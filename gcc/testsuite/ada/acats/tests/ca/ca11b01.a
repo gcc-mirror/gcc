@@ -1,0 +1,208 @@
+-- CA11B01.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a type derived in a public child inherits primitive 
+--      operations from parent.  
+--
+-- TEST DESCRIPTION:
+--      Declare a root record type with discriminant in a package 
+--      specification. Declare a primitive subprogram for the type 
+--      (foundation code).
+--
+--      Add a public child to the above package.  Derive a new type 
+--      with constraint to the discriminant record type from the parent 
+--      package.  Declare a new primitive subprogram to write to the child 
+--      derived type.
+--
+--      Add a new public child to the above package.  This grandchild package
+--      derives a new type using the record type from the above package.  
+--      Declare a new primitive subprogram to write to the grandchild derived 
+--      type.
+--
+--      In the main program, "with" the grandchild.  Access the inherited 
+--      operations from grandparent, parent, and grandchild packages.
+--
+-- TEST FILES:
+--      This test depends on the following foundation code:
+--
+--         FA11B00.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+-- Child package of FA11B00.
+package FA11B00.CA11B01_0 is          -- Application_Two_Widget
+-- This public child declares a derived type from its parent.  It 
+-- represents processing of widgets in a window system.  
+                                                               
+   type App2_Widget is new App1_Widget (Maximum_Size => 5000); 
+   -- Inherits procedure Create_Widget from parent.
+
+   -- Primitive operation of type App2_Widget.
+   -- To be inherited by its children derivatives.
+   procedure App2_Widget_Specific_Oper (The_Widget : in out App2_Widget;    
+                                        Loc        : in     Widget_Location);
+
+end FA11B00.CA11B01_0;                -- Application_Two_Widget
+
+--=======================================================================--
+
+package body FA11B00.CA11B01_0 is     -- Application_Two_Widget
+
+   procedure App2_Widget_Specific_Oper 
+     (The_Widget : in out App2_Widget;    
+      Loc        : in     Widget_Location) is
+   begin
+      The_Widget.Location := Loc;
+   end App2_Widget_Specific_Oper;
+
+end FA11B00.CA11B01_0;                -- Application_Two_Widget
+
+--=======================================================================--
+
+-- Grandchild package of FA11B00, child package of FA11B00.CA11B01_0.
+package FA11B00.CA11B01_0.CA11B01_1 is     -- Application_Three_Widget
+-- This public grandchild declares a derived type from its parent.  It 
+-- represents processing of widgets in a window system.  
+
+   type App3_Widget is new App2_Widget;    -- Derived record of App2_Widget.
+
+   -- Inherits (inherited) procedure Create_Widget from Application_One_Widget.
+   -- Inherits procedure App2_Widget_Specific_Oper from App2_Widget.
+
+   -- Primitive operation of type App3_Widget.
+   procedure App3_Widget_Specific_Oper (The_Widget : in out App3_Widget; 
+                                        S          : in     Widget_Size);
+
+end FA11B00.CA11B01_0.CA11B01_1;           -- Application_Three_Widget
+
+--=======================================================================--
+
+package body FA11B00.CA11B01_0.CA11B01_1 is     -- Application_Three_Widget
+
+   procedure App3_Widget_Specific_Oper 
+     (The_Widget : in out App3_Widget; 
+      S          : in     Widget_Size) is
+   begin
+      The_Widget.Size := S;
+   end App3_Widget_Specific_Oper;
+
+end FA11B00.CA11B01_0.CA11B01_1;                -- Application_Three_Widget
+
+--=======================================================================--
+
+with FA11B00.CA11B01_0.CA11B01_1; -- Application_Three_Widget, 
+                                  -- implicitly with Application_Two_Widget,
+                                  -- implicitly with Application_Three_Widget.
+with Report;
+
+procedure CA11B01 is
+
+   package Application_One_Widget renames FA11B00;
+   package Application_Two_Widget renames FA11B00.CA11B01_0;
+   package Application_Three_Widget renames FA11B00.CA11B01_0.CA11B01_1;
+
+   use Application_One_Widget;
+   use Application_Two_Widget;
+   use Application_Three_Widget;
+
+begin
+
+   Report.Test ("CA11B01", "Check that a type derived in a public " &
+                "child inherits primitive operations from parent");
+
+   Application_One_Subtest:
+   declare
+      White_Widget : App1_Widget;
+
+   begin
+      -- perform an App1_Widget specific operation.
+      App1_Widget_Specific_Oper (C => White, L => "Line Editor    ",
+                                 The_Widget => White_Widget, I => 10);
+
+      If White_Widget.Color /= White or
+        White_Widget.Id /= Widget_ID 
+          (Report.Ident_Int (10)) or
+            White_Widget.Label  /= "Line Editor    " then
+              Report.Failed ("Incorrect result for White_Widget");
+      end if;
+
+   end Application_One_Subtest;
+   ---------------------------------------------------------------
+   Application_Two_Subtest:
+   declare
+      Amber_Widget : App2_Widget;
+
+   begin
+      App1_Widget_Specific_Oper (Amber_Widget, I => 11, 
+                                 C => Amber, L => "Alarm_Clock    ");  
+                                 -- Inherited from Application_One_Widget.
+                                           
+      -- perform an App2_Widget specific operation.
+      App2_Widget_Specific_Oper (The_Widget => Amber_Widget, Loc => (380,512));
+
+      If Amber_Widget.Color /= Amber or
+        Amber_Widget.Id /= Widget_ID (Report.Ident_Int (11)) or
+            Amber_Widget.Label  /= "Alarm_Clock    " or
+              Amber_Widget.Location /= (380,512) then
+                Report.Failed ("Incorrect result for Amber_Widget");
+      end if;
+
+   end Application_Two_Subtest;
+   ---------------------------------------------------------------
+   Application_Three_Subtest:
+   declare
+      Green_Widget : App3_Widget;
+
+   begin
+      App1_Widget_Specific_Oper (Green_Widget, 100, Green, 
+                                 "Screen Editor  ");  
+                                   -- Inherited (inherited) from Basic_Widget.
+
+      -- perform an App2_Widget specific operation.
+      App2_Widget_Specific_Oper (Loc => (1024,760), 
+                                 The_Widget => Green_Widget);
+                                    -- Inherited from App_1_Widget.
+
+      -- perform an App3_Widget specific operation.
+      App3_Widget_Specific_Oper (Green_Widget, S => (100,100));
+
+      If Green_Widget.Color /= Green or
+        Green_Widget.Id /= Widget_ID (Report.Ident_Int (100)) or
+          Green_Widget.Label  /= "Screen Editor  " or
+            Green_Widget.Location /= (1024,760) or
+              Green_Widget.Size /= (100,100) then
+                Report.Failed ("Incorrect result for Green_Widget");
+      end if;
+
+   end Application_Three_Subtest;
+
+   Report.Result;
+
+end CA11B01;

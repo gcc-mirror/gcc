@@ -1,0 +1,91 @@
+-- CA140283.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+-- OBJECTIVE:
+--     Check that when a subprogram body is compiled as a library unit
+--     it is not interpreted as a completion for any previous library
+--     subprogram created by generic instantiation, and it therefore
+--     declares a new library subprogram.
+--
+-- TEST DESCRIPTION
+--     A generic function and procedure plus their instantiations are
+--     created. Then, subprogram bodies which ought to replace the
+--     instantiations are compiled. Following that, additional instantiations
+--     are compiled. Finally the main subprogram is compiled.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         CA140280.A
+--         CA140281.A
+--         CA140282.A
+--      -> CA140283.AM
+--
+-- CHANGE HISTORY:
+--     JBG 05/28/85  CREATED ORIGINAL TEST.
+--     RDH 04/18/90  ADDED CASES WHERE SUBPROGRAM PARAMETER TYPES ARE
+--                   NOT THE SAME.
+--     THS 09/24/90  REWORDED HEADER COMMENTS, ERROR MESSAGES, AND
+--                   CALL TO TEST. CALLED IDENT_INT CONSISTENTLY.
+--     RLB 07/08/99  Reinstated withdrawn test; revised to Ada 95 format.
+
+WITH REPORT; USE REPORT;
+WITH CA14028_PROC1, CA14028_FUNC2, CA14028_PROC5, CA14028_FUNC22,
+     CA14028_PROC3, CA14028_FUNC3;
+PROCEDURE CA140283 IS
+     TEMP : INTEGER := 0;
+BEGIN
+     TEST ("CA14028", "Check that library subprograms created by " &
+                      "generic instantiation are replaced " &
+                      "when new non-generic subprogram bodies are " &
+                      "compiled");
+
+     CA14028_PROC1(TEMP);
+     IF TEMP /= IDENT_INT(3) THEN
+          FAILED ("CA14028_Proc1 instantiation not replaced");
+     END IF;
+
+     IF CA14028_FUNC2 /= IDENT_INT(4) THEN
+          FAILED ("CA14028_Func2 instantiation not replaced");
+     END IF;
+
+     CA14028_PROC5(TEMP);
+     IF TEMP /= IDENT_INT(5) THEN
+          FAILED ("New CA14028_Proc5 instantiation not correct");
+     END IF;
+
+     IF CA14028_FUNC22 /= IDENT_INT(2) THEN
+          FAILED ("New CA14028_Func22 instantiation not correct");
+     END IF;
+
+     CA14028_PROC3(TEMP);
+     IF TEMP /= IDENT_INT(4) THEN
+          FAILED ("CA14028_Proc3 not replaced by correct version");
+     END IF;
+
+     IF CA14028_FUNC3 /= IDENT_INT(7) THEN
+          FAILED ("CA14028_Func3 not replaced by correct version");
+     END IF;
+
+     RESULT;
+END CA140283;

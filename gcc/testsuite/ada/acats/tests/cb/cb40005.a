@@ -1,0 +1,339 @@
+-- CB40005.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that exceptions raised in non-generic code can be handled by
+--      a procedure in a generic package.  Check that the exception identity
+--      can be properly retrieved from the generic code and used by the
+--      non-generic code.
+--
+-- TEST DESCRIPTION:
+--      This test models a possible usage paradigm for the type:
+--        Ada.Exceptions.Exception_Occurrence.
+--
+--      A generic package takes access to procedure types (allowing it to
+--      be used at any accessibility level) and defines a "fail soft"
+--      procedure that takes designators to a procedure to call, a
+--      procedure to call in the event that it fails, and a function to
+--      call to determine the next action.
+--
+--      In the event an exception occurs on the call to the first procedure,
+--      the exception is stored in a stack; along with the designator to the
+--      procedure that caused it; allowing the procedure to be called again, 
+--      or the exception to be re-raised.
+--
+--      A full implementation of such a tool would use a more robust storage
+--      mechanism, and would provide a more flexible interface.
+--
+--
+-- CHANGE HISTORY:
+--      29 MAR 96   SAIC   Initial version
+--      12 NOV 96   SAIC   Revised for 2.1 release
+--
+--!
+
+----------------------------------------------------------------- CB40005_0
+
+with Ada.Exceptions;
+generic
+  type Proc_Pointer is access procedure;
+  type Func_Pointer is access function return Proc_Pointer;
+package CB40005_0 is -- Fail_Soft
+
+
+  procedure Fail_Soft_Call( Proc_To_Call : Proc_Pointer;
+                            Proc_To_Call_On_Exception : Proc_Pointer := null;
+                            Retry_Routine : Func_Pointer := null );
+
+  function Top_Event_Exception return Ada.Exceptions.Exception_Occurrence;
+
+  function Top_Event_Procedure return Proc_Pointer;
+
+  procedure Pop_Event;
+
+  function Event_Stack_Size return Natural;
+
+end CB40005_0; -- Fail_Soft
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- CB40005_0
+
+with Report;
+package body CB40005_0 is
+
+  type History_Event is record
+    Exception_Event  : Ada.Exceptions.Exception_Occurrence_Access;
+    Procedure_Called : Proc_Pointer;
+  end record;
+
+  procedure Store_Event( Proc_Called : Proc_Pointer;
+                         Error       : Ada.Exceptions.Exception_Occurrence );
+
+  procedure Fail_Soft_Call( Proc_To_Call : Proc_Pointer;
+                            Proc_To_Call_On_Exception : Proc_Pointer := null;
+                            Retry_Routine : Func_Pointer := null ) is
+
+    Current_Proc_To_Call : Proc_Pointer := Proc_To_Call;
+
+  begin
+    while Current_Proc_To_Call /= null loop
+      begin
+        Current_Proc_To_Call.all;  -- call procedure through pointer
+        Current_Proc_To_Call := null;
+      exception
+        when Capture: others =>
+          Store_Event( Current_Proc_To_Call, Capture );
+          if Proc_To_Call_On_Exception /= null then
+            Proc_To_Call_On_Exception.all;
+          end if;
+          if Retry_Routine /= null then
+            Current_Proc_To_Call := Retry_Routine.all;
+          else
+            Current_Proc_To_Call := null;
+          end if;
+      end;
+    end loop;
+  end Fail_Soft_Call;
+  
+  Stack : array(1..10) of History_Event;  -- minimal, sufficient for testing
+
+  Stack_Top : Natural := 0;
+
+  procedure Store_Event( Proc_Called : Proc_Pointer;
+                         Error       : Ada.Exceptions.Exception_Occurrence )
+  is
+  begin
+    Stack_Top := Stack_Top +1;
+    Stack(Stack_Top) := ( Ada.Exceptions.Save_Occurrence(Error),
+                          Proc_Called );
+  end Store_Event;
+
+  function Top_Event_Exception return Ada.Exceptions.Exception_Occurrence is
+  begin
+    if Stack_Top > 0 then
+      return Stack(Stack_Top).Exception_Event.all;
+    else
+      return Ada.Exceptions.Null_Occurrence;
+    end if;
+  end Top_Event_Exception;
+
+  function Top_Event_Procedure return Proc_Pointer is
+  begin
+    if Stack_Top > 0 then
+      return Stack(Stack_Top).Procedure_Called;
+    else
+      return null;
+    end if;
+  end Top_Event_Procedure;
+
+  procedure Pop_Event is
+  begin
+    if Stack_Top > 0 then
+      Stack_Top := Stack_Top -1;
+    else
+      Report.Failed("Stack Error");
+    end if;
+  end Pop_Event;
+
+  function Event_Stack_Size return Natural is
+  begin
+    return Stack_Top;
+  end Event_Stack_Size;
+
+end CB40005_0;
+
+------------------------------------------------------------------- CB40005
+
+with Report;
+with TCTouch;
+with CB40005_0;
+with Ada.Exceptions;
+procedure CB40005 is
+
+  type Proc_Pointer is access procedure;
+  type Func_Pointer is access function return Proc_Pointer;
+
+  package Fail_Soft is new CB40005_0(Proc_Pointer, Func_Pointer);
+
+  procedure Cause_Standard_Exception;
+
+  procedure Cause_Visible_Exception;
+
+  procedure Cause_Invisible_Exception;
+
+  Exception_Procedure_Pointer : Proc_Pointer;
+
+  Visible_Exception : exception;
+
+  procedure Action_On_Exception;
+
+  function Retry_Procedure return Proc_Pointer;
+
+  Raise_Error : Boolean;
+
+  -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+  procedure Cause_Standard_Exception is
+  begin
+    TCTouch.Touch('S');  --------------------------------------------------- S
+    if Raise_Error then
+      raise Constraint_Error;
+    end if;
+  end Cause_Standard_Exception;
+
+  procedure Cause_Visible_Exception is
+  begin
+    TCTouch.Touch('V');  --------------------------------------------------- V
+    if Raise_Error then
+      raise Visible_Exception;
+    end if;
+  end Cause_Visible_Exception;
+
+  procedure Cause_Invisible_Exception is
+    Invisible_Exception : exception;
+  begin
+    TCTouch.Touch('I');  --------------------------------------------------- I
+    if Raise_Error then
+      raise Invisible_Exception;
+    end if;
+  end Cause_Invisible_Exception;
+
+  procedure Action_On_Exception is
+  begin
+    TCTouch.Touch('A');  --------------------------------------------------- A
+  end Action_On_Exception;
+
+  function Retry_Procedure return Proc_Pointer is
+  begin
+    TCTouch.Touch('R');  --------------------------------------------------- R
+    return Action_On_Exception'Access;
+  end Retry_Procedure;
+
+         -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+
+begin  -- Main test procedure.
+
+  Report.Test ("CB40005", "Check that exceptions raised in non-generic " &
+                          "code can be handled by a procedure in a generic " &
+                          "package.  Check that the exception identity can " &
+                          "be properly retrieved from the generic code and " &
+                          "used by the non-generic code" );
+
+  -- first, check that the no exception cases cause no action on the stack
+  Raise_Error := False;
+
+  Fail_Soft.Fail_Soft_Call( Cause_Standard_Exception'Access );    -- S
+
+  Fail_Soft.Fail_Soft_Call( Cause_Visible_Exception'Access,       -- V
+                            Action_On_Exception'Access,
+                            Retry_Procedure'Access );
+
+  Fail_Soft.Fail_Soft_Call( Cause_Invisible_Exception'Access,     -- I
+                            null,
+                            Retry_Procedure'Access );
+
+  TCTouch.Assert( Fail_Soft.Event_Stack_Size = 0, "Empty stack");
+
+  TCTouch.Validate( "SVI", "Non error case check" );
+
+  -- second, check that error cases add to the stack
+  Raise_Error := True;
+
+  Fail_Soft.Fail_Soft_Call( Cause_Standard_Exception'Access );    -- S
+
+  Fail_Soft.Fail_Soft_Call( Cause_Visible_Exception'Access,       -- V
+                            Action_On_Exception'Access,           -- A
+                            Retry_Procedure'Access );             -- RA
+
+  Fail_Soft.Fail_Soft_Call( Cause_Invisible_Exception'Access,     -- I
+                            null,
+                            Retry_Procedure'Access );             -- RA
+
+  TCTouch.Assert( Fail_Soft.Event_Stack_Size = 3, "Stack = 3");
+
+  TCTouch.Validate( "SVARAIRA", "Error case check" );
+
+  -- check that the exceptions and procedure were stored correctly
+  -- on the stack
+  Raise_Error := False;
+
+  -- return procedure pointer from top of stack and call the procedure
+  -- through that pointer:
+
+  Fail_Soft.Top_Event_Procedure.all;
+
+  TCTouch.Validate( "I", "Invisible case unwind" );
+
+  begin
+    Ada.Exceptions.Raise_Exception( 
+      Ada.Exceptions.Exception_Identity(Fail_Soft.Top_Event_Exception) );
+    Report.Failed("1: Exception not raised");
+  exception
+    when Constraint_Error  => Report.Failed("1: Raised Constraint_Error");
+    when Visible_Exception => Report.Failed("1: Raised Visible_Exception");
+    when others            => null; -- expected case
+  end;
+
+  Fail_Soft.Pop_Event;
+
+  -- return procedure pointer from top of stack and call the procedure
+  -- through that pointer:
+
+  Fail_Soft.Top_Event_Procedure.all;
+
+  TCTouch.Validate( "V", "Visible case unwind" );
+
+  begin
+    Ada.Exceptions.Raise_Exception( 
+      Ada.Exceptions.Exception_Identity(Fail_Soft.Top_Event_Exception) );
+    Report.Failed("2: Exception not raised");
+  exception
+    when Constraint_Error  => Report.Failed("2: Raised Constraint_Error");
+    when Visible_Exception => null; -- expected case
+    when others            => Report.Failed("2: Raised Invisible_Exception");
+  end;
+
+  Fail_Soft.Pop_Event;
+
+  Fail_Soft.Top_Event_Procedure.all;
+
+  TCTouch.Validate( "S", "Standard case unwind" );
+
+  begin
+    Ada.Exceptions.Raise_Exception( 
+      Ada.Exceptions.Exception_Identity(Fail_Soft.Top_Event_Exception) );
+    Report.Failed("3: Exception not raised");
+  exception
+    when Constraint_Error  => null; -- expected case
+    when Visible_Exception => Report.Failed("3: Raised Visible_Exception");
+    when others            => Report.Failed("3: Raised Invisible_Exception");
+  end;
+
+  Fail_Soft.Pop_Event;
+
+  TCTouch.Assert( Fail_Soft.Event_Stack_Size = 0, "Stack empty after pops");
+
+  Report.Result;
+
+end CB40005;

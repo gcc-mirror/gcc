@@ -1,0 +1,186 @@
+-- C3A0011.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE: 
+--      Check that an access-to-subprogram object whose type is declared in a
+--      parent package, may be used to invoke subprograms in a child package.
+--      Check that such access objects may be stored in a data structure and
+--      that subprograms may be called by walking the data structure.
+-- 
+-- TEST DESCRIPTION:
+--      In the package, declare an access to procedure type.  Declare an 
+--      array of the access type.  Declare three different procedures that 
+--      can be referred to by the access to procedure type.           
+--
+--      In the visible child package, declare two procedures that can be 
+--      referred to by the access to procedure type of the parent.  Build 
+--      the array by calling each procedure indirectly through the access 
+--      value.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      16 Dec 94   SAIC    Improved visibility of "/=" in main body
+--
+--!
+
+package C3A0011_0 is -- Interpreter
+   
+   type Compass_Point is mod 360;
+
+   function Heading return Compass_Point;
+
+   -- Type accesses to any procedure
+   type Action_Ptr is access procedure;
+   
+   -- Array of access to procedure
+   type Action_Array is array (Natural range <>) of Action_Ptr;
+
+   procedure Rotate_Left;
+
+   procedure Rotate_Right;
+
+   procedure Center;
+
+private
+   The_Heading : Compass_Point := Compass_Point'First;
+
+end C3A0011_0;
+
+
+-----------------------------------------------------------------------------
+
+
+package body C3A0011_0 is
+
+   function Heading return Compass_Point is
+   begin
+     return The_Heading;
+   end Heading;
+
+   procedure Rotate_Left is
+   begin
+      The_Heading := The_Heading - 90;
+   end Rotate_Left;
+
+
+   procedure Rotate_Right is
+   begin
+      The_Heading := The_Heading + 90;
+   end Rotate_Right;
+
+
+   procedure Center is
+   begin
+      The_Heading := 0;
+   end Center;
+
+end C3A0011_0;
+
+
+-----------------------------------------------------------------------------
+
+
+package C3A0011_0.Action is
+
+   procedure Rotate_Front;
+
+   procedure Rotate_Back;
+
+end C3A0011_0.Action;
+
+
+-----------------------------------------------------------------------------
+
+
+package body C3A0011_0.Action is
+
+   procedure Rotate_Front is
+   begin
+      The_Heading := The_Heading + 5;
+   end Rotate_Front;
+
+
+   procedure Rotate_Back is
+   begin
+      The_Heading := The_Heading - 5;
+   end Rotate_Back;
+
+end C3A0011_0.Action;
+
+
+-----------------------------------------------------------------------------
+
+
+with C3A0011_0.Action;
+
+with Report;
+
+procedure C3A0011 is
+
+   Total_Actions   : constant := 6;
+
+   Action_Sequence : C3A0011_0.Action_Array (1 .. Total_Actions);
+
+   type Result_Array is array (Natural range <>) of C3A0011_0.Compass_Point;
+
+   Action_Results  : Result_Array(1 .. Total_Actions);
+
+   package IA renames C3A0011_0.Action;
+   
+begin
+
+   Report.Test ("C3A0011", "Check that an access-to-subprogram object whose "
+                         & "type is declared in a parent package, may be "
+                         & "used to invoke subprograms in a child package. "
+                         & "Check that such access objects may be stored in "
+                         & "a data structure and that subprograms may be "
+                         & "called by walking the data structure");
+
+   -- Build the action sequence
+   Action_Sequence := (C3A0011_0.Rotate_Left'Access, 
+                       C3A0011_0.Center'Access,
+                       C3A0011_0.Rotate_Right'Access, 
+                       IA.Rotate_Front'Access,
+                       C3A0011_0.Center'Access,
+                       IA.Rotate_Back'Access);
+
+   -- Build the expected result
+   Action_Results := ( 270, 0, 90, 95, 0, 355 );
+
+   -- Assign actions by invoking subprogram designated by access value
+   for I in Action_Sequence'Range loop
+      Action_Sequence(I).all;
+      if C3A0011_0."/="( C3A0011_0.Heading, Action_Results(I) ) then
+        Report.Failed ("Expecting "
+                       & C3A0011_0.Compass_Point'Image(Action_Results(I))
+                       & " Got"
+                       & C3A0011_0.Compass_Point'Image(C3A0011_0.Heading));
+      end if;
+   end loop;
+
+   Report.Result;
+
+end C3A0011;

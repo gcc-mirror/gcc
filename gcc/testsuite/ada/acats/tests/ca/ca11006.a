@@ -1,0 +1,211 @@
+-- CA11006.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the private part of a child library unit can utilize
+--      its parent unit's private definition.
+--
+-- TEST DESCRIPTION:
+--      Declare a package and public child package, both with private 
+--      parts.  The child package will have a private extension of a type 
+--      declared in the parent's private part.  In addition, the private 
+--      part of the child package specification will make use of some of 
+--      the components declared in the private part of the parent.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      15 Nov 95   SAIC    Update and repair for ACVC 2.0.1
+--
+--!
+
+package CA11006_0 is      -- Package File_Package 
+
+   type File_Descriptor is private;
+   type File_Mode       is (Read_Only, Write_Only, Read_Write);
+   type File_Type       is tagged private;
+
+   function  Next_Available_File return File_Descriptor;
+
+private
+
+   type File_Measure    is range 0 .. 1000;
+   type File_Descriptor is new Integer;
+
+   Null_File       : constant File_Descriptor := 0;
+   Default_Mode    : constant File_Mode       := Read_Write;
+
+   type File_Type is tagged
+     record
+        Descriptor : File_Descriptor := Null_File;
+        Mode       : File_Mode       := Default_Mode;
+     end record;
+
+   System_File : File_Type;
+
+end CA11006_0;               -- Package File_Package  
+
+     --=================================================================--
+
+package body CA11006_0 is    -- Package File_Package  
+   
+   File_Count : Integer := 0;
+
+   function Next_Available_File return File_Descriptor is
+   begin
+      File_Count := File_Count + 1;
+      return File_Descriptor (File_Count);
+   end Next_Available_File;
+
+end CA11006_0;               -- Package File_Package   
+
+     --=================================================================--
+
+package CA11006_0.CA11006_1 is        -- Child package File_Package.Operations
+
+   type File_Length_Type   is private;
+   type Extended_File_Type is new File_Type with private;
+
+   System_Extended_File : constant Extended_File_Type;
+
+   procedure Create_File (Mode : in     File_Mode;
+                          File :    out Extended_File_Type);    
+
+   procedure Compress_File (Original        : in     Extended_File_Type;
+                            Compressed_File :    out Extended_File_Type);
+
+   function  Validate (File : in Extended_File_Type) return Boolean;
+
+   function  Validate_Compression (File : in Extended_File_Type) 
+     return Boolean;
+                                   -- These two validation functions provide
+                                   -- the capability to check the private
+                                   -- components defined in the parent and
+                                   -- child packages from within the client
+                                   -- program.
+private
+
+   type File_Length_Type is new File_Measure;       -- Parent private type.
+
+   Min_File_Size : File_Length_Type := File_Length_Type'First;
+   Max_File_Size : File_Length_Type := File_Length_Type'Last;
+
+   type Extended_File_Type is new File_Type with        -- Parent type.
+      record
+         Blocks : File_Length_Type := Min_File_Size;
+      end record;
+
+   System_Extended_File : constant Extended_File_Type :=
+     (Descriptor => System_File.Descriptor,      -- Parent private object.
+      Mode       => Read_Only,                   -- Parent enumeration literal.
+      Blocks     => Min_File_Size);
+
+
+end CA11006_0.CA11006_1;             -- Child Package File_Package.Operations
+
+     --=================================================================--
+
+                                -- Child package body File_Package.Operations
+package body CA11006_0.CA11006_1 is  
+
+   procedure Create_File 
+     (Mode : in     File_Mode; 
+      File :    out Extended_File_Type) is                 
+   begin
+      File.Descriptor := Next_Available_File;    -- Parent subprogram.
+      File.Mode       := Default_Mode;           -- Parent private constant.
+      File.Blocks     := Max_File_Size;
+   end Create_File;
+   ------------------------------------------------------------------------
+   procedure Compress_File (Original        : in     Extended_File_Type;
+                            Compressed_File :    out Extended_File_Type) is
+   begin
+      Compressed_File.Descriptor := Next_Available_File;      
+      Compressed_File.Mode       := Read_Only;
+      Compressed_File.Blocks     := Original.Blocks / 2;  -- Simulated file
+   end Compress_File;                                     -- compression.
+   ------------------------------------------------------------------------
+   function  Validate (File : in Extended_File_Type) return Boolean is      
+   begin
+      if ((File.Descriptor /= System_Extended_File.Descriptor) and    
+          (File.Mode = Read_Write)                             and
+          (File.Blocks = Max_File_Size))                       then
+         return True;
+      else
+         return False;
+      end if;
+   end Validate;
+   ------------------------------------------------------------------------
+   function  Validate_Compression (File : in Extended_File_Type) 
+      return Boolean is      
+   begin
+      if ((File.Descriptor /= System_File.Descriptor) and    
+          (File.Mode = Read_Only)                     and
+          (File.Blocks = Max_File_Size/2))            then
+         return True;
+      else
+         return False;
+      end if;
+   end Validate_Compression;
+
+end CA11006_0.CA11006_1;         -- Child package body File_Package.Operations
+
+     --=================================================================--
+
+with CA11006_0.CA11006_1;        -- with Child package File_Package.Operations
+with Report;
+
+procedure CA11006 is
+
+   package File      renames CA11006_0;
+   package File_Ops  renames CA11006_0.CA11006_1;            
+
+   Validation_File_Mode : File.File_Mode := File.Read_Only;
+   Validation_File,
+   Storage_Copy         : File_Ops.Extended_File_Type;     
+
+begin
+
+   Report.Test ("CA11006", "Check that the private part of a child "  &
+                           "library unit can utilize its parent "     &
+                           "unit's private definition");
+
+   File_Ops.Create_File (Validation_File_Mode, Validation_File);
+
+   if not File_Ops.Validate (Validation_File) then
+      Report.Failed ("Incorrect initialization of file");
+   end if;
+
+   File_Ops.Compress_File (Validation_File, Storage_Copy);
+
+   if not (File_Ops.Validate (Validation_File) and 
+           File_Ops.Validate_Compression (Storage_Copy))
+   then
+      Report.Failed ("Incorrect compression of file");
+   end if;
+
+   Report.Result;
+
+end CA11006; 

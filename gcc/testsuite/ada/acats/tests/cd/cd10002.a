@@ -1,0 +1,1198 @@
+-- CD10002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--    Check that operational items are allowed in some contexts where
+--    representation items are not:
+--
+--       1 - Check that the name of an incompletely defined type can be used
+--           when specifying an operational item. (RM95/TC1 7.3(5)).
+--
+--       2 - Check that operational items can be specified for a descendant of
+--           a generic formal untagged type. (RM95/TC1 13.1(10)).
+--
+--       3 - Check that operational items can be specified for a derived
+--           untagged type even if the parent type is a by-reference type or
+--           has user-defined primitive subprograms. (RM95/TC1 13.1(11/1)).
+--
+--    (Defect Report 8652/0009, as reflected in Technical Corrigendum 1).
+--
+-- CHANGE HISTORY:
+--    19 JAN 2001   PHL   Initial version.
+--     3 DEC 2001   RLB   Reformatted for ACATS.
+--     3 OCT 2002   RLB   Corrected incorrect type derivations.
+--
+--!
+with Ada.Streams;
+use Ada.Streams;
+package CD10002_0 is
+
+    type Kinds is (Read, Write, Input, Output);
+    type Counts is array (Kinds) of Natural;
+
+    generic
+        type T is private;
+    package Nonlimited_Stream_Ops is
+
+        procedure Write (Stream : access Root_Stream_Type'Class; Item : T);
+        function Input (Stream : access Root_Stream_Type'Class) return T;
+        procedure Read (Stream : access Root_Stream_Type'Class; Item : out T);
+        procedure Output (Stream : access Root_Stream_Type'Class; Item : T);
+
+        function Get_Counts return Counts;
+
+    end Nonlimited_Stream_Ops;
+
+    generic
+        type T (<>) is limited private; -- Should be self-initializing.
+        C : in out T;
+    package Limited_Stream_Ops is
+
+        procedure Write (Stream : access Root_Stream_Type'Class; Item : T);
+        function Input (Stream : access Root_Stream_Type'Class) return T;
+        procedure Read (Stream : access Root_Stream_Type'Class; Item : out T);
+        procedure Output (Stream : access Root_Stream_Type'Class; Item : T);
+
+        function Get_Counts return Counts;
+
+    end Limited_Stream_Ops;
+
+end CD10002_0;
+
+
+package body CD10002_0 is
+
+    package body Nonlimited_Stream_Ops is
+        Cnts : Counts := (others => 0);
+        X : T; -- Initialized by Write/Output.
+
+        procedure Write (Stream : access Root_Stream_Type'Class; Item : T) is
+        begin
+            X := Item;
+            Cnts (Write) := Cnts (Write) + 1;
+        end Write;
+
+        function Input (Stream : access Root_Stream_Type'Class) return T is
+        begin
+            Cnts (Input) := Cnts (Input) + 1;
+            return X;
+        end Input;
+
+        procedure Read (Stream : access Root_Stream_Type'Class; Item : out T) is
+        begin
+            Cnts (Read) := Cnts (Read) + 1;
+            Item := X;
+        end Read;
+
+        procedure Output (Stream : access Root_Stream_Type'Class; Item : T) is
+        begin
+            X := Item;
+            Cnts (Output) := Cnts (Output) + 1;
+        end Output;
+
+        function Get_Counts return Counts is
+        begin
+            return Cnts;
+        end Get_Counts;
+
+    end Nonlimited_Stream_Ops;
+
+    package body Limited_Stream_Ops is
+        Cnts : Counts := (others => 0);
+
+        procedure Write (Stream : access Root_Stream_Type'Class; Item : T) is
+        begin
+            Cnts (Write) := Cnts (Write) + 1;
+        end Write;
+
+        function Input (Stream : access Root_Stream_Type'Class) return T is
+        begin
+            Cnts (Input) := Cnts (Input) + 1;
+            return C;
+        end Input;
+
+        procedure Read (Stream : access Root_Stream_Type'Class; Item : out T) is
+        begin
+            Cnts (Read) := Cnts (Read) + 1;
+        end Read;
+
+        procedure Output (Stream : access Root_Stream_Type'Class; Item : T) is
+        begin
+            Cnts (Output) := Cnts (Output) + 1;
+        end Output;
+
+        function Get_Counts return Counts is
+        begin
+            return Cnts;
+        end Get_Counts;
+
+    end Limited_Stream_Ops;
+
+end CD10002_0;
+
+
+with Ada.Streams;
+use Ada.Streams;
+package CD10002_1 is
+
+    type Dummy_Stream is new Root_Stream_Type with null record;
+    procedure Read (Stream : in out Dummy_Stream;
+                    Item : out Stream_Element_Array;
+                    Last : out Stream_Element_Offset);
+    procedure Write (Stream : in out Dummy_Stream;
+                     Item : Stream_Element_Array);
+
+end CD10002_1;
+
+
+with Report;
+use Report;
+package body CD10002_1 is
+
+    procedure Read (Stream : in out Dummy_Stream;
+                    Item : out Stream_Element_Array;
+                    Last : out Stream_Element_Offset) is
+    begin
+        Failed ("Unexpected call to the Read operation of Dummy_Stream");
+    end Read;
+
+    procedure Write (Stream : in out Dummy_Stream;
+                     Item : Stream_Element_Array) is
+    begin
+        Failed ("Unexpected call to the Write operation of Dummy_Stream");
+    end Write;
+
+end CD10002_1;
+
+
+with Ada.Streams;
+use Ada.Streams;
+with CD10002_0;
+package CD10002_Deriv is
+
+    -- Parent has user-defined subprograms.
+
+    type T1 is new Boolean;
+    function Is_Odd (X : Integer) return T1;
+
+    type T2 is
+        record
+            F : Float;
+        end record;
+    procedure Print (X : T2);
+
+    type T3 is array (Boolean) of Duration;
+    function "+" (L, R : T3) return T3;
+
+    -- Parent is by-reference.  No need to check the case where the parent
+    -- is tagged, because the defect report only deals with untagged types.
+
+    task type T4 is
+    end T4;
+
+    protected type T5 is
+    end T5;
+
+    type T6 (D : access Integer := new Integer'(2)) is limited null record;
+
+    type T7 is array (Character) of T6;
+
+    package P is
+        type T8 is limited private;
+    private
+        type T8 is new T5;
+    end P;
+
+    type Nt1 is new T1;
+    type Nt2 is new T2;
+    type Nt3 is new T3;
+    type Nt4 is new T4;
+    type Nt5 is new T5;
+    type Nt6 is new T6;
+    type Nt7 is new T7;
+    type Nt8 is new P.T8;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt1'Base);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt1'Base;
+    procedure Read (Stream : access Root_Stream_Type'Class;
+                    Item : out Nt1'Base);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt1'Base);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt2);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt2;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt2);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt2);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt3);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt3;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt3);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt3);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt4);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt4;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt4);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt4);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt5);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt5;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt5);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt5);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt6);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt6;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt6);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt6);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt7);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt7;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt7);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt7);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt8);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt8;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt8);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt8);
+
+    for Nt1'Write use Write;
+    for Nt1'Read use Read;
+    for Nt1'Output use Output;
+    for Nt1'Input use Input;
+
+    for Nt2'Write use Write;
+    for Nt2'Read use Read;
+    for Nt2'Output use Output;
+    for Nt2'Input use Input;
+
+    for Nt3'Write use Write;
+    for Nt3'Read use Read;
+    for Nt3'Output use Output;
+    for Nt3'Input use Input;
+
+    for Nt4'Write use Write;
+    for Nt4'Read use Read;
+    for Nt4'Output use Output;
+    for Nt4'Input use Input;
+
+    for Nt5'Write use Write;
+    for Nt5'Read use Read;
+    for Nt5'Output use Output;
+    for Nt5'Input use Input;
+
+    for Nt6'Write use Write;
+    for Nt6'Read use Read;
+    for Nt6'Output use Output;
+    for Nt6'Input use Input;
+
+    for Nt7'Write use Write;
+    for Nt7'Read use Read;
+    for Nt7'Output use Output;
+    for Nt7'Input use Input;
+
+    for Nt8'Write use Write;
+    for Nt8'Read use Read;
+    for Nt8'Output use Output;
+    for Nt8'Input use Input;
+
+    -- All these variables are self-initializing.
+    C4 : Nt4;
+    C5 : Nt5;
+    C6 : Nt6;
+    C7 : Nt7;
+    C8 : Nt8;
+
+    package Nt1_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt1'Base);
+    package Nt2_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt2);
+    package Nt3_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt3);
+    package Nt4_Ops is new CD10002_0.Limited_Stream_Ops (Nt4, C4);
+    package Nt5_Ops is new CD10002_0.Limited_Stream_Ops (Nt5, C5);
+    package Nt6_Ops is new CD10002_0.Limited_Stream_Ops (Nt6, C6);
+    package Nt7_Ops is new CD10002_0.Limited_Stream_Ops (Nt7, C7);
+    package Nt8_Ops is new CD10002_0.Limited_Stream_Ops (Nt8, C8);
+
+end CD10002_Deriv;
+
+
+package body CD10002_Deriv is
+
+    function Is_Odd (X : Integer) return T1 is
+    begin
+        return True;
+    end Is_Odd;
+    procedure Print (X : T2) is
+    begin
+        null;
+    end Print;
+    function "+" (L, R : T3) return T3 is
+    begin
+        return (False => L (False) + R (True), True => L (True) + R (False));
+    end "+";
+    task body T4 is
+    begin
+        null;
+    end T4;
+    protected body T5 is
+    end T5;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt1'Base)
+       renames Nt1_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt1'Base
+       renames Nt1_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt1'Base)
+       renames Nt1_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt1'Base)
+       renames Nt1_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt2)
+       renames Nt2_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt2
+       renames Nt2_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt2)
+       renames Nt2_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt2)
+       renames Nt2_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt3)
+       renames Nt3_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt3
+       renames Nt3_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt3)
+       renames Nt3_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt3)
+       renames Nt3_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt4)
+       renames Nt4_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt4
+       renames Nt4_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt4)
+       renames Nt4_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt4)
+       renames Nt4_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt5)
+       renames Nt5_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt5
+       renames Nt5_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt5)
+       renames Nt5_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt5)
+       renames Nt5_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt6)
+       renames Nt6_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt6
+       renames Nt6_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt6)
+       renames Nt6_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt6)
+       renames Nt6_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt7)
+       renames Nt7_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt7
+       renames Nt7_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt7)
+       renames Nt7_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt7)
+       renames Nt7_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt8)
+       renames Nt8_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt8
+       renames Nt8_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt8)
+       renames Nt8_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt8)
+       renames Nt8_Ops.Output;
+
+end CD10002_Deriv;
+
+
+with Ada.Streams;
+use Ada.Streams;
+with CD10002_0;
+generic
+    type T1 is (<>);
+    type T2 is range <>;
+    type T3 is mod <>;
+    type T4 is digits <>;
+    type T5 is delta <>;
+    type T6 is delta <> digits <>;
+    type T7 is access T3;
+    type T8 is new Boolean;
+    type T9 is private;
+    type T10 (<>) is limited private; -- Should be self-initializing.
+    C10 : in out T10;
+    type T11 is array (T1) of T2;
+package CD10002_Gen is
+
+    -- Direct descendants.
+    type Nt1 is new T1;
+    type Nt2 is new T2;
+    type Nt3 is new T3;
+    type Nt4 is new T4;
+    type Nt5 is new T5;
+    type Nt6 is new T6;
+    type Nt7 is new T7;
+    type Nt8 is new T8;
+    type Nt9 is new T9;
+    type Nt10 is new T10;
+    type Nt11 is new T11;
+
+    -- Indirect descendants (only pick two, a limited one and a non-limited
+    -- one).
+    type Nt12 is new Nt10;
+    type Nt13 is new Nt11;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt1'Base);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt1'Base;
+    procedure Read (Stream : access Root_Stream_Type'Class;
+                    Item : out Nt1'Base);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt1'Base);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt2'Base);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt2'Base;
+    procedure Read (Stream : access Root_Stream_Type'Class;
+                    Item : out Nt2'Base);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt2'Base);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt3'Base);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt3'Base;
+    procedure Read (Stream : access Root_Stream_Type'Class;
+                    Item : out Nt3'Base);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt3'Base);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt4'Base);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt4'Base;
+    procedure Read (Stream : access Root_Stream_Type'Class;
+                    Item : out Nt4'Base);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt4'Base);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt5'Base);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt5'Base;
+    procedure Read (Stream : access Root_Stream_Type'Class;
+                    Item : out Nt5'Base);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt5'Base);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt6'Base);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt6'Base;
+    procedure Read (Stream : access Root_Stream_Type'Class;
+                    Item : out Nt6'Base);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt6'Base);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt7);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt7;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt7);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt7);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt8'Base);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt8'Base;
+    procedure Read (Stream : access Root_Stream_Type'Class;
+                    Item : out Nt8'Base);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt8'Base);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt9);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt9;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt9);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt9);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt10);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt10;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt10);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt10);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt11);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt11;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt11);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt11);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt12);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt12;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt12);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt12);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt13);
+    function Input (Stream : access Root_Stream_Type'Class) return Nt13;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt13);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt13);
+
+    for Nt1'Write use Write;
+    for Nt1'Read use Read;
+    for Nt1'Output use Output;
+    for Nt1'Input use Input;
+
+    for Nt2'Write use Write;
+    for Nt2'Read use Read;
+    for Nt2'Output use Output;
+    for Nt2'Input use Input;
+
+    for Nt3'Write use Write;
+    for Nt3'Read use Read;
+    for Nt3'Output use Output;
+    for Nt3'Input use Input;
+
+    for Nt4'Write use Write;
+    for Nt4'Read use Read;
+    for Nt4'Output use Output;
+    for Nt4'Input use Input;
+
+    for Nt5'Write use Write;
+    for Nt5'Read use Read;
+    for Nt5'Output use Output;
+    for Nt5'Input use Input;
+
+    for Nt6'Write use Write;
+    for Nt6'Read use Read;
+    for Nt6'Output use Output;
+    for Nt6'Input use Input;
+
+    for Nt7'Write use Write;
+    for Nt7'Read use Read;
+    for Nt7'Output use Output;
+    for Nt7'Input use Input;
+
+    for Nt8'Write use Write;
+    for Nt8'Read use Read;
+    for Nt8'Output use Output;
+    for Nt8'Input use Input;
+
+    for Nt9'Write use Write;
+    for Nt9'Read use Read;
+    for Nt9'Output use Output;
+    for Nt9'Input use Input;
+
+    for Nt10'Write use Write;
+    for Nt10'Read use Read;
+    for Nt10'Output use Output;
+    for Nt10'Input use Input;
+
+    for Nt11'Write use Write;
+    for Nt11'Read use Read;
+    for Nt11'Output use Output;
+    for Nt11'Input use Input;
+
+    for Nt12'Write use Write;
+    for Nt12'Read use Read;
+    for Nt12'Output use Output;
+    for Nt12'Input use Input;
+
+    for Nt13'Write use Write;
+    for Nt13'Read use Read;
+    for Nt13'Output use Output;
+    for Nt13'Input use Input;
+
+    type Null_Record is null record;
+
+    package Nt1_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt1'Base);
+    package Nt2_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt2'Base);
+    package Nt3_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt3'Base);
+    package Nt4_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt4'Base);
+    package Nt5_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt5'Base);
+    package Nt6_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt6'Base);
+    package Nt7_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt7);
+    package Nt8_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt8'Base);
+    package Nt9_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt9);
+    package Nt11_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt11);
+    package Nt13_Ops is new CD10002_0.Nonlimited_Stream_Ops (Nt13);
+
+    function Get_Nt10_Counts return CD10002_0.Counts;
+    function Get_Nt12_Counts return CD10002_0.Counts;
+
+end CD10002_Gen;
+
+
+package body CD10002_Gen is
+
+    use CD10002_0;
+
+    Nt10_Cnts : Counts := (others => 0);
+    Nt12_Cnts : Counts := (others => 0);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt1'Base)
+       renames Nt1_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt1'Base
+       renames Nt1_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt1'Base)
+       renames Nt1_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt1'Base)
+       renames Nt1_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt2'Base)
+       renames Nt2_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt2'Base
+       renames Nt2_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt2'Base)
+       renames Nt2_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt2'Base)
+       renames Nt2_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt3'Base)
+       renames Nt3_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt3'Base
+       renames Nt3_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt3'Base)
+       renames Nt3_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt3'Base)
+       renames Nt3_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt4'Base)
+       renames Nt4_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt4'Base
+       renames Nt4_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt4'Base)
+       renames Nt4_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt4'Base)
+       renames Nt4_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt5'Base)
+       renames Nt5_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt5'Base
+       renames Nt5_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt5'Base)
+       renames Nt5_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt5'Base)
+       renames Nt5_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt6'Base)
+       renames Nt6_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt6'Base
+       renames Nt6_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt6'Base)
+       renames Nt6_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt6'Base)
+       renames Nt6_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt7)
+       renames Nt7_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt7
+       renames Nt7_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt7)
+       renames Nt7_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt7)
+       renames Nt7_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt8'Base)
+       renames Nt8_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt8'Base
+       renames Nt8_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt8'Base)
+       renames Nt8_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt8'Base)
+       renames Nt8_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt9)
+       renames Nt9_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt9
+       renames Nt9_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt9)
+       renames Nt9_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt9)
+       renames Nt9_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt10) is
+    begin
+        Nt10_Cnts (Write) := Nt10_Cnts (Write) + 1;
+    end Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt10 is
+    begin
+        Nt10_Cnts (Input) := Nt10_Cnts (Input) + 1;
+        return Nt10 (C10);
+    end Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt10) is
+    begin
+        Nt10_Cnts (Read) := Nt10_Cnts (Read) + 1;
+    end Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt10) is
+    begin
+        Nt10_Cnts (Output) := Nt10_Cnts (Output) + 1;
+    end Output;
+    function Get_Nt10_Counts return CD10002_0.Counts is
+    begin
+        return Nt10_Cnts;
+    end Get_Nt10_Counts;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt11)
+       renames Nt11_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt11
+       renames Nt11_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt11)
+       renames Nt11_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt11)
+       renames Nt11_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt12) is
+    begin
+        Nt12_Cnts (Write) := Nt12_Cnts (Write) + 1;
+    end Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt12 is
+    begin
+        Nt12_Cnts (Input) := Nt12_Cnts (Input) + 1;
+        return Nt12 (C10);
+    end Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt12) is
+    begin
+        Nt12_Cnts (Read) := Nt12_Cnts (Read) + 1;
+    end Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt12) is
+    begin
+        Nt12_Cnts (Output) := Nt12_Cnts (Output) + 1;
+    end Output;
+    function Get_Nt12_Counts return CD10002_0.Counts is
+    begin
+        return Nt12_Cnts;
+    end Get_Nt12_Counts;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : Nt13)
+       renames Nt13_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return Nt13
+       renames Nt13_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out Nt13)
+       renames Nt13_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : Nt13)
+       renames Nt13_Ops.Output;
+
+end CD10002_Gen;
+
+
+with Ada.Streams;
+use Ada.Streams;
+with CD10002_0;
+package CD10002_Priv is
+
+    External_Tag_1 : constant String := "Isaac Newton";
+    External_Tag_2 : constant String := "Albert Einstein";
+
+    type T1 is tagged private;
+    type T2 is tagged
+        record
+            C : T1;
+        end record;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : T1);
+    function Input (Stream : access Root_Stream_Type'Class) return T1;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out T1);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : T1);
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : T2);
+    function Input (Stream : access Root_Stream_Type'Class) return T2;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out T2);
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : T2);
+
+    for T1'Write use Write;
+    for T1'Input use Input;
+
+    for T2'Read use Read;
+    for T2'Output use Output;
+    for T2'External_Tag use External_Tag_2;
+
+    function Get_T1_Counts return CD10002_0.Counts;
+    function Get_T2_Counts return CD10002_0.Counts;
+
+private
+
+    for T1'Read use Read;
+    for T1'Output use Output;
+    for T1'External_Tag use External_Tag_1;
+
+    for T2'Write use Write;
+    for T2'Input use Input;
+
+    type T1 is tagged null record;
+
+    package T1_Ops is new CD10002_0.Nonlimited_Stream_Ops (T1);
+    package T2_Ops is new CD10002_0.Nonlimited_Stream_Ops (T2);
+
+end CD10002_Priv;
+
+
+package body CD10002_Priv is
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : T1)
+       renames T1_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return T1
+       renames T1_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out T1)
+       renames T1_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : T1)
+       renames T1_Ops.Output;
+
+    procedure Write (Stream : access Root_Stream_Type'Class; Item : T2)
+       renames T2_Ops.Write;
+    function Input (Stream : access Root_Stream_Type'Class) return T2
+       renames T2_Ops.Input;
+    procedure Read (Stream : access Root_Stream_Type'Class; Item : out T2)
+       renames T2_Ops.Read;
+    procedure Output (Stream : access Root_Stream_Type'Class; Item : T2)
+       renames T2_Ops.Output;
+
+    function Get_T1_Counts return CD10002_0.Counts renames T1_Ops.Get_Counts;
+    function Get_T2_Counts return CD10002_0.Counts renames T2_Ops.Get_Counts;
+end CD10002_Priv;
+
+
+with Ada.Streams;
+use Ada.Streams;
+with Report;
+use Report;
+with System;
+with CD10002_0;
+with CD10002_1;
+with CD10002_Deriv;
+with CD10002_Gen;
+with CD10002_Priv;
+procedure CD10002 is
+
+    package Deriv renames CD10002_Deriv;
+    generic package Gen renames CD10002_Gen;
+    package Priv renames CD10002_Priv;
+
+    type Stream_Ops is (Read, Write, Input, Output);
+    type Counts is array (Stream_Ops) of Natural;
+
+    S : aliased CD10002_1.Dummy_Stream;
+
+begin
+    Test ("CD10002",
+          "Check that operational items are allowed in some contexts " &
+             "where representation items are not");
+
+    Test_Priv:
+        declare
+            X1 : Priv.T1;
+            X2 : Priv.T2;
+            use CD10002_0;
+        begin
+            Comment
+               ("Check that the name of an incompletely defined type can be " &
+                "used when specifying an operational item");
+
+            -- Partial view of a private type.
+            Priv.T1'Write (S'Access, X1);
+            Priv.T1'Read (S'Access, X1);
+            Priv.T1'Output (S'Access, X1);
+            X1 := Priv.T1'Input (S'Access);
+
+            if Priv.Get_T1_Counts /= (1, 1, 1, 1) then
+                Failed ("Incorrect calls to the stream attributes for Priv.T1");
+            elsif Priv.T1'External_Tag /= Priv.External_Tag_1 then
+                Failed ("Incorrect external tag for Priv.T1");
+            end if;
+
+            -- Incompletely defined but not private.
+            Priv.T2'Write (S'Access, X2);
+            Priv.T2'Read (S'Access, X2);
+            Priv.T2'Output (S'Access, X2);
+            X2 := Priv.T2'Input (S'Access);
+
+            if Priv.Get_T2_Counts /= (1, 1, 1, 1) then
+                Failed ("Incorrect calls to the stream attributes for Priv.T2");
+            elsif Priv.T2'External_Tag /= Priv.External_Tag_2 then
+                Failed ("Incorrect external tag for Priv.T2");
+            end if;
+
+        end Test_Priv;
+
+    Test_Gen:
+        declare
+
+            type Modular is mod System.Max_Binary_Modulus;
+            type Decimal is delta 1.0 digits 1;
+            type Access_Modular is access Modular;
+            type R9 is null record;
+            type R10 (D : access Integer) is limited null record;
+            type Arr is array (Character) of Integer;
+
+            C10 : R10 (new Integer'(19));
+
+            package Inst is new Gen (T1 => Character,
+                                     T2 => Integer,
+                                     T3 => Modular,
+                                     T4 => Float,
+                                     T5 => Duration,
+                                     T6 => Decimal,
+                                     T7 => Access_Modular,
+                                     T8 => Boolean,
+                                     T9 => R9,
+                                     T10 => R10,
+                                     C10 => C10,
+                                     T11 => Arr);
+
+            X1 : Inst.Nt1 := 'a';
+            X2 : Inst.Nt2 := 0;
+            X3 : Inst.Nt3 := 0;
+            X4 : Inst.Nt4 := 0.0;
+            X5 : Inst.Nt5 := 0.0;
+            X6 : Inst.Nt6 := 0.0;
+            X7 : Inst.Nt7 := null;
+            X8 : Inst.Nt8 := Inst.False;
+            X9 : Inst.Nt9 := (null record);
+            X10 : Inst.Nt10 (D => new Integer'(5));
+            Y10 : Integer;
+            X11 : Inst.Nt11 := (others => 0);
+            X12 : Inst.Nt12 (D => new Integer'(7));
+            Y12 : Integer;
+            X13 : Inst.Nt13 := (others => 0);
+            use CD10002_0;
+        begin
+            Comment ("Check that operational items can be specified for a " &
+                     "descendant of a generic formal untagged type");
+
+            Inst.Nt1'Write (S'Access, X1);
+            Inst.Nt1'Read (S'Access, X1);
+            Inst.Nt1'Output (S'Access, X1);
+            X1 := Inst.Nt1'Input (S'Access);
+
+            if Inst.Nt1_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Inst.Nt1");
+            end if;
+
+            Inst.Nt2'Write (S'Access, X2);
+            Inst.Nt2'Read (S'Access, X2);
+            Inst.Nt2'Output (S'Access, X2);
+            X2 := Inst.Nt2'Input (S'Access);
+
+            if Inst.Nt2_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Inst.Nt2");
+            end if;
+
+            Inst.Nt3'Write (S'Access, X3);
+            Inst.Nt3'Read (S'Access, X3);
+            Inst.Nt3'Output (S'Access, X3);
+            X3 := Inst.Nt3'Input (S'Access);
+
+            if Inst.Nt3_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Inst.Nt3");
+            end if;
+
+            Inst.Nt4'Write (S'Access, X4);
+            Inst.Nt4'Read (S'Access, X4);
+            Inst.Nt4'Output (S'Access, X4);
+            X4 := Inst.Nt4'Input (S'Access);
+
+            if Inst.Nt4_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Inst.Nt4");
+            end if;
+
+            Inst.Nt5'Write (S'Access, X5);
+            Inst.Nt5'Read (S'Access, X5);
+            Inst.Nt5'Output (S'Access, X5);
+            X5 := Inst.Nt5'Input (S'Access);
+
+            if Inst.Nt5_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Inst.Nt5");
+            end if;
+
+            Inst.Nt6'Write (S'Access, X6);
+            Inst.Nt6'Read (S'Access, X6);
+            Inst.Nt6'Output (S'Access, X6);
+            X6 := Inst.Nt6'Input (S'Access);
+
+            if Inst.Nt6_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Inst.Nt6");
+            end if;
+
+            Inst.Nt7'Write (S'Access, X7);
+            Inst.Nt7'Read (S'Access, X7);
+            Inst.Nt7'Output (S'Access, X7);
+            X7 := Inst.Nt7'Input (S'Access);
+
+            if Inst.Nt7_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Inst.Nt7");
+            end if;
+
+            Inst.Nt8'Write (S'Access, X8);
+            Inst.Nt8'Read (S'Access, X8);
+            Inst.Nt8'Output (S'Access, X8);
+            X8 := Inst.Nt8'Input (S'Access);
+
+            if Inst.Nt8_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Inst.Nt8");
+            end if;
+
+            Inst.Nt9'Write (S'Access, X9);
+            Inst.Nt9'Read (S'Access, X9);
+            Inst.Nt9'Output (S'Access, X9);
+            X9 := Inst.Nt9'Input (S'Access);
+
+            if Inst.Nt9_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Inst.Nt9");
+            end if;
+
+            Inst.Nt10'Write (S'Access, X10);
+            Inst.Nt10'Read (S'Access, X10);
+            Inst.Nt10'Output (S'Access, X10);
+            Y10 := Inst.Nt10'Input (S'Access).D.all;
+
+            if Inst.Get_Nt10_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Inst.Nt10");
+            end if;
+
+            Inst.Nt11'Write (S'Access, X11);
+            Inst.Nt11'Read (S'Access, X11);
+            Inst.Nt11'Output (S'Access, X11);
+            X11 := Inst.Nt11'Input (S'Access);
+
+            if Inst.Nt11_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Inst.Nt11");
+            end if;
+
+            Inst.Nt12'Write (S'Access, X12);
+            Inst.Nt12'Read (S'Access, X12);
+            Inst.Nt12'Output (S'Access, X12);
+            Y12 := Inst.Nt12'Input (S'Access).D.all;
+
+            if Inst.Get_Nt12_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Inst.Nt12");
+            end if;
+
+            Inst.Nt13'Write (S'Access, X13);
+            Inst.Nt13'Read (S'Access, X13);
+            Inst.Nt13'Output (S'Access, X13);
+            X13 := Inst.Nt13'Input (S'Access);
+
+            if Inst.Nt13_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Inst.Nt13");
+            end if;
+        end Test_Gen;
+
+    Test_Deriv:
+        declare
+            X1 : Deriv.Nt1 := Deriv.False;
+            X2 : Deriv.Nt2 := (others => 0.0);
+            X3 : Deriv.Nt3 := (others => 0.0);
+            X4 : Deriv.Nt4;
+            Y4 : Boolean;
+            X5 : Deriv.Nt5;
+            Y5 : System.Address;
+            X6 : Deriv.Nt6;
+            Y6 : Integer;
+            X7 : Deriv.Nt7;
+            Y7 : Integer;
+            X8 : Deriv.Nt8;
+            Y8 : Integer;
+            use CD10002_0;
+        begin
+            Comment ("Check that operational items can be specified for a " &
+                     "derived untagged type even if the parent type is a " &
+                     "by-reference type, or has user-defined primitive " &
+                     "subprograms");
+
+            Deriv.Nt1'Write (S'Access, X1);
+            Deriv.Nt1'Read (S'Access, X1);
+            Deriv.Nt1'Output (S'Access, X1);
+            X1 := Deriv.Nt1'Input (S'Access);
+
+            if Deriv.Nt1_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Deriv.Nt1");
+            end if;
+
+            Deriv.Nt2'Write (S'Access, X2);
+            Deriv.Nt2'Read (S'Access, X2);
+            Deriv.Nt2'Output (S'Access, X2);
+            X2 := Deriv.Nt2'Input (S'Access);
+
+            if Deriv.Nt2_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Deriv.Nt2");
+            end if;
+
+            Deriv.Nt3'Write (S'Access, X3);
+            Deriv.Nt3'Read (S'Access, X3);
+            Deriv.Nt3'Output (S'Access, X3);
+            X3 := Deriv.Nt3'Input (S'Access);
+
+            if Deriv.Nt3_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Deriv.Nt3");
+            end if;
+
+            Deriv.Nt4'Write (S'Access, X4);
+            Deriv.Nt4'Read (S'Access, X4);
+            Deriv.Nt4'Output (S'Access, X4);
+            Y4 := Deriv.Nt4'Input (S'Access)'Terminated;
+
+            if Deriv.Nt4_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Deriv.Nt4");
+            end if;
+
+            Deriv.Nt5'Write (S'Access, X5);
+            Deriv.Nt5'Read (S'Access, X5);
+            Deriv.Nt5'Output (S'Access, X5);
+            Y5 := Deriv.Nt5'Input (S'Access)'Address;
+
+            if Deriv.Nt5_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Deriv.Nt5");
+            end if;
+
+            Deriv.Nt6'Write (S'Access, X6);
+            Deriv.Nt6'Read (S'Access, X6);
+            Deriv.Nt6'Output (S'Access, X6);
+            Y6 := Deriv.Nt6'Input (S'Access).D.all;
+
+            if Deriv.Nt6_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Deriv.Nt6");
+            end if;
+
+            Deriv.Nt7'Write (S'Access, X7);
+            Deriv.Nt7'Read (S'Access, X7);
+            Deriv.Nt7'Output (S'Access, X7);
+            Y7 := Deriv.Nt7'Input (S'Access) ('a').D.all;
+
+            if Deriv.Nt7_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Deriv.Nt7");
+            end if;
+
+            Deriv.Nt8'Write (S'Access, X8);
+            Deriv.Nt8'Read (S'Access, X8);
+            Deriv.Nt8'Output (S'Access, X8);
+            Y8 := Deriv.Nt8'Input (S'Access)'Size;
+
+            if Deriv.Nt8_Ops.Get_Counts /= (1, 1, 1, 1) then
+                Failed
+                   ("Incorrect calls to the stream attributes for Deriv.Nt8");
+            end if;
+        end Test_Deriv;
+
+    Result;
+end CD10002;
+
+

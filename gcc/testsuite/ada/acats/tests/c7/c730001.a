@@ -1,0 +1,437 @@
+-- C730001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the full view of a private extension may be derived
+--      indirectly from the ancestor type (i.e., the parent type of the full
+--      type may be any descendant of the ancestor type). Check that, for
+--      a primitive subprogram of the private extension that is inherited from
+--      the ancestor type and not overridden, the formal parameter names and
+--      default expressions come from the corresponding primitive subprogram
+--      of the ancestor type, while the body comes from that of the parent
+--      type.  Check both dispatching and non-dispatching cases.
+--
+-- TEST DESCRIPTION:
+--      Consider:
+--
+--      package P is
+--         type Ancestor is tagged ...
+--         procedure Op (P1: Ancestor; P2: Boolean := True);
+--      end P;
+--
+--      with P;
+--      package Q is
+--         type Derived is new P.Ancestor with ...
+--         procedure Op (X: Ancestor; Y: Boolean := False);
+--      end Q;
+--
+--      with P, Q;
+--      package R is
+--         type Priv_Ext is new P.Ancestor with private;   -- (A)
+--         -- Inherits procedure Op (P1: Priv_Ext; P2: Boolean := True);
+--         -- But body executed is that of Q.Op.
+--      private
+--         type Priv_Ext is new Q.Derived with record ...  -- (B)
+--      end R;
+--
+--      The ancestor type in (A) differs from the parent type in (B); the
+--      parent of the full type is descended from the ancestor type of the
+--      private extension. For a call to Op (from outside the scope of the
+--      full view) with an operand of type Priv_Ext, the formal parameter
+--      names and default expression come from that of P.Op (the ancestor
+--      type's version), but the body executed will be that of 
+--      Q.Op (the parent type's version)
+--
+--      One half of the test mirrors the above template, where an inherited
+--      subprogram (Set_Display) is called using the formal parameter 
+--      name (C) and default parameter expression of the ancestor type's 
+--      version (type Clock), but the version of the body executed is from
+--      the parent type.
+--
+--      The test also includes an examination of the dynamic evaluation
+--      case, where correct body associations are required through dispatching 
+--      calls.  As described for the non-dispatching case above, the formal
+--      parameter name and default values of the ancestor type's (Phone) 
+--      version of the inherited subprogram (Answer) are used in the 
+--      dispatching call, but the body executed is from the parent type.
+--      
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package C730001_0 is
+
+   type Display_Kind      is (None, Analog, Digital);
+   type Illumination_Type is (None, Light, Phosphorescence);
+   type Capability_Type   is (Available, In_Use, Call_Waiting, Conference);
+   type Indicator_Type    is (None, Light, Bell, Buzzer, Click, Modem);
+
+   type Clock is abstract tagged record           -- ancestor type associated
+      Display      : Display_Kind      := None;   -- with non-dispatching case.
+      Illumination : Illumination_Type := None;
+   end record;
+
+   type Phone is tagged record                    -- ancestor type associated
+      Status    : Capability_Type := Available;   -- with dispatching case.
+      Indicator : Indicator_Type  := None;
+   end record;
+
+   -- The Set_Display procedure for type Clock implements a basic, no-frills
+   -- clock display.
+   procedure Set_Display (C   : in out Clock;
+                          Disp: in     Display_Kind := Digital);
+
+   -- The Answer procedure for type Phone implements a phone status change
+   -- operation.
+   procedure Answer (The_Phone : in out Phone;
+                     Ind       : in     Indicator_Type := Light);
+   -- ...Other general clock and/or phone operations (not specified in this
+   -- test scenario).
+
+end C730001_0;
+
+
+     --==================================================================--
+
+
+package body C730001_0 is
+
+   procedure Set_Display (C   : in out Clock;
+                          Disp: in     Display_Kind := Digital) is
+   begin
+      C.Display      := Disp;
+      C.Illumination := Light;
+   end Set_Display;
+
+   procedure Answer (The_Phone : in out Phone;
+                     Ind       : in     Indicator_Type := Light) is
+   begin
+      The_Phone.Status    := In_Use;
+      The_Phone.Indicator := Ind;
+   end Answer;
+
+end C730001_0;
+
+
+     --==================================================================--
+
+
+with C730001_0; use C730001_0;
+package C730001_1 is
+
+   type Power_Supply_Type is (Spring, Battery, AC_Current);
+   type Speaker_Type      is (None, Present, Adjustable, Stereo);
+
+   type Wall_Clock is new Clock with record
+      Power_Source : Power_Supply_Type := Spring;
+   end record;
+
+   type Office_Phone is new Phone with record
+      Speaker : Speaker_Type := Present;
+   end record;
+
+   -- Note: Both procedures below, parameter names and defaults differ from
+   --       parent's version.
+
+   -- The Set_Display procedure for type Wall_Clock improves upon the
+   -- basic Set_Display procedure of type Clock.
+
+   procedure Set_Display (WC: in out Wall_Clock;
+                          D : in     Display_Kind := Analog);
+
+   procedure Answer (OP : in out Office_Phone;
+                     OI : in     Indicator_Type := Buzzer);
+
+   -- ...Other wall clock and/or Office_Phone operations (not specified in
+   -- this test scenario).
+
+end C730001_1;
+
+
+     --==================================================================--
+
+
+package body C730001_1 is
+
+   -- Note: This body is the one that should be executed in the test block
+   --       below, not the version of the body corresponding to type Clock.
+
+   procedure Set_Display (WC: in out Wall_Clock;
+                          D : in     Display_Kind := Analog) is
+   begin
+      WC.Display      := D;
+      WC.Illumination := Phosphorescence;
+   end Set_Display;
+
+
+   procedure Answer (OP : in out Office_Phone;
+                     OI : in     Indicator_Type := Buzzer) is
+   begin
+      OP.Status    := Call_Waiting;
+      OP.Indicator := OI;
+   end Answer;
+
+end C730001_1;
+
+
+     --==================================================================--
+
+
+with C730001_0; use C730001_0;
+with C730001_1; use C730001_1;
+package C730001_2 is
+
+   type Alarm_Type  is (Buzzer, Radio, Both);
+   type Video_Type  is (None, TV_Monitor, Wall_Projection);
+
+   type Alarm_Clock is new Clock with private;
+   -- Inherits proc Set_Display (C   : in out Clock;
+   --                            Disp: in     Display_Kind := Digital); -- (A)
+   --
+   -- Would also inherit other general clock operations (if present).
+
+
+   type Conference_Room_Phone is new Office_Phone with record
+      Display : Video_Type := TV_Monitor;
+   end record;
+
+   procedure Answer (CP : in out Conference_Room_Phone;
+                     CI : in     Indicator_Type := Modem);
+
+
+   function TC_Get_Display              (C: Alarm_Clock) return Display_Kind;
+   function TC_Get_Display_Illumination (C: Alarm_Clock) 
+     return Illumination_Type;
+
+private
+
+   -- ...however, certain of the wall clock's operations (Set_Display, in 
+   -- this example) improve on the implementations provided for the general
+   -- clock. We want to call the improved implementations, so we
+   -- derive from Wall_Clock in the private part.
+
+   type Alarm_Clock is new Wall_Clock with record
+      Alarm : Alarm_Type := Buzzer;
+   end record;
+
+   -- Inherits proc Set_Display (WC: in out Wall_Clock;
+   --                            D : in     Display_Kind := Analog);    -- (B)
+
+   -- The implicit Set_Display at (B) overrides the implicit Set_Display at 
+   -- (A), but only within the scope of the full view. 
+   --
+   -- Outside the scope of the full view, only (A) is visible, so calls
+   -- from outside the scope will get the formal parameter names and default
+   -- from (A). Both inside and outside the scope, however, the body executed
+   -- will be that corresponding to Set_Display of the parent type.
+
+end C730001_2;
+
+
+     --==================================================================--
+
+
+package body C730001_2 is
+
+   procedure Answer (CP : in out Conference_Room_Phone;
+                     CI : in     Indicator_Type := Modem)is
+   begin
+      CP.Status    := Conference;
+      CP.Indicator := CI;
+   end Answer;
+
+
+   function TC_Get_Display (C: Alarm_Clock) return Display_Kind is
+   begin
+      return C.Display;
+   end TC_Get_Display;
+
+
+   function TC_Get_Display_Illumination (C: Alarm_Clock) 
+     return Illumination_Type is
+   begin
+      return C.Illumination;
+   end TC_Get_Display_Illumination;
+
+end C730001_2;
+
+
+     --==================================================================--
+
+
+with C730001_0; use C730001_0;
+with C730001_1; use C730001_1;
+with C730001_2; use C730001_2;
+
+package C730001_3 is
+
+   -- Types extended from the ancestor (Phone) type in the specification.
+
+   type Secure_Phone_Type     is new Phone with private;
+   type Auditorium_Phone_Type is new Phone with private;
+   -- Inherit versions of Answer from ancestor (Phone).
+
+   function TC_Get_Phone_Status (P : Phone'Class) return Capability_Type;
+   function TC_Get_Indicator    (P : Phone'Class) return Indicator_Type;
+
+private
+
+   -- Types extended from descendents of Phone_Type in the private part.
+
+   type Secure_Phone_Type is new Office_Phone with record
+      Scrambled_Communication : Boolean := True;
+   end record;
+
+   type Auditorium_Phone_Type is new Conference_Room_Phone with record
+      Volume_Control : Boolean := True;
+   end record;
+
+end C730001_3;
+
+     --==================================================================--
+
+package body C730001_3 is
+
+   function TC_Get_Phone_Status (P : Phone'Class) return Capability_Type is
+   begin
+      return P.Status;
+   end TC_Get_Phone_Status;
+
+   function TC_Get_Indicator (P : Phone'Class) return Indicator_Type is
+   begin
+      return P.Indicator;
+   end TC_Get_Indicator;
+
+end C730001_3;
+
+     --==================================================================--
+
+with C730001_0; use C730001_0;
+with C730001_1; use C730001_1;
+with C730001_2; use C730001_2;
+with C730001_3; use C730001_3;
+
+with Report;
+
+procedure C730001 is
+begin
+
+   Report.Test ("C730001","Check that the full view of a private extension " &
+                          "may be derived indirectly from the ancestor "     &
+                          "type. Check that, for a primitive subprogram "    &
+                          "of the private extension that is inherited from " &
+                          "the ancestor type and not overridden, the "       &
+                          "formal parameter names and default expressions "  &
+                          "come from the corresponding primitive "           &
+                          "subprogram of the ancestor type, while the body " &
+                          "comes from that of the parent type");
+
+   Test_Block:
+   declare
+
+      Alarm                : Alarm_Clock;
+      Hot_Line             : Secure_Phone_Type;
+      TeleConference_Phone : Auditorium_Phone_Type;
+
+   begin
+
+   -- Evaluate non-dispatching case:
+
+      -- Call Set_Display using formal parameter name from 
+      -- C730001_0.Set_Display.
+      -- Give no 2nd parameter so that default expression must be used.
+
+      Set_Display (C => Alarm);
+    
+      -- The value of the Display component should equal Digital, which is
+      -- the default value from the ancestor's version of Set_Display,
+      -- and not the default value from the parent's version of Set_Display.
+
+      if TC_Get_Display (Alarm) /= Digital then
+         Report.Failed ("Default expression for ancestor op not used " &
+                        "in non-dispatching case");
+      end if;
+
+      -- However, the value of the Illumination component should equal
+      -- Phosphorescence, which is assigned in the parent type's version of
+      -- the body of Set_Display.
+
+      if TC_Get_Display_Illumination (Alarm) /= Phosphorescence then
+         Report.Failed ("Wrong body was executed in non-dispatching case");
+      end if;
+
+
+   -- Evaluate dispatching case:
+      declare
+
+         Hot_Line             : Secure_Phone_Type;
+         TeleConference_Phone : Auditorium_Phone_Type;
+
+         procedure Answer_The_Phone (P : in out Phone'Class) is
+         begin
+            -- Give no 2nd parameter so that default expression must be used.
+            Answer (P);
+         end Answer_The_Phone;
+
+      begin
+
+         Answer_The_Phone (Hot_Line);
+         Answer_The_Phone (TeleConference_Phone);
+
+         -- The value of the Indicator field shold equal "Light", the default
+         -- value from the ancestor's version of Answer, and not the default
+         -- from either of the parent versions of Answer.
+
+         if TC_Get_Indicator(Hot_Line)             /= Light   or
+            TC_Get_Indicator(TeleConference_Phone) /= Light
+         then
+            Report.Failed("Default expression from ancestor operation " &
+                          "not used in dispatching case");
+         end if;
+
+         -- However, the value of the Status component should equal
+         -- Call_Waiting or Conference respectively, based on the assignment
+         -- in the parent type's version of the body of Answer.
+
+         if TC_Get_Phone_Status(Hot_Line)  /=  Call_Waiting then
+            Report.Failed("Wrong body executed in dispatching case - 1");
+         end if;
+
+         if TC_Get_Phone_Status(TeleConference_Phone) /= Conference then
+            Report.Failed("Wrong body executed in dispatching case - 2");
+         end if;
+
+      end;
+
+   exception
+      when others => Report.Failed ("Exception raised in Test_Block");
+   end Test_Block;
+
+
+   Report.Result;
+
+end C730001;

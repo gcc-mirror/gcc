@@ -1,0 +1,174 @@
+-- CA11D03.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that an exception declared in a package can be raised by a 
+--      client of a child of the package.  Check that it can be renamed in 
+--      the client of the child of the package and raised with the correct 
+--      effect.
+--
+-- TEST DESCRIPTION:
+--      Declare a package which defines complex number abstraction with
+--      user-defined exceptions (foundation code).
+--
+--      Add a public child package to the above package. Declare two 
+--      subprograms for the parent type.  
+--
+--      In the main program, "with" the child package, then check that
+--      an exception can be raised and handled as expected.  
+--
+-- TEST FILES:
+--      This test depends on the following foundation code:
+--
+--         FA11D00.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+-- Child package of FA11D00.
+package FA11D00.CA11D03_0 is     -- Basic_Complex
+
+   function "+" (Left, Right : Complex_Type) 
+     return Complex_Type;                   -- Add two complex numbers.
+
+   function "*" (Left, Right : Complex_Type) 
+     return Complex_Type;                   -- Multiply two complex numbers.
+
+end FA11D00.CA11D03_0;     -- Basic_Complex
+
+--=======================================================================--
+
+package body FA11D00.CA11D03_0 is     -- Basic_Complex
+
+   function "+" (Left, Right : Complex_Type) return Complex_Type is
+   begin
+      return ( (Left.Real + Right.Real, Left.Imag + Right.Imag) );
+   end "+";
+   --------------------------------------------------------------
+   function "*" (Left, Right : Complex_Type) return Complex_Type is
+   begin
+      return ( Real => (Left.Real * Right.Real),
+               Imag => (Left.Imag * Right.Imag) );
+   end "*";
+
+end FA11D00.CA11D03_0;     -- Basic_Complex
+
+--=======================================================================--
+
+with FA11D00.CA11D03_0;    -- Basic_Complex,
+                           -- implicitly with Complex_Definition.
+with Report;
+
+procedure CA11D03 is
+
+   package Complex_Pkg renames FA11D00;     -- Complex_Definition_Pkg
+   package Basic_Complex_Pkg renames FA11D00.CA11D03_0;   -- Basic_Complex
+
+   use Complex_Pkg;                            
+   use Basic_Complex_Pkg;           
+           
+   TC_Handled_In_Subtest_1,
+   TC_Handled_In_Subtest_2 : boolean := false;
+
+begin
+
+   Report.Test ("CA11D03", "Check that an exception declared in a package " &
+                "can be raised by a client of a child of the package");
+
+   Multiply_Complex_Subtest:
+   declare
+      Operand_1  : Complex_Type := Complex (Int_Type (Report.Ident_Int (3)), 
+                                   Int_Type (Report.Ident_Int (2)));  
+                                   -- Referenced to function in parent package.
+      Operand_2  : Complex_Type := Complex (Int_Type (Report.Ident_Int (10)), 
+                                   Int_Type (Report.Ident_Int (8)));  
+      Mul_Res    : Complex_type := Complex (Int_Type (Report.Ident_Int (30)), 
+                                   Int_Type (Report.Ident_Int (16)));  
+      Complex_No : Complex_Type := Zero;  -- Zero is declared in parent package.
+   begin
+      Complex_No := Operand_1 * Operand_2;   -- Basic_Complex."*".
+      if Complex_No /= Mul_Res then
+         Report.Failed ("Incorrect results from multiplication");
+      end if;
+
+      -- Error is raised and exception will be handled.
+      if Complex_No = Mul_Res then
+         raise Multiply_Error;             -- Reference to exception in
+      end if;                              -- parent package.
+
+   exception
+      when Multiply_Error => 
+         TC_Handled_In_Subtest_1 := true;
+      when others => 
+         TC_Handled_In_Subtest_1 := false;  -- Improper exception handling.
+
+   end Multiply_Complex_Subtest;
+
+   Add_Complex_Subtest:
+   declare
+      Error_In_Client : exception renames Add_Error;  
+                        -- Reference to exception in parent package.
+      Operand_1  : Complex_Type := Complex (Int_Type (Report.Ident_Int (2)), 
+                                   Int_Type (Report.Ident_Int (7)));  
+      Operand_2  : Complex_Type := Complex (Int_Type (Report.Ident_Int (-4)), 
+                                   Int_Type (Report.Ident_Int (1)));  
+      Add_Res    : Complex_type := Complex (Int_Type (Report.Ident_Int (-2)), 
+                                   Int_Type (Report.Ident_Int (8)));  
+      Complex_No : Complex_Type := One;   -- One is declared in parent 
+                                          -- package.
+   begin
+      Complex_No := Operand_1 + Operand_2;   -- Basic_Complex."+".
+
+      if Complex_No /= Add_Res then
+         Report.Failed ("Incorrect results from multiplication");
+      end if;
+
+      -- Error is raised and exception will be handled.
+      if Complex_No = Add_Res then
+         raise Error_In_Client;
+      end if;
+
+   exception
+      when Error_In_Client => 
+         TC_Handled_In_Subtest_2 := true;
+
+      when others => 
+         TC_Handled_In_Subtest_2 := false;  -- Improper exception handling.
+
+   end Add_Complex_Subtest;
+
+   if not (TC_Handled_In_Subtest_1           and   -- Check to see that all 
+           TC_Handled_In_Subtest_2)                -- exceptions were handled
+                                                   -- in the proper location.
+   then
+      Report.Failed ("Exceptions handled in incorrect locations");
+   end if;
+
+   Report.Result;
+
+end CA11D03;

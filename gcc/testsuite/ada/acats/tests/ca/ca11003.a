@@ -1,0 +1,290 @@
+-- CA11003.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a public grandchild can utilize its ancestor unit's visible 
+--      definitions.
+--
+-- TEST DESCRIPTION:
+--      Declare a public package, public child package, and public 
+--      grandchild package and library unit function.  Within the 
+--      grandchild package and function, make use of components that are 
+--      declared in the ancestor packages, both parent and grandparent.  
+--
+--      Use the following ancestral components in the grandchildren library
+--      units:
+--                       Grandparent   Parent
+--          Type              X           X
+--          Constant          X           X
+--          Object            X           X
+--          Subprogram        X           X
+--          Exception         X           X
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      21 Dec 94   SAIC    Modified procedure Create_File
+--      15 Nov 95   SAIC    Update and repair for ACVC 2.0.1
+--
+--!
+   
+package CA11003_0 is      -- Package OS 
+
+   type File_Descriptor is new Integer;
+   type File_Mode       is (Read_Only, Write_Only, Read_Write);
+
+   Null_File       : constant File_Descriptor := 0;
+   Default_Mode    : constant File_Mode       := Read_Only;
+   File_Data_Error : exception;
+
+   type File_Type is tagged
+     record
+        Descriptor : File_Descriptor := Null_File;
+        Mode       : File_Mode       := Read_Write;
+     end record;
+
+   System_File : File_Type;
+
+   function Next_Available_File return File_Descriptor;
+
+   procedure Reclaim_File_Descriptor;
+
+end CA11003_0;               -- Package OS 
+
+     --=================================================================--
+
+package body CA11003_0 is    -- Package body OS 
+   
+   File_Count : Integer := 0;
+
+   function Next_Available_File return File_Descriptor is
+   begin
+      File_Count := File_Count + 1;
+      return (File_Descriptor(File_Count));
+   end Next_Available_File;
+   --------------------------------------------------
+   procedure Reclaim_File_Descriptor is
+   begin
+      null;                                        -- Dummy processing unit.
+   end Reclaim_File_Descriptor;
+
+end CA11003_0;                          -- Package body OS 
+
+     --=================================================================--
+
+package CA11003_0.CA11003_1 is          -- Child package OS.Operations
+
+   subtype File_Length_Type is Integer range 0 .. 1000;
+   Min_File_Size : File_Length_Type := File_Length_Type'First;
+   Max_File_Size : File_Length_Type := File_Length_Type'Last;
+
+   File_Duplication_Error : exception;
+
+   type Extended_File_Type is new File_Type with private;
+
+   procedure Create_File (Mode : in     File_Mode;
+                          File :    out Extended_File_Type);    
+
+   procedure Duplicate_File (Original  : in     Extended_File_Type;
+                             Duplicate :    out Extended_File_Type);
+
+private
+   type Extended_File_Type is new File_Type with
+      record
+         Blocks : File_Length_Type := Min_File_Size;
+      end record;
+
+   System_Extended_File : Extended_File_Type;
+
+end CA11003_0.CA11003_1;                -- Child Package OS.Operations 
+
+     --=================================================================--
+
+package body CA11003_0.CA11003_1 is     -- Child package body OS.Operations
+
+   procedure Create_File 
+     (Mode : in     File_Mode;
+      File :    out Extended_File_Type) is                 
+   begin
+      File.Descriptor := Next_Available_File;           -- Parent subprogram.
+      File.Mode       := Default_Mode;                  -- Parent constant.
+      File.Blocks     := Min_File_Size;
+   end Create_File;
+   --------------------------------------------------
+   procedure Duplicate_File (Original  : in     Extended_File_Type;
+                             Duplicate :    out Extended_File_Type) is
+   begin
+      Duplicate.Descriptor := Next_Available_File;      -- Parent subprogram.
+      Duplicate.Mode       := Original.Mode;
+      Duplicate.Blocks     := Original.Blocks;
+   end Duplicate_File;
+
+end CA11003_0.CA11003_1;                   -- Child package body OS.Operations
+
+     --=================================================================--
+
+-- This package contains menu selectable operations for manipulating files.
+-- This abstraction builds on the capabilities available from ancestor
+-- packages.
+
+package CA11003_0.CA11003_1.CA11003_2 is   
+
+   procedure News (Mode : in     File_Mode;
+                   File :    out Extended_File_Type);    
+
+   procedure Copy (Original  : in     Extended_File_Type;
+                   Duplicate :    out Extended_File_Type);
+
+   procedure Delete   (File : in Extended_File_Type);
+
+end CA11003_0.CA11003_1.CA11003_2;  -- Grandchild package OS.Operations.Menu
+ 
+     --=================================================================--
+
+-- Grandchild subprogram Validate 
+function  CA11003_0.CA11003_1.CA11003_3 (File : in Extended_File_Type) 
+  return Boolean;     
+
+     --=================================================================--
+
+-- Grandchild subprogram Validate 
+function  CA11003_0.CA11003_1.CA11003_3         
+  (File : in Extended_File_Type)                            -- Parent type.
+  return Boolean is      
+
+   function New_File_Validated (File : Extended_File_Type) 
+       return Boolean is  
+   begin                                                
+      if (File.Descriptor > System_File.Descriptor) and     -- Grandparent
+         (File.Mode in File_Mode ) and                      -- object and type
+         not ((File.Blocks < System_Extended_File.Blocks) or       
+              (File.Blocks > Max_File_Size))                -- Parent object
+      then                                                  -- and constant.
+         return True;
+      else
+         return False;
+      end if;
+   end New_File_Validated;
+      
+begin
+   return (New_File_Validated (File)) and    
+          (File.Descriptor /= Null_File);              -- Grandparent constant.
+                                                 
+end CA11003_0.CA11003_1.CA11003_3;      -- Grandchild subprogram Validate
+
+     --=================================================================--
+
+with CA11003_0.CA11003_1.CA11003_3;
+                                 -- Grandchild package body OS.Operations.Menu
+package body CA11003_0.CA11003_1.CA11003_2 is  
+
+   procedure News (Mode : in     File_Mode;
+                   File :    out Extended_File_Type) is   -- Parent type.
+   begin
+      Create_File (Mode, File);                           -- Parent subprogram.
+      if not CA11003_0.CA11003_1.CA11003_3 (File) then                       
+         raise File_Data_Error;                       -- Grandparent exception.
+      end if;
+   end News;
+   --------------------------------------------------
+   procedure Copy (Original  : in     Extended_File_Type;
+                   Duplicate :    out Extended_File_Type) is
+   begin
+      Duplicate_File (Original, Duplicate);               -- Parent subprogram.
+
+      if Original.Descriptor = Duplicate.Descriptor then
+         raise File_Duplication_Error;                    -- Parent exception.
+      end if;
+
+   end Copy;
+   --------------------------------------------------
+   procedure Delete (File : in Extended_File_Type) is
+   begin
+      Reclaim_File_Descriptor;                            -- Grandparent
+   end Delete;                                            -- subprogram.
+
+end CA11003_0.CA11003_1.CA11003_2;  
+
+     --=================================================================--
+
+with CA11003_0.CA11003_1.CA11003_2;  -- Grandchild Pkg OS.Operations.Menu
+with CA11003_0.CA11003_1.CA11003_3;  -- Grandchild Ftn OS.Operations.Validate
+with Report;
+
+procedure CA11003 is
+
+   package Menu renames CA11003_0.CA11003_1.CA11003_2;
+
+begin
+
+   Report.Test ("CA11003", "Check that a public grandchild can utilize " &
+                "its ancestor unit's visible definitions");
+
+   File_Processing:         -- Validate all of the capabilities contained in 
+                            -- the Menu package by exercising them on specific 
+                            -- files.  This will demonstrate the use of child
+                            -- and grandchild functionality based on components
+                            -- that have been declared in the
+                            -- parent/grandparent package.
+   declare
+
+      function Validate (File : CA11003_0.CA11003_1.Extended_File_Type) 
+        return Boolean renames CA11003_0.CA11003_1.CA11003_3;
+
+      MacWrite_File,
+      Backup_Copy : CA11003_0.CA11003_1.Extended_File_Type;        
+      MacWrite_File_Mode : CA11003_0.File_Mode := CA11003_0.Read_Write;
+                                     
+   begin                                                
+                                                        
+      Menu.News (MacWrite_File_Mode, MacWrite_File);                          
+
+      if not Validate (MacWrite_File) then
+         Report.Failed ("Incorrect initialization of files");
+      end if;
+
+      Menu.Copy (MacWrite_File, Backup_Copy);
+
+      if not (Validate (MacWrite_File) and 
+              Validate (Backup_Copy))
+      then
+         Report.Failed ("Incorrect duplication of files");
+      end if;
+
+      Menu.Delete (Backup_Copy);
+
+   exception
+      when CA11003_0.File_Data_Error =>
+          Report.Failed ("Exception raised during file validation");
+      when CA11003_0.CA11003_1.File_Duplication_Error =>
+          Report.Failed ("Exception raised during file duplication");
+      when others =>
+          Report.Failed ("Unexpected exception in test procedure");
+
+   end File_Processing;
+
+   Report.Result;
+
+end CA11003; 

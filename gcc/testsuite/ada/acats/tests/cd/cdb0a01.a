@@ -1,0 +1,305 @@
+-- CDB0A01.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a storage pool may be user_determined, and that storage
+--      is allocated by calling Allocate.
+--
+--      Check that a storage.pool may be specified using 'Storage_Pool
+--      and that S'Storage_Pool denotes the storage pool of the type S.
+--
+-- TEST DESCRIPTION:
+--      The package System.Storage_Pools is exercised by two very similar
+--      packages which define a tree type and exercise it in a simple manner.
+--      One package uses a user defined pool.  The other package uses a
+--      storage pool assigned by the implementation; Storage_Size is
+--      specified for this pool.
+--      The dispatching procedures Allocate and Deallocate are tested as an
+--      intentional side effect of the tree packages.
+--
+--      For completeness, the actions of the tree packages are checked for
+--      correct operation.
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         FDB0A00.A   (foundation code)
+--         CDB0A01.A
+--
+--
+-- CHANGE HISTORY:
+--      02 JUN 95   SAIC   Initial version
+--      07 MAY 96   SAIC   Removed ambiguity with CDB0A02
+--      13 FEB 97   PWB.CTA Corrected lexically ordered string literal
+--!
+
+---------------------------------------------------------------- CDB0A01_1
+
+---------------------------------------------------------- FDB0A00.Pool1
+
+package FDB0A00.Pool1 is
+  User_Pool : Stack_Heap( 5_000 );
+end FDB0A00.Pool1;
+
+---------------------------------------------------------- FDB0A00.Comparator
+
+with System.Storage_Pools;
+package FDB0A00.Comparator is
+
+  function "="( A,B : System.Storage_Pools.Root_Storage_Pool'Class )
+           return Boolean;
+
+end FDB0A00.Comparator;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with TCTouch;
+package body FDB0A00.Comparator is
+
+  function "="( A,B : System.Storage_Pools.Root_Storage_Pool'Class )
+           return Boolean is
+    use type System.Address;
+  begin
+    return A'Address = B'Address;
+  end "=";
+
+end FDB0A00.Comparator;
+
+---------------------------------------------------------------- CDB0A01_2
+
+with FDB0A00.Pool1;
+package CDB0A01_2 is
+
+  type Cell;
+  type User_Pool_Tree is access Cell;
+
+  for User_Pool_Tree'Storage_Pool use FDB0A00.Pool1.User_Pool;
+
+  type Cell is record
+    Data : Character;
+    Left,Right : User_Pool_Tree;
+  end record;
+
+  procedure Insert( Item: Character; On_Tree : in out User_Pool_Tree );
+
+  procedure Traverse( The_Tree : User_Pool_Tree );
+
+  procedure Defoliate( The_Tree : in out User_Pool_Tree );
+
+end CDB0A01_2;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with TCTouch;
+with Unchecked_Deallocation;
+package body CDB0A01_2 is
+  procedure Deallocate is new Unchecked_Deallocation(Cell,User_Pool_Tree);
+
+  -- Sort: zeros on the left, ones on the right...
+  procedure Insert( Item: Character; On_Tree : in out User_Pool_Tree ) is
+  begin
+    if On_Tree = null then
+      On_Tree := new Cell'(Item,null,null); 
+    elsif Item > On_Tree.Data then
+      Insert(Item,On_Tree.Right);
+    else
+      Insert(Item,On_Tree.Left);  
+    end if;
+  end Insert;
+
+  procedure Traverse( The_Tree : User_Pool_Tree ) is
+  begin
+    if The_Tree = null then
+      null;  -- how very symmetrical
+    else
+      Traverse(The_Tree.Left);
+      TCTouch.Touch(The_Tree.Data);
+      Traverse(The_Tree.Right);
+    end if;
+  end Traverse;
+
+  procedure Defoliate( The_Tree : in out User_Pool_Tree ) is
+  begin
+
+    if The_Tree.Left /= null then
+      Defoliate(The_Tree.Left);
+    end if;
+
+    if The_Tree.Right /= null then
+      Defoliate(The_Tree.Right);
+    end if;
+
+    Deallocate(The_Tree);
+
+  end Defoliate;
+
+end CDB0A01_2;
+
+---------------------------------------------------------------- CDB0A01_3
+
+with FDB0A00.Pool1;
+package CDB0A01_3 is
+
+  type Cell;
+  type System_Pool_Tree is access Cell;
+
+  for System_Pool_Tree'Storage_Size use 2000;
+
+  -- assumptions: Cell is <= 20 storage_units
+  --              Tree building exercise requires O(15) cells
+  --              2000 > 20 * 15 by a generous margin
+
+  type Cell is record
+    Data: Character;
+    Left,Right : System_Pool_Tree;
+  end record;
+
+  procedure Insert( Item: Character; On_Tree : in out System_Pool_Tree );
+
+  procedure Traverse( The_Tree : System_Pool_Tree );
+
+  procedure Defoliate( The_Tree : in out System_Pool_Tree );
+
+end CDB0A01_3;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with TCTouch;
+with Unchecked_Deallocation;
+package body CDB0A01_3 is
+  procedure Deallocate is new Unchecked_Deallocation(Cell,System_Pool_Tree);
+
+  -- Sort: zeros on the left, ones on the right...
+  procedure Insert( Item: Character; On_Tree : in out System_Pool_Tree ) is
+  begin
+    if On_Tree = null then
+      On_Tree := new Cell'(Item,null,null);
+    elsif Item > On_Tree.Data then
+      Insert(Item,On_Tree.Right);
+    else
+      Insert(Item,On_Tree.Left);  
+    end if;
+  end Insert;
+
+  procedure Traverse( The_Tree : System_Pool_Tree ) is
+  begin
+    if The_Tree = null then
+      null;  -- how very symmetrical
+    else
+      Traverse(The_Tree.Left);
+      TCTouch.Touch(The_Tree.Data);
+      Traverse(The_Tree.Right);
+    end if;
+  end Traverse;
+
+  procedure Defoliate( The_Tree : in out System_Pool_Tree ) is
+  begin
+
+    if The_Tree.Left /= null then
+      Defoliate(The_Tree.Left);
+    end if;
+
+    if The_Tree.Right /= null then
+      Defoliate(The_Tree.Right);
+    end if;
+
+    Deallocate(The_Tree);
+
+  end Defoliate;
+
+end CDB0A01_3;
+
+------------------------------------------------------------------ CDB0A01
+
+with Report;
+with TCTouch;
+with FDB0A00.Comparator;
+with FDB0A00.Pool1;
+with CDB0A01_2;
+with CDB0A01_3;
+
+procedure CDB0A01 is
+
+  Banyan : CDB0A01_2.User_Pool_Tree;
+  Torrey : CDB0A01_3.System_Pool_Tree;
+
+  use type CDB0A01_2.User_Pool_Tree;
+  use type CDB0A01_3.System_Pool_Tree;
+
+  Countess     : constant String := "Ada Augusta Lovelace";
+  Cenosstu     : constant String := "  AALaaacdeeglostuuv";
+  Insertion    : constant String := "AAAAAAAAAAAAAAAAAAAA";
+  Deallocation : constant String := "DDDDDDDDDDDDDDDDDDDD";
+
+begin  -- Main test procedure.
+
+   Report.Test ("CDB0A01", "Check that a storage pool may be " &
+                           "user_determined, and that storage is " &
+                           "allocated by calling Allocate.  Check that " &
+                           "a storage.pool may be specified using " &
+                           "'Storage_Pool and that S'Storage_Pool denotes " &
+                           "the storage pool of the type S" );
+
+--      Check that S'Storage_Pool denotes the storage pool for the type S.
+
+  TCTouch.Assert(
+     FDB0A00.Comparator."="(FDB0A00.Pool1.User_Pool,
+                            CDB0A01_2.User_Pool_Tree'Storage_Pool ),
+     "'Storage_Pool not correct for CDB0A01_2.User_Pool_Tree");
+
+  TCTouch.Assert_Not(
+     FDB0A00.Comparator."="(FDB0A00.Pool1.User_Pool,
+                            CDB0A01_3.System_Pool_Tree'Storage_Pool ),
+     "'Storage_Pool not correct for CDB0A01_3.System_Pool_Tree");
+
+--      Check that storage is allocated by calling Allocate.
+
+  for Count in Countess'Range loop
+    CDB0A01_2.Insert( Countess(Count), Banyan );
+  end loop;
+  TCTouch.Validate(Insertion, "Allocate calls via CDB0A01_2" ); 
+
+  for Count in Countess'Range loop
+    CDB0A01_3.Insert( Countess(Count), Torrey );
+  end loop;
+  TCTouch.Validate("", "Allocate calls via CDB0A01_3" ); 
+
+  CDB0A01_2.Traverse(Banyan);
+  TCTouch.Validate(Cenosstu, "Traversal of Banyan" );
+
+  CDB0A01_3.Traverse(Torrey);
+  TCTouch.Validate(Cenosstu, "Traversal of Torrey" );
+
+  CDB0A01_2.Defoliate(Banyan);
+  TCTouch.Validate(Deallocation, "Deforestation of Banyan" );
+  TCTouch.Assert(Banyan = null, "Banyan Deallocation result not null");
+
+  CDB0A01_3.Defoliate(Torrey);
+  TCTouch.Validate("", "Deforestation of Torrey" );
+  TCTouch.Assert(Torrey = null, "Torrey Deallocation result not null");
+
+  Report.Result;
+
+end CDB0A01;

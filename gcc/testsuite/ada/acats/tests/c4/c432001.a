@@ -1,0 +1,512 @@
+-- C432001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--
+--      Check that extension aggregates may be used to specify values
+--      for types that are record extensions. Check that the
+--      type of the ancestor expression may be any nonlimited type that
+--      is a record extension, including private types and private
+--      extensions. Check that the type for the aggregate is
+--      derived from the type of the ancestor expression.
+--
+-- TEST DESCRIPTION:
+--
+--      Two progenitor nonlimited record types are declared, one
+--      nonprivate and one private. Using these as parent types,
+--      all possible combinations of record extensions are declared
+--      (Nonprivate record extension of nonprivate type, private
+--      extension of nonprivate type, nonprivate record extension of
+--      private type, and private extension of private type). Finally,
+--      each of these types is extended using nonprivate record
+--      extensions.
+--
+--      Extension of private types is done in packages other than
+--      the ones containing the parent declaration. This is done
+--      to eliminate errors with extension of the partial view of
+--      a type, which is not an objective of this test.
+--
+--      All components of private types and private extensions are given
+--      default values. This eliminates the need for separate subprograms
+--      whose sole purpose is to place a value into a private record type.
+--
+--      Types that have been extended are checked using an object of their
+--      parent type as the ancestor expression. For those types that
+--      have been extended twice, using only nonprivate record extensions,
+--      a check is made using an object of their grandparent type as
+--      the ancestor expression.
+--      
+--      For each type, a subprogram is defined which checks the contents
+--      of the parameter, which is a value of the record extension.
+--      Components of nonprivate record extensions are checked against
+--      passed-in parameters of the component type. Components of private
+--      extensions are checked to ensure that they maintain their initial
+--      values.
+--
+--      To check that the aggregate's type is derived from its ancestor,
+--      each Check subprogram in turn calls the Check subprogram for
+--      its parent type. Explicit conversion is used to convert the
+--      record extension to the parent type.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+with Report;
+package C432001_0 is
+
+   type Eras is (Precambrian, Paleozoic, Mesozoic, Cenozoic);
+
+   type N is tagged record
+      How_Long_Ago : Natural := Report.Ident_Int(1);
+      Era          : Eras := Cenozoic;
+   end record;
+
+   function Check (Rec : in N;
+                   N   : in Natural;
+                   E   : in Eras) return Boolean;
+
+   type P is tagged private;
+
+   function Check (Rec : in P) return Boolean;
+
+private
+
+   type P is tagged record
+      How_Long_Ago : Natural := Report.Ident_Int(150);
+      Era          : Eras := Mesozoic;
+   end record;
+
+end C432001_0;
+
+package body C432001_0 is
+
+   function Check (Rec : in P) return Boolean is
+   begin
+      return Rec.How_Long_Ago = 150 and Rec.Era = Mesozoic;
+   end Check;
+
+   function Check (Rec : in N;
+                   N   : in Natural;
+                   E   : in Eras) return Boolean is
+   begin
+      return Rec.How_Long_Ago = N and Rec.Era = E;
+   end Check;
+
+end C432001_0;
+
+with C432001_0;
+package C432001_1 is
+
+   type Periods is
+      (Aphebian, Helikian, Hadrynian,
+       Cambrian, Ordovician, Silurian, Devonian, Carboniferous, Permian,
+       Triassic, Jurassic, Cretaceous,
+       Tertiary, Quaternary);
+
+   type N_N is new C432001_0.N with record
+      Period : Periods := C432001_1.Quaternary;
+   end record;
+
+   function Check (Rec : in N_N;
+                   N   : in Natural;
+                   E   : in C432001_0.Eras;
+                   P   : in Periods) return Boolean;
+
+   type N_P is new C432001_0.N with private;
+
+   function Check (Rec : in N_P) return Boolean;
+
+   type P_N is new C432001_0.P with record
+      Period : Periods := C432001_1.Jurassic;
+   end record;
+
+   function Check (Rec : in P_N;
+                   P   : in Periods) return Boolean;
+
+   type P_P is new C432001_0.P with private;
+
+   function Check (Rec : in P_P) return Boolean;
+
+   type P_P_Null is new C432001_0.P with null record;  
+
+private
+
+   type N_P is new C432001_0.N with record
+      Period : Periods := C432001_1.Quaternary;
+   end record;
+
+   type P_P is new C432001_0.P with record
+      Period : Periods := C432001_1.Jurassic;
+   end record;
+
+end C432001_1;
+
+with Report;
+package body C432001_1 is
+
+   function Check (Rec : in N_N;
+                   N   : in Natural;
+                   E   : in C432001_0.Eras;
+                   P   : in Periods) return Boolean is
+   begin
+      if not C432001_0.Check (C432001_0.N (Rec), N, E) then
+         Report.Failed ("Conversion to parent type of " &
+                        "nonprivate portion of " &
+                        "nonprivate extension failed");
+      end if;
+      return Rec.Period = P;
+   end Check;
+   
+
+   function Check (Rec : in N_P) return Boolean is
+   begin
+      if not C432001_0.Check (C432001_0.N (Rec), 1, C432001_0.Cenozoic) then
+         Report.Failed ("Conversion to parent type of " &
+                        "nonprivate portion of " &
+                        "private extension failed");
+      end if;
+      return Rec.Period = C432001_1.Quaternary;
+   end Check;
+
+   function Check (Rec : in P_N;
+                   P   : in Periods) return Boolean is
+   begin
+      if not C432001_0.Check (C432001_0.P (Rec)) then
+         Report.Failed ("Conversion to parent type of " &
+                        "private portion of " &
+                        "nonprivate extension failed");
+      end if;
+      return Rec.Period = P;
+   end Check;
+
+   function Check (Rec : in P_P) return Boolean is
+   begin
+      if not C432001_0.Check (C432001_0.P (Rec)) then
+         Report.Failed ("Conversion to parent type of " &
+                        "private portion of " &
+                        "private extension failed");
+      end if;
+      return Rec.Period = C432001_1.Jurassic;
+   end Check;
+
+end C432001_1;
+
+with C432001_0;
+with C432001_1;
+package C432001_2 is
+
+   -- All types herein are nonprivate extensions, since aggregates
+   -- cannot be given for private extensions
+   
+   type N_N_N is new C432001_1.N_N with record
+      Sample_On_Loan : Boolean;
+   end record;
+
+   function Check (Rec : in N_N_N;
+                   N   : in Natural;
+                   E   : in C432001_0.Eras;
+                   P   : in C432001_1.Periods;
+                   B   : in Boolean) return Boolean;
+
+   type N_P_N is new C432001_1.N_P with record
+      Sample_On_Loan : Boolean;
+   end record;
+
+   function Check (Rec : in N_P_N;
+                   B   : Boolean) return Boolean;
+
+   type P_N_N is new C432001_1.P_N with record
+      Sample_On_Loan : Boolean;
+   end record;
+
+   function Check (Rec : in P_N_N;
+                   P   : in C432001_1.Periods;
+                   B   : Boolean) return Boolean;
+
+   type P_P_N is new C432001_1.P_P with record
+      Sample_On_Loan : Boolean;
+   end record;
+
+   function Check (Rec : in P_P_N;
+                   B   : Boolean) return Boolean;
+
+end C432001_2;
+
+with Report;
+package body C432001_2 is
+
+   -- direct access to operator
+   use type C432001_1.Periods;
+
+
+   function Check (Rec : in N_N_N;
+                   N   : in Natural;
+                   E   : in C432001_0.Eras;
+                   P   : in C432001_1.Periods;
+                   B   : in Boolean) return Boolean is
+   begin
+      if not C432001_1.Check (C432001_1.N_N (Rec), N, E, P) then
+         Report.Failed ("Conversion to parent " &
+                        "nonprivate type extension " &
+                        "failed");
+      end if;
+      return Rec.Sample_On_Loan = B;
+   end Check;
+   
+
+   function Check (Rec : in N_P_N;
+                   B   : Boolean) return Boolean is
+   begin
+      if not C432001_1.Check (C432001_1.N_P (Rec)) then
+         Report.Failed ("Conversion to parent " &
+                        "private type extension " &
+                        "failed");
+      end if;
+      return Rec.Sample_On_Loan = B;
+   end Check;
+
+   function Check (Rec : in P_N_N;
+                   P   : in C432001_1.Periods;
+                   B   : Boolean) return Boolean is
+   begin
+      if not C432001_1.Check (C432001_1.P_N (Rec), P) then
+         Report.Failed ("Conversion to parent " &
+                        "nonprivate type extension " &
+                        "failed");
+      end if;
+      return Rec.Sample_On_Loan = B;
+   end Check;
+
+   function Check (Rec : in P_P_N;
+                   B   : Boolean) return Boolean is
+   begin
+      if not C432001_1.Check (C432001_1.P_P (Rec)) then
+         Report.Failed ("Conversion to parent " &
+                        "private type extension " &
+                        "failed");
+      end if;
+      return Rec.Sample_On_Loan = B;
+   end Check;
+
+end C432001_2;
+
+
+with C432001_0;
+with C432001_1;
+with C432001_2;
+with Report;
+procedure C432001 is
+
+   N_Object : C432001_0.N := (How_Long_Ago => Report.Ident_Int(375),
+                              Era          => C432001_0.Paleozoic);
+
+   P_Object : C432001_0.P; -- default value is (150,
+                           --                   C432001_0.Mesozoic)
+
+   N_N_Object : C432001_1.N_N :=
+      (N_Object with Period => C432001_1.Devonian);
+
+   P_N_Object : C432001_1.P_N :=
+      (P_Object with Period => C432001_1.Jurassic);
+
+   N_P_Object : C432001_1.N_P; -- default is (1,
+                               --             C432001_0.Cenozoic,
+                               --             C432001_1.Quaternary)
+
+   P_P_Object : C432001_1.P_P; -- default is (150,
+                               --             C432001_0.Mesozoic,
+                               --             C432001_1.Jurassic)
+
+   P_P_Null_Ob:C432001_1.P_P_Null := (P_Object with null record);
+
+   N_N_N_Object : C432001_2.N_N_N :=
+      (N_N_Object with Sample_On_Loan => Report.Ident_Bool(True));
+
+   N_P_N_Object : C432001_2.N_P_N :=
+      (N_P_Object with Sample_On_Loan => Report.Ident_Bool(False));
+
+   P_N_N_Object : C432001_2.P_N_N :=
+      (P_N_Object with Sample_On_Loan => Report.Ident_Bool(True));
+
+   P_P_N_Object : C432001_2.P_P_N :=
+      (P_P_Object with Sample_On_Loan => Report.Ident_Bool(False));
+
+   P_N_Object_2 : C432001_1.P_N := (C432001_0.P(P_N_N_Object)
+                                    with C432001_1.Carboniferous);
+
+   N_N_Object_2 : C432001_1.N_N := (C432001_0.N'(42,C432001_0.Precambrian)
+                                    with C432001_1.Carboniferous);
+
+begin
+
+   Report.Test ("C432001", "Extension aggregates");
+
+   -- check ultimate ancestor types
+
+   if not C432001_0.Check (N_Object,
+                           375,
+                           C432001_0.Paleozoic) then
+      Report.Failed ("Object of " &
+                     "nonprivate type " &
+                     "failed content check");
+   end if;
+
+   if not C432001_0.Check (P_Object) then
+      Report.Failed ("Object of " &
+                     "private type " &
+                     "failed content check");
+   end if;
+
+   -- check direct type extensions
+
+   if not C432001_1.Check (N_N_Object,
+                           375,
+                           C432001_0.Paleozoic,
+                           C432001_1.Devonian) then
+      Report.Failed ("Object of " &
+                     "nonprivate extension of nonprivate type " &
+                     "failed content check");
+   end if;
+
+   if not C432001_1.Check (N_P_Object) then
+      Report.Failed ("Object of " &
+                     "private extension of nonprivate type " &
+                     "failed content check");
+   end if;
+
+   if not C432001_1.Check (P_N_Object,
+                           C432001_1.Jurassic) then
+      Report.Failed ("Object of " &
+                     "nonprivate extension of private type " &
+                     "failed content check");
+   end if;
+
+   if not C432001_1.Check (P_P_Object) then
+      Report.Failed ("Object of " &
+                     "private extension of private type " &
+                     "failed content check");
+   end if;
+
+    if not C432001_1.Check (P_P_Null_Ob) then
+      Report.Failed ("Object of " &
+                     "private type " &
+                     "failed content check");
+   end if;
+
+
+   -- check direct extensions of extensions
+
+   if not C432001_2.Check (N_N_N_Object,
+                           375,
+                           C432001_0.Paleozoic,
+                           C432001_1.Devonian,
+                           True) then
+      Report.Failed ("Object of " &
+                     "nonprivate extension of nonprivate extension " &
+                     "(of nonprivate parent) " &
+                     "failed content check");
+   end if;
+
+   if not C432001_2.Check (N_P_N_Object, False) then
+      Report.Failed ("Object of " &
+                     "nonprivate extension of private extension " &
+                     "(of nonprivate parent) " &
+                     "failed content check");
+   end if;
+
+   if not C432001_2.Check (P_N_N_Object,
+                           C432001_1.Jurassic,
+                           True) then
+      Report.Failed ("Object of " &
+                     "nonprivate extension of nonprivate extension " &
+                     "(of private parent) " &
+                     "failed content check");
+   end if;
+
+   if not C432001_2.Check (P_P_N_Object, False) then
+      Report.Failed ("Object of " &
+                     "nonprivate extension of private extension " &
+                     "(of private parent) " &
+                     "failed content check");
+   end if;
+
+   -- check that the extension aggregate may specify an expression of
+   -- a "grandparent" ancestor type
+
+   -- types tested are derived through nonprivate extensions only
+   -- (extension aggregates are not allowed if the path from the
+   -- ancestor type wanders through a private extension)
+   
+   N_N_N_Object :=
+      (N_Object with Period => C432001_1.Devonian,
+                     Sample_On_Loan => Report.Ident_Bool(True));
+
+   if not C432001_2.Check (N_N_N_Object,
+                           375,
+                           C432001_0.Paleozoic,
+                           C432001_1.Devonian,
+                           True) then
+      Report.Failed ("Object of " &
+                     "nonprivate extension " &
+                     "of nonprivate ancestor " &
+                     "failed content check");
+   end if;
+
+   P_N_N_Object :=
+      (P_Object with Period => C432001_1.Jurassic,
+                     Sample_On_Loan => Report.Ident_Bool(True));
+
+   if not C432001_2.Check (P_N_N_Object,
+                           C432001_1.Jurassic,
+                           True) then
+      Report.Failed ("Object of " &
+                     "nonprivate extension " &
+                     "of private ancestor " &
+                     "failed content check");
+   end if;
+
+  -- Check additional cases
+   if not C432001_1.Check (P_N_Object_2,
+                           C432001_1.Carboniferous) then
+      Report.Failed ("Additional Object of " &
+                     "nonprivate extension of private type " &
+                     "failed content check");
+   end if;
+
+   if not C432001_1.Check (N_N_Object_2,
+                           42,
+                           C432001_0.Precambrian,
+                           C432001_1.Carboniferous) then
+      Report.Failed ("Additional Object of " &
+                     "nonprivate extension of nonprivate type " &
+                     "failed content check");
+   end if;
+
+   Report.Result;
+
+end C432001;

@@ -1,0 +1,374 @@
+-- C390007.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the tag of an object of a tagged type is preserved by
+--      type conversion and parameter passing.
+--
+-- TEST DESCRIPTION:
+--      The fact that the tag of an object is not changed is verified by
+--      making dispatching calls to primitive operations, and confirming that
+--      the proper body is executed. Objects of both specific and class-wide
+--      types are checked. 
+--
+--      The dispatching calls are made in two contexts. The first is a
+--      straightforward dispatching call made from within a class-wide
+--      operation. The second is a redispatch from within a primitive
+--      operation.
+--
+--      For the parameter passing case, the initial class-wide and specific
+--      objects are passed directly in calls to the class-wide and primitive
+--      operations. The redispatch is accomplished by initializing a local
+--      class-wide object in the primitive operation to the value of the
+--      formal parameter, and using the local object as the actual in the
+--      (re)dispatching call.
+--
+--      For the type conversion case, the initial class-wide object is assigned
+--      a view conversion of an object of a specific type:
+--
+--         type T is tagged ...
+--         type DT is new T with ...
+--
+--         A : DT;
+--         B : T'Class := T(A); -- Despite conversion, tag of B is that of DT.
+--
+--      The class-wide object is then passed directly in calls to the
+--      class-wide and primitive operations. For the initial object of a
+--      specific type, however, a view conversion of the object is passed,
+--      forcing a non-dispatching call in the primitive operation case. Within
+--      the primitive operation, a view conversion of the formal parameter to
+--      a class-wide type is then used to force a (re)dispatching call.
+--
+--      For the type conversion and parameter passing case, a combining of
+--      view conversion and parameter passing of initial specific objects are 
+--      called directly to the class-wide and primitive operations. 
+--
+--
+-- CHANGE HISTORY:
+--      28 Jun 95   SAIC    Initial prerelease version.
+--      23 Apr 96   SAIC    Added use C390007_0 in the main.
+--
+--!
+
+package C390007_0 is
+
+   type Call_ID_Kind is (None, Parent_Outer,  Parent_Inner,
+                               Derived_Outer, Derived_Inner);
+
+   type Root_Type is abstract tagged null record;
+
+   procedure Outer_Proc (X : in out Root_Type) is abstract;
+   procedure Inner_Proc (X : in out Root_Type) is abstract;
+
+   procedure ClassWide_Proc (X : in out Root_Type'Class);
+
+end C390007_0;
+
+
+     --==================================================================--
+
+
+package body C390007_0 is
+
+   procedure ClassWide_Proc (X : in out Root_Type'Class) is
+   begin
+      Inner_Proc (X);
+   end ClassWide_Proc;
+
+end C390007_0;
+
+
+     --==================================================================--
+
+
+package C390007_0.C390007_1 is
+
+   type Param_Parent_Type is new Root_Type with record
+      Last_Call : Call_ID_Kind := None;
+   end record;
+
+   procedure Outer_Proc (X : in out Param_Parent_Type);
+   procedure Inner_Proc (X : in out Param_Parent_Type);
+
+end C390007_0.C390007_1;
+
+
+     --==================================================================--
+
+
+package body C390007_0.C390007_1 is
+
+   procedure Outer_Proc (X : in out Param_Parent_Type) is
+   begin
+      X.Last_Call := Parent_Outer;
+   end Outer_Proc;
+
+   procedure Inner_Proc (X : in out Param_Parent_Type) is
+   begin
+      X.Last_Call := Parent_Inner;
+   end Inner_Proc;
+
+end C390007_0.C390007_1;
+
+
+     --==================================================================--
+
+
+package C390007_0.C390007_1.C390007_2 is
+
+   type Param_Derived_Type is new Param_Parent_Type with null record;
+
+   procedure Outer_Proc (X : in out Param_Derived_Type);
+   procedure Inner_Proc (X : in out Param_Derived_Type);
+
+end C390007_0.C390007_1.C390007_2;
+
+
+     --==================================================================--
+
+
+package body C390007_0.C390007_1.C390007_2 is
+
+   procedure Outer_Proc (X : in out Param_Derived_Type) is
+      Y : Root_Type'Class := X;
+   begin
+      Inner_Proc (Y);  -- Redispatch.
+      Root_Type'Class (X) := Y;
+   end Outer_Proc;
+
+   procedure Inner_Proc (X : in out Param_Derived_Type) is
+   begin
+      X.Last_Call := Derived_Inner;
+   end Inner_Proc;
+
+end C390007_0.C390007_1.C390007_2;
+
+
+     --==================================================================--
+
+
+package C390007_0.C390007_3 is
+
+   type Convert_Parent_Type is new Root_Type with record
+      First_Call  : Call_ID_Kind := None;
+      Second_Call : Call_ID_Kind := None;
+   end record;
+
+   procedure Outer_Proc (X : in out Convert_Parent_Type);
+   procedure Inner_Proc (X : in out Convert_Parent_Type);
+
+end C390007_0.C390007_3;
+
+
+     --==================================================================--
+
+
+package body C390007_0.C390007_3 is
+
+   procedure Outer_Proc (X : in out Convert_Parent_Type) is
+   begin
+      X.First_Call := Parent_Outer;
+      Inner_Proc (Root_Type'Class(X));  -- Redispatch.
+   end Outer_Proc;
+
+   procedure Inner_Proc (X : in out Convert_Parent_Type) is
+   begin
+      X.Second_Call := Parent_Inner;
+   end Inner_Proc;
+
+end C390007_0.C390007_3;
+
+
+     --==================================================================--
+
+
+package C390007_0.C390007_3.C390007_4 is
+
+   type Convert_Derived_Type is new Convert_Parent_Type with null record;
+
+   procedure Outer_Proc (X : in out Convert_Derived_Type);
+   procedure Inner_Proc (X : in out Convert_Derived_Type);
+
+end C390007_0.C390007_3.C390007_4;
+
+
+     --==================================================================--
+
+
+package body C390007_0.C390007_3.C390007_4 is
+
+   procedure Outer_Proc (X : in out Convert_Derived_Type) is
+   begin
+      X.First_Call := Derived_Outer;
+      Inner_Proc (Root_Type'Class(X));  -- Redispatch.
+   end Outer_Proc;
+
+   procedure Inner_Proc (X : in out Convert_Derived_Type) is
+   begin
+      X.Second_Call := Derived_Inner;
+   end Inner_Proc;
+
+end C390007_0.C390007_3.C390007_4;
+
+
+     --==================================================================--
+
+
+with C390007_0.C390007_1.C390007_2;
+with C390007_0.C390007_3.C390007_4;
+use  C390007_0;
+
+with Report;
+procedure C390007 is
+begin
+   Report.Test ("C390007", "Check that the tag of an object of a tagged " &
+                "type is preserved by type conversion and parameter passing");
+
+
+   --
+   -- Check that tags are preserved by parameter passing:
+   --
+
+   Parameter_Passing_Subtest:
+   declare
+      Specific_A  : C390007_0.C390007_1.C390007_2.Param_Derived_Type;
+      Specific_B  : C390007_0.C390007_1.C390007_2.Param_Derived_Type;
+
+      ClassWide_A : C390007_0.C390007_1.Param_Parent_Type'Class := Specific_A;
+      ClassWide_B : C390007_0.C390007_1.Param_Parent_Type'Class := Specific_B;
+
+      use C390007_0.C390007_1;
+      use C390007_0.C390007_1.C390007_2;
+   begin
+
+      Outer_Proc (Specific_A);         
+      if Specific_A.Last_Call /= Derived_Inner then
+         Report.Failed ("Parameter passing: tag not preserved in call to " &
+                        "primitive operation with specific operand");
+      end if;
+
+      C390007_0.ClassWide_Proc (Specific_B);
+      if Specific_B.Last_Call /= Derived_Inner then
+         Report.Failed ("Parameter passing: tag not preserved in call to " &
+                        "class-wide operation with specific operand");
+      end if;
+
+      Outer_Proc (ClassWide_A);        
+      if ClassWide_A.Last_Call /= Derived_Inner then
+         Report.Failed ("Parameter passing: tag not preserved in call to " &
+                        "primitive operation with class-wide operand");
+      end if;
+
+      C390007_0.ClassWide_Proc (ClassWide_B);
+      if ClassWide_B.Last_Call /= Derived_Inner then
+         Report.Failed ("Parameter passing: tag not preserved in call to " &
+                        "class-wide operation with class-wide operand");
+      end if;
+
+   end Parameter_Passing_Subtest;
+
+
+   --
+   -- Check that tags are preserved by type conversion:
+   --
+
+   Type_Conversion_Subtest:
+   declare
+      Specific_A  : C390007_0.C390007_3.C390007_4.Convert_Derived_Type;
+      Specific_B  : C390007_0.C390007_3.C390007_4.Convert_Derived_Type;
+
+      ClassWide_A : C390007_0.C390007_3.Convert_Parent_Type'Class :=
+                    C390007_0.C390007_3.Convert_Parent_Type(Specific_A);
+      ClassWide_B : C390007_0.C390007_3.Convert_Parent_Type'Class :=
+                    C390007_0.C390007_3.Convert_Parent_Type(Specific_B);
+
+      use C390007_0.C390007_3;
+      use C390007_0.C390007_3.C390007_4;
+   begin
+
+      Outer_Proc (Convert_Parent_Type(Specific_A));
+      if (Specific_A.First_Call  /= Parent_Outer)  or
+         (Specific_A.Second_Call /= Derived_Inner)
+      then
+         Report.Failed ("Type conversion: tag not preserved in call to " &
+                        "primitive operation with specific operand");
+      end if;
+
+      Outer_Proc (ClassWide_A);   
+      if (ClassWide_A.First_Call  /= Derived_Outer) or
+         (ClassWide_A.Second_Call /= Derived_Inner)
+      then
+         Report.Failed ("Type conversion: tag not preserved in call to " &
+                        "primitive operation with class-wide operand");
+      end if;
+
+      C390007_0.ClassWide_Proc (Convert_Parent_Type(Specific_B));
+      if (Specific_B.Second_Call /= Derived_Inner) then
+         Report.Failed ("Type conversion: tag not preserved in call to " &
+                        "class-wide operation with specific operand");
+      end if;
+
+      C390007_0.ClassWide_Proc (ClassWide_B);
+      if (ClassWide_A.Second_Call /= Derived_Inner) then
+         Report.Failed ("Type conversion: tag not preserved in call to " &
+                        "class-wide operation with class-wide operand");
+      end if;
+
+   end Type_Conversion_Subtest;
+
+
+   --
+   -- Check that tags are preserved by type conversion and parameter passing:
+   --
+
+   Type_Conversion_And_Parameter_Passing_Subtest:
+   declare
+      Specific_A  : C390007_0.C390007_1.C390007_2.Param_Derived_Type;
+      Specific_B  : C390007_0.C390007_1.C390007_2.Param_Derived_Type;
+
+      use C390007_0.C390007_1;
+      use C390007_0.C390007_1.C390007_2;
+   begin
+
+      Outer_Proc (Param_Parent_Type (Specific_A));   
+      if Specific_A.Last_Call /= Parent_Outer then
+         Report.Failed ("Type conversion and parameter passing: tag not " &
+                        "preserved in call to primitive operation with "  &
+                        "specific operand");
+      end if;
+
+      C390007_0.ClassWide_Proc (Param_Parent_Type (Specific_B));
+      if Specific_B.Last_Call /= Derived_Inner then
+         Report.Failed ("Type conversion and parameter passing: tag not " &
+                        "preserved in call to class-wide operation with "  &
+                        "specific operand");
+      end if;
+
+   end Type_Conversion_And_Parameter_Passing_Subtest;
+
+
+   Report.Result;
+
+end C390007;

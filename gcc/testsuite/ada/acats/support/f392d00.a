@@ -1,0 +1,103 @@
+-- F392D00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation declares parent tagged types and subprograms for use 
+--      in tests covering dispatching operations.
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package F392D00 is
+
+   type Depth_Of_Field is range 5 .. 100;  
+   type Shutter_Speed  is (One, Two_Fifty, Four_Hundred, Thousand);
+
+   type Remote_Camera is tagged record
+      DOF    : Depth_Of_Field := 10;
+      Shutter: Shutter_Speed  := One;
+   end record;
+
+   -- ...Other declarations.
+
+   procedure Focus (C     : in out Remote_Camera;
+                    Depth : in     Depth_Of_Field);
+
+   procedure Self_Test (C: in out Remote_Camera'Class);
+
+   -- ...Other operations.
+
+private
+
+   procedure Set_Shutter_Speed (C     : in out Remote_Camera;
+                                Speed : in     Shutter_Speed);
+
+   -- For the basic remote camera, shutter speed might be set as a function of
+   -- focus perhaps, thus it is declared as a private operation (usable
+   -- only internally within the abstraction).
+
+
+end F392D00;
+
+
+     --==================================================================--
+
+
+package body F392D00 is
+
+   procedure Focus (C     : in out Remote_Camera;
+                    Depth : in     Depth_Of_Field) is
+   begin
+      -- Artificial for testing purposes.
+      C.DOF := 46;
+   end Focus;
+
+   -----------------------------------------------------------
+   procedure Set_Shutter_Speed (C     : in out Remote_Camera;
+                                Speed : in     Shutter_Speed) is
+   begin
+      -- Artificial for testing purposes.
+      C.Shutter := Thousand;
+   end Set_Shutter_Speed;
+
+   -----------------------------------------------------------
+   procedure Self_Test (C: in out Remote_Camera'Class) is
+      TC_Dummy_Depth : constant Depth_Of_Field := 23;
+      TC_Dummy_Speed : constant Shutter_Speed  := Four_Hundred;
+   begin
+
+      -- Test focus at various depths:
+      Focus(C, TC_Dummy_Depth);
+      -- ...Additional calls to Focus.
+
+      -- Test various shutter speeds:
+      Set_Shutter_Speed(C, TC_Dummy_Speed);
+      -- ...Additional calls to Set_Shutter_Speed.
+
+   end Self_Test;
+
+end F392D00;

@@ -1,0 +1,512 @@
+-- C392010.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--     Check that a subprogram dispatches correctly with a controlling
+--     access parameter. Check that a subprogram dispatches correctly
+--     when it has access parameters that are not controlling.
+--     Check with and without default expressions.
+--
+-- TEST DESCRIPTION:
+--      The three packages define layers of tagged types.  The root tagged
+--      type contains a character value used to check that the right object
+--      got passed to the right routine.  Each subprogram has a unique
+--      TCTouch tag, upper case values are used for subprograms, lower case
+--      values are used for object values.
+--
+--      Notes on style: the "tagged" comment lines --I and --A represent
+--      commentary about what gets inherited and what becomes abstract,
+--      respectively.  The author felt these to be necessary with this test
+--      to reduce some of the additional complexities.
+--
+--3.9.2(16,17,18,20);6.0
+--
+-- CHANGE HISTORY:
+--      22 SEP 95   SAIC   Initial version
+--      22 APR 96   SAIC   Revised for 2.1
+--      05 JAN 98   EDS    Change return type of C392010_2.Func_W_Non to make
+--                         it override.
+--      21 JUN 00   RLB    Changed expected result to reflect the appropriate
+--                         value of the default expression.
+--      20 JUL 00   RLB    Removed entire call pending resolution by the ARG.
+
+--!
+
+----------------------------------------------------------------- C392010_0
+
+package C392010_0 is
+
+  -- define a root tagged type
+  type Tagtype_Level_0 is tagged record
+    Ch_Item : Character;
+  end record;
+
+  type Access_Procedure is access procedure( P: Tagtype_Level_0 );
+
+  procedure Proc_1( P: Tagtype_Level_0 );
+
+  procedure Proc_2( P: Tagtype_Level_0 );
+
+  function A_Default_Value return Tagtype_Level_0;
+
+  procedure Proc_w_Ap_and_Cp( AP : Access_Procedure;
+                              Cp : Tagtype_Level_0 );
+    -- has both access procedure and controlling parameter
+
+  procedure Proc_w_Ap_and_Cp_w_Def( AP : Access_Procedure := Proc_2'Access;
+                                    Cp : Tagtype_Level_0
+                                       := A_Default_Value );   ------------ z
+    -- has both access procedure and controlling parameter with defaults
+
+  -- for the objective:
+--     Check that access parameters may be controlling.
+
+  procedure Proc_w_Cp_Ap( Cp_Ap : access Tagtype_Level_0 );
+    -- has access parameter that is controlling
+
+  function Func_w_Cp_Ap_and_Cr( Cp_Ap : access Tagtype_Level_0 )
+           return Tagtype_Level_0;
+    -- has access parameter that is controlling, and controlling result
+
+  Level_0_Global_Object : aliased Tagtype_Level_0
+                        := ( Ch_Item => 'a' );  ---------------------------- a
+
+end C392010_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with TCTouch;
+package body C392010_0 is
+
+  procedure Proc_1( P: Tagtype_Level_0 ) is
+  begin
+    TCTouch.Touch('A');  --------------------------------------------------- A
+    TCTouch.Touch(P.Ch_Item);  -- depends on the value passed -------------- ?
+  end Proc_1;
+
+  procedure Proc_2( P: Tagtype_Level_0 ) is
+  begin
+    TCTouch.Touch('B');  --------------------------------------------------- B
+    TCTouch.Touch(P.Ch_Item);  -- depends on the value passed -------------- ?
+  end Proc_2;
+
+  function A_Default_Value return Tagtype_Level_0 is
+  begin
+    return (Ch_Item => 'z');  ---------------------------------------------- z
+  end A_Default_Value;
+
+  procedure Proc_w_Ap_and_Cp( Ap : Access_Procedure;
+                              Cp : Tagtype_Level_0 ) is
+  begin
+    TCTouch.Touch('C');  --------------------------------------------------- C
+    Ap.all( Cp );
+  end Proc_w_Ap_and_Cp;
+
+  procedure Proc_w_Ap_and_Cp_w_Def( AP : Access_Procedure := Proc_2'Access;
+                                    Cp : Tagtype_Level_0
+                                       := A_Default_Value ) is
+  begin
+    TCTouch.Touch('D');  --------------------------------------------------- D
+    Ap.all( Cp );
+  end Proc_w_Ap_and_Cp_w_Def;
+
+  procedure Proc_w_Cp_Ap( Cp_Ap : access Tagtype_Level_0 ) is
+  begin
+    TCTouch.Touch('E');  --------------------------------------------------- E
+    TCTouch.Touch(Cp_Ap.Ch_Item);  -- depends on the value passed ---------- ?
+  end Proc_w_Cp_Ap;
+
+  function Func_w_Cp_Ap_and_Cr( Cp_Ap : access Tagtype_Level_0 )
+           return Tagtype_Level_0 is
+  begin
+    TCTouch.Touch('F');  --------------------------------------------------- F
+    TCTouch.Touch(Cp_Ap.Ch_Item);  -- depends on the value passed ---------- ?
+    return ( Ch_Item => 'b' );  -------------------------------------------- b
+  end Func_w_Cp_Ap_and_Cr;
+
+end C392010_0;
+
+----------------------------------------------------------------- C392010_1
+
+with C392010_0;
+package C392010_1 is
+
+  type Tagtype_Level_1 is new C392010_0.Tagtype_Level_0 with record
+    Int_Item : Integer;
+  end record;
+
+  type Access_Tagtype_Level_1 is access all Tagtype_Level_1'Class;
+
+  -- the following procedures are inherited by the above declaration:
+  --I   procedure Proc_1( P: Tagtype_Level_1 );
+  --I
+  --I   procedure Proc_2( P: Tagtype_Level_1 );
+  --I
+  --I   procedure Proc_w_Ap_and_Cp( AP : C392010_0.Access_Procedure;
+  --I                               Cp : Tagtype_Level_1 );
+  --I
+  --I   procedure Proc_w_Ap_and_Cp_w_Def
+  --I             ( AP : C392010_0.Access_Procedure := Proc_2'Access;
+  --I               Cp : Tagtype_Level_1 := A_Default_Value );
+  --I
+  --I   procedure Proc_w_Cp_Ap( Cp_Ap : access Tagtype_Level_1 );
+  --I
+
+  -- the following functions become abstract due to the above declaration:
+  --A   function A_Default_Value return Tagtype_Level_1;
+  --A
+  --A   function Func_w_Cp_Ap_and_Cr( Cp_Ap : access Tagtype_Level_1 )
+  --A            return Tagtype_Level_1;
+
+  -- so, in the interest of testing dispatching, we override them all:
+     -- except Proc_1 and Proc_2
+
+  procedure Proc_w_Ap_and_Cp( AP : C392010_0.Access_Procedure;
+                              Cp : Tagtype_Level_1 );
+
+  function A_Default_Value return Tagtype_Level_1;
+
+  procedure Proc_w_Ap_and_Cp_w_Def(
+              AP : C392010_0.Access_Procedure := C392010_0.Proc_2'Access;
+              Cp : Tagtype_Level_1 := A_Default_Value );
+
+ procedure Proc_w_Cp_Ap( Cp_Ap : access Tagtype_Level_1 );
+
+  function Func_w_Cp_Ap_and_Cr( Cp_Ap : access Tagtype_Level_1 )
+           return Tagtype_Level_1;
+
+  -- to test the objective:
+--     Check that a subprogram dispatches correctly when it has
+--     access parameters that are not controlling.
+
+  procedure Proc_w_Non( Cp_Ap    : access Tagtype_Level_1;
+                        NonCp_Ap : access C392010_0.Tagtype_Level_0
+                             := C392010_0.Level_0_Global_Object'Access );
+
+  function Func_w_Non( Cp_Ap : access Tagtype_Level_1;
+                    NonCp_Ap : access C392010_0.Tagtype_Level_0
+                             := C392010_0.Level_0_Global_Object'Access )
+           return Access_Tagtype_Level_1;
+
+  Level_1_Global_Object : aliased Tagtype_Level_1
+                        := ( Int_Item => 0,
+                             Ch_Item  => 'c' );  --------------------------- c
+
+end C392010_1;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with TCTouch;
+package body C392010_1 is
+
+  procedure Proc_w_Ap_and_Cp( AP : C392010_0.Access_Procedure;
+                              Cp : Tagtype_Level_1 ) is
+  begin
+    TCTouch.Touch('G');  --------------------------------------------------- G
+    Ap.All( C392010_0.Tagtype_Level_0( Cp ) );
+  end Proc_w_Ap_and_Cp;
+
+  procedure Proc_w_Ap_and_Cp_w_Def(
+              AP : C392010_0.Access_Procedure := C392010_0.Proc_2'Access;
+              Cp : Tagtype_Level_1 := A_Default_Value )
+  is
+  begin
+    TCTouch.Touch('H');  --------------------------------------------------- H
+    Ap.All( C392010_0.Tagtype_Level_0( Cp ) );
+  end Proc_w_Ap_and_Cp_w_Def;
+
+  procedure Proc_w_Cp_Ap( Cp_Ap : access Tagtype_Level_1 ) is
+  begin
+    TCTouch.Touch('I');  --------------------------------------------------- I
+    TCTouch.Touch(Cp_Ap.Ch_Item);  -- depends on the value passed ---------- ?
+  end Proc_w_Cp_Ap;
+
+  function A_Default_Value return Tagtype_Level_1 is
+  begin
+    return ( Int_Item => 0, Ch_Item  => 'y' );  ---------------------------- y
+  end A_Default_Value;
+
+  function Func_w_Cp_Ap_and_Cr( Cp_Ap : access Tagtype_Level_1 )
+           return Tagtype_Level_1 is
+  begin
+    TCTouch.Touch('J');  --------------------------------------------------- J
+    TCTouch.Touch(Cp_Ap.Ch_Item);  -- depends on the value passed ---------- ?
+    return ( Int_Item => 2, Ch_Item => 'd' );  ----------------------------- d
+  end Func_w_Cp_Ap_and_Cr;
+
+  procedure Proc_w_Non( Cp_Ap    : access Tagtype_Level_1;
+                        NonCp_Ap : access C392010_0.Tagtype_Level_0
+                          := C392010_0.Level_0_Global_Object'Access ) is
+  begin
+    TCTouch.Touch('K');  --------------------------------------------------- K
+    TCTouch.Touch(Cp_Ap.Ch_Item);  ----- depends on the value passed ------- ?
+    TCTouch.Touch(NonCp_Ap.Ch_Item);  -- depends on the value passed ------- ?
+  end Proc_w_Non;
+
+  Own_Item : aliased Tagtype_Level_1 := ( Int_Item => 3, Ch_Item => 'e' );
+
+  function Func_w_Non( Cp_Ap : access Tagtype_Level_1;
+                    NonCp_Ap : access C392010_0.Tagtype_Level_0
+                             := C392010_0.Level_0_Global_Object'Access )
+           return Access_Tagtype_Level_1 is
+  begin
+    TCTouch.Touch('L');  --------------------------------------------------- L
+    TCTouch.Touch(Cp_Ap.Ch_Item);  ----- depends on the value passed ------- ?
+    TCTouch.Touch(NonCp_Ap.Ch_Item);  -- depends on the value passed ------- ?
+    return Own_Item'Access;  ----------------------------------------------- e
+  end Func_w_Non;
+
+end C392010_1;
+
+
+
+----------------------------------------------------------------- C392010_2
+
+with C392010_0;
+with C392010_1;
+package C392010_2 is
+
+  Lev2_Level_0_Global_Object : aliased C392010_0.Tagtype_Level_0
+                        := ( Ch_Item => 'f' );  ---------------------------- f
+
+  type Tagtype_Level_2 is new C392010_1.Tagtype_Level_1 with record
+    Another_Int_Item : Integer;
+  end record;
+
+  type Access_Tagtype_Level_2 is access all Tagtype_Level_2;
+
+  -- the following procedures are inherited by the above declaration:
+  --I   procedure Proc_1( P: Tagtype_Level_2 );
+  --I
+  --I   procedure Proc_2( P: Tagtype_Level_2 );
+  --I
+  --I   procedure Proc_w_Ap_and_Cp( AP : C392010_0.Access_Procedure;
+  --I                               Cp : Tagtype_Level_2 );
+  --I
+  --I   procedure Proc_w_Ap_and_Cp_w_Def
+  --I             (AP: C392010_0.Access_Procedure := C392010_0. Proc_2'Access;
+  --I              CP: Tagtype_Level_2 := A_Default_Value );
+  --I
+  --I   procedure Proc_w_Cp_Ap( Cp_Ap : access Tagtype_Level_2 );
+  --I
+  --I   procedure Proc_w_Non( Cp_Ap    : access Tagtype_Level_2;
+  --I                         NonCp_Ap : access C392010_0.Tagtype_Level_0
+  --I                           := C392010_0.Level_0_Global_Object'Access );
+
+  -- the following functions become abstract due to the above declaration:
+  --A   function Func_w_Cp_Ap_and_Cr( Cp_Ap : access Tagtype_Level_2 )
+  --A            return Tagtype_Level_2;
+  --A
+  --A   function A_Default_Value
+  --A            return Access_Tagtype_Level_2;
+
+  -- so we override the interesting ones to check the objective:
+--     Check that a subprogram with parameters of distinct tagged types may
+--     be primitive for only one type (i.e. the other tagged types must be
+--     declared in other packages).  Check that the subprogram does not
+--     dispatch for the other type(s).
+
+  procedure Proc_w_Non( Cp_Ap    : access Tagtype_Level_2;
+                        NonCp_Ap : access C392010_0.Tagtype_Level_0
+                                   := Lev2_Level_0_Global_Object'Access );
+
+  function Func_w_Non( Cp_Ap : access Tagtype_Level_2;
+                    NonCp_Ap : access C392010_0.Tagtype_Level_0
+                                      := Lev2_Level_0_Global_Object'Access )
+           return C392010_1.Access_Tagtype_Level_1;
+
+  -- and override the other abstract functions
+  function Func_w_Cp_Ap_and_Cr( Cp_Ap : access Tagtype_Level_2 )
+           return Tagtype_Level_2;
+
+  function A_Default_Value return Tagtype_Level_2;
+
+end C392010_2;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with TCTouch;
+with Report;
+package body C392010_2 is
+
+  procedure Proc_w_Non( Cp_Ap    : access Tagtype_Level_2;
+                          NonCp_Ap : access C392010_0.Tagtype_Level_0
+                                   := Lev2_Level_0_Global_Object'Access ) is
+  begin
+    TCTouch.Touch('M');  --------------------------------------------------- M
+    TCTouch.Touch(Cp_Ap.Ch_Item);  ----- depends on the value passed ------- ?
+    TCTouch.Touch(NonCp_Ap.Ch_Item);  -- depends on the value passed ------- ?
+  end Proc_w_Non;
+
+  function A_Default_Value return Tagtype_Level_2 is
+  begin
+     return ( Another_Int_Item | Int_Item => 0, Ch_Item  => 'x' );  -------- x
+  end A_Default_Value;
+
+  Own : aliased Tagtype_Level_2
+                 := ( Another_Int_Item | Int_Item => 4, Ch_Item => 'g' );
+
+  function Func_w_Non( Cp_Ap : access Tagtype_Level_2;
+                             NonCp_Ap : access C392010_0.Tagtype_Level_0
+                                      := Lev2_Level_0_Global_Object'Access )
+           return C392010_1.Access_Tagtype_Level_1 is
+  begin
+    TCTouch.Touch('N');  --------------------------------------------------- N
+    TCTouch.Touch(Cp_Ap.Ch_Item);  ----- depends on the value passed ------- ?
+    TCTouch.Touch(NonCp_Ap.Ch_Item);  -- depends on the value passed ------- ?
+    return Own'Access;  ---------------------------------------------------- g
+  end Func_w_Non;
+
+  function Func_w_Cp_Ap_and_Cr( Cp_Ap : access Tagtype_Level_2 )
+           return Tagtype_Level_2 is
+  begin
+    TCTouch.Touch('P');  --------------------------------------------------- P
+    TCTouch.Touch(Cp_Ap.Ch_Item);  ----- depends on the value passed ------- ?
+    return ( Another_Int_Item | Int_Item => 5, Ch_Item => 'h' );  ---------- h
+ end Func_w_Cp_Ap_and_Cr;
+
+end C392010_2;
+
+
+
+------------------------------------------------------------------- C392010
+
+with Report;
+with TCTouch;
+with C392010_0, C392010_1, C392010_2;
+
+procedure C392010 is
+
+  type Access_Class_0 is access all C392010_0.Tagtype_Level_0'Class;
+
+  -- define an array of class-wide pointers:
+  type Zero_Dispatch_List is array(Natural range <>) of Access_Class_0;
+
+  Item_0 : aliased C392010_0.Tagtype_Level_0 := ( Ch_Item  => 'k' );  ------ k
+  Item_1 : aliased C392010_1.Tagtype_Level_1 := ( Ch_Item  => 'm',    ------ m
+                                                  Int_Item => 1 );
+  Item_2 : aliased C392010_2.Tagtype_Level_2 := ( Ch_Item  => 'n',    ------ n
+                                                  Int_Item => 1,
+                                                  Another_Int_Item => 1 );
+
+  Z: Zero_Dispatch_List(1..3) := (Item_0'Access,Item_1'Access,Item_2'Access);
+
+  procedure Subtest_1( Items: Zero_Dispatch_List ) is
+    -- there is little difference between the actions for _1 and _2 in
+    -- this subtest due to the nature of _2 inheriting most operations
+    --
+    -- this subtest checks operations available to Level_0'Class
+  begin
+    for I in Items'Range loop
+
+      C392010_0.Proc_w_Ap_and_Cp( C392010_0.Proc_1'Access, Items(I).all );
+      -- CAk, GAm, GAn
+      -- actual is class-wide, operation should dispatch
+
+      case I is  -- use defaults
+        when 1 => C392010_0.Proc_w_Ap_and_Cp_w_Def;
+                  -- DBz
+        when 2 => C392010_1.Proc_w_Ap_and_Cp_w_Def;
+                  -- HBy
+        when 3 => null; -- Removed following pending resolution by ARG
+                  -- (see AI-00239):
+                  -- C392010_2.Proc_w_Ap_and_Cp_w_Def;
+                  -- HBx
+        when others => Report.Failed("Unexpected loop value");
+      end case;
+
+      C392010_0.Proc_w_Ap_and_Cp_w_Def   -- override defaults
+                ( C392010_0.Proc_1'Access, Items(I).all );
+      -- DAk, HAm, HAn
+
+      C392010_0.Proc_w_Cp_Ap( Items(I) );
+      -- Ek, Im, In
+
+      -- function return value is controlling for procedure call
+      C392010_0.Proc_w_Ap_and_Cp_w_Def( C392010_0.Proc_1'Access,
+                                  C392010_0.Func_w_Cp_Ap_and_Cr( Items(I) ) );
+      -- FkDAb, JmHAd, PnHAh
+      -- note that the function evaluates first
+
+    end loop;
+  end Subtest_1;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+  type Access_Class_1 is access all C392010_1.Tagtype_Level_1'Class;
+
+  type One_Dispatch_List is array(Natural range <>) of Access_Class_1;
+
+  Object_1 : aliased C392010_1.Tagtype_Level_1 := ( Ch_Item  => 'p',   ----- p
+                                                    Int_Item => 1 );
+  Object_2 : aliased C392010_2.Tagtype_Level_2 := ( Ch_Item  => 'q',   ----- q
+                                                    Int_Item => 1,
+                                            Another_Int_Item => 1 );
+
+  D: One_Dispatch_List(1..2) := (Object_1'Access, Object_2'Access);
+
+  procedure Subtest_2( Items: One_Dispatch_List ) is
+    -- this subtest checks operations available to Level_1'Class,
+    -- specifically those operations that are not testable in subtest_1,
+    -- the operations with parameters of the two tagged type objects.
+  begin
+    for I in Items'Range loop
+
+       C392010_1.Proc_w_Non(                               -- t_1,   t_2
+         C392010_1.Func_w_Non( Items(I),
+           C392010_0.Tagtype_Level_0(Z(I).all)'Access ),   -- Lpk    Nqm
+           C392010_0.Tagtype_Level_0(Z(I+1).all)'Access ); -- Kem    Mgn
+
+    end loop;
+  end Subtest_2;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C392010", "Check that a subprogram dispatches correctly " &
+                          "with a controlling access parameter. " &
+                          "Check that a subprogram dispatches correctly " &
+                          "when it has access parameters that are not " &
+                          "controlling. Check with and without default " &
+                          "expressions" );
+
+  Subtest_1( Z );
+
+  -- Original result:
+  --TCTouch.Validate( "CAkDBzDAkEkFkDAb"
+  --                & "GAmHByHAmImJmHAd"
+  --                & "GAnHBxHAnInPnHAh", "Subtest 1" );
+
+  -- Result pending resultion of AI-239:
+  TCTouch.Validate( "CAkDBzDAkEkFkDAb"
+                  & "GAmHByHAmImJmHAd"
+                  & "GAnHAnInPnHAh", "Subtest 1" );
+
+  Subtest_2( D );
+
+  TCTouch.Validate( "LpkKem" & "NqmMgn", "Subtest 2" );
+
+  Report.Result;
+
+end C392010;

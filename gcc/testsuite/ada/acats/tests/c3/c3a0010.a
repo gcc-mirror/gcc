@@ -1,0 +1,158 @@
+-- C3A0010.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that an access-to-subprogram type in a generic instance may be
+--      used to declare access-to-subprogram objects which invoke subprograms
+--      in the instance.
+--
+-- TEST DESCRIPTION:
+--      Declare a numeric type in the visible part of a generic package.
+--      Declare two different math procedures that can be referred to by 
+--      the access to procedure type.  
+--
+--      In the main program, instantiate the generic.  Declare an access 
+--      to procedure type.  Call each procedure indirectly by dereferencing 
+--      the access value.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      05 APR 96   SAIC    Header correction for 2.1
+--
+--!
+
+generic
+   type Real_Num is digits <>;
+
+package C3A0010_0 is
+
+   -- Type accesses to any math procedure
+   type Math_Procedure_Ptr is access procedure   
+       (First_Num, Second_Num : in  Real_Num;
+        Result_Num            : out Real_Num);
+
+   procedure Add      (First_Num, Second_Num : in  Real_Num;
+                       Result_Num            : out Real_Num);
+
+   procedure Subtract (First_Num, Second_Num : in  Real_Num;
+                       Result_Num            : out Real_Num);
+
+end C3A0010_0;
+
+
+-----------------------------------------------------------------------------
+
+
+package body C3A0010_0 is
+
+   procedure Add (First_Num, Second_Num : in  Real_Num;
+                  Result_Num            : out Real_Num) is
+   begin
+      Result_Num := First_Num + Second_Num;
+   end Add;
+
+
+   procedure Subtract (First_Num, Second_Num : in  Real_Num;
+                       Result_Num            : out Real_Num) is
+   begin
+      Result_Num := First_Num - Second_Num;
+   end Subtract;
+
+end C3A0010_0;
+
+-----------------------------------------------------------------------------
+
+with Report;
+with C3A0010_0; 
+
+procedure C3A0010 is
+
+   type Real is digits 2;
+
+   subtype Math_Float is Real range -10.0 .. 10.0;
+
+   package Math_Pk is new C3A0010_0 (Real_Num => Math_Float);
+
+   Math_Access : Math_Pk.Math_Procedure_Ptr;
+
+   Total_Num   : Math_Float := 0.0;
+   First_Num   : Math_Float := 1.0;
+   Second_Num  : Math_Float := 2.0;
+
+   procedure Max( A_Num, B_Num: in Math_Float; Result : out Math_Float ) is
+   begin
+      if A_Num > B_Num then
+        Result := A_Num;
+      else
+        Result := B_Num;
+      end if;
+   end Max;
+
+   procedure Due_Process( Process: Math_Pk.Math_Procedure_Ptr ) is
+   begin
+     Process(First_Num, Second_Num, Total_Num);
+   end Due_Process;
+
+begin
+
+   Report.Test ("C3A0010", "Check that an access-to-subprogram type in a "
+                         & "generic instance may be used to declare "
+                         & "access-to-subprogram objects which invoke "
+                         & "subprograms in the instance");
+
+-- Check for correct defaulting
+   if Math_Pk."/="( Math_Access, null) then
+     Report.Failed("subprogram access type object not initialized to null");
+   end if;
+
+   Math_Access := Math_Pk.Add'Access;
+
+   -- Invoking Add procedure designated by access value
+   Due_Process( Math_Access );
+
+   If Total_Num /= 3.0 then
+      Report.Failed ("Incorrect Add result");
+   end if;
+
+   Math_Access := Math_Pk.Subtract'Access;
+
+   Due_Process( Math_Access );
+
+   If Total_Num /= -1.0 then
+      Report.Failed ("Incorrect Subtract result");
+   end if;
+
+   Math_Access := Max'Access;
+
+   Due_Process( Math_Access );
+
+   If Total_Num /= 2.0 then
+      Report.Failed ("Incorrect Max result");
+   end if;
+
+   Report.Result;
+
+end C3A0010;

@@ -1,0 +1,153 @@
+-- C930001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- TEST OBJECTIVE:
+--      Check when a dependent task and its master both
+--      terminate as a result of a terminate alternative that
+--      finalization is performed and that the finalization is
+--      performed in the proper order.
+--
+-- TEST DESCRIPTION:
+--      A controlled type with finalization is used to determine
+--      the order in which finalization occurs.  The finalization
+--      procedure records the identity of the object being
+--      finalized.
+--      Two tasks, one nested inside the other, both contain 
+--      objects of the above finalization type.  These tasks
+--      cooperatively terminate so the termination and finalization
+--      order can be noted.
+--
+--
+-- CHANGE HISTORY:
+--      08 Jan 96   SAIC    ACVC 2.1
+--      09 May 96   SAIC    Addressed Reviewer comments.
+--
+--!
+
+
+with Ada.Finalization;
+package C930001_0 is
+    Verbose : constant Boolean := False;
+
+    type Ids is range 0..10;
+    Finalization_Order : array (Ids) of Ids := (Ids => 0);
+    Finalization_Cnt : Ids := 0;
+
+    protected Note is
+       -- serializes concurrent access to Finalization_* above
+       procedure Done (Id : Ids);
+    end Note;
+
+    -- Objects of the following type are used to note the order in
+    -- which finalization occurs.
+    type Has_Finalization is new Ada.Finalization.Limited_Controlled with
+          record
+             Id : Ids;
+          end record;
+    procedure Finalize (Object : in out Has_Finalization);
+end C930001_0;
+
+
+with Report;
+package body C930001_0 is
+
+    protected body Note is
+        procedure Done (Id : Ids) is
+        begin
+            Finalization_Cnt := Finalization_Cnt + 1;
+            Finalization_Order (Finalization_Cnt) := Id;
+        end Done;
+    end Note;
+
+    procedure Finalize (Object : in out Has_Finalization) is
+    begin
+        Note.Done (Object.Id);
+        if Verbose then
+            Report.Comment ("in Finalize for" & Ids'Image (Object.Id));
+        end if;
+    end Finalize;
+end C930001_0;
+
+
+with Report;
+with ImpDef;
+with C930001_0;   use C930001_0;
+procedure C930001 is
+begin
+ 
+    Report.Test ("C930001", "Check that dependent tasks are terminated" &
+                            " before the remaining finalization");
+
+    declare
+        task Level_1;
+        task body Level_1 is
+            V1a : C930001_0.Has_Finalization;        -------> 4
+            task Level_2 is
+                entry Not_Taken;
+            end Level_2;
+            task body Level_2 is
+                V2 : C930001_0.Has_Finalization;     -------> 2
+            begin
+                V2.Id := 2;
+                C930001_0.Note.Done (1);             -------> 1
+                select
+                    accept Not_Taken;
+                or
+                    terminate;
+                    -- cooperative termination at this point of
+                    -- both tasks
+                end select;
+            end Level_2;
+
+            -- 7.6.1(11) requires that V1b be finalized before V1a
+            V1b : C930001_0.Has_Finalization;        -------> 3
+        begin
+            V1a.Id := 4;
+            V1b.Id := 3;
+        end Level_1;
+    begin  -- declare
+        while not Level_1'Terminated loop
+             delay ImpDef.Switch_To_New_Task;
+        end loop;
+        C930001_0.Note.Done (5);                     -------> 5
+        
+        -- now check the order
+        for I in Ids range 1..5 loop
+            if Verbose then
+                Report.Comment (Ids'Image (I) & 
+                       Ids'Image (Finalization_Order (I)));
+            end if;
+            if Finalization_Order (I) /= I then
+                Report.Failed ("Finalization occurred out of order" &
+                   " expected:" &
+                   Ids'Image (I) &
+                   " actual:" &
+                   Ids'Image (Finalization_Order (I)));
+            end if;
+        end loop;
+    end;
+
+    Report.Result;
+end C930001;

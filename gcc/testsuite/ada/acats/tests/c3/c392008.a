@@ -1,0 +1,401 @@
+-- C392008.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the use of a class-wide formal parameter allows for the 
+--      proper dispatching of objects to the appropriate implementation of 
+--      a primitive operation.  Check this for the case where the root tagged
+--      type is defined in a package and the extended type is defined in a
+--      dependent package.
+--
+-- TEST DESCRIPTION:
+--      Declare a root tagged type, and some associated primitive operations,
+--      in a visible library package.
+--      Extend the root type in another visible library package, and override 
+--      one or more primitive operations, inheriting the other primitive 
+--      operations from the root type.
+--      Derive from the extended type in yet another visible library package, 
+--      again overriding some primitive operations and inheriting others 
+--      (including some that the parent inherited).
+--      Define subprograms with class-wide parameters, inside of which is a 
+--      call on a dispatching primitive operation.  These primitive
+--      operations modify the objects of the specific class passed as actuals
+--      to the class-wide formal parameter (class-wide formal parameter has 
+--      mode IN OUT).
+--     
+-- The following hierarchy of tagged types and primitive operations is 
+-- utilized in this test:
+--
+--   package Bank
+--      type Account (root)
+--            |
+--            | Operations
+--            |     proc Deposit
+--            |     proc Withdrawal
+--            |     func Balance        
+--            |     proc Service_Charge 
+--            |     proc Add_Interest   
+--            |     proc Open
+--            |
+--   package Checking
+--      type Account (extended from Bank.Account)
+--            |
+--            | Operations
+--            |     proc Deposit         (inherited)
+--            |     proc Withdrawal      (inherited)
+--            |     func Balance         (inherited)
+--            |     proc Service_Charge  (inherited)
+--            |     proc Add_Interest    (inherited)
+--            |     proc Open            (overridden)
+--            |
+--   package Interest_Checking
+--      type Account (extended from Checking.Account)
+--            |
+--            | Operations
+--            |     proc Deposit         (inherited twice - Bank.Acct.)
+--            |     proc Withdrawal      (inherited twice - Bank.Acct.)
+--            |     func Balance         (inherited twice - Bank.Acct.)
+--            |     proc Service_Charge  (inherited twice - Bank.Acct.)
+--            |     proc Add_Interest    (overridden)
+--            |     proc Open            (overridden)
+--            |   
+--
+-- In this test, we are concerned with the following selection of dispatching
+-- calls, accomplished with the use of a Bank.Account'Class IN OUT formal
+-- parameter :
+--
+--                \ Type
+--        Prim. Op \  Bank.Account  Checking.Account Interest_Checking.Account
+--                  \---------------------------------------------------------
+
+--   Service_Charge |      X                X                 X
+--   Add_Interest   |      X                X                 X
+--   Open           |      X                X                 X
+--
+--
+--
+-- The location of the declaration of the root and derivation of extended
+-- types will be varied over a series of tests.  Locations of declaration
+-- and derivation for a particular test are marked with an asterisk (*).
+--
+-- Root type:
+--       
+--    *  Declared in package.
+--       Declared in generic package.
+--
+-- Extended types:
+--
+--       Derived in parent location.
+--       Derived in a nested package.
+--       Derived in a nested subprogram.
+--       Derived in a nested generic package.
+--    *  Derived in a separate package.
+--       Derived in a separate visible child package.
+--       Derived in a separate private child package.
+--
+-- Primitive Operations:
+--
+--    *  Procedures with same parameter profile.
+--       Procedures with different parameter profile.
+--       Functions with same parameter profile.
+--       Functions with different parameter profile.
+--       Mixture of Procedures and Functions.
+--
+--
+-- TEST FILES:
+--      This test depends on the following foundation code:
+--
+--         C392008_0.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      20 Nov 95   SAIC    C392B04 became C392008 for ACVC 2.0.1
+--
+--!
+
+----------------------------------------------------------------- C392008_0
+
+package C392008_0 is           -- package Bank
+
+  type Dollar_Amount is range -30_000..30_000; 
+ 
+   type Account is tagged
+      record
+        Current_Balance: Dollar_Amount;
+      end record;
+
+   -- Primitive operations.
+
+   procedure Deposit        (A : in out Account; 
+                             X : in     Dollar_Amount);
+   procedure Withdrawal     (A : in out Account; 
+                             X : in     Dollar_Amount);
+   function  Balance        (A : in     Account) return Dollar_Amount;
+   procedure Service_Charge (A : in out Account);
+   procedure Add_Interest   (A : in out Account);
+   procedure Open           (A : in out Account);
+
+end C392008_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+package body C392008_0 is
+
+   -- Primitive operations for type Account.
+
+   procedure Deposit (A : in out Account; 
+                      X : in     Dollar_Amount) is
+   begin
+      A.Current_Balance := A.Current_Balance + X;
+   end Deposit;
+
+   procedure Withdrawal(A : in out Account; 
+                        X : in     Dollar_Amount) is
+   begin
+      A.Current_Balance := A.Current_Balance - X;
+   end Withdrawal;
+
+   function  Balance (A : in     Account) return Dollar_Amount is
+   begin
+      return (A.Current_Balance);
+   end Balance;
+
+   procedure Service_Charge (A : in out Account) is
+   begin
+      A.Current_Balance := A.Current_Balance - 5_00;
+   end Service_Charge;
+
+   procedure Add_Interest (A : in out Account) is
+      Interest_On_Account : Dollar_Amount := 0_00;
+   begin
+      A.Current_Balance := A.Current_Balance + Interest_On_Account;
+   end Add_Interest;
+
+   procedure Open (A : in out Account) is
+      Initial_Deposit : Dollar_Amount := 10_00;
+   begin
+      A.Current_Balance := Initial_Deposit;
+   end Open;
+
+end C392008_0;
+
+----------------------------------------------------------------- C392008_1
+
+with C392008_0;              -- package Bank
+
+package C392008_1 is      -- package Checking
+
+   package Bank renames C392008_0;
+
+   type Account is new Bank.Account with 
+      record
+         Overdraft_Fee : Bank.Dollar_Amount;
+      end record;
+
+   -- Overridden primitive operation.
+
+   procedure Open (A : in out Account);
+
+   -- Inherited primitive operations.
+   -- procedure Deposit        (A : in out Account;
+   --                           X : in     Bank.Dollar_Amount);
+   -- procedure Withdrawal     (A : in out Account;
+   --                           X : in     Bank.Dollar_Amount);
+   -- function  Balance        (A : in     Account) return Bank.Dollar_Amount;
+   -- procedure Service_Charge (A : in out Account);
+   -- procedure Add_Interest   (A : in out Account);
+
+end C392008_1;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+package body C392008_1 is
+
+   -- Overridden primitive operation.
+
+   procedure Open (A : in out Account) is
+      Check_Guarantee : Bank.Dollar_Amount := 10_00;
+      Initial_Deposit : Bank.Dollar_Amount := 20_00;
+   begin
+      A.Current_Balance := Initial_Deposit;
+      A.Overdraft_Fee   := Check_Guarantee;
+   end Open;
+
+end C392008_1;
+
+----------------------------------------------------------------- C392008_2
+
+with C392008_0;             -- with Bank;
+with C392008_1;          -- with Checking;
+
+package C392008_2 is     -- package Interest_Checking
+
+   package Bank     renames C392008_0;
+   package Checking renames C392008_1;
+
+   subtype Interest_Rate is Bank.Dollar_Amount range 0..100; -- was digits 4;
+
+   Current_Rate : Interest_Rate := 0_02;
+
+   type Account is new Checking.Account with
+      record
+         Rate : Interest_Rate;
+      end record;
+
+   -- Overridden primitive operations.
+
+   procedure Add_Interest (A : in out Account);
+   procedure Open         (A : in out Account);
+
+   -- "Twice" inherited primitive operations (from Bank.Account)
+   -- procedure Deposit        (A : in out Account;
+   --                           X : in     Bank.Dollar_Amount);
+   -- procedure Withdrawal     (A : in out Account;
+   --                           X : in     Bank.Dollar_Amount);
+   -- function  Balance        (A : in     Account) return Bank.Dollar_Amount;
+   -- procedure Service_Charge (A : in out Account);
+
+end C392008_2;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+package body C392008_2 is
+
+   -- Overridden primitive operations.
+
+   procedure Add_Interest (A : in out Account) is
+      Interest_On_Account : Bank.Dollar_Amount
+        := Bank.Dollar_Amount( Bank."*"( A.Current_Balance, A.Rate ));
+   begin
+      A.Current_Balance := Bank."+"( A.Current_Balance, Interest_On_Account);
+   end Add_Interest;
+
+   procedure Open (A : in out Account) is
+      Initial_Deposit : Bank.Dollar_Amount := 30_00;
+   begin
+      Checking.Open (Checking.Account (A));
+      A.Current_Balance := Initial_Deposit;
+      A.Rate            := Current_Rate;
+   end Open;
+
+end C392008_2;
+
+------------------------------------------------------------------- C392008
+
+with C392008_0;    use C392008_0;          -- package Bank
+with C392008_1;    use C392008_1;        -- package Checking;
+with C392008_2;    use C392008_2;        -- package Interest_Checking;
+with Report;
+
+procedure C392008 is
+
+   package Bank              renames C392008_0;
+   package Checking          renames C392008_1;
+   package Interest_Checking renames C392008_2;
+
+   B_Acct  : Bank.Account;
+   C_Acct  : Checking.Account;
+   IC_Acct : Interest_Checking.Account;
+
+   --
+   -- Define procedures with class-wide formal parameters of mode IN OUT.
+   --
+
+   -- This procedure will perform a dispatching call on the
+   -- overridden primitive operation Open.
+
+   procedure New_Account (Acct : in out Bank.Account'Class) is
+   begin
+      Open (Acct);  -- Dispatch according to tag of class-wide parameter.
+   end New_Account;
+
+   -- This procedure will perform a dispatching call on the inherited
+   -- primitive operation (for all types derived from the root Bank.Account)
+   -- Service_Charge.
+
+   procedure Apply_Service_Charge (Acct: in out Bank.Account'Class) is
+   begin
+      Service_Charge (Acct);  -- Dispatch according to tag of class-wide parm.
+   end Apply_Service_Charge;
+
+   -- This procedure will perform a dispatching call on the 
+   -- inherited/overridden primitive operation Add_Interest.
+
+   procedure Annual_Interest (Acct: in out Bank.Account'Class) is
+   begin
+      Add_Interest (Acct);  -- Dispatch according to tag of class-wide parm.
+   end Annual_Interest;
+
+begin
+
+   Report.Test ("C392008",  "Check that the use of a class-wide formal "    &
+                            "parameter allows for the proper dispatching "  &
+                            "of objects to the appropriate implementation " &
+                            "of a primitive operation");
+
+   -- Check the dispatch to primitive operations overridden for each 
+   -- extended type.
+   New_Account (B_Acct);
+   New_Account (C_Acct);
+   New_Account (IC_Acct);
+   
+   if (B_Acct.Current_Balance  /= 10_00) or
+      (C_Acct.Current_Balance  /= 20_00) or
+      (IC_Acct.Current_Balance /= 30_00) 
+   then
+      Report.Failed ("Failed dispatch to multiply overridden prim. oper.");
+   end if;
+
+
+   Annual_Interest (B_Acct);
+   Annual_Interest (C_Acct);
+   Annual_Interest (IC_Acct); -- Check the dispatch to primitive operation 
+                              -- overridden from a parent type which inherited
+                              -- the operation from the root type.  
+   if (B_Acct.Current_Balance  /= 10_00) or
+      (C_Acct.Current_Balance  /= 20_00) or
+      (IC_Acct.Current_Balance /= 90_00)
+   then
+      Report.Failed ("Failed dispatch to overridden primitive operation");
+   end if;
+
+
+   Apply_Service_Charge (Acct => B_Acct);
+   Apply_Service_Charge (Acct => C_Acct);
+   Apply_Service_Charge (Acct => IC_Acct); -- Check the dispatch to a  
+                                           -- primitive operation twice 
+                                           -- inherited from the root
+                                           -- tagged type.
+   if (B_Acct.Current_Balance  /=  5_00) or
+      (C_Acct.Current_Balance  /= 15_00) or
+      (IC_Acct.Current_Balance /= 85_00) 
+   then
+      Report.Failed ("Failed dispatch to Apply_Service_Charge");
+   end if;
+
+   Report.Result;
+
+end C392008;

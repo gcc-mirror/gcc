@@ -1,0 +1,144 @@
+-- C3A0003.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a function in a generic instance can be called using
+--      an access-to-subprogram value.
+--
+-- TEST DESCRIPTION:
+--      Declare a numeric type in the visible part of a generic package.
+--      Declare an access to function type.  Declare three different sine 
+--      functions that can be referred to by the access to function type.  
+--
+--      In the main program, instantiate the generic.  Call each function 
+--      indirectly by dereferencing the access value.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+generic
+   type Real_Num is digits <>;
+
+package C3A0003_0 is
+   
+   TC_Call_Tag : Natural := 0;
+
+   -- Type accesses to any sine function
+   type Sine_Function_Ptr is access function   
+      (Angle : in Real_Num) return Real_Num;
+
+   function Sine_Calc_Fast  (Angle : in Real_Num) return Real_Num;         
+
+   function Sine_Calc_Acc   (Angle : in Real_Num) return Real_Num;        
+
+   function Sine_Calc_Table (Angle : in Real_Num) return Real_Num;        
+
+end C3A0003_0;
+
+
+-----------------------------------------------------------------------------
+
+
+package body C3A0003_0 is
+
+   function Sine_Calc_Fast (Angle : in Real_Num) return Real_Num is
+      Sine_Num : Real_Num := 1.0;
+   begin
+      TC_Call_Tag := 1;
+      return Sine_Num;
+   end Sine_Calc_Fast;
+
+
+   function Sine_Calc_Acc (Angle : in Real_Num) return Real_Num is
+      Sine_Num : Real_Num := 0.0;
+   begin
+      TC_Call_Tag := 2;
+      return Sine_Num;
+   end Sine_Calc_Acc;
+
+
+   function Sine_Calc_Table (Angle : in Real_Num) return Real_Num is
+      Sine_Num : Real_Num := -1.0;
+   begin
+      TC_Call_Tag := 3;
+      return Sine_Num;
+   end Sine_Calc_Table;
+
+end C3A0003_0;
+
+-----------------------------------------------------------------------------
+
+with Report;
+with C3A0003_0;
+
+procedure C3A0003 is
+
+   type Real is digits 5;
+
+   Subtype Trig_Float is Real range -1.0 .. 1.0;
+
+   package Trig is new C3A0003_0 (Real_Num => Trig_Float);
+
+   Sine_Access : Trig.Sine_Function_Ptr;
+   X, Theta    : Trig_Float := 0.0;
+
+begin
+
+   Report.Test ("C3A0003", "Check that a function in a generic instance can "
+                         & "be called using an access-to-subprogram value");
+
+   Sine_Access := Trig.Sine_Calc_Fast'Access;
+
+   -- Invoking Sine function designated by access value
+   X := Sine_Access.all(Theta);
+
+   If Trig.TC_Call_Tag /= 1 then
+      Report.Failed ("Incorrect Sine_Calc_Fast result");
+   end if;
+
+   Sine_Access := Trig.Sine_Calc_Acc'Access;
+
+   -- Invoking Sine function designated by access value
+   X := Sine_Access.all(Theta);
+
+   If Trig.TC_Call_Tag /= 2 then
+      Report.Failed ("Incorrect Sine_Calc_Acc result");
+   end if;
+
+   Sine_Access := Trig.Sine_Calc_Table'Access;
+
+   -- Invoking Sine function designated by access value
+   X := Sine_Access.all(Theta);
+
+   If Trig.TC_Call_Tag /= 3 then
+      Report.Failed ("Incorrect Sine_Calc_Table result");
+   end if;
+
+   Report.Result;
+
+end C3A0003;

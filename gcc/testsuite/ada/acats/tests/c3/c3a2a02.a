@@ -1,0 +1,396 @@
+-- C3A2A02.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that, for X'Access of a general access type A, Program_Error is
+--      raised if the accessibility level of X is deeper than that of A.
+--      Check for cases where X'Access occurs in an instance body, and A
+--      is a type either declared inside the instance, or declared outside
+--      the instance but not passed as an actual during instantiation.
+--
+-- TEST DESCRIPTION:
+--      In order to satisfy accessibility requirements, the designated
+--      object X must be at the same or a less deep nesting level than the
+--      general access type A -- X must "live" as long as A. Nesting
+--      levels are the run-time nestings of masters: block statements;
+--      subprogram, task, and entry bodies; and accept statements. Packages
+--      are invisible to accessibility rules.
+--
+--      This test declares three generic packages:
+--
+--         (1) One in which X is of a formal tagged derived type and declared
+--             in the body, A is a type declared outside the instance, and
+--             X'Access occurs in the declarative part of a nested subprogram.
+--
+--         (2) One in which X is a formal object of a tagged type, A is a
+--             type declared outside the instance, and X'Access occurs in the
+--             declarative part of the body.
+--
+--         (3) One in which there are two X's and two A's. In the first pair,
+--             X is a formal in object of a tagged type, A is declared in the
+--             specification, and X'Access occurs in the declarative part of
+--             the body. In the second pair, X is of a formal derived type,
+--             X and A are declared in the specification, and X'Access occurs
+--             in the sequence of statements of the body.
+--
+--      The test verifies the following:
+--
+--         For (1), Program_Error is raised when the nested subprogram is
+--         called, if the generic package is instantiated at a deeper level
+--         than that of A. The exception is propagated to the innermost
+--         enclosing master. Also, check that Program_Error is not raised
+--         if the instantiation is at the same level as that of A.
+--
+--         For (2), Program_Error is raised upon instantiation if the object
+--         passed as an actual during instantiation has an accessibility level
+--         deeper than that of A. The exception is propagated to the innermost
+--         enclosing master. Also, check that Program_Error is not raised if
+--         the level of the actual object is not deeper than that of A.
+--
+--         For (3), Program_Error is not raised, for actual objects at
+--         various accessibility levels (since A will have at least the same
+--         accessibility level as X in all cases, no exception should ever
+--         be raised).
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         F3A2A00.A
+--      -> C3A2A02.A
+--
+--
+-- CHANGE HISTORY:
+--      12 May 95   SAIC    Initial prerelease version.
+--      10 Jul 95   SAIC    Modified code to avoid dead variable optimization.
+--      26 Jun 98   EDS     Added pragma Elaborate (C3A2A02_0) to package
+--                          package C3A2A02_3, in order to avoid possible
+--                          instantiation error.
+--!
+
+with F3A2A00;
+generic
+   type FD is new F3A2A00.Tagged_Type with private;
+package C3A2A02_0 is
+   procedure Proc;
+end C3A2A02_0;
+
+
+     --==================================================================--
+
+
+with Report;
+package body C3A2A02_0 is
+   X : aliased FD;
+
+   procedure Proc is
+      Ptr : F3A2A00.AccTagClass_L0 := X'Access;
+   begin
+      -- Avoid optimization (dead variable removal of Ptr):
+
+      if not Report.Equal (Ptr.C, Ptr.C) then              -- Always false.
+         Report.Failed ("Unexpected error in Proc");
+      end if;
+   end Proc;
+end C3A2A02_0;
+
+
+     --==================================================================--
+
+
+with F3A2A00;
+generic
+   FObj : in out F3A2A00.Tagged_Type;
+package C3A2A02_1 is
+   procedure Dummy; -- Needed to allow package body.
+end C3A2A02_1;
+
+
+     --==================================================================--
+
+
+with Report;
+package body C3A2A02_1 is
+   Ptr : F3A2A00.AccTag_L0 := FObj'Access;
+
+   procedure Dummy is
+   begin
+      null;
+   end Dummy;
+begin
+   -- Avoid optimization (dead variable removal of Ptr):
+
+   if not Report.Equal (Ptr.C, Ptr.C) then              -- Always false.
+      Report.Failed ("Unexpected error in C3A2A02_1 instance");
+   end if;
+end C3A2A02_1;
+
+
+     --==================================================================--
+
+
+with F3A2A00;
+generic
+   type FD is new F3A2A00.Array_Type;
+   FObj : in F3A2A00.Tagged_Type;
+package C3A2A02_2 is
+   type GAF is access all FD;
+   type GAO is access constant F3A2A00.Tagged_Type;
+   XG    : aliased FD;
+   PtrF  : GAF;
+   Index : Integer := FD'First;
+
+   procedure Dummy; -- Needed to allow package body.
+end C3A2A02_2;
+
+
+     --==================================================================--
+
+
+with Report;
+package body C3A2A02_2 is
+   PtrO : GAO := FObj'Access;
+
+   procedure Dummy is
+   begin
+      null;
+   end Dummy;
+begin
+   PtrF := XG'Access;
+
+   -- Avoid optimization (dead variable removal of PtrO and/or PtrF):
+
+   if not Report.Equal (PtrO.C, PtrO.C) then                -- Always false.
+      Report.Failed ("Unexpected error in C3A2A02_2 instance: PtrO");
+   end if;
+
+   if not Report.Equal (PtrF(Index).C, PtrF(Index).C) then  -- Always false.
+      Report.Failed ("Unexpected error in C3A2A02_2 instance: PtrF");
+   end if;
+end C3A2A02_2;
+
+
+     --==================================================================--
+
+
+-- The instantiation of C3A2A02_0 should NOT result in any exceptions.
+
+with F3A2A00;
+with C3A2A02_0;
+pragma Elaborate (C3A2A02_0);
+package C3A2A02_3 is new C3A2A02_0 (F3A2A00.Tagged_Type);
+
+
+     --==================================================================--
+
+
+with F3A2A00;
+with C3A2A02_0;
+with C3A2A02_1;
+with C3A2A02_2;
+with C3A2A02_3;
+
+with Report;
+procedure C3A2A02 is
+begin -- C3A2A02.                                              -- [ Level = 1 ]
+
+   Report.Test ("C3A2A02", "Run-time accessibility checks: instance " &
+                "bodies. Type of X'Access is local or global to instance");
+
+
+   SUBTEST1:
+   declare                                                     -- [ Level = 2 ]
+      Result1 : F3A2A00.TC_Result_Kind;
+      Result2 : F3A2A00.TC_Result_Kind;
+   begin -- SUBTEST1.
+
+      declare                                                  -- [ Level = 3 ]
+         package Pack_Same_Level renames C3A2A02_3;
+      begin
+         -- The accessibility level of Pack_Same_Level.X is that of the
+         -- instance (0), not that of the renaming declaration. The level of
+         -- the type of Pack_Same_Level.X'Access (F3A2A00.AccTagClass_L0) is
+         -- 0. Therefore, the X'Access in Pack_Same_Level.Proc does not raise
+         -- an exception when the subprogram is called. The level of execution
+         -- of the subprogram is irrelevant:
+
+         Pack_Same_Level.Proc;
+         Result1 := F3A2A00.OK;                             -- Expected result.
+      exception
+         when Program_Error => Result1 := F3A2A00.P_E;
+         when others        => Result1 := F3A2A00.O_E;
+      end;
+
+      F3A2A00.TC_Display_Results (Result1, F3A2A00.OK,
+                                  "SUBTEST #1 (same level)");
+
+
+      declare                                                  -- [ Level = 3 ]
+         -- The instantiation of C3A2A02_0 should NOT result in any
+         -- exceptions.
+
+         package Pack_Deeper_Level is new C3A2A02_0 (F3A2A00.Tagged_Type);
+      begin
+         -- The accessibility level of Pack_Deeper_Level.X is that of the
+         -- instance (3). The level of the type of Pack_Deeper_Level.X'Access
+         -- (F3A2A00.AccTagClass_L0) is 0. Therefore, the X'Access in
+         -- Pack_Deeper_Level.Proc propagates Program_Error when the
+         -- subprogram is called:
+
+         Pack_Deeper_Level.Proc;
+         Result2 := F3A2A00.OK;
+      exception
+         when Program_Error => Result2 := F3A2A00.P_E;      -- Expected result.
+         when others        => Result2 := F3A2A00.O_E;
+      end;
+
+      F3A2A00.TC_Display_Results (Result2, F3A2A00.P_E,
+                                  "SUBTEST #1: deeper level");
+
+   exception
+      when Program_Error =>
+         Report.Failed ("SUBTEST #1: Program_Error incorrectly raised " &
+                        "during instantiation of generic");
+      when others        =>
+         Report.Failed ("SUBTEST #1: Unexpected exception raised " &
+                        "during instantiation of generic");
+   end SUBTEST1;
+
+
+
+   SUBTEST2:
+   declare                                                     -- [ Level = 2 ]
+      Result1 : F3A2A00.TC_Result_Kind;
+      Result2 : F3A2A00.TC_Result_Kind;
+   begin -- SUBTEST2.
+
+      declare                                                  -- [ Level = 3 ]
+         X_L3 : F3A2A00.Tagged_Type;
+      begin
+         declare                                               -- [ Level = 4 ]
+            -- The accessibility level of the actual object corresponding to
+            -- FObj in Pack_PE is 3. The level of the type of FObj'Access
+            -- (F3A2A00.AccTag_L0) is 0. Therefore, the FObj'Access in Pack_PE
+            -- propagates Program_Error when the instance body is elaborated:
+
+            package Pack_PE is new C3A2A02_1 (X_L3);
+         begin
+            Result1 := F3A2A00.OK;
+         end;
+      exception
+         when Program_Error => Result1 := F3A2A00.P_E;      -- Expected result.
+         when others        => Result1 := F3A2A00.O_E;
+      end;
+
+      F3A2A00.TC_Display_Results (Result1, F3A2A00.P_E,
+                                  "SUBTEST #2: deeper level");
+
+
+      begin                                                    -- [ Level = 3 ]
+         declare                                               -- [ Level = 4 ]
+            -- The accessibility level of the actual object corresponding to
+            -- FObj in Pack_OK is 0. The level of the type of FObj'Access
+            -- (F3A2A00.AccTag_L0) is also 0. Therefore, the FObj'Access in
+            -- Pack_OK does not raise an exception when the instance body is
+            -- elaborated:
+
+            package Pack_OK is new C3A2A02_1 (F3A2A00.X_L0);
+         begin
+            Result2 := F3A2A00.OK;                          -- Expected result.
+         end;
+      exception
+         when Program_Error => Result2 := F3A2A00.P_E;
+         when others        => Result2 := F3A2A00.O_E;
+      end;
+
+      F3A2A00.TC_Display_Results (Result2, F3A2A00.OK,
+                                  "SUBTEST #2: same level");
+
+   end SUBTEST2;
+
+
+
+   SUBTEST3:
+   declare                                                     -- [ Level = 2 ]
+      Result1 : F3A2A00.TC_Result_Kind;
+      Result2 : F3A2A00.TC_Result_Kind;
+   begin -- SUBTEST3.
+
+      declare                                                  -- [ Level = 3 ]
+         X_L3 : F3A2A00.Tagged_Type;
+      begin
+         declare                                               -- [ Level = 4 ]
+            -- Since the accessibility level of the type of X'Access in
+            -- both cases within Pack_OK1 is that of the instance, and since
+            -- X is either passed as an actual (in which case its level will
+            -- not be deeper than that of the instance) or is declared within
+            -- the instance (in which case its level is the same as that of
+            -- the instance), no exception should be raised when the instance
+            -- body is elaborated:
+
+            package Pack_OK1 is new C3A2A02_2 (F3A2A00.Array_Type, X_L3);
+         begin
+            Result1 := F3A2A00.OK;                          -- Expected result.
+         end;
+      exception
+         when Program_Error => Result1 := F3A2A00.P_E;
+         when others        => Result1 := F3A2A00.O_E;
+      end;
+
+      F3A2A00.TC_Display_Results (Result1, F3A2A00.OK,
+                                  "SUBTEST #3: 1st okay case");
+
+
+      declare                                                  -- [ Level = 3 ]
+         type My_Array is new F3A2A00.Array_Type;
+      begin
+         declare                                               -- [ Level = 4 ]
+            -- Since the accessibility level of the type of X'Access in
+            -- both cases within Pack_OK2 is that of the instance, and since
+            -- X is either passed as an actual (in which case its level will
+            -- not be deeper than that of the instance) or is declared within
+            -- the instance (in which case its level is the same as that of
+            -- the instance), no exception should be raised when the instance
+            -- body is elaborated:
+
+            package Pack_OK2 is new C3A2A02_2 (My_Array, F3A2A00.X_L0);
+         begin
+            Result2 := F3A2A00.OK;                          -- Expected result.
+         end;
+      exception
+         when Program_Error => Result2 := F3A2A00.P_E;
+         when others        => Result2 := F3A2A00.O_E;
+      end;
+
+      F3A2A00.TC_Display_Results (Result2, F3A2A00.OK,
+                                  "SUBTEST #3: 2nd okay case");
+
+
+   end SUBTEST3;
+
+
+
+   Report.Result;
+
+end C3A2A02;

@@ -1,0 +1,121 @@
+-- FXA5A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation package contains constants and a function used in 
+--      the evaluation of the Generic Elementary Functions.
+--
+-- CHANGE HISTORY:
+--      06 Mar 95   SAIC    Initial prerelease version.
+--      03 Apr 95   SAIC    Corrected error in context clause.
+--      12 Jun 95   SAIC    Added procedure Dont_Optimize.  Added New_Float
+--                          type, and overload of function 
+--                          Result_Within_Range.
+--
+--!
+
+with Ada.Numerics;
+with Report;
+
+package FXA5A00 is
+
+   -- Constants.
+
+   Epsilon               : constant Float := Float'Model_Epsilon;
+   Small                 : constant Float := Float'Model_Small;
+   Large                 : constant Float := Float'Safe_Last;
+   Minus_Large           : constant Float := Float'Safe_First; 
+
+   Half_Pi               : constant Float := Ada.Numerics.Pi / 2.0;
+   Two_Pi                : constant Float := Ada.Numerics.Pi * 2.0;
+
+   Floating_Delta        : constant Float :=  0.05;
+   One_Plus_Delta        : constant Float :=  1.0 + Floating_Delta;
+   One_Minus_Delta       : constant Float :=  1.0 - Floating_Delta;
+   Minus_One_Plus_Delta  : constant Float := -1.0 + Floating_Delta;
+   Minus_One_Minus_Delta : constant Float := -1.0 - Floating_Delta;
+
+
+   type New_Float is new Float digits 6;
+
+   function Result_Within_Range (Result          : Float;
+                                 Expected_Result : Float;
+                                 Relative_Error  : Float) return Boolean;
+
+   function Result_Within_Range (Result          : New_Float;
+                                 Expected_Result : Float;
+                                 Relative_Error  : Float) return Boolean;
+
+   -- This procedure is designed to defeat optimization attempts by an 
+   -- implementation in cases where an exception is specifically raised
+   -- in a test to test a prescribed exception result condition.
+   -- The parameter Num is a unique identifier for location purposes within
+   -- the test.
+
+   generic
+      type Eval_Type is digits <>;
+   procedure Dont_Optimize (Check_Result : Eval_Type; 
+                            Num          : Integer);
+
+end FXA5A00;
+
+---
+
+package body FXA5A00 is
+
+
+   function Result_Within_Range (Result          : Float;
+                                 Expected_Result : Float;
+                                 Relative_Error  : Float) return Boolean is
+   begin
+      return (Result <= Expected_Result + Relative_Error) and 
+             (Result >= Expected_Result - Relative_Error);
+   end Result_Within_Range;
+
+
+   function Result_Within_Range (Result          : New_Float;
+                                 Expected_Result : Float;
+                                 Relative_Error  : Float) return Boolean is
+   begin
+      return (Float(Result) <= Expected_Result + Relative_Error) and 
+             (Float(Result) >= Expected_Result - Relative_Error);
+   end Result_Within_Range;
+
+
+   procedure Dont_Optimize (Check_Result : Eval_Type; 
+                            Num          : Integer) is
+   begin
+      -- Note that the use of Minus_Large here is simply as a "dummy" value,
+      -- designed to indicate use of the Check_Result parameter, and has no
+      -- pass/fail significance to any test using this procedure.
+      --
+      if Float(Check_Result) = Minus_Large then
+         Report.Comment("Attempted Defeat of Optimization ONLY -- Not " &
+                        "a cause for test failure! "                    & 
+                        "Result = Minus_Large, Case:" & Integer'Image(Num));
+      end if;
+   end Dont_Optimize;
+
+end FXA5A00;

@@ -1,0 +1,300 @@
+-- CD10001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that representation items may contain nonstatic expressions
+--      in the case that each expression in  the representation item is a
+--      name that statically denotes a constant declared before the entity.
+--
+--
+-- TEST DESCRIPTION:
+--      For each of the specific items in the objective, this test checks
+--      an example of each of the categories of representation specification
+--      that are applicable to that objective, to wit:
+--        address clause ....................... Expressions need not be static
+--        alignment clause ..................... Expressions must be static
+--        bit order clause ..................... Not tested
+--        component size clause ................ Expressions must be static
+--        enumeration representation clause .... Expressions must be static
+--        external tag clause .................. Expressions must be static
+--        Import, Export and Convention pragmas  Not tested
+--        input clause ......................... Not tested
+--        output clause ........................ Not tested
+--        Pack pragma .......................... Not tested
+--        read clause .......................... Not tested
+--        record representation clause ......... Expressions must be static
+--        size clause .......................... Expressions must be static
+--        small clause ......................... Expressions must be static
+--        storage pool clause .................. Not tested
+--        storage size clause .................. Expressions must be static
+--        write clause ......................... Not tested
+--
+-- APPLICABILITY CRITERIA:
+--      All implementations must attempt to compile this test.
+--
+--      For implementations validating against Systems Programming Annex (C):
+--        this test must execute.
+--
+--      For implementations not validating against Annex C:
+--        if this test compiles without error messages at compilation,
+--        it must bind and execute.
+--
+-- PASS/FAIL CRITERIA:
+--      For implementations validating against Systems Programming Annex (C):
+--        this test must execute, report PASSED, and complete normally,
+--        otherwise the test FAILS
+--
+--      For implementations not validating against Annex C:
+--        PASSING behavior is:
+--          this test executes, reports PASSED, and completes normally
+--        or
+--          this test executes and reports NOT_APPLICABLE
+--        or
+--          this test produces at least one error message at compilation, and
+--          the error message is associated with one of the items marked:
+--             -- N/A => ERROR.
+--
+--      All other behaviors are FAILING.
+--
+
+-- CHANGE HISTORY:
+--      11 JUL 95   SAIC  Initial version
+--      10 MAR 97   PWB.CTA Made Nonstatic_Entity nonstatic; changed
+--                        Tenths'Small from 1.0/32.0 to 1.0/10.0,
+--                        as expected by the later check; improved
+--                        internal documentation.
+--      16 FEB 98   EDS   Modified test documentation.
+--      24 NOV 98   RLB   Changed Tenths'Small to 1.0/32.0, as this is
+--                        necessary so that all implementations can
+--                        process this test. (3.5.9(21) means non-binary
+--                        smalls are optional.)
+--      11 MAR 99   RLB   Merged versions. Most EDS changes removed (as
+--                        they made the test less applicable than the ACAA
+--                        version).
+--!
+
+----------------------------------------------------------------- CD10001_0
+
+with System;
+with System.Storage_Elements;
+with Impdef;
+with SPPRT13;
+package CD10001_0 is
+
+  -- a few types and objects to work with.
+
+  type Int is range -2048 .. 2047;
+  My_Int : Int := 1024;
+
+  type Enumeration is (First, Second, Third, Fourth, Fifth);
+
+  -- a few names that statically denote constants:
+
+  Nonstatic_Entity : constant System.Address :=                  -- Non-static
+     System.Storage_Elements."+" 
+       ( SPPRT13.Variable_Address, 
+         System.Storage_Elements.Storage_Offset'(0) );
+
+  Tag_String : constant String := Impdef.External_Tag_Value;     -- Static
+  -- Check to ensure that Tag_String is static
+  Tag_String_Length : constant := Tag_String'Length;
+
+  A_Reasonable_Size_Value : constant := System.Storage_Unit;     -- Static
+ 
+  Zero  : constant := 0;                                         -- Static
+  One   : constant := 1;                                         -- Static
+  Two   : constant := 2;                                         -- Static
+  Three : constant := 3;                                         -- Static
+  Four  : constant := 4;                                         -- Static
+  Five  : constant := 5;                                         -- Static
+
+  K : constant Int := My_Int;                                    -- Non-Static
+
+--      Check that representation items containing nonstatic expressions are
+--      supported in the case that the representation item is a name that
+--      statically denotes a constant declared before the entity.
+--
+--        address clause
+--        Expression must be static - RM 13.3(12)
+
+  Object_Address : Enumeration;
+    for Object_Address'Address use Nonstatic_Entity;          -- N/A => ERROR.
+
+--        alignment clause
+--        Expression must be static - RM 13.3(25)
+
+  Object_Alignment : Enumeration;
+    for Object_Alignment'Alignment use One;                   -- N/A => ERROR.
+  
+--        bit order clause
+-- no interesting test can be specified
+
+--        component size clause
+--        Expression must be static - RM 13.3(69)
+
+  type Array_With_Components is array(1..10) of Enumeration;
+    for Array_With_Components'Component_Size
+      use A_Reasonable_Size_Value;                            -- N/A => ERROR.
+
+--        enumeration representation clause
+--        Expressions must be static - RM 13.4(6)
+
+  type Enumeration_1 is (First, Second, Third);
+  for Enumeration_1 use (First => One, Second => Two, Third => Three);
+
+--        external tag clause
+--        Expression must be static - RM 13.3(75)
+
+  type Some_Tagged_Type is tagged null record;
+    for Some_Tagged_Type'External_Tag use Tag_String;         -- N/A => ERROR.
+
+--        Import, Export and Convention pragmas
+-- no interesting test can be specified
+
+--        input clause
+-- no interesting test can be specified
+
+--        output clause
+-- no interesting test can be specified
+
+--        Pack pragma
+-- no interesting test can be specified
+
+--        read clause
+-- no interesting test can be specified
+
+--        record representation clause
+--        Expressions must be static - RM 13.3(10)
+
+  type Record_To_Layout is record
+    Bit_0 : Boolean;
+    Bit_1 : Boolean;
+  end record;
+    for Record_To_Layout use record                           -- N/A => ERROR.
+      Bit_0 at Zero range Zero..Zero;                         -- N/A => ERROR.
+      Bit_1 at Zero range Four..Four;                         -- N/A => ERROR.
+    end record;                                               -- N/A => ERROR.
+
+--        size clause
+--        Expression must be static - RM 13.3(41)
+
+  Object_Size : Enumeration;
+    for Object_Size'Size use A_Reasonable_Size_Value;         -- N/A => ERROR.
+
+--        small clause
+--        Expression must be static - RM 3.5.10(2)
+
+  type Tenths is delta 0.1 range 0.0..10.0;
+    for Tenths'Small use 1.0 / (Two ** Five);                 -- N/A => ERROR.
+
+--        storage pool clause
+--        Not tested
+
+--        storage size clause
+--        Expression may be non-static - RM 13.11(15)
+  type Reference is access Record_To_Layout;
+    for Reference'Storage_Size use Four * K;                  -- N/A => ERROR.
+
+
+--        write clause
+-- no interesting test can be specified
+
+  procedure TC_Check_Values;
+
+end CD10001_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with TCTouch;
+package body CD10001_0 is
+
+  use type System.Address;
+
+  procedure Assert( Truth : Boolean; Message: String ) is
+  begin
+    if not Truth then
+      TCTouch.Implementation_Check( Message );
+    end if;
+  end Assert;
+
+  procedure TC_Check_Values is
+    Record_Object : Record_To_Layout;
+  begin
+
+    Assert(Object_Address'Address = Nonstatic_Entity,
+           "Object not at specified address");
+
+    Assert(Object_Alignment'Alignment >= One,
+           "Object not at specified alignment");
+
+    Assert(Array_With_Components'Component_Size = A_Reasonable_Size_Value,
+           "Array Components not specified size");
+
+-- I don't see how to reliably check this one:
+--
+--  type Enumeration_1 is (First, Second, Third);
+--  for Enumeration_1 use (First => One, Second => Two, Third => Three);
+
+    Assert(Some_Tagged_Type'External_Tag = Tag_String,
+           "External_Tag not specified value");
+    Assert(Record_Object.Bit_0'First_Bit = Zero,
+          "Record object First_Bit not zero");
+
+    Assert(Record_Object.Bit_1'Last_Bit = Four,
+          "Record object Last_Bit not four");
+
+    Assert(Object_Size'Size = A_Reasonable_Size_Value,
+           "Object size not specified value");
+
+    Assert(Tenths'Small = 1.0 / Two ** Five,
+           "Tenths small not specified value");
+
+    Assert(Reference'Storage_Size = 4096, -- Four * K,
+           "Reference storage size not specified value");
+
+  end TC_Check_Values;
+
+end CD10001_0;
+
+------------------------------------------------------------------- CD10001
+
+with Report;
+with CD10001_0;
+
+procedure CD10001 is
+
+begin  -- Main test procedure.
+
+  Report.Test ("CD10001", "Check that representation items containing " &
+                          "nonstatic expressions are supported in the " &
+                          "case that the representation item is a name " &
+                          "that statically denotes a constant declared " &
+                          "before the entity" );
+
+  CD10001_0.TC_Check_Values;
+
+  Report.Result;
+
+end CD10001;

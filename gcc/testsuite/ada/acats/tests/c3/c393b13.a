@@ -1,0 +1,105 @@
+-- C393B13.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- TEST OBJECTIVE:
+--      Check that an extended type can be derived from an abstract type
+--      when that derivation is declared in a child package.
+--
+-- TEST DESCRIPTION:
+--      Add a visible child to Alert_Foundation.  Using the abstract type
+--      Alert as parent, declare an extended type with discriminant and new
+--      record components.  Override the Handle procedure.
+--  
+-- TEST FILES: 
+--      This test depends on the following foundation code:
+--
+--         F393B00.A  Package Alert_Foundation
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      15 Oct 95   SAIC    Fixed bugs for ACVC 2.0.1
+--
+--!
+
+package F393B00.C393B13_0 is
+     -- Alert_Foundation.Public_Child
+
+  subtype Msg_Length_Range is integer range 0 .. 240;
+  Max_Msg_Length : constant Msg_Length_Range := 80;
+  Message : String := "Test Passed";
+
+  type Child_Alert (Length : Msg_Length_Range) 
+    is new Alert with record        -- abstract type is in parent package
+      Times_Handled : Natural := 0;
+      Msg           : String (1..Length);
+    end record;
+
+  procedure Handle (CA : in out Child_Alert);  -- required override
+  
+end F393B00.C393B13_0;
+ -- Alert_Foundation.Public_Child;
+
+--=======================================================================--
+
+package body F393B00.C393B13_0 is
+          -- Alert_Foundation.Public_Child
+  
+  procedure Handle (CA : in out Child_Alert) is
+    begin
+      CA.Msg(1..Message'Length) := Message;
+      CA.Times_Handled := CA.Times_Handled + 1;
+    end;
+  
+end F393B00.C393B13_0;
+ -- Alert_Foundation.Public_Child
+
+--=======================================================================--
+  
+with Report;
+with F393B00.C393B13_0;
+  -- Alert_foundation.Public_Child;
+procedure C393B13 is
+  package Child renames F393B00.C393B13_0;
+  CA : Child.Child_Alert(Child.Message'Length);
+ 
+begin
+
+  Report.Test ("C393B13", "Check that an extended type can be derived " &
+                          "from an abstract type");
+
+  if CA.Times_Handled /= 0 then
+    Report.Failed ("Wrong initialization");
+  end if;
+
+  Child.Handle (CA);
+  if (CA.Times_Handled /= 1)
+  or (CA.Msg /= Child.Message) then
+    Report.Failed ("Wrong results from Handle");
+  end if;
+  
+  Report.Result;
+
+end C393B13;

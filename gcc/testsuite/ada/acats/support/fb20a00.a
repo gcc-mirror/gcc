@@ -1,0 +1,101 @@
+-- FB20A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This test performs a search for the first instance of a specified 
+--      substring within a specified string, returning boolean result.
+--      (Case insensitive analysis)  Both the string and the substring are 
+--      made upper case.  Successive slices are taken from the input string
+--      and compared with the substring. If a match is found, the search is 
+--      terminated immediately. The search continues until the last index 
+--      position from which a substring-length slice can be constructed is
+--      passed. 
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package FB20A00 is
+
+   function Find ( Str : in String ;           
+                   Sub : in String ) return Boolean;
+
+end FB20A00;
+
+     --=================================================================--
+
+package body FB20A00 is
+                 
+   function Find ( Str : in String ;          
+                   Sub : in String ) return Boolean is
+
+      New_Str : String (Str'First .. Str'Last);
+      New_Sub : String (Sub'First .. Sub'Last);
+
+      Pos : Integer := Str'First ;             -- Character index.
+
+                 
+      function Upper_Case (Str : in String) return String is
+         subtype Upper is Character range 'A' .. 'Z' ;
+         subtype Lower is Character range 'a' .. 'z' ;
+         Ret : String (Str'First .. Str'Last) ;
+         Pos : Integer;
+      begin
+         for I in Str'Range loop
+            if ( Str (I) in Lower ) then
+               Pos := Upper'Pos (Upper'First) +
+                      ( Lower'Pos (Str(I)) - Lower'Pos(Lower'First) ) ;
+               Ret (I) := Upper'Val (Pos) ;
+            else
+               Ret (I) := Str (I);
+            end if ;
+         end loop ;
+         return (Ret) ;
+      end Upper_Case;
+
+   begin
+
+      
+      New_Str := Upper_Case (Str);             -- Convert Str and Sub to upper 
+      New_Sub := Upper_Case (Sub);             -- case for comparison.
+
+      while ( Pos <= New_Str'Last-New_Sub'Length+1 )  -- Search until no more 
+        and then                                      -- sub-string-length 
+        ( New_Str ( Pos .. Pos+New_Sub'Length-1 ) /= New_Sub ) -- slices
+                                                               -- remain.
+      loop
+         Pos := Pos + 1 ;
+      end loop ;
+
+      if ( Pos > New_Str'Last-New_Sub'Length+1 ) then  -- Substring not found.
+         return (False);
+      else
+         return (True);
+      end if ;
+
+   end Find;
+
+end FB20A00;

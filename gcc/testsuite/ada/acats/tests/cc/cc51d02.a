@@ -1,0 +1,244 @@
+-- CC51D02.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that, in an instance, each implicit declaration of a user-defined
+--      subprogram of a formal private extension declares a view of the
+--      corresponding primitive subprogram of the ancestor, and that if the
+--      tag in a call is statically determined to be that of the formal type,
+--      the body executed will be that corresponding to the actual type.
+--
+--      Check subprograms declared within a generic formal package. Check for
+--      the case where the actual type passed to the formal private extension
+--      is a class-wide type. Check for several types in the same class.
+--
+--
+-- TEST DESCRIPTION:
+--      Declare a list abstraction in a generic package which manages lists of
+--      elements of any nonlimited type (foundation code). Declare a package
+--      which declares a tagged type and a derivative. Declare an operation
+--      for the root tagged type and override it for the derivative. Declare
+--      a generic subprogram which operates on lists of elements of tagged
+--      types. Provide the generic subprogram with two formal parameters: (1)
+--      a formal derived tagged type which represents a list element type, and
+--      (2) a generic formal package with the list abstraction package as
+--      template. Use the formal derived type as the generic formal actual
+--      part for the formal package. Within the generic subprogram, call the
+--      operation of the root tagged type. In the main program, instantiate
+--      the generic list package and the generic subprogram with the class-wide
+--      type for the root tagged type.
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         FC51D00.A
+--      -> CC51D02.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      05 Jan 95   SAIC    Changed types of TC_Expected_1 and TC_Expected_2
+--                          from specific to class-wide. Eliminated (illegal)
+--                          assignment step prior to comparison of
+--                          TC_Expected_X with item on stack.
+--
+--!
+
+package CC51D02_0 is -- This package simulates support for a personnel
+                     -- database.
+
+   type SSN_Type is new String (1 .. 9);
+
+   type Blind_ID_Type is tagged record                   -- Root type of
+      SSN : SSN_Type;                                    -- class.
+      -- ... Other components.
+   end record;
+
+   procedure Update_ID (Item : in out Blind_ID_Type);    -- Parent operation.
+
+   -- ... Other operations.
+
+
+   type Name_Type is new String (1 .. 9);
+
+   type Named_ID_Type is new Blind_ID_Type with record   -- Direct derivative
+      Name : Name_Type := "Doe      ";                   -- of root type.
+      -- ... Other components.
+   end record;
+
+   -- Inherits Update_ID from parent.
+
+   procedure Update_ID (Item : in out Named_ID_Type);    -- Overrides parent's
+                                                         -- implementation.
+
+end CC51D02_0;
+
+
+     --==================================================================--
+
+
+package body CC51D02_0 is
+
+   -- The implementations of Update_ID are purely artificial; the validity of
+   -- their implementations in the context of the abstraction is irrelevant to
+   -- the feature being tested.
+
+   procedure Update_ID (Item : in out Blind_ID_Type) is
+   begin
+      Item.SSN := "111223333";
+   end Update_ID;
+
+
+   procedure Update_ID (Item : in out Named_ID_Type) is
+   begin
+      Item.SSN := "444556666";
+      -- ... Other stuff.
+   end Update_ID;
+
+end CC51D02_0;
+
+
+     --==================================================================--
+
+
+--                           --
+-- Formal package used here. --
+--                           --
+
+with FC51D00;    -- Generic list abstraction.
+with CC51D02_0;  -- Tagged type declarations.
+generic          -- This procedure simulates a generic operation for types
+                 -- in the class rooted at Blind_ID_Type.
+   type Elem_Type (<>) is new CC51D02_0.Blind_ID_Type with private;
+   with package List_Mgr is new FC51D00 (Elem_Type);
+procedure CC51D02_1 (L : in out List_Mgr.List_Type; E : in Elem_Type);
+
+
+     --==================================================================--
+
+
+-- The implementation of CC51D02_1 is purely artificial; the validity
+-- of its implementation in the context of the abstraction is irrelevant
+-- to the feature being tested.
+--
+-- The expected behavior here is as follows: for each actual type corresponding
+-- to Elem_Type, the call to Update_ID should invoke the actual type's
+-- implementation (based on the tag of the actual), which updates the object's
+-- SSN field. Write_Element then adds the object to the list.
+
+procedure CC51D02_1 (L : in out List_Mgr.List_Type; E : in Elem_Type) is
+   Element : Elem_Type := E;   -- Can't update IN parameter.
+                               -- Initialization of unconstrained variable.
+begin
+   Update_ID (Element);                    -- Executes actual type's version
+                                           -- (for this test, this will be a
+                                           -- dispatching call).
+   List_Mgr.Write_Element (1, L, Element); -- Executes actual type's version
+                                           -- (for this test, this will be a
+                                           -- class-wide operation).
+end CC51D02_1;
+
+
+     --==================================================================--
+
+
+with FC51D00;    -- Generic list abstraction.
+with CC51D02_0;  -- Tagged type declarations.
+with CC51D02_1;  -- Generic operation.
+
+with Report;
+procedure CC51D02 is
+
+   use CC51D02_0;                                        -- All types & ops
+                                                         -- directly visible.
+
+   -- Begin test code declarations: -----------------------
+
+   TC_Expected_1 : Blind_ID_Type'Class :=
+                   Blind_ID_Type'(SSN => "111223333");
+   TC_Expected_2 : Blind_ID_Type'Class :=
+                   Named_ID_Type'("444556666", "Doe      ");
+
+
+   TC_Initial_1  : Blind_ID_Type       := (SSN => "777889999");
+   TC_Initial_2  : Named_ID_Type       := ("777889999", "Doe      ");
+   TC_Initial_3  : Blind_ID_Type'Class := TC_Initial_2;
+
+   -- End test code declarations. -------------------------
+
+
+   package ID_Class_Lists is new FC51D00 (Blind_ID_Type'Class);
+
+   procedure Update_and_Write is new CC51D02_1 (Blind_ID_Type'Class,
+                                                ID_Class_Lists);
+
+   Blind_List  : ID_Class_Lists.List_Type;
+   Named_List  : ID_Class_Lists.List_Type;
+   Maimed_List : ID_Class_Lists.List_Type;
+
+
+begin
+   Report.Test ("CC51D02", "Formal private extension, class-wide actual: " &
+                "body of primitive subprogram executed is that of actual " &
+                "type. Check for subprograms declared in formal package");
+
+
+   Update_and_Write (Blind_List, TC_Initial_1);    -- Test root type actual.
+
+   if (ID_Class_Lists.View_Element (1, Blind_List) not in Blind_ID_Type) then
+      Report.Failed ("Result for root type actual is not in proper class");
+   elsif (ID_Class_Lists.View_Element (1, Blind_List) /= TC_Expected_1) then
+      Report.Failed ("Wrong result for root type actual");
+   end if;
+
+
+   Update_and_Write (Named_List, TC_Initial_2);    -- Test derived type actual.
+
+   if (ID_Class_Lists.View_Element (1, Named_List) not in Named_ID_Type) then
+      Report.Failed ("Result for derived type actual is not in proper class");
+   elsif (ID_Class_Lists.View_Element (1, Named_List)/= TC_Expected_2) then
+      Report.Failed ("Wrong result for derived type actual");
+   end if;
+
+
+   -- In the subtest below, an object of a class-wide type (TC_Initial_3) is
+   -- passed to Update_and_Write. It has been initialized with an object of
+   -- type Named_ID_Type, so the result should be identical to
+   -- that of the Named_ID_Type subtest (namely TC_Expected_2). Note that
+   -- a new list of Named IDs is used (Maimed_List). This is to assure test
+   -- validity, since Named_List has already been updated by a previous
+   -- subtest.
+
+   Update_and_Write (Maimed_List, TC_Initial_3);   -- Test class-wide actual.
+
+   if (ID_Class_Lists.View_Element (1, Maimed_List) not in Named_ID_Type) then
+      Report.Failed ("Result for class-wide actual is not in proper class");
+   elsif (ID_Class_Lists.View_Element (1, Maimed_List) /= TC_Expected_2) then
+      Report.Failed ("Wrong result for class-wide actual");
+   end if;
+
+
+   Report.Result;
+end CC51D02;

@@ -1,0 +1,291 @@
+-- C760011.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the anonymous objects of a controlled type associated with
+--      function results and aggregates are finalized no later than the
+--      end of the innermost enclosing declarative_item or statement.  Also
+--      check this for function calls and aggregates of a noncontrolled type
+--      with controlled components.
+--
+-- TEST DESCRIPTION:
+--      This test defines a controlled type with a discriminant, the
+--      discriminant is use as an index into a global table to indicate that
+--      the object has been finalized.  The controlled type is used as the
+--      component of a non-controlled type, and the non-controlled type is
+--      used for the same set of tests.  Following is a table of the tests
+--      performed and their associated tag character.
+--
+--      7.6(21) allows for the optimizations that remove these temporary
+--      objects from ever existing.  As such this test checks that in the
+--      case the object was initialized (the only access we have to
+--      determining if it ever existed) it must subsequently be finalized.
+--
+-- CASE TABLE:
+--      A - aggregate test, controlled
+--      B - aggregate test, controlled
+--      C - aggregate test, non_controlled
+--      D - function test, controlled
+--      E - function test, non_controlled
+--      F - formal parameter function test, controlled
+--      G - formal parameter aggregate test, controlled
+--      H - formal parameter function test, non_controlled
+--      I - formal parameter aggregate test, non_controlled
+--
+--      X - scratch object, not consequential to the objective
+--      Y - scratch object, not consequential to the objective
+--      Z - scratch object, not consequential to the objective
+--
+--
+-- CHANGE HISTORY:
+--      22 MAY 95   SAIC    Initial version
+--      24 APR 96   SAIC    Minor doc fixes, visibility patch
+--      14 NOV 96   SAIC    Revised for release 2.1
+--
+--!
+
+------------------------------------------------------------------- C760011_0
+
+with Ada.Finalization;
+package C760011_0 is
+  type Tracking_Array is array(Character range 'A'..'Z') of Boolean;
+
+  Initialized : Tracking_Array := (others => False);
+  Finalized   : Tracking_Array := (others => False);
+
+  type Controlled_Type(Tag : Character) is
+    new Ada.Finalization.Controlled with record
+      TC_Component : String(1..4) := "ACVC";
+    end record;
+  procedure Initialize( It: in out Controlled_Type );
+  procedure Finalize  ( It: in out Controlled_Type );
+  function Create(With_Tag: Character) return Controlled_Type;
+
+  type Non_Controlled(Tag : Character := 'Y') is record
+    Controlled_Component : Controlled_Type(Tag);
+  end record;
+  procedure Initialize( It: in out Non_Controlled );
+  procedure Finalize  ( It: in out Non_Controlled );
+  function Create(With_Tag: Character) return Non_Controlled;
+
+  Under_Debug : constant Boolean := False;  -- construction lines
+
+end C760011_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body C760011_0 is
+
+  procedure Initialize( It: in out Controlled_Type ) is
+  begin
+    It.TC_Component := (others => It.Tag);
+    if It.Tag in Tracking_Array'Range then 
+      Initialized(It.Tag) := True;
+    end if;
+    if Under_Debug then
+      Report.Comment("Initializing Tag: " & It.Tag );
+    end if;
+  end Initialize;
+  
+  procedure Finalize( It: in out Controlled_Type ) is
+  begin
+    if Under_Debug then
+      Report.Comment("Finalizing for Tag: " & It.Tag );
+    end if;
+    if It.Tag in Finalized'Range then 
+      Finalized(It.Tag) := True;
+    end if;
+  end Finalize;
+
+  function Create(With_Tag: Character) return Controlled_Type is
+  begin
+    return Controlled_Type'(Ada.Finalization.Controlled
+                            with Tag          => With_Tag,
+                                 TC_Component => "*CON" );
+  end Create;
+
+  procedure Initialize( It: in out Non_Controlled ) is
+  begin
+    Report.Failed("Called Initialize for Non_Controlled");
+  end Initialize;
+  
+  procedure Finalize( It: in out Non_Controlled ) is
+  begin
+    Report.Failed("Called Finalize for Non_Controlled");
+  end Finalize;
+
+  function Create(With_Tag: Character) return Non_Controlled is
+  begin
+    return Non_Controlled'(Tag => With_Tag, Controlled_Component => (
+                                  Ada.Finalization.Controlled
+                                    with Tag          => With_Tag,
+                                         TC_Component => "#NON" ) );
+  end Create;
+
+end C760011_0;
+
+--------------------------------------------------------------------- C760011
+
+with Report;
+with TCTouch;
+with C760011_0;
+with Ada.Finalization; -- needed to be able to create extension aggregates
+procedure C760011 is
+
+  use type C760011_0.Controlled_Type;
+  use type C760011_0.Controlled_Type'Class;
+  use type C760011_0.Non_Controlled;
+
+  subtype AFC is Ada.Finalization.Controlled;
+
+  procedure Check_Result( Tag : Character; Message : String ) is
+  -- make allowance for 7.6(21) optimizations
+  begin
+    if C760011_0.Initialized(Tag) then
+      TCTouch.Assert(C760011_0.Finalized(Tag),Message);
+    elsif C760011_0.Under_Debug then
+      Report.Comment("Optimized away: " & Tag );
+    end if;
+  end Check_Result;
+
+  procedure Subtest_1 is
+
+
+    procedure Subtest_1_Local_1 is
+      An_Object : C760011_0.Controlled_Type'Class
+                := C760011_0.Controlled_Type'(AFC with 'X', "ONE*");
+                   -- initialize An_Object
+    begin
+      if C760011_0.Controlled_Type(An_Object)   
+         = C760011_0.Controlled_Type'(AFC with 'A', "ONE*") then
+        Report.Failed("Comparison bad");  -- A = X !!!
+      end if;
+    end Subtest_1_Local_1;
+    -- An_Object must be Finalized by this point.
+
+    procedure Subtest_1_Local_2 is
+      An_Object : C760011_0.Controlled_Type('B');
+    begin
+      An_Object := (AFC with 'B',  "TWO!" );
+      if Report.Ident_Char(An_Object.Tag) /= 'B' then
+        Report.Failed("Subtest_1_Local_2 Optimization Foil: Bad Data!");
+      end if;
+    exception
+      when others => Report.Failed("Bad controlled assignment");
+    end Subtest_1_Local_2;
+    -- An_Object must be Finalized by this point.
+
+    procedure Subtest_1_Local_3 is
+      An_Object : C760011_0.Non_Controlled('C');
+    begin
+      TCTouch.Assert_Not(C760011_0.Finalized('C'),
+                           "Non_Controlled declaration C");
+      An_Object := C760011_0.Non_Controlled'('C', Controlled_Component
+                                     => (AFC with 'C', "TEE!"));
+      if Report.Ident_Char(An_Object.Tag) /= 'C' then
+        Report.Failed("Subtest_1_Local_3 Optimization Foil: Bad Data!");
+      end if;
+    end Subtest_1_Local_3;
+    -- Only controlled components of An_Object must be finalized; it is an
+    -- error to call Finalize for An_Object
+
+  begin
+    Subtest_1_Local_1;
+    Check_Result( 'A', "Aggregate in subprogram 1" );
+
+    Subtest_1_Local_2;
+    Check_Result( 'B', "Aggregate in subprogram 2" );
+
+    Subtest_1_Local_3;
+    Check_Result( 'C', "Embedded aggregate in subprogram 3" );
+  end Subtest_1;
+
+
+  procedure Subtest_2 is
+    -- using 'Z' for both evades order issues
+    Con_Object : C760011_0.Controlled_Type('Z');
+    Non_Object : C760011_0.Non_Controlled('Z');
+  begin
+    if Report.Ident_Bool( Con_Object = C760011_0.Create('D') ) then
+      Report.Failed("Con_Object catastrophe");
+    end if;
+     -- Controlled function result should be finalized by now
+    Check_Result( 'D', "Function Result" );
+
+    if Report.Ident_Bool( Non_Object = C760011_0.Create('E') ) then
+      Report.Failed("Non_Object catastrophe");
+    end if;
+     -- Controlled component of function result should be finalized by now
+    Check_Result( 'E', "Function Result" );
+  end Subtest_2;
+
+
+  procedure Subtest_3(Con : in C760011_0.Controlled_Type) is
+  begin
+    if Con.Tag not in 'F'..'G' then  
+      Report.Failed("Bad value passed to subtest 3 " & Con.Tag & ' ' 
+                    & Report.Ident_Str(Con.TC_Component));
+    end if;
+  end Subtest_3;
+
+
+  procedure Subtest_4(Non : in C760011_0.Non_Controlled) is
+  begin
+    if Non.Tag not in 'H'..'I' then  
+      Report.Failed("Bad value passed to subtest 4 "
+                   & Non.Tag & ' ' 
+                   & Report.Ident_Str(Non.Controlled_Component.TC_Component));
+    end if;
+  end Subtest_4;
+
+
+begin  -- Main test procedure.
+
+  Report.Test ("C760011", "Check that anonymous objects of controlled " &
+                          "types or types containing controlled types " &
+                          "are finalized no later than the end of the " &
+                          "innermost enclosing declarative_item or " &
+                          "statement" );
+
+  Subtest_1;
+
+  Subtest_2;
+
+  Subtest_3(C760011_0.Create('F'));
+  Check_Result( 'F', "Function as formal F" );
+
+  Subtest_3(C760011_0.Controlled_Type'(AFC with 'G',"GIGI"));
+  Check_Result( 'G', "Aggregate as formal G" );
+
+  Subtest_4(C760011_0.Create('H'));
+  Check_Result( 'H', "Function as formal H" );
+
+  Subtest_4(C760011_0.Non_Controlled'('I', (AFC with 'I',"IAGO")));
+  Check_Result( 'I', "Aggregate as formal I" );
+
+  Report.Result;
+
+end C760011;

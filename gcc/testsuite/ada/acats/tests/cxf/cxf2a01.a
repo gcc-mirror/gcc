@@ -1,0 +1,448 @@
+-- CXF2A01.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the binary adding operators for a decimal fixed point type
+--      return values that are integral multiples of the small of the type.
+--    
+-- TEST DESCRIPTION:
+--      The test verifies that decimal addition and subtraction behave as
+--      expected for types with various digits, delta, and Machine_Radix
+--      values. Types with the minimum values for Decimal.Max_Digits and
+--      Decimal.Max_Scale (18) are included.
+--
+--      Two kinds of checks are performed for each type. In the first check,
+--      the iteration, operation, and operand counts in the foundation and
+--      the operation tables in this test are given values such that, when the
+--      operations loop is complete, each operand will have been added to and
+--      subtracted from the loop's cumulator variable the same number of times,
+--      albeit in varying order. Thus, the result returned by the operations
+--      loop should have the same value as that used to initialize the
+--      cumulator (in this test, zero).
+--
+--      In the second check, the same operation (addition for some types and
+--      subtraction for others) is performed during each loop iteration,
+--      resulting in a cumulative total which is checked against an expected
+--      value.
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         FXF2A00.A
+--      -> CXF2A01.A
+--
+-- APPLICABILITY CRITERIA:
+--      This test is only applicable for a compiler attempting validation
+--      for the Information Systems Annex.
+--
+--
+-- CHANGE HISTORY:
+--      08 Apr 96   SAIC    Prerelease version for ACVC 2.1.
+--
+--!
+
+package CXF2A01_0 is
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   type Micro is delta 10.0**(-18) digits 18; -- range -0.999999999999999999 ..
+   for Micro'Machine_Radix use 10;     --              +0.999999999999999999
+
+   function Add      (Left, Right : Micro) return Micro;
+   function Subtract (Left, Right : Micro) return Micro;
+
+
+   type Micro_Optr_Ptr is access function (Left, Right : Micro) return Micro;
+
+   Micro_Add : Micro_Optr_Ptr := Add'Access;
+   Micro_Sub : Micro_Optr_Ptr := Subtract'Access;
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   type Money is delta 0.01 digits 11; -- range -999,999,999.99 ..
+   for Money'Machine_Radix use 2;      --       +999,999,999.99
+
+   function Add      (Left, Right : Money) return Money;
+   function Subtract (Left, Right : Money) return Money;
+
+
+   type Money_Optr_Ptr is access function (Left, Right : Money) return Money;
+
+   Money_Add : Money_Optr_Ptr := Add'Access;
+   Money_Sub : Money_Optr_Ptr := Subtract'Access;
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   -- Same as Money, but with Radix 10:
+
+   type Cash is delta 0.01 digits 11; -- range -999,999,999.99 ..
+   for Cash'Machine_Radix use 10;     --       +999,999,999.99
+
+   function Add      (Left, Right : Cash) return Cash;
+   function Subtract (Left, Right : Cash) return Cash;
+
+
+   type Cash_Optr_Ptr is access function (Left, Right : Cash) return Cash;
+
+   Cash_Add : Cash_Optr_Ptr := Add'Access;
+   Cash_Sub : Cash_Optr_Ptr := Subtract'Access;
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   type Broad is delta 10.0**(-9) digits 18; -- range -999,999,999.999999999 ..
+   for Broad'Machine_Radix use 10;           --       +999,999,999.999999999
+
+   function Add      (Left, Right : Broad) return Broad;
+   function Subtract (Left, Right : Broad) return Broad;
+
+
+   type Broad_Optr_Ptr is access function (Left, Right : Broad) return Broad;
+
+   Broad_Add : Broad_Optr_Ptr := Add'Access;
+   Broad_Sub : Broad_Optr_Ptr := Subtract'Access;
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+end CXF2A01_0;
+
+
+     --==================================================================--
+
+
+package body CXF2A01_0 is
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   function Add (Left, Right : Micro) return Micro is
+   begin
+      return (Left + Right); -- Decimal fixed addition.
+   end Add;
+
+   function Subtract (Left, Right : Micro) return Micro is
+   begin
+      return (Left - Right); -- Decimal fixed subtraction.
+   end Subtract;
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   function Add (Left, Right : Money) return Money is
+   begin
+      return (Left + Right); -- Decimal fixed addition.
+   end Add;
+
+   function Subtract (Left, Right : Money) return Money is
+   begin
+      return (Left - Right); -- Decimal fixed subtraction.
+   end Subtract;
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   function Add (Left, Right : Cash) return Cash is
+   begin
+      return (Left + Right); -- Decimal fixed addition.
+   end Add;
+
+   function Subtract (Left, Right : Cash) return Cash is
+   begin
+      return (Left - Right); -- Decimal fixed subtraction.
+   end Subtract;
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   function Add (Left, Right : Broad) return Broad is
+   begin
+      return (Left + Right); -- Decimal fixed addition.
+   end Add;
+
+   function Subtract (Left, Right : Broad) return Broad is
+   begin
+      return (Left - Right); -- Decimal fixed subtraction.
+   end Subtract;
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+end CXF2A01_0;
+
+
+     --==================================================================--
+
+
+with FXF2A00;
+package CXF2A01_0.CXF2A01_1 is
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   type Micro_Ops   is array (FXF2A00.Optr_Range) of Micro_Optr_Ptr;
+   type Micro_Opnds is array (FXF2A00.Opnd_Range) of Micro;
+
+   Micro_Optr_Table_Cancel : Micro_Ops   := ( Micro_Add, Micro_Sub,
+                                              Micro_Add, Micro_Sub,
+                                              Micro_Add, Micro_Sub );
+
+   Micro_Optr_Table_Cumul  : Micro_Ops   := ( others => Micro_Add );
+
+   Micro_Opnd_Table_Cancel : Micro_Opnds := ( 0.001025000235111997,
+                                              0.000000000000000003,
+                                              0.724902903219925400,
+                                              0.000459228020000011,
+                                              0.049832104921096533 );
+
+   Micro_Opnd_Table_Cumul  : Micro_Opnds := ( 0.000002309540000000,
+                                              0.000000278060000000,
+                                              0.000000000000070000,
+                                              0.000010003000000000,
+                                              0.000000023090000000 );
+
+   function Test_Micro_Ops is new FXF2A00.Operations_Loop
+     (Decimal_Fixed  => Micro,
+      Operator_Ptr   => Micro_Optr_Ptr,
+      Operator_Table => Micro_Ops,
+      Operand_Table  => Micro_Opnds);
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   type Money_Ops   is array (FXF2A00.Optr_Range) of Money_Optr_Ptr;
+   type Money_Opnds is array (FXF2A00.Opnd_Range) of Money;
+
+   Money_Optr_Table_Cancel : Money_Ops   := ( Money_Add, Money_Add,
+                                              Money_Sub, Money_Add,
+                                              Money_Sub, Money_Sub );
+
+   Money_Optr_Table_Cumul  : Money_Ops   := ( others => Money_Sub );
+
+   Money_Opnd_Table_Cancel  : Money_Opnds := (       127.10,
+                                                    5600.44,
+                                                       0.05,
+                                                  189662.78,
+                                               226900402.99  );
+
+   Money_Opnd_Table_Cumul   : Money_Opnds := (        17.99,
+                                                     500.41,
+                                                      92.78,
+                                                       0.38,
+                                                    2942.99  );
+
+   function Test_Money_Ops is new FXF2A00.Operations_Loop
+     (Decimal_Fixed  => Money,
+      Operator_Ptr   => Money_Optr_Ptr,
+      Operator_Table => Money_Ops,
+      Operand_Table  => Money_Opnds);
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   type Cash_Ops   is array (FXF2A00.Optr_Range) of Cash_Optr_Ptr;
+   type Cash_Opnds is array (FXF2A00.Opnd_Range) of Cash;
+
+   Cash_Optr_Table_Cancel : Cash_Ops   := ( Cash_Add, Cash_Add,
+                                            Cash_Sub, Cash_Add,
+                                            Cash_Sub, Cash_Sub );
+
+   Cash_Optr_Table_Cumul  : Cash_Ops   := ( others => Cash_Add );
+
+   Cash_Opnd_Table_Cancel : Cash_Opnds := (       127.10,
+                                                 5600.44,
+                                                    0.05,
+                                               189662.78,
+                                            226900402.99  );
+
+   Cash_Opnd_Table_Cumul  : Cash_Opnds := (         3.33,
+                                               100056.14,
+                                                   22.87,
+                                                 3901.55,
+                                                  111.21  );
+
+   function Test_Cash_Ops is new FXF2A00.Operations_Loop
+     (Decimal_Fixed  => Cash,
+      Operator_Ptr   => Cash_Optr_Ptr,
+      Operator_Table => Cash_Ops,
+      Operand_Table  => Cash_Opnds);
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+   type Broad_Ops   is array (FXF2A00.Optr_Range) of Broad_Optr_Ptr;
+   type Broad_Opnds is array (FXF2A00.Opnd_Range) of Broad;
+
+   Broad_Optr_Table_Cancel : Broad_Ops   := ( Broad_Sub, Broad_Add,
+                                              Broad_Add, Broad_Sub,
+                                              Broad_Sub, Broad_Add );
+
+   Broad_Optr_Table_Cumul  : Broad_Ops   := ( others => Broad_Sub );
+
+   Broad_Opnd_Table_Cancel : Broad_Opnds := (         1.000009092,
+                                              732919479.445022293,
+                                                  89662.787000006,
+                                                    660.101010133,
+                                                1121127.999905594  );
+
+   Broad_Opnd_Table_Cumul  : Broad_Opnds := (        12.000450223,
+                                                    479.430320780,
+                                                      0.003492096,
+                                                      8.112888400,
+                                                   1002.994937800  );
+
+   function Test_Broad_Ops is new FXF2A00.Operations_Loop
+     (Decimal_Fixed  => Broad,
+      Operator_Ptr   => Broad_Optr_Ptr,
+      Operator_Table => Broad_Ops,
+      Operand_Table  => Broad_Opnds);
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+end CXF2A01_0.CXF2A01_1;
+
+
+     --==================================================================--
+
+
+with CXF2A01_0.CXF2A01_1;
+
+with Report;
+procedure CXF2A01 is
+   package Data renames CXF2A01_0.CXF2A01_1;
+
+   use type CXF2A01_0.Micro;
+   use type CXF2A01_0.Money;
+   use type CXF2A01_0.Cash;
+   use type CXF2A01_0.Broad;
+
+   Micro_Cancel_Expected : constant CXF2A01_0.Micro := 0.0;
+   Money_Cancel_Expected : constant CXF2A01_0.Money := 0.0;
+   Cash_Cancel_Expected  : constant CXF2A01_0.Cash  := 0.0;
+   Broad_Cancel_Expected : constant CXF2A01_0.Broad := 0.0;
+
+   Micro_Cumul_Expected  : constant CXF2A01_0.Micro :=  0.075682140420000000;
+   Money_Cumul_Expected  : constant CXF2A01_0.Money := -21327300.00;
+   Cash_Cumul_Expected   : constant CXF2A01_0.Cash  :=  624570600.00;
+   Broad_Cumul_Expected  : constant CXF2A01_0.Broad := -9015252.535794000;
+
+   Micro_Actual   : CXF2A01_0.Micro;
+   Money_Actual   : CXF2A01_0.Money;
+   Cash_Actual    : CXF2A01_0.Cash;
+   Broad_Actual   : CXF2A01_0.Broad;
+begin
+
+   Report.Test ("CXF2A01", "Check decimal addition and subtraction");
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+   Micro_Actual := Data.Test_Micro_Ops (0.0,
+                                        Data.Micro_Optr_Table_Cancel,
+                                        Data.Micro_Opnd_Table_Cancel);
+
+   if Micro_Actual /= Micro_Cancel_Expected then
+      Report.Failed ("Wrong cancellation result for type Micro");
+   end if;
+
+                       ---=---=---=---=---=---=---
+
+
+   Micro_Actual := Data.Test_Micro_Ops (0.0,
+                                        Data.Micro_Optr_Table_Cumul,
+                                        Data.Micro_Opnd_Table_Cumul);
+
+   if Micro_Actual /= Micro_Cumul_Expected then
+      Report.Failed ("Wrong cumulation result for type Micro");
+   end if;
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+   Money_Actual := Data.Test_Money_Ops (0.0,
+                                        Data.Money_Optr_Table_Cancel,
+                                        Data.Money_Opnd_Table_Cancel);
+
+   if Money_Actual /= Money_Cancel_Expected then
+      Report.Failed ("Wrong cancellation result for type Money");
+   end if;
+
+                       ---=---=---=---=---=---=---
+
+
+   Money_Actual := Data.Test_Money_Ops (0.0,
+                                        Data.Money_Optr_Table_Cumul,
+                                        Data.Money_Opnd_Table_Cumul);
+
+   if Money_Actual /= Money_Cumul_Expected then
+      Report.Failed ("Wrong cumulation result for type Money");
+   end if;
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+   Cash_Actual := Data.Test_Cash_Ops (0.0,
+                                      Data.Cash_Optr_Table_Cancel,
+                                      Data.Cash_Opnd_Table_Cancel);
+
+   if Cash_Actual /= Cash_Cancel_Expected then
+      Report.Failed ("Wrong cancellation result for type Cash");
+   end if;
+
+
+                       ---=---=---=---=---=---=---
+
+
+   Cash_Actual := Data.Test_Cash_Ops (0.0,
+                                      Data.Cash_Optr_Table_Cumul,
+                                      Data.Cash_Opnd_Table_Cumul);
+
+   if Cash_Actual /= Cash_Cumul_Expected then
+      Report.Failed ("Wrong cumulation result for type Cash");
+   end if;
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+   Broad_Actual := Data.Test_Broad_Ops (0.0,
+                                        Data.Broad_Optr_Table_Cancel,
+                                        Data.Broad_Opnd_Table_Cancel);
+
+   if Broad_Actual /= Broad_Cancel_Expected then
+      Report.Failed ("Wrong cancellation result for type Broad");
+   end if;
+
+
+                       ---=---=---=---=---=---=---
+
+
+   Broad_Actual := Data.Test_Broad_Ops (0.0,
+                                        Data.Broad_Optr_Table_Cumul,
+                                        Data.Broad_Opnd_Table_Cumul);
+
+   if Broad_Actual /= Broad_Cumul_Expected then
+      Report.Failed ("Wrong cumulation result for type Broad");
+   end if;
+
+
+               ---=---=---=---=---=---=---=---=---=---=---
+
+
+   Report.Result;
+
+end CXF2A01;

@@ -1,0 +1,321 @@
+-- CA11016.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a child of a non-generic package can be a private generic 
+--      package. Check that the private child instance can use its parent's
+--      declarations and operations.  Check that the body of a public child 
+--      package can instantiate its sibling private generic package.
+--
+-- TEST DESCRIPTION:
+--      Declare a map abstraction in a package which manages basic physical
+--      map[s].  Declare a private generic child of this package which can be
+--      instantiated for any display device which has display locations of 
+--      the physical map that can be characterized by any integer type, i.e., 
+--      the intensity of the display point.
+--
+--      Declare a public child of the physical map which specifies the 
+--      display device.  In the body of this child, declare an instance of 
+--      its generic sibling to display the geographic locations.
+--
+--      In the main program, check that the operations in the parent, public 
+--      child and instance of the private child package perform as expected.  
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      17 Apr 96   SAIC    ACVC 2.1: Added pragma Elaborate.
+--
+--!
+
+-- Simulates map of physical features, i.e., desert, forest, or water.
+
+package CA11016_0 is              
+   type Map_Type is private;
+   subtype Latitude is integer range 1 .. 9;
+   subtype Longitude is integer range 1 .. 7;
+
+   type Physical_Features is (Desert, Forest, Water);
+   
+   -- Use geographic database to initialize the basic map.
+
+   procedure Initialize_Basic_Map (Map  : in out Map_Type);
+
+   function Get_Physical_Feature (Lat  : Latitude;
+                                  Long : Longitude;
+                                  Map  : Map_Type) return Physical_Features;
+
+private
+   type Map_Type is array (Latitude, Longitude) of Physical_Features;
+   Basic_Map : Map_Type;
+
+end CA11016_0;
+
+     --==================================================================--
+
+package body CA11016_0 is              
+
+   procedure Initialize_Basic_Map (Map : in out Map_Type) is
+   -- Not a real initialization.  Real application can use geographic
+   -- database to create the basic map.
+
+   begin
+      for I in Latitude'first .. Latitude'last loop
+         for J in 1 .. 2 loop
+            Map (I, J) := Desert;
+         end loop;
+         for J in 3 .. 4 loop
+            Map (I, J) := Forest;
+         end loop;
+         for J in 5 .. 7 loop
+            Map (I, J) := Water;
+         end loop;
+      end loop;
+
+   end Initialize_Basic_Map;
+   --------------------------------------------------------
+   function Get_Physical_Feature (Lat  : Latitude;
+                                  Long : Longitude;
+                                  Map  : Map_Type) 
+     return Physical_Features is
+   begin
+     return (Map (Lat, Long));
+   end Get_Physical_Feature;
+   --------------------------------------------------------
+
+   begin
+      -- Initialize a basic map.
+      Initialize_Basic_Map (Basic_Map);
+
+end CA11016_0;
+
+     --==================================================================--
+
+-- Private generic child package of physical map.  This generic package may
+-- be instantiated for any display device which has display locations 
+-- (latitude, longitude) that can be characterized by an integer value.
+-- For example, the intensity of the display point might be so characterized.
+-- It can be instantiated for any desired range of values (which would 
+-- correspond to the range accepted by the display device).
+
+
+private 
+
+generic               
+
+   type Display_Value is range <>;  -- Any display feature that is 
+                                    -- represented by an integer.
+
+package CA11016_0.CA11016_1 is              
+
+   function Get_Display_Value (Lat  : Latitude;
+                               Long : Longitude;
+                               Map  : Map_Type) return Display_Value;
+
+end CA11016_0.CA11016_1;
+
+
+     --==================================================================--
+
+
+package body CA11016_0.CA11016_1 is              
+
+   function Get_Display_Value (Lat  : Latitude;
+                               Long : Longitude;
+                               Map  : Map_Type) 
+     return Display_Value is
+   begin
+      case Get_Physical_Feature (Lat, Long, Map) is
+                                          -- Parent's operation,
+           when Forest => return (Display_Value'first);
+                                          -- Parent's type.
+           when Desert => return (Display_Value'last);
+                                          -- Parent's type.
+           when others => return 
+                            ( (Display_Value'last - Display_Value'first) / 2 );
+                                          -- NOTE: Results are truncated.
+      end case;
+
+   end Get_Display_Value;
+
+end CA11016_0.CA11016_1;
+
+
+     --==================================================================--
+
+-- Map display operation, public child of physical map.
+
+package CA11016_0.CA11016_2 is              
+
+   -- Super-duper Ultra Geographic Display Device (SDUGD) can display 
+   -- geographic locations with light intensity values ranging from 1 to 7.
+
+   type Display_Val is range 1 .. 7;
+
+   type Device_Color is (Brown, Blue, Green);
+
+   type IO_Packet is
+      record
+         Lat       : Latitude;       -- Parent's type.
+         Long      : Longitude;      -- Parent's type.
+         Color     : Device_Color;
+         Intensity : Display_Val;
+      end record;
+
+   procedure Data_For_SDUGD (Lat           : in     Latitude;
+                             Long          : in     Longitude;
+                             Output_Packet : in out IO_Packet);
+
+end CA11016_0.CA11016_2;
+
+     --==================================================================--
+
+
+with CA11016_0.CA11016_1;          -- Private generic sibling.
+pragma Elaborate (CA11016_0.CA11016_1);
+
+package body CA11016_0.CA11016_2 is              
+
+   -- Declare instance of the private generic sibling for 
+   -- an integer type that represents color intensity.
+
+   package SDUGD is new CA11016_0.CA11016_1 (Display_Val);
+
+   procedure Data_For_SDUGD (Lat           : in     Latitude;
+                             Long          : in     Longitude;
+                             Output_Packet : in out IO_Packet) is
+
+   -- Simulates sending control information to a display device.
+   -- Control information consists of latitude, longitude, a
+   -- color, and an intensity.
+
+   begin
+      case Get_Physical_Feature (Lat, Long, Basic_Map) is
+                                           -- Parent's operation.
+         when Water  => Output_Packet.Color     := Blue;
+                        Output_Packet.Intensity := SDUGD.Get_Display_Value 
+                                                   (Lat, Long, Basic_Map);
+                                           -- Sibling's operation.
+         when Forest => Output_Packet.Color     := Green;
+                        Output_Packet.Intensity := SDUGD.Get_Display_Value 
+                                                   (Lat, Long, Basic_Map);
+                                           -- Sibling's operation.
+         when others => Output_Packet.Color     := Brown;
+                        Output_Packet.Intensity := SDUGD.Get_Display_Value 
+                                                   (Lat, Long, Basic_Map);
+                                           -- Sibling's operation.
+       end case;
+
+   end Data_For_SDUGD;
+
+end CA11016_0.CA11016_2;
+
+     --==================================================================--
+
+with CA11016_0.CA11016_2;            -- Map display device operation,
+                                     -- implicitly withs parent, physical map
+                                     -- application.
+
+use CA11016_0.CA11016_2;             -- Allows direct visibility to the simple
+                                     -- name of CA11016_0.CA11016_2.
+
+with Report;
+
+procedure CA11016 is
+
+   TC_Packet : IO_Packet;
+
+begin 
+
+   Report.Test ("CA11016", "Check that body of a public child package can " &
+                           "use its sibling private generic package "       &
+                           "declarations and operations");
+
+-- Simulate control information at coordinates 3 and 7 of the
+-- basic map for the SDUGD.
+         
+         Water_Display_Subtest:
+         begin
+            TC_Packet.Lat  := 3;
+            TC_Packet.Long := 7;
+
+            -- Build color and light intensity of the basic map at 
+            -- latitude 3 and longitude 7.
+
+            Data_For_SDUGD (TC_Packet.Lat, TC_Packet.Long, TC_Packet);
+
+            if ( (TC_Packet.Color     /= Blue) or
+                 (TC_Packet.Intensity /= 3) ) then
+                Report.Failed ("Map display device contains " &
+                               "incorrect values for water subtest");
+            end if;
+
+         end Water_Display_Subtest;
+
+-- Simulate control information at coordinates 2 and 1 of the
+-- basic map for the SDUGD.
+         
+         Desert_Display_Subtest:
+         begin
+            TC_Packet.Lat  := 9;
+            TC_Packet.Long := 2;
+
+            -- Build color and light intensity of the basic map at 
+            -- latitude 9 and longitude 2.
+
+            Data_For_SDUGD (TC_Packet.Lat, TC_Packet.Long, TC_Packet);
+
+            if ( (TC_Packet.Color     /= Brown) or
+                 (TC_Packet.Intensity /= 7) ) then
+                Report.Failed ("Map display device contains " &
+                               "incorrect values for desert subtest");
+            end if;
+
+         end Desert_Display_Subtest;
+
+-- Simulate control information at coordinates 8 and 4 of the
+-- basic map for the SDUGD.
+         
+         Forest_Display_Subtest:
+         begin
+            TC_Packet.Lat  := 8;
+            TC_Packet.Long := 4;
+
+            -- Build color and light intensity of the basic map at 
+            -- latitude 8 and longitude 4.
+
+            Data_For_SDUGD (TC_Packet.Lat, TC_Packet.Long, TC_Packet);
+
+            if ( (TC_Packet.Color     /= Green) or
+                 (TC_Packet.Intensity /= 1) ) then
+                Report.Failed ("Map display device contains " &
+                               "incorrect values for forest subtest");
+            end if;
+
+         end Forest_Display_Subtest;
+
+   Report.Result;
+
+end CA11016;

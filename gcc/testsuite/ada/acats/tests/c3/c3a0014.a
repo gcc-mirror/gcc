@@ -1,0 +1,453 @@
+-- C3A0014.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that if the view defined by an object declaration is aliased,
+--      and the type of the object has discriminants, then the object is
+--      constrained by its initial value even if its nominal subtype is
+--      unconstrained.
+--
+--      Check that the attribute A'Constrained returns True if A is a formal
+--      out or in out parameter, or dereference thereof, and A denotes an
+--      aliased view of an object.
+--
+-- TEST DESCRIPTION:
+--      These rules apply to objects of a record type with defaulted
+--      discriminants, which may be unconstrained variables. If such a
+--      variable is declared to be aliased, then it is constrained by its
+--      initial value, and the value of the discriminant cannot be changed
+--      for the life of the variable.
+--
+--      The rules do not apply to aliased component types because if such
+--      types are discriminated they must be constrained.
+--
+--      A'Constrained returns True if A denotes a constant, value, or
+--      constrained variable. Since aliased objects are constrained, it must
+--      return True if the actual parameter corresponding to a formal
+--      parameter A is an aliased object. The objective only mentions formal
+--      parameters of mode out and in out, since parameters of mode in are
+--      by definition constant, and would result in True anyway.
+--
+--      This test declares aliased objects of a nominally unconstrained
+--      record subtype, both with and without initialization expressions.
+--      It also declares access values which point to such objects. It then
+--      checks that Constraint_Error is raised if an attempt is made to
+--      change the discriminant value of an aliased object, either directly
+--      or via a dereference of an access value. For aliased objects, this
+--      check is also performed for subprogram parameters of mode out.
+--
+--      The test also passes aliased objects and access values which point
+--      to such objects as actuals to subprograms and verifies, for parameter
+--      modes out and in out, that P'Constrained returns true if P is the
+--      corresponding formal parameter or a dereference thereof.
+--
+--      Additionally, the test declares a generic package which declares a
+--      an aliased object of a formal derived unconstrained type, which is
+--      is initialized with the value of a formal object of that type.
+--      procedure declared within the generic assigns a value to the object
+--      which has the same discriminant value as the formal derived type's
+--      ancestor type. The generic is instantiated with various actuals
+--      for the formal object, and the procedure is called. The test verifies
+--      that Constraint_Error is raised if the discriminant values of the
+--      actual corresponding to the formal object and the value assigned
+--      by the procedure are not equal.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      16 Nov 95   SAIC    ACVC 2.0.1 fixes: Corrected numerous errors.
+--
+--!
+
+package C3A0014_0 is
+
+   subtype Reasonable is Integer range 1..10;
+                                          -- Unconstrained (sub)type.
+   type UC (D: Reasonable := 2) is record -- Discriminant default.
+      S: String (1 .. D) := "Hi";         -- Default value.
+   end record;
+
+   type AUC is access all UC;
+
+   -- Nominal subtype is unconstrained for the following:
+
+   Obj0 :         UC;                  -- An unconstrained object.
+
+   Obj1 :         UC := (5, "Hello");  -- Non-aliased with initialization,
+                                       -- an unconstrained object.
+
+   Obj2 : aliased UC := (5, "Hello");  -- Aliased with initialization,
+                                       -- a constrained object.
+
+   Obj3 :         UC renames Obj2;     -- Aliased (renaming of aliased view),
+                                       -- a constrained object.
+   Obj4 : aliased UC;                  -- Aliased without initialization, Obj4
+                                       -- constrained here to initial value
+                                       -- taken from default for type.
+
+   Ptr1 : AUC := new UC'(Obj1);
+   Ptr2 : AUC := new UC;
+   Ptr3 : AUC := Obj3'Access;
+   Ptr4 : AUC := Obj4'Access;
+
+
+   procedure NP_Proc (A:    out UC);
+   procedure NP_Cons (A: in out UC;  B: out Boolean);
+   procedure P_Cons  (A:    out AUC; B: out Boolean);
+
+
+   generic
+      type FT is new UC;
+      FObj : in out FT;
+   package Gen is
+      F  : aliased FT := FObj;     -- Constrained if FT has discriminants.
+      procedure Proc;
+   end Gen;
+
+
+   procedure Avoid_Optimization_and_Fail ( P : UC; Msg : String );
+
+
+end C3A0014_0;
+
+
+  --=======================================================================--
+
+with Report;
+
+package body C3A0014_0 is
+
+   procedure NP_Proc (A: out UC) is
+   begin
+      A := (3, "Bye");
+   end NP_Proc;
+
+   procedure NP_Cons (A: in out UC; B: out Boolean) is
+   begin
+      B := A'Constrained; 
+   end NP_Cons;
+
+   procedure P_Cons (A: out AUC; B: out Boolean) is
+   begin
+      B := A.all'Constrained; 
+   end P_Cons;
+
+
+   package body Gen is
+     
+      procedure Proc is
+      begin
+         F := (2, "Fi");
+      end Proc;
+
+   end Gen;
+
+
+   procedure Avoid_Optimization_and_Fail ( P : UC; Msg : String ) is
+      Default : UC := (1, "!"); -- Unique value.
+   begin                       
+      if P = Default then       -- Both If branches can't do the same thing.
+         Report.Failed  (Msg & ": Constraint_Error not raised");
+      else                      -- Subtests should always select this path.
+         Report.Failed ("Constraint_Error not raised " & Msg);
+      end if;
+   end Avoid_Optimization_and_Fail;
+
+
+end C3A0014_0;
+
+
+  --=======================================================================--
+
+
+with C3A0014_0;  use C3A0014_0;
+with Report;
+
+procedure C3A0014 is
+begin
+
+   Report.Test("C3A0014", "Check that if the view defined by an object "   &
+                          "declaration is aliased, and the type of the "   &
+                          "object has discriminants, then the object is "  &
+                          "constrained by its initial value even if its "  &
+                          "nominal subtype is unconstrained.  Check that " &
+                          "the attribute A'Constrained returns True if A " &
+                          "is a formal out or in out parameter, or "       &
+                          "dereference thereof, and A denotes an aliased " &
+                          "view of an object");
+
+   Non_Pointer_Block:
+   begin
+
+      begin
+         Obj0 := (3, "Bye");              -- OK: Obj0 not constrained.
+         if Obj0 /= (3, "Bye") then
+            Report.Failed 
+              ("Wrong value after aggregate assignment - Subtest 1");
+         end if;
+      exception
+         when others => 
+            Report.Failed ("Unexpected exception raised - Subtest 1");
+      end;
+
+
+      begin
+         Obj1 := (3, "Bye");              -- OK: Obj1 not constrained.
+         if Obj1 /= (3, "Bye") then
+            Report.Failed
+              ("Wrong value after aggregate assignment - Subtest 2");
+         end if;
+      exception
+         when others => 
+            Report.Failed ("Unexpected exception raised - Subtest 2");
+      end;
+
+
+      begin
+         Obj2 := (3, "Bye");              -- C_E: Obj2 is constrained (D=>5).
+         Avoid_Optimization_and_Fail (Obj2, "Subtest 3");
+      exception
+         when Constraint_Error => null;  -- Exception is expected.
+      end;
+
+
+      begin
+         Obj3 := (3, "Bye");              -- C_E: Obj3 is constrained (D=>5).
+         Avoid_Optimization_and_Fail (Obj3, "Subtest 4");
+      exception
+         when Constraint_Error => null;  -- Exception is expected.
+      end;
+
+
+      begin
+         Obj4 := (3, "Bye");              -- C_E: Obj4 is constrained (D=>2).
+         Avoid_Optimization_and_Fail (Obj4, "Subtest 5");
+      exception
+         when Constraint_Error => null;  -- Exception is expected.
+      end;
+
+   exception
+      when others => Report.Failed("Unexpected exception: Non_Pointer_Block");
+   end Non_Pointer_Block;
+
+
+   Pointer_Block:
+   begin
+   
+      begin
+         Ptr1.all := (3, "Bye");        -- C_E: Ptr1.all is constrained (D=>5).
+         Avoid_Optimization_and_Fail (Ptr1.all, "Subtest 6");
+      exception
+         when Constraint_Error => null; -- Exception is expected.
+      end;
+
+
+      begin
+         Ptr2.all := (3, "Bye");        -- C_E: Ptr2.all is constrained (D=>2).
+         Avoid_Optimization_and_Fail (Ptr2.all, "Subtest 7");
+      exception
+         when Constraint_Error => null; -- Exception is expected. 
+      end;
+
+
+      begin
+         Ptr3.all := (3, "Bye");        -- C_E: Ptr3.all is constrained (D=>5).
+         Avoid_Optimization_and_Fail (Ptr3.all, "Subtest 8");
+      exception
+         when Constraint_Error => null; -- Exception is expected. 
+      end;
+
+
+      begin
+         Ptr4.all := (3, "Bye");        -- C_E: Ptr4.all is constrained (D=>2).
+         Avoid_Optimization_and_Fail (Ptr4.all, "Subtest 9");
+      exception
+         when Constraint_Error => null; -- Exception is expected. 
+      end;
+
+   exception
+      when others => Report.Failed("Unexpected exception: Pointer_Block");
+   end Pointer_Block;
+
+
+   Subprogram_Block:
+   declare
+      Is_Constrained : Boolean;
+   begin
+
+      begin
+         NP_Proc (Obj0);                 -- OK: Obj0 not constrained, can
+         if Obj0 /= (3, "Bye") then      -- change discriminant value.
+            Report.Failed 
+              ("Wrong value after aggregate assignment - Subtest 10");
+         end if;
+      exception
+         when others => 
+            Report.Failed ("Unexpected exception raised - Subtest 10");
+      end;
+
+
+      begin
+         NP_Proc (Obj2);                 -- C_E: Obj2 is constrained (D=>5).
+         Avoid_Optimization_and_Fail (Obj2, "Subtest 11");      
+      exception
+         when Constraint_Error => null;  -- Exception is expected.
+      end;
+
+
+      begin
+         NP_Proc (Obj3);                 -- C_E: Obj3 is constrained (D=>5).
+         Avoid_Optimization_and_Fail (Obj3, "Subtest 12");
+      exception
+         when Constraint_Error => null;  -- Exception is expected.
+      end;
+
+
+      begin
+         NP_Proc (Obj4);                 -- C_E: Obj4 is constrained (D=>2).
+         Avoid_Optimization_and_Fail (Obj4, "Subtest 13");
+      exception
+         when Constraint_Error => null;  -- Exception is expected.
+      end;
+
+
+
+      begin
+         Is_Constrained := True;
+         NP_Cons (Obj1, Is_Constrained);  -- Should return False, since Obj1
+         if Is_Constrained then           -- is not constrained.
+            Report.Failed ("Wrong result from 'Constrained - Subtest 14");
+         end if;
+      exception
+         when others => 
+            Report.Failed ("Unexpected exception raised - Subtest 14");
+      end;
+
+
+      begin
+         Is_Constrained := False;
+         NP_Cons (Obj2, Is_Constrained);  -- Should return True, Obj2 is
+         if not Is_Constrained then       -- constrained.
+            Report.Failed ("Wrong result from 'Constrained - Subtest 15");
+         end if;
+      exception
+         when others => 
+            Report.Failed ("Unexpected exception raised - Subtest 15");
+      end;
+
+
+
+
+      begin
+         Is_Constrained := False;
+         P_Cons (Ptr2, Is_Constrained);   -- Should return True, Ptr2.all
+         if not Is_Constrained then       -- is constrained.
+            Report.Failed ("Wrong result from 'Constrained - Subtest 16");
+         end if;
+      exception
+         when others => 
+            Report.Failed ("Unexpected exception raised - Subtest 16");
+      end;
+
+
+      begin
+         Is_Constrained := False;
+         P_Cons (Ptr3, Is_Constrained);   -- Should return True, Ptr3.all
+         if not Is_Constrained then       -- is constrained.
+            Report.Failed ("Wrong result from 'Constrained - Subtest 17");
+         end if;
+      exception
+         when others => 
+            Report.Failed ("Unexpected exception raised - Subtest 17");
+      end;
+
+
+   exception
+      when others => Report.Failed("Exception raised in Subprogram_Block");
+   end Subprogram_Block;
+
+
+   Generic_Block:
+   declare
+
+      type NUC is new UC;
+
+      Obj : NUC;
+
+
+      package Instance_A is new Gen (NUC, Obj);
+      package Instance_B is new Gen (UC, Obj2);
+      package Instance_C is new Gen (UC, Obj3);
+      package Instance_D is new Gen (UC, Obj4);
+
+   begin
+
+      begin
+         Instance_A.Proc;                -- OK: Obj.D = 2.
+         if Instance_A.F /= (2, "Fi") then
+            Report.Failed 
+              ("Wrong value after aggregate assignment - Subtest 18");
+         end if;
+      exception
+         when others => 
+            Report.Failed ("Unexpected exception raised - Subtest 18");
+      end;
+
+
+      begin
+         Instance_B.Proc;                -- C_E: Obj2.D = 5.
+         Avoid_Optimization_and_Fail (Obj2, "Subtest 19");
+      exception
+         when Constraint_Error => null;  -- Exception is expected.
+      end;
+
+
+      begin
+         Instance_C.Proc;                -- C_E: Obj3.D = 5.
+         Avoid_Optimization_and_Fail (Obj3, "Subtest 20");
+      exception
+         when Constraint_Error => null;  -- Exception is expected.
+      end;
+
+
+      begin
+         Instance_D.Proc;                -- OK: Obj4.D = 2.
+         if Instance_D.F /= (2, "Fi") then
+            Report.Failed 
+              ("Wrong value after aggregate assignment - Subtest 21");
+         end if;
+      exception
+         when others => 
+            Report.Failed ("Unexpected exception raised - Subtest 21");
+      end;
+
+   exception
+      when others => Report.Failed("Exception raised in Generic_Block");
+   end Generic_Block;
+
+
+   Report.Result;
+
+end C3A0014;

@@ -1,0 +1,245 @@
+-- F393A00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation provides a simple background for a class family
+--      based on an abstract type.  It is to be used to test the
+--      dispatching of various forms of subprogram defined/inherited and
+--      overridden with the abstract type.
+--
+--  type                       procedures                  functions
+--  ----                       ----------                  ---------
+--  Object                     Initialize, Swap(abstract)  Create(abstract)
+--        Object'Class                                     Initialized
+--    Windmill is new Object   Swap, Stop, Add_Spin        Create, Spin
+--      Pump is new Windmill   Set_Rate                    Create, Rate
+--      Mill is new Windmill   Swap, Stop                  Create
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+ 
+package F393A00_0 is
+   procedure TC_Touch ( A_Tag : Character );
+   procedure TC_Validate( Expected: String; Message: String );
+end F393A00_0;
+ 
+with Report;
+package body F393A00_0 is
+   Expectation : String(1..20);
+   Finger      : Natural := 0;
+ 
+   procedure TC_Touch ( A_Tag : Character ) is
+   begin
+     Finger := Finger+1;
+     Expectation(Finger) := A_Tag;
+   end TC_Touch;
+ 
+   procedure TC_Validate( Expected: String; Message: String ) is
+   begin
+     if Expectation(1..Finger) /= Expected then
+       Report.Failed( Message & " Expecting: " & Expected 
+ 			     & " Got: " & Expectation(1..Finger) );
+     end if;
+     Finger := 0;
+   end TC_Validate;
+end F393A00_0;
+ 
+----------------------------------------------------------------------
+ 
+package F393A00_1 is
+   type Object is abstract tagged private;
+   procedure Initialize( An_Object: in out Object );
+   function  Initialized( An_Object: Object'Class ) return Boolean;
+   procedure Swap( A,B: in out Object ) is abstract;
+   function  Create return Object is abstract;
+private
+   type Object is abstract tagged record
+     Initialized : Boolean := False;
+   end record;
+end F393A00_1;
+ 
+with F393A00_0;
+package body F393A00_1 is
+   procedure Initialize( An_Object: in out Object ) is
+   begin
+     An_Object.Initialized := True;
+     F393A00_0.TC_Touch('a');
+   end Initialize;
+ 
+   function  Initialized( An_Object: Object'Class ) return Boolean is
+   begin
+     F393A00_0.TC_Touch('b');
+     return An_Object.Initialized;
+   end Initialized;
+end F393A00_1;
+ 
+----------------------------------------------------------------------
+ 
+with F393A00_1;
+package F393A00_2 is
+ 
+   type Rotational_Measurement is range -1_000 .. 1_000;
+   type Windmill is new F393A00_1.Object with private;
+ 
+   procedure Swap( A,B: in out Windmill );  
+ 
+   function  Create return Windmill;        
+ 
+   procedure Add_Spin( To_Mill : in out Windmill;
+ 		      RPMs    : in     Rotational_Measurement );
+ 
+   procedure Stop( Mill : in out Windmill );
+ 
+   function  Spin( Mill : Windmill ) return Rotational_Measurement;
+ 
+private
+   type Windmill is new F393A00_1.Object with
+     record
+       Spin : Rotational_Measurement := 0;
+     end record;
+end F393A00_2;
+ 
+with F393A00_0;
+package body F393A00_2 is
+ 
+   procedure Swap( A,B: in out Windmill ) is
+     T : constant Windmill := B;
+   begin
+     F393A00_0.TC_Touch('c');
+     B := A;
+     A := T;
+   end Swap;
+ 
+   function  Create return Windmill is
+     A_Mill : Windmill;
+   begin
+     F393A00_0.TC_Touch('d');
+     return A_Mill;
+   end Create;
+ 
+   procedure Add_Spin( To_Mill : in out Windmill;
+ 		      RPMs    : in     Rotational_Measurement ) is
+   begin
+     F393A00_0.TC_Touch('e');
+     To_Mill.Spin := To_Mill.Spin + RPMs;
+   end Add_Spin;
+ 
+   procedure Stop( Mill : in out Windmill ) is
+   begin
+     F393A00_0.TC_Touch('f');
+     Mill.Spin := 0;
+   end Stop;
+ 
+   function  Spin( Mill : Windmill ) return Rotational_Measurement is
+   begin
+     F393A00_0.TC_Touch('g');
+     return Mill.Spin;
+   end Spin;
+ 
+end F393A00_2;
+ 
+----------------------------------------------------------------------
+ 
+with F393A00_2;
+package F393A00_3 is
+   type Pump is new F393A00_2.Windmill with private;
+   function Create return Pump;
+ 
+   type Gallons_Per_Revolution is digits 3;
+   procedure Set_Rate( A_Pump: in out Pump; To_Rate: Gallons_Per_Revolution);
+   function  Rate( Of_Pump: Pump ) return Gallons_Per_Revolution;
+private
+   type Pump is new F393A00_2.Windmill with
+     record
+       GPRPM : Gallons_Per_Revolution := 0.0; -- Gallons/RPM
+     end record;
+end F393A00_3;
+ 
+with F393A00_0;
+package body F393A00_3 is
+   function Create return Pump is
+     Sump : Pump;
+   begin
+     F393A00_0.TC_Touch('h');
+     return Sump;
+   end Create;
+ 
+   procedure Set_Rate( A_Pump: in out Pump; To_Rate: Gallons_Per_Revolution)
+   is
+   begin
+     F393A00_0.TC_Touch('i');
+     A_Pump.GPRPM := To_Rate;
+   end Set_Rate;
+ 
+   function  Rate( Of_Pump: Pump ) return Gallons_Per_Revolution is
+   begin
+     F393A00_0.TC_Touch('j');
+     return Of_Pump.GPRPM;
+   end Rate;
+end F393A00_3;
+ 
+----------------------------------------------------------------------
+
+with F393A00_2;
+with F393A00_3;
+package F393A00_4 is
+   type Mill is new F393A00_2.Windmill with private;
+ 
+   procedure Swap( A,B: in out Mill );
+   function  Create return Mill;
+   procedure Stop( It: in out Mill );
+ private
+   type Mill is new F393A00_2.Windmill with
+     record
+       Pump: F393A00_3.Pump := F393A00_3.Create;
+     end record;
+end F393A00_4;
+ 
+with F393A00_0;
+package body F393A00_4 is
+   procedure Swap( A,B: in out Mill ) is
+     T: constant Mill := A;
+   begin
+     F393A00_0.TC_Touch('k');
+     A := B;
+     B := T;
+   end Swap;
+ 
+   function  Create return Mill is
+     A_Mill : Mill;
+   begin
+     F393A00_0.TC_Touch('l');
+     return A_Mill;
+   end Create;
+ 
+   procedure Stop( It: in out Mill ) is
+   begin
+     F393A00_0.TC_Touch('m');
+     F393A00_3.Stop( It.Pump ); 
+     F393A00_2.Stop( F393A00_2.Windmill( It ) ); 
+   end Stop;
+end F393A00_4;

@@ -1,0 +1,193 @@
+-- CC51A01.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that, in an instance, each implicit declaration of a user-defined
+--      subprogram of a formal derived record type declares a view of the
+--      corresponding primitive subprogram of the ancestor, even if the
+--      primitive subprogram has been overridden for the actual type.
+--
+-- TEST DESCRIPTION:
+--      Declare a "fraction" type abstraction in a package (foundation code).
+--      Declare a "fraction" I/O routine in a generic package with a formal
+--      derived type whose ancestor type is the fraction type declared in
+--      the first package. Within the I/O routine, call other operations of
+--      ancestor type. Derive from the root fraction type in another package
+--      and override one of the operations called in the generic I/O routine.
+--      Derive from the derivative of the root fraction type. Instantiate
+--      the generic package for each of the three types and call the I/O
+--      routine.
+--
+-- TEST FILES:
+--      The following files comprise this test:
+--
+--         FC51A00.A
+--         CC51A01.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+with FC51A00;         -- Fraction type abstraction.
+generic               -- Fraction I/O support.
+   type Fraction is new FC51A00.Fraction_Type;     -- Formal derived type of a
+package CC51A01_0 is                               -- (private) record type.
+
+   -- Simulate writing a fraction to standard output. In a real application,
+   -- this subprogram might be a procedure which uses Text_IO routines. For
+   -- the purposes of the test, the "output" is returned to the caller as a
+   -- string.
+   function Put (Item : in Fraction) return String;
+
+   -- ... Other I/O operations for fractions.
+
+end CC51A01_0;
+
+
+     --==================================================================--
+
+
+package body CC51A01_0 is
+
+   function Put (Item : in Fraction) return String is
+      Num : constant String :=              -- Fraction's primitive subprograms
+        Integer'Image (Numerator (Item));   -- are inherited from its parent
+      Den : constant String :=              -- (FC51A00.Fraction_Type) and NOT
+        Integer'Image (Denominator (Item)); -- from the actual type.
+   begin
+      return (Num & '/' & Den);
+   end Put;
+
+end CC51A01_0;
+
+
+     --==================================================================--
+
+
+with FC51A00;         -- Fraction type abstraction.
+package CC51A01_1 is
+
+   -- Derive directly from the root type of the class and override one of the
+   -- primitive subprograms.
+
+   type Pos_Fraction is new FC51A00.Fraction_Type;     -- Derived directly from
+                                                       -- root type of class.
+   -- Inherits "/" from root type.
+   -- Inherits "-" from root type.
+   -- Inherits Numerator from root type.
+   -- Inherits Denominator from root type.
+
+   -- Return absolute value of numerator as integer.
+   function Numerator (Frac : Pos_Fraction)            -- Overrides parent's
+     return Integer;                                   -- operation.
+
+end CC51A01_1;
+
+
+     --==================================================================--
+
+
+package body CC51A01_1 is
+
+   -- This body should never be called.
+   --
+   -- The test sends the function Numerator a fraction with a negative
+   -- numerator, and expects this negative numerator to be returned. This
+   -- version of the function returns the absolute value of the numerator.
+   -- Thus, a call to this version is detectable by examining the sign
+   -- of the return value.
+
+   function Numerator (Frac : Pos_Fraction) return Integer is
+      Converted_Frac : FC51A00.Fraction_Type := FC51A00.Fraction_Type (Frac);
+      Orig_Numerator : Integer := FC51A00.Numerator (Converted_Frac);
+   begin
+      return abs (Orig_Numerator);
+   end Numerator;
+
+end CC51A01_1;
+
+
+     --==================================================================--
+
+
+with FC51A00;     -- Fraction type abstraction.
+with CC51A01_0;   -- Fraction I/O support.
+with CC51A01_1;   -- Positive fraction type abstraction.
+
+with Report;
+procedure CC51A01 is
+
+   type Distance is new CC51A01_1.Pos_Fraction;    -- Derived indirectly from
+                                                   -- root type of class.
+   -- Inherits "/" indirectly from root type.
+   -- Inherits "-" indirectly from root type.
+   -- Inherits Numerator directly from parent type.
+   -- Inherits Denominator indirectly from root type.
+
+   use FC51A00, CC51A01_1;                         -- All primitive subprograms
+                                                   -- directly visible.
+
+   package Fraction_IO     is new CC51A01_0 (Fraction_Type);
+   package Pos_Fraction_IO is new CC51A01_0 (Pos_Fraction);
+   package Distance_IO     is new CC51A01_0 (Distance);
+
+   -- For each of the instances above, the subprogram "Put" should produce
+   -- the same result. That is, the primitive subprograms called by Put
+   -- should in all cases be those of the type Fraction_Type, which is the
+   -- ancestor type for the formal derived type in the generic unit. In
+   -- particular, for Pos_Fraction_IO and Distance_IO, the versions of
+   -- Numerator called should NOT be those of the actual types, which override
+   -- Fraction_Type's version.
+
+   TC_Expected_Result : constant String := "-3/ 16";
+
+   TC_Root_Type_Of_Class  : Fraction_Type := -3/16;
+   TC_Direct_Derivative   : Pos_Fraction  := -3/16;
+   TC_Indirect_Derivative : Distance      := -3/16;
+
+begin
+   Report.Test ("CC51A01", "Check that, in an instance, each implicit "     &
+                "declaration of a user-defined subprogram of a formal "     &
+                "derived record type declares a view of the corresponding " &
+                "primitive subprogram of the ancestor, even if the "        &
+                "primitive subprogram has been overridden for the actual "  &
+                "type");
+
+   if (Fraction_IO.Put (TC_Root_Type_Of_Class) /= TC_Expected_Result) then
+      Report.Failed ("Wrong result for root type");
+   end if;
+
+   if (Pos_Fraction_IO.Put (TC_Direct_Derivative) /= TC_Expected_Result) then
+      Report.Failed ("Wrong result for direct derivative");
+   end if;
+
+   if (Distance_IO.Put (TC_Indirect_Derivative) /= TC_Expected_Result) then
+      Report.Failed ("Wrong result for INdirect derivative");
+   end if;
+
+   Report.Result;
+end CC51A01;

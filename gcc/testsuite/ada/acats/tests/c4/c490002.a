@@ -1,0 +1,239 @@
+-- C490002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that, for a real static expression that is not part of a larger
+--      static expression, and whose expected type T is an ordinary fixed
+--      point type that is not a descendant of a formal scalar type, the value
+--      is rounded to the nearest integral multiple of the small of T if
+--      T'Machine_Rounds is true, and is truncated otherwise. Check that if
+--      rounding is performed, and the value is exactly halfway between two
+--      multiples of the small, one of the two multiples of small is used.
+--
+-- TEST DESCRIPTION:
+--      The test obtains an integral multiple M1 of the small of an ordinary
+--      fixed point subtype S by dividing a real literal by S'Small, and then
+--      truncating the result using 'Truncation. It then obtains an adjacent
+--      multiple M2 of the small by using S'Succ (or S'Pred). It then
+--      constructs values which lie between these multiples: one (A) which is
+--      closer to M1, one (B) which is exactly halfway between M1 and M2, and
+--      one (C) which is closer to M2. This is done for both positive and
+--      negative multiples of the small.
+--
+--      Let M1 be closer to zero than M2. Then if S'Machine_Rounds is true,
+--      C must be rounded to M2, A must be rounded to M1, and B must be rounded
+--      to either M1 or M2. If S'Machine_Rounds is false, all the values must
+--      be truncated to M1.
+--
+--      A, B, and C are constructed using the following static expressions:
+--
+--         A: constant S := M1 + (M2 - M1)/Z; -- Z slightly more than 2.0.
+--         B: constant S := M1 + (M2 - M1)/Z; -- Z equals 2.0.
+--         C: constant S := M1 + (M2 - M1)/Z; -- Z slightly less than 2.0.
+--
+--      Since these are static expressions, they must be evaluated exactly,
+--      and no rounding may occur until the final result is calculated.
+--
+--      The checks for equality between the members of (A, B, C) and (M1, M2)
+--      are performed at run-time within the body of a subprogram.
+--
+--      The test performs additional checks that the rounding performed on
+--      real literals is consistent for ordinary fixed point subtypes. A
+--      named number (initialized with a literal) is assigned to a constant of
+--      a fixed point subtype S. The same literal is then passed to a
+--      subprogram, along with the constant, and an equality check is
+--      performed within the body of the subprogram.
+--
+--
+-- CHANGE HISTORY:
+--      26 Sep 95   SAIC    Initial prerelease version.
+--
+--!
+
+package C490002_0 is
+
+   type My_Fix is delta 0.0625 range -1000.0 .. 1000.0;
+
+   Small : constant := My_Fix'Small;                      -- Named number.
+
+   procedure Fixed_Subtest (A, B: in My_Fix; Msg: in String);
+
+   procedure Fixed_Subtest (A, B, C: in My_Fix; Msg: in String);
+
+
+--
+-- Positive cases:
+--
+
+   --  |----|-------------|-----------------|-------------------|-----------|
+   --  |    |             |                 |                   |           |
+   --  0   P_M1  Less_Pos_Than_Half  Pos_Exactly_Half  More_Pos_Than_Half  P_M2
+
+
+   Positive_Real  : constant := 0.11433;          -- Named number.
+   Pos_Multiplier : constant := Float'Truncation(Positive_Real/Small);
+
+   -- Pos_Multiplier is the number of integral multiples of small contained
+   -- in Positive_Real. P_M1 is thus the largest integral multiple of
+   -- small less than or equal to Positive_Real. Note that since Positive_Real
+   -- is a named number and not a fixed point object, P_M1 is generated
+   -- without assuming that rounding is performed correctly for fixed point
+   -- subtypes.
+
+   Positive_Fixed : constant My_Fix := Positive_Real;
+
+   P_M1 : constant My_Fix := Pos_Multiplier * Small;
+   P_M2 : constant My_Fix := My_Fix'Succ(P_M1);
+
+   -- P_M1 and P_M2 are adjacent multiples of the small of My_Fix. Note that
+   -- 0.11433 either equals P_M1 (if it is an integral multiple of the small)
+   -- or lies between P_M1 and P_M2 (since truncation was forced in
+   -- generating Pos_Multiplier). It is not certain, however, exactly where
+   -- it lies between them (halfway, less than halfway, more than halfway).
+   -- This fact is irrelevant to the test.
+
+
+   -- The following entities are used to verify that rounding is performed
+   -- according to the value of 'Machine_Rounds. If language rules are
+   -- obeyed, the intermediate expressions in the following static
+   -- initialization expressions will not be rounded; all calculations will
+   -- be performed exactly. The final result, however, will be rounded to
+   -- an integral multiple of the small (either P_M1 or P_M2, depending on the
+   -- value of My_Fix'Machine_Rounds). Thus, the value of each constant below
+   -- will equal that of P_M1 or P_M2.
+
+   Less_Pos_Than_Half : constant My_Fix := P_M1 + ((P_M2 - P_M1)/2.050);
+   Pos_Exactly_Half   : constant My_Fix := P_M1 + ((P_M2 - P_M1)/2.000);
+   More_Pos_Than_Half : constant My_Fix := P_M1 + ((P_M2 - P_M1)/1.975);
+
+
+--
+-- Negative cases:
+--
+
+   --  -|-------------|-----------------|-------------------|-----------|----|
+   --   |             |                 |                   |           |    |
+   --  N_M2  More_Neg_Than_Half  Neg_Exactly_Half  Less_Neg_Than_Half  N_M1  0
+
+
+   -- The descriptions for the positive cases above apply to the negative
+   -- cases below as well. Note that, for N_M2, 'Pred is used rather than
+   -- 'Succ. Thus, N_M2 is further from 0.0 (i.e. more negative) than N_M1.
+
+   Negative_Real  : constant := -467.13988;       -- Named number.
+   Neg_Multiplier : constant := Float'Truncation(Negative_Real/Small);
+
+   Negative_Fixed : constant My_Fix := Negative_Real;
+
+   N_M1 : constant My_Fix := Neg_Multiplier * Small;
+   N_M2 : constant My_Fix := My_Fix'Pred(N_M1);
+
+   More_Neg_Than_Half : constant My_Fix := N_M1 + ((N_M2 - N_M1)/1.980);
+   Neg_Exactly_Half   : constant My_Fix := N_M1 + ((N_M2 - N_M1)/2.000);
+   Less_Neg_Than_Half : constant My_Fix := N_M1 + ((N_M2 - N_M1)/2.033);
+
+end C490002_0;
+
+
+     --==================================================================--
+
+
+with TCTouch;
+package body C490002_0 is
+
+   procedure Fixed_Subtest (A, B: in My_Fix; Msg: in String) is
+   begin
+       TCTouch.Assert (A = B, Msg);
+   end Fixed_Subtest;
+
+   procedure Fixed_Subtest (A, B, C: in My_Fix; Msg: in String) is
+   begin
+       TCTouch.Assert (A = B or A = C, Msg);
+   end Fixed_Subtest;
+
+end C490002_0;
+
+
+     --==================================================================--
+
+
+with C490002_0;  -- Fixed point support.
+use  C490002_0;
+
+with Report;
+procedure C490002 is
+begin
+   Report.Test ("C490002", "Rounding of real static expressions: " &
+                "ordinary fixed point subtypes");
+
+
+   -- Literal cases: If the named numbers used to initialize Positive_Fixed
+   -- and Negative_Fixed are rounded to an integral multiple of the small
+   -- prior to assignment (as expected), then Positive_Fixed and
+   -- Negative_Fixed are already integral multiples of the small, and
+   -- equal either P_M1 or P_M2 (resp., N_M1 or N_M2). An equality check
+   -- can determine in which direction rounding occurred. For example:
+   --
+   --        if (Positive_Fixed = P_M1) then -- Rounding was toward 0.0.
+   --
+   -- Check here that the rounding direction is consistent for literals:
+
+   if (Positive_Fixed = P_M1) then
+      Fixed_Subtest (0.11433, P_M1, "Positive Fixed: literal");
+   else
+      Fixed_Subtest (0.11433, P_M2, "Positive Fixed: literal");
+   end if;
+
+   if (Negative_Fixed = N_M1) then
+      Fixed_Subtest (-467.13988, N_M1, "Negative Fixed: literal");
+   else
+      Fixed_Subtest (-467.13988, N_M2, "Negative Fixed: literal");
+   end if;
+
+
+   -- Now check that rounding is performed correctly for values between
+   -- multiples of the small, according to the value of 'Machine_Rounds:
+
+   if My_Fix'Machine_Rounds then
+      Fixed_Subtest (Pos_Exactly_Half,   P_M1, P_M2, "Positive Fixed: = half");
+      Fixed_Subtest (More_Pos_Than_Half, P_M2, "Positive Fixed: > half");
+      Fixed_Subtest (Less_Pos_Than_Half, P_M1, "Positive Fixed: < half");
+
+      Fixed_Subtest (Neg_Exactly_Half,   N_M1, N_M2, "Negative Fixed: = half");
+      Fixed_Subtest (More_Neg_Than_Half, N_M2, "Negative Fixed: > half");
+      Fixed_Subtest (Less_Neg_Than_Half, N_M1, "Negative Fixed: < half");
+   else
+      Fixed_Subtest (Pos_Exactly_Half,   P_M1, "Positive Fixed: = half");
+      Fixed_Subtest (More_Pos_Than_Half, P_M1, "Positive Fixed: > half");
+      Fixed_Subtest (Less_Pos_Than_Half, P_M1, "Positive Fixed: < half");
+
+      Fixed_Subtest (Neg_Exactly_Half,   N_M1, "Negative Fixed: = half");
+      Fixed_Subtest (More_Neg_Than_Half, N_M1, "Negative Fixed: > half");
+      Fixed_Subtest (Less_Neg_Than_Half, N_M1, "Negative Fixed: < half");
+   end if;
+
+
+   Report.Result;
+end C490002;

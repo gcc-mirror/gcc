@@ -1,0 +1,407 @@
+-- C393001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that an abstract type can be declared, and in turn concrete
+--      types can be derived from it.  Check that the definition of 
+--      actual subprograms associated with the derived types dispatch
+--      correctly.
+--
+-- TEST DESCRIPTION:
+--      This test declares an abstract type Breaker in a package, and
+--      then derives from it.  The type Basic_Breaker defines the least
+--      possible in order to not be abstract.  The type Ground_Fault is
+--      defined to inherit as much as possible, whereas type Special_Breaker
+--      overrides everything it can.  The type Special_Breaker also includes
+--      an embedded Basic_Breaker object.  The main program then utilizes
+--      each of the three types of breaker, and to ascertain that the
+--      overloading and tagging resolution are correct, each "Create"
+--      procedure is called with a unique value.  The diagram below
+--      illustrates the relationships.  This test is derived from C3A2001.
+--
+--              Abstract type:           Breaker
+--                                           |
+--                                    Basic_Breaker (Short)
+--                                    /           \
+--                     (Sharp) Ground_Fault    Special_Breaker (Shock)
+--
+--      Test structure is an array of class-wide objects, modeling a circuit
+--      as a list of components.  The test then creates some values, and
+--      traverses the list to determine correct operation.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      13 Nov 95   SAIC    Revised for 2.0.1
+--
+--!
+
+----------------------------------------------------------------- C393001_1
+
+with Report;
+package C393001_1 is
+
+  type Breaker is abstract tagged private;
+  type Status  is ( Power_Off, Power_On, Tripped, Failed );
+
+  procedure Flip ( The_Breaker : in out Breaker ) is abstract;
+  procedure Trip ( The_Breaker : in out Breaker ) is abstract;
+  procedure Reset( The_Breaker : in out Breaker ) is abstract;
+  procedure Fail ( The_Breaker : in out Breaker );
+
+  procedure Set ( The_Breaker : in out Breaker'Class; To_State : Status );
+
+  function  Status_Of( The_Breaker : Breaker ) return Status;
+
+private
+  type Breaker is abstract tagged record
+    State : Status := Power_Off;
+  end record;
+end C393001_1;
+
+with TCTouch;
+package body C393001_1 is
+  procedure Fail( The_Breaker : in out Breaker ) is ------------------- a
+  begin
+    TCTouch.Touch( 'a' );
+    The_Breaker.State := Failed;
+  end Fail;
+
+  procedure Set( The_Breaker : in out Breaker'Class; To_State : Status ) is
+  begin
+    The_Breaker.State := To_State;
+  end Set;
+
+  function  Status_Of( The_Breaker : Breaker ) return Status is ------- b
+  begin
+    TCTouch.Touch( 'b' );
+    return The_Breaker.State;
+  end Status_Of;
+end C393001_1;
+
+----------------------------------------------------------------- C393001_2
+
+with C393001_1;
+package C393001_2 is
+
+  type Basic_Breaker is new C393001_1.Breaker with private;
+
+  type Voltages is ( V12, V110, V220, V440 );
+  type Amps     is ( A1, A5, A10, A25, A100 );
+
+  function Construct( Voltage : Voltages; Amperage : Amps )
+    return Basic_Breaker;
+
+  procedure Flip ( The_Breaker : in out Basic_Breaker );
+  procedure Trip ( The_Breaker : in out Basic_Breaker );
+  procedure Reset( The_Breaker : in out Basic_Breaker );
+private
+  type Basic_Breaker is new C393001_1.Breaker with record
+    Voltage_Level : Voltages := V110;
+    Amperage      : Amps;
+  end record;
+end C393001_2;
+
+with TCTouch;
+package body C393001_2 is
+  function Construct( Voltage : Voltages; Amperage : Amps ) ----------- c
+    return Basic_Breaker is
+    It : Basic_Breaker;
+  begin
+    TCTouch.Touch( 'c' );
+    It.Amperage := Amperage;
+    It.Voltage_Level := Voltage;
+    C393001_1.Set( It, C393001_1.Power_Off );
+    return It;
+  end Construct;
+
+  procedure Flip ( The_Breaker : in out Basic_Breaker ) is ------------ d
+  begin
+    TCTouch.Touch( 'd' );
+    case Status_Of( The_Breaker ) is
+      when C393001_1.Power_Off =>
+        C393001_1.Set( The_Breaker, C393001_1.Power_On );
+      when C393001_1.Power_On =>
+        C393001_1.Set( The_Breaker, C393001_1.Power_Off );
+      when C393001_1.Tripped | C393001_1.Failed  => null;
+    end case;
+  end Flip;
+
+  procedure Trip ( The_Breaker : in out Basic_Breaker ) is ------------ e
+  begin
+    TCTouch.Touch( 'e' );
+    C393001_1.Set( The_Breaker, C393001_1.Tripped );
+  end Trip;
+
+  procedure Reset( The_Breaker : in out Basic_Breaker ) is ------------ f
+  begin
+    TCTouch.Touch( 'f' );
+    case Status_Of( The_Breaker ) is
+      when C393001_1.Power_Off | C393001_1.Tripped =>
+        C393001_1.Set( The_Breaker, C393001_1.Power_On );
+      when C393001_1.Power_On  | C393001_1.Failed  => null;
+    end case;
+  end Reset;
+
+end C393001_2;
+
+with C393001_1,C393001_2;
+package C393001_3 is
+  
+  type Ground_Fault is new C393001_2.Basic_Breaker with private;
+
+  function Construct( Voltage : C393001_2.Voltages; Amperage : C393001_2.Amps
+)
+    return Ground_Fault;
+
+  procedure Set_Trip( The_Breaker : in out Ground_Fault;
+                      Capacitance : in     Integer );
+
+private
+  type Ground_Fault is new C393001_2.Basic_Breaker with record
+    Capacitance : Integer;
+  end record;
+end C393001_3;
+
+----------------------------------------------------------------- C393001_3
+
+with TCTouch;
+package body C393001_3 is
+
+  function Construct( Voltage  : C393001_2.Voltages; ------------------ g
+                      Amperage : C393001_2.Amps )
+    return Ground_Fault is
+
+    It : Ground_Fault;
+
+    procedure Set_Root( It: in out C393001_2.Basic_Breaker ) is
+    begin
+      It := C393001_2.Construct( Voltage, Amperage );
+    end Set_Root;
+
+  begin
+    TCTouch.Touch( 'g' );
+    Set_Root( C393001_2.Basic_Breaker( It ) );
+    It.Capacitance := 0;
+    return It;
+  end Construct;
+
+  procedure Set_Trip( The_Breaker : in out Ground_Fault; -------------- h
+                      Capacitance : in     Integer ) is
+  begin
+    TCTouch.Touch( 'h' );
+    The_Breaker.Capacitance := Capacitance;
+  end Set_Trip;
+
+end C393001_3;
+
+----------------------------------------------------------------- C393001_4
+
+with C393001_1, C393001_2;
+package C393001_4 is
+
+  type Special_Breaker is new C393001_2.Basic_Breaker with private;
+
+  function Construct( Voltage     : C393001_2.Voltages;
+                      Amperage    : C393001_2.Amps )
+    return Special_Breaker;
+
+  procedure Flip ( The_Breaker : in out Special_Breaker );
+  procedure Trip ( The_Breaker : in out Special_Breaker );
+  procedure Reset( The_Breaker : in out Special_Breaker );
+  procedure Fail ( The_Breaker : in out Special_Breaker );
+
+  function Status_Of( The_Breaker : Special_Breaker ) return C393001_1.Status;
+  function On_Backup( The_Breaker : Special_Breaker ) return Boolean;
+
+private
+  type Special_Breaker is new C393001_2.Basic_Breaker with record
+    Backup : C393001_2.Basic_Breaker;
+  end record;
+end C393001_4;
+
+with TCTouch;
+package body C393001_4 is
+
+  function Construct( Voltage     : C393001_2.Voltages; --------------- i
+                      Amperage    : C393001_2.Amps )
+    return Special_Breaker is
+    It: Special_Breaker;
+    procedure Set_Root( It: in out C393001_2.Basic_Breaker ) is
+    begin
+      It := C393001_2.Construct( Voltage, Amperage );
+    end Set_Root;
+  begin
+    TCTouch.Touch( 'i' );
+    Set_Root( C393001_2.Basic_Breaker( It ) );
+    Set_Root( It.Backup );
+    return It;
+  end Construct;
+
+  function Status_Of( It: C393001_1.Breaker ) return C393001_1.Status
+    renames C393001_1.Status_Of;
+
+  procedure Flip ( The_Breaker : in out Special_Breaker ) is ---------- j
+  begin
+    TCTouch.Touch( 'j' );
+    case Status_Of( C393001_1.Breaker( The_Breaker )) is
+      when C393001_1.Power_Off | C393001_1.Power_On =>
+        C393001_2.Flip( C393001_2.Basic_Breaker( The_Breaker ) );
+      when others =>
+        C393001_2.Flip( The_Breaker.Backup );
+    end case;
+  end Flip;
+
+  procedure Trip ( The_Breaker : in out Special_Breaker ) is ---------- k
+  begin
+    TCTouch.Touch( 'k' );
+    case Status_Of( C393001_1.Breaker( The_Breaker )) is
+      when C393001_1.Power_Off => null;
+      when C393001_1.Power_On  =>
+        C393001_2.Reset( The_Breaker.Backup );
+        C393001_2.Trip( C393001_2.Basic_Breaker( The_Breaker ) );
+      when others =>
+        C393001_2.Trip( The_Breaker.Backup );
+    end case;
+  end Trip;
+
+  procedure Reset( The_Breaker : in out Special_Breaker ) is ---------- l
+  begin
+    TCTouch.Touch( 'l' );
+    case Status_Of( C393001_1.Breaker( The_Breaker )) is
+      when C393001_1.Tripped  =>
+        C393001_2.Reset( C393001_2.Basic_Breaker( The_Breaker ));
+      when C393001_1.Failed  =>
+        C393001_2.Reset( The_Breaker.Backup );
+      when C393001_1.Power_On | C393001_1.Power_Off =>
+        null;
+    end case;
+  end Reset;
+
+  procedure Fail ( The_Breaker : in out Special_Breaker ) is ---------- m
+  begin
+    TCTouch.Touch( 'm' );
+    case Status_Of( C393001_1.Breaker( The_Breaker )) is
+      when C393001_1.Failed  =>
+        C393001_2.Fail( The_Breaker.Backup );
+      when others => 
+        C393001_2.Fail( C393001_2.Basic_Breaker( The_Breaker ));
+        C393001_2.Reset( The_Breaker.Backup );
+    end case;
+  end Fail;
+
+  function Status_Of( The_Breaker : Special_Breaker ) ----------------- n
+    return C393001_1.Status is
+  begin
+    TCTouch.Touch( 'n' );
+    case Status_Of( C393001_1.Breaker( The_Breaker )) is
+      when C393001_1.Power_On  => return C393001_1.Power_On;
+      when C393001_1.Power_Off => return C393001_1.Power_Off;
+      when others =>
+        return C393001_2.Status_Of( The_Breaker.Backup );
+    end case;
+  end Status_Of;
+
+  function On_Backup( The_Breaker : Special_Breaker ) return Boolean is
+    use C393001_2;
+    use type C393001_1.Status;
+  begin
+    return Status_Of(Basic_Breaker(The_Breaker)) = C393001_1.Tripped
+        or Status_Of(Basic_Breaker(The_Breaker)) = C393001_1.Failed;
+  end On_Backup;
+
+end C393001_4;
+
+------------------------------------------------------------------- C393001
+
+with Report, TCTouch;
+with C393001_1, C393001_2, C393001_3, C393001_4;
+procedure C393001 is
+ 
+  procedure Flipper( The_Circuit : in out C393001_1.Breaker'Class ) is
+  begin
+      C393001_1.Flip( The_Circuit );
+  end Flipper;
+
+  procedure Tripper( The_Circuit : in out C393001_1.Breaker'Class ) is
+  begin
+      C393001_1.Trip( The_Circuit );
+  end Tripper;
+
+  procedure Restore( The_Circuit : in out C393001_1.Breaker'Class ) is
+  begin
+      C393001_1.Reset( The_Circuit );
+  end Restore;
+
+  procedure Failure( The_Circuit : in out C393001_1.Breaker'Class ) is
+  begin
+      C393001_1.Fail( The_Circuit );
+  end Failure;
+
+  Short : C393001_1.Breaker'Class -- Basic_Breaker
+          := C393001_2.Construct( C393001_2.V440, C393001_2.A5 );
+  Sharp : C393001_1.Breaker'Class -- Ground_Fault
+          := C393001_3.Construct( C393001_2.V110, C393001_2.A1 );
+  Shock : C393001_1.Breaker'Class -- Special_Breaker
+          := C393001_4.Construct( C393001_2.V12,  C393001_2.A100 );
+
+begin  -- Main test procedure.
+
+  Report.Test ("C393001", "Check that an abstract type can be declared " &
+               "and used.  Check actual subprograms dispatch correctly" );
+
+  TCTouch.Validate( "cgcicc", "Declaration" );
+
+  Flipper( Short );
+  TCTouch.Validate( "db", "Flipping Short" );
+  Flipper( Sharp );
+  TCTouch.Validate( "db", "Flipping Sharp" );
+  Flipper( Shock );
+  TCTouch.Validate( "jbdb", "Flipping Shock" );
+
+  Tripper( Short );
+  TCTouch.Validate( "e", "Tripping Short" );
+  Tripper( Sharp );
+  TCTouch.Validate( "e", "Tripping Sharp" );
+  Tripper( Shock );
+  TCTouch.Validate( "kbfbe", "Tripping Shock" );
+
+  Restore( Short );
+  TCTouch.Validate( "fb", "Restoring Short" );
+  Restore( Sharp );
+  TCTouch.Validate( "fb", "Restoring Sharp" );
+  Restore( Shock );
+  TCTouch.Validate( "lbfb", "Restoring Shock" );
+
+  Failure( Short );
+  TCTouch.Validate( "a", "Shock Failing" );
+  Failure( Sharp );
+  TCTouch.Validate( "a", "Shock Failing" );
+  Failure( Shock );
+  TCTouch.Validate( "mbafb", "Shock Failing" );
+
+  Report.Result;
+
+end C393001;

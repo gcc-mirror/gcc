@@ -1,0 +1,378 @@
+-- C460006.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a view conversion to a tagged type is permitted in the 
+--      prefix of a selected component, an object renaming declaration, and 
+--      (if the operand is a variable) on the left side of an assignment 
+--      statement. Check that such a renaming or assignment does not change 
+--      the tag of the operand.
+--
+--      Check that, for a view conversion of a tagged type, each
+--      nondiscriminant component of the new view denotes the matching
+--      component of the operand object. Check that reading the value of the
+--      view yields the result of converting the value of the operand object
+--      to the target subtype.
+--
+-- TEST DESCRIPTION:
+--      The fact that the tag of an object is not changed is verified by
+--      making calls to primitive operations which in turn make (re)dispatching
+--      calls, and confirming that the proper bodies are executed.
+--
+--      Selected components are checked in three contexts: as the object name
+--      in an object renaming declaration, as the left operand of an inequality
+--      operation, and as the left side of an assignment statement.
+--
+--      View conversions of an object of a 2nd level type extension are
+--      renamed as objects of an ancestor type and of a class-wide type. In
+--      one case the operand of the conversion is itself a renaming of an
+--      object.
+--
+--      View conversions of an object of a 2nd level type extension are
+--      checked for equality with record aggregates of various ancestor types.
+--      In one case, the view conversion is to a class-wide type, and it is
+--      checked for equality with the result of a class-wide function with
+--      the following structure:
+--
+--         function F return T'Class is
+--            A : DDT     := Expected_Value;
+--            X : T'Class := T(A);
+--         begin
+--            return X;
+--
+--         end F;
+--
+--         ...
+--
+--         Var : DDT := Expected_Value;
+--
+--         if (T'Class(Var) /= F) then    -- Condition should yield FALSE.
+--            FAIL;
+--         end if;
+--
+--      The view conversion to which X is initialized does not affect the
+--      value or tag of the operand; the tag of X is that of type DDT (not T),
+--      and the components are those of A. The result of this function
+--      should equal the value of an object of type DDT initialized to the
+--      same value as F.A.
+--
+--      To check that assignment to a view conversion does not change the tag
+--      of the operand, an assignment is made to a conversion of an object,
+--      and the object is then passed as an actual to a dispatching operation.
+--      Conversions to both specific and class-wide types are checked.
+--
+--
+-- CHANGE HISTORY:
+--      20 Jul 95   SAIC    Initial prerelease version.
+--      24 Apr 96   SAIC    Added type conversions.
+--
+--!
+
+package C460006_0 is
+
+   type Call_ID_Kind is (None, Parent_Outer,     Parent_Inner,
+                               Child_Outer,      Child_Inner,
+                               Grandchild_Outer, Grandchild_Inner);
+
+   type Root_Type is abstract tagged record
+      First_Call  : Call_ID_Kind := None;
+      Second_Call : Call_ID_Kind := None;
+   end record;
+
+   procedure Inner_Proc (X : in out Root_Type) is abstract;
+   procedure Outer_Proc (X : in out Root_Type) is abstract;
+
+end C460006_0;
+
+
+     --==================================================================--
+
+
+package C460006_0.C460006_1 is
+
+   type Parent_Type is new Root_Type with record
+      C1 : Integer := 0;
+   end record;
+
+   procedure Inner_Proc (X : in out Parent_Type);
+   procedure Outer_Proc (X : in out Parent_Type);
+
+end C460006_0.C460006_1;
+
+
+     --==================================================================--
+
+
+package body C460006_0.C460006_1 is
+
+   procedure Inner_Proc (X : in out Parent_Type) is
+   begin
+      X.Second_Call := Parent_Inner;
+   end Inner_Proc;
+
+   -------------------------------------------------
+   procedure Outer_Proc (X : in out Parent_Type) is
+   begin
+      X.First_Call := Parent_Outer;
+      Inner_Proc ( Parent_Type'Class(X) );
+   end Outer_Proc;
+
+end C460006_0.C460006_1;
+
+
+     --==================================================================--
+
+
+package C460006_0.C460006_1.C460006_2 is
+
+   type Child_Type is new Parent_Type with record
+      C2 : String(1 .. 5) := "-----";
+   end record;
+
+   procedure Inner_Proc (X : in out Child_Type);
+   procedure Outer_Proc (X : in out Child_Type);
+
+end C460006_0.C460006_1.C460006_2;
+
+
+     --==================================================================--
+
+
+package body C460006_0.C460006_1.C460006_2 is
+
+   procedure Inner_Proc (X : in out Child_Type) is
+   begin
+      X.Second_Call := Child_Inner;
+   end Inner_Proc;
+
+   -------------------------------------------------
+   procedure Outer_Proc (X : in out Child_Type) is
+   begin
+      X.First_Call := Child_Outer;
+      Inner_Proc ( Parent_Type'Class(X) );
+   end Outer_Proc;
+
+end C460006_0.C460006_1.C460006_2;
+
+
+     --==================================================================--
+
+
+package C460006_0.C460006_1.C460006_2.C460006_3 is
+
+   type Grandchild_Type is new Child_Type with record
+      C3: String(1 .. 5) := "-----";
+   end record;
+
+   procedure Inner_Proc (X : in out Grandchild_Type);
+   procedure Outer_Proc (X : in out Grandchild_Type);
+
+
+   function ClassWide_Func return Parent_Type'Class;
+
+
+   Grandchild_Value : constant Grandchild_Type := (First_Call  => None,
+                                                   Second_Call => None,
+                                                   C1          => 15,
+                                                   C2          => "Hello",
+                                                   C3          => "World");
+
+end C460006_0.C460006_1.C460006_2.C460006_3;
+
+
+     --==================================================================--
+
+
+package body C460006_0.C460006_1.C460006_2.C460006_3 is
+
+   procedure Inner_Proc (X : in out Grandchild_Type) is
+   begin
+      X.Second_Call := Grandchild_Inner;
+   end Inner_Proc;
+
+   -------------------------------------------------
+   procedure Outer_Proc (X : in out Grandchild_Type) is
+   begin
+      X.First_Call := Grandchild_Outer;
+      Inner_Proc ( Parent_Type'Class(X) );
+   end Outer_Proc;
+
+   -------------------------------------------------
+   function ClassWide_Func return Parent_Type'Class is
+      A : Grandchild_Type   := Grandchild_Value;
+      X : Parent_Type'Class := Parent_Type(A); -- Value of X is still that of A.
+   begin
+      return X;
+   end ClassWide_Func;
+
+end C460006_0.C460006_1.C460006_2.C460006_3;
+
+
+     --==================================================================--
+
+
+with C460006_0.C460006_1.C460006_2.C460006_3;
+
+with Report;
+procedure C460006 is
+
+   package Root_Package       renames C460006_0;
+   package Parent_Package     renames C460006_0.C460006_1;
+   package Child_Package      renames C460006_0.C460006_1.C460006_2;
+   package Grandchild_Package renames C460006_0.C460006_1.C460006_2.C460006_3;
+
+begin
+   Report.Test ("C460006", "Check that a view conversion to a tagged type " &
+                "is permitted in the prefix of a selected component, an "   &
+                "object renaming declaration, and (if the operand is a "    &
+                "variable) on the left side of an assignment statement.  "  &
+                "Check that such a renaming or assignment does not change " &
+                " the tag of the operand");
+
+
+   --
+   -- Check conversion as prefix of selected component:
+   --
+
+   Selected_Component_Subtest:
+   declare
+      use Root_Package, Parent_Package, Child_Package, Grandchild_Package;
+
+      Var    : Grandchild_Type   := Grandchild_Value;
+      CW_Var : Parent_Type'Class := Var;
+
+      Ren    : Integer renames Parent_Type(Var).C1;
+
+   begin
+      if Ren /= 15 then
+         Report.Failed ("Wrong value: selected component in renaming");
+      end if;
+
+      if Child_Type(Var).C2 /= "Hello" then
+         Report.Failed ("Wrong value: selected component in IF");
+      end if;
+
+      Grandchild_Type(CW_Var).C3(2..4) := "eir";
+      if CW_Var /= Parent_Type'Class
+                   (Grandchild_Type'(None, None, 15, "Hello", "Weird"))
+      then
+         Report.Failed ("Wrong value: selected component in assignment");
+      end if;
+   end Selected_Component_Subtest;
+
+
+   --
+   -- Check conversion in object renaming:
+   --
+
+   Object_Renaming_Subtest:
+   declare
+      use Root_Package, Parent_Package, Child_Package, Grandchild_Package;
+
+      Var : Grandchild_Type := Grandchild_Value;
+      Ren1 : Parent_Type       renames Parent_Type(Var);
+      Ren2 : Child_Type        renames Child_Type(Var);
+      Ren3 : Parent_Type'Class renames Parent_Type'Class(Var);
+      Ren4 : Parent_Type       renames Parent_Type(Ren2); -- Rename of rename.
+   begin
+      Outer_Proc (Ren1);
+      if Ren1 /= (Parent_Outer, Grandchild_Inner, 15) then
+         Report.Failed ("Value or tag not preserved by object renaming: Ren1");
+      end if;
+
+      Outer_Proc (Ren2);
+      if Ren2 /= (Child_Outer, Grandchild_Inner, 15, "Hello") then
+         Report.Failed ("Value or tag not preserved by object renaming: Ren2");
+      end if;
+
+      Outer_Proc (Ren3);
+      if Ren3 /= Parent_Type'Class
+                 (Grandchild_Type'(Grandchild_Outer,
+                                   Grandchild_Inner,
+                                   15,
+                                   "Hello",
+                                   "World"))
+      then
+         Report.Failed ("Value or tag not preserved by object renaming: Ren3");
+      end if;
+
+      Outer_Proc (Ren4);
+      if Ren4 /= (Parent_Outer, Grandchild_Inner, 15) then
+         Report.Failed ("Value or tag not preserved by object renaming: Ren4");
+      end if;
+   end Object_Renaming_Subtest;
+
+
+   --
+   -- Check reading view conversion, and conversion as left side of assignment:
+   --
+
+   View_Conversion_Subtest:
+   declare
+      use Root_Package, Parent_Package, Child_Package, Grandchild_Package;
+
+      Var : Grandchild_Type := Grandchild_Value;
+      Specific  : Child_Type;
+      ClassWide : Parent_Type'Class := Var;   -- Grandchild_Type tag.
+   begin
+      if Parent_Type(Var) /= (None, None, 15) then
+         Report.Failed ("View has wrong value: #1");
+      end if;
+
+      if Child_Type(Var) /= (None, None, 15, "Hello") then
+         Report.Failed ("View has wrong value: #2");
+      end if;
+
+      if Parent_Type'Class(Var) /= ClassWide_Func then
+         Report.Failed ("Upward view conversion did not preserve " &
+                        "extension's components");
+      end if;
+
+
+      Parent_Type(Specific) := (None, None, 26); -- Assign to view.
+      Outer_Proc (Specific);                     -- Call dispatching op.
+
+      if Specific /= (Child_Outer, Child_Inner, 26, "-----") then
+         Report.Failed ("Value or tag not preserved by assignment: Specific");
+      end if;
+
+
+      Parent_Type(ClassWide) := (None, None, 44); -- Assign to view.
+      Outer_Proc (ClassWide);                     -- Call dispatching op.
+
+      if ClassWide /= Parent_Type'Class
+                      (Grandchild_Type'(Grandchild_Outer,
+                                        Grandchild_Inner,
+                                        44,
+                                        "Hello",
+                                        "World"))
+      then
+         Report.Failed ("Value or tag not preserved by assignment: ClassWide");
+      end if;
+   end View_Conversion_Subtest;
+
+   Report.Result;
+
+end C460006;

@@ -1,0 +1,410 @@
+-- C761011.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--    Check that if a Finalize propagates an exception, other Finalizes due
+--    to be performed are performed.
+--        Case 1: A Finalize invoked due to the end of execution of
+--        a master. (Defect Report 8652/0023, as reflected in Technical
+--        Corrigendum 1).
+--        Case 2: A Finalize invoked due to finalization of an anonymous
+--        object. (Defect Report 8652/0023, as reflected in Technical
+--        Corrigendum 1).
+--        Case 3: A Finalize invoked due to the transfer of control
+--        due to an exit statement.
+--        Case 4: A Finalize invoked due to the transfer of control
+--        due to a goto statement.
+--        Case 5: A Finalize invoked due to the transfer of control
+--        due to a return statement.
+--        Case 6: A Finalize invoked due to the transfer of control
+--        due to raises an exception.
+--
+--
+-- CHANGE HISTORY:
+--    29 JAN 2001   PHL   Initial version
+--    15 MAR 2001   RLB   Readied for release; added optimization blockers.
+--                        Added test cases for paragraphs 18 and 19 of the
+--                        standard (the previous tests were withdrawn).
+--
+--!
+with Ada.Finalization;
+use Ada.Finalization;
+package C761011_0 is
+
+    type Ctrl (D : Boolean) is new Ada.Finalization.Controlled with
+        record
+            Finalized : Boolean := False;
+            case D is
+                when False =>
+                    C1 : Integer;
+                when True =>
+                    C2 : Float;
+            end case;
+        end record;
+
+    function Create (Id : Integer) return Ctrl;
+    procedure Finalize (Obj : in out Ctrl);
+    function Was_Finalized (Id : Integer) return Boolean;
+    procedure Use_It (Obj : in Ctrl);
+       -- Use Obj to prevent optimization.
+
+end C761011_0;
+
+with Report;
+use Report;
+package body C761011_0 is
+
+    User_Error : exception;
+
+    Finalize_Called : array (0 .. 50) of Boolean := (others => False);
+
+    function Create (Id : Integer) return Ctrl is
+        Obj : Ctrl (Boolean'Val (Id mod Ident_Int (2)));
+    begin
+        case Obj.D is
+            when False =>
+                Obj.C1 := Ident_Int (Id);
+            when True =>
+                Obj.C2 := Float (Ident_Int (Id + Ident_Int (Id)));
+        end case;
+        return Obj;
+    end Create;
+
+    procedure Finalize (Obj : in out Ctrl) is
+    begin
+        if not Obj.Finalized then
+            Obj.Finalized := True;
+            if Obj.D then
+                if Integer (Obj.C2 / 2.0) mod Ident_Int (10) =
+                   Ident_Int (3) then
+                    raise User_Error;
+                else
+                    Finalize_Called (Integer (Obj.C2) / 2) := True;
+                end if;
+            else
+                if Obj.C1 mod Ident_Int (10) = Ident_Int (0) then
+                    raise Tasking_Error;
+                else
+                    Finalize_Called (Obj.C1) := True;
+                end if;
+            end if;
+        end if;
+    end Finalize;
+
+    function Was_Finalized (Id : Integer) return Boolean is
+    begin
+        return Finalize_Called (Ident_Int (Id));
+    end Was_Finalized;
+
+    procedure Use_It (Obj : in Ctrl) is
+       -- Use Obj to prevent optimization.
+    begin
+        case Obj.D is
+            when True =>
+                if not Equal (Boolean'Pos(Obj.Finalized),
+                              Boolean'Pos(Obj.Finalized)) then
+                    Failed ("Identity check - 1");
+                end if;
+            when False =>
+                if not Equal (Obj.C1, Obj.C1) then
+                    Failed ("Identity check - 2");
+                end if;
+        end case;
+    end Use_It;
+
+end C761011_0;
+
+with Ada.Exceptions;
+use Ada.Exceptions;
+with Ada.Finalization;
+with C761011_0;
+use C761011_0;
+with Report;
+use Report;
+procedure C761011 is
+begin
+    Test
+       ("C761011",
+        " Check that if a finalize propagates an exception, other finalizes " &
+         "due to be performed are performed");
+
+    Normal: -- Case 1
+        begin
+            declare
+                Obj1 : Ctrl := Create (Ident_Int (1));
+                Obj2 : constant Ctrl := (Ada.Finalization.Controlled with
+                                         D => False,
+                                         Finalized => Ident_Bool (False),
+                                         C1 => Ident_Int (2));
+                Obj3 : Ctrl :=
+                   (Ada.Finalization.Controlled with
+                    D => True,
+                    Finalized => Ident_Bool (False),
+                    C2 => 2.0 * Float (Ident_Int
+                                          (3))); -- Finalization: User_Error
+                Obj4 : Ctrl := Create (Ident_Int (4));
+            begin
+                Comment ("Finalization of normal object");
+                Use_It (Obj1); -- Prevent optimization of Objects.
+                Use_It (Obj2); -- (Critical if AI-147 is adopted.)
+                Use_It (Obj3);
+                Use_It (Obj4);
+            end;
+            Failed ("No exception raised by finalization of normal object");
+        exception
+            when Program_Error =>
+                if not Was_Finalized (Ident_Int (1)) or
+                   not Was_Finalized (Ident_Int (2)) or
+                   not Was_Finalized (Ident_Int (4)) then
+                    Failed ("Missing finalizations - 1");
+                end if;
+            when E: others =>
+                Failed ("Exception " & Exception_Name (E) &
+                        " raised - " & Exception_Message (E) & " - 1");
+        end Normal;
+
+    Anon: -- Case 2
+        begin
+            declare
+                Obj1 : Ctrl := (Ada.Finalization.Controlled with
+                                D => True,
+                                Finalized => Ident_Bool (False),
+                                C2 => 2.0 * Float (Ident_Int (5)));
+                Obj2 : constant Ctrl := (Ada.Finalization.Controlled with
+                                         D => False,
+                                         Finalized => Ident_Bool (False),
+                                         C1 => Ident_Int (6));
+                Obj3 : Ctrl := (Ada.Finalization.Controlled with
+                                D => True,
+                                Finalized => Ident_Bool (False),
+                                C2 => 2.0 * Float (Ident_Int (7)));
+                Obj4 : Ctrl := Create (Ident_Int (8));
+            begin
+                Comment ("Finalization of anonymous object");
+
+                -- The finalization of the anonymous object below will raise
+                -- Tasking_Error.
+                if Create (Ident_Int (10)).C1 /= Ident_Int (10) then
+                    Failed ("Incorrect construction of an anonymous object");
+                end if;
+                Failed ("Anonymous object not finalized at the end of the " &
+                        "enclosing statement");
+                Use_It (Obj1); -- Prevent optimization of Objects.
+                Use_It (Obj2); -- (Critical if AI-147 is adopted.)
+                Use_It (Obj3);
+                Use_It (Obj4);
+            end;
+            Failed ("No exception raised by finalization of an anonymous " &
+                    "object of a function");
+        exception
+            when Program_Error =>
+                if not Was_Finalized (Ident_Int (5)) or
+                   not Was_Finalized (Ident_Int (6)) or
+                   not Was_Finalized (Ident_Int (7)) or
+                   not Was_Finalized (Ident_Int (8)) then
+                    Failed ("Missing finalizations - 2");
+                end if;
+            when E: others =>
+                Failed ("Exception " & Exception_Name (E) &
+                        " raised - " & Exception_Message (E) & " - 2");
+        end Anon;
+
+    An_Exit: -- Case 3
+        begin
+            for Counter in 1 .. 4 loop
+                declare
+                    Obj1 : Ctrl := Create (Ident_Int (11));
+                    Obj2 : constant Ctrl := (Ada.Finalization.Controlled with
+                                             D => False,
+                                             Finalized => Ident_Bool (False),
+                                             C1 => Ident_Int (12));
+                    Obj3 : Ctrl :=
+                        (Ada.Finalization.Controlled with
+                         D => True,
+                         Finalized => Ident_Bool (False),
+                         C2 => 2.0 * Float (
+                               Ident_Int(13))); -- Finalization: User_Error
+                    Obj4 : Ctrl := Create (Ident_Int (14));
+                begin
+                    Comment ("Finalization because of exit of loop");
+
+                    Use_It (Obj1); -- Prevent optimization of Objects.
+                    Use_It (Obj2); -- (Critical if AI-147 is adopted.)
+                    Use_It (Obj3);
+                    Use_It (Obj4);
+
+                    exit when not Ident_Bool (Obj2.D);
+
+                    Failed ("Exit not taken");
+                end;
+            end loop;
+            Failed ("No exception raised by finalization on exit");
+        exception
+            when Program_Error =>
+                if not Was_Finalized (Ident_Int (11)) or
+                   not Was_Finalized (Ident_Int (12)) or
+                   not Was_Finalized (Ident_Int (14)) then
+                    Failed ("Missing finalizations - 3");
+                end if;
+            when E: others =>
+                Failed ("Exception " & Exception_Name (E) &
+                        " raised - " & Exception_Message (E) & " - 3");
+        end An_Exit;
+
+    A_Goto: -- Case 4
+        begin
+            declare
+                Obj1 : Ctrl := Create (Ident_Int (15));
+                Obj2 : constant Ctrl := (Ada.Finalization.Controlled with
+                                         D => False,
+                                         Finalized => Ident_Bool (False),
+                                         C1 => Ident_Int (0));
+                             -- Finalization: Tasking_Error
+                Obj3 : Ctrl := Create (Ident_Int (16));
+                Obj4 : Ctrl := (Ada.Finalization.Controlled with
+                                D => True,
+                                Finalized => Ident_Bool (False),
+                                C2 => 2.0 * Float (Ident_Int (17)));
+            begin
+                Comment ("Finalization because of goto statement");
+
+                Use_It (Obj1); -- Prevent optimization of Objects.
+                Use_It (Obj2); -- (Critical if AI-147 is adopted.)
+                Use_It (Obj3);
+                Use_It (Obj4);
+
+                if Ident_Bool (Obj4.D) then
+                   goto Continue;
+                end if;
+
+                Failed ("Goto not taken");
+            end;
+         <<Continue>>
+            Failed ("No exception raised by finalization on goto");
+        exception
+            when Program_Error =>
+                if not Was_Finalized (Ident_Int (15)) or
+                   not Was_Finalized (Ident_Int (16)) or
+                   not Was_Finalized (Ident_Int (17)) then
+                    Failed ("Missing finalizations - 4");
+                end if;
+            when E: others =>
+                Failed ("Exception " & Exception_Name (E) &
+                        " raised - " & Exception_Message (E) & " - 4");
+        end A_Goto;
+
+    A_Return: -- Case 5
+        declare
+            procedure Do_Something is
+                Obj1 : Ctrl := Create (Ident_Int (18));
+                Obj2 : Ctrl := (Ada.Finalization.Controlled with
+                                D => True,
+                                Finalized => Ident_Bool (False),
+                                C2 => 2.0 * Float (Ident_Int (19)));
+                Obj3 : constant Ctrl := (Ada.Finalization.Controlled with
+                                         D => False,
+                                         Finalized => Ident_Bool (False),
+                                         C1 => Ident_Int (20));
+                             -- Finalization: Tasking_Error
+            begin
+                Comment ("Finalization because of return statement");
+
+                Use_It (Obj1); -- Prevent optimization of Objects.
+                Use_It (Obj2); -- (Critical if AI-147 is adopted.)
+                Use_It (Obj3);
+
+                if not Ident_Bool (Obj3.D) then
+                   return;
+                end if;
+
+                Failed ("Return not taken");
+            end Do_Something;
+        begin
+            Do_Something;
+            Failed ("No exception raised by finalization on return statement");
+        exception
+            when Program_Error =>
+                if not Was_Finalized (Ident_Int (18)) or
+                   not Was_Finalized (Ident_Int (19)) then
+                    Failed ("Missing finalizations - 5");
+                end if;
+            when E: others =>
+                Failed ("Exception " & Exception_Name (E) &
+                        " raised - " & Exception_Message (E) & " - 5");
+        end A_Return;
+
+    Except: -- Case 6
+        declare
+            Funky_Error : exception;
+
+            procedure Do_Something is
+                Obj1 : Ctrl :=
+                    (Ada.Finalization.Controlled with
+                     D => True,
+                     Finalized => Ident_Bool (False),
+                     C2 => 2.0 * Float (
+                           Ident_Int(23))); -- Finalization: User_Error
+                Obj2 : Ctrl := Create (Ident_Int (24));
+                Obj3 : Ctrl := Create (Ident_Int (25));
+                Obj4 : constant Ctrl := (Ada.Finalization.Controlled with
+                                         D => False,
+                                         Finalized => Ident_Bool (False),
+                                         C1 => Ident_Int (26));
+            begin
+                Comment ("Finalization because of exception propagation");
+
+                Use_It (Obj1); -- Prevent optimization of Objects.
+                Use_It (Obj2); -- (Critical if AI-147 is adopted.)
+                Use_It (Obj3);
+                Use_It (Obj4);
+
+                if not Ident_Bool (Obj4.D) then
+                   raise Funky_Error;
+                end if;
+
+                Failed ("Exception not raised");
+            end Do_Something;
+        begin
+            Do_Something;
+            Failed ("No exception raised by finalization on exception " &
+                    "propagation");
+        exception
+            when Program_Error =>
+                if not Was_Finalized (Ident_Int (24)) or
+                   not Was_Finalized (Ident_Int (25)) or
+                   not Was_Finalized (Ident_Int (26)) then
+                    Failed ("Missing finalizations - 6");
+                end if;
+            when Funky_Error =>
+                Failed ("Wrong exception propagated");
+                    -- Should be Program_Error (7.6.1(19)).
+            when E: others =>
+                Failed ("Exception " & Exception_Name (E) &
+                        " raised - " & Exception_Message (E) & " - 6");
+        end Except;
+
+    Result;
+end C761011;
+

@@ -1,0 +1,101 @@
+-- F393B00.A   
+ -- Alert_Foundation
+ --
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+ --
+ -- FOUNDATION DESCRIPTION:
+ --      This package declares three abstract types for use in C660 series 
+ --      tests, Alert, Special_Alert, and Private_Alert.
+ --      It models (in miniature) an application situation in which an 
+ --      abstraction is defined in terms of structure (record and operations 
+ --      on the record) but not in terms of content (record is null).  It 
+ --      also models a situation in which an abstraction includes some 
+ --      specific, implementation dependent, information.
+ --
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+ --!
+ 
+ package F393B00 is
+    type Alert is abstract tagged null record;  -- abstract type
+                                                -- see procedure Handle below
+ 
+    procedure Handle (A : in out Alert) is abstract;
+                                                -- abstract procedure, 
+                                                -- explicitly declared
+ 
+ 
+    type Private_Alert is abstract tagged private;
+ 
+    procedure Handle (PA : in out Private_Alert) is abstract;
+                                                -- ensures that Private_Alert
+                                                -- is visibly abstract
+ 
+ 
+    type Status_Kind is (Practice, Real, Dont_Care);
+    type Urgency_Kind is (Low, Medium, High);
+ 
+    type Practice_Alert is new Alert with record
+      Status : Status_Kind := Dont_Care;
+      Urgency : Urgency_Kind := Low;
+    end record;
+ 
+    procedure Handle (PA : in out Practice_Alert);
+                                                -- overrides inherited Handle
+ 
+ 
+ 
+    type Device is (Teletype, Console, Big_Screen);
+ 
+    type Special_Alert (Age : Integer) is 
+      abstract new Practice_Alert with record
+        Display : Device;
+      end record;
+ 
+    procedure Handle (SA : in out Special_Alert) is abstract; 
+                                                -- overrides inherited Handle
+ 
+ private
+    subtype Implementation_Detail is Integer range 1..10;
+ 
+    type Private_Alert is abstract tagged record
+      Private_Field : Implementation_Detail := 1;
+    end record;
+ 
+  
+ end F393B00;
+ 
+ --=======================================================================--
+ 
+ package body F393B00 is
+ 
+      procedure Handle (PA : in out Practice_Alert) is
+        begin
+          PA.Status := Real;
+          PA.Urgency := Medium;
+        end Handle;
+ 
+ end F393B00;
+ 

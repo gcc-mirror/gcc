@@ -1,0 +1,412 @@
+-- C650001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that, for a function result type that is a return-by-reference
+--      type, Program_Error is raised if the return expression is a name that
+--      denotes an object view whose accessibility level is deeper than that
+--      of the master that elaborated the function body.
+--      
+--      Check for cases where the result type is:
+--         (a) A tagged limited type.
+--         (b) A task type.
+--         (c) A protected type.
+--         (d) A composite type with a subcomponent of a
+--             return-by-reference type (task type).
+--      
+-- TEST DESCRIPTION:
+--      The accessibility level of the master that elaborates the body of a
+--      return-by-reference function will always be less deep than that of
+--      the function (which is itself a master). 
+--
+--      Thus, the return object may not be any of the following, since each
+--      has an accessibility level at least as deep as that of the function:
+--
+--         (1) An object declared local to the function. 
+--         (2) The result of a local function.           
+--         (3) A parameter of the function.              
+--
+--      Verify that Program_Error is raised within the return-by-reference
+--      function if the return object is any of (1)-(3) above, for various
+--      subsets of the return types (a)-(d) above. Include cases where (1)-(3)
+--      are operands of parenthesized expressions.
+--
+--      Verify that no exception is raised if the return object is any of the
+--      following:
+--
+--         (4) An object declared at a less deep level than that of the
+--             master that elaborated the function body.
+--         (5) The result of a function declared at the same level as the
+--             original function (assuming the new function is also legal).
+--         (6) A parameter of the master that elaborated the function body.
+--
+--      For (5), pass the new function as an actual via an access-to-
+--      subprogram parameter of the original function. Check for cases where
+--      the new function does and does not raise an exception.
+--
+--      Since the functions to be tested cannot be part of an assignment
+--      statement (since they return values of a limited type), pass each
+--      function result as an actual parameter to a dummy procedure, e.g.,
+--
+--         Dummy_Proc ( Function_Call );
+--
+--
+-- CHANGE HISTORY:
+--      03 May 95   SAIC    Initial prerelease version.
+--      08 Feb 99   RLB     Removed subcase with two errors.
+--
+--!
+
+package C650001_0 is
+
+   type Tagged_Limited is tagged limited record
+      C: String (1 .. 10);
+   end record;
+
+   task type Task_Type;
+
+   protected type Protected_Type is
+      procedure Op;
+   end Protected_Type;
+
+   type Task_Array is array (1 .. 10) of Task_Type;
+
+   type Variant_Record (Toggle: Boolean) is record
+      case Toggle is
+         when True  =>
+            T: Task_Type;  -- Return-by-reference component.
+         when False =>
+            I: Integer;    -- Non-return-by-reference component.
+      end case;
+   end record;
+
+   -- Limited type even though variant contains no limited components:
+   type Non_Task_Variant is new Variant_Record (Toggle => False);
+
+end C650001_0;
+
+
+     --==================================================================--
+
+
+package body C650001_0 is
+
+   task body Task_Type is
+   begin
+      null;
+   end Task_Type;
+
+   protected body Protected_Type is
+      procedure Op is
+      begin
+         null;
+      end Op;
+   end Protected_Type;
+
+end C650001_0;
+
+
+     --==================================================================--
+
+
+with C650001_0;
+package C650001_1 is
+
+   type TC_Result_Kind is (OK, P_E, O_E);
+
+   procedure TC_Display_Results (Actual  : in TC_Result_Kind;
+                                 Expected: in TC_Result_Kind;
+                                 Message : in String);
+
+   -- Dummy procedures:
+
+   procedure Check_Tagged    (P: C650001_0.Tagged_Limited);
+   procedure Check_Task      (P: C650001_0.Task_Type);
+   procedure Check_Protected (P: C650001_0.Protected_Type);
+   procedure Check_Composite (P: C650001_0.Non_Task_Variant);
+
+end C650001_1;
+
+
+     --==================================================================--
+
+
+with Report;
+package body C650001_1 is
+
+   procedure TC_Display_Results (Actual  : in TC_Result_Kind;
+                                 Expected: in TC_Result_Kind;
+                                 Message : in String) is
+   begin
+      if Actual /= Expected then
+         case Actual is
+            when OK  =>
+               Report.Failed ("No exception raised: "         & Message);
+            when P_E =>
+               Report.Failed ("Program_Error raised: "        & Message);
+            when O_E =>
+               Report.Failed ("Unexpected exception raised: " & Message);
+         end case;
+      end if;
+   end TC_Display_Results;
+
+
+   procedure Check_Tagged (P: C650001_0.Tagged_Limited) is
+   begin
+      null;
+   end;
+
+   procedure Check_Task (P: C650001_0.Task_Type) is
+   begin
+      null;
+   end;
+
+   procedure Check_Protected (P: C650001_0.Protected_Type) is
+   begin
+      null;
+   end;
+
+   procedure Check_Composite (P: C650001_0.Non_Task_Variant) is
+   begin
+      null;
+   end;
+
+end C650001_1;
+
+
+
+     --==================================================================--
+
+
+with C650001_0;
+with C650001_1;
+
+with Report;
+procedure C650001 is
+begin
+
+   Report.Test ("C650001", "Check that, for a function result type that " &
+                "is a return-by-reference type, Program_Error is raised " &
+                "if the return expression is a name that denotes an "     &
+                "object view whose accessibility level is deeper than "   &
+                "that of the master that elaborated the function body");
+
+
+
+   SUBTEST1:
+   declare
+
+      Result: C650001_1.TC_Result_Kind;
+      PO    : C650001_0.Protected_Type;
+
+      function Return_Prot (P: C650001_0.Protected_Type)
+        return C650001_0.Protected_Type is
+      begin
+         Result := C650001_1.OK;
+         return P;                                     -- Formal parameter (3).
+      exception
+         when Program_Error =>
+            Result := C650001_1.P_E;                        -- Expected result.
+            return PO;
+         when others        =>
+            Result := C650001_1.O_E;
+            return PO;
+      end Return_Prot;
+
+   begin  -- SUBTEST1.
+      C650001_1.Check_Protected ( Return_Prot(PO) );
+      C650001_1.TC_Display_Results (Result, C650001_1.P_E, "SUBTEST #1");
+   exception
+      when others =>
+         Report.Failed ("SUBTEST #1: Unexpected exception in outer block");
+   end SUBTEST1;
+
+
+
+   SUBTEST2:
+   declare
+
+      Result: C650001_1.TC_Result_Kind;
+      Comp  : C650001_0.Non_Task_Variant;
+
+      function Return_Composite return C650001_0.Non_Task_Variant is
+         Local: C650001_0.Non_Task_Variant;
+      begin
+         Result := C650001_1.OK;
+         return (Local);                     -- Parenthesized local object (1).
+      exception
+         when Program_Error =>
+            Result := C650001_1.P_E;                        -- Expected result.
+            return Comp;
+         when others        =>
+            Result := C650001_1.O_E;
+            return Comp;
+      end Return_Composite;
+
+   begin -- SUBTEST2.
+      C650001_1.Check_Composite ( Return_Composite );
+      C650001_1.TC_Display_Results (Result, C650001_1.P_E, "SUBTEST #2");
+   exception
+      when others =>
+         Report.Failed ("SUBTEST #2: Unexpected exception in outer block");
+   end SUBTEST2;
+
+
+
+   SUBTEST3:
+   declare
+
+      Result: C650001_1.TC_Result_Kind;
+      Tsk   : C650001_0.Task_Type;
+      TskArr: C650001_0.Task_Array;
+
+      function Return_Task (P: C650001_0.Task_Array)
+        return C650001_0.Task_Type is
+
+         function Inner return C650001_0.Task_Type is
+         begin
+            return P(P'First);           -- OK: should not raise exception (6).
+         exception
+            when Program_Error =>
+               Report.Failed ("SUBTEST #3: Program_Error incorrectly " &
+                              "raised within function Inner");
+               return Tsk;
+            when others        =>
+               Report.Failed ("SUBTEST #3: Unexpected exception " &
+                              "raised within function Inner");
+               return Tsk;
+         end Inner;
+
+      begin -- Return_Task.
+         Result := C650001_1.OK;
+         return Inner;                           -- Call to local function (2).
+      exception
+         when Program_Error =>
+            Result := C650001_1.P_E;                        -- Expected result.
+            return Tsk;
+         when others        =>
+            Result := C650001_1.O_E;
+            return Tsk;
+      end Return_Task;
+
+   begin -- SUBTEST3.
+      C650001_1.Check_Task ( Return_Task(TskArr) );
+      C650001_1.TC_Display_Results (Result, C650001_1.P_E, "SUBTEST #3");
+   exception
+      when others =>
+         Report.Failed ("SUBTEST #3: Unexpected exception in outer block");
+   end SUBTEST3;
+
+
+
+   SUBTEST4:
+   declare
+
+      Result: C650001_1.TC_Result_Kind;
+      TagLim: C650001_0.Tagged_Limited;
+
+      function Return_TagLim (P: C650001_0.Tagged_Limited'Class)
+        return C650001_0.Tagged_Limited is
+      begin
+         Result := C650001_1.OK;
+         return C650001_0.Tagged_Limited(P); -- Conversion of formal param (3).
+      exception
+         when Program_Error =>
+            Result := C650001_1.P_E;                        -- Expected result.
+            return TagLim;
+         when others        =>
+            Result := C650001_1.O_E;
+            return TagLim;
+      end Return_TagLim;
+
+   begin -- SUBTEST4.
+      C650001_1.Check_Tagged ( Return_TagLim(TagLim) );
+      C650001_1.TC_Display_Results (Result, C650001_1.P_E,
+                                    "SUBTEST #4 (root type)");
+   exception
+      when others =>
+         Report.Failed ("SUBTEST #4: Unexpected exception in outer block");
+   end SUBTEST4;
+
+
+
+   SUBTEST5:
+   declare
+      Tsk : C650001_0.Task_Type;
+   begin  -- SUBTEST5.
+
+      declare
+         Result: C650001_1.TC_Result_Kind;
+
+         type AccToFunc is access function return C650001_0.Task_Type;
+
+         function Return_Global return C650001_0.Task_Type is
+         begin
+            return Tsk;                  -- OK: should not raise exception (4).
+         end Return_Global;
+
+         function Return_Local return C650001_0.Task_Type is
+            Local : C650001_0.Task_Type;
+         begin
+            return Local;                           -- Propagate Program_Error.
+         end Return_Local;
+
+
+         function Return_Func (P: AccToFunc) return C650001_0.Task_Type is
+         begin
+            Result := C650001_1.OK;
+            return P.all;                                 -- Function call (5).
+         exception
+            when Program_Error =>
+               Result := C650001_1.P_E;
+               return Tsk;
+            when others        =>
+               Result := C650001_1.O_E;
+               return Tsk;
+         end Return_Func;
+
+         RG : AccToFunc := Return_Global'Access;
+         RL : AccToFunc := Return_Local'Access;
+
+      begin
+         C650001_1.Check_Task ( Return_Func(RG) );
+         C650001_1.TC_Display_Results (Result, C650001_1.OK,
+                                       "SUBTEST #5 (global task)");
+
+         C650001_1.Check_Task ( Return_Func(RL) );
+         C650001_1.TC_Display_Results (Result, C650001_1.P_E,
+                                       "SUBTEST #5 (local task)");
+      exception
+         when others =>
+            Report.Failed ("SUBTEST #5: Unexpected exception in outer block");
+      end;
+
+   end SUBTEST5;
+
+
+
+   Report.Result;
+
+end C650001;

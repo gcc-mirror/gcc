@@ -1,0 +1,217 @@
+-- CB20006.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that exceptions are raised and properly handled (including 
+--      propagation by reraise) in protected operations.
+--
+-- TEST DESCRIPTION:
+--      Declare a package with a protected type, including protected operation
+--      declarations and private data, simulating a counting semaphore.
+--      In the main procedure, perform calls on protected operations 
+--      of the protected object designed to induce the raising of exceptions.
+--
+--      The exceptions raised are to be initially handled in the protected
+--      operations, but this handling involves the reraise of the exception
+--      and the propagation of the exception to the caller.
+--
+--      Ensure that the exceptions are raised, handled / reraised successfully
+--      in protected procedures and functions.  Use "others" handlers in the
+--      protected operations.
+--
+--       
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+package CB20006_0 is               -- Package Semaphore.
+
+   Reraised_In_Function,
+   Reraised_In_Procedure,
+   Handled_In_Function_Caller,
+   Handled_In_Procedure_Caller   : Boolean := False;
+
+   Resource_Overflow,
+   Resource_Underflow            : exception;
+
+   protected type Counting_Semaphore (Max_Resources : Integer) is
+      procedure Secure;
+      function  Resource_Limit_Exceeded return Boolean;
+      procedure Release;
+   private
+      Count : Integer := Max_Resources;
+   end Counting_Semaphore;
+
+end CB20006_0;
+
+     --=================================================================--
+
+with Report;
+
+package body CB20006_0 is                 -- Package Semaphore.
+
+   protected body Counting_Semaphore is
+
+      procedure Secure is
+      begin
+         if (Count = 0) then              -- No resources left to secure.
+            raise Resource_Underflow;      
+            Report.Failed 
+              ("Program control not transferred by raise in Procedure Secure");
+         else
+            Count := Count - 1;           -- Available resources decremented.
+         end if;                          
+      exception
+         when Resource_Underflow =>
+            Reraised_In_Procedure := True; 
+            raise;                        -- Exception propagated to caller.
+            Report.Failed ("Exception not propagated to caller from Secure");
+         when others =>
+            Report.Failed ("Unexpected exception raised in Secure");
+      end Secure;
+
+
+      function Resource_Limit_Exceeded return Boolean is
+      begin
+         if (Count > Max_Resources) then   
+            raise Resource_Overflow;      -- Exception used as control flow
+                                          -- mechanism.
+            Report.Failed 
+              ("Specific raise did not alter program control" &
+               " from Resource_Limit_Exceeded");
+         else                              
+            return (False);
+         end if;
+      exception
+         when others =>
+            Reraised_In_Function := True; 
+            raise;                         -- Exception propagated to caller.
+            Report.Failed ("Exception not propagated to caller" & 
+                           " from Resource_Limit_Exceeded");
+      end Resource_Limit_Exceeded;
+
+
+      procedure Release is
+      begin
+         Count := Count + 1;               -- Count of resources available 
+                                           -- incremented.
+         if Resource_Limit_Exceeded then   -- Call to protected operation
+            Count := Count - 1;            -- function that raises/reraises
+                                           -- an exception.
+            Report.Failed("Resource limit exceeded");
+         end if;                          
+
+      exception
+         when others =>
+            raise;                         -- Reraised and propagated again.
+             Report.Failed ("Exception not reraised by procedure Release");
+      end Release;
+
+
+   end Counting_Semaphore;
+
+end CB20006_0;
+
+
+     --=================================================================--
+
+
+with CB20006_0;                           -- Package Semaphore.
+with Report;
+
+procedure CB20006 is
+begin
+
+   Report.Test ("CB20006", "Check that exceptions are raised and " &
+                           "handled / reraised and propagated "    &
+                           "correctly by protected operations" );
+
+   Test_Block:
+   declare
+
+      package Semaphore renames CB20006_0;
+
+      Total_Resources_Available : constant := 1;
+
+      Resources : Semaphore.Counting_Semaphore (Total_Resources_Available);
+                                             -- An object of protected type.
+
+   begin
+
+      Allocate_Resources:
+      declare
+         Loop_Count : Integer := Total_Resources_Available + 1;
+      begin
+         for I in 1..Loop_Count loop -- Force exception
+            Resources.Secure;
+         end loop;
+         Report.Failed 
+           ("Exception not propagated from protected operation Secure");
+      exception                                     
+         when Semaphore.Resource_Underflow =>        -- Exception propagated
+           Semaphore.Handled_In_Procedure_Caller := True;  -- from protected
+         when others =>                                    -- procedure.
+           Semaphore.Handled_In_Procedure_Caller := False;
+      end Allocate_Resources;
+
+   
+      Deallocate_Resources:
+      declare
+         Loop_Count : Integer := Total_Resources_Available + 1;
+      begin
+         for I in 1..Loop_Count loop -- Force exception
+            Resources.Release;  
+         end loop;
+         Report.Failed 
+           ("Exception not propagated from protected operation Release");
+      exception                                     
+         when Semaphore.Resource_Overflow =>        -- Exception propagated 
+            Semaphore.Handled_In_Function_Caller := True; -- from protected
+         when others =>                                   -- function.
+            Semaphore.Handled_In_Function_Caller := False;
+      end Deallocate_Resources;
+
+
+      if not (Semaphore.Reraised_In_Procedure and
+              Semaphore.Reraised_In_Function  and
+              Semaphore.Handled_In_Procedure_Caller and
+              Semaphore.Handled_In_Function_Caller) 
+      then                                       -- Incorrect excpt. handling
+         Report.Failed                           -- in protected operations.
+           ("Improper exception handling/reraising by protected operations");
+      end if;
+
+   exception
+
+      when others =>
+         Report.Failed ("Unexpected exception " & 
+                        " raised and propagated in test");
+   end Test_Block;
+
+   Report.Result;
+
+
+end CB20006;

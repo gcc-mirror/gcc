@@ -1,0 +1,134 @@
+-- CA2009F0M.ADA
+
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+-- OBJECTIVE:
+--     CHECK THAT A GENERIC SUBPROGRAM SUBUNIT CAN BE SPECIFIED AND
+--     INSTANTIATED.  IN THIS TEST, SOME SUBUNIT BODIES ARE
+--     IN SEPARATE FILES.
+
+-- APPLICABILITY CRITERIA:
+--     THIS TEST MUST RUN AND REPORT "PASSED" FOR ALL ADA 95 IMPLEMENTATIONS.
+
+-- SEPARATE FILES ARE:
+--     CA2009F0M  THE MAIN PROCEDURE, WITH SUBUNIT BODIES FOR
+--                     PROC2 AND FUNC2.
+--     CA2009F1   A SUBUNIT PROCEDURE BODY (PROC1).
+--     CA2009F2   A SUBUNIT FUNCTION BODY  (FUNC1).
+
+-- HISTORY:
+--     BHS 08/01/84  CREATED ORIGINAL TEST.
+--     PWB 02/19/86  ADDED "SOME" TO FIRST COMMENT.
+--     BCB 01/05/88  MODIFIED HEADER.
+--     EDS 08/04/98  REMOVE CONTROL Z AT END OF FILE.
+--     RLB 09/13/99  UPDATED APPLICABILITY CRITERIA FOR ADA 95.
+--     RLB 09/15/99  REMOVED JUNK COMMENT.
+
+WITH REPORT;
+USE REPORT;
+PROCEDURE CA2009F0M IS
+
+     INT1 : INTEGER := 1;
+     INT2 : INTEGER := 2;
+     INT3 : INTEGER := 3;
+     INT4 : INTEGER := 4;
+
+
+     GENERIC
+          TYPE ELEM IS PRIVATE;
+          PCON1 : IN ELEM;
+          PVAR1 : IN OUT ELEM;
+     PROCEDURE PROC1;
+
+     GENERIC
+          TYPE ELEM IS PRIVATE;
+          PCON2 : IN ELEM;
+          PVAR2 : IN OUT ELEM;
+     PROCEDURE PROC2;
+
+     GENERIC
+          TYPE OBJ IS PRIVATE;
+          FCON1 : IN OBJ;
+          FVAR1 : IN OUT OBJ;
+     FUNCTION FUNC1 RETURN OBJ;
+
+     GENERIC
+          TYPE OBJ IS PRIVATE;
+          FCON2 : IN OBJ;
+          FVAR2 : IN OUT OBJ;
+     FUNCTION FUNC2 RETURN OBJ;
+
+
+     PROCEDURE PROC1 IS SEPARATE;
+     PROCEDURE PROC2 IS SEPARATE;
+     FUNCTION FUNC1 RETURN OBJ IS SEPARATE;
+     FUNCTION FUNC2 RETURN OBJ IS SEPARATE;
+
+
+     PROCEDURE NI_PROC1 IS NEW PROC1 (INTEGER, 2, INT1);
+     PROCEDURE NI_PROC2 IS NEW PROC2 (INTEGER, 3, INT2);
+     FUNCTION NI_FUNC1 IS NEW FUNC1 (INTEGER, 4, INT3);
+     FUNCTION NI_FUNC2 IS NEW FUNC2 (INTEGER, 5, INT4);
+
+
+BEGIN
+
+     TEST ("CA2009F", "SPECIFICATION AND INSTANTIATION " &
+                      "OF GENERIC SUBPROGRAM SUBUNITS");
+
+     NI_PROC1;
+     IF INT1 /= 2 THEN
+          FAILED ("INCORRECT INSTANTIATION - NI_PROC1");
+     END IF;
+
+     NI_PROC2;
+     IF INT2 /= 3 THEN
+          FAILED ("INCORRECT INSTANTIATION - NI_PROC2");
+     END IF;
+
+     IF NI_FUNC1 /= 4 THEN
+          FAILED ("INCORRECT INSTANTIATION - NI_FUNC1");
+     END IF;
+
+     IF NI_FUNC2 /= 5 THEN
+          FAILED ("INCORRECT INSTANTIATION - NI_FUNC2");
+     END IF;
+
+
+     RESULT;
+
+END CA2009F0M;
+
+
+SEPARATE (CA2009F0M)
+PROCEDURE PROC2 IS
+BEGIN
+     PVAR2 := PCON2;
+END PROC2;
+
+SEPARATE (CA2009F0M)
+FUNCTION FUNC2 RETURN OBJ IS
+BEGIN
+     FVAR2 := FCON2;
+     RETURN FVAR2;
+END FUNC2;

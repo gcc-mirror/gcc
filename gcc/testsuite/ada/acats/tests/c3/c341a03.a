@@ -1,0 +1,140 @@
+-- C341A03.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that an object of one class-wide type can initialize a 
+--      class-wide object of a different type when the operation is embedded
+--      in a generic unit.
+--
+-- TEST DESCRIPTION:
+--      Declare specific-type objects of an extended type.  Declare an array
+--      of access values designating class-wide objects, initialized to point
+--      to the objects of the specific type.  Define a generic subprogram
+--      having a generic formal derived type parameter.  Within the generic,
+--      declare a class-wide variable of the formal parameter type.  Verify
+--      that the variable can be initialized with the value of an object
+--      of another class-wide type within the class.
+--
+--      The particular root and extended types used in this abstraction are
+--      defined in foundation code (F341A00.A), and are graphically displayed
+--      as follows:
+--
+--           package Bank
+--              type Account
+--                  |
+--                  |
+--                  |
+--               package Checking
+--                  type Account
+--                      |
+--                      |
+--                      | 
+--                   package Interest_Checking
+--                          type Account
+--
+-- TEST FILES:
+--      This test depends on the following foundation code:
+--
+--         F341A00.A
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      16 Dec 94   SAIC    Changed level of 'Class for ATM_Card
+--
+--!
+
+with F341A00_0;            -- package Bank
+generic
+   type Account_Type is new F341A00_0.Account with private; -- new Bank.Account
+function C341A03_0 (The_Account : Account_Type'Class)       -- function Audit
+  return F341A00_0.Dollar_Amount;
+
+function C341A03_0 (The_Account : Account_Type'Class)
+  return F341A00_0.Dollar_Amount is
+   Acct : Account_Type'Class := The_Account;  -- Init. of class-wide with
+begin                                         -- another class-wide object.
+   return Acct.Current_Balance;
+end C341A03_0;
+
+
+     --=================================================================--
+
+
+with F341A00_0;            -- package Bank
+with F341A00_1;            -- package Checking
+with C341A03_0;            -- generic function Audit
+with Report;
+
+procedure C341A03 is
+
+   package Bank     renames F341A00_0;
+   package Checking renames F341A00_1;
+
+   Current_Checking_Accounts : constant := 3;
+
+   Checking_Acct1 : aliased Checking.Account := (Current_Balance => 10.00,
+                                                 Overdraft_Fee   =>  5.00);
+   Checking_Acct2 : aliased Checking.Account := (Current_Balance => 20.00,
+                                                 Overdraft_Fee   =>  5.00);
+   Checking_Acct3 : aliased Checking.Account := (Current_Balance => 30.00,
+                                                 Overdraft_Fee   =>  5.00);
+
+   type ATM_Card is access all Checking.Account'Class;
+
+   -- Declare array of accesses to class-wide objects.
+   Account_Array : array (1 .. Current_Checking_Accounts) of 
+     ATM_Card := (Checking_Acct1'Access, 
+                  Checking_Acct2'Access, 
+                  Checking_Acct3'Access);
+begin  -- C341A03
+
+   Report.Test ("C341A03",  "Check that an object of one class-wide type " &
+                            "can initialize a class-wide object of a "   &
+                            "different type when the operation is embedded " &
+                            "in a generic unit" );
+
+   Audit_Checking_Accounts:
+   declare
+      Balance_In_Checking_Accounts : Bank.Dollar_Amount := 0.00;
+      -- Instantiate with a specific extended type.
+      function Checking_Audit is new C341A03_0 (Checking.Account);
+      use type Bank.Dollar_Amount;
+   begin
+
+      for I in 1 .. Current_Checking_Accounts loop
+         Balance_In_Checking_Accounts := Balance_In_Checking_Accounts + 
+           Checking_Audit (Account_Array (I).all);
+      end loop;
+
+      if Balance_In_Checking_Accounts /= 60.00 then
+         Report.Failed ("Incorrect initialization of class-wide object");
+      end if;
+
+   end Audit_Checking_Accounts;
+
+   Report.Result;
+
+end C341A03;

@@ -1,0 +1,407 @@
+-- C731001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687 and
+--     F08630-91-C-0015, the U.S. Government obtained unlimited rights in the
+--     software and documentation contained herein.  Unlimited rights are
+--     defined in DFAR 252.227-7013(a)(19).  By making this public release,
+--     the Government intends to confer upon all recipients unlimited rights
+--     equal to those held by the Government.  These rights include rights to
+--     use, duplicate, release or disclose the released technical data and
+--     computer software in whole or in part, in any manner and for any purpose
+--     whatsoever, and to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE
+--     Check that inherited operations can be overridden, even when they are
+--     inherited in a body.
+--     The test cases here are inspired by the AARM examples given in
+--     the discussion of AARM-7.3.1(7.a-7.v).
+--     This discussion was confirmed by AI95-00035.
+--
+-- TEST DESCRIPTION
+--     See AARM-7.3.1.
+--
+-- CHANGE HISTORY:
+--      29 JUN 1999   RAD   Initial Version
+--      23 SEP 1999   RLB   Improved comments, renamed, issued.
+--      20 AUG 2001   RLB   Corrected 'verbose' flag.
+--
+--!
+
+with Report; use Report; pragma Elaborate_All(Report);
+package C731001_1 is
+    pragma Elaborate_Body;
+private
+    procedure Check_String(X, Y: String);
+    function Check_String(X, Y: String) return String;
+        -- This one is a function, so we can call it in package specs.
+end C731001_1;
+
+package body C731001_1 is
+
+    Verbose: Boolean := False;
+
+    procedure Check_String(X, Y: String) is
+    begin
+        if Verbose then
+            Comment("""" & X & """ = """ & Y & """?");
+        end if;
+        if X /= Y then
+            Failed("""" & X & """ should be """ & Y & """");
+        end if;
+    end Check_String;
+
+    function Check_String(X, Y: String) return String is
+    begin
+        Check_String(X, Y);
+        return X;
+    end Check_String;
+
+end C731001_1;
+
+private package C731001_1.Parent is
+
+    procedure Call_Main;
+
+    type Root is tagged null record;
+    subtype Renames_Root is Root;
+    subtype Root_Class is Renames_Root'Class;
+    function Make return Root;
+    function Op1(X: Root) return String;
+    function Call_Op2(X: Root'Class) return String;
+private
+    function Op2(X: Root) return String;
+end C731001_1.Parent;
+
+procedure C731001_1.Parent.Main;
+
+with C731001_1.Parent.Main;
+package body C731001_1.Parent is
+
+    procedure Call_Main is
+    begin
+        Main;
+    end Call_Main;
+
+    function Make return Root is
+        Result: Root;
+    begin
+        return Result;
+    end Make;
+
+    function Op1(X: Root) return String is
+    begin
+        return "Parent.Op1 body";
+    end Op1;
+
+    function Op2(X: Root) return String is
+    begin
+        return "Parent.Op2 body";
+    end Op2;
+
+    function Call_Op2(X: Root'Class) return String is
+    begin
+        return Op2(X);
+    end Call_Op2;
+
+begin
+
+    Check_String(Op1(Root'(Make)), "Parent.Op1 body");
+    Check_String(Op1(Root_Class(Root'(Make))), "Parent.Op1 body");
+
+    Check_String(Op2(Root'(Make)), "Parent.Op2 body");
+    Check_String(Op2(Root_Class(Root'(Make))), "Parent.Op2 body");
+
+end C731001_1.Parent;
+
+with C731001_1.Parent; use C731001_1.Parent;
+private package C731001_1.Unrelated is
+
+    type T2 is new Root with null record;
+    subtype T2_Class is T2'Class;
+    function Make return T2;
+    function Op2(X: T2) return String;
+end C731001_1.Unrelated;
+
+with C731001_1.Parent; use C731001_1.Parent;
+    pragma Elaborate(C731001_1.Parent);
+package body C731001_1.Unrelated is
+
+    function Make return T2 is
+        Result: T2;
+    begin
+        return Result;
+    end Make;
+
+    function Op2(X: T2) return String is
+    begin
+        return "Unrelated.Op2 body";
+    end Op2;
+begin
+
+    Check_String(Op1(T2'(Make)), "Parent.Op1 body");
+    Check_String(Op1(T2_Class(T2'(Make))), "Parent.Op1 body");
+    Check_String(Op1(Root_Class(T2'(Make))), "Parent.Op1 body");
+
+    Check_String(Op2(T2'(Make)), "Unrelated.Op2 body");
+    Check_String(Op2(T2_Class(T2'(Make))), "Unrelated.Op2 body");
+    Check_String(Call_Op2(T2'(Make)), "Parent.Op2 body");
+    Check_String(Call_Op2(T2_Class(T2'(Make))), "Parent.Op2 body");
+    Check_String(Call_Op2(Root_Class(T2'(Make))), "Parent.Op2 body");
+
+end C731001_1.Unrelated;
+
+package C731001_1.Parent.Child is
+    pragma Elaborate_Body;
+
+    type T3 is new Root with null record;
+    subtype T3_Class is T3'Class;
+    function Make return T3;
+
+    T3_Obj: T3;
+    T3_Class_Obj: T3_Class := T3_Obj;
+    T3_Root_Class_Obj: Root_Class := T3_Obj;
+
+    X3: constant String :=
+      Check_String(Op1(T3_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T3_Class_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T3_Root_Class_Obj), "Parent.Op1 body") &
+
+      Check_String(Call_Op2(T3_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T3_Class_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T3_Root_Class_Obj), "Parent.Op2 body");
+
+    package Nested is
+        type T4 is new Root with null record;
+        subtype T4_Class is T4'Class;
+        function Make return T4;
+
+        T4_Obj: T4;
+        T4_Class_Obj: T4_Class := T4_Obj;
+        T4_Root_Class_Obj: Root_Class := T4_Obj;
+
+        X4: constant String :=
+          Check_String(Op1(T4_Obj), "Parent.Op1 body") &
+          Check_String(Op1(T4_Class_Obj), "Parent.Op1 body") &
+          Check_String(Op1(T4_Root_Class_Obj), "Parent.Op1 body") &
+
+          Check_String(Call_Op2(T4_Obj), "Parent.Op2 body") &
+          Check_String(Call_Op2(T4_Class_Obj), "Parent.Op2 body") &
+          Check_String(Call_Op2(T4_Root_Class_Obj), "Parent.Op2 body");
+
+    private
+
+        XX4: constant String :=
+          Check_String(Op1(T4_Obj), "Parent.Op1 body") &
+          Check_String(Op1(T4_Class_Obj), "Parent.Op1 body") &
+          Check_String(Op1(T4_Root_Class_Obj), "Parent.Op1 body") &
+
+          Check_String(Call_Op2(T4_Obj), "Parent.Op2 body") &
+          Check_String(Call_Op2(T4_Class_Obj), "Parent.Op2 body") &
+          Check_String(Call_Op2(T4_Root_Class_Obj), "Parent.Op2 body");
+
+    end Nested;
+
+    use Nested;
+
+    XXX4: constant String :=
+      Check_String(Op1(T4_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T4_Class_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T4_Root_Class_Obj), "Parent.Op1 body") &
+
+      Check_String(Call_Op2(T4_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T4_Class_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T4_Root_Class_Obj), "Parent.Op2 body");
+
+private
+
+    XX3: constant String :=
+      Check_String(Op1(T3_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T3_Class_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T3_Root_Class_Obj), "Parent.Op1 body") &
+
+      Check_String(Call_Op2(T3_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T3_Class_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T3_Root_Class_Obj), "Parent.Op2 body") &
+
+      Check_String(Op2(T3_Obj), "Parent.Op2 body") &
+      Check_String(Op2(T3_Class_Obj), "Parent.Op2 body") &
+      Check_String(Op2(T3_Root_Class_Obj), "Parent.Op2 body");
+
+    XXXX4: constant String :=
+      Check_String(Op1(T4_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T4_Class_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T4_Root_Class_Obj), "Parent.Op1 body") &
+
+      Check_String(Call_Op2(T4_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T4_Class_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T4_Root_Class_Obj), "Parent.Op2 body") &
+
+      Check_String(Op2(T4_Root_Class_Obj), "Parent.Op2 body");
+
+end C731001_1.Parent.Child;
+
+with C731001_1.Unrelated; use C731001_1.Unrelated;
+    pragma Elaborate(C731001_1.Unrelated);
+package body C731001_1.Parent.Child is
+
+    XXX3: constant String :=
+      Check_String(Op1(T3_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T3_Class_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T3_Root_Class_Obj), "Parent.Op1 body") &
+
+      Check_String(Call_Op2(T3_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T3_Class_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T3_Root_Class_Obj), "Parent.Op2 body") &
+
+      Check_String(Op2(T3_Obj), "Parent.Op2 body") &
+      Check_String(Op2(T3_Class_Obj), "Parent.Op2 body") &
+      Check_String(Op2(T3_Root_Class_Obj), "Parent.Op2 body");
+
+    XXXXX4: constant String :=
+      Check_String(Op1(T4_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T4_Class_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T4_Root_Class_Obj), "Parent.Op1 body") &
+
+      Check_String(Call_Op2(T4_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T4_Class_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T4_Root_Class_Obj), "Parent.Op2 body") &
+
+      Check_String(Op2(T4_Root_Class_Obj), "Parent.Op2 body");
+
+    function Make return T3 is
+        Result: T3;
+    begin
+        return Result;
+    end Make;
+
+    package body Nested is
+        function Make return T4 is
+            Result: T4;
+        begin
+            return Result;
+        end Make;
+
+        XXXXXX4: constant String :=
+          Check_String(Op1(T4_Obj), "Parent.Op1 body") &
+          Check_String(Op1(T4_Class_Obj), "Parent.Op1 body") &
+          Check_String(Op1(T4_Root_Class_Obj), "Parent.Op1 body") &
+
+          Check_String(Call_Op2(T4_Obj), "Parent.Op2 body") &
+          Check_String(Call_Op2(T4_Class_Obj), "Parent.Op2 body") &
+          Check_String(Call_Op2(T4_Root_Class_Obj), "Parent.Op2 body") &
+
+          Check_String(Op2(T4_Obj), "Parent.Op2 body") &
+          Check_String(Op2(T4_Class_Obj), "Parent.Op2 body") &
+          Check_String(Op2(T4_Root_Class_Obj), "Parent.Op2 body");
+
+    end Nested;
+
+    type T5 is new T2 with null record;
+    subtype T5_Class is T5'Class;
+    function Make return T5;
+
+    function Make return T5 is
+        Result: T5;
+    begin
+        return Result;
+    end Make;
+
+    XXXXXXX4: constant String :=
+      Check_String(Op1(T4_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T4_Class_Obj), "Parent.Op1 body") &
+      Check_String(Op1(T4_Root_Class_Obj), "Parent.Op1 body") &
+
+      Check_String(Call_Op2(T4_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T4_Class_Obj), "Parent.Op2 body") &
+      Check_String(Call_Op2(T4_Root_Class_Obj), "Parent.Op2 body") &
+
+      Check_String(Op2(T4_Root_Class_Obj), "Parent.Op2 body");
+
+end C731001_1.Parent.Child;
+
+procedure C731001_1.Main;
+
+with C731001_1.Parent;
+procedure C731001_1.Main is
+begin
+    C731001_1.Parent.Call_Main;
+end C731001_1.Main;
+
+with C731001_1.Parent.Child;
+    use C731001_1.Parent;
+    use C731001_1.Parent.Child;
+    use C731001_1.Parent.Child.Nested;
+with C731001_1.Unrelated; use C731001_1.Unrelated;
+procedure C731001_1.Parent.Main is
+
+    Root_Obj: Root := Make;
+    Root_Class_Obj: Root_Class := Root'(Make);
+
+    T2_Obj: T2 := Make;
+    T2_Class_Obj: T2_Class := T2_Obj;
+    T2_Root_Class_Obj: Root_Class := T2_Class_Obj;
+
+    T3_Obj: T3 := Make;
+    T3_Class_Obj: T3_Class := T3_Obj;
+    T3_Root_Class_Obj: Root_Class := T3_Obj;
+
+    T4_Obj: T4 := Make;
+    T4_Class_Obj: T4_Class := T4_Obj;
+    T4_Root_Class_Obj: Root_Class := T4_Obj;
+
+begin
+    Test("C731001_1", "Check that inherited operations can be overridden, even"
+                    & " when they are inherited in a body");
+
+    Check_String(Op1(Root_Obj), "Parent.Op1 body");
+    Check_String(Op1(Root_Class_Obj), "Parent.Op1 body");
+
+    Check_String(Call_Op2(Root_Obj), "Parent.Op2 body");
+    Check_String(Call_Op2(Root_Class_Obj), "Parent.Op2 body");
+
+    Check_String(Op1(T2_Obj), "Parent.Op1 body");
+    Check_String(Op1(T2_Class_Obj), "Parent.Op1 body");
+    Check_String(Op1(T2_Root_Class_Obj), "Parent.Op1 body");
+
+    Check_String(Op2(T2_Obj), "Unrelated.Op2 body");
+    Check_String(Op2(T2_Class_Obj), "Unrelated.Op2 body");
+    Check_String(Call_Op2(T2_Obj), "Parent.Op2 body");
+    Check_String(Call_Op2(T2_Class_Obj), "Parent.Op2 body");
+    Check_String(Call_Op2(T2_Root_Class_Obj), "Parent.Op2 body");
+
+    Check_String(Op1(T3_Obj), "Parent.Op1 body");
+    Check_String(Op1(T3_Class_Obj), "Parent.Op1 body");
+    Check_String(Op1(T3_Root_Class_Obj), "Parent.Op1 body");
+
+    Check_String(Call_Op2(T3_Obj), "Parent.Op2 body");
+    Check_String(Call_Op2(T3_Class_Obj), "Parent.Op2 body");
+    Check_String(Call_Op2(T3_Root_Class_Obj), "Parent.Op2 body");
+
+    Check_String(Op1(T4_Obj), "Parent.Op1 body");
+    Check_String(Op1(T4_Class_Obj), "Parent.Op1 body");
+    Check_String(Op1(T4_Root_Class_Obj), "Parent.Op1 body");
+
+    Check_String(Call_Op2(T4_Obj), "Parent.Op2 body");
+    Check_String(Call_Op2(T4_Class_Obj), "Parent.Op2 body");
+    Check_String(Call_Op2(T4_Root_Class_Obj), "Parent.Op2 body");
+
+    Result;
+end C731001_1.Parent.Main;
+
+with C731001_1.Main;
+procedure C731001 is
+begin
+    C731001_1.Main;
+end C731001;

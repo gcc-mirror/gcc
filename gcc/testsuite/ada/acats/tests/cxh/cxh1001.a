@@ -1,0 +1,349 @@
+-- CXH1001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE
+--     Check pragma Normalize_Scalars.
+--     Check that this configuration pragma causes uninitialized scalar
+--     objects to be set to a predictable value.  Check that multiple
+--     compilation units are affected.  Check for uninitialized scalar
+--     objects that are subcomponents of composite objects, unassigned
+--     out parameters, objects that have been allocated without an initial
+--     value, and objects that are stand alone.
+--
+-- TEST DESCRIPTION
+--     The test requires that the configuration pragma Normalize_Scalars
+--     be processed.  It then defines a few scalar types (some enumeration,
+--     some integer) in a few packages.  The scalar types are designed such
+--     that the representation will easily allow for an out of range value.
+--     Unchecked_Conversion and the 'Valid attribute are both used to verify
+--     that the default values of the various kinds of objects are indeed
+--     invalid for the type.
+--
+--     Note that this test relies on having uninitialized objects, compilers
+--     may generate several warnings to this effect.
+--
+-- SPECIAL REQUIREMENTS
+--      The implementation must process configuration pragmas which
+--      are not part of any Compilation Unit;  the method employed
+--      is implementation defined.
+--
+-- APPLICABILITY CRITERIA:
+--      This test is only applicable for a compiler attempting validation
+--      for the Safety and Security Annex.
+--
+--
+-- CHANGE HISTORY:
+--      26 OCT 95   SAIC   Initial version
+--      04 NOV 96   SAIC   Added cases, upgraded commentary
+--
+--!
+
+---------------------------- CONFIGURATION PRAGMAS -----------------------
+
+pragma Normalize_Scalars;                                         -- OK
+                                                -- configuration pragma
+
+------------------------ END OF CONFIGURATION PRAGMAS --------------------
+
+
+----------------------------------------------------------------- CXH1001_0
+
+with Impdef.Annex_H;
+with Unchecked_Conversion;
+package CXH1001_0 is
+
+  package Imp_H renames Impdef.Annex_H;
+  use type Imp_H.Small_Number;
+  use type Imp_H.Scalar_To_Normalize;
+
+  Global_Object : Imp_H.Scalar_To_Normalize;
+  -- if the pragma is in effect, this should come up with the predictable
+  -- value
+
+  Global_Number : Imp_H.Small_Number;
+  -- if the pragma is in effect, this should come up with the predictable
+  -- value
+
+  procedure Package_Check;
+
+  type Num is range 0..2**Imp_H.Scalar_To_Normalize'Size-1;
+  for Num'Size use Imp_H.Scalar_To_Normalize'Size;  
+
+  function STN_2_Num is
+     new Unchecked_Conversion( Imp_H.Scalar_To_Normalize, Num );
+
+  Small_Last : constant Integer := Integer(Imp_H.Small_Number'Last);
+
+end CXH1001_0;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body CXH1001_0 is
+
+  procedure Heap_Check( A_Value  : access Imp_H.Scalar_To_Normalize;
+                        A_Number : access Imp_H.Small_Number ) is
+    Value  : Num;
+    Number : Integer;
+  begin
+
+    if A_Value.all'Valid then
+      Value := STN_2_Num ( A_Value.all );
+      if Imp_H.Default_For_Scalar_To_Normalize_Is_In_Range then
+        if Imp_H.Scalar_To_Normalize'Val(Value)
+           /= Imp_H.Default_For_Scalar_To_Normalize then
+          Report.Failed("Implicit initial value for local variable is not "
+                         & "the predicted value"); 
+        end if;
+      else
+        if Value in 0 ..
+            Imp_H.Scalar_To_Normalize'Pos(Imp_H.Scalar_To_Normalize'Last) then
+          Report.Failed("Implicit initial value for local variable is a "
+                         & "value of the type"); 
+        end if;
+      end if;
+    end if;
+
+    if A_Number.all'Valid then
+      Number := Integer( A_Number.all );
+      if Imp_H.Default_For_Small_Number_Is_In_Range then
+        if Global_Number /= Imp_H.Default_For_Small_Number then
+          Report.Failed("Implicit initial value for number is not "
+                         & "the predicted value"); 
+        end if;
+      else
+        if Integer( Global_Number ) in 0 .. Report.Ident_Int(Small_Last) then
+          Report.Failed("Implicit initial value for number is a "
+                         & "value of the type"); 
+        end if;
+      end if;
+    end if;
+
+  end Heap_Check;
+
+  procedure Package_Check is
+    Value  : Num;
+    Number : Integer;
+  begin
+
+    if Global_Object'Valid then
+      Value := STN_2_Num ( Global_Object );
+      if Imp_H.Default_For_Scalar_To_Normalize_Is_In_Range then
+        if Imp_H.Scalar_To_Normalize'Val(Value)
+           /= Imp_H.Default_For_Scalar_To_Normalize then
+          Report.Failed("Implicit initial value for local variable is not "
+                         & "the predicted value"); 
+        end if;
+      else
+        if Value in 0 .. 
+            Imp_H.Scalar_To_Normalize'Pos(Imp_H.Scalar_To_Normalize'Last) then
+          Report.Failed("Implicit initial value for local variable is a "
+                         & "value of the type"); 
+        end if;
+      end if;
+    end if;
+
+    if Global_Number'Valid then
+      Number := Integer( Global_Number );
+      if Imp_H.Default_For_Small_Number_Is_In_Range then
+        if Global_Number /= Imp_H.Default_For_Small_Number then
+          Report.Failed("Implicit initial value for number is not "
+                         & "the predicted value"); 
+        end if;
+      else
+        if Integer( Global_Number ) in 0 .. Report.Ident_Int(Small_Last) then
+          Report.Failed("Implicit initial value for number is a "
+                         & "value of the type"); 
+        end if;
+      end if;
+    end if;
+
+    Heap_Check( new Imp_H.Scalar_To_Normalize, new Imp_H.Small_Number );
+
+  end Package_Check;
+
+end CXH1001_0;
+
+----------------------------------------------------------------- CXH1001_1
+
+with Unchecked_Conversion;
+package CXH1001_0.CXH1001_1 is
+
+  -- kill as many birds as possible with a single stone:
+  --   embed a protected object in the body of a child package,
+  -- checks the multiple compilation unit case,
+  -- and part of the subcomponent case.
+
+  protected Thingy is
+    procedure Check_Embedded_Values;
+  private
+    Hidden_Object : Imp_H.Scalar_To_Normalize;  -- not initialized
+    Hidden_Number : Imp_H.Small_Number;         -- not initialized
+  end Thingy;
+
+end CXH1001_0.CXH1001_1;
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body CXH1001_0.CXH1001_1 is
+
+  Childs_Object : Imp_H.Scalar_To_Normalize;  -- not initialized
+
+  protected body Thingy is
+
+    procedure Check_Embedded_Values is
+    begin
+
+      if Imp_H.Default_For_Scalar_To_Normalize_Is_In_Range then
+        if Childs_Object /= Imp_H.Default_For_Scalar_To_Normalize then
+          Report.Failed("Implicit initial value for child object is not "
+                         & "the predicted value"); 
+        end if;
+      elsif Childs_Object'Valid and then STN_2_Num( Childs_Object ) in 0 ..
+            Imp_H.Scalar_To_Normalize'Pos(Imp_H.Scalar_To_Normalize'Last) then
+          Report.Failed("Implicit initial value for child object is a "
+                         & "value of the type"); 
+      end if;
+
+      if Imp_H.Default_For_Scalar_To_Normalize_Is_In_Range then
+        if Hidden_Object /= Imp_H.Default_For_Scalar_To_Normalize then
+          Report.Failed("Implicit initial value for protected package object "
+                         & "is not the predicted value"); 
+        end if;
+      elsif Hidden_Object'Valid and then STN_2_Num( Hidden_Object ) in 0 ..
+            Imp_H.Scalar_To_Normalize'Pos(Imp_H.Scalar_To_Normalize'Last) then
+          Report.Failed("Implicit initial value for protected component "
+                         & "is a value of the type"); 
+      end if;
+
+      if Imp_H.Default_For_Small_Number_Is_In_Range then
+        if Hidden_Number /= Imp_H.Default_For_Small_Number then
+          Report.Failed("Implicit initial value for protected number "
+                         & "is not the predicted value"); 
+        end if;
+      elsif Hidden_Number'Valid and then Hidden_Number in
+                    0 .. Imp_H.Small_Number(Report.Ident_Int(Small_Last)) then
+          Report.Failed("Implicit initial value for protected number "
+                         & "is a value of the type"); 
+      end if;
+
+    end Check_Embedded_Values;
+
+ end Thingy;
+
+end CXH1001_0.CXH1001_1;
+
+------------------------------------------------------------------- CXH1001
+
+with Impdef.Annex_H;
+with Report;
+with CXH1001_0.CXH1001_1;
+procedure CXH1001 is
+
+  package Imp_H renames Impdef.Annex_H;
+  use type CXH1001_0.Num;
+
+  My_Object : Imp_H.Scalar_To_Normalize;  -- not initialized
+
+  Value     : CXH1001_0.Num := CXH1001_0.STN_2_Num ( My_Object );
+                               -- My_Object is not initialized
+
+  Parameter_Value : Imp_H.Scalar_To_Normalize
+                  := Imp_H.Scalar_To_Normalize'Last;
+
+  type Structure is record  -- not initialized
+    Std_Int : Integer;
+    Scalar  : Imp_H.Scalar_To_Normalize;
+    Num     : CXH1001_0.Num;
+  end record;
+
+  S : Structure;  -- not initialized
+
+  procedure Bad_Code( Unassigned : out Imp_H.Scalar_To_Normalize ) is
+    -- returns uninitialized OUT parameter
+  begin
+
+    if Report.Ident_Int( 0 ) = 1 then
+      Report.Failed( "Nothing is something" );
+      Unassigned := Imp_H.Scalar_To_Normalize'First;
+    end if;
+
+  end Bad_Code; 
+
+  procedure Check( V : CXH1001_0.Num; Message : String ) is
+  begin
+
+
+    if Imp_H.Default_For_Scalar_To_Normalize_Is_In_Range then
+      if V /= Imp_H.Scalar_To_Normalize'Pos(
+                                  Imp_H.Default_For_Scalar_To_Normalize) then
+        Report.Failed(Message & ": Implicit initial value for object "
+                       & "is not the predicted value"); 
+      end if;
+    elsif V'Valid and then V in
+      0 .. Imp_H.Scalar_To_Normalize'Pos(Imp_H.Scalar_To_Normalize'Last) then
+      Report.Failed(Message & ": Implicit initial value for object "
+                     & "is a value of the type"); 
+    end if;
+
+  end Check;
+
+begin  -- Main test procedure.
+
+  Report.Test ("CXH1001", "Check that the configuration pragma " &
+                          "Normalize_Scalars causes uninitialized scalar " &
+                          "objects to be set to a predictable value. " &
+                          "Check that multiple compilation units are " &
+                          "affected.  Check for uninitialized scalar " &
+                          "objects that are subcomponents of composite " &
+                          "objects, unassigned out parameters, have been " &
+                          "allocated without an initial value, and are " &
+                          "stand alone." );
+   
+  CXH1001_0.Package_Check;
+
+  if My_Object'Valid then
+    Value := CXH1001_0.STN_2_Num ( My_Object ); -- My_Object not initialized
+  end if;
+  -- otherwise, we just leave Value uninitialized
+
+  Check( Value, "main procedure variable" );
+
+  Bad_Code( Parameter_Value );
+
+  if Parameter_Value'Valid then
+    Check( CXH1001_0.STN_2_Num ( Parameter_Value ), "Out parameter return" );
+  end if;
+
+  if S.Scalar'Valid then
+    Check( CXH1001_0.STN_2_Num ( S.Scalar ), "Record component" );
+  end if;
+
+  CXH1001_0.CXH1001_1.Thingy.Check_Embedded_Values;
+
+  Report.Result;
+
+end CXH1001;

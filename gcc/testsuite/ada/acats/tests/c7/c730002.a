@@ -1,0 +1,383 @@
+-- C730002.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that the full view of a private extension may be derived
+--      indirectly from the ancestor type (i.e., the parent type of the full
+--      type may be any descendant of the ancestor type). Check that, for
+--      a primitive subprogram of the private extension that is inherited from
+--      the ancestor type and not overridden, the formal parameter names and
+--      default expressions come from the corresponding primitive subprogram
+--      of the ancestor type, while the body comes from that of the parent
+--      type.
+--      Check for a case where the parent type is derived from the ancestor
+--      type through a series of types produced by generic instantiations.
+--      Examine both the static and dynamic binding cases.
+--
+-- TEST DESCRIPTION:
+--      Consider:
+--
+--      package P is
+--         type Ancestor is tagged ...
+--         procedure Op (P1: Ancestor; P2: Boolean := True);
+--      end P;
+--
+--      with P;
+--      generic
+--         type T is new P.Ancestor with private;  
+--      package Gen1 is
+--         type Enhanced is new T with private;
+--         procedure Op (A: Enhanced; B: Boolean := True);
+--         -- other specific procedures...
+--      private
+--         type Enhanced is new T with ...
+--      end Gen1;
+--
+--      with P, Gen1;
+--      package N is new Gen1 (P.Ancestor);
+--
+--      with N;
+--      generic
+--         type T is new N.Enhanced with private;
+--      package Gen2 is
+--         type Enhanced_Again is new T with private;
+--         procedure Op (X: Enhanced_Again; Y: Boolean := False);
+--         -- other specific procedures...
+--      private
+--         type Enhanced_Again is new T with ...
+--      end Gen2;
+--
+--      with N, Gen2;
+--      package Q is new Gen2 (N.Enhanced);
+--
+--      with P, Q;
+--      package R is
+--         type Priv_Ext is new P.Ancestor with private;         -- (A)
+--         -- Inherits procedure Op (P1: Priv_Ext; P2: Boolean := True);
+--         -- But body executed is that of Q.Op.
+--      private
+--         type Priv_Ext is new Q.Enhanced_Again with record ... -- (B)
+--      end R;
+--
+--      The ancestor type in (A) differs from the parent type in (B); the
+--      parent of the full type is descended from the ancestor type of the
+--      private extension, in this case through a series of types produced
+--      by generic instantiations.  Gen1 redefines the implementation of Op
+--      for any type that has one.  N is an instance of Gen1 for the ancestor
+--      type. Gen2 again redefines the implementation of Op for any type that
+--      has one. Q is an instance of Gen2 for the extension of the P.Ancestor
+--      declared in N.  Both N and Q could define other operations which we
+--      don't want to be available in R.  For a call to Op (from outside the
+--      scope of the full view) with an operand of type R.Priv_Ext, the body
+--      executed will be that of Q.Op (the parent type's version), but the
+--      formal parameter names and default expression come from that of P.Op
+--      (the ancestor type's version).
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      27 Feb 97   CTA.PWB Added elaboration pragmas.
+--!
+
+package C730002_0 is
+
+   type Hours_Type      is range 0..1000;
+   type Personnel_Type  is range 0..10;
+   type Specialist_ID is (Manny, Moe, Jack, Curly, Joe, Larry);
+
+   type Engine_Type is tagged record
+      Ave_Repair_Time    : Hours_Type     := 0;     -- Default init. for
+      Personnel_Required : Personnel_Type := 0;     -- component fields.
+      Specialist         : Specialist_ID  := Manny;
+   end record;
+
+   procedure Routine_Maintenance (Engine     : in out Engine_Type ; 
+                                  Specialist : in     Specialist_ID := Moe);
+
+   -- The Routine_Maintenance procedure implements the processing required
+   -- for an engine.
+
+end C730002_0;
+
+     --==================================================================--
+
+package body C730002_0 is
+
+   procedure Routine_Maintenance (Engine     : in out Engine_Type ; 
+                                  Specialist : in     Specialist_ID := Moe) is
+   begin
+      Engine.Ave_Repair_Time     := 3;
+      Engine.Personnel_Required  := 1;
+      Engine.Specialist := Specialist;
+   end Routine_Maintenance;
+
+end C730002_0;
+
+     --==================================================================--
+
+with C730002_0; use C730002_0;
+generic
+   type T is new C730002_0.Engine_Type with private;
+package C730002_1 is
+
+   -- This generic package contains types/procedures specific to engines 
+   -- of the diesel variety.
+
+   type Repair_Facility_Type is (On_Site, Repair_Shop, Factory);
+
+   type Diesel_Series is new T with private;
+
+   procedure Routine_Maintenance (Eng      : in out Diesel_Series;
+                                  Spec_Req : in     Specialist_ID := Jack);
+  
+   -- Other diesel specific operations... (not required in this test).
+
+private
+
+   type Diesel_Series is new T with record
+      Repair_Facility_Required : Repair_Facility_Type := On_Site;
+   end record;
+
+end C730002_1;
+
+     --==================================================================--
+
+package body C730002_1 is
+
+   procedure Routine_Maintenance (Eng      : in out Diesel_Series;
+                                  Spec_Req : in     Specialist_ID := Jack) is
+   begin
+      Eng.Ave_Repair_Time          := 6;
+      Eng.Personnel_Required       := 2;
+      Eng.Specialist               := Spec_Req;
+      Eng.Repair_Facility_Required := On_Site;
+   end Routine_Maintenance;
+
+end C730002_1;
+
+     --==================================================================--
+
+with C730002_0;
+with C730002_1;
+pragma Elaborate (C730002_1);
+package C730002_2 is new C730002_1 (C730002_0.Engine_Type);
+
+     --==================================================================--
+
+with C730002_0; use C730002_0;
+with C730002_2; use C730002_2;
+generic
+  type T is new C730002_2.Diesel_Series with private;
+package C730002_3 is
+
+   type Time_Of_Operation_Type is range 0..100_000;
+
+   type Electric_Series is new T with private;
+
+   procedure Routine_Maintenance (E  : in out Electric_Series;
+                                  SR : in     Specialist_ID := Curly);
+
+   -- Other electric specific operations... (not required in this test).
+
+private
+
+   type Electric_Series is new T with record
+      Mean_Time_Between_Repair : Time_Of_Operation_Type := 0;
+   end record; 
+
+end C730002_3;
+
+     --==================================================================--
+
+package body C730002_3 is
+
+   procedure Routine_Maintenance (E  : in out Electric_Series;
+                                  SR : in     Specialist_ID := Curly) is
+   begin
+      E.Ave_Repair_Time          := 9;
+      E.Personnel_Required       := 3;
+      E.Specialist               := SR;
+      E.Mean_Time_Between_Repair := 1000;
+   end Routine_Maintenance;
+
+end C730002_3;
+
+     --==================================================================--
+
+with C730002_2;
+with C730002_3;
+pragma Elaborate (C730002_3);
+package C730002_4 is new C730002_3 (C730002_2.Diesel_Series);
+
+     --==================================================================--
+
+with C730002_0;  use C730002_0;
+with C730002_4;  use C730002_4;
+
+package C730002_5 is
+
+   type Inspection_Type is (AAA, MIL_STD, NRC);
+
+   type Nuclear_Series is new Engine_Type with private;              -- (A)
+
+   -- Inherits procedure Routine_Maintenance from ancestor; does not override.
+   --                      (Engine     : in out Nuclear_Series; 
+   --                       Specialist : in     Specialist_ID := Moe);
+   -- But body executed will be that of C730002_4.Routine_Maintenance, 
+   -- the parent type.
+
+   function TC_Specialist         (E : Nuclear_Series) return Specialist_ID;
+   function TC_Personnel_Required (E : Nuclear_Series) return Personnel_Type;
+   function TC_Time_Required      (E : Nuclear_Series) return Hours_Type;
+
+   -- Dispatching subprogram.
+   procedure Maintain_The_Engine (The_Engine : in out Engine_Type'Class);
+
+private
+
+   type Nuclear_Series is new Electric_Series with record           -- (B)
+      Inspector_Rep : Inspection_Type := NRC;
+   end record;
+
+   -- The ancestor type is used in the type extension (A), while the parent
+   -- of the full type (B) is a descendent of the ancestor type, through a
+   -- series of types produced by generic instantiation.
+
+end C730002_5;
+
+     --==================================================================--
+
+package body C730002_5 is
+
+   function TC_Specialist (E : Nuclear_Series) return Specialist_ID is
+   begin
+      return E.Specialist;
+   end TC_Specialist;
+
+   function TC_Personnel_Required (E : Nuclear_Series) 
+     return Personnel_Type is
+   begin
+      return E.Personnel_Required;
+   end TC_Personnel_Required;
+
+   function TC_Time_Required (E : Nuclear_Series) return Hours_Type is
+   begin
+      return E.Ave_Repair_Time;
+   end TC_Time_Required;
+
+   -- Dispatching subprogram.
+   procedure Maintain_The_Engine (The_Engine : in out Engine_Type'Class) is
+   begin
+      Routine_Maintenance (The_Engine);
+   end Maintain_The_Engine;
+
+
+end C730002_5;
+
+     --==================================================================--
+
+with Report;
+with C730002_0;  use C730002_0;
+with C730002_2;  use C730002_2;
+with C730002_4;  use C730002_4;
+with C730002_5;  use C730002_5;
+
+procedure C730002 is
+begin
+
+   Report.Test ("C730002", "Check that the full view of a private "        &
+                           "extension may be derived indirectly from "     &
+                           "the ancestor type.  Check for a case where "   &
+                           "the parent type is derived from the ancestor " &
+                           "type through a series of types produced by "   &
+                           "generic instantiations");
+
+   Test_Block:
+   declare
+      Nuclear_Drive : Nuclear_Series;
+      Warp_Drive    : Nuclear_Series;
+   begin
+
+      -- Non-Dispatching Case:
+      -- Call Routine_Maintenance using formal parameter name from
+      -- C730002_0.Routine_Maintenance (ancestor version).
+      -- Give no second parameter so that the default expression must be
+      -- used.
+
+      Routine_Maintenance (Engine => Nuclear_Drive);
+
+      -- The value of the Specialist component should equal "Moe",
+      -- which is the default value from the ancestor's version of
+      -- Routine_Maintenance, and not the default value from the parent's
+      -- version of Routine_Maintenance.
+
+      if TC_Specialist (Nuclear_Drive) /= Moe then
+         Report.Failed
+           ("Default expression for ancestor op not used " &
+            " - non-dispatching case");
+      end if;
+
+      -- However the value of the Ave_Repair_Time and Personnel_Required 
+      -- components should be those assigned in the parent type's version 
+      -- of the body of Routine_Maintenance.
+      -- Note: Only components associated with the ancestor type are
+      --       evaluated for the purposes of this test.
+
+      if TC_Personnel_Required (Nuclear_Drive) /= 3  or
+         TC_Time_Required (Nuclear_Drive)      /= 9
+      then
+         Report.Failed("Wrong body was executed - non-dispatching case");
+      end if;
+
+      -- Dispatching Case:
+      -- Use a dispatching subprogram to ensure that the correct body is 
+      -- used at runtime.
+
+      Maintain_The_Engine (Warp_Drive);
+
+      -- The resulting assignments to the fields of the Warp_Drive variable
+      -- should be the same as those of the Nuclear_Drive above, indicating
+      -- that the body of the parent version of the inherited subprogram
+      -- was used.
+
+      if TC_Specialist (Warp_Drive) /= Moe then
+         Report.Failed
+           ("Default expression for ancestor op not used - dispatching case");
+      end if;
+
+      if TC_Personnel_Required (Nuclear_Drive) /= 3  or
+         TC_Time_Required (Nuclear_Drive)      /= 9
+      then
+         Report.Failed("Wrong body was executed - dispatching case");
+      end if;
+
+
+   exception
+      when others => Report.Failed("Exception raised in Test_Block");
+   end Test_Block;
+
+   Report.Result;
+
+end C730002;

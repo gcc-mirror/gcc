@@ -1,0 +1,212 @@
+-- C940001.A
+--
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a protected object provides coordinated access to
+--      shared data.  Check that it can be used to sequence a number of tasks.
+--      Use the protected object to control a single token for which three 
+--      tasks compete.  Check that only one task is running at a time and that
+--      all tasks get a chance to run sometime.
+--
+-- TEST DESCRIPTION:
+--      Declare a protected type with two entries.  A task may call the Take
+--      entry to get a token which allows it to continue processing.  If it 
+--      has the token, it may call the Give entry to return it.  The tasks 
+--      implement a discipline whereby only the task with the token may be 
+--      active.  The test does not require any specific order for the tasks 
+--      to run.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      07 Jul 96   SAIC    Fixed spelling nits.
+--
+--!
+
+package C940001_0 is
+
+  type Token_Type is private;
+  True_Token : constant Token_Type;   -- Create a deferred constant in order 
+                                      -- to provide a component init for the
+                                      -- protected object
+
+  protected type Token_Mgr_Prot_Unit is
+    entry Take (T : out Token_Type);
+    entry Give (T : in out  Token_Type);
+  private
+    Token : Token_Type := True_Token;
+  end Token_Mgr_Prot_Unit;
+
+  function Init_Token return Token_Type;   -- call to initialize an 
+                                           -- object of Token_Type
+  function Token_Value (T : Token_Type) return Boolean;
+                                           -- call to inspect the value of an
+                                           -- object of Token_Type
+private
+  type Token_Type is new boolean;
+  True_Token : constant Token_Type := true;
+end C940001_0;
+
+--=================================================================--
+
+package body C940001_0 is
+  protected body  Token_Mgr_Prot_Unit is
+    entry Take (T : out Token_Type) when Token = true is
+      begin                   -- Calling task will Take the token, so
+        T := Token;           -- check first that token_mgr owns the
+        Token := false;       -- token to give, then give it to caller
+      end Take;
+
+    entry Give (T : in out Token_Type)  when Token = false is
+      begin                   -- Calling task will Give the token back,
+        if T = true then      -- so first check that token_mgr does not
+          Token := T;         -- own the token, then check that the task has
+          T := false;         -- the token to give, then take it from the
+        end if;               -- task
+                              -- if caller does not own the token, then
+      end Give;               -- it falls out of the entry body with no
+  end Token_Mgr_Prot_Unit;    -- action
+
+  function Init_Token return Token_Type is
+    begin
+      return false;
+    end Init_Token;
+
+  function Token_Value (T : Token_Type) return Boolean is
+    begin
+      return Boolean (T);
+    end Token_Value;
+
+end C940001_0;
+
+--===============================================================--
+
+with Report;
+with ImpDef;
+with C940001_0;
+
+procedure C940001 is
+
+  type TC_Int_Type is range 0..2;
+              -- range is very narrow so that erroneous execution may
+              -- raise Constraint_Error
+
+  type TC_Artifact_Type is record
+     TC_Int : TC_Int_Type := 1;
+     Number_of_Accesses : integer := 0;
+  end record;
+
+  TC_Artifact : TC_Artifact_Type;
+
+  Sequence_Mgr : C940001_0.Token_Mgr_Prot_Unit;
+    
+  procedure Bump (Item : in out TC_Int_Type) is
+    begin
+      Item := Item + 1;
+    exception
+      when Constraint_Error =>
+        Report.Failed ("Incremented without corresponding decrement");
+      when others =>
+        Report.Failed ("Bump raised Unexpected Exception");
+   end Bump;
+
+  procedure Decrement (Item : in out TC_Int_Type) is
+    begin
+      Item := Item - 1;
+    exception
+      when Constraint_Error =>
+        Report.Failed ("Decremented without corresponding increment");
+      when others =>
+        Report.Failed ("Decrement raised Unexpected Exception");
+    end Decrement;
+    
+    --==============--
+
+  task type Network_Node_Type;
+
+  task body Network_Node_Type is
+
+    Slot_for_Token : C940001_0.Token_Type := C940001_0.Init_Token;
+
+    begin
+ 
+      -- Ask for token - if request is not granted, task will be queued
+      Sequence_Mgr.Take (Slot_for_Token);        
+
+      -- Task now has token and may perform its work
+
+      --==========================--
+      -- in this case, the work is to ensure that the test results
+      -- are the expected ones!
+      --==========================--
+      Bump (TC_Artifact.TC_Int);   -- increment when request is granted
+      TC_Artifact.Number_Of_Accesses := 
+        TC_Artifact.Number_Of_Accesses + 1;
+      if not C940001_0.Token_Value ( Slot_for_Token) then
+        Report.Failed ("Incorrect results from entry Take");
+      end if;
+ 
+      -- give a chance for other tasks to (incorrectly) run
+      delay ImpDef.Minimum_Task_Switch;
+
+      Decrement (TC_Artifact.TC_Int); -- prepare to return token
+
+      -- Task has completed its work and will return token
+
+      Sequence_Mgr.Give (Slot_for_Token);   -- return token to sequence manager
+
+      if c940001_0.Token_Value (Slot_for_Token) then
+        Report.Failed ("Incorrect results from entry Give");
+      end if;
+
+    exception
+      when others => Report.Failed ("Unexpected exception raised in task");
+
+    end Network_Node_Type; 
+
+    --==============--
+
+begin
+
+  Report.Test ("C940001", "Check that a protected object can control " &
+                          "tasks by coordinating access to shared data");
+
+  declare
+     Node_1, Node_2, Node_3 : Network_Node_Type;
+                           -- declare three tasks which will compete for
+                           -- a single token, managed by Sequence Manager
+
+  begin                    -- tasks start
+    null;
+  end; -- wait for all tasks to terminate before reporting result
+
+  if TC_Artifact.Number_of_Accesses /= 3 then
+    Report.Failed ("Not all tasks got through");
+  end if;
+
+  Report.Result;
+
+end C940001;

@@ -1,0 +1,419 @@
+-- C761007.A
+--
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that if a finalize procedure invoked by a transfer of control
+--      due to selection of a terminate alternative attempts to propagate an
+--      exception, the exception is ignored, but any other finalizations due
+--      to be performed are performed.
+--
+--
+-- TEST DESCRIPTION:
+--      This test declares a nested controlled data type, and embeds an object
+--      of that type within a protected type.  Objects of the protected type
+--      are created and destroyed, and the actions of the embedded controlled
+--      object are checked.  The container controlled type causes an exception
+--      as the last part of it's finalization operation.
+--
+--      This test utilizes several tasks to accomplish the objective.  The
+--      tasks contain delays to ensure that the expected order of processing
+--      is indeed accomplished.
+--
+--      Subtest 1:
+--        local task object runs to normal completion
+--
+--      Subtest 2:
+--        local task aborts a nested task to cause finalization
+--
+--      Subtest 3: 
+--        local task sleeps long enough to allow procedure started
+--        asynchronously to go into infinite loop.  Procedure is then aborted
+--        via ATC, causing finalization of objects.
+--
+--      Subtest 4:
+--        local task object takes terminate alternative, causing finalization
+--
+--
+-- CHANGE HISTORY:
+--      06 JUN 95   SAIC    Initial version
+--      05 APR 96   SAIC    Documentation changes
+--      03 MAR 97   PWB.CTA Allowed two finalization orders for ATC test
+--      02 DEC 97   EDS     Remove duplicate characters from check string.
+--!
+
+---------------------------------------------------------------- C761007_0
+
+with Ada.Finalization;
+package C761007_0 is
+
+  type Internal is new Ada.Finalization.Controlled
+    with record
+      Effect : Character;
+    end record;
+
+  procedure Finalize( I: in out Internal );
+
+  Side_Effect : String(1..80);  -- way bigger than needed
+  Side_Effect_Finger : Natural := 0;
+
+end C761007_0;
+ 
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with TCTouch;
+package body C761007_0 is
+
+  procedure Finalize( I : in out Internal ) is
+    Previous_Side_Effect : Boolean := False;
+  begin
+    -- look to see if this character has been finalized yet
+    for SEI in 1..Side_Effect_Finger loop
+      Previous_Side_Effect := Previous_Side_Effect
+                              or Side_Effect(Side_Effect_Finger) = I.Effect;
+    end loop;
+
+    -- if not, then tack it on to the string, and touch the character
+    if not Previous_Side_Effect then
+      Side_Effect_Finger := Side_Effect_Finger +1;
+      Side_Effect(Side_Effect_Finger) := I.Effect;
+      TCTouch.Touch(I.Effect);
+    end if;
+
+  end Finalize;
+
+end C761007_0;
+
+---------------------------------------------------------------- C761007_1
+
+with C761007_0;
+with Ada.Finalization;
+package C761007_1 is
+
+  type Container is new Ada.Finalization.Controlled
+    with record
+      Effect   : Character;
+      Content  : C761007_0.Internal;
+    end record;
+
+  procedure Finalize( C: in out Container );
+
+  Side_Effect : String(1..80);  -- way bigger than needed
+  Side_Effect_Finger : Natural := 0;
+
+  This_Exception_Is_Supposed_To_Be_Ignored : exception;
+
+end C761007_1;
+ 
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with TCTouch;
+package body C761007_1 is
+
+  procedure Finalize( C: in out Container ) is
+    Previous_Side_Effect : Boolean := False;
+  begin
+    -- look to see if this character has been finalized yet
+    for SEI in 1..Side_Effect_Finger loop
+      Previous_Side_Effect := Previous_Side_Effect
+                              or Side_Effect(Side_Effect_Finger) = C.Effect;
+    end loop;
+
+    -- if not, then tack it on to the string, and touch the character
+    if not Previous_Side_Effect then
+      Side_Effect_Finger := Side_Effect_Finger +1;
+      Side_Effect(Side_Effect_Finger) := C.Effect;
+      TCTouch.Touch(C.Effect);
+    end if;
+
+    raise This_Exception_Is_Supposed_To_Be_Ignored;
+
+  end Finalize;
+
+end C761007_1;
+ 
+---------------------------------------------------------------- C761007_2
+with C761007_1;
+package C761007_2 is
+
+  protected type Prot_W_Fin_Obj is
+    procedure Set_Effects( Container, Filling: Character );
+  private
+    The_Data_Under_Test : C761007_1.Container;
+    -- finalization for this will occur when the Prot_W_Fin_Obj object
+    --  "goes out of existence" for whatever reason.
+  end Prot_W_Fin_Obj;
+
+end C761007_2;
+ 
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+package body C761007_2 is
+
+  protected body Prot_W_Fin_Obj is
+    procedure Set_Effects( Container, Filling: Character ) is
+    begin
+      The_Data_Under_Test.Effect := Container;           -- A, etc.
+      The_Data_Under_Test.Content.Effect := Filling;     -- B, etc.
+    end Set_Effects;
+  end Prot_W_Fin_Obj;
+
+end C761007_2;
+
+------------------------------------------------------------------ C761007
+
+with Report;
+with Impdef;
+with TCTouch;
+with C761007_0;
+with C761007_1;
+with C761007_2;
+procedure C761007 is
+
+  task type Subtests( Outer, Inner : Character) is
+    entry Ready;
+    entry Complete;
+  end Subtests;
+
+  task body Subtests is
+    Local_Prot_W_Fin_Obj : C761007_2.Prot_W_Fin_Obj;
+  begin
+    Local_Prot_W_Fin_Obj.Set_Effects( Outer, Inner );
+
+    accept Ready;
+
+    select
+      accept Complete;
+    or terminate;       -- used in Subtest 4
+    end select;
+  exception
+    -- the exception caused by the finalization of Local_Prot_W_Fin_Obj
+    --  should never be visible to this scope.
+    when others => Report.Failed("Exception in a Subtest object "
+                                 & Outer & Inner);
+  end Subtests;
+
+  procedure Subtest_1 is
+    -- check the case where "nothing special" happens.
+
+    This_Subtest : Subtests( 'A', 'B' );
+  begin
+
+    This_Subtest.Ready;
+    This_Subtest.Complete;
+
+    while not This_Subtest'Terminated loop -- wait for finalization
+      delay Impdef.Clear_Ready_Queue;
+    end loop;
+
+    -- in the finalization of This_Subtest, the controlled object embedded in
+    -- the Prot_W_Fin_Obj will finalize.  An exception is raised in the
+    -- container object, after "touching" it's tag character.
+    -- The finalization of the contained controlled object must be performed.
+
+
+    TCTouch.Validate( "AB", "Item embedded in task" );
+
+
+  exception
+    when others => Report.Failed("Undesirable exception in Subtest_1");
+
+  end Subtest_1;
+
+  procedure Subtest_2 is
+    -- check for explicit abort
+
+    task Subtest_Task is
+      entry Complete;
+    end Subtest_Task;
+
+    task body Subtest_Task is
+
+      task Nesting;
+      task body Nesting is
+        Deep_Nesting : Subtests( 'E', 'F' );
+      begin
+        if Report.Ident_Bool( True ) then
+          -- controlled objects have been created in the elaboration of
+          -- Deep_Nesting.  Deep_Nesting must call the Set_Effects operation
+          -- in the Prot_W_Fin_Obj, and then hang waiting for the Complete
+          -- entry call.
+          Deep_Nesting.Ready;
+          abort Deep_Nesting;
+        else
+          Report.Failed("Dead code in Nesting");
+        end if;
+      exception
+        when others => Report.Failed("Exception in Subtest_Task.Nesting");
+      end Nesting;
+
+      Local_2 : C761007_2.Prot_W_Fin_Obj;
+
+    begin
+      -- Nesting has activated at this point, which implies the activation
+      -- of Deep_Nesting as well.
+
+      Local_2.Set_Effects( 'C', 'D' );
+
+      -- wait for Nesting to terminate
+
+      while not Nesting'Terminated loop
+        delay Impdef.Clear_Ready_Queue;
+      end loop;
+
+      accept Complete;
+
+    exception
+      when others => Report.Failed("Exception in Subtest_Task");
+    end Subtest_Task;
+
+  begin
+
+    -- wait for everything in Subtest_Task to happen
+    Subtest_Task.Complete;
+
+    while not Subtest_Task'Terminated loop -- wait for finalization
+      delay Impdef.Clear_Ready_Queue;
+    end loop;
+
+    TCTouch.Validate( "EFCD", "Aborted nested task" );
+
+  exception
+    when others => Report.Failed("Undesirable exception in Subtest_2");
+  end Subtest_2;
+
+  procedure Subtest_3 is
+    -- check abort caused by asynchronous transfer of control
+
+    task Subtest_3_Task is
+      entry Complete;
+    end Subtest_3_Task;
+
+    procedure Check_Atc_Operation is
+      Check_Atc : C761007_2.Prot_W_Fin_Obj;
+    begin
+
+      Check_Atc.Set_Effects( 'G', 'H' );
+
+
+      while Report.Ident_Bool( True ) loop -- wait to be aborted
+        if Report.Ident_Bool( True ) then
+          Impdef.Exceed_Time_Slice;
+          delay Impdef.Switch_To_New_Task;
+        else
+          Report.Failed("Optimization prevention");
+        end if;
+      end loop;
+
+      Report.Failed("Check_Atc_Operation loop completed");
+
+    end Check_Atc_Operation;
+
+    task body Subtest_3_Task is
+      task Nesting is
+        entry Complete;
+      end Nesting;
+
+      task body Nesting is
+        Nesting_3 : C761007_2.Prot_W_Fin_Obj;
+      begin
+        Nesting_3.Set_Effects( 'G', 'H' );
+
+        -- give Check_Atc_Operation sufficient time to perform it's
+        -- Set_Effects on it's local Prot_W_Fin_Obj object
+        delay Impdef.Clear_Ready_Queue;
+
+        accept Complete;
+      exception
+        when others => Report.Failed("Exception in Subtest_3_Task.Nesting");
+      end Nesting;
+
+      Local_3 : C761007_2.Prot_W_Fin_Obj;
+
+    begin -- Subtest_3_Task
+
+      Local_3.Set_Effects( 'I', 'J' );
+
+      select
+        Nesting.Complete;
+      then abort ---------------------------------------------------- cause KL
+        Check_ATC_Operation;
+      end select;
+
+      accept Complete;
+
+    exception
+      when others => Report.Failed("Exception in Subtest_3_Task");
+    end Subtest_3_Task;
+
+  begin -- Subtest_3
+    Subtest_3_Task.Complete;
+
+    while not Subtest_3_Task'Terminated loop -- wait for finalization
+      delay Impdef.Clear_Ready_Queue;
+    end loop;
+
+    TCTouch.Validate( "GHIJ", "Asynchronously aborted operation" );
+
+  exception
+    when others => Report.Failed("Undesirable exception in Subtest_3");
+  end Subtest_3;
+
+  procedure Subtest_4 is
+    -- check the case where transfer is caused by terminate alternative
+    -- highly similar to Subtest_1
+
+    This_Subtest : Subtests( 'M', 'N' );
+  begin
+
+    This_Subtest.Ready;
+    -- don't call This_Subtest.Complete;
+
+  exception
+    when others => Report.Failed("Undesirable exception in Subtest_4");
+
+  end Subtest_4;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C761007", "Check that if a finalize procedure invoked by " &
+                          "a transfer of control or selection of a " &
+                          "terminate alternative attempts to propagate " &
+                          "an exception, the exception is ignored, but " &
+                          "any other finalizations due to be performed " &
+                          "are performed" );
+
+  Subtest_1;  -- checks internal
+
+  Subtest_2;  -- checks internal
+
+  Subtest_3;  -- checks internal
+
+  Subtest_4;
+  TCTouch.Validate( "MN", "transfer due to terminate alternative" );
+
+  Report.Result;
+
+end C761007;

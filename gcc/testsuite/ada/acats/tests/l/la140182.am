@@ -1,0 +1,118 @@
+-- LA140182.AM
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a compilation unit may not depend semantically
+--      on two different versions of the same compilation unit.
+--      Check the case where a separate generic package body depends
+--      on a library level generic package body that is changed.
+--
+-- TEST DESCRIPTION:
+--      This test compiles a generic package and its body, and a
+--      procedure that withs the generic package.  Then a new 
+--      version of the generic package body is compiled (in a 
+--      separate file, simulating and editing modification to the
+--      unit).  Unless automatic recompilation is supported, this
+--      test should fail to link.  Otherwise, the test should 
+--      recompile and link the correct version of the with package
+--      withed package and report "PASSED" at execution time.
+--
+-- SPECIAL REQUIREMENTS:
+--      To build this test:
+--         1) Compile the file LA140180 (and include the results in the
+--            program library).
+--         2) Compile the file LA140181 (and include the results in the
+--            program library).
+--         3) Compile the file LA140182 (and include the results in the
+--            program library).
+--         4) Compile the file LA140183 (and include the results in the
+--            program library).
+--         5) Attempt to build an executable image.
+--         6) If an executable image results, run it.
+--
+-- TEST FILES:
+--      This test consists of the following files:
+--         LA140180.A
+--         LA140181.A
+--      -> LA140182.AM
+--         LA140183.A
+--
+-- PASS/FAIL CRITERIA:    
+--      The test passes if a link time error message reports that 
+--      LA14018_0.utils_18 is missing or obsolete and no executable image
+--      results.  The test also passes if an executable image is produced
+--      and reports "PASSED" (in the case where the implementation supports
+--      automatic recompilation).            
+--
+--
+-- CHANGE HISTORY:
+--     01 MAY 95   ACVC 1.12   LA5008N baseline version
+--     16 JUN 95   SAIC        Initial version
+--     07 DEC 96   SAIC        Modified unit names and prologue to conform
+--                             to coding conventions. Moved instantiation
+--                             of utils_18 to avoid potential Program_Error.
+--                             Moved LA14018_0 to a separate file.
+--
+--!
+                  
+separate (LA14018_0)        -- This dependency must be resolved
+                            -- after LA140181.A is compiled.
+package body utils_18 is
+     procedure Dec (Param : in out unsigned) is 
+     begin 
+          Param := Param - offset;
+     end Dec;
+end utils_18;
+
+--------------------------------------------------------
+
+with Report; use Report;
+with LA14018_0;
+procedure LA140182 is
+     type mod_4 is mod 4; -- 0, 1, 2, 3, 0, 1,...
+     TC_var : mod_4 := 2;
+
+     package Mod_stuff is new LA14018_0 (mod_4);
+     package unsigned_utils is new Mod_stuff.utils_18 (mod_4);
+begin
+     Test ("LA14018", "Check that a compilation unit may not " &
+                      "depend semantically on two different " &
+                      "versions of the same compilation unit. "&
+                      "Check the case where a separate package " &
+                      "body depends on a library level generic " &
+                      "package body that is changed");
+
+     unsigned_utils.Dec (TC_var);
+
+     if TC_var = 2 then
+          Failed ("Dec routine did not work");
+     elsif TC_var = 1 then
+          Failed ("New body for LA14018_0 not used");
+     elsif TC_var /= 3 then 
+          Failed ("Unexpected result produced");
+     end if;
+
+     Result;
+end LA140182;

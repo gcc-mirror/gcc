@@ -1,0 +1,533 @@
+-- C760009.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that for an extension_aggregate whose ancestor_part is a
+--      subtype_mark (i.e. Typemark'( Subtype with Field => x, etc.) )
+--      Initialize is called on all controlled subcomponents of the
+--      ancestor part; if the type of the ancestor part is itself controlled,
+--      the Initialize procedure of the ancestor type is called, unless that
+--      Initialize procedure is abstract.
+--
+--      Check that the utilization of a controlled type for a generic actual
+--      parameter supports the correct behavior in the instantiated package.
+--
+-- TEST DESCRIPTION:
+--      Declares a generic package instantiated to check that controlled
+--      types are not impacted by the "generic boundary."
+--      This instance is then used to perform the tests of various
+--      aggregate formations of the controlled type.  After each operation
+--      in the main program that should cause implicit calls, the "state" of
+--      the software is checked.  The "state" of the software is maintained in
+--      several variables which count the calls to the Initialize, Adjust and
+--      Finalize procedures in each context.  Given the nature of the
+--      language rules, the test specifies a minimum number of times that
+--      these subprograms should have been called.  The test also checks cases
+--      where the subprograms should not have been called.
+--     
+--      As per the example in AARM 7.6(11a..d);6.0, the distinctions between
+--      the presence/absence of default values is tested.
+--
+-- DATA STRUCTURES
+--
+--      C760009_3.Master_Control is derived from
+--        C760009_2.Control is derived from
+--          Ada.Finalization.Controlled
+--
+--      C760009_1.Simple_Control is derived from
+--        Ada.Finalization.Controlled
+--
+--      C760009_3.Master_Control contains
+--        Standard.Integer
+--
+--      C760009_2.Control contains
+--        C760009_1.Simple_Control (default value)
+--        C760009_1.Simple_Control (default initialized)
+--
+--
+-- CHANGE HISTORY:
+--      01 MAY 95   SAIC    Initial version
+--      19 FEB 96   SAIC    Fixed elaboration Initialize count
+--      14 NOV 96   SAIC    Allowed for 7.6(21) optimizations
+--      13 FEB 97   PWB.CTA Initialized counters at lines 127-129
+--      26 JUN 98   EDS     Added pragma Elaborate_Body to C760009_0
+--                          to avoid possible instantiation error
+--!
+
+---------------------------------------------------------------- C760009_0
+
+with Ada.Finalization;
+generic
+
+  type Private_Formal is private;
+
+  with procedure TC_Validate( APF: in out Private_Formal );
+
+package C760009_0 is -- Check_1
+
+  pragma Elaborate_Body;
+  procedure TC_Check_1( APF: in     Private_Formal );
+  procedure TC_Check_2( APF:    out Private_Formal );
+  procedure TC_Check_3( APF: in out Private_Formal );
+
+end C760009_0;
+ 
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body C760009_0 is -- Check_1
+
+    procedure TC_Check_1( APF: in     Private_Formal ) is
+      Local : Private_Formal;
+    begin
+      Local := APF;
+      TC_Validate( Local );
+    end TC_Check_1;
+
+    procedure TC_Check_2( APF:    out Private_Formal ) is
+      Local : Private_Formal;  -- initialized by virtue of actual being
+                               -- Controlled
+    begin
+      APF := Local;
+      TC_Validate( APF );
+    end TC_Check_2;
+
+    procedure TC_Check_3( APF: in out Private_Formal ) is
+      Local : Private_Formal;
+    begin
+      Local := APF;
+      TC_Validate( Local );
+    end TC_Check_3;
+
+end C760009_0;
+ 
+---------------------------------------------------------------- C760009_1
+
+with Ada.Finalization;
+package C760009_1 is
+
+  Initialize_Called : Natural := 0;
+  Adjust_Called     : Natural := 0;
+  Finalize_Called   : Natural := 0;
+
+  procedure Reset_Counters;
+
+  type Simple_Control is new Ada.Finalization.Controlled with private;
+
+  procedure Initialize( AV: in out Simple_Control );
+  procedure Adjust    ( AV: in out Simple_Control );
+  procedure Finalize  ( AV: in out Simple_Control );
+  procedure Validate  ( AV: in out Simple_Control );
+
+  function Item( AV: Simple_Control'Class ) return String;
+
+  Empty : constant Simple_Control;
+
+  procedure TC_Trace( Message: String );
+
+private
+  type Simple_Control is new Ada.Finalization.Controlled with record
+    Item: Natural;
+  end record;
+
+  Empty : constant Simple_Control := ( Ada.Finalization.Controlled with 0 );
+
+end C760009_1;
+ 
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+package body C760009_1 is
+
+  -- Maintenance_Mode and TC_Trace are for the test writers and compiler
+  -- developers to get more information from this test as it executes.
+  -- Maintenance_Mode is always False for validation purposes.
+
+  Maintenance_Mode : constant Boolean := False;
+
+  procedure TC_Trace( Message: String ) is
+  begin
+    if Maintenance_Mode then
+      Report.Comment( Message );
+    end if;
+  end TC_Trace;
+
+  procedure Reset_Counters is
+  begin
+    Initialize_Called := 0;
+    Adjust_Called     := 0;
+    Finalize_Called   := 0;
+  end Reset_Counters;
+
+  Master_Count : Natural := 100;  -- Help distinguish values
+
+  procedure Initialize( AV: in out Simple_Control ) is
+  begin
+    Initialize_Called := Initialize_Called +1;
+    AV.Item := Master_Count;
+    Master_Count := Master_Count +100;
+    TC_Trace( "Initialize _1.Simple_Control" );
+  end Initialize;
+
+  procedure Adjust    ( AV: in out Simple_Control ) is
+  begin
+    Adjust_Called := Adjust_Called +1;
+    AV.Item := AV.Item +1;
+    TC_Trace( "Adjust _1.Simple_Control" );
+  end Adjust;
+
+  procedure Finalize  ( AV: in out Simple_Control ) is
+  begin
+    Finalize_Called := Finalize_Called +1;
+    AV.Item := AV.Item +1;
+    TC_Trace( "Finalize _1.Simple_Control" );
+  end Finalize;
+
+  procedure Validate  ( AV: in out Simple_Control ) is
+  begin
+    Report.Failed("Attempt to Validate at Simple_Control level");
+  end Validate;
+
+  function Item( AV: Simple_Control'Class ) return String is
+  begin
+    return Natural'Image(AV.Item);
+  end Item;
+
+end C760009_1;
+ 
+---------------------------------------------------------------- C760009_2
+
+with C760009_1;
+with Ada.Finalization;
+package C760009_2 is
+
+  type Control is new Ada.Finalization.Controlled with record
+    Element_1 : C760009_1.Simple_Control;
+    Element_2 : C760009_1.Simple_Control := C760009_1.Empty;
+  end record;
+
+  procedure Initialize( AV: in out Control );
+  procedure Finalize  ( AV: in out Control );
+
+  Initialized : Natural := 0;
+  Finalized   : Natural := 0;
+
+end C760009_2;
+ 
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+package body C760009_2 is
+
+  procedure Initialize( AV: in out Control ) is
+  begin
+    Initialized := Initialized +1;
+    C760009_1.TC_Trace( "Initialize _2.Control" );
+  end Initialize;
+
+  procedure Finalize  ( AV: in out Control ) is
+  begin
+    Finalized := Finalized +1;
+    C760009_1.TC_Trace( "Finalize _2.Control" );
+  end Finalize;
+
+end C760009_2;
+ 
+---------------------------------------------------------------- C760009_3
+
+with C760009_0;
+with C760009_2;
+package C760009_3 is
+
+  type Master_Control is new C760009_2.Control with record
+    Data: Integer;
+  end record;
+
+  procedure Initialize( AC: in out Master_Control );
+  -- calls C760009_2.Initialize
+  -- embedded data causes 1 call to C760009_1.Initialize
+
+  -- Adjusting operation will
+  -- make 1 call to C760009_2.Adjust 
+  -- make 2 call to C760009_1.Adjust 
+
+  -- Finalize operation will
+  -- make 1 call to C760009_2.Finalize 
+  -- make 2 call to C760009_1.Finalize 
+
+  procedure Validate( AC: in out Master_Control );
+
+  package Check_1 is
+    new C760009_0(Master_Control, Validate);
+
+end C760009_3;
+ 
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+with Report;
+with C760009_1;
+package body C760009_3 is
+
+  procedure Initialize( AC: in out Master_Control ) is
+  begin
+    AC.Data := 42;
+    C760009_2.Initialize(C760009_2.Control(AC));
+    C760009_1.TC_Trace( "Initialize Master_Control" );
+  end Initialize;
+
+  procedure Validate( AC: in out Master_Control ) is
+  begin
+    if AC.Data not in 0..1000 then
+      Report.Failed("C760009_3.Control did not Initialize" );
+    end if;
+  end Validate;
+
+end C760009_3;
+ 
+--------------------------------------------------------------------- C760009
+
+with Report;
+with C760009_1;
+with C760009_2;
+with C760009_3;
+procedure C760009 is
+
+  -- Comment following declaration indicates expected calls in the order:
+  -- Initialize of a C760009_2 value
+  -- Finalize   of a C760009_2 value
+  -- Initialize of a C760009_1 value
+  -- Adjust     of a C760009_1 value
+  -- Finalize   of a C760009_1 value
+
+  Global_Control : C760009_3.Master_Control;
+  -- 1, 0, 1, 1, 0
+
+  Parent_Control : C760009_2.Control;
+  -- 1, 0, 1, 1, 0
+
+  -- Global_Control is a derived tagged type, the parent type
+  --   of Master_Control, Control, is derived from Controlled, and contains
+  --   two components of a Controlled type, Simple_Control.  One of these
+  --   components has a default value, the other does not.
+
+  procedure Fail( Which: String; Expect, Got: Natural ) is
+  begin
+    Report.Failed(Which & " Expected" & Natural'Image(Expect)
+                        & " got" & Natural'Image(Got) );
+  end Fail;
+
+  procedure Master_Assertion( Layer_2_Inits   : Natural;
+                              Layer_2_Finals  : Natural;
+                              Layer_1_Inits   : Natural;
+                              Layer_1_Adjs    : Natural;
+                              Layer_1_Finals  : Natural;
+                              Failing_Message : String ) is
+
+  begin
+
+
+
+   if C760009_2.Initialized /= Layer_2_Inits then
+     Fail("C760009_2.Initialize " & Failing_Message,
+          Layer_2_Inits, C760009_2.Initialized );
+   end if;
+
+   if C760009_2.Finalized not in Layer_2_Finals..Layer_2_Finals*2 then
+     Fail("C760009_2.Finalize " & Failing_Message,
+           Layer_2_Finals, C760009_2.Finalized );
+   end if;
+
+   if C760009_1.Initialize_Called /= Layer_1_Inits then
+     Fail("C760009_1.Initialize " & Failing_Message,
+           Layer_1_Inits,
+          C760009_1.Initialize_Called );
+   end if;
+
+   if C760009_1.Adjust_Called not in Layer_1_Adjs..Layer_1_Adjs*2 then
+     Fail("C760009_1.Adjust " & Failing_Message,
+           Layer_1_Adjs, C760009_1.Adjust_Called );
+   end if;
+
+   if C760009_1.Finalize_Called not in Layer_1_Finals..Layer_1_Finals*2 then
+     Fail("C760009_1.Finalize " & Failing_Message,
+           Layer_1_Finals, C760009_1.Finalize_Called );
+   end if;
+
+   C760009_1.Reset_Counters;
+   C760009_2.Initialized := 0;
+   C760009_2.Finalized   := 0;
+
+  end Master_Assertion;
+
+  procedure Lesser_Assertion( Layer_2_Inits   : Natural;
+                              Layer_2_Finals  : Natural;
+                              Layer_1_Inits   : Natural;
+                              Layer_1_Adjs    : Natural;
+                              Layer_1_Finals  : Natural;
+                              Failing_Message : String ) is
+  begin
+
+
+   if C760009_2.Initialized > Layer_2_Inits then
+     Fail("C760009_2.Initialize " & Failing_Message,
+           Layer_2_Inits, C760009_2.Initialized );
+   end if;
+
+   if C760009_2.Finalized < Layer_2_Inits 
+      or C760009_2.Finalized > Layer_2_Finals*2 then
+     Fail("C760009_2.Finalize " & Failing_Message,
+           Layer_2_Finals, C760009_2.Finalized );
+   end if;
+
+   if C760009_1.Initialize_Called > Layer_1_Inits then
+     Fail("C760009_1.Initialize " & Failing_Message,
+           Layer_1_Inits,
+          C760009_1.Initialize_Called );
+   end if;
+
+   if C760009_1.Adjust_Called > Layer_1_Adjs*2 then
+     Fail("C760009_1.Adjust " & Failing_Message,
+           Layer_1_Adjs, C760009_1.Adjust_Called );
+   end if;
+
+   if C760009_1.Finalize_Called < Layer_1_Inits
+      or C760009_1.Finalize_Called > Layer_1_Finals*2 then
+     Fail("C760009_1.Finalize " & Failing_Message,
+           Layer_1_Finals, C760009_1.Finalize_Called );
+   end if;
+
+   C760009_1.Reset_Counters;
+   C760009_2.Initialized := 0;
+   C760009_2.Finalized   := 0;
+
+  end Lesser_Assertion;
+
+begin  -- Main test procedure.
+
+  Report.Test ("C760009", "Check that for an extension_aggregate whose " &
+                          "ancestor_part is a subtype_mark, Initialize " &
+                          "is called on all controlled subcomponents of " &
+                          "the ancestor part.  Also check that the " &
+                          "utilization of a controlled type for a generic " &
+                          "actual parameter supports the correct behavior " &
+                          "in the instantiated software" );
+
+  C760009_1.TC_Trace( "=====> Case 0 <=====" );
+
+  C760009_1.Reset_Counters;
+  C760009_2.Initialized := 0;
+  C760009_2.Finalized   := 0;
+
+  C760009_3.Validate( Global_Control ); -- check that it Initialized correctly
+
+  C760009_1.TC_Trace( "=====> Case 1 <=====" );
+
+  C760009_3.Check_1.TC_Check_1( ( C760009_2.Control with Data => 1 ) );
+  Lesser_Assertion( 2, 3, 2, 3, 6, "Check_1.TC_Check_1" );
+  --                |  |  |  |  + Finalize 2 embedded in aggregate
+  --                |  |  |  |  + Finalize 2 at assignment in TC_Check_1
+  --                |  |  |  |  + Finalize 2 embedded in local variable
+  --                |  |  |  + Adjust 2 caused by assignment in TC_Check_1
+  --                |  |  |  + Adjust at declaration in TC_Check_1
+  --                |  |  + Initialize at declaration in TC_Check_1
+  --                |  |  + Initialize of aggregate object
+  --                |  + Finalize of assignment target
+  --                |  + Finalize of local variable
+  --                |  + Finalize of aggregate object
+  --               + Initialize of aggregate object
+  --               + Initialize of local variable
+
+
+  C760009_1.TC_Trace( "=====> Case 2 <=====" );
+
+  C760009_3.Check_1.TC_Check_2( Global_Control );
+  Master_Assertion( 1, 2, 1, 3, 4, "Check_1.TC_Check_2" );
+  --                |  |  |  |  + Finalize 2 at assignment in TC_Check_2
+  --                |  |  |  |  + Finalize 2 embedded in local variable
+  --                |  |  |  + Adjust 2 caused by assignment in TC_Check_2
+  --                |  |  |  + Adjust at declaration in TC_Check_2
+  --                |  |  + Initialize at declaration in TC_Check_2
+  --                |  + Finalize of assignment target
+  --                |  + Finalize of local variable
+  --               + Initialize of local variable
+
+
+  C760009_1.TC_Trace( "=====> Case 3 <=====" );
+
+  Global_Control := ( C760009_2.Control with Data => 2 );
+  Lesser_Assertion( 1, 1, 1, 3, 2, "Aggregate -> object" );
+  --                |  |  |  |  + Finalize 2 by assignment
+  --                |  |  |  + Adjust 2 caused by assignment
+  --                |  |  |  + Adjust in aggregate creation
+  --                |  |  + Initialize of aggregate object
+  --                |  + Finalize of assignment target
+  --               + Initialize of aggregate object
+
+
+  C760009_1.TC_Trace( "=====> Case 4 <=====" );
+
+  C760009_3.Check_1.TC_Check_3( Global_Control );
+  Master_Assertion( 1, 2, 1, 3, 4, "Check_1.TC_Check_3" );
+  --                |  |  |  |  + Finalize 2 at assignment in TC_Check_3
+  --                |  |  |  |  + Finalize 2 embedded in local variable
+  --                |  |  |  + Adjust 2 at assignment in TC_Check_3
+  --                |  |  |  + Adjust in local variable creation
+  --                |  |  + Initialize of local variable in TC_Check_3
+  --                |  + Finalize of assignment target
+  --                |  + Finalize of local variable
+  --               + Initialize of local variable
+
+
+  C760009_1.TC_Trace( "=====> Case 5 <=====" );
+
+  Global_Control := ( Parent_Control with Data => 3 );
+  Lesser_Assertion( 1, 1, 1, 3, 2, "Object Aggregate -> object" );
+  --                |  |  |  |  + Finalize 2 by assignment
+  --                |  |  |  + Adjust 2 caused by assignment
+  --                |  |  |  + Adjust in aggregate creation
+  --                |  |  + Initialize of aggregate object
+  --                |  + Finalize of assignment target
+  --               + Initialize of aggregate object
+
+
+
+  C760009_1.TC_Trace( "=====> Case 6 <=====" );
+
+  -- perform this check a second time to make sure nothing is "remembered"
+
+  C760009_3.Check_1.TC_Check_3( Global_Control );
+  Master_Assertion( 1, 2, 1, 3, 4, "Check_1.TC_Check_3 second time" );
+  --                |  |  |  |  + Finalize 2 at assignment in TC_Check_3
+  --                |  |  |  |  + Finalize 2 embedded in local variable
+  --                |  |  |  + Adjust 2 at assignment in TC_Check_3
+  --                |  |  |  + Adjust in local variable creation
+  --                |  |  + Initialize of local variable in TC_Check_3
+  --                |  + Finalize of assignment target
+  --                |  + Finalize of local variable
+  --               + Initialize of local variable
+
+
+  Report.Result;
+
+end C760009;

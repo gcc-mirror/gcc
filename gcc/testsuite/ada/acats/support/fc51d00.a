@@ -1,0 +1,82 @@
+-- FC51D00.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- FOUNDATION DESCRIPTION:
+--      This foundation defines a generic list abstraction. List elements can
+--      be of any (nonlimited) type. Lists are implemented as arrays of
+--      pointers and are only two elements in length.
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--
+--!
+
+generic
+   type Element_Type (<>) is private;
+package FC51D00 is  -- This package simulates a generic list abstraction.
+
+   -- The definition of List_Type below is purely artificial; its validity
+   -- in the context of the abstraction is irrelevant to the feature being
+   -- tested.
+
+   type Element_Ptr is access Element_Type;
+
+   subtype List_Size is Natural range 1 .. 2;
+   type List_Type is array (List_Size) of Element_Ptr;
+
+   function  View_Element (I : List_Size; L : List_Type) return Element_Type;
+
+   procedure Write_Element (I : in     List_Size;
+                            L : in out List_Type;
+                            E : in     Element_Type);
+
+   -- ... Other list operations for Element_Type.
+
+end FC51D00;
+
+
+     --==================================================================--
+
+
+package body FC51D00 is
+
+   -- The implementations of the operations below are purely artificial; the
+   -- validity of their implementations in the context of the abstraction is
+   -- irrelevant to the feature being tested.
+
+   function View_Element (I : List_Size; L : List_Type) return Element_Type is
+   begin
+      return L(I).all;
+   end View_Element;
+
+
+   procedure Write_Element (I : in     List_Size;
+                            L : in out List_Type;
+                            E : in     Element_Type) is
+   begin
+      L(I) := new Element_Type'(E);
+   end Write_Element;
+
+end FC51D00;

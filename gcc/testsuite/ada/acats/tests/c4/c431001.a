@@ -1,0 +1,464 @@
+-- C431001.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a record aggregate can be given for a nonprivate,
+--      nonlimited record extension and that the tag of the aggregate 
+--      values are initialized to the tag of the record extension.
+--
+-- TEST DESCRIPTION:
+--      From an initial parent tagged type, several type extensions
+--      are declared. Each type extension adds components onto
+--      the existing record structure.
+--
+--      In the main procedure, aggregates are declared in two ways.
+--      In the declarative part, aggregates are used to supply
+--      initial values for objects of specific types. In the executable
+--      part, aggregates are used directly as actual parameters to
+--      a class-wide formal parameter.
+--
+--      The abstraction is for a catalog of recordings. A recording
+--      can be a CD or a record (vinyl). Additionally, a CD may also
+--      be a CD-ROM, containing both music and data. This type is declared
+--      as an extension to a type extension, to test that the inclusion
+--      of record components is transitive across multiple extensions.
+--
+--      That the aggregate has the correct tag is verify by feeding
+--      it to a dispatching operation and confirming that the
+--      expected subprogram is called as a result. To accomplish this,
+--      an enumeration type is declared with an enumeration literal
+--      representing each of the declared types in the hierarchy. A value
+--      of this type is passed as a parameter to the dispatching
+--      operation which passes it along to the dispatched subprogram.
+--      Each dispatched subprogram verifies that it received the
+--      expected enumeration literal.
+--
+--      Not quite fitting the above abstraction are several test cases
+--      for null records. These tests verify that the new syntax for
+--      null record aggregates, (null record), is supported. A type is
+--      declared which extends a null tagged type and adds components.
+--      Aggregates of this type should include associations for the
+--      components of the type extension only. Finally, a type is
+--      declared that adds a null type extension onto a non-null tagged
+--      type. The aggregate associations should remain the same.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      19 Dec 94   SAIC    Removed RM references from objective text.
+--
+--!
+--
+package C431001_0 is
+
+   -- Values of TC_Type_ID are passed through to dispatched subprogram
+   -- calls so that it can be verified that the dispatching resulted in
+   -- the expected call.
+   type TC_Type_ID is (TC_Recording, TC_CD, TC_Vinyl, TC_CD_ROM);
+
+   type Genre is (Classical, Country, Jazz, Rap, Rock, World);
+
+   type Recording is tagged record
+      Artist     : String (1..20);
+      Category   : Genre;
+      Length     : Duration;
+      Selections : Positive;
+   end record;
+
+   function Summary (R       : in Recording;
+                     TC_Type : in TC_Type_ID) return String;
+
+   type Recording_Method is (Audio, Digital);
+   type CD is new Recording with record
+      Recorded : Recording_Method;
+      Mastered : Recording_Method;
+   end record;
+
+   function Summary (Disc    : in CD;
+                     TC_Type : in TC_Type_ID) return String;
+
+   type Playing_Speed is (LP_33, Single_45, Old_78);
+   type Vinyl is new Recording with record
+      Speed : Playing_Speed;
+   end record;
+
+   function Summary (Album   : in Vinyl;
+                     TC_Type : in TC_Type_ID)  return String;
+                       
+
+   type CD_ROM is new CD with record
+      Storage : Positive;
+   end record;
+
+   function Summary (Disk    : in CD_ROM;
+                     TC_Type : in TC_Type_ID)  return String;
+                       
+   function Catalog_Entry (R       : in Recording'Class;
+                           TC_Type : in TC_Type_ID) return String;
+
+   procedure Print (S : in String); -- provides somewhere for the
+                                    -- results of Catalog_Entry to
+                                    -- "go", so they don't get
+                                    -- optimized away.
+
+   -- The types and procedures declared below are not a continuation
+   -- of the Recording abstraction. These types are intended to test
+   -- support for null tagged types and type extensions. TC_Check mirrors
+   -- the operation of function Summary, above. Similarly, TC_Dispatch
+   -- mirrors the operation of Catalog_Entry.
+
+   type TC_N_Type_ID is
+      (TC_Null_Tagged, TC_Null_Extension,
+       TC_Extension_Of_Null, TC_Null_Extension_Of_Nonnull);
+
+   type Null_Tagged is tagged null record;
+   procedure TC_Check (N       : in Null_Tagged;
+                       TC_Type : in TC_N_Type_ID);
+
+   type Null_Extension is new Null_Tagged with null record;
+   procedure TC_Check (N       : in Null_Extension;
+                       TC_Type : in TC_N_Type_ID);
+   
+   type Extension_Of_Null is new Null_Tagged with record
+      New_Component1 : Boolean;
+      New_Component2 : Natural;
+   end record;
+   procedure TC_Check (N       : in Extension_Of_Null;
+                       TC_Type : in TC_N_Type_ID);
+
+   type Null_Extension_Of_Nonnull is new Extension_Of_Null
+      with null record;
+   procedure TC_Check (N       : in Null_Extension_Of_Nonnull;
+                       TC_Type : in TC_N_Type_ID);
+
+   procedure TC_Dispatch (N       : in Null_Tagged'Class;
+                          TC_Type : in TC_N_Type_ID);
+
+end C431001_0;
+
+with Report;
+package body C431001_0 is
+
+   function Summary (R       : in Recording;
+                     TC_Type : in TC_Type_ID) return String is
+   begin
+
+      if TC_Type /= TC_Recording then
+         Report.Failed ("Did not dispatch on tag for tagged parent " &
+                        "type Recording");
+      end if;
+
+      return R.Artist (1..10)
+             & ' ' & Genre'Image (R.Category) (1..2)
+             & ' ' & Duration'Image (R.Length)
+             & ' ' & Integer'Image (R.Selections);
+
+   end Summary;
+
+   function Summary (Disc    : in CD;
+                     TC_Type : in TC_Type_ID) return String is
+   begin
+
+      if TC_Type /= TC_CD then
+         Report.Failed ("Did not dispatch on tag for type extension " &
+                        "CD");
+      end if;
+
+      return Summary (Recording (Disc), TC_Type => TC_Recording)
+         & ' ' & Recording_Method'Image(Disc.Recorded)(1)
+         & Recording_Method'Image(Disc.Mastered)(1);
+
+   end Summary;
+
+   function Summary (Album   : in Vinyl;
+                     TC_Type : in TC_Type_ID)  return String is
+   begin
+      if TC_Type /= TC_Vinyl then
+         Report.Failed ("Did not dispatch on tag for type extension " &
+                        "Vinyl");
+      end if;
+
+      case Album.Speed is
+      when LP_33 =>
+         return Summary (Recording (Album), TC_Type => TC_Recording)
+            & " 33";
+      when Single_45 =>
+         return Summary (Recording (Album), TC_Type => TC_Recording)      
+            & " 45";
+      when Old_78 =>
+         return Summary (Recording (Album), TC_Type => TC_Recording)      
+            & " 78";
+      end case;
+
+   end Summary;
+
+   function Summary (Disk    : in CD_ROM;
+                     TC_Type : in TC_Type_ID)  return String is
+   begin
+      if TC_Type /= TC_CD_ROM then
+         Report.Failed ("Did not dispatch on tag for type extension " &
+                        "CD_ROM. This is an extension of the type " &
+                        "extension CD");
+      end if;
+
+      return Summary (Recording(Disk), TC_Type => TC_Recording)
+         & ' ' & Integer'Image (Disk.Storage) & 'K';
+
+   end Summary;
+
+   function Catalog_Entry (R       : in Recording'Class;
+                           TC_Type : in TC_Type_ID) return String is
+   begin
+      return Summary (R, TC_Type); -- dispatched call
+   end Catalog_Entry;
+
+   procedure Print (S : in String) is
+      T : String (1..S'Length) := Report.Ident_Str (S);
+   begin
+      -- Ada.Text_IO.Put_Line (S);
+      null;
+   end Print;
+   
+   -- Bodies for null type checks
+   procedure TC_Check (N       : in Null_Tagged;
+                       TC_Type : in TC_N_Type_ID) is
+   begin
+      if TC_Type /= TC_Null_Tagged then
+         Report.Failed ("Did not dispatch on tag for null tagged " &
+                        "type Null_Tagged");
+      end if;
+   end TC_Check;
+
+   procedure TC_Check (N       : in Null_Extension;
+                       TC_Type : in TC_N_Type_ID) is
+   begin
+      if TC_Type /= TC_Null_Extension then
+         Report.Failed ("Did not dispatch on tag for null tagged " &
+                        "type extension Null_Extension");
+      end if;
+   end TC_Check;
+   
+   procedure TC_Check (N       : in Extension_Of_Null;
+                       TC_Type : in TC_N_Type_ID) is
+   begin
+      if TC_Type /= TC_Extension_Of_Null then
+         Report.Failed
+            ("Did not dispatch on tag for extension of null parent" &
+             "type");
+      end if;
+   end TC_Check;
+
+   procedure TC_Check (N       : in Null_Extension_Of_Nonnull;
+                       TC_Type : in TC_N_Type_ID) is
+   begin
+      if TC_Type /= TC_Null_Extension_Of_Nonnull then
+         Report.Failed
+            ("Did not dispatch on tag for null extension of nonnull " &
+             "parent type");
+      end if;
+   end TC_Check;
+
+   procedure TC_Dispatch (N       : in Null_Tagged'Class;
+                          TC_Type : in TC_N_Type_ID) is
+   begin
+      TC_Check (N, TC_Type); -- dispatched call
+   end TC_Dispatch;
+
+end C431001_0;
+
+
+with C431001_0;
+with Report;
+procedure C431001 is
+
+   -- Tagged type
+   -- Named component associations
+   DAT : C431001_0.Recording :=
+      (Artist     => "Aerosmith           ",
+       Category   => C431001_0.Rock,
+       Length     => 48.5,
+       Selections => 10);
+
+   -- Type extensions
+   -- Named component associations
+   Disc1 : C431001_0.CD :=
+      (Artist     => "London Symphony     ",
+       Category   => C431001_0.Classical,
+       Length     => 55.0,
+       Selections => 4,
+       Recorded   => C431001_0.Digital,
+       Mastered   => C431001_0.Digital);
+   
+   -- Named component associations with others
+   Disc2 : C431001_0.CD :=
+      (Artist     => "Pink Floyd          ",
+       Category   => C431001_0.Rock,
+       Length     => 51.8,
+       Selections => 5,
+       others     => C431001_0.Audio); -- Recorded
+                                       -- Mastered
+   
+   -- Positional component associations
+   Album1 : C431001_0.Vinyl :=
+      ("Hammer              ", -- Artist
+       C431001_0.Rap,          -- Category
+       46.2,                   -- Length
+       9,                      -- Selections
+       C431001_0.LP_33);       -- Speed
+   
+   -- Mixed positional and named component associations
+   -- Named component associations out of order
+   Album2 : C431001_0.Vinyl :=
+      ("Balinese Gamelan    ", -- Artist 
+       C431001_0.World,        -- Category
+       42.6,                   -- Length
+       14,                     -- Selections
+       C431001_0.LP_33);       -- Speed
+   
+   -- Type extension, parent is also type extension
+   -- Named notation, components out of order
+   Data : C431001_0.CD_ROM :=
+      (Storage    => 140,
+       Mastered   => C431001_0.Digital,
+       Category   => C431001_0.Rock,
+       Selections => 10,
+       Recorded   => C431001_0.Digital,
+       Artist     => "Black, Clint        ",
+       Length     => 48.5);
+
+   -- Null tagged type
+   Null_Rec : C431001_0.Null_Tagged := (null record);
+
+   -- Null type extension
+   Null_Ext : C431001_0.Null_Extension := (null record);
+
+   -- Nonnull extension of null parent
+   Ext_Of_Null : C431001_0.Extension_Of_Null := (True, 0);
+
+   -- Null extension of nonnull parent
+   Null_Ext_Of_Nonnull : C431001_0.Null_Extension_Of_Nonnull
+      := (False, 1);
+
+begin
+
+   Report.Test ("C431001", "Aggregate values for type extensions");
+
+   C431001_0.Print (C431001_0.Catalog_Entry (DAT, C431001_0.TC_Recording));
+   C431001_0.Print (C431001_0.Catalog_Entry (Disc1, C431001_0.TC_CD));
+   C431001_0.Print (C431001_0.Catalog_Entry (Disc2, C431001_0.TC_CD));
+   C431001_0.Print (C431001_0.Catalog_Entry (Album1, C431001_0.TC_Vinyl));
+   C431001_0.Print (C431001_0.Catalog_Entry (Album2, C431001_0.TC_Vinyl));
+   C431001_0.Print (C431001_0.Catalog_Entry (Data, C431001_0.TC_CD_ROM));
+
+   C431001_0.TC_Dispatch (Null_Rec, C431001_0.TC_Null_Tagged);
+   C431001_0.TC_Dispatch (Null_Ext, C431001_0.TC_Null_Extension);
+   C431001_0.TC_Dispatch (Ext_Of_Null, C431001_0.TC_Extension_Of_Null);
+   C431001_0.TC_Dispatch
+      (Null_Ext_Of_Nonnull, C431001_0.TC_Null_Extension_Of_Nonnull);
+
+   -- Tagged type
+   -- Named component associations
+   C431001_0.Print (C431001_0.Catalog_Entry
+      (TC_Type => C431001_0.TC_Recording,
+       R => C431001_0.Recording'(Artist     => "Zappa, Frank        ",
+                                 Category   => C431001_0.Rock,
+                                 Length     => 70.0,
+                                 Selections => 38)));
+
+   -- Type extensions
+   -- Named component associations
+   C431001_0.Print (C431001_0.Catalog_Entry
+      (TC_Type => C431001_0.TC_CD,
+       R => C431001_0.CD'(Artist     => "Dog, Snoop Doggy    ",
+                          Category   => C431001_0.Rap,
+                          Length     => 37.3,
+                          Selections => 8,
+                          Recorded   => C431001_0.Audio,
+                          Mastered   => C431001_0.Digital)));
+
+   -- Named component associations with others
+   C431001_0.Print (C431001_0.Catalog_Entry
+      (TC_Type => C431001_0.TC_CD,
+       R => C431001_0.CD'(Artist     => "Judd, Winona        ",
+                          Category   => C431001_0.Country,
+                          Length     => 51.2,
+                          Selections => 11,
+                          others     => C431001_0.Digital))); -- Recorded
+                                                              -- Mastered
+
+   -- Positional component associations
+   C431001_0.Print (C431001_0.Catalog_Entry
+      (TC_Type => C431001_0.TC_Vinyl,
+       R => C431001_0.Vinyl'("Davis, Miles        ",  -- Artist
+                              C431001_0.Jazz,         -- Category
+                              50.4,                   -- Length
+                              10,                     -- Selections
+                              C431001_0.LP_33)));      -- Speed
+
+   -- Mixed positional and named component associations
+   -- Named component associations out of order
+   C431001_0.Print (C431001_0.Catalog_Entry
+      (TC_Type => C431001_0.TC_Vinyl,
+       R => C431001_0.Vinyl'("Zamfir              ",    -- Artist
+                              C431001_0.World,          -- Category
+                              Speed => C431001_0.LP_33,
+                              Selections => 14,
+                              Length => 56.5)));
+
+   -- Type extension, parent is also type extension
+   -- Named notation, components out of order
+   C431001_0.Print (C431001_0.Catalog_Entry
+      (TC_Type => C431001_0.TC_CD_ROM,
+       R => C431001_0.CD_ROM'(Storage         => 720,
+                              Category        => C431001_0.Classical,
+                              Recorded        => C431001_0.Digital,
+                              Artist          => "Baltimore Symphony  ",
+                              Length          => 68.9,
+                              Mastered        => C431001_0.Digital,
+                              Selections      => 5)));
+   
+   -- Null tagged type
+   C431001_0.TC_Dispatch
+      (TC_Type => C431001_0.TC_Null_Tagged,
+       N => C431001_0.Null_Tagged'(null record));
+
+   -- Null type extension
+   C431001_0.TC_Dispatch
+      (TC_Type => C431001_0.TC_Null_Extension,
+       N => C431001_0.Null_Extension'(null record));
+
+   -- Nonnull extension of null parent
+   C431001_0.TC_Dispatch
+      (TC_Type => C431001_0.TC_Extension_Of_Null,
+       N => C431001_0.Extension_Of_Null'(True, 3));
+
+   -- Null extension of nonnull parent
+   C431001_0.TC_Dispatch
+      (TC_Type => C431001_0.TC_Extension_Of_Null,
+       N => C431001_0.Extension_Of_Null'(False, 4));
+
+   Report.Result;
+
+end C431001;

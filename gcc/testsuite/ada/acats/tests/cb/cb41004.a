@@ -1,0 +1,316 @@
+-- CB41004.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making
+--     this public release, the Government intends to confer upon all
+--     recipients unlimited rights  equal to those held by the Government.
+--     These rights include rights to use, duplicate, release or disclose the
+--     released technical data and computer software in whole or in part, in
+--     any manner and for any purpose whatsoever, and to have or permit others
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that Raise_Exception and Reraise_Occurrence have no effect in
+--      the case of Null_Id or Null_Occurrence.  Check that Exception_Message,
+--      Exception_Identity, Exception_Name, and Exception_Information raise
+--      Constraint_Error for a Null_Occurrence input parameter.
+--      Check that calling the Save_Occurrence subprograms with the
+--      Null_Occurrence input parameter saves the Null_Occurrence to the
+--      appropriate target object, and does not raise Constraint_Error.
+--      Check that Null_Id is the default initial value of type Exception_Id.
+--
+-- TEST DESCRIPTION:
+--      This test performs a series of calls to many of the subprograms
+--      defined in package Ada.Exceptions, using either Null_Id or
+--      Null_Occurrence (based on their parameter profile).  In the cases of
+--      Raise_Exception and Reraise_Occurrence, these null input values
+--      should result in no exceptions being raised, and Constraint_Error
+--      should not be raised in response to these calls.  Test failure will
+--      result if any exception is raised in these cases.
+--      For the Save_Occurrence subprograms, calling them with the
+--      Null_Occurrence input parameter does not raise Constraint_Error, but
+--      simply results in the Null_Occurrence being saved into the appropriate
+--      target (either a Exception_Occurrence out parameter, or as an
+--      Exception_Occurrence_Access value).
+--      In the cases of the other mentioned subprograms, calls performed with
+--      a Null_Occurrence input parameter must result in Constraint_Error
+--      being raised.  This exception will be handled, with test failure the
+--      result if the exception is not raised.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      08 Dec 00   RLB     Removed Exception_Identity subtest, pending
+--                          resolution of AI95-00241.
+--                          Notes for future: Replace Exception_Identity
+--                          subtest with whatever the resolution is.
+--                          Add a subtest for Exception_Name(Null_Id), which
+--                          is missing from this test.
+--!
+
+with Report;
+with Ada.Exceptions;
+
+procedure CB41004 is
+begin
+
+   Report.Test ("CB41004", "Check that Null_Id and Null_Occurrence input " &
+                           "parameters have the appropriate effect when "  &
+                           "used in calls of the subprograms found in "    &
+                           "package Ada.Exceptions");
+
+   Test_Block:
+   declare
+
+      use Ada.Exceptions;
+
+      -- No initial values given for these two declarations; they default
+      -- to Null_Id and Null_Occurrence respectively.
+      A_Null_Exception_Id         : Ada.Exceptions.Exception_Id;
+      A_Null_Exception_Occurrence : Ada.Exceptions.Exception_Occurrence;
+
+      TC_Flag : Boolean := False;
+
+   begin
+
+      -- Verify that Null_Id is the default initial value of type
+      -- Exception_Id.
+
+      if not (A_Null_Exception_Id = Ada.Exceptions.Null_Id) then
+         Report.Failed("The default initial value of an object of type " &
+                       "Exception_Id was not Null_Id");
+      end if;
+
+
+      -- Verify that Raise_Exception has no effect in the case of Null_Id.
+      begin
+         Ada.Exceptions.Raise_Exception(A_Null_Exception_Id);
+         TC_Flag := True;
+      exception
+         when others =>
+            Report.Failed("Exception raised by procedure Raise_Exception " &
+                          "when called with a Null_Id input parameter");
+      end;
+
+      if not TC_Flag then
+         Report.Failed("Incorrect processing following the call to " &
+                       "Raise_Exception with a Null_Id input parameter");
+      end if;
+      TC_Flag := False;
+
+
+      -- Verify that Reraise_Occurrence has no effect in the case of
+      -- Null_Occurrence.
+      begin
+         Ada.Exceptions.Reraise_Occurrence(A_Null_Exception_Occurrence);
+         TC_Flag := True;
+      exception
+         when others =>
+            Report.Failed
+              ("Exception raised by procedure Reraise_Occurrence " &
+               "when called with a Null_Occurrence input parameter");
+      end;
+
+      if not TC_Flag then
+         Report.Failed("Incorrect processing following the call to " &
+                       "Reraise_Occurrence with a Null_Occurrence "  &
+                       "input parameter");
+      end if;
+
+
+      -- Verify that function Exception_Message raises Constraint_Error for
+      -- a Null_Occurrence input parameter.
+      begin
+         declare
+            Msg : constant String :=
+              Ada.Exceptions.Exception_Message(A_Null_Exception_Occurrence);
+         begin
+            Report.Failed
+              ("Constraint_Error not raised by Function Exception_Message " &
+               "when called with a Null_Occurrence input parameter");
+         end;
+      exception
+         when Constraint_Error => null; -- OK, expected exception.
+         when others =>
+            Report.Failed
+              ("Unexpected exception raised by Function Exception_Message " &
+               "when called with a Null_Occurrence input parameter");
+      end;
+
+
+--      -- Verify that function Exception_Identity raises Constraint_Error for
+--      -- a Null_Occurrence input parameter.
+--      -- Note: (RLB, 2000/12/08) This behavior may be modified by AI-00241.
+--      -- As such, this test case has been removed pending a resolution.
+--      begin
+--         declare
+--            Id : Ada.Exceptions.Exception_Id :=
+--              Ada.Exceptions.Exception_Identity(A_Null_Exception_Occurrence);
+--         begin
+--            Report.Failed
+--              ("Constraint_Error not raised by Function Exception_Identity " &
+--               "when called with a Null_Occurrence input parameter");
+--         end;
+--      exception
+--         when Constraint_Error => null; -- OK, expected exception.
+--         when others =>
+--            Report.Failed
+--              ("Unexpected exception raised by Function Exception_Identity " &
+--               "when called with a Null_Occurrence input parameter");
+--      end;
+
+
+      -- Verify that function Exception_Name raises Constraint_Error for
+      -- a Null_Occurrence input parameter.
+      begin
+         declare
+            Name : constant String :=
+              Ada.Exceptions.Exception_Name(A_Null_Exception_Occurrence);
+         begin
+            Report.Failed
+              ("Constraint_Error not raised by Function Exception_Name " &
+               "when called with a Null_Occurrence input parameter");
+         end;
+      exception
+         when Constraint_Error => null; -- OK, expected exception.
+         when others =>
+            Report.Failed
+              ("Unexpected exception raised by Function Exception_Null " &
+               "when called with a Null_Occurrence input parameter");
+      end;
+
+
+      -- Verify that function Exception_Information raises Constraint_Error
+      -- for a Null_Occurrence input parameter.
+      begin
+         declare
+            Info : constant String :=
+              Ada.Exceptions.Exception_Information
+                               (A_Null_Exception_Occurrence);
+         begin
+            Report.Failed
+              ("Constraint_Error not raised by Function "  &
+               "Exception_Information when called with a " &
+               "Null_Occurrence input parameter");
+         end;
+      exception
+         when Constraint_Error => null; -- OK, expected exception.
+         when others =>
+            Report.Failed
+              ("Unexpected exception raised by Function Exception_Null " &
+               "when called with a Null_Occurrence input parameter");
+      end;
+
+
+      -- Verify that calling the Save_Occurrence procedure with a
+      -- Null_Occurrence input parameter saves the Null_Occurrence to the
+      -- target object, and does not raise Constraint_Error.
+      declare
+         use Ada.Exceptions;
+         Saved_Occurrence : Exception_Occurrence;
+      begin
+
+         -- Initialize the Saved_Occurrence variable with a value other than
+         -- Null_Occurrence (default).
+         begin
+            raise Program_Error;
+         exception
+            when Exc : others => Save_Occurrence(Saved_Occurrence, Exc);
+         end;
+
+         -- Save a Null_Occurrence input parameter.
+         begin
+            Save_Occurrence(Target => Saved_Occurrence,
+                            Source => Ada.Exceptions.Null_Occurrence);
+         exception
+            when others =>
+               Report.Failed
+                 ("Unexpected exception raised by procedure "           &
+                  "Save_Occurrence when called with a Null_Occurrence " &
+                  "input parameter");
+         end;
+
+         -- Verify that the occurrence that was saved above is a
+         -- Null_Occurrence value.
+
+         begin
+            Reraise_Occurrence(Saved_Occurrence);
+         exception
+            when others =>
+               Report.Failed("Value saved from Procedure Save_Occurrence " &
+                             "resulted in an exception, i.e., was not a "  &
+                             "value of Null_Occurrence");
+         end;
+
+      exception
+         when others =>
+            Report.Failed("Unexpected exception raised during evaluation " &
+                          "of Procedure Save_Occurrence");
+      end;
+
+
+      -- Verify that calling the Save_Occurrence function with a
+      -- Null_Occurrence input parameter returns the Null_Occurrence as the
+      -- function result, and does not raise Constraint_Error.
+      declare
+         Occurrence_Ptr : Ada.Exceptions.Exception_Occurrence_Access;
+      begin
+         -- Save a Null_Occurrence input parameter.
+         begin
+            Occurrence_Ptr :=
+              Ada.Exceptions.Save_Occurrence(Ada.Exceptions.Null_Occurrence);
+         exception
+            when others =>
+               Report.Failed
+                 ("Unexpected exception raised by function "            &
+                  "Save_Occurrence when called with a Null_Occurrence " &
+                  "input parameter");
+         end;
+
+         -- Verify that the occurrence that was saved above is a
+         -- Null_Occurrence value.
+
+         begin
+            -- Dereferenced value of type Exception_Occurrence_Access
+            -- should be a Null_Occurrence value, based on the action
+            -- of Function Save_Occurrence above.  Providing this as an
+            -- input parameter to Reraise_Exception should not result in
+            -- any exception being raised.
+
+            Ada.Exceptions.Reraise_Occurrence(Occurrence_Ptr.all);
+
+         exception
+            when others =>
+               Report.Failed("Value saved from Function Save_Occurrence " &
+                             "resulted in an exception, i.e., was not a "  &
+                             "value of Null_Occurrence");
+         end;
+      exception
+         when others =>
+            Report.Failed("Unexpected exception raised during evaluation " &
+                          "of Function Save_Occurrence");
+      end;
+
+
+
+   exception
+      when others => Report.Failed ("Exception raised in Test_Block");
+   end Test_Block;
+
+   Report.Result;
+
+end CB41004;

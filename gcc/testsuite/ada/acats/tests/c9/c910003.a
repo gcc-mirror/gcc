@@ -1,0 +1,185 @@
+-- C910003.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687 and
+--     F08630-91-C-0015, the U.S. Government obtained unlimited rights in the
+--     software and documentation contained herein.  Unlimited rights are
+--     defined in DFAR 252.227-7013(a)(19).  By making this public release,
+--     the Government intends to confer upon all recipients unlimited rights
+--     equal to those held by the Government.  These rights include rights to
+--     use, duplicate, release or disclose the released technical data and
+--     computer software in whole or in part, in any manner and for any purpose
+--     whatsoever, and to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that task discriminants that have an access subtype may be
+--      dereferenced.
+--
+--      Note that discriminants in Ada 83 never can be dereferenced with
+--      selection or indexing, as they cannot have an access type.
+--
+-- TEST DESCRIPTION:
+--      A protected object is defined to create a simple buffer.
+--      Two task types are defined, one to put values into the buffer,
+--      and one to remove them. The tasks are passed a buffer object as
+--      a discriminant with an access subtype. The producer task type includes
+--      a discriminant to determine the values to product. The consumer task
+--      type includes a value to save the results.
+--      Two producer and one consumer tasks are declared, and the results
+--      are checked.
+--
+-- CHANGE HISTORY:
+--      10 Mar 99   RLB    Created test.
+--
+--!
+
+package C910003_Pack is
+
+    type Item_Type is range 1 .. 100; -- In a real application, this probably
+                                      -- would be a record type.
+
+    type Item_Array is array (Positive range <>) of Item_Type;
+
+    protected type Buffer is
+       entry Put (Item  : in Item_Type);
+       entry Get (Item  : out Item_Type);
+       function TC_Items_Buffered return Item_Array;
+    private
+       Saved_Item : Item_Type;
+       Empty : Boolean := True;
+       TC_Items : Item_Array (1 .. 10);
+       TC_Last  : Natural := 0;
+    end Buffer;
+
+    type Buffer_Access_Type is access Buffer;
+
+    PRODUCE_COUNT : constant := 2; -- Number of items to produce.
+
+    task type Producer (Buffer_Access : Buffer_Access_Type;
+                        Start_At : Item_Type);
+        -- Produces PRODUCE_COUNT items. Starts when activated.
+
+    type TC_Item_Array_Access_Type is access Item_Array (1 .. PRODUCE_COUNT*2);
+
+    task type Consumer (Buffer_Access : Buffer_Access_Type;
+                        Results : TC_Item_Array_Access_Type) is
+        -- Stores PRODUCE_COUNT*2 items consumed in Results. Starts when
+        -- activated.
+        entry Wait_until_Done;
+    end Consumer;
+
+end C910003_Pack;
+
+
+with Report;
+package body C910003_Pack is
+
+    protected body Buffer is
+       entry Put (Item  : in Item_Type) when Empty is
+       begin
+           Empty := False;
+           Saved_Item := Item;
+           TC_Last := TC_Last + 1;
+           TC_Items(TC_Last) := Item;
+       end Put;
+
+       entry Get (Item  : out Item_Type) when not Empty is
+       begin
+           Empty := True;
+           Item := Saved_Item;
+       end Get;
+
+       function TC_Items_Buffered return Item_Array is
+       begin
+           return TC_Items(1..TC_Last);
+       end TC_Items_Buffered;
+
+    end Buffer;
+
+
+    task body Producer is
+        -- Produces PRODUCE_COUNT items. Starts when activated.
+    begin
+        for I in 1 .. Report.Ident_Int(PRODUCE_COUNT) loop
+           Buffer_Access.Put (Start_At + (Item_Type(I)-1)*2);
+        end loop;
+    end Producer;
+
+
+    task body Consumer is
+        -- Stores PRODUCE_COUNT*2 items consumed in Results. Starts when
+        -- activated.
+    begin
+        for I in 1 .. Report.Ident_Int(PRODUCE_COUNT*2) loop
+            Buffer_Access.Get (Results (I));
+            -- Buffer_Access and Results are both dereferenced.
+        end loop;
+
+        -- Check the results (and function call with a prefix dereference).
+        if Results.all(Report.Ident_Int(1)) /= Buffer_Access.all.TC_Items_Buffered(Report.Ident_Int(1)) then
+           Report.Failed ("First item mismatch");
+        end if;
+        if Results(Report.Ident_Int(2)) /= Buffer_Access.TC_Items_Buffered(Report.Ident_Int(2)) then
+           Report.Failed ("Second item mismatch");
+        end if;
+        accept Wait_until_Done; -- Tell main that we're done.
+    end Consumer;
+
+end C910003_Pack;
+
+
+with Report;
+with C910003_Pack;
+
+procedure C910003 is
+
+begin -- C910003
+
+   Report.Test ("C910003", "Check that tasks discriminants of access types can be dereferenced");
+
+
+   declare     -- encapsulate the test
+
+      Buffer_Access : C910003_Pack.Buffer_Access_Type :=
+         new C910003_Pack.Buffer;
+
+      TC_Results : C910003_Pack.TC_Item_Array_Access_Type :=
+         new C910003_Pack.Item_Array (1 .. C910003_Pack.PRODUCE_COUNT*2);
+
+      Producer_1 : C910003_Pack.Producer (Buffer_Access, 12);
+      Producer_2 : C910003_Pack.Producer (Buffer_Access, 23);
+
+      Consumer : C910003_Pack.Consumer (Buffer_Access, TC_Results);
+
+      use type C910003_Pack.Item_Array; -- For /=.
+
+   begin
+      Consumer.Wait_until_Done;
+      if TC_Results.all /= Buffer_Access.TC_Items_Buffered then
+           Report.Failed ("Different items buffered than returned - Main");
+      end if;
+      if (TC_Results.all /= (12, 14, 23, 25) and
+          TC_Results.all /= (12, 23, 14, 25) and
+          TC_Results.all /= (12, 23, 25, 14) and
+          TC_Results.all /= (23, 12, 14, 25) and
+          TC_Results.all /= (23, 12, 25, 14) and
+          TC_Results.all /= (23, 25, 12, 14)) then
+          -- Above are the only legal results.
+           Report.Failed ("Wrong results");
+      end if;
+   end;     -- encapsulation
+
+   Report.Result;
+
+end C910003;

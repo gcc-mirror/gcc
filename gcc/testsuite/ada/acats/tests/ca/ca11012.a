@@ -1,0 +1,259 @@
+-- CA11012.A
+--
+--                             Grant of Unlimited Rights
+--
+--     Under contracts F33600-87-D-0337, F33600-84-D-0280, MDA903-79-C-0687,
+--     F08630-91-C-0015, and DCA100-97-D-0025, the U.S. Government obtained 
+--     unlimited rights in the software and documentation contained herein.
+--     Unlimited rights are defined in DFAR 252.227-7013(a)(19).  By making 
+--     this public release, the Government intends to confer upon all 
+--     recipients unlimited rights  equal to those held by the Government.  
+--     These rights include rights to use, duplicate, release or disclose the 
+--     released technical data and computer software in whole or in part, in 
+--     any manner and for any purpose whatsoever, and to have or permit others 
+--     to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED 
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE 
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--      Check that a child package of a library level instantiation
+--      of a generic can be the instantiation of a child package of
+--      the generic. Check that the child instance can use its parent's
+--      declarations and operations, including a formal type of the parent. 
+--      
+-- TEST DESCRIPTION:
+--      Declare a generic package which simulates an integer complex 
+--      abstraction.  Declare a generic child package of this package 
+--      which defines additional complex operations. 
+--
+--      Instantiate the first generic package, then instantiate the child 
+--      generic package as a child unit of the first instance.  In the main
+--      program, check that the operations in both instances perform as 
+--      expected.
+--
+--
+-- CHANGE HISTORY:
+--      06 Dec 94   SAIC    ACVC 2.0
+--      21 Dec 94   SAIC    Corrected visibility errors for literals
+--      27 Feb 97   PWB.CTA Added elaboration pragma at package CA11012_3
+--!
+
+generic               -- Complex number abstraction.
+   type Int_Type is range <>;
+
+package CA11012_0 is
+ 
+   -- Simulate a generic complex number support package. Complex numbers
+   -- are treated as coordinates in the Cartesian plane.
+
+   type Complex_Type is private;
+
+   Zero : constant Complex_Type;                      -- Real number (0,0).
+
+   function Complex (Real, Imag : Int_Type)           -- Create a complex
+     return Complex_Type;                             -- number.
+
+   function "-" (Right : Complex_Type)                -- Invert a complex
+     return Complex_Type;                             -- number.
+
+   function "+" (Left, Right : Complex_Type)          -- Add two complex
+     return Complex_Type;                             -- numbers.
+
+private
+   type Complex_Type is record
+      Real : Int_Type;
+      Imag : Int_Type;
+   end record;
+
+   Zero : constant Complex_Type := (Real => 0, Imag => 0);
+
+end CA11012_0;
+
+     --==================================================================--
+
+package body CA11012_0 is
+
+   function Complex (Real, Imag : Int_Type) return Complex_Type is
+   begin
+      return (Real, Imag);
+   end Complex;
+   ---------------------------------------------------------------
+   function "-" (Right : Complex_Type) return Complex_Type is
+   begin
+      return (-Right.Real, -Right.Imag);
+   end "-";
+   ---------------------------------------------------------------
+   function "+" (Left, Right : Complex_Type) return Complex_Type is
+   begin
+      return ( (Left.Real + Right.Real, Left.Imag + Right.Imag) );
+   end "+";
+
+end CA11012_0;
+
+     --==================================================================--
+
+-- Generic child of complex number package.  Child must be generic since 
+-- parent is generic. 
+
+generic               -- Complex additional operations
+
+package CA11012_0.CA11012_1 is
+ 
+   -- More operations on complex number. This child adds a layer of
+   -- functionality to the parent generic.
+
+   function Real_Part (Complex_No : Complex_Type)
+     return Int_Type;
+
+   function Imag_Part (Complex_No : Complex_Type)
+     return Int_Type;
+
+   function "*" (Factor : Int_Type; 
+                 C      : Complex_Type) return Complex_Type;
+
+   function Vector_Magnitude (Complex_No : Complex_Type)
+     return Int_Type;
+
+end CA11012_0.CA11012_1;
+
+     --==================================================================--
+
+package body CA11012_0.CA11012_1 is
+
+   function Real_Part (Complex_No : Complex_Type) return Int_Type is
+   begin
+      return (Complex_No.Real);
+   end Real_Part;
+   ---------------------------------------------------------------
+   function Imag_Part (Complex_No : Complex_Type) return Int_Type is
+   begin
+      return (Complex_No.Imag);
+   end Imag_Part;
+   ---------------------------------------------------------------
+   function "*" (Factor : Int_Type; 
+                 C      : Complex_Type) return Complex_Type is
+      Result : Complex_Type := Zero;   -- Zero is declared in parent,
+                                       -- Complex_Number
+   begin
+      for I in 1 .. abs (Factor) loop
+         Result := Result + C;         -- Complex_Number "+"
+      end loop;
+
+      if Factor < 0 then
+         Result := - Result;           -- Complex_Number "-"
+      end if;
+
+      return Result;
+   end "*";
+   ---------------------------------------------------------------
+   function Vector_Magnitude (Complex_No : Complex_Type)
+     return Int_Type is                -- Not a real vector magnitude.
+   begin
+      return (Complex_No.Real + Complex_No.Imag);
+   end Vector_Magnitude;  
+
+end CA11012_0.CA11012_1;
+
+     --==================================================================--
+
+package CA11012_2 is
+
+   subtype My_Integer is integer range -100 .. 100;
+
+   -- ... Various other types used by the application.
+
+end CA11012_2;
+
+-- No body for CA11012_2;
+
+     --==================================================================--
+
+-- Declare instances of the generic complex packages for integer type.  
+-- The instance of the child must itself be declared as a child of the 
+-- instance of the parent.
+
+with CA11012_0;                        -- Complex number abstraction
+with CA11012_2;                        -- Package containing integer type
+pragma Elaborate (CA11012_0);
+package CA11012_3 is new CA11012_0 (Int_Type => CA11012_2.My_Integer);
+
+with CA11012_0.CA11012_1;              -- Complex additional operations
+with CA11012_3;
+package CA11012_3.CA11012_4 is new CA11012_3.CA11012_1;
+
+     --==================================================================--
+
+with CA11012_2;                -- Package containing integer type
+with CA11012_3.CA11012_4;      -- Complex abstraction + additional operations
+with Report;
+
+procedure CA11012 is
+
+   package My_Complex_Pkg renames CA11012_3;
+
+   package My_Complex_Operation renames CA11012_3.CA11012_4;
+
+   use My_Complex_Pkg,                                -- All user-defined
+       My_Complex_Operation;                          -- operators directly
+                                                      -- visible.
+   Complex_One, Complex_Two : Complex_Type;
+
+begin
+
+   Report.Test ("CA11012", "Check that child instance can use its parent's "  &
+                           "declarations and operations, including a formal " &
+                           "type of the parent");
+
+   Correct_Range_Test:
+   declare
+      My_Literal  : CA11012_2.My_Integer := -3;
+
+   begin
+      Complex_One := Complex (-4, 7);          -- Operation from the generic 
+                                               -- parent package.
+
+      Complex_Two := My_Literal * Complex_One; -- Operation from the generic 
+                                               -- child package.
+
+      if Real_Part (Complex_Two) /= 12         -- Operation from the generic 
+        or Imag_Part (Complex_Two) /= -21      -- child package.
+          then
+             Report.Failed ("Incorrect results from complex operation");
+      end if;
+
+   end Correct_Range_Test;
+
+   ---------------------------------------------------------------
+
+   Out_Of_Range_Test:
+   declare
+      My_Vector : CA11012_2.My_Integer;
+
+   begin
+      Complex_One := Complex (70, 70);         -- Operation from the generic 
+                                               -- parent package.
+      My_Vector := Vector_Magnitude (Complex_One);         
+                     -- Operation from the generic child package.
+
+      Report.Failed ("Exception not raised in child package");
+
+   exception
+      when Constraint_Error =>
+        Report.Comment ("Exception is raised as expected");
+
+      when others           =>
+        Report.Failed ("Others exception is raised");
+
+   end Out_Of_Range_Test;
+
+   Report.Result;
+
+end CA11012;
