@@ -1634,12 +1634,17 @@ struct lang_decl_flags GTY(())
   unsigned this_thunk_p : 1;
 
   union lang_decl_u {
-    /* In a FUNCTION_DECL, VAR_DECL, TYPE_DECL, or TEMPLATE_DECL, this
-       is DECL_TEMPLATE_INFO.  */
+    /* In a FUNCTION_DECL for which DECL_THUNK_P does not hold,
+       VAR_DECL, TYPE_DECL, or TEMPLATE_DECL, this is
+       DECL_TEMPLATE_INFO.  */
     tree GTY ((tag ("0"))) template_info;
 
     /* In a NAMESPACE_DECL, this is NAMESPACE_LEVEL.  */
     struct cp_binding_level * GTY ((tag ("1"))) level;
+
+    /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
+       THUNK_ALIAS.  */
+    tree GTY ((tag ("2"))) thunk_alias;
   } GTY ((desc ("%1.u1sel"))) u;
 
   union lang_decl_u2 {
@@ -2859,12 +2864,17 @@ struct lang_decl GTY(())
    for the result pointer adjustment.
 
    The constant adjustment is given by THUNK_FIXED_OFFSET.  If the
-   vcall or vbase offset is required, the index into the vtable is given by
-   THUNK_VIRTUAL_OFFSET.
+   vcall or vbase offset is required, THUNK_VIRTUAL_OFFSET is
+   used. For this pointer adjusting thunks, it is the vcall offset
+   into the vtable.  For result pointer adjusting thunks it is the
+   binfo of the virtual base to convert to.  Use that binfo's vbase
+   offset.
 
-   Due to ordering constraints in class layout, it is possible to have
-   equivalent covariant thunks. THUNK_ALIAS_P and THUNK_ALIAS are used
-   in those cases.  */
+   It is possible to have equivalent covariant thunks.  These are
+   distinct virtual covariant thunks whose vbase offsets happen to
+   have the same value.  THUNK_ALIAS is used to pick one as the
+   canonical thunk, which will get all the this pointer adjusting
+   thunks attached to it.  */
 
 /* An integer indicating how many bytes should be subtracted from the
    this or result pointer when this function is called.  */
@@ -2882,15 +2892,11 @@ struct lang_decl GTY(())
    binfos.)  */
 
 #define THUNK_VIRTUAL_OFFSET(DECL) \
-  (LANG_DECL_U2_CHECK (VAR_OR_FUNCTION_DECL_CHECK (DECL), 0)->virtual_offset)
+  (LANG_DECL_U2_CHECK (FUNCTION_DECL_CHECK (DECL), 0)->virtual_offset)
 
 /* A thunk which is equivalent to another thunk. */
-#define THUNK_ALIAS_P(DECL) \
-  (THUNK_VIRTUAL_OFFSET (DECL) && DECL_P (THUNK_VIRTUAL_OFFSET (DECL)))
-
-/* When THUNK_ALIAS_P is true, this indicates the thunk which is
-   aliased.  */
-#define THUNK_ALIAS(DECL) THUNK_VIRTUAL_OFFSET (DECL)
+#define THUNK_ALIAS(DECL) \
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (DECL))->decl_flags.u.thunk_alias)
 
 /* For thunk NODE, this is the FUNCTION_DECL thunked to.  */
 #define THUNK_TARGET(NODE)				\

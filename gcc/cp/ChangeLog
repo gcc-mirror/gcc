@@ -1,5 +1,20 @@
 2003-12-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/13118
+	* cp-tree.h (lang_decl_u): Add thunk_alias member.
+	(THUNK_VIRTUAL_OFFSET): Must be a FUNCTION_DECL.
+	(THUNK_ALIAS_P): Remove.
+	(THUNK_ALIAS): Adjust.
+	* class.c (update_vtable_entry_for_fn): Get the vbase within the
+	overriding function's return type.
+	(dump_thunk): Adjust THUNK_ALIAS printing.
+	(build_vtbl_initializer): Adjust THUNK_ALIAS use.
+	* method.c (make_thunk): Revert 12881 test change. Clear
+	THUNK_ALIAS.
+	(finish_thunk): Adjust THUNK_ALIAS setting.
+	(use_thunk): Adjust THUNK_ALIAS use.
+	* semantics.c (emit_associated_thunks): Likewise.
+
 	PR c++/13114, c++/13115
 	* class.c (layout_empty_base): Propagate the move of an empty base
 	to offset zero.

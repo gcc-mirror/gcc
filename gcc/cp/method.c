@@ -124,51 +124,15 @@ make_thunk (tree function, bool this_adjusting,
      thunks VIRTUAL_OFFSET will be an INTEGER_CST, for covariant thunks it
      will be a BINFO.  */
   for (thunk = DECL_THUNKS (function); thunk; thunk = TREE_CHAIN (thunk))
-    {
-      if (DECL_THIS_THUNK_P (thunk) != this_adjusting
-	  || THUNK_FIXED_OFFSET (thunk) != d)
-	/*not me*/;
-      else if (this_adjusting)
-	{
-	  if (!virtual_offset)
-	    {
-	      /* We want a non-virtual covariant thunk.  */
-	      if (!THUNK_VIRTUAL_OFFSET (thunk))
-		return thunk;
-	    }
-	  else if (THUNK_VIRTUAL_OFFSET (thunk))
-	    {
-	      if (tree_int_cst_equal (THUNK_VIRTUAL_OFFSET (thunk),
-				      virtual_offset))
-		return thunk;
-	    }
-	}
-      else
-	{
-	  if (!virtual_offset)
-	    {
-	      /* We want a non-virtual covariant thunk.  */
-	      if (!THUNK_VIRTUAL_OFFSET (thunk))
-		return thunk;
-	    }
-	  else if (!THUNK_VIRTUAL_OFFSET (thunk))
-	    /*not me*/;
-	  else if (THUNK_ALIAS_P (thunk))
-	    {
-	      /* We have already determined the thunks for FUNCTION,
-	         and there is a virtual covariant thunk alias.  We
-	         must compare the vbase offsets of the binfo we have
-	         been given, and the binfo of the thunk.  */
-	      tree binfo = THUNK_VIRTUAL_OFFSET (THUNK_ALIAS (thunk));
-	      
-	      if (tree_int_cst_equal (BINFO_VPTR_FIELD (virtual_offset),
-				      BINFO_VPTR_FIELD (binfo)))
-		return THUNK_ALIAS (thunk);
-	    }
-	  else if (THUNK_VIRTUAL_OFFSET (thunk) == virtual_offset)
-	    return thunk;
-	}
-    }
+    if (DECL_THIS_THUNK_P (thunk) == this_adjusting
+	&& THUNK_FIXED_OFFSET (thunk) == d
+	&& !virtual_offset == !THUNK_VIRTUAL_OFFSET (thunk)
+	&& (!virtual_offset
+	    || (this_adjusting
+		? tree_int_cst_equal (THUNK_VIRTUAL_OFFSET (thunk),
+				      virtual_offset)
+		: THUNK_VIRTUAL_OFFSET (thunk) == virtual_offset)))
+      return thunk;
   
   /* All thunks must be created before FUNCTION is actually emitted;
      the ABI requires that all thunks be emitted together with the
@@ -195,6 +159,7 @@ make_thunk (tree function, bool this_adjusting,
   THUNK_TARGET (thunk) = function;
   THUNK_FIXED_OFFSET (thunk) = d;
   THUNK_VIRTUAL_OFFSET (thunk) = virtual_offset;
+  THUNK_ALIAS (thunk) = NULL_TREE;
   
   /* The thunk itself is not a constructor or destructor, even if
      the thing it is thunking to is.  */
@@ -254,7 +219,7 @@ finish_thunk (tree thunk)
 	if (DECL_NAME (cov_probe) == name)
 	  {
 	    my_friendly_assert (!DECL_THUNKS (thunk), 20031023);
-	    THUNK_ALIAS (thunk) = (THUNK_ALIAS_P (cov_probe)
+	    THUNK_ALIAS (thunk) = (THUNK_ALIAS (cov_probe)
 				   ? THUNK_ALIAS (cov_probe) : cov_probe);
 	    break;
 	  }
@@ -376,7 +341,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 
   /* We should never be using an alias, always refer to the
      aliased thunk.  */
-  my_friendly_assert (!THUNK_ALIAS_P (thunk_fndecl), 20031023);
+  my_friendly_assert (!THUNK_ALIAS (thunk_fndecl), 20031023);
 
   if (TREE_ASM_WRITTEN (thunk_fndecl))
     return;
