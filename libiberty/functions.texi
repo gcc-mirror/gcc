@@ -65,14 +65,14 @@ should be sorted in ascending order according to the @var{compar}
 comparison function.  This routine should take two arguments pointing to
 the @var{key} and to an array member, in that order, and should return an
 integer less than, equal to, or greater than zero if the @var{key} object
-is respecitively less than, matching, or greater than the array member.
+is respectively less than, matching, or greater than the array member.
 
 @end deftypefn
 
 @c bzero.c:6
 @deftypefn Supplemental void bzero (char *@var{mem}, int @var{count})
 
-Zeros @var{count} bytes starting at @var{mem}.  Use if this function
+Zeros @var{count} bytes starting at @var{mem}.  Use of this function
 is deprecated in favor of @code{memset}.
 
 @end deftypefn
