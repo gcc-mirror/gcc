@@ -1,3 +1,8 @@
+2002-12-26  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/standards.texi, doc/invoke.texi: Point to 3.3 version of
+	c99status.html.
+
 2002-12-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.h (IDENT_ASM_OP): End with a tab.
