@@ -1,3 +1,10 @@
+Sat Jun 27 23:34:18 1998  Fred Fish  <fnf@ninemoons.com>
+
+	* g++spec.c (NEED_MATH_LIBRARY): Define to 1 if not already defined.
+	(lang_specific_driver): Initialize need_math with NEED_MATH_LIBRARY.
+	(lang_specific_driver): Only add -lm automatically if need_math is
+	nonzero.
+
 Sat Jun 27 12:22:56 1998  Jeffrey A Law  (law@cygnus.com)
 
         * Make-lang.in (g++): Depend on mkstemp.o.  Link in mkstemp.o

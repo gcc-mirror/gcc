@@ -34,6 +34,9 @@ Boston, MA 02111-1307, USA.  */
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "-lm"
 #endif
+#ifndef NEED_MATH_LIBRARY
+#define NEED_MATH_LIBRARY 1	/* Default is pass MATH_LIBRARY to linker */
+#endif
 
 extern char *xmalloc PROTO((size_t));
 
@@ -81,7 +84,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   int *args;
 
   /* By default, we throw on the math library.  */
-  int need_math = 1;
+  int need_math = NEED_MATH_LIBRARY;
 
   /* The total number of arguments with the new stuff.  */
   int argc;
@@ -241,7 +244,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
     }
   if (saw_math)
     arglist[j++] = saw_math;
-  else if (library)
+  else if (library && need_math)
     {
       arglist[j++] = MATH_LIBRARY;
       added_libraries++;
