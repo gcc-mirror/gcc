@@ -2109,7 +2109,7 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
     COPY_HARD_REG_SET (used, call_used_reg_set);
 
   if (accept_call_clobbered)
-    IOR_HARD_REG_SET(used, losing_caller_save_reg_set);
+    IOR_HARD_REG_SET (used, losing_caller_save_reg_set);
 
   for (ins = born_index; ins < dead_index; ins++)
     IOR_HARD_REG_SET (used, regs_live_at[ins]);
