@@ -115,14 +115,14 @@ stmp-sub-all:
 	touch stmp-sub-all
 
 clean mostlyclean:
-	for dir in $(SUBDIRS); do \
+	for dir in $(SUBDIRS) info; do \
 	  echo making $@ in $$dir; \
 	  (cd $$dir && $(MAKE) $(MDEFINES) $@ || exit 1); \
 	done
 	-rm -f stmp*
 
 distclean: clean texclean
-	for dir in $(SUBDIRS); do \
+	for dir in $(SUBDIRS) info; do \
 	  echo making $@ in $$dir; \
 	  (cd $$dir && $(MAKE) $(MDEFINES) $@ || exit 1); \
 	done
