@@ -1,4 +1,8 @@
-1999-06-06  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+1999-06-05  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+
+	* std/std_valarray.h: Don't #include unconditionally <alloca.h>
+
+1999-06-05  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* std/std_valarray.h: New file.
 	  * std/slice.h: New file.
