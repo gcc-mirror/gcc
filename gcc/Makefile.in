@@ -450,9 +450,13 @@ HOST_DOPRINT=$(DOPRINT)
 
 # Actual name to use when installing a native compiler.
 GCC_INSTALL_NAME = `t='$(program_transform_name)'; echo gcc | sed -e $$t`
+PROTOIZE_INSTALL_NAME = `t='$(program_transform_name)'; echo protoize | sed -e $$t`
+UNPROTOIZE_INSTALL_NAME = `t='$(program_transform_name)'; echo unprotoize | sed -e $$t`
 
 # Actual name to use when installing a cross-compiler.
 GCC_CROSS_NAME = `t='$(program_transform_cross_name)'; echo gcc | sed -e $$t`
+PROTOIZE_CROSS_NAME = `t='$(program_transform_cross_name)'; echo protoize | sed -e $$t`
+UNPROTOIZE_CROSS_NAME = `t='$(program_transform_cross_name)'; echo unprotoize | sed -e $$t`
 
 # Choose the real default target.
 ALL=all.internal
@@ -2321,10 +2325,17 @@ install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 # Install protoize if it was compiled.
 	-if [ -f protoize$(exeext) ]; \
 	then \
-	    rm -f $(bindir)/protoize$(exeext); \
-	    $(INSTALL_PROGRAM) protoize$(exeext) $(bindir)/protoize$(exeext); \
-	    rm -f $(bindir)/unprotoize$(exeext); \
-	    $(INSTALL_PROGRAM) unprotoize$(exeext) $(bindir)/unprotoize$(exeext); \
+	    if [ -f gcc-cross$(exeext) ] ; then \
+		rm -f $(bindir)/$(PROTOIZE_CROSS_NAME)$(exeext); \
+		$(INSTALL_PROGRAM) protoize$(exeext) $(bindir)/$(PROTOIZE_CROSS_NAME)$(exeext); \
+		rm -f $(bindir)/$(UNPROTOIZE_CROSS_NAME)$(exeext); \
+		$(INSTALL_PROGRAM) unprotoize$(exeext) $(bindir)/$(UNPROTOIZE_CROSS_NAME)$(exeext); \
+	    else \
+		rm -f $(bindir)/$(PROTOIZE_INSTALL_NAME)$(exeext); \
+		$(INSTALL_PROGRAM) protoize$(exeext) $(bindir)/$(PROTOIZE_INSTALL_NAME)$(exeext); \
+		rm -f $(bindir)/$(UNPROTOIZE_INSTALL_NAME)$(exeext); \
+		$(INSTALL_PROGRAM) unprotoize$(exeext) $(bindir)/$(UNPROTOIZE_INSTALL_NAME)$(exeext); \
+	    fi ; \
 	    rm -f $(libsubdir)/SYSCALLS.c.X; \
 	    $(INSTALL_DATA) SYSCALLS.c.X $(libsubdir)/SYSCALLS.c.X; \
 	    chmod a-x $(libsubdir)/SYSCALLS.c.X; \

@@ -1,5 +1,9 @@
 Mon Jun 22 12:01:48 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* Makefile.in (PROTOIZE_INSTALL_NAME, UNPROTOIZE_INSTALL_NAME,
+	PROTOIZE_CROSS_NAME, UNPROTOIZE_CROSS_NAME): New variables.
+	(install-common): Use them.
+
 	* gcse.c (add_label_notes): New function.
 	(pre_insert_insn): Call it.
 	* unroll.c (unroll_loop): Look for insns with a REG_LABEL note, and
