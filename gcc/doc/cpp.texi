@@ -6,7 +6,7 @@
 @c @cropmarks
 @c @finalout
 
-@macro copyrightnotice
+@copying
 @c man begin COPYRIGHT
 Copyright @copyright{} 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996,
 1997, 1998, 1999, 2000, 2001, 2002
@@ -23,9 +23,7 @@ section entitled ``GNU Free Documentation License''.
 man page gfdl(7).
 @c man end
 @end ignore
-@end macro
 
-@macro covertexts
 @c man begin COPYRIGHT
 This manual contains no Invariant Sections.  The Front-Cover Texts are
 (a) (see below), and the Back-Cover Texts are (b) (see below).
@@ -40,7 +38,7 @@ This manual contains no Invariant Sections.  The Front-Cover Texts are
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development.
 @c man end
-@end macro
+@end copying
 
 @macro gcctabopt{body}
 @code{\body\}
@@ -70,8 +68,7 @@ This manual contains no Invariant Sections.  The Front-Cover Texts are
 @c There is a fill at the bottom of the page, so we need a filll to
 @c override it.
 @vskip 0pt plus 1filll
-@copyrightnotice{}
-@covertexts{}
+@insertcopying
 @end titlepage
 @contents
 @page
@@ -180,8 +177,7 @@ Obsolete Features
 @end detailmenu
 @end menu
 
-@copyrightnotice{}
-@covertexts{}
+@insertcopying
 @end ifnottex
 
 @node Overview

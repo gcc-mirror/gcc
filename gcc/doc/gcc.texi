@@ -60,23 +60,10 @@
 \global\setfont\defbf\ttbshape{10}{\magstep1}
 @end tex
 
-@macro copyrightnotice
+@copying
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
-@end macro
-@ifnottex
-@dircategory Programming
-@direntry
-* gcc: (gcc).                  The GNU Compiler Collection.
-@end direntry
-This file documents the use of the GNU compilers.
-@sp 1
-Published by the Free Software Foundation@*
-59 Temple Place - Suite 330@*
-Boston, MA 02111-1307 USA
-@sp 1
-@copyrightnotice{}
-@sp 1
+
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
 any later version published by the Free Software Foundation; with the
@@ -94,6 +81,20 @@ included in the section entitled ``GNU Free Documentation License''.
      You have freedom to copy and modify this GNU Manual, like GNU
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development.
+@end copying
+@ifnottex
+@dircategory Programming
+@direntry
+* gcc: (gcc).                  The GNU Compiler Collection.
+@end direntry
+This file documents the use of the GNU compilers.
+@sp 1
+Published by the Free Software Foundation@*
+59 Temple Place - Suite 330@*
+Boston, MA 02111-1307 USA
+@sp 1
+@insertcopying
+@sp 1
 @end ifnottex
 
 @setchapternewpage odd
@@ -108,8 +109,6 @@ included in the section entitled ``GNU Free Documentation License''.
 @center for GCC @value{version-GCC}
 @page
 @vskip 0pt plus 1filll
-@copyrightnotice{}
-@sp 2
 For GCC Version @value{version-GCC}@*
 @sp 1
 Published by the Free Software Foundation @*
@@ -122,23 +121,7 @@ Printed copies are available for $50 each.@*
 ISBN 1-882114-37-X
 @end ifset
 @sp 1
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'', the Front-Cover
-texts being (a) (see below), and with the Back-Cover Texts being (b)
-(see below).  A copy of the license is included in the section entitled
-``GNU Free Documentation License''.
-
-(a) The FSF's Front-Cover Text is:
-
-     A GNU Manual
-
-(b) The FSF's Back-Cover Text is:
-
-     You have freedom to copy and modify this GNU Manual, like GNU
-     software.  Copies published by the Free Software Foundation raise
-     funds for GNU development.
+@insertcopying
 @end titlepage
 @summarycontents
 @contents

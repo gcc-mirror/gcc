@@ -1,5 +1,10 @@
 2002-12-28  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* doc/cpp.texi, doc/gcc.texi, doc/gccint.texi, doc/install.texi:
+	Use @copying.
+
+2002-12-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* configure.in: Increase makeinfo version requirement to 4.[2-9].
 	* configure: Regenerate.
 	* doc/install.texi: Update Texinfo version requirement.

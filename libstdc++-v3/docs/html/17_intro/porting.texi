@@ -8,22 +8,7 @@
 @settitle Porting libstdc++-v3
 @setchapternewpage odd
 
-@ifinfo
-This file explains how to port libstdc++-v3 (the GNU C++ library) to 
-a new target.
-
-Copyright (c) 2000, 2001, 2002 Free Software Foundation, Inc.
-@end ifinfo
-
-@c ---------------------------------------------------------------------
-@c Titlepage
-@c ---------------------------------------------------------------------
-
-@titlepage
-@title Porting libstdc++-v3
-@author Mark Mitchell
-@page
-@vskip 0pt plus 1filll
+@copying
 Copyright @copyright{} 2000, 2001, 2002 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -43,6 +28,25 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
      You have freedom to copy and modify this GNU Manual, like GNU
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development.
+@end copying
+
+@ifinfo
+This file explains how to port libstdc++-v3 (the GNU C++ library) to 
+a new target.
+
+@insertcopying
+@end ifinfo
+
+@c ---------------------------------------------------------------------
+@c Titlepage
+@c ---------------------------------------------------------------------
+
+@titlepage
+@title Porting libstdc++-v3
+@author Mark Mitchell
+@page
+@vskip 0pt plus 1filll
+@insertcopying
 @end titlepage
 
 @c ---------------------------------------------------------------------
