@@ -6858,7 +6858,16 @@ schedule_insns (dump_file)
   for (b = 0; b < n_basic_blocks; b++)
     for (insn = BLOCK_HEAD (b);; insn = NEXT_INSN (insn))
       {
-	INSN_LUID (insn) = luid++;
+	INSN_LUID (insn) = luid;
+
+	/* Increment the next luid, unless this is a note.  We don't
+	   really need separate IDs for notes and we don't want to
+	   schedule differently depending on whether or not there are
+	   line-number notes, i.e., depending on whether or not we're
+	   generating debugging information.  */
+	if (GET_CODE (insn) != NOTE)
+	  ++luid;
+
 	if (insn == BLOCK_END (b))
 	  break;
       }

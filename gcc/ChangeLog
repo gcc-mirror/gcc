@@ -1,3 +1,8 @@
+Sun Oct 24 19:33:24 1999  Mark P. Mitchell  <mark@codesourcery.com>
+
+	* haifa-sched.c (schedule_insns): Don't assign LUIDs differently
+ 	depending on whether or not line-number notes are present.
+
 Sun Oct 24 20:29:59 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cccp.c (progname, file_buf, default_include, include_file,
