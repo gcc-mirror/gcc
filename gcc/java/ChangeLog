@@ -1,5 +1,12 @@
 2004-12-03  Tom Tromey  <tromey@redhat.com>
 
+	* lang.c (flag_new_verifier): Define.
+	(java_post_options): Set flag_new_verifier if indirect dispatch
+	is being used.
+	* lang.opt (fnew-verifier): Removed.
+
+2004-12-03  Tom Tromey  <tromey@redhat.com>
+
 	PR bootstrap/14614:
 	* Make-lang.in (java.install-common): Only install transformed
 	gcjh if gcj-cross exists.

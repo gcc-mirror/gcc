@@ -176,9 +176,5 @@ fuse-divide-subroutine
 Java Var(flag_use_divide_subroutine) Init(1)
 Call a library routine to do integer divisions
 
-fnew-verifier
-Java Var(flag_new_verifier)
-Enable the new bytecode verifier
-
 version
 Java
