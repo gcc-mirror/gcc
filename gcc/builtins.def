@@ -140,19 +140,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_FRONTEND, TYPE, TYPE,	\
 	       true, true, true, ATTRS, true)
 
-/* If SMALL_STACK is defined, then `alloca' is only defined in its
-   `__builtin' form.  */
-#if SMALL_STACK  
-DEF_FALLBACK_BUILTIN(BUILT_IN_ALLOCA,
-		     "__builtin_alloca",
-		     BT_FN_PTR_SIZE,
-		     ATTR_MALLOC_NOTHROW_LIST)
-#else
 DEF_EXT_LIB_BUILTIN(BUILT_IN_ALLOCA,
 		    "__builtin_alloca",
 		    BT_FN_PTR_SIZE,
 		    ATTR_MALLOC_NOTHROW_LIST)
-#endif
 
 DEF_LIB_BUILTIN(BUILT_IN_ABS,
 		"__builtin_abs",

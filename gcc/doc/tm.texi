@@ -2936,12 +2936,6 @@ want to support call frame debugging information like that provided by
 DWARF 2.
 @end defmac
 
-@defmac SMALL_STACK
-Define this macro if the stack size for the target is very small.  This
-has the effect of disabling gcc's built-in @samp{alloca}, though
-@samp{__builtin_alloca} is not affected.
-@end defmac
-
 @node Exception Handling
 @subsection Exception Handling Support
 @cindex exception handling

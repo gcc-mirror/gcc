@@ -1,3 +1,9 @@
+2003-07-20  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.def (BUILT_IN_ALLOCA): Remove "#if SMALL_STACK" form.
+	* system.h (SMALL_STACK): Poison obsolete target macro.
+	* doc/tm.texi (SMALL_STACK): Remove target macro documentation.
+
 2003-07-20  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure.in:  Cache the results of testing for cmp's capabilities.
