@@ -1,3 +1,9 @@
+2003-10-12  Andreas Jaeger  <aj@suse.de>
+
+	* Make-lang.in (treelang.install-info): Remove reference to
+	treelang.info.
+	(treelang.): Removed.
+
 2003-10-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (treelang.info): Replace with ...
