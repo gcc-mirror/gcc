@@ -176,10 +176,9 @@ namespace _GLIBCXX_STD
       else if (__n > size())
 	{
 	  std::fill(begin(), end(), __val);
-	  this->_M_impl._M_finish = std::uninitialized_fill_n(this->
-							      _M_impl._M_finish,
-							      __n - size(),
-							      __val);
+	  std::uninitialized_fill_n(this->_M_impl._M_finish,
+				    __n - size(), __val);
+	  this->_M_impl._M_finish += __n - size();
 	}
       else
         erase(fill_n(begin(), __n, __val), end());
@@ -336,15 +335,15 @@ namespace _GLIBCXX_STD
 		{
 		  __new_finish = std::uninitialized_copy(begin(), __position,
 							 __new_start);
-		  __new_finish = std::uninitialized_fill_n(__new_finish, __n,
-							   __x);
+		  std::uninitialized_fill_n(__new_finish, __n, __x);
+		  __new_finish += __n;
 		  __new_finish = std::uninitialized_copy(__position, end(),
 							 __new_finish);
 		}
 	      catch(...)
 		{
-		  std::_Destroy(__new_start,__new_finish);
-		  _M_deallocate(__new_start.base(),__len);
+		  std::_Destroy(__new_start, __new_finish);
+		  _M_deallocate(__new_start.base(), __len);
 		  __throw_exception_again;
 		}
 	      std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish);

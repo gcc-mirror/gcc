@@ -82,7 +82,7 @@ namespace std
       _ForwardIterator __cur = __result;
       try
 	{
-	  for ( ; __first != __last; ++__first, ++__cur)
+	  for (; __first != __last; ++__first, ++__cur)
 	    std::_Construct(&*__cur, *__first);
 	  return __cur;
 	}
@@ -145,7 +145,7 @@ namespace std
       _ForwardIterator __cur = __first;
       try
 	{
-	  for ( ; __cur != __last; ++__cur)
+	  for (; __cur != __last; ++__cur)
 	    std::_Construct(&*__cur, __x);
 	}
       catch(...)
@@ -190,7 +190,7 @@ namespace std
       _ForwardIterator __cur = __first;
       try
 	{
-	  for ( ; __n > 0; --__n, ++__cur)
+	  for (; __n > 0; --__n, ++__cur)
 	    std::_Construct(&*__cur, __x);
 	  return __cur;
 	}
@@ -206,17 +206,17 @@ namespace std
    *  @param  first  An input iterator.
    *  @param  n      The number of copies to make.
    *  @param  x      The source value.
-   *  @return   first+n
+   *  @return   Nothing.
    *
    *  Like fill_n(), but does not require an initialized output range.
   */
   template<typename _ForwardIterator, typename _Size, typename _Tp>
-    inline _ForwardIterator
+    inline void
     uninitialized_fill_n(_ForwardIterator __first, _Size __n, const _Tp& __x)
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
       typedef typename __type_traits<_ValueType>::is_POD_type _Is_POD;
-      return std::__uninitialized_fill_n_aux(__first, __n, __x, _Is_POD());
+      std::__uninitialized_fill_n_aux(__first, __n, __x, _Is_POD());
     }
 
   // Extensions: __uninitialized_copy_copy, __uninitialized_copy_fill,
