@@ -513,6 +513,7 @@ struct cpp_options {
 #define CPP_WARN_UNDEF(PFILE) (CPP_OPTIONS(PFILE)->warn_undef)
 #define CPP_C89(PFILE) (CPP_OPTIONS(PFILE)->c89)
 #define CPP_PEDANTIC(PFILE) (CPP_OPTIONS (PFILE)->pedantic)
+#define CPP_PREPROCESSED(PFILE) (CPP_OPTIONS (PFILE)->preprocessed)
 #define CPP_PRINT_DEPS(PFILE) (CPP_OPTIONS (PFILE)->print_deps)
 
 /* List of directories to look for include files in. */
