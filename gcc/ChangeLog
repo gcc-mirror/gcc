@@ -1,3 +1,21 @@
+Thu Feb 25 21:52:54 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (PASS_IN_REG_P):  For TARGET_HITACHI, don't pass structures
+	in registers.
+
+	* expr.h (PRETEND_OUTGOING_VARARGS_NAMED): Provide default definition.
+	* function.c (assign_parms): Honour PRETEND_OUTGOING_VARARGS_NAMED.
+	* calls.c (expand_call): Likewise.
+
+	* sh.c (sh_expand_prologue): For TARGET_HITACHI, don't push varargs /
+	stdarg arguments.
+	* sh.h (CPP_SPEC): Add -D__HITACHI__ for -mhitachi.
+	(FUNCTION_ARG):  For TARGET_HITACHI, don't pass unnamed
+	arguments in registers.
+	(PRETEND_OUTGOING_VARARGS_NAMED): Define.
+	* va-sh.h (entire file): If __HITACHI__ is defined, use sh[123]
+	flavour varargs.
+
 Thu Feb 25 14:32:40 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cse.c (dump_class): Revert last change and make the prototype

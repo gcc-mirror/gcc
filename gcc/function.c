@@ -4096,6 +4096,7 @@ assign_parms (fndecl, second_time)
       int did_conversion = 0;
       tree passed_type = DECL_ARG_TYPE (parm);
       tree nominal_type = TREE_TYPE (parm);
+      int pretend_named;
 
       /* Set LAST_NAMED if this is last named arg before some
 	 anonymous args.  */
@@ -4217,6 +4218,7 @@ assign_parms (fndecl, second_time)
 	 In this case, we call FUNCTION_ARG with NAMED set to 1 instead of
 	 0 as it was the previous time.  */
 
+      pretend_named = named_arg || PRETEND_OUTGOING_VARARGS_NAMED;
       locate_and_pad_parm (nominal_mode, passed_type,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
 			   1,
@@ -4224,12 +4226,11 @@ assign_parms (fndecl, second_time)
 #ifdef FUNCTION_INCOMING_ARG
 			   FUNCTION_INCOMING_ARG (args_so_far, promoted_mode,
 						  passed_type,
-						  (named_arg
-						   || varargs_setup)) != 0,
+						  pretend_named) != 0,
 #else
 			   FUNCTION_ARG (args_so_far, promoted_mode,
 					 passed_type,
-					 named_arg || varargs_setup) != 0,
+					 pretend_named) != 0,
 #endif
 #endif
 			   fndecl, &stack_args_size, &stack_offset, &arg_size);
