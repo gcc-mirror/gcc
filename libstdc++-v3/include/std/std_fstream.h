@@ -93,6 +93,10 @@ namespace std
       // XXX Needed?
       bool			_M_last_overflowed;
 
+      // The position in the buffer corresponding to the external file
+      // pointer.
+      char_type*		_M_filepos;
+
     public:
       // Constructors/destructor:
       basic_filebuf();
@@ -137,8 +141,21 @@ namespace std
       // underflow() and uflow() functions are called to get the next
       // charater from the real input source when the buffer is empty.
       // Buffered input uses underflow()
+
+      // The only difference between underflow() and uflow() is that the
+      // latter bumps _M_in_cur after the read.  In the sync_with_stdio
+      // case, this is important, as we need to unget the read character in
+      // the underflow() case in order to maintain synchronization.  So
+      // instead of calling underflow() from uflow(), we create a common
+      // subroutine to do the real work.
+      int_type
+      _M_underflow_common(bool __bump);
+
       virtual int_type
-      underflow();
+      underflow() { return _M_underflow_common(false); }
+
+      virtual int_type
+      uflow() { return _M_underflow_common(true); }
 
       virtual int_type
       pbackfail(int_type __c = _Traits::eof());
@@ -189,14 +206,11 @@ namespace std
 	// the file position with the external file.
 	if (__testput && !_M_file.sync())
 	  {
-	    // Need to restore current position. This interpreted as
-	    // the position of the external byte sequence (_M_file)
-	    // plus the offset in the current internal buffer
-	    // (_M_out_beg - _M_out_cur)
-	    streamoff __cur = _M_file.seekoff(0, ios_base::cur);
-	    off_type __off = _M_out_cur - _M_out_beg;
+	    // Need to restore current position after the write.
+	    off_type __off = _M_out_cur - _M_out_end;
 	    _M_really_overflow();
-	    _M_file.seekpos(__cur + __off);
+	    if (__off)
+	      _M_file.seekoff(__off, ios_base::cur);
 	  }
 	_M_last_overflowed = false;
 	return 0;
@@ -235,6 +249,50 @@ namespace std
 
       void
       _M_output_unshift();
+
+      // These three functions are used to clarify internal buffer
+      // maintenance. After an overflow, or after a seekoff call that
+      // started at beg or end, or possibly when the stream becomes
+      // unbuffered, and a myrid other obscure corner cases, the
+      // internal buffer does not truly reflect the contents of the
+      // external buffer. At this point, for whatever reason, it is in
+      // an indeterminate state.
+      void
+      _M_set_indeterminate(void)
+      {
+	if (_M_mode & ios_base::in)
+	  this->setg(_M_buf, _M_buf, _M_buf);
+	if (_M_mode & ios_base::out)
+	  this->setp(_M_buf, _M_buf);
+	_M_filepos = _M_in_end;
+      }
+
+      void
+      _M_set_determinate(off_type __off)
+      {
+	bool __testin = _M_mode & ios_base::in;
+	bool __testout = _M_mode & ios_base::out;
+	if (__testin)
+	  this->setg(_M_buf, _M_buf, _M_buf + __off);
+	if (__testout)
+	  this->setp(_M_buf, _M_buf + __off);
+	_M_filepos = _M_in_end;
+      }
+
+      bool
+      _M_is_indeterminate(void)
+      { 
+	bool __ret = false;
+	// Don't return true if unbuffered.
+	if (_M_buf)
+	  {
+	    if (_M_mode & ios_base::in)
+	      __ret = _M_in_beg == _M_in_cur && _M_in_cur == _M_in_end;
+	    if (_M_mode & ios_base::out)
+	      __ret = _M_out_beg == _M_out_cur && _M_out_cur == _M_out_end;
+	  }
+	return __ret;
+      }
     };
 
 
