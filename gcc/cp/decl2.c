@@ -2774,8 +2774,6 @@ extern int parse_time, varconst_time;
 extern tree pending_templates;
 extern tree maybe_templates;
 
-extern struct obstack permanent_obstack;
-
 static tree
 get_sentry (base)
      tree base;
@@ -2787,7 +2785,8 @@ get_sentry (base)
   tree sentry = IDENTIFIER_GLOBAL_VALUE (sname);
   if (! sentry)
     {
-      push_obstacks (&permanent_obstack, &permanent_obstack);
+      push_obstacks_nochange ();
+      end_temporary_allocation ();
       sentry = build_decl (VAR_DECL, sname, integer_type_node);
       TREE_PUBLIC (sentry) = 1;
       DECL_ARTIFICIAL (sentry) = 1;

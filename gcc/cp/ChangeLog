@@ -1,3 +1,8 @@
+Mon May 18 23:22:52 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (get_sentry): Use end_temporary_allocation.
+	Don't declare permanent_obstack.
+
 Mon May 18 12:28:44 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* parse.y (.finish_new_placement): New non-terminal.
