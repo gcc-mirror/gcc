@@ -3,22 +3,6 @@
 	* libU77/sys_clock_.c: Replace TIMES conditional stuff removed in
 	error by last change.
 
-1998-07-07  Dave Love  <d.love@dl.ac.uk>
-
-	* configure.in: Remove much into lib[IF]77/configure.in.
-	Configure subdirs.  Change ranlib handling.
-
-	* Makefile.in: Rewrite to punt most things to subdirs/sub-makes
-	where dependencies will be checked so rebuilding gets done more
-	reliably and make can be invoked in the (sub-)build directories.
-	Some simplification of variables.
-
-	* libF77/conigure.in, libI77/conigure.in, libU77/stamp-h.in: New
-	file.
-
-	* libF77/Makefile.in, libI77/Makefile.in, libU77/Makefile.in:
-	Rewrite in step with changes to parent.
-
 1998-07-06  Dave Love  <d.love@dl.ac.uk>
 
 	* libU77/Makefile.in (lib): Change variable lib to LIBS.
