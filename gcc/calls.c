@@ -64,6 +64,9 @@ struct arg_data
      This is not the same register as for normal calls on machines with
      register windows.  */
   rtx tail_call_reg;
+  /* If REG is a PARALLEL, this is a copy of VALUE pulled into the correct
+     form for emit_group_move.  */
+  rtx parallel_value;
   /* If REG was promoted from the actual mode of the argument expression,
      indicates whether the promotion is sign- or zero-extended.  */
   int unsignedp;
@@ -686,7 +689,7 @@ precompute_register_parameters (int num_actuals, struct arg_data *args,
 	if (GET_CODE (args[i].reg) == PARALLEL)
 	  {
 	    tree type = TREE_TYPE (args[i].tree_value);
-	    args[i].value
+	    args[i].parallel_value
 	      = emit_group_load_into_temps (args[i].reg, args[i].value,
 					    type, int_size_in_bytes (type));
 	  }
@@ -1466,7 +1469,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	     locations.  The Irix 6 ABI has examples of this.  */
 
 	  if (GET_CODE (reg) == PARALLEL)
-	    emit_group_move (reg, args[i].value);
+	    emit_group_move (reg, args[i].parallel_value);
 
 	  /* If simple case, just do move.  If normal partial, store_one_arg
 	     has already loaded the register for us.  In all other cases,
@@ -4185,6 +4188,14 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	 like that.  It's not clear that this is always correct.  */
       if (partial == 0)
 	arg->value = arg->stack_slot;
+    }
+
+  if (arg->reg && GET_CODE (arg->reg) == PARALLEL)
+    {
+      tree type = TREE_TYPE (arg->tree_value);
+      arg->parallel_value
+	= emit_group_load_into_temps (arg->reg, arg->value, type,
+				      int_size_in_bytes (type));
     }
 
   /* Mark all slots this store used.  */
