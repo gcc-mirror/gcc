@@ -341,9 +341,8 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	  if (GET_MODE (op0) == BLKmode
 	      || GET_MODE_SIZE (GET_MODE (op0)) > GET_MODE_SIZE (maxmode))
 	    bestmode
-	      = get_best_mode (bitsize, bitnum,
-			       align * BITS_PER_UNIT, maxmode,
-			       GET_CODE (op0) == MEM && MEM_VOLATILE_P (op0));
+	      = get_best_mode (bitsize, bitnum, align * BITS_PER_UNIT, maxmode,
+			       MEM_VOLATILE_P (op0));
 	  else
 	    bestmode = GET_MODE (op0);
 
@@ -914,8 +913,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 			  > GET_MODE_SIZE (maxmode)))
 		    bestmode = get_best_mode (bitsize, bitnum,
 					      align * BITS_PER_UNIT, maxmode,
-					      (GET_CODE (xop0) == MEM
-					       && MEM_VOLATILE_P (xop0)));
+					      MEM_VOLATILE_P (xop0));
 		  else
 		    bestmode = GET_MODE (xop0);
 
@@ -1042,8 +1040,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 			  > GET_MODE_SIZE (maxmode)))
 		    bestmode = get_best_mode (bitsize, bitnum,
 					      align * BITS_PER_UNIT, maxmode,
-					      (GET_CODE (xop0) == MEM
-					       && MEM_VOLATILE_P (xop0)));
+					      MEM_VOLATILE_P (xop0));
 		  else
 		    bestmode = GET_MODE (xop0);
 
