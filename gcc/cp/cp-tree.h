@@ -4044,7 +4044,7 @@ extern void note_list_got_semicolon		PARAMS ((tree));
 extern void do_pending_lang_change		PARAMS ((void));
 extern void see_typename			PARAMS ((void));
 extern tree do_identifier			PARAMS ((tree, int, tree));
-extern tree do_scoped_id			PARAMS ((tree, int));
+extern tree do_scoped_id			PARAMS ((tree, tree));
 extern tree identifier_typedecl_value		PARAMS ((tree));
 extern tree build_lang_decl			PARAMS ((enum tree_code, tree, tree));
 extern void retrofit_lang_decl			PARAMS ((tree));
