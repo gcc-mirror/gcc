@@ -1,5 +1,6 @@
 2004-04-04  Richard Sandiford  <rsandifo@redhat.com>
 
+	PR target/19537
 	* Makefile.in (tree-ssa-loop-ivopts.o): Depend on langhooks.h.
 	* tree-ssa-loop-ivopts.c: Include langhooks.h.
 	(add_standard_iv_candidates_for_size): New function, extracting code
