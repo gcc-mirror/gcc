@@ -3651,6 +3651,7 @@ do {									\
 #define SDATA_SECTION_ASM_OP	"\t.sdata"	/* small data */
 #define RDATA_SECTION_ASM_OP	"\t.rdata"	/* read-only data */
 #define READONLY_DATA_SECTION	rdata_section
+#define SMALL_DATA_SECTION	sdata_section
 
 /* What other sections we support other than the normal .data/.text.  */
 
