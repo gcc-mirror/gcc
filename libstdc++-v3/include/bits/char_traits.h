@@ -36,28 +36,14 @@
 
 #pragma GCC system_header
 
-#include <bits/std_cwchar.h> 	// For mbstate_t.
 #include <bits/std_cstring.h> 	// For memmove, memset, memchr
-#include <bits/fpos.h> 		// For streamoff, streamsize
+#include <bits/fpos.h> 		// For streampos
 
-namespace std {
-
-  // Same as iosfwd
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
-  // Can't have self-recursive types for streampos. 
-  // 21.1.3.1 char_traits sets size_type to streampos
-  // 27.4.1 
-  // And here, where streampos is typedefed to fpos<traits::state_type>
-    typedef fpos<mbstate_t> 	streampos;
-#  ifdef _GLIBCPP_USE_WCHAR_T
-    typedef fpos<mbstate_t> 	wstreampos;
-#  endif
-#endif
-
+namespace std 
+{
   // 21.1.2 Basis for explicit _Traits specialization 
   // NB: That for any given actual character type this definition is
   // probably wrong.
-
   template<class _CharT>
     struct char_traits
     {
@@ -216,7 +202,7 @@ namespace std {
     {
       typedef wchar_t 		char_type;
       typedef wint_t 		int_type;
-      typedef wstreamoff 	off_type;
+      typedef streamoff 	off_type;
       typedef wstreampos 	pos_type;
       typedef mbstate_t 	state_type;
       
@@ -287,6 +273,4 @@ namespace std {
 
 } // namespace std
 
-
-#endif /* _CPP_BITS_CHAR_TRAITS_H */
-
+#endif

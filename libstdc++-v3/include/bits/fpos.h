@@ -36,14 +36,11 @@
 
 #pragma GCC system_header
 
-// Need this here as well as in std_ios because fpos is used in
-// char_traits, and char_traits is used by string, which may or may
-// not have included the std_ios file.
 #include <bits/c++io.h>
+#include <bits/std_cwchar.h> 	// For mbstate_t.
 
 namespace std
 {
-
   // 27.4.1  Types
 
   // 27.4.3  Template class fpos
@@ -80,11 +77,27 @@ namespace std
       fpos& 
       operator-=(streamoff __off) { _M_off -= __off; return *this; }
 
-      bool  
-      operator==(const fpos& __pos) const { return _M_off == __pos._M_off; }
+      fpos& 
+      operator+(streamoff __off) 
+      { 
+	fpos t(*this); 
+	return t += __off; 
+      }
+
+      fpos&      
+      operator-(streamoff __off) 
+      { 
+	fpos t(*this); 
+	return t -= __off; 
+      }
 
       bool  
-      operator!=(const fpos& __pos) const { return _M_off != __pos._M_off; }
+      operator==(const fpos& __pos) const
+      { return _M_off == __pos._M_off; }
+
+      bool  
+      operator!=(const fpos& __pos) const
+      { return _M_off != __pos._M_off; }
       
       streamoff 
       _M_position() const { return _M_off; }
@@ -93,29 +106,14 @@ namespace std
       _M_position(streamoff __off)  { _M_off = __off; }
     };
 
-  template<typename _State>
-    inline fpos<_State> 
-    operator+(const fpos<_State>& __pos, streamoff __off)
-    { 
-      fpos<_State> t(__pos); 
-      return t += __off; 
-    }
-
-  template<typename _State>
-    inline fpos<_State>
-    operator-(const fpos<_State>& __pos, streamoff __off)
-    { 
-      fpos<_State> t(__pos); 
-      return t -= __off; 
-    }
-
-  template<typename _State>
-    inline streamoff 
-    operator-(const fpos<_State>& __pos1, const fpos<_State>& __pos2)
-    { return __pos1._M_position() - __pos2._M_position(); }
-
+  // 27.2, paragraph 10 about fpos/char_traits circularity
+  typedef fpos<mbstate_t> 		streampos;
+#  ifdef _GLIBCPP_USE_WCHAR_T
+  typedef fpos<mbstate_t> 		wstreampos;
+#  endif
 }  // namespace std
 
-#endif /* _CPP_BITS_FPOS_H */
+#endif 
+
 
 
