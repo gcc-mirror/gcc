@@ -121,6 +121,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #ifndef _SIZE_T_
 #ifndef _BSD_SIZE_T_
 #ifndef _SIZE_T_DEFINED_
+#ifndef _SIZE_T_DEFINED
 #ifndef ___int_size_t_h
 #ifndef _GCC_SIZE_T
 #ifndef _SIZET_
@@ -133,6 +134,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #define _SIZE_T_
 #define _BSD_SIZE_T_
 #define _SIZE_T_DEFINED_
+#define _SIZE_T_DEFINED
 #define ___int_size_t_h
 #define _GCC_SIZE_T
 #define _SIZET_
@@ -147,6 +149,7 @@ typedef __SIZE_TYPE__ size_t;
 #endif /* _SIZET_ */
 #endif /* _GCC_SIZE_T */
 #endif /* ___int_size_t_h */
+#endif /* _SIZE_T_DEFINED */
 #endif /* _SIZE_T_DEFINED_ */
 #endif /* _BSD_SIZE_T_ */
 #endif /* _SIZE_T_ */
@@ -174,6 +177,7 @@ typedef __SIZE_TYPE__ size_t;
 #ifndef _WCHAR_T_
 #ifndef _BSD_WCHAR_T_
 #ifndef _WCHAR_T_DEFINED_
+#ifndef _WCHAR_T_DEFINED
 #ifndef _WCHAR_T_H
 #ifndef ___int_wchar_t_h
 #ifndef __INT_WCHAR_T_H
@@ -185,6 +189,7 @@ typedef __SIZE_TYPE__ size_t;
 #define _WCHAR_T_
 #define _BSD_WCHAR_T_
 #define _WCHAR_T_DEFINED_
+#define _WCHAR_T_DEFINED
 #define _WCHAR_T_H
 #define ___int_wchar_t_h
 #define __INT_WCHAR_T_H
@@ -213,6 +218,7 @@ typedef _BSD_RUNE_T_ rune_t;
 #define __WCHAR_TYPE__ int
 #endif
 typedef __WCHAR_TYPE__ wchar_t;
+#endif
 #endif
 #endif
 #endif
