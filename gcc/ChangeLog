@@ -1,3 +1,8 @@
+2005-03-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (override_options): Only warn about -mint64
+	deprecation if TARGET_INT64.
+
 2005-03-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR rtl-opt/20412
