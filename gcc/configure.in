@@ -1008,6 +1008,7 @@ changequote([,])dnl
 		;;
  	c4x-*)
  		cpu_type=c4x
+		float_format=c4x
  		tmake_file=c4x/t-c4x
  		;;
 	clipper-intergraph-clix*)
