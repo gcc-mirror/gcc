@@ -2850,7 +2850,7 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  /* If op0 is a comparison, extract the comparison arguments form it.  */
 	  if (code == NE)
 	    {
-	      if (GET_MODE (op0) == cmp_mode)
+	      if (GET_MODE (op0) == mode)
 		return simplify_rtx (op0);
 	      else
 		return simplify_gen_relational (GET_CODE (op0), mode, VOIDmode,

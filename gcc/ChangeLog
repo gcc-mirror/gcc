@@ -1,3 +1,9 @@
+2005-03-10  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR rtl-opt/20412
+	* simplify-rtx.c (simplify_relational_operation_1): Fix typo - check the
+	correct mode.
+
 2005-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/20322
