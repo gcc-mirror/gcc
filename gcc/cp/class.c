@@ -4646,7 +4646,7 @@ check_bases_and_members (t, empty_p)
 	|| TYPE_HAS_ASSIGN_REF (t));
   TYPE_HAS_REAL_ASSIGN_REF (t) |= TYPE_HAS_ASSIGN_REF (t);
   TYPE_HAS_COMPLEX_ASSIGN_REF (t)
-    |= TYPE_HAS_ASSIGN_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t);
+    |= TYPE_HAS_ASSIGN_REF (t) || TYPE_CONTAINS_VPTR_P (t);
 
   /* Synthesize any needed methods.  Note that methods will be synthesized
      for anonymous unions; grok_x_components undoes that.  */
@@ -5133,8 +5133,7 @@ layout_class_type (t, empty_p, vfuns_p,
 			     TYPE_FIELDS (t));
 
   /* CLASSTYPE_INLINE_FRIENDS is really TYPE_NONCOPIED_PARTS.  Thus,
-     we have to save this before we start modifying
-     TYPE_NONCOPIED_PARTS.  */
+     we have to save this before we zap TYPE_NONCOPIED_PARTS.  */
   fixup_inline_methods (t);
 
   /* Layout the non-static data members.  */
@@ -5232,9 +5231,6 @@ layout_class_type (t, empty_p, vfuns_p,
 
       padding = build_decl (FIELD_DECL, NULL_TREE, char_type_node);
       place_field (rli, padding);
-      TYPE_NONCOPIED_PARTS (t) 
-	= tree_cons (NULL_TREE, padding, TYPE_NONCOPIED_PARTS (t));
-      TREE_STATIC (TYPE_NONCOPIED_PARTS (t)) = 1;
     }
 
   /* Let the back-end lay out the type. Note that at this point we
@@ -5493,20 +5489,9 @@ finish_struct_1 (t)
   /* Build the VTT for T.  */
   build_vtt (t);
 
-  if (TYPE_VFIELD (t))
-    {
-      /* In addition to this one, all the other vfields should be listed.  */
-      /* Before that can be done, we have to have FIELD_DECLs for them, and
-	 a place to find them.  */
-      TYPE_NONCOPIED_PARTS (t) 
-	= tree_cons (default_conversion (TYPE_BINFO_VTABLE (t)),
-		     TYPE_VFIELD (t), TYPE_NONCOPIED_PARTS (t));
-
-      if (warn_nonvdtor && TYPE_HAS_DESTRUCTOR (t)
-	  && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 1)) == NULL_TREE)
-	cp_warning ("`%#T' has virtual functions but non-virtual destructor",
-		    t);
-    }
+  if (warn_nonvdtor && TYPE_POLYMORPHIC_P (t) && TYPE_HAS_DESTRUCTOR (t)
+      && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 1)) == NULL_TREE)
+    cp_warning ("`%#T' has virtual functions but non-virtual destructor", t);
 
   hack_incomplete_structures (t);
 

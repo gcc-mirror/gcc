@@ -1,3 +1,17 @@
+2001-08-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/3820
+	Stop using TYPE_NONCOPIED_PARTS.
+	* call.c (build_over_call): Be careful when copy constructing
+	or assigning to an empty class.
+	* class.c (check_bases_and_members): It has a
+	COMPLEX_ASSIGN_REF if it has a vptr.
+	(layout_class_type): Don't add empty class padding to
+	TYPE_NONCOPIED_PARTS.
+	(finish_struct_1): Don't add the VFIELD either.
+	* cp-tree.h (TYPE_HAS_TRIVIAL_INIT_REF): Mention _copy_
+	initialization.
+
 2001-08-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Remove -fhonor-std.

@@ -2593,7 +2593,7 @@ extern int flag_new_for_scope;
 #define TYPE_HAS_NONTRIVIAL_DESTRUCTOR(NODE) \
   (TYPE_LANG_FLAG_4(NODE))
 
-/* Nonzero for class type means that initialization of this type can use
+/* Nonzero for class type means that copy initialization of this type can use
    a bitwise copy.  */
 #define TYPE_HAS_TRIVIAL_INIT_REF(NODE) \
   (TYPE_HAS_INIT_REF (NODE) && ! TYPE_HAS_COMPLEX_INIT_REF (NODE))
