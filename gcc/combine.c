@@ -4167,6 +4167,36 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == mode)
 	return XEXP (XEXP (x, 0), 0);
 
+      /* (float_truncate:SF (float_truncate:DF foo:XF)) 
+         = (float_truncate:SF foo:XF). 
+	 This may elliminate double rounding, so it is unsafe.
+
+         (float_truncate:SF (float_extend:XF foo:DF)) 
+         = (float_truncate:SF foo:DF). 
+
+         (float_truncate:DF (float_extend:XF foo:SF)) 
+         = (float_extend:SF foo:DF). */
+      if ((GET_CODE (XEXP (x, 0)) == FLOAT_TRUNCATE
+	   && flag_unsafe_math_optimizations)
+	  || GET_CODE (XEXP (x, 0)) == FLOAT_EXTEND)
+	return simplify_gen_unary (GET_MODE_SIZE (GET_MODE (XEXP (XEXP (x, 0),
+		  					    0)))
+	    			   > GET_MODE_SIZE (mode)
+				   ? FLOAT_TRUNCATE : FLOAT_EXTEND,
+	    			   mode,
+				   XEXP (XEXP (XEXP (x, 0), 0), 0), mode);
+
+      /*  (float_truncate (float x)) is (float x)  */
+      if (GET_CODE (XEXP (x, 0)) == FLOAT
+	  && (flag_unsafe_math_optimizations
+	      || ((unsigned)significand_size (GET_MODE (XEXP (x, 0)))
+		  >= (GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (x, 0), 0)))
+		      - num_sign_bit_copies (XEXP (XEXP (x, 0), 0),
+					     GET_MODE (XEXP (XEXP (x, 0), 0)))))))
+	return simplify_gen_unary (FLOAT, mode,
+				   XEXP (XEXP (x, 0), 0),
+				   GET_MODE (XEXP (XEXP (x, 0), 0)));
+
       /* (float_truncate:SF (OP:DF (float_extend:DF foo:sf))) is
 	 (OP:SF foo:SF) if OP is NEG or ABS.  */
       if ((GET_CODE (XEXP (x, 0)) == ABS
@@ -4183,7 +4213,23 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  && GET_CODE (SUBREG_REG (XEXP (x, 0))) == FLOAT_TRUNCATE)
 	return SUBREG_REG (XEXP (x, 0));
       break;
+    case FLOAT_EXTEND:
+      /*  (float_extend (float_extend x)) is (float_extend x)
+        
+	  (float_extend (float x)) is (float x) assuming that double
+	  rounding can't happen. 
+          */
+      if (GET_CODE (XEXP (x, 0)) == FLOAT_EXTEND
+	  || (GET_CODE (XEXP (x, 0)) == FLOAT
+	      && ((unsigned)significand_size (GET_MODE (XEXP (x, 0)))
+		  >= (GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (x, 0), 0)))
+		      - num_sign_bit_copies (XEXP (XEXP (x, 0), 0),
+					     GET_MODE (XEXP (XEXP (x, 0), 0)))))))
+	return simplify_gen_unary (GET_CODE (XEXP (x, 0)), mode,
+				   XEXP (XEXP (x, 0), 0),
+				   GET_MODE (XEXP (XEXP (x, 0), 0)));
 
+      break;
 #ifdef HAVE_cc0
     case COMPARE:
       /* Convert (compare FOO (const_int 0)) to FOO unless we aren't

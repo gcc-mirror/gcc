@@ -1,3 +1,9 @@
+Mon Feb 10 11:40:18 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (combine_simplify_rtx): Simplify using
+	(float_truncate (float x)) is (float x)
+	(float_extend (float_extend x)) is (float_extend x).
+
 2003-02-10  Alan Modra  <amodra@bigpond.net.au>
 
 	* calls.c (try_to_integrate): Tidy stack_usage_map access.
