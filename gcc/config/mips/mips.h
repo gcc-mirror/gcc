@@ -2791,14 +2791,14 @@ while (0)
   mips_output_filename (STREAM, NAME)
 
 /* mips-tfile does not understand .stabd directives.  */
-#define DBX_OUTPUT_SOURCE_LINE(STREAM, LINE, COUNTER)		\
-  fprintf (STREAM, "%sLM%d:\n\t.stabn\t%d,0,%d,%sLM%d\n",	\
-	   LOCAL_LABEL_PREFIX, COUNTER, N_SLINE, LINE,		\
-	   LOCAL_LABEL_PREFIX, COUNTER)
+#define DBX_OUTPUT_SOURCE_LINE(STREAM, LINE, COUNTER) do {	\
+  dbxout_begin_stabn_sline (LINE);				\
+  dbxout_stab_value_internal_label ("LM", &COUNTER);		\
+} while (0)
 
 /* Use .loc directives for SDB line numbers.  */
 #define SDB_OUTPUT_SOURCE_LINE(STREAM, LINE)			\
-  fprintf (STREAM, "\t.loc\t%d %d", num_source_filenames, LINE)
+  fprintf (STREAM, "\t.loc\t%d %d\n", num_source_filenames, LINE)
 
 /* The MIPS implementation uses some labels for its own purpose.  The
    following lists what labels are created, and are all formed by the

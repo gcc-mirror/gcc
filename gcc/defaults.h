@@ -73,10 +73,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   } while (0)
 #endif
 
-#ifndef ASM_STABD_OP
-#define ASM_STABD_OP "\t.stabd\t"
-#endif
-
 /* This is how to output an element of a case-vector that is absolute.
    Some targets don't use this, but we have to define it anyway.  */
 

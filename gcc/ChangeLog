@@ -1,3 +1,79 @@
+2004-10-26  Zack Weinberg  <zack@codesourcery.com>
+
+	* dbxout.c: Include obstack.h.
+	(ASM_STABS_OP): Take XCOFF_DEBUGGING_INFO into account in
+	default definition.
+	(ASM_STABD_OP, NO_DBX_MAIN_SOURCE_DIRECTORY, DBX_CONTIN_CHAR):
+	Default-define here.
+	(DBX_CONTIN_LENGTH): Move definition with others.
+	(DBX_FINISH_STABS): New target macro.
+	(current_sym_code, current_sym_value, current_sym_addr)
+	(current_sym_nchars, CHARS, dbxout_continue)
+	(print_int_cst_octal, print_octal, print_wide_int)
+	(dbxout_prepare_symbol, dbxout_finish_symbol): Delete.
+	(stabstr_ob, stabstr_last_contin_point): New variables.
+	(NUMBER_FMT_LOOP): New improper macro.
+	(dbxout_int, dbxout_stab_value_zero, dbxout_stab_value_label)
+	(dbxout_stab_value_label_diff, dbxout_stab_value_internal_label)
+	(dbxout_stab_value_internal_label_diff, dbxout_stabd)
+	(dbxout_begin_stabn, dbxout_begin_stabn_sline)
+	(dbxout_begin_simple_stabs, dbxout_begin_simple_stabs_desc)
+	(dbxout_begin_complex_stabs, dbxout_finish_complex_stabs)
+	(stabstr_C, stabstr_S, stabstr_I, stabstr_D, stabstr_U, stabstr_O)
+	(stabstr_continue, DECL_ACCESSIBILITY_CHAR)
+	New functions and/or proper function-like macros.
+	(CONTIN): Use stabstr_continue, unconditionally.
+	(get_lang_number): Define unconditionally, with ATTRIBUTE_UNUSED.
+	(dbxout_init): Initialize stabstr_ob.  Check
+	NO_DBX_MAIN_SOURCE_DIRECTORY.  Only write out the Ltext label
+	if it was used.  Use the new interfaces.
+	(dbxout_source_file): Remove file argument; always write to
+	asm_out_file.  Use the new interfaces.
+	(dbxout_type_method_1): Remove second argument which is always
+	DECL_ASSEMBLER_NAME of the first argument.  Use the new interfaces.
+	(dbxout_type_methods): Remove write-only variables.  Use the
+	new interfaces.
+	(dbxout_parms): Refactor to remove code duplicated in each of
+	several successive if-else-if blocks.  Use the new interfaces.
+	(dbxout_function_end, emit_bincl_stab, dbxout_end_source_file)
+	(dbxout_source_line, dbxout_finish, dbxout_type_index)
+	(dbxout_type_fields, dbxout_range_type, dbxout_type, dbxout_type_name)
+	(dbxout_class_name_qualifiers, dbxout_symbol, dbxout_symbol_location)
+	(dbxout_symbol_name, dbxout_reg_parms, dbxout_args)
+	(dbx_output_lbrac, dbx_output_rbrac, dbxout_block):
+	Use the new interfaces.
+	* Makefile.in (dbxout.o): Update dependencies.
+
+	* defaults.h: Don't define ASM_STABD_OP.
+	* output.h: Prototype new dbxout_* interfaces.
+	* system.h: Poison DBX_OUTPUT_GCC_MARKER and DBX_FINISH_SYMBOL.
+	* varasm.c: Don't define ASM_STABS_OP.
+	(default_stabs_asm_out_constructor, default_stabs_asm_out_destructor):
+	Use the new dbxout.c interfaces.  Call sorry if neither
+	DBX_DEBUGGING_INFO nor XCOFF_DEBUGGING_INFO is defined.
+
+	* xcoffout.h: Don't define ASM_STABS_OP.
+	(DBX_FINISH_SYMBOL): Rewrite and rename DBX_FINISH_STABS.
+	(DBX_OUTPUT_MAIN_SOURCE_DIRECTORY, DBX_OUTPUT_GCC_MARKER): Delete.
+	(NO_DBX_MAIN_SOURCE_DIRECTORY, NO_DBX_GCC_MARKER): Define.
+	(DBX_OUTPUT_MAIN_SOURCE_FILE_END): Change bare block to
+	do { ... } while (0) idiom.
+
+	* config/alpha/alpha.c (num_source_filenames): Export.
+	* config/alpha/alpha.h (num_source_filenames): Declare.
+	(DBX_OUTPUT_SOURCE_LINE): Use new interfaces.
+	(SDB_OUTPUT_SOURCE_LINE): Add missing newline.
+	* config/m32r/m32r.h (DBX_OUTPUT_SOURCE_LINE): Use new interfaces.
+	Always use .debugsym.  Update commentary.
+	* config/mips/mips.h (DBX_OUTPUT_SOURCE_LINE): Use new interfaces.
+	(SDB_OUTPUT_SOURCE_LINE): Add missing newline.
+	* config/rs6000/linux64.h (DBX_OUTPUT_SOURCE_LINE, DBX_OUTPUT_BRAC):
+	Use new interfaces.
+	* config/rs6000/rs6000.c: If TARGET_MACHO, include gstab.h.
+	(macho_branch_islands): Use new interfaces.
+
+	* doc/tm.texi: Update.
+
 2004-10-26  Aldy Hernandez  <aldyh@redhat.com>
 
 	* expr.c (emit_group_store): Do not treat floats as BLKmode.
@@ -37,8 +113,8 @@
 
 2004-10-26  Fariborz Jahanian <fjahanian@apple.com>
 
-        * config/rs6000/rs6000.md (andsi3_internal8): Set CR when splitting 
-        into rotlsi3.
+	* config/rs6000/rs6000.md (andsi3_internal8): Set CR when splitting
+	into rotlsi3.
 
 2004-10-26  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -64,8 +140,8 @@
 
 2004-10-26  Aldy Hernandez  <aldyh@redhat.com>
 
-        * expr.c (emit_group_load): Handle floats.
-        (emit_group_store): Same.
+	* expr.c (emit_group_load): Handle floats.
+	(emit_group_store): Same.
 
 2004-10-26  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -147,8 +223,8 @@
 	* gcc/Makefile.in: removed ggc for cgraphunit.
 	* gcc/cgraph.c.dump_cgraph_node: removed static var analysis.
 	* gcc/cgraph.h: removed static var analysis data structures and calls.
-	* gcc/cgraphunit.c: 
-	cgraph_mark_local_and_external_functions:changed name to 
+	* gcc/cgraphunit.c:
+	cgraph_mark_local_and_external_functions:changed name to
 		cgraph_mark_local_functions
 	(print_order,convert_UIDs_in_bitmap,new_static_vars_info,
 	cgraph_reset_static_var_maps,get_global_static_vars_info,
@@ -160,8 +236,8 @@
 	removed.
 	(cgraph_optimize,init_cgraph): removed calls to static vars analysis
 	* gcc/tree-dfa.c find_referenced_vars: removed call to static vars
-	analysis 
-	* gcc/tree-flow.h static_vars_info: removed 
+	analysis
+	* gcc/tree-flow.h static_vars_info: removed
 	* gcc/tree-ssa-operands.c (add_call_clobber_ops,add_call_read_ops):
 	removed calls to static vars analysis.
 	get_call_expr_operands: removed callee variable.
@@ -228,7 +304,7 @@
 
 2004-10-25  David Billinghurst <David.Billinghurst@riotinto.com>
 
-	* config/mips/mips.c(mips_output_filename): Remove unused 
+	* config/mips/mips.c(mips_output_filename): Remove unused
 	array ltext_label_name
 
 2004-10-24  Geoffrey Keating  <geoffk@geoffk.org>
@@ -294,7 +370,7 @@
 
 2004-10-22  Eric Christopher  <echristo@redhat.com>
 
-        * config/rs6000/rs6000.c (setup_incoming_varargs): Align DFmode
+	* config/rs6000/rs6000.c (setup_incoming_varargs): Align DFmode
 	saves.
 
 2004-10-22  Aldy Hernandez  <aldyh@redhat.com>

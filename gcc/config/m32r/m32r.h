@@ -1517,25 +1517,23 @@ L2:     .word STATIC
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.global\t"
 
-/* If -Os, don't force line number labels to begin at the beginning of
-   the word; we still want the assembler to try to put things in parallel,
-   should that be possible.
-   For m32r/d, instructions are never in parallel (other than with a nop)
-   and the simulator and stub both handle a breakpoint in the middle of
-   a word so don't ever force line number labels to begin at the beginning
-   of a word.  */
+/* We do not use DBX_LINES_FUNCTION_RELATIVE or
+   dbxout_stab_value_internal_label_diff here because
+   we need to use .debugsym for the line label.  */
 
 #define DBX_OUTPUT_SOURCE_LINE(file, line, counter)			\
   do									\
     {									\
-      fprintf (file, ".stabn 68,0,%d,.LM%d-",				\
-	       line, counter);						\
-      assemble_name							\
-	(file, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));	\
-      fprintf (file, (optimize_size || TARGET_M32R)			\
-	       ? "\n\t.debugsym .LM%d\n"				\
-	       : "\n.LM%d:\n",						\
-	       counter);						\
+      char label[64];							\
+      ASM_GENERATE_INTERNAL_LABEL (label, "LM", counter);		\
+									\
+      dbxout_begin_stabn_sline (line);					\
+      assemble_name (file, label);					\
+      putc ('-', file);							\
+      assemble_name (file, begin_label);				\
+      fputs ("\n\t.debugsym ", file);					\
+      assemble_name (file, label);					\
+      putc ('\n', file);						\
     }									\
   while (0)
 

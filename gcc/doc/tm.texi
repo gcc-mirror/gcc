@@ -8049,26 +8049,36 @@ This describes file names in DBX format.
 
 @defmac DBX_OUTPUT_MAIN_SOURCE_FILENAME (@var{stream}, @var{name})
 A C statement to output DBX debugging information to the stdio stream
-@var{stream} which indicates that file @var{name} is the main source
+@var{stream}, which indicates that file @var{name} is the main source
 file---the file specified as the input file for compilation.
 This macro is called only once, at the beginning of compilation.
 
 This macro need not be defined if the standard form of output
 for DBX debugging information is appropriate.
+
+It may be necessary to refer to a label equal to the beginning of the
+text section.  You can use @samp{assemble_name (stream, ltext_label_name)}
+to do so.  If you do this, you must also set the variable
+@var{used_ltext_label_name} to @code{true}.
 @end defmac
 
-@defmac DBX_OUTPUT_MAIN_SOURCE_DIRECTORY (@var{stream}, @var{name})
-A C statement to output DBX debugging information to the stdio stream
-@var{stream} which indicates that the current directory during
-compilation is named @var{name}.
+@defmac NO_DBX_MAIN_SOURCE_DIRECTORY
+Define this macro, with value 1, if GCC should not emit an indication
+of the current directory for compilation and current source language at
+the beginning of the file.
+@end defmac
 
-This macro need not be defined if the standard form of output
-for DBX debugging information is appropriate.
+@defmac NO_DBX_GCC_MARKER
+Define this macro, with value 1, if GCC should not emit an indication
+that this object file was compiled by GCC@.  The default is to emit
+an @code{N_OPT} stab at the beginning of every source file, with
+@samp{gcc2_compiled.} for the string and value 0.
 @end defmac
 
 @defmac DBX_OUTPUT_MAIN_SOURCE_FILE_END (@var{stream}, @var{name})
 A C statement to output DBX debugging information at the end of
-compilation of the main source file @var{name}.
+compilation of the main source file @var{name}.  Output should be
+written to the stdio stream @var{stream}.
 
 If you don't define this macro, nothing special is output at the end
 of compilation, which is correct for most machines.
