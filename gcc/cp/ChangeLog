@@ -1,3 +1,7 @@
+Mon May 29 12:45:10 1995  Paul Eggert  <eggert@twinsun.com>
+
+	* Make-lang.in (c++.mostlyclean): Remove $(DEMANGLER_PROG).
+
 Wed May 24 15:55:18 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
 	* decl.c (duplicate_decls): Check simple_cst_equal result against 0.
