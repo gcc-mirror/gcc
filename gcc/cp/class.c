@@ -7564,7 +7564,7 @@ accumulate_vtbl_inits (binfo, orig_binfo, rtti_binfo, t, inits)
 				   BINFO_TYPE (orig_binfo)),
 		      20000517);
 
-  /* If it doesn't have a vpte, we don't do anything. */
+  /* If it doesn't have a vptr, we don't do anything. */
   if (!TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo)))
     return;
   
@@ -7675,14 +7675,32 @@ dfs_accumulate_vtbl_inits (binfo, orig_binfo, rtti_binfo, t, l)
 	         still be primary to something within a lost primary
 	         virtual base of RTTI_BINFO.  */
 	      tree b;
-	      tree last, orig_last;
+	      tree last = binfo;
+	      tree orig_last = orig_binfo;
 
 	      /* First, look through the bases we are primary to for a
 	     	 virtual base.  */
-	      for (b = BINFO_PRIMARY_BASE_OF (binfo), orig_last = orig_binfo;
+	      for (b = BINFO_PRIMARY_BASE_OF (binfo);
 		   b;
 		   b = BINFO_PRIMARY_BASE_OF (b))
 		{
+		  if (!TREE_VIA_VIRTUAL (b))
+		    {
+		      /* See if B is still within the hierarchy starting
+			 at RTTI_BINFO. */
+		      tree probe;
+
+		      for (probe = b; probe;
+			   probe = BINFO_INHERITANCE_CHAIN (probe))
+			if (probe == rtti_binfo)
+			  break;
+		      if (!probe)
+			{
+			  b = NULL_TREE;
+			  break;
+			}
+		    }
+		  
 		  last = b;
 		  if (orig_last)
 		    orig_last = BINFO_PRIMARY_BASE_OF (orig_last);
