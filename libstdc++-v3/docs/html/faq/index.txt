@@ -55,12 +55,12 @@
 
 1.1 What is libstdc++-v3?
 
-   The GNU Standard C++ Library v3, or libstdc++-2.90.x/2.9x, is an
-   ongoing project to implement the ISO 14882 Standard C++ library as
-   described in chapters 17 through 27 and annex D. As the library
-   reaches stable plateaus, it is captured in a snapshot and released.
-   The current release is [40]the tenth snapshot. For those who want to
-   see exactly how far the project has come, or just want the latest
+   The GNU Standard C++ Library v3, or libstdc++-2.9x, is an ongoing
+   project to implement the ISO 14882 Standard C++ library as described
+   in chapters 17 through 27 and annex D. As the library reaches stable
+   plateaus, it is captured in a snapshot and released. The current
+   release is [40]the eleventh snapshot. For those who want to see
+   exactly how far the project has come, or just want the latest
    bleeding-edge code, the up-to-date source is available over anonymous
    CVS, and can even be browsed over the Web (see below).
 
@@ -103,8 +103,8 @@
 
 1.4 How do I get libstdc++?
 
-   The tenth (and latest) snapshot of libstdc++-v3 is [45]available via
-   ftp.
+   The eleventh (and latest) snapshot of libstdc++-v3 is [45]available
+   via ftp.
 
    The [46]homepage has instructions for retrieving the latest CVS
    sources, and for browsing the CVS sources over the web.
@@ -316,55 +316,28 @@
    This is a verbatim clip from the "Status" section of the RELEASE-NOTES
    for the latest snapshot.
 New:
-- namespace std:: is now on by default.
-- choice of "C" include strategies, including the shadow header work,
-  or generic global to std mapping of required "C" types.
-- cpu/atomicity.h tweaks, additions of ia64 and arm support.
-- abstraction of atomicity.h header to support notion of os/atomicity.h files.
-- addition of backward header bits
-- use of system_header pragma
-- Conditional use of -Werror
-- preliminary support for new g++ diagnostics capabilities, including
-  -fdiagnostics-show-location=once
-- pedantic and shadow argument warning fixes
-- Ugly, yet correct mechanism for dealing with "C" math adopted,
-  including the use of builtins.
-- updates and configure/build work to support new libtool
-- addition of strstream
-- valarray work
-- complex work
-- update to SGI STL 3.3
-- libio sync between glibc/libstdc++-v3. Some divergence since initial
-  merge, but sources remain quite close.
-- IO fixes for alpha
-- wide character work for IO when using libio
-- addition of c_io_stdio and "C" IO abstraction layer.
-- auto_ptr fixes, testsuite additions
-- Attempts to use -ffunction-sections -fdata-sections and
-  --gc-sections, depending on use of GNU ld and specific features. As of
-  late, --gc-sections has been disabled due to problems with it throwing
-  away initialization sections. This work is ongoing.
-- long double support
-- sub directory removal, coherent organization of cpu and os-specific
-  files, consolidation of include directories, integration of the C++
-  support bits for operator new/delete,exceptions, etc. All includes
-  are now either in the include/* hierarchy or in libsupc++'s sub directory.
-- Support for more platforms, including irix and bsd variants.
-- filebuf tweaks to deal with variable-size buffers.
-- filebuf implementation for putbackc, etc. al.
-- ctype rewritten. Includes ctype, ctype, and others.
-- codecvt rewritten. Includes codecvt,
-  codecvt. In addition,
-  implementation-defined conversions using iconv are now supported with
-  the __enc_traits partial-specialization of the State template
-  parameter of the codecvt class. In this manner, conversions between
-  encodings such as UCS4, USC2, UNICODE, UNICODEBIG, UNICODELITTLE, etc
-  can be performed.
-- preliminary work on named locales
-- preliminary documentation for locale implementation has been established.
-- Many, many bug fixes.
-- Many, many testsuite additions and consistent VERIFY usage.
-- work on mkcheck to make it more flexible, use libtool, etc.
+---
+- preliminary doxygen documentation has been added. Running "make
+  doxygen" in the libstdc++-v3 build directory will generate HTML
+  documentation that can be used to cross-reference names and files in
+  the library.
+- a dejagnu based testing framework has been added
+- a new implementation of the concept checking code has been ported
+  from the boost libraries.
+- support for -fno-exceptions has been added
+- stdexcept was re-written
+- using deprecated or antiquated headers now gives a warning
+- the stdio interface to iostreams has been tweaked, and now works
+  with synchronized c/c++ io
+- new libsupc++ routines implementing the IA-64 C++ ABI.
+- HPUX configuration files
+- support for AIX added
+- a lot of bugs were fixed.
+- preliminary named locales implemented
+- portability improvements made to generation of <limits>
+- speedups to improve configuration time.
+- DJGPP support added.
+- support for dlopening shared libstdc++
      _________________________________________________________________
 
 4.2 Bugs in gcc/g++ (not libstdc++-v3)
@@ -545,7 +518,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
 5.6 Is libstdc++-v3 thread-safe?
 
-   Quick answer: no, as of 2.91 (tenth snapshot), the library is not
+   Quick answer: no, as of 2.92 (eleventh snapshot), the library is not
    appropriate for multithreaded access. The string class is MT-safe.
 
    This is assuming that your idea of "multithreaded" is the same as
@@ -573,7 +546,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
    Comments and suggestions are welcome, and may be sent to [83]the
    mailing list.
-   $Id: index.html,v 1.5 2001/03/25 00:01:57 pme Exp $ 
+   $Id: index.html,v 1.6 2001/04/03 00:26:56 pme Exp $ 
 
 References
 
@@ -616,12 +589,12 @@ References
   37. ../faq/index.html#5_5
   38. ../faq/index.html#5_6
   39. ../faq/index.html#5_7
-  40. ftp://gcc.gnu.org/pub/libstdc++/libstdc++-2.91.tar.gz
+  40. ftp://gcc.gnu.org/pub/libstdc++/libstdc++-2.92.tar.gz
   41. ../17_intro/DESIGN
   42. http://gcc.gnu.org/
   43. http://gcc.gnu.org/gcc-2.95/buildstat.html
   44. http://gcc.gnu.org/libstdc++/
-  45. ftp://gcc.gnu.org/pub/libstdc++/libstdc++-2.91.tar.gz
+  45. ftp://gcc.gnu.org/pub/libstdc++/libstdc++-2.92.tar.gz
   46. http://gcc.gnu.org/libstdc++/
   47. ../17_intro/contribute.html
   48. http://www.boost.org/
