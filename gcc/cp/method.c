@@ -354,8 +354,10 @@ thunk_adjust (tree ptr, bool this_adjusting,
   return ptr;
 }
 
-#ifdef ASM_OUTPUT_DEF
+/* Garbage collector tables contains thunk_labelno even when places
+   inside ifdef block.  */
 static GTY (()) int thunk_labelno;
+#ifdef ASM_OUTPUT_DEF
 
 /* Create a static alias to function.  */
 
