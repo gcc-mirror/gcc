@@ -92,17 +92,18 @@ struct hashnode {
   union hashval value;		/* pointer to expansion, or whatever */
 };
 
-extern HASHNODE *cpp_install	  PARAMS ((cpp_reader *, const U_CHAR *, int,
+extern HASHNODE *_cpp_install	  PARAMS ((cpp_reader *, const U_CHAR *, int,
 					   enum node_type, const char *));
-extern HASHNODE *cpp_lookup	  PARAMS ((cpp_reader *, const U_CHAR *, int));
-extern void free_definition	  PARAMS ((DEFINITION *));
-extern void delete_macro	  PARAMS ((HASHNODE *));
+extern HASHNODE *_cpp_lookup	  PARAMS ((cpp_reader *, const U_CHAR *, int));
+extern void _cpp_free_definition  PARAMS ((DEFINITION *));
+extern void _cpp_delete_macro	  PARAMS ((HASHNODE *));
 
-extern DEFINITION *create_definition PARAMS ((cpp_reader *, int));
-extern int compare_defs		  PARAMS ((cpp_reader *, DEFINITION *,
+extern DEFINITION *_cpp_create_definition
+				  PARAMS ((cpp_reader *, int));
+extern int _cpp_compare_defs		  PARAMS ((cpp_reader *, DEFINITION *,
 					   DEFINITION *));
-extern void macroexpand		  PARAMS ((cpp_reader *, HASHNODE *));
-extern void dump_definition	  PARAMS ((cpp_reader *, const U_CHAR *, long,
+extern void _cpp_macroexpand	  PARAMS ((cpp_reader *, HASHNODE *));
+extern void _cpp_dump_definition  PARAMS ((cpp_reader *, const U_CHAR *, long,
 					   DEFINITION *));
 
 #endif

@@ -1,4 +1,4 @@
-/* Parse C expressions for CCCP.
+/* Parse C expressions for cpplib.
    Copyright (C) 1987, 92, 94, 95, 97, 98, 1999, 2000 Free Software Foundation.
 
 This program is free software; you can redistribute it and/or modify it
@@ -65,11 +65,11 @@ Written by Per Bothner 1994.  */
 #endif
 
 #define MAX_CHAR_TYPE_MASK (MAX_CHAR_TYPE_SIZE < HOST_BITS_PER_WIDEST_INT \
-			    ? (~ (~ (HOST_WIDEST_INT) 0 << MAX_CHAR_TYPE_SIZE)) \
+			    ? (~(~(HOST_WIDEST_INT) 0 << MAX_CHAR_TYPE_SIZE)) \
 			    : ~ (HOST_WIDEST_INT) 0)
 
 #define MAX_WCHAR_TYPE_MASK (MAX_WCHAR_TYPE_SIZE < HOST_BITS_PER_WIDEST_INT \
-			     ? ~ (~ (HOST_WIDEST_INT) 0 << MAX_WCHAR_TYPE_SIZE) \
+			     ? ~(~(HOST_WIDEST_INT) 0 << MAX_WCHAR_TYPE_SIZE) \
 			     : ~ (HOST_WIDEST_INT) 0)
 
 /* Yield nonzero if adding two numbers with A's and B's signs can yield a
@@ -77,14 +77,19 @@ Written by Per Bothner 1994.  */
 #define possible_sum_sign(a, b, sum) ((((a) ^ (b)) | ~ ((a) ^ (sum))) < 0)
 
 static void integer_overflow PARAMS ((cpp_reader *));
-static HOST_WIDEST_INT left_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT, int, unsigned HOST_WIDEST_INT));
-static HOST_WIDEST_INT right_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT, int, unsigned HOST_WIDEST_INT));
-static struct operation parse_number PARAMS ((cpp_reader *, U_CHAR *, U_CHAR *));
-static struct operation parse_charconst PARAMS ((cpp_reader *, U_CHAR *, U_CHAR *));
+static HOST_WIDEST_INT left_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT,
+					   int, unsigned HOST_WIDEST_INT));
+static HOST_WIDEST_INT right_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT,
+					    int, unsigned HOST_WIDEST_INT));
+static struct operation parse_number PARAMS ((cpp_reader *, U_CHAR *,
+					      U_CHAR *));
+static struct operation parse_charconst PARAMS ((cpp_reader *, U_CHAR *,
+						 U_CHAR *));
 static struct operation parse_defined PARAMS ((cpp_reader *));
-static struct operation cpp_lex PARAMS ((cpp_reader *, int));
-extern HOST_WIDEST_INT cpp_parse_expr PARAMS ((cpp_reader *));
-static HOST_WIDEST_INT cpp_parse_escape PARAMS ((cpp_reader *, U_CHAR **, HOST_WIDEST_INT));
+static HOST_WIDEST_INT parse_escape PARAMS ((cpp_reader *, U_CHAR **,
+					     HOST_WIDEST_INT));
+static struct operation lex PARAMS ((cpp_reader *, int));
+
 
 #define ERROR 299
 #define OROR 300
@@ -107,12 +112,13 @@ static HOST_WIDEST_INT cpp_parse_escape PARAMS ((cpp_reader *, U_CHAR **, HOST_W
 #define SKIP_OPERAND 8
 /*#define UNSIGNEDP 16*/
 
-struct operation {
-    short op;
-    char rprio; /* Priority of op (relative to it right operand).  */
-    char flags;
-    char unsignedp;    /* true if value should be treated as unsigned */
-    HOST_WIDEST_INT value;        /* The value logically "right" of op.  */
+struct operation
+{
+  short op;
+  char rprio; /* Priority of op (relative to it right operand).  */
+  char flags;
+  char unsignedp;    /* true if value should be treated as unsigned */
+  HOST_WIDEST_INT value;        /* The value logically "right" of op.  */
 };
 
 /* Parse and convert an integer for #if.  Accepts decimal, hex, or octal
@@ -258,13 +264,7 @@ parse_charconst (pfile, start, end)
   int max_chars;
   U_CHAR *ptr = start;
 
-  /* FIXME: Should use reentrant multibyte functions.  */
-#ifdef MULTIBYTE_CHARS
-  wchar_t c = (wchar_t)-1;
-  (void) mbtowc (NULL_PTR, NULL_PTR, 0);
-#else
   int c = -1;
-#endif
 
   if (*ptr == 'L')
     {
@@ -277,22 +277,12 @@ parse_charconst (pfile, start, end)
 
   while (ptr < end)
     {
-#ifndef MULTIBYTE_CHARS
       c = *ptr++;
-#else
-      ptr += mbtowc (&c, ptr, end - ptr);
-#endif
       if (c == '\'' || c == '\0')
 	break;
       else if (c == '\\')
 	{
-	  /* Hopefully valid assumption: if mbtowc returns a backslash,
-	     we are in initial shift state.  No valid escape-sequence
-	     character can take us out of initial shift state or begin
-	     an unshifted multibyte char, so cpp_parse_escape doesn't
-	     need to know about multibyte chars.  */
-
-	  c = cpp_parse_escape (pfile, &ptr, mask);
+	  c = parse_escape (pfile, &ptr, mask);
 	  if (width < HOST_BITS_PER_INT
 	      && (unsigned int) c >= (unsigned int)(1 << width))
 	    cpp_pedwarn (pfile, "escape sequence out of range for character");
@@ -420,7 +410,7 @@ static const struct token tokentab2[] = {
 /* Read one token.  */
 
 static struct operation
-cpp_lex (pfile, skip_evaluation)
+lex (pfile, skip_evaluation)
      cpp_reader *pfile;
      int skip_evaluation;
 {
@@ -510,7 +500,7 @@ cpp_lex (pfile, skip_evaluation)
    after the zeros.  A value of 0 does not mean end of string.  */
 
 static HOST_WIDEST_INT
-cpp_parse_escape (pfile, string_ptr, result_mask)
+parse_escape (pfile, string_ptr, result_mask)
      cpp_reader *pfile;
      U_CHAR **string_ptr;
      HOST_WIDEST_INT result_mask;
@@ -681,7 +671,7 @@ right_shift (pfile, a, unsignedp, b)
    Returns the value of the expression.  */
 
 HOST_WIDEST_INT
-cpp_parse_expr (pfile)
+_cpp_parse_expr (pfile)
      cpp_reader *pfile;
 {
   /* The implementation is an operator precedence parser,
@@ -710,7 +700,7 @@ cpp_parse_expr (pfile)
       char flags = 0;
 
       /* Read a token */
-      op =  cpp_lex (pfile, skip_evaluation);
+      op =  lex (pfile, skip_evaluation);
 
       /* See if the token is an operand, in which case go to set_value.
 	 If the token is an operator, figure out its left and right
@@ -719,7 +709,7 @@ cpp_parse_expr (pfile)
       switch (op.op)
 	{
 	case NAME:
-	  cpp_ice (pfile, "cpp_lex returns a NAME");
+	  cpp_ice (pfile, "lex returns a NAME");
 	  goto syntax_error;
 	case INT:  case CHAR:
 	  goto set_value;
@@ -1027,7 +1017,7 @@ cpp_parse_expr (pfile)
 	  else
 	    {
 	      new_stack = (struct operation *) xmalloc (new_size);
-	      bcopy ((char *) stack, (char *) new_stack, old_size);
+	      memcpy (new_stack, stack, old_size);
 	    }
 	  stack = new_stack;
 	  top = (struct operation *) ((char *) new_stack + old_size);
