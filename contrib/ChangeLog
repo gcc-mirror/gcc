@@ -1,3 +1,9 @@
+2000-08-30  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>,
+	    Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc_update: Execute touch_files_reexec even if `cvs update`
+	failed.
+
 2000-08-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* test_summary: AWK breaks with filenames containing `='.
