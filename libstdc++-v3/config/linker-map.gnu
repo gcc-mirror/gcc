@@ -112,13 +112,15 @@ GLIBCXX_3.4 {
     _ZSt9has_facet*;
 
     # _Rb_tree
+    _ZSt18_Rb_tree_decrementPKSt18_Rb_tree_node_base;
     _ZSt18_Rb_tree_decrementPSt18_Rb_tree_node_base;
+    _ZSt18_Rb_tree_incrementPKSt18_Rb_tree_node_base;
     _ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base;
-    _ZSt18_Rb_tree_rebalancePSt18_Rb_tree_node_baseRS0_;
     _ZSt20_Rb_tree_black_countPKSt18_Rb_tree_node_baseS1_;
     _ZSt20_Rb_tree_rotate_leftPSt18_Rb_tree_node_baseRS0_;
     _ZSt21_Rb_tree_rotate_rightPSt18_Rb_tree_node_baseRS0_;
     _ZSt28_Rb_tree_rebalance_for_erasePSt18_Rb_tree_node_baseRS_;
+    _ZSt29_Rb_tree_insert_and_rebalancebPSt18_Rb_tree_node_baseS0_RS_;
 
     # std::__codecvt_abstract_base*
     _ZNStSt23__codecvt_abstract_base*;

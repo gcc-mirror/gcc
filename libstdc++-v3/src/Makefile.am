@@ -104,13 +104,14 @@ sources = \
 	ios_init.cc \
 	ios_locale.cc \
 	limits.cc \
+	list.cc \
 	locale.cc \
 	locale_init.cc \
 	locale_facets.cc \
 	localename.cc \
 	stdexcept.cc \
-	stl_tree.cc \
 	strstream.cc \
+	tree.cc \
 	allocator-inst.cc \
 	concept-inst.cc \
 	fstream-inst.cc \

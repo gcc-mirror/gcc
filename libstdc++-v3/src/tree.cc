@@ -82,6 +82,12 @@ namespace std
     return __x;
   }
 
+  const _Rb_tree_node_base*
+  _Rb_tree_increment(const _Rb_tree_node_base* __x)
+  {
+    return _Rb_tree_increment(const_cast<_Rb_tree_node_base*>(__x));
+  }
+
   _Rb_tree_node_base*
   _Rb_tree_decrement(_Rb_tree_node_base* __x)
   {
@@ -106,6 +112,12 @@ namespace std
         __x = __y;
       }
     return __x;
+  }
+
+  const _Rb_tree_node_base*
+  _Rb_tree_decrement(const _Rb_tree_node_base* __x)
+  {
+    return _Rb_tree_decrement(const_cast<_Rb_tree_node_base*>(__x));
   }
 
   void 
@@ -151,10 +163,43 @@ namespace std
   }
 
   void 
-  _Rb_tree_rebalance(_Rb_tree_node_base* __x, _Rb_tree_node_base*& __root)
+  _Rb_tree_insert_and_rebalance(const bool          __insert_left,
+                                _Rb_tree_node_base* __x,
+                                _Rb_tree_node_base* __p,
+                                _Rb_tree_node_base& __header)
   {
+    _Rb_tree_node_base *& __root = __header._M_parent;
+
+    // Initialize fields in new node to insert.
+    __x->_M_parent = __p;
+    __x->_M_left = 0;
+    __x->_M_right = 0;
     __x->_M_color = _S_red;
 
+    // Insert.
+    // Make new node child of parent and maintain root, leftmost and
+    // rightmost nodes.
+    // N.B. First node is always inserted left.
+    if (__insert_left)
+      {
+        __p->_M_left = __x; // also makes leftmost = __x when __p == &__header
+
+        if (__p == &__header)
+        {
+            __header._M_parent = __x;
+            __header._M_right = __x;
+        }
+        else if (__p == __header._M_left)
+          __header._M_left = __x; // maintain leftmost pointing to min node
+      }
+    else
+      {
+        __p->_M_right = __x;
+
+        if (__p == __header._M_right)
+          __header._M_right = __x; // maintain rightmost pointing to max node
+      }
+    // Rebalance.
     while (__x != __root 
 	   && __x->_M_parent->_M_color == _S_red) 
       {

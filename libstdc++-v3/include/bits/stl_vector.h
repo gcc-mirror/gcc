@@ -112,8 +112,8 @@ namespace __gnu_norm
   
   
   /**
-   *  @brief  A standard container which offers fixed time access to individual
-   *  elements in any order.
+   *  @brief A standard container which offers fixed time access to
+   *  individual elements in any order.
    *
    *  @ingroup Containers
    *  @ingroup Sequences
@@ -124,10 +124,11 @@ namespace __gnu_norm
    *  <a href="tables.html#68">optional sequence requirements</a> with the
    *  %exception of @c push_front and @c pop_front.
    *
-   *  In some terminology a %vector can be described as a dynamic C-style array,
-   *  it offers fast and efficient access to individual elements in any order
-   *  and saves the user from worrying about memory and size allocation.
-   *  Subscripting ( @c [] ) access is also provided as with C-style arrays.
+   *  In some terminology a %vector can be described as a dynamic
+   *  C-style array, it offers fast and efficient access to individual
+   *  elements in any order and saves the user from worrying about
+   *  memory and size allocation.  Subscripting ( @c [] ) access is
+   *  also provided as with C-style arrays.
   */
   template<typename _Tp, typename _Alloc = allocator<_Tp> >
     class vector : protected _Vector_base<_Tp, _Alloc>
@@ -185,7 +186,8 @@ namespace __gnu_norm
       vector(size_type __n, const value_type& __value,
 	     const allocator_type& __a = allocator_type())
       : _Base(__n, __a)
-      { this->_M_finish = std::uninitialized_fill_n(this->_M_start, __n, __value); }
+      { this->_M_finish = std::uninitialized_fill_n(this->_M_start, 
+						    __n, __value); }
   
       /**
        *  @brief  Create a %vector with default elements.
@@ -223,11 +225,12 @@ namespace __gnu_norm
        *  Create a %vector consisting of copies of the elements from
        *  [first,last).
        *
-       *  If the iterators are forward, bidirectional, or random-access, then
-       *  this will call the elements' copy constructor N times (where N is
-       *  distance(first,last)) and do no memory reallocation.  But if only
-       *  input iterators are used, then this will do at most 2N calls to the
-       *  copy constructor, and logN memory reallocations.
+       *  If the iterators are forward, bidirectional, or
+       *  random-access, then this will call the elements' copy
+       *  constructor N times (where N is distance(first,last)) and do
+       *  no memory reallocation.  But if only input iterators are
+       *  used, then this will do at most 2N calls to the copy
+       *  constructor, and logN memory reallocations.
        */
       template<typename _InputIterator>
         vector(_InputIterator __first, _InputIterator __last,
@@ -240,9 +243,10 @@ namespace __gnu_norm
 	}
       
       /**
-       *  The dtor only erases the elements, and note that if the elements
-       *  themselves are pointers, the pointed-to memory is not touched in any
-       *  way.  Managing the pointer is the user's responsibilty.
+       *  The dtor only erases the elements, and note that if the
+       *  elements themselves are pointers, the pointed-to memory is
+       *  not touched in any way.  Managing the pointer is the user's
+       *  responsibilty.
        */
       ~vector() { std::_Destroy(this->_M_start, this->_M_finish); }
   
@@ -297,8 +301,9 @@ namespace __gnu_norm
       
       // iterators
       /**
-       *  Returns a read/write iterator that points to the first element in the
-       *  %vector.  Iteration is done in ordinary element order.
+       *  Returns a read/write iterator that points to the first
+       *  element in the %vector.  Iteration is done in ordinary
+       *  element order.
        */
       iterator
       begin() { return iterator (this->_M_start); }
@@ -320,8 +325,9 @@ namespace __gnu_norm
       end() { return iterator (this->_M_finish); }
       
       /**
-       *  Returns a read-only (constant) iterator that points one past the last
-       *  element in the %vector.  Iteration is done in ordinary element order.
+       *  Returns a read-only (constant) iterator that points one past
+       *  the last element in the %vector.  Iteration is done in
+       *  ordinary element order.
        */
       const_iterator
       end() const { return const_iterator (this->_M_finish); }
@@ -343,9 +349,9 @@ namespace __gnu_norm
       rbegin() const { return const_reverse_iterator(end()); }
       
       /**
-       *  Returns a read/write reverse iterator that points to one before the
-       *  first element in the %vector.  Iteration is done in reverse element
-       *  order.
+       *  Returns a read/write reverse iterator that points to one
+       *  before the first element in the %vector.  Iteration is done
+       *  in reverse element order.
        */
       reverse_iterator
       rend() { return reverse_iterator(begin()); }
@@ -401,8 +407,8 @@ namespace __gnu_norm
       resize(size_type __new_size) { resize(__new_size, value_type()); }
       
       /**
-       *  Returns the total number of elements that the %vector can hold before
-       *  needing to allocate more memory.
+       *  Returns the total number of elements that the %vector can
+       *  hold before needing to allocate more memory.
        */
       size_type
       capacity() const
@@ -438,7 +444,8 @@ namespace __gnu_norm
       // element access
       /**
        *  @brief  Subscript access to the data contained in the %vector.
-       *  @param  n  The index of the element for which data should be accessed.
+       *  @param n The index of the element for which data should be
+       *  accessed.
        *  @return  Read/write reference to data.
        *
        *  This operator allows for easy, array-style, data access.
@@ -480,9 +487,9 @@ namespace __gnu_norm
        *  @return  Read/write reference to data.
        *  @throw  std::out_of_range  If @a n is an invalid index.
        *
-       *  This function provides for safer data access.  The parameter is first
-       *  checked that it is in the range of the vector.  The function throws
-       *  out_of_range if the check fails.
+       *  This function provides for safer data access.  The parameter
+       *  is first checked that it is in the range of the vector.  The
+       *  function throws out_of_range if the check fails.
        */
       reference
       at(size_type __n) { _M_range_check(__n); return (*this)[__n]; }
@@ -516,15 +523,15 @@ namespace __gnu_norm
       front() const { return *begin(); }
       
       /**
-       *  Returns a read/write reference to the data at the last element of the
-       *  %vector.
+       *  Returns a read/write reference to the data at the last
+       *  element of the %vector.
        */
       reference
       back() { return *(end() - 1); }
       
       /**
-       *  Returns a read-only (constant) reference to the data at the last
-       *  element of the %vector.
+       *  Returns a read-only (constant) reference to the data at the
+       *  last element of the %vector.
        */
       const_reference
       back() const { return *(end() - 1); }
@@ -557,8 +564,9 @@ namespace __gnu_norm
        *
        *  This is a typical stack operation. It shrinks the %vector by one.
        *
-       *  Note that no data is returned, and if the last element's data is
-       *  needed, it should be retrieved before pop_back() is called.
+       *  Note that no data is returned, and if the last element's
+       *  data is needed, it should be retrieved before pop_back() is
+       *  called.
        */
       void
       pop_back()
@@ -614,7 +622,8 @@ namespace __gnu_norm
        */
       template<typename _InputIterator>
         void
-        insert(iterator __position, _InputIterator __first, _InputIterator __last)
+        insert(iterator __position, _InputIterator __first, 
+	       _InputIterator __last)
         {
 	  // Check whether it's an integral type.  If so, it's not an iterator.
 	  typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
@@ -721,7 +730,8 @@ namespace __gnu_norm
         {
 	  this->_M_start = _M_allocate(__n);
 	  this->_M_end_of_storage = this->_M_start + __n;
-	  this->_M_finish = std::uninitialized_fill_n(this->_M_start, __n, __value);
+	  this->_M_finish = std::uninitialized_fill_n(this->_M_start, 
+						      __n, __value);
 	}
       
       // Called by the range constructor to implement [23.1.1]/9
@@ -774,7 +784,8 @@ namespace __gnu_norm
       // Called by the range assign to implement [23.1.1]/9
       template<typename _InputIterator>
         void
-        _M_assign_dispatch(_InputIterator __first, _InputIterator __last, __false_type)
+        _M_assign_dispatch(_InputIterator __first, _InputIterator __last, 
+			   __false_type)
         {
 	  typedef typename iterator_traits<_InputIterator>::iterator_category
 	    _IterCategory;

@@ -260,13 +260,14 @@ sources = \
 	ios_init.cc \
 	ios_locale.cc \
 	limits.cc \
+	list.cc \
 	locale.cc \
 	locale_init.cc \
 	locale_facets.cc \
 	localename.cc \
 	stdexcept.cc \
-	stl_tree.cc \
 	strstream.cc \
+	tree.cc \
 	allocator-inst.cc \
 	concept-inst.cc \
 	fstream-inst.cc \
@@ -361,13 +362,13 @@ am__objects_1 = codecvt_members.lo collate_members.lo ctype_members.lo \
 am__objects_2 = basic_file.lo c++locale.lo
 am__objects_3 = codecvt.lo complex_io.lo ctype.lo debug.lo demangle.lo \
 	functexcept.lo globals_locale.lo globals_io.lo ios.lo \
-	ios_failure.lo ios_init.lo ios_locale.lo limits.lo locale.lo \
-	locale_init.lo locale_facets.lo localename.lo stdexcept.lo \
-	stl_tree.lo strstream.lo allocator-inst.lo concept-inst.lo \
-	fstream-inst.lo ext-inst.lo io-inst.lo istream-inst.lo \
-	locale-inst.lo locale-misc-inst.lo misc-inst.lo ostream-inst.lo \
-	sstream-inst.lo streambuf-inst.lo string-inst.lo \
-	valarray-inst.lo wlocale-inst.lo wstring-inst.lo \
+	ios_failure.lo ios_init.lo ios_locale.lo limits.lo list.lo \
+	locale.lo locale_init.lo locale_facets.lo localename.lo \
+	stdexcept.lo strstream.lo tree.lo allocator-inst.lo \
+	concept-inst.lo fstream-inst.lo ext-inst.lo io-inst.lo \
+	istream-inst.lo locale-inst.lo locale-misc-inst.lo misc-inst.lo \
+	ostream-inst.lo sstream-inst.lo streambuf-inst.lo \
+	string-inst.lo valarray-inst.lo wlocale-inst.lo wstring-inst.lo \
 	$(am__objects_1) $(am__objects_2)
 am_libstdc___la_OBJECTS = $(am__objects_3)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
