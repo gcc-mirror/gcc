@@ -1,3 +1,8 @@
+2002-06-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* spew.c (remove_last_token): Use ARRAY_SIZE in lieu of explicit
+	array size calculation.
+
 2002-06-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/6892

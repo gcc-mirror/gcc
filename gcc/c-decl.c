@@ -697,7 +697,7 @@ c_decode_option (argc, argv)
   else
     {
       size_t i;
-      for (i = 0; i < sizeof (warn_options) / sizeof (warn_options[0]); i++)
+      for (i = 0; i < ARRAY_SIZE (warn_options); i++)
 	if (strncmp (p, "-W", 2) == 0 
 	    && warn_options[i].flag
 	    && (strcmp (p+2, warn_options[i].option) == 0

@@ -625,13 +625,12 @@ init_gigi_decls (long_long_float_type, exception_type)
 						      endlink))),
 	   NULL_TREE, 0, 1, 1, 0);
 
-      for (i = 0; i < sizeof gnat_raise_decls / sizeof gnat_raise_decls[0];
-	   i++)
+      for (i = 0; i < ARRAY_SIZE (gnat_raise_decls); i++)
 	gnat_raise_decls[i] = decl;
     }
   else
     /* Otherwise, make one decl for each exception reason.  */
-    for (i = 0; i < sizeof gnat_raise_decls / sizeof gnat_raise_decls[0]; i++)
+    for (i = 0; i < ARRAY_SIZE (gnat_raise_decls); i++)
       {
 	char name[17];
 
@@ -656,7 +655,7 @@ init_gigi_decls (long_long_float_type, exception_type)
     = build_qualified_type (TREE_TYPE (raise_nodefer_decl),
 			    TYPE_QUAL_VOLATILE);
 
-  for (i = 0; i < sizeof gnat_raise_decls / sizeof gnat_raise_decls[0]; i++)
+  for (i = 0; i < ARRAY_SIZE (gnat_raise_decls); i++)
     {
       TREE_THIS_VOLATILE (gnat_raise_decls[i]) = 1;
       TREE_SIDE_EFFECTS (gnat_raise_decls[i]) = 1;

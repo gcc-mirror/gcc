@@ -525,7 +525,7 @@ enum {
 static const char *const lang_names[] = {
   "c", "objc", "cp", "treelang", "cobol", "f", "ada", "java"
 };
-#define NUM_BASE_FILES (sizeof (lang_names) / sizeof (lang_names[0]))
+#define NUM_BASE_FILES ARRAY_SIZE (lang_names)
 outf_p base_files[NUM_BASE_FILES];
 
 static outf_p create_file PARAMS ((const char *, const char *));
@@ -570,7 +570,7 @@ create_file (name, oname)
   output_files = f;
 
   oprintf (f, "/* Type information for %s.\n", name);
-  for (i = 0; i < sizeof(hdr)/sizeof(hdr[0]); i++)
+  for (i = 0; i < ARRAY_SIZE (hdr); i++)
     oprintf (f, "%s", hdr[i]);
   return f;
 }
@@ -1626,8 +1626,7 @@ write_gc_root (f, v, type, name, has_length, line, if_marked)
 	  if (ap->u.a.len[0])
 	    oprintf (f, " * (%s)", ap->u.a.len);
 	  else if (ap == v->type)
-	    oprintf (f, " * (sizeof (%s) / sizeof (%s[0]))",
-		     v->name, v->name);
+	    oprintf (f, " * ARRAY_SIZE (%s)", v->name);
 	oprintf (f, ",\n");
 	oprintf (f, "    sizeof (%s", v->name);
 	for (ap = v->type; ap->kind == TYPE_ARRAY; ap = ap->u.a.p)

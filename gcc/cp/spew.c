@@ -1063,7 +1063,7 @@ remove_last_token (t)
       for (tc = &t->tokens; (*tc)->next != NULL; tc = &(*tc)->next)
 	;
       *tc = NULL;
-      t->last_pos = sizeof ((*tc)->toks) / sizeof ((*tc)->toks[0]);
+      t->last_pos = ARRAY_SIZE ((*tc)->toks);
     }
   return result;
 }

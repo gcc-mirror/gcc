@@ -1,5 +1,10 @@
 2002-06-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* c-decl.c (c_decode_option): Use ARRAY_SIZE in lieu of explicit
+	array size calculation.
+	* gengtype.c (NUM_BASE_FILES, create_file, write_gc_root):
+	Likewise.
+
 	* diagnostic.c (diagnostic_kind_text): Const-ify.
 	* gengtype.c (lang_names): Likewise.
 

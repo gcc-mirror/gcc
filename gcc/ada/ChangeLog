@@ -1,3 +1,8 @@
+2002-06-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* utils.c (init_gigi_decls): Use ARRAY_SIZE in lieu of explicit
+	array size calculation.
+
 2002-06-04  Andreas Jaeger  <aj@suse.de>
 
 	* Make-lang.in (gnatbind): Readd rule that has been lost in last
