@@ -2391,11 +2391,9 @@ schedule_block (b, file)
      high priorities to these insns to guarantee that they get scheduled last.
      If these insns are ignored, as is currently done, the register life info
      may be incorrectly computed.  */
-  if (GET_CODE (tail) == INSN
-      && GET_CODE (PATTERN (tail)) == USE
-      && next_nonnote_insn (tail) == 0)
+  if (GET_CODE (tail) == INSN && GET_CODE (PATTERN (tail)) == USE)
     {
-      /* Don't try to reorder any USE insns at the end of a function.
+      /* Don't try to reorder any USE insns at the end of any block.
 	 They must be last to ensure proper register allocation.
 	 Exclude them all from scheduling.  */
       do
