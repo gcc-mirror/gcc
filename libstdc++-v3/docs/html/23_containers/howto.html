@@ -1,17 +1,17 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
-   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 23.">
-   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 23.">
+   <meta name="GENERATOR" content="vi and eight fingers">
    <title>libstdc++-v3 HOWTO:  Chapter 23</title>
-<link REL=StyleSheet HREF="../lib3styles.css">
+<link rel=StyleSheet href="../lib3styles.css">
 </head>
 <body>
 
-<h1 CLASS="centered"><a name="top">Chapter 23:  Containers</a></h1>
+<h1 class="centered"><a name="top">Chapter 23:  Containers</a></h1>
 
 <p>Chapter 23 deals with container classes and what they offer.
 </p>
@@ -63,8 +63,8 @@
       code size or execution time.
    </p>
    <p>The result is that if all your algorithm calls look like
-      <PRE>
-   std::transform(beginof(foo), endof(foo), beginof(foo), SomeFunction);</PRE>
+      <pre>
+   std::transform(beginof(foo), endof(foo), beginof(foo), SomeFunction);</pre>
       then the type of foo can change from an array of ints to a vector
       of ints to a deque of ints and back again, without ever changing any
       client code.
@@ -84,8 +84,8 @@
       give the extra three lines and avoid confusion.
    </p>
    <p>Second, the line
-      <PRE>
-    inline unsigned int lengthof (T (&amp;)[sz]) { return sz; } </PRE>
+      <pre>
+    inline unsigned int lengthof (T (&amp;)[sz]) { return sz; } </pre>
       looks just weird!  Hint:  unused parameters can be left nameless.
    </p>
    <p>Return <a href="#top">to top of page</a> or
@@ -96,14 +96,14 @@
 <h2><a name="2">Variable-sized bitmasks</a></h2>
    <p>No, you cannot write code of the form
       <!-- Careful, the leading spaces in PRE show up directly. -->
-      <PRE>
+      <pre>
       #include &lt;bitset&gt;
 
       void foo (size_t n)
       {
           std::bitset&lt;n&gt;   bits;
           ....
-      } </PRE>
+      } </pre>
       because <code>n</code> must be known at compile time.  Your compiler is
       correct; it is not a bug.  That's the way templates work.  (Yes, it
       <em>is</em> a feature.)
@@ -117,7 +117,8 @@
         <li>Extremely weird solutions.
       </ul>
    </p>
-   <p><B>A very large N in <code>bitset&lt;N&gt;</code>.&nbsp;&nbsp;</B>  It has
+   <p><strong>A very large N in
+      <code>bitset&lt;N&gt;</code>.&nbsp;&nbsp;</strong>  It has
       been pointed out a few times in newsgroups that N bits only takes up
       (N/8) bytes on most systems, and division by a factor of eight is pretty
       impressive when speaking of memory.  Half a megabyte given over to a
@@ -136,7 +137,8 @@
       there may be zero space overhead, but it's all allocated inside the
       object.)
    </p>
-   <p><B>A container&lt;bool&gt;.&nbsp;&nbsp;</B>  The Committee made provision
+   <p><strong>A container&lt;bool&gt;.&nbsp;&nbsp;</strong>  The Committee
+      made provision
       for the space savings possible with that (N/8) usage previously mentioned,
       so that you don't have to do wasteful things like
       <code>Container&lt;char&gt;</code> or
@@ -148,14 +150,15 @@
       normal vector anymore.  There have been recent journal articles which
       discuss the problems (the ones by Herb Sutter in the May and
       July/August 1999 issues of
-      <em>C++ Report</em> cover it well).  Future revisions of the ISO C++
+      <u>C++ Report</u> cover it well).  Future revisions of the ISO C++
       Standard will change the requirement for <code>vector&lt;bool&gt;</code>
       specialization.  In the meantime, <code>deque&lt;bool&gt;</code> is
       recommended (although its behavior is sane, you probably will not get
       the space savings, but the allocation scheme is different than that
       of vector).
    </p>
-   <p><B>Extremely weird solutions.&nbsp;&nbsp;</B>  If you have access to
+   <p><strong>Extremely weird solutions.&nbsp;&nbsp;</strong>  If you have
+      access to
       the compiler and linker at runtime, you can do something insane, like
       figuring out just how many bits you need, then writing a temporary 
       source code file.  That file contains an instantiation of
@@ -260,8 +263,8 @@
 <h2><a name="4">&quot;Hinting&quot; during insertion</a></h2>
    <p>Section [23.1.2], Table 69, of the C++ standard lists this function
       for all of the associative containers (map, set, etc):
-      <PRE>
-      a.insert(p,t);</PRE>
+      <pre>
+      a.insert(p,t);</pre>
       where 'p' is an iterator into the container 'a', and 't' is the item
       to insert.  The standard says that &quot;iterator p is a hint
       pointing to where the insert should start to search,&quot; but
@@ -349,13 +352,13 @@
    </p>
    <p>For now you can simply make a temporary string object using the
       constructor expression:
-      <PRE>
+      <pre>
       std::bitset&lt;5&gt; b ( std::string(&quot;10110&quot;) );
-      </PRE>
+      </pre>
       instead of
-      <PRE>
+      <pre>
       std::bitset&lt;5&gt; b ( &quot;10110&quot; );    // invalid
-      </PRE>
+      </pre>
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
@@ -365,10 +368,10 @@
 <!-- ####################################################### -->
 
 <hr>
-<P CLASS="fineprint"><em>
+<p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
-<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<a href="mailto:libstdc++@gcc.gnu.org">the libstdc++ mailing list</a>.
 </em></p>
 
 

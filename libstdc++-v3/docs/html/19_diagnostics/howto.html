@@ -1,17 +1,17 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
-   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 19.">
-   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 19.">
+   <meta name="GENERATOR" content="vi and eight fingers">
    <title>libstdc++-v3 HOWTO:  Chapter 19</title>
-<link REL=StyleSheet HREF="../lib3styles.css">
+<link rel=StyleSheet href="../lib3styles.css">
 </head>
 <body>
 
-<h1 CLASS="centered"><a name="top">Chapter 19:  Diagnostics</a></h1>
+<h1 class="centered"><a name="top">Chapter 19:  Diagnostics</a></h1>
 
 <p>Chapter 19 deals with program diagnostics, such as exceptions
    and assertions.  You know, all the things we wish weren't even
@@ -38,20 +38,19 @@
       place).  It's good to remember that you can add your own data to
       these exceptions when extending the heirarchy:
    </p>
-   <PRE>
-   using std::runtime_error;
-   struct My_Exception : public runtime_error
+   <pre>
+   struct My_Exception : public std::runtime_error
    {
      public:
        My_Exception (const string&amp; whatarg)
-           : runtime_error(whatarg), e(errno), id(GetDataBaseID()) { }
+           : std::runtime_error(whatarg), e(errno), id(GetDataBaseID()) { }
        int  errno_at_time_of_throw() const { return e; }
        DBID id_of_thing_that_threw() const { return id; }
      protected:
        int    e;
        DBID   id;     // some user-defined type
    };
-   </PRE>
+   </pre>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
@@ -111,10 +110,10 @@
 <!-- ####################################################### -->
 
 <hr>
-<P CLASS="fineprint"><em>
+<p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
-<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<a href="mailto:libstdc++@gcc.gnu.org">the libstdc++ mailing list</a>.
 </em></p>
 
 

@@ -1,23 +1,23 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
-   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta NAME="DESCRIPTION" CONTENT="Notes for the libstdc++ extensions.">
-   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta name="DESCRIPTION" content="Notes for the libstdc++ extensions.">
+   <meta name="GENERATOR" content="vi and eight fingers">
    <title>libstdc++-v3 HOWTO:  Extensions</title>
-<link REL=StyleSheet HREF="../lib3styles.css">
+<link rel=StyleSheet href="../lib3styles.css">
 </head>
 <body>
 
-<h1 CLASS="centered"><a name="top">Extensions</a></h1>
+<h1 class="centered"><a name="top">Extensions</a></h1>
 
 <p>Here we will make an attempt at describing the non-Standard extensions to
    the library.  Some of these are from SGI's STL, some of these are GNU's,
    and some just seemed to appear on the doorstep.
 </p>
-<p><B>Before you leap in and use these</B>, be aware of two things:
+<p><strong>Before you leap in and use these</strong>, be aware of two things:
    <ol>
     <li>Non-Standard means exactly that.  The behavior, and the very
         existence, of these extensions may change with little or no
@@ -48,14 +48,14 @@
 
 <h2><a name="1">Ropes and trees and hashes, oh my!</a></h2>
    <p>The SGI headers
-     <PRE>
+     <pre>
      &lt;bvector&gt;
      &lt;hash_map&gt;
      &lt;hash_set&gt;
      &lt;rope&gt;
      &lt;slist&gt;
      &lt;tree&gt;
-     </PRE> are all here; <code>&lt;bvector&gt;</code> exposes the old bit_vector
+     </pre> are all here; <code>&lt;bvector&gt;</code> exposes the old bit_vector
       class that was used before specialization of vector&lt;bool&gt; was
       available (it's actually a typedef for the specialization now).
       <code>&lt;hash_map&gt;</code> and <code>&lt;hash_set&gt;</code>
@@ -87,17 +87,17 @@
    </p>
    <p>Why would you want to use a hashing class instead of the
       &quot;normal&quot; implementations?  Matt Austern writes:
-      <BLOCKQUOTE><em>[W]ith a well chosen hash function, hash tables
+      <blockquote><em>[W]ith a well chosen hash function, hash tables
       generally provide much better average-case performance than binary
       search trees, and much worse worst-case performance.  So if your
       implementation has hash_map, if you don't mind using nonstandard
       components, and if you aren't scared about the possibility of
       pathological cases, you'll probably get better performance from
-      hash_map.</em></BLOCKQUOTE>
+      hash_map.</em></blockquote>
    </p>
-   <p>(Side note:  for those of you wondering, <B>&quot;Why wasn't a hash
-      table included in the Standard in the first #!$@ place?&quot;</B> I'll
-      give a quick answer:  it was proposed, but too late and in too
+   <p>(Side note:  for those of you wondering, <strong>&quot;Why wasn't a hash
+      table included in the Standard in the first #!$@ place?&quot;</strong>
+      I'll give a quick answer:  it was proposed, but too late and in too
       unorganized a fashion.  Some sort of hashing will undoubtedly be
       included in a future Standard.
    </p>
@@ -309,10 +309,10 @@
 <!-- ####################################################### -->
 
 <hr>
-<P CLASS="fineprint"><em>
+<p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
-<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<a href="mailto:libstdc++@gcc.gnu.org">the libstdc++ mailing list</a>.
 </em></p>
 
 

@@ -1,17 +1,17 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <meta NAME="AUTHOR" CONTENT="pme@gcc.gnu.org (Phil Edwards)">
-   <meta NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 18.">
-   <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 18.">
+   <meta name="GENERATOR" content="vi and eight fingers">
    <title>libstdc++-v3 HOWTO:  Chapter 18</title>
-<link REL=StyleSheet HREF="../lib3styles.css">
+<link rel=StyleSheet href="../lib3styles.css">
 </head>
 <body>
 
-<h1 CLASS="centered"><a name="top">Chapter 18:  Library Support</a></h1>
+<h1 class="centered"><a name="top">Chapter 18:  Library Support</a></h1>
 
 <p>Chapter 18 deals with the functions called and objects created
    automatically during the course of a program's existence.
@@ -59,7 +59,7 @@
       not overload on pointer-vs-integer types to begin with.  He also
       offers a way to make your own magic NULL that will match pointers
       before it matches integers:
-      <PRE>
+      <pre>
    const                             // this is a const object...
    class {
    public:
@@ -76,7 +76,7 @@
                                      // taken (see Item 27)...
 
    } NULL;                           // and whose name is NULL
-      </PRE>(Cribbed from the published version of
+      </pre>(Cribbed from the published version of
       <a href="http://www.awlonline.com/cseng/meyerscddemo/">the
       Effective C++ CD</a>, reproduced here with permission.)
    </p>
@@ -87,7 +87,8 @@
       <code>foo(0);</code> instead of <code>foo(NULL);</code>, then you're back
       where you started.
    </p>
-   <p><B>Added Note:</B>  When we contacted Dr. Meyers to ask permission to
+   <p><strong>Added Note:</strong>  When we contacted Dr. Meyers to ask
+      permission to
       print this stuff, it prompted him to run this code through current
       compilers to see what the state of the art is with respect to member
       template functions.  He posted
@@ -106,12 +107,12 @@
 <hr>
 <h2><a name="2">Implementation properties</a></h2>
    <p>
-   <h3><CODE>&lt;limits&gt;</CODE></h3>
+   <h3><code>&lt;limits&gt;</code></h3>
    This header mainly defines traits classes to give access to various
    implementation defined-aspects of the fundamental types.  The
    traits classes -- fourteen in total -- are all specilizations of the 
-   template class <CODE>numeric_limits</CODE> defined as follows:
-   <PRE>
+   template class <code>numeric_limits</code> defined as follows:
+   <pre>
    template&lt;typename T&gt; struct class {
       static const bool is_specialized;
       static T max() throw();
@@ -147,7 +148,7 @@
       static const bool traps;
       static const bool tinyness_before;
       static const float_round_style round_style;
-   };</PRE>
+   };</pre>
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
@@ -171,7 +172,7 @@
             (This isn't actually new.)
         <li>The previous two actions are &quot;interleaved,&quot; that is,
             given this pseudocode:
-            <PRE>
+            <pre>
               extern "C or C++" void  f1 (void);
               extern "C or C++" void  f2 (void);
 
@@ -179,7 +180,7 @@
               atexit(f1);
               static Thing obj2;
               atexit(f2);
-            </PRE>then at a call of <code>exit()</code>, f2 will be called, then
+            </pre>then at a call of <code>exit()</code>, f2 will be called, then
             obj2 will be destroyed, then f1 will be called, and finally obj1
             will be destroyed.  If f1 or f2 allow an exception to propogate
             out of them, Bad Things happen.
@@ -221,9 +222,9 @@
    <p>By default, if one of the &quot;throwing <code>new</code>s&quot; can't
       allocate the memory requested, it tosses an instance of a
       <code>bad_alloc</code> exception (or, technically, some class derived
-      from it).  You can change this by writing your own function (called
-      a new-handler) and then registering it with <code>set_new_handler()</code>:
-      <PRE>
+      from it).  You can change this by writing your own function (called a
+      new-handler) and then registering it with <code>set_new_handler()</code>:
+      <pre>
    typedef void (*PFV)(void);
 
    static char*  safety;
@@ -242,10 +243,10 @@
    int main ()
    {
        safety = new char[500000];
-       old_handler = set_new_handler (&my_new_handler);
+       old_handler = set_new_handler (&amp;my_new_handler);
        ...
    }
-      </PRE>
+      </pre>
    </p>
    <p><code>bad_alloc</code> is derived from the base <code>exception</code>
       class defined in Chapter 19.
@@ -256,15 +257,13 @@
 
 
 
-
-
 <!-- ####################################################### -->
 
 <hr>
-<P CLASS="fineprint"><em>
+<p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
-<a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
+<a href="mailto:libstdc++@gcc.gnu.org">the libstdc++ mailing list</a>.
 </em></p>
 
 
