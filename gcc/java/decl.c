@@ -221,6 +221,7 @@ struct binding_level
 
     /* The bytecode PC that marks the end of this level. */
     int end_pc;
+    /* The bytecode PC that marks the start of this level. */
     int start_pc;
 
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
@@ -253,7 +254,7 @@ static struct binding_level *global_binding_level;
 
 static struct binding_level clear_binding_level
   = {NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE,
-       NULL_BINDING_LEVEL, 0, 0, 0, 0, LARGEST_PC, 0, 0};
+       NULL_BINDING_LEVEL, 0, 0, 0, 0, LARGEST_PC, 0};
 
 #if 0
 /* A list (chain of TREE_LIST nodes) of all LABEL_DECLs in the function
@@ -1443,7 +1444,6 @@ maybe_poplevels (pc)
 
   while (current_binding_level->end_pc <= pc)
     {
-      tree decls = getdecls ();	
       expand_end_bindings (getdecls (), 1, 0);
       maybe_end_try (current_binding_level->start_pc, pc);
       poplevel (1, 0, 0);
@@ -1462,7 +1462,6 @@ force_poplevels (start_pc)
 {
   while (current_binding_level->start_pc > start_pc)
     {
-      tree decls = getdecls ();	
       if (pedantic && current_binding_level->start_pc > start_pc)
 	warning_with_decl (current_function_decl, 
 			   "In %s: overlapped variable and exception ranges at %d",

@@ -1,3 +1,10 @@
+2000-02-09  Andrew Haley  <aph@cygnus.com>
+
+	* decl.c (clear_binding_level): Remove excess initializer.
+	(maybe_poplevels): Remove unused variable.
+	(force_poplevels): Ditto.
+	(struct binding_level): Add comment.
+	
 2000-01-25  Andrew Haley  <aph@cygnus.com>
 
         * java-except.h (struct eh_range): Add `expanded' field.
