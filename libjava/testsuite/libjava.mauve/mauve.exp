@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation.
 # Written by Tom Tromey <tromey@cygnus.com>.
 # Incorporate Mauve into libjava's DejaGNU test suite framework.
 
@@ -92,7 +92,7 @@ proc test_mauve {} {
     set env(GCJ) "$GCJ_UNDER_TEST -B$objdir/../ -I$objdir/../libgcj.zip"
 
   if {[catch {
-    system "$env(MAUVEDIR)/configure --with-gcj 2>@ stdout"
+    system "$env(MAUVEDIR)/configure --with-gcj 2>&1"
   } msg]} then {
     fail "Mauve configure"
     verbose "configure failed with $msg"
