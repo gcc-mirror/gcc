@@ -1,5 +1,12 @@
 2002-05-31  Jason Thorpe  <thorpej@wasabisystems.com>
 
+	* config.gcc (ns32k-*-netbsd*): Set tm_file to
+	"${tm_file} netbsd.h netbsd-aout.h ns32k/netbsd.h"
+	* config/ns32k/netbsd.h: Don't include ns32k/ns32k.h,
+	netbsd.h, or netbsd-aout.h.
+
+2002-05-31  Jason Thorpe  <thorpej@wasabisystems.com>
+
 	* longlong.h (count_trailing_zeros): Add missing \, and clean up
 	whitespace in __ns32000__ case.
 
