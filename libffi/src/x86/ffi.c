@@ -426,7 +426,7 @@ ffi_prep_raw_closure (ffi_raw_closure* closure,
   FFI_ASSERT (cif->abi == FFI_SYSV);
 
   // we currently don't support certain kinds of arguments for raw
-  // closures.  This should be implemented by a seperate assembly language
+  // closures.  This should be implemented by a separate assembly language
   // routine, since it would require argument processing, something we
   // don't do now for performance.
 

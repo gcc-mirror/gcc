@@ -3445,7 +3445,7 @@ process_command (argc, argv)
 		len = strlen (value);
 
 		/* Catch the case where the user has forgotten to append a
-		   directory seperator to the path.  Note, they may be using
+		   directory separator to the path.  Note, they may be using
 		   -B to add an executable name prefix, eg "i386-elf-", in
 		   order to distinguish between multiple installations of
 		   GCC in the same directory.  Hence we must check to see

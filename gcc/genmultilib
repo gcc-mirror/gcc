@@ -57,8 +57,8 @@
 # the compiler similar to exceptions. The difference being that exclusions
 # allow matching default options that genmultilib does not know about and
 # is done at runtime as opposed to being sorted out at compile time.
-# Each element in the list is a seperate exclusion rule. Each rule is
-# a list of options (sans preceding '-') seperated by a '/'. The options
+# Each element in the list is a separate exclusion rule. Each rule is
+# a list of options (sans preceding '-') separated by a '/'. The options
 # on the rule are grouped as an AND operation, and all options much match
 # for the rule to exclude a set. Options can be preceded with a '!' to
 # match a logical NOT.

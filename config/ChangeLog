@@ -1,3 +1,7 @@
+2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* acinclude.m4: Fix spelling error of "separate" as "seperate".
+
 2001-05-22  Jason Merrill  <jason_merrill@redhat.com>
 
 	* mt-linux (CXXFLAGS_FOR_TARGET): Lose -fvtable-thunks.

@@ -39,7 +39,7 @@ import gnu.gcj.awt.Buffers;
  * <li>arrays of unnormalized component samples of single pixel: these
  * samples are scaled and multiplied according to the color model, but
  * is otherwise not packed or encoded. Each element of the array is one
- * seperate component sample. The color model only operate on the
+ * separate component sample. The color model only operate on the
  * components from one pixel at a time, but using offsets, allows
  * manipulation of arrays that contain the components of more than one
  * pixel.</li>
@@ -337,7 +337,7 @@ public abstract class ColorModel implements Transparency
    * @return arrays of unnormalized component samples of single
    * pixel.  The scale and multiplication state of the samples are
    * according to the color model. Each component sample is stored
-   * as a seperate element in the array.
+   * as a separate element in the array.
    */
   public int[] getComponents(int pixel, int[] components, int offset) {
     // FIXME: implement
@@ -358,7 +358,7 @@ public abstract class ColorModel implements Transparency
    * @return arrays of unnormalized component samples of single
    * pixel.  The scale and multiplication state of the samples are
    * according to the color model. Each component sample is stored
-   * as a seperate element in the array.
+   * as a separate element in the array.
    */
   public int[] getComponents(Object pixel, int[] components, int offset)
   {
@@ -429,7 +429,7 @@ public abstract class ColorModel implements Transparency
    * @param arrays of unnormalized component samples of single
    * pixel.  The scale and multiplication state of the samples are
    * according to the color model. Each component sample is stored
-   * as a seperate element in the array.
+   * as a separate element in the array.
    *
    * @return pixel value encoded according to the color model.
    */

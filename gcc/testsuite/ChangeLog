@@ -1,3 +1,8 @@
+2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.c-torture/unsorted/unsorted.exp, lib/file-format.exp: Fix
+	spelling errors of "separate" as "seperate".
+
 2001-10-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c-torture/execute/20010122-1.c: Don't assume alloca() is

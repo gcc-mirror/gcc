@@ -80,7 +80,7 @@ public abstract class SampleModel
    *
    * This method is provided as a faster alternative to getPixel(),
    * that can be used when there is no need to decode the pixel into
-   * seperate sample values.
+   * separate sample values.
    *
    * @param obj An array to return the pixel data in. If null, an
    * array of the right type and size will be created.

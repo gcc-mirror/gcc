@@ -44,7 +44,7 @@ import java.util.StringTokenizer;
  * specification as implemented by a package. A package is considered
  * compatible with another version if the version of the specification is
  * equal or higher then the requested version. Version numbers are represented
- * as strings of positive numbers seperated by dots (e.g. "1.2.0").
+ * as strings of positive numbers separated by dots (e.g. "1.2.0").
  * The first number is called the major number, the second the minor,
  * the third the micro, etc. A version is considered higher then another
  * version if it has a bigger major number then the another version or when

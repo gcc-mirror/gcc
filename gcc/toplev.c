@@ -2728,7 +2728,7 @@ rest_of_compilation (decl)
 	DECL_DEFER_OUTPUT (decl) = 1;
 
       if (DECL_INLINE (decl))
-	/* DWARF wants seperate debugging info for abstract and
+	/* DWARF wants separate debugging info for abstract and
 	   concrete instances of all inline functions, including those
 	   declared inline but not inlined, and those inlined even
 	   though they weren't declared inline.  Conveniently, that's

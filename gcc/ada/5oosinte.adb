@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.11 $
+--                             $Revision: 1.1 $
 --                                                                          --
 --            Copyright (C) 1991-2000 Florida State University              --
 --                                                                          --
@@ -62,7 +62,7 @@ package body System.OS_Interface is
    --  So we use the standard Ada Duration type which is implemented using
    --  microseconds.
 
-   --  Shouldn't the timer be moved to a seperate package ???
+   --  Shouldn't the timer be moved to a separate package ???
 
    type Timer is record
       Handle : aliased HTIMER := NULLHANDLE;

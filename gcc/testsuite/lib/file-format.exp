@@ -19,7 +19,7 @@
 
 # This file defines a proc for determining the file format in use by the
 # target.  This is useful for tests that are only supported by certain file
-# formats.  This procedure is defined in a seperate file so that it can be
+# formats.  This procedure is defined in a separate file so that it can be
 # included by other expect library files.
 
 proc gcc_target_object_format { } { 
