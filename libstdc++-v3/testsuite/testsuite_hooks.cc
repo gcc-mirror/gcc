@@ -205,8 +205,6 @@ namespace __gnu_cxx_test
       }
     else
       throw environment_variable(string(env) + string(" to ") + string(name));
-#else
-    throw not_found("setenv");
 #endif
   }
 

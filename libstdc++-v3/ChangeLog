@@ -1,3 +1,8 @@
+2003-03-11  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/testsuite_hooks.h (run_tests_wrapped_env): Do not
+	report lack of setenv().
+
 2003-03-09  Paolo Carlini  <pcarlini@unitus.it>
 
 	* config/io/basic_file_stdio.cc: include <unistd.h>.
