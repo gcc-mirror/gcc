@@ -1,5 +1,10 @@
 2001-01-02  Jeffrey Oldham  <oldham@codesourcery.com>
 
+	* config/mips/mips.c (function_arg): Don't pass NULL_TREE to
+	host_integerp.
+
+2001-01-02  Jeffrey Oldham  <oldham@codesourcery.com>
+
 	* tm.texi (FUNCTION_ARG): Document that @var{type} can be an
 	incomplete type.
 
