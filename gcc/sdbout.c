@@ -369,7 +369,7 @@ static int
 plain_type (type)
      tree type;
 {
-  int val = plain_type_1 (type);
+  int val = plain_type_1 (type, 0);
 
   /* If we have already saved up some array dimensions, print them now.  */
   if (sdb_n_dims > 0)
@@ -449,15 +449,25 @@ sdbout_record_type_name (type)
 #endif
 }
 
+/* Return the .type value for type TYPE.
+
+   LEVEL indicates how many levels deep we have recursed into the type.
+   The SDB debug format can only represent 6 derived levels of types.
+   After that, we must output inaccurate debug info.  We deliberately
+   stop before the 7th level, so that ADA recursive types will not give an
+   infinite loop.  */
+
 static int
-plain_type_1 (type)
+plain_type_1 (type, level)
      tree type;
+     int level;
 {
   if (type == 0)
     type = void_type_node;
-  if (type == error_mark_node)
+  else if (type == error_mark_node)
     type = integer_type_node;
-  type = TYPE_MAIN_VARIANT (type);
+  else
+    type = TYPE_MAIN_VARIANT (type);
 
   switch (TREE_CODE (type))
     {
@@ -520,7 +530,10 @@ plain_type_1 (type)
     case ARRAY_TYPE:
       {
 	int m;
-	m = plain_type_1 (TREE_TYPE (type));
+	if (level >= 6)
+	  return T_VOID;
+	else
+	  m = plain_type_1 (TREE_TYPE (type), level+1);
 	if (sdb_n_dims < SDB_MAX_DIM)
 	  sdb_dims[sdb_n_dims++]
 	    = (TYPE_DOMAIN (type)
@@ -569,13 +582,21 @@ plain_type_1 (type)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       {
-	int m = plain_type_1 (TREE_TYPE (type));
+	int m;
+	if (level >= 6)
+	  return T_VOID;
+	else
+	  m = plain_type_1 (TREE_TYPE (type), level+1);
 	return PUSH_DERIVED_LEVEL (DT_PTR, m);
       }
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       {
-	int m = plain_type_1 (TREE_TYPE (type));
+	int m;
+	if (level >= 6)
+	  return T_VOID;
+	else
+	  m = plain_type_1 (TREE_TYPE (type), level+1);
 	return PUSH_DERIVED_LEVEL (DT_FCN, m);
       }
     default:
