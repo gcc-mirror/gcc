@@ -50,6 +50,7 @@ Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 
 #ifndef DIR_SEPARATOR
+# define DIR_SEPARATOR '/'
 # define IS_DIR_SEPARATOR(ch) ((ch) == '/')
 #else /* DIR_SEPARATOR */
 # ifndef DIR_SEPARATOR_2
