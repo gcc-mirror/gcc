@@ -63,12 +63,15 @@ static void output_append PARAMS ((struct output_buffer *, const char *,
 static void output_puts PARAMS ((struct output_buffer *, const char *));
 static void dump_output PARAMS ((struct output_buffer *, FILE *));
 static const char *vbuild_message_string PARAMS ((const char *, va_list));
-static const char *build_message_string PARAMS ((const char *, ...));
+static const char *build_message_string PARAMS ((const char *, ...))
+     ATTRIBUTE_PRINTF_1;
 static const char *build_location_prefix PARAMS ((const char *, int, int));
 static void voutput_notice PARAMS ((struct output_buffer *, const char *,
 				    va_list));
-static void output_printf PARAMS ((struct output_buffer *, const char *, ...));
-static void line_wrapper_printf PARAMS ((FILE *, const char *, ...));
+static void output_printf PARAMS ((struct output_buffer *, const char *, ...))
+     ATTRIBUTE_PRINTF_2;
+static void line_wrapper_printf PARAMS ((FILE *, const char *, ...))
+     ATTRIBUTE_PRINTF_2;
 static void vline_wrapper_message_with_location PARAMS ((const char *, int,
 							 int, const char *,
 							 va_list));
@@ -315,13 +318,20 @@ build_location_prefix (file, line, warn)
      int line;
      int warn;
 {
-  const char *fmt = file
-    ? (warn ? "%s:%d: warning: " : "%s:%d: ")
-    : (warn ? "%s: warning: " : "%s: ");
-
-  return file
-    ? build_message_string (fmt, file, line)
-    : build_message_string (fmt, progname);
+  if (file)
+    {
+      if (warn)
+	return build_message_string ("%s:%d: warning: ", file, line);
+      else
+	return build_message_string ("%s:%d: ", file, line);
+    }
+  else
+    {
+      if (warn)
+	return build_message_string ("%s: warning: ", progname);
+      else
+	return build_message_string ("%s: ", progname);
+    }
 }
 
 /* Format a MESSAGE into BUFFER.  Automatically wrap lines.  */
