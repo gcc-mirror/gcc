@@ -1808,7 +1808,7 @@ sh-*-rtemself*)
 	;;
 sh-*-rtems*)
 	tmake_file="sh/t-sh t-rtems"
-	tm_file="${tm_file} sh/coff.h sh/rtems.h rtems.h"
+	tm_file="${tm_file} dbxcoff.h sh/coff.h sh/rtems.h rtems.h"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
@@ -1876,7 +1876,7 @@ sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
 	esac
 	;;
 sh-*-*)
-	tm_file="${tm_file} sh/coff.h"
+	tm_file="${tm_file} dbxcoff.h sh/coff.h"
 	;;
 sparc-tti-*)
 	tm_file="${tm_file} sparc/pbd.h"
