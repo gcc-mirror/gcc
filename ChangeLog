@@ -1,3 +1,10 @@
+2004-09-19  Roger Sayle  <roger@eyesopen.com>
+
+	* config/mh-x86omitfp: New host makefile fragment.  Add
+	-fomit-frame-pointer to the default BOOT_CFLAGS.
+	* configure.in: Use it to speed up bootstrap on some IA-32 hosts.
+	* configure: Regenerate.
+
 2004-09-15  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/11572
