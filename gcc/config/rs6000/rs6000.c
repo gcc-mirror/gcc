@@ -7118,24 +7118,21 @@ void
 output_profile_hook (labelno)
      int labelno;
 {
+  if (DEFAULT_ABI == ABI_AIX)
+    {
+      char buf[30];
+      char *label_name;
+      rtx fun;
 
-   if (profile_flag && DEFAULT_ABI == ABI_AIX)
-     {
-       char *buf;
-       int length = 0;
-       rtx fun;
+      labelno += 1;
 
-       labelno += 1;
-       buf = permalloc (labelno+6);
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
+      STRIP_NAME_ENCODING (label_name, ggc_strdup (buf));
+      fun = gen_rtx_SYMBOL_REF (Pmode, label_name);
 
-       ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
-
-       fun = gen_rtx_SYMBOL_REF (Pmode, buf+1);
-
-       emit_library_call (init_one_libfunc (RS6000_MCOUNT), 0, VOIDmode, 1,
-                          fun, Pmode, Pmode);
-
-      }
+      emit_library_call (init_one_libfunc (RS6000_MCOUNT), 0, VOIDmode, 1,
+                         fun, Pmode);
+    }
 }
 
 /* Write function profiler code. */

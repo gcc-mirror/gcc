@@ -1,3 +1,10 @@
+2001-02-06  Chandrakala Chavva  <cchavva@redhat.com>
+
+	* final.c: Revert back my previous changes.
+	* output.h: Make profile_label_no extern.
+	* config/rs6000/rs6000.c (output_profile_hook): Use standard functions
+	for generating label.
+
 2001-02-06  Laurynas Biveinis  <lauras@softhome.net>
 
 	* config/i386/djgpp.h: Add comments about standard paths.
