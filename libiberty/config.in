@@ -291,6 +291,9 @@
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
 
+/* Define if you have the <malloc.h> header file.  */
+#undef HAVE_MALLOC_H
+
 /* whether byteorder is bigendian */
 #undef WORDS_BIGENDIAN
 
