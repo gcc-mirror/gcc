@@ -3103,10 +3103,10 @@ generate_classfile (tree clas, struct jcf_partial *state)
     i++;
   if (clas == object_type_node)
     i++;
-  PUT2 (i);			/* attributes_count */
-
   if (CLASS_DEPRECATED (TYPE_NAME (clas)))
     i++;
+
+  PUT2 (i);			/* attributes_count */
 
   /* generate the SourceFile attribute. */
   if (SourceFile_node == NULL_TREE) 
