@@ -428,7 +428,6 @@ extern struct c_expr c_expr_sizeof_expr (struct c_expr);
 extern struct c_expr c_expr_sizeof_type (struct c_type_name *);
 extern struct c_expr parser_build_binary_op (enum tree_code, struct c_expr,
 					     struct c_expr);
-extern void readonly_error (tree, const char *);
 extern tree build_conditional_expr (tree, tree, tree);
 extern tree build_compound_expr (tree, tree);
 extern tree c_cast_expr (struct c_type_name *, tree);
