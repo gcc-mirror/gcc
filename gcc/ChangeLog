@@ -1,3 +1,12 @@
+Fri Jan 25 08:26:19 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* builtins.c (expand_builtin_strncpy): Use integer_zerop instead
+	of compare_tree_int.
+	(expand_builtin_strncat): Likewise.
+	* c-decl.c (finish_struct): Use tree_low_cst.
+	* tree.h (compare_tree_int): Arg is unsigned HOST_WIDE_INT.
+	* tree.c (compare_tree_int): Likewise.
+
 2002-01-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload1.c (eliminate_regs_in_insn): Recognize frame pointer
@@ -5,7 +14,7 @@
 
 Fri Jan 25 20:43:56 CET 2002  Jan Hubicka  <jh@suse.cz>
 
-	* df.c (df_ref_create, df_ref_record_1, df_ref_record): Kill BB argument.
+	* df.c (df_ref_create, df_ref_record_1, df_ref_record): Kill BB arg.
 	* df.h (struct ref): Kill B.
 	(DF_REF_BB, DF_REF_BBNO): Use BLOCK_FOR_INSN.
 
