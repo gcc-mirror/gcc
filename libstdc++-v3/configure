@@ -51047,7 +51047,7 @@ _ACEOF
 	;;
     esac
     ;;
-  *-linux*)
+  *-linux* | *-uclinux*)
     #os_include_dir="os/gnu-linux"
 
 
