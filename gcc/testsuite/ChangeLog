@@ -1,3 +1,8 @@
+Fri Jul 17 14:19:32 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.dg/980626-1.c: Expect failures for all toolchains until
+	c-decl.c:grokdeclarator can handle mode attributes.
+
 Thu Jul 16 21:42:50 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980716-1.c: New test.

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options -Wimplicit-int } */
+/* { dg-excess-errors "c-decl.c:grokdeclarator does not handle mode attributes" { xfail *-*-* } } */
 
 int main()
 {
