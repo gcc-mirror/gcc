@@ -3990,14 +3990,15 @@ unsigned int
 compute_a_rotate_length (rtx *operands)
 {
   rtx src = operands[1];
+  rtx amount_rtx = operands[2];
   enum machine_mode mode = GET_MODE (src);
   int amount;
   unsigned int length = 0;
 
-  if (GET_CODE (XEXP (src, 1)) != CONST_INT)
-    return 0;
+  if (GET_CODE (amount_rtx) != CONST_INT)
+    abort ();
 
-  amount = INTVAL (XEXP (src, 1));
+  amount = INTVAL (amount_rtx);
 
   /* Clean up AMOUNT.  */
   if (amount < 0)
