@@ -105,8 +105,11 @@ public class DataInputStream extends FilterInputStream implements DataInput
 
     while (true)
       {
-	char ch = (char) read();
-	if (ch < 0 || (ch &= 0xFF) == '\n')
+	int c = read();
+	if (c < 0)	// got an EOF
+	  return strb.length() > 0 ? strb.toString() : null;
+	char ch = (char) c;
+	if ((ch &= 0xFF) == '\n')
 	  break;
 	if (ch == '\r')
 	  {
@@ -148,7 +151,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
 	strb.append(ch);
       }
 
-    return strb.length() > 0 ? strb.toString() : null;
+    return strb.length() > 0 ? strb.toString() : "";
   }
 
   public final long readLong() throws IOException
