@@ -9205,7 +9205,7 @@ reload_cse_move2add (first)
 				  (set (REGX) (REGY))
 				  (set (REGX) (PLUS (REGX) (CONST_INT B)))
 		 to
-				  (REGX) (REGY))
+				  (set (REGX) (REGY))
 				  (set (REGX) (PLUS (REGX) (CONST_INT A)))
 				  ...
 				  (set (REGX) (plus (REGX) (CONST_INT B-A)))  */
