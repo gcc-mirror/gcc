@@ -2644,8 +2644,6 @@ c_common_truthvalue_conversion (tree expr)
     case NEGATE_EXPR:
     case ABS_EXPR:
     case FLOAT_EXPR:
-    case FFS_EXPR:
-    case POPCOUNT_EXPR:
       /* These don't change whether an object is nonzero or zero.  */
       return c_common_truthvalue_conversion (TREE_OPERAND (expr, 0));
 

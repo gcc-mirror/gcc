@@ -1,3 +1,9 @@
+2003-09-18  Roger Sayle  <roger@eyesopen.com>
+
+	* com.c (ffecom_overlap_): Remove FFS_EXPR case.
+	(ffecom_tree_canonize_ref_): Likewise.
+	(ffe_truthvalue_conversion): Likewise.
+
 2003-09-01  Josef Zlomek  <zlomekj@suse.cz>
 
 	* com.c (ffecom_overlap_): Kill BIT_ANDTC_EXPR.

@@ -8494,17 +8494,7 @@ tree_expr_nonnegative_p (tree t)
   switch (TREE_CODE (t))
     {
     case ABS_EXPR:
-    case FFS_EXPR:
-    case POPCOUNT_EXPR:
-    case PARITY_EXPR:
       return 1;
-
-    case CLZ_EXPR:
-    case CTZ_EXPR:
-      /* These are undefined at zero.  This is true even if
-	 C[LT]Z_DEFINED_VALUE_AT_ZERO is set, since what we're
-	 computing here is a user-visible property.  */
-      return 0;
 
     case INTEGER_CST:
       return tree_int_cst_sgn (t) >= 0;
@@ -8649,12 +8639,21 @@ tree_expr_nonnegative_p (tree t)
 	    case BUILT_IN_EXP10:
 	    case BUILT_IN_EXP10F:
 	    case BUILT_IN_EXP10L:
-	    case BUILT_IN_POW10:
-	    case BUILT_IN_POW10F:
-	    case BUILT_IN_POW10L:
 	    case BUILT_IN_FABS:
 	    case BUILT_IN_FABSF:
 	    case BUILT_IN_FABSL:
+	    case BUILT_IN_FFS:
+	    case BUILT_IN_FFSL:
+	    case BUILT_IN_FFSLL:
+	    case BUILT_IN_PARITY:
+	    case BUILT_IN_PARITYL:
+	    case BUILT_IN_PARITYLL:
+	    case BUILT_IN_POPCOUNT:
+	    case BUILT_IN_POPCOUNTL:
+	    case BUILT_IN_POPCOUNTLL:
+	    case BUILT_IN_POW10:
+	    case BUILT_IN_POW10F:
+	    case BUILT_IN_POW10L:
 	    case BUILT_IN_SQRT:
 	    case BUILT_IN_SQRTF:
 	    case BUILT_IN_SQRTL:

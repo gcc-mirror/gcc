@@ -8525,43 +8525,6 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 	abort ();
       return temp;
 
-    case FFS_EXPR:
-      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
-      if (modifier == EXPAND_STACK_PARM)
-	target = 0;
-      temp = expand_unop (mode, ffs_optab, op0, target, 1);
-      if (temp == 0)
-	abort ();
-      return temp;
-
-    case CLZ_EXPR:
-      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
-      temp = expand_unop (mode, clz_optab, op0, target, 1);
-      if (temp == 0)
-	abort ();
-      return temp;
-
-    case CTZ_EXPR:
-      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
-      temp = expand_unop (mode, ctz_optab, op0, target, 1);
-      if (temp == 0)
-	abort ();
-      return temp;
-
-    case POPCOUNT_EXPR:
-      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
-      temp = expand_unop (mode, popcount_optab, op0, target, 1);
-      if (temp == 0)
-	abort ();
-      return temp;
-
-    case PARITY_EXPR:
-      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
-      temp = expand_unop (mode, parity_optab, op0, target, 1);
-      if (temp == 0)
-	abort ();
-      return temp;
-
       /* ??? Can optimize bitwise operations with one arg constant.
 	 Can optimize (a bitwise1 n) bitwise2 (a bitwise3 b)
 	 and (a bitwise1 b) bitwise2 b (etc)

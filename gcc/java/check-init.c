@@ -792,7 +792,6 @@ check_init (tree exp, words before)
     case FIX_FLOOR_EXPR:
     case FIX_ROUND_EXPR:
     case ABS_EXPR:
-    case FFS_EXPR:
       /* Avoid needless recursion. */
       exp = TREE_OPERAND (exp, 0);
       goto again;

@@ -6130,7 +6130,6 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
     case ABS_EXPR:
     case MAX_EXPR:
     case MIN_EXPR:
-    case FFS_EXPR:
 
     case BIT_AND_EXPR:
     case BIT_IOR_EXPR:
