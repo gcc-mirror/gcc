@@ -171,7 +171,7 @@ target_libs="target-libiberty \
 # list belongs in this list.  those programs are also very likely
 # candidates for the "native_only" list which follows
 #
-target_tools="target-examples target-groff target-gperf"
+target_tools="target-examples target-groff target-gperf target-rda"
 
 ################################################################################
 
@@ -201,7 +201,7 @@ fi
 
 # We always want to use the same name for this directory, so that dejagnu
 # can reliably find it.
-target_subdir=${target_alias}
+target_subdir=${target}
 
 if test ! -d ${target_subdir} ; then
   if mkdir ${target_subdir} ; then true
@@ -211,8 +211,7 @@ if test ! -d ${target_subdir} ; then
   fi
 fi
 
-build_prefix=build-
-build_subdir=${build_prefix}${build_alias}
+build_subdir=build-${build}
 
 if test x"${build_alias}" != x"${host}" ; then
   if test ! -d ${build_subdir} ; then
@@ -258,7 +257,7 @@ esac
 
 # Some tools are only suitable for building in a "native" situation.
 # Remove these if host!=target.  
-native_only="autoconf automake libtool fileutils find gawk gettext grep gzip hello indent m4 rcs recode sed shellutils tar textutils uudecode wdiff gprof target-groff guile perl time ash bash bzip2 prms snavigator gnuserv target-gperf target-rda"
+native_only="autoconf automake libtool fileutils find gawk gettext grep gzip hello indent m4 rcs recode sed shellutils tar textutils uudecode wdiff gprof target-groff guile perl time ash bash bzip2 prms snavigator gnuserv target-gperf"
 
 # Similarly, some are only suitable for cross toolchains.
 # Remove these if host=target.
