@@ -1284,7 +1284,9 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 		 But if ARG_VALS[I] overlaps TARGET, these assumptions are
 		 wrong, so put ARG_VALS[I] into a fresh register.  */
 	      || (target != 0
-		  && ! CONSTANT_P (arg_vals[i])
+		  && (GET_CODE (arg_vals[i]) == REG
+		      || GET_CODE (arg_vals[i]) == SUBREG
+		      || GET_CODE (arg_vals[i]) == MEM)
 		  && reg_overlap_mentioned_p (arg_vals[i], target))
 	      /* ??? We must always copy a SUBREG into a REG, because it might
 		 get substituted into an address, and not all ports correctly
