@@ -235,7 +235,7 @@ public final class Subject implements Serializable
    */
   public static Object doAsPrivileged (final Subject subject,
                                        final PrivilegedExceptionAction action,
-                                       final AccessControlContext acc)
+				       AccessControlContext acc)
     throws PrivilegedActionException
   {
     final SecurityManager sm = System.getSecurityManager();
@@ -243,6 +243,8 @@ public final class Subject implements Serializable
       {
         sm.checkPermission (new AuthPermission ("doAsPrivileged"));
       }
+    if (acc == null)
+      acc = new AccessControlContext (new java.security.ProtectionDomain[0]);
     AccessControlContext context =
       new AccessControlContext (acc, new SubjectDomainCombiner (subject));
     return AccessController.doPrivileged (action, context);

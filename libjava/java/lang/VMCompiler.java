@@ -142,7 +142,8 @@ final class VMCompiler
   {
     Class c = null;
     SharedLibHelper helper 
-      = SharedLibHelper.findHelper (loader, fileName, domain.getCodeSource());
+	= SharedLibHelper.findHelper (loader, fileName, domain.getCodeSource(), 
+				      domain, false);
     c = helper.findClass (className);
     if (c != null)
       {

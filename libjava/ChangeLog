@@ -1,5 +1,38 @@
 2005-02-16  Andrew Haley  <aph@redhat.com>
 
+
+2005-02-08  Andrew Haley  <aph@redhat.com>
+
+	* javax/security/auth/Subject.java (doAsPrivileged): If acc is
+	null, create a new AccessControlContext.
+	* java/security/SecureClassLoader.java (protectionDomainCache):
+	new field.
+	(defineClass): Create a new protection domain and add it to our
+	cache.
+
+	* java/rmi/server/UnicastRemoteObject.java (exportObject): Call
+	addStub() to keep track of the stub we've exported.
+	(unexportObject): Call deleteStub().
+	* java/rmi/server/RemoteObject.java (stubs): New field.
+	(addStub): New method.
+	(deleteStub): New method.
+	(toStub): Rewrite.
+	
+	* java/lang/VMCompiler.java (loadSharedLibrary): Pass
+	true to findHelper (tryParents).
+	* gnu/gcj/runtime/SharedLibLoader.java (SharedLibLoader):
+	Likewise.
+	* java/net/URLClassLoader.java (SoURLLoader): Likewise.
+	* gnu/gcj/runtime/SharedLibHelper.java (SharedLibHelper): Pass
+	ProtectionDomain.  
+	If tryParents is false, don't scan parent class loaders.
+
+	* java/security/Permissions.java (PermissionsHash.implies):
+	Iterate over the collection and invoke implies() on each
+	element.
+
+2005-02-16  Andrew Haley  <aph@redhat.com>
+
 	* gnu/gcj/runtime/PersistentByteMap.java (name, values, fc): new
 	fields.
 	(PersistentByteMap): Set name

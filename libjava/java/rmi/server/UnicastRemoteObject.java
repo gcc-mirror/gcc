@@ -98,7 +98,9 @@ public static RemoteStub exportObject(Remote obj) throws RemoteException {
       {
 	sref = new UnicastServerRef(new ObjID (), port, ssf);
       }
-    return (sref.exportObject (obj)); 
+    Remote stub = sref.exportObject (obj); 
+    addStub(obj, stub);
+    return stub;
   }
 
   /**
@@ -116,12 +118,15 @@ public static RemoteStub exportObject(Remote obj) throws RemoteException {
   {
     if (obj instanceof RemoteObject)
       {
+	deleteStub(obj);
 	UnicastServerRef sref = (UnicastServerRef)((RemoteObject)obj).getRef();
 	return sref.unexportObject(obj, force);
       }
     else
-      //FIX ME
-      ;
+      {
+	//FIX ME
+	;
+      }
     return true;
   }
 

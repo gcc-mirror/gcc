@@ -28,13 +28,15 @@ public class SharedLibHelper
    * @parem flags passed to dlopen
    */
   SharedLibHelper(String libname, ClassLoader parent, CodeSource source,
-		  int flags)
+		  ProtectionDomain domain, int flags)
   {
     // FIXME: ask security manager first.
     loader = parent;
     baseName = libname;
-    domain = new ProtectionDomain(source,
-				  Policy.getPolicy().getPermissions(source));
+    if (domain == null)
+      domain = new ProtectionDomain(source,
+				    Policy.getPolicy().getPermissions(source));
+    this.domain = domain;
     this.flags = flags;
   }
 
@@ -65,7 +67,14 @@ public class SharedLibHelper
   }
 
   public static SharedLibHelper findHelper (ClassLoader loader, String libname,
-					    CodeSource source)
+					    CodeSource source, boolean tryParents)
+  {
+    return findHelper (loader, libname, source, null, tryParents);
+  }
+
+  public static SharedLibHelper findHelper (ClassLoader loader, String libname,
+					    CodeSource source, ProtectionDomain domain, 
+					    boolean tryParents)
   {
     synchronized (map)
       {
@@ -95,7 +104,7 @@ public class SharedLibHelper
 			      return result;
 			    l = l.getParent();
 			  }
-			while (l != null);
+			while (tryParents && l != null);
 		      }
 		  }
 	      }
@@ -116,7 +125,7 @@ public class SharedLibHelper
 		return null;
 	      }
 	  }
-	result = new SharedLibHelper(libname, loader, source, 0);
+	result = new SharedLibHelper(libname, loader, source, domain, 0);
 	s.add(new WeakReference(result));
 	return result;
       }
