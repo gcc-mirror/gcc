@@ -1,3 +1,9 @@
+Wed May 17 18:19:41 2000  Philippe De Muyter  <phdm@macqel.be>
+
+	* configure.in (NO_MINUS_C_MINUS_O): Macro made availabe for AC_OUTPUT
+	files.
+	* configure: Rebuilt.
+
 Wed May 17 18:06:12 2000  John David Anglin <dave@hiauly1.hia.nrc.ca>
 
 	* mklibgcc.in Add missing -DL$name when compiling modules in libgcc1.c.
