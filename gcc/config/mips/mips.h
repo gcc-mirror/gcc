@@ -2201,8 +2201,7 @@ extern enum reg_class mips_char_to_class[256];
 
 #define FUNCTION_ARG_REGNO_P(N)					\
   ((IN_RANGE((N), GP_ARG_FIRST, GP_ARG_LAST)			\
-    || (IN_RANGE((N), FP_ARG_FIRST, FP_ARG_LAST)		\
-	&& ((N) % FP_INC == 0) && mips_abi != ABI_O64))		\
+    || (IN_RANGE((N), FP_ARG_FIRST, FP_ARG_LAST)))		\
    && !fixed_regs[N])
 
 /* This structure has to cope with two different argument allocation
