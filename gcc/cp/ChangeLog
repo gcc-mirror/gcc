@@ -1,3 +1,12 @@
+2003-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* Backport from mainline:
+	2002-05-13  Jason Merrill  <jason@redhat.com>
+
+	* class.c (build_vtbl_ref_1): Use fixed_type_or_null.
+	(fixed_type_or_null): See through reference vars.
+	(build_base_path): Vtable contents are constant.
+
 2003-03-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/8316, c++/9315, c++/10136

@@ -315,7 +315,8 @@ build_base_path (code, expr, binfo, nonnull)
 			 build_pointer_type (ptrdiff_type_node),
 			 v_offset);
       v_offset = build_indirect_ref (v_offset, NULL);
-      
+      TREE_CONSTANT (v_offset) = 1;
+
       offset = cp_convert (ptrdiff_type_node,
 			   size_diffop (offset, BINFO_OFFSET (v_binfo)));
 
@@ -400,75 +401,36 @@ static tree
 build_vtbl_ref_1 (instance, idx)
      tree instance, idx;
 {
-  tree vtbl, aref;
-  tree basetype = TREE_TYPE (instance);
+  tree aref;
+  tree vtbl = NULL_TREE;
 
+  /* Try to figure out what a reference refers to, and
+     access its virtual function table directly.  */
+
+  int cdtorp = 0;
+  tree fixed_type = fixed_type_or_null (instance, NULL, &cdtorp);
+
+  tree basetype = TREE_TYPE (instance);
   if (TREE_CODE (basetype) == REFERENCE_TYPE)
     basetype = TREE_TYPE (basetype);
 
-  if (instance == current_class_ref)
-    vtbl = build_vfield_ref (instance, basetype);
-  else
+  if (fixed_type && !cdtorp)
     {
-      if (optimize)
-	{
-	  /* Try to figure out what a reference refers to, and
-	     access its virtual function table directly.  */
-	  tree ref = NULL_TREE;
+      tree binfo = lookup_base (fixed_type, basetype,
+				ba_ignore|ba_quiet, NULL);
+      if (binfo)
+	vtbl = BINFO_VTABLE (binfo);
+    }
 
-	  if (TREE_CODE (instance) == INDIRECT_REF
-	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (instance, 0))) == REFERENCE_TYPE)
-	    ref = TREE_OPERAND (instance, 0);
-	  else if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
-	    ref = instance;
-
-	  if (ref && TREE_CODE (ref) == VAR_DECL
-	      && DECL_INITIAL (ref))
-	    {
-	      tree init = DECL_INITIAL (ref);
-
-	      while (TREE_CODE (init) == NOP_EXPR
-		     || TREE_CODE (init) == NON_LVALUE_EXPR)
-		init = TREE_OPERAND (init, 0);
-	      if (TREE_CODE (init) == ADDR_EXPR)
-		{
-		  init = TREE_OPERAND (init, 0);
-		  if (IS_AGGR_TYPE (TREE_TYPE (init))
-		      && (TREE_CODE (init) == PARM_DECL
-			  || TREE_CODE (init) == VAR_DECL))
-		    instance = init;
-		}
-	    }
-	}
-
-      if (IS_AGGR_TYPE (TREE_TYPE (instance))
-	  && (TREE_CODE (instance) == RESULT_DECL
-	      || TREE_CODE (instance) == PARM_DECL
-	      || TREE_CODE (instance) == VAR_DECL))
-	{
-	  vtbl = TYPE_BINFO_VTABLE (basetype);
-	  /* Knowing the dynamic type of INSTANCE we can easily obtain
-	     the correct vtable entry.  We resolve this back to be in
-	     terms of the primary vtable.  */
-	  if (TREE_CODE (vtbl) == PLUS_EXPR)
-	    {
-	      idx = fold (build (PLUS_EXPR,
-				 TREE_TYPE (idx),
-				 idx,
-				 build (EXACT_DIV_EXPR,
-					TREE_TYPE (idx),
-					TREE_OPERAND (vtbl, 1),
-					TYPE_SIZE_UNIT (vtable_entry_type))));
-	      vtbl = get_vtbl_decl_for_binfo (TYPE_BINFO (basetype));
-	    }
-	}
-      else
-	vtbl = build_vfield_ref (instance, basetype);
+  if (!vtbl)
+    {
+      vtbl = build_vfield_ref (instance, basetype);
     }
 
   assemble_external (vtbl);
 
   aref = build_array_ref (vtbl, idx);
+  TREE_CONSTANT (aref) = 1;
 
   return aref;
 }
@@ -5370,7 +5332,7 @@ fixed_type_or_null (instance, nonnull, cdtorp)
 	return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
       if (TREE_CODE (TREE_OPERAND (instance, 1)) == INTEGER_CST)
 	/* Propagate nonnull.  */
-	fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
+	return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
       return NULL_TREE;
 
     case NOP_EXPR:
@@ -5397,6 +5359,7 @@ fixed_type_or_null (instance, nonnull, cdtorp)
       /* fall through...  */
     case TARGET_EXPR:
     case PARM_DECL:
+    case RESULT_DECL:
       if (IS_AGGR_TYPE (TREE_TYPE (instance)))
 	{
 	  if (nonnull)
@@ -5423,6 +5386,11 @@ fixed_type_or_null (instance, nonnull, cdtorp)
           /* Reference variables should be references to objects.  */
           if (nonnull)
 	    *nonnull = 1;
+
+	  if (TREE_CODE (instance) == VAR_DECL
+	      && DECL_INITIAL (instance))
+	    return fixed_type_or_null (DECL_INITIAL (instance),
+				       nonnull, cdtorp);
 	}
       return NULL_TREE;
 
