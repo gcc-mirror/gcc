@@ -1,5 +1,29 @@
 2003-10-12  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/table/DefaultTableModel.java,
+	javax/swing/table/TableCellEditor.java,
+	javax/swing/table/TableCellRenderer.java,
+	javax/swing/table/TableColumnModel.java,
+	javax/swing/table/TableModel.java,
+	javax/swing/text/AbstractDocument.java,
+	javax/swing/text/Document.java,
+	javax/swing/text/MutableAttributeSet.java,
+	javax/swing/text/StyledDocument.java,
+	javax/swing/text/ViewFactory.java,
+	javax/swing/tree/DefaultMutableTreeNode.java,
+	javax/swing/tree/MutableTreeNode.java,
+	javax/swing/tree/RowMapper.java,
+	javax/swing/tree/TreeCellEditor.java,
+	javax/swing/tree/TreeCellRenderer.java,
+	javax/swing/tree/TreeModel.java,
+	javax/swing/tree/TreeNode.java,
+	javax/swing/tree/TreeSelectionModel.java,
+	javax/swing/undo/StateEditable.java,
+	javax/swing/undo/UndoableEdit.java:
+	Removed redundant modifiers.
+
+2003-10-12  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/event/AncestorListener.java,
 	javax/swing/event/CaretListener.java,
 	javax/swing/event/CellEditorListener.java,

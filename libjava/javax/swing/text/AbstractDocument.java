@@ -102,19 +102,19 @@ public abstract class AbstractDocument implements Document
 	public int getStartOffset() { return 0; }
     }
     
-    public interface Content
+    interface Content
     {
-        public Position createPosition(int offset) throws BadLocationException;
-        public int length();
-        public UndoableEdit insertString(int where, String str) throws BadLocationException;
-        public UndoableEdit remove(int where, int nitems) throws BadLocationException;	
-        public String getString(int where, int len) throws BadLocationException;
-        public void getChars(int where, int len, Segment txt) throws BadLocationException;
+        Position createPosition(int offset) throws BadLocationException;
+        int length();
+        UndoableEdit insertString(int where, String str) throws BadLocationException;
+        UndoableEdit remove(int where, int nitems) throws BadLocationException;	
+        String getString(int where, int len) throws BadLocationException;
+        void getChars(int where, int len, Segment txt) throws BadLocationException;
     }
     
     class DefaultDocumentEvent implements DocumentEvent
     {
-	int len, off;
+	public int len, off;
 	public Document getDocument() { return AbstractDocument.this; }
 	public int getLength() { return len; }
 	public int getOffset() { return off; }
@@ -226,7 +226,7 @@ public abstract class AbstractDocument implements Document
     }
 
 
-    Dictionary getDocumentProperties()
+    public Dictionary getDocumentProperties()
     {
 	return null;
     }
@@ -241,7 +241,7 @@ public abstract class AbstractDocument implements Document
 	return content.length();
     }
     
-    EventListener[] getListeners(Class listenerType)
+    public EventListener[] getListeners(Class listenerType)
     {
 	return null;
     }
@@ -314,11 +314,11 @@ public abstract class AbstractDocument implements Document
     {
     }
   
-    void readLock()
+    public void readLock()
     {
     }
   
-    void readUnlock()
+    public void readUnlock()
     {
     }
   

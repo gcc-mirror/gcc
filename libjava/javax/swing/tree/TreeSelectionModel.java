@@ -42,42 +42,42 @@ import java.beans.PropertyChangeListener;
 import javax.swing.event.TreeSelectionListener;
 
 /**
- * TreeSelectionModel interface
+ * TreeSelectionModel public interface
  * @author Andrew Selkirk
  */
 public interface TreeSelectionModel {
 
-	public static final int SINGLE_TREE_SELECTION			= 1;
-	public static final int CONTIGUOUS_TREE_SELECTION		= 2;
-	public static final int DISCONTIGUOUS_TREE_SELECTION	= 4;
+	int SINGLE_TREE_SELECTION			= 1;
+	int CONTIGUOUS_TREE_SELECTION		= 2;
+	int DISCONTIGUOUS_TREE_SELECTION	= 4;
 
-	public void setSelectionMode(int mode);
-	public int getSelectionMode();
-	public void setSelectionPath(TreePath path);
-	public void setSelectionPaths(TreePath[] paths);
-	public void addSelectionPath(TreePath path);
-	public void addSelectionPaths(TreePath[] paths);
-	public void removeSelectionPath(TreePath path);
-	public void removeSelectionPaths(TreePath[] paths);
-	public TreePath getSelectionPath();
-	public TreePath[] getSelectionPaths();
-	public int getSelectionCount();
-	public boolean isPathSelected(TreePath path);
-	public boolean isSelectionEmpty();
-	public void clearSelection();
-	public void setRowMapper(RowMapper newMapper);
-	public RowMapper getRowMapper();
-	public int[] getSelectionRows();
-	public int getMinSelectionRow();
-	public int getMaxSelectionRow();
-	public boolean isRowSelected(int row);
-	public void resetRowSelection();
-	public int getLeadSelectionRow();
-	public TreePath getLeadSelectionPath();
-	public void addPropertyChangeListener(PropertyChangeListener listener);
-	public void removePropertyChangeListener(PropertyChangeListener listener);
-	public void addTreeSelectionListener(TreeSelectionListener x);
-	public void removeTreeSelectionListener(TreeSelectionListener x);
+	void setSelectionMode(int mode);
+	int getSelectionMode();
+	void setSelectionPath(TreePath path);
+	void setSelectionPaths(TreePath[] paths);
+	void addSelectionPath(TreePath path);
+	void addSelectionPaths(TreePath[] paths);
+	void removeSelectionPath(TreePath path);
+	void removeSelectionPaths(TreePath[] paths);
+	TreePath getSelectionPath();
+	TreePath[] getSelectionPaths();
+	int getSelectionCount();
+	boolean isPathSelected(TreePath path);
+	boolean isSelectionEmpty();
+	void clearSelection();
+	void setRowMapper(RowMapper newMapper);
+	RowMapper getRowMapper();
+	int[] getSelectionRows();
+	int getMinSelectionRow();
+	int getMaxSelectionRow();
+	boolean isRowSelected(int row);
+	void resetRowSelection();
+	int getLeadSelectionRow();
+	TreePath getLeadSelectionPath();
+	void addPropertyChangeListener(PropertyChangeListener listener);
+	void removePropertyChangeListener(PropertyChangeListener listener);
+	void addTreeSelectionListener(TreeSelectionListener x);
+	void removeTreeSelectionListener(TreeSelectionListener x);
 
 
 } // TreeSelectionModel

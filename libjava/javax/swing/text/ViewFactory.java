@@ -37,8 +37,7 @@ exception statement from your version. */
 
 package javax.swing.text;
 
-
 public interface ViewFactory
 {
-    public View create(Element elem);
+    View create (Element elem);
 }

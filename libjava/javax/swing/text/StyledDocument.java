@@ -57,20 +57,20 @@ public interface StyledDocument extends Document {
 	 * @param rent TODO
 	 * @returns Style
 	 */
-	public Style addStyle(String nm, Style parent);
+	Style addStyle(String nm, Style parent);
 
 	/**
 	 * removeStyle
 	 * @param nm TODO
 	 */
-	public void removeStyle(String nm);
+	void removeStyle(String nm);
 
 	/**
 	 * getStyle
 	 * @param nm TODO
 	 * @returns Style
 	 */
-	public Style getStyle(String nm);
+	Style getStyle(String nm);
 
 	/**
 	 * setCharacterAttributes
@@ -79,7 +79,7 @@ public interface StyledDocument extends Document {
 	 * @param set TODO
 	 * @param replace TODO
 	 */
-	public void setCharacterAttributes(int offset, int length,
+	void setCharacterAttributes(int offset, int length,
 		AttributeSet set, boolean replace);
 
 	/**
@@ -89,7 +89,7 @@ public interface StyledDocument extends Document {
 	 * @param set TODO
 	 * @param replace TODO
 	 */
-	public void setParagraphAttributes(int offset, int length,
+	void setParagraphAttributes(int offset, int length,
 		AttributeSet set, boolean replace);
 
 	/**
@@ -97,49 +97,49 @@ public interface StyledDocument extends Document {
 	 * @param position TODO
 	 * @returns Style
 	 */
-	public Style getLogicalStyle(int position);
+	Style getLogicalStyle(int position);
 
 	/**
 	 * setLogicalStyle
 	 * @param position TODO
 	 * @param style TODO
 	 */
-	public void setLogicalStyle(int position, Style style);
+	void setLogicalStyle(int position, Style style);
 
 	/**
 	 * getParagraphElement
 	 * @param position TODO
 	 * @returns Element
 	 */
-	public abstract Element getParagraphElement(int position);
+	Element getParagraphElement(int position);
 
 	/**
 	 * getCharacterElement
 	 * @param position TODO
 	 * @returns Element
 	 */
-	public Element getCharacterElement(int position);
+	Element getCharacterElement(int position);
 
 	/**
 	 * getForeground
 	 * @param set TODO
 	 * @returns Color
 	 */
-	public Color getForeground(AttributeSet set);
+	Color getForeground(AttributeSet set);
 
 	/**
 	 * getBackground
 	 * @param set TODO
 	 * @returns Color
 	 */
-	public Color getBackground(AttributeSet set);
+	Color getBackground(AttributeSet set);
 
 	/**
 	 * getFont
 	 * @param set TODO
 	 * @returns Font
 	 */
-	public Font getFont(AttributeSet set);
+	Font getFont(AttributeSet set);
 
 
 } // StyledDocument

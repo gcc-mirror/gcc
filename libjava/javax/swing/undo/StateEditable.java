@@ -41,7 +41,7 @@ package javax.swing.undo;
 import java.util.Hashtable;
 
 /**
- * StateEditable interface
+ * StateEditable public interface
  * @author Andrew Selkirk
  */
 public interface StateEditable
@@ -50,16 +50,16 @@ public interface StateEditable
    * Restore State
    * @param state State
    */
-  public void restoreState(Hashtable state);
+  void restoreState(Hashtable state);
 
   /**
    * Store State
    * @param state State
    */
-  public void storeState(Hashtable state);
+  void storeState(Hashtable state);
 
   /**
    * For some reason, Sun made the RCS IDs visible.
    */
-  public static final String RCSID = "We aren't compatible";
+  String RCSID = "We aren't compatible";
 } // StateEditable

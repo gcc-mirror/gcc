@@ -511,7 +511,6 @@ public class DefaultMutableTreeNode
 	public static void growTree(DefaultMutableTreeNode root) {
 
 		// Variables
-		int						size;
 		int						index;
 		DefaultMutableTreeNode	node;
 		DefaultMutableTreeNode	current;
@@ -626,7 +625,6 @@ public class DefaultMutableTreeNode
 		// Variables
 		TreeNode[]	path;
 		Object[]	object;
-		int			size;
 		int			index;
 
 		// Get Path for Tree Nodes
@@ -739,7 +737,6 @@ public class DefaultMutableTreeNode
 
 		// Variables
 		TreeNode	current;
-		int			index;
 
 		// Sanity Check
 		if (node == null) {
@@ -840,9 +837,6 @@ public class DefaultMutableTreeNode
 	 * @returns boolean
 	 */
 	public boolean isNodeSibling(TreeNode node) {
-
-		// Variables
-		int			index;
 
 		// Check for null
 		if (node == null) {
