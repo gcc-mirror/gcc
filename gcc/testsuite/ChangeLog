@@ -1,3 +1,7 @@
+2000-12-29  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* g++.dg/vtgc1.C: New test.
+
 2000-12-28  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gcc.dg/20001228-1.c: New test.
