@@ -1439,26 +1439,28 @@ emit_tinfo_decl (decl_ptr, data)
   tree decl = *decl_ptr;
   tree type = TREE_TYPE (DECL_NAME (decl));
   int non_public;
+  int in_library = typeinfo_in_lib_p (type);
   tree var_desc, var_init;
   
-  import_export_tinfo (decl, type);
+  import_export_tinfo (decl, type, in_library);
   if (DECL_REALLY_EXTERN (decl) || !DECL_NEEDED_P (decl))
     return 0;
 
-  if (!doing_runtime && typeinfo_in_lib_p (type))
+  if (!doing_runtime && in_library)
     return 0;
 
   non_public = 0;
   var_desc = get_pseudo_ti_desc (type);
   var_init = get_pseudo_ti_init (type, var_desc, &non_public);
+  
   DECL_EXTERNAL (decl) = 0;
   TREE_PUBLIC (decl) = !non_public;
-  if (!non_public
-      && (flag_weak || (DECL_COMDAT (decl) && !typeinfo_in_lib_p (type))))
-    comdat_linkage (decl);
-  
+  if (non_public)
+    DECL_COMDAT (decl) = 0;
+
   DECL_INITIAL (decl) = var_init;
   cp_finish_decl (decl, var_init, NULL_TREE, 0);
+  /* cp_finish_decl will have dealt with linkage. */
   
   /* Say we've dealt with it.  */
   TREE_TYPE (DECL_NAME (decl)) = NULL_TREE;

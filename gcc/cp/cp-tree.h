@@ -3935,7 +3935,7 @@ extern tree coerce_delete_type			PARAMS ((tree));
 extern void comdat_linkage			PARAMS ((tree));
 extern void import_export_vtable		PARAMS ((tree, tree, int));
 extern void import_export_decl			PARAMS ((tree));
-extern void import_export_tinfo			PARAMS ((tree, tree));
+extern void import_export_tinfo			PARAMS ((tree, tree, int));
 extern tree build_cleanup			PARAMS ((tree));
 extern void finish_file				PARAMS ((void));
 extern tree reparse_absdcl_as_expr		PARAMS ((tree, tree));
