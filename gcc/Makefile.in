@@ -613,12 +613,11 @@ LANG_EXTRA_HEADERS = @all_headers@
 # because we need CC="stage1/xgcc -Bstage1/" to work in the language
 # subdirectories.
 # ??? The choices here will need some experimenting with.
-FLAGS_TO_PASS = \
+ORDINARY_FLAGS_TO_PASS = \
 	"AR_FLAGS_FOR_TARGET=$(AR_FLAGS_FOR_TARGET)" \
 	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
 	"BISON=$(BISON)" \
 	"BISONFLAGS=$(BISONFLAGS)" \
-	"CC=@cc_set_by_configure@" \
 	"CFLAGS=$(CFLAGS)" \
 	"CLIB=$(CLIB)" \
 	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
@@ -647,7 +646,7 @@ FLAGS_TO_PASS = \
 	"datadir=$(datadir)" \
 	"distdir=../tmp/\$$(subdir)" \
 	"localedir=$(localedir)"
-
+FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) "CC=@cc_set_by_configure@"
 PREPEND_DOTDOT_TO_RELATIVE_PATHS = sed \
 	-e 's|^ *[^ /][^ /]*/|%&|' \
 	-e 's| -B| -B%|g' \
