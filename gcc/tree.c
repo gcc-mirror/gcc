@@ -2191,7 +2191,7 @@ unsave_expr_now (expr)
   switch (code)
     {
     case SAVE_EXPR:
-      SAVE_EXPR_RTL (expr) = NULL_RTX;
+      SAVE_EXPR_RTL (expr) = 0;
       break;
 
     case TARGET_EXPR:
@@ -2201,12 +2201,12 @@ unsave_expr_now (expr)
       
     case RTL_EXPR:
       /* I don't yet know how to emit a sequence multiple times.  */
-      if (RTL_EXPR_SEQUENCE (expr) != NULL_RTX)
+      if (RTL_EXPR_SEQUENCE (expr) != 0)
 	abort ();
       break;
 
     case CALL_EXPR:
-      CALL_EXPR_RTL (expr) = NULL_RTX;
+      CALL_EXPR_RTL (expr) = 0;
       if (TREE_OPERAND (expr, 1)
 	  && TREE_CODE (TREE_OPERAND (expr, 1)) == TREE_LIST)
 	{
