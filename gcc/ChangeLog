@@ -1,5 +1,15 @@
 2003-07-12  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/alpha/alpha.c: Fix comment typos.
+	* config/alpha/alpha.md: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/arm/arm.md: Likewise.
+	* config/arm/lib1funcs.asm: Likewise.
+	* config/avr/avr.md: Likewise.
+	* config/arm/README-interworking: Fix typos.
+
+2003-07-12  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* c-format.c: Fix comment formatting.
 	* c-typeck.c: Likewise.
 	* coverage.c: Likewise.
