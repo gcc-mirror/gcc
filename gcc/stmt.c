@@ -3685,7 +3685,7 @@ void
 expand_end_case (orig_index)
      tree orig_index;
 {
-  tree minval, maxval, range;
+  tree minval, maxval, range, orig_minval;
   rtx default_label = 0;
   register struct case_node *n;
   int count;
@@ -3778,6 +3778,8 @@ expand_end_case (orig_index)
 	    count++;
 	}
 
+      orig_minval = minval;
+
       /* Compute span of values.  */
       if (count != 0)
 	range = fold (build (MINUS_EXPR, TREE_TYPE (index_expr),
@@ -3789,6 +3791,7 @@ expand_end_case (orig_index)
 	  emit_queue ();
 	  emit_jump (default_label);
 	}
+
       /* If range of values is much bigger than number of values,
 	 make a sequence of conditional branches instead of a dispatch.
 	 If the switch-index is a constant, do it this way
@@ -3924,7 +3927,7 @@ expand_end_case (orig_index)
 				      index_expr, minval);
 		  minval = integer_zero_node;
 		  index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
-		  emit_cmp_insn (rangertx, index, LTU, NULL_RTX, omode, 0, 0);
+		  emit_cmp_insn (rangertx, index, LTU, NULL_RTX, omode, 1, 0);
 		  emit_jump_insn (gen_bltu (default_label));
 		  /* Now we can safely truncate.  */
 		  index = convert_to_mode (index_mode, index, 0);
@@ -3978,13 +3981,13 @@ expand_end_case (orig_index)
 	  for (n = thiscase->data.case_stmt.case_list; n; n = n->right)
 	    {
 	      register HOST_WIDE_INT i
-		= TREE_INT_CST_LOW (n->low) - TREE_INT_CST_LOW (minval);
+		= TREE_INT_CST_LOW (n->low) - TREE_INT_CST_LOW (orig_minval);
 
 	      while (1)
 		{
 		  labelvec[i]
 		    = gen_rtx (LABEL_REF, Pmode, label_rtx (n->code_label));
-		  if (i + TREE_INT_CST_LOW (minval)
+		  if (i + TREE_INT_CST_LOW (orig_minval)
 		      == TREE_INT_CST_LOW (n->high))
 		    break;
 		  i++;
