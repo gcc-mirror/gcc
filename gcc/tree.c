@@ -4578,26 +4578,27 @@ get_set_constructor_bits (init, buffer, bit_size)
   int i;
   tree vals;
   HOST_WIDE_INT domain_min
-    = TREE_INT_CST_LOW (TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (init))));
+    = tree_low_cst (TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (init))), 0);
   tree non_const_bits = NULL_TREE;
+
   for (i = 0; i < bit_size; i++)
     buffer[i] = 0;
 
   for (vals = TREE_OPERAND (init, 1);
        vals != NULL_TREE; vals = TREE_CHAIN (vals))
     {
-      if (TREE_CODE (TREE_VALUE (vals)) != INTEGER_CST
+      if (!host_integerp (TREE_VALUE (vals), 0)
 	  || (TREE_PURPOSE (vals) != NULL_TREE
-	      && TREE_CODE (TREE_PURPOSE (vals)) != INTEGER_CST))
+	      && !host_integerp (TREE_PURPOSE (vals), 0)))
 	non_const_bits
 	  = tree_cons (TREE_PURPOSE (vals), TREE_VALUE (vals), non_const_bits);
       else if (TREE_PURPOSE (vals) != NULL_TREE)
 	{
 	  /* Set a range of bits to ones.  */
 	  HOST_WIDE_INT lo_index
-	    = TREE_INT_CST_LOW (TREE_PURPOSE (vals)) - domain_min;
+	    = tree_low_cst (TREE_PURPOSE (vals), 0) - domain_min;
 	  HOST_WIDE_INT hi_index
-	    = TREE_INT_CST_LOW (TREE_VALUE (vals)) - domain_min;
+	    = tree_low_cst (TREE_VALUE (vals), 0) - domain_min;
 
 	  if (lo_index < 0 || lo_index >= bit_size
 	      || hi_index < 0 || hi_index >= bit_size)
@@ -4609,7 +4610,7 @@ get_set_constructor_bits (init, buffer, bit_size)
 	{
 	  /* Set a single bit to one.  */
 	  HOST_WIDE_INT index
-	    = TREE_INT_CST_LOW (TREE_VALUE (vals)) - domain_min;
+	    = tree_low_cst (TREE_VALUE (vals), 0) - domain_min;
 	  if (index < 0 || index >= bit_size)
 	    {
 	      error ("invalid initializer for bit string");
