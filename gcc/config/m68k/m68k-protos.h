@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.  */
 /* Define functions defined in aux-output.c and used in templates.  */
 
 #ifdef RTX_CODE
+extern HOST_WIDE_INT m68k_initial_elimination_offset (int from, int to);
 extern const char *output_move_const_into_data_reg (rtx *);
 extern const char *output_move_simode_const (rtx *);
 extern const char *output_move_simode (rtx *);
