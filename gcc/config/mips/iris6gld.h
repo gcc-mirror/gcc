@@ -59,23 +59,22 @@ Boston, MA 02111-1307, USA.  */
       char *name;						\
       char *string;						\
       char *prefix;						\
-      static char *prefixes[4][2] =				\
+      static char *prefixes[/*4*/3][2] =			\
       {								\
 	{ ".text.",   ".gnu.linkonce.t." },			\
 	{ ".rodata.", ".gnu.linkonce.r." },			\
-	{ ".data.",   ".gnu.linkonce.d." },			\
+	{ ".data.",   ".gnu.linkonce.d." }			\
 	/* Do not generate unique sections for uninitialised 	\
 	   data since we do not have support for this in the    \
 	   linker scripts yet...				\
-        { ".bss.",    ".gnu.linkonce.b." }  */			\
-	{ "", "" }						\
+        , { ".bss.",    ".gnu.linkonce.b." }  */		\
       };							\
       								\
       if (TREE_CODE (DECL) == FUNCTION_DECL)			\
 	sec = 0;						\
-      else if (DECL_INITIAL (DECL) == 0				\
+   /* else if (DECL_INITIAL (DECL) == 0				\
 	       || DECL_INITIAL (DECL) == error_mark_node)	\
-	sec = 3;						\
+        sec =  3; */						\
       else if (DECL_READONLY_SECTION (DECL, RELOC))		\
 	sec = 1;						\
       else							\
