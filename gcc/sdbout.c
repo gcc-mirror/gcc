@@ -756,6 +756,12 @@ sdbout_symbol (decl, local)
 	  alter_subreg (DECL_RTL (decl));
 	  value = DECL_RTL (decl);
 	}
+      /* Don't output anything if an auto variable
+	 gets RTL that is static.
+	 GAS version 2.2 can't handle such output.  */
+      else if (GET_CODE (value) == MEM && CONSTANT_P (XEXP (value, 0))
+	       && ! TREE_STATIC (decl))
+	return;
 
       /* Emit any structure, union, or enum type that has not been output.
 	 This occurs for tag-less structs (et al) used to declare variables
