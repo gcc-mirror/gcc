@@ -307,34 +307,35 @@ static struct sdb_file *current_file;
 /* The debug hooks structure.  */
 const struct gcc_debug_hooks sdb_debug_hooks =
 {
-  sdbout_init,			/* init */
-  sdbout_finish,		/* finish */
-  debug_nothing_int_charstar,	/* define */
-  debug_nothing_int_charstar,	/* undef */
-  sdbout_start_source_file,	/* start_source_file */
-  sdbout_end_source_file,	/* end_source_file */
-  sdbout_begin_block,		/* begin_block */
-  sdbout_end_block,		/* end_block */
-  debug_true_tree,		/* ignore_block */
-  sdbout_source_line,		/* source_line */
+  sdbout_init,			         /* init */
+  sdbout_finish,		         /* finish */
+  debug_nothing_int_charstar,	         /* define */
+  debug_nothing_int_charstar,	         /* undef */
+  sdbout_start_source_file,	         /* start_source_file */
+  sdbout_end_source_file,	         /* end_source_file */
+  sdbout_begin_block,		         /* begin_block */
+  sdbout_end_block,		         /* end_block */
+  debug_true_tree,		         /* ignore_block */
+  sdbout_source_line,		         /* source_line */
 #ifdef MIPS_DEBUGGING_INFO
   /* Defer on MIPS systems so that parameter descriptions follow
      function entry.  */
-  debug_nothing_int_charstar,	/* begin_prologue */
-  sdbout_end_prologue,		/* end_prologue */
+  debug_nothing_int_charstar,	         /* begin_prologue */
+  sdbout_end_prologue,		         /* end_prologue */
 #else
-  sdbout_begin_prologue,	/* begin_prologue */
-  debug_nothing_int_charstar,	/* end_prologue */
+  sdbout_begin_prologue,	         /* begin_prologue */
+  debug_nothing_int_charstar,	         /* end_prologue */
 #endif
-  sdbout_end_epilogue,		/* end_epilogue */
-  sdbout_begin_function,	/* begin_function */
-  sdbout_end_function,		/* end_function */
-  debug_nothing_tree,		/* function_decl */
-  sdbout_global_decl,		/* global_decl */
-  debug_nothing_tree,		/* deferred_inline_function */
-  debug_nothing_tree,		/* outlining_inline_function */
-  sdbout_label,			/* label */
-  debug_nothing_int		/* handle_pch */
+  sdbout_end_epilogue,		         /* end_epilogue */
+  sdbout_begin_function,	         /* begin_function */
+  sdbout_end_function,		         /* end_function */
+  debug_nothing_tree,		         /* function_decl */
+  sdbout_global_decl,		         /* global_decl */
+  debug_nothing_tree_tree,               /* imported_module_or_decl */
+  debug_nothing_tree,		         /* deferred_inline_function */
+  debug_nothing_tree,		         /* outlining_inline_function */
+  sdbout_label,			         /* label */
+  debug_nothing_int		         /* handle_pch */
 };
 
 /* Return a unique string to name an anonymous type.  */

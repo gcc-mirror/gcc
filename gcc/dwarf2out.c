@@ -65,6 +65,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "hashtab.h"
 #include "cgraph.h"
+#include "input.h"
 
 #ifdef DWARF2_DEBUGGING_INFO
 static void dwarf2out_source_line (unsigned int, const char *);
@@ -3248,6 +3249,7 @@ static void dwarf2out_begin_block (unsigned, unsigned);
 static void dwarf2out_end_block (unsigned, unsigned);
 static bool dwarf2out_ignore_block (tree);
 static void dwarf2out_global_decl (tree);
+static void dwarf2out_imported_module_or_decl (tree, tree);
 static void dwarf2out_abstract_function (tree);
 
 /* The debug hooks structure.  */
@@ -3271,6 +3273,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   debug_nothing_int,		/* end_function */
   dwarf2out_decl,		/* function_decl */
   dwarf2out_global_decl,
+  dwarf2out_imported_module_or_decl,
   debug_nothing_tree,		/* deferred_inline_function */
   /* The DWARF 2 backend tries to reduce debugging bloat by not
      emitting the abstract description of inline functions until
@@ -3647,6 +3650,7 @@ static bool is_java (void);
 static bool is_fortran (void);
 static bool is_ada (void);
 static void remove_AT (dw_die_ref, enum dwarf_attribute);
+static void remove_child_TAG (dw_die_ref, enum dwarf_tag);
 static inline void free_die (dw_die_ref);
 static void remove_children (dw_die_ref);
 static void add_child_die (dw_die_ref, dw_die_ref);
@@ -3795,7 +3799,8 @@ static void decls_for_scope (tree, dw_die_ref, int);
 static int is_redundant_typedef (tree);
 static void gen_namespace_die (tree);
 static void gen_decl_die (tree, dw_die_ref);
-static dw_die_ref force_namespace_die (tree);
+static dw_die_ref force_decl_die (tree);
+static dw_die_ref force_type_die (tree);
 static dw_die_ref setup_namespace_context (tree, dw_die_ref);
 static void declare_in_namespace (tree, dw_die_ref);
 static unsigned lookup_filename (const char *);
@@ -4073,6 +4078,8 @@ dwarf_tag_name (unsigned int tag)
       return "DW_TAG_variable";
     case DW_TAG_volatile_type:
       return "DW_TAG_volatile_type";
+    case DW_TAG_imported_module:
+      return "DW_TAG_imported_module";
     case DW_TAG_MIPS_loop:
       return "DW_TAG_MIPS_loop";
     case DW_TAG_format_label:
@@ -5046,6 +5053,34 @@ remove_AT (dw_die_ref die, enum dwarf_attribute attr_kind)
 
       if (removed != 0)
 	free_AT (removed);
+    }
+}
+
+/* Remove child die whose die_tag is specified tag.  */
+
+static void
+remove_child_TAG (dw_die_ref die, enum dwarf_tag tag)
+{
+  dw_die_ref current, prev, next;
+  current = die->die_child;
+  prev = NULL;
+  while (current != NULL)
+    {
+      if (current->die_tag == tag)
+	{
+	  next = current->die_sib;
+	  if (prev == NULL)
+	    die->die_child = next;
+	  else
+	    prev->die_sib = next;
+	  free_die (current);
+	  current = next;
+	}
+      else
+	{
+	  prev = current;
+	  current = current->die_sib;
+	}
     }
 }
 
@@ -10712,9 +10747,13 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	{
 	  subr_die = old_die;
 
-	  /* Clear out the declaration attribute and the parm types.  */
+	  /* Clear out the declaration attribute and the formal parameters.
+	     Do not remove all children, because it is possible that this 
+	     declaration die was forced using force_decl_die(). In such
+	     cases die that forced declaration die (e.g. TAG_imported_module)
+	     is one of the children that we do not want to remove.  */
 	  remove_AT (subr_die, DW_AT_declaration);
-	  remove_children (subr_die);
+	  remove_child_TAG (subr_die, DW_TAG_formal_parameter);
 	}
       else
 	{
@@ -10762,8 +10801,10 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  /* The first time we see a member function, it is in the context of
 	     the class to which it belongs.  We make sure of this by emitting
 	     the class first.  The next time is the definition, which is
-	     handled above.  The two may come from the same source text.  */
-	  if (DECL_CONTEXT (decl) || DECL_ABSTRACT (decl))
+	     handled above.  The two may come from the same source text. 
+
+	     Note that force_decl_die() forces function declaration die. It is
+	     later reused to represent definition.  */
 	    equate_decl_number_to_die (decl, subr_die);
 	}
     }
@@ -10975,7 +11016,7 @@ gen_variable_die (tree decl, dw_die_ref context_die)
   if (declaration)
     add_AT_flag (var_die, DW_AT_declaration, 1);
 
-  if (class_or_namespace_scope_p (context_die) || DECL_ABSTRACT (decl))
+  if (DECL_ABSTRACT (decl) || declaration)
     equate_decl_number_to_die (decl, var_die);
 
   if (! declaration && ! DECL_ABSTRACT (decl))
@@ -11147,6 +11188,9 @@ gen_field_die (tree decl, dw_die_ref context_die)
     add_AT_unsigned (decl_die, DW_AT_accessibility, DW_ACCESS_protected);
   else if (TREE_PRIVATE (decl))
     add_AT_unsigned (decl_die, DW_AT_accessibility, DW_ACCESS_private);
+
+  /* Equate decl number to die, so that we can look up this decl later on.  */
+  equate_decl_number_to_die (decl, decl_die);
 }
 
 #if 0
@@ -11857,23 +11901,95 @@ is_redundant_typedef (tree decl)
   return 0;
 }
 
-/* Returns the DIE for namespace NS or aborts.
-
-   Note that namespaces don't really have a lexical context, so there's no
-   need to pass in a context_die.  They always go inside their containing
-   namespace, or comp_unit_die if none.  */
+/* Returns the DIE for decl or aborts.  */
 
 static dw_die_ref
-force_namespace_die (tree ns)
+force_decl_die (tree decl)
 {
-  dw_die_ref ns_die;
+  dw_die_ref decl_die;
+  unsigned saved_external_flag;
+  tree save_fn = NULL_TREE;
+  decl_die = lookup_decl_die (decl);
+  if (!decl_die)
+    {
+      dw_die_ref context_die;
+      tree decl_context = DECL_CONTEXT (decl);
+      if (decl_context)
+	{
+	  /* Find die that represents this context.  */
+	  if (TYPE_P (decl_context))
+	    context_die = force_type_die (decl_context);
+	  else
+	    context_die = force_decl_die (decl_context);
+	}
+      else
+	context_die = comp_unit_die;
 
-  dwarf2out_decl (ns);
-  ns_die = lookup_decl_die (ns);
-  if (!ns_die)
-    abort();
+      switch (TREE_CODE (decl))
+	{
+	case FUNCTION_DECL:
+	  /* Clear current_function_decl, so that gen_subprogram_die thinks
+	     that this is a declaration. At this point, we just want to force
+	     declaration die.  */
+	  save_fn = current_function_decl;
+	  current_function_decl = NULL_TREE;
+	  gen_subprogram_die (decl, context_die);
+	  current_function_decl = save_fn; 
+	  break;
 
-  return ns_die;
+	case VAR_DECL:
+	  /* Set external flag to force declaration die. Restore it after
+	   gen_decl_die() call.  */
+	  saved_external_flag = DECL_EXTERNAL (decl);
+	  DECL_EXTERNAL (decl) = 1;
+	  gen_decl_die (decl, context_die);
+	  DECL_EXTERNAL (decl) = saved_external_flag;
+	  break;
+
+	case NAMESPACE_DECL:
+	  dwarf2out_decl (decl);
+	  break;
+
+	default:
+	  abort ();
+	}
+  
+      /* See if we can find the die for this deci now.
+	 If not then abort.  */
+      if (!decl_die)
+	decl_die = lookup_decl_die (decl);
+      if (!decl_die)
+	abort ();
+    }
+  
+  return decl_die;
+}
+
+/* Returns the DIE for decl or aborts.  */
+
+static dw_die_ref
+force_type_die (tree type)
+{
+  dw_die_ref type_die;
+
+  type_die = lookup_type_die (root_type (type));
+  if (!type_die)
+    {
+      dw_die_ref context_die;
+      if (TYPE_CONTEXT (type))
+	if (TYPE_P (TYPE_CONTEXT (type)))
+	  context_die = force_type_die (TYPE_CONTEXT (type));
+	else
+	  context_die = force_decl_die (TYPE_CONTEXT (type));
+      else
+	context_die = comp_unit_die;
+
+      gen_type_die (type, context_die);
+      type_die = lookup_type_die (root_type (type));
+      if (!type_die)
+	abort();
+    }
+  return type_die;
 }
 
 /* Force out any required namespaces to be able to output DECL,
@@ -11885,7 +12001,7 @@ setup_namespace_context (tree thing, dw_die_ref context_die)
   tree context = DECL_P (thing) ? DECL_CONTEXT (thing) : TYPE_CONTEXT (thing);
   if (context && TREE_CODE (context) == NAMESPACE_DECL)
     /* Force out the namespace.  */
-    context_die = force_namespace_die (context);
+    context_die = force_decl_die (context);
 
   return context_die;
 }
@@ -11938,7 +12054,7 @@ gen_namespace_die (tree decl)
 
       /* Force out the namespace we are an alias of, if necessary.  */
       dw_die_ref origin_die
-	= force_namespace_die (DECL_ABSTRACT_ORIGIN (decl));
+	= force_decl_die (DECL_ABSTRACT_ORIGIN (decl));
 
       /* Now create the namespace alias DIE.  */
       dw_die_ref namespace_die
@@ -12139,6 +12255,52 @@ dwarf2out_global_decl (tree decl)
      definitions which have not yet been forced out.  */
   if (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl))
     dwarf2out_decl (decl);
+}
+
+/* Output debug information for imported module or decl.  */ 
+ 
+static void
+dwarf2out_imported_module_or_decl (tree decl, tree context)
+{
+  dw_die_ref imported_die, at_import_die;
+  dw_die_ref scope_die;
+  unsigned file_index;
+  
+  if (debug_info_level <= DINFO_LEVEL_TERSE)
+    return;
+
+  if (!decl)
+    abort ();
+
+  /* To emit DW_TAG_imported_module or DW_TAG_imported_decl, we need two DIEs.
+     We need decl DIE for reference and scope die. First, get DIE for the decl 
+     itself.  */
+
+  /* Get the scope die for decl context. Use comp_unit_die for global module
+     or decl. If die is not found for non globals, force new die.  */
+  if (!context)
+    scope_die = comp_unit_die;
+  else if (TYPE_P (context))
+    scope_die = force_type_die (context);
+  else
+    scope_die = force_decl_die (context);
+
+  /* For TYPE_DECL, lookup TREE_TYPE.  */
+  if (TREE_CODE (decl) == TYPE_DECL)
+    at_import_die = force_type_die (TREE_TYPE (decl));
+  else
+    at_import_die = force_decl_die (decl);
+  
+  /* OK, now we have DIEs for decl as well as scope. Emit imported die.  */ 
+  if (TREE_CODE (decl) == NAMESPACE_DECL)
+    imported_die = new_die (DW_TAG_imported_module, scope_die, context);
+  else
+    imported_die = new_die (DW_TAG_imported_declaration, scope_die, context);
+  
+  file_index = lookup_filename (input_filename);
+  add_AT_unsigned (imported_die, DW_AT_decl_file, file_index);
+  add_AT_unsigned (imported_die, DW_AT_decl_line, input_line);
+  add_AT_die_ref (imported_die, DW_AT_import, at_import_die);
 }
 
 /* Write the debugging output for DECL.  */
