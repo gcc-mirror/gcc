@@ -8442,6 +8442,15 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
 	path_size--;
     }
 
+  /* If the first instruction is marked with QImode, that means we've
+     already processed this block.  Our caller will look at DATA->LAST
+     to figure out where to go next.  We want to return the next block
+     in the instruction stream, not some branched-to block somewhere
+     else.  We accomplish this by pretending our called forbid us to
+     follow jumps, or skip blocks.  */
+  if (GET_MODE (insn) == QImode)
+    follow_jumps = skip_blocks = 0;
+
   /* Scan to end of this basic block.  */
   while (p && GET_CODE (p) != CODE_LABEL)
     {

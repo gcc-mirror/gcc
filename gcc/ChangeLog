@@ -1,3 +1,9 @@
+Wed Oct 20 20:41:46 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* cse.c (cse_end_of_basic_block): Don't return the end of a basic
+	block reached by a branch if we're not going to actually process
+	this block.
+
 Wed Oct 20 15:18:42 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* integrate.c (integrate_decl_tree): Set DECL_CONTEXT to 0 if this is
