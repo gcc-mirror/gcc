@@ -70,6 +70,8 @@ static int arm_legitimate_index_p (enum machine_mode, rtx, RTX_CODE, int);
 static int thumb_base_register_rtx_p (rtx, enum machine_mode, int);
 inline static int thumb_index_register_rtx_p (rtx, int);
 static int thumb_far_jump_used_p (void);
+static bool thumb_force_lr_save (void);
+static unsigned long thumb_compute_save_reg_mask (void);
 static int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 static rtx emit_multi_reg_push (int);
 static rtx emit_sfm (int, int);
@@ -2987,6 +2989,27 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
     }
 
   return orig;
+}
+
+
+/* Find a spare low register.  */
+
+static int
+thumb_find_work_register (int live_regs_mask)
+{
+  int reg;
+
+  /* Use a spare arg register.  */
+  if (!regs_ever_live[LAST_ARG_REGNUM])
+    return LAST_ARG_REGNUM;
+
+  /* Look for a pushed register.  */
+  for (reg = 0; reg < LAST_LO_REGNUM; reg++)
+    if (live_regs_mask & (1 << reg))
+      return reg;
+
+  /* Something went wrong.  */
+  abort ();
 }
 
 /* Generate code to load the PIC register.  PROLOGUE is true if
@@ -9158,6 +9181,39 @@ arm_compute_save_reg_mask (void)
 }
 
 
+/* Compute a bit mask of which registers need to be
+   saved on the stack for the current function.  */
+static unsigned long
+thumb_compute_save_reg_mask (void)
+{
+  unsigned long mask;
+  int reg;
+
+  mask = 0;
+  for (reg = 0; reg < 12; reg ++)
+    {
+      if (regs_ever_live[reg] && !call_used_regs[reg])
+	mask |= 1 << reg;
+    }
+
+  if (flag_pic && !TARGET_SINGLE_PIC_BASE)
+    mask |= PIC_OFFSET_TABLE_REGNUM;
+  if (TARGET_SINGLE_PIC_BASE)
+    mask &= ~(1 << arm_pic_register);
+
+  /* lr will also be pushed if any lo regs are pushed.  */
+  if (mask & 0xff || thumb_force_lr_save ())
+    mask |= (1 << LR_REGNUM);
+
+  /* Make sure we have a low work register if we need one.  */
+  if (((mask & 0xff) == 0 && regs_ever_live[LAST_ARG_REGNUM])
+      && ((mask & 0x0f00) || TARGET_BACKTRACE))
+    mask |= 1 << LAST_LO_REGNUM;
+
+  return mask;
+}
+
+
 /* Return the number of bytes required to save VFP registers.  */
 static int
 arm_get_vfp_saved_size (void)
@@ -10216,29 +10272,9 @@ arm_get_frame_offsets (void)
     }
   else /* TARGET_THUMB */
     {
-      int reg;
-      int count_regs;
-
-      saved = 0;
-      count_regs = 0;
-      for (reg = 8; reg < 13; reg ++)
-	if (THUMB_REG_PUSHED_P (reg))
-	  count_regs ++;
-      if (count_regs)
-	saved += 4 * count_regs;
-      count_regs = 0;
-      for (reg = 0; reg <= LAST_LO_REGNUM; reg ++)
-	if (THUMB_REG_PUSHED_P (reg))
-	  count_regs ++;
-      if (count_regs || thumb_force_lr_save ())
-	saved += 4 * (count_regs + 1);
+      saved = bit_count (thumb_compute_save_reg_mask ()) * 4;
       if (TARGET_BACKTRACE)
-	{
-	  if ((count_regs & 0xFF) == 0 && (regs_ever_live[3] != 0))
-	    saved += 20;
-	  else
-	    saved += 16;
-	}
+	saved += 16;
     }
 
   /* Saved registers include the stack frame.  */
@@ -13049,6 +13085,8 @@ thumb_unexpanded_epilogue (void)
   int live_regs_mask = 0;
   int high_regs_pushed = 0;
   int had_to_push_lr;
+  int size;
+  int mode;
 
   if (return_used_this_function)
     return "";
@@ -13056,13 +13094,20 @@ thumb_unexpanded_epilogue (void)
   if (IS_NAKED (arm_current_func_type ()))
     return "";
 
-  for (regno = 0; regno <= LAST_LO_REGNUM; regno++)
-    if (THUMB_REG_PUSHED_P (regno))
-      live_regs_mask |= 1 << regno;
+  live_regs_mask = thumb_compute_save_reg_mask ();
+  high_regs_pushed = bit_count (live_regs_mask & 0x0f00);
 
-  for (regno = 8; regno < 13; regno++)
-    if (THUMB_REG_PUSHED_P (regno))
-      high_regs_pushed++;
+  /* If we can deduce the registers used from the function's return value.
+     This is more reliable that examining regs_ever_live[] because that
+     will be set if the register is ever used in the function, not just if
+     the register is used to hold a return value.  */
+
+  if (current_function_return_rtx != 0)
+    mode = GET_MODE (current_function_return_rtx);
+  else
+    mode = DECL_MODE (DECL_RESULT (current_function_decl));
+
+  size = GET_MODE_SIZE (mode);
 
   /* The prolog may have pushed some high registers to use as
      work registers.  eg the testsuite file:
@@ -13076,27 +13121,15 @@ thumb_unexpanded_epilogue (void)
   
   if (high_regs_pushed)
     {
-      int mask = live_regs_mask;
+      int mask = live_regs_mask & 0xff;
       int next_hi_reg;
-      int size;
-      int mode;
-       
-      /* If we can deduce the registers used from the function's return value.
-	 This is more reliable that examining regs_ever_live[] because that
-	 will be set if the register is ever used in the function, not just if
-	 the register is used to hold a return value.  */
 
-      if (current_function_return_rtx != 0)
-	mode = GET_MODE (current_function_return_rtx);
-      else
-	mode = DECL_MODE (DECL_RESULT (current_function_decl));
-
-      size = GET_MODE_SIZE (mode);
-
-      /* Unless we are returning a type of size > 12 register r3 is
-         available.  */
-      if (size < 13)
+      /* The available low registers depend on the size of the value we are
+         returning.  */
+      if (size <= 12)
 	mask |=  1 << 3;
+      if (size <= 8)
+	mask |= 1 << 2;
 
       if (mask == 0)
 	/* Oh dear!  We have no low registers into which we can pop
@@ -13105,7 +13138,7 @@ thumb_unexpanded_epilogue (void)
 	  ("no low registers available for popping high registers");
       
       for (next_hi_reg = 8; next_hi_reg < 13; next_hi_reg++)
-	if (THUMB_REG_PUSHED_P (next_hi_reg))
+	if (live_regs_mask & (1 << next_hi_reg))
 	  break;
 
       while (high_regs_pushed)
@@ -13134,29 +13167,21 @@ thumb_unexpanded_epilogue (void)
 			       regno);
 		  
 		  for (next_hi_reg++; next_hi_reg < 13; next_hi_reg++)
-		    if (THUMB_REG_PUSHED_P (next_hi_reg))
+		    if (live_regs_mask & (1 << next_hi_reg))
 		      break;
 		}
 	    }
 	}
+      live_regs_mask &= ~0x0f00;
     }
 
-  had_to_push_lr = (live_regs_mask || thumb_force_lr_save ());
-  
-  if (TARGET_BACKTRACE
-      && ((live_regs_mask & 0xFF) == 0)
-      && regs_ever_live [LAST_ARG_REGNUM] != 0)
-    {
-      /* The stack backtrace structure creation code had to
-	 push R7 in order to get a work register, so we pop
-	 it now.  */
-      live_regs_mask |= (1 << LAST_LO_REGNUM);
-    }
-  
+  had_to_push_lr = (live_regs_mask & (1 << LR_REGNUM)) != 0;
+  live_regs_mask &= 0xff;
+
   if (current_function_pretend_args_size == 0 || TARGET_BACKTRACE)
     {
-      if (had_to_push_lr
-	  && !is_called_in_ARM_mode (current_function_decl))
+      /* Pop the return address into the PC.  */ 
+      if (had_to_push_lr)
 	live_regs_mask |= 1 << PC_REGNUM;
 
       /* Either no argument registers were pushed or a backtrace
@@ -13165,38 +13190,54 @@ thumb_unexpanded_epilogue (void)
       if (live_regs_mask)
 	thumb_pushpop (asm_out_file, live_regs_mask, FALSE, NULL,
 		       live_regs_mask);
-      
+
       /* We have either just popped the return address into the
-	 PC or it is was kept in LR for the entire function or
-	 it is still on the stack because we do not want to
-	 return by doing a pop {pc}.  */
-      if ((live_regs_mask & (1 << PC_REGNUM)) == 0)
-	thumb_exit (asm_out_file,
-		    (had_to_push_lr
-		     && is_called_in_ARM_mode (current_function_decl)) ?
-		    -1 : LR_REGNUM);
+	 PC or it is was kept in LR for the entire function.  */
+      if (!had_to_push_lr)
+	thumb_exit (asm_out_file, LR_REGNUM);
     }
   else
     {
       /* Pop everything but the return address.  */
-      live_regs_mask &= ~(1 << PC_REGNUM);
-      
       if (live_regs_mask)
 	thumb_pushpop (asm_out_file, live_regs_mask, FALSE, NULL,
 		       live_regs_mask);
 
       if (had_to_push_lr)
-	/* Get the return address into a temporary register.  */
-	thumb_pushpop (asm_out_file, 1 << LAST_ARG_REGNUM, 0, NULL,
-		       1 << LAST_ARG_REGNUM);
+	{
+	  if (size > 12)
+	    {
+	      /* We have no free low regs, so save one.  */
+	      asm_fprintf (asm_out_file, "\tmov\t%r, %r\n", IP_REGNUM,
+			   LAST_ARG_REGNUM);
+	    }
+
+	  /* Get the return address into a temporary register.  */
+	  thumb_pushpop (asm_out_file, 1 << LAST_ARG_REGNUM, 0, NULL,
+			 1 << LAST_ARG_REGNUM);
+
+	  if (size > 12)
+	    {
+	      /* Move the return address to lr.  */
+	      asm_fprintf (asm_out_file, "\tmov\t%r, %r\n", LR_REGNUM,
+			   LAST_ARG_REGNUM);
+	      /* Restore the low register.  */
+	      asm_fprintf (asm_out_file, "\tmov\t%r, %r\n", LAST_ARG_REGNUM,
+			   IP_REGNUM);
+	      regno = LR_REGNUM;
+	    }
+	  else
+	    regno = LAST_ARG_REGNUM;
+	}
+      else
+	regno = LR_REGNUM;
       
       /* Remove the argument registers that were pushed onto the stack.  */
       asm_fprintf (asm_out_file, "\tadd\t%r, %r, #%d\n",
 		   SP_REGNUM, SP_REGNUM,
 		   current_function_pretend_args_size);
       
-      thumb_exit (asm_out_file,
-		  had_to_push_lr ? LAST_ARG_REGNUM : LR_REGNUM);
+      thumb_exit (asm_out_file, regno);
     }
 
   return "";
@@ -13302,6 +13343,7 @@ thumb_expand_prologue (void)
   arm_stack_offsets *offsets;
   unsigned long func_type;
   int regno;
+  unsigned long live_regs_mask;
 
   func_type = arm_current_func_type ();
   
@@ -13324,6 +13366,7 @@ thumb_expand_prologue (void)
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
+  live_regs_mask = thumb_compute_save_reg_mask ();
   amount = offsets->outgoing_args - offsets->saved_regs;
   if (amount)
     {
@@ -13352,7 +13395,7 @@ thumb_expand_prologue (void)
 	     been pushed at the start of the prologue and so we can corrupt
 	     it now.  */
 	  for (regno = LAST_ARG_REGNUM + 1; regno <= LAST_LO_REGNUM; regno++)
-	    if (THUMB_REG_PUSHED_P (regno)
+	    if (live_regs_mask & (1 << regno)
 		&& !(frame_pointer_needed
 		     && (regno == THUMB_HARD_FRAME_POINTER_REGNUM)))
 	      break;
@@ -13421,20 +13464,15 @@ thumb_expand_prologue (void)
     emit_insn (gen_blockage ());
 
   cfun->machine->lr_save_eliminated = !thumb_force_lr_save ();
-  for (regno = 0; regno <= LAST_LO_REGNUM; regno++)
-    {
-      if (THUMB_REG_PUSHED_P (regno))
-        {
-          cfun->machine->lr_save_eliminated = 0;
-          break;
-        }
-    }
+  if (live_regs_mask & 0xff)
+    cfun->machine->lr_save_eliminated = 0;
 
   /* If the link register is being kept alive, with the return address in it,
      then make sure that it does not get reused by the ce2 pass.  */
   if (cfun->machine->lr_save_eliminated)
     emit_insn (gen_prologue_use (gen_rtx_REG (SImode, LR_REGNUM)));
 }
+
 
 void
 thumb_expand_epilogue (void)
@@ -13488,6 +13526,7 @@ static void
 thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
   int live_regs_mask = 0;
+  int l_mask;
   int high_regs_pushed = 0;
   int cfa_offset = 0;
   int regno;
@@ -13564,18 +13603,14 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	}
     }
 
-  for (regno = 0; regno <= LAST_LO_REGNUM; regno++)
-    if (THUMB_REG_PUSHED_P (regno))
-      live_regs_mask |= 1 << regno;
-
-  if (live_regs_mask || thumb_force_lr_save ())
-    live_regs_mask |= 1 << LR_REGNUM;
+  live_regs_mask = thumb_compute_save_reg_mask ();
+  /* Just low regs and lr. */
+  l_mask = live_regs_mask & 0x40ff;
 
   if (TARGET_BACKTRACE)
     {
       int    offset;
-      int    work_register = 0;
-      int    wr;
+      int    work_register;
       
       /* We have been asked to create a stack backtrace structure.
          The code looks like this:
@@ -13583,7 +13618,7 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	 0   .align 2
 	 0   func:
          0     sub   SP, #16         Reserve space for 4 registers.
-	 2     push  {R7}            Get a work register.
+	 2     push  {R7}            Push low registers.
          4     add   R7, SP, #20     Get the stack pointer before the push.
          6     str   R7, [SP, #8]    Store the stack pointer (before reserving the space).
          8     mov   R7, PC          Get hold of the start of this code plus 12.
@@ -13595,24 +13630,7 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
         20     add   R7, SP, #16     Point at the start of the backtrace structure.
         22     mov   FP, R7          Put this value into the frame pointer.  */
 
-      if ((live_regs_mask & 0xFF) == 0)
-	{
-	  /* See if the a4 register is free.  */
-
-	  if (regs_ever_live [LAST_ARG_REGNUM] == 0)
-	    work_register = LAST_ARG_REGNUM;
-	  else	  /* We must push a register of our own.  */
-	    live_regs_mask |= (1 << LAST_LO_REGNUM);
-	}
-
-      if (work_register == 0)
-	{
-	  /* Select a register from the list that will be pushed to
-             use as our work register.  */
-	  for (work_register = (LAST_LO_REGNUM + 1); work_register--;)
-	    if ((1 << work_register) & live_regs_mask)
-	      break;
-	}
+      work_register = thumb_find_work_register (live_regs_mask);
       
       asm_fprintf
 	(f, "\tsub\t%r, %r, #16\t%@ Create stack backtrace structure\n",
@@ -13625,12 +13643,13 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	  dwarf2out_def_cfa (l, SP_REGNUM, cfa_offset);
 	}
 
-      if (live_regs_mask)
-	thumb_pushpop (f, live_regs_mask, 1, &cfa_offset, live_regs_mask);
-      
-      for (offset = 0, wr = 1 << 15; wr != 0; wr >>= 1)
-	if (wr & live_regs_mask)
-	  offset += 4;
+      if (l_mask)
+	{
+	  thumb_pushpop (f, l_mask, 1, &cfa_offset, l_mask);
+	  offset = bit_count (l_mask);
+	}
+      else
+	offset = 0;
       
       asm_fprintf (f, "\tadd\t%r, %r, #%d\n", work_register, SP_REGNUM,
 		   offset + 16 + current_function_pretend_args_size);
@@ -13640,7 +13659,7 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 
       /* Make sure that the instruction fetching the PC is in the right place
 	 to calculate "start of backtrace creation code + 12".  */
-      if (live_regs_mask)
+      if (l_mask)
 	{
 	  asm_fprintf (f, "\tmov\t%r, %r\n", work_register, PC_REGNUM);
 	  asm_fprintf (f, "\tstr\t%r, [%r, #%d]\n", work_register, SP_REGNUM,
@@ -13669,32 +13688,24 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       asm_fprintf (f, "\tmov\t%r, %r\t\t%@ Backtrace structure created\n",
 		   ARM_HARD_FRAME_POINTER_REGNUM, work_register);
     }
-  else if (live_regs_mask)
-    thumb_pushpop (f, live_regs_mask, 1, &cfa_offset, live_regs_mask);
+  else if (l_mask)
+    thumb_pushpop (f, l_mask, 1, &cfa_offset, l_mask);
 
-  for (regno = 8; regno < 13; regno++)
-    if (THUMB_REG_PUSHED_P (regno))
-      high_regs_pushed++;
+  high_regs_pushed = bit_count (live_regs_mask & 0x0f00);
 
   if (high_regs_pushed)
     {
       int pushable_regs = 0;
-      int mask = live_regs_mask & 0xff;
       int next_hi_reg;
 
       for (next_hi_reg = 12; next_hi_reg > LAST_LO_REGNUM; next_hi_reg--)
-	if (THUMB_REG_PUSHED_P (next_hi_reg))
+	if (live_regs_mask & (1 << next_hi_reg))
 	  break;
 
-      pushable_regs = mask;
+      pushable_regs = l_mask & 0xff;
 
       if (pushable_regs == 0)
-	{
-	  /* Desperation time -- this probably will never happen.  */
-	  if (THUMB_REG_PUSHED_P (LAST_ARG_REGNUM))
-	    asm_fprintf (f, "\tmov\t%r, %r\n", IP_REGNUM, LAST_ARG_REGNUM);
-	  mask = 1 << LAST_ARG_REGNUM;
-	}
+	pushable_regs = 1 << thumb_find_work_register (live_regs_mask);
 
       while (high_regs_pushed > 0)
 	{
@@ -13702,7 +13713,7 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 
 	  for (regno = LAST_LO_REGNUM; regno >= 0; regno--)
 	    {
-	      if (mask & (1 << regno))
+	      if (pushable_regs & (1 << regno))
 		{
 		  asm_fprintf (f, "\tmov\t%r, %r\n", regno, next_hi_reg);
 		  
@@ -13713,23 +13724,19 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 		    {
 		      for (next_hi_reg--; next_hi_reg > LAST_LO_REGNUM;
 			   next_hi_reg--)
-			if (THUMB_REG_PUSHED_P (next_hi_reg))
+			if (live_regs_mask & (1 << next_hi_reg))
 			  break;
 		    }
 		  else
 		    {
-		      mask &= ~((1 << regno) - 1);
+		      pushable_regs &= ~((1 << regno) - 1);
 		      break;
 		    }
 		}
 	    }
 
-	  thumb_pushpop (f, mask, 1, &cfa_offset, real_regs_mask);
+	  thumb_pushpop (f, pushable_regs, 1, &cfa_offset, real_regs_mask);
 	}
-
-      if (pushable_regs == 0
-	  && (THUMB_REG_PUSHED_P (LAST_ARG_REGNUM)))
-	asm_fprintf (f, "\tmov\t%r, %r\n", LAST_ARG_REGNUM, IP_REGNUM);
     }
 }
 
@@ -14741,24 +14748,15 @@ void
 thumb_set_return_address (rtx source, rtx scratch)
 {
   arm_stack_offsets *offsets;
-  bool lr_saved;
   HOST_WIDE_INT delta;
   int reg;
   rtx addr;
+  unsigned long mask;
 
   emit_insn (gen_rtx_USE (VOIDmode, source));
-  lr_saved = FALSE;
-  for (reg = 0; reg <= LAST_LO_REGNUM; reg++)
-    {
-      if (THUMB_REG_PUSHED_P (reg))
-	{
-	  lr_saved = TRUE;
-	  break;
-	}
-    }
-  lr_saved |= thumb_force_lr_save ();
 
-  if (lr_saved)
+  mask = thumb_compute_save_reg_mask ();
+  if (mask & (1 << LR_REGNUM))
     {
       offsets = arm_get_frame_offsets ();
 
