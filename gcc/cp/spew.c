@@ -723,7 +723,6 @@ int
 yylex ()
 {
   int yychr;
-  tree trrr = NULL_TREE;
   int old_looking_for_typename = 0;
 
   timevar_push (TV_LEX);
