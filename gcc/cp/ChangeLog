@@ -1,3 +1,8 @@
+1998-10-04  Mark Mitchell  <mark@markmitchell.com>
+
+	* search.c (expand_upcast_vtables): In addition to unsetting 
+	TREE_READONLY, remove top-level const type qualifier.
+
 1998-10-03  Mark Mitchell  <mark@markmitchell.com>
 
 	* class.c (current_class_ptr, current_class_ref): Clarify
