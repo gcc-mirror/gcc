@@ -27,7 +27,7 @@ __attribute__ ((__unused__))
 __exchange_and_add (volatile _Atomic_word* __mem, int __val)
 {
   _Atomic_word __tmp, __tmp2, __result;
-  __asm__ ("\
+  __asm__ __volatile__ ("\
 0:      ldr     %0,[%3]
         add     %1,%0,%4
         swp     %2,%1,[%3]
@@ -45,7 +45,7 @@ __attribute__ ((__unused__))
 __atomic_add (volatile _Atomic_word *__mem, int __val)
 {
   _Atomic_word __tmp, __tmp2, __tmp3;
-  __asm__ ("\
+  __asm__ __volatile__ ("\
 0:      ldr     %0,[%3]
         add     %1,%0,%4
         swp     %2,%1,[%3]
@@ -63,7 +63,7 @@ __compare_and_swap (volatile long *__p, long __oldval, long __newval)
 {
   int __result;
   long __tmp;
-  __asm__ ("\
+  __asm__ __volatile__ ("\
 0:      ldr     %1,[%2]
         mov     %0,#0
         cmp     %1,%4
@@ -85,7 +85,7 @@ __attribute__ ((__unused__))
 __always_swap (volatile long *__p, long __newval)
 {
   long __result;
-  __asm__ ("\
+  __asm__ __volatile__ ("\
         swp     %0,%2,[%1]
 " : "=&r"(__result) : "r"(__p), "r"(__newval) : "memory");
   return __result;
@@ -97,7 +97,7 @@ __test_and_set (volatile long *__p, long __newval)
 {
   int __result;
   long __tmp;
-  __asm__ ("\
+  __asm__ __volatile__ ("\
 0:      ldr     %0,[%2]
         cmp     %0,#0
         bne     1f
