@@ -1,3 +1,7 @@
+Fri Oct 24 17:49:10 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* integrate.c (save_for_inline_copying): Copy parm_reg_stack_loc.
+
 Fri Oct 24 17:40:34 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10200.c (indirect_memory_operand): Delete unused function.
