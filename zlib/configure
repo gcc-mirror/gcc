@@ -2669,7 +2669,12 @@ else
   toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
   toolexeclibdir='$(libdir)'
 fi
-toolexeclibdir=$toolexeclibdir/`$CC -print-multi-os-directory 2>/dev/null || echo .`
+if test "$GCC" = yes && $CC -print-multi-os-directory > /dev/null 2>&1; then
+  multiosdir=/`$CC -print-multi-os-directory`
+else
+  multiosdir=
+fi
+toolexeclibdir=${toolexeclibdir}${multiosdir}
 
 
 
