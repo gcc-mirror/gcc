@@ -2,6 +2,7 @@
 
 	* dwarf2asm.c (dw2_asm_output_encoded_addr_rtx): Use proper
 	alignment for assemble_integer for DW_EH_PE_aligned.
+	* except.c (output_function_exception_table): Likewise.
 
 2001-08-26  Andreas Jaeger  <aj@suse.de>
 

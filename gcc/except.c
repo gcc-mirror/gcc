@@ -3636,16 +3636,19 @@ output_function_exception_table ()
   while (i-- > 0)
     {
       tree type = VARRAY_TREE (cfun->eh->ttype_data, i);
+      rtx value;
 
       if (type == NULL_TREE)
 	type = integer_zero_node;
       else
 	type = lookup_type_for_runtime (type);
 
-      dw2_asm_output_encoded_addr_rtx (tt_format,
-				       expand_expr (type, NULL_RTX, VOIDmode,
-						    EXPAND_INITIALIZER),
-				       NULL);
+      value = expand_expr (type, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);
+      if (tt_format == DW_EH_PE_absptr || tt_format == DW_EH_PE_aligned)
+	assemble_integer (value, tt_format_size,
+			  tt_format_size * BITS_PER_UNIT, 1);
+      else
+        dw2_asm_output_encoded_addr_rtx (tt_format, value, NULL);
     }
 
 #ifdef HAVE_AS_LEB128
