@@ -1646,7 +1646,7 @@ xtensa_emit_call (int callop, rtx *operands)
 }
 
 
-/* Return the stabs register number to use for 'regno'.  */
+/* Return the debugger register number to use for 'regno'.  */
 
 int
 xtensa_dbx_register_number (int regno)
@@ -1666,17 +1666,12 @@ xtensa_dbx_register_number (int regno)
   else if (FP_REG_P (regno))
     {
       regno -= FP_REG_FIRST;
-      /* The current numbering convention is that TIE registers are
-	 numbered in libcc order beginning with 256.  We can't guarantee
-	 that the FP registers will come first, so the following is just
-	 a guess.  It seems like we should make a special case for FP
-	 registers and give them fixed numbers < 256.  */
-      first = 256;
+      first = 48;
     }
   else if (ACC_REG_P (regno))
     {
-      first = 0;
-      regno = -1;
+      first = 0x200;	/* Start of Xtensa special registers.  */
+      regno = 16;	/* ACCLO is special register 16.  */
     }
 
   /* When optimizing, we sometimes get asked about pseudo-registers
