@@ -28,11 +28,17 @@ if $tracelevel then {
     strace $tracelevel
 }
 
+if [target_info exists ieee_multilib_flags] {
+    set additional_flags [target_info ieee_multilib_flags];
+} else {
+    set additional_flags "";
+}
+
 # load support procs
 load_lib c-torture.exp
 
 # initialize harness
-gcc_init 
+gcc_init
 
 #
 # main test loop
@@ -44,7 +50,7 @@ foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
 	continue
     }
 
-    c-torture-execute $src
+    c-torture-execute $src $additional_flags
 }
 
 # All done.

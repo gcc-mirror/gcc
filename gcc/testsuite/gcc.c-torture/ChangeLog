@@ -1,6 +1,24 @@
-Fri Aug 29 12:46:05 1997  Jeffrey A Law  (law@cygnus.com)
+Wed Sep  3 17:29:35 1997  Bob Manson  <manson@charmed.cygnus.com>
+
+	* execute/ieee/ieee.exp: Check for ieee_multilib_flags target
+	feature; pass this to c-torture-execute as needed.
+
+Fri Aug 29 12:48:09 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* execute/921007-1.c: Make strcmp static.
+
+Tue Jul 29 00:40:38 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* conversion.c (test_float_to_integer): Make double precision tests
+	dependent on sizeof (double).
+
+Tue Jun 17 22:11:16 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* compile/961203-1.cexp: New script.
+
+Wed Jun  4 03:38:50 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* execute/ieee/ieee.exp: Set -mieee for SH.
 
 Thu May 15 14:00:04 1997  Mike Meissner  <meissner@cygnus.com>
 

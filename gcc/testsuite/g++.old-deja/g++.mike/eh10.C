@@ -9,7 +9,7 @@ void foo() {
 
 void ee(int *);
 
-bar() {
+void bar() {
   int i = 2;
   ee(&i);
 }

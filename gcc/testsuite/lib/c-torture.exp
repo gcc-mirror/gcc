@@ -23,12 +23,16 @@
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"
 
 if ![info exists TORTURE_OPTIONS] {
-    # FIXME: We should test -g at least once.
+    # It is theoretically beneficial to group all of the O2 options together,
+    # as in many cases the compiler will generate identical executables for
+    # all of them--and the c-torture testsuite will skip testing identical
+    # executables multiple times.
     set TORTURE_OPTIONS [list \
 	{ -O0 } { -O1 } { -O2 } \
 	{ -O2 -fomit-frame-pointer -finline-functions } \
 	{ -O2 -fomit-frame-pointer -finline-functions -funroll-loops } \
-	{ -O2 -fomit-frame-pointer -finline-functions -funroll-all-loops }]
+	{ -O2 -fomit-frame-pointer -finline-functions -funroll-all-loops } \
+	{ -O2 -g } ]
 }
 
 
@@ -130,9 +134,14 @@ proc c-torture-compile { src option } {
 # run the compile.exp tests for example - one need only pass compile.exp to
 # dejagnu, and not compile.exp, foo1.exp, foo2.exp, etc.).
 #
-proc c-torture-execute { src } {
+proc c-torture-execute { src args } {
     global tmpdir tool srcdir output 
 
+    if { [llength $args] > 0 } {
+	set additional_flags [lindex $args 0];
+    } else {
+	set additional_flags "";
+    }
     # Check for alternate driver.
     if [file exists [file rootname $src].cexp] {
 	verbose "Using alternate driver [file rootname [file tail $src]].cexp" 2
@@ -163,31 +172,42 @@ proc c-torture-execute { src } {
 	set testcase "[file tail [file dirname $src]]/[file tail $src]"
     }
 
+    set count 0;
+    set oldstatus "foo";
     foreach option $option_list {
+	if { $count > 0 } {
+	    set oldexec $execname;
+	}
+	set execname "${executable}${count}";
+	incr count;
+
 	# torture_{compile,execute}_xfail are set by the .cexp script
 	# (if present)
 	if [info exists torture_compile_xfail] {
 	    setup_xfail $torture_compile_xfail
 	}
-	remote_file build delete $executable
+	remote_file build delete $execname;
 	verbose "Testing $testcase, $option" 1
 
 	set options ""
 	lappend options "additional_flags=-w $option"
-	set comp_output [gcc_target_compile "$src" "$executable" executable $options];
+	if { $additional_flags != "" } {
+	    lappend options "additional_flags=$additional_flags";
+	}
+	set comp_output [gcc_target_compile "$src" "${execname}" executable $options];
 
 	# Set a few common compiler messages.
 	set fatal_signal "*cc: Internal compiler error: program*got fatal signal"
 	
 	if [string match "$fatal_signal 6" $comp_output] then {
 	    gcc_fail $testcase "Got Signal 6, $option"
-	    remote_file build delete $executable
+	    remote_file build delete $execname
 	    continue
 	}
 	
 	if [string match "$fatal_signal 11" $comp_output] then {
 	    gcc_fail $testcase "Got Signal 11, $option"
-	    remote_file build delete $executable
+	    remote_file build delete $execname
 	    continue
 	}
 	
@@ -196,7 +216,7 @@ proc c-torture-execute { src } {
 	    warning "$testcase: (with warnings) $option"
 	    send_log "$comp_output\n"
 	    unresolved "$testcase, $option"
-	    remote_file build delete $executable
+	    remote_file build delete $execname
 	    continue
 	}
 	
@@ -207,7 +227,7 @@ proc c-torture-execute { src } {
 	if { $unsupported_message != "" } {
 	    unsupported "$testcase: $unsupported_message"
 	    continue
-	} elseif ![file exists $executable] {
+	} elseif ![file exists $execname] {
 	    if ![is3way] {
 		fail "$testcase compilation, $option"
 		untested "$testcase execution, $option"
@@ -234,14 +254,27 @@ proc c-torture-execute { src } {
 	if [info exists torture_execute_xfail] {
 	    setup_xfail $torture_execute_xfail
 	}
-	
-	set result [gcc_load "$executable" "" ""]
-	set status [lindex $result 0];
-	set output [lindex $result 1];
-        if { $status == "pass" } {
-	    remote_file build delete $executable
+	set skip 0;
+	if [info exists oldexec] {
+	    if { [remote_file build cmp $oldexec $execname] == 0 } {
+		set skip 1;
+	    }
+	}
+	if { $skip == 0 } {
+	    set result [gcc_load "$execname" "" ""]
+	    set status [lindex $result 0];
+	    set output [lindex $result 1];
+	}
+        if { $oldstatus == "pass" } {
+	    remote_file build delete $oldexec;
         }
 	$status "$testcase execution, $option"
+	set oldstatus $status;
+    }
+    if [info exists status] {
+	if { $status == "pass" } {
+	    remote_file build delete $execname;
+	}
     }
 }
 
