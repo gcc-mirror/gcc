@@ -544,6 +544,9 @@ pop_function_context_from (context)
 
   outer_function_chain = p->next;
 
+  current_function_contains_functions
+    = p->contains_functions || p->inline_obstacks
+      || context == current_function_decl;
   current_function_name = p->name;
   current_function_decl = p->decl;
   current_function_pops_args = p->pops_args;
@@ -555,9 +558,6 @@ pop_function_context_from (context)
   current_function_calls_alloca = p->calls_alloca;
   current_function_has_nonlocal_label = p->has_nonlocal_label;
   current_function_has_nonlocal_goto = p->has_nonlocal_goto;
-  current_function_contains_functions
-    = p->contains_functions || p->inline_obstacks
-      || context == current_function_decl;
   current_function_args_size = p->args_size;
   current_function_pretend_args_size = p->pretend_args_size;
   current_function_arg_offset_rtx = p->arg_offset_rtx;
