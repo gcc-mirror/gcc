@@ -358,6 +358,9 @@ USE_NLS = @USE_NLS@
 # Internationalization library.
 INTLLIBS = @INTLLIBS@
 
+# Character encoding conversion library.
+LIBICONV = @LIBICONV@
+
 # List of internationalization subdirectories.
 POSUB = @POSUB@
 INTL_SUBDIRS = intl $(POSUB)

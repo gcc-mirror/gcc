@@ -1,3 +1,7 @@
+2001-07-26  Rainer Orth <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.in (LIBICONV): Define.
+
 2001-07-26  Andrew MacLeod  <amacleod@redhat.com>
 
 	* params.def (PARAM_MAX_PENDING_LIST_LENGTH): Add parameter to 
