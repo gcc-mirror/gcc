@@ -1474,20 +1474,19 @@ struct lang_decl_flags
   unsigned const_memfunc : 1;
   unsigned volatile_memfunc : 1;
   unsigned abstract_virtual : 1;
-  unsigned permanent_attr : 1 ;
-
   unsigned constructor_for_vbase_attr : 1;
+
   unsigned mutable_flag : 1;
   unsigned saved_inline : 1;
   unsigned use_template : 2;
   unsigned nonconverting : 1;
   unsigned declared_inline : 1;
   unsigned not_really_extern : 1;
-
   unsigned needs_final_overrider : 1;
+
   unsigned bitfield : 1;
   unsigned defined_in_class : 1;
-  unsigned dummy : 5;
+  unsigned dummy : 6;
 
   tree access;
   tree context;
@@ -1515,9 +1514,6 @@ struct lang_decl
   {
     tree sorted_fields;
     struct pending_inline *pending_inline_info;
-    /* The lang_decls on the free_lang_decl_chain are chained together
-       through this pointer.  */
-    struct lang_decl *next;
   } u;
 };
 
@@ -1638,9 +1634,6 @@ struct lang_decl
 /* Nonzero for FUNCTION_DECL means that this member function
    must be overridden by derived classes.  */
 #define DECL_NEEDS_FINAL_OVERRIDER_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.needs_final_overrider)
-
-/* Nonzero if allocated on permanent_obstack.  */
-#define LANG_DECL_PERMANENT(LANGDECL) ((LANGDECL)->decl_flags.permanent_attr)
 
 /* The _TYPE context in which this _DECL appears.  This field holds the
    class where a virtual function instance is actually defined, and the

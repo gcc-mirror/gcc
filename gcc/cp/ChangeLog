@@ -1,5 +1,16 @@
 1999-09-08  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (lang_decl_flags): Remove permanent_attr.
+	Remove next.
+	(LANG_DECL_PERMANENT): Remove.
+	* decl.c (duplicate_decls): Don't mess about with obstacks trying
+	to free memory.
+	(lang_mark_tree): Mark DECL_LANG_SPECIFIC.
+	* lex.c (free_lang_decl_chain): Remove.
+	(build_lang_decl): Don't use obstacks.
+	(retrofit_lang_decl): Likewise.
+	(copy_lang_decl): Likewise.
+
 	* cp-tree.h (saved_scope): Remove old_binding_level and 
 	function_decl.  Tidy up.
 	* decl.c (mark_saved_scope): Don't set them.
