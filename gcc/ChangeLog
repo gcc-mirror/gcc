@@ -1,3 +1,19 @@
+2004-11-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/2064.md ("z_int", "z_agen"): Ensure the condition
+	matches no insns already matched by other reservations.
+	* config/s390/2084.md ("x_int", "x_agen"): Ensure the condition
+	matches no insns already matched by other reservations.
+	("x_ss"): Remove, replace by ...
+	("x_cs"): ... this new reservation.  Check type instead of op_type.
+	Update bypasses to use x_cs instead of x_ss.
+	("x_nn"): Remove, replace by ...
+	("x_other"): ... this new reservation.  Check type instead of op_type.
+	Add x_other and x_branch to bypasses.
+	("x_vs"): New reservation.
+	* config/s390/s390.md (attribute "type"): Default according to op_type.
+	("*execute"): Set type to "cs".
+
 2004-11-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c (non_lvalue): Don't construct NON_LVALUE_EXPR
