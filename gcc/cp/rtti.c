@@ -130,8 +130,7 @@ build_headof (exp)
   /* We use this a couple of times below, protect it.  */
   exp = save_expr (exp);
 
-  /* Under the new ABI, the offset-to-top field is at index -2 from
-     the vptr.  */
+  /* The offset-to-top field is at index -2 from the vptr.  */
   index = build_int_2 (-2, -1);
 
   aref = build_vtbl_ref (build_indirect_ref (exp, NULL), index);
@@ -452,36 +451,12 @@ get_base_offset (binfo, parent)
 {
   if (! TREE_VIA_VIRTUAL (binfo))
     return BINFO_OFFSET (binfo);
-  else if (! vbase_offsets_in_vtable_p ())
-    {
-      const char *name;
-      tree result;
-      tree field;
-    
-      FORMAT_VBASE_NAME (name, BINFO_TYPE (binfo));
-      field = lookup_field (parent, get_identifier (name), 0, 0);
-      result = byte_position (field);
-      
-      if (DECL_CONTEXT (field) != parent)
-        {
-          /* The vbase pointer might be in a non-virtual base of PARENT.
-           * Adjust for the offset of that base in PARENT.  */
-          tree path;
-          
-          get_base_distance (DECL_CONTEXT (field), parent, -1, &path);
-          result = build (PLUS_EXPR, TREE_TYPE (result),
-                          result, BINFO_OFFSET (path));
-          result = fold (result);
-        }
-      return result;
-    }
   else
-    /* Under the new ABI, we store the vtable offset at which
-       the virtual base offset can be found.  */
+    /* We store the vtable offset at which the virtual base offset can
+       be found.  */
     return convert (sizetype,
 		    BINFO_VPTR_FIELD (binfo_for_vbase (BINFO_TYPE (binfo),
 						       parent)));
-
 }
 
 /* Execute a dynamic cast, as described in section 5.2.6 of the 9/93 working
@@ -833,8 +808,8 @@ tinfo_base_init (desc, target)
     DECL_EXTERNAL (name_decl) = 0;
     TREE_PUBLIC (name_decl) = 1;
     comdat_linkage (name_decl);
-    /* The new ABI specifies the external name of the string
-       containing the type's name.  */
+    /* External name of the string containing the type's name has a
+       special name.  */
     SET_DECL_ASSEMBLER_NAME (name_decl,
 			     mangle_typeinfo_string_for_type (target));
     DECL_INITIAL (name_decl) = name_string;
@@ -1295,8 +1270,7 @@ create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
   vtable_decl = get_vtable_decl (real_type, /*complete=*/1);
   vtable_decl = build_unary_op (ADDR_EXPR, vtable_decl, 0);
 
-  /* Under the new ABI, we need to point into the middle of the
-     vtable.  */
+  /* We need to point into the middle of the vtable.  */
   vtable_decl = build (PLUS_EXPR,
 		       TREE_TYPE (vtable_decl),
 		       vtable_decl,

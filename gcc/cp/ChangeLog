@@ -1,3 +1,45 @@
+2001-07-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Remove old-abi remnants. Remove comments about old abi
+	behaviour. Remove refences to 'new-abi' in comments.
+	* cp-tree.h: Adjust comments.
+	(vbase_offsets_in_vtable_p): Delete.
+	(vcall_offsets_in_vtable_p): Delete.
+	(vptrs_present_everywhere_p): Delete.
+	(all_overridden_vfuns_in_vtables_p): Delete.
+	(merge_primary_and_secondary_vtables_p): Delete.
+	(TYPE_CONTAINS_VPTR_P): Adjust.
+	(VTT_NAME_PREFIX): Remove.
+	(CTOR_VTBL_NAME_PREFIX): Remove.
+	(init_vbase_pointers): Remove.
+	* class.c: Adjust coments.
+	(build_vbase_pointer_fields): Delete.
+	(build_vbase_pointer): Remove old-abi code.
+	(build_secondary_vtable): Likewise.
+	(modify_all_vtables): Likewise.
+	(create_vtable_ptr): Likewise.
+	(layout_class_type): Likewise.
+	(finish_struct_1): Likewise.
+	(finish_vtbls): Likewise.
+	(dfs_finish_vtbls): Delete.
+	(build_vbase_offset_vtbl_entries): Remove old-abi code.
+	* cvt.c: Adjust comments.
+	* decl.c: Adjust comments.
+	* decl2.c: Adjust comments.
+	* init.c: Adjust comments.
+	(construct_virtual_bases): Remove old-abi code.
+	* lang-specs.h: Remove -fno-new-abi.
+	* mangle.c: Adjust comments.
+	* rtti.c: Adjust comments.
+	(get_base_offset): Remove old-abi-code.
+	* search.c: Adjust comments.
+	(dfs_init_vbase_pointers): Remove.
+	(dfs_vtable_path_unmark): Remove.
+	(init_vbase_pointers): Remove.
+	* semantics.c: Adjust comments.
+	(emit_associated_thunks): Remove old-abi code.
+	* typeck.c: Adjust comments.
+
 2001-07-20  Daniel Berlin  <dan@cgsoftware.com>
 
 	* Make-lang.in (cp/optimize.o): Depend on $(PARAMS_H), not

@@ -2291,12 +2291,12 @@ comdat_linkage (decl)
        address, and this will not hold when we emit multiple copies of
        the function.  However, there's little else we can do.  
 
-       Also, by default, the typeinfo implementation for the new ABI
-       assumes that there will be only one copy of the string used as
-       the name for each type.  Therefore, if weak symbols are
-       unavailable, the run-time library should perform a more
-       conservative check; it should perform a string comparison,
-       rather than an address comparison.  */
+       Also, by default, the typeinfo implementation assumes that
+       there will be only one copy of the string used as the name for
+       each type.  Therefore, if weak symbols are unavailable, the
+       run-time library should perform a more conservative check; it
+       should perform a string comparison, rather than an address
+       comparison.  */
     TREE_PUBLIC (decl) = 0;
   else
     {
@@ -2744,8 +2744,8 @@ get_guard (decl)
     {
       tree guard_type;
 
-      /* Under the new ABI, we use a type that is big enough to
-	 contain a mutex as well as an integer counter.  */
+      /* We use a type that is big enough to contain a mutex as well
+	 as an integer counter.  */
       guard_type = long_long_integer_type_node;
       guard = build_decl (VAR_DECL, sname, guard_type);
       
@@ -2772,8 +2772,8 @@ static tree
 get_guard_bits (guard)
      tree guard;
 {
-  /* Under the new ABI, we only set the first byte of the guard,
-     in order to leave room for a mutex in the high-order bits.  */
+  /* We only set the first byte of the guard, in order to leave room
+     for a mutex in the high-order bits.  */
   guard = build1 (ADDR_EXPR, 
 		  build_pointer_type (TREE_TYPE (guard)),
 		  guard);

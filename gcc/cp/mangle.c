@@ -1,4 +1,4 @@
-/* Name mangling for the new standard C++ ABI.
+/* Name mangling for the 3.0 C++ ABI.
    Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Written by Alex Samuel <sameul@codesourcery.com>
 
@@ -1168,10 +1168,9 @@ write_identifier (identifier)
 
    Currently, allocating constructors are never used. 
 
-   We also need to provide unique mangled names (which should never be
-   exported) for the constructor that takes an in-charge parameter,
-   and for a constructor whose name is the same as its class's name.
-   We use "C*INTERNAL*" for these.  */
+   We also need to provide mangled names for the maybe-in-charge
+   constructor, so we treat it here too.  mangle_decl_string will
+   append *INTERNAL* to that, to make sure we never emit it.  */
 
 static void
 write_special_name_constructor (ctor)
@@ -1190,15 +1189,15 @@ write_special_name_constructor (ctor)
 }
 
 /* Handle destructor productions of non-terminal <special-name>.
-   DTOR is a denstructor FUNCTION_DECL. 
+   DTOR is a destructor FUNCTION_DECL. 
 
      <special-name> ::= D0 # deleting (in-charge) destructor
                     ::= D1 # complete object (in-charge) destructor
-                    ::= D2 # base object (not-in-charge) destructor 
+                    ::= D2 # base object (not-in-charge) destructor
 
-   We also need to provide unique mngled names for old-ABI
-   destructors, sometimes.  These should only be used internally.  We
-   use "D*INTERNAL*" for these.  */
+   We also need to provide mangled names for the maybe-incharge
+   destructor, so we treat it here too.  mangle_decl_string will
+   append *INTERNAL* to that, to make sure we never emit it.  */
 
 static void
 write_special_name_destructor (dtor)
