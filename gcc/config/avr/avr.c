@@ -605,8 +605,8 @@ function_epilogue (FILE *file, int size)
   signal_func_p = signal_function_p (current_function_decl);
   leaf_func_p = leaf_function_p ();
   main_p = ! strcmp ("main", current_function_name);
-  function_size = (insn_addresses[INSN_UID (get_last_insn ())]
-		   - insn_addresses[INSN_UID (get_insns ())]);
+  function_size = (INSN_ADDRESSES (INSN_UID (get_last_insn ()))
+		   - INSN_ADDRESSES (INSN_UID (get_insns ())));
   live_seq = sequent_regs_live ();
   minimize = (TARGET_CALL_PROLOGUES
 	      && !interrupt_func_p && !signal_func_p && live_seq);
@@ -1089,9 +1089,9 @@ avr_jump_mode (x,insn)
      rtx x;                     /* jump operand */
      rtx insn;                  /* jump insn */
 {
-  int dest_addr = insn_addresses[INSN_UID (GET_MODE (x) == LABEL_REF
-                                           ? XEXP (x, 0) : x)];
-  int cur_addr = insn_addresses[INSN_UID (insn)];
+  int dest_addr = INSN_ADDRESSES (INSN_UID (GET_MODE (x) == LABEL_REF
+					    ? XEXP (x, 0) : x));
+  int cur_addr = INSN_ADDRESSES (INSN_UID (insn));
   int jump_distance = cur_addr - dest_addr;
   
   if (-63 <= jump_distance && jump_distance <= 62)
@@ -1212,11 +1212,12 @@ final_prescan_insn (insn, operand, num_operands)
 
   if (TARGET_INSN_SIZE_DUMP || TARGET_ALL_DEBUG)
     {
-      fprintf (asm_out_file, "/*DEBUG: 0x%x\t\t%d\t%d */\n", insn_addresses[uid],
-               insn_addresses[uid] - last_insn_address,
-	       rtx_cost (PATTERN (insn),INSN));
+      fprintf (asm_out_file, "/*DEBUG: 0x%x\t\t%d\t%d */\n",
+	       INSN_ADDRESSES (uid),
+               INSN_ADDRESSES (uid) - last_insn_address,
+	       rtx_cost (PATTERN (insn), INSN));
     }
-  last_insn_address = insn_addresses[uid];
+  last_insn_address = INSN_ADDRESSES (uid);
 
   if (TARGET_RTL_DUMP)
     {
@@ -3999,8 +4000,8 @@ jump_over_one_insn_p (insn, dest)
   int uid = INSN_UID (GET_CODE (dest) == LABEL_REF
 		      ? XEXP (dest, 0)
 		      : dest);
-  int jump_addr = insn_addresses[INSN_UID (insn)];
-  int dest_addr = insn_addresses[uid];
+  int jump_addr = INSN_ADDRESSES (INSN_UID (insn));
+  int dest_addr = INSN_ADDRESSES (uid);
   return dest_addr - jump_addr == 2;
 }
 

@@ -2910,11 +2910,11 @@ output_function_prologue (file, size)
      we don't need to accumulate the total number of code bytes.  */
   if (TARGET_GAS && ! TARGET_PORTABLE_RUNTIME)
     total_code_bytes = 0;
-  else if (insn_addresses)
+  else if (INSN_ADDRESSES_SET_P ())
     {
       unsigned int old_total = total_code_bytes;
 
-      total_code_bytes += insn_addresses[INSN_UID (get_last_insn())];
+      total_code_bytes += INSN_ADDRESSES (INSN_UID (get_last_insn()));
       total_code_bytes += FUNCTION_BOUNDARY / BITS_PER_UNIT;
 
       /* Be prepared to handle overflows.  */
@@ -4887,9 +4887,9 @@ output_cbranch (operands, nullify, length, negated, insn)
 	   taken and untaken branches.  */
 	else if (dbr_sequence_length () == 0
 		 && ! forward_branch_p (insn)
-		 && insn_addresses
-		 && VAL_14_BITS_P (insn_addresses[INSN_UID (JUMP_LABEL (insn))]
-				    - insn_addresses[INSN_UID (insn)] - 8))
+		 && INSN_ADDRESSES_SET_P ()
+		 && VAL_14_BITS_P (INSN_ADDRESSES (INSN_UID (JUMP_LABEL (insn)))
+				    - INSN_ADDRESSES (INSN_UID (insn)) - 8))
 	  {
 	    strcpy (buf, "{com%I2b,|cmp%I2b,}");
 	    if (GET_MODE (operands[1]) == DImode)
@@ -5104,9 +5104,9 @@ output_bb (operands, nullify, length, negated, insn, which)
 	   taken and untaken branches.  */
 	else if (dbr_sequence_length () == 0
 		 && ! forward_branch_p (insn)
-		 && insn_addresses
-		 && VAL_14_BITS_P (insn_addresses[INSN_UID (JUMP_LABEL (insn))]
-				    - insn_addresses[INSN_UID (insn)] - 8))
+		 && INSN_ADDRESSES_SET_P ()
+		 && VAL_14_BITS_P (INSN_ADDRESSES (INSN_UID (JUMP_LABEL (insn)))
+				    - INSN_ADDRESSES (INSN_UID (insn)) - 8))
 	  {
 	    strcpy (buf, "bb,");
 	    if (GET_MODE (operands[0]) == DImode)
@@ -5252,9 +5252,9 @@ output_bvb (operands, nullify, length, negated, insn, which)
 	   taken and untaken branches.  */
 	else if (dbr_sequence_length () == 0
 		 && ! forward_branch_p (insn)
-		 && insn_addresses
-		 && VAL_14_BITS_P (insn_addresses[INSN_UID (JUMP_LABEL (insn))]
-				    - insn_addresses[INSN_UID (insn)] - 8))
+		 && INSN_ADDRESSES_SET_P ()
+		 && VAL_14_BITS_P (INSN_ADDRESSES (INSN_UID (JUMP_LABEL (insn)))
+				    - INSN_ADDRESSES (INSN_UID (insn)) - 8))
 	  {
 	    strcpy (buf, "{bvb,|bb,}");
 	    if (GET_MODE (operands[0]) == DImode)
@@ -5361,9 +5361,9 @@ output_dbra (operands, insn, which_alternative)
 	     taken and untaken branches.  */
 	  else if (dbr_sequence_length () == 0
 		   && ! forward_branch_p (insn)
-		   && insn_addresses
-		   && VAL_14_BITS_P (insn_addresses[INSN_UID (JUMP_LABEL (insn))]
-				      - insn_addresses[INSN_UID (insn)] - 8))
+		   && INSN_ADDRESSES_SET_P ()
+		   && VAL_14_BITS_P (INSN_ADDRESSES (INSN_UID (JUMP_LABEL (insn)))
+				      - INSN_ADDRESSES (INSN_UID (insn)) - 8))
 	      return "addib,%C2 %1,%0,%3%#";
 
 	  /* Handle normal cases.  */
@@ -5469,9 +5469,9 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	     taken and untaken branches.  */
 	  else if (dbr_sequence_length () == 0
 		   && ! forward_branch_p (insn)
-		   && insn_addresses
-		   && VAL_14_BITS_P (insn_addresses[INSN_UID (JUMP_LABEL (insn))]
-				      - insn_addresses[INSN_UID (insn)] - 8))
+		   && INSN_ADDRESSES_SET_P ()
+		   && VAL_14_BITS_P (INSN_ADDRESSES (INSN_UID (JUMP_LABEL (insn)))
+				      - INSN_ADDRESSES (INSN_UID (insn)) - 8))
 	    return "movb,%C2 %1,%0,%3%#";
 	  /* Handle normal cases.  */
 	  if (nullify)
@@ -5644,8 +5644,8 @@ output_millicode_call (insn, call_dest)
   /* Use the containing sequence insn's address.  */
   seq_insn = NEXT_INSN (PREV_INSN (XVECEXP (final_sequence, 0, 0)));
 
-  distance = insn_addresses[INSN_UID (JUMP_LABEL (NEXT_INSN (insn)))]
-	       - insn_addresses[INSN_UID (seq_insn)] - 8;
+  distance = INSN_ADDRESSES (INSN_UID (JUMP_LABEL (NEXT_INSN (insn))))
+	       - INSN_ADDRESSES (INSN_UID (seq_insn)) - 8;
 
   /* If the branch was too far away, emit a normal call followed
      by a nop, followed by the unconditional branch.
@@ -5917,8 +5917,8 @@ output_call (insn, call_dest, sibcall)
   /* Use the containing sequence insn's address.  */
   seq_insn = NEXT_INSN (PREV_INSN (XVECEXP (final_sequence, 0, 0)));
 
-  distance = insn_addresses[INSN_UID (JUMP_LABEL (NEXT_INSN (insn)))]
-	       - insn_addresses[INSN_UID (seq_insn)] - 8;
+  distance = INSN_ADDRESSES (INSN_UID (JUMP_LABEL (NEXT_INSN (insn))))
+	       - INSN_ADDRESSES (INSN_UID (seq_insn)) - 8;
 
   /* If the branch was too far away, emit a normal call followed
      by a nop, followed by the unconditional branch.

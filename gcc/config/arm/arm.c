@@ -8570,10 +8570,9 @@ void
 thumb_final_prescan_insn (insn)
      rtx insn;
 {
-  extern int * insn_addresses;
-
   if (flag_print_asm_name)
-    asm_fprintf (asm_out_file, "%@ 0x%04x\n", insn_addresses[INSN_UID (insn)]);
+    asm_fprintf (asm_out_file, "%@ 0x%04x\n",
+		 INSN_ADDRESSES (INSN_UID (insn)));
 }
 
 int

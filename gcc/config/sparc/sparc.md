@@ -8415,8 +8415,8 @@
      instead.  */
 
   if (! TARGET_V9 && flag_delayed_branch
-      && (insn_addresses[INSN_UID (operands[0])]
-	  == insn_addresses[INSN_UID (insn)]))
+      && (INSN_ADDRESSES (INSN_UID (operands[0]))
+	  == INSN_ADDRESSES (INSN_UID (insn))))
     return \"b\\t%l0%#\";
   else
     return TARGET_V9 ? \"ba,pt%*\\t%%xcc, %l0%(\" : \"b%*\\t%l0%(\";

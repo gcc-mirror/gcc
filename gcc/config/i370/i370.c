@@ -328,7 +328,7 @@ i370_branch_dest (branch)
     dest = XEXP (dest, 1);
   dest = XEXP (dest, 0);
   dest_uid = INSN_UID (dest);
-  dest_addr =  insn_addresses[dest_uid];
+  dest_addr = INSN_ADDRESSES (dest_uid);
 
   /* next, record the address of this insn as the true addr of first ref */
   {
@@ -349,7 +349,7 @@ i370_branch_length (insn)
      rtx insn;
 {
   int here, there;
-  here = insn_addresses[INSN_UID (insn)];
+  here = INSN_ADDRESSES (INSN_UID (insn));
   there = i370_branch_dest (insn);
   return (there - here);
 }
@@ -407,13 +407,13 @@ i370_label_scan ()
 
    for (insn = get_insns(); insn; insn = NEXT_INSN(insn))
      {
-       int here = insn_addresses[INSN_UID (insn)];
+       int here = INSN_ADDRESSES (INSN_UID (insn));
        enum rtx_code code = GET_CODE(insn);
 
        /* ??? adjust for tables embedded in the .text section that
         * the compiler didn't take into account */
        here += tablejump_offset;
-       insn_addresses[INSN_UID (insn)] = here;
+       INSN_ADDRESSES (INSN_UID (insn)) = here;
 
        /* check to see if this insn is a label ... */
        if (CODE_LABEL == code)

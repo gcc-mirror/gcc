@@ -73,10 +73,6 @@ int pragma_nosave_low_regs;
    sh_expand_prologue.  */
 int current_function_anonymous_args;
 
-/* Global variables from toplev.c and final.c that are used within, but
-   not declared in any header file.  */
-extern int *insn_addresses;
-
 /* Global variables for machine-dependent things. */
 
 /* Which cpu are we scheduling for.  */
@@ -696,7 +692,7 @@ output_far_jump (insn, op)
   struct { rtx lab, reg, op; } this;
   const char *jump;
   int far;
-  int offset = branch_dest (insn) - insn_addresses[INSN_UID (insn)];
+  int offset = branch_dest (insn) - INSN_ADDRESSES (INSN_UID (insn));
 
   this.lab = gen_label_rtx ();
 
@@ -818,12 +814,15 @@ output_branchy_insn (code, template, insn, operands)
 	  /* Following branch not taken */
 	  operands[9] = gen_label_rtx ();
 	  emit_label_after (operands[9], next_insn);
+	  INSN_ADDRESSES_NEW (operands[9],
+			      INSN_ADDRESSES (INSN_UID (next_insn))
+			      + get_attr_length (next_insn));
 	  return template;
 	}
       else
 	{
 	  int offset = (branch_dest (next_insn)
-			- insn_addresses[INSN_UID (next_insn)] + 4);
+			- INSN_ADDRESSES (INSN_UID (next_insn)) + 4);
 	  if (offset >= -252 && offset <= 258)
 	    {
 	      if (GET_CODE (src) == IF_THEN_ELSE)
@@ -836,6 +835,9 @@ output_branchy_insn (code, template, insn, operands)
     }
   operands[9] = gen_label_rtx ();
   emit_label_after (operands[9], insn);
+  INSN_ADDRESSES_NEW (operands[9],
+		      INSN_ADDRESSES (INSN_UID (insn))
+		      + get_attr_length (insn));
   return template;
 }
 
@@ -2502,7 +2504,7 @@ gen_block_redirect (jump, addr, need_block)
   dest = XEXP (SET_SRC (PATTERN (jump)), 0);
   /* If the branch is out of range, try to find a scratch register for it.  */
   if (optimize
-      && (insn_addresses[INSN_UID (dest)] - addr + 4092U > 4092 + 4098))
+      && (INSN_ADDRESSES (INSN_UID (dest)) - addr + 4092U > 4092 + 4098))
     {
       rtx scan;
       /* Don't look for the stack pointer as a scratch register,
@@ -2578,8 +2580,9 @@ gen_block_redirect (jump, addr, need_block)
 	{
 	  dest = JUMP_LABEL (next);
 	  if (dest
-	      && insn_addresses[INSN_UID (dest)] - addr + 4092U > 4092 + 4098)
-	    gen_block_redirect (next, insn_addresses[INSN_UID (next)], -1);
+	      && (INSN_ADDRESSES (INSN_UID (dest)) - addr + 4092U
+		  > 4092 + 4098))
+	    gen_block_redirect (next, INSN_ADDRESSES (INSN_UID (next)), -1);
 	}
     }
 
@@ -3231,7 +3234,7 @@ machine_dependent_reorg (first)
     }
 
   mdep_reorg_phase = SH_SHORTEN_BRANCHES1;
-  insn_addresses = 0;
+  INSN_ADDRESSES_FREE ();
   split_branches (first);
 
   /* The INSN_REFERENCES_ARE_DELAYED in sh.h is problematic because it
@@ -3330,7 +3333,7 @@ split_branches (first)
 	      {
 		rtx src = SET_SRC (PATTERN (insn));
 		rtx olabel = XEXP (XEXP (src, 1), 0);
-		int addr = insn_addresses[INSN_UID (insn)];
+		int addr = INSN_ADDRESSES (INSN_UID (insn));
 		rtx label = 0;
 		int dest_uid = get_dest_uid (olabel, max_uid);
 		struct far_branch *bp = uid_branch[dest_uid];
@@ -3409,11 +3412,12 @@ split_branches (first)
 			    == JUMP_INSN))
 		    && GET_CODE (PATTERN (beyond)) == SET
 		    && recog_memoized (beyond) == CODE_FOR_jump
-		    && ((insn_addresses[INSN_UID (XEXP (SET_SRC (PATTERN (beyond)), 0))]
-			 - insn_addresses[INSN_UID (insn)] + 252U)
+		    && ((INSN_ADDRESSES
+			 (INSN_UID (XEXP (SET_SRC (PATTERN (beyond)), 0)))
+			 - INSN_ADDRESSES (INSN_UID (insn)) + 252U)
 			> 252 + 258 + 2))
 		  gen_block_redirect (beyond,
-				      insn_addresses[INSN_UID (beyond)], 1);
+				      INSN_ADDRESSES (INSN_UID (beyond)), 1);
 	      }
     
 	    next = next_active_insn (insn);
@@ -3422,14 +3426,15 @@ split_branches (first)
 		 || GET_CODE (next = next_active_insn (next)) == JUMP_INSN)
 		&& GET_CODE (PATTERN (next)) == SET
 		&& recog_memoized (next) == CODE_FOR_jump
-		&& ((insn_addresses[INSN_UID (XEXP (SET_SRC (PATTERN (next)), 0))]
-		     - insn_addresses[INSN_UID (insn)] + 252U)
+		&& ((INSN_ADDRESSES
+		     (INSN_UID (XEXP (SET_SRC (PATTERN (next)), 0)))
+		     - INSN_ADDRESSES (INSN_UID (insn)) + 252U)
 		    > 252 + 258 + 2))
-	      gen_block_redirect (next, insn_addresses[INSN_UID (next)], 1);
+	      gen_block_redirect (next, INSN_ADDRESSES (INSN_UID (next)), 1);
 	  }
 	else if (type == TYPE_JUMP || type == TYPE_RETURN)
 	  {
-	    int addr = insn_addresses[INSN_UID (insn)];
+	    int addr = INSN_ADDRESSES (INSN_UID (insn));
 	    rtx far_label = 0;
 	    int dest_uid = 0;
 	    struct far_branch *bp;
@@ -3524,7 +3529,7 @@ final_prescan_insn (insn, opvec, noperands)
      int noperands ATTRIBUTE_UNUSED;
 {
   if (TARGET_DUMPISIZE)
-    fprintf (asm_out_file, "\n! at %04x\n", insn_addresses[INSN_UID (insn)]);
+    fprintf (asm_out_file, "\n! at %04x\n", INSN_ADDRESSES (INSN_UID (insn)));
 
   if (TARGET_RELAX)
     {
@@ -4792,7 +4797,7 @@ branch_dest (branch)
     dest = XEXP (dest, 1);
   dest = XEXP (dest, 0);
   dest_uid = INSN_UID (dest);
-  return insn_addresses[dest_uid];
+  return INSN_ADDRESSES (dest_uid);
 }
 
 /* Return non-zero if REG is not used after INSN.

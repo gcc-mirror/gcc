@@ -4662,7 +4662,7 @@ write_test_expr (exp, flags)
 
     /* The address of the branch target.  */
     case MATCH_DUP:
-      printf ("insn_addresses[INSN_UID (GET_CODE (operands[%d]) == LABEL_REF ? XEXP (operands[%d], 0) : operands[%d])]",
+      printf ("INSN_ADDRESSES (INSN_UID (GET_CODE (operands[%d]) == LABEL_REF ? XEXP (operands[%d], 0) : operands[%d]))",
 	      XINT (exp, 0), XINT (exp, 0), XINT (exp, 0));
       break;
 

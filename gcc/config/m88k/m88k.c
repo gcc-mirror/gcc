@@ -853,8 +853,8 @@ output_call (operands, addr)
 	  rtx low, high;
 	  const char *last;
 	  rtx dest = XEXP (SET_SRC (PATTERN (jump)), 0);
-	  int delta = 4 * (insn_addresses[INSN_UID (dest)]
-			   - insn_addresses[INSN_UID (seq_insn)]
+	  int delta = 4 * (INSN_ADDRESSES (INSN_UID (dest))
+			   - INSN_ADDRESSES (INSN_UID (seq_insn))
 			   - 2);
 #if (MONITOR_GCC & 0x2) /* How often do long branches happen?  */
 	  if ((unsigned) (delta + 0x8000) >= 0x10000)
@@ -1039,8 +1039,8 @@ mostly_false_jump (jump_insn, condition)
     insnj = NEXT_INSN (PREV_INSN (XVECEXP (final_sequence, 0, 0)));
   else
     insnj = jump_insn;
-  if (insn_addresses[INSN_UID (insnj)]
-      > insn_addresses[INSN_UID (target_label)])
+  if (INSN_ADDRESSES (INSN_UID (insnj))
+      > INSN_ADDRESSES (INSN_UID (target_label)))
     return 0;
 
   /* EQ tests are usually false and NE tests are usually true.  Also,
