@@ -59,6 +59,15 @@ static void java_unget_unicode PARAMS ((void));
 static unicode_t java_sneak_unicode PARAMS ((void));
 java_lexer *java_new_lexer PARAMS ((FILE *, const char *));
 
+/* This is nonzero if we have initialized `need_byteswap'.  */
+static int byteswap_init = 0;
+
+/* Some versions of iconv() (e.g., glibc 2.1.3) will return UCS-2 in
+   big-endian order -- not native endian order.  We handle this by
+   doing a conversion once at startup and seeing what happens.  This
+   flag holds the results of this determination.  */
+static int need_byteswap = 0;
+
 void
 java_init_lex (finput, encoding)
      FILE *finput;
@@ -208,19 +217,66 @@ java_new_lexer (finput, encoding)
 
 #ifdef HAVE_ICONV
   lex->handle = iconv_open ("UCS-2", encoding);
-  if (lex->handle == (iconv_t) -1)
+  if (lex->handle != (iconv_t) -1)
     {
-      /* FIXME: we should give a nice error based on errno here.  */
-      enc_error = 1;
+      lex->first = -1;
+      lex->last = -1;
+      lex->out_first = -1;
+      lex->out_last = -1;
+      lex->read_anything = 0;
+      lex->use_fallback = 0;
+
+      /* Work around broken iconv() implementations by doing checking at
+	 runtime.  We assume that if the UTF-8 => UCS-2 encoder is broken,
+	 then all UCS-2 encoders will be broken.  Perhaps not a valid
+	 assumption.  */
+      if (! byteswap_init)
+	{
+	  iconv_t handle;
+
+	  byteswap_init = 1;
+
+	  handle = iconv_open ("UCS-2", "UTF-8");
+	  if (handle != (iconv_t) -1)
+	    {
+	      unicode_t result;
+	      unsigned char in[3];
+	      char *inp, *outp;
+	      size_t inc, outc, r;
+
+	      /* This is the UTF-8 encoding of \ufeff.  */
+	      in[0] = 0xef;
+	      in[1] = 0xbb;
+	      in[2] = 0xbf;
+
+	      inp = in;
+	      inc = 3;
+	      outp = (char *) &result;
+	      outc = 2;
+
+	      r = iconv (handle, (const char **) &inp, &inc, &outp, &outc);
+	      /* Conversion must be complete for us to use the result.  */
+	      if (r != (size_t) -1 && inc == 0 && outc == 0)
+		need_byteswap = (result != 0xfeff);
+	    }
+	}
+
+      lex->byte_swap = need_byteswap;
     }
-  lex->first = -1;
-  lex->last = -1;
-  lex->out_first = -1;
-  lex->out_last = -1;
-#else /* HAVE_ICONV */
-  if (strcmp (encoding, DEFAULT_ENCODING))
-    enc_error = 1;
+  else
 #endif /* HAVE_ICONV */
+    {
+      /* If iconv failed, use the internal decoder if the default
+	 encoding was requested.  This code is used on platforms where
+	 iconv() exists but is insufficient for our needs.  For
+	 instance, on Solaris 2.5 iconv() cannot handle UTF-8 or UCS-2.  */
+      if (strcmp (encoding, DEFAULT_ENCODING))
+	enc_error = 1;
+#ifdef HAVE_ICONV
+      else
+	lex->use_fallback = 1;
+#endif /* HAVE_ICONV */
+    }
 
   if (enc_error)
     fatal ("unknown encoding: `%s'", encoding);
@@ -233,7 +289,8 @@ java_destroy_lexer (lex)
      java_lexer *lex;
 {
 #ifdef HAVE_ICONV
-  iconv_close (lex->handle);
+  if (! lex->use_fallback)
+    iconv_close (lex->handle);
 #endif
   free (lex);
 }
@@ -250,140 +307,170 @@ java_read_char (lex)
     }
 
 #ifdef HAVE_ICONV
-  {
-    size_t ir, inbytesleft, in_save, out_count, out_save;
-    char *inp, *outp;
-    unicode_t result;
+  if (! lex->use_fallback)
+    {
+      size_t ir, inbytesleft, in_save, out_count, out_save;
+      char *inp, *outp;
+      unicode_t result;
 
-    /* If there is data which has already been converted, use it.  */
-    if (lex->out_first == -1 || lex->out_first >= lex->out_last)
-      {
-	lex->out_first = 0;
-	lex->out_last = 0;
+      /* If there is data which has already been converted, use it.  */
+      if (lex->out_first == -1 || lex->out_first >= lex->out_last)
+	{
+	  lex->out_first = 0;
+	  lex->out_last = 0;
 
-	while (1)
-	  {
-	    /* See if we need to read more data.  If FIRST == 0 then
-	       the previous conversion attempt ended in the middle of
-	       a character at the end of the buffer.  Otherwise we
-	       only have to read if the buffer is empty.  */
-	    if (lex->first == 0 || lex->first >= lex->last)
-	      {
-		int r;
+	  while (1)
+	    {
+	      /* See if we need to read more data.  If FIRST == 0 then
+		 the previous conversion attempt ended in the middle of
+		 a character at the end of the buffer.  Otherwise we
+		 only have to read if the buffer is empty.  */
+	      if (lex->first == 0 || lex->first >= lex->last)
+		{
+		  int r;
 
-		if (lex->first >= lex->last)
-		  {
-		    lex->first = 0;
-		    lex->last = 0;
-		  }
-		if (feof (lex->finput))
-		  return UEOF;
-		r = fread (&lex->buffer[lex->last], 1,
-			   sizeof (lex->buffer) - lex->last,
-			   lex->finput);
-		lex->last += r;
-	      }
-
-	    inbytesleft = lex->last - lex->first;
-	    out_count = sizeof (lex->out_buffer) - lex->out_last;
-
-	    if (inbytesleft == 0)
-	      {
-		/* We've tried to read and there is nothing left.  */
-		return UEOF;
-	      }
-
-	    in_save = inbytesleft;
-	    out_save = out_count;
-	    inp = &lex->buffer[lex->first];
-	    outp = &lex->out_buffer[lex->out_last];
-	    ir = iconv (lex->handle, (const char **) &inp, &inbytesleft,
-			&outp, &out_count);
-	    lex->first += in_save - inbytesleft;
-	    lex->out_last += out_save - out_count;
-
-	    /* If we converted anything at all, move along.  */
-	    if (out_count != out_save)
-	      break;
-
-	    if (ir == (size_t) -1)
-	      {
-		if (errno == EINVAL)
-		  {
-		    /* This is ok.  This means that the end of our buffer
-		       is in the middle of a character sequence.  We just
-		       move the valid part of the buffer to the beginning
-		       to force a read.  */
-		    /* We use bcopy() because it should work for
-		       overlapping strings.  Use memmove() instead... */
-		    bcopy (&lex->buffer[lex->first], &lex->buffer[0],
-			   lex->last - lex->first);
-		    lex->last -= lex->first;
-		    lex->first = 0;
-		  }
-		else
-		  {
-		    /* A more serious error.  */
-		    java_lex_error ("unrecognized character in input stream",
-				    0);
+		  if (lex->first >= lex->last)
+		    {
+		      lex->first = 0;
+		      lex->last = 0;
+		    }
+		  if (feof (lex->finput))
 		    return UEOF;
-		  }
-	      }
-	  }
-      }
+		  r = fread (&lex->buffer[lex->last], 1,
+			     sizeof (lex->buffer) - lex->last,
+			     lex->finput);
+		  lex->last += r;
+		}
 
-    if (lex->out_first == -1 || lex->out_first >= lex->out_last)
-      {
-	/* Don't have any data.  */
-	return UEOF;
-      }
+	      inbytesleft = lex->last - lex->first;
+	      out_count = sizeof (lex->out_buffer) - lex->out_last;
 
-    /* Success.  We assume that UCS-2 is big-endian.  This appears to
-       be an ok assumption.  */
-    result = ((((unsigned char) lex->out_buffer[lex->out_first]) << 8)
-	      | (unsigned char) lex->out_buffer[lex->out_first + 1]);
-    lex->out_first += 2;
-    return result;
-  }
-#else /* HAVE_ICONV */
-  {
-    int c, c1, c2;
-    c = getc (lex->finput);
+	      if (inbytesleft == 0)
+		{
+		  /* We've tried to read and there is nothing left.  */
+		  return UEOF;
+		}
 
-    if (c < 128)
-      return (unicode_t)c;
-    if (c == EOF)
-      return UEOF;
-    else
-      {
-	if ((c & 0xe0) == 0xc0)
-	  {
-	    c1 = getc (lex->finput);
-	    if ((c1 & 0xc0) == 0x80)
-	      return (unicode_t)(((c &0x1f) << 6) + (c1 & 0x3f));
-	    c = c1;
-	  }
-	else if ((c & 0xf0) == 0xe0)
-	  {
-	    c1 = getc (lex->finput);
-	    if ((c1 & 0xc0) == 0x80)
-	      {
-		c2 = getc (lex->finput);
-		if ((c2 & 0xc0) == 0x80)
-		  return (unicode_t)(((c & 0xf) << 12) + 
-				     (( c1 & 0x3f) << 6) + (c2 & 0x3f));
-		else
-		  c = c2;
-	      }
-	    else
-	      c = c1;
-	  }
+	      in_save = inbytesleft;
+	      out_save = out_count;
+	      inp = &lex->buffer[lex->first];
+	      outp = &lex->out_buffer[lex->out_last];
+	      ir = iconv (lex->handle, (const char **) &inp, &inbytesleft,
+			  &outp, &out_count);
 
-	/* We simply don't support invalid characters.  */
-	java_lex_error ("malformed UTF-8 character", 0);
-      }
-  }
+	      /* If we haven't read any bytes, then look to see if we
+		 have read a BOM.  */
+	      if (! lex->read_anything && out_save - out_count >= 2)
+		{
+		  unicode_t uc = * (unicode_t *) &lex->out_buffer[0];
+		  if (uc == 0xfeff)
+		    {
+		      lex->byte_swap = 0;
+		      lex->out_first += 2;
+		    }
+		  else if (uc == 0xfffe)
+		    {
+		      lex->byte_swap = 1;
+		      lex->out_first += 2;
+		    }
+		  lex->read_anything = 1;
+		}
+
+	      if (lex->byte_swap)
+		{
+		  unsigned int i;
+		  for (i = 0; i < out_save - out_count; i += 2)
+		    {
+		      char t = lex->out_buffer[lex->out_last + i];
+		      lex->out_buffer[lex->out_last + i]
+			= lex->out_buffer[lex->out_last + i + 1];
+		      lex->out_buffer[lex->out_last + i + 1] = t;
+		    }
+		}
+
+	      lex->first += in_save - inbytesleft;
+	      lex->out_last += out_save - out_count;
+
+	      /* If we converted anything at all, move along.  */
+	      if (out_count != out_save)
+		break;
+
+	      if (ir == (size_t) -1)
+		{
+		  if (errno == EINVAL)
+		    {
+		      /* This is ok.  This means that the end of our buffer
+			 is in the middle of a character sequence.  We just
+			 move the valid part of the buffer to the beginning
+			 to force a read.  */
+		      /* We use bcopy() because it should work for
+			 overlapping strings.  Use memmove() instead... */
+		      bcopy (&lex->buffer[lex->first], &lex->buffer[0],
+			     lex->last - lex->first);
+		      lex->last -= lex->first;
+		      lex->first = 0;
+		    }
+		  else
+		    {
+		      /* A more serious error.  */
+		      java_lex_error ("unrecognized character in input stream",
+				      0);
+		      return UEOF;
+		    }
+		}
+	    }
+	}
+
+      if (lex->out_first == -1 || lex->out_first >= lex->out_last)
+	{
+	  /* Don't have any data.  */
+	  return UEOF;
+	}
+
+      /* Success.  */
+      result = * ((unicode_t *) &lex->out_buffer[lex->out_first]);
+      lex->out_first += 2;
+      return result;
+    }
+  else
 #endif /* HAVE_ICONV */
+    {
+      int c, c1, c2;
+      c = getc (lex->finput);
+
+      if (c < 128)
+	return (unicode_t)c;
+      if (c == EOF)
+	return UEOF;
+      else
+	{
+	  if ((c & 0xe0) == 0xc0)
+	    {
+	      c1 = getc (lex->finput);
+	      if ((c1 & 0xc0) == 0x80)
+		return (unicode_t)(((c &0x1f) << 6) + (c1 & 0x3f));
+	      c = c1;
+	    }
+	  else if ((c & 0xf0) == 0xe0)
+	    {
+	      c1 = getc (lex->finput);
+	      if ((c1 & 0xc0) == 0x80)
+		{
+		  c2 = getc (lex->finput);
+		  if ((c2 & 0xc0) == 0x80)
+		    return (unicode_t)(((c & 0xf) << 12) + 
+				       (( c1 & 0x3f) << 6) + (c2 & 0x3f));
+		  else
+		    c = c2;
+		}
+	      else
+		c = c1;
+	    }
+
+	  /* We simply don't support invalid characters.  */
+	  java_lex_error ("malformed UTF-8 character", 0);
+	}
+    }
 
   /* We only get here on error.  */
   return UEOF;

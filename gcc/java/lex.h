@@ -115,6 +115,16 @@ typedef struct java_lexer
   unicode_t unget_value;
 
 #ifdef HAVE_ICONV
+  /* Nonzero if we've read any bytes.  We only recognize the
+     byte-order-marker (BOM) as the first word.  */
+  int read_anything : 1;
+
+  /* Nonzero if we have to byte swap.  */
+  int byte_swap : 1;
+
+  /* Nonzero if we're using the fallback decoder.  */
+  int use_fallback : 1;
+
   /* The handle for the iconv converter we're using.  */
   iconv_t handle;
 
@@ -132,7 +142,7 @@ typedef struct java_lexer
   /* This is a buffer of characters already converted by iconv.  We
      use `char' here because we're assuming that iconv() converts to
      big-endian UCS-2, and then we convert it ourselves.  */
-  char out_buffer[1024];
+  unsigned char out_buffer[1024];
 
   /* Index of first valid output character.  -1 if no valid
      characters.  */

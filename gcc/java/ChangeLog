@@ -1,3 +1,15 @@
+2000-10-24  Tom Tromey  <tromey@cygnus.com>
+
+	* lex.c (java_new_lexer): Initialize new fields.  Work around
+	broken iconv() implementations.
+	(java_read_char): Swap bytes if required.  Use fallback decoder if
+	required.
+	(byteswap_init, need_byteswap): New globals.
+	(java_destroy_lexer): Only close iconv handle if it is in use.
+	* lex.h (java_lexer): New fields read_anything, byte_swap,
+	use_fallback.
+	Made out_buffer unsigned.
+
 2000-10-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (register_incomplete_type): Include JDEP_FIELD as a case
