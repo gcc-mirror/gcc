@@ -1,3 +1,8 @@
+2004-07-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16623
+	* g++.dg/template/assign1.C: New test.
+
 2004-07-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/12170
