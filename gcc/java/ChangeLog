@@ -1,5 +1,10 @@
 2004-05-28  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* check-init.c (check_init): Handle binops UNLT_EXPR, UNLE_EXPR,
+    	UNGT_EXPR, UNGE_EXPR, UNEQ_EXPR, and LTGT_EXPR.
+
+2004-05-28  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* gcj.texi (Object allocation): Remove _Jv_AllocBytes.
 	(Mixing with C++): Document JvAllocBytes and RawDataManaged.
 
