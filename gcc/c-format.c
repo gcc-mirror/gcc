@@ -374,7 +374,10 @@ enum
   /* Zero width is bad in this type of format (scanf).  */
   FMT_FLAG_ZERO_WIDTH_BAD = 32,
   /* Empty precision specification is OK in this type of format (printf).  */
-  FMT_FLAG_EMPTY_PREC_OK = 64
+  FMT_FLAG_EMPTY_PREC_OK = 64,
+  /* Gaps are allowed in the arguments with $ operand numbers if all
+     arguments are pointers (scanf).  */
+  FMT_FLAG_DOLLAR_GAP_POINTER_OK = 128
   /* Not included here: details of whether width or precision may occur
      (controlled by width_char and precision_char); details of whether
      '*' can be used for these (width_type and precision_type); details
@@ -848,7 +851,7 @@ static const format_kind_info format_types[] =
   },
   { "scanf",    scanf_length_specs,   scan_char_table,  "*'I", NULL, 
     scanf_flag_specs, scanf_flag_pairs,
-    FMT_FLAG_ARG_CONVERT|FMT_FLAG_SCANF_A_KLUDGE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_ZERO_WIDTH_BAD,
+    FMT_FLAG_ARG_CONVERT|FMT_FLAG_SCANF_A_KLUDGE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_ZERO_WIDTH_BAD|FMT_FLAG_DOLLAR_GAP_POINTER_OK,
     'w', 0, 0, '*', 'L',
     NULL, NULL
   },
@@ -907,7 +910,7 @@ static void init_dollar_format_checking		PARAMS ((int, tree));
 static int maybe_read_dollar_number		PARAMS ((int *, const char **, int,
 							 tree, tree *,
 							 const format_kind_info *));
-static void finish_dollar_format_checking	PARAMS ((int *, format_check_results *));
+static void finish_dollar_format_checking	PARAMS ((int *, format_check_results *, int));
 
 static const format_flag_spec *get_flag_spec	PARAMS ((const format_flag_spec *,
 							 int, const char *));
@@ -1029,6 +1032,7 @@ status_warning VPARAMS ((int *status, const char *msgid, ...))
 
 /* Variables used by the checking of $ operand number formats.  */
 static char *dollar_arguments_used = NULL;
+static char *dollar_arguments_pointer_p = NULL;
 static int dollar_arguments_alloc = 0;
 static int dollar_arguments_count;
 static int dollar_first_arg_num;
@@ -1046,6 +1050,8 @@ init_dollar_format_checking (first_arg_num, params)
      int first_arg_num;
      tree params;
 {
+  tree oparams = params;
+
   dollar_first_arg_num = first_arg_num;
   dollar_arguments_count = 0;
   dollar_max_arg_used = 0;
@@ -1062,11 +1068,28 @@ init_dollar_format_checking (first_arg_num, params)
     {
       if (dollar_arguments_used)
 	free (dollar_arguments_used);
+      if (dollar_arguments_pointer_p)
+	free (dollar_arguments_pointer_p);
       dollar_arguments_alloc = dollar_arguments_count;
       dollar_arguments_used = xmalloc (dollar_arguments_alloc);
+      dollar_arguments_pointer_p = xmalloc (dollar_arguments_alloc);
     }
   if (dollar_arguments_alloc)
-    memset (dollar_arguments_used, 0, dollar_arguments_alloc);
+    {
+      memset (dollar_arguments_used, 0, dollar_arguments_alloc);
+      if (first_arg_num > 0)
+	{
+	  int i = 0;
+	  params = oparams;
+	  while (params)
+	    {
+	      dollar_arguments_pointer_p[i] = (TREE_CODE (TREE_TYPE (TREE_VALUE (params)))
+					       == POINTER_TYPE);
+	      params = TREE_CHAIN (params);
+	      i++;
+	    }
+	}
+    }
 }
 
 
@@ -1146,6 +1169,8 @@ maybe_read_dollar_number (status, format, dollar_needed, params, param_ptr,
       int nalloc;
       nalloc = 2 * dollar_arguments_alloc + 16;
       dollar_arguments_used = xrealloc (dollar_arguments_used, nalloc);
+      dollar_arguments_pointer_p = xrealloc (dollar_arguments_pointer_p,
+					     nalloc);
       memset (dollar_arguments_used + dollar_arguments_alloc, 0,
 	      nalloc - dollar_arguments_alloc);
       dollar_arguments_alloc = nalloc;
@@ -1186,21 +1211,32 @@ maybe_read_dollar_number (status, format, dollar_needed, params, param_ptr,
    and for unused operands at the end of the format (if we know how many
    arguments the format had, so not for vprintf).  If there were operand
    numbers out of range on a non-vprintf-style format, we won't have reached
-   here.  */
+   here.  If POINTER_GAP_OK, unused arguments are OK if all arguments are
+   pointers.  */
 
 static void
-finish_dollar_format_checking (status, res)
+finish_dollar_format_checking (status, res, pointer_gap_ok)
      int *status;
      format_check_results *res;
+     int pointer_gap_ok;
 {
   int i;
+  bool found_pointer_gap = false;
   for (i = 0; i < dollar_max_arg_used; i++)
     {
       if (!dollar_arguments_used[i])
-	status_warning (status, "format argument %d unused before used argument %d in $-style format",
-		 i + 1, dollar_max_arg_used);
+	{
+	  if (pointer_gap_ok && (dollar_first_arg_num == 0
+				 || dollar_arguments_pointer_p[i]))
+	    found_pointer_gap = true;
+	  else
+	    status_warning (status, "format argument %d unused before used argument %d in $-style format",
+			    i + 1, dollar_max_arg_used);
+	}
     }
-  if (dollar_first_arg_num && dollar_max_arg_used < dollar_arguments_count)
+  if (found_pointer_gap
+      || (dollar_first_arg_num
+	  && dollar_max_arg_used < dollar_arguments_count))
     {
       res->number_other--;
       res->number_dollar_extra_args++;
@@ -1639,7 +1675,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	      res->number_extra_args++;
 	    }
 	  if (has_operand_number > 0)
-	    finish_dollar_format_checking (status, res);
+	    finish_dollar_format_checking (status, res, fki->flags & (int) FMT_FLAG_DOLLAR_GAP_POINTER_OK);
 	  return;
 	}
       if (*format_chars++ != '%')
