@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1996 Cygnus Solutions
+   ffi.c - Copyright (c) 1996 Red Hat, Inc.
    
    MIPS Foreign Function Interface 
 
@@ -23,7 +23,6 @@
    OTHER DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
 
-#include <sgidefs.h>
 #include <ffi.h>
 #include <ffi_common.h>
 
@@ -59,8 +58,8 @@ static void ffi_prep_args(char *stack,
   /* If more than 8 double words are used, the remainder go
      on the stack. We reorder stuff on the stack here to 
      support this easily. */
-  if (bytes > 8 * SIZEOF_ARG)
-    argp = &stack[bytes - (8 * SIZEOF_ARG)];
+  if (bytes > 8 * FFI_SIZEOF_ARG)
+    argp = &stack[bytes - (8 * FFI_SIZEOF_ARG)];
   else
     argp = stack;
 #else
@@ -75,8 +74,8 @@ static void ffi_prep_args(char *stack,
   if ( ecif->cif->rtype->type == FFI_TYPE_STRUCT )
 #endif  
     {
-      *(SLOT_TYPE_UNSIGNED *) argp = (SLOT_TYPE_UNSIGNED) ecif->rvalue;
-      argp += sizeof(SLOT_TYPE_UNSIGNED);
+      *(ffi_arg *) argp = (ffi_arg) ecif->rvalue;
+      argp += sizeof(ffi_arg);
       FIX_ARGP;
     }
 
@@ -99,9 +98,9 @@ static void ffi_prep_args(char *stack,
 #endif      
 
 	  z = (*p_arg)->size;
-	  if (z < sizeof(SLOT_TYPE_UNSIGNED))
+	  if (z < sizeof(ffi_arg))
 	    {
-	      z = sizeof(SLOT_TYPE_UNSIGNED);
+	      z = sizeof(ffi_arg);
 
 	      switch ((*p_arg)->type)
 		{

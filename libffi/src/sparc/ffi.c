@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1996, 2003 Cygnus Solutions
+   ffi.c - Copyright (c) 1996, 2003 Red Hat, Inc.
    
    Sparc Foreign Function Interface 
 
@@ -491,7 +491,7 @@ ffi_closure_sparc_inner(ffi_closure *closure,
   while (i < avn)
     {
       /* Assume big-endian.  FIXME */
-      argn += ALIGN(arg_types[i]->size, SIZEOF_ARG) / SIZEOF_ARG;
+      argn += ALIGN(arg_types[i]->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
 
 #ifdef SPARC64
       if (i < 16 && (arg_types[i]->type == FFI_TYPE_FLOAT

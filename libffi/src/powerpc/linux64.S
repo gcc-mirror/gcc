@@ -24,6 +24,7 @@
    ----------------------------------------------------------------------- */
 
 #define LIBFFI_ASM	
+#include <fficonfig.h>
 #include <ffi.h>
 
 #ifdef __powerpc64__

@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   sysv.S - Copyright (c) 1998 Cygnus Solutions
+   sysv.S - Copyright (c) 1998 Red Hat, Inc.
    
    ARM Foreign Function Interface 
 
@@ -24,6 +24,7 @@
    ----------------------------------------------------------------------- */
 
 #define LIBFFI_ASM	
+#include <fficonfig.h>
 #include <ffi.h>
 #ifdef HAVE_MACHINE_ASM_H
 #include <machine/asm.h>

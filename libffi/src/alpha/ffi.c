@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1998, 2001 Cygnus Solutions
+   ffi.c - Copyright (c) 1998, 2001 Red Hat, Inc.
    
    Alpha Foreign Function Interface 
 
@@ -37,8 +37,8 @@ ffi_prep_cif_machdep(ffi_cif *cif)
 {
   /* Adjust cif->bytes to represent a minimum 6 words for the temporary
      register argument loading area.  */
-  if (cif->bytes < 6*SIZEOF_ARG)
-    cif->bytes = 6*SIZEOF_ARG;
+  if (cif->bytes < 6*FFI_SIZEOF_ARG)
+    cif->bytes = 6*FFI_SIZEOF_ARG;
 
   /* Set the return type flag */
   switch (cif->rtype->type)
@@ -73,7 +73,7 @@ ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 
   /* Allocate the space for the arguments, plus 4 words of temp
      space for ffi_call_osf.  */
-  argp = stack = alloca(cif->bytes + 4*SIZEOF_ARG);
+  argp = stack = alloca(cif->bytes + 4*FFI_SIZEOF_ARG);
 
   if (cif->flags == FFI_TYPE_STRUCT)
     *(void **) argp++ = rvalue;
@@ -137,7 +137,7 @@ ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 	  FFI_ASSERT(0);
 	}
 
-      argp += ALIGN((*arg_types)->size, SIZEOF_ARG) / SIZEOF_ARG;
+      argp += ALIGN((*arg_types)->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
       i++, arg_types++, avalue++;
     }
 
@@ -240,7 +240,7 @@ ffi_closure_osf_inner(ffi_closure *closure, void *rvalue, unsigned long *argp)
 	  FFI_ASSERT(0);
 	}
 
-      argn += ALIGN(arg_types[i]->size, SIZEOF_ARG) / SIZEOF_ARG;
+      argn += ALIGN(arg_types[i]->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
       i++;
     }
 

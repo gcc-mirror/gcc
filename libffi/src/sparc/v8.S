@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   v8.S - Copyright (c) 1996, 1997, 2003 Cygnus Solutions
+   v8.S - Copyright (c) 1996, 1997, 2003 Red Hat, Inc.
    
    Sparc Foreign Function Interface 
 
@@ -24,6 +24,7 @@
    ----------------------------------------------------------------------- */
 
 #define LIBFFI_ASM	
+#include <fficonfig.h>
 #include <ffi.h>
 
 #define STACKFRAME 96		/* Minimum stack framesize for SPARC */

@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------*-C-*-
-   libffi @VERSION@ - Copyright (c) 1996-2003  Cygnus Solutions
+   libffi @VERSION@ - Copyright (c) 1996-2003  Red Hat, Inc.
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -60,258 +60,70 @@ extern "C" {
 
 /* ---- System configuration information --------------------------------- */
 
-#include <fficonfig.h>
+#include <ffitarget.h>
 
-#if !defined(LIBFFI_ASM)
+#ifndef LIBFFI_ASM
+
 #include <stddef.h>
-#if defined(FFI_DEBUG) 
-#include <stdio.h>
-#endif
-#endif
+#include <limits.h>
 
-/* ---- Generic type definitions ----------------------------------------- */
-
-#define FLOAT32 float
-#define FLOAT64 double
-#define FLOAT80 long double
-
-#define UINT8   unsigned char
-#define SINT8   signed char
-
-#if SIZEOF_INT == 2
-
-#define UINT16	unsigned int
-#define SINT16  int
-#define ffi_type_uint ffi_type_uint16
-#define ffi_type_sint ffi_type_sint16
-
-#else 
-#if SIZEOF_SHORT == 2
-
-#define UINT16  unsigned short
-#define SINT16  short
-#define ffi_type_ushort ffi_type_uint16
-#define ffi_type_sshort ffi_type_sint16
-
-#endif
-#endif
-
-#if SIZEOF_INT == 4
-
-#define UINT32	unsigned int
-#define SINT32  int
-#define ffi_type_uint ffi_type_uint32
-#define ffi_type_sint ffi_type_sint32
-
-#else 
-#if SIZEOF_SHORT == 4
-
-#define UINT32  unsigned short
-#define SINT32  short
-#define ffi_type_ushort ffi_type_uint32
-#define ffi_type_sshort ffi_type_sint32
-
+/* LONG_LONG_MAX is not always defined (not if STRICT_ANSI, for example).
+   But we can find it either under the correct ANSI name, or under GNU
+   C's internal name.  */
+#ifdef LONG_LONG_MAX
+# define FFI_LONG_LONG_MAX LONG_LONG_MAX
 #else
-#if SIZEOF_LONG == 4
-
-#define UINT32  unsigned long
-#define SINT32  long
-#define ffi_type_ulong ffi_type_uint32
-#define ffi_type_slong ffi_type_sint32
-
-#endif
-#endif
-#endif
-
-#if SIZEOF_INT == 8
-
-#define UINT64  unsigned int
-#define SINT64  int
-#define ffi_type_uint ffi_type_uint64
-#define ffi_type_sint ffi_type_sint64
-
-#else
-#if SIZEOF_LONG == 8
-
-#define UINT64  unsigned long
-#define SINT64  long
-#define ffi_type_ulong ffi_type_uint64
-#define ffi_type_slong ffi_type_sint64
-
-#else
-#if SIZEOF_LONG_LONG == 8
-
-#define UINT64  unsigned long long
-#define SINT64  long long
-#define ffi_type_ulong ffi_type_uint64
-#define ffi_type_slong ffi_type_sint64
-
-#endif
-#endif
-#endif
-
-/* ---- System specific configurations ----------------------------------- */
-
-#ifdef MIPS
-#include <ffi_mips.h>
-#else
-#define SIZEOF_ARG SIZEOF_VOID_P
-#endif
-
-#ifdef POWERPC
-#if defined (__powerpc64__)
-#define POWERPC64
-#endif
-#endif
-
-#ifdef SPARC
-#if defined(__arch64__) || defined(__sparcv9)
-#define SPARC64
-#endif
-#endif
-
-#ifdef S390
-#if defined (__s390x__)
-#define S390X
-#endif
-#endif
-
-#ifdef X86_64
-#if defined (__i386__)
-#undef X86_64
-#define X86
-#endif
-#endif
-
-#ifdef LIBFFI_ASM
-
-#ifdef HAVE_RO_EH_FRAME
-#define EH_FRAME_FLAGS "a"
-#else
-#define EH_FRAME_FLAGS "aw"
-#endif
-
-#else
-
-/* ---- Generic type definitions ----------------------------------------- */
-
-#define ALIGN(v, a)  (((((size_t) (v))-1) | ((a)-1))+1)
-/* The closure code assumes that this works on pointers, i.e. a size_t	*/
-/* can hold a pointer.							*/
-
-typedef enum ffi_abi {
-
-  /* Leave this for debugging purposes */
-  FFI_FIRST_ABI = 0,
-
-  /* ---- Sparc -------------------- */
-#ifdef SPARC
-  FFI_V8,
-  FFI_V8PLUS,
-  FFI_V9,
-#ifdef SPARC64
-  FFI_DEFAULT_ABI = FFI_V9,
-#else
-  FFI_DEFAULT_ABI = FFI_V8,
-#endif
-#endif
-
-  /* ---- Intel x86 Win32 ---------- */
-#ifdef X86_WIN32
-  FFI_SYSV,
-  FFI_STDCALL,
-  /* TODO: Add fastcall support for the sake of completeness */
-  FFI_DEFAULT_ABI = FFI_SYSV,
-#endif
-
-  /* ---- Intel x86 and AMD x86-64 - */
-#if !defined(X86_WIN32) && (defined(__i386__) || defined(__x86_64__))
-  FFI_SYSV,
-  FFI_UNIX64,   /* Unix variants all use the same ABI for x86-64  */
-#ifdef __i386__
-  FFI_DEFAULT_ABI = FFI_SYSV,
-#else
-  FFI_DEFAULT_ABI = FFI_UNIX64,
-#endif
-#endif
-
-  /* ---- Intel ia64 ---------------- */
-#ifdef IA64
-  FFI_UNIX,   	/* Linux and all Unix variants use the same conventions	*/
-  FFI_DEFAULT_ABI = FFI_UNIX,
-#endif
-
-  /* ---- Mips --------------------- */
-#ifdef MIPS
-  FFI_O32,
-  FFI_N32,
-  FFI_N64,
-#endif
-
-  /* ---- Alpha -------------------- */
-#ifdef ALPHA
-  FFI_OSF,
-  FFI_DEFAULT_ABI = FFI_OSF,
-#endif
-
-  /* ---- Motorola m68k ------------ */
-#ifdef M68K
-  FFI_SYSV,
-  FFI_DEFAULT_ABI = FFI_SYSV,
-#endif
-
-  /* ---- PowerPC ------------------ */
-#ifdef POWERPC
-  FFI_SYSV,
-  FFI_GCC_SYSV,
-  FFI_LINUX64,
-# ifdef POWERPC64
-  FFI_DEFAULT_ABI = FFI_LINUX64,
+# ifdef LLONG_MAX
+#  define FFI_LONG_LONG_MAX LLONG_MAX
 # else
-  FFI_DEFAULT_ABI = FFI_GCC_SYSV,
+#  ifdef __GNUC__
+#   define FFI_LONG_LONG_MAX __LONG_LONG_MAX__
+#  endif
 # endif
 #endif
 
-#ifdef POWERPC_AIX
-  FFI_AIX,
-  FFI_DARWIN,
-  FFI_DEFAULT_ABI = FFI_AIX,
+#if SCHAR_MAX == 127
+# define ffi_type_uchar                ffi_type_uint8
+# define ffi_type_schar                ffi_type_sint8
+#else
+ #error "char size not supported"
 #endif
 
-#ifdef POWERPC_DARWIN
-  FFI_AIX,
-  FFI_DARWIN,
-  FFI_DEFAULT_ABI = FFI_DARWIN,
+#if SHRT_MAX == 32767
+# define ffi_type_ushort       ffi_type_uint16
+# define ffi_type_sshort       ffi_type_sint16
+#elif SHRT_MAX == 2147483647
+# define ffi_type_ushort       ffi_type_uint32
+# define ffi_type_sshort       ffi_type_sint32
+#else
+ #error "short size not supported"
 #endif
 
-  /* ---- ARM  --------------------- */
-#ifdef ARM
-  FFI_SYSV,
-  FFI_DEFAULT_ABI = FFI_SYSV,
+#if INT_MAX == 32767
+# define ffi_type_uint         ffi_type_uint16
+# define ffi_type_sint         ffi_type_sint16
+#elif INT_MAX == 2147483647
+# define ffi_type_uint         ffi_type_uint32
+# define ffi_type_sint         ffi_type_sint32
+#elif INT_MAX == 9223372036854775807
+# define ffi_type_uint         ffi_type_uint64
+# define ffi_type_sint         ffi_type_sint64
+#else
+ #error "int size not supported"
 #endif
 
-  /* ---- S390 --------------------- */
-#ifdef S390
-  FFI_SYSV,
-  FFI_DEFAULT_ABI = FFI_SYSV,
+#define ffi_type_ulong         ffi_type_uint64
+#define ffi_type_slong         ffi_type_sint64
+#if LONG_MAX == 2147483647
+# if FFI_LONG_LONG_MAX != 9223372036854775807
+  #error "no 64-bit data type supported"
+# endif
+#elif LONG_MAX != 9223372036854775807
+ #error "long size not supported"
 #endif
 
-  /* ---- SuperH ------------------- */
-#ifdef SH
-  FFI_SYSV,
-  FFI_DEFAULT_ABI = FFI_SYSV,
-#endif
-
-  /* ---- SuperH - SHmedia --------- */
-#ifdef SH64
-  FFI_SYSV,
-  FFI_DEFAULT_ABI = FFI_SYSV,
-#endif
-
-  /* Leave this for debugging purposes */
-  FFI_LAST_ABI
-
-} ffi_abi;
+/* The closure code assumes that this works on pointers, i.e. a size_t	*/
+/* can hold a pointer.							*/
 
 typedef struct _ffi_type
 {
@@ -336,9 +148,6 @@ extern ffi_type ffi_type_double;
 extern ffi_type ffi_type_longdouble;
 extern ffi_type ffi_type_pointer;
 
-/* Characters are 8 bit integral types */
-#define ffi_type_schar ffi_type_sint8
-#define ffi_type_uchar ffi_type_uint8
 
 typedef enum {
   FFI_OK = 0,
@@ -355,53 +164,27 @@ typedef struct {
   /*@dependent@*/ ffi_type *rtype;
   unsigned bytes;
   unsigned flags;
-
-#ifdef MIPS
-#if _MIPS_SIM == _ABIN32
-  unsigned rstruct_flag;
+#ifdef FFI_EXTRA_CIF_FIELDS
+  FFI_EXTRA_CIF_FIELDS;
 #endif
-#endif
-
-#ifdef SH64
-  long long flags2;
-#endif
-
 } ffi_cif;
-
-#if SIZEOF_ARG == 4
-typedef UINT32 ffi_arg;
-#else
-#if SIZEOF_ARG == 8
-typedef UINT64 ffi_arg;
-#else
--- unsupported configuration
-#endif
-#endif
 
 /* ---- Definitions for the raw API -------------------------------------- */
 
-#if !FFI_NO_RAW_API
-
-#if SIZEOF_ARG == 4
-
-#define UINT_ARG UINT32
-#define SINT_ARG SINT32
-
-#endif
-
-#if SIZEOF_ARG == 8
-
-#define UINT_ARG UINT64
-#define SINT_ARG SINT64
-
+#ifndef FFI_SIZEOF_ARG
+# if LONG_MAX == 2147483647
+#  define FFI_SIZEOF_ARG        4
+# elif LONG_MAX == 9223372036854775807
+#  define FFI_SIZEOF_ARG        8
+# endif
 #endif
 
 typedef union {
-  SINT_ARG sint;
-  UINT_ARG uint;
-  float	   flt;
-  char     data[SIZEOF_ARG];
-  void*    ptr;
+  ffi_sarg  sint;
+  ffi_arg   uint;
+  float	    flt;
+  char      data[FFI_SIZEOF_ARG];
+  void*     ptr;
 } ffi_raw;
 
 void ffi_raw_call (/*@dependent@*/ ffi_cif *cif, 
@@ -412,8 +195,6 @@ void ffi_raw_call (/*@dependent@*/ ffi_cif *cif,
 void ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw);
 void ffi_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args);
 size_t ffi_raw_size (ffi_cif *cif);
-
-#if !NO_JAVA_RAW_API
 
 /* This is analogous to the raw API, except it uses Java parameter	*/
 /* packing, even on 64-bit machines.  I.e. on 64-bit machines		*/
@@ -428,119 +209,7 @@ void ffi_java_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw);
 void ffi_java_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args);
 size_t ffi_java_raw_size (ffi_cif *cif);
 
-#endif /* !NO_JAVA_RAW_API */
-
-#endif /* !FFI_NO_RAW_API */
-
 /* ---- Definitions for closures ----------------------------------------- */
-
-#ifdef __i386__
-
-#define FFI_CLOSURES 1		/* x86 supports closures */
-#define FFI_TRAMPOLINE_SIZE 10
-#define FFI_NATIVE_RAW_API 1	/* and has native raw api support */
-
-#elif defined(IA64)
-
-#define FFI_CLOSURES 1
-#define FFI_TRAMPOLINE_SIZE 24  /* Really the following struct, which 	*/
-				/* can be interpreted as a C function	*/
-				/* decriptor:				*/
-
-struct ffi_ia64_trampoline_struct {
-    void * code_pointer;	/* Pointer to ffi_closure_UNIX	*/
-    void * fake_gp;		/* Pointer to closure, installed as gp	*/
-    void * real_gp;		/* Real gp value, reinstalled by 	*/
-				/* ffi_closure_UNIX.			*/
-};
-#define FFI_NATIVE_RAW_API 0
-
-#elif defined(ALPHA)
-
-#define FFI_CLOSURES 1
-#define FFI_TRAMPOLINE_SIZE 24
-#define FFI_NATIVE_RAW_API 0
-
-#elif defined(POWERPC)
-
-#define FFI_CLOSURES 1
-#ifdef POWERPC64
-#define FFI_TRAMPOLINE_SIZE 24
-#else
-#define FFI_TRAMPOLINE_SIZE 40
-#endif
-#define FFI_NATIVE_RAW_API 0
-
-#elif defined(POWERPC_DARWIN)
-
-#define FFI_CLOSURES 1
-#define FFI_TRAMPOLINE_SIZE 40
-#define FFI_NATIVE_RAW_API 0
-
-#elif defined(POWERPC_AIX)
-
-#define FFI_CLOSURES 1
-#define FFI_TRAMPOLINE_SIZE 24 /* see struct below */ 
-#define FFI_NATIVE_RAW_API 0
-
-#elif defined(SPARC64)
-
-#define FFI_CLOSURES 1
-#define FFI_TRAMPOLINE_SIZE 24
-#define FFI_NATIVE_RAW_API 0
-
-#elif defined(SPARC)
-
-#define FFI_CLOSURES 1
-#define FFI_TRAMPOLINE_SIZE 16
-#define FFI_NATIVE_RAW_API 0
-
-#elif defined(S390)
-
-#define FFI_CLOSURES 1
-#ifdef S390X
-#define FFI_TRAMPOLINE_SIZE 32
-#else
-#define FFI_TRAMPOLINE_SIZE 16
-#endif
-#define FFI_NATIVE_RAW_API 0
-
-#elif defined(SH)
-
-#define FFI_CLOSURES 1
-#define FFI_TRAMPOLINE_SIZE 16
-#define FFI_NATIVE_RAW_API 0
-
-#elif defined(SH64)
-
-#define FFI_CLOSURES 1
-#define FFI_TRAMPOLINE_SIZE 32
-#define FFI_NATIVE_RAW_API 0
-
-#elif defined(__x86_64__)
-
-#define FFI_CLOSURES 1
-#define FFI_TRAMPOLINE_SIZE 24
-#define FFI_NATIVE_RAW_API 0
-
-#else 
-
-#define FFI_CLOSURES 0
-#define FFI_NATIVE_RAW_API 0
-
-#endif
-
-#if defined(POWERPC_DARWIN) || defined(POWERPC_AIX)
-
-struct ffi_aix_trampoline_struct {
-    void * code_pointer;	/* Pointer to ffi_closure_ASM */
-    void * toc;			/* TOC */
-    void * static_chain;	/* Pointer to closure */
-};
-
-#endif
-
-
 
 #if FFI_CLOSURES
 
@@ -556,8 +225,6 @@ ffi_prep_closure (ffi_closure*,
 		  ffi_cif *,
 		  void (*fun)(ffi_cif*,void*,void**,void*),
 		  void *user_data);
-
-#if !FFI_NO_RAW_API
 
 typedef struct {
   char tramp[FFI_TRAMPOLINE_SIZE];
@@ -586,15 +253,12 @@ ffi_prep_raw_closure (ffi_raw_closure*,
 		      void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
 		      void *user_data);
 
-#ifndef NO_JAVA_RAW_API
 ffi_status
 ffi_prep_java_raw_closure (ffi_raw_closure*,
 		           ffi_cif *cif,
 		           void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
 		           void *user_data);
-#endif
 
-#endif /* !FFI_NO_RAW_API */
 #endif /* FFI_CLOSURES */
 
 /* ---- Public interface definition -------------------------------------- */
@@ -617,25 +281,25 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
 
 #endif
 
+/* If these change, update src/mips/ffitarget.h. */
 #define FFI_TYPE_VOID       0    
 #define FFI_TYPE_INT        1
 #define FFI_TYPE_FLOAT      2    
 #define FFI_TYPE_DOUBLE     3
-#if SIZEOF_LONG_DOUBLE == SIZEOF_DOUBLE
-#define FFI_TYPE_LONGDOUBLE FFI_TYPE_DOUBLE
-#else
+#if @HAVE_LONG_DOUBLE@
 #define FFI_TYPE_LONGDOUBLE 4
+#else
+#define FFI_TYPE_LONGDOUBLE FFI_TYPE_DOUBLE
 #endif
-
-#define FFI_TYPE_UINT8      5   /* If this changes, update ffi_mips.h. */
-#define FFI_TYPE_SINT8      6   /* If this changes, update ffi_mips.h. */
+#define FFI_TYPE_UINT8      5   
+#define FFI_TYPE_SINT8      6
 #define FFI_TYPE_UINT16     7 
 #define FFI_TYPE_SINT16     8
 #define FFI_TYPE_UINT32     9
 #define FFI_TYPE_SINT32     10
 #define FFI_TYPE_UINT64     11
 #define FFI_TYPE_SINT64     12
-#define FFI_TYPE_STRUCT     13  /* If this changes, update ffi_mips.h. */
+#define FFI_TYPE_STRUCT     13
 #define FFI_TYPE_POINTER    14
 
 /* This should always refer to the last type code (for sanity checks) */

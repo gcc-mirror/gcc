@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   debug.c - Copyright (c) 1996 Cygnus Solutions
+   debug.c - Copyright (c) 1996 Red Hat, Inc.
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -37,29 +37,23 @@ void ffi_stop_here(void)
 
 /* This function should only be called via the FFI_ASSERT() macro */
 
-int ffi_assert(char *file, int line)
+void ffi_assert(char *expr, char *file, int line)
 {
-  fprintf(stderr, "ASSERTION FAILURE: %s line %d\n", file, line);
+  fprintf(stderr, "ASSERTION FAILURE: %s at %s:%d\n", expr, file, line);
   ffi_stop_here();
   abort();
-
-  /* This has to return something for the compiler not to complain */
-  /*@notreached@*/
-  return 0;
 }
 
 /* Perform a sanity check on an ffi_type structure */
 
-bool ffi_type_test(ffi_type *a)
+void ffi_type_test(ffi_type *a, char *file, int line)
 {
-  /*@-usedef@*/
-  FFI_ASSERT(a->type <= FFI_TYPE_LAST);
-  FFI_ASSERT(a->type > FFI_TYPE_VOID ? a->size > 0 : 1);
-  FFI_ASSERT(a->type > FFI_TYPE_VOID ? a->alignment > 0 : 1);
-  FFI_ASSERT(a->type == FFI_TYPE_STRUCT ? a->elements != NULL : 1);
-  /*@=usedef@*/
+  FFI_ASSERT_AT(a != NULL, file, line);
 
-  /* This is a silly thing to return, but it keeps the compiler from
-     issuing warnings about "a" not being used in non-debug builds. */
-  return (a != NULL);
+  /*@-usedef@*/
+  FFI_ASSERT_AT(a->type <= FFI_TYPE_LAST, file, line);
+  FFI_ASSERT_AT(a->type == FFI_TYPE_VOID || a->size > 0, file, line);
+  FFI_ASSERT_AT(a->type == FFI_TYPE_VOID || a->alignment > 0, file, line);
+  FFI_ASSERT_AT(a->type != FFI_TYPE_STRUCT || a->elements != NULL, file, line);
+  /*@=usedef@*/
 }

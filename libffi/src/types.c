@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   types.c - Copyright (c) 1996, 1998  Cygnus Solutions
+   types.c - Copyright (c) 1996, 1998  Red Hat, Inc.
    
    Predefined ffi_types needed by libffi.
 
