@@ -40,8 +40,8 @@ exception statement from your version.
 
 package java.util.logging;
 
+import java.io.Serializable;
 import java.util.ResourceBundle;
-
 
 /**
  * A class for indicating logging levels.  A number of commonly used
@@ -52,8 +52,7 @@ import java.util.ResourceBundle;
  *
  * @author Sascha Brawer <brawer@acm.org>
  */
-public class Level
-  implements java.io.Serializable
+public class Level implements Serializable
 {
   /* The integer values are the same as in the Sun J2SE 1.4.
    * They have been obtained with a test program. In J2SE 1.4.1,
@@ -344,7 +343,7 @@ public class Level
 
     for (int i = 0; i < knownLevels.length; i++)
     {
-      if (name == knownLevels[i].name)
+      if (name.equals(knownLevels[i].name))
 	return knownLevels[i];
     }
     
