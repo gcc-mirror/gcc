@@ -170,18 +170,19 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_gtkSetFont
 
   ptr = NSA_GET_PTR (env, obj);
   text = GTK_WIDGET (TEXT_FROM_SW (ptr));
-  
+
   font_name = (*env)->GetStringUTFChars (env, jname, NULL);
 
   gdk_threads_enter();
 
   font_desc = pango_font_description_from_string (font_name);
-  pango_font_description_set_size (font_desc, size);
+  pango_font_description_set_size (font_desc, size * PANGO_SCALE);
+
   gtk_widget_modify_font (GTK_WIDGET(text), font_desc);
+
   pango_font_description_free (font_desc);
-  
+
   gdk_threads_leave();
 
   (*env)->ReleaseStringUTFChars (env, jname, font_name);
-
 }

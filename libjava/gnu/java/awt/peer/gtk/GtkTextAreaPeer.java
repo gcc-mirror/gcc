@@ -107,6 +107,6 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
 
   public void setFont (Font f)
   {
-    gtkSetFont(((GtkFontPeer)f.getPeer()).getXLFD(), f.getSize());
+    gtkSetFont(f.getName(), f.getSize());
   }
 }

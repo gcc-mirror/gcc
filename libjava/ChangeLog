@@ -1,3 +1,16 @@
+2003-07-29  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkButtonPeer.java: Call getName rather
+	than getXLFD.
+	* gnu/java/awt/peer/gtk/GtkTextFieldPeer.java: Likewise.
+	* gnu/java/awt/peer/gtk/GtkTextAreaPeer.java: Likewise.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c
+	(gtkSetFont): Scale size parameter by PANGO_SCALE.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.c:
+	Likewise.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c:
+	Likewise.
+
 2003-07-29  Tom Tromey  <tromey@redhat.com>
 
 	* defineclass.cc (handleField): Throw exception if field name is
