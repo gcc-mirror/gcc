@@ -1,5 +1,7 @@
 2000-04-30  Mark Mitchell  <mark@codesourcery.com>
 
+	* method.c (emit_thunk): Don't try to return a `void' value.
+
 	* optimize.c (initialize_inlined_parameters): If the parameter is
 	addressable, we need to make a new VAR_DECL, even if the
 	initializer is constant.
