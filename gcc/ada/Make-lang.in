@@ -204,6 +204,7 @@ GNATBIND_OBJS = \
  ada/osint.o      \
  ada/output.o     \
  ada/rident.o     \
+ ada/s-addope.o   \
  ada/s-assert.o   \
  ada/s-carun8.o   \
  ada/s-casuti.o   \
