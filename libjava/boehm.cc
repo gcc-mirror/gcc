@@ -23,12 +23,8 @@ details.  */
 #undef TRUE
 #undef FALSE
 
-// We need to include gc_priv.h.  However, it tries to include
-// config.h if it hasn't already been included.  So we force the
-// inclusion of the Boehm config.h.
 extern "C"
 {
-#include <boehm-config.h>
 #include <gc_priv.h>
 #include <gc_mark.h>
 
