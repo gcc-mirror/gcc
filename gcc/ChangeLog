@@ -1,3 +1,14 @@
+2004-11-22  David Edelsohn  <edelsohn@gnu.org>
+	    Fariborz Jahanian  <fjahanian@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_return_in_memory): Test
+	TARGET_ALTIVEC_ABI.
+	(function_arg_boundary): Align 8 to 16 byte vectors like SPE.
+	Align 16 byte and larger vectors like Altivec.
+	(function_arg_advance): Pass any 16 byte vector like Altivec vector.
+	(function_arg): Same.
+	(rs6000_pass_by_references): Test TARGET_ALTIVEC_ABI.
+
 2004-11-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/18572
