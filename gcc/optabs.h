@@ -488,11 +488,6 @@ extern enum insn_code can_extend_p (enum machine_mode, enum machine_mode, int);
 extern rtx gen_extend_insn (rtx, rtx, enum machine_mode,
 			    enum machine_mode, int);
 
-/* Initialize the tables that control conversion between fixed and
-   floating values.  */
-extern void init_fixtab (void);
-extern void init_floattab (void);
-
 /* Call this to reset the function entry for one optab.  */
 extern void set_optab_libfunc (optab, enum machine_mode, const char *);
 extern void set_conv_libfunc (convert_optab, enum machine_mode,

@@ -24,8 +24,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Instrumentation.  */
 extern void mudflap_init (void);
-extern void mudflap_c_function_decls (tree);
-extern void mudflap_c_function_ops (tree);
 extern void mudflap_enqueue_decl (tree);
 extern void mudflap_enqueue_constant (tree);
 extern void mudflap_finish_file (void);

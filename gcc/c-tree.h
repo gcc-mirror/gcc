@@ -434,7 +434,6 @@ extern int c_cannot_inline_tree_fn (tree *);
 extern bool c_objc_common_init (void);
 extern bool c_missing_noreturn_ok_p (tree);
 extern tree c_objc_common_truthvalue_conversion (tree expr);
-extern int defer_fn (tree);
 extern bool c_warn_unused_global_decl (tree);
 extern void c_initialize_diagnostics (diagnostic_context *);
 
