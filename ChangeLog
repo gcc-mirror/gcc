@@ -1,3 +1,9 @@
+2004-11-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* configure.in (hppa*-*-linux*): Don't add libgcj to noconfigdirs.
+	(hppa*64*-*-*): Delete incorrect comment.
+	* configure: Rebuilt.
+
 2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* libtool.m4 (AC_DEPLIBS_CHECK_METHOD): Revert previous change.

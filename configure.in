@@ -534,13 +534,13 @@ case "${target}" in
     # headers, crt*.o, etc., all of which are needed by these.
     noconfigdirs="$noconfigdirs target-zlib"
     ;;
+  parisc*-*-linux* | hppa*-*-linux*)
+    ;;
   hppa*-*-*elf* | \
-  parisc*-*-linux* | hppa*-*-linux* | \
   hppa*-*-lites* | \
   hppa*-*-openbsd* | \
   hppa*64*-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    # Do configure ld/binutils/gas for this case.
     ;;
   hppa*-*-*)
     # According to Alexandre Oliva <aoliva@redhat.com>, libjava won't
