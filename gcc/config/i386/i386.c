@@ -2246,6 +2246,8 @@ classify_argument (enum machine_mode mode, tree type,
 	mode_alignment = 128;
       else if (mode == XCmode)
 	mode_alignment = 256;
+      if (COMPLEX_MODE_P (mode))
+	mode_alignment /= 2;
       /* Misaligned fields are always returned in memory.  */
       if (bit_offset % mode_alignment)
 	return 0;
@@ -2423,7 +2425,8 @@ construct_container (enum machine_mode mode, tree type, int in_return,
       default:
 	abort ();
       }
-  if (n == 2 && class[0] == X86_64_SSE_CLASS && class[1] == X86_64_SSEUP_CLASS)
+  if (n == 2 && class[0] == X86_64_SSE_CLASS && class[1] == X86_64_SSEUP_CLASS
+      && mode != BLKmode)
     return gen_rtx_REG (mode, SSE_REGNO (sse_regno));
   if (n == 2
       && class[0] == X86_64_X87_CLASS && class[1] == X86_64_X87UP_CLASS)
@@ -2435,7 +2438,8 @@ construct_container (enum machine_mode mode, tree type, int in_return,
     return gen_rtx_REG (mode, intreg[0]);
   if (n == 4
       && class[0] == X86_64_X87_CLASS && class[1] == X86_64_X87UP_CLASS
-      && class[2] == X86_64_X87_CLASS && class[3] == X86_64_X87UP_CLASS)
+      && class[2] == X86_64_X87_CLASS && class[3] == X86_64_X87UP_CLASS
+      && mode != BLKmode)
     return gen_rtx_REG (XCmode, FIRST_STACK_REG);
 
   /* Otherwise figure out the entries of the PARALLEL.  */
