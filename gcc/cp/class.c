@@ -5040,8 +5040,16 @@ instantiate_type (lhstype, rhs, complain)
 	    my_friendly_assert (TREE_CODE (function) == FUNCTION_DECL, 185);
 
 	    if (! DECL_STATIC_FUNCTION_P (function))
-	      cp_error ("reference to `%D' can only be used in a call",
-			function);
+	      {
+		tree t = TREE_TYPE (TREE_OPERAND (rhs, 0));
+		if (TYPE_MAIN_VARIANT (t) == current_class_type)
+		  t = constructor_name (t);
+
+		cp_error ("object-dependent reference to `%D' can only be used in a call",
+			  function);
+		cp_error ("  to form a pointer to member function, say `&%T::%D'",
+			  t, DECL_NAME (function));
+	      }
 
 	    mark_used (function);
 	    return function;
