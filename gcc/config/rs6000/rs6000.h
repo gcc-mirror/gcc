@@ -2058,59 +2058,16 @@ typedef struct rs6000_args
    operand.  If we find one, push the reload and jump to WIN.  This
    macro is used in only one place: `find_reloads_address' in reload.c.
 
-   For RS/6000, we wish to handle large displacements off a base
-   register by splitting the addend across an addiu/addis and the mem insn.
-   This cuts number of extra insns needed from 3 to 1.  */
+   Implemented on rs6000 by rs6000_legitimize_reload_address.  
+   Note that (X) is evaluated twice; this is safe in current usage.  */
    
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	     \
 do {									     \
-  /* We must recognize output that we have already generated ourselves.  */  \
-  if (GET_CODE (X) == PLUS						     \
-      && GET_CODE (XEXP (X, 0)) == PLUS					     \
-      && GET_CODE (XEXP (XEXP (X, 0), 0)) == REG			     \
-      && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT			     \
-      && GET_CODE (XEXP (X, 1)) == CONST_INT)				     \
-    {									     \
-      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,		     \
-                   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	     \
-                   OPNUM, TYPE);					     \
-      goto WIN; 							     \
-    }									     \
-  if (GET_CODE (X) == PLUS						     \
-      && GET_CODE (XEXP (X, 0)) == REG					     \
-      && REGNO (XEXP (X, 0)) < FIRST_PSEUDO_REGISTER			     \
-      && REG_MODE_OK_FOR_BASE_P (XEXP (X, 0), MODE)			     \
-      && GET_CODE (XEXP (X, 1)) == CONST_INT)				     \
-    {									     \
-      HOST_WIDE_INT val = INTVAL (XEXP (X, 1));				     \
-      HOST_WIDE_INT low = ((val & 0xffff) ^ 0x8000) - 0x8000;		     \
-      HOST_WIDE_INT high						     \
-        = (((val - low) & 0xffffffff) ^ 0x80000000) - 0x80000000;	     \
-									     \
-      /* Check for 32-bit overflow.  */					     \
-      if (high + low != val)						     \
-        break;								     \
-									     \
-      /* Reload the high part into a base reg; leave the low part	     \
-         in the mem directly.  */					     \
-									     \
-      X = gen_rtx_PLUS (GET_MODE (X),					     \
-                        gen_rtx_PLUS (GET_MODE (X), XEXP (X, 0),	     \
-                                      GEN_INT (high)),			     \
-                        GEN_INT (low));					     \
-									     \
-      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,		     \
-                   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	     \
-                   OPNUM, TYPE);					     \
-      goto WIN;								     \
-    }									     \
-  else if (TARGET_TOC							     \
-	   && CONSTANT_POOL_EXPR_P (X)					     \
-	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (X), MODE)) \
-    {									     \
-      (X) = create_TOC_reference (X);					     \
-      goto WIN;								     \
-    }									     \
+  int win;								     \
+  (X) = rs6000_legitimize_reload_address ((X), (MODE), (OPNUM),		     \
+			(int)(TYPE), (IND_LEVELS), &win);		     \
+  if ( win )								     \
+    goto WIN;								     \
 } while (0)
 
 /* Go to LABEL if ADDR (a legitimate address expression)

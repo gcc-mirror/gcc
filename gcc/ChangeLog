@@ -1,3 +1,11 @@
+2001-12-19  Dale Johannesen  <dalej@apple.com>
+
+	 * config/rs6000/rs6000.h: LEGITIMIZE_RELOAD_ADDRESS:
+	 redefine in terms of rs6000_legitimize_reload_address().
+	 * config/rs6000/rs6000-protos.h: Add this function.
+	 * config/rs6000/rs6000.c: Add this function.  Includes
+	 handling for Darwin FP constants.
+
 Wed Dec 19 11:01:21 2001  Jeffrey A Law  (law@redhat.com)
 
 	* config/pa/t-hpux-shlib: New file.
