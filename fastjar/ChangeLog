@@ -1,3 +1,8 @@
+2002-03-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* jartool.c (expand_options): Handle tar-style argument list with a
+	leading "-".
+
 2002-02-23  Anthony Green  <green@redhat.com>
 
 	* jartool.c (main): Fix handling of -C.
