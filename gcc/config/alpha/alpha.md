@@ -1,6 +1,6 @@
-;;- Machine description for DEC Alpha for GNU C compiler
-;;   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
-;;   Contributed by Richard Kenner (kenner@nyu.edu)
+;; Machine description for DEC Alpha for GNU C compiler
+;; Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 ;; This file is part of GNU CC.
 
@@ -2233,7 +2233,7 @@
 			 operands[4], const0_rtx);
 }")
 
-;; We can convert such things as "a > 0xffff" to "t = a & 0xffff; t != 0".
+;; We can convert such things as "a > 0xffff" to "t = a & ~ 0xffff; t != 0".
 ;; This eliminates one, and sometimes two, insns when the AND can be done
 ;; with a ZAP.
 (define_split
@@ -2247,13 +2247,14 @@
        || GET_CODE (operands[1]) == LEU
        || ((GET_CODE (operands[1]) == GT || GET_CODE (operands[1]) == LE)
 	   && extended_count (operands[2], DImode, 1) > 0))"
-  [(set (match_dup 4) (and:DI (match_dup 2) (match_dup 3)))
-   (set (match_dup 0) (match_dup 5))]
+  [(set (match_dup 4) (and:DI (match_dup 2) (match_dup 5)))
+   (set (match_dup 0) (match_dup 6))]
   "
 {
-  operands[5] = gen_rtx (((GET_CODE (operands[1]) == GTU
+  operands[5] = GEN_INT (~ INTVAL (operands[3]));
+  operands[6] = gen_rtx (((GET_CODE (operands[1]) == GTU
 			   || GET_CODE (operands[1]) == GE)
-			  ? NE : LE),
+			  ? NE : EQ),
 			 DImode, operands[4], const0_rtx);
 }")
 
