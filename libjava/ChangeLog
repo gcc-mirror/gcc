@@ -1,5 +1,43 @@
 2004-10-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/BindException.java,
+	java/net/ConnectException.java,
+	java/net/ContentHandler.java,
+	java/net/ContentHandlerFactory.java,
+	java/net/DatagramPacket.java,
+	java/net/DatagramSocket.java,
+	java/net/DatagramSocketImpl.java,
+	java/net/DatagramSocketImplFactory.java,
+	java/net/FileNameMap.java,
+	java/net/HttpURLConnection.java,
+	java/net/MalformedURLException.java,
+	java/net/MulticastSocket.java,
+	java/net/NetworkInterface.java,
+	java/net/NoRouteToHostException.java,
+	java/net/PasswordAuthentication.java,
+	java/net/PortUnreachableException.java,
+	java/net/ProtocolException.java,
+	java/net/ServerSocket.java,
+	java/net/Socket.java,
+	java/net/SocketException.java,
+	java/net/SocketImpl.java,
+	java/net/SocketImplFactory.java,
+	java/net/SocketOptions.java,
+	java/net/SocketPermission.java,
+	java/net/SocketTimeoutException.java,
+	java/net/URI.java,
+	java/net/URISyntaxException.java,
+	java/net/URL.java,
+	java/net/URLDecoder.java,
+	java/net/URLEncoder.java,
+	java/net/URLStreamHandler.java,
+	java/net/URLStreamHandlerFactory.java,
+	java/net/UnknownHostException.java,
+	java/net/UnknownServiceException.java:
+	Big import statement and @author tag cleanup.
+
+2004-10-17  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/security/OID.java,
 	gnu/java/security/provider/DSAParameters.java,
 	gnu/java/security/provider/DSASignature.java,

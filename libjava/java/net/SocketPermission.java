@@ -151,13 +151,13 @@ public final class SocketPermission extends Permission implements Serializable
   public boolean equals(Object obj)
   {
     if (! (obj instanceof SocketPermission))
-      return (false);
+      return false;
 
     if (((SocketPermission) obj).hostport.equals(hostport))
       if (((SocketPermission) obj).actions.equals(actions))
-	return (true);
+	return true;
 
-    return (false);
+    return false;
   }
 
   /**
@@ -216,7 +216,7 @@ public final class SocketPermission extends Permission implements Serializable
     else if (actions.indexOf("resolve") != -1)
       sb.append("resolve");
 
-    return (sb.toString());
+    return sb.toString();
   }
 
   /**
@@ -229,7 +229,7 @@ public final class SocketPermission extends Permission implements Serializable
   {
     // FIXME: Implement
 
-    return (null);
+    return null;
   }
 
   /**
@@ -265,14 +265,14 @@ public final class SocketPermission extends Permission implements Serializable
     if (perm instanceof SocketPermission)
       p = (SocketPermission) perm;
     else
-      return (false);
+      return false;
 
     // Next check the actions
     String ourlist = getActions();
     String theirlist = p.getActions();
 
     if (! ourlist.startsWith(theirlist))
-      return (false);
+      return false;
 
     // Now check ports
     int ourfirstport = 0;
@@ -347,7 +347,7 @@ public final class SocketPermission extends Permission implements Serializable
 
     // Now check them
     if ((theirfirstport < ourfirstport) || (theirlastport > ourlastport))
-      return (false);
+      return false;
 
     // Finally we can check the hosts
     String ourhost;
@@ -369,7 +369,7 @@ public final class SocketPermission extends Permission implements Serializable
 
     // Are they equal?
     if (ourhost.equals(theirhost))
-      return (true);
+      return true;
 
     // Try the canonical names
     String ourcanonical = null;
@@ -392,17 +392,17 @@ public final class SocketPermission extends Permission implements Serializable
       }
 
     if (ourcanonical.equals(theircanonical))
-      return (true);
+      return true;
 
     // Well, last chance.  Try for a wildcard
     if (ourhost.indexOf("*.") != -1)
       {
 	String wild_domain = ourhost.substring(ourhost.indexOf("*" + 1));
 	if (theircanonical.endsWith(wild_domain))
-	  return (true);
+	  return true;
       }
 
     // Didn't make it
-    return (false);
+    return false;
   }
 }

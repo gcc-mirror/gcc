@@ -43,8 +43,8 @@ package java.net;
  * connect to a remote host.  Often this indicates that the remote host
  * refused the connection (ie, is not listening on the target socket).
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Warren Levy (warrenl@cygnus.com)
  * @since 1.1
  * @status updated to 1.4
  */

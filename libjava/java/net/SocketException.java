@@ -45,7 +45,7 @@ import java.io.IOException;
  * operation on a socket.  Check the descriptive message (if any) for
  * details on the nature of this error
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Per Bothner
  * @status updated to 1.4
  */

@@ -48,7 +48,7 @@ package java.net;
   * the MIME type associated with that filename.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Warren Levy <warrenl@cygnus.com>
+  * @author Warren Levy (warrenl@cygnus.com)
   * @since 1.1
   */
 public interface FileNameMap

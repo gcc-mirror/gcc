@@ -1,4 +1,4 @@
-/* DatagramSocketImplFactory.java
+/* DatagramSocketImplFactory.java --
    Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,7 +46,7 @@ package java.net;
   * <code>DatagramSocketImpl</code> object.
   * This should not be needed by ordinary applications.
   *
-  * @author Michael Koch <konqueror@gmx.de>
+  * @author Michael Koch (konqueror@gmx.de)
   * @since 1.3
   */
 public interface DatagramSocketImplFactory

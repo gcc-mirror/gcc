@@ -46,8 +46,8 @@ import java.io.IOException;
  * the MIME type returned from a URL could not be determined or that an
  * attempt was made to write to a read-only URL.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Warren Levy (warrenl@cygnus.com)
  * @status updated to 1.4
  */
 public class UnknownServiceException extends IOException

@@ -42,7 +42,7 @@ package java.net;
  * This exception signals that an ICMP port unreachable datagram has been
  * received.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.4
  * @status updated to 1.4
  */

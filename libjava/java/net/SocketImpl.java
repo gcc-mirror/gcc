@@ -62,7 +62,7 @@ import java.io.OutputStream;
  * a factory.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Per Bothner <bothner@cygnus.com>
+ * @author Per Bothner (bothner@cygnus.com)
  */
 public abstract class SocketImpl implements SocketOptions
 {

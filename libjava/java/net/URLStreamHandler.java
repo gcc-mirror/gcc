@@ -180,8 +180,8 @@ public abstract class URLStreamHandler
 	      }
 	    catch (NumberFormatException e)
 	      {
-		; // Ignore invalid port values; port is already set to u's
-		  // port.
+		// Ignore invalid port values; port is already set to u's
+		// port.
 	      }
 
 	    // Now we must cut the port number in the original string.

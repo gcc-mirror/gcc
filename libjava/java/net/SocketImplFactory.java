@@ -46,7 +46,7 @@ package java.net;
   * object.  This should not be needed by ordinary applications.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Per Bothner <bothner@cygnus.com>
+  * @author Per Bothner (bothner@cygnus.com)
   */
 public interface SocketImplFactory
 {

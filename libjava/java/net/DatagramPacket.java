@@ -62,7 +62,7 @@ package java.net;
  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
  * Status:  Believed complete and correct.
  *
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @author Aarom M. Renn (arenn@urbanophile.com) (Documentation comments)
  * @date April 28, 1999.
  */

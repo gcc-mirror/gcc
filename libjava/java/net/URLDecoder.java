@@ -57,7 +57,7 @@ import java.io.UnsupportedEncodingException;
  *
  * @since 1.2
  *
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @author Aaron M. Renn (arenn@urbanophile.com) (documentation comments)
  * @author Mark Wielaard (mark@klomp.org)
  */

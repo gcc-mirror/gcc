@@ -42,8 +42,8 @@ package java.net;
   * This exception indicates that there is no TCP/IP route to the requested
   * host.  This is often due to a misconfigured routing table.
   *
-  * @author Aaron M. Renn <arenn@urbanophile.com>
-  * @author Warren Levy <warrenl@cygnus.com>
+  * @author Aaron M. Renn (arenn@urbanophile.com)
+  * @author Warren Levy (warrenl@cygnus.com)
   * @since 1.1
   * @status updated to 1.4
   */
