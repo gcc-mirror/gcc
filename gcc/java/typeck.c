@@ -67,23 +67,12 @@ convert_ieee_real_to_integer (type, expr)
      tree type, expr;
 {
   tree node, assignment, expr_decl;
+  expr = save_expr (expr);
 
-  expr_decl = build_decl (VAR_DECL, generate_name (), TREE_TYPE (expr));
-  layout_decl (expr_decl, 0);
-  expand_decl (pushdecl (expr_decl));
-  assignment = build (MODIFY_EXPR, NULL_TREE, expr_decl, expr);
-  TREE_SIDE_EFFECTS (assignment) = 1;
-  TREE_TYPE (assignment) = type;
-
-  expr = build (COMPOUND_EXPR, NULL_TREE,
-		assignment,
-		build (COND_EXPR, type, 
-		       build (NE_EXPR, boolean_type_node, expr_decl, expr_decl),
-		       build_int_2 (0, 0),
-		       convert_to_integer (type, expr_decl)));
-
-  TREE_TYPE (expr) = type;
-  return expr;
+  return build (COND_EXPR, type, 
+		build (NE_EXPR, boolean_type_node, expr, expr),
+		convert (type, integer_zero_node),
+		convert_to_integer (type, expr));
 }  
 
 /* Create an expression whose value is that of EXPR,

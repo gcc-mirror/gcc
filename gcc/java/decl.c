@@ -1514,29 +1514,6 @@ complete_start_java_method (fndecl)
       expand_expr_stmt (init);
     }
 
-  if (METHOD_SYNCHRONIZED (fndecl) && ! flag_emit_class_files
-      && DECL_FUNCTION_BODY (fndecl) != NULL_TREE)
-    {
-      /* Warp function body with a monitorenter plus monitorexit cleanup. */
-      tree function_body = DECL_FUNCTION_BODY (fndecl);
-      tree body = BLOCK_EXPR_BODY (function_body);
-      tree enter, exit, lock;
-      if (METHOD_STATIC (fndecl))
-	lock = build_class_ref (DECL_CONTEXT (fndecl));
-      else
-	lock = DECL_ARGUMENTS (fndecl);
-      BUILD_MONITOR_ENTER (enter, lock);
-      BUILD_MONITOR_EXIT (exit, lock);
-      lock = build (WITH_CLEANUP_EXPR, void_type_node,
-		    enter,  NULL_TREE, exit);
-      TREE_SIDE_EFFECTS (lock) = 1;
-      lock = build (COMPOUND_EXPR, TREE_TYPE (body), lock, body);
-      TREE_SIDE_EFFECTS (lock) = 1;
-      lock = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (body), lock);
-      TREE_SIDE_EFFECTS (lock) = 1;
-      BLOCK_EXPR_BODY (function_body) = lock;
-    }
-
   /* Push local variables. Function compiled from source code are
      using a different local variables management, and for them,
      pushlevel shouldn't be called from here.  */
@@ -1545,6 +1522,36 @@ complete_start_java_method (fndecl)
       pushlevel (2);
       if (! flag_emit_class_files)
 	expand_start_bindings (1);
+    }
+
+  if (METHOD_SYNCHRONIZED (fndecl) && ! flag_emit_class_files)
+    {
+      /* Warp function body with a monitorenter plus monitorexit cleanup. */
+      tree enter, exit, lock;
+      if (METHOD_STATIC (fndecl))
+	lock = build_class_ref (DECL_CONTEXT (fndecl));
+      else
+	lock = DECL_ARGUMENTS (fndecl);
+      BUILD_MONITOR_ENTER (enter, lock);
+      BUILD_MONITOR_EXIT (exit, lock);
+      if (!CLASS_FROM_SOURCE_P (DECL_CONTEXT (fndecl)))
+	{
+	  expand_expr_stmt (enter);
+	  expand_decl_cleanup (NULL_TREE, exit);
+	}
+      else
+	{
+	  tree function_body = DECL_FUNCTION_BODY (fndecl);
+	  tree body = BLOCK_EXPR_BODY (function_body);
+	  lock = build (WITH_CLEANUP_EXPR, void_type_node,
+			enter,  NULL_TREE, exit);
+	  TREE_SIDE_EFFECTS (lock) = 1;
+	  lock = build (COMPOUND_EXPR, TREE_TYPE (body), lock, body);
+	  TREE_SIDE_EFFECTS (lock) = 1;
+	  lock = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (body), lock);
+	  TREE_SIDE_EFFECTS (lock) = 1;
+	  BLOCK_EXPR_BODY (function_body) = lock;
+	}
     }
 }
 
