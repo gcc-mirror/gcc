@@ -381,7 +381,17 @@
 ;; Therefore, we only allow div.s if not working around SB-1 rev2
 ;; errata or if a slight loss of precision is OK.
 (define_mode_attr divide_condition
-  [DF (SF "!TARGET_FIX_SB1 || flag_unsafe_math_optimizations")])
+  [DF (SF "!TARGET_FIX_SB1 || flag_unsafe_math_optimizations")
+   (V2SF "TARGET_SB1 && (!TARGET_FIX_SB1 || flag_unsafe_math_optimizations)")])
+
+; This attribute gives the condition for which sqrt instructions exist.
+(define_mode_attr sqrt_condition
+  [(SF "!ISA_MIPS1") (DF "!ISA_MIPS1") (V2SF "TARGET_SB1")])
+
+; This attribute gives the condition for which recip and rsqrt instructions
+; exist.
+(define_mode_attr recip_condition
+  [(SF "ISA_HAS_FP4") (DF "ISA_HAS_FP4") (V2SF "TARGET_SB1")])
 
 ;; This code macro allows all branch instructions to be generated from
 ;; a single define_expand template.
@@ -1703,9 +1713,9 @@
 ;;
 
 (define_expand "div<mode>3"
-  [(set (match_operand:SCALARF 0 "register_operand")
-	(div:SCALARF (match_operand:SCALARF 1 "reg_or_1_operand")
-		     (match_operand:SCALARF 2 "register_operand")))]
+  [(set (match_operand:ANYF 0 "register_operand")
+	(div:ANYF (match_operand:ANYF 1 "reg_or_1_operand")
+		  (match_operand:ANYF 2 "register_operand")))]
   "<divide_condition>"
 {
   if (const_1_operand (operands[1], <MODE>mode))
@@ -1726,9 +1736,9 @@
 ;; long latency op destination register.
 
 (define_insn "*div<mode>3"
-  [(set (match_operand:SCALARF 0 "register_operand" "=f")
-	(div:SCALARF (match_operand:SCALARF 1 "register_operand" "f")
-		     (match_operand:SCALARF 2 "register_operand" "f")))]
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(div:ANYF (match_operand:ANYF 1 "register_operand" "f")
+		  (match_operand:ANYF 2 "register_operand" "f")))]
   "<divide_condition>"
 {
   if (TARGET_FIX_SB1)
@@ -1737,17 +1747,17 @@
     return "div.<fmt>\t%0,%1,%2";
 }
   [(set_attr "type" "fdiv")
-   (set_attr "mode" "<MODE>")
+   (set_attr "mode" "<UNITMODE>")
    (set (attr "length")
         (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
                       (const_int 8)
                       (const_int 4)))])
 
 (define_insn "*recip<mode>3"
-  [(set (match_operand:SCALARF 0 "register_operand" "=f")
-	(div:SCALARF (match_operand:SCALARF 1 "const_1_operand" "")
-		     (match_operand:SCALARF 2 "register_operand" "f")))]
-  "ISA_HAS_FP4 && flag_unsafe_math_optimizations"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(div:ANYF (match_operand:ANYF 1 "const_1_operand" "")
+		  (match_operand:ANYF 2 "register_operand" "f")))]
+  "<recip_condition> && flag_unsafe_math_optimizations"
 {
   if (TARGET_FIX_SB1)
     return "recip.<fmt>\t%0,%2\;mov.<fmt>\t%0,%0";
@@ -1755,7 +1765,7 @@
     return "recip.<fmt>\t%0,%2";
 }
   [(set_attr "type" "frdiv")
-   (set_attr "mode" "<MODE>")
+   (set_attr "mode" "<UNITMODE>")
    (set (attr "length")
         (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
                       (const_int 8)
@@ -1798,9 +1808,9 @@
 ;; "*div[sd]f3" comment for details).
 
 (define_insn "sqrt<mode>2"
-  [(set (match_operand:SCALARF 0 "register_operand" "=f")
-	(sqrt:SCALARF (match_operand:SCALARF 1 "register_operand" "f")))]
-  "HAVE_SQRT_P()"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(sqrt:ANYF (match_operand:ANYF 1 "register_operand" "f")))]
+  "<sqrt_condition>"
 {
   if (TARGET_FIX_SB1)
     return "sqrt.<fmt>\t%0,%1\;mov.<fmt>\t%0,%0";
@@ -1808,18 +1818,17 @@
     return "sqrt.<fmt>\t%0,%1";
 }
   [(set_attr "type" "fsqrt")
-   (set_attr "mode" "<MODE>")
+   (set_attr "mode" "<UNITMODE>")
    (set (attr "length")
         (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
                       (const_int 8)
                       (const_int 4)))])
 
 (define_insn "*rsqrt<mode>a"
-  [(set (match_operand:SCALARF 0 "register_operand" "=f")
-	(div:SCALARF
-	 (match_operand:SCALARF 1 "const_1_operand" "")
-	 (sqrt:SCALARF (match_operand:SCALARF 2 "register_operand" "f"))))]
-  "ISA_HAS_FP4 && flag_unsafe_math_optimizations"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(div:ANYF (match_operand:ANYF 1 "const_1_operand" "")
+		  (sqrt:ANYF (match_operand:ANYF 2 "register_operand" "f"))))]
+  "<recip_condition> && flag_unsafe_math_optimizations"
 {
   if (TARGET_FIX_SB1)
     return "rsqrt.<fmt>\t%0,%2\;mov.<fmt>\t%0,%0";
@@ -1827,18 +1836,17 @@
     return "rsqrt.<fmt>\t%0,%2";
 }
   [(set_attr "type" "frsqrt")
-   (set_attr "mode" "<MODE>")
+   (set_attr "mode" "<UNITMODE>")
    (set (attr "length")
         (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
                       (const_int 8)
                       (const_int 4)))])
 
 (define_insn "*rsqrt<mode>b"
-  [(set (match_operand:SCALARF 0 "register_operand" "=f")
-	(sqrt:SCALARF
-	 (div:SCALARF (match_operand:SCALARF 1 "const_1_operand" "")
-		      (match_operand:SCALARF 2 "register_operand" "f"))))]
-  "ISA_HAS_FP4 && flag_unsafe_math_optimizations"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(sqrt:ANYF (div:ANYF (match_operand:ANYF 1 "const_1_operand" "")
+			     (match_operand:ANYF 2 "register_operand" "f"))))]
+  "<recip_condition> && flag_unsafe_math_optimizations"
 {
   if (TARGET_FIX_SB1)
     return "rsqrt.<fmt>\t%0,%2\;mov.<fmt>\t%0,%0";
@@ -1846,7 +1854,7 @@
     return "rsqrt.<fmt>\t%0,%2";
 }
   [(set_attr "type" "frsqrt")
-   (set_attr "mode" "<MODE>")
+   (set_attr "mode" "<UNITMODE>")
    (set (attr "length")
         (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
                       (const_int 8)

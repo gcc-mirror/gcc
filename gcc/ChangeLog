@@ -1,3 +1,23 @@
+2004-09-13  James E Wilson  <wilson@specifixinc.com>
+
+	* config/mips/mips.c (CODE_FOR_mips_sqrt_ps): New.
+	(sb1_bdesc, bdesc_map, bdesc_arrays): New.
+	(mips_expand_builtin): Add SB-1 support.  Use bdesc_map and
+	bdesc_arrays instead of mips_bdesc.
+	(mips_init_builtins): Likewise.
+	* config/mips/mips.h (TARGET_SB1): New.
+	(HAVE_SQRT_P): Delete.
+	* config/mips/mips.md (divide_condition): Support V2SF.
+	(sqrt_condition, recip_condition): New.
+	(div<mode>3): Use ANYF instead of SCALARF.
+	(*div<mode>3): Use ANYF instead of SCALARF.  Use UNITMODE instead of
+	MODE.
+	(*recip<mode>3, *rsqrt<mode>a, *rsqrt<mode>b): Use recip_condition
+	instead of ISA_HAS_FP4.  Use ANYF instead of SCALARF.  Use UNITMODE
+	instead of MODE.
+	(sqrt<mode>2): Use sqrt_condition instead of HAVE_SQRT_P.  Use ANYF
+	instead of SCALARF.  Use UNITMODE instead of MODE.
+
 2004-09-13  Zack Weinberg  <zack@codesourcery.com>
 
 	* config.in: Regenerate after removal of libbanshee.
