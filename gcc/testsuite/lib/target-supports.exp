@@ -371,8 +371,16 @@ proc check_vmx_hw_available { } {
 	puts $f "  return 0; }"
 	close $f
 
+	# Most targets don't require special flags for this test case, but
+	# Darwin does.
+	if [istarget *-*-darwin*] {
+	  set opts "additional_flags=-maltivec"
+	} else {
+	  set opts ""
+	}
+
 	verbose "check_vmx_hw_available  compiling testfile $src" 2
-	set lines [${tool}_target_compile $src $exe executable ""]
+	set lines [${tool}_target_compile $src $exe executable "$opts"]
 	file delete $src
 
 	if [string match "" $lines] then {
