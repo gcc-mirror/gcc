@@ -1,3 +1,12 @@
+2005-01-09  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/19224
+	* tree-scalar-evolution.c (get_instantiated_value,
+	set_instantiated_value): New functions.
+	(instantiate_parameters_1): Cache the results.
+	(instantiate_parameters, resolve_mixers): Initialize and free
+	the cache.
+
 2005-01-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/i386/i386.md (addhi_4): Correct reference in comment.
