@@ -1,5 +1,20 @@
 2005-01-11  Paolo Carlini  <pcarlini@suse.de>
 
+	* src/istream.cc (basic_istream<char>::ignore(streamsize),
+	basic_istream<char>::ignore(streamsize, int_type),
+	basic_istream<wchar_t>::ignore(streamsize),
+	basic_istream<wchar_t>::ignore(streamsize, int_type)): Revert
+	2005-01-05 change: actually, the previous behavior is conforming
+	and consistent with that of get(char_type*, streamsize, char_type),
+	albeit slightly different from that of 3.3/3.4 in a corner case
+	due to the use of snextc.
+	* include/bits/istream.tcc (ignore(streamsize), ignore(streamsize,
+	int_type)): Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/4.cc: Remove.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/4.cc: Likewise.
+
+2005-01-11  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traits: Implement alignment_of and aligned_storage.
 	* testsuite/tr1/4_metaprogramming/other_transformations/
 	aligned_storage/aligned_storage.cc: New.

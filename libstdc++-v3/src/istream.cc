@@ -152,7 +152,7 @@ namespace std
 		    break;
 		}
 
-	      if (_M_gcount < __n)
+	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
 	    }
 	  catch(...)
@@ -217,11 +217,9 @@ namespace std
 		    break;
 		}
 
-	      if (_M_gcount == __n)
-		;
-	      else if (traits_type::eq_int_type(__c, __eof))
+	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
-	      else
+	      else if (traits_type::eq_int_type(__c, __delim))
 		{
 		  ++_M_gcount;
 		  __sb->sbumpc();
@@ -432,7 +430,7 @@ namespace std
 		    break;
 		}
 
-	      if (_M_gcount < __n)
+	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
 	    }
 	  catch(...)
@@ -497,11 +495,9 @@ namespace std
 		    break;
 		}
 
-	      if (_M_gcount == __n)
-		;
-	      else if (traits_type::eq_int_type(__c, __eof))
+	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
-	      else
+	      else if (traits_type::eq_int_type(__c, __delim))
 		{
 		  ++_M_gcount;
 		  __sb->sbumpc();
