@@ -1421,8 +1421,7 @@ Windows 95, 98, and NT:
 @item
 The @uref{http://sources.redhat.com/cygwin/,,Cygwin} project;
 @item
-@uref{http://www.xraylith.wisc.edu/~khan/software/gnu-win32/,,GNU Win32}
-related projects by Mumit Khan.
+The @uref{http://www.mingw.org/,,MinGW} project.
 @end itemize
 
 @item
