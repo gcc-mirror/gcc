@@ -1,3 +1,7 @@
+2003-03-30  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcj.texi: Remove @ at start of file.
+
 2003-03-28  Zack Weinberg  <zack@codesourcery.com>
 
 	PR bootstrap/10216

@@ -1,4 +1,4 @@
-@\input texinfo @c -*-texinfo-*-
+\input texinfo @c -*-texinfo-*-
 @setfilename fastjar.info
 @settitle Guide to GNU jar utilites
 
