@@ -5194,7 +5194,7 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
   register enum tree_code code = TREE_CODE (type);
   register dw_die_ref mod_type_die = NULL;
   register dw_die_ref sub_die = NULL;
-  register tree item_type;
+  register tree item_type = NULL;
 
   if (code != ERROR_MARK)
     {
@@ -5245,10 +5245,6 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 	  add_AT_unsigned (mod_type_die, DW_AT_address_class, 0);
 #endif
 	  item_type = TREE_TYPE (type);
-	  sub_die = modified_type_die (item_type,
-				       TYPE_READONLY (item_type),
-				       TYPE_VOLATILE (item_type),
-				       context_die);
 	}
       else if (code == REFERENCE_TYPE)
 	{
@@ -5258,10 +5254,6 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 	  add_AT_unsigned (mod_type_die, DW_AT_address_class, 0);
 #endif 
 	  item_type = TREE_TYPE (type);
-	  sub_die = modified_type_die (item_type,
-				       TYPE_READONLY (item_type),
-				       TYPE_VOLATILE (item_type),
-				       context_die);
 	}
       else if (is_base_type (type))
 	{
@@ -5281,11 +5273,22 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 	  assert (mod_type_die != NULL);
 	}
     }
+  equate_type_number_to_die (type, mod_type_die);
+  if (item_type)
+    {
+      /* We must do this after the equate_type_number_to_die call, in case
+	 this is a recursive type.  This ensures that the modified_type_die
+	 recursion will terminate even if the type is recursive.  Recursive
+	 types are possible in Ada.  */
+      sub_die = modified_type_die (item_type,
+				   TYPE_READONLY (item_type),
+				   TYPE_VOLATILE (item_type),
+				   context_die);
+    }
   if (sub_die != NULL)
     {
       add_AT_die_ref (mod_type_die, DW_AT_type, sub_die);
     }
-  equate_type_number_to_die (type, mod_type_die);
   return mod_type_die;
 }
 
