@@ -398,7 +398,7 @@ extern void _cpp_pop_file_buffer	PARAMS ((cpp_reader *,
 extern int _cpp_parse_expr		PARAMS ((cpp_reader *));
 
 /* In cpplex.c */
-extern void _cpp_lex_token		PARAMS ((cpp_reader *, cpp_token *));
+extern const cpp_token *_cpp_lex_token	PARAMS ((cpp_reader *));
 extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
 						 const cpp_token *));
 extern void _cpp_init_tokenrun		PARAMS ((tokenrun *, unsigned int));
