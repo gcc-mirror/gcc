@@ -3634,7 +3634,7 @@ output_constant_pool (fnname, fndecl)
 #endif
 
       if (pool->align > 1)
-	ASM_OUTPUT_ALIGN (asm_out_file, exact_log2 (pool->align));
+	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (pool->align));
 
       /* Output the label.  */
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LC", pool->labelno);

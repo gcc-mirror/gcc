@@ -966,18 +966,18 @@ Like PCC_BITFIELD_TYPE_MATTERS except that its effect is limited to
 aligning a bitfield within the structure.
 
 @findex ROUND_TYPE_SIZE
-@item ROUND_TYPE_SIZE (@var{struct}, @var{size}, @var{align})
-Define this macro as an expression for the overall size of a structure
-(given by @var{struct} as a tree node) when the size computed from the
-fields is @var{size} and the alignment is @var{align}.
+@item ROUND_TYPE_SIZE (@var{type}, @var{computed}, @var{specified})
+Define this macro as an expression for the overall size of a type
+(given by @var{type} as a tree node) when the size computed in the
+usual way is @var{computed} and the alignment is @var{specified}.
 
-The default is to round @var{size} up to a multiple of @var{align}.
+The default is to round @var{computed} up to a multiple of @var{specified}.
 
 @findex ROUND_TYPE_ALIGN
-@item ROUND_TYPE_ALIGN (@var{struct}, @var{computed}, @var{specified})
-Define this macro as an expression for the alignment of a structure
-(given by @var{struct} as a tree node) if the alignment computed in the
-usual way is @var{computed} and the alignment explicitly specified was
+@item ROUND_TYPE_ALIGN (@var{type}, @var{computed}, @var{specified})
+Define this macro as an expression for the alignment of a type (given
+by @var{type} as a tree node) if the alignment computed in the usual
+way is @var{computed} and the alignment explicitly specified was
 @var{specified}.
 
 The default is to use @var{specified} if it is larger; otherwise, use

@@ -1136,11 +1136,15 @@ operand_subword (op, i, validate_address, mode)
   if (mode == VOIDmode)
     abort ();
 
-  /* If OP is narrower than a word or if we want a word outside OP, fail.  */
+  /* If OP is narrower than a word, fail. */
   if (mode != BLKmode
-      && (GET_MODE_SIZE (mode) < UNITS_PER_WORD
-	  || (i + 1) * UNITS_PER_WORD > GET_MODE_SIZE (mode)))
+      && (GET_MODE_SIZE (mode) < UNITS_PER_WORD))
     return 0;
+
+  /* If we want a word outside OP, return zero. */
+  if (mode != BLKmode
+      && (i + 1) * UNITS_PER_WORD > GET_MODE_SIZE (mode))
+    return const0_rtx;
 
   /* If OP is already an integer word, return it.  */
   if (GET_MODE_CLASS (mode) == MODE_INT
