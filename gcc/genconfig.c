@@ -264,9 +264,6 @@ main (int argc, char **argv)
 
   progname = "genconfig";
 
-  if (argc <= 1)
-    fatal ("no input file name");
-
   if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
     return (FATAL_EXIT_CODE);
 

@@ -188,10 +188,7 @@ main (int argc, char **argv)
 
   progname = "genconditions";
 
-  if (argc <= 1)
-    fatal ("No input file name.");
-
-  if (init_md_reader (argv[1]) != SUCCESS_EXIT_CODE)
+  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
     return (FATAL_EXIT_CODE);
 
   condition_table = htab_create (1000, hash_c_test, cmp_c_test, NULL);

@@ -34,8 +34,6 @@ Boston, MA 02111-1307, USA.  */
 #include "errors.h"
 #include "gensupport.h"
 
-static int print_md_constant (void **, void *);
-
 /* Called via traverse_md_constants; emit a #define for
    the current constant definition.  */
 
@@ -52,22 +50,13 @@ print_md_constant (void **slot, void *info)
 int
 main (int argc, char **argv)
 {
-  int dummy1, dummy2;
-  rtx desc;
-
   progname = "genconstants";
 
-  if (argc <= 1)
-    fatal ("no input file name");
-
-  if (init_md_reader (argv[1]) != SUCCESS_EXIT_CODE)
+  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
     return (FATAL_EXIT_CODE);
 
-  /* Scan and discard the entire file.  This has the side effect
-     of loading up the constants table that we wish to scan.  */
-  do
-    desc = read_md_rtx (&dummy1, &dummy2);
-  while (desc);
+  /* Initializing the MD reader has the side effect of loading up
+     the constants table that we wish to scan.  */
 
   puts ("/* Generated automatically by the program `genconstants'");
   puts ("   from the machine description file `md'.  */\n");
@@ -83,4 +72,3 @@ main (int argc, char **argv)
 
   return SUCCESS_EXIT_CODE;
 }
-

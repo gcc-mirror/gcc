@@ -24,8 +24,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 struct obstack;
 extern struct obstack *rtl_obstack;
 
+extern int init_md_reader_args_cb (int, char **, bool (*)(const char *));
 extern int init_md_reader_args (int, char **);
-extern int init_md_reader (const char *);
 extern rtx read_md_rtx (int *, int *);
 
 extern void message_with_line (int, const char *, ...)

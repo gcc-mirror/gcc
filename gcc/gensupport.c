@@ -898,9 +898,12 @@ save_string (const char *s, int len)
 /* The entry point for initializing the reader.  */
 
 int
-init_md_reader_args (int argc, char **argv)
+init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
 {
+  FILE *input_file;
   int i;
+  size_t ix;
+  char *lastsl;
   const char *in_fname;
 
   max_include_len = 0;
@@ -909,8 +912,10 @@ init_md_reader_args (int argc, char **argv)
     {
       if (argv[i][0] != '-')
 	{
-	  if (in_fname == NULL)
-	    in_fname = argv[i];
+	  if (in_fname)
+	    fatal ("too many input files");
+
+	  in_fname = argv[i];
 	}
       else
 	{
@@ -939,33 +944,28 @@ init_md_reader_args (int argc, char **argv)
 	      }
 	      break;
 	    default:
-	      fatal ("invalid option `%s'", argv[i]);
+	      /* The program may have provided a callback so it can
+		 accept its own options.  */
+	      if (parse_opt && parse_opt (argv[i]))
+		break;
 
+	      fatal ("invalid option `%s'", argv[i]);
 	    }
 	}
     }
-    return init_md_reader (in_fname);
-}
-
-/* The entry point for initializing the reader.  */
 
-int
-init_md_reader (const char *filename)
-{
-  FILE *input_file;
-  int c;
-  size_t i;
-  char *lastsl;
+  if (!in_fname)
+    fatal ("no input file name");
 
-  lastsl = strrchr (filename, '/');
+  lastsl = strrchr (in_fname, '/');
   if (lastsl != NULL)
-    base_dir = save_string (filename, lastsl - filename + 1 );
+    base_dir = save_string (in_fname, lastsl - in_fname + 1 );
 
-  read_rtx_filename = filename;
-  input_file = fopen (filename, "r");
+  read_rtx_filename = in_fname;
+  input_file = fopen (in_fname, "r");
   if (input_file == 0)
     {
-      perror (filename);
+      perror (in_fname);
       return FATAL_EXIT_CODE;
     }
 
@@ -973,9 +973,9 @@ init_md_reader (const char *filename)
   condition_table = htab_create (n_insn_conditions,
 				 hash_c_test, cmp_c_test, NULL);
 
-  for (i = 0; i < n_insn_conditions; i++)
-    *(htab_find_slot (condition_table, &insn_conditions[i], INSERT))
-      = (void *) &insn_conditions[i];
+  for (ix = 0; ix < n_insn_conditions; ix++)
+    *(htab_find_slot (condition_table, &insn_conditions[ix], INSERT))
+      = (void *) &insn_conditions[ix];
 
   obstack_init (rtl_obstack);
   errors = 0;
@@ -986,8 +986,7 @@ init_md_reader (const char *filename)
     {
       rtx desc;
       int lineno;
-
-      c = read_skip_spaces (input_file);
+      int c = read_skip_spaces (input_file);
       if (c == EOF)
         break;
 
@@ -1005,6 +1004,14 @@ init_md_reader (const char *filename)
   return errors ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE;
 }
 
+/* Programs that don't have their own options can use this entry point
+   instead.  */
+int
+init_md_reader_args (int argc, char **argv)
+{
+  return init_md_reader_args_cb (argc, argv, 0);
+}
+
 /* The entry point for reading a single rtx from an md file.  */
 
 rtx
