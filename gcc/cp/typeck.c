@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987, 88, 89, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -5671,18 +5671,14 @@ static tree
 expand_target_expr (t)
      tree t;
 {
-  extern int temp_slot_level;
-  extern int target_temp_slot_level;
-  int old_temp_level = target_temp_slot_level;
-
+  int old_temp_level = get_target_temp_slot_level ();
   tree xval = make_node (RTL_EXPR);
   rtx rtxval;
 
   /* Any TARGET_EXPR temps live only as long as the outer temp level.
      Since they are preserved in this new inner level, we know they
      will make it into the outer level.  */
-  push_temp_slots ();
-  target_temp_slot_level = temp_slot_level;
+  push_temp_slots_for_target ();
 
   do_pending_stack_adjust ();
   start_sequence_for_rtl_expr (xval);
@@ -5696,7 +5692,7 @@ expand_target_expr (t)
   TREE_TYPE (xval) = TREE_TYPE (t);
 
   pop_temp_slots ();
-  target_temp_slot_level = old_temp_level;
+  set_target_temp_slot_level (old_temp_level);
 
   return xval;
 }
