@@ -578,21 +578,23 @@ object_get_super_class
 }
 
 static inline BOOL
-object_is_class(id object)
+object_is_class (id object)
 {
-  return CLS_ISCLASS((Class)object);
+  return ((object != nil)  &&  CLS_ISMETA (object->class_pointer));
+}
+ 
+static inline BOOL
+object_is_instance (id object)
+{
+  return ((object != nil)  &&  CLS_ISCLASS (object->class_pointer));
 }
 
 static inline BOOL
-object_is_instance(id object)
+object_is_meta_class (id object)
 {
-  return (object!=nil)&&CLS_ISCLASS(object->class_pointer);
-}
-
-static inline BOOL
-object_is_meta_class(id object)
-{
-  return CLS_ISMETA((Class)object);
+  return ((object != nil)
+	  &&  !object_is_instance (object)  
+	  &&  !object_is_class (object));
 }
 
 struct sarray* 

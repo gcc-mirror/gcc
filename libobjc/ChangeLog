@@ -1,3 +1,10 @@
+Mon Jul 16 12:15:00 2001  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* objc/objc-api.h (object_is_class): Fixed - buggy code was trying
+	to cast an id to a Class, which can not be done.  Make the check
+	by using CLS_ISMETA on the class pointer instead.
+	(object_is_meta_class): Similar fix.
+
 20010617 Release Manager
 
         * GCC 3.0 Released.
