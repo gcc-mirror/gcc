@@ -17,8 +17,3 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* This describes the machine the compiler is hosted on.  */
-#define HOST_BITS_PER_CHAR   8
-#define HOST_BITS_PER_SHORT 16
-#define HOST_BITS_PER_INT   32
-#define HOST_BITS_PER_LONG  32

@@ -22,15 +22,3 @@
 /* Defined if the host machine stores words of multi-word values in big-endian
    order.  (GNU CC does not depend on the host byte ordering within a word.)  */
 #define HOST_WORDS_BIG_ENDIAN
-
-/* A C expression for the number of bits in `char' on the host machine.  */
-#define HOST_BITS_PER_CHAR 8
-
-/* A C expression for the number of bits in `short' on the host machine.  */
-#define HOST_BITS_PER_SHORT 16
-
-/* A C expression for the number of bits in `int' on the host machine.  */
-#define HOST_BITS_PER_INT 32
-
-/* A C expression for the number of bits in `long' on the host machine.  */
-#define HOST_BITS_PER_LONG 32

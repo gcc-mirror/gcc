@@ -22,11 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #define USG
 
 /* This describes the machine the compiler is hosted on.  */
-#define HOST_BITS_PER_CHAR 8
-#define HOST_BITS_PER_SHORT 16
-#define HOST_BITS_PER_INT 32
 #define HOST_BITS_PER_LONG 64
-#define HOST_BITS_PER_LONGLONG 64
 
 /* Doubles are stored in memory with the high order word first.  This
    matters when cross-compiling.  */

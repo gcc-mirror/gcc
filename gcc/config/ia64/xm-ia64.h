@@ -24,20 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #define HOST_WORDS_BIG_ENDIAN
 #endif
 
-/* A C expression for the number of bits in `char' on the host machine.  */
-#define HOST_BITS_PER_CHAR 8
-
-/* A C expression for the number of bits in `short' on the host machine.  */
-#define HOST_BITS_PER_SHORT 16
-
-/* A C expression for the number of bits in `int' on the host machine.  */
-#define HOST_BITS_PER_INT 32
-
 /* ??? This depends on the as yet unimplemented ILP32 option.  */
 
 /* A C expression for the number of bits in `long' on the host machine.  */
 #define HOST_BITS_PER_LONG 64
-
-/* A C expression for the number of bits in `long long' on the host
-   machine.  */
-#define HOST_BITS_PER_LONGLONG 64

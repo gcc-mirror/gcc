@@ -9,9 +9,24 @@
 #ifndef __HWINT_H__
 #define __HWINT_H__
 
-/* Only do all of this if both of these macros are defined, otherwise
-   they'll evaluate to zero, which is not what you want. */
-#if defined (HOST_BITS_PER_LONG) && defined (HOST_BITS_PER_INT)
+/* This describes the machine the compiler is hosted on.  The defaults
+   we provide describe the standard 32 bit host since that is the most
+   common type supported in gcc.  */
+#ifndef HOST_BITS_PER_CHAR
+# define HOST_BITS_PER_CHAR 8
+#endif
+#ifndef HOST_BITS_PER_SHORT
+# define HOST_BITS_PER_SHORT 16
+#endif
+#ifndef HOST_BITS_PER_INT
+# define HOST_BITS_PER_INT 32
+#endif
+#ifndef HOST_BITS_PER_LONG
+# define HOST_BITS_PER_LONG 32
+#endif
+#ifndef HOST_BITS_PER_LONGLONG
+# define HOST_BITS_PER_LONGLONG 64
+#endif
 
 /* Find the largest host integer type and set its size and type.  */
 
@@ -90,7 +105,5 @@
 #  endif
 # endif
 #endif /* ! HOST_WIDE_INT_PRINT_DOUBLE_HEX */
-
-#endif /* HOST_BITS_PER_LONG && HOST_BITS_PER_INT */
 
 #endif /* __HWINT_H__ */
