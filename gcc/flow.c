@@ -1026,11 +1026,15 @@ delete_block (i)
       NEXT_INSN (PREV_INSN (basic_block_head[i])) = kept_head;
       if (insn != 0)
 	PREV_INSN (insn) = kept_tail;
-      else
-	set_last_insn (kept_tail);
 
       PREV_INSN (kept_head) = PREV_INSN (basic_block_head[i]);
       NEXT_INSN (kept_tail) = insn;
+
+      /* This must happen after NEXT_INSN (kept_tail) has been reinitialized
+	 since set_last_insn will abort if it detects a non-NULL NEXT_INSN
+	 field in its argument.  */
+      if (insn == NULL_RTX)
+	set_last_insn (kept_tail);
     }
 
   /* Each time we delete some basic blocks,
