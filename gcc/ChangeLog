@@ -1,3 +1,17 @@
+Wed Mar 25 10:05:19 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/thumb.c: New File.  Support for ARM's Thumb
+	instruction set. 
+	* config/arm/thumb.h: New File.  Thumb definitions.
+	* config/arm/thumb.md: New File.  Thumb machine description.
+	* config/arm/tcoff.h: New File.  Thumb COFF support.
+	* config/arm/t-thumb: New File.  Thumb makefile fragment.
+	* config/arm/lib1thumb.asm: New File.  Thumb libgcc support functions.
+
+	* configure.in: Add Thumb-coff target.
+	* configure: Add Thumb-coff target.
+	* config.sub: Add Thumb-coff target.
+
 Wed Mar 25 10:30:32 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* loop.c (scan_loop): Initialize move_insn_first to zero.

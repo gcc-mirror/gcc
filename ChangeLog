@@ -1,3 +1,8 @@
+Wed Mar 25 10:04:18 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* configure.in: Add thumb-coff target.
+	* config.sub: Add thumb-coff target.
+
 Fri Mar 20 09:32:14 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (install-gcc): Don't specify LANGUAGES here.
