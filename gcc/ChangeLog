@@ -1,3 +1,17 @@
+2004-02-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Add a prototype for
+	h8300_regs_ok_for_stm.
+	* config/h8300/h8300.c (h8300_regs_ok_for_stm): New.
+	* config/h8300/h8300.md (stm_h8300s_2_advanced,
+	stm_h8300s_2_normal, stm_h8300s_2, stm_h8300s_3_advanced,
+	stm_h8300s_3_normal, stm_h8300s_3, stm_h8300s_4_advanced,
+	stm_h8300s_4_normal, stm_h8300s_4, ldm_h8300s_2_advanced,
+	ldm_h8300s_2_normal, ldm_h8300s_2, ldm_h8300s_3_advanced,
+	ldm_h8300s_3_normal, ldm_h8300s_3, ldm_h8300s_4_advanced,
+	ldm_h8300s_4_normal, ldm_h8300s_4): Use
+	h8300_regs_ok_for_stm().
+
 2004-02-10  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR c/14088
