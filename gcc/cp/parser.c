@@ -12842,9 +12842,17 @@ cp_parser_class_head (cp_parser* parser,
     CLASSTYPE_DECLARED_CLASS (type) = (class_key == class_type);
   cp_parser_check_class_key (class_key, type);
 
+  /* If this type was already complete, and we see another definition,
+     that's an error.  */
+  if (type != error_mark_node && COMPLETE_TYPE_P (type))
+    {
+      error ("redefinition of %q#T", type);
+      cp_error_at ("previous definition of %q#T", type);
+      type = error_mark_node;
+    }
+
   /* We will have entered the scope containing the class; the names of
-     base classes should be looked up in that context.  For example,
-     given:
+     base classes should be looked up in that context.  For example:
 
        struct A { struct B {}; struct C; };
        struct A::C : B {};

@@ -2125,15 +2125,6 @@ begin_class_definition (tree t)
       pushtag (make_anon_name (), t, 0);
     }
 
-  /* If this type was already complete, and we see another definition,
-     that's an error.  */
-  if (COMPLETE_TYPE_P (t))
-    {
-      error ("redefinition of %q#T", t);
-      cp_error_at ("previous definition of %q#T", t);
-      return error_mark_node;
-    }
-
   /* Update the location of the decl.  */
   DECL_SOURCE_LOCATION (TYPE_NAME (t)) = input_location;
   

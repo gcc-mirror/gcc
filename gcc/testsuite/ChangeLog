@@ -1,3 +1,19 @@
+2005-02-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19991
+	* g++.dg/parse/constant7.C: New test.
+
+	PR c++/20152
+	* g++.dg/parse/error27.C: New test.
+	* g++.dg/template/qualttp15.C: Adjust error markers.
+	* g++.old-deja/g++.other/struct1.C: Likewise.
+	
+	PR c++/20153
+	* g++.dg/template/error17.C: New test.
+
+	PR c++/20148
+	* g++.dg/parser/error26.C: New test.
+
 2005-02-22  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/20100

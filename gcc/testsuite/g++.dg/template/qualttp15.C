@@ -17,8 +17,8 @@ template <class T> struct X<T::template B>
 	T z;
 };
 
-template <class T> struct X<T::template B>
-{	// { dg-error "redefinition" }
+template <class T> struct X<T::template B> // { dg-error "redefinition" }
+{	
 	T z;
 };
 
