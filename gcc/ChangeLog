@@ -1,3 +1,9 @@
+2004-01-24  Hartmut Penner <hpenner@de.ibm.com>
+
+	PR target/13674
+	* config/rs6000/rs6000.md (movdf_hardfloat64): Do not disparage
+	loading into GPR.
+
 2004-01-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR optimization/12440
