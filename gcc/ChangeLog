@@ -1,3 +1,9 @@
+Mon Oct  5 22:34:30 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* tree.def (GOTO_EXPR): Modified documentation.
+	* expr.c (expand_expr): Expand GOTO_EXPR into a goto or a computed
+ 	goto.
+
 Mon Oct  5 22:43:36 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* unroll.c (loop_iteration_var, loop_initial_value, loop_increment
