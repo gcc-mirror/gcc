@@ -627,10 +627,10 @@ objc_read_string (struct objc_typed_stream* stream,
 	  unsigned int nbytes = buf[0]&_B_VALUE;
 	  len = __objc_read_nbyte_uint(stream, nbytes, &nbytes);
 	  if (len) {
-	    (*string) = (char*)__objc_xmalloc(nbytes);
+	    (*string) = (char*)__objc_xmalloc(nbytes+1);
 	    if (key)
 	      hash_add (&stream->stream_table, (void*)key, *string);
-	    len = (*stream->read)(stream->physical, *string, buf[0]&_B_VALUE);
+	    len = (*stream->read)(stream->physical, *string, nbytes);
 	    (*string)[nbytes] = '\0';
 	  }
 	}
