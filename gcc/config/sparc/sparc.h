@@ -2737,6 +2737,12 @@ extern struct rtx_def *legitimize_pic_address ();
 
 #define ASM_FILE_START(file)
 
+/* A C string constant describing how to begin a comment in the target
+   assembler language.  The compiler assumes that the comment will end at
+   the end of the line.  */
+
+#define ASM_COMMENT_START "!"
+
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
 
