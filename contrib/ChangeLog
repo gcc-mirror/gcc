@@ -1,5 +1,7 @@
 2003-05-23  Nathanael Nerode <neroden@gcc.gnu.org>
 
+	* paranoia.cc: Fix spelling error.
+
 	* analyze_brprob, gcc_build, gennews, texi2pod.pl: Change GNU CC
 	to GCC.
 

@@ -186,7 +186,7 @@ static int verbose_index = 0;
 
 /* ====================================================================== */
 /* The implementation of the abstract floating point class based on gcc's
-   real.c.  I.e. the object of this excersize.  Templated so that we can
+   real.c.  I.e. the object of this exercise.  Templated so that we can
    all fp sizes.  */
 
 class real_c_float
