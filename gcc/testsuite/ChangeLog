@@ -1,4 +1,8 @@
-2003-03-21  Glen Nakamura  <glen@imodulo.com>
+2003-03-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/ultrasp5.c: Fix comment.
+
+2003-03-24  Glen Nakamura  <glen@imodulo.com>
 
 	PR opt/10087
 	* gcc.dg/20030324-1.c: New test.
