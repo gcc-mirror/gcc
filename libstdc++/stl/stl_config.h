@@ -71,6 +71,10 @@
 //  (19) Defines __stl_assert either as a test or as a null macro,
 //       depending on whether or not __STL_ASSERTIONS is defined.
 
+#ifdef _PTHREADS
+#   define __STL_PTHREADS
+#endif
+
 # if defined(__sgi) && !defined(__GNUC__)
 #   if !defined(_BOOL)
 #     define __STL_NEED_BOOL
@@ -93,13 +97,14 @@
 #   if (_COMPILER_VERSION >= 721) && defined(_NAMESPACES)
 #     define __STL_USE_NAMESPACES
 #   endif 
-#   if !defined(_NOTHREADS) && !defined(_PTHREADS)
+#   if !defined(_NOTHREADS) && !defined(__STL_PTHREADS)
 #     define __STL_SGI_THREADS
 #   endif
 # endif
 
 # ifdef __GNUC__
-#   if 0 && (__GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8))
+#   include <_G_config.h>
+#   if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8)
 #     define __STL_STATIC_TEMPLATE_MEMBER_BUG
 #     define __STL_NEED_TYPENAME
 #     define __STL_NEED_EXPLICIT
@@ -108,6 +113,9 @@
 #     define __STL_FUNCTION_TMPL_PARTIAL_ORDER
 #     define __STL_EXPLICIT_FUNCTION_TMPL_ARGS
 #     define __STL_MEMBER_TEMPLATES
+#   endif
+#   if !defined(_NOTHREADS) && __GLIBC__ >= 2
+#     define __STL_PTHREADS
 #   endif
 #   ifdef __EXCEPTIONS
 #     define __STL_USE_EXCEPTIONS
