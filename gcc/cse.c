@@ -722,11 +722,6 @@ dump_class (classp)
     }
 }
 
-/* Return an estimate of the cost of computing rtx X.
-   One use is in cse, to decide which expression to keep in the hash table.
-   Another is in rtl generation, to pick the cheapest way to multiply.
-   Other uses like the latter are expected in the future.  */
-
 /* Internal function, to compute cost when X is not a register; called
    from COST macro to keep it simple.  */
 
@@ -754,6 +749,11 @@ notreg_cost (x)
    N times that of a fast register-to-register instruction.  */
 
 #define COSTS_N_INSNS(N) ((N) * 4 - 2)
+
+/* Return an estimate of the cost of computing rtx X.
+   One use is in cse, to decide which expression to keep in the hash table.
+   Another is in rtl generation, to pick the cheapest way to multiply.
+   Other uses like the latter are expected in the future.  */
 
 int
 rtx_cost (x, outer_code)
