@@ -1,3 +1,23 @@
+Tue Sep 21 14:14:50 1999  Richard Henderson  <rth@cygnus.com>
+
+	* basic-block.h (basic_block): Add eh_beg, eh_end.
+	* flow.c (entry_exit_blocks): Update.
+	(find_basic_blocks): Don't allocate bb_eh_end, or pass it around.
+	Call new functions.
+	(find_basic_blocks_1): Don't record eh_list at each bb.  Use
+	lists.c functions to allocate insn lists.
+	(make_edges): Use eh_beg+eh_end, not the lists.  Split out EH
+	edge creation ...
+	(make_eh_edge): ... here.  New.
+	(move_stray_eh_region_notes): New.
+	(record_active_eh_regions): New.
+	(delete_unreachable_blocks): Split out block merging ...
+	(try_merge_blocks): ... here.  New.
+	(merge_blocks_move_predecessor_nojumps): Remove edge arg.
+	Dump debugging data.
+	(merge_blocks_move_successor_nojumps): Likewise.
+	(merge_blocks): Use eh_beg+eh_end to validate block movement.
+
 Tue Sep 21 11:15:03 1999  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* extend.texi (Bound member functions): Document unbound pmf
