@@ -2800,6 +2800,53 @@ eliminate_regs (x, mem_mode, insn)
       }
       return x;
 
+    case MULT:
+      /* If this is the product of an eliminable register and a 
+	 constant, apply the distribute law and move the constant out
+	 so that we have (plus (mult ..) ..).  This is needed in order
+	 to keep load-address insns valid.   This case is pathalogical.
+	 We ignore the possibility of overflow here.  */
+      if (GET_CODE (XEXP (x, 0)) == REG
+	  && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT)
+	for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
+	     ep++)
+	  if (ep->from_rtx == XEXP (x, 0) && ep->can_eliminate)
+	    {
+	      if (! mem_mode
+		  /* Refs inside notes don't count for this purpose.  */
+		  && ! (insn != 0 && (GET_CODE (insn) == EXPR_LIST
+				      || GET_CODE (insn) == INSN_LIST)))
+		ep->ref_outside_mem = 1;
+
+	      return
+		plus_constant (gen_rtx (MULT, Pmode, ep->to_rtx, XEXP (x, 1)),
+			       ep->previous_offset * INTVAL (XEXP (x, 1)));
+	    }
+
+      /* ... fall through ... */
+
+    case CALL:
+    case COMPARE:
+    case MINUS:
+    case DIV:      case UDIV:
+    case MOD:      case UMOD:
+    case AND:      case IOR:      case XOR:
+    case LSHIFT:   case ASHIFT:   case ROTATE:
+    case ASHIFTRT: case LSHIFTRT: case ROTATERT:
+    case NE:       case EQ:
+    case GE:       case GT:       case GEU:    case GTU:
+    case LE:       case LT:       case LEU:    case LTU:
+      {
+	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, insn);
+	rtx new1
+	  = XEXP (x, 1) ? eliminate_regs (XEXP (x, 1), mem_mode, insn) : 0;
+
+	if (new0 != XEXP (x, 0) || new1 != XEXP (x, 1))
+	  return gen_rtx (code, GET_MODE (x), new0, new1);
+      }
+      return x;
+
     case EXPR_LIST:
       /* If we have something in XEXP (x, 0), the usual case, eliminate it.  */
       if (XEXP (x, 0))
@@ -2821,28 +2868,6 @@ eliminate_regs (x, mem_mode, insn)
 	  if (new != XEXP (x, 1))
 	    return gen_rtx (GET_CODE (x), GET_MODE (x), XEXP (x, 0), new);
 	}
-      return x;
-
-    case CALL:
-    case COMPARE:
-    case MINUS:
-    case MULT:
-    case DIV:      case UDIV:
-    case MOD:      case UMOD:
-    case AND:      case IOR:      case XOR:
-    case LSHIFT:   case ASHIFT:   case ROTATE:
-    case ASHIFTRT: case LSHIFTRT: case ROTATERT:
-    case NE:       case EQ:
-    case GE:       case GT:       case GEU:    case GTU:
-    case LE:       case LT:       case LEU:    case LTU:
-      {
-	rtx new0 = eliminate_regs (XEXP (x, 0), mem_mode, insn);
-	rtx new1
-	  = XEXP (x, 1) ? eliminate_regs (XEXP (x, 1), mem_mode, insn) : 0;
-
-	if (new0 != XEXP (x, 0) || new1 != XEXP (x, 1))
-	  return gen_rtx (code, GET_MODE (x), new0, new1);
-      }
       return x;
 
     case PRE_INC:
