@@ -9,7 +9,7 @@ call config\msdos\configure %1 %2 %3 %4
 goto END
 
 :call_winnt
-call config\i386\config-nt %1 %2 %3 %4
+call config\%2\config-nt %1 %2 %3 %4
 goto END
 
 :END
