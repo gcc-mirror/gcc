@@ -207,9 +207,6 @@ tree cp_global_trees[CPTI_MAX];
 
 static GTY(()) tree global_type_node;
 
-/* Expect only namespace names now.  */
-static int only_namespace_names;
-
 /* Used only for jumps to as-yet undefined labels, since jumps to
    defined labels can have their validity checked immediately.  */
 
@@ -5931,10 +5928,7 @@ qualify_lookup (val, flags)
     return val;
   if ((flags & LOOKUP_PREFER_NAMESPACES) && TREE_CODE (val) == NAMESPACE_DECL)
     return val;
-  if ((flags & LOOKUP_PREFER_TYPES)
-      && (TREE_CODE (val) == TYPE_DECL
-	  || ((flags & LOOKUP_TEMPLATES_EXPECTED)
-	      && DECL_CLASS_TEMPLATE_P (val))))
+  if ((flags & LOOKUP_PREFER_TYPES) && TREE_CODE (val) == TYPE_DECL)
     return val;
   if (flags & (LOOKUP_PREFER_NAMESPACES | LOOKUP_PREFER_TYPES))
     return NULL_TREE;
@@ -6105,10 +6099,6 @@ lookup_name_real (tree name,
       return NULL_TREE;
     }
 
-  /* Hack: copy flag set by parser, if set. */
-  if (only_namespace_names)
-    namespaces_only = 1;
-
   flags |= lookup_flags (prefer_type, namespaces_only);
 
   /* First, look in non-namespace scopes.  */
@@ -6181,14 +6171,6 @@ lookup_function_nonclass (name, args)
      tree args;
 {
   return lookup_arg_dependent (name, lookup_name_nonclass (name), args);
-}
-
-tree
-lookup_name_namespace_only (name)
-     tree name;
-{
-  /* type-or-namespace, nonclass, namespace_only */
-  return lookup_name_real (name, 1, 1, 1, LOOKUP_COMPLAIN);
 }
 
 tree
@@ -6267,17 +6249,6 @@ lookup_type_current_level (name)
   return t;
 }
 
-void
-begin_only_namespace_names ()
-{
-  only_namespace_names = 1;
-}
-
-void
-end_only_namespace_names ()
-{
-  only_namespace_names = 0;
-}
 
 /* Push the declarations of builtin types into the namespace.
    RID_INDEX is the index of the builtin type

@@ -1684,7 +1684,7 @@ static void cp_parser_label_declaration
 /* Utility Routines */
 
 static tree cp_parser_lookup_name
-  PARAMS ((cp_parser *, tree, bool, bool, bool));
+  PARAMS ((cp_parser *, tree, bool, bool, bool, bool));
 static tree cp_parser_lookup_name_simple
   PARAMS ((cp_parser *, tree));
 static tree cp_parser_resolve_typename_type
@@ -3558,6 +3558,15 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 			   token->value);
 		  parser->scope = NULL_TREE;
 		  error_p = true;
+		  /* Treat this as a successful nested-name-specifier
+		     due to:
+
+		     [basic.lookup.qual]
+
+		     If the name found is not a class-name (clause
+		     _class_) or namespace-name (_namespace.def_), the
+		     program is ill-formed.  */
+		  success = true;
 		}
 	      cp_lexer_consume_token (parser->lexer);
 	    }
@@ -3663,7 +3672,8 @@ cp_parser_nested_name_specifier (cp_parser *parser,
    scope.
 
    Returns the class (TYPE_DECL) or namespace (NAMESPACE_DECL)
-   specified by the class-or-namespace-name.  */
+   specified by the class-or-namespace-name.  If neither is found the
+   ERROR_MARK_NODE is returned.  */
 
 static tree
 cp_parser_class_or_namespace_name (cp_parser *parser, 
@@ -3676,6 +3686,7 @@ cp_parser_class_or_namespace_name (cp_parser *parser,
   tree saved_qualifying_scope;
   tree saved_object_scope;
   tree scope;
+  bool only_class_p;
 
   /* If the next token is the `template' keyword, we know that we are
      looking at a class-name.  */
@@ -3693,8 +3704,11 @@ cp_parser_class_or_namespace_name (cp_parser *parser,
   saved_scope = parser->scope;
   saved_qualifying_scope = parser->qualifying_scope;
   saved_object_scope = parser->object_scope;
-  /* Try for a class-name first.  */
-  cp_parser_parse_tentatively (parser);
+  /* Try for a class-name first.  If the SAVED_SCOPE is a type, then
+     there is no need to look for a namespace-name.  */
+  only_class_p = saved_scope && TYPE_P (saved_scope);
+  if (!only_class_p)
+    cp_parser_parse_tentatively (parser);
   scope = cp_parser_class_name (parser, 
 				typename_keyword_p,
 				template_keyword_p,
@@ -3703,13 +3717,19 @@ cp_parser_class_or_namespace_name (cp_parser *parser,
 				check_dependency_p,
 				/*class_head_p=*/false);
   /* If that didn't work, try for a namespace-name.  */
-  if (!cp_parser_parse_definitely (parser))
+  if (!only_class_p && !cp_parser_parse_definitely (parser))
     {
       /* Restore the saved scope.  */
       parser->scope = saved_scope;
       parser->qualifying_scope = saved_qualifying_scope;
       parser->object_scope = saved_object_scope;
-      /* Now look for a namespace-name.  */
+      /* If we are not looking at an identifier followed by the scope
+	 resolution operator, then this is not part of a
+	 nested-name-specifier.  (Note that this function is only used
+	 to parse the components of a nested-name-specifier.)  */
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_NAME)
+	  || cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_SCOPE)
+	return error_mark_node;
       scope = cp_parser_namespace_name (parser);
     }
 
@@ -8225,6 +8245,7 @@ cp_parser_template_name (parser, template_keyword_p, check_dependency_p)
   decl = cp_parser_lookup_name (parser, identifier,
 				/*check_access=*/true,
 				/*is_type=*/false,
+				/*is_namespace=*/false,
 				check_dependency_p);
   decl = maybe_get_template_decl_from_type_decl (decl);
 
@@ -8966,6 +8987,7 @@ cp_parser_elaborated_type_specifier (parser, is_friend, is_declaration)
 	  decl = cp_parser_lookup_name (parser, identifier, 
 					/*check_access=*/true,
 					/*is_type=*/true,
+					/*is_namespace=*/false,
 					/*check_dependency=*/true);
 	  decl = (cp_parser_maybe_treat_template_as_class 
 		  (decl, /*tag_name_p=*/is_friend));
@@ -9193,8 +9215,29 @@ cp_parser_namespace_name (parser)
   if (identifier == error_mark_node)
     return error_mark_node;
 
-  /* Look up the identifier in the currently active scope.  */
-  namespace_decl = cp_parser_lookup_name_simple (parser, identifier);
+  /* Look up the identifier in the currently active scope.  Look only
+     for namespaces, due to:
+
+       [basic.lookup.udir]
+
+       When looking up a namespace-name in a using-directive or alias
+       definition, only namespace names are considered.  
+
+     And:
+
+       [basic.lookup.qual]
+
+       During the lookup of a name preceding the :: scope resolution
+       operator, object, function, and enumerator names are ignored.  
+
+     (Note that cp_parser_class_or_namespace_name only calls this
+     function if the token after the name is the scope resolution
+     operator.)  */
+  namespace_decl = cp_parser_lookup_name (parser, identifier,
+					  /*check_access=*/true,
+					  /*is_type=*/false,
+					  /*is_namespace=*/true,
+					  /*check_dependency=*/true);
   /* If it's not a namespace, issue an error.  */
   if (namespace_decl == error_mark_node
       || TREE_CODE (namespace_decl) != NAMESPACE_DECL)
@@ -11406,6 +11449,7 @@ cp_parser_class_name (cp_parser *parser,
 	  decl = cp_parser_lookup_name (parser, identifier, 
 					check_access_p,
 					type_p,
+					/*is_namespace=*/false,
 					check_dependency_p);
 	}
     }
@@ -13268,17 +13312,15 @@ cp_parser_label_declaration (parser)
    If IS_TYPE is TRUE, bindings that do not refer to types are
    ignored.
 
+   If IS_NAMESPACE is TRUE, bindings that do not refer to namespaces
+   are ignored.
+
    If CHECK_DEPENDENCY is TRUE, names are not looked up in dependent
    types.  */
 
 static tree
-cp_parser_lookup_name (parser, name, check_access, is_type, 
-		       check_dependency)
-     cp_parser *parser;
-     tree name;
-     bool check_access;
-     bool is_type;
-     bool check_dependency;
+cp_parser_lookup_name (cp_parser *parser, tree name, bool check_access, 
+		       bool is_type, bool is_namespace, bool check_dependency)
 {
   tree decl;
   tree object_type = parser->context->object_type;
@@ -13396,7 +13438,7 @@ cp_parser_lookup_name (parser, name, check_access, is_type,
 				     /*protect=*/0, is_type);
       /* Look it up in the enclosing context, too.  */
       decl = lookup_name_real (name, is_type, /*nonclass=*/0, 
-			       /*namespaces_only=*/0, 
+			       is_namespace,
 			       /*flags=*/0);
       parser->object_scope = object_type;
       parser->qualifying_scope = NULL_TREE;
@@ -13406,7 +13448,7 @@ cp_parser_lookup_name (parser, name, check_access, is_type,
   else
     {
       decl = lookup_name_real (name, is_type, /*nonclass=*/0, 
-			       /*namespaces_only=*/0, 
+			       is_namespace,
 			       /*flags=*/0);
       parser->qualifying_scope = NULL_TREE;
       parser->object_scope = NULL_TREE;
@@ -13481,7 +13523,8 @@ cp_parser_lookup_name_simple (parser, name)
 {
   return cp_parser_lookup_name (parser, name, 
 				/*check_access=*/true,
-				/*is_type=*/false, 
+				/*is_type=*/false,
+				/*is_namespace=*/false,
 				/*check_dependency=*/true);
 }
 

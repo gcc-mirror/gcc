@@ -3385,9 +3385,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 
    LOOKUP_PREFER_TYPES means not to accept objects, and possibly namespaces.
    LOOKUP_PREFER_NAMESPACES means not to accept objects, and possibly types.
-   LOOKUP_PREFER_BOTH means class-or-namespace-name.
-   LOOKUP_TEMPLATES_EXPECTED means that class templates also count
-     as types.  */
+   LOOKUP_PREFER_BOTH means class-or-namespace-name.  */
 
 #define LOOKUP_PROTECT (1)
 #define LOOKUP_COMPLAIN (2)
@@ -3403,7 +3401,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define LOOKUP_PREFER_TYPES (2048)
 #define LOOKUP_PREFER_NAMESPACES (4096)
 #define LOOKUP_PREFER_BOTH (6144)
-#define LOOKUP_TEMPLATES_EXPECTED (8192)
 
 #define LOOKUP_NAMESPACES_ONLY(F)  \
   (((F) & LOOKUP_PREFER_NAMESPACES) && !((F) & LOOKUP_PREFER_TYPES))
@@ -3738,10 +3735,7 @@ extern tree lookup_qualified_name               (tree, tree, bool, int);
 extern tree lookup_name				PARAMS ((tree, int));
 extern tree lookup_name_current_level		PARAMS ((tree));
 extern tree lookup_type_current_level		PARAMS ((tree));
-extern tree lookup_name_namespace_only          PARAMS ((tree));
 extern tree lookup_name_real                    (tree, int, int, int, int);
-extern void begin_only_namespace_names          PARAMS ((void));
-extern void end_only_namespace_names            PARAMS ((void));
 extern tree namespace_ancestor			PARAMS ((tree, tree));
 extern tree unqualified_namespace_lookup	PARAMS ((tree, int, tree *));
 extern tree check_for_out_of_scope_variable     (tree);
