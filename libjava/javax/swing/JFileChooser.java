@@ -59,6 +59,8 @@ import javax.swing.plaf.FileChooserUI;
  */
 public class JFileChooser extends JComponent implements Accessible {
 
+  private static final long serialVersionUID = 3162921138695327837L;
+
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------
 	//-------------------------------------------------------------
@@ -67,6 +69,8 @@ public class JFileChooser extends JComponent implements Accessible {
 	 * AccessibleJFileChooser
 	 */
 	protected class AccessibleJFileChooser extends AccessibleJComponent {
+
+          private static final long serialVersionUID = 3318922050345221200L;
 
 		//-------------------------------------------------------------
 		// Variables --------------------------------------------------
@@ -906,17 +910,24 @@ public class JFileChooser extends JComponent implements Accessible {
 	 * addActionListener
 	 * @param listener TODO
 	 */
-	public void addActionListener(ActionListener listener) {
-		// TODO
-	} // addActionListener()
+	public void addActionListener(ActionListener listener)
+	{
+		listenerList.add (ActionListener.class, listener);
+	}
 
 	/**
 	 * removeActionListener
 	 * @param listener TODO
 	 */
-	public void removeActionListener(ActionListener listener) {
-		// TODO
-	} // removeActionListener()
+	public void removeActionListener(ActionListener listener)
+	{
+		listenerList.remove (ActionListener.class, listener);
+	}
+
+	public ActionListener[] getActionListeners()
+	{
+		return (ActionListener[]) listenerList.getListeners (ActionListener.class);
+	}
 
 	/**
 	 * fireActionPerformed

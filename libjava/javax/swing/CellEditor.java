@@ -45,54 +45,49 @@ import javax.swing.event.CellEditorListener;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public interface CellEditor {
+public interface CellEditor
+{
+  /**
+   * getCellEditorValue
+   * @returns Object
+   */
+  Object getCellEditorValue();
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * isCellEditable
+   * @param event TODO
+   * @returns boolean
+   */
+  boolean isCellEditable(EventObject event);
 
-	/**
-	 * getCellEditorValue
-	 * @returns Object
-	 */
-	Object getCellEditorValue();
+  /**
+   * shouldSelectCell
+   * @param event TODO
+   * @returns boolean
+   */
+  boolean shouldSelectCell(EventObject event);
 
-	/**
-	 * isCellEditable
-	 * @param event TODO
-	 * @returns boolean
-	 */
-	boolean isCellEditable(EventObject event);
+  /**
+   * stopCellEditing
+   * @returns boolean
+   */
+  boolean stopCellEditing();
 
-	/**
-	 * shouldSelectCell
-	 * @param event TODO
-	 * @returns boolean
-	 */
-	boolean shouldSelectCell(EventObject event);
+  /**
+   * cancelCellEditing
+   */
+  void cancelCellEditing();
 
-	/**
-	 * stopCellEditing
-	 * @returns boolean
-	 */
-	boolean stopCellEditing();
+  /**
+   * addCellEditorListener
+   * @param value0 TODO
+   */
+  void addCellEditorListener(CellEditorListener listener);
 
-	/**
-	 * cancelCellEditing
-	 */
-	void cancelCellEditing();
-
-	/**
-	 * addCellEditorListener
-	 * @param value0 TODO
-	 */
-	void addCellEditorListener(CellEditorListener listener);
-
-	/**
-	 * removeCellEditorListener
-	 * @param listener TODO
-	 */
-	void removeCellEditorListener(CellEditorListener listener);
-
+  /**
+   * removeCellEditorListener
+   * @param listener TODO
+   */
+  void removeCellEditorListener(CellEditorListener listener);
 
 } // CellEditor

@@ -51,6 +51,8 @@ import javax.swing.plaf.ListUI;
 
 public class JList extends JComponent implements Accessible, Scrollable
 {
+  private static final long serialVersionUID = 4406629526391098046L;
+
     Color select_back, select_fore;
     ListCellRenderer render;
     int visibles = 8;
@@ -105,10 +107,23 @@ public class JList extends JComponent implements Accessible, Scrollable
 	repaint();
     }
 
-    void addListSelectionListener(ListSelectionListener listener)
-    { sel_model.addListSelectionListener(listener);    }
-    void removeListSelectionListener(ListSelectionListener listener)
-    { sel_model.removeListSelectionListener(listener);    }
+  public void addListSelectionListener (ListSelectionListener listener)
+  {
+    sel_model.addListSelectionListener (listener);
+  }
+  
+  public void removeListSelectionListener (ListSelectionListener listener)
+  {
+    sel_model.removeListSelectionListener (listener);
+  }
+
+  /**
+   * @since 1.4
+   */
+  public ListSelectionListener[] getListSelectionListeners()
+  {
+    throw new Error ("not implemented");
+  }
 
     void setSelectionMode(int a)
     {  sel_model.setSelectionMode(a);   }

@@ -49,21 +49,14 @@ import javax.swing.JPanel;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public abstract class AbstractColorChooserPanel extends JPanel {
-
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+public abstract class AbstractColorChooserPanel extends JPanel
+{
+  private static final long serialVersionUID = -977469671210173863L;
 
 	/**
 	 * chooser
 	 */
 	private JColorChooser chooser;
-
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
 
 	/**
 	 * Constructor AbstractColorChooserPanel
@@ -71,11 +64,6 @@ public abstract class AbstractColorChooserPanel extends JPanel {
 	public AbstractColorChooserPanel() {
 		// TODO
 	} // AbstractColorChooserPanel()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
 
 	/**
 	 * getDisplayName
@@ -144,6 +132,4 @@ public abstract class AbstractColorChooserPanel extends JPanel {
 	public void paint(Graphics graphics) {
 		// TODO
 	} // paint()
-
-
 } // AbstractColorChooserPanel

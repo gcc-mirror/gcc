@@ -46,6 +46,8 @@ import javax.swing.plaf.LabelUI;
 
 public class JLabel extends JComponent implements Accessible, SwingConstants
 {
+  private static final long serialVersionUID = 5496508283662221534L;
+  
     String text;
     Icon icon;
     int gap;

@@ -52,6 +52,8 @@ import javax.swing.event.HyperlinkListener;
 
 public class JEditorPane extends JTextComponent
 {
+  private static final long serialVersionUID = 3140472492599046285L;
+
     URL page_url;
     EditorKit kit;
     String ctype = "text/plain";
@@ -82,9 +84,6 @@ public class JEditorPane extends JTextComponent
 	setPage(url);
     }
 
-    void addHyperlinkListener(HyperlinkListener listener)
-    {  }
-    
     protected  EditorKit createDefaultEditorKit()
     {	return new PlainEditorKit();    }
     
@@ -174,11 +173,6 @@ public class JEditorPane extends JTextComponent
 	//Establishes the default bindings of type to classname.  
     }
     
-    void removeHyperlinkListener(HyperlinkListener listener)
-    {
-	//Removes a hyperlink listener.  
-    }
-    
     void replaceSelection(String content)
     {
 	//Replaces the currently selected content with new content represented by the given string. 
@@ -210,11 +204,13 @@ public class JEditorPane extends JTextComponent
     }
   
   void setPage(String url)
+    throws IOException
     {
 	//  Sets the current URL being displayed.  
     }
     
     void setPage(URL page)
+    throws IOException
     {
 	//    Sets the current URL being displayed.  
     }
@@ -223,4 +219,23 @@ public class JEditorPane extends JTextComponent
     {	
 	super.setText(t);
     }
+
+  public void addHyperlinkListener(HyperlinkListener listener)
+  {
+    listenerList.add (HyperlinkListener.class, listener);
+  }
+    
+  public void removeHyperlinkListener (HyperlinkListener listener)
+  {
+    listenerList.remove (HyperlinkListener.class, listener);
+  }
+
+  /**
+   * @since 1.4
+   */
+  public HyperlinkListener[] getHyperlinkListeners()
+  {
+    return (HyperlinkListener[]) getListeners (HyperlinkListener.class);
+  }
+    
 } // class JEditorPane
