@@ -678,6 +678,10 @@ else
      AC_EGREP_HEADER(gethostname, unistd.h, [
        AC_DEFINE(HAVE_GETHOSTNAME_DECL)])])
 
+   AC_CHECK_FUNCS(usleep, [
+     AC_EGREP_HEADER(usleep, unistd.h, [
+       AC_DEFINE(HAVE_USLEEP_DECL)])])
+
    # Look for these functions in the thread library, but only bother
    # if using POSIX threads.
    if test "$THREADS" = posix; then
