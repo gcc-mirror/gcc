@@ -2009,7 +2009,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	}
       /* Also preserve various other info from the definition.  */
       else if (! new_is_definition)
-	DECL_FRAME_SIZE (newdecl) = DECL_FRAME_SIZE (olddecl);
+	DECL_NUM_STMTS (newdecl) = DECL_NUM_STMTS (olddecl);
       if (! new_is_definition)
 	{
 	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
@@ -2372,7 +2372,7 @@ pushdecl (x)
 		      DECL_INITIAL (x) = (current_function_decl == oldglobal
 					  ? 0 : DECL_INITIAL (oldglobal));
 		      DECL_SAVED_INSNS (x) = DECL_SAVED_INSNS (oldglobal);
-		      DECL_FRAME_SIZE (x) = DECL_FRAME_SIZE (oldglobal);
+		      DECL_NUM_STMTS (x) = DECL_NUM_STMTS (oldglobal);
 		      DECL_ARGUMENTS (x) = DECL_ARGUMENTS (oldglobal);
 		      DECL_RESULT (x) = DECL_RESULT (oldglobal);
 		      TREE_ASM_WRITTEN (x) = TREE_ASM_WRITTEN (oldglobal);

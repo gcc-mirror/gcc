@@ -892,9 +892,6 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	     incoming arg rtx values are expanded now so that we can be
 	     sure we have enough slots in the const equiv map since the
 	     store_expr call can easily blow the size estimate.  */
-	  if (DECL_FRAME_SIZE (fndecl) != 0)
-	    copy_rtx_and_substitute (virtual_stack_vars_rtx, map, 0);
-
 	  if (DECL_SAVED_INSNS (fndecl)->args_size != 0)
 	    copy_rtx_and_substitute (virtual_incoming_args_rtx, map, 0);
 	}

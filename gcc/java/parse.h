@@ -720,7 +720,7 @@ typedef struct _jdeplist {
 #define CURRENT_OSB(C) (C)->osb_number [(C)->osb_depth]
 
 /* Macro for the xreferencer */
-#define DECL_END_SOURCE_LINE(DECL)       DECL_FRAME_SIZE (DECL)
+#define DECL_END_SOURCE_LINE(DECL)       (DECL_CHECK (DECL)->decl.u1.i)
 #define DECL_INHERITED_SOURCE_LINE(DECL) (DECL_CHECK (DECL)->decl.u2.i)
      
 /* Parser context data structure. */

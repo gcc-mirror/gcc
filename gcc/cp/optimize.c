@@ -30,6 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "varray.h"
 #include "ggc.h"
+#include "params.h"
 
 /* To Do:
 
@@ -50,8 +51,13 @@ typedef struct inline_data
   /* A stack of the functions we are inlining.  For example, if we are
      compiling `f', which calls `g', which calls `h', and we are
      inlining the body of `h', the stack will contain, `h', followed
-     by `g', followed by `f'.  */
+     by `g', followed by `f'.  The first few elements of the stack may
+     contain other functions that we know we should not recurse into,
+     even though they are not directly being inlined.  */
   varray_type fns;
+  /* The index of the first element of FNS that really represents an
+     inlined function.  */
+  unsigned first_inlined_fn;
   /* The label to jump to when a return statement is encountered.  If
      this value is NULL, then return statements will simply be
      remapped as return statements, rather than as jumps.  */
@@ -66,6 +72,14 @@ typedef struct inline_data
   varray_type target_exprs;
   /* A list of the functions current function has inlined.  */
   varray_type inlined_fns;
+  /* The approximate number of statements we have inlined in the
+     current call stack.  */
+  int inlined_stmts;
+  /* We use the same mechanism to build clones that we do to perform
+     inlining.  However, there are a few places where we need to
+     distinguish between those two situations.  This flag is true nif
+     we are cloning, rather than inlining.  */
+  bool cloning_p;
 } inline_data;
 
 /* Prototypes.  */
@@ -81,6 +95,11 @@ static tree remap_decl PARAMS ((tree, inline_data *));
 static void remap_block PARAMS ((tree, tree, inline_data *));
 static void copy_scope_stmt PARAMS ((tree *, int *, inline_data *));
 static tree calls_setjmp_r PARAMS ((tree *, int *, void *));
+
+/* The approximate number of instructions per statement.  This number
+   need not be particularly accurate; it is used only to make
+   decisions about when a function is too big to inline.  */
+#define INSNS_PER_STMT (10)
 
 /* Remap DECL during the copying of the BLOCK tree for the function.
    DATA is really an `inline_data *'.  */
@@ -199,9 +218,10 @@ remap_block (scope_stmt, decls, id)
       /* We put the BLOCK_VARS in reverse order; fix that now.  */
       BLOCK_VARS (new_block) = nreverse (BLOCK_VARS (new_block));
       fn = VARRAY_TREE (id->fns, 0);
-      if (fn == current_function_decl)
-	/* We're building a clone; DECL_INITIAL is still error_mark_node, and
-	   current_binding_level is the parm binding level.  */
+      if (id->cloning_p)
+	/* We're building a clone; DECL_INITIAL is still
+	   error_mark_node, and current_binding_level is the parm
+	   binding level.  */
 	insert_block (new_block);
       else
 	{
@@ -583,6 +603,9 @@ inlinable_function_p (fn, id)
   /* We can't inline varargs functions.  */
   else if (varargs_function_p (fn))
     ;
+  /* We can't inline functions that are too big.  */
+  else if (DECL_NUM_STMTS (fn) * INSNS_PER_STMT > MAX_INLINE_INSNS)
+    ;
   /* All is well.  We can inline this function.  Traditionally, GCC
      has refused to inline functions using alloca, or functions whose
      values are returned in a PARALLEL, and a few other such obscure
@@ -592,6 +615,13 @@ inlinable_function_p (fn, id)
 
   /* Squirrel away the result so that we don't have to check again.  */
   DECL_UNINLINABLE (fn) = !inlinable;
+
+  /* Even if this function is not itself too big to inline, it might
+     be that we've done so much inlining already that we don't want to
+     risk inlining any more.  */
+  if ((DECL_NUM_STMTS (fn) + id->inlined_stmts) * INSNS_PER_STMT 
+      > MAX_INLINE_INSNS)
+    inlinable = 0;
 
   /* We can inline a template instantiation only if it's fully
      instantiated.  */
@@ -830,9 +860,18 @@ expand_call_inline (tp, walk_subtrees, data)
      the equivalent inlined version either.  */
   TREE_USED (*tp) = 1;
 
+  /* Our function now has more statements than it did before.  */
+  DECL_NUM_STMTS (VARRAY_TREE (id->fns, 0)) += DECL_NUM_STMTS (fn);
+  id->inlined_stmts += DECL_NUM_STMTS (VARRAY_TREE (id->fns, 0));
+
   /* Recurse into the body of the just inlined function.  */
   expand_calls_inline (inlined_body, id);
   VARRAY_POP (id->fns);
+
+  /* If we've returned to the top level, clear out the record of how
+     much inlining has been done.  */
+  if (VARRAY_ACTIVE_SIZE (id->fns) == id->first_inlined_fn)
+    id->inlined_stmts = 0;
 
   /* Don't walk into subtrees.  We've already handled them above.  */
   *walk_subtrees = 0;
@@ -903,6 +942,10 @@ optimize_function (fn)
 
       /* Create the list of functions this call will inline.  */
       VARRAY_TREE_INIT (id.inlined_fns, 32, "inlined_fns");
+
+      /* Keep track of the low-water mark, i.e., the point where
+	 the first real inlining is represented in ID.FNS.  */
+      id.first_inlined_fn = VARRAY_ACTIVE_SIZE (id.fns);
 
       /* Replace all calls to inline functions with the bodies of those
 	 functions.  */
@@ -1010,6 +1053,10 @@ maybe_clone_body (fn)
       VARRAY_TREE_INIT (id.fns, 2, "fns");
       VARRAY_PUSH_TREE (id.fns, clone);
       VARRAY_PUSH_TREE (id.fns, fn);
+
+      /* Cloning is treated slightly differently from inlining.  Set
+	 CLONING_P so that its clear which operation we're performing.  */
+      id.cloning_p = true;
 
       /* Remap the parameters.  */
       id.decl_map = splay_tree_new (splay_tree_compare_pointers,
