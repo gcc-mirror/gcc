@@ -261,7 +261,9 @@ private:
 		if (is_assignable_from_slow (target, source->interfaces[i]))
 		    return true;
 	      }
-	    return false;
+	    source = source->getSuperclass ();
+	    if (source == NULL)
+	      return false;
 	  }
 	else if (target == &java::lang::Object::class$)
 	  return true;

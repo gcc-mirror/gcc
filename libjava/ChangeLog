@@ -1,3 +1,8 @@
+2002-01-24  Per Bothner  <per@bothner.com>
+
+	* verify.cc (is_assignable_from_slow): If source is an interface,
+	we must also check the the superclass.
+
 2002-01-24  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/awt/xlib/XToolkit.java (getPrintJob): New stub method.
