@@ -1,3 +1,8 @@
+2004-11-03  Ben Elliston  <bje@au.ibm.com>
+
+	* g++.old-deja/g++.other/enum5.C (enum conditions): Move the
+	packed attribute to the definition to satisfy the new C++ parser.
+
 2004-11-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/stdarg-2.c (foo): Split multiple
