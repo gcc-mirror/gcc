@@ -37,6 +37,7 @@ static tree java_gimplify_default_expr (tree);
 static tree java_gimplify_block (tree);
 static tree java_gimplify_new_array_init (tree);
 static tree java_gimplify_try_expr (tree);
+static tree java_gimplify_modify_expr (tree);
 
 static void dump_java_tree (enum tree_dump_index, tree);
 
@@ -117,6 +118,21 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
       *expr_p = build_exception_object_ref (TREE_TYPE (*expr_p));
       break;
 
+    case VAR_DECL:
+      *expr_p = java_replace_reference (*expr_p, /* want_lvalue */ false);
+      return GS_UNHANDLED;
+
+    case MODIFY_EXPR:
+      *expr_p = java_gimplify_modify_expr (*expr_p);
+      return GS_UNHANDLED;
+
+    case SAVE_EXPR:
+      if (TREE_CODE (TREE_OPERAND (*expr_p, 0)) == VAR_DECL)
+	TREE_OPERAND (*expr_p, 0) 
+	  = java_replace_reference (TREE_OPERAND (*expr_p, 0), 
+			       /* want_lvalue */ false);
+      return GS_UNHANDLED;
+
     /* These should already be lowered before we get here.  */
     case URSHIFT_EXPR:
     case COMPARE_EXPR:
@@ -140,6 +156,33 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
   return GS_OK;
 }
 
+/* This is specific to the bytecode compiler.  If a variable has
+   LOCAL_SLOT_P set, replace an assignment to it with an assignment to
+   the corresponding variable that holds all its aliases.  */
+
+static tree
+java_gimplify_modify_expr (tree modify_expr)
+{
+  tree lhs = TREE_OPERAND (modify_expr, 0);
+  tree rhs = TREE_OPERAND (modify_expr, 1);
+  tree lhs_type = TREE_TYPE (lhs);
+  
+  if (TREE_CODE (lhs) == VAR_DECL
+      && DECL_LANG_SPECIFIC (lhs)
+      && LOCAL_SLOT_P (lhs)
+      && TREE_CODE (lhs_type) == POINTER_TYPE)
+    {
+      tree new_lhs = java_replace_reference (lhs, /* want_lvalue */ true);
+      tree new_rhs = build1 (NOP_EXPR, TREE_TYPE (new_lhs), rhs);
+      modify_expr = build (MODIFY_EXPR, TREE_TYPE (new_lhs),
+			   new_lhs, new_rhs);
+      modify_expr = build1 (NOP_EXPR, lhs_type, modify_expr);
+    }
+  
+  return modify_expr;
+}
+
+    
 static tree
 java_gimplify_case_expr (tree expr)
 {

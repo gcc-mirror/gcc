@@ -925,6 +925,8 @@ union lang_tree_node
 /* True if NODE is a variable that is out of scope.  */
 #define LOCAL_VAR_OUT_OF_SCOPE_P(NODE) \
     (DECL_LANG_SPECIFIC (NODE)->u.v.freed)
+#define LOCAL_SLOT_P(NODE) \
+    (DECL_LANG_SPECIFIC (NODE)->u.v.local_slot)
 /* Create a DECL_LANG_SPECIFIC if necessary. */
 #define MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC(T)			\
   if (DECL_LANG_SPECIFIC (T) == NULL)				\
@@ -1010,7 +1012,8 @@ struct lang_decl_var GTY(())
   tree owner;
   unsigned int final_iud : 1;	/* Final initialized upon declaration */
   unsigned int cif : 1;		/* True: decl is a class initialization flag */
-  unsigned int freed;		/* Decl is no longer in scope.  */
+  unsigned int freed : 1;		/* Decl is no longer in scope.  */
+  unsigned int local_slot : 1;	/* Decl is a temporary in the stack frame.  */
 };
 
 /* This is what 'lang_decl' really points to.  */
@@ -1176,7 +1179,7 @@ extern void set_java_signature (tree, tree);
 extern tree build_static_field_ref (tree);
 extern tree build_address_of (tree);
 extern tree find_local_variable (int index, tree type, int pc);
-extern void update_aliases (tree decl, int index);
+extern void update_aliases (tree decl, int index, int pc);
 extern tree find_stack_slot (int index, tree type);
 extern tree build_prim_array_type (tree, HOST_WIDE_INT);
 extern tree build_java_array_type (tree, HOST_WIDE_INT);
@@ -1254,6 +1257,8 @@ extern void java_layout_seen_class_methods (void);
 extern void check_for_initialization (tree, tree);
 
 extern tree pushdecl_top_level (tree);
+extern tree pushdecl_function_level (tree);
+extern tree java_replace_reference (tree, bool);
 extern int alloc_class_constant (tree);
 extern void init_expr_processing (void);
 extern void push_super_field (tree, tree);

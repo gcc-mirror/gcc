@@ -255,6 +255,9 @@ push_type_0 (tree type)
   n_words = 1 + TYPE_IS_WIDE (type);
   if (stack_pointer + n_words > DECL_MAX_STACK (current_function_decl))
     return 0;
+  /* Allocate decl for this variable now, so we get a temporary that
+     survives the whole method. */
+  find_stack_slot (stack_pointer, type);
   stack_type_map[stack_pointer++] = type;
   n_words--;
   while (--n_words >= 0)
@@ -368,7 +371,7 @@ pop_type (tree type)
   return type;
 }
 
-/* Return 1f if SOURCE_TYPE can be safely widened to TARGET_TYPE.
+/* Return 1 if SOURCE_TYPE can be safely widened to TARGET_TYPE.
    Handles array types and interfaces.  */
 
 int
@@ -1289,7 +1292,7 @@ expand_iinc (unsigned int local_var_index, int ival, int pc)
   constant_value = build_int_2 (ival, ival < 0 ? -1 : 0);
   res = fold (build2 (PLUS_EXPR, int_type_node, local_var, constant_value));
   java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (local_var), local_var, res));
-  update_aliases (local_var, local_var_index);
+  update_aliases (local_var, local_var_index, pc);
 }
 
       
@@ -2758,7 +2761,8 @@ process_jvm_instruction (int PC, const unsigned char* byte_ops,
   {									\
     int saw_index = 0;							\
     int index     = OPERAND_VALUE;					\
-    build_java_ret (find_local_variable (index, ptr_type_node, oldpc));	\
+    build_java_ret							\
+      (find_local_variable (index, return_address_type_node, oldpc));	\
   }
 
 #define JSR(OPERAND_TYPE, OPERAND_VALUE) \
@@ -2937,7 +2941,7 @@ process_jvm_instruction (int PC, const unsigned char* byte_ops,
     decl = find_local_variable (index, type, oldpc);		\
     set_local_type (index, type);				\
     java_add_stmt (build2 (MODIFY_EXPR, type, decl, value));	\
-    update_aliases (decl, index);				\
+    update_aliases (decl, index, PC);				\
   }
 
 #define STORE(OPERAND_TYPE, OPERAND_VALUE) \

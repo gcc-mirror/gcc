@@ -1,3 +1,40 @@
+2004-07-20  Andrew Haley  <aph@redhat.com>
+
+	* verify.c (verify_jvm_instructions): Comment change only.
+
+	* typeck.c (build_java_array_type): Add size field to array name.
+
+	* java-tree.h (LOCAL_SLOT_P): New.
+	(update_aliases): Add PC argument.
+	(pushdecl_function_level): New function.
+
+	* java-gimplify.c (java_gimplify_expr): Handle VAR_DECL,
+	MODIFY_EXPR, and SAVE_EXPR.
+	(java_gimplify_modify_expr): New function.
+
+	* expr.c (push_type_0): Call find_stack_slot() to create temporary.
+	(expand_iinc): Pass PC to update_aliases().
+	(STORE_INTERNAL): Likewise.
+	(process_jvm_instruction): Likewise.
+
+	* decl.c (base_decl_map): New variable.
+	(uniq): New variable.
+	(update_aliases): Rewrite with more thorough checking.
+	(debug_variable_p): New function.
+	(push_jvm_slot): Don't initialize local variable.  Don't pushdecl.
+	(check_local_named_variable): Delete whole function.
+	(initialize_local_variable): New function.
+	(check_local_unnamed_variable): Add checks and comments.
+	(find_local_variable): Rewrite.
+	(java_replace_reference): New function.
+	(function_binding_level): New variable.
+	(pushdecl_function_level): New function.
+	(maybe_pushlevels): Set DECL_LOCAL_END_PC.
+	(maybe_pushlevels): Call pushdecl() on each of the new decls.
+	(start_java_method): Reset uniq.  Create base_decl_map.  Set
+	function_binding_level.
+	(end_java_method): Null unused fields to save memory.
+	
 2004-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (add_interface_do): Remove.
