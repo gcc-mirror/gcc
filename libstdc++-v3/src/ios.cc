@@ -257,7 +257,7 @@ namespace std
 	  }
 	for (; i < _M_word_limit; i++) 
 	  words[i] = _M_words[i];
-	if (_M_words != _M_word_array) 
+	if (_M_words && _M_words != _M_word_array) 
 	  delete [] _M_words;
       }
     
@@ -294,7 +294,11 @@ namespace std
 
   ios_base::ios_base()
   {
-    // Do nothing; init() does it.  Static init to 0 makes everything sane.
+    // Do nothing: basic_ios::init() does it.  
+    // NB: _M_callbacks and _M_words must be zero for non-initialized
+    // ios_base to go through ~ios_base gracefully.
+    _M_callbacks = 0;
+    _M_words = 0;
   }
   
   // 27.4.2.7  ios_base constructors/destructors
@@ -302,9 +306,8 @@ namespace std
   {
     _M_call_callbacks(erase_event);
     _M_dispose_callbacks();
-    if (_M_words != _M_word_array) 
+    if (_M_words && _M_words != _M_word_array) 
       delete [] _M_words;
-    // XXX done?
   }
 
   void 
@@ -314,13 +317,14 @@ namespace std
   void 
   ios_base::_M_call_callbacks(event __e) throw()
   {
-    for (_Callback_list* __p = _M_callbacks; __p; __p = __p->_M_next)
+    _Callback_list* __p = _M_callbacks;
+    while (__p)
       {
-	try { 
-	  (*__p->_M_fn) (__e, *this, __p->_M_index); 
-	} 
-	catch (...) { 
-	}
+	try 
+	  { (*__p->_M_fn) (__e, *this, __p->_M_index); } 
+	catch (...) 
+	  { }
+	__p = __p->_M_next;
       }
   }
 

@@ -86,6 +86,9 @@ void test01()
 // by default, into the locale object. As such, basic_ios::init is
 // required to return a bad_cast for the first use of fill() call.
 // See 27.4.4.1
+
+class gnu_ios: public std::basic_ios<char> { };
+
 void test02() 
 {
   bool test = true;
@@ -93,7 +96,7 @@ void test02()
   // 01: Doesn't call basic_ios::init, which uses ctype<char_type>..
   try
     {
-      std::basic_ostringstream<unsigned short> 	oss;
+      gnu_ios gios;
     }
   catch(...)
     { 
@@ -122,7 +125,7 @@ void test02()
     }
   catch(const std::bad_cast& obj)
     {
-      test = true;
+      // This is correct.
     }
   catch(...)
     {

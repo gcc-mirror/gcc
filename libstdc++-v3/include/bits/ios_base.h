@@ -277,7 +277,7 @@ namespace std
     };
 
     static const int 	_S_local_words = 8;
-    _Words  		_M_word_array[_S_local_words];  // Guaranteed storage
+    _Words  		_M_word_array[_S_local_words];  // Guaranteed storage.
     _Words  		_M_dummy;    // Only for failed iword/pword calls.
     _Words* 		_M_words;
     int     		_M_word_limit;
