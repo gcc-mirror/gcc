@@ -1,3 +1,8 @@
+2005-02-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.c, java-except.h, jcf-parse.c, jv-scan.c, lex.c,
+	parse-scan.y: Update copyright.
+
 2005-02-11  Per Bothner  <per@bothner.com>
 
 	PR java/15543
