@@ -251,6 +251,13 @@ do {  \
 
 #define BSS_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $BSS$\n"
 
+/* We must not have a reference to an external symbol defined in a
+   shared library in a readonly section, else the SOM linker will
+   complain.
+
+   So, we force exception information into the data section.  */
+#define EXCEPTION_SECTION data_section
+
 /* Define the .bss section for ASM_OUTPUT_LOCAL to use. */
 
 #ifndef CTORS_SECTION_FUNCTION
@@ -353,4 +360,3 @@ do {						\
 /* SOM does not support the init_priority C++ attribute.  */
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY 0
-
