@@ -1,3 +1,11 @@
+2003-10-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/11637
+	* combine.c (adjust_for_new_dest): New function to adjust the
+	notes and LOG_LINKS when the dest of an insn has changed.
+	(try_combine): Use it when deleting the first insn of a two-insn
+	parallel or splitting a two-load parallel.
+
 2003-10-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_classify_constant): Only allow UNSPECs
@@ -77,7 +85,6 @@
 	* config/mn10300/mn10300.md: Likewise.
 	* config/sh/sh.h: Likewise.
 
->>>>>>> 2.1294
 2003-10-05  Richard Henderson  <rth@redhat.com>
 
 	* tree-inline.c (remap_type): New.
