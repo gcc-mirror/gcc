@@ -671,9 +671,6 @@ namespace std
     basic_istream<_CharT, _Traits>::
     ignore(streamsize __n)
     {
-      if (__n == 1)
-	return ignore();
-
       _M_gcount = 0;
       sentry __cerb(*this, true);
       if (__cerb && __n > 0)
@@ -692,6 +689,7 @@ namespace std
 	      // by definition, when more than 2G chars are actually ignored,
 	      // _M_gcount (the return value of gcount, that is) cannot be
 	      // really correct, being unavoidably too small.
+	      bool __large_ignore = false;
 	      while (true)
 		{
 		  while (_M_gcount < __n
@@ -702,10 +700,16 @@ namespace std
 		    }
 		  if (__n == numeric_limits<streamsize>::max()
 		      && !traits_type::eq_int_type(__c, __eof))
-		    _M_gcount = numeric_limits<streamsize>::min();
+		    {
+		      _M_gcount = numeric_limits<streamsize>::min();
+		      __large_ignore = true;
+		    }
 		  else
 		    break;
 		}
+
+	      if (__large_ignore)
+		_M_gcount = numeric_limits<streamsize>::max();
 
 	      if (traits_type::eq_int_type(__c, __eof))
                 __err |= ios_base::eofbit;
@@ -723,9 +727,6 @@ namespace std
     basic_istream<_CharT, _Traits>::
     ignore(streamsize __n, int_type __delim)
     {
-      if (traits_type::eq_int_type(__delim, traits_type::eof()))
-	return ignore(__n);
-
       _M_gcount = 0;
       sentry __cerb(*this, true);
       if (__cerb && __n > 0)
@@ -738,6 +739,7 @@ namespace std
               int_type __c = __sb->sgetc();
 
 	      // See comment above.
+	      bool __large_ignore = false;
 	      while (true)
 		{
 		  while (_M_gcount < __n
@@ -750,16 +752,23 @@ namespace std
 		  if (__n == numeric_limits<streamsize>::max()
 		      && !traits_type::eq_int_type(__c, __eof)
 		      && !traits_type::eq_int_type(__c, __delim))
-		    _M_gcount = numeric_limits<streamsize>::min();
+		    {
+		      _M_gcount = numeric_limits<streamsize>::min();
+		      __large_ignore = true;
+		    }
 		  else
 		    break;
 		}
+
+	      if (__large_ignore)
+		_M_gcount = numeric_limits<streamsize>::max();
 
               if (traits_type::eq_int_type(__c, __eof))
                 __err |= ios_base::eofbit;
 	      else if (traits_type::eq_int_type(__c, __delim))
 		{
-		  ++_M_gcount;
+		  if (_M_gcount < numeric_limits<streamsize>::max())
+		    ++_M_gcount;
 		  __sb->sbumpc();
 		}
             }

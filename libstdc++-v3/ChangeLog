@@ -1,4 +1,16 @@
 2005-01-11  Paolo Carlini  <pcarlini@suse.de>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/istream.cc (basic_istream<char>::ignore(streamsize),
+	basic_istream<char>::ignore(streamsize, int_type),
+	basic_istream<wchar_t>::ignore(streamsize),
+	basic_istream<wchar_t>::ignore(streamsize, int_type)): In case
+	more than numeric_limits<streamsize>::max() chars are skipped,
+	set _M_gcount = max().
+	* include/bits/istream.tcc (ignore(streamsize), ignore(streamsize,
+	int_type)): Likewise; keep simple, don't forward.
+
+2005-01-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/istream.cc (basic_istream<char>::ignore(streamsize),
 	basic_istream<char>::ignore(streamsize, int_type),
