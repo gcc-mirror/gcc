@@ -1,3 +1,10 @@
+2001-01-05  Michael Hayes  <mhayes@redhat.com>
+
+	* loop.c (prescan_loop): Set loop_info->has_nonconst_call.
+	Use it instead of loop_info->has_call for scanning loop mems.
+	(check_dbra_loop): Replace loop_info->has_call test with
+	loop_info->has_nonconst_call.
+
 2000-01-04  Matthew Hiller  <hiller@redhat.com>
 
 	* config/sh/sh.h (EPILOGUE_USES): Recognize fpscr as epilogue-used
