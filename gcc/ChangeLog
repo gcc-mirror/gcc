@@ -1,3 +1,8 @@
+Fri Aug 14 12:22:55 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* configure.in: Avoid [[ by using test and changequote.
+	* configure: Rebuild.
+
 Fri Aug 14 01:22:31 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* rtl.def (CONSTANT_P_RTX): Fix typo in string name.
