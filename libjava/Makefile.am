@@ -848,6 +848,7 @@ gnu/awt/j2d/IntegerGraphicsState.java \
 gnu/awt/j2d/MappedRaster.java \
 gnu/java/awt/BitMaskExtent.java \
 gnu/java/awt/Buffers.java \
+gnu/java/awt/BitwiseXORComposite.java \
 gnu/java/awt/ComponentDataBlitOp.java \
 gnu/java/awt/ClasspathToolkit.java \
 gnu/java/awt/EmbeddedWindow.java \
