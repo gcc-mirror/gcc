@@ -5928,13 +5928,12 @@ cse_insn (insn, libcall_insn)
 	  }
       }
 
-  /* Special handling for (set REG0 REG1)
-     where REG0 is the "cheapest", cheaper than REG1.
-     After cse, REG1 will probably not be used in the sequel, 
-     so (if easily done) change this insn to (set REG1 REG0) and
-     replace REG1 with REG0 in the previous insn that computed their value.
-     Then REG1 will become a dead store and won't cloud the situation
-     for later optimizations.
+  /* Special handling for (set REG0 REG1) where REG0 is the
+     "cheapest", cheaper than REG1.  After cse, REG1 will probably not
+     be used in the sequel, so (if easily done) change this insn to
+     (set REG1 REG0) and replace REG1 with REG0 in the previous insn
+     that computed their value.  Then REG1 will become a dead store
+     and won't cloud the situation for later optimizations.
 
      Do not make this change if REG1 is a hard register, because it will
      then be used in the sequel and we may be changing a two-operand insn
@@ -5958,19 +5957,18 @@ cse_insn (insn, libcall_insn)
       if ((src_ent->first_reg == REGNO (SET_DEST (sets[0].rtl)))
 	  && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
 	{
-	  rtx prev = PREV_INSN (insn);
-	  while (prev && GET_CODE (prev) == NOTE)
-	    prev = PREV_INSN (prev);
+	  rtx prev = prev_nonnote_insn (insn);
 
-	  if (prev && GET_CODE (prev) == INSN && GET_CODE (PATTERN (prev)) == SET
+	  if (prev != 0 && GET_CODE (prev) == INSN
+	      && GET_CODE (PATTERN (prev)) == SET
 	      && SET_DEST (PATTERN (prev)) == SET_SRC (sets[0].rtl))
 	    {
 	      rtx dest = SET_DEST (sets[0].rtl);
+	      rtx src = SET_SRC (sets[0].rtl);
 	      rtx note = find_reg_note (prev, REG_EQUIV, NULL_RTX);
 
 	      validate_change (prev, & SET_DEST (PATTERN (prev)), dest, 1);
-	      validate_change (insn, & SET_DEST (sets[0].rtl),
-			       SET_SRC (sets[0].rtl), 1);
+	      validate_change (insn, & SET_DEST (sets[0].rtl), src, 1);
 	      validate_change (insn, & SET_SRC (sets[0].rtl), dest, 1);
 	      apply_change_group ();
 
@@ -5992,10 +5990,14 @@ cse_insn (insn, libcall_insn)
 		  REG_NOTES (prev) = note;
 		}
 
-	      /* If INSN has a REG_EQUAL note, and this note mentions REG0,
-		 then we must delete it, because the value in REG0 has changed.  */
+	      /* If INSN has a REG_EQUAL note, and this note mentions
+		 REG0, then we must delete it, because the value in
+		 REG0 has changed.  If the note's value is REG1, we must
+		 also delete it because that is now this insn's dest.  */
 	      note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-	      if (note && reg_mentioned_p (dest, XEXP (note, 0)))
+	      if (note != 0
+		  && (reg_mentioned_p (dest, XEXP (note, 0))
+		      || rtx_equal_p (src, XEXP (note, 0))))
 		remove_note (insn, note);
 	    }
 	}
