@@ -35,6 +35,7 @@ static int memrefs_conflict_p		PROTO((int, rtx, int, rtx,
 static void record_set			PROTO((rtx, rtx));
 static rtx find_base_term		PROTO((rtx));
 static int base_alias_check		PROTO((rtx, rtx));
+static rtx find_base_value		PROTO((rtx));
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
@@ -865,7 +866,7 @@ true_dependence (mem, mem_mode, x, varies)
      rtx mem;
      enum machine_mode mem_mode;
      rtx x;
-     int (*varies)();
+     int (*varies) PROTO((rtx));
 {
   register rtx x_addr, mem_addr;
 
