@@ -1186,8 +1186,12 @@ extern union tree_node *make_tree	PROTO((union tree_node *, rtx));
 #define STORE_FLAG_VALUE 1
 #endif
 
+/* Nonzero after the second flow pass has completed.
+   Set to 1 or 0 by toplev.c  */
+extern int flow2_completed;
+
 /* Nonzero after end of reload pass.
-   Set to 1 or 0 by toplev.c.  */
+   Set to 1 or 0 by reload1.c.  */
 
 extern int reload_completed;
 
