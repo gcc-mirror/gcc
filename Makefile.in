@@ -24061,13 +24061,11 @@ configure-stage2-gcc: all-stage1-gcc
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
-	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
 	AS="$(AS)"; export AS; \
-	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
 	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
 	LD="$(LD)"; export LD; \
 	NM="$(NM)"; export NM; \
@@ -24075,6 +24073,8 @@ configure-stage2-gcc: all-stage1-gcc
 	WINDRES="$(WINDRES)"; export WINDRES; \
 	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
 	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
+	CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC; \
+	CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC_FOR_BUILD; \
 	echo Configuring stage 2 in gcc; \
 	cd gcc || exit 1; \
 	case $(srcdir) in \
@@ -24101,8 +24101,7 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	ADAC="\$$(CC)" \
 	WARN_CFLAGS="\$$(GCC_WARN_CFLAGS)" \
-	STRICT_WARN="\$$(STRICT2_WARN)" \
-	OUTPUT_OPTION="-o \$$@"
+	STRICT_WARN="\$$(STRICT2_WARN)"
 
 all-stage2-gcc: all-stage1-gcc configure-stage2-gcc
 	echo all-stage2-gcc > stage_last ; \
@@ -24136,13 +24135,11 @@ configure-stage3-gcc: all-stage2-gcc
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
-	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	AR="$(AR)"; export AR; \
 	AS="$(AS)"; export AS; \
-	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
 	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
 	LD="$(LD)"; export LD; \
 	NM="$(NM)"; export NM; \
@@ -24150,6 +24147,8 @@ configure-stage3-gcc: all-stage2-gcc
 	WINDRES="$(WINDRES)"; export WINDRES; \
 	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
 	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
+	CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC; \
+	CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC_FOR_BUILD; \
 	echo Configuring stage 3 in gcc; \
 	cd gcc || exit 1; \
 	case $(srcdir) in \
