@@ -42,6 +42,7 @@ extern const char* __objc_sparse3_id;
 #endif
 
 #include <stddef.h>
+#include <assert.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,13 +52,6 @@ extern int nbuckets;		/* for stats */
 extern int nindices;
 extern int narrays;
 extern int idxsize;
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
-
-#include <assert.h>
 
 /* An unsigned integer of same size as a pointer */
 #define SIZET_BITS (sizeof(size_t)*8)
@@ -150,10 +144,6 @@ struct sarray {
   struct sarray* is_copy_of;
   size_t capacity;
 };
-
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
 
 struct sarray* sarray_new(int, void* default_element);
 void sarray_free(struct sarray*);
