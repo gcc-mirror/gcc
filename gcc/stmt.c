@@ -3996,6 +3996,8 @@ expand_decl_cleanup (decl, cleanup)
       if (! using_eh_for_cleanups_p
 	  || expand_eh_region_start_tree (decl, cleanup))
 	TREE_ADDRESSABLE (t) = 1;
+      /* If that started a new EH region, we're in a new block.  */
+      thisblock = block_stack;
 
       if (cond_context)
 	{
