@@ -1047,24 +1047,4 @@ extern long mcore_current_compilation_timestamp;
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
   ((CHAR)=='.' || (CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^' || (CHAR) == '!')
 
-#define PREDICATE_CODES							\
-  { "mcore_arith_reg_operand",		{ REG, SUBREG }},		\
-  { "mcore_general_movsrc_operand",	{ MEM, CONST_INT, REG, SUBREG, SYMBOL_REF, LABEL_REF }},\
-  { "mcore_general_movdst_operand",	{ MEM, CONST_INT, REG, SUBREG }},\
-  { "mcore_reload_operand",	        { MEM, REG, SUBREG }},		\
-  { "mcore_arith_J_operand",		{ CONST_INT, REG, SUBREG }},	\
-  { "mcore_arith_K_operand",		{ CONST_INT, REG, SUBREG }},	\
-  { "mcore_arith_K_operand_not_0",	{ CONST_INT, REG, SUBREG }},	\
-  { "mcore_arith_M_operand",		{ CONST_INT, REG, SUBREG }},	\
-  { "mcore_arith_K_S_operand",		{ CONST_INT, REG, SUBREG }},	\
-  { "mcore_arith_O_operand",		{ CONST_INT, REG, SUBREG }},	\
-  { "mcore_arith_imm_operand",		{ CONST_INT, REG, SUBREG }},	\
-  { "mcore_arith_any_imm_operand",	{ CONST_INT, REG, SUBREG }},	\
-  { "mcore_literal_K_operand",		{ CONST_INT }},			\
-  { "mcore_addsub_operand",		{ CONST_INT, REG, SUBREG }},	\
-  { "mcore_compare_operand",		{ CONST_INT, REG, SUBREG }},	\
-  { "mcore_load_multiple_operation",	{ PARALLEL }},			\
-  { "mcore_store_multiple_operation",	{ PARALLEL }},			\
-  { "mcore_call_address_operand",	{ REG, SUBREG, CONST_INT, SYMBOL_REF }},	\
-
 #endif /* ! GCC_MCORE_H */

@@ -1,3 +1,31 @@
+2005-04-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/mcore/mcore-protos.h: Remove the prototypes for
+	mcore_arith_reg_operand, mcore_general_movsrc_operand,
+	mcore_general_movdst_operand, mcore_reload_operand,
+	mcore_arith_J_operand, mcore_arith_K_operand,
+	mcore_arith_K_operand_not_0, mcore_arith_M_operand,
+	mcore_arith_K_S_operand, mcore_arith_imm_operand,
+	mcore_arith_any_imm_operand, mcore_arith_O_operand,
+	mcore_literal_K_operand, mcore_addsub_operand,
+	mcore_compare_operand, mcore_load_multiple_operation,
+	mcore_store_multiple_operation, mcore_call_address_operand.
+	Add a prototype for const_ok_for_mcore.
+	* config/mcore/mcore.c (mcore_call_address_operand,
+	mcore_general_movsrc_operand, mcore_general_movdst_operand,
+	mcore_arith_reg_operand, mcore_reload_operand,
+	mcore_arith_J_operand, mcore_arith_K_operand,
+	mcore_arith_K_operand_not_0, mcore_arith_K_S_operand,
+	mcore_arith_M_operand, mcore_arith_imm_operand,
+	mcore_arith_any_imm_operand, mcore_arith_O_operand,
+	mcore_literal_K_operand, mcore_addsub_operand,
+	mcore_compare_operand, mcore_load_multiple_operation,
+	mcore_store_multiple_operation): Move to predicates.md.
+	(const_ok_for_mcore): Export.
+	* config/mcore/mcore.h (PREDICATE_CODES): Remove.
+	* config/mcore/mcore.md: Include predicates.md.
+	* config/mcore/predicates.md: New.
+
 2005-04-04  Andreas Krebbel  <krebbel1@de.ibm.com>
 	    Adrian Straetling  <straetling@de.ibm.com>
 
