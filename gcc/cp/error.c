@@ -2690,7 +2690,7 @@ cp_error_at VPARAMS ((const char *msgid, ...))
   VA_FIXEDARG (ap, const char *, msgid);
 
   diagnostic_set_info (&diagnostic, msgid, &ap,
-                       cp_file_of (here), cp_line_of (here), DK_WARNING);
+                       cp_file_of (here), cp_line_of (here), DK_ERROR);
   report_diagnostic (&diagnostic);
   VA_CLOSE (ap);
 }
