@@ -1,3 +1,11 @@
+Sat Apr  4 17:42:05 1998  Richard Henderson  <rth@cygnus.com>
+
+	* tree.h (sizetype_tab[2], sbitsizetype, ubitsizetype): Merge all
+	of these into a single struct, with additional [us]sizetype entries.
+	* stor-layout.c (set_sizetype): Initialize [us]sizetype.
+	* fold-const.c (size_int_wide): Don't rely on sizetype_tab being
+	an array.
+
 Sat Apr  4 17:04:41 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in (alpha-*-linux-*): Undo tm_file changes from gcc2 merge.

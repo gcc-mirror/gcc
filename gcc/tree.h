@@ -1435,9 +1435,21 @@ extern void put_pending_sizes		PROTO((tree));
    + (BITS_PER_UNIT > 8) + (BITS_PER_UNIT > 16) + (BITS_PER_UNIT > 32) \
    + (BITS_PER_UNIT > 64) + (BITS_PER_UNIT > 128) + (BITS_PER_UNIT > 256))
 
-extern tree sizetype_tab[2], sbitsizetype, ubitsizetype;
-#define sizetype sizetype_tab[0]
-#define bitsizetype sizetype_tab[1]
+struct sizetype_tab
+{
+  tree xsizetype, xbitsizetype;
+  tree ssizetype, usizetype;
+  tree sbitsizetype, ubitsizetype;
+};
+
+extern struct sizetype_tab sizetype_tab;
+
+#define sizetype sizetype_tab.xsizetype
+#define bitsizetype sizetype_tab.xbitsizetype
+#define ssizetype sizetype_tab.ssizetype
+#define usizetype sizetype_tab.usizetype
+#define sbitsizetype sizetype_tab.sbitsizetype
+#define ubitsizetype sizetype_tab.ubitsizetype
 
 /* If nonzero, an upper limit on alignment of structure fields, in bits. */
 extern int maximum_field_alignment;
