@@ -3155,7 +3155,21 @@ emit_single_push_insn (mode, x, type)
   rtx dest_addr;
   unsigned rounded_size = PUSH_ROUNDING (GET_MODE_SIZE (mode));
   rtx dest;
+  enum insn_code icode;
+  insn_operand_predicate_fn pred;
 
+  stack_pointer_delta += PUSH_ROUNDING (GET_MODE_SIZE (mode));
+  /* If there is push pattern, use it.  Otherwise try old way of throwing
+     MEM representing push operation to move expander.  */
+  icode = push_optab->handlers[(int) mode].insn_code;
+  if (icode != CODE_FOR_nothing)
+    {
+      if (((pred = insn_data[(int) icode].operand[0].predicate)
+	  && !((*pred) (x, mode))))
+	x = force_reg (mode, x);
+      emit_insn (GEN_FCN (icode) (x));
+      return;
+    }
   if (GET_MODE_SIZE (mode) == rounded_size)
     dest_addr = gen_rtx_fmt_e (STACK_PUSH_CODE, Pmode, stack_pointer_rtx);
   else
@@ -3171,8 +3185,6 @@ emit_single_push_insn (mode, x, type)
     }
 
   dest = gen_rtx_MEM (mode, dest_addr);
-
-  stack_pointer_delta += PUSH_ROUNDING (GET_MODE_SIZE (mode));
 
   if (type != 0)
     {

@@ -378,6 +378,9 @@ enum optab_index
   OTI_cmov,
   OTI_cstore,
     
+  /* Push instruction.  */
+  OTI_push,
+
   OTI_MAX
 };
 
@@ -437,6 +440,7 @@ extern optab optab_table[OTI_MAX];
 #define cbranch_optab (optab_table[OTI_cbranch])
 #define cmov_optab (optab_table[OTI_cmov])
 #define cstore_optab (optab_table[OTI_cstore])
+#define push_optab (optab_table[OTI_push])
 
 /* Tables of patterns for extending one integer mode to another.  */
 extern enum insn_code extendtab[MAX_MACHINE_MODE][MAX_MACHINE_MODE][2];

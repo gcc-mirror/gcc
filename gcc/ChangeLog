@@ -1,3 +1,14 @@
+Fri Jul 20 21:59:42 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* rtlanal.c (set_noop_p): Return true for noop jumps.
+
+	* expr.c (emit_single_push_insn): Add call to push expander.
+	* expr.h (optab_index): Add OTI_push
+	(push_optab): New constant.
+	* genopinit.c (optabs): Add push_optab.
+	* optabs.c (init_optab): Init push optab.
+	* md.texi (push??1): Document
+
 2001-07-20  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("movdi", "movdi_internal"): Use an

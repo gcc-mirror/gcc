@@ -128,6 +128,7 @@ const char * const optabs[] =
   "cbranch_optab->handlers[$A].insn_code = CODE_FOR_$(cbranch$a4$)",
   "cmov_optab->handlers[$A].insn_code = CODE_FOR_$(cmov$a6$)",
   "cstore_optab->handlers[$A].insn_code = CODE_FOR_$(cstore$a4$)",
+  "push_optab->handlers[$A].insn_code = CODE_FOR_$(push$a1$)",
   "reload_in_optab[$A] = CODE_FOR_$(reload_in$a$)",
   "reload_out_optab[$A] = CODE_FOR_$(reload_out$a$)",
   "movstr_optab[$A] = CODE_FOR_$(movstr$a$)",
