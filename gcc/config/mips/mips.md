@@ -4213,19 +4213,21 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
-  int i;
-
-  emit_call_insn (gen_call (operands[0], const0_rtx, NULL, const0_rtx));
-
-  for (i = 0; i < XVECLEN (operands[2], 0); i++)
+  if (operands[0])		/* silence statement not reached warnings */
     {
-      rtx set = XVECEXP (operands[2], 0, i);
-      emit_move_insn (SET_DEST (set), SET_SRC (set));
+      int i;
+
+      emit_call_insn (gen_call (operands[0], const0_rtx, NULL, const0_rtx));
+
+      for (i = 0; i < XVECLEN (operands[2], 0); i++)
+	{
+	  rtx set = XVECEXP (operands[2], 0, i);
+	  emit_move_insn (SET_DEST (set), SET_SRC (set));
+	}
+
+      emit_insn (gen_blockage ());
+      DONE;
     }
-
-  emit_insn (gen_blockage ());
-
-  DONE;
 }")
 
 ;;
