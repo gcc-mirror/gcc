@@ -575,6 +575,9 @@ public final class Math
    */
   public static int round(float a)
   {
+    // this check for NaN, from JLS 15.21.1, saves a method call
+    if (a != a)
+      return 0;
     return (int) floor(a + 0.5f);
   }
 
@@ -591,6 +594,9 @@ public final class Math
    */
   public static long round(double a)
   {
+    // this check for NaN, from JLS 15.21.1, saves a method call
+    if (a != a)
+      return 0;
     return (long) floor(a + 0.5d);
   }
 
@@ -624,7 +630,7 @@ public final class Math
    */
   public static double toRadians(double degrees)
   {
-    return degrees * (PI / 180);
+    return (degrees * PI) / 180;
   }
 
   /**
@@ -638,6 +644,6 @@ public final class Math
    */
   public static double toDegrees(double rads)
   {
-    return rads * (180 / PI);
+    return (rads * 180) / PI;
   }
 }
