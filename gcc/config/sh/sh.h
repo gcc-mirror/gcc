@@ -456,7 +456,7 @@ do {									\
        targetm.asm_out.unaligned_op.di = NULL;				\
     }									\
   if (TARGET_FMOVD)							\
-    reg_class_from_letter['e'] = NO_REGS;				\
+    reg_class_from_letter['e' - 'a'] = NO_REGS;				\
 									\
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)		\
     if (! VALID_REGISTER_P (regno))					\

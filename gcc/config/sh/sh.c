@@ -157,7 +157,7 @@ char sh_additional_register_names[ADDREGNAMES_SIZE] \
 
 /* Provide reg_class from a letter such as appears in the machine
    description.  *: target independently reserved letter.
-   reg_class_from_letter['e'] is set to NO_REGS for TARGET_FMOVD.  */
+   reg_class_from_letter['e' - 'a'] is set to NO_REGS for TARGET_FMOVD.  */
 
 enum reg_class reg_class_from_letter[] =
 {
@@ -4694,7 +4694,7 @@ calc_live_regs (count_ptr, live_regs_mask)
 
 /* Code to generate prologue and epilogue sequences */
 
-/* PUSHED is the number of bytes that are bing pushed on the
+/* PUSHED is the number of bytes that are being pushed on the
    stack for register saves.  Return the frame size, padded
    appropriately so that the stack stays properly aligned.  */
 static HOST_WIDE_INT
@@ -8080,11 +8080,12 @@ sh_expand_binop_v2sf (code, op0, op1, op2)
 {
   rtx sel0 = const0_rtx;
   rtx sel1 = const1_rtx;
-  rtx (*fn) PARAMS ((rtx, rtx, rtx, rtx, rtx, rtx, rtx)) = gen_binary_sf_op;
+  rtx (*fn) PARAMS ((rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx))
+    = gen_binary_sf_op;
   rtx op = gen_rtx_fmt_ee (code, SFmode, op1, op2);
 
-  emit_insn ((*fn) (op0, op1, op2, op, sel0, sel0, sel0));
-  emit_insn ((*fn) (op0, op1, op2, op, sel1, sel1, sel1));
+  emit_insn ((*fn) (op0, op1, op2, op, sel0, sel0, sel0, sel1));
+  emit_insn ((*fn) (op0, op1, op2, op, sel1, sel1, sel1, sel0));
 }
 
 /* Return the class of registers for which a mode change from FROM to TO
