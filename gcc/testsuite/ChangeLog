@@ -4,6 +4,8 @@
 
 	* gcc.dg/20020219-1.c: New test.
 
+	* gcc.dg/noncompile/20020220-1.c: New test.
+
 2002-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20020216-1.c: New test.
