@@ -1,5 +1,8 @@
 2003-01-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Make-lang.in (keyword.h): Pass "-L ANSI-C" to gperf.
+	* keyword.h: Regenerated.
+
 	* All Files: Convert to ISO C style function definitions.
 
 2003-01-09  Nathanael Nerode  <neroden@gcc.gnu.org>

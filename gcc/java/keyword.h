@@ -1,5 +1,5 @@
-/* C code produced by gperf version 2.7.2 */
-/* Command-line: gperf -L C -C -F ', 0' -p -t -j1 -i 1 -g -o -N java_keyword -k'1,4,$' keyword.gperf  */
+/* ANSI-C code produced by gperf version 2.7.2 */
+/* Command-line: gperf -L ANSI-C -C -F ', 0' -p -t -j1 -i 1 -g -o -N java_keyword -k'1,4,$' keyword.gperf  */
 /* Keyword definition for the GNU compiler for the Java(TM) language.
    Copyright (C) 1997, 1998, 2001, 2002, 2003
    Free Software Foundation, Inc.
@@ -51,9 +51,7 @@ inline
 #endif
 #endif
 static unsigned int
-hash (str, len)
-     register const char *str;
-     register unsigned int len;
+hash (register const char *str, register unsigned int len)
 {
   static const unsigned char asso_values[] =
     {
@@ -104,9 +102,7 @@ hash (str, len)
 __inline
 #endif
 const struct java_keyword *
-java_keyword (str, len)
-     register const char *str;
-     register unsigned int len;
+java_keyword (register const char *str, register unsigned int len)
 {
   static const struct java_keyword wordlist[] =
     {
