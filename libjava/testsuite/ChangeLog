@@ -1,3 +1,9 @@
+2001-08-28  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* libjava.compile/final_assignment_check.java: New file.
+	* libjava.compile/final_assignment_check.xfail: Likewise.
+	* libjava.compile/final_local_switch.java: Likewise.
+	
 2001-08-24  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* libjava.lang/KeepInline.out: Fixed content.
