@@ -27,4 +27,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	%{shared} %{non_shared} %{call_shared} %{no_archive} %{exact_version} \
 	%{!shared: %{!non_shared: %{!call_shared: -non_shared}}}}"
 
+#define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt1.o%s crtn.o%s}}"
+
 #include "mips/mips.h"
