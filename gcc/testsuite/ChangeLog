@@ -1,3 +1,8 @@
+2005-04-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/nonnull-3.c: Also test __builtin_stpncpy,
+	__builtin_strcasecmp and __builtin_strncasecmp.
+
 2005-04-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20723

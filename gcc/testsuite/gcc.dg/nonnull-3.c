@@ -33,10 +33,16 @@ foo (void *p, char *s)
   __builtin_strncat (s, NULL, 16);  /* { dg-warning "null" "null pointer check" } */
   __builtin_stpcpy (NULL, s);  /* { dg-warning "null" "null pointer check" } */
   __builtin_stpcpy (s, NULL);  /* { dg-warning "null" "null pointer check" } */
+  __builtin_stpncpy (NULL, s, 16);  /* { dg-warning "null" "null pointer check" } */
+  __builtin_stpncpy (s, NULL, 16);  /* { dg-warning "null" "null pointer check" } */
   __builtin_strcpy (NULL, s);  /* { dg-warning "null" "null pointer check" } */
   __builtin_strcpy (s, NULL);  /* { dg-warning "null" "null pointer check" } */
   __builtin_strncpy (NULL, s, 16);  /* { dg-warning "null" "null pointer check" } */
   __builtin_strncpy (s, NULL, 16);  /* { dg-warning "null" "null pointer check" } */
+  __builtin_strcasecmp (NULL, s);  /* { dg-warning "null" "null pointer check" } */
+  __builtin_strcasecmp (s, NULL);  /* { dg-warning "null" "null pointer check" } */
+  __builtin_strncasecmp (NULL, s, 16);  /* { dg-warning "null" "null pointer check" } */
+  __builtin_strncasecmp (s, NULL, 16);  /* { dg-warning "null" "null pointer check" } */
   __builtin_strcmp (NULL, s);  /* { dg-warning "null" "null pointer check" } */
   __builtin_strcmp (s, NULL);  /* { dg-warning "null" "null pointer check" } */
   __builtin_strncmp (NULL, s, 16);  /* { dg-warning "null" "null pointer check" } */
