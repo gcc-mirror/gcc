@@ -4622,7 +4622,7 @@ move\\t%0,%z4\\n\\
 
   if ((INTVAL (offset) & 3) == 0
       && (mem_addr == stack_pointer_rtx || mem_addr == frame_pointer_rtx))
-    return \"sw\\t%1,%0\";
+    return \"sw\\t%z1,%0\";
 
   return \"usw\\t%z1,%0\";
 }"
