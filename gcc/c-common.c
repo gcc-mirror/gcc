@@ -246,7 +246,7 @@ add_attribute (id, string, min_len, max_len, decl_req)
 static void
 init_attributes ()
 {
-  add_attribute (A_PACKED, "packed", 0, 0, 1);
+  add_attribute (A_PACKED, "packed", 0, 0, 0);
   add_attribute (A_NOCOMMON, "nocommon", 0, 0, 1);
   add_attribute (A_NORETURN, "noreturn", 0, 0, 1);
   add_attribute (A_NORETURN, "volatile", 0, 0, 1);
@@ -325,7 +325,9 @@ decl_attributes (node, attributes, prefix_attributes)
       switch (id)
 	{
 	case A_PACKED:
-	  if (TREE_CODE (decl) == FIELD_DECL)
+	  if (decl == 0)
+	    TYPE_PACKED (type) = 1;
+	  else if (TREE_CODE (decl) == FIELD_DECL)
 	    DECL_PACKED (decl) = 1;
 	  /* We can't set DECL_PACKED for a VAR_DECL, because the bit is
 	     used for DECL_REGISTER.  It wouldn't mean anything anyway.  */
