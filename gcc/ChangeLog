@@ -1,3 +1,9 @@
+Thu Nov 13 16:56:14 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* v850/lib1funcs.asm: Minor whitespace changes.
+	* v850.c: Fix minor formatting problems in many places.
+	(construct_restore_jr, construct_save_jarl): Remove unwanted aborts.
+
 Thu Nov 13 12:53:44 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* mips.h (GO_IF_LEGITIMATE_ADDRESS): Delete code swapping xplus0 and
