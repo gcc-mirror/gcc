@@ -78,7 +78,7 @@ void test02()
   const locale env_orig("");
 
   // setlocale to en_PH
-  string lc_all_ph = std::setlocale(LC_ALL, ph.c_str());
+  std::setlocale(LC_ALL, ph.c_str());
 
   const locale loc_env("");
   VERIFY( loc_env == env_orig );
