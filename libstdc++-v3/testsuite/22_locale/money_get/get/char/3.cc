@@ -28,8 +28,6 @@
 void test03()
 {
   using namespace std;
-  typedef money_base::part part;
-  typedef money_base::pattern pattern;
   typedef istreambuf_iterator<char> iterator_type;
 
   bool test __attribute__((unused)) = true;
@@ -38,13 +36,6 @@ void test03()
   locale loc_c = locale::classic();
   locale loc_de = __gnu_test::try_named_locale("de_DE@euro");
   VERIFY( loc_c != loc_de );
-
-  // cache the moneypunct facets
-  typedef moneypunct<char, true> __money_true;
-  typedef moneypunct<char, false> __money_false;
-
-  // sanity check the data is correct.
-  const string empty;
 
   // total EPA budget FY 2002
   const long double  digits1 = 720000000000.0;

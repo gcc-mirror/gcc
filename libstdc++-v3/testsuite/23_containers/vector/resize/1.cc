@@ -1,7 +1,7 @@
 // 1999-05-07
 // bkoz 
 
-// Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,7 +24,7 @@
 // XXX This test will not work for irix6 because of bug(s) in libc malloc
 // XXX for very large allocations.  However -lmalloc seems to work.
 // See http://gcc.gnu.org/ml/libstdc++/2002-12/msg00131.html
-// { dg-options "-D_GLIBCXX_ASSERT -lmalloc" { target mips*-*-irix6* } }
+// { dg-options "-lmalloc" { target mips*-*-irix6* } }
 
 #include <vector>
 #include <stdexcept>
@@ -49,6 +49,11 @@ void test01()
     }
   VERIFY( test );
 }
+
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template class __gnu_cxx::__mt_alloc<int>;
+#endif
 
 int main()
 {

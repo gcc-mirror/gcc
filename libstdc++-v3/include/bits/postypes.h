@@ -96,7 +96,7 @@ namespace std
     {
     private:
       streamoff	                _M_off;
-      _StateT 			_M_state;
+      _StateT			_M_state;
 
     public:
       // The standard doesn't require that fpos objects can be default

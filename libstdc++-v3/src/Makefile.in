@@ -40,10 +40,13 @@ target_triplet = @target@
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
 ACLOCAL = @ACLOCAL@
+ALLOCATOR_H = @ALLOCATOR_H@
+ALLOCATOR_NAME = @ALLOCATOR_NAME@
 AMTAR = @AMTAR@
 AR = @AR@
 AS = @AS@
-ATOMICITY_INC_SRCDIR = @ATOMICITY_INC_SRCDIR@
+ATOMICITY_SRCDIR = @ATOMICITY_SRCDIR@
+ATOMIC_WORD_SRCDIR = @ATOMIC_WORD_SRCDIR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -219,24 +222,27 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 
 # Cross compiler support.
 toolexeclib_LTLIBRARIES = libstdc++.la
-@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
 
 # Symbol versioning for shared libraries.
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@version_arg = -Wl,--version-script=libstdc++-symbol.ver
-@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@version_dep = 
+@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@version_dep = libstdc++-symbol.ver
+@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@version_dep = 
 
 # Source files linked in via configuration/make substitution for a
 # particular host.
 host_sources = \
+	atomicity.cc \
 	codecvt_members.cc \
 	collate_members.cc \
 	ctype_members.cc \
 	messages_members.cc \
 	monetary_members.cc \
 	numeric_members.cc \
-	time_members.cc
+	time_members.cc 
 
+
+atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
 
 # Source files linked in via configuration/make substitution for a
 # particular host, but with ad hoc naming rules.
@@ -247,6 +253,7 @@ host_sources_extra = \
 
 # Sources present in the src directory.
 sources = \
+	allocator.cc \
 	codecvt.cc \
 	complex_io.cc \
 	ctype.cc \
@@ -355,11 +362,11 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 
-am__objects_1 = codecvt_members.lo collate_members.lo ctype_members.lo \
-	messages_members.lo monetary_members.lo numeric_members.lo \
-	time_members.lo
+am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
+	ctype_members.lo messages_members.lo monetary_members.lo \
+	numeric_members.lo time_members.lo
 am__objects_2 = basic_file.lo c++locale.lo
-am__objects_3 = codecvt.lo complex_io.lo ctype.lo debug.lo \
+am__objects_3 = allocator.lo codecvt.lo complex_io.lo ctype.lo debug.lo \
 	functexcept.lo globals_locale.lo globals_io.lo ios.lo \
 	ios_failure.lo ios_init.lo ios_locale.lo limits.lo list.lo \
 	locale.lo locale_init.lo locale_facets.lo localename.lo \
@@ -653,6 +660,8 @@ numeric_members.cc: ${glibcxx_srcdir}/$(CNUMERIC_CC)
 
 time_members.cc: ${glibcxx_srcdir}/$(CTIME_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CTIME_CC) . || true
+atomicity.cc: ${atomicity_file}
+	$(LN_S) ${atomicity_file} ./atomicity.cc || true
 
 c++locale.cc: ${glibcxx_srcdir}/$(CLOCALE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CLOCALE_CC) ./$@ || true
@@ -671,13 +680,6 @@ concept-inst.lo: concept-inst.cc
 	$(LTCXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 concept-inst.o: concept-inst.cc
 	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
-
-# Use special rules for the demangler, so that an additional implicit
-# instantiation file is not necessary.
-demangle.lo: demangle.cc
-	$(LTCXXCOMPILE) -fimplicit-templates -c $<
-demangle.o: demangle.cc
-	$(CXXCOMPILE) -fimplicit-templates -c $<
 
 # Added bits to build debug library.
 @GLIBCXX_BUILD_DEBUG_TRUE@all-local: build_debug

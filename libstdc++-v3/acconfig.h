@@ -10,9 +10,6 @@
 #undef HAVE_GETTEXT
 #undef HAVE_STPCPY
 
-// Define if GCC supports weak symbols.
-#undef _GLIBCXX_SUPPORTS_WEAK
-
 // Include I/O support for 'long long' and 'unsigned long long'.
 #undef _GLIBCXX_USE_LONG_LONG
 

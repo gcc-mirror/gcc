@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,6 @@
 #pragma GCC system_header
 
 #include <cstring>              // get std::strlen
-#include <cstdlib>              // get std::malloc
 #include <cstdio>               // get std::snprintf or std::sprintf
 #include <clocale>
 #include <langinfo.h>		// For codecvt
@@ -76,9 +75,8 @@ namespace std
 		     _Tv __v, const __c_locale&, int __prec = -1)
     {
       char* __old = std::setlocale(LC_ALL, NULL);
-      char* __sav = static_cast<char*>(std::malloc(std::strlen(__old) + 1));
-      if (__sav)
-        std::strcpy(__sav, __old);
+      char* __sav = new char[std::strlen(__old) + 1];
+      std::strcpy(__sav, __old);
       std::setlocale(LC_ALL, "C");
 #endif
 
@@ -99,7 +97,7 @@ namespace std
       __gnu_cxx::__uselocale(__old);
 #else
       std::setlocale(LC_ALL, __sav);
-      std::free(__sav);
+      delete [] __sav;
 #endif
       return __ret;
     }

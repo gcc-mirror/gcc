@@ -1,6 +1,6 @@
 // Hashtable implementation used by containers -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -91,8 +91,8 @@ struct _Hashtable_node
   _Val _M_val;
 };
 
-template <class _Val, class _Key, class _HashFcn,
-          class _ExtractKey, class _EqualKey, class _Alloc = std::__alloc>
+template <class _Val, class _Key, class _HashFcn, class _ExtractKey, 
+	  class _EqualKey, class _Alloc = std::allocator<_Val> >
 class hashtable;
 
 template <class _Val, class _Key, class _HashFcn,

@@ -37,13 +37,6 @@ void test04()
   locale loc_hk = __gnu_test::try_named_locale("en_HK");
   VERIFY( loc_c != loc_hk );
 
-  // cache the moneypunct facets
-  typedef moneypunct<wchar_t, true> __money_true;
-  typedef moneypunct<wchar_t, false> __money_false;
-
-  // sanity check the data is correct.
-  const wstring empty;
-
   // input less than frac_digits
   const long double digits4 = -1.0;
   

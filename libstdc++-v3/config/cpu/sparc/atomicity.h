@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: Sparc version  -*- C++ -*-
 
-// Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,105 +27,99 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _GLIBCXX_ATOMICITY_H
-#define _GLIBCXX_ATOMICITY_H	1
+#include <bits/atomicity.h>
 
+namespace __gnu_cxx
+{
 #ifdef __arch64__
+  _Atomic_word
+  __attribute__ ((__unused__))
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
+  {
+    _Atomic_word __tmp1, __tmp2;
+    _Atomic_word __val_extended = __val;
 
-typedef long _Atomic_word;
-
-static inline _Atomic_word
-__attribute__ ((__unused__))
-__exchange_and_add(volatile _Atomic_word* __mem, int __val)
-{
-  _Atomic_word __tmp1, __tmp2;
-  _Atomic_word __val_extended = __val;
-
-  __asm__ __volatile__("1:	ldx	[%3], %0\n\t"
-		       "	add	%0, %4, %1\n\t"
-		       "	casx	[%3], %0, %1\n\t"
-		       "	sub	%0, %1, %0\n\t"
-		       "	brnz,pn	%0, 1b\n\t"
-		       "	 nop"
-		       : "=&r" (__tmp1), "=&r" (__tmp2), "=m" (*__mem)
-		       : "r" (__mem), "r" (__val_extended), "m" (*__mem));
-  return __tmp2;
-}
-
-static inline void
-__attribute__ ((__unused__))
-__atomic_add(volatile _Atomic_word* __mem, int __val)
-{
-  _Atomic_word __tmp1, __tmp2;
-  _Atomic_word __val_extended = __val;
-
-  __asm__ __volatile__("1:	ldx	[%3], %0\n\t"
-		       "	add	%0, %4, %1\n\t"
-		       "	casx	[%3], %0, %1\n\t"
-		       "	sub	%0, %1, %0\n\t"
-		       "	brnz,pn	%0, 1b\n\t"
-		       "	 nop"
-		       : "=&r" (__tmp1), "=&r" (__tmp2), "=m" (*__mem)
-		       : "r" (__mem), "r" (__val_extended), "m" (*__mem));
-}
-
+    __asm__ __volatile__("1:	ldx	[%3], %0\n\t"
+			 "	add	%0, %4, %1\n\t"
+			 "	casx	[%3], %0, %1\n\t"
+			 "	sub	%0, %1, %0\n\t"
+			 "	brnz,pn	%0, 1b\n\t"
+			 "	 nop"
+			 : "=&r" (__tmp1), "=&r" (__tmp2), "=m" (*__mem)
+			 : "r" (__mem), "r" (__val_extended), "m" (*__mem));
+    return __tmp2;
+  }
+  
+  void
+  __attribute__ ((__unused__))
+  __atomic_add(volatile _Atomic_word* __mem, int __val)
+  {
+    _Atomic_word __tmp1, __tmp2;
+    _Atomic_word __val_extended = __val;
+    
+    __asm__ __volatile__("1:	ldx	[%3], %0\n\t"
+			 "	add	%0, %4, %1\n\t"
+			 "	casx	[%3], %0, %1\n\t"
+			 "	sub	%0, %1, %0\n\t"
+			 "	brnz,pn	%0, 1b\n\t"
+			 "	 nop"
+			 : "=&r" (__tmp1), "=&r" (__tmp2), "=m" (*__mem)
+			 : "r" (__mem), "r" (__val_extended), "m" (*__mem));
+  }
+  
 #else /* __arch32__ */
 
-typedef int _Atomic_word;
+  template<int __inst>
+    struct _Atomicity_lock
+    {
+      static unsigned char _S_atomicity_lock;
+    };
 
-template<int __inst>
-  struct __Atomicity_lock
+  template<int __inst>
+  unsigned char _Atomicity_lock<__inst>::_S_atomicity_lock = 0;
+  
+  template unsigned char _Atomicity_lock<0>::_S_atomicity_lock;
+  
+  _Atomic_word
+  __attribute__ ((__unused__))
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
   {
-    static unsigned char _S_atomicity_lock;
-  };
-
-template<int __inst>
-unsigned char __Atomicity_lock<__inst>::_S_atomicity_lock = 0;
-
-template unsigned char __Atomicity_lock<0>::_S_atomicity_lock;
-
-static int
-__attribute__ ((__unused__))
-__exchange_and_add(volatile _Atomic_word* __mem, int __val)
-{
-  _Atomic_word __result, __tmp;
-
-  __asm__ __volatile__("1:	ldstub	[%1], %0\n\t"
-		       "	cmp	%0, 0\n\t"
-		       "	bne	1b\n\t"
-		       "	 nop"
-		       : "=&r" (__tmp)
-		       : "r" (&__Atomicity_lock<0>::_S_atomicity_lock)
-		       : "memory");
-  __result = *__mem;
-  *__mem += __val;
-  __asm__ __volatile__("stb	%%g0, [%0]"
-		       : /* no outputs */
-		       : "r" (&__Atomicity_lock<0>::_S_atomicity_lock)
-		       : "memory");
-  return __result;
-}
-
-static void
-__attribute__ ((__unused__))
-__atomic_add(volatile _Atomic_word* __mem, int __val)
-{
-  _Atomic_word __tmp;
-
-  __asm__ __volatile__("1:	ldstub	[%1], %0\n\t"
-		       "	cmp	%0, 0\n\t"
-		       "	bne	1b\n\t"
-		       "	 nop"
-		       : "=&r" (__tmp)
-		       : "r" (&__Atomicity_lock<0>::_S_atomicity_lock)
-		       : "memory");
-  *__mem += __val;
-  __asm__ __volatile__("stb	%%g0, [%0]"
-		       : /* no outputs */
-		       : "r" (&__Atomicity_lock<0>::_S_atomicity_lock)
-		       : "memory");
-}
-
+    _Atomic_word __result, __tmp;
+    
+    __asm__ __volatile__("1:	ldstub	[%1], %0\n\t"
+			 "	cmp	%0, 0\n\t"
+			 "	bne	1b\n\t"
+			 "	 nop"
+			 : "=&r" (__tmp)
+			 : "r" (&_Atomicity_lock<0>::_S_atomicity_lock)
+			 : "memory");
+    __result = *__mem;
+    *__mem += __val;
+    __asm__ __volatile__("stb	%%g0, [%0]"
+			 : /* no outputs */
+			 : "r" (&_Atomicity_lock<0>::_S_atomicity_lock)
+			 : "memory");
+    return __result;
+  }
+  
+  void
+  __attribute__ ((__unused__))
+  __atomic_add(volatile _Atomic_word* __mem, int __val)
+  {
+    _Atomic_word __tmp;
+    
+    __asm__ __volatile__("1:	ldstub	[%1], %0\n\t"
+			 "	cmp	%0, 0\n\t"
+			 "	bne	1b\n\t"
+			 "	 nop"
+			 : "=&r" (__tmp)
+			 : "r" (&_Atomicity_lock<0>::_S_atomicity_lock)
+			 : "memory");
+    *__mem += __val;
+    __asm__ __volatile__("stb	%%g0, [%0]"
+			 : /* no outputs */
+			 : "r" (&_Atomicity_lock<0>::_S_atomicity_lock)
+			 : "memory");
+  }  
 #endif /* __arch32__ */
-
-#endif /* atomicity.h */
+} // namespace __gnu_cxx

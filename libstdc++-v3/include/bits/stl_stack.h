@@ -1,6 +1,6 @@
 // Stack implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -70,16 +70,15 @@ namespace std
   // declaration.
   template<typename _Tp, typename _Sequence = deque<_Tp> >
     class stack;
-  
+
   template<typename _Tp, typename _Seq>
-    inline bool 
+    inline bool
     operator==(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y);
-  
+
   template<typename _Tp, typename _Seq>
-    inline bool 
+    inline bool
     operator<(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y);
-  
-  
+
   /**
    *  @brief  A standard container giving FILO behavior.
    *
@@ -115,66 +114,69 @@ namespace std
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
       __glibcxx_class_requires(_Sequence, _BackInsertionSequenceConcept)
       __glibcxx_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
-  
-	template<typename _Tp1, typename _Seq1>
-          friend bool 
-          operator==(const stack<_Tp1, _Seq1>&, const stack<_Tp1, _Seq1>&);
 
       template<typename _Tp1, typename _Seq1>
-        friend bool 
+        friend bool
+        operator==(const stack<_Tp1, _Seq1>&, const stack<_Tp1, _Seq1>&);
+
+      template<typename _Tp1, typename _Seq1>
+        friend bool
         operator<(const stack<_Tp1, _Seq1>&, const stack<_Tp1, _Seq1>&);
-  
+
     public:
       typedef typename _Sequence::value_type                value_type;
       typedef typename _Sequence::reference                 reference;
       typedef typename _Sequence::const_reference           const_reference;
       typedef typename _Sequence::size_type                 size_type;
       typedef          _Sequence                            container_type;
-      
+
     protected:
       //  See queue::c for notes on this name.
       _Sequence c;
-      
+
     public:
       // XXX removed old def ctor, added def arg to this one to match 14882
       /**
        *  @brief  Default constructor creates no elements.
        */
       explicit
-      stack(const _Sequence& __c = _Sequence()) : c(__c) {}
-      
+      stack(const _Sequence& __c = _Sequence())
+      : c(__c) {}
+
       /**
        *  Returns true if the %stack is empty.
        */
       bool
-      empty() const { return c.empty(); }
-      
+      empty() const
+      { return c.empty(); }
+
       /**  Returns the number of elements in the %stack.  */
       size_type
-      size() const { return c.size(); }
-      
+      size() const
+      { return c.size(); }
+
       /**
        *  Returns a read/write reference to the data at the first
        *  element of the %stack.
        */
       reference
-      top() 
-      { 
+      top()
+      {
 	__glibcxx_requires_nonempty();
-	return c.back(); 
+	return c.back();
       }
-      
+
       /**
        *  Returns a read-only (constant) reference to the data at the first
        *  element of the %stack.
        */
       const_reference
-      top() const 
+      top() const
       {
 	__glibcxx_requires_nonempty();
-	return c.back(); 
+	return c.back();
       }
-      
+
       /**
        *  @brief  Add data to the top of the %stack.
        *  @param  x  Data to be added.
@@ -185,8 +187,9 @@ namespace std
        *  underlying sequence.
        */
       void
-      push(const value_type& __x) { c.push_back(__x); }
-  
+      push(const value_type& __x)
+      { c.push_back(__x); }
+
       /**
        *  @brief  Removes first element.
        *
@@ -199,14 +202,13 @@ namespace std
        *  called.
        */
       void
-      pop() 
+      pop()
       {
 	__glibcxx_requires_nonempty();
-	c.pop_back(); 
+	c.pop_back();
       }
     };
-  
-  
+
   /**
    *  @brief  Stack equality comparison.
    *  @param  x  A %stack.
@@ -221,9 +223,9 @@ namespace std
   */
   template<typename _Tp, typename _Seq>
     inline bool
-    operator==(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
+    operator==(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return __x.c == __y.c; }
-  
+
   /**
    *  @brief  Stack ordering relation.
    *  @param  x  A %stack.
@@ -239,31 +241,31 @@ namespace std
   */
   template<typename _Tp, typename _Seq>
     inline bool
-    operator<(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
+    operator<(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return __x.c < __y.c; }
-  
+
   /// Based on operator==
   template<typename _Tp, typename _Seq>
     inline bool
-    operator!=(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
+    operator!=(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return !(__x == __y); }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Seq>
     inline bool
-    operator>(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
+    operator>(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return __y < __x; }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Seq>
     inline bool
-    operator<=(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
+    operator<=(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return !(__y < __x); }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Seq>
     inline bool
-    operator>=(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
+    operator>=(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return !(__x < __y); }
 } // namespace std
 

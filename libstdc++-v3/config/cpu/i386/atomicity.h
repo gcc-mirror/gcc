@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: x86, x >= 3 version  -*- C++ -*-
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,50 +27,48 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _GLIBCXX_ATOMICITY_H
-#define _GLIBCXX_ATOMICITY_H	1
+#include <bits/atomicity.h>
 
-typedef int _Atomic_word;
+namespace __gnu_cxx
+{
+  template<int __inst>
+    struct _Atomicity_lock
+    {
+      static volatile _Atomic_word _S_atomicity_lock;
+    };
 
-template<int __inst>
-  struct __Atomicity_lock
+  template<int __inst>
+  volatile _Atomic_word _Atomicity_lock<__inst>::_S_atomicity_lock = 0;
+
+  template volatile _Atomic_word _Atomicity_lock<0>::_S_atomicity_lock;
+  
+  _Atomic_word 
+  __attribute__ ((__unused__))
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
   {
-    static volatile _Atomic_word _S_atomicity_lock;
-  };
-
-template<int __inst>
-volatile _Atomic_word __Atomicity_lock<__inst>::_S_atomicity_lock = 0;
-
-template volatile _Atomic_word __Atomicity_lock<0>::_S_atomicity_lock;
-
-static inline _Atomic_word 
-__attribute__ ((__unused__))
-__exchange_and_add(volatile _Atomic_word* __mem, int __val)
-{
-  register _Atomic_word __result, __tmp = 1;
-
-  /* obtain the atomic exchange/add spin lock */
-  do {
-    __asm__ __volatile__ ("xchg{l} {%0,%1|%1,%0}"
-			  : "=m" (__Atomicity_lock<0>::_S_atomicity_lock),
-			    "+r" (__tmp)
-                          : "m" (__Atomicity_lock<0>::_S_atomicity_lock));
-  } while (__tmp);
-
-  __result = *__mem;
-  *__mem += __val;
-
-  /* release spin lock */
-  __Atomicity_lock<0>::_S_atomicity_lock = 0;
-
-  return __result;
-}
-
-static inline void
-__attribute__ ((__unused__))
-__atomic_add(volatile _Atomic_word* __mem, int __val)
-{
-  __exchange_and_add(__mem, __val);
-}
-
-#endif /* atomicity.h */
+    register _Atomic_word __result, __tmp = 1;
+    
+    // Obtain the atomic exchange/add spin lock.
+    do 
+      {
+	__asm__ __volatile__ ("xchg{l} {%0,%1|%1,%0}"
+			      : "=m" (_Atomicity_lock<0>::_S_atomicity_lock),
+			      "+r" (__tmp)
+			      : "m" (_Atomicity_lock<0>::_S_atomicity_lock));
+      } 
+    while (__tmp);
+    
+    __result = *__mem;
+    *__mem += __val;
+    
+    // Release spin lock.
+    _Atomicity_lock<0>::_S_atomicity_lock = 0;
+    
+    return __result;
+  }
+  
+  void
+  __attribute__ ((__unused__))
+  __atomic_add(volatile _Atomic_word* __mem, int __val)
+  { __exchange_and_add(__mem, __val); }
+} // namespace __gnu_cxx

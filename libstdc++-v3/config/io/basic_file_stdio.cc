@@ -267,7 +267,7 @@ namespace std
     while (__ret == -1L && errno == EINTR);
     return __ret;
   }
-    
+
   streamsize 
   __basic_file<char>::xsputn(const char* __s, streamsize __n)
   { return __gnu_internal::xwrite(this->fd(), __s, __n); }

@@ -1,6 +1,6 @@
 // Queue implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -69,15 +69,15 @@ namespace std
   // Forward declarations of operators < and ==, needed for friend declaration.
   template<typename _Tp, typename _Sequence = deque<_Tp> >
     class queue;
-  
+
   template<typename _Tp, typename _Seq>
-    inline bool 
+    inline bool
     operator==(const queue<_Tp,_Seq>&, const queue<_Tp,_Seq>&);
-  
+
   template<typename _Tp, typename _Seq>
-    inline bool 
+    inline bool
     operator<(const queue<_Tp,_Seq>&, const queue<_Tp,_Seq>&);
-  
+
   /**
    *  @brief  A standard container giving FIFO behavior.
    *
@@ -111,22 +111,22 @@ namespace std
       __glibcxx_class_requires(_Sequence, _FrontInsertionSequenceConcept)
       __glibcxx_class_requires(_Sequence, _BackInsertionSequenceConcept)
       __glibcxx_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
-  
-	template<typename _Tp1, typename _Seq1>
-          friend bool 
-          operator==(const queue<_Tp1, _Seq1>&, const queue<_Tp1, _Seq1>&);
 
       template<typename _Tp1, typename _Seq1>
-        friend bool 
+        friend bool
+        operator==(const queue<_Tp1, _Seq1>&, const queue<_Tp1, _Seq1>&);
+
+      template<typename _Tp1, typename _Seq1>
+        friend bool
         operator<(const queue<_Tp1, _Seq1>&, const queue<_Tp1, _Seq1>&);
-  
+
     public:
       typedef typename _Sequence::value_type                value_type;
       typedef typename _Sequence::reference                 reference;
       typedef typename _Sequence::const_reference           const_reference;
       typedef typename _Sequence::size_type                 size_type;
       typedef          _Sequence                            container_type;
-      
+
     protected:
       /**
        *  'c' is the underlying container.  Maintainers wondering why
@@ -137,68 +137,70 @@ namespace std
        *  containers allow for derivation.  Odd.)
        */
       _Sequence c;
-      
+
     public:
       /**
        *  @brief  Default constructor creates no elements.
        */
       explicit
       queue(const _Sequence& __c = _Sequence()) : c(__c) {}
-      
+
       /**
        *  Returns true if the %queue is empty.
        */
       bool
-      empty() const { return c.empty(); }
-      
+      empty() const
+      { return c.empty(); }
+
       /**  Returns the number of elements in the %queue.  */
       size_type
-      size() const { return c.size(); }
-      
+      size() const
+      { return c.size(); }
+
       /**
        *  Returns a read/write reference to the data at the first
        *  element of the %queue.
        */
       reference
-      front() 
-      { 
+      front()
+      {
 	__glibcxx_requires_nonempty();
-	return c.front(); 
+	return c.front();
       }
-      
+
       /**
        *  Returns a read-only (constant) reference to the data at the first
        *  element of the %queue.
        */
       const_reference
-      front() const 
-      { 
+      front() const
+      {
 	__glibcxx_requires_nonempty();
-	return c.front(); 
+	return c.front();
       }
-      
+
       /**
        *  Returns a read/write reference to the data at the last
        *  element of the %queue.
        */
       reference
-      back() 
+      back()
       {
 	__glibcxx_requires_nonempty();
-	return c.back(); 
+	return c.back();
       }
-      
+
       /**
        *  Returns a read-only (constant) reference to the data at the last
        *  element of the %queue.
        */
       const_reference
-      back() const 
+      back() const
       {
 	__glibcxx_requires_nonempty();
-	return c.back(); 
+	return c.back();
       }
-      
+
       /**
        *  @brief  Add data to the end of the %queue.
        *  @param  x  Data to be added.
@@ -209,8 +211,9 @@ namespace std
        *  underlying sequence.
        */
       void
-      push(const value_type& __x) { c.push_back(__x); }
-      
+      push(const value_type& __x)
+      { c.push_back(__x); }
+
       /**
        *  @brief  Removes first element.
        *
@@ -223,14 +226,14 @@ namespace std
        *  called.
        */
       void
-      pop() 
-      { 
+      pop()
+      {
 	__glibcxx_requires_nonempty();
-	c.pop_front(); 
+	c.pop_front();
       }
     };
-  
-  
+
+
   /**
    *  @brief  Queue equality comparison.
    *  @param  x  A %queue.
@@ -243,11 +246,11 @@ namespace std
    *  if their sequences compare equal.
   */
   template<typename _Tp, typename _Sequence>
-    inline bool 
-    operator==(const queue<_Tp,_Sequence>& __x, 
+    inline bool
+    operator==(const queue<_Tp,_Sequence>& __x,
 	       const queue<_Tp,_Sequence>& __y)
     { return __x.c == __y.c; }
-  
+
   /**
    *  @brief  Queue ordering relation.
    *  @param  x  A %queue.
@@ -265,35 +268,34 @@ namespace std
     inline bool
     operator<(const queue<_Tp,_Sequence>& __x, const queue<_Tp,_Sequence>& __y)
     { return __x.c < __y.c; }
-  
+
   /// Based on operator==
   template<typename _Tp, typename _Sequence>
     inline bool
-    operator!=(const queue<_Tp,_Sequence>& __x, 
+    operator!=(const queue<_Tp,_Sequence>& __x,
 	       const queue<_Tp,_Sequence>& __y)
     { return !(__x == __y); }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Sequence>
-    inline bool 
+    inline bool
     operator>(const queue<_Tp,_Sequence>& __x, const queue<_Tp,_Sequence>& __y)
     { return __y < __x; }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Sequence>
-    inline bool 
-    operator<=(const queue<_Tp,_Sequence>& __x, 
+    inline bool
+    operator<=(const queue<_Tp,_Sequence>& __x,
 	       const queue<_Tp,_Sequence>& __y)
     { return !(__y < __x); }
-  
+
   /// Based on operator<
   template<typename _Tp, typename _Sequence>
-    inline bool 
-    operator>=(const queue<_Tp,_Sequence>& __x, 
+    inline bool
+    operator>=(const queue<_Tp,_Sequence>& __x,
 	       const queue<_Tp,_Sequence>& __y)
     { return !(__x < __y); }
-  
-  
+
   /**
    *  @brief  A standard container automatically sorting its contents.
    *
@@ -333,7 +335,7 @@ namespace std
    *  the elements for you.  (How could it know to do so?)
   */
   template<typename _Tp, typename _Sequence = vector<_Tp>,
-            typename _Compare  = less<typename _Sequence::value_type> >
+	   typename _Compare  = less<typename _Sequence::value_type> >
     class priority_queue
     {
       // concept requirements
@@ -343,36 +345,36 @@ namespace std
       __glibcxx_class_requires(_Sequence, _RandomAccessContainerConcept)
       __glibcxx_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
       __glibcxx_class_requires4(_Compare, bool, _Tp,_Tp,_BinaryFunctionConcept)
-  
-	public:
+
+    public:
       typedef typename _Sequence::value_type                value_type;
       typedef typename _Sequence::reference                 reference;
       typedef typename _Sequence::const_reference           const_reference;
       typedef typename _Sequence::size_type                 size_type;
       typedef          _Sequence                            container_type;
-      
+
     protected:
       //  See queue::c for notes on these names.
       _Sequence  c;
       _Compare   comp;
-      
+
     public:
       /**
        *  @brief  Default constructor creates no elements.
        */
       explicit
-      priority_queue(const _Compare& __x = _Compare(), 
-		     const _Sequence& __s = _Sequence()) 
-      : c(__s), comp(__x) 
+      priority_queue(const _Compare& __x = _Compare(),
+		     const _Sequence& __s = _Sequence())
+      : c(__s), comp(__x)
       { std::make_heap(c.begin(), c.end(), comp); }
-  
+
       /**
        *  @brief  Builds a %queue from a range.
        *  @param  first  An input iterator.
        *  @param  last  An input iterator.
        *  @param  x  A comparison functor describing a strict weak ordering.
        *  @param  s  An initial sequence with which to start.
-       * 
+       *
        *  Begins by copying @a s, inserting a copy of the elements
        *  from @a [first,last) into the copy of @a s, then ordering
        *  the copy according to @a x.
@@ -386,33 +388,33 @@ namespace std
 		       const _Compare& __x = _Compare(),
 		       const _Sequence& __s = _Sequence())
 	: c(__s), comp(__x)
-        { 
+        {
 	  __glibcxx_requires_valid_range(__first, __last);
 	  c.insert(c.end(), __first, __last);
 	  std::make_heap(c.begin(), c.end(), comp);
 	}
-      
+
       /**
        *  Returns true if the %queue is empty.
        */
       bool
       empty() const { return c.empty(); }
-      
+
       /**  Returns the number of elements in the %queue.  */
       size_type
       size() const { return c.size(); }
-      
+
       /**
        *  Returns a read-only (constant) reference to the data at the first
        *  element of the %queue.
        */
       const_reference
-      top() const 
+      top() const
       {
 	__glibcxx_requires_nonempty();
-	return c.front(); 
+	return c.front();
       }
-      
+
       /**
        *  @brief  Add data to the %queue.
        *  @param  x  Data to be added.
@@ -421,21 +423,21 @@ namespace std
        *  The time complexity of the operation depends on the underlying
        *  sequence.
        */
-      void 
-      push(const value_type& __x) 
+      void
+      push(const value_type& __x)
       {
-	try 
+	try
         {
-          c.push_back(__x); 
+          c.push_back(__x);
           std::push_heap(c.begin(), c.end(), comp);
         }
 	catch(...)
         {
           c.clear();
-          __throw_exception_again; 
+          __throw_exception_again;
         }
       }
-      
+
       /**
        *  @brief  Removes first element.
        *
@@ -447,11 +449,11 @@ namespace std
        *  data is needed, it should be retrieved before pop() is
        *  called.
        */
-      void 
-      pop() 
+      void
+      pop()
       {
 	__glibcxx_requires_nonempty();
-	try 
+	try
         {
           std::pop_heap(c.begin(), c.end(), comp);
           c.pop_back();
@@ -459,11 +461,11 @@ namespace std
 	catch(...)
         {
           c.clear();
-          __throw_exception_again; 
+          __throw_exception_again;
         }
       }
     };
-  
+
   // No equality/comparison operators are provided for priority_queue.
 } // namespace std
 

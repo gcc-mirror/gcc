@@ -1,5 +1,7 @@
-# Copyright (C) 2001 Free Software Foundation, Inc.
+# libstdc++ "tool-and-target file" for DejaGNU
 
+# Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -14,8 +16,18 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
-# Please email any bugs, comments, and/or additions to this file to:
-# libstdc++@gcc.gnu.org
 
+# This file is loaded only if a target-specific file or OS-specific file
+# is not found first.  It should provide libstdc++_load, which runs a
+# program.  (The default calls the standard remote_load.)  It may also
+# provide libstdc++_compile, but this is not presently used.  It must
+# provide libstdc++_target_compile, which does the same thing and is used.
+
+# Here are the default definitions:
 load_lib "standard.exp"
+
+# target-supports.exp uses this
+proc ${tool}_target_compile { srcfile destfile compile_type options } {
+    target_compile $srcfile $destfile $compile_type $options
+}
 

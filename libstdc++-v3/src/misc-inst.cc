@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -42,10 +42,6 @@
 
 namespace std
 {
-#ifdef _GLIBCXX_INST_ATOMICITY_LOCK
-  template volatile int __Atomicity_lock<0>::_S_atomicity_lock;
-#endif
-
   // string related to iostreams
   template 
     basic_istream<char>& 
@@ -77,20 +73,6 @@ namespace std
 
 namespace __gnu_cxx
 {
-#ifdef _GLIBCXX_NEED_GENERIC_MUTEX
-#ifdef __GTHREAD_MUTEX_INIT
-  __gthread_mutex_t _Atomic_add_mutex = __GTHREAD_MUTEX_INIT;
-#else
-  // generic atomicity.h without static initialization
-  __gthread_mutex_t _Atomic_add_mutex;
-  __gthread_once_t _Atomic_add_mutex_once = __GTHREAD_ONCE_INIT;
-  void __gthread_atomic_add_mutex_once()
-  {
-    __GTHREAD_MUTEX_INIT_FUNCTION (&_Atomic_add_mutex);
-  }
-#endif
-#endif // _GLIBCXX_NEED_GLOBAL_MUTEX
-
   template class stdio_sync_filebuf<char>;
 #ifdef _GLIBCXX_USE_WCHAR_T
   template class stdio_sync_filebuf<wchar_t>;

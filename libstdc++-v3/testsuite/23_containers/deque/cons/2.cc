@@ -1,6 +1,6 @@
 // 2001-12-27 pme
 //
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -499,6 +499,13 @@ test_copy_ctor_exception_safety()
   // teardown
 }
 
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template class __gnu_cxx::__mt_alloc<int>;
+template class __gnu_cxx::__mt_alloc<int*>;
+template class __gnu_cxx::__mt_alloc<__gnu_test::copy_tracker>;
+template class __gnu_cxx::__mt_alloc<__gnu_test::copy_tracker*>;
+#endif
 
 int main()
 {

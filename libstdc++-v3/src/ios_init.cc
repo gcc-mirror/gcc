@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -40,8 +40,10 @@
 #include <ext/stdio_filebuf.h>
 #include <ext/stdio_sync_filebuf.h>
 
-namespace __gnu_cxx
+namespace __gnu_internal
 {
+  using namespace __gnu_cxx;
+
   // Extern declarations for global objects in src/globals.cc.
   extern stdio_sync_filebuf<char> buf_cout_sync;
   extern stdio_sync_filebuf<char> buf_cin_sync;
@@ -60,11 +62,11 @@ namespace __gnu_cxx
   extern stdio_filebuf<wchar_t> buf_wcin;
   extern stdio_filebuf<wchar_t> buf_wcerr;
 #endif
-} // namespace __gnu_cxx
+} // namespace __gnu_internal
 
 namespace std 
 {
-  using namespace __gnu_cxx;
+  using namespace __gnu_internal;
   
   extern istream cin;
   extern ostream cout;
@@ -80,7 +82,7 @@ namespace std
 
   ios_base::Init::Init()
   {
-    if (__exchange_and_add(&_S_refcount, 1) == 0)
+    if (__gnu_cxx::__exchange_and_add(&_S_refcount, 1) == 0)
       {
 	// Standard streams default to synced with "C" operations.
 	_S_synced_with_stdio = true;
@@ -115,13 +117,13 @@ namespace std
 	// streams are not re-initialized with uses of ios_base::Init
 	// besides <iostream> static object, ie just using <ios> with
 	// ios_base::Init objects.
-	__atomic_add(&_S_refcount, 1);
+	__gnu_cxx::__atomic_add(&_S_refcount, 1);
       }
   }
 
   ios_base::Init::~Init()
   {
-    if (__exchange_and_add(&_S_refcount, -1) == 2)
+    if (__gnu_cxx::__exchange_and_add(&_S_refcount, -1) == 2)
       {
 	// Catch any exceptions thrown by basic_ostream::flush()
 	try

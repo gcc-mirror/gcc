@@ -2,7 +2,7 @@
 // 24.3.1 Iterator traits
 // (basic_string and vector implementations)
 //
-// Copyright (C) 1999, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2003, 2004 Free Software Foundation, Inc.
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or 
@@ -587,6 +587,12 @@ test6642()
 
    return it - cit;
 }
+
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template class __gnu_cxx::__mt_alloc<int>;
+template class __gnu_cxx::__mt_alloc<std::string>;
+#endif
 
 int
 main()

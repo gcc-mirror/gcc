@@ -1,5 +1,5 @@
 // { dg-do run { xfail *-*-![linux]* } }
-// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +38,7 @@ typedef char char_type;
 void test02()
 {
   using namespace std;
-  typedef ctype_base::mask 	mask;
+  typedef ctype_base::mask	mask;
   typedef vector<mask> 		vector_type;
 
   bool test __attribute__((unused)) = true;
@@ -97,6 +97,10 @@ void test02()
   VERIFY( v_c != v_de );
 }
 
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template class __gnu_cxx::__mt_alloc<std::ctype_base::mask>;
+#endif
 int main() 
 {
   test02();

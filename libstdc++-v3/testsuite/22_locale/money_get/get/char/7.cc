@@ -1,6 +1,6 @@
 // 2001-09-12 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,22 +44,25 @@ void test07()
 
   ios_base::iostate err;
 
-  const money_get<char,InIt>& mg = use_facet<money_get<char, InIt> >(loc_c);
+  const money_get<char, InIt>& mg = use_facet<money_get<char, InIt> >(loc_c);
 
   istringstream fmt1(buffer1);
+  fmt1.imbue(loc_c);
   InIt ibeg1(fmt1);
-  mg.get(ibeg1,iend1,false,fmt1,err,val);
+  mg.get(ibeg1, iend1, false, fmt1, err, val);
   VERIFY( val == buffer1 );
 
   istringstream fmt2(buffer2);
+  fmt2.imbue(loc_c);
   InIt ibeg2(fmt2);
-  mg.get(ibeg2,iend2,false,fmt2,err,val);
+  mg.get(ibeg2, iend2, false, fmt2, err, val);
   VERIFY( val == buffer2 );
 
   val = buffer3;
   istringstream fmt3(buffer3);
+  fmt3.imbue(loc_c);
   InIt ibeg3(fmt3);
-  mg.get(ibeg3,iend3,false,fmt3,err,val);
+  mg.get(ibeg3, iend3, false, fmt3, err, val);
   VERIFY( val == buffer3 );
 }
 

@@ -49,6 +49,7 @@ namespace std
 	{
 	  // "C" locale
 	  _M_data->_M_grouping = "";
+	  _M_data->_M_grouping_size = 0;
 	  _M_data->_M_use_grouping = false;
 
 	  _M_data->_M_decimal_point = '.';
@@ -71,8 +72,8 @@ namespace std
 	    _M_data->_M_grouping = "";
 	  else
 	    _M_data->_M_grouping = __nl_langinfo_l(GROUPING, __cloc);
+	  _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
 	}
-      _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
 
       // NB: There is no way to extact this info from posix locales.
       // _M_truename = __nl_langinfo_l(YESSTR, __cloc);
@@ -99,6 +100,7 @@ namespace std
 	{
 	  // "C" locale
 	  _M_data->_M_grouping = "";
+	  _M_data->_M_grouping_size = 0;
 	  _M_data->_M_use_grouping = false;
 
 	  _M_data->_M_decimal_point = L'.';
@@ -138,8 +140,8 @@ namespace std
 	    _M_data->_M_grouping = "";
 	  else
 	    _M_data->_M_grouping = __nl_langinfo_l(GROUPING, __cloc);
+	  _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
 	}
-      _M_data->_M_grouping_size = strlen(_M_data->_M_grouping);
 
       // NB: There is no way to extact this info from posix locales.
       // _M_truename = __nl_langinfo_l(YESSTR, __cloc);

@@ -42,10 +42,10 @@
 namespace std
 {
   /// Provides input iterator semantics for streams.
-  template<typename _Tp, typename _CharT = char, 
-           typename _Traits = char_traits<_CharT>, typename _Dist = ptrdiff_t> 
-    class istream_iterator 
-      : public iterator<input_iterator_tag, _Tp, _Dist, const _Tp*, const _Tp&>
+  template<typename _Tp, typename _CharT = char,
+           typename _Traits = char_traits<_CharT>, typename _Dist = ptrdiff_t>
+    class istream_iterator
+    : public iterator<input_iterator_tag, _Tp, _Dist, const _Tp*, const _Tp&>
     {
     public:
       typedef _CharT                         char_type;
@@ -53,25 +53,28 @@ namespace std
       typedef basic_istream<_CharT, _Traits> istream_type;
 
     private:
-      istream_type* 	_M_stream;
-      _Tp 		_M_value;
-      bool 		_M_ok;
+      istream_type*	_M_stream;
+      _Tp		_M_value;
+      bool		_M_ok;
 
     public:
       ///  Construct end of input stream iterator.
-      istream_iterator() : _M_stream(0), _M_ok(false) {}
+      istream_iterator()
+      : _M_stream(0), _M_ok(false) {}
 
       ///  Construct start of input stream iterator.
-      istream_iterator(istream_type& __s) : _M_stream(&__s) { _M_read(); }
+      istream_iterator(istream_type& __s)
+      : _M_stream(&__s)
+      { _M_read(); }
 
-      istream_iterator(const istream_iterator& __obj) 
-      : _M_stream(__obj._M_stream), _M_value(__obj._M_value), 
-        _M_ok(__obj._M_ok) 
+      istream_iterator(const istream_iterator& __obj)
+      : _M_stream(__obj._M_stream), _M_value(__obj._M_value),
+        _M_ok(__obj._M_ok)
       { }
 
       const _Tp&
-      operator*() const 
-      { 
+      operator*() const
+      {
 	__glibcxx_requires_cond(_M_ok,
 				_M_message(__gnu_debug::__msg_deref_istream)
 				._M_iterator(*this));
@@ -81,58 +84,57 @@ namespace std
       const _Tp*
       operator->() const { return &(operator*()); }
 
-      istream_iterator& 
-      operator++() 
-      { 
-	__glibcxx_requires_cond(_M_ok,
-				_M_message(__gnu_debug::__msg_inc_istream)
-				._M_iterator(*this));
-	_M_read(); 
-	return *this; 
-      }
-
-      istream_iterator 
-      operator++(int)  
+      istream_iterator&
+      operator++()
       {
 	__glibcxx_requires_cond(_M_ok,
 				_M_message(__gnu_debug::__msg_inc_istream)
-				._M_iterator(*this)); 
+				._M_iterator(*this));
+	_M_read();
+	return *this;
+      }
+
+      istream_iterator
+      operator++(int)
+      {
+	__glibcxx_requires_cond(_M_ok,
+				_M_message(__gnu_debug::__msg_inc_istream)
+				._M_iterator(*this));
 	istream_iterator __tmp = *this;
 	_M_read();
 	return __tmp;
       }
 
-      bool 
+      bool
       _M_equal(const istream_iterator& __x) const
-      { return (_M_ok == __x._M_ok) && (!_M_ok || _M_stream == __x._M_stream);}
+      { return (_M_ok == __x._M_ok) && (!_M_ok || _M_stream == __x._M_stream); }
 
-    private:      
-      void 
-      _M_read() 
+    private:
+      void
+      _M_read()
       {
 	_M_ok = (_M_stream && *_M_stream) ? true : false;
-	if (_M_ok) 
+	if (_M_ok)
 	  {
 	    *_M_stream >> _M_value;
 	    _M_ok = *_M_stream ? true : false;
 	  }
       }
     };
-  
+
   ///  Return true if x and y are both end or not end, or x and y are the same.
   template<typename _Tp, typename _CharT, typename _Traits, typename _Dist>
-    inline bool 
+    inline bool
     operator==(const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __x,
-	       const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __y) 
+	       const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __y)
     { return __x._M_equal(__y); }
 
   ///  Return false if x and y are both end or not end, or x and y are the same.
   template <class _Tp, class _CharT, class _Traits, class _Dist>
-    inline bool 
+    inline bool
     operator!=(const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __x,
-	       const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __y) 
+	       const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __y)
     { return !__x._M_equal(__y); }
-
 
   /**
    *  @brief  Provides output iterator semantics for streams.
@@ -145,10 +147,10 @@ namespace std
    *  @param  CharT  The ostream char_type.
    *  @param  Traits  The ostream char_traits.
   */
-  template<typename _Tp, typename _CharT = char, 
+  template<typename _Tp, typename _CharT = char,
            typename _Traits = char_traits<_CharT> >
-    class ostream_iterator 
-      : public iterator<output_iterator_tag, void, void, void, void>
+    class ostream_iterator
+    : public iterator<output_iterator_tag, void, void, void, void>
     {
     public:
       //@{
@@ -159,8 +161,8 @@ namespace std
       //@}
 
     private:
-      ostream_type* 	_M_stream;
-      const _CharT* 	_M_string;
+      ostream_type*	_M_stream;
+      const _CharT*	_M_string;
 
     public:
       /// Construct from an ostream.
@@ -176,7 +178,7 @@ namespace std
        *  @param  s  Underlying ostream to write to.
        *  @param  c  CharT delimiter string to insert.
       */
-      ostream_iterator(ostream_type& __s, const _CharT* __c) 
+      ostream_iterator(ostream_type& __s, const _CharT* __c)
       : _M_stream(&__s), _M_string(__c)  { }
 
       /// Copy constructor.
@@ -185,9 +187,9 @@ namespace std
 
       /// Writes @a value to underlying ostream using operator<<.  If
       /// constructed with delimiter string, writes delimiter to ostream.
-      ostream_iterator& 
-      operator=(const _Tp& __value) 
-      { 
+      ostream_iterator&
+      operator=(const _Tp& __value)
+      {
 	__glibcxx_requires_cond(_M_stream != 0,
 				_M_message(__gnu_debug::__msg_output_ostream)
 				._M_iterator(*this));
@@ -195,15 +197,18 @@ namespace std
 	if (_M_string) *_M_stream << _M_string;
 	return *this;
       }
-      
-      ostream_iterator& 
-      operator*() { return *this; }
-      
-      ostream_iterator& 
-      operator++() { return *this; } 
-      
-      ostream_iterator& 
-      operator++(int) { return *this; } 
+
+      ostream_iterator&
+      operator*()
+      { return *this; }
+
+      ostream_iterator&
+      operator++()
+      { return *this; }
+
+      ostream_iterator&
+      operator++(int)
+      { return *this; }
     };
 } // namespace std
 #endif

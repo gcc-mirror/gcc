@@ -1,6 +1,6 @@
 // Debugging mode support code -*- C++ -*-
 
-// Copyright (C) 2003
+// Copyright (C) 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -107,18 +107,18 @@ namespace __gnu_debug
   _Safe_sequence_base::
   _M_detach_all()
   {
-    for (_Safe_iterator_base* iter = _M_iterators; iter; )
+    for (_Safe_iterator_base* __iter = _M_iterators; __iter; )
       {
-	_Safe_iterator_base* old = iter;
-	iter = iter->_M_next;
-	old->_M_attach(0, false);
+	_Safe_iterator_base* __old = __iter;
+	__iter = __iter->_M_next;
+	__old->_M_attach(0, false);
       }
     
-    for (_Safe_iterator_base* iter = _M_const_iterators; iter; )
+    for (_Safe_iterator_base* __iter = _M_const_iterators; __iter; )
       {
-	_Safe_iterator_base* old = iter;
-	iter = iter->_M_next;
-	old->_M_attach(0, true);
+	_Safe_iterator_base* __old = __iter;
+	__iter = __iter->_M_next;
+	__old->_M_attach(0, true);
       }
   }
 
@@ -126,20 +126,20 @@ namespace __gnu_debug
   _Safe_sequence_base::
   _M_detach_singular()
   {
-    for (_Safe_iterator_base* iter = _M_iterators; iter; )
+    for (_Safe_iterator_base* __iter = _M_iterators; __iter; )
       {
-	_Safe_iterator_base* old = iter;
-	iter = iter->_M_next;
-	if (old->_M_singular())
-	  old->_M_attach(0, false);
+	_Safe_iterator_base* __old = __iter;
+	__iter = __iter->_M_next;
+	if (__old->_M_singular())
+	  __old->_M_attach(0, false);
       }
 
-    for (_Safe_iterator_base* iter = _M_const_iterators; iter; )
+    for (_Safe_iterator_base* __iter = _M_const_iterators; __iter; )
       {
-	_Safe_iterator_base* old = iter;
-	iter = iter->_M_next;
-	if (old->_M_singular())
-	  old->_M_attach(0, true);
+	_Safe_iterator_base* __old = __iter;
+	__iter = __iter->_M_next;
+	if (__old->_M_singular())
+	  __old->_M_attach(0, true);
       }
   }
   
@@ -147,17 +147,17 @@ namespace __gnu_debug
   _Safe_sequence_base::
   _M_revalidate_singular()
   {
-    _Safe_iterator_base* iter;
-    for (iter = _M_iterators; iter; iter = iter->_M_next)
+    _Safe_iterator_base* __iter;
+    for (__iter = _M_iterators; __iter; __iter = __iter->_M_next)
       {
-	iter->_M_version = _M_version;
-	iter = iter->_M_next;
+	__iter->_M_version = _M_version;
+	__iter = __iter->_M_next;
       }
     
-    for (iter = _M_const_iterators; iter; iter = iter->_M_next)
+    for (__iter = _M_const_iterators; __iter; __iter = __iter->_M_next)
       {
-	iter->_M_version = _M_version;
-	iter = iter->_M_next;
+	__iter->_M_version = _M_version;
+	__iter = __iter->_M_next;
       }
   }
 
@@ -168,15 +168,15 @@ namespace __gnu_debug
     swap(_M_iterators, __x._M_iterators);
     swap(_M_const_iterators, __x._M_const_iterators);
     swap(_M_version, __x._M_version);
-    _Safe_iterator_base* iter;
-    for (iter = _M_iterators; iter; iter = iter->_M_next)
-      iter->_M_sequence = this;
-    for (iter = __x._M_iterators; iter; iter = iter->_M_next)
-      iter->_M_sequence = &__x;
-    for (iter = _M_const_iterators; iter; iter = iter->_M_next)
-      iter->_M_sequence = this;
-    for (iter = __x._M_const_iterators; iter; iter = iter->_M_next)
-      iter->_M_sequence = &__x;
+    _Safe_iterator_base* __iter;
+    for (__iter = _M_iterators; __iter; __iter = __iter->_M_next)
+      __iter->_M_sequence = this;
+    for (__iter = __x._M_iterators; __iter; __iter = __iter->_M_next)
+      __iter->_M_sequence = &__x;
+    for (__iter = _M_const_iterators; __iter; __iter = __iter->_M_next)
+      __iter->_M_sequence = this;
+    for (__iter = __x._M_const_iterators; __iter; __iter = __iter->_M_next)
+      __iter->_M_sequence = &__x;
   }
   
   void 
@@ -250,8 +250,8 @@ namespace __gnu_debug
   _M_print_field(const _Error_formatter* __formatter, const char* __name) const
   {
     assert(this->_M_kind != _Parameter::__unused_param);
-    const int bufsize = 64;
-    char buf[bufsize];
+    const int __bufsize = 64;
+    char __buf[__bufsize];
     
     if (_M_kind == __iterator)
       {
@@ -262,9 +262,9 @@ namespace __gnu_debug
 	  }
 	else if (strcmp(__name, "address") == 0)
 	  {
-	    __formatter->_M_format_word(buf, bufsize, "%p", 
+	    __formatter->_M_format_word(__buf, __bufsize, "%p", 
 					_M_variant._M_iterator._M_address);
-	    __formatter->_M_print_word(buf);
+	    __formatter->_M_print_word(__buf);
 	  }
 	else if (strcmp(__name, "type") == 0)
 	  {
@@ -297,9 +297,9 @@ namespace __gnu_debug
 	else if (strcmp(__name, "sequence") == 0)
 	  {
 	    assert(_M_variant._M_iterator._M_sequence);
-	    __formatter->_M_format_word(buf, bufsize, "%p", 
+	    __formatter->_M_format_word(__buf, __bufsize, "%p", 
 					_M_variant._M_iterator._M_sequence);
-	    __formatter->_M_print_word(buf);
+	    __formatter->_M_print_word(__buf);
 	  }
 	else if (strcmp(__name, "seq_type") == 0)
 	  {
@@ -320,9 +320,9 @@ namespace __gnu_debug
 	else if (strcmp(__name, "address") == 0)
 	  {
 	    assert(_M_variant._M_sequence._M_address);
-	    __formatter->_M_format_word(buf, bufsize, "%p", 
+	    __formatter->_M_format_word(__buf, __bufsize, "%p", 
 					_M_variant._M_sequence._M_address);
-	    __formatter->_M_print_word(buf);
+	    __formatter->_M_print_word(__buf);
 	  }
 	else if (strcmp(__name, "type") == 0)
 	  {
@@ -363,22 +363,22 @@ namespace __gnu_debug
   _Error_formatter::_Parameter::
   _M_print_description(const _Error_formatter* __formatter) const
   {
-    const int bufsize = 128;
-    char buf[bufsize];
+    const int __bufsize = 128;
+    char __buf[__bufsize];
     
     if (_M_kind == __iterator)
       {
 	__formatter->_M_print_word("iterator ");
 	if (_M_variant._M_iterator._M_name)
 	  {
-	    __formatter->_M_format_word(buf, bufsize, "\"%s\" ", 
+	    __formatter->_M_format_word(__buf, __bufsize, "\"%s\" ", 
 					_M_variant._M_iterator._M_name);
-	    __formatter->_M_print_word(buf);
+	    __formatter->_M_print_word(__buf);
 	  }
 	
-	__formatter->_M_format_word(buf, bufsize, "@ 0x%p {\n", 
+	__formatter->_M_format_word(__buf, __bufsize, "@ 0x%p {\n", 
 				    _M_variant._M_iterator._M_address);
-	__formatter->_M_print_word(buf);
+	__formatter->_M_print_word(__buf);
 	if (_M_variant._M_iterator._M_type)
 	  {
 	    __formatter->_M_print_word("type = ");
@@ -410,9 +410,9 @@ namespace __gnu_debug
 		__formatter->_M_print_word("' ");
 	      }
 	    
-	    __formatter->_M_format_word(buf, bufsize, "@ 0x%p\n", 
+	    __formatter->_M_format_word(__buf, __bufsize, "@ 0x%p\n", 
 					_M_variant._M_sequence._M_address);
-	    __formatter->_M_print_word(buf);
+	    __formatter->_M_print_word(__buf);
 	  }
 	__formatter->_M_print_word("}\n");
       }
@@ -421,14 +421,14 @@ namespace __gnu_debug
 	__formatter->_M_print_word("sequence ");
 	if (_M_variant._M_sequence._M_name)
 	  {
-	    __formatter->_M_format_word(buf, bufsize, "\"%s\" ", 
+	    __formatter->_M_format_word(__buf, __bufsize, "\"%s\" ", 
 					_M_variant._M_sequence._M_name);
-	    __formatter->_M_print_word(buf);
+	    __formatter->_M_print_word(__buf);
 	  }
 	
-	__formatter->_M_format_word(buf, bufsize, "@ 0x%p {\n", 
+	__formatter->_M_format_word(__buf, __bufsize, "@ 0x%p {\n", 
 				    _M_variant._M_sequence._M_address);
-	__formatter->_M_print_word(buf);
+	__formatter->_M_print_word(__buf);
 	
 	if (_M_variant._M_sequence._M_type)
 	  {
@@ -447,24 +447,24 @@ namespace __gnu_debug
   void
   _Error_formatter::_M_error() const
   {
-    const int bufsize = 128;
-    char buf[bufsize];
+    const int __bufsize = 128;
+    char __buf[__bufsize];
     
     // Emit file & line number information
     _M_column = 1;
     _M_wordwrap = false;
     if (_M_file)
       {
-	_M_format_word(buf, bufsize, "%s:", _M_file);
-	_M_print_word(buf);
-	_M_column += strlen(buf);
+	_M_format_word(__buf, __bufsize, "%s:", _M_file);
+	_M_print_word(__buf);
+	_M_column += strlen(__buf);
       }
     
     if (_M_line > 0)
       {
-	_M_format_word(buf, bufsize, "%u:", _M_line);
-	_M_print_word(buf);
-	_M_column += strlen(buf);
+	_M_format_word(__buf, __bufsize, "%u:", _M_line);
+	_M_print_word(__buf);
+	_M_column += strlen(__buf);
       }
     
     _M_wordwrap = true;
@@ -477,19 +477,19 @@ namespace __gnu_debug
     
     // Emit descriptions of the objects involved in the operation
     _M_wordwrap = false;
-    bool has_noninteger_parameters = false;
-    for (unsigned int i = 0; i < _M_num_parameters; ++i)
+    bool __has_noninteger_parameters = false;
+    for (unsigned int __i = 0; __i < _M_num_parameters; ++__i)
       {
-	if (_M_parameters[i]._M_kind == _Parameter::__iterator
-	    || _M_parameters[i]._M_kind == _Parameter::__sequence)
+	if (_M_parameters[__i]._M_kind == _Parameter::__iterator
+	    || _M_parameters[__i]._M_kind == _Parameter::__sequence)
 	  {
-	    if (!has_noninteger_parameters)
+	    if (!__has_noninteger_parameters)
 	      {
 		_M_first_line = true;
 		_M_print_word("\nObjects involved in the operation:\n");
-		has_noninteger_parameters = true;
+		__has_noninteger_parameters = true;
 	      }
-	    _M_parameters[i]._M_print_description(this);
+	    _M_parameters[__i]._M_print_description(this);
 	  }
       }
     
@@ -529,11 +529,11 @@ namespace __gnu_debug
 	// If this isn't the first line, indent
 	if (_M_column == 1 && !_M_first_line)
 	  {
-	    char spacing[_M_indent + 1];
+	    char __spacing[_M_indent + 1];
 	    for (int i = 0; i < _M_indent; ++i)
-	      spacing[i] = ' ';
-	    spacing[_M_indent] = '\0';
-	    fprintf(stderr, "%s", spacing);
+	      __spacing[i] = ' ';
+	    __spacing[_M_indent] = '\0';
+	    fprintf(stderr, "%s", __spacing);
 	    _M_column += _M_indent;
 	  }
 	
@@ -560,8 +560,8 @@ namespace __gnu_debug
   {
     const char* __start = __string;
     const char* __end = __start;
-    const int bufsize = 128;
-    char buf[bufsize];
+    const int __bufsize = 128;
+    char __buf[__bufsize];
 
     while (*__start)
       {
@@ -573,9 +573,9 @@ namespace __gnu_debug
 	    if (__start == __end) ++__end;
 	    if (isspace(*__end)) ++__end;
 	    
-	    assert(__end - __start + 1< bufsize);
-	    _M_format_word(buf, __end - __start + 1, "%s", __start);
-	    _M_print_word(buf);
+	    assert(__end - __start + 1< __bufsize);
+	    _M_format_word(__buf, __end - __start + 1, "%s", __start);
+	    _M_print_word(__buf);
 	    __start = __end;
 	    
 	    // Skip extra whitespace
@@ -585,56 +585,56 @@ namespace __gnu_debug
 	    continue;
 	  } 
 	
-      ++__start;
-      assert(*__start);
-      if (*__start == '%')
-	{
-	  _M_print_word("%");
-	  ++__start;
-	  continue;
-	}
-      
-      // Get the parameter number
-      assert(*__start >= '1' && *__start <= '9');
-      size_t param = *__start - '0';
-      --param;
-      assert(param < _M_num_parameters);
-      
-      // '.' separates the parameter number from the field
-      // name, if there is one.
-      ++__start;
-      if (*__start != '.')
-	{
-	assert(*__start == ';');
 	++__start;
-	buf[0] = '\0';
-	if (_M_parameters[param]._M_kind == _Parameter::__integer)
-	{
-	  _M_format_word(buf, bufsize, "%ld", 
-			 _M_parameters[param]._M_variant._M_integer._M_value);
-	  _M_print_word(buf);
-	}
-	else if (_M_parameters[param]._M_kind == _Parameter::__string)
-	  _M_print_string(_M_parameters[param]._M_variant._M_string._M_value);
-	continue;
-      }
-      
-      // Extract the field name we want
-      enum { max_field_len = 16 };
-      char field[max_field_len];
-      int field_idx = 0;
-      ++__start;
-      while (*__start != ';')
-      {
 	assert(*__start);
-	assert(field_idx < max_field_len-1);
-	field[field_idx++] = *__start++;
-      }
-      ++__start;
-      field[field_idx] = 0;
+	if (*__start == '%')
+	  {
+	    _M_print_word("%");
+	    ++__start;
+	    continue;
+	  }
+	
+	// Get the parameter number
+	assert(*__start >= '1' && *__start <= '9');
+	size_t __param = *__start - '0';
+	--__param;
+	assert(__param < _M_num_parameters);
       
-      _M_parameters[param]._M_print_field(this, field);		  
-    }
+	// '.' separates the parameter number from the field
+	// name, if there is one.
+	++__start;
+	if (*__start != '.')
+	  {
+	    assert(*__start == ';');
+	    ++__start;
+	    __buf[0] = '\0';
+	    if (_M_parameters[__param]._M_kind == _Parameter::__integer)
+	      {
+		_M_format_word(__buf, __bufsize, "%ld", 
+			       _M_parameters[__param]._M_variant._M_integer._M_value);
+		_M_print_word(__buf);
+	      }
+	    else if (_M_parameters[__param]._M_kind == _Parameter::__string)
+	      _M_print_string(_M_parameters[__param]._M_variant._M_string._M_value);
+	    continue;
+	  }
+	
+	// Extract the field name we want
+	enum { __max_field_len = 16 };
+	char __field[__max_field_len];
+	int __field_idx = 0;
+	++__start;
+	while (*__start != ';')
+	  {
+	    assert(*__start);
+	    assert(__field_idx < __max_field_len-1);
+	    __field[__field_idx++] = *__start++;
+	  }
+	++__start;
+	__field[__field_idx] = 0;
+	
+	_M_parameters[__param]._M_print_field(this, __field);		  
+      }
   }
 
   // Instantiations.

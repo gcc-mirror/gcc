@@ -41,7 +41,7 @@
 #pragma GCC system_header
 
 namespace std {
-    
+
   /**
    *  @brief  Class defining multi-dimensional subset of an array.
    *
@@ -60,76 +60,76 @@ namespace std {
    *  slice[0,2]==array[9], slice[1,0]==array[14], slice[1,1]==array[17],
    *  slice[1,2]==array[20].
    */
-  class gslice
-  {
-  public:
-    ///  Construct an empty slice.
-    gslice ();
+    class gslice
+    {
+    public:
+      ///  Construct an empty slice.
+      gslice ();
 
-    /**
-     *  @brief  Construct a slice.
-     *
-     *  Constructs a slice with as many dimensions as the length of the @a l
-     *  and @a s arrays.
-     *
-     *  @param  o  Offset in array of first element.
-     *  @param  l  Array of dimension lengths.
-     *  @param  s  Array of dimension strides between array elements.
-     */
-    gslice (size_t, const valarray<size_t>&, const valarray<size_t>&);
+      /**
+       *  @brief  Construct a slice.
+       *
+       *  Constructs a slice with as many dimensions as the length of the @a l
+       *  and @a s arrays.
+       *
+       *  @param  o  Offset in array of first element.
+       *  @param  l  Array of dimension lengths.
+       *  @param  s  Array of dimension strides between array elements.
+       */
+      gslice(size_t, const valarray<size_t>&, const valarray<size_t>&);
 
-    // XXX: the IS says the copy-ctor and copy-assignment operators are
-    //      synthetized by the compiler but they are just unsuitable
-    //      for a ref-counted semantic
-    ///  Copy constructor.
-    gslice(const gslice&);
+      // XXX: the IS says the copy-ctor and copy-assignment operators are
+      //      synthetized by the compiler but they are just unsuitable
+      //      for a ref-counted semantic
+      ///  Copy constructor.
+      gslice(const gslice&);
 
-    ///  Destructor.
-    ~gslice();
+      ///  Destructor.
+      ~gslice();
 
-    // XXX: See the note above.
-    ///  Assignment operator.
-    gslice& operator= (const gslice&);
-        
-    ///  Return array offset of first slice element.
-    size_t           start () const;
+      // XXX: See the note above.
+      ///  Assignment operator.
+      gslice& operator=(const gslice&);
 
-    ///  Return array of sizes of slice dimensions.
-    valarray<size_t> size () const;
+      ///  Return array offset of first slice element.
+      size_t           start() const;
 
-    ///  Return array of array strides for each dimension.
-    valarray<size_t> stride () const;
-        
-  private:
-    struct _Indexer {
-      size_t _M_count;
-      size_t _M_start;
-      valarray<size_t> _M_size;
-      valarray<size_t> _M_stride;
-      valarray<size_t> _M_index; // Linear array of referenced indices
-      _Indexer(size_t, const valarray<size_t>&,
-	       const valarray<size_t>&);
-      void _M_increment_use() { ++_M_count; }
-      size_t _M_decrement_use() { return --_M_count; }
+      ///  Return array of sizes of slice dimensions.
+      valarray<size_t> size() const;
+
+      ///  Return array of array strides for each dimension.
+      valarray<size_t> stride() const;
+
+    private:
+      struct _Indexer {
+	size_t _M_count;
+	size_t _M_start;
+	valarray<size_t> _M_size;
+	valarray<size_t> _M_stride;
+	valarray<size_t> _M_index; // Linear array of referenced indices
+	_Indexer(size_t, const valarray<size_t>&,
+		 const valarray<size_t>&);
+	void _M_increment_use() { ++_M_count; }
+	size_t _M_decrement_use() { return --_M_count; }
+      };
+
+      _Indexer* _M_index;
+
+      template<typename _Tp> friend class valarray;
     };
 
-    _Indexer* _M_index;
-        
-    template<typename _Tp> friend class valarray;
-  };
-    
     inline size_t
     gslice::start () const
     { return _M_index ? _M_index->_M_start : 0; }
-    
+
     inline valarray<size_t>
     gslice::size () const
     { return _M_index ? _M_index->_M_size : valarray<size_t>(); }
-    
+
     inline valarray<size_t>
     gslice::stride () const
     { return _M_index ? _M_index->_M_stride : valarray<size_t>(); }
-    
+
     inline gslice::gslice () : _M_index(0) {}
 
     inline
@@ -140,7 +140,7 @@ namespace std {
     inline
     gslice::gslice(const gslice& __g) : _M_index(__g._M_index)
     { if (_M_index) _M_index->_M_increment_use(); }
-    
+
     inline
     gslice::~gslice()
     { if (_M_index && _M_index->_M_decrement_use() == 0) delete _M_index; }
@@ -153,8 +153,8 @@ namespace std {
         _M_index = __g._M_index;
         return *this;
     }
-            
-    
+
+
 } // std::
 
 

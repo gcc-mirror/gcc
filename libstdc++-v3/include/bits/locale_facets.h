@@ -57,28 +57,28 @@ namespace std
 # define  _GLIBCXX_NUM_FACETS 14
 #endif
 
-  // Convert string to numeric value of type _Tv and store results.  
+  // Convert string to numeric value of type _Tv and store results.
   // NB: This is specialized for all required types, there is no
   // generic definition.
   template<typename _Tv>
     void
-    __convert_to_v(const char* __in, _Tv& __out, ios_base::iostate& __err, 
+    __convert_to_v(const char* __in, _Tv& __out, ios_base::iostate& __err,
 		   const __c_locale& __cloc);
 
   // Explicit specializations for required types.
   template<>
     void
-    __convert_to_v(const char*, float&, ios_base::iostate&, 
+    __convert_to_v(const char*, float&, ios_base::iostate&,
 		   const __c_locale&);
 
   template<>
     void
-    __convert_to_v(const char*, double&, ios_base::iostate&, 
+    __convert_to_v(const char*, double&, ios_base::iostate&,
 		   const __c_locale&);
 
   template<>
     void
-    __convert_to_v(const char*, long double&, ios_base::iostate&, 
+    __convert_to_v(const char*, long double&, ios_base::iostate&,
 		   const __c_locale&);
 
   // NB: __pad is a struct, rather than a function, so it can be
@@ -87,8 +87,8 @@ namespace std
     struct __pad
     {
       static void
-      _S_pad(ios_base& __io, _CharT __fill, _CharT* __news, 
-	     const _CharT* __olds, const streamsize __newlen, 
+      _S_pad(ios_base& __io, _CharT __fill, _CharT* __news,
+	     const _CharT* __olds, const streamsize __newlen,
 	     const streamsize __oldlen, const bool __num);
     };
 
@@ -99,8 +99,8 @@ namespace std
   // only with __glen != 0.
   template<typename _CharT>
     _CharT*
-    __add_grouping(_CharT* __s, _CharT __sep,  
-		   const char* __gbeg, size_t __gsize, 
+    __add_grouping(_CharT* __s, _CharT __sep,
+		   const char* __gbeg, size_t __gsize,
 		   const _CharT* __first, const _CharT* __last);
 
   // This template permits specializing facet output code for
@@ -131,7 +131,7 @@ namespace std
   // Include host and configuration specific ctype enums for ctype_base.
   #include <bits/ctype_base.h>
 
-  // Common base for ctype<_CharT>.  
+  // Common base for ctype<_CharT>.
   /**
    *  @brief  Common base for ctype facet
    *
@@ -159,7 +159,7 @@ namespace std
        *  @param m  The mask to compare against.
        *  @return  (M & m) != 0.
       */
-      bool 
+      bool
       is(mask __m, char_type __c) const
       { return this->do_is(__m, __c); }
 
@@ -177,7 +177,7 @@ namespace std
        *  @return  @a hi.
       */
       const char_type*
-      is(const char_type *__lo, const char_type *__hi, mask *__vec) const   
+      is(const char_type *__lo, const char_type *__hi, mask *__vec) const
       { return this->do_is(__lo, __hi, __vec); }
 
       /**
@@ -222,7 +222,7 @@ namespace std
        *  @param c  The char_type to convert.
        *  @return  The uppercase char_type if convertible, else @a c.
       */
-      char_type 
+      char_type
       toupper(char_type __c) const
       { return this->do_toupper(__c); }
 
@@ -321,7 +321,7 @@ namespace std
        *  @param dfault  Char to return if conversion fails.
        *  @return  The converted char.
       */
-      char 
+      char
       narrow(char_type __c, char __dfault) const
       { return this->do_narrow(__c, __dfault); }
 
@@ -349,12 +349,12 @@ namespace std
       { return this->do_narrow(__lo, __hi, __dfault, __to); }
 
     protected:
-      explicit 
+      explicit
       __ctype_abstract_base(size_t __refs = 0): facet(__refs) { }
 
-      virtual 
+      virtual
       ~__ctype_abstract_base() { }
-      
+
       /**
        *  @brief  Test char_type classification.
        *
@@ -388,7 +388,7 @@ namespace std
        *  @return  @a hi.
       */
       virtual const char_type*
-      do_is(const char_type* __lo, const char_type* __hi, 
+      do_is(const char_type* __lo, const char_type* __hi,
 	    mask* __vec) const = 0;
 
       /**
@@ -426,7 +426,7 @@ namespace std
        *  @return  Pointer to a non-matching char_type if found, else @a hi.
       */
       virtual const char_type*
-      do_scan_not(mask __m, const char_type* __lo, 
+      do_scan_not(mask __m, const char_type* __lo,
 		  const char_type* __hi) const = 0;
 
       /**
@@ -443,7 +443,7 @@ namespace std
        *  @param c  The char_type to convert.
        *  @return  The uppercase char_type if convertible, else @a c.
       */
-      virtual char_type 
+      virtual char_type
       do_toupper(char_type) const = 0;
 
       /**
@@ -495,7 +495,7 @@ namespace std
       */
       virtual const char_type*
       do_tolower(char_type* __lo, const char_type* __hi) const = 0;
-      
+
       /**
        *  @brief  Widen char
        *
@@ -512,7 +512,7 @@ namespace std
        *  @param c  The char to convert.
        *  @return  The converted char_type
       */
-      virtual char_type 
+      virtual char_type
       do_widen(char) const = 0;
 
       /**
@@ -534,7 +534,7 @@ namespace std
        *  @return  @a hi.
       */
       virtual const char*
-      do_widen(const char* __lo, const char* __hi, 
+      do_widen(const char* __lo, const char* __hi,
 	       char_type* __dest) const = 0;
 
       /**
@@ -555,7 +555,7 @@ namespace std
        *  @param dfault  Char to return if conversion fails.
        *  @return  The converted char.
       */
-      virtual char 
+      virtual char
       do_narrow(char_type, char __dfault) const = 0;
 
       /**
@@ -607,20 +607,20 @@ namespace std
     {
     public:
       // Types:
-      typedef _CharT 		  	char_type;
+      typedef _CharT			char_type;
       typedef typename __ctype_abstract_base<_CharT>::mask mask;
 
       /// The facet id for ctype<char_type>
-      static locale::id 	       	id;
+      static locale::id			id;
 
-      explicit 
+      explicit
       ctype(size_t __refs = 0) : __ctype_abstract_base<_CharT>(__refs) { }
 
    protected:
-      virtual 
+      virtual
       ~ctype();
 
-      virtual bool 
+      virtual bool
       do_is(mask __m, char_type __c) const;
 
       virtual const char_type*
@@ -633,25 +633,25 @@ namespace std
       do_scan_not(mask __m, const char_type* __lo,
 		  const char_type* __hi) const;
 
-      virtual char_type 
+      virtual char_type
       do_toupper(char_type __c) const;
 
       virtual const char_type*
       do_toupper(char_type* __lo, const char_type* __hi) const;
 
-      virtual char_type 
+      virtual char_type
       do_tolower(char_type __c) const;
 
       virtual const char_type*
       do_tolower(char_type* __lo, const char_type* __hi) const;
 
-      virtual char_type 
+      virtual char_type
       do_widen(char __c) const;
 
       virtual const char*
       do_widen(const char* __lo, const char* __hi, char_type* __dest) const;
 
-      virtual char 
+      virtual char
       do_narrow(char_type, char __dfault) const;
 
       virtual const char_type*
@@ -677,21 +677,21 @@ namespace std
     public:
       // Types:
       /// Typedef for the template parameter char.
-      typedef char 	       	char_type;
+      typedef char		char_type;
 
     protected:
       // Data Members:
       __c_locale		_M_c_locale_ctype;
-      bool 		       	_M_del;
-      __to_type 	       	_M_toupper;
-      __to_type  	       	_M_tolower;
-      const mask*              	_M_table;
+      bool			_M_del;
+      __to_type			_M_toupper;
+      __to_type			_M_tolower;
+      const mask*		_M_table;
       mutable char		_M_widen_ok;
       mutable char		_M_widen[1 + static_cast<unsigned char>(-1)];
       mutable char		_M_narrow[1 + static_cast<unsigned char>(-1)];
       mutable char		_M_narrow_ok;	// 0 uninitialized, 1 init,
 						// 2 non-consecutive
-      
+
     public:
       /// The facet id for ctype<char>
       static locale::id        id;
@@ -708,7 +708,7 @@ namespace std
        *  @param del   If true, passes ownership of table to this facet.
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
+      explicit
       ctype(const mask* __table = 0, bool __del = false, size_t __refs = 0);
 
       /**
@@ -721,8 +721,8 @@ namespace std
        *  @param del   If true, passes ownership of table to this facet.
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
-      ctype(__c_locale __cloc, const mask* __table = 0, bool __del = false, 
+      explicit
+      ctype(__c_locale __cloc, const mask* __table = 0, bool __del = false,
 	    size_t __refs = 0);
 
       /**
@@ -736,7 +736,7 @@ namespace std
       */
       inline bool
       is(mask __m, char __c) const;
- 
+
       /**
        *  @brief  Return a mask array.
        *
@@ -751,7 +751,7 @@ namespace std
       */
       inline const char*
       is(const char* __lo, const char* __hi, mask* __vec) const;
- 
+
       /**
        *  @brief  Find char matching a mask
        *
@@ -779,7 +779,7 @@ namespace std
       */
       inline const char*
       scan_not(mask __m, const char* __lo, const char* __hi) const;
-     
+
       /**
        *  @brief  Convert to uppercase.
        *
@@ -792,7 +792,7 @@ namespace std
        *  @param c  The char to convert.
        *  @return  The uppercase char if convertible, else @a c.
       */
-      char_type 
+      char_type
       toupper(char_type __c) const
       { return this->do_toupper(__c); }
 
@@ -825,7 +825,7 @@ namespace std
        *  @param c  The char to convert.
        *  @return  The lowercase char if convertible, else @a c.
       */
-      char_type 
+      char_type
       tolower(char_type __c) const
       { return this->do_tolower(__c); }
 
@@ -862,9 +862,9 @@ namespace std
        *  @param c  The char to convert.
        *  @return  The converted character.
       */
-      char_type 
+      char_type
       widen(char __c) const
-      { 
+      {
 	if (_M_widen_ok) return _M_widen[static_cast<unsigned char>(__c)];
 	this->_M_widen_init();
 	return this->do_widen(__c);
@@ -918,7 +918,7 @@ namespace std
        *  @param dfault  Char to return if conversion fails.
        *  @return  The converted character.
       */
-      char 
+      char
       narrow(char_type __c, char __dfault) const
       {
 	if (_M_narrow[static_cast<unsigned char>(__c)])
@@ -967,12 +967,12 @@ namespace std
     protected:
       /// Returns a pointer to the mask table provided to the constructor, or
       /// the default from classic_table() if none was provided.
-      const mask* 
+      const mask*
       table() const throw()
       { return _M_table; }
 
       /// Returns a pointer to the C locale mask table.
-      static const mask* 
+      static const mask*
       classic_table() throw();
 
       /**
@@ -981,7 +981,7 @@ namespace std
        *  This function deletes table() if @a del was true in the
        *  constructor.
       */
-      virtual 
+      virtual
       ~ctype();
 
       /**
@@ -997,7 +997,7 @@ namespace std
        *  @param c  The char to convert.
        *  @return  The uppercase char if convertible, else @a c.
       */
-      virtual char_type 
+      virtual char_type
       do_toupper(char_type) const;
 
       /**
@@ -1030,7 +1030,7 @@ namespace std
        *  @param c  The char to convert.
        *  @return  The lowercase char if convertible, else @a c.
       */
-      virtual char_type 
+      virtual char_type
       do_tolower(char_type) const;
 
       /**
@@ -1049,7 +1049,7 @@ namespace std
       */
       virtual const char_type*
       do_tolower(char_type* __lo, const char_type* __hi) const;
-      
+
       /**
        *  @brief  Widen char
        *
@@ -1067,7 +1067,7 @@ namespace std
        *  @param c  The char to convert.
        *  @return  The converted character.
       */
-      virtual char_type 
+      virtual char_type
       do_widen(char __c) const
       { return __c; }
 
@@ -1116,7 +1116,7 @@ namespace std
        *  @param dfault  Char to return if conversion fails.
        *  @return  The converted char.
       */
-      virtual char 
+      virtual char
       do_narrow(char_type __c, char) const
       { return __c; }
 
@@ -1158,7 +1158,7 @@ namespace std
 	for (size_t __i = 0; __i < sizeof(_M_widen); ++__i)
 	  __tmp[__i] = __i;
 	do_widen(__tmp, __tmp + sizeof(__tmp), _M_widen);
-	    
+
 	_M_widen_ok = 1;
 	// Set _M_widen_ok to 2 if memcpy can't be used.
 	for (size_t __i = 0; __i < sizeof(_M_widen); ++__i)
@@ -1196,7 +1196,7 @@ namespace std
 	_M_narrow_ok = __consecutive ? 1 : 2;
       }
     };
- 
+
   template<>
     const ctype<char>&
     use_facet<ctype<char> >(const locale& __loc);
@@ -1219,8 +1219,8 @@ namespace std
     public:
       // Types:
       /// Typedef for the template parameter wchar_t.
-      typedef wchar_t 	       	char_type;
-      typedef wctype_t	       	__wmask_type;
+      typedef wchar_t		char_type;
+      typedef wctype_t		__wmask_type;
 
     protected:
       __c_locale		_M_c_locale_ctype;
@@ -1237,7 +1237,7 @@ namespace std
     public:
       // Data Members:
       /// The facet id for ctype<wchar_t>
-      static locale::id        	id;
+      static locale::id		id;
 
       /**
        *  @brief  Constructor performs initialization.
@@ -1246,7 +1246,7 @@ namespace std
        *
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
+      explicit
       ctype(size_t __refs = 0);
 
       /**
@@ -1257,7 +1257,7 @@ namespace std
        *  @param cloc  Handle to C locale data.
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
+      explicit
       ctype(__c_locale __cloc, size_t __refs = 0);
 
     protected:
@@ -1265,7 +1265,7 @@ namespace std
       _M_convert_to_wmask(const mask __m) const;
 
       /// Destructor
-      virtual 
+      virtual
       ~ctype();
 
       /**
@@ -1281,7 +1281,7 @@ namespace std
        *  @param m  The mask to compare against.
        *  @return  (M & m) != 0.
       */
-      virtual bool 
+      virtual bool
       do_is(mask __m, char_type __c) const;
 
       /**
@@ -1337,7 +1337,7 @@ namespace std
        *  @return  Pointer to a non-matching wchar_t if found, else @a hi.
       */
       virtual const char_type*
-      do_scan_not(mask __m, const char_type* __lo, 
+      do_scan_not(mask __m, const char_type* __lo,
 		  const char_type* __hi) const;
 
       /**
@@ -1353,7 +1353,7 @@ namespace std
        *  @param c  The wchar_t to convert.
        *  @return  The uppercase wchar_t if convertible, else @a c.
       */
-      virtual char_type 
+      virtual char_type
       do_toupper(char_type) const;
 
       /**
@@ -1386,7 +1386,7 @@ namespace std
        *  @param c  The wchar_t to convert.
        *  @return  The lowercase wchar_t if convertible, else @a c.
       */
-      virtual char_type 
+      virtual char_type
       do_tolower(char_type) const;
 
       /**
@@ -1405,7 +1405,7 @@ namespace std
       */
       virtual const char_type*
       do_tolower(char_type* __lo, const char_type* __hi) const;
-      
+
       /**
        *  @brief  Widen char to wchar_t
        *
@@ -1423,7 +1423,7 @@ namespace std
        *  @param c  The char to convert.
        *  @return  The converted wchar_t.
       */
-      virtual char_type 
+      virtual char_type
       do_widen(char) const;
 
       /**
@@ -1467,7 +1467,7 @@ namespace std
        *  @param dfault  Char to return if conversion fails.
        *  @return  The converted char.
       */
-      virtual char 
+      virtual char
       do_narrow(char_type, char __dfault) const;
 
       /**
@@ -1498,7 +1498,7 @@ namespace std
 		char __dfault, char* __dest) const;
 
       // For use at construction time only.
-      void 
+      void
       _M_initialize_ctype();
     };
 
@@ -1515,13 +1515,13 @@ namespace std
     class ctype_byname : public ctype<_CharT>
     {
     public:
-      typedef _CharT 		char_type;
+      typedef _CharT		char_type;
 
-      explicit 
+      explicit
       ctype_byname(const char* __s, size_t __refs = 0);
 
     protected:
-      virtual 
+      virtual
       ~ctype_byname() { };
     };
 
@@ -1536,26 +1536,26 @@ namespace std
   #include <bits/codecvt.h>
 
   // 22.2.2  The numeric category.
-  class __num_base 
+  class __num_base
   {
   public:
     // NB: Code depends on the order of _S_atoms_out elements.
     // Below are the indices into _S_atoms_out.
-    enum 
-      {  
-        _S_ominus, 
-        _S_oplus, 
-        _S_ox, 
-        _S_oX, 
+    enum
+      {
+        _S_ominus,
+        _S_oplus,
+        _S_ox,
+        _S_oX,
         _S_odigits,
         _S_odigits_end = _S_odigits + 16,
-        _S_oudigits = _S_odigits_end,  
+        _S_oudigits = _S_odigits_end,
         _S_oudigits_end = _S_oudigits + 16,
         _S_oe = _S_odigits + 14,  // For scientific notation, 'e'
         _S_oE = _S_oudigits + 14, // For scientific notation, 'E'
 	_S_oend = _S_oudigits_end
       };
-    
+
     // A list of valid numeric literals for output.  This array
     // contains chars that will be passed through the current locale's
     // ctype<_CharT>.widen() and then used to render numbers.
@@ -1567,12 +1567,12 @@ namespace std
     // "-+xX0123456789abcdefABCDEF"
     static const char* _S_atoms_in;
 
-    enum 
-    {  
-      _S_iminus, 
-      _S_iplus, 
-      _S_ix, 
-      _S_iX, 
+    enum
+    {
+      _S_iminus,
+      _S_iplus,
+      _S_ix,
+      _S_iX,
       _S_izero,
       _S_ie = _S_izero + 14,
       _S_iE = _S_izero + 20,
@@ -1588,36 +1588,36 @@ namespace std
   template<typename _CharT>
     struct __numpunct_cache : public locale::facet
     {
-      const char* 			_M_grouping;
+      const char*			_M_grouping;
       size_t                            _M_grouping_size;
       bool				_M_use_grouping;
-      const _CharT* 			_M_truename;
+      const _CharT*			_M_truename;
       size_t                            _M_truename_size;
       const _CharT*			_M_falsename;
-      size_t                            _M_falsename_size;     
-      _CharT 				_M_decimal_point;
-      _CharT 				_M_thousands_sep;
-      
+      size_t                            _M_falsename_size;
+      _CharT				_M_decimal_point;
+      _CharT				_M_thousands_sep;
+
       // A list of valid numeric literals for output: in the standard
       // "C" locale, this is "-+xX0123456789abcdef0123456789ABCDEF".
       // This array contains the chars after having been passed
       // through the current locale's ctype<_CharT>.widen().
-      _CharT                    	_M_atoms_out[__num_base::_S_oend];
+      _CharT				_M_atoms_out[__num_base::_S_oend];
 
       // A list of valid numeric literals for input: in the standard
       // "C" locale, this is "-+xX0123456789abcdefABCDEF"
       // This array contains the chars after having been passed
       // through the current locale's ctype<_CharT>.widen().
-      _CharT                    	_M_atoms_in[__num_base::_S_iend];
+      _CharT				_M_atoms_in[__num_base::_S_iend];
 
       bool				_M_allocated;
 
-      __numpunct_cache(size_t __refs = 0) : facet(__refs), 
+      __numpunct_cache(size_t __refs = 0) : facet(__refs),
       _M_grouping(NULL), _M_grouping_size(0), _M_use_grouping(false),
       _M_truename(NULL), _M_truename_size(0), _M_falsename(NULL),
       _M_falsename_size(0), _M_decimal_point(_CharT()),
       _M_thousands_sep(_CharT()), _M_allocated(false)
-      { } 
+      { }
 
       ~__numpunct_cache();
 
@@ -1648,14 +1648,14 @@ namespace std
       _CharT* __falsename = new _CharT[_M_falsename_size];
       __np.falsename().copy(__falsename, _M_falsename_size);
       _M_falsename = __falsename;
-          
+
       _M_decimal_point = __np.decimal_point();
       _M_thousands_sep = __np.thousands_sep();
-      
+
       const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
-      __ct.widen(__num_base::_S_atoms_out, 
+      __ct.widen(__num_base::_S_atoms_out,
 		 __num_base::_S_atoms_out + __num_base::_S_oend, _M_atoms_out);
-      __ct.widen(__num_base::_S_atoms_in, 
+      __ct.widen(__num_base::_S_atoms_in,
 		 __num_base::_S_atoms_in + __num_base::_S_iend, _M_atoms_in);
     }
 
@@ -1690,8 +1690,8 @@ namespace std
       // Types:
       //@{
       /// Public typedefs
-      typedef _CharT          		char_type;
-      typedef basic_string<_CharT> 	string_type;
+      typedef _CharT			char_type;
+      typedef basic_string<_CharT>	string_type;
       //@}
       typedef __numpunct_cache<_CharT>  __cache_type;
 
@@ -1700,14 +1700,14 @@ namespace std
 
     public:
       /// Numpunct facet id.
-      static locale::id 		id;
+      static locale::id			id;
 
       /**
        *  @brief  Numpunct constructor.
        *
        *  @param  refs  Refcount to pass to the base class.
        */
-      explicit 
+      explicit
       numpunct(size_t __refs = 0) : facet(__refs), _M_data(NULL)
       { _M_initialize_numpunct(); }
 
@@ -1720,8 +1720,8 @@ namespace std
        *  @param  cache  __numpunct_cache object.
        *  @param  refs  Refcount to pass to the base class.
        */
-      explicit 
-      numpunct(__cache_type* __cache, size_t __refs = 0) 
+      explicit
+      numpunct(__cache_type* __cache, size_t __refs = 0)
       : facet(__refs), _M_data(__cache)
       { _M_initialize_numpunct(); }
 
@@ -1734,8 +1734,8 @@ namespace std
        *  @param  cloc  The "C" locale.
        *  @param  refs  Refcount to pass to the base class.
        */
-      explicit 
-      numpunct(__c_locale __cloc, size_t __refs = 0) 
+      explicit
+      numpunct(__c_locale __cloc, size_t __refs = 0)
       : facet(__refs), _M_data(NULL)
       { _M_initialize_numpunct(__cloc); }
 
@@ -1748,7 +1748,7 @@ namespace std
        *
        *  @return  @a char_type representing a decimal point.
       */
-      char_type    
+      char_type
       decimal_point() const
       { return this->do_decimal_point(); }
 
@@ -1761,7 +1761,7 @@ namespace std
        *
        *  @return  char_type representing a thousands separator.
       */
-      char_type    
+      char_type
       thousands_sep() const
       { return this->do_thousands_sep(); }
 
@@ -1790,7 +1790,7 @@ namespace std
        *
        *  @return  string representing grouping specification.
       */
-      string       
+      string
       grouping() const
       { return this->do_grouping(); }
 
@@ -1803,7 +1803,7 @@ namespace std
        *
        *  @return  string_type representing printed form of true.
       */
-      string_type  
+      string_type
       truename() const
       { return this->do_truename(); }
 
@@ -1816,13 +1816,13 @@ namespace std
        *
        *  @return  string_type representing printed form of false.
       */
-      string_type  
+      string_type
       falsename() const
       { return this->do_falsename(); }
 
     protected:
       /// Destructor.
-      virtual 
+      virtual
       ~numpunct();
 
       /**
@@ -1833,7 +1833,7 @@ namespace std
        *
        *  @return  @a char_type representing a decimal point.
       */
-      virtual char_type    
+      virtual char_type
       do_decimal_point() const
       { return _M_data->_M_decimal_point; }
 
@@ -1845,7 +1845,7 @@ namespace std
        *
        *  @return  @a char_type representing a thousands separator.
       */
-      virtual char_type    
+      virtual char_type
       do_thousands_sep() const
       { return _M_data->_M_thousands_sep; }
 
@@ -1889,25 +1889,25 @@ namespace std
       { return _M_data->_M_falsename; }
 
       // For use at construction time only.
-      void 
+      void
       _M_initialize_numpunct(__c_locale __cloc = NULL);
     };
 
   template<typename _CharT>
     locale::id numpunct<_CharT>::id;
 
-  template<> 
+  template<>
     numpunct<char>::~numpunct();
 
-  template<> 
+  template<>
     void
     numpunct<char>::_M_initialize_numpunct(__c_locale __cloc);
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  template<> 
+  template<>
     numpunct<wchar_t>::~numpunct();
 
-  template<> 
+  template<>
     void
     numpunct<wchar_t>::_M_initialize_numpunct(__c_locale __cloc);
 #endif
@@ -1916,10 +1916,10 @@ namespace std
     class numpunct_byname : public numpunct<_CharT>
     {
     public:
-      typedef _CharT               	char_type;
-      typedef basic_string<_CharT> 	string_type;
+      typedef _CharT			char_type;
+      typedef basic_string<_CharT>	string_type;
 
-      explicit 
+      explicit
       numpunct_byname(const char* __s, size_t __refs = 0)
       : numpunct<_CharT>(__refs)
       {
@@ -1927,14 +1927,14 @@ namespace std
 	  {
 	    __c_locale __tmp;
 	    this->_S_create_c_locale(__tmp, __s);
-	    this->_M_initialize_numpunct(__tmp);	
-	    this->_S_destroy_c_locale(__tmp); 
+	    this->_M_initialize_numpunct(__tmp);
+	    this->_S_destroy_c_locale(__tmp);
 	  }
       }
 
     protected:
-      virtual 
-      ~numpunct_byname() { }	
+      virtual
+      ~numpunct_byname() { }
     };
 
   /**
@@ -1956,12 +1956,12 @@ namespace std
       // Types:
       //@{
       /// Public typedefs
-      typedef _CharT   			char_type;
-      typedef _InIter  			iter_type;
+      typedef _CharT			char_type;
+      typedef _InIter			iter_type;
       //@}
 
       /// Numpunct facet id.
-      static locale::id 		id;
+      static locale::id			id;
 
       /**
        *  @brief  Constructor performs initialization.
@@ -1970,7 +1970,7 @@ namespace std
        *
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
+      explicit
       num_get(size_t __refs = 0) : facet(__refs) { }
 
       /**
@@ -1995,7 +1995,7 @@ namespace std
        *  @param  v  Value to format and insert.
        *  @return  Iterator after reading.
       */
-      iter_type 
+      iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, bool& __v) const
       { return this->do_get(__in, __end, __io, __err, __v); }
@@ -2032,32 +2032,32 @@ namespace std
        *  @return  Iterator after reading.
       */
       iter_type
-      get(iter_type __in, iter_type __end, ios_base& __io, 
+      get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, long& __v) const
       { return this->do_get(__in, __end, __io, __err, __v); }
 
-      iter_type 
+      iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, unsigned short& __v) const
       { return this->do_get(__in, __end, __io, __err, __v); }
 
-      iter_type 
+      iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, unsigned int& __v)   const
       { return this->do_get(__in, __end, __io, __err, __v); }
 
-      iter_type 
+      iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, unsigned long& __v)  const
       { return this->do_get(__in, __end, __io, __err, __v); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
-      iter_type 
+      iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, long long& __v) const
       { return this->do_get(__in, __end, __io, __err, __v); }
 
-      iter_type 
+      iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, unsigned long long& __v)  const
       { return this->do_get(__in, __end, __io, __err, __v); }
@@ -2090,17 +2090,17 @@ namespace std
        *  @param  v  Value to format and insert.
        *  @return  Iterator after reading.
       */
-      iter_type 
+      iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, float& __v) const
       { return this->do_get(__in, __end, __io, __err, __v); }
 
-      iter_type 
+      iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, double& __v) const
       { return this->do_get(__in, __end, __io, __err, __v); }
 
-      iter_type 
+      iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, long double& __v) const
       { return this->do_get(__in, __end, __io, __err, __v); }
@@ -2132,22 +2132,22 @@ namespace std
        *  @param  v  Value to format and insert.
        *  @return  Iterator after reading.
       */
-      iter_type 
+      iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, void*& __v) const
-      { return this->do_get(__in, __end, __io, __err, __v); }      
+      { return this->do_get(__in, __end, __io, __err, __v); }
 
     protected:
       /// Destructor.
       virtual ~num_get() { }
 
-      iter_type 
-      _M_extract_float(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+      iter_type
+      _M_extract_float(iter_type, iter_type, ios_base&, ios_base::iostate&,
 		       string& __xtrc) const;
 
       template<typename _ValueT>
-        iter_type 
-        _M_extract_int(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+        iter_type
+        _M_extract_int(iter_type, iter_type, ios_base&, ios_base::iostate&,
 		       _ValueT& __v) const;
 
       //@{
@@ -2165,49 +2165,49 @@ namespace std
        *  @param  v  Value to format and insert.
        *  @return  Iterator after reading.
       */
-      virtual iter_type 
+      virtual iter_type
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const;
 
 
-      virtual iter_type 
+      virtual iter_type
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, long&) const;
 
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
 	      unsigned short&) const;
 
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
 	     unsigned int&) const;
 
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
 	     unsigned long&) const;
 
-#ifdef _GLIBCXX_USE_LONG_LONG 
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+#ifdef _GLIBCXX_USE_LONG_LONG
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
 	     long long&) const;
 
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
 	     unsigned long long&) const;
 #endif
 
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
 	     float&) const;
 
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
 	     double&) const;
 
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
 	     long double&) const;
 
-      virtual iter_type 
-      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+      virtual iter_type
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
 	     void*&) const;
       //@}
     };
@@ -2234,8 +2234,8 @@ namespace std
       // Types:
       //@{
       /// Public typedefs
-      typedef _CharT       	char_type;
-      typedef _OutIter     	iter_type;
+      typedef _CharT		char_type;
+      typedef _OutIter		iter_type;
       //@}
 
       /// Numpunct facet id.
@@ -2248,7 +2248,7 @@ namespace std
        *
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
+      explicit
       num_put(size_t __refs = 0) : facet(__refs) { }
 
       /**
@@ -2266,7 +2266,7 @@ namespace std
        *  @param  v  Value to format and insert.
        *  @return  Iterator after writing.
       */
-      iter_type 
+      iter_type
       put(iter_type __s, ios_base& __f, char_type __fill, bool __v) const
       { return this->do_put(__s, __f, __fill, __v); }
 
@@ -2308,22 +2308,22 @@ namespace std
        *  @param  v  Value to format and insert.
        *  @return  Iterator after writing.
       */
-      iter_type 
+      iter_type
       put(iter_type __s, ios_base& __f, char_type __fill, long __v) const
       { return this->do_put(__s, __f, __fill, __v); }
 
-      iter_type 
-      put(iter_type __s, ios_base& __f, char_type __fill, 
+      iter_type
+      put(iter_type __s, ios_base& __f, char_type __fill,
 	  unsigned long __v) const
       { return this->do_put(__s, __f, __fill, __v); }
 
-#ifdef _GLIBCXX_USE_LONG_LONG 
-      iter_type 
+#ifdef _GLIBCXX_USE_LONG_LONG
+      iter_type
       put(iter_type __s, ios_base& __f, char_type __fill, long long __v) const
       { return this->do_put(__s, __f, __fill, __v); }
 
-      iter_type 
-      put(iter_type __s, ios_base& __f, char_type __fill, 
+      iter_type
+      put(iter_type __s, ios_base& __f, char_type __fill,
 	  unsigned long long __v) const
       { return this->do_put(__s, __f, __fill, __v); }
 #endif
@@ -2371,12 +2371,12 @@ namespace std
        *  @param  v  Value to format and insert.
        *  @return  Iterator after writing.
       */
-      iter_type 
+      iter_type
       put(iter_type __s, ios_base& __f, char_type __fill, double __v) const
       { return this->do_put(__s, __f, __fill, __v); }
 
-      iter_type 
-      put(iter_type __s, ios_base& __f, char_type __fill, 
+      iter_type
+      put(iter_type __s, ios_base& __f, char_type __fill,
 	  long double __v) const
       { return this->do_put(__s, __f, __fill, __v); }
       //@}
@@ -2396,15 +2396,15 @@ namespace std
        *  @param  v  Value to format and insert.
        *  @return  Iterator after writing.
       */
-      iter_type 
-      put(iter_type __s, ios_base& __f, char_type __fill, 
+      iter_type
+      put(iter_type __s, ios_base& __f, char_type __fill,
 	  const void* __v) const
       { return this->do_put(__s, __f, __fill, __v); }
 
     protected:
       template<typename _ValueT>
         iter_type
-        _M_insert_float(iter_type, ios_base& __io, char_type __fill, 
+        _M_insert_float(iter_type, ios_base& __io, char_type __fill,
 			char __mod, _ValueT __v) const;
 
       void
@@ -2414,7 +2414,7 @@ namespace std
 
       template<typename _ValueT>
         iter_type
-        _M_insert_int(iter_type, ios_base& __io, char_type __fill, 
+        _M_insert_int(iter_type, ios_base& __io, char_type __fill,
 		      _ValueT __v) const;
 
       void
@@ -2423,11 +2423,11 @@ namespace std
 		   char_type* __cs, int& __len) const;
 
       void
-      _M_pad(char_type __fill, streamsize __w, ios_base& __io, 
+      _M_pad(char_type __fill, streamsize __w, ios_base& __io,
 	     char_type* __new, const char_type* __cs, int& __len) const;
 
       /// Destructor.
-      virtual 
+      virtual
       ~num_put() { };
 
       //@{
@@ -2444,30 +2444,30 @@ namespace std
        *  @param  v  Value to format and insert.
        *  @return  Iterator after writing.
       */
-      virtual iter_type 
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, bool __v) const;
 
-      virtual iter_type 
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, long __v) const;
 
-      virtual iter_type 
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, unsigned long) const;
 
-#ifdef _GLIBCXX_USE_LONG_LONG 
-      virtual iter_type 
+#ifdef _GLIBCXX_USE_LONG_LONG
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, long long __v) const;
 
       virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, unsigned long long) const;
 #endif
 
-      virtual iter_type 
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, double __v) const;
 
-      virtual iter_type 
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, long double __v) const;
 
-      virtual iter_type 
+      virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, const void* __v) const;
       //@}
     };
@@ -2495,18 +2495,18 @@ namespace std
       // Types:
       //@{
       /// Public typedefs
-      typedef _CharT               	char_type;
-      typedef basic_string<_CharT> 	string_type;
+      typedef _CharT			char_type;
+      typedef basic_string<_CharT>	string_type;
       //@}
 
     protected:
       // Underlying "C" library locale information saved from
       // initialization, needed by collate_byname as well.
       __c_locale			_M_c_locale_collate;
- 
+
     public:
       /// Numpunct facet id.
-      static locale::id 		id;
+      static locale::id			id;
 
       /**
        *  @brief  Constructor performs initialization.
@@ -2515,7 +2515,7 @@ namespace std
        *
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
+      explicit
       collate(size_t __refs = 0)
       : facet(__refs)
       { _M_c_locale_collate = _S_get_c_locale(); }
@@ -2529,8 +2529,8 @@ namespace std
        *  @param cloc  The "C" locale.
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
-      collate(__c_locale __cloc, size_t __refs = 0) 
+      explicit
+      collate(__c_locale __cloc, size_t __refs = 0)
       : facet(__refs)
       { _M_c_locale_collate = _S_clone_c_locale(__cloc); }
 
@@ -2546,7 +2546,7 @@ namespace std
        *  @param hi2  End of string 2.
        *  @return  1 if string1 > string2, -1 if string1 < string2, else 0.
       */
-      int 
+      int
       compare(const _CharT* __lo1, const _CharT* __hi1,
 	      const _CharT* __lo2, const _CharT* __hi2) const
       { return this->do_compare(__lo1, __hi1, __lo2, __hi2); }
@@ -2565,7 +2565,7 @@ namespace std
        *  @param hi  End of string.
        *  @return  Transformed string_type.
       */
-      string_type 
+      string_type
       transform(const _CharT* __lo, const _CharT* __hi) const
       { return this->do_transform(__lo, __hi); }
 
@@ -2579,10 +2579,10 @@ namespace std
        *  @param hi  End of string.
        *  @return  Hash value.
       */
-      long 
+      long
       hash(const _CharT* __lo, const _CharT* __hi) const
       { return this->do_hash(__lo, __hi); }
-      
+
       // Used to abstract out _CharT bits in virtual member functions, below.
       int
       _M_compare(const _CharT*, const _CharT*) const;
@@ -2593,7 +2593,7 @@ namespace std
   protected:
       /// Destructor.
       virtual
-      ~collate() 
+      ~collate()
       { _S_destroy_c_locale(_M_c_locale_collate); }
 
       /**
@@ -2608,7 +2608,7 @@ namespace std
        *  @param hi2  End of string 2.
        *  @return  1 if string1 > string2, -1 if string1 < string2, else 0.
       */
-      virtual int  
+      virtual int
       do_compare(const _CharT* __lo1, const _CharT* __hi1,
 		 const _CharT* __lo2, const _CharT* __hi2) const;
 
@@ -2624,7 +2624,7 @@ namespace std
        *  @param hi2  End of string 2.
        *  @return  1 if string1 > string2, -1 if string1 < string2, else 0.
       */
-      virtual string_type 
+      virtual string_type
       do_transform(const _CharT* __lo, const _CharT* __hi) const;
 
       /**
@@ -2637,7 +2637,7 @@ namespace std
        *  @param hi  End of string.
        *  @return  Hash value.
       */
-      virtual long   
+      virtual long
       do_hash(const _CharT* __lo, const _CharT* __hi) const;
     };
 
@@ -2646,7 +2646,7 @@ namespace std
 
   // Specializations.
   template<>
-    int 
+    int
     collate<char>::_M_compare(const char*, const char*) const;
 
   template<>
@@ -2655,7 +2655,7 @@ namespace std
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<>
-    int 
+    int
     collate<wchar_t>::_M_compare(const wchar_t*, const wchar_t*) const;
 
   template<>
@@ -2673,19 +2673,19 @@ namespace std
       typedef basic_string<_CharT> string_type;
       //@}
 
-      explicit 
+      explicit
       collate_byname(const char* __s, size_t __refs = 0)
-      : collate<_CharT>(__refs) 
-      { 
+      : collate<_CharT>(__refs)
+      {
 	if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
 	  {
 	    this->_S_destroy_c_locale(this->_M_c_locale_collate);
-	    this->_S_create_c_locale(this->_M_c_locale_collate, __s); 
+	    this->_S_create_c_locale(this->_M_c_locale_collate, __s);
 	  }
       }
 
     protected:
-      virtual   
+      virtual
       ~collate_byname() { }
     };
 
@@ -2706,82 +2706,82 @@ namespace std
     struct __timepunct_cache : public locale::facet
     {
       // List of all known timezones, with GMT first.
-      static const _CharT* 		_S_timezones[14];
+      static const _CharT*		_S_timezones[14];
 
-      const _CharT* 			_M_date_format;
-      const _CharT* 			_M_date_era_format;
-      const _CharT* 			_M_time_format;
-      const _CharT* 			_M_time_era_format;
+      const _CharT*			_M_date_format;
+      const _CharT*			_M_date_era_format;
+      const _CharT*			_M_time_format;
+      const _CharT*			_M_time_era_format;
       const _CharT*			_M_date_time_format;
       const _CharT*			_M_date_time_era_format;
-      const _CharT* 			_M_am;
-      const _CharT* 			_M_pm;
+      const _CharT*			_M_am;
+      const _CharT*			_M_pm;
       const _CharT*			_M_am_pm_format;
 
       // Day names, starting with "C"'s Sunday.
-      const _CharT*  			_M_day1;
-      const _CharT*  			_M_day2;
-      const _CharT*  			_M_day3;
-      const _CharT*  			_M_day4;
-      const _CharT*  			_M_day5;
-      const _CharT*  			_M_day6;
-      const _CharT*  			_M_day7;
+      const _CharT*			_M_day1;
+      const _CharT*			_M_day2;
+      const _CharT*			_M_day3;
+      const _CharT*			_M_day4;
+      const _CharT*			_M_day5;
+      const _CharT*			_M_day6;
+      const _CharT*			_M_day7;
 
       // Abbreviated day names, starting with "C"'s Sun.
-      const _CharT*  			_M_aday1;
-      const _CharT*  			_M_aday2;
-      const _CharT*  			_M_aday3;
-      const _CharT*  			_M_aday4;
-      const _CharT*  			_M_aday5;
-      const _CharT*  			_M_aday6;
-      const _CharT*  			_M_aday7;
+      const _CharT*			_M_aday1;
+      const _CharT*			_M_aday2;
+      const _CharT*			_M_aday3;
+      const _CharT*			_M_aday4;
+      const _CharT*			_M_aday5;
+      const _CharT*			_M_aday6;
+      const _CharT*			_M_aday7;
 
       // Month names, starting with "C"'s January.
-      const _CharT*  			_M_month01;
-      const _CharT*  			_M_month02;
-      const _CharT*  			_M_month03;
-      const _CharT*  			_M_month04;
-      const _CharT*  			_M_month05;
-      const _CharT*  			_M_month06;
-      const _CharT*  			_M_month07;
-      const _CharT*  			_M_month08;
-      const _CharT*  			_M_month09;
-      const _CharT*  			_M_month10;
-      const _CharT*  			_M_month11;
-      const _CharT*  			_M_month12;
+      const _CharT*			_M_month01;
+      const _CharT*			_M_month02;
+      const _CharT*			_M_month03;
+      const _CharT*			_M_month04;
+      const _CharT*			_M_month05;
+      const _CharT*			_M_month06;
+      const _CharT*			_M_month07;
+      const _CharT*			_M_month08;
+      const _CharT*			_M_month09;
+      const _CharT*			_M_month10;
+      const _CharT*			_M_month11;
+      const _CharT*			_M_month12;
 
       // Abbreviated month names, starting with "C"'s Jan.
-      const _CharT*  			_M_amonth01;
-      const _CharT*  			_M_amonth02;
-      const _CharT*  			_M_amonth03;
-      const _CharT*  			_M_amonth04;
-      const _CharT*  			_M_amonth05;
-      const _CharT*  			_M_amonth06;
-      const _CharT*  			_M_amonth07;
-      const _CharT*  			_M_amonth08;
-      const _CharT*  			_M_amonth09;
-      const _CharT*  			_M_amonth10;
-      const _CharT*  			_M_amonth11;
-      const _CharT*  			_M_amonth12;
+      const _CharT*			_M_amonth01;
+      const _CharT*			_M_amonth02;
+      const _CharT*			_M_amonth03;
+      const _CharT*			_M_amonth04;
+      const _CharT*			_M_amonth05;
+      const _CharT*			_M_amonth06;
+      const _CharT*			_M_amonth07;
+      const _CharT*			_M_amonth08;
+      const _CharT*			_M_amonth09;
+      const _CharT*			_M_amonth10;
+      const _CharT*			_M_amonth11;
+      const _CharT*			_M_amonth12;
 
       bool				_M_allocated;
 
-      __timepunct_cache(size_t __refs = 0) : facet(__refs), 
+      __timepunct_cache(size_t __refs = 0) : facet(__refs),
       _M_date_format(NULL), _M_date_era_format(NULL), _M_time_format(NULL),
-      _M_time_era_format(NULL), _M_date_time_format(NULL), 
-      _M_date_time_era_format(NULL), _M_am(NULL), _M_pm(NULL), 
-      _M_am_pm_format(NULL), _M_day1(NULL), _M_day2(NULL), _M_day3(NULL), 
-      _M_day4(NULL), _M_day5(NULL), _M_day6(NULL), _M_day7(NULL), 
-      _M_aday1(NULL), _M_aday2(NULL), _M_aday3(NULL), _M_aday4(NULL), 
+      _M_time_era_format(NULL), _M_date_time_format(NULL),
+      _M_date_time_era_format(NULL), _M_am(NULL), _M_pm(NULL),
+      _M_am_pm_format(NULL), _M_day1(NULL), _M_day2(NULL), _M_day3(NULL),
+      _M_day4(NULL), _M_day5(NULL), _M_day6(NULL), _M_day7(NULL),
+      _M_aday1(NULL), _M_aday2(NULL), _M_aday3(NULL), _M_aday4(NULL),
       _M_aday5(NULL), _M_aday6(NULL), _M_aday7(NULL), _M_month01(NULL),
-      _M_month02(NULL), _M_month03(NULL), _M_month04(NULL), _M_month05(NULL), 
-      _M_month06(NULL), _M_month07(NULL), _M_month08(NULL), _M_month09(NULL), 
+      _M_month02(NULL), _M_month03(NULL), _M_month04(NULL), _M_month05(NULL),
+      _M_month06(NULL), _M_month07(NULL), _M_month08(NULL), _M_month09(NULL),
       _M_month10(NULL), _M_month11(NULL), _M_month12(NULL), _M_amonth01(NULL),
-      _M_amonth02(NULL), _M_amonth03(NULL), _M_amonth04(NULL), 
-      _M_amonth05(NULL), _M_amonth06(NULL), _M_amonth07(NULL), 
-      _M_amonth08(NULL), _M_amonth09(NULL), _M_amonth10(NULL), 
+      _M_amonth02(NULL), _M_amonth03(NULL), _M_amonth04(NULL),
+      _M_amonth05(NULL), _M_amonth06(NULL), _M_amonth07(NULL),
+      _M_amonth08(NULL), _M_amonth09(NULL), _M_amonth10(NULL),
       _M_amonth11(NULL), _M_amonth12(NULL), _M_allocated(false)
-      { } 
+      { }
 
       ~__timepunct_cache();
 
@@ -2799,12 +2799,12 @@ namespace std
     }
 
   // Specializations.
-  template<> 
+  template<>
     const char*
     __timepunct_cache<char>::_S_timezones[14];
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  template<> 
+  template<>
     const wchar_t*
     __timepunct_cache<wchar_t>::_S_timezones[14];
 #endif
@@ -2818,8 +2818,8 @@ namespace std
     {
     public:
       // Types:
-      typedef _CharT          		__char_type;
-      typedef basic_string<_CharT> 	__string_type;
+      typedef _CharT			__char_type;
+      typedef basic_string<_CharT>	__string_type;
       typedef __timepunct_cache<_CharT>	__cache_type;
 
     protected:
@@ -2829,12 +2829,12 @@ namespace std
 
     public:
       /// Numpunct facet id.
-      static locale::id 		id;
+      static locale::id			id;
 
-      explicit 
+      explicit
       __timepunct(size_t __refs = 0);
 
-      explicit 
+      explicit
       __timepunct(__cache_type* __cache, size_t __refs = 0);
 
       /**
@@ -2847,11 +2847,11 @@ namespace std
        *  @param s  The name of a locale.
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
+      explicit
       __timepunct(__c_locale __cloc, const char* __s, size_t __refs = 0);
 
       void
-      _M_put(_CharT* __s, size_t __maxlen, const _CharT* __format, 
+      _M_put(_CharT* __s, size_t __maxlen, const _CharT* __format,
 	     const tm* __tm) const;
 
       void
@@ -2859,7 +2859,7 @@ namespace std
       {
 	// Always have default first.
 	__date[0] = _M_data->_M_date_format;
-	__date[1] = _M_data->_M_date_era_format;	
+	__date[1] = _M_data->_M_date_era_format;
       }
 
       void
@@ -2867,27 +2867,27 @@ namespace std
       {
 	// Always have default first.
 	__time[0] = _M_data->_M_time_format;
-	__time[1] = _M_data->_M_time_era_format;	
+	__time[1] = _M_data->_M_time_era_format;
       }
 
       void
       _M_ampm(const _CharT** __ampm) const
-      { 
+      {
 	__ampm[0] = _M_data->_M_am;
 	__ampm[1] = _M_data->_M_pm;
-      }      
+      }
 
       void
       _M_date_time_formats(const _CharT** __dt) const
       {
 	// Always have default first.
 	__dt[0] = _M_data->_M_date_time_format;
-	__dt[1] = _M_data->_M_date_time_era_format;	
+	__dt[1] = _M_data->_M_date_time_era_format;
       }
 
       void
       _M_days(const _CharT** __days) const
-      { 
+      {
 	__days[0] = _M_data->_M_day1;
 	__days[1] = _M_data->_M_day2;
 	__days[2] = _M_data->_M_day3;
@@ -2899,7 +2899,7 @@ namespace std
 
       void
       _M_days_abbreviated(const _CharT** __days) const
-      { 
+      {
 	__days[0] = _M_data->_M_aday1;
 	__days[1] = _M_data->_M_aday2;
 	__days[2] = _M_data->_M_aday3;
@@ -2911,7 +2911,7 @@ namespace std
 
       void
       _M_months(const _CharT** __months) const
-      { 
+      {
 	__months[0] = _M_data->_M_month01;
 	__months[1] = _M_data->_M_month02;
 	__months[2] = _M_data->_M_month03;
@@ -2928,7 +2928,7 @@ namespace std
 
       void
       _M_months_abbreviated(const _CharT** __months) const
-      { 
+      {
 	__months[0] = _M_data->_M_amonth01;
 	__months[1] = _M_data->_M_amonth02;
 	__months[2] = _M_data->_M_amonth03;
@@ -2944,11 +2944,11 @@ namespace std
       }
 
     protected:
-      virtual 
+      virtual
       ~__timepunct();
 
       // For use at construction time only.
-      void 
+      void
       _M_initialize_timepunct(__c_locale __cloc = NULL);
     };
 
@@ -2956,7 +2956,7 @@ namespace std
     locale::id __timepunct<_CharT>::id;
 
   // Specializations.
-  template<> 
+  template<>
     void
     __timepunct<char>::_M_initialize_timepunct(__c_locale __cloc);
 
@@ -2965,13 +2965,13 @@ namespace std
     __timepunct<char>::_M_put(char*, size_t, const char*, const tm*) const;
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  template<> 
+  template<>
     void
     __timepunct<wchar_t>::_M_initialize_timepunct(__c_locale __cloc);
 
   template<>
     void
-    __timepunct<wchar_t>::_M_put(wchar_t*, size_t, const wchar_t*, 
+    __timepunct<wchar_t>::_M_put(wchar_t*, size_t, const wchar_t*,
 				 const tm*) const;
 #endif
 
@@ -2997,13 +2997,13 @@ namespace std
       // Types:
       //@{
       /// Public typedefs
-      typedef _CharT     		char_type;
-      typedef _InIter    		iter_type;
+      typedef _CharT			char_type;
+      typedef _InIter			iter_type;
       //@}
-      typedef basic_string<_CharT> 	__string_type;
+      typedef basic_string<_CharT>	__string_type;
 
       /// Numpunct facet id.
-      static locale::id 		id;
+      static locale::id			id;
 
       /**
        *  @brief  Constructor performs initialization.
@@ -3012,8 +3012,8 @@ namespace std
        *
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
-      time_get(size_t __refs = 0) 
+      explicit
+      time_get(size_t __refs = 0)
       : facet (__refs) { }
 
       /**
@@ -3023,13 +3023,13 @@ namespace std
        *  preferred ordering if the format "x" given to time_put::put() only
        *  uses month, day, and year.  If the format "x" for the associated
        *  locale uses other fields, this function returns
-       *  timebase::dateorder::noorder.  
+       *  timebase::dateorder::noorder.
        *
        *  NOTE: The library always returns noorder at the moment.
        *
        *  @return  A member of timebase::dateorder.
       */
-      dateorder 
+      dateorder
       date_order()  const
       { return this->do_date_order(); }
 
@@ -3053,8 +3053,8 @@ namespace std
        *  @param  tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond time string.
       */
-      iter_type 
-      get_time(iter_type __beg, iter_type __end, ios_base& __io, 
+      iter_type
+      get_time(iter_type __beg, iter_type __end, ios_base& __io,
 	       ios_base::iostate& __err, tm* __tm)  const
       { return this->do_get_time(__beg, __end, __io, __err, __tm); }
 
@@ -3078,7 +3078,7 @@ namespace std
        *  @param  tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond date string.
       */
-      iter_type 
+      iter_type
       get_date(iter_type __beg, iter_type __end, ios_base& __io,
 	       ios_base::iostate& __err, tm* __tm)  const
       { return this->do_get_date(__beg, __end, __io, __err, __tm); }
@@ -3106,7 +3106,7 @@ namespace std
        *  @param  tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond weekday name.
       */
-      iter_type 
+      iter_type
       get_weekday(iter_type __beg, iter_type __end, ios_base& __io,
 		  ios_base::iostate& __err, tm* __tm) const
       { return this->do_get_weekday(__beg, __end, __io, __err, __tm); }
@@ -3135,8 +3135,8 @@ namespace std
        *  @param  tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond month name.
       */
-      iter_type 
-      get_monthname(iter_type __beg, iter_type __end, ios_base& __io, 
+      iter_type
+      get_monthname(iter_type __beg, iter_type __end, ios_base& __io,
 		    ios_base::iostate& __err, tm* __tm) const
       { return this->do_get_monthname(__beg, __end, __io, __err, __tm); }
 
@@ -3161,14 +3161,14 @@ namespace std
        *  @param  tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond year.
       */
-      iter_type 
+      iter_type
       get_year(iter_type __beg, iter_type __end, ios_base& __io,
 	       ios_base::iostate& __err, tm* __tm) const
       { return this->do_get_year(__beg, __end, __io, __err, __tm); }
 
     protected:
       /// Destructor.
-      virtual 
+      virtual
       ~time_get() { }
 
       /**
@@ -3181,7 +3181,7 @@ namespace std
        *
        *  @return  A member of timebase::dateorder.
       */
-      virtual dateorder 
+      virtual dateorder
       do_date_order() const;
 
       /**
@@ -3199,7 +3199,7 @@ namespace std
        *  @param  tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond time string.
       */
-      virtual iter_type 
+      virtual iter_type
       do_get_time(iter_type __beg, iter_type __end, ios_base& __io,
 		  ios_base::iostate& __err, tm* __tm) const;
 
@@ -3218,7 +3218,7 @@ namespace std
        *  @param  tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond date string.
       */
-      virtual iter_type 
+      virtual iter_type
       do_get_date(iter_type __beg, iter_type __end, ios_base& __io,
 		  ios_base::iostate& __err, tm* __tm) const;
 
@@ -3237,7 +3237,7 @@ namespace std
        *  @param  tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond weekday name.
       */
-      virtual iter_type 
+      virtual iter_type
       do_get_weekday(iter_type __beg, iter_type __end, ios_base&,
 		     ios_base::iostate& __err, tm* __tm) const;
 
@@ -3256,8 +3256,8 @@ namespace std
        *  @param  tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond month name.
       */
-      virtual iter_type 
-      do_get_monthname(iter_type __beg, iter_type __end, ios_base&, 
+      virtual iter_type
+      do_get_monthname(iter_type __beg, iter_type __end, ios_base&,
 		       ios_base::iostate& __err, tm* __tm) const;
 
       /**
@@ -3275,7 +3275,7 @@ namespace std
        *  @param  tm  Pointer to struct tm to fill in.
        *  @return  Iterator to first char beyond year.
       */
-      virtual iter_type 
+      virtual iter_type
       do_get_year(iter_type __beg, iter_type __end, ios_base& __io,
 		  ios_base::iostate& __err, tm* __tm) const;
 
@@ -3283,21 +3283,21 @@ namespace std
       void
       _M_extract_num(iter_type& __beg, iter_type& __end, int& __member,
 		     int __min, int __max, size_t __len,
-		     const ctype<_CharT>& __ctype, 
+		     const ctype<_CharT>& __ctype,
 		     ios_base::iostate& __err) const;
-      
+
       // Extract day or month name, or any unique array of string
       // literals in a const _CharT* array.
       void
       _M_extract_name(iter_type& __beg, iter_type& __end, int& __member,
-		      const _CharT** __names, size_t __indexlen, 
-		      const ctype<_CharT>& __ctype, 
+		      const _CharT** __names, size_t __indexlen,
+		      const ctype<_CharT>& __ctype,
 		      ios_base::iostate& __err) const;
 
       // Extract on a component-by-component basis, via __format argument.
       void
       _M_extract_via_format(iter_type& __beg, iter_type& __end, ios_base& __io,
-			    ios_base::iostate& __err, tm* __tm, 
+			    ios_base::iostate& __err, tm* __tm,
 			    const _CharT* __format) const;
     };
 
@@ -3309,15 +3309,15 @@ namespace std
     {
     public:
       // Types:
-      typedef _CharT     		char_type;
-      typedef _InIter    		iter_type;
+      typedef _CharT			char_type;
+      typedef _InIter			iter_type;
 
-      explicit 
-      time_get_byname(const char*, size_t __refs = 0) 
+      explicit
+      time_get_byname(const char*, size_t __refs = 0)
       : time_get<_CharT, _InIter>(__refs) { }
 
     protected:
-      virtual 
+      virtual
       ~time_get_byname() { }
     };
 
@@ -3339,12 +3339,12 @@ namespace std
       // Types:
       //@{
       /// Public typedefs
-      typedef _CharT     		char_type;
-      typedef _OutIter   		iter_type;
+      typedef _CharT			char_type;
+      typedef _OutIter			iter_type;
       //@}
 
       /// Numpunct facet id.
-      static locale::id 	     	id;
+      static locale::id			id;
 
       /**
        *  @brief  Constructor performs initialization.
@@ -3353,8 +3353,8 @@ namespace std
        *
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
-      time_put(size_t __refs = 0) 
+      explicit
+      time_put(size_t __refs = 0)
       : facet(__refs) { }
 
       /**
@@ -3372,8 +3372,8 @@ namespace std
        *  @param  end  End of format string.
        *  @return  Iterator after writing.
        */
-      iter_type 
-      put(iter_type __s, ios_base& __io, char_type __fill, const tm* __tm, 
+      iter_type
+      put(iter_type __s, ios_base& __io, char_type __fill, const tm* __tm,
 	  const _CharT* __beg, const _CharT* __end) const;
 
       /**
@@ -3392,14 +3392,14 @@ namespace std
        *  @param  mod  Optional modifier char.
        *  @return  Iterator after writing.
        */
-      iter_type 
+      iter_type
       put(iter_type __s, ios_base& __io, char_type __fill,
 	  const tm* __tm, char __format, char __mod = 0) const
       { return this->do_put(__s, __io, __fill, __tm, __format, __mod); }
 
     protected:
       /// Destructor.
-      virtual 
+      virtual
       ~time_put()
       { }
 
@@ -3419,8 +3419,8 @@ namespace std
        *  @param  mod  Optional modifier char.
        *  @return  Iterator after writing.
        */
-      virtual iter_type 
-      do_put(iter_type __s, ios_base& __io, char_type __fill, const tm* __tm, 
+      virtual iter_type
+      do_put(iter_type __s, ios_base& __io, char_type __fill, const tm* __tm,
 	     char __format, char __mod) const;
     };
 
@@ -3432,16 +3432,16 @@ namespace std
     {
     public:
       // Types:
-      typedef _CharT     		char_type;
-      typedef _OutIter   		iter_type;
+      typedef _CharT			char_type;
+      typedef _OutIter			iter_type;
 
-      explicit 
-      time_put_byname(const char*, size_t __refs = 0) 
-      : time_put<_CharT, _OutIter>(__refs) 
+      explicit
+      time_put_byname(const char*, size_t __refs = 0)
+      : time_put<_CharT, _OutIter>(__refs)
       { };
 
     protected:
-      virtual 
+      virtual
       ~time_put_byname() { }
     };
 
@@ -3464,35 +3464,58 @@ namespace std
 
     static const pattern _S_default_pattern;
 
+    enum
+    {
+      _S_minus,
+      _S_zero,
+      _S_end = 11
+    };
+
+    // String literal of acceptable (narrow) input/output, for
+    // money_get/money_put. "-0123456789"
+    static const char* _S_atoms;
+
     // Construct and return valid pattern consisting of some combination of:
     // space none symbol sign value
-    static pattern 
+    static pattern
     _S_construct_pattern(char __precedes, char __space, char __posn);
   };
 
-  template<typename _CharT>
+  template<typename _CharT, bool _Intl>
     struct __moneypunct_cache : public locale::facet
     {
-      const char* 			_M_grouping;
+      const char*			_M_grouping;
+      size_t                            _M_grouping_size;
       bool				_M_use_grouping;
-      _CharT 				_M_decimal_point;
-      _CharT 				_M_thousands_sep;
-      const _CharT* 			_M_curr_symbol;
+      _CharT				_M_decimal_point;
+      _CharT				_M_thousands_sep;
+      const _CharT*			_M_curr_symbol;
+      size_t                            _M_curr_symbol_size;
       const _CharT*			_M_positive_sign;
+      size_t                            _M_positive_sign_size;
       const _CharT*			_M_negative_sign;
-      int 				_M_frac_digits;
-      money_base::pattern 		_M_pos_format;
-      money_base::pattern 	        _M_neg_format;
+      size_t                            _M_negative_sign_size;
+      int				_M_frac_digits;
+      money_base::pattern		_M_pos_format;
+      money_base::pattern	        _M_neg_format;
+
+      // A list of valid numeric literals for input and output: in the standard
+      // "C" locale, this is "-0123456789". This array contains the chars after
+      // having been passed through the current locale's ctype<_CharT>.widen().
+      _CharT				_M_atoms[money_base::_S_end];
 
       bool				_M_allocated;
 
-      __moneypunct_cache(size_t __refs = 0) : facet(__refs), 
-      _M_grouping(NULL), _M_use_grouping(false), _M_decimal_point(_CharT()), 
-      _M_thousands_sep(_CharT()), _M_curr_symbol(NULL), _M_positive_sign(NULL),
-      _M_negative_sign(NULL), _M_frac_digits(0), 
-      _M_pos_format(money_base::pattern()), 
+      __moneypunct_cache(size_t __refs = 0) : facet(__refs),
+      _M_grouping(NULL), _M_grouping_size(0), _M_use_grouping(false),
+      _M_decimal_point(_CharT()), _M_thousands_sep(_CharT()),
+      _M_curr_symbol(NULL), _M_curr_symbol_size(0),
+      _M_positive_sign(NULL), _M_positive_sign_size(0),
+      _M_negative_sign(NULL), _M_negative_sign_size(0),
+      _M_frac_digits(0),
+      _M_pos_format(money_base::pattern()),
       _M_neg_format(money_base::pattern()), _M_allocated(false)
-      { } 
+      { }
 
       ~__moneypunct_cache();
 
@@ -3500,13 +3523,58 @@ namespace std
       _M_cache(const locale& __loc);
     };
 
-  template<typename _CharT>
-    __moneypunct_cache<_CharT>::~__moneypunct_cache()
+  template<typename _CharT, bool _Intl>
+    __moneypunct_cache<_CharT, _Intl>::~__moneypunct_cache()
     {
       if (_M_allocated)
 	{
-	  // XXX.
+	  delete [] _M_grouping;
+	  delete [] _M_curr_symbol;
+	  delete [] _M_positive_sign;
+	  delete [] _M_negative_sign;
 	}
+    }
+
+  template<typename _CharT, bool _Intl>
+    void
+    __moneypunct_cache<_CharT, _Intl>::_M_cache(const locale& __loc)
+    {
+      _M_allocated = true;
+
+      const moneypunct<_CharT, _Intl>& __mp =
+	use_facet<moneypunct<_CharT, _Intl> >(__loc);
+
+      _M_grouping_size = __mp.grouping().size();
+      char* __grouping = new char[_M_grouping_size];
+      __mp.grouping().copy(__grouping, _M_grouping_size);
+      _M_grouping = __grouping;
+      _M_use_grouping = _M_grouping_size && __mp.grouping()[0] != 0;
+      
+      _M_decimal_point = __mp.decimal_point();
+      _M_thousands_sep = __mp.thousands_sep();
+      _M_frac_digits = __mp.frac_digits();
+      
+      _M_curr_symbol_size = __mp.curr_symbol().size();
+      _CharT* __curr_symbol = new _CharT[_M_curr_symbol_size];
+      __mp.curr_symbol().copy(__curr_symbol, _M_curr_symbol_size);
+      _M_curr_symbol = __curr_symbol;
+      
+      _M_positive_sign_size = __mp.positive_sign().size();
+      _CharT* __positive_sign = new _CharT[_M_positive_sign_size];
+      __mp.positive_sign().copy(__positive_sign, _M_positive_sign_size);
+      _M_positive_sign = __positive_sign;
+
+      _M_negative_sign_size = __mp.negative_sign().size();
+      _CharT* __negative_sign = new _CharT[_M_negative_sign_size];
+      __mp.negative_sign().copy(__negative_sign, _M_negative_sign_size);
+      _M_negative_sign = __negative_sign;
+      
+      _M_pos_format = __mp.pos_format();
+      _M_neg_format = __mp.neg_format();
+
+      const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
+      __ct.widen(money_base::_S_atoms,
+		 money_base::_S_atoms + money_base::_S_end, _M_atoms);
     }
 
   /**
@@ -3522,10 +3590,10 @@ namespace std
       // Types:
       //@{
       /// Public typedefs
-      typedef _CharT 		       	char_type;
-      typedef basic_string<_CharT> 	string_type;
+      typedef _CharT			char_type;
+      typedef basic_string<_CharT>	string_type;
       //@}
-      typedef __moneypunct_cache<_CharT>	__cache_type;
+      typedef __moneypunct_cache<_CharT, _Intl>     __cache_type;
 
     private:
       __cache_type*			_M_data;
@@ -3533,9 +3601,9 @@ namespace std
     public:
       /// This value is provided by the standard, but no reason for its
       /// existence.
-      static const bool 		intl = _Intl;
+      static const bool			intl = _Intl;
       /// Numpunct facet id.
-      static locale::id 		id;
+      static locale::id			id;
 
       /**
        *  @brief  Constructor performs initialization.
@@ -3544,7 +3612,7 @@ namespace std
        *
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
+      explicit
       moneypunct(size_t __refs = 0) : facet(__refs), _M_data(NULL)
       { _M_initialize_moneypunct(); }
 
@@ -3556,8 +3624,8 @@ namespace std
        *  @param cache  Cache for optimization.
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
-      moneypunct(__cache_type* __cache, size_t __refs = 0) 
+      explicit
+      moneypunct(__cache_type* __cache, size_t __refs = 0)
       : facet(__refs), _M_data(__cache)
       { _M_initialize_moneypunct(); }
 
@@ -3571,8 +3639,8 @@ namespace std
        *  @param s  The name of a locale.
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
-      moneypunct(__c_locale __cloc, const char* __s, size_t __refs = 0) 
+      explicit
+      moneypunct(__c_locale __cloc, const char* __s, size_t __refs = 0)
       : facet(__refs), _M_data(NULL)
       { _M_initialize_moneypunct(__cloc, __s); }
 
@@ -3588,7 +3656,7 @@ namespace std
       char_type
       decimal_point() const
       { return this->do_decimal_point(); }
-      
+
       /**
        *  @brief  Return thousands separator character.
        *
@@ -3601,7 +3669,7 @@ namespace std
       char_type
       thousands_sep() const
       { return this->do_thousands_sep(); }
-      
+
       /**
        *  @brief  Return grouping specification.
        *
@@ -3627,7 +3695,7 @@ namespace std
        *
        *  @return  string representing grouping specification.
       */
-      string 
+      string
       grouping() const
       { return this->do_grouping(); }
 
@@ -3640,7 +3708,7 @@ namespace std
        *
        *  @return  @a string_type representing a currency symbol.
       */
-      string_type  
+      string_type
       curr_symbol() const
       { return this->do_curr_symbol(); }
 
@@ -3657,7 +3725,7 @@ namespace std
        *
        *  @return  @a string_type representing a positive sign.
       */
-      string_type  
+      string_type
       positive_sign() const
       { return this->do_positive_sign(); }
 
@@ -3674,7 +3742,7 @@ namespace std
        *
        *  @return  @a string_type representing a negative sign.
       */
-      string_type  
+      string_type
       negative_sign() const
       { return this->do_negative_sign(); }
 
@@ -3729,14 +3797,14 @@ namespace std
       pos_format() const
       { return this->do_pos_format(); }
 
-      pattern      
+      pattern
       neg_format() const
       { return this->do_neg_format(); }
       //@}
 
     protected:
       /// Destructor.
-      virtual 
+      virtual
       ~moneypunct();
 
       /**
@@ -3750,7 +3818,7 @@ namespace std
       virtual char_type
       do_decimal_point() const
       { return _M_data->_M_decimal_point; }
-      
+
       /**
        *  @brief  Return thousands separator character.
        *
@@ -3762,7 +3830,7 @@ namespace std
       virtual char_type
       do_thousands_sep() const
       { return _M_data->_M_thousands_sep; }
-      
+
       /**
        *  @brief  Return grouping specification.
        *
@@ -3772,7 +3840,7 @@ namespace std
        *
        *  @return  String representing grouping specification.
       */
-      virtual string 
+      virtual string
       do_grouping() const
       { return _M_data->_M_grouping; }
 
@@ -3785,7 +3853,7 @@ namespace std
        *
        *  @return  @a string_type representing a currency symbol.
       */
-      virtual string_type  
+      virtual string_type
       do_curr_symbol()   const
       { return _M_data->_M_curr_symbol; }
 
@@ -3798,7 +3866,7 @@ namespace std
        *
        *  @return  @a string_type representing a positive sign.
       */
-      virtual string_type  
+      virtual string_type
       do_positive_sign() const
       { return _M_data->_M_positive_sign; }
 
@@ -3811,7 +3879,7 @@ namespace std
        *
        *  @return  @a string_type representing a negative sign.
       */
-      virtual string_type  
+      virtual string_type
       do_negative_sign() const
       { return _M_data->_M_negative_sign; }
 
@@ -3825,7 +3893,7 @@ namespace std
        *
        *  @return  Number of digits in amount fraction.
       */
-      virtual int          
+      virtual int
       do_frac_digits() const
       { return _M_data->_M_frac_digits; }
 
@@ -3839,7 +3907,7 @@ namespace std
        *
        *  @return  Pattern for money values.
       */
-      virtual pattern      
+      virtual pattern
       do_pos_format() const
       { return _M_data->_M_pos_format; }
 
@@ -3853,13 +3921,13 @@ namespace std
        *
        *  @return  Pattern for money values.
       */
-      virtual pattern      
+      virtual pattern
       do_neg_format() const
       { return _M_data->_M_neg_format; }
 
       // For use at construction time only.
-       void 
-       _M_initialize_moneypunct(__c_locale __cloc = NULL, 
+       void
+       _M_initialize_moneypunct(__c_locale __cloc = NULL,
 				const char* __name = NULL);
     };
 
@@ -3875,11 +3943,11 @@ namespace std
   template<>
     moneypunct<char, false>::~moneypunct();
 
-  template<> 
+  template<>
     void
     moneypunct<char, true>::_M_initialize_moneypunct(__c_locale, const char*);
 
-  template<> 
+  template<>
     void
     moneypunct<char, false>::_M_initialize_moneypunct(__c_locale, const char*);
 
@@ -3890,14 +3958,14 @@ namespace std
   template<>
     moneypunct<wchar_t, false>::~moneypunct();
 
-  template<> 
+  template<>
     void
-    moneypunct<wchar_t, true>::_M_initialize_moneypunct(__c_locale, 
+    moneypunct<wchar_t, true>::_M_initialize_moneypunct(__c_locale,
 							const char*);
 
-  template<> 
+  template<>
     void
-    moneypunct<wchar_t, false>::_M_initialize_moneypunct(__c_locale, 
+    moneypunct<wchar_t, false>::_M_initialize_moneypunct(__c_locale,
 							 const char*);
 #endif
 
@@ -3905,12 +3973,12 @@ namespace std
     class moneypunct_byname : public moneypunct<_CharT, _Intl>
     {
     public:
-      typedef _CharT 			char_type;
-      typedef basic_string<_CharT> 	string_type;
+      typedef _CharT			char_type;
+      typedef basic_string<_CharT>	string_type;
 
       static const bool intl = _Intl;
 
-      explicit 
+      explicit
       moneypunct_byname(const char* __s, size_t __refs = 0)
       : moneypunct<_CharT, _Intl>(__refs)
       {
@@ -3918,13 +3986,13 @@ namespace std
 	  {
 	    __c_locale __tmp;
 	    this->_S_create_c_locale(__tmp, __s);
-	    this->_M_initialize_moneypunct(__tmp);	
-	    this->_S_destroy_c_locale(__tmp); 
+	    this->_M_initialize_moneypunct(__tmp);
+	    this->_S_destroy_c_locale(__tmp);
 	  }
       }
 
     protected:
-      virtual 
+      virtual
       ~moneypunct_byname() { }
     };
 
@@ -3944,19 +4012,19 @@ namespace std
    *  the money_get facet.
   */
   template<typename _CharT, typename _InIter>
-    class money_get : public locale::facet
+  class money_get : public locale::facet, public money_base
     {
     public:
       // Types:
       //@{
       /// Public typedefs
-      typedef _CharT        		char_type;
-      typedef _InIter       		iter_type;
-      typedef basic_string<_CharT> 	string_type;
+      typedef _CharT			char_type;
+      typedef _InIter			iter_type;
+      typedef basic_string<_CharT>	string_type;
       //@}
 
       /// Numpunct facet id.
-      static locale::id 		id;
+      static locale::id			id;
 
       /**
        *  @brief  Constructor performs initialization.
@@ -3965,7 +4033,7 @@ namespace std
        *
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
+      explicit
       money_get(size_t __refs = 0) : facet(__refs) { }
 
       /**
@@ -3993,10 +4061,10 @@ namespace std
        *  @param  err  Error field to set if parsing fails.
        *  @param  units  Place to store result of parsing.
        *  @return  Iterator referencing first character beyond valid money
-       *  	   amount. 
+       *	   amount.
        */
       iter_type
-      get(iter_type __s, iter_type __end, bool __intl, ios_base& __io, 
+      get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
 	  ios_base::iostate& __err, long double& __units) const
       { return this->do_get(__s, __end, __intl, __io, __err, __units); }
 
@@ -4023,16 +4091,16 @@ namespace std
        *  @param  err  Error field to set if parsing fails.
        *  @param  digits  Place to store result of parsing.
        *  @return  Iterator referencing first character beyond valid money
-       *  	   amount. 
+       *	   amount.
        */
-      iter_type 
-      get(iter_type __s, iter_type __end, bool __intl, ios_base& __io, 
+      iter_type
+      get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
 	  ios_base::iostate& __err, string_type& __digits) const
       { return this->do_get(__s, __end, __intl, __io, __err, __digits); }
 
     protected:
       /// Destructor.
-      virtual 
+      virtual
       ~money_get() { }
 
       /**
@@ -4042,8 +4110,8 @@ namespace std
        *  value.  This function is a hook for derived classes to change the
        *  value returned.  @see get() for details.
        */
-      virtual iter_type 
-      do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io, 
+      virtual iter_type
+      do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
 	     ios_base::iostate& __err, long double& __units) const;
 
       /**
@@ -4053,9 +4121,14 @@ namespace std
        *  value.  This function is a hook for derived classes to change the
        *  value returned.  @see get() for details.
        */
-      virtual iter_type 
-      do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io, 
+      virtual iter_type
+      do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io,
 	     ios_base::iostate& __err, string_type& __digits) const;
+
+      template<bool _Intl>
+        iter_type
+        _M_extract(iter_type __s, iter_type __end, ios_base& __io,
+		   ios_base::iostate& __err, string& __digits) const;     
     };
 
   template<typename _CharT, typename _InIter>
@@ -4074,18 +4147,18 @@ namespace std
    *  the money_put facet.
   */
   template<typename _CharT, typename _OutIter>
-    class money_put : public locale::facet
+  class money_put : public locale::facet, public money_base
     {
     public:
       //@{
       /// Public typedefs
-      typedef _CharT              	char_type;
-      typedef _OutIter            	iter_type;
+      typedef _CharT			char_type;
+      typedef _OutIter			iter_type;
       typedef basic_string<_CharT>	string_type;
       //@}
 
       /// Numpunct facet id.
-      static locale::id 		id;
+      static locale::id			id;
 
       /**
        *  @brief  Constructor performs initialization.
@@ -4094,7 +4167,7 @@ namespace std
        *
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
+      explicit
       money_put(size_t __refs = 0) : facet(__refs) { }
 
       /**
@@ -4114,7 +4187,7 @@ namespace std
        *  @param  units  Place to store result of parsing.
        *  @return  Iterator after writing.
        */
-      iter_type 
+      iter_type
       put(iter_type __s, bool __intl, ios_base& __io,
 	  char_type __fill, long double __units) const
       { return this->do_put(__s, __intl, __io, __fill, __units); }
@@ -4136,14 +4209,14 @@ namespace std
        *  @param  units  Place to store result of parsing.
        *  @return  Iterator after writing.
        */
-      iter_type 
+      iter_type
       put(iter_type __s, bool __intl, ios_base& __io,
 	  char_type __fill, const string_type& __digits) const
       { return this->do_put(__s, __intl, __io, __fill, __digits); }
 
     protected:
       /// Destructor.
-      virtual 
+      virtual
       ~money_put() { }
 
       /**
@@ -4189,6 +4262,11 @@ namespace std
       virtual iter_type
       do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
 	     const string_type& __digits) const;
+
+      template<bool _Intl>
+        iter_type
+        _M_insert(iter_type __s, ios_base& __io, char_type __fill,
+		  const string_type& __digits) const;
     };
 
   template<typename _CharT, typename _OutIter>
@@ -4229,8 +4307,8 @@ namespace std
       // Types:
       //@{
       /// Public typedefs
-      typedef _CharT 			char_type;
-      typedef basic_string<_CharT> 	string_type;
+      typedef _CharT			char_type;
+      typedef basic_string<_CharT>	string_type;
       //@}
 
     protected:
@@ -4241,7 +4319,7 @@ namespace std
 
     public:
       /// Numpunct facet id.
-      static locale::id 		id;
+      static locale::id			id;
 
       /**
        *  @brief  Constructor performs initialization.
@@ -4250,7 +4328,7 @@ namespace std
        *
        *  @param refs  Passed to the base facet class.
       */
-      explicit 
+      explicit
       messages(size_t __refs = 0);
 
       // Non-standard.
@@ -4264,7 +4342,7 @@ namespace std
        *  @param  s  The name of a locale.
        *  @param  refs  Refcount to pass to the base class.
        */
-      explicit 
+      explicit
       messages(__c_locale __cloc, const char* __s, size_t __refs = 0);
 
       /*
@@ -4277,7 +4355,7 @@ namespace std
        *  @param  loc  Locale to use for character set conversions.
        *  @return  Handle to the catalog or value < 0 if open fails.
       */
-      catalog 
+      catalog
       open(const basic_string<char>& __s, const locale& __loc) const
       { return this->do_open(__s, __loc); }
 
@@ -4295,7 +4373,7 @@ namespace std
        *  @param  dir  Message catalog root directory.
        *  @return  Handle to the catalog or value < 0 if open fails.
       */
-      catalog 
+      catalog
       open(const basic_string<char>&, const locale&, const char*) const;
 
       /*
@@ -4313,7 +4391,7 @@ namespace std
        *  @param  s  Default return value if retrieval fails.
        *  @return  Retrieved message or @a s if get fails.
       */
-      string_type  
+      string_type
       get(catalog __c, int __set, int __msgid, const string_type& __s) const
       { return this->do_get(__c, __set, __msgid, __s); }
 
@@ -4324,13 +4402,13 @@ namespace std
        *
        *  @param  c  The catalog to close.
       */
-      void 
+      void
       close(catalog __c) const
       { return this->do_close(__c); }
 
     protected:
       /// Destructor.
-      virtual 
+      virtual
       ~messages();
 
       /*
@@ -4344,7 +4422,7 @@ namespace std
        *  @param  loc  Locale to use for character set conversions.
        *  @return  Handle to the opened catalog, value < 0 if open failed.
       */
-      virtual catalog 
+      virtual catalog
       do_open(const basic_string<char>&, const locale&) const;
 
       /*
@@ -4363,7 +4441,7 @@ namespace std
        *  @param  s  Default return value if retrieval fails.
        *  @return  Retrieved message or @a s if get fails.
       */
-      virtual string_type  
+      virtual string_type
       do_get(catalog, int, int, const string_type& __dfault) const;
 
       /*
@@ -4371,7 +4449,7 @@ namespace std
        *
        *  @param  c  The catalog to close.
       */
-      virtual void    
+      virtual void
       do_close(catalog) const;
 
       // Returns a locale and codeset-converted string, given a char* message.
@@ -4396,12 +4474,12 @@ namespace std
 	// Convert char* to _CharT in locale used to open catalog.
 	// XXX need additional template parameter on messages class for this..
 	// typedef typename codecvt<char, _CharT, _StateT> __codecvt_type;
-	typedef typename codecvt<char, _CharT, mbstate_t> __codecvt_type;      
+	typedef typename codecvt<char, _CharT, mbstate_t> __codecvt_type;
 
 	__codecvt_type::state_type __state;
 	// XXX may need to initialize state.
 	//initialize_state(__state._M_init());
-	
+
 	char* __from_next;
 	// XXX what size for this string?
 	_CharT* __to = static_cast<_CharT*>(__builtin_alloca(__len + 1));
@@ -4442,15 +4520,15 @@ namespace std
     class messages_byname : public messages<_CharT>
     {
     public:
-      typedef _CharT               	char_type;
-      typedef basic_string<_CharT> 	string_type;
+      typedef _CharT			char_type;
+      typedef basic_string<_CharT>	string_type;
 
-      explicit 
+      explicit
       messages_byname(const char* __s, size_t __refs = 0);
 
     protected:
-      virtual 
-      ~messages_byname() 
+      virtual
+      ~messages_byname()
       { }
     };
 
@@ -4465,22 +4543,22 @@ namespace std
   //@{
   /// Convenience interface to ctype.is().
   template<typename _CharT>
-    inline bool 
+    inline bool
     isspace(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::space, __c); }
 
   template<typename _CharT>
-    inline bool 
+    inline bool
     isprint(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::print, __c); }
 
   template<typename _CharT>
-    inline bool 
+    inline bool
     iscntrl(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::cntrl, __c); }
 
   template<typename _CharT>
-    inline bool 
+    inline bool
     isupper(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::upper, __c); }
 
@@ -4489,42 +4567,42 @@ namespace std
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::lower, __c); }
 
   template<typename _CharT>
-    inline bool 
+    inline bool
     isalpha(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::alpha, __c); }
 
   template<typename _CharT>
-    inline bool 
+    inline bool
     isdigit(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::digit, __c); }
 
   template<typename _CharT>
-    inline bool 
+    inline bool
     ispunct(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::punct, __c); }
 
   template<typename _CharT>
-    inline bool 
+    inline bool
     isxdigit(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::xdigit, __c); }
 
   template<typename _CharT>
-    inline bool 
+    inline bool
     isalnum(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::alnum, __c); }
 
   template<typename _CharT>
-    inline bool 
+    inline bool
     isgraph(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::graph, __c); }
 
   template<typename _CharT>
-    inline _CharT 
+    inline _CharT
     toupper(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).toupper(__c); }
 
   template<typename _CharT>
-    inline _CharT 
+    inline _CharT
     tolower(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).tolower(__c); }
   //@}

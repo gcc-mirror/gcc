@@ -1,6 +1,6 @@
 // Algorithm implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -82,7 +82,7 @@ namespace std
    *  @ingroup SGIextensions
   */
   template<typename _Tp>
-  inline const _Tp&
+    inline const _Tp&
     __median(const _Tp& __a, const _Tp& __b, const _Tp& __c)
     {
       // concept requirements
@@ -167,8 +167,7 @@ namespace std
   template<typename _InputIterator, typename _Tp>
     inline _InputIterator
     find(_InputIterator __first, _InputIterator __last,
-	 const _Tp& __val,
-	 input_iterator_tag)
+	 const _Tp& __val, input_iterator_tag)
     {
       while (__first != __last && !(*__first == __val))
 	++__first;
@@ -183,8 +182,7 @@ namespace std
   template<typename _InputIterator, typename _Predicate>
     inline _InputIterator
     find_if(_InputIterator __first, _InputIterator __last,
-	    _Predicate __pred,
-	    input_iterator_tag)
+	    _Predicate __pred, input_iterator_tag)
     {
       while (__first != __last && !__pred(*__first))
 	++__first;
@@ -199,40 +197,48 @@ namespace std
   template<typename _RandomAccessIterator, typename _Tp>
     _RandomAccessIterator
     find(_RandomAccessIterator __first, _RandomAccessIterator __last,
-	 const _Tp& __val,
-	 random_access_iterator_tag)
+	 const _Tp& __val, random_access_iterator_tag)
     {
-      typename iterator_traits<_RandomAccessIterator>::difference_type __trip_count
-	= (__last - __first) >> 2;
+      typename iterator_traits<_RandomAccessIterator>::difference_type
+	__trip_count = (__last - __first) >> 2;
 
-      for ( ; __trip_count > 0 ; --__trip_count) {
-	if (*__first == __val) return __first;
-	++__first;
+      for ( ; __trip_count > 0 ; --__trip_count)
+	{
+	  if (*__first == __val)
+	    return __first;
+	  ++__first;
 
-	if (*__first == __val) return __first;
-	++__first;
+	  if (*__first == __val)
+	    return __first;
+	  ++__first;
 
-	if (*__first == __val) return __first;
-	++__first;
+	  if (*__first == __val)
+	    return __first;
+	  ++__first;
 
-	if (*__first == __val) return __first;
-	++__first;
-      }
+	  if (*__first == __val)
+	    return __first;
+	  ++__first;
+	}
 
-      switch(__last - __first) {
-      case 3:
-	if (*__first == __val) return __first;
-	++__first;
-      case 2:
-	if (*__first == __val) return __first;
-	++__first;
-      case 1:
-	if (*__first == __val) return __first;
-	++__first;
-      case 0:
-      default:
-	return __last;
-      }
+      switch (__last - __first)
+	{
+	case 3:
+	  if (*__first == __val)
+	    return __first;
+	  ++__first;
+	case 2:
+	  if (*__first == __val)
+	    return __first;
+	  ++__first;
+	case 1:
+	  if (*__first == __val)
+	    return __first;
+	  ++__first;
+	case 0:
+	default:
+	  return __last;
+	}
     }
 
   /**
@@ -243,40 +249,48 @@ namespace std
   template<typename _RandomAccessIterator, typename _Predicate>
     _RandomAccessIterator
     find_if(_RandomAccessIterator __first, _RandomAccessIterator __last,
-	    _Predicate __pred,
-	    random_access_iterator_tag)
+	    _Predicate __pred, random_access_iterator_tag)
     {
-      typename iterator_traits<_RandomAccessIterator>::difference_type __trip_count
-	= (__last - __first) >> 2;
+      typename iterator_traits<_RandomAccessIterator>::difference_type
+	__trip_count = (__last - __first) >> 2;
 
-      for ( ; __trip_count > 0 ; --__trip_count) {
-	if (__pred(*__first)) return __first;
-	++__first;
+      for ( ; __trip_count > 0 ; --__trip_count)
+	{
+	  if (__pred(*__first))
+	    return __first;
+	  ++__first;
 
-	if (__pred(*__first)) return __first;
-	++__first;
+	  if (__pred(*__first))
+	    return __first;
+	  ++__first;
 
-	if (__pred(*__first)) return __first;
-	++__first;
+	  if (__pred(*__first))
+	    return __first;
+	  ++__first;
 
-	if (__pred(*__first)) return __first;
-	++__first;
-      }
+	  if (__pred(*__first))
+	    return __first;
+	  ++__first;
+	}
 
-      switch(__last - __first) {
-      case 3:
-	if (__pred(*__first)) return __first;
-	++__first;
-      case 2:
-	if (__pred(*__first)) return __first;
-	++__first;
-      case 1:
-	if (__pred(*__first)) return __first;
-	++__first;
-      case 0:
-      default:
-	return __last;
-      }
+      switch (__last - __first)
+	{
+	case 3:
+	  if (__pred(*__first))
+	    return __first;
+	  ++__first;
+	case 2:
+	  if (__pred(*__first))
+	    return __first;
+	  ++__first;
+	case 1:
+	  if (__pred(*__first))
+	    return __first;
+	  ++__first;
+	case 0:
+	default:
+	  return __last;
+	}
     }
 
   /**
@@ -297,7 +311,8 @@ namespace std
       __glibcxx_function_requires(_EqualOpConcept<
 		typename iterator_traits<_InputIterator>::value_type, _Tp>)
       __glibcxx_requires_valid_range(__first, __last);
-      return std::find(__first, __last, __val, std::__iterator_category(__first));
+      return std::find(__first, __last, __val,
+		       std::__iterator_category(__first));
     }
 
   /**
@@ -318,7 +333,8 @@ namespace std
       __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
 	      typename iterator_traits<_InputIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
-      return std::find_if(__first, __last, __pred, std::__iterator_category(__first));
+      return std::find_if(__first, __last, __pred,
+			  std::__iterator_category(__first));
     }
 
   /**
@@ -341,11 +357,12 @@ namespace std
       if (__first == __last)
 	return __last;
       _ForwardIterator __next = __first;
-      while(++__next != __last) {
-	if (*__first == *__next)
-	  return __first;
-	__first = __next;
-      }
+      while(++__next != __last)
+	{
+	  if (*__first == *__next)
+	    return __first;
+	  __first = __next;
+	}
       return __last;
     }
 
@@ -373,11 +390,12 @@ namespace std
       if (__first == __last)
 	return __last;
       _ForwardIterator __next = __first;
-      while(++__next != __last) {
-	if (__binary_pred(*__first, *__next))
-	  return __first;
-	__first = __next;
-      }
+      while(++__next != __last)
+	{
+	  if (__binary_pred(*__first, *__next))
+	    return __first;
+	  __first = __next;
+	}
       return __last;
     }
 
@@ -430,7 +448,6 @@ namespace std
       return __n;
     }
 
-
   /**
    *  @brief Search a sequence for a matching sub-sequence.
    *  @param  first1  A forward iterator.
@@ -478,32 +495,30 @@ namespace std
 	return std::find(__first1, __last1, *__first2);
 
       // General case.
-
       _ForwardIterator2 __p1, __p;
-
       __p1 = __first2; ++__p1;
-
       _ForwardIterator1 __current = __first1;
 
-      while (__first1 != __last1) {
-	__first1 = std::find(__first1, __last1, *__first2);
-	if (__first1 == __last1)
-	  return __last1;
+      while (__first1 != __last1)
+	{
+	  __first1 = std::find(__first1, __last1, *__first2);
+	  if (__first1 == __last1)
+	    return __last1;
 
-	__p = __p1;
-	__current = __first1;
-	if (++__current == __last1)
-	  return __last1;
-
-	while (*__current == *__p) {
-	  if (++__p == __last2)
-	    return __first1;
+	  __p = __p1;
+	  __current = __first1;
 	  if (++__current == __last1)
 	    return __last1;
-	}
 
-	++__first1;
-      }
+	  while (*__current == *__p)
+	    {
+	      if (++__p == __last2)
+		return __first1;
+	      if (++__current == __last1)
+		return __last1;
+	    }
+	  ++__first1;
+	}
       return __first1;
     }
 
@@ -527,7 +542,8 @@ namespace std
    *
    *  @see search(_ForwardIter1, _ForwardIter1, _ForwardIter2, _ForwardIter2)
   */
-  template<typename _ForwardIterator1, typename _ForwardIterator2, typename _BinaryPredicate>
+  template<typename _ForwardIterator1, typename _ForwardIterator2,
+	   typename _BinaryPredicate>
     _ForwardIterator1
     search(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
 	   _ForwardIterator2 __first2, _ForwardIterator2 __last2,
@@ -549,44 +565,45 @@ namespace std
       // Test for a pattern of length 1.
       _ForwardIterator2 __tmp(__first2);
       ++__tmp;
-      if (__tmp == __last2) {
-	while (__first1 != __last1 && !__predicate(*__first1, *__first2))
-	  ++__first1;
-	return __first1;
-      }
+      if (__tmp == __last2)
+	{
+	  while (__first1 != __last1 && !__predicate(*__first1, *__first2))
+	    ++__first1;
+	  return __first1;
+	}
 
       // General case.
-
       _ForwardIterator2 __p1, __p;
-
       __p1 = __first2; ++__p1;
-
       _ForwardIterator1 __current = __first1;
 
-      while (__first1 != __last1) {
-	while (__first1 != __last1) {
-	  if (__predicate(*__first1, *__first2))
-	    break;
-	  ++__first1;
-	}
-	while (__first1 != __last1 && !__predicate(*__first1, *__first2))
-	  ++__first1;
-	if (__first1 == __last1)
-	  return __last1;
+      while (__first1 != __last1)
+	{
+	  while (__first1 != __last1)
+	    {
+	      if (__predicate(*__first1, *__first2))
+		break;
+	      ++__first1;
+	    }
+	  while (__first1 != __last1 && !__predicate(*__first1, *__first2))
+	    ++__first1;
+	  if (__first1 == __last1)
+	    return __last1;
 
-	__p = __p1;
-	__current = __first1;
-	if (++__current == __last1) return __last1;
-
-	while (__predicate(*__current, *__p)) {
-	  if (++__p == __last2)
-	    return __first1;
+	  __p = __p1;
+	  __current = __first1;
 	  if (++__current == __last1)
 	    return __last1;
-	}
 
-	++__first1;
-      }
+	  while (__predicate(*__current, *__p))
+	    {
+	      if (++__p == __last2)
+		return __first1;
+	      if (++__current == __last1)
+		return __last1;
+	    }
+	  ++__first1;
+	}
       return __first1;
     }
 
@@ -617,23 +634,27 @@ namespace std
 
       if (__count <= 0)
 	return __first;
-      else {
-	__first = std::find(__first, __last, __val);
-	while (__first != __last) {
-	  typename iterator_traits<_ForwardIterator>::difference_type __n = __count;
-	  _ForwardIterator __i = __first;
-	  ++__i;
-	  while (__i != __last && __n != 1 && *__i == __val) {
-	    ++__i;
-	    --__n;
-	  }
-	  if (__n == 1)
-	    return __first;
-	  else
-	    __first = std::find(__i, __last, __val);
+      else
+	{
+	  __first = std::find(__first, __last, __val);
+	  while (__first != __last)
+	    {
+	      typename iterator_traits<_ForwardIterator>::difference_type
+		__n = __count;
+	      _ForwardIterator __i = __first;
+	      ++__i;
+	      while (__i != __last && __n != 1 && *__i == __val)
+		{
+		  ++__i;
+		  --__n;
+		}
+	      if (__n == 1)
+		return __first;
+	      else
+		__first = std::find(__i, __last, __val);
+	    }
+	  return __last;
 	}
-	return __last;
-      }
     }
 
   /**
@@ -666,33 +687,40 @@ namespace std
 
       if (__count <= 0)
 	return __first;
-      else {
-	while (__first != __last) {
-	  if (__binary_pred(*__first, __val))
-	    break;
-	  ++__first;
-	}
-	while (__first != __last) {
-	  typename iterator_traits<_ForwardIterator>::difference_type __n = __count;
-	  _ForwardIterator __i = __first;
-	  ++__i;
-	  while (__i != __last && __n != 1 && __binary_pred(*__i, __val)) {
-	    ++__i;
-	    --__n;
-	  }
-	  if (__n == 1)
-	    return __first;
-	  else {
-	    while (__i != __last) {
-	      if (__binary_pred(*__i, __val))
+      else
+	{
+	  while (__first != __last)
+	    {
+	      if (__binary_pred(*__first, __val))
 		break;
-	      ++__i;
+	      ++__first;
 	    }
-	    __first = __i;
-	  }
+	  while (__first != __last)
+	    {
+	      typename iterator_traits<_ForwardIterator>::difference_type
+		__n = __count;
+	      _ForwardIterator __i = __first;
+	      ++__i;
+	      while (__i != __last && __n != 1 && __binary_pred(*__i, __val))
+		{
+		  ++__i;
+		  --__n;
+		}
+	      if (__n == 1)
+		return __first;
+	      else
+		{
+		  while (__i != __last)
+		    {
+		      if (__binary_pred(*__i, __val))
+			break;
+		      ++__i;
+		    }
+		  __first = __i;
+		}
+	    }
+	  return __last;
 	}
-	return __last;
-      }
     }
 
   /**
@@ -712,8 +740,10 @@ namespace std
 		_ForwardIterator2 __first2)
     {
       // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator1>)
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator2>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator1>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator2>)
       __glibcxx_function_requires(_ConvertibleConcept<
 	    typename iterator_traits<_ForwardIterator1>::value_type,
 	    typename iterator_traits<_ForwardIterator2>::value_type>)
@@ -742,7 +772,8 @@ namespace std
    *
    *  @p unary_op must not alter its argument.
   */
-  template<typename _InputIterator, typename _OutputIterator, typename _UnaryOperation>
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _UnaryOperation>
     _OutputIterator
     transform(_InputIterator __first, _InputIterator __last,
 	      _OutputIterator __result, _UnaryOperation __unary_op)
@@ -776,8 +807,8 @@ namespace std
    *
    *  @p binary_op must not alter either of its arguments.
   */
-  template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator,
-	   typename _BinaryOperation>
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator, typename _BinaryOperation>
     _OutputIterator
     transform(_InputIterator1 __first1, _InputIterator1 __last1,
 	      _InputIterator2 __first2, _OutputIterator __result,
@@ -814,7 +845,8 @@ namespace std
 	    const _Tp& __old_value, const _Tp& __new_value)
     {
       // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator>)
       __glibcxx_function_requires(_EqualOpConcept<
 	    typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
       __glibcxx_function_requires(_ConvertibleConcept<_Tp,
@@ -844,7 +876,8 @@ namespace std
 	       _Predicate __pred, const _Tp& __new_value)
     {
       // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator>)
       __glibcxx_function_requires(_ConvertibleConcept<_Tp,
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
@@ -903,8 +936,8 @@ namespace std
    *  @p [result,result+(last-first)) replacing elements for which
    *  @p pred returns true with @p new_value.
   */
-  template<typename _InputIterator, typename _OutputIterator, typename _Predicate,
-           typename _Tp>
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _Predicate, typename _Tp>
     _OutputIterator
     replace_copy_if(_InputIterator __first, _InputIterator __last,
 		    _OutputIterator __result,
@@ -936,7 +969,8 @@ namespace std
   */
   template<typename _ForwardIterator, typename _Generator>
     void
-    generate(_ForwardIterator __first, _ForwardIterator __last, _Generator __gen)
+    generate(_ForwardIterator __first, _ForwardIterator __last,
+	     _Generator __gen)
     {
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
@@ -1000,10 +1034,11 @@ namespace std
       __glibcxx_requires_valid_range(__first, __last);
 
       for ( ; __first != __last; ++__first)
-	if (!(*__first == __value)) {
-	  *__result = *__first;
-	  ++__result;
-	}
+	if (!(*__first == __value))
+	  {
+	    *__result = *__first;
+	    ++__result;
+	  }
       return __result;
     }
 
@@ -1021,7 +1056,8 @@ namespace std
    *  remove_copy_if() is stable, so the relative order of elements that are
    *  copied is unchanged.
   */
-  template<typename _InputIterator, typename _OutputIterator, typename _Predicate>
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _Predicate>
     _OutputIterator
     remove_copy_if(_InputIterator __first, _InputIterator __last,
 		   _OutputIterator __result, _Predicate __pred)
@@ -1035,10 +1071,11 @@ namespace std
       __glibcxx_requires_valid_range(__first, __last);
 
       for ( ; __first != __last; ++__first)
-	if (!__pred(*__first)) {
-	  *__result = *__first;
-	  ++__result;
-	}
+	if (!__pred(*__first))
+	  {
+	    *__result = *__first;
+	    ++__result;
+	  }
       return __result;
     }
 
@@ -1064,7 +1101,8 @@ namespace std
 	   const _Tp& __value)
     {
       // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator>)
       __glibcxx_function_requires(_ConvertibleConcept<_Tp,
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_function_requires(_EqualOpConcept<
@@ -1074,7 +1112,8 @@ namespace std
       __first = std::find(__first, __last, __value);
       _ForwardIterator __i = __first;
       return __first == __last ? __first
-			       : std::remove_copy(++__i, __last, __first, __value);
+			       : std::remove_copy(++__i, __last,
+						  __first, __value);
     }
 
   /**
@@ -1099,7 +1138,8 @@ namespace std
 	      _Predicate __pred)
     {
       // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator>)
       __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
@@ -1107,12 +1147,14 @@ namespace std
       __first = std::find_if(__first, __last, __pred);
       _ForwardIterator __i = __first;
       return __first == __last ? __first
-			       : std::remove_copy_if(++__i, __last, __first, __pred);
+			       : std::remove_copy_if(++__i, __last,
+						     __first, __pred);
     }
 
   /**
    *  @if maint
-   *  This is an uglified unique_copy(_InputIterator, _InputIterator, _OutputIterator)
+   *  This is an uglified unique_copy(_InputIterator, _InputIterator,
+   *                                  _OutputIterator)
    *  overloaded for output iterators.
    *  @endif
   */
@@ -1126,16 +1168,18 @@ namespace std
       typename iterator_traits<_InputIterator>::value_type __value = *__first;
       *__result = __value;
       while (++__first != __last)
-	if (!(__value == *__first)) {
-	  __value = *__first;
-	  *++__result = __value;
-	}
+	if (!(__value == *__first))
+	  {
+	    __value = *__first;
+	    *++__result = __value;
+	  }
       return ++__result;
     }
 
   /**
    *  @if maint
-   *  This is an uglified unique_copy(_InputIterator, _InputIterator, _OutputIterator)
+   *  This is an uglified unique_copy(_InputIterator, _InputIterator,
+   *                                  _OutputIterator)
    *  overloaded for forward iterators.
    *  @endif
   */
@@ -1156,11 +1200,13 @@ namespace std
   /**
    *  @if maint
    *  This is an uglified
-   *  unique_copy(_InputIterator, _InputIterator, _OutputIterator, _BinaryPredicate)
+   *  unique_copy(_InputIterator, _InputIterator, _OutputIterator,
+   *              _BinaryPredicate)
    *  overloaded for output iterators.
    *  @endif
   */
-  template<typename _InputIterator, typename _OutputIterator, typename _BinaryPredicate>
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _BinaryPredicate>
     _OutputIterator
     __unique_copy(_InputIterator __first, _InputIterator __last,
 		  _OutputIterator __result,
@@ -1175,21 +1221,24 @@ namespace std
       typename iterator_traits<_InputIterator>::value_type __value = *__first;
       *__result = __value;
       while (++__first != __last)
-	if (!__binary_pred(__value, *__first)) {
-	  __value = *__first;
-	  *++__result = __value;
-	}
+	if (!__binary_pred(__value, *__first))
+	  {
+	    __value = *__first;
+	    *++__result = __value;
+	  }
       return ++__result;
     }
 
   /**
    *  @if maint
    *  This is an uglified
-   *  unique_copy(_InputIterator, _InputIterator, _OutputIterator, _BinaryPredicate)
+   *  unique_copy(_InputIterator, _InputIterator, _OutputIterator,
+   *              _BinaryPredicate)
    *  overloaded for forward iterators.
    *  @endif
   */
-  template<typename _InputIterator, typename _ForwardIterator, typename _BinaryPredicate>
+  template<typename _InputIterator, typename _ForwardIterator,
+	   typename _BinaryPredicate>
     _ForwardIterator
     __unique_copy(_InputIterator __first, _InputIterator __last,
 		  _ForwardIterator __result,
@@ -1233,7 +1282,8 @@ namespace std
 	    typename iterator_traits<_InputIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      typedef typename iterator_traits<_OutputIterator>::iterator_category _IterType;
+      typedef typename iterator_traits<_OutputIterator>::iterator_category
+	_IterType;
 
       if (__first == __last) return __result;
       return std::__unique_copy(__first, __last, __result, _IterType());
@@ -1254,7 +1304,8 @@ namespace std
    *  unique_copy() is stable, so the relative order of elements that are
    *  copied is unchanged.
   */
-  template<typename _InputIterator, typename _OutputIterator, typename _BinaryPredicate>
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _BinaryPredicate>
     inline _OutputIterator
     unique_copy(_InputIterator __first, _InputIterator __last,
 		_OutputIterator __result,
@@ -1266,10 +1317,12 @@ namespace std
 	    typename iterator_traits<_InputIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      typedef typename iterator_traits<_OutputIterator>::iterator_category _IterType;
+      typedef typename iterator_traits<_OutputIterator>::iterator_category
+	_IterType;
 
       if (__first == __last) return __result;
-      return std::__unique_copy(__first, __last, __result, __binary_pred, _IterType());
+      return std::__unique_copy(__first, __last, __result,
+				__binary_pred, _IterType());
     }
 
   /**
@@ -1290,7 +1343,8 @@ namespace std
     unique(_ForwardIterator __first, _ForwardIterator __last)
     {
       // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator>)
       __glibcxx_function_requires(_EqualityComparableConcept<
 		     typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
@@ -1329,7 +1383,8 @@ namespace std
            _BinaryPredicate __binary_pred)
     {
       // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
 		typename iterator_traits<_ForwardIterator>::value_type,
 		typename iterator_traits<_ForwardIterator>::value_type>)
@@ -1351,7 +1406,8 @@ namespace std
 
   /**
    *  @if maint
-   *  This is an uglified reverse(_BidirectionalIterator, _BidirectionalIterator)
+   *  This is an uglified reverse(_BidirectionalIterator,
+   *                              _BidirectionalIterator)
    *  overloaded for bidirectional iterators.
    *  @endif
   */
@@ -1369,7 +1425,8 @@ namespace std
 
   /**
    *  @if maint
-   *  This is an uglified reverse(_BidirectionalIterator, _BidirectionalIterator)
+   *  This is an uglified reverse(_BidirectionalIterator,
+   *                              _BidirectionalIterator)
    *  overloaded for bidirectional iterators.
    *  @endif
   */
@@ -1425,16 +1482,18 @@ namespace std
 			     _OutputIterator __result)
     {
       // concept requirements
-      __glibcxx_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator>)
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
 		typename iterator_traits<_BidirectionalIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      while (__first != __last) {
-	--__last;
-	*__result = *__last;
-	++__result;
-      }
+      while (__first != __last)
+	{
+	  --__last;
+	  *__result = *__last;
+	  ++__result;
+	}
       return __result;
     }
 
@@ -1449,11 +1508,12 @@ namespace std
     _EuclideanRingElement
     __gcd(_EuclideanRingElement __m, _EuclideanRingElement __n)
     {
-      while (__n != 0) {
-	_EuclideanRingElement __t = __m % __n;
-	__m = __n;
-	__n = __t;
-      }
+      while (__n != 0)
+	{
+	  _EuclideanRingElement __t = __m % __n;
+	  __m = __n;
+	  __n = __t;
+	}
       return __m;
     }
 
@@ -1473,21 +1533,24 @@ namespace std
 	return;
 
       _ForwardIterator __first2 = __middle;
-      do {
-	swap(*__first++, *__first2++);
-	if (__first == __middle)
-	  __middle = __first2;
-      } while (__first2 != __last);
+      do
+	{
+	  swap(*__first++, *__first2++);
+	  if (__first == __middle)
+	    __middle = __first2;
+	}
+      while (__first2 != __last);
 
       __first2 = __middle;
 
-      while (__first2 != __last) {
-	swap(*__first++, *__first2++);
-	if (__first == __middle)
-	  __middle = __first2;
-	else if (__first2 == __last)
-	  __first2 = __middle;
-      }
+      while (__first2 != __last)
+	{
+	  swap(*__first++, *__first2++);
+	  if (__first == __middle)
+	    __middle = __first2;
+	  else if (__first2 == __last)
+	    __first2 = __middle;
+	}
     }
 
   /**
@@ -1515,12 +1578,10 @@ namespace std
       while (__first != __middle && __middle != __last)
 	swap(*__first++, *--__last);
 
-      if (__first == __middle) {
+      if (__first == __middle)
 	std::__reverse(__middle, __last,   bidirectional_iterator_tag());
-      }
-      else {
+      else
 	std::__reverse(__first,  __middle, bidirectional_iterator_tag());
-      }
     }
 
   /**
@@ -1542,51 +1603,59 @@ namespace std
       if ((__first == __middle) || (__last  == __middle))
 	return;
 
-      typedef typename iterator_traits<_RandomAccessIterator>::difference_type _Distance;
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
+	_Distance;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
 
-      _Distance __n = __last   - __first;
-      _Distance __k = __middle - __first;
-      _Distance __l = __n - __k;
+      const _Distance __n = __last   - __first;
+      const _Distance __k = __middle - __first;
+      const _Distance __l = __n - __k;
 
-      if (__k == __l) {
-	std::swap_ranges(__first, __middle, __middle);
-	return;
-      }
-
-      _Distance __d = __gcd(__n, __k);
-
-      for (_Distance __i = 0; __i < __d; __i++) {
-	_ValueType __tmp = *__first;
-	_RandomAccessIterator __p = __first;
-
-	if (__k < __l) {
-	  for (_Distance __j = 0; __j < __l/__d; __j++) {
-	    if (__p > __first + __l) {
-	      *__p = *(__p - __l);
-	      __p -= __l;
-	    }
-
-	    *__p = *(__p + __k);
-	    __p += __k;
-	  }
+      if (__k == __l)
+	{
+	  std::swap_ranges(__first, __middle, __middle);
+	  return;
 	}
 
-	else {
-	  for (_Distance __j = 0; __j < __k/__d - 1; __j ++) {
-	    if (__p < __last - __k) {
-	      *__p = *(__p + __k);
-	      __p += __k;
+      const _Distance __d = __gcd(__n, __k);
+
+      for (_Distance __i = 0; __i < __d; __i++)
+	{
+	  const _ValueType __tmp = *__first;
+	  _RandomAccessIterator __p = __first;
+
+	  if (__k < __l)
+	    {
+	      for (_Distance __j = 0; __j < __l / __d; __j++)
+		{
+		  if (__p > __first + __l)
+		    {
+		      *__p = *(__p - __l);
+		      __p -= __l;
+		    }
+
+		  *__p = *(__p + __k);
+		  __p += __k;
+		}
+	    }
+	  else
+	    {
+	      for (_Distance __j = 0; __j < __k / __d - 1; __j ++)
+		{
+		  if (__p < __last - __k)
+		    {
+		      *__p = *(__p + __k);
+		      __p += __k;
+		    }
+		  *__p = * (__p - __l);
+		  __p -= __l;
+		}
 	    }
 
-	    *__p = * (__p - __l);
-	    __p -= __l;
-	  }
+	  *__p = __tmp;
+	  ++__first;
 	}
-
-	*__p = __tmp;
-	++__first;
-      }
     }
 
   /**
@@ -1609,14 +1678,17 @@ namespace std
   */
   template<typename _ForwardIterator>
     inline void
-    rotate(_ForwardIterator __first, _ForwardIterator __middle, _ForwardIterator __last)
+    rotate(_ForwardIterator __first, _ForwardIterator __middle,
+	   _ForwardIterator __last)
     {
       // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator>)
       __glibcxx_requires_valid_range(__first, __middle);
       __glibcxx_requires_valid_range(__middle, __last);
 
-      typedef typename iterator_traits<_ForwardIterator>::iterator_category _IterType;
+      typedef typename iterator_traits<_ForwardIterator>::iterator_category
+	_IterType;
       std::__rotate(__first, __middle, __last, _IterType());
     }
 
@@ -1671,7 +1743,7 @@ namespace std
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first != __last) 
+      if (__first != __last)
 	for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
 	  std::iter_swap(__i, __first + (std::rand() % ((__i - __first) + 1)));
     }
@@ -1699,7 +1771,8 @@ namespace std
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first == __last) return;
+      if (__first == __last)
+	return;
       for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
 	std::iter_swap(__i, __first + __rand((__i - __first) + 1));
     }
@@ -1713,21 +1786,24 @@ namespace std
   template<typename _ForwardIterator, typename _Predicate>
     _ForwardIterator
     __partition(_ForwardIterator __first, _ForwardIterator __last,
-		_Predicate   __pred,
+		_Predicate __pred,
 		forward_iterator_tag)
     {
-      if (__first == __last) return __first;
+      if (__first == __last)
+	return __first;
 
       while (__pred(*__first))
-	if (++__first == __last) return __first;
+	if (++__first == __last)
+	  return __first;
 
       _ForwardIterator __next = __first;
 
       while (++__next != __last)
-	if (__pred(*__next)) {
-	  swap(*__first, *__next);
-	  ++__first;
-	}
+	if (__pred(*__next))
+	  {
+	    swap(*__first, *__next);
+	    ++__first;
+	  }
 
       return __first;
     }
@@ -1743,25 +1819,26 @@ namespace std
 		_Predicate __pred,
 		bidirectional_iterator_tag)
     {
-      while (true) {
-	while (true)
-	  if (__first == __last)
-	    return __first;
-	  else if (__pred(*__first))
-	    ++__first;
-	  else
-	    break;
-	--__last;
-	while (true)
-	  if (__first == __last)
-	    return __first;
-	  else if (!__pred(*__last))
-	    --__last;
-	  else
-	    break;
-	std::iter_swap(__first, __last);
-	++__first;
-      }
+      while (true)
+	{
+	  while (true)
+	    if (__first == __last)
+	      return __first;
+	    else if (__pred(*__first))
+	      ++__first;
+	    else
+	      break;
+	  --__last;
+	  while (true)
+	    if (__first == __last)
+	      return __first;
+	    else if (!__pred(*__last))
+	      --__last;
+	    else
+	      break;
+	  std::iter_swap(__first, __last);
+	  ++__first;
+	}
     }
 
   /**
@@ -1773,7 +1850,7 @@ namespace std
    *  @return  An iterator @p middle such that @p pred(i) is true for each
    *  iterator @p i in the range @p [first,middle) and false for each @p i
    *  in the range @p [middle,last).
-   *  
+   *
    *  @p pred must not modify its operand. @p partition() does not preserve
    *  the relative ordering of elements in each group, use
    *  @p stable_partition() if this is needed.
@@ -1784,12 +1861,14 @@ namespace std
 	      _Predicate   __pred)
     {
       // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator>)
       __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      return std::__partition(__first, __last, __pred, std::__iterator_category(__first));
+      return std::__partition(__first, __last, __pred,
+			      std::__iterator_category(__first));
     }
 
 
@@ -1800,19 +1879,22 @@ namespace std
   */
   template<typename _ForwardIterator, typename _Predicate, typename _Distance>
     _ForwardIterator
-    __inplace_stable_partition(_ForwardIterator __first, _ForwardIterator __last,
+    __inplace_stable_partition(_ForwardIterator __first,
+			       _ForwardIterator __last,
 			       _Predicate __pred, _Distance __len)
     {
       if (__len == 1)
 	return __pred(*__first) ? __last : __first;
       _ForwardIterator __middle = __first;
       std::advance(__middle, __len / 2);
-      _ForwardIterator __begin = std::__inplace_stable_partition(__first, __middle,
+      _ForwardIterator __begin = std::__inplace_stable_partition(__first,
+								 __middle,
 								 __pred,
 								 __len / 2);
       _ForwardIterator __end = std::__inplace_stable_partition(__middle, __last,
 							       __pred,
-							       __len - __len / 2);
+							       __len
+							       - __len / 2);
       std::rotate(__begin, __middle, __end);
       std::advance(__begin, std::distance(__middle, __end));
       return __begin;
@@ -1826,41 +1908,46 @@ namespace std
   template<typename _ForwardIterator, typename _Pointer, typename _Predicate,
 	   typename _Distance>
     _ForwardIterator
-    __stable_partition_adaptive(_ForwardIterator __first, _ForwardIterator __last,
+    __stable_partition_adaptive(_ForwardIterator __first,
+				_ForwardIterator __last,
 				_Predicate __pred, _Distance __len,
 				_Pointer __buffer,
 				_Distance __buffer_size)
     {
-      if (__len <= __buffer_size) {
-	_ForwardIterator __result1 = __first;
-	_Pointer __result2 = __buffer;
-	for ( ; __first != __last ; ++__first)
-	  if (__pred(*__first)) {
-	    *__result1 = *__first;
-	    ++__result1;
-	  }
-	  else {
-	    *__result2 = *__first;
-	    ++__result2;
-	  }
-	std::copy(__buffer, __result2, __result1);
-	return __result1;
-      }
-      else {
-	_ForwardIterator __middle = __first;
-	std::advance(__middle, __len / 2);
-	_ForwardIterator __begin = std::__stable_partition_adaptive(__first, __middle,
-								    __pred,
-								    __len / 2,
-								    __buffer, __buffer_size);
-	_ForwardIterator __end = std::__stable_partition_adaptive( __middle, __last,
-								   __pred,
-								   __len - __len / 2,
-								   __buffer, __buffer_size);
-	std::rotate(__begin, __middle, __end);
-	std::advance(__begin, std::distance(__middle, __end));
-	return __begin;
-      }
+      if (__len <= __buffer_size)
+	{
+	  _ForwardIterator __result1 = __first;
+	  _Pointer __result2 = __buffer;
+	  for ( ; __first != __last ; ++__first)
+	    if (__pred(*__first))
+	      {
+		*__result1 = *__first;
+		++__result1;
+	      }
+	    else
+	      {
+		*__result2 = *__first;
+		++__result2;
+	      }
+	  std::copy(__buffer, __result2, __result1);
+	  return __result1;
+	}
+      else
+	{
+	  _ForwardIterator __middle = __first;
+	  std::advance(__middle, __len / 2);
+	  _ForwardIterator __begin =
+	    std::__stable_partition_adaptive(__first, __middle, __pred,
+					     __len / 2, __buffer,
+					     __buffer_size);
+	  _ForwardIterator __end =
+	    std::__stable_partition_adaptive(__middle, __last, __pred,
+					     __len - __len / 2,
+					     __buffer, __buffer_size);
+	  std::rotate(__begin, __middle, __end);
+	  std::advance(__begin, std::distance(__middle, __end));
+	  return __begin;
+	}
     }
 
   /**
@@ -1872,7 +1959,7 @@ namespace std
    *  @return  An iterator @p middle such that @p pred(i) is true for each
    *  iterator @p i in the range @p [first,middle) and false for each @p i
    *  in the range @p [middle,last).
-   *  
+   *
    *  Performs the same function as @p partition() with the additional
    *  guarantee that the relative ordering of elements in each group is
    *  preserved, so any two elements @p x and @p y in the range
@@ -1885,7 +1972,8 @@ namespace std
 		     _Predicate __pred)
     {
       // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator>)
       __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
@@ -1893,19 +1981,24 @@ namespace std
       if (__first == __last)
 	return __first;
       else
-      {
-	typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-	typedef typename iterator_traits<_ForwardIterator>::difference_type _DistanceType;
+	{
+	  typedef typename iterator_traits<_ForwardIterator>::value_type
+	    _ValueType;
+	  typedef typename iterator_traits<_ForwardIterator>::difference_type
+	    _DistanceType;
 
-	_Temporary_buffer<_ForwardIterator, _ValueType> __buf(__first, __last);
+	  _Temporary_buffer<_ForwardIterator, _ValueType> __buf(__first,
+								__last);
 	if (__buf.size() > 0)
-	  return std::__stable_partition_adaptive(__first, __last, __pred,
-						  _DistanceType(__buf.requested_size()),
-						  __buf.begin(), __buf.size());
+	  return
+	    std::__stable_partition_adaptive(__first, __last, __pred,
+					  _DistanceType(__buf.requested_size()),
+					  __buf.begin(), __buf.size());
 	else
-	  return std::__inplace_stable_partition(__first, __last, __pred,
-						 _DistanceType(__buf.requested_size()));
-      }
+	  return
+	    std::__inplace_stable_partition(__first, __last, __pred,
+					 _DistanceType(__buf.requested_size()));
+	}
     }
 
   /**
@@ -1915,20 +2008,21 @@ namespace std
   */
   template<typename _RandomAccessIterator, typename _Tp>
     _RandomAccessIterator
-    __unguarded_partition(_RandomAccessIterator __first, _RandomAccessIterator __last,
-			  _Tp __pivot)
+    __unguarded_partition(_RandomAccessIterator __first,
+			  _RandomAccessIterator __last, _Tp __pivot)
     {
-      while (true) {
-	while (*__first < __pivot)
-	  ++__first;
-	--__last;
-	while (__pivot < *__last)
+      while (true)
+	{
+	  while (*__first < __pivot)
+	    ++__first;
 	  --__last;
-	if (!(__first < __last))
-	  return __first;
-	std::iter_swap(__first, __last);
-	++__first;
-      }
+	  while (__pivot < *__last)
+	    --__last;
+	  if (!(__first < __last))
+	    return __first;
+	  std::iter_swap(__first, __last);
+	  ++__first;
+	}
     }
 
   /**
@@ -1938,22 +2032,23 @@ namespace std
   */
   template<typename _RandomAccessIterator, typename _Tp, typename _Compare>
     _RandomAccessIterator
-    __unguarded_partition(_RandomAccessIterator __first, _RandomAccessIterator __last,
+    __unguarded_partition(_RandomAccessIterator __first,
+			  _RandomAccessIterator __last,
 			  _Tp __pivot, _Compare __comp)
     {
-      while (true) {
-	while (__comp(*__first, __pivot))
-	  ++__first;
-	--__last;
-	while (__comp(__pivot, *__last))
+      while (true)
+	{
+	  while (__comp(*__first, __pivot))
+	    ++__first;
 	  --__last;
-	if (!(__first < __last))
-	  return __first;
-	std::iter_swap(__first, __last);
-	++__first;
-      }
+	  while (__comp(__pivot, *__last))
+	    --__last;
+	  if (!(__first < __last))
+	    return __first;
+	  std::iter_swap(__first, __last);
+	  ++__first;
+	}
     }
-
 
   /**
    *  @if maint
@@ -1974,11 +2069,12 @@ namespace std
     {
       _RandomAccessIterator __next = __last;
       --__next;
-      while (__val < *__next) {
-	*__last = *__next;
-	__last = __next;
-	--__next;
-      }
+      while (__val < *__next)
+	{
+	  *__last = *__next;
+	  __last = __next;
+	  --__next;
+	}
       *__last = __val;
     }
 
@@ -1989,15 +2085,17 @@ namespace std
   */
   template<typename _RandomAccessIterator, typename _Tp, typename _Compare>
     void
-    __unguarded_linear_insert(_RandomAccessIterator __last, _Tp __val, _Compare __comp)
+    __unguarded_linear_insert(_RandomAccessIterator __last, _Tp __val,
+			      _Compare __comp)
     {
       _RandomAccessIterator __next = __last;
       --__next;
-      while (__comp(__val, *__next)) {
-	*__last = *__next;
-	__last = __next;
-	--__next;
-      }
+      while (__comp(__val, *__next))
+	{
+	  *__last = *__next;
+	  __last = __next;
+	  --__next;
+	}
       *__last = __val;
     }
 
@@ -2008,20 +2106,24 @@ namespace std
   */
   template<typename _RandomAccessIterator>
     void
-    __insertion_sort(_RandomAccessIterator __first, _RandomAccessIterator __last)
+    __insertion_sort(_RandomAccessIterator __first,
+		     _RandomAccessIterator __last)
     {
-      if (__first == __last) return;
+      if (__first == __last)
+	return;
 
       for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
-      {
-	typename iterator_traits<_RandomAccessIterator>::value_type __val = *__i;
-	if (__val < *__first) {
-	  std::copy_backward(__first, __i, __i + 1);
-	  *__first = __val;
+	{
+	  typename iterator_traits<_RandomAccessIterator>::value_type
+	    __val = *__i;
+	  if (__val < *__first)
+	    {
+	      std::copy_backward(__first, __i, __i + 1);
+	      *__first = __val;
+	    }
+	  else
+	    std::__unguarded_linear_insert(__i, __val);
 	}
-	else
-	  std::__unguarded_linear_insert(__i, __val);
-      }
     }
 
   /**
@@ -2031,21 +2133,23 @@ namespace std
   */
   template<typename _RandomAccessIterator, typename _Compare>
     void
-    __insertion_sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
-		     _Compare __comp)
+    __insertion_sort(_RandomAccessIterator __first,
+		     _RandomAccessIterator __last, _Compare __comp)
     {
       if (__first == __last) return;
 
       for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
-      {
-	typename iterator_traits<_RandomAccessIterator>::value_type __val = *__i;
-	if (__comp(__val, *__first)) {
-	  std::copy_backward(__first, __i, __i + 1);
-	  *__first = __val;
+	{
+	  typename iterator_traits<_RandomAccessIterator>::value_type
+	    __val = *__i;
+	  if (__comp(__val, *__first))
+	    {
+	      std::copy_backward(__first, __i, __i + 1);
+	      *__first = __val;
+	    }
+	  else
+	    std::__unguarded_linear_insert(__i, __val, __comp);
 	}
-	else
-	  std::__unguarded_linear_insert(__i, __val, __comp);
-      }
     }
 
   /**
@@ -2055,9 +2159,11 @@ namespace std
   */
   template<typename _RandomAccessIterator>
     inline void
-    __unguarded_insertion_sort(_RandomAccessIterator __first, _RandomAccessIterator __last)
+    __unguarded_insertion_sort(_RandomAccessIterator __first,
+			       _RandomAccessIterator __last)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
 
       for (_RandomAccessIterator __i = __first; __i != __last; ++__i)
 	std::__unguarded_linear_insert(__i, _ValueType(*__i));
@@ -2070,10 +2176,11 @@ namespace std
   */
   template<typename _RandomAccessIterator, typename _Compare>
     inline void
-    __unguarded_insertion_sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
-			       _Compare __comp)
+    __unguarded_insertion_sort(_RandomAccessIterator __first,
+			       _RandomAccessIterator __last, _Compare __comp)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
 
       for (_RandomAccessIterator __i = __first; __i != __last; ++__i)
 	std::__unguarded_linear_insert(__i, _ValueType(*__i), __comp);
@@ -2086,12 +2193,14 @@ namespace std
   */
   template<typename _RandomAccessIterator>
     void
-    __final_insertion_sort(_RandomAccessIterator __first, _RandomAccessIterator __last)
+    __final_insertion_sort(_RandomAccessIterator __first,
+			   _RandomAccessIterator __last)
     {
-      if (__last - __first > _S_threshold) {
-	std::__insertion_sort(__first, __first + _S_threshold);
-	std::__unguarded_insertion_sort(__first + _S_threshold, __last);
-      }
+      if (__last - __first > _S_threshold)
+	{
+	  std::__insertion_sort(__first, __first + _S_threshold);
+	  std::__unguarded_insertion_sort(__first + _S_threshold, __last);
+	}
       else
 	std::__insertion_sort(__first, __last);
     }
@@ -2103,13 +2212,15 @@ namespace std
   */
   template<typename _RandomAccessIterator, typename _Compare>
     void
-    __final_insertion_sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
-			   _Compare __comp)
+    __final_insertion_sort(_RandomAccessIterator __first,
+			   _RandomAccessIterator __last, _Compare __comp)
     {
-      if (__last - __first > _S_threshold) {
-	std::__insertion_sort(__first, __first + _S_threshold, __comp);
-	std::__unguarded_insertion_sort(__first + _S_threshold, __last, __comp);
-      }
+      if (__last - __first > _S_threshold)
+	{
+	  std::__insertion_sort(__first, __first + _S_threshold, __comp);
+	  std::__unguarded_insertion_sort(__first + _S_threshold, __last,
+					  __comp);
+	}
       else
 	std::__insertion_sort(__first, __last, __comp);
     }
@@ -2124,7 +2235,8 @@ namespace std
     __lg(_Size __n)
     {
       _Size __k;
-      for (__k = 0; __n != 1; __n >>= 1) ++__k;
+      for (__k = 0; __n != 1; __n >>= 1)
+	++__k;
       return __k;
     }
 
@@ -2149,7 +2261,8 @@ namespace std
 		 _RandomAccessIterator __middle,
 		 _RandomAccessIterator __last)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
 
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
@@ -2190,13 +2303,14 @@ namespace std
 		 _RandomAccessIterator __last,
 		 _Compare __comp)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
 
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
-							  _ValueType, _ValueType>)
+				  _ValueType, _ValueType>)
       __glibcxx_requires_valid_range(__first, __middle);
       __glibcxx_requires_valid_range(__middle, __last);
 
@@ -2230,33 +2344,41 @@ namespace std
 		      _RandomAccessIterator __result_first,
 		      _RandomAccessIterator __result_last)
     {
-      typedef typename iterator_traits<_InputIterator>::value_type _InputValueType;
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _OutputValueType;
-      typedef typename iterator_traits<_RandomAccessIterator>::difference_type _DistanceType;
+      typedef typename iterator_traits<_InputIterator>::value_type
+	_InputValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_OutputValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
+	_DistanceType;
 
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_ConvertibleConcept<_InputValueType, _OutputValueType>)
+      __glibcxx_function_requires(_ConvertibleConcept<_InputValueType,
+				  _OutputValueType>)
       __glibcxx_function_requires(_LessThanComparableConcept<_OutputValueType>)
       __glibcxx_function_requires(_LessThanComparableConcept<_InputValueType>)
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_valid_range(__result_first, __result_last);
 
-      if (__result_first == __result_last) return __result_last;
+      if (__result_first == __result_last)
+	return __result_last;
       _RandomAccessIterator __result_real_last = __result_first;
-      while(__first != __last && __result_real_last != __result_last) {
-	*__result_real_last = *__first;
-	++__result_real_last;
-	++__first;
-      }
+      while(__first != __last && __result_real_last != __result_last)
+	{
+	  *__result_real_last = *__first;
+	  ++__result_real_last;
+	  ++__first;
+	}
       std::make_heap(__result_first, __result_real_last);
-      while (__first != __last) {
-	if (*__first < *__result_first)
-	  std::__adjust_heap(__result_first, _DistanceType(0),
-			     _DistanceType(__result_real_last - __result_first),
-			     _InputValueType(*__first));
-	++__first;
-      }
+      while (__first != __last)
+	{
+	  if (*__first < *__result_first)
+	    std::__adjust_heap(__result_first, _DistanceType(0),
+			       _DistanceType(__result_real_last
+					     - __result_first),
+			       _InputValueType(*__first));
+	  ++__first;
+	}
       std::sort_heap(__result_first, __result_real_last);
       return __result_real_last;
     }
@@ -2287,35 +2409,44 @@ namespace std
 		      _RandomAccessIterator __result_last,
 		      _Compare __comp)
     {
-      typedef typename iterator_traits<_InputIterator>::value_type _InputValueType;
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _OutputValueType;
-      typedef typename iterator_traits<_RandomAccessIterator>::difference_type _DistanceType;
+      typedef typename iterator_traits<_InputIterator>::value_type
+	_InputValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_OutputValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
+	_DistanceType;
 
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<_RandomAccessIterator>)
-      __glibcxx_function_requires(_ConvertibleConcept<_InputValueType, _OutputValueType>)
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+				  _RandomAccessIterator>)
+      __glibcxx_function_requires(_ConvertibleConcept<_InputValueType,
+				  _OutputValueType>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 				  _OutputValueType, _OutputValueType>)
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_valid_range(__result_first, __result_last);
 
-      if (__result_first == __result_last) return __result_last;
+      if (__result_first == __result_last)
+	return __result_last;
       _RandomAccessIterator __result_real_last = __result_first;
-      while(__first != __last && __result_real_last != __result_last) {
-	*__result_real_last = *__first;
-	++__result_real_last;
-	++__first;
-      }
+      while(__first != __last && __result_real_last != __result_last)
+	{
+	  *__result_real_last = *__first;
+	  ++__result_real_last;
+	  ++__first;
+	}
       std::make_heap(__result_first, __result_real_last, __comp);
-      while (__first != __last) {
-	if (__comp(*__first, *__result_first))
-	  std::__adjust_heap(__result_first, _DistanceType(0),
-			     _DistanceType(__result_real_last - __result_first),
-			     _InputValueType(*__first),
-			     __comp);
-	++__first;
-      }
+      while (__first != __last)
+	{
+	  if (__comp(*__first, *__result_first))
+	    std::__adjust_heap(__result_first, _DistanceType(0),
+			       _DistanceType(__result_real_last
+					     - __result_first),
+			       _InputValueType(*__first),
+			       __comp);
+	  ++__first;
+	}
       std::sort_heap(__result_first, __result_real_last, __comp);
       return __result_real_last;
     }
@@ -2327,25 +2458,33 @@ namespace std
   */
   template<typename _RandomAccessIterator, typename _Size>
     void
-    __introsort_loop(_RandomAccessIterator __first, _RandomAccessIterator __last,
+    __introsort_loop(_RandomAccessIterator __first,
+		     _RandomAccessIterator __last,
 		     _Size __depth_limit)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
 
-      while (__last - __first > _S_threshold) {
-	if (__depth_limit == 0) {
-	  std::partial_sort(__first, __last, __last);
-	  return;
+      while (__last - __first > _S_threshold)
+	{
+	  if (__depth_limit == 0)
+	    {
+	      std::partial_sort(__first, __last, __last);
+	      return;
+	    }
+	  --__depth_limit;
+	  _RandomAccessIterator __cut =
+	    std::__unguarded_partition(__first, __last,
+				       _ValueType(std::__median(*__first,
+								*(__first
+								  + (__last
+								     - __first)
+								  / 2),
+								*(__last
+								  - 1))));
+	  std::__introsort_loop(__cut, __last, __depth_limit);
+	  __last = __cut;
 	}
-	--__depth_limit;
-	_RandomAccessIterator __cut =
-	  std::__unguarded_partition(__first, __last,
-				     _ValueType(std::__median(*__first,
-							      *(__first + (__last - __first)/2),
-							      *(__last - 1))));
-	std::__introsort_loop(__cut, __last, __depth_limit);
-	__last = __cut;
-      }
     }
 
   /**
@@ -2355,25 +2494,34 @@ namespace std
   */
   template<typename _RandomAccessIterator, typename _Size, typename _Compare>
     void
-    __introsort_loop(_RandomAccessIterator __first, _RandomAccessIterator __last,
+    __introsort_loop(_RandomAccessIterator __first,
+		     _RandomAccessIterator __last,
 		     _Size __depth_limit, _Compare __comp)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
 
-      while (__last - __first > _S_threshold) {
-	if (__depth_limit == 0) {
-	  std::partial_sort(__first, __last, __last, __comp);
-	  return;
+      while (__last - __first > _S_threshold)
+	{
+	  if (__depth_limit == 0)
+	    {
+	      std::partial_sort(__first, __last, __last, __comp);
+	      return;
+	    }
+	  --__depth_limit;
+	  _RandomAccessIterator __cut =
+	    std::__unguarded_partition(__first, __last,
+				       _ValueType(std::__median(*__first,
+								*(__first
+								  + (__last
+								     - __first)
+								  / 2),
+								*(__last - 1),
+								__comp)),
+				       __comp);
+	  std::__introsort_loop(__cut, __last, __depth_limit, __comp);
+	  __last = __cut;
 	}
-	--__depth_limit;
-	_RandomAccessIterator __cut =
-	  std::__unguarded_partition(__first, __last,
-				     _ValueType(std::__median(*__first,
-							      *(__first + (__last - __first)/2),
-							      *(__last - 1), __comp)), __comp);
-	std::__introsort_loop(__cut, __last, __depth_limit, __comp);
-	__last = __cut;
-      }
     }
 
   /**
@@ -2393,7 +2541,8 @@ namespace std
     inline void
     sort(_RandomAccessIterator __first, _RandomAccessIterator __last)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
 
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
@@ -2401,10 +2550,11 @@ namespace std
       __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first != __last) {
-	std::__introsort_loop(__first, __last, __lg(__last - __first) * 2);
-	std::__final_insertion_sort(__first, __last);
-      }
+      if (__first != __last)
+	{
+	  std::__introsort_loop(__first, __last, __lg(__last - __first) * 2);
+	  std::__final_insertion_sort(__first, __last);
+	}
     }
 
   /**
@@ -2423,20 +2573,25 @@ namespace std
   */
   template<typename _RandomAccessIterator, typename _Compare>
     inline void
-    sort(_RandomAccessIterator __first, _RandomAccessIterator __last, _Compare __comp)
+    sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
+	 _Compare __comp)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
 
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare, _ValueType, _ValueType>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare, _ValueType,
+				  _ValueType>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first != __last) {
-	std::__introsort_loop(__first, __last, __lg(__last - __first) * 2, __comp);
-	std::__final_insertion_sort(__first, __last, __comp);
-      }
+      if (__first != __last)
+	{
+	  std::__introsort_loop(__first, __last, __lg(__last - __first) * 2,
+				__comp);
+	  std::__final_insertion_sort(__first, __last, __comp);
+	}
     }
 
   /**
@@ -2451,10 +2606,13 @@ namespace std
   */
   template<typename _ForwardIterator, typename _Tp>
     _ForwardIterator
-    lower_bound(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __val)
+    lower_bound(_ForwardIterator __first, _ForwardIterator __last,
+		const _Tp& __val)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-      typedef typename iterator_traits<_ForwardIterator>::difference_type _DistanceType;
+      typedef typename iterator_traits<_ForwardIterator>::value_type
+	_ValueType;
+      typedef typename iterator_traits<_ForwardIterator>::difference_type
+	_DistanceType;
 
       // concept requirements
       // Note that these are slightly stricter than those of the 4-argument
@@ -2470,18 +2628,20 @@ namespace std
       _DistanceType __half;
       _ForwardIterator __middle;
 
-      while (__len > 0) {
-	__half = __len >> 1;
-	__middle = __first;
-	std::advance(__middle, __half);
-	if (*__middle < __val) {
-	  __first = __middle;
-	  ++__first;
-	  __len = __len - __half - 1;
+      while (__len > 0)
+	{
+	  __half = __len >> 1;
+	  __middle = __first;
+	  std::advance(__middle, __half);
+	  if (*__middle < __val)
+	    {
+	      __first = __middle;
+	      ++__first;
+	      __len = __len - __half - 1;
+	    }
+	  else
+	    __len = __half;
 	}
-	else
-	  __len = __half;
-      }
       return __first;
     }
 
@@ -2504,30 +2664,35 @@ namespace std
     lower_bound(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val, _Compare __comp)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-      typedef typename iterator_traits<_ForwardIterator>::difference_type _DistanceType;
+      typedef typename iterator_traits<_ForwardIterator>::value_type
+	_ValueType;
+      typedef typename iterator_traits<_ForwardIterator>::difference_type
+	_DistanceType;
 
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare, _ValueType, _Tp>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
+				  _ValueType, _Tp>)
       __glibcxx_requires_partitioned_pred(__first, __last, __val, __comp);
 
       _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
       _ForwardIterator __middle;
 
-      while (__len > 0) {
-	__half = __len >> 1;
-	__middle = __first;
-	std::advance(__middle, __half);
-	if (__comp(*__middle, __val)) {
-	  __first = __middle;
-	  ++__first;
-	  __len = __len - __half - 1;
+      while (__len > 0)
+	{
+	  __half = __len >> 1;
+	  __middle = __first;
+	  std::advance(__middle, __half);
+	  if (__comp(*__middle, __val))
+	    {
+	      __first = __middle;
+	      ++__first;
+	      __len = __len - __half - 1;
+	    }
+	  else
+	    __len = __half;
 	}
-	else
-	  __len = __half;
-      }
       return __first;
     }
 
@@ -2543,10 +2708,13 @@ namespace std
   */
   template<typename _ForwardIterator, typename _Tp>
     _ForwardIterator
-    upper_bound(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __val)
+    upper_bound(_ForwardIterator __first, _ForwardIterator __last,
+		const _Tp& __val)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-      typedef typename iterator_traits<_ForwardIterator>::difference_type _DistanceType;
+      typedef typename iterator_traits<_ForwardIterator>::value_type
+	_ValueType;
+      typedef typename iterator_traits<_ForwardIterator>::difference_type
+	_DistanceType;
 
       // concept requirements
       // See comments on lower_bound.
@@ -2559,18 +2727,20 @@ namespace std
       _DistanceType __half;
       _ForwardIterator __middle;
 
-      while (__len > 0) {
-	__half = __len >> 1;
-	__middle = __first;
-	std::advance(__middle, __half);
-	if (__val < *__middle)
-	  __len = __half;
-	else {
-	  __first = __middle;
-	  ++__first;
-	  __len = __len - __half - 1;
+      while (__len > 0)
+	{
+	  __half = __len >> 1;
+	  __middle = __first;
+	  std::advance(__middle, __half);
+	  if (__val < *__middle)
+	    __len = __half;
+	  else
+	    {
+	      __first = __middle;
+	      ++__first;
+	      __len = __len - __half - 1;
+	    }
 	}
-      }
       return __first;
     }
 
@@ -2593,30 +2763,35 @@ namespace std
     upper_bound(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val, _Compare __comp)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-      typedef typename iterator_traits<_ForwardIterator>::difference_type _DistanceType;
+      typedef typename iterator_traits<_ForwardIterator>::value_type
+	_ValueType;
+      typedef typename iterator_traits<_ForwardIterator>::difference_type
+	_DistanceType;
 
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare, _Tp, _ValueType>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
+				  _Tp, _ValueType>)
       __glibcxx_requires_partitioned_pred(__first, __last, __val, __comp);
 
       _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
       _ForwardIterator __middle;
 
-      while (__len > 0) {
-	__half = __len >> 1;
-	__middle = __first;
-	std::advance(__middle, __half);
-	if (__comp(__val, *__middle))
-	  __len = __half;
-	else {
-	  __first = __middle;
-	  ++__first;
-	  __len = __len - __half - 1;
+      while (__len > 0)
+	{
+	  __half = __len >> 1;
+	  __middle = __first;
+	  std::advance(__middle, __half);
+	  if (__comp(__val, *__middle))
+	    __len = __half;
+	  else
+	    {
+	      __first = __middle;
+	      ++__first;
+	      __len = __len - __half - 1;
+	    }
 	}
-      }
       return __first;
     }
 
@@ -2634,27 +2809,30 @@ namespace std
     {
       if (__len1 == 0 || __len2 == 0)
 	return;
-      if (__len1 + __len2 == 2) {
-	if (*__middle < *__first)
-	  std::iter_swap(__first, __middle);
-	return;
-      }
+      if (__len1 + __len2 == 2)
+	{
+	  if (*__middle < *__first)
+	    std::iter_swap(__first, __middle);
+	  return;
+	}
       _BidirectionalIterator __first_cut = __first;
       _BidirectionalIterator __second_cut = __middle;
       _Distance __len11 = 0;
       _Distance __len22 = 0;
-      if (__len1 > __len2) {
-	__len11 = __len1 / 2;
-	std::advance(__first_cut, __len11);
-	__second_cut = std::lower_bound(__middle, __last, *__first_cut);
-	__len22 = std::distance(__middle, __second_cut);
-      }
-      else {
-	__len22 = __len2 / 2;
-	std::advance(__second_cut, __len22);
-	__first_cut = std::upper_bound(__first, __middle, *__second_cut);
-	__len11 = std::distance(__first, __first_cut);
-      }
+      if (__len1 > __len2)
+	{
+	  __len11 = __len1 / 2;
+	  std::advance(__first_cut, __len11);
+	  __second_cut = std::lower_bound(__middle, __last, *__first_cut);
+	  __len22 = std::distance(__middle, __second_cut);
+	}
+      else
+	{
+	  __len22 = __len2 / 2;
+	  std::advance(__second_cut, __len22);
+	  __first_cut = std::upper_bound(__first, __middle, *__second_cut);
+	  __len11 = std::distance(__first, __first_cut);
+	}
       std::rotate(__first_cut, __middle, __second_cut);
       _BidirectionalIterator __new_middle = __first_cut;
       std::advance(__new_middle, std::distance(__middle, __second_cut));
@@ -2669,7 +2847,8 @@ namespace std
    *  This is a helper function for the merge routines.
    *  @endif
   */
-  template<typename _BidirectionalIterator, typename _Distance, typename _Compare>
+  template<typename _BidirectionalIterator, typename _Distance,
+	   typename _Compare>
     void
     __merge_without_buffer(_BidirectionalIterator __first,
                            _BidirectionalIterator __middle,
@@ -2679,27 +2858,32 @@ namespace std
     {
       if (__len1 == 0 || __len2 == 0)
 	return;
-      if (__len1 + __len2 == 2) {
-	if (__comp(*__middle, *__first))
-	  std::iter_swap(__first, __middle);
-	return;
-      }
+      if (__len1 + __len2 == 2)
+	{
+	  if (__comp(*__middle, *__first))
+	    std::iter_swap(__first, __middle);
+	  return;
+	}
       _BidirectionalIterator __first_cut = __first;
       _BidirectionalIterator __second_cut = __middle;
       _Distance __len11 = 0;
       _Distance __len22 = 0;
-      if (__len1 > __len2) {
-	__len11 = __len1 / 2;
-	std::advance(__first_cut, __len11);
-	__second_cut = std::lower_bound(__middle, __last, *__first_cut, __comp);
-	__len22 = std::distance(__middle, __second_cut);
-      }
-      else {
-	__len22 = __len2 / 2;
-	std::advance(__second_cut, __len22);
-	__first_cut = std::upper_bound(__first, __middle, *__second_cut, __comp);
-	__len11 = std::distance(__first, __first_cut);
-      }
+      if (__len1 > __len2)
+	{
+	  __len11 = __len1 / 2;
+	  std::advance(__first_cut, __len11);
+	  __second_cut = std::lower_bound(__middle, __last, *__first_cut,
+					  __comp);
+	  __len22 = std::distance(__middle, __second_cut);
+	}
+      else
+	{
+	  __len22 = __len2 / 2;
+	  std::advance(__second_cut, __len22);
+	  __first_cut = std::upper_bound(__first, __middle, *__second_cut,
+					 __comp);
+	  __len11 = std::distance(__first, __first_cut);
+	}
       std::rotate(__first_cut, __middle, __second_cut);
       _BidirectionalIterator __new_middle = __first_cut;
       std::advance(__new_middle, std::distance(__middle, __second_cut));
@@ -2716,12 +2900,14 @@ namespace std
   */
   template<typename _RandomAccessIterator>
     void
-    __inplace_stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last)
+    __inplace_stable_sort(_RandomAccessIterator __first,
+			  _RandomAccessIterator __last)
     {
-      if (__last - __first < 15) {
-	std::__insertion_sort(__first, __last);
-	return;
-      }
+      if (__last - __first < 15)
+	{
+	  std::__insertion_sort(__first, __last);
+	  return;
+	}
       _RandomAccessIterator __middle = __first + (__last - __first) / 2;
       std::__inplace_stable_sort(__first, __middle);
       std::__inplace_stable_sort(__middle, __last);
@@ -2737,13 +2923,14 @@ namespace std
   */
   template<typename _RandomAccessIterator, typename _Compare>
     void
-    __inplace_stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
-			  _Compare __comp)
+    __inplace_stable_sort(_RandomAccessIterator __first,
+			  _RandomAccessIterator __last, _Compare __comp)
     {
-      if (__last - __first < 15) {
-	std::__insertion_sort(__first, __last, __comp);
-	return;
-      }
+      if (__last - __first < 15)
+	{
+	  std::__insertion_sort(__first, __last, __comp);
+	  return;
+	}
       _RandomAccessIterator __middle = __first + (__last - __first) / 2;
       std::__inplace_stable_sort(__first, __middle, __comp);
       std::__inplace_stable_sort(__middle, __last, __comp);
@@ -2769,7 +2956,8 @@ namespace std
    *  elements in the two ranges, elements from the first range will always
    *  come before elements from the second.
   */
-  template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator>
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator>
     _OutputIterator
     merge(_InputIterator1 __first1, _InputIterator1 __last1,
 	  _InputIterator2 __first2, _InputIterator2 __last2,
@@ -2788,18 +2976,22 @@ namespace std
       __glibcxx_requires_sorted(__first1, __last1);
       __glibcxx_requires_sorted(__first2, __last2);
 
-      while (__first1 != __last1 && __first2 != __last2) {
-	if (*__first2 < *__first1) {
-	  *__result = *__first2;
-	  ++__first2;
+      while (__first1 != __last1 && __first2 != __last2)
+	{
+	  if (*__first2 < *__first1)
+	    {
+	      *__result = *__first2;
+	      ++__first2;
+	    }
+	  else
+	    {
+	      *__result = *__first1;
+	      ++__first1;
+	    }
+	  ++__result;
 	}
-	else {
-	  *__result = *__first1;
-	  ++__first1;
-	}
-	++__result;
-      }
-      return std::copy(__first2, __last2, std::copy(__first1, __last1, __result));
+      return std::copy(__first2, __last2, std::copy(__first1, __last1,
+						    __result));
     }
 
   /**
@@ -2822,8 +3014,8 @@ namespace std
    *  The comparison function should have the same effects on ordering as
    *  the function used for the initial sort.
   */
-  template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator,
-	   typename _Compare>
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator, typename _Compare>
     _OutputIterator
     merge(_InputIterator1 __first1, _InputIterator1 __last1,
 	  _InputIterator2 __first2, _InputIterator2 __last2,
@@ -2843,34 +3035,41 @@ namespace std
       __glibcxx_requires_sorted_pred(__first1, __last1, __comp);
       __glibcxx_requires_sorted_pred(__first2, __last2, __comp);
 
-      while (__first1 != __last1 && __first2 != __last2) {
-	if (__comp(*__first2, *__first1)) {
-	  *__result = *__first2;
-	  ++__first2;
+      while (__first1 != __last1 && __first2 != __last2)
+	{
+	  if (__comp(*__first2, *__first1))
+	    {
+	      *__result = *__first2;
+	      ++__first2;
+	    }
+	  else
+	    {
+	      *__result = *__first1;
+	      ++__first1;
+	    }
+	  ++__result;
 	}
-	else {
-	  *__result = *__first1;
-	  ++__first1;
-	}
-	++__result;
-      }
-      return std::copy(__first2, __last2, std::copy(__first1, __last1, __result));
+      return std::copy(__first2, __last2, std::copy(__first1, __last1,
+						    __result));
     }
 
   template<typename _RandomAccessIterator1, typename _RandomAccessIterator2,
 	   typename _Distance>
     void
-    __merge_sort_loop(_RandomAccessIterator1 __first, _RandomAccessIterator1 __last,
-		      _RandomAccessIterator2 __result, _Distance __step_size)
+    __merge_sort_loop(_RandomAccessIterator1 __first,
+		      _RandomAccessIterator1 __last,
+		      _RandomAccessIterator2 __result,
+		      _Distance __step_size)
     {
-      _Distance __two_step = 2 * __step_size;
+      const _Distance __two_step = 2 * __step_size;
 
-      while (__last - __first >= __two_step) {
-	__result = std::merge(__first, __first + __step_size,
-			      __first + __step_size, __first + __two_step,
-			      __result);
-	__first += __two_step;
-      }
+      while (__last - __first >= __two_step)
+	{
+	  __result = std::merge(__first, __first + __step_size,
+				__first + __step_size, __first + __two_step,
+				__result);
+	  __first += __two_step;
+	}
 
       __step_size = std::min(_Distance(__last - __first), __step_size);
       std::merge(__first, __first + __step_size, __first + __step_size, __last,
@@ -2880,19 +3079,21 @@ namespace std
   template<typename _RandomAccessIterator1, typename _RandomAccessIterator2,
 	   typename _Distance, typename _Compare>
     void
-    __merge_sort_loop(_RandomAccessIterator1 __first, _RandomAccessIterator1 __last,
+    __merge_sort_loop(_RandomAccessIterator1 __first,
+		      _RandomAccessIterator1 __last,
 		      _RandomAccessIterator2 __result, _Distance __step_size,
 		      _Compare __comp)
     {
-      _Distance __two_step = 2 * __step_size;
+      const _Distance __two_step = 2 * __step_size;
 
-      while (__last - __first >= __two_step) {
-	__result = std::merge(__first, __first + __step_size,
-			      __first + __step_size, __first + __two_step,
-			      __result,
-			      __comp);
-	__first += __two_step;
-      }
+      while (__last - __first >= __two_step)
+	{
+	  __result = std::merge(__first, __first + __step_size,
+				__first + __step_size, __first + __two_step,
+				__result,
+				__comp);
+	  __first += __two_step;
+	}
       __step_size = std::min(_Distance(__last - __first), __step_size);
 
       std::merge(__first, __first + __step_size,
@@ -2905,68 +3106,80 @@ namespace std
 
   template<typename _RandomAccessIterator, typename _Distance>
     void
-    __chunk_insertion_sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
+    __chunk_insertion_sort(_RandomAccessIterator __first,
+			   _RandomAccessIterator __last,
 			   _Distance __chunk_size)
     {
-      while (__last - __first >= __chunk_size) {
-	std::__insertion_sort(__first, __first + __chunk_size);
-	__first += __chunk_size;
-      }
+      while (__last - __first >= __chunk_size)
+	{
+	  std::__insertion_sort(__first, __first + __chunk_size);
+	  __first += __chunk_size;
+	}
       std::__insertion_sort(__first, __last);
     }
 
   template<typename _RandomAccessIterator, typename _Distance, typename _Compare>
     void
-    __chunk_insertion_sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
+    __chunk_insertion_sort(_RandomAccessIterator __first,
+			   _RandomAccessIterator __last,
 			   _Distance __chunk_size, _Compare __comp)
     {
-      while (__last - __first >= __chunk_size) {
-	std::__insertion_sort(__first, __first + __chunk_size, __comp);
-	__first += __chunk_size;
-      }
+      while (__last - __first >= __chunk_size)
+	{
+	  std::__insertion_sort(__first, __first + __chunk_size, __comp);
+	  __first += __chunk_size;
+	}
       std::__insertion_sort(__first, __last, __comp);
     }
 
   template<typename _RandomAccessIterator, typename _Pointer>
     void
-    __merge_sort_with_buffer(_RandomAccessIterator __first, _RandomAccessIterator __last,
+    __merge_sort_with_buffer(_RandomAccessIterator __first,
+			     _RandomAccessIterator __last,
                              _Pointer __buffer)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::difference_type _Distance;
+      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
+	_Distance;
 
-      _Distance __len = __last - __first;
-      _Pointer __buffer_last = __buffer + __len;
+      const _Distance __len = __last - __first;
+      const _Pointer __buffer_last = __buffer + __len;
 
       _Distance __step_size = _S_chunk_size;
       std::__chunk_insertion_sort(__first, __last, __step_size);
 
-      while (__step_size < __len) {
-	std::__merge_sort_loop(__first, __last, __buffer, __step_size);
-	__step_size *= 2;
-	std::__merge_sort_loop(__buffer, __buffer_last, __first, __step_size);
-	__step_size *= 2;
-      }
+      while (__step_size < __len)
+	{
+	  std::__merge_sort_loop(__first, __last, __buffer, __step_size);
+	  __step_size *= 2;
+	  std::__merge_sort_loop(__buffer, __buffer_last, __first, __step_size);
+	  __step_size *= 2;
+	}
     }
 
   template<typename _RandomAccessIterator, typename _Pointer, typename _Compare>
     void
-    __merge_sort_with_buffer(_RandomAccessIterator __first, _RandomAccessIterator __last,
+    __merge_sort_with_buffer(_RandomAccessIterator __first,
+			     _RandomAccessIterator __last,
                              _Pointer __buffer, _Compare __comp)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::difference_type _Distance;
+      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
+	_Distance;
 
-      _Distance __len = __last - __first;
-      _Pointer __buffer_last = __buffer + __len;
+      const _Distance __len = __last - __first;
+      const _Pointer __buffer_last = __buffer + __len;
 
       _Distance __step_size = _S_chunk_size;
       std::__chunk_insertion_sort(__first, __last, __step_size, __comp);
 
-      while (__step_size < __len) {
-	std::__merge_sort_loop(__first, __last, __buffer, __step_size, __comp);
-	__step_size *= 2;
-	std::__merge_sort_loop(__buffer, __buffer_last, __first, __step_size, __comp);
-	__step_size *= 2;
-      }
+      while (__step_size < __len)
+	{
+	  std::__merge_sort_loop(__first, __last, __buffer,
+				 __step_size, __comp);
+	  __step_size *= 2;
+	  std::__merge_sort_loop(__buffer, __buffer_last, __first,
+				 __step_size, __comp);
+	  __step_size *= 2;
+	}
     }
 
   /**
@@ -2977,8 +3190,10 @@ namespace std
   template<typename _BidirectionalIterator1, typename _BidirectionalIterator2,
 	   typename _BidirectionalIterator3>
     _BidirectionalIterator3
-    __merge_backward(_BidirectionalIterator1 __first1, _BidirectionalIterator1 __last1,
-		     _BidirectionalIterator2 __first2, _BidirectionalIterator2 __last2,
+    __merge_backward(_BidirectionalIterator1 __first1,
+		     _BidirectionalIterator1 __last1,
+		     _BidirectionalIterator2 __first2,
+		     _BidirectionalIterator2 __last2,
 		     _BidirectionalIterator3 __result)
     {
       if (__first1 == __last1)
@@ -2987,20 +3202,23 @@ namespace std
 	return std::copy_backward(__first1, __last1, __result);
       --__last1;
       --__last2;
-      while (true) {
-	if (*__last2 < *__last1) {
-	  *--__result = *__last1;
-	  if (__first1 == __last1)
-	    return std::copy_backward(__first2, ++__last2, __result);
-	  --__last1;
+      while (true)
+	{
+	  if (*__last2 < *__last1)
+	    {
+	      *--__result = *__last1;
+	      if (__first1 == __last1)
+		return std::copy_backward(__first2, ++__last2, __result);
+	      --__last1;
+	    }
+	  else
+	    {
+	      *--__result = *__last2;
+	      if (__first2 == __last2)
+		return std::copy_backward(__first1, ++__last1, __result);
+	      --__last2;
+	    }
 	}
-	else {
-	  *--__result = *__last2;
-	  if (__first2 == __last2)
-	    return std::copy_backward(__first1, ++__last1, __result);
-	  --__last2;
-	}
-      }
     }
 
   /**
@@ -3011,8 +3229,10 @@ namespace std
   template<typename _BidirectionalIterator1, typename _BidirectionalIterator2,
 	   typename _BidirectionalIterator3, typename _Compare>
     _BidirectionalIterator3
-    __merge_backward(_BidirectionalIterator1 __first1, _BidirectionalIterator1 __last1,
-		     _BidirectionalIterator2 __first2, _BidirectionalIterator2 __last2,
+    __merge_backward(_BidirectionalIterator1 __first1,
+		     _BidirectionalIterator1 __last1,
+		     _BidirectionalIterator2 __first2,
+		     _BidirectionalIterator2 __last2,
 		     _BidirectionalIterator3 __result,
 		     _Compare __comp)
     {
@@ -3022,20 +3242,23 @@ namespace std
 	return std::copy_backward(__first1, __last1, __result);
       --__last1;
       --__last2;
-      while (true) {
-	if (__comp(*__last2, *__last1)) {
-	  *--__result = *__last1;
-	  if (__first1 == __last1)
-	    return std::copy_backward(__first2, ++__last2, __result);
-	  --__last1;
+      while (true)
+	{
+	  if (__comp(*__last2, *__last1))
+	    {
+	      *--__result = *__last1;
+	      if (__first1 == __last1)
+		return std::copy_backward(__first2, ++__last2, __result);
+	      --__last1;
+	    }
+	  else
+	    {
+	      *--__result = *__last2;
+	      if (__first2 == __last2)
+		return std::copy_backward(__first1, ++__last1, __result);
+	      --__last2;
+	    }
 	}
-	else {
-	  *--__result = *__last2;
-	  if (__first2 == __last2)
-	    return std::copy_backward(__first1, ++__last1, __result);
-	  --__last2;
-	}
-      }
     }
 
   /**
@@ -3054,21 +3277,24 @@ namespace std
 		      _Distance __buffer_size)
     {
       _BidirectionalIterator2 __buffer_end;
-      if (__len1 > __len2 && __len2 <= __buffer_size) {
-	__buffer_end = std::copy(__middle, __last, __buffer);
-	std::copy_backward(__first, __middle, __last);
-	return std::copy(__buffer, __buffer_end, __first);
-      }
-      else if (__len1 <= __buffer_size) {
-	__buffer_end = std::copy(__first, __middle, __buffer);
-	std::copy(__middle, __last, __first);
-	return std::copy_backward(__buffer, __buffer_end, __last);
-      }
-      else {
-	std::rotate(__first, __middle, __last);
-	std::advance(__first, std::distance(__middle, __last));
-	return __first;
-      }
+      if (__len1 > __len2 && __len2 <= __buffer_size)
+	{
+	  __buffer_end = std::copy(__middle, __last, __buffer);
+	  std::copy_backward(__first, __middle, __last);
+	  return std::copy(__buffer, __buffer_end, __first);
+	}
+      else if (__len1 <= __buffer_size)
+	{
+	  __buffer_end = std::copy(__first, __middle, __buffer);
+	  std::copy(__middle, __last, __first);
+	  return std::copy_backward(__buffer, __buffer_end, __last);
+	}
+      else
+	{
+	  std::rotate(__first, __middle, __last);
+	  std::advance(__first, std::distance(__middle, __last));
+	  return __first;
+	}
     }
 
   /**
@@ -3076,7 +3302,8 @@ namespace std
    *  This is a helper function for the merge routines.
    *  @endif
   */
-  template<typename _BidirectionalIterator, typename _Distance, typename _Pointer>
+  template<typename _BidirectionalIterator, typename _Distance,
+	   typename _Pointer>
     void
     __merge_adaptive(_BidirectionalIterator __first,
                      _BidirectionalIterator __middle,
@@ -3084,40 +3311,49 @@ namespace std
 		     _Distance __len1, _Distance __len2,
 		     _Pointer __buffer, _Distance __buffer_size)
     {
-	  if (__len1 <= __len2 && __len1 <= __buffer_size) {
-	    _Pointer __buffer_end = std::copy(__first, __middle, __buffer);
-	    std::merge(__buffer, __buffer_end, __middle, __last, __first);
-	  }
-	  else if (__len2 <= __buffer_size) {
-	    _Pointer __buffer_end = std::copy(__middle, __last, __buffer);
-	    std::__merge_backward(__first, __middle, __buffer, __buffer_end, __last);
-	  }
-	  else {
-	    _BidirectionalIterator __first_cut = __first;
-	    _BidirectionalIterator __second_cut = __middle;
-	    _Distance __len11 = 0;
-	    _Distance __len22 = 0;
-	    if (__len1 > __len2) {
-		  __len11 = __len1 / 2;
-		  std::advance(__first_cut, __len11);
-		  __second_cut = std::lower_bound(__middle, __last, *__first_cut);
-		  __len22 = std::distance(__middle, __second_cut);
+      if (__len1 <= __len2 && __len1 <= __buffer_size)
+	{
+	  _Pointer __buffer_end = std::copy(__first, __middle, __buffer);
+	  std::merge(__buffer, __buffer_end, __middle, __last, __first);
+	}
+      else if (__len2 <= __buffer_size)
+	{
+	  _Pointer __buffer_end = std::copy(__middle, __last, __buffer);
+	  std::__merge_backward(__first, __middle, __buffer,
+				__buffer_end, __last);
+	}
+      else
+	{
+	  _BidirectionalIterator __first_cut = __first;
+	  _BidirectionalIterator __second_cut = __middle;
+	  _Distance __len11 = 0;
+	  _Distance __len22 = 0;
+	  if (__len1 > __len2)
+	    {
+	      __len11 = __len1 / 2;
+	      std::advance(__first_cut, __len11);
+	      __second_cut = std::lower_bound(__middle, __last,
+					      *__first_cut);
+	      __len22 = std::distance(__middle, __second_cut);
 	    }
-	    else {
-		  __len22 = __len2 / 2;
-		  std::advance(__second_cut, __len22);
-		  __first_cut = std::upper_bound(__first, __middle, *__second_cut);
-		  __len11 = std::distance(__first, __first_cut);
+	  else
+	    {
+	      __len22 = __len2 / 2;
+	      std::advance(__second_cut, __len22);
+	      __first_cut = std::upper_bound(__first, __middle,
+					     *__second_cut);
+	      __len11 = std::distance(__first, __first_cut);
 	    }
-	    _BidirectionalIterator __new_middle =
-		  std::__rotate_adaptive(__first_cut, __middle, __second_cut,
-					 __len1 - __len11, __len22, __buffer,
-					 __buffer_size);
-	    std::__merge_adaptive(__first, __first_cut, __new_middle, __len11,
-				  __len22, __buffer, __buffer_size);
-	    std::__merge_adaptive(__new_middle, __second_cut, __last, __len1 - __len11,
-				  __len2 - __len22, __buffer, __buffer_size);
-	  }
+	  _BidirectionalIterator __new_middle =
+	    std::__rotate_adaptive(__first_cut, __middle, __second_cut,
+				   __len1 - __len11, __len22, __buffer,
+				   __buffer_size);
+	  std::__merge_adaptive(__first, __first_cut, __new_middle, __len11,
+				__len22, __buffer, __buffer_size);
+	  std::__merge_adaptive(__new_middle, __second_cut, __last,
+				__len1 - __len11,
+				__len2 - __len22, __buffer, __buffer_size);
+	}
     }
 
   /**
@@ -3135,41 +3371,50 @@ namespace std
 		     _Pointer __buffer, _Distance __buffer_size,
 		     _Compare __comp)
     {
-	  if (__len1 <= __len2 && __len1 <= __buffer_size) {
-	    _Pointer __buffer_end = std::copy(__first, __middle, __buffer);
-	    std::merge(__buffer, __buffer_end, __middle, __last, __first, __comp);
-	  }
-	  else if (__len2 <= __buffer_size) {
-	    _Pointer __buffer_end = std::copy(__middle, __last, __buffer);
-	    std::__merge_backward(__first, __middle, __buffer, __buffer_end, __last,
-				  __comp);
-	  }
-	  else {
-	    _BidirectionalIterator __first_cut = __first;
-	    _BidirectionalIterator __second_cut = __middle;
-	    _Distance __len11 = 0;
-	    _Distance __len22 = 0;
-	    if (__len1 > __len2) {
-		  __len11 = __len1 / 2;
-		  std::advance(__first_cut, __len11);
-		  __second_cut = std::lower_bound(__middle, __last, *__first_cut, __comp);
-		  __len22 = std::distance(__middle, __second_cut);
+      if (__len1 <= __len2 && __len1 <= __buffer_size)
+	{
+	  _Pointer __buffer_end = std::copy(__first, __middle, __buffer);
+	  std::merge(__buffer, __buffer_end, __middle, __last, __first, __comp);
+	}
+      else if (__len2 <= __buffer_size)
+	{
+	  _Pointer __buffer_end = std::copy(__middle, __last, __buffer);
+	  std::__merge_backward(__first, __middle, __buffer, __buffer_end,
+				__last, __comp);
+	}
+      else
+	{
+	  _BidirectionalIterator __first_cut = __first;
+	  _BidirectionalIterator __second_cut = __middle;
+	  _Distance __len11 = 0;
+	  _Distance __len22 = 0;
+	  if (__len1 > __len2)
+	    {
+	      __len11 = __len1 / 2;
+	      std::advance(__first_cut, __len11);
+	      __second_cut = std::lower_bound(__middle, __last, *__first_cut,
+					      __comp);
+	      __len22 = std::distance(__middle, __second_cut);
 	    }
-	    else {
-		  __len22 = __len2 / 2;
-		  std::advance(__second_cut, __len22);
-		  __first_cut = std::upper_bound(__first, __middle, *__second_cut, __comp);
-		  __len11 = std::distance(__first, __first_cut);
+	  else
+	    {
+	      __len22 = __len2 / 2;
+	      std::advance(__second_cut, __len22);
+	      __first_cut = std::upper_bound(__first, __middle, *__second_cut,
+					     __comp);
+	      __len11 = std::distance(__first, __first_cut);
 	    }
-	    _BidirectionalIterator __new_middle =
-		  std::__rotate_adaptive(__first_cut, __middle, __second_cut,
-					 __len1 - __len11, __len22, __buffer,
-					 __buffer_size);
-	    std::__merge_adaptive(__first, __first_cut, __new_middle, __len11,
-				  __len22, __buffer, __buffer_size, __comp);
-	    std::__merge_adaptive(__new_middle, __second_cut, __last, __len1 - __len11,
-				  __len2 - __len22, __buffer, __buffer_size, __comp);
-	  }
+	  _BidirectionalIterator __new_middle =
+	    std::__rotate_adaptive(__first_cut, __middle, __second_cut,
+				   __len1 - __len11, __len22, __buffer,
+				   __buffer_size);
+	  std::__merge_adaptive(__first, __first_cut, __new_middle, __len11,
+				__len22, __buffer, __buffer_size, __comp);
+	  std::__merge_adaptive(__new_middle, __second_cut, __last,
+				__len1 - __len11,
+				__len2 - __len22, __buffer,
+				__buffer_size, __comp);
+	}
     }
 
   /**
@@ -3213,7 +3458,8 @@ namespace std
       _DistanceType __len1 = std::distance(__first, __middle);
       _DistanceType __len2 = std::distance(__middle, __last);
 
-      _Temporary_buffer<_BidirectionalIterator, _ValueType> __buf(__first, __last);
+      _Temporary_buffer<_BidirectionalIterator, _ValueType> __buf(__first,
+								  __last);
       if (__buf.begin() == 0)
 	std::__merge_without_buffer(__first, __middle, __last, __len1, __len2);
       else
@@ -3265,58 +3511,73 @@ namespace std
       if (__first == __middle || __middle == __last)
 	return;
 
-      _DistanceType __len1 = std::distance(__first, __middle);
-      _DistanceType __len2 = std::distance(__middle, __last);
+      const _DistanceType __len1 = std::distance(__first, __middle);
+      const _DistanceType __len2 = std::distance(__middle, __last);
 
-      _Temporary_buffer<_BidirectionalIterator, _ValueType> __buf(__first, __last);
+      _Temporary_buffer<_BidirectionalIterator, _ValueType> __buf(__first,
+								  __last);
       if (__buf.begin() == 0)
-	std::__merge_without_buffer(__first, __middle, __last, __len1, __len2, __comp);
+	std::__merge_without_buffer(__first, __middle, __last, __len1,
+				    __len2, __comp);
       else
 	std::__merge_adaptive(__first, __middle, __last, __len1, __len2,
 			      __buf.begin(), _DistanceType(__buf.size()),
 			      __comp);
     }
 
-  template<typename _RandomAccessIterator, typename _Pointer, typename _Distance>
+  template<typename _RandomAccessIterator, typename _Pointer,
+	   typename _Distance>
     void
-    __stable_sort_adaptive(_RandomAccessIterator __first, _RandomAccessIterator __last,
+    __stable_sort_adaptive(_RandomAccessIterator __first,
+			   _RandomAccessIterator __last,
                            _Pointer __buffer, _Distance __buffer_size)
     {
-      _Distance __len = (__last - __first + 1) / 2;
-      _RandomAccessIterator __middle = __first + __len;
-      if (__len > __buffer_size) {
-	std::__stable_sort_adaptive(__first, __middle, __buffer, __buffer_size);
-	std::__stable_sort_adaptive(__middle, __last, __buffer, __buffer_size);
-      }
-      else {
-	std::__merge_sort_with_buffer(__first, __middle, __buffer);
-	std::__merge_sort_with_buffer(__middle, __last, __buffer);
-      }
-      std::__merge_adaptive(__first, __middle, __last, _Distance(__middle - __first),
-			    _Distance(__last - __middle), __buffer, __buffer_size);
+      const _Distance __len = (__last - __first + 1) / 2;
+      const _RandomAccessIterator __middle = __first + __len;
+      if (__len > __buffer_size)
+	{
+	  std::__stable_sort_adaptive(__first, __middle,
+				      __buffer, __buffer_size);
+	  std::__stable_sort_adaptive(__middle, __last,
+				      __buffer, __buffer_size);
+	}
+      else
+	{
+	  std::__merge_sort_with_buffer(__first, __middle, __buffer);
+	  std::__merge_sort_with_buffer(__middle, __last, __buffer);
+	}
+      std::__merge_adaptive(__first, __middle, __last,
+			    _Distance(__middle - __first),
+			    _Distance(__last - __middle),
+			    __buffer, __buffer_size);
     }
 
-  template<typename _RandomAccessIterator, typename _Pointer, typename _Distance,
-           typename _Compare>
+  template<typename _RandomAccessIterator, typename _Pointer,
+	   typename _Distance, typename _Compare>
     void
-    __stable_sort_adaptive(_RandomAccessIterator __first, _RandomAccessIterator __last,
+    __stable_sort_adaptive(_RandomAccessIterator __first,
+			   _RandomAccessIterator __last,
                            _Pointer __buffer, _Distance __buffer_size,
                            _Compare __comp)
     {
-      _Distance __len = (__last - __first + 1) / 2;
-      _RandomAccessIterator __middle = __first + __len;
-      if (__len > __buffer_size) {
-	std::__stable_sort_adaptive(__first, __middle, __buffer, __buffer_size,
-				    __comp);
-	std::__stable_sort_adaptive(__middle, __last, __buffer, __buffer_size,
-				    __comp);
-      }
-      else {
-	std::__merge_sort_with_buffer(__first, __middle, __buffer, __comp);
-	std::__merge_sort_with_buffer(__middle, __last, __buffer, __comp);
-      }
-      std::__merge_adaptive(__first, __middle, __last, _Distance(__middle - __first),
-			    _Distance(__last - __middle), __buffer, __buffer_size,
+      const _Distance __len = (__last - __first + 1) / 2;
+      const _RandomAccessIterator __middle = __first + __len;
+      if (__len > __buffer_size)
+	{
+	  std::__stable_sort_adaptive(__first, __middle, __buffer,
+				      __buffer_size, __comp);
+	  std::__stable_sort_adaptive(__middle, __last, __buffer,
+				      __buffer_size, __comp);
+	}
+      else
+	{
+	  std::__merge_sort_with_buffer(__first, __middle, __buffer, __comp);
+	  std::__merge_sort_with_buffer(__middle, __last, __buffer, __comp);
+	}
+      std::__merge_adaptive(__first, __middle, __last,
+			    _Distance(__middle - __first),
+			    _Distance(__last - __middle),
+			    __buffer, __buffer_size,
 			    __comp);
     }
 
@@ -3340,8 +3601,10 @@ namespace std
     inline void
     stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
-      typedef typename iterator_traits<_RandomAccessIterator>::difference_type _DistanceType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
+	_DistanceType;
 
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
@@ -3349,11 +3612,13 @@ namespace std
       __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      _Temporary_buffer<_RandomAccessIterator, _ValueType> buf(__first, __last);
+      _Temporary_buffer<_RandomAccessIterator, _ValueType>
+	buf(__first, __last);
       if (buf.begin() == 0)
 	std::__inplace_stable_sort(__first, __last);
       else
-	std::__stable_sort_adaptive(__first, __last, buf.begin(), _DistanceType(buf.size()));
+	std::__stable_sort_adaptive(__first, __last, buf.begin(),
+				    _DistanceType(buf.size()));
     }
 
   /**
@@ -3375,24 +3640,28 @@ namespace std
   */
   template<typename _RandomAccessIterator, typename _Compare>
     inline void
-    stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last, _Compare __comp)
+    stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
+		_Compare __comp)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
-      typedef typename iterator_traits<_RandomAccessIterator>::difference_type _DistanceType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
+	_DistanceType;
 
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
-							  _ValueType, _ValueType>)
+				  _ValueType,
+				  _ValueType>)
       __glibcxx_requires_valid_range(__first, __last);
 
       _Temporary_buffer<_RandomAccessIterator, _ValueType> buf(__first, __last);
       if (buf.begin() == 0)
 	std::__inplace_stable_sort(__first, __last, __comp);
       else
-	std::__stable_sort_adaptive(__first, __last, buf.begin(), _DistanceType(buf.size()),
-				    __comp);
+	std::__stable_sort_adaptive(__first, __last, buf.begin(),
+				    _DistanceType(buf.size()), __comp);
     }
 
   /**
@@ -3404,7 +3673,7 @@ namespace std
    *
    *  Rearranges the elements in the range @p [first,last) so that @p *nth
    *  is the same element that would have been in that position had the
-   *  whole sequence been sorted. 
+   *  whole sequence been sorted.
    *  whole sequence been sorted. The elements either side of @p *nth are
    *  not completely sorted, but for any iterator @i in the range
    *  @p [first,nth) and any iterator @j in the range @p [nth,last) it
@@ -3416,25 +3685,32 @@ namespace std
 		_RandomAccessIterator __nth,
 		_RandomAccessIterator __last)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
 
       // concept requirements
-      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<_RandomAccessIterator>)
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+				  _RandomAccessIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
       __glibcxx_requires_valid_range(__first, __nth);
       __glibcxx_requires_valid_range(__nth, __last);
 
-      while (__last - __first > 3) {
-	_RandomAccessIterator __cut =
-	  std::__unguarded_partition(__first, __last,
-				     _ValueType(std::__median(*__first,
-							      *(__first + (__last - __first)/2),
-							      *(__last - 1))));
-	if (__cut <= __nth)
-	  __first = __cut;
-	else
-	  __last = __cut;
-      }
+      while (__last - __first > 3)
+	{
+	  _RandomAccessIterator __cut =
+	    std::__unguarded_partition(__first, __last,
+				       _ValueType(std::__median(*__first,
+								*(__first
+								  + (__last
+								     - __first)
+								  / 2),
+								*(__last
+								  - 1))));
+	  if (__cut <= __nth)
+	    __first = __cut;
+	  else
+	    __last = __cut;
+	}
       std::__insertion_sort(__first, __last);
     }
 
@@ -3461,27 +3737,33 @@ namespace std
 		_RandomAccessIterator __last,
 			    _Compare __comp)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
 
       // concept requirements
-      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<_RandomAccessIterator>)
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+				  _RandomAccessIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 				  _ValueType, _ValueType>)
       __glibcxx_requires_valid_range(__first, __nth);
       __glibcxx_requires_valid_range(__nth, __last);
 
-      while (__last - __first > 3) {
-	_RandomAccessIterator __cut =
-	  std::__unguarded_partition(__first, __last,
-				     _ValueType(std::__median(*__first,
-							      *(__first + (__last - __first)/2),
-							      *(__last - 1),
+      while (__last - __first > 3)
+	{
+	  _RandomAccessIterator __cut =
+	    std::__unguarded_partition(__first, __last,
+				       _ValueType(std::__median(*__first,
+								*(__first
+								  + (__last
+								     - __first)
+								  / 2),
+								*(__last - 1),
 							      __comp)), __comp);
-	if (__cut <= __nth)
-	  __first = __cut;
-	else
-	  __last = __cut;
-      }
+	  if (__cut <= __nth)
+	    __first = __cut;
+	  else
+	    __last = __cut;
+	}
       std::__insertion_sort(__first, __last, __comp);
     }
 
@@ -3503,10 +3785,13 @@ namespace std
   */
   template<typename _ForwardIterator, typename _Tp>
     pair<_ForwardIterator, _ForwardIterator>
-    equal_range(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __val)
+    equal_range(_ForwardIterator __first, _ForwardIterator __last,
+		const _Tp& __val)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-      typedef typename iterator_traits<_ForwardIterator>::difference_type _DistanceType;
+      typedef typename iterator_traits<_ForwardIterator>::value_type
+	_ValueType;
+      typedef typename iterator_traits<_ForwardIterator>::difference_type
+	_DistanceType;
 
       // concept requirements
       // See comments on lower_bound.
@@ -3519,24 +3804,27 @@ namespace std
       _DistanceType __half;
       _ForwardIterator __middle, __left, __right;
 
-      while (__len > 0) {
-	__half = __len >> 1;
-	__middle = __first;
-	std::advance(__middle, __half);
-	if (*__middle < __val) {
-	  __first = __middle;
-	  ++__first;
-	  __len = __len - __half - 1;
+      while (__len > 0)
+	{
+	  __half = __len >> 1;
+	  __middle = __first;
+	  std::advance(__middle, __half);
+	  if (*__middle < __val)
+	    {
+	      __first = __middle;
+	      ++__first;
+	      __len = __len - __half - 1;
+	    }
+	  else if (__val < *__middle)
+	    __len = __half;
+	  else
+	    {
+	      __left = std::lower_bound(__first, __middle, __val);
+	      std::advance(__first, __len);
+	      __right = std::upper_bound(++__middle, __first, __val);
+	      return pair<_ForwardIterator, _ForwardIterator>(__left, __right);
+	    }
 	}
-	else if (__val < *__middle)
-	  __len = __half;
-	else {
-	  __left = std::lower_bound(__first, __middle, __val);
-	  std::advance(__first, __len);
-	  __right = std::upper_bound(++__middle, __first, __val);
-	  return pair<_ForwardIterator, _ForwardIterator>(__left, __right);
-	}
-      }
       return pair<_ForwardIterator, _ForwardIterator>(__first, __first);
     }
 
@@ -3559,40 +3847,48 @@ namespace std
   */
   template<typename _ForwardIterator, typename _Tp, typename _Compare>
     pair<_ForwardIterator, _ForwardIterator>
-    equal_range(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __val,
+    equal_range(_ForwardIterator __first, _ForwardIterator __last,
+		const _Tp& __val,
 		_Compare __comp)
     {
-      typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-      typedef typename iterator_traits<_ForwardIterator>::difference_type _DistanceType;
+      typedef typename iterator_traits<_ForwardIterator>::value_type
+	_ValueType;
+      typedef typename iterator_traits<_ForwardIterator>::difference_type
+	_DistanceType;
 
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare, _ValueType, _Tp>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare, _Tp, _ValueType>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
+				  _ValueType, _Tp>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
+				  _Tp, _ValueType>)
       __glibcxx_requires_partitioned_pred(__first, __last, __val, __comp);
 
       _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
       _ForwardIterator __middle, __left, __right;
 
-      while (__len > 0) {
-	__half = __len >> 1;
-	__middle = __first;
-	std::advance(__middle, __half);
-	if (__comp(*__middle, __val)) {
-	  __first = __middle;
-	  ++__first;
-	  __len = __len - __half - 1;
+      while (__len > 0)
+	{
+	  __half = __len >> 1;
+	  __middle = __first;
+	  std::advance(__middle, __half);
+	  if (__comp(*__middle, __val))
+	    {
+	      __first = __middle;
+	      ++__first;
+	      __len = __len - __half - 1;
+	    }
+	  else if (__comp(__val, *__middle))
+	    __len = __half;
+	  else
+	    {
+	      __left = std::lower_bound(__first, __middle, __val, __comp);
+	      std::advance(__first, __len);
+	      __right = std::upper_bound(++__middle, __first, __val, __comp);
+	      return pair<_ForwardIterator, _ForwardIterator>(__left, __right);
+	    }
 	}
-	else if (__comp(__val, *__middle))
-	  __len = __half;
-	else {
-	  __left = std::lower_bound(__first, __middle, __val, __comp);
-	  std::advance(__first, __len);
-	  __right = std::upper_bound(++__middle, __first, __val, __comp);
-	  return pair<_ForwardIterator, _ForwardIterator>(__left, __right);
-	}
-      }
       return pair<_ForwardIterator, _ForwardIterator>(__first, __first);
     }
 
@@ -3723,7 +4019,8 @@ namespace std
    *  in [first2,last2) is not found before the search iterator reaches @a
    *  last2, false is returned.
   */
-  template<typename _InputIterator1, typename _InputIterator2, typename _Compare>
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _Compare>
     bool
     includes(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2, _InputIterator2 __last2, _Compare __comp)
@@ -3768,7 +4065,8 @@ namespace std
    *  both ranges advance.  The output range may not overlap either input
    *  range.
   */
-  template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator>
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator>
     _OutputIterator
     set_union(_InputIterator1 __first1, _InputIterator1 __last1,
 	      _InputIterator2 __first2, _InputIterator2 __last2,
@@ -3787,23 +4085,28 @@ namespace std
       __glibcxx_requires_sorted(__first1, __last1);
       __glibcxx_requires_sorted(__first2, __last2);
 
-      while (__first1 != __last1 && __first2 != __last2) {
-	if (*__first1 < *__first2) {
-	  *__result = *__first1;
-	  ++__first1;
+      while (__first1 != __last1 && __first2 != __last2)
+	{
+	  if (*__first1 < *__first2)
+	    {
+	      *__result = *__first1;
+	      ++__first1;
+	    }
+	  else if (*__first2 < *__first1)
+	    {
+	      *__result = *__first2;
+	      ++__first2;
+	    }
+	  else
+	    {
+	      *__result = *__first1;
+	      ++__first1;
+	      ++__first2;
+	    }
+	  ++__result;
 	}
-	else if (*__first2 < *__first1) {
-	  *__result = *__first2;
-	  ++__first2;
-	}
-	else {
-	  *__result = *__first1;
-	  ++__first1;
-	  ++__first2;
-	}
-	++__result;
-      }
-      return std::copy(__first2, __last2, std::copy(__first1, __last1, __result));
+      return std::copy(__first2, __last2, std::copy(__first1, __last1,
+						    __result));
     }
 
   /**
@@ -3824,8 +4127,8 @@ namespace std
    *  ranges, the element from the first range is copied and both ranges
    *  advance.  The output range may not overlap either input range.
   */
-  template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator,
-	   typename _Compare>
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator, typename _Compare>
     _OutputIterator
     set_union(_InputIterator1 __first1, _InputIterator1 __last1,
 	      _InputIterator2 __first2, _InputIterator2 __last2,
@@ -3845,23 +4148,28 @@ namespace std
       __glibcxx_requires_sorted_pred(__first1, __last1, __comp);
       __glibcxx_requires_sorted_pred(__first2, __last2, __comp);
 
-      while (__first1 != __last1 && __first2 != __last2) {
-	if (__comp(*__first1, *__first2)) {
-	  *__result = *__first1;
-	  ++__first1;
+      while (__first1 != __last1 && __first2 != __last2)
+	{
+	  if (__comp(*__first1, *__first2))
+	    {
+	      *__result = *__first1;
+	      ++__first1;
+	    }
+	  else if (__comp(*__first2, *__first1))
+	    {
+	      *__result = *__first2;
+	      ++__first2;
+	    }
+	  else
+	    {
+	      *__result = *__first1;
+	      ++__first1;
+	      ++__first2;
+	    }
+	  ++__result;
 	}
-	else if (__comp(*__first2, *__first1)) {
-	  *__result = *__first2;
-	  ++__first2;
-	}
-	else {
-	  *__result = *__first1;
-	  ++__first1;
-	  ++__first2;
-	}
-	++__result;
-      }
-      return std::copy(__first2, __last2, std::copy(__first1, __last1, __result));
+      return std::copy(__first2, __last2, std::copy(__first1, __last1,
+						    __result));
     }
 
   /**
@@ -3880,7 +4188,8 @@ namespace std
    *  element from the first range is copied and both ranges advance.  The
    *  output range may not overlap either input range.
   */
-  template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator>
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator>
     _OutputIterator
     set_intersection(_InputIterator1 __first1, _InputIterator1 __last1,
 		     _InputIterator2 __first2, _InputIterator2 __last2,
@@ -3904,18 +4213,19 @@ namespace std
 	  ++__first1;
 	else if (*__first2 < *__first1)
 	  ++__first2;
-	else {
-	  *__result = *__first1;
-	  ++__first1;
-	  ++__first2;
-	  ++__result;
-	}
+	else
+	  {
+	    *__result = *__first1;
+	    ++__first1;
+	    ++__first2;
+	    ++__result;
+	  }
       return __result;
     }
 
   /**
    *  @brief Return the intersection of two sorted ranges using comparison
-   *  functor. 
+   *  functor.
    *  @param  first1  Start of first range.
    *  @param  last1   End of first range.
    *  @param  first2  Start of second range.
@@ -3932,8 +4242,8 @@ namespace std
    *  first range is copied and both ranges advance.  The output range may not
    *  overlap either input range.
   */
-  template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator,
-	   typename _Compare>
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator, typename _Compare>
     _OutputIterator
     set_intersection(_InputIterator1 __first1, _InputIterator1 __last1,
 		     _InputIterator2 __first2, _InputIterator2 __last2,
@@ -3958,12 +4268,13 @@ namespace std
 	  ++__first1;
 	else if (__comp(*__first2, *__first1))
 	  ++__first2;
-	else {
-	  *__result = *__first1;
-	  ++__first1;
-	  ++__first2;
-	  ++__result;
-	}
+	else
+	  {
+	    *__result = *__first1;
+	    ++__first1;
+	    ++__first2;
+	    ++__result;
+	  }
       return __result;
     }
 
@@ -3985,7 +4296,8 @@ namespace std
    *  contained in both ranges, no elements are copied and both ranges
    *  advance.  The output range may not overlap either input range.
   */
-  template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator>
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator>
     _OutputIterator
     set_difference(_InputIterator1 __first1, _InputIterator1 __last1,
 		   _InputIterator2 __first2, _InputIterator2 __last2,
@@ -4005,17 +4317,19 @@ namespace std
       __glibcxx_requires_sorted(__first2, __last2);
 
       while (__first1 != __last1 && __first2 != __last2)
-	if (*__first1 < *__first2) {
-	  *__result = *__first1;
-	  ++__first1;
-	  ++__result;
-	}
+	if (*__first1 < *__first2)
+	  {
+	    *__result = *__first1;
+	    ++__first1;
+	    ++__result;
+	  }
 	else if (*__first2 < *__first1)
 	  ++__first2;
-	else {
-	  ++__first1;
-	  ++__first2;
-	}
+	else
+	  {
+	    ++__first1;
+	    ++__first2;
+	  }
       return std::copy(__first1, __last1, __result);
     }
 
@@ -4040,8 +4354,8 @@ namespace std
    *  elements are copied and both ranges advance.  The output range may not
    *  overlap either input range.
   */
-  template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator,
-	   typename _Compare>
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator, typename _Compare>
     _OutputIterator
     set_difference(_InputIterator1 __first1, _InputIterator1 __last1,
 		   _InputIterator2 __first2, _InputIterator2 __last2,
@@ -4062,17 +4376,19 @@ namespace std
       __glibcxx_requires_sorted_pred(__first2, __last2, __comp);
 
       while (__first1 != __last1 && __first2 != __last2)
-	if (__comp(*__first1, *__first2)) {
-	  *__result = *__first1;
-	  ++__first1;
-	  ++__result;
-	}
+	if (__comp(*__first1, *__first2))
+	  {
+	    *__result = *__first1;
+	    ++__first1;
+	    ++__result;
+	  }
 	else if (__comp(*__first2, *__first1))
 	  ++__first2;
-	else {
-	  ++__first1;
-	  ++__first2;
-	}
+	else
+	  {
+	    ++__first1;
+	    ++__first2;
+	  }
       return std::copy(__first1, __last1, __result);
     }
 
@@ -4092,7 +4408,8 @@ namespace std
    *  element is contained in both ranges, no elements are copied and both
    *  ranges advance.  The output range may not overlap either input range.
   */
-  template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator>
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator>
     _OutputIterator
     set_symmetric_difference(_InputIterator1 __first1, _InputIterator1 __last1,
 			     _InputIterator2 __first2, _InputIterator2 __last2,
@@ -4112,21 +4429,25 @@ namespace std
       __glibcxx_requires_sorted(__first2, __last2);
 
       while (__first1 != __last1 && __first2 != __last2)
-	if (*__first1 < *__first2) {
-	  *__result = *__first1;
-	  ++__first1;
-	  ++__result;
-	}
-	else if (*__first2 < *__first1) {
-	  *__result = *__first2;
-	  ++__first2;
-	  ++__result;
-	}
-	else {
-	  ++__first1;
-	  ++__first2;
-	}
-      return std::copy(__first2, __last2, std::copy(__first1, __last1, __result));
+	if (*__first1 < *__first2)
+	  {
+	    *__result = *__first1;
+	    ++__first1;
+	    ++__result;
+	  }
+	else if (*__first2 < *__first1)
+	  {
+	    *__result = *__first2;
+	    ++__first2;
+	    ++__result;
+	  }
+	else
+	  {
+	    ++__first1;
+	    ++__first2;
+	  }
+      return std::copy(__first2, __last2, std::copy(__first1,
+						    __last1, __result));
     }
 
   /**
@@ -4148,8 +4469,8 @@ namespace std
    *  to @a comp, no elements are copied and both ranges advance.  The output
    *  range may not overlap either input range.
   */
-  template<typename _InputIterator1, typename _InputIterator2, typename _OutputIterator,
-	   typename _Compare>
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator, typename _Compare>
     _OutputIterator
     set_symmetric_difference(_InputIterator1 __first1, _InputIterator1 __last1,
 			     _InputIterator2 __first2, _InputIterator2 __last2,
@@ -4171,21 +4492,25 @@ namespace std
       __glibcxx_requires_sorted_pred(__first2, __last2, __comp);
 
       while (__first1 != __last1 && __first2 != __last2)
-	if (__comp(*__first1, *__first2)) {
-	  *__result = *__first1;
-	  ++__first1;
-	  ++__result;
-	}
-	else if (__comp(*__first2, *__first1)) {
-	  *__result = *__first2;
-	  ++__first2;
-	  ++__result;
-	}
-	else {
-	  ++__first1;
-	  ++__first2;
-	}
-      return std::copy(__first2, __last2, std::copy(__first1, __last1, __result));
+	if (__comp(*__first1, *__first2))
+	  {
+	    *__result = *__first1;
+	    ++__first1;
+	    ++__result;
+	  }
+	else if (__comp(*__first2, *__first1))
+	  {
+	    *__result = *__first2;
+	    ++__first2;
+	    ++__result;
+	  }
+	else
+	  {
+	    ++__first1;
+	    ++__first2;
+	  }
+      return std::copy(__first2, __last2, std::copy(__first1,
+						    __last1, __result));
     }
 
   // min_element and max_element, with and without an explicitly supplied
@@ -4207,7 +4532,8 @@ namespace std
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first == __last) return __first;
+      if (__first == __last)
+	return __first;
       _ForwardIterator __result = __first;
       while (++__first != __last)
 	if (*__result < *__first)
@@ -4258,7 +4584,8 @@ namespace std
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first == __last) return __first;
+      if (__first == __last)
+	return __first;
       _ForwardIterator __result = __first;
       while (++__first != __last)
 	if (*__first < *__result)
@@ -4286,7 +4613,8 @@ namespace std
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first == __last) return __first;
+      if (__first == __last)
+	return __first;
       _ForwardIterator __result = __first;
       while (++__first != __last)
 	if (__comp(*__first, *__result))
@@ -4310,10 +4638,12 @@ namespace std
   */
   template<typename _BidirectionalIterator>
     bool
-    next_permutation(_BidirectionalIterator __first, _BidirectionalIterator __last)
+    next_permutation(_BidirectionalIterator __first,
+		     _BidirectionalIterator __last)
     {
       // concept requirements
-      __glibcxx_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator>)
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_BidirectionalIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
@@ -4327,22 +4657,25 @@ namespace std
       __i = __last;
       --__i;
 
-      for(;;) {
-	_BidirectionalIterator __ii = __i;
-	--__i;
-	if (*__i < *__ii) {
-	  _BidirectionalIterator __j = __last;
-	  while (!(*__i < *--__j))
-	    {}
-	  std::iter_swap(__i, __j);
-	  std::reverse(__ii, __last);
-	  return true;
+      for(;;)
+	{
+	  _BidirectionalIterator __ii = __i;
+	  --__i;
+	  if (*__i < *__ii)
+	    {
+	      _BidirectionalIterator __j = __last;
+	      while (!(*__i < *--__j))
+		{}
+	      std::iter_swap(__i, __j);
+	      std::reverse(__ii, __last);
+	      return true;
+	    }
+	  if (__i == __first)
+	    {
+	      std::reverse(__first, __last);
+	      return false;
+	    }
 	}
-	if (__i == __first) {
-	  std::reverse(__first, __last);
-	  return false;
-	}
-      }
     }
 
   /**
@@ -4350,7 +4683,7 @@ namespace std
    *  comparison functor.
    *  @param  first  Start of range.
    *  @param  last   End of range.
-   *  @param  comp   
+   *  @param  comp
    *  @return  False if wrapped to first permutation, true otherwise.
    *
    *  Treats all permutations of the range [first,last) as a set of
@@ -4361,11 +4694,12 @@ namespace std
   */
   template<typename _BidirectionalIterator, typename _Compare>
     bool
-    next_permutation(_BidirectionalIterator __first, _BidirectionalIterator __last,
-		     _Compare __comp)
+    next_permutation(_BidirectionalIterator __first,
+		     _BidirectionalIterator __last, _Compare __comp)
     {
       // concept requirements
-      __glibcxx_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator>)
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 	    typename iterator_traits<_BidirectionalIterator>::value_type,
 	    typename iterator_traits<_BidirectionalIterator>::value_type>)
@@ -4380,22 +4714,25 @@ namespace std
       __i = __last;
       --__i;
 
-      for(;;) {
-	_BidirectionalIterator __ii = __i;
-	--__i;
-	if (__comp(*__i, *__ii)) {
-	  _BidirectionalIterator __j = __last;
-	  while (!__comp(*__i, *--__j))
-	    {}
-	  std::iter_swap(__i, __j);
-	  std::reverse(__ii, __last);
-	  return true;
+      for(;;)
+	{
+	  _BidirectionalIterator __ii = __i;
+	  --__i;
+	  if (__comp(*__i, *__ii))
+	    {
+	      _BidirectionalIterator __j = __last;
+	      while (!__comp(*__i, *--__j))
+		{}
+	      std::iter_swap(__i, __j);
+	      std::reverse(__ii, __last);
+	      return true;
+	    }
+	  if (__i == __first)
+	    {
+	      std::reverse(__first, __last);
+	      return false;
+	    }
 	}
-	if (__i == __first) {
-	  std::reverse(__first, __last);
-	  return false;
-	}
-      }
     }
 
   /**
@@ -4412,10 +4749,12 @@ namespace std
   */
   template<typename _BidirectionalIterator>
     bool
-    prev_permutation(_BidirectionalIterator __first, _BidirectionalIterator __last)
+    prev_permutation(_BidirectionalIterator __first,
+		     _BidirectionalIterator __last)
     {
       // concept requirements
-      __glibcxx_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator>)
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_BidirectionalIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
@@ -4429,22 +4768,25 @@ namespace std
       __i = __last;
       --__i;
 
-      for(;;) {
-	_BidirectionalIterator __ii = __i;
-	--__i;
-	if (*__ii < *__i) {
-	  _BidirectionalIterator __j = __last;
-	  while (!(*--__j < *__i))
-	    {}
-	  std::iter_swap(__i, __j);
-	  std::reverse(__ii, __last);
-	  return true;
+      for(;;)
+	{
+	  _BidirectionalIterator __ii = __i;
+	  --__i;
+	  if (*__ii < *__i)
+	    {
+	      _BidirectionalIterator __j = __last;
+	      while (!(*--__j < *__i))
+		{}
+	      std::iter_swap(__i, __j);
+	      std::reverse(__ii, __last);
+	      return true;
+	    }
+	  if (__i == __first)
+	    {
+	      std::reverse(__first, __last);
+	      return false;
+	    }
 	}
-	if (__i == __first) {
-	  std::reverse(__first, __last);
-	  return false;
-	}
-      }
     }
 
   /**
@@ -4452,7 +4794,7 @@ namespace std
    *  comparison functor.
    *  @param  first  Start of range.
    *  @param  last   End of range.
-   *  @param  comp   
+   *  @param  comp
    *  @return  False if wrapped to last permutation, true otherwise.
    *
    *  Treats all permutations of the range [first,last) as a set of
@@ -4463,11 +4805,12 @@ namespace std
   */
   template<typename _BidirectionalIterator, typename _Compare>
     bool
-    prev_permutation(_BidirectionalIterator __first, _BidirectionalIterator __last,
-		     _Compare __comp)
+    prev_permutation(_BidirectionalIterator __first,
+		     _BidirectionalIterator __last, _Compare __comp)
     {
       // concept requirements
-      __glibcxx_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator>)
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 	    typename iterator_traits<_BidirectionalIterator>::value_type,
 	    typename iterator_traits<_BidirectionalIterator>::value_type>)
@@ -4482,22 +4825,25 @@ namespace std
       __i = __last;
       --__i;
 
-      for(;;) {
-	_BidirectionalIterator __ii = __i;
-	--__i;
-	if (__comp(*__ii, *__i)) {
-	  _BidirectionalIterator __j = __last;
-	  while (!__comp(*--__j, *__i))
-	    {}
-	  std::iter_swap(__i, __j);
-	  std::reverse(__ii, __last);
-	  return true;
+      for(;;)
+	{
+	  _BidirectionalIterator __ii = __i;
+	  --__i;
+	  if (__comp(*__ii, *__i))
+	    {
+	      _BidirectionalIterator __j = __last;
+	      while (!__comp(*--__j, *__i))
+		{}
+	      std::iter_swap(__i, __j);
+	      std::reverse(__ii, __last);
+	      return true;
+	    }
+	  if (__i == __first)
+	    {
+	      std::reverse(__first, __last);
+	      return false;
+	    }
 	}
-	if (__i == __first) {
-	  std::reverse(__first, __last);
-	  return false;
-	}
-      }
     }
 
   // find_first_of, with and without an explicitly supplied comparison function.
@@ -4552,7 +4898,8 @@ namespace std
    *  some element in the range [first2,last2).  If found, returns an iterator in
    *  the range [first1,last1), otherwise returns @p last1.
   */
-  template<typename _InputIterator, typename _ForwardIterator, typename _BinaryPredicate>
+  template<typename _InputIterator, typename _ForwardIterator,
+	   typename _BinaryPredicate>
     _InputIterator
     find_first_of(_InputIterator __first1, _InputIterator __last1,
 		  _ForwardIterator __first2, _ForwardIterator __last2,
@@ -4592,20 +4939,23 @@ namespace std
     {
       if (__first2 == __last2)
 	return __last1;
-      else {
-	_ForwardIterator1 __result = __last1;
-	while (1) {
-	  _ForwardIterator1 __new_result
-	    = std::search(__first1, __last1, __first2, __last2);
-	  if (__new_result == __last1)
-	    return __result;
-	  else {
-	    __result = __new_result;
-	    __first1 = __new_result;
-	    ++__first1;
-	  }
+      else
+	{
+	  _ForwardIterator1 __result = __last1;
+	  while (1)
+	    {
+	      _ForwardIterator1 __new_result
+		= std::search(__first1, __last1, __first2, __last2);
+	      if (__new_result == __last1)
+		return __result;
+	      else
+		{
+		  __result = __new_result;
+		  __first1 = __new_result;
+		  ++__first1;
+		}
+	    }
 	}
-      }
     }
 
   template<typename _ForwardIterator1, typename _ForwardIterator2,
@@ -4618,32 +4968,39 @@ namespace std
     {
       if (__first2 == __last2)
 	return __last1;
-      else {
-	_ForwardIterator1 __result = __last1;
-	while (1) {
-	  _ForwardIterator1 __new_result
-	    = std::search(__first1, __last1, __first2, __last2, __comp);
-	  if (__new_result == __last1)
-	    return __result;
-	  else {
-	    __result = __new_result;
-	    __first1 = __new_result;
-	    ++__first1;
-	  }
+      else
+	{
+	  _ForwardIterator1 __result = __last1;
+	  while (1)
+	    {
+	      _ForwardIterator1 __new_result
+		= std::search(__first1, __last1, __first2, __last2, __comp);
+	      if (__new_result == __last1)
+		return __result;
+	      else
+		{
+		  __result = __new_result;
+		  __first1 = __new_result;
+		  ++__first1;
+		}
+	    }
 	}
-      }
     }
 
   // find_end for bidirectional iterators.  Requires partial specialization.
   template<typename _BidirectionalIterator1, typename _BidirectionalIterator2>
     _BidirectionalIterator1
-    __find_end(_BidirectionalIterator1 __first1, _BidirectionalIterator1 __last1,
-	       _BidirectionalIterator2 __first2, _BidirectionalIterator2 __last2,
+    __find_end(_BidirectionalIterator1 __first1,
+	       _BidirectionalIterator1 __last1,
+	       _BidirectionalIterator2 __first2,
+	       _BidirectionalIterator2 __last2,
 	       bidirectional_iterator_tag, bidirectional_iterator_tag)
     {
       // concept requirements
-      __glibcxx_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator1>)
-      __glibcxx_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator2>)
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator1>)
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator2>)
 
       typedef reverse_iterator<_BidirectionalIterator1> _RevIterator1;
       typedef reverse_iterator<_BidirectionalIterator2> _RevIterator2;
@@ -4655,24 +5012,29 @@ namespace std
 
       if (__rresult == __rlast1)
 	return __last1;
-      else {
-	_BidirectionalIterator1 __result = __rresult.base();
-	std::advance(__result, -std::distance(__first2, __last2));
-	return __result;
-      }
+      else
+	{
+	  _BidirectionalIterator1 __result = __rresult.base();
+	  std::advance(__result, -std::distance(__first2, __last2));
+	  return __result;
+	}
     }
 
   template<typename _BidirectionalIterator1, typename _BidirectionalIterator2,
 	   typename _BinaryPredicate>
     _BidirectionalIterator1
-    __find_end(_BidirectionalIterator1 __first1, _BidirectionalIterator1 __last1,
-	       _BidirectionalIterator2 __first2, _BidirectionalIterator2 __last2,
+    __find_end(_BidirectionalIterator1 __first1,
+	       _BidirectionalIterator1 __last1,
+	       _BidirectionalIterator2 __first2,
+	       _BidirectionalIterator2 __last2,
 	       bidirectional_iterator_tag, bidirectional_iterator_tag,
 	       _BinaryPredicate __comp)
     {
       // concept requirements
-      __glibcxx_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator1>)
-      __glibcxx_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator2>)
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator1>)
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator2>)
 
       typedef reverse_iterator<_BidirectionalIterator1> _RevIterator1;
       typedef reverse_iterator<_BidirectionalIterator2> _RevIterator2;
@@ -4685,11 +5047,12 @@ namespace std
 
       if (__rresult == __rlast1)
 	return __last1;
-      else {
-	_BidirectionalIterator1 __result = __rresult.base();
-	std::advance(__result, -std::distance(__first2, __last2));
-	return __result;
-      }
+      else
+	{
+	  _BidirectionalIterator1 __result = __rresult.base();
+	  std::advance(__result, -std::distance(__first2, __last2));
+	  return __result;
+	}
     }
 
   // Dispatching functions for find_end.
@@ -4788,4 +5151,3 @@ namespace std
 } // namespace std
 
 #endif /* _ALGO_H */
-

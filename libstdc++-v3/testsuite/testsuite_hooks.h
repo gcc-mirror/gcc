@@ -152,6 +152,10 @@ namespace __gnu_test
   {
     unsigned char c;
   };
+
+  inline bool
+  operator==(const pod_char& lhs, const pod_char& rhs)
+  { return lhs.c == rhs.c; }
   
   struct pod_int
   {

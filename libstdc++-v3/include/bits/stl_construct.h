@@ -1,6 +1,6 @@
 // nonstandard construct and destroy functions -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -78,9 +78,9 @@ namespace std
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 402. wrong new expression in [some_]allocator::construct
-      ::new(static_cast<void*>(__p)) _T1(__value); 
+      ::new(static_cast<void*>(__p)) _T1(__value);
     }
-  
+
   /**
    * @if maint
    * Constructs an object in existing memory by invoking an allocated
@@ -92,7 +92,7 @@ namespace std
     _Construct(_T1* __p)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 402. wrong new expression in [some_]allocator::construct     
+      // 402. wrong new expression in [some_]allocator::construct
       ::new(static_cast<void*>(__p)) _T1();
     }
 
@@ -108,14 +108,15 @@ namespace std
 
   /**
    * @if maint
-   * Destroy a range of objects with nontrivial destructors.  
+   * Destroy a range of objects with nontrivial destructors.
    *
    * This is a helper function used only by _Destroy().
    * @endif
    */
   template<typename _ForwardIterator>
     inline void
-    __destroy_aux(_ForwardIterator __first, _ForwardIterator __last, __false_type)
+    __destroy_aux(_ForwardIterator __first, _ForwardIterator __last,
+		  __false_type)
     { for ( ; __first != __last; ++__first) std::_Destroy(&*__first); }
 
   /**
@@ -127,7 +128,7 @@ namespace std
    * This is a helper function used only by _Destroy().
    * @endif
    */
-  template<typename _ForwardIterator> 
+  template<typename _ForwardIterator>
     inline void
     __destroy_aux(_ForwardIterator, _ForwardIterator, __true_type)
     { }

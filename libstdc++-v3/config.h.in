@@ -11,9 +11,6 @@
 #undef HAVE_GETTEXT
 #undef HAVE_STPCPY
 
-// Define if GCC supports weak symbols.
-#undef _GLIBCXX_SUPPORTS_WEAK
-
 // Include I/O support for 'long long' and 'unsigned long long'.
 #undef _GLIBCXX_USE_LONG_LONG
 
@@ -511,6 +508,9 @@
 
 /* Define to 1 if you have the <sys/machine.h> header file. */
 #undef HAVE_SYS_MACHINE_H
+
+/* Define to 1 if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
 
 /* Define to 1 if you have the <sys/resource.h> header file. */
 #undef HAVE_SYS_RESOURCE_H

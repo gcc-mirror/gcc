@@ -1,6 +1,6 @@
 // List implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -78,7 +78,7 @@ namespace __gnu_norm
         _M_put_node(__tmp);
       }
     }
- 
+
   template<typename _Tp, typename _Alloc>
     typename list<_Tp,_Alloc>::iterator
     list<_Tp,_Alloc>::
@@ -88,7 +88,7 @@ namespace __gnu_norm
       __tmp->hook(__position._M_node);
       return __tmp;
     }
-  
+
   template<typename _Tp, typename _Alloc>
     typename list<_Tp,_Alloc>::iterator
     list<_Tp,_Alloc>::
@@ -98,7 +98,7 @@ namespace __gnu_norm
       _M_erase(__position);
       return __ret;
     }
-  
+
   template<typename _Tp, typename _Alloc>
     void
     list<_Tp,_Alloc>::
@@ -113,28 +113,28 @@ namespace __gnu_norm
       else                          // __i == end()
         insert(end(), __new_size - __len, __x);
     }
-  
+
   template<typename _Tp, typename _Alloc>
     list<_Tp,_Alloc>&
     list<_Tp,_Alloc>::
     operator=(const list& __x)
     {
       if (this != &__x)
-      {
-        iterator __first1 = begin();
-        iterator __last1 = end();
-        const_iterator __first2 = __x.begin();
-        const_iterator __last2 = __x.end();
-        while (__first1 != __last1 && __first2 != __last2)
-          *__first1++ = *__first2++;
-        if (__first2 == __last2)
-          erase(__first1, __last1);
-        else
-          insert(__last1, __first2, __last2);
-      }
+	{
+	  iterator __first1 = begin();
+	  iterator __last1 = end();
+	  const_iterator __first2 = __x.begin();
+	  const_iterator __last2 = __x.end();
+	  while (__first1 != __last1 && __first2 != __last2)
+	    *__first1++ = *__first2++;
+	  if (__first2 == __last2)
+	    erase(__first1, __last1);
+	  else
+	    insert(__last1, __first2, __last2);
+	}
       return *this;
     }
-  
+
   template<typename _Tp, typename _Alloc>
     void
     list<_Tp,_Alloc>::
@@ -148,17 +148,17 @@ namespace __gnu_norm
       else
         erase(__i, end());
     }
-  
+
   template<typename _Tp, typename _Alloc>
     template <typename _InputIterator>
       void
       list<_Tp,_Alloc>::
-      _M_assign_dispatch(_InputIterator __first2, _InputIterator __last2, 
+      _M_assign_dispatch(_InputIterator __first2, _InputIterator __last2,
 			 __false_type)
       {
         iterator __first1 = begin();
         iterator __last1 = end();
-        for (; __first1 != __last1 && __first2 != __last2; 
+        for (; __first1 != __last1 && __first2 != __last2;
 	     ++__first1, ++__first2)
           *__first1 = *__first2;
         if (__first2 == __last2)
@@ -166,7 +166,7 @@ namespace __gnu_norm
         else
           insert(__last1, __first2, __last2);
       }
-  
+
   template<typename _Tp, typename _Alloc>
     void
     list<_Tp,_Alloc>::
@@ -183,7 +183,7 @@ namespace __gnu_norm
         __first = __next;
       }
     }
-  
+
   template<typename _Tp, typename _Alloc>
     void
     list<_Tp,_Alloc>::
@@ -191,7 +191,8 @@ namespace __gnu_norm
     {
       iterator __first = begin();
       iterator __last = end();
-      if (__first == __last) return;
+      if (__first == __last)
+	return;
       iterator __next = __first;
       while (++__next != __last)
       {
@@ -202,7 +203,7 @@ namespace __gnu_norm
         __next = __first;
       }
     }
-  
+
   template<typename _Tp, typename _Alloc>
     void
     list<_Tp,_Alloc>::
@@ -229,14 +230,14 @@ namespace __gnu_norm
 	    _M_transfer(__last1, __first2, __last2);
 	}
     }
-  
+
   template<typename _Tp, typename _Alloc>
     void
     list<_Tp,_Alloc>::
     sort()
     {
       // Do nothing if the list has length 0 or 1.
-      if (this->_M_node._M_next != &this->_M_node 
+      if (this->_M_node._M_next != &this->_M_node
 	  && this->_M_node._M_next->_M_next != &this->_M_node)
       {
         list __carry;
@@ -245,26 +246,28 @@ namespace __gnu_norm
         list * __counter;
 
         do
-        {
-          __carry.splice(__carry.begin(), *this, begin());
+	  {
+	    __carry.splice(__carry.begin(), *this, begin());
 
-          for(__counter = &__tmp[0];
-              (__counter != __fill) && !__counter->empty();
-              ++__counter)
-          {
-            __counter->merge(__carry);
-            __carry.swap(*__counter);
-          }
-          __carry.swap(*__counter);
-          if (__counter == __fill) ++__fill;
-        } while ( !empty() );
+	    for(__counter = &__tmp[0];
+		(__counter != __fill) && !__counter->empty();
+		++__counter)
+	      {
+		__counter->merge(__carry);
+		__carry.swap(*__counter);
+	      }
+	    __carry.swap(*__counter);
+	    if (__counter == __fill)
+	      ++__fill;
+	  }
+	while ( !empty() );
 
         for (__counter =  &__tmp[1]; __counter != __fill; ++__counter)
           __counter->merge( *(__counter-1) );
         swap( *(__fill-1) );
       }
     }
-  
+
   template<typename _Tp, typename _Alloc>
     template <typename _Predicate>
       void
@@ -277,11 +280,12 @@ namespace __gnu_norm
         {
           iterator __next = __first;
           ++__next;
-          if (__pred(*__first)) _M_erase(__first);
+          if (__pred(*__first))
+	    _M_erase(__first);
           __first = __next;
         }
       }
-  
+
   template<typename _Tp, typename _Alloc>
     template <typename _BinaryPredicate>
       void
@@ -301,7 +305,7 @@ namespace __gnu_norm
           __next = __first;
         }
       }
-  
+
   template<typename _Tp, typename _Alloc>
     template <typename _StrictWeakOrdering>
       void
@@ -309,7 +313,7 @@ namespace __gnu_norm
       merge(list& __x, _StrictWeakOrdering __comp)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 300. list::merge() specification incomplete	
+	// 300. list::merge() specification incomplete
 	if (this != &__x)
 	  {
 	    iterator __first1 = begin();
@@ -329,42 +333,44 @@ namespace __gnu_norm
 	      _M_transfer(__last1, __first2, __last2);
 	  }
       }
-  
+
   template<typename _Tp, typename _Alloc>
     template <typename _StrictWeakOrdering>
-    void
-    list<_Tp,_Alloc>::
-    sort(_StrictWeakOrdering __comp)
-    {
-      // Do nothing if the list has length 0 or 1.
-      if (this->_M_node._M_next != &this->_M_node && 
-	  this->_M_node._M_next->_M_next != &this->_M_node)
+      void
+      list<_Tp,_Alloc>::
+      sort(_StrictWeakOrdering __comp)
       {
-        list __carry;
-        list __tmp[64];
-        list * __fill = &__tmp[0];
-        list * __counter;
+	// Do nothing if the list has length 0 or 1.
+	if (this->_M_node._M_next != &this->_M_node
+	    && this->_M_node._M_next->_M_next != &this->_M_node)
+	  {
+	    list __carry;
+	    list __tmp[64];
+	    list * __fill = &__tmp[0];
+	    list * __counter;
 
-        do
-        {
-          __carry.splice(__carry.begin(), *this, begin());
+	    do
+	      {
+		__carry.splice(__carry.begin(), *this, begin());
 
-          for(__counter = &__tmp[0];
-              (__counter != __fill) && !__counter->empty();
-              ++__counter)
-          {
-            __counter->merge(__carry, __comp);
-            __carry.swap(*__counter);
-          }
-          __carry.swap(*__counter);
-          if (__counter == __fill) ++__fill;
-        } while ( !empty() );
-        
-        for (__counter =  &__tmp[1]; __counter != __fill; ++__counter)
-          __counter->merge( *(__counter-1), __comp );
-        swap( *(__fill-1) );
+		for(__counter = &__tmp[0];
+		    (__counter != __fill) && !__counter->empty();
+		    ++__counter)
+		  {
+		    __counter->merge(__carry, __comp);
+		    __carry.swap(*__counter);
+		  }
+		__carry.swap(*__counter);
+		if (__counter == __fill)
+		  ++__fill;
+	      }
+	    while ( !empty() );
+
+	    for (__counter =  &__tmp[1]; __counter != __fill; ++__counter)
+	      __counter->merge( *(__counter-1), __comp );
+	    swap( *(__fill-1) );
+	  }
       }
-    }
 } // namespace __gnu_norm
 
 #endif /* _LIST_TCC */

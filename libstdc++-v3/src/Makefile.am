@@ -48,13 +48,14 @@ endif
 # Source files linked in via configuration/make substitution for a
 # particular host.
 host_sources = \
+	atomicity.cc \
 	codecvt_members.cc \
 	collate_members.cc \
 	ctype_members.cc \
 	messages_members.cc \
 	monetary_members.cc \
 	numeric_members.cc \
-	time_members.cc
+	time_members.cc 
 
 codecvt_members.cc: ${glibcxx_srcdir}/$(CCODECVT_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CCODECVT_CC) . || true
@@ -77,6 +78,10 @@ numeric_members.cc: ${glibcxx_srcdir}/$(CNUMERIC_CC)
 time_members.cc: ${glibcxx_srcdir}/$(CTIME_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CTIME_CC) . || true
 
+atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
+atomicity.cc: ${atomicity_file}
+	$(LN_S) ${atomicity_file} ./atomicity.cc || true
+
 # Source files linked in via configuration/make substitution for a
 # particular host, but with ad hoc naming rules.
 host_sources_extra = \
@@ -91,6 +96,7 @@ basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
 
 # Sources present in the src directory.
 sources = \
+	allocator.cc \
 	codecvt.cc \
 	complex_io.cc \
 	ctype.cc \
@@ -159,14 +165,6 @@ concept-inst.lo: concept-inst.cc
 	$(LTCXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 concept-inst.o: concept-inst.cc
 	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
-
-# Use special rules for the demangler, so that an additional implicit
-# instantiation file is not necessary.
-demangle.lo: demangle.cc
-	$(LTCXXCOMPILE) -fimplicit-templates -c $<
-demangle.o: demangle.cc
-	$(CXXCOMPILE) -fimplicit-templates -c $<
-
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

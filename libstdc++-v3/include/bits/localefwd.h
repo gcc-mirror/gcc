@@ -44,7 +44,7 @@
 
 #include <bits/c++config.h>
 #include <bits/c++locale.h>     // Defines __c_locale, config-specific includes
-#include <iosfwd> 		// For ostreambuf_iterator, istreambuf_iterator
+#include <iosfwd>		// For ostreambuf_iterator, istreambuf_iterator
 #include <bits/functexcept.h>
 
 namespace std
@@ -53,67 +53,67 @@ namespace std
   class locale;
 
   // 22.1.3 Convenience interfaces
-  template<typename _CharT> 
-    inline bool 
+  template<typename _CharT>
+    inline bool
     isspace(_CharT, const locale&);
 
-  template<typename _CharT> 
-    inline bool 
+  template<typename _CharT>
+    inline bool
     isprint(_CharT, const locale&);
 
-  template<typename _CharT> 
-    inline bool 
+  template<typename _CharT>
+    inline bool
     iscntrl(_CharT, const locale&);
 
-  template<typename _CharT> 
-    inline bool 
+  template<typename _CharT>
+    inline bool
     isupper(_CharT, const locale&);
 
-  template<typename _CharT> 
-    inline bool 
+  template<typename _CharT>
+    inline bool
     islower(_CharT, const locale&);
 
-  template<typename _CharT> 
-    inline bool 
+  template<typename _CharT>
+    inline bool
     isalpha(_CharT, const locale&);
 
-  template<typename _CharT> 
-    inline bool 
+  template<typename _CharT>
+    inline bool
     isdigit(_CharT, const locale&);
 
-  template<typename _CharT> 
-    inline bool 
+  template<typename _CharT>
+    inline bool
     ispunct(_CharT, const locale&);
 
-  template<typename _CharT> 
-    inline bool 
+  template<typename _CharT>
+    inline bool
     isxdigit(_CharT, const locale&);
 
-  template<typename _CharT> 
-    inline bool 
+  template<typename _CharT>
+    inline bool
     isalnum(_CharT, const locale&);
 
-  template<typename _CharT> 
-    inline bool 
+  template<typename _CharT>
+    inline bool
     isgraph(_CharT, const locale&);
 
-  template<typename _CharT> 
-    inline _CharT 
+  template<typename _CharT>
+    inline _CharT
     toupper(_CharT, const locale&);
 
-  template<typename _CharT> 
-    inline _CharT 
+  template<typename _CharT>
+    inline _CharT
     tolower(_CharT, const locale&);
 
   // 22.2.1 and 22.2.1.3 ctype
   class ctype_base;
-  template<typename _CharT> 
+  template<typename _CharT>
     class ctype;
   template<> class ctype<char>;
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<> class ctype<wchar_t>;
 #endif
-  template<typename _CharT> 
+  template<typename _CharT>
     class ctype_byname;
   // NB: Specialized for char and wchar_t in locale_facets.h.
 
@@ -137,9 +137,9 @@ namespace std
   template<typename _CharT> class numpunct_byname;
 
   // 22.2.4 collation
-  template<typename _CharT> 
+  template<typename _CharT>
     class collate;
-  template<typename _CharT> class 
+  template<typename _CharT> class
     collate_byname;
 
   // 22.2.5 date and time
@@ -159,16 +159,16 @@ namespace std
     class money_get;
   template<typename _CharT, typename _OutIter = ostreambuf_iterator<_CharT> >
     class money_put;
-  template<typename _CharT, bool _Intl = false> 
+  template<typename _CharT, bool _Intl = false>
     class moneypunct;
-  template<typename _CharT, bool _Intl = false> 
+  template<typename _CharT, bool _Intl = false>
     class moneypunct_byname;
 
   // 22.2.7 message retrieval
   class messages_base;
-  template<typename _CharT> 
+  template<typename _CharT>
     class messages;
-  template<typename _CharT> 
+  template<typename _CharT>
     class messages_byname;
 
   template<typename _Facet>
@@ -182,9 +182,9 @@ namespace std
   template<typename _Facet>
     inline const _Facet&
     __check_facet(const _Facet* __f)
-    { 
+    {
       if (!__f)
-	__throw_bad_cast(); 
+	__throw_bad_cast();
       return *__f;
     }
 } // namespace std

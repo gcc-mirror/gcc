@@ -46,8 +46,13 @@ void test01()
   VERIFY(!finish._M_dereferenceable() && !finish._M_singular());
 }
 
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template class __gnu_cxx::__mt_alloc<std::_Rb_tree_node<std::pair<int const, int> > >;
+#endif
+
 int main()
 {
   test01();
-  return !test;
+  return 0;
 }

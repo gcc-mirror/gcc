@@ -51,7 +51,7 @@ namespace std
   // At some point we use partial specialization to remove one level
   // template nesting due to _Expr<>
   //
-  
+
   // This class is NOT defined. It doesn't need to.
   template<typename _Tp1, typename _Tp2> class _Constant;
 
@@ -386,11 +386,11 @@ namespace std
     //
 
   template<typename _Dom, typename _Arg>
-    class _FunBase 
+    class _FunBase
     {
     public:
       typedef typename _Dom::value_type value_type;
-      
+
       _FunBase(const _Dom& __e, value_type __f(_Arg))
 	: _M_expr(__e), _M_func(__f) {}
 
@@ -405,12 +405,12 @@ namespace std
     };
 
   template<class _Dom>
-    struct _ValFunClos<_Expr,_Dom> : _FunBase<_Dom, typename _Dom::value_type> 
+    struct _ValFunClos<_Expr,_Dom> : _FunBase<_Dom, typename _Dom::value_type>
     {
       typedef _FunBase<_Dom, typename _Dom::value_type> _Base;
       typedef typename _Base::value_type value_type;
       typedef value_type _Tp;
-    
+
       _ValFunClos(const _Dom& __e, _Tp __f(_Tp)) : _Base(__e, __f) {}
     };
 
@@ -419,32 +419,32 @@ namespace std
     {
       typedef _FunBase<valarray<_Tp>, _Tp> _Base;
       typedef _Tp value_type;
-      
+
       _ValFunClos(const valarray<_Tp>& __v, _Tp __f(_Tp)) : _Base(__v, __f) {}
     };
 
   template<class _Dom>
     struct _RefFunClos<_Expr,_Dom> :
-        _FunBase<_Dom, const typename _Dom::value_type&> 
+        _FunBase<_Dom, const typename _Dom::value_type&>
     {
       typedef _FunBase<_Dom, const typename _Dom::value_type&> _Base;
       typedef typename _Base::value_type value_type;
       typedef value_type _Tp;
-      
+
       _RefFunClos(const _Dom& __e, _Tp __f(const _Tp&))
 	: _Base(__e, __f) {}
     };
 
   template<typename _Tp>
-    struct _RefFunClos<_ValArray,_Tp> : _FunBase<valarray<_Tp>, const _Tp&> 
+    struct _RefFunClos<_ValArray,_Tp> : _FunBase<valarray<_Tp>, const _Tp&>
     {
       typedef _FunBase<valarray<_Tp>, const _Tp&> _Base;
       typedef _Tp value_type;
-      
+
       _RefFunClos(const valarray<_Tp>& __v, _Tp __f(const _Tp&))
 	: _Base(__v, __f) {}
     };
-    
+
   //
   // Unary expression closure.
   //
@@ -473,17 +473,17 @@ namespace std
       typedef _Dom _Arg;
       typedef _UnBase<_Oper, _Dom> _Base;
       typedef typename _Base::value_type value_type;
-      
+
       _UnClos(const _Arg& __e) : _Base(__e) {}
     };
 
   template<class _Oper, typename _Tp>
-    struct _UnClos<_Oper, _ValArray, _Tp> : _UnBase<_Oper, valarray<_Tp> > 
+    struct _UnClos<_Oper, _ValArray, _Tp> : _UnBase<_Oper, valarray<_Tp> >
     {
       typedef valarray<_Tp> _Arg;
       typedef _UnBase<_Oper, valarray<_Tp> > _Base;
       typedef typename _Base::value_type value_type;
-      
+
       _UnClos(const _Arg& __e) : _Base(__e) {}
     };
 
@@ -493,7 +493,7 @@ namespace std
   //
 
   template<class _Oper, class _FirstArg, class _SecondArg>
-    class _BinBase 
+    class _BinBase
     {
     public:
         typedef typename _FirstArg::value_type _Vt;
@@ -501,12 +501,12 @@ namespace std
 
       _BinBase(const _FirstArg& __e1, const _SecondArg& __e2)
 	: _M_expr1(__e1), _M_expr2(__e2) {}
-      
+
       value_type operator[](size_t __i) const
       { return _Oper()(_M_expr1[__i], _M_expr2[__i]); }
 
       size_t size() const { return _M_expr1.size(); }
-        
+
     private:
       const _FirstArg& _M_expr1;
       const _SecondArg& _M_expr2;
@@ -545,27 +545,27 @@ namespace std
 
       value_type operator[](size_t __i) const
       { return _Oper()(_M_expr1, _M_expr2[__i]); }
-      
+
       size_t size() const { return _M_expr2.size(); }
 
     private:
       const _Vt& _M_expr1;
       const _Clos& _M_expr2;
     };
-    
+
   template<class _Oper, class _Dom1, class _Dom2>
     struct _BinClos<_Oper, _Expr, _Expr, _Dom1, _Dom2>
-        : _BinBase<_Oper,_Dom1,_Dom2> 
+        : _BinBase<_Oper,_Dom1,_Dom2>
     {
       typedef _BinBase<_Oper,_Dom1,_Dom2> _Base;
       typedef typename _Base::value_type value_type;
-        
+
       _BinClos(const _Dom1& __e1, const _Dom2& __e2) : _Base(__e1, __e2) {}
     };
 
   template<class _Oper, typename _Tp>
     struct _BinClos<_Oper,_ValArray,_ValArray,_Tp,_Tp>
-      : _BinBase<_Oper,valarray<_Tp>,valarray<_Tp> > 
+      : _BinBase<_Oper,valarray<_Tp>,valarray<_Tp> >
     {
       typedef _BinBase<_Oper,valarray<_Tp>,valarray<_Tp> > _Base;
       typedef _Tp value_type;
@@ -576,70 +576,70 @@ namespace std
 
   template<class _Oper, class _Dom>
     struct _BinClos<_Oper,_Expr,_ValArray,_Dom,typename _Dom::value_type>
-      : _BinBase<_Oper,_Dom,valarray<typename _Dom::value_type> > 
+      : _BinBase<_Oper,_Dom,valarray<typename _Dom::value_type> >
     {
       typedef typename _Dom::value_type _Tp;
       typedef _BinBase<_Oper,_Dom,valarray<_Tp> > _Base;
       typedef typename _Base::value_type value_type;
-      
+
       _BinClos(const _Dom& __e1, const valarray<_Tp>& __e2)
 	: _Base(__e1, __e2) {}
     };
 
   template<class _Oper, class _Dom>
     struct  _BinClos<_Oper,_ValArray,_Expr,typename _Dom::value_type,_Dom>
-      : _BinBase<_Oper,valarray<typename _Dom::value_type>,_Dom> 
+      : _BinBase<_Oper,valarray<typename _Dom::value_type>,_Dom>
     {
       typedef typename _Dom::value_type _Tp;
       typedef _BinBase<_Oper,valarray<_Tp>,_Dom> _Base;
       typedef typename _Base::value_type value_type;
-      
+
       _BinClos(const valarray<_Tp>& __e1, const _Dom& __e2)
 	: _Base(__e1, __e2) {}
     };
 
   template<class _Oper, class _Dom>
     struct _BinClos<_Oper,_Expr,_Constant,_Dom,typename _Dom::value_type>
-      : _BinBase2<_Oper,_Dom> 
+      : _BinBase2<_Oper,_Dom>
     {
       typedef typename _Dom::value_type _Tp;
       typedef _BinBase2<_Oper,_Dom> _Base;
       typedef typename _Base::value_type value_type;
-      
+
       _BinClos(const _Dom& __e1, const _Tp& __e2) : _Base(__e1, __e2) {}
     };
 
   template<class _Oper, class _Dom>
     struct _BinClos<_Oper,_Constant,_Expr,typename _Dom::value_type,_Dom>
-      : _BinBase1<_Oper,_Dom> 
+      : _BinBase1<_Oper,_Dom>
     {
       typedef typename _Dom::value_type _Tp;
       typedef _BinBase1<_Oper,_Dom> _Base;
       typedef typename _Base::value_type value_type;
-      
+
       _BinClos(const _Tp& __e1, const _Dom& __e2) : _Base(__e1, __e2) {}
     };
-    
+
   template<class _Oper, typename _Tp>
     struct _BinClos<_Oper,_ValArray,_Constant,_Tp,_Tp>
-      : _BinBase2<_Oper,valarray<_Tp> > 
+      : _BinBase2<_Oper,valarray<_Tp> >
     {
       typedef _BinBase2<_Oper,valarray<_Tp> > _Base;
       typedef typename _Base::value_type value_type;
-      
+
       _BinClos(const valarray<_Tp>& __v, const _Tp& __t) : _Base(__v, __t) {}
     };
 
   template<class _Oper, typename _Tp>
     struct _BinClos<_Oper,_Constant,_ValArray,_Tp,_Tp>
-      : _BinBase1<_Oper,valarray<_Tp> > 
+      : _BinBase1<_Oper,valarray<_Tp> >
     {
       typedef _BinBase1<_Oper,valarray<_Tp> > _Base;
       typedef typename _Base::value_type value_type;
-      
+
       _BinClos(const _Tp& __t, const valarray<_Tp>& __v) : _Base(__t, __v) {}
     };
-        
+
 
     //
     // slice_array closure.
@@ -679,7 +679,7 @@ namespace std
     template<class _Dom> struct  _SClos<_Expr,_Dom> : _SBase<_Dom> {
         typedef _SBase<_Dom> _Base;
         typedef typename _Base::value_type value_type;
-        
+
         _SClos (const _Dom& __e, const slice& __s) : _Base (__e, __s) {}
     };
 

@@ -1,6 +1,6 @@
 // Temporary buffer implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,88 +61,110 @@
 #ifndef _TEMPBUF_H
 #define _TEMPBUF_H 1
 
+#include <memory>
+
 namespace std
 {
+  /**
+   *  @if maint
+   *  This class is used in two places: stl_algo.h and ext/memory,
+   *  where it is wrapped as the temporary_buffer class.  See
+   *  temporary_buffer docs for more notes.
+   *  @endif
+   */
+  template<typename _ForwardIterator, typename _Tp>
+    class _Temporary_buffer
+    {
+      // concept requirements
+      __glibcxx_class_requires(_ForwardIterator, _ForwardIteratorConcept)
 
-/**
- *  @if maint
- *  This class is used in two places:  stl_algo.h and ext/memory, where it
- *  is wrapped as the temporary_buffer class.  See temporary_buffer docs for
- *  more notes.
- *  @endif
-*/
-template <class _ForwardIterator, class _Tp>
-  class _Temporary_buffer
-{
-  // concept requirements
-  __glibcxx_class_requires(_ForwardIterator, _ForwardIteratorConcept)
+	public:
+      typedef _Tp         value_type;
+      typedef value_type* pointer;
+      typedef pointer     iterator;
+      typedef ptrdiff_t   size_type;
 
-  ptrdiff_t  _M_original_len;
-  ptrdiff_t  _M_len;
-  _Tp*       _M_buffer;
+    protected:
+      size_type  _M_original_len;
+      size_type  _M_len;
+      pointer    _M_buffer;
 
-  // this is basically get_temporary_buffer() all over again
-  void _M_allocate_buffer() {
-    _M_original_len = _M_len;
-    _M_buffer = 0;
+      void
+      _M_initialize_buffer(const _Tp&, __true_type) { }
 
-    if (_M_len > (ptrdiff_t)(INT_MAX / sizeof(_Tp)))
-      _M_len = INT_MAX / sizeof(_Tp);
+      void
+      _M_initialize_buffer(const _Tp& val, __false_type)
+      { std::uninitialized_fill_n(_M_buffer, _M_len, val); }
 
-    while (_M_len > 0) {
-      _M_buffer = (_Tp*) malloc(_M_len * sizeof(_Tp));
-      if (_M_buffer)
-        break;
-      _M_len /= 2;
-    }
-  }
+    public:
+      /// As per Table mumble.
+      size_type
+      size() const
+      { return _M_len; }
 
-  void _M_initialize_buffer(const _Tp&, __true_type) {}
-  void _M_initialize_buffer(const _Tp& val, __false_type) {
-    std::uninitialized_fill_n(_M_buffer, _M_len, val);
-  }
+      /// Returns the size requested by the constructor; may be >size().
+      size_type
+      requested_size() const
+      { return _M_original_len; }
 
-public:
-  /// As per Table mumble.
-  ptrdiff_t size() const { return _M_len; }
-  /// Returns the size requested by the constructor; may be >size().
-  ptrdiff_t requested_size() const { return _M_original_len; }
-  /// As per Table mumble.
-  _Tp* begin() { return _M_buffer; }
-  /// As per Table mumble.
-  _Tp* end() { return _M_buffer + _M_len; }
+      /// As per Table mumble.
+      iterator
+      begin()
+      { return _M_buffer; }
 
-  _Temporary_buffer(_ForwardIterator __first, _ForwardIterator __last) {
-    // Workaround for a __type_traits bug in the pre-7.3 compiler.
-    typedef typename __type_traits<_Tp>::has_trivial_default_constructor
-            _Trivial;
+      /// As per Table mumble.
+      iterator
+      end()
+      { return _M_buffer + _M_len; }
 
-    try {
-      _M_len = std::distance(__first, __last);
-      _M_allocate_buffer();
-      if (_M_len > 0)
-        _M_initialize_buffer(*__first, _Trivial());
-    }
-    catch(...)
-      { 
-	std::free(_M_buffer); 
-	_M_buffer = 0; 
-	_M_len = 0;
-	__throw_exception_again; 
+      /**
+       * Constructs a temporary buffer of a size somewhere between
+       * zero and the size of the given range.
+       */
+      _Temporary_buffer(_ForwardIterator __first, _ForwardIterator __last);
+
+      ~_Temporary_buffer()
+      {
+	std::_Destroy(_M_buffer, _M_buffer + _M_len);
+	std::return_temporary_buffer(_M_buffer);
       }
-  }
- 
-  ~_Temporary_buffer() {  
-    std::_Destroy(_M_buffer, _M_buffer + _M_len);
-    std::free(_M_buffer);
-  }
 
-private:
-  // Disable copy constructor and assignment operator.
-  _Temporary_buffer(const _Temporary_buffer&) {}
-  void operator=(const _Temporary_buffer&) {}
-};
-    
+    private:
+      // Disable copy constructor and assignment operator.
+      _Temporary_buffer(const _Temporary_buffer&);
+
+      void
+      operator=(const _Temporary_buffer&);
+    };
+
+
+  template<typename _ForwardIterator, typename _Tp>
+    _Temporary_buffer<_ForwardIterator, _Tp>::
+    _Temporary_buffer(_ForwardIterator __first, _ForwardIterator __last)
+    : _M_original_len(std::distance(__first, __last)),
+      _M_len(0), _M_buffer(0)
+    {
+      // Workaround for a __type_traits bug in the pre-7.3 compiler.
+      typedef typename __type_traits<_Tp>::has_trivial_default_constructor
+	      _Trivial;
+
+      try
+	{
+	  pair<pointer, size_type> __p(get_temporary_buffer<
+				       value_type>(_M_original_len));
+	  _M_buffer = __p.first;
+	  _M_len = __p.second;
+	  if (_M_len > 0)
+	    _M_initialize_buffer(*__first, _Trivial());
+	}
+      catch(...)
+	{
+	  std::return_temporary_buffer(_M_buffer);
+	  _M_buffer = 0;
+	  _M_len = 0;
+	  __throw_exception_again;
+	}
+    }
 } // namespace std
 
 #endif /* _TEMPBUF_H */

@@ -139,7 +139,7 @@ namespace std
 	_M_type = 1
       };
     };
-  
+
   template<>
     struct __is_integer<char>
     {
@@ -157,7 +157,7 @@ namespace std
 	_M_type = 1
       };
     };
-  
+
   template<>
   struct __is_integer<unsigned char>
   {
@@ -177,7 +177,7 @@ namespace std
     };
   };
 # endif
-  
+
   template<>
   struct __is_integer<short>
   {

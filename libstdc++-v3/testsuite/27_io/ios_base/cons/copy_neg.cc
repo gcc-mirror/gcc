@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,5 +41,5 @@ void test02()
   test_base io2 = io1; 
 }
 // { dg-error "within this context" "" { target *-*-* } 41 } 
-// { dg-error "is private" "" { target *-*-* } 737 } 
+// { dg-error "is private" "" { target *-*-* } 738 } 
 // { dg-error "copy constructor" "" { target *-*-* } 0 } 

@@ -62,6 +62,9 @@
                             mentioning?</a> </li>
          <li><a href="#2_4">How do I know if it works?</a> </li>
          <li><a href="#2_5">This library is HUGE!  And what's libsupc++?</a> </li>
+         <li><a href="#2_6">Why do I get an error saying
+                            <code>libstdc++.so.X</code> is missing when I
+                            run my program?</a> </li>
       </ol>
    </li>
 
@@ -415,6 +418,43 @@ which is no longer available, thanks deja...-->
          are mistakenly removed, leading to horrible crashes when your
          executable starts up.  For the time being, this feature is not used
          when building the library.
+      </p>
+
+<hr />
+   <h2><a name="2_6">2.6 Why do I get an error saying
+                         <code>libstdc++.so.X</code> is missing when I run
+                         my program?</a></h2>
+      <p>Depending on your platform and library version, the message might
+         be similar to one of the following:
+      </p>
+      <pre>
+    ./a.out: error while loading shared libraries: libstdc++.so.6: cannot open shared object file: No such file or directory
+
+    /usr/libexec/ld-elf.so.1: Shared object "libstdc++.so.6" not found </pre>
+
+      <p>This doesn't mean that the shared library isn't installed, only
+         that the dynamic linker can't find it. When a dynamically-linked
+         executable is run the linker finds and loads the required shared
+         libraries by searching a pre-configured list of directories. If
+         the directory where you've installed libstdc++ is not in this
+         list then the libraries won't be found. The simplest way to fix
+         this is to use the <code>LD_LIBRARY_PATH</code> environment
+         variable, which is a colon-separated list of directories in which
+         the linker will search for shared libraries:
+      </p>
+      <pre>
+    LD_LIBRARY_PATH=${prefix}/lib:$LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH </pre>
+      <p>The exact environment variable to use will depend on your platform,
+         e.g. DYLD_LIBRARY_PATH for Darwin,
+         LD_LIBRARY_PATH_32/LD_LIBRARY_PATH_64 for Solaris 32-/64-bit,
+         LD_LIBRARYN32_PATH/LD_LIBRARY64_PATH for Irix N32/64-bit ABIs
+         and SHLIB_PATH for HP-UX.
+      </p>
+      <p>See the man pages for <code>ld(1)</code>, <code>ldd(1)</code> and
+         <code>ldconfig(8)</code> for more information. The dynamic linker
+         has different names on different platforms but the man page is
+         usually called something such as <code>ld.so / rtld / dld.so</code>.
       </p>
 
 <hr />

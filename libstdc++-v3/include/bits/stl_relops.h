@@ -1,6 +1,6 @@
 // std::rel_ops implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -75,61 +75,61 @@ namespace std
 {
   namespace rel_ops
   {
-      /** @namespace std::rel_ops
-       *  @brief  The generated relational operators are sequestered here.
-       */
+    /** @namespace std::rel_ops
+     *  @brief  The generated relational operators are sequestered here.
+     */
 
-/**
- *  @brief Defines @c != for arbitrary types, in terms of @c ==.
- *  @param  x  A thing.
- *  @param  y  Another thing.
- *  @return   x != y
- *
- *  This function uses @c == to determine its result.
-*/
-template <class _Tp>
-inline bool operator!=(const _Tp& __x, const _Tp& __y) {
-  return !(__x == __y);
-}
+    /**
+     *  @brief Defines @c != for arbitrary types, in terms of @c ==.
+     *  @param  x  A thing.
+     *  @param  y  Another thing.
+     *  @return   x != y
+     *
+     *  This function uses @c == to determine its result.
+     */
+    template <class _Tp>
+      inline bool
+      operator!=(const _Tp& __x, const _Tp& __y)
+      { return !(__x == __y); }
 
-/**
- *  @brief Defines @c > for arbitrary types, in terms of @c <.
- *  @param  x  A thing.
- *  @param  y  Another thing.
- *  @return   x > y
- *
- *  This function uses @c < to determine its result.
-*/
-template <class _Tp>
-inline bool operator>(const _Tp& __x, const _Tp& __y) {
-  return __y < __x;
-}
+    /**
+     *  @brief Defines @c > for arbitrary types, in terms of @c <.
+     *  @param  x  A thing.
+     *  @param  y  Another thing.
+     *  @return   x > y
+     *
+     *  This function uses @c < to determine its result.
+     */
+    template <class _Tp>
+      inline bool
+      operator>(const _Tp& __x, const _Tp& __y)
+      { return __y < __x; }
 
-/**
- *  @brief Defines @c <= for arbitrary types, in terms of @c <.
- *  @param  x  A thing.
- *  @param  y  Another thing.
- *  @return   x <= y
- *
- *  This function uses @c < to determine its result.
-*/
-template <class _Tp>
-inline bool operator<=(const _Tp& __x, const _Tp& __y) {
-  return !(__y < __x);
-}
+    /**
+     *  @brief Defines @c <= for arbitrary types, in terms of @c <.
+     *  @param  x  A thing.
+     *  @param  y  Another thing.
+     *  @return   x <= y
+     *
+     *  This function uses @c < to determine its result.
+     */
+    template <class _Tp>
+      inline bool
+      operator<=(const _Tp& __x, const _Tp& __y)
+      { return !(__y < __x); }
 
-/**
- *  @brief Defines @c >= for arbitrary types, in terms of @c <.
- *  @param  x  A thing.
- *  @param  y  Another thing.
- *  @return   x >= y
- *
- *  This function uses @c < to determine its result.
-*/
-template <class _Tp>
-inline bool operator>=(const _Tp& __x, const _Tp& __y) {
-  return !(__x < __y);
-}
+    /**
+     *  @brief Defines @c >= for arbitrary types, in terms of @c <.
+     *  @param  x  A thing.
+     *  @param  y  Another thing.
+     *  @return   x >= y
+     *
+     *  This function uses @c < to determine its result.
+     */
+    template <class _Tp>
+      inline bool
+      operator>=(const _Tp& __x, const _Tp& __y)
+      { return !(__x < __y); }
 
   } // namespace rel_ops
 } // namespace std

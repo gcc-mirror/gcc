@@ -50,35 +50,35 @@ namespace std
   template<typename _CharT, typename _Traits>
     class istreambuf_iterator
     : public iterator<input_iterator_tag, _CharT, typename _Traits::off_type,
-    		      _CharT*, _CharT&>
+		      _CharT*, _CharT&>
     {
     public:
       // Types:
       //@{
       /// Public typedefs
-      typedef _CharT                         		char_type;
-      typedef _Traits                        		traits_type;
-      typedef typename _Traits::int_type     		int_type;
-      typedef basic_streambuf<_CharT, _Traits> 		streambuf_type;
-      typedef basic_istream<_CharT, _Traits>         	istream_type;
+      typedef _CharT					char_type;
+      typedef _Traits					traits_type;
+      typedef typename _Traits::int_type		int_type;
+      typedef basic_streambuf<_CharT, _Traits>		streambuf_type;
+      typedef basic_istream<_CharT, _Traits>		istream_type;
       //@}
 
     private:
-      // 24.5.3 istreambuf_iterator 
-      // p 1 
+      // 24.5.3 istreambuf_iterator
+      // p 1
       // If the end of stream is reached (streambuf_type::sgetc()
       // returns traits_type::eof()), the iterator becomes equal to
       // the "end of stream" iterator value.
       // NB: This implementation assumes the "end of stream" value
       // is EOF, or -1.
-      mutable streambuf_type* 	_M_sbuf;  
-      int_type 			_M_c;
+      mutable streambuf_type*	_M_sbuf;
+      int_type			_M_c;
 
     public:
       ///  Construct end of input stream iterator.
-      istreambuf_iterator() throw() 
+      istreambuf_iterator() throw()
       : _M_sbuf(0), _M_c(traits_type::eof()) { }
-      
+
       ///  Construct start of input stream iterator.
       istreambuf_iterator(istream_type& __s) throw()
       : _M_sbuf(__s.rdbuf()), _M_c(traits_type::eof()) { }
@@ -86,36 +86,36 @@ namespace std
       ///  Construct start of streambuf iterator.
       istreambuf_iterator(streambuf_type* __s) throw()
       : _M_sbuf(__s), _M_c(traits_type::eof()) { }
-       
+
       ///  Return the current character pointed to by iterator.  This returns
       ///  streambuf.sgetc().  It cannot be assigned.  NB: The result of
       ///  operator*() on an end of stream is undefined.
-      char_type 
+      char_type
       operator*() const
-      { 
+      {
 #ifdef _GLIBCXX_DEBUG_PEDANTIC
 	// Dereferencing a past-the-end istreambuf_iterator is a
 	// libstdc++ extension
 	__glibcxx_requires_cond(!_M_at_eof(),
 				_M_message(__gnu_debug::__msg_deref_istreambuf)
-				._M_iterator(*this)); 
+				._M_iterator(*this));
 #endif
-	return traits_type::to_char_type(_M_get()); 
+	return traits_type::to_char_type(_M_get());
       }
 
       /// Advance the iterator.  Calls streambuf.sbumpc().
-      istreambuf_iterator& 
+      istreambuf_iterator&
       operator++()
-      { 
+      {
 	__glibcxx_requires_cond(!_M_at_eof(),
 				_M_message(__gnu_debug::__msg_inc_istreambuf)
-				._M_iterator(*this)); 
+				._M_iterator(*this));
 	const int_type __eof = traits_type::eof();
 	if (_M_sbuf && traits_type::eq_int_type(_M_sbuf->sbumpc(), __eof))
 	  _M_sbuf = 0;
 	else
 	  _M_c = __eof;
-	return *this; 
+	return *this;
       }
 
       /// Advance the iterator.  Calls streambuf.sbumpc().
@@ -124,24 +124,24 @@ namespace std
       {
 	__glibcxx_requires_cond(!_M_at_eof(),
 				_M_message(__gnu_debug::__msg_inc_istreambuf)
-				._M_iterator(*this)); 
+				._M_iterator(*this));
 
 	const int_type __eof = traits_type::eof();
 	istreambuf_iterator __old = *this;
 	if (_M_sbuf
-	    && traits_type::eq_int_type((__old._M_c = _M_sbuf->sbumpc()), 
+	    && traits_type::eq_int_type((__old._M_c = _M_sbuf->sbumpc()),
 					__eof))
 	  _M_sbuf = 0;
 	else
 	  _M_c = __eof;
-	return __old; 
+	return __old;
       }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 110 istreambuf_iterator::equal not const
       // NB: there is also number 111 (NAD, Future) pending on this function.
       /// Return true both iterators are end or both are not end.
-      bool 
+      bool
       equal(const istreambuf_iterator& __b) const
       {
 	const bool __thiseof = _M_at_eof();
@@ -150,23 +150,23 @@ namespace std
       }
 
     private:
-      int_type 
+      int_type
       _M_get() const
-      { 
+      {
 	const int_type __eof = traits_type::eof();
 	int_type __ret = __eof;
 	if (_M_sbuf)
-	  { 
+	  {
 	    if (!traits_type::eq_int_type(_M_c, __eof))
 	      __ret = _M_c;
-	    else 
-	      if (traits_type::eq_int_type((__ret = _M_sbuf->sgetc()), __eof))
-		_M_sbuf = 0;
+	    else if (traits_type::eq_int_type((__ret = _M_sbuf->sgetc()),
+					      __eof))
+	      _M_sbuf = 0;
 	  }
 	return __ret;
       }
 
-      bool 
+      bool
       _M_at_eof() const
       {
 	const int_type __eof = traits_type::eof();
@@ -175,13 +175,13 @@ namespace std
     };
 
   template<typename _CharT, typename _Traits>
-    inline bool 
+    inline bool
     operator==(const istreambuf_iterator<_CharT, _Traits>& __a,
 	       const istreambuf_iterator<_CharT, _Traits>& __b)
     { return __a.equal(__b); }
 
   template<typename _CharT, typename _Traits>
-    inline bool 
+    inline bool
     operator!=(const istreambuf_iterator<_CharT, _Traits>& __a,
 	       const istreambuf_iterator<_CharT, _Traits>& __b)
     { return !__a.equal(__b); }
@@ -202,53 +202,54 @@ namespace std
       //@}
 
     private:
-      streambuf_type* 	_M_sbuf;
-      bool 		_M_failed;
+      streambuf_type*	_M_sbuf;
+      bool		_M_failed;
 
     public:
       ///  Construct output iterator from ostream.
       ostreambuf_iterator(ostream_type& __s) throw ()
       : _M_sbuf(__s.rdbuf()), _M_failed(!_M_sbuf) { }
-      
+
       ///  Construct output iterator from streambuf.
       ostreambuf_iterator(streambuf_type* __s) throw ()
       : _M_sbuf(__s), _M_failed(!_M_sbuf) { }
 
       ///  Write character to streambuf.  Calls streambuf.sputc().
-      ostreambuf_iterator& 
+      ostreambuf_iterator&
       operator=(_CharT __c)
       {
-	if (!_M_failed && 
+	if (!_M_failed &&
 	    _Traits::eq_int_type(_M_sbuf->sputc(__c), _Traits::eof()))
 	  _M_failed = true;
 	return *this;
       }
 
       /// Return *this.
-      ostreambuf_iterator& 
+      ostreambuf_iterator&
       operator*()
       { return *this; }
 
       /// Return *this.
-      ostreambuf_iterator& 
+      ostreambuf_iterator&
       operator++(int)
       { return *this; }
 
       /// Return *this.
-      ostreambuf_iterator& 
+      ostreambuf_iterator&
       operator++()
       { return *this; }
 
       /// Return true if previous operator=() failed.
-      bool 
+      bool
       failed() const throw()
       { return _M_failed; }
 
-      ostreambuf_iterator& 
+      ostreambuf_iterator&
       _M_put(const _CharT* __ws, streamsize __len)
       {
 	if (__builtin_expect(!_M_failed, true)
-	    && __builtin_expect(this->_M_sbuf->sputn(__ws, __len) != __len, false))
+	    && __builtin_expect(this->_M_sbuf->sputn(__ws, __len) != __len,
+				false))
 	  _M_failed = true;
 	return *this;
       }

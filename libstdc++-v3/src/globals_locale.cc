@@ -1,4 +1,4 @@
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,7 +43,7 @@
 // In macro form:
 // _GLIBCXX_ASM_SYMVER(currentname, oldname, GLIBCXX_3.2)
 
-namespace __gnu_cxx
+namespace __gnu_internal
 {
   using namespace std;
 
@@ -184,8 +184,8 @@ namespace __gnu_cxx
   __attribute__ ((aligned(__alignof__(std::__numpunct_cache<char>))));
   fake_num_cache_c numpunct_cache_c;
 
-  typedef char fake_money_cache_c[sizeof(std::__moneypunct_cache<char>)]
-  __attribute__ ((aligned(__alignof__(std::__moneypunct_cache<char>))));
+  typedef char fake_money_cache_c[sizeof(std::__moneypunct_cache<char, true>)]
+  __attribute__ ((aligned(__alignof__(std::__moneypunct_cache<char, true>))));
   fake_money_cache_c moneypunct_cache_ct;
   fake_money_cache_c moneypunct_cache_cf;
 
@@ -198,8 +198,8 @@ namespace __gnu_cxx
   __attribute__ ((aligned(__alignof__(std::__numpunct_cache<wchar_t>))));
   fake_num_cache_w numpunct_cache_w;
 
-  typedef char fake_money_cache_w[sizeof(std::__moneypunct_cache<wchar_t>)]
-  __attribute__ ((aligned(__alignof__(std::__moneypunct_cache<wchar_t>))));
+  typedef char fake_money_cache_w[sizeof(std::__moneypunct_cache<wchar_t,true>)]
+  __attribute__ ((aligned(__alignof__(std::__moneypunct_cache<wchar_t,true>))));
   fake_money_cache_w moneypunct_cache_wt;
   fake_money_cache_w moneypunct_cache_wf;
 
@@ -207,4 +207,4 @@ namespace __gnu_cxx
   __attribute__ ((aligned(__alignof__(std::__timepunct_cache<wchar_t>))));
   fake_time_cache_w timepunct_cache_w;
 #endif
-} // namespace __gnu_cxx
+} // namespace __gnu_internal

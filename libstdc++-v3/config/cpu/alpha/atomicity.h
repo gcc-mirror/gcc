@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: Alpha version  -*- C++ -*-
 
-// Copyright (C) 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,23 +27,22 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _GLIBCXX_ATOMICITY_H
-#define _GLIBCXX_ATOMICITY_H	1
+#include <bits/atomicity.h>
 
 /* @@@ With gas we can play nice .subsection games to get the
    non-predicted branch pointing forward.  But Digital assemblers
    don't understand those directives.  This isn't a terribly
    important issue, so just ignore it.  */
 
-typedef int _Atomic_word;
-
-static inline _Atomic_word
-__attribute__ ((__unused__))
-__exchange_and_add(volatile _Atomic_word* __mem, int __val)
+namespace __gnu_cxx
 {
-  register int __result, __tmp;
-
-  __asm__ __volatile__ (
+  _Atomic_word
+  __attribute__ ((__unused__))
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
+  {
+    register int __result, __tmp;
+    
+    __asm__ __volatile__ (
       "\n$Lxadd_%=:\n\t"
       "ldl_l  %0,%3\n\t"
       "addl   %0,%4,%1\n\t"
@@ -53,16 +52,16 @@ __exchange_and_add(volatile _Atomic_word* __mem, int __val)
       : "=&r"(__result), "=&r"(__tmp), "=m"(*__mem)
       : "m" (*__mem), "r"(__val));
 
-  return __result;
-}
+    return __result;
+  }
 
-static inline void
-__attribute__ ((__unused__))
-__atomic_add(volatile _Atomic_word* __mem, int __val)
-{
-  register _Atomic_word __result;
+  void
+  __attribute__ ((__unused__))
+  __atomic_add(volatile _Atomic_word* __mem, int __val)
+  {
+    register _Atomic_word __result;
 
-  __asm__ __volatile__ (
+    __asm__ __volatile__ (
       "\n$Ladd_%=:\n\t"
       "ldl_l  %0,%2\n\t"
       "addl   %0,%3,%0\n\t"
@@ -71,6 +70,6 @@ __atomic_add(volatile _Atomic_word* __mem, int __val)
       "mb"
       : "=&r"(__result), "=m"(*__mem)
       : "m" (*__mem), "r"(__val));
-}
+  }
+} // namespace __gnu_cxx
 
-#endif /* atomicity.h */

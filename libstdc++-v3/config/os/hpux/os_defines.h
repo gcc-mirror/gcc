@@ -1,6 +1,6 @@
 // Specific definitions for HPUX  -*- C++ -*-
 
-// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -89,12 +89,6 @@ typedef long int __padding_type;
 // because that is not part of the standard IA64 Unwind ABI.
 #if defined (__ia64__)
 #define _LIBUNWIND_STD_ABI 1
-#endif
-
-/* We need explicit instantiation of the atomicity lock on HPPA if
-   there is no weak support.  */
-#if !defined(_GLIBCXX_SUPPORTS_WEAK) && defined (__hppa__)
-#define _GLIBCXX_INST_ATOMICITY_LOCK 1
 #endif
 
 /* Don't use pragma weak in gthread headers.  HP-UX rejects programs

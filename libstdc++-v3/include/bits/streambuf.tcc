@@ -37,7 +37,7 @@
 
 #pragma GCC system_header
 
-namespace std 
+namespace std
 {
   template<typename _CharT, typename _Traits>
     streamsize
@@ -57,10 +57,10 @@ namespace std
 	      __s += __len;
 	      this->gbump(__len);
 	    }
-	  
+
 	  if (__ret < __n)
 	    {
-	      const int_type __c = this->uflow();  
+	      const int_type __c = this->uflow();
 	      if (!traits_type::eq_int_type(__c, traits_type::eof()))
 		{
 		  traits_type::assign(*__s++, traits_type::to_char_type(__c));
@@ -114,7 +114,7 @@ namespace std
   template<typename _CharT, typename _Traits>
     streamsize
     __copy_streambufs(basic_streambuf<_CharT, _Traits>* __sbin,
-		      basic_streambuf<_CharT, _Traits>* __sbout) 
+		      basic_streambuf<_CharT, _Traits>* __sbout)
     {
       streamsize __ret = 0;
       typename _Traits::int_type __c = __sbin->sgetc();
@@ -130,7 +130,7 @@ namespace std
 		break;
 	      __c = __sbin->underflow();
 	    }
-	  else 
+	  else
 	    {
 	      __c = __sbout->sputc(_Traits::to_char_type(__c));
 	      if (_Traits::eq_int_type(__c, _Traits::eof()))
@@ -143,21 +143,21 @@ namespace std
     }
 
   // Inhibit implicit instantiations for required instantiations,
-  // which are defined via explicit instantiations elsewhere.  
+  // which are defined via explicit instantiations elsewhere.
   // NB:  This syntax is a GNU extension.
 #if _GLIBCXX_EXTERN_TEMPLATE
   extern template class basic_streambuf<char>;
   extern template
     streamsize
-    __copy_streambufs(basic_streambuf<char>*, basic_streambuf<char>*); 
+    __copy_streambufs(basic_streambuf<char>*, basic_streambuf<char>*);
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   extern template class basic_streambuf<wchar_t>;
   extern template
     streamsize
-    __copy_streambufs(basic_streambuf<wchar_t>*, basic_streambuf<wchar_t>*); 
+    __copy_streambufs(basic_streambuf<wchar_t>*, basic_streambuf<wchar_t>*);
 #endif
 #endif
 } // namespace std
 
-#endif 
+#endif

@@ -1,6 +1,6 @@
 // 1999-06-24 bkoz
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,10 +20,11 @@
 
 // 23.3.4 template class multiset
 
-#include <iostream>
+#include <sstream>
 #include <iterator>
 #include <set>
 #include <algorithm>
+#include <testsuite_hooks.h>
 
 namespace std 
 {
@@ -36,8 +37,14 @@ bool
 operator<(std::pair<int, int> const& lhs, std::pair<int, int> const& rhs) 
 { return lhs.first < rhs.first; }
 
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template class __gnu_cxx::__mt_alloc<std::_Rb_tree_node<std::pair<int, int> > >;
+#endif
+
 int main () 
 {
+  bool test __attribute__((unused)) = true;
   typedef std::multiset<std::pair<int, int> >::iterator iterator;
   std::pair<int, int> p(69, 0);
   std::multiset<std::pair<int, int> > s;
@@ -51,24 +58,13 @@ int main ()
 	++p.second;
       }
 
-  // XXX need to use debug-assert here and get this working with an
-  // ostrinsrtream, that way we can just check the strings for
-  // equivalance.
+  std::ostringstream stream;
   std::copy(s.begin(), s.end(), 
-            std::ostream_iterator<std::pair<int, int> >(std::cout, "\n"));
+            std::ostream_iterator<std::pair<int, int> >(stream, "\n"));
+  const std::string expected("69 0\n69 1\n69 2\n69 3\n69 4\n"
+			     "69 5\n69 6\n69 7\n69 8\n69 9\n");
+  std::string tested(stream.str());
+  VERIFY( tested == expected );
 
   return 0;
 }
-
-/* output:
-69 5
-69 0
-69 6
-69 1
-69 7
-69 2
-69 8
-69 3
-69 9
-69 4
-*/

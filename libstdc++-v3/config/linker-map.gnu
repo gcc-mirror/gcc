@@ -1,6 +1,6 @@
 ## Linker script for GNU ld 2.13.91+ only.
 ##
-## Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+## Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ##
@@ -211,17 +211,13 @@ GLIBCXX_3.4 {
     __signbitf;
     __signbitl;
 
-    # __gnu_cxx::__pool_alloc
-    _ZN9__gnu_cxx12__pool_allocILb1ELi0EE8allocateE[jm];
-    _ZN9__gnu_cxx12__pool_allocILb1ELi0EE10deallocateEPv[jm];
-
     # __gnu_cxx::stdio_sync_filebuf
     _ZTVN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEE;
 
-    # Needed only when generic cpu's atomicity.h is in use.
-    _ZN9__gnu_cxx17_Atomic_add_mutexE;
-    _ZN9__gnu_cxx22_Atomic_add_mutex_onceE;
-    _ZN9__gnu_cxx31__gthread_atomic_add_mutex_onceEv;
+    # __gnu_cxx::__atomic_add
+    # __gnu_cxx::__exchange_and_add
+    _ZN9__gnu_cxx12__atomic_add*;
+    _ZN9__gnu_cxx18__exchange_and_add*;
 
   # DO NOT DELETE THIS LINE.  Port-specific symbols, if any, will be here.
 
