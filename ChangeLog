@@ -1,3 +1,9 @@
+Tue Oct 13 15:45:36 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure: Add pattern to replace "build_tooldir"'s
+	definition in the generated Makefile with "tooldir"'s
+	actual value.
+
 Tue Oct 13 09:17:06 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* config.sub: Bring back lost sparcv9.
