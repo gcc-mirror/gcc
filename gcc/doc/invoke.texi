@@ -4215,8 +4215,8 @@ exactly determine which path is taken more often.
 @item -fnew-ra
 @opindex fnew-ra
 Use a graph coloring register allocator.  Currently this option is meant
-for testing, so we are interested to hear about miscompilations with
-@option{-fnew-ra}.
+only for testing.  Users should not specify this option, since it is not
+yet ready for production use.
 
 @item -ftracer
 @opindex ftracer

@@ -1,3 +1,7 @@
+2004-03-13  Dara Hazeghi  <dhazeghi@yahoo.com>
+
+	* doc/install.texi: Note status of -fnew-ra.
+
 2004-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/14533
