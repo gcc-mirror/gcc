@@ -1978,6 +1978,11 @@ fold_convert (tree type, tree arg)
 tree
 non_lvalue (tree x)
 {
+  /* While we are in GIMPLE, NON_LVALUE_EXPR doesn't mean anything to
+     us.  */
+  if (in_gimple_form)
+    return x;
+
   /* We only need to wrap lvalue tree codes.  */
   switch (TREE_CODE (x))
   {
