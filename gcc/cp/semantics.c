@@ -2881,7 +2881,12 @@ expand_body (tree fn)
   /* Emit any thunks that should be emitted at the same time as FN.  */
   emit_associated_thunks (fn);
 
-  tree_rest_of_compilation (fn, function_depth > 1);
+  /* This function is only called from cgraph, or recursively from
+     emit_associated_thunks.  In neither case should we be currently
+     generating trees for a function.  */
+  gcc_assert (function_depth == 0);
+
+  tree_rest_of_compilation (fn, 0);
 
   current_function_decl = saved_function;
 
