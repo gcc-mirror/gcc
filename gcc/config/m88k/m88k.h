@@ -197,13 +197,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.57 $"
+#define VERSION_INFO2   "$Revision: 1.58 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.57 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.58 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What$"
 #endif  /* __STDC__ */
@@ -2552,7 +2552,10 @@ sdata_section ()							\
       if (SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)))			\
 	sdata_section ();						\
       else if ((flag_pic && RELOC)					\
-	  || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL))		\
+	       || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)	\
+	       || !DECL_INITIAL (DECL)					\
+	       || (DECL_INITIAL (DECL) != error_mark_node		\
+		   && !TREE_CONSTANT (DECL_INITIAL (DECL))))		\
 	data_section ();						\
       else								\
 	const_section ();						\

@@ -536,11 +536,19 @@ objc_section_init ()				\
 	  else								\
 	    data_section ();						\
 	}								\
-      else if ((TREE_READONLY (exp) || TREE_CONSTANT (exp))	\
-	       && !TREE_SIDE_EFFECTS (exp))				\
-	readonly_data_section ();					\
+      else if (TREE_CODE (DECL) == VAR_DECL)				\
+	{								\
+	  if ((flag_pic && RELOC)					\
+	      || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)	\
+	      || !DECL_INITIAL (DECL)					\
+	      || (DECL_INITIAL (DECL) != error_mark_node		\
+		  && !TREE_CONSTANT (DECL_INITIAL (DECL))))		\
+	    data_section ();						\
+	  else								\
+	    readonly_data_section ();					\
+	}								\
       else								\
-        data_section ();						\
+	readonly_data_section ();					\
     }									\
   while (0)
 

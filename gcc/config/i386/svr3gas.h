@@ -255,7 +255,10 @@ dtors_section ()							\
   else if (TREE_CODE (DECL) == VAR_DECL)				\
     {									\
       if ((0 && RELOC)	/* should be (flag_pic && RELOC) */		\
-	  || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL))		\
+	  || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
+	  || !DECL_INITIAL (DECL)					\
+	  || (DECL_INITIAL (DECL) != error_mark_node 			\
+	      && !TREE_CONSTANT (DECL_INITIAL (DECL))))			\
 	data_section ();						\
       else								\
 	const_section ();						\

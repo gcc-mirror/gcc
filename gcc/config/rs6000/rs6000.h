@@ -1747,11 +1747,13 @@ toc_section ()						\
 
 #define SELECT_SECTION(EXP,RELOC)			\
 {							\
-  if ((TREE_READONLY (EXP)				\
-       || (TREE_CODE (EXP) == STRING_CST		\
-	   && !flag_writable_strings))			\
-      && ! TREE_THIS_VOLATILE (EXP)			\
-      && ! (RELOC))					\
+  if ((TREE_CODE (EXP) == STRING_CST			\
+       && !flag_writable_strings)			\
+      || (TREE_READONLY (EXP) && ! TREE_THIS_VOLATILE (EXP) \
+	  && DECL_INITIAL (EXP)				\
+	  && (DECL_INITIAL (EXP) == error_mark_node	\
+	      || TREE_CONSTANT (DECL_INITIAL (EXP)))	\
+	  && ! (RELOC)))				\
     {							\
       if (TREE_PUBLIC (EXP))				\
         read_only_data_section ();			\

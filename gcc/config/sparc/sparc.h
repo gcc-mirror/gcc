@@ -282,6 +282,9 @@ extern int target_flags;
   if (TREE_CODE (T) == VAR_DECL)					\
     {									\
       if (TREE_READONLY (T) && ! TREE_SIDE_EFFECTS (T)			\
+	  && DECL_INITIAL (T)						\
+	  && (DECL_INITIAL (T) == error_mark_node			\
+	      || TREE_CONSTANT (DECL_INITIAL (T)))			\
 	  && DECL_ALIGN (T) <= MAX_TEXT_ALIGN				\
 	  && ! (flag_pic && (RELOC)))					\
 	text_section ();						\
