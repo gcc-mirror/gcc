@@ -140,10 +140,17 @@ DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", 'x',
    The TYPE_FIELDS value will be a TEMPLATE_PARM_INDEX.  */
 DEFTREECODE (TEMPLATE_TYPE_PARM, "template_type_parm", 't', 0)
 
-/* Index into a template parameter list.  This parameter must be a type.
-   If it is used in signature of a template, TEMPLATE_INFO is NULL_TREE.
-   Otherwise it is used to declare a type like TT<int>.
-   The TYPE_FIELDS value will be a TEMPLATE_PARM_INDEX.  */
+/* Index into a template parameter list for template template parameters.
+   This parameter must be a type.  The TYPE_FIELDS value will be a 
+   TEMPLATE_PARM_INDEX.
+
+   If it is used without template arguments like TT in C<TT>, 
+   TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO is NULL_TREE
+   and TYPE_NAME is a TEMPLATE_DECL.
+
+   Otherwise it is used with bound template arguments like TT<int>.  In this case,
+   TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO contains the template name
+   and its bound arguments.  TYPE_NAME is a TYPE_DECL.  */
 DEFTREECODE (TEMPLATE_TEMPLATE_PARM, "template_template_parm", 't', 0)
 
 /* A type designated by `typename T::t'.  TYPE_CONTEXT is `T',

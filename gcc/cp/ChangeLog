@@ -1,3 +1,28 @@
+2000-06-23  Kriang Lerdsuwanakij <lerdsuwa@scf.usc.edu>
+
+	* parse.y (template_arg): Convert TEMPLATE_DECL
+	that is a template template paramter to
+	TEMPLATE_TEMPLATE_PARM here.
+
+	* cp-tree.def (TEMPLATE_TEMPLATE_PARM): Adjust comment.
+	* cp-tree.h (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL): New macro.
+	(copy_template_template_parm): Adjust prototype.
+	* decl.c (grokdeclarator): Remove dead code.
+	* pt.c (process_template_parm): Tidy.
+	(lookup_template_class): Construct nodes in
+	copy_template_template_parm.
+	(tsubst): Pass TEMPLATE_DECL rather than IDENTIFIER_NODE to
+	lookup_template_class.  Use TYPE_TI_TEMPLATE.
+	* tree.c (copy_template_template_parm): Add NEWARGS
+	parameter.
+	(mapcar): Adjust call to copy_template_template_parm.
+	* typeck.c (comptypes): Use TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL.
+	* method.c (build_template_template_parm_names): Change error
+	code to avoid compilation warning.
+
+	* gxxint.texi: Document template template parameter
+	name mangling.
+
 2000-06-21  Alex Samuel  <samuel@codesourcery.com>
 
 	* Make-lang.in (CXX_LIB2FUNCS): Add cp-demangle.o and dyn-string.o.

@@ -3802,6 +3802,13 @@ enum tree_string_flags
     TS_NEXT_BIT       = 13       /* next available bit */
 };
 
+/* Returns the TEMPLATE_DECL associated to a TEMPLATE_TEMPLATE_PARM
+   node.  */
+#define TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL(NODE) 	\
+  (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (NODE) 		\
+   ? TYPE_TI_TEMPLATE (NODE) 				\
+   : TYPE_NAME (NODE))
+
 /* in lex.c  */
 /* Indexed by TREE_CODE, these tables give C-looking names to
    operators represented by TREE_CODES.  For example,
@@ -4574,7 +4581,7 @@ extern int promotes_to_aggr_type		PARAMS ((tree, enum tree_code));
 extern int is_aggr_type_2			PARAMS ((tree, tree));
 extern const char *lang_printable_name		PARAMS ((tree, int));
 extern tree build_exception_variant		PARAMS ((tree, tree));
-extern tree copy_template_template_parm		PARAMS ((tree));
+extern tree copy_template_template_parm		PARAMS ((tree, tree));
 extern void print_lang_statistics		PARAMS ((void));
 extern tree array_type_nelts_total		PARAMS ((tree));
 extern tree array_type_nelts_top		PARAMS ((tree));

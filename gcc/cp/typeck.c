@@ -994,8 +994,9 @@ comptypes (t1, t2, strict)
       if (TEMPLATE_TYPE_IDX (t1) != TEMPLATE_TYPE_IDX (t2)
 	  || TEMPLATE_TYPE_LEVEL (t1) != TEMPLATE_TYPE_LEVEL (t2))
 	return 0;
-      if (! comp_template_parms (DECL_TEMPLATE_PARMS (TYPE_NAME (t1)),
-				 DECL_TEMPLATE_PARMS (TYPE_NAME (t2))))
+      if (! comp_template_parms
+	      (DECL_TEMPLATE_PARMS (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (t1)),
+	       DECL_TEMPLATE_PARMS (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (t2))))
 	return 0;
       if (!TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t1) 
 	  && ! TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t2))

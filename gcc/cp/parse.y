@@ -1060,7 +1060,11 @@ template_arg:
 	  type_id
 		{ $$ = groktypename ($1.t); }
 	| PTYPENAME
-		{ $$ = lastiddecl; }
+		{
+		  $$ = lastiddecl;
+		  if (DECL_TEMPLATE_TEMPLATE_PARM_P ($$))
+		    $$ = TREE_TYPE ($$);
+		}
 	| expr_no_commas  %prec ARITHCOMPARE
 	;
 

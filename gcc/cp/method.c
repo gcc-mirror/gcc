@@ -919,7 +919,7 @@ build_template_template_parm_names (parmlist)
 {
   int i, nparms;
 
-  my_friendly_assert (TREE_CODE (parmlist) == TREE_VEC, 246.5);
+  my_friendly_assert (TREE_CODE (parmlist) == TREE_VEC, 990228);
   nparms = TREE_VEC_LENGTH (parmlist);
   icat (nparms);
   for (i = 0; i < nparms; i++)

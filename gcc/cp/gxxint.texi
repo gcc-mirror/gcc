@@ -1655,7 +1655,9 @@ A class template instantiation is encoded as the letter @samp{t},
 followed by the encoding of the template name, followed
 the number of template parameters, followed by encoding of the template
 parameters.  If a template parameter is a type, it is written
-as a @samp{Z} followed by the encoding of the type.
+as a @samp{Z} followed by the encoding of the type.  If it is a
+template, it is encoded as @samp{z} followed by the parameter
+of the template template parameter and the template name.
 
 A function template specialization (either an instantiation or an
 explicit specialization) is encoded by an @samp{H} followed by the
@@ -1664,8 +1666,9 @@ encoding of the template parameters, as described above, followed by an
 (not the specialization), another @samp{_}, and the return type.  (Like
 the argument types, the return type is the return type of the function
 template, not the specialization.)  Template parameters in the argument
-and return types are encoded by an @samp{X} for type parameters, or a
-@samp{Y} for constant parameters, an index indicating their position
+and return types are encoded by an @samp{X} for type parameters, 
+@samp{zX} for template parameters, 
+or a @samp{Y} for constant parameters, an index indicating their position
 in the template parameter list declaration, and their template depth.
 
 @subsection Arrays
@@ -1830,6 +1833,9 @@ Encodes a template type parameter, when part of a function type.
 
 @item Y
 Encodes a template constant parameter, when part of a function type.
+
+@item z
+Used for template template parameters. 
 
 @item Z
 Used for template type parameters. 
