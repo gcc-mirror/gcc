@@ -424,8 +424,7 @@ jv_convert_LINK = $(GCJLINK)
 ## system libraries we need (via the specs file).
 ## We need the -L so that gcj can find libgcj with `-lgcj'.
 ## FIXME: should be _libs on some systems.
-jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
-	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
+jv_convert_LDADD = libgcj.la $(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
