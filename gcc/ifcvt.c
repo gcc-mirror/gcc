@@ -1745,7 +1745,7 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
 
       /* There should sill be a branch at the end of the THEN or ELSE
          blocks taking us to our final destination.  */
-      if (! simplejump_p (combo_bb->end)
+      if (! any_uncondjump_p (combo_bb->end)
           && ! returnjump_p (combo_bb->end))
 	abort ();
     }

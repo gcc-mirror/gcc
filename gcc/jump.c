@@ -608,8 +608,9 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 		      do_cross_jump (insn, newjpos, newlpos);
 		      /* Make the old conditional jump
 			 into an unconditional one.  */
-		      SET_SRC (PATTERN (insn))
-			= gen_rtx_LABEL_REF (VOIDmode, JUMP_LABEL (insn));
+		      PATTERN (insn)
+			 = gen_jump (gen_rtx_LABEL_REF (VOIDmode,
+							JUMP_LABEL (insn)));
 		      INSN_CODE (insn) = -1;
 		      emit_barrier_after (insn);
 		      /* Add to jump_chain unless this is a new label
