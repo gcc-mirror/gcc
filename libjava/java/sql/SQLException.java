@@ -32,7 +32,7 @@ package java.sql;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class SQLException extends Exception implements java.io.Serializable
+public class SQLException extends Exception
 {
 
 /*************************************************************************/
@@ -59,6 +59,15 @@ private String SQLState;
   */
 private int vendorCode;
 
+/*************************************************************************/
+
+/**
+  * Static Variables
+  */
+
+/**
+  * This is the serialization UID for this class
+  */
 private static final long serialVersionUID = 2135244094396331484L;
 
 /*************************************************************************/

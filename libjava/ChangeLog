@@ -1,3 +1,27 @@
+2000-11-30  Warren Levy  <warrenl@cygnus.com>
+
+	* Array.java: New file from classpath.
+	* BatchUpdateException.java: Ditto.
+	* Blob.java: Ditto.
+	* Clob.java: Ditto.
+	* Ref.java: Ditto.
+	* SQLData.java: Ditto.
+	* SQLInput.java: Ditto.
+	* SQLOutput.java: Ditto.
+	* Struct.java: Ditto.
+	* CallableStatement.java: Merged file from claspath.
+	* Connection.java: Ditto.
+	* DataTruncation.java: Ditto.
+	* DatabaseMetaData.java: Ditto.
+	* DriverManager.java: Ditto.
+	* PreparedStatement.java: Ditto.
+	* ResultSet.java: Ditto.
+	* ResultSetMetaData.java: Ditto.
+	* SQLException.java: Ditto.
+	* SQLWarning.java: Ditto.
+	* Statement.java: Ditto.
+	* Types.java: Ditto.
+
 2000-11-29  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/natSystem.cc (init_properties): Set user.language and

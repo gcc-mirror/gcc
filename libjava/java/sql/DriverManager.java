@@ -1,5 +1,5 @@
 /* DriverManager.java -- Manage JDBC drivers
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -138,6 +138,38 @@ setLoginTimeout(int login_timeout)
 /*************************************************************************/
 
 /**
+  * This method returns the log writer being used by all JDBC drivers.
+  * This method should be used in place of the deprecated
+  * <code>getLogStream</code> method.
+  *
+  * @return The log writer in use by JDBC drivers.
+  */
+public static PrintWriter
+getLogWriter()
+{
+  return(log_writer);
+}
+
+/*************************************************************************/
+
+/**
+  * This method sets the log writer being used by JDBC drivers.  This is a
+  * system-wide parameter that affects all drivers.  Note that since there
+  * is no way to retrieve a <code>PrintStream</code> from a 
+  * <code>PrintWriter</code>, this method cannot set the log stream in
+  * use by JDBC.  Thus any older drivers may not see this setting.
+  *
+  * @param log_writer The new log writer for JDBC.
+  */
+public static void
+setLogWriter(PrintWriter log_writer)
+{
+  DriverManager.log_writer = log_writer;
+}
+
+/*************************************************************************/
+
+/**
   * This method returns the log stream in use by JDBC.
   *
   * @return The log stream in use by JDBC.
@@ -186,9 +218,11 @@ println(String str)
   * called by the driver itself in a static initializer.
   *
   * @param driver The new <code>Driver</code> to add.
+  *
+  * @exception SQLException If an error occurs.
   */
 public static void
-registerDriver(Driver driver)
+registerDriver(Driver driver) throws SQLException
 {
   if (!drivers.contains(driver))
     drivers.addElement(driver);
@@ -200,9 +234,11 @@ registerDriver(Driver driver)
   * This method de-registers a driver from the manager.
   *
   * @param driver The <code>Driver</code> to unregister.
+  *
+  * @exception SQLException If an error occurs.
   */
 public static void
-deregisterDriver(Driver driver)
+deregisterDriver(Driver driver) throws SQLException
 {
   if (drivers.contains(driver))
     drivers.removeElement(driver);
@@ -211,15 +247,30 @@ deregisterDriver(Driver driver)
 /*************************************************************************/
 
 /**
-  * This method returns a list of all the currently loaded JDBC drivers which
-  * the current caller has access to.
+  * This method returns a list of all the currently registered JDBC drivers
+  * that were loaded by the current <code>ClassLoader</code>.
   *
   * @return An <code>Enumeration</code> of all currently loaded JDBC drivers.
   */
 public static Enumeration
 getDrivers()
 {
-  return(drivers.elements());
+  Vector v = new Vector();
+  Enumeration e = drivers.elements();
+
+  // Is this right?
+  ClassLoader cl = Thread.currentThread().getContextClassLoader();
+
+  while(e.hasMoreElements())
+    {
+      Object obj = e.nextElement();
+      if (!obj.getClass().getClassLoader().equals(cl))
+        continue;
+
+      v.addElement(obj);
+    } 
+
+  return(v.elements());
 }
 
 /*************************************************************************/

@@ -1,5 +1,5 @@
 /* CallableStatement.java -- A statement for calling stored procedures.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.util.Calendar;
+import java.util.Map;
 
 /**
   * This interface provides a mechanism for calling stored procedures.
@@ -83,6 +84,22 @@ getString(int index) throws SQLException;
   */
 public abstract Object
 getObject(int index) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the value of the specified parameter as a Java
+  * <code>Object</code>.
+  *
+  * @param index The index of the parameter to return.
+  * @param map The mapping to use for conversion from SQL to Java types.
+  *
+  * @return The parameter value as an <code>Object</code>.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract Object
+getObject(int index, Map map) throws SQLException;
 
 /*************************************************************************/
 
@@ -196,6 +213,21 @@ getDouble(int index) throws SQLException;
   * <code>BigDecimal</code>.
   *
   * @param index The index of the parameter to return.
+  *
+  * @return The parameter value as a <code>BigDecimal</code>.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract BigDecimal
+getBigDecimal(int index) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the value of the specified parameter as a Java
+  * <code>BigDecimal</code>.
+  *
+  * @param index The index of the parameter to return.
   * @param scale The number of digits to the right of the decimal to return.
   *
   * @return The parameter value as a <code>BigDecimal</code>.
@@ -239,6 +271,22 @@ getDate(int index) throws SQLException;
 
 /**
   * This method returns the value of the specified parameter as a Java
+  * <code>java.sql.Date</code>.
+  *
+  * @param index The index of the parameter to return.
+  * @param calendar The <code>Calendar</code> to use for timezone and locale.
+  *
+  * @return The parameter value as a <code>java.sql.Date</code>.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract java.sql.Date
+getDate(int index, Calendar calendar) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the value of the specified parameter as a Java
   * <code>java.sql.Time</code>.
   *
   * @param index The index of the parameter to return.
@@ -249,6 +297,22 @@ getDate(int index) throws SQLException;
   */
 public abstract java.sql.Time
 getTime(int index) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the value of the specified parameter as a Java
+  * <code>java.sql.Time</code>.
+  *
+  * @param index The index of the parameter to return.
+  * @param calendar The <code>Calendar</code> to use for timezone and locale.
+  *
+  * @return The parameter value as a <code>java.sql.Time</code>.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract java.sql.Time
+getTime(int index, Calendar calendar) throws SQLException;
 
 /*************************************************************************/
 
@@ -268,6 +332,82 @@ getTimestamp(int index) throws SQLException;
 /*************************************************************************/
 
 /**
+  * This method returns the value of the specified parameter as a Java
+  * <code>java.sql.Timestamp</code>.
+  *
+  * @param index The index of the parameter to return.
+  * @param calendar The <code>Calendar</code> to use for timezone and locale.
+  *
+  * @return The parameter value as a <code>java.sql.Timestamp</code>.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract java.sql.Timestamp
+getTimestamp(int index, Calendar calendar) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the value of the specified parameter as a Java
+  * <code>Ref</code>.
+  *
+  * @param index The index of the parameter to return.
+  *
+  * @return The parameter value as a <code>Ref</code>.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract Ref
+getRef(int index) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the value of the specified parameter as a Java
+  * <code>Blob</code>.
+  *
+  * @param index The index of the parameter to return.
+  *
+  * @return The parameter value as a <code>Blob</code>.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract Blob
+getBlob(int index) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the value of the specified parameter as a Java
+  * <code>Clob</code>.
+  *
+  * @param index The index of the parameter to return.
+  *
+  * @return The parameter value as a <code>Clob</code>.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract Clob
+getClob(int index) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the value of the specified parameter as a Java
+  * <code>Array</code>.
+  *
+  * @param index The index of the parameter to return.
+  *
+  * @return The parameter value as a <code>Array</code>.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract Array
+getArray(int index) throws SQLException;
+
+/*************************************************************************/
+
+/**
   * This method registers the specified parameter as an output parameter
   * of the specified SQL type.
   *
@@ -278,6 +418,21 @@ getTimestamp(int index) throws SQLException;
   */
 public abstract void
 registerOutParameter(int index, int type) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method registers the specified parameter as an output parameter
+  * of the specified SQL type.
+  *
+  * @param index The index of the parameter to register as output.
+  * @param type The SQL type value from <code>Types</code>.
+  * @param name The user defined data type name.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+registerOutParameter(int index, int type, String name) throws SQLException;
 
 /*************************************************************************/
 

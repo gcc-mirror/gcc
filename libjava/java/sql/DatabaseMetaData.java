@@ -2456,5 +2456,276 @@ public abstract ResultSet
 getIndexInfo(String catalog, String schema, String table, boolean unique,
              boolean approx) throws SQLException; 
 
+/*************************************************************************/
+
+/**
+  * This method tests whether or not the datbase supports the specified
+  * result type.
+  *
+  * @param type The desired result type, which is one of the constants
+  * defined in <code>ResultSet</code>.
+  *
+  * @return <code>true</code> if the result set type is supported,
+  * <code>false</code> otherwise.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see ResultSet
+  */
+public abstract boolean
+supportsResultSetType(int type) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method tests whether the specified result set type and result set
+  * concurrency type are supported by the database.
+  *
+  * @param type The desired result type, which is one of the constants
+  * defined in <code>ResultSet</code>.
+  * @param concur The desired concurrency type, which is one of the constants
+  * defined in <code>ResultSet</code>.
+  *
+  * @return <code>true</code> if the result set type is supported,
+  * <code>false</code> otherwise.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see ResultSet
+  */
+public abstract boolean
+supportsResultSetConcurrency(int type, int concur) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method tests whether or not the specified result set type sees its
+  * own updates.
+  *
+  * @param type The desired result type, which is one of the constants
+  * defined in <code>ResultSet</code>.
+  *
+  * @return <code>true</code> if the result set type sees its own updates,
+  * <code>false</code> otherwise.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see ResultSet
+  */
+public abstract boolean
+ownUpdatesAreVisible(int type) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method tests whether or not the specified result set type sees its
+  * own deletes.
+  *
+  * @param type The desired result type, which is one of the constants
+  * defined in <code>ResultSet</code>.
+  *
+  * @return <code>true</code> if the result set type sees its own deletes,
+  * <code>false</code> otherwise.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see ResultSet
+  */
+public abstract boolean
+ownDeletesAreVisible(int type) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method tests whether or not the specified result set type sees its
+  * own inserts.
+  *
+  * @param type The desired result type, which is one of the constants
+  * defined in <code>ResultSet</code>.
+  *
+  * @return <code>true</code> if the result set type sees its own inserts,
+  * <code>false</code> otherwise.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see ResultSet
+  */
+public abstract boolean
+ownInsertsAreVisible(int type) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method tests whether or not the specified result set type sees 
+  * updates committed by others.
+  *
+  * @param type The desired result type, which is one of the constants
+  * defined in <code>ResultSet</code>.
+  *
+  * @return <code>true</code> if the result set type sees other updates,
+  * <code>false</code> otherwise.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see ResultSet
+  */
+public abstract boolean
+othersUpdatesAreVisible(int type) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method tests whether or not the specified result set type sees 
+  * deletes committed by others.
+  *
+  * @param type The desired result type, which is one of the constants
+  * defined in <code>ResultSet</code>.
+  *
+  * @return <code>true</code> if the result set type sees other deletes,
+  * <code>false</code> otherwise.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see ResultSet
+  */
+public abstract boolean
+othersDeletesAreVisible(int type) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method tests whether or not the specified result set type sees 
+  * inserts committed by others.
+  *
+  * @param type The desired result type, which is one of the constants
+  * defined in <code>ResultSet</code>.
+  *
+  * @return <code>true</code> if the result set type sees other inserts,
+  * <code>false</code> otherwise.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see ResultSet
+  */
+public abstract boolean
+othersInsertsAreVisible(int type) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method tests whether or not the specified result set type can detect
+  * a visible update by calling the <code>rowUpdated</code> method.
+  *
+  * @param type The desired result type, which is one of the constants
+  * defined in <code>ResultSet</code>.
+  *
+  * @return <code>true</code> if the result set type can detect visible updates
+  * using <code>rowUpdated</code>, <code>false</code> otherwise.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see ResultSet
+  */
+public abstract boolean
+updatesAreDetected(int type) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method tests whether or not the specified result set type can detect
+  * a visible delete by calling the <code>rowUpdated</code> method.
+  *
+  * @param type The desired result type, which is one of the constants
+  * defined in <code>ResultSet</code>.
+  *
+  * @return <code>true</code> if the result set type can detect visible deletes
+  * using <code>rowUpdated</code>, <code>false</code> otherwise.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see ResultSet
+  */
+public abstract boolean
+deletesAreDetected(int type) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method tests whether or not the specified result set type can detect
+  * a visible insert by calling the <code>rowUpdated</code> method.
+  *
+  * @param type The desired result type, which is one of the constants
+  * defined in <code>ResultSet</code>.
+  *
+  * @return <code>true</code> if the result set type can detect visible inserts
+  * using <code>rowUpdated</code>, <code>false</code> otherwise.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see ResultSet
+  */
+public abstract boolean
+insertsAreDetected(int type) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method tests whether or not the database supports batch updates.
+  *
+  * @return <code>true</code> if batch updates are supported,
+  * <code>false</code> otherwise.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract boolean
+supportsBatchUpdates() throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the list of user defined data types in use.  These
+  * are returned as a <code>ResultSet</code> with the following columns:
+  * <p>
+  * <ol>
+  * <li>TYPE_CAT - The catalog name, which may be <code>null</code>.
+  * <li>TYPE_SCEHM - The schema name, which may be <code>null</code>.
+  * <li>TYPE_NAME - The user defined data type name.
+  * <li>CLASS_NAME - The Java class name this type maps to.
+  * <li>DATA_TYPE - A type identifer from <code>Types</code> for this type.
+  * This will be one of <code>JAVA_OBJECT</code>, <code>STRUCT</code>, or
+  * <code>DISTINCT</code>.
+  * <li>REMARKS - Comments about this data type.
+  * </ol>
+  *
+  * @param catalog The catalog to retrieve information from, or the empty string
+  * to return entities not associated with a catalog, or <code>null</code>
+  * to return information from all catalogs.
+  * @param schema The schema to retrieve information from, or the empty string
+  * to return entities not associated with a schema.
+  * @param typePattern The type name pattern to match.
+  * @param types The type identifer patterns (from <code>Types</code>) to
+  * match.
+  *
+  * @return A <code>ResultSet</code> with the requested type information
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract ResultSet
+getUDTs(String catalog, String schema, String typePattern, int[] types)
+        throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the <code>Connection</code> object that was used
+  * to generate the metadata in this object.
+  *
+  * @return The connection for this object.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract Connection
+getConnection() throws SQLException;
+
 } // interface DatabaseMetaData
 
