@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80386 running Solaris 2
-   Copyright (C) 1993, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995-8, 1999 Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com).
 
 This file is part of GNU CC.
@@ -40,11 +40,18 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) \
-   %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude}"
+  %{pthreads:-D_REENTRANT -D_PTHREADS} \
+  %{!pthreads:%{threads:-D_REENTRANT -D_SOLARIS_THREADS}} \
+  %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude}"
 
 #undef LIB_SPEC
 #define LIB_SPEC \
-  "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} %{!shared:%{!symbolic:-lc}}"
+  "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
+   %{!shared:\
+     %{!symbolic:\
+       %{pthreads:-lpthread} \
+       %{!pthreads:%{threads:-lthread}} \
+       -lc}}"
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s %{pg:crtn.o%s}%{!pg:crtn.o%s}"
@@ -66,20 +73,20 @@ Boston, MA 02111-1307, USA.  */
   "%{h*} %{v:-V} \
    %{b} %{Wl,*:%*} \
    %{static:-dn -Bstatic} \
-   %{shared:-G -dy -z text} \
+   %{shared:-G -dy %{!mimpure-text:-z text}} \
    %{symbolic:-Bsymbolic -G -dy -z text} \
    %{G:-G} \
    %{YP,*} \
    %{R*} \
    %{compat-bsd: \
      %{!YP,*:%{pg:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-     %{!pg:%{p:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-       %{!p:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}}} \
-     -R /usr/ucblib} \
+             %{!pg:%{p:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+                   %{!p:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}}} \
+             -R /usr/ucblib} \
    %{!compat-bsd: \
      %{!YP,*:%{pg:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-     %{!pg:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-       %{!p:-Y P,/usr/ccs/lib:/usr/lib}}}} \
+             %{!pg:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+                   %{!p:-Y P,/usr/ccs/lib:/usr/lib}}}} \
    %{Qy:} %{!Qn:-Qy}"
 
 /* This defines which switch letters take arguments.
