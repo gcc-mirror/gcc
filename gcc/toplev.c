@@ -367,11 +367,11 @@ int flag_evaluation_order = 0;
 const char *user_label_prefix;
 
 static const param_info lang_independent_params[] = {
-#define DEFPARAM(ENUM, OPTION, HELP, DEFAULT) \
-  { OPTION, DEFAULT, HELP },
+#define DEFPARAM(ENUM, OPTION, HELP, DEFAULT, MIN, MAX) \
+  { OPTION, DEFAULT, MIN, MAX, HELP },
 #include "params.def"
 #undef DEFPARAM
-  { NULL, 0, NULL }
+  { NULL, 0, 0, 0, NULL }
 };
 
 /* Here is a table, controlled by the tm.h file, listing each -m switch
