@@ -622,7 +622,7 @@ java::lang::Class::isAssignableFrom (jclass klass)
 inline jboolean
 java::lang::Class::isInstance (jobject obj)
 {
-  if (! obj || isPrimitive ())
+  if (__builtin_expect (! obj || isPrimitive (), false))
     return false;
   _Jv_InitClass (this);
   return _Jv_IsAssignableFrom (this, JV_CLASS (obj));
@@ -923,7 +923,7 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
     {
       _Jv_IDispatchTable *cl_idt = source->idt;
       _Jv_IDispatchTable *if_idt = target->idt;
-      if (if_idt == NULL)
+      if (__builtin_expect ((if_idt == NULL), false))
 	return false; // No class implementing TARGET has been loaded.    
       jshort cl_iindex = cl_idt->cls.iindex;
       if (cl_iindex <= if_idt->iface.ioffsets[0])
@@ -941,13 +941,16 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
 jboolean
 _Jv_IsInstanceOf(jobject obj, jclass cl)
 {
-  return (obj ? _Jv_IsAssignableFrom (cl, JV_CLASS (obj)) : false);
+  if (__builtin_expect (!obj, false))
+    return false;
+  return (_Jv_IsAssignableFrom (cl, JV_CLASS (obj)));
 }
 
 void *
 _Jv_CheckCast (jclass c, jobject obj)
 {
-  if (obj != NULL && ! _Jv_IsAssignableFrom(c, JV_CLASS (obj)))
+  if (__builtin_expect 
+       (obj != NULL && ! _Jv_IsAssignableFrom(c, JV_CLASS (obj)), false))
     JvThrow (new java::lang::ClassCastException);
   return obj;
 }
@@ -960,7 +963,8 @@ _Jv_CheckArrayStore (jobject arr, jobject obj)
       JvAssert (arr != NULL);
       jclass elt_class = (JV_CLASS (arr))->getComponentType();
       jclass obj_class = JV_CLASS (obj);
-      if (! _Jv_IsAssignableFrom (elt_class, obj_class))
+      if (__builtin_expect 
+          (! _Jv_IsAssignableFrom (elt_class, obj_class), false))
 	JvThrow (new java::lang::ArrayStoreException);
     }
 }

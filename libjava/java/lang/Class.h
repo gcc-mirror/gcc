@@ -203,7 +203,7 @@ private:
   inline friend void 
   _Jv_InitClass (jclass klass)
   {
-    if (klass->state != JV_STATE_DONE)
+    if (__builtin_expect (klass->state != JV_STATE_DONE, false))
       klass->initializeClass ();
   }
 
