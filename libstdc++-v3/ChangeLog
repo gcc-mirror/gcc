@@ -1,4 +1,8 @@
-2001-01-09  Peter Schmid<schmid@snake.iap.physik.tu-darmstadt.de>
+2001-01-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* tests_flags.in (check_directory): Fix typo.
+
+2001-01-09  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
          * include/bits/std_complex.h: Fix a typo.
 
 2001-01-10  Loren J. Rittle  <ljrittle@acm.org>
