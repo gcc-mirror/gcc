@@ -1,3 +1,10 @@
+2004-01-23  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 18314
+	* c-decl.c (diagnose_mismatched_decls): Also discard a
+	built-in if we encounter an old-style definition with the
+	same name.
+
 2004-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* config.gcc (powerpc*-*): Clear $with_cpu or $with_tune if it was
@@ -9,7 +16,7 @@
 	[!__powerpc64__]: Corrected to handle kernels with changed ucontext.
 
 2004-01-23  Eric Botcazou  <ebotcazou@act-europe.fr>
-            Olivier Hainque  <hainque@act-europe.fr>
+	    Olivier Hainque  <hainque@act-europe.fr>
 
 	* fold-const.c (fold_binary_op_with_conditional_arg): Only
 	build a COMPOUND_EXPR if 'arg' is really a SAVE_EXPR.
@@ -34,7 +41,7 @@
 2004-01-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR optimization/13819
-	* config/sh/sh.c (sh_reorg): Compensate for sharing of CLOBBERs 
+	* config/sh/sh.c (sh_reorg): Compensate for sharing of CLOBBERs
 	introduced by 2004-01-20's Jan Hubicka's copy_insn change.
 	(sh_handle_sp_switch_attribute): Remove warning.
 
@@ -129,7 +136,7 @@
 2004-01-22  Daniel Jacobowitz  <drow@mvista.com>
 
 	* config/arm/arm.c: Include "debug.h".
-	(thumb_pushpop): Take two new arguments.  Add some commentary. 
+	(thumb_pushpop): Take two new arguments.  Add some commentary.
 	Output frame information when pushing.
 	(thumb_exit, thumb_unexpanded_epilogue): Update calls to
 	thumb_pushpop.
@@ -210,7 +217,7 @@
 2004-01-21  Andrew Pinski  <apinski@apple.com>
 
 	PR target/13785
-	* config/rs6000/rs6000.md (call_value): Force operand 
+	* config/rs6000/rs6000.md (call_value): Force operand
 	1 not operand 0 into a register.
 
 2004-01-21  Kazu Hirata  <kazu@cs.umass.edu>
@@ -227,7 +234,7 @@
 2004-01-21  Caroline Tice <ctice@apple.com>
 
 	PR target/12308
-	* config/i386/i386.md (fix_truncxfdi2): Add clause to clobber 
+	* config/i386/i386.md (fix_truncxfdi2): Add clause to clobber
 	flags register.
 	(fix_truncdfdi2): Likewise.
 	(fix_truncsfdi2): Likewise.
@@ -240,7 +247,7 @@
 	(fix_truncdfhi2): Likewise.
 	(fix_truncsfhi2): Likewise.
 	(*fix_trunchi_1): Likewise.
-	
+
 2004-01-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* alias.c, basic-block.h, c-common.c, c-common.h,

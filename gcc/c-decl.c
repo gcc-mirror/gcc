@@ -1029,11 +1029,15 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
      extern-inline definition supersedes the extern-inline definition.  */
   else if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
-      if (DECL_BUILT_IN (olddecl) && !TREE_PUBLIC (newdecl))
+      /* If you declare a built-in function name as static, or
+	 define the built-in with an old-style definition (so we
+	 can't validate the argument list) the built-in definition is
+	 overridden, but optionally warn this was a bad choice of name.  */
+      if (DECL_BUILT_IN (olddecl)
+	  && (!TREE_PUBLIC (newdecl)
+	      || (DECL_INITIAL (newdecl)
+		  && !TYPE_ARG_TYPES (TREE_TYPE (newdecl)))))
 	{
-	  /* If you declare a built-in function name as static, the
-	     built-in definition is overridden,
-	     but optionally warn this was a bad choice of name.  */
 	  if (warn_shadow)
 	    warning ("%Jshadowing built-in function '%D'", newdecl, newdecl);
 	  /* Discard the old built-in function.  */
