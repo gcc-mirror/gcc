@@ -607,23 +607,20 @@ gt_pch_restore (FILE *f)
       addr = mmap (mmi.preferred_base, mmi.size,
 		   PROT_READ | PROT_WRITE, MAP_PRIVATE,
 		   fileno (f), mmi.offset);
-      
+
 #if HAVE_MINCORE
       if (addr != mmi.preferred_base)
 	{
 	  size_t page_size = getpagesize();
 	  char one_byte;
-	  
-	  if (addr != (void *) MAP_FAILED)
-	    munmap (addr, mmi.size);
-	  
+
 	  /* We really want to be mapped at mmi.preferred_base
 	     so we're going to resort to MAP_FIXED.  But before,
 	     make sure that we can do so without destroying a
 	     previously mapped area, by looping over all pages
 	     that would be affected by the fixed mapping.  */
 	  errno = 0;
-	  
+
 	  for (i = 0; i < mmi.size; i+= page_size)
 	    if (mincore ((char *)mmi.preferred_base + i, page_size, 
 			 (void *)&one_byte) == -1
@@ -631,14 +628,19 @@ gt_pch_restore (FILE *f)
 	      continue; /* The page is not mapped.  */
 	    else
 	      break;
-	  
+
 	  if (i >= mmi.size)
-	    addr = mmap (mmi.preferred_base, mmi.size, 
-			 PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
-			 fileno (f), mmi.offset);
+	    {
+	      if (addr != (void *) MAP_FAILED)
+		munmap (addr, mmi.size);
+
+	      addr = mmap (mmi.preferred_base, mmi.size, 
+			   PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
+			   fileno (f), mmi.offset);
+	    }
 	}
 #endif /* HAVE_MINCORE */
-      
+
       needs_read = addr == (void *) MAP_FAILED;
 
 #else /* HAVE_MMAP_FILE */
@@ -651,7 +653,7 @@ gt_pch_restore (FILE *f)
   if (needs_read)
     {
       if (fseek (f, mmi.offset, SEEK_SET) != 0
-	  || fread (&mmi, mmi.size, 1, f) != 1)
+	  || fread (addr, mmi.size, 1, f) != 1)
 	fatal_error ("can't read PCH file: %m");
     }
   else if (fseek (f, mmi.offset + mmi.size, SEEK_SET) != 0)
@@ -679,7 +681,7 @@ gt_pch_restore (FILE *f)
 		*ptr += (size_t)addr - (size_t)mmi.preferred_base;
 	    }
 
-      sorry ("had to relocate PCH");
+      fatal_error ("had to relocate PCH");
     }
 
   gt_pch_restore_stringpool ();
