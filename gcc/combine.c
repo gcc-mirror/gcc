@@ -6347,6 +6347,25 @@ nonzero_bits (x, mode)
        just return the mode mask.  Those tests will then be false.  */
     return nonzero;
 
+#ifndef BYTE_LOADS_EXTEND
+  /* If X is wider than MODE, but both are a single word for both the host
+     and target machines, we can compute this from which bits of the 
+     object might be nonzero in its own mode, taking into account the fact
+     that on many CISC machines, accessing an object in a wider mode
+     causes the high-order bits to become undefined.  So they are
+     not known to be zero.  */
+
+  if (GET_MODE (x) != VOIDmode && GET_MODE (x) != mode
+      && GET_MODE_BITSIZE (GET_MODE (x)) <= BITS_PER_WORD
+      && GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT
+      && GET_MODE_BITSIZE (mode) < GET_MODE_BITSIZE (GET_MODE (x)))
+    {
+      nonzero &= nonzero_bits (x, GET_MODE (x));
+      nonzero |= GET_MODE_MASK (mode) & ~ GET_MODE_MASK (GET_MODE (x));
+      return nonzero;
+    }
+#endif
+
   code = GET_CODE (x);
   switch (code)
     {
