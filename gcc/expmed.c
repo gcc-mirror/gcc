@@ -39,9 +39,6 @@ static rtx lshift_value ();
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
-/* Non-zero means multiply instructions are cheaper than shifts.  */
-int mult_is_very_cheap;
-
 /* Non-zero means divides or modulus operations are relatively cheap for
    powers of two, so don't use branches; emit the operation instead. 
    Usually, this will mean that the MD file will emit non-branch
@@ -58,7 +55,7 @@ static int sdiv_pow2_cheap, smod_pow2_cheap;
 #endif
 
 /* Cost of various pieces of RTL.  */
-static int add_cost, mult_cost, negate_cost, zero_cost;
+static int add_cost, negate_cost, zero_cost;
 static int shift_cost[MAX_BITS_PER_WORD];
 static int shiftadd_cost[MAX_BITS_PER_WORD];
 static int shiftsub_cost[MAX_BITS_PER_WORD];
@@ -125,16 +122,7 @@ init_expmed ()
 	shiftsub_cost[m] = rtx_cost (SET_SRC (PATTERN (shiftsub_insn)), SET);
     }
 
-  mult_cost = rtx_cost (gen_rtx (MULT, word_mode, reg, reg), SET);
-  /* For gcc 2.4 keep MULT_COST small to avoid really slow searches
-     in synth_mult.  */
-  mult_cost = MIN (12 * add_cost, mult_cost);
   negate_cost = rtx_cost (gen_rtx (NEG, word_mode, reg), SET);
-
-  /* 999999 is chosen to avoid any plausible faster special case.  */
-  mult_is_very_cheap
-    = (rtx_cost (gen_rtx (MULT, word_mode, reg, GEN_INT (999999)), SET)
-       < rtx_cost (gen_rtx (ASHIFT, word_mode, reg, GEN_INT (7)), SET));
 
   sdiv_pow2_cheap
     = (rtx_cost (gen_rtx (DIV, word_mode, reg, GEN_INT (32)), SET)
@@ -1818,8 +1806,9 @@ struct algorithm
    If retval.cost >= COST_LIMIT, no algorithm was found and all
    other field of the returned struct are undefined.  */
 
-static struct algorithm
-synth_mult (t, cost_limit)
+static void
+synth_mult (alg_out, t, cost_limit)
+     struct algorithm *alg_out;
      unsigned HOST_WIDE_INT t;
      int cost_limit;
 {
@@ -1833,33 +1822,32 @@ synth_mult (t, cost_limit)
 
   /* Indicate that no algorithm is yet found.  If no algorithm
      is found, this value will be returned and indicate failure.  */
-  best_alg->cost = cost_limit;
+  alg_out->cost = cost_limit;
 
   if (cost_limit <= 0)
-    return *best_alg;
+    return;
 
   /* t == 1 can be done in zero cost.  */
   if (t == 1)
     {
-      best_alg->ops = 1;
-      best_alg->cost = 0;
-      best_alg->op[0] = alg_m;
-      return *best_alg;
+      alg_out->ops = 1;
+      alg_out->cost = 0;
+      alg_out->op[0] = alg_m;
+      return;
     }
 
   /* t == 0 sometimes has a cost.  If it does and it exceeds our limit,
      fail now.  */
-
-  else if (t == 0)
+  if (t == 0)
     {
       if (zero_cost >= cost_limit)
-	return *best_alg;
+	return;
       else
 	{
-	  best_alg->ops = 1;
-	  best_alg->cost = zero_cost;
-	  best_alg->op[0] = alg_zero;
-	  return *best_alg;
+	  alg_out->ops = 1;
+	  alg_out->cost = zero_cost;
+	  alg_out->op[0] = alg_zero;
+	  return;
 	}
     }
 
@@ -1871,67 +1859,64 @@ synth_mult (t, cost_limit)
       m = floor_log2 (t & -t);	/* m = number of low zero bits */
       q = t >> m;
       cost = shift_cost[m];
+      synth_mult (alg_in, q, cost_limit - cost);
+
+      cost += alg_in->cost;
       if (cost < cost_limit)
 	{
-	  *alg_in = synth_mult (q, cost_limit - cost);
-
-	  cost += alg_in->cost;
-	  if (cost < best_alg->cost)
-	    {
-	      struct algorithm *x;
-	      x = alg_in, alg_in = best_alg, best_alg = x;
-	      best_alg->log[best_alg->ops] = m;
-	      best_alg->op[best_alg->ops++] = alg_shift;
-	      best_alg->cost = cost_limit = cost;
-	    }
+	  struct algorithm *x;
+	  x = alg_in, alg_in = best_alg, best_alg = x;
+	  best_alg->log[best_alg->ops] = m;
+	  best_alg->op[best_alg->ops] = alg_shift;
+	  cost_limit = cost;
 	}
     }
 
   /* If we have an odd number, add or subtract one.  */
   if ((t & 1) != 0)
-  {
-    unsigned HOST_WIDE_INT w;
+    {
+      unsigned HOST_WIDE_INT w;
 
-    for (w = 1; (w & t) != 0; w <<= 1)
-      ;
-    if (w > 2
-	/* Reject the case where t is 3.
-	   Thus we prefer addition in that case.  */
-	&& t != 3)
-      {
-	/* T ends with ...111.  Multiply by (T + 1) and subtract 1.  */
+      for (w = 1; (w & t) != 0; w <<= 1)
+	;
+      if (w > 2
+	  /* Reject the case where t is 3.
+	     Thus we prefer addition in that case.  */
+	  && t != 3)
+	{
+	  /* T ends with ...111.  Multiply by (T + 1) and subtract 1.  */
 
-	cost = add_cost;
-	*alg_in = synth_mult (t + 1, cost_limit - cost);
+	  cost = add_cost;
+	  synth_mult (alg_in, t + 1, cost_limit - cost);
 
-	cost += alg_in->cost;
-	if (cost < best_alg->cost)
-	  {
-	    struct algorithm *x;
-	    x = alg_in, alg_in = best_alg, best_alg = x;
-	    best_alg->log[best_alg->ops] = 0;
-	    best_alg->op[best_alg->ops++] = alg_sub_t_m2;
-	    best_alg->cost = cost_limit = cost;
-	  }
-      }
-    else
-      {
-	/* T ends with ...01 or ...011.  Multiply by (T - 1) and add 1.  */
+	  cost += alg_in->cost;
+	  if (cost < cost_limit)
+	    {
+	      struct algorithm *x;
+	      x = alg_in, alg_in = best_alg, best_alg = x;
+	      best_alg->log[best_alg->ops] = 0;
+	      best_alg->op[best_alg->ops] = alg_sub_t_m2;
+	      cost_limit = cost;
+	    }
+	}
+      else
+	{
+	  /* T ends with ...01 or ...011.  Multiply by (T - 1) and add 1.  */
 
-	cost = add_cost;
-	*alg_in = synth_mult (t - 1, cost_limit - cost);
+	  cost = add_cost;
+	  synth_mult (alg_in, t - 1, cost_limit - cost);
 
-	cost += alg_in->cost;
-	if (cost < best_alg->cost)
-	  {
-	    struct algorithm *x;
-	    x = alg_in, alg_in = best_alg, best_alg = x;
-	    best_alg->log[best_alg->ops] = 0;
-	    best_alg->op[best_alg->ops++] = alg_add_t_m2;
-	    best_alg->cost = cost_limit = cost;
-	  }
-      }
-  }
+	  cost += alg_in->cost;
+	  if (cost < cost_limit)
+	    {
+	      struct algorithm *x;
+	      x = alg_in, alg_in = best_alg, best_alg = x;
+	      best_alg->log[best_alg->ops] = 0;
+	      best_alg->op[best_alg->ops] = alg_add_t_m2;
+	      cost_limit = cost;
+	    }
+	}
+    }
 
   /* Look for factors of t of the form
      t = q(2**m +- 1), 2 <= m <= floor(log2(t - 1)).
@@ -1951,16 +1936,16 @@ synth_mult (t, cost_limit)
       if (t % d == 0 && t > d)
 	{
 	  cost = MIN (shiftadd_cost[m], add_cost + shift_cost[m]);
-	  *alg_in = synth_mult (t / d, cost_limit - cost);
+	  synth_mult (alg_in, t / d, cost_limit - cost);
 
 	  cost += alg_in->cost;
-	  if (cost < best_alg->cost)
+	  if (cost < cost_limit)
 	    {
 	      struct algorithm *x;
 	      x = alg_in, alg_in = best_alg, best_alg = x;
 	      best_alg->log[best_alg->ops] = m;
-	      best_alg->op[best_alg->ops++] = alg_add_factor;
-	      best_alg->cost = cost_limit = cost;
+	      best_alg->op[best_alg->ops] = alg_add_factor;
+	      cost_limit = cost;
 	    }
 	}
 
@@ -1968,16 +1953,16 @@ synth_mult (t, cost_limit)
       if (t % d == 0 && t > d)
 	{
 	  cost = MIN (shiftsub_cost[m], add_cost + shift_cost[m]);
-	  *alg_in = synth_mult (t / d, cost_limit - cost);
+	  synth_mult (alg_in, t / d, cost_limit - cost);
 
 	  cost += alg_in->cost;
-	  if (cost < best_alg->cost)
+	  if (cost < cost_limit)
 	    {
 	      struct algorithm *x;
 	      x = alg_in, alg_in = best_alg, best_alg = x;
 	      best_alg->log[best_alg->ops] = m;
-	      best_alg->op[best_alg->ops++] = alg_sub_factor;
-	      best_alg->cost = cost_limit = cost;
+	      best_alg->op[best_alg->ops] = alg_sub_factor;
+	      cost_limit = cost;
 	    }
 	}
     }
@@ -1992,16 +1977,16 @@ synth_mult (t, cost_limit)
       if (m >= 0)
 	{
 	  cost = shiftadd_cost[m];
-	  *alg_in = synth_mult ((t - 1) >> m, cost_limit - cost);
+	  synth_mult (alg_in, (t - 1) >> m, cost_limit - cost);
 
 	  cost += alg_in->cost;
-	  if (cost < best_alg->cost)
+	  if (cost < cost_limit)
 	    {
 	      struct algorithm *x;
 	      x = alg_in, alg_in = best_alg, best_alg = x;
 	      best_alg->log[best_alg->ops] = m;
-	      best_alg->op[best_alg->ops++] = alg_add_t2_m;
-	      best_alg->cost = cost_limit = cost;
+	      best_alg->op[best_alg->ops] = alg_add_t2_m;
+	      cost_limit = cost;
 	    }
 	}
 
@@ -2011,26 +1996,37 @@ synth_mult (t, cost_limit)
       if (m >= 0)
 	{
 	  cost = shiftsub_cost[m];
-	  *alg_in = synth_mult ((t + 1) >> m, cost_limit - cost);
+	  synth_mult (alg_in, (t + 1) >> m, cost_limit - cost);
 
 	  cost += alg_in->cost;
-	  if (cost < best_alg->cost)
+	  if (cost < cost_limit)
 	    {
 	      struct algorithm *x;
 	      x = alg_in, alg_in = best_alg, best_alg = x;
 	      best_alg->log[best_alg->ops] = m;
-	      best_alg->op[best_alg->ops++] = alg_sub_t2_m;
-	      best_alg->cost = cost_limit = cost;
+	      best_alg->op[best_alg->ops] = alg_sub_t2_m;
+	      cost_limit = cost;
 	    }
 	}
     }
 
   /* If we are getting a too long sequence for `struct algorithm'
-     to record, store a fake cost to make this search fail.  */
+     to record, make this search fail.  */
   if (best_alg->ops == MAX_BITS_PER_WORD)
-    best_alg->cost = cost_limit;
+    return;
 
-  return *best_alg;
+  /* If cost_limit has not decreased since we stored it in alg_out->cost,
+     we have not found any algorithm.  */
+  if (cost_limit == alg_out->cost)
+    return;
+
+  /* Copy the algorithm from temporary space to the space at alg_out.
+     We avoid using structure assignment because the majority of
+     best_alg is normally undefined, and this is a critical function.  */
+  alg_out->ops = best_alg->ops + 1;
+  alg_out->cost = cost_limit;
+  bcopy (best_alg->op, alg_out->op, alg_out->ops * sizeof *alg_out->op);
+  bcopy (best_alg->log, alg_out->log, alg_out->ops * sizeof *alg_out->log);
 }
 
 /* Perform a multiplication and return an rtx for the result.
@@ -2065,7 +2061,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
      But this causes such a terrible slowdown sometimes
      that it seems better to use synth_mult always.  */
 
-  if (GET_CODE (const_op1) == CONST_INT && ! mult_is_very_cheap)
+  if (GET_CODE (const_op1) == CONST_INT)
     {
       struct algorithm alg;
       struct algorithm neg_alg;
@@ -2073,6 +2069,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
       HOST_WIDE_INT val = INTVAL (op1);
       HOST_WIDE_INT val_so_far;
       rtx insn;
+      int mult_cost;
 
       /* Try to do the computation two ways: multiply by the negative of OP1
 	 and then negate, or do the multiplication directly.  The latter is
@@ -2081,10 +2078,12 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	 has a factor of 2**m +/- 1, while the negated value does not or
 	 vice versa.  */
 
-      alg = synth_mult (val, mult_cost);
-      neg_alg = synth_mult (- val,
-			    (alg.cost < mult_cost ? alg.cost : mult_cost)
-			    - negate_cost);
+      mult_cost = rtx_cost (gen_rtx (MULT, mode, op0, op1), SET);
+      mult_cost = MIN (12 * add_cost, mult_cost);
+
+      synth_mult (&alg, val, mult_cost);
+      synth_mult (&neg_alg, - val,
+		  (alg.cost < mult_cost ? alg.cost : mult_cost) - negate_cost);
 
       if (neg_alg.cost + negate_cost < alg.cost)
 	alg = neg_alg, negate = 1;
@@ -2112,7 +2111,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	    }
 	  else if (alg.op[0] == alg_m)
 	    {
-	      accum  = copy_to_mode_reg (mode, op0);
+	      accum = copy_to_mode_reg (mode, op0);
 	      val_so_far = 1;
 	    }
 	  else
@@ -2207,9 +2206,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	}
     }
 
-  /* This used to use umul_optab if unsigned,
-     but for non-widening multiply there is no difference
-     between signed and unsigned.  */
+  /* This used to use umul_optab if unsigned, but for non-widening multiply
+     there is no difference between signed and unsigned.  */
   op0 = expand_binop (mode, smul_optab,
 		      op0, op1, target, unsignedp, OPTAB_LIB_WIDEN);
   if (op0 == 0)
