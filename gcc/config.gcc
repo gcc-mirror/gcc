@@ -1480,7 +1480,7 @@ mips64orion-*-elf* | mips64orionel-*-elf*)
 	;;
 mips*-*-rtems*)
 	tm_file="${tm_file} mips/elf.h mips/rtems.h rtems.h"
-	tmake_file="mips/t-elf t-rtems"
+	tmake_file="mips/t-elf t-rtems mips/t-rtems"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi

@@ -1,3 +1,9 @@
+2003-09-19  Ralf Corsepius <corsepiu@faw.uni-ulm.de>
+
+	* config/mips/t-rtems: New.
+	* config.gcc (mips*-*-rtems*): Use config/mips/t-rtems.
+
+
 2003-09-19  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* cgraph.c: Fix typo in debugging output.
