@@ -3803,6 +3803,8 @@ rest_of_compilation (decl)
 	 life_analysis (insns, max_reg_num (), rtl_dump_file);
        });
 
+  flow2_completed = 1;
+
   /* On some machines, the prologue and epilogue code, or parts thereof,
      can be represented as RTL.  Doing so lets us schedule insns between
      it and the rest of the code and also allows delayed branch
@@ -3972,6 +3974,7 @@ rest_of_compilation (decl)
     }
 
   reload_completed = 0;
+  flow2_completed = 0;
 
   TIMEVAR (final_time,
 	   {

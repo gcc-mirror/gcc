@@ -161,6 +161,9 @@ int *uid_block_number;
 #define INSN_VOLATILE(INSN) uid_volatile[INSN_UID (INSN)]
 static char *uid_volatile;
 
+/* Nonzero if the second flow pass has completed.  */
+int flow2_completed;
+
 /* Number of basic blocks in the current function.  */
 
 int n_basic_blocks;
