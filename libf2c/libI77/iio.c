@@ -21,7 +21,7 @@ z_getc (void)
 void
 z_putc (int c)
 {
-  if (f__icptr < f__icend && f__recpos++ < f__svic->icirlen)
+  if (f__recpos++ < f__svic->icirlen && f__icptr < f__icend)
     *f__icptr++ = c;
 }
 int
