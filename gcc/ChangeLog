@@ -1,3 +1,9 @@
+2004-04-29  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/15189
+	* config/mips/mips.md (load_df_low): Use default length.
+	(load_df_high, store_df_high): Likewise.
+
 2004-04-29  Philip Blundell  <philb@gnu.org>
 
 	* Merge from trunk:
