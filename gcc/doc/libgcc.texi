@@ -364,7 +364,7 @@ There are two sets of basic comparison functions.
 @deftypefnx {Runtime Function} int __cmpdf2 (double @var{a}, double @var{b})
 @deftypefnx {Runtime Function} int __cmptf2 (long double @var{a}, long double @var{b})
 These functions calculate @math{a <=> b}.  That is, if @var{a} is less
-than @var{b}, they return -1; if @var{a} is greater than @var{b}, they
+than @var{b}, they return @minus{}1; if @var{a} is greater than @var{b}, they
 return 1; and if @var{a} and @var{b} are equal they return 0.  If
 either argument is NaN they return 1, but you should not rely on this;
 if NaN is a possibility, use one of the higher-level comparison

@@ -314,7 +314,7 @@ a dependency output file as a side-effect of the compilation process.
 @item -MMD
 @opindex MMD
 Like @option{-MD} except mention only user header files, not system
--header files.
+header files.
 
 @ifclear cppmanual
 @item -fpch-deps

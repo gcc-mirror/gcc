@@ -1,5 +1,12 @@
 2004-10-28  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* doc/contrib.texi, doc/cpp.texi, doc/cppopts.texi,
+	doc/extend.texi, doc/gcov.texi, doc/install.texi, doc/invoke.texi,
+	doc/libgcc.texi, doc/md.texi, doc/passes.texi,
+	doc/sourcebuild.texi, doc/tm.texi: Improve Texinfo formatting.
+
+2004-10-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* doc/c-tree.texi, doc/cpp.texi, doc/implement-c.texi,
 	doc/invoke.texi, doc/md.texi, doc/passes.texi, doc/tm.texi: Put
 	punctuation outside quotes.
