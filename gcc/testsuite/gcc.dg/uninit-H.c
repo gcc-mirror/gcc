@@ -8,6 +8,8 @@
 # define ASM __asm__("esp")
 #elif (defined __powerpc__) || (defined __PPC__) || (defined __ppc__)
 # define ASM __asm__("r1")
+#elif defined __s390__
+# define ASM __asm__("r15")
 #else
 # define ASM
 #endif

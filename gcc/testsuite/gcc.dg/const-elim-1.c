@@ -12,8 +12,8 @@
    to eliminate the block move, so the constant gets emitted.
    Currently known targets with this problem: all ARM; PA32 ("hppa*.*"
    matches "hppa2.0w" but not "hppa64"); PPC if string instructions
-   are enabled (notably under AIX); S/390; Xtensa.  */
-/* { dg-final { scan-assembler-not "L\\\$?C\[^A-Z\]" { xfail arm-*-* strongarm-*-* xscale-*-* hppa-*-* hppa*.*-*-* powerpc*-*-aix* s390*-*-* xtensa-*-* } } } */
+   are enabled (notably under AIX); Xtensa.  */
+/* { dg-final { scan-assembler-not "L\\\$?C\[^A-Z\]" { xfail arm-*-* strongarm-*-* xscale-*-* hppa-*-* hppa*.*-*-* powerpc*-*-aix* xtensa-*-* } } } */
 
 #define I (__extension__ 1.0iF)
 
