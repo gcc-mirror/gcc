@@ -888,7 +888,7 @@ merge_blocks (e, b, c, mode)
       return next == ENTRY_BLOCK_PTR ? next->next_bb : next;
     }
 
-  return false;
+  return NULL;
 }
 
 
@@ -1479,7 +1479,7 @@ try_crossjump_to_edge (mode, e1, e2)
 	}
     }
 #endif
-  
+
   /* Avoid splitting if possible.  */
   if (newpos2 == src2->head)
     redirect_to = src2;
