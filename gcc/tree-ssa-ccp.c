@@ -1,5 +1,5 @@
 /* Conditional constant propagation pass for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Adapted from original RTL SSA-CCP by Daniel Berlin <dberlin@dberlin.org>
    Adapted to GIMPLE trees by Diego Novillo <dnovillo@redhat.com>
 
@@ -141,7 +141,7 @@ static void dump_lattice_value (FILE *, const char *, value);
 static bool replace_uses_in (tree, bool *);
 static latticevalue likely_value (tree);
 static tree get_rhs (tree);
-static void set_rhs (tree *, tree);
+static bool set_rhs (tree *, tree);
 static value *get_value (tree);
 static value get_default_value (tree);
 static tree ccp_fold_builtin (tree, tree);
@@ -2089,10 +2089,7 @@ fold_stmt (tree *stmt_p)
   STRIP_USELESS_TYPE_CONVERSION (result);
 
   if (result != rhs)
-    {
-      changed = true;
-      set_rhs (stmt_p, result);
-    }
+    changed |= set_rhs (stmt_p, result);
 
   return changed;
 }
@@ -2130,12 +2127,26 @@ get_rhs (tree stmt)
 
 /* Set the main expression of *STMT_P to EXPR.  */
 
-static void
+static bool
 set_rhs (tree *stmt_p, tree expr)
 {
   tree stmt = *stmt_p;
-  enum tree_code code = TREE_CODE (stmt);
+  enum tree_code code = TREE_CODE (expr);
 
+  /* Verify the constant folded result is valid gimple.  */
+  if (TREE_CODE_CLASS (code) == '2')
+    {
+      if (!is_gimple_val (TREE_OPERAND (expr, 0))
+	  || !is_gimple_val (TREE_OPERAND (expr, 1)))
+	return false;
+    }
+  else if (TREE_CODE_CLASS (code) == '1')
+    {
+      if (!is_gimple_val (TREE_OPERAND (expr, 0)))
+	return false;
+    }
+
+  code = TREE_CODE (stmt);
   if (code == MODIFY_EXPR)
     TREE_OPERAND (stmt, 1) = expr;
   else if (code == COND_EXPR)
@@ -2196,6 +2207,8 @@ set_rhs (tree *stmt_p, tree expr)
 	    }
 	}
     }
+
+  return true;
 }
 
 
@@ -2510,8 +2523,8 @@ execute_fold_all_builtins (void)
 	      print_generic_stmt (dump_file, *stmtp, dump_flags);
 	    }
 
-	  set_rhs (stmtp, result);
-	  modify_stmt (*stmtp);
+	  if (set_rhs (stmtp, result))
+	    modify_stmt (*stmtp);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {

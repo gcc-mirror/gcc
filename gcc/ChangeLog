@@ -1,3 +1,12 @@
+2004-07-04  Roger Sayle  <roger@eyesopen.com>
+
+	* tree-ssa-ccp.c (set_rhs): Change function to return a bool.
+	Ensure the replacement rhs is valid gimple before performing
+	the substitution.  Return false if these sanity checks fail.
+	(fold_stmt): Only set changed to true, if set_rhs returns true.
+	(execute_fold_all_builtins): Only call modify_stmt if set_rhs
+	succeeds.
+
 2004-07-04  Richard Henderson  <rth@redhat.com>
 
 	PR c/16348
