@@ -66,6 +66,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 #include <setjmp.h>
 #include "gvarargs.h"
+
+/* Include getopt.h for the sake of getopt_long.
+   We don't need the declaration of getopt, and it could conflict
+   with something from a system header file, so effectively nullify that.  */
+#define getopt getopt_loser
 #include "getopt.h"
 
 extern int errno;
@@ -2516,7 +2521,11 @@ find_extern_def (head, user)
                 strcpy (needed, user->ansi_decl);
                 p = (NONCONST char *) substr (needed, user->hash_entry->symbol)
                     + strlen (user->hash_entry->symbol) + 2;
-                strcpy (p, "??\?);");
+		/* Avoid having ??? in the string.  */
+		*p++ = '?';
+		*p++ = '?';
+		*p++ = '?';
+                strcpy (p, ");");
 
                 fprintf (stderr, "%s: %d: `%s' used but missing from SYSCALLS\n",
 			 shortpath (NULL, file), user->line,
@@ -4387,6 +4396,7 @@ main (argc, argv)
 {
   int longind;
   int c;
+  char *params = "";
 
   pname = strrchr (argv[0], '/');
   pname = pname ? pname+1 : argv[0];
@@ -4447,7 +4457,7 @@ main (argc, argv)
 	  keep_flag = 1;
 	  break;
 	case 'c':
-	  munge_compile_params (optarg);
+	  params = optarg;
 	  break;
 #ifdef UNPROTOIZE
 	case 'i':
@@ -4472,6 +4482,9 @@ main (argc, argv)
 	}
     }
  
+  /* Set up compile_params based on -p and -c options.  */
+  munge_compile_params (params);
+
   n_base_source_files = argc - optind;
 
   /* Now actually make a list of the base source filenames.  */
