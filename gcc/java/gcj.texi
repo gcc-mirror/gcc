@@ -150,7 +150,7 @@ gcj [@option{-I}@var{dir}@dots{}] [@option{-d} @var{dir}@dots{}]
     [@option{--CLASSPATH}=@var{path}] [@option{--classpath}=@var{path}]
     [@option{-f}@var{option}@dots{}] [@option{--encoding}=@var{name}]
     [@option{--main}=@var{classname}] [@option{-D}@var{name}[=@var{value}]@dots{}]
-    [@option{-C}] [@option{-R} @var{resource-name}] [@option{-d} @var{directory}]
+    [@option{-C}] [@option{--resource} @var{resource-name}] [@option{-d} @var{directory}]
     [@option{-W}@var{warn}@dots{}]
     @var{sourcefile}@dots{}
 @c man end
@@ -213,7 +213,7 @@ in which case they will all be compiled.  If you specify a
 option, all the input files will be compiled together, producing a
 single output file, named @var{FILENAME}.
 This is allowed even when using @code{-S} or @code{-c},
-but not when using @code{-C} or @code{-R}.
+but not when using @code{-C} or @code{--resource}.
 (This is an extension beyond the what plain @command{gcc} allows.)
 (If more than one input file is specified, all must currently
 be @code{.java} files, though we hope to fix this.)
@@ -387,10 +387,14 @@ using the @code{java.lang.System.getProperty} method.
 This option is used to tell @command{gcj} to generate bytecode
 (@file{.class} files) rather than object code.
 
-@item -R @var{resource-name}
+@item --resource @var{resource-name}
 This option is used to tell @command{gcj} to compile the contents of a
 given file to object code so it may be accessed at runtime with the core
-protocol handler as @var{core:/resource-name}.
+protocol handler as @samp{core:/@var{resource-name}}.  Note that
+@var{resource-name} is the name of the resource as found at runtime; for
+instance, it could be used in a call to @code{ResourceBundle.getBundle}.
+The actual file name to be compiled this way must be specified
+separately.
 
 @item -d @var{directory}
 When used with @code{-C}, this causes all generated @file{.class} files
