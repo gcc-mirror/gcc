@@ -7354,7 +7354,7 @@ ix86_init_builtins ()
 				      tree_cons (NULL_TREE, integer_type_node,
 						 endlink)));
   tree v4hi_ftype_v4hi_int_int
-    = build_function_type (integer_type_node,
+    = build_function_type (V4HI_type_node,
 			   tree_cons (NULL_TREE, V4HI_type_node,
 				      tree_cons (NULL_TREE, integer_type_node,
 						 tree_cons (NULL_TREE,
@@ -8155,17 +8155,17 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
       op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      mode0 = insn_data[icode].operand[1].mode;
-      mode1 = insn_data[icode].operand[2].mode;
+      mode0 = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
 
-      op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-      if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
+      if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
 	{
 	  /* @@@ better error message */
 	  error ("selector must be an immediate");
 	  return const0_rtx;
 	}
 
+      op0 = copy_to_mode_reg (Pmode, op0);
       pat = GEN_FCN (icode) (op0, op1);
       if (! pat)
 	return 0;
