@@ -1,3 +1,8 @@
+Tue Jul 14 14:46:08 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.md (movsi, movsf, movdi, movdf): Remove "x" from I -> a
+	alternative.
+
 Tue Jul 14 07:41:59 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm/tcoff.h (USER_LABEL_PREFIX): Make it empty to match coff.h.
