@@ -6343,9 +6343,10 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		emit_insn_before (gen_move_insn (tem, copy_rtx (v->add_val)),
 				  where);
 
-		if (validate_change (insn, &SET_SRC (PATTERN (insn)),
-				     gen_rtx (COMPARE, VOIDmode,
-					      v->new_reg, tem), 0))
+		/* Substitute the new register for its invariant value in
+		   the compare expression. */
+		XEXP (new, (INTVAL (v->mult_val) < 0) ? 0 : 1) = tem;
+		if (validate_change (insn, &SET_SRC (PATTERN (insn)), new, 0))
 		  return 1;
 	      }
 	}
