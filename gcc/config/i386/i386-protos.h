@@ -156,8 +156,6 @@ extern int ix86_attr_length_address_default (rtx);
 
 extern enum machine_mode ix86_fp_compare_mode (enum rtx_code);
 
-extern int x86_64_sign_extended_value (rtx);
-extern int x86_64_zero_extended_value (rtx);
 extern rtx ix86_libcall_value (enum machine_mode);
 extern bool ix86_function_value_regno_p (int);
 extern bool ix86_function_arg_regno_p (int);
@@ -227,3 +225,24 @@ extern void i386_pe_encode_section_info (tree, rtx, int);
 extern const char *i386_pe_strip_name_encoding (const char *);
 extern const char *i386_pe_strip_name_encoding_full (const char *);
 extern void i386_pe_output_labelref (FILE *, const char *);
+extern rtx maybe_get_pool_constant (rtx);
+
+extern char internal_label_prefix[16];
+extern int internal_label_prefix_len;
+
+enum ix86_address_seg { SEG_DEFAULT, SEG_FS, SEG_GS };
+struct ix86_address
+{
+  rtx base, index, disp;
+  HOST_WIDE_INT scale;
+  enum ix86_address_seg seg;
+};
+
+extern int ix86_decompose_address (rtx, struct ix86_address *);
+extern int memory_address_length (rtx addr);
+
+#ifdef RTX_CODE
+extern void ix86_fp_comparison_codes (enum rtx_code code, enum rtx_code *,
+				      enum rtx_code *, enum rtx_code *);
+extern enum rtx_code ix86_fp_compare_code_to_integer (enum rtx_code);
+#endif

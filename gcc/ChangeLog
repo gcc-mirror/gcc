@@ -1,3 +1,45 @@
+2004-08-12  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (internal_label_prefix): Export.
+	(internal_label_prefix_len, struct ix86_address,
+	ix86_decompose_address, maybe_get_pool_constant,
+	ix86_fp_compare_code_to_integer, ix86_fp_comparison_codes,
+	memory_address_length): Export.
+	(any_fp_register_operand, fp_register_operand, 
+	register_and_not_any_fp_reg_operand, register_and_not_fp_reg_operand,
+	x86_64_general_operand, x86_64_szext_general_operand, 
+	x86_64_nonmemory_operand, x86_64_movabs_operand,
+	x86_64_szext_nonmemory_operand, x86_64_immediate_operand,
+	x86_64_zext_immediate_operand, const_int_1_31_operand,
+	symbolic_operand, pic_symbolic_operand, local_symbolic_operand,
+	tls_symbolic_operand, global_dynamic_symbolic_operand,
+	local_dynamic_symbolic_operand, initial_exec_symbolic_operand,
+	local_exec_symbolic_operand, call_insn_operand, sibcall_insn_operand,
+	constant_call_address_operand, const0_operand, const1_operand,
+	const248_operand, const_0_to_3_operand, const_0_to_7_operand,
+	const_0_to_15_operand, const_0_to_255_operand, incdec_operand,
+	shiftdi_operand, reg_no_sp_operand, mmx_reg_operand,
+	general_no_elim_operand, nonmemory_no_elim_operand,
+	index_register_operand, q_regs_operand, flags_reg_operand,
+	non_q_regs_operand, zero_extended_scalar_load_operand,
+	vector_move_operand, no_seg_address_operand, sse_comparison_operator,
+	ix86_comparison_operator, ix86_carry_flag_operator, 
+	fcmov_comparison_operator, promotable_binary_operator,
+	cmp_fp_expander_operand, ext_register_operand, binary_fp_operator,
+	mult_operator, div_operator, arith_or_logical_operator, 
+	memory_displacement_operand, cmpsi_operand, long_memory_operand,
+	aligned_operand): Move to predicates.md as define_predicates.
+	(tls_symbolic_operand_1): Remove.
+	(x86_64_sign_extended_value): Merge into x86_64_immediate_operand.
+	(x86_64_zero_extended_value): Merge into x86_64_zext_immediate_operand.
+	(legitimize_address): Merge tls_symbolic_operand contents.
+	(ix86_expand_move): Likewise.
+	* config/i386/i386-protos.h: Update for exports.
+	* config/i386/i386.h (EXTRA_CONSTRAINT): Update for renames.
+	(PREDICATE_CODES, SPECIAL_MODE_PREDICATES): Remove.
+	* config/i386/i386.md: Include predicates.md.
+	* config/i386/predicates.md: New file.
+
 2004-08-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16924
