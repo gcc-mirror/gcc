@@ -1,3 +1,8 @@
+2001-01-23  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (new_die): Use xcalloc.
+	(output_die): Abort rather than emit a local reference to offset 0.
+
 2001-01-17  Andrew Haley  <aph@redhat.com>
 
 	* libgcc2.c (get_reg_addr): Don't abort if we haven't got a copy
