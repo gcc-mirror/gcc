@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the DEC Alpha.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -600,10 +600,12 @@ alpha_emit_set_const (target, c, n)
       HOST_WIDE_INT tmp1 = c - low;
       HOST_WIDE_INT high
 	= ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
-      HOST_WIDE_INT tmp2 = c - (high << 16) - low;
       HOST_WIDE_INT extra = 0;
 
-      if (tmp2)
+      /* If HIGH will be interpreted as negative but the constant is
+	 positive, we must adjust it to do two ldha insns.  */
+
+      if ((high & 0x8000) != 0 && c >= 0)
 	{
 	  extra = 0x4000;
 	  tmp1 -= 0x40000000;
@@ -1190,11 +1192,14 @@ output_prolog (file, size)
       HOST_WIDE_INT tmp1 = blocks - low;
       HOST_WIDE_INT high
 	= ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
-      HOST_WIDE_INT tmp2 = blocks - (high << 16) - low;
       HOST_WIDE_INT extra = 0;
       int in_reg = 31;
 
-      if (tmp2)
+      /* If HIGH will be interpreted as negative, we must adjust it to
+	 do two ldha insns.  Note that we will never be building a negative
+	 constant here.  */
+
+      if (high & 0x8000)
 	{
 	  extra = 0x4000;
 	  tmp1 -= 0x40000000;
@@ -1351,7 +1356,6 @@ output_epilog (file, size)
 	  HOST_WIDE_INT tmp1 = frame_size - low;
 	  HOST_WIDE_INT high
 	    = ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
-	  HOST_WIDE_INT tmp2 = frame_size - (high << 16) - low;
 	  HOST_WIDE_INT extra = 0;
 	  int in_reg = 31;
 
@@ -1361,7 +1365,11 @@ output_epilog (file, size)
 	    abort ();
 #endif
 
-	  if (tmp2)
+	  /* If HIGH will be interpreted as negative, we must adjust it to
+	     do two ldha insns.  Note that we will never be building a negative
+	     constant here.  */
+
+	  if (high & 0x8000)
 	    {
 	      extra = 0x4000;
 	      tmp1 -= 0x40000000;
