@@ -1094,7 +1094,10 @@ expand_member_init (exp, name, init)
     }
   else
     {
-      field = lookup_field (type, name, 1, 0);
+      if (TREE_CODE (name) == IDENTIFIER_NODE)
+	field = lookup_field (type, name, 1, 0);
+      else
+	field = name;
 
       if (! member_init_ok_or_else (field, type, name))
 	return NULL_TREE;

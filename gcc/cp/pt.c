@@ -10274,8 +10274,10 @@ tsubst_initializer_list (t, argvec)
       else
 	init = convert_from_reference (init);
 
-      *p = build_tree_list (decl, init);
-      p = &TREE_CHAIN (*p);
+      *p = expand_member_init (current_class_ref, decl, 
+			       init ? init : void_type_node);
+      if (*p)
+	p = &TREE_CHAIN (*p);
     }
   return first;
 }
