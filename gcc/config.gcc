@@ -1377,7 +1377,10 @@ mips-sgi-irix6*o32)		# SGI System V.4., IRIX 6, O32 ABI
 	target_cpu_default="MASK_ABICALLS"
 	# mips-tfile doesn't work yet
 	# See comment in mips/iris5.h file.
-	use_collect2=yes
+	if test x$gas = xno
+	then
+		use_collect2=yes
+	fi
 #	if test x$enable_threads = xyes; then
 #		thread_file='irix'
 #	fi
@@ -1385,6 +1388,10 @@ mips-sgi-irix6*o32)		# SGI System V.4., IRIX 6, O32 ABI
 	;;
 mips-sgi-irix6*)		# SGI System V.4., IRIX 6
 	tm_file="${tm_file} mips/iris5.h mips/iris6.h"
+	if test x$gas = xyes
+	then
+		tm_file="${tm_file} mips/iris6gas.h"
+	fi
 	if test "x$gnu_ld" = xyes
 	then
 		tm_file="${tm_file} mips/iris6gld.h"
@@ -1392,6 +1399,12 @@ mips-sgi-irix6*)		# SGI System V.4., IRIX 6
 	tmake_file="mips/t-iris mips/t-iris5-6 mips/t-iris6"
 	target_cpu_default="MASK_ABICALLS|MASK_FLOAT64|MASK_64BIT"
 	tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
+	# See comment in mips/iris5.h file.  Only enabled for O32 ABI
+	# without GNU as.
+	if test x$gas = xno
+	then
+		use_collect2=yes
+	fi
 #	if test x$enable_threads = xyes; then
 #		thread_file='irix'
 #	fi

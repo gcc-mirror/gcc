@@ -1,5 +1,125 @@
 2003-10-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* config.gcc (mips-sgi-irix6*o32): Only enable use_collect2
+	without gas.
+	(mips-sgi-irix6*): Likewise.
+
+	* config/mips/iris6gas.h: New file.
+	* gcc/config.gcc (mips-sgi-irix6*): Use it.
+
+	* config/mips/mips.h (TARGET_IRIX): Provide default.
+	(TARGET_IRIX5): Likewise.
+	(TARGET_SGI_O32_AS): Likewise.
+	* config/mips/iris5.h (TARGET_IRIX): Redefine as 1.
+	(TARGET_IRIX5): Likewise.
+	* config/mips/iris6.h (TARGET_IRIX6): Remove.
+	(TARGET_IRIX5): Redefine as 0.
+
+	* config/mips/mips.c (mips_output_external): Test for IRIX 6 O32
+	linker workaround with TARGET_IRIX and mips_abi instead of
+	ASM_OUTPUT_UNDEF_FUNCTION.
+	(mips_file_end): Inline old ASM_OUTPUT_UNDEF_FUNCTION definition,
+	testing TARGET_IRIX and mips_abi explicitly.
+	* config/mips/iris5.h (ASM_OUTPUT_UNDEF_FUNCTION): Remove.
+	* config/mips/iris6.h (ASM_OUTPUT_UNDEF_FUNCTION): Remove undef.
+
+	* config/mips/mips.c (irix_output_external_libcall): Renamed from
+	mips_output_external_libcall.
+	Use new TARGET_IRIX in guard.
+	* config/mips/mips-protos.h (irix_output_external_libcall): Match
+	this.
+	* config/mips/iris5.h (TARGET_ASM_EXTERNAL_LIBCALL): Likewise.
+
+	* config/mips/iris5gas.h (HAVE_GAS_SHF_MERGE): Update comment.
+	Define as 0.
+
+	* config/mips/iris6.h (FUNCTION_NAME_ALREADY_DECLARED): Define
+	depending on mips_abi. 
+	* config/mips/linux.h (FUNCTION_NAME_ALREADY_DECLARED): Define as 1.
+	* config/mips/mips.c (mips_output_function_prologue): Test
+	FUNCTION_NAME_ALREADY_DECLARED at runtime.
+	(mips_output_function_epilogue): Likewise.
+	(build_mips16_function_stub): Likewise.
+	(build_mips16_call_stub): Likewise.
+	* config/mips/mips.h (FUNCTION_NAME_ALREADY_DECLARED): Provide
+	default.
+	
+	* config/mips/iris6.h (DWARF2_UNWIND_INFO): Don't define for native
+	IRIX 6 O32 assembler.
+	(SUBTARGET_CC1_SPEC): Enforce mips2 ISA with O32 ABI.
+	(TARGET_OS_CPP_BUILTINS): Define _ABIO32, use it to define
+	_MIPS_SIM for O32 ABI.
+	(DWARF2_FRAME_INFO): Don't define for native IRIX 6 O32 assembler.
+	(ASM_DECLARE_FUNCTION_NAME): Integrate mips.h version.
+	(ASM_DECLARE_FUNCTION_SIZE): Move undef before redefinition.
+	Integrate O32 version.
+	(SUBTARGET_ASM_SPEC): Handle -mabi=32.
+	(SUBTARGET_ASM_DEBUGGING_SPEC): Add mdebug_asm_spec for gas with
+	O32 ABI.
+	(BSS_SECTION_ASM_OP_32): Define.
+	(BSS_SECTION_ASM_OP_64): Likewise.
+	(BSS_SECTION_ASM_OP): Define differently for O32 and N32/N64 ABIs
+	using them.
+	(TARGET_ASM_NAMED_SECTION): Reflect renaming.
+	Move up to allow override for O32 ABI without GNU as.
+	(EH_FRAME_SECTION_NAME): Define explicitly.
+	(MUST_USE_SJLJ_EXCEPTIONS): Define.
+	[_MIPS_SIM == _ABIO32 && !GAS] (CTORS_SECTION_ASM_OP,
+	DTORS_SECTION_ASM_OP): Dummy definitions.
+	(TARGET_ASM_NAMED_SECTION): Undef statically. 
+	(EH_FRAME_SECTION_NAME): Likewise.
+	(ASM_OUTPUT_FILENAME): Integrate mips.h version.
+	(LINK_SPEC): Only use default options -call_shared -no_unresolved
+	without -r.
+	Don't pass -init, -fini with -mabi=32.
+	(COLLECT_PARSE_FLAG): Define.
+
+	* config/mips/mips.c (iris6_asm_named_section_1): Changed guard to
+	TARGET_IRIX.
+	Renamed to use irix_ prefix.
+	(iris6_asm_named_section): Likewise.
+	(iris_section_align_entry_eq): Likewise.
+	(iris_section_align_entry_hash): Likewise.
+	(iris6_file_start): Likewise.
+	(iris6_section_align_1): Likewise.
+	(iris6_file_end): Likewise.
+	(iris6_section_type_flags): Likewise.
+	(iris_section_align_htab): Likewise.
+	(iris_orig_asm_out_file): Likewise.
+	[TARGET_IRIX] (TARGET_ASM_FILE_START): Reflect rename.
+	(TARGET_ASM_FILE_END): Likewise.
+	(TARGET_SECTION_TYPE_FLAGS): Likewise.
+
+	* config/mips/mips.c [TARGET_IRIX5 && !TARGET_IRIX6]
+	(TARGET_ASM_UNALIGNED_HI_OP): Use runtime initialization in
+	override_options instead.
+	(TARGET_ASM_UNALIGNED_SI_OP): Likewise.
+	(TARGET_ASM_UNALIGNED_DI_OP): Likewise.
+	* config/mips/mips.c (override_options) [USE_COLLECT2]: Restore
+	flag_gnu_linker to defaults without USE_COLLECT2 for non-IRIX O32
+	assemblers.
+	Likewise for constructor/destructor handling.
+	(override_options): Handle IRIX O32 assembler quirks.
+	[TARGET_IRIX] (irix_asm_named_section): Handle O32 ABI with and
+	without gas.
+	(mips_file_start): Use new TARGET_IRIX.
+	(mips_declare_object_name): No special processing for IRIX O32
+	assembler.
+	(mips_finish_declare_object): Likewise.
+	(irix_asm_output_align): Renamed from iris6_asm_output_align.
+	Don't record alignment for O32 ABI.
+	(irix_file_start): Renamed from iris6_file_start.
+	Return early for O32 ABI.
+	(irix_file_end): Renamed from iris6_file_end.
+	Don't emit .section directives for O32 ABI.
+	* config/mips/iris6.h (ASM_OUTPUT_ALIGN): Reflect renaming.
+	* config/mips/mips-protos.h (irix_asm_output_align): Likewise.
+
+	* config/mips/t-iris6 (MULTILIB_OPTIONS): Add mabi=32.
+	(MULTILIB_OSDIRNAMES): Likewise.
+
+2003-10-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* collect2.c (COLLECT_PARSE_FLAG): Provide default.
 	(main): Use it.
 	* doc/tm.texi (COLLECT_PARSE_FLAG): Document it.

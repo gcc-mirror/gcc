@@ -336,6 +336,11 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 #define TARGET_NEWABI		    (mips_abi == ABI_N32 || mips_abi == ABI_64)
 
+/* IRIX specific stuff.  */
+#define TARGET_IRIX	   0
+#define TARGET_IRIX5	   0
+#define TARGET_SGI_O32_AS  (TARGET_IRIX && mips_abi == ABI_32 && !TARGET_GAS)
+
 /* Define preprocessor macros for the -march and -mtune options.
    PREFIX is either _MIPS_ARCH or _MIPS_TUNE, INFO is the selected
    processor.  If INFO's canonical name is "foo", define PREFIX to
@@ -3276,7 +3281,6 @@ while (0)
 #define ASM_OUTPUT_EXTERNAL(STREAM,DECL,NAME) \
   mips_output_external(STREAM,DECL,NAME)
 
-
 /* This is how to declare a function name.  The actual work of
    emitting the label is moved to function_prologue, so that we can
    get the line number correctly emitted before the .ent directive,
@@ -3285,6 +3289,10 @@ while (0)
 
 #undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL)
+
+#ifndef FUNCTION_NAME_ALREADY_DECLARED
+#define FUNCTION_NAME_ALREADY_DECLARED 0
+#endif
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where

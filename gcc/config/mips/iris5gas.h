@@ -76,5 +76,8 @@ do {							\
 #define NM_FLAGS "-Bng"
 
 /* Disable SHF_MERGE support.  Even if gas supports it, the IRIX ld does not
-   without a special elspec(5) file.  */
+   without a special elspec(5) file.
+
+   FIXME: Only do this if not using GNU ld.  */
 #undef HAVE_GAS_SHF_MERGE
+#define HAVE_GAS_SHF_MERGE 0
