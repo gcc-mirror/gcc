@@ -1,3 +1,21 @@
+2003-03-07  Michael Matz  <matz@suse.de>
+
+	* df.h (enum df_ref_flags.DF_REF_STRIPPED): New.
+	(DF_FOR_REGALLOC): New.
+	* df.c (df_ref_record): Set DF_REF_STRIPPED.
+	(read_modify_subreg_p): Simplify.
+	(df_def_record_1, df_uses_record): Set DF_REF_MODE_CHANGE more often.
+	Use DF_FOR_REGALLOC.
+	* ra.h (struct web): New member subreg_stripped.
+	(invalid_mode_change_regs): Declare.
+	* ra.c (invalid_mode_change_regs): New.
+	(init_ra): Initialize it.
+	* ra-build.c (init_one_web_common, remember_web_was_spilled): Use it.
+	Use CANNOT_CHANGE_MODE_CLASS as ifdef guard.
+	(reinit_one_web, parts_to_web_1): Deal with subreg_stripped.
+	* ra-colorize.c (colorize_one_web): Use invalid_mode_change_regs.
+	Use CANNOT_CHANGE_MODE_CLASS as ifdef guard.
+
 2003-03-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (addsf3, adddf3, subsf3, subdf3, mulsf3, muldf3, negsf2)

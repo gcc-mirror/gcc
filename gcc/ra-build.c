@@ -1305,10 +1305,9 @@ init_one_web_common (web, reg)
       AND_COMPL_HARD_REG_SET (web->usable_regs, never_use_colors);
       prune_hardregs_for_mode (&web->usable_regs,
 			       PSEUDO_REGNO_MODE (web->regno));
-#ifdef CLASS_CANNOT_CHANGE_MODE
+#ifdef CANNOT_CHANGE_MODE_CLASS
       if (web->mode_changed)
-        AND_COMPL_HARD_REG_SET (web->usable_regs, reg_class_contents[
-			          (int) CLASS_CANNOT_CHANGE_MODE]);
+        AND_COMPL_HARD_REG_SET (web->usable_regs, invalid_mode_change_regs);
 #endif
       web->num_freedom = hard_regs_count (web->usable_regs);
       web->num_freedom -= web->add_hardregs;
@@ -1351,6 +1350,7 @@ reinit_one_web (web, reg)
   web->artificial = 0;
   web->live_over_abnormal = 0;
   web->mode_changed = 0;
+  web->subreg_stripped = 0;
   web->move_related = 0;
   web->in_load = 0;
   web->target_of_spilled_move = 0;
@@ -1912,6 +1912,9 @@ parts_to_webs_1 (df, copy_webs, all_refs)
 	  if ((DF_REF_FLAGS (ref) & DF_REF_MODE_CHANGE) != 0
 	      && web->regno >= FIRST_PSEUDO_REGISTER)
 	    web->mode_changed = 1;
+	  if ((DF_REF_FLAGS (ref) & DF_REF_STRIPPED) != 0
+	      && web->regno >= FIRST_PSEUDO_REGISTER)
+	    web->subreg_stripped = 1;
 	  if (i >= def_id
 	      && TEST_BIT (live_over_abnormal, ref_id))
 	    web->live_over_abnormal = 1;
@@ -1961,6 +1964,9 @@ parts_to_webs_1 (df, copy_webs, all_refs)
       if ((DF_REF_FLAGS (ref) & DF_REF_MODE_CHANGE) != 0
 	  && web->regno >= FIRST_PSEUDO_REGISTER)
 	web->mode_changed = 1;
+      if ((DF_REF_FLAGS (ref) & DF_REF_STRIPPED) != 0
+	  && web->regno >= FIRST_PSEUDO_REGISTER)
+	web->subreg_stripped = 1;
 
       /* Setup def2web, or use2web, and increment num_defs or num_uses.  */
       if (i < def_id)
@@ -2364,10 +2370,9 @@ remember_web_was_spilled (web)
 		       reg_class_contents[(int) GENERAL_REGS]);
   AND_COMPL_HARD_REG_SET (web->usable_regs, never_use_colors);
   prune_hardregs_for_mode (&web->usable_regs, PSEUDO_REGNO_MODE (web->regno));
-#ifdef CLASS_CANNOT_CHANGE_MODE
+#ifdef CANNOT_CHANGE_MODE_CLASS
   if (web->mode_changed)
-    AND_COMPL_HARD_REG_SET (web->usable_regs, reg_class_contents[
-			      (int) CLASS_CANNOT_CHANGE_MODE]);
+    AND_COMPL_HARD_REG_SET (web->usable_regs, invalid_mode_change_regs);
 #endif
   web->num_freedom = hard_regs_count (web->usable_regs);
   if (!web->num_freedom)

@@ -168,6 +168,11 @@ struct web
      was illegal for hardregs in CLASS_CANNOT_CHANGE_MODE.  */
   unsigned int mode_changed:1;
 
+  /* Nonzero if some references of this web, where in subreg context,
+     but the actual subreg is already stripped (i.e. we don't know the
+     outer mode of the actual reference).  */
+  unsigned int subreg_stripped:1;
+
   /* Nonzero, when this web stems from the last pass of the allocator,
      and all info is still valid (i.e. it wasn't spilled).  */
   unsigned int old_web:1;
@@ -497,6 +502,8 @@ extern unsigned int num_free_regs[N_REG_CLASSES];
    represent the possible resources which could be taken away be a value
    in mode M.  */
 extern HARD_REG_SET hardregs_for_mode[NUM_MACHINE_MODES];
+/* The set of hardregs, for which _any_ mode change is invalid.  */
+extern HARD_REG_SET invalid_mode_change_regs;
 /* For 0 <= I <= 255, the number of bits set in I.  Used to calculate
    the number of set bits in a HARD_REG_SET.  */
 extern unsigned char byte2bitcount[256];

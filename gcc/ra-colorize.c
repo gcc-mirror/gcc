@@ -1370,10 +1370,9 @@ colorize_one_web (web, hard)
       else
 	COPY_HARD_REG_SET (colors,
 			   usable_regs[reg_preferred_class (web->regno)]);
-#ifdef CLASS_CANNOT_CHANGE_MODE
+#ifdef CANNOT_CHANGE_MODE_CLASS
       if (web->mode_changed)
-        AND_COMPL_HARD_REG_SET (colors, reg_class_contents[
-			          (int) CLASS_CANNOT_CHANGE_MODE]);
+        AND_COMPL_HARD_REG_SET (colors, invalid_mode_change_regs);
 #endif
       COPY_HARD_REG_SET (call_clobbered, colors);
       AND_HARD_REG_SET (call_clobbered, call_used_reg_set);
@@ -1404,10 +1403,9 @@ colorize_one_web (web, hard)
 	  else
 	    IOR_HARD_REG_SET (colors, usable_regs
 			      [reg_alternate_class (web->regno)]);
-#ifdef CLASS_CANNOT_CHANGE_MODE
+#ifdef CANNOT_CHANGE_MODE_CLASS
 	  if (web->mode_changed)
-	    AND_COMPL_HARD_REG_SET (colors, reg_class_contents[
-				      (int) CLASS_CANNOT_CHANGE_MODE]);
+	    AND_COMPL_HARD_REG_SET (colors, invalid_mode_change_regs);
 #endif
 	  COPY_HARD_REG_SET (call_clobbered, colors);
 	  AND_HARD_REG_SET (call_clobbered, call_used_reg_set);

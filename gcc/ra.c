@@ -148,6 +148,7 @@ HARD_REG_SET never_use_colors;
 HARD_REG_SET usable_regs[N_REG_CLASSES];
 unsigned int num_free_regs[N_REG_CLASSES];
 HARD_REG_SET hardregs_for_mode[NUM_MACHINE_MODES];
+HARD_REG_SET invalid_mode_change_regs;
 unsigned char byte2bitcount[256];
 
 unsigned int debug_new_regalloc = -1;
@@ -555,6 +556,23 @@ init_ra ()
       COPY_HARD_REG_SET (hardregs_for_mode[i], rs);
     }
 
+  CLEAR_HARD_REG_SET (invalid_mode_change_regs);
+#ifdef CANNOT_CHANGE_MODE_CLASS
+  if (0)
+  for (i = 0; i < NUM_MACHINE_MODES; i++)
+    {
+      enum machine_mode from = (enum machine_mode) i;
+      enum machine_mode to;
+      for (to = VOIDmode; to < MAX_MACHINE_MODE; ++to)
+	{
+	  int r;
+	  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
+	    if (REG_CANNOT_CHANGE_MODE_P (from, to, r))
+	      SET_HARD_REG_BIT (invalid_mode_change_regs, r);
+	}
+    }
+#endif
+
   for (an_unusable_color = 0; an_unusable_color < FIRST_PSEUDO_REGISTER;
        an_unusable_color++)
     if (TEST_HARD_REG_BIT (never_use_colors, an_unusable_color))
@@ -755,7 +773,7 @@ reg_alloc ()
 	 chains per insn, and per regno.  In later passes only update
          that info from the new and modified insns.  */
       df_analyse (df, (ra_pass == 1) ? 0 : (bitmap) -1,
-		  DF_HARD_REGS | DF_RD_CHAIN | DF_RU_CHAIN);
+		  DF_HARD_REGS | DF_RD_CHAIN | DF_RU_CHAIN | DF_FOR_REGALLOC);
 
       if ((debug_new_regalloc & DUMP_DF) != 0)
 	{
