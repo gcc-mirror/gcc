@@ -131,7 +131,7 @@ static void mmix_target_asm_function_end_prologue PARAMS ((FILE *));
 static void mmix_target_asm_function_epilogue
   PARAMS ((FILE *, HOST_WIDE_INT));
 static void mmix_asm_output_mi_thunk
-  PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
+  PARAMS ((FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
 
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
@@ -166,6 +166,8 @@ static void mmix_asm_output_mi_thunk
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK mmix_asm_output_mi_thunk
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -778,10 +780,11 @@ mmix_target_asm_function_epilogue (stream, locals_size)
 /* TARGET_ASM_OUTPUT_MI_THUNK.  */
 
 static void
-mmix_asm_output_mi_thunk (stream, fndecl, delta, func)
+mmix_asm_output_mi_thunk (stream, fndecl, delta, vcall_offset, func)
      FILE * stream;
      tree fndecl ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
      tree func;
 {
   /* If you define STRUCT_VALUE to 0, rather than use STRUCT_VALUE_REGNUM,

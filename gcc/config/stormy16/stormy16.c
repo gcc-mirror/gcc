@@ -51,7 +51,7 @@ static void xstormy16_asm_out_constructor PARAMS ((rtx, int));
 static void xstormy16_asm_out_destructor PARAMS ((rtx, int));
 static void xstormy16_encode_section_info PARAMS ((tree, int));
 static void xstormy16_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
-						   tree));
+						   HOST_WIDE_INT, tree));
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
@@ -1383,10 +1383,12 @@ xstormy16_function_value (valtype, func)
    probably not.  */
 
 static void
-xstormy16_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
+xstormy16_asm_output_mi_thunk (file, thunk_fndecl, delta,
+			       vcall_offset, function)
      FILE *file;
      tree thunk_fndecl ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
      tree function;
 {
   int regnum = FIRST_ARGUMENT_REGISTER;
@@ -2035,5 +2037,7 @@ xstormy16_handle_interrupt_attribute (node, name, args, flags, no_add_attrs)
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK xstormy16_asm_output_mi_thunk
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -1,3 +1,9 @@
+2002-10-22  Richard Henderson  <rth@redhat.com>
+
+	* method.c (use_thunk): Always compute vcall_value; assert that
+	it is not zero.  Use can_output_mi_thunk; use output_mi_thunk
+	for vcall thunks as well.
+
 2002-10-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (empty_base_at_nonzero_offset_p): New function.

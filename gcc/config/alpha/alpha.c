@@ -197,7 +197,7 @@ static void alpha_write_linkage
 
 #if TARGET_ABI_OSF
 static void alpha_output_mi_thunk_osf
-  PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
+  PARAMS ((FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
 #endif
 
 static struct machine_function * alpha_init_machine_status
@@ -300,6 +300,8 @@ static void unicosmk_unique_section PARAMS ((tree, int));
 #if TARGET_ABI_OSF
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK alpha_output_mi_thunk_osf
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 #endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
@@ -7860,10 +7862,11 @@ alpha_end_function (file, fnname, decl)
    Not sure why this idea hasn't been explored before...  */
 
 static void
-alpha_output_mi_thunk_osf (file, thunk_fndecl, delta, function)
+alpha_output_mi_thunk_osf (file, thunk_fndecl, delta, vcall_offset, function)
      FILE *file;
      tree thunk_fndecl ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
      tree function;
 {
   HOST_WIDE_INT hi, lo;

@@ -54,8 +54,8 @@ static int s390_adjust_priority PARAMS ((rtx, int));
 static void s390_select_rtx_section PARAMS ((enum machine_mode, rtx, 
 					     unsigned HOST_WIDE_INT));
 static void s390_encode_section_info PARAMS ((tree, int));
-static void s390_output_mi_vcall_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, 
-						HOST_WIDE_INT, tree));
+static void s390_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
+					  HOST_WIDE_INT, tree));
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -82,8 +82,10 @@ static void s390_output_mi_vcall_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 #undef	TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO s390_encode_section_info
 
-#undef TARGET_ASM_OUTPUT_MI_VCALL_THUNK
-#define TARGET_ASM_OUTPUT_MI_VCALL_THUNK s390_output_mi_vcall_thunk
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK s390_output_mi_thunk
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5620,7 +5622,7 @@ s390_encode_section_info (decl, first)
    relative to the resulting this pointer.  */
 
 static void
-s390_output_mi_vcall_thunk (file, thunk, delta, vcall_offset, function)
+s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;

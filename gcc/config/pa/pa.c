@@ -119,7 +119,8 @@ static void pa_encode_section_info PARAMS ((tree, int));
 static const char *pa_strip_name_encoding PARAMS ((const char *));
 static void pa_globalize_label PARAMS ((FILE *, const char *))
      ATTRIBUTE_UNUSED;
-static void pa_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
+static void pa_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
+					    HOST_WIDE_INT, tree));
 
 
 /* Save the operands last given to a compare for use when we
@@ -199,6 +200,8 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK pa_asm_output_mi_thunk
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6556,10 +6559,11 @@ is_function_label_plus_const (op)
 /* Output assembly code for a thunk to FUNCTION.  */
 
 static void
-pa_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
+pa_asm_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
      FILE *file;
      tree thunk_fndecl;
      HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
      tree function;
 {
   const char *target_name = XSTR (XEXP (DECL_RTL (function), 0), 0);

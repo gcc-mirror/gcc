@@ -46,7 +46,8 @@ Boston, MA 02111-1307, USA.  */
 
 static void i960_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void i960_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-static void i960_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
+static void i960_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
+					  HOST_WIDE_INT, tree));
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -101,6 +102,8 @@ static int ret_label = 0;
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK i960_output_mi_thunk
+#undef TARGET_CAN_ASM_OUTPUT_MI_THUNK
+#define TARGET_CAN_ASM_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2830,10 +2833,11 @@ i960_scan_opcode (p)
 }
 
 static void
-i960_output_mi_thunk (file, thunk, delta, function)
+i960_output_mi_thunk (file, thunk, delta, vcall_offset, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
      tree function;
 {
   int d = delta;

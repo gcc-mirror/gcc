@@ -65,7 +65,8 @@ static void m68k_coff_asm_named_section PARAMS ((const char *, unsigned int));
 #ifdef CTOR_LIST_BEGIN
 static void m68k_svr3_asm_out_constructor PARAMS ((rtx, int));
 #endif
-static void m68k_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
+static void m68k_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
+					  HOST_WIDE_INT, tree));
 
 
 /* Alignment to use for loops and jumps */
@@ -125,6 +126,8 @@ int m68k_last_compare_had_fp_operands;
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK m68k_output_mi_thunk
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3841,10 +3844,11 @@ m68k_svr3_asm_out_constructor (symbol, priority)
 #endif
 
 static void
-m68k_output_mi_thunk (file, thunk, delta, function)
+m68k_output_mi_thunk (file, thunk, delta, vcall_offset, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
      HOST_WIDE_INT delta;
+     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
      tree function;
 {
   rtx xops[1];

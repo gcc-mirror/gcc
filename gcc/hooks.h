@@ -27,5 +27,12 @@ bool hook_tree_bool_false PARAMS ((tree));
 void hook_tree_int_void PARAMS ((tree, int));
 void hook_void_void PARAMS ((void));
 void hook_FILEptr_constcharptr_void PARAMS ((FILE *, const char *));
+bool hook_bool_tree_hwi_hwi_tree_false
+  PARAMS ((tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
+bool hook_bool_tree_hwi_hwi_tree_true
+  PARAMS ((tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
+
+bool default_can_output_mi_thunk_no_vcall
+  PARAMS ((tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
 
 #endif

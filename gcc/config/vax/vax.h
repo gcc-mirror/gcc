@@ -1155,14 +1155,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
-/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
-   Used for C++ multiple inheritance.
-	.mask	^m<r2,r3,r4,r5,r6,r7,r8,r9,r10,r11>	#conservative entry mask
-	addl2	$DELTA, 4(ap)	#adjust first argument
-	jmp	FUNCTION+2	#jump beyond FUNCTION's entry mask
- */
-#define ASM_OUTPUT_MI_THUNK vax_output_mi_thunk
-
 /* Print an instruction operand X on file FILE.
    CODE is the code from the %-spec that requested printing this operand;
    if `%z3' was used to print operand 3, then CODE is 'z'.
