@@ -1,3 +1,8 @@
+2005-04-06  James A. Morrison  <phython@gcc.gnu.org>
+
+	* gcc.dg/15443-1.c: New test.
+	* gcc.dg/15443-2.c: Likewise.
+
 2005-04-06  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/pr15754.f90: Change annotations to dg-error.
