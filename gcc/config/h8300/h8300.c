@@ -1650,13 +1650,6 @@ final_prescan_insn (insn, operand, num_operands)
 
   const int uid = INSN_UID (insn);
 
-  if (TARGET_RTL_DUMP)
-    {
-      fprintf (asm_out_file, "\n****************");
-      print_rtl (asm_out_file, PATTERN (insn));
-      fprintf (asm_out_file, "\n");
-    }
-
   if (TARGET_ADDRESSES)
     {
       fprintf (asm_out_file, "; 0x%x %d\n", INSN_ADDRESSES (uid),

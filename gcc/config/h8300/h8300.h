@@ -101,7 +101,6 @@ extern int target_flags;
 #define MASK_SLOWBYTE		0x00000100
 #define MASK_NORMAL_MODE 	0x00000200
 #define MASK_RELAX		0x00000400
-#define MASK_RTL_DUMP		0x00000800
 #define MASK_H8300H		0x00001000
 #define MASK_ALIGN_300		0x00002000
 
@@ -119,10 +118,6 @@ extern int target_flags;
 
 /* Pretend byte accesses are slow.  */
 #define TARGET_SLOWBYTE (target_flags & MASK_SLOWBYTE)
-
-/* Dump each assembler insn's rtl into the output file.
-   This is for debugging the compiler only.  */
-#define TARGET_RTL_DUMP	(target_flags & MASK_RTL_DUMP)
 
 /* Select between the H8/300 and H8/300H CPUs.  */
 #define TARGET_H8300	(! TARGET_H8300H && ! TARGET_H8300S)
@@ -160,7 +155,6 @@ extern int target_flags;
   {"slowbyte",		 MASK_SLOWBYTE,					    \
    N_("Consider access to byte sized memory slow")},			    \
   {"relax",		 MASK_RELAX, N_("Enable linker relaxing")},	    \
-  {"rtl-dump",		 MASK_RTL_DUMP, NULL},				    \
   {"h",			 MASK_H8300H, N_("Generate H8/300H code")},	    \
   {"n",			 MASK_NORMAL_MODE, N_("Enable the normal mode")},   \
   {"no-h",		-MASK_H8300H, N_("Do not generate H8/300H code")},  \
