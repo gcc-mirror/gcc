@@ -78,7 +78,7 @@ JAVA_SRCS = $(srcdir)/java/parse.y $(srcdir)/java/class.c \
   $(srcdir)/java/jcf-depend.c  $(srcdir)/java/jcf-path.c
 
 jc1$(exeext): $(P) $(JAVA_SRCS) $(LIBDEPS) stamp-objlist ggc-callbacks.o
-	cd java; $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jc1$(exeext)
+	cd java; $(MAKE) $(LANG_FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jc1$(exeext)
 
 jvspec.o: $(srcdir)/java/jvspec.c system.h $(GCC_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
@@ -98,7 +98,7 @@ $(GCJ)-cross$(exeext): $(GCJ)$(exeext)
 # Dependencies here must be kept in sync with dependencies in Makefile.in.
 jvgenmain$(exeext): $(srcdir)/java/jvgenmain.c $(srcdir)/java/mangle.c \
 		$(LIBDEPS) $(TREE_H)
-	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jvgenmain$(exeext)
+	cd java && $(MAKE) $(LANG_FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jvgenmain$(exeext)
 
 # This must be kept in sync with dependencies in Makefile.in.
 GCJH_SOURCES = $(srcdir)/java/gjavah.c $(srcdir)/java/jcf-io.c \
@@ -108,21 +108,21 @@ GCJH_SOURCES = $(srcdir)/java/gjavah.c $(srcdir)/java/jcf-io.c \
 	$(srcdir)/java/jcf-path.c
 
 gcjh$(exeext): $(GCJH_SOURCES) $(LIBDEPS) $(TREE_H)
-	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../gcjh$(exeext)
+	cd java && $(MAKE) $(LANG_FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../gcjh$(exeext)
 
 # This must be kept in sync with dependencies in Makefile.in.
 JV_SCAN_SOURCES = $(srcdir)/java/parse-scan.y $(srcdir)/java/lex.c \
        $(srcdir)/java/parse.h $(srcdir)/java/lex.h $(srcdir)/java/jv-scan.c
 
 jv-scan$(exeext): $(JV_SCAN_SOURCES) stamp-objlist $(LIBDEPS)
-	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jv-scan$(exeext)
+	cd java && $(MAKE) $(LANG_FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jv-scan$(exeext)
 
 # This must be kept in sync with dependencies in Makefile.in.
 JCF_DUMP_SOURCES = $(srcdir)/java/jcf-dump.c $(srcdir)/java/jcf-io.c \
        $(srcdir)/java/zextract.c $(TREE_H)
 
 jcf-dump$(exeext): $(JCF_DUMP_SOURCES)
-	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jcf-dump$(exeext)
+	cd java && $(MAKE) $(LANG_FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jcf-dump$(exeext)
 
 #
 # Build hooks:
@@ -203,7 +203,7 @@ java.stage4: stage4-start
 # distribution anyway.  It then copies the files to the distdir directory.
 java.distdir:
 	mkdir tmp/java
-	cd java ; $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) parse.c hash.h
+	cd java ; $(MAKE) $(LANG_FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) parse.c hash.h
 	cd java; \
 	for file in *[0-9a-zA-Z+]; do \
 	  ln $$file ../tmp/java >/dev/null 2>&1 || cp $$file ../tmp/java; \

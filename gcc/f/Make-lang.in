@@ -1,5 +1,5 @@
 # Top level makefile fragment for GNU Fortran.           -*-makefile-*-
-#   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
 
 #This file is part of GNU Fortran.
 
@@ -202,7 +202,7 @@ F77_SRCS = \
 
 f771$(exeext): $(P) $(F77_SRCS) $(LIBDEPS) stamp-objlist
 	touch lang-f77
-	cd f; $(MAKE) $(FLAGS_TO_PASS) \
+	cd f; $(MAKE) $(LANG_FLAGS_TO_PASS) \
 	  HOST_CC="`case '$(HOST_CC)' in stage*) echo '$(HOST_CC)' | sed -e 's|stage|../stage|g';; *) echo '$(HOST_CC)';; esac`" \
 	  HOST_CFLAGS="$(HOST_CFLAGS)" HOST_CPPFLAGS="$(HOST_CPPFLAGS)" \
 	  ../f771$(exeext)

@@ -68,13 +68,16 @@ ALLOCA_FINISH = true
 # separate from BOOT_CFLAGS because people tend to override optimization
 # flags and we'd like them to still have warnings turned on.  They are free
 # to explicitly turn warnings off if they wish.
+# LOOSE_CFLAGS are the CFLAGS to use when compiling something which is only
+# compiled with gcc, such as libgcc and the frontends other than C.
 # XCFLAGS is used for most compilations but not when using the GCC just built.
 # TCFLAGS is used for compilations with the GCC just built.
 XCFLAGS =
 TCFLAGS =
 CFLAGS = -g @stage1_warn_cflags@
 BOOT_CFLAGS = -O2 $(CFLAGS)
-WARN_CFLAGS = -W -Wall -Wtraditional
+WARN_CFLAGS = -pipe -W -Wall -Wtraditional -pedantic -Wno-long-long
+LOOSE_CFLAGS = `echo $(CFLAGS) | sed -e 's/-pedantic//' -e 's/-Wtraditional//'`
 # These exists to be overridden by the x-* and t-* files, respectively.
 X_CFLAGS =
 T_CFLAGS =
@@ -164,7 +167,7 @@ GCC_FOR_TARGET = ./xgcc -B$(build_tooldir)/bin/ -B./ -isystem $(build_tooldir)/i
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
 # It also specifies -isystem ./include to find, e.g., stddef.h.
-GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -isystem ./include $(TCFLAGS)
+GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(LOOSE_CFLAGS) -isystem ./include $(TCFLAGS)
 
 # Specify the abi to use when building the c++ runtime
 GXX_ABI_FLAG=@GXX_ABI_FLAG@
@@ -664,7 +667,10 @@ PREPEND_DOTDOT_TO_RELATIVE_PATHS = sed \
 	-e 's|%% *|../|g' \
 	-e 's|%||g'
 SUBDIR_FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) \
-  "CC=`echo @quoted_cc_set_by_configure@ | $(PREPEND_DOTDOT_TO_RELATIVE_PATHS)`"
+	"CC=`echo @quoted_cc_set_by_configure@ | $(PREPEND_DOTDOT_TO_RELATIVE_PATHS)`"
+# Flags to pass when recursing into a frontend subdirectory.
+LANG_FLAGS_TO_PASS = $(SUBDIR_FLAGS_TO_PASS) \
+	"CFLAGS=$(LOOSE_CFLAGS)"
 #
 # Lists of files for various purposes.
 
