@@ -72,15 +72,13 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdio.h>
 #include <ctype.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#ifndef O_RDONLY
-#define O_RDONLY 0
-#endif
 #include "hconfig.h"
 #include "obstack.h"
 #include "scan.h"
 #include "cpplib.h"
+#ifndef O_RDONLY
+#define O_RDONLY 0
+#endif
 
 #if !__STDC__
 #define const /* nothing */
