@@ -1,3 +1,21 @@
+2003-08-17  Andreas Jaeger  <aj@suse.de>
+
+	* config/alpha/alpha.md: Remove usage of PARAMS.
+
+	* config/i386/cygwin.h: Convert K&R prototypes to ISO C90.
+	* config/i386/i386-interix.h: Likewise.
+	* config/i386/winnt.c: Likewise.
+	* config/i386/cygming.h: Likewise.
+	* config/i386/cygwin2.c: Likewise.
+	* config/darwin.c: Likewise.
+	* config/darwin-c.c: Likewise.
+	* config/darwin-protos.h: Likewise.
+	* config/darwin.h: Likewise.
+	* config/s390/s390-protos.h: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/ia64/ia64.c: Likewse
+	* config/ia64/ia64-protos.h: Likewise.
+
 2003-08-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/sparc/sparc.c: Convert to ISO C.

@@ -20,7 +20,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#define TARGET_VERSION fprintf (stderr, " (x86 Cygwin)"); 
+#define TARGET_VERSION fprintf (stderr, " (x86 Cygwin)");
 
 #define EXTRA_OS_CPP_BUILTINS()  /* Nothing.  */
 
@@ -81,7 +81,7 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef CYGWIN_MINGW_SUBDIR
 #define CYGWIN_MINGW_SUBDIR "/mingw"
-#endif 
+#endif
 #define CYGWIN_MINGW_SUBDIR_LEN (sizeof (CYGWIN_MINGW_SUBDIR) - 1)
 
 #ifdef GPLUSPLUS_INCLUDE_DIR
@@ -199,7 +199,7 @@ char *cvt_to_mingw[] =
 #undef GEN_CVT_ARRAY
 #endif /*GEN_CVT_ARRAY*/
 
-void mingw_scan PARAMS ((int, const char * const *, char **));
+void mingw_scan (int, const char * const *, char **);
 #if 1
 #define GCC_DRIVER_HOST_INITIALIZATION \
 do \

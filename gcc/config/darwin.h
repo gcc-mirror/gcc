@@ -368,7 +368,7 @@ do { text_section ();							\
         || DECL_INITIAL (DECL))						\
       (* targetm.encode_section_info) (DECL, DECL_RTL (DECL), false);	\
     ASM_OUTPUT_LABEL (FILE, xname);					\
-    /* Darwin doesn't support zero-size objects, so give them a 	\
+    /* Darwin doesn't support zero-size objects, so give them a	\
        byte.  */							\
     if (tree_low_cst (DECL_SIZE_UNIT (DECL), 1) == 0)			\
       assemble_zeros (1);						\
@@ -478,9 +478,9 @@ do { text_section ();							\
 
 #undef	SECTION_FUNCTION
 #define SECTION_FUNCTION(FUNCTION, SECTION, DIRECTIVE, OBJC)		\
-extern void FUNCTION PARAMS ((void));					\
+extern void FUNCTION (void);						\
 void									\
-FUNCTION ()								\
+FUNCTION (void)								\
 {									\
   if (in_section != SECTION)						\
     {									\
@@ -509,7 +509,7 @@ FUNCTION ()								\
   in_objc_protocol, in_objc_string_object,		\
   in_objc_constant_string_object,			\
   in_objc_class_names, in_objc_meth_var_names,		\
-  in_objc_meth_var_types, in_objc_cls_refs, 		\
+  in_objc_meth_var_types, in_objc_cls_refs,		\
   in_machopic_nl_symbol_ptr,				\
   in_machopic_lazy_symbol_ptr,				\
   in_machopic_symbol_stub,				\
@@ -521,7 +521,7 @@ FUNCTION ()								\
 
 #undef	EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS			\
-static void objc_section_init PARAMS ((void));	\
+static void objc_section_init (void);		\
 SECTION_FUNCTION (const_section,		\
                   in_const,			\
                   ".const", 0)			\
@@ -612,19 +612,19 @@ SECTION_FUNCTION (objc_cls_refs_section,	\
 						\
 SECTION_FUNCTION (machopic_lazy_symbol_ptr_section,	\
 		in_machopic_lazy_symbol_ptr,		\
-		".lazy_symbol_pointer", 0)      	\
+		".lazy_symbol_pointer", 0)	\
 SECTION_FUNCTION (machopic_nl_symbol_ptr_section,	\
 		in_machopic_nl_symbol_ptr,		\
-		".non_lazy_symbol_pointer", 0)      	\
+		".non_lazy_symbol_pointer", 0)	\
 SECTION_FUNCTION (machopic_symbol_stub_section,		\
 		in_machopic_symbol_stub,		\
-		".symbol_stub", 0)      		\
+		".symbol_stub", 0)		\
 SECTION_FUNCTION (machopic_symbol_stub1_section,	\
 		in_machopic_symbol_stub1,		\
 		".section __TEXT,__symbol_stub1,symbol_stubs,pure_instructions,16", 0)\
 SECTION_FUNCTION (machopic_picsymbol_stub_section,	\
 		in_machopic_picsymbol_stub,		\
-		".picsymbol_stub", 0)      		\
+		".picsymbol_stub", 0)		\
 SECTION_FUNCTION (machopic_picsymbol_stub1_section,	\
 		in_machopic_picsymbol_stub1,		\
 		".section __TEXT,__picsymbolstub1,symbol_stubs,pure_instructions,32", 0)\
@@ -636,7 +636,7 @@ SECTION_FUNCTION (darwin_eh_frame_section,		\
 		".section __TEXT,__eh_frame", 0)	\
 							\
 static void					\
-objc_section_init ()				\
+objc_section_init (void)			\
 {						\
   static int been_here = 0;			\
 						\
@@ -653,7 +653,7 @@ objc_section_init ()				\
       objc_cls_refs_section ();			\
       objc_class_section ();			\
       objc_meta_class_section ();		\
-          /* shared, hot -> cold */    		\
+          /* shared, hot -> cold */		\
       objc_cls_meth_section ();			\
       objc_inst_meth_section ();		\
       objc_protocol_section ();			\
@@ -676,7 +676,7 @@ objc_section_init ()				\
 #define TARGET_ASM_SELECT_RTX_SECTION machopic_select_rtx_section
 
 #define ASM_DECLARE_UNRESOLVED_REFERENCE(FILE,NAME)			\
-    do { 								\
+    do {								\
 	 if (FILE) {							\
 	   if (MACHOPIC_INDIRECT)					\
 	     fprintf (FILE, "\t.lazy_reference ");			\
@@ -691,7 +691,7 @@ objc_section_init ()				\
     do {								\
 	 if (FILE) {							\
 	   fprintf (FILE, "\t");					\
-	   assemble_name (FILE, NAME); 					\
+	   assemble_name (FILE, NAME);					\
 	   fprintf (FILE, "=0\n");					\
 	   (*targetm.asm_out.globalize_label) (FILE, NAME);		\
 	 }								\
@@ -793,7 +793,7 @@ enum machopic_addr_class {
 #define TARGET_ASM_EXCEPTION_SECTION darwin_exception_section
 
 #define TARGET_ASM_EH_FRAME_SECTION darwin_eh_frame_section
-  
+
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)  \
   (((CODE) == 2 && (GLOBAL) == 1) \

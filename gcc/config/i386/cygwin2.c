@@ -28,13 +28,13 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 
 /*
-static void remove_w32api PARAMS ((void));
+static void remove_w32api (void);
 */
-static void add_mingw PARAMS ((void));
-static void set_mingw PARAMS((void)) __attribute__ ((constructor));
+static void add_mingw (void);
+static void set_mingw (void) __attribute__ ((constructor));
 
 static void
-add_mingw ()
+add_mingw (void)
 {
   char **av;
   char *p;
@@ -59,7 +59,7 @@ add_mingw ()
 
 
 static void
-set_mingw ()
+set_mingw (void)
 {
   char *env = getenv ("GCC_CYGWIN_MINGW");
   if (env && *env == '1')
