@@ -1,3 +1,9 @@
+Tue Oct 26 23:29:56 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* call.c (build_over_call):  Check that the built-in function is
+	of class BUILT_IN_NORMAL before trying to recongize it as BUILT_IN_ABS.
+	* typeck.c (build_function_call_real): Similarly. 
+
 1999-10-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (poplevel): Don't set BLOCK_TYPE_TAGS.  Don't call

@@ -218,6 +218,7 @@ calls_function_1 (exp, which)
 	  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
 
 	  if ((DECL_BUILT_IN (fndecl)
+	       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
 	       && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA)
 	      || (DECL_SAVED_INSNS (fndecl)
 		  && DECL_SAVED_INSNS (fndecl)->calls_alloca))

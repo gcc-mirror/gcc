@@ -1,3 +1,10 @@
+Tue Oct 26 23:29:18 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* c-typeck.c (build_function_call): Check that the built-in
+	function is of class BUILT_IN_NORMAL before trying to recongize
+	it as BUILT_IN_ABS.
+	* calls.c (calls_function_1): Similarly for BUILT_IN_ALLOCA.
+	* stmt.c (expand_end_cae): Similarly for BUILT_IN_CLASSIFY_TYPE.
 
 Wed Oct 27 00:14:13 1999  Robert Lipe  <robertlipe@usa.net>
 
