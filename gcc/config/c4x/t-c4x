@@ -8,7 +8,7 @@ LIB1ASMFUNCS = _divqf3 _divqi3 _udivqi3 _umodqi3 _modqi3 _mulqi3 \
 
 # We do not have DF or DI types (or SF and SI for that matter),
 # so fake out the libgcc2 compilation.
-LIBGCC2_CFLAGS = -O2 -Dexit=unused_exit $(GCC_CFLAGS) $(LIBGCC2_INCLUDES) -DDF=HF -DDI=HI -DSF=QF -DSI=QI
+LIBGCC2_CFLAGS = -O2 -Dexit=unused_exit $(GCC_CFLAGS) $(LIBGCC2_INCLUDES) -DDF=HF -DDI=HI -DSF=QF -DSI=QI -Dinhibit_libc
 
 MULTILIB_OPTIONS = m30 msmall mmemparm
 MULTILIB_DIRNAMES = c3x small mem
@@ -20,7 +20,3 @@ INSTALL_LIBGCC = install-multilib
 
 # Don't make libgcc1-test since require crt0.o
 LIBGCC1_TEST =
-
-# C[34]x has its own float and limits.h
-TARGET_FLOAT_H=config/c4x/c4x-float.h
-TARGET_LIMITS_H=config/c4x/c4x-limits.h
