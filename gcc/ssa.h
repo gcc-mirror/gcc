@@ -1,5 +1,5 @@
 /* Static Single Assignment (SSA) definitions for GNU C-Compiler
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Written by Jeffrey D. Oldham <oldham@codesourcery.com>.
 
 This file is part of GNU CC.
@@ -27,9 +27,11 @@ typedef int (*successor_phi_fn)         PARAMS ((rtx, int, int, void *));
 extern int for_each_successor_phi       PARAMS ((basic_block bb,
 						 successor_phi_fn,
 						 void *));
+extern int remove_phi_alternative	PARAMS ((rtx, basic_block));
+
 
 /* Optimizations.  */
-/* In dce.c */
+/* In ssa-dce.c */
 extern void eliminate_dead_code		PARAMS ((void));
 
 /* SSA definitions and uses.  */
