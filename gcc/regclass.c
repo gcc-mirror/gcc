@@ -408,18 +408,30 @@ static struct costs op_costs[MAX_RECOG_OPERANDS];
 
 static char *prefclass;
 
-/* preferred_or_nothing[R] is nonzero if we should put pseudo number R
-   in memory if we can't get its preferred class.
+/* altclass[R] is a register class that we should use for allocating
+   pseudo number R if no register in the preferred class is available.
+   If no register in this class is available, memory is preferred.
+
+   It might appear to be more general to have a bitmask of classes here,
+   but since it is recommended that there be a class corresponding to the
+   union of most major pair of classes, that generality is not required. 
+
    This is available after `regclass' is run.  */
 
-static char *preferred_or_nothing;
+static char *altclass;
 
-/* Record the depth of loops that we are in, 1 for no loops.  */
+/* Record the depth of loops that we are in.  */
 
 static int loop_depth;
 
-void reg_class_record ();
-void record_address_regs ();
+/* Account for the fact that insns within a loop are executed very commonly,
+   but don't keep doing this as loops go too deep.  */
+
+static int loop_cost;
+
+static int copy_cost ();
+static void record_reg_classes ();
+static void record_address_regs ();
 
 
 /* Return the reg_class in which pseudo reg number REGNO is best allocated.
