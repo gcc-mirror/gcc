@@ -28,6 +28,11 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __GNU_OBJC_LIST_H
 #define __GNU_OBJC_LIST_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+
 struct objc_list {
   void *head;
   struct objc_list *tail;
@@ -144,4 +149,10 @@ list_free(struct objc_list* list)
       objc_free(list);
     }
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+
 #endif /* not __GNU_OBJC_LIST_H */

@@ -34,6 +34,11 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>
 #include <stdarg.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+
 /* For functions which return Method_t */
 #define METHOD_NULL	(Method_t)0
                                                 /* Boolean typedefs */
@@ -605,6 +610,11 @@ object_is_meta_class (id object)
 
 struct sarray* 
 objc_get_uninstalled_dtable(void);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 
 #endif /* not __objc_api_INCLUDE_GNU */
 

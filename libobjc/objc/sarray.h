@@ -43,10 +43,19 @@ extern const char* __objc_sparse3_id;
 
 #include "objc/thr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 extern int nbuckets;		/* for stats */
 extern int nindices;
 extern int narrays;
 extern int idxsize;
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 
 #include <assert.h>
 
@@ -142,6 +151,10 @@ struct sarray {
   size_t capacity;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 struct sarray* sarray_new(int, void* default_element);
 void sarray_free(struct sarray*);
 struct sarray* sarray_lazy_copy(struct sarray*);
@@ -233,5 +246,10 @@ static inline void* sarray_get_safe(struct sarray* array, sidx indx)
   else
     return (array->empty_bucket->elems[0]);
 }
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 
 #endif /* __sarray_INCLUDE_GNU */

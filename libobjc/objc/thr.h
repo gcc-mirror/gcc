@@ -40,6 +40,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include "objc/objc.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /*************************************************************************
  *  Universal static variables:
  */
@@ -141,5 +145,10 @@ int __objc_thread_exit (void);
 objc_thread_t __objc_thread_id (void);
 int __objc_thread_set_data (void *value);
 void * __objc_thread_get_data (void);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 
 #endif /* not __thread_INCLUDE_GNU */
