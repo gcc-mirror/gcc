@@ -4182,7 +4182,7 @@ dsrl\t%3,%3,1\n\
 ;; Operand 2 is the address: print_operand works out which relocation
 ;; should be applied.
 
-(define_insn "lowsi"
+(define_insn "*lowsi"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:SI 2 "immediate_operand" "")))]
@@ -4191,7 +4191,7 @@ dsrl\t%3,%3,1\n\
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")])
 
-(define_insn "lowdi"
+(define_insn "*lowdi"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(lo_sum:DI (match_operand:DI 1 "register_operand" "r")
 		   (match_operand:DI 2 "immediate_operand" "")))]
@@ -4199,6 +4199,26 @@ dsrl\t%3,%3,1\n\
   "daddiu\t%0,%1,%R2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")])
+
+(define_insn "*lowsi_mips16"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(lo_sum:SI (match_operand:SI 1 "register_operand" "0")
+		   (match_operand:SI 2 "immediate_operand" "")))]
+  "TARGET_MIPS16"
+  "addiu\t%0,%R2"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"8")])
+
+(define_insn "*lowdi_mips16"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(lo_sum:DI (match_operand:DI 1 "register_operand" "0")
+		   (match_operand:DI 2 "immediate_operand" "")))]
+  "TARGET_MIPS16 && TARGET_64BIT"
+  "daddiu\t%0,%R2"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"8")])
 
 ;; 64-bit integer moves
 
