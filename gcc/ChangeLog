@@ -1,3 +1,11 @@
+2000-01-22  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* loop.c (loops_info): New variable.
+	(loop_optimize): Allocate loops->array and free it on exit.
+	Allocate memory for loops_info and assign to each loop,
+ 	replacing alloca.  
+	(find_and_verify_loops): Do not allocate loops->array.
+
 2000-01-21  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* fixinc/fixfixes.c (machine_name_fix): Don't free 'scratch'.
