@@ -256,3 +256,5 @@ extern void sbitmap_intersect_of_successors PROTO ((sbitmap, sbitmap *, int,
 						    int_list_ptr *));
 extern void sbitmap_union_of_predecessors PROTO ((sbitmap, sbitmap *, int,
 						  int_list_ptr *));
+extern void sbitmap_union_of_successors PROTO ((sbitmap, sbitmap *, int,
+						int_list_ptr *));

@@ -3862,6 +3862,19 @@ sbitmap_union_of_predecessors (dst, src, bb, s_preds)
   sbitmap_union_of_predsucc (dst, src, bb, s_preds);
 }
 
+/* Set the bitmap DST to the union of SRC of all predecessors of
+   block number BB.  */
+
+void
+sbitmap_union_of_successors (dst, src, bb, s_succ)
+     sbitmap dst;
+     sbitmap *src;
+     int bb;
+     int_list_ptr *s_succ;
+{
+  sbitmap_union_of_predsucc (dst, src, bb, s_succ);
+}
+
 /* Compute dominator relationships.  */
 void
 compute_dominators (dominators, post_dominators, s_preds, s_succs)
