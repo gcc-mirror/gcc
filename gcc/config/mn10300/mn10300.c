@@ -627,8 +627,7 @@ initial_offset (from, to)
 /* Flush the argument registers to the stack for a stdarg function;
    return the new argument pointer.  */
 rtx
-mn10300_builtin_saveregs (arglist)
-     tree arglist;
+mn10300_builtin_saveregs ()
 {
   rtx offset;
   tree fntype = TREE_TYPE (current_function_decl);

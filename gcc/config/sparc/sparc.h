@@ -2039,11 +2039,10 @@ void sparc64_initialize_trampoline ();
     else							\
       sparc_initialize_trampoline (TRAMP, FNADDR, CXT)
 
-/* Generate necessary RTL for __builtin_saveregs().
-   ARGLIST is the argument list; see expr.c.  */
+/* Generate necessary RTL for __builtin_saveregs().  */
 
 extern struct rtx_def *sparc_builtin_saveregs ();
-#define EXPAND_BUILTIN_SAVEREGS(ARGLIST) sparc_builtin_saveregs (ARGLIST)
+#define EXPAND_BUILTIN_SAVEREGS() sparc_builtin_saveregs ()
 
 /* Define this macro if the location where a function argument is passed
    depends on whether or not it is a named argument.

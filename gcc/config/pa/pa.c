@@ -4259,14 +4259,12 @@ function_arg_padding (mode, type)
 }
 
 
-/* Do what is necessary for `va_start'.  The argument is ignored;
-   We look at the current function to determine if stdargs or varargs
-   is used and fill in an initial va_list.  A pointer to this constructor
-   is returned.  */
+/* Do what is necessary for `va_start'.  We look at the current function
+   to determine if stdargs or varargs is used and fill in an initial
+   va_list.  A pointer to this constructor is returned.  */
 
 struct rtx_def *
-hppa_builtin_saveregs (arglist)
-     tree arglist ATTRIBUTE_UNUSED;
+hppa_builtin_saveregs ()
 {
   rtx offset, dest;
   tree fntype = TREE_TYPE (current_function_decl);

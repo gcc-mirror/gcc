@@ -1566,16 +1566,10 @@ typedef struct rs6000_args
    code for a call to `__builtin_saveregs'.  This code will be moved
    to the very beginning of the function, before any parameter access
    are made.  The return value of this function should be an RTX that
-   contains the value to use as the return of `__builtin_saveregs'.
+   contains the value to use as the return of `__builtin_saveregs'.  */
 
-   The argument ARGS is a `tree_list' containing the arguments that
-   were passed to `__builtin_saveregs'.
-
-   If this macro is not defined, the compiler will output an ordinary
-   call to the library function `__builtin_saveregs'.  */
-
-#define EXPAND_BUILTIN_SAVEREGS(ARGS) \
-  expand_builtin_saveregs (ARGS)
+#define EXPAND_BUILTIN_SAVEREGS() \
+  expand_builtin_saveregs ()
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.

@@ -570,7 +570,7 @@ extern struct rtx_def *function_arg ();
    _builtin_saveregs, so we must make this explicit.  */
 
 extern struct rtx_def *mn10300_builtin_saveregs ();
-#define EXPAND_BUILTIN_SAVEREGS(ARGLIST) mn10300_builtin_saveregs (ARGLIST)
+#define EXPAND_BUILTIN_SAVEREGS() mn10300_builtin_saveregs ()
 
 /* Addressing modes, and classification of registers for them.  */
 
