@@ -53,8 +53,8 @@ import gnu.java.awt.ComponentDataBlitOp;
  * 
  * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
  */
-public class BufferedImage extends java.awt.Image
-    //implements java.awt.image.WritableRenderedImage
+public class BufferedImage extends Image
+  implements WritableRenderedImage
 {
   public static final int TYPE_CUSTOM         =  0,
                           TYPE_INT_RGB        =  1,
@@ -88,6 +88,8 @@ public class BufferedImage extends java.awt.Image
 				   0x03e0,
 				   0x001f,
 				   DataBuffer.TYPE_USHORT};
+
+  Vector observers;
   
   public BufferedImage(int w, int h, int type)
   {
@@ -568,5 +570,34 @@ public class BufferedImage extends java.awt.Image
   {
     // FIXME: implement:
     return super.toString();
+  }
+
+  /**
+   * Adds a tile observer. If the observer is already present, it receives
+   * multiple notifications.
+   *
+   * @param to The TileObserver to add.
+   */
+  public void addTileObserver (TileObserver to)
+  {
+    if (observers == null)
+      observers = new Vector ();
+	
+    observers.add (to);
+  }
+	
+  /**
+   * Removes a tile observer. If the observer was not registered,
+   * nothing happens. If the observer was registered for multiple
+   * notifications, it is now registered for one fewer notification.
+   *
+   * @param to The TileObserver to remove.
+   */
+  public void removeTileObserver (TileObserver to)
+  {
+    if (observers == null)
+      return;
+	
+    observers.remove (to);
   }
 }

@@ -1,3 +1,73 @@
+2003-03-10  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/FocusTraversalPolicy.java
+	(FocusTraversalPolicy): Documentation added.
+	(getComponentAfter): Documentation added.
+	(getComponentBefore): Documentation added.
+	(getFirstComponent): Documentation added.
+	(getLastComponent): Documentation added.
+	(getDefaultComponent): Documentation added.
+	(getInitialComponent): Documentation added.
+	* java/awt/ScrollPaneAdjustable.java
+	(sp): New member variable.
+	(orientation): New member variable.
+	(value): New member variable.
+	(minimum): New member variable.
+	(maximum): New member variable.
+	(visibleAmount): New member variable.
+	(unitIncrement): New member variable.
+	(blockIncrement): New member variable.
+	(adjustmentListener): New member variable.
+	(ScrollPaneAdjustable): Rewrote.
+	(addAdjustmentListener): New method.
+	(removeAdjustmentListener): New method.
+	(getAdjustmentListeners): New method.
+	(getBlockIncrement): New method.
+	(getMaximum): New method.
+	(getMinimum): New method.
+	(getOrientation): New method.
+	(getUnitIncrement): New method.
+	(getValue): New method.
+	(getVisibleAmount): New method.
+	(setBlockIncrement): New method.
+	(setUnitIncrement): New method.
+	(setMaximum): Implemented.
+	(setMinimum): Implemented.
+	(setValue): New method.
+	(setVisibleAmount): Implemented.
+	(paramString): New method.
+	* java/awt/Window.java
+	(show): Use setVisible(true) instead of super.show().
+	(hide): Use sevVisible(false) instead of super.hide().
+	(processWindowEvent): Added cases for WINDOW_GAINED_FOCUS,
+	WINDOW_LOST_FOCUS and WINDOW_STATE_CHANGED.
+	(postEvent): Deprecated.
+	(applyResourceBundle): Deprecated.
+	(processWindowFocusEvent): New method.
+	(processWindowStateEvent): New method.
+	* java/awt/datatransfer/DataFlavor.java: Reindented.
+	* java/awt/font/TextHitInfo.java
+	(charIndex): New member variable.
+	(leadingEdge): New member variable.
+	(TextHitInfo): New constructor.
+	(getCharIndex): Implemented.
+	(isLeadingEdge): Implemented.
+	(getInsertionIndex): Implemented.
+	(hashCode): Access charIndex directly.
+	(equals): Reformated.
+	(leading): Implemented.
+	(trailing): Implemented.
+	(beforeOffset): Implemented.
+	(afterOffset): Implemented.
+	(getOtherHit): Implemented.
+	(getOffsetHit): Implemented.
+	(toString): Implemented.
+	* java/awt/image/BufferedImage.java
+	(BufferedImage): Implements WritableRenderedImage.
+	(observers): New member variable.
+	(addTileObserver): New method.
+	(removeTileObserver): New method.
+
 2003-03-09  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/9934:
