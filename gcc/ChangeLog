@@ -1,3 +1,13 @@
+2001-03-07  Laurynas Biveinis  <lauras@softhome.net>
+
+        * Makefile.in: Set RANLIB to @RANLIB@.
+        Remove RANLIB_TEST.
+
+2001-03-07  Laurynas Biveinis  <lauras@softhome.net>
+	 
+	* fixinc/inclhack.def (djgpp_wchar_h): New test.
+	* fixinc/fixincl.x: Regenerated.
+
 2001-03-07  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (call_osf_1_noreturn): New pattern.
