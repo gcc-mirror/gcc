@@ -381,6 +381,10 @@
 ;; from the same template.
 (define_code_macro any_shift [ashift ashiftrt lshiftrt])
 
+;; This code macro allows all native floating-point comparisons to be
+;; generated from the same template.
+(define_code_macro fcond [unordered uneq unlt unle eq lt le])
+
 ;; <u> expands to an empty string when doing a signed operation and
 ;; "u" when doing an unsigned operation.
 (define_code_attr u [(sign_extend "") (zero_extend "u")])
@@ -397,6 +401,15 @@
 (define_code_attr insn [(ashift "sll")
 			(ashiftrt "sra")
 			(lshiftrt "srl")])
+
+;; <fcond> is the c.cond.fmt condition associated with a particular code.
+(define_code_attr fcond [(unordered "un")
+			 (uneq "ueq")
+			 (unlt "ult")
+			 (unle "ule")
+			 (eq "eq")
+			 (lt "lt")
+			 (le "le")])
 
 ;; .........................
 ;;
@@ -4731,165 +4744,30 @@ beq\t%2,%.,1b\;\
 ;;
 ;;  ....................
 
-(define_insn "sunordered_df"
+(define_insn "s<code>_<mode>"
   [(set (match_operand:CC 0 "register_operand" "=z")
-	(unordered:CC (match_operand:DF 1 "register_operand" "f")
-		      (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "c.un.d\t%Z0%1,%2"
+	(fcond:CC (match_operand:SCALARF 1 "register_operand" "f")
+		  (match_operand:SCALARF 2 "register_operand" "f")))]
+  ""
+  "c.<fcond>.<fmt>\t%Z0%1,%2"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
 
-(define_insn "sunlt_df"
+(define_insn "sgt_<mode>"
   [(set (match_operand:CC 0 "register_operand" "=z")
-	(unlt:CC (match_operand:DF 1 "register_operand" "f")
-		 (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "c.ult.d\t%Z0%1,%2"
+	(gt:CC (match_operand:SCALARF 1 "register_operand" "f")
+	       (match_operand:SCALARF 2 "register_operand" "f")))]
+  ""
+  "c.lt.<fmt>\t%Z0%2,%1"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
 
-(define_insn "suneq_df"
+(define_insn "sge_<mode>"
   [(set (match_operand:CC 0 "register_operand" "=z")
-	(uneq:CC (match_operand:DF 1 "register_operand" "f")
-		 (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "c.ueq.d\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "sunle_df"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unle:CC (match_operand:DF 1 "register_operand" "f")
-		 (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "c.ule.d\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "seq_df"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(eq:CC (match_operand:DF 1 "register_operand" "f")
-	       (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "c.eq.d\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "slt_df"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(lt:CC (match_operand:DF 1 "register_operand" "f")
-	       (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "c.lt.d\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "sle_df"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(le:CC (match_operand:DF 1 "register_operand" "f")
-	       (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "c.le.d\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "sgt_df"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(gt:CC (match_operand:DF 1 "register_operand" "f")
-	       (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "c.lt.d\t%Z0%2,%1"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "sge_df"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(ge:CC (match_operand:DF 1 "register_operand" "f")
-	       (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "c.le.d\t%Z0%2,%1"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "sunordered_sf"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unordered:CC (match_operand:SF 1 "register_operand" "f")
-		      (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "c.un.s\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "sunlt_sf"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unlt:CC (match_operand:SF 1 "register_operand" "f")
-		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "c.ult.s\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "suneq_sf"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(uneq:CC (match_operand:SF 1 "register_operand" "f")
-		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "c.ueq.s\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "sunle_sf"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(unle:CC (match_operand:SF 1 "register_operand" "f")
-		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "c.ule.s\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "seq_sf"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(eq:CC (match_operand:SF 1 "register_operand" "f")
-	       (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "c.eq.s\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "slt_sf"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(lt:CC (match_operand:SF 1 "register_operand" "f")
-	       (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "c.lt.s\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "sle_sf"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(le:CC (match_operand:SF 1 "register_operand" "f")
-	       (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "c.le.s\t%Z0%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "sgt_sf"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(gt:CC (match_operand:SF 1 "register_operand" "f")
-	       (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "c.lt.s\t%Z0%2,%1"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "FPSW")])
-
-(define_insn "sge_sf"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(ge:CC (match_operand:SF 1 "register_operand" "f")
-	       (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "c.le.s\t%Z0%2,%1"
+	(ge:CC (match_operand:SCALARF 1 "register_operand" "f")
+	       (match_operand:SCALARF 2 "register_operand" "f")))]
+  ""
+  "c.le.<fmt>\t%Z0%2,%1"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
 
