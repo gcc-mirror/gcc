@@ -1,3 +1,8 @@
+2005-03-17  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/19966
+	* g++.dg/overload/operator2.C: New test.
+
 2005-03-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20257
