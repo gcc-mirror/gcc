@@ -1,3 +1,19 @@
+2003-02-09  Richard Henderson  <rth@redhat.com>
+
+	* libgcc-std.ver (__clztf2): New.
+	(__ctztf2, __popcounttf2, __paritytf2): New.
+	* libgcc2.c (__clzSI2, __clzDI2, __ctzSI2, __ctzDI2, __popcountSI2,
+	__popcountDI2, __paritySI2, __parityDI2): Use UWmode and UDWmode;
+	adjust code to match the different type sizes.
+	* libgcc2.h (__clzSI2, __ctzSI2, __popcountSI2, __paritySI2,
+	__clzDI2, __ctzDI2, __popcountDI2, __parityDI2): New macros.
+
+	* optabs.c (init_integral_libfuncs): Don't hard-code SImode and
+	TImode; select word_mode and twice that.
+	(init_floating_libfuncs): Don't hard-code SFmode and TFmode;
+	select the modes from float, double, and long double.
+	(init_optabs): Remove duplicate initializations.
+
 2003-02-09  Wolfgang Bangerth  <bangerth@ticam.utexas.edu>
 
 	* doc/install.texi: Squeeze and streamline section on

@@ -5396,7 +5396,9 @@ init_integral_libfuncs (optable, opname, suffix)
      const char *opname;
      int suffix;
 {
-  init_libfuncs (optable, SImode, TImode, opname, suffix);
+  init_libfuncs (optable, word_mode,
+		 mode_for_size (2*BITS_PER_WORD, MODE_INT, 0),
+		 opname, suffix);
 }
 
 /* Initialize the libfunc fields of an entire group of entries in some
@@ -5410,7 +5412,18 @@ init_floating_libfuncs (optable, opname, suffix)
      const char *opname;
      int suffix;
 {
-  init_libfuncs (optable, SFmode, TFmode, opname, suffix);
+  enum machine_mode fmode, dmode, lmode;
+
+  fmode = float_type_node ? TYPE_MODE (float_type_node) : VOIDmode;
+  dmode = double_type_node ? TYPE_MODE (double_type_node) : VOIDmode;
+  lmode = long_double_type_node ? TYPE_MODE (long_double_type_node) : VOIDmode;
+
+  if (fmode != VOIDmode)
+    init_libfuncs (optable, fmode, fmode, opname, suffix);
+  if (dmode != fmode && dmode != VOIDmode)
+    init_libfuncs (optable, dmode, dmode, opname, suffix);
+  if (lmode != dmode && lmode != VOIDmode)
+    init_libfuncs (optable, lmode, lmode, opname, suffix);
 }
 
 rtx
@@ -5659,17 +5672,6 @@ init_optabs ()
   /* The ffs function operates on `int'.  */
   ffs_optab->handlers[(int) mode_for_size (INT_TYPE_SIZE, MODE_INT, 0)].libfunc
     = init_one_libfunc ("ffs");
-  ffs_optab->handlers[(int) DImode].libfunc = init_one_libfunc ("__ffsdi2");
-  clz_optab->handlers[(int) SImode].libfunc = init_one_libfunc ("__clzsi2");
-  clz_optab->handlers[(int) DImode].libfunc = init_one_libfunc ("__clzdi2");
-  ctz_optab->handlers[(int) SImode].libfunc = init_one_libfunc ("__ctzsi2");
-  ctz_optab->handlers[(int) DImode].libfunc = init_one_libfunc ("__ctzdi2");
-  popcount_optab->handlers[(int) SImode].libfunc
-      = init_one_libfunc ("__popcountsi2");
-  popcount_optab->handlers[(int) DImode].libfunc
-      = init_one_libfunc ("__popcountdi2");
-  parity_optab->handlers[(int) SImode].libfunc = init_one_libfunc ("__paritysi2");
-  parity_optab->handlers[(int) DImode].libfunc = init_one_libfunc ("__paritydi2");
 
   extendsfdf2_libfunc = init_one_libfunc ("__extendsfdf2");
   extendsfxf2_libfunc = init_one_libfunc ("__extendsfxf2");

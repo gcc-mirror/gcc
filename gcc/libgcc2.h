@@ -203,7 +203,15 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define __fixunssfSI	__NW(fixunssf,)
 
 #define __ffsSI2	__NW(ffs,2)
+#define __clzSI2	__NW(clz,2)
+#define __ctzSI2	__NW(ctz,2)
+#define __popcountSI2	__NW(popcount,2)
+#define __paritySI2	__NW(parity,2)
 #define __ffsDI2	__NDW(ffs,2)
+#define __clzDI2	__NDW(clz,2)
+#define __ctzDI2	__NDW(ctz,2)
+#define __popcountDI2	__NDW(popcount,2)
+#define __parityDI2	__NDW(parity,2)
 
 extern DWtype __muldi3 (DWtype, DWtype);
 extern DWtype __divdi3 (DWtype, DWtype);
@@ -225,20 +233,6 @@ extern DWtype __negdi2 (DWtype);
 extern DWtype __lshrdi3 (DWtype, word_type);
 extern DWtype __ashldi3 (DWtype, word_type);
 extern DWtype __ashrdi3 (DWtype, word_type);
-
-/* ??? Ought to get these named properly for DSPs.  */
-#if BITS_PER_UNIT != 8 || MIN_UNITS_PER_WORD < 4
-# undef L_clzsi2
-# undef L_ctzsi2
-# undef L_popcountsi2
-# undef L_paritysi2
-# if LONG_LONG_TYPE_SIZE <= 32
-#  undef L_clzdi2
-#  undef L_ctzdi2
-#  undef L_popcountdi2
-#  undef L_paritydi2
-# endif
-#endif
 
 /* __udiv_w_sdiv is static inline when building other libgcc2 portions.  */
 #if (!defined(L_udivdi3) && !defined(L_divdi3) && \

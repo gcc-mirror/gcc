@@ -539,15 +539,13 @@ const UQItype __clz_tab[] =
 
 #ifdef L_clzsi2
 #undef int
-extern int __clzsi2 (USItype x);
+extern int __clzSI2 (UWtype x);
 int
-__clzsi2 (USItype x)
+__clzSI2 (UWtype x)
 {
-  UWtype w = x;
   Wtype ret;
 
-  count_leading_zeros (ret, w);
-  ret -= (sizeof(w) - sizeof(x)) * BITS_PER_UNIT;
+  count_leading_zeros (ret, x);
 
   return ret;
 }
@@ -555,25 +553,19 @@ __clzsi2 (USItype x)
 
 #ifdef L_clzdi2
 #undef int
-extern int __clzdi2 (UDItype x);
+extern int __clzDI2 (UDWtype x);
 int
-__clzdi2 (UDItype x)
+__clzDI2 (UDWtype x)
 {
+  DWunion uu;
   UWtype word;
   Wtype ret, add;
 
-  if (sizeof(x) > sizeof(word))
-    {
-      DWunion uu;
-
-      uu.ll = x;
-      if (uu.s.high)
-	word = uu.s.high, add = 0;
-      else
-	word = uu.s.low, add = W_TYPE_SIZE;
-    }
+  uu.ll = x;
+  if (uu.s.high)
+    word = uu.s.high, add = 0;
   else
-    word = x, add = (Wtype)(sizeof(x) - sizeof(word)) * BITS_PER_UNIT;
+    word = uu.s.low, add = W_TYPE_SIZE;
 
   count_leading_zeros (ret, word);
   return ret + add;
@@ -582,9 +574,9 @@ __clzdi2 (UDItype x)
 
 #ifdef L_ctzsi2
 #undef int
-extern int __ctzsi2 (USItype x);
+extern int __ctzSI2 (UWtype x);
 int
-__ctzsi2 (USItype x)
+__ctzSI2 (UWtype x)
 {
   Wtype ret;
 
@@ -596,25 +588,19 @@ __ctzsi2 (USItype x)
 
 #ifdef L_ctzdi2
 #undef int
-extern int __ctzdi2 (UDItype x);
+extern int __ctzDI2 (UDWtype x);
 int
-__ctzdi2 (UDItype x)
+__ctzDI2 (UDWtype x)
 {
+  DWunion uu;
   UWtype word;
   Wtype ret, add;
 
-  if (sizeof(x) > sizeof(word))
-    {
-      DWunion uu;
-
-      uu.ll = x;
-      if (uu.s.low)
-	word = uu.s.low, add = 0;
-      else
-	word = uu.s.high, add = W_TYPE_SIZE;
-    }
+  uu.ll = x;
+  if (uu.s.low)
+    word = uu.s.low, add = 0;
   else
-    word = x, add = 0;
+    word = uu.s.high, add = W_TYPE_SIZE;
 
   count_trailing_zeros (ret, word);
   return ret + add;
@@ -642,57 +628,77 @@ const UQItype __popcount_tab[] =
 
 #ifdef L_popcountsi2
 #undef int
-extern int __popcountsi2 (USItype x);
+extern int __popcountSI2 (UWtype x);
 int
-__popcountsi2 (USItype x)
+__popcountSI2 (UWtype x)
 {
-  return __popcount_tab[(x >>  0) & 0xff]
-       + __popcount_tab[(x >>  8) & 0xff]
-       + __popcount_tab[(x >> 16) & 0xff]
-       + __popcount_tab[(x >> 24) & 0xff];
+  UWtype i, ret = 0;
+
+  for (i = 0; i < W_TYPE_SIZE; i += 8)
+    ret += __popcount_tab[(x >> i) & 0xff];
+
+  return ret;
 }
 #endif
 
 #ifdef L_popcountdi2
 #undef int
-extern int __popcountdi2 (UDItype x);
+extern int __popcountDI2 (UDWtype x);
 int
-__popcountdi2 (UDItype x)
+__popcountDI2 (UDWtype x)
 {
-  return __popcount_tab[(x >>  0) & 0xff]
-       + __popcount_tab[(x >>  8) & 0xff]
-       + __popcount_tab[(x >> 16) & 0xff]
-       + __popcount_tab[(x >> 24) & 0xff]
-       + __popcount_tab[(x >> 32) & 0xff]
-       + __popcount_tab[(x >> 40) & 0xff]
-       + __popcount_tab[(x >> 48) & 0xff]
-       + __popcount_tab[(x >> 56) & 0xff];
+  UWtype i, ret = 0;
+
+  for (i = 0; i < 2*W_TYPE_SIZE; i += 8)
+    ret += __popcount_tab[(x >> i) & 0xff];
+
+  return ret;
 }
 #endif
 
 #ifdef L_paritysi2
 #undef int
-extern int __paritysi2 (USItype x);
+extern int __paritySI2 (UWtype x);
 int
-__paritysi2 (USItype x)
+__paritySI2 (UWtype x)
 {
-  UWtype nx = x;
-  nx ^= nx >> 16;
-  nx ^= nx >> 8;
-  nx ^= nx >> 4;
-  nx &= 0xf;
-  return (0x6996 >> nx) & 1;
+#if W_TYPE_SIZE > 64
+# error "fill out the table"
+#endif
+#if W_TYPE_SIZE > 32
+  x ^= x >> 32;
+#endif
+#if W_TYPE_SIZE > 16
+  x ^= x >> 16;
+#endif
+  x ^= x >> 8;
+  x ^= x >> 4;
+  x &= 0xf;
+  return (0x6996 >> x) & 1;
 }
 #endif
 
 #ifdef L_paritydi2
 #undef int
-extern int __paritydi2 (UDItype x);
+extern int __parityDI2 (UDWtype x);
 int
-__paritydi2 (UDItype x)
+__parityDI2 (UDWtype x)
 {
-  UWtype nx = x ^ (x >> 32);
+  DWunion uu;
+  UWtype nx;
+
+  uu.ll = x;
+  nx = uu.s.low ^ uu.s.high;
+
+#if W_TYPE_SIZE > 64
+# error "fill out the table"
+#endif
+#if W_TYPE_SIZE > 32
+  nx ^= nx >> 32;
+#endif
+#if W_TYPE_SIZE > 16
   nx ^= nx >> 16;
+#endif
   nx ^= nx >> 8;
   nx ^= nx >> 4;
   nx &= 0xf;
