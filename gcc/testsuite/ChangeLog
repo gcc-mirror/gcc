@@ -1,3 +1,7 @@
+2002-03-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.old-deja/g++.abi/ptrmem.C: Mips puts vbit in delta too.
+
 2002-03-22  Phil Edwards  <pme@gcc.gnu.org>
 
 	* gcc.dg/cpp/extratokens2.c:  New file.
