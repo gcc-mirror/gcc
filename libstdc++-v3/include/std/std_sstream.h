@@ -258,7 +258,7 @@ namespace std
 	  {
 	    this->setp(__base, __base + _M_string.capacity());
 	    // _M_out_lim points to the string end.
-	    this->_M_out_lim = __base + __len;
+	    this->_M_out_lim += __len;
 	    this->_M_out_cur += __o;
 	  }
       }
