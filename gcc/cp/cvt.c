@@ -794,6 +794,8 @@ ocp_convert (type, expr, convtype, flags)
   if (code == POINTER_TYPE || code == REFERENCE_TYPE
       || TYPE_PTRMEMFUNC_P (type))
     return fold (cp_convert_to_pointer (type, e, 0));
+  if (code == VECTOR_TYPE)
+    return fold (convert_to_vector (type, e));
   if (code == REAL_TYPE || code == COMPLEX_TYPE)
     {
       if (IS_AGGR_TYPE (TREE_TYPE (e)))

@@ -1,3 +1,8 @@
+2001-01-16 Daniel Berlin <dberlin@redhat.com>
+
+        * cvt.c (ocp_convert): Handle vector type conversion
+        * typeck2.c (digest_init): Handle vector type initializations
+		
 2001-01-16  Phil Edwards  <pme@sources.redhat.com>
 
 	* g++spec.c:  Don't add libraries needlessly if -fsyntax-only
