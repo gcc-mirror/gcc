@@ -3091,10 +3091,9 @@ extern GTY(()) tree sizetype_tab[(int) TYPE_KIND_LAST];
 #define ssizetype sizetype_tab[(int) SSIZETYPE]
 #define sbitsizetype sizetype_tab[(int) SBITSIZETYPE]
 
+extern tree size_int_kind (HOST_WIDE_INT, enum size_type_kind);
 extern tree size_binop (enum tree_code, tree, tree);
 extern tree size_diffop (tree, tree);
-extern tree size_int_kind (HOST_WIDE_INT, enum size_type_kind);
-extern tree size_int_type (HOST_WIDE_INT, tree);
 
 #define size_int(L) size_int_kind (L, SIZETYPE)
 #define ssize_int(L) size_int_kind (L, SSIZETYPE)
