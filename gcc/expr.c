@@ -11039,7 +11039,7 @@ do_jump_for_compare (comparison, if_false_label, if_true_label)
       /* Here we get the first insn that was just emitted.  It used to be the
 	 case that, on some machines, emitting the branch would discard
 	 the previous compare insn and emit a replacement.  This isn't
-	 done anymore, but abort if we see that PREV is deleted.  */
+	 done anymore, but abort if we see that FIRST is deleted.  */
 
       if (first == 0)
 	first = get_insns ();
