@@ -187,6 +187,7 @@ extern int mvs_function_name_length;
 #define BASE_REGISTER 3
 #define PAGE_REGISTER 4
 
+#ifdef TARGET_HLASM
 /* 1 for registers that have pervasive standard uses and are not available
    for the register allocator.  These are registers that must have fixed,
    valid values stored in them for the entire length of the subroutine call,
@@ -249,6 +250,26 @@ extern int mvs_function_name_length;
    but can be less for certain modes in special long registers.  
    Note that DCmode (complex double) needs two regs.
 */
+#endif /* TARGET_HLASM */
+
+/* ================= */
+#ifdef TARGET_ELF_ABI 
+/* The Linux/ELF ABI uses the same register layout as the 
+ * the MVS/OE version, with the following exceptions:
+ * -- r12 (rtca) is not used.
+ */
+
+#define FIXED_REGISTERS 						\
+{ 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0 }
+/*0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19*/
+
+#define CALL_USED_REGISTERS 						\
+{ 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1 }
+/*0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19*/
+
+#endif /* TARGET_ELF_ABI */
+/* ================= */
+
 
 #define HARD_REGNO_NREGS(REGNO, MODE) 					\
   ((REGNO) > 15 ? 							\
@@ -327,7 +348,7 @@ extern int mvs_function_name_length;
             A_t a; a.a=1; a.b=2 a.c=3;
             return a;
         } 
-   In the above, the stroage for the return value is in the callers stack, and 
+   In the above, the storage for the return value is in the callers stack, and 
    the R1 points at that mem location.
  */
 
@@ -444,7 +465,10 @@ enum reg_class
 
 /* Define this if pushing a word on the stack makes the stack pointer a
    smaller address.  */
+/* ------------------------------------------------------------------- */
 
+/* ================= */
+#ifdef TARGET_HLASM
 /* #define STACK_GROWS_DOWNWARD */
 
 /* Define this if the nominal address of the stack frame is at the
@@ -465,6 +489,29 @@ enum reg_class
 
 /* If we generate an insn to push BYTES bytes, this says how many the stack
    pointer really advances by.  On the 370, we have no push instruction.  */
+
+#endif /* TARGET_HLASM */
+
+/* ================= */
+#ifdef TARGET_ELF_ABI 
+
+/* With ELF/Linux, stack is placed at large virtual addrs and grows down.
+   But we want the compiler to generate posistive displacements from the 
+   stack pointer, and so we make the frame lie above the stack.  */
+
+#define STACK_GROWS_DOWNWARD 
+/* #define FRAME_GROWS_DOWNWARD */
+
+/* Offset within stack frame to start allocating local variables at.
+   This is the offset to the BEGINNING of the first local allocated.  */
+
+#define STARTING_FRAME_OFFSET  						\
+     (STACK_POINTER_OFFSET + current_function_outgoing_args_size)
+
+#define INITIAL_FRAME_POINTER_OFFSET(DEPTH) (DEPTH) = STARTING_FRAME_OFFSET
+
+#endif /* TARGET_ELF_ABI */
+/* ================= */
 
 /* #define PUSH_ROUNDING(BYTES) */
 
@@ -529,7 +576,7 @@ enum reg_class
 
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
 
-/* The FUNCTION_VALUE macro dDefines how to find the value returned by a 
+/* The FUNCTION_VALUE macro defines how to find the value returned by a 
    function.  VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is NULL.  
@@ -1559,7 +1606,7 @@ enum reg_class
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
 {									\
-  if (strlen (NAME) * 2 > mvs_function_name_length)			\
+  if (strlen (NAME) + 1 > mvs_function_name_length)			\
     {									\
       if (mvs_function_name)						\
 	free (mvs_function_name);					\
@@ -1567,7 +1614,7 @@ enum reg_class
     }									\
   if (!mvs_function_name)						\
     {									\
-      mvs_function_name_length = strlen (NAME) * 2;			\
+      mvs_function_name_length = strlen (NAME) * 2 + 1;			\
       mvs_function_name = (char *) xmalloc (mvs_function_name_length);	\
     }									\
   if (!strcmp (NAME, "main"))						\

@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-flags.h"
 #include "output.h"
 #include "insn-attr.h"
-#include "function.h"
+/* #include "function.h" */
 #include "flags.h"
 #include "recog.h"
 
@@ -370,13 +370,13 @@ i370_short_branch (insn)
 /* The i370_label_scan() routine is supposed to loop over
    all labels and label references in a compilation unit,
    and determine whether all label refs appear on the same 
-   code page as the label. If they do, thenm we can avoid 
+   code page as the label. If they do, then we can avoid 
    a reload of the base register for that label.
   
-   Note that the instruciton addresses used here are only 
+   Note that the instruction addresses used here are only 
    approximate, and make the sizes of the jumps appear
    farther apart then they will actually be.  This makes 
-   this code far more conservative than it needed to be.
+   this code far more conservative than it needs to be.
  */
 
 #define I370_RECORD_LABEL_REF(label,addr) {				\
@@ -470,8 +470,8 @@ i370_label_scan (void)
    can only lead to horrible results if this were to occur.
   
    However, the current situation is not any worse than it was 
-   last week, and so we punt for now.
- */
+   last week, and so we punt for now.  */
+
                     debug_rtx (insn);
 // abort();
                     for (j=0; j < XVECLEN (body, 0); j++)
@@ -483,23 +483,30 @@ i370_label_scan (void)
                  }
                else 
                  {
-/* The following appears during make of _eh in libgcc2.a
-   while not obviously wrong, its weird, so not obviously 
-   right either ...
-   (jump_insn:HI 125 124 126 (set (pc)
-         (mem:SI (plus:SI (reg/v:SI 1 r1)
-                 (const_int 4)))) 144 {indirect_jump} (nil)
- */
+/* XXX hack alert.
+   Compiling the execption handling (L_eh) in libgcc2.a will trip
+   up right here, with something that looks like
+   (set (pc) (mem:SI (plus:SI (reg/v:SI 1 r1) (const_int 4))))
+      {indirect_jump} 
+   I'm not sure of what leads up to this, but it looks like
+   the makings of a long jump which will surely get us into trouble
+   because the base & page registers don't get reloaded.  For now
+   I'm not sure of what to do ... again we punt ... we are not worse
+   off than yesterday.  */
+
+                    /* print_rtl_single (stdout, insn); */
                     debug_rtx (insn);
-//                    abort();
+                    /* abort(); */
                     continue;
                  }
             }
-
-          /* At this point, this jump_insn had better be a plain-old
-           * ordinary one, grap the label id and go */
-          if (CODE_LABEL != GET_CODE (label)) abort ();
-          I370_RECORD_LABEL_REF(label,here);
+          else
+            {
+              /* At this point, this jump_insn had better be a plain-old
+                 ordinary one, grap the label id and go */
+              if (CODE_LABEL != GET_CODE (label)) abort ();
+              I370_RECORD_LABEL_REF(label,here);
+            }
         }
 
       /* Sometimes, we take addresses of labels and use them
@@ -1364,11 +1371,11 @@ i370_function_prolog (f, l)
 #ifdef TARGET_ELF_ABI
 /*
    The 370_function_prolog() routine generates the current ELF ABI ES/390 prolog.
+   It implements a stack that grows downward. 
    It performs the following steps:
    -- saves the callers non-volatile registers on the callers stack.
-   -- computes a new stack top and checks for room for the stack.
-   -- initializes size and backpointer of new stack frame
-   -- updates stack pointer to point at new frame.
+   -- subtracts stackframe size from the stack pointer.
+   -- stores backpointer to old caller stack.
   
    XXX hack alert -- if the global var int leaf_function is non-zero, 
    then this is a leaf, and it might be possible to optimize the prologue
@@ -1413,59 +1420,30 @@ i370_function_prolog (f, frame_size)
   fprintf (f, "\t.long\t%d\n", aligned_size);
 
   /* FENT == function prologue entry */
-  fprintf (f, ".LFENT%03d:\n\t.balign 2\n",   /* FENT%03d DS 0H */
+  fprintf (f, "\t.balign 2\n.LFENT%03d:\n",
               function_label_index);
 
-  /* store multiple of registers 14,15,0,...12 at 12 bytes from sp */
+  /* store multiple registers 14,15,0,...12 at 12 bytes from sp */
   fprintf (f, "\tSTM\tr14,r12,12(sp)\n");
+
+  /* r3 == saved callee stack pointer */
+  fprintf (f, "\tLR\tr3,sp\n");
+
+  /* 4(r15) == stackframe size */
+  fprintf (f, "\tSL\tsp,4(,r15)\n");
 
   /* r11 points to arg list in callers stackframe; was passed in r2 */
   fprintf (f, "\tLR\tr11,r2\n");
 
-  /* r2 == callee stack pointer ; 76(sp) == caller top of stack */
-  fprintf (f, "\tL\tr2,76(,sp)\n");
-
-  /* 4(r15) == callee stack length */
-  fprintf (f, "\tL\tr0,4(,r15)\n");
-
-  /* add callee stack length to caller top of stack */
-  fprintf (f, "\tALR\tr0,r2\n");
-
-  /* is there enough room for this new stack frame? */
-  fprintf (f, "\tCL\tr0,12(,rtca)\n");
-  
-  /* if we've got room, skip next 2 insns */
-  fprintf (f, "\tBNH\t*+10\n");
-
-  /* branch to tca to get more stack */
-  fprintf (f, "\tL\tr15,116(,rtca)\n");
-
-  /* go */
-  fprintf (f, "\tBASR\tr14,r15\n"); 
-
-  /* 72(sp) is something that is propagated up from the base of the stack.
-     We don't use this anywhere, so we could chop this out. For the moment,
-     Lets keep it; it might be handy someday ... */
-  fprintf (f, "\tL\tr15,72(,sp)\n");
-
-  /* store the new top-of-stack at 76(callee_stack) */
-  fprintf (f, "\tSTM\tr15,r0,72(r2)\n");
-
-  /* store some PL/1 compatible eyecatcher ???? why bother ??? */
-  fprintf (f, "\tMVI\t0(r2),0x10\n");
-
   /* store callee stack pointer at 8(sp) */
-  fprintf (f, "\tST\tr2,8(,sp)\n ");
+  /* fprintf (f, "\tST\tsp,8(,r3)\n ");  wasted cycles, no one uses this ... */
 
-  /* store caller sp at 4(callee_sp)  */
-  fprintf (f, "\tST\tsp,4(,r2)\n ");
-
-  /* load calle_sp into sp  */
-  fprintf (f, "\tLR\tsp,r2\n");
+  /* backchain -- store caller sp at 4(callee_sp)  */
+  fprintf (f, "\tST\tr3,4(,sp)\n ");
 
   fprintf (f, "\t.drop\tr15\n");
-  /* place contents of the PSW into r3
-   * that is, place the address of "." into r3 */
+  /* Place contents of the PSW into r3
+     that is, place the address of "." into r3 */
   fprintf (f, "\tBASR\tr%d,0\n", BASE_REGISTER);
   fprintf (f, "\t.using\t.,r%d\n", BASE_REGISTER);
   function_first = 1;

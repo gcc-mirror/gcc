@@ -19,3 +19,10 @@ CC=c89
 
 CLIB=-liberty
 LDFLAGS=-L../libiberty
+
+# TAR Options
+# Please note that OpenEdition confuses tar and pax, and 
+# thus uses the non-standard options 'xpf'
+
+TAROUTOPTS=xpf
+
