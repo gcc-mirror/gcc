@@ -39,14 +39,7 @@ Boston, MA 02111-1307, USA.  */
    object constructed before entering `main'.  */
    
 #undef	STARTFILE_SPEC
-#ifdef USE_GNULIBC_1
-#define STARTFILE_SPEC \
-  "%{!shared: \
-     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
-		       %{!p:%{profile:gcrt1.o%s} \
-			 %{!profile:crt1.o%s}}}} \
-   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
-#elif defined HAVE_LD_PIE
+#if defined HAVE_LD_PIE
 #define STARTFILE_SPEC \
   "%{!shared: %{pg|p|profile:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} \
    crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
@@ -76,26 +69,10 @@ Boston, MA 02111-1307, USA.  */
 #define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
 
 #undef	LIB_SPEC
-/* We no longer link with libc_p.a or libg.a by default. If you
-   want to profile or debug the GNU/Linux C library, please add
-   -profile or -ggdb to LDFLAGS at the link time, respectively.  */
-#if 1
-#ifdef USE_GNULIBC_1
-#define LIB_SPEC \
-  "%{!shared: %{p:-lgmon} %{pg:-lgmon} %{profile:-lgmon -lc_p} \
-     %{!profile:%{!ggdb:-lc} %{ggdb:-lg}}}"
-#else
 #define LIB_SPEC \
   "%{pthread:-lpthread} \
    %{shared:-lc} \
    %{!shared:%{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc}}"
-#endif
-#else
-#define LIB_SPEC \
-  "%{!shared: \
-     %{p:-lgmon -lc_p} %{pg:-lgmon -lc_p} \
-       %{!p:%{!pg:%{!g*:-lc} %{g*:-lg}}}}"
-#endif
 
 #define LINUX_TARGET_OS_CPP_BUILTINS()				\
     do {							\
@@ -107,7 +84,7 @@ Boston, MA 02111-1307, USA.  */
 	builtin_assert ("system=posix");			\
     } while (0)
 
-#if !defined(USE_GNULIBC_1) && defined(HAVE_LD_EH_FRAME_HDR)
+#if defined(HAVE_LD_EH_FRAME_HDR)
 #define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
 #endif
 
@@ -124,8 +101,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Determine whether the the entire c99 runtime
    is present in the runtime library.  */
-#ifndef USE_GNULIBC_1
 #define TARGET_C99_FUNCTIONS 1
-#endif
 
 #define TARGET_HAS_F_SETLKW
