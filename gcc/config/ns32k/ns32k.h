@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  NS32000 version.
    Copyright (C) 1988, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002 Free Software Foundation, Inc.
+   2001, 2002, 2004 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -404,7 +404,7 @@ while (0)
 
 /* Register in which address to store a structure value
    is passed to a function.  */
-#define STRUCT_VALUE_REGNUM 2
+#define NS32K_STRUCT_VALUE_REGNUM 2
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
