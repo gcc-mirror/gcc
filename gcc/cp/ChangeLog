@@ -1,3 +1,8 @@
+2001-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck2.c (add_exception_specifier): Only require complete type if
+	not in processing template declaration.
+
 2001-08-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c: Cast argument to size_t, not HOST_WIDE_INT, in calls to
