@@ -1,3 +1,8 @@
+2004-12-15  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_arg_info): Use FUNCTION_ARG_BOUNDARY to
+	decide whether an argument is double-word aligned.
+
 2004-12-15  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md: Fix missing modes on cmove splitters.

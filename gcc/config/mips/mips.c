@@ -3136,9 +3136,7 @@ mips_arg_info (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
     }
 
   /* See whether the argument has doubleword alignment.  */
-  doubleword_aligned_p = (type
-			  ? TYPE_ALIGN (type) > BITS_PER_WORD
-			  : GET_MODE_UNIT_SIZE (mode) > UNITS_PER_WORD);
+  doubleword_aligned_p = FUNCTION_ARG_BOUNDARY (mode, type) > BITS_PER_WORD;
 
   /* Set REG_OFFSET to the register count we're interested in.
      The EABI allocates the floating-point registers separately,
