@@ -1,3 +1,7 @@
+2000-12-15  Andreas Jaeger  <aj@suse.de>
+
+	* config-lang.in (lang_dirs): Added.
+
 2000-12-15  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (end_artificial_method_body): Fixed undefined behavior.
