@@ -1,3 +1,8 @@
+2003-11-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/12924
+	* g++.dg/template/template-id-2.C: New test.
+
 2003-11-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/5369

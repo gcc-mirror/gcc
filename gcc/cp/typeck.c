@@ -1860,6 +1860,11 @@ finish_class_member_access_expr (tree object, tree name)
 	  is_template_id = true;
 	  template_args = TREE_OPERAND (name, 1);
 	  name = TREE_OPERAND (name, 0);
+
+	  if (TREE_CODE (name) == OVERLOAD)
+	    name = DECL_NAME (get_first_fn (name));
+	  else if (DECL_P (name))
+	    name = DECL_NAME (name);
 	}
 
       if (TREE_CODE (name) == SCOPE_REF)
