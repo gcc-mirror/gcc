@@ -646,6 +646,15 @@ DEFTREECODE (NON_LVALUE_EXPR, "non_lvalue_expr", "1", 1)
    nonzero only after the expression has been computed.  */
 DEFTREECODE (SAVE_EXPR, "save_expr", "e", 3)
 
+/* For a UNSAVE_EXPR, operand 0 is the value to unsave.  By unsave, we
+   mean that all _EXPRs such as TARGET_EXPRs, SAVE_EXPRs,
+   CALL_EXPRs and RTL_EXPRs, that are protected
+   from being evaluated more than once should be reset so that a new
+   expand_expr call of this expr will cause those to be re-evaluated.
+   This is useful when we want to reuse a tree in different places,
+   but where we must re-expand.  */
+DEFTREECODE (UNSAVE_EXPR, "unsave_expr", "e", 1)
+
 /* Represents something whose RTL has already been expanded
    as a sequence which should be emitted when this expression is expanded.
    The first operand is the RTL to emit.  It is the first of a chain of insns.

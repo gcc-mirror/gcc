@@ -4905,6 +4905,14 @@ expand_expr (exp, target, tmode, modifier)
 
       return SAVE_EXPR_RTL (exp);
 
+    case UNSAVE_EXPR:
+      {
+	rtx temp;
+	temp = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
+	TREE_OPERAND (exp, 0) = unsave_expr_now (TREE_OPERAND (exp, 0));
+	return temp;
+      }
+
     case PLACEHOLDER_EXPR:
       /* If there is an object on the head of the placeholder list,
 	 see if some object in it's references is of type TYPE.  For

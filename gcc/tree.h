@@ -1436,6 +1436,17 @@ extern int lvalue_or_else		PROTO((tree, char *));
 
 extern tree save_expr			PROTO((tree));
 
+/* unsave_expr (EXP) returns an expression equivalent to EXP but it
+   can be used multiple times and will evaluate EXP, in it's entirety
+   each time.  */
+
+extern tree unsave_expr			PROTO((tree));
+
+/* unsave_expr_now (EXP) resets EXP in place, so that it can be
+   expanded again.  */
+
+extern tree unsave_expr_now		PROTO((tree));
+
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
    or offset that depends on a field within a record.
 
