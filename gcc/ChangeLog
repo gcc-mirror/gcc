@@ -1,3 +1,11 @@
+Wed Aug  8 21:08:14 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* sibcall.c (return_value_pseudo): New static variable.
+	(skip_copy_to_return_value): Handle return_value_pseudo.
+	(call_ends_block_p): Ensure that return_value_pseudo is set.
+	(optimize_sibling_and_tail_recursive_call): Discover the
+	load of pseudo return value in alternate exit block.
+
 Wed Aug  8 21:06:43 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (ECF_ALWAYS_RETURN): New constant.

@@ -32,6 +32,11 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 
+/* In case alternate_exit_block contains copy from pseudo, to return value,
+   record the pseudo here.  In such case the pseudo must be set to function
+   return in the sibcall sequence.  */
+static rtx return_value_pseudo;
+
 static int identify_call_return_value	PARAMS ((rtx, rtx *, rtx *));
 static rtx skip_copy_to_return_value	PARAMS ((rtx));
 static rtx skip_use_of_return_value	PARAMS ((rtx, enum rtx_code));
@@ -151,6 +156,13 @@ skip_copy_to_return_value (orig_insn)
   set = single_set (insn);
   if (! set)
     return orig_insn;
+
+  if (return_value_pseudo)
+    {
+      if (SET_DEST (set) == return_value_pseudo)
+        return insn;
+      return orig_insn;
+    }
 
   /* The destination must be the same as the called function's return
      value to ensure that any return value is put in the same place by the
@@ -323,6 +335,7 @@ call_ends_block_p (insn, end)
      rtx insn;
      rtx end;
 {
+  rtx new_insn;
   /* END might be a note, so get the last nonnote insn of the block.  */
   end = next_nonnote_insn (PREV_INSN (end));
 
@@ -333,7 +346,15 @@ call_ends_block_p (insn, end)
   /* Skip over copying from the call's return value pseudo into
      this function's hard return register and if that's the end
      of the block, we're OK.  */
-  insn = skip_copy_to_return_value (insn);
+  new_insn = skip_copy_to_return_value (insn);
+
+  /* In case we return value in pseudo, we must set the pseudo to
+     return value of called function, otherwise we are returning
+     something else.  */
+  if (return_value_pseudo && insn == new_insn)
+    return 0;
+  insn = new_insn;
+
   if (insn == end)
     return 1;
 
@@ -575,6 +596,8 @@ optimize_sibling_and_tail_recursive_calls ()
   if (n_basic_blocks == 0)
     return;
 
+  return_value_pseudo = NULL_RTX;
+
   /* Find the exit block.
 
      It is possible that we have blocks which can reach the exit block
@@ -595,6 +618,7 @@ optimize_sibling_and_tail_recursive_calls ()
 	   insn;
 	   insn = NEXT_INSN (insn))
 	{
+	  rtx set;
 	  /* This should only happen once, at the start of this block.  */
 	  if (GET_CODE (insn) == CODE_LABEL)
 	    continue;
@@ -606,6 +630,18 @@ optimize_sibling_and_tail_recursive_calls ()
 	      && GET_CODE (PATTERN (insn)) == USE)
 	    continue;
 
+	  /* Exit block also may contain copy from pseudo containing
+	     return value to hard register.  */
+	  if (GET_CODE (insn) == INSN
+	      && (set = single_set (insn))
+	      && SET_DEST (set) == current_function_return_rtx
+	      && REG_P (SET_SRC (set))
+	      && !return_value_pseudo)
+	    {
+	      return_value_pseudo = SET_SRC (set);
+	      continue;
+	    }
+
 	  break;
 	}
 
@@ -614,6 +650,8 @@ optimize_sibling_and_tail_recursive_calls ()
 	 valid alternate exit block.  */
       if (insn == NULL)
 	alternate_exit = e->src;
+      else
+	return_value_pseudo = NULL;
     }
 
   /* If the function uses ADDRESSOF, we can't (easily) determine
