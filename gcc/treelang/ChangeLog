@@ -1,3 +1,17 @@
+2002-08-16  Tim Josling  <tej@melbpc.org.au>
+
+        Remove variables and functions now defined elsewhere.
+	
+	* treetree.c (maybe_objc_comptypes): Remove.
+	(warn_format, warn_format_y2k, warn_format_extra_args,
+	warn_format_nonliteral, warn_format_security,
+	warn_format_zero_length): Remove.
+	(maybe_building_objc_message_expr): Remove.
+	(cpp_post_options): Remove.
+	(maybe_objc_check_decl): Remove.
+	(integer_types): Remove.
+
+
 2002-08-13  Neil Booth  <neil@daikokuya.co.uk>
 
 	* treelang.c: Remove cpp_post_options.
