@@ -1,4 +1,6 @@
-2003-07-17  Andrew Pinski  <pinskia@physics.uc.edu>
+2003-07-16  Andrew Pinski  <pinskia@physics.uc.edu>
+	
+	* doc/install.texi (--without-headers): New.
 
 	Partial Fix PR/10129
 	* config/darwin.c (machopic_function_base_name): Only Return "<pic base>".
@@ -7,12 +9,8 @@
 	* config/darwin.h (ASM_OUTPUT_LABELREF): Support the pic base label.
 	* config/darwin-proto.h (machopic_output_function_base_name): Prototype.
 
-2003-07-16  Andrew Pinski  <pinskia@physics.uc.edu>
-
 	* gcse.c (gcse_constant_p): COMPARE of the same registers is a constant
 	if they are not floating point registers.
-
-2003-07-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/10962
 	* ggc.h: Add header guards.
