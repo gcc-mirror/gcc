@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 void
 st_rewind (void)
 {
-  unit_t *u;
+  gfc_unit *u;
 
   library_start ();
 

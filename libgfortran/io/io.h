@@ -254,13 +254,13 @@ unit_flags;
 #define DEFAULT_RECL 10000
 
 
-typedef struct unit_t
+typedef struct gfc_unit
 {
   int unit_number;
 
   stream *s;
 
-  struct unit_t *left, *right;	/* Treap links.  */
+  struct gfc_unit *left, *right;	/* Treap links.  */
   int priority;
 
   int read_bad, current_record;
@@ -279,7 +279,7 @@ typedef struct unit_t
   int file_len;
   char file[1];	      /* Filename is allocated at the end of the structure.  */
 }
-unit_t;
+gfc_unit;
 
 /* Global variables.  Putting these in a structure makes it easier to
    maintain, particularly with the constraint of a prefix.  */
@@ -293,7 +293,7 @@ typedef struct
   int reversion_flag;	/* Format reversion has occurred.  */
   int first_item;
 
-  unit_t *unit_root;
+  gfc_unit *unit_root;
   int seen_dollar;
 
   enum {READING, WRITING} mode;
@@ -311,7 +311,7 @@ extern global_t g;
 
 
 #define current_unit prefix(current_unit)
-extern unit_t *current_unit;
+extern gfc_unit *current_unit;
 
 /* Format tokens.  Only about half of these can be stored in the
    format nodes.  */
@@ -409,7 +409,7 @@ stream *output_stream (void);
 int compare_file_filename (stream *, const char *, int);
 
 #define find_file prefix(find_file)
-unit_t *find_file (void);
+gfc_unit *find_file (void);
 
 #define stream_at_bof prefix(stream_at_bof)
 int stream_at_bof (stream *);
@@ -418,7 +418,7 @@ int stream_at_bof (stream *);
 int stream_at_eof (stream *);
 
 #define delete_file prefix(delete_file)
-int delete_file (unit_t *);
+int delete_file (gfc_unit *);
 
 #define file_exists prefix(file_exists)
 int file_exists (void);
@@ -460,24 +460,24 @@ void empty_internal_buffer(stream *);
 /* unit.c */
 
 #define insert_unit prefix(insert_unix)
-void insert_unit (unit_t *);
+void insert_unit (gfc_unit *);
 
 #define close_unit prefix(close_unit)
-int close_unit (unit_t *);
+int close_unit (gfc_unit *);
 
 #define is_internal_unit prefix(is_internal_unit)
 int is_internal_unit (void);
 
 #define find_unit prefix(find_unit)
-unit_t *find_unit (int);
+gfc_unit *find_unit (int);
 
 #define get_unit prefix(get_unit)
-unit_t *get_unit (int);
+gfc_unit *get_unit (int);
 
 /* open.c */
 
 #define test_endfile prefix(test_endfile)
-void test_endfile (unit_t *);
+void test_endfile (gfc_unit *);
 
 #define new_unit prefix(new_unit)
 void new_unit (unit_flags *);

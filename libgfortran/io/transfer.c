@@ -54,7 +54,7 @@ Boston, MA 02111-1307, USA.  */
  *  transferred.
  */
 
-unit_t *current_unit;
+gfc_unit *current_unit;
 static int sf_seen_eor = 0;
 
 char scratch[SCRATCH_SIZE];
