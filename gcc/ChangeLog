@@ -323,7 +323,7 @@ Wed Apr  5 12:35:18 2000  Hans-Peter Nilsson  <hp@axis.com>
 Wed Apr  5 18:03:31 2000  Toshiyasu Morita  (toshi.morita@sega.com)
 	                  J"orn Rennecke <amylaar@cygnus.co.uk>
 
-	* sh.c (block_lump_real_i4): Add missing clobber of T_REG
+	* sh.md (block_lump_real_i4): Add missing clobber of T_REG
 	(block_lump_real): Likewise.
 
 2000-04-05  Chris Demetriou  <cgd@netbsd.org>
