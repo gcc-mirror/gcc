@@ -72,7 +72,6 @@ target_libs="target-libiberty \
 		target-newlib \
 		target-librx \
 		${libstdcxx_version} \
-		target-libg++ \
 		target-libf2c \
 		target-libchill \
 		${libgcj}
@@ -591,7 +590,7 @@ esac
 
 case "${target}" in
   *-*-netware)
-    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-newlib target-libiberty target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-newlib target-libiberty target-libgloss ${libgcj}"
     ;;
   *-*-rtems*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
@@ -655,7 +654,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   c4x-*-*)
-    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
     ;;
   c54x*-*-* | tic54x-*-*)
     noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj} gcc gdb newlib"
@@ -700,7 +699,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ld target-libgloss ${libgcj}"
     ;;
   d10v-*-*)
-    noconfigdirs="$noconfigdirs target-librx target-libg++ ${libstdcxx_version} target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-librx ${libstdcxx_version} target-libgloss ${libgcj}"
     ;;
   d30v-*-*)
     noconfigdirs="${libgcj}"
@@ -713,7 +712,7 @@ case "${target}" in
     ;;
   h8300*-*-* | \
   h8500-*-*)
-    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
     ;;
   hppa*-*-*elf* | \
   hppa*-*-linux* | \
@@ -771,7 +770,7 @@ case "${target}" in
     esac
     ;;    
   i[3456]86-*-pe)
-    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
     ;;
   i[3456]86-*-sco3.2v5*)
     # The linker does not yet know about weak symbols in COFF,
@@ -928,7 +927,7 @@ case "${target}" in
   sparc-*-solaris*)
     ;;
   v810-*-*)
-    noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld target-libg++ ${libstdcxx_version} opcodes target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld ${libstdcxx_version} opcodes target-libgloss ${libgcj}"
     ;;
   v850-*-*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
@@ -1292,7 +1291,7 @@ fi
 
 # provide a proper gxx_include_dir.
 # Note, if you change the default, make sure to fix both here and in
-# the gcc, libio, libstdc++ and libg++ subdirectories.
+# the gcc and libstdc++-v3 subdirectories.
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 gxx_include_dir=
 if test -n "${with_gxx_include_dir}"; then
