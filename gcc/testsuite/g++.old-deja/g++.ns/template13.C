@@ -2,6 +2,7 @@
 // Templates defined outside must be declared inside
 namespace bar
 {
+  void foo(); // trick it to provide some prior declaration
   template<class T>class X;
 }
 
