@@ -1,3 +1,7 @@
+2003-07-10  Andreas Schwab  <schwab@suse.de>
+
+	* gcov-dump.c (dump_file): Fix missing address operator.
+
 2003-07-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a peephole2): New.
