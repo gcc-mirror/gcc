@@ -1,3 +1,8 @@
+2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/s390/s390.md (*extendsiqi2_short_displ): Change to
+	*extendqisi2_short_displ.
+
 2004-02-06  Alan Modra  <amodra@bigpond.net.au>
 
 	* doc/tm.texi (INIT_CUMULATIVE_ARGS): Update doco.
