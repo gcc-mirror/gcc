@@ -1310,8 +1310,8 @@ tree_expand_cfg (void)
   /* We're done expanding trees to RTL.  */
   currently_expanding_to_rtl = 0;
 
-  /* Convert from NOTE_INSN_EH_REGION style notes, and do other
-     sorts of eh initialization.  */
+  /* Convert tree EH labels to RTL EH labels, and clean out any unreachable
+     EH regions.  */
   convert_from_eh_region_ranges ();
 
   rebuild_jump_labels (get_insns ());

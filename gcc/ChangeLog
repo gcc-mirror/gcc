@@ -1,7 +1,30 @@
+2004-11-24  Steven Bosscher  <stevenb@suse.de>
+
+	* cfgrtl.c (rtl_delete_block): Fix comment.
+	* emit-rtl.c (remove_unnecessary_notes): Die if we see BLOCK_BEG
+	or BLOCK_END insn notes.
+	* jump.c (squeeze_notes): Likewise.
+	* haifa-sched.c (reemit_notes): Don't "re-emit" EH_REGION_BEG and
+	EH_REGION_END notes, we never have them to begin with.
+	* sched-deps.c (sched_analyze_insn): When updating loop notes,
+	verify that we have indeed only recorded loop notes.
+	(sched_analyze): Die if we see EH_REGION_BEG or EH_REGION_END notes.
+	Only record loop notes.
+
+	* cfgexpand.c (tree_expand_cfg): Fix comment.
+
+	* passes.c (rest_of_compilation): Don't do a second call to
+	convert_from_eh_region_ranges from here, it's already called
+	from cfgexpand.c.
+	* except.c (resolve_fixup_regions): Remove.
+	(remove_fixup_regions): Remove.
+	(convert_from_eh_region_ranges_1): Remove.
+	(convert_from_eh_region_ranges): Remove the case where EH is
+	not already lowered at the tree level.  We always lower there.
+
 2004-11-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c++/16882
-
 	* tree.c (make_vector_type): Move qualifiers to the vector type,
 	use the inner type's main variant and build a main variant for
 	the vector type if necessary.

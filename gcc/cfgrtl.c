@@ -368,14 +368,9 @@ rtl_delete_block (basic_block b)
   rtx insn, end, tmp;
 
   /* If the head of this block is a CODE_LABEL, then it might be the
-     label for an exception handler which can't be reached.
-
-     We need to remove the label from the exception_handler_label list
-     and remove the associated NOTE_INSN_EH_REGION_BEG and
-     NOTE_INSN_EH_REGION_END notes.  */
-
+     label for an exception handler which can't be reached.  We need
+     to remove the label from the exception_handler_label list.  */
   insn = BB_HEAD (b);
-
   if (LABEL_P (insn))
     maybe_remove_eh_handler (insn);
 

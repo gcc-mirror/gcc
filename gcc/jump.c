@@ -248,6 +248,10 @@ squeeze_notes (rtx* startp, rtx* endp)
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END))
 	{
+	  /* BLOCK_BEG or BLOCK_END notes only exist in the `final' pass.  */
+	  gcc_assert (NOTE_LINE_NUMBER (insn) != NOTE_INSN_BLOCK_BEG
+		      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BLOCK_END);
+
 	  if (insn == start)
 	    start = next;
 	  else

@@ -3728,7 +3728,6 @@ find_line_note (rtx insn)
 void
 remove_unnecessary_notes (void)
 {
-  rtx block_stack = NULL_RTX;
   rtx eh_stack = NULL_RTX;
   rtx insn;
   rtx next;
@@ -3767,66 +3766,17 @@ remove_unnecessary_notes (void)
 	  break;
 
 	case NOTE_INSN_BLOCK_BEG:
-	  /* By now, all notes indicating lexical blocks should have
-	     NOTE_BLOCK filled in.  */
-	  gcc_assert (NOTE_BLOCK (insn));
-	  block_stack = alloc_INSN_LIST (insn, block_stack);
-	  break;
-
 	case NOTE_INSN_BLOCK_END:
-	  /* Too many end notes.  */
-	  gcc_assert (block_stack);
-	  /* Mismatched nesting.  */
-	  gcc_assert (NOTE_BLOCK (XEXP (block_stack, 0)) == NOTE_BLOCK (insn));
-	  tmp = block_stack;
-	  block_stack = XEXP (block_stack, 1);
-	  free_INSN_LIST_node (tmp);
+          /* BLOCK_END and BLOCK_BEG notes only exist in the `final' pass.  */
+          gcc_unreachable ();
 
-	  /* Scan back to see if there are any non-note instructions
-	     between INSN and the beginning of this block.  If not,
-	     then there is no PC range in the generated code that will
-	     actually be in this block, so there's no point in
-	     remembering the existence of the block.  */
-	  for (tmp = PREV_INSN (insn); tmp; tmp = PREV_INSN (tmp))
-	    {
-	      /* This block contains a real instruction.  Note that we
-		 don't include labels; if the only thing in the block
-		 is a label, then there are still no PC values that
-		 lie within the block.  */
-	      if (INSN_P (tmp))
-		break;
-
-	      /* We're only interested in NOTEs.  */
-	      if (!NOTE_P (tmp))
-		continue;
-
-	      if (NOTE_LINE_NUMBER (tmp) == NOTE_INSN_BLOCK_BEG)
-		{
-		  /* We just verified that this BLOCK matches us with
-		     the block_stack check above.  Never delete the
-		     BLOCK for the outermost scope of the function; we
-		     can refer to names from that scope even if the
-		     block notes are messed up.  */
-		  if (! is_body_block (NOTE_BLOCK (insn))
-		      && (*debug_hooks->ignore_block) (NOTE_BLOCK (insn)))
-		    {
-		      remove_insn (tmp);
-		      remove_insn (insn);
-		    }
-		  break;
-		}
-	      else if (NOTE_LINE_NUMBER (tmp) == NOTE_INSN_BLOCK_END)
-		/* There's a nested block.  We need to leave the
-		   current block in place since otherwise the debugger
-		   wouldn't be able to show symbols from our block in
-		   the nested block.  */
-		break;
-	    }
+	default:
+	  break;
 	}
     }
 
-  /* Too many begin notes.  */
-  gcc_assert (!block_stack && !eh_stack);
+  /* Too many EH_REGION_BEG notes.  */
+  gcc_assert (!eh_stack);
 }
 
 
