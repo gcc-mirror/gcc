@@ -399,11 +399,17 @@ cb_file_change (pfile, map)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
      const struct line_map *map;
 {
-  /* Not first time?  */
-  if (print.map)
-    {
-      const char *flags = "";
+  const char *flags = "";
 
+  /* First time?  */
+  if (print.map == NULL)
+    {
+      /* Avoid printing foo.i when the main file is foo.c.  */
+      if (!options->preprocessed)
+	print_line (map, map->from_line, flags);
+    }
+  else
+    {
       /* Bring current file to correct line when entering a new file.  */
       if (map->reason == LC_ENTER)
 	maybe_print_line (map - 1, map->from_line - 1);
@@ -412,7 +418,6 @@ cb_file_change (pfile, map)
 	flags = " 1";
       else if (map->reason == LC_LEAVE)
 	flags = " 2";
-
       print_line (map, map->from_line, flags);
     }
 
