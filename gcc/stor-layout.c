@@ -243,6 +243,7 @@ mode_for_size_tree (size, class, limit)
      int limit;
 {
   if (TREE_CODE (size) != INTEGER_CST
+      || TREE_OVERFLOW (size)
       /* What we really want to say here is that the size can fit in a
 	 host integer, but we know there's no way we'd find a mode for
 	 this many bits, so there's no point in doing the precise test.  */
