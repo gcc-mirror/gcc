@@ -144,7 +144,7 @@ static void store_constructor_field (rtx, unsigned HOST_WIDE_INT,
 				     tree, tree, int, int);
 static void store_constructor (tree, rtx, int, HOST_WIDE_INT);
 static rtx store_field (rtx, HOST_WIDE_INT, HOST_WIDE_INT, enum machine_mode,
-			tree, enum machine_mode, int, tree, int);
+			tree, tree, int);
 
 static unsigned HOST_WIDE_INT highest_pow2_factor (tree);
 static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (tree, tree);
@@ -3620,8 +3620,7 @@ expand_assignment (tree to, tree from)
 	}
 
       result = store_field (to_rtx, bitsize, bitpos, mode1, from,
-			    VOIDmode,
-			    unsignedp, TREE_TYPE (tem), get_alias_set (to));
+			    TREE_TYPE (tem), get_alias_set (to));
 
       preserve_temp_slots (result);
       free_temp_slots ();
@@ -4329,8 +4328,7 @@ store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
       store_constructor (exp, target, cleared, bitsize / BITS_PER_UNIT);
     }
   else
-    store_field (target, bitsize, bitpos, mode, exp, VOIDmode, 0, type,
-		 alias_set);
+    store_field (target, bitsize, bitpos, mode, exp, type, alias_set);
 }
 
 /* Store the value of constructor EXP into the rtx TARGET.
@@ -5081,12 +5079,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
    BITSIZE bits, starting BITPOS bits from the start of TARGET.
    If MODE is VOIDmode, it means that we are storing into a bit-field.
 
-   If VALUE_MODE is VOIDmode, return nothing in particular.
-   UNSIGNEDP is not used in this case.
-
-   Otherwise, return an rtx for the value stored.  This rtx
-   has mode VALUE_MODE if that is convenient to do.
-   In this case, UNSIGNEDP must be nonzero if the value is an unsigned type.
+   Always return const0_rtx unless we have something particular to
+   return.
 
    TYPE is the type of the underlying object,
 
@@ -5096,8 +5090,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 
 static rtx
 store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
-	     enum machine_mode mode, tree exp, enum machine_mode value_mode,
-	     int unsignedp, tree type, int alias_set)
+	     enum machine_mode mode, tree exp, tree type, int alias_set)
 {
   HOST_WIDE_INT width_mask = 0;
 
@@ -5132,8 +5125,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
       if (bitsize != (HOST_WIDE_INT) GET_MODE_BITSIZE (GET_MODE (target)))
 	emit_move_insn (object, target);
 
-      store_field (blk_object, bitsize, bitpos, mode, exp, VOIDmode, 0, type,
-		   alias_set);
+      store_field (blk_object, bitsize, bitpos, mode, exp, type, alias_set);
 
       emit_move_insn (target, object);
 
@@ -5146,7 +5138,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
       /* We're storing into a struct containing a single __complex.  */
 
       gcc_assert (!bitpos);
-      return store_expr (exp, target, value_mode != VOIDmode);
+      return store_expr (exp, target, 0);
     }
 
   /* If the structure is in a register or if the component
@@ -5207,62 +5199,18 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 				    / BITS_PER_UNIT),
 			   BLOCK_OP_NORMAL);
 
-	  return value_mode == VOIDmode ? const0_rtx : target;
+	  return const0_rtx;
 	}
 
       /* Store the value in the bitfield.  */
       store_bit_field (target, bitsize, bitpos, mode, temp);
 
-      if (value_mode != VOIDmode)
-	{
-	  /* The caller wants an rtx for the value.
-	     If possible, avoid refetching from the bitfield itself.  */
-	  if (width_mask != 0
-	      && ! (MEM_P (target) && MEM_VOLATILE_P (target)))
-	    {
-	      tree count;
-	      enum machine_mode tmode;
-
-	      tmode = GET_MODE (temp);
-	      if (tmode == VOIDmode)
-		tmode = value_mode;
-
-	      if (unsignedp)
-		return expand_and (tmode, temp,
-				   gen_int_mode (width_mask, tmode),
-				   NULL_RTX);
-
-	      count = build_int_cst (NULL_TREE,
-				     GET_MODE_BITSIZE (tmode) - bitsize);
-	      temp = expand_shift (LSHIFT_EXPR, tmode, temp, count, 0, 0);
-	      return expand_shift (RSHIFT_EXPR, tmode, temp, count, 0, 0);
-	    }
-
-	  return extract_bit_field (target, bitsize, bitpos, unsignedp,
-				    NULL_RTX, value_mode, VOIDmode);
-	}
       return const0_rtx;
     }
   else
     {
-      rtx addr = XEXP (target, 0);
-      rtx to_rtx = target;
-
-      /* If a value is wanted, it must be the lhs;
-	 so make the address stable for multiple use.  */
-
-      if (value_mode != VOIDmode && !REG_P (addr)
-	  && ! CONSTANT_ADDRESS_P (addr)
-	  /* A frame-pointer reference is already stable.  */
-	  && ! (GET_CODE (addr) == PLUS
-		&& GET_CODE (XEXP (addr, 1)) == CONST_INT
-		&& (XEXP (addr, 0) == virtual_incoming_args_rtx
-		    || XEXP (addr, 0) == virtual_stack_vars_rtx)))
-	to_rtx = replace_equiv_address (to_rtx, copy_to_reg (addr));
-
       /* Now build a reference to just the desired component.  */
-
-      to_rtx = adjust_address (target, mode, bitpos / BITS_PER_UNIT);
+      rtx to_rtx = adjust_address (target, mode, bitpos / BITS_PER_UNIT);
 
       if (to_rtx == target)
 	to_rtx = copy_rtx (to_rtx);
@@ -5271,7 +5219,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
       if (!MEM_KEEP_ALIAS_SET_P (to_rtx) && MEM_ALIAS_SET (to_rtx) != 0)
 	set_mem_alias_set (to_rtx, alias_set);
 
-      return store_expr (exp, to_rtx, value_mode != VOIDmode);
+      return store_expr (exp, to_rtx, 0);
     }
 }
 
@@ -7274,7 +7222,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 				 * BITS_PER_UNIT),
 				(HOST_WIDE_INT) GET_MODE_BITSIZE (mode)),
 			   0, TYPE_MODE (valtype), TREE_OPERAND (exp, 0),
-			   VOIDmode, 0, type, 0);
+			   type, 0);
 	    }
 
 	  /* Return the entire union.  */

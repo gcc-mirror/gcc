@@ -1,3 +1,10 @@
+2004-10-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.c (store_field): Remove two arguments value_mode and
+	unsignedp.
+	(expand_assignment, store_constructor_field,
+	expand_expr_real_1): Adjust calls to store_field.
+
 2004-10-18  Ramana Radhakrishnan  <ramana.radhakrishnan@codito.com>
 
 	* config/arc/lib1funcs.asm (___umulsidi3): Correct usage of flags.
