@@ -11031,7 +11031,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		/* Divergence from the standard:  In extern "C", we
 		   allow non-static data members here, because C does
 		   and /usr/include/netinet/in.h uses that.  */
-		&& (staticp || current_lang_name != lang_c))
+		&& (staticp || current_lang_name != lang_name_c))
 	      cp_pedwarn ("ANSI C++ forbids data member `%D' with same name as enclosing class",
 			  declarator);
 
