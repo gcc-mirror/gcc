@@ -61,9 +61,9 @@ do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
 #ifndef ASM_OUTPUT_ADDR_DIFF_ELT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
 do { fprintf (FILE, "\t%s\t", ASM_SHORT);				\
-     ASM_GENERATE_INTERNAL_LABEL (FILE, "L", (VALUE));			\
+     ASM_OUTPUT_INTERNAL_LABEL (FILE, "L", (VALUE));			\
      fputc ('-', FILE);							\
-     ASM_GENERATE_INTERNAL_LABEL (FILE, "L", (REL));			\
+     ASM_OUTPUT_INTERNAL_LABEL (FILE, "L", (REL));			\
      fputc ('\n', FILE);						\
    } while (0)
 #endif
