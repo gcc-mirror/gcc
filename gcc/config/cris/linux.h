@@ -60,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
 #define CRIS_ASM_SUBTARGET_SPEC \
  "--em=criself\
   %{!fleading-underscore:--no-underscore}\
-  %{fPIC|fpic: --pic}"
+  %{fPIC|fpic|fPIE|fpie: --pic}"
 
 /* Provide a legacy -mlinux option.  */
 #undef CRIS_SUBTARGET_SWITCHES

@@ -210,7 +210,7 @@ do {                                                                    \
   } while (0)
 
 #define AS_NEEDS_DASH_FOR_PIPED_INPUT
-#define ASM_SPEC   "%{fpic:-k} %{fPIC:-k}"
+#define ASM_SPEC   "%{fpic|fpie|fPIC|fPIE:-k}"
 #define LINK_SPEC \
   "%{p:%e`-p' not supported; use `-pg' and gprof(1)} \
    %{shared:-Bshareable} \

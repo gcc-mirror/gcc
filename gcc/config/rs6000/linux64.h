@@ -215,14 +215,19 @@
 #endif
 
 #undef  STARTFILE_LINUX_SPEC
+#ifdef HAVE_LD_PIE
 #define STARTFILE_LINUX_SPEC "\
-%{!shared: %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}} crti.o%s \
-%{static:crtbeginT.o%s} \
-%{!static:%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
+%{!shared: %{pg|p:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} crti.o%s \
+%{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
+#else
+#define STARTFILE_LINUX_SPEC "\
+%{!shared: %{pg|p:gcrt1.o%s;:crt1.o%s}} crti.o%s \
+%{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
+#endif
 
 #undef  ENDFILE_LINUX_SPEC
 #define ENDFILE_LINUX_SPEC "\
-%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
 #undef  TOC_SECTION_ASM_OP
 #define TOC_SECTION_ASM_OP "\t.section\t\".toc\",\"aw\""

@@ -66,7 +66,7 @@ Boston, MA 02111-1307, USA.  */
   while (0)
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%{fPIC|fpic|fPIE|fpie:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"
 
 #undef	LIB_SPEC
 #define LIB_SPEC \

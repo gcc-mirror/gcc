@@ -664,6 +664,14 @@ proper position among the other output files.  */
 #define LINK_GCC_C_SEQUENCE_SPEC "%G %L %G"
 #endif
 
+#ifndef LINK_PIE_SPEC
+#ifdef HAVE_LD_PIE
+#define LINK_PIE_SPEC "%{pie:-pie} "
+#else
+#define LINK_PIE_SPEC "%{pie:} "
+#endif
+#endif
+
 /* -u* was put back because both BSD and SysV seem to support it.  */
 /* %{static:} simply prevents an error message if the target machine
    doesn't handle -static.  */
@@ -673,8 +681,8 @@ proper position among the other output files.  */
 #ifndef LINK_COMMAND_SPEC
 #define LINK_COMMAND_SPEC "\
 %{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
-    %(linker) %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r} %{s} %{t}\
-    %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
+    %(linker) %l " LINK_PIE_SPEC "%X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r}\
+    %{s} %{t} %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
     %{static:} %{L*} %(link_libgcc) %o %{fprofile-arcs:-lgcov}\
     %{!nostdlib:%{!nodefaultlibs:%(link_gcc_c_sequence)}}\
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} }}}}}}"
@@ -1021,6 +1029,7 @@ static const struct option_map option_map[] =
    {"--param", "--param", "a"},
    {"--pedantic", "-pedantic", 0},
    {"--pedantic-errors", "-pedantic-errors", 0},
+   {"--pie", "-pie", 0},
    {"--pipe", "-pipe", 0},
    {"--prefix", "-B", "a"},
    {"--preprocess", "-E", 0},

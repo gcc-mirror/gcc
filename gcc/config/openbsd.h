@@ -106,7 +106,7 @@ Boston, MA 02111-1307, USA.  */
    still uses a special flavor of gas that needs to be told when generating 
    pic code.  */
 #undef ASM_SPEC
-#define ASM_SPEC "%{fpic:-k} %{fPIC:-k -K}"
+#define ASM_SPEC "%{fpic|fpie:-k} %{fPIC|fPIE:-k -K}"
 #endif
 
 /* Since we use gas, stdin -> - is a good idea.  */

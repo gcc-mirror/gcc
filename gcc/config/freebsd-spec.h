@@ -78,7 +78,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define FBSD_CPP_SPEC "							\
   %(cpp_cpu)								\
-  %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__}		\
+  %{fPIC|fpic|fPIE|fpie:-D__PIC__ -D__pic__}				\
   %{posix:-D_POSIX_SOURCE}"
 
 /* Provide a STARTFILE_SPEC appropriate for FreeBSD.  Here we add

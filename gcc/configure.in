@@ -2631,6 +2631,24 @@ if test x"$gcc_cv_ld_eh_frame_hdr" = xyes; then
 fi
 AC_MSG_RESULT($gcc_cv_ld_eh_frame_hdr)
 
+AC_MSG_CHECKING(linker position independent executable support)
+gcc_cv_ld_pie=no
+if test $in_tree_ld = yes ; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 15 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
+    gcc_cv_ld_pie=yes
+  fi
+elif test x$gcc_cv_ld != x; then
+	# Check if linker supports -pie option
+	if $gcc_cv_ld --help 2>/dev/null | grep -- -pie > /dev/null; then
+		gcc_cv_ld_pie=yes
+	fi
+fi
+if test x"$gcc_cv_ld_pie" = xyes; then
+	AC_DEFINE(HAVE_LD_PIE, 1,
+[Define if your linker supports -pie option.])
+fi
+AC_MSG_RESULT($gcc_cv_ld_pie)
+
 # Miscellaneous target-specific checks.
 case "$target" in
   mips*-*-*)

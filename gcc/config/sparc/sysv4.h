@@ -59,7 +59,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_SPEC
 #define ASM_SPEC \
   "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
-   %{fpic:-K PIC} %{fPIC:-K PIC} %(asm_cpu)"
+   %{fpic|fPIC|fpie|fPIE:-K PIC} %(asm_cpu)"
 
 /* Define the names of various pseudo-op used by the SPARC/svr4 assembler.
    Note that many of these are different from the typical pseudo-ops used

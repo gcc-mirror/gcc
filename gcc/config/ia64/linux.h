@@ -21,18 +21,21 @@ do {						\
 
 /* Need to override linux.h STARTFILE_SPEC, since it has crtbeginT.o in.  */
 #undef STARTFILE_SPEC
+#ifdef HAVE_LD_PIE
 #define STARTFILE_SPEC \
-  "%{!shared: \
-     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
-		       %{!p:%{profile:gcrt1.o%s} \
-			 %{!profile:crt1.o%s}}}} \
-   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+  "%{!shared: %{pg|p|profile:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}}\
+   crti.o%s %{shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
+#else
+#define STARTFILE_SPEC \
+  "%{!shared: %{pg|p|profile:gcrt1.o%s;:crt1.o%s}}\
+   crti.o%s %{shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
+#endif
 
 /* Similar to standard Linux, but adding -ffast-math support.  */
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
-   %{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+   %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
 /* Define this for shared library support because it isn't in the main
    linux.h file.  */
