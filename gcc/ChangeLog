@@ -1,3 +1,7 @@
+2001-03-16  Phil Edwards  <pme@sources.redhat.com>
+
+	* gccbug.in:  Remove high priority.
+
 2001-03-16  Richard Henerson  <rth@redhat.com>
 
 	* aclocal.m4 (gcc_AC_EXAMINE_OBJECT): Substitute leading od
