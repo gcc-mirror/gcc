@@ -2905,22 +2905,24 @@ ffeste_R840 (ffebld expr, ffelab neg, ffelab zero, ffelab pos)
     ffecom_push_calltemps ();
 
     if (neg == zero)
-      if (neg == pos)
-	expand_goto (gzero);
-      else
-	{			/* IF (expr.LE.0) THEN GOTO neg/zero ELSE
-				   GOTO pos. */
-	  texpr = ffecom_expr (expr);
-	  texpr = ffecom_2 (LE_EXPR, integer_type_node,
-			    texpr,
-			    convert (TREE_TYPE (texpr),
-				     integer_zero_node));
-	  expand_start_cond (ffecom_truth_value (texpr), 0);
+      {
+	if (neg == pos)
 	  expand_goto (gzero);
-	  expand_start_else ();
-	  expand_goto (gpos);
-	  expand_end_cond ();
-	}
+	else
+	  {			/* IF (expr.LE.0) THEN GOTO neg/zero ELSE
+				   GOTO pos. */
+	    texpr = ffecom_expr (expr);
+	    texpr = ffecom_2 (LE_EXPR, integer_type_node,
+			      texpr,
+			      convert (TREE_TYPE (texpr),
+				       integer_zero_node));
+	    expand_start_cond (ffecom_truth_value (texpr), 0);
+	    expand_goto (gzero);
+	    expand_start_else ();
+	    expand_goto (gpos);
+	    expand_end_cond ();
+	  }
+      }
     else if (neg == pos)
       {				/* IF (expr.NE.0) THEN GOTO neg/pos ELSE GOTO
 				   zero. */

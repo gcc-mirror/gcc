@@ -15477,10 +15477,12 @@ type_for_mode (mode, unsignedp)
       {
 	if (((t = ffecom_tree_type[i][j]) != NULL_TREE)
 	    && (mode == TYPE_MODE (t)))
-	  if ((i == FFEINFO_basictypeINTEGER) && unsignedp)
-	    return ffecom_tree_type[FFEINFO_basictypeHOLLERITH][j];
-	  else
-	    return t;
+	  {
+	    if ((i == FFEINFO_basictypeINTEGER) && unsignedp)
+	      return ffecom_tree_type[FFEINFO_basictypeHOLLERITH][j];
+	    else
+	      return t;
+	  }
       }
 
   return 0;

@@ -2191,13 +2191,15 @@ ffetarget_real1 (ffetargetReal1 *value, ffelexToken integer,
   dotoktxt (exponent);
 
   if (exponent_sign != NULL)
-    if (ffelex_token_type (exponent_sign) == FFELEX_typePLUS)
-      *p++ = '+';
-    else
-      {
-	assert (ffelex_token_type (exponent_sign) == FFELEX_typeMINUS);
-	*p++ = '-';
-      }
+    {
+      if (ffelex_token_type (exponent_sign) == FFELEX_typePLUS)
+	*p++ = '+';
+      else
+	{
+	  assert (ffelex_token_type (exponent_sign) == FFELEX_typeMINUS);
+	  *p++ = '-';
+	}
+    }
 
   dotoktxt (exponent_digits);
 
@@ -2275,13 +2277,15 @@ ffetarget_real2 (ffetargetReal2 *value, ffelexToken integer,
   dotoktxtexp (exponent);
 
   if (exponent_sign != NULL)
-    if (ffelex_token_type (exponent_sign) == FFELEX_typePLUS)
-      *p++ = '+';
-    else
-      {
-	assert (ffelex_token_type (exponent_sign) == FFELEX_typeMINUS);
-	*p++ = '-';
-      }
+    {
+      if (ffelex_token_type (exponent_sign) == FFELEX_typePLUS)
+	*p++ = '+';
+      else
+	{
+	  assert (ffelex_token_type (exponent_sign) == FFELEX_typeMINUS);
+	  *p++ = '-';
+	}
+    }
 
   dotoktxt (exponent_digits);
 

@@ -1,3 +1,39 @@
+Fri Feb 13 00:14:56 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (type_for_mode): Add explicit braces to avoid ambiguous `else'.
+ 
+	* expr.c (ffeexpr_type_combine): Likewise.
+	(ffeexpr_reduce_): Likewise.
+	(ffeexpr_declare_parenthesized_): Likewise.
+ 
+	* src.c (ffesrc_strcmp_1ns2i): Likewise.
+	(ffesrc_strcmp_2c): Likewise.
+	(ffesrc_strncmp_2c): Likewise.
+ 
+	* stb.c (ffestb_halt1_): Likewise.
+	(ffestb_R90910_): Likewise.
+	(ffestb_R9109_): Likewise.
+
+	* stc.c (ffestc_R544_equiv_): Likewise.
+ 
+	* std.c (ffestd_subr_copy_easy_): Likewise.
+	(ffestd_R1001dump_): Likewise.
+	(ffestd_R1001dump_1005_1_): Likewise.
+	(ffestd_R1001dump_1005_2_): Likewise.
+	(ffestd_R1001dump_1005_3_): Likewise.
+	(ffestd_R1001dump_1005_4_): Likewise.
+	(ffestd_R1001dump_1005_5_): Likewise.
+	(ffestd_R1001dump_1010_2_): Likewise.
+ 
+	* ste.c (ffeste_R840): Likewise.
+ 
+	* sts.c (ffests_puttext): Likewise.
+ 
+	* symbol.c (ffesymbol_check_token_): Likewise.
+ 
+	* target.c (ffetarget_real1): Likewise.
+	(ffetarget_real2): Likewise.
+ 
 Wed Feb 11 01:44:48 1998  Richard Henderson  (rth@cygnus.com)
 
 	* com.c (ffecom_ptr_to_expr) [FFEBLD_opARRAYREF]:  Do upper - lower

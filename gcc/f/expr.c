@@ -8761,10 +8761,12 @@ ffeexpr_type_combine (ffeinfoBasictype *xnbt, ffeinfoKindtype *xnkt,
   else
     {				/* The normal stuff. */
       if (nbt == lbt)
-	if (nbt == rbt)
-	  nkt = ffeinfo_kindtype_max (nbt, lkt, rkt);
-	else
-	  nkt = lkt;
+	{
+	  if (nbt == rbt)
+	    nkt = ffeinfo_kindtype_max (nbt, lkt, rkt);
+	  else
+	    nkt = lkt;
+	}
       else if (nbt == rbt)
 	nkt = rkt;
       else
@@ -10022,26 +10024,30 @@ ffeexpr_reduce_ ()
 	      && (left_operand->previous->type != FFEEXPR_exprtypeOPERAND_)
 	      && (left_operand->previous->u.operator.op
 		  == FFEEXPR_operatorSUBTRACT_))
-	    if (left_operand->previous->type == FFEEXPR_exprtypeUNARY_)
-	      ffetarget_integer_bad_magical_precedence (left_operand->token,
-					      left_operand->previous->token,
-							operator->token);
-	    else
-	      ffetarget_integer_bad_magical_precedence_binary
-		(left_operand->token,
-		 left_operand->previous->token,
-		 operator->token);
+	    {
+	      if (left_operand->previous->type == FFEEXPR_exprtypeUNARY_)
+		ffetarget_integer_bad_magical_precedence (left_operand->token,
+							  left_operand->previous->token,
+							  operator->token);
+	      else
+		ffetarget_integer_bad_magical_precedence_binary
+		  (left_operand->token,
+		   left_operand->previous->token,
+		   operator->token);
+	    }
 	  else
 	    ffetarget_integer_bad_magical (left_operand->token);
 	}
       if ((ffebld_op (expr) == FFEBLD_opCONTER)
 	  && (ffebld_conter_orig (expr) == NULL)
 	  && ffebld_constant_is_magical (constnode = ffebld_conter (expr)))
-	if (submag)
-	  ffetarget_integer_bad_magical_binary (operand->token,
-						operator->token);
-	else
-	  ffetarget_integer_bad_magical (operand->token);
+	{
+	  if (submag)
+	    ffetarget_integer_bad_magical_binary (operand->token,
+						  operator->token);
+	  else
+	    ffetarget_integer_bad_magical (operand->token);
+	}
       ffeexpr_stack_->exprstack = left_operand->previous;	/* Pops binary-op
 								   operands off stack. */
       ffeexpr_expr_kill_ (left_operand);
@@ -17901,13 +17907,15 @@ ffeexpr_declare_parenthesized_ (ffelexToken t, bool maybe_intrin,
 
 	case FFEINFO_kindENTITY:
 	  if (ffesymbol_rank (s) == 0)
-	    if (ffesymbol_basictype (s) == FFEINFO_basictypeCHARACTER)
-	      *paren_type = FFEEXPR_parentypeSUBSTRING_;
-	    else
-	      {
-		bad = TRUE;
-		*paren_type = FFEEXPR_parentypeANY_;
-	      }
+	    {
+	      if (ffesymbol_basictype (s) == FFEINFO_basictypeCHARACTER)
+		*paren_type = FFEEXPR_parentypeSUBSTRING_;
+	      else
+		{
+		  bad = TRUE;
+		  *paren_type = FFEEXPR_parentypeANY_;
+		}
+	    }
 	  else
 	    *paren_type = FFEEXPR_parentypeARRAY_;
 	  break;
@@ -18028,15 +18036,17 @@ ffeexpr_declare_parenthesized_ (ffelexToken t, bool maybe_intrin,
 
 	case FFEINFO_kindENTITY:
 	  if (ffesymbol_rank (s) == 0)
-	    if (ffeexpr_stack_->context == FFEEXPR_contextEQUIVALENCE)
-	      *paren_type = FFEEXPR_parentypeEQUIVALENCE_;
-	    else if (ffesymbol_basictype (s) == FFEINFO_basictypeCHARACTER)
-	      *paren_type = FFEEXPR_parentypeSUBSTRING_;
-	    else
-	      {
-		bad = TRUE;
-		*paren_type = FFEEXPR_parentypeANY_;
-	      }
+	    {
+	      if (ffeexpr_stack_->context == FFEEXPR_contextEQUIVALENCE)
+		*paren_type = FFEEXPR_parentypeEQUIVALENCE_;
+	      else if (ffesymbol_basictype (s) == FFEINFO_basictypeCHARACTER)
+		*paren_type = FFEEXPR_parentypeSUBSTRING_;
+	      else
+		{
+		  bad = TRUE;
+		  *paren_type = FFEEXPR_parentypeANY_;
+		}
+	    }
 	  else
 	    *paren_type = FFEEXPR_parentypeARRAY_;
 	  break;

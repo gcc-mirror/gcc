@@ -234,10 +234,12 @@ ffesrc_strcmp_1ns2i (ffeCase mcase, const char *var, int len,
 	  c = ffesrc_toupper (c);	/* Upcase source. */
 	  d = ffesrc_toupper (*str_ic);	/* Upcase InitialCaps char. */
 	  if (c != d)
-	    if ((d != '\0') && (c < d))
-	      return -1;
-	    else
-	      return 1;
+	    {
+	      if ((d != '\0') && (c < d))
+		return -1;
+	      else
+		return 1;
+	    }
 	}
       break;
 
@@ -247,10 +249,12 @@ ffesrc_strcmp_1ns2i (ffeCase mcase, const char *var, int len,
 	  c = ffesrc_char_source (*var);	/* Transform source. */
 	  d = ffesrc_toupper (*str_ic);	/* Transform InitialCaps char. */
 	  if (c != d)
-	    if ((d != '\0') && (c < d))
-	      return -1;
-	    else
-	      return 1;
+	    {
+	      if ((d != '\0') && (c < d))
+		return -1;
+	      else
+		return 1;
+	    }
 	}
       break;
 
@@ -260,10 +264,12 @@ ffesrc_strcmp_1ns2i (ffeCase mcase, const char *var, int len,
 	  c = ffesrc_char_source (*var);	/* Transform source. */
 	  d = ffesrc_tolower (*str_ic);	/* Transform InitialCaps char. */
 	  if (c != d)
-	    if ((d != '\0') && (c < d))
-	      return -1;
-	    else
-	      return 1;
+	    {
+	      if ((d != '\0') && (c < d))
+		return -1;
+	      else
+		return 1;
+	    }
 	}
       break;
 
@@ -320,10 +326,12 @@ ffesrc_strcmp_2c (ffeCase mcase, const char *var, const char *str_uc,
 	{
 	  c = ffesrc_toupper (*var);	/* Upcase source. */
 	  if (c != *str_uc)
-	    if ((*str_uc != '\0') && (c < *str_uc))
-	      return -1;
-	    else
-	      return 1;
+	    {
+	      if ((*str_uc != '\0') && (c < *str_uc))
+		return -1;
+	      else
+		return 1;
+	    }
 	}
       if (*str_uc == '\0')
 	return 0;
@@ -388,10 +396,12 @@ ffesrc_strncmp_2c (ffeCase mcase, const char *var, const char *str_uc,
 	{
 	  c = ffesrc_toupper (*var);	/* Upcase source. */
 	  if (c != *str_uc)
-	    if (c < *str_uc)
-	      return -1;
-	    else
-	      return 1;
+	    {
+	      if (c < *str_uc)
+		return -1;
+	      else
+		return 1;
+	    }
 	}
       return 0;
 

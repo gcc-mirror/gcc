@@ -170,10 +170,12 @@ ffesymbol_check_token_ (ffelexToken t, char *c)
     }
 
   if (bad != FFEBAD)
-    if (i >= len)
-      *c = *(ffelex_token_text (t));
-    else
-      *c = *p;
+    {
+      if (i >= len)
+	*c = *(ffelex_token_text (t));
+      else
+	*c = *p;
+    }
 
   return bad;
 }
