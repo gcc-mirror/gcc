@@ -1,5 +1,10 @@
 2004-10-04  Robert Dewar  <dewar@gnat.com>
 
+	* g-spipat.adb: (XMatch): Avoid warning for Logic_Error call
+	(XMatchD): Avoid warning for Logic_Error call
+
+2004-10-04  Robert Dewar  <dewar@gnat.com>
+
 	* exp_ch4.adb (Is_Procedure_Actual): Correct so that this does not
 	consider expressions buried within a procedure actual to be an actual.
 	This caused some blowups with uses of packed slices within a procedure

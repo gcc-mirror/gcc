@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1998-2003, Ada Core Technologies, Inc.           --
+--           Copyright (C) 1998-2004, Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4823,8 +4823,9 @@ package body GNAT.Spitbol.Patterns is
       --  match routine must end by executing a goto to the appropriate point
       --  in the finite state machine model.
 
+      pragma Warnings (Off);
       Logic_Error;
-
+      pragma Warnings (On);
    end XMatch;
 
    -------------
@@ -6309,8 +6310,9 @@ package body GNAT.Spitbol.Patterns is
       --  match routine must end by executing a goto to the appropriate point
       --  in the finite state machine model.
 
+      pragma Warnings (Off);
       Logic_Error;
-
+      pragma Warnings (On);
    end XMatchD;
 
 end GNAT.Spitbol.Patterns;
