@@ -1805,6 +1805,17 @@ reload (first, global, dumpfile)
       || caller_save_spill_class != NO_REGS)
     reload_as_needed (first, global);
 
+  /* If we were able to eliminate the frame pointer, show that it is no
+     longer live at the start of any basic block.  If it ls live by
+     virtue of being in a pseudo, that pseudo will be marked live
+     and hence the frame pointer will be known to be live via that
+     pseudo.  */
+
+  if (! frame_pointer_needed)
+    for (i = 0; i < n_basic_blocks; i++)
+      basic_block_live_at_start[i][FRAME_POINTER_REGNUM / REGSET_ELT_BITS]
+	&= ~ ((REGSET_ELT_TYPE) 1 << (FRAME_POINTER_REGNUM % REGSET_ELT_BITS));
+
   reload_in_progress = 0;
 
   /* Come here (with failure set nonzero) if we can't get enough spill regs
