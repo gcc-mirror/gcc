@@ -2566,7 +2566,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		  || GET_CODE (operand) == PLUS
 		  /* We must force a reload of paradoxical SUBREGs
 		     of a MEM because the alignment of the inner value
-		     may not be enough to do the outer reference.
+		     may not be enough to do the outer reference.  On
+		     big-endian machines, it may also reference outside
+		     the object.
 
 		     On machines that extend byte operations and we have a
 		     SUBREG where both the inner and outer modes are no wider
@@ -2584,6 +2586,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			    < BIGGEST_ALIGNMENT)
 			   && (GET_MODE_SIZE (operand_mode[i])
 			       > GET_MODE_SIZE (GET_MODE (operand))))
+			  || (GET_CODE (operand) == MEM && BYTES_BIG_ENDIAN)
 #ifdef LOAD_EXTEND_OP
 			  || (GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
 			      && (GET_MODE_SIZE (GET_MODE (operand))
