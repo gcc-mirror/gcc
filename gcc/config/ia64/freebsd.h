@@ -19,7 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
-#undef  LINK_SPEC
 #define LINK_SPEC							\
  "%{p:%e`-p' not supported; use `-pg' and gprof(1)}			\
   %{Wl,*:%*}								\
@@ -31,9 +30,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
       %{rdynamic:-export-dynamic}					\
       %{!dynamic-linker:-dynamic-linker /usr/libexec/ld-elf.so.1}}	\
     %{static:-Bstatic}}"
-
-#undef  ASM_SPEC
-#define ASM_SPEC "-x %{mconstant-gp} %{mauto-pic}"
 
 
 /************************[  Target stuff  ]***********************************/
@@ -57,10 +53,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define TARGET_ELF		1
 
-#define DONT_USE_BUILTIN_SETJMP
 #define JMP_BUF_SIZE  76
-
-/* Output any profiling code before the prologue.  */
-
-#undef  PROFILE_BEFORE_PROLOGUE
-#define PROFILE_BEFORE_PROLOGUE 1

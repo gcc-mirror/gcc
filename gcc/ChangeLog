@@ -1,5 +1,29 @@
 2002-04-11  David O'Brien  <obrien@FreeBSD.org>
 
+	* config/ia64/aix.h (CPP_PREDEFINES): Do not define _LP64/__LP64__
+	or set Acpu or Amachine.  Reformat.
+	(ASM_SPEC, DONT_USE_BUILTIN_SETJMP, PROFILE_BEFORE_PROLOGUE): Do not
+	define.
+	(LINK_SPEC): Do not need to undef.
+	* config/ia64/elf.h (ASM_EXTRA_SPEC): Define.
+	* config/ia64/freebsd.h (LINK_SPEC): Do not need to undef.
+	(ASM_SPEC, DONT_USE_BUILTIN_SETJMP, PROFILE_BEFORE_PROLOGUE): Do not
+	define.
+	* config/ia64/hpux.h (ASM_EXTRA_SPEC): Define.
+	(ASM_SPEC): Do not define, use ASM_EXTRA_SPEC instead.
+	(LINK_SPEC): Do not need to undef.
+	(DONT_USE_BUILTIN_SETJMP): Do not define.
+	* config/ia64/ia64.h (ASM_SPEC, ASM_EXTRA_SPEC): Add.
+	(CPP_CPU_SPEC): Define _LP64, set Acpu and Amachine.  Remove -Dia64.
+	(DONT_USE_BUILTIN_SETJMP, PROFILE_BEFORE_PROLOGUE): Define.
+	Remove trailing spaces.
+	* config/ia64/linux.h (CPP_PREDEFINES): Do not define _LP64/__LP64__,
+	__ELF__, or set Acpu or Amachine.  Reformat.
+	(ASM_SPEC, DONT_USE_BUILTIN_SETJMP, PROFILE_BEFORE_PROLOGUE): Do not
+	define.
+
+2002-04-11  David O'Brien  <obrien@FreeBSD.org>
+
 	* config.gcc (ia64-*-freebsd*): Fix ordering of tm_files to match
 	all other *-*-freebsd* targets.
 

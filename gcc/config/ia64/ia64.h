@@ -31,11 +31,23 @@ Boston, MA 02111-1307, USA.  */
 
 /* Run-time target specifications */
 
-#define CPP_CPU_SPEC "\
-  -Acpu=ia64 -Amachine=ia64 \
-  %{!ansi:%{!std=c*:%{!std=i*:-Dia64}}} -D__ia64 -D__ia64__"
+#define EXTRA_SPECS \
+  { "cpp_cpu", CPP_CPU_SPEC },
+  { "asm_extra", ASM_EXTRA_SPEC },
+
+#define CPP_CPU_SPEC " \
+  -Acpu=ia64 -Amachine=ia64 -D__ia64 -D__ia64__ %{!milp32:-D_LP64 -D__LP64__} \
+  -D__ELF__"
 
 #define CC1_SPEC "%(cc1_cpu) "
+
+#define ASM_EXTRA_SPEC ""
+
+/* ia64-specific options for gas
+   ??? ia64 gas doesn't accept standard svr4 assembler options?  */
+#undef ASM_SPEC
+#define ASM_SPEC "-x %{mconstant-gp} %{mauto-pic} %(asm_extra)"
+
 
 /* This declaration should be present.  */
 extern int target_flags;
@@ -340,7 +352,7 @@ while (0)
 /* By default, the C++ compiler will use function addresses in the
    vtable entries.  Setting this non-zero tells the compiler to use
    function descriptors instead.  The value of this macro says how
-   many words wide the descriptor is (normally 2).  It is assumed 
+   many words wide the descriptor is (normally 2).  It is assumed
    that the address of a function descriptor may be treated as a
    pointer to a function.  */
 #define TARGET_VTABLE_USES_DESCRIPTORS 2
@@ -397,7 +409,7 @@ while (0)
 
 /* Register Basics */
 
-/* Number of hardware registers known to the compiler.  
+/* Number of hardware registers known to the compiler.
    We have 128 general registers, 128 floating point registers,
    64 predicate registers, 8 branch registers, one frame pointer,
    and several "application" registers.  */
@@ -459,7 +471,7 @@ while (0)
    f0: constant 0.0
    f1: constant 1.0
    p0: constant true
-   fp: eliminable frame pointer */   
+   fp: eliminable frame pointer */
 
 /* The last 16 stacked regs are reserved for the 8 input and 8 output
    registers.  */
@@ -529,12 +541,12 @@ while (0)
      1, 1,  1,   1,  1, 0, 1				\
 }
 
-/* Like `CALL_USED_REGISTERS' but used to overcome a historical 
+/* Like `CALL_USED_REGISTERS' but used to overcome a historical
    problem which makes CALL_USED_REGISTERS *always* include
-   all the FIXED_REGISTERS.  Until this problem has been 
+   all the FIXED_REGISTERS.  Until this problem has been
    resolved this macro can be used to overcome this situation.
-   In particular, block_propagate() requires this list 
-   be acurate, or we can remove registers which should be live.  
+   In particular, block_propagate() requires this list
+   be acurate, or we can remove registers which should be live.
    This macro is used in regs_invalidated_by_call.  */
 
 #define CALL_REALLY_USED_REGISTERS \
@@ -1366,7 +1378,7 @@ do {									\
 
 #define FUNCTION_VALUE_REGNO_P(REGNO)				\
   (((REGNO) >= GR_RET_FIRST && (REGNO) <= GR_RET_LAST)		\
-   || ((REGNO) >= FR_RET_FIRST && (REGNO) <= FR_RET_LAST)) 
+   || ((REGNO) >= FR_RET_FIRST && (REGNO) <= FR_RET_LAST))
 
 
 /* How Large Values are Returned */
@@ -1737,7 +1749,7 @@ do {									\
    || (CLASS) == GR_AND_FR_REGS ? 4 : 10)
 
 /* A C expression for the cost of a branch instruction.  A value of 1 is the
-   default; other values are interpreted relative to that.  Used by the 
+   default; other values are interpreted relative to that.  Used by the
    if-conversion code as max instruction count.  */
 /* ??? This requires investigation.  The primary effect might be how
    many additional insn groups we run into, vs how good the dynamic
@@ -2288,7 +2300,7 @@ do {									\
   fprintf (FILE, "[.%s%d:]\n", PREFIX, NUM)
 
 /* Use section-relative relocations for debugging offsets.  Unlike other
-   targets that fake this by putting the section VMA at 0, IA-64 has 
+   targets that fake this by putting the section VMA at 0, IA-64 has
    proper relocations for them.  */
 #define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL)	\
   do {							\
@@ -2541,5 +2553,12 @@ enum ia64_builtins
 enum fetchop_code {
   IA64_ADD_OP, IA64_SUB_OP, IA64_OR_OP, IA64_AND_OP, IA64_XOR_OP, IA64_NAND_OP
 };
+
+#define DONT_USE_BUILTIN_SETJMP
+
+/* Output any profiling code before the prologue.  */
+
+#undef  PROFILE_BEFORE_PROLOGUE
+#define PROFILE_BEFORE_PROLOGUE 1
 
 /* End of ia64.h */
