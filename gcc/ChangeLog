@@ -1,3 +1,8 @@
+2002-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* cselib.c (cselib_record_sets): Use IF_THEN_ELSE result
+	in cselib_lookup.
+
 2002-01-29  Aldy Hernandez  <aldyh@redhat.com>
 
         * rs6000.md ("*call_value_local32"): Remove constraints.
