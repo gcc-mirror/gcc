@@ -1,3 +1,47 @@
+2004-09-07  Ziemowit Laski  <zlaski@apple.com>
+
+	* Makefile.in (c-parse.o): Depend on $(C_COMMON_H).
+	* c-parse.in: Include c-common.h instead of objc-act.h.
+	(ivar_decl_list, ivar_decls, ivar_decl, ivars, ivar_declarator,
+	myparms, myparm): Remove %type declarations.
+	(methodtype, optparms, OBJC_TYPE_QUAL, objc_quals, objc_qual,
+	objc_typename, objc_try_catch_stmt, optellipsis): Add %type
+	declarations.
+	(objc_inherit_code, objc_public_flag): Remove.
+	(typespec_nonreserved_nonattr): Call
+	objc_get_protocol_qualified_type() instead of get_static_reference()
+	and get_protocol_reference().
+	(stmt_nocomp): Call grokparm() on @catch parameter.
+	(objcdef): Move semantic action to objc_finish_implementation().
+	(classdef): Move semantic action to objc_start_class_interface(),
+	objc_continue_interface(), objc_finish_interface(),
+	objc_start_class_implementation(), objc_continue_implementation(),
+	objc_start_category_interface() and
+	objc_start_category_implementation().
+	(protocoldef): Move semantic actions to objc_start_protocol() and
+	objc_finish_interface().
+	(ivar_decl_list): Remove nonterminal.
+	(visibility_spec): Move semantic actions to objc_set_visibility().
+	(ivar_decls): Remove assignment to $$.
+	(ivar_decl): Rephrase in terms of component_decl; call
+	objc_add_instance_variable().
+	(ivars, ivar_declarator): Remove nonterminals.
+	(opt_semi): New nonterminal.
+	(methodtype): Remove semantic actions.
+	(methoddef): Move semantic actions to objc_set_method_type(),
+	objc_start_method_definition() and objc_finish_method_definition().
+	(methodproto): Move semantic actions to objc_set_method_type() and
+	objc_add_method_declaration().
+	(methoddecl): Use objc_typename instead of typename; move semantic
+	actions to objc_build_method_signature().
+	(optarglist, myxdecls, mydecl, myparms, myparm): Remove nonterminals.
+	(optparmlist): Express in terms of optparms and optellipsis.
+	(optparms, optellipsis, objc_qual, objc_quals, objc_typename): New
+	nonterminals.
+	(keyworddecl): Use objc_typename instead of typename.
+	(rid_to_yy): Mark RID_IN, RID_OUT, RID_INOUT, RID_BYCOPY, RID_BYREF
+	and RID_ONEWAY as returning OBJC_TYPE_QUAL to yyparse().
+
 2004-09-08  Alan Modra  <amodra@bigpond.net.au>
 
 	* doc/tm.texi (MD_UNWIND_SUPPORT): Document.

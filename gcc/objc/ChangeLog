@@ -1,3 +1,258 @@
+2004-09-07  Ziemowit Laski  <zlaski@apple.com>
+
+	* Make-lang.in (objc/objc-parse.o): Depend on $(C_COMMON_H) instead of
+	objc/objc-act.h.
+	(objc/objc-act.o): Depend on $(HASHTAB_H).
+	* objc-act.c: Include hashtab.h; in ObjC++ mode, include cp-tree.h and
+	objcp-decl.h instead of c-tree.h.
+	(build_module_descriptor, get_class_ivars, synth_id_with_class_suffix,
+	error_with_ivar, gen_method_decl, gen_declaration, setup_string_decl,
+	build_protocol_template): Adjust prototypes.
+	(build_module_initializer_routine, start_class, continue_class,
+	finish_class, start_method_def, objc_start_function, start_protocol,
+	build_method_decl, objc_add_method, add_instance_variable,
+	build_ivar_reference, is_ivar, is_private, get_super_receiver,
+	build_selector_table_decl, objc_push_parm, objc_get_parm_info,
+	gen_type_name, gen_type_name_0, start_var_decl, finish_var_decl,
+	create_field_decl): New prototypes.
+	(objc_expand_function_end, comp_method_with_proto, objc_expr_last,
+	gen_declaration_1, gen_declarator, is_complex_decl, adorn_decl,
+	define_decl, create_builtin_decl, gen_declspecs): Remove prototypes.
+	(TYPE_ID): Rename to OBJECT_TYPEDEF_NAME.
+	(CLASS_TYPEDEF_NAME): New.
+	(TAG_EXECCLASS): Change from a global variable to a #define.
+	(TAG_RETURN_STRUCT): Delete.
+	(TAG_GNUINIT): New, holds '__objc_gnu_init' name.
+	(objc_inherit_code, objc_public_flag): New, moved from c-parse.in.
+	(string_descriptor): New struct.
+	(string_htab): New hash table.
+	(string_hash, string_eq): New prototypes.
+	(generate_struct_by_value_array): Call create_field_decl() instead of
+	create_builtin_decl().
+	(objc_init): Do not initialize objc_ellipsis_node or TAG_EXECCLASS;
+	In ObjC++ mode, call cxx_init() instead of c_objc_common_init().
+	(objc_finish_file): In ObjC++, call instantiate_pending_templates()
+	and cp_finish_file().
+	(define_decl, get_static_reference, get_protocol_reference,
+	create_builtin_decl): Remove functions.
+	(objc_start_class_interface, objc_start_category_interface,
+	objc_start_protocol, objc_continue_interface, objc_finish_interface,
+	objc_start_class_implementation, objc_start_category_implementation,
+	objc_continue_implementation, objc_finish_implementation,
+	objc_set_visibility, objc_set_method_type,
+	objc_build_method_signature, objc_add_method_declaration,
+	objc_start_method_definition, objc_add_instance_variable,
+	objc_get_protocol_qualified_type, create_field_decl,
+	start_var_decl, finish_var_decl): New functions.
+	(setup_string_decl): Simplify since it is only called once.
+	(synth_module_prologue): Call build_class_template(); predefine 'id'
+	and 'Class' as typedefs; rename 'temp_type' to 'type'; disable debug
+	hooks for duration of function; fix GNU runtime messenger signatures
+	to correspond to reality; forward-declare '__objc_exec_class' for the
+	GNU runtime; call build_selector_table_decl(); in ObjC++ mode, generate
+	'extern "C" { ... }' wrappers around synthesized declarations; call
+	build_protocol_template() and build_category_template().
+	(string_hash, string_eq): New functions.
+	(objc_build_string_object): Check metaclass correctness only once;
+	store string literals in hash table.
+	(objc_build_constructor): Do not convert initializer elements;
+	adjust for ObjC++ impedance mismatch.
+	(build_objc_symtab_template): Call create_field_decl() instead of
+	create_builtin_decl().
+	(init_objc_symtab): Add missing conversion to initializer element.
+	(build_metadata_decl): Call start_var_decl() instead of define_decl().
+	(generate_objc_symtab_decl): Do not call build_category_template();
+	call start_var_decl() and finish_var_decl() instead of start_decl()
+	and finish_decl().
+	(build_module_descriptor): Call create_field_decl() instead of
+	grokfield(); call start_var_decl() and finish_var_decl() instead of
+	start_decl() and finish_decl(); always mark module descriptor as
+	used; move GNU runtime-specific functionality to
+	build_module_initializer_routine().
+	(build_module_initializer_routine): New function, broken off of
+	build_module_descriptor().
+	(objc_static_init_needed_p, objc_generate_static_init_call): New
+	functions.
+	(generate_static_references, generate_strings,
+	build_selector_translation_table, generate_descriptor_table,
+	generate_ivars_list, generate_dispatch_table, generate_category): Call
+	start_var_decl() and finish_var_decl() instead of start_decl() and
+	finish_decl(); build a type directly instead of via groktypename().
+	(build_selector_reference_decl, build_selector_table_decl,
+	build_class_reference_decl, build_protocol_reference,
+	generate_objc_image_info): Call start_var_decl() instead of
+	build_decl().
+	(build_selector_reference): For GNU runtime, do not call
+	build_selector_reference_decl().
+	(build_selector, build_typed_selector_reference): Always convert
+	result to the selector type.
+	(add_objc_string): Cast return value to 'char *'.
+	(build_method_prototype_template, build_selector_template,
+	build_method_template): Use actual selector type for fields
+	pointing to selectors.
+	(finish_objc): For GNU runtime, call
+	build_module_initializer_routine() after build_module_descriptor().
+	(generate_protocol_list, generate_shared_structures): Call
+	start_var_decl() and finish_var_decl() instead of start_decl() and
+	finish_decl(); build a type directly instead of via
+	groktypename().
+	(synth_id_with_class_suffix): Return a string.
+	(get_arg_type_list): For instance methods, use the instance type for
+	'self'; do not call groktypename_in_parm_context().
+	(build_objc_string_decl): Squash redeclaration errors in ObjC++.
+	(objc_is_class_name): Use OBJC_TYPE_NAME instead of TYPE_NAME;
+	handle RECORD_TYPEs in ObjC as well as ObjC++.
+	(objc_is_id): New function.
+	(objc_is_object_ptr): Return the canonical type node.
+	(objc_get_class_ivars): Simplify using get_class_ivars().
+	(get_class_ivars): Remove second parameter; create a fresh copy
+	of the ivar list for each call; do not check for existence of
+	super class.
+	(objc_eh_runtime_type): Mark #ifndef OBJCPLUS.
+	(objc_init_exceptions): When using SJLJ-style exceptions, require
+	the use of '-fobjc-exceptions' flag; do not require it for DWARF-style
+	exceptions.
+	(objc_build_exc_ptr, next_sjlj_build_try_catch_finally): Use
+	objc_object_type instead of objc_id_type.
+	(objc_begin_catch_clause): Convert the incoming PARM_DECL into
+	a VAR_DECL before placing it in the appropriate scope; do not
+	call define_decl(); adjust call to c_begin_compound_stmt();
+	use objc_object_type instead of objc_id_type.
+	(build_next_objc_exception_stuff): Call create_field_decl() instead
+	of create_builtin_decl(); construct type directly instead of calling
+	groktypename(); use OBJC_VOID_AT_END to mark end of function parameters.
+	(build_private_template): Adjust call to get_class_ivars(); build
+	a type directly instead of via groktypename().
+	(build_protocol_template, build_method_prototype_list_template,
+	build_method_prototype_template, build_category_template,
+	build_selector_template, build_class_template, build_super_template,
+	build_ivar_template, build_ivar_list_template,
+	build_method_list_template, build_method_template):
+	Call create_field_decl() instead of grokfield().
+	(objc_method_parm_type): Do not call groktypename().
+	(generate_descriptor_table): Call start_var_decl() and
+	finish_var_decl() instead of start_decl() and finish_decl().
+	(generate_method_descriptors, build_protocol_initializer,
+	generate_dispatch_tables, build_category_initializer,
+	build_shared_structure_initializer): Do not call groktypename().
+	(generate_protocols): Call start_var_decl() and finish_var_decl()
+	instead of start_decl() and finish_decl(); do not call groktypename().
+	(error_with_ivar): Remove last parameter.
+	(check_ivars): Do not iterate ovar CLASS_RAW_IVARS lists in addition
+	to CLASS_IVARS lists; adjust calls to error_with_ivar().
+	(generate_ivar_lists): Convert one of the initializer elements; do
+	not call groktypename().
+	(get_arg_type_list, start_method_def, gen_method_def): Account for
+	new representation of variable arguments and '...' in Objective-C
+	methods; add Objective-C++ impedance matching code.
+	(is_objc_type_qualifier): Remove function.
+	(adjust_type_for_id_default): Simplify; there is no longer a need to
+	wade through declspecs.
+	(lookup_interface, start_class, continue_class,
+	finish_class, start_method_def, start_protocol, build_method_decl,
+	objc_add_method, add_instance_variable, build_ivar_reference,
+	is_ivar, is_private, get_super_receiver, objc_build_finally_epilogue):
+	Make into static functions.
+	(receiver_is_class_object): Use new IS_CLASS() macro.
+	(objc_build_message_expr): Tweak ObjC++ message argument handling;
+	call objc_finish_message_expr() instead of finish_message_expr().
+	(finish_message_expr): Rename to objc_finish_message_expr(); use
+	OBJC_TYPE_NAME and OBJC_SET_TYPE_NAME macros instead of TYPE_NAME.
+	call gen_type_name() instead of gen_declaration(); call objc_is_id()
+	instead of using IS_ID and IS_CLASS; Use objc_class_name instead of
+	calling get_identifier("Class"); handle CONVERT_EXPRs in receiver.
+	(build_objc_method_call, warn_with_method): Do not call groktypename().
+	(build_ivar_reference): Call convert() instead of clobbering in a
+	type.
+	(hash_init): Initialize string_htab hash table.
+	(add_instance_variable): Simplify parameter list; do not call grokfield();
+	do not populate CLASS_IVARS list.
+	(start_class): Check for the existence of super class, if one was specified.
+	(continue_class): Use CLASS_RAW_IVARS rather than CLASS_IVARS; do not
+	call build_class_template(); adjust call to get_class_ivars(); call
+	build_decl(), pushdecl() and finish_decl() instead of define_decl().
+	(finish_class): Call build_decl(), pushdecl() and finish_decl() instead
+	of define_decl().
+	(add_protocols): Use PROTOCOL_BINFO_ELTS for the tree vector size.
+	(start_protocol): Do not call build_protocol_template(); use
+	PROTOCOL_BINFO_ELTS for the tree vector size.
+	(encode_type_qualifiers): Do not handle the 'const' qualifier here.
+	(encode_pointer): Encode 'const char *' as 'r*', for backwards
+	compatibility.
+	(encode_array): Use HOST_WIDE_INT_PRINT_DEC instead of "%ld".
+	(encode_type): Handle the 'const' qualifier here.
+	(objc_parmlist): New global variable, sued by objc_push_parm and
+	objc_get_parm_info().
+	(objc_push_parm, objc_get_parm_info): New functions.
+	(objc_expr_last): Remove function.
+	(synth_self_and_ucmd_args): For instance methods, use the instance
+	type for 'self'; call objc_push_parm() instead of push_parm_decl().
+	(start_method_def): Do not call push_scope(), declare_parm_level(),
+	pop_scope(), push_parm_decl(), store_parm_decls() or objc_expr_last();
+	just use objc_push_parm() and objc_get_parm_info().
+	(comp_method_with_proto): Remove function.
+	(objc_types_are_equivalent): Strip away indirections before comparing
+	underlying types.
+	(comp_proto_with_proto): Do not call groktypename(); types are no
+	longer in raw declspec format.
+	(objc_start_function): New function.
+	(really_start_method): Call comp_proto_with_proto() instead of
+	comp_method_with_proto(); call objc_start_function() instead of
+	hand-crafting a function declarator.
+	(continue_method_def, objc_expand_function_end): Remove functions.
+	(get_super_receiver): Call objc_get_current_scope() instead of
+	get_current_scope(); reference 'super_class' field (instead of
+	'class').
+	(finish_method_def): Rename to objc_finish_method_definition() and
+	add a function decl parameter; move method encoding call from
+	objc_expand_function_end().
+	(is_complex_decl, adorn_decl, gen_declarator, gen_declspecs,
+	gen_declaration_1): Remove functions.
+	(tmpbuf, RAW_DECLSPEC): Remove.
+	(gen_declaration): Remove second parameter; simplify to deal
+	with TYPE_P nodes instead of raw declspecs.
+	(gen_type_name, gen_type_name_0): New functions.
+	(gen_method_decl): Remove second parameter; call gen_type_name()
+	instead of gen_declaration_1().
+	(dump_interface): Adjust calls to gen_declaration() and 
+	gen_method_decl(); do not allocate a separate string buffer.
+	(init_objc): Allocate a larger string buffer to accommodate
+	dump_interface(); adjust call to build_module_descriptor();
+	add call to build_module_initializer_routine() for the GNU
+	runtime.
+	(generate_classref_translation_entry): Do not call start_decl(); call
+	finish_var_decl() instead of finish_decl(); call convert() instead of
+	build_c_cast().
+	* objc-act.h (CLASS_OWN_IVARS): Remove accessor.
+	(CLASS_BINFO_ELTS): Reduce from 6 to 5, now that CLASS_OWN_IVARS is
+	gone.
+	(OCTI_GNU_INIT_DECL, GNU_INIT_decl): New.
+	(OCTI_ELLIPSIS_NODE, objc_ellipsis_node): Remove.
+	(OCTI_ID_ID, id_type, objc_id_id): Rename to OCTI_ID_NAME,
+	objc_object_type and objc_object_name, respectively.
+	(OCTI_CLS_REF, OCTI_CLASS_NAME, objc_class_reference,
+	objc_class_name): New.
+	(IS_CLASS): New macro.
+	(IS_ID, IS_SUPER): Robustify.
+	(OCTI_EXECCLASS_DECL, execclass_decl): New.
+	(finish_file, start_class, continue_class, finish_class,
+	start_method_def, continue_method_def, finish_method_def,
+	start_protocol, finish_protocol, objc_build_throw_stmt,
+	objc_build_try_catch_finally_stmt, objc_build_synchronized_prologue,
+	objc_build_synchronized_epilogue, objc_build_try_prologue,
+	objc_build_try_epilogue, objc_build_catch_stmt, objc_build_catch_epilogue,
+	objc_build_finally_prologue, objc_build_finally_epilogue,
+	is_ivar, is_private, is_public, add_instance_variable, objc_add_method,
+	get_super_receiver, objc_clear_super_receiver, get_class_ivars_from_name,
+	get_class_reference, get_static_reference, get_object_reference,
+	build_message_expr, finish_message_expr, build_selector_expr,
+	build_ivar_reference, build_keyword_decl, build_method_decl,
+	build_protocol_expr, build_objc_string_object, objc_declare_alias,
+	objc_declare_class, objc_declare_protocols, objc_comptypes,
+	objc_check_decl, build_encode_expr): Remove prototypes.
+	(imp_count, cat_count): Make GGC-aware.
+	(OBJC_SET_TYPE_NAME): New macro.
+	
 2004-09-03  Ziemowit Laski  <zlaski@apple.com>
 
 	* config-lang.in: Update copyright notice.
