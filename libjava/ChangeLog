@@ -1,3 +1,9 @@
+2001-11-25  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/4583:
+	* java/math/BigDecimal.java (BigDecimal(double)): Rewrote.
+	(BigDecimal(String)): Likewise.
+
 2001-11-19  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (_Jv_BytecodeVerifier::branch_prepass) [op_iinc]:
