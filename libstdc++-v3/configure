@@ -16773,6 +16773,14 @@ echo "$ac_t""$gxx_include_dir" 1>&6
   
 
 
+if ${CONFIG_SHELL-/bin/sh} ./libtool --tag CXX --features |
+   grep "enable shared" > /dev/null; then
+  LIBSUPCXX_PICFLAGS=-prefer-pic
+else
+  LIBSUPCXX_PICFLAGS=
+fi
+
+
 # This should be done by mkincludedir, but hack around it now.
 blddir=`pwd`
 echo "checking for $blddir/include"
@@ -17003,6 +17011,7 @@ s%@LIBIO_INCLUDES@%$LIBIO_INCLUDES%g
 s%@CSTD_INCLUDES@%$CSTD_INCLUDES%g
 s%@OPTIMIZE_CXXFLAGS@%$OPTIMIZE_CXXFLAGS%g
 s%@WARN_FLAGS@%$WARN_FLAGS%g
+s%@LIBSUPCXX_PICFLAGS@%$LIBSUPCXX_PICFLAGS%g
 
 CEOF
 EOF
