@@ -79,5 +79,8 @@ Boston, MA 02111-1307, USA.  */
   register unsigned long _beg __asm ("a1") = (unsigned long) (BEG);	\
   register unsigned long _end __asm ("a2") = (unsigned long) (END);	\
   register unsigned long _flg __asm ("a3") = 0;				\
-  __asm __volatile ("swi 0x9f0002");					\
+  __asm __volatile ("swi 0x9f0002		@ sys_cacheflush"	\
+		    : /* no outputs */					\
+		    : /* no inputs */					\
+		    : "a1");						\
 }
