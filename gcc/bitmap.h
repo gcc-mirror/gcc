@@ -100,19 +100,20 @@ extern bool bitmap_intersect_compl_p (bitmap, bitmap);
 /* Perform an operation on two bitmaps, yielding a third.  */
 extern int bitmap_operation (bitmap, bitmap, bitmap, enum bitmap_bits);
 
-#define bitmap_and(DST,A,B) bitmap_operation (DST,A,B,BITMAP_AND)
-#define bitmap_and_into(DST_SRC,B) bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_AND)
-#define bitmap_and_compl(DST,A,B) bitmap_operation (DST,A,B,BITMAP_AND_COMPL)
-#define bitmap_and_compl_into(DST_SRC,B) bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_AND_COMPL)
-#define bitmap_ior(DST,A,B) bitmap_operation (DST,A,B,BITMAP_IOR)
-#define bitmap_ior_into(DST_SRC,B) bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_IOR)
-#define bitmap_ior_compl(DST,A,B) bitmap_operation (DST,A,B,BITMAP_IOR_COMPL)
-#define bitmap_xor(DST,A,B) bitmap_operation (DST,A,B,BITMAP_XOR)
-#define bitmap_xor_into(DST_SRC,B) bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_XOR)
+#define bitmap_and(DST,A,B) (void)bitmap_operation (DST,A,B,BITMAP_AND)
+#define bitmap_and_into(DST_SRC,B) (void)bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_AND)
+#define bitmap_and_compl(DST,A,B) (void)bitmap_operation (DST,A,B,BITMAP_AND_COMPL)
+#define bitmap_and_compl_into(DST_SRC,B) (void)bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_AND_COMPL)
+#define bitmap_ior(DST,A,B) (void)bitmap_operation (DST,A,B,BITMAP_IOR)
+#define bitmap_ior_into(DST_SRC,B) (void)bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_IOR)
+#define bitmap_ior_compl(DST,A,B) (void)bitmap_operation (DST,A,Br,BITMAP_IOR_COMPL)
+#define bitmap_xor(DST,A,B) (void)bitmap_operation (DST,A,B,BITMAP_XOR)
+#define bitmap_xor_into(DST_SRC,B) (void)bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_XOR)
 
 /* `or' into one bitmap the `and' of a second bitmap witih the complement
    of a third. Return nonzero if the bitmap changes. */
-extern int bitmap_ior_and_compl_into (bitmap, bitmap, bitmap);
+extern bool bitmap_ior_and_compl_into (bitmap, bitmap, bitmap);
+extern bool bitmap_ior_and_compl (bitmap, bitmap, bitmap, bitmap);
 
 /* Clear a single register in a register set.  */
 extern void bitmap_clear_bit (bitmap, int);
@@ -142,7 +143,6 @@ extern void bitmap_release_memory (void);
 #define bitmap_zero(a) bitmap_clear (a)
 #define bitmap_a_or_b(a,b,c) bitmap_operation (a, b, c, BITMAP_IOR)
 #define bitmap_a_and_b(a,b,c) bitmap_operation (a, b, c, BITMAP_AND)
-extern int bitmap_union_of_diff (bitmap, bitmap, bitmap, bitmap);
 extern int bitmap_first_set_bit (bitmap);
 extern int bitmap_last_set_bit (bitmap);
 

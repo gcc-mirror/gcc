@@ -1,5 +1,20 @@
 2004-11-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* bitmap.h (bitmap_and, bitmap_and_into, bitmap_and_compl,
+	bitmap_and_compl_into, bitmap_ior, bitmap_iot_into,
+	bitmap_ior_compl, bitmap_xor, bitmap_xor_into): Produce void.
+	(bitmap_ior_and_compl_into): Produce bool.
+	(bitmap_union_of_diff): Rename to ...
+	(bitmap_ior_and_compl): ... here. Produce bool.
+	* bitmap.c (bitmap_ior_and_compl_into): Return bool. Use
+	bitmap_operation directly.
+	(bitmap_union_of_diff): Rename to ...
+	(bitmap_ior_and_compl): ... here. Return bool, use
+	bitmap_operation directly.
+	* df.c (df_rd_transfer_function): Use bitmap_ior_and_compl.
+	(df_ru_transfer_function, df_lr_transfer_function): Likewise.
+	* global.c (modify_bb_reg_pav): Likewise.
+
 	* bitmap.h (bitmap_equal_p): Return bool.
 	(bitmap_intersect_p, bitmap_intersect_compl_p): Declare.
 	* bitmap.c (bitmap_equal_p): Return bool. Compare directly.

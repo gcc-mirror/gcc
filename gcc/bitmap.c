@@ -743,10 +743,9 @@ bitmap_intersect_compl_p (bitmap a, bitmap b)
 }
 
 
-/* Or into bitmap TO bitmap FROM1 and'ed with the complement of
-   bitmap FROM2.  */
+/* Produce TO |= FROM1 & ~FROM2.  Return true, if TO changed.  */
 
-int
+bool
 bitmap_ior_and_compl_into (bitmap to, bitmap from1, bitmap from2)
 {
   bitmap_head tmp;
@@ -756,13 +755,15 @@ bitmap_ior_and_compl_into (bitmap to, bitmap from1, bitmap from2)
   tmp.using_obstack = 0;
 
   bitmap_and_compl (&tmp, from1, from2);
-  changed = bitmap_ior_into (to, &tmp);
+  changed = bitmap_operation (to, to, &tmp, BITMAP_IOR);
   bitmap_clear (&tmp);
   return changed;
 }
 
-int
-bitmap_union_of_diff (bitmap dst, bitmap a, bitmap b, bitmap c)
+/* Produce DST = A | (B & ~C).  Return true if DST != A.  */
+
+bool
+bitmap_ior_and_compl (bitmap dst, bitmap a, bitmap b, bitmap c)
 {
   bitmap_head tmp;
   int changed;
@@ -771,7 +772,7 @@ bitmap_union_of_diff (bitmap dst, bitmap a, bitmap b, bitmap c)
   tmp.using_obstack = 0;
 
   bitmap_and_compl (&tmp, b, c);
-  changed = bitmap_ior (dst, &tmp, a);
+  changed = bitmap_operation (dst, a, &tmp, BITMAP_IOR);
   bitmap_clear (&tmp);
 
   return changed;
