@@ -349,9 +349,12 @@ run_directive (pfile, dir_no, buf, count, name)
      size_t count;
      const char *name;
 {
+  unsigned int output_line = pfile->lexer_pos.output_line;
+
   if (cpp_push_buffer (pfile, (const U_CHAR *) buf, count) != NULL)
     {
-      const struct directive *dir = &dtable[dir_no];
+      const struct directive *dir = &dtable[dir_no], *orig_dir;
+      unsigned char orig_in_directive;
 
       if (name)
 	CPP_BUFFER (pfile)->nominal_fname = name;
@@ -360,7 +363,11 @@ run_directive (pfile, dir_no, buf, count, name)
 
       /* A kludge to avoid line markers for _Pragma.  */
       if (dir_no == T_PRAGMA)
-	pfile->lexer_pos.output_line = CPP_BUFFER (pfile)->prev->lineno;
+	pfile->lexer_pos.output_line = output_line;
+
+      /* Save any in-process directive; _Pragma can appear in one.  */
+      orig_dir = pfile->directive;
+      orig_in_directive = pfile->state.in_directive;
 
       /* For _Pragma, the text is passed through preprocessing stage 3
 	 only, i.e. no trigraphs, no escaped newline removal, and no
@@ -371,8 +378,8 @@ run_directive (pfile, dir_no, buf, count, name)
       pfile->state.prevent_expansion++;
       (void) (*dir->handler) (pfile);
       pfile->state.prevent_expansion--;
-      pfile->directive = 0;
-      pfile->state.in_directive = 0;
+      pfile->directive = orig_dir;
+      pfile->state.in_directive = orig_in_directive;
 
       skip_rest_of_line (pfile);
       if (pfile->buffer->cur != pfile->buffer->rlimit)
