@@ -1,6 +1,6 @@
 /* Handle verification of bytecoded methods for the GNU compiler for 
    the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1326,7 +1326,8 @@ verify_jvm_instructions (jcf, byte_ops, length)
 		      type_map[len] = TREE_VEC_ELT (return_map, len);
 		  }
 		current_subr = LABEL_SUBR_CONTEXT (target);
-		PUSH_PENDING (return_label);
+		if (RETURN_MAP_ADJUSTED (return_map))
+		  PUSH_PENDING (return_label);
 	      }
 
 	    INVALIDATE_PC;

@@ -1,3 +1,9 @@
+2002-09-03  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
+
+	For PR java/5794:
+	* verify.c (verify_jvm_instructions) [OPCODE_jsr]: Only push the
+	return label if a ret instruction for the jsr has been reached.
+
 2002-09-09  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* parse.y (DIR_SEPARATOR): Don't define.
