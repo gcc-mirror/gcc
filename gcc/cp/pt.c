@@ -274,9 +274,9 @@ push_template_decl (decl)
 	    return;
 	}
 
-      DECL_TEMPLATE_SPECIALIZATIONS (maintmpl) = perm_tree_cons
-	(mainargs, TREE_VALUE (current_template_parms),
-	 DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
+      DECL_TEMPLATE_SPECIALIZATIONS (maintmpl) = CLASSTYPE_TI_SPEC_INFO (type)
+	= perm_tree_cons (mainargs, TREE_VALUE (current_template_parms),
+			  DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
       TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
       return;
     }
@@ -291,6 +291,8 @@ push_template_decl (decl)
     }
   else
     {
+      tree t;
+
       if (CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
 	cp_error ("must specialize `%#T' before defining member `%#D'",
 		  ctx, decl);
@@ -303,6 +305,18 @@ push_template_decl (decl)
 	}
       else
 	tmpl = DECL_TI_TEMPLATE (decl);
+
+      if (CLASSTYPE_TEMPLATE_SPECIALIZATION (ctx))
+	t = TREE_VALUE (CLASSTYPE_TI_SPEC_INFO (ctx));
+      else
+	t = DECL_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (ctx));
+
+      if (TREE_VEC_LENGTH (t) != TREE_VEC_LENGTH (args))
+	{
+	  cp_error ("got %d template parameters for `%#D'",
+		    TREE_VEC_LENGTH (args), decl);
+	  cp_error ("  but `%#T' has %d", ctx, TREE_VEC_LENGTH (t));
+	}
     }
 
   DECL_TEMPLATE_RESULT (tmpl) = decl;
@@ -1183,8 +1197,13 @@ instantiate_class_template (type)
 			TREE_VEC_LENGTH (args), NULL_TREE);
 	    BINFO_INHERITANCE_CHAIN (elt) = binfo;
 
-	    if (! uses_template_parms (type)
-		&& TYPE_SIZE (complete_type (TREE_TYPE (elt))) == NULL_TREE)
+	    if (! IS_AGGR_TYPE (TREE_TYPE (elt)))
+	      cp_error
+		("base type `%T' of `%T' fails to be a struct or class type",
+		 TREE_TYPE (elt), type);
+	    else if (! uses_template_parms (type)
+		     && (TYPE_SIZE (complete_type (TREE_TYPE (elt)))
+			 == NULL_TREE))
 	      cp_error ("base class `%T' of `%T' has incomplete type",
 			TREE_TYPE (elt), type);
 	  }
@@ -1752,11 +1771,13 @@ tsubst (t, args, nargs, in_decl)
 	    return t;
 
 	  TREE_TYPE (t) = complete_type (type);
-	  BINFO_VTABLE (t) = TYPE_BINFO_VTABLE (type);
-	  BINFO_VIRTUALS (t) = TYPE_BINFO_VIRTUALS (type);
-	  if (TYPE_BINFO_BASETYPES (type) != NULL_TREE)
-	    BINFO_BASETYPES (t) = copy_node (TYPE_BINFO_BASETYPES (type));
-
+	  if (IS_AGGR_TYPE (type))
+	    {
+	      BINFO_VTABLE (t) = TYPE_BINFO_VTABLE (type);
+	      BINFO_VIRTUALS (t) = TYPE_BINFO_VIRTUALS (type);
+	      if (TYPE_BINFO_BASETYPES (type) != NULL_TREE)
+		BINFO_BASETYPES (t) = copy_node (TYPE_BINFO_BASETYPES (type));
+	    }
 	  return t;
 	}
       {
@@ -3153,7 +3174,7 @@ most_specialized_class (specs, mainargs)
 /* called from the parser.  */
 
 void
-do_function_instantiation (declspecs, declarator, storage)
+do_decl_instantiation (declspecs, declarator, storage)
      tree declspecs, declarator, storage;
 {
   tree decl = grokdeclarator (declarator, declspecs, NORMAL, 0, NULL_TREE);
@@ -3169,7 +3190,18 @@ do_function_instantiation (declspecs, declarator, storage)
     }
 
   /* If we've already seen this template instance, use it.  */
-  if (DECL_FUNCTION_MEMBER_P (decl))
+  if (TREE_CODE (decl) == VAR_DECL)
+    {
+      result = lookup_field (DECL_CONTEXT (decl), DECL_NAME (decl), 0, 0);
+      if (result && TREE_CODE (result) != VAR_DECL)
+	result = NULL_TREE;
+    }
+  else if (TREE_CODE (decl) != FUNCTION_DECL)
+    {
+      cp_error ("explicit instantiation of `%#D'", decl);
+      return;
+    }
+  else if (DECL_FUNCTION_MEMBER_P (decl))
     {
       if (DECL_TEMPLATE_INSTANTIATION (decl))
 	result = decl;
@@ -3217,6 +3249,12 @@ do_function_instantiation (declspecs, declarator, storage)
   if (! result)
     {
       cp_error ("no matching template for `%D' found", decl);
+      return;
+    }
+
+  if (! DECL_TEMPLATE_INFO (result))
+    {
+      cp_pedwarn ("explicit instantiation of non-template `%#D'", result);
       return;
     }
 

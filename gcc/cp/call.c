@@ -5452,15 +5452,23 @@ compare_ics (ics1, ics2)
      they were REF_BINDs.  */
   if (ICS_THIS_FLAG (ics1))
     {
-      ics1 = build_conv (REF_BIND, TREE_TYPE (ics1), main1);
-      TREE_OPERAND (ics1, 0) = TREE_OPERAND (main1, 0);
-      main1 = ics1;
+      tree t = main1;
+      if (TREE_CODE (t) == PTR_CONV)
+	t = TREE_OPERAND (t, 0);
+      t = build1 (IDENTITY_CONV, TREE_TYPE (TREE_TYPE (t)), NULL_TREE);
+      t = build_conv (REF_BIND, TREE_TYPE (ics1), t);
+      ICS_STD_RANK (t) = ICS_STD_RANK (main1);
+      main1 = ics1 = t;
     }
   if (ICS_THIS_FLAG (ics2))
     {
-      ics2 = build_conv (REF_BIND, TREE_TYPE (ics2), main2);
-      TREE_OPERAND (ics2, 0) = TREE_OPERAND (main2, 0);
-      main2 = ics2;
+      tree t = main2;
+      if (TREE_CODE (t) == PTR_CONV)
+	t = TREE_OPERAND (t, 0);
+      t = build1 (IDENTITY_CONV, TREE_TYPE (TREE_TYPE (t)), NULL_TREE);
+      t = build_conv (REF_BIND, TREE_TYPE (ics2), t);
+      ICS_STD_RANK (t) = ICS_STD_RANK (main2);
+      main2 = ics2 = t;
     }
 
   if (ICS_RANK (ics1) > ICS_RANK (ics2))

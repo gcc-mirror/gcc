@@ -196,21 +196,28 @@ build_vbase_path (code, type, expr, path, alias_this)
   register int changed = 0;
   tree last = NULL_TREE, last_virtual = NULL_TREE;
   int nonnull = 0;
-  int fixed_type_p = resolves_to_fixed_type_p (expr, &nonnull);
+  int fixed_type_p;
   tree null_expr = 0, nonnull_expr;
   tree basetype;
   tree offset = integer_zero_node;
 
+  if (BINFO_INHERITANCE_CHAIN (path) == NULL_TREE)
+    return build1 (NOP_EXPR, type, expr);
+
   if (nonnull == 0 && (alias_this && flag_this_is_variable <= 0))
     nonnull = 1;
 
+#if 0
   /* We need additional logic to convert back to the unconverted type
      (the static type of the complete object), and then convert back
      to the type we want.  Until that is done, or until we can
      recognize when that is, we cannot do the short cut logic. (mrs) */
+  fixed_type_p = resolves_to_fixed_type_p (expr, &nonnull);
+#else
   /* Do this, until we can undo any previous conversions.  See net35.C
      for a testcase.  */
   fixed_type_p = complete_type_p (expr);
+#endif
 
   if (!fixed_type_p && TREE_SIDE_EFFECTS (expr))
     expr = save_expr (expr);

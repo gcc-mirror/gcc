@@ -390,7 +390,11 @@ extdef:
 	| using_decl ';'
 		{ do_toplevel_using_decl ($1); }
 	| USING NAMESPACE any_id ';'
-		{ do_using_directive ($3); }
+		{
+		  if (TREE_CODE ($3) == IDENTIFIER_NODE)
+		    $3 = lastiddecl;
+		  do_using_directive ($3);
+		}
 	| extension extdef
 		{ pedantic = $<itype>1; }
 	;
@@ -814,20 +818,20 @@ explicit_instantiation:
 		{ do_type_instantiation ($3, NULL_TREE); }
 	| TEMPLATE typed_declspecs declarator
 		{ tree specs = strip_attrs ($2.t);
-		  do_function_instantiation (specs, $3, NULL_TREE); }
+		  do_decl_instantiation (specs, $3, NULL_TREE); }
 	| TEMPLATE notype_declarator
-		{ do_function_instantiation (NULL_TREE, $2, NULL_TREE); }
+		{ do_decl_instantiation (NULL_TREE, $2, NULL_TREE); }
 	| TEMPLATE constructor_declarator
-		{ do_function_instantiation (NULL_TREE, $2, NULL_TREE); }
+		{ do_decl_instantiation (NULL_TREE, $2, NULL_TREE); }
 	| SCSPEC TEMPLATE aggr template_type
 		{ do_type_instantiation ($4, $1); }
 	| SCSPEC TEMPLATE typed_declspecs declarator
 		{ tree specs = strip_attrs ($3.t);
-		  do_function_instantiation (specs, $4, $1); }
+		  do_decl_instantiation (specs, $4, $1); }
 	| SCSPEC TEMPLATE notype_declarator
-		{ do_function_instantiation (NULL_TREE, $3, $1); }
+		{ do_decl_instantiation (NULL_TREE, $3, $1); }
 	| SCSPEC TEMPLATE constructor_declarator
-		{ do_function_instantiation (NULL_TREE, $3, $1); }
+		{ do_decl_instantiation (NULL_TREE, $3, $1); }
 	;
 
 /* The TYPENAME expansions are to deal with use of a template class name as
@@ -1831,13 +1835,9 @@ typespec:
 		{ $$.t = $1; $$.new_type_flag = 0; }
 	| TYPEOF '(' expr ')'
 		{ $$.t = TREE_TYPE ($3);
-		  $$.new_type_flag = 0;
-		  if (pedantic && !in_system_header)
-		    pedwarn ("ANSI C++ forbids `typeof'"); }
+		  $$.new_type_flag = 0; }
 	| TYPEOF '(' type_id ')'
 		{ $$.t = groktypename ($3.t);
-		  if (pedantic && !in_system_header)
-		    pedwarn ("ANSI C++ forbids `typeof'"); 
 		  $$.new_type_flag = 0; }
 	| SIGOF '(' expr ')'
 		{ tree type = TREE_TYPE ($3);
@@ -3051,7 +3051,15 @@ nested_name_specifier_1:
 		  got_scope = $$ = TREE_TYPE ($$);
 		}
 	| NSNAME SCOPE
-		{ got_scope = $$ = $1; }
+		{
+		  if (TREE_CODE ($$) == IDENTIFIER_NODE)
+		    $$ = lastiddecl;
+		  if (TREE_CODE ($$) == NAMESPACE_DECL
+		      && DECL_NAME ($$) == get_identifier ("std"))
+		    got_scope = void_type_node;
+		  else
+		    got_scope = $$;
+		}
 	| template_type SCOPE
 		{ got_scope = $$ = complete_type (TREE_TYPE ($1)); }
 /* 	These break 'const i;'

@@ -240,9 +240,11 @@ init_exception_processing ()
   tree declspecs;
   tree d;
 
+  /* void vtype () */
+  tree vtype = build_function_type (void_type_node, void_list_node);
+  
   /* void (*)() */
-  tree PFV = build_pointer_type (build_function_type
-				 (void_type_node, void_list_node));
+  tree PFV = build_pointer_type (vtype);
 
   /* Arg list for the build_function_type call for set_terminate and
      set_unexpected.  */
@@ -251,9 +253,6 @@ init_exception_processing ()
   /* void (*pfvtype (void (*) ()))() */
   tree pfvtype = build_function_type (PFV, pfvlist);
 
-  /* void vtype () */
-  tree vtype = build_function_type (void_type_node, void_list_node);
-  
   set_terminate_fndecl = auto_function (get_identifier ("set_terminate"),
 					pfvtype, NOT_BUILT_IN);
   set_unexpected_fndecl = auto_function (get_identifier ("set_unexpected"),
@@ -290,7 +289,7 @@ init_exception_processing ()
 			NOT_BUILT_IN, NULL_PTR);
   empty_fndecl
     = builtin_function ("__empty",
-			build_function_type (void_type_node, void_list_node),
+			vtype,
 			NOT_BUILT_IN, NULL_PTR);
   DECL_EXTERNAL (empty_fndecl) = 1;
   TREE_PUBLIC (empty_fndecl) = 1;
@@ -611,18 +610,18 @@ do_unwind (inner_throw_label)
   /* This doesn't work for the flat model sparc, I bet.  */
   tree fcall;
   tree params;
-  rtx return_val_rtx;
+  rtx next_pc;
   rtx temp;
 
   /* Call to  __builtin_return_address. */
   params = tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
   fcall = build_function_call (BuiltinReturnAddress, params);
-  return_val_rtx = expand_expr (fcall, NULL_RTX, Pmode, 0);
+  next_pc = expand_expr (fcall, NULL_RTX, Pmode, 0);
   /* In the return, the new pc is pc+8, as the value coming in is
      really the address of the call insn, not the next insn.  */
   temp = gen_reg_rtx (Pmode);
   emit_move_insn (temp, inner_throw_label);
-  emit_move_insn (return_val_rtx, plus_constant (temp, -8));
+  emit_move_insn (next_pc, plus_constant (temp, -8));
   emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, SImode, 31)));
   easy_expand_asm ("ret");
   easy_expand_asm ("restore");
@@ -663,16 +662,16 @@ do_unwind (inner_throw_label)
 #if ! defined (TARGET_88000) && ! defined (ARM_FRAME_RTX) && ! defined (SPARC_STACK_ALIGN)
   tree fcall;
   tree params;
-  rtx return_val_rtx;
+  rtx next_pc;
 
 #if 0
   /* I would like to do this here, but the move below doesn't seem to work.  */
   /* Call to  __builtin_return_address.  */
   params = tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
   fcall = build_function_call (BuiltinReturnAddress, params);
-  return_val_rtx = expand_expr (fcall, NULL_RTX, Pmode, 0);
+  next_pc = expand_expr (fcall, NULL_RTX, Pmode, 0);
 
-  emit_move_insn (return_val_rtx, inner_throw_label);
+  emit_move_insn (next_pc, inner_throw_label);
   /* So, for now, just pass throw label to stack unwinder.  */
 #endif
   params = tree_cons (NULL_TREE, make_tree (ptr_type_node,
@@ -705,12 +704,15 @@ expand_builtin_throw ()
 {
   tree fcall;
   tree params;
-  rtx return_val_rtx;
+  rtx handler;
+  rtx saved_pcnthrow;
+  rtx next_pc;
   rtx gotta_rethrow_it;
   rtx gotta_call_terminate;
+  rtx after_unwind;
   rtx top_of_loop;
-  rtx unwind_first;
   tree t;
+  rtx x;
 
   if (! doing_eh (0))
     return;
@@ -721,8 +723,11 @@ expand_builtin_throw ()
   params = void_list_node;
   t = make_call_declarator (get_identifier ("__throw"), params, NULL_TREE,
 			    NULL_TREE);
-  start_function (decl_tree_cons (NULL_TREE, get_identifier ("static"),
-				  void_list_node),
+  start_function (decl_tree_cons (NULL_TREE,
+				  get_identifier ("void"),
+				  decl_tree_cons (NULL_TREE,
+						  get_identifier ("static"),
+						  NULL_TREE)),
 		  t, NULL_TREE, 0);
   store_parm_decls ();
   pushlevel (0);
@@ -732,8 +737,6 @@ expand_builtin_throw ()
 
   gotta_rethrow_it = gen_label_rtx ();
   gotta_call_terminate = gen_label_rtx ();
-  top_of_loop = gen_label_rtx ();
-  unwind_first = gen_label_rtx ();
 
   /* These two can be frontend specific.  If wanted, they can go in
      expand_throw.  */
@@ -742,54 +745,108 @@ expand_builtin_throw ()
 		 GET_MODE (DECL_RTL (saved_throw_type)), 0, 0);
   emit_jump_insn (gen_beq (gotta_call_terminate));
 
-  emit_jump (unwind_first);
-
-  emit_label (top_of_loop);
-
   /* search for an exception handler for the saved_pc */
-  return_val_rtx = do_function_call (FirstExceptionMatch,
-				     tree_cons (NULL_TREE, saved_pc, NULL_TREE),
-				     ptr_type_node);
+  handler = do_function_call (FirstExceptionMatch,
+			      tree_cons (NULL_TREE, saved_pc,
+					 NULL_TREE),
+			      ptr_type_node);
   assemble_external (TREE_OPERAND (FirstExceptionMatch, 0));
 
   /* did we find one? */
-  emit_cmp_insn (return_val_rtx, const0_rtx, EQ, NULL_RTX,
-		 GET_MODE (return_val_rtx), 0, 0);
+  emit_cmp_insn (handler, const0_rtx, EQ, NULL_RTX,
+		 GET_MODE (handler), 0, 0);
 
   /* if not, jump to gotta_rethrow_it */
   emit_jump_insn (gen_beq (gotta_rethrow_it));
 
-  /* we found it, so jump to it */
-  emit_indirect_jump (return_val_rtx);
+  {
+    rtx ret_val, x;
+    ret_val = expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
+					  0, hard_frame_pointer_rtx);
 
-  /* code to deal with unwinding and looking for it again */
-  emit_label (gotta_rethrow_it);
+    /* Set it up so that we continue at the handler.  */
+    emit_move_insn (ret_val, handler);
+#ifdef RETURN_ADDR_OFFSET
+    x = plus_constant (ret_val, -RETURN_ADDR_OFFSET);
+    if (x != ret_val)
+      emit_move_insn (ret_val, x);
+#endif
 
+    expand_null_return ();
+  }
+
+  top_of_loop = gen_label_rtx ();
+  emit_label (top_of_loop);
+  
+#ifdef DONT_ACCESS_GBLS_AFTER_EPILOGUE
+  if (DONT_ACCESS_GBLS_AFTER_EPILOGUE)
+    {
+      saved_pcnthrow = gen_reg_rtx (Pmode);
+      emit_move_insn (saved_pcnthrow, hard_function_value (ptr_type_node,
+							   NULL_TREE));
+    }
+#endif
+      
   /* Call to  __builtin_return_address.  */
 #if defined (ARM_FRAME_RTX)  /* was __arm */
   /* This should be moved into arm.h:RETURN_ADDR_RTX */
   /* This replaces a 'call' to __builtin_return_address */
-  return_val_rtx = gen_reg_rtx (Pmode);
-  emit_move_insn (return_val_rtx, gen_rtx (MEM, Pmode, plus_constant (hard_frame_pointer_rtx, -4)));
+  next_pc = gen_reg_rtx (Pmode);
+  emit_move_insn (next_pc,
+		  gen_rtx (MEM, Pmode, plus_constant (hard_frame_pointer_rtx, -4)));
 #else
   params = tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
   fcall = build_function_call (BuiltinReturnAddress, params);
-  return_val_rtx = expand_expr (fcall, NULL_RTX, Pmode, 0);
+  next_pc = expand_expr (fcall, NULL_RTX, Pmode, 0);
 #endif
 
   /* Did __builtin_return_address return a valid address?  */
-  emit_cmp_insn (return_val_rtx, const0_rtx, EQ, NULL_RTX,
-		 GET_MODE (return_val_rtx), 0, 0);
+  emit_cmp_insn (next_pc, const0_rtx, EQ, NULL_RTX,
+		 GET_MODE (next_pc), 0, 0);
 
   emit_jump_insn (gen_beq (gotta_call_terminate));
 
-  return_val_rtx = eh_outer_context (return_val_rtx);
+  next_pc = eh_outer_context (next_pc);
 
   /* Yes it did.  */
-  emit_move_insn (eh_saved_pc_rtx, return_val_rtx);
+#ifdef DONT_ACCESS_GBLS_AFTER_EPILOGUE
+  if (DONT_ACCESS_GBLS_AFTER_EPILOGUE)
+    {
+      rtx x;
 
-  do_unwind (gen_rtx (LABEL_REF, Pmode, top_of_loop));
-  emit_jump (top_of_loop);
+      x = validize_mem (gen_rtx (MEM, Pmode, saved_pcnthrow));
+      emit_move_insn (validize_mem (gen_rtx (MEM, Pmode, x)),
+		      next_pc);
+#ifdef FUNCTION_OUTGOING_VALUE	
+      emit_move_insn (FUNCTION_OUTGOING_VALUE (ptr_type_node, NULL_TREE),
+		      validize_mem (gen_rtx (MEM, Pmode,
+					     plus_constant (saved_pcnthrow,
+							    GET_MODE_SIZE (Pmode)))));
+      emit_insn (gen_rtx (USE, VOIDmode,
+			  FUNCTION_OUTGOING_VALUE (ptr_type_node, NULL_TREE)));
+#endif
+    }
+  else
+#endif
+    emit_move_insn (eh_saved_pc_rtx, next_pc);
+
+  after_unwind = gen_label_rtx ();
+  do_unwind (gen_rtx (LABEL_REF, Pmode, after_unwind));
+
+  emit_label (after_unwind);
+
+#ifdef DONT_ACCESS_GBLS_AFTER_EPILOGUE
+  if (DONT_ACCESS_GBLS_AFTER_EPILOGUE)
+    {
+      t = make_tree (build_pointer_type (TREE_TYPE (empty_fndecl)),
+		     hard_function_value (ptr_type_node,
+					  NULL_TREE));
+      t = build_function_call (t, NULL_TREE);
+      expand_expr (t, const0_rtx, VOIDmode, 0);
+    }
+  else
+#endif
+    emit_throw ();
 
   /* no it didn't --> therefore we need to call terminate */
   emit_label (gotta_call_terminate);
@@ -797,17 +854,37 @@ expand_builtin_throw ()
   assemble_external (TREE_OPERAND (Terminate, 0));
 
   {
-    rtx ret_val, return_val_rtx;
-    emit_label (unwind_first);
+    rtx ret_val, x;
+    /* code to deal with unwinding and looking for it again */
+    emit_label (gotta_rethrow_it);
     ret_val = expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
 					  0, hard_frame_pointer_rtx);
 
     /* Set it up so that we continue inside, at the top of the loop.  */
     emit_move_insn (ret_val, gen_rtx (LABEL_REF, Pmode, top_of_loop));
 #ifdef RETURN_ADDR_OFFSET
-  return_val_rtx = plus_constant (ret_val, -RETURN_ADDR_OFFSET);
-    if (return_val_rtx != ret_val)
-      emit_move_insn (ret_val, return_val_rtx);
+    x = plus_constant (ret_val, -RETURN_ADDR_OFFSET);
+    if (x != ret_val)
+      emit_move_insn (ret_val, x);
+#endif
+
+#ifdef DONT_ACCESS_GBLS_AFTER_EPILOGUE
+    if (DONT_ACCESS_GBLS_AFTER_EPILOGUE)
+      {
+	rtx x = emit_library_call_value (gen_rtx (SYMBOL_REF, Pmode,
+						  "__eh_pcnthrow"),
+					 NULL_RTX, 1,
+					 Pmode, 0);
+	/* This is to get a version of throw that will throw properly.  */
+	emit_move_insn (validize_mem (gen_rtx (MEM, Pmode,
+					       plus_constant (x, GET_MODE_SIZE (Pmode)))),
+			throw_libfunc);
+#ifdef FUNCTION_OUTGOING_VALUE	
+	emit_move_insn (FUNCTION_OUTGOING_VALUE (ptr_type_node, NULL_TREE),
+			x);
+	emit_insn (gen_rtx (USE, VOIDmode, FUNCTION_OUTGOING_VALUE (ptr_type_node, NULL_TREE)));
+#endif
+      }
 #endif
 
     /* Fall into epilogue to unwind prologue.  */

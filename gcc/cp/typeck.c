@@ -5082,9 +5082,11 @@ build_conditional_expr (ifexp, op1, op2)
     result_type = build_ptrmemfunc_type (result_type);
 
   if (result_type != TREE_TYPE (op1))
-    op1 = convert_and_check (result_type, op1);
+    op1 = convert_for_initialization
+      (NULL_TREE, result_type, op1, LOOKUP_NORMAL, "converting", NULL_TREE, 0);
   if (result_type != TREE_TYPE (op2))
-    op2 = convert_and_check (result_type, op2);
+    op2 = convert_for_initialization
+      (NULL_TREE, result_type, op2, LOOKUP_NORMAL, "converting", NULL_TREE, 0);
 
   if (TREE_CONSTANT (ifexp))
     return integer_zerop (ifexp) ? op2 : op1;
@@ -7221,7 +7223,8 @@ c_expand_return (retval)
 	  if (TREE_CODE (whats_returned) == ADDR_EXPR)
 	    whats_returned = TREE_OPERAND (whats_returned, 0);
 	}
-      if (TREE_CODE (whats_returned) == CONVERT_EXPR)
+      while (TREE_CODE (whats_returned) == CONVERT_EXPR
+	     || TREE_CODE (whats_returned) == NOP_EXPR)
 	whats_returned = TREE_OPERAND (whats_returned, 0);
       if (TREE_CODE (whats_returned) == ADDR_EXPR)
 	{
