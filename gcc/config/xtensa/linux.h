@@ -52,7 +52,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
  "-D__XTENSA__ -D__ELF__ -Acpu=xtensa -Amachine=xtensa \
-  -Dunix -Dgnu_linux -Dlinux -Asystem=posix"
+  -Dunix -D__gnu_linux__ -Dlinux -Asystem=posix"
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"."

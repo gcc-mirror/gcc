@@ -11,7 +11,7 @@
 
 /* ??? Maybe this should be in sysv4.h?  */
 #define CPP_PREDEFINES "\
-  -D__gnu_linux__ -D__linux -D__linux__ -D_LONGLONG -Dgnu_linux \
+  -D__gnu_linux__ -D__linux -D__linux__ -D_LONGLONG \
   -Dlinux -Dunix -Asystem=linux"
 
 /* Need to override linux.h STARTFILE_SPEC, since it has crtbeginT.o in.  */

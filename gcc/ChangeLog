@@ -1,3 +1,15 @@
+2002-04-15  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/linux.h, config/arm/linux-elf.h, config/i370/linux.h,
+	config/i386/linux-aout.h, config/i386/linux-oldld.h,
+	config/i386/linux.h, config/i386/linux64.h, config/ia64/linux.h,
+	config/m68k/linux-aout.h, config/m68k/linux.h, config/mips/linux.h,
+	config/pa/pa-linux.h, config/pj/linux.h, config/s390/linux.h,
+	config/sh/linux.h, config/sparc/linux-aout.h, config/sparc/linux.h,
+	config/sparc/linux64.h, config/xtensa/linux.h (CPP_PREDEFINES):
+	Define __gnu_linux__, not gnu_linux.
+	* config/rs6000/sysv4.h (CPP_OS_GNU_SPEC): Likewise for gnu_hurd.
+
 2002-04-15  Mark Mitchell  <mark@codesourcery.com>
 
 	Remove Chill front end.

@@ -167,7 +167,7 @@ ENDFILE_SPEC_COMMON
 #endif
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -D_LONGLONG -D__sparc__ -Dgnu_linux -Dlinux -Asystem=unix -Asystem=posix"
+#define CPP_PREDEFINES "-D__ELF__ -Dunix -D_LONGLONG -D__sparc__ -D__gnu_linux__ -Dlinux -Asystem=unix -Asystem=posix"
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "\
