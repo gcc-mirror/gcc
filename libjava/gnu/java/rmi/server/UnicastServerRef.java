@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -129,7 +129,7 @@ public RemoteStub getStub(){
 }
 
 
-public boolean unexportObject(Remote obj, boolean force) throws RemoteException {
+public boolean unexportObject(Remote obj, boolean force) {
     // Remove all hashes of methods which may be called.
     buildMethodHash(obj.getClass(), false);
     return UnicastServer.unexportObject(this, force);

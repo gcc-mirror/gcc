@@ -1,3 +1,10 @@
+2003-01-03  Dhek Bhun Kho  <bhun@chello.nl>
+
+	* gnu/java/rmi/server/UnicastServerRef.java (unexportObject):
+	Don't throw RemoteException.
+	* java/rmi/server/UnicastRemoteObject.java (unexportObject): Don't
+	throw RemoteException.
+
 2003-01-03  Joerg Brunsmann  <joerg_brunsmann@yahoo.de>
 
 	* gnu/gcj/protocol/http/Connection.java (proxyPort, proxyInUse,
