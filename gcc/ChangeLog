@@ -1,5 +1,10 @@
 2005-01-01  Richard Henderson  <rth@redhat.com>
 
+	* tree-vectorizer.c (vect_analyze_offset_expr): Strip conversions
+	that don't narrow the value.  Fail for other conversions.
+
+2005-01-01  Richard Henderson  <rth@redhat.com>
+
 	PR c/19031
 	* c-decl.c (pop_file_scope): Call maybe_apply_pending_pragma_weaks.
 	* c-lang.c (finish_file): Don't do it here.

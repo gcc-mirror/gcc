@@ -1390,7 +1390,22 @@ vect_analyze_offset_expr (tree expr,
   enum tree_code code;
   tree init, evolution, def_stmt;
 
-  STRIP_NOPS (expr);
+  /* Strip conversions that don't narrow the mode.  */
+  while (TREE_CODE (expr) == NOP_EXPR || TREE_CODE (expr) == CONVERT_EXPR)
+    {
+      tree to, ti;
+
+      to = TREE_TYPE (expr);
+      oprnd0 = TREE_OPERAND (expr, 0);
+      ti = TREE_TYPE (oprnd0);
+
+      if (!INTEGRAL_TYPE_P (to) || !INTEGRAL_TYPE_P (ti))
+	return false;
+      if (GET_MODE_SIZE (TYPE_MODE (to)) < GET_MODE_SIZE (TYPE_MODE (ti)))
+	return false;
+
+      expr = oprnd0;
+    }
   
   *step = NULL_TREE;
   *misalign = NULL_TREE;
