@@ -1,3 +1,9 @@
+2003-04-18  Olivier Hainque <hainque@act-europe.fr>
+
+        * integrate.c (expand_inline_function): Ensure non-const actuals
+        don't end up const in the caller's flow after conversion to possibly
+        const formal type.
+
 2003-04-18  Vincent Celier  <celier@gnat.com>
 
         * dwarf2out.c (loc_descriptor_from_tree): Treat all *_MOD_EXPR
