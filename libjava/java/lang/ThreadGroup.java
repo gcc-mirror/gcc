@@ -80,9 +80,7 @@ public class ThreadGroup
   }
 
   // This is called by the Thread code to remove a Thread from our
-  // internal list.  FIXME: currently, it isn't called at all.  There
-  // doesn't appear to be any way to remove a Thread from a
-  // ThreadGroup (except the unimplemented destroy method).
+  // internal list.
   final void remove (Thread t)
   {
     threads.removeElement(t);

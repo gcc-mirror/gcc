@@ -1,5 +1,10 @@
 1999-08-18  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/ThreadGroup.java: Fixed now-erroneous comment.
+	* java/lang/natThread.cc (finish_): Call ThreadGroup.remove.
+
+1999-08-18  Tom Tromey  <tromey@cygnus.com>
+
 	* include/javaprims.h ("Java"): Regenerated namespace decls.
 
 1999-08-18  Kresten Krab Thorup  <krab@gnu.org>
