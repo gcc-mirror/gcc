@@ -1,4 +1,3 @@
-# CYGNUS LOCAL entire file
 LIBGCC1 = libgcc1-asm.a
 CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = i386/cygwin32.asm
