@@ -58,16 +58,15 @@
    ;; are really only available for n32 and n64.  However, it is convenient
    ;; to reuse them for SVR4 PIC, where they represent the local and global
    ;; forms of R_MIPS_GOT16.
-   (RELOC_GPREL16		100)
-   (RELOC_GOT_HI		101)
-   (RELOC_GOT_LO		102)
-   (RELOC_GOT_PAGE		103)
-   (RELOC_GOT_DISP		104)
-   (RELOC_CALL16		105)
-   (RELOC_CALL_HI		106)
-   (RELOC_CALL_LO		107)
-   (RELOC_LOADGP_HI		108)
-   (RELOC_LOADGP_LO		109)])
+   (RELOC_GOT_HI		100)
+   (RELOC_GOT_LO		101)
+   (RELOC_GOT_PAGE		102)
+   (RELOC_GOT_DISP		103)
+   (RELOC_CALL16		104)
+   (RELOC_CALL_HI		105)
+   (RELOC_CALL_LO		106)
+   (RELOC_LOADGP_HI		107)
+   (RELOC_LOADGP_LO		108)])
 
 ;; ....................
 ;;

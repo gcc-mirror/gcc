@@ -1,3 +1,22 @@
+2003-09-28  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (mips16_gp_pseudo_reg): Remove.
+	* config/mips/mips.h (LEGITIMATE_CONSTANT_P): Remove orphaned comment.
+	* config/mips/mips.c (mips_reloc_offset_ok_p): New function.
+	(mips_classify_constant): Use it.
+	(mips_splittable_symbol_p): Add an offset argument.
+	(mips_classify_address): Adjust call accordingly.
+	(mips_legitimize_symbol): Handle sdata references with LO_SUM rather
+	than a relocation unspec.  Update call to mips_splittable_symbol_p.
+	Generalize the code that copes with symbols + invalid offsets.
+	(print_operand): Allow '%R' to be applied to small data addresses.
+	(mips_reloc_string): Remove RELOC_GPREL16.
+	(mips_sdata_pointer): Renamed from mips16_gp_pseudo_reg.  Return $gp
+	for TARGET_EXPLICIT_RELOCS.  Return null if we can't use gp-relative
+	relocation operators.
+	* config/mips/mips.md (RELOC_GPREL16): Remove.  Shuffle other reloc
+	constants accordingly.
+
 2003-09-27  Roger Sayle  <roger@eyesopen.com>
 
 	* toplev.c (flag_evaluation_order): New global variable.

@@ -2605,20 +2605,6 @@ typedef struct mips_args {
 #define CONSTANT_ADDRESS_P(X) \
   (CONSTANT_P (X) && mips_legitimate_address_p (SImode, X, 0))
 
-
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.
-
-   At present, GAS doesn't understand li.[sd], so don't allow it
-   to be generated at present.  Also, the MIPS assembler does not
-   grok li.d Infinity.  */
-
-/* ??? SGI Irix 6 assembler fails for CONST address, so reject them.
-   Note that the Irix 6 assembler problem may already be fixed.
-   Note also that the GET_CODE (X) == CONST test catches the mips16
-   gp pseudo reg (see mips16_gp_pseudo_reg) deciding it is not
-   a LEGITIMATE_CONSTANT.  If we ever want mips16 and ABI_N32 or
-   ABI_64 to work together, we'll need to fix this.  */
 #define LEGITIMATE_CONSTANT_P(X) (mips_const_insns (X) > 0)
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)			\

@@ -1,3 +1,8 @@
+2003-09-28  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c-torture/execute/20030928-1.c: New test.
+	* gcc.dg/torture/mips-sdata-1.c (f): Refer to x[0] rather than x[3].
+
 2003-09-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/unroll1.C: New test.
