@@ -1326,7 +1326,9 @@ expand_expr_stmt (exp)
   if (last_expr_value != 0 && GET_CODE (last_expr_value) == MEM
       && TREE_THIS_VOLATILE (exp))
     {
-      if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
+      if (TYPE_MODE (TREE_TYPE (exp)) == VOIDmode)
+	;
+      else if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
 	copy_to_reg (last_expr_value);
       else
 	{
