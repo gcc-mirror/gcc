@@ -1,3 +1,9 @@
+2000-02-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.c (cpp_define, cpp_undef): Make sure the stacked buffer
+	ends with a newline and a NUL.  Don't be so clever manipulating
+	strings.
+
 Wed Feb  9 14:18:08 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* reload1.c (reload) Align stack frame to cfun->stack_alignment_needed,
