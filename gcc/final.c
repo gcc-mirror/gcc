@@ -276,6 +276,7 @@ static int add_bb_string	PROTO((char *, int));
 static void output_source_line	PROTO((FILE *, rtx));
 static rtx walk_alter_subreg	PROTO((rtx));
 static int alter_cond		PROTO((rtx));
+static void output_asm_name	PROTO((void));
 static void output_operand	PROTO((rtx, int));
 static void leaf_renumber_regs	PROTO((rtx));
 
@@ -2313,6 +2314,28 @@ output_operand_lossage (str)
       and print a constant expression for minus the value
       of the operand, with no other punctuation.  */
 
+static void
+output_asm_name ()
+{
+  if (flag_print_asm_name)
+    {
+      /* Annotate the assembly with a comment describing the pattern and
+	 alternative used.  */
+      if (debug_insn)
+	{
+	  register int num = INSN_CODE (debug_insn);
+	  fprintf (asm_out_file, " %s %d %s", 
+		   ASM_COMMENT_START, INSN_UID (debug_insn), insn_name[num]);
+	  if (insn_n_alternatives[num] > 1)
+	    fprintf (asm_out_file, "/%d", which_alternative + 1);
+
+	  /* Clear this so only the first assembler insn
+	     of any rtl insn will get the special comment for -dp.  */
+	  debug_insn = 0;
+	}
+    }
+}
+
 void
 output_asm_insn (template, operands)
      char *template;
@@ -2336,17 +2359,18 @@ output_asm_insn (template, operands)
   while (c = *p++)
     switch (c)
       {
-#ifdef ASM_OUTPUT_OPCODE
       case '\n':
+	output_asm_name ();
 	putc (c, asm_out_file);
+#ifdef ASM_OUTPUT_OPCODE
 	while ((c = *p) == '\t')
 	  {
 	    putc (c, asm_out_file);
 	    p++;
 	  }
 	ASM_OUTPUT_OPCODE (asm_out_file, p);
-	break;
 #endif
+	break;
 
 #ifdef ASSEMBLER_DIALECT
       case '{':
@@ -2459,23 +2483,7 @@ output_asm_insn (template, operands)
 	putc (c, asm_out_file);
       }
 
-  if (flag_print_asm_name)
-    {
-      /* Annotate the assembly with a comment describing the pattern and
-	 alternative used.  */
-      if (debug_insn)
-	{
-	  register int num = INSN_CODE (debug_insn);
-	  fprintf (asm_out_file, " %s %d %s", 
-		   ASM_COMMENT_START, INSN_UID (debug_insn), insn_name[num]);
-	  if (insn_n_alternatives[num] > 1)
-	    fprintf (asm_out_file, "/%d", which_alternative + 1);
-
-	  /* Clear this so only the first assembler insn
-	     of any rtl insn will get the special comment for -dp.  */
-	  debug_insn = 0;
-	}
-    }
+  output_asm_name ();
 
   putc ('\n', asm_out_file);
 }
