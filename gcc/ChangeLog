@@ -1,4 +1,16 @@
+2001-04-28  Jason Merrill  <jason_merrill@redhat.com>
+
+	* except.c (expand_eh_region_start): Don't start a new block.
+	(expand_eh_region_end): Don't end a block.
+	* stmt.c (expand_end_bindings): Don't end EH blocks.
+	(expand_decl_cleanup): Starting an EH region won't change the block.
+	(mark_block_as_eh_region, mark_block_as_not_eh_region): Lose.
+	(is_eh_region): Lose.
+	* tree.h: Adjust.
+
 2001-04-27  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* except.c (expand_eh_region_end_cleanup): word_mode, not Pmode.
 
 	* collect2.c (main): Add `-L' case to remove duplicate entries.
 	(is_in_args): New function to check for a duplicate argument.
