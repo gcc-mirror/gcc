@@ -1,3 +1,10 @@
+Thu Nov 15 10:06:38 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (ffecom_init_decl_processing): Renamed from
+	init_decl_processing.
+	(init_parse): Move contents to ffe_init.
+	(ffe_init): Update prototype.
+
 2001-11-14  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* g77.texi: Update to use `@command', `@option.

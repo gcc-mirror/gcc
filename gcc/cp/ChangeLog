@@ -1,3 +1,13 @@
+2001-11-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-tree.h (init_reswords, cxx_init_decl_processing): New.
+	(cxx_init): Update prototype.
+	* decl.c (init_decl_processing): Rename.  Move null node init
+	to its creation time.
+	* lex.c (cxx_init_options): Update.
+	(cxx_init): Combine with old init_parse; also call
+	cxx_init_decl_processing.
+
 2001-11-14  Richard Sandiford  <rsandifo@redhat.com>
 
         * decl.c (check_initializer): Try to complete the type of an

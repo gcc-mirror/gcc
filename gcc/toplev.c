@@ -161,13 +161,20 @@ extern char **environ;
 extern int size_directive_output;
 extern tree last_assemble_variable_decl;
 
+static void general_init PARAMS ((char *));
+static void parse_options_and_default_flags PARAMS ((int, char **));
+static void process_options PARAMS ((void));
+static void lang_independent_init PARAMS ((void));
+static void lang_dependent_init PARAMS ((const char *));
+static void init_asm_output PARAMS ((const char *));
+
 static void set_target_switch PARAMS ((const char *));
 static const char *decl_name PARAMS ((tree, int));
 
 static void float_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
 static void crash_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
 static void set_float_handler PARAMS ((jmp_buf));
-static void compile_file PARAMS ((const char *));
+static void compile_file PARAMS ((void));
 static void display_help PARAMS ((void));
 static void display_target_options PARAMS ((void));
 
@@ -232,7 +239,7 @@ extern int target_flags;
 
 /* Debug hooks - dependent upon command line options.  */
 
-struct gcc_debug_hooks *debug_hooks;
+struct gcc_debug_hooks *debug_hooks = &do_nothing_debug_hooks;
 
 /* Describes a dump file.  */
 
@@ -1438,23 +1445,6 @@ int warn_unused_parameter;
 int warn_unused_variable;
 int warn_unused_value;
 
-void
-set_Wunused (setting)
-     int setting;
-{
-  warn_unused_function = setting;
-  warn_unused_label = setting;
-  /* Unused function parameter warnings are reported when either ``-W
-     -Wunused'' or ``-Wunused-parameter'' is specified.  Differentiate
-     -Wunused by setting WARN_UNUSED_PARAMETER to -1.  */
-  if (!setting)
-    warn_unused_parameter = 0;
-  else if (!warn_unused_parameter)
-    warn_unused_parameter = -1;
-  warn_unused_variable = setting;
-  warn_unused_value = setting;
-}
-
 /* Nonzero to warn about code which is never reached.  */
 
 int warn_notreached;
@@ -1555,6 +1545,23 @@ lang_independent_options W_options[] =
   {"missing-noreturn", &warn_missing_noreturn, 1,
    N_("Warn about functions which might be candidates for attribute noreturn") }
 };
+
+void
+set_Wunused (setting)
+     int setting;
+{
+  warn_unused_function = setting;
+  warn_unused_label = setting;
+  /* Unused function parameter warnings are reported when either ``-W
+     -Wunused'' or ``-Wunused-parameter'' is specified.  Differentiate
+     -Wunused by setting WARN_UNUSED_PARAMETER to -1.  */
+  if (!setting)
+    warn_unused_parameter = 0;
+  else if (!warn_unused_parameter)
+    warn_unused_parameter = -1;
+  warn_unused_variable = setting;
+  warn_unused_value = setting;
+}
 
 /* The following routines are useful in setting all the flags that
    -ffast-math and -fno-fast-math imply.  */
@@ -2132,202 +2139,13 @@ pop_srcloc ()
   lineno = input_file_stack->line;
 }
 
-/* Compile an entire translation unit, whose primary source file is
-   named NAME.  Write a file of assembly output and various debugging
-   dumps.  */
+/* Compile an entire translation unit.  Write a file of assembly
+   output and various debugging dumps.  */
 
 static void
-compile_file (name)
-     const char *name;
+compile_file ()
 {
   tree globals;
-
-  int name_specified = name != 0;
-
-  if (dump_base_name == 0)
-    dump_base_name = name ? name : "gccdump";
-
-  if (! quiet_flag)
-    time_report = 1;
-
-  /* Start timing total execution time.  */
-
-  init_timevar ();
-  timevar_start (TV_TOTAL);
-
-  /* Open assembly code output file.  Do this even if -fsyntax-only is on,
-     because then the driver will have provided the name of a temporary
-     file or bit bucket for us.  */
-
-  if (! name_specified && asm_file_name == 0)
-    asm_out_file = stdout;
-  else
-    {
-      if (asm_file_name == 0)
-        {
-          int len = strlen (dump_base_name);
-          char *dumpname = (char *) xmalloc (len + 6);
-          memcpy (dumpname, dump_base_name, len + 1);
-          strip_off_ending (dumpname, len);
-          strcat (dumpname, ".s");
-          asm_file_name = dumpname;
-        }
-      if (!strcmp (asm_file_name, "-"))
-        asm_out_file = stdout;
-      else
-        asm_out_file = fopen (asm_file_name, "w");
-      if (asm_out_file == 0)
-	fatal_io_error ("can't open %s for writing", asm_file_name);
-    }
-
-  /* Initialize data in various passes.  */
-
-  init_obstacks ();
-  name = init_parse (name);
-  init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
-		  || debug_info_level == DINFO_LEVEL_VERBOSE
-		  || flag_test_coverage
-		  || warn_notreached);
-  init_regs ();
-  init_alias_once ();
-  init_decl_processing ();
-  init_eh ();
-  init_optabs ();
-  init_stmt ();
-  init_loop ();
-  init_reload ();
-  init_function_once ();
-  init_stor_layout_once ();
-  init_varasm_once ();
-  init_EXPR_INSN_LIST_cache ();
-
-  /* The following initialization functions need to generate rtl, so
-     provide a dummy function context for them.  */
-  init_dummy_function_start ();
-  init_expmed ();
-  init_expr_once ();
-  if (flag_caller_saves)
-    init_caller_save ();
-  expand_dummy_function_end ();
-
-  /* If auxiliary info generation is desired, open the output file.
-     This goes in the same directory as the source file--unlike
-     all the other output files.  */
-  if (flag_gen_aux_info)
-    {
-      aux_info_file = fopen (aux_info_file_name, "w");
-      if (aux_info_file == 0)
-	fatal_io_error ("can't open %s", aux_info_file_name);
-    }
-
-#ifdef IO_BUFFER_SIZE
-  setvbuf (asm_out_file, (char *) xmalloc (IO_BUFFER_SIZE),
-           _IOFBF, IO_BUFFER_SIZE);
-#endif
-
-  if (name != 0)
-    name = ggc_strdup (name);
-
-  input_filename = name;
-
-  /* Put an entry on the input file stack for the main input file.  */
-  push_srcloc (input_filename, 0);
-
-  /* Perform language-specific initialization.
-     This may set main_input_filename.  */
-  (*lang_hooks.init) ();
-
-  /* If the input doesn't start with a #line, use the input name
-     as the official input file name.  */
-  if (main_input_filename == 0)
-    main_input_filename = name;
-
-  if (flag_syntax_only)
-    {
-      write_symbols = NO_DEBUG;
-      profile_flag = 0;
-      profile_block_flag = 0;
-    }
-  else
-    {
-#ifdef ASM_FILE_START
-      ASM_FILE_START (asm_out_file);
-#endif
-
-#ifdef ASM_COMMENT_START
-      if (flag_verbose_asm)
-	{
-	  /* Print the list of options in effect.  */
-	  print_version (asm_out_file, ASM_COMMENT_START);
-	  print_switch_values (asm_out_file, 0, MAX_LINE,
-			       ASM_COMMENT_START, " ", "\n");
-	  /* Add a blank line here so it appears in assembler output but not
-	     screen output.  */
-	  fprintf (asm_out_file, "\n");
-	}
-#endif
-    } /* ! flag_syntax_only  */
-
-  /* Set up the debug hooks based on write_symbols.  Default to doing
-     nothing.  */
-  debug_hooks = &do_nothing_debug_hooks;  
-#if defined(DBX_DEBUGGING_INFO)
-  if (write_symbols == DBX_DEBUG)
-    debug_hooks = &dbx_debug_hooks;
-#endif
-#if defined(XCOFF_DEBUGGING_INFO)
-  if (write_symbols == XCOFF_DEBUG)
-    debug_hooks = &xcoff_debug_hooks;
-#endif
-#ifdef SDB_DEBUGGING_INFO
-  if (write_symbols == SDB_DEBUG)
-    debug_hooks = &sdb_debug_hooks;
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-  if (write_symbols == DWARF_DEBUG)
-    debug_hooks = &dwarf_debug_hooks;
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG)
-    debug_hooks = &dwarf2_debug_hooks;
-#endif
-
-  if (! targetm.have_named_sections)
-    {
-      if (flag_function_sections)
-	{
-	  warning ("-ffunction-sections not supported for this target.");
-	  flag_function_sections = 0;
-	}
-      if (flag_data_sections)
-	{
-	  warning ("-fdata-sections not supported for this target.");
-	  flag_data_sections = 0;
-	}
-    }
-
-  if (flag_function_sections
-      && (profile_flag || profile_block_flag))
-    {
-      warning ("-ffunction-sections disabled; it makes profiling impossible.");
-      flag_function_sections = 0;
-    }
-
-#ifndef OBJECT_FORMAT_ELF
-  if (flag_function_sections && write_symbols != NO_DEBUG)
-    warning ("-ffunction-sections may affect debugging on some targets.");
-#endif
-
-  /* If dbx symbol table desired, initialize writing it
-     and output the predefined types.  */
-  timevar_push (TV_SYMOUT);
-#ifdef DWARF2_UNWIND_INFO
-  if (dwarf2out_do_frame ())
-    dwarf2out_frame_init ();
-#endif
-
-  (*debug_hooks->init) (main_input_filename);
-  timevar_pop (TV_SYMOUT);
 
   /* Initialize yet another pass.  */
 
@@ -2491,13 +2309,6 @@ compile_file (name)
 
   /* Free up memory for the benefit of leak detectors.  */
   free_reg_info ();
-
-  /* Stop timing total execution time.  */
-  timevar_stop (TV_TOTAL);
-
-  /* Print the times.  */
-
-  timevar_print (stderr);
 }
 
 /* This is called from various places for FUNCTION_DECL, VAR_DECL,
@@ -4591,387 +4402,6 @@ independent_decode_option (argc, argv)
   return 1;
 }
 
-/* Entry point of cc1, cc1plus, jc1, f771, etc.
-   Decode command args, then call compile_file.
-   Exit code is FATAL_EXIT_CODE if can't open files or if there were
-   any errors, or SUCCESS_EXIT_CODE if compilation succeeded.
-
-   It is not safe to call this function more than once.  */
-
-int
-toplev_main (argc, argv)
-     int argc;
-     char **argv;
-{
-  int i;
-  char *p;
-
-  /* save in case md file wants to emit args as a comment.  */
-  save_argc = argc;
-  save_argv = argv;
-
-  p = argv[0] + strlen (argv[0]);
-  while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))
-    --p;
-  progname = p;
-
-  xmalloc_set_program_name (progname);
-
-  gcc_init_libintl ();
-
-  /* Install handler for SIGFPE, which may be received while we do
-     compile-time floating point arithmetic.  */
-  signal (SIGFPE, float_signal);
-
-  /* Trap fatal signals, e.g. SIGSEGV, and convert them to ICE messages.  */
-#ifdef SIGSEGV
-  signal (SIGSEGV, crash_signal);
-#endif
-#ifdef SIGILL
-  signal (SIGILL, crash_signal);
-#endif
-#ifdef SIGBUS
-  signal (SIGBUS, crash_signal);
-#endif
-#ifdef SIGABRT
-  signal (SIGABRT, crash_signal);
-#endif
-#if defined SIGIOT && (!defined SIGABRT || SIGABRT != SIGIOT)
-  signal (SIGIOT, crash_signal);
-#endif
-
-  decl_printable_name = decl_name;
-  lang_expand_expr = (lang_expand_expr_t) do_abort;
-
-  /* Initialize whether `char' is signed.  */
-  flag_signed_char = DEFAULT_SIGNED_CHAR;
-#ifdef DEFAULT_SHORT_ENUMS
-  /* Initialize how much space enums occupy, by default.  */
-  flag_short_enums = DEFAULT_SHORT_ENUMS;
-#endif
-
-  tree_code_length[(int) IDENTIFIER_NODE]
-    = ((lang_hooks.identifier_size - sizeof (struct tree_common))
-       / sizeof (tree));
-
-  /* Initialize the garbage-collector.  */
-  init_ggc ();
-  init_stringpool ();
-  ggc_add_rtx_root (&stack_limit_rtx, 1);
-  ggc_add_tree_root (&current_function_decl, 1);
-  ggc_add_tree_root (&current_function_func_begin_label, 1);
-
-  /* Initialize the diagnostics reporting machinery.  */
-  diagnostic_initialize (global_dc);
-
-  /* Register the language-independent parameters.  */
-  add_params (lang_independent_params, LAST_PARAM);
-
-  /* Perform language-specific options initialization.  */
-  (*lang_hooks.init_options) ();
-
-  /* Scan to see what optimization level has been specified.  That will
-     determine the default value of many flags.  */
-  for (i = 1; i < argc; i++)
-    {
-      if (!strcmp (argv[i], "-O"))
-	{
-	  optimize = 1;
-	  optimize_size = 0;
-	}
-      else if (argv[i][0] == '-' && argv[i][1] == 'O')
-	{
-	  /* Handle -Os, -O2, -O3, -O69, ...  */
-	  char *p = &argv[i][2];
-
-	  if ((p[0] == 's') && (p[1] == 0))
-	    {
-	      optimize_size = 1;
-
-	      /* Optimizing for size forces optimize to be 2.  */
-	      optimize = 2;
-	    }
-	  else
-	    {
-	      const int optimize_val = read_integral_parameter (p, p - 2, -1);
-	      if (optimize_val != -1)
-		{
-		  optimize = optimize_val;
-		  optimize_size = 0;
-		}
-	    }
-	}
-    }
-
-  if (!optimize)
-    {
-      flag_merge_constants = 0;
-    }
-
-  if (optimize >= 1)
-    {
-      flag_defer_pop = 1;
-      flag_thread_jumps = 1;
-#ifdef DELAY_SLOTS
-      flag_delayed_branch = 1;
-#endif
-#ifdef CAN_DEBUG_WITHOUT_FP
-      flag_omit_frame_pointer = 1;
-#endif
-      flag_guess_branch_prob = 1;
-    }
-
-  if (optimize >= 2)
-    {
-      flag_optimize_sibling_calls = 1;
-      flag_cse_follow_jumps = 1;
-      flag_cse_skip_blocks = 1;
-      flag_gcse = 1;
-      flag_expensive_optimizations = 1;
-      flag_strength_reduce = 1;
-      flag_rerun_cse_after_loop = 1;
-      flag_rerun_loop_opt = 1;
-      flag_caller_saves = 1;
-      flag_force_mem = 1;
-      flag_peephole2 = 1;
-#ifdef INSN_SCHEDULING
-      flag_schedule_insns = 1;
-      flag_schedule_insns_after_reload = 1;
-#endif
-      flag_regmove = 1;
-      flag_strict_aliasing = 1;
-      flag_delete_null_pointer_checks = 1;
-      flag_reorder_blocks = 1;
-    }
-
-  if (optimize >= 3)
-    {
-      flag_inline_functions = 1;
-      flag_rename_registers = 1;
-    }
-
-  if (optimize < 2 || optimize_size)
-    {
-      align_loops = 1;
-      align_jumps = 1;
-      align_labels = 1;
-      align_functions = 1;
-    }
-
-  /* Initialize target_flags before OPTIMIZATION_OPTIONS so the latter can
-     modify it.  */
-  target_flags = 0;
-  set_target_switch ("");
-
-  /* Unwind tables are always present in an ABI-conformant IA-64
-     object file, so the default should be ON.  */
-#ifdef IA64_UNWIND_INFO
-  flag_unwind_tables = IA64_UNWIND_INFO;
-#endif
-
-#ifdef OPTIMIZATION_OPTIONS
-  /* Allow default optimizations to be specified on a per-machine basis.  */
-  OPTIMIZATION_OPTIONS (optimize, optimize_size);
-#endif
-
-  /* Initialize register usage now so switches may override.  */
-  init_reg_sets ();
-
-  /* Perform normal command line switch decoding.  */
-  for (i = 1; i < argc;)
-    {
-      int lang_processed;
-      int indep_processed;
-
-      /* Give the language a chance to decode the option for itself.  */
-      lang_processed = (*lang_hooks.decode_option) (argc - i, argv + i);
-
-      if (lang_processed >= 0)
-	/* Now see if the option also has a language independent meaning.
-	   Some options are both language specific and language independent,
-	   eg --help.  */
-	indep_processed = independent_decode_option (argc - i, argv + i);
-      else
-	{
-	  lang_processed = -lang_processed;
-	  indep_processed = 0;
-	}
-
-      if (lang_processed || indep_processed)
-	i += MAX (lang_processed, indep_processed);
-      else
-	{
-	  const char *option = NULL;
-	  const char *lang = NULL;
-	  unsigned int j;
-
-	  /* It is possible that the command line switch is not valid for the
-	     current language, but it is valid for another language.  In order
-	     to be compatible with previous versions of the compiler (which
-	     did not issue an error message in this case) we check for this
-	     possibility here.  If we do find a match, then if extra_warnings
-	     is set we generate a warning message, otherwise we will just
-	     ignore the option.  */
-	  for (j = 0; j < ARRAY_SIZE (documented_lang_options); j++)
-	    {
-	      option = documented_lang_options[j].option;
-
-	      if (option == NULL)
-		lang = documented_lang_options[j].description;
-	      else if (! strncmp (argv[i], option, strlen (option)))
-		break;
-	    }
-
-	  if (j != ARRAY_SIZE (documented_lang_options))
-	    {
-	      if (extra_warnings)
-		{
-		  warning ("Ignoring command line option '%s'", argv[i]);
-		  if (lang)
-		    warning
-		      ("(It is valid for %s but not the selected language)",
-		       lang);
-		}
-	    }
-	  else if (argv[i][0] == '-' && argv[i][1] == 'g')
-	    warning ("`%s': unknown or unsupported -g option", &argv[i][2]);
-	  else
-	    error ("Unrecognized option `%s'", argv[i]);
-
-	  i++;
-	}
-    }
-
-  /* All command line options have been processed.  */
-  (*lang_hooks.post_options) ();
-
-  if (exit_after_options)
-    exit (0);
-
-  /* Checker uses the frame pointer.  */
-  if (flag_check_memory_usage)
-    flag_omit_frame_pointer = 0;
-
-  if (optimize == 0)
-    {
-      /* Inlining does not work if not optimizing,
-	 so force it not to be done.  */
-      flag_no_inline = 1;
-      warn_inline = 0;
-
-      /* The c_decode_option function and decode_option hook set
-	 this to `2' if -Wall is used, so we can avoid giving out
-	 lots of errors for people who don't realize what -Wall does.  */
-      if (warn_uninitialized == 1)
-	warning ("-Wuninitialized is not supported without -O");
-    }
-
-  /* We do not currently support sibling-call optimization in the
-     presence of exceptions.  See PR2975 for a test-case that will
-     fail if we try to combine both of these features.  */
-  if (flag_exceptions)
-    flag_optimize_sibling_calls = 0;
-
-#ifdef OVERRIDE_OPTIONS
-  /* Some machines may reject certain combinations of options.  */
-  OVERRIDE_OPTIONS;
-#endif
-
-  /* Set up the align_*_log variables, defaulting them to 1 if they
-     were still unset.  */
-  if (align_loops <= 0) align_loops = 1;
-  if (align_loops_max_skip > align_loops || !align_loops)
-    align_loops_max_skip = align_loops - 1;
-  align_loops_log = floor_log2 (align_loops * 2 - 1);
-  if (align_jumps <= 0) align_jumps = 1;
-  if (align_jumps_max_skip > align_jumps || !align_jumps)
-    align_jumps_max_skip = align_jumps - 1;
-  align_jumps_log = floor_log2 (align_jumps * 2 - 1);
-  if (align_labels <= 0) align_labels = 1;
-  align_labels_log = floor_log2 (align_labels * 2 - 1);
-  if (align_labels_max_skip > align_labels || !align_labels)
-    align_labels_max_skip = align_labels - 1;
-  if (align_functions <= 0) align_functions = 1;
-  align_functions_log = floor_log2 (align_functions * 2 - 1);
-
-  if (profile_block_flag == 3)
-    {
-      warning ("`-ax' and `-a' are conflicting options. `-a' ignored.");
-      profile_block_flag = 2;
-    }
-
-  /* Unrolling all loops implies that standard loop unrolling must also
-     be done.  */
-  if (flag_unroll_all_loops)
-    flag_unroll_loops = 1;
-  /* Loop unrolling requires that strength_reduction be on also.  Silently
-     turn on strength reduction here if it isn't already on.  Also, the loop
-     unrolling code assumes that cse will be run after loop, so that must
-     be turned on also.  */
-  if (flag_unroll_loops)
-    {
-      flag_strength_reduce = 1;
-      flag_rerun_cse_after_loop = 1;
-    }
-
-  if (flag_non_call_exceptions)
-    flag_asynchronous_unwind_tables = 1;
-  if (flag_asynchronous_unwind_tables)
-    flag_unwind_tables = 1;
-
-  /* Warn about options that are not supported on this machine.  */
-#ifndef INSN_SCHEDULING
-  if (flag_schedule_insns || flag_schedule_insns_after_reload)
-    warning ("instruction scheduling not supported on this target machine");
-#endif
-#ifndef DELAY_SLOTS
-  if (flag_delayed_branch)
-    warning ("this target machine does not have delayed branches");
-#endif
-
-  /* Some operating systems do not allow profiling without a frame
-     pointer.  */
-  if (!TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER
-      && profile_flag
-      && flag_omit_frame_pointer)
-    {
-      error ("profiling does not work without a frame pointer");
-      flag_omit_frame_pointer = 0;
-    }
-    
-  user_label_prefix = USER_LABEL_PREFIX;
-  if (flag_leading_underscore != -1)
-    {
-      /* If the default prefix is more complicated than "" or "_",
-	 issue a warning and ignore this option.  */
-      if (user_label_prefix[0] == 0 ||
-	  (user_label_prefix[0] == '_' && user_label_prefix[1] == 0))
-	{
-	  user_label_prefix = flag_leading_underscore ? "_" : "";
-	}
-      else
-	warning ("-f%sleading-underscore not supported on this target machine",
-		 flag_leading_underscore ? "" : "no-");
-    }
-
-  /* If we are in verbose mode, write out the version and maybe all the
-     option flags in use.  */
-  if (version_flag)
-    {
-      print_version (stderr, "");
-      if (! quiet_flag)
-	print_switch_values (stderr, 0, MAX_LINE, "", " ", "\n");
-    }
-
-  compile_file (filename);
-
-  if (errorcount)
-    return (FATAL_EXIT_CODE);
-  if (sorrycount)
-    return (FATAL_EXIT_CODE);
-  return (SUCCESS_EXIT_CODE);
-}
-
 /* Decode -m switches.  */
 /* Decode the switch -mNAME.  */
 
@@ -5139,4 +4569,638 @@ print_switch_values (file, pos, max, indent, sep, term)
 #endif
 
   fprintf (file, "%s", term);
+}
+
+/* Open assembly code output file.  Do this even if -fsyntax-only is
+   on, because then the driver will have provided the name of a
+   temporary file or bit bucket for us.  NAME is the file specified on
+   the command line, possibly NULL.  */
+static void
+init_asm_output (name)
+     const char *name;
+{
+  if (name == NULL && asm_file_name == 0)
+    asm_out_file = stdout;
+  else
+    {
+      if (asm_file_name == 0)
+        {
+          int len = strlen (dump_base_name);
+          char *dumpname = (char *) xmalloc (len + 6);
+          memcpy (dumpname, dump_base_name, len + 1);
+          strip_off_ending (dumpname, len);
+          strcat (dumpname, ".s");
+          asm_file_name = dumpname;
+        }
+      if (!strcmp (asm_file_name, "-"))
+        asm_out_file = stdout;
+      else
+        asm_out_file = fopen (asm_file_name, "w");
+      if (asm_out_file == 0)
+	fatal_io_error ("can't open %s for writing", asm_file_name);
+    }
+
+#ifdef IO_BUFFER_SIZE
+  setvbuf (asm_out_file, (char *) xmalloc (IO_BUFFER_SIZE),
+           _IOFBF, IO_BUFFER_SIZE);
+#endif
+
+  if (!flag_syntax_only)
+    {
+#ifdef ASM_FILE_START
+      ASM_FILE_START (asm_out_file);
+#endif
+
+#ifdef ASM_COMMENT_START
+      if (flag_verbose_asm)
+	{
+	  /* Print the list of options in effect.  */
+	  print_version (asm_out_file, ASM_COMMENT_START);
+	  print_switch_values (asm_out_file, 0, MAX_LINE,
+			       ASM_COMMENT_START, " ", "\n");
+	  /* Add a blank line here so it appears in assembler output but not
+	     screen output.  */
+	  fprintf (asm_out_file, "\n");
+	}
+#endif
+    }
+}
+
+/* Initialization of the front end environment, before command line
+   options are parsed.  Signal handlers, internationalization etc.
+   ARGV0 is main's argv[0].  */
+static void
+general_init (argv0)
+     char *argv0;
+{
+  char *p;
+
+  p = argv0 + strlen (argv0);
+  while (p != argv0 && !IS_DIR_SEPARATOR (p[-1]))
+    --p;
+  progname = p;
+
+  xmalloc_set_program_name (progname);
+
+  gcc_init_libintl ();
+
+  /* Install handler for SIGFPE, which may be received while we do
+     compile-time floating point arithmetic.  */
+  signal (SIGFPE, float_signal);
+
+  /* Trap fatal signals, e.g. SIGSEGV, and convert them to ICE messages.  */
+#ifdef SIGSEGV
+  signal (SIGSEGV, crash_signal);
+#endif
+#ifdef SIGILL
+  signal (SIGILL, crash_signal);
+#endif
+#ifdef SIGBUS
+  signal (SIGBUS, crash_signal);
+#endif
+#ifdef SIGABRT
+  signal (SIGABRT, crash_signal);
+#endif
+#if defined SIGIOT && (!defined SIGABRT || SIGABRT != SIGIOT)
+  signal (SIGIOT, crash_signal);
+#endif
+
+  /* Initialize the diagnostics reporting machinery, so option parsing
+     can give warnings and errors.  */
+  diagnostic_initialize (global_dc);
+}
+
+/* Parse command line options and set default flag values, called
+   after language-independent option-independent intialization.  Do
+   minimal options processing.  Outputting diagnostics is OK, but GC
+   and identifier hashtables etc. are not initialized yet.  */
+static void
+parse_options_and_default_flags (argc, argv)
+     int argc;
+     char **argv;
+{
+  int i;
+
+  /* Save in case md file wants to emit args as a comment.  */
+  save_argc = argc;
+  save_argv = argv;
+
+  /* Initialize register usage now so switches may override.  */
+  init_reg_sets ();
+
+  /* Register the language-independent parameters.  */
+  add_params (lang_independent_params, LAST_PARAM);
+
+  /* Perform language-specific options initialization.  */
+  (*lang_hooks.init_options) ();
+
+  /* Scan to see what optimization level has been specified.  That will
+     determine the default value of many flags.  */
+  for (i = 1; i < argc; i++)
+    {
+      if (!strcmp (argv[i], "-O"))
+	{
+	  optimize = 1;
+	  optimize_size = 0;
+	}
+      else if (argv[i][0] == '-' && argv[i][1] == 'O')
+	{
+	  /* Handle -Os, -O2, -O3, -O69, ...  */
+	  char *p = &argv[i][2];
+
+	  if ((p[0] == 's') && (p[1] == 0))
+	    {
+	      optimize_size = 1;
+
+	      /* Optimizing for size forces optimize to be 2.  */
+	      optimize = 2;
+	    }
+	  else
+	    {
+	      const int optimize_val = read_integral_parameter (p, p - 2, -1);
+	      if (optimize_val != -1)
+		{
+		  optimize = optimize_val;
+		  optimize_size = 0;
+		}
+	    }
+	}
+    }
+
+  if (!optimize)
+    {
+      flag_merge_constants = 0;
+    }
+
+  if (optimize >= 1)
+    {
+      flag_defer_pop = 1;
+      flag_thread_jumps = 1;
+#ifdef DELAY_SLOTS
+      flag_delayed_branch = 1;
+#endif
+#ifdef CAN_DEBUG_WITHOUT_FP
+      flag_omit_frame_pointer = 1;
+#endif
+      flag_guess_branch_prob = 1;
+    }
+
+  if (optimize >= 2)
+    {
+      flag_optimize_sibling_calls = 1;
+      flag_cse_follow_jumps = 1;
+      flag_cse_skip_blocks = 1;
+      flag_gcse = 1;
+      flag_expensive_optimizations = 1;
+      flag_strength_reduce = 1;
+      flag_rerun_cse_after_loop = 1;
+      flag_rerun_loop_opt = 1;
+      flag_caller_saves = 1;
+      flag_force_mem = 1;
+      flag_peephole2 = 1;
+#ifdef INSN_SCHEDULING
+      flag_schedule_insns = 1;
+      flag_schedule_insns_after_reload = 1;
+#endif
+      flag_regmove = 1;
+      flag_strict_aliasing = 1;
+      flag_delete_null_pointer_checks = 1;
+      flag_reorder_blocks = 1;
+    }
+
+  if (optimize >= 3)
+    {
+      flag_inline_functions = 1;
+      flag_rename_registers = 1;
+    }
+
+  if (optimize < 2 || optimize_size)
+    {
+      align_loops = 1;
+      align_jumps = 1;
+      align_labels = 1;
+      align_functions = 1;
+    }
+
+  /* Initialize whether `char' is signed.  */
+  flag_signed_char = DEFAULT_SIGNED_CHAR;
+#ifdef DEFAULT_SHORT_ENUMS
+  /* Initialize how much space enums occupy, by default.  */
+  flag_short_enums = DEFAULT_SHORT_ENUMS;
+#endif
+
+  /* Initialize target_flags before OPTIMIZATION_OPTIONS so the latter can
+     modify it.  */
+  target_flags = 0;
+  set_target_switch ("");
+
+  /* Unwind tables are always present in an ABI-conformant IA-64
+     object file, so the default should be ON.  */
+#ifdef IA64_UNWIND_INFO
+  flag_unwind_tables = IA64_UNWIND_INFO;
+#endif
+
+#ifdef OPTIMIZATION_OPTIONS
+  /* Allow default optimizations to be specified on a per-machine basis.  */
+  OPTIMIZATION_OPTIONS (optimize, optimize_size);
+#endif
+
+  /* Perform normal command line switch decoding.  */
+  for (i = 1; i < argc;)
+    {
+      int lang_processed;
+      int indep_processed;
+
+      /* Give the language a chance to decode the option for itself.  */
+      lang_processed = (*lang_hooks.decode_option) (argc - i, argv + i);
+
+      if (lang_processed >= 0)
+	/* Now see if the option also has a language independent meaning.
+	   Some options are both language specific and language independent,
+	   eg --help.  */
+	indep_processed = independent_decode_option (argc - i, argv + i);
+      else
+	{
+	  lang_processed = -lang_processed;
+	  indep_processed = 0;
+	}
+
+      if (lang_processed || indep_processed)
+	i += MAX (lang_processed, indep_processed);
+      else
+	{
+	  const char *option = NULL;
+	  const char *lang = NULL;
+	  unsigned int j;
+
+	  /* It is possible that the command line switch is not valid for the
+	     current language, but it is valid for another language.  In order
+	     to be compatible with previous versions of the compiler (which
+	     did not issue an error message in this case) we check for this
+	     possibility here.  If we do find a match, then if extra_warnings
+	     is set we generate a warning message, otherwise we will just
+	     ignore the option.  */
+	  for (j = 0; j < ARRAY_SIZE (documented_lang_options); j++)
+	    {
+	      option = documented_lang_options[j].option;
+
+	      if (option == NULL)
+		lang = documented_lang_options[j].description;
+	      else if (! strncmp (argv[i], option, strlen (option)))
+		break;
+	    }
+
+	  if (j != ARRAY_SIZE (documented_lang_options))
+	    {
+	      if (extra_warnings)
+		{
+		  warning ("Ignoring command line option '%s'", argv[i]);
+		  if (lang)
+		    warning
+		      ("(It is valid for %s but not the selected language)",
+		       lang);
+		}
+	    }
+	  else if (argv[i][0] == '-' && argv[i][1] == 'g')
+	    warning ("`%s': unknown or unsupported -g option", &argv[i][2]);
+	  else
+	    error ("Unrecognized option `%s'", argv[i]);
+
+	  i++;
+	}
+    }
+
+  /* All command line options have been processed.  */
+  (*lang_hooks.post_options) ();
+}
+
+/* Process the options that have been parsed.  */
+static void
+process_options ()
+{
+  /* Checker uses the frame pointer.  */
+  if (flag_check_memory_usage)
+    flag_omit_frame_pointer = 0;
+
+  if (optimize == 0)
+    {
+      /* Inlining does not work if not optimizing,
+	 so force it not to be done.  */
+      flag_no_inline = 1;
+      warn_inline = 0;
+
+      /* The c_decode_option function and decode_option hook set
+	 this to `2' if -Wall is used, so we can avoid giving out
+	 lots of errors for people who don't realize what -Wall does.  */
+      if (warn_uninitialized == 1)
+	warning ("-Wuninitialized is not supported without -O");
+    }
+
+  /* We do not currently support sibling-call optimization in the
+     presence of exceptions.  See PR2975 for a test-case that will
+     fail if we try to combine both of these features.  */
+  if (flag_exceptions)
+    flag_optimize_sibling_calls = 0;
+
+#ifdef OVERRIDE_OPTIONS
+  /* Some machines may reject certain combinations of options.  */
+  OVERRIDE_OPTIONS;
+#endif
+
+  /* Set up the align_*_log variables, defaulting them to 1 if they
+     were still unset.  */
+  if (align_loops <= 0) align_loops = 1;
+  if (align_loops_max_skip > align_loops || !align_loops)
+    align_loops_max_skip = align_loops - 1;
+  align_loops_log = floor_log2 (align_loops * 2 - 1);
+  if (align_jumps <= 0) align_jumps = 1;
+  if (align_jumps_max_skip > align_jumps || !align_jumps)
+    align_jumps_max_skip = align_jumps - 1;
+  align_jumps_log = floor_log2 (align_jumps * 2 - 1);
+  if (align_labels <= 0) align_labels = 1;
+  align_labels_log = floor_log2 (align_labels * 2 - 1);
+  if (align_labels_max_skip > align_labels || !align_labels)
+    align_labels_max_skip = align_labels - 1;
+  if (align_functions <= 0) align_functions = 1;
+  align_functions_log = floor_log2 (align_functions * 2 - 1);
+
+  if (profile_block_flag == 3)
+    {
+      warning ("`-ax' and `-a' are conflicting options. `-a' ignored.");
+      profile_block_flag = 2;
+    }
+
+  /* Unrolling all loops implies that standard loop unrolling must also
+     be done.  */
+  if (flag_unroll_all_loops)
+    flag_unroll_loops = 1;
+  /* Loop unrolling requires that strength_reduction be on also.  Silently
+     turn on strength reduction here if it isn't already on.  Also, the loop
+     unrolling code assumes that cse will be run after loop, so that must
+     be turned on also.  */
+  if (flag_unroll_loops)
+    {
+      flag_strength_reduce = 1;
+      flag_rerun_cse_after_loop = 1;
+    }
+
+  if (flag_non_call_exceptions)
+    flag_asynchronous_unwind_tables = 1;
+  if (flag_asynchronous_unwind_tables)
+    flag_unwind_tables = 1;
+
+  /* Warn about options that are not supported on this machine.  */
+#ifndef INSN_SCHEDULING
+  if (flag_schedule_insns || flag_schedule_insns_after_reload)
+    warning ("instruction scheduling not supported on this target machine");
+#endif
+#ifndef DELAY_SLOTS
+  if (flag_delayed_branch)
+    warning ("this target machine does not have delayed branches");
+#endif
+
+  /* Some operating systems do not allow profiling without a frame
+     pointer.  */
+  if (!TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER
+      && profile_flag
+      && flag_omit_frame_pointer)
+    {
+      error ("profiling does not work without a frame pointer");
+      flag_omit_frame_pointer = 0;
+    }
+    
+  user_label_prefix = USER_LABEL_PREFIX;
+  if (flag_leading_underscore != -1)
+    {
+      /* If the default prefix is more complicated than "" or "_",
+	 issue a warning and ignore this option.  */
+      if (user_label_prefix[0] == 0 ||
+	  (user_label_prefix[0] == '_' && user_label_prefix[1] == 0))
+	{
+	  user_label_prefix = flag_leading_underscore ? "_" : "";
+	}
+      else
+	warning ("-f%sleading-underscore not supported on this target machine",
+		 flag_leading_underscore ? "" : "no-");
+    }
+
+  /* If we are in verbose mode, write out the version and maybe all the
+     option flags in use.  */
+  if (version_flag)
+    {
+      print_version (stderr, "");
+      if (! quiet_flag)
+	print_switch_values (stderr, 0, MAX_LINE, "", " ", "\n");
+    }
+
+  if (! quiet_flag)
+    time_report = 1;
+
+  if (flag_syntax_only)
+    {
+      write_symbols = NO_DEBUG;
+      profile_flag = 0;
+      profile_block_flag = 0;
+    }
+
+  /* Now we know write_symbols, set up the debug hooks based on it.
+     By default we do nothing for debug output.  */
+#if defined(DBX_DEBUGGING_INFO)
+  if (write_symbols == DBX_DEBUG)
+    debug_hooks = &dbx_debug_hooks;
+#endif
+#if defined(XCOFF_DEBUGGING_INFO)
+  if (write_symbols == XCOFF_DEBUG)
+    debug_hooks = &xcoff_debug_hooks;
+#endif
+#ifdef SDB_DEBUGGING_INFO
+  if (write_symbols == SDB_DEBUG)
+    debug_hooks = &sdb_debug_hooks;
+#endif
+#ifdef DWARF_DEBUGGING_INFO
+  if (write_symbols == DWARF_DEBUG)
+    debug_hooks = &dwarf_debug_hooks;
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG)
+    debug_hooks = &dwarf2_debug_hooks;
+#endif
+
+  /* If auxiliary info generation is desired, open the output file.
+     This goes in the same directory as the source file--unlike
+     all the other output files.  */
+  if (flag_gen_aux_info)
+    {
+      aux_info_file = fopen (aux_info_file_name, "w");
+      if (aux_info_file == 0)
+	fatal_io_error ("can't open %s", aux_info_file_name);
+    }
+
+  if (! targetm.have_named_sections)
+    {
+      if (flag_function_sections)
+	{
+	  warning ("-ffunction-sections not supported for this target.");
+	  flag_function_sections = 0;
+	}
+      if (flag_data_sections)
+	{
+	  warning ("-fdata-sections not supported for this target.");
+	  flag_data_sections = 0;
+	}
+    }
+
+  if (flag_function_sections
+      && (profile_flag || profile_block_flag))
+    {
+      warning ("-ffunction-sections disabled; it makes profiling impossible.");
+      flag_function_sections = 0;
+    }
+
+#ifndef OBJECT_FORMAT_ELF
+  if (flag_function_sections && write_symbols != NO_DEBUG)
+    warning ("-ffunction-sections may affect debugging on some targets.");
+#endif
+}
+
+/* Language-independent initialization, before language-dependent
+   initialization.  */
+static void
+lang_independent_init ()
+{
+  decl_printable_name = decl_name;
+  lang_expand_expr = (lang_expand_expr_t) do_abort;
+
+  /* Set the language-dependent identifer size.  */
+  tree_code_length[(int) IDENTIFIER_NODE]
+    = ((lang_hooks.identifier_size - sizeof (struct tree_common))
+       / sizeof (tree));
+
+  /* Initialize the garbage-collector, and string pools.  FIXME: We
+     should do this later, in independent_init () when we know we
+     actually want to compile something, but cpplib currently wants to
+     use the hash table immediately in cpp_create_reader.  */
+  init_ggc ();
+  ggc_add_rtx_root (&stack_limit_rtx, 1);
+  ggc_add_tree_root (&current_function_decl, 1);
+  ggc_add_tree_root (&current_function_func_begin_label, 1);
+
+  init_stringpool ();
+  init_obstacks ();
+
+  init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
+		  || debug_info_level == DINFO_LEVEL_VERBOSE
+		  || flag_test_coverage
+		  || warn_notreached);
+  init_regs ();
+  init_alias_once ();
+  init_stmt ();
+  init_loop ();
+  init_reload ();
+  init_function_once ();
+  init_stor_layout_once ();
+  init_varasm_once ();
+  init_EXPR_INSN_LIST_cache ();
+
+  /* The following initialization functions need to generate rtl, so
+     provide a dummy function context for them.  */
+  init_dummy_function_start ();
+  init_expmed ();
+  init_expr_once ();
+  if (flag_caller_saves)
+    init_caller_save ();
+  expand_dummy_function_end ();
+}
+
+/* Language-dependent initialization.  */
+static void
+lang_dependent_init (name)
+     const char *name;
+{
+  if (dump_base_name == 0)
+    dump_base_name = name ? name : "gccdump";
+
+  /* Front-end initialization.  This hook can assume that GC,
+     identifier hashes etc. are set up, but debug initialization is
+     not done yet.  This routine must return the original filename
+     (e.g. foo.i -> foo.c) so can correctly initialize debug output.  */
+  name = (*lang_hooks.init) (name);
+
+  if (name)
+    name = ggc_strdup (name);
+
+  main_input_filename = input_filename = name;
+  init_asm_output (name);
+
+  /* These create various _DECL nodes, so need to be called after the
+     front end is initialized.  */
+  init_eh ();
+  init_optabs ();
+
+  /* Put an entry on the input file stack for the main input file.  */
+  push_srcloc (input_filename, 0);
+
+  /* If dbx symbol table desired, initialize writing it and output the
+     predefined types.  */
+  timevar_push (TV_SYMOUT);
+
+#ifdef DWARF2_UNWIND_INFO
+  if (dwarf2out_do_frame ())
+    dwarf2out_frame_init ();
+#endif
+
+  /* Now we have the correct original filename, we can initialize
+     debug output.  */
+  (*debug_hooks->init) (name);
+
+  timevar_pop (TV_SYMOUT);
+}
+
+/* Entry point of cc1, cc1plus, jc1, f771, etc.
+   Decode command args, then call compile_file.
+   Exit code is FATAL_EXIT_CODE if can't open files or if there were
+   any errors, or SUCCESS_EXIT_CODE if compilation succeeded.
+
+   It is not safe to call this function more than once.  */
+
+int
+toplev_main (argc, argv)
+     int argc;
+     char **argv;
+{
+  /* Initialization of GCC's environment, and diagnostics.  */
+  general_init (argv [0]);
+
+  /* Parse the options and do minimal processing; basically just
+     enough to default flags appropriately.  */
+  parse_options_and_default_flags (argc, argv);
+
+  /* Exit early if we can (e.g. -help).  */
+  if (exit_after_options)
+    return (SUCCESS_EXIT_CODE);
+
+  /* Start timing total execution time.  */
+  init_timevar ();
+  timevar_start (TV_TOTAL);
+
+  /* The bulk of command line switch processing.  */
+  process_options ();
+
+  /* Language-independent initialization.  Also sets up GC, identifier
+     hashes etc.  */
+  lang_independent_init ();
+
+  /* Language-dependent initialization.  */
+  lang_dependent_init (filename);
+
+  compile_file ();
+
+  /* Stop timing and print the times.  */
+  timevar_stop (TV_TOTAL);
+  timevar_print (stderr);
+
+  if (errorcount || sorrycount)
+    return (FATAL_EXIT_CODE);
+
+  return (SUCCESS_EXIT_CODE);
 }

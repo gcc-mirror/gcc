@@ -63,7 +63,7 @@ struct pending_option
 };
 
 /* The `pending' structure accumulates all the options that are not
-   actually processed until we hit cpp_start_read.  It consists of
+   actually processed until we hit cpp_read_main_file.  It consists of
    several lists, one for each type of option.  We keep both head and
    tail pointers for quick insertion.  */
 struct cpp_pending
@@ -111,6 +111,7 @@ static void free_chain			PARAMS ((struct pending_option *));
 static void set_lang			PARAMS ((cpp_reader *, enum c_lang));
 static void init_dependency_output	PARAMS ((cpp_reader *));
 static void init_standard_includes	PARAMS ((cpp_reader *));
+static void read_original_filename	PARAMS ((cpp_reader *));
 static void new_pending_directive	PARAMS ((struct cpp_pending *,
 						 const char *,
 						 cl_directive_handler));
@@ -476,11 +477,9 @@ init_library ()
 
 /* Initialize a cpp_reader structure.  */
 cpp_reader *
-cpp_create_reader (table, lang)
-     hash_table *table;
+cpp_create_reader (lang)
      enum c_lang lang;
 {
-  struct spec_nodes *s;
   cpp_reader *pfile;
 
   /* Initialise this instance of the library if it hasn't been already.  */
@@ -534,23 +533,7 @@ cpp_create_reader (table, lang)
   /* Initialise the buffer obstack.  */
   gcc_obstack_init (&pfile->buffer_ob);
 
-  /* Initialise the hashtable.  */
-  _cpp_init_hashtable (pfile, table);
-
-  _cpp_init_directives (pfile);
   _cpp_init_includes (pfile);
-  _cpp_init_internal_pragmas (pfile);
-
-  /* Initialize the special nodes.  */
-  s = &pfile->spec_nodes;
-  s->n_L                = cpp_lookup (pfile, DSC("L"));
-  s->n_defined		= cpp_lookup (pfile, DSC("defined"));
-  s->n_true		= cpp_lookup (pfile, DSC("true"));
-  s->n_false		= cpp_lookup (pfile, DSC("false"));
-  s->n__STRICT_ANSI__   = cpp_lookup (pfile, DSC("__STRICT_ANSI__"));
-  s->n__CHAR_UNSIGNED__ = cpp_lookup (pfile, DSC("__CHAR_UNSIGNED__"));
-  s->n__VA_ARGS__       = cpp_lookup (pfile, DSC("__VA_ARGS__"));
-  s->n__VA_ARGS__->flags |= NODE_DIAGNOSTIC;
 
   return pfile;
 }
@@ -704,7 +687,7 @@ static const struct builtin builtin_array[] =
 #define builtin_array_end \
  builtin_array + sizeof(builtin_array)/sizeof(struct builtin)
 
-/* Subroutine of cpp_start_read; reads the builtins table above and
+/* Subroutine of cpp_read_main_file; reads the builtins table above and
    enters the macros into the hash table.  */
 static void
 init_builtins (pfile)
@@ -916,14 +899,21 @@ free_chain (head)
     }
 }
 
-/* This is called after options have been processed.  Setup for
-   processing input from the file named FNAME, or stdin if it is the
-   empty string.  Return 1 on success, 0 on failure.  */
-int
-cpp_start_read (pfile, fname)
+/* This is called after options have been parsed, and partially
+   processed.  Setup for processing input from the file named FNAME,
+   or stdin if it is the empty string.  Return the original filename
+   on success (e.g. foo.i->foo.c), or NULL on failure.  */
+const char *
+cpp_read_main_file (pfile, fname, table)
      cpp_reader *pfile;
      const char *fname;
+     hash_table *table;
 {
+  /* The front ends don't set up the hash table until they have
+     finished processing the command line options, so initializing the
+     hashtable is deferred until now.  */
+  _cpp_init_hashtable (pfile, table);
+
   /* Set up the include search path now.  */
   if (! CPP_OPTION (pfile, no_standard_includes))
     init_standard_includes (pfile);
@@ -948,16 +938,60 @@ cpp_start_read (pfile, fname)
     /* Set the default target (if there is none already).  */
     deps_add_default_target (pfile->deps, fname);
 
-  /* Open the main input file.  This must be done early, so we have a
-     buffer to stand on.  */
+  /* Open the main input file.  */
   if (!_cpp_read_file (pfile, fname))
-    return 0;
+    return NULL;
 
   /* Set this after cpp_post_options so the client can change the
      option if it wishes, and after stacking the main file so we don't
      trace the main file.  */
   pfile->line_maps.trace_includes = CPP_OPTION (pfile, print_include_names);
 
+  /* For foo.i, read the original filename foo.c now, for the benefit
+     of the front ends.  */
+  if (CPP_OPTION (pfile, preprocessed))
+    read_original_filename (pfile);
+
+  return pfile->map->to_file;
+}
+
+/* For preprocessed files, if the first tokens are of the form # NUM.
+   handle the directive so we know the original file name.  This will
+   generate file_change callbacks, which the front ends must handle
+   appropriately given their state of initialization.  */
+static void
+read_original_filename (pfile)
+     cpp_reader *pfile;
+{
+  const cpp_token *token, *token1;
+
+  /* Lex ahead; if the first tokens are of the form # NUM, then
+     process the directive, otherwise back up.  */
+  token = _cpp_lex_direct (pfile);
+  if (token->type == CPP_HASH)
+    {
+      token1 = _cpp_lex_direct (pfile);
+      _cpp_backup_tokens (pfile, 1);
+
+      /* If it's a #line directive, handle it.  */
+      if (token1->type == CPP_NUMBER)
+	{
+	  _cpp_handle_directive (pfile, token->flags & PREV_WHITE);
+	  return;
+	}
+    }
+
+  /* Backup as if nothing happened.  */
+  _cpp_backup_tokens (pfile, 1);
+}
+
+/* Handle pending command line options: -D, -U, -A, -imacros and
+   -include.  This should be called after debugging has been properly
+   set up in the front ends.  */
+void
+cpp_finish_options (pfile)
+     cpp_reader *pfile;
+{
   /* Install builtins and process command line macros etc. in the order
      they appeared, but only if not already preprocessed.  */
   if (! CPP_OPTION (pfile, preprocessed))
@@ -986,8 +1020,6 @@ cpp_start_read (pfile, fname)
 
   free_chain (CPP_OPTION (pfile, pending)->directive_head);
   _cpp_push_next_buffer (pfile);
-
-  return 1;
 }
 
 /* Called to push the next buffer on the stack given by -include.  If

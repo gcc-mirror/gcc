@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.2 $
+ *                            $Revision: 1.3 $
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -478,7 +478,7 @@ pushdecl (decl)
    front end has been run.  */
 
 void
-init_decl_processing ()
+gnat_init_decl_processing ()
 {
   lineno = 0;
 

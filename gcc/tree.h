@@ -2647,7 +2647,6 @@ extern const char *(*decl_printable_name)	PARAMS ((tree, int));
 
 extern void (*incomplete_decl_finalize_hook)	PARAMS ((tree));
 
-extern const char *init_parse			PARAMS ((const char *));
 extern void finish_parse			PARAMS ((void));
 
 /* Declare a predefined function.  Return the declaration.  This function is
@@ -2774,9 +2773,6 @@ extern tree (*lang_type_promotes_to)	PARAMS ((tree));
 extern tree fold_builtin		PARAMS ((tree));
 
 /* The language front-end must define these functions.  */
-
-/* Function of no arguments for initializing the symbol table.  */
-extern void init_decl_processing		PARAMS ((void));
 
 /* Function to replace the DECL_LANG_SPECIFIC field of a DECL with a copy.  */
 extern void copy_lang_decl			PARAMS ((tree));

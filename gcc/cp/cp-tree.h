@@ -3458,6 +3458,9 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
    : TYPE_NAME (NODE))
 
 /* in lex.c  */
+
+extern void init_reswords PARAMS ((void));
+
 /* Indexed by TREE_CODE, these tables give C-looking names to
    operators represented by TREE_CODES.  For example,
    opname_tab[(int) MINUS_EXPR] == "-".  */
@@ -3569,6 +3572,7 @@ extern void adjust_clone_args			PARAMS ((tree));
 
 /* decl.c */
 /* resume_binding_level */
+extern void cxx_init_decl_processing		PARAMS ((void));
 extern int toplevel_bindings_p			PARAMS ((void));
 extern int namespace_bindings_p			PARAMS ((void));
 extern void keep_next_level			PARAMS ((int));
@@ -3882,7 +3886,7 @@ extern void yyerror				PARAMS ((const char *));
 extern void clear_inline_text_obstack		PARAMS ((void));
 extern void yyhook				PARAMS ((int));
 extern int cp_type_qual_from_rid                PARAMS ((tree));
-extern void cxx_init PARAMS ((void));
+extern const char *cxx_init			PARAMS ((const char *));
 extern void cxx_finish PARAMS ((void));
 extern void cxx_init_options PARAMS ((void));
 extern void cxx_post_options PARAMS ((void));

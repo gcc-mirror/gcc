@@ -6390,7 +6390,7 @@ initialize_predefined_identifiers ()
    Make definitions for built-in primitive functions.  */
 
 void
-init_decl_processing ()
+cxx_init_decl_processing ()
 {
   tree void_ftype;
   tree void_ftype_ptr;
@@ -6522,8 +6522,6 @@ init_decl_processing ()
 
   /* Indirecting an UNKNOWN_TYPE node yields an UNKNOWN_TYPE node.  */
   TREE_TYPE (unknown_type_node) = unknown_type_node;
-
-  TREE_TYPE (null_node) = type_for_size (POINTER_SIZE, 0);
 
   /* Looking up TYPE_POINTER_TO and TYPE_REFERENCE_TO yield the same
      result.  */

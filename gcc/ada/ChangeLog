@@ -1,3 +1,11 @@
+2001-11-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (gnat_init): Change prototype.  Include the
+	functionality of the old init_parse and init_decl_processing.
+	(gnat_init_decl_processing): New prototype.
+	(init_parse): Remove.
+	* utils.c (init_decl_processing): Rename gnat_init_decl_processing.
+
 2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* misc.c (gnat_print_decl, gnat_print_type): Renamed.

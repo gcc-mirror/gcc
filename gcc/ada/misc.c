@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision: 1.10 $
+ *                             $Revision: 1.11 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -109,12 +109,13 @@ const char *gnat_tree_code_name[] = {
 };
 #undef DEFTREECODE
 
-static void gnat_init			PARAMS ((void));
+static const char *gnat_init		PARAMS ((const char *));
 static void gnat_init_options		PARAMS ((void));
 static int gnat_decode_option		PARAMS ((int, char **));
 static HOST_WIDE_INT gnat_get_alias_set	PARAMS ((tree));
 static void gnat_print_decl		PARAMS ((FILE *, tree, int));
 static void gnat_print_type		PARAMS ((FILE *, tree, int));
+extern void gnat_init_decl_processing	PARAMS ((void));
 
 /* Structure giving our language-specific hooks.  */
 
@@ -342,11 +343,38 @@ internal_error_function (msgid, ap)
 
 /* Perform all the initialization steps that are language-specific.  */
 
-void
-gnat_init ()
+static const char *
+gnat_init (filename)
+     const char *filename;
 {
+/* Performs whatever initialization steps needed by the language-dependent
+   lexical analyzer.
+
+   Define the additional tree codes here.  This isn't the best place to put
+   it, but it's where g++ does it.  */
+
+  lang_expand_expr = gnat_expand_expr;
+  lang_expand_constant = gnat_expand_constant;
+
+  memcpy ((char *) (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE),
+	  (char *) gnat_tree_code_type,
+	  ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
+	   * sizeof (char *)));
+
+  memcpy ((char *) (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE),
+	  (char *) gnat_tree_code_length,
+	  ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
+	   * sizeof (int)));
+
+  memcpy ((char *) (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE),
+	  (char *) gnat_tree_code_name,
+	  ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
+	   * sizeof (char *)));
+
+  gnat_init_decl_processing ();
+
   /* Add the input filename as the last argument.  */
-  gnat_argv [gnat_argc] = (char *) input_filename;
+  gnat_argv [gnat_argc] = (char *) filename;
   gnat_argc++;
   gnat_argv [gnat_argc] = 0;
 
@@ -365,6 +393,8 @@ gnat_init ()
 #if defined(MIPS_DEBUGGING_INFO) && defined(DWARF2_DEBUGGING_INFO)
   dwarf2out_set_demangle_name_func (convert_ada_name_to_qualified_name);
 #endif
+
+  return filename;
 }
 
 /* If DECL has a cleanup, build and return that cleanup here.
@@ -847,37 +877,6 @@ insert_code_for (gnat_node)
       end_sequence ();
       emit_insns_after (insns, RTL_EXPR_RTL (get_gnu_tree (gnat_node)));
     }
-}
-
-/* Performs whatever initialization steps needed by the language-dependent
-   lexical analyzer.
-
-   Define the additional tree codes here.  This isn't the best place to put
-   it, but it's where g++ does it.  */
-
-const char *
-init_parse (filename)
-     const char *filename;
-{
-  lang_expand_expr = gnat_expand_expr;
-  lang_expand_constant = gnat_expand_constant;
-
-  memcpy ((char *) (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE),
-	  (char *) gnat_tree_code_type,
-	  ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
-	   * sizeof (char *)));
-
-  memcpy ((char *) (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE),
-	  (char *) gnat_tree_code_length,
-	  ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
-	   * sizeof (int)));
-
-  memcpy ((char *) (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE),
-	  (char *) gnat_tree_code_name,
-	  ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
-	   * sizeof (char *)));
-
-  return filename;
 }
 
 void

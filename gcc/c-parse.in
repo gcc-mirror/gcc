@@ -304,6 +304,8 @@ static void init_reswords PARAMS ((void));
 void
 c_parse_init ()
 {
+  init_reswords ();
+
   ggc_add_tree_root (&declspec_stack, 1);
   ggc_add_tree_root (&current_declspecs, 1);
   ggc_add_tree_root (&prefix_attributes, 1);
@@ -3526,17 +3528,6 @@ init_reswords ()
       C_IS_RESERVED_WORD (id) = 1;
       ridpointers [(int) reswords[i].rid] = id;
     }
-}
-
-const char *
-init_parse (filename)
-     const char *filename;
-{
-  add_c_tree_codes ();
-  init_reswords ();
-  init_pragma ();
-
-  return init_c_lex (filename);
 }
 
 void

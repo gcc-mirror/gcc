@@ -260,6 +260,7 @@ struct _ffecom_concat_list_
 
 /* Static functions (internal). */
 
+static void ffecom_init_decl_processing PARAMS ((void));
 static tree ffecom_arglist_expr_ (const char *argstring, ffebld args);
 static tree ffecom_widest_expr_type_ (ffebld list);
 static bool ffecom_overlap_ (tree dest_decl, tree dest_offset,
@@ -14120,8 +14121,8 @@ mark_binding_level (void *arg)
     }
 }
 
-void
-init_decl_processing ()
+static void
+ffecom_init_decl_processing ()
 {
   static tree *const tree_roots[] = {
     &current_function_decl,
@@ -14188,31 +14189,6 @@ init_decl_processing ()
   ffe_init_0 ();
 }
 
-const char *
-init_parse (filename)
-     const char *filename;
-{
-  /* Open input file.  */
-  if (filename == 0 || !strcmp (filename, "-"))
-    {
-      finput = stdin;
-      filename = "stdin";
-    }
-  else
-    finput = fopen (filename, "r");
-  if (finput == 0)
-    fatal_io_error ("can't open %s", filename);
-
-#ifdef IO_BUFFER_SIZE
-  setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
-#endif
-
-  decl_printable_name = lang_printable_name;
-  print_error_function = lang_print_error_function;
-
-  return filename;
-}
-
 void
 finish_parse ()
 {
@@ -14253,7 +14229,7 @@ insert_block (block)
 }
 
 /* Each front end provides its own.  */
-static void ffe_init PARAMS ((void));
+static const char *ffe_init PARAMS ((const char *));
 static void ffe_finish PARAMS ((void));
 static void ffe_init_options PARAMS ((void));
 static void ffe_print_identifier PARAMS ((FILE *, tree, int));
@@ -14281,6 +14257,45 @@ static void ffe_print_identifier PARAMS ((FILE *, tree, int));
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
+static const char *
+ffe_init (filename)
+     const char *filename;
+{
+  /* Open input file.  */
+  if (filename == 0 || !strcmp (filename, "-"))
+    {
+      finput = stdin;
+      filename = "stdin";
+    }
+  else
+    finput = fopen (filename, "r");
+  if (finput == 0)
+    fatal_io_error ("can't open %s", filename);
+
+#ifdef IO_BUFFER_SIZE
+  setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
+#endif
+
+  ffecom_init_decl_processing ();
+  decl_printable_name = lang_printable_name;
+  print_error_function = lang_print_error_function;
+
+  /* If the file is output from cpp, it should contain a first line
+     `# 1 "real-filename"', and the current design of gcc (toplev.c
+     in particular and the way it sets up information relied on by
+     INCLUDE) requires that we read this now, and store the
+     "real-filename" info in master_input_filename.  Ask the lexer
+     to try doing this.  */
+  ffelex_hash_kludge (finput);
+
+  /* FIXME: The ffelex_hash_kludge code needs to be cleaned up to
+     return the new file name.  */
+  if (main_input_filename)
+    filename = main_input_filename;
+
+  return filename;
+}
+
 static void
 ffe_finish ()
 {
@@ -14300,18 +14315,6 @@ ffe_init_options ()
   flag_merge_constants = 2;
   flag_errno_math = 0;
   flag_complex_divide_method = 1;
-}
-
-static void
-ffe_init ()
-{
-  /* If the file is output from cpp, it should contain a first line
-     `# 1 "real-filename"', and the current design of gcc (toplev.c
-     in particular and the way it sets up information relied on by
-     INCLUDE) requires that we read this now, and store the
-     "real-filename" info in master_input_filename.  Ask the lexer
-     to try doing this.  */
-  ffelex_hash_kludge (finput);
 }
 
 int

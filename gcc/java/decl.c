@@ -398,7 +398,7 @@ create_primitive_vtable (name)
 }
 
 void
-init_decl_processing ()
+java_init_decl_processing ()
 {
   register tree endlink;
   tree field = NULL_TREE;

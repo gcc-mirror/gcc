@@ -1031,6 +1031,7 @@ extern tree ident_subst PARAMS ((const char*, int,
 				const char*, int, int, const char*));
 extern tree identifier_subst PARAMS ((const tree,
 				     const char *, int, int, const char *));
+extern void java_init_decl_processing PARAMS ((void));
 extern tree build_java_signature PARAMS ((tree));
 extern tree build_java_argument_signature PARAMS ((tree));
 extern void set_java_signature PARAMS ((tree, tree));

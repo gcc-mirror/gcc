@@ -157,7 +157,7 @@ char *util_firstobj;
 
 static void init_objc				PARAMS ((void));
 static void finish_objc				PARAMS ((void));
-static void objc_init				PARAMS ((void));
+static const char *objc_init			PARAMS ((const char *));
 static void objc_init_options			PARAMS ((void));
 static int objc_decode_option			PARAMS ((int, char **));
 static void objc_post_options			PARAMS ((void));
@@ -545,19 +545,24 @@ generate_struct_by_value_array ()
 static void
 objc_init_options ()
 {
-  parse_in = cpp_create_reader (ident_hash, CLK_OBJC);
+  parse_in = cpp_create_reader (CLK_OBJC);
   c_language = clk_objective_c;
 }
 
-static void
-objc_init ()
+static const char *
+objc_init (filename)
+     const char *filename;
 {
+  c_init_decl_processing ();
+
+  filename = c_common_lang_init (filename);
+
+  add_c_tree_codes ();
+
   /* Force the line number back to 0; check_newline will have
      raised it to 1, which will make the builtin functions appear
      not to be built in.  */
   lineno = 0;
-
-  c_common_lang_init ();
 
   /* If gen_declaration desired, open the output file.  */
   if (flag_gen_declaration)
@@ -595,10 +600,11 @@ objc_init ()
     generate_struct_by_value_array ();
 
   objc_act_parse_init ();
-  c_parse_init ();
 
   VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
   ggc_add_tree_varray_root (&deferred_fns, 1);
+
+  return filename;
 }
 
 /* Register a function tree, so that its optimization and conversion

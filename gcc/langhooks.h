@@ -59,8 +59,10 @@ struct lang_hooks
      identifier nodes long enough for the language-specific slots.  */
   size_t identifier_size;
 
-  /* Called first, to initialize the front end.  */
-  void (*init) PARAMS ((void));
+  /* Called after options parsing, to initialize the front end.  The
+     main input filename is passed, which may be NULL; the front end
+     should return the original filename (e.g. foo.i -> foo.c).  */
+  const char * (*init) PARAMS ((const char *));
 
   /* Called last, as a finalizer.  */
   void (*finish) PARAMS ((void));
@@ -81,7 +83,7 @@ struct lang_hooks
      done for this option.  */
   int (*decode_option) PARAMS ((int, char **));
 
-  /* Called when all command line options have been processed.  */
+  /* Called when all command line options have been parsed.  */
   void (*post_options) PARAMS ((void));
 
   /* Called to obtain the alias set to be used for an expression or type.

@@ -173,7 +173,7 @@ static tree defarg_parm;    /* current default parameter */
 static tree defarg_depfns;  /* list of unprocessed fns met during current fn. */
 static tree defarg_fnsdone; /* list of fns with circular defargs */
 
-/* Initialize obstacks. Called once, from init_parse.  */
+/* Initialize obstacks. Called once, from cxx_init.  */
 
 void
 init_spew ()

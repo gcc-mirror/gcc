@@ -451,16 +451,8 @@ struct cpp_hashnode
   } value;
 };
 
-/* Call this first to get a handle to pass to other functions.  If you
-   want cpplib to manage its own hashtable, pass in a NULL pointer.
-   Or you can pass in an initialised hash table that cpplib will use;
-   this technique is used by the C front ends.  */
-extern cpp_reader *cpp_create_reader PARAMS ((struct ht *,
-					      enum c_lang));
-
-/* Call this to release the handle.  Any use of the handle after this
-   function returns is invalid.  Returns cpp_errors (pfile).  */
-extern int cpp_destroy PARAMS ((cpp_reader *));
+/* Call this first to get a handle to pass to other functions.  */
+extern cpp_reader *cpp_create_reader PARAMS ((enum c_lang));
 
 /* Call these to get pointers to the options and callback structures
    for a given reader.  These pointers are good until you call
@@ -476,12 +468,38 @@ extern void cpp_set_callbacks PARAMS ((cpp_reader *, cpp_callbacks *));
    return value is the number of arguments used.  If
    cpp_handle_options returns without using all arguments, it couldn't
    understand the next switch.  When there are no switches left, you
-   must call cpp_post_options before calling cpp_start_read.  Only
+   must call cpp_post_options before calling cpp_read_main_file.  Only
    after cpp_post_options are the contents of the cpp_options
-   structure reliable.  */
+   structure reliable.  Options processing is not completed until you
+   call cpp_finish_options.  */
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
 extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
 extern void cpp_post_options PARAMS ((cpp_reader *));
+
+/* This function reads the file, but does not start preprocessing.  It
+   returns the name of the original file; this is the same as the
+   input file, except for preprocessed input.  This will generate at
+   least one file change callback, and possibly a line change callback
+   too.  If there was an error opening the file, it returns NULL.
+
+   If you want cpplib to manage its own hashtable, pass in a NULL
+   pointer.  Otherise you should pass in an initialised hash table
+   that cpplib will share; this technique is used by the C front
+   ends.  */
+extern const char *cpp_read_main_file PARAMS ((cpp_reader *, const char *,
+					       struct ht *));
+
+/* Deferred handling of command line options that can generate debug
+   callbacks, such as -D and -imacros.  Call this after
+   cpp_read_main_file.  The front ends need this separation so they
+   can initialize debug output with the original file name, returned
+   from cpp_read_main_file, before they get debug callbacks.  */
+extern void cpp_finish_options PARAMS ((cpp_reader *));
+
+/* Call this to release the handle at the end of preprocessing.  Any
+   use of the handle after this function returns is invalid.  Returns
+   cpp_errors (pfile).  */
+extern int cpp_destroy PARAMS ((cpp_reader *));
 
 /* Error count.  */
 extern unsigned int cpp_errors PARAMS ((cpp_reader *));
@@ -495,7 +513,6 @@ extern void cpp_register_pragma PARAMS ((cpp_reader *,
 					 const char *, const char *,
 					 void (*) PARAMS ((cpp_reader *))));
 
-extern int cpp_start_read PARAMS ((cpp_reader *, const char *));
 extern void cpp_finish PARAMS ((cpp_reader *));
 extern int cpp_avoid_paste PARAMS ((cpp_reader *, const cpp_token *,
 				    const cpp_token *));

@@ -1,3 +1,9 @@
+2001-11-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* decl.c (init_decl_processing): Rename java_init_decl_processing.
+	* java-tree.h: New prototype.
+	* lang.c (java_init): Update prototype.  Combine with old init_parse.
+
 2001-11-13  Tom Tromey  <tromey@redhat.com>
 
 	* gjavah.c (method_signature): New global.

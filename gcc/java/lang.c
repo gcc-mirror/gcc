@@ -48,7 +48,7 @@ struct string_option
   int on_value;
 };
 
-static void java_init PARAMS ((void));
+static const char *java_init PARAMS ((const char *));
 static void java_init_options PARAMS ((void));
 static int java_decode_option PARAMS ((int, char **));
 static void put_decl_string PARAMS ((const char *, int));
@@ -186,7 +186,7 @@ lang_W_options[] =
 JCF *current_jcf;
 
 /* Variable controlling how dependency tracking is enabled in
-   init_parse.  */
+   java_init.  */
 static int dependency_tracking = 0;
 
 /* Flag values for DEPENDENCY_TRACKING.  */
@@ -411,10 +411,15 @@ java_decode_option (argc, argv)
 /* Global open file.  */
 FILE *finput;
 
-const char *
-init_parse (filename)
+static const char *
+java_init (filename)
      const char *filename;
 {
+#if 0
+  extern int flag_minimal_debug;
+  flag_minimal_debug = 0;
+#endif
+
   /* Open input file.  */
 
   if (filename == 0 || !strcmp (filename, "-"))
@@ -475,6 +480,30 @@ init_parse (filename)
 	    }
 	}
     }
+
+  jcf_path_init ();
+  jcf_path_seal (version_flag);
+
+  decl_printable_name = lang_printable_name;
+  print_error_function = lang_print_error;
+  lang_expand_expr = java_lang_expand_expr;
+
+  /* Append to Gcc tree node definition arrays */
+
+  memcpy (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
+	  java_tree_code_type,
+	  (int)LAST_JAVA_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE);
+  memcpy (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE,
+	  java_tree_code_length,
+	  (LAST_JAVA_TREE_CODE - 
+	   (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (int));
+  memcpy (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE,
+	  java_tree_code_name,
+	  (LAST_JAVA_TREE_CODE - 
+	   (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
+  java_init_decl_processing ();
+
+  using_eh_for_cleanups ();
 
   return filename;
 }
@@ -675,38 +704,6 @@ lang_print_error (context, file)
       last_error_function = current_function_decl;
     }
 
-}
-
-static void
-java_init ()
-{
-#if 0
-  extern int flag_minimal_debug;
-  flag_minimal_debug = 0;
-#endif
-
-  jcf_path_init ();
-  jcf_path_seal (version_flag);
-
-  decl_printable_name = lang_printable_name;
-  print_error_function = lang_print_error;
-  lang_expand_expr = java_lang_expand_expr;
-
-  /* Append to Gcc tree node definition arrays */
-
-  memcpy (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
-	  java_tree_code_type,
-	  (int)LAST_JAVA_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE);
-  memcpy (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE,
-	  java_tree_code_length,
-	  (LAST_JAVA_TREE_CODE - 
-	   (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (int));
-  memcpy (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE,
-	  java_tree_code_name,
-	  (LAST_JAVA_TREE_CODE - 
-	   (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
-
-  using_eh_for_cleanups ();
 }
 
 /* This doesn't do anything on purpose. It's used to satisfy the

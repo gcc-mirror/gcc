@@ -1,3 +1,45 @@
+2001-11-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c: Include c-lex.h.
+	(c_common_lang_init): Change prototype.  Call init_c_lex and
+	init_pragma from here.
+	* c-common.h (c_common_lang_init): Change prototype.
+	* c-decl.c (init_decl_processing): Rename.  Call c_parse_init.
+	* c-lang.c (c_init): Change prototype.  Update.
+	(c_init_options): Update.
+	* c-lex.c (cpp_filename): Remove.
+	(init_c_lex): Update.  Read the main file, and get the original
+	file name.
+	(yyparse): Finish the command line options.
+	* c-parse.in (c_parse_init): Call init_reswords here.
+	(init_parse): Remove.
+	* c-tree.h (c_init_decl_processing): New.
+	* cpphash.c (_cpp_init_hashtable): After initializing the hash
+	table, populate it.
+	* cppinit.c (read_original_filename, cpp_finish_options): New.
+	(cpp_create_reader): New prototype. Defer hash table initialization.
+	(cpp_start_read): Rename cpp_read_main_file.  Initialize the
+	hash table.  Get the original filename.
+	* cpplib.h (cpp_create_reader): Update.
+	(cpp_start_read): Remove.
+	(cpp_read_main_file, cpp_finish_options): New.
+	* cppmain.c (main, do_preprocessing): Update.
+	* langhooks.h (struct langhooks): Update init prototype.
+	* toplev.c (general_init, parse_options_and_default_flags,
+	process_options, lang_indpendent_init, lang_dependent_init,
+	init_asm_output): New; perform the bulk of initialization.
+	(compile_file): Move most of initialization to above functions.
+	(debug_hooks): Initialize statically.
+	(set_Wunused): Relocate.
+	(toplev_main): Move most of initialization to other init functions.
+	Have a clear logic flow.
+	* tree.h (init_parse, init_decl_processing): Remove.
+objc:
+	* objc-act.c (objc_init): Update prototype, combine with old
+	init_parse.
+	(objc_init_options): Update.
+
+
 2001-11-15  Andreas Jaeger  <aj@suse.de>
 
 	* cfgrtl.c (purge_all_dead_edges): Use int as argument for
