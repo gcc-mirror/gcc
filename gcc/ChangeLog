@@ -1,5 +1,17 @@
 1999-12-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* combine.c (record_promoted_value): Remove unused variable
+	`links2'.
+
+	* emit-rtl.c (renumber_insns): Likewise for `old_max_uid'.
+
+	* global.c (record_conflicts): Likewise for `j'.
+
+	* genoutput.c (output_insn_data): Don't unnecessarily cast away
+	const-ness.
+
+1999-12-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* i386-protos.h (output_387_binary_op, output_fix_trunc,
 	output_fp_compare): Constify a char*.
 

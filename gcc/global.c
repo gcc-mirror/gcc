@@ -1352,7 +1352,6 @@ record_conflicts (allocno_vec, len)
      register int len;
 {
   register int num;
-  register int j;
   register int ialloc_prod;
 
   while (--len >= 0)
