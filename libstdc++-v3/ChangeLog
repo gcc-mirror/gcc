@@ -1,3 +1,10 @@
+2000-11-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_CTYPE_SUPPORT): Fix punctuation in
+	use of `test'.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+
 2000-11-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* acinclude.m4 (CXX): Prevent it from being cached.
