@@ -1,5 +1,10 @@
 1999-05-10  Tom Tromey  <tromey@cygnus.com>
 
+	* java/io/RandomAccessFile.java (RandomAccessFile): Removed
+	`FIXME' comment.
+	(readLine): Likewise.
+	(readFully): Implemented.
+
 	* java/lang/natObject.cc (sync_init): Use _Jv_AllocBytesChecked.
 
 	* java/awt/natToolkit.cc: Added copyright header.

@@ -17,7 +17,7 @@ package java.io;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
- * Status:  not finished
+ * Status: Believe complete and correct to 1.1.
  */
 
 public class RandomAccessFile implements DataOutput, DataInput
@@ -63,7 +63,6 @@ public class RandomAccessFile implements DataOutput, DataInput
       }
 
     fd = new FileDescriptor (fileName, fdmode);
-    // FIXME: read-only mode.
     out = new DataOutputStream (new FileOutputStream (fd));
     in = new DataInputStream (new FileInputStream (fd));
   }
@@ -115,13 +114,13 @@ public class RandomAccessFile implements DataOutput, DataInput
 
   public final void readFully (byte[] buffer) throws IOException
   {
-    // FIXME.
+    in.readFully(buffer);
   }
 
   public final void readFully (byte[] buffer, int offset, int count)
     throws IOException
   {
-    // FIXME.
+    in.readFully(buffer, offset, count);
   }
 
   public final int readInt () throws IOException
@@ -131,7 +130,6 @@ public class RandomAccessFile implements DataOutput, DataInput
 
   public final String readLine () throws IOException
   {
-    // FIXME?
     return in.readLine();
   }
 
