@@ -1,3 +1,7 @@
+2001-07-27  Mark Kettenis  <kettenis@gnu.org>
+
+	* ltcf-cxx.sh: Add support for GNU.
+
 2001-07-22  Timothy Wall  <twall@redhat.com>
 
 	* ltcf-c.sh: Don't disable shared libraries for AIX5/IA64.  Preserve 

@@ -246,6 +246,8 @@ case $host_os in
     # conventions
     ld_shlibs=yes
     ;;
+  gnu*)
+    ;;
   hpux*)
     if test $with_gnu_ld = no; then
       hardcode_libdir_flag_spec='${wl}+b ${wl}$libdir'
@@ -743,6 +745,8 @@ else
       ;;
     freebsd*)
       # FreeBSD uses GNU C++
+      ;;
+    gnu*)
       ;;
     hpux9* | hpux10* | hpux11*)
       case $cc_basename in
