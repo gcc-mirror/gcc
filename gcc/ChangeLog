@@ -1,3 +1,19 @@
+Thu Jun 13 20:18:38 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config.gcc: Add support for sh[234]*-*-elf*, sh[2346lbe]*-*-linux*.
+	* config/sh/linux.h (TARGET_DEFAULT): Use TARGET_CPU_DEFAULT.
+	* sh.h (SELECT_SH1, SELECT_SH2, SELECT_SH3, SELECT_SH3E): New macros.
+	(SELECT_SH4_NOFPU, SELECT_SH4_SINGLE_ONLY, SELECT_SH4): Likewise.
+	(SELECT_SH4_SINGLE, SELECT_SH5_64, SELECT_SH5_64_NOFPU): Likewise.
+	(SELECT_SH5_32, SELECT_SH5_32_NOFPU, SELECT_SH5_COMPACT): Likewise.
+	(SELECT_SH5_COMPACT_NOFPU): Likewise.
+	(TARGET_SWITCHES): Use them.
+	(TARGET_CPU_DEFAULT): Define if not already defined.
+	(TARGET_DEFAULT): Use it.
+	(LINK_DEFAULT_CPU_EMUL): Value now depends on TARGET_CPU_DEFAULT.
+	* config/sh/t-linux (MULTILIB_OPTIONS): Use MULTILIB_ENDIAN.
+	* config/sh/t-monolib: New file.
+
 2002-06-13  Roger Sayle  <roger@eyesopen.com>
 
 	* toplev.c (rest_of_compilation): Simplify (and correct) the
