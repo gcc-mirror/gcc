@@ -1,3 +1,9 @@
+2001-12-16  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR other/3725
+	* configure.in: Add AC_SUBST(target_alias). 
+	* configure: Regenerated.
+
 2001-11-26  Loren J. Rittle  <ljrittle@acm.org>
 
 	* linux_threads.c (WRAP_FUNC(pthread_join)): Remove special
