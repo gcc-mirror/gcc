@@ -2315,7 +2315,7 @@ rs6000_emit_move (dest, source, mode)
 
   /* Handle the case where reload calls us with an invalid address;
      and the case of CONSTANT_P_RTX.  */
-  if (!VECTOR_MODE_P (mode)
+  if (!ALTIVEC_VECTOR_MODE (mode)
       && (! general_operand (operands[1], mode)
 	  || ! nonimmediate_operand (operands[0], mode)
 	  || GET_CODE (operands[1]) == CONSTANT_P_RTX))
@@ -3225,8 +3225,8 @@ rs6000_va_arg (valist, type)
   lab_over = gen_label_rtx ();
   addr_rtx = gen_reg_rtx (Pmode);
 
-  /*  Vectors never go in registers.  */
-  if (TREE_CODE (type) != VECTOR_TYPE)
+  /*  AltiVec vectors never go in registers.  */
+  if (!TARGET_ALTIVEC || TREE_CODE (type) != VECTOR_TYPE)
     {
       TREE_THIS_VOLATILE (reg) = 1;
       emit_cmp_and_jump_insns
@@ -3280,7 +3280,8 @@ rs6000_va_arg (valist, type)
      All AltiVec vectors go in the overflow area.  So in the AltiVec
      case we need to get the vectors from the overflow area, but
      remember where the GPRs and FPRs are.  */
-  if (n_reg > 1 && TREE_CODE (type) != VECTOR_TYPE)
+  if (n_reg > 1 && (TREE_CODE (type) != VECTOR_TYPE
+		    || !TARGET_ALTIVEC))
     {
       t = build (MODIFY_EXPR, TREE_TYPE (reg), reg, build_int_2 (8, 0));
       TREE_SIDE_EFFECTS (t) = 1;
@@ -3294,8 +3295,8 @@ rs6000_va_arg (valist, type)
     {
       int align;
 
-      /* Vectors are 16 byte aligned.  */
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      /* AltiVec vectors are 16 byte aligned.  */
+      if (TARGET_ALTIVEC && TREE_CODE (type) == VECTOR_TYPE)
 	align = 15;
       else
 	align = 7;
