@@ -166,4 +166,5 @@ dtors_section ()							\
 
 /* Don't assume anything about startfiles.  */
 
+#undef STARTFILE_SPEC
 #define STARTFILE_SPEC ""
