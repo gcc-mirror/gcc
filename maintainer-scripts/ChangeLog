@@ -1,3 +1,8 @@
+2002-12-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_release: Make snapshots from the GCC 3.3 branch.
+	* snapshot-README: Update.
+
 2002-09-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* update_version: Do not check in files which are unchanged.
