@@ -1,3 +1,8 @@
+2000-05-18  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (jump_optimize_1): Base minimum insn count during
+	find_cross_jump on BRANCH_COST.
+
 2000-05-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* print-rtl.c (print_rtx): Only print note line number as string
