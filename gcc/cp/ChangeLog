@@ -1,3 +1,36 @@
+Tue Jun 28 11:58:38 1994  Gerald Baumgartner  (gb@cs.purdue.edu)
+
+	* class.c (finish_struct): Don't `cons_up_default_function's
+	for signatures.
+	(finish_struct): Handle an empty method_vec correctly.
+
+	* decl.c (grokdeclarator): Don't warn about a signature being
+	empty in a signature pointer declaration if we only saw a
+	forward declaration of the signature.  Changed `warning's into
+	`cp_warning's.
+
+	* sig.c (build_sigtable): Don't die if a null signature table
+	constructor is returned.
+	(build_signature_pointer_constructor): If the signature table
+	constructor is null, the _sptr field is set to a null pointer
+	and cast to the appropriate type.  Make copies of all null
+	pointers so that the type null_pointer_node doesn't get changed.
+	(build_signature_table_constructor): Added comments.
+
+	* sig.c (build_signature_pointer_constructor): Complain if we
+	try to assign to/initialize a signature pointer/reference of
+	an undefined signature.
+
+Mon Jun 27 14:05:16 1994  Gerald Baumgartner  (gb@cs.purdue.edu)
+
+	* typeck2.c (store_init_value): Don't be pedantic about
+	non-constant initializers of signature tables/pointers/references.
+
+Fri Jun 24 16:49:41 1994  Gerald Baumgartner  (gb@cs.purdue.edu)
+
+	* decl.c (grokdeclarator): If we are grokking an opaque typedef
+	in a signature, don't complain about it begin static.
+
 Wed Jun 29 16:44:45 1994  Mike Stump  (mrs@cygnus.com)
 
 	Fixes a problem of the this pointer being wrong in virtual calls to
@@ -64,7 +97,7 @@ Thu Jun 23 00:22:28 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	specify, say, 'long'.
 
 	* init.c (do_friend): Do overload C functions (or call pushdecl,
-        anyaway).
+	anyaway).
 
 Wed Jun 22 13:40:49 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
@@ -611,10 +644,10 @@ Tue May 17 13:34:46 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 Mon May 16 23:04:01 1994  Stephen R. van den Berg  (berg@pool.informatik.rwth-aachen.de)
 
-        * cp/typeck.c (common_type): Attribute merging.
-        (comp_types): Utilise COMP_TYPE_ATTRIBUTES macro.
+	* cp/typeck.c (common_type): Attribute merging.
+	(comp_types): Utilise COMP_TYPE_ATTRIBUTES macro.
 
-        * cp/parse.y: Revamp attribute parsing.
+	* cp/parse.y: Revamp attribute parsing.
 
 Mon May 16 01:40:34 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
@@ -1443,7 +1476,7 @@ Fri Apr 22 12:55:42 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	[ cp/* changes propagated from c-* changes in 940206 snapshot ]
 	* cp/typeck.c (signed_or_unsigned_type): Check for any
-        INTEGRAL_TYPE_P not just INTEGER_TYPE.
+	INTEGRAL_TYPE_P not just INTEGER_TYPE.
 
 	Mon Dec  6 13:35:31 1993  Norbert Kiesel  (norbert@i3.INformatik.rwth-aachen.DE)
 
@@ -1652,9 +1685,9 @@ Fri Apr 15 16:36:33 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 Fri Apr 15 15:56:35 1994  Kung Hsu  (kung@mexican.cygnus.com)
 
-        * class.c (build_vtable_entry): revert Apr 4 change.
-        * decl2.c (mark_vtable_entries): replace pure virtual function
-        decl with abort's.
+	* class.c (build_vtable_entry): revert Apr 4 change.
+	* decl2.c (mark_vtable_entries): replace pure virtual function
+	decl with abort's.
 
 Fri Apr 15 13:49:33 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
@@ -2158,8 +2191,8 @@ Wed Mar 30 14:20:50 1994  Mike Stump  (mrs@cygnus.com)
 	base class member should be called in some MI situations.
 
 	* search.c (make_binfo): Use more the more specialized base
-        binfos from the binfo given as the second argument to make_binfo,
-        instead of the unspecialized ones from the TYPE_BINFO.
+	binfos from the binfo given as the second argument to make_binfo,
+	instead of the unspecialized ones from the TYPE_BINFO.
 	* class.c (finish_base_struct): Ditto, update callers.
 	* search.c (dfs_get_vbase_types): Ditto.
 	* tree.c (propagate_binfo_offsets, layout_vbasetypes): Ditto.
@@ -2928,7 +2961,7 @@ Fri Feb 11 11:52:26 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 hu Jan 13 17:55:51 EST 1994 Gnanasekaran Swaminathan (gs4t@virginia.edu)
 
-            * cp-tree.h (DESTRUCTOR_NAME_P): do not confuse AUTO_TEMP names
+	    * cp-tree.h (DESTRUCTOR_NAME_P): do not confuse AUTO_TEMP names
 	    with destructor names when either NO_DOLLAR_IN_LABEL or
 	    NO_DOT_IN_LABEL are not defined.
 
@@ -3950,10 +3983,10 @@ Wed Dec  8 17:38:06 1993  Mike Stump  (mrs@cygnus.com)
 
 Wed Dec  8 13:01:54 1993  Brendan Kehoe  (brendan@lisa.cygnus.com)
 
-        * cp-call.c (print_harshness) [DEBUG_MATCHING]: New function.
-        (compute_conversion_costs_ansi) [DEBUG_MATCHING]: Print out
-        argument matching diagnostics to make instantly clear what the
-        compiler is doing.
+	* cp-call.c (print_harshness) [DEBUG_MATCHING]: New function.
+	(compute_conversion_costs_ansi) [DEBUG_MATCHING]: Print out
+	argument matching diagnostics to make instantly clear what the
+	compiler is doing.
 
 	* cp-call.c (convert_harshness_ansi): If the parm isn't an lvalue,
 	then check to see if the penalty was increased due to
@@ -3982,19 +4015,19 @@ Tue Dec  7 16:09:34 1993  Jason Merrill  (jason@deneb.cygnus.com)
 
        Mon Oct  4 12:50:02 1993  Chip Salzenberg  (chip@fin.uucp)
 
-        [changes propagated from 930810 snapshot]
-        * cp-decl.c (init_decl_processing): Make long long available for use
-        as SIZE_TYPE and PTRDIFF_TYPE.
-        (finish_decl): Allow file-scope static incomplete array.
-        (grokdeclarator): Don't pass on const and volatile fron function
-        value type to function type.
-        Warn here for volatile fn returning non-void type.
-        * cp-parse.y (attrib): Accept attributes `volatile' with alias
-        `noreturn', and `const'.
-        * cp-typeck.c (default_conversion): Don't lose const and volatile.
-        (build_binary_op_nodefault): Generate pedantic warning for comparison
-        of complete pointer type with incomplete pointer type.
-        (build_c_cast): Be careful that null pointer constant be INTEGER_CST.
+	[changes propagated from 930810 snapshot]
+	* cp-decl.c (init_decl_processing): Make long long available for use
+	as SIZE_TYPE and PTRDIFF_TYPE.
+	(finish_decl): Allow file-scope static incomplete array.
+	(grokdeclarator): Don't pass on const and volatile fron function
+	value type to function type.
+	Warn here for volatile fn returning non-void type.
+	* cp-parse.y (attrib): Accept attributes `volatile' with alias
+	`noreturn', and `const'.
+	* cp-typeck.c (default_conversion): Don't lose const and volatile.
+	(build_binary_op_nodefault): Generate pedantic warning for comparison
+	of complete pointer type with incomplete pointer type.
+	(build_c_cast): Be careful that null pointer constant be INTEGER_CST.
 
 Tue Dec  7 10:46:48 1993  Jason Merrill  (jason@deneb.cygnus.com)
 
@@ -4278,7 +4311,7 @@ Mon Nov 22 14:22:23 1993  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* cp-decl.c (grokfndecl): Move call to grok_op_properties back
 	after grokclassfn so that it's dealing with the right decl.
-        (grok_op_properties): Don't assert !methodp for op new and op delete.
+	(grok_op_properties): Don't assert !methodp for op new and op delete.
 
 	* cp-init.c (build_delete): Don't use TYPE_BUILT_IN (there are now
 	no uses of it in the compiler).

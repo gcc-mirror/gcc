@@ -610,6 +610,7 @@ build_signature_table_constructor (sig_ty, rhs)
 
   if (result == NULL_TREE)
     {
+      /* The signature was empty, we don't need a signature table.  */
       undo_casts (sig_ty);
       return NULL_TREE;
     }
@@ -618,17 +619,20 @@ build_signature_table_constructor (sig_ty, rhs)
     {
       if (first_rhs_field == TYPE_FIELDS (rhstype))
 	{
+	  /* The sptr field on the lhs can be copied from the rhs.  */
 	  undo_casts (sig_ty);
 	  return integer_zero_node;
 	}
       else
 	{
+	  /* The sptr field on the lhs will point into the rhs sigtable.  */
 	  undo_casts (sig_ty);
 	  return build_component_ref (rhs, DECL_NAME (first_rhs_field),
 				      NULL_TREE, 0);
 	}
     }
 
+  /* We need to construct a new signature table.  */
   result = build_nt (CONSTRUCTOR, NULL_TREE, nreverse (result));
   TREE_HAS_CONSTRUCTOR (result) = 1;
   TREE_CONSTANT (result) = !sig_ptr_p;
@@ -679,7 +683,7 @@ build_sigtable (sig_type, rhs_type, init_from)
       SIGTABLE_HAS_BEEN_GENERATED (sig_type) = 1;
 
       init_expr = build_signature_table_constructor (sig_type, init_from);
-      if (TREE_CODE (init_expr) != CONSTRUCTOR)
+      if (init_expr == NULL_TREE || TREE_CODE (init_expr) != CONSTRUCTOR)
 	return init_expr;
 
       if (name == NULL_TREE)
@@ -748,6 +752,14 @@ build_signature_pointer_constructor (lhs, rhs)
       return error_mark_node;
     }
 
+  if (TYPE_SIZE (sig_ty) == NULL_TREE)
+    {
+      cp_error ("undefined signature `%T' used in signature %s declaration",
+		sig_ty,
+		IS_SIGNATURE_POINTER (lhstype) ? "pointer" : "reference");
+      return error_mark_node;
+    }
+
   /* If SIG_TY is permanent, make the signature table constructor and
      the signature pointer/reference constructor permanent too.  */
   if (TREE_PERMANENT (sig_ty))
@@ -779,7 +791,11 @@ build_signature_pointer_constructor (lhs, rhs)
 	    return error_mark_node;
 
 	  optr_expr = build_optr_ref (rhs);
-	  if (sig_tbl == integer_zero_node)
+	  if (sig_tbl == NULL_TREE)
+	    /* The signature was empty.  The signature pointer is
+	       pretty useless, but the user has been warned.  */
+	    sptr_expr = copy_node (null_pointer_node);
+	  else if (sig_tbl == integer_zero_node)
 	    sptr_expr = rhs_sptr_ref;
 	  else
 	    sptr_expr = build_unary_op (ADDR_EXPR, sig_tbl, 0);
@@ -802,7 +818,15 @@ build_signature_pointer_constructor (lhs, rhs)
 	return error_mark_node;
 
       optr_expr = rhs;
-      sptr_expr = build_unary_op (ADDR_EXPR, sig_tbl, 0);
+      if (sig_tbl == NULL_TREE)
+	/* The signature was empty.  The signature pointer is
+	   pretty useless, but the user has been warned.  */
+	{
+	  sptr_expr = copy_node (null_pointer_node);
+	  TREE_TYPE (sptr_expr) = build_pointer_type (sig_ty);
+	}
+      else
+	sptr_expr = build_unary_op (ADDR_EXPR, sig_tbl, 0);
       if (CLASSTYPE_VFIELD (TREE_TYPE (rhstype)))
 	{
 	  rhs_vptr = DECL_NAME (CLASSTYPE_VFIELD (TREE_TYPE (rhstype)));
@@ -810,7 +834,7 @@ build_signature_pointer_constructor (lhs, rhs)
 					   rhs_vptr, NULL_TREE, 0);
 	}
       else
-	vptr_expr = null_pointer_node;
+	vptr_expr = copy_node (null_pointer_node);
       TREE_TYPE (vptr_expr) = build_pointer_type (vtbl_type_node);
     }
 
