@@ -1,3 +1,9 @@
+2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c (process_command): Don't internationalize the
+	Copyright message.
+	* mips-tfile.c (main): Likewise.
+
 2004-01-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* recog.c: Fix a typo in copyright.
