@@ -893,7 +893,7 @@ local-clean:
 	-rm -f *.a TEMP errs core *.o *~ \#* TAGS *.E
 
 local-distclean:
-	-rm -f Makefile config.status config.cache
+	-rm -f Makefile config.status config.cache mh-frag mt-frag
 	-if [ "$(TARGET_SUBDIR)" != "." ]; then \
 	  rm -rf $(TARGET_SUBDIR); \
 	else true; fi
