@@ -7827,6 +7827,12 @@ mem_loc_descriptor (rtl, mode)
  	 pool.  */
     case CONST:
     case SYMBOL_REF:
+      /* Alternatively, the symbol in the constant pool can be referenced
+	 by a different symbol.  */
+      if (GET_CODE (rtl) == SYMBOL_REF
+	  && CONSTANT_POOL_ADDRESS_P (rtl))
+	rtl = get_pool_constant (rtl);
+
       mem_loc_result = new_loc_descr (DW_OP_addr, 0, 0);
       mem_loc_result->dw_loc_oprnd1.val_class = dw_val_class_addr;
       mem_loc_result->dw_loc_oprnd1.v.val_addr = save_rtx (rtl);

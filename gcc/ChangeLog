@@ -1,3 +1,8 @@
+2001-05-02  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* dwarf2out.c (mem_loc_descriptor): If a SYMBOL_REF is in the
+	constant pool, use the pool's SYMBOL_REF instead.
+
 2001-05-01  Per Bothner  <per@bothner.com>
 
 	* expr.c (expand_expr):  When compiling LABELED_BLOCK_EXPR,
