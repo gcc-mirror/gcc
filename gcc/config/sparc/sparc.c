@@ -154,7 +154,7 @@ symbolic_operand (op, mode)
 	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
 	      && GET_CODE (XEXP (op, 1)) == CONST_INT);
 
-      /* This clause seems to be irrelevant.  */
+      /* ??? This clause seems to be irrelevant.  */
     case CONST_DOUBLE:
       return GET_MODE (op) == mode;
 
@@ -396,8 +396,9 @@ cc_arithopn (op, mode)
 	  || GET_CODE (op) == IOR);
 }
 
-/* Return truth value of whether OP can be used as an operands in a three
-   address arithmetic insn (such as add %o1,7,%l2) of mode MODE.  */
+/* Return true if OP is a register, or is a CONST_INT that can fit in a 13
+   bit immediate field.  This is an acceptable SImode operand for most 3
+   address instructions.  */
 
 int
 arith_operand (op, mode)
@@ -408,7 +409,9 @@ arith_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && SMALL_INT (op)));
 }
 
-/* Return truth value of whether OP is a register or a CONST_DOUBLE.  */
+/* Return true if OP is a register, or is a CONST_INT or CONST_DOUBLE that
+   can fit in a 13 bit immediate field.  This is an acceptable DImode operand
+   for most 3 address instructions.  */
 
 int
 arith_double_operand (op, mode)
@@ -429,7 +432,8 @@ arith_double_operand (op, mode)
 }
 
 /* Return truth value of whether OP is a integer which fits the
-   range constraining immediate operands in three-address insns.  */
+   range constraining immediate operands in most three-address insns,
+   which have a 13 bit immediate field.  */
 
 int
 small_int (op, mode)
@@ -3127,11 +3131,6 @@ struct sparc_frame_info zero_frame_info;
   || (regno == FRAME_POINTER_REGNUM && frame_pointer_needed)	\
   || (regno == 15 && regs_ever_live[15]))
 
-#ifndef SPARC_STACK_ALIGN
-#define STACK_BYTES (STACK_BOUNDARY / 8)
-#define SPARC_STACK_ALIGN(X) (((X) + STACK_BYTES -  1) & -STACK_BYTES)
-#endif
-
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.  */
 
@@ -3404,7 +3403,6 @@ sparc_frw_output_function_epilogue (file, size, ignored1, ignored2)
   char *t1_str = "%g1";
   rtx epilogue_delay = current_function_epilogue_delay_list;
   int noepilogue = FALSE;
-  int load_only_r15;
 
   /* The epilogue does not depend on any registers, but the stack
      registers, so we assume that if we have 1 pending nop, it can be
@@ -3450,9 +3448,6 @@ sparc_frw_output_function_epilogue (file, size, ignored1, ignored2)
 
       sparc_frw_save_restore (file, "ld", "ldd");
 
-      load_only_r15 = (current_frame_info.mask == (1 << 15)
-		       && current_frame_info.fmask == 0);
-
       if (current_function_returns_struct)
 	fprintf (file, "\tjmp %%o7+12\n");
       else
@@ -3496,9 +3491,6 @@ sparc_frw_epilogue_delay_slots ()
     (void) sparc_frw_compute_frame_size (get_frame_size ());
 
   if (current_frame_info.total_size == 0)
-    return 1;
-
-  if (current_frame_info.mask == (1 << 15) && current_frame_info.fmask == 0)
     return 1;
 
   return 0;
