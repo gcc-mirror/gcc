@@ -250,8 +250,28 @@ remap_type (tree type, inline_data *id)
       return type;
     }
   
-  /* We do need a copy.  build and register it now.  */
-  new = copy_node (type);
+  /* We do need a copy.  build and register it now.  If this is a pointer or
+     reference type, remap the designated type and make a new pointer or
+     reference type.  */
+  if (TREE_CODE (type) == POINTER_TYPE)
+    {
+      new = build_pointer_type_for_mode (remap_type (TREE_TYPE (type), id),
+					 TYPE_MODE (type),
+					 TYPE_REF_CAN_ALIAS_ALL (type));
+      insert_decl_map (id, type, new);
+      return new;
+    }
+  else if (TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      new = build_reference_type_for_mode (remap_type (TREE_TYPE (type), id),
+					    TYPE_MODE (type),
+					    TYPE_REF_CAN_ALIAS_ALL (type));
+      insert_decl_map (id, type, new);
+      return new;
+    }
+  else
+    new = copy_node (type);
+
   insert_decl_map (id, type, new);
 
   /* This is a new type, not a copy of an old type.  Need to reassociate
@@ -290,19 +310,6 @@ remap_type (tree type, inline_data *id)
         walk_tree (&TYPE_MAX_VALUE (new), copy_body_r, id, NULL);
       return new;
     
-    case POINTER_TYPE:
-      TREE_TYPE (new) = t = remap_type (TREE_TYPE (new), id);
-      TYPE_NEXT_PTR_TO (new) = TYPE_POINTER_TO (t);
-      TYPE_POINTER_TO (t) = new;
-      return new;
-
-    case REFERENCE_TYPE:
-      TREE_TYPE (new) = t = remap_type (TREE_TYPE (new), id);
-      TYPE_NEXT_REF_TO (new) = TYPE_REFERENCE_TO (t);
-      TYPE_REFERENCE_TO (t) = new;
-      return new;
-
-    case METHOD_TYPE:
     case FUNCTION_TYPE:
       TREE_TYPE (new) = remap_type (TREE_TYPE (new), id);
       walk_tree (&TYPE_ARG_TYPES (new), copy_body_r, id, NULL);
@@ -733,8 +740,9 @@ setup_one_parameter (inline_data *id, tree p, tree value, tree fn,
 	}
     }
 
-  /* Make an equivalent VAR_DECL.  */
+  /* Make an equivalent VAR_DECL with the remapped type.  */
   var = copy_decl_for_inlining (p, fn, VARRAY_TREE (id->fns, 0));
+  TREE_TYPE (var) = remap_type (TREE_TYPE (var), id);
 
   /* See if the frontend wants to pass this by invisible reference.  If
      so, our new VAR_DECL will have REFERENCE_TYPE, and we need to
@@ -1048,6 +1056,7 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  inline_forbidden_reason
 	    = N_("%Jfunction '%F' can never be inlined "
 		 "because it receives a non-local goto");
+	  return node;
 	}
       break;
 
@@ -1084,8 +1093,9 @@ static tree
 inline_forbidden_p (tree fndecl)
 {
   location_t saved_loc = input_location;
-  tree ret = walk_tree_without_duplicates
-		(&DECL_SAVED_TREE (fndecl), inline_forbidden_p_1, fndecl);
+  tree ret = walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
+					   inline_forbidden_p_1, fndecl);
+
   input_location = saved_loc;
   return ret;
 }
@@ -1180,9 +1190,10 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
   /* Assume that constants and references counts nothing.  These should
      be majorized by amount of operations among them we count later
      and are common target of CSE and similar optimizations.  */
-  if (TREE_CODE_CLASS (TREE_CODE (x)) == 'c'
-      || TREE_CODE_CLASS (TREE_CODE (x)) == 'r')
+  else if (TREE_CODE_CLASS (TREE_CODE (x)) == 'c'
+	   || TREE_CODE_CLASS (TREE_CODE (x)) == 'r')
     return NULL;
+
   switch (TREE_CODE (x))
     { 
     /* Containers have no cost.  */
