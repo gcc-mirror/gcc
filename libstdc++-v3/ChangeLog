@@ -17,7 +17,13 @@
 	* bits/char_traits.h (char_traits::eos): Non standard member
 	function, uglify to __eos. Return char_type().
 	* bits/std_ostream.h: Change.
-	
+
+	* testsuite/27_io/ostream_seeks.cc (test01): New file.
+	* testsuite/27_io/ostream_seeks-1.tst: New file.
+	* testsuite/27_io/istream_unformatted.cc (main): Move test04 and
+	test05 to...
+	* testsuite/27_io/istream_seeks.cc: New file.
+
 2000-06-29  Branko Cibej  <branko.cibej@hermes.si>
 
         * bits/std_memory.h (auto_ptr_ref): Reworked and defined only if
