@@ -1086,6 +1086,7 @@ __ev_set_spefscr_frmc (int rnd)
   i = __builtin_spe_mfspefscr ();
   i &= ~__SPEFSCR_FRMC;
   i |= rnd;
+  __builtin_spe_mtspefscr (i);
 }
 
 #endif /* _SPE_H */

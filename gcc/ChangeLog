@@ -1,3 +1,7 @@
+2003-06-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/rs6000/spe.h (__ev_set_spefscr_frmc): Set the flag.
+
 2003-06-30  Bob Wilson  <bob.wilson@acm.org>
 	
 	* config/xtensa/lib1funcs.asm: Use "xtensa-config.h" from
