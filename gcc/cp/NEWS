@@ -1,5 +1,12 @@
 *** Changes in GCC 3.0:
 
+* In some obscure cases, functions with the same type could have the
+  same mangled name.  This bug caused compiler crashes, link-time clashes,
+  and debugger crahses.  Fixing this bug required breaking ABI
+  compatibility for the functions involved.  The functions in questions
+  are those whose types involve non-type template arguments whose
+  mangled representations require more than one digit.
+
 * Support for assignment to `this' has been removed.  This idiom 
   was used in the very early days of C++, before users were allowed
   to overload `operator new'; it is no longer allowed by the C++

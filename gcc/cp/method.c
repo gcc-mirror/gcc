@@ -25,10 +25,6 @@ Boston, MA 02111-1307, USA.  */
 #define __inline
 #endif
 
-#ifndef PARM_CAN_BE_ARRAY_TYPE
-#define PARM_CAN_BE_ARRAY_TYPE 1
-#endif
-
 /* Handle method declarations.  */
 #include "config.h"
 #include "system.h"
@@ -43,6 +39,24 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 #include "tm_p.h"
+
+/* Various flags to control the mangling process.  */
+
+enum mangling_flags
+{
+  /* No flags.  */
+  mf_none = 0,
+  /* The thing we are presently mangling is part of a template type,
+     rather than a fully instantiated type.  Therefore, we may see
+     complex expressions where we would normally expect to see a
+     simple integer constant.  */
+  mf_maybe_uninstantiated = 1,
+  /* When mangling a numeric value, use the form `_XX_' (instead of
+     just `XX') if the value has more than one digit.  */
+  mf_use_underscores_around_value = 2,
+};
+
+typedef enum mangling_flags mangling_flags;
 
 /* TREE_LIST of the current inline functions that need to be
    processed.  */
@@ -61,10 +75,11 @@ static int old_backref_index PROTO((tree));
 static int flush_repeats PROTO((int, tree));
 static void build_overload_identifier PROTO((tree));
 static void build_overload_nested_name PROTO((tree));
-static void build_overload_int PROTO((tree, int));
+static void mangle_expression PROTO((tree));
+static void build_overload_int PROTO((tree, mangling_flags));
 static void build_overload_identifier PROTO((tree));
 static void build_qualified_name PROTO((tree));
-static void build_overload_value PROTO((tree, tree, int));
+static void build_overload_value PROTO((tree, tree, mangling_flags));
 static void issue_nrepeats PROTO((int, tree));
 static char *build_mangled_name PROTO((tree,int,int));
 static void process_modifiers PROTO((tree));
@@ -197,8 +212,8 @@ do_inline_function_hair (type, friend_list)
 /* Nonzero if we should not try folding parameter types.  */
 static int nofold;
 
-/* This appears to be set to true if an underscore is required to be
-   comcatenated before another number can be outputed. */
+/* Nonzero if an underscore is required before adding a digit to the
+   mangled name currently being built.  */
 static int numeric_output_need_bar;
 
 static __inline void
@@ -546,104 +561,141 @@ build_overload_scope_ref (value)
   build_overload_identifier (TREE_OPERAND (value, 1));
 }
 
-/* Encoding for an INTEGER_CST value.  */
+/* VALUE is a complex expression.  Produce an appropriate mangling.
+   (We are forced to mangle complex expressions when dealing with
+   templates, and an expression involving template parameters appears
+   in the type of a function parameter.)  */
 
 static void
-build_overload_int (value, in_template)
+mangle_expression (value)
      tree value;
-     int in_template;
 {
-  if (in_template && TREE_CODE (value) != INTEGER_CST)
+  if (TREE_CODE (value) == SCOPE_REF)
     {
-      if (TREE_CODE (value) == SCOPE_REF)
-	{
-	  build_overload_scope_ref (value);
-	  return;
-	}
-
-      OB_PUTC ('E');
-      numeric_output_need_bar = 0;
-
-      if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (value))))
-	{
-	  int i;
-	  int operands = tree_code_length[(int) TREE_CODE (value)];
-	  tree id;
-	  const char *name;
-
-	  id = ansi_opname [(int) TREE_CODE (value)];
-	  my_friendly_assert (id != NULL_TREE, 0);
-	  name = IDENTIFIER_POINTER (id);
-	  if (name[0] != '_' || name[1] != '_')
-	    /* On some erroneous inputs, we can get here with VALUE a
-	       LOOKUP_EXPR.  In that case, the NAME will be the
-	       identifier for "<invalid operator>".  We must survive
-	       this routine in order to issue a sensible error
-	       message, so we fall through to the case below.  */
-	    goto bad_value;
-
-	  for (i = 0; i < operands; ++i)
-	    {
-	      tree operand;
-	      enum tree_code tc;
-
-	      /* We just outputted either the `E' or the name of the
-		 operator.  */
-	      numeric_output_need_bar = 0;
-
-	      if (i != 0)
-		/* Skip the leading underscores.  */
-		OB_PUTCP (name + 2);
-
-	      operand = TREE_OPERAND (value, i);
-	      tc = TREE_CODE (operand);
-
-	      if (TREE_CODE_CLASS (tc) == 't')
-		/* We can get here with sizeof, e.g.:
-		     
-		   template <class T> void f(A<sizeof(T)>);  */
-		build_mangled_name_for_type (operand);
-	      else if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (tc)))
-		build_overload_int (operand, in_template);
-	      else
-		build_overload_value (TREE_TYPE (operand),
-				      operand,
-				      in_template);
-	    }
-	}
-      else
-	{
-	  /* We don't ever want this output, but it's
-	     inconvenient not to be able to build the string.
-	     This should cause assembler errors we'll notice.  */
-	    
-	  static int n;
-	bad_value:
-	  sprintf (digit_buffer, " *%d", n++);
-	  OB_PUTCP (digit_buffer);
-	}
-
-      OB_PUTC ('W');
-      numeric_output_need_bar = 0;
+      build_overload_scope_ref (value);
       return;
     }
 
-  my_friendly_assert (TREE_CODE (value) == INTEGER_CST, 243);
-  if (TYPE_PRECISION (TREE_TYPE (value)) == 2 * HOST_BITS_PER_WIDE_INT)
+  OB_PUTC ('E');
+  numeric_output_need_bar = 0;
+
+  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (value))))
     {
-      if (TREE_INT_CST_HIGH (value)
-	  != (TREE_INT_CST_LOW (value) >> (HOST_BITS_PER_WIDE_INT - 1)))
+      int i;
+      int operands = tree_code_length[(int) TREE_CODE (value)];
+      tree id;
+      const char *name;
+
+      id = ansi_opname [(int) TREE_CODE (value)];
+      my_friendly_assert (id != NULL_TREE, 0);
+      name = IDENTIFIER_POINTER (id);
+      if (name[0] != '_' || name[1] != '_')
+	/* On some erroneous inputs, we can get here with VALUE a
+	   LOOKUP_EXPR.  In that case, the NAME will be the
+	   identifier for "<invalid operator>".  We must survive
+	   this routine in order to issue a sensible error
+	   message, so we fall through to the case below.  */
+	goto bad_value;
+
+      for (i = 0; i < operands; ++i)
 	{
-	  /* need to print a DImode value in decimal */
-	  dicat (TREE_INT_CST_LOW (value), TREE_INT_CST_HIGH (value));
-	  numeric_output_need_bar = 1;
-	  return;
+	  tree operand;
+	  enum tree_code tc;
+
+	  /* We just outputted either the `E' or the name of the
+	     operator.  */
+	  numeric_output_need_bar = 0;
+
+	  if (i != 0)
+	    /* Skip the leading underscores.  */
+	    OB_PUTCP (name + 2);
+
+	  operand = TREE_OPERAND (value, i);
+	  tc = TREE_CODE (operand);
+
+	  if (TREE_CODE_CLASS (tc) == 't')
+	    /* We can get here with sizeof, e.g.:
+		     
+	       template <class T> void f(A<sizeof(T)>);  */
+	    build_mangled_name_for_type (operand);
+	  else
+	    build_overload_value (TREE_TYPE (operand),
+				  operand,
+				  mf_maybe_uninstantiated);
 	}
-      /* else fall through to print in smaller mode */
     }
-  /* Wordsize or smaller */
-  icat (TREE_INT_CST_LOW (value));
-  numeric_output_need_bar = 1;
+  else
+    {
+      /* We don't ever want this output, but it's
+	 inconvenient not to be able to build the string.
+	 This should cause assembler errors we'll notice.  */
+	    
+      static int n;
+    bad_value:
+      sprintf (digit_buffer, " *%d", n++);
+      OB_PUTCP (digit_buffer);
+    }
+
+  OB_PUTC ('W');
+  numeric_output_need_bar = 0;
+}
+
+/* Encoding for an INTEGER_CST value.  */
+
+static void
+build_overload_int (value, flags)
+     tree value;
+     mangling_flags flags;
+{
+  int multiple_words_p = 0;
+  int multiple_digits_p = 0;
+
+  if ((flags & mf_maybe_uninstantiated) && TREE_CODE (value) != INTEGER_CST)
+    {
+      mangle_expression (value);
+      return;
+    }
+
+  /* Unless we were looking at an uninstantiated template, integers
+     should always be represented by constants.  */
+  my_friendly_assert (TREE_CODE (value) == INTEGER_CST, 243);
+
+  /* If the high-order word is not merely a sign-extension of the
+     low-order word, we must use a special output routine that can
+     deal with this.  */
+  if (TREE_INT_CST_HIGH (value)
+      != (TREE_INT_CST_LOW (value) >> (HOST_BITS_PER_WIDE_INT - 1)))
+    {
+      multiple_words_p = 1;
+      /* And there is certainly going to be more than one digit.  */
+      multiple_digits_p = 1;
+    }
+  else 
+    multiple_digits_p = (TREE_INT_CST_LOW (value) > 9
+			 || TREE_INT_CST_LOW (value) < -9);
+
+  /* If necessary, add a leading underscore.  */
+  if (multiple_digits_p && (flags & mf_use_underscores_around_value))
+    OB_PUTC ('_');
+
+  /* Output the number itself.  */
+  if (multiple_words_p)
+    dicat (TREE_INT_CST_LOW (value), TREE_INT_CST_HIGH (value));
+  else
+    icat (TREE_INT_CST_LOW (value));
+
+  if (flags & mf_use_underscores_around_value)
+    {
+      if (multiple_digits_p)
+	OB_PUTC ('_');
+      /* Whether or not there were multiple digits, we don't need an
+	 underscore.  We've either terminated the number with an
+	 underscore, or else it only had one digit.  */
+      numeric_output_need_bar = 0;
+    }
+  else
+    /* We just output a numeric value.  */
+    numeric_output_need_bar = 1;
 }
 
 
@@ -701,9 +753,9 @@ build_mangled_C9x_name (bits)
 #endif
 
 static void
-build_overload_value (type, value, in_template)
+build_overload_value (type, value, flags)
      tree type, value;
-     int in_template;
+     mangling_flags flags;
 {
   my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (type)) == 't', 0);
 
@@ -738,24 +790,31 @@ build_overload_value (type, value, in_template)
       build_overload_identifier (DECL_NAME (value));
       return;
     }
+  else if (INTEGRAL_TYPE_P (type))
+    {
+      build_overload_int (value, flags);
+      return;
+    }
+
+  /* The only case where we use the extra underscores here is when
+     forming the mangling for an integral non-type template argument.
+     If that didn't happen, stop now.  */
+  flags &= ~mf_use_underscores_around_value;
 
   switch (TREE_CODE (type))
     {
-    case INTEGER_TYPE:
-    case ENUMERAL_TYPE:
-    case BOOLEAN_TYPE:
-      {
-	build_overload_int (value, in_template);
-	return;
-      }
     case REAL_TYPE:
       {
 	REAL_VALUE_TYPE val;
 	char *bufp = digit_buffer;
 
-	pedwarn ("ANSI C++ forbids floating-point template arguments");
+	/* We must handle non-constants in templates.  */
+	if (TREE_CODE (value) != REAL_CST)
+	  {
+	    mangle_expression (value);
+	    break;
+	  }
 
-	my_friendly_assert (TREE_CODE (value) == REAL_CST, 244);
 	val = TREE_REAL_CST (value);
 	if (REAL_VALUE_ISNAN (val))
 	  {
@@ -817,7 +876,7 @@ build_overload_value (type, value, in_template)
     case POINTER_TYPE:
       if (TREE_CODE (value) == INTEGER_CST)
 	{
-	  build_overload_int (value, in_template);
+	  build_overload_int (value, flags);
 	  return;
 	}
       else if (TREE_CODE (value) == TEMPLATE_PARM_INDEX)
@@ -877,9 +936,9 @@ build_overload_value (type, value, in_template)
 	my_friendly_assert (TREE_CODE (value) == PTRMEM_CST, 0);
 
 	expand_ptrmemfunc_cst (value, &delta, &idx, &pfn, &delta2);
-	build_overload_int (delta, in_template);
+	build_overload_int (delta, flags);
 	OB_PUTC ('_');
-	build_overload_int (idx, in_template);
+	build_overload_int (idx, flags);
 	OB_PUTC ('_');
 	if (pfn)
 	  {
@@ -890,7 +949,7 @@ build_overload_value (type, value, in_template)
 	else
 	  {
 	    OB_PUTC ('i');
-	    build_overload_int (delta2, in_template);
+	    build_overload_int (delta2, flags);
 	  }
       }
       break;
@@ -983,7 +1042,9 @@ build_template_parm_names (parmlist, arglist)
 	  /* It's a PARM_DECL.  */
 	  build_mangled_name_for_type (TREE_TYPE (parm));
 	  build_overload_value (TREE_TYPE (parm), arg, 
-				uses_template_parms (arglist));
+				((mf_maybe_uninstantiated 
+				  * uses_template_parms (arglist))
+				 | mf_use_underscores_around_value));
 	}
     }
  }
@@ -1317,7 +1378,6 @@ process_overload_item (parmtype, extra_Gcode)
       goto more;
 
     case ARRAY_TYPE:
-#if PARM_CAN_BE_ARRAY_TYPE
       {
         OB_PUTC ('A');
         if (TYPE_DOMAIN (parmtype) == NULL_TREE)
@@ -1337,10 +1397,6 @@ process_overload_item (parmtype, extra_Gcode)
 	  OB_PUTC ('_');
         goto more;
       }
-#else
-      OB_PUTC ('P');
-      goto more;
-#endif
 
     case POINTER_TYPE:
       OB_PUTC ('P');
