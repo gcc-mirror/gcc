@@ -1,3 +1,13 @@
+Fri Feb 28 11:09:14 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (gen_lowpart_for_combine): Update handling of
+	subregs_of_mode
+	* flow.c (life_analysis, mark_used_regs): Likewise.
+	* regclass.c (subregs_of_mode): Turn into single bitmap.
+	(cannot_change-mode_set_regs, invalid_mode_change_p): Update
+	dealing with subregs_of_mode
+	* regs.h (subregs_of_mode): Update prototype.
+
 2003-02-28  Josef Zlomek  <zlomekj@suse.cz>
 
 	* emit-rtl.c (set_reg_attrs_for_parm): New function.
