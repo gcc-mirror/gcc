@@ -1,3 +1,23 @@
+2001-10-28  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix31.h (ASM_OUTPUT_EXTERNAL): Use assemble_name.
+	* config/rs6000/darwin.h (RS6000_OUTPUT_BASENAME): Delete.
+	(ASM_GLOBALIZE_LABEL): Use assemble_name.
+	(ASM_OUTPUT_COMMON): Likewise.
+	* config/rs6000/rs6000.c (print_operand): Use assemble_name.
+	(rs6000_output_function_epilogue): Likewise.
+	(output_mi_thunk): Fix typo.
+	(rs6000_output_symbol_ref): Use assemble_name.
+	(output_toc): Likewise.
+	* config/rs6000/sysv4.h (RS6000_OUTPUT_BASENAME): Delete.
+	* config/rs6000/xcoff.h (RS6000_OUTPUT_BASENAME): Delete;
+	assemble_name calls STRIP_NAME_ENCODING.
+	(ASM_OUTPUT_LABEL): Use assemble_name.
+	(ASM_GLOBALIZE_LABEL): Likewise.
+	(ASM_DECLARE_FUNCTION_NAME): Likewise.
+	(ASM_OUTPUT_ALIGNED_COMMON): Indent pseudo-op.  Use assemble_name.
+	(ASM_OUTPUT_LOCAL): Likewise.
+
 Sun Oct 28 15:45:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* builtins.c (get_memory_rtx): Handle POINTERS_EXTEND_UNSIGNED case.

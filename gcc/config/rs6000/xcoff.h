@@ -231,28 +231,18 @@ toc_section ()						\
 #define RS6000_ITRUNC "__itrunc"
 #define RS6000_UITRUNC "__uitrunc"
 
-/* This outputs NAME to FILE up to the first null or '['.  */
-
-#define RS6000_OUTPUT_BASENAME(FILE, NAME)	\
-  {						\
-    const char *_p;				\
-						\
-    STRIP_NAME_ENCODING (_p, (NAME));		\
-    assemble_name ((FILE), _p);			\
-  }
-
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 
 #define ASM_OUTPUT_LABEL(FILE,NAME)	\
-  do { RS6000_OUTPUT_BASENAME (FILE, NAME); fputs (":\n", FILE); } while (0)
+  do { assemble_name (FILE, NAME); fputs (":\n", FILE); } while (0)
 
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
   do { fputs ("\t.globl ", FILE);	\
-       RS6000_OUTPUT_BASENAME (FILE, NAME); putc ('\n', FILE);} while (0)
+       assemble_name (FILE, NAME); putc ('\n', FILE);} while (0)
 
 /* Remove any trailing [DS] or the like from the symbol name.  */
 
@@ -343,27 +333,27 @@ toc_section ()						\
   if (TREE_PUBLIC (DECL))					\
     {								\
       fputs ("\t.globl .", FILE);				\
-      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
+      assemble_name (FILE, NAME);				\
       putc ('\n', FILE);					\
     }								\
   else								\
     {								\
       fputs ("\t.lglobl .", FILE);				\
-      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
+      assemble_name (FILE, NAME);				\
       putc ('\n', FILE);					\
     }								\
   fputs ("\t.csect ", FILE);					\
-  RS6000_OUTPUT_BASENAME (FILE, NAME);				\
+  assemble_name (FILE, NAME);					\
   fputs (TARGET_32BIT ? "[DS]\n" : "[DS],3\n", FILE);		\
-  RS6000_OUTPUT_BASENAME (FILE, NAME);				\
+  assemble_name (FILE, NAME);					\
   fputs (":\n", FILE);						\
   fputs (TARGET_32BIT ? "\t.long ." : "\t.llong .", FILE);	\
-  RS6000_OUTPUT_BASENAME (FILE, NAME);				\
+  assemble_name (FILE, NAME);					\
   fputs (", TOC[tc0], 0\n", FILE);				\
   in_section = no_section;					\
   function_section(DECL);					\
   putc ('.', FILE);						\
-  RS6000_OUTPUT_BASENAME (FILE, NAME);				\
+  assemble_name (FILE, NAME);					\
   fputs (":\n", FILE);						\
   if (write_symbols == XCOFF_DEBUG)				\
     xcoffout_declare_function (FILE, DECL, NAME);		\
@@ -430,8 +420,8 @@ toc_section ()						\
    to define a global common symbol.  */
 
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGNMENT)	\
-  do { fputs (".comm ", (FILE));			\
-       RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
+  do { fputs ("\t.comm ", (FILE));			\
+       assemble_name ((FILE), (NAME));			\
        if ( (SIZE) > 4)					\
          fprintf ((FILE), ",%d,3\n", (SIZE));		\
        else						\
@@ -448,8 +438,8 @@ toc_section ()						\
    for 64-bit mode.  */
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
-  do { fputs (".lcomm ", (FILE));			\
-       RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
+  do { fputs ("\t.lcomm ", (FILE));			\
+       assemble_name ((FILE), (NAME));			\
        fprintf ((FILE), ",%d,%s\n", (TARGET_32BIT ? (SIZE) : (ROUNDED)), \
 		xcoff_bss_section_name);		\
      } while (0)

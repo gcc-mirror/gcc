@@ -886,11 +886,6 @@ do {									\
 #undef	ENCODE_SECTION_INFO
 #define	ENCODE_SECTION_INFO(DECL) rs6000_encode_section_info (DECL)
 
-/* The ELF version doesn't encode [DS] or whatever at the end of symbols.  */
-
-#define	RS6000_OUTPUT_BASENAME(FILE, NAME)	\
-    assemble_name (FILE, NAME)
-
 /* This macro gets just the user-specified name
    out of the string in a SYMBOL_REF.  Discard
    a leading * or @.  */
