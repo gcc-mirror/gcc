@@ -1,3 +1,7 @@
+Mon Aug 31 15:35:16 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* decl.c (layout_chill_variants): Calculate nlables properly.
+
 Mon Jul 27 17:21:01 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* typeck.c (apply_chill_array_layout): Don't set TYPE_SIZE of the
