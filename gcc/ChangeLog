@@ -1,6 +1,303 @@
-Fri Dec  5 07:29:26 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+Wed Jan  7 18:02:42 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Version 2.8.0 released.
+
+Wed Jan  7 17:54:41 1998  J. Kean Johnston  <jkj@sco.com>
+
+	* i386/sco5.h ({END,START}FILE_SPEC): Link with correct crtbegin.o
+	and crtend.o when using -static.
+
+Wed Jan  7 17:49:14 1998  Jan Christiaan van Winkel <Jan.Christiaan.van.Winkel@ATComputing.nl>
+
+	* cppexp.c (gansidecl.h): Include.
+
+Wed Jan  7 17:45:07 1998  Tristan Gingold  <gingold@puccini.enst.fr>
+
+	* expr.c (get_push_address): Use copy_to_reg instead of force_operand.
+	(emit_push_insn): Avoid null pointer deference if aggregate has no
+	types.
+	(expand_expr): Avoid finite but useless recursion.
+	(expand_builtin): Fix typo in calling function.
+	* function.c (assign_parms): Avoid useless call to chkr_set_right.
+
+Wed Jan  7 17:31:13 1998  Christian Iseli  <Christian.Iseli@lslsun.epfl.ch>
+
+	* combine.c (force_to_mode): Return if operand is a CLOBBER.
+
+Wed Jan  7 17:23:24 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* x-rs6000 (INSTALL): Remove.
+
+	* jump.c (jump_optimize): Don't use a hard reg as an operand
+	of a conditional move if small register classes.
+
+Wed Jan  7 17:09:28 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* cse.c (max_insn_uid): New variable.
+	(cse_around_loop): Use it.
+	(cse_main): Set it.
+
+Wed Dec 31 18:40:26 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stmt.c (expand_asm_operands): Treat ASM with no outputs as volatile.
+
+Wed Dec 31 08:03:45 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* toplev.c (flag_verbose_asm): Default to 0, not 1.
+
+	* i386/bsd386.h (ASM_COMMENT_START): Define to " #".
+
+Tue Dec 30 17:38:55 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* unroll.c (find_splittable_givs): Handle givs with
+	dest_reg created by loop.
+
+Tue Dec 30 14:21:33 1997  Ian Lance Taylor  <ian@cygnus.com>
+
+	* svr4.h (LINK_SPEC): Never specify -h.
+	* ptx4.h (LINK_SPEC): Likewise.
+	* rs6000/sysv4.h (LINK_SPEC): Likewise.
+	* sparc/sol2.h (LINK_SPEC): Likewise.
+
+Tue Dec 30 06:15:23 1997  Philippe De Muyter  <phdm@macqel.be>
+
+	* libgcc2.c (_eh_compat): Do not include stdlib.h, but provide a
+	private extern declaration for malloc.
+
+Mon Dec 29 06:56:41 1997  Laurent Guerby <guerby@gnat.com>
+
+	* Makefile.in (stmp-int-hdrs): Add "touch".
+
+Sun Dec 28 19:36:05 1997  Stephen L Moshier  <moshier@mediaone.net>
+
+	* mips.h (CACHE_FLUSH_FUNC): New, defaults to _flush_cache.
+	(INITIALIZE_TRAMPOLINE): Use it.
+	* mips/ultrix.h (CACHE_FLUSH_FUNC): Define as cacheflush.
+	* mips/news4.h (CACHE_FLUSH_FUNC): Likewise.
+
+Sun Dec 28 08:19:13 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* arm.c: Don't include assert.h.
+	* i960.c: Likewise.
+	(i960_arg_size_and_align): Rewrite to avoid assert.
+	* m88k.c: Don't include assert.h.
+	(expand_block_move): Rewrite to avoid assert.
+	* except.c: Don't include assert.h.
+	(scan_region): Rewrite to avoid assert.
+	(save_eh_status, restore_eh_status, scan_region): Don't bother
+	testing whether pointer is null.
+	* dwarfout.c, dwarf2out.c: Do not include assert.h.
+	(assert): New macro, since we can't use system assert.
+
+Sat Dec 27 19:08:17 1997  Stephen L Moshier  <moshier@mediaone.net>
+
+    * mips/ultrix.h (DWARF2_UNWIND_INFO): Define as 0.
+
+Fri Dec 26 05:57:06 1997  Philippe De Muyter  <phdm@macqel.be>
+
+	* m68k/mot3300.h (FINALIZE_TRAMPOLINE): Macro defined.
+	* libgcc2.c (__clear_insn_cache): New sysV68-specific helper function
+	for trampolines.
+
+Thu Dec 25 15:22:43 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* rs6000.c (function_arg_padding): All aggregates pad upward.
+
+Wed Dec 24 18:05:13 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* sparc.c: Add prototypes for static functions.
+	(check_pic): Check for form of pic_pc_rtx, not it itself.
+	(pic_setup_code): New function, from finalize_pic.
+	(finalize_pic): Call pic_setup_code and insert after nonlocal_receiver.
+	* sparc.md (nonlocal_goto_receiver): New pattern.
+
+Tue Dec 23 05:54:38 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_builtin_setjmp): Call builtin_setjmp_receiver.
+	* mips.md (builtin_setjmp_receiver): New pattern.
+
+	* crtstuff.c (__do_global_ctors_aux): Add missing call to
+	FORCE_INIT_SECTION_ALIGN and go back to text section.
+	* i386/sol2.h (FORCE_INIT_SECTION_ALIGN): Remove loop.
+
+	* expr.c (do_store_flag): For shift, get bit count using tree_pow2.
+
+Tue Dec 23 05:21:18 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* genattrtab.c (main): Check HAVE_{G,S}ETRLIMIT too.
+
+Mon Dec 22 19:30:59 1997  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
+
+	* sdbout.c (plain_type_1): Add missing checks for named types "char"
+	and "int" and check for int by size first.
+
+Mon Dec 22 19:13:58 1997  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* m68k/xm-mot3300.h (ADD_MISSING_{POSIX,XOPEN}): Define.
+	* m88k/xm-sysv3.h: Likewise.
+
+	* configure.in (getrlimit, setrlimit): Call AC_CHECK_FUNCS.
+	* cccp.c (main): Check HAVE_{G,S}ETRLIMIT in addition to RLIMIT_STACK.
+	* toplev.c (main): Likewise.
+	
+	* fixincludes (target_canonical): New variable.
+	(size_t): Add support for Motorola's stdlib.h which fails to provide
+	a definition for size_t.
+	(str{len,spn,cspn} return value): Handle different layout on sysV88.
+	(fabs/hypot): Provide a fake for hypot which is broken on
+	m88k-motorola-sysv3; emit a prototype for fabs on m88k-motorola-sysv3.
+
+	* m68k/mot3300.h (ASM_BYTE_OP): Don't include '\t' in  definition.
+	(ASM_OUTPUT_ASCII): Prefix ASM_BYTE_OP by one single '\t'.
+
+Mon Dec 22 19:05:49 1997  Richard Henderson  <rth@cygnus.com>
+
+        * sparc.md (jump): Don't use the annul bit around an empty loop.
+
+Mon Dec 22 18:52:56 1997  Robert Lipe <robertl@dgii.com>
+
+	* i386/x-sco5 (CLIB) Deleted.
+	(ALLOCA) Added.
+	* i386/xm-sco5.h (USE_C_ALLOCA) Added.
+
+Mon Dec 22 18:42:16 1997  Philippe De Muyter  <phdm@macqel.be>
+
+	* m68k/mot3300Mcrt0.S (mcount): Function removed.
+	(__stop_monitor): New function.
+	* m68k/mot3300-crt0.S (__stop_monitor): New (empty) function.
+	(mcount, mcount%, monitor): Common symbols removed.
+	* m68k/mot3300.h (FUNCTION_PROFILER): USE_GAS and !USE_GAS versions
+	fixed and merged.
+	(EXIT_BODY): Always call __stop_monitor without tricky tests.
+
+Mon Dec 22 18:35:05 1997  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* objc/Make-lang.in (runtime-info.h, libobjc_entry.o): Create in
+	build directory.
+	(libobjc.a): Update dependency list.
+	(libobjc.dll): Likewise.  Use libobjc_entry.o from build directory.
+	(objc/sendmsg.o): Add -Iobjc to find runtime-info.h.
+	(objc.mostlyclean): Remove runtime-info.h.
+
+Mon Dec 22 18:27:47 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* libgcc2.c (_eh_compat): New section.
+	* Makefile.in (LIB2FUNCS): Add _eh_compat.
+
+Mon Dec 22 17:52:37 1997  Marcus G. Daniels  <mgd@wijiji.santafe.edu>
+
+	* objc/init.c (_objc_load_callback): Don't initialize.
+
+Sun Dec 21 15:06:00 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* mips/xm-iris5.h (HAVE_INTTYPES_H): Force undefined.
+
+Sun Dec 21 14:51:51 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* dwarf2out.c (add_bound_info, case COMPONENT_REF): New case.
+
+Sun Dec 14 06:49:05 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case PLACEHOLDER_EXPR): Use placeholder_list 
+	expression in preference to any other if correct type.
+
+	* i386.h (INITIAL_ELIMINATION_OFFSET): Correctly test for PIC
+	register used.
+
+Sat Dec 13 06:11:32 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* frame.h (__register_frame_info_table): Fix typo in declaration.
+
+Fri Dec 12 07:55:18 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (purge_addressof_1): For (mem (address (mem ...)),
+	when collapsing, preserve mode of outer MEM.
+
+	* frame.c (__register_frame_info): Renamed from __register_frame.
+	(__register_frame_info_table, __deregister_frame_info): Similarly.
+	* frame.h (__{,de}register_frame_info): Likewise.
+	(__register_frame_info_table): New declaration.
+	* crtstuff.c (__do_global_dtors{,_aux}): Rename __deregister_frame.
+	(frame_dummy, __do_global_ctors): Likewise for __register_frame.
+	* collect2.c (write_c_file_{stat,glob}): Rename __register_frame
+	to __register_frame_info and similarly for __deregister_frame and
+	__register_frame_table.
+
+	* sched.c (remove_dependencies): Set RTX_INTEGRATED_P on dependency
+	we delete.  Properly update prev for multiple consecutive deletions.
+	(priority): Skip deleted dependence.
+
+	* integrate.c (initialize_for_inline): In DECL_RTL of a PARM_DECL,
+	look inside a (mem (addressof (mem ...))).
+
+Fri Dec 12 05:49:58 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* collect2.c (write_c_file_glob):
+	Allocate initial frame object in static storage and pass its address.
+
+Thu Dec 11 18:01:31 1997  Philippe De Muyter  <phdm@macqel.be>
+
+	* acconfig.h (NEED_DECLARATION_GETENV): Define slot added.
+
+Thu Dec 11 17:54:23 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* crtstuff.c (__do_global_ctors): Fix typo in last change.
+
+Wed Dec 10 18:38:28 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+ 
+        * libgcc2.c (__bb_exit_func): Fix test of return value of fopen.
+
+Wed Dec 10 07:07:37 1997  Bernd Schmidt <crux@starsky.Informatik.RWTH-Aachen.DE>
+	* combine.c (simplify_rtx, case ABS): Don't get confused by a
+	VOIDmode operand.
+
+Tue Dec  9 17:44:14 1997  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (FUNCTION_ARG_PADDING): Define.
+	* rs6000.c (function_arg_padding): New function.
+
+Tue Dec  9 08:53:56 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* integrate.c (save_for_inline_copying): Make a new reg_parm_stack_loc.
+
+Mon Dec  8 19:23:58 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* toplev.c (get_run_time): [#if VMS] Cast arg in times call.
+
+	* vax/xm-vms.h (HAVE_UNISTD_H): Define for DEC C.
+	* make-cccp.com [CC]: Add /Prefix=All for DEC C.
+
+Mon Dec  8 08:09:17 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stmt.c (expand_decl_cleanup_no_eh): Properly return a value.
+
+	* fold-const.c (fold_convert): Don't flag overflow when converting
+	pointer to integer.
+
+Sun Dec  7 09:42:05 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* make-gcc.com (@make-l2): Pass along any command line arguments.
+	* make-l2.com: Add latent support to compile cp/inc/* if `cc1plus'
+	is specified [currently disabled].
+	* make-cc1.com: When building with GNU C, use -O2.
+	* make-cccp.com: Likewise.
+
+Sun Dec  7 06:56:48 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* crtstuff.c (__do_global_ctors): Add missing arg to __register_frame.
+
+	* collect2.c (write_c_file_stat): Fix error in last change;
+	use __SIZE_TYPE__, not size_t.
+
+Sun Dec  7 05:50:43 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* cccp.c (strings.h): Fix misspelling of `include' introduced
+	in last change to this file.
+
+Sat Dec  6 18:54:11 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alpha/vms.h (CPP_PREDEFINES): Remove redundant setting
+	of GCC version and unneeded setting of __VMS_VER.
 
 Fri Dec  5 07:24:36 1997  Richard Stallman  <rms@gnu.org>
 

@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "tree.h"
 #include "insn-codes.h"
-#include "assert.h"
 #include "expr.h"
 #include "except.h"
 #include "function.h"
@@ -2241,7 +2240,8 @@ i960_arg_size_and_align (mode, type, size_out, align_out)
   else if (mode == VOIDmode)
     {
       /* End of parm list.  */
-      assert (type != 0 && TYPE_MODE (type) == VOIDmode);
+      if (type == 0 || TYPE_MODE (type) != VOIDmode)
+	abort ();
       size = 1;
     }
   else

@@ -1035,8 +1035,8 @@ do {									\
 %{!static: %(link_path) %{!R*:%{L*:-R %*}}} \
 %{mshlib: } \
 %{static:-dn -Bstatic} \
-%{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
-%{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}}"
+%{shared:-G -dy -z text} \
+%{symbolic:-Bsymbolic -G -dy -z text}"
 
 #else
 /* Shared libraries are not default.  */
@@ -1044,8 +1044,8 @@ do {									\
 %{mshlib: %(link_path) } \
 %{!mshlib: %{!shared: %{!symbolic: -dn -Bstatic}}} \
 %{static: } \
-%{shared:-G -dy -z text %{!h*:%{o*:-h %*}} %(link_path) } \
-%{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}} %(link_path) }"
+%{shared:-G -dy -z text %(link_path) } \
+%{symbolic:-Bsymbolic -G -dy -z text %(link_path) }"
 #endif
 
 /* Override the default target of the linker.  */

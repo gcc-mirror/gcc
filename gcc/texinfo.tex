@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 1.1 1997/08/11 15:57:14 law Exp $
+%% $Id: texinfo.tex,v 2.221 1997/12/24 18:59:06 karl Exp $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 1.1 $
+\deftexinfoversion$Revision: 2.221 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -441,14 +441,11 @@
 % @. is an end-of-sentence period.
 \def\.{.\spacefactor=3000 }
 
-% @enddots{} is an end-of-sentence ellipsis.
-\gdef\enddots{$\mathinner{\ldotp\ldotp\ldotp\ldotp}$\spacefactor=3000}
-
 % @! is an end-of-sentence bang.
-\gdef\!{!\spacefactor=3000 }
+\def\!{!\spacefactor=3000 }
 
 % @? is an end-of-sentence query.
-\gdef\?{?\spacefactor=3000 }
+\def\?{?\spacefactor=3000 }
 
 % @w prevents a word break.  Without the \leavevmode, @w at the
 % beginning of a paragraph, when TeX is still in vertical mode, would
@@ -573,9 +570,27 @@ where each line of input produces a line of output.}
 
 \let\br = \par
 
-% @dots{}  output some dots
+% @dots{} output an ellipsis using the current font.
+% We do .5em per period so that it has the same spacing in a typewriter
+% font as three actual period characters.
+%
+\def\dots{\hbox to 1.5em{%
+  \hskip 0pt plus 0.25fil minus 0.25fil
+  .\hss.\hss.%
+  \hskip 0pt plus 0.5fil minus 0.5fil
+}}
 
-\def\dots{$\ldots$}
+% @enddots{} is an end-of-sentence ellipsis.
+% 
+\def\enddots{%
+  \hbox to 2em{%
+    \hskip 0pt plus 0.25fil minus 0.25fil
+    .\hss.\hss.\hss.%
+    \hskip 0pt plus 0.5fil minus 0.5fil
+  }%
+  \spacefactor=3000
+}
+
 
 % @page    forces the start of a new page
 
@@ -1236,7 +1251,7 @@ where each line of input produces a line of output.}
   \let\tensf=\titlesf \let\teni=\titlei \let\tensy=\titlesy
   \let\tenttsl=\titlettsl
   \resetmathfonts \setleading{25pt}}
-\def\titlefont#1{{\titlefonts #1}}
+\def\titlefont#1{{\titlefonts\rm #1}}
 \def\chapfonts{%
   \let\tenrm=\chaprm \let\tenit=\chapit \let\tensl=\chapsl
   \let\tenbf=\chapbf \let\tentt=\chaptt \let\smallcaps=\chapsc
@@ -4617,7 +4632,7 @@ width0pt\relax} \fi
 % Check for and read epsf.tex up front.  If we read it only at @image
 % time, we might be inside a group, and then its definitions would get
 % undone and the next image would fail.
-\openin 1 = xepsf.tex
+\openin 1 = epsf.tex
 \ifeof 1 \else
   \closein 1
   \def\epsfannounce{\toks0 = }% do not bother showing banner

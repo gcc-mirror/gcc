@@ -1,5 +1,5 @@
 /* The start module mcrt0.s for the SysV68 Motorola 3300 Delta Series.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Manfred Hollstein (manfred@lts.sel.alcatel.de).
 
 This file is part of GNU CC.
@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 # define FILE(n)	file	n
 # define GLOBAL_SYM(s)	global	s
 # define LOCAL_LABEL(l)	L%##l
-# define SECTION(n)	section	n
+# define IDENT(s)	ident	s
 # define TEXT		text
 #else /* Assume we are using GNU as.  */
 # define COMM		.comm
@@ -35,8 +35,7 @@ Boston, MA 02111-1307, USA.  */
 # define FILE(name)	.file	name
 # define GLOBAL_SYM(s)	.globl	s
 # define LOCAL_LABEL(l)	.L.##l
-# define SECTION(n)	.section	n
-# define STRING(s)	.asciz	s
+# define IDENT(s)	.section .comment;.asciz s
 # define TEXT		.text
 #endif
 
@@ -110,30 +109,27 @@ LOCAL_LABEL(isatty):
 	jsr	exit
 _exit:	moveq	&1,%d0
 	trap	&0
-	
-	GLOBAL_SYM (mcount)
 
-	EVEN
-mcount:	bra	mcount%
+	GLOBAL_SYM (__stop_monitor)
+__stop_monitor:
+	clr.l	-(%sp)
+	jsr	monitor
+	add.w	&4,%sp
+	rts
 
 LOCAL_LABEL(errtxt):
-#ifdef STRING
-	STRING ("No space for monitor buffer\n")
-#else
 	byte	'N,'o,' ,'s,'p,'a,'c,'e,' ,'f,'o,'r,' ,'m,'o,'n
-	byte	'i,'t,'o,'r,' ,'b,'u,'f,'f,'e,'r,'\n,0
-#endif
+	byte	'i,'t,'o,'r,' ,'b,'u,'f,'f,'e,'r,'\n
+LOCAL_LABEL(errtxt_end):
 
 	EVEN
 LOCAL_LABEL(3):
-	mov.l	&28,-(%sp)
-	mov.l	&LOCAL_LABEL(errtxt),-(%sp)
-	moveq	&2,%d0
-	mov.l	%d0,-(%sp)
+	pea	LOCAL_LABEL(errtxt_end)-LOCAL_LABEL(errtxt)
+	pea	LOCAL_LABEL(errtxt)(%pc)
+	pea	2
 	jsr	write
 	bra.b	_exit
 LOCAL_LABEL(endofstart):
-	nop
 	
 	EVEN
 
@@ -141,15 +137,6 @@ LOCAL_LABEL(endofstart):
 	COMM	environ,4
 	COMM	_countbase,4
 
-#ifdef STRING
-	SECTION (.comment)
-	STRING ("$Id: mot3300Mcrt0.S,v 1.1 1997/08/11 15:57:32 law Exp $\n")
-	STRING ("Contributed by manfred@lts.sel.alcatel.de (Manfred Hollstein, Germany)\n")
-#else
-	byte	'C,'o,'n,'t,'r,'i,'b,'u,'t,'e,'d,' ,'b,'y
-	byte	' ,'m,'a,'n,'f,'r,'e,'d,'@,'l,'t,'s,'.,'s
-	byte	'e,'l,'.,'a,'l,'c,'a,'t,'e,'l,'.,'d,'e,' 
-	byte	'(,'M,'a,'n,'f,'r,'e,'d,' ,'H,'o,'l,'l,'s
-	byte	't,'e,'i,'n,',,' ,'G,'e,'r,'m,'a,'n,'y,')
-	byte	10,0
-#endif
+	IDENT ("$Id: mot3300Mcrt0.S,v 1.2 1997/12/22 23:39:48 kenner Exp $")
+	IDENT ("Contributed by Manfred Hollstein (manfred@lts.sel.alcatel.de)")
+	IDENT ("Corrections by Philippe De Muyter (phdm@macqel.be)")

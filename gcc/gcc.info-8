@@ -6,8 +6,8 @@ input file gcc.texi.
    Published by the Free Software Foundation 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
-Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
+Free Software Foundation, Inc.
 
    Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -290,8 +290,8 @@ perform the following steps:
             disk:[gcc.gxx_include.] gnu_gxx_include
 
      with the appropriate disk and directory name.  If you are going to
-     be using libg++, this is where the libg++ install procedure will
-     install the libg++ header files.
+     be using a C++ runtime library, this is where its install
+     procedure will install its header files.
 
   2. Obtain the file `gcc-cc1plus.exe', and place this in the same
      directory that `gcc-cc1.exe' is kept.
@@ -530,8 +530,8 @@ before GNU CC is built.  If the cross compilation header files are
 already suitable for ANSI C and GNU CC, nothing special need be done).
 
    `GPLUS_INCLUDE_DIR' means the same thing for native and cross.  It
-is where `g++' looks first for header files.  `libg++' installs only
-target independent header files in that directory.
+is where `g++' looks first for header files.  The C++ library installs
+only target independent header files in that directory.
 
    `LOCAL_INCLUDE_DIR' is used only for a native compiler.  It is
 normally `/usr/local/include'.  GNU CC searches this directory so that
@@ -825,8 +825,7 @@ does not refer to anything that has gone out of scope, you should be
 safe.
 
    GNU CC implements taking the address of a nested function using a
-technique called "trampolines".  A paper describing them is available
-from `maya.idiap.ch' in directory `pub/tmb', file `usenix88-lexic.ps.Z'.
+technique called "trampolines".
 
    A nested function can jump to a label inherited from a containing
 function, provided the label was explicitly declared in the containing

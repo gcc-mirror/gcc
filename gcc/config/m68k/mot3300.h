@@ -147,13 +147,8 @@ Boston, MA 02111-1307, USA.  */
       asm_fprintf (FILE, "\tmov.l %Ra0,%Rd0\n"); } 
 
 #undef FUNCTION_PROFILER
-#ifndef USE_GAS
 #define FUNCTION_PROFILER(FILE, LABEL_NO)	\
-    asm_fprintf (FILE, "\tmov.l %ILP%%%d,%Ra0\n\tjsr mcount%%\n", (LABEL_NO))
-#else /* USE_GAS */
-#define FUNCTION_PROFILER(FILE, LABEL_NO)	\
-    asm_fprintf (FILE, "\tmov.l %I%.LP%d,%Ra0\n\tjsr mcount%%\n", (LABEL_NO))
-#endif /* USE_GAS */
+    asm_fprintf (FILE, "\tmov.l %I%LLP%d,%Ra0\n\tjsr mcount%%\n", (LABEL_NO))
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
@@ -356,7 +351,7 @@ dtors_section ()							\
 #undef ASM_BYTE
 #define ASM_BYTE	".byte"
 #undef ASM_BYTE_OP
-#define ASM_BYTE_OP	"\t.byte"
+#define ASM_BYTE_OP	".byte"
 #else
 #undef ASM_LONG
 #define ASM_LONG	"long"
@@ -367,7 +362,7 @@ dtors_section ()							\
 #undef ASM_BYTE
 #define ASM_BYTE	"byte"
 #undef ASM_BYTE_OP
-#define ASM_BYTE_OP	"\tbyte"
+#define ASM_BYTE_OP	"byte"
 #endif /* USE_GAS */
 
 /* The sysV68 as doesn't know about double's and float's.  */
@@ -476,7 +471,7 @@ do { long l;					\
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN) \
   do { register int sp = 0, lp = 0;				\
-    fprintf ((FILE), "%s\t", ASM_BYTE_OP);			\
+    fprintf ((FILE), "\t%s\t", ASM_BYTE_OP);			\
   loop:								\
     if ((PTR)[sp] > ' ' && ! ((PTR)[sp] & 0x80) && (PTR)[sp] != '\\')	\
       { lp += 3;						\
@@ -797,20 +792,25 @@ do {(CUM).offset = 0;\
 #define MATH_LIBRARY	"-lm881"
 #endif
 
-/* Currently we do not have the atexit() function;
- *  so take that from libgcc2.c
- */
+/* Currently we do not have the atexit() function,
+   so take that from libgcc2.c */
 
 #define NEED_ATEXIT 1
 #define HAVE_ATEXIT 1
 
 #define EXIT_BODY	\
   do								\
-    { extern void monitor ();					\
-      extern long mcount asm ("mcount%");			\
-      extern long etext;					\
-								\
-      if (&mcount < &etext)					\
-	monitor (0);						\
+    { 								\
+      __stop_monitor ();					\
       _cleanup ();						\
     } while (0)
+
+/* FINALIZE_TRAMPOLINE clears the instruction cache. */
+
+#undef FINALIZE_TRAMPOLINE
+#define FINALIZE_TRAMPOLINE(TRAMP)	\
+  if (!TARGET_68040)			\
+    ;					\
+  else					\
+    emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__clear_insn_cache"), \
+		       0, VOIDmode, 0)

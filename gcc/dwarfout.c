@@ -33,9 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "defaults.h"
 
-/* #define NDEBUG 1 */
-#include "assert.h"
-
 #if defined(DWARF_TIMESTAMPS)
 #if defined(POSIX)
 #include <time.h>
@@ -59,6 +56,15 @@ extern time_t time ();
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
 #endif
+#endif
+
+/* We cannot use <assert.h> in GCC source, since that would include
+   GCC's assert.h, which may not be compatible with the host compiler.  */
+#undef assert
+#ifdef NDEBUG
+# define assert(e)
+#else
+# define assert(e) do { if (! (e)) abort (); } while (0)
 #endif
 
 extern char *getpwd ();

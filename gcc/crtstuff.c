@@ -137,7 +137,7 @@ __do_global_dtors_aux ()
     }
 
 #ifdef EH_FRAME_SECTION_ASM_OP
-  __deregister_frame (__EH_FRAME_BEGIN__);
+  __deregister_frame_info (__EH_FRAME_BEGIN__);
 #endif
 }
 
@@ -155,15 +155,15 @@ fini_dummy ()
 }
 
 #ifdef EH_FRAME_SECTION_ASM_OP
-/* Stick a call to __register_frame into the .init section.  For some reason
-   calls with no arguments work more reliably in .init, so stick the call
-   in another function.  */
+/* Stick a call to __register_frame_info into the .init section.  For some
+   reason calls with no arguments work more reliably in .init, so stick the
+   call in another function.  */
 
 static void
 frame_dummy ()
 {
   static struct object object;
-  __register_frame (__EH_FRAME_BEGIN__, &object);
+  __register_frame_info (__EH_FRAME_BEGIN__, &object);
 }
 
 static void
@@ -247,7 +247,7 @@ __do_global_dtors ()
     (*p) ();
 
 #ifdef EH_FRAME_SECTION_ASM_OP
-  __deregister_frame (__EH_FRAME_BEGIN__);
+  __deregister_frame_info (__EH_FRAME_BEGIN__);
 #endif
 }
 #endif
@@ -370,6 +370,10 @@ __do_global_ctors_aux ()	/* prologue goes in .text section */
   asm (INIT_SECTION_ASM_OP);
   DO_GLOBAL_CTORS_BODY;
   ON_EXIT (__do_global_dtors, 0);
+#ifdef FORCE_INIT_SECTION_ALIGN
+  FORCE_INIT_SECTION_ALIGN;
+#endif
+  asm (TEXT_SECTION_ASM_OP);
 }				/* epilogue and body go in .init section */
 
 #endif /* OBJECT_FORMAT_ELF */
@@ -387,7 +391,8 @@ __do_global_ctors ()
 {
   func_ptr *p;
 #ifdef EH_FRAME_SECTION_ASM_OP
-  __register_frame (__EH_FRAME_BEGIN__);
+  static struct object object;
+  __register_frame_info (__EH_FRAME_BEGIN__, &object);
 #endif
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)
     (*p) ();

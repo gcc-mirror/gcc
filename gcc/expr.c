@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2432,7 +2432,7 @@ get_push_address (size)
   else
     temp = stack_pointer_rtx;
 
-  return force_operand (temp, NULL_RTX);
+  return copy_to_reg (temp);
 }
 
 /* Generate code to push X onto the stack, assuming it has mode MODE and
@@ -2561,7 +2561,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	      
 	      in_check_memory_usage = 1;
 	      temp = get_push_address (INTVAL(size) - used);
-	      if (GET_CODE (x) == MEM && AGGREGATE_TYPE_P (type))
+	      if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
 		emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
 				   temp, ptr_mode,
 				   XEXP (xinner, 0), ptr_mode,
@@ -2617,7 +2617,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	      
 	      in_check_memory_usage = 1;
 	      target = copy_to_reg (temp);
-	      if (GET_CODE (x) == MEM && AGGREGATE_TYPE_P (type))
+	      if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
 		emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
 				   target, ptr_mode,
 				   XEXP (xinner, 0), ptr_mode,
@@ -2829,7 +2829,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	  if (target == 0)
 	    target = get_push_address (GET_MODE_SIZE (mode));
 
-	  if (GET_CODE (x) == MEM && AGGREGATE_TYPE_P (type))
+	  if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
 	    emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
 			       target, ptr_mode,
 			       XEXP (x, 0), ptr_mode,
@@ -5293,7 +5293,7 @@ expand_expr (exp, target, tmode, modifier)
 	tree placeholder_expr;
 
 	/* If there is an object on the head of the placeholder list,
-	   see if some object in it's references is of type TYPE.  For
+	   see if some object in its references is of type TYPE.  For
 	   further information, see tree.def.  */
 	for (placeholder_expr = placeholder_list;
 	     placeholder_expr != 0;
@@ -5310,9 +5310,9 @@ expand_expr (exp, target, tmode, modifier)
 		 == need_type))
 	      object = TREE_PURPOSE (placeholder_expr);
 
-	    /* Find the innermost reference that is of the type we want.  */
+	    /* Find the outermost reference that is of the type we want.  */
 	    for (elt = TREE_PURPOSE (placeholder_expr);
-		 elt != 0
+		 elt != 0 && object == 0
 		 && (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
 		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
 		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
@@ -5323,10 +5323,7 @@ expand_expr (exp, target, tmode, modifier)
 	      if (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
 		  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (elt, 0)))
 		      == need_type))
-		{
-		  object = TREE_OPERAND (elt, 0);
-		  break;
-		}
+		object = TREE_OPERAND (elt, 0);
 
 	    if (object != 0)
 	      {
@@ -5498,12 +5495,16 @@ expand_expr (exp, target, tmode, modifier)
 	    memory_usage = get_memory_usage_from_modifier (modifier);
 
             if (memory_usage != MEMORY_USE_DONT)
-	      emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-				 op0, ptr_mode,
-				 GEN_INT (int_size_in_bytes (type)),
-				 TYPE_MODE (sizetype),
-				 GEN_INT (memory_usage),
-				 TYPE_MODE (integer_type_node));
+	      {
+		in_check_memory_usage = 1;
+		emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
+				   op0, ptr_mode,
+				   GEN_INT (int_size_in_bytes (type)),
+				   TYPE_MODE (sizetype),
+				   GEN_INT (memory_usage),
+				   TYPE_MODE (integer_type_node));
+		in_check_memory_usage = 0;
+	      }
 	  }
 
 	temp = gen_rtx (MEM, mode, op0);
@@ -8306,6 +8307,11 @@ expand_builtin_setjmp (buf_addr, target)
 #endif
       abort ();
 
+#ifdef HAVE_builtin_setjmp_receiver
+  if (HAVE_builtin_setjmp_receiver)
+    emit_insn (gen_builtin_setjmp_receiver ());
+#endif
+
   emit_move_insn (target, const1_rtx);
   emit_label (lab2);
   return target;
@@ -8986,8 +8992,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  /* Just copy the rights of SRC to the rights of DEST.  */
 	  if (flag_check_memory_usage)
 	    emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
-			       src_rtx, ptr_mode,
 			       dest_rtx, ptr_mode,
+			       src_rtx, ptr_mode,
 			       len_rtx, TYPE_MODE (sizetype));
 
 	  /* There could be a void* cast on top of the object.  */
@@ -11098,28 +11104,11 @@ do_store_flag (exp, target, mode, only_cheap)
 
   if ((code == NE || code == EQ)
       && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
-      && integer_pow2p (TREE_OPERAND (arg0, 1))
-      && TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT)
+      && integer_pow2p (TREE_OPERAND (arg0, 1)))
     {
       tree inner = TREE_OPERAND (arg0, 0);
-      HOST_WIDE_INT tem;
-      int bitnum;
+      int bitnum = tree_log2 (TREE_OPERAND (arg0, 1));
       int ops_unsignedp;
-
-      tem = INTVAL (expand_expr (TREE_OPERAND (arg0, 1),
-				 NULL_RTX, VOIDmode, 0));
-      /* In this case, immed_double_const will sign extend the value to make
-	 it look the same on the host and target.  We must remove the
-	 sign-extension before calling exact_log2, since exact_log2 will
-	 fail for negative values.  */
-      if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT
-	  && BITS_PER_WORD == GET_MODE_BITSIZE (TYPE_MODE (type)))
-	/* We don't use the obvious constant shift to generate the mask,
-	   because that generates compiler warnings when BITS_PER_WORD is
-	   greater than or equal to HOST_BITS_PER_WIDE_INT, even though this
-	   code is unreachable in that case.  */
-	tem = tem & GET_MODE_MASK (word_mode);
-      bitnum = exact_log2 (tem);
 
       /* If INNER is a right shift of a constant and it plus BITNUM does
 	 not overflow, adjust BITNUM and INNER.  */
@@ -11130,7 +11119,7 @@ do_store_flag (exp, target, mode, only_cheap)
 	  && (bitnum + TREE_INT_CST_LOW (TREE_OPERAND (inner, 1))
 	      < TYPE_PRECISION (type)))
 	{
-	  bitnum +=TREE_INT_CST_LOW (TREE_OPERAND (inner, 1));
+	  bitnum += TREE_INT_CST_LOW (TREE_OPERAND (inner, 1));
 	  inner = TREE_OPERAND (inner, 0);
 	}
 

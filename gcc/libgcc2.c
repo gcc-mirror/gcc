@@ -1530,7 +1530,7 @@ __bb_exit_func (void)
 		fprintf (stderr, "arc profiling: Error closing output file %s.\n",
 			 ptr->filename);
 	    }
-	  if ((da_file = fopen (ptr->filename, "w")) < 0)
+	  if ((da_file = fopen (ptr->filename, "w")) == 0)
 	    {
 	      fprintf (stderr, "arc profiling: Can't open output file %s.\n",
 		       ptr->filename);
@@ -2866,6 +2866,45 @@ __enable_execute_stack ()
 
 #endif /* __sysV88__ */
 
+#ifdef __sysV68__
+
+#include <sys/signal.h>
+#include <errno.h>
+
+/* Motorola forgot to put memctl.o in the libp version of libc881.a,
+   so define it here, because we need it in __clear_insn_cache below */
+
+asm("\n\
+	global memctl\n\
+memctl:\n\
+	movq &75,%d0\n\
+	trap &0\n\
+	bcc.b noerror\n\
+	jmp cerror%\n\
+noerror:\n\
+	movq &0,%d0\n\
+	rts");
+
+/* Clear instruction cache so we can call trampolines on stack.
+   This is called from FINALIZE_TRAMPOLINE in mot3300.h.  */
+
+void
+__clear_insn_cache ()
+{
+  int save_errno;
+
+  /* Preserve errno, because users would be surprised to have
+  errno changing without explicitly calling any system-call. */
+  save_errno = errno;
+
+  /* Keep it simple : memctl (MCT_TEXT) always fully clears the insn cache. 
+     No need to use an address derived from _start or %sp, as 0 works also. */
+  memctl(0, 4096, MCT_TEXT);
+  errno = save_errno;
+}
+
+#endif /* __sysV68__ */
+
 #ifdef __pyr__
 
 #undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
@@ -3801,6 +3840,47 @@ label:
 #endif /* !DWARF2_UNWIND_INFO */
 
 #endif /* L_eh */
+
+#ifdef L_eh_compat
+
+/* This is needed to provide the old names of the frame info registering
+   code for compatibility.  It should be deleted in GCC 2.9.0.  */
+
+extern void *malloc ();
+
+struct object {
+  void *pc_begin;
+  void *pc_end;
+  void *fde_begin;
+  void *fde_array;
+  size_t count;
+  struct object *next;
+};
+
+void __register_frame_info (void *, struct object *);
+void __register_frame_info_table (void *, struct object *);
+void __deregister_frame_info (void *);
+
+void
+__register_frame (void *begin)
+{
+  __register_frame_info (begin, malloc (sizeof (struct object)));
+}
+
+void
+__register_frame_table (void *begin)
+{
+  __register_frame_info_table (begin, malloc (sizeof (struct object)));
+}
+
+void
+__deregister_frame (void *begin)
+{
+  /* This leaks the memory malloced above,
+     but that's good enough for backward compatibility purposes.  */
+  __deregister_frame_info (begin);
+}
+#endif
 
 #ifdef L_pure
 #ifndef inhibit_libc

@@ -5588,7 +5588,7 @@ main (argc, argv)
   rtx tem;
   int i;
 
-#ifdef RLIMIT_STACK
+#if defined (RLIMIT_STACK) && defined (HAVE_GETRLIMIT) && defined (HAVE_SETRLIMIT)
   /* Get rid of any avoidable limit on stack size.  */
   {
     struct rlimit rlim;
@@ -5598,7 +5598,7 @@ main (argc, argv)
     rlim.rlim_cur = rlim.rlim_max;
     setrlimit (RLIMIT_STACK, &rlim);
   }
-#endif /* RLIMIT_STACK defined */
+#endif
 
   obstack_init (rtl_obstack);
   obstack_init (hash_obstack);

@@ -1,3 +1,11 @@
+Mon Dec 22 17:46:17 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* method.c (build_overload_name): Fix mangling for __null.
+
+Sat Dec 13 09:23:54 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Make-lang.in (g++.c, cxxmain.o): Use $(LN).
+
 Wed Dec  3 08:47:27 1997  Paul Eggert  <eggert@twinsun.com>
 
 	* pt.c (check_explicit_specialization): Fix misspelling in
@@ -6555,3 +6563,10 @@ Wed Oct 11 16:30:34 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* parse.y (fn.def1): Call split_specs_attrs in
 	declmods notype_declarator case.
+
+Use a consistent time stamp format in ChangeLog entries.
+Not everyone has Emacs 20 yet, so stick with Emacs 19 format for now.
+
+Local Variables:
+add-log-time-format: current-time-string
+End:

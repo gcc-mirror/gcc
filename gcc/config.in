@@ -20,6 +20,9 @@
 /* Whether rindex must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_RINDEX
 
+/* Whether getenv must be declared even if <stdlib.h> is included.  */
+#undef NEED_DECLARATION_GETENV
+
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
@@ -38,6 +41,9 @@
 /* Define if you have the bzero function.  */
 #undef HAVE_BZERO
 
+/* Define if you have the getrlimit function.  */
+#undef HAVE_GETRLIMIT
+
 /* Define if you have the index function.  */
 #undef HAVE_INDEX
 
@@ -52,6 +58,9 @@
 
 /* Define if you have the rindex function.  */
 #undef HAVE_RINDEX
+
+/* Define if you have the setrlimit function.  */
+#undef HAVE_SETRLIMIT
 
 /* Define if you have the strerror function.  */
 #undef HAVE_STRERROR

@@ -142,8 +142,8 @@ Boston, MA 02111-1307, USA.  */
   "%{h*} %{v:-V} \
    %{b} %{Wl,*:%*} \
    %{static:-dn -Bstatic} \
-   %{shared:-G -dy %{!mimpure-text:-z text} %{!h*:%{o*:-h %*}}} \
-   %{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
+   %{shared:-G -dy %{!mimpure-text:-z text}} \
+   %{symbolic:-Bsymbolic -G -dy -z text} \
    %{G:-G} \
    %{YP,*} \
    %{R*} \

@@ -6,8 +6,8 @@ input file gcc.texi.
    Published by the Free Software Foundation 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
-Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
+Free Software Foundation, Inc.
 
    Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -504,9 +504,8 @@ the other form by either removing `no-' or adding it.
      those who actually need to read the generated assembly code
      (perhaps while debugging the compiler itself).
 
-     `-fverbose-asm' is the default.  `-fno-verbose-asm' causes the
-     extra information to be omitted and is useful when comparing two
-     assembler files.
+     `-fno-verbose-asm', the default, causes the extra information to
+     be omitted and is useful when comparing two assembler files.
 
 `-fvolatile'
      Consider all memory references through pointers to be volatile.

@@ -276,6 +276,13 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
     {
       rtx p = DECL_RTL (parms);
 
+      /* If we have (mem (addressof (mem ...))), use the inner MEM since
+	 otherwise the copy_rtx call below will not unshare the MEM since
+	 it shares ADDRESSOF.  */
+      if (GET_CODE (p) == MEM && GET_CODE (XEXP (p, 0)) == ADDRESSOF
+	  && GET_CODE (XEXP (XEXP (p, 0), 0)) == MEM)
+	p = XEXP (XEXP (p, 0), 0);
+
       if (GET_CODE (p) == MEM && copy)
 	{
 	  /* Copy the rtl so that modifications of the addresses
@@ -415,6 +422,7 @@ save_for_inline_copying (fndecl)
   int max_uid;
   rtx first_nonparm_insn;
   char *new, *new1;
+  rtx *new_parm_reg_stack_loc;
 
   /* Make and emit a return-label if we have not already done so. 
      Do this before recording the bounds on label numbers.  */
@@ -520,6 +528,13 @@ save_for_inline_copying (fndecl)
 
   for (i = min_labelno; i < max_labelno; i++)
     label_map[i] = gen_label_rtx ();
+
+  /* Likewise for parm_reg_stack_slot.  */
+  new_parm_reg_stack_loc = (rtx *) savealloc (max_parm_reg * sizeof (rtx));
+  for (i = 0; i < max_parm_reg; i++)
+    new_parm_reg_stack_loc[i] = copy_for_inline (parm_reg_stack_loc[i]);
+
+  parm_reg_stack_loc = new_parm_reg_stack_loc;
 
   /* Record the mapping of old insns to copied insns.  */
 

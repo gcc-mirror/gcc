@@ -6,8 +6,8 @@ input file gcc.texi.
    Published by the Free Software Foundation 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
-Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
+Free Software Foundation, Inc.
 
    Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -220,7 +220,11 @@ special things you must know:
      you must specify the version number during configuration.  Note
      that the assembler shipped with RISC iX does not support stabs
      debugging information; a new version of the assembler, with stabs
-     support included, is now available from Acorn.
+     support included, is now available from Acorn and via ftp
+     `ftp.acorn.com:/pub/riscix/as+xterm.tar.Z'.  To enable stabs
+     debugging, pass `--with-gnu-as' to configure.
+
+     You will need to install GNU `sed' before you can run configure.
 
 `a29k'
      AMD Am29k-family processors.  These are normally used in embedded

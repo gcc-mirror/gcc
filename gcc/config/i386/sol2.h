@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
    executed.  This macro forces the assembler to do the padding, since
    it knows what it is doing. */
 
-#define FORCE_INIT_SECTION_ALIGN do { asm (ALIGN_ASM_OP ## " 16"); } while (0)
+#define FORCE_INIT_SECTION_ALIGN asm (ALIGN_ASM_OP ## " 16")
 #define FORCE_FINI_SECTION_ALIGN FORCE_INIT_SECTION_ALIGN
 
 /* Add "sun" to the list of symbols defined for SVR4.  */

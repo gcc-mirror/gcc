@@ -349,7 +349,7 @@ extern int flag_function_sections;
    the generated assembly code (to make it more readable).  This option
    is generally only of use to those who actually need to read the
    generated assembly code (perhaps while debugging the compiler itself).
-   -fverbose-asm is the default.  -fno-verbose-asm causes the extra information
+   -fno-verbose-asm, the default, causes the extra information
    to not be added and is useful when comparing two assembler files.  */
 
 extern int flag_verbose_asm;

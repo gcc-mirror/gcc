@@ -6,8 +6,8 @@ input file gcc.texi.
    Published by the Free Software Foundation 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
-Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
+Free Software Foundation, Inc.
 
    Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -200,7 +200,7 @@ and includes all the necessary compilation tools and libraries.
           `--nfp' currently has no effect, though perhaps there are
           other systems where it could usefully make a difference.
 
-    `--enable-objcthreads=TYPE'
+    `--enable-threads=TYPE'
           Certain systems, notably Linux-based GNU systems, can't be
           relied on to supply a threads facility for the Objective C
           runtime and so will default to single-threaded runtime.  They
@@ -488,11 +488,39 @@ and includes all the necessary compilation tools and libraries.
      some other compiler.)
 
  16. If you're going to use C++, it's likely that you need to also
-     install the libg++ distribution.  It should be available from the
-     same place where you got the GNU C distribution.  Just as GNU C
-     does not distribute a C runtime library, it also does not include
-     a C++ run-time library.  All I/O functionality, special class
-     libraries, etc., are available in the libg++ distribution.
+     install a C++ runtime library.  Just as GNU C does not distribute
+     a C runtime library, it also does not include a C++ runtime
+     library.  All I/O functionality, special class libraries, etc., are
+     provided by the C++ runtime library.
+
+     Here's one way to build and install a C++ runtime library for GNU
+     CC:
+
+        * Build and install GNU CC, so that invoking `gcc' obtains the
+          GNU CC that was just built.
+
+        * Obtain a copy of a compatible `libstdc++' distribution.  For
+          example, the `libstdc++-2.8.0.tar.gz' distribution should be
+          compatible with GCC 2.8.0.  GCC distributors normally
+          distribute `libstdc++' as well.
+
+        * Set the `CXX' environment variable to `gcc' while running the
+          `libstdc++' distribution's `configure' command.  Use the same
+          `configure' options that you used when you invoked GCC's
+          `configure' command.
+
+        * Invoke `make' to build the C++ runtime.
+
+        * Invoke `make install' to install the C++ runtime.
+
+     To summarize, after building and installing GNU CC, invoke the
+     following shell commands in the topmost directory of the C++
+     library distribution.  For CONFIGURE-OPTIONS, use the same options
+     that you used to configure GNU CC.
+
+          $ CXX=gcc ./configure CONFIGURE-OPTIONS
+          $ make
+          $ make install
 
  17. GNU CC includes a runtime library for Objective-C because it is an
      integral part of the language.  You can find the files associated

@@ -5277,7 +5277,7 @@ make it more readable.  This option is generally only of use to those
 who actually need to read the generated assembly code (perhaps while
 debugging the compiler itself).
 
-@samp{-fverbose-asm} is the default.  @samp{-fno-verbose-asm} causes the
+@samp{-fno-verbose-asm}, the default, causes the
 extra information to be omitted and is useful when comparing two assembler
 files.
 

@@ -100,8 +100,16 @@ char leaf_reg_remap[] =
 static char *frame_base_name;
 static int frame_base_offset;
 
-static rtx find_addr_reg ();
-static void sparc_init_modes ();
+static rtx pic_setup_code	PROTO((void));
+static rtx find_addr_reg	PROTO((rtx));
+static void sparc_init_modes	PROTO((void));
+static int save_regs		PROTO((FILE *, int, int, char *,
+				       int, int, int));
+static int restore_regs		PROTO((FILE *, int, int, char *, int, int));
+static void build_big_number	PROTO((FILE *, int, char *));
+static function_arg_slotno	PROTO((const CUMULATIVE_ARGS *,
+				       enum machine_mode, tree, int, int,
+				       int *, int *));
 
 #ifdef DWARF2_DEBUGGING_INFO
 extern char *dwarf2out_cfi_label ();
@@ -1324,9 +1332,8 @@ reg_unused_after (reg, insn)
   return 1;
 }
 
-/* The rtx for the global offset table which is a special form
-   that *is* a position independent symbolic constant.  */
-static rtx pic_pc_rtx;
+/* The table we use to reference PIC data.  */
+static rtx global_offset_table;
 
 /* Ensure that we are not using patterns that are not OK with PIC.  */
 
@@ -1339,7 +1346,11 @@ check_pic (i)
     case 1:
       if (GET_CODE (recog_operand[i]) == SYMBOL_REF
 	  || (GET_CODE (recog_operand[i]) == CONST
-	      && ! rtx_equal_p (pic_pc_rtx, recog_operand[i])))
+	      && ! (GET_CODE (XEXP (recog_operand[i], 0)) == MINUS
+		    && (XEXP (XEXP (recog_operand[i], 0), 0)
+			== global_offset_table)
+		    && (GET_CODE (XEXP (XEXP (recog_operand[i], 0), 1))
+			== CONST))))
 	abort ();
     case 2:
     default:
@@ -1472,39 +1483,26 @@ initialize_pic ()
 {
 }
 
-/* Emit special PIC prologues and epilogues.  */
+/* Return the RTX for insns to set the PIC register.  */
 
-void
-finalize_pic ()
+static rtx
+pic_setup_code ()
 {
-  /* The table we use to reference PIC data.  */
-  rtx global_offset_table;
-  /* Labels to get the PC in the prologue of this function.  */
+  rtx pic_pc_rtx;
   rtx l1, l2;
   rtx seq;
-  int orig_flag_pic = flag_pic;
-
-  if (current_function_uses_pic_offset_table == 0)
-    return;
-
-  if (! flag_pic)
-    abort ();
-
-  flag_pic = 0;
 
   start_sequence ();
 
   l1 = gen_label_rtx ();
 
-  /* Initialize every time through, since we can't easily
-     know this to be permanent.  */
-  global_offset_table = gen_rtx (SYMBOL_REF, Pmode, "_GLOBAL_OFFSET_TABLE_");
   pic_pc_rtx = gen_rtx (CONST, Pmode,
 			gen_rtx (MINUS, Pmode,
 				 global_offset_table,
 				 gen_rtx (CONST, Pmode,
 					  gen_rtx (MINUS, Pmode,
-						   gen_rtx (LABEL_REF, VOIDmode, l1),
+						   gen_rtx (LABEL_REF,
+							    VOIDmode, l1),
 						   pc_rtx))));
 
   /* sparc64: the RDPC instruction doesn't pair, and puts 4 bubbles in the
@@ -1543,14 +1541,46 @@ finalize_pic ()
   LABEL_PRESERVE_P (l1) = 1;
   LABEL_PRESERVE_P (l2) = 1;
 
-  flag_pic = orig_flag_pic;
-
   seq = gen_sequence ();
   end_sequence ();
-  emit_insn_after (seq, get_insns ());
+
+  return seq;
+}
+
+/* Emit special PIC prologues and epilogues.  */
+
+void
+finalize_pic ()
+{
+  /* Labels to get the PC in the prologue of this function.  */
+  int orig_flag_pic = flag_pic;
+  rtx insn;
+
+  if (current_function_uses_pic_offset_table == 0)
+    return;
+
+  if (! flag_pic)
+    abort ();
+
+  /* Initialize every time through, since we can't easily
+     know this to be permanent.  */
+  global_offset_table = gen_rtx (SYMBOL_REF, Pmode, "_GLOBAL_OFFSET_TABLE_");
+  flag_pic = 0;
+
+  emit_insn_after (pic_setup_code (), get_insns ());
+
+  /* Insert the code in each nonlocal goto receiver.  */
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+	&& XINT (PATTERN (insn), 1) == 4)
+      emit_insn_after (pic_setup_code (), insn);
+
+  flag_pic = orig_flag_pic;
 
   /* Need to emit this whether or not we obey regdecls,
-     since setjmp/longjmp can cause life info to screw up.  */
+     since setjmp/longjmp can cause life info to screw up.
+     ??? In the case where we don't obey regdecls, this is not sufficient
+     since we may not fall out the bottom.  */
   emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
 }
 

@@ -1,5 +1,5 @@
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987, 1992, 1994, 1995, 1997 Free Software Foundation.
+   Copyright (C) 1987, 1992, 1994, 1995, 1997, 1998 Free Software Foundation.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -26,6 +26,7 @@ Written by Per Bothner 1994.  */
    
 #include "config.h"
 #include "cpplib.h"
+#include "gansidecl.h"
 
 extern char *xmalloc PARAMS ((unsigned));
 extern char *xrealloc PARAMS ((void *, unsigned));

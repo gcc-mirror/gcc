@@ -18,7 +18,7 @@ $!
 $!	Compiler-specific setup (assume GNU C, then override as necessary):
 $!
 $ CC	 = "gcc"
-$ CFLAGS = "/Debug/noVerbos"
+$ CFLAGS = "/Opt=2/Debug/noVerbos"
 $ LIBS	 = "gnu_cc:[000000]gcclib.olb/Libr,sys$library:vaxcrtl.olb/Libr"
 $ if p1.nes."GNUC"
 $ then
@@ -33,6 +33,7 @@ $   else
 $     if p1.eqs."DECC"
 $     then
 $	if f$trnlnm("DECC$CC_DEFAULT").nes."" then  CC = "cc/DECC"
+$	CC = CC + "/Prefix=All"
 $	LIBS = "alloca.obj"	!DECC$SHR will be found implicitly by linker
 $	define/noLog SYS DECC$LIBRARY_INCLUDE:
 $     else

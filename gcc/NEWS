@@ -7,6 +7,28 @@ optimization improvements have been made.  These increase the
 maintainability and portability of GCC.  GCC now uses autoconf to
 compute many host parameters.
 
+A new project, egcs (pronounced ``eggs''), is maintaining an
+experimental version of the GNU C compiler.  The egcs compiler
+contains features that are candidates for inclusion in future versions
+of GCC.  The standard GCC distribution is intended to contain a mature
+compiler that is stable and reliable; egcs aims at making experimental
+changes available to interested users at an earlier stage in their
+development process than would be appropriate for a production
+compiler.  Please see <http://www.cygnus.com/egcs/> for more
+information about egcs.  A major motivation for the egcs project was
+the long release cycle for GCC 2.8.0.  This was due to changes for
+exception handling that took a long time to complete.  In the future,
+changes of this nature can be developed in the egcs framework and not
+interfere with the frequent releases of the standard GCC distribution.
+
+Due to a bug fix related to exception handling, if you have previously
+built a sharable library with some recent unofficial versions of GCC
+on some systems and then rebuild the library with GCC 2.8.0, programs
+previously linked with that library may fail during initialization
+with a message about an undefined symbols __register_frame.  If that
+happens, you must either relink the application or rebuild the
+sharable library with "-Wl,-u,__register_frame" on the command line.
+
 The following lists changes that add new features or targets.
 
 See cp/NEWS for new features of C++ in this release.
@@ -45,7 +67,8 @@ New features in configuration, installation and specs file handling:
 
     New option --enable-c-cpplib to configure script.
 
-    Allow --with-cpu on configure command to specify a default CPU.
+    You can use --with-cpu on the configure command to specify the default
+    CPU that GCC should generate code for.
 
     The -specs=file switch allows you to override default specs used in
     invoking programs like cc1, as, etc.
@@ -213,28 +236,6 @@ New feature for Solaris systems:
     GCC installation no longer makes a copy of system include files,
     thus insulating GCC better from updates to the operating system.
 
-Changes in Objective-C:
-
-    The Objective-C Runtime Library has been made thread-safe.
-
-    The Objective-C Runtime Library contains an interface for creating
-    mutexes, condition mutexes, and threads; it requires a back-end
-    implementation for the specific platform and/or thread package.
-    Currently supported are DEC/OSF1, IRIX, Mach, OS/2, POSIX, PCThreads,
-    Solaris, and Windows32.  The --enable-threads parameter can be used
-    when configuring GCC to enable and select a thread back-end.
-
-    Objective-C is now configured as separate front-end language to GCC,
-    making it more convenient to conditionally build it.
-
-    The internal structures of the Objective-C Runtime Library have
-    changed sufficiently to warrant a new version number; now version 8.
-    Programs compiled with an older version must be recompiled.
-
-    The Objective-C Runtime Library can be built as a DLL on Windows 95
-    and Windows NT systems.
-    
-    The Objective-C Runtime Library implements +load.
 
 Noteworthy changes in GCC version 2.7.2
 ---------------------------------------

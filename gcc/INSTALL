@@ -161,7 +161,7 @@ and includes all the necessary compilation tools and libraries.
           `--nfp' currently has no effect, though perhaps there are
           other systems where it could usefully make a difference.
 
-    `--enable-objcthreads=TYPE'
+    `--enable-threads=TYPE'
           Certain systems, notably Linux-based GNU systems, can't be
           relied on to supply a threads facility for the Objective C
           runtime and so will default to single-threaded runtime.  They
@@ -449,11 +449,39 @@ and includes all the necessary compilation tools and libraries.
      some other compiler.)
 
  16. If you're going to use C++, it's likely that you need to also
-     install the libg++ distribution.  It should be available from the
-     same place where you got the GNU C distribution.  Just as GNU C
-     does not distribute a C runtime library, it also does not include
-     a C++ run-time library.  All I/O functionality, special class
-     libraries, etc., are available in the libg++ distribution.
+     install a C++ runtime library.  Just as GNU C does not distribute
+     a C runtime library, it also does not include a C++ runtime
+     library.  All I/O functionality, special class libraries, etc., are
+     provided by the C++ runtime library.
+
+     Here's one way to build and install a C++ runtime library for GNU
+     CC:
+
+        * Build and install GNU CC, so that invoking `gcc' obtains the
+          GNU CC that was just built.
+
+        * Obtain a copy of a compatible `libstdc++' distribution.  For
+          example, the `libstdc++-2.8.0.tar.gz' distribution should be
+          compatible with GCC 2.8.0.  GCC distributors normally
+          distribute `libstdc++' as well.
+
+        * Set the `CXX' environment variable to `gcc' while running the
+          `libstdc++' distribution's `configure' command.  Use the same
+          `configure' options that you used when you invoked GCC's
+          `configure' command.
+
+        * Invoke `make' to build the C++ runtime.
+
+        * Invoke `make install' to install the C++ runtime.
+
+     To summarize, after building and installing GNU CC, invoke the
+     following shell commands in the topmost directory of the C++
+     library distribution.  For CONFIGURE-OPTIONS, use the same options
+     that you used to configure GNU CC.
+
+          $ CXX=gcc ./configure CONFIGURE-OPTIONS
+          $ make
+          $ make install
 
  17. GNU CC includes a runtime library for Objective-C because it is an
      integral part of the language.  You can find the files associated
@@ -684,7 +712,11 @@ special things you must know:
      you must specify the version number during configuration.  Note
      that the assembler shipped with RISC iX does not support stabs
      debugging information; a new version of the assembler, with stabs
-     support included, is now available from Acorn.
+     support included, is now available from Acorn and via ftp
+     `ftp.acorn.com:/pub/riscix/as+xterm.tar.Z'.  To enable stabs
+     debugging, pass `--with-gnu-as' to configure.
+
+     You will need to install GNU `sed' before you can run configure.
 
 `a29k'
      AMD Am29k-family processors.  These are normally used in embedded
@@ -1779,8 +1811,8 @@ perform the following steps:
             disk:[gcc.gxx_include.] gnu_gxx_include
 
      with the appropriate disk and directory name.  If you are going to
-     be using libg++, this is where the libg++ install procedure will
-     install the libg++ header files.
+     be using a C++ runtime library, this is where its install
+     procedure will install its header files.
 
   2. Obtain the file `gcc-cc1plus.exe', and place this in the same
      directory that `gcc-cc1.exe' is kept.
@@ -2013,8 +2045,8 @@ before GNU CC is built.  If the cross compilation header files are
 already suitable for ANSI C and GNU CC, nothing special need be done).
 
    `GPLUS_INCLUDE_DIR' means the same thing for native and cross.  It
-is where `g++' looks first for header files.  `libg++' installs only
-target independent header files in that directory.
+is where `g++' looks first for header files.  The C++ library installs
+only target independent header files in that directory.
 
    `LOCAL_INCLUDE_DIR' is used only for a native compiler.  It is
 normally `/usr/local/include'.  GNU CC searches this directory so that

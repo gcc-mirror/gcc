@@ -6,8 +6,8 @@ input file gcc.texi.
    Published by the Free Software Foundation 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
-Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
+Free Software Foundation, Inc.
 
    Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -114,9 +114,9 @@ File: gcc.info,  Node: Extended Asm,  Next: Asm Labels,  Prev: Inline,  Up: C Ex
 Assembler Instructions with C Expression Operands
 =================================================
 
-   In an assembler instruction using `asm', you can now specify the
-operands of the instruction using C expressions.  This means no more
-guessing which registers or memory locations will contain the data you
+   In an assembler instruction using `asm', you can specify the
+operands of the instruction using C expressions.  This means you need
+not guess which registers or memory locations will contain the data you
 want to use.
 
    You must specify an assembler instruction template much like what
@@ -134,35 +134,35 @@ in `=f' indicates that the operand is an output; all output operands'
 constraints must use `='.  The constraints use the same language used
 in the machine description (*note Constraints::.).
 
-   Each operand is described by an operand-constraint string followed
-by the C expression in parentheses.  A colon separates the assembler
-template from the first output operand, and another separates the last
-output operand from the first input, if any.  Commas separate output
-operands and separate inputs.  The total number of operands is limited
-to ten or to the maximum number of operands in any instruction pattern
-in the machine description, whichever is greater.
+   Each operand is described by an operand-constraint string followed by
+the C expression in parentheses.  A colon separates the assembler
+template from the first output operand and another separates the last
+output operand from the first input, if any.  Commas separate the
+operands within each group.  The total number of operands is limited to
+ten or to the maximum number of operands in any instruction pattern in
+the machine description, whichever is greater.
 
-   If there are no output operands, and there are input operands, then
-there must be two consecutive colons surrounding the place where the
-output operands would go.
+   If there are no output operands but there are input operands, you
+must place two consecutive colons surrounding the place where the output
+operands would go.
 
    Output operand expressions must be lvalues; the compiler can check
 this.  The input operands need not be lvalues.  The compiler cannot
 check whether the operands have data types that are reasonable for the
-instruction being executed.  It does not parse the assembler
-instruction template and does not know what it means, or whether it is
-valid assembler input.  The extended `asm' feature is most often used
-for machine instructions that the compiler itself does not know exist.
-If the output expression cannot be directly addressed (for example, it
-is a bit field), your constraint must allow a register.  In that case,
-GNU CC will use the register as the output of the `asm', and then store
-that register into the output.
+instruction being executed.  It does not parse the assembler instruction
+template and does not know what it means or even whether it is valid
+assembler input.  The extended `asm' feature is most often used for
+machine instructions the compiler itself does not know exist.  If the
+output expression cannot be directly addressed (for example, it is a
+bit field), your constraint must allow a register.  In that case, GNU CC
+will use the register as the output of the `asm', and then store that
+register into the output.
 
    The ordinary output operands must be write-only; GNU CC will assume
 that the values in these operands before the instruction are dead and
-need not be generated.  Extended asm supports input-output or
-read-write operands.  Use the constraint character `+' to indicate such
-an operand and list it with the output operands.
+need not be generated.  Extended asm supports input-output or read-write
+operands.  Use the constraint character `+' to indicate such an operand
+and list it with the output operands.
 
    When the constraints for the read-write operand (or the operand in
 which only some of the bits are to be changed) allows a register, you
@@ -179,13 +179,13 @@ destination:
 
 The constraint `"0"' for operand 1 says that it must occupy the same
 location as operand 0.  A digit in constraint is allowed only in an
-input operand, and it must refer to an output operand.
+input operand and it must refer to an output operand.
 
    Only a digit in the constraint can guarantee that one operand will
 be in the same place as another.  The mere fact that `foo' is the value
 of both operands is not enough to guarantee that they will be in the
 same place in the generated assembler code.  The following would not
-work:
+work reliably:
 
      asm ("combine %2,%0" : "=r" (foo) : "r" (foo), "g" (bar));
 
@@ -197,10 +197,10 @@ a different register (copying it afterward to `foo''s own address).  Of
 course, since the register for operand 1 is not even mentioned in the
 assembler code, the result will not work, but GNU CC can't tell that.
 
-   Some instructions clobber specific hard registers.  To describe
-this, write a third colon after the input operands, followed by the
-names of the clobbered hard registers (given as strings).  Here is a
-realistic example for the Vax:
+   Some instructions clobber specific hard registers.  To describe this,
+write a third colon after the input operands, followed by the names of
+the clobbered hard registers (given as strings).  Here is a realistic
+example for the VAX:
 
      asm volatile ("movc3 %0,%1,%2"
                    : /* no outputs */
@@ -208,10 +208,10 @@ realistic example for the Vax:
                    : "r0", "r1", "r2", "r3", "r4", "r5");
 
    If you refer to a particular hardware register from the assembler
-code, then you will probably have to list the register after the third
-colon to tell the compiler that the register's value is modified.  In
-many assemblers, the register names begin with `%'; to produce one `%'
-in the assembler code, you must write `%%' in the input.
+code, you will probably have to list the register after the third colon
+to tell the compiler the register's value is modified.  In some
+assemblers, the register names begin with `%'; to produce one `%' in the
+assembler code, you must write `%%' in the input.
 
    If your assembler instruction can alter the condition code register,
 add `cc' to the list of clobbered registers.  GNU CC on some machines
@@ -226,14 +226,14 @@ cause GNU CC to not keep memory values cached in registers across the
 assembler instruction.
 
    You can put multiple assembler instructions together in a single
-`asm' template, separated either with newlines (written as `\n') or with
-semicolons if the assembler allows such semicolons.  The GNU assembler
-allows semicolons and all Unix assemblers seem to do so.  The input
-operands are guaranteed not to use any of the clobbered registers, and
-neither will the output operands' addresses, so you can read and write
-the clobbered registers as many times as you like.  Here is an example
-of multiple instructions in a template; it assumes that the subroutine
-`_foo' accepts arguments in registers 9 and 10:
+`asm' template, separated either with newlines (written as `\n') or
+with semicolons if the assembler allows such semicolons.  The GNU
+assembler allows semicolons and most Unix assemblers seem to do so.
+The input operands are guaranteed not to use any of the clobbered
+registers, and neither will the output operands' addresses, so you can
+read and write the clobbered registers as many times as you like.  Here
+is an example of multiple instructions in a template; it assumes the
+subroutine `_foo' accepts arguments in registers 9 and 10:
 
      asm ("movl %0,r9;movl %1,r10;call _foo"
           : /* no outputs */
@@ -242,7 +242,7 @@ of multiple instructions in a template; it assumes that the subroutine
 
    Unless an output operand has the `&' constraint modifier, GNU CC may
 allocate it in the same register as an unrelated input operand, on the
-assumption that the inputs are consumed before the outputs are produced.
+assumption the inputs are consumed before the outputs are produced.
 This assumption may be false if the assembler code actually consists of
 more than one instruction.  In such a case, use `&' for each output
 operand that may not overlap an input.  *Note Modifiers::.
@@ -259,8 +259,8 @@ This assumes your assembler supports local labels, as the GNU assembler
 and most Unix assemblers do.
 
    Speaking of labels, jumps from one `asm' to another are not
-supported.  The compiler's optimizers do not know about these jumps,
-and therefore they cannot take account of them when deciding how to
+supported.  The compiler's optimizers do not know about these jumps, and
+therefore they cannot take account of them when deciding how to
 optimize.
 
    Usually the most convenient way to use these `asm' instructions is to
@@ -275,8 +275,8 @@ Here the variable `__arg' is used to make sure that the instruction
 operates on a proper `double' value, and to accept only those arguments
 `x' which can convert automatically to a `double'.
 
-   Another way to make sure the instruction operates on the correct
-data type is to use a cast in the `asm'.  This is different from using a
+   Another way to make sure the instruction operates on the correct data
+type is to use a cast in the `asm'.  This is different from using a
 variable `__arg' in that it converts more different types.  For
 example, if the desired type were `int', casting the argument to `int'
 would accept a pointer with no complaint, while assigning the argument
@@ -284,24 +284,38 @@ to an `int' variable named `__arg' would warn about using a pointer
 unless the caller explicitly casts it.
 
    If an `asm' has output operands, GNU CC assumes for optimization
-purposes that the instruction has no side effects except to change the
-output operands.  This does not mean that instructions with a side
-effect cannot be used, but you must be careful, because the compiler
-may eliminate them if the output operands aren't used, or move them out
-of loops, or replace two with one if they constitute a common
-subexpression.  Also, if your instruction does have a side effect on a
-variable that otherwise appears not to change, the old value of the
-variable may be reused later if it happens to be found in a register.
+purposes the instruction has no side effects except to change the output
+operands.  This does not mean instructions with a side effect cannot be
+used, but you must be careful, because the compiler may eliminate them
+if the output operands aren't used, or move them out of loops, or
+replace two with one if they constitute a common subexpression.  Also,
+if your instruction does have a side effect on a variable that otherwise
+appears not to change, the old value of the variable may be reused later
+if it happens to be found in a register.
 
    You can prevent an `asm' instruction from being deleted, moved
 significantly, or combined, by writing the keyword `volatile' after the
 `asm'.  For example:
 
-     #define set_priority(x)  \
-     asm volatile ("set_priority %0": /* no outputs */ : "g" (x))
+     #define get_and_set_priority(new)  \
+     ({ int __old; \
+        asm volatile ("get_and_set_priority %0, %1": "=g" (__old) : "g" (new)); \
+        __old; })
+     b
 
-An instruction without output operands will not be deleted or moved
-significantly, regardless, unless it is unreachable.
+If you write an `asm' instruction with no outputs, GNU CC will know the
+instruction has side-effects and will not delete the instruction or
+move it outside of loops.  If the side-effects of your instruction are
+not purely external, but will affect variables in your program in ways
+other than reading the inputs and clobbering the specified registers or
+memory, you should write the `volatile' keyword to prevent future
+versions of GNU CC from moving the instruction around within a core
+region.
+
+   An `asm' instruction without any operands or clobbers (and "old
+style" `asm') will not be deleted or moved significantly, regardless,
+unless it is unreachable, the same wasy as if you had written a
+`volatile' keyword.
 
    Note that even a volatile `asm' instruction can be moved in ways
 that appear insignificant to the compiler, such as across jump

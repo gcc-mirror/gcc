@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,95,96,97 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92,93,94,95,96,97,1998 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -178,7 +178,7 @@ make a difference.
 
 @cindex Objective C threads
 @cindex threads, Objective C
-@item --enable-objcthreads=@var{type}
+@item --enable-threads=@var{type}
 Certain systems, notably Linux-based GNU systems, can't be relied on to
 supply a threads facility for the Objective C runtime and so will
 default to single-threaded runtime.  They may, however, have a library
@@ -521,12 +521,51 @@ since they usually run faster than the ones compiled with some other
 compiler.)
 
 @item
+@cindex C++ runtime library
+@cindex @code{libstdc++}
 If you're going to use C++, it's likely that you need to also install
-the libg++ distribution.  It should be available from the same
-place where you got the GNU C distribution.  Just as GNU C does not
-distribute a C runtime library, it also does not include a C++ run-time
+a C++ runtime library.  Just as GNU C does not
+distribute a C runtime library, it also does not include a C++ runtime
 library.  All I/O functionality, special class libraries, etc., are
-available in the libg++ distribution.
+provided by the C++ runtime library.
+
+Here's one way to build and install a C++ runtime library for GNU CC:
+
+@itemize @bullet
+@item
+Build and install GNU CC, so that invoking @samp{gcc} obtains the GNU CC
+that was just built.
+
+@item
+Obtain a copy of a compatible @samp{libstdc++} distribution.  For
+example, the @samp{libstdc++-2.8.0.tar.gz} distribution should be
+compatible with GCC 2.8.0.  GCC distributors normally distribute
+@samp{libstdc++} as well.
+
+@item
+Set the @samp{CXX} environment variable to @samp{gcc} while running the
+@samp{libstdc++} distribution's @file{configure} command.  Use the same
+@file{configure} options that you used when you invoked GCC's
+@file{configure} command.
+
+@item
+Invoke @samp{make} to build the C++ runtime.
+
+@item
+Invoke @samp{make install} to install the C++ runtime.
+
+@end itemize
+
+To summarize, after building and installing GNU CC, invoke the following
+shell commands in the topmost directory of the C++ library distribution.
+For @var{configure-options}, use the same options that
+you used to configure GNU CC.
+
+@example
+$ CXX=gcc ./configure @var{configure-options}
+$ make
+$ make install
+@end example
 
 @item
 GNU CC includes a runtime library for Objective-C because it is an
@@ -779,12 +818,16 @@ from @file{sunsite.unc.edu:/pub/Linux/GCC} and other mirror sites for
 Linux-based GNU systems.
 
 @item arm-*-riscix
-The ARM2 or ARM3 processor running RISC iX, Acorn's port of BSD Unix.  If
-you are running a version of RISC iX prior to 1.2 then you must specify
-the version number during configuration.  Note that the assembler
-shipped with RISC iX does not support stabs debugging information; a
-new version of the assembler, with stabs support included, is now
-available from Acorn.
+The ARM2 or ARM3 processor running RISC iX, Acorn's port of BSD Unix.
+If you are running a version of RISC iX prior to 1.2 then you must
+specify the version number during configuration.  Note that the
+assembler shipped with RISC iX does not support stabs debugging
+information; a new version of the assembler, with stabs support
+included, is now available from Acorn and via ftp
+@file{ftp.acorn.com:/pub/riscix/as+xterm.tar.Z}.  To enable stabs
+debugging, pass @samp{--with-gnu-as} to configure.
+
+You will need to install GNU @file{sed} before you can run configure.
 
 @item a29k
 AMD Am29k-family processors.  These are normally used in embedded
@@ -2010,8 +2053,8 @@ $ assign /system /translation=concealed -
 
 @noindent
 with the appropriate disk and directory name.  If you are going to be
-using libg++, this is where the libg++ install procedure will install
-the libg++ header files.
+using a C++ runtime library, this is where its install procedure will install
+its header files.
 
 @item
 Obtain the file @file{gcc-cc1plus.exe}, and place this in the same
@@ -2283,7 +2326,7 @@ are already suitable for ANSI C and GNU CC, nothing special need be
 done).
 
 @code{GPLUS_INCLUDE_DIR} means the same thing for native and cross.  It
-is where @code{g++} looks first for header files.  @code{libg++}
+is where @code{g++} looks first for header files.  The C++ library
 installs only target independent header files in that directory.
 
 @code{LOCAL_INCLUDE_DIR} is used only for a native compiler.  It is

@@ -62,7 +62,7 @@ Boston, MA 02111-1307, USA. */
 # include <string.h>
 #else
 # ifdef HAVE_STRINGS_H
-#  inclued <strings.h>
+#  include <strings.h>
 #endif
 #endif
 
@@ -1230,7 +1230,7 @@ main (argc, argv)
   /* Target-name to write with the dependency information.  */
   char *deps_target = 0;
 
-#ifdef RLIMIT_STACK
+#if defined (RLIMIT_STACK) && defined (HAVE_GETRLIMIT) && defined (HAVE_SETRLIMIT)
   /* Get rid of any avoidable limit on stack size.  */
   {
     struct rlimit rlim;
@@ -1241,7 +1241,7 @@ main (argc, argv)
     rlim.rlim_cur = rlim.rlim_max;
     setrlimit (RLIMIT_STACK, &rlim);
   }
-#endif /* RLIMIT_STACK defined */
+#endif
 
 #ifdef SIGPIPE
   signal (SIGPIPE, pipe_closed);

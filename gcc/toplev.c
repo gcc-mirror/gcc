@@ -587,10 +587,10 @@ int flag_inhibit_size_directive = 0;
    the generated assembly code (to make it more readable).  This option
    is generally only of use to those who actually need to read the
    generated assembly code (perhaps while debugging the compiler itself).
-   -fverbose-asm is the default.  -fno-verbose-asm causes the extra information
+   -fno-verbose-asm, the default, causes the extra information
    to be omitted and is useful when comparing two assembler files.  */
 
-int flag_verbose_asm = 1;
+int flag_verbose_asm = 0;
 
 /* -dA causes debug commentary information to be produced in
    the generated assembly code (to make it more readable).  This option
@@ -959,7 +959,7 @@ get_run_time ()
   return (rusage.ru_utime.tv_sec * 1000000 + rusage.ru_utime.tv_usec
 	  + rusage.ru_stime.tv_sec * 1000000 + rusage.ru_stime.tv_usec);
 #else /* VMS */
-  times (&vms_times);
+  times ((void *) &vms_times);
   return (vms_times.proc_user_time + vms_times.proc_system_time) * 10000;
 #endif
 #endif
@@ -3698,7 +3698,7 @@ main (argc, argv, envp)
     --p;
   progname = p;
 
-#ifdef RLIMIT_STACK
+#if defined (RLIMIT_STACK) && defined (HAVE_GETRLIMIT) && defined (HAVE_SETRLIMIT)
   /* Get rid of any avoidable limit on stack size.  */
   {
     struct rlimit rlim;
@@ -3708,7 +3708,7 @@ main (argc, argv, envp)
     rlim.rlim_cur = rlim.rlim_max;
     setrlimit (RLIMIT_STACK, &rlim);
   }
-#endif /* RLIMIT_STACK */
+#endif
 
   signal (SIGFPE, float_signal);
 

@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running SCO Unix System V 3.2 Version 5.
-   Copyright (C) 1992, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Kean Johnston (hug@netcom.com)
 
 This file is part of GNU CC.
@@ -828,12 +828,11 @@ dtors_section ()							\
        %{!Xc:%{Xk:values-Xk.o%s} \
         %{!Xk:%{Xt:values-Xt.o%s} \
          %{!Xt:values-Xa.o%s}}}}}} \
-  %{mcoff:crtbeginS.o%s} \
-  %{!mcoff:%{!static:crtbegin.o%s}%{static:crtbeginS.o%s}}"
+  %{mcoff:crtbeginS.o%s} %{!mcoff:crtbegin.o%s}"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
- "%{!mcoff:%{!static:crtend.o%s}%{static:crtendS.o%s}} \
+ "%{!mcoff:crtend.o%s} \
   %{mcoff:crtendS.o%s} \
   %{pg:gcrtn.o%s}%{!pg:crtn.o%s}"
 

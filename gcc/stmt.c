@@ -1565,7 +1565,10 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   body = gen_rtx (ASM_OPERANDS, VOIDmode,
 		  TREE_STRING_POINTER (string), "", 0, argvec, constraints,
 		  filename, line);
-  MEM_VOLATILE_P (body) = vol;
+
+  /* The only use of BODY is if no outputs are specified, so set
+     it volatile, at least for now.  */
+  MEM_VOLATILE_P (body) = 1;
 
   /* Eval the inputs and put them into ARGVEC.
      Put their constraints into ASM_INPUTs and store in CONSTRAINTS.  */
@@ -4026,9 +4029,13 @@ expand_decl_cleanup_no_eh (decl, cleanup)
      tree decl, cleanup;
 {
   int save_eh = using_eh_for_cleanups_p;
+  int result;
+
   using_eh_for_cleanups_p = 0;
-  expand_decl_cleanup (decl, cleanup);
+  result = expand_decl_cleanup (decl, cleanup);
   using_eh_for_cleanups_p = save_eh;
+
+  return result;
 }
 
 /* Arrange for the top element of the dynamic cleanup chain to be

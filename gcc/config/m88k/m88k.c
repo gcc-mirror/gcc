@@ -27,7 +27,6 @@ Boston, MA 02111-1307, USA.  */
 #include <time.h>
 #include <ctype.h>
 
-#include "assert.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -501,9 +500,10 @@ expand_block_move (dest_mem, src_mem, operands)
   int bytes = (constp ? INTVAL (operands[2]) : 0);
   int target = (int) m88k_cpu;
 
-  assert (PROCESSOR_M88100 == 0);
-  assert (PROCESSOR_M88110 == 1);
-  assert (PROCESSOR_M88000 == 2);
+  if (! (PROCESSOR_M88100 == 0
+	 && PROCESSOR_M88110 == 1
+	 && PROCESSOR_M88000 == 2))
+    abort ();
 
   if (constp && bytes <= 0)
     return;

@@ -1,6 +1,6 @@
 /* Utilities to execute a program in a subprocess (possibly linked by pipes
    with other subprocesses), and wait for it.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -236,7 +236,7 @@ extern int _spawnvp ();
 /* This is a kludge to get around the Microsoft C spawn functions' propensity
    to remove the outermost set of double quotes from all arguments.  */
 
-const char * const *
+char * const *
 fix_argv (argvec)
      char **argvec;
 {
@@ -267,7 +267,7 @@ fix_argv (argvec)
         argvec[i] = temp;
       }
 
-  return (const char * const *) argvec;
+  return (char * const *) argvec;
 }
 
 #endif /* ! defined (__CYGWIN32__) */
@@ -278,7 +278,8 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
      char * const *argv;
      const char *this_pname;
      const char *temp_base;
-     char **errmsg_fmt, **errmsg_arg;
+     char **errmsg_fmt;
+     const char **errmsg_arg;
      int flags;
 {
   int pid;
@@ -286,7 +287,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
   if ((flags & PEXECUTE_ONE) != PEXECUTE_ONE)
     abort ();
   pid = (flags & PEXECUTE_SEARCH ? _spawnvp : _spawnv)
-    (_P_NOWAIT, program, fix_argv(argv));
+    (_P_NOWAIT, program, fix_argv (argv));
   if (pid == -1)
     {
       *errmsg_fmt = install_error_msg;

@@ -501,7 +501,7 @@ execute_cfa_insn (void *p, struct frame_state_internal *state,
 /* Called from crtbegin.o to register the unwind info for an object.  */
 
 void
-__register_frame (void *begin, struct object *ob)
+__register_frame_info (void *begin, struct object *ob)
 {
   ob->fde_begin = begin;
 
@@ -518,7 +518,7 @@ __register_frame (void *begin, struct object *ob)
    collect2.  */
 
 void
-__register_frame_table (void *begin, struct object *ob)
+__register_frame_info_table (void *begin, struct object *ob)
 {
   ob->fde_begin = begin;
   ob->fde_array = begin;
@@ -533,7 +533,7 @@ __register_frame_table (void *begin, struct object *ob)
 /* Called from crtend.o to deregister the unwind info for an object.  */
 
 void
-__deregister_frame (void *begin)
+__deregister_frame_info (void *begin)
 {
   struct object **p = &objects;
 

@@ -6,8 +6,8 @@ input file gcc.texi.
    Published by the Free Software Foundation 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
-Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
+Free Software Foundation, Inc.
 
    Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -736,6 +736,15 @@ pattern in to accomplish a certain task.
      such as a pointer to a global table, must be restored after
      control flow is branched to the handler of an exception.  There
      are no arguments.
+
+`builtin_setjmp_receiver'
+     This pattern, if defined, contains code needed at the site of an
+     builtin setjmp that isn't needed at the site of a nonlocal goto.
+     You will not normally need to define this pattern.  A typical
+     reason why you might need this pattern is if some value, such as a
+     pointer to a global table, must be restored.  This pattern is
+     called immediate after the call to `__dummy' has been emitted.
+     There are no arguments.
 
 
 File: gcc.info,  Node: Pattern Ordering,  Next: Dependent Patterns,  Prev: Standard Names,  Up: Machine Desc

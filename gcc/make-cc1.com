@@ -24,7 +24,7 @@ $!
 $!	Compiler-specific setup (assume GNU C, then override as necessary):
 $!
 $ CC	 = "gcc"
-$ CFLAGS = "/Debug/noVerbos/CC1=""-mpcc-alignment"""
+$ CFLAGS = "/Opt=2/Debug/noVerbos/CC1=""-mpcc-alignment"""
 $ LIBS	 = "gnu_cc:[000000]gcclib.olb/Libr,sys$library:vaxcrtl.olb/Libr"
 $ if p1.eqs."GNUC"
 $ then

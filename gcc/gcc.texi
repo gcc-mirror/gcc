@@ -96,7 +96,7 @@ Published by the Free Software Foundation
 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -144,7 +144,7 @@ original English.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 4 December 1997
+@center Last updated 7 January 1998
 @sp 1
 @c The version number appears three times more in this file.
 

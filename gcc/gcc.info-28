@@ -6,8 +6,8 @@ input file gcc.texi.
    Published by the Free Software Foundation 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free
-Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
+Free Software Foundation, Inc.
 
    Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -301,6 +301,7 @@ Index
 * bugs:                                  Bugs.
 * bugs, known:                           Trouble.
 * builtin functions:                     C Dialect Options.
+* builtin_setjmp_receiver instruction pattern: Standard Names.
 * byte writes (29k):                     AMD29K Options.
 * byte_mode:                             Machine Modes.
 * BYTES_BIG_ENDIAN:                      Storage Layout.
@@ -322,6 +323,7 @@ Index
 * C++ named return value:                Naming Results.
 * C++ options, command line:             C++ Dialect Options.
 * C++ pragmas, effect on inlining:       C++ Interface.
+* C++ runtime library:                   Installation.
 * C++ signatures:                        C++ Signatures.
 * C++ source file suffixes:              Invoking G++.
 * C++ static data, declaring and defining: Static Definitions.
@@ -1056,6 +1058,7 @@ Index
 * Libraries:                             Link Options.
 * library subroutine names:              Library Calls.
 * LIBRARY_PATH:                          Environment Variables.
+* libstdc++:                             Installation.
 * LIMIT_RELOAD_CLASS:                    Register Classes.
 * link options:                          Link Options.
 * LINK_LIBGCC_SPECIAL:                   Driver.
