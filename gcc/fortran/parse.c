@@ -1409,7 +1409,6 @@ parse_interface (void)
   gfc_interface_info save;
   gfc_state_data s1, s2;
   gfc_statement st;
-  int seen_body;
 
   accept_statement (ST_INTERFACE);
 
@@ -1420,7 +1419,6 @@ parse_interface (void)
 	 || current_interface.type == INTERFACE_USER_OP) ? gfc_new_block : NULL;
 
   push_state (&s1, COMP_INTERFACE, sym);
-  seen_body = 0;
   current_state = COMP_NONE;
 
 loop:
@@ -1446,7 +1444,6 @@ loop:
 
     case ST_MODULE_PROC:	/* The module procedure matcher makes
 				   sure the context is correct.  */
-      seen_body = 1;
       accept_statement (st);
       gfc_free_namespace (gfc_current_ns);
       goto loop;
@@ -1512,8 +1509,6 @@ decl:
       goto decl;
     }
 
-  seen_body = 1;
-
   current_interface = save;
   gfc_add_interface (prog_unit);
 
@@ -1521,9 +1516,6 @@ decl:
   goto loop;
 
 done:
-  if (!seen_body)
-    gfc_error ("INTERFACE block at %C is empty");
-
   pop_state ();
 }
 
