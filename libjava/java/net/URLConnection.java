@@ -108,7 +108,7 @@ public abstract class URLConnection
    * This is the default value that will be used to determine whether or
    * not user interaction should be allowed.
    */
-  private static boolean defaultAllowUserInteraction = false;
+  private static boolean defaultAllowUserInteraction;
 
   /**
    * This is the default flag indicating whether or not to use caches to
@@ -126,7 +126,7 @@ public abstract class URLConnection
    * Indicates whether or not a connection has been established to the
    * destination specified in the URL
    */
-  protected boolean connected = false;
+  protected boolean connected;
 
   /**
    * Indicates whether or not input can be read from this URL
@@ -136,7 +136,7 @@ public abstract class URLConnection
   /**
    * Indicates whether or not output can be sent to this URL
    */
-  protected boolean doOutput = false;
+  protected boolean doOutput;
 
   /**
    * If this flag is set, the protocol is allowed to cache data whenever
@@ -157,7 +157,7 @@ public abstract class URLConnection
    * modified more recently than the date set in this variable.  That date
    * should be specified as the number of seconds since 1/1/1970 GMT.
    */
-  protected long ifModifiedSince = 0L;
+  protected long ifModifiedSince;
 
   /**
    * This is the URL associated with this connection
@@ -165,8 +165,10 @@ public abstract class URLConnection
   protected URL url;
 
   private static Hashtable handlers = new Hashtable();
-  private static SimpleDateFormat dateFormat1, dateFormat2, dateFormat3;
-  private static boolean dateformats_initialized = false;
+  private static SimpleDateFormat dateFormat1;
+  private static SimpleDateFormat dateFormat2;
+  private static SimpleDateFormat dateFormat3;
+  private static boolean dateformats_initialized;
 
   /**
    * Creates a URL connection to a given URL. A real connection is not made.
@@ -430,10 +432,10 @@ public abstract class URLConnection
     String type = getContentType();
     ContentHandler ch = setContentHandler(type);
 
-    if (ch == null)
-      return getInputStream();
+    if (ch != null)
+      return ch.getContent(this);
 
-    return ch.getContent(this);
+    return getInputStream();
   }
 
   /**
