@@ -266,7 +266,6 @@ case "${host}" in
   vax-*-ultrix2*)
     # The old BSD pcc isn't up to compiling parts of gdb so use gcc
     tentative_cc=gcc
-    host_makefile_frag="${host_makefile_frag} config/mh-vaxult2"
     ;;
   *-*-solaris2*)
     host_makefile_frag="${host_makefile_frag} config/mh-solaris"
@@ -275,7 +274,6 @@ case "${host}" in
     # Sun's C compiler needs the -J flag to be able to compile cp-parse.c
     # without overflowing the jump tables (-J says to use a 32 bit table)
     tentative_cc="cc -J"
-    host_makefile_frag="${host_makefile_frag} config/mh-sun3"
     ;;
   *-hp-hpux[78]*)
     tentative_cc="cc -Wp,-H256000"
@@ -297,7 +295,6 @@ case "${host}" in
   *-*-lynxos*)
     # /bin/cc is less than useful for our purposes.  Always use GCC
     tentative_cc="/bin/gcc"
-    host_makefile_frag="${host_makefile_frag} config/mh-lynxos"
     ;;
   *-*-sysv4*)
     host_makefile_frag="${host_makefile_frag} config/mh-sysv4"

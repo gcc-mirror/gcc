@@ -1,3 +1,29 @@
+2002-04-19  Nathanael Nerode  <neroden@twcny.rr.com>
+
+	* mh-a68bsd: clean out dead code
+	* mh-apollo68: clean out dead code
+	* mh-cxux: clean out dead code
+	* mh-decstation: clean out dead code
+	* mh-dgux: clean out dead code
+	* mh-dgux386: clean out dead code
+	* mh-hp300: clean out dead code
+	* mh-hpux: clean out dead code
+	* mh-hpux8: clean out dead code
+	* mh-interix: clean out dead code
+	* mh-irix4: clean out dead code
+	* mh-lynxrs6k: clean out dead code
+	* mh-mingw32: clean out dead code
+	* mh-ncr3000: clean out dead code
+	* mh-ncrsvr43: clean out dead code
+	* mh-necv4: clean out dead code
+	* mh-openedition: clean out dead code
+	* mh-riscos: clean out dead code
+	* mh-sco: clean out dead code
+	* mh-sysv4: clean out dead code
+	* mh-lynxos: removed, contained only dead code
+	* mh-vaxult2: removed, contained only dead code
+	* mh-sun3: removed, contained only dead code
+
 2002-04-15  Keith Seitz  <keiths@redhat.com>
 
 	* acinclude.m4 (CYG_AC_PATH_TCLCONFIG): Search the win/ directory,
