@@ -4061,11 +4061,20 @@ s390_output_constant_pool (start_label, end_label)
      rtx start_label;
      rtx end_label;
 {
-  if (TARGET_64BIT)
-    readonly_data_section ();
-  ASM_OUTPUT_ALIGN (asm_out_file, TARGET_64BIT ? 3 : 2);
+  if (TARGET_64BIT) 
+    {
+      readonly_data_section ();
+      ASM_OUTPUT_ALIGN (asm_out_file, 3);
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", 
+                                 CODE_LABEL_NUMBER (start_label));
+    } 
+  else 
+    {
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+                                 CODE_LABEL_NUMBER (start_label));
+      ASM_OUTPUT_ALIGN (asm_out_file, 2);      
+    }
 
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (start_label));
   s390_pool_count = 0;
   output_constant_pool (current_function_name, current_function_decl);
   s390_pool_count = -1;
