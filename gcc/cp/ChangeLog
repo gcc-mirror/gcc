@@ -1,3 +1,8 @@
+1998-07-14  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl2.c (add_function): Move error message ...
+	(arg_assoc_namespace): ... from here.
+
 1998-07-14  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* parse.y (namespace_qualifier): Fix multiple level handling.

@@ -4149,7 +4149,26 @@ add_function (k, fn)
 {
   if (ovl_member (fn, k->functions))
     return 0;
-  k->functions = build_overload (fn, k->functions);
+  /* We must find only functions, or exactly one non-function. */
+  if (k->functions && is_overloaded_fn (k->functions)
+      && is_overloaded_fn (fn))
+    k->functions = build_overload (fn, k->functions);
+  else 
+    if(k->functions)
+      {
+	tree f1 = OVL_CURRENT (k->functions);
+	tree f2 = fn;
+	if (is_overloaded_fn (f1))
+	  {
+	    fn = f1; f1 = f2; f2 = fn;
+	  }
+	cp_error_at ("`%D' is not a function,", f1);
+	cp_error_at ("  conflict with `%D'", f2);
+	cp_error ("  in call to `%D'", k->name);
+	return 1;
+      }
+    else
+      k->functions = fn;
   return 0;
 }
 
@@ -4169,13 +4188,6 @@ arg_assoc_namespace (k, scope)
   value = namespace_binding (k->name, scope);
   if (!value)
     return 0;
-  
-  if (!is_overloaded_fn (value))
-    {
-      cp_error_at ("`%D' is not a function", value);
-      cp_error ("in call to `%D'", k->name);
-      return 1;
-    }
   
   for (; value; value = OVL_NEXT (value))
     if (add_function (k, OVL_CURRENT (value)))
