@@ -596,10 +596,10 @@
 ;; Reloading and elimination of the frame pointer can
 ;; sometimes cause this optimization to be missed.
 (define_peephole2
-  [(set (match_operand:SI 0 "register_operand" "=l")
-	(match_operand:SI 1 "const_int_operand" "M"))
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 1 "const_int_operand" ""))
    (set (match_dup 0)
-	(plus:SI (match_dup 0) (match_operand:SI 2 "register_operand" "k")))]
+	(plus:SI (match_dup 0) (match_operand:SI 2 "register_operand" "")))]
   "TARGET_THUMB
    && REGNO (operands[2]) == STACK_POINTER_REGNUM 
    && (unsigned HOST_WIDE_INT) (INTVAL (operands[1])) < 1024
@@ -2334,11 +2334,11 @@
 ; insns.
 
 (define_split
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(ior:SI (and:SI (not:SI (match_operand:SI 1 "s_register_operand" "r"))
-			(not:SI (match_operand:SI 2 "arm_rhs_operand" "rI")))
-		(match_operand:SI 3 "arm_rhs_operand" "rI")))
-   (clobber (match_operand:SI 4 "s_register_operand" "=r"))]
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(ior:SI (and:SI (not:SI (match_operand:SI 1 "s_register_operand" ""))
+			(not:SI (match_operand:SI 2 "arm_rhs_operand" "")))
+		(match_operand:SI 3 "arm_rhs_operand" "")))
+   (clobber (match_operand:SI 4 "s_register_operand" ""))]
   "TARGET_ARM"
   [(set (match_dup 4) (and:SI (ior:SI (match_dup 1) (match_dup 2))
 			      (not:SI (match_dup 3))))
