@@ -3382,17 +3382,15 @@
   [(set_attr "type"   "arith_media,store_media")
    (set_attr "length" "8,4")])
 
-; N.B. we want sign-extension here because
-; - we need to be consistent with LOAD_EXTEND_OP and movqi
-; - only sign extension allows us to do signed compares transparently.
-;  unsigned compares don't care about the kind of extension as long as
-;   it's consistent.
+; N.B. This should agree with LOAD_EXTEND_OP and movqi.
+; Because we use zero extension, we can't provide signed QImode compares
+; using a simple compare or conditional banch insn.
 (define_insn "truncdiqi2"
   [(set (match_operand:QI 0 "general_movdst_operand" "=r,m")
 	(truncate:QI (match_operand:DI 1 "register_operand" "r,r")))]
   "TARGET_SHMEDIA"
   "@
-	ori	%1, -256, %0
+	and	%1, 255, %0
 	st%M0.b	%m0, %1"
   [(set_attr "type"   "arith_media,store")])
 
@@ -3741,7 +3739,7 @@
   "@
 	add.l	%1, r63, %0
 	movi	%1, %0
-	ld%M1.b	%m1, %0
+	ld%M1.ub	%m1, %0
 	st%M0.b	%m0, %1"
   [(set_attr "type" "arith_media,arith_media,load_media,store_media")])
 
