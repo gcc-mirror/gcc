@@ -1,3 +1,25 @@
+2000-06-13  Anthony Williams  <anthony@anthonyw.cjb.net>
+
+	* testsuite/23_containers/bitset_ctor.cc: Qualify reverse wth std::.
+
+	* testsuite/27_io/filebuf.cc: Changed calls to
+	fpos<>._M_position() to implicit calls to operator streamoff().
+	* testsuite/27_io/iostream_objects.cc: Removed #include <ciso646>,
+	as not needed. Revert, as part of standard.
+	* testsuite/27_io/ostream_inserter_arith.cc: Replaced explicit
+	call to numpunct<>._M_init() with overrides of the appropriate
+	virtual functions.
+
+	* testsuite/27_io/stringstream.cc: Removed unnecessary char *
+	pointers from test01, so no need to call base(), which isn't
+	guaranteed to be implemented as iterators may themselves be pointers
+	* testsuite/27_io/stringbuf.cc: Removed unnecessary calls to
+	_M_position() - use implicit conversion to streamoff instead
+
+2000-06-13  Thomas Holenstein  <thomas@hex.ch>
+ 
+        * bits/stl_iterator.h: Added inline to operators == to >=.
+
 2000-06-13  Brent Verner <brent@rcfile.org>
 
 	* bits/streambuf.tcc: repaired _S_copy_streambufs()

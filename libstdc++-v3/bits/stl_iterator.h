@@ -1043,35 +1043,41 @@ public:
 // forward iterator requirements
 
 template<typename _IteratorL, typename _IteratorR, typename _Container>
-bool operator==(const __normal_iterator<_IteratorL, _Container>& __lhs,
-                const __normal_iterator<_IteratorR, _Container>& __rhs)
+inline bool
+operator==(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	   const __normal_iterator<_IteratorR, _Container>& __rhs)
 { return __lhs.base() == __rhs.base(); }
 
 template<typename _IteratorL, typename _IteratorR, typename _Container>
-bool operator!=(const __normal_iterator<_IteratorL, _Container>& __lhs,
-                const __normal_iterator<_IteratorR, _Container>& __rhs)
+inline bool
+operator!=(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	   const __normal_iterator<_IteratorR, _Container>& __rhs)
 { return !(__lhs == __rhs); }
 
 // random access iterator requirements
 
 template<typename _IteratorL, typename _IteratorR, typename _Container>
-bool operator<(const __normal_iterator<_IteratorL, _Container>& __lhs,
-               const __normal_iterator<_IteratorR, _Container>& __rhs)
+inline bool 
+operator<(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	  const __normal_iterator<_IteratorR, _Container>& __rhs)
 { return __lhs.base() < __rhs.base(); }
 
 template<typename _IteratorL, typename _IteratorR, typename _Container>
-bool operator>(const __normal_iterator<_IteratorL, _Container>& __lhs,
-               const __normal_iterator<_IteratorR, _Container>& __rhs)
+inline bool
+operator>(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	  const __normal_iterator<_IteratorR, _Container>& __rhs)
 { return __rhs < __lhs; }
 
 template<typename _IteratorL, typename _IteratorR, typename _Container>
-bool operator<=(const __normal_iterator<_IteratorL, _Container>& __lhs,
-                const __normal_iterator<_IteratorR, _Container>& __rhs)
+inline bool
+operator<=(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	   const __normal_iterator<_IteratorR, _Container>& __rhs)
 { return !(__rhs < __lhs); }
 
 template<typename _IteratorL, typename _IteratorR, typename _Container>
-bool operator>=(const __normal_iterator<_IteratorL, _Container>& __lhs,
-                const __normal_iterator<_IteratorR, _Container>& __rhs)
+inline bool
+operator>=(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	   const __normal_iterator<_IteratorR, _Container>& __rhs)
 { return !(__lhs < __rhs); }
 
 template<typename _Iterator, typename _Container>
