@@ -41,15 +41,15 @@
     // NB: Offsets into ctype<char>::_M_table force a particular size
     // on the mask type. Because of this, we don't use an enum.
     typedef unsigned int        mask;   
-    static const mask upper     = 1 << 0;
-    static const mask lower     = 1 << 1;
-    static const mask alpha     = 1 << 2;
-    static const mask digit     = 1 << 3;
-    static const mask xdigit    = 1 << 4;
-    static const mask space     = 1 << 5;
-    static const mask print     = 1 << 6;
-    static const mask graph     = 1 << 7;
-    static const mask cntrl     = 1 << 8;
-    static const mask punct     = 1 << 9;
-    static const mask alnum     = 1 << 10;
+    static const mask upper     = _ISUPPER;
+    static const mask lower     = _ISLOWER;
+    static const mask alpha     = _ISALPHA;
+    static const mask digit     = _ISDIGIT;
+    static const mask xdigit    = _ISXDIGIT;
+    static const mask space     = _ISSPACE;
+    static const mask print     = _ISPRINT;
+    static const mask graph     = _ISGRAPH;
+    static const mask cntrl     = _ISCNTRL;
+    static const mask punct     = _ISPUNCT;
+    static const mask alnum     = _ISALNUM;
   };
