@@ -67,7 +67,15 @@ typedef struct cp_token GTY (())
 typedef struct cp_token *cp_token_position;
 DEF_VEC_MALLOC_P (cp_token_position);
 
-static cp_token eof_token = {CPP_EOF, 0, 0, 0, 0, NULL_TREE, {0, 0}};
+static const cp_token eof_token =
+{
+  CPP_EOF, RID_MAX, 0, 0, 0, NULL_TREE,
+#if USE_MAPPED_LOCATION
+  0
+#else
+  {0, 0}
+#endif
+};
 
 /* The cp_lexer structure represents the C++ lexer.  It is responsible
    for managing the token stream from the preprocessor and supplying
@@ -78,10 +86,10 @@ typedef struct cp_lexer GTY (())
 {
   /* The memory allocated for the buffer.  NULL if this lexer does not
      own the token buffer.  */
-  cp_token * GTY ((length ("(%h.buffer_end - %h.buffer)"))) buffer;
-  /* If non-null, a pointer just past the end of the memory allocated
-     for the buffer.  */
-  cp_token * GTY ((skip)) buffer_end;
+  cp_token * GTY ((length ("%h.buffer_length"))) buffer;
+  /* If the lexer owns the buffer, this is the number of tokens in the
+     buffer.  */
+  size_t buffer_length;
   
   /* A pointer just past the last available token.  The tokens
      in this lexer are [buffer, last_token). */
@@ -133,8 +141,6 @@ static cp_token_position cp_lexer_token_position
   (cp_lexer *, bool);
 static cp_token *cp_lexer_token_at
   (cp_lexer *, cp_token_position);
-static void cp_lexer_grow_buffer
-  (cp_lexer *);
 static void cp_lexer_get_preprocessor_token
   (cp_lexer *, cp_token *);
 static inline cp_token *cp_lexer_peek_token
@@ -224,8 +230,12 @@ static FILE *cp_lexer_debug_stream;
 static cp_lexer *
 cp_lexer_new_main (void)
 {
-  cp_lexer *lexer;
   cp_token first_token;
+  cp_lexer *lexer;
+  cp_token *pos;
+  size_t alloc;
+  size_t space;
+  cp_token *buffer;
 
   /* Tell cpplib we want CPP_PRAGMA tokens. */
   cpp_get_options (parse_in)->defer_pragmas = true;
@@ -242,30 +252,38 @@ cp_lexer_new_main (void)
   /* Allocate the memory.  */
   lexer = GGC_CNEW (cp_lexer);
 
-  /* Create the buffer.  */
-  lexer->buffer = ggc_calloc (CP_LEXER_BUFFER_SIZE, sizeof (cp_token));
-  lexer->buffer_end = lexer->buffer + CP_LEXER_BUFFER_SIZE;
- 
-  /* There is one token in the buffer.  */
-  lexer->last_token = lexer->buffer;
-  lexer->next_token = lexer->buffer;
-  *lexer->next_token = first_token;
-
-  lexer->saved_tokens = VEC_alloc (cp_token_position, CP_SAVED_TOKEN_STACK);
-
 #ifdef ENABLE_CHECKING  
   /* Initially we are not debugging.  */
   lexer->debugging_p = false;
 #endif /* ENABLE_CHECKING */
+  lexer->saved_tokens = VEC_alloc (cp_token_position, CP_SAVED_TOKEN_STACK);
+	 
+  /* Create the buffer.  */
+  alloc = CP_LEXER_BUFFER_SIZE;
+  buffer = ggc_alloc (alloc * sizeof (cp_token));
 
-  /* Get the rest of the tokens from the preprocessor. */
-  while (lexer->last_token->type != CPP_EOF)
+  /* Put the first token in the buffer.  */
+  space = alloc;
+  pos = buffer;
+  *pos = first_token;
+  
+  /* Get the remaining tokens from the preprocessor. */
+  while (pos->type != CPP_EOF)
     {
-      lexer->last_token++;
-      if (lexer->last_token == lexer->buffer_end)
-	cp_lexer_grow_buffer (lexer);
-      cp_lexer_get_preprocessor_token (lexer, lexer->last_token);
+      pos++;
+      if (!--space)
+	{
+	  space = alloc;
+	  alloc *= 2;
+	  buffer = ggc_realloc (buffer, alloc * sizeof (cp_token));
+	  pos = buffer + space;
+	}
+      cp_lexer_get_preprocessor_token (lexer, pos);
     }
+  lexer->buffer = buffer;
+  lexer->buffer_length = alloc - space;
+  lexer->last_token = pos;
+  lexer->next_token = lexer->buffer_length ? buffer : (cp_token *)&eof_token;
 
   /* Pragma processing (via cpp_handle_deferred_pragma) may result in
      direct calls to c_lex.  Those callers all expect c_lex to do
@@ -287,8 +305,9 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
   cp_lexer *lexer = GGC_CNEW (cp_lexer);
 
   /* We do not own the buffer.  */
-  lexer->buffer = lexer->buffer_end = NULL;
-  lexer->next_token = first == last ? &eof_token : first;
+  lexer->buffer = NULL;
+  lexer->buffer_length = 0;
+  lexer->next_token = first == last ? (cp_token *)&eof_token : first;
   lexer->last_token = last;
   
   lexer->saved_tokens = VEC_alloc (cp_token_position, CP_SAVED_TOKEN_STACK);
@@ -347,40 +366,8 @@ cp_lexer_saving_tokens (const cp_lexer* lexer)
   return VEC_length (cp_token_position, lexer->saved_tokens) != 0;
 }
 
-/* If the buffer is full, make it bigger.  */
-static void
-cp_lexer_grow_buffer (cp_lexer* lexer)
-{
-  cp_token *old_buffer;
-  cp_token *new_buffer;
-  ptrdiff_t buffer_length;
-
-  /* This function should only be called when buffer is full. */
-  gcc_assert (lexer->last_token == lexer->buffer_end);
-
-  /* Remember the current buffer pointer.  It will become invalid,
-     but we will need to do pointer arithmetic involving this
-     value.  */
-  old_buffer = lexer->buffer;
-  /* Compute the current buffer size.  */
-  buffer_length = lexer->buffer_end - lexer->buffer;
-  /* Allocate a buffer twice as big.  */
-  new_buffer = ggc_realloc (lexer->buffer,
-			    2 * buffer_length * sizeof (cp_token));
-
-  /* Recompute buffer positions. */
-  lexer->buffer = new_buffer;
-  lexer->buffer_end = new_buffer + 2 * buffer_length;
-  lexer->last_token = new_buffer + (lexer->last_token - old_buffer);
-  lexer->next_token = new_buffer + (lexer->next_token - old_buffer);
-
-  /* Clear the rest of the buffer.  We never look at this storage,
-     but the garbage collector may.  */
-  memset (lexer->last_token, 0,
-	  (lexer->buffer_end - lexer->last_token) * sizeof(cp_token));
-}
-
-/* Store the next token from the preprocessor in *TOKEN.  */
+/* Store the next token from the preprocessor in *TOKEN.  Return true
+   if we reach EOF.  */
 
 static void
 cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
@@ -519,7 +506,7 @@ cp_lexer_peek_nth_token (cp_lexer* lexer, size_t n)
       ++token;
       if (token == lexer->last_token)
 	{
-	  token = &eof_token;
+	  token = (cp_token *)&eof_token;
 	  break;
 	}
       
@@ -551,7 +538,7 @@ cp_lexer_consume_token (cp_lexer* lexer)
       lexer->next_token++;
       if (lexer->next_token == lexer->last_token)
 	{
-	  lexer->next_token = &eof_token;
+	  lexer->next_token = (cp_token *)&eof_token;
 	  break;
 	}
       
@@ -591,7 +578,7 @@ cp_lexer_purge_token (cp_lexer *lexer)
       tok++;
       if (tok == lexer->last_token)
 	{
-	  tok = &eof_token;
+	  tok = (cp_token *)&eof_token;
 	  break;
 	}
     }

@@ -1,3 +1,17 @@
+2004-10-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/18095
+	* parser.c (eof_token): Make const, correctly initialize rid and
+	location fields.
+	(struct cp_lexer): Replace buffer_end pointer with buffer_length
+	count. Adjust.
+	(cp_lexer_new_main): Directly grow lexer's buffer here.  Don't
+	zero it out.
+	(cp_lexer_new_from_tokens): Adjust.
+	(cp_lexer_grow_buffer): Remove.
+	(cp_lexer_peek_nth_token, cp_lexer_consume_token,
+	cp_lexer_purge_token): Add const casts.
+
 2004-10-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18073
