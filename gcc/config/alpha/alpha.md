@@ -4820,7 +4820,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   "@
    jsr $26,(%0),0\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*
    bsr $26,$%0..ng
-   ldq $27,%0($29)\t\t!literal!%#\;jsr $26,($27),0\t\t!lituse_jsr!%#\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*"
+   ldq $27,%0($29)\t\t!literal!%#\;jsr $26,($27),%0\t\t!lituse_jsr!%#\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,*,16")])
 
@@ -4925,11 +4925,22 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 
 ;; Note that the DEC assembler expands "jmp foo" with $at, which
 ;; doesn't do what we want.
+(define_insn "*sibcall_osf_1_er"
+  [(call (mem:DI (match_operand:DI 0 "symbolic_operand" "R,s"))
+	 (match_operand 1 "" ""))
+   (use (reg:DI 29))]
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
+  "@
+   br $31,$%0..ng
+   ldq $27,%0($29)\t\t!literal!%#\;jmp $31,($27),%0\t\t!lituse_jsr!%#"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "*,8")])
+
 (define_insn "*sibcall_osf_1"
   [(call (mem:DI (match_operand:DI 0 "symbolic_operand" "R,s"))
 	 (match_operand 1 "" ""))
    (use (reg:DI 29))]
-  "TARGET_ABI_OSF"
+  "! TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "@
    br $31,$%0..ng
    lda $27,%0\;jmp $31,($27),%0"
@@ -6920,12 +6931,24 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,*,16")])
 
+(define_insn "*sibcall_value_osf_1_er"
+  [(set (match_operand 0 "" "")
+	(call (mem:DI (match_operand:DI 1 "symbolic_operand" "R,s"))
+	      (match_operand 2 "" "")))
+   (use (reg:DI 29))]
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
+  "@
+   br $31,$%1..ng
+   ldq $27,%1($29)\t\t!literal!%#\;jmp $31,($27),%1\t\t!lituse_jsr!%#"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "*,8")])
+
 (define_insn "*sibcall_value_osf_1"
   [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "symbolic_operand" "R,s"))
 	      (match_operand 2 "" "")))
    (use (reg:DI 29))]
-  "TARGET_ABI_OSF"
+  "! TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "@
    br $31,$%1..ng
    lda $27,%1\;jmp $31,($27),%1"
