@@ -146,7 +146,7 @@ ffi_closure_SYSV:
 	.size	 ffi_closure_SYSV,.ffi_closure_SYSV_end-ffi_closure_SYSV
 
 
-	.section	.eh_frame,"aw",@progbits
+	.section	.eh_frame,"a",@progbits
 .Lframe1:
 	.4byte	.LECIE1-.LSCIE1	# Length of Common Information Entry
 .LSCIE1:
@@ -345,7 +345,7 @@ ffi_closure_SYSV:
 
 
 
-	.section	.eh_frame,"aw",@progbits
+	.section	.eh_frame,"a",@progbits
 .Lframe1:
 	.4byte	.LECIE1-.LSCIE1	# Length of Common Information Entry
 .LSCIE1:
