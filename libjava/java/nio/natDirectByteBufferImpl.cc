@@ -65,9 +65,9 @@ java::nio::DirectByteBufferImpl::adjustAddress (RawData* address, jint offset)
 
 void
 java::nio::DirectByteBufferImpl::shiftDown
-(jint dst_offset, jint src_offset, jint count)
+(RawData* address, jint dst_offset, jint src_offset, jint count)
 {
-  jbyte* dst = reinterpret_cast<jbyte*> (address) + array_offset + dst_offset;
-  jbyte* src = reinterpret_cast<jbyte*> (address) + array_offset + src_offset;
+  jbyte* dst = reinterpret_cast<jbyte*> (address) + dst_offset;
+  jbyte* src = reinterpret_cast<jbyte*> (address) + src_offset;
   ::memmove(dst, src, count);
 }

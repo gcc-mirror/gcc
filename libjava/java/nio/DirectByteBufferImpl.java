@@ -136,15 +136,20 @@ final class DirectByteBufferImpl extends ByteBuffer
     return this;
   }
   
-  native void shiftDown (int dst_offset, int src_offset, int count);
+  static native void shiftDown(RawData address, int dst_offset, int src_offset, int count);
 
+  void shiftDown(int dst_offset, int src_offset, int count)
+  {
+    shiftDown(address, dst_offset, src_offset, count);
+  }
+  
   public ByteBuffer compact ()
   {
     int pos = position();
     if (pos > 0)
       {
 	int count = remaining();
-	shiftDown(0, pos, count);
+	shiftDown(address, 0, pos, count);
 	position(count);
 	limit(capacity());
       }

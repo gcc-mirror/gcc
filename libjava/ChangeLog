@@ -1,5 +1,16 @@
 2004-04-21  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/DirectByteBufferImpl.java
+	(shiftDown): Made static, give address as argument and
+	provide a convenience method that overwrites shiftDown in
+	ByteBufferImpl and calls the native shiftDown.
+	* java/nio/MappedByteBufferImpl.java
+	(): Use optimized method in DirectByteBufferImpl.
+	* java/nio/natDirectByteBufferImpl.cc
+	(shiftDown): Changed method signature. Removed usage of array_offset.
+
+2004-04-21  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/natPlainSocketImplPosix.cc
 	(SocketInputStream::read): Make sure returned data is a byte value.
 
