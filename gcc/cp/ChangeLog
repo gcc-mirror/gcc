@@ -1,3 +1,9 @@
+2003-07-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (coerce_template_template_parms, lookup_template_class,
+	can_complete_type_without_circularity, instantiate_class_template,
+	tsubst_decl, unify): Reformat.
+
 Thu Jul 31 01:07:41 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (maybe_make_one_only): Use mark_referenced.
