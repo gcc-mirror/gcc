@@ -849,8 +849,8 @@ dfs_accessible_p (binfo, data)
 /* DECL is a declaration from a base class of TYPE, which was the
    classs used to name DECL.  Return non-zero if, in the current
    context, DECL is accessible.  If TYPE is actually a BINFO node,
-   then the most derived class along the path indicated by BINFO is
-   the one used to name the DECL.  */
+   then we can tell in what context the access is occurring by looking
+   at the most derived class along the path indicated by BINFO.  */
 
 int 
 accessible_p (type, decl)

@@ -1,3 +1,11 @@
+1999-03-12  Mark Mitchell  <mark@markmitchell.com>
+
+	* lex.c (do_identifier): Correct call to enforce_access.
+	* search.c (accessible_p): Tweak comment.
+
+	* decl2.c (validate_nonmember_using_decl): Issue sensible
+	error-messages on bogus qualifiers.
+	
 1999-03-10  Mark Mitchell  <mark@markmitchell.com>
 
 	* semantics.c (begin_class_definition): Call build_self_reference.

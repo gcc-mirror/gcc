@@ -3045,7 +3045,7 @@ do_identifier (token, parsing, args)
     {
       /* Check access.  */
       if (IDENTIFIER_CLASS_VALUE (token) == id)
-	enforce_access (current_class_type, id);
+	enforce_access (DECL_REAL_CONTEXT(id), id);
       if (!processing_template_decl || DECL_TEMPLATE_PARM_P (id))
 	id = DECL_INITIAL (id);
     }
