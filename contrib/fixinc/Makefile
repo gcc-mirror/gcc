@@ -3,7 +3,7 @@
 ##
 ##  Makefile for constructing the "best" include fixer we can
 ##
-##  $Id: Makefile,v 1.1 1998/03/20 16:19:41 korbb Exp $
+##  $Id: Makefile,v 1.4 1998/08/05 10:20:10 korbb Exp $
 ##
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -26,7 +26,8 @@ fixincl.o: fixincl.x
 
 fixincl: $(OBJ)
 	if $(CC) -o $@ $(OBJ) $(LIB) ; then : ; else \
-	rm -f $@ ; echo false > $@ ; fi
+	rm -f $@ ; (echo "#! /bin/sh" ; echo exit 1 ) > $@ ; \
+	chmod 777 $@ ; fi
 
 regex.o: regex.c
 	$(CC) -g -DSTDC_HEADERS=1 -c regex.c
@@ -55,11 +56,13 @@ clean:
 	rm -f *.o fixincl
 
 install: fixincl.sh
-	@rm -f ../../gcc/fixincl.sh ; \
-		echo cp fixincl.sh ../../gcc ; \
-		cp fixincl.sh ../../gcc ; \
-		chmod +x ../../gcc/fixincl.sh
+	@rm -f $(DESTDIR)/fixinc.sh ; \
+		echo cp fixincl.sh $(DESTDIR)/fixinc.sh ; \
+		cp fixincl.sh $(DESTDIR)/fixinc.sh ; \
+		chmod 555 $(DESTDIR)/fixinc.sh
 	@echo check for fixincl copy...
 	@if ( ./fixincl -v > /dev/null 2>&1 ) ; then \
-		echo cp fixincl ../../gcc/fixincl ; \
-		cp fixincl ../../gcc/fixincl ; fi
+	    rm -f $(DESTDIR)/fixincl ; \
+		echo cp fixincl $(DESTDIR) ; \
+		cp fixincl $(DESTDIR) ; \
+		chmod 555 $(DESTDIR)/fixincl ; fi
