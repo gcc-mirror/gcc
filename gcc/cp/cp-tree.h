@@ -527,10 +527,6 @@ struct tree_srcloc
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is read-only.  */
 #define C_TYPE_FIELDS_READONLY(type) TYPE_LANG_FLAG_0 (type)
 
-/* Record in each node resulting from a binary operator
-   what operator was specified for it.  */
-#define C_EXP_ORIGINAL_CODE(exp) ((enum tree_code) TREE_COMPLEXITY (exp))
-
 /* Store a value in that field.  */
 #define C_SET_EXP_ORIGINAL_CODE(exp, code) \
   (TREE_COMPLEXITY (exp) = (int)(code))
