@@ -1,5 +1,19 @@
 1999-02-26  Tom Tromey  <tromey@cygnus.com>
 
+	* gjavah.c (add_class_decl): Only generate `#include' if outer
+	class is not the name of the class we are processing.  Correctly
+	append `.h' in #include.
+	(process_file): Clean up newlines around generated `#include's.
+	(decode_signature_piece): Correctly handle inner classes.
+	(struct include): New structure.
+	(all_includes): New global.
+	(print_include): New function.
+	(add_class_decl): Use it.
+	(process_file): Likewise.
+	(add_class_decl): Generate include for java-array.h if array
+	seen.
+	(process_file): Don't generate java-array.h include.
+
 	* gjavah.c (add_namelet): Check for standard package names here.
 	(add_class_decl): Don't check for standard package names here.
 
