@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,36 +36,39 @@
 --  This package contains types and procedures for interfacing to the
 --  underlying OS. It is used by the GNAT compiler and by tools associated
 --  with the GNAT compiler, and therefore works for the various operating
---  systems to which GNAT has been ported. This package will undoubtedly
---  grow as new services are needed by various tools.
+--  systems to which GNAT has been ported. This package will undoubtedly grow
+--  as new services are needed by various tools.
 
---  This package tends to use fairly low-level Ada in order to not bring
---  in large portions of the RTL. For example, functions return access
---  to string as part of avoiding functions returning unconstrained types.
+--  This package tends to use fairly low-level Ada in order to not bring in
+--  large portions of the RTL. For example, functions return access to string
+--  as part of avoiding functions returning unconstrained types.
 
---  Except where specifically noted, these routines are portable across
---  all GNAT implementations on all supported operating systems.
+--  Except where specifically noted, these routines are portable across all
+--  GNAT implementations on all supported operating systems.
 
 with System;
 with GNAT.Strings;
 
 package GNAT.OS_Lib is
-pragma Elaborate_Body (OS_Lib);
+   pragma Elaborate_Body (OS_Lib);
+
+   -----------------------
+   -- String Operations --
+   -----------------------
+
+   --  These are reexported from package Strings (which was introduced to
+   --  avoid different packages declarting different types unnecessarily).
+   --  See package GNAT.Strings for details.
 
    subtype String_Access is Strings.String_Access;
-   --  General purpose string access type. Some of the functions in this
-   --  package allocate string results on the heap, and return a value of
-   --  this type. Note that the caller is responsible for freeing this
-   --  String to avoid memory leaks.
 
    function "=" (Left, Right : in String_Access) return Boolean
      renames Strings."=";
 
    procedure Free (X : in out String_Access) renames Strings.Free;
-   --  This procedure is provided for freeing returned values of type
-   --  String_Access
 
    subtype String_List is Strings.String_List;
+
    function "=" (Left, Right : in String_List) return Boolean
      renames Strings."=";
 
@@ -79,15 +82,12 @@ pragma Elaborate_Body (OS_Lib);
      return String_List renames Strings."&";
 
    subtype String_List_Access is Strings.String_List_Access;
-   --  General purpose array and pointer for list of string accesses
+
    function "=" (Left, Right : in String_List_Access) return Boolean
      renames Strings."=";
 
    procedure Free (Arg : in out String_List_Access)
      renames Strings.Free;
-   --  Frees the given array and all strings that its elements reference,
-   --  and then sets the argument to null. Provided for freeing returned
-   --  values of this type (including Argument_List_Access).
 
    ---------------------
    -- Time/Date Stuff --
@@ -127,9 +127,9 @@ pragma Elaborate_Body (OS_Lib);
    function ">"  (X, Y : OS_Time) return Boolean;
    function ">=" (X, Y : OS_Time) return Boolean;
    function "<=" (X, Y : OS_Time) return Boolean;
-   --  Basic comparison operators on OS_Time with obvious meanings. Note
-   --  that these have Intrinsic convention, so for example it is not
-   --  permissible to create accesses to any of these functions.
+   --  Basic comparison operators on OS_Time with obvious meanings. Note that
+   --  these have Intrinsic convention, so for example it is not permissible
+   --  to create accesses to any of these functions.
 
    procedure GM_Split
      (Date    : OS_Time;
@@ -146,15 +146,15 @@ pragma Elaborate_Body (OS_Lib);
    -- File Stuff --
    ----------------
 
-   --  These routines give access to the open/creat/close/read/write level
-   --  of I/O routines in the typical C library (these functions are not
-   --  part of the ANSI C standard, but are typically available in all
-   --  systems). See also package Interfaces.C_Streams for access to the
-   --  stream level routines.
+   --  These routines give access to the open/creat/close/read/write level of
+   --  I/O routines in the typical C library (these functions are not part of
+   --  the ANSI C standard, but are typically available in all systems). See
+   --  also package Interfaces.C_Streams for access to the stream level
+   --  routines.
 
-   --  Note on file names. If a file name is passed as type String in any
-   --  of the following specifications, then the name is a normal Ada string
-   --  and need not be NUL-terminated. However, a trailing NUL character is
+   --  Note on file names. If a file name is passed as type String in any of
+   --  the following specifications, then the name is a normal Ada string and
+   --  need not be NUL-terminated. However, a trailing NUL character is
    --  permitted, and will be ignored (more accurately, the NUL and any
    --  characters that follow it will be ignored).
 
@@ -189,9 +189,8 @@ pragma Elaborate_Body (OS_Lib);
    function Open_Read_Write
      (Name  : String;
       Fmode : Mode) return File_Descriptor;
-   --  Open file Name for both reading and writing, returning file
-   --  descriptor. File descriptor returned is Invalid_FD if file cannot be
-   --  opened.
+   --  Open file Name for both reading and writing, returning file descriptor.
+   --  File descriptor returned is Invalid_FD if file cannot be opened.
 
    function Create_File
      (Name  : String;
@@ -224,29 +223,30 @@ pragma Elaborate_Body (OS_Lib);
       Name : out Temp_File_Name);
    --  Create and open for writing a temporary file in the current working
    --  directory. The name of the file and the File Descriptor are returned.
-   --  The File Descriptor returned is Invalid_FD in the case of failure.
-   --  No mode parameter is provided. Since this is a temporary file,
-   --  there is no point in doing text translation on it.
-   --  On some OSes, the maximum number of temp files that can be
-   --  created with this procedure may be limited. When the maximum is
-   --  reached, this procedure returns Invalid_FD. On some OSes, there may be
-   --  a race condition between processes trying to create temp files
-   --  at the same time in the same directory using this procedure.
+   --  The File Descriptor returned is Invalid_FD in the case of failure. No
+   --  mode parameter is provided. Since this is a temporary file, there is no
+   --  point in doing text translation on it.
+   --
+   --  On some OSes, the maximum number of temp files that can be created with
+   --  this procedure may be limited. When the maximum is reached, this
+   --  procedure returns Invalid_FD. On some OSes, there may be a race
+   --  condition between processes trying to create temp files at the same
+   --  time in the same directory using this procedure.
 
    procedure Create_Temp_File
      (FD   : out File_Descriptor;
       Name : out String_Access);
    --  Create and open for writing a temporary file in the current working
    --  directory. The name of the file and the File Descriptor are returned.
-   --  No mode parameter is provided. Since this is a temporary file,
-   --  there is no point in doing text translation on it.
-   --  It is the responsibility of the caller to deallocate the access value
-   --  returned in Name.
-   --  This procedure will always succeed if the current working directory
-   --  is writable. If the current working directory is not writable, then
+   --  No mode parameter is provided. Since this is a temporary file, there is
+   --  no point in doing text translation on it. It is the responsibility of
+   --  the caller to deallocate the access value returned in Name.
+   --
+   --  This procedure will always succeed if the current working directory is
+   --  writable. If the current working directory is not writable, then
    --  Invalid_FD is returned for the file descriptor and null for the Name.
-   --  There is no race condition problem between processes trying to
-   --  create temp files at the same time in the same directory.
+   --  There is no race condition problem between processes trying to create
+   --  temp files at the same time in the same directory.
 
    procedure Close (FD : File_Descriptor; Status : out Boolean);
    --  Close file referenced by FD. Status is False if the underlying service
@@ -254,8 +254,18 @@ pragma Elaborate_Body (OS_Lib);
    --  and invalid file descriptor (the file may have been closed twice).
 
    procedure Close (FD : File_Descriptor);
-   --  Close file referenced by FD. This form is used when the caller
-   --  wants to ignore any possible error (see above for error cases).
+   --  Close file referenced by FD. This form is used when the caller wants to
+   --  ignore any possible error (see above for error cases).
+
+   procedure Set_Close_On_Exec
+     (FD            : File_Descriptor;
+      Close_On_Exec : Boolean;
+      Status        : out Boolean);
+   --  When Close_On_Exec is True, mark FD to be closed automatically when new
+   --  program is executed by the calling process (i.e. prevent FD from being
+   --  inherited by child processes). When Close_On_Exec is False, mark FD to
+   --  not be closed on exec (i.e. allow it to be inherited). Status is False
+   --  if the operation could not be performed.
 
    procedure Delete_File (Name : String; Success : out Boolean);
    --  Deletes file. Success is set True or False indicating if the delete is
@@ -265,29 +275,29 @@ pragma Elaborate_Body (OS_Lib);
      (Old_Name : String;
       New_Name : String;
       Success  : out Boolean);
-   --  Rename a file. Success is set True or False indicating if the
-   --  rename is successful or not.
+   --  Rename a file. Success is set True or False indicating if the rename is
+   --  successful or not.
 
-   --  The following defines the mode for the Copy_File procedure below.
-   --  Note that "time stamps and other file attributes" in the descriptions
-   --  below refers to the creation and last modification times, and also
-   --  the file access (read/write/execute) status flags.
+   --  The following defines the mode for the Copy_File procedure below. Note
+   --  that "time stamps and other file attributes" in the descriptions below
+   --  refers to the creation and last modification times, and also the file
+   --  access (read/write/execute) status flags.
 
    type Copy_Mode is
      (Copy,
-      --  Copy the file. It is an error if the target file already exists.
-      --  The time stamps and other file attributes are preserved in the copy.
+      --  Copy the file. It is an error if the target file already exists. The
+      --  time stamps and other file attributes are preserved in the copy.
 
       Overwrite,
-      --  If the target file exists, the file is replaced otherwise
-      --  the file is just copied. The time stamps and other file
-      --  attributes are preserved in the copy.
+      --  If the target file exists, the file is replaced otherwise the file
+      --  is just copied. The time stamps and other file attributes are
+      --  preserved in the copy.
 
       Append);
-      --  If the target file exists, the contents of the source file
-      --  is appended at the end. Otherwise the source file is just
-      --  copied. The time stamps and other file attributes are
-      --  are preserved if the destination file does not exist.
+      --  If the target file exists, the contents of the source file is
+      --  appended at the end. Otherwise the source file is just copied. The
+      --  time stamps and other file attributes are are preserved if the
+      --  destination file does not exist.
 
    type Attribute is
      (Time_Stamps,
@@ -295,8 +305,8 @@ pragma Elaborate_Body (OS_Lib);
       --  attributes are set to normal default values for file creation.
 
       Full,
-      --  All attributes are copied from the source file to the target
-      --  file. This includes the timestamps, and for example also includes
+      --  All attributes are copied from the source file to the target file.
+      --  This includes the timestamps, and for example also includes
       --  read/write/execute attributes in Unix systems.
 
       None);
@@ -305,8 +315,8 @@ pragma Elaborate_Body (OS_Lib);
 
    --  Note: The default is Time_Stamps, which corresponds to the normal
    --  default on Windows style systems. Full corresponds to the typical
-   --  effect of "cp -p" on Unix systems, and None corresponds to the
-   --  typical effect of "cp" on Unix systems.
+   --  effect of "cp -p" on Unix systems, and None corresponds to the typical
+   --  effect of "cp" on Unix systems.
 
    --  Note: Time_Stamps and Full are not supported on VMS and VxWorks
 
@@ -320,15 +330,15 @@ pragma Elaborate_Body (OS_Lib);
    --  Pathname can be a filename or directory name. In the latter case Name
    --  is copied into the directory preserving the same file name. Mode
    --  defines the kind of copy, see above with the default being a normal
-   --  copy in which the target file must not already exist. Success is set
-   --  to True or False indicating if the copy is successful (depending on
-   --  the specified Mode).
+   --  copy in which the target file must not already exist. Success is set to
+   --  True or False indicating if the copy is successful (depending on the
+   --  specified Mode).
    --
-   --  Note: this procedure is only supported to a very limited extent on
-   --  VMS. The only supported mode is Overwrite, and the only supported
-   --  value for Preserve is None, resulting in the default action which
-   --  for Overwrite is to leave attributes unchanged. Furthermore, the
-   --  copy only works for simple text files.
+   --  Note: this procedure is only supported to a very limited extent on VMS.
+   --  The only supported mode is Overwrite, and the only supported value for
+   --  Preserve is None, resulting in the default action which for Overwrite
+   --  is to leave attributes unchanged. Furthermore, the copy only works for
+   --  simple text files.
 
    procedure Copy_Time_Stamps (Source, Dest : String; Success : out Boolean);
    --  Copy Source file time stamps (last modification and last access time
@@ -343,16 +353,16 @@ pragma Elaborate_Body (OS_Lib);
      (FD   : File_Descriptor;
       A    : System.Address;
       N    : Integer) return Integer;
-   --  Read N bytes to address A from file referenced by FD. Returned value
-   --  is count of bytes actually read, which can be less than N at EOF.
+   --  Read N bytes to address A from file referenced by FD. Returned value is
+   --  count of bytes actually read, which can be less than N at EOF.
 
    function Write
      (FD   : File_Descriptor;
       A    : System.Address;
       N    : Integer) return Integer;
    --  Write N bytes from address A to file referenced by FD. The returned
-   --  value is the number of bytes written, which can be less than N if
-   --  a disk full condition was detected.
+   --  value is the number of bytes written, which can be less than N if a
+   --  disk full condition was detected.
 
    Seek_Cur : constant := 1;
    Seek_End : constant := 2;
@@ -364,9 +374,9 @@ pragma Elaborate_Body (OS_Lib);
       offset : Long_Integer;
       origin : Integer);
    pragma Import (C, Lseek, "__gnat_lseek");
-   --  Sets the current file pointer to the indicated offset value,
-   --  relative to the current position (origin = SEEK_CUR), end of
-   --  file (origin = SEEK_END), or start of file (origin = SEEK_SET).
+   --  Sets the current file pointer to the indicated offset value, relative
+   --  to the current position (origin = SEEK_CUR), end of file (origin =
+   --  SEEK_END), or start of file (origin = SEEK_SET).
 
    function File_Length (FD : File_Descriptor) return Long_Integer;
    pragma Import (C, File_Length, "__gnat_file_length");
@@ -374,12 +384,12 @@ pragma Elaborate_Body (OS_Lib);
 
    function File_Time_Stamp (Name : String) return OS_Time;
    --  Given the name of a file or directory, Name, obtains and returns the
-   --  time stamp. This function can be used for an unopened file.
-   --  Returns Invalid_Time is Name doesn't correspond to an existing file.
+   --  time stamp. This function can be used for an unopened file. Returns
+   --  Invalid_Time is Name doesn't correspond to an existing file.
 
    function File_Time_Stamp (FD : File_Descriptor) return OS_Time;
-   --  Get time stamp of file from file descriptor FD
-   --  Returns Invalid_Time is FD doesn't correspond to an existing file.
+   --  Get time stamp of file from file descriptor FD Returns Invalid_Time is
+   --  FD doesn't correspond to an existing file.
 
    function Normalize_Pathname
      (Name           : String;
@@ -394,43 +404,41 @@ pragma Elaborate_Body (OS_Lib);
    --  directory if Directory is null. The result returned is the normalized
    --  name of the file. For most cases, if two file names designate the same
    --  file through different paths, Normalize_Pathname will return the same
-   --  canonical name in both cases. However, there are cases when this is
-   --  not true; for example, this is not true in Unix for two hard links
+   --  canonical name in both cases. However, there are cases when this is not
+   --  true; for example, this is not true in Unix for two hard links
    --  designating the same file.
    --
    --  On Windows, the returned path will start with a drive letter except
-   --  when Directory is not empty and does not include a drive letter.
-   --  If Directory is empty (the default) and Name is a relative path
-   --  or an absolute path without drive letter, the letter of the current
-   --  drive will start the returned path. If Case_Sensitive is True
-   --  (the default), then this drive letter will be forced to upper case
-   --  ("C:\...").
+   --  when Directory is not empty and does not include a drive letter. If
+   --  Directory is empty (the default) and Name is a relative path or an
+   --  absolute path without drive letter, the letter of the current drive
+   --  will start the returned path. If Case_Sensitive is True (the default),
+   --  then this drive letter will be forced to upper case ("C:\...").
    --
    --  If Resolve_Links is set to True, then the symbolic links, on systems
-   --  that support them, will be fully converted to the name of the file
-   --  or directory pointed to. This is slightly less efficient, since it
+   --  that support them, will be fully converted to the name of the file or
+   --  directory pointed to. This is slightly less efficient, since it
    --  requires system calls.
    --
    --  If Name cannot be resolved or is null on entry (for example if there is
-   --  a circularity in symbolic links: A is a symbolic link for B, while B is
-   --  a symbolic link for A), then Normalize_Pathname returns an empty string.
+   --  symbolic link circularity, e.g. A is a symbolic link for B, and B is a
+   --  symbolic link for A), then Normalize_Pathname returns an empty  string.
    --
    --  In VMS, if Name follows the VMS syntax file specification, it is first
    --  converted into Unix syntax. If the conversion fails, Normalize_Pathname
    --  returns an empty string.
    --
    --  For case-sensitive file systems, the value of Case_Sensitive parameter
-   --  is ignored.  For file systems that are not case-sensitive, such as
+   --  is ignored. For file systems that are not case-sensitive, such as
    --  Windows and OpenVMS, if this parameter is set to False, then the file
    --  and directory names are folded to lower case. This allows checking
    --  whether two files are the same by applying this function to their names
-   --  and comparing the results.  If Case_Sensitive is set to True, this
+   --  and comparing the results. If Case_Sensitive is set to True, this
    --  function does not change the casing of file and directory names.
 
    function Is_Absolute_Path (Name : String) return Boolean;
-   --  Returns True if Name is an absolute path name, i.e. it designates
-   --  a file or a directory absolutely, rather than relative to another
-   --  directory.
+   --  Returns True if Name is an absolute path name, i.e. it designates a
+   --  file or directory absolutely rather than relative to another directory.
 
    function Is_Regular_File (Name : String) return Boolean;
    --  Determines if the given string, Name, is the name of an existing
@@ -446,25 +454,25 @@ pragma Elaborate_Body (OS_Lib);
    --  a relative path name, it is relative to the current working directory.
 
    function Is_Readable_File (Name : String) return Boolean;
-   --  Determines if the given string, Name, is the name of an existing
-   --  file that is readable. Returns True if so, False otherwise. Note
-   --  that this function simply interrogates the file attributes (e.g.
-   --  using the C function stat), so it does not indicate a situation
-   --  in which a file may not actually be readable due to some other
-   --  process having exclusive access.
+   --  Determines if the given string, Name, is the name of an existing file
+   --  that is readable. Returns True if so, False otherwise. Note that this
+   --  function simply interrogates the file attributes (e.g. using the C
+   --  function stat), so it does not indicate a situation in which a file may
+   --  not actually be readable due to some other process having exclusive
+   --  access.
 
    function Is_Writable_File (Name : String) return Boolean;
-   --  Determines if the given string, Name, is the name of an existing
-   --  file that is writable. Returns True if so, False otherwise. Note
-   --  that this function simply interrogates the file attributes (e.g.
-   --  using the C function stat), so it does not indicate a situation
-   --  in which a file may not actually be writeable due to some other
-   --  process having exclusive access.
+   --  Determines if the given string, Name, is the name of an existing file
+   --  that is writable. Returns True if so, False otherwise. Note that this
+   --  function simply interrogates the file attributes (e.g. using the C
+   --  function stat), so it does not indicate a situation in which a file may
+   --  not actually be writeable due to some other process having exclusive
+   --  access.
 
    function Is_Symbolic_Link (Name : String) return Boolean;
-   --  Determines if the given string, Name, is the path of a symbolic link
-   --  on systems that support it. Returns True if so, False if the path
-   --  is not a symbolic link or if the system does not support symbolic links.
+   --  Determines if the given string, Name, is the path of a symbolic link on
+   --  systems that support it. Returns True if so, False if the path is not a
+   --  symbolic link or if the system does not support symbolic links.
    --
    --  A symbolic link is an indirect pointer to a file; its directory entry
    --  contains the name of the file to which it is linked. Symbolic links may
@@ -496,16 +504,16 @@ pragma Elaborate_Body (OS_Lib);
      (File_Name : String;
       Path      : String) return String_Access;
    --  Try to locate a regular file whose name is given by File_Name in the
-   --  directories listed in  Path. If a file is found, its full pathname is
+   --  directories listed in Path. If a file is found, its full pathname is
    --  returned; otherwise, a null pointer is returned. If the File_Name given
    --  is an absolute pathname, then Locate_Regular_File just checks that the
    --  file exists and is a regular file. Otherwise, if the File_Name given
-   --  includes directory information, Locate_Regular_File first checks if
-   --  the file exists relative to the current directory. If it does not,
-   --  or if the File_Name given is a simple file name, the Path argument is
-   --  parsed according to OS conventions, and for each directory in the Path
-   --  a check is made if File_Name is a relative pathname of a regular file
-   --  from that directory.
+   --  includes directory information, Locate_Regular_File first checks if the
+   --  file exists relative to the current directory. If it does not, or if
+   --  the File_Name given is a simple file name, the Path argument is parsed
+   --  according to OS conventions, and for each directory in the Path a check
+   --  is made if File_Name is a relative pathname of a regular file from that
+   --  directory.
    --
    --  Note that this function allocates some memory for the returned value.
    --  This memory needs to be deallocated after use.
@@ -531,8 +539,8 @@ pragma Elaborate_Body (OS_Lib);
    --  routine (using String in place of C_File_Name) defined above.
 
    subtype C_File_Name is System.Address;
-   --  This subtype is used to document that a parameter is the address
-   --  of a null-terminated string containing the name of a file.
+   --  This subtype is used to document that a parameter is the address of a
+   --  null-terminated string containing the name of a file.
 
    --  All the following functions need comments ???
 
@@ -571,7 +579,7 @@ pragma Elaborate_Body (OS_Lib);
       Success      : out Boolean);
 
    function File_Time_Stamp (Name : C_File_Name) return OS_Time;
-   --  Returns Invalid_Time is Name doesn't correspond to an existing file.
+   --  Returns Invalid_Time is Name doesn't correspond to an existing file
 
    function Is_Regular_File (Name : C_File_Name) return Boolean;
    function Is_Directory (Name : C_File_Name) return Boolean;
@@ -589,9 +597,9 @@ pragma Elaborate_Body (OS_Lib);
    ------------------
 
    subtype Argument_List is String_List;
-   --  Type used for argument list in call to Spawn. The lower bound
-   --  of the array should be 1, and the length of the array indicates
-   --  the number of arguments.
+   --  Type used for argument list in call to Spawn. The lower bound of the
+   --  array should be 1, and the length of the array indicates the number of
+   --  arguments.
 
    subtype Argument_List_Access is String_List_Access;
    --  Type used to return Argument_List without dragging in secondary stack.
@@ -606,42 +614,45 @@ pragma Elaborate_Body (OS_Lib);
    --  and Non_Blocking_Spawn call Normalize_Arguments automatically, but
    --  since there is a guarantee that a second call does nothing, this
    --  internal call will have no effect if Normalize_Arguments is called
-   --  before calling Spawn. The call to Normalize_Arguments assumes that
-   --  the individual referenced arguments in Argument_List are on the heap,
-   --  and may free them and reallocate if they are modified.
+   --  before calling Spawn. The call to Normalize_Arguments assumes that the
+   --  individual referenced arguments in Argument_List are on the heap, and
+   --  may free them and reallocate if they are modified.
 
    procedure Spawn
      (Program_Name : String;
       Args         : Argument_List;
       Success      : out Boolean);
-   --  The first parameter of function Spawn is the name of the executable.
-   --  The second parameter contains the arguments to be passed to the
-   --  program. Success is False if the named program could not be spawned
-   --  or its execution completed unsuccessfully. Note that the caller will
-   --  be blocked until the execution of the spawned program is complete.
-   --  For maximum portability, use a full path name for the Program_Name
-   --  argument. On some systems (notably Unix systems) a simple file
-   --  name may also work (if the executable can be located in the path).
+   --  This procedure spawns a program with a given list of arguments. The
+   --  first parameter of is the name of the executable. The second parameter
+   --  contains the arguments to be passed to this program. Success is False
+   --  if the named program could not be spawned or its execution completed
+   --  unsuccessfully. Note that the caller will be blocked until the
+   --  execution of the spawned program is complete. For maximum portability,
+   --  use a full path name for the Program_Name argument. On some systems
+   --  (notably Unix systems) a simple file name may also work (if the
+   --  executable can be located in the path).
    --
-   --  "Spawn" should not be used in tasking applications.
+   --  "Spawn" should not be used in tasking applications. Why not??? More
+   --  documentation would be helpful here ??? Is it really tasking programs,
+   --  or tasking activity that cause trouble ???
    --
    --  Note: Arguments in Args that contain spaces and/or quotes such as
    --  "--GCC=gcc -v" or "--GCC=""gcc -v""" are not portable across all
-   --  operating systems, and would not have the desired effect if they
-   --  were passed directly to the operating system. To avoid this problem,
-   --  Spawn makes an internal call to Normalize_Arguments, which ensures
-   --  that such arguments are modified in a manner that ensures that the
-   --  desired effect is obtained on all operating systems. The caller may
-   --  call Normalize_Arguments explicitly before the call (e.g. to print
-   --  out the exact form of arguments passed to the operating system). In
-   --  this case the guarantee a second call to Normalize_Arguments has no
-   --  effect ensures that the internal call will not affect the result.
-   --  Note that the implicit call to Normalize_Arguments may free and
-   --  reallocate some of the individual arguments.
+   --  operating systems, and would not have the desired effect if they were
+   --  passed directly to the operating system. To avoid this problem, Spawn
+   --  makes an internal call to Normalize_Arguments, which ensures that such
+   --  arguments are modified in a manner that ensures that the desired effect
+   --  is obtained on all operating systems. The caller may call
+   --  Normalize_Arguments explicitly before the call (e.g. to print out the
+   --  exact form of arguments passed to the operating system). In this case
+   --  the guarantee a second call to Normalize_Arguments has no effect
+   --  ensures that the internal call will not affect the result. Note that
+   --  the implicit call to Normalize_Arguments may free and reallocate some
+   --  of the individual arguments.
    --
-   --  This function will always set Success to False under VxWorks and
-   --  other similar operating systems which have no notion of the concept
-   --  of a dynamically executable file.
+   --  This function will always set Success to False under VxWorks and other
+   --  similar operating systems which have no notion of the concept of
+   --  dynamically executable file.
 
    function Spawn
      (Program_Name : String;
@@ -659,12 +670,10 @@ pragma Elaborate_Body (OS_Lib);
       Output_File_Descriptor : File_Descriptor;
       Return_Code            : out Integer;
       Err_To_Out             : Boolean := True);
-   --  Similar to the procedure above, but redirects the output to
-   --  the file designated by Output_File_Descriptor. If Err_To_Out
-   --  is True, then the Standard Error output is also redirected.
-   --
-   --  Return_Code is set to the status code returned by the operating
-   --  system as described above.
+   --  Similar to the procedure above, but redirects the output to the file
+   --  designated by Output_File_Descriptor. If Err_To_Out is True, then the
+   --  Standard Error output is also redirected.
+   --  Return_Code is set to the status code returned by the operating system
    --
    --  "Spawn" should not be used in tasking applications.
 
@@ -675,13 +684,13 @@ pragma Elaborate_Body (OS_Lib);
       Success       : out Boolean;
       Return_Code   : out Integer;
       Err_To_Out    : Boolean := True);
-   --  Similar to the procedure above, but saves the output of the command
-   --  to a file with the name Output_File.
+   --  Similar to the procedure above, but saves the output of the command to
+   --  a file with the name Output_File.
    --
    --  Success is set to True if the command is executed and its output
-   --  successfully written to the file. If Success is True, then
-   --  Return_Code will be set to the status code returned by the
-   --  operating system. Otherwise, Return_Code is undefined.
+   --  successfully written to the file. If Success is True, then Return_Code
+   --  will be set to the status code returned by the operating system.
+   --  Otherwise, Return_Code is undefined.
    --
    --  "Spawn" should not be used in tasking applications.
 
@@ -691,31 +700,31 @@ pragma Elaborate_Body (OS_Lib);
    --  comparison for equality.
 
    Invalid_Pid : constant Process_Id;
-   --  A special value used to indicate errors, as described below.
+   --  A special value used to indicate errors, as described below
 
    function Non_Blocking_Spawn
      (Program_Name : String;
       Args         : Argument_List)
       return         Process_Id;
-   --  This is a non blocking call. The Process_Id of the spawned process
-   --  is returned. Parameters are to be used as in Spawn. If Invalid_Id
-   --  is returned the program could not be spawned.
+   --  This is a non blocking call. The Process_Id of the spawned process is
+   --  returned. Parameters are to be used as in Spawn. If Invalid_Id is
+   --  returned the program could not be spawned.
    --
    --  "Non_Blocking_Spawn" should not be used in tasking applications.
    --
-   --  This function will always return Invalid_Id under VxWorks, since
-   --  there is no notion of executables under this OS.
+   --  This function will always return Invalid_Id under VxWorks, since there
+   --  is no notion of executables under this OS.
 
    procedure Wait_Process (Pid : out Process_Id; Success : out Boolean);
    --  Wait for the completion of any of the processes created by previous
-   --  calls to Non_Blocking_Spawn. The caller will be suspended until one
-   --  of these processes terminates (normally or abnormally). If any of
-   --  these subprocesses terminates prior to the call to Wait_Process (and
-   --  has not been returned by a previous call to Wait_Process), then the
-   --  call to Wait_Process is immediate. Pid identifies the process that
-   --  has terminated (matching the value returned from Non_Blocking_Spawn).
-   --  Success is set to True if this sub-process terminated successfully.
-   --  If Pid = Invalid_Id, there were no subprocesses left to wait on.
+   --  calls to Non_Blocking_Spawn. The caller will be suspended until one of
+   --  these processes terminates (normally or abnormally). If any of these
+   --  subprocesses terminates prior to the call to Wait_Process (and has not
+   --  been returned by a previous call to Wait_Process), then the call to
+   --  Wait_Process is immediate. Pid identifies the process that has
+   --  terminated (matching the value returned from Non_Blocking_Spawn).
+   --  Success is set to True if this sub-process terminated successfully. If
+   --  Pid = Invalid_Id, there were no subprocesses left to wait on.
    --
    --  This function will always set success to False under VxWorks, since
    --  there is no notion of executables under this OS.
@@ -723,9 +732,9 @@ pragma Elaborate_Body (OS_Lib);
    function Argument_String_To_List
      (Arg_String : String)
       return       Argument_List_Access;
-   --  Take a string that is a program and its arguments and parse it into
-   --  an Argument_List. Note that the result is allocated on the heap, and
-   --  must be freed by the programmer (when it is no longer needed) to avoid
+   --  Take a string that is a program and its arguments and parse it into an
+   --  Argument_List. Note that the result is allocated on the heap, and must
+   --  be freed by the programmer (when it is no longer needed) to avoid
    --  memory leaks.
 
    -------------------
@@ -733,25 +742,24 @@ pragma Elaborate_Body (OS_Lib);
    -------------------
 
    function Getenv (Name : String) return String_Access;
-   --  Get the value of the environment variable. Returns an access
-   --  to the empty string if the environment variable does not exist
-   --  or has an explicit null value (in some operating systems these
-   --  are distinct cases, in others they are not; this interface
-   --  abstracts away that difference. The argument is allocated on
-   --  the heap (even in the null case), and needs to be freed explicitly
-   --  when no longer needed to avoid memory leaks.
+   --  Get the value of the environment variable. Returns an access to the
+   --  empty string if the environment variable does not exist or has an
+   --  explicit null value (in some operating systems these are distinct
+   --  cases, in others they are not; this interface abstracts away that
+   --  difference. The argument is allocated on the heap (even in the null
+   --  case), and needs to be freed explicitly when no longer needed to avoid
+   --  memory leaks.
 
    procedure Setenv (Name : String; Value : String);
    --  Set the value of the environment variable Name to Value. This call
    --  modifies the current environment, but does not modify the parent
-   --  process environment. After a call to Setenv, Getenv (Name) will
-   --  always return a String_Access referencing the same String as Value.
-   --  This is true also for the null string case (the actual effect may
-   --  be to either set an explicit null as the value, or to remove the
-   --  entry, this is operating system dependent). Note that any following
-   --  calls to Spawn will pass an environment to the spawned process that
-   --  includes the changes made by Setenv calls. This procedure is not
-   --  available under VMS.
+   --  process environment. After a call to Setenv, Getenv (Name) will always
+   --  return a String_Access referencing the same String as Value. This is
+   --  true also for the null string case (the actual effect may be to either
+   --  set an explicit null as the value, or to remove the entry, this is
+   --  operating system dependent). Note that any following calls to Spawn
+   --  will pass an environment to the spawned process that includes the
+   --  changes made by Setenv calls. This procedure is not available on VMS.
 
    procedure OS_Exit (Status : Integer);
    pragma Import (C, OS_Exit, "__gnat_os_exit");
@@ -762,37 +770,36 @@ pragma Elaborate_Body (OS_Lib);
    pragma Import (C, OS_Abort, "abort");
    pragma No_Return (OS_Abort);
    --  Exit to OS signalling an abort (traceback or other appropriate
-   --  diagnostic information should be given if possible, or entry made
-   --  to the debugger if that is possible).
+   --  diagnostic information should be given if possible, or entry made to
+   --  the debugger if that is possible).
 
    function Errno return Integer;
    pragma Import (C, Errno, "__get_errno");
-   --  Return the task-safe last error number.
+   --  Return the task-safe last error number
 
    procedure Set_Errno (Errno : Integer);
    pragma Import (C, Set_Errno, "__set_errno");
-   --  Set the task-safe error number.
+   --  Set the task-safe error number
 
    Directory_Separator : constant Character;
-   --  The character that is used to separate parts of a pathname.
+   --  The character that is used to separate parts of a pathname
 
    Path_Separator : constant Character;
-   --  The character to separate paths in an environment variable value.
+   --  The character to separate paths in an environment variable value
 
 private
    pragma Import (C, Path_Separator, "__gnat_path_separator");
    pragma Import (C, Directory_Separator, "__gnat_dir_separator");
 
    type OS_Time is new Long_Integer;
-   --  Type used for timestamps in the compiler. This type is used to
-   --  hold time stamps, but may have a different representation than
-   --  C's time_t. This type needs to match the declaration of OS_Time
-   --  in adaint.h.
+   --  Type used for timestamps in the compiler. This type is used to hold
+   --  time stamps, but may have a different representation than C's time_t.
+   --  This type needs to match the declaration of OS_Time in adaint.h.
 
-   --  Add pragma Inline statements for comparison operations on OS_Time.
-   --  It would actually be nice to use pragma Import (Intrinsic) here,
-   --  but this was not properly supported till GNAT 3.15a, so that would
-   --  cause bootstrap path problems. To be changed later ???
+   --  Add pragma Inline statements for comparison operations on OS_Time. It
+   --  would actually be nice to use pragma Import (Intrinsic) here, but this
+   --  was not properly supported till GNAT 3.15a, so that would cause
+   --  bootstrap path problems. To be changed later ???
 
    Invalid_Time : constant OS_Time := -1;
    --  This value should match the return valud by __gnat_file_time_*

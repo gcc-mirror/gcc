@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2003 Ada Core Technologies, Inc.            --
+--           Copyright (C) 2000-2005 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1123,6 +1123,8 @@ package body GNAT.Expect is
       Pipe2      : access Pipe_Type;
       Pipe3      : access Pipe_Type)
    is
+      Status : Boolean;
+
    begin
       --  Create the pipes
 
@@ -1134,18 +1136,36 @@ package body GNAT.Expect is
          return;
       end if;
 
+      --  Record the 'parent' end of the two pipes in Pid:
+      --    Child stdin  is connected to the 'write' end of Pipe1;
+      --    Child stdout is connected to the 'read'  end of Pipe2.
+      --  We do not want these descriptors to remain open in the child
+      --  process, so we mark them close-on-exec/non-inheritable.
+
       Pid.Input_Fd  := Pipe1.Output;
+      Set_Close_On_Exec (Pipe1.Output, True, Status);
       Pid.Output_Fd := Pipe2.Input;
+      Set_Close_On_Exec (Pipe2.Input, True, Status);
 
       if Err_To_Out then
+
+         --  Reuse the standard output pipe for standard error
+
          Pipe3.all := Pipe2.all;
       else
+
+         --  Create a separate pipe for standard error
+
          if Create_Pipe (Pipe3) /= 0 then
             return;
          end if;
       end if;
 
+      --  As above, we record the proper fd for the child's
+      --  standard error stream.
+
       Pid.Error_Fd := Pipe3.Input;
+      Set_Close_On_Exec (Pipe3.Input, True, Status);
    end Set_Up_Communications;
 
    ----------------------------------

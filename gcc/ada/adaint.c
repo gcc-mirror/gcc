@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2004, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -277,6 +277,37 @@ int max_path_len = GNAT_MAX_PATH_LEN;
    system provides the routine readdir_r.  */
 #undef HAVE_READDIR_R
 
+#if defined(VMS) && defined (__LONG_POINTERS)
+
+/* Return a 32 bit pointer to an array of 32 bit pointers
+   given a 64 bit pointer to an array of 64 bit pointers */
+
+typedef __char_ptr32 *__char_ptr_char_ptr32 __attribute__ ((mode (SI)));
+
+static __char_ptr_char_ptr32
+to_ptr32 (char **ptr64)
+{
+  int argc;
+  __char_ptr_char_ptr32 short_argv;
+
+  for (argc=0; ptr64[argc]; argc++);
+
+  /* Reallocate argv with 32 bit pointers. */
+  short_argv = (__char_ptr_char_ptr32) decc$malloc
+    (sizeof (__char_ptr32) * (argc + 1));
+
+  for (argc=0; ptr64[argc]; argc++)
+    short_argv[argc] = (__char_ptr32) decc$strdup (ptr64[argc]);
+
+  short_argv[argc] = (__char_ptr32) 0;
+  return short_argv;
+
+}
+#define MAYBE_TO_PTR32(argv) to_ptr32 (argv)
+#else
+#define MAYBE_TO_PTR32(argv) argv
+#endif
+
 void
 __gnat_to_gm_time
   (OS_Time *p_time,
@@ -1213,13 +1244,13 @@ static char *to_host_path_spec (char *);
 struct descriptor_s
 {
   unsigned short len, mbz;
-  char *adr;
+  __char_ptr32 adr;
 };
 
 typedef struct _ile3
 {
   unsigned short len, code;
-  char *adr;
+  __char_ptr32 adr;
   unsigned short *retlen_adr;
 } ile_s;
 
@@ -1524,17 +1555,6 @@ __gnat_is_symbolic_link (char *name ATTRIBUTE_UNUSED)
 #endif
 }
 
-#ifdef VMS
-/* Defined in VMS header files. */
-#if defined (__ALPHA)
-#define fork() (decc$$alloc_vfork_blocks() >= 0 ? \
-		LIB$GET_CURRENT_INVO_CONTEXT (decc$$get_vfork_jmpbuf()) : -1)
-#elif defined (__IA64)
-#define fork() (decc$$alloc_vfork_blocks() >= 0 ? \
-		LIB$I64_GET_CURR_INVO_CONTEXT(decc$$get_vfork_jmpbuf()) : -1)
-#endif
-#endif
-
 #if defined (sun) && defined (__SVR4)
 /* Using fork on Solaris will duplicate all the threads. fork1, which
    duplicates only the active thread, must be used instead, or spawning
@@ -1585,7 +1605,7 @@ __gnat_portable_spawn (char *args[])
   if (pid == 0)
     {
       /* The child. */
-      if (execv (args[0], args) != 0)
+      if (execv (args[0], MAYBE_TO_PTR32 (args)) != 0)
 #if defined (VMS)
 	return -1; /* execv is in parent context on VMS.  */
 #else
@@ -1866,7 +1886,7 @@ __gnat_portable_no_block_spawn (char *args[])
   if (pid == 0)
     {
       /* The child.  */
-      if (execv (args[0], args) != 0)
+      if (execv (args[0], MAYBE_TO_PTR32 (args)) != 0)
 #if defined (VMS)
 	return -1; /* execv is in parent context on VMS. */
 #else
@@ -2592,4 +2612,25 @@ int
 get_gcc_version (void)
 {
   return 3;
+}
+
+int
+__gnat_set_close_on_exec (int fd, int close_on_exec_p)
+{
+#if defined (F_GETFD) && defined (FD_CLOEXEC) && ! defined (__vxworks)
+  int flags = fcntl (fd, F_GETFD, 0);
+  if (flags < 0)
+    return flags;
+  if (close_on_exec_p)
+    flags |= FD_CLOEXEC;
+  else
+    flags &= ~FD_CLOEXEC;
+  return fcntl (fd, F_SETFD, flags | FD_CLOEXEC);
+#else
+  return -1;
+  /* For the Windows case, we should use SetHandleInformation to remove
+     the HANDLE_INHERIT property from fd. This is not implemented yet,
+     but for our purposes (support of GNAT.Expect) this does not matter,
+     as by default handles are *not* inherited. */
+#endif
 }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1995-2004 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1995-2005 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1075,7 +1075,7 @@ package body GNAT.OS_Lib is
       S  : Integer;
 
    begin
-      --  Use the global lock because To_GM_Time is not thread safe.
+      --  Use the global lock because To_GM_Time is not thread safe
 
       Locked_Processing : begin
          SSL.Lock_Task.all;
@@ -1920,7 +1920,7 @@ package body GNAT.OS_Lib is
             if Status <= 0 then
                Last := Finish + 1;
 
-            --  Replace symbolic link with its value.
+            --  Replace symbolic link with its value
 
             else
                if Is_Absolute_Path (Link_Buffer (1 .. Status)) then
@@ -2056,6 +2056,23 @@ package body GNAT.OS_Lib is
       Rename_File (C_Old_Name'Address, C_New_Name'Address, Success);
    end Rename_File;
 
+   -----------------------
+   -- Set_Close_On_Exec --
+   -----------------------
+
+   procedure Set_Close_On_Exec
+     (FD            : File_Descriptor;
+      Close_On_Exec : Boolean;
+      Status        : out Boolean)
+   is
+      function C_Set_Close_On_Exec
+        (FD : File_Descriptor; Close_On_Exec : System.CRTL.int)
+         return System.CRTL.int;
+      pragma Import (C, C_Set_Close_On_Exec, "__gnat_set_close_on_exec");
+   begin
+      Status := C_Set_Close_On_Exec (FD, Boolean'Pos (Close_On_Exec)) = 0;
+   end Set_Close_On_Exec;
+
    --------------------
    -- Set_Executable --
    --------------------
@@ -2186,7 +2203,7 @@ package body GNAT.OS_Lib is
          Dup2 (Saved_Error, Standerr);
       end if;
 
-      --  And close the saved standard output and error file descriptors.
+      --  And close the saved standard output and error file descriptors
 
       Close (Saved_Output);
 
@@ -2234,7 +2251,7 @@ package body GNAT.OS_Lib is
    is
 
       procedure Spawn (Args : Argument_List);
-      --  Call Spawn.
+      --  Call Spawn with given argument list
 
       N_Args : Argument_List (Args'Range);
       --  Normalized arguments
