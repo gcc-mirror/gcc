@@ -222,11 +222,11 @@ do {									\
    set in the first regset and not set in the second. */
 #define EXECUTE_IF_AND_COMPL_IN_REG_SET(REGSET1, REGSET2, MIN, REGNUM, CODE) \
 do {									\
-  register REGSET_ELT_TYPE *scan_rs1_ = (REGSET1);			\
-  register REGSET_ELT_TYPE *scan_rs2_ = (REGSET2);			\
-  register int i_;							\
+  register int i_ = (MIN) / REGSET_ELT_BITS;				\
   register int shift_ = (MIN) % REGSET_ELT_BITS;			\
-  for (i_ = (MIN) / REGSET_ELT_BITS; i_ < regset_size; i_++)		\
+  register REGSET_ELT_TYPE *scan_rs1_ = (REGSET1) + i_;			\
+  register REGSET_ELT_TYPE *scan_rs2_ = (REGSET2) + i_;			\
+  for ( ; i_ < regset_size; i_++)					\
     {									\
       REGSET_ELT_TYPE word_ = *scan_rs1_++ & ~ *scan_rs2_++;		\
       if (word_)							\
