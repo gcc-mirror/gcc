@@ -331,6 +331,9 @@ struct cpp_reader
   /* We're printed a warning recommending against using #import.  */
   unsigned char import_warning;
 
+  /* Used to flag the token after a paste AVOID_LPASTE.  */
+  unsigned char saved_flags;
+
   /* True after cpp_start_read completes.  Used to inhibit some
      warnings while parsing the command line.  */
   unsigned char done_initializing;

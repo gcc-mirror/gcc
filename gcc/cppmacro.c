@@ -906,7 +906,9 @@ cpp_get_token (pfile, token)
      cpp_reader *pfile;
      cpp_token *token;
 {
-  unsigned char flags = 0;
+  unsigned char flags = pfile->saved_flags;
+
+  pfile->saved_flags = 0;
 
   for (;;)
     {
@@ -922,7 +924,10 @@ cpp_get_token (pfile, token)
 	  *token = *context->list.first++;
 	  /* PASTE_LEFT tokens can only appear in macro expansions.  */
 	  if (token->flags & PASTE_LEFT)
-	    paste_all_tokens (pfile, token);
+	    {
+	      paste_all_tokens (pfile, token);
+	      pfile->saved_flags = AVOID_LPASTE;
+	    }
 	}
       else
 	{
