@@ -158,38 +158,37 @@ extern void decode_d_option		(const char *);
 /* Return true iff flags are set as if -ffast-math.  */
 extern bool fast_math_flags_set_p	(void);
 
-/* The following functions accept a wide integer argument.  Rather
-   than having to cast on every function call, we use a macro instead.  */
+/* Return log2, or -1 if not exact.  */
+extern int exact_log2                  (unsigned HOST_WIDE_INT);
 
-#ifndef exact_log2
-#define exact_log2(N) exact_log2_wide ((unsigned HOST_WIDE_INT) (N))
+/* Return floor of log2, with -1 for zero.  */
+extern int floor_log2                  (unsigned HOST_WIDE_INT);
 
-#if (__GNUC__ * 1000 + __GNUC_MINOR__) >= 3004
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONGLONG
-#define FL2T__ HOST_WIDE_INT
-#define FL2T_CLZ__ __builtin_clzll
-#else
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-#define FL2T__ HOST_WIDE_INT
-#define FL2T_CLZ__ __builtin_clzl
-#else
-#define FL2T__ int
-#define FL2T_CLZ__ __builtin_clz
-#endif
-#endif
-static inline int floor_log2(FL2T__ n)
+/* Inline versions of the above for speed.  */
+#if GCC_VERSION >= 3004
+# if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+#  define CLZ_HWI __builtin_clzl
+#  define CTZ_HWI __builtin_ctzl
+# elif HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONGLONG
+#  define CLZ_HWI __builtin_clzll
+#  define CTZ_HWI __builtin_ctzll
+# else
+#  define CLZ_HWI __builtin_clz
+#  define CTZ_HWI __builtin_ctz
+# endif
+
+extern inline int
+floor_log2 (unsigned HOST_WIDE_INT x)
 {
-  if (n)
-    return (sizeof(FL2T__)*8-1) - (int)FL2T_CLZ__(n);
-  return -1;
+  return x ? HOST_BITS_PER_WIDE_INT - 1 - (int) CLZ_HWI (x) : -1;
 }
-#else
-#define floor_log2(N) floor_log2_wide ((unsigned HOST_WIDE_INT) (N))
-#endif
 
-#endif
-extern int exact_log2_wide             (unsigned HOST_WIDE_INT);
-extern int floor_log2_wide             (unsigned HOST_WIDE_INT);
+extern inline int
+exact_log2 (unsigned HOST_WIDE_INT x)
+{
+  return x == (x & -x) && x ? (int) CTZ_HWI (x) : -1;
+}
+#endif /* GCC_VERSION >= 3004 */
 
 /* Functions used to get and set GCC's notion of in what directory
    compilation was started.  */
