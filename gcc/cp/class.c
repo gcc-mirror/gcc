@@ -91,7 +91,6 @@ static tree get_vfield_name PARAMS ((tree));
 static void finish_struct_anon PARAMS ((tree));
 static tree build_vbase_pointer PARAMS ((tree, tree));
 static tree build_vtable_entry PARAMS ((tree, tree, tree));
-static tree get_vtable_name PARAMS ((tree));
 static tree get_derived_offset PARAMS ((tree, tree));
 static tree get_basefndecls PARAMS ((tree, tree));
 static int build_primary_vtable PARAMS ((tree, tree));
@@ -628,34 +627,6 @@ build_vfn_ref (ptr_to_instptr, instance, idx)
   return build_component_ref (aref, pfn_identifier, NULL_TREE, 0);
 }
 
-/* Return the name of the virtual function table (as an IDENTIFIER_NODE)
-   for the given TYPE.  */
-
-static tree
-get_vtable_name (type)
-     tree type;
-{
-  if (flag_new_abi)
-    return mangle_vtbl_for_type (type);
-  else
-    return build_overload_with_type (get_identifier (VTABLE_NAME_PREFIX),
-				     type);
-}
-
-/* Return an IDENTIFIER_NODE for the name of the virtual table table
-   for TYPE.  */
-
-tree
-get_vtt_name (type)
-     tree type;
-{
-  if (flag_new_abi)
-    return mangle_vtt_for_type (type);
-  else
-    return build_overload_with_type (get_identifier (VTT_NAME_PREFIX),
-				     type);
-}
-
 /* Return the offset to the main vtable for a given base BINFO.  */
 
 tree
@@ -732,7 +703,7 @@ get_vtable_decl (type, complete)
      tree type;
      int complete;
 {
-  tree name = get_vtable_name (type);
+  tree name = mangle_vtbl_for_type (type);
   tree decl = IDENTIFIER_GLOBAL_VALUE (name);
   
   if (decl)
@@ -6587,7 +6558,7 @@ build_vtt (t)
   type = build_cplus_array_type (const_ptr_type_node, type);
 				 
   /* Now, build the VTT object itself.  */
-  vtt = build_vtable (t, get_vtt_name (t), type);
+  vtt = build_vtable (t, mangle_vtt_for_type (t), type);
   pushdecl_top_level (vtt);
   initialize_array (vtt, inits);
 }
@@ -6771,10 +6742,7 @@ build_ctor_vtbl_group (binfo, t)
   tree id;
 
   /* See if we've already create this construction vtable group.  */
-  if (flag_new_abi)
-    id = mangle_ctor_vtbl_for_type (t, binfo);
-  else
-    id = get_ctor_vtbl_name (t, binfo);
+  id = mangle_ctor_vtbl_for_type (t, binfo);
   if (IDENTIFIER_GLOBAL_VALUE (id))
     return;
 

@@ -998,8 +998,10 @@ write_special_name_constructor (ctor)
     write_string ("C1");
   else if (DECL_BASE_CONSTRUCTOR_P (ctor))
     write_string ("C2");
-  else
+  else if (flag_new_abi)
     write_string ("C*INTERNAL*");
+  else
+    write_string ("C1");
 }
 
 /* Handle destructor productions of non-terminal <special-name>.
@@ -1023,9 +1025,10 @@ write_special_name_destructor (dtor)
     write_string ("D1");
   else if (DECL_BASE_DESTRUCTOR_P (dtor))
     write_string ("D2");
-  else
-    /* Old-ABI destructor.   */
+  else if (flag_new_abi)
     write_string ("D*INTERNAL*");
+  else
+    write_string ("D0");
 }
 
 /* Return the discriminator for ENTITY appearing inside
@@ -1564,8 +1567,17 @@ write_expression (expr)
       if (TREE_CODE (expr) == ADDR_EXPR
 	  && TREE_TYPE (expr)
 	  && TREE_CODE (TREE_TYPE (expr)) == REFERENCE_TYPE)
-	expr = TREE_OPERAND (expr, 0);
+	{
+	  expr = TREE_OPERAND (expr, 0);
+	  if (DECL_P (expr))
+	    {
+	      write_expression (expr);
+	      return;
+	    }
 
+	  code = TREE_CODE (expr);
+	}
+      
       /* If it wasn't any of those, recursively expand the expression.  */
       write_string (operator_name_info[(int) code].mangled_name);
 
@@ -1969,6 +1981,27 @@ mangle_typeinfo_for_type (type)
   return mangle_special_for_type (type, "TI");
 }
 
+/* Return the mangled name of the function that returns the typeinfo
+   for TYPE.  */
+
+tree
+mangle_typeinfo_fn_for_type (type)
+     tree type;
+{
+  my_friendly_assert (!new_abi_rtti_p (), 20000608);
+  return mangle_special_for_type (type, "TF");
+}
+
+/* Return the name of the variable that represents TYPE at runtime in
+   Java.  */
+
+tree
+mangle_java_reflection_var_for_type (type)
+     tree type;
+{
+  return mangle_special_for_type (type, "TJ");
+}
+
 /* Create an identifier for the mangled name of the NTBS containing
    the mangled name of TYPE.  */
 
@@ -2085,15 +2118,7 @@ mangle_thunk (fn_decl, offset, vcall_offset)
 
 /* Return an identifier for the mangled unqualified name for a
    conversion operator to TYPE.  This mangling is not specified by the
-   ABI spec; it is only used internally.
-
-   For compatibility with existing conversion operator mechanisms,
-   the mangled form is `__op<type>' where <type> is the mangled
-   representation of TYPE.  
-
-   FIXME: Though identifiers with starting with __op are reserved for
-   the implementation, it would eventually be nice to use inaccessible
-   names for these operators.  */
+   ABI spec; it is only used internally.  */
 
 tree
 mangle_conv_op_name_for_type (type)
@@ -2104,11 +2129,10 @@ mangle_conv_op_name_for_type (type)
   /* Build the mangling for TYPE.  */
   const char *mangled_type = mangle_type_string (type);
   /* Allocate a temporary buffer for the complete name.  */
-  char *op_name = (char *) xmalloc (strlen (OPERATOR_TYPENAME_FORMAT) 
+  char *op_name = (char *) xmalloc (strlen ("operator ") 
 				    + strlen (mangled_type) + 1);
   /* Assemble the mangling.  */
-  strcpy (op_name, OPERATOR_TYPENAME_FORMAT);
-  strcat (op_name, mangled_type);
+  sprintf (op_name, "operator %s", mangled_type);
   /* Find or create an identifier.  */
   identifier = get_identifier (op_name);
   /* Done with the temporary buffer.  */

@@ -1,5 +1,4 @@
 // Build don't link:
-// Special g++ Options: -fsquangle
 
 template <class STRUCT, class MEMBER> inline STRUCT *
 setback(MEMBER *bp, MEMBER STRUCT::*offset)

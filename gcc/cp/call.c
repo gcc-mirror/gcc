@@ -4332,7 +4332,8 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	  /* If the current function is a complete object constructor
 	     or destructor, then we fetch the VTT directly.
 	     Otherwise, we look it up using the VTT we were given.  */
-	  vtt = IDENTIFIER_GLOBAL_VALUE (get_vtt_name (current_class_type));
+	  vtt = IDENTIFIER_GLOBAL_VALUE (mangle_vtt_for_type
+					 (current_class_type));
 	  vtt = build_unary_op (ADDR_EXPR, vtt, /*noconvert=*/1);
 	  vtt = build (COND_EXPR, TREE_TYPE (vtt), 
 		       DECL_USE_VTT_PARM (current_function_decl),
