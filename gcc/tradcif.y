@@ -248,14 +248,11 @@ parse_number (olen)
     c = *p++;
     len--;
     if (ISUPPER (c))
-      c += 'a' - 'A';
+      c = TOLOWER (c);
 
-    if (ISDIGIT (c)) {
-      n *= base;
-      n += c - '0';
-    } else if (base == 16 && c >= 'a' && c <= 'f') {
-      n *= base;
-      n += c - 'a' + 10;
+    if (ISDIGIT (c)
+	|| (base == 16 && ISXDIGIT (c))) {
+      n = (n * base) + hex_value (c);
     } else {
       /* `l' means long, and `u' means unsigned.  */
       while (1) {
@@ -509,12 +506,8 @@ parse_escape (string_ptr)
 	for (;;)
 	  {
 	    c = *(*string_ptr)++;
-	    if (ISDIGIT (c))
-	      i = (i << 4) + c - '0';
-	    else if (c >= 'a' && c <= 'f')
-	      i = (i << 4) + c - 'a' + 10;
-	    else if (c >= 'A' && c <= 'F')
-	      i = (i << 4) + c - 'A' + 10;
+	    if (hex_p (c))
+	      i = (i << 4) + hex_value (c);
 	    else
 	      {
 		(*string_ptr)--;

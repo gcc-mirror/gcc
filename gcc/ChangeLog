@@ -3,6 +3,7 @@
 	* cppexp.c (parse_number): Use ISXDIGIT/hex_value.
 	* cpplex.c (hex_digit_value): Use hex_p/hex_value.
 	* cppmain.c (general_init): Call hex_init.
+	* tradcif.y (parse_number): Use TOLOWER/ISXDIGIT/hex_value/hex_p.
 
 	* config.gcc (i[34567]86-dg-dgux*): Don't set `out_file'.
 
