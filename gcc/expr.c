@@ -5430,20 +5430,46 @@ expand_expr (exp, target, tmode, modifier)
 	{
 	  enum machine_mode innermode
 	    = TYPE_MODE (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)));
+	  optab other_optab = (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)))
+			? smul_widen_optab : umul_widen_optab);
 	  this_optab = (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)))
 			? umul_widen_optab : smul_widen_optab);
-	  if (mode == GET_MODE_WIDER_MODE (innermode)
-	      && this_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+	  if (mode == GET_MODE_WIDER_MODE (innermode))
 	    {
-	      op0 = expand_expr (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
-				 NULL_RTX, VOIDmode, 0);
-	      if (TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST)
-		op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX,
-				   VOIDmode, 0);
-	      else
-		op1 = expand_expr (TREE_OPERAND (TREE_OPERAND (exp, 1), 0),
-				   NULL_RTX, VOIDmode, 0);
-	      goto binop2;
+	      if (this_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+		{
+		  op0 = expand_expr (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
+				     NULL_RTX, VOIDmode, 0);
+		  if (TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST)
+		    op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX,
+				       VOIDmode, 0);
+		  else
+		    op1 = expand_expr (TREE_OPERAND (TREE_OPERAND (exp, 1), 0),
+				       NULL_RTX, VOIDmode, 0);
+		  goto binop2;
+		}
+	      else if (other_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing
+		       && innermode == word_mode)
+		{
+		  rtx htem;
+		  op0 = expand_expr (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
+				     NULL_RTX, VOIDmode, 0);
+		  if (TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST)
+		    op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX,
+				       VOIDmode, 0);
+		  else
+		    op1 = expand_expr (TREE_OPERAND (TREE_OPERAND (exp, 1), 0),
+				       NULL_RTX, VOIDmode, 0);
+		  temp = expand_binop (mode, other_optab, op0, op1, target,
+				       unsignedp, OPTAB_LIB_WIDEN);
+		  htem = expand_mult_highpart_adjust (innermode,
+						      gen_highpart (innermode, temp),
+						      op0, op1,
+						      gen_highpart (innermode, temp),
+						      unsignedp);
+		  emit_move_insn (gen_highpart (innermode, temp), htem);
+		  return temp;
+		}
 	    }
 	}
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
