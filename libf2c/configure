@@ -658,17 +658,17 @@ compiler_name=f771
 rm -f skip-this-dir
 echo $ac_n "checking if compiler $compiler_name has been built""... $ac_c" 1>&6
 echo "configure:661: checking if compiler $compiler_name has been built" >&5
-if eval "test \"`echo '$''{'f77_cv_compiler_exists'+set}'`\" = set"; then
+if eval "test \"`echo '$''{'g77_cv_compiler_exists'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  f77_cv_compiler_exists=yes
+  g77_cv_compiler_exists=yes
 if test -n "$r"; then
   if test -d "$r"/gcc; then
     if test -f "$r"/gcc/$compiler_name \
        || test -f "$r"/gcc/$compiler_name$EXEEXT; then
       true
     else
-      f77_cv_compiler_exists=no
+      g77_cv_compiler_exists=no
       echo "rm -f config.cache config.log multilib.out" > skip-this-dir
     fi
   fi
@@ -676,8 +676,8 @@ fi
 
 fi
 
-echo "$ac_t""$f77_cv_compiler_exists" 1>&6
-if test x$f77_cv_compiler_exists = xno
+echo "$ac_t""$g77_cv_compiler_exists" 1>&6
+if test x$g77_cv_compiler_exists = xno
 then
   rm -f Makefile conftest* confdefs* core
   exit 0
@@ -1161,17 +1161,49 @@ fi
 # is in gcc/ and the config files are in gcc/config/.
 echo $ac_n "checking f2c integer type""... $ac_c" 1>&6
 echo "configure:1164: checking f2c integer type" >&5
+# Set this back later below!
 late_ac_cpp=$ac_cpp
-ac_cpp="$late_ac_cpp -I../../gcc/f -I../../gcc -I../../gcc/config"
+late_cflags=$CFLAGS
+##gcc -c  -DIN_GCC -DHAVE_CONFIG_H -I. -I/home/fx/c-e/egcs/gcc -I/home/fx/c-e/egcs/gcc/config -I/home/fx/c-e/egcs/gcc/../include /home/fx/c-e/egcs/gcc/f/proj.c
 if test "$srcdir" != . ; then
-  ac_cpp="$ac_cpp -I$srcdir/../gcc/f -I$srcdir/../gcc -I$srcdir/../gcc/config"
+  extra_includes="-I$srcdir/../gcc/f -I../../gcc -I$srcdir/../gcc -I$srcdir/../include -I$srcdir/../gcc/config"
+else
+  extra_includes="-I../../gcc/f -I../../gcc -I../../include -I../../gcc/config"
 fi
+ac_cpp="$late_ac_cpp -DIN_GCC -DHAVE_CONFIG_H $extra_includes"
+
+# The AC_EGREP_CPPs below have been known to fail when the header
+# path is wrong after things have been moved about; the cpp error status
+# counts for nothing.  First check that there aren't any errors from
+# the headers.
+CFLAGS="$CFLAGS -DHAVE_CONFIG_H -DIN_GCC $extra_includes"
+cat > conftest.$ac_ext <<EOF
+#line 1182 "configure"
+#include "confdefs.h"
+#include "proj.h"
+#define FFECOM_DETERMINE_TYPES 1
+#include "com.h"
+int main() {
+
+; return 0; }
+EOF
+if { (eval echo configure:1191: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  :
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  { echo "configure: error: Can't run check for integer sizes -- see config.log" 1>&2; exit 1; }
+fi
+rm -f conftest*
+CFLAGS=$late_cflags
+
 if eval "test \"`echo '$''{'g77_cv_sys_f2cinteger'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  echo "configure:1173: using $ac_cpp" >&5
+  echo "configure:1205: using $ac_cpp" >&5
 cat > conftest.$ac_ext <<EOF
-#line 1175 "configure"
+#line 1207 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1193,9 +1225,9 @@ fi
 rm -f conftest*
 
 if test "$g77_cv_sys_f2cinteger" = ""; then
-echo "configure:1197: using $ac_cpp" >&5
+echo "configure:1229: using $ac_cpp" >&5
   cat > conftest.$ac_ext <<EOF
-#line 1199 "configure"
+#line 1231 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1226,22 +1258,16 @@ fi
 
 echo "$ac_t""$g77_cv_sys_f2cinteger" 1>&6
 F2C_INTEGER=$g77_cv_sys_f2cinteger
-ac_cpp=$late_ac_cpp
 
 
 echo $ac_n "checking f2c long int type""... $ac_c" 1>&6
-echo "configure:1234: checking f2c long int type" >&5
-late_ac_cpp=$ac_cpp
-ac_cpp="$late_ac_cpp -I../../gcc/f -I../../gcc -I../../gcc/config"
-if test "$srcdir" != . ; then
-  ac_cpp="$ac_cpp -I$srcdir/../gcc/f -I$srcdir/../gcc -I$srcdir/../gcc/config"
-fi
+echo "configure:1265: checking f2c long int type" >&5
 if eval "test \"`echo '$''{'g77_cv_sys_f2clongint'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  echo "configure:1243: using $ac_cpp" >&5
+  echo "configure:1269: using $ac_cpp" >&5
 cat > conftest.$ac_ext <<EOF
-#line 1245 "configure"
+#line 1271 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1262,10 +1288,11 @@ if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
 fi
 rm -f conftest*
 
+
 if test "$g77_cv_sys_f2clongint" = ""; then
-echo "configure:1267: using $ac_cpp" >&5
+echo "configure:1294: using $ac_cpp" >&5
   cat > conftest.$ac_ext <<EOF
-#line 1269 "configure"
+#line 1296 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1296,8 +1323,8 @@ fi
 
 echo "$ac_t""$g77_cv_sys_f2clongint" 1>&6
 F2C_LONGINT=$g77_cv_sys_f2clongint
-ac_cpp=$late_ac_cpp
 
+ac_cpp=$late_ac_cpp
 
 # avoid confusion in case the `makefile's from the f2c distribution have
 # got put here
@@ -1344,7 +1371,7 @@ else { echo "configure: error: can not run $ac_config_sub" 1>&2; exit 1; }
 fi
 
 echo $ac_n "checking host system type""... $ac_c" 1>&6
-echo "configure:1348: checking host system type" >&5
+echo "configure:1375: checking host system type" >&5
 
 host_alias=$host
 case "$host_alias" in
@@ -1365,7 +1392,7 @@ host_os=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$host" 1>&6
 
 echo $ac_n "checking target system type""... $ac_c" 1>&6
-echo "configure:1369: checking target system type" >&5
+echo "configure:1396: checking target system type" >&5
 
 target_alias=$target
 case "$target_alias" in
@@ -1383,7 +1410,7 @@ target_os=`echo $target | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$target" 1>&6
 
 echo $ac_n "checking build system type""... $ac_c" 1>&6
-echo "configure:1387: checking build system type" >&5
+echo "configure:1414: checking build system type" >&5
 
 build_alias=$build
 case "$build_alias" in

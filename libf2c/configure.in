@@ -47,22 +47,22 @@ AC_EXEEXT
 compiler_name=f771
 rm -f skip-this-dir
 AC_MSG_CHECKING(if compiler $compiler_name has been built)
-AC_CACHE_VAL(f77_cv_compiler_exists,
-[f77_cv_compiler_exists=yes
+AC_CACHE_VAL(g77_cv_compiler_exists,
+[g77_cv_compiler_exists=yes
 if test -n "$r"; then
   if test -d "$r"/gcc; then
     if test -f "$r"/gcc/$compiler_name \
        || test -f "$r"/gcc/$compiler_name$EXEEXT; then
       true
     else
-      f77_cv_compiler_exists=no
+      g77_cv_compiler_exists=no
       echo "rm -f config.cache config.log multilib.out" > skip-this-dir
     fi
   fi
 fi
 ])
-AC_MSG_RESULT($f77_cv_compiler_exists)
-if test x$f77_cv_compiler_exists = xno
+AC_MSG_RESULT($g77_cv_compiler_exists)
+if test x$g77_cv_compiler_exists = xno
 then
   rm -f Makefile conftest* confdefs* core
   exit 0
@@ -98,11 +98,28 @@ then the target library, then build with \`LANGUAGES=f77'.])])
 # (via com.h).  proj.h and com.h are in gcc/f/, config.h which they need
 # is in gcc/ and the config files are in gcc/config/.
 AC_MSG_CHECKING(f2c integer type)
+# Set this back later below!
 late_ac_cpp=$ac_cpp
-ac_cpp="$late_ac_cpp -I../../gcc/f -I../../gcc -I../../gcc/config"
+late_cflags=$CFLAGS
+##gcc -c  -DIN_GCC -DHAVE_CONFIG_H -I. -I/home/fx/c-e/egcs/gcc -I/home/fx/c-e/egcs/gcc/config -I/home/fx/c-e/egcs/gcc/../include /home/fx/c-e/egcs/gcc/f/proj.c
 if test "$srcdir" != . ; then
-  ac_cpp="$ac_cpp -I$srcdir/../gcc/f -I$srcdir/../gcc -I$srcdir/../gcc/config"
+  extra_includes="-I$srcdir/../gcc/f -I../../gcc -I$srcdir/../gcc -I$srcdir/../include -I$srcdir/../gcc/config"
+else
+  extra_includes="-I../../gcc/f -I../../gcc -I../../include -I../../gcc/config"
 fi
+ac_cpp="$late_ac_cpp -DIN_GCC -DHAVE_CONFIG_H $extra_includes"
+
+# The AC_EGREP_CPPs below have been known to fail when the header
+# path is wrong after things have been moved about; the cpp error status
+# counts for nothing.  First check that there aren't any errors from
+# the headers.
+CFLAGS="$CFLAGS -DHAVE_CONFIG_H -DIN_GCC $extra_includes"
+AC_TRY_COMPILE([#include "proj.h"
+#define FFECOM_DETERMINE_TYPES 1
+#include "com.h"],,,
+AC_MSG_ERROR([Can't run check for integer sizes -- see config.log]))
+CFLAGS=$late_cflags
+
 AC_CACHE_VAL(g77_cv_sys_f2cinteger,
 echo "configure:__oline__: using $ac_cpp" >&AC_FD_CC
 AC_EGREP_CPP(F2C_INTEGER=long int,
@@ -141,15 +158,9 @@ fi
 )
 AC_MSG_RESULT($g77_cv_sys_f2cinteger)
 F2C_INTEGER=$g77_cv_sys_f2cinteger
-ac_cpp=$late_ac_cpp
 AC_SUBST(F2C_INTEGER)
 
 AC_MSG_CHECKING(f2c long int type)
-late_ac_cpp=$ac_cpp
-ac_cpp="$late_ac_cpp -I../../gcc/f -I../../gcc -I../../gcc/config"
-if test "$srcdir" != . ; then
-  ac_cpp="$ac_cpp -I$srcdir/../gcc/f -I$srcdir/../gcc -I$srcdir/../gcc/config"
-fi
 AC_CACHE_VAL(g77_cv_sys_f2clongint,
 echo "configure:__oline__: using $ac_cpp" >&AC_FD_CC
 AC_EGREP_CPP(F2C_LONGINT=long int,
@@ -165,6 +176,7 @@ F2C_LONGINT=long long int
 #endif
 ],
  g77_cv_sys_f2clongint="long int",)
+
 if test "$g77_cv_sys_f2clongint" = ""; then
 echo "configure:__oline__: using $ac_cpp" >&AC_FD_CC
   AC_EGREP_CPP(F2C_LONGINT=long long int,
@@ -188,8 +200,8 @@ fi
 )
 AC_MSG_RESULT($g77_cv_sys_f2clongint)
 F2C_LONGINT=$g77_cv_sys_f2clongint
-ac_cpp=$late_ac_cpp
 AC_SUBST(F2C_LONGINT)
+ac_cpp=$late_ac_cpp
 
 # avoid confusion in case the `makefile's from the f2c distribution have
 # got put here

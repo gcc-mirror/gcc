@@ -1,3 +1,13 @@
+1999-03-28  Dave Love  <fx@gnu.org>
+
+	* configure: Rebuilt.
+
+        * configure.in: Fix integer size tests: sanity check first; search
+        toplevel include dir (from Rainer Orth); only mess with ac_cpp
+        once; use -DIN_GCC -DHAVE_CONFIG_H.
+
+        * configure.in: Use `g77_cv_...', not `f77_cv_...'.
+
 Wed Mar 24 22:41:28 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* configure.in (AC_PREREQ): Update to 2.13.
