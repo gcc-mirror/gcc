@@ -153,8 +153,8 @@ struct trace
 };
 
 /* Maximum frequency and count of one of the entry blocks.  */
-int max_entry_frequency;
-gcov_type max_entry_count;
+static int max_entry_frequency;
+static gcov_type max_entry_count;
 
 /* Local function prototypes.  */
 static void find_traces (int *, struct trace *);
