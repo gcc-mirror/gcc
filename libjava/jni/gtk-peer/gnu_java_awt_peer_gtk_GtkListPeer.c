@@ -192,12 +192,14 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_delItems
   list = CLIST_FROM_SW (ptr);
 
   if (end == -1)		/* special case for removing all rows */
-    end = list->rows;
-
-  gtk_clist_freeze (list);
-  for (i = start; i < end; i++)
-    gtk_clist_remove (list, i);
-  gtk_clist_thaw (list);
+    gtk_clist_clear (list);
+  else
+    {
+      gtk_clist_freeze (list);
+      for (i = end; i >= start; i--)
+        gtk_clist_remove (list, i);
+      gtk_clist_thaw (list);
+    }
 
   gdk_threads_leave ();
 }

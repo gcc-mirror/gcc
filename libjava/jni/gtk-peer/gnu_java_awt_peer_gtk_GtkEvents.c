@@ -813,7 +813,7 @@ generates_key_typed_event (GdkEvent *event, GtkWidget *source)
 void
 awt_event_handler (GdkEvent *event)
 {
-  jobject *event_obj_ptr;
+  jobject *event_obj_ptr = NULL;
   static guint32 button_click_time = 0;
   static GdkWindow *button_window = NULL;
   static guint button_number = -1;
@@ -827,6 +827,24 @@ awt_event_handler (GdkEvent *event)
       return;
     }
 
+  /* If it is not an input event, let the main loop handle it */
+  if (!(event->type == GDK_BUTTON_PRESS
+       || event->type == GDK_BUTTON_RELEASE
+       || event->type == GDK_ENTER_NOTIFY
+       || event->type == GDK_LEAVE_NOTIFY
+       || event->type == GDK_CONFIGURE
+       || event->type == GDK_EXPOSE
+       || event->type == GDK_KEY_PRESS
+       || event->type == GDK_KEY_RELEASE
+       || event->type == GDK_FOCUS_CHANGE
+       || event->type == GDK_MOTION_NOTIFY))
+    {
+      gtk_main_do_event (event);
+      return;
+    }
+
+  /* Handle input events */
+      
   /* keep track of clickCount ourselves, since the AWT allows more
      than a triple click to occur */
   if (event->type == GDK_BUTTON_PRESS)
@@ -845,18 +863,9 @@ awt_event_handler (GdkEvent *event)
 
   /* for all input events, which have a window with a jobject attached,
      send the input event off to Java before GTK has a chance to process
-     the event */
-  if ((event->type == GDK_BUTTON_PRESS
-       || event->type == GDK_BUTTON_RELEASE
-       || event->type == GDK_ENTER_NOTIFY
-       || event->type == GDK_LEAVE_NOTIFY
-       || event->type == GDK_CONFIGURE
-       || event->type == GDK_EXPOSE
-       || event->type == GDK_KEY_PRESS
-       || event->type == GDK_KEY_RELEASE
-       || event->type == GDK_FOCUS_CHANGE
-       || event->type == GDK_MOTION_NOTIFY)
-      && gdk_property_get (event->any.window,
+     the event.  Note that the jobject may be in the parent for widgets
+     that are always inside a scrolled window, like List */
+  if (!gdk_property_get (event->any.window,
 			   gdk_atom_intern ("_GNU_GTKAWT_ADDR", FALSE),
 			   gdk_atom_intern ("CARDINAL", FALSE),
 			   0,
@@ -866,6 +875,31 @@ awt_event_handler (GdkEvent *event)
 			   NULL,
 			   NULL,
 			   (guchar **)&event_obj_ptr))
+    {
+      /* See if is contained in a scrolled pane */
+      GtkWidget *widget;
+      gdk_window_get_user_data (event->any.window, (void **) &widget);
+
+      if ((gtk_widget_get_parent (widget) != NULL)
+          && (gtk_widget_get_parent (widget)->window != NULL))
+        {
+          GtkWidget *parent = gtk_widget_get_parent (widget);
+
+          if (GTK_IS_SCROLLED_WINDOW (parent))
+            gdk_property_get (gtk_widget_get_parent (widget)->window,
+                           gdk_atom_intern ("_GNU_GTKAWT_ADDR", FALSE),
+                           gdk_atom_intern ("CARDINAL", FALSE),
+                           0,
+                           sizeof (jobject),
+                           FALSE,
+                           NULL,
+                           NULL,
+                           NULL,
+                           (guchar **)&event_obj_ptr);
+        }
+    }
+
+  if (event_obj_ptr)
     {
       GtkWidget *event_widget;
       GtkWidget *grab_widget;
@@ -879,30 +913,47 @@ awt_event_handler (GdkEvent *event)
 	  grab_widget = global_gtk_window_group->grabs->data;
 	  g_assert (grab_widget);
 
-	  gdk_property_get (grab_widget->window,
-			    gdk_atom_intern ("_GNU_GTKAWT_ADDR", FALSE),
-			    gdk_atom_intern ("CARDINAL", FALSE),
-			    0,
-			    sizeof (jobject),
-			    FALSE,
-			    NULL,
-			    NULL,
-			    NULL,
-			    (guchar **)&grab_obj_ptr);
-
 	  ptr = NSA_GET_PTR (gdk_env, *event_obj_ptr);
 	  event_widget = GTK_WIDGET(ptr);
 
-	  if (GTK_WIDGET_IS_SENSITIVE (event_widget) &&
-	      gtk_widget_is_ancestor (event_widget, grab_widget))
+	  /* Don't need to do this if it is the same widget as we
+	   *  already got the jobject above.
+	   * Also, don't do it for the BUTTON_PRESS as the focus may be
+	   *  changing and the event widget is the one that must 
+	   *  receive it (again, we have the jobject already) 
+	   */
+          if ((event_widget != grab_widget)
+	      && (event->type != GDK_BUTTON_PRESS))
 	    {
-	      g_free (grab_obj_ptr);
+              /* If the grab widget is an ancestor of the event widget
+               *  then we send the event to the original event widget.
+               *  This is the key to implementing modality.
+	       * Unless the widget is disabled, in this case the grab
+	       *  widget still gets the event.
+	       *  XXX: But the grab widget may not be an ancestor!!!
+               */
+	      if (!GTK_WIDGET_IS_SENSITIVE (event_widget)
+	          || !gtk_widget_is_ancestor (event_widget, grab_widget))
+	        {
+	          gdk_property_get (grab_widget->window,
+			            gdk_atom_intern ("_GNU_GTKAWT_ADDR", FALSE),
+			            gdk_atom_intern ("CARDINAL", FALSE),
+			            0,
+			            sizeof (jobject),
+			            FALSE,
+			            NULL,
+			            NULL,
+			            NULL,
+			            (guchar **)&grab_obj_ptr);
 
-	      grab_obj_ptr = event_obj_ptr;
+	        }
 	    }
 	}
-      else
+
+      if (!grab_obj_ptr)
 	grab_obj_ptr = event_obj_ptr;
+      else
+        g_free (event_obj_ptr);
 
       switch (event->type)
 	{
@@ -1035,7 +1086,7 @@ awt_event_handler (GdkEvent *event)
 		bottom = 6;
 		right = 6;
 
-		(*gdk_env)->CallVoidMethod (gdk_env, *event_obj_ptr,
+		(*gdk_env)->CallVoidMethod (gdk_env, *grab_obj_ptr,
 					    postConfigureEventID,
 					    (jint) event->configure.x,
 					    (jint) event->configure.y,
@@ -1051,7 +1102,7 @@ awt_event_handler (GdkEvent *event)
 	  break;
 	case GDK_EXPOSE:
 	  {
-	    (*gdk_env)->CallVoidMethod (gdk_env, *event_obj_ptr,
+	    (*gdk_env)->CallVoidMethod (gdk_env, *grab_obj_ptr,
 					postExposeEventID,
 					(jint)event->expose.area.x,
 					(jint)event->expose.area.y,
@@ -1082,7 +1133,8 @@ awt_event_handler (GdkEvent *event)
                 /* TextArea peers are attached to the scrolled window
                    that contains the GtkTextView, not to the text view
                    itself. */
-                if (GTK_IS_TEXT_VIEW (window->focus_widget))
+                if (GTK_IS_TEXT_VIEW (window->focus_widget)
+                    || GTK_IS_CLIST (window->focus_widget))
                   obj_window = gtk_widget_get_parent (window->focus_widget)->window;
                 else
                   obj_window = window->focus_widget->window;
@@ -1137,7 +1189,8 @@ awt_event_handler (GdkEvent *event)
 	      {
 		gtk_widget_activate (window->focus_widget);
 
-                if (GTK_IS_TEXT_VIEW (window->focus_widget))
+                if (GTK_IS_TEXT_VIEW (window->focus_widget)
+                    || GTK_IS_CLIST (window->focus_widget))
                   obj_window = gtk_widget_get_parent (window->focus_widget)->window;
                 else
                   obj_window = window->focus_widget->window;
@@ -1165,7 +1218,7 @@ awt_event_handler (GdkEvent *event)
           }
           break;
 	case GDK_FOCUS_CHANGE:
-	  (*gdk_env)->CallVoidMethod (gdk_env, *event_obj_ptr,
+	  (*gdk_env)->CallVoidMethod (gdk_env, *grab_obj_ptr,
 				      postFocusEventID,
 				      (jint) (event->focus_change.in) ? 
 				      AWT_FOCUS_GAINED : AWT_FOCUS_LOST,
@@ -1174,7 +1227,7 @@ awt_event_handler (GdkEvent *event)
         default:
 	  break;
 	}
-      g_free (event_obj_ptr);
+      g_free (grab_obj_ptr);
     }
 
   gtk_main_do_event (event);
