@@ -5,9 +5,9 @@
             and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl).
 
 	
-This file is part of GNU CC.
+This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify it
+GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 2, or (at your option) any
 later version.

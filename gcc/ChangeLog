@@ -1,5 +1,10 @@
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/c4x/c4x-c.c, config/c4x/c4x-modes.def,
+	config/c4x/c4x-protos.h, config/c4x/c4x.c, config/c4x/c4x.h,
+	config/c4x/c4x.md, config/c4x/libgcc.S, config/c4x/rtems.h:
+	GCC, not GNU CC.
+
 	* genattrtab.h, hosthooks-def.h, hosthooks.h, langhooks-def.h,
 	langhooks.h, tree-inline.h: Replace "GNU CC" with "GCC".
 
