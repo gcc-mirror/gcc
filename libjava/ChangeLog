@@ -1,3 +1,13 @@
+2002-01-09  Tom Tromey  <tromey@redhat.com>
+
+	For PR libgcj/5303:
+	* gnu/gcj/convert/Convert.java (error): Program is called
+	`jv-convert'.  Print GNU-style message.  Exit with status 1, not
+	-1.
+	(main): Handle --help and --version.
+	(help): New method.
+	(version): Likewise.
+
 2002-01-08  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -13,11 +13,40 @@ public class Convert
 {
   static void error (String message)
   {
-    System.err.print("convert: ");
+    System.err.print("jv-convert: ");
     System.err.println(message);
-    System.err.println("Usage:  convert [--from srcEncoding] [--to dstEncoding]");
-    System.err.println("  [inputfile [outputfile]]");
-    System.exit(-1);
+    System.err.println("Try `jv-convert --help' for more information.");
+    System.exit(1);
+  }
+
+  static void help ()
+  {
+    System.out.println("Usage: jv-convert [OPTIONS] [INPUTFILE [OUTPUTFILE]]");
+    System.out.println("");
+    System.out.println("Convert from one encoding to another.");
+    System.out.println("");
+    System.out.println("   --encoding FROM");
+    System.out.println("   --from FROM        use FROM as source encoding name");
+    System.out.println("   --to TO            use TO as target encoding name");
+    System.out.println("   -i FILE            read from FILE");
+    System.out.println("   -o FILE            print output to FILE");
+    System.out.println("   --reverse          swap FROM and TO encodings");
+    System.out.println("   --help             print this help, then exit");
+    System.out.println("   --version          print version number, then exit");
+    System.out.println("");
+    System.out.println("`-' as a file name argument can be used to refer to stdin or stdout.");
+    System.exit(0);
+  }
+
+  static void version ()
+  {
+    System.out.println("jv-convert (GNU libgcj) "
+		       + System.getProperty("java.vm.version"));
+    System.out.println("");
+    System.out.println("Copyright 1999, 2002 Free Software Foundation");
+    System.out.println("This is free software; see the source for copying conditions.  There is NO");
+    System.out.println("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
+    System.exit(0);
   }
 
   static void missing (String arg)
@@ -65,6 +94,14 @@ public class Convert
 	    else if (arg.equals("-reverse") || arg.equals("--reverse"))
 	      {
 		reverse = true;
+	      }
+	    else if (arg.equals("-help") || arg.equals("--help"))
+	      {
+		help ();
+	      }
+	    else if (arg.equals("-version") || arg.equals("--version"))
+	      {
+		version ();
 	      }
 	    else if (arg.equals("-"))
 	      {
@@ -143,7 +180,7 @@ public class Convert
       }
     catch (java.io.IOException ex)
       {
-	System.err.print("convert exception: ");
+	System.err.print("jv-convert exception: ");
 	System.err.println(ex);
 	System.exit(-1);
       }
