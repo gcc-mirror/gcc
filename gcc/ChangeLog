@@ -1,3 +1,10 @@
+2004-01-18  Jan Hubicka  <jh@suse.cz>
+
+	* coverage.c (checksum_string): Rename to ...
+	(coverage_checksum_string): ... this one, Use crc32_string; recognize
+	names containing random number and zero the number out in order to get
+	match.
+
 2004-01-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_got_alias_set): Mark for PCH.
