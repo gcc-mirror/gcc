@@ -1,5 +1,7 @@
 2000-03-03  Tom Tromey  <tromey@cygnus.com>
 
+	* Makefile.in: Fixed ia64 by hand.
+
 	* configure: Rebuilt.
 	* configure.in (--enable-multilib): New option.
 	(libffi_basedir): New subst.
