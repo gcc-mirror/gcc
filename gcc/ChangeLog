@@ -1,3 +1,16 @@
+2005-03-01  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/20216
+	* tree-chrec.c (tree_fold_factorial): Delete.
+	(tree_fold_binomial): Change argument list to take a return type
+	and change the type of K to unsigned int.  Rewrite to avoid explicit
+	evaluation of factorials, and (recursively) calling fold to perform
+	compile-time arithmetic.  Return NULL on (internal) overflow.
+	(chrec_evaluate): Change type of K to an unsigned int.  Avoid
+	calling tree_fold_binomial unnecessarily.  Return chrec_dont_know
+	if any intermediate calculation overflows.
+	(chrec_apply): Update call to chrec_evaluate.
+
 2005-03-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/19065.
