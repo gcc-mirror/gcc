@@ -1,3 +1,18 @@
+Thu Dec  2 21:22:45 1999  Greg McGary  <gkm@gnu.org>
+			  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* flags.h (warn_padded, warn_packed): Add global var decls.
+	* toplev.c (warn_padded, warn_packed): Add global var defns.
+	(W_options): Add warnings `-Wpacked' and `-Wpadded'.
+	* stor-layout.c (layout_record): Add local variable `type'
+	to hold often-used TREE_TYPE (field).  Add local variable
+	`unpacked_align' to hold alignment that would be in force
+	if no `packed' attribute were present.  Warn if `packed' attribute
+	is unnecessary, or even harmful.  Warn when gcc inserts padding
+	to satisfy alignment requirements of members.  Use NULL_TREE
+	when checking whether var_size is set.
+	* invoke.texi: Document new flags.
+
 1999-12-03  Nathan Sidwell  <nathan@acm.org>
 
 	* frame.c (fde_split): Reimplement to avoid variable sized array.

@@ -128,7 +128,7 @@ in the following sections.
 -Werror-implicit-function-declaration  -Wfloat-equal -Winline
 -Wlarger-than-@var{len}  -Wlong-long
 -Wmain  -Wmissing-declarations  -Wmissing-noreturn
--Wmultichar  -Wno-import  
+-Wmultichar  -Wno-import  -Wpacked  -Wpadded
 -Wparentheses -Wpointer-arith  -Wredundant-decls
 -Wreturn-type -Wshadow  -Wsign-compare -Wswitch
 -Wtrigraphs -Wundef  -Wuninitialized  -Wunknown-pragmas -Wunreachable-code 
@@ -1430,7 +1430,7 @@ arguments, two, or three arguments of appropriate types.
 Warn if a multicharacter constant (@samp{'FOOF'}) is used.  Usually they
 indicate a typo in the user's code, as they have implementation-defined
 values, and should not be used in portable code.
-  
+
 @item -Wparentheses
 Warn if parentheses are omitted in certain contexts, such
 as when there is an assignment in a context where a truth value
@@ -1797,6 +1797,33 @@ Note these are only possible candidates, not absolute ones.  Care should
 be taken to manually verify functions actually do not ever return before
 adding the @code{noreturn} attribute, otherwise subtle code generation
 bugs could be introduced.
+
+@item -Wpacked
+Warn if a structure is given the packed attribute, but the packed
+attribute has no effect on the layout or size of the structure.  
+Such structures may be mis-aligned for little benefit.  For
+instance, in this code, the variable @code{f.x} in @code{struct bar}
+will be misaligned even though @code{struct bar} does not itself
+have the packed attribute:
+
+@smallexample
+@group
+struct foo @{
+  int x;
+  char a, b, c, d;
+@} __attribute__((packed));
+struct bar @{
+  char z;
+  struct foo f;
+@};
+@end group
+@end smallexample
+
+@item -Wpadded
+Warn if padding is included in a structure, either to align an element
+of the structure or to align the whole structure.  Sometimes when this
+happens it is possible to rearrange the fields of the structure to
+reduce the padding and so make the structure smaller.
 
 @item -Wredundant-decls
 Warn if anything is declared more than once in the same scope, even in

@@ -1258,6 +1258,14 @@ int warn_inline;
 
 int warn_aggregate_return;
 
+/* Warn if packed attribute on struct is unnecessary and inefficient.  */
+
+int warn_packed;
+
+/* Warn when gcc pads a structure to an alignment boundary.  */
+
+int warn_padded;
+
 /* Likewise for -W.  */
 
 lang_independent_options W_options[] =
@@ -1276,7 +1284,11 @@ lang_independent_options W_options[] =
   {"uninitialized", &warn_uninitialized, 1,
    "Warn about unitialized automatic variables"},
   {"inline", &warn_inline, 1,
-   "Warn when an inlined function cannot be inlined"}
+   "Warn when an inlined function cannot be inlined"},
+  {"packed", &warn_packed, 1,
+   "Warn when the packed attribute has no effect on struct layout"},
+  {"padded", &warn_padded, 1,
+   "Warn when padding is required to align struct members"}
 };
 
 /* Output files for assembler code (real compiler output)

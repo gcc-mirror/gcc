@@ -347,6 +347,7 @@ layout_record (rec)
 {
   register tree field;
   unsigned record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (rec));
+  unsigned unpacked_align = record_align;
   /* These must be laid out *after* the record is.  */
   tree pending_statics = NULL_TREE;
   /* Record size so far is CONST_SIZE + VAR_SIZE bits,
@@ -354,11 +355,12 @@ layout_record (rec)
      and VAR_SIZE is a tree expression.
      If VAR_SIZE is null, the size is just CONST_SIZE.
      Naturally we try to avoid using VAR_SIZE.  */
- register HOST_WIDE_INT const_size = 0;
+  register HOST_WIDE_INT const_size = 0;
   register tree var_size = 0;
   /* Once we start using VAR_SIZE, this is the maximum alignment
      that we know VAR_SIZE has.  */
   register int var_align = BITS_PER_UNIT;
+  int packed_maybe_necessary = 0;
 
 #ifdef STRUCTURE_SIZE_BOUNDARY
   /* Packed structures don't need to have minimum size.  */
@@ -370,6 +372,7 @@ layout_record (rec)
     {
       register int known_align = var_size ? var_align : const_size;
       register int desired_align = 0;
+      tree type = TREE_TYPE (field);
 
       /* If FIELD is static, then treat it like a separate variable,
 	 not really like a structure field.
@@ -408,12 +411,10 @@ layout_record (rec)
 	 Otherwise, the alignment of the field within the record
 	 is meaningless.  */
 
-#ifndef PCC_BITFIELD_TYPE_MATTERS
-      record_align = MAX (record_align, desired_align);
-#else
-      if (PCC_BITFIELD_TYPE_MATTERS && TREE_TYPE (field) != error_mark_node
+#ifdef PCC_BITFIELD_TYPE_MATTERS
+      if (PCC_BITFIELD_TYPE_MATTERS && type != error_mark_node
 	  && DECL_BIT_FIELD_TYPE (field)
-	  && ! integer_zerop (TYPE_SIZE (TREE_TYPE (field))))
+	  && ! integer_zerop (TYPE_SIZE (type)))
 	{
 	  /* For these machines, a zero-length field does not
 	     affect the alignment of the structure as a whole.
@@ -422,23 +423,47 @@ layout_record (rec)
 	  if (! integer_zerop (DECL_SIZE (field)))
 	    record_align = MAX ((int)record_align, desired_align);
 	  else if (! DECL_PACKED (field))
-	    desired_align = TYPE_ALIGN (TREE_TYPE (field));
+	    desired_align = TYPE_ALIGN (type);
 	  /* A named bit field of declared type `int'
 	     forces the entire structure to have `int' alignment.  */
 	  if (DECL_NAME (field) != 0)
 	    {
-	      int type_align = TYPE_ALIGN (TREE_TYPE (field));
+	      int type_align = TYPE_ALIGN (type);
 	      if (maximum_field_alignment != 0)
 		type_align = MIN (type_align, maximum_field_alignment);
 	      else if (DECL_PACKED (field))
 		type_align = MIN (type_align, BITS_PER_UNIT);
 
-	      record_align = MAX ((int)record_align, type_align);
+	      record_align = MAX ((int) record_align, type_align);
+	      if (warn_packed)
+		unpacked_align = MAX (unpacked_align, TYPE_ALIGN (type));
 	    }
 	}
       else
-	record_align = MAX ((int)record_align, desired_align);
 #endif
+	{
+	  record_align = MAX ((int) record_align, desired_align);
+	  if (warn_packed)
+	    unpacked_align = MAX (unpacked_align, TYPE_ALIGN (type));
+	}
+
+      if (warn_packed && DECL_PACKED (field))
+	{
+	  if (const_size % TYPE_ALIGN (type) == 0
+	      || (var_align % TYPE_ALIGN (type) == 0
+		  && var_size != NULL_TREE))
+	    {
+	      if (TYPE_ALIGN (type) > desired_align)
+		{
+		  if (STRICT_ALIGNMENT)
+		    warning_with_decl (field, "packed attribute causes inefficient alignment for `%s'");
+		  else
+		    warning_with_decl (field, "packed attribute is unnecessary for `%s'");
+		}
+	    }
+	  else
+	    packed_maybe_necessary = 1;
+	}
 
       /* Does this field automatically have alignment it needs
 	 by virtue of the fields that precede it and the record's
@@ -446,12 +471,15 @@ layout_record (rec)
 
       if (const_size % desired_align != 0
 	  || (var_align % desired_align != 0
-	      && var_size != 0))
+	      && var_size != NULL_TREE))
 	{
 	  /* No, we need to skip space before this field.
 	     Bump the cumulative size to multiple of field alignment.  */
 
-	  if (var_size == 0
+	  if (warn_padded)
+	    warning_with_decl (field, "padding struct to align `%s'");
+
+	  if (var_size == NULL_TREE
 	      || var_align % desired_align == 0)
 	    const_size
 	      = CEIL (const_size, desired_align) * desired_align;
@@ -469,13 +497,13 @@ layout_record (rec)
 #ifdef PCC_BITFIELD_TYPE_MATTERS
       if (PCC_BITFIELD_TYPE_MATTERS
 	  && TREE_CODE (field) == FIELD_DECL
-	  && TREE_TYPE (field) != error_mark_node
+	  && type != error_mark_node
 	  && DECL_BIT_FIELD_TYPE (field)
 	  && !DECL_PACKED (field)
 	  && maximum_field_alignment == 0
 	  && !integer_zerop (DECL_SIZE (field)))
 	{
-	  int type_align = TYPE_ALIGN (TREE_TYPE (field));
+	  int type_align = TYPE_ALIGN (type);
 	  register tree dsize = DECL_SIZE (field);
 	  int field_size = TREE_INT_CST_LOW (dsize);
 
@@ -493,12 +521,12 @@ layout_record (rec)
 #ifdef BITFIELD_NBYTES_LIMITED
       if (BITFIELD_NBYTES_LIMITED
 	  && TREE_CODE (field) == FIELD_DECL
-	  && TREE_TYPE (field) != error_mark_node
+	  && type != error_mark_node
 	  && DECL_BIT_FIELD_TYPE (field)
 	  && !DECL_PACKED (field)
 	  && !integer_zerop (DECL_SIZE (field)))
 	{
-	  int type_align = TYPE_ALIGN (TREE_TYPE (field));
+	  int type_align = TYPE_ALIGN (type);
 	  register tree dsize = DECL_SIZE (field);
 	  int field_size = TREE_INT_CST_LOW (dsize);
 
@@ -556,7 +584,7 @@ layout_record (rec)
 	  const_size += TREE_INT_CST_LOW (dsize);
 	else
 	  {
-	    if (var_size == 0)
+	    if (var_size == NULL_TREE)
 	      var_size = dsize;
 	    else
 	      var_size = size_binop (PLUS_EXPR, var_size, dsize);
@@ -568,7 +596,7 @@ layout_record (rec)
      as one expression and store in the record type.
      Round it up to a multiple of the record's alignment.  */
 
-  if (var_size == 0)
+  if (var_size == NULL_TREE)
     {
       TYPE_SIZE (rec) = bitsize_int (const_size, 0L);
     }
@@ -591,13 +619,59 @@ layout_record (rec)
      the size of TYPE_BINFO to make sure that BINFO_SIZE is available.  */
   if (TYPE_BINFO (rec) && TREE_VEC_LENGTH (TYPE_BINFO (rec)) > 6)
     TYPE_BINFO_SIZE (rec) = TYPE_SIZE (rec);
-
+  
+  {
+    tree unpadded_size = TYPE_SIZE (rec);
 #ifdef ROUND_TYPE_SIZE
-  TYPE_SIZE (rec) = ROUND_TYPE_SIZE (rec, TYPE_SIZE (rec), TYPE_ALIGN (rec));
+    TYPE_SIZE (rec) = ROUND_TYPE_SIZE (rec, TYPE_SIZE (rec), TYPE_ALIGN (rec));
 #else
-  /* Round the size up to be a multiple of the required alignment */
-  TYPE_SIZE (rec) = round_up (TYPE_SIZE (rec), TYPE_ALIGN (rec));
+    /* Round the size up to be a multiple of the required alignment */
+    TYPE_SIZE (rec) = round_up (TYPE_SIZE (rec), TYPE_ALIGN (rec));
 #endif
+    if (warn_padded && var_size == NULL_TREE
+	&& simple_cst_equal (unpadded_size, TYPE_SIZE (rec)) == 0)
+      warning ("padding struct size to alignment boundary");
+  }
+  
+  if (warn_packed && TYPE_PACKED (rec) && !packed_maybe_necessary
+      && var_size == NULL_TREE)
+    {
+      tree unpacked_size;
+      TYPE_PACKED (rec) = 0;
+#ifdef ROUND_TYPE_ALIGN
+      unpacked_align = ROUND_TYPE_ALIGN (rec, TYPE_ALIGN (rec), unpacked_align);
+#else
+      unpacked_align = MAX (TYPE_ALIGN (rec), unpacked_align);
+#endif
+#ifdef ROUND_TYPE_SIZE
+      unpacked_size = ROUND_TYPE_SIZE (rec, TYPE_SIZE (rec), unpacked_align);
+#else
+      unpacked_size = round_up (TYPE_SIZE (rec), unpacked_align);
+#endif
+      if (simple_cst_equal (unpacked_size, TYPE_SIZE (rec)))
+	{
+	  if (TYPE_NAME (rec))
+	    {
+	      char *name;
+	      if (TREE_CODE (TYPE_NAME (rec)) == IDENTIFIER_NODE)
+		name = IDENTIFIER_POINTER (TYPE_NAME (rec));
+	      else
+		name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (rec)));
+	      if (STRICT_ALIGNMENT)
+		warning ("packed attribute causes inefficient alignment for `%s'", name);
+	      else
+		warning ("packed attribute is unnecessary for `%s'", name);
+	    }
+	  else
+	    {
+	      if (STRICT_ALIGNMENT)
+		warning ("packed attribute causes inefficient alignment");
+	      else
+		warning ("packed attribute is unnecessary");
+	    }
+	}
+      TYPE_PACKED (rec) = 1;
+    }
 
   return pending_statics;
 }
