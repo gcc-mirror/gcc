@@ -1,3 +1,8 @@
+2003-09-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/5296
+	* g++.dg/rtti/typeid2.C: New test.
+
 2003-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20030904-1.c: New test.
