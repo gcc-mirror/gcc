@@ -177,8 +177,6 @@ static const struct mcu_type_s avr_mcu_types[] = {
     /* Enhanced, <= 8K.  */
   { "avr4",      4, NULL },
   { "atmega8",   4, "__AVR_ATmega8__" },
-  { "atmega83",  4, "__AVR_ATmega83__" },
-  { "atmega85",  4, "__AVR_ATmega85__" },
   { "atmega8515", 4, "__AVR_ATmega8515__" },
     /* Enhanced, > 8K.  */
   { "avr5",      5, NULL },
@@ -194,7 +192,6 @@ static const struct mcu_type_s avr_mcu_types[] = {
     /* Assembler only.  */
   { "avr1",      1, NULL },
   { "at90s1200", 1, "__AVR_AT90S1200__" },
-  { "attiny10",  1, "__AVR_ATtiny11__" }, /* Yes, tiny11.  */
   { "attiny11",  1, "__AVR_ATtiny11__" },
   { "attiny12",  1, "__AVR_ATtiny12__" },
   { "attiny15",  1, "__AVR_ATtiny15__" },
