@@ -216,10 +216,8 @@ cond_exec_process_insns (start, end, test, prob_val, mod_ok)
       if (GET_CODE (insn) != INSN && GET_CODE (insn) != CALL_INSN)
 	abort ();
 
-      /* Remove USE and CLOBBER insns that get in the way.  */
-      if (reload_completed
-	  && (GET_CODE (PATTERN (insn)) == USE
-	      || GET_CODE (PATTERN (insn)) == CLOBBER))
+      /* Remove USE insns that get in the way.  */
+      if (reload_completed && GET_CODE (PATTERN (insn)) == USE)
 	{
 	  /* ??? Ug.  Actually unlinking the thing is problematic, 
 	     given what we'd have to coordinate with our callers.  */
