@@ -496,8 +496,7 @@ create_builtin_decl (code, type, name)
   tree decl = build_decl (code, get_identifier (name), type);
   if (code == VAR_DECL)
     {
-      DECL_EXTERNAL (decl) = 1;
-      TREE_PUBLIC (decl) = 1;
+      TREE_STATIC (decl) = 1;
       make_decl_rtl (decl, 0, 1);
       pushdecl (decl);
     }
