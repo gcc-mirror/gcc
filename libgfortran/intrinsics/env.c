@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
-#include <alloca.h>
 #include "libgfortran.h"
 
 
@@ -55,7 +54,7 @@ prefix(getenv) (char * name,
     name_len--;
 
   /* Make a null terminated copy of the string.  */
-  name_nt = alloca (name_len + 1);
+  name_nt = gfc_alloca (name_len + 1);
   memcpy (name_nt, name, name_len);
   name_nt[name_len] = '\0'; 
 
@@ -131,7 +130,7 @@ prefix(get_environment_variable_i4)
 	name_len--;
     }
   /* Make a null terminated copy of the name.  */
-  name_nt = alloca (name_len + 1);
+  name_nt = gfc_alloca (name_len + 1);
   memcpy (name_nt, name, name_len);
   name_nt[name_len] = '\0'; 
   
