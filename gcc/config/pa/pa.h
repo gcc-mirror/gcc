@@ -1640,6 +1640,7 @@ bss_section ()								\
   fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
 
 /* Jump tables are executable code and live in the TEXT section on the PA.  */
+#define JUMP_TABLES_IN_TEXT_SECTION
 
 /* This is how to output an element of a case-vector that is relative.
    (The HP-PA does not use such vectors,
