@@ -108,7 +108,7 @@ main (argc, argv)
 
 
       /* NOTE:  If you edit this,
-	 also edit lookup_std_proto in patch-header.c !! */
+	 also edit lookup_std_proto in fix-header.c !! */
       i = hash(name_start) % HASH_SIZE;
       i0 = i;
       if (hash_tab[i] != 0)
