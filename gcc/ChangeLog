@@ -1,3 +1,7 @@
+2000-10-05  Richard Henderson  <rth@cygnus.com>
+
+	* diagnostic.c (output_format): Add missing break.
+
 2000-10-05  Jim Wilson  <wilson@cygnus.com>
 
 	* function.c (fixup_var_refs_1, case SET): When gen_move_insn returns a

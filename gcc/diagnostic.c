@@ -744,6 +744,7 @@ output_format (buffer)
             output_unsigned_decimal
               (buffer, va_arg (output_buffer_format_args (buffer),
                                unsigned int));
+          break;
           
         case 'x':
           if (long_integer)
