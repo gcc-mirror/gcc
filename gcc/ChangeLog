@@ -1,4 +1,4 @@
-2002-04-06  Hans-Peter Nilsson  <hp@bitrange.com>
+2002-04-08  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/t-mmix (TARGET_LIBGCC2_CFLAGS): Don't -Dinhibit_libc
 	here.
