@@ -1371,32 +1371,60 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 dnl
 dnl Check to see if building and using a C++ precompiled header can be done.
 dnl
-dnl GLIBCPP_CHECK_PCH
+dnl GLIBCPP_ENABLE_PCH
 dnl
-dnl If it looks like it may work, flip bits on in include/Makefile.am
+dnl --enable-pch=yes
+dnl default, this shows intent to use stdc++.h.gch If it looks like it
+dnl may work, after some light-hearted attempts to puzzle out compiler
+dnl support, flip bits on in include/Makefile.am
 dnl
-AC_DEFUN(GLIBCPP_CHECK_PCH, [
-  ac_test_CXXFLAGS="${CXXFLAGS+set}"
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS='-Werror -Winvalid-pch -Wno-deprecated -x c++-header'
+dnl --disable-pch
+dnl turns off attempts to use or build stdc++.h.gch.
+dnl
+AC_DEFUN(GLIBCPP_ENABLE_PCH, [dnl
+define([GLIBCPP_ENABLE_PCH_DEFAULT], ifelse($1,,, $1))dnl
+AC_ARG_ENABLE(pch,
+changequote(<<, >>)dnl
+<<  --enable-pch         build pre-compiled libstdc++ includes [default=>>GLIBCPP_ENABLE_PCH_DEFAULT],
+changequote([, ])dnl
+[case "${enableval}" in
+ yes) enable_pch=yes ;;
+ no)  enable_pch=no ;;
+ *)   AC_MSG_ERROR([Unknown argument to enable/disable PCH]) ;;
+ esac],
+enable_pch=GLIBCPP_ENABLE_PCH_DEFAULT)dnl
 
-  AC_MSG_CHECKING([for compiler that seems to compile .gch files])
-  if test x${glibcpp_pch_comp+set} != xset; then
-    AC_CACHE_VAL(glibcpp_pch_comp, [
-      AC_LANG_SAVE
-      AC_LANG_CPLUSPLUS
-      AC_TRY_COMPILE([#include <math.h>
+  if test x$enable_pch = xyes; then
+    ac_test_CXXFLAGS="${CXXFLAGS+set}"
+    ac_save_CXXFLAGS="$CXXFLAGS"
+    CXXFLAGS='-Werror -Winvalid-pch -Wno-deprecated -x c++-header'
+
+    AC_MSG_CHECKING([for compiler that seems to compile .gch files])
+    if test x${glibcpp_pch_comp+set} != xset; then
+      AC_CACHE_VAL(glibcpp_pch_comp, [
+        AC_LANG_SAVE
+        AC_LANG_CPLUSPLUS
+        AC_TRY_COMPILE([#include <math.h>
 		     ],
                      [ $1(0);],
                      [glibcpp_pch_comp=yes], [glibcpp_pch_comp=no])
-      AC_LANG_RESTORE
-    ])
-  fi
-  AC_MSG_RESULT([$glibcpp_pch_comp])
+        AC_LANG_RESTORE
+      ])
+    fi
+    AC_MSG_RESULT([$glibcpp_pch_comp])
 
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  AM_CONDITIONAL(GLIBCPP_BUILD_PCH, test "$glibcpp_pch_comp" = yes)
-  if test "$glibcpp_pch_comp" = yes; then
+    CXXFLAGS="$ac_save_CXXFLAGS"
+  fi
+
+  if test x"$enable_pch" = xyes && test x"$glibcpp_pch_comp" = xno; then
+    enable_pch=no
+  fi
+
+  AC_MSG_CHECKING([for enabled PCH])
+  AC_MSG_RESULT([$enable_pch])
+
+  AM_CONDITIONAL(GLIBCPP_BUILD_PCH, test "$enable_pch" = yes)
+  if test "$enable_pch" = yes; then
 	glibcpp_PCHFLAGS="-include bits/stdc++.h"
   else
 	glibcpp_PCHFLAGS=""
