@@ -1,3 +1,9 @@
+2004-02-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.ac (gcc_cv_ld): Don't set to LD if target is not
+	host, but try LD_FOR_TARGET first.
+	* configure: Rebuilt.
+
 2004-02-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* dbxout.c: Move declaration of dbxout_type_decl outside
