@@ -38,20 +38,23 @@ string prepare(string::size_type len, unsigned nchunks)
   return ret;
 }
 
-void check(istream& stream, const string& str)
+void check(istream& stream, const string& str, unsigned nchunks)
 {
   bool test __attribute__((unused)) = true;
 
   string chunk;
   string::size_type index = 0, index_new = 0;
+  unsigned n = 0;
 
   while (stream >> chunk)
     {
       index_new = str.find(' ', index);
       VERIFY( !str.compare(index, index_new - index, chunk) );
       index = index_new + 1;
+      ++n;
     }
   VERIFY( stream.eof() );
+  VERIFY( n == nchunks );  
 }
 
 // istream& operator>>(istream&, string&)
@@ -59,7 +62,8 @@ void test01()
 {
   const char filename[] = "inserters_extractors-3.txt";
 
-  const string data = prepare(666, 10);
+  const unsigned nchunks = 10;
+  const string data = prepare(666, nchunks);
 
   ofstream ofstrm;
   ofstrm.open(filename);
@@ -68,7 +72,7 @@ void test01()
 
   ifstream ifstrm;
   ifstrm.open(filename);
-  check(ifstrm, data);
+  check(ifstrm, data, nchunks);
   ifstrm.close();
 }
 

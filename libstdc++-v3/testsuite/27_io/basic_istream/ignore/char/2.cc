@@ -16,11 +16,12 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 21.3.7.9 inserters and extractors
+// 27.6.1.3 unformatted input functions
 
 #include <istream>
 #include <string>
 #include <fstream>
+#include <limits>
 #include <testsuite_hooks.h>
 
 using namespace std;
@@ -42,29 +43,28 @@ void check(istream& stream, const string& str, unsigned nchunks, char delim)
 {
   bool test __attribute__((unused)) = true;
 
-  string chunk;
   string::size_type index = 0, index_new = 0;
   unsigned n = 0;
 
-  while (getline(stream, chunk, delim))
+  while (stream.ignore(numeric_limits<streamsize>::max(), delim).good())
     {
       index_new = str.find(delim, index);
-      VERIFY( !str.compare(index, index_new - index, chunk) );
+      VERIFY( stream.gcount() == index_new - index + 1 );
       index = index_new + 1;
       ++n;
     }
-  VERIFY( stream.eof() );
+  VERIFY( stream.gcount() == 0 );
+  VERIFY( !stream.fail() );
   VERIFY( n == nchunks );
 }
 
-// istream& getline(istream&, string&, char)
 void test01()
 {
-  const char filename[] = "inserters_extractors-2.txt";
+  const char filename[] = "istream_ignore.txt";
 
   const char delim = '|';
   const unsigned nchunks = 10;
-  const string data = prepare(777, nchunks, delim);
+  const string data = prepare(555, nchunks, delim);
 
   ofstream ofstrm;
   ofstrm.open(filename);
