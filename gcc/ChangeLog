@@ -1,3 +1,9 @@
+2001-10-28  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/elfos.h(_USING_ELFOS_H): Define.
+	* config/rs6000/rs6000.c: Test for _USING_ELFOS_H rather than USING_SVR4_H
+	to know when to turn on ELF support. (svr4.h includes elfos.h)
+
 2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/invoke.texi: Fix spelling.

@@ -21,6 +21,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+
+/* Define a symbol indicating that we are using elfos.h.  */
+#define _USING_ELFOS_H
+
 /* The prefix to add to user-visible assembler symbols.
 
    For ELF systems the convention is *not* to prepend a leading
