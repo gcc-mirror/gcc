@@ -110,6 +110,7 @@ extern const char *output_fix_trunc PARAMS ((rtx, rtx*));
 extern const char *output_fp_compare PARAMS ((rtx, rtx*, int, int));
 
 extern void i386_dwarf_output_addr_const PARAMS ((FILE*, rtx));
+extern void i386_output_dwarf_dtprel PARAMS ((FILE*, int, rtx));
 extern rtx i386_simplify_dwarf_addr PARAMS ((rtx));
 
 extern void ix86_expand_clear PARAMS ((rtx));

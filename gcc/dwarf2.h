@@ -399,10 +399,12 @@ enum dwarf_location_atom
     DW_OP_push_object_address = 0x97,
     DW_OP_call2 = 0x98,
     DW_OP_call4 = 0x99,
-    DW_OP_calli = 0x9a
+    DW_OP_call_ref = 0x9a,
+    /* GNU extensions.  */
+    DW_OP_GNU_push_tls_address = 0xe0
   };
 
-#define DW_OP_lo_user	0x80	/* Implementation-defined range start.  */
+#define DW_OP_lo_user	0xe0	/* Implementation-defined range start.  */
 #define DW_OP_hi_user	0xff	/* Implementation-defined range end.  */
 
 /* Type encodings.  */

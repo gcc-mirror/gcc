@@ -1,3 +1,22 @@
+2002-09-08  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2.h (DW_OP_call_ref): Rename from DW_OP_calli.
+	(DW_OP_GNU_push_tls_address): New.
+	(DW_OP_lo_user): Fix.
+	* dwarf2out.c (INTERNAL_DW_OP_tls_addr): New.
+	(dwarf_stack_op_name): Handle it, plus other dwarf3 opcodes.
+	(size_of_loc_descr): Likewise.
+	(output_loc_operands): Handle INTERNAL_DW_OP_tls_addr.
+	(add_AT_location_description): Take a dw_loc_descr_ref not an rtx.
+	(loc_descriptor_from_tree): Handle TLS variables.
+	(rtl_for_decl_location): Do avoid_constant_pool_reference here ...
+	(add_location_or_const_value_attribute): ... not here.  Defer
+	to loc_descriptor_from_tree for TLS variables.
+
+	* config/i386/i386.h (ASM_OUTPUT_DWARF_DTPREL): New.
+	* config/i386/i386.c (i386_output_dwarf_dtprel): New.
+	* config/i386/i386-protos.h: Update.
+
 2002-09-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/6405
