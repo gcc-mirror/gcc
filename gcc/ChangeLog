@@ -1,5 +1,8 @@
 2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize):
+	Free nonzero_vars at the end of the function.
+
 	* convert.c (convert_to_integer): Make a CONVERT_EXPR when there is a
 	need to generate code instead of a NOP_EXPR.
 
