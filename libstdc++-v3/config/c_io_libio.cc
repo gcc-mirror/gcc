@@ -204,7 +204,11 @@ namespace std {
     _lock = __lock;
 #endif
     // Don't set the orientation of the stream when initializing.
+#ifdef _GLIBCPP_USE_WCHAR_T
     _IO_no_init(this, 0, 0, &_M_wfile, 0);
+#else /* !defined(_GLIBCPP_USE_WCHAR_T) */
+    _IO_no_init(this, 0, 0, NULL, 0);
+#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
     _IO_JUMPS((_IO_FILE_plus *) this) = &_IO_file_jumps;
     _IO_file_init((_IO_FILE_plus*)this);
   }

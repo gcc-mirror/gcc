@@ -27,6 +27,7 @@
 
 #include <libio.h>
 
+#ifdef _GLIBCPP_USE_WCHAR_T
 
 /* Prototypes of libio's codecvt functions.  */
 static enum __codecvt_result 
@@ -148,3 +149,5 @@ do_length(struct _IO_codecvt *codecvt, __c_mbstate_t *statep,
 static int
 do_max_length(struct _IO_codecvt *codecvt)
 { return 1; }
+
+#endif /* _GLIBCPP_USE_WCHAR_T */

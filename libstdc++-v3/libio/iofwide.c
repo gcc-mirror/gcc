@@ -38,7 +38,7 @@
 # include <langinfo.h>
 #endif
 
-
+#ifdef _GLIBCPP_USE_WCHAR_T
 /* Prototypes of libio's codecvt functions.  */
 static enum __codecvt_result do_out (struct _IO_codecvt *codecvt,
 				     __c_mbstate_t *statep,
@@ -83,7 +83,7 @@ static struct __gconv_trans_data libio_translit =
   .__trans_fct = __gconv_transliterate
 };
 #endif
-
+#endif /* defined(GLIBCPP_USE_WCHAR_T) */
 
 /* Return orientation of stream.  If mode is nonzero try to change
    the orientation first.  */
@@ -104,6 +104,7 @@ _IO_fwide (fp, mode)
   /* Set the orientation appropriately.  */
   if (mode > 0)
     {
+#ifdef _GLIBCPP_USE_WCHAR_T
       struct _IO_codecvt *cc = fp->_codecvt;
 
       fp->_wide_data->_IO_read_ptr = fp->_wide_data->_IO_read_end;
@@ -174,6 +175,9 @@ _IO_fwide (fp, mode)
 
       /* From now on use the wide character callback functions.  */
       ((struct _IO_FILE_plus *) fp)->vtable = fp->_wide_data->_wide_vtable;
+#else /* !defined(_GLIBCPP_USE_WCHAR_T) */
+      mode = fp->_mode;
+#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
     }
 
   /* Set the mode now.  */
@@ -186,6 +190,7 @@ _IO_fwide (fp, mode)
 weak_alias (_IO_fwide, fwide)
 #endif
 
+#ifdef _GLIBCPP_USE_WCHAR_T
 
 static enum __codecvt_result
 do_out (struct _IO_codecvt *codecvt, __c_mbstate_t *statep,
@@ -467,3 +472,5 @@ do_max_length (struct _IO_codecvt *codecvt)
   return MB_CUR_MAX;
 #endif
 }
+
+#endif /* defined(_GLIBCPP_USE_WCHAR_T) */

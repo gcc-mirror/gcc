@@ -303,6 +303,7 @@ namespace std
   template<typename _InternT, typename _ExternT, typename _StateT>
     locale::id codecvt<_InternT, _ExternT, _StateT>::id;
 
+#ifdef _GLIBCPP_USE_WCHAR_T
   // partial specialization
   // This specialization takes advantage of iconv to provide code
   // conversions between a large number of character encodings.
@@ -567,6 +568,7 @@ namespace std
     do_max_length() const throw()
     { return 1; }
 #endif
+#endif /* _GLIBCPP_USE_WCHAR_T */
 
   // codecvt<char, char, mbstate_t> required specialization
   template<>

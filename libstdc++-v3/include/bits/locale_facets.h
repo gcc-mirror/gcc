@@ -39,7 +39,9 @@
 #include <bits/std_ctime.h>	// For struct tm
 #include <typeinfo> 		// For bad_cast, which shouldn't be here.
 #include <bits/std_ios.h>	// For ios_base
+#ifdef _GLIBCPP_USE_WCHAR_T
 #include <bits/std_cwctype.h>	// For wctype_t
+#endif /* _GLIBCPP_USE_WCHAR_T */
 
 namespace std
 {

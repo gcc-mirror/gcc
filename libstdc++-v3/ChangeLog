@@ -1,6 +1,29 @@
 2000-10-29  Mark Mitchell  <mark@codesourcery.com>
 
-	* acinclue.m4 (GLIBCPP_ENABLE_ATOMICITY): Handle IRIX.
+	* config/c_io_libio.cc (basic_file<char>::__basic_file): 
+	Don't pass a NULL _IO_wide_data to _IO_no_init when
+	_GLIBCPP_USE_WCHAR_T is not defined.
+	* config/c_io_libio.h (_IO_codecvt): Don't declare when 
+	_GLIBCPP_USE_WCHAR_T is not defined.
+	* config/c_io_libio_codecvt.c: Don't compile it 
+	when _GLIBCPP_USE_WCHAR_T is not defined.
+	* include/bits/codecvt.h (codecvt<_InternT, _ExternT, __enc_traits):
+	Don't define this specialization when _GLIBCPP_USE_WCHAR_T 
+	is not defined.
+	* include/bits/locale_facets.h (<bits/std_cwctype.h>): Don't
+	include it when _GLIBCPP_USE_WCHAR_T is not defined. 
+	* src/codecvt.cc (__enc_traits::_S_max_size): Don't define
+	when _GLIBCPP_USE_WCHAR_T is not defined.
+	* src/localename.cc (locale::_Impl::_M_construct_collate):
+	Don't call wide-character functions when _GLIBCPP_USE_WCHAR_T is 
+	not defined.
+	(locale::_Impl::_M_construct_ctype): Likewise.
+	(locale::_Impl::_M_construct_monetary): Likewise.
+	(locale::_Impl::_M_construct_numeric): Likewise.
+	(locale::_Impl::_M_construct_time): Likewise.
+	(locale::_Impl::_M_construct_messages): Likewise.
+	
+	* acinclude.m4 (GLIBCPP_ENABLE_ATOMICITY): Handle IRIX.
 	* aclocal.m4: Regenerated.
 	* configure: Likewise.
 	* config/os/irix/bits/atomicity.h: New file.

@@ -31,8 +31,10 @@
 
 namespace std {
 
+#ifdef _GLIBCPP_USE_WCHAR_T
   // Definitions for static const data members of __enc_traits.
   const int __enc_traits::_S_max_size;
+#endif /* _GLIBCPP_USE_WCHAR_T */
 
   // codecvt<char, char, mbstate_t> required specialization
   locale::id codecvt<char, char, mbstate_t>::id;
