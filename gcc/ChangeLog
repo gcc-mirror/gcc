@@ -1,3 +1,8 @@
+2003-04-26  Ben Elliston  <bje@wasabisystems.com>
+
+	* config/arm/arm.c (arm_adjust_cost): Correct logic that tests the
+	return values from recog_memoized().
+
 2003-04-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR opt/8705
