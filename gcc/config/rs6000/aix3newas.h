@@ -26,7 +26,26 @@ Boston, MA 02111-1307, USA.  */
 /* Tell the assembler to assume that all undefined names are external.  */
 
 #undef ASM_SPEC
-#define ASM_SPEC "-u"
+#define ASM_SPEC "-u \
+%{!mcpu*: \
+  %{mpower: %{!mpowerpc*: %{!mpower2: -mpwr}}} \
+  %{mpower2: -mpwrx} \
+  %{mno-power: %{mpowerpc*: -mppc}} \
+  %{mno-power: %{!mpowerpc*: -mcom}} \
+  %{!mno-power: %{mpowerpc*: -m601}} \
+  %{!mno-power: %{!mpowerpc*: %{!mpower2: -mpwr}}}} \
+%{mcpu=common: -mcom} \
+%{mcpu=power: -mpwr} \
+%{mcpu=powerpc: -mppc} \
+%{mcpu=rios: -mpwr} \
+%{mcpu=rios1: -mpwr} \
+%{mcpu=rios2: -mpwrx} \
+%{mcpu=rsc: -mpwr} \
+%{mcpu=rsc1: -mpwr} \
+%{mcpu=403: -mppc} \
+%{mcpu=601: -m601} \
+%{mcpu=603: -mppc} \
+%{mcpu=604: -mppc}"
 
 /* These are not necessary when we pass -u to the assembler, and undefining
    them saves a great deal of space in object files.  */
