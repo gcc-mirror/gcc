@@ -590,14 +590,6 @@ eval_token (pfile, token)
 	{
 	  result.high = 0;
 	  result.low = (token->val.node == pfile->spec_nodes.n_true);
-
-	  /* Warn about use of true or false in #if when pedantic
-	     and stdbool.h has not been included.  */
-	  if (CPP_PEDANTIC (pfile)
-	      && ! cpp_defined (pfile, DSC("__bool_true_false_are_defined")))
-	    cpp_error (pfile, DL_PEDWARN,
-		       "ISO C++ does not permit \"%s\" in #if",
-		       NODE_NAME (token->val.node));
 	}
       else
 	{

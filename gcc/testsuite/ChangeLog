@@ -1,5 +1,10 @@
 2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
 
+	* gcc.dg/cpp/truefalse.cpp: New test.
+	* gcc.dg/cpp/cpp.exp: Update.
+
+2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
+
 	* gcc.dg/cpp/_Pragma4.c: Remove stray space.
 	* gcc.dg/cpp/trad/escaped-eof.c: Correct line number.
 
