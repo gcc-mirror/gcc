@@ -3,28 +3,28 @@
    Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk).
    
-This file is part of GNU CC.
+   This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 2, or (at your
+   option) any later version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING.  If not, write to
+   the Free Software Foundation, 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
 
 #ifndef ARM_OS_NAME
 #define ARM_OS_NAME "(generic)"
 #endif
 
-/* The text to go at the start of the assembler file */
+/* The text to go at the start of the assembler file.  */
 #ifndef ASM_FILE_START
 #define ASM_FILE_START(STREAM)		    \
 {					    \
@@ -52,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Note: If USER_LABEL_PREFIX or LOCAL_LABEL_PREFIX are changed,
    make sure that this change is reflected in the function
-   coff_arm_is_local_label_name() in bfd/coff-arm.c  */
+   coff_arm_is_local_label_name() in bfd/coff-arm.c.  */
 #ifndef REGISTER_PREFIX
 #define REGISTER_PREFIX 	""
 #endif
@@ -169,7 +169,7 @@ Boston, MA 02111-1307, USA.  */
 }
 #endif
 
-/* Arm Assembler barfs on dollars */
+/* Arm Assembler barfs on dollars.  */
 #define DOLLARS_IN_IDENTIFIERS 0
 
 #ifndef NO_DOLLAR_IN_LABEL
@@ -177,7 +177,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Generate DBX debugging information.  riscix.h will undefine this because
-   the native assembler does not support stabs. */
+   the native assembler does not support stabs.  */
 #define DBX_DEBUGGING_INFO 1
 
 /* Acorn dbx moans about continuation chars, so don't use any.  */
@@ -257,7 +257,7 @@ Boston, MA 02111-1307, USA.  */
   while (0)
 #endif
 
-/* Output a common block */
+/* Output a common block.  */
 #ifndef ASM_OUTPUT_COMMON
 #define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)	\
   do							\
