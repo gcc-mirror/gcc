@@ -1,5 +1,11 @@
 2003-03-23  Richard Henderson  <rth@redhat.com>
 
+	* cfgcleanup.c (try_optimize_cfg): Allow merging of tablejumps
+	before flow2.
+	* cfgrtl.c (try_redirect_by_replacing_jump): Similarly.
+
+2003-03-23  Richard Henderson  <rth@redhat.com>
+
 	PR opt/10116
 	* ifcvt.c (find_if_block): Disallow tablejump insns outgoing
 	from then_bb or else_bb after flow2.
