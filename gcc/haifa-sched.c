@@ -1386,7 +1386,7 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
      int *num_succs;
      sbitmap *dom;
 {
-  int *max_hdr, *dfs_nr, *stack, *queue, *degree;
+  int *max_hdr, *dfs_nr, *stack, *degree;
   char no_loops = 1;
   int node, child, loop_head, i, head, tail;
   int count = 0, sp, idx = 0, current_edge = out_edges[0];
@@ -1418,10 +1418,9 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
      STACK, SP and DFS_NR are only used during the first traversal.  */
 
   /* Allocate and initialize variables for the first traversal.  */
-  max_hdr = (int *) alloca (n_basic_blocks * sizeof (int));
-  dfs_nr = (int *) alloca (n_basic_blocks * sizeof (int));
-  bzero ((char *) dfs_nr, n_basic_blocks * sizeof (int));
-  stack = (int *) alloca (nr_edges * sizeof (int));
+  max_hdr = (int *) xmalloc (n_basic_blocks * sizeof (int));
+  dfs_nr = (int *) xcalloc (n_basic_blocks, sizeof (int));
+  stack = (int *) xmalloc (nr_edges * sizeof (int));
 
   inner = sbitmap_alloc (n_basic_blocks);
   sbitmap_ones (inner);
@@ -1551,13 +1550,15 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
      blocks.  */
   if (!unreachable)
     {
+      int *queue;
+
       if (no_loops)
 	SET_BIT (header, 0);
 
       /* Second travsersal:find reducible inner loops and topologically sort
 	 block of each region.  */
 
-      queue = (int *) alloca (n_basic_blocks * sizeof (int));
+      queue = (int *) xmalloc (n_basic_blocks * sizeof (int));
 
       /* Find blocks which are inner loop headers.  We still have non-reducible
 	 loops to consider at this point.  */
@@ -1769,6 +1770,7 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 		}
 	    }
 	}
+      free (queue);
     }
 
   /* Any block that did not end up in a region is placed into a region
@@ -1783,6 +1785,9 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
 	BLOCK_TO_BB (i) = 0;
       }
 
+  free (max_hdr);
+  free (dfs_nr);
+  free (stack);
   free (passed);
   free (header);
   free (inner);
@@ -1883,12 +1888,13 @@ split_edges (bb_src, bb_trg, bl)
      edgelst *bl;
 {
   int es = edgeset_size;
-  edgeset src = (edgeset) alloca (es * sizeof (HOST_WIDE_INT));
+  edgeset src = (edgeset) xmalloc (es * sizeof (HOST_WIDE_INT));
 
   while (es--)
     src[es] = (pot_split[bb_src])[es];
   BITSET_DIFFER (src, pot_split[bb_trg], edgeset_size);
   extract_bitlst (src, edgeset_size, bl);
+  free (src);
 }
 
 
@@ -5795,8 +5801,8 @@ schedule_block (bb, rgn_n_insns)
   /* Prepare current target block info.  */
   if (current_nr_blocks > 1)
     {
-      candidate_table = (candidate *) alloca (current_nr_blocks 
-					      * sizeof (candidate));
+      candidate_table = (candidate *) xmalloc (current_nr_blocks 
+					       * sizeof (candidate));
 
       bblst_last = 0;
       /* ??? It is not clear why bblst_size is computed this way.  The original
@@ -5805,11 +5811,11 @@ schedule_block (bb, rgn_n_insns)
 	 members) seems to be a reasonable solution.  */
       /* ??? Or perhaps there is a bug somewhere else in this file?  */
       bblst_size = (current_nr_blocks - bb) * rgn_nr_edges * 2;
-      bblst_table = (int *) alloca (bblst_size * sizeof (int));
+      bblst_table = (int *) xmalloc (bblst_size * sizeof (int));
 
       bitlst_table_last = 0;
       bitlst_table_size = rgn_nr_edges;
-      bitlst_table = (int *) alloca (rgn_nr_edges * sizeof (int));
+      bitlst_table = (int *) xmalloc (rgn_nr_edges * sizeof (int));
 
       compute_trg_info (bb);
     }
@@ -5817,7 +5823,7 @@ schedule_block (bb, rgn_n_insns)
   clear_units ();
 
   /* Allocate the ready list.  */
-  ready = (rtx *) alloca ((rgn_n_insns + 1) * sizeof (rtx));
+  ready = (rtx *) xmalloc ((rgn_n_insns + 1) * sizeof (rtx));
 
   /* Print debugging information.  */
   if (sched_verbose >= 5)
@@ -6099,6 +6105,15 @@ schedule_block (bb, rgn_n_insns)
 	       INSN_UID (BLOCK_END (b)));
     }
 
+  /* Clean up.  */
+  if (current_nr_blocks > 1)
+    {
+      free (candidate_table);
+      free (bblst_table);
+      free (bitlst_table);
+    }
+  free (ready);
+
   return (sched_n_insns);
 }				/* schedule_block () */
 
@@ -6312,13 +6327,9 @@ compute_block_backward_dependences (bb)
 
   if (current_nr_blocks == 1)
     {
-      reg_last_uses = (rtx *) alloca (max_reg * sizeof (rtx));
-      reg_last_sets = (rtx *) alloca (max_reg * sizeof (rtx));
-      reg_last_clobbers = (rtx *) alloca (max_reg * sizeof (rtx));
-
-      bzero ((char *) reg_last_uses, max_reg * sizeof (rtx));
-      bzero ((char *) reg_last_sets, max_reg * sizeof (rtx));
-      bzero ((char *) reg_last_clobbers, max_reg * sizeof (rtx));
+      reg_last_uses = (rtx *) xcalloc (max_reg, sizeof (rtx));
+      reg_last_sets = (rtx *) xcalloc (max_reg, sizeof (rtx));
+      reg_last_clobbers = (rtx *) xcalloc (max_reg, sizeof (rtx));
 
       pending_read_insns = 0;
       pending_read_mems = 0;
@@ -6515,6 +6526,12 @@ compute_block_backward_dependences (bb)
       bb_reg_last_sets[bb] = (rtx *) NULL_RTX;
       bb_reg_last_clobbers[bb] = (rtx *) NULL_RTX;
     }
+  else if (current_nr_blocks == 1)
+    {
+      free (reg_last_uses);
+      free (reg_last_sets);
+      free (reg_last_clobbers);
+    }
 }
 
 /* Print dependences for debugging, callable from debugger.  */
@@ -6660,6 +6677,9 @@ schedule_region (rgn)
   int bb;
   int rgn_n_insns = 0;
   int sched_rgn_n_insns = 0;
+  rtx *bb_reg_last_uses_space = NULL;
+  rtx *bb_reg_last_sets_space = NULL;
+  rtx *bb_reg_last_clobbers_space = NULL;
 
   /* Set variables for the current region.  */
   current_nr_blocks = RGN_NR_BLOCKS (rgn);
@@ -6675,37 +6695,41 @@ schedule_region (rgn)
       rtx *space;
       int maxreg = max_reg_num ();
 
-      bb_reg_last_uses = (rtx **) alloca (current_nr_blocks * sizeof (rtx *));
-      space = (rtx *) alloca (current_nr_blocks * maxreg * sizeof (rtx));
-      bzero ((char *) space, current_nr_blocks * maxreg * sizeof (rtx));
-      init_rtx_vector (bb_reg_last_uses, space, current_nr_blocks,
-		       maxreg * sizeof (rtx *));
+      bb_reg_last_uses = (rtx **) xmalloc (current_nr_blocks * sizeof (rtx *));
+      bb_reg_last_uses_space 
+	= (rtx *) xcalloc (current_nr_blocks * maxreg, sizeof (rtx));
+      init_rtx_vector (bb_reg_last_uses, bb_reg_last_uses_space, 
+		       current_nr_blocks, maxreg * sizeof (rtx *));
 
-      bb_reg_last_sets = (rtx **) alloca (current_nr_blocks * sizeof (rtx *));
-      space = (rtx *) alloca (current_nr_blocks * maxreg * sizeof (rtx));
-      bzero ((char *) space, current_nr_blocks * maxreg * sizeof (rtx));
-      init_rtx_vector (bb_reg_last_sets, space, current_nr_blocks,
-		       maxreg * sizeof (rtx *));
+      bb_reg_last_sets = (rtx **) xmalloc (current_nr_blocks * sizeof (rtx *));
+      bb_reg_last_sets_space 
+	= (rtx *) xcalloc (current_nr_blocks * maxreg, sizeof (rtx));
+      init_rtx_vector (bb_reg_last_sets, bb_reg_last_sets_space, 
+		       current_nr_blocks, maxreg * sizeof (rtx *));
 
       bb_reg_last_clobbers =
-	(rtx **) alloca (current_nr_blocks * sizeof (rtx *));
-      space = (rtx *) alloca (current_nr_blocks * maxreg * sizeof (rtx));
-      bzero ((char *) space, current_nr_blocks * maxreg * sizeof (rtx));
-      init_rtx_vector (bb_reg_last_clobbers, space, current_nr_blocks,
-		       maxreg * sizeof (rtx *));
+	(rtx **) xmalloc (current_nr_blocks * sizeof (rtx *));
+      bb_reg_last_clobbers_space 
+	= (rtx *) xcalloc (current_nr_blocks * maxreg, sizeof (rtx));
+      init_rtx_vector (bb_reg_last_clobbers, bb_reg_last_clobbers_space, 
+		       current_nr_blocks, maxreg * sizeof (rtx *));
 
-      bb_pending_read_insns = (rtx *) alloca (current_nr_blocks * sizeof (rtx));
-      bb_pending_read_mems = (rtx *) alloca (current_nr_blocks * sizeof (rtx));
+      bb_pending_read_insns 
+	= (rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
+      bb_pending_read_mems 
+	= (rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
       bb_pending_write_insns =
-	(rtx *) alloca (current_nr_blocks * sizeof (rtx));
-      bb_pending_write_mems = (rtx *) alloca (current_nr_blocks * sizeof (rtx));
+	(rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
+      bb_pending_write_mems 
+	= (rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
       bb_pending_lists_length =
-	(int *) alloca (current_nr_blocks * sizeof (int));
+	(int *) xmalloc (current_nr_blocks * sizeof (int));
       bb_last_pending_memory_flush =
-	(rtx *) alloca (current_nr_blocks * sizeof (rtx));
-      bb_last_function_call = (rtx *) alloca (current_nr_blocks * sizeof (rtx));
+	(rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
+      bb_last_function_call 
+	= (rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
       bb_sched_before_next_call =
-	(rtx *) alloca (current_nr_blocks * sizeof (rtx));
+	(rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
 
       init_rgn_data_dependences (current_nr_blocks);
     }
@@ -6735,23 +6759,20 @@ schedule_region (rgn)
     {
       int i;
 
-      prob = (float *) alloca ((current_nr_blocks) * sizeof (float));
+      prob = (float *) xmalloc ((current_nr_blocks) * sizeof (float));
 
       bbset_size = current_nr_blocks / HOST_BITS_PER_WIDE_INT + 1;
-      dom = (bbset *) alloca (current_nr_blocks * sizeof (bbset));
+      dom = (bbset *) xmalloc (current_nr_blocks * sizeof (bbset));
       for (i = 0; i < current_nr_blocks; i++)
-	{
-	  dom[i] = (bbset) alloca (bbset_size * sizeof (HOST_WIDE_INT));
-	  bzero ((char *) dom[i], bbset_size * sizeof (HOST_WIDE_INT));
-	}
+	dom[i] = (bbset) xcalloc (bbset_size, sizeof (HOST_WIDE_INT));
 
       /* Edge to bit.  */
       rgn_nr_edges = 0;
-      edge_to_bit = (int *) alloca (nr_edges * sizeof (int));
+      edge_to_bit = (int *) xmalloc (nr_edges * sizeof (int));
       for (i = 1; i < nr_edges; i++)
 	if (CONTAINING_RGN (FROM_BLOCK (i)) == rgn)
 	  EDGE_TO_BIT (i) = rgn_nr_edges++;
-      rgn_edges = (int *) alloca (rgn_nr_edges * sizeof (int));
+      rgn_edges = (int *) xmalloc (rgn_nr_edges * sizeof (int));
 
       rgn_nr_edges = 0;
       for (i = 1; i < nr_edges; i++)
@@ -6760,19 +6781,15 @@ schedule_region (rgn)
 
       /* Split edges.  */
       edgeset_size = rgn_nr_edges / HOST_BITS_PER_WIDE_INT + 1;
-      pot_split = (edgeset *) alloca (current_nr_blocks * sizeof (edgeset));
-      ancestor_edges = (edgeset *) alloca (current_nr_blocks 
-					   * sizeof (edgeset));
+      pot_split = (edgeset *) xmalloc (current_nr_blocks * sizeof (edgeset));
+      ancestor_edges 
+	= (edgeset *) xmalloc (current_nr_blocks * sizeof (edgeset));
       for (i = 0; i < current_nr_blocks; i++)
 	{
 	  pot_split[i] =
-	    (edgeset) alloca (edgeset_size * sizeof (HOST_WIDE_INT));
-	  bzero ((char *) pot_split[i],
-		 edgeset_size * sizeof (HOST_WIDE_INT));
+	    (edgeset) xcalloc (edgeset_size, sizeof (HOST_WIDE_INT));
 	  ancestor_edges[i] =
-	    (edgeset) alloca (edgeset_size * sizeof (HOST_WIDE_INT));
-	  bzero ((char *) ancestor_edges[i],
-		 edgeset_size * sizeof (HOST_WIDE_INT));
+	    (edgeset) xcalloc (edgeset_size, sizeof (HOST_WIDE_INT));
 	}
 
       /* Compute probabilities, dominators, split_edges.  */
@@ -6782,13 +6799,7 @@ schedule_region (rgn)
 
   /* Now we can schedule all blocks.  */
   for (bb = 0; bb < current_nr_blocks; bb++)
-    {
-      sched_rgn_n_insns += schedule_block (bb, rgn_n_insns);
-
-#ifdef USE_C_ALLOCA
-      alloca (0);
-#endif
-    }
+    sched_rgn_n_insns += schedule_block (bb, rgn_n_insns);
 
   /* Sanity check: verify that all region insns were scheduled.  */
   if (sched_rgn_n_insns != rgn_n_insns)
@@ -6806,6 +6817,38 @@ schedule_region (rgn)
 
   FREE_REG_SET (reg_pending_sets);
   FREE_REG_SET (reg_pending_clobbers);
+
+  if (current_nr_blocks > 1)
+    {
+      int i;
+
+      free (bb_reg_last_uses_space);
+      free (bb_reg_last_uses);
+      free (bb_reg_last_sets_space);
+      free (bb_reg_last_sets);
+      free (bb_reg_last_clobbers_space);
+      free (bb_reg_last_clobbers);
+      free (bb_pending_read_insns);
+      free (bb_pending_read_mems);
+      free (bb_pending_write_insns);
+      free (bb_pending_write_mems);
+      free (bb_pending_lists_length);
+      free (bb_last_pending_memory_flush);
+      free (bb_last_function_call);
+      free (bb_sched_before_next_call);
+      free (prob);
+      for (i = 0; i < current_nr_blocks; ++i)
+	{
+	  free (dom[i]);
+	  free (pot_split[i]);
+	  free (ancestor_edges[i]);
+	}
+      free (dom);
+      free (edge_to_bit);
+      free (rgn_edges);
+      free (pot_split);
+      free (ancestor_edges);
+    }
 }
 
 /* The one entry point in this file.  DUMP_FILE is the dump file for
@@ -6892,10 +6935,10 @@ schedule_insns (dump_file)
     }
 
   nr_regions = 0;
-  rgn_table = (region *) alloca ((n_basic_blocks) * sizeof (region));
-  rgn_bb_table = (int *) alloca ((n_basic_blocks) * sizeof (int));
-  block_to_bb = (int *) alloca ((n_basic_blocks) * sizeof (int));
-  containing_rgn = (int *) alloca ((n_basic_blocks) * sizeof (int));
+  rgn_table = (region *) xmalloc ((n_basic_blocks) * sizeof (region));
+  rgn_bb_table = (int *) xmalloc ((n_basic_blocks) * sizeof (int));
+  block_to_bb = (int *) xmalloc ((n_basic_blocks) * sizeof (int));
+  containing_rgn = (int *) xmalloc ((n_basic_blocks) * sizeof (int));
 
   blocks = sbitmap_alloc (n_basic_blocks);
   large_region_blocks = sbitmap_alloc (n_basic_blocks);
@@ -6922,12 +6965,12 @@ schedule_insns (dump_file)
 	  int *num_preds, *num_succs;
 	  sbitmap *dom, *pdom;
 
-	  s_preds = (int_list_ptr *) alloca (n_basic_blocks
-					     * sizeof (int_list_ptr));
-	  s_succs = (int_list_ptr *) alloca (n_basic_blocks
-					     * sizeof (int_list_ptr));
-	  num_preds = (int *) alloca (n_basic_blocks * sizeof (int));
-	  num_succs = (int *) alloca (n_basic_blocks * sizeof (int));
+	  s_preds = (int_list_ptr *) xmalloc (n_basic_blocks
+					      * sizeof (int_list_ptr));
+	  s_succs = (int_list_ptr *) xmalloc (n_basic_blocks
+					      * sizeof (int_list_ptr));
+	  num_preds = (int *) xmalloc (n_basic_blocks * sizeof (int));
+	  num_succs = (int *) xmalloc (n_basic_blocks * sizeof (int));
 	  dom = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
 	  pdom = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
 
@@ -6966,6 +7009,10 @@ schedule_insns (dump_file)
 	  free_bb_mem ();
 	  free (dom);
 	  free (pdom);
+	  free (s_preds);
+	  free (s_succs);
+	  free (num_preds);
+	  free (num_succs);
 	}
     }
 
@@ -6987,7 +7034,7 @@ schedule_insns (dump_file)
   insn_dep_count = (int *) xcalloc (max_uid, sizeof (int));
   insn_depend = (rtx *) xcalloc (max_uid, sizeof (rtx));
 
-  deaths_in_region = (int *) alloca (sizeof(int) * nr_regions);
+  deaths_in_region = (int *) xmalloc (sizeof(int) * nr_regions);
 
   init_alias_analysis ();
 
@@ -6996,8 +7043,7 @@ schedule_insns (dump_file)
       rtx line;
 
       line_note = (rtx *) xcalloc (max_uid, sizeof (rtx));
-      line_note_head = (rtx *) alloca (n_basic_blocks * sizeof (rtx));
-      bzero ((char *) line_note_head, n_basic_blocks * sizeof (rtx));
+      line_note_head = (rtx *) xcalloc (n_basic_blocks, sizeof (rtx));
 
       /* Save-line-note-head:
          Determine the line-number at the start of each basic block.
@@ -7048,13 +7094,7 @@ schedule_insns (dump_file)
 
   /* Schedule every region in the subroutine.  */
   for (rgn = 0; rgn < nr_regions; rgn++)
-    {
-      schedule_region (rgn);
-
-#ifdef USE_C_ALLOCA
-      alloca (0);
-#endif
-    }
+    schedule_region (rgn);
 
   /* Update life analysis for the subroutine.  Do single block regions
      first so that we can verify that live_at_start didn't change.  Then
@@ -7131,6 +7171,10 @@ schedule_insns (dump_file)
       free (true_dependency_cache);
       true_dependency_cache = NULL;
     }
+  free (rgn_table);
+  free (rgn_bb_table);
+  free (block_to_bb);
+  free (containing_rgn);
   free (cant_move);
   free (fed_by_spec_load);
   free (is_load_insn);
@@ -7148,7 +7192,10 @@ schedule_insns (dump_file)
   free (insn_depend);
 
   if (write_symbols != NO_DEBUG)
-    free (line_note);
+    {
+      free (line_note);
+      free (line_note_head);
+    }
 
   if (edge_table)
     {
@@ -7169,5 +7216,8 @@ schedule_insns (dump_file)
 
   sbitmap_free (blocks);
   sbitmap_free (large_region_blocks);
+
+  free (deaths_in_region);
 }
+
 #endif /* INSN_SCHEDULING */
