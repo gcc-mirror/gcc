@@ -2550,7 +2550,7 @@ convert_regs_1 (file, block)
       /* Care for EH edges specially.  The normal return path may return
 	 a value in st(0), but the EH path will not, and there's no need
 	 to add popping code to the edge.  */
-      if (e->flags & EDGE_EH)
+      if (e->flags & (EDGE_EH | EDGE_ABNORMAL_CALL))
 	{
 	  /* Assert that the lifetimes are as we expect -- one value
 	     live at st(0) on the end of the source block, and no

@@ -1,4 +1,12 @@
-2000-04-26  Jason Merrill  <jason@casey.cygnus.com>
+2000-04-25  Richard Henderson  <rth@cygnus.com>
+
+	* calls.c (expand_call): Disable tail call generation once
+	rtx_equal_function_value_matters is false.
+
+	* reg-stack.c (convert_regs_1): Treat EDGE_ABNORMAL_CALL edges
+	like EDGE_EH edges.
+
+2000-04-25  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (add_bound_info): Don't crash on an unexpanded SAVE_EXPR.
 
