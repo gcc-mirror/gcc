@@ -1,6 +1,13 @@
 2003-10-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (money_get::do_get(...,
+	string_type&): Disregard the previous commit: doesn't hurt but
+	doesn't accomplish anything useful either. This is the right
+	one, speeding up greatly the function in case of early fail.
+
+2003-10-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (money_get::do_get(...,
 	string_type&): Move an if block, thus minimizing the amount
 	of code processed anyway when __tmp_units.size() == 0.
 
