@@ -1,3 +1,45 @@
+2003-12-02  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* configure.in: Added new MinGW-specific configure flag
+	--with-win32-nlsapi.
+	Added new AC_DEFINE MINGW_LIBGCJ_UNICODE.
+	Add -lunicows to MinGW SYSTEMSPEC if --with-win32-nlsapi
+	is set to unicows.
+	* configure: Rebuilt.
+	* include/config.h.in: Rebuilt.
+	* win32.cc (_Jv_Win32NewString): Implemented.
+	(nativeToUnicode): New helper function defined only for
+	non-UNICODE builds.
+	(unicodeToNative): Likewise.
+	(_Jv_Win32TempString): Implemented.
+	(lots): Refactored using tchar.h macros.
+	(WSAEventWrapper): Use _Jv_Win32NewString.
+	(_Jv_platform_initialize): Use GetModuleFileNameA instead
+	of GetModuleFileName.
+	(_Jv_platform_initProperties): Use _Jv_Win32NewString.
+	Use temporary stack buffer instead of a heap buffer.
+	* include/win32.h
+	Added defines for UNICODE and _UNICODE if MINGW_LIBGCJ_UNICODE is
+	defined; added tchar.h include.
+	(_Jv_Win32TempString): Declared new helper class.
+	(JV_TEMP_STRING_WIN32): New helper macro.
+	(_Jv_Win32NewString): Declared new helper method.
+	* java/io/natFileDescriptorWin32.cc (open): Use
+	JV_TEMP_STRING_WIN32 instead of JV_TEMP_UTF_STRING.
+	(write): Reformatted slightly.
+	* java/io/natFileWin32.cc (lots): Use tchar.h macros;
+	use JV_TEMP_STRING_WIN32 instead of JV_TEMP_UTF_STRING.
+	(getCanonicalPath): Use _Jv_Win32NewString instead of
+	JvNewStringUTF.
+	(performList): Likewise.
+	* java/lang/natWin32Process.cc (ChildProcessPipe):
+	Use tchar.h macros.
+	(startProcess): Use tchar.h macros, JV_TEMP_STRING_WIN32,
+	and UNICODE environment flag for CreateProcess.
+	* java/net/natNetworkInterfaceWin32.cc
+	(winsock2GetRealNetworkInterfaces): Use tchar.h macros and
+	_Jv_Win32NewString.
+
 2003-12-02  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.c

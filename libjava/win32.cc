@@ -42,6 +42,106 @@ const char *_Jv_ThisExecutable (void)
 
 // Helper classes and methods implementation
   
+#ifdef MINGW_LIBGCJ_UNICODE
+
+// We're using the OS W (UNICODE) API, which means that we're speaking
+// the same language....
+jstring
+_Jv_Win32NewString (LPCTSTR pcsz)
+{
+  return JvNewString ((jchar*) pcsz, _tcslen (pcsz));
+}
+
+#else
+
+// We're using the OS A functions, which means we need to translate between
+// UNICODE and the native character set.
+
+// First, let's set up some helper translation functions....
+
+// Converts the native string to any specified jstring, returning the
+// length of the jstring. If the specified jstring is null, we simply
+// compute and return the length.
+static int nativeToUnicode(LPCSTR pcsz, jstring jstr = 0)
+{
+  jchar* buf = 0;
+  int len = 0;
+  if (jstr)
+    {
+      len = jstr->length();
+      buf = JvGetStringChars(jstr);
+    }
+  return ::MultiByteToWideChar(GetACP(), 0, pcsz,
+    strlen(pcsz), (LPWSTR) buf, len);
+}
+
+// Does the inverse of nativeToUnicode, with the same calling semantics.
+static int unicodeToNative(jstring jstr, LPSTR buf, int buflen)
+{
+  return ::WideCharToMultiByte(GetACP(), 0, (LPWSTR) JvGetStringChars(jstr),
+    jstr->length(), buf, buflen, NULL, NULL);
+}
+
+// Convenience function when the caller only wants to compute the length
+// of the native string.
+static int unicodeToNative(jstring jstr)
+{
+  return unicodeToNative(jstr, 0, 0);
+}
+
+jstring
+_Jv_Win32NewString (LPCTSTR pcsz)
+{
+  // Compute the length, allocate the jstring, then perform the conversion.
+  int len = nativeToUnicode(pcsz);
+  jstring jstr = JvAllocString(len);
+  nativeToUnicode(pcsz, jstr);
+  return jstr;
+}
+
+#endif // MINGW_LIBGCJ_UNICODE
+
+// class _Jv_Win32TempString
+_Jv_Win32TempString::_Jv_Win32TempString(jstring jstr):
+  buf_(0)
+{
+  if (jstr == 0)
+    return;
+    
+  // We need space for the string length plus a null terminator.
+  // Determine whether to use our stack-allocated buffer or a heap-
+  // allocated one.
+#ifdef MINGW_LIBGCJ_UNICODE
+  // A UNICODE character is a UNICODE character is a UNICODE character....
+  int len = jstr->length();
+#else
+  // Compute the length of the native character string.
+  int len = unicodeToNative(jstr);
+#endif // MINGW_LIBGCJ_UNICODE
+
+  int bytesNeeded = (len + 1) * sizeof(TCHAR);
+  if (bytesNeeded <= (int) sizeof(stackbuf_))
+    buf_ = stackbuf_;
+  else
+    buf_ = (LPTSTR) _Jv_Malloc(bytesNeeded);
+    
+#ifdef MINGW_LIBGCJ_UNICODE
+  // Copy the UNICODE characters to our buffer.
+  _tcsncpy(buf_, (LPCTSTR) JvGetStringChars (jstr), len);
+#else
+  // Convert the UNICODE string to a native one.
+  unicodeToNative(jstr, buf_, len);
+#endif // MINGW_LIBGCJ_UNICODE
+
+  buf_[len] = 0;
+}
+
+_Jv_Win32TempString::~_Jv_Win32TempString()
+{
+  if (buf_ && buf_ != stackbuf_)
+    _Jv_Free (buf_);
+}
+
 // class WSAEventWrapper
 WSAEventWrapper::WSAEventWrapper (int fd, DWORD dwSelFlags):
   m_hEvent(0),
@@ -92,16 +192,17 @@ _Jv_WinStrError (LPCTSTR lpszPrologue, int nErrorCode)
   if (lpszPrologue)
     {
       LPTSTR lpszTemp =
-        (LPTSTR) _Jv_Malloc (strlen (lpszPrologue) +
-          strlen (lpMsgBuf) + 3);
-      strcpy (lpszTemp, lpszPrologue);
-      strcat (lpszTemp, ": ");
-      strcat (lpszTemp, lpMsgBuf);
-      ret = JvNewStringLatin1 (lpszTemp);
+        (LPTSTR) _Jv_Malloc ((_tcslen (lpszPrologue) +
+          _tcslen (lpMsgBuf) + 3) * sizeof(TCHAR) );
+      _tcscpy (lpszTemp, lpszPrologue);
+      _tcscat (lpszTemp, _T(": "));
+      _tcscat (lpszTemp, lpMsgBuf);
+      ret = _Jv_Win32NewString (lpszTemp);
+      _Jv_Free (lpszTemp);
     } 
   else
     {
-      ret = JvNewStringLatin1 (lpMsgBuf);
+      ret = _Jv_Win32NewString (lpMsgBuf);
     }
 
   LocalFree(lpMsgBuf);
@@ -143,14 +244,17 @@ _Jv_platform_initialize (void)
   // Initialise winsock for networking
   WSADATA data;
   if (WSAStartup (MAKEWORD (1, 1), &data))
-    MessageBox (NULL, "Error initialising winsock library.", "Error",
+    MessageBox (NULL, _T("Error initialising winsock library."), _T("Error"),
     MB_OK | MB_ICONEXCLAMATION);
 
   // Install exception handler
   SetUnhandledExceptionFilter (win32_exception_handler);
 
-  // Initialize our executable name
-  GetModuleFileName(NULL, exec_name, sizeof(exec_name));
+  // Initialize our executable name.
+  // FIXME: We unconditionally use the ANSI function because
+  // _Jv_ThisExecutable returns a const char*. We should really
+  // change _Jv_ThisExecutable to return a jstring.
+  GetModuleFileNameA(NULL, exec_name, sizeof(exec_name));
 }
 
 // gettimeofday implementation.
@@ -177,19 +281,19 @@ __mingwthr_key_dtor (DWORD, void (*) (void *))
   return 0;
 }
 
-static bool dirExists (const char* dir)
+static bool dirExists (LPCTSTR dir)
 {
   DWORD dwAttrs = ::GetFileAttributes (dir);
   return dwAttrs != 0xFFFFFFFF &&
     (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
 
-static void getUserHome(char* userHome, const char* userId)
+static void getUserHome(LPTSTR userHome, LPCTSTR userId)
 {
-  char* uh = ::getenv ("USERPROFILE");
+  LPTSTR uh = _tgetenv (_T("USERPROFILE"));
   if (uh)
     {
-      strcpy(userHome, uh);
+      _tcscpy(userHome, uh);
     }
   else
     {
@@ -202,15 +306,15 @@ static void getUserHome(char* userHome, const char* userId)
       // To do this correctly, we'd have to factor in the
       // Windows version, but if we did that, then this attempt
       // wouldn't be half-hearted.
-      char userHomePath[MAX_PATH], winHome[MAX_PATH];
+      TCHAR userHomePath[MAX_PATH], winHome[MAX_PATH];
       ::GetWindowsDirectory(winHome, MAX_PATH);
         // assume this call always succeeds
 
-      sprintf(userHomePath, "%s\\Profiles\\%s", winHome, userId);
+      _stprintf(userHomePath, _T("%s\\Profiles\\%s"), winHome, userId);
       if (dirExists (userHomePath))
-        strcpy(userHome, userHomePath);
+        _tcscpy(userHome, userHomePath);
       else
-        strcpy(userHome, winHome);
+        _tcscpy(userHome, winHome);
     }
 }
 
@@ -220,15 +324,15 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
 {
   // A convenience define.
 #define SET(Prop,Val) \
-  newprops->put(JvNewStringLatin1 (Prop), JvNewStringLatin1 (Val))
+  newprops->put(JvNewStringLatin1 (Prop), _Jv_Win32NewString (Val))
 
-  SET ("file.separator", "\\");
-  SET ("path.separator", ";");
-  SET ("line.separator", "\r\n");
+  SET ("file.separator", _T("\\"));
+  SET ("path.separator", _T(";"));
+  SET ("line.separator", _T("\r\n"));
 
   // Use GetCurrentDirectory to set 'user.dir'.
   DWORD buflen = MAX_PATH;
-  char *buffer = (char *) _Jv_MallocUnchecked (buflen);
+  TCHAR buffer[buflen];
   if (buffer != NULL)
     {
       if (GetCurrentDirectory (buflen, buffer))
@@ -236,18 +340,16 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
 
       if (GetTempPath (buflen, buffer))
   SET ("java.io.tmpdir", buffer);
-
-      _Jv_Free (buffer);
     }
 
   // Use GetUserName to set 'user.name'.
   buflen = 257;  // UNLEN + 1
-  char userName[buflen];
+  TCHAR userName[buflen];
   if (GetUserName (userName, &buflen))
     SET ("user.name", userName);
 
   // Set user.home
-  char userHome[MAX_PATH];
+  TCHAR userHome[MAX_PATH];
   getUserHome(userHome, userName);
   SET ("user.home", userHome);
 
@@ -257,41 +359,39 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
   osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
   if (GetVersionEx (&osvi))
     {
-      char *buffer = (char *) _Jv_MallocUnchecked (30);
       if (buffer != NULL)
         {
-          sprintf (buffer, "%d.%d", (int) osvi.dwMajorVersion,
+          _stprintf (buffer, _T("%d.%d"), (int) osvi.dwMajorVersion,
            (int) osvi.dwMinorVersion);
           SET ("os.version", buffer);
-          _Jv_Free (buffer);
         }
 
       switch (osvi.dwPlatformId)
         {
           case VER_PLATFORM_WIN32_WINDOWS:
             if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 0)
-              SET ("os.name", "Windows 95");
+              SET ("os.name", _T("Windows 95"));
             else if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 10)
-              SET ("os.name", "Windows 98");
+              SET ("os.name", _T("Windows 98"));
             else if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 90)
-              SET ("os.name", "Windows Me");
+              SET ("os.name", _T("Windows Me"));
             else
-              SET ("os.name", "Windows ??");
+              SET ("os.name", _T("Windows ??"));
             break;
 
           case VER_PLATFORM_WIN32_NT:
             if (osvi.dwMajorVersion <= 4 )
-              SET ("os.name", "Windows NT");
+              SET ("os.name", _T("Windows NT"));
             else if (osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 0)
-              SET ("os.name", "Windows 2000");
+              SET ("os.name", _T("Windows 2000"));
             else if (osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 1)
-              SET ("os.name", "Windows XP");
+              SET ("os.name", _T("Windows XP"));
             else
-              SET ("os.name", "Windows NT ??");
+              SET ("os.name", _T("Windows NT ??"));
             break;
 
           default:
-            SET ("os.name", "Windows UNKNOWN");
+            SET ("os.name", _T("Windows UNKNOWN"));
             break;
        }
   }
@@ -302,23 +402,23 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
   switch (si.wProcessorArchitecture)
     {
       case PROCESSOR_ARCHITECTURE_INTEL:
-        SET ("os.arch", "x86");
+        SET ("os.arch", _T("x86"));
         break;
       case PROCESSOR_ARCHITECTURE_MIPS:
-        SET ("os.arch", "mips");
+        SET ("os.arch", _T("mips"));
         break;
       case PROCESSOR_ARCHITECTURE_ALPHA:
-        SET ("os.arch", "alpha");
+        SET ("os.arch", _T("alpha"));
         break;
-      case PROCESSOR_ARCHITECTURE_PPC:	
-        SET ("os.arch", "ppc");
+      case PROCESSOR_ARCHITECTURE_PPC:  
+        SET ("os.arch", _T("ppc"));
         break;
       case PROCESSOR_ARCHITECTURE_IA64:
-        SET ("os.arch", "ia64");
+        SET ("os.arch", _T("ia64"));
         break;
       case PROCESSOR_ARCHITECTURE_UNKNOWN:
       default:
-        SET ("os.arch", "unknown");
+        SET ("os.arch", _T("unknown"));
         break;
     }
 }

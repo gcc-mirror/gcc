@@ -11,6 +11,16 @@ details.  */
 #ifndef __JV_WIN32_H__
 #define __JV_WIN32_H__
 
+// Enable UNICODE Support.?
+
+#ifdef MINGW_LIBGCJ_UNICODE
+#define UNICODE
+#define _UNICODE
+#endif // MINGW_LIBGCJ_UNICODE
+
+#include <tchar.h>
+
+// Includes
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
@@ -22,6 +32,43 @@ details.  */
 #include <java/util/Properties.h>
 
 #include <io.h>
+
+/* Begin UNICODE Support Classes and Functions */
+
+/* Helper class which creates a temporary, null-terminated,
+   wide-character C string. */
+class _Jv_Win32TempString
+{
+public:
+  _Jv_Win32TempString(jstring jstr);
+  ~_Jv_Win32TempString();
+
+// Accessors
+  operator LPCTSTR() const
+  {
+    return buf_;
+  }
+  LPCTSTR buf() const
+  {
+    return buf_;
+  }
+  LPTSTR buf()
+  {
+    return buf_;
+  }
+
+private:
+  TCHAR stackbuf_[500];
+  LPTSTR buf_;
+};
+
+// Mimics the JV_TEMP_STRING_UTF macro in jvm.h
+#define JV_TEMP_STRING_WIN32(x,y) _Jv_Win32TempString x(y);
+
+// Creates a jstring from a LPCTSTR
+extern jstring _Jv_Win32NewString (LPCTSTR pcsz);
+
+/* End UNICODE Helpers */
 
 // Prefix and suffix for shared libraries.
 #define _Jv_platform_solib_prefix ""

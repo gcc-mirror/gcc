@@ -272,6 +272,9 @@
 /* Define if we should ignore arguments to main(). */
 #undef DISABLE_MAIN_ARGS
 
+/* Define if MinGW libgcj uses the Windows UNICODE OS API. */
+#undef MINGW_LIBGCJ_UNICODE
+
 /* Define if if the synchronization code should try to avoid pthread_self calls by caching thread IDs in a hashtable. */
 #undef SLOW_PTHREAD_SELF
 
