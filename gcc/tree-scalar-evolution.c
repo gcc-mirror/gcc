@@ -331,7 +331,7 @@ del_scev_info (void *e)
 
 /* Get the index corresponding to VAR in the current LOOP.  If
    it's the first time we ask for this VAR, then we return
-   chrec_not_analysed_yet for this VAR and return its index.  */
+   chrec_not_analyzed_yet for this VAR and return its index.  */
 
 static tree *
 find_var_scev_info (tree var)

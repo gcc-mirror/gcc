@@ -167,7 +167,7 @@ typedef struct edge_def *edge;
 #define EDGE_SIBCALL		256	/* Edge from sibcall to exit.  */
 #define EDGE_LOOP_EXIT		512	/* Exit of a loop.  */
 #define EDGE_TRUE_VALUE		1024	/* Edge taken when controlling
-					   predicate is non zero.  */
+					   predicate is nonzero.  */
 #define EDGE_FALSE_VALUE	2048	/* Edge taken when controlling
 					   predicate is zero.  */
 #define EDGE_EXECUTABLE		4096	/* Edge is executable.  Only

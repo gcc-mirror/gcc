@@ -29,7 +29,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    out-of-line generic functions.  The vectors are designed to
    interoperate with the GTY machinery.
 
-   Because of the different behaviour of objects and of pointers to
+   Because of the different behavior of objects and of pointers to
    objects, there are two flavors.  One to deal with a vector of
    pointers to objects, and one to deal with a vector of objects
    themselves.  Both of these pass pointers to objects around -- in
@@ -200,7 +200,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    Ensure that V has at least RESERVE slots available, if RESERVE is
    >= 0.  If RESERVE < 0, ensure that there is at least one spare
-   slot.  These differ in their reallocation behaviour, the first will
+   slot.  These differ in their reallocation behavior, the first will
    not create additional headroom, but the second mechanism will
    perform the usual exponential headroom increase.  Note this can
    cause V to be reallocated.  Returns nonzero iff reallocation

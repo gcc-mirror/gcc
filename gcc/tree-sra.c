@@ -132,7 +132,7 @@ struct sra_elt
 };
 
 /* Random access to the child of a parent is performed by hashing.
-   This prevents quadratic behaviour, and allows SRA to function
+   This prevents quadratic behavior, and allows SRA to function
    reasonably on larger records.  */
 static htab_t sra_map;
 

@@ -361,7 +361,7 @@ static inline int _yylex (void);
 static int  yylex (void);
 static void init_reswords (void);
 
-  /* Initialisation routine for this file.  */
+  /* Initialization routine for this file.  */
 void
 c_parse_init (void)
 {

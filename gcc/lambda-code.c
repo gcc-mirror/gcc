@@ -1932,7 +1932,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 
 
 /* Returns true when the vector V is lexicographically positive, in
-   other words, when the first non zero element is positive.  */
+   other words, when the first nonzero element is positive.  */
 
 static bool
 lambda_vector_lexico_pos (lambda_vector v, 
