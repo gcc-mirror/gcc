@@ -1011,7 +1011,8 @@ dbxout_type (type, full, show_arg_types)
 	   This used to use `r2' explicitly and we used to
 	   take care to make sure that `char' was type number 2.  */
 	fprintf (asmfile, "r%d;0;127;", TYPE_SYMTAB_ADDRESS (type));
-      else if (use_gnu_debug_info_extensions && TYPE_PRECISION (type) > BITS_PER_WORD)
+      else if (use_gnu_debug_info_extensions
+	       && TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node))
 	{
 	  /* This used to say `r1' and we used to take care
 	     to make sure that `int' was type number 1.  */
