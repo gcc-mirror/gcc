@@ -1167,11 +1167,11 @@ $(CONFIGURE_TARGET_MODULES):
 	      libsrcdir="$$s/$${dir}"; \
 	    fi; \
 	    if [ -f $${libsrcdir}/configure ] ; then \
-	      $(SHELL) $${libsrcdir}/configure \
+	      CONFIG_SITE=/dev/null $(SHELL) $${libsrcdir}/configure \
 		$(CONFIG_ARGUMENTS) $${srcdiroption} \
 		--with-target-subdir="$(TARGET_SUBDIR)"; \
 	    else \
-	      $(SHELL) $$s/configure \
+	      CONFIG_SITE=/dev/null $(SHELL) $$s/configure \
 		$(CONFIG_ARGUMENTS) $${srcdiroption} \
 		--with-target-subdir="$(TARGET_SUBDIR)"; \
 	    fi; \

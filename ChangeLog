@@ -1,3 +1,8 @@
+1998-02-16  Dave Love  <d.love@dl.ac.uk>
+
+	* Makefile.in ($(CONFIGURE_TARGET_MODULES)): Run configure with
+	CONFIG_SITE=/dev/null to forestall lossage with site configuration.
+
 Mon Feb 16 12:23:53 1998  Manfred Hollstein  <Manfred.Hollstein@ks.sel.alcatel.de>
 
 	* Makefile.in (BASE_FLAGS_TO_PASS, EXTRA_TARGET_FLAGS): Really add
