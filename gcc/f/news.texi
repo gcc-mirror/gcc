@@ -9,7 +9,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1999-02-26
+@c 1999-03-02
 
 @ifclear NEWSONLY
 @node News
@@ -71,6 +71,10 @@ such as @samp{IOSTAT=@var{j}},
 where @var{j} is other than default @code{INTEGER}
 (such as @code{INTEGER*2}).
 Instead, it issues a diagnostic.
+
+@item
+The @samp{-ax} option is now obeyed when compiling Fortran programs.
+(It is passed to the @file{f771} driver.)
 
 @item
 Source file names with the suffixes @samp{.FOR} and @samp{.FPP}
