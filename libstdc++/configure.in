@@ -92,6 +92,7 @@ if [ "${shared}" = "yes" ]; then
     *-*-sunos4*)	frags="${frags} sunos4.ml" ;;
     *-*-aix*)		frags="${frags} aix.ml" ;;
     i[3456]86-*-interix*)	frags="${frags} x86-interix.ml" ;;
+    *-*-gnu*)		frags="${frags} gnu.ml" ;;
   esac
 fi
 
