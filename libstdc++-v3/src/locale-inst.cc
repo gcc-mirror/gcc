@@ -34,7 +34,6 @@
 #include <cstdlib>
 #include <clocale>
 #include <cstring>
-#include <cassert>
 #include <locale>
 
 namespace std
