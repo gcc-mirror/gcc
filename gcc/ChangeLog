@@ -1,3 +1,9 @@
+2001-12-06  Richard Henderson  <rth@redhat.com>
+
+	* stmt.c (parse_input_constraint): Break out from ...
+	(expand_asm_operands): ... here.  Loop over the operands twice,
+	the first time only calling mark_addressable.
+
 2001-12-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.def (stdio_va_list): Handle __VA_LIST__ in Tru64

@@ -396,6 +396,8 @@ struct stmt_status
 static int using_eh_for_cleanups_p = 0;
 
 static int n_occurrences		PARAMS ((int, const char *));
+static bool parse_input_constraint	PARAMS ((const char **, int, int, int,
+						 int, tree, bool *, bool *));
 static void expand_goto_internal	PARAMS ((tree, rtx, rtx));
 static int expand_fixup			PARAMS ((tree, rtx, rtx));
 static rtx expand_nl_handler_label	PARAMS ((rtx, rtx));
@@ -1311,13 +1313,8 @@ expand_asm (body)
    Returns TRUE if all went well; FALSE if an error occurred.  */
 
 bool
-parse_output_constraint (constraint_p, 
-			 operand_num,
-			 ninputs,
-			 noutputs,
-			 allows_mem, 
-			 allows_reg, 
-			 is_inout)
+parse_output_constraint (constraint_p, operand_num, ninputs, noutputs,
+			 allows_mem, allows_reg, is_inout)
      const char **constraint_p;
      int operand_num;
      int ninputs;
@@ -1455,6 +1452,128 @@ parse_output_constraint (constraint_p,
   return true;
 }
 
+/* Similar, but for input constraints.  */
+
+static bool
+parse_input_constraint (constraint_p, input_num, ninputs, noutputs, ninout,
+			outputs, allows_mem, allows_reg)
+     const char **constraint_p;
+     int input_num;
+     int ninputs;
+     int noutputs;
+     int ninout;
+     tree outputs;
+     bool *allows_mem;
+     bool *allows_reg;
+{
+  const char *constraint = *constraint_p;
+  const char *orig_constraint = constraint;
+  size_t c_len = strlen (constraint);
+  size_t j;
+
+  /* Assume the constraint doesn't allow the use of either
+     a register or memory.  */
+  *allows_mem = false;
+  *allows_reg = false;
+
+  /* Make sure constraint has neither `=', `+', nor '&'.  */
+
+  for (j = 0; j < c_len; j++)
+    switch (constraint[j])
+      {
+      case '+':  case '=':  case '&':
+	if (constraint == orig_constraint)
+	  {
+	    error ("input operand constraint contains `%c'", constraint[j]);
+	    return false;
+	  }
+	break;
+
+      case '%':
+	if (constraint == orig_constraint
+	    && input_num + 1 == ninputs - ninout)
+	  {
+	    error ("`%%' constraint used with last operand");
+	    return false;
+	  }
+	break;
+
+      case 'V':  case 'm':  case 'o':
+	*allows_mem = true;
+	break;
+
+      case '<':  case '>':
+      case '?':  case '!':  case '*':  case '#':
+      case 'E':  case 'F':  case 'G':  case 'H':
+      case 's':  case 'i':  case 'n':
+      case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
+      case 'N':  case 'O':  case 'P':  case ',':
+	break;
+
+	/* Whether or not a numeric constraint allows a register is
+	   decided by the matching constraint, and so there is no need
+	   to do anything special with them.  We must handle them in
+	   the default case, so that we don't unnecessarily force
+	   operands to memory.  */
+      case '0':  case '1':  case '2':  case '3':  case '4':
+      case '5':  case '6':  case '7':  case '8':  case '9':
+	if (constraint[j] >= '0' + noutputs)
+	  {
+	    error ("matching constraint references invalid operand number");
+	    return false;
+	  }
+
+	/* Try and find the real constraint for this dup.  */
+	if ((j == 0 && c_len == 1)
+	    || (j == 1 && c_len == 2 && constraint[0] == '%'))
+	  {
+	    tree o = outputs;
+
+	    for (j = constraint[j] - '0'; j > 0; --j)
+	      o = TREE_CHAIN (o);
+
+	    constraint = TREE_STRING_POINTER (TREE_PURPOSE (o));
+	    *constraint_p = constraint;
+	    c_len = strlen (constraint);
+	    j = 0;
+	    break;
+	  }
+
+	/* Fall through.  */
+
+      case 'p':  case 'r':
+	*allows_reg = true;
+	break;
+
+      case 'g':  case 'X':
+	*allows_reg = true;
+	*allows_mem = true;
+	break;
+
+      default:
+	if (! ISALPHA (constraint[j]))
+	  {
+	    error ("invalid punctuation `%c' in constraint", constraint[j]);
+	    return false;
+	  }
+	if (REG_CLASS_FROM_LETTER (constraint[j]) != NO_REGS)
+	  *allows_reg = true;
+#ifdef EXTRA_CONSTRAINT
+	else
+	  {
+	    /* Otherwise we can't assume anything about the nature of
+	       the constraint except that it isn't purely registers.
+	       Treat it like "g" and hope for the best.  */
+	    *allows_reg = true;
+	    *allows_mem = true;
+	  }
+#endif
+	break;
+      }
+
+  return true;
+}
+
 /* Generate RTL for an asm statement with arguments.
    STRING is the instruction template.
    OUTPUTS is a list of output arguments (lvalues); INPUTS a list of inputs.
@@ -1481,7 +1600,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   rtx body;
   int ninputs = list_length (inputs);
   int noutputs = list_length (outputs);
-  int ninout = 0;
+  int ninout;
   int nclobbers;
   tree tail;
   register int i;
@@ -1569,6 +1688,10 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	}
     }
 
+  /* First pass over inputs and outputs checks validity and sets
+     mark_addressable if needed.  */
+
+  ninout = 0;
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
     {
       tree val = TREE_VALUE (tail);
@@ -1582,24 +1705,68 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       if (type == error_mark_node)
 	return;
 
-      /* Make sure constraint has `=' and does not have `+'.  Also, see
-	 if it allows any register.  Be liberal on the latter test, since
-	 the worst that happens if we get it wrong is we issue an error
-	 message.  */
-
-      constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
-      output_constraints[i] = constraint;
-
       /* Try to parse the output constraint.  If that fails, there's
 	 no point in going further.  */
-      if (!parse_output_constraint (&output_constraints[i],
-				    i,
-				    ninputs,
-				    noutputs,
-				    &allows_mem,
-				    &allows_reg,
-				    &is_inout))
+      constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
+      if (!parse_output_constraint (&constraint, i, ninputs, noutputs,
+				    &allows_mem, &allows_reg, &is_inout))
 	return;
+
+      if (! allows_reg
+	  && ((TREE_CODE (val) == INDIRECT_REF && allows_mem)
+	      || (DECL_P (val)
+		  && (allows_mem || GET_CODE (DECL_RTL (val)) == REG)
+		  && ! (GET_CODE (DECL_RTL (val)) == REG
+			&& GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
+	      || is_inout))
+	mark_addressable (val);
+
+      if (is_inout)
+	ninout++;
+    }
+
+  ninputs += ninout;
+  if (ninputs + noutputs > MAX_RECOG_OPERANDS)
+    {
+      error ("more than %d operands in `asm'", MAX_RECOG_OPERANDS);
+      return;
+    }
+
+  for (i = 0, tail = inputs; tail; i++, tail = TREE_CHAIN (tail))
+    {
+      bool allows_reg, allows_mem;
+      const char *constraint;
+
+      /* If there's an erroneous arg, emit no insn, because the ASM_INPUT
+	 would get VOIDmode and that could cause a crash in reload.  */
+      if (TREE_TYPE (TREE_VALUE (tail)) == error_mark_node)
+	return;
+
+      constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
+      if (! parse_input_constraint (&constraint, i, ninputs, noutputs, ninout,
+				    outputs, &allows_mem, &allows_reg))
+	return;
+
+      if (! allows_reg && allows_mem)
+	mark_addressable (TREE_VALUE (tail));
+    }
+
+  /* Second pass evaluates arguments.  */
+
+  ninout = 0;
+  for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
+    {
+      tree val = TREE_VALUE (tail);
+      tree type = TREE_TYPE (val);
+      bool is_inout;
+      bool allows_reg;
+      bool allows_mem;
+
+      output_constraints[i] = TREE_STRING_POINTER (TREE_PURPOSE (tail));
+      if (!parse_output_constraint (&output_constraints[i], i, ninputs,
+				    noutputs, &allows_mem, &allows_reg,
+				    &is_inout))
+	abort ();
 
       /* If an output operand is not a decl or indirect ref and our constraint
 	 allows a register, make a temporary to act as an intermediate.
@@ -1618,12 +1785,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  || ! allows_reg
 	  || is_inout)
 	{
-	  if (! allows_reg)
-	    mark_addressable (TREE_VALUE (tail));
-
 	  output_rtx[i]
-	    = expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode,
-			   EXPAND_MEMORY_USE_WO);
+	    = expand_expr (val, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_WO);
 
 	  if (! allows_reg && GET_CODE (output_rtx[i]) != MEM)
 	    error ("output number %d not directly addressable", i);
@@ -1646,16 +1809,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       if (is_inout)
 	{
-	  inout_mode[ninout] = TYPE_MODE (TREE_TYPE (TREE_VALUE (tail)));
+	  inout_mode[ninout] = TYPE_MODE (type);
 	  inout_opnum[ninout++] = i;
 	}
-    }
-
-  ninputs += ninout;
-  if (ninputs + noutputs > MAX_RECOG_OPERANDS)
-    {
-      error ("more than %d operands in `asm'", MAX_RECOG_OPERANDS);
-      return;
     }
 
   /* Make vectors for the expression-rtx and constraint strings.  */
@@ -1674,154 +1830,40 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   /* Eval the inputs and put them into ARGVEC.
      Put their constraints into ASM_INPUTs and store in CONSTRAINTS.  */
 
-  i = 0;
-  for (tail = inputs; tail; tail = TREE_CHAIN (tail))
+  for (i = 0, tail = inputs; tail; i++, tail = TREE_CHAIN (tail))
     {
-      int j;
-      int allows_reg = 0, allows_mem = 0;
-      const char *constraint, *orig_constraint;
-      int c_len;
+      bool allows_reg, allows_mem;
+      const char *constraint;
+      tree val, type;
       rtx op;
 
-      /* If there's an erroneous arg, emit no insn,
-	 because the ASM_INPUT would get VOIDmode
-	 and that could cause a crash in reload.  */
-      if (TREE_TYPE (TREE_VALUE (tail)) == error_mark_node)
-	return;
-
-      /* ??? Can this happen, and does the error message make any sense? */
-      if (TREE_PURPOSE (tail) == NULL_TREE)
-	{
-	  error ("hard register `%s' listed as input operand to `asm'",
-		 TREE_STRING_POINTER (TREE_VALUE (tail)) );
-	  return;
-	}
-
       constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
-      c_len = strlen (constraint);
-      orig_constraint = constraint;
+      if (! parse_input_constraint (&constraint, i, ninputs, noutputs, ninout,
+				    outputs, &allows_mem, &allows_reg))
+	abort ();
 
-      /* Make sure constraint has neither `=', `+', nor '&'.  */
+      generating_concat_p = 0;
 
-      for (j = 0; j < c_len; j++)
-	switch (constraint[j])
-	  {
-	  case '+':  case '=':  case '&':
-	    if (constraint == orig_constraint)
-	      {
-	        error ("input operand constraint contains `%c'",
-		       constraint[j]);
-	        return;
-	      }
-	    break;
-
-	  case '%':
-	    if (constraint == orig_constraint
-		&& i + 1 == ninputs - ninout)
-	      {
-		error ("`%%' constraint used with last operand");
-		return;
-	      }
-	    break;
-
-	  case 'V':  case 'm':  case 'o':
-	    allows_mem = 1;
-	    break;
-
-	  case '<':  case '>':
-	  case '?':  case '!':  case '*':  case '#':
-	  case 'E':  case 'F':  case 'G':  case 'H':
-	  case 's':  case 'i':  case 'n':
-	  case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
-	  case 'N':  case 'O':  case 'P':  case ',':
-	    break;
-
-	    /* Whether or not a numeric constraint allows a register is
-	       decided by the matching constraint, and so there is no need
-	       to do anything special with them.  We must handle them in
-	       the default case, so that we don't unnecessarily force
-	       operands to memory.  */
-	  case '0':  case '1':  case '2':  case '3':  case '4':
-	  case '5':  case '6':  case '7':  case '8':  case '9':
-	    if (constraint[j] >= '0' + noutputs)
-	      {
-		error
-		  ("matching constraint references invalid operand number");
-		return;
-	      }
-
-	    /* Try and find the real constraint for this dup.  */
-	    if ((j == 0 && c_len == 1)
-		|| (j == 1 && c_len == 2 && constraint[0] == '%'))
-	      {
-		tree o = outputs;
-
-		for (j = constraint[j] - '0'; j > 0; --j)
-		  o = TREE_CHAIN (o);
-
-		constraint = TREE_STRING_POINTER (TREE_PURPOSE (o));
-		c_len = strlen (constraint);
-		j = 0;
-		break;
-	      }
-
-	    /* Fall through.  */
-
-	  case 'p':  case 'r':
-	    allows_reg = 1;
-	    break;
-
-	  case 'g':  case 'X':
-	    allows_reg = 1;
-	    allows_mem = 1;
-	    break;
-
-	  default:
-	    if (! ISALPHA (constraint[j]))
-	      {
-		error ("invalid punctuation `%c' in constraint",
-		       constraint[j]);
-		return;
-	      }
-	    if (REG_CLASS_FROM_LETTER (constraint[j]) != NO_REGS)
-	      allows_reg = 1;
-#ifdef EXTRA_CONSTRAINT
-	    else
-	      {
-		/* Otherwise we can't assume anything about the nature of
-		   the constraint except that it isn't purely registers.
-		   Treat it like "g" and hope for the best.  */
-		allows_reg = 1;
-		allows_mem = 1;
-	      }
-#endif
-	    break;
-	  }
-
-      if (! allows_reg && allows_mem)
-	mark_addressable (TREE_VALUE (tail));
-
-      op = expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode, 0);
+      val = TREE_VALUE (tail);
+      type = TREE_TYPE (val);
+      op = expand_expr (val, NULL_RTX, VOIDmode, 0);
 
       /* Never pass a CONCAT to an ASM.  */
-      generating_concat_p = 0;
       if (GET_CODE (op) == CONCAT)
 	op = force_reg (GET_MODE (op), op);
 
       if (asm_operand_ok (op, constraint) <= 0)
 	{
 	  if (allows_reg)
-	    op = force_reg (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))), op);
+	    op = force_reg (TYPE_MODE (type), op);
 	  else if (!allows_mem)
 	    warning ("asm operand %d probably doesn't match constraints", i);
 	  else if (CONSTANT_P (op))
-	    op = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
-				  op);
+	    op = force_const_mem (TYPE_MODE (type), op);
 	  else if (GET_CODE (op) == REG
 		   || GET_CODE (op) == SUBREG
 		   || GET_CODE (op) == CONCAT)
 	    {
-	      tree type = TREE_TYPE (TREE_VALUE (tail));
 	      tree qual_type = build_qualified_type (type,
 						     (TYPE_QUALS (type)
 						      | TYPE_QUAL_CONST));
@@ -1830,11 +1872,11 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	      emit_move_insn (memloc, op);
 	      op = memloc;
 	    }
-
 	  else if (GET_CODE (op) == MEM && MEM_VOLATILE_P (op))
-	    /* We won't recognize volatile memory as available a
-	       memory_operand at this point.  Ignore it.  */
-	    ;
+	    {
+	      /* We won't recognize volatile memory as available a
+		 memory_operand at this point.  Ignore it.  */
+	    }
 	  else if (queued_subexp_p (op))
 	    ;
 	  else
@@ -1843,13 +1885,13 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	       not satisfied.  */
 	    warning ("asm operand %d probably doesn't match constraints", i);
 	}
+
       generating_concat_p = old_generating_concat_p;
       ASM_OPERANDS_INPUT (body, i) = op;
 
       ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, i)
-	= gen_rtx_ASM_INPUT (TYPE_MODE (TREE_TYPE (TREE_VALUE (tail))),
-			     orig_constraint);
-      i++;
+	= gen_rtx_ASM_INPUT (TYPE_MODE (type),
+			     TREE_STRING_POINTER (TREE_PURPOSE (tail)));
     }
 
   /* Protect all the operands from the queue now that they have all been
