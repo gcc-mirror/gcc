@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
    This avoids the need to pull in the entire fp emulation library
    when only a small number of functions are needed.
 
-   If FINE_GRAINED_LIBRARIES is not defined, then compile every 
+   If FINE_GRAINED_LIBRARIES is not defined, then compile every
    suitable routine.  */
 #ifndef FINE_GRAINED_LIBRARIES
 #define L_pack_df
@@ -163,6 +163,7 @@ typedef unsigned int UDItype __attribute__ ((mode (DI)));
 #		define multiply 	fpmul
 #		define divide 		fpdiv
 #		define compare 		fpcmp
+#		define _unord_f2	__unordsf2
 #		define usi_to_float 	__floatunsisf
 #		define si_to_float 	sitofp
 #		define float_to_si 	fptosi
@@ -176,6 +177,7 @@ typedef unsigned int UDItype __attribute__ ((mode (DI)));
 #		define multiply 	dpmul
 #		define divide 		dpdiv
 #		define compare 		dpcmp
+#		define _unord_f2	__unorddf2
 #		define usi_to_float 	__floatunsidf
 #		define si_to_float 	litodp
 #		define float_to_si 	dptoli
