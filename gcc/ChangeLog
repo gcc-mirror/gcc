@@ -1,3 +1,7 @@
+2003-12-01  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* unroll.c (find_splittable_givs): Add missing extend_value_for_giv.
+
 2003-12-01  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/12628
