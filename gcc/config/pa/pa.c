@@ -96,11 +96,8 @@ static int max_unscaled_index_insn_codes_uid;
 void
 override_options ()
 {
-  /* Default to 7100 scheduling.  If the 7100LC scheduling ever
-     gets reasonably tuned, it should be the default since that
-     what most PAs sold now are.  */
-  if (pa_cpu_string == NULL
-      || ! strcmp (pa_cpu_string, "7100"))
+  /* Default to 7100LC scheduling.  */
+  if (! strcmp (pa_cpu_string, "7100"))
     {
       pa_cpu_string = "7100";
       pa_cpu = PROCESSOR_7100;
@@ -110,7 +107,8 @@ override_options ()
       pa_cpu_string = "700";
       pa_cpu = PROCESSOR_700;
     }
-  else if (! strcmp (pa_cpu_string, "7100LC"))
+  else if (pa_cpu_string == NULL
+         || ! strcmp (pa_cpu_string, "7100LC"))
     {
       pa_cpu_string = "7100LC";
       pa_cpu = PROCESSOR_7100LC;
