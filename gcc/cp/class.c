@@ -146,9 +146,8 @@ build_vbase_pointer (exp, type)
      tree exp, type;
 {
   char *name;
+  FORMAT_VBASE_NAME (name, type);
 
-  name = (char *) alloca (TYPE_NAME_LENGTH (type) + sizeof (VBASE_NAME) + 1);
-  sprintf (name, VBASE_NAME_FORMAT, TYPE_NAME_STRING (type));
   return build_component_ref (exp, get_identifier (name), NULL_TREE, 0);
 }
 

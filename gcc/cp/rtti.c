@@ -801,8 +801,7 @@ expand_class_desc (tdecl, type)
 	  char *name;
 	  tree field;
 
-	  name = (char *) alloca (TYPE_NAME_LENGTH (t)+sizeof (VBASE_NAME)+1);
-	  sprintf (name, VBASE_NAME_FORMAT, TYPE_NAME_STRING (t));
+	  FORMAT_VBASE_NAME (name, t);
 	  field = lookup_field (type, get_identifier (name), 0, 0);
 	  offset = size_binop (FLOOR_DIV_EXPR, 
 		DECL_FIELD_BITPOS (field), size_int (BITS_PER_UNIT));
