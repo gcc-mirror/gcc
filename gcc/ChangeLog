@@ -1,3 +1,13 @@
+2005-03-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20375
+	* function.c (struct assign_parm_data_one): Remove last_named
+	field.
+	(assign_parm_find_data_types): Don't determine last_named.
+	Reorder named_parm determination.
+	(assign_parms): Only setup varargs on the last non-varadic
+	parameter.
+
 2005-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/20314
