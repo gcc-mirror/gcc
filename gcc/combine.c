@@ -878,6 +878,8 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
       || (rtx_equal_p (src, dest) && find_reg_note (insn, REG_EQUAL, NULL_RTX))
       /* Can't merge a function call.  */
       || GET_CODE (src) == CALL
+      /* Don't eliminate a function call argument.  */
+      || (GET_CODE (i3) == CALL_INSN && find_reg_fusage (i3, USE, dest))
       /* Don't substitute into an incremented register.  */
       || FIND_REG_INC_NOTE (i3, dest)
       || (succ && FIND_REG_INC_NOTE (succ, dest))
@@ -1216,17 +1218,6 @@ try_combine (i3, i2, i1)
       || GET_RTX_CLASS (GET_CODE (i2)) != 'i'
       || (i1 && GET_RTX_CLASS (GET_CODE (i1)) != 'i')
       || find_reg_note (i3, REG_LIBCALL, NULL_RTX))
-    return 0;
-
-  /* If I1 or I2 is an argument set insn, and I3 is the actual
-     CALL_INSN using it as argument, never combine the two.
-     This to prevent the elimination of insns that setup a
-     parameter register for a CALL_INSN.  */
-  if (GET_CODE (i3) == CALL_INSN
-      && (((temp = single_set (i2))
-            && find_reg_fusage (i3, USE, SET_DEST (temp)))
-	  || (i1 && (temp = single_set (i1))
-              && find_reg_fusage (i3, USE, SET_DEST (temp)))))
     return 0;
 
   combine_attempts++;
