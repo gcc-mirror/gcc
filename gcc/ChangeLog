@@ -1,3 +1,7 @@
+2002-09-07  Graham Stott  <graham.stott@btinternet.con>
+
+       * rtlanal.c (dead_or_set_regno_p): Fix typo.
+
 2002-09-07  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.

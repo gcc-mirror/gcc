@@ -1798,7 +1798,7 @@ dead_or_set_regno_p (insn, test_regno)
 
   if (GET_CODE (pattern) == SET)
     {
-      rtx dest = SET_DEST (PATTERN (insn));
+      rtx dest = SET_DEST (pattern);
 
       /* A value is totally replaced if it is the destination or the
 	 destination is a SUBREG of REGNO that does not change the number of
