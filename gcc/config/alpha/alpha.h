@@ -820,7 +820,7 @@ extern int normal_memory_operand ();
   && (((CLASS) == FLOAT_REGS						\
        && ((MODE) == SImode || (MODE) == HImode || (MODE) == QImode))	\
       || (((MODE) == QImode || (MODE) == HImode)			\
-	  && ! TARGET_BWX && unaligned_memory_operand (IN, MODE)))) \
+	  && ! TARGET_BWX && ! aligned_memory_operand (IN, MODE))))	\
  ? GENERAL_REGS								\
  : ((CLASS) == FLOAT_REGS && GET_CODE (IN) == MEM			\
     && GET_CODE (XEXP (IN, 0)) == AND) ? GENERAL_REGS			\

@@ -4522,7 +4522,7 @@
 			 ? gen_rtx_REG (SImode, REGNO (operands[0]))
 			 : gen_reg_rtx (SImode));
 
-	  get_aligned_mem (operands[1], scratch, &aligned_mem, &bitnum);
+	  get_aligned_mem (operands[1], &aligned_mem, &bitnum);
 
 	  emit_insn (gen_aligned_loadqi (operands[0], aligned_mem, bitnum,
 					 scratch));
@@ -4562,7 +4562,7 @@
 	  rtx temp1 = gen_reg_rtx (SImode);
 	  rtx temp2 = gen_reg_rtx (SImode);
 
-	  get_aligned_mem (operands[0], NULL_RTX, &aligned_mem, &bitnum);
+	  get_aligned_mem (operands[0], &aligned_mem, &bitnum);
 
 	  emit_insn (gen_aligned_store (aligned_mem, operands[1], bitnum,
 					temp1, temp2));
@@ -4574,7 +4574,7 @@
 	  rtx temp3 = gen_reg_rtx (DImode);
 	  rtx seq
 	    = gen_unaligned_storeqi (get_unaligned_address (operands[0], 0),
-					   operands[1], temp1, temp2, temp3);
+				     operands[1], temp1, temp2, temp3);
 
 	  alpha_set_memflags (seq, operands[0]);
 	  emit_insn (seq);
@@ -4633,7 +4633,7 @@
 			 ? gen_rtx_REG (SImode, REGNO (operands[0]))
 			 : gen_reg_rtx (SImode));
 
-	  get_aligned_mem (operands[1], scratch, &aligned_mem, &bitnum);
+	  get_aligned_mem (operands[1], &aligned_mem, &bitnum);
 
 	  emit_insn (gen_aligned_loadhi (operands[0], aligned_mem, bitnum,
 					 scratch));
@@ -4673,7 +4673,7 @@
 	  rtx temp1 = gen_reg_rtx (SImode);
 	  rtx temp2 = gen_reg_rtx (SImode);
 
-	  get_aligned_mem (operands[0], NULL_RTX, &aligned_mem, &bitnum);
+	  get_aligned_mem (operands[0], &aligned_mem, &bitnum);
 
 	  emit_insn (gen_aligned_store (aligned_mem, operands[1], bitnum,
 					temp1, temp2));
@@ -4702,20 +4702,21 @@
 
 (define_expand "reload_inqi"
   [(parallel [(match_operand:QI 0 "register_operand" "=r")
-	      (match_operand:QI 1 "unaligned_memory_operand" "m")
+	      (match_operand:QI 1 "any_memory_operand" "m")
 	      (match_operand:TI 2 "register_operand" "=&r")])]
   "! TARGET_BWX"
   "
 {
   rtx scratch, seq;
 
+  if (GET_CODE (operands[1]) != MEM)
+    abort ();
+
   if (aligned_memory_operand (operands[1], QImode))
     {
       rtx aligned_mem, bitnum;
 
-      get_aligned_mem (operands[1],
-		       gen_rtx_REG (DImode, REGNO (operands[2]) + 1),
-		       &aligned_mem, &bitnum);
+      get_aligned_mem (operands[1], &aligned_mem, &bitnum);
       seq = gen_aligned_loadqi (operands[0], aligned_mem, bitnum,
 				gen_rtx_REG (SImode, REGNO (operands[2])));
     }
@@ -4724,8 +4725,8 @@
       rtx addr;
 
       /* It is possible that one of the registers we got for operands[2]
-         might coincide with that of operands[0] (which is why we made
-         it TImode).  Pick the other one to use as our scratch.  */
+	 might coincide with that of operands[0] (which is why we made
+	 it TImode).  Pick the other one to use as our scratch.  */
       if (REGNO (operands[0]) == REGNO (operands[2]))
 	scratch = gen_rtx_REG (DImode, REGNO (operands[2]) + 1);
       else
@@ -4733,9 +4734,9 @@
 
       addr = get_unaligned_address (operands[1], 0);
       seq = gen_unaligned_loadqi (operands[0], addr, scratch,
-				  gen_rtx_REG (DImode, REGNO (operands[0])));
+			  gen_rtx_REG (DImode, REGNO (operands[0])));
+      alpha_set_memflags (seq, operands[1]);
     }
-  alpha_set_memflags (seq, operands[1]);
   emit_insn (seq);
   DONE;
 }")
@@ -4749,13 +4750,14 @@
 {
   rtx scratch, seq;
 
+  if (GET_CODE (operands[1]) != MEM)
+    abort ();
+
   if (aligned_memory_operand (operands[1], HImode))
     {
       rtx aligned_mem, bitnum;
 
-      get_aligned_mem (operands[1],
-		       gen_rtx_REG (DImode, REGNO (operands[2]) + 1),
-		       &aligned_mem, &bitnum);
+      get_aligned_mem (operands[1], &aligned_mem, &bitnum);
       seq = gen_aligned_loadhi (operands[0], aligned_mem, bitnum,
 				gen_rtx_REG (SImode, REGNO (operands[2])));
     }
@@ -4764,8 +4766,8 @@
       rtx addr;
 
       /* It is possible that one of the registers we got for operands[2]
-         might coincide with that of operands[0] (which is why we made
-         it TImode).  Pick the other one to use as our scratch.  */
+	 might coincide with that of operands[0] (which is why we made
+	 it TImode).  Pick the other one to use as our scratch.  */
       if (REGNO (operands[0]) == REGNO (operands[2]))
 	scratch = gen_rtx_REG (DImode, REGNO (operands[2]) + 1);
       else
@@ -4773,9 +4775,9 @@
 
       addr = get_unaligned_address (operands[1], 0);
       seq = gen_unaligned_loadhi (operands[0], addr, scratch,
-				  gen_rtx_REG (DImode, REGNO (operands[0])));
+			  gen_rtx_REG (DImode, REGNO (operands[0])));
+      alpha_set_memflags (seq, operands[1]);
     }
-  alpha_set_memflags (seq, operands[1]);
   emit_insn (seq);
   DONE;
 }")
@@ -4787,11 +4789,14 @@
   "! TARGET_BWX"
   "
 {
+  if (GET_CODE (operands[0]) != MEM)
+    abort ();
+
   if (aligned_memory_operand (operands[0], QImode))
     {
       rtx aligned_mem, bitnum;
 
-      get_aligned_mem (operands[0], NULL_RTX, &aligned_mem, &bitnum);
+      get_aligned_mem (operands[0], &aligned_mem, &bitnum);
 
       emit_insn (gen_aligned_store (aligned_mem, operands[1], bitnum,
 				    gen_rtx_REG (SImode, REGNO (operands[2])),
@@ -4814,7 +4819,6 @@
       alpha_set_memflags (seq, operands[0]);
       emit_insn (seq);
     }
-
   DONE;
 }")
 
@@ -4825,11 +4829,14 @@
   "! TARGET_BWX"
   "
 {
+  if (GET_CODE (operands[0]) != MEM)
+    abort ();
+
   if (aligned_memory_operand (operands[0], HImode))
     {
       rtx aligned_mem, bitnum;
 
-      get_aligned_mem (operands[0], NULL_RTX, &aligned_mem, &bitnum);
+      get_aligned_mem (operands[0], &aligned_mem, &bitnum);
 
       emit_insn (gen_aligned_store (aligned_mem, operands[1], bitnum,
 				    gen_rtx_REG (SImode, REGNO (operands[2])),
@@ -4852,7 +4859,6 @@
       alpha_set_memflags (seq, operands[0]);
       emit_insn (seq);
     }
-
   DONE;
 }")
 

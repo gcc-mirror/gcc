@@ -3,6 +3,23 @@ Wed Apr 14 09:59:38 1999  Richard Henderson  <rth@cygnus.com>
 	* reload1.c (emit_reload_insns): Also find equivalent mems
 	for subregs of pseudos.
 
+	* alpha.c (aligned_memory_operand): Recognize the output of
+	LEGITIMIZE_RELOAD_ADDRESS.  Examine reg_equiv_memory_loc in
+	the event of a pseudo.
+	(unaligned_memory_operand): Likewise.  Don't otherwise accept
+	completely illegal addresses.
+	(normal_memory_operand): Likewise.  Handle subregs of pseudos.
+	(get_aligned_mem): Revert previous change.  Abort if we don't have a
+	mem.  During reload, call find_replacement on all illegal memories.
+	(get_unaligned_address): Likewise.
+	* alpha.h (SECONDARY_INPUT_RELOAD_CLASS): Use !aligned_memory_operand
+	instead of unaligned_memory_operand.
+	* alpha.md: Revert extra argument to get_aligned_mem.
+	(reload_inqi): Use any_memory_operand in constraints.  Abort if
+	we're not given some sort of mem.
+	(reload_inhi): Likewise.
+	(reload_outqi, reload_outhi): Likewise.
+
 Wed Apr 14 09:39:20 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (neghi): Use the whole register when widening the op.

@@ -735,36 +735,42 @@ aligned_memory_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  if (GET_CODE (op) == SUBREG)
-    {
-      if (GET_MODE (op) != mode)
-	return 0;
-      op = SUBREG_REG (op);
-      mode = GET_MODE (op);
-    }
+  rtx base;
 
   if (reload_in_progress)
     {
-      /* This is a stack slot.  The stack pointer is always aligned.
-	 We may have to jump through hoops to get a valid address,
-	 but we can do it.  */
-      if (GET_CODE (op) == REG
-          && REGNO (op) >= FIRST_PSEUDO_REGISTER)
-	return 1;
+      rtx tmp = op;
+      if (GET_CODE (tmp) == SUBREG)
+	tmp = SUBREG_REG (tmp);
+      if (GET_CODE (tmp) == REG
+	  && REGNO (tmp) >= FIRST_PSEUDO_REGISTER)
+	{
+	  op = reg_equiv_memory_loc[REGNO (tmp)];
+	  if (op == 0)
+	    return 0;
+	}
     }
 
   if (GET_CODE (op) != MEM
-      || GET_MODE (op) != mode
-      || ! memory_address_p (mode, XEXP (op, 0)))
+      || GET_MODE (op) != mode)
     return 0;
-
   op = XEXP (op, 0);
 
-  if (GET_CODE (op) == PLUS)
-    op = XEXP (op, 0);
+  /* LEGITIMIZE_RELOAD_ADDRESS creates (plus (plus reg const_hi) const_lo)
+     sorts of constructs.  Dig for the real base register.  */
+  if (reload_in_progress
+      && GET_CODE (op) == PLUS
+      && GET_CODE (XEXP (op, 0)) == PLUS)
+    base = XEXP (XEXP (op, 0), 0);
+  else
+    {
+      if (! memory_address_p (mode, op))
+	return 0;
+      base = (GET_CODE (op) == PLUS ? XEXP (op, 0) : op);
+    }
 
-  return (GET_CODE (op) == REG
-	  && REGNO_POINTER_ALIGN (REGNO (op)) >= 4);
+  return (GET_CODE (base) == REG
+	  && REGNO_POINTER_ALIGN (REGNO (base)) >= 4);
 }
 
 /* Similar, but return 1 if OP is a MEM which is not alignable.  */
@@ -774,31 +780,42 @@ unaligned_memory_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  if (GET_CODE (op) == SUBREG)
+  rtx base;
+
+  if (reload_in_progress)
     {
-      if (GET_MODE (op) != mode)
-	return 0;
-      op = SUBREG_REG (op);
-      mode = GET_MODE (op);
+      rtx tmp = op;
+      if (GET_CODE (tmp) == SUBREG)
+	tmp = SUBREG_REG (tmp);
+      if (GET_CODE (tmp) == REG
+	  && REGNO (tmp) >= FIRST_PSEUDO_REGISTER)
+	{
+	  op = reg_equiv_memory_loc[REGNO (tmp)];
+	  if (op == 0)
+	    return 0;
+	}
     }
 
-  if (reload_in_progress && GET_CODE (op) == REG
-      && REGNO (op) >= FIRST_PSEUDO_REGISTER)
-    op = reg_equiv_mem[REGNO (op)];
-
-  if (GET_CODE (op) != MEM || GET_MODE (op) != mode)
+  if (GET_CODE (op) != MEM
+      || GET_MODE (op) != mode)
     return 0;
-
   op = XEXP (op, 0);
 
-  if (! memory_address_p (mode, op))
-    return 1;
+  /* LEGITIMIZE_RELOAD_ADDRESS creates (plus (plus reg const_hi) const_lo)
+     sorts of constructs.  Dig for the real base register.  */
+  if (reload_in_progress
+      && GET_CODE (op) == PLUS
+      && GET_CODE (XEXP (op, 0)) == PLUS)
+    base = XEXP (XEXP (op, 0), 0);
+  else
+    {
+      if (! memory_address_p (mode, op))
+	return 0;
+      base = (GET_CODE (op) == PLUS ? XEXP (op, 0) : op);
+    }
 
-  if (GET_CODE (op) == PLUS)
-    op = XEXP (op, 0);
-
-  return (GET_CODE (op) != REG
-	  || REGNO_POINTER_ALIGN (REGNO (op)) < 4);
+  return (GET_CODE (base) == REG
+	  && REGNO_POINTER_ALIGN (REGNO (base)) < 4);
 }
 
 /* Return 1 if OP is either a register or an unaligned memory location.  */
@@ -861,15 +878,21 @@ normal_memory_operand (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  if (reload_in_progress && GET_CODE (op) == REG
-      && REGNO (op) >= FIRST_PSEUDO_REGISTER)
+  if (reload_in_progress)
     {
-      op = reg_equiv_mem[REGNO (op)];
+      rtx tmp = op;
+      if (GET_CODE (tmp) == SUBREG)
+	tmp = SUBREG_REG (tmp);
+      if (GET_CODE (tmp) == REG
+	  && REGNO (tmp) >= FIRST_PSEUDO_REGISTER)
+	{
+	  op = reg_equiv_memory_loc[REGNO (tmp)];
 
-      /* This may not have been assigned an equivalent address if it will
-	 be eliminated.  In that case, it doesn't matter what we do.  */
-      if (op == 0)
-	return 1;
+	  /* This may not have been assigned an equivalent address if it will
+	     be eliminated.  In that case, it doesn't matter what we do.  */
+	  if (op == 0)
+	    return 1;
+	}
     }
 
   return GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) != AND;
@@ -906,63 +929,26 @@ direct_return ()
    of range stack slots.  */
 
 void
-get_aligned_mem (ref, scratch, paligned_mem, pbitnum)
-     rtx ref, scratch;
+get_aligned_mem (ref, paligned_mem, pbitnum)
+     rtx ref;
      rtx *paligned_mem, *pbitnum;
 {
   rtx base;
   HOST_WIDE_INT offset = 0;
 
-  if (GET_CODE (ref) == SUBREG)
+  if (GET_CODE (ref) != MEM)
+    abort ();
+
+  if (reload_in_progress
+      && ! memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
     {
-      offset = SUBREG_WORD (ref) * UNITS_PER_WORD;
-      if (BYTES_BIG_ENDIAN)
-	offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (ref)))
-		   - MIN (UNITS_PER_WORD,
-			  GET_MODE_SIZE (GET_MODE (SUBREG_REG (ref)))));
-      ref = SUBREG_REG (ref);
-    }
+      base = find_replacement (&XEXP (ref, 0));
 
-  if (reload_in_progress)
-    {
-      if (GET_CODE (ref) == REG)
-	{
-	  /* The "simple" case is where the stack slot is in range.  */
-	  if (reg_equiv_mem[REGNO (ref)])
-	    {
-	      ref = reg_equiv_mem[REGNO (ref)];
-	      base = find_replacement (&XEXP (ref, 0));
-	    }
-	  else
-	    {
-	      /* The stack slot isn't in range.  Fix it up as needed.  */
-	      HOST_WIDE_INT hi, lo;
-
-	      base = reg_equiv_address[REGNO (ref)];
-	      if (GET_CODE (base) != PLUS)
-		abort ();
-	      offset += INTVAL (XEXP (base, 1));
-	      base = XEXP (base, 0);
-
-	      lo = ((offset & 0xFFFF) ^ 0x8000) - 0x8000;
-	      hi = (((offset - lo) & 0xFFFFFFFF) ^ 0x80000000) - 0x80000000;
-	      if (hi + lo != offset)
-		abort ();
-	      if (scratch == NULL)
-		abort ();
-
-	      emit_insn (gen_adddi3 (scratch, base, GEN_INT (hi)));
-	      base = scratch;
-	      offset = lo;
-	    }
-	}
-      else
-	base = find_replacement (&XEXP (ref, 0));
+      if (! memory_address_p (GET_MODE (ref), base))
+	abort ();
     }
   else
     {
-      if (GET_CODE (ref) != MEM)
-	abort ();
       base = XEXP (ref, 0);
     }
 
@@ -991,35 +977,19 @@ get_unaligned_address (ref, extra_offset)
   rtx base;
   HOST_WIDE_INT offset = 0;
 
-  if (GET_CODE (ref) == SUBREG)
-    {
-      offset = SUBREG_WORD (ref) * UNITS_PER_WORD;
-      if (BYTES_BIG_ENDIAN)
-	offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (ref)))
-		   - MIN (UNITS_PER_WORD,
-			  GET_MODE_SIZE (GET_MODE (SUBREG_REG (ref)))));
-      ref = SUBREG_REG (ref);
-    }
+  if (GET_CODE (ref) != MEM)
+    abort ();
 
-  if (reload_in_progress)
+  if (reload_in_progress
+      && ! memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
     {
-      if (GET_CODE (ref) == REG)
-	{
-	  if (reg_equiv_mem[REGNO (ref)])
-            ref = reg_equiv_mem[REGNO (ref)];
-	  else
-	    {
-	      /* The stack slot is out of range.  We should have handled
-		 this as an aligned access -- I wonder why we didn't? */
-	      abort ();
-	    }
-	}
       base = find_replacement (&XEXP (ref, 0));
+
+      if (! memory_address_p (GET_MODE (ref), base))
+	abort ();
     }
   else
     {
-      if (GET_CODE (ref) != MEM)
-	abort ();
       base = XEXP (ref, 0);
     }
 
