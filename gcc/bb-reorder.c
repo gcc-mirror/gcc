@@ -415,8 +415,10 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	  /* Select the successor that will be placed after BB.  */
 	  for (e = bb->succ; e; e = e->succ_next)
 	    {
+#ifdef ENABLE_CHECKING
 	      if (e->flags & EDGE_FAKE)
 		abort ();
+#endif
 
 	      if (e->dest == EXIT_BLOCK_PTR)
 		continue;
@@ -1001,6 +1003,8 @@ copy_bb_p (basic_block bb, int code_may_grow)
   int size = 0;
   int max_size = uncond_jump_length;
   rtx insn;
+  int n_succ;
+  edge e;
 
   if (!bb->frequency)
     return false;
@@ -1008,6 +1012,15 @@ copy_bb_p (basic_block bb, int code_may_grow)
     return false;
   if (!cfg_layout_can_duplicate_bb_p (bb))
     return false;
+
+  /* Avoid duplicating blocks which have many successors (PR/13430).  */
+  n_succ = 0;
+  for (e = bb->succ; e; e = e->succ_next)
+    {
+      n_succ++;
+      if (n_succ > 8)
+	return false;
+    }
 
   if (code_may_grow && maybe_hot_bb_p (bb))
     max_size *= 8;
