@@ -1,3 +1,10 @@
+Thu Sep 24 15:08:08 1998  Jakub Jelinek  <jj@sunsite.ms.mff.cuni.cz>
+
+	* config/sparc/sparc.c (function_value): Perform the equivalent of
+	PROMOTE_MODE for ARCH64.
+	(eligible_for_epilogue_delay): Allow DImode operations in delay
+	slot of a return for ARCH64.
+
 Thu Sep 24 22:17:54 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (sqrtsf2): Fix mode of sqrt.
