@@ -18,8 +18,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-#include "coretypes.h"
-#include "tm.h"
 #include "cpplib.h"
 #include "cpphash.h"
 
@@ -305,7 +303,7 @@ _cpp_read_logical_line_trad (cpp_reader *pfile)
       if (pfile->buffer->need_line && !_cpp_get_fresh_line (pfile))
 	return false;
     }
-  while (!scan_out_logical_line (pfile, NULL) || pfile->state.skipping);
+  while (!_cpp_scan_out_logical_line (pfile, NULL) || pfile->state.skipping);
 
   return true;
 }
@@ -343,7 +341,7 @@ save_argument (struct fun_macro *macro, size_t offset)
    MACRO, and we call save_replacement_text() every time we meet an
    argument.  */
 bool
-scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
+_cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
 {
   bool result = true;
   cpp_context *context;
@@ -982,7 +980,7 @@ _cpp_create_trad_definition (cpp_reader *pfile, cpp_macro *macro)
   if (* CUR (context) == '(')
     {
       /* Setting macro to NULL indicates an error occurred, and
-	 prevents unnecessary work in scan_out_logical_line.  */
+	 prevents unnecessary work in _cpp_scan_out_logical_line.  */
       if (!scan_parameters (pfile, macro))
 	macro = NULL;
       else
@@ -1000,7 +998,7 @@ _cpp_create_trad_definition (cpp_reader *pfile, cpp_macro *macro)
 		       CPP_OPTION (pfile, discard_comments_in_macro_exp));
 
   pfile->state.prevent_expansion++;
-  scan_out_logical_line (pfile, macro);
+  _cpp_scan_out_logical_line (pfile, macro);
   pfile->state.prevent_expansion--;
 
   if (!macro)

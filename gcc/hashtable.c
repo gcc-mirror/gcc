@@ -21,8 +21,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "config.h"
 #include "system.h"
-#include "coretypes.h"
-#include "tm.h"
 #include "hashtable.h"
 
 /* The code below is a specialization of Vladimir Makarov's expandable
@@ -63,7 +61,10 @@ ht_create (unsigned int order)
   memset (table, 0, sizeof (hash_table));
 
   /* Strings need no alignment.  */
-  gcc_obstack_init (&table->stack);
+  _obstack_begin (&table->stack, 0, 0,
+		  (void *(*) (long)) xmalloc,
+		  (void (*) (void *)) free);
+
   obstack_alignment_mask (&table->stack) = 0;
 
   table->entries = (hashnode *) xcalloc (nslots, sizeof (hashnode));

@@ -42,7 +42,7 @@ static struct
 /* General output routines.  */
 static void scan_translation_unit (cpp_reader *);
 static void scan_translation_unit_trad (cpp_reader *);
-static void account_for_newlines (const uchar *, size_t);
+static void account_for_newlines (const unsigned char *, size_t);
 static int dump_macro (cpp_reader *, cpp_hashnode *, void *);
 
 static void print_line (const struct line_map *, unsigned int,
@@ -174,7 +174,7 @@ scan_translation_unit (cpp_reader *pfile)
 
 /* Adjust print.line for newlines embedded in output.  */
 static void
-account_for_newlines (const uchar *str, size_t len)
+account_for_newlines (const unsigned char *str, size_t len)
 {
   while (len--)
     if (*str++ == '\n')

@@ -1,3 +1,25 @@
+2003-07-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (LIBCPP_DEPS): Remove coretypes.h and $(TM_H).
+	(hashtable.o, line-map.o, mkdeps.o): Likewise, from dependency
+	list.  Move these all together down by cpplib.
+
+	* cpplib.h: Don't refer to MAX_WCHAR_TYPE_SIZE when determining
+	definition of CPPCHAR_SIGNED_T.
+
+	* cppcharset.c, cpperror.c, cppexp.c, cppfiles.c, cpphash.c, cppinit.c
+	* cpplex.c, cpplib.c, cppmacro.c, cpppch.c, cpptrad.c, hashtable.c
+	* line-map.c, mkdeps.c: Don't include coretypes.h or tm.h.
+
+	* cpphash.c (_cpp_init_hashtable): Don't use gcc_obstack_init.
+	* cppinit.c (cpp_create_reader): Likewise.
+
+	* cpphash.h (scan_out_logical_line): Rename _cpp_scan_out_logical_line.
+	* cpptrad.c: Likewise.  All callers changed.
+	* cpplib.c: All callers changed.
+	* c-ppoutput.c: Replace 'uchar' with 'unsigned char' throughout.
+	* hashtable.h: Define GTY(x) to nothing here too.
+
 2003-07-13  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stor-layout.c (compute_record_mode): Remove very obsolete test
