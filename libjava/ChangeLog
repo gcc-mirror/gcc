@@ -5,6 +5,15 @@
 	loadFactor > 1. Add exception messages.
 	* java/util/Hashtable.java (Hashtable): Likewise.
 
+2001-02-21  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Disable libgcjx by default.
+        * configure.in: Add support for --enable-java-awt configure option. 
+	Use --enable-java-awt=xlib to build the xlib peers (libgcjx).
+        * Makefile.am: Make libgcjx conditional on XLIB_AWT, instead of NO_X.
+	* Makefile.in: Rebuilt.
+	* configure: Rebuilt.
+
 2001-02-20  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/PipedWriter.java (flush): Throw exception if stream
