@@ -1,57 +1,46 @@
 dnl Process this with autoconf to create configure
-AC_PREREQ(2.13)
-AC_INIT(fficonfig.h.in)
-AM_CONFIG_HEADER(fficonfig.h)
 
-# This works around the fact that libtool configuration may change LD
-# for this particular configuration, but some shells, instead of
-# keeping the changes in LD private, export them just because LD is
-# exported.
-ORIGINAL_LD_FOR_MULTILIBS=$LD
+AC_PREREQ(2.59)
 
-dnl Default to --enable-multilib
-AC_ARG_ENABLE(multilib,
-[  --enable-multilib       build many library versions (default)],
-[case "${enableval}" in
-  yes) multilib=yes ;;
-  no)  multilib=no ;;
-  *)   AC_MSG_ERROR(bad value ${enableval} for multilib option) ;;
- esac], [multilib=yes])dnl
+AC_INIT([libffi], [2.1], [http://gcc.gnu.org/bugs.html])
+AC_CONFIG_HEADERS([fficonfig.h])
 
-dnl We may get other options which we don't document:
-dnl --with-target-subdir, --with-multisrctop, --with-multisubdir
-
-if test "${srcdir}" = "."; then
-  if test "${with_target_subdir}" != "."; then
-    libffi_basedir="${with_multisrctop}../"
-  else
-    libffi_basedir="${with_multisrctop}"
-  fi
+AM_ENABLE_MULTILIB(, ..)
+if test a = b; then
+   # This is for automake
+   AC_CONFIG_AUX_DIR([..])
 else
-  libffi_basedir=
-fi
-AC_SUBST(libffi_basedir)
-AC_CONFIG_AUX_DIR(${libffi_basedir}..)
+   # and this is for autoconf
+   AC_CONFIG_AUX_DIRS(${multi_basedir})
+ fi
 
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
 
-AM_PROG_LIBTOOL
+AM_INIT_AUTOMAKE
 
-AM_INIT_AUTOMAKE(libffi,2.00-beta,no-define)
+# The same as in boehm-gc and libstdc++. Have to borrow it from there.
+# We must force CC to /not/ be precious variables; otherwise
+# the wrong, non-multilib-adjusted value will be used in multilibs.
+# As a side effect, we have to subst CFLAGS ourselves.
 
-AC_EXEEXT
-AM_MAINTAINER_MODE
-
+m4_rename([_AC_ARG_VAR_PRECIOUS],[real_PRECIOUS])
+m4_define([_AC_ARG_VAR_PRECIOUS],[])
 AC_PROG_CC
+m4_rename([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
 
+AC_SUBST(CFLAGS)
+
+AM_PROG_AS
+AM_PROG_CC_C_O
 AC_PROG_LIBTOOL
+
+AM_MAINTAINER_MODE
 
 AC_FUNC_MMAP_BLACKLIST
 
 dnl The -no-testsuite modules omit the test subdir.
 AM_CONDITIONAL(TESTSUBDIR, test -d $srcdir/testsuite)
-
 
 TARGETDIR="unknown"
 case "$host" in
@@ -90,7 +79,7 @@ esac
 AC_SUBST(AM_RUNTESTFLAGS)
 
 if test $TARGETDIR = unknown; then
-  AC_ERROR("libffi has not been ported to $host.")
+  AC_MSG_ERROR(["libffi has not been ported to $host."])
 fi
 
 AM_CONDITIONAL(MIPS_IRIX, test x$TARGET = xMIPS_IRIX)
@@ -156,12 +145,12 @@ if test x$TARGET = xSPARC; then
        libffi_cv_as_register_pseudo_op=unknown
        # Check if we have .register
        AC_TRY_COMPILE([asm (".register %g2, #scratch");],,
-                       [libffi_cv_as_register_pseudo_op=yes],
-                       [libffi_cv_as_register_pseudo_op=no])
+		       [libffi_cv_as_register_pseudo_op=yes],
+		       [libffi_cv_as_register_pseudo_op=no])
     ])
     if test "x$libffi_cv_as_register_pseudo_op" = xyes; then
        AC_DEFINE(HAVE_AS_REGISTER_PSEUDO_OP, 1,
-               [Define if your assembler supports .register.])
+	       [Define if your assembler supports .register.])
     fi
 fi
 
@@ -251,28 +240,14 @@ else
   multilib_arg=
 fi
 
-AC_OUTPUT(include/Makefile testsuite/Makefile include/ffi.h Makefile,
-[
-if test -n "$CONFIG_FILES"; then
-   LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-   ac_file=Makefile . ${srcdir}/${libffi_basedir}../config-ml.in
-fi
-],
-srcdir=${srcdir}
-host=${host}
-target=${target}
-with_multisubdir=${with_multisubdir}
-ac_configure_args="${multilib_arg} ${ac_configure_args}"
-CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
-libffi_basedir=${libffi_basedir}
-CC="${CC}"
-DEFS="$DEFS"
-ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
-
-# Make target subdirectories if required.
+AC_CONFIG_COMMANDS(include, [test -d include || mkdir include])
+AC_CONFIG_COMMANDS(src, [
 test -d src || mkdir src
-test -d src/${TARGETDIR} || mkdir src/${TARGETDIR}
-test -d include || mkdir include
+test -d src/$TARGETDIR || mkdir src/$TARGETDIR
+], [TARGETDIR="$TARGETDIR"])
 
-AC_LINK_FILES(src/$TARGETDIR/ffitarget.h, include/ffitarget.h)
-)
+AC_CONFIG_LINKS(include/ffitarget.h:src/$TARGETDIR/ffitarget.h)
+
+AC_CONFIG_FILES(include/Makefile include/ffi.h Makefile testsuite/Makefile)
+
+AC_OUTPUT

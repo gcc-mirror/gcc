@@ -1,3 +1,23 @@
+2004-03-11  Andreas Tobler  <a.tobler@schweiz.ch>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.am (AUTOMAKE_OPTIONS): Set them.
+	Remove VPATH. Remove rules for object files. Remove multilib support.
+	(AM_CCASFLAGS): Add.
+	* configure.in (AC_CONFIG_HEADERS): Relace AM_CONFIG_HEADER.
+	(AC_PREREQ): Bump version to 2.59.
+	(AC_INIT): Fill with version info and bug address.
+	(ORIGINAL_LD_FOR_MULTILIBS): Remove.
+	(AM_ENABLE_MULTILIB): Use this instead of AC_ARG_ENABLE.
+	De-precious CC so that the right flags are passed down to multilibs.
+	(AC_MSG_ERROR): Replace obsolete macro AC_ERROR.
+	(AC_CONFIG_FILES): Replace obsolete macro AC_LINK_FILES.
+	(AC_OUTPUT): Reorganize the output with AC_CONFIG_COMMANDS.
+	* configure: Rebuilt.
+	* aclocal.m4: Likewise.
+	* Makefile.in, include/Makefile.in, testsuite/Makefile.in: Likewise.
+	* fficonfig.h.in: Likewise.
+
 2004-03-11  Andreas Schwab  <schwab@suse.de>
 
 	* src/ia64/ffi.c (ffi_prep_incoming_args_UNIX): Get floating point
