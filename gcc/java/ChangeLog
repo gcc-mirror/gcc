@@ -1,3 +1,10 @@
+1998-11-11  Tom Tromey  <tromey@cygnus.com>
+
+	* jvspec.c (GC_NAME): New define.
+	(lang_specific_driver): Use GC_NAME.  Add GC_NAME to command line
+	if required.
+	* Make-lang.in (jvspec.o): Define WITH_GC_<name>.
+
 Wed Nov 11 19:08:52 1998  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-dump.c (TABLE_SWITCH):  Fix typos.

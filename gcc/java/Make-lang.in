@@ -84,7 +84,7 @@ $(GCJ).c: $(srcdir)/gcc.c
 	$(LN_S) $(srcdir)/gcc.c $@
 
 jvspec.o: $(srcdir)/java/jvspec.c
-	$(CC) -c -DWITH_THREAD_$(GCC_THREAD_FILE) \
+	$(CC) -c -DWITH_THREAD_$(GCC_THREAD_FILE) -DWITH_GC_$(JAVAGC) \
 		$(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 		$(INCLUDES) $(srcdir)/java/jvspec.c
 
