@@ -1,3 +1,17 @@
+2002-05-28  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/netbsd-aout.h (NETBSD_OS_CPP_BUILTINS_AOUT): Define
+	common CPP built-ins for all NetBSD a.out targets.
+	* config/netbsd-elf.h (NETBSD_OS_CPP_BUILTINS_ELF): Define
+	common CPP built-ins for all NetBSD ELF targets.
+	* config/netbsd.h: Add missing notice.
+	(NETBSD_OS_CPP_BUILTINS_COMMON): Define common CPP built-ins
+	for all NetBSD targets.
+	(NETBSD_OS_CPP_BUILTINS_LP64): Define common CPP built-ins
+	for all NetBSD targets using an LP64 code model.
+	(NETBSD_CPP_SPEC): Define CPP_SPEC parts common to all
+	NetBSD targets.
+
 2002-05-28  Richard Henderson  <rth@redhat.com>
 
 	* flow.c (update_life_info_in_dirty_blocks): Only do a partial

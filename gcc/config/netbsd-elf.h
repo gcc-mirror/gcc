@@ -19,6 +19,14 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* TARGET_OS_CPP_BUILTINS() common to all NetBSD ELF targets.  */
+#define NETBSD_OS_CPP_BUILTINS_ELF()		\
+  do						\
+    {						\
+      NETBSD_OS_CPP_BUILTINS_COMMON();		\
+      builtin_define ("__ELF__");		\
+    }						\
+  while (0)
 
 /* This defines which switch letters take arguments.  On NetBSD, most
    of the normal cases (defined by gcc.c) apply, and we also have -h*
