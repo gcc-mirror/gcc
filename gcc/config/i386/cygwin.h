@@ -51,6 +51,7 @@ Boston, MA 02111-1307, USA. */
 { "no-cygwin",		  MASK_WIN32,					\
   N_("Use the Mingw32 interface") },					\
 { "windows",		  MASK_WINDOWS, N_("Create GUI application") },	\
+{ "no-win32",		  -MASK_WIN32, N_("Don't set Windows defines") },\
 { "console",		  -MASK_WINDOWS,				\
   N_("Create console application") }, 					\
 { "dll",		  MASK_DLL, N_("Generate code for a DLL") },	\
@@ -69,19 +70,20 @@ Boston, MA 02111-1307, USA. */
    existing args.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D_WIN32 \
-  -DWINNT  -D_X86_=1 \
-  -Asystem=winnt"
+#define CPP_PREDEFINES "-D_X86_=1 -Asystem=winnt"
 
 /* Normally, -lgcc is not needed since everything in it is in the DLL, but we
    want to allow things to be added to it when installing new versions of
    GCC without making a new CYGWIN.DLL, so we leave it.  Profiling is handled
    by calling the init function from the prologue. */
 
+#undef LIBGCC_SPEC
+#define LIBGCC_SPEC "%{mno-cygwin: %{mthreads:-lmingwthrd} -lmingw32} -lgcc %{mno-cygwin:-lmoldname -lcrtdll}"
+
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{mdll: %{mno-cygwin:dllcrt1%O%s}} \
-                        %{!mdll: %{!mno-cygwin:crt0%O%s} \
-                                 %{mno-cygwin:crt1%O%s} %{pg:gcrt0%O%s}}"
+#define STARTFILE_SPEC "%{shared|mdll: %{mno-cygwin:dllcrt1%O%s}} \
+  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:crt1%O%s} \
+  %{pg:gcrt0%O%s}}}"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
@@ -90,9 +92,19 @@ Boston, MA 02111-1307, USA. */
   %{!ansi:-D_stdcall=__attribute__((__stdcall__)) \
     -D_cdecl=__attribute__((__cdecl__))} \
   -D__declspec(x)=__attribute__((x)) \
-  %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__} \
-  %{mno-cygwin:-iwithprefixbefore \
-    ../../../../%(mingw_include_path)/include/mingw32 -D__MINGW32__=0.2}"
+  -D__i386__ -D__i386 \
+  %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__ -Dunix -D__unix -D__unix__} \
+  %{!mno-win32:-D_WIN32 -DWINNT -iwithprefixbefore /usr/include/w32api} \
+  %{mno-win32: %{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} \
+  %{mno-cygwin:-DWIN32 -D__WIN32__ -D_WIN32 -D__MINGW32__=0.2 \
+    %{mthreads:-D_MT} \
+    -isystem /usr/include/mingw32 \
+    -isystem /usr/include/mingw \
+    -iwithprefixbefore ../../../../mingw/include/g++-3 \
+    -iwithprefixbefore ../../../../mingw/include \
+    -iwithprefixbefore ../../../../mingw32/include/g++-3 \
+    -iwithprefixbefore ../../../../mingw32/include }"
+
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -116,15 +128,22 @@ Boston, MA 02111-1307, USA. */
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-lgmon} \
-                  %{!mno-cygwin:-lcygwin} \
-                  %{mno-cygwin:-lmingw32 -lmoldname -lcrtdll} \
-                  %{mwindows:-lgdi32 -lcomdlg32} \
-		  -luser32 -lkernel32 -ladvapi32 -lshell32"
+  %{!mno-cygwin:-lcygwin} \
+  %{mno-cygwin:%{mthreads:-lmingwthrd} -lmingw32} \
+  %{mwindows:-lgdi32 -lcomdlg32} \
+  -luser32 -lkernel32 -ladvapi32 -lshell32"
 
 #define LINK_SPEC "%{mwindows:--subsystem windows} \
-                   %{mconsole:--subsystem console} \
-                   %{mdll:--dll -e _DllMainCRTStartup@12}"
+  %{mconsole:--subsystem console} \
+  %{shared: %{mdll: %eshared and mdll are not compatible}} \
+  %{shared: --shared} %{mdll:--dll} \
+  %{static:-Bstatic} %{!static:-Bdynamic} \
+  %{shared|mdll: -e \
+    %{mno-cygwin:_DllMainCRTStartup@12} \
+    %{!mno-cygwin:__cygwin_dll_entry@12}}"
 
+#undef MATH_LIBRARY
+#define MATH_LIBRARY ""
 
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
@@ -139,11 +158,14 @@ Boston, MA 02111-1307, USA. */
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
    is a valid machine specific attribute for DECL.
    The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-extern int i386_pe_valid_decl_attribute_p ();
+
+union tree_node;
+#define TREE union tree_node *
 
 #undef VALID_MACHINE_DECL_ATTRIBUTE
 #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
   i386_pe_valid_decl_attribute_p (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
+extern int i386_pe_valid_decl_attribute_p PARAMS ((TREE, TREE, TREE, TREE));
 
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
    is a valid machine specific attribute for TYPE.
@@ -152,11 +174,12 @@ extern int i386_pe_valid_decl_attribute_p ();
 #undef VALID_MACHINE_TYPE_ATTRIBUTE
 #define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, IDENTIFIER, ARGS) \
   i386_pe_valid_type_attribute_p (TYPE, ATTRIBUTES, IDENTIFIER, ARGS)
-extern int i386_pe_valid_type_attribute_p ();
+extern int i386_pe_valid_type_attribute_p PARAMS ((TREE, TREE, TREE, TREE));
 
-extern union tree_node *i386_pe_merge_decl_attributes ();
+extern union tree_node *i386_pe_merge_decl_attributes PARAMS ((TREE, TREE));
 #define MERGE_MACHINE_DECL_ATTRIBUTES(OLD, NEW) \
   i386_pe_merge_decl_attributes ((OLD), (NEW))
+extern TREE i386_pe_merge_decl_attributes PARAMS ((TREE, TREE));
 
 /* Used to implement dllexport overriding dllimport semantics.  It's also used
    to handle vtables - the first pass won't do anything because
@@ -285,7 +308,7 @@ do {									\
    section and we need to set DECL_SECTION_NAME so we do that here.
    Note that we can be called twice on the same decl.  */
 
-extern void i386_pe_encode_section_info ();
+extern void i386_pe_encode_section_info PARAMS ((TREE));
 
 #ifdef ENCODE_SECTION_INFO
 #undef ENCODE_SECTION_INFO
@@ -377,7 +400,7 @@ do {							\
 #define MULTIPLE_SYMBOL_SPACES
 
 #define UNIQUE_SECTION_P(DECL) DECL_ONE_ONLY (DECL)
-extern void i386_pe_unique_section ();
+extern void i386_pe_unique_section PARAMS ((TREE, int));
 #define UNIQUE_SECTION(DECL,RELOC) i386_pe_unique_section (DECL, RELOC)
 
 #define SUPPORTS_ONE_ONLY 1
@@ -507,16 +530,10 @@ do {									\
 #endif
 #endif
 
-#ifdef BUFSIZ		/* stdio.h has been included, ok to use FILE * */
-#define STDIO_PARAMS(ARGS) PARAMS(ARGS)
-#else
-#define STDIO_PARAMS(ARGS) ()
-#endif
-
 extern void i386_pe_record_external_function PARAMS ((char *));
-extern void i386_pe_declare_function_type STDIO_PARAMS ((FILE *, char *, int));
+/* extern void i386_pe_declare_function_type PARAMS ((FILE *, char *, int)); */
 extern void i386_pe_record_exported_symbol PARAMS ((char *, int));
-extern void i386_pe_asm_file_end STDIO_PARAMS ((FILE *));
+/* extern void i386_pe_asm_file_end PARAMS ((FILE *)); */
 
 /* For Win32 ABI compatibility */
 #undef DEFAULT_PCC_STRUCT_RETURN
@@ -528,7 +545,9 @@ extern void i386_pe_asm_file_end STDIO_PARAMS ((FILE *));
 
 /* A bitfield declared as `int' forces `int' alignment for the struct.  */
 #undef PCC_BITFIELDS_TYPE_MATTERS
-#define PCC_BITFIELDS_TYPE_MATTERS 0
+#define PCC_BITFIELDS_TYPE_MATTERS 1
+#define GROUP_BITFIELDS_BY_ALIGN TYPE_NATIVE(rec)
+
 
 /* Enable alias attribute support.  */
 #ifndef SET_ASM_OP
@@ -539,3 +558,14 @@ extern void i386_pe_asm_file_end STDIO_PARAMS ((FILE *));
 #define INT_ASM_OP "\t.long\t"
 #endif
 
+#undef STANDARD_INCLUDE_DIR
+#define STANDARD_INCLUDE_DIR "/usr/include"
+
+#undef STANDARD_STARTFILE_PREFIX
+#define STANDARD_STARTFILE_PREFIX     "/usr/lib/"
+
+#undef TREE
+
+#ifndef BUFSIZ
+# undef FILE
+#endif
