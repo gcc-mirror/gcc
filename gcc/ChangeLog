@@ -1,3 +1,9 @@
+Fri Oct 24 13:19:40 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.c (symbolic_operand, legitimize_address): New functions.
+	* mn10300.h (LEGITIMIZE_ADDRESS): Call legitimize_address.
+	(GO_IF_LEGITIMATE_ADDRESS): Don't allow base + symbolic.
+
 Thu Oct 23 09:35:12 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
