@@ -387,9 +387,7 @@ use_thunk (thunk_fndecl, emit_p)
   fnaddr = DECL_INITIAL (thunk_fndecl);
   if (TREE_CODE (DECL_INITIAL (thunk_fndecl)) != ADDR_EXPR)
     /* We already turned this thunk into an ordinary function.
-       There's no need to process this thunk again.  (We can't just
-       clear DECL_THUNK_P because that will confuse
-       FNADDR_FROM_VTABLE_ENTRY and friends.)  */
+       There's no need to process this thunk again.  */
     return;
 
   /* Thunks are always addressable; they only appear in vtables.  */
