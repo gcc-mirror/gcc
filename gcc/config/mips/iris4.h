@@ -30,15 +30,16 @@ Boston, MA 02111-1307, USA.  */
 /* Some assemblers have a bug that causes backslash escaped chars in .ascii
    to be misassembled, so we just completely avoid it.  */
 #undef ASM_OUTPUT_ASCII
-#define ASM_OUTPUT_ASCII(FILE,PTR,LEN)			\
-do {							\
-  const unsigned char *s;				\
-  int i;						\
-  for (i = 0, s = (const unsigned char *)(PTR); i < (LEN); s++, i++) \
-    {							\
-      if ((i % 8) == 0)					\
-	fputs ("\n\t.byte\t", (FILE));			\
-      fprintf ((FILE), "%s0x%x", (i%8?",":""), (unsigned)*s); \
-    }							\
-  fputs ("\n", (FILE));					\
+#define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
+do {								\
+  const unsigned char *s_ = (const unsigned char *)(PTR);	\
+  unsigned len_ = (LEN);					\
+  unsigned i_;							\
+  for (i_ = 0; i_ < len_; s_++, i_++)				\
+    {								\
+      if ((i_ % 8) == 0)					\
+	fputs ("\n\t.byte\t", (FILE));				\
+      fprintf ((FILE), "%s0x%x", (i_%8?",":""), *s_);		\
+    }								\
+  fputs ("\n", (FILE));						\
 } while (0)
