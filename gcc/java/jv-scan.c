@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include <locale.h>
 #endif
 
-#ifdef HAVE_NL_LANGINFO
+#ifdef HAVE_LANGINFO_CODESET
 #include <langinfo.h>
 #endif
 
@@ -203,7 +203,7 @@ DEFUN (main, (argc, argv),
 	    /* There's no point in trying to find the current encoding
 	       unless we are going to do something intelligent with it
 	       -- hence the test for iconv.  */
-#if defined (HAVE_LOCALE_H) && defined (HAVE_ICONV) && defined (HAVE_NL_LANGINFO)
+#if defined (HAVE_LOCALE_H) && defined (HAVE_ICONV) && defined (HAVE_LANGINFO_CODESET)
 	    setlocale (LC_CTYPE, "");
 	    if (encoding == NULL)
 	      encoding = nl_langinfo (CODESET);
