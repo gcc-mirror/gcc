@@ -1,3 +1,8 @@
+2005-01-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/18809
+	* gcc.dg/pr18809-1.c: New test.
+
 2005-01-21  Ian Lance Taylor  <ian@airs.com>
 
 	* gcc.dg/20050121-1.c: New test.
