@@ -1,3 +1,11 @@
+Thu May 23 11:09:26 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.dg/weak-2.c: Allow optional leading underscore
+	in scan-assembler symbol name.
+	* gcc.dg/weak-3.c: Likewise.
+	* gcc.dg/weak-4.c: Likewise.
+	* gcc.dg/weak-5.c: Likewise.
+
 2002-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20020523-1.c: New test.
