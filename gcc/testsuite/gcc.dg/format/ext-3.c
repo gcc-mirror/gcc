@@ -3,7 +3,7 @@
 */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -Wformat" } */
+/* { dg-options "-std=gnu99 -Wformat -Wformat-y2k" } */
 
 #include "format.h"
 

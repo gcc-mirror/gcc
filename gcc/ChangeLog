@@ -1,3 +1,10 @@
+2003-11-08  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/3190
+	PR c/8714
+	* c-format.c (set_Wformat): Do not enable -Wformat-y2k by default.
+	* invoke.texi: Update.
+
 2003-11-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR optimization/12630
