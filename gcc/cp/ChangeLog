@@ -1,3 +1,8 @@
+2000-11-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (do_nonmember_using_decl): Allow `extern "C"'
+	declarations from different namespaces to be combined.
+
 2000-11-03  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* decl.c: Include tm_p.h.

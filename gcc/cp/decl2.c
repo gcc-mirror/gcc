@@ -5204,10 +5204,12 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
 		  && compparms (TYPE_ARG_TYPES (TREE_TYPE (new_fn)),
 				TYPE_ARG_TYPES (TREE_TYPE (old_fn))))
 		{
-		  /* There was already a non-using declaration in
-		     this scope with the same parameter types.  */
-		  cp_error ("`%D' is already declared in this scope",
-			    name);
+		  if (!(DECL_EXTERN_C_P (new_fn)
+			&& DECL_EXTERN_C_P (old_fn)))
+		    /* There was already a non-using declaration in
+		       this scope with the same parameter types.  */
+		    cp_error ("`%D' is already declared in this scope",
+			      name);
 		  break;
 		}
 	      else if (duplicate_decls (new_fn, old_fn))
