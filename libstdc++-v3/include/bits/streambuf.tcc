@@ -37,6 +37,10 @@
 
 #pragma GCC system_header
 
+#ifdef _GLIBCPP_HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 namespace std 
 {
   template<typename _CharT, typename _Traits>
@@ -219,8 +223,14 @@ namespace std
 		}
  	      else 
 		{
-		  _CharT __buf[256];
-		  streamsize __charsread = __sbin->sgetn(__buf, sizeof(__buf));
+#ifdef _GLIBCPP_HAVE_ISATTY		  
+		  size_t __size = isatty(0) ? 1 : static_cast<size_t>(BUFSIZ);
+#else
+		  size_t __size = 1;
+#endif
+		  _CharT* __buf =
+		    static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __size));
+		  streamsize __charsread = __sbin->sgetn(__buf, __size);
 		  __xtrct = __sbout->sputn(__buf, __charsread);
 		  __ret += __xtrct;
 		  if (__xtrct != __charsread)
