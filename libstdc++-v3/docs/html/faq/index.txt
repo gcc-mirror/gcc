@@ -548,8 +548,8 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
 5.6 Is libstdc++-v3 thread-safe?
 
-   Quick  answer:  no, as of 2.92 (eleventh snapshot), the library is not
-   appropriate for multithreaded access. The string class is MT-safe.
+   Quick  answer:  no,  as  of  3.0,  most of the library is not safe for
+   multithreaded access. The string class is MT-safe.
 
    This  is  assuming  that  your  idea of "multithreaded" is the same as
    ours...  The  general  question  of multithreading and libstdc++-v3 is

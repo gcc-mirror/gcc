@@ -93,8 +93,7 @@
       Here is one possible example displaying the forcing of the malloc-based
       allocator over the typically higher-speed default allocator:
       <pre>
-      std::list &lt;void*, std::malloc_alloc&gt;  my_malloc_based_list;
-      </pre>
+      std::list &lt;my_type, std::malloc_alloc&gt;  my_malloc_based_list;</pre>
    </p>
    <p>A recent journal article has described &quot;atomic integer
       operations,&quot; which would allow us to, well, perform updates

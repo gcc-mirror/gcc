@@ -29,6 +29,7 @@
    <li><a href="#6">Deriving a stream buffer</a>
    <li><a href="#7">More on binary I/O</a>
    <li><a href="#8">Pathetic performance?  Ditch C.</a>
+   <li><a href="#9">Threads and I/O</a>
 </ul>
 
 <hr>
@@ -59,7 +60,7 @@
    </p>
    <p>Seriously, go do it.  Get surprised, then come back.  It's worth it.
    </p>
-   <HR WIDTH="60%">
+   <hr width="60%">
    <p>The thing to remember is that the <code>basic_[io]stream</code> classes
       handle formatting, nothing else.  In particular, they break up on
       whitespace.  The actual reading, writing, and storing of data is
@@ -170,11 +171,14 @@
       <code>streambuf</code> does not specify any actions for its own 
       <code>setbuf()</code>-ish functions; the classes derived from
       <code>streambuf</code> each define behavior that &quot;makes 
-      sense&quot; for that class:  an argument of (0,0) turns off
-      buffering for <code>filebuf</code> but has undefined behavior for
-      its sibling <code>stringbuf</code>, and specifying anything other
-      than (0,0) has varying effects.  Other user-defined class derived
-      from streambuf can do whatever they want.
+      sense&quot; for that class:  an argument of (0,0) turns off buffering
+      for <code>filebuf</code> but has undefined behavior for its sibling
+      <code>stringbuf</code>, and specifying anything other than (0,0) has
+      varying effects.  Other user-defined class derived from streambuf can
+      do whatever they want.  (For <code>filebuf</code> and arguments for
+      <code>(p,s)</code> other than zeros, libstdc++ does what you'd expect:
+      the first <code>s</code> bytes of <code>p</code> are used as a buffer,
+      which you must allocate and deallocate.)
    </p>
    <p>A last reminder:  there are usually more buffers involved than
       just those at the language/library level.  Kernel buffers, disk
@@ -453,10 +457,96 @@
       buffered.
    </p>
 
+<hr>
+<h2><a name="9">Threads and I/O</a></h2>
+   <p>I'll assume that you have already read the
+      <a href="../17_intro/howto.html#3">general notes on library threads</a>,
+      and the
+      <a href="../23_containers/howto.html#3">notes on threaded container
+      access</a> (you might not think of an I/O stream as a container, but
+      the points made there also hold here).  If you have not read them,
+      please do so first.
+   </p>
+   <p>This gets a bit tricky.  Please read carefully, and bear with me.
+   </p>
+   <h3>Structure</h3>
+   <p>As described <a href="../explanations.html#cstdio">here</a>, a wrapper
+      type called <code>__basic_file</code> provides our abstraction layer
+      for the <code>std::filebuf</code> classes.  Nearly all decisions dealing
+      with actual input and output must be made in <code>__basic_file</code>.
+   </p>
+   <p>A generic locking mechanism is somewhat in place at the filebuf layer,
+      but is not used in the current code.  Providing locking at any higher
+      level is akin to providing locking within containers, and is not done
+      for the same reasons (see the links above).
+   </p>
+   <h3>The defaults for 3.0.x</h3>
+   <p>The __basic_file type is simply a collection of small wrappers around
+      the C stdio layer (again, see the link under Structure).  We do no
+      locking ourselves, but simply pass through to calls to <code>fopen</code>,
+      <code>fwrite</code>, and so forth.
+   </p>
+   <p>So, for 3.0, the question of &quot;is multithreading safe for I/O&quot; 
+      must be answered with, &quot;is your platform's C library threadsafe
+      for I/O?&quot;  Some are by default, some are not; many offer multiple
+      implementations of the C library with varying tradeoffs of threadsafety
+      and efficiency.  You, the programmer, are always required to take care
+      with multiple threads.
+   </p>
+   <p>(As an example, the POSIX standard requires that C stdio FILE*
+       operations are atomic.  POSIX-conforming C libraries (e.g, on Solaris
+       and GNU/Linux) have an internal mutex to serialize operations on
+       FILE*s.  However, you still need to not do stupid things like calling
+       <code>fclose(fs)</code> in one thread followed by an access of
+       <code>fs</code> in another.)
+   </p>
+   <p>So, if your platform's C library is threadsafe, then your
+      <code>fstream</code> I/O operations will be threadsafe at the lowest
+      level.  For higher-level operations, such as manipulating the data
+      contained in the stream formatting classes (e.g., setting up callbacks
+      inside an <code>std::ofstream</code>), you need to guard such accesses
+      like any other critical shared resource.
+   </p>
+   <h3>The future</h3>
+   <p>As already mentioned <a href="../explanations.html#cstdio">here</a>, a
+      second choice is available for I/O implementations:  libio.  This is
+      disabled by default, and in fact will not currently work due to other
+      issues.  It will be revisited, however.
+   </p>
+   <p>The libio code is a subset of the guts of the GNU libc (glibc) I/O
+      implementation.  When libio is in use, the <code>__basic_file</code>
+      type is basically derived from FILE.  (The real situation is more
+      complex than that... it's derived from an internal type used to
+      implement FILE.  See libio/libioP.h to see scary things done with
+      vtbls.)  The result is that there is no &quot;layer&quot; of C stdio
+      to go through; the filebuf makes calls directly into the same
+      functions used to implement <code>fread</code>, <code>fwrite</code>,
+      and so forth, using internal data structures.  (And when I say
+      &quot;makes calls directly,&quot; I mean the function is literally
+      replaced by a jump into an internal function.  Fast but frightening.
+      *grin*)
+   </p>
+   <p>Also, the libio internal locks are used.  This requires pulling in
+      large chunks of glibc, such as a pthreads implementation, and is one
+      of the issues preventing widespread use of libio as the libstdc++
+      cstdio implementation.
+   </p>
+   <p>But we plan to make this work, at least as an option if not a future
+      default.  Platforms running a copy of glibc with a recent-enough
+      version will see calls from libstdc++ directly into the glibc already
+      installed.  For other platforms, a copy of the libio subsection will
+      be built and included in libstdc++.
+   </p>
+   <h3>Alternatives</h3>
+   <p>Don't forget that other cstdio implemenations are possible.  You could
+      easily write one to perform your own forms of locking, to solve your
+      &quot;interesting&quot; problems.
+   </p>
+
 
 <!-- ####################################################### -->
 
-<hr><br><br><br><br><br><br><br><br>
+<hr>
 <p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
