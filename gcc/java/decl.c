@@ -349,7 +349,8 @@ tree double_zero_node;
 tree empty_stmt_node;
 
 /* Nodes for boolean constants TRUE and FALSE. */
-tree boolean_true_node, boolean_false_node;
+tree boolean_true_node;
+tree boolean_false_node;
 
 tree TYPE_identifier_node;
 tree init_identifier_node;
@@ -413,7 +414,8 @@ push_promoted_type (name, actual_type)
 }
 
 /* Nodes for integer constants.  */
-tree integer_two_node, integer_four_node;
+tree integer_two_node;
+tree integer_four_node;
 tree integer_negative_one_node;
 
 /* Return a definition for a builtin function named NAME and whose data type
@@ -629,8 +631,9 @@ init_decl_processing ()
   /* This isn't exactly true, but it is what we have in the source.
      There is an unresolved issue here, which is whether the vtable
      should be marked by the GC.  */
-  PUSH_FIELD (object_type_node, field, "sync_info",
-	      build_pointer_type (object_type_node));
+  if (! flag_hash_synchronization)
+    PUSH_FIELD (object_type_node, field, "sync_info",
+		build_pointer_type (object_type_node));
   for (t = TYPE_FIELDS (object_type_node); t != NULL_TREE; t = TREE_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
   FINISH_RECORD (object_type_node);
@@ -1082,6 +1085,7 @@ pushdecl (x)
 
   return x;
 }
+
 void
 pushdecl_force_head (x)
      tree x;
@@ -1125,8 +1129,7 @@ getdecls ()
 
 /* Create a new `struct binding_level'.  */
 
-static
-struct binding_level *
+static struct binding_level *
 make_binding_level ()
 {
   /* NOSTRICT */

@@ -155,6 +155,10 @@ extern int flag_use_divide_subroutine;
 /* When non zero, generate code for the Boehm GC.  */
 extern int flag_use_boehm_gc;
 
+/* When non zero, assume the runtime uses a hash table to map an
+   object to its synchronization structure.  */
+extern int flag_hash_synchronization;
+
 /* The Java .class file that provides main_class;  the main input file. */
 extern struct JCF *current_jcf;
 

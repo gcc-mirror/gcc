@@ -1,5 +1,18 @@
 2000-03-16  Tom Tromey  <tromey@cygnus.com>
 
+	* lang.c (flag_hash_synchronization): New global.
+	(lang_f_options): Added `hash-synchronization'.
+	* lang-options.h: Mention -fhash-synchronization.
+	* java-tree.h (flag_hash_synchronization): Declare.
+	* expr.c (java_lang_expand_expr): Only push `sync_info' value when
+	hash table synchronization is disabled.
+	* decl.c (init_decl_processing): Only push `sync_info' value when
+	hash table synchronization is disabled.
+	* class.c (make_class_data): Only push `sync_info' field when hash
+	table synchronization is disabled.  Removed dead code.
+
+2000-03-16  Tom Tromey  <tromey@cygnus.com>
+
 	* lang.c (lang_decode_option): Enable -Wunused when -Wall given.
 
 2000-03-15  Tom Tromey  <tromey@cygnus.com>
