@@ -9053,6 +9053,7 @@ rs6000_output_function_epilogue (file, size)
      HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   rs6000_stack_t *info = rs6000_stack_info ();
+  int optional_tbtab = (optimize_size || TARGET_ELF) ? 0 : 1;
 
   if (! HAVE_epilogue)
     {
@@ -9098,7 +9099,7 @@ rs6000_output_function_epilogue (file, size)
     {
       const char *fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
       const char *language_string = lang_hooks.name;
-      int fixed_parms, float_parms, parm_info;
+      int fixed_parms = 0, float_parms = 0, parm_info = 0;
       int i;
 
       while (*fname == '.')	/* V.4 encodes . in the name */
@@ -9158,7 +9159,8 @@ rs6000_output_function_epilogue (file, size)
 	 has controlled storage, function has no toc, function uses fp,
 	 function logs/aborts fp operations.  */
       /* Assume that fp operations are used if any fp reg must be saved.  */
-      fprintf (file, "%d,", (1 << 5) | ((info->first_fp_reg_save != 64) << 1));
+      fprintf (file, "%d,",
+	       (optional_tbtab << 5) | ((info->first_fp_reg_save != 64) << 1));
 
       /* 6 bitfields: function is interrupt handler, name present in
 	 proc table, function calls alloca, on condition directives
@@ -9167,10 +9169,12 @@ rs6000_output_function_epilogue (file, size)
       /* The `function calls alloca' bit seems to be set whenever reg 31 is
 	 set up as a frame pointer, even when there is no alloca call.  */
       fprintf (file, "%d,",
-	       ((1 << 6) | (frame_pointer_needed << 5)
-		| (info->cr_save_p << 1) | (info->lr_save_p)));
+	       ((optional_tbtab << 6)
+		| ((optional_tbtab & frame_pointer_needed) << 5)
+		| (info->cr_save_p << 1)
+		| (info->lr_save_p)));
 
-      /* 3 bitfields: saves backchain, spare bit, number of fpr saved
+      /* 3 bitfields: saves backchain, fixup code, number of fpr saved
 	 (6 bits).  */
       fprintf (file, "%d,",
 	       (info->push_p << 7) | (64 - info->first_fp_reg_save));
@@ -9178,53 +9182,49 @@ rs6000_output_function_epilogue (file, size)
       /* 2 bitfields: spare bits (2 bits), number of gpr saved (6 bits).  */
       fprintf (file, "%d,", (32 - first_reg_to_save ()));
 
-      {
-	/* Compute the parameter info from the function decl argument
-	   list.  */
-	tree decl;
-	int next_parm_info_bit;
+      if (optional_tbtab)
+	{
+	  /* Compute the parameter info from the function decl argument
+	     list.  */
+	  tree decl;
+	  int next_parm_info_bit = 31;
 
-	next_parm_info_bit = 31;
-	parm_info = 0;
-	fixed_parms = 0;
-	float_parms = 0;
+	  for (decl = DECL_ARGUMENTS (current_function_decl);
+	       decl; decl = TREE_CHAIN (decl))
+	    {
+	      rtx parameter = DECL_INCOMING_RTL (decl);
+	      enum machine_mode mode = GET_MODE (parameter);
 
-	for (decl = DECL_ARGUMENTS (current_function_decl);
-	     decl; decl = TREE_CHAIN (decl))
-	  {
-	    rtx parameter = DECL_INCOMING_RTL (decl);
-	    enum machine_mode mode = GET_MODE (parameter);
+	      if (GET_CODE (parameter) == REG)
+		{
+		  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+		    {
+		      int bits;
 
-	    if (GET_CODE (parameter) == REG)
-	      {
-		if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-		  {
-		    int bits;
+		      float_parms++;
 
-		    float_parms++;
+		      if (mode == SFmode)
+			bits = 0x2;
+		      else if (mode == DFmode)
+			bits = 0x3;
+		      else
+			abort ();
 
-		    if (mode == SFmode)
-		      bits = 0x2;
-		    else if (mode == DFmode)
-		      bits = 0x3;
-		    else
-		      abort ();
-
-		    /* If only one bit will fit, don't or in this entry.  */
-		    if (next_parm_info_bit > 0)
-		      parm_info |= (bits << (next_parm_info_bit - 1));
-		    next_parm_info_bit -= 2;
-		  }
-		else
-		  {
-		    fixed_parms += ((GET_MODE_SIZE (mode)
-				     + (UNITS_PER_WORD - 1))
-				    / UNITS_PER_WORD);
-		    next_parm_info_bit -= 1;
-		  }
-	      }
-	  }
-      }
+		      /* If only one bit will fit, don't or in this entry.  */
+		      if (next_parm_info_bit > 0)
+			parm_info |= (bits << (next_parm_info_bit - 1));
+		      next_parm_info_bit -= 2;
+		    }
+		  else
+		    {
+		      fixed_parms += ((GET_MODE_SIZE (mode)
+				       + (UNITS_PER_WORD - 1))
+				      / UNITS_PER_WORD);
+		      next_parm_info_bit -= 1;
+		    }
+		}
+	    }
+	}
 
       /* Number of fixed point parameters.  */
       /* This is actually the number of words of fixed point parameters; thus
@@ -9239,6 +9239,9 @@ rs6000_output_function_epilogue (file, size)
 	 registers, regardless of whether they are on the stack?  Xlc
 	 seems to set the bit when not optimizing.  */
       fprintf (file, "%d\n", ((float_parms << 1) | (! optimize)));
+
+      if (! optional_tbtab)
+	return;
 
       /* Optional fields follow.  Some are variable length.  */
 
@@ -9289,6 +9292,7 @@ rs6000_output_function_epilogue (file, size)
       if (frame_pointer_needed)
 	fputs ("\t.byte 31\n", file);
     }
+  return;
 }
 
 /* A C compound statement that outputs the assembler code for a thunk
