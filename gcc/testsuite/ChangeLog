@@ -1,6 +1,11 @@
+2004-05-03  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14389
+	* g++.dg/template/member5.C: New test.
+
 2004-05-03  Uros Bizjak  <uros@kss-loka.si>
 
-        * gcc.dg/builtins-34.c: Also check expm1*.
+	* gcc.dg/builtins-34.c: Also check expm1*.
 
 2004-05-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 

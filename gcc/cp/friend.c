@@ -397,7 +397,10 @@ do_friend (tree ctype, tree declarator, tree decl,
 	       validity of the declaration later.  */
 	    decl = push_template_decl_real (decl, /*is_friend=*/1);
 	  else
-	    decl = check_classfn (ctype, decl, template_member_p);
+	    decl = check_classfn (ctype, decl, 
+				  template_member_p 
+				  ? current_template_parms
+				  : NULL_TREE);
 
 	  if (template_member_p && decl && TREE_CODE (decl) == FUNCTION_DECL)
 	    decl = DECL_TI_TEMPLATE (decl);
