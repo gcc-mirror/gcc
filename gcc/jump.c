@@ -2548,7 +2548,7 @@ duplicate_loop_exit_test (loop_start)
      rtx loop_start;
 {
   rtx insn, set, reg, p, link;
-  rtx copy = 0;
+  rtx copy = 0, first_copy = 0;
   int num_insns = 0;
   rtx exitcode = NEXT_INSN (JUMP_LABEL (next_nonnote_insn (loop_start)));
   rtx lastexit;
@@ -2661,19 +2661,20 @@ duplicate_loop_exit_test (loop_start)
 
   /* Now copy each insn.  */
   for (insn = exitcode; insn != lastexit; insn = NEXT_INSN (insn))
-    switch (GET_CODE (insn))
-      {
-      case BARRIER:
-	copy = emit_barrier_before (loop_start);
-	break;
-      case NOTE:
-	/* Only copy line-number notes.  */
-	if (NOTE_LINE_NUMBER (insn) >= 0)
-	  {
-	    copy = emit_note_before (NOTE_LINE_NUMBER (insn), loop_start);
-	    NOTE_SOURCE_FILE (copy) = NOTE_SOURCE_FILE (insn);
-	  }
-	break;
+    {
+      switch (GET_CODE (insn))
+        {
+	case BARRIER:
+	  copy = emit_barrier_before (loop_start);
+	  break;
+	case NOTE:
+	  /* Only copy line-number notes.  */
+	  if (NOTE_LINE_NUMBER (insn) >= 0)
+	    {
+	      copy = emit_note_before (NOTE_LINE_NUMBER (insn), loop_start);
+	      NOTE_SOURCE_FILE (copy) = NOTE_SOURCE_FILE (insn);
+	    }
+	  break;
 
       case INSN:
 	copy = emit_insn_before (copy_rtx (PATTERN (insn)), loop_start);
@@ -2694,32 +2695,38 @@ duplicate_loop_exit_test (loop_start)
 	  replace_regs (REG_NOTES (copy), reg_map, max_reg, 1);
 	break;
 
-      case JUMP_INSN:
-	copy = emit_jump_insn_before (copy_rtx (PATTERN (insn)), loop_start);
-	if (reg_map)
-	  replace_regs (PATTERN (copy), reg_map, max_reg, 1);
-	mark_jump_label (PATTERN (copy), copy, 0);
-	if (REG_NOTES (insn))
-	  {
-	    REG_NOTES (copy) = copy_rtx (REG_NOTES (insn));
-	    if (reg_map)
-	      replace_regs (REG_NOTES (copy), reg_map, max_reg, 1);
-	  }
+	case JUMP_INSN:
+	  copy = emit_jump_insn_before (copy_rtx (PATTERN (insn)), loop_start);
+	  if (reg_map)
+	    replace_regs (PATTERN (copy), reg_map, max_reg, 1);
+	  mark_jump_label (PATTERN (copy), copy, 0);
+	  if (REG_NOTES (insn))
+	    {
+	      REG_NOTES (copy) = copy_rtx (REG_NOTES (insn));
+	      if (reg_map)
+		replace_regs (REG_NOTES (copy), reg_map, max_reg, 1);
+	    }
 	
-	/* If this is a simple jump, add it to the jump chain.  */
+	  /* If this is a simple jump, add it to the jump chain.  */
 
-	if (INSN_UID (copy) < max_jump_chain && JUMP_LABEL (copy)
-	    && simplejump_p (copy))
-	  {
-	    jump_chain[INSN_UID (copy)]
-	      = jump_chain[INSN_UID (JUMP_LABEL (copy))];
-	    jump_chain[INSN_UID (JUMP_LABEL (copy))] = copy;
-	  }
-	break;
+	  if (INSN_UID (copy) < max_jump_chain && JUMP_LABEL (copy)
+	      && simplejump_p (copy))
+	    {
+	      jump_chain[INSN_UID (copy)]
+		= jump_chain[INSN_UID (JUMP_LABEL (copy))];
+	      jump_chain[INSN_UID (JUMP_LABEL (copy))] = copy;
+	    }
+	  break;
 
-      default:
-	abort ();
-      }
+	default:
+	  abort ();
+	}
+
+      /* Record the first insn we copied.  We need it so that we can
+	 scan the copied insns for new pseudo registers.  */
+      if (! first_copy)
+	first_copy = copy;
+    }
 
   /* Now clean up by emitting a jump to the end label and deleting the jump
      at the start of the loop.  */
@@ -2727,6 +2734,14 @@ duplicate_loop_exit_test (loop_start)
     {
       copy = emit_jump_insn_before (gen_jump (get_label_after (insn)),
 				    loop_start);
+
+      /* Record the first insn we copied.  We need it so that we can
+	 scan the copied insns for new pseudo registers.   This may not
+	 be strictly necessary since we should have copied at least one
+	 insn above.  But I am going to be safe.  */
+      if (! first_copy)
+	first_copy = copy;
+
       mark_jump_label (PATTERN (copy), copy, 0);
       if (INSN_UID (copy) < max_jump_chain
 	  && INSN_UID (JUMP_LABEL (copy)) < max_jump_chain)
@@ -2737,6 +2752,11 @@ duplicate_loop_exit_test (loop_start)
 	}
       emit_barrier_before (loop_start);
     }
+
+  /* Now scan from the first insn we copied to the last insn we copied
+     (copy) for new pseudo registers.  Do this after the code to jump to
+     the end label since that might create a new pseudo too.  */
+  reg_scan_update (first_copy, copy, max_reg);
 
   /* Mark the exit code as the virtual top of the converted loop.  */
   emit_note_before (NOTE_INSN_LOOP_VTOP, exitcode);

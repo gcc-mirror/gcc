@@ -1,5 +1,14 @@
 Tue Sep  7 01:27:21 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Fri Aug 27 01:03:48 1999  Jim Kingdon  <http://developer.redhat.com>
+	with much help from Jeffrey A Law and Richard Henderson
+	* i386.md: In the 6 insns which call output_fix_trunc,
+	earlyclobber operands[0].
+
+	Fri Aug 27 01:01:51 1999  Philip Blundell  <pb@nexus.co.uk>
+	* jump.c (duplicate_loop_exit_test): Call reg_scan_update after
+	creating new registers.
+
 	Fri Aug 27 15:35:24 1999  Jeffrey A Law  (law@cygnus.com)
 	* cse.c (fold_rtx): Work around bug in Sun V5.0 compilers.
 	* pa.c (emit_move_sequence): Do not stop on SUBREG_WORD of an
