@@ -15,7 +15,7 @@
 ## for 'Autoconf' (autoconf.texi) and 'Configure' (configure.texi).  
 
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000 Free Software Foundation, Inc.
+#   1999, 2000, 2001 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -757,6 +757,12 @@ case "${target}" in
     if [ x${is_cross_compiler} != xno ] ; then
          target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
+    ;;
+  s390*-*-linux*)
+    # linux has rx in libc
+    skipdirs="$skipdirs target-librx"
+    # The libffi port is not yet in the GCC tree, boehm-gc does not work.
+    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   *-*-linux*)
     # linux has rx in libc
