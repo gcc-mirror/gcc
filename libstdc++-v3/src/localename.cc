@@ -89,31 +89,27 @@ namespace std {
   locale::_Impl::
   _Impl(const _Impl& __other, const string& __name, category __cat, 
 	size_t __refs)
-    : _M_references(__refs - 1)
-    //  , _M_facets(other._M_facets)
-    //  , _M_category_names(other._M_category_names)
-    , _M_has_name(__name != "*"), _M_name(__name)
+    : _M_references(__refs - 1), _M_has_name(__other._M_name != "*")
   {
-#if 1
     typedef vector<facet*, allocator<facet*> > __vec_facet;
     typedef vector<string, allocator<string> > __vec_string;
+
+    __cat = _S_normalize_category(__cat);  // might throw
     try {
       _M_facets = new __vec_facet(*(__other._M_facets));
     }
-    catch (...) {
+    catch(...) {
       delete _M_facets;
       throw;
     }
     try {
        _M_category_names = new __vec_string(*(__other._M_category_names));
     }
-    catch (...) {
+    catch(...) {
       delete _M_category_names;
       throw;
     }
-#endif
-    // XXX Nathan what are you doing here? Is this supposed to be const?
-    // static void(_Impl::* const ctors[]) (const char*) = 
+
     static void(_Impl::* ctors[]) (const char*) = 
     {
       //  NB: Order must match the decl order in class locale.
@@ -126,33 +122,35 @@ namespace std {
       0
     };
     
-    _S_initialize();
-    std::vector<facet*>::iterator __it = _M_facets->begin();
+    __vec_facet::iterator __it = _M_facets->begin();
     for (; __it != _M_facets->end(); ++__it)
       (*__it)->_M_add_reference();
 
-    try {
-      category __ccategory = _S_normalize_category(__cat);  // might throw
-      _M_normalize_category_names(__name, __ccategory);
-	
-      unsigned mask = (locale::all & -(unsigned)locale::all);
-      for (unsigned ix = 0; (-mask & __cat) != 0; ++ix, (mask <<= 1))
-	{
-	  if (!(mask & __cat))
-	    continue;
-	  
-	  if (mask & __ccategory)
-	    _M_replace_category(_S_classic, _S_facet_categories[ix]);
-	  else
-	    (this->*ctors[ix]) (__name.c_str());
-	}
-    }
-    catch (...) {
-      __it = _M_facets->begin();
-      for (; __it != _M_facets->end(); ++__it)
-	(*__it)->_M_remove_reference();
-      throw;
-    }
+    try 
+      {
+	unsigned mask = (locale::all & -(unsigned)locale::all);
+	for (unsigned ix = 0; (-mask & __cat) != 0; ++ix, (mask <<= 1))
+	  {
+	    if (!(mask & __cat))
+	      continue;
+	    
+	    if (mask & __cat)
+	      _M_replace_category(_S_classic, _S_facet_categories[ix]);
+	    else
+	      (this->*ctors[ix])(__name.c_str());
+	  }
+      }
+    catch(...) 
+      {
+	__it = _M_facets->begin();
+	for (; __it != _M_facets->end(); ++__it)
+	  (*__it)->_M_remove_reference();
+	throw;
+      }
+
+    // XXX May need to be adjusted
+    if (__cat == all)
+      _M_name = __name;
   }
   
   void
@@ -214,107 +212,62 @@ namespace std {
     __fpr = __fp;
   }
  
-  locale::category
-  locale::_Impl::_M_normalize_category_names(const string&, 
-					     locale::category __cat)
+  void 
+  locale::_Impl::_M_construct_collate(const char* __name)
   {
-    // The problem to be solved here is that locale names
-    // generally have one of two forms: they might have
-    // only one component, such as "en_US"; or they might
-    // have six, such as "en_US fr_FR en_US C C C", where
-    // each component names a category.  Each vendor has
-    // a different order of categories.  Each vendor uses
-    // a different format:
-    //    AIX uses "C C C C C C"
-    //    Sun uses "/C/C/C/C/C/C"
-    //    HP uses  "/0:C;1:C;2:C;3:C;4:C;5:C;6:C;/"
-    //    (where the 0th element is for LC_ALL.)
-    // Most systems (except AIX) permit the long form only for
-    // setlocale(LC_ALL,...), and require the short form for
-    // other calls.  All this matters because locale names are
-    // supposed to be compatible between locale("") and
-    // setlocale(..., "") constructors.
-    
-    return __cat;
-#if 0 /* XXX not done */
-    unsigned mask = (locale::all & -(unsigned)locale::all);
-    for (unsigned ix = 0; (-mask & __cat) != 0; ++ix, (mask <<= 1))
-      {
-	
-      }
-#endif
+    _M_facet_init(new collate_byname<char>(__name, 0));
+    _M_facet_init(new collate_byname<wchar_t>(__name, 0));
   }
 
   void 
-  locale::_Impl::_M_construct_collate(const char* /*__name*/)
+  locale::_Impl::_M_construct_ctype(const char* __name)
   {
-#if 0
-    _M_facet_init(new std::collate_byname<char>(__name));
-    _M_facet_init(new std::collate_byname<wchar_t>(__name));
-#endif
+    _M_facet_init(new ctype_byname<char>(__name, 0));
+    _M_facet_init(new ctype_byname<wchar_t>(__name, 0));
+    _M_facet_init(new codecvt_byname<char, char, mbstate_t>(__name));
+    _M_facet_init(new codecvt_byname<wchar_t, char, mbstate_t>(__name));
   }
+    
+  void 
+  locale::_Impl::_M_construct_monetary(const char* __name)
+  {
+    _M_facet_init(new moneypunct_byname<char, false>(__name, 0));
+    _M_facet_init(new moneypunct_byname<wchar_t, false>(__name, 0));
+    _M_facet_init(new moneypunct_byname<char, true >(__name, 0));
+    _M_facet_init(new moneypunct_byname<wchar_t, true >(__name, 0));
 
-  void 
-  locale::_Impl::_M_construct_ctype(const char* /*__name*/)
-  {
-#if 0
-    _M_facet_init(new std::ctype_byname<char>(__name));
-    _M_facet_init(new std::ctype_byname<wchar_t>(__name));
-    _M_facet_init(new std::codecvt_byname<char, char, mbstate_t>(__name));
-    _M_facet_init(new std::codecvt_byname<wchar_t, char, mbstate_t>(__name));
-#endif
+    _M_replace_facet(locale::_S_classic, &money_get<char>::id);
+    _M_replace_facet(locale::_S_classic, &money_get<wchar_t>::id);
+    _M_replace_facet(locale::_S_classic, &money_put<char>::id);
+    _M_replace_facet(locale::_S_classic, &money_put<wchar_t>::id);
   }
     
   void 
-  locale::_Impl::_M_construct_monetary(const char* /*__name*/)
+  locale::_Impl::_M_construct_numeric(const char* __name)
   {
-#if 0
-    _M_facet_init(new std::moneypunct_byname<char, false>(__name));
-    _M_facet_init(new std::moneypunct_byname<wchar_t, false>(__name));
-    _M_facet_init(new std::moneypunct_byname<char, true >(__name));
-    _M_facet_init(new std::moneypunct_byname<wchar_t, true >(__name));
+    _M_facet_init(new numpunct_byname<char>(__name, 0));
+    _M_facet_init(new numpunct_byname<wchar_t>(__name, 0));
 
-    locale::_M_initialize();
-    _M_replace_facet(locale::_S_classic, &std::money_get<char>(__name)::id);
-    _M_replace_facet(locale::_S_classic, &std::money_get<wchar_t>(__name)::id);
-    _M_replace_facet(locale::_S_classic, &std::money_put<char>(__name)::id);
-    _M_replace_facet(locale::_S_classic, &std::money_put<wchar_t>(__name)::id);
-#endif
+    _M_replace_facet(locale::_S_classic, &num_get<char>::id);
+    _M_replace_facet(locale::_S_classic, &num_get<wchar_t>::id);
+    _M_replace_facet(locale::_S_classic, &num_put<char>::id);
+    _M_replace_facet(locale::_S_classic, &num_put<wchar_t>::id);
   }
     
   void 
-  locale::_Impl::_M_construct_numeric(const char* /*__name*/)
+  locale::_Impl::_M_construct_time(const char* __name)
   {
-#if 0
-    _M_facet_init(new std::numpunct_byname<char>(__name));
-    _M_facet_init(new std::numpunct_byname<wchar_t>(__name));
-
-    locale::_M_initialize();
-    _M_replace_facet(locale::_S_classic, &std::num_get<char>::id);
-    _M_replace_facet(locale::_S_classic, &std::num_get<wchar_t>::id);
-    _M_replace_facet(locale::_S_classic, &std::num_put<char>::id);
-    _M_replace_facet(locale::_S_classic, &std::num_put<wchar_t>::id);
-#endif
+    _M_facet_init(new time_get_byname<char>(__name, 0));
+    _M_facet_init(new time_get_byname<wchar_t>(__name, 0));
+    _M_facet_init(new time_put_byname<char>(__name, 0));
+    _M_facet_init(new time_put_byname<wchar_t>(__name, 0));
   }
     
   void 
-  locale::_Impl::_M_construct_time(const char* /*__name*/)
+  locale::_Impl::_M_construct_messages(const char* __name)
   {
-#if 0
-    _M_facet_init(new std::time_get_byname<char>(__name));
-    _M_facet_init(new std::time_get_byname<wchar_t>(__name));
-    _M_facet_init(new std::time_put_byname<char>(__name));
-    _M_facet_init(new std::time_put_byname<wchar_t>(__name));
-#endif
-  }
-    
-  void 
-  locale::_Impl::_M_construct_messages(const char* /*__name*/)
-  {
-#if 0
-    _M_facet_init(new std::messages_byname<char>(__name));
-    _M_facet_init(new std::messages_byname<wchar_t>(__name));
-#endif
+    _M_facet_init(new messages_byname<char>(__name, 0));
+    _M_facet_init(new messages_byname<wchar_t>(__name, 0));
   }
 }
 

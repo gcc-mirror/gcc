@@ -1,3 +1,18 @@
+2000-09-18  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* src/locale-inst.cc: Add time_put_byname and
+	time_get_byname instantiations.
+	* bits/locale_facets.h: Correct default, private derivation to
+	public derivation in _byname declarations.
+	* src/locale.cc (locale::classic()): Simplify.
+	* src/localename.cc (locale::_Impl:: _Impl(const _Impl& __other,
+	const string& __name, category __cat, size_t __refs): Re-work for
+	named locales.
+	(_M_normalize_category_names): Remove.
+
+	* testsuite/22_locale/global_templates.cc (test01): Tweaks.
+	* testsuite/22_locale/ctor_copy_dtor.cc (test01): More tests.
+
 2000-09-18  Yuri V. Baskakov  <yuribsk@lab.sun.mcst.ru>
 
 	* bits/std_bitset.h (operator>>): Change to char_type.
