@@ -659,8 +659,9 @@ inlinable_function_p (fn, id)
   /* We can't inline varargs functions.  */
   else if (varargs_function_p (fn))
     ;
-  /* We can't inline functions that are too big.  */
-  else if (DECL_NUM_STMTS (fn) * INSNS_PER_STMT > MAX_INLINE_INSNS)
+  /* We can't inline functions that are too big.
+   * Only allow a single function to eat up half of our budget. */
+  else if (DECL_NUM_STMTS (fn) * INSNS_PER_STMT > MAX_INLINE_INSNS / 2)
     ;
   /* All is well.  We can inline this function.  Traditionally, GCC
      has refused to inline functions using alloca, or functions whose
@@ -674,9 +675,10 @@ inlinable_function_p (fn, id)
 
   /* Even if this function is not itself too big to inline, it might
      be that we've done so much inlining already that we don't want to
-     risk inlining any more.  */
-  if ((DECL_NUM_STMTS (fn) + id->inlined_stmts) * INSNS_PER_STMT 
-      > MAX_INLINE_INSNS)
+     risk too much inlining any more and thus halve the acceptable size. */
+  if ((DECL_NUM_STMTS (fn) + id->inlined_stmts) * INSNS_PER_STMT
+      > MAX_INLINE_INSNS
+      && DECL_NUM_STMTS (fn) * INSNS_PER_STMT > MAX_INLINE_INSNS / 4)
     inlinable = 0;
 
   /* We can inline a template instantiation only if it's fully

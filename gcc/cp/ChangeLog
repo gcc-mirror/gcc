@@ -1,3 +1,8 @@
+2001-08-30  Kurt Garloff  <garloff@suse.de>
+ 
+	* optimize.c (inlinable_function_p): Allow only smaller single
+	functions. Halve inline limit after reaching recursive limit.
+ 
 2001-08-30  Joern Rennecke <amylaar@redhat.com>
 	    Jason Merrill  <jason_merrill@redhat.com>
 
