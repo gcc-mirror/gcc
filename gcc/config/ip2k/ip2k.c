@@ -353,7 +353,7 @@ function_epilogue (file, size)
 	  /* fall-thru  */
 	case 0:
 	  break;
-	case 1:
+	case 0x100:
 	  OUT_AS1 (inc, sph);
 	  epilogue_size += 2;
 	}
@@ -490,7 +490,7 @@ function_epilogue (file, size)
 	case 0:
 	  break;
 
-	case 1:
+	case 0x100:
 	  OUT_AS1 (inc, sph);
 	  epilogue_size += 2;
 	}
