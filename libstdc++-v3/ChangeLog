@@ -1,3 +1,7 @@
+2000-11-15  David Billinghurst  <David.Billinghurst@riotinto.com>
+
+	* mkcheck.in:  Add function size_command() for irix.
+
 2000-11-14  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_WCHAR_T_SUPPOR): Set LIBS back to

@@ -273,6 +273,16 @@ setup_size_command()
           esac
         }
         ;;
+      *irix*)
+        function size_command()
+        {
+          case $1 in
+            TEXT)  TEXT=$(size -4 $EXENAME | awk '{print $1}')  ;;
+            DATA)  DATA=$(size -4 $EXENAME | awk '{print $3}')  ;;
+            SIZE)  SIZE=$(size -4 $EXENAME | awk '{print $7}')  ;;
+          esac
+        }
+        ;;
       *solaris*)
         function size_command()
         {
