@@ -3068,7 +3068,8 @@ Dump after SSA optimizations, to @file{@var{file}.04.ssa} and
 Dump after the second if conversion, to @file{@var{file}.29.ce3}.
 @item f
 @opindex df
-Dump after life analysis, to @file{@var{file}.18.life}.
+Dump after control and data flow analysis, to @file{@var{file}.14.cfg}.
+Also dump after life analysis, to @file{@var{file}.18.life}.
 @item F
 @opindex dF
 Dump after purging @code{ADDRESSOF} codes, to @file{@var{file}.10.addressof}.

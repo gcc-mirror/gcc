@@ -1,5 +1,9 @@
 2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/invoke.texi: Document dump, .cfg.
+
+2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* doc/invoke.texi: Alphabetize dump options.
 
 2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
