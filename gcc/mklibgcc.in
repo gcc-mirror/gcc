@@ -12,6 +12,7 @@
 # LIB2FUNCS_1
 # LIB2FUNCS_2
 # LIB2FUNCS_ST
+# LIBGCOV
 # LIB2ADD
 # LIB2ADD_ST 
 # LIB2ADDEH
@@ -64,6 +65,9 @@ make_compile='$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 
 # Dependencies for libgcc2.c
 libgcc2_c_dep='stmp-dirs $(srcdir)/libgcc2.c $(CONFIG_H) coretypes.h $(TM_H) $(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'" $LIB2ADDEHDEP"
+
+# Dependencies for libgcov.c
+libgcov_c_dep='stmp-dirs $(srcdir)/libgcov.c $(CONFIG_H) coretypes.h $(TM_H) $(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs tsystem.h'
 
 # Dependencies for fp-bit.c
 fpbit_c_dep='stmp-dirs config.status tsystem.h'
@@ -249,6 +253,25 @@ for file in $LIB2ADD_ST; do
   libgcc2_st_objs="$libgcc2_st_objs ${oname}${objext}"
 done
 
+#
+# build libgcov components
+#
+
+libgcov_objs=""
+
+for name in $LIBGCOV; do
+  for ml in $MULTILIBS; do
+    dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+    flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+    out="libgcc/${dir}/${name}${objext}"
+
+    echo $out: $libgcov_c_dep
+    echo "	$gcc_compile" '$(MAYBE_USE_COLLECT2)' $flags -DL$name \
+      -c '$(srcdir)/libgcov.c' -o $out
+  done
+  libgcov_objs="$libgcov_objs ${name}${objext}"
+done
+
 # SHLIB_MKMAP
 # SHLIB_MKMAP_OPTS
 # SHLIB_MAPFILES
@@ -275,6 +298,11 @@ for ml in $MULTILIBS; do
     libgcc_st_objs="$libgcc_st_objs libgcc/${dir}/$o"
   done
 
+  libgcov_a_objs=""
+  for o in $libgcov_objs; do
+    libgcov_a_objs="$libgcov_a_objs libgcc/${dir}/$o"
+  done
+  
   if [ "$SHLIB_LINK" -a "$SHLIB_MKMAP" ]; then
     mapfile="libgcc/${dir}/libgcc.map"
     tmpmapfile="libgcc/${dir}/tmp-libgcc.map"
@@ -313,6 +341,12 @@ for ml in $MULTILIBS; do
   echo "	-rm -rf ${dir}/libgcc.a"
   echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcc.a $libgcc_a_objs
   echo '	$(RANLIB_FOR_TARGET)' ${dir}/libgcc.a
+
+  echo ""
+  echo "${dir}/libgcov.a: $libgcov_a_objs"
+  echo "	-rm -rf ${dir}/libgcov.a"
+  echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcov.a $libgcov_a_objs
+  echo '	$(RANLIB_FOR_TARGET)' ${dir}/libgcov.a
 
   if [ "$SHLIB_LINK" ]; then
 
@@ -395,7 +429,7 @@ for ml in $MULTILIBS; do
   if [ $dir != . ]; then
     dirs="$dirs ${dir} libgcc/${dir}"
   fi
-  all="$all ${dir}/libgcc.a"
+  all="$all ${dir}/libgcc.a ${dir}/libgcov.a"
   if [ "$SHLIB_LINK" ]; then
     all="$all ${dir}/libgcc_eh.a"
     if [ -z "$SHLIB_MULTILIB" ]; then
@@ -456,6 +490,8 @@ for ml in $MULTILIBS; do
   fi
   echo '	$(INSTALL_DATA)' ${dir}/libgcc.a ${ldir}/
   echo '	$(RANLIB_FOR_TARGET)' ${ldir}/libgcc.a
+  echo '	$(INSTALL_DATA)' ${dir}/libgcov.a ${ldir}/
+  echo '	$(RANLIB_FOR_TARGET)' ${ldir}/libgcov.a
 
   if [ "$SHLIB_LINK" ]; then
     echo '	$(INSTALL_DATA)' ${dir}/libgcc_eh.a ${ldir}/

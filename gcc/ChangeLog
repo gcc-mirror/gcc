@@ -1,3 +1,24 @@
+2003-01-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* Makefile.in (LIB2FUNCS_ST): Remove _gcov.
+	(LIBGCOV): New variable.
+	(libgcc.mk): Add LIBGCOV.
+	(LIBGCC_DEPS): Add libgcov.c.
+	(libgcov.a): New target.
+	(clean): Remove libgcov.a.
+	(install-libgcc): Do libgcov too.
+	(stage1-start, stage2-start, stage3-start, stage4-start): Deal
+	with libgcov.a.
+	* libgcc2.c (L_gcov): Move into ...
+	* libgcov.c: ... here. New file.
+	* mklibgcc.in: Add libgcov rules.
+	* gcc.c (LINK_COMMAND_SPEC): Add -lgcov when profiling.
+
+	* doc/invoke.texi (profile-arcs, test-coverage): Update and
+	clarify.
+	
+	* profile.c (index_counts_file): Remove duplicate check for open file.
+
 2003-01-27  Jerry Quinn  <jlquinn@optonline.net>
 
 	* gcc/doc/invoke.texi (Optimization Options): Group together

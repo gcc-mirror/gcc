@@ -3035,27 +3035,46 @@ allocation when it finishes.
 
 @item -fprofile-arcs
 @opindex fprofile-arcs
-Instrument @dfn{arcs} during compilation to generate coverage data or
-for profile-directed block ordering.  During execution the program
-records how many times each branch is executed and how many times it is
-taken.  When the compiled program exits it saves this data to a file
-called @file{@var{auxname}.da} for each source file.  @var{auxname} is
-generated from the name of the output file, if explicitly specified and
-it is not the final executable, otherwise it is the basename of the
-source file. In both cases any suffix is removed (e.g.  @file{foo.da}
-for input file @file{dir/foo.c}, or @file{dir/foo.da} for output file
-specified as @option{-o dir/foo.o}).
+Add code so that program flow @dfn{arcs} are instrumented.  During
+execution the program records how many times each branch and call is
+executed and how many times it is taken or returns.  When the compiled
+program exits it saves this data to a file called
+@file{@var{auxname}.da} for each source file. The data may be used for
+profile-directed optimizations (@option{-fbranch-probabilities}), or for
+test coverage analysis (@option{-ftest-coverage}). Each object file's
+@var{auxname} is generated from the name of the output file, if
+explicitly specified and it is not the final executable, otherwise it is
+the basename of the source file. In both cases any suffix is removed
+(e.g.  @file{foo.da} for input file @file{dir/foo.c}, or
+@file{dir/foo.da} for output file specified as @option{-o dir/foo.o}).
 
-For profile-directed block ordering, compile the program with
-@option{-fprofile-arcs} plus optimization and code generation options,
-generate the arc profile information by running the program on a
-selected workload, and then compile the program again with the same
-optimization and code generation options plus
+@itemize
+
+@item
+Compile the source files with @option{-fprofile-arcs} plus optimization
+and code generation options. For test coverage analysis, use the
+additional @option{-ftest-coverage} option. You do not need to profile
+every source file in a program.
+
+@item
+Link your object files as normal.
+
+@item
+Run the program on a representative workload to generate the arc profile
+information. This may be repeated any number of times.
+
+@item
+For profile-directed optimizations, compile the source files again with
+the same optimization and code generation options plus
 @option{-fbranch-probabilities} (@pxref{Optimize Options,,Options that
 Control Optimization}).
 
-The other use of @option{-fprofile-arcs} is for use with @command{gcov},
-when it is used with the @option{-ftest-coverage} option.
+@item
+For test coverage analysis, use @command{gcov} to produce human readable
+information from the @file{.bbg} and @file{.da} files. Refer to the
+@command{gcov} documentation for further information.
+
+@end itemize
 
 With @option{-fprofile-arcs}, for each function of your program GCC
 creates a program flow graph, then finds a spanning tree for the graph.
@@ -3068,34 +3087,13 @@ block must be created to hold the instrumentation code.
 @need 2000
 @item -ftest-coverage
 @opindex ftest-coverage
-Create data files for the @command{gcov} code-coverage utility
-(@pxref{Gcov,, @command{gcov}---a Test Coverage Program}).  See
-@option{-fprofile-arcs} option above for a description of @var{auxname}.
-
-@table @gcctabopt
-@item @var{auxname}.bb
-A mapping from basic blocks to line numbers, which @command{gcov} uses to
-associate basic block execution counts with line numbers.
-
-@item @var{auxname}.bbg
-A list of all arcs in the program flow graph.  This allows @command{gcov}
-to reconstruct the program flow graph, so that it can compute all basic
-block and arc execution counts from the information in the
-@file{@var{auxname}.da} file.
-@end table
-
-Use @option{-ftest-coverage} with @option{-fprofile-arcs}; the latter
-option adds instrumentation to the program, which then writes
-execution counts to another data file:
-
-@table @gcctabopt
-@item @var{auxname}.da
-Runtime arc execution counts, used in conjunction with the arc
-information in the file @file{@var{auxname}.bbg}.
-@end table
-
-Coverage data will map better to the source files if
-@option{-ftest-coverage} is used without optimization.
+Produce a graph file that the @command{gcov} code-coverage utility
+(@pxref{Gcov,, @command{gcov}---a Test Coverage Program}) can use to
+show program coverage. Each source file's data file is called
+@file{@var{auxname}.bbg}. Refer to the @option{-fprofile-arcs} option
+above for a description of @var{auxname} and instructions on how to
+generate test coverage data. Coverage data will match the source files
+more closely, if you do not optimize.
 
 @item -d@var{letters}
 @opindex d

@@ -825,7 +825,10 @@ LIB2FUNCS_2 = _floatdixf _fixunsxfsi _fixtfdi _fixunstfdi _floatditf \
     _addvdi3 _subvsi3 _subvdi3 _mulvsi3 _mulvdi3 _negvsi2 _negvdi2 _ctors
 
 # Defined in libgcc2.c, included only in the static library.
-LIB2FUNCS_ST = _eprintf _gcov __gcc_bcmp
+LIB2FUNCS_ST = _eprintf __gcc_bcmp
+
+# Defined in libgcov.c, included only in gcov library
+LIBGCOV = _gcov
 
 FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
     _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
@@ -1054,6 +1057,7 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) xgcc$(exeext
 	LIB2FUNCS_1='$(LIB2FUNCS_1)' \
 	LIB2FUNCS_2='$(LIB2FUNCS_2)' \
 	LIB2FUNCS_ST='$(LIB2FUNCS_ST)' \
+	LIBGCOV='$(LIBGCOV)' \
 	LIB2ADD='$(LIB2ADD)' \
 	LIB2ADD_ST='$(LIB2ADD_ST)' \
 	LIB2ADDEH='$(LIB2ADDEH)' \
@@ -1082,11 +1086,13 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) xgcc$(exeext
 
 # All the things that might cause us to want to recompile bits of libgcc.
 LIBGCC_DEPS = $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO) \
-	libgcc.mk $(srcdir)/libgcc2.c $(TCONFIG_H) \
+	libgcc.mk $(srcdir)/libgcc2.c $(srcdir)/libgcov.c $(TCONFIG_H) \
 	$(MACHMODE_H) longlong.h gbl-ctors.h config.status stmp-int-hdrs \
 	tsystem.h $(FPBIT) $(DPBIT) $(TPBIT) $(LIB2ADD) \
 	$(LIB2ADD_ST) $(LIB2ADDEH) $(LIB2ADDEHDEP) $(EXTRA_PARTS) \
 	$(srcdir)/config/$(LIB1ASMSRC)
+
+libgcov.a: libgcc.a; @true
 
 libgcc.a: $(LIBGCC_DEPS)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
@@ -2728,7 +2734,8 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 # that don't exist in the distribution.
 INTL_CLEAN = intl.clean
 clean: mostlyclean $(INTL_CLEAN) lang.clean
-	-rm -f libgcc.a libgcc_eh.a libgcc_s$(SHLIB_EXT) libgcc_s$(SHLIB_EXT).1
+	-rm -f libgcc.a libgcc_eh.a libgcov.a
+	-rm -f libgcc_s$(SHLIB_EXT) libgcc_s$(SHLIB_EXT).1
 	-rm -f config.h tconfig.h bconfig.h tm_p.h tm.h
 	-rm -f cs-*
 	-rm -rf libgcc
@@ -2984,7 +2991,7 @@ install-man: installdirs $(GENERATED_MANPAGES) lang.install-man
 	-chmod a-x $(DESTDIR)$(man7dir)/gpl$(man7ext)
 
 # Install the library.
-install-libgcc: libgcc.mk libgcc.a installdirs
+install-libgcc: libgcc.mk libgcc.a libgcov.a installdirs
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  BUILD_PREFIX="$(BUILD_PREFIX)" BUILD_PREFIX_1="$(BUILD_PREFIX_1)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
@@ -3004,7 +3011,7 @@ install-libgcc: libgcc.mk libgcc.a installdirs
 	  slibdir="$(slibdir)" \
 	  -f libgcc.mk install
 
-# Install multiple versions of libgcc.a.
+# Install multiple versions of libgcc.a, libgcov.a.
 install-multilib: stmp-multilib installdirs
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  BUILD_PREFIX="$(BUILD_PREFIX)" BUILD_PREFIX_1="$(BUILD_PREFIX_1)" \
@@ -3611,9 +3618,11 @@ stage1-start:
 	-if [ -f as$(exeext) ] ; then (cd stage1 && $(LN_S) ../as$(exeext) .) ; else true ; fi
 	-if [ -f ld$(exeext) ] ; then (cd stage1 && $(LN_S) ../ld$(exeext) .) ; else true ; fi
 	-if [ -f collect-ld$(exeext) ] ; then (cd stage1 && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-rm -f stage1/libgcc.a stage1/libgcc_eh.a
+	-rm -f stage1/libgcc.a stage1/libgcc_eh.a stage1/libgcov.a
 	-cp libgcc.a stage1
 	-$(RANLIB_FOR_TARGET) stage1/libgcc.a
+	-cp libgcov.a stage1
+	-$(RANLIB_FOR_TARGET) stage1/libgcov.a
 	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stage1; \
 	   $(RANLIB_FOR_TARGET) stage1/libgcc_eh.a; \
 	fi
@@ -3641,9 +3650,11 @@ stage2-start:
 	-if [ -f as$(exeext) ] ; then (cd stage2 && $(LN_S) ../as$(exeext) .) ; else true ; fi
 	-if [ -f ld$(exeext) ] ; then (cd stage2 && $(LN_S) ../ld$(exeext) .) ; else true ; fi
 	-if [ -f collect-ld$(exeext) ] ; then (cd stage2 && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-rm -f stage2/libgcc.a stage2/libgcc_eh.a
+	-rm -f stage2/libgcc.a stage2/libgcov.a stage2/libgcc_eh.a
 	-cp libgcc.a stage2
 	-$(RANLIB_FOR_TARGET) stage2/libgcc.a
+	-cp libgcov.a stage2
+	-$(RANLIB_FOR_TARGET) stage2/libgcov.a
 	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stage2; \
 	   $(RANLIB_FOR_TARGET) stage2/libgcc_eh.a; \
 	fi
@@ -3667,9 +3678,11 @@ stage3-start:
 	-if [ -f as$(exeext) ] ; then (cd stage3 && $(LN_S) ../as$(exeext) .) ; else true ; fi
 	-if [ -f ld$(exeext) ] ; then (cd stage3 && $(LN_S) ../ld$(exeext) .) ; else true ; fi
 	-if [ -f collect-ld$(exeext) ] ; then (cd stage3 && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-rm -f stage3/libgcc.a stage3/libgcc_eh.a
+	-rm -f stage3/libgcc.a stage3/libgcov.a stage3/libgcc_eh.a
 	-cp libgcc.a stage3
 	-$(RANLIB_FOR_TARGET) stage3/libgcc.a
+	-cp libgcov.a stage3
+	-$(RANLIB_FOR_TARGET) stage3/libgcov.a
 	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stage3; \
 	   $(RANLIB_FOR_TARGET) stage3/libgcc_eh.a; \
 	fi
@@ -3693,9 +3706,11 @@ stage4-start:
 	-if [ -f as$(exeext) ] ; then (cd stage4 && $(LN_S) ../as$(exeext) .) ; else true ; fi
 	-if [ -f ld$(exeext) ] ; then (cd stage4 && $(LN_S) ../ld$(exeext) .) ; else true ; fi
 	-if [ -f collect-ld$(exeext) ] ; then (cd stage4 && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-rm -f stage4/libgcc.a stage4/libgcc_eh.a
+	-rm -f stage4/libgcc.a stage4/libgcov.a stage4/libgcc_eh.a
 	-cp libgcc.a stage4
 	-$(RANLIB_FOR_TARGET) stage4/libgcc.a
+	-cp libgcov.a stage4
+	-$(RANLIB_FOR_TARGET) stage4/libgcov.a
 	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stage4; \
 	   $(RANLIB_FOR_TARGET) stage4/libgcc_eh.a; \
 	fi
