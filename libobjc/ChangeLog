@@ -1,3 +1,24 @@
+2005-03-02  David Ayers  <d.ayers@inode.at>
+
+	PR libobjc/19024
+	* Makefile.in (OBJS): Add hash_compat.lo.
+	(OBJS_GC): Add hash_compat_gc.lo.
+	(hash_compat_gc.lo): New target and rule.
+	* objc/hash.h (hash_new, hash_delete, hash_add, hash_remove)
+	(hash_next, hash_value_for_key, hash_is_key_in_hash)
+	(hash_ptr, hash_string, compare_ptrs, compare_strings): Prefix
+	with objc_.  Add deprecated non prefixed inlined versions.
+	(OBJC_IGNORE_DEPRECATED_API): New macro to hide deprecated
+	declarations.
+	* hash.c (hash_new, hash_delete, hash_add, hash_remove, hash_next)
+	(hash_value_for_key, hash_is_key_in_hash): Prefix with objc_ and
+	update callers.
+	* hash_compat.c: New file.
+	* archive.c: Update callers.
+	* init.c: Likewise.
+	* selector.c: Likewise.
+	* libobjc.def: Add objc_ versions of hash functions.
+
 2004-12-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR libobjc/12035

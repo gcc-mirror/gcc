@@ -363,10 +363,12 @@ __objc_send_message_in_list (MethodList_t method_list, Class class, SEL op)
       Method_t mth = &method_list->method_list[i];
 
       if (mth->method_name && sel_eq (mth->method_name, op)
-	  && ! hash_is_key_in_hash (__objc_load_methods, mth->method_imp))
+	  && ! objc_hash_is_key_in_hash (__objc_load_methods, mth->method_imp))
 	{
 	  /* Add this method into the +load hash table */
-	  hash_add (&__objc_load_methods, mth->method_imp, mth->method_imp);
+	  objc_hash_add (&__objc_load_methods,
+			 mth->method_imp,
+			 mth->method_imp);
 
 	  DEBUG_PRINTF ("sending +load in class: %s\n", class->name);
 
@@ -538,8 +540,9 @@ __objc_exec_class (Module_t module)
       __objc_init_class_tables ();
       __objc_init_dispatch_tables ();
       __objc_class_tree_list = list_cons (NULL, __objc_class_tree_list);
-      __objc_load_methods
-	  = hash_new (128, (hash_func_type)hash_ptr, compare_ptrs);
+      __objc_load_methods = objc_hash_new (128, 
+					   (hash_func_type)objc_hash_ptr,
+					   objc_compare_ptrs);
       previous_constructors = 1;
     }
 

@@ -22,6 +22,7 @@ LIBRARY libobjc
 EXPORTS
 search_for_method_in_list
 objc_get_uninstalled_dtable
+objc_hash_is_key_in_hash
 hash_is_key_in_hash
 objc_verror
 _objc_load_callback
@@ -155,9 +156,15 @@ sarray_lazy_copy
 sarray_new
 sarray_realloc
 sarray_remove_garbage
+objc_hash_add
 hash_add
+objc_hash_delete
 hash_delete
+objc_hash_new
 hash_new
+objc_hash_next
 hash_next
+objc_hash_remove
 hash_remove
+objc_hash_value_for_key
 hash_value_for_key
