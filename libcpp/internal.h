@@ -26,7 +26,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "symtab.h"
 #include "cpp-id-data.h"
 
-#if defined HAVE_ICONV_H && defined HAVE_ICONV
+#ifndef HAVE_ICONV_H
+#undef HAVE_ICONV
+#endif
+
+#if HAVE_ICONV
 #include <iconv.h>
 #else
 #define HAVE_ICONV 0
