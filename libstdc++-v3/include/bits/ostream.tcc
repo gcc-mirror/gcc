@@ -387,7 +387,7 @@ namespace std
       sentry __cerb(*this);
       if (__cerb) 
 	{
-	  int_type __put = rdbuf()->sputc(__c); 
+	  int_type __put = this->rdbuf()->sputc(__c); 
 	  if (traits_type::eq_int_type(__put, traits_type::eof()))
 	    this->setstate(ios_base::badbit);
 	}

@@ -268,7 +268,7 @@ namespace std
       _M_range_initialize(_InputIterator __first, _InputIterator __last,
                           input_iterator_tag)
       {
-        _M_initialize_map(0);
+        this->_M_initialize_map(0);
         try
           {
             for ( ; __first != __last; ++__first)
@@ -289,7 +289,7 @@ namespace std
                           forward_iterator_tag)
       {
         size_type __n = std::distance(__first, __last);
-        _M_initialize_map(__n);
+        this->_M_initialize_map(__n);
       
         _Map_pointer __cur_node;
         try
@@ -320,7 +320,7 @@ namespace std
     {
       value_type __t_copy = __t;
       _M_reserve_map_at_back();
-      *(this->_M_finish._M_node + 1) = _M_allocate_node();
+      *(this->_M_finish._M_node + 1) = this->_M_allocate_node();
       try
         {
           std::_Construct(this->_M_finish._M_cur, __t_copy);
@@ -342,7 +342,7 @@ namespace std
     {
       value_type __t_copy = __t;
       _M_reserve_map_at_front();
-      *(this->_M_start._M_node - 1) = _M_allocate_node();
+      *(this->_M_start._M_node - 1) = this->_M_allocate_node();
       try
         {
           this->_M_start._M_set_node(this->_M_start._M_node - 1);
@@ -631,7 +631,7 @@ namespace std
       try
         {
           for (__i = 1; __i <= __new_nodes; ++__i)
-            *(this->_M_start._M_node - __i) = _M_allocate_node();
+            *(this->_M_start._M_node - __i) = this->_M_allocate_node();
         }
       catch(...)
         {
@@ -653,7 +653,7 @@ namespace std
       try
         {
           for (__i = 1; __i <= __new_nodes; ++__i)
-            *(this->_M_finish._M_node + __i) = _M_allocate_node();
+            *(this->_M_finish._M_node + __i) = this->_M_allocate_node();
         }
       catch(...)
         {
@@ -692,7 +692,7 @@ namespace std
         size_type __new_map_size = 
           this->_M_map_size + std::max(this->_M_map_size, __nodes_to_add) + 2;
     
-        _Map_pointer __new_map = _M_allocate_map(__new_map_size);
+        _Map_pointer __new_map = this->_M_allocate_map(__new_map_size);
         __new_nstart = __new_map + (__new_map_size - __new_num_nodes) / 2
                              + (__add_at_front ? __nodes_to_add : 0);
         std::copy(this->_M_start._M_node,

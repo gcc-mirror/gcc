@@ -153,7 +153,7 @@ namespace std
       _Vector_base(size_t __n, const allocator_type& __a)
       : _Base(__a)
       {
-	this->_M_start = _M_allocate(__n);
+	this->_M_start = this->_M_allocate(__n);
 	this->_M_finish = this->_M_start;
 	this->_M_end_of_storage = this->_M_start + __n;
       }
@@ -753,7 +753,7 @@ namespace std
         _M_allocate_and_copy(size_type __n,
 			     _ForwardIterator __first, _ForwardIterator __last)
         {
-	  pointer __result = _M_allocate(__n);
+	  pointer __result = this->_M_allocate(__n);
 	  try
 	    {
 	      std::uninitialized_copy(__first, __last, __result);
@@ -807,7 +807,7 @@ namespace std
 			    _ForwardIterator __last, forward_iterator_tag)
         {
 	  size_type __n = std::distance(__first, __last);
-	  this->_M_start = _M_allocate(__n);
+	  this->_M_start = this->_M_allocate(__n);
 	  this->_M_end_of_storage = this->_M_start + __n;
 	  this->_M_finish = std::uninitialized_copy(__first, __last,
 						    this->_M_start);

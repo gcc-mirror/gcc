@@ -946,7 +946,7 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
             // "the type returned by a _Generator"
-            __typeof__(gen())>)
+            __typeof__(__gen())>)
 
       for ( ; __n > 0; --__n, ++__first)
 	*__first = __gen();

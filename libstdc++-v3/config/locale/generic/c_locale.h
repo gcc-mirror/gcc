@@ -39,6 +39,8 @@
 #pragma GCC system_header
 
 #include <clocale>
+#include <cstdlib>
+#include <cstring>
 
 #define _GLIBCXX_NUM_CATEGORIES 0
 

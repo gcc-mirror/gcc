@@ -373,7 +373,7 @@ template <typename _Alloc>
   
   protected:
     void _M_initialize(size_type __n) {
-      _Bit_type * __q = _M_bit_alloc(__n);
+      _Bit_type * __q = this->_M_bit_alloc(__n);
       this->_M_end_of_storage = __q + (__n + _S_word_bit - 1)/_S_word_bit;
       this->_M_start = iterator(__q, 0);
       this->_M_finish = this->_M_start + difference_type(__n);
@@ -387,11 +387,11 @@ template <typename _Alloc>
       else {
         size_type __len = size() 
 	                  ? 2 * size() : static_cast<size_type>(_S_word_bit);
-        _Bit_type * __q = _M_bit_alloc(__len);
+        _Bit_type * __q = this->_M_bit_alloc(__len);
         iterator __i = std::copy(begin(), __position, iterator(__q, 0));
         *__i++ = __x;
         this->_M_finish = std::copy(__position, end(), __i);
-        _M_deallocate();
+        this->_M_deallocate();
         this->_M_end_of_storage = __q + (__len + _S_word_bit - 1)/_S_word_bit;
         this->_M_start = iterator(__q, 0);
       }
@@ -439,11 +439,11 @@ template <typename _Alloc>
         }
         else {
           size_type __len = size() + std::max(size(), __n);
-          _Bit_type * __q = _M_bit_alloc(__len);
+          _Bit_type * __q = this->_M_bit_alloc(__len);
           iterator __i = std::copy(begin(), __position, iterator(__q, 0));
           __i = std::copy(__first, __last, __i);
           this->_M_finish = std::copy(__position, end(), __i);
-          _M_deallocate();
+          this->_M_deallocate();
           this->_M_end_of_storage
 	    = __q + (__len + _S_word_bit - 1)/_S_word_bit;
           this->_M_start = iterator(__q, 0);
@@ -539,7 +539,7 @@ template <typename _Alloc>
     vector& operator=(const vector& __x) {
       if (&__x == this) return *this;
       if (__x.size() > capacity()) {
-        _M_deallocate();
+        this->_M_deallocate();
         _M_initialize(__x.size());
       }
       std::copy(__x.begin(), __x.end(), begin());
@@ -609,9 +609,9 @@ template <typename _Alloc>
       if (__n > this->max_size())
 	__throw_length_error(__N("vector::reserve"));
       if (this->capacity() < __n) {
-        _Bit_type * __q = _M_bit_alloc(__n);
+        _Bit_type * __q = this->_M_bit_alloc(__n);
         this->_M_finish = std::copy(begin(), end(), iterator(__q, 0));
-        _M_deallocate();
+        this->_M_deallocate();
         this->_M_start = iterator(__q, 0);
         this->_M_end_of_storage = __q + (__n + _S_word_bit - 1)/_S_word_bit;
       }
@@ -682,11 +682,11 @@ template <typename _Alloc>
       }
       else {
         size_type __len = size() + std::max(size(), __n);
-        _Bit_type * __q = _M_bit_alloc(__len);
+        _Bit_type * __q = this->_M_bit_alloc(__len);
         iterator __i = std::copy(begin(), __position, iterator(__q, 0));
         std::fill_n(__i, __n, __x);
         this->_M_finish = std::copy(__position, end(), __i + difference_type(__n));
-        _M_deallocate();
+        this->_M_deallocate();
         this->_M_end_of_storage = __q + (__len + _S_word_bit - 1)/_S_word_bit;
         this->_M_start = iterator(__q, 0);
       }

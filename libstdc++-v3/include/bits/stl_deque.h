@@ -532,7 +532,7 @@ namespace std
     try
       {
         for (__cur = __nstart; __cur < __nfinish; ++__cur)
-          *__cur = _M_allocate_node();
+          *__cur = this->_M_allocate_node();
       }
     catch(...)
       { 

@@ -1455,7 +1455,7 @@ const _CharT* rope<_CharT,_Alloc>::c_str() const {
     if (0 == __result)
       {
 	size_t __s = size();
-	__result = _Data_allocate(__s + 1);
+	__result = this->_Data_allocate(__s + 1);
 	_S_flatten(this->_M_tree_ptr, __result);
 	__result[__s] = _S_eos((_CharT*)0);
 	this->_M_tree_ptr->_M_c_string = __result;
@@ -1480,7 +1480,7 @@ const _CharT* rope<_CharT,_Alloc>::replace_with_c_str() {
     _S_flatten(this->_M_tree_ptr, __result);
     __result[__s] = _S_eos((_CharT*)0);
     this->_M_tree_ptr->_M_unref_nonnil();
-    this->_M_tree_ptr = _S_new_RopeLeaf(__result, __s, get_allocator());
+    this->_M_tree_ptr = _S_new_RopeLeaf(__result, __s, this->get_allocator());
     return(__result);
 }
 
