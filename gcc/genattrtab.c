@@ -81,7 +81,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    for constant attributes and generate a set of functions for that given
    combination.  An initialization function would be written that evaluates
    the attributes and installs the corresponding set of routines and
-   definitions (each would be accessed through a pointer).  */
+   definitions (each would be accessed through a pointer).
+
+   We use the flags in an RTX as follows:
+   `unchanging' (RTX_UNCHANGING_P): This rtx is fully simplified
+      independent of the insn code.
+   `in_struct' (MEM_IN_STRUCT_P): This rtx is fully simplified
+      for the insn code currently being processed (see optimize_attrs).
+   `integrated' (RTX_INTEGRATED_P): This rtx is permanent and unique
+      (see attr_rtx).  */
+
 
 #include <stdio.h>
 #include "gvarargs.h"
@@ -202,7 +211,9 @@ struct function_unit
 
 /* Listheads of above structures.  */
 
-static struct attr_desc *attrs;
+/* This one is indexed by the first character of the attribute name.  */
+#define MAX_ATTRS_INDEX 256
+static struct attr_desc *attrs[MAX_ATTRS_INDEX];
 static struct insn_def *defs;
 static struct delay_desc *delays;
 static struct function_unit *units;
@@ -223,10 +234,20 @@ static int num_units;
 
 enum operator {PLUS_OP, MINUS_OP, OR_OP, MAX_OP};
 
+/* Stores, for each insn code, the number of constraint alternatives.  */
+
+static int *insn_n_alternatives;
+
 /* Stores, for each insn code, a bitmap that has bits on for each possible
    alternative.  */
 
 static int *insn_alternatives;
+
+/* If nonzero, assume that the `alternative' attr has this value.
+   This is the hashed, unique string for the numeral
+   whose value is chosen alternative.  */
+
+static char *current_alternative_string;
 
 /* Used to simplify expressions.  */
 
@@ -239,9 +260,18 @@ static char *alternative_name;
 /* Simplify an expression.  Only call the routine if there is something to
    simplify.  */
 #define SIMPLIFY_TEST_EXP(EXP,INSN_CODE,INSN_INDEX)	\
-  (RTX_UNCHANGING_P (EXP) || MEM_IN_STRUCT_P (EXP) ? (EXP)		\
+  (RTX_UNCHANGING_P (EXP) || MEM_IN_STRUCT_P (EXP) ? (EXP)	\
    : simplify_test_exp (EXP, INSN_CODE, INSN_INDEX))
   
+/* Simplify (eq_attr ("alternative") ...)
+   when we are working with a particular alternative.  */
+#define SIMPLIFY_ALTERNATIVE(EXP)				\
+  if (current_alternative_string				\
+      && GET_CODE ((EXP)) == EQ_ATTR				\
+      && XSTR ((EXP), 0) == alternative_name)			\
+    (EXP) = (XSTR ((EXP), 1) == current_alternative_string	\
+	    ? true_rtx : false_rtx);
+
 /* These are referenced by rtlanal.c and hence need to be defined somewhere.
    They won't actually be used.  */
 
@@ -271,6 +301,7 @@ static rtx zero_fn ();
 static rtx one_fn ();
 static rtx max_fn ();
 static rtx simplify_cond ();
+static rtx simplify_by_alternatives ();
 static void remove_insn_ent ();
 static void insert_insn_ent ();
 static rtx insert_right_side ();
@@ -1157,7 +1188,7 @@ convert_const_symbol_ref (exp, attr)
       value = attr_rtx (SYMBOL_REF, string);
       RTX_UNCHANGING_P (value) = 1;
       
-      XVECEXP (condexp, 0, 2 * i) = attr_eq (exp, value);
+      XVECEXP (condexp, 0, 2 * i) = attr_rtx (EQ, exp, value);
 
       XVECEXP (condexp, 0, 2 * i + 1) = av->value;
     }
@@ -1197,6 +1228,10 @@ make_canonical (attr, exp)
     case SYMBOL_REF:
       if (!attr->is_const || RTX_UNCHANGING_P (exp))
 	break;
+      /* The SYMBOL_REF is constant for a given run, so mark it as unchanging.
+	 This makes the COND something that won't be considered an arbitrary
+	 expression by walk_attr_value.  */
+      RTX_UNCHANGING_P (exp) = 1;
       exp = convert_const_symbol_ref (exp, attr);
       RTX_UNCHANGING_P (exp) = 1;
       exp = check_attr_value (exp, attr);
@@ -2169,10 +2204,15 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
       orexp = false_rtx;
       andexp = true_rtx;
 
+      if (current_alternative_string)
+	clear_struct_flag (value);
+
       for (i = 0; i < XVECLEN (value, 0); i += 2)
 	{
 	  rtx this = SIMPLIFY_TEST_EXP (XVECEXP (value, 0, i),
 					insn_code, insn_index);
+
+	  SIMPLIFY_ALTERNATIVE (this);
 
 	  right = insert_right_side (AND, andexp, this,
 				     insn_code, insn_index);
@@ -2207,7 +2247,7 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
 
   if (address_used)
     {
-      if (! RTX_UNCHANGING_P (exp))
+      if (! RTX_UNCHANGING_P (exp) && current_alternative_string)
 	return copy_rtx_unchanging (exp);
       return exp;
     }
@@ -2456,7 +2496,19 @@ simplify_test_exp (exp, insn_code, insn_index)
     {
     case AND:
       left = SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
+      SIMPLIFY_ALTERNATIVE (left);
+      if (left == false_rtx)
+	{
+	  obstack_free (rtl_obstack, spacer);
+	  return false_rtx;
+	}
       right = SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
+      SIMPLIFY_ALTERNATIVE (right);
+      if (left == false_rtx)
+	{
+	  obstack_free (rtl_obstack, spacer);
+	  return false_rtx;
+	}
 
       /* If either side is an IOR and we have (eq_attr "alternative" ..")
 	 present on both sides, apply the distributive law since this will
@@ -2542,7 +2594,19 @@ simplify_test_exp (exp, insn_code, insn_index)
 
     case IOR:
       left = SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
+      SIMPLIFY_ALTERNATIVE (left);
+      if (left == true_rtx)
+	{
+	  obstack_free (rtl_obstack, spacer);
+	  return true_rtx;
+	}
       right = SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
+      SIMPLIFY_ALTERNATIVE (right);
+      if (right == true_rtx)
+	{
+	  obstack_free (rtl_obstack, spacer);
+	  return true_rtx;
+	}
 
       right = simplify_or_tree (right, &left, insn_code, insn_index);
       if (left == XEXP (exp, 0) && right == XEXP (exp, 1))
@@ -2623,9 +2687,15 @@ simplify_test_exp (exp, insn_code, insn_index)
 
     case NOT:
       if (GET_CODE (XEXP (exp, 0)) == NOT)
-	return SIMPLIFY_TEST_EXP (XEXP (XEXP (exp, 0), 0),
-				  insn_code, insn_index);
+	{
+	  left = SIMPLIFY_TEST_EXP (XEXP (XEXP (exp, 0), 0),
+				    insn_code, insn_index);
+	  SIMPLIFY_ALTERNATIVE (left);
+	  return left;
+	}
+
       left = SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
+      SIMPLIFY_ALTERNATIVE (left);
       if (GET_CODE (left) == NOT)
 	return XEXP (left, 0);
 
@@ -2664,6 +2734,10 @@ simplify_test_exp (exp, insn_code, insn_index)
       break;
 
     case EQ_ATTR:
+      if (current_alternative_string && XSTR (exp, 0) == alternative_name)
+	return (XSTR (exp, 1) == current_alternative_string
+		? true_rtx : false_rtx);
+	
       /* Look at the value for this insn code in the specified attribute.
 	 We normally can replace this comparison with the condition that
 	 would give this insn the values being tested for.   */
@@ -2678,10 +2752,9 @@ simplify_test_exp (exp, insn_code, insn_index)
   /* We have already simplified this expression.  Simplifying it again
      won't buy anything unless we weren't given a valid insn code
      to process (i.e., we are canonicalizing something.).  */
-  if (insn_code != -2 && ! RTX_UNCHANGING_P (newexp))
-    {
-      return copy_rtx_unchanging (newexp);
-    }
+  if (insn_code != -2 && current_alternative_string
+      && ! RTX_UNCHANGING_P (newexp))
+    return copy_rtx_unchanging (newexp);
 
   return newexp;
 }
@@ -2721,31 +2794,33 @@ optimize_attrs ()
   /* Offset the table address so we can index by -2 or -1.  */
   insn_code_values += 2;
 
-  for (attr = attrs; attr; attr = attr->next)
-    for (av = attr->first_value; av; av = av->next)
-      for (ie = av->first_insn; ie; ie = ie->next)
-	{
-	  iv = ((struct attr_value_list *)
-		alloca (sizeof (struct attr_value_list)));
-	  iv->attr = attr;
-	  iv->av = av;
-	  iv->ie = ie;
-	  iv->next = insn_code_values[ie->insn_code];
-	  insn_code_values[ie->insn_code] = iv;
-	}
+  for (i = 0; i < MAX_ATTRS_INDEX; i++)
+    for (attr = attrs[i]; attr; attr = attr->next)
+      for (av = attr->first_value; av; av = av->next)
+	for (ie = av->first_insn; ie; ie = ie->next)
+	  {
+	    iv = ((struct attr_value_list *)
+		  alloca (sizeof (struct attr_value_list)));
+	    iv->attr = attr;
+	    iv->av = av;
+	    iv->ie = ie;
+	    iv->next = insn_code_values[ie->insn_code];
+	    insn_code_values[ie->insn_code] = iv;
+	  }
 
-  /* Loop until nothing changes for one iteration.  */
-  while (something_changed)
+  /* Process one insn code at a time.  */
+  for (i = -2; i < insn_code_number; i++)
     {
-      something_changed = 0;
-      /* Process one insn code at a time.  */
-      for (i = -2; i < insn_code_number; i++)
+      /* Clear the MEM_IN_STRUCT_P flag everywhere relevant.
+	 We use it to mean "already simplified for this insn".  */
+      for (iv = insn_code_values[i]; iv; iv = iv->next)
+	clear_struct_flag (iv->av->value);
+
+      /* Loop until nothing changes for one iteration.  */
+      something_changed = 1;
+      while (something_changed)
 	{
-	  /* Clear the MEM_IN_STRUCT_P flag everywhere relevant.
-	     We use it to mean "already simplified for this insn".  */
-	  for (iv = insn_code_values[i]; iv; iv = iv->next)
-	    clear_struct_flag (iv->av->value);
-		  
+	  something_changed = 0;
 	  for (iv = insn_code_values[i]; iv; iv = iv->next)
 	    {
 	      struct obstack *old = rtl_obstack;
@@ -2758,8 +2833,16 @@ optimize_attrs ()
 		continue;
 
 	      rtl_obstack = temp_obstack;
-	      newexp = simplify_cond (av->value, ie->insn_code,
-				      ie->insn_index);
+#if 0 /* This was intended as a speed up, but it was slower.  */
+	      if (insn_n_alternatives[ie->insn_code] > 6
+		  && count_sub_rtxs (av->value, 200) >= 200)
+		newexp = simplify_by_alternatives (av->value, ie->insn_code,
+						   ie->insn_index);
+	      else
+#endif
+		newexp = simplify_cond (av->value, ie->insn_code,
+					ie->insn_index);
+
 	      rtl_obstack = old;
 	      if (newexp != av->value)
 		{
@@ -2776,6 +2859,38 @@ optimize_attrs ()
     }
 }
 
+static rtx
+simplify_by_alternatives (exp, insn_code, insn_index)
+     rtx exp;
+     int insn_code, insn_index;
+{
+  int i;
+  int len = insn_n_alternatives[insn_code];
+  rtx newexp = rtx_alloc (COND);
+  rtx ultimate;
+
+
+  XVEC (newexp, 0) = rtvec_alloc (len * 2);
+
+  /* It will not matter what value we use as the default value
+     of the new COND, since that default will never be used.
+     Choose something of the right type.  */
+  for (ultimate = exp; GET_CODE (ultimate) == COND;)
+    ultimate = XEXP (ultimate, 1);
+  XEXP (newexp, 1) = ultimate;
+
+  for (i = 0; i < insn_n_alternatives[insn_code]; i++)
+    {
+      current_alternative_string = attr_numeral (i);
+      XVECEXP (newexp, 0, i * 2) = make_alternative_compare (1 << i);
+      XVECEXP (newexp, 0, i * 2 + 1)
+	= simplify_cond (exp, insn_code, insn_index);
+    }
+
+  current_alternative_string = 0;
+  return simplify_cond (newexp, insn_code, insn_index);
+}
+
 /* Clear the MEM_IN_STRUCT_P flag in EXP and its subexpressions.  */
 
 clear_struct_flag (x)
@@ -2816,7 +2931,6 @@ clear_struct_flag (x)
 	{
 	case 'V':
 	case 'E':
-	  /* And the corresponding elements must match.  */
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    clear_struct_flag (XVECEXP (x, i, j));
 	  break;
@@ -2826,6 +2940,61 @@ clear_struct_flag (x)
 	  break;
 	}
     }
+}
+
+/* Return the number of RTX objects making up the expression X.
+   But if we count more more than MAX objects, stop counting.  */
+
+count_sub_rtxs (x, max)
+     rtx x;
+     int max;
+{
+  register int i;
+  register int j;
+  register enum rtx_code code;
+  register char *fmt;
+  int total = 0;
+
+  code = GET_CODE (x);
+
+  switch (code)
+    {
+    case REG:
+    case QUEUED:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case SYMBOL_REF:
+    case CODE_LABEL:
+    case PC:
+    case CC0:
+    case EQ_ATTR:
+      return 1;
+    }
+
+  /* Compare the elements.  If any pair of corresponding elements
+     fail to match, return 0 for the whole things.  */
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (total >= max)
+	return total;
+
+      switch (fmt[i])
+	{
+	case 'V':
+	case 'E':
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    total += count_sub_rtxs (XVECEXP (x, i, j), max);
+	  break;
+
+	case 'e':
+	  total += count_sub_rtxs (XEXP (x, i), max);
+	  break;
+	}
+    }
+  return total;
+
 }
 
 /* Create table entries for DEFINE_ATTR.  */
@@ -4059,34 +4228,32 @@ find_attr (name, create)
      int create;
 {
   struct attr_desc *attr;
-  char *new_name;
+  int index;
 
   /* Before we resort to using `strcmp', see if the string address matches
      anywhere.  In most cases, it should have been canonicalized to do so.  */
   if (name == alternative_name)
     return NULL;
 
-  for (attr = attrs; attr; attr = attr->next)
+  index = name[0] & (MAX_ATTRS_INDEX - 1);
+  for (attr = attrs[index]; attr; attr = attr->next)
     if (name == attr->name)
       return attr;
 
   /* Otherwise, do it the slow way.  */
-  for (attr = attrs; attr; attr = attr->next)
+  for (attr = attrs[index]; attr; attr = attr->next)
     if (name[0] == attr->name[0] && ! strcmp (name, attr->name))
       return attr;
 
   if (! create)
     return NULL;
 
-  new_name = (char *) xmalloc (strlen (name) + 1);
-  strcpy (new_name, name);
-
   attr = (struct attr_desc *) xmalloc (sizeof (struct attr_desc));
-  attr->name = new_name;
+  attr->name = attr_string (name, strlen (name));
   attr->first_value = attr->default_val = NULL;
   attr->is_numeric = attr->is_const = attr->is_special = 0;
-  attr->next = attrs;
-  attrs = attr;
+  attr->next = attrs[index];
+  attrs[index] = attr;
 
   return attr;
 }
@@ -4266,6 +4433,7 @@ main (argc, argv)
   struct attr_value *av;
   struct insn_def *id;
   rtx tem;
+  int i;
 
   obstack_init (rtl_obstack);
   obstack_init (hash_obstack);
@@ -4369,16 +4537,23 @@ from the machine description file `md'.  */\n\n");
     if (id->insn_code >= 0)
       insn_alternatives[id->insn_code] = (1 << id->num_alternatives) - 1;
 
+  /* Make `insn_n_alternatives'.  */
+  insn_n_alternatives = (int *) xmalloc (insn_code_number * sizeof (int));
+  for (id = defs; id; id = id->next)
+    if (id->insn_code >= 0)
+      insn_n_alternatives[id->insn_code] = id->num_alternatives;
+
   /* Prepare to write out attribute subroutines by checking everything stored
      away and building the attribute cases.  */
 
   check_defs ();
-  for (attr = attrs; attr; attr = attr->next)
-    {
-      attr->default_val->value
-	= check_attr_value (attr->default_val->value, attr);
-      fill_attr (attr);
-    }
+  for (i = 0; i < MAX_ATTRS_INDEX; i++)
+    for (attr = attrs[i]; attr; attr = attr->next)
+      {
+	attr->default_val->value
+	  = check_attr_value (attr->default_val->value, attr);
+	fill_attr (attr);
+      }
 
   /* Construct extra attributes for `length'.  */
   make_length_attrs ();
@@ -4390,11 +4565,12 @@ from the machine description file `md'.  */\n\n");
      special routines (specifically before write_function_unit_info), so
      that they get defined before they are used.  */
 
-  for (attr = attrs; attr; attr = attr->next)
-    {
-      if (! attr->is_special)
-	write_attr_get (attr);
-    }
+  for (i = 0; i < MAX_ATTRS_INDEX; i++)
+    for (attr = attrs[i]; attr; attr = attr->next)
+      {
+	if (! attr->is_special)
+	  write_attr_get (attr);
+      }
 
   /* Write out delay eligibility information, if DEFINE_DELAY present.
      (The function to compute the number of delay slots will be written
