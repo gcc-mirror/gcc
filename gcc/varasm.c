@@ -1144,6 +1144,10 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 #endif
     }
 
+  /* dbxout.c needs to know this.  */
+  if (in_text_section ())
+    DECL_IN_TEXT_SECTION (decl) = 1;
+
   /* Compute and output the alignment of this data.  */
 
   align = DECL_ALIGN (decl);
