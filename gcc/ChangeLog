@@ -1,3 +1,8 @@
+2000-07-26  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* emit-rtl.c (gen_lowpart_common) [REAL_ARITHMETIC]: Handle
+	cross-compiling between 64-bit and 32-bit machines.
+
 2000-07-27  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.md (movqicc_astep, movqi_internal_astep): New.

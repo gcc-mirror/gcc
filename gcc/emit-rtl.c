@@ -793,6 +793,7 @@ gen_lowpart_common (mode, x)
 	}
     }
 
+#ifndef REAL_ARITHMETIC
   /* If X is an integral constant but we want it in floating-point, it
      must be the case that we have a union of an integer and a floating-point
      value.  If the machine-parameters allow it, simulate that union here
@@ -806,23 +807,12 @@ gen_lowpart_common (mode, x)
 	   && GET_MODE_SIZE (mode) == UNITS_PER_WORD
 	   && GET_CODE (x) == CONST_INT
 	   && sizeof (float) * HOST_BITS_PER_CHAR == HOST_BITS_PER_WIDE_INT)
-#ifdef REAL_ARITHMETIC
-    {
-      REAL_VALUE_TYPE r;
-      HOST_WIDE_INT i;
-
-      i = INTVAL (x);
-      r = REAL_VALUE_FROM_TARGET_SINGLE (i);
-      return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
-    }
-#else
     {
       union {HOST_WIDE_INT i; float d; } u;
 
       u.i = INTVAL (x);
       return CONST_DOUBLE_FROM_REAL_VALUE (u.d, mode);
     }
-#endif
   else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
 	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
 	    || flag_pretend_float)
@@ -832,28 +822,6 @@ gen_lowpart_common (mode, x)
 	   && GET_MODE (x) == VOIDmode
 	   && (sizeof (double) * HOST_BITS_PER_CHAR
 	       == 2 * HOST_BITS_PER_WIDE_INT))
-#ifdef REAL_ARITHMETIC
-    {
-      REAL_VALUE_TYPE r;
-      HOST_WIDE_INT i[2];
-      HOST_WIDE_INT low, high;
-
-      if (GET_CODE (x) == CONST_INT)
-	low = INTVAL (x), high = low >> (HOST_BITS_PER_WIDE_INT -1);
-      else
-	low = CONST_DOUBLE_LOW (x), high = CONST_DOUBLE_HIGH (x);
-
-      /* REAL_VALUE_TARGET_DOUBLE takes the addressing order of the
-	 target machine.  */
-      if (WORDS_BIG_ENDIAN)
-	i[0] = high, i[1] = low;
-      else
-	i[0] = low, i[1] = high;
-
-      r = REAL_VALUE_FROM_TARGET_DOUBLE (i);
-      return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
-    }
-#else
     {
       union {HOST_WIDE_INT i[2]; double d; } u;
       HOST_WIDE_INT low, high;
@@ -871,38 +839,6 @@ gen_lowpart_common (mode, x)
 
       return CONST_DOUBLE_FROM_REAL_VALUE (u.d, mode);
     }
-#endif
-
-  /* We need an extra case for machines where HOST_BITS_PER_WIDE_INT is the
-     same as sizeof (double) or when sizeof (float) is larger than the
-     size of a word on the target machine.  */
-#ifdef REAL_ARITHMETIC
-  else if (mode == SFmode && GET_CODE (x) == CONST_INT)
-    {
-      REAL_VALUE_TYPE r;
-      HOST_WIDE_INT i;
-
-      i = INTVAL (x);
-      r = REAL_VALUE_FROM_TARGET_SINGLE (i);
-      return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
-    }
-  else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
-	    || flag_pretend_float)
-	   && GET_MODE_CLASS (mode) == MODE_FLOAT
-	   && GET_MODE_SIZE (mode) == UNITS_PER_WORD
-	   && GET_CODE (x) == CONST_INT
-	   && (sizeof (double) * HOST_BITS_PER_CHAR
-	       == HOST_BITS_PER_WIDE_INT))
-    {
-      REAL_VALUE_TYPE r;
-      HOST_WIDE_INT i;
-
-      i = INTVAL (x);
-      r = REAL_VALUE_FROM_TARGET_DOUBLE (&i);
-      return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
-    }
-#endif
 
   /* Similarly, if this is converting a floating-point value into a
      single-word integer.  Only do this is the host and target parameters are
@@ -941,6 +877,100 @@ gen_lowpart_common (mode, x)
 	  && highpart && GET_CODE (highpart) == CONST_INT)
 	return immed_double_const (INTVAL (lowpart), INTVAL (highpart), mode);
     }
+#else /* ifndef REAL_ARITHMETIC */
+
+  /* When we have a FP emulator, we can handle all conversions between
+     FP and integer operands.  This simplifies reload because it
+     doesn't have to deal with constructs like (subreg:DI
+     (const_double:SF ...)) or (subreg:DF (const_int ...)).  */
+
+  else if (mode == SFmode
+	   && GET_CODE (x) == CONST_INT)
+    {
+      REAL_VALUE_TYPE r;
+      HOST_WIDE_INT i;
+
+      i = INTVAL (x);
+      r = REAL_VALUE_FROM_TARGET_SINGLE (i);
+      return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
+    }
+  else if (mode == DFmode
+	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
+	   && GET_MODE (x) == VOIDmode)
+    {
+      REAL_VALUE_TYPE r;
+      HOST_WIDE_INT i[2];
+      HOST_WIDE_INT low, high;
+
+      if (GET_CODE (x) == CONST_INT)
+	{
+	  low = INTVAL (x);
+	  high = low >> (HOST_BITS_PER_WIDE_INT - 1);
+	}
+      else
+	{
+	  low = CONST_DOUBLE_LOW (x); 
+	  high = CONST_DOUBLE_HIGH (x);
+	}
+
+      /* REAL_VALUE_TARGET_DOUBLE takes the addressing order of the
+	 target machine.  */
+      if (WORDS_BIG_ENDIAN)
+	i[0] = high, i[1] = low;
+      else
+	i[0] = low, i[1] = high;
+
+      r = REAL_VALUE_FROM_TARGET_DOUBLE (i);
+      return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
+    }
+  else if ((GET_MODE_CLASS (mode) == MODE_INT
+	    || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
+	   && GET_CODE (x) == CONST_DOUBLE
+	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+    {
+      REAL_VALUE_TYPE r;
+      long i[4];  /* Only the low 32 bits of each 'long' are used.  */
+      int endian = WORDS_BIG_ENDIAN ? 1 : 0;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+      switch (GET_MODE (x))
+	{
+	case SFmode:
+	  REAL_VALUE_TO_TARGET_SINGLE (r, i[endian]);
+	  i[1-endian] = 0;
+	  break;
+	case DFmode:
+	  REAL_VALUE_TO_TARGET_DOUBLE (r, i);
+	  break;
+#if LONG_DOUBLE_TYPE_SIZE == 96
+	case XFmode:
+#else
+	case TFmode:
+#endif
+	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, i);
+	  break;
+	default:
+	  abort();
+	}
+
+      /* Now, pack the 32-bit elements of the array into a CONST_DOUBLE
+	 and return it.  */
+#if HOST_BITS_PER_WIDE_INT == 32
+      return immed_double_const (i[endian], i[1-endian], mode);
+#else
+      if (HOST_BITS_PER_WIDE_INT != 64)
+	abort();
+      for (c = 0; c < 4; c++)
+	i[c] &= 0xffffffffL;
+      
+      return immed_double_const (i[endian*3] | 
+				 (((HOST_WIDE_INT) i[1+endian]) << 32),
+				 i[2-endian] |
+				 (((HOST_WIDE_INT) i[3-endian*3]) << 32),
+				 mode);
+#endif
+    }
+#endif /* ifndef REAL_ARITHMETIC */
 
   /* Otherwise, we can't do this.  */
   return 0;
