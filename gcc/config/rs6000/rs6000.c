@@ -5010,8 +5010,6 @@ static struct builtin_description bdesc_1arg[] =
   { 0, CODE_FOR_spe_evsubfsmiaaw, "__builtin_spe_evsubfsmiaaw", SPE_BUILTIN_EVSUBFSMIAAW },
   { 0, CODE_FOR_spe_evsubfssiaaw, "__builtin_spe_evsubfssiaaw", SPE_BUILTIN_EVSUBFSSIAAW },
   { 0, CODE_FOR_spe_evsubfumiaaw, "__builtin_spe_evsubfumiaaw", SPE_BUILTIN_EVSUBFUMIAAW },
-  { 0, CODE_FOR_spe_evsplatfi, "__builtin_spe_evsplatfi", SPE_BUILTIN_EVSPLATFI },
-  { 0, CODE_FOR_spe_evsplati, "__builtin_spe_evsplati", SPE_BUILTIN_EVSPLATI },
 
   /* Place-holder.  Leave as last unary SPE builtin.  */
   { 0, CODE_FOR_spe_evsubfusiaaw, "__builtin_spe_evsubfusiaaw", SPE_BUILTIN_EVSUBFUSIAAW },
@@ -5754,6 +5752,19 @@ spe_expand_builtin (exp, target, expandedp)
       break;
     }
 
+  /* The evsplat*i instructions are not quite generic.  */
+  switch (fcode)
+    {
+    case SPE_BUILTIN_EVSPLATFI:
+      return rs6000_expand_unop_builtin (CODE_FOR_spe_evsplatfi,
+					 arglist, target);
+    case SPE_BUILTIN_EVSPLATI:
+      return rs6000_expand_unop_builtin (CODE_FOR_spe_evsplati,
+					 arglist, target);
+    default:
+      break;
+    }
+
   d = (struct builtin_description *) bdesc_2arg_spe;
   for (i = 0; i < ARRAY_SIZE (bdesc_2arg_spe); ++i, ++d)
     if (d->code == fcode)
@@ -6209,6 +6220,11 @@ spe_init_builtins ()
 				      tree_cons (NULL_TREE, integer_type_node,
 						 endlink)));
 
+  tree v2si_ftype_signed_char
+    = build_function_type (opaque_V2SI_type_node,
+			   tree_cons (NULL_TREE, signed_char_type_node,
+				      endlink));
+
   /* The initialization of the simple binary and unary builtins is
      done in rs6000_common_init_builtins, but we have to enable the
      mask bits here manually because we have run out of `target_flags'
@@ -6253,6 +6269,8 @@ spe_init_builtins ()
   def_builtin (target_flags, "__builtin_spe_evstwho", void_ftype_v2si_puint_char, SPE_BUILTIN_EVSTWHO);
   def_builtin (target_flags, "__builtin_spe_evstwwe", void_ftype_v2si_puint_char, SPE_BUILTIN_EVSTWWE);
   def_builtin (target_flags, "__builtin_spe_evstwwo", void_ftype_v2si_puint_char, SPE_BUILTIN_EVSTWWO);
+  def_builtin (target_flags, "__builtin_spe_evsplatfi", v2si_ftype_signed_char, SPE_BUILTIN_EVSPLATFI);
+  def_builtin (target_flags, "__builtin_spe_evsplati", v2si_ftype_signed_char, SPE_BUILTIN_EVSPLATI);
 
   /* Loads.  */
   def_builtin (target_flags, "__builtin_spe_evlddx", v2si_ftype_pv2si_int, SPE_BUILTIN_EVLDDX);
