@@ -720,9 +720,8 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operand:SI 1 "immediate_operand" "n"))]
-  "(GET_CODE (operands[1]) == CONST_INT) &&
-   (INT_14_BITS (operands[1]) || !(INTVAL (operands[1]) & 0x7ff))"
+	(match_operand:SI 1 "const_int_operand" ""))]
+  "INT_14_BITS (operands[1]) || (INTVAL (operands[1]) & 0x7ff) == 0"
   "*
 {
   if (INT_14_BITS (operands[1]))
@@ -735,7 +734,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operand:SI 1 "depi_cint_operand" "n"))]
+	(match_operand:SI 1 "depi_cint_operand" ""))]
   ""
   "*
 {
@@ -762,10 +761,11 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(plus:SI (match_operand:SI 1 "register_operand" "")
-		 (high:SI (match_operand 2 "" ""))))]
+		 (high:SI (match_operand 2 "" ""))))
+   (clobber (match_scratch:SI 3 ""))]
   "reload_completed && REGNO (operands[0]) != 1"
-  [(set (match_dup 0) (high:SI (match_dup 2)))
-   (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 1)))]
+  [(set (match_dup 3) (high:SI (match_dup 2)))
+   (set (match_dup 0) (plus:SI (match_dup 3) (match_dup 1)))]
   "")
 
 (define_insn ""
@@ -787,7 +787,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
-		   (match_operand:SI 2 "immediate_operand" "in")))]
+		   (match_operand:SI 2 "immediate_operand" "i")))]
   ""
   "ldo R'%G2(%1),%0"
   ;; Need to set length for this arith insn because operand2
@@ -835,9 +835,8 @@
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(match_operand:HI 1 "immediate_operand" "n"))]
-  "(GET_CODE (operands[1]) == CONST_INT) &&
-   (INT_14_BITS (operands[1]) || !(INTVAL (operands[1]) & 0x7ff))"
+	(match_operand:HI 1 "const_int_operand" ""))]
+  "INT_14_BITS (operands[1]) || (INTVAL (operands[1]) & 0x7ff) == 0"
   "*
 {
   if (INT_14_BITS (operands[1]))
@@ -850,7 +849,7 @@
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(match_operand:HI 1 "depi_cint_operand" "n"))]
+	(match_operand:HI 1 "depi_cint_operand" ""))]
   ""
   "*
 {
@@ -866,7 +865,7 @@
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(lo_sum:HI (match_operand:HI 1 "register_operand" "r")
-		   (match_operand 2 "immediate_operand" "in")))]
+		   (match_operand 2 "immediate_operand" "i")))]
   ""
   "ldo R'%G2(%1),%0"
   [(set_attr "length" "1")])
@@ -903,7 +902,7 @@
 (define_insn ""
   [(set (match_operand:QI 0 "register_operand" "=r")
 	(subreg:QI (lo_sum:SI (match_operand:QI 1 "register_operand" "r")
-			      (match_operand 2 "immediate_operand" "in")) 0))]
+			      (match_operand 2 "immediate_operand" "i")) 0))]
   ""
   "ldo R'%G2(%1),%0"
   [(set_attr "length" "1")])
@@ -917,8 +916,8 @@
 		   (mem:BLK (match_operand:BLK 1 "general_operand" "")))
 	      (clobber (match_dup 0))
 	      (clobber (match_dup 1))
-	      (clobber (match_scratch:SI 4 ""))
-	      (clobber (match_scratch:SI 5 ""))
+	      (clobber (match_dup 4))
+	      (clobber (match_dup 5))
 	      (use (match_operand:SI 2 "arith_operand" ""))
 	      (use (match_operand:SI 3 "const_int_operand" ""))])]
   ""
@@ -935,7 +934,8 @@
 
   operands[0] = copy_to_mode_reg (SImode, XEXP (operands[0], 0));
   operands[1] = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
-  operands[2] = force_not_mem (operands[2]);
+  operands[4] = gen_reg_rtx (SImode);
+  operands[5] = gen_reg_rtx (SImode);
 }")
 
 ;; The operand constraints are written like this to support both compile-time
@@ -948,8 +948,8 @@
 	(mem:BLK (match_operand:SI 1 "register_operand" "+r,r")))
    (clobber (match_dup 0))
    (clobber (match_dup 1))
-   (clobber (match_scratch:SI 2 "=r,r"))		 ;loop cnt/item tmp
-   (clobber (match_scratch:SI 3 "=r,r"))		 ;item tmp
+   (clobber (match_operand:SI 2 "register_operand" "=r,r"))	;loop cnt/tmp
+   (clobber (match_operand:SI 3 "register_operand" "=&r,&r"))	;item tmp
    (use (match_operand:SI 4 "arith_operand" "J,2"))	 ;byte count
    (use (match_operand:SI 5 "const_int_operand" "n,n"))] ;alignment
   ""
@@ -1071,7 +1071,7 @@
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(lo_sum:DI (match_operand:DI 1 "register_operand" "0,r")
-		   (match_operand:DI 2 "immediate_operand" "in,in")))]
+		   (match_operand:DI 2 "immediate_operand" "i,i")))]
   ""
   "*
 {
@@ -1596,7 +1596,7 @@
 	(and:SI (match_operand:SI 1 "register_operand" "%r,0")
 		(match_operand:SI 2 "and_operand" "rO,P")))]
   ""
-  "* output_and (operands); ")
+  "* return output_and (operands); ")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -1639,7 +1639,7 @@
 	(ior:SI (match_operand:SI 1 "register_operand" "%r,0")
 		(match_operand:SI 2 "ior_operand" "r,n")))]
   ""
-  "* output_ior (operands); ")
+  "* return output_ior (operands); ")
 
 (define_expand "xordi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -1826,7 +1826,18 @@
 	(lshiftrt:SI (match_operand:SI 1 "memory_operand" "m")
 		     (const_int 24)))]
   ""
-  "ldb%M1 %1,%0")
+  "ldb%M1 %1,%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "1")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "memory_operand" "m")
+		     (const_int 16)))]
+  ""
+  "ldh%M1 %1,%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "1")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
