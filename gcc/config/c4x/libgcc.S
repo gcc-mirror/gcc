@@ -65,7 +65,7 @@ Boston, MA 02111-1307, USA.  */
 
 ; r2 dividend, r3 divisor, r0 quotient
 ; clobbers r1, ar1
-#ifdef L_divqf3
+#ifdef L_divsf3
 	.text
         .global ___divqf3
 ___divqf3:
@@ -166,7 +166,7 @@ ___divqf3:
 ;
 ; ar2 dividend, r2 divisor, r0 quotient
 ; clobbers r1, r3, ar0, ar1, ir0, ir1, rc, rs, re
-#ifdef L_divqi3
+#ifdef L_divsi3
 	.text
 	.global ___divqi3
 	.ref	udivqi3n
@@ -255,7 +255,7 @@ divq32:
 ;
 ; ar2 dividend, r2 divisor, r0 quotient, 
 ; clobbers r1, r3, ar0, ar1, ir0, ir1, rc, rs, re
-#ifdef L_udivqi3
+#ifdef L_udivsi3
 	.text
 	.global ___udivqi3
 	.global udivqi3n
@@ -366,7 +366,7 @@ qzero:
 	nop
 #endif
 
-#ifdef L_umodqi3
+#ifdef L_umodsi3
 	.text
 	.global	___umodqi3
 	.global	umodqi3n
@@ -482,7 +482,7 @@ uzero:	bud	ir1
 	nop
 #endif
 
-#ifdef L_modqi3
+#ifdef L_modsi3
 	.text
 	.global	___modqi3
 	.ref umodqi3n
@@ -606,7 +606,7 @@ ___unsfltcompare: .float 2147483648.0
 ;
 ; ar2 multiplier, r2 multiplicand, r0 product
 ; clobbers r1, r2, r3
-#ifdef L_mulqi3	
+#ifdef L_mulsi3	
 	.text
 	.global	___mulqi3
 ___mulqi3:
@@ -643,7 +643,7 @@ ___mulqi3:
 ; long1 and long2 on stack
 ; result in r0,r1
 ;
-#ifdef L_mulhi3
+#ifdef L_muldi3
 	.text
 	.global	___mulhi3
 #ifdef _TMS320C4x
@@ -725,7 +725,7 @@ ___mulhi3:
 ; src2 in r2
 ; result in r0
 ;
-#ifdef L_umulhi3_high
+#ifdef L_umuldi3_high
 	.text
 	.global	___umulhi3_high
 ___umulhi3_high:
@@ -771,7 +771,7 @@ ___umulhi3_high:
 ; src2 in r2
 ; result in r0
 ;
-#ifdef L_smulhi3_high
+#ifdef L_smuldi3_high
 	.text
 	.global	___smulhi3_high
 ___smulhi3_high:
@@ -823,9 +823,9 @@ ___smulhi3_high:
 ; long1 and long2 on stack
 ; divide in r0,r1
 ; modulo in r2,r3
-; routine takes a maximum of 64*9+21=597 cycles = 24 us @ 50Mhz
+; routine takes a maximum of 64*8+23=535 cycles = 21.4 us @ 50Mhz
 ;
-#ifdef L_udivhi3
+#ifdef L_udivdi3
 	.text
 	.global	___udivhi3
 	.global	___udivide
@@ -879,12 +879,13 @@ udiv0:
 
 	rolc	r2
 	subi3	ar0,r2,r3
-	xor	1,st
-	ldic	r3,r2
+	ldinc	r3,r2
 	rolc	r0
 udivend0:
 	rolc	r1
 
+	not	r0
+	not	r1
 	ldiu	0,r3
 	rets
 udiv1:
@@ -908,13 +909,14 @@ udiv1:
 	rolc	r3
 	subi3	ar0,r2,r4
 	subb3	ar1,r3,r5
-	xor	1,st
-	ldic	r4,r2
-	ldic	r5,r3
+	ldinc	r4,r2
+	ldinc	r5,r3
 	rolc	r0
 udivend1:
 	rolc	r1
 
+	not	r0
+	not	r1
 	pop	r5
 	pop	r4
 	rets
@@ -925,7 +927,7 @@ udivend1:
 ; long1 and long2 on stack
 ; result in r0,r1
 ;
-#ifdef L_umodhi3
+#ifdef L_umoddi3
 	.text
 	.global	___umodhi3
 	.ref ___modulo
@@ -948,7 +950,7 @@ ___umodhi3:
 ; long1 and long2 on stack
 ; result in r0,r1
 ;
-#ifdef L_divhi3
+#ifdef L_divdi3
 	.text
 	.global	___divhi3
 	.ref ___udivide
@@ -985,7 +987,7 @@ div3:
 ; long1 and long2 on stack
 ; result in r0,r1
 ;
-#ifdef L_modhi3
+#ifdef L_moddi3
 	.text
 	.global	___modhi3
 	.ref ___umodulo
@@ -1024,7 +1026,7 @@ mod3:
 ; input in r2
 ; result in r0,r1
 ;
-#ifdef L_fix_truncqfhi2
+#ifdef L_fix_truncsfdi2
 	.text
 	.global	___fix_truncqfhi2
 	.ref ufix_truncqfhi2n
@@ -1052,7 +1054,7 @@ ___fix_truncqfhi2:
 ; input in r2
 ; result in r0,r1
 ;
-#ifdef L_ufix_truncqfhi2
+#ifdef L_ufix_truncsfdi2
 	.text
 	.global	___ufix_truncqfhi2
 	.global	ufix_truncqfhi2n
@@ -1098,7 +1100,7 @@ ufix1:
 ; input on stack
 ; result in r0
 ;
-#ifdef L_floathiqf2
+#ifdef L_floatdisf2
 	.text
 	.global	___floathiqf2
 	.ref ufloathiqf2n
@@ -1119,7 +1121,7 @@ ___floathiqf2:
 ; input on stack
 ; result in r0
 ;
-#ifdef L_ufloathiqf2
+#ifdef L_ufloatdisf2
 	.text
 	.global	___ufloathiqf2
 	.global	ufloathiqf2n
@@ -1169,7 +1171,7 @@ uflt2:
 ; input in r2
 ; result in r0,r1
 ;
-#ifdef L_fix_trunchfhi2
+#ifdef L_fix_truncdfdi2
 	.text
 	.global	___fix_trunchfhi2
 	.ref ufix_trunchfhi2n
@@ -1198,7 +1200,7 @@ ___fix_trunchfhi2:
 ; input in r2
 ; result in r0,r1
 ;
-#ifdef L_ufix_trunchfhi2
+#ifdef L_ufix_truncdfdi2
 	.text
 	.global	___ufix_trunchfhi2
 	.global	ufix_trunchfhi2n
@@ -1245,7 +1247,7 @@ ufixh1:
 ; input on stack
 ; result in r0
 ;
-#ifdef L_floathihf2
+#ifdef L_floatdidf2
 	.text
 	.global	___floathihf2
 	.ref ufloathihf2n
@@ -1266,7 +1268,7 @@ ___floathihf2:
 ; input on stack
 ; result in r0
 ;
-#ifdef L_ufloathihf2
+#ifdef L_ufloatdidf2
 	.text
 	.global	___ufloathihf2
 	.global	ufloathihf2n
@@ -1357,7 +1359,7 @@ ___ffs:
 ; input in r2, r3
 ; output in r0
 ;
-#ifdef L_mulhf3
+#ifdef L_muldf3
 	.global ___mulhf3
 	.text
 ___mulhf3:
@@ -1392,7 +1394,7 @@ ___mulhf3:
 ; calculate long double / long double
 ; r2 dividend, r3 divisor, r0 quotient
 ;
-#ifdef L_divhf3
+#ifdef L_divdf3
 	.global ___divhf3
 	.text
 ___divhf3:
