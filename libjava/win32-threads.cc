@@ -262,6 +262,7 @@ _Jv_ThreadInitData (java::lang::Thread* obj)
 {
   _Jv_Thread_t *data = (_Jv_Thread_t*)_Jv_Malloc(sizeof(_Jv_Thread_t));
   data->flags = 0;
+  data->handle = 0;
   data->thread_obj = obj;
   data->interrupt_event = 0;
   InitializeCriticalSection (&data->interrupt_mutex);
@@ -275,6 +276,7 @@ _Jv_ThreadDestroyData (_Jv_Thread_t *data)
   DeleteCriticalSection (&data->interrupt_mutex);
   if (data->interrupt_event)
     CloseHandle(data->interrupt_event);
+  CloseHandle(data->handle);
   _Jv_Free(data);
 }
 
@@ -365,7 +367,6 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data, _Jv_ThreadStart
     return;
   data->flags |= FLAG_START;
 
-  // FIXME: handle marking the info object for GC.
   info = (struct starter *) _Jv_AllocBytes (sizeof (struct starter));
   info->method = meth;
   info->data = data;
@@ -379,7 +380,7 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data, _Jv_ThreadStart
   else
     data->flags |= FLAG_DAEMON;
 
-  GC_CreateThread(NULL, 0, really_start, info, 0, &id);
+  data->handle = GC_CreateThread(NULL, 0, really_start, info, 0, &id);
   _Jv_ThreadSetPriority(data, thread->getPriority());
 }
 
