@@ -2118,12 +2118,9 @@ build_anon_union_vars (anon_decl, elems, static_p, external_p)
   return main_decl;
 }
 
-/* Finish off the processing of a UNION_TYPE structure.
-   If there are static members, then all members are
-   static, and must be laid out together.  If the
-   union is an anonymous union, we arrange for that
-   as well.  PUBLIC_P is nonzero if this union is
-   not declared static.  */
+/* Finish off the processing of a UNION_TYPE structure.  If the union is an
+   anonymous union, then all members must be laid out together.  PUBLIC_P
+   is nonzero if this union is not declared static.  */
 
 void
 finish_anon_union (anon_union_decl)
