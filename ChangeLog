@@ -1,5 +1,9 @@
 2004-03-24  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.tpl (top level bootstrap support): Remove now-unneeded
+	STRICT_WARN, WARN_CFLAGS flags passed down to make.
+	* Makefile.in: Regenerate.
+
 	* configure.in (top level bootstrap support): Rework --enable-werror
 	to set @stage2_werror_flag@.
 	* configure: Regenerate.

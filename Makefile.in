@@ -24101,9 +24101,7 @@ configure-stage2-gcc: all-stage1-gcc
 BOOT_CFLAGS= -g -O2
 POSTSTAGE1_FLAGS_TO_PASS = \
 	CFLAGS="$(BOOT_CFLAGS)" \
-	ADAC="\$$(CC)" \
-	WARN_CFLAGS="\$$(GCC_WARN_CFLAGS)" \
-	STRICT_WARN="\$$(STRICT2_WARN)"
+	ADAC="\$$(CC)"
 
 all-stage2-gcc: all-stage1-gcc configure-stage2-gcc
 	echo all-stage2-gcc > stage_last ; \
