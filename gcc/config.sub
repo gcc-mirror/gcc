@@ -716,7 +716,7 @@ case $os in
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
 	      | -cygwin32* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
-	      | -mingw32* | -linux-gnu* | -uxpv*)
+	      | -mingw32* | -linux-gnu* | -uxpv* | -beos* )
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-linux*)
@@ -895,6 +895,9 @@ case $basic_machine in
 	f301-fujitsu)
 		os=-uxpv
 		;;
+	*-be)
+		os=-beos
+		;;
 	*)
 		os=-none
 		;;
@@ -945,6 +948,9 @@ case $basic_machine in
 				;;
 			-aux*)
 				vendor=apple
+				;;
+			-beos*)
+				vendor=be
 				;;
 		esac
 		basic_machine=`echo $basic_machine | sed "s/unknown/$vendor/"`

@@ -135,6 +135,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 /* Define this type if we are doing the whole job,
    or if we want this type in particular.  */
 #if defined (_STDDEF_H) || defined (__need_size_t)
+#ifndef __size_t__	/* BeOS */
 #ifndef _SIZE_T	/* in case <sys/types.h> has defined it. */
 #ifndef _SYS_SIZE_T_H
 #ifndef _T_SIZE_
@@ -148,6 +149,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #ifndef _GCC_SIZE_T
 #ifndef _SIZET_
 #ifndef __size_t
+#define __size_t__	/* BeOS */
 #define _SIZE_T
 #define _SYS_SIZE_T_H
 #define _T_SIZE_
@@ -166,6 +168,9 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #endif
 #if !(defined (__GNUG__) && defined (size_t))
 typedef __SIZE_TYPE__ size_t;
+#ifdef __BEOS__
+typedef long ssize_t;
+#endif /* __BEOS__ */
 #endif /* !(defined (__GNUG__) && defined (size_t)) */
 #endif /* __size_t */
 #endif /* _SIZET_ */
@@ -180,6 +185,7 @@ typedef __SIZE_TYPE__ size_t;
 #endif /* _T_SIZE_ */
 #endif /* _SYS_SIZE_T_H */
 #endif /* _SIZE_T */
+#endif /* __size_t__ */
 #undef	__need_size_t
 #endif /* _STDDEF_H or __need_size_t.  */
 
@@ -192,6 +198,7 @@ typedef __SIZE_TYPE__ size_t;
 /* Define this type if we are doing the whole job,
    or if we want this type in particular.  */
 #if defined (_STDDEF_H) || defined (__need_wchar_t)
+#ifndef __wchar_t__	/* BeOS */
 #ifndef _WCHAR_T
 #ifndef _T_WCHAR_
 #ifndef _T_WCHAR
@@ -204,6 +211,7 @@ typedef __SIZE_TYPE__ size_t;
 #ifndef ___int_wchar_t_h
 #ifndef __INT_WCHAR_T_H
 #ifndef _GCC_WCHAR_T
+#define __wchar_t__	/* BeOS */
 #define _WCHAR_T
 #define _T_WCHAR_
 #define _T_WCHAR
@@ -237,7 +245,11 @@ typedef _BSD_RUNE_T_ rune_t;
 #endif
 
 #ifndef __WCHAR_TYPE__
+#ifdef __BEOS__
+#define __WCHAR_TYPE__ unsigned char
+#else
 #define __WCHAR_TYPE__ int
+#endif
 #endif
 #ifndef __cplusplus
 typedef __WCHAR_TYPE__ wchar_t;
@@ -254,6 +266,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 #endif
 #endif
 #endif
+#endif /* __wchar_t__ */
 #undef	__need_wchar_t
 #endif /* _STDDEF_H or __need_wchar_t.  */
 

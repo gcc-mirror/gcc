@@ -2124,6 +2124,13 @@ for machine in $build $host $target; do
 		xmake_file=romp/x-mach
 		use_collect2=yes
 		;;
+	powerpc-*-beos*)
+		cpu_type=rs6000
+		tm_file=rs6000/beos.h
+		xm_file=rs6000/xm-beos.h
+		tmake_file=rs6000/t-beos
+		xmake_file=rs6000/x-beos
+		;;
 	powerpc-*-sysv* | powerpc-*-elf*)
 		if [[ x$enable_haifa != xno ]]; then
 			enable_haifa=yes

@@ -1036,9 +1036,10 @@ get_run_time ()
 #else /* VMS */
   times ((void *) &vms_times);
   return (vms_times.proc_user_time + vms_times.proc_system_time) * 10000;
-#endif
-#endif
-#endif
+#endif	/* VMS */
+#endif	/* USG */
+#endif	/* _WIN32 */
+#endif	/* __BEOS__ */
 }
 
 #define TIMEVAR(VAR, BODY)    \
