@@ -1,4 +1,9 @@
-2001-05-30  Benjamin Kosnik  <bkoz@redat.com>
+2001-05-31  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/2997
+	* src/bitset.cc: Qualify size_t with std::.
+
+2001-05-30  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acconfig.h (_GLIBCPP_BUGGY_FLOAT_COMPLEX): Remove.
 	(_GLIBCPP_BUGGY_COMPLEX): Remove.
