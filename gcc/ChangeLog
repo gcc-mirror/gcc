@@ -1,3 +1,8 @@
+2003-02-05  Hans Boehm <Hans.Boehm@hp.com>
+
+	* config/ia64/unwind-ia64.c: include coretypes.h, tm.h to get
+	  config/ia64/linux.h
+
 2002-02-05  Roger Sayle  <roger@eyesopen.com>
 
 	* cfgloop.h (flow_bb_inside_loop_p): Correct prototype again.
