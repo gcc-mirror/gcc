@@ -1,3 +1,14 @@
+2000-11-07  Jeffrey Oldham  <oldham@oz.codesourcery.com>
+
+	* gcc.c-torture/execute/va-arg-15.x: New file.  Fails on
+	mips-sgi-irix6.* because the MIPS ABI passes floating-point
+	parameters in registers, and there is no way for a varargs
+	function to know in which order the integer and floating-point
+	parameters should be interleaved when they are placed on the
+	stack.
+	* gcc.c-torture/execute/va-arg-16.x: Likewise.
+	* gcc.c-torture/execute/va-arg-17.x: Likewise.
+
 2000-11-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/string-opt-2.c: New test.
