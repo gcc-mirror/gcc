@@ -132,7 +132,7 @@ AC_PROG_RANLIB
 AC_PROG_YACC
 AC_PROG_INSTALL
 
-AC_CHECK_HEADERS(stddef.h string.h strings.h stdlib.h time.h unistd.h)
+AC_CHECK_HEADERS(inttypes.h limits.h stddef.h string.h strings.h stdlib.h time.h unistd.h)
 
 GCC_NEED_DECLARATION(malloc)
 GCC_NEED_DECLARATION(realloc)
@@ -934,7 +934,7 @@ for machine in $build $host $target; do
 		tmake_file=i386/t-sol2
 		extra_parts="crt1.o crti.o crtn.o crtbegin.o crtend.o"
 		xmake_file=x-svr4
-		fixincludes=Makefile.in
+		fixincludes=fixinc.math
 		broken_install=yes
  		if [[ x$enable_threads = xyes ]]; then
 			thread_file='solaris'
@@ -2228,7 +2228,7 @@ for machine in $build $host $target; do
 			tmake_file="rs6000/t-ppc rs6000/t-ppccomm"
 		fi
 		xmake_file=rs6000/x-sysv4
-		fixincludes=Makefile.in
+		fixincludes=fixinc.math
 		extra_headers=ppc-asm.h
 		;;
 	rs6000-ibm-aix3.[[01]]*)
@@ -2363,7 +2363,7 @@ for machine in $build $host $target; do
 		tmake_file=sparc/t-sol2
 		xmake_file=sparc/x-sysv4
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
-		fixincludes=Makefile.in
+		fixincludes=fixinc.math
 		float_format=i128
 		broken_install=yes
  		if [[ x$enable_threads = xyes ]]; then
