@@ -1,3 +1,11 @@
+2001-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* cppfiles.c (_cpp_read_file): Add to dependencies if requested.
+	* cppinit.c (cpp_start_read): Remove deps_add_dep call.
+	* tradcpp.c (main): Add -imacros or -include'd dependencies
+	for -M*.
+	* cpp.texi (-M, -MM): Document -M -include behaviour.
+
 2001-01-24  Roger Collins <roger@ProProject.com>
 	  
         * config/i386/xm-i386.h: Make __i386__ a boolean macro.
