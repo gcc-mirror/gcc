@@ -1352,6 +1352,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       rtx funexp = binoptab->handlers[(int) mode].libfunc;
       rtx op1x = op1;
       enum machine_mode op1_mode = mode;
+      rtx value;
 
       start_sequence ();
 
@@ -1365,14 +1366,15 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
       /* Pass 1 for NO_QUEUE so we don't lose any increments
 	 if the libcall is cse'd or moved.  */
-      emit_library_call (binoptab->handlers[(int) mode].libfunc,
-			 1, mode, 2, op0, mode, op1x, op1_mode);
+      value = emit_library_call_value (binoptab->handlers[(int) mode].libfunc,
+				       NULL_RTX, 1, mode, 2,
+				       op0, mode, op1x, op1_mode);
 
       insns = get_insns ();
       end_sequence ();
 
       target = gen_reg_rtx (mode);
-      emit_libcall_block (insns, target, hard_libcall_value (mode),
+      emit_libcall_block (insns, target, value,
 			  gen_rtx (binoptab->code, mode, op0, op1));
 
       return target;
@@ -1842,18 +1844,19 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
     {
       rtx insns;
       rtx funexp = unoptab->handlers[(int) mode].libfunc;
+      rtx value;
 
       start_sequence ();
 
       /* Pass 1 for NO_QUEUE so we don't lose any increments
 	 if the libcall is cse'd or moved.  */
-      emit_library_call (unoptab->handlers[(int) mode].libfunc,
-			 1, mode, 1, op0, mode);
+      value = emit_library_call_value (unoptab->handlers[(int) mode].libfunc,
+				       NULL_RTX, 1, mode, 1, op0, mode);
       insns = get_insns ();
       end_sequence ();
 
       target = gen_reg_rtx (mode);
-      emit_libcall_block (insns, target, hard_libcall_value (mode),
+      emit_libcall_block (insns, target, value,
 			  gen_rtx (unoptab->code, mode, op0));
 
       return target;
@@ -2051,13 +2054,13 @@ expand_complex_abs (mode, op0, target, unsignedp)
 
       /* Pass 1 for NO_QUEUE so we don't lose any increments
 	 if the libcall is cse'd or moved.  */
-      emit_library_call (abs_optab->handlers[(int) mode].libfunc,
-			 1, mode, 1, op0, mode);
+      value = emit_library_call_value (abs_optab->handlers[(int) mode].libfunc,
+				       NULL_RTX, 1, submode, 1, op0, mode);
       insns = get_insns ();
       end_sequence ();
 
       target = gen_reg_rtx (submode);
-      emit_libcall_block (insns, target, hard_libcall_value (submode),
+      emit_libcall_block (insns, target, value,
 			  gen_rtx (abs_optab->code, mode, op0));
 
       return target;
@@ -3096,6 +3099,7 @@ expand_float (to, from, unsignedp)
     {
       rtx libfcn;
       rtx insns;
+      rtx value;
 
       to = protect_from_queue (to, 1);
       from = protect_from_queue (from, 0);
@@ -3155,11 +3159,13 @@ expand_float (to, from, unsignedp)
 
       start_sequence ();
 
-      emit_library_call (libfcn, 1, GET_MODE (to), 1, from, GET_MODE (from));
+      value = emit_library_call_value (libfcn, NULL_RTX, 1,
+				       GET_MODE (to),
+				       1, from, GET_MODE (from));
       insns = get_insns ();
       end_sequence ();
 
-      emit_libcall_block (insns, target, hard_libcall_value (GET_MODE (to)),
+      emit_libcall_block (insns, target, value,
 			  gen_rtx (FLOAT, GET_MODE (to), from));
     }
 
