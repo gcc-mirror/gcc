@@ -60,11 +60,17 @@
 # else
 #  ifdef __STDC__
 #   define __P(p) p
-#   define __PMT(p) p
 #  else
 #   define __P(p) ()
-#   define __PMT(p) ()
 #  endif
+# endif
+#endif /*!__P*/
+
+#ifndef __PMT
+# ifdef __STDC__
+#  define __PMT(p) p
+# else
+#  define __PMT(p) ()
 # endif
 #endif /*!__P*/
 
