@@ -33,8 +33,9 @@
   
 // Information as gleaned from /usr/include/ctype.h
   
-  // Data for classic_table().
-  const ctype_base::mask* ctype<char>::_S_ctable;
+  const ctype_base::mask*
+  ctype<char>::classic_table() throw()
+  { return 0; }
 
   ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
 		     size_t __refs) 

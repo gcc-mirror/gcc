@@ -1,3 +1,35 @@
+2002-01-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h (ctype<char>::classic_table):
+	Remove definition.
+	(ctype<char>::_S_ctable): Remove.
+	* config/os/gnu-linux/bits/ctype_noninline.h
+	(ctype<char>::_S_table): Remove definition.
+	(ctype<char>::classic_table): Define.
+	(ctype<char>::ctype): Replace _S_ctable with classic_table().
+	* config/os/aix/bits/ctype_noninline.h: Same.
+	* config/os/bsd/freebsd/bits/ctype_noninline.h: Same.
+	* config/os/bsd/netbsd/bits/ctype_noninline.h: Same.
+	* config/os/djgpp/bits/ctype_noninline.h: Same.
+	* config/os/generic/bits/ctype_noninline.h: Same.
+	* config/os/gnu-linux/bits/ctype_noninline.h: Same.
+	* config/os/hpux/bits/ctype_noninline.h: Same.
+	* config/os/irix/irix5.2/bits/ctype_noninline.h: Same.
+	* config/os/irix/irix6.5/bits/ctype_noninline.h: Same.
+	* config/os/mingw32/bits/ctype_noninline.h: Same.
+	* config/os/newlib/bits/ctype_noninline.h: Same.
+	* config/os/solaris/solaris2.5/bits/ctype_noninline.h: Same.
+	* config/os/solaris/solaris2.6/bits/ctype_noninline.h: Same.
+	* config/os/solaris/solaris2.7/bits/ctype_noninline.h: Same.
+
+2002-01-20  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/os/mingw32/bits/ctype_noninline.h: Declare _ctype instead
+	of _pctype. Use to define _S_ctable.  Add definition for alternate
+	ctor.  Initialise _M_ctable to _S_ctable in ctors.
+	(do_toupper, do_tolower): Use inline code appropriate for C-locale
+	rather than ::toupper, ::tolower.
+
 2002-01-18  Loren Rittle <ljrittle@acm.org>
 
 	* testsuite/18_support/numeric_limits.cc (test_extrema<long double>):
