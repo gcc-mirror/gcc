@@ -7,6 +7,8 @@
 	* fold-const.c (extract_muldiv): Apply type check for defined
 	overflow to multiply as well as divide.
 
+	* stor-layout.c (layout_decl): Don't abort on any zero sized decl.
+
 2000-03-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* emit-rtl.c (remove_unncessary_notes): Check that all

@@ -308,17 +308,6 @@ layout_decl (decl, known_align)
     {
       HOST_WIDE_INT spec_size;
 
-      /* The front-end may set the explicit width of the field, so its
-	 size may not be the same as the size of its type.  This happens
-	 with bitfields, of course (an `int' bitfield may be only 2 bits,
-	 say), but it also happens with other fields.  For example, the
-	 C++ front-end creates zero-sized fields corresponding to empty
-	 base classes, and depends on layout_type setting
-	 DECL_FIELD_BITPOS correctly for the field.  */
-      if (integer_zerop (DECL_SIZE (decl)) 
-	  && DECL_NAME (decl) != NULL_TREE)
-	abort ();
-
       /* Size is specified in number of bits.  */
       spec_size = TREE_INT_CST_LOW (DECL_SIZE (decl));
       if (spec_size % BITS_PER_UNIT == 0)
