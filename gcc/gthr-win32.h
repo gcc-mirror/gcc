@@ -328,37 +328,32 @@ __gthread_objc_condition_signal(objc_condition_t condition)
 
 #else /* _LIBOBJC */
 
-#include <windows.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef DWORD __gthread_key_t;
+typedef unsigned long __gthread_key_t;
 
 typedef struct {
   int done;
   long started;
 } __gthread_once_t;
 
-typedef HANDLE __gthread_mutex_t;
+typedef void* __gthread_mutex_t;
 
-#define __GTHREAD_ONCE_INIT {FALSE, -1}
+#define __GTHREAD_ONCE_INIT {0, -1}
 #define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
 #define __GTHREAD_MUTEX_INIT_DEFAULT 0
 
 #if __MINGW32_MAJOR_VERSION >= 1 || \
   (__MINGW32_MAJOR_VERSION == 0 && __MINGW32_MINOR_VERSION > 2)
 #define MINGW32_SUPPORTS_MT_EH 1
-#ifdef __cplusplus
-extern "C" {
-#endif
-extern int __mingwthr_key_dtor (DWORD, void (*) (void *));
-#ifdef __cplusplus
-}
-#endif
-
 /* Mingw runtime >= v0.3 provides a magic variable that is set to non-zero
    if -mthreads option was specified, or 0 otherwise. This is to get around
    the lack of weak symbols in PE-COFF.  */
 extern int _CRT_MT;
-#endif
+extern int __mingwthr_key_dtor (unsigned long, void (*) (void *));
+#endif /* __MINGW32__ version */
 
 static inline int
 __gthread_active_p (void)
@@ -369,6 +364,100 @@ __gthread_active_p (void)
   return 1;
 #endif
 }
+
+#ifdef __GTHREAD_HIDE_WIN32API
+
+/* The implementations are in config/i386/gthr-win32.c in libgcc.a.
+   Only stubs are exposed to avoid polluting the C++ namespace with
+   windows api definitions.  */
+
+extern int __gthr_win32_once (__gthread_once_t *, void (*) (void));
+extern int __gthr_win32_key_create (__gthread_key_t *, void (*) (void*));
+extern int __gthr_win32_key_delete (__gthread_key_t);
+extern void * __gthr_win32_getspecific (__gthread_key_t);
+extern int __gthr_win32_setspecific (__gthread_key_t, const void *);
+extern void __gthr_win32_mutex_init_function (__gthread_mutex_t *);
+extern int __gthr_win32_mutex_lock (__gthread_mutex_t *);
+extern int __gthr_win32_mutex_trylock (__gthread_mutex_t *);
+extern int __gthr_win32_mutex_unlock (__gthread_mutex_t *);
+
+static inline int
+__gthread_once (__gthread_once_t *once, void (*func) (void))
+{
+  if ( __gthread_active_p ())
+    return __gthr_win32_once (once, func);
+  else
+    return -1;	
+}
+
+static inline int
+__gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
+{
+  return __gthr_win32_key_create (key, dtor);
+}
+
+static inline int
+__gthread_key_dtor (__gthread_key_t key, void *ptr)
+{
+  /* Nothing needed.  */
+  return 0;
+}
+  
+ static inline int
+__gthread_key_delete (__gthread_key_t key)
+{
+   return __gthr_win32_key_delete (key);
+}
+
+static inline void *
+__gthread_getspecific (__gthread_key_t key)
+{
+  return __gthr_win32_getspecific (key);
+}
+
+static inline int
+__gthread_setspecific (__gthread_key_t key, const void *ptr)
+{
+  return __gthr_win32_setspecific (key, ptr);
+}
+
+static inline void
+__gthread_mutex_init_function (__gthread_mutex_t *mutex)
+{
+  __gthr_win32_mutex_init_function (mutex);
+}
+
+static inline int
+__gthread_mutex_lock (__gthread_mutex_t *mutex)
+{
+  if (__gthread_active_p ())
+    return __gthr_win32_mutex_lock (mutex);
+  else
+    return 0;
+}
+
+static inline int
+__gthread_mutex_trylock (__gthread_mutex_t *mutex)
+{
+  if (__gthread_active_p ())
+    return __gthr_win32_mutex_trylock (mutex);
+  else
+    return 0;	
+}
+
+static inline int
+__gthread_mutex_unlock (__gthread_mutex_t *mutex)
+{
+  if (__gthread_active_p ())
+    return __gthr_win32_mutex_unlock (mutex);
+  else
+    return 0;	
+}
+
+#else /* ! __GTHREAD_HIDE_WIN32API */
+
+#include <windows.h>
+#include <errno.h>
 
 static inline int
 __gthread_once (__gthread_once_t *once, void (*func) (void))
@@ -504,7 +593,12 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
     return 0;
 }
 
+#endif /*  __GTHREAD_HIDE_WIN32API */
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* _LIBOBJC */
 
 #endif /* ! GCC_GTHR_WIN32_H */
-
