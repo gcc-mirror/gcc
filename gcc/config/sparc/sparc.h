@@ -1183,9 +1183,12 @@ extern struct rtx_def *sparc_builtin_saveregs ();
       || (GET_CODE (OP) == REG && reg_renumber[REGNO (OP)] > 0) \
       || strict_memory_address_p (Pmode, OP)) 		\
    : (C) == 'T'						\
-   ? mem_aligned_8 (OP) && strict_memory_address_p (Pmode, OP) \
+   ? mem_aligned_8 (OP) && strict_memory_address_p (Pmode, XEXP (OP, 0)) \
    : (C) == 'U'						\
-   ? register_ok_for_ldd (OP) : 0)
+   ? (GET_CODE (OP) == REG				\
+      && (REGNO (OP) < FIRST_PSEUDO_REGISTER		\
+	  || reg_renumber[REGNO (OP)] > 0)		\
+      && register_ok_for_ldd (OP)) : 0)
 #endif
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
