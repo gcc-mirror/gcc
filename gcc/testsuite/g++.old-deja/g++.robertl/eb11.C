@@ -1,12 +1,9 @@
 // Build don't link:
 
-#define NO_META_MAX
-#ifndef NO_META_MAX
 template<int N1, int N2>
 struct meta_max {
     enum { max = (N1 > N2) ? N1 : N2 };
 };
-#endif
 
 struct X {
     enum {

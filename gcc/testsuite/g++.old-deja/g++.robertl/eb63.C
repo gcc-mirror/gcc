@@ -1,3 +1,5 @@
+//Special g++ Options:
+//This uses GNU extensions, so disable -ansi
 #include <stdio.h>
 
 class A {

@@ -2,7 +2,7 @@
 
 template <int n1>
 double val <int> ()
-{
+{                          // ERROR - bogus code
    return (double) n1;
 };
 
