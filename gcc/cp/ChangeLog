@@ -1,3 +1,9 @@
+2004-06-08  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/7841
+	* parser.c (cp_parser_direct_declarator): Reject constructor named
+	as qualified template-id.
+
 2004-06-07  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15815
