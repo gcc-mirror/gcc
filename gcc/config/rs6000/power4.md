@@ -176,11 +176,11 @@
   "iq_power4")
 
 (define_insn_reservation "power4-cmp" 3
-  (and (eq_attr "type" "cmp")
+  (and (eq_attr "type" "cmp,fast_compare")
        (eq_attr "cpu" "power4"))
   "iq_power4")
 
-(define_insn_reservation "power4-compare" 3
+(define_insn_reservation "power4-compare" 4
   (and (eq_attr "type" "compare,delayed_compare")
        (eq_attr "cpu" "power4"))
   "((du1_power4+du2_power4),iu1_power4,iu2_power4)\
