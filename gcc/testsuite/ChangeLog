@@ -1,5 +1,9 @@
 2004-01-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/fwritable-strings-1.c: New test.
+
+2004-01-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.c-torture/compile/20040130-1.c: New test.
 
 2004-01-29  Giovanni Bajo  <giovannibajo@gcc.gnu.org>

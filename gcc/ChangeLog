@@ -1,3 +1,13 @@
+2004-01-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/12818
+	* varasm.c (const_hash_1) <STRING_CST>: Use the
+	address to compute the hash value if flag_writable_strings.
+	(compare_constant) <STRING_CST>: Compare the addresses
+	if flag_writable_strings.
+	(build_constant_desc): Do not copy the expression for a
+	STRING_CST if flag_writable_strings.
+
 2004-01-30  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/12850
