@@ -1,4 +1,8 @@
-2001-02-28  David Edelsohn  <edelsohn@gnu.org>
+2001-02-08  Loren J. Rittle  <ljrittle@acm.org>
+
+        * src/locale-inst.cc (fill_n): Instantiate with size_t arguments.
+
+2001-02-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.target (aix4*): Remove extra set of brackets.
 
