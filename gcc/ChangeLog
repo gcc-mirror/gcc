@@ -5,6 +5,15 @@
 
 2004-05-19  Jeff Law <law@redhat.com>
 
+	* tree-into-ssa.c (prepare_operand_for_rename): New argument is_use.
+	If the operand is for a use, then strip away the SSA_NAME, do not
+	strip away the SSA_NAME for a set.  Never call release_ssa_name.
+	(mark_def_sites): Appropriately pass additional argument to
+	prepare_operand_for_rename.  If a VDEF_RESULT is not an SSA_NAME,
+	then set the VDEF_RESULT to the VDEF_OP.
+	(set_def_block): Strip away any SSA_NAME to get to the real
+	underlying variable.
+
 	* tree-ssa-phiopt.c (value_replacement): Handle the case where
 	the desired edge out of COND_BLOCK reaches OTHER_BLOCK rather than
 	BB directly.
