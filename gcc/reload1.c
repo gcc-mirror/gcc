@@ -377,6 +377,7 @@ static int eliminate_regs_in_insn	PROTO((rtx, int));
 static void update_eliminable_offsets	PROTO((void));
 static void mark_not_eliminable		PROTO((rtx, rtx));
 static void set_initial_elim_offsets	PROTO((void));
+static void verify_initial_elim_offsets	PROTO((void));
 static void init_elim_table		PROTO((void));
 static void update_eliminables		PROTO((HARD_REG_SET *));
 static void spill_hard_reg		PROTO((int, FILE *, int));
@@ -970,7 +971,17 @@ reload (first, global, dumpfile)
 
   if (insns_need_reload != 0 || something_needs_elimination
       || something_needs_operands_changed)
-    reload_as_needed (global);
+    {
+      int old_frame_size = get_frame_size ();
+
+      reload_as_needed (global);
+
+      if (old_frame_size != get_frame_size ())
+	abort ();
+
+      if (num_eliminable)
+	verify_initial_elim_offsets ();
+    }
 
   /* If we were able to eliminate the frame pointer, show that it is no
      longer live at the start of any basic block.  If it ls live by
@@ -3420,6 +3431,31 @@ mark_not_eliminable (dest, x)
 	  = reg_eliminate[i].can_eliminate = 0;
 	num_eliminable--;
       }
+}
+
+/* Verify that the initial elimination offsets did not change since the
+   last call to set_initial_elim_offsets.  This is used to catch cases
+   where something illegal happened during reload_as_needed that could
+   cause incorrect code to be generated if we did not check for it.  */
+static void
+verify_initial_elim_offsets ()
+{
+  int t;
+
+#ifdef ELIMINABLE_REGS
+  struct elim_table *ep;
+
+  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+    {
+      INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, t);
+      if (t != ep->initial_offset)
+	abort ();
+    }
+#else
+  INITIAL_FRAME_POINTER_OFFSET (t);
+  if (t != reg_eliminate[0].initial_offset)
+    abort ();
+#endif  
 }
 
 /* Reset all offsets on eliminable registers to their initial values.  */
