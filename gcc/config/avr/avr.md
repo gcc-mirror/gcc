@@ -1011,7 +1011,7 @@
   ""
   "@
 	com %D0\;com %C0\;com %B0\;neg %A0\;sbci %B0,lo8(-1)\;sbci %C0,lo8(-1)\;sbci %D0,lo8(-1)
-	com %D0\;com %C0\;com %B0\;com %A0\;adc %A0,%@\;adc %B0,%@\;adc %C0,%@\;adc %D0,%@
+	com %D0\;com %C0\;com %B0\;com %A0\;adc %A0,__zero_reg__\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__
 	clr %A0\;clr %B0\;clr %C0\;clr %D0\;sub %A0,%A1\;sbc %B0,%B1\;sbc %C0,%C1\;sbc %D0,%D1"
   [(set_attr "length" "7,8,8")
    (set_attr "cc" "set_czn,set_n,set_czn")])
