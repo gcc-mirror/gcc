@@ -1,3 +1,8 @@
+2002-10-24  Steve Ellcey  <sje@cup.hp.com>
+
+	* expr.c (convert_move): If unsignedp is less then zero there
+	is no equivalent code.
+
 2002-10-24  Zack Weinberg  <zack@codesourcery.com>
 
 	* tree.def: Delete mention of nonexistent ARRAY_TYPE fields.

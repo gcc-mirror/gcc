@@ -552,7 +552,8 @@ convert_move (to, from, unsignedp)
   rtx libcall;
 
   /* rtx code for making an equivalent value.  */
-  enum rtx_code equiv_code = (unsignedp ? ZERO_EXTEND : SIGN_EXTEND);
+  enum rtx_code equiv_code = (unsignedp < 0 ? UNKNOWN
+			      : (unsignedp ? ZERO_EXTEND : SIGN_EXTEND));
 
   to = protect_from_queue (to, 1);
   from = protect_from_queue (from, 0);
