@@ -1584,17 +1584,17 @@ true_dependence (mem, mem_mode, x, varies)
   if (RTX_UNCHANGING_P (x) && ! RTX_UNCHANGING_P (mem))
     return 0;
 
-  base = find_base_term (x);
-  if (base && (GET_CODE (base) == LABEL_REF
-	       || (GET_CODE (base) == SYMBOL_REF
-		   && CONSTANT_POOL_ADDRESS_P (base))))
-    return 0;
-
   if (mem_mode == VOIDmode)
     mem_mode = GET_MODE (mem);
 
   x_addr = get_addr (XEXP (x, 0));
   mem_addr = get_addr (XEXP (mem, 0));
+
+  base = find_base_term (x_addr);
+  if (base && (GET_CODE (base) == LABEL_REF
+	       || (GET_CODE (base) == SYMBOL_REF
+		   && CONSTANT_POOL_ADDRESS_P (base))))
+    return 0;
 
   if (! base_alias_check (x_addr, mem_addr, GET_MODE (x), mem_mode))
     return 0;
@@ -1645,21 +1645,20 @@ write_dependence_p (mem, x, writep)
   /* If MEM is an unchanging read, then it can't possibly conflict with
      the store to X, because there is at most one store to MEM, and it must
      have occurred somewhere before MEM.  */
+  if (! writep && RTX_UNCHANGING_P (mem))
+    return 0;
+
+  x_addr = get_addr (XEXP (x, 0));
+  mem_addr = get_addr (XEXP (mem, 0));
+
   if (! writep)
     {
-      if (RTX_UNCHANGING_P (mem))
-	return 0;
-
-      base = find_base_term (mem);
+      base = find_base_term (mem_addr);
       if (base && (GET_CODE (base) == LABEL_REF
 		   || (GET_CODE (base) == SYMBOL_REF
 		       && CONSTANT_POOL_ADDRESS_P (base))))
 	return 0;
     }
-
-
-  x_addr = get_addr (XEXP (x, 0));
-  mem_addr = get_addr (XEXP (mem, 0));
 
   if (! base_alias_check (x_addr, mem_addr, GET_MODE (x),
 			  GET_MODE (mem)))

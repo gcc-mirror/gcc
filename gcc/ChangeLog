@@ -1,3 +1,21 @@
+Tue Aug 22 23:53:27 EDT 2000  John Wehle  (john@feith.com)
+
+	* rtlanal.c (rtx_unstable_p): The pic register is stable
+	(within one function) and the actual rtx should be used
+	when checking the registers.
+	(rtx_addr_can_trap_p): Pic memory addresses can't trap.
+
+	* alias.c (true_dependence, write_dependence_p): Fix
+	bug in previous patch.
+
+	* i386.c (ix86_GOT_alias_set): New.
+	(legitimize_pic_address): Use it.
+
+	* rtlanal.c (rtx_unstable_p): An unchanging MEM is
+	only stable if its address is stable.
+	(rtx_varies_p): An unchanging MEM can't vary if
+	its address doesn't vary.
+
 2000-08-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-parse.in (unop +): Restrict -Wtraditional warnings to user code.

@@ -53,7 +53,7 @@ rtx_unstable_p (x)
   register const char *fmt;
 
   if (code == MEM)
-    return ! RTX_UNCHANGING_P (x);
+    return ! RTX_UNCHANGING_P (x) || rtx_unstable_p (XEXP (x, 0));
 
   if (code == QUEUED)
     return 1;
@@ -62,9 +62,9 @@ rtx_unstable_p (x)
     return 0;
 
   if (code == REG)
-    return ! (REGNO (x) == FRAME_POINTER_REGNUM
-	      || REGNO (x) == HARD_FRAME_POINTER_REGNUM
-	      || REGNO (x) == ARG_POINTER_REGNUM
+    /* As in rtx_varies_p, we have to use the actual rtx, not reg number.  */
+    return ! (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
+	      || x == arg_pointer_rtx || x == pic_offset_table_rtx
 	      || RTX_UNCHANGING_P (x));
 
   fmt = GET_RTX_FORMAT (code);
@@ -101,6 +101,8 @@ rtx_varies_p (x)
   switch (code)
     {
     case MEM:
+      return ! RTX_UNCHANGING_P (x) || rtx_varies_p (XEXP (x, 0));
+
     case QUEUED:
       return 1;
 
@@ -174,9 +176,12 @@ rtx_addr_can_trap_p (x)
 
     case PLUS:
       /* An address is assumed not to trap if it is an address that can't
-	 trap plus a constant integer.  */
-      return (rtx_addr_can_trap_p (XEXP (x, 0))
-	      || GET_CODE (XEXP (x, 1)) != CONST_INT);
+	 trap plus a constant integer or it is the pic register plus a
+	 constant.  */
+      return ! ((! rtx_addr_can_trap_p (XEXP (x, 0))
+		 && GET_CODE (XEXP (x, 1)) == CONST_INT)
+		|| (XEXP (x, 0) == pic_offset_table_rtx
+		    && CONSTANT_P (XEXP (x, 1))));
 
     case LO_SUM:
       return rtx_addr_can_trap_p (XEXP (x, 1));
