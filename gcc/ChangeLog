@@ -1,3 +1,8 @@
+2004-06-19  Richard Henderson  <rth@redhat.com>
+
+	PR target/15550
+	* ifcvt.c (noce_try_move): Recognize all generated instructions.
+
 2004-06-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/10129
