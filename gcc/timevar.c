@@ -26,12 +26,75 @@
 #ifdef HAVE_SYS_TIMES_H
 # include <sys/times.h>
 #endif
-
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
-#ifdef NEED_DECLARATION_GETRUSAGE
+
+#ifndef HAVE_CLOCK_T
+typedef int clock_t;
+#endif
+
+#ifndef HAVE_STRUCT_TMS
+struct tms
+{
+  clock_t tms_utime;
+  clock_t tms_stime;
+  clock_t tms_cutime;
+  clock_t tms_cstime;
+};
+#endif
+
+#if defined HAVE_DECL_GETRUSAGE && !HAVE_DECL_GETRUSAGE
 extern int getrusage PARAMS ((int, struct rusage *));
+#endif
+#if defined HAVE_DECL_TIMES && !HAVE_DECL_TIMES
+extern clock_t times PARAMS ((struct tms *));
+#endif
+#if defined HAVE_DECL_CLOCK && !HAVE_DECL_CLOCK
+extern clock_t clock PARAMS ((void));
+#endif
+
+#ifndef RUSAGE_SELF
+# define RUSAGE_SELF 0
+#endif
+
+/* Calculation of scale factor to convert ticks to microseconds.
+   We mustn't use CLOCKS_PER_SEC except with clock().  */
+#if HAVE_SYSCONF && defined _SC_CLK_TCK
+# define TICKS_PER_SECOND sysconf (_SC_CLK_TCK) /* POSIX 1003.1-1996 */
+#else
+# ifdef CLK_TCK
+#  define TICKS_PER_SECOND CLK_TCK /* POSIX 1003.1-1988; obsolescent */
+# else
+#  ifdef HZ
+#   define TICKS_PER_SECOND HZ  /* traditional UNIX */
+#  else
+#   define TICKS_PER_SECOND 100 /* often the correct value */
+#  endif
+# endif
+#endif
+
+#define TICKS_TO_USEC (1000000 / TICKS_PER_SECOND)
+#define CLOCKS_TO_USEC (1000000 / CLOCKS_PER_SEC)
+
+/* Prefer times to getrusage to clock (each gives successively less
+   information).  */
+#ifdef HAVE_TIMES
+# define USE_TIMES
+# define HAVE_USER_TIME
+# define HAVE_SYS_TIME
+# define HAVE_WALL_TIME
+#else
+#ifdef HAVE_GETRUSAGE
+# define USE_GETRUSAGE
+# define HAVE_USER_TIME
+# define HAVE_SYS_TIME
+#else
+#ifdef HAVE_CLOCK
+# define USE_CLOCK
+# define HAVE_USER_TIME
+#endif
+#endif
 #endif
 
 #include "flags.h"
@@ -114,86 +177,37 @@ get_time (now)
   if (!TIMEVAR_ENABLE)
     return;
 
-#ifdef __BEOS__
-  /* Nothing.  */
-#else /* not BeOS */
-#if defined (_WIN32) && !defined (__CYGWIN__)
-  if (clock () >= 0)
-    now->user = clock () * 1000;
-#define HAVE_USER_TIME
-
-#else /* not _WIN32 */
-#ifdef _SC_CLK_TCK
   {
-    static int tick;
+#ifdef USE_TIMES
+    /* libc is very likely to have snuck a call to sysconf() into one
+       of the underlying constants, and that can make system calls, so
+       we have to precompute the value.  Whose wonderful idea was it
+       to make all those _constants_ variable at run time, anyway?  */
+    static int ticks_to_usec;
     struct tms tms;
-    if (tick == 0)
-      tick = 1000000 / sysconf (_SC_CLK_TCK);
-    now->wall = times (&tms) * tick;
-    now->user = tms.tms_utime * tick;
-    now->sys = tms.tms_stime * tick;
-  }
-#define HAVE_USER_TIME
-#define HAVE_SYS_TIME
-#define HAVE_WALL_TIME
+    if (ticks_to_usec == 0)
+      ticks_to_usec = TICKS_TO_USEC;
 
-#else
-#ifdef USG
-  {
-    struct tms tms;
-#   if HAVE_SYSCONF && defined _SC_CLK_TCK
-#    define TICKS_PER_SECOND sysconf (_SC_CLK_TCK) /* POSIX 1003.1-1996 */
-#   else
-#    ifdef CLK_TCK
-#     define TICKS_PER_SECOND CLK_TCK /* POSIX 1003.1-1988; obsolescent */
-#    else
-#     define TICKS_PER_SECOND HZ /* traditional UNIX */
-#    endif
-#   endif
-    now->wall = times (&tms) * (1000000 / TICKS_PER_SECOND);
-    now->user = tms.tms_utime * (1000000 / TICKS_PER_SECOND);
-    now->sys = tms.tms_stime * (1000000 / TICKS_PER_SECOND);
-  }
-#define HAVE_USER_TIME
-#define HAVE_SYS_TIME
-#define HAVE_WALL_TIME
-
-#else
-#ifndef VMS
-  {
+    now->wall = times (&tms) * ticks_to_usec;
+    now->user = tms.tms_utime * ticks_to_usec;
+    now->sys = tms.tms_stime * ticks_to_usec;
+#endif
+#ifdef USE_GETRUSAGE
     struct rusage rusage;
-    getrusage (0, &rusage);
+    getrusage (RUSAGE_SELF, &rusage);
     now->user 
       = rusage.ru_utime.tv_sec * 1000000 + rusage.ru_utime.tv_usec;
     now->sys 
       = rusage.ru_stime.tv_sec * 1000000 + rusage.ru_stime.tv_usec;
+#endif
+#ifdef USE_CLOCK
+    static int clocks_to_usec;
+    if (clocks_to_usec == 0)
+      clocks_to_usec = CLOCKS_TO_USEC;
+    now->user = clock () * clocks_to_usec;
+#endif
   }
-#define HAVE_USER_TIME
-#define HAVE_SYS_TIME
-
-#else /* VMS */
-  {
-    struct
-      {
-        int proc_user_time;
-        int proc_system_time;
-        int child_user_time;
-        int child_system_time;
-      } vms_times;
-    now->wall = times ((void *) &vms_times) * 10000;
-    now->user = vms_times.proc_user_time * 10000;
-    now->sys = vms_times.proc_system_time * 10000;
-  }
-#define HAVE_USER_TIME
-#define HAVE_SYS_TIME
-#define HAVE_WALL_TIME
-
-#endif	/* VMS */
-#endif	/* USG */
-#endif  /* _SC_CLK_TCK */
-#endif	/* _WIN32 */
-#endif	/* __BEOS__ */
-}  
+}
 
 /* Add the difference between STOP_TIME and START_TIME to TIMER.  */
 

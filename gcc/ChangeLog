@@ -1,3 +1,10 @@
+2001-04-20  Zack Weinberg  <zackw@stanford.edu>
+
+	* configure.in: Probe for times, clock, struct tms, and clock_t.
+	* configure, config.in: Regenerate.
+	* timevar.c: Replace ifdef forest in get_time with (relatively)
+	straightforward series of checks based on autoconf's probes.
+
 Fri Apr 20 12:24:50 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* config/pa/som.h (NM_FLAGS): Define.
