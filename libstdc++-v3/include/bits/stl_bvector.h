@@ -611,7 +611,9 @@ template <typename _Alloc>
     }    
   
     void reserve(size_type __n) {
-      if (capacity() < __n) {
+      if (__n > this->max_size())
+	__throw_length_error("vector::reserve");
+      if (this->capacity() < __n) {
         _Bit_type * __q = _M_bit_alloc(__n);
         _M_finish = copy(begin(), end(), iterator(__q, 0));
         _M_deallocate();

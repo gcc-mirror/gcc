@@ -391,7 +391,9 @@ public:
    *  reallocation of memory and copy of vector data.
   */
   void reserve(size_type __n) {
-    if (capacity() < __n) {
+    if (__n > this->max_size())
+      __throw_length_error("vector::reserve");
+    if (this->capacity() < __n) {
       const size_type __old_size = size();
       pointer __tmp = _M_allocate_and_copy(__n, _M_start, _M_finish);
       _Destroy(_M_start, _M_finish);

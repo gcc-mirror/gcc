@@ -1,7 +1,7 @@
 // 1999-05-07
 // bkoz 
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,6 +22,7 @@
 // 23.2.4.2 vector capacity
 
 #include <vector>
+#include <stdexcept>
 #include <testsuite_hooks.h>
 
 template<typename T>
@@ -29,9 +30,8 @@ template<typename T>
 
 struct B { };
 
-bool test01()
+void test01()
 {
-
   // non POD types
   bool test = true;
   std::vector< A<B> > vec01;
@@ -51,17 +51,57 @@ bool test01()
   vec01.resize(sz01);
   sz02 = vec01.size();
   VERIFY( sz01 == sz02 );
+}
 
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-  
-  return test;
+// libstdc++/8230
+void test02()
+{
+  bool test = true;
+
+  {
+    std::vector<int>  array;
+    const std::size_t size = array.max_size();
+    try 
+      {
+	array.reserve(size);
+      } 
+    catch (const std::length_error& error) 
+      {
+	test &= false;
+      }
+    catch (const std::bad_alloc& error)
+      {
+	test &= true;
+      }
+    catch (...)
+      {
+	test &= false;
+      }
+    VERIFY( test );
+  }
+
+  {
+    std::vector<int>  array;
+    const std::size_t size = array.max_size() + 1;
+    try 
+      {
+	array.reserve(size);
+      } 
+    catch (const std::length_error& error) 
+      {
+	test &= true;
+      }
+    catch (...)
+      {
+	test &= false;
+      }
+    VERIFY( test );
+  }
 }
 
 int main()
 {
   test01();
-
+  test02();
   return 0;
 }
