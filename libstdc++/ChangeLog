@@ -1,3 +1,9 @@
+Fri Mar  5 02:16:39 1999  Doug Rabson  <dfr@freebsd.org>
+
+	* configure.in: Support shared libs on FreeBSD 3.x and 4.x
+	* config/freebsd.ml: A copy of config/linux.ml since they are both 
+	ELF and both have a shared libm.
+
 1999-02-24  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* configure.in: Fix INSTALLDIR sed pattern for Solaris sed.
