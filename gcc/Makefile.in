@@ -474,7 +474,7 @@ rest.cross: libgcc.a float.h specs
 
 # Verify that it works to compile and link cross-test.
 # If it does, then there are sufficient replacements for libgcc1.a.
-cross-test: cross-test.o native gcc-cross libgcc.a
+cross-test: cross-test.o native gcc-cross libgcc.a $(GCC_PARTS)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) cross-test.o -o $@
 cross-test.o: cross-test.c native gcc-cross
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -c $(srcdir)/cross-test.c
