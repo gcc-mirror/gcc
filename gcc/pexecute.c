@@ -1,6 +1,6 @@
 /* Utilities to execute a program in a subprocess (possibly linked by pipes
    with other subprocesses), and wait for it.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -217,12 +217,11 @@ pwait (pid, status, flags)
 
 #endif /* MSDOS */
 
-#if defined (_WIN32) && !defined (__CYGWIN32__)
+#if defined (_WIN32)
 
 #include <process.h>
-/* ??? Why are these __spawnv{,p} and not _spawnv{,p}?  */
-extern int __spawnv ();
-extern int __spawnvp ();
+extern int _spawnv ();
+extern int _spawnvp ();
 
 int
 pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
@@ -237,7 +236,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 
   if ((flags & PEXECUTE_ONE) != PEXECUTE_ONE)
     abort ();
-  pid = (flags & PEXECUTE_SEARCH ? __spawnvp : __spawnv) (_P_NOWAIT, program, argv);
+  pid = (flags & PEXECUTE_SEARCH ? _spawnvp : _spawnv) (_P_NOWAIT, program, argv);
   if (pid == -1)
     {
       *errmsg_fmt = install_error_msg;
@@ -255,11 +254,10 @@ pwait (pid, status, flags)
 {
   /* ??? Here's an opportunity to canonicalize the values in STATUS.
      Needed?  */
-  int pid = cwait (status, pid, WAIT_CHILD);
-  return pid;
+  return cwait (status, pid, WAIT_CHILD);
 }
 
-#endif /* WIN32 */
+#endif /* _WIN32 */
 
 #ifdef OS2
 
@@ -442,7 +440,7 @@ pfinish ()
 
 /* include for Unix-like environments but not for Dos-like environments */
 #if ! defined (__MSDOS__) && ! defined (OS2) && ! defined (MPW) \
-    && (defined (__CYGWIN32__) || ! defined (_WIN32))
+    && ! defined (_WIN32)
 
 #ifdef VMS
 #define vfork() (decc$$alloc_vfork_blocks() >= 0 ? \
@@ -588,4 +586,4 @@ pwait (pid, status, flags)
   return pid;
 }
 
-#endif /* ! __MSDOS__ && ! OS2 && ! MPW && (__CYGWIN32___ || ! _WIN32) */
+#endif /* ! __MSDOS__ && ! OS2 && ! MPW && ! _WIN32 */
