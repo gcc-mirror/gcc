@@ -593,7 +593,7 @@ do {								\
 /* SOM ABI says that objects larger than 64 bits are returned in memory.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 #define RETURN_IN_MEMORY(TYPE)	\
-  (int_size_in_bytes (TYPE) > 8 || TREE_ADDRESSABLE (TYPE))
+  (int_size_in_bytes (TYPE) > 8)
 
 /* Register in which address to store a structure value
    is passed to a function.  */
