@@ -1,3 +1,8 @@
+2000-06-11  Richard Earnshaw <rearnsha@arm.com>
+
+	* flow.c (mark_used_regs): Don't call find_auto_inc after reload
+	has run.
+
 2000-06-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bb-reorder.c (build_scope_forest): Initialize variable

@@ -5254,7 +5254,7 @@ mark_used_regs (pbi, x, cond, insn)
 	}
 
 #ifdef AUTO_INC_DEC
-      if (flags & PROP_AUTOINC)
+      if (! reload_completed && (flags & PROP_AUTOINC))
         find_auto_inc (pbi, x, insn);
 #endif
       break;
@@ -5287,7 +5287,7 @@ mark_used_regs (pbi, x, cond, insn)
 	if (GET_CODE (testreg) == MEM)
 	  {
 #ifdef AUTO_INC_DEC
-	    if (flags & PROP_AUTOINC)
+	    if (! reload_completed && (flags & PROP_AUTOINC))
 	      find_auto_inc (pbi, testreg, insn);
 #endif
 	    mark_used_regs (pbi, XEXP (testreg, 0), cond, insn);
