@@ -666,7 +666,7 @@ struct tree_type
    Need not be constant.  */
 #define DECL_SIZE(NODE) ((NODE)->decl.size)
 /* Holds the alignment required for the datum.  */
-#define DECL_ALIGN(NODE) ((NODE)->decl.align)
+#define DECL_ALIGN(NODE) ((NODE)->decl.frame_size)
 /* Holds the machine mode of a variable or field.  */
 #define DECL_MODE(NODE) ((NODE)->decl.mode)
 /* Holds the RTL expression for the value of a variable or function.  */
@@ -771,7 +771,6 @@ struct tree_decl
 #else
   enum machine_mode mode : 8;
 #endif
-  unsigned char align;
 
   unsigned external_flag : 1;
   unsigned nonlocal_flag : 1;
@@ -801,7 +800,10 @@ struct tree_decl
   union tree_node *assembler_name;
   struct rtx_def *rtl;	/* acts as link to register transfer language
 				   (rtl) info */
-  int frame_size;		/* For FUNCTION_DECLs: size of stack frame */
+  /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
+     If built-in, this is the code for which built-in function.
+     For any other kind of decl, this is the alignment.  */
+  int frame_size;
   struct rtx_def *saved_insns;	/* For FUNCTION_DECLs: points to insn that
 				   constitutes its definition on the
 				   permanent obstack.  */
