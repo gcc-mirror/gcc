@@ -1420,9 +1420,10 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
       return COSTS_N_INSNS (2);				\
     case PROCESSOR_PPC601:				\
     case PROCESSOR_PPC603:				\
+      return COSTS_N_INSNS (5);				\
     case PROCESSOR_PPC604:				\
     case PROCESSOR_PPC620:				\
-      return COSTS_N_INSNS (5);				\
+      return COSTS_N_INSNS (4);				\
     }							\
   case DIV:						\
   case MOD:						\
@@ -1439,10 +1440,12 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
     case PROCESSOR_RIOS2:				\
       return COSTS_N_INSNS (13);			\
     case PROCESSOR_PPC601:				\
+      return COSTS_N_INSNS (36);			\
     case PROCESSOR_PPC603:				\
+      return COSTS_N_INSNS (37);			\
     case PROCESSOR_PPC604:				\
     case PROCESSOR_PPC620:				\
-      return COSTS_N_INSNS (36);			\
+      return COSTS_N_INSNS (20);			\
     }							\
   case MEM:						\
     /* MEM should be slightly more expensive than (plus (reg) (const)) */ \
