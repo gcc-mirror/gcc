@@ -1,3 +1,16 @@
+1998-07-15  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl2.c (add_using_namespace): Iterate over namespaces used
+	indirectly.
+
+	* decl.c (lookup_name_real): Accept namespace aliases as locals.
+	(cat_namespace_levels): Ignore aliases.
+	(duplicate_decls): Ignore duplicate aliases.
+	* decl2.c (do_namespace_alias): Process block level namespace
+	aliases. Store alias with pushdecl. Remove odr errors.
+	* parse.y (namespace_alias): New non-terminal.
+	(extdef): Use it.
+
 1998-07-15  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (arg_assoc_type): Handle METHOD_TYPE like FUNCTION_TYPE.

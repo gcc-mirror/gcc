@@ -1865,7 +1865,8 @@ cat_namespace_levels()
   /* The nested namespaces appear in the names list of their ancestors. */
   for (current = last; current; current = TREE_CHAIN (current))
     {
-      if (TREE_CODE (current) != NAMESPACE_DECL)
+      if (TREE_CODE (current) != NAMESPACE_DECL
+          || DECL_NAMESPACE_ALIAS (current))
 	continue;
       if (!DECL_LANG_SPECIFIC (current))
 	{
@@ -2740,6 +2741,11 @@ duplicate_decls (newdecl, olddecl)
     /* One of the declarations is a template instantiation, and the
        other is not a template at all.  That's OK.  */
     return 0;
+  else if (TREE_CODE (newdecl) == NAMESPACE_DECL
+           && DECL_NAMESPACE_ALIAS (newdecl)
+           && DECL_NAMESPACE_ALIAS (newdecl) == DECL_NAMESPACE_ALIAS (olddecl))
+    /* Redeclaration of namespace alias, ignore it. */
+    return 1;
   else
     {
       char *errmsg = redeclaration_error_message (newdecl, olddecl);
@@ -4913,12 +4919,26 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 
   locval = classval = NULL_TREE;
 
-  if (!namespaces_only && !current_binding_level->namespace_p
-      && IDENTIFIER_LOCAL_VALUE (name)
-      /* Kludge to avoid infinite recursion with identifier_type_value.  */
-      && (prefer_type <= 0
-          || TREE_CODE (IDENTIFIER_LOCAL_VALUE (name)) == TYPE_DECL))
-    locval = IDENTIFIER_LOCAL_VALUE (name);
+  if (!current_binding_level->namespace_p
+      && IDENTIFIER_LOCAL_VALUE (name))
+    switch (TREE_CODE (IDENTIFIER_LOCAL_VALUE (name)))
+      {
+      case NAMESPACE_DECL:
+        /* A namespace is rejected only if we strictly require types. */
+        if (prefer_type <= 1)
+          locval = IDENTIFIER_LOCAL_VALUE (name);
+        break;
+      case TYPE_DECL:
+        /* A type is rejected only if we strictly require namespaces. */
+        if (!namespaces_only)
+          locval = IDENTIFIER_LOCAL_VALUE (name);
+        break;
+      default:
+        /* We require neither types or namespaces. */
+        if (!namespaces_only && prefer_type <= 0)
+          locval = IDENTIFIER_LOCAL_VALUE (name);
+        break;
+      }
 
   /* In C++ class fields are between local and global scope,
      just before the global scope.  */
