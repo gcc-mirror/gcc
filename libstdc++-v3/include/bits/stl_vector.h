@@ -650,12 +650,12 @@ namespace std
        *  consider using std::list.
        */
       void
-      insert(iterator __pos, size_type __n, const value_type& __x)
-      { _M_fill_insert(__pos, __n, __x); }
+      insert(iterator __position, size_type __n, const value_type& __x)
+      { _M_fill_insert(__position, __n, __x); }
       
       /**
        *  @brief  Inserts a range into the %vector.
-       *  @param  pos  An iterator into the %vector.
+       *  @param  position  An iterator into the %vector.
        *  @param  first  An input iterator.
        *  @param  last   An input iterator.
        *
@@ -669,11 +669,11 @@ namespace std
        */
       template<typename _InputIterator>
         void
-        insert(iterator __pos, _InputIterator __first, _InputIterator __last)
+        insert(iterator __position, _InputIterator __first, _InputIterator __last)
         {
 	  // Check whether it's an integral type.  If so, it's not an iterator.
 	  typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
-	  _M_insert_dispatch(__pos, __first, __last, _Integral());
+	  _M_insert_dispatch(__position, __first, __last, _Integral());
 	}
       
       /**
@@ -780,12 +780,12 @@ namespace std
 	}
       
       // Called by the range constructor to implement [23.1.1]/9
-      template<typename _InputIter>
+      template<typename _InputIterator>
         void
-        _M_initialize_dispatch(_InputIter __first, _InputIter __last,
+        _M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
 			       __false_type)
         {
-	  typedef typename iterator_traits<_InputIter>::iterator_category
+	  typedef typename iterator_traits<_InputIterator>::iterator_category
 	    _IterCategory;
 	  _M_range_initialize(__first, __last, _IterCategory());
 	}
@@ -827,11 +827,11 @@ namespace std
 	}
       
       // Called by the range assign to implement [23.1.1]/9
-      template<typename _InputIter>
+      template<typename _InputIterator>
         void
-        _M_assign_dispatch(_InputIter __first, _InputIter __last, __false_type)
+        _M_assign_dispatch(_InputIterator __first, _InputIterator __last, __false_type)
         {
-	  typedef typename iterator_traits<_InputIter>::iterator_category
+	  typedef typename iterator_traits<_InputIterator>::iterator_category
 	    _IterCategory;
 	  _M_assign_aux(__first, __last, _IterCategory());
 	}

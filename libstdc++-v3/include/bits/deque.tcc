@@ -186,10 +186,10 @@ namespace std
     }
     
   template <typename _Tp, class _Alloc>
-    template <typename _InputIter>
+    template <typename _InputIterator>
       void
       deque<_Tp,_Alloc>
-      ::_M_assign_aux(_InputIter __first, _InputIter __last, input_iterator_tag)
+      ::_M_assign_aux(_InputIterator __first, _InputIterator __last, input_iterator_tag)
       {
         iterator __cur = begin();
         for ( ; __first != __last && __cur != end(); ++__cur, ++__first)
@@ -710,4 +710,3 @@ namespace std
 } // namespace std 
   
 #endif /* __GLIBCPP_INTERNAL_DEQUE_TCC */
-

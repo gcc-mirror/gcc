@@ -268,7 +268,3 @@ inline void swap(set<_Key,_Compare,_Alloc>& __x,
 } // namespace std
 
 #endif /* __GLIBCPP_INTERNAL_SET_H */
-
-// Local Variables:
-// mode:C++
-// End:

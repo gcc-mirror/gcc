@@ -114,12 +114,12 @@ namespace std
       return __distance(__first, __last, __iterator_category(__first));
     }
   
-  template<typename _InputIter, typename _Distance>
+  template<typename _InputIterator, typename _Distance>
     inline void
-    __advance(_InputIter& __i, _Distance __n, input_iterator_tag)
+    __advance(_InputIterator& __i, _Distance __n, input_iterator_tag)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIter>)
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
       while (__n--) ++__i;
     }
   

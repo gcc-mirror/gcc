@@ -71,10 +71,10 @@ namespace std
   // Input Iterators have a cost structure very different from
   // pointers, calling for a different coding style.
   template<typename _CharT, typename _Traits, typename _Alloc>
-    template<typename _InIter>
+    template<typename _InIterator>
       _CharT*
       basic_string<_CharT, _Traits, _Alloc>::
-      _S_construct(_InIter __beg, _InIter __end, const _Alloc& __a,
+      _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a,
 		   input_iterator_tag)
       {
 	if (__beg == __end && __a == _Alloc())
@@ -131,17 +131,17 @@ namespace std
       }
   
   template<typename _CharT, typename _Traits, typename _Alloc>
-    template <class _InIter>
+    template <class _InIterator>
       _CharT*
       basic_string<_CharT, _Traits, _Alloc>::
-      _S_construct(_InIter __beg, _InIter __end, const _Alloc& __a, 
+      _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a, 
 		   forward_iterator_tag)
       {
 	if (__beg == __end && __a == _Alloc())
 	  return _S_empty_rep()._M_refcopy();
 
 	// NB: Not required, but considered best practice.
-	if (__builtin_expect(__beg == _InIter(), 0))
+	if (__builtin_expect(__beg == _InIterator(), 0))
 	  __throw_logic_error("basic_string::_S_construct NULL not valid");
 
 	const size_type __dnew = static_cast<size_type>(std::distance(__beg, __end));
@@ -234,9 +234,9 @@ namespace std
     { }
  
   template<typename _CharT, typename _Traits, typename _Alloc>
-    template<typename _InputIter>
+    template<typename _InputIterator>
     basic_string<_CharT, _Traits, _Alloc>::
-    basic_string(_InputIter __beg, _InputIter __end, const _Alloc& __a)
+    basic_string(_InputIterator __beg, _InputIterator __end, const _Alloc& __a)
     : _M_dataplus(_S_construct(__beg, __end, __a), __a)
     { }
 
@@ -613,11 +613,11 @@ namespace std
   // for input iterators and reverse iterators. It buffers internally and then
   // calls _M_replace_safe.
   template<typename _CharT, typename _Traits, typename _Alloc>
-    template<typename _InputIter>
+    template<typename _InputIterator>
       basic_string<_CharT, _Traits, _Alloc>&
       basic_string<_CharT, _Traits, _Alloc>::
-      _M_replace(iterator __i1, iterator __i2, _InputIter __k1, 
-		 _InputIter __k2, input_iterator_tag)
+      _M_replace(iterator __i1, iterator __i2, _InputIterator __k1, 
+		 _InputIterator __k2, input_iterator_tag)
       {
 	// Save concerned source string data in a temporary.
 	const basic_string __s(__k1, __k2);
@@ -628,11 +628,11 @@ namespace std
   // and can be used in "safe" situations involving forward iterators,
   // i.e., when source and destination ranges are known to not overlap.
   template<typename _CharT, typename _Traits, typename _Alloc>
-    template<typename _ForwardIter>
+    template<typename _ForwardIterator>
       basic_string<_CharT, _Traits, _Alloc>&
       basic_string<_CharT, _Traits, _Alloc>::
-      _M_replace_safe(iterator __i1, iterator __i2, _ForwardIter __k1, 
-		      _ForwardIter __k2)
+      _M_replace_safe(iterator __i1, iterator __i2, _ForwardIterator __k1, 
+		      _ForwardIterator __k2)
       {
 	const size_type __dnew = static_cast<size_type>(std::distance(__k1, __k2));
 	const size_type __dold = __i2 - __i1;

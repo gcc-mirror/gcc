@@ -77,10 +77,10 @@ namespace __gnu_cxx
   //--------------------------------------------------
   // copy_n (not part of the C++ standard)
 
-  template<typename _InputIter, typename _Size, typename _OutputIter>
-    pair<_InputIter, _OutputIter>
-    __copy_n(_InputIter __first, _Size __count,
-	     _OutputIter __result,
+  template<typename _InputIterator, typename _Size, typename _OutputIterator>
+    pair<_InputIterator, _OutputIterator>
+    __copy_n(_InputIterator __first, _Size __count,
+	     _OutputIterator __result,
 	     input_iterator_tag)
     {
       for ( ; __count > 0; --__count) {
@@ -88,17 +88,17 @@ namespace __gnu_cxx
 	++__first;
 	++__result;
       }
-      return pair<_InputIter, _OutputIter>(__first, __result);
+      return pair<_InputIterator, _OutputIterator>(__first, __result);
     }
 
-  template<typename _RAIter, typename _Size, typename _OutputIter>
-    inline pair<_RAIter, _OutputIter>
-    __copy_n(_RAIter __first, _Size __count,
-	     _OutputIter __result,
+  template<typename _RAIterator, typename _Size, typename _OutputIterator>
+    inline pair<_RAIterator, _OutputIterator>
+    __copy_n(_RAIterator __first, _Size __count,
+	     _OutputIterator __result,
 	     random_access_iterator_tag)
     {
-      _RAIter __last = __first + __count;
-      return pair<_RAIter, _OutputIter>(__last,
+      _RAIterator __last = __first + __count;
+      return pair<_RAIterator, _OutputIterator>(__last,
 					std::copy(__first, __last, __result));
     }
 
@@ -116,23 +116,23 @@ namespace __gnu_cxx
    *  optimizations such as unrolling).
    *  @ingroup SGIextensions
   */
-  template<typename _InputIter, typename _Size, typename _OutputIter>
-    inline pair<_InputIter, _OutputIter>
-    copy_n(_InputIter __first, _Size __count, _OutputIter __result)
+  template<typename _InputIterator, typename _Size, typename _OutputIterator>
+    inline pair<_InputIterator, _OutputIterator>
+    copy_n(_InputIterator __first, _Size __count, _OutputIterator __result)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIter>)
-      __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
-	    typename iterator_traits<_InputIter>::value_type>)
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcpp_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    typename iterator_traits<_InputIterator>::value_type>)
 
       return __copy_n(__first, __count, __result,
 		      std::__iterator_category(__first));
     }
 
-  template<typename _InputIter1, typename _InputIter2>
+  template<typename _InputIterator1, typename _InputIterator2>
     int
-    __lexicographical_compare_3way(_InputIter1 __first1, _InputIter1 __last1,
-				   _InputIter2 __first2, _InputIter2 __last2)
+    __lexicographical_compare_3way(_InputIterator1 __first1, _InputIterator1 __last1,
+				   _InputIterator2 __first2, _InputIterator2 __last2)
     {
       while (__first1 != __last1 && __first2 != __last2) {
 	if (*__first1 < *__first2)
@@ -195,18 +195,18 @@ namespace __gnu_cxx
    *  This is an SGI extension.
    *  @ingroup SGIextensions
   */
-  template<typename _InputIter1, typename _InputIter2>
+  template<typename _InputIterator1, typename _InputIterator2>
     int
-    lexicographical_compare_3way(_InputIter1 __first1, _InputIter1 __last1,
-				 _InputIter2 __first2, _InputIter2 __last2)
+    lexicographical_compare_3way(_InputIterator1 __first1, _InputIterator1 __last1,
+				 _InputIterator2 __first2, _InputIterator2 __last2)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>)
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIter2>)
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator1>)
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator2>)
       __glibcpp_function_requires(_LessThanComparableConcept<
-	    typename iterator_traits<_InputIter1>::value_type>)
+	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcpp_function_requires(_LessThanComparableConcept<
-	    typename iterator_traits<_InputIter2>::value_type>)
+	    typename iterator_traits<_InputIterator2>::value_type>)
 
       return __lexicographical_compare_3way(__first1, __last1, __first2, __last2);
     }
@@ -214,32 +214,32 @@ namespace __gnu_cxx
   // count and count_if: this version, whose return type is void, was present
   // in the HP STL, and is retained as an extension for backward compatibility.
 
-  template<typename _InputIter, typename _Tp, typename _Size>
+  template<typename _InputIterator, typename _Tp, typename _Size>
     void
-    count(_InputIter __first, _InputIter __last,
+    count(_InputIterator __first, _InputIterator __last,
 	  const _Tp& __value,
 	  _Size& __n)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIter>)
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcpp_function_requires(_EqualityComparableConcept<
-	    typename iterator_traits<_InputIter>::value_type >)
+	    typename iterator_traits<_InputIterator>::value_type >)
       __glibcpp_function_requires(_EqualityComparableConcept<_Tp>)
       for ( ; __first != __last; ++__first)
 	if (*__first == __value)
 	  ++__n;
     }
 
-  template<typename _InputIter, typename _Predicate, typename _Size>
+  template<typename _InputIterator, typename _Predicate, typename _Size>
     void
-    count_if(_InputIter __first, _InputIter __last,
+    count_if(_InputIterator __first, _InputIterator __last,
 	     _Predicate __pred,
 	     _Size& __n)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIter>)
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcpp_function_requires(_UnaryPredicateConcept<_Predicate,
-	    typename iterator_traits<_InputIter>::value_type>)
+	    typename iterator_traits<_InputIterator>::value_type>)
       for ( ; __first != __last; ++__first)
 	if (__pred(*__first))
 	  ++__n;
@@ -252,15 +252,15 @@ namespace __gnu_cxx
    *  @ingroup SGIextensions
    *  @doctodo
   */
-  template<typename _ForwardIter, typename _OutputIter, typename _Distance>
-    _OutputIter
-    random_sample_n(_ForwardIter __first, _ForwardIter __last,
-                    _OutputIter __out, const _Distance __n)
+  template<typename _ForwardIterator, typename _OutputIterator, typename _Distance>
+    _OutputIterator
+    random_sample_n(_ForwardIterator __first, _ForwardIterator __last,
+                    _OutputIterator __out, const _Distance __n)
     {
       // concept requirements
-      __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
-      __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
-		typename iterator_traits<_ForwardIter>::value_type>)
+      __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcpp_function_requires(_OutputIteratorConcept<_OutputIterator,
+		typename iterator_traits<_ForwardIterator>::value_type>)
 
       _Distance __remaining = std::distance(__first, __last);
       _Distance __m = min(__n, __remaining);
@@ -283,17 +283,17 @@ namespace __gnu_cxx
    *  @ingroup SGIextensions
    *  @doctodo
   */
-  template<typename _ForwardIter, typename _OutputIter, typename _Distance,
+  template<typename _ForwardIterator, typename _OutputIterator, typename _Distance,
 	   typename _RandomNumberGenerator>
-    _OutputIter
-    random_sample_n(_ForwardIter __first, _ForwardIter __last,
-                   _OutputIter __out, const _Distance __n, 
+    _OutputIterator
+    random_sample_n(_ForwardIterator __first, _ForwardIterator __last,
+                   _OutputIterator __out, const _Distance __n, 
 		   _RandomNumberGenerator& __rand)
     {
       // concept requirements
-      __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
-      __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
-		typename iterator_traits<_ForwardIter>::value_type>)
+      __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcpp_function_requires(_OutputIteratorConcept<_OutputIterator,
+		typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcpp_function_requires(_UnaryFunctionConcept<
 		_RandomNumberGenerator, _Distance, _Distance>)
 
@@ -313,10 +313,10 @@ namespace __gnu_cxx
       return __out;
     }
 
-  template<typename _InputIter, typename _RandomAccessIter, typename _Distance>
-    _RandomAccessIter
-    __random_sample(_InputIter __first, _InputIter __last,
-		    _RandomAccessIter __out,
+  template<typename _InputIterator, typename _RandomAccessIterator, typename _Distance>
+    _RandomAccessIterator
+    __random_sample(_InputIterator __first, _InputIterator __last,
+		    _RandomAccessIterator __out,
 		    const _Distance __n)
     {
       _Distance __m = 0;
@@ -335,11 +335,11 @@ namespace __gnu_cxx
       return __out + __m;
     }
 
-  template<typename _InputIter, typename _RandomAccessIter,
+  template<typename _InputIterator, typename _RandomAccessIterator,
 	   typename _RandomNumberGenerator, typename _Distance>
-    _RandomAccessIter
-    __random_sample(_InputIter __first, _InputIter __last,
-		    _RandomAccessIter __out,
+    _RandomAccessIterator
+    __random_sample(_InputIterator __first, _InputIterator __last,
+		    _RandomAccessIterator __out,
 		    _RandomNumberGenerator& __rand,
 		    const _Distance __n)
     {
@@ -368,15 +368,15 @@ namespace __gnu_cxx
    *  @ingroup SGIextensions
    *  @doctodo
   */
-  template<typename _InputIter, typename _RandomAccessIter>
-    inline _RandomAccessIter
-    random_sample(_InputIter __first, _InputIter __last,
-		  _RandomAccessIter __out_first, _RandomAccessIter __out_last) 
+  template<typename _InputIterator, typename _RandomAccessIterator>
+    inline _RandomAccessIterator
+    random_sample(_InputIterator __first, _InputIterator __last,
+		  _RandomAccessIterator __out_first, _RandomAccessIterator __out_last) 
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIter>)
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcpp_function_requires(_Mutable_RandomAccessIteratorConcept<
-	    _RandomAccessIter>)
+	    _RandomAccessIterator>)
 
       return __random_sample(__first, __last,
 			     __out_first, __out_last - __out_first);
@@ -387,17 +387,17 @@ namespace __gnu_cxx
    *  @ingroup SGIextensions
    *  @doctodo
   */
-  template<typename _InputIter, typename _RandomAccessIter, 
+  template<typename _InputIterator, typename _RandomAccessIterator, 
 	   typename _RandomNumberGenerator>
-    inline _RandomAccessIter
-    random_sample(_InputIter __first, _InputIter __last,
-		  _RandomAccessIter __out_first, _RandomAccessIter __out_last,
+    inline _RandomAccessIterator
+    random_sample(_InputIterator __first, _InputIterator __last,
+		  _RandomAccessIterator __out_first, _RandomAccessIterator __out_last,
 		  _RandomNumberGenerator& __rand) 
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIter>)
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcpp_function_requires(_Mutable_RandomAccessIteratorConcept<
-	    _RandomAccessIter>)
+	    _RandomAccessIterator>)
 
       return __random_sample(__first, __last,
 			     __out_first, __rand,
@@ -408,9 +408,9 @@ namespace __gnu_cxx
   // a heap.  This function is an extension, not part of the C++
   // standard.
 
-  template<typename _RandomAccessIter, typename _Distance>
+  template<typename _RandomAccessIterator, typename _Distance>
     bool
-    __is_heap(_RandomAccessIter __first, _Distance __n)
+    __is_heap(_RandomAccessIterator __first, _Distance __n)
     {
       _Distance __parent = 0;
       for (_Distance __child = 1; __child < __n; ++__child) {
@@ -422,10 +422,10 @@ namespace __gnu_cxx
       return true;
     }
 
-  template<typename _RandomAccessIter, typename _Distance,
+  template<typename _RandomAccessIterator, typename _Distance,
            typename _StrictWeakOrdering>
     bool
-    __is_heap(_RandomAccessIter __first, _StrictWeakOrdering __comp,
+    __is_heap(_RandomAccessIterator __first, _StrictWeakOrdering __comp,
 	      _Distance __n)
     {
       _Distance __parent = 0;
@@ -443,14 +443,14 @@ namespace __gnu_cxx
    *  @ingroup SGIextensions
    *  @doctodo
   */
-  template<typename _RandomAccessIter>
+  template<typename _RandomAccessIterator>
     inline bool
-    is_heap(_RandomAccessIter __first, _RandomAccessIter __last)
+    is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
     {
       // concept requirements
-      __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIter>)
+      __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
       __glibcpp_function_requires(_LessThanComparableConcept<
-	    typename iterator_traits<_RandomAccessIter>::value_type>)
+	    typename iterator_traits<_RandomAccessIterator>::value_type>)
 
       return __is_heap(__first, __last - __first);
     }
@@ -460,16 +460,16 @@ namespace __gnu_cxx
    *  @ingroup SGIextensions
    *  @doctodo
   */
-  template<typename _RandomAccessIter, typename _StrictWeakOrdering>
+  template<typename _RandomAccessIterator, typename _StrictWeakOrdering>
     inline bool
-    is_heap(_RandomAccessIter __first, _RandomAccessIter __last,
+    is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
 	    _StrictWeakOrdering __comp)
     {
       // concept requirements
-      __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIter>)
+      __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
       __glibcpp_function_requires(_BinaryPredicateConcept<_StrictWeakOrdering,
-	    typename iterator_traits<_RandomAccessIter>::value_type, 
-	    typename iterator_traits<_RandomAccessIter>::value_type>)
+	    typename iterator_traits<_RandomAccessIterator>::value_type, 
+	    typename iterator_traits<_RandomAccessIterator>::value_type>)
 
       return __is_heap(__first, __comp, __last - __first);
     }
@@ -483,19 +483,19 @@ namespace __gnu_cxx
    *  @ingroup SGIextensions
    *  @doctodo
   */
-  template<typename _ForwardIter>
+  template<typename _ForwardIterator>
     bool
-    is_sorted(_ForwardIter __first, _ForwardIter __last)
+    is_sorted(_ForwardIterator __first, _ForwardIterator __last)
     {
       // concept requirements
-      __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
+      __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcpp_function_requires(_LessThanComparableConcept<
-	    typename iterator_traits<_ForwardIter>::value_type>)
+	    typename iterator_traits<_ForwardIterator>::value_type>)
 
       if (__first == __last)
 	return true;
 
-      _ForwardIter __next = __first;
+      _ForwardIterator __next = __first;
       for (++__next; __next != __last; __first = __next, ++__next) {
 	if (*__next < *__first)
 	  return false;
@@ -509,20 +509,20 @@ namespace __gnu_cxx
    *  @ingroup SGIextensions
    *  @doctodo
   */
-  template<typename _ForwardIter, typename _StrictWeakOrdering>
+  template<typename _ForwardIterator, typename _StrictWeakOrdering>
     bool
-    is_sorted(_ForwardIter __first, _ForwardIter __last, _StrictWeakOrdering __comp)
+    is_sorted(_ForwardIterator __first, _ForwardIterator __last, _StrictWeakOrdering __comp)
     {
       // concept requirements
-      __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
+      __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcpp_function_requires(_BinaryPredicateConcept<_StrictWeakOrdering,
-	    typename iterator_traits<_ForwardIter>::value_type, 
-	    typename iterator_traits<_ForwardIter>::value_type>)
+	    typename iterator_traits<_ForwardIterator>::value_type, 
+	    typename iterator_traits<_ForwardIterator>::value_type>)
 
       if (__first == __last)
 	return true;
 
-      _ForwardIter __next = __first;
+      _ForwardIterator __next = __first;
       for (++__next; __next != __last; __first = __next, ++__next) {
 	if (__comp(*__next, *__first))
 	  return false;

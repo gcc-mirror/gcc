@@ -209,7 +209,3 @@ namespace std
 } // namespace std
 
 #endif /* _CPP_BITS_STL_NUMERIC_H */
-
-// Local Variables:
-// mode:C++
-// End:

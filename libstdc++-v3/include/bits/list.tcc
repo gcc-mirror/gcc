@@ -160,10 +160,10 @@ namespace std
     }
   
   template<typename _Tp, typename _Alloc>
-    template <typename _InputIter>
+    template <typename _InputIterator>
       void
       list<_Tp,_Alloc>::
-      _M_assign_dispatch(_InputIter __first2, _InputIter __last2, __false_type)
+      _M_assign_dispatch(_InputIterator __first2, _InputIterator __last2, __false_type)
       {
         iterator __first1 = begin();
         iterator __last1 = end();

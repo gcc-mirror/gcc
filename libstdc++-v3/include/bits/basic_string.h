@@ -661,43 +661,43 @@ namespace std
 
       // _S_construct_aux is used to implement the 21.3.1 para 15 which
       // requires special behaviour if _InIter is an integral type
-      template<class _InIter>
+      template<class _InIterator>
         static _CharT*
-        _S_construct_aux(_InIter __beg, _InIter __end, const _Alloc& __a,
+        _S_construct_aux(_InIterator __beg, _InIterator __end, const _Alloc& __a,
 			 __false_type)
 	{
-          typedef typename iterator_traits<_InIter>::iterator_category _Tag;
+          typedef typename iterator_traits<_InIterator>::iterator_category _Tag;
           return _S_construct(__beg, __end, __a, _Tag());
 	}
 
-      template<class _InIter>
+      template<class _InIterator>
         static _CharT*
-        _S_construct_aux(_InIter __beg, _InIter __end, const _Alloc& __a,
+        _S_construct_aux(_InIterator __beg, _InIterator __end, const _Alloc& __a,
 			 __true_type)
 	{
 	  return _S_construct(static_cast<size_type>(__beg),
 			      static_cast<value_type>(__end), __a);
 	}
 
-      template<class _InIter>
+      template<class _InIterator>
         static _CharT*
-        _S_construct(_InIter __beg, _InIter __end, const _Alloc& __a)
+        _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a)
 	{
-	  typedef typename _Is_integer<_InIter>::_Integral _Integral;
+	  typedef typename _Is_integer<_InIterator>::_Integral _Integral;
 	  return _S_construct_aux(__beg, __end, __a, _Integral());
         }
 
       // For Input Iterators, used in istreambuf_iterators, etc.
-      template<class _InIter>
+      template<class _InIterator>
         static _CharT*
-         _S_construct(_InIter __beg, _InIter __end, const _Alloc& __a,
+         _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a,
 		      input_iterator_tag);
 
       // For forward_iterators up to random_access_iterators, used for
       // string::iterator, _CharT*, etc.
-      template<class _FwdIter>
+      template<class _FwdIterator>
         static _CharT*
-        _S_construct(_FwdIter __beg, _FwdIter __end, const _Alloc& __a,
+        _S_construct(_FwdIterator __beg, _FwdIterator __end, const _Alloc& __a,
 		     forward_iterator_tag);
 
       static _CharT*

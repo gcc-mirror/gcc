@@ -176,10 +176,10 @@ namespace std
         erase(fill_n(begin(), __n, __val), end());
     }
   
-  template<typename _Tp, typename _Alloc> template<typename _InputIter>
+  template<typename _Tp, typename _Alloc> template<typename _InputIterator>
     void
     vector<_Tp,_Alloc>::
-    _M_assign_aux(_InputIter __first, _InputIter __last, input_iterator_tag)
+    _M_assign_aux(_InputIterator __first, _InputIterator __last, input_iterator_tag)
     {
       iterator __cur(begin());
       for ( ; __first != __last && __cur != end(); ++__cur, ++__first)
@@ -190,10 +190,10 @@ namespace std
         insert(end(), __first, __last);
     }
   
-  template<typename _Tp, typename _Alloc> template<typename _ForwardIter>
+  template<typename _Tp, typename _Alloc> template<typename _ForwardIterator>
     void
     vector<_Tp,_Alloc>::
-    _M_assign_aux(_ForwardIter __first, _ForwardIter __last,
+    _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
                   forward_iterator_tag)
     {
       size_type __len = std::distance(__first, __last);
@@ -215,7 +215,7 @@ namespace std
       }
       else
       {
-        _ForwardIter __mid = __first;
+        _ForwardIterator __mid = __first;
         advance(__mid, size());
         copy(__first, __mid, this->_M_start);
         this->_M_finish = uninitialized_copy(__mid, __last, this->_M_finish);
