@@ -748,6 +748,6 @@ optimize_sibling_and_tail_recursive_calls (void)
     reorder_blocks ();
 
   /* This information will be invalid after inline expansion.  Kill it now.  */
-  free_basic_block_vars (0);
+  free_basic_block_vars ();
   free_EXPR_LIST_list (&tail_recursion_label_list);
 }
