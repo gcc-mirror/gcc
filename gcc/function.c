@@ -4379,58 +4379,74 @@ reposition_prologue_and_epilogue_notes (f)
   if (n_basic_blocks)
     {
       rtx next, prev;
+      int len;
 
       if (prologue)
 	{
-	  register rtx insn, end_prologue;
+	  register rtx insn, note = 0;
 
-	  /* From the end of the first basic block, search backward for a
-	     prologue insn.  */
-	  for (insn = NEXT_INSN (PREV_INSN (basic_block_end[0]));
-	       insn; insn = prev_nonnote_insn (insn))
-	    if (contains (insn, prologue))
+	  /* Scan from the beginning until we reach the last prologue insn.
+	     We apparently can't depend on basic_block_{head,end} after
+	     reorg has run.  */
+	  for (len = 0; prologue[len]; len++)
+	    ;
+	  for (insn = f; insn; insn = NEXT_INSN (insn))
+	    if (GET_CODE (insn) == NOTE)
 	      {
-		end_prologue = insn;
-		/* Find the prologue-end note and move it to just after the
-		   last prologue insn.  */
-		for (insn = f; insn; insn = NEXT_INSN (insn))
-		  if (GET_CODE (insn) == NOTE
-		      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
-		    break;
-		next = NEXT_INSN (insn);
-		prev = PREV_INSN (insn);
+		if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
+		  note = insn;
+	      }
+	    else if (contains (insn, prologue) && --len == 0)
+	      {
+		/* Find the prologue-end note if we haven't already, and
+		   move it to just after the last prologue insn.  */
+		if (note == 0)
+		  for (note = insn; note = NEXT_INSN (note);)
+		    if (GET_CODE (note) == NOTE
+			&& NOTE_LINE_NUMBER (note) == NOTE_INSN_PROLOGUE_END)
+		      break;
+		next = NEXT_INSN (note);
+		prev = PREV_INSN (note);
 		if (prev)
 		  NEXT_INSN (prev) = next;
 		if (next)
 		  PREV_INSN (next) = prev;
-		add_insn_after (insn, end_prologue);
+		add_insn_after (note, insn);
 		break;
 	      }
 	}
 
       if (epilogue)
 	{
-	  register rtx insn, beg_epilogue;
+	  register rtx insn, note = 0;
 
-	  /* From the start of the last basic block, search forward for an
-	     epilogue insn.  */
-	  for (insn = PREV_INSN (NEXT_INSN (basic_block_head[n_basic_blocks - 1]));
-	       insn; insn = next_nonnote_insn (insn))
-	    if (beg_epilogue = contains (insn, epilogue))
+	  /* Scan from the end until we reach the first epilogue insn.
+	     We apparently can't depend on basic_block_{head,end} after
+	     reorg has run.  */
+	  for (len = 0; epilogue[len]; len++)
+	    ;
+	  for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
+	    if (GET_CODE (insn) == NOTE)
 	      {
-		/* Find the epilogue-begin note and move it to just before
-		   the first epilogue insn.  */
-		for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
-		  if (GET_CODE (insn) == NOTE
-		      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
-		    break;
-		next = NEXT_INSN (insn);
-		prev = PREV_INSN (insn);
+		if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
+		  note = insn;
+	      }
+	    else if (contains (insn, epilogue) && --len == 0)
+	      {
+		/* Find the epilogue-begin note if we haven't already, and
+		   move it to just before the first epilogue insn.  */
+		if (note == 0)
+		  for (note = insn; note = PREV_INSN (note);)
+		    if (GET_CODE (note) == NOTE
+			&& NOTE_LINE_NUMBER (note) == NOTE_INSN_EPILOGUE_BEG)
+		      break;
+		next = NEXT_INSN (note);
+		prev = PREV_INSN (note);
 		if (prev)
 		  NEXT_INSN (prev) = next;
 		if (next)
 		  PREV_INSN (next) = prev;
-		add_insn_after (insn, PREV_INSN (beg_epilogue));
+		add_insn_after (note, PREV_INSN (insn));
 		break;
 	      }
 	}
