@@ -1065,12 +1065,8 @@ compute_record_mode (type)
 
       /* If this field is the whole struct, remember its mode so
 	 that, say, we can put a double in a class into a DF
-	 register instead of forcing it to live in the stack.  However,
-	 we don't support using such a mode if there is no integer mode
-	 of the same size, so don't set it here.  */
-      if (field == TYPE_FIELDS (type) && TREE_CHAIN (field) == 0
-	  && int_mode_for_mode (DECL_MODE (field)) != BLKmode
-	  && operand_equal_p (DECL_SIZE (field), TYPE_SIZE (type), 1))
+	 register instead of forcing it to live in the stack.  */
+      if (simple_cst_equal (TYPE_SIZE (type), DECL_SIZE (field)))
 	mode = DECL_MODE (field);
 
 #ifdef STRUCT_FORCE_BLK
@@ -1081,8 +1077,9 @@ compute_record_mode (type)
 #endif /* STRUCT_FORCE_BLK  */
     }
 
-  if (mode != VOIDmode)
-    /* We only have one real field; use its mode.  */
+  /* If we only have one real field; use its mode.  This only applies to
+     RECORD_TYPE.  This does not apply to unions.  */
+  if (TREE_CODE (type) == RECORD_TYPE && mode != VOIDmode)
     TYPE_MODE (type) = mode;
   else
     TYPE_MODE (type) = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1);

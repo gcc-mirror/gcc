@@ -269,21 +269,6 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       op0 = SUBREG_REG (op0);
     }
 
-  /* Make sure we are playing with integral modes.  Pun with subregs
-     if we aren't.  */
-  {
-    enum machine_mode imode = int_mode_for_mode (GET_MODE (op0));
-    if (imode != GET_MODE (op0))
-      {
-	if (GET_CODE (op0) == MEM)
-	  op0 = change_address (op0, imode, NULL_RTX);
-	else if (imode != BLKmode)
-	  op0 = gen_lowpart (imode, op0);
-	else
-	  abort ();
-      }
-  }
-
   /* If OP0 is a register, BITPOS must count within a word.
      But as we have it, it counts within whatever size OP0 now has.
      On a bigendian machine, these are not the same, so convert.  */
@@ -336,6 +321,23 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       emit_move_insn (op0, value);
       return value;
     }
+
+  /* Make sure we are playing with integral modes.  Pun with subregs
+     if we aren't.  This must come after the entire register case above,
+     since that case is valid for any mode.  The following cases are only
+     valid for integral modes.  */
+  {
+    enum machine_mode imode = int_mode_for_mode (GET_MODE (op0));
+    if (imode != GET_MODE (op0))
+      {
+	if (GET_CODE (op0) == MEM)
+	  op0 = change_address (op0, imode, NULL_RTX);
+	else if (imode != BLKmode)
+	  op0 = gen_lowpart (imode, op0);
+	else
+	  abort ();
+      }
+  }
 
   /* Storing an lsb-aligned field in a register
      can be done with a movestrict instruction.  */
