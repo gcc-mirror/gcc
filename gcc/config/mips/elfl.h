@@ -24,6 +24,3 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_ENDIAN_DEFAULT 0
 
 #include "mips/elf.h"
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmips -DMIPSEL -DR3000 -D_mips -D_MIPSEL -D_R3000"

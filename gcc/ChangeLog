@@ -1,3 +1,40 @@
+2002-06-11  Eric Christopher  <echristo@redhat.com>
+
+	* doc/tm.texi (Run-time Target): Add comment about flag_iso
+	and strict ANSI.
+	* config/mips/ecoff.h (CPP_PREDEFINES): Remove.
+	* config/mips/ecoffl.h: Ditto.
+	* config/mips/elf64.h (SUBTARGET_CPP_SPEC): Remove.
+	(CPP_PREDEFINES): Ditto.
+	* config/mips/elfl64.h: Ditto.
+	* config/mips/elfl.h: Ditto.
+	* config/mips/iris3.h (CPP_PREDEFINES, SUBTARGET_CPP_SPEC): #if 0
+	out until irix header consolidation.
+	* config/mips/iris5.h (CPP_PREDEFINES, SUBTARGET_CPP_SPEC): Replace
+	with SUBTARGET_OS_CPP_BUILTINS.
+	* config/mips/iris6.h: Ditto.
+	(CPLUSPLUS_CPP_SPEC): Remove.
+	* config/mips/linux.h: Ditto.
+	* config/mips/netbsd.h: Ditto.
+	* config/mips/openbsd.h: Ditto.
+	* config/mips/rtems.h: Ditto.
+	* config/mips/rtems64.h: Ditto.
+	* config/mips/sni-svr4.h: Ditto.
+	* config/mips/mips.h (ISA_MIPS1, ISA_MIPS2, ISA_MIPS3, ISA_MIPS4,
+	ISA_MIPS32, ISA_MIPS64): New defines.
+	(GENERATE_MULT3_SI, HAVE_SQRT_P, ISA_HAS_64BIT_REGS,
+	ISA_HAS_BRANCHLIKELY, ISA_HAS_CONDMOVE, ISA_HAS_8CC, ISA_HAS_FP4,
+	ISA_HAS_COND_TRAP, ISA_HAS_MADD_MSUB, ISA_HAS_NMADD_NMSUB,
+	ISA_HAS_CLZ_CLO, ISA_HAS_DCLZ_DCLO): Use.
+	(TARGET_CPU_CPP_BUILTINS): Define.
+	(CPP_PREDEFINES, LONG_MAX_SPEC, CPP_FPR_SPEC, CPP_SPEC): Remove.
+	* config/mips/mips.md (mulsi3_mult3): Use ISA_MIPS32/64.
+	(movdicc): Remove check for ISA_MIPS32.
+	 (bunordered, bordered, bungt, bunlt, buneq, bunge, bunle,
+	sunordered_df, sunordered_sf, sordered_df, sordered_sf,
+	sunlt_df, sunlt_sf, sungt_df, sungt_sf, suneq_df, suneq_sf, sunge_df,
+	sunge_sf, sunle_df, sunle_sf): New patterns.
+
 2002-06-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in: Update cppmain.o.
@@ -51,7 +88,7 @@
 	__gthr_win32_* extern implementations if #defined
 	__GTHREAD_HIDE_WIN32API.
 	* config/i386/t-mingw32 (LIB2FUNCS_EXTRA): Set to
-	$(srcdir)/config/i386/gthr-win32.c 
+	$(srcdir)/config/i386/gthr-win32.c
 	* config/i386/gthr-win32.c: New implementation file.
 	(__gthr_win32_once, __gthr_win32_key_create,
 	__gthr_win32_key_delete, __gthr_win32_getspecific,
@@ -72,7 +109,7 @@
 2002-06-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (MACHMODE_H): Add @extra_modes_file@.
-	* configure.in: If $srcdir/config/${cpu_type}/${cpu_type}-modes.def 
+	* configure.in: If $srcdir/config/${cpu_type}/${cpu_type}-modes.def
 	exists, substitute its pathname as @extra_modes_file@, define
 	EXTRA_MODES_FILE to be an appropriate string to #include it
 	with, and define EXTRA_CC_MODES to 1.

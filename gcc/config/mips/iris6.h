@@ -69,47 +69,75 @@ Boston, MA 02111-1307, USA.  */
    system header files require it.  This is OK, because gcc never warns
    when long long is used in system header files.  Alternatively, we can
    add support for the SGI builtin type __long_long.  */
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES \
- "-Dunix -Dmips -Dsgi -Dhost_mips -DMIPSEB -D_MIPSEB -DSYSTYPE_SVR4 \
-  -D_LONGLONG -D_SVR4_SOURCE -D_MODERN_C -D__DSO__ \
-  -Asystem=unix -Asystem=svr4 -Acpu=mips -Amachine=sgi"
 
-/* We must make -mips3 do what -mlong64 used to do.  */
-/* ??? If no mipsX option given, but a mabi=X option is, then should set
-   _MIPS_ISA based on the mabi=X option.  */
-/* ??? If no mabi=X option give, but a mipsX option is, then should set
-   _MIPS_SIM based on the mipsX option.  */
-/* ??? Same for _MIPS_SZINT.  */
-/* ??? Same for _MIPS_SZPTR.  */
-#undef SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC "\
-%{!ansi:-D__EXTENSIONS__ -D_SGI_SOURCE} \
-%{mfp32: -D_MIPS_FPSET=16}%{!mfp32: -D_MIPS_FPSET=32} \
-%{mips1: -D_MIPS_ISA=_MIPS_ISA_MIPS1} \
-%{mips2: -D_MIPS_ISA=_MIPS_ISA_MIPS2} \
-%{mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
-%{mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS4} \
-%{!mips*: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
-%{mabi=32: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
-%{mabi=n32: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
-%{mabi=64: -D_ABI64=3 -D_MIPS_SIM=_ABI64} \
-%{!mabi*: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
-%{!mint64: -D_MIPS_SZINT=32}%{mint64: -D_MIPS_SZINT=64} \
-%{mabi=32: -D_MIPS_SZLONG=32} \
-%{mabi=n32: -D_MIPS_SZLONG=32} \
-%{mabi=64: -D_MIPS_SZLONG=64} \
-%{!mabi*: -D_MIPS_SZLONG=32} \
-%{mabi=32: -D_MIPS_SZPTR=32} \
-%{mabi=n32: -D_MIPS_SZPTR=32} \
-%{mabi=64: -D_MIPS_SZPTR=64} \
-%{!mabi*: -D_MIPS_SZPTR=32} \
-%{!mips1:%{!mips2: -D_COMPILER_VERSION=601}}		\
-%{!mips*: -U__mips -D__mips=3} \
-%{mabi=32: -U__mips64} \
-%{mabi=n32: -D__mips64} \
-%{mabi=64: -D__mips64} \
-%{!mabi*: -D__mips64}"
+/* The GNU C++ standard library requires that __EXTENSIONS__ and
+   _SGI_SOURCE be defined on at least irix6.2 and probably all IRIX 6
+   prior to 6.5.  They normally get defined if !ansi, for g++ we want
+   them regardless.  We don't need this on IRIX 6.5 itself, but it
+   shouldn't hurt other than the namespace pollution.  */
+
+/* Undefine because this includes iris5.h.  */
+#undef  TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()			\
+    do {						\
+	builtin_define_std ("host_mips");		\
+	builtin_define ("_LONGLONG");			\
+	builtin_define ("_MODERN_C");			\
+	builtin_define ("_SVR4_SOURCE");		\
+	builtin_define_std ("SYSTYPE_SVR4");		\
+	builtin_define ("__DSO__");			\
+	builtin_define_std ("unix");			\
+	builtin_define_std ("sgi");			\
+	builtin_assert ("system=svr4");			\
+	builtin_assert ("system=unix");			\
+	builtin_assert ("machine=sgi");			\
+							\
+     if (mips_abi == ABI_32)				\
+      {							\
+	builtin_define ("_MIPS_SIM=_MIPS_SIM_ABI32");	\
+	builtin_define ("_MIPS_SZLONG=32");		\
+	builtin_define ("_MIPS_SZPTR=32");		\
+      }							\
+     else if (mips_abi == ABI_64)			\
+      {							\
+	builtin_define ("_ABI64=3");			\
+	builtin_define ("_MIPS_SIM=_ABI64");		\
+	builtin_define ("_MIPS_SZLONG=64");		\
+	builtin_define ("_MIPS_SZPTR=64");		\
+      }							\
+     else						\
+      {							\
+	builtin_define ("_ABIN32=2");			\
+	builtin_define ("_MIPS_SIM=_ABIN32");		\
+	builtin_define ("_MIPS_SZLONG=32");		\
+	builtin_define ("_MIPS_SZPTR=32");		\
+      }							\
+							\
+     if (!TARGET_FLOAT64)				\
+	builtin_define ("_MIPS_FPSET=16");		\
+     else						\
+	builtin_define ("_MIPS_FPSET=32");		\
+							\
+     if (!TARGET_INT64)					\
+	builtin_define ("_MIPS_SZINT=32");		\
+     else						\
+	builtin_define ("_MIPS_SZINT=64");		\
+							\
+     if (!ISA_MIPS1 && !ISA_MIPS2)			\
+	builtin_define ("_COMPILER_VERSION=601");	\
+							\
+     if (c_language == clk_cplusplus)			\
+      {							\
+	builtin_define ("__EXTENSIONS__");		\
+	builtin_define ("_SGI_SOURCE");			\
+      }							\
+							\
+     if (!flag_iso)					\
+       {						\
+	 builtin_define ("__EXTENSIONS__");		\
+	 builtin_define ("_SGI_SOURCE");		\
+       }						\
+} while (0)
 
 /* The GNU C++ standard library requires that __EXTENSIONS__ and
    _SGI_SOURCE be defined on at least irix6.2 and probably all irix6
@@ -117,11 +145,6 @@ Boston, MA 02111-1307, USA.  */
    !ansi, for g++ we want them regardless.  We don't need this on
    irix6.5 itself, but it shouldn't hurt other than the namespace
    pollution.  */
-#undef CPLUSPLUS_CPP_SPEC
-#define CPLUSPLUS_CPP_SPEC "\
--D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS \
-%{ansi:-D__EXTENSIONS__ -D_SGI_SOURCE} %(cpp) \
-"
 
 /* Irix 6 uses DWARF-2.  */
 #define DWARF2_DEBUGGING_INFO

@@ -24,9 +24,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "mips/mips.h"
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmips -DMIPSEB -DR3000 -D_mips -D_MIPSEB -D_R3000"
-
 /* Use memcpy, et. al., rather than bcopy.  */
 #define TARGET_MEM_FUNCTIONS
 
