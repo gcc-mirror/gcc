@@ -562,9 +562,27 @@ hard_fp_register_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  return ((GET_CODE (op) == REG && REGNO_REG_CLASS (REGNO (op)) == FLOAT_REGS)
-	  || (GET_CODE (op) == SUBREG
-	      && hard_fp_register_operand (SUBREG_REG (op), mode)));
+  if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
+    return 0;
+
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+  return GET_CODE (op) == REG && REGNO_REG_CLASS (REGNO (op)) == FLOAT_REGS;
+}
+
+/* Return 1 if OP is a hard general register.  */
+
+int
+hard_int_register_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
+    return 0;
+
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+  return GET_CODE (op) == REG && REGNO_REG_CLASS (REGNO (op)) == GENERAL_REGS;
 }
 
 /* Return 1 if OP is a register or a constant integer.  */

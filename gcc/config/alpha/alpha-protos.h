@@ -49,6 +49,7 @@ extern int mul8_operand PARAMS ((rtx, enum machine_mode));
 extern int fp0_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_fp0_operand PARAMS ((rtx, enum machine_mode));
 extern int hard_fp_register_operand PARAMS ((rtx, enum machine_mode));
+extern int hard_int_register_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_cint_operand PARAMS ((rtx, enum machine_mode));
 extern int some_operand PARAMS ((rtx, enum machine_mode));
 extern int some_ni_operand PARAMS ((rtx, enum machine_mode));

@@ -27,6 +27,13 @@
 
 	* config/i386/i386.md (all peepholes): Use peep2_regno_dead_p.
 
+	* config/alpha/alpha.c (hard_fp_register_operand): Mind the mode.
+	(hard_int_register_operand): New.
+	* config/alpha/alpha-protos.h: Declare it.
+	* config/alpha/alpha.h (PREDICATE_CODES): Update.
+	* config/alpha/alpha.md (peep2 patterns): Use hard_int_register_operand
+	as needed; use peep2_reg_dead_p instead of dead_or_set_p.
+
 2000-05-27  Richard Henderson  <rth@cygnus.com>
 
 	* function.c (thread_prologue_epilogue_insns): Don't move the
