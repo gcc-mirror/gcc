@@ -2182,7 +2182,7 @@ purge_dead_edges (bb)
 	 should of course never have been a fallthru edge.  */
       if (!bb->succ || bb->succ->succ_next)
 	abort ();
-      if (bb->succ->flags != EDGE_SIBCALL)
+      if (bb->succ->flags != (EDGE_SIBCALL | EDGE_ABNORMAL))
 	abort ();
 
       return 0;

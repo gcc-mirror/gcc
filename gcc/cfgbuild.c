@@ -406,7 +406,8 @@ make_edges (label_value_list, min, max, update_p)
 	 worry about EH edges, since we wouldn't have created the sibling call
 	 in the first place.  */
       if (code == CALL_INSN && SIBLING_CALL_P (insn))
-	cached_make_edge (edge_cache, bb, EXIT_BLOCK_PTR, EDGE_SIBCALL);
+	cached_make_edge (edge_cache, bb, EXIT_BLOCK_PTR,
+			  EDGE_SIBCALL | EDGE_ABNORMAL);
 
       /* If this is a CALL_INSN, then mark it as reaching the active EH
 	 handler for this CALL_INSN.  If we're handling non-call

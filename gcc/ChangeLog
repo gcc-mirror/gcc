@@ -1,3 +1,8 @@
+2003-06-13  Richard Henderson  <rth@redhat.com>
+
+	* cfgbuild.c (make_edges): Set ABNORMAL with SIBCALL.
+	* cfgrtl.c (purge_dead_edges): Expect it too.
+
 2003-06-13  Jim Wilson  <wilson@tuliptree.org>
             Eric Botcazou  <ebotcazou@libertysurf.fr>
 
