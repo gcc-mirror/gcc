@@ -3255,7 +3255,8 @@ cp_parser_unqualified_id (cp_parser* parser,
 	   identifier in the declarator for a destructor declaration.  */
 	if (declarator_p
 	    && !DECL_IMPLICIT_TYPEDEF_P (type_decl)
-	    && !DECL_SELF_REFERENCE_P (type_decl))
+	    && !DECL_SELF_REFERENCE_P (type_decl)
+	    && !cp_parser_uncommitted_to_tentative_parse_p (parser))
 	  error ("typedef-name %qD used as destructor declarator",
 		 type_decl);
 
