@@ -57,20 +57,20 @@ void test01()
 
   int size3 = strlen(strlit3) - 1;
   i1 = coll_de.compare(strlit3, strlit3 + size3, strlit3, strlit3 + 7);
-  VERIFY ( i1 > 0 );
+  VERIFY ( i1 == 1 );
   i1 = coll_de.compare(strlit3, strlit3 + 7, strlit3, strlit3 + size3);
-  VERIFY ( i1 < 0 );
+  VERIFY ( i1 == -1 );
   i1 = coll_de.compare(strlit3, strlit3 + 7, strlit3, strlit3 + 7);
   VERIFY ( i1 == 0 );
 
   i1 = coll_de.compare(strlit3, strlit3 + 6, strlit3 + 8, strlit3 + 14);
-  VERIFY ( i1 < 0 );
+  VERIFY ( i1 == -1 );
 
   int size4 = strlen(strlit4) - 1;
   i2 = coll_de.compare(strlit4, strlit4 + size4, strlit4, strlit4 + 13);
-  VERIFY ( i2 > 0 );
+  VERIFY ( i2 == 1 );
   i2 = coll_de.compare(strlit4, strlit4 + 13, strlit4, strlit4 + size4);
-  VERIFY ( i2 < 0 );
+  VERIFY ( i2 == -1 );
   i2 = coll_de.compare(strlit4, strlit4 + size4, strlit4, strlit4 + size4);
   VERIFY ( i2 == 0 );
 
@@ -83,10 +83,10 @@ void test01()
 
   string str3 = coll_de.transform(strlit3, strlit3 + size3);
   string str4 = coll_de.transform(strlit4, strlit4 + size4);
-  i1 = coll_de.compare(str3.c_str(), str3.c_str() + size3,
-		       str4.c_str(), str4.c_str() + size4);
+  i1 = str3.compare(str4);
   i2 = coll_de.compare(strlit3, strlit3 + size3, strlit4, strlit4 + size4);
-  VERIFY(i1 == i2);
+  VERIFY ( i2 == -1 );
+  VERIFY ( i1 * i2 > 0 );
 
 
   // Check byname locale
@@ -96,20 +96,20 @@ void test01()
   long l4;
   size4 = strlen(strlit3) - 1;
   i3 = coll_de.compare(strlit3, strlit3 + size4, strlit3, strlit3 + 7);
-  VERIFY ( i3 > 0 );
+  VERIFY ( i3 == 1 );
   i3 = coll_de.compare(strlit3, strlit3 + 7, strlit3, strlit3 + size4);
-  VERIFY ( i3 < 0 );
+  VERIFY ( i3 == -1 );
   i3 = coll_de.compare(strlit3, strlit3 + 7, strlit3, strlit3 + 7);
   VERIFY ( i3 == 0 );
 
   i3 = coll_de.compare(strlit3, strlit3 + 6, strlit3 + 8, strlit3 + 14);
-  VERIFY ( i3 < 0 );
+  VERIFY ( i3 == -1 );
 
   size4 = strlen(strlit4) - 1;
   i4 = coll_de.compare(strlit4, strlit4 + size4, strlit4, strlit4 + 13);
-  VERIFY ( i4 > 0 );
+  VERIFY ( i4 == 1 );
   i4 = coll_de.compare(strlit4, strlit4 + 13, strlit4, strlit4 + size4);
-  VERIFY ( i4 < 0 );
+  VERIFY ( i4 == -1 );
   i4 = coll_de.compare(strlit4, strlit4 + size4, strlit4, strlit4 + size4);
   VERIFY ( i4 == 0 );
 
@@ -122,10 +122,10 @@ void test01()
 
   string str5 = coll_de.transform(strlit3, strlit3 + size3);
   string str6 = coll_de.transform(strlit4, strlit4 + size4);
-  i3 = coll_de.compare(str5.c_str(), str5.c_str() + size3,
-		       str6.c_str(), str6.c_str() + size4);
+  i3 = str5.compare(str6);
   i4 = coll_de.compare(strlit3, strlit3 + size4, strlit4, strlit4 + size4);
-  VERIFY(i3 == i4);
+  VERIFY ( i4 == -1 );
+  VERIFY ( i3 * i4 > 0 );
 
   // Verify byname == de
   VERIFY ( str5 == str3 );
