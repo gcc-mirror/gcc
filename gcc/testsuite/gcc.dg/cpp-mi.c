@@ -12,7 +12,7 @@
 
 /* { dg-do compile }
    { dg-options "-H" }
-   { dg-error "mic\.h\n\[^\n\]*micc\.h\n\[^\n\]*mind\.h\n\[^\n\]*mindp\.h\n\[^\n\]*mix\.h" "redundant include check" { target native } 0 } */
+   { dg-error "mic\.h\n\[^\n\]*micc\.h\n\[^\n\]*mind\.h\n\[^\n\]*mindp\.h\n\[^\n\]*mix\.h" "redundant include check" { target *-*-* } 0 } */
 
 #include "cpp-mic.h"
 #include "cpp-mic.h"
