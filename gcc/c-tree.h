@@ -145,6 +145,9 @@ extern tree make_index_type ();
 /* Add qualifiers to a type, in the fashion for C.  */
 extern tree c_build_type_variant ();
 
+/* Declare a predefined function.  Return the declaration.  */
+extern tree builtin_function ();
+
 /* Functions in c-common.c: */
 
 /* Concatenate a list of STRING_CST nodes into one STRING_CST.  */
