@@ -503,7 +503,7 @@ if [ -r ${LIB}/$file ]; then
   echo Fixing $file sprintf declaration
   sed -e 's,^extern char \*	sprintf();$,#ifndef __STDC__\
 extern char *	sprintf();\
-#endif /* !defined __STDC__ */,' ${LIB}/$file > ${file}.sed
+#endif /* !defined __STDC__ */,' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm ${LIB}/$file
@@ -524,7 +524,7 @@ if [ -r ${LIB}/$file ]; then
   echo Fixing $file sprintf declaration
   sed -e 's,^extern char \*	sprintf();$,#ifndef __STDC__\
 extern char *	sprintf();\
-#endif /* !defined __STDC__ */,' ${LIB}/$file > ${file}.sed
+#endif /* !defined __STDC__ */,' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm ${LIB}/$file
