@@ -57,7 +57,7 @@ package System.Compare_Array_Signed_8 is
       Right     : System.Address;
       Left_Len  : Natural;
       Right_Len : Natural) return Integer;
-   --  Same functionality as Compare_Array_U8 but always proceeds by
+   --  Same functionality as Compare_Array_S8 but always proceeds by
    --  bytes. Used when the caller knows that the operands are unaligned,
    --  or short enough that it makes no sense to go by words.
 

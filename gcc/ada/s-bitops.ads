@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1999, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,11 +45,11 @@ package System.Bit_Ops is
    procedure Bit_And
      (Left   : System.Address;
       Llen   : Natural;
-      Right  : Address;
+      Right  : System.Address;
       Rlen   : Natural;
       Result : System.Address);
    --  Bitwise "and" of given bit string with result being placed in Result.
-   --  The or operation is allowed to destroy unused bits in the last byte,
+   --  The and operation is allowed to destroy unused bits in the last byte,
    --  i.e. to leave them set in an undefined manner. Note that Left, Right
    --  and Result always have the same length in bits (Len).
 
@@ -77,7 +77,7 @@ package System.Bit_Ops is
    procedure Bit_Or
      (Left   : System.Address;
       Llen   : Natural;
-      Right  : Address;
+      Right  : System.Address;
       Rlen   : Natural;
       Result : System.Address);
    --  Bitwise "or" of given bit string with result being placed in Result.
@@ -88,11 +88,11 @@ package System.Bit_Ops is
    procedure Bit_Xor
      (Left   : System.Address;
       Llen   : Natural;
-      Right  : Address;
+      Right  : System.Address;
       Rlen   : Natural;
       Result : System.Address);
    --  Bitwise "xor" of given bit string with result being placed in Result.
-   --  The or operation is allowed to destroy unused bits in the last byte,
+   --  The xor operation is allowed to destroy unused bits in the last byte,
    --  i.e. to leave them set in an undefined manner. Note that Left, Right
    --  and Result always have the same length in bits (Len).
 
