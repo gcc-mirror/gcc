@@ -1,3 +1,8 @@
+Wed May  6 19:31:32 1998  Alan Modra <alan@spri.levels.unisa.edu.au>
+
+	* config/linux.h (ASM_COMMENT_START): Define as "#".
+	* config/linux-aout.h (ASM_COMMENT_START): Likewise.
+
 Wed May  6 15:51:39 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* objc/Make-lang.h (objc-parse.o): Add toplev.h dependency.
