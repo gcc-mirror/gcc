@@ -1,5 +1,13 @@
 2000-10-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (scanf_flag_specs): Add flags ' and I.
+	(strftime_flag_pairs): Disallow any pair of the _, - and 0 flags,
+	or the ^ and # flags together.
+	(scan_char_table): Handle the ' and I flags.
+	(format_types): Add ' and I flags for scanf.
+
+2000-10-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (print_char_table): Use the unpromoted type for
 	lengths "h" and "hh" with conversions dioxXu.
 	(check_format_types): Apply the default argument promotions where

@@ -22,6 +22,7 @@ foo (int *ip, long long int *llp, wchar_t *ls)
   scanf ("%S", ls); /* { dg-warning "C" "scanf %S" } */
   /* The use of operand number $ formats is an X/Open extension.  */
   scanf ("%1$d", ip); /* { dg-warning "C" "scanf $ format" } */
-  /* glibc also supports flags ' and I on scanf formats, but GCC
-     doesn't yet.  */
+  /* glibc also supports flags ' and I on scanf formats as an extension.  */
+  scanf ("%'d", ip); /* { dg-warning "C" "scanf ' flag" } */
+  scanf ("%Id", ip); /* { dg-warning "C" "scanf I flag" } */
 }

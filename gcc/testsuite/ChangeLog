@@ -1,3 +1,10 @@
+2000-10-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c99-scanf-2.c, gcc.dg/format-ext-2.c: Test ' and I
+	scanf flags.
+	* gcc.dg/format-ext-3.c: Test mutually exclusive pairs of strftime
+	flags.
+
 2000-10-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/sequence-pt-1.c: New test.
