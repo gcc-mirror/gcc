@@ -1,3 +1,10 @@
+2001-12-09  Per Bothner  <per@bothner.com>
+
+	* check-init.c (current_switch_has_default):  New static field.
+	(check_init):  Case DEFAULT_EXPR: Set current_switch_has_default.
+	Case SWITCH_EXPR:  Save/restore current_switch_has_default.  If no
+	DEFAULT_EXPR seen, simulate a default alternative that copies state.
+
 2001-12-09  Tom Tromey  <tromey@redhat.com>
 
 	* check-init.c (check_init): Don't allow pre- or post- increment

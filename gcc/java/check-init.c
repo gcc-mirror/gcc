@@ -429,6 +429,9 @@ struct alternatives
 
 struct alternatives * alternatives = NULL;
 
+/* True if we've seen a DEFAULT_EXPR for the current SWITCH_EXPR. */
+static int current_switch_has_default;
+
 /* Begin handling a control flow branch.
    BEFORE is the state of [un]assigned variables on entry.
    CURRENT is a struct alt to manage the branch alternatives. */
@@ -686,7 +689,9 @@ check_init (exp, before)
     case SWITCH_EXPR:
       {
 	struct alternatives alt;
+	int saved_current_switch_has_default = current_switch_has_default;
 	word buf[2];
+	current_switch_has_default = 0;
 	check_init (TREE_OPERAND (exp, 0), before);
 	BEGIN_ALTERNATIVES (before, alt);
 	alt.saved = ALLOC_BUFFER(buf, num_current_words);
@@ -694,12 +699,19 @@ check_init (exp, before)
 	alt.block = exp;
 	check_init (TREE_OPERAND (exp, 1), before);
 	done_alternative (before, &alt);
+	if (! current_switch_has_default)
+	  {
+	    done_alternative (alt.saved, &alt);
+	  }
 	FREE_BUFFER(alt.saved, buf);
 	END_ALTERNATIVES (before, alt);
+	current_switch_has_default = saved_current_switch_has_default;
 	return;
       }
-    case CASE_EXPR:
     case DEFAULT_EXPR:
+      current_switch_has_default = 1;
+      /* .. then fall through ... */
+    case CASE_EXPR:
       {
 	int i;
 	struct alternatives *alt = alternatives;
