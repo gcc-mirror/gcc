@@ -5773,7 +5773,12 @@ finish_decl (decl, init, asmspec_tree, need_pop)
   type = TREE_TYPE (decl);
 
   if (type == error_mark_node)
-    return;
+    {
+      if (current_binding_level == global_binding_level && temporary)
+	end_temporary_allocation ();
+
+      return;
+    }
 
   was_incomplete = (DECL_SIZE (decl) == NULL_TREE);
 

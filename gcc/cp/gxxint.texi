@@ -1199,8 +1199,7 @@ catch variables cannot be used.  Only works on a Sun sparc running SunOS
 variables are cleaned up in all unwinded scopes.  Completed parts of
 partially constructed objects are not cleaned up.  Don't expect
 exception handling to work right if you optimize, in fact the compiler
-will probably core dump.  You can only have one source file worth of
-exception handling code.  If two EH regions are the exact same size, the
+will probably core dump.  If two EH regions are the exact same size, the
 backend cannot tell which one is first.  It punts by picking the last
 one, if they tie.  This is usually right.  We really should stick in a
 nop, if they are the same size.
@@ -1223,7 +1222,8 @@ The EH object is copied like it should be, if it is passed by value,
 otherwise we get a reference directly to it.
 
 EH objects make it through unwinding, but are subject to being
-overwritten as they are still past the top of stack.
+overwritten as they are still past the top of stack.  Don't throw
+automatic objects if this is a problem.
 
 Exceptions in catch handlers now go to outer block.
 
