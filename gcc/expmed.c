@@ -2391,8 +2391,7 @@ static bool choose_mult_variant (enum machine_mode, HOST_WIDE_INT,
 static rtx expand_mult_const (enum machine_mode, rtx, HOST_WIDE_INT, rtx,
 			      const struct algorithm *, enum mult_variant);
 static unsigned HOST_WIDE_INT choose_multiplier (unsigned HOST_WIDE_INT, int,
-						 int, unsigned HOST_WIDE_INT *,
-						 int *, int *);
+						 int, rtx *, int *, int *);
 static unsigned HOST_WIDE_INT invert_mod2n (unsigned HOST_WIDE_INT, int);
 static rtx extract_high_half (enum machine_mode, rtx);
 static rtx expand_mult_highpart (enum machine_mode, rtx, rtx, rtx, int, int);
@@ -3118,8 +3117,7 @@ ceil_log2 (unsigned HOST_WIDE_INT x)
 static
 unsigned HOST_WIDE_INT
 choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
-		   unsigned HOST_WIDE_INT *multiplier_ptr,
-		   int *post_shift_ptr, int *lgup_ptr)
+		   rtx *multiplier_ptr, int *post_shift_ptr, int *lgup_ptr)
 {
   HOST_WIDE_INT mhigh_hi, mlow_hi;
   unsigned HOST_WIDE_INT mhigh_lo, mlow_lo;
@@ -3191,12 +3189,12 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   if (n < HOST_BITS_PER_WIDE_INT)
     {
       unsigned HOST_WIDE_INT mask = ((unsigned HOST_WIDE_INT) 1 << n) - 1;
-      *multiplier_ptr = mhigh_lo & mask;
+      *multiplier_ptr = GEN_INT (mhigh_lo & mask);
       return mhigh_lo >= mask;
     }
   else
     {
-      *multiplier_ptr = mhigh_lo;
+      *multiplier_ptr = GEN_INT (mhigh_lo);
       return mhigh_hi;
     }
 }
@@ -3855,9 +3853,10 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	  {
 	    if (unsignedp)
 	      {
-		unsigned HOST_WIDE_INT mh, ml;
+		unsigned HOST_WIDE_INT mh;
 		int pre_shift, post_shift;
 		int dummy;
+		rtx ml;
 		unsigned HOST_WIDE_INT d = (INTVAL (op1)
 					    & GET_MODE_MASK (compute_mode));
 
@@ -3923,8 +3922,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			      = (shift_cost[compute_mode][post_shift - 1]
 				 + shift_cost[compute_mode][1]
 				 + 2 * add_cost[compute_mode]);
-			    t1 = gen_int_mode (ml, compute_mode);
-			    t1 = expand_mult_highpart (compute_mode, op0, t1,
+			    t1 = expand_mult_highpart (compute_mode, op0, ml,
 						       NULL_RTX, 1,
 						       max_cost - extra_cost);
 			    if (t1 == 0)
@@ -3959,8 +3957,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			    extra_cost
 			      = (shift_cost[compute_mode][pre_shift]
 				 + shift_cost[compute_mode][post_shift]);
-			    t2 = gen_int_mode (ml, compute_mode);
-			    t2 = expand_mult_highpart (compute_mode, t1, t2,
+			    t2 = expand_mult_highpart (compute_mode, t1, ml,
 						       NULL_RTX, 1,
 						       max_cost - extra_cost);
 			    if (t2 == 0)
@@ -3987,6 +3984,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	      {
 		unsigned HOST_WIDE_INT ml;
 		int lgup, post_shift;
+		rtx mlr;
 		HOST_WIDE_INT d = INTVAL (op1);
 		unsigned HOST_WIDE_INT abs_d = d >= 0 ? d : -d;
 
@@ -4069,7 +4067,8 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 		else if (size <= HOST_BITS_PER_WIDE_INT)
 		  {
 		    choose_multiplier (abs_d, size, size - 1,
-				       &ml, &post_shift, &lgup);
+				       &mlr, &post_shift, &lgup);
+		    ml = (unsigned HOST_WIDE_INT) INTVAL (mlr);
 		    if (ml < (unsigned HOST_WIDE_INT) 1 << (size - 1))
 		      {
 			rtx t1, t2, t3;
@@ -4081,8 +4080,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			extra_cost = (shift_cost[compute_mode][post_shift]
 				      + shift_cost[compute_mode][size - 1]
 				      + add_cost[compute_mode]);
-			t1 = gen_int_mode (ml, compute_mode);
-			t1 = expand_mult_highpart (compute_mode, op0, t1,
+			t1 = expand_mult_highpart (compute_mode, op0, mlr,
 						   NULL_RTX, 0,
 						   max_cost - extra_cost);
 			if (t1 == 0)
@@ -4115,11 +4113,11 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			  goto fail1;
 
 			ml |= (~(unsigned HOST_WIDE_INT) 0) << (size - 1);
+			mlr = gen_int_mode (ml, compute_mode);
 			extra_cost = (shift_cost[compute_mode][post_shift]
 				      + shift_cost[compute_mode][size - 1]
 				      + 2 * add_cost[compute_mode]);
-			t1 = gen_int_mode (ml, compute_mode);
-			t1 = expand_mult_highpart (compute_mode, op0, t1,
+			t1 = expand_mult_highpart (compute_mode, op0, mlr,
 						   NULL_RTX, 0,
 						   max_cost - extra_cost);
 			if (t1 == 0)
@@ -4169,9 +4167,10 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
       /* We will come here only for signed operations.  */
 	if (op1_is_constant && HOST_BITS_PER_WIDE_INT >= size)
 	  {
-	    unsigned HOST_WIDE_INT mh, ml;
+	    unsigned HOST_WIDE_INT mh;
 	    int pre_shift, lgup, post_shift;
 	    HOST_WIDE_INT d = INTVAL (op1);
+	    rtx ml;
 
 	    if (d > 0)
 	      {
@@ -4213,8 +4212,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			extra_cost = (shift_cost[compute_mode][post_shift]
 				      + shift_cost[compute_mode][size - 1]
 				      + 2 * add_cost[compute_mode]);
-			t3 = gen_int_mode (ml, compute_mode);
-			t3 = expand_mult_highpart (compute_mode, t2, t3,
+			t3 = expand_mult_highpart (compute_mode, t2, ml,
 						   NULL_RTX, 1,
 						   max_cost - extra_cost);
 			if (t3 != 0)
