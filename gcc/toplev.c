@@ -2303,9 +2303,9 @@ rest_of_handle_reorder_blocks (tree decl, rtx insns)
 
   /* Last attempt to optimize CFG, as scheduling, peepholing and insn
      splitting possibly introduced more crossjumping opportunities.  */
-  changed |= cleanup_cfg (CLEANUP_EXPENSIVE
-		  	  | (!HAVE_conditional_execution
-			     ? CLEANUP_UPDATE_LIFE : 0));
+  changed = cleanup_cfg (CLEANUP_EXPENSIVE
+			 | (!HAVE_conditional_execution
+			    ? CLEANUP_UPDATE_LIFE : 0));
 
   if (flag_sched2_use_traces && flag_schedule_insns_after_reload)
     tracer ();
