@@ -188,6 +188,16 @@
   [(set_attr "length" "2")
    (set_attr "cc" "none")])
 
+(define_peephole2
+  [(match_scratch:QI 2 "d")
+   (set (match_operand:QI 0 "register_operand" "")
+	(match_operand:QI 1 "immediate_operand" ""))]
+  "(operands[1] != const0_rtx
+    && test_hard_reg_class (NO_LD_REGS, operands[0]))"
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (clobber (match_dup 2))])]
+  "")
+
 ;;============================================================================
 ;; move word (16 bit)
 
@@ -709,7 +719,7 @@
           AS1 (clr,%B0));
 }"
   [(set_attr "length" "2,2,3")
-   (set_attr "cc" "set_n,clobber,clobber")])
+   (set_attr "cc" "set_n,clobber,set_n")])
 
 (define_insn "andsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,d")
@@ -793,7 +803,7 @@
   ""
   "@
 	ldi %3,lo8(%2)\;or %A0,%3
-	ldi %3,lo8(%2)\;or %A0,%3\;ldi %3,lo8(%2)\;or %B0,%3"
+	ldi %3,lo8(%2)\;or %A0,%3\;ldi %3,hi8(%2)\;or %B0,%3"
   [(set_attr "length" "2,4")
    (set_attr "cc" "clobber,set_n")])
 
@@ -894,7 +904,7 @@
    (clobber (match_scratch:QI 3 "=X,X,X,X,&d,X"))]
   ""
   "* return ashlhi3_out (insn, operands, NULL);"
-  [(set_attr "length" "7,2,4,2,5,8")
+  [(set_attr "length" "7,2,2,4,5,8")
    (set_attr "cc" "clobber,set_n,clobber,set_n,clobber,clobber")])
 
 (define_insn "ashlsi3"
@@ -926,7 +936,7 @@
    (clobber (match_scratch:QI 3 "=X,X,X,X,&d,X"))]
   ""
   "* return ashrhi3_out (insn, operands, NULL);"
-  [(set_attr "length" "7,2,4,2,5,8")
+  [(set_attr "length" "7,2,4,4,5,8")
    (set_attr "cc" "clobber,clobber,clobber,clobber,clobber,clobber")])
 
 (define_insn "ashrsi3"
@@ -992,7 +1002,7 @@
 	andi %D0,0x7f
 	clt\;bld %D0,7"
   [(set_attr "length" "1,2")
-   (set_attr "cc" "clobber,clobber")])
+   (set_attr "cc" "set_n,clobber")])
 
 ;; 0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x
 ;; neg
@@ -1094,7 +1104,7 @@
 	clr %B0\;sbrc %A0,7\;com %B0\;mov %C0,%B0\;mov %D0,%B0
 	mov %A0,%A1\;clr %B0\;sbrc %A0,7\;com %B0\;mov %C0,%B0\;mov %D0,%B0"
   [(set_attr "length" "5,6")
-   (set_attr "cc" "clobber,clobber")])
+   (set_attr "cc" "set_n,set_n")])
 
 (define_insn "extendhisi2"
   [(set (match_operand:SI 0 "register_operand"               "=r,&r")
@@ -1108,7 +1118,7 @@
 			  (if_then_else (eq_attr "mcu_enhanced" "yes")
 					(const_int 5)
 					(const_int 6))])
-   (set_attr "cc" "clobber,clobber")])
+   (set_attr "cc" "set_n,set_n")])
 
 ;; xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x
 ;; zero extend
@@ -1139,7 +1149,7 @@
   ""
   "@
 	clr %C0\;clr %D0
-	{mov %A0,%A1\;mov %B0,%B1|movw %A0,%B0}\;clr %C0\;clr %D0"
+	{mov %A0,%A1\;mov %B0,%B1|movw %A0,%A1}\;clr %C0\;clr %D0"
   [(set_attr_alternative "length"
 			 [(const_int 2)
 			  (if_then_else (eq_attr "mcu_enhanced" "yes")

@@ -2699,7 +2699,7 @@ out_shift_with_cnt (template, insn, operands, len)
       if (len)
 	++*len;
       else
-	strcat (str, "ldi %3,lo8((%2)-1)");
+	strcat (str, AS2 (ldi,%3,lo8((%2)-1)));
       second_label = 0;
     }
   else if (GET_CODE (operands[2]) == MEM)
@@ -2718,7 +2718,7 @@ out_shift_with_cnt (template, insn, operands, len)
       else
 	{
 	  out_movqi_r_mr (insn, op_mov, &mov_len);
-	  *len = mov_len + 1;
+	  *len += mov_len + 1;
 	}
     }
   else if (register_operand (operands[2], QImode))
@@ -2731,7 +2731,7 @@ out_shift_with_cnt (template, insn, operands, len)
 	  if (len)
 	    ++*len;
 	  else
-	    strcat (str, "mov %3,%2" CR_TAB);
+	    strcat (str, AS2 (mov,%3,%2) CR_TAB);
 	}
       
       if (len)
@@ -2742,7 +2742,7 @@ out_shift_with_cnt (template, insn, operands, len)
     }
   if (!len)
     {
-      strcat (str,"\n1:\t");
+      strcat (str, "\n1:\t");
       strcat (str, template);
       strcat (str, second_label ? "\n2:\t" : "\n\t");
       strcat (str,
