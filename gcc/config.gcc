@@ -2333,11 +2333,11 @@ fi
 		supported_defaults="cpu tune"
 		for which in cpu tune; do
 			eval "val=\$with_$which"
-			case "x$val" in
-			x \
-			| xev4 | xev45 | x21064 | xev5 | x21164 | xev56 | x21164a \
-			| xpca56 | x21164PC | x21164pc | xev6 | x21264 | xev67 \
-			| x21264a)
+			case "$val" in
+			"" \
+			| ev4 | ev45 | 21064 | ev5 | 21164 | ev56 | 21164a \
+			| pca56 | 21164PC | 21164pc | ev6 | 21264 | ev67 \
+			| 21264a)
 				;;
 			*)
 				echo "Unknown CPU used in --with-$which=$val" 1>&2
@@ -2351,19 +2351,19 @@ fi
 		supported_defaults="arch cpu float tune"
 		for which in cpu tune; do
 			eval "val=\$with_$which"
-			case "x$val" in
-			x \
-			| xarm[236789] | xarm250 | xarm[67][01]0 \
-			| xarm60 | xarm620 | xarm7d | xarm7di \
-			| xarm7m | xarm7dm | xarm7dmi | xarm[79]tdmi \
-			| xarm70 | xarm700i | xarm710t | xarm720 \
-			| xarm720t | xarm740t | xarm710c | xarm920 \
-			| xarm920t | xarm940t | xarm9e | xarm10tdmi \
-			| xarm7100 | xarm7500 | xarm7500fe | xarm810 \
-			| xarm1020t \
-			| xxscale | xiwmmxt \
-			| xep9312 \
-			| xstrongarm | xstrongarm110 | xstrongarm11[01]0)
+			case "$val" in
+			"" \
+			| arm[236789] | arm250 | arm[67][01]0 \
+			| arm60 | arm620 | arm7d | arm7di \
+			| arm7m | arm7dm | arm7dmi | arm[79]tdmi \
+			| arm70 | arm700i | arm710t | arm720 \
+			| arm720t | arm740t | arm710c | arm920 \
+			| arm920t | arm940t | arm9e | arm10tdmi \
+			| arm7100 | arm7500 | arm7500fe | arm810 \
+			| arm1020t \
+			| xscale | iwmmxt \
+			| ep9312 \
+			| strongarm | strongarm110 | strongarm11[01]0)
 				# OK
 				;;
 			*)
@@ -2373,10 +2373,10 @@ fi
 			esac
 		done
 
-		case "x$with_arch" in
-		x \
-		| xarmv[2345] | xarmv2a | xarmv3m | xarmv4t | xarmv5t \
-		| xarmv5te | ep9312)
+		case "$with_arch" in
+		"" \
+		| armv[2345] | armv2a | armv3m | armv4t | armv5t \
+		| armv5te | ep9312)
 			# OK
 			;;
 		*)
@@ -2385,9 +2385,9 @@ fi
 			;;
 		esac
 
-		case "x$with_float" in
-		x \
-		| xsoft | xhard)
+		case "$with_float" in
+		"" \
+		| soft | hard)
 			# OK
 			;;
 		*)
@@ -2404,8 +2404,8 @@ fi
 	hppa*-*-* | parisc*-*-*)
 		supported_defaults="arch schedule"
 
-		case "x$with_arch" in
-		x | x1.0 | x1.1 | x2.0)
+		case "$with_arch" in
+		"" | 1.0 | 1.1 | 2.0)
 			# OK
 			;;
 		*)
@@ -2414,8 +2414,8 @@ fi
 			;;
 		esac
 
-		case "x$with_schedule" in
-		x | x700 | x7100 | x7100LC | x7200 | x7300 | x8000)
+		case "$with_schedule" in
+		"" | 700 | 7100 | 7100LC | 7200 | 7300 | 8000)
 			# OK
 			;;
 		*)
