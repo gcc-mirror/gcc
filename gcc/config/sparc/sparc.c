@@ -5241,7 +5241,7 @@ static void function_arg_record_value_2
 static void function_arg_record_value_1
  (tree, HOST_WIDE_INT, struct function_arg_record_value_parms *, bool);
 static rtx function_arg_record_value (tree, enum machine_mode, int, int, int);
-static rtx function_arg_union_value (int, enum machine_mode, int);
+static rtx function_arg_union_value (int, enum machine_mode, int, int);
 
 /* A subroutine of function_arg_record_value.  Traverse the structure
    recursively and determine how many registers will be required.  */
@@ -5608,7 +5608,8 @@ function_arg_record_value (tree type, enum machine_mode mode,
    REGNO is the hard register the union will be passed in.  */
 
 static rtx
-function_arg_union_value (int size, enum machine_mode mode, int regno)
+function_arg_union_value (int size, enum machine_mode mode, int slotno,
+			  int regno)
 {
   int nwords = ROUND_ADVANCE (size), i;
   rtx regs;
@@ -5616,6 +5617,9 @@ function_arg_union_value (int size, enum machine_mode mode, int regno)
   /* See comment in previous function for empty structures.  */
   if (nwords == 0)
     return gen_rtx_REG (mode, regno);
+
+  if (slotno == SPARC_INT_ARG_MAX - 1)
+    nwords = 1;
 
   regs = gen_rtx_PARALLEL (mode, rtvec_alloc (nwords));
 
@@ -5717,7 +5721,7 @@ function_arg (const struct sparc_args *cum, enum machine_mode mode,
       if (size > 16)
 	abort (); /* shouldn't get here */
 
-      return function_arg_union_value (size, mode, regno);
+      return function_arg_union_value (size, mode, slotno, regno);
     }
   else if (type && TREE_CODE (type) == VECTOR_TYPE)
     {
@@ -6107,7 +6111,7 @@ function_value (tree type, enum machine_mode mode, int incoming_p)
 	  if (size > 32)
 	    abort (); /* shouldn't get here */
 
-	  return function_arg_union_value (size, mode, regbase);
+	  return function_arg_union_value (size, mode, 0, regbase);
 	}
       else if (AGGREGATE_TYPE_P (type))
 	{
@@ -6130,7 +6134,7 @@ function_value (tree type, enum machine_mode mode, int incoming_p)
 	     try to be unduly clever, and simply follow the ABI
 	     for unions in that case.  */
 	  if (mode == BLKmode)
-	    return function_arg_union_value (bytes, mode, regbase);
+	    return function_arg_union_value (bytes, mode, 0, regbase);
 	  else
 	    mclass = MODE_INT;
 	}
