@@ -10065,7 +10065,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	       decl-specifier like in 
 	             std::allocator alloc;
                Handle that gracefully.  */
-	    error ("invalid use of template-name '%E' as type-specifier", 
+	    error ("invalid use of template-name '%E' in a declarator", 
 		   decl);
 	    return error_mark_node;
 	    break;
