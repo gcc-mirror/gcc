@@ -1,3 +1,12 @@
+Fri Dec  5 01:17:34 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (template_id): do_identifier for PFUNCNAMEs, too.
+	* spew.c (yylex): Don't do_identifier here.
+	* decl2.c (build_expr_from_tree): Revert last change.
+
+	* decl2.c (build_expr_from_tree): Expand the name for a method call.
+	* parse.y (object_template_id): Don't try to take the DECL_NAME.
+
 Wed Dec  3 20:02:39 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* init.c (build_new): Use a TARGET_EXPR instead of SAVE_EXPR for
