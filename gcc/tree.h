@@ -2177,6 +2177,11 @@ struct tree_binfo GTY (())
 #define DECL_PRESERVE_P(DECL) \
   DECL_CHECK (DECL)->decl.preserve_flag
 
+/* Internal to the gimplifier.  Indicates that the value is a formal
+   temporary controlled by the gimplifier.  */
+#define DECL_GIMPLE_FORMAL_TEMP_P(DECL) \
+  DECL_CHECK (DECL)->decl.gimple_formal_temp
+
 /* Enumerate visibility settings.  */
 #ifndef SYMBOL_VISIBILITY_DEFINED
 #define SYMBOL_VISIBILITY_DEFINED
@@ -2245,6 +2250,7 @@ struct tree_decl GTY(())
 
   unsigned possibly_inlined : 1;
   unsigned preserve_flag: 1;
+  unsigned gimple_formal_temp : 1;
   /* 13 unused bits.  */
 
   union tree_decl_u1 {

@@ -1,3 +1,7 @@
+2004-08-18  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/20040206-1.c: XFAIL.
+
 2004-08-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16246

@@ -1,3 +1,9 @@
+2004-08-18  Richard Henderson  <rth@redhat.com>
+
+	* java-gimplify.c (java_gimplify_expr): Move '2' handling into
+	default case.  Treat '<' similarly.  Update for
+	is_gimple_formal_tmp_var name change.
+
 2004-08-17  Andrew Haley  <aph@redhat.com>
 
 	* lang.c (lang_printable_name): Obey verbose flag.

@@ -8,4 +8,4 @@
     returning non-void" is PR 13000. */
 
 static int foo (int a __attribute__((unused)) ) { }  /* { dg-warning "return" "" { xfail *-*-* } } */
-int main (void) { return foo (0); } 
+int main (void) { return foo (0); } /* { dg-bogus "uninitialized" "" { xfail *-*-* } } */

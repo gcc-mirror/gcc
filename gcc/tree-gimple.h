@@ -48,9 +48,9 @@ extern bool is_gimple_reg_type (tree);
 /* Returns true iff T is a scalar register variable.  */
 extern bool is_gimple_reg (tree);
 /* Returns true if T is a GIMPLE temporary variable, false otherwise.  */
-extern bool is_gimple_tmp_var (tree);
+extern bool is_gimple_formal_tmp_var (tree);
 /* Returns true if T is a GIMPLE temporary register variable.  */
-extern bool is_gimple_tmp_reg (tree);
+extern bool is_gimple_formal_tmp_reg (tree);
 /* Returns true iff T is any sort of variable.  */
 extern bool is_gimple_variable (tree);
 /* Returns true iff T is a variable or an INDIRECT_REF (of a variable).  */
@@ -67,7 +67,7 @@ extern bool is_gimple_val (tree);
 /* Returns true iff T is a valid rhs for a MODIFY_EXPR where the LHS is a
    GIMPLE temporary, a renamed user variable, or something else,
    respectively.  */
-extern bool is_gimple_tmp_rhs (tree);
+extern bool is_gimple_formal_tmp_rhs (tree);
 extern bool is_gimple_reg_rhs (tree);
 extern bool is_gimple_mem_rhs (tree);
 /* Returns the appropriate one of the above three predicates for the LHS
