@@ -1,3 +1,10 @@
+2004-10-10  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/17703
+	part of PR c++/17657
+	* fold-const.c (fold_build_cleanup_point_expr): New function.
+	* tree.h (fold_build_cleanup_point_expr): Prototype.
+
 2004-10-10  Eric Christopher  <echristo@redhat.com>
 
 	* dwarf2out.c: Move attribute to subprogram declaration

@@ -10465,6 +10465,21 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
   return constant_boolean_node (result, type);
 }
 
+/* Build an expression for the a clean point containing EXPR with type TYPE.
+   Don't build a cleanup point expression for EXPR which don't have side
+   effects.  */
+
+tree
+fold_build_cleanup_point_expr (tree type, tree expr)
+{
+  /* If the expression does not have side effects then we don't have to wrap
+     it with a cleanup point expression.  */
+  if (!TREE_SIDE_EFFECTS (expr))
+    return expr;
+  
+  return build1 (CLEANUP_POINT_EXPR, type, expr);
+}
+
 /* Build an expression for the address of T.  Folds away INDIRECT_REF to
    avoid confusing the gimplify process.  */
 
