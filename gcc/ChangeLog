@@ -1,3 +1,7 @@
+Fri Jun 18 07:02 1999  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* fixinc/mkfixinc.sh: enable the fixincl program for DG/UX
+
 Thu Jun 17 15:06:10 PDT 1999 Don Lindsay  <dlindsay@cygnus.com>
 
         * added support for -mpcrel (PC relative addressing for m68k) 
