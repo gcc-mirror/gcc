@@ -1,3 +1,8 @@
+Sat May 22 07:17:05 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* tm.texi (FUNCTION_ARG): Correct description of a stack element
+	in a PARALLEL.
+
 Sat May 22 01:27:49 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.h (lang_expand_constant): Guard with #ifdef TREE_CODE.
