@@ -1,3 +1,13 @@
+2001-12-17  Robert Dewar <dewar@gnat.com>
+
+	* frontend.adb: Move call to Check_Unused_Withs from Frontend, so 
+	that it happens before modification of Sloc values for -gnatD.
+	
+	* gnat1drv.adb: Move call to Check_Unused_Withs to Frontend, 
+	so that it happens before modification of Sloc values for -gnatD.
+	
+	* switch.adb: Minor reformatting
+
 2001-12-15  Richard Henderson  <rth@redhat.com>
 
 	* sem_ch7.adb: Wrap comment.

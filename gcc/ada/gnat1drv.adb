@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.129 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -50,7 +50,6 @@ with Repinfo;  use Repinfo;
 with Restrict; use Restrict;
 with Sem;
 with Sem_Ch13;
-with Sem_Warn;
 with Sinfo;    use Sinfo;
 with Sinput.L; use Sinput.L;
 with Snames;
@@ -327,10 +326,6 @@ begin
          Exit_Program (E_Errors);
       end if;
 
-      --  Check for unused with's. We do this whether or not code is generated
-
-      Sem_Warn.Check_Unused_Withs;
-
       --  Set Generate_Code on main unit and its spec. We do this even if
       --  are not generating code, since Lib-Writ uses this to determine
       --  which units get written in the ali file.
@@ -346,10 +341,6 @@ begin
          Set_Generate_Code
            (Get_Cunit_Unit_Number (Library_Unit (Main_Unit_Node)));
       end if;
-
-      --  Check for unused with's. We do this whether or not code is generated
-
-      Sem_Warn.Check_Unused_Withs;
 
       --  Case of no code required to be generated, exit indicating no error
 

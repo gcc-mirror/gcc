@@ -221,14 +221,17 @@ package body Switch is
 
          when 'g' =>
             Ptr := Ptr + 1;
+
             if Ptr <= Max then
                C := Switch_Chars (Ptr);
+
                if C in '0' .. '3' then
                   Debugger_Level :=
                     Character'Pos
                       (Switch_Chars (Ptr)) - Character'Pos ('0');
                   Ptr := Ptr + 1;
                end if;
+
             else
                Debugger_Level := 2;
             end if;
