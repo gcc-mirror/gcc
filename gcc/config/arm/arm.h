@@ -877,7 +877,7 @@ extern const char * structure_size_string;
 #define ARG_REGISTER(N) 	(N - 1)
 
 /* RTX for structure returns.  NULL means use a hidden first argument.  */
-#define STRUCT_VALUE		NULL
+#define STRUCT_VALUE		0
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
