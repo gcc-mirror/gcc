@@ -1,3 +1,7 @@
+2000-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20000703-1.c: New test.
+
 2000-07-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt (lookup10.C): New test.
