@@ -365,6 +365,12 @@ sparc_override_options ()
 
   /* Do various machine dependent initializations.  */
   sparc_init_modes ();
+
+  if ((profile_flag || profile_block_flag)
+      && sparc_cmodel != CM_MEDLOW)
+    {
+      error ("profiling does not support code models other than medlow");
+    }
 }
 
 /* Miscellaneous utilities.  */
@@ -7530,4 +7536,308 @@ sparc_return_peephole_ok (dest, src)
       && (GET_CODE (src) != REG || ! IN_OR_GLOBAL_P (src)))
     return 0;
   return IN_OR_GLOBAL_P (dest);
+}
+
+/* Output assembler code to FILE to increment profiler label # LABELNO
+   for profiling a function entry.
+
+   32 bit sparc uses %g2 as the STATIC_CHAIN_REGNUM which gets clobbered
+   during profiling so we need to save/restore it around the call to mcount.
+   We're guaranteed that a save has just been done, and we use the space
+   allocated for intreg/fpreg value passing.  */
+
+void
+sparc_function_profiler (file, labelno)
+     FILE *file;
+     int labelno;
+{
+  char buf[32];
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
+
+  if (! TARGET_ARCH64)
+    fputs ("\tst\t%g2,[%fp-4]\n", file);
+
+  fputs ("\tsethi\t%hi(", file);
+  assemble_name (file, buf);
+  fputs ("),%o0\n", file);
+
+  fputs ("\tcall\t", file);
+  assemble_name (file, MCOUNT_FUNCTION);
+  putc ('\n', file);
+
+  fputs ("\t or\t%o0,%lo(", file);
+  assemble_name (file, buf);
+  fputs ("),%o0\n", file);
+
+  if (! TARGET_ARCH64)
+    fputs ("\tld\t[%fp-4],%g2\n", file);
+}
+
+
+/* The following macro shall output assembler code to FILE
+   to initialize basic-block profiling.
+
+   If profile_block_flag == 2
+
+	Output code to call the subroutine `__bb_init_trace_func'
+	and pass two parameters to it. The first parameter is
+	the address of a block allocated in the object module.
+	The second parameter is the number of the first basic block
+	of the function.
+
+	The name of the block is a local symbol made with this statement:
+	
+	    ASM_GENERATE_INTERNAL_LABEL (BUFFER, "LPBX", 0);
+
+	Of course, since you are writing the definition of
+	`ASM_GENERATE_INTERNAL_LABEL' as well as that of this macro, you
+	can take a short cut in the definition of this macro and use the
+	name that you know will result.
+
+	The number of the first basic block of the function is
+	passed to the macro in BLOCK_OR_LABEL.
+
+	If described in a virtual assembler language the code to be
+	output looks like:
+
+		parameter1 <- LPBX0
+		parameter2 <- BLOCK_OR_LABEL
+		call __bb_init_trace_func
+
+    else if profile_block_flag != 0
+
+	Output code to call the subroutine `__bb_init_func'
+	and pass one single parameter to it, which is the same
+	as the first parameter to `__bb_init_trace_func'.
+
+	The first word of this parameter is a flag which will be nonzero if
+	the object module has already been initialized.  So test this word
+	first, and do not call `__bb_init_func' if the flag is nonzero.
+	Note: When profile_block_flag == 2 the test need not be done
+	but `__bb_init_trace_func' *must* be called.
+
+	BLOCK_OR_LABEL may be used to generate a label number as a
+	branch destination in case `__bb_init_func' will not be called.
+
+	If described in a virtual assembler language the code to be
+	output looks like:
+
+		cmp (LPBX0),0
+		jne local_label
+		parameter1 <- LPBX0
+		call __bb_init_func
+	    local_label:
+
+*/
+
+void
+sparc_function_block_profiler(file, block_or_label)
+     FILE *file;
+     int block_or_label;
+{
+  char LPBX[32];
+  ASM_GENERATE_INTERNAL_LABEL (LPBX, "LPBX", 0);
+
+  if (profile_block_flag == 2)
+    {
+      fputs ("\tsethi\t%hi(", file);
+      assemble_name (file, LPBX);
+      fputs ("),%o0\n", file);
+  
+      fprintf (file, "\tsethi\t%%hi(%d),%%o1\n", block_or_label);
+
+      fputs ("\tor\t%o0,%lo(", file);
+      assemble_name (file, LPBX);
+      fputs ("),%o0\n", file);
+  
+      fprintf (file, "\tcall\t%s__bb_init_trace_func\n", user_label_prefix);
+
+      fprintf (file, "\t or\t%%o1,%%lo(%d),%%o1\n", block_or_label);
+    }
+  else if (profile_block_flag != 0)
+    {
+      char LPBY[32];
+      ASM_GENERATE_INTERNAL_LABEL (LPBY, "LPBY", block_or_label);
+
+      fputs ("\tsethi\t%hi(", file);
+      assemble_name (file, LPBX);
+      fputs ("),%o0\n", file);
+      
+      fputs ("\tld\t[%lo(", file);
+      assemble_name (file, LPBX);
+      fputs (")+%o0],%o1\n", file);
+
+      fputs ("\ttst\t%o1\n", file);
+
+      if (TARGET_V9)
+	{
+	  fputs ("\tbne,pn\t%icc,", file);
+	  assemble_name (file, LPBY);
+	  putc ('\n', file);
+	}
+      else
+	{
+	  fputs ("\tbne\t", file);
+	  assemble_name (file, LPBY);
+	  putc ('\n', file);
+	}
+
+      fputs ("\t or\t%o0,%lo(", file);
+      assemble_name (file, LPBX);
+      fputs ("),%o0\n", file);
+
+      fprintf (file, "\tcall\t%s__bb_init_func\n\t nop\n", user_label_prefix);
+
+      ASM_OUTPUT_INTERNAL_LABEL (file, "LPBY", block_or_label);
+    }
+}
+
+/* The following macro shall output assembler code to FILE
+   to increment a counter associated with basic block number BLOCKNO.
+
+   If profile_block_flag == 2
+
+	Output code to initialize the global structure `__bb' and
+	call the function `__bb_trace_func' which will increment the
+	counter.
+
+	`__bb' consists of two words. In the first word the number
+	of the basic block has to be stored. In the second word
+	the address of a block allocated in the object module 
+	has to be stored.
+
+	The basic block number is given by BLOCKNO.
+
+	The address of the block is given by the label created with 
+
+	    ASM_GENERATE_INTERNAL_LABEL (BUFFER, "LPBX", 0);
+
+	by FUNCTION_BLOCK_PROFILER.
+
+	Of course, since you are writing the definition of
+	`ASM_GENERATE_INTERNAL_LABEL' as well as that of this macro, you
+	can take a short cut in the definition of this macro and use the
+	name that you know will result.
+
+	If described in a virtual assembler language the code to be
+	output looks like:
+
+		move BLOCKNO -> (__bb)
+		move LPBX0 -> (__bb+4)
+		call __bb_trace_func
+
+	Note that function `__bb_trace_func' must not change the
+	machine state, especially the flag register. To grant
+	this, you must output code to save and restore registers
+	either in this macro or in the macros MACHINE_STATE_SAVE
+	and MACHINE_STATE_RESTORE. The last two macros will be
+	used in the function `__bb_trace_func', so you must make
+	sure that the function prologue does not change any 
+	register prior to saving it with MACHINE_STATE_SAVE.
+
+   else if profile_block_flag != 0
+
+	Output code to increment the counter directly.
+	Basic blocks are numbered separately from zero within each
+	compiled object module. The count associated with block number
+	BLOCKNO is at index BLOCKNO in an array of words; the name of 
+	this array is a local symbol made with this statement:
+
+	    ASM_GENERATE_INTERNAL_LABEL (BUFFER, "LPBX", 2);
+
+	Of course, since you are writing the definition of
+	`ASM_GENERATE_INTERNAL_LABEL' as well as that of this macro, you
+	can take a short cut in the definition of this macro and use the
+	name that you know will result. 
+
+	If described in a virtual assembler language, the code to be
+	output looks like:
+
+		inc (LPBX2+4*BLOCKNO)
+
+*/
+
+void
+sparc_block_profiler(file, blockno)
+     FILE *file;
+     int blockno;
+{
+  char LPBX[32];
+
+  if (profile_block_flag == 2)
+    {
+      ASM_GENERATE_INTERNAL_LABEL (LPBX, "LPBX", 0);
+
+      fprintf (file, "\tsethi\t%%hi(%s__bb),%%g1\n", user_label_prefix);
+      fprintf (file, "\tsethi\t%%hi(%d),%%g2\n", blockno);
+      fprintf (file, "\tor\t%%g1,%%lo(%s__bb),%%g1\n", user_label_prefix);
+      fprintf (file, "\tor\t%%g2,%%lo(%d),%%g2\n", blockno);
+
+      fputs ("\tst\t%g2,[%g1]\n", file);
+
+      fputs ("\tsethi\t%hi(", file);
+      assemble_name (file, LPBX);
+      fputs ("),%g2\n", file);
+  
+      fputs ("\tor\t%o0,%lo(", file);
+      assemble_name (file, LPBX);
+      fputs ("),%g2\n", file);
+  
+      fputs ("\tst\t%g2,[%g1+4]\n", file);
+      fputs ("\tmov\t%o7,%g2\n", file);
+
+      fprintf (file, "\tcall\t%s__bb_trace_func\n\t nop\n", user_label_prefix);
+
+      fputs ("\tmov\t%g2,%o7\n", file);
+    }
+  else if (profile_block_flag != 0)
+    {
+      ASM_GENERATE_INTERNAL_LABEL (LPBX, "LPBX", 2);
+
+      fputs ("\tsethi\t%hi(", file);
+      assemble_name (file, LPBX);
+      fprintf (file, "+%d),%%g1\n", blockno*4);
+
+      fputs ("\tld\t[%g1+%lo(", file);
+      assemble_name (file, LPBX);
+      fprintf (file, "+%d)],%%g2\n", blockno*4);
+
+      fputs ("\tadd\t%g2,1,%g2\n", file);
+
+      fputs ("\tst\t%g2,[%g1+%lo(", file);
+      assemble_name (file, LPBX);
+      fprintf (file, "+%d)]\n", blockno*4);
+    }
+}
+
+/* The following macro shall output assembler code to FILE
+   to indicate a return from function during basic-block profiling.
+
+   If profile_block_flag == 2:
+
+	Output assembler code to call function `__bb_trace_ret'.
+
+	Note that function `__bb_trace_ret' must not change the
+	machine state, especially the flag register. To grant
+	this, you must output code to save and restore registers
+	either in this macro or in the macros MACHINE_STATE_SAVE_RET
+	and MACHINE_STATE_RESTORE_RET. The last two macros will be
+	used in the function `__bb_trace_ret', so you must make
+	sure that the function prologue does not change any 
+	register prior to saving it with MACHINE_STATE_SAVE_RET.
+
+   else if profile_block_flag != 0:
+
+	The macro will not be used, so it need not distinguish
+	these cases.
+*/
+
+void
+sparc_function_block_profiler_exit(file)
+     FILE *file;
+{
+  if (profile_block_flag == 2)
+    fprintf (file, "\tcall\t%s__bb_trace_ret\n\t nop\n", user_label_prefix);
+  else
+    abort ();
 }
