@@ -1,3 +1,8 @@
+Sun Dec  7 22:38:12 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (lookup_template_function): Copy the template arguments,
+	not just the list containing them, to the permanent obstack.
+
 Sun Dec  7 15:53:06 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (expand_start_catch_block): suspend_momentary for the
