@@ -370,7 +370,7 @@
 #   define mach_type_known
 # endif
 # if defined(__s390__) && defined(LINUX)
-#    define S370
+#    define S390
 #    define mach_type_known
 # endif
 # if defined(__GNU__)
@@ -419,7 +419,8 @@
 		    /* 		        (CX_UX and DGUX)		*/
 		    /* 		   S370	      ==> 370-like machine	*/
 		    /* 			running Amdahl UTS4		*/
-		    /*			or a 390 running LINUX		*/
+		    /*		   S390       ==> 390-like machine      */
+		    /*			running LINUX			*/
 		    /* 		   ARM32      ==> Intel StrongARM	*/
 		    /* 		   IA64	      ==> Intel IPF		*/
 		    /*				  (e.g. Itanium)	*/
@@ -1523,12 +1524,29 @@
 #	define DATAEND (_end)
 #	define HEURISTIC2
 #   endif
+# endif
+
+# ifdef S390
+#   define MACH_TYPE "S390"
+#   define USE_GENERIC_PUSH_REGS
+#   ifndef __s390x__
+#	define ALIGNMENT 4
+#	define CPP_WORDSZ 32
+#   else
+#	define ALIGNMENT 8
+#	define CPP_WORDSZ 64
+#	define HBLKSIZE 4096
+#   endif
 #   ifdef LINUX
 #       define OS_TYPE "LINUX"
-#       define HEURISTIC1
+#       define LINUX_STACKBOTTOM
 #       define DYNAMIC_LOADING
         extern int __data_start[];
 #       define DATASTART ((ptr_t)(__data_start))
+	extern int _end[];
+#	define DATAEND (_end)
+#	define CACHE_LINE_SIZE 256
+#	define GETPAGESIZE() 4096
 #   endif
 # endif
 

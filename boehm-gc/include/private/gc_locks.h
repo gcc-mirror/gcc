@@ -209,6 +209,19 @@
         }
 #       define GC_TEST_AND_SET_DEFINED
 #    endif /* ARM32 */
+#    ifdef S390
+	inline static int GC_test_and_set(volatile unsigned int *addr) {
+	 int ret;
+	 __asm__ __volatile__ (
+		"	l	%0,0(%2)\n"
+		"0:	cs	%0,%1,0(%2)\n"
+		"	jl	0b"
+		: "=&d" (ret)
+		: "d" (1), "a" (addr)
+		: "cc", "memory");
+	  return ret;
+	}
+#    endif
 #  endif /* __GNUC__ */
 #  if (defined(ALPHA) && !defined(__GNUC__))
 #    define GC_test_and_set(addr) __cxx_test_and_set_atomic(addr, 1)
@@ -330,6 +343,27 @@
         }
 #      endif /* 0 */
 #     endif /* IA64 */
+#     if defined(S390)
+#      if !defined(GENERIC_COMPARE_AND_SWAP)
+	 inline static GC_bool GC_compare_and_exchange(volatile C_word *addr,
+						       GC_word old, GC_word new_val) 
+	 {
+	   int retval;
+	   __asm__ __volatile__ (
+#          ifndef __s390x__
+		"	cs  %1,%2,0(%3)\n"
+#          else
+		"	csg %1,%2,0(%3)\n"
+#	   endif
+		"	ipm %0\n"
+		"	srl %0,28\n"
+		: "=&d" (retval), "+d" (old)
+		: "d" (new_val), "a" (addr)
+		: "cc", "memory");
+	   return retval == 0;
+	}
+#      endif
+#     endif
 #     if !defined(GENERIC_COMPARE_AND_SWAP)
         /* Returns the original value of *addr.	*/
         inline static GC_word GC_atomic_add(volatile GC_word *addr,
