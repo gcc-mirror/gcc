@@ -47,7 +47,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 64
 #endif
-#if (LONG_DOUBLE_TYPE_SIZE == 96) || defined (REAL_ARITHMETIC)
+#if (LONG_DOUBLE_TYPE_SIZE == 96) || (LONG_DOUBLE_TYPE_SIZE == 128)
+#ifndef REAL_ARITHMETIC
+#define REAL_ARITHMETIC
+#endif
+#endif
+#ifdef REAL_ARITHMETIC
 /* **** Start of software floating point emulator interface macros **** */
 
 /* Support 80-bit extended real XFmode if LONG_DOUBLE_TYPE_SIZE
@@ -62,6 +67,17 @@ typedef struct {
 
 #else /* no XFmode support */
 
+#if (LONG_DOUBLE_TYPE_SIZE == 128)
+
+#define REAL_IS_NOT_DOUBLE
+#define REAL_ARITHMETIC
+typedef struct {
+  HOST_WIDE_INT r[(19 + sizeof (HOST_WIDE_INT))/(sizeof (HOST_WIDE_INT))];
+} realvaluetype;
+#define REAL_VALUE_TYPE realvaluetype
+
+#else /* not TFmode */
+
 #if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
 /* If no XFmode support, then a REAL_VALUE_TYPE is 64 bits wide
    but it is not necessarily a host machine double. */
@@ -75,10 +91,12 @@ typedef struct {
    is actually a host machine double. */
 #define REAL_VALUE_TYPE double
 #endif
+
+#endif /* no TFmode support */
 #endif /* no XFmode support */
 
 /* If emulation has been enabled by defining REAL_ARITHMETIC or by
-   setting LONG_DOUBLE_TYPE_SIZE to 96, then define macros so that
+   setting LONG_DOUBLE_TYPE_SIZE to 96 or 128, then define macros so that
    they invoke emulator functions. This will succeed only if the machine
    files have been updated to use these macros in place of any
    references to host machine `double' or `float' types.  */
@@ -89,9 +107,10 @@ typedef struct {
 
 /* Declare functions in real.c that are referenced here. */
 void earith (), ereal_from_uint (), ereal_from_int (), ereal_to_int ();
-void etarldouble (), etardouble ();
-long etarsingle ();
-int ereal_cmp (), eroundi (), ereal_isneg ();
+void etarldouble (), etartdouble (), etardouble ();
+long etarsingle (), efixi ();
+unsigned long efixui ();
+int ereal_cmp (), ereal_isneg ();
 unsigned int eroundui ();
 REAL_VALUE_TYPE etrunci (), etruncui (), ereal_ldexp (), ereal_atof ();
 REAL_VALUE_TYPE ereal_negate (), ereal_truncate ();
@@ -109,8 +128,11 @@ extern REAL_VALUE_TYPE real_value_truncate ();
 #define REAL_VALUE_TRUNCATE(mode, x)  real_value_truncate (mode, x)
 
 /* These return int: */
-#define REAL_VALUE_FIX(x) (eroundi (x))
-#define REAL_VALUE_UNSIGNED_FIX(x) ((unsigned int) eroundui (x))
+/* Convert a floating-point value to integer, rounding toward zero.  */
+#define REAL_VALUE_FIX(x) (efixi (x))
+/* Convert a floating-point value to unsigned integer, rounding
+   toward zero. */
+#define REAL_VALUE_UNSIGNED_FIX(x) (efixui (x))
 
 #define REAL_VALUE_ATOF ereal_atof
 #define REAL_VALUE_NEGATE ereal_negate
@@ -123,12 +145,19 @@ extern REAL_VALUE_TYPE real_value_truncate ();
 #define REAL_VALUE_FROM_UNSIGNED_INT(d, i, j) (ereal_from_uint (&d, i, j))
 
 /* IN is a REAL_VALUE_TYPE.  OUT is an array of longs. */
+#if LONG_DOUBLE_TYPE_SIZE == 96
 #define REAL_VALUE_TO_TARGET_LONG_DOUBLE(IN, OUT) (etarldouble ((IN), (OUT)))
+#else
+#define REAL_VALUE_TO_TARGET_LONG_DOUBLE(IN, OUT) (etartdouble ((IN), (OUT)))
+#endif
 #define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT) (etardouble ((IN), (OUT)))
-/* d is an array of longs. */
-#define REAL_VALUE_FROM_TARGET_DOUBLE(d)  (ereal_from_double (d))
+
 /* IN is a REAL_VALUE_TYPE.  OUT is a long. */
 #define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT) ((OUT) = etarsingle ((IN)))
+
+/* d is an array of longs. */
+#define REAL_VALUE_FROM_TARGET_DOUBLE(d)  (ereal_from_double (d))
+
 /* f is a long. */
 #define REAL_VALUE_FROM_TARGET_SINGLE(f)  (ereal_from_float (f))
 
@@ -138,7 +167,7 @@ extern REAL_VALUE_TYPE real_value_truncate ();
 #endif /* REAL_ARITHMETIC defined */
 
 /* **** End of software floating point emulator interface macros **** */
-#else /* LONG_DOUBLE_TYPE_SIZE != 96 and REAL_ARITHMETIC not defined */
+#else /* No XFmode or TFmode and REAL_ARITHMETIC not defined */
 
 /* old interface */
 #ifdef REAL_ARITHMETIC
@@ -230,13 +259,13 @@ do { REAL_VALUE_TYPE in = (IN);  /* Make sure it's not in a register.  */\
 #define REAL_VALUE_UNSIGNED_RNDZINT(x) ((double) ((unsigned int) (x)))
 #endif
 
-/* Convert a floating-point value to integer, using any rounding mode.  */
+/* Convert a floating-point value to integer, rounding toward zero.  */
 #ifndef REAL_VALUE_FIX
 #define REAL_VALUE_FIX(x) ((int) (x))
 #endif
 
-/* Convert a floating-point value to unsigned integer, using any rounding
-   mode.  */
+/* Convert a floating-point value to unsigned integer, rounding
+   toward zero. */
 #ifndef REAL_VALUE_UNSIGNED_FIX
 #define REAL_VALUE_UNSIGNED_FIX(x) ((unsigned int) (x))
 #endif
