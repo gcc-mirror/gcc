@@ -1371,6 +1371,9 @@ asm ("___builtin_saveregs:");
 #if defined(__MIPSEL__) | defined(__R3000__) | defined(__R2000__) | defined(__mips__)
 
   asm ("	.text");
+#ifdef __mips16
+  asm ("	.set nomips16");
+#endif
   asm ("	.ent __builtin_saveregs");
   asm ("	.globl __builtin_saveregs");
   asm ("__builtin_saveregs:");
