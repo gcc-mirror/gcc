@@ -306,7 +306,7 @@ namespace std
       void
       open(const char* __s, ios_base::openmode __mode = ios_base::in)
       {
-	if (_M_filebuf.open(__s, __mode | ios_base::in) == NULL)
+	if (!_M_filebuf.open(__s, __mode | ios_base::in))
 	  this->setstate(ios_base::failbit);
       }
 
