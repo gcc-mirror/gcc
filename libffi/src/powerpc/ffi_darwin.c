@@ -410,38 +410,40 @@ typedef struct aix_fd_struct {
                   +---------------------------------------+ 20
                   | saved TOC pointer 4                   | 
                   +---------------------------------------+ 24
-                  | always reserved 8*4=32  (revious GPRs)| 
+                  | always reserved 8*4=32 (previous GPRs)| 
                   | according to the linkage convention   |
-                  | from AIX			          |
+                  | from AIX                              |
                   +---------------------------------------+ 56
-                  | our FPR area 13*8=104   		  |
-                  | f1				   	  |
-                  | .	       				  |
-                  | f13    	        		  | 
+                  | our FPR area 13*8=104                 |
+                  | f1                                    |
+                  | .                                     |
+                  | f13                                   | 
                   +---------------------------------------+ 160
-                  | result area 4                         | 
-SP current -->    +---------------------------------------+ 164 <- parent frame
-                  | back chain to caller 4                | 
+                  | result area 8                         |
                   +---------------------------------------+ 168
-                  | saved CR 4                            | 
-                  +---------------------------------------+ 172
-                  | saved LR 4                            | 
-                  +---------------------------------------+ 176
-                  | reserved for compilers 4              | 
+                  | alignement to the next multiple of 16 |
+SP current -->    +---------------------------------------+ 176 <- parent frame
+                  | back chain to caller 4                | 
                   +---------------------------------------+ 180
-                  | reserved for binders 4                | 
+                  | saved CR 4                            | 
                   +---------------------------------------+ 184
-                  | saved TOC pointer 4                   | 
+                  | saved LR 4                            | 
                   +---------------------------------------+ 188
+                  | reserved for compilers 4              | 
+                  +---------------------------------------+ 192
+                  | reserved for binders 4                | 
+                  +---------------------------------------+ 196
+                  | saved TOC pointer 4                   | 
+                  +---------------------------------------+ 200
                   | always reserved 8*4=32  we store our  |
-                  | GPRs here	        		  |
-                  | r3		       			  |
-                  | .	        			  |
-                  | r10      				  |
-                  +---------------------------------------+ 220
-                  | PST area, overflow part	          | 
+                  | GPRs here                             |
+                  | r3                                    |
+                  | .                                     |
+                  | r10                                   |
+                  +---------------------------------------+ 232
+                  | PST area, overflow part               | 
                   +---------------------------------------+ xxx
-                  | ????				  | 
+                  | ????                                  | 
                   +---------------------------------------+ xxx
 
 */
