@@ -2,7 +2,8 @@
 const double dnan = 1.0/0.0 - 1.0/0.0;
 double x = 1.0;
 
-extern void link_error ();
+extern void link_error (void);
+extern void abort (void);
 
 main ()
 {
@@ -28,4 +29,11 @@ main ()
 #endif
   exit (0);
 }
+
+#ifndef __OPTIMIZE__
+void link_error (void)
+{
+  abort ();
+}
+#endif
 
