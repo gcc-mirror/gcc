@@ -77,15 +77,18 @@ deregister (void)
 }
 
 /* Start function.  */
-
 void
 _start(int argc, char *argv[], char *envp[], void *auxp, void (*termfunc)())
 {
   int ret;
   int dummy = 0;
 
+#if 0
+  /* Disable this for now, it causes an impossible reload.  */
   /* Load up r13/r2 before we do anything else.  */
   __asm__ volatile ("mr %%r13,%0;mr %%r2,%1" : "=r" (dummy) : "r" (&_SDA_BASE_[0]), "r" (&_SDA2_BASE_[0]), "r" (dummy));
+#endif
+
   _environ = envp + dummy;
 
   /* Register loader termination function (the || dummy is to make sure the above asm
