@@ -322,6 +322,10 @@ extern const char *darwin_fix_and_continue_switch;
       %{shared-libgcc:-lgcc_s -lgcc}} %{Zdynamiclib:-lgcc_s -lgcc}}}"
 
 /* We specify crt0.o as -lcrt0.o so that ld will search the library path.  */
+/* We don't want anything to do with crt2.o in the 64-bit case;
+   testing the PowerPC-specific -m64 flag here is a little irregular,
+   but it's overkill to make copies of this spec for each target
+   arch.  */
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC  \
@@ -329,11 +333,11 @@ extern const char *darwin_fix_and_continue_switch;
      %{!Zbundle:%{pg:%{static:-lgcrt0.o} \
                      %{!static:%{object:-lgcrt0.o} \
                                %{!object:%{preload:-lgcrt0.o} \
-                                 %{!preload:-lgcrt1.o crt2.o%s}}}} \
+                                 %{!preload:-lgcrt1.o %{!m64: crt2.o%s}}}}} \
                 %{!pg:%{static:-lcrt0.o} \
                       %{!static:%{object:-lcrt0.o} \
                                 %{!object:%{preload:-lcrt0.o} \
-                                  %{!preload:-lcrt1.o crt2.o%s}}}}}}"
+                                  %{!preload:-lcrt1.o %{!m64: crt2.o%s}}}}}}}"
 
 /* The native Darwin linker doesn't necessarily place files in the order
    that they're specified on the link line.  Thus, it is pointless
@@ -989,7 +993,7 @@ enum machopic_addr_class {
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)  \
   (((CODE) == 2 && (GLOBAL) == 1) \
-   ? (DW_EH_PE_pcrel | DW_EH_PE_indirect) : \
+   ? (DW_EH_PE_pcrel | DW_EH_PE_indirect | DW_EH_PE_sdata4) : \
      ((CODE) == 1 || (GLOBAL) == 0) ? DW_EH_PE_pcrel : DW_EH_PE_absptr)
 
 #define ASM_OUTPUT_DWARF_DELTA(FILE,SIZE,LABEL1,LABEL2)  \

@@ -1358,21 +1358,22 @@ darwin_assemble_visibility (tree decl, int vis)
 static int darwin_dwarf_label_counter;
 
 void
-darwin_asm_output_dwarf_delta (FILE *file, int size ATTRIBUTE_UNUSED,
+darwin_asm_output_dwarf_delta (FILE *file, int size,
 			       const char *lab1, const char *lab2)
 {
   int islocaldiff = (lab1[0] == '*' && lab1[1] == 'L'
 		     && lab2[0] == '*' && lab2[1] == 'L');
+  char *directive = (size == 8 ? ".quad" : ".long");
 
   if (islocaldiff)
     fprintf (file, "\t.set L$set$%d,", darwin_dwarf_label_counter);
   else
-    fprintf (file, "\t%s\t", ".long");
+    fprintf (file, "\t%s\t", directive);
   assemble_name_raw (file, lab1);
   fprintf (file, "-");
   assemble_name_raw (file, lab2);
   if (islocaldiff)
-    fprintf (file, "\n\t.long L$set$%d", darwin_dwarf_label_counter++);
+    fprintf (file, "\n\t%s L$set$%d", directive, darwin_dwarf_label_counter++);
 }
 
 void
