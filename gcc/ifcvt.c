@@ -745,6 +745,15 @@ noce_try_move (struct noce_if_info *if_info)
 	  seq = get_insns ();
 	  unshare_ifcvt_sequence (if_info, seq);
 	  end_sequence ();
+
+	  /* Make sure that all of the instructions emitted are
+	     recognizable.  As an excersise for the reader, build
+	     a general mechanism that allows proper placement of
+	     required clobbers.  */
+	  for (y = seq; y ; y = NEXT_INSN (y))
+	    if (recog_memoized (y) == -1)
+	      return FALSE;
+
 	  emit_insn_before_setloc (seq, if_info->jump,
 				   INSN_LOCATOR (if_info->insn_a));
 	}
