@@ -5190,7 +5190,8 @@ really_start_incremental_init (type)
 	    = TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type));
 
 	  /* Detect non-empty initializations of zero-length arrays.  */
-	  if (constructor_max_index == NULL_TREE)
+	  if (constructor_max_index == NULL_TREE
+	      && TYPE_SIZE (constructor_type))
 	    constructor_max_index = build_int_2 (-1, -1);
 
 	  constructor_index
@@ -5352,14 +5353,15 @@ push_init_level (implicit)
 	{
 	  constructor_max_index
 	    = TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type));
+
+	  /* Detect non-empty initializations of zero-length arrays.  */
+	  if (constructor_max_index == NULL_TREE
+	      && TYPE_SIZE (constructor_type))
+	    constructor_max_index = build_int_2 (-1, -1);
+
 	  constructor_index
 	    = convert (bitsizetype, 
 		       TYPE_MIN_VALUE (TYPE_DOMAIN (constructor_type)));
-
-	  /* ??? For GCC 3.1, remove special case initialization of
-	     zero-length array members from pop_init_level and set
-	     constructor_max_index such that we get the normal
-	     "excess elements" warning.  */
 	}
       else
 	constructor_index = bitsize_zero_node;
@@ -5438,19 +5440,9 @@ pop_init_level (implicit)
 	    constructor_type = NULL_TREE;
 	}
       else
-	{
-	  warning_init ("deprecated initialization of zero-length array");
-
-	  /* We must be initializing the last member of a top-level struct.  */
-	  if (TREE_CHAIN (constructor_fields) != NULL_TREE)
-	    {
-	      error_init ("initialization of zero-length array before end of structure");
-	      /* Discard the initializer so that we do not abort later.  */
-	      constructor_type = NULL_TREE;
-	    }
-	  else if (constructor_depth > 2)
-	    error_init ("initialization of zero-length array inside a nested context");
-	}
+	/* Zero-length arrays are no longer special, so we should no longer
+	   get here.  */
+	abort();
     }
 
   /* Warn when some struct elements are implicitly initialized to zero.  */

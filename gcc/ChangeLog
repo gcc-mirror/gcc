@@ -1,3 +1,13 @@
+2001-09-20  DJ Delorie  <dj@redhat.com>
+
+	* c-typeck.c (really_start_incremental_init): Discriminate
+	between zero-length arrays and flexible arrays.
+	(push_init_level): Detect zero-length arrays and handle them
+	like fixed-sized arrays.
+	* expr.c (store_constructor): Handle zero-length arrays and
+	flexible arrays correctly.
+	* doc/extend.texi: Update zero-length array notes.
+
 2001-09-20  Jim Wilson  <wilson@redhat.com>
 
 	* config/ia64/ia64.c (itanium_split_issue): Allow max 2 FP per cycle.
