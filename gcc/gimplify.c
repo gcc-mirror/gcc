@@ -214,16 +214,13 @@ gimple_pop_condition (tree *pre_p)
     }
 }
 
-/* A subroutine of append_to_statement_list{,_force}.  */
+/* A subroutine of append_to_statement_list{,_force}.  T is not NULL.  */
 
 static void
-append_to_statement_list_1 (tree t, tree *list_p, bool side_effects)
+append_to_statement_list_1 (tree t, tree *list_p)
 {
   tree list = *list_p;
   tree_stmt_iterator i;
-
-  if (!side_effects)
-    return;
 
   if (!list)
     {
@@ -245,7 +242,8 @@ append_to_statement_list_1 (tree t, tree *list_p, bool side_effects)
 void
 append_to_statement_list (tree t, tree *list_p)
 {
-  append_to_statement_list_1 (t, list_p, t ? TREE_SIDE_EFFECTS (t) : false);
+  if (t && TREE_SIDE_EFFECTS (t))
+    append_to_statement_list_1 (t, list_p);
 }
 
 /* Similar, but the statement is always added, regardless of side effects.  */
@@ -253,7 +251,8 @@ append_to_statement_list (tree t, tree *list_p)
 void
 append_to_statement_list_force (tree t, tree *list_p)
 {
-  append_to_statement_list_1 (t, list_p, t != NULL);
+  if (t != NULL_TREE)
+    append_to_statement_list_1 (t, list_p);
 }
 
 /* Both gimplify the statement T and append it to LIST_P.  */

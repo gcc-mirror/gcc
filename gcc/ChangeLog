@@ -1,3 +1,13 @@
+2004-12-06  Roger Sayle  <roger@eyesopen.com>
+
+	* c-gimplify.c (gimplify_c_loop): Improve initial implementations
+	for loops whose conditions are known at compile-time.
+	* gimplify.c (append_to_statement_list_1): Remove side_effects
+	parameter, this function should never be called if its false.
+	(append_to_statement_list): Only call append_to_statement_list_1
+	if t is non-NULL tree with side-effects.
+	(append_to_statement_list_force):  Likewise, if t is not NULL.
+
 2004-12-06  J"orn Rennecke <joern.rennecke@st.com>
 
 	* bt-load.c (btr_def_s): New member own_end;
