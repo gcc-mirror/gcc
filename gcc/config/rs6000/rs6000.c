@@ -155,7 +155,7 @@ static char alt_reg_names[][8] =
 
 void
 rs6000_override_options (default_cpu)
-     char *default_cpu;
+     const char *default_cpu;
 {
   size_t i, j;
   struct rs6000_cpu_select *ptr;
@@ -170,7 +170,7 @@ rs6000_override_options (default_cpu)
 
   static struct ptt
     {
-      char *name;		/* Canonical processor name.  */
+      const char *name;		/* Canonical processor name.  */
       enum processor_type processor; /* Processor type enum value.  */
       int target_enable;	/* Target flags to enable.  */
       int target_disable;	/* Target flags to disable.  */
@@ -374,11 +374,11 @@ optimization_options (level, size)
 void
 rs6000_file_start (file, default_cpu)
      FILE *file;
-     char *default_cpu;
+     const char *default_cpu;
 {
   size_t i;
   char buffer[80];
-  char *start = buffer;
+  const char *start = buffer;
   struct rs6000_cpu_select *ptr;
 
   if (flag_verbose_asm)
@@ -422,7 +422,7 @@ rs6000_file_start (file, default_cpu)
 
 struct rtx_def *
 rs6000_float_const (string, mode)
-     char *string;
+     const char *string;
      enum machine_mode mode;
 {
   REAL_VALUE_TYPE value = REAL_VALUE_ATOF (string, mode);
@@ -2361,7 +2361,7 @@ rs6000_replace_regno (x, from, reg)
      rtx *reg;
 {
   register int i, j;
-  register char *fmt;
+  register const char *fmt;
 
   /* Allow this function to make replacements in EXPR_LISTs.  */
   if (!x)
@@ -3663,7 +3663,7 @@ void
 debug_stack_info (info)
      rs6000_stack_t *info;
 {
-  char *abi_string;
+  const char *abi_string;
 
   if (!info)
     info = rs6000_stack_info ();
@@ -3818,7 +3818,7 @@ rs6000_output_load_toc_table (file, reg)
 	 address before loading.  */
       if (rs6000_pic_func_labelno != rs6000_pic_labelno)
 	{
-	  char *init_ptr = TARGET_32BIT ? ".long" : ".quad";
+	  const char *init_ptr = TARGET_32BIT ? ".long" : ".quad";
 	  char *buf_ptr;
 
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCL", rs6000_pic_labelno);
@@ -3932,8 +3932,8 @@ output_prolog (file, size)
 {
   rs6000_stack_t *info = rs6000_stack_info ();
   int reg_size = info->reg_size;
-  char *store_reg;
-  char *load_reg;
+  const char *store_reg;
+  const char *load_reg;
   int sp_reg = 1;
   int sp_offset = 0;
 
@@ -4112,7 +4112,7 @@ output_prolog (file, size)
      before dealing with the TOC.  */
   if (info->main_p)
     {
-      char *prefix = "";
+      const char *prefix = "";
 
       switch (DEFAULT_ABI)
 	{
@@ -4187,7 +4187,7 @@ output_epilog (file, size)
      int size ATTRIBUTE_UNUSED;
 {
   rs6000_stack_t *info = rs6000_stack_info ();
-  char *load_reg = (TARGET_32BIT) ? "\t{l|lwz} %s,%d(%s)\n" : "\tld %s,%d(%s)\n";
+  const char *load_reg = (TARGET_32BIT) ? "\t{l|lwz} %s,%d(%s)\n" : "\tld %s,%d(%s)\n";
   rtx insn = get_last_insn ();
   int sp_reg = 1;
   int sp_offset = 0;
@@ -4527,20 +4527,22 @@ output_epilog (file, size)
 void
 output_mi_thunk (file, thunk_fndecl, delta, function)
      FILE *file;
-     tree thunk_fndecl;
+     tree thunk_fndecl ATTRIBUTE_UNUSED;
      int delta;
      tree function;
 {
-  char *this_reg = reg_names[ aggregate_value_p (TREE_TYPE (TREE_TYPE (function))) ? 4 : 3 ];
-  char *r0	 = reg_names[0];
-  char *sp	 = reg_names[1];
-  char *toc	 = reg_names[2];
-  char *schain	 = reg_names[11];
-  char *r12	 = reg_names[12];
-  char *prefix;
+  const char *this_reg = reg_names[ aggregate_value_p (TREE_TYPE (TREE_TYPE (function))) ? 4 : 3 ];
+  const char *prefix;
   char *fname;
+#if 0
+  const char *r0	 = reg_names[0];
+  const char *sp	 = reg_names[1];
+  const char *toc	 = reg_names[2];
+  const char *schain	 = reg_names[11];
+  const char *r12	 = reg_names[12];
   char buf[512];
   static int labelno = 0;
+#endif
 
   /* Small constants that can be done by one add instruction */
   if (delta >= -32768 && delta <= 32767)
@@ -4915,14 +4917,14 @@ output_toc (file, x, labelno)
 void
 output_ascii (file, p, n)
      FILE *file;
-     char *p;
+     const char *p;
      int n;
 {
   char c;
   int i, count_string;
-  char *for_string = "\t.byte \"";
-  char *for_decimal = "\t.byte ";
-  char *to_close = NULL;
+  const char *for_string = "\t.byte \"";
+  const char *for_decimal = "\t.byte ";
+  const char *to_close = NULL;
 
   count_string = 0;
   for (i = 0; i < n; i++)
@@ -4992,7 +4994,7 @@ rs6000_gen_section_name (buf, filename, section_desc)
      char *filename;
      char *section_desc;
 {
-  char *q, *after_last_slash, *last_period;
+  char *q, *after_last_slash, *last_period = 0;
   char *p;
   int len;
 
@@ -5198,7 +5200,7 @@ rs6000_adjust_cost (insn, link, dep_insn, cost)
 
 int
 rs6000_adjust_priority (insn, priority)
-     rtx insn;
+     rtx insn ATTRIBUTE_UNUSED;
      int priority;
 {
   /* On machines (like the 750) which have asymetric integer units, where one
@@ -5269,9 +5271,9 @@ void
 rs6000_trampoline_template (file)
      FILE *file;
 {
-  char *sc = reg_names[STATIC_CHAIN_REGNUM];
-  char *r0 = reg_names[0];
-  char *r2 = reg_names[2];
+  const char *sc = reg_names[STATIC_CHAIN_REGNUM];
+  const char *r0 = reg_names[0];
+  const char *r2 = reg_names[2];
 
   switch (DEFAULT_ABI)
     {
@@ -5535,7 +5537,7 @@ struct rtx_def *
 rs6000_dll_import_ref (call_ref)
      rtx call_ref;
 {
-  char *call_name;
+  const char *call_name;
   int len;
   char *p;
   rtx reg1, reg2;
@@ -5564,7 +5566,7 @@ struct rtx_def *
 rs6000_longcall_ref (call_ref)
      rtx call_ref;
 {
-  char *call_name;
+  const char *call_name;
   tree node;
 
   if (GET_CODE (call_ref) != SYMBOL_REF)
@@ -5679,7 +5681,7 @@ rs6000_encode_section_info (decl)
 
       if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT)
 	{
-	  char *prefix = (DEFAULT_ABI == ABI_AIX) ? "." : "..";
+	  const char *prefix = (DEFAULT_ABI == ABI_AIX) ? "." : "..";
 	  char *str = permalloc (strlen (prefix) + 1
 				 + strlen (XSTR (sym_ref, 0)));
 	  strcpy (str, prefix);
@@ -5693,7 +5695,7 @@ rs6000_encode_section_info (decl)
     {
       int size = int_size_in_bytes (TREE_TYPE (decl));
       tree section_name = DECL_SECTION_NAME (decl);
-      char *name = (char *)0;
+      const char *name = (char *)0;
       int len = 0;
 
       if (section_name)

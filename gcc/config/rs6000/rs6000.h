@@ -3218,6 +3218,8 @@ extern int flag_expensive_optimizations;
 extern int frame_pointer_needed;
 
 /* Declare functions in rs6000.c */
+extern int offsettable_mem_operand ();
+extern void optimization_options ();
 extern void output_options ();
 extern void rs6000_override_options ();
 extern void rs6000_file_start ();
