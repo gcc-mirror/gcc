@@ -66,10 +66,9 @@ gcc/configure: gcc/configure.in
 gcc/cstamp-h.in: gcc/configure.in gcc/acconfig.h
 gcc/config.in: gcc/cstamp-h.in
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
-gcc/tradcif.c: gcc/tradcif.y
 gcc/gcov.1: gcc/gcov.texi
 # And then, language-specific files
-gcc/java/parse.h: gcc/java/parse.y
+# (None at present.)
 # And libraries, at last
 libchill/configure: libchill/configure.in
 libf2c/configure: libf2c/configure.in
