@@ -1,3 +1,8 @@
+2004-05-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (emit_move_sequence): Fix loading of non 14-bit CONST operands
+	when generating PIC code.
+
 2004-05-30  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* c-decl.c (c_expand_body_1): Remove and fold back into ...
