@@ -2580,6 +2580,18 @@ subst (x, from, to, in_dest, unique_copy)
 
  restart:
 
+  /* If we have restarted more than 4 times, we are probably looping, so
+     give up.  */
+  if (++n_restarts > 4)
+    return x;
+
+  /* If we are restarting at all, it means that we no longer know the
+     original mode of operand 0 (since we have probably changed the
+     form of X).  */
+
+  if (n_restarts > 1)
+    op0_mode = VOIDmode;
+
   code = GET_CODE (x);
 
   /* If this is a commutative operation, put a constant last and a complex
@@ -2662,11 +2674,6 @@ subst (x, from, to, in_dest, unique_copy)
 
   if (temp)
     x = temp, code = GET_CODE (temp);
-
-  /* If we have restarted more than 4 times, we are probably looping, so
-     give up.  */
-  if (++n_restarts > 4)
-    return x;
 
   /* First see if we can apply the inverse distributive law.  */
   if (code == PLUS || code == MINUS || code == IOR || code == XOR)
