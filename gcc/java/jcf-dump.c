@@ -1042,7 +1042,7 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
 #define TABLE_SWITCH \
   { jint default_offset = IMMEDIATE_s4; \
     jint low = IMMEDIATE_s4; jint high = IMMEDIATE_s4; \
-    fprintf (out, " low==%d, high=%ddefault=%d", \
+    fprintf (out, " low=%d, high=%d, default=%d", \
       low, high, default_offset+oldpc); \
     for (; low <= high; low++) { \
      jint offset = IMMEDIATE_s4; \
