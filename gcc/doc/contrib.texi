@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001
+@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -225,7 +225,7 @@ Klaus Kaempf for his ongoing work to make alpha-vms a viable target.
 David Kashtan of SRI adapted GCC to VMS@.
 
 @item
-Geoffrey Keating for his ongoing work to make the PPC work for Linux
+Geoffrey Keating for his ongoing work to make the PPC work for GNU/Linux
 and his automatic regression tester.
 
 @item
@@ -308,7 +308,7 @@ and various C++ improvements including namespace support.
 
 @item
 H.J. Lu for his previous contributions to the steering committee, many x86
-bug reports, prototype patches, and keeping the Linux ports working.
+bug reports, prototype patches, and keeping the GNU/Linux ports working.
 
 @item
 Greg McGary for random fixes and (someday) bounded pointers.
@@ -347,7 +347,7 @@ C++ work, load/store hoisting out of loops, alias analysis improvements,
 ISO C @code{restrict} support, and serving as release manager for GCC 3.0.
 
 @item
-Alan Modra for various Linux bits and testing.
+Alan Modra for various GNU/Linux bits and testing.
 
 @item
 Toon Moene for his direction via the steering committee, Fortran
@@ -360,8 +360,8 @@ services, ftp services, etc etc.
 
 @item
 Catherine Moore for fixing various ugly problems we have sent her
-way, including the haifa bug which was killing the Alpha & PowerPC Linux
-kernels.
+way, including the haifa bug which was killing the Alpha & PowerPC
+Linux kernels.
 
 @item
 David Mosberger-Tang for various Alpha improvements.
@@ -529,7 +529,7 @@ fixincludes, etc.
 Holger Teutsch provided the support for the Clipper cpu.
 
 @item
-Gary Thomas for his ongoing work to make the PPC work for Linux.
+Gary Thomas for his ongoing work to make the PPC work for GNU/Linux.
 
 @item
 Philipp Thomas for random bugfixes throughout the compiler
