@@ -284,20 +284,19 @@ extra_target_headers = \
 	${target_builddir}/messages_members.h \
 	${target_builddir}/codecvt_specializations.h
 
-thread_builddir = ./${target_alias}/bits
-thread_headers = \
-	${thread_builddir}/gthr.h \
-	${thread_builddir}/gthr-single.h \
-	${thread_builddir}/gthr-default.h
+thread_target_headers = \
+	${target_builddir}/gthr.h \
+	${target_builddir}/gthr-single.h \
+	${target_builddir}/gthr-default.h
 
 # List of all timestamp files.  By keeping only one copy of this list, both
 # CLEANFILES and all-local are kept up-to-date.
 allstamps = stamp-std stamp-bits stamp-c_base stamp-backward stamp-ext \
-	stamp-target stamp-thread 
+	${target_builddir}/stamp-target
 
 
 # Here are the rules for building the headers
-all-local: ${target_builddir}/c++config.h ${allstamps}
+all-local: ${target_builddir}/c++config.h ${thread_target_headers} ${allstamps}
 
 # This rule is slightly different, in that we must change the name of the
 # local file from std_foo.h to foo.
@@ -343,11 +342,6 @@ stamp-ext: ${ext_headers}
 	(cd ${ext_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-ext
 
-# This target is special.  The timestamp on a directory gets modified
-# whenever a file it contains gets modified, and that'll throw off all the
-# build dependencies that need this target.  On the other hand, someone
-# could delete the directory and not the stamp file, faking out make.
-${target_builddir}: stamp-${target_alias}
 stamp-${target_alias}:
 	@if [ ! -d ${target_builddir} ]; then \
 	  mkdir -p ${target_builddir} ;\
@@ -355,7 +349,7 @@ stamp-${target_alias}:
 	fi
 
 # Target includes static.
-stamp-target: ${target_headers} ${target_builddir}
+${target_builddir}/stamp-target: ${target_headers} stamp-${target_alias}
 	@cd ${target_builddir} ;\
 	if [ ! -f stamp-target ]; then \
 	  @LN_S@ ${target_headers} . || true ;\
@@ -368,9 +362,9 @@ stamp-target: ${target_headers} ${target_builddir}
 	fi
 
 # Target includes dynamic.
-${target_builddir}/c++config.h: ../config.h \
+${target_builddir}/c++config.h: ${glibcpp_builddir}/config.h \
 				${glibcpp_srcdir}/include/bits/c++config \
-				${target_builddir}
+				stamp-${target_alias}
 	@cat ${glibcpp_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCPP_HAVE_/g' \
 	    -e 's/PACKAGE/_GLIBCPP_PACKAGE/g' \
@@ -383,21 +377,19 @@ ${target_builddir}/c++config.h: ../config.h \
 glibcpp_thread_h = @glibcpp_thread_h@
 uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
 
-stamp-thread: ${thread_headers} ${thread_builddir}
-	@echo `date` > stamp-thread
-
-
-${thread_builddir}/gthr.h:
+${target_builddir}/gthr.h: ${toplevel_srcdir}/gcc/gthr.h stamp-${target_alias}
 	sed -e '/^#/s/\(${uppercase}${uppercase}*\)/_GLIBCPP_\1/g' \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
 	    < ${toplevel_srcdir}/gcc/gthr.h > $@
 
-${thread_builddir}/gthr-single.h:
+${target_builddir}/gthr-single.h: ${toplevel_srcdir}/gcc/gthr-single.h \
+				  stamp-${target_alias}
 	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
 	    < ${toplevel_srcdir}/gcc/gthr-single.h > $@
 
-${thread_builddir}/gthr-default.h:
+${target_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcpp_thread_h} \
+				   stamp-${target_alias}
 	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
 	    -e 's/\(${uppercase}*WEAK\)/_GLIBCPP_\1/g' \
@@ -434,11 +426,9 @@ install-data-local:
 	  $(INSTALL_DATA) ${std_builddir}/$${file} \
 	    ${gxx_include_dir}/${std_builddir}; done
 	$(INSTALL) -d ${gxx_include_dir}/${target_builddir}
-	for file in ${target_headers} ${extra_target_headers}; do \
+	for file in ${target_headers} ${extra_target_headers} \
+	 ${thread_target_headers}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${target_builddir}; done
-	$(INSTALL) -d ${gxx_include_dir}/${thread_builddir}
-	for file in ${thread_headers}; do \
-	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${thread_builddir}; done
 
 # By adding these files here, automake will remove them for 'make clean'
 #CLEANFILES = ${allstamps}

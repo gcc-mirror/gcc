@@ -1,3 +1,16 @@
+2002-02-18  Loren Rittle <ljrittle@acm.org>
+
+	libstdc++/5697
+	* include/Makefile.am (thread_builddir): Remove (map all
+	existing uses to target_builddir).
+	(thread_headers): Rename to...
+	(thread_target_headers): ...this.
+	(stamp-thread): Remove.
+	(stamp-target): Correctly state the position as built.
+	Update all dependencies to match the new reality.  Remove all
+	dependency calculations on directories.
+	* include/Makefile.in: Rebuilt.
+
 2002-02-16   Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.tcc: Add pragma GCC system_header.	
