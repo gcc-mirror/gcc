@@ -117,7 +117,9 @@ struct arglist {
 #define CHAR_BIT 8
 #endif
 
+#ifndef HOST_BITS_PER_WIDE_INT
 #define HOST_BITS_PER_WIDE_INT (CHAR_BIT * sizeof (HOST_WIDE_INT))
+#endif
 
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 # define __attribute__(x)

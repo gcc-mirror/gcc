@@ -156,7 +156,9 @@ static long right_shift ();
 #define CHAR_BIT 8
 #endif
 
+#ifndef HOST_BITS_PER_WIDE_INT
 #define HOST_BITS_PER_WIDE_INT (CHAR_BIT * sizeof (HOST_WIDE_INT))
+#endif
 
 struct operation {
     short op;
