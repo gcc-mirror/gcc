@@ -1,3 +1,12 @@
+2001-02-08  Chandrakala Chavva  <cchavva@redhat.com>
+
+	* config.gcc : New targets, i386-*-chorusos*, sparc-*-chorusos*,
+	powerpc-*-chorusos* .
+	* config/rs6000/chorus.h : New file.
+	* config/i386/chorus.h : New file.
+	* config/sparc/chorus.h : New file.
+	* config/sparc/t-chorus-elf : New file.
+
 2001-02-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (ASM_OUTPUT_SYMBOL_REF): Move from here ...
@@ -101,7 +110,7 @@ Thu Feb  8 11:21:28 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-02-06  Chandrakala Chavva  <cchavva@redhat.com>
 
-	* final.c: Revert back my previous changes.
+	* final.c: Revert my previous changes.
 	* output.h: Make profile_label_no extern.
 	* config/rs6000/rs6000.c (output_profile_hook): Use standard functions
 	for generating label.
