@@ -1,3 +1,9 @@
+Mon Sep 15 15:24:00 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha/alpha.c (output_prolog): New variable sa_reg.  Use it for
+	out-or-range reg_offset.
+	(output_epilog): Likewise.
+
 Mon Sep 15 15:39:26 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (simplify_relational_operation): If MODE specifies a
