@@ -1,3 +1,10 @@
+2004-07-10  David Billinghurst (David.Billinghurst@riotinto.com)
+
+	* lib/gfortran-dg.exp (gfortran-dg-test):  Adapt regular
+	expression to match gfortran warning/error messages
+	* gfortran.dg/g77/12632.f: Copy from g77.dg and fix
+	dg-error text.
+
 2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
 
 	* lib/fortran-torture.exp: Rename proc search_for to 
