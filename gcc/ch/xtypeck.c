@@ -43,19 +43,8 @@ mark_addressable (exp)
       case ARRAY_REF:
       case REALPART_EXPR:
       case IMAGPART_EXPR:
-/* start-sanitize-chill */
-      case TRUTH_ANDIF_EXPR:
-      case TRUTH_ORIF_EXPR:
-      case COMPOUND_EXPR:
-/* end-sanitize-chill */
 	x = TREE_OPERAND (x, 0);
 	break;
-/* start-sanitize-chill */
-
-      case COND_EXPR:
-	return mark_addressable (TREE_OPERAND (x, 1))
-	  & mark_addressable (TREE_OPERAND (x, 2));
-/* end-sanitize-chill */
 
       case CONSTRUCTOR:
 	TREE_ADDRESSABLE (x) = 1;
