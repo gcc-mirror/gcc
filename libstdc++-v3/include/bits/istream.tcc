@@ -588,11 +588,10 @@ namespace std {
 	    bool __testdelim = __c == __idelim;
 	    bool __testeof =  __c == __eof;
 	    bool __testput = true;
-	    streamsize __n = __this_sb->in_avail();
 
-	    while (_M_gcount <= __n && !__testeof && !__testdelim 
+	    while (!__testeof && !__testdelim 
 		   && (__testput = __sb.sputc(traits_type::to_char_type(__c)) 
-		                   != __eof))
+		       != __eof))
 	      {
 		++_M_gcount;
 		__c = __this_sb->sbumpc();
