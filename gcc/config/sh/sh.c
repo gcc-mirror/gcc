@@ -87,8 +87,6 @@ enum processor_type sh_cpu;
 rtx sh_compare_op0;
 rtx sh_compare_op1;
 
-enum machine_mode sh_addr_diff_vec_mode;
-
 /* Provides the class number of the smallest class containing
    reg number.  */
 

@@ -251,7 +251,6 @@ do {									\
      break global alloc, and generates slower code anyway due		\
      to the pressure on R0.  */						\
   flag_schedule_insns = 0;						\
-  sh_addr_diff_vec_mode = TARGET_BIGTABLE ? SImode : HImode;		\
 } while (0)
 
 /* Target machine storage layout.  */
@@ -2074,8 +2073,6 @@ enum processor_type {
 
 #define sh_cpu_attr ((enum attr_cpu)sh_cpu)
 extern enum processor_type sh_cpu;
-
-extern enum machine_mode sh_addr_diff_vec_mode;
 
 extern int optimize; /* needed for gen_casesi.  */
 
