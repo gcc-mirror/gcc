@@ -683,6 +683,10 @@ rs6000_override_options (default_cpu)
 	target_flags |= MASK_AIX_STRUCT_RET;
     }
 
+  if (TARGET_LONG_DOUBLE_128
+      && (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_DARWIN))
+    real_format_for_mode[TFmode - QFmode] = &ibm_extended_format;
+
   /* Register global variables with the garbage collector.  */
   rs6000_add_gc_roots ();
 
@@ -1306,7 +1310,21 @@ easy_fp_constant (op, mode)
     return 0;
 #endif
 
-  if (mode == DFmode)
+  if (mode == TFmode)
+    {
+      long k[4];
+      REAL_VALUE_TYPE rv;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
+      REAL_VALUE_TO_TARGET_LONG_DOUBLE (rv, k);
+
+      return (num_insns_constant_wide ((HOST_WIDE_INT) k[0]) == 1
+	      && num_insns_constant_wide ((HOST_WIDE_INT) k[1]) == 1
+	      && num_insns_constant_wide ((HOST_WIDE_INT) k[2]) == 1
+	      && num_insns_constant_wide ((HOST_WIDE_INT) k[3]) == 1);
+    }
+
+  else if (mode == DFmode)
     {
       long k[2];
       REAL_VALUE_TYPE rv;
@@ -2095,7 +2113,7 @@ rs6000_legitimize_address (x, oldx, mode)
 	   && GET_MODE_NUNITS (mode) == 1
 	   && ((TARGET_HARD_FLOAT && TARGET_FPRS)
 	       || TARGET_POWERPC64
-	       || mode != DFmode)
+	       || (mode != DFmode && mode != TFmode))
 	   && (TARGET_POWERPC64 || mode != DImode)
 	   && mode != TImode)
     {
@@ -2348,7 +2366,7 @@ rs6000_legitimate_address (mode, x, reg_ok_strict)
   if (mode != TImode
       && ((TARGET_HARD_FLOAT && TARGET_FPRS)
 	  || TARGET_POWERPC64
-	  || mode != DFmode)
+	  || (mode != DFmode && mode != TFmode))
       && (TARGET_POWERPC64 || mode != DImode)
       && LEGITIMATE_INDEXED_ADDRESS_P (x, reg_ok_strict))
     return 1;
@@ -3026,7 +3044,7 @@ function_arg_advance (cum, mode, type, named)
 
       if (GET_MODE_CLASS (mode) == MODE_FLOAT
 	  && TARGET_HARD_FLOAT && TARGET_FPRS)
-	cum->fregno++;
+	cum->fregno += (mode == TFmode ? 2 : 1);
 
       if (TARGET_DEBUG_ARG)
 	{
@@ -10453,21 +10471,21 @@ rs6000_emit_prologue ()
 		      gen_rtx_REG (Pmode, 11));
   }
 
+#if TARGET_MACHO
   if (DEFAULT_ABI == ABI_DARWIN
       && flag_pic && current_function_uses_pic_offset_table)
     {
       rtx dest = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
-#if TARGET_MACHO
       char *picbase = machopic_function_base_name ();
       rtx src = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (picbase, -1));
 
       rs6000_maybe_dead (emit_insn (gen_load_macho_picbase (dest, src)));
-#endif
 
       rs6000_maybe_dead (
 	emit_move_insn (gen_rtx_REG (Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM),
 			gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)));
     }
+#endif
 }
 
 /* Write function prologue.  */
@@ -11085,7 +11103,7 @@ rs6000_output_function_epilogue (file, size)
 
 		      if (mode == SFmode)
 			bits = 0x2;
-		      else if (mode == DFmode)
+		      else if (mode == DFmode || mode == TFmode)
 			bits = 0x3;
 		      else
 			abort ();
@@ -11639,7 +11657,42 @@ output_toc (file, x, labelno, mode)
   /* Handle FP constants specially.  Note that if we have a minimal
      TOC, things we put here aren't actually in the TOC, so we can allow
      FP constants.  */
-  if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == DFmode)
+  if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == TFmode)
+    {
+      REAL_VALUE_TYPE rv;
+      long k[4];
+
+      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+      REAL_VALUE_TO_TARGET_LONG_DOUBLE (rv, k);
+
+      if (TARGET_64BIT)
+	{
+	  if (TARGET_MINIMAL_TOC)
+	    fputs (DOUBLE_INT_ASM_OP, file);
+	  else
+	    fprintf (file, "\t.tc FT_%lx_%lx_%lx_%lx[TC],",
+		     k[0] & 0xffffffff, k[1] & 0xffffffff,
+		     k[2] & 0xffffffff, k[3] & 0xffffffff);
+	  fprintf (file, "0x%lx%08lx,0x%lx%08lx\n",
+		   k[0] & 0xffffffff, k[1] & 0xffffffff,
+		   k[2] & 0xffffffff, k[3] & 0xffffffff);
+	  return;
+	}
+      else
+	{
+	  if (TARGET_MINIMAL_TOC)
+	    fputs ("\t.long ", file);
+	  else
+	    fprintf (file, "\t.tc FT_%lx_%lx_%lx_%lx[TC],",
+		     k[0] & 0xffffffff, k[1] & 0xffffffff,
+		     k[2] & 0xffffffff, k[3] & 0xffffffff);
+	  fprintf (file, "0x%lx,0x%lx,0x%lx,0x%lx\n",
+		   k[0] & 0xffffffff, k[1] & 0xffffffff,
+		   k[2] & 0xffffffff, k[3] & 0xffffffff);
+	  return;
+	}
+    }
+  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == DFmode)
     {
       REAL_VALUE_TYPE rv;
       long k[2];
