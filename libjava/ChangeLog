@@ -1,5 +1,11 @@
 2004-02-05  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/datatransfer/DataFlavor.java
+	(imageFlavor): Javadoc added.
+	(javaJVMLocalObjectType): Fixed.
+
+2004-02-05  Michael Koch  <konqueror@gmx.de>
+
 	* java/lang/Thread.java
 	(Thread): Reordered.
 	(setContextClassLoader): Fixed javadoc comment.
