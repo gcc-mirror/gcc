@@ -1,0 +1,14 @@
+/* Ensure that diagnostics for labels appear on the correct lineno.
+   by Kaveh R. Ghazi <ghazi@caip.rutgers.edu> 8/23/2000.  */
+
+int
+foo(int i)
+{
+ my_label:
+
+  i++;
+
+ my_label: /* { dg-error "duplicate label" "label lineno" } */
+
+  i++;
+}
