@@ -342,7 +342,6 @@ void FN ()					\
        else if (TREE_CODE (DECL) == CONSTRUCTOR)		\
 	 {							\
 	   if ((flag_pic && RELOC)				\
-	       || ! TREE_READONLY (DECL)			\
 	       || TREE_SIDE_EFFECTS (DECL)			\
 	       || ! TREE_CONSTANT (DECL))			\
 	     SECNUM = 2;					\

@@ -1,3 +1,8 @@
+2001-11-06  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/elf.h (DO_SELECT_SECTION): TREE_READONLY is not
+	defined for a CONSTRUCTOR; don't check it.
+
 2001-11-06  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* gcov.c (output_data): Use IS_ABSOLUTE_PATHNAME to
