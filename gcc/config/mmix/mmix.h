@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MMIX.
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 This file is part of GCC.
@@ -268,15 +268,6 @@ extern int target_flags;
 #define WORDS_BIG_ENDIAN 1
 #define FLOAT_WORDS_BIG_ENDIAN 1
 #define UNITS_PER_WORD 8
-
-/* FIXME: This macro is correlated to MAX_FIXED_MODE_SIZE in that
-   e.g. this macro must not be 8 (default, UNITS_PER_WORD) when
-   MAX_FIXED_MODE_SIZE is 64 (default, DImode), or really: this must be
-   set manually if MAX_FIXED_MODE_SIZE is not at least twice the register
-   size.  By setting it to 4, we don't have to worry about TImode things
-   yet.  Revisit, perhaps get TImode going or get some solution that does
-   not mandate TImode or lie in other ways.  */
-#define MIN_UNITS_PER_WORD 4
 
 /* FIXME: Promotion of modes currently generates slow code, extending
    before every operation.  */
@@ -745,7 +736,7 @@ enum reg_class
 
 typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
  ((CUM).regs = 0, (CUM).lib = ((LIBNAME) != 0))
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)		\

@@ -620,8 +620,22 @@ mmix_function_outgoing_value (tree valtype, tree func ATTRIBUTE_UNUSED)
     return
       gen_rtx_REG (mode, MMIX_OUTGOING_RETURN_VALUE_REGNUM);
 
-  /* A complex type, made up of components.  */
-  cmode = TYPE_MODE (TREE_TYPE (valtype));
+  if (COMPLEX_MODE_P (mode))
+    /* A complex type, made up of components.  */
+    cmode = TYPE_MODE (TREE_TYPE (valtype));
+  else
+    {
+      /* Of the other larger-than-register modes, we only support
+	 scalar mode TImode.  (At least, that's the only one that's
+	 been rudimentally tested.)  Make sure we're alerted for
+	 unexpected cases.  */
+      if (mode != TImode)
+	sorry ("support for mode `%s'", GET_MODE_NAME (mode));
+
+      /* In any case, we will fill registers to the natural size.  */
+      cmode = DImode;
+    }
+
   nregs = ((GET_MODE_BITSIZE (mode) + BITS_PER_WORD - 1) / BITS_PER_WORD);
 
   /* We need to take care of the effect of the register hole on return

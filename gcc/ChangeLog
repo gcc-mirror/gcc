@@ -1,3 +1,11 @@
+2004-11-14  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/18347
+	* config/mmix/mmix.c (mmix_function_outgoing_value): Handle
+	TImode.  Sorry for other non-complex larger-than-64-bit modes.
+	* config/mmix/mmix.h (MIN_UNITS_PER_WORD): Do not define.
+	(INIT_CUMULATIVE_ARGS): Correct unused macro name FNDECL.
+
 2004-11-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/md.texi (constraints) <% modifier>: Mention that it is
