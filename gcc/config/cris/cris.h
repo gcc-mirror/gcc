@@ -1051,14 +1051,6 @@ struct cum_args {int regs;};
    documentation.  */
 
 
-/* Node: Varargs */
-
-/* FIXME: This and other EXPAND_BUILTIN_VA_... target macros are not
-   documented, although used by several targets.  */
-#define EXPAND_BUILTIN_VA_ARG(VALIST, TYPE) \
- cris_expand_builtin_va_arg (VALIST, TYPE)
-
-
 /* Node: Trampolines */
 
 /* This looks too complicated, and it is.  I assigned r7 to be the

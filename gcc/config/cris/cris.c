@@ -116,6 +116,8 @@ static void cris_init_libfuncs (void);
 static bool cris_rtx_costs (rtx, int, int, int *);
 static int cris_address_cost (rtx);
 
+static tree cris_gimplify_va_arg_expr (tree, tree, tree *, tree *);
+
 /* The function cris_target_asm_function_epilogue puts the last insn to
    output here.  It always fits; there won't be a symbol operand.  Used in
    delay_slots_for_epilogue and function_epilogue.  */
@@ -189,6 +191,8 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS cris_setup_incoming_varargs
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR cris_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2785,84 +2789,16 @@ cris_init_libfuncs (void)
   set_optab_libfunc (umod_optab, SImode, "__Umod");
 }
 
-/* The EXPAND_BUILTIN_VA_ARG worker.  This is modified from the
-   "standard" implementation of va_arg: read the value from the current
-   address and increment by the size of one or two registers.  The
-   important difference for CRIS is that if the type is
-   pass-by-reference, then perform an indirection.  */
+/* The va_arg gimplifier.  All we need to do here special is notice
+   when we we've got a pass-by-reference.  */
 
-rtx
-cris_expand_builtin_va_arg (tree valist, tree type)
+static tree
+cris_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  tree addr_tree, t;
-  rtx addr;
-  tree passed_size = size_zero_node;
-  tree type_size = NULL;
-  tree size3 = size_int (3);
-  tree size4 = size_int (4);
-  tree size8 = size_int (8);
-  tree rounded_size;
-
-  /* Get AP.  */
-  addr_tree = valist;
-
-  if (type == error_mark_node
-      || (type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type))) == NULL
-      || TREE_OVERFLOW (type_size))
-    /* Presumably an error; the size isn't computable.  A message has
-       supposedly been emitted elsewhere.  */
-    rounded_size = size_zero_node;
+  if (FUNCTION_ARG_PASS_BY_REFERENCE (dummy, TYPE_MODE (type), type, dummy))
+    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
   else
-    rounded_size
-      = fold (build (MULT_EXPR, sizetype,
-		     fold (build (TRUNC_DIV_EXPR, sizetype,
-				  fold (build (PLUS_EXPR, sizetype,
-					       type_size, size3)),
-				  size4)),
-		     size4));
-
-  if (!integer_zerop (rounded_size))
-    {
-      /* Check if the type is passed by value or by reference.  Values up
-	 to 8 bytes are passed by-value, padded to register-size (4
-	 bytes).  Larger values and varying-size types are passed
-	 by reference.  */
-      passed_size
-	= (!really_constant_p (type_size)
-	   ? size4
-	   : fold (build (COND_EXPR, sizetype,
-			  fold (build (GT_EXPR, sizetype,
-				       rounded_size,
-				       size8)),
-			  size4,
-			  rounded_size)));
-
-      addr_tree
-	= (!really_constant_p (type_size)
-	   ? build1 (INDIRECT_REF, build_pointer_type (type), addr_tree)
-	   : fold (build (COND_EXPR, TREE_TYPE (addr_tree),
-			  fold (build (GT_EXPR, sizetype,
-				       rounded_size,
-				       size8)),
-			  build1 (INDIRECT_REF, build_pointer_type (type),
-				  addr_tree),
-			  addr_tree)));
-    }
-
-  addr = expand_expr (addr_tree, NULL_RTX, Pmode, EXPAND_NORMAL);
-  addr = copy_to_reg (addr);
-
-  if (!integer_zerop (rounded_size))
-    {
-      /* Compute new value for AP.  */
-      t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
-		 build (PLUS_EXPR, TREE_TYPE (valist), valist,
-			passed_size));
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-    }
-
-  return addr;
+    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /* The INIT_EXPANDERS worker sets the per-function-data initializer and

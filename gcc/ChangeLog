@@ -6,6 +6,13 @@
 
 2004-07-08  Richard Henderson  <rth@redhat.com>
 
+	* config/cris/cris-protos.h (cris_expand_builtin_va_arg): Remove.
+	* config/cris/cris.c (TARGET_GIMPLIFY_VA_ARG_EXPR): New.
+	(cris_gimplify_va_arg_expr): Rewrite from cris_expand_builtin_va_arg.
+	* config/cris/cris.h (EXPAND_BUILTIN_VA_ARG): Remove.
+
+2004-07-08  Richard Henderson  <rth@redhat.com>
+
 	* builtins.c (ind_gimplify_va_arg_expr): New.
 	* tree.h (ind_gimplify_va_arg_expr): Declare.
 	* config/arc/arc.c (arc_gimplify_va_arg_expr): Use it.
