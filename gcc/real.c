@@ -271,8 +271,8 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 # define PUT_REAL(e,r)						\
 	do {							\
 	  memcpy ((r), (e), 2*NE);				\
-	  if (2*NE < sizeof(*r))				\
-	    memset ((char *) (r) + 2*NE, 0, sizeof(*r) - 2*NE);	\
+	  if (2*NE < sizeof (*r))				\
+	    memset ((char *) (r) + 2*NE, 0, sizeof (*r) - 2*NE);	\
 	} while (0)
 # else /* no XFmode */
 #  if MAX_LONG_DOUBLE_TYPE_SIZE == 128
@@ -283,8 +283,8 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 #   define PUT_REAL(e,r)					\
 	do {							\
 	  memcpy ((r), (e), 2*NE);				\
-	  if (2*NE < sizeof(*r))				\
-	    memset ((char *) (r) + 2*NE, 0, sizeof(*r) - 2*NE);	\
+	  if (2*NE < sizeof (*r))				\
+	    memset ((char *) (r) + 2*NE, 0, sizeof (*r) - 2*NE);	\
 	} while (0)
 #else
 #define NE 6
@@ -1015,7 +1015,7 @@ ereal_to_int (low, high, rr)
   ediv (df, d, dg);		/* dg = d / 2^32 is the high word */
   euifrac (dg, (unsigned HOST_WIDE_INT *) high, dh);
   emul (df, dh, dg);		/* fractional part is the low word */
-  euifrac (dg, (unsigned HOST_WIDE_INT *)low, dh);
+  euifrac (dg, (unsigned HOST_WIDE_INT *) low, dh);
   if (s)
     {
       /* complement and add 1 */
@@ -2382,9 +2382,9 @@ m16m (a, b, c)
 	{
 	  m = (unsigned EMULONG) aa * *ps--;
 	  carry = (m & 0xffff) + *pp;
-	  *pp-- = (UEMUSHORT)carry;
+	  *pp-- = (UEMUSHORT) carry;
 	  carry = (carry >> 16) + (m >> 16) + *pp;
-	  *pp = (UEMUSHORT)carry;
+	  *pp = (UEMUSHORT) carry;
 	  *(pp-1) = carry >> 16;
 	}
     }
@@ -2428,7 +2428,7 @@ edivm (den, num)
       else
 	tquot = tnum / tdenm;
       /* Multiply denominator by trial quotient digit.  */
-      m16m ((unsigned int)tquot, den, tprod);
+      m16m ((unsigned int) tquot, den, tprod);
       /* The quotient digit may have been overestimated.  */
       if (ecmpm (tprod, num) > 0)
 	{
@@ -2442,7 +2442,7 @@ edivm (den, num)
 	}
       esubm (tprod, num);
       equot[i] = tquot;
-      eshup6(num);
+      eshup6 (num);
     }
   /* test for nonzero remainder after roundoff bit */
   p = &num[M];
@@ -2457,7 +2457,7 @@ edivm (den, num)
   for (i=0; i<NI; i++)
     num[i] = equot[i];
 
-  return ((int)j);
+  return ((int) j);
 }
 
 /* Multiply significands of exploded e-type A and B, result in B.  */
@@ -2490,17 +2490,17 @@ emulm (a, b)
       else
 	{
 	  m16m ((unsigned int) *p--, b, pprod);
-	  eaddm(pprod, equot);
+	  eaddm (pprod, equot);
 	}
       j |= *q;
-      eshdn6(equot);
+      eshdn6 (equot);
     }
 
   for (i=0; i<NI; i++)
     b[i] = equot[i];
 
   /* return flag for lost nonzero bits */
-  return ((int)j);
+  return ((int) j);
 }
 #endif
 
@@ -2946,7 +2946,7 @@ ediv (a, b, c)
 
 /* IEEE says if result is not a NaN, the sign is "-" if and only if
    operands have opposite signs -- but flush -0 to 0 later if not IEEE.  */
-  sign = eisneg(a) ^ eisneg(b);
+  sign = eisneg (a) ^ eisneg (b);
 
 #ifdef NANS
 /* Return any NaN input.  */
@@ -3051,7 +3051,7 @@ emul (a, b, c)
 
 /* IEEE says if result is not a NaN, the sign is "-" if and only if
    operands have opposite signs -- but flush -0 to 0 later if not IEEE.  */
-  sign = eisneg(a) ^ eisneg(b);
+  sign = eisneg (a) ^ eisneg (b);
 
 #ifdef NANS
 /* NaN times anything is the same NaN.  */
@@ -3283,13 +3283,13 @@ e64toe (pe, y)
       /* For denormal long double Intel format, shift significand up one
 	 -- but only if the top significand bit is zero.  A top bit of 1
 	 is "pseudodenormal" when the exponent is zero.  */
-      if((yy[NE-1] & 0x7fff) == 0 && (yy[NE-2] & 0x8000) == 0)
+      if ((yy[NE-1] & 0x7fff) == 0 && (yy[NE-2] & 0x8000) == 0)
 	{
 	  UEMUSHORT temp[NI];
 
-	  emovi(yy, temp);
-	  eshup1(temp);
-	  emovo(temp,y);
+	  emovi (yy, temp);
+	  eshup1 (temp);
+	  emovo (temp,y);
 	  return;
 	}
     }
@@ -5035,7 +5035,7 @@ etoasc (x, string, ndigs)
     }
   else
     {
-      *s++ = (char)digit + '0';
+      *s++ = (char) digit + '0';
       *s++ = '.';
     }
   /* Generate digits after the decimal point.  */
@@ -5231,7 +5231,7 @@ asctoeg (ss, y, oprec)
   trail = 0;
 
  nxtcom:
-  k = hex_value(*s);
+  k = hex_value (*s);
   if ((k >= 0) && (k < base))
     {
       /* Ignore leading zeros */
@@ -6123,7 +6123,7 @@ c4xtoe (d, e, mode)
         }
       else
 	size = 2;
-      eshift(y, -8);
+      eshift (y, -8);
 
       /* Now do the two's complement on the data.  */
 
@@ -6143,7 +6143,7 @@ c4xtoe (d, e, mode)
 
       if (carry)
         {
-	  eshift(y, -1);
+	  eshift (y, -1);
 	  y[M+1] |= 0x8000;
 	  r++;
          }
@@ -6165,7 +6165,7 @@ c4xtoe (d, e, mode)
 	 y[M+2] = dn[2];	/* Fill in the rest of our mantissa.  */
 	 y[M+3] = dn[3];
        }
-     eshift(y, -8);
+     eshift (y, -8);
     }
 
   emovo (y, e);
@@ -6261,7 +6261,7 @@ toc4x (x, y, mode)
 	{
 	  /* This is the case of -1 x 2^m, we have to rid ourselves of the
 	     high sign bit and shift the exponent.  */
-	  eshift(x, 1);
+	  eshift (x, 1);
 	  i--;
 	}
     }

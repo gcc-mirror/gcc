@@ -1,5 +1,16 @@
 2002-01-15  Kazu Hirata  <kazu@hxi.com>
 
+	* read-rtl.c: Fix formatting.
+	* real.c: Likewise.
+	* recog.c: Likewise.
+	* regclass.c: Likewise.
+	* regmove.c: Likewise.
+	* reg-stack.c: Likewise.
+	* reload1.c: Likewise.
+	* rtlanal.c: Likewise.
+
+2002-01-15  Kazu Hirata  <kazu@hxi.com>
+
 	* config/i386/i386.c: Fix formatting.
 
 2002-01-15  Jakub Jelinek  <jakub@redhat.com>
