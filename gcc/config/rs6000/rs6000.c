@@ -4029,10 +4029,6 @@ function_arg_padding (enum machine_mode mode, tree type)
 	return upward;
     }
 
-  /* SFmode parameters are padded upwards.  */
-  if (mode == SFmode)
-    return upward;
-
   /* Fall back to the default.  */
   return DEFAULT_FUNCTION_ARG_PADDING (mode, type);
 }

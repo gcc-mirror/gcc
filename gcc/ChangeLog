@@ -1,3 +1,7 @@
+2004-08-07  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (function_arg_padding): Revert 2004-07-28.
+
 2004-08-04  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 13956
