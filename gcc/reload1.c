@@ -156,7 +156,9 @@ static rtx spill_reg_stored_to[FIRST_PSEUDO_REGISTER];
 /* This table is the inverse mapping of spill_regs:
    indexed by hard reg number,
    it contains the position of that reg in spill_regs,
-   or -1 for something that is not in spill_regs.  */
+   or -1 for something that is not in spill_regs. 
+
+   ?!?  This is no longer accurate.  */
 static short spill_reg_order[FIRST_PSEUDO_REGISTER];
 
 /* This reg set indicates registers that may not be used for retrying global
