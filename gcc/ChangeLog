@@ -1,5 +1,9 @@
 Wed Jan 28 11:45:27 1998  Per Bothner  <bothner@cygnus.com>
 
+	* dbxout.c (dbxout_type):  For a RECORD_TYPE, check that TYPE_BINFO
+	is a TREE_VEC before trying to use it for baseclasses.
+	(Chill uses the same field for a different purpose.)
+
 	* toplev.c (strip_off_ending):  Generalize to endings up to 5 chars.
 
 Tue Jan 27 23:15:55 1998  Lassi A. Tuura  <lat@iki.fi>
