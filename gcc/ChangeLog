@@ -1,3 +1,8 @@
+Tue Jul  7 21:18:14 1998  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/cygwin32.h (ASM_DECLARE_FUNCTION_NAME): Merge duplicate
+	definitions from last two patches.
+
 Tue Jul  7 23:03:34 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (choose_reload_regs): Don't set reload_override_in
@@ -10,7 +15,7 @@ Tue Jul  7 21:23:36 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 Tue Jul  7 21:05:25 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
-	* cse (cse_insn): Don't make change without validation.
+	* cse.c (cse_insn): Don't make change without validation.
 
 Tue Jul  7 11:40:05 1998  Jeffrey A Law  (law@cygnus.com)
 
