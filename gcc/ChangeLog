@@ -1,3 +1,10 @@
+2003-05-20  Kevin Ryde <user42@zip.com.au>
+	    Wolfgang Bangerth <bangerth@dealii.org>
+
+	PR/10355
+	* doc/extend.texi: Put a warning into the documentation
+	of attribute regparm.
+
 2003-05-20  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (expr_last): New fn.
