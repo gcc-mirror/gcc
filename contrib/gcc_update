@@ -70,7 +70,6 @@ gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
 gcc/tradcif.c: gcc/tradcif.y
 # And then, language-specific files
 gcc/java/parse.h: gcc/java/parse.y
-gcc/java/parse.c: gcc/java/parse.y gcc/java/lex.c gcc/java/parse.h gcc/java/lex.h
 # And libraries, at last
 libchill/configure: libchill/configure.in
 libf2c/configure: libf2c/configure.in
