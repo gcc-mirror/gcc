@@ -126,7 +126,11 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 #endif
 
 #ifndef NULL_PTR
+#ifdef __STDC__
+#define NULL_PTR (void *) NULL
+#else
 #define NULL_PTR (char *) NULL
+#endif
 #endif
 
 #ifndef INCLUDE_LEN_FUDGE
