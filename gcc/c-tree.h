@@ -326,10 +326,17 @@ extern tree c_expand_start_case                 PROTO((tree));
    Given two compatible ANSI C types, returns the merged type.  */
 extern tree common_type                         PROTO((tree, tree));
 extern tree default_conversion                  PROTO((tree));
-extern tree digest_init                         PROTO((tree, tree, tree *, int, int, char *));
 extern tree parser_build_binary_op              PROTO((enum tree_code, tree, tree));
 extern tree require_complete_type		PROTO((tree));
 extern void store_init_value                    PROTO((tree, tree));
+extern void start_init				PROTO((tree, tree, int));
+extern void finish_init				PROTO((void));
+extern void really_start_incremental_init	PROTO((tree));
+extern void push_init_level			PROTO((int));
+extern tree pop_init_level			PROTO((int));
+extern void set_init_index			PROTO((tree, tree));
+extern void set_init_label			PROTO((tree));
+extern void process_init_element		PROTO((tree));
 
 /* in c-iterate.c */
 extern void iterator_expand			PROTO((tree));
