@@ -711,7 +711,7 @@ cris_target_asm_function_prologue (file, size)
     {
       if ((((regs_ever_live[regno]
 	     && !call_used_regs[regno])
-	    || (regno == PIC_OFFSET_TABLE_REGNUM
+	    || (regno == (int) PIC_OFFSET_TABLE_REGNUM
 		&& (current_function_uses_pic_offset_table
 		    /* It is saved anyway, if there would be a gap.  */
 		    || (flag_pic
@@ -1043,7 +1043,7 @@ cris_target_asm_function_epilogue (file, size)
        regno++)
     if ((((regs_ever_live[regno]
 	   && !call_used_regs[regno])
-	  || (regno == PIC_OFFSET_TABLE_REGNUM
+	  || (regno == (int) PIC_OFFSET_TABLE_REGNUM
 	      && (current_function_uses_pic_offset_table
 		  /* It is saved anyway, if there would be a gap.  */
 		  || (flag_pic
@@ -1069,7 +1069,7 @@ cris_target_asm_function_epilogue (file, size)
        regno--)
     if ((((regs_ever_live[regno]
 	   && !call_used_regs[regno])
-	  || (regno == PIC_OFFSET_TABLE_REGNUM
+	  || (regno == (int) PIC_OFFSET_TABLE_REGNUM
 	      && (current_function_uses_pic_offset_table
 		  /* It is saved anyway, if there would be a gap.  */
 		  || (flag_pic
@@ -1659,7 +1659,7 @@ cris_initial_frame_pointer_offset ()
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if ((((regs_ever_live[regno]
 	   && !call_used_regs[regno])
-	  || (regno == PIC_OFFSET_TABLE_REGNUM
+	  || (regno == (int) PIC_OFFSET_TABLE_REGNUM
 	      && (current_function_uses_pic_offset_table
 		  /* It is saved anyway, if there would be a gap.  */
 		  || (flag_pic
@@ -2051,7 +2051,7 @@ cris_simple_epilogue ()
      in the delay-slot of the "ret".  */
   for (regno = 0; regno < reglimit; regno++)
     if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	|| (regno == PIC_OFFSET_TABLE_REGNUM
+	|| (regno == (int) PIC_OFFSET_TABLE_REGNUM
 	    && (current_function_uses_pic_offset_table
 		/* It is saved anyway, if there would be a gap.  */
 		|| (flag_pic
@@ -2626,7 +2626,7 @@ cris_expand_builtin_va_arg (valist, type)
   if (type == error_mark_node
       || (type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type))) == NULL
       || TREE_OVERFLOW (type_size))
-    /* Presumable an error; the size isn't computable.  A message has
+    /* Presumably an error; the size isn't computable.  A message has
        supposedly been emitted elsewhere.  */
     rounded_size = size_zero_node;
   else
@@ -2640,28 +2640,30 @@ cris_expand_builtin_va_arg (valist, type)
 
   if (!integer_zerop (rounded_size))
     {
-      /* Check if the type is passed by value or by reference.  This test must
-	 be different than the call-site test and be done at run-time:
-	 gcc.c-torture/execute/20020307-2.c.  Hence the tree stuff.
-
-	 Values up to 8 bytes are passed by-value, padded to register-size
-	 (4 bytes).  Larger values are passed by-reference.  */
+      /* Check if the type is passed by value or by reference.  Values up
+	 to 8 bytes are passed by-value, padded to register-size (4
+	 bytes).  Larger values and varying-size types are passed
+	 by reference.  */
       passed_size
-	= fold (build (COND_EXPR, sizetype,
-		       fold (build (GT_EXPR, sizetype,
-				    rounded_size,
-				    size8)),
-		       size4,
-		       rounded_size));
+	= (!really_constant_p (type_size)
+	   ? size4
+	   : fold (build (COND_EXPR, sizetype,
+			  fold (build (GT_EXPR, sizetype,
+				       rounded_size,
+				       size8)),
+			  size4,
+			  rounded_size)));
 
       addr_tree
-       = fold (build (COND_EXPR, TREE_TYPE (addr_tree),
-		      fold (build (GT_EXPR, sizetype,
-				   rounded_size,
-				   size8)),
-		      build1 (INDIRECT_REF, build_pointer_type (type),
-			      addr_tree),
-		      addr_tree));
+	= (!really_constant_p (type_size)
+	   ? build1 (INDIRECT_REF, build_pointer_type (type), addr_tree)
+	   : fold (build (COND_EXPR, TREE_TYPE (addr_tree),
+			  fold (build (GT_EXPR, sizetype,
+				       rounded_size,
+				       size8)),
+			  build1 (INDIRECT_REF, build_pointer_type (type),
+				  addr_tree),
+			  addr_tree)));
     }
 
   addr = expand_expr (addr_tree, NULL_RTX, Pmode, EXPAND_NORMAL);
