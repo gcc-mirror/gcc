@@ -50,3 +50,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 #include "xm-svr4.h"
+
+#ifndef __GNUC__
+#define ONLY_INT_FIELDS
+#endif
