@@ -1,3 +1,39 @@
+2000-07-10  Benjamin Chelf  <chelf@codesourcery.com>
+
+	* semantics.c (finish_for_stmt): Remove call to emit_line_note.
+	(finish_continue_stmt): Likewise.
+	(begin_for_stmt): Remove call to note_level_for_for.
+	(finish_goto_stmt): Change call from build_min_nt
+	to build_stmt.
+	(finish_expr_stmt): Likewise.
+	(begin_if_stmt): Likewise.
+	(begin_while_stmt): Likewise.
+	(finish_while_stmt): Likewise.
+	(finish_return_stmt): Likewise.
+	(begin_for_stmt): Likewise.
+	(finish_for_stmt): Likewise.
+	(finish_break_stmt): Likewise.
+	(begin_switch_stmt): Likewise.
+	(finish_case_label): Likewise.
+	(genrtl_try_block): Likewise.
+	(begin_try_block): Likewise.
+	(begin_handler): Likewise.
+	(begin_compound_stmt): Likewise.
+	(finish_asm_stmt): Likewise.
+	(finish_label_stmt): Likewise.
+	(add_decl_stmt): Likewise.
+	(finish_subobject): Likewise.
+	(finish_decl_cleanup): Likewise.
+	(finish_named_return_value): Likewise.
+	(setup_vtbl_ptr): Likewise.
+	(add_scope_stmt): Likewise.
+	* decl.c (finish_constructor_body): Likewise.
+	(finish_destructor_body): Likewise.
+	* optimize.c (copy_body_r): Likewise.
+	(initialize_inlined_parameters): Likewise.
+	(declare_return_variable): Likewise.
+	(expand_call_inline): Likewise.
+	
 2000-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* semantics.c (expand_body): Sync interface information

@@ -457,7 +457,11 @@ extern tree lang_expand_stmt                    PARAMS ((tree));
 extern void c_expand_return			PARAMS ((tree));
 extern tree c_expand_start_case			PARAMS ((tree));
 extern void do_case				PARAMS ((tree, tree));
+extern tree build_stmt                          PARAMS ((enum tree_code, ...));
 extern tree build_case_label                    PARAMS ((tree, tree));
+extern tree build_continue_stmt                 PARAMS ((void));
+extern tree build_break_stmt                    PARAMS ((void));
+extern tree build_return_stmt                   PARAMS ((tree));
 
 #define COMPOUND_STMT_NO_SCOPE(NODE)	TREE_LANG_FLAG_0 (NODE)
 

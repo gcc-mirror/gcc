@@ -6841,7 +6841,62 @@ do_case (low_value, high_value)
      tree low_value;
      tree high_value;
 {
-  abort ();
+  tree value1 = NULL_TREE, value2 = NULL_TREE, label;
+
+  if (low_value != NULL_TREE)
+    value1 = check_case_value (low_value);
+  if (high_value != NULL_TREE)
+    value2 = check_case_value (high_value);
+
+  label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+  
+  if (pedantic && (high_value != NULL_TREE))
+    pedwarn ("ANSI C forbids case ranges");
+
+  if (value1 != error_mark_node && value2 != error_mark_node)
+    {
+      tree duplicate;
+      int success;
+      
+      if (high_value == NULL_TREE && value1 != NULL_TREE &&
+	  pedantic && ! INTEGRAL_TYPE_P (TREE_TYPE (value1)))
+	pedwarn ("label must have integral type in ANSI C");
+      
+      if (low_value == NULL_TREE)
+	success = pushcase (NULL_TREE, 0, label, &duplicate);
+      else if (high_value == NULL_TREE)
+	success = pushcase (value1, convert_and_check, label,
+			    &duplicate);
+      else
+	success = pushcase_range (value1, value2, convert_and_check,
+				  label, &duplicate);
+      
+      if (success == 1)
+	{
+	  if (low_value == NULL_TREE)
+	    error ("default label not within a switch statement");
+	  else
+	    error ("case label not within a switch statement");
+	}
+      else if (success == 2) {
+	if (low_value == NULL_TREE) 
+	  {
+	    error ("multiple default labels in one switch");
+	    error_with_decl (duplicate, "this is the first default label");
+	  }
+	else
+	  error ("dupicate case value");
+	if (high_value != NULL_TREE)
+	  error_with_decl (duplicate, "this is the first entry for that value");
+      }
+      else if (low_value != NULL_TREE) 
+	{
+	  if (success == 3)
+	    warning ("case value out of range");
+	  else if (success == 5)
+	    error ("case label within scope of cleanup or variable array");
+	}
+    }
 }
 
 /* Language specific handler of tree nodes used when generating RTL
@@ -6863,3 +6918,4 @@ set_current_function_name_declared (i)
 {
   abort ();
 }
+
