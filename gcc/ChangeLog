@@ -1,3 +1,8 @@
+2004-07-19  Gabriel Dos Reis  <gdr@integrable-solution.net>
+
+	* doc/sourcebuild.texi: Add libcpp, now that CPP has its own
+	directory. 
+
 2004-07-19  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-tree.h (struct c_expr): Define.
