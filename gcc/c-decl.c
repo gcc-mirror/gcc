@@ -2623,6 +2623,14 @@ init_decl_processing ()
   pushdecl (build_decl (TYPE_DECL, get_identifier ("long unsigned int"),
 			long_unsigned_type_node));
 
+  long_long_integer_type_node = make_signed_type (LONG_LONG_TYPE_SIZE);
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("long long int"),
+			long_long_integer_type_node));
+
+  long_long_unsigned_type_node = make_unsigned_type (LONG_LONG_TYPE_SIZE);
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("long long unsigned int"),
+			long_long_unsigned_type_node));
+
   /* `unsigned long' is the standard type for sizeof.
      Traditionally, use a signed type.
      Note that stddef.h uses `unsigned long',
@@ -2640,6 +2648,8 @@ init_decl_processing ()
   TREE_TYPE (TYPE_SIZE (unsigned_type_node)) = sizetype;
   TREE_TYPE (TYPE_SIZE (long_unsigned_type_node)) = sizetype;
   TREE_TYPE (TYPE_SIZE (long_integer_type_node)) = sizetype;
+  TREE_TYPE (TYPE_SIZE (long_long_integer_type_node)) = sizetype;
+  TREE_TYPE (TYPE_SIZE (long_long_unsigned_type_node)) = sizetype;
 
   error_mark_node = make_node (ERROR_MARK);
   TREE_TYPE (error_mark_node) = error_mark_node;
@@ -2648,17 +2658,9 @@ init_decl_processing ()
   pushdecl (build_decl (TYPE_DECL, get_identifier ("short int"),
 			short_integer_type_node));
 
-  long_long_integer_type_node = make_signed_type (LONG_LONG_TYPE_SIZE);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("long long int"),
-			long_long_integer_type_node));
-
   short_unsigned_type_node = make_unsigned_type (SHORT_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("short unsigned int"),
 			short_unsigned_type_node));
-
-  long_long_unsigned_type_node = make_unsigned_type (LONG_LONG_TYPE_SIZE);
-  pushdecl (build_decl (TYPE_DECL, get_identifier ("long long unsigned int"),
-			long_long_unsigned_type_node));
 
   /* Define both `signed char' and `unsigned char'.  */
   signed_char_type_node = make_signed_type (CHAR_TYPE_SIZE);
