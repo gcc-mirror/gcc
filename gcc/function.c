@@ -322,23 +322,6 @@ extern tree bc_runtime_type_code ();
 extern rtx bc_build_calldesc ();
 extern char *bc_emit_trampoline ();
 extern char *bc_end_function ();
-
-void fixup_gotos ();
-
-static tree round_down ();
-static rtx round_trampoline_addr ();
-static rtx fixup_stack_1 ();
-static void put_reg_into_stack ();
-static void fixup_var_refs ();
-static void fixup_var_refs_insns ();
-static void fixup_var_refs_1 ();
-static void optimize_bit_field ();
-static void instantiate_decls ();
-static void instantiate_decls_1 ();
-static void instantiate_decl ();
-static int instantiate_virtual_regs_1 ();
-static rtx fixup_memory_subreg ();
-static rtx walk_fixup_memory_subreg ();
 
 /* In order to evaluate some expressions, such as function calls returning
    structures in memory, we need to temporarily allocate stack locations.
@@ -411,6 +394,49 @@ int max_stack_depth;
 
 /* Current depth in statement expressions.  */
 static int stmt_expr_depth;
+
+/* This structure is used to record MEMs or pseudos used to replace VAR, any
+   SUBREGs of VAR, and any MEMs containing VAR as an address.  We need to
+   maintain this list in case two operands of an insn were required to match;
+   in that case we must ensure we use the same replacement.  */
+
+struct fixup_replacement
+{
+  rtx old;
+  rtx new;
+  struct fixup_replacement *next;
+};
+   
+/* Forward declarations.  */
+
+static struct temp_slot *find_temp_slot_from_address  PROTO((rtx));
+static void put_reg_into_stack	PROTO((struct function *, rtx, tree,
+				       enum machine_mode, enum machine_mode));
+static void fixup_var_refs	PROTO((rtx, enum machine_mode, int));
+static struct fixup_replacement
+  *find_fixup_replacement	PROTO((struct fixup_replacement **, rtx));
+static void fixup_var_refs_insns PROTO((rtx, enum machine_mode, int,
+					rtx, int));
+static void fixup_var_refs_1	PROTO((rtx, enum machine_mode, rtx *, rtx,
+				       struct fixup_replacement **));
+static rtx fixup_memory_subreg	PROTO((rtx, rtx, int));
+static rtx walk_fixup_memory_subreg  PROTO((rtx, rtx, int));
+static rtx fixup_stack_1	PROTO((rtx, rtx));
+static void optimize_bit_field	PROTO((rtx, rtx, rtx *));
+static void instantiate_decls	PROTO((tree, int));
+static void instantiate_decls_1	PROTO((tree, int));
+static void instantiate_decl	PROTO((rtx, int, int));
+static int instantiate_virtual_regs_1 PROTO((rtx *, rtx, int));
+static void delete_handlers	PROTO((void));
+static void pad_to_arg_alignment PROTO((struct args_size *, int));
+static void pad_below		PROTO((struct args_size *, enum  machine_mode,
+				       tree));
+static tree round_down		PROTO((tree, int));
+static rtx round_trampoline_addr PROTO((rtx));
+static tree blocks_nreverse	PROTO((tree));
+static int all_blocks		PROTO((tree, tree *));
+static int *record_insns	PROTO((rtx));
+static int contains		PROTO((rtx, int *));
 
 /* Pointer to chain of `struct function' for containing functions.  */
 struct function *outer_function_chain;
@@ -1263,20 +1289,7 @@ fixup_var_refs (var, promoted_mode, unsignedp)
     }
 }
 
-/* This structure is used by the following two functions to record MEMs or
-   pseudos used to replace VAR, any SUBREGs of VAR, and any MEMs containing
-   VAR as an address.  We need to maintain this list in case two operands of
-   an insn were required to match; in that case we must ensure we use the
-   same replacement.  */
-
-struct fixup_replacement
-{
-  rtx old;
-  rtx new;
-  struct fixup_replacement *next;
-};
-   
-/* REPLACEMENTS is a pointer to a list of the above structures and X is
+/* REPLACEMENTS is a pointer to a list of the struct fixup_replacement and X is
    some part of an insn.  Return a struct fixup_replacement whose OLD
    value is equal to X.  Allocate a new structure if no such entry exists. */
 
@@ -2065,28 +2078,6 @@ walk_fixup_memory_subreg (x, insn, uncritical)
   return x;
 }
 
-#if 0
-/* Fix up any references to stack slots that are invalid memory addresses
-   because they exceed the maximum range of a displacement.  */
-
-void
-fixup_stack_slots ()
-{
-  register rtx insn;
-
-  /* Did we generate a stack slot that is out of range
-     or otherwise has an invalid address?  */
-  if (invalid_stack_slot)
-    {
-      /* Yes.  Must scan all insns for stack-refs that exceed the limit.  */
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN
-	    || GET_CODE (insn) == JUMP_INSN)
-	  fixup_stack_1 (PATTERN (insn), insn);
-    }
-}
-#endif
-
 /* For each memory ref within X, if it refers to a stack slot
    with an out of range displacement, put the address in a temp register
    (emitting new insns before INSN to load these registers)
@@ -3851,8 +3842,6 @@ promoted_input_arg (regno, pmode, punsignedp)
     callers pass in the total size of args so far as
     initial_offset_ptr. arg_size_ptr is always positive.*/
 
-static void pad_to_arg_alignment (), pad_below ();
-
 void
 locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
 		     initial_offset_ptr, offset_ptr, arg_size_ptr)
@@ -4353,9 +4342,6 @@ round_trampoline_addr (tramp)
    duplicate portions of the RTL code.  Call identify_blocks before
    changing the RTL, and call reorder_blocks after.  */
 
-static int all_blocks ();
-static tree blocks_nreverse ();
-
 /* Put all this function's BLOCK nodes into a vector, and return it.
    Also store in each NOTE for the beginning or end of a block
    the index of that block in the vector.
@@ -4495,6 +4481,7 @@ all_blocks (block, vector)
 }
 
 /* Build bytecode call descriptor for function SUBR. */
+
 rtx
 bc_build_calldesc (subr)
   tree subr;
@@ -4788,7 +4775,7 @@ bc_expand_function_end ()
      to BC_END_FUNCTION (), since that will cause the bytecode
      segment to be finished off and closed. */
 
-  fixup_gotos (0, 0, 0, 0, 0);
+  expand_fixups (NULL_RTX);
 
   ptrconsts = bc_end_function ();
 
@@ -5257,7 +5244,7 @@ expand_function_end (filename, line, end_bindings)
   /* If you have any cleanups to do at this point,
      and they need to create temporary variables,
      then you will lose.  */
-  fixup_gotos (NULL_PTR, NULL_RTX, NULL_TREE, get_insns (), 0);
+  expand_fixups (get_insns ());
 }
 
 /* These arrays record the INSN_UIDs of the prologue and epilogue insns.  */
