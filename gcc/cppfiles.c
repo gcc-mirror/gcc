@@ -318,9 +318,12 @@ stack_include_file (pfile, inc)
   sysp = MAX ((pfile->map ? pfile->map->sysp : 0),
 	      (inc->foundhere ? inc->foundhere->sysp : 0));
 
-  /* For -M, add the file to the dependencies on its first inclusion.  */
+  /* Add the file to the dependencies on its first inclusion.  */
   if (CPP_OPTION (pfile, deps.style) > !!sysp && !inc->include_count)
-    deps_add_dep (pfile->deps, inc->name);
+    {
+      if (pfile->buffer || CPP_OPTION (pfile, deps.ignore_main_file) == 0)
+	deps_add_dep (pfile->deps, inc->name);
+    }
 
   /* Not in cache?  */
   if (! inc->buffer)

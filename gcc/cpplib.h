@@ -387,6 +387,9 @@ struct cpp_options
     /* Generate phony targets for each dependency apart from the first
        one.  */
     bool phony_targets;
+
+    /* If true, no dependency is generated on the main file.  */
+    bool ignore_main_file;
   } deps;
 
   /* Target-specific features set by the front end or client.  */

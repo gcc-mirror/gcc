@@ -1,3 +1,13 @@
+2002-08-15  Neil Booth  <neil@daikokuya.co.uk>
+
+	PR preprocessor/7358
+	* c-opts.c (check_deps_environment_vars): Ignore main file
+	for SUNPRO_DEPENDENCIES.
+	* cppfiles.c (stack_include_file): Ignore main file if
+	appropriate.
+	* cpplib.h (struct cpp_options): New member in deps.
+	* doc/cppenv.texi: Update.
+
 2002-08-14  Neil Booth  <neil@daikokuya.co.uk>
 
 	PR preprocessor/7526

@@ -1467,7 +1467,8 @@ c_common_finish ()
    DEPS_TARGET", where OUTPUT_FILE is the file to write deps info to
    and DEPS_TARGET is the target to mention in the deps.  They also
    result in dependency information being appended to the output file
-   rather than overwriting it.  */
+   rather than overwriting it, and like Sun's compiler
+   SUNPRO_DEPENDENCIES suppresses the dependency on the main file.  */
 static void
 check_deps_environment_vars ()
 {
@@ -1480,7 +1481,10 @@ check_deps_environment_vars ()
     {
       GET_ENVIRONMENT (spec, "SUNPRO_DEPENDENCIES");
       if (spec)
-	cpp_opts->deps.style = DEPS_SYSTEM;
+	{
+	  cpp_opts->deps.style = DEPS_SYSTEM;
+	  cpp_opts->deps.ignore_main_file = true;
+	}
     }
 
   if (spec)
