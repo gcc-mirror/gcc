@@ -1269,7 +1269,11 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 		  && (GET_CODE (arg_vals[i]) == REG
 		      || GET_CODE (arg_vals[i]) == SUBREG
 		      || GET_CODE (arg_vals[i]) == MEM)
-		  && reg_overlap_mentioned_p (arg_vals[i], target))))
+		  && reg_overlap_mentioned_p (arg_vals[i], target))
+	      /* ??? We must always copy a SUBREG into a REG, because it might
+		 get substituted into an address, and not all ports correctly
+		 handle SUBREGs in addresses.  */
+	      || (GET_CODE (arg_vals[i]) == SUBREG)))
 	arg_vals[i] = copy_to_mode_reg (GET_MODE (loc), arg_vals[i]);
     }
 	
