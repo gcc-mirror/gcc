@@ -1,3 +1,8 @@
+2002-04-07  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR optimization/6086
+	* g++.dg/opt/preinc1.C: New test.
+
 2002-04-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/5571
