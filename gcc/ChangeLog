@@ -1,3 +1,24 @@
+2004-05-18  Zack Weinberg  <zack@codesourcery.com>
+
+	* cgraph.c (hash_node, eq_node, cgraph_node, cgraph_remove_node)
+	(cgraph_varpool_hash_node, eq_cgraph_varpool_node)
+	(cgraph_varpool_node):
+	Use DECL_UID for the key, not DECL_ASSEMBLER_NAME.
+	(cgraph_function_possibly_inlined_p): Use the decl itself for
+	the key, not DECL_ASSEMBLER_NAME.
+	(change_decl_assembler_name): No need to muck with the hash tables.
+	(cgraph_node_for_identifier, cgraph_varpool_node_for_identifier):
+	Delete.
+	* cgraphunit.c (cgraph_mark_inline_edge): Use the decl itself
+	for the key, not DECL_ASSEMBLER_NAME.
+	* cgraph.h: Remove prototypes of deleted functions.
+	* varasm.c (mark_referenced): Just set TREE_SYMBOL_REFERENCED.
+	(mark_decl_referenced): New function.
+	* tree.h: Prototype mark_decl_referenced.
+	* final.c (output_addr_const) <case SYMBOL_REF>: Call
+	mark_decl_referenced before assemble_name.
+	* c-decl.c (finish_decl): Use mark_decl_referenced.
+
 2004-05-18  Andrew Pinski  <pinskia@physics.uc.edu>
 	    Jeff Law <law@redhat.com>
 

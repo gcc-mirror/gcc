@@ -353,7 +353,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
      this translation unit.  */
   TREE_ADDRESSABLE (function) = 1;
   mark_used (function);
-  mark_referenced (DECL_ASSEMBLER_NAME (function));
+  mark_decl_referenced (function);
   if (!emit_p)
     return;
 
@@ -495,7 +495,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 
       /* Since we want to emit the thunk, we explicitly mark its name as
 	 referenced.  */
-      mark_referenced (DECL_ASSEMBLER_NAME (thunk_fndecl));
+      mark_decl_referenced (thunk_fndecl);
 
       /* But we don't want debugging information about it.  */
       DECL_IGNORED_P (thunk_fndecl) = 1;
