@@ -9001,3 +9001,70 @@ sparc_extra_constraint_check (op, c, strict)
 
   return reload_ok_mem;
 }
+
+/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
+   Used for C++ multiple inheritance.  */
+
+void
+sparc_output_mi_thunk (file, thunk_fndecl, delta, function)
+     FILE *file;
+     tree thunk_fndecl ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT delta;
+     tree function;
+{
+  rtx this, insn, funexp, delta_rtx, tmp;
+
+  reload_completed = 1;
+  no_new_pseudos = 1;
+  current_function_uses_only_leaf_regs = 1;
+
+  emit_note (NULL, NOTE_INSN_PROLOGUE_END);
+
+  /* Find the "this" pointer.  Normally in %o0, but in ARCH64 if the function
+     returns a structure, the structure return pointer is there instead.  */
+  if (TARGET_ARCH64 && aggregate_value_p (TREE_TYPE (TREE_TYPE (function))))
+    this = gen_rtx_REG (Pmode, SPARC_INCOMING_INT_ARG_FIRST + 1);
+  else
+    this = gen_rtx_REG (Pmode, SPARC_INCOMING_INT_ARG_FIRST);
+
+  /* Add DELTA.  When possible use a plain add, otherwise load it into
+     a register first.  */
+  delta_rtx = GEN_INT (delta);
+  if (!SPARC_SIMM13_P (delta))
+    {
+      rtx scratch = gen_rtx_REG (Pmode, 1);
+      if (TARGET_ARCH64)
+	sparc_emit_set_const64 (scratch, delta_rtx);
+      else
+	sparc_emit_set_const32 (scratch, delta_rtx);
+      delta_rtx = scratch;
+    }
+
+  tmp = gen_rtx_PLUS (Pmode, this, delta_rtx);
+  emit_insn (gen_rtx_SET (VOIDmode, this, tmp));
+
+  /* Generate a tail call to the target function.  */
+  if (! TREE_USED (function))
+    {
+      assemble_external (function);
+      TREE_USED (function) = 1;
+    }
+  funexp = XEXP (DECL_RTL (function), 0);
+  funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
+  insn = emit_call_insn (gen_sibcall (funexp));
+  SIBLING_CALL_P (insn) = 1;
+  emit_barrier ();
+
+  /* Run just enough of rest_of_compilation to get the insns emitted.
+     There's not really enough bulk here to make other passes such as
+     instruction scheduling worth while.  Note that use_thunk calls
+     assemble_start_function and assemble_end_function.  */
+  insn = get_insns ();
+  shorten_branches (insn);
+  final_start_function (insn, file, 1);
+  final (insn, file, 1, 0);
+  final_end_function ();
+
+  reload_completed = 0;
+  no_new_pseudos = 0;
+}

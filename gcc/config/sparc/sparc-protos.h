@@ -123,4 +123,6 @@ extern rtx gen_df_reg PARAMS ((rtx, int));
 extern int sparc_extra_constraint_check PARAMS ((rtx, int, int));
 #endif /* RTX_CODE */
 
+extern void sparc_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
+
 #endif /* __SPARC_PROTOS_H__ */
