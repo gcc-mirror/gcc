@@ -148,10 +148,12 @@ ZIP = @ZIP@
 ZLIBS = @ZLIBS@
 ZLIBSPEC = @ZLIBSPEC@
 ZLIBTESTSPEC = @ZLIBTESTSPEC@
+build_noncanonical = @build_noncanonical@
 build_subdir = @build_subdir@
 do_compare = @do_compare@
 gcc_version = @gcc_version@
 here = @here@
+host_noncanonical = @host_noncanonical@
 host_subdir = @host_subdir@
 libgcj_basedir = @libgcj_basedir@
 mkinstalldirs = @mkinstalldirs@
@@ -177,7 +179,7 @@ DIST_COMMON =  ./stamp-h1.in Makefile.am Makefile.in config.h.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:

@@ -144,10 +144,12 @@ ZINCS = @ZINCS@
 ZLIBS = @ZLIBS@
 ZLIBSPEC = @ZLIBSPEC@
 ZLIBTESTSPEC = @ZLIBTESTSPEC@
+build_noncanonical = @build_noncanonical@
 build_subdir = @build_subdir@
 do_compare = @do_compare@
 gcc_version = @gcc_version@
 here = @here@
+host_noncanonical = @host_noncanonical@
 host_subdir = @host_subdir@
 libgcj_basedir = @libgcj_basedir@
 mkinstalldirs = @mkinstalldirs@
@@ -242,7 +244,7 @@ INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 
 nat_files = $(nat_source_files:.cc=.lo)
 xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
-c_files = $(c_source_files:.c=.lo)
+math_c_files = $(math_c_source_files:.c=.lo)
 extra_cc_files = $(extra_cc_source_files:.cc=.lo)
 gtk_c_files = $(gtk_c_source_files:.c=.lo)
 javao_files = $(java_source_files:.java=.lo) \
@@ -257,16 +259,16 @@ libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
 	$(nat_source_files)
 
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
-	win32-threads.cc posix.cc win32.cc $(c_source_files) \
+	win32-threads.cc posix.cc win32.cc $(math_c_source_files) \
 	$(extra_cc_source_files) $(java_source_files) $(built_java_source_files)
 
 libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar $(javao_files) \
-	$(c_files) $(extra_cc_files) $(GCOBJS) $(THREADOBJS) \
+	$(math_c_files) $(extra_cc_files) $(GCOBJS) $(THREADOBJS) \
 	$(PLATFORMOBJS) $(LIBLTDL) $(LIBFFI) $(ZLIBS) $(GCLIBS) \
 	$(propertyo_files)
 
 
-libgcj_la_LIBADD = $(javao_files) $(c_files) $(extra_cc_files) $(GCOBJS) \
+libgcj_la_LIBADD = $(javao_files) $(math_c_files) $(extra_cc_files) $(GCOBJS) \
 	$(THREADOBJS) $(PLATFORMOBJS) $(propertyo_files)
 
 # Include THREADLIBS here to ensure that the correct version of
@@ -2608,7 +2610,7 @@ $(javax_source_files)
 
 java_source_files = $(special_java_source_files) $(ordinary_java_source_files)
 
-c_source_files = \
+math_c_source_files = \
   java/lang/dtoa.c        java/lang/k_rem_pio2.c  java/lang/s_tan.c       \
   java/lang/e_acos.c      java/lang/k_sin.c       java/lang/strtod.c      \
   java/lang/e_asin.c      java/lang/k_tan.c       java/lang/w_acos.c      \
@@ -2625,8 +2627,6 @@ c_source_files = \
 
 
 extra_cc_source_files = $(EXTRA_CC_FILES)
-
-#java/awt/natToolkit.cc
 
 nat_source_files = \
 gnu/gcj/natCore.cc \
@@ -3093,7 +3093,7 @@ libgcj-test.spec.in libgcj.pc.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -5521,13 +5521,13 @@ $(nat_files) $(xlib_nat_files): %.lo: %.cc
 	$(LTCXXCOMPILE) -MD -MT $@ -MF $(@:.lo=.pp) -c -o $@ $<
 	@-mv $(@:.lo=.pp) $(@:.lo=.d)
 
-$(c_files): %.lo: %.c
+$(math_c_files): %.lo: %.c
 	$(LTCOMPILE) -c -o $@ $<
 
 $(extra_cc_files): %.lo: %.cc
 	$(LTCXXCOMPILE) -c -o $@ $<
 
-$(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
+$(math_c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
 $(gtk_c_files): %.lo: %.c
 	$(LTCOMPILE) -c -Ijniinclude -I$(srcdir)/jni/classpath -I$(srcdir)/jni/gtk-peer \
