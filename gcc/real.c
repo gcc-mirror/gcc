@@ -4459,8 +4459,7 @@ real_sqrt (REAL_VALUE_TYPE *r, enum machine_mode mode,
   /* Negative arguments return NaN.  */
   if (real_isneg (x))
     {
-      /* Mode is ignored for canonical NaN.  */
-      real_nan (r, "", 1, SFmode);
+      get_canonical_qnan (r, 0);
       return false;
     }
 
