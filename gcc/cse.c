@@ -1480,14 +1480,18 @@ merge_equiv_classes (class1, class2)
    (because, when a memory reference with a varying address is stored in,
    all memory references are removed by invalidate_memory
    so specific invalidation is superfluous).
+   FULL_MODE, if not VOIDmode, indicates that this much should be invalidated
+   instead of just the amount indicated by the mode of X.  This is only used
+   for bitfield stores into memory.
 
    A nonvarying address may be just a register or just
    a symbol reference, or it may be either of those plus
    a numeric offset.  */
 
 static void
-invalidate (x)
+invalidate (x, full_mode)
      rtx x;
+     enum machine_mode full_mode;
 {
   register int i;
   register struct table_elt *p;
@@ -1562,7 +1566,7 @@ invalidate (x)
     {
       if (GET_CODE (SUBREG_REG (x)) != REG)
 	abort ();
-      invalidate (SUBREG_REG (x));
+      invalidate (SUBREG_REG (x), VOIDmode);
       return;
     }
 
@@ -1573,7 +1577,10 @@ invalidate (x)
   if (GET_CODE (x) != MEM)
     abort ();
 
-  set_nonvarying_address_components (XEXP (x, 0), GET_MODE_SIZE (GET_MODE (x)),
+  if (full_mode == VOIDmode)
+    full_mode = GET_MODE (x);
+
+  set_nonvarying_address_components (XEXP (x, 0), GET_MODE_SIZE (full_mode),
 				     &base, &start, &end);
 
   for (i = 0; i < NBUCKETS; i++)
@@ -2230,9 +2237,10 @@ refers_to_p (x, y)
    set PBASE, PSTART, and PEND which correspond to the base of the address,
    the starting offset, and ending offset respectively.
 
-   ADDR is known to be a nonvarying address. 
+   ADDR is known to be a nonvarying address.  */
 
-   cse_address_varies_p returns zero for nonvarying addresses.  */
+/* ??? Despite what the comments say, this function is in fact frequently
+   passed varying addresses.  This does not appear to cause any problems.  */
 
 static void
 set_nonvarying_address_components (addr, size, pbase, pstart, pend)
@@ -5998,7 +6006,7 @@ cse_insn (insn, in_libcall_block)
     {
       for (tem = CALL_INSN_FUNCTION_USAGE (insn); tem; tem = XEXP (tem, 1))
 	if (GET_CODE (XEXP (tem, 0)) == CLOBBER)
-          invalidate (SET_DEST (XEXP (tem, 0)));
+          invalidate (SET_DEST (XEXP (tem, 0)), VOIDmode);
     }
 
   if (GET_CODE (x) == SET)
@@ -6029,7 +6037,7 @@ cse_insn (insn, in_libcall_block)
 	  canon_reg (SET_SRC (x), insn);
 	  apply_change_group ();
 	  fold_rtx (SET_SRC (x), insn);
-	  invalidate (SET_DEST (x));
+	  invalidate (SET_DEST (x), VOIDmode);
 	}
       else
 	n_sets = 1;
@@ -6060,10 +6068,10 @@ cse_insn (insn, in_libcall_block)
 
 	      if (GET_CODE (clobbered) == REG
 		  || GET_CODE (clobbered) == SUBREG)
-		invalidate (clobbered);
+		invalidate (clobbered, VOIDmode);
 	      else if (GET_CODE (clobbered) == STRICT_LOW_PART
 		       || GET_CODE (clobbered) == ZERO_EXTRACT)
-		invalidate (XEXP (clobbered, 0));
+		invalidate (XEXP (clobbered, 0), GET_MODE (clobbered));
 	    }
 	}
 	    
@@ -6079,7 +6087,7 @@ cse_insn (insn, in_libcall_block)
 		  canon_reg (SET_SRC (y), insn);
 		  apply_change_group ();
 		  fold_rtx (SET_SRC (y), insn);
-		  invalidate (SET_DEST (y));
+		  invalidate (SET_DEST (y), VOIDmode);
 		}
 	      else if (SET_DEST (y) == pc_rtx
 		       && GET_CODE (SET_SRC (y)) == LABEL_REF)
@@ -6969,10 +6977,10 @@ cse_insn (insn, in_libcall_block)
 	{
 	  if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
 	      || GET_CODE (dest) == MEM)
-	    invalidate (dest);
+	    invalidate (dest, VOIDmode);
 	  else if (GET_CODE (dest) == STRICT_LOW_PART
 		   || GET_CODE (dest) == ZERO_EXTRACT)
-	    invalidate (XEXP (dest, 0));
+	    invalidate (XEXP (dest, 0), GET_MODE (dest));
 	  sets[i].rtl = 0;
 	}
 
@@ -7107,18 +7115,21 @@ cse_insn (insn, in_libcall_block)
   for (i = 0; i < n_sets; i++)
     if (sets[i].rtl)
       {
-	register rtx dest = sets[i].inner_dest;
+	/* We can't use the inner dest, because the mode associated with
+	   a ZERO_EXTRACT is significant.  */
+	register rtx dest = SET_DEST (sets[i].rtl);
 
 	/* Needed for registers to remove the register from its
 	   previous quantity's chain.
 	   Needed for memory if this is a nonvarying address, unless
 	   we have just done an invalidate_memory that covers even those.  */
 	if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
-	    || (! writes_memory.all && ! cse_rtx_addr_varies_p (dest)))
-	  invalidate (dest);
+	    || (GET_CODE (dest) == MEM && ! writes_memory.all
+		&& ! cse_rtx_addr_varies_p (dest)))
+	  invalidate (dest, VOIDmode);
 	else if (GET_CODE (dest) == STRICT_LOW_PART
 		 || GET_CODE (dest) == ZERO_EXTRACT)
-	  invalidate (XEXP (dest, 0));
+	  invalidate (XEXP (dest, 0), GET_MODE (dest));
       }
 
   /* Make sure registers mentioned in destinations
@@ -7430,7 +7441,7 @@ invalidate_from_clobbers (w, x)
 
       /* This should be *very* rare.  */
       if (TEST_HARD_REG_BIT (hard_regs_in_table, STACK_POINTER_REGNUM))
-	invalidate (stack_pointer_rtx);
+	invalidate (stack_pointer_rtx, VOIDmode);
     }
 
   if (GET_CODE (x) == CLOBBER)
@@ -7440,10 +7451,10 @@ invalidate_from_clobbers (w, x)
 	{
 	  if (GET_CODE (ref) == REG || GET_CODE (ref) == SUBREG
 	      || (GET_CODE (ref) == MEM && ! w->all))
-	    invalidate (ref);
+	    invalidate (ref, VOIDmode);
 	  else if (GET_CODE (ref) == STRICT_LOW_PART
 		   || GET_CODE (ref) == ZERO_EXTRACT)
-	    invalidate (XEXP (ref, 0));
+	    invalidate (XEXP (ref, 0), GET_MODE (ref));
 	}
     }
   else if (GET_CODE (x) == PARALLEL)
@@ -7459,10 +7470,10 @@ invalidate_from_clobbers (w, x)
 		{
 		  if (GET_CODE (ref) == REG || GET_CODE (ref) == SUBREG
 		      || (GET_CODE (ref) == MEM && !w->all))
-		    invalidate (ref);
+		    invalidate (ref, VOIDmode);
 		  else if (GET_CODE (ref) == STRICT_LOW_PART
 			   || GET_CODE (ref) == ZERO_EXTRACT)
-		    invalidate (XEXP (ref, 0));
+		    invalidate (XEXP (ref, 0), GET_MODE (ref));
 		}
 	    }
 	}
@@ -7592,10 +7603,10 @@ cse_around_loop (loop_start)
       if (GET_CODE (p->exp) == MEM || GET_CODE (p->exp) == REG
 	  || (GET_CODE (p->exp) == SUBREG
 	      && GET_CODE (SUBREG_REG (p->exp)) == REG))
-	invalidate (p->exp);
+	invalidate (p->exp, VOIDmode);
       else if (GET_CODE (p->exp) == STRICT_LOW_PART
 	       || GET_CODE (p->exp) == ZERO_EXTRACT)
-	invalidate (XEXP (p->exp, 0));
+	invalidate (XEXP (p->exp, 0), GET_MODE (p->exp));
 
   /* Process insns starting after LOOP_START until we hit a CALL_INSN or
      a CODE_LABEL (we could handle a CALL_INSN, but it isn't worth it).
@@ -7654,10 +7665,10 @@ invalidate_skipped_set (dest, set)
 
   if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
       || (! skipped_writes_memory.all && ! cse_rtx_addr_varies_p (dest)))
-    invalidate (dest);
+    invalidate (dest, VOIDmode);
   else if (GET_CODE (dest) == STRICT_LOW_PART
 	   || GET_CODE (dest) == ZERO_EXTRACT)
-    invalidate (XEXP (dest, 0));
+    invalidate (XEXP (dest, 0), GET_MODE (dest));
 }
 
 /* Invalidate all insns from START up to the end of the function or the
@@ -7809,10 +7820,10 @@ cse_set_around_loop (x, insn, loop_start)
   if (GET_CODE (SET_DEST (x)) == REG || GET_CODE (SET_DEST (x)) == SUBREG
       || (GET_CODE (SET_DEST (x)) == MEM && ! writes_memory.all
 	  && ! cse_rtx_addr_varies_p (SET_DEST (x))))
-    invalidate (SET_DEST (x));
+    invalidate (SET_DEST (x), VOIDmode);
   else if (GET_CODE (SET_DEST (x)) == STRICT_LOW_PART
 	   || GET_CODE (SET_DEST (x)) == ZERO_EXTRACT)
-    invalidate (XEXP (SET_DEST (x), 0));
+    invalidate (XEXP (SET_DEST (x), 0), GET_MODE (SET_DEST (x)));
 }
 
 /* Find the end of INSN's basic block and return its range,
