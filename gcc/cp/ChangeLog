@@ -1,3 +1,8 @@
+2003-03-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (initialize_reference): Remove bogus assertion.
+	* decl.c (build_ptrmemfunc_type): Revert change of 2003-03-09.
+
 2003-03-12  Andrew Lewycky  <andrew@mxc.ca>
 
 	PR c++/7050
