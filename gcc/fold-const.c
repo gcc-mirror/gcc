@@ -7938,11 +7938,20 @@ fold (tree expr)
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
     case TRUNC_MOD_EXPR:
-      /* 0 % X is always zero as is X % 1.  */
-      if (integer_zerop (arg0) || integer_onep (arg1))
+      /* X % 1 is always zero, but be sure to preserve any side
+	 effects in X.  */
+      if (integer_onep (arg1))
 	return omit_one_operand (type, integer_zero_node, arg0);
+
+      /* X % 0, return X % 0 unchanged so that we can get the
+	 proper warnings and errors.  */
       if (integer_zerop (arg1))
 	return t;
+
+      /* 0 % X is always zero, but be sure to preserve any side
+	 effects in X.  Place this after checking for X == 0.  */
+      if (integer_zerop (arg0))
+	return omit_one_operand (type, integer_zero_node, arg1);
 
       /* X % -1 is zero.  */
       if (!TYPE_UNSIGNED (type)
