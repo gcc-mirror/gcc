@@ -67,6 +67,15 @@ ifobjc
 #include "objc-act.h"
 end ifobjc
 
+/* Since parsers are distinct for each language, put the language string
+   definition here.  */
+ifobjc
+char *language_string = "GNU Obj-C";
+end ifobjc
+ifc
+char *language_string = "GNU C";
+end ifc
+
 #ifndef errno
 extern int errno;
 #endif
