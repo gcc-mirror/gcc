@@ -87,7 +87,7 @@ int gfc_index_integer_kind;
    We first get the argument into the range 0.5 to 1.5 by successive
    multiplications or divisions by e.  Then we use the series:
 
-     ln(x) = (x-1) - (x-1)^/2 + (x-1)^3/3 - (x-1)^4/4 + ...
+     ln(x) = (x-1) - (x-1)^2/2 + (x-1)^3/3 - (x-1)^4/4 + ...
 
    Because we are expanding in powers of (x-1), and 0.5 < x < 1.5, we
    have -0.5 < (x-1) < 0.5.  Ignoring the harmonic term, this means
@@ -179,7 +179,7 @@ common_logarithm (mpf_t * arg, mpf_t * result)
 
      x = Nln2 + r
 
-   Then we obtain exp(r) from the McLaurin series.
+   Then we obtain exp(r) from the Maclaurin series.
    exp(x) is then recovered from the identity
 
      exp(x) = 2^N*exp(r).  */
@@ -266,7 +266,7 @@ exponential (mpf_t * arg, mpf_t * result)
 
      x= N*2pi + r
 
-   Then we obtain sin(r) from the McLaurin series.  */
+   Then we obtain sin(r) from the Maclaurin series.  */
 
 void
 sine (mpf_t * arg, mpf_t * result)
@@ -1173,7 +1173,7 @@ gfc_arith_neqv (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
 
 
 /* Make sure a constant numeric expression is within the range for
-   it's type and kind.  Note that there's also a gfc_check_range(),
+   its type and kind.  Note that there's also a gfc_check_range(),
    but that one deals with the intrinsic RANGE function.  */
 
 arith
