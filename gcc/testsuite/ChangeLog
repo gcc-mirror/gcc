@@ -1,3 +1,8 @@
+2002-07-25  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/20020720-1.x: Skip this test on
+	several targets known to fail.
+
 2002-07-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/mips-args-[123].c: New tests.
