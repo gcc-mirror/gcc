@@ -825,6 +825,11 @@ extern char *alpha_function_name;
   fprintf (FILE, "\t.quad 0,0\n");		\
 }
 
+/* Section in which to place the trampoline.  On Alpha, instructions
+   may only be placed in a text segment.  */
+
+#define TRAMPOLINE_SECTION text_section
+
 /* Length in units of the trampoline for entering a nested function.  */
 
 #define TRAMPOLINE_SIZE    32
