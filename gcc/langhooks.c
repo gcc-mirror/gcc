@@ -430,6 +430,14 @@ lhd_expr_size (tree exp)
   else
     return size_in_bytes (TREE_TYPE (exp));
 }
+/* lang_hooks.decl_uninit: Find out if a variable is uninitialized based
+   on DECL_INITIAL.  */
+
+bool
+lhd_decl_uninit (tree t ATTRIBUTE_UNUSED)
+{
+  return false;
+}
 
 /* lang_hooks.tree_size: Determine the size of a tree with code C,
    which is a language-specific tree code in category 'x'.  The
