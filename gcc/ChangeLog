@@ -1,3 +1,8 @@
+2003-03-25  Marcelo Abreu  <mmabreu@inf.ufrgs.br>
+
+	PR other/10203
+	* version.c: Reference the GCC web site in the URL.
+
 Tue Mar 25 20:48:05 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/10056
