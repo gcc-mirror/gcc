@@ -1,3 +1,7 @@
+2001-02-14  Richard Henderson  <rth@redhat.com>
+
+	* toplev.c (f_options): Clarify -fschedule-insns2 documentation.
+
 Wed Feb 14 23:35:57 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* regclass.c (init_reg_sets_1): Reinstall the optimization
