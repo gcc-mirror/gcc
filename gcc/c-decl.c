@@ -1543,6 +1543,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 
 /* Return any external DECL associated with ID, whether or not it is
    currently in scope.  */
+
 static tree
 any_external_decl (id)
      tree id;
@@ -1550,7 +1551,9 @@ any_external_decl (id)
   tree decl = IDENTIFIER_SYMBOL_VALUE (id);
   tree t;
 
-  if (decl && TREE_CODE (decl) != TYPE_DECL && DECL_EXTERNAL (decl))
+  if (decl == 0 || TREE_CODE (decl) == ERROR_MARK)
+    return 0;
+  else if (TREE_CODE (decl) != TYPE_DECL && DECL_EXTERNAL (decl))
     return decl;
 
   t = purpose_member (id, truly_local_externals);
