@@ -3332,8 +3332,6 @@ AC_SUBST(target_cpu_default)
 
 AC_SUBST_FILE(language_hooks)
 
-TL_AC_GNU_MAKE_GCC_LIB_PATH
-
 # Echo link setup.
 if test x${build} = x${host} ; then
   if test x${host} = x${target} ; then

@@ -1625,28 +1625,6 @@ case "${host}" in
   ;;
 esac
 
-# If no --enable-shared nor --disable-shared is specified, we set up
-# LD_LIBRARY_PATH when we build for gcc.
-case $enable_shared in
-"")
-  if test -d ${srcdir}/gcc; then
-    set_lib_path=yes
-  else 
-    set_lib_path=no
-  fi
-  ;;
-*)
-  set_lib_path=$enable_shared
-  ;;
-esac
-
-# If --enable-shared was set, we must set LD_LIBRARY_PATH so that the
-# binutils tools will find libbfd.so.
-case "${set_lib_path}" in
-  no) SET_LIB_PATH= ;;
-  *) SET_LIB_PATH="\$(REALLY_SET_LIB_PATH)" ;;
-esac
-
 case "${host}" in
   *-*-hpux*) RPATH_ENVVAR=SHLIB_PATH ;;
   *-*-darwin* | *-*-rhapsody* ) RPATH_ENVVAR=DYLD_LIBRARY_PATH ;;
@@ -2116,7 +2094,6 @@ AC_SUBST_FILE(alphaieee_frag)
 AC_SUBST_FILE(ospace_frag)
 
 # Miscellanea: directories, flags, etc.
-AC_SUBST(SET_LIB_PATH)
 AC_SUBST(RPATH_ENVVAR)
 AC_SUBST(BUILD_PREFIX)
 AC_SUBST(BUILD_PREFIX_1)
@@ -2294,25 +2271,5 @@ case ${enable_werror} in
   *) stage2_werror_flag="" ;;
 esac
 AC_SUBST(stage2_werror_flag)
-
-# If gcc is built natively with shared library enabled, set
-# $RPATH_ENVVAR to make sure the newly built gcc shared librares are
-# used.
-SET_GCC_LIB_PATH=
-if test -d ${srcdir}/gcc && test x${is_cross_compiler} = xno; then
-  case "${set_lib_path}" in
-    no) ;;
-    *)
-      eval "d=\$$RPATH_ENVVAR"
-      if test x"$d" != x; then
-	d="$pwd/gcc:$d"
-      else
-	d="$pwd/gcc"
-    fi
-    SET_GCC_LIB_PATH="\$(RPATH_ENVVAR)=$d; export \$(RPATH_ENVVAR);"
-    ;;
-  esac
-fi
-AC_SUBST(SET_GCC_LIB_PATH)
 
 AC_OUTPUT(Makefile)

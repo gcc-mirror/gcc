@@ -87,17 +87,6 @@ GDB_NLM_DEPS =
 # the libraries.
 RPATH_ENVVAR = @RPATH_ENVVAR@
 
-# This is set by configure to REALLY_SET_LIB_PATH if --enable-shared
-# was used.
-SET_LIB_PATH = @SET_LIB_PATH@
-
-# configure.in sets SET_LIB_PATH to this if --enable-shared was used.
-# Some platforms don't like blank entries, so we remove duplicate,
-# leading and trailing colons.
-REALLY_SET_LIB_PATH = \
-  @SET_GCC_LIB_PATH@ \
-  $(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH):$(TARGET_LIB_PATH):$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
-
 # This is the list of directories to be built for the build system.
 BUILD_CONFIGDIRS = libiberty
 # Build programs are put under this directory.
@@ -169,11 +158,11 @@ HOST_EXPORTS = \
 	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
 	GMPLIBS="$(HOST_GMPLIBS)"; export GMPLIBS; \
 	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
-	SET_GCC_LIB_PATH_CMD="@SET_GCC_LIB_PATH@"; export SET_GCC_LIB_PATH_CMD; \
-	@SET_GCC_LIB_PATH@
+	$(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
 # Similar, for later GCC stages.
 STAGE_HOST_EXPORTS = \
+	$(RPATH_ENVVAR)=`echo "$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
 	$(HOST_EXPORTS) \
 	CC="$(STAGE_CC_WRAPPER) $$r/$(HOST_SUBDIR)/prev-gcc/xgcc$(exeext) \
 	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ -B$(build_tooldir)/bin/"; export CC; \
@@ -209,8 +198,7 @@ BASE_TARGET_EXPORTS = \
 	NM="$(NM_FOR_TARGET)"; export NM; \
 	RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
 	WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES; \
-	SET_GCC_LIB_PATH_CMD="@SET_GCC_LIB_PATH@"; export SET_GCC_LIB_PATH_CMD; \
-	@SET_GCC_LIB_PATH@
+	$(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH)$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
 RAW_CXX_TARGET_EXPORTS = \
 	$(BASE_TARGET_EXPORTS) \
@@ -316,10 +304,6 @@ RUNTEST = `if [ -f $$s/dejagnu/runtest ] ; \
 # Programs producing files for the HOST machine
 # ---------------------------------------------
 
-# This is the list of directories that may be needed in RPATH_ENVVAR
-# so that programs built for the host machine work.
-HOST_LIB_PATH = $$r/$(HOST_SUBDIR)/bfd:$$r/$(HOST_SUBDIR)/opcodes
-
 AS = @AS@
 
 AR = @AR@
@@ -349,10 +333,6 @@ PICFLAG =
 # -----------------------------------------------
 # Programs producing files for the TARGET machine
 # -----------------------------------------------
-
-# This is the list of directories that may be needed in RPATH_ENVVAR
-# so that prorgams built for the target machine work.
-TARGET_LIB_PATH = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:$$r/$(TARGET_SUBDIR)/libmudflap/.libs
 
 FLAGS_FOR_TARGET = @FLAGS_FOR_TARGET@
 
@@ -500,6 +480,37 @@ PICFLAG_FOR_TARGET =
 @ospace_frag@
 @host_makefile_frag@
 ###
+
+# This is the list of directories that may be needed in RPATH_ENVVAR
+# so that prorgams built for the target machine work.
+TARGET_LIB_PATH = [+ FOR target_modules +][+
+  IF lib_path +]$(TARGET_LIB_PATH_[+module+])[+ ENDIF lib_path +][+
+  ENDFOR target_modules +]$(HOST_LIB_PATH_gcc)
+[+ FOR target_modules +][+ IF lib_path +]
+@if target-[+module+]
+TARGET_LIB_PATH_[+module+] = $$r/$(TARGET_SUBDIR)/[+module+]/[+lib_path+]:
+@endif target-[+module+]
+[+ ENDIF lib_path +][+ ENDFOR target_modules +]
+
+
+# This is the list of directories that may be needed in RPATH_ENVVAR
+# so that programs built for the host machine work.
+HOST_LIB_PATH = [+ FOR host_modules +][+
+  IF lib_path +]$(HOST_LIB_PATH_[+module+])[+ ENDIF lib_path +][+
+  ENDFOR host_modules +]
+
+# Define HOST_LIB_PATH_gcc here, for the sake of TARGET_LIB_PATH, ouch
+@if gcc
+HOST_LIB_PATH_gcc = $$r/$(HOST_SUBDIR)/gcc:$$r/$(HOST_SUBDIR)/prev-gcc:
+@endif gcc
+
+[+ FOR host_modules +][+ IF lib_path +]
+@if [+module+]
+HOST_LIB_PATH_[+module+] = \
+  $$r/$(HOST_SUBDIR)/[+module+]/[+lib_path+]:[+ IF bootstrap
+  +]$$r/$(HOST_SUBDIR)/prev-[+module+]/[+lib_path+]:[+ ENDIF bootstrap +]
+@endif [+module+]
+[+ ENDIF lib_path +][+ ENDFOR host_modules +]
 
 # Flags to pass down to all sub-makes.
 BASE_FLAGS_TO_PASS = [+ FOR flags_to_pass +]\
@@ -764,7 +775,6 @@ uninstall:
 install.all: install-no-fixedincludes
 	@if [ -f ./gcc/Makefile ] ; then \
 		r=`${PWD_COMMAND}` ; export r ; \
-		$(SET_LIB_PATH) \
 		$(HOST_EXPORTS) \
 		(cd ./gcc && \
 		$(MAKE) $(FLAGS_TO_PASS) install-headers) ; \
@@ -890,7 +900,6 @@ all-[+module+]: configure-[+module+]
 	@[+ IF bootstrap +]test -f stage_last && exit 0; \
 	[+ ENDIF bootstrap +]r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/[+module+] && \
 	  $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] $(TARGET-[+module+]))
@@ -908,7 +917,6 @@ check-[+module+]:
 	@if [ '$(host)' = '$(target)' ] ; then \
 	  r=`${PWD_COMMAND}`; export r; \
 	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	  $(SET_LIB_PATH) \
 	  $(HOST_EXPORTS) \
 	  (cd $(HOST_SUBDIR)/[+module+] && \
 	    $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] check); \
@@ -917,7 +925,6 @@ check-[+module+]:
 check-[+module+]:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/[+module+] && \
 	  $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] check)
@@ -934,7 +941,6 @@ install-[+module+]:
 install-[+module+]: installdirs
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/[+module+] && \
 	  $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] install)
@@ -958,7 +964,6 @@ maybe-[+make_target+]-[+module+]: [+make_target+]-[+module+]
 	@[ -f ./[+module+]/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) [+extra_make_flags+]; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
@@ -995,8 +1000,7 @@ configure-target-[+module+]: $(TARGET_SUBDIR)/[+module+]/multilib.out
 	@test ! -f $(TARGET_SUBDIR)/[+module+]/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/[+module+] ; \
 	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \[+
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \[+
 IF raw_cxx +]
 	$(RAW_CXX_TARGET_EXPORTS) \[+
 ELSE normal_cxx +]
@@ -1025,8 +1029,7 @@ TARGET-target-[+module+]=[+ IF target +][+target+][+ ELSE +]all[+ ENDIF target +
 maybe-all-target-[+module+]: all-target-[+module+]
 all-target-[+module+]: configure-target-[+module+]
 	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \[+
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \[+
 IF raw_cxx +]
 	$(RAW_CXX_TARGET_EXPORTS) \[+
 ELSE normal_cxx +]
@@ -1050,8 +1053,7 @@ check-target-[+module+]:
 [+ ELSE check +]
 check-target-[+module+]:
 	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \[+
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \[+
 IF raw_cxx +]
 	$(RAW_CXX_TARGET_EXPORTS) \[+
 ELSE normal_cxx +]
@@ -1076,8 +1078,7 @@ install-target-[+module+]:
 [+ ELSE install +]
 install-target-[+module+]: installdirs
 	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \[+
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \[+
 IF raw_cxx +]
 	$(RAW_CXX_TARGET_EXPORTS) \[+
 ELSE normal_cxx +]
@@ -1104,8 +1105,7 @@ maybe-[+make_target+]-target-[+module+]: [+make_target+]-target-[+module+]
   ENDFOR depend +]
 	@[ -f $(TARGET_SUBDIR)/[+module+]/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \[+
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \[+
 IF raw_cxx +]
 	$(RAW_CXX_TARGET_EXPORTS) \[+
 ELSE normal_cxx +]
@@ -1141,9 +1141,9 @@ GCC_STRAP_TARGETS = bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstra
 $(GCC_STRAP_TARGETS): all-prebootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	echo "Bootstrapping the compiler"; \
+	$(RPATH_ENVVAR)=`echo "$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,:[ :]*,:,g;s,^[ :]*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $@
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -1161,32 +1161,28 @@ $(GCC_STRAP_TARGETS): all-prebootstrap configure-gcc
 	    msg="Comparing stage2 and stage3 of the compiler"; \
 	    compare=compare ;; \
 	esac; \
-	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	echo "$$msg"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $$compare
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
-	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
 
 profiledbootstrap: all-prebootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
+	$(RPATH_ENVVAR)=`echo "$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,:[ :]*,:,g;s,^[ :]*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
 	echo "Bootstrapping training compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) stageprofile_build
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	echo "Building feedback based compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) stagefeedback_build
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
-	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
 
@@ -1194,13 +1190,11 @@ profiledbootstrap: all-prebootstrap configure-gcc
 cross: all-build all-gas all-ld
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	echo "Building the C and C++ compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) LANGUAGES="c c++"
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
-	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) LANGUAGES="c c++" all
 @endif gcc-no-bootstrap
@@ -1211,7 +1205,6 @@ check-gcc-c++:
 	@if [ -f ./gcc/Makefile ] ; then \
 	  r=`${PWD_COMMAND}`; export r; \
 	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	  $(SET_LIB_PATH) \
 	  $(HOST_EXPORTS) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++); \
 	else \
@@ -1235,7 +1228,6 @@ gcc-no-fixedincludes:
 	  rm -f gcc/stmp-headers gcc/stmp-int-hdrs; \
 	  r=`${PWD_COMMAND}`; export r; \
 	  s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
-	  $(SET_LIB_PATH) \
 	  $(HOST_EXPORTS) \
 	  (cd ./gcc && \
 	   $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
@@ -1491,18 +1483,15 @@ stagefeedback-start::
 profiledbootstrap:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	echo "Bootstrapping the compiler"; \
 	$(MAKE) stageprofile-bubble distclean-stagefeedback
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
-	$(SET_LIB_PATH) \
 	echo "Building runtime libraries and training compiler"; \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
 	echo "Building feedback based compiler"; \
 	$(MAKE) stagefeedback-bubble stagefeedback-end
