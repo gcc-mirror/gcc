@@ -1,5 +1,7 @@
 2000-05-09  Bruce Korb  <bkorb@gnu.org>
 
+	* fixinc/check.tpl:  Template for checking fixes
+	* fixinc/inclhack.def:  Added 'test_text' for many fixes
 	* fixinc/fixinc.sco:  Oh, yes, we don't need this any more.
 
 Tue May  9 16:30:27 MET DST 2000  Jan Hubicka  <jh@suse.cz>
