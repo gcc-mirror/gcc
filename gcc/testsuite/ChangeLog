@@ -1,3 +1,9 @@
+2003-03-31  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-3.c: Add new tests for sin and cos.
+	* gcc.dg/builtins-7.c: New test case.
+	* gcc.dg/builtins-8.c: New test case.
+
 2003-03-31  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/execute/ieee/20030331-1.c: New test.

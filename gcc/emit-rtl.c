@@ -111,6 +111,8 @@ REAL_VALUE_TYPE dconst0;
 REAL_VALUE_TYPE dconst1;
 REAL_VALUE_TYPE dconst2;
 REAL_VALUE_TYPE dconstm1;
+REAL_VALUE_TYPE dconstm2;
+REAL_VALUE_TYPE dconsthalf;
 
 /* All references to the following fixed hard registers go through
    these unique rtl objects.  On machines where the frame-pointer and
@@ -5552,6 +5554,10 @@ init_emit_once (line_numbers)
   REAL_VALUE_FROM_INT (dconst1,   1,  0, double_mode);
   REAL_VALUE_FROM_INT (dconst2,   2,  0, double_mode);
   REAL_VALUE_FROM_INT (dconstm1, -1, -1, double_mode);
+  REAL_VALUE_FROM_INT (dconstm2, -2, -1, double_mode);
+
+  dconsthalf = dconst1;
+  dconsthalf.exp--;
 
   for (i = 0; i <= 2; i++)
     {

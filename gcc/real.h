@@ -322,12 +322,14 @@ extern void real_ldexp		PARAMS ((REAL_VALUE_TYPE *,
 
 /* **** End of software floating point emulator interface macros **** */
 
-/* Constant real values 0, 1, 2, and -1.  */
+/* Constant real values 0, 1, 2, -1, -2 and 0.5.  */
 
 extern REAL_VALUE_TYPE dconst0;
 extern REAL_VALUE_TYPE dconst1;
 extern REAL_VALUE_TYPE dconst2;
 extern REAL_VALUE_TYPE dconstm1;
+extern REAL_VALUE_TYPE dconstm2;
+extern REAL_VALUE_TYPE dconsthalf;
 
 /* Function to return a real value (not a tree node)
    from a given integer constant.  */
