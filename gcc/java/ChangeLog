@@ -1,3 +1,8 @@
+1999-10-21  Tom Tromey  <tromey@cygnus.com>
+
+	* jvgenmain.c (main): _Jv_Compiler_Properties now an extern; set
+	in generated `main'.
+
 Thu Oct 21 01:27:31 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_qualified_expression_name): Handle MODIFY_EXPR.
