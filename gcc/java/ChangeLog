@@ -1,3 +1,8 @@
+Sun Oct 25 14:58:05 1998  H.J. Lu  (hjl@gnu.org)
+
+	* Make-lang.in (jv-scan$(exeext)): Add stamp-objlist to
+	dependency.
+
 1998-10-23  Tom Tromey  <tromey@cygnus.com>
 
 	* lang-specs.h: `.zip' files are input to jc1.
