@@ -36,7 +36,7 @@ static int	stat(const char *__f, struct stat *__p) {
  }
 #endif /* __cplusplus */
 
-#  else /* !__STDC__ */
+#  else /* !__STDC__ THIS FAILS ON BSD SYSTEMS */
 #if __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -62,7 +62,7 @@ static int	stat(__f, __p)
 
 	fstat(),
 	lstat(),
-
+/* THE INSERTION LINE FAILS ON BSD SYSTEMS */
 #endif  /* ULTRIX_STAT_CHECK */
 
 

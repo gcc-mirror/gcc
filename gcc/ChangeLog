@@ -1,3 +1,16 @@
+2003-05-06  Bruce Korb  <bkorb@gnu.org>
+
+	* inclhack.def: fix up whitespace differences from mainline.
+	mark fix tests that fail on BSD systems (like mainline).
+	Fixup the solaris_mutex_init test to cope with Sol. 2.6 (like mainline).
+	Removed unused SONY commentary (its obsolete anyway).
+	(svr4_mach_defines): remove i860 machine from comment (like mainline).
+	* gcc/fixinc/tests/base/pthread.h: solaris_mutex_init fix tests
+	* gcc/fixinc/tests/base/testing.h: remove ^M chars from some mistake
+	* gcc/fixinc/tests/base/Xm/Traversal.h: accommodate BSD's sed
+	* gcc/fixinc/tests/base/sys/stat.h: accommodate BSD's sed
+	* gcc/fixinc/fixincl.x: regenerated
+
 2003-05-06  Phil Edwards  <pme@gcc.gnu.org>
 
 	* doc/install.texi (mips-*-*):  Add note about libstdc++.
