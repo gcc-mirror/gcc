@@ -102,6 +102,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
         /* Enforcing intentions */
 - subclassResponsibility:(SEL)aSel;
 - notImplemented:(SEL)aSel;
+- shouldNotImplement:(SEL)aSel;
 
         /* Error handling */
 - doesNotRecognize:(SEL)aSel;
