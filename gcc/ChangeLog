@@ -1,3 +1,9 @@
+2001-12-06  H.J. Lu <hjl@gnu.org>
+
+	* Makefile.in (.po.gmo): Use "-mkdir po" for parallel build.
+	(.po.pox): Likewise.
+	(o/$(PACKAGE).pot): Likewise.
+
 2001-12-06  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc: Include dbxelf.h before elfos.h.
