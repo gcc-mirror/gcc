@@ -7084,6 +7084,38 @@ add_location_or_const_value_attribute (die, decl)
 		   && TYPE_SIZE (declared_type) <= TYPE_SIZE (passed_type))
 		rtl = DECL_INCOMING_RTL (decl);
 	}
+
+      /* If the parm was passed in registers, but lives on the stack, then
+	 make a big endian correction if the mode of the type of the
+	 parameter is not the same as the mode of the rtl.  */
+      /* ??? This is the same series of checks that are made in dbxout.c before
+	 we reach the big endian correction code there.  It isn't clear if all
+	 of these checks are necessary here, but keeping them all is the safe
+	 thing to do.  */
+      else if (GET_CODE (rtl) == MEM
+	       && XEXP (rtl, 0) != const0_rtx
+	       && ! CONSTANT_P (XEXP (rtl, 0))
+	       /* Not passed in memory.  */
+	       && GET_CODE (DECL_INCOMING_RTL (decl)) != MEM
+	       /* Not passed by invisible reference.  */
+	       && (GET_CODE (XEXP (rtl, 0)) != REG
+		   || REGNO (XEXP (rtl, 0)) == HARD_FRAME_POINTER_REGNUM
+		   || REGNO (XEXP (rtl, 0)) == STACK_POINTER_REGNUM
+#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+		   || REGNO (XEXP (rtl, 0)) == ARG_POINTER_REGNUM
+#endif
+		     )
+	       /* Big endian correction check.  */
+	       && BYTES_BIG_ENDIAN
+	       && TYPE_MODE (TREE_TYPE (decl)) != GET_MODE (rtl)
+	       && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl)))
+		   < UNITS_PER_WORD))
+	{
+	  int offset = (UNITS_PER_WORD
+			- GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl))));
+	  rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (decl)),
+			     plus_constant (XEXP (rtl, 0), offset));
+	}
     }
 
   if (rtl == NULL_RTX)
