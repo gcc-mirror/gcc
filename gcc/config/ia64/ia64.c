@@ -6114,6 +6114,12 @@ ia64_internal_sched_reorder (dump, sched_verbose, ready, pn_ready,
   else if (n_ready > 0)
     {
       /* Only asm insns left.  */
+      if (ia64_final_schedule && group_barrier_needed_p (ready[n_ready - 1]))
+	{
+	  schedule_stop (sched_verbose ? dump : NULL);
+	  sched_data.last_was_stop = 1;
+	  maybe_rotate (sched_verbose ? dump : NULL);
+	}
       cycle_end_fill_slots (sched_verbose ? dump : NULL);
       return 1;
     }
