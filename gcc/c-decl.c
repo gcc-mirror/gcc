@@ -1472,6 +1472,10 @@ duplicate_decls (newdecl, olddecl)
       /* Make sure we keep void * as ret type, not char *.  */
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (oldtype))) == void_type_node)
 	TREE_TYPE (newdecl) = newtype = oldtype;
+
+      /* Set DECL_IN_SYSTEM_HEADER, so that if we see another declaration
+	 we will come back here again.  */
+      DECL_IN_SYSTEM_HEADER (newdecl) = 1;
     }
   else if (!types_match
 	   /* Permit char *foo (int, ...); followed by char *foo ();
