@@ -335,7 +335,7 @@ apply_change_group ()
 
 		   newpat
 		     = gen_rtx_PARALLEL (VOIDmode, 
-					 gen_rtvec (XVECLEN (pat, 0) - 1));
+					 rtvec_alloc (XVECLEN (pat, 0) - 1));
 		   for (j = 0; j < XVECLEN (newpat, 0); j++)
 		     XVECEXP (newpat, 0, j) = XVECEXP (pat, 0, j);
 		 }
