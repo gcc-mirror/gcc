@@ -1,3 +1,9 @@
+2003-02-23  Andreas Schwab  <schwab@suse.de>
+
+	* config.gcc: Delete references to m68k/t-linux and
+	m68k/t-linux-aout.
+	* config/m68k/t-linux, config/m68k/t-linux-aout: Removed.
+
 Sat Feb 22 20:22:19 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation):  Apply fotgotten hunk

@@ -1654,14 +1654,14 @@ m68k-*-sysv4*)			# Motorola m68k's running system V.4
 m68k-*-linux*aout*)		# Motorola m68k's running GNU/Linux
 				# with a.out format
 	tm_file=m68k/linux-aout.h
-	tmake_file="t-linux-aout m68k/t-linux-aout"
+	tmake_file="t-linux-aout"
 	gnu_ld=yes
 	;;
 m68k-*-linux*libc1)		# Motorola m68k's running GNU/Linux
 				# with ELF format using the
 				# GNU/Linux C library 5
 	tm_file=m68k/linux.h
-	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1 m68k/t-linux"
+	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
 	;;
@@ -1669,7 +1669,7 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 				# with ELF format using glibc 2
 				# aka the GNU/Linux C library 6.
 	tm_file=m68k/linux.h
-	tmake_file="t-slibgcc-elf-ver t-linux m68k/t-linux"
+	tmake_file="t-slibgcc-elf-ver t-linux"
 	;;
 m68k-*-psos*)
 	tmake_file=m68k/t-m68kbare
