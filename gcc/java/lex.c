@@ -454,15 +454,21 @@ java_read_char (lex)
       if (c == EOF)
 	return UEOF;
       if (c < 128)
-	return (unicode_t)c;
+	return (unicode_t) c;
       else
 	{
 	  if ((c & 0xe0) == 0xc0)
 	    {
 	      c1 = getc (lex->finput);
 	      if ((c1 & 0xc0) == 0x80)
-		return (unicode_t)(((c &0x1f) << 6) + (c1 & 0x3f));
-	      c = c1;
+		{
+		  unicode_t r = (unicode_t)(((c & 0x1f) << 6) + (c1 & 0x3f));
+		  /* Check for valid 2-byte characters.  We explicitly
+		     allow \0 because this encoding is common in the
+		     Java world.  */
+		  if (r == 0 || (r >= 0x80 && r <= 0x7ff))
+		    return r;
+		}
 	    }
 	  else if ((c & 0xf0) == 0xe0)
 	    {
@@ -471,16 +477,23 @@ java_read_char (lex)
 		{
 		  c2 = getc (lex->finput);
 		  if ((c2 & 0xc0) == 0x80)
-		    return (unicode_t)(((c & 0xf) << 12) + 
-				       (( c1 & 0x3f) << 6) + (c2 & 0x3f));
-		  else
-		    c = c2;
+		    {
+		      unicode_t r =  (unicode_t)(((c & 0xf) << 12) + 
+						 (( c1 & 0x3f) << 6)
+						 + (c2 & 0x3f));
+		      /* Check for valid 3-byte characters.
+			 Don't allow surrogate, \ufffe or \uffff.  */
+		      if (r >= 0x800 && r <= 0xffff
+			  && ! (r >= 0xd800 && r <= 0xdfff)
+			  && r != 0xfffe && r != 0xffff)
+			return r;
+		    }
 		}
-	      else
-		c = c1;
 	    }
 
-	  /* We simply don't support invalid characters.  */
+	  /* We simply don't support invalid characters.  We also
+	     don't support 4-, 5-, or 6-byte UTF-8 sequences, as these
+	     cannot be valid Java characters.  */
 	  java_lex_error ("malformed UTF-8 character", 0);
 	}
     }

@@ -1,3 +1,8 @@
+2001-06-19  Tom Tromey  <tromey@redhat.com>
+
+	* lex.c (java_read_char): Disallow invalid and overlong
+	sequences.  Fixes PR java/2319.
+
 2001-06-05  Jeff Sturm  <jsturm@one-point.com>
 
 	* decl.c (create_primitive_vtable): Don't call make_decl_rtl.
