@@ -821,9 +821,6 @@ struct cum_arg
 /* Don't use REGNO_OK_FOR_BASE_P here because it uses reg_renumber.  */
 #define REG_OK_FOR_BASE_P(X) \
 	(REGNO (X) >= FIRST_PSEUDO_REGISTER || REGNO (X) != 8)
-#define REG_OK_FOR_INDEX_P_STRICT(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
-#define REG_OK_FOR_BASE_P_STRICT(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-#define STRICT 0
 
 #else
 
@@ -831,7 +828,6 @@ struct cum_arg
 #define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-#define STRICT 1
 
 #endif
 
