@@ -1,5 +1,15 @@
 2004-10-29  Geoffrey Keating  <geoffk@apple.com>
 
+	* configure.host (darwin*): Set os_include_dir to a separate directory
+	for Darwin.
+	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Add a new C locale kind,
+	'darwin'.
+	* config/locale/darwin/ctype_members.cc: New.
+	* config/os/bsd/darwin/ctype_base.h: New.
+	* config/os/bsd/darwin/ctype_inline.h: New.
+	* config/os/bsd/darwin/ctype_noninline.h: New.
+	* config/os/bsd/darwin/os_defines.h: New.
+
 	* testsuite/22_locale/locale/cons/12658_thread-1.cc: Only xfail
 	on Linux.
 
