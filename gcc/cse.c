@@ -609,7 +609,8 @@ static int canon_hash		PROTO((rtx, enum machine_mode));
 static int safe_hash		PROTO((rtx, enum machine_mode));
 static int exp_equiv_p		PROTO((rtx, rtx, int, int));
 static void set_nonvarying_address_components PROTO((rtx, int, rtx *,
-						     int *, int *));
+						     HOST_WIDE_INT *,
+						     HOST_WIDE_INT *));
 static int refers_to_p		PROTO((rtx, rtx));
 static int refers_to_mem_p	PROTO((rtx, rtx, HOST_WIDE_INT,
 				       HOST_WIDE_INT));
@@ -2205,7 +2206,7 @@ set_nonvarying_address_components (addr, size, pbase, pstart, pend)
      rtx addr;
      int size;
      rtx *pbase;
-     int *pstart, *pend;
+     HOST_WIDE_INT *pstart, *pend;
 {
   rtx base;
   int start, end;
@@ -2297,7 +2298,7 @@ refers_to_mem_p (x, base, start, end)
     {
       register rtx addr = XEXP (x, 0);	/* Get the address.  */
       rtx mybase;
-      int mystart, myend;
+      HOST_WIDE_INT mystart, myend;
 
       set_nonvarying_address_components (addr, GET_MODE_SIZE (GET_MODE (x)),
 					 &mybase, &mystart, &myend);
