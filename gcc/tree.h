@@ -210,6 +210,8 @@ struct tree_common GTY(())
        TREE_PROTECTED in
            BLOCK
 	   ..._DECL
+       CALL_FROM_THUNK_P in
+           CALL_EXPR 
 
    side_effects_flag:
 
@@ -265,6 +267,7 @@ struct tree_common GTY(())
 
 	TREE_DEPRECATED in
 	   ..._DECL
+
 */
 
 /* Define accessors for the fields that all tree nodes have
@@ -622,6 +625,10 @@ extern void tree_operand_check_failed (int, enum tree_code,
 /* In a CALL_EXPR, means that the address of the return slot is part of the
    argument list.  */
 #define CALL_EXPR_HAS_RETURN_SLOT_ADDR(NODE) ((NODE)->common.private_flag)
+
+/* In a CALL_EXPR, means that the call is the jump from a thunk to the
+   thunked-to function.  */
+#define CALL_FROM_THUNK_P(NODE) ((NODE)->common.protected_flag)
 
 /* In a type, nonzero means that all objects of the type are guaranteed by the
    language or front-end to be properly aligned, so we can indicate that a MEM

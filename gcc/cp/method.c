@@ -487,6 +487,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 	t = tree_cons (NULL_TREE, a, t);
       t = nreverse (t);
       t = build_call (alias, t);
+      CALL_FROM_THUNK_P (t) = 1;
       
       if (VOID_TYPE_P (TREE_TYPE (t)))
 	finish_expr_stmt (t);
