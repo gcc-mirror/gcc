@@ -66,6 +66,17 @@
 namespace std
 {
 
+  /**
+   *  @brief  Accumulate values in a range.
+   *
+   *  Accumulates the values in the range [first,last) using operator+().  The
+   *  initial value is @a init.  The values are processed in order.
+   *
+   *  @param  first  Start of range.
+   *  @param  last  End of range.
+   *  @param  init  Starting value to add other values to.
+   *  @return  The final sum.
+   */
   template<typename _InputIterator, typename _Tp>
     _Tp
     accumulate(_InputIterator __first, _InputIterator __last, _Tp __init)
@@ -79,6 +90,19 @@ namespace std
       return __init;
     }
 
+  /**
+   *  @brief  Accumulate values in a range with operation.
+   *
+   *  Accumulates the values in the range [first,last) using the function
+   *  object @a binary_op.  The initial value is @a init.  The values are
+   *  processed in order.
+   *
+   *  @param  first  Start of range.
+   *  @param  last  End of range.
+   *  @param  init  Starting value to add other values to.
+   *  @param  binary_op  Function object to accumulate with.
+   *  @return  The final sum.
+   */
   template<typename _InputIterator, typename _Tp, typename _BinaryOperation>
     _Tp
     accumulate(_InputIterator __first, _InputIterator __last, _Tp __init,
@@ -93,6 +117,20 @@ namespace std
       return __init;
     }
 
+  /**
+   *  @brief  Compute inner product of two ranges.
+   *
+   *  Starting with an initial value of @a init, multiplies successive
+   *  elements from the two ranges and adds each product into the accumulated
+   *  value using operator+().  The values in the ranges are processed in
+   *  order.
+   *
+   *  @param  first1  Start of range 1.
+   *  @param  last1  End of range 1.
+   *  @param  first2  Start of range 2.
+   *  @param  init  Starting value to add other values to.
+   *  @return  The final inner product.
+   */
   template<typename _InputIterator1, typename _InputIterator2, typename _Tp>
     _Tp
     inner_product(_InputIterator1 __first1, _InputIterator1 __last1,
@@ -108,6 +146,22 @@ namespace std
       return __init;
     }
 
+  /**
+   *  @brief  Compute inner product of two ranges.
+   *
+   *  Starting with an initial value of @a init, applies @a binary_op2 to
+   *  successive elements from the two ranges and accumulates each result into
+   *  the accumulated value using @a binary_op1.  The values in the ranges are
+   *  processed in order.
+   *
+   *  @param  first1  Start of range 1.
+   *  @param  last1  End of range 1.
+   *  @param  first2  Start of range 2.
+   *  @param  init  Starting value to add other values to.
+   *  @param  binary_op1  Function object to accumulate with.
+   *  @param  binary_op2  Function object to apply to pairs of input values.
+   *  @return  The final inner product.
+   */
   template<typename _InputIterator1, typename _InputIterator2, typename _Tp,
 	    typename _BinaryOperation1, typename _BinaryOperation2>
     _Tp
@@ -126,6 +180,20 @@ namespace std
       return __init;
     }
 
+  /**
+   *  @brief  Return list of partial sums
+   *
+   *  Accumulates the values in the range [first,last) using operator+().
+   *  As each successive input value is added into the total, that partial sum
+   *  is written to @a result.  Therefore, the first value in result is the
+   *  first value of the input, the second value in result is the sum of the
+   *  first and second input values, and so on.
+   *
+   *  @param  first  Start of input range.
+   *  @param  last  End of input range.
+   *  @param  result  Output to write sums to.
+   *  @return  Iterator pointing just beyond the values written to result.
+   */
   template<typename _InputIterator, typename _OutputIterator>
     _OutputIterator 
     partial_sum(_InputIterator __first, _InputIterator __last,
@@ -148,6 +216,20 @@ namespace std
       return ++__result;
     }
 
+  /**
+   *  @brief  Return list of partial sums
+   *
+   *  Accumulates the values in the range [first,last) using operator+().
+   *  As each successive input value is added into the total, that partial sum
+   *  is written to @a result.  Therefore, the first value in result is the
+   *  first value of the input, the second value in result is the sum of the
+   *  first and second input values, and so on.
+   *
+   *  @param  first  Start of input range.
+   *  @param  last  End of input range.
+   *  @param  result  Output to write sums to.
+   *  @return  Iterator pointing just beyond the values written to result.
+   */
   template<typename _InputIterator, typename _OutputIterator, typename _BinaryOperation>
     _OutputIterator 
     partial_sum(_InputIterator __first, _InputIterator __last,
@@ -170,6 +252,17 @@ namespace std
       return ++__result;
     }
 
+  /**
+   *  @brief  Return differences between adjacent values.
+   *
+   *  Computes the difference between adjacent values in the range
+   *  [first,last) using operator-() and writes the result to @a result.
+   *
+   *  @param  first  Start of input range.
+   *  @param  last  End of input range.
+   *  @param  result  Output to write sums to.
+   *  @return  Iterator pointing just beyond the values written to result.
+   */
   template<typename _InputIterator, typename _OutputIterator>
     _OutputIterator
     adjacent_difference(_InputIterator __first,
@@ -193,6 +286,18 @@ namespace std
       return ++__result;
     }
 
+  /**
+   *  @brief  Return differences between adjacent values.
+   *
+   *  Computes the difference between adjacent values in the range
+   *  [first,last) using the function object @a binary_op and writes the
+   *  result to @a result.
+   *
+   *  @param  first  Start of input range.
+   *  @param  last  End of input range.
+   *  @param  result  Output to write sums to.
+   *  @return  Iterator pointing just beyond the values written to result.
+   */
   template<typename _InputIterator, typename _OutputIterator, typename _BinaryOperation>
     _OutputIterator 
     adjacent_difference(_InputIterator __first, _InputIterator __last,
