@@ -1,3 +1,8 @@
+1999-09-15  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (cp_pragma_implementation): Allow #pragma implementation
+	in header files.
+
 1999-09-15  Richard Henderson  <rth@cygnus.com>
 
 	* lex.c (mark_impl_file_chain): Follow the next chain.
@@ -12,11 +17,6 @@
 1999-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* typeck2.c (ack): Don't declare progname.
-
-1999-09-15  Nathan Sidwell  <nathan@acm.org>
-
-	* typeck.c (expr_sizeof): Reinstall and augment OFFSET_REF
-	comment.
 
 1999-09-14  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 

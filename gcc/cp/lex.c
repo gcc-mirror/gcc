@@ -1238,53 +1238,31 @@ cp_pragma_interface (main_filename)
   TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
 }
 
+/* Note that we have seen a #pragma implementation for the key MAIN_FILENAME.
+   We used to only allow this at toplevel, but that restriction was buggy
+   in older compilers and it seems reasonable to allow it in the headers
+   themselves, too.  It only needs to precede the matching #p interface.
+
+   We don't touch interface_only or interface_unknown; the user must specify
+   a matching #p interface for this to have any effect.  */
+
 static void
 cp_pragma_implementation (main_filename)
      char *main_filename;
 {
-  tree fileinfo 
-    = TIME_IDENTIFIER_FILEINFO (get_time_identifier (input_filename));
-
-  if (impl_file_chain)
+  struct impl_files *ifiles = impl_file_chain;
+  for (; ifiles; ifiles = ifiles->next)
     {
-      struct impl_files *ifiles = impl_file_chain;
-      while (ifiles)
-	{
-	  if (! strcmp (ifiles->filename, main_filename))
-	    break;
-	  ifiles = ifiles->next;
-	}
-      if (ifiles == 0)
-	{
-	  ifiles = (struct impl_files*) xmalloc (sizeof (struct impl_files));
-	  ifiles->filename = ggc_alloc_string (main_filename, -1);
-	  ifiles->next = impl_file_chain;
-	  impl_file_chain = ifiles;
-	}
+      if (! strcmp (ifiles->filename, main_filename))
+	break;
     }
-  else if ((main_input_filename != 0
-	    && ! strcmp (main_input_filename, input_filename))
-	   || ! strcmp (main_filename, input_filename))
+  if (ifiles == 0)
     {
-      impl_file_chain = (struct impl_files*) xmalloc (sizeof (struct impl_files));
-      impl_file_chain->filename = ggc_alloc_string (main_filename, -1);
-      impl_file_chain->next = 0;
+      ifiles = (struct impl_files*) xmalloc (sizeof (struct impl_files));
+      ifiles->filename = ggc_alloc_string (main_filename, -1);
+      ifiles->next = impl_file_chain;
+      impl_file_chain = ifiles;
     }
-  else
-    error ("`#pragma implementation' can only appear at top-level");
-  interface_only = 0;
-#if 1
-  /* We make this non-zero so that we infer decl linkage
-     in the impl file only for variables first declared
-     in the interface file.  */
-  interface_unknown = 1;
-#else
-  /* We make this zero so that templates in the impl
-     file will be emitted properly.  */
-  interface_unknown = 0;
-#endif
-  TREE_INT_CST_LOW (fileinfo) = interface_only;
-  TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
 }
 
 /* Set up the state required to correctly handle the definition of the
