@@ -1,3 +1,8 @@
+Sun Apr 25 01:15:34 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* Makefile.in (CC1OBJ): Define in terms of CC.
+	(runtime-info.h): Use.
+
 Fri April 8 08:21:07 1999 Ovidiu Predescu <ovidiu@cup.hp.com>
 
 	* objc-features.texi: Updated the URL to Boehm's GC page.
