@@ -92,7 +92,8 @@ Thu Nov 19 15:42:54 1998  Nick Clifton  <nickc@cygnus.com>
 
 Thu Nov 19 23:20:59 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
-	* Early auto_inc reloads don't conflict with outputs.
+	* reload1.c (reload_reg_free_for_value_p):
+	Early auto_inc reloads don't conflict with outputs.
 
 Thu Nov 19 12:58:55 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
