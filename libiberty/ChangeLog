@@ -1,3 +1,15 @@
+1998-05-21  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure.in: Check for unistd.h as well.
+	* configure: Rebuild.
+	* config.in: Rebuild.
+	* getpagesize.c (GNU_OUR_PAGESIZE): Use sysconf only if _SC_PAGESIZE
+	is defined in unistd.h. Reformat conditional block for easier reading.
+
+	* config.table (shared): Default to no if ${enable_shared}
+	is unset or empty; this logic is used by the toplevel
+	configure scripts, too.
+
 Sat May 16 14:01:26 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* config.table: Add line to set enable_shared in the Makefile
