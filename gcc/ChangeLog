@@ -1,3 +1,8 @@
+Mon May 24 07:56:29 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.h (OUTPUT_INT_ADDR_CONST): Fix blunder made when
+	applying Philip's patch.
+
 Mon May 24 01:02:12 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* stmt.c (expand_end_bindings): Ignore any elements of VARS that
