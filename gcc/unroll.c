@@ -3687,11 +3687,9 @@ loop_iterations (loop_start, loop_end, loop_info)
       return 0;
     }
 
-  /* The only new registers that care created before loop iterations are
-     givs made from biv increments, so this should never occur.  */
-
+  /* This can happen due to optimization in load_mems.  */
   if ((unsigned) REGNO (iteration_var) >= reg_iv_type->num_elements)
-    abort ();
+    return 0;
 
   iteration_info (iteration_var, &initial_value, &increment,
 		  loop_start, loop_end);
