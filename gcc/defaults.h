@@ -339,7 +339,7 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #endif
 #endif
 
-/* This decision to use a .jcr section can be overriden by defining
+/* This decision to use a .jcr section can be overridden by defining
    USE_JCR_SECTION to 0 in target file.  This is necessary if target
    can define JCR_SECTION_NAME but does not have crtstuff or
    linker support for .jcr section.  */

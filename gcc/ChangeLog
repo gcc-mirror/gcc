@@ -6,6 +6,9 @@
 	* tree-ssa-dom.c (record_equivalences_from_phis): Add a
 	comment.
 
+	* defaults.h, stmt.c, tree-cfg.c, tree-ssa-dce.c: Fix comment
+	typos.
+
 2004-12-13  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/t-linux (SHLIB_MAPFILES): Add libgcc-glibc.ver to

@@ -450,7 +450,7 @@ make_edges (void)
      statements in it.  */
   make_edge (ENTRY_BLOCK_PTR, BASIC_BLOCK (0), EDGE_FALLTHRU);
 
-  /* Traverse basic block array placing edges.  */
+  /* Traverse the basic block array placing edges.  */
   FOR_EACH_BB (bb)
     {
       tree first = first_stmt (bb);
@@ -3087,8 +3087,8 @@ bsi_insert_on_edge (edge e, tree stmt)
   append_to_statement_list (stmt, &PENDING_STMT (e));
 }
 
-/* Similar to bsi_insert_on_edge+bsi_commit_edge_inserts.  If new block has to
-   be created, it is returned.  */
+/* Similar to bsi_insert_on_edge+bsi_commit_edge_inserts.  If a new
+   block has to be created, it is returned.  */
 
 basic_block
 bsi_insert_on_edge_immediate (edge e, tree stmt)
@@ -3941,7 +3941,7 @@ has_abnormal_incoming_edge_p (basic_block bb)
   return false;
 }
 
-/* Removes forwarder block BB.  Returns false if this failed.  If new
+/* Removes forwarder block BB.  Returns false if this failed.  If a new
    forwarder block is created due to redirection of edges, it is
    stored to worklist.  */
 

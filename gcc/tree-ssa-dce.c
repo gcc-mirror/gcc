@@ -264,7 +264,7 @@ mark_operand_necessary (tree op, bool phionly)
 }
 
 
-/* Mark STMT as necessary if it is obviously is.  Add it to the worklist if
+/* Mark STMT as necessary if it obviously is.  Add it to the worklist if
    it can make other statements necessary.
 
    If AGGRESSIVE is false, control statements are conservatively marked as
