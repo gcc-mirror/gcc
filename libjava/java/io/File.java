@@ -111,7 +111,7 @@ public class File implements Serializable, Comparable
    * is taken from the <code>path.separator</code> system property.
    */
   public static final char pathSeparatorChar = pathSeparator.charAt(0);
-  
+
   static final String tmpdir = System.getProperty("java.io.tmpdir");
   static int maxPathLen;
   static boolean caseSensitive;
@@ -246,9 +246,6 @@ public class File implements Serializable, Comparable
    */
   public boolean equals (Object obj)
   {
-    if (obj == null)
-      return false;
-    
     if (! (obj instanceof File))
       return false;
     
@@ -1006,10 +1003,11 @@ public class File implements Serializable, Comparable
                                  + " is not really a directory.");
       }
 
-    // Now process the prefix and suffix.
+    // Check if prefix is at least 3 characters long
     if (prefix.length() < 3)
       throw new IllegalArgumentException ("Prefix too short: " + prefix);
 
+    // Set default value of suffix
     if (suffix == null)
       suffix = ".tmp";
 
