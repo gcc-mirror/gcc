@@ -1,3 +1,8 @@
+2004-10-30  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* sdbout.c (sdbout_symbol): Do not output type .def statements
+	for builtin types.
+
 2004-10-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-common.c (catenate_strings): New.
