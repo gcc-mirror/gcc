@@ -1,5 +1,5 @@
 /* Demangler for GNU C++ 
-   Copyright 1989, 1991, 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright 1989, 91, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
    
@@ -925,7 +925,8 @@ demangle_signature (work, mangled, declp)
 	    {
 	      remember_type (work, oldmangled, *mangled - oldmangled);
 	    }
-	  string_append(&tname, SCOPE_STRING (work));
+	  string_append (&tname, SCOPE_STRING (work));
+
 	  string_prepends(declp, &tname);
 	  if (work -> destructor & 1)
 	    {
@@ -1592,9 +1593,11 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 	}
       need_comma = 1;
     }
+    {
   if (tname->p[-1] == '>')
     string_append (tname, " ");
   string_append (tname, ">");
+    }
   
   if (is_type && remember)
     remember_Btype (work, tname->b, LEN_STRING (tname), bindex);
