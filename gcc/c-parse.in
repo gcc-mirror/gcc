@@ -27,10 +27,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    written by AT&T, but I have never seen it.  */
 
 ifobjc
-%expect 42
+%expect 46
 end ifobjc
 ifc
-%expect 30
+%expect 34
 
 /* These are the 23 conflicts you should get in parse.output;
    the state numbers may vary if minor changes in the grammar are made.
@@ -2118,16 +2118,27 @@ parms:
 /* A single parameter declaration or parameter type name,
    as found in a parmlist.  */
 parm:
-	  typed_declspecs parm_declarator
-		{ $$ = build_tree_list ($1, $2)	; }
-	| typed_declspecs notype_declarator
-		{ $$ = build_tree_list ($1, $2)	; }
-	| typed_declspecs absdcl
-		{ $$ = build_tree_list ($1, $2); }
-	| declmods notype_declarator
-		{ $$ = build_tree_list ($1, $2)	; }
-	| declmods absdcl
-		{ $$ = build_tree_list ($1, $2); }
+	  typed_declspecs parm_declarator maybe_attribute
+		{ $$ = build_tree_list (build_tree_list ($1, $2),
+					build_tree_list (prefix_attributes,
+							 $3)); }
+	| typed_declspecs notype_declarator maybe_attribute
+		{ $$ = build_tree_list (build_tree_list ($1, $2),
+					build_tree_list (prefix_attributes,
+							 $3)); }
+	| typed_declspecs absdcl maybe_attribute
+		{ $$ = build_tree_list (build_tree_list ($1, $2),
+					build_tree_list (prefix_attributes,
+							 $3)); }
+	| declmods notype_declarator maybe_attribute
+		{ $$ = build_tree_list (build_tree_list ($1, $2),
+					build_tree_list (prefix_attributes,
+							 $3)); }
+
+	| declmods absdcl maybe_attribute
+		{ $$ = build_tree_list (build_tree_list ($1, $2),
+					build_tree_list (prefix_attributes,
+							 $3)); }
 	;
 
 /* This is used in a function definition
