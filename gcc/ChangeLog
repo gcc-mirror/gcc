@@ -1,3 +1,7 @@
+2002-08-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcov.c (output_data): Round to % to nearest, tweak formatting.
+
 2002-08-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* fold-const.c (associate_trees): Only optimize NEGATE_EXPR in one

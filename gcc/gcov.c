@@ -1134,10 +1134,10 @@ format_hwint (top, bottom, dp)
       for (ix = dp; ix--; )
 	limit *= 10;
       
-      percent = (unsigned) (ratio * limit);
-      if (!percent && top)
+      percent = (unsigned) (ratio * limit + (float)0.5);
+      if (percent <= 0 && top)
 	percent = 1;
-      else if (percent == limit && top != bottom)
+      else if (percent >= limit && top != bottom)
 	percent = limit - 1;
       ix = sprintf (buffer, "%.*u%%", dp + 1, percent);
       if (dp)
@@ -1607,10 +1607,10 @@ output_data ()
 		      if (a_ptr->call_insn)
 			{
 			  if (a_ptr->total == 0)
-			    fnotice (gcov_file, "call   %2d: never executed\n", i);
+			    fnotice (gcov_file, "call   %2d never executed\n", i);
 			  else
 			    fnotice
-			      (gcov_file, "call   %2d: returns %s\n", i,
+			      (gcov_file, "call   %2d returns %s\n", i,
 			       format_hwint (a_ptr->total - a_ptr->hits,
 					     a_ptr->total,
 					     -output_branch_counts));
@@ -1618,11 +1618,11 @@ output_data ()
 		      else
 			{
 			  if (a_ptr->total == 0)
-			    fnotice (gcov_file, "branch %2d: never executed\n",
+			    fnotice (gcov_file, "branch %2d never executed\n",
 				     i);
 			  else
 			    fnotice
-			      (gcov_file, "branch %2d: taken %s\n", i,
+			      (gcov_file, "branch %2d taken %s\n", i,
 			       format_hwint (a_ptr->hits, a_ptr->total,
 					     -output_branch_counts));
 			}
