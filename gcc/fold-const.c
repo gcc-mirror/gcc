@@ -4874,6 +4874,74 @@ fold (expr)
       else if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (arg1)))
 	return non_lvalue (convert (type, arg0));
 
+     bit_rotate:
+      /* (A << C1) + (A >> C2) if A is unsigned and C1+C2 is the size of A
+	 is a rotate of A by C1 bits.  */
+      /* (A << B) + (A >> (Z - B)) if A is unsigned and Z is the size of A
+	 is a rotate of A by B bits.  */
+      {
+        register enum tree_code code0, code1;
+        code0 = TREE_CODE (arg0);
+        code1 = TREE_CODE (arg1);
+        if (((code0 == RSHIFT_EXPR && code1 == LSHIFT_EXPR)
+	    || (code1 == RSHIFT_EXPR && code0 == LSHIFT_EXPR))
+	    && operand_equal_p (TREE_OPERAND (arg0, 0),
+			        TREE_OPERAND (arg1,0), 0)
+	    && TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg0, 0))))
+	  {
+	    register tree tree01, tree11;
+	    register enum tree_code code01, code11;
+
+	    tree01 = TREE_OPERAND (arg0, 1);
+	    tree11 = TREE_OPERAND (arg1, 1);
+	    STRIP_NOPS (tree01);
+	    STRIP_NOPS (tree11);
+	    code01 = TREE_CODE (tree01);
+	    code11 = TREE_CODE (tree11);
+	    if (code01 == INTEGER_CST
+	      && code11 == INTEGER_CST
+	      && TREE_INT_CST_HIGH (tree01) == 0
+	      && TREE_INT_CST_HIGH (tree11) == 0
+	      && ((TREE_INT_CST_LOW (tree01) + TREE_INT_CST_LOW (tree11))
+	        == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0)))))
+	      return build (LROTATE_EXPR, type, TREE_OPERAND (arg0, 0),
+		        code0 == LSHIFT_EXPR ? tree01 : tree11);
+	    else if (code11 == MINUS_EXPR)
+	      {
+	        tree tree110, tree111;
+	        tree110 = TREE_OPERAND (tree11, 0);
+	        tree111 = TREE_OPERAND (tree11, 1);
+	        STRIP_NOPS (tree110);
+	        STRIP_NOPS (tree111);
+	        if (TREE_CODE (tree110) == INTEGER_CST
+		    && TREE_INT_CST_HIGH (tree110) == 0
+		    && (TREE_INT_CST_LOW (tree110)
+		        == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0))))
+		    && operand_equal_p (tree01, tree111, 0))
+		  return build ((code0 == LSHIFT_EXPR 
+			         ? LROTATE_EXPR 
+			         : RROTATE_EXPR),
+			        type, TREE_OPERAND (arg0, 0), tree01);
+	      }
+	    else if (code01 == MINUS_EXPR)
+	      {
+	        tree tree010, tree011;
+	        tree010 = TREE_OPERAND (tree01, 0);
+	        tree011 = TREE_OPERAND (tree01, 1);
+	        STRIP_NOPS (tree010);
+	        STRIP_NOPS (tree011);
+	        if (TREE_CODE (tree010) == INTEGER_CST
+		    && TREE_INT_CST_HIGH (tree010) == 0
+		    && (TREE_INT_CST_LOW (tree010)
+		        == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0))))
+		    && operand_equal_p (tree11, tree011, 0))
+		  return build ((code0 != LSHIFT_EXPR 
+			         ? LROTATE_EXPR 
+			         : RROTATE_EXPR),
+			         type, TREE_OPERAND (arg0, 0), tree11);
+	      }
+	  }
+      }
 
     associate:
       /* In most languages, can't associate operations on floats
@@ -5107,9 +5175,6 @@ fold (expr)
 
     case BIT_IOR_EXPR:
     bit_ior:
-      {
-      register enum tree_code code0, code1;
-
       if (integer_all_onesp (arg1))
 	return omit_one_operand (type, arg1, arg0);
       if (integer_zerop (arg1))
@@ -5118,85 +5183,34 @@ fold (expr)
       if (t1 != NULL_TREE)
 	return t1;
 
-     bit_rotate:
-      /* (A << C1) | (A >> C2) if A is unsigned and C1+C2 is the size of A
-	 is a rotate of A by C1 bits.  */
-      /* (A << B) | (A >> (Z - B)) if A is unsigned and Z is the size of A
-	 is a rotate of A by B bits.  */
-
-      /* Both transformations noted above also apply to when the inner
-	 operation is an XOR.  */
-
-      code0 = TREE_CODE (arg0);
-      code1 = TREE_CODE (arg1);
-      if (((code0 == RSHIFT_EXPR && code1 == LSHIFT_EXPR)
-	  || (code1 == RSHIFT_EXPR && code0 == LSHIFT_EXPR))
-	  && operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1,0), 0)
-	  && TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg0, 0))))
-	{
-	  register tree tree01, tree11;
-	  register enum tree_code code01, code11;
-
-	  tree01 = TREE_OPERAND (arg0, 1);
-	  tree11 = TREE_OPERAND (arg1, 1);
-	  STRIP_NOPS (tree01);
-	  STRIP_NOPS (tree11);
-	  code01 = TREE_CODE (tree01);
-	  code11 = TREE_CODE (tree11);
-	  if (code01 == INTEGER_CST
-	    && code11 == INTEGER_CST
-	    && TREE_INT_CST_HIGH (tree01) == 0
-	    && TREE_INT_CST_HIGH (tree11) == 0
-	    && ((TREE_INT_CST_LOW (tree01) + TREE_INT_CST_LOW (tree11))
-	      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0)))))
-	    return build (LROTATE_EXPR, type, TREE_OPERAND (arg0, 0),
-		      code0 == LSHIFT_EXPR ? tree01 : tree11);
-	  else if (code11 == MINUS_EXPR)
-	    {
-	      tree tree110, tree111;
-	      tree110 = TREE_OPERAND (tree11, 0);
-	      tree111 = TREE_OPERAND (tree11, 1);
-	      STRIP_NOPS (tree110);
-	      STRIP_NOPS (tree111);
-	      if (TREE_CODE (tree110) == INTEGER_CST
-		  && TREE_INT_CST_HIGH (tree110) == 0
-		  && (TREE_INT_CST_LOW (tree110)
-		      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0))))
-		  && operand_equal_p (tree01, tree111, 0))
-		return build ((code0 == LSHIFT_EXPR 
-			       ? LROTATE_EXPR 
-			       : RROTATE_EXPR),
-			      type, TREE_OPERAND (arg0, 0), tree01);
-	    }
-	  else if (code01 == MINUS_EXPR)
-	    {
-	      tree tree010, tree011;
-	      tree010 = TREE_OPERAND (tree01, 0);
-	      tree011 = TREE_OPERAND (tree01, 1);
-	      STRIP_NOPS (tree010);
-	      STRIP_NOPS (tree011);
-	      if (TREE_CODE (tree010) == INTEGER_CST
-		  && TREE_INT_CST_HIGH (tree010) == 0
-		  && (TREE_INT_CST_LOW (tree010)
-		      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0))))
-		  && operand_equal_p (tree11, tree011, 0))
-		return build ((code0 != LSHIFT_EXPR 
-			       ? LROTATE_EXPR 
-			       : RROTATE_EXPR),
-			       type, TREE_OPERAND (arg0, 0), tree11);
-	    }
-	}
-
-      goto associate;
-      }
+      /* See if this can be simplified into a rotate first.  If that
+	 is unsuccessful continue in the association code.  */
+      goto bit_rotate;
 
     case BIT_XOR_EXPR:
       if (integer_zerop (arg1))
 	return non_lvalue (convert (type, arg0));
       if (integer_all_onesp (arg1))
 	return fold (build1 (BIT_NOT_EXPR, type, arg0));
+
+      /* If we are XORing two BIT_AND_EXPR's, both of which are and'ing
+         with a constant, and the two constants have no bits in common,
+	 we should treat this as a BIT_IOR_EXPR since this may produce more
+	 simplifications.  */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && TREE_CODE (arg1) == BIT_AND_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	  && TREE_CODE (TREE_OPERAND (arg1, 1)) == INTEGER_CST
+	  && integer_zerop (const_binop (BIT_AND_EXPR,
+					 TREE_OPERAND (arg0, 1),
+					 TREE_OPERAND (arg1, 1), 0)))
+        {
+           code = BIT_IOR_EXPR;
+	   goto bit_ior;
+        }
+
       /* See if this can be simplified into a rotate first.  If that
-	 is unsuccessful we will jump to the association code.  */
+	 is unsuccessful continue in the association code.  */
       goto bit_rotate;
 
     case BIT_AND_EXPR:

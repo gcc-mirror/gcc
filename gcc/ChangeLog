@@ -1,3 +1,13 @@
+Thu Oct 14 19:44:08 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* fold-const.c (fold): Move bit_rotate code to the EXPR_PLUS case,
+	falltrought to assocate code.
+	Convert XOR to OR in code like (a&c1)^(a&c2) where c1 and c2 don't have
+	bits in common.
+
+	* combine.c (simplify_logical): Convert XOR to IOR if operands have
+	no bits in common; remove XOR to ROTATE conversion.
+
 Fri Oct 15 17:40:11 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (c4x_va_start, c4x_va_arg): Declare.
