@@ -1220,6 +1220,10 @@ snarf_method (decl)
   DECL_PENDING_INLINE_INFO (decl) = meth;
   DECL_PENDING_INLINE_P (decl) = 1;
 
+  /* We need to know that this was defined in the class, so that
+     friend templates are handled correctly.  */
+  DECL_INITIALIZED_IN_CLASS_P (decl) = 1;
+
   if (pending_inlines_tail)
     pending_inlines_tail->next = meth;
   else

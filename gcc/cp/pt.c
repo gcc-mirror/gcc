@@ -10231,12 +10231,14 @@ instantiate_decl (d, defer_ok)
 
   code_pattern = DECL_TEMPLATE_RESULT (td);
 
-  /* In the case of a friend template whose definition is provided
-     outside the class, we may have too many arguments.  Drop the ones
-     we don't need.  */
-  args = get_innermost_template_args (gen_args,
-				      TMPL_PARMS_DEPTH 
-				      (DECL_TEMPLATE_PARMS (td)));
+  if (DECL_NAMESPACE_SCOPE_P (d) && !DECL_INITIALIZED_IN_CLASS_P (d))
+    /* In the case of a friend template whose definition is provided
+       outside the class, we may have too many arguments.  Drop the
+       ones we don't need.  */
+    args = get_innermost_template_args
+      (gen_args, TMPL_PARMS_DEPTH  (DECL_TEMPLATE_PARMS (td)));
+  else
+    args = gen_args;
 
   if (TREE_CODE (d) == FUNCTION_DECL)
     pattern_defined = (DECL_SAVED_TREE (code_pattern) != NULL_TREE);

@@ -1,3 +1,11 @@
+2003-03-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/10158
+	* spew.c (snarf_method):Set DECL_INITIALIZED_IN_CLASS for
+	members.
+	* pt.c (instantiate_decl): Only reduce the template args for
+	friends that are not defined in class.
+
 2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9898, PR c++/383, DR 322
