@@ -1,3 +1,8 @@
+2001-02-14	Joel Sherrill <joel@OARcorp.com>
+
+	* config/cpu/m68k/bits/atomicity.h: Corrected for RTEMS targets which
+	do not have a CAS instruction.
+
 2002-01-28  Jens Rehsack <rehsack@web.de>
 
 	libstdc++/3561
