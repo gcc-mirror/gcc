@@ -1,7 +1,5 @@
 2001-04-11  Mark Mitchell  <mark@codesourcery.com>
 
-	* typeck2.c (build_m_component_ref): Robustify.
-
 	* optimize.c (maybe_clone_body): Copy DECL_NUM_STMTS from the
 	cloned function to the clone.
 
