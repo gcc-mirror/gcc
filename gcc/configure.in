@@ -4117,7 +4117,7 @@ AC_ARG_ENABLE(nls,
 # if cross compiling, disable NLS support.
 # It's not worth the trouble, at least for now.
 
-if test "${build}" != "${host}" && test "x$enable_nls" == "xyes"; then
+if test "${build}" != "${host}" && test "x$enable_nls" = "xyes"; then
   AC_MSG_WARN(Disabling NLS support for canadian cross compiler.)
   enable_nls=no
 fi

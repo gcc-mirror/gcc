@@ -1445,7 +1445,7 @@ for ac_kw in inline __inline__ __inline; do
 #include "confdefs.h"
 
 int main() {
-} $ac_kw foo() {
+} int $ac_kw foo() {
 ; return 0; }
 EOF
 if { (eval echo configure:1452: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
@@ -6923,7 +6923,7 @@ fi
 # if cross compiling, disable NLS support.
 # It's not worth the trouble, at least for now.
 
-if test "${build}" != "${host}" && test "x$enable_nls" == "xyes"; then
+if test "${build}" != "${host}" && test "x$enable_nls" = "xyes"; then
   echo "configure: warning: Disabling NLS support for canadian cross compiler." 1>&2
   enable_nls=no
 fi
@@ -6983,7 +6983,7 @@ else
 int main() {
 
 /* Ultrix mips cc rejects this.  */
-typedef int charset[2]; const charset x;
+typedef int charset[2]; const charset x = {0,0};
 /* SunOS 4.1.1 cc rejects this.  */
 char const *const *ccp;
 char **p;
@@ -7124,7 +7124,7 @@ else
 #include "confdefs.h"
 #include <alloca.h>
 int main() {
-char *p = alloca(2 * sizeof(int));
+void *p = alloca(2 * sizeof(int));
 ; return 0; }
 EOF
 if { (eval echo configure:7131: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
