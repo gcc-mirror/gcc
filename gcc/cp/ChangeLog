@@ -1,3 +1,12 @@
+2003-09-10  Richard Henderson  <rth@redhat.com>
+
+	* decl2.c (cxx_callgraph_analyze_expr): New, from corpse of
+	mark_member_pointers.
+	(lower_function): Remove.
+	* cp-tree.h: Update to match.
+	* cp-lang.c (LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR): New.
+	(LANG_HOOKS_CALLGRAPH_LOWER_FUNCTION): Remove.
+
 2003-09-09  Richard Henderson  <rth@redhat.com>
 
 	* semantics.c (expand_or_defer_fn): Update call to 

@@ -23,7 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GCC_CGRAPH_H
 
 /* Information about the function collected locally.
-   Available after function is lowered  */
+   Available after function is analyzed.  */
 
 struct cgraph_local_info GTY(())
 {
@@ -100,10 +100,9 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   /* Set when function is reachable by call from other function
      that is either reachable or needed.  */
   bool reachable;
-  /* Set when the frontend has been asked to lower representation of this
-     function into trees.  Callees lists are not available when lowered
-     is not set.  */
-  bool lowered;
+  /* Set once the function has been instantiated and its callee
+     lists created.  */
+  bool analyzed;
   /* Set when function is scheduled to be assembled.  */
   bool output;
   struct cgraph_local_info local;
