@@ -1,3 +1,10 @@
+2001-06-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (instantiate_decl): Tell the repository code about the
+	clones, not the cloned functions.
+	* repo.c (repo_template_used): Explicitly instantiate the cloned
+	function, not the clones.
+
 2001-06-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* call.c (build_user_type_conversion_1): Set ICS_USER_FLAG and
