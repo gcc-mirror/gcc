@@ -53,7 +53,9 @@ Boston, MA 02111-1307, USA.  */
        %{p:gcrt0%O%s}		\
        %{!p:crt0%O%s}}}		\
    %:if-exists(crti%O%s)	\
-   %{!shared:crtbegin%O%s} %{shared:crtbeginS%O%s}"
+   %{static:%:if-exists-else(crtbeginT%O%s crtbegin%O%s)} \
+   %{!static: \
+     %{!shared:crtbegin%O%s} %{shared:crtbeginS%O%s}}"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC NETBSD_STARTFILE_SPEC

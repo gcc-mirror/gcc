@@ -4986,7 +4986,20 @@ pathname.  Here is a small example of its usage:
 *startfile:
 crt0%O%s %:if-exists(crti%O%s) crtbegin%O%s
 @end smallexample
-@end table
+
+@item @code{if-exists-else}
+The @code{if-exists-else} spec function is similar to the @code{if-exists}
+spec function, except that it takes two arguments.  The first argument is
+an absolute pathname to a file.  If the file exists, @code{if-exists-else}
+returns the pathname.  If it does not exist, it returns the second argument.
+This way, @code{if-exists-else} can be used to select one file or another,
+based on the existence of the first.  Here is a small example of its usage:
+
+@smallexample 
+*startfile:
+crt0%O%s %:if-exists(crti%O%s) %:if-exists-else(crtbeginT%O%s crtbegin%O%s)
+@end smallexample
+@end table 
 
 @item %@{@code{S}@}
 Substitutes the @code{-S} switch, if that switch was given to GCC@.
