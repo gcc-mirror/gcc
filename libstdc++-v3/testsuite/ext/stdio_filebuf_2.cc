@@ -29,7 +29,6 @@
 // out by _M_really_overflow upon overflow.
 void test01()
 {
-  
   using namespace std;
   bool test = true;
 
@@ -37,11 +36,10 @@ void test01()
   FILE* file = fopen(name, "w");
   {
     using namespace __gnu_cxx;
-    
-    // One char big stack-based buffer.
-    stdio_filebuf<char> sbuf(file, ios_base::out, 1); 
+    stdio_filebuf<char> sbuf(file, ios_base::out, 2); 
     sbuf.sputc('T');
     sbuf.sputc('S');
+    sbuf.sputc('P');
   }
   fclose(file);
 
@@ -51,8 +49,8 @@ void test01()
   streamsize n = fbuf.sgetn(buf, sizeof(buf));	
   fbuf.close();
   
-  VERIFY( n == 2 );
-  VERIFY( !memcmp(buf, "TS", 2) );
+  VERIFY( n == 3 );
+  VERIFY( !memcmp(buf, "TSP", 3) );
 }
 
 int main()

@@ -1,3 +1,30 @@
+2003-05-15  Paolo Carlini  <pcarlini@unitus.it>
+	    Nathan Myers  <ncm@cantrip.org>
+
+	* include/bits/fstream.tcc (_M_overflow): Rewrote to call
+	_M_convert_to_external only once (_M_buf_size is now the size of
+	the put area + 1 for the overflow char of a full area); call
+	_M_set_buffer instead of _M_set_indeterminate.
+	(setbuf): Don't accept a buffer smaller than 2 chars.
+	(_M_underflow): Refill _M_buf_size - 1 chars; call _M_set_buffer,
+	instead of _M_set_determinate.
+	(open): Call _M_set_buffer, instead of _M_set_indeterminate.
+	(seekoff): Likewise.
+	* include/ext/stdio_filebuf.h (stdio_filebuf(int,
+	std::ios_base::openmode, bool, size_t),
+	stdio_filebuf(std::__c_file*, std::ios_base::openmode, size_t):
+	Likewise.
+	* include/std/std_fstream.h (_M_set_indeterminate): Remove.
+	(_M_set_determinate): Rename as _M_set_buffer, _M_buf_size ->
+	_M_buf_size - 1.
+	* include/std/std_streambuf.h: Tweak _M_out_lim comment.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1.cc: Tweak, taking
+	into account that, for _M_buf_size == BUFSIZ == 8192, the size of
+	the put area is now BUFSIZ - 1.
+	* testsuite/ext/stdio_filebuf_2.cc: Tweak, taking into account
+	that now the smallest _M_buf_size is 2 (still fails, for the same
+	reason, with 3.2.3)
+
 2003-05-14  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/thread/pthread4.cc: Tweak test.
