@@ -36,6 +36,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef CPP_SPEC
 #define CPP_SPEC "%{!m29000:-Dam29050 -D__am29050__}"
 
+#undef LINK_SPEC
+#define LINK_SPEC "-c /usr/lib/default.ld"
+
+/* We can't say "-lgcc" due to a bug in gld for now.  */
+#define LINK_LIBGCC_SPECIAL
+
 /* For some systems, it is best if double-word objects are aligned on a 
    doubleword boundary.  We want to maintain compatibility with MetaWare in
    a29k.h, but do not feel constrained to do so here.  */
