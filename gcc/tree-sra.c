@@ -1832,6 +1832,8 @@ scalarize_init (struct sra_elt *lhs_elt, tree rhs, block_stmt_iterator *bsi)
   /* Generate initialization statements for all members extant in the RHS.  */
   if (rhs)
     {
+      /* Unshare the expression just in case this is from a decl's initial.  */
+      rhs = unshare_expr (rhs);
       push_gimplify_context ();
       result = generate_element_init (lhs_elt, rhs, &list);
       pop_gimplify_context (NULL);
