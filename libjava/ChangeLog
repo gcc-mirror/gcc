@@ -1,5 +1,10 @@
 1999-09-23  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/natFirstThread.cc (run): Renamed from `run0'.  Removed
+	dead code.
+	* java/lang/FirstThread.java (run0): Renamed to `run'.
+	(run): Removed.
+
 	* prims.cc (main_init): New function.
 	(JvRunMain): Call it.
 	(_Jv_RunMain): Likewise.
