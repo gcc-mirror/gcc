@@ -32,6 +32,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "c-tree.h"
 #include "flags.h"
+#include "output.h"
 
 /* Nonzero if we've already printed a "missing braces around initializer"
    message within this initializer.  */
