@@ -78,7 +78,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_SPEC "\
 %{V} %{v:%{!V:-V}} %{pipe: - %{msvr4:%{mversion-03.00:-KV3}}}\
 %{!mlegend:%{mstandard:-Wc,off}}\
-%{mlegend:-Wc,-fix-bb,-h\"gcc-1.96.5\",-s\"%i\"\
+%{mlegend:-Wc,-fix-bb,-h\"gcc-2.0.3\",-s\"%i\"\
 %{traditional:,-lc}%{!traditional:,-lansi-c}\
 %{mstandard:,-keep-std}\
 %{mkeep-coff:,-keep-coff}\
@@ -128,7 +128,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_FIRST_LINE(FILE)						\
   do {									\
     if (VERSION_0300_SYNTAX)						\
-      fprintf (FILE, "%s\t \"03.00\"\n", VERSION_ASM_OP);		\
+      fprintf (FILE, "\t%s\t \"03.00\"\n", VERSION_ASM_OP);		\
     if (write_symbols != NO_DEBUG					\
 	&& ! (TARGET_STANDARD && ! TARGET_LEGEND))			\
       {									\
