@@ -1,3 +1,16 @@
+2002-10-27  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/zip/ZipFile.java (readLeShort): Take and use DataInput as
+	argument.
+	(readLeShort): Likewise and use byte[].
+	(readLeInt): Likewise.
+	(readEntries): Use new versions of methods and use byte[] for reading
+	a complete zip entry. Add ZipFile name to exceptions.
+	(entries): Add ZipFile name to exceptions.
+	(getEntry): Likewise.
+	(checkLocalHeader): Use new versions of methods and add ZipFile name
+	to exceptions.
+
 2002-10-31  Mark Anderson  <mark@panonet.net>
 
 	* java/awt/GridBagLayout.java (setConstraints): New stubbed method

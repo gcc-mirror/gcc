@@ -1,5 +1,5 @@
 /* java.util.zip.ZipFile
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,6 +36,10 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.util.zip;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
@@ -102,9 +106,9 @@ public class ZipFile implements ZipConstants
   /**
    * Opens a Zip file reading the given File in the given mode.
    *
-   * If the OPEN_DELETE mode is specified, the zip file will be deleted at some time moment
-   * after it is opened. It will be deleted before the zip file is closed or the Virtual Machine
-   * exits.
+   * If the OPEN_DELETE mode is specified, the zip file will be deleted at
+   * some time moment after it is opened. It will be deleted before the zip
+   * file is closed or the Virtual Machine exits.
    * 
    * The contents of the zip file will be accessible until it is closed.
    *
@@ -121,7 +125,8 @@ public class ZipFile implements ZipConstants
   {
     if ((mode & OPEN_DELETE) != 0)
       {
-	throw new IllegalArgumentException("OPEN_DELETE mode not supported yet in java.util.zip.ZipFile");
+	throw new IllegalArgumentException
+	  ("OPEN_DELETE mode not supported yet in java.util.zip.ZipFile");
       }
     this.raf = new RandomAccessFile(file, "r");
     this.name = file.getName();
@@ -133,8 +138,11 @@ public class ZipFile implements ZipConstants
    * @exception IOException if a i/o error occured.
    * @exception EOFException if the file ends prematurely
    */
-  private final int readLeShort() throws IOException {
-    return raf.readUnsignedByte() | raf.readUnsignedByte() << 8;
+  private final int readLeShort(DataInput di) throws IOException
+  {
+    byte[] b = new byte[2];
+    di.readFully(b);
+    return (b[0] & 0xff) | (b[1] & 0xff) << 8;
   }
 
   /**
@@ -142,8 +150,12 @@ public class ZipFile implements ZipConstants
    * @exception IOException if a i/o error occured.
    * @exception EOFException if the file ends prematurely
    */
-  private final int readLeInt() throws IOException {
-    return readLeShort() | readLeShort() << 16;
+  private final int readLeInt(DataInput di) throws IOException
+  {
+    byte[] b = new byte[4];
+    di.readFully(b);
+    return ((b[0] & 0xff) | (b[1] & 0xff) << 8)
+	    | ((b[2] & 0xff) | (b[3] & 0xff) << 8) << 16;
   }
 
   /**
@@ -164,36 +176,43 @@ public class ZipFile implements ZipConstants
       {
 	if (pos < 0)
 	  throw new ZipException
-	    ("central directory not found, probably not a zip file");
+	    ("central directory not found, probably not a zip file: " + name);
 	raf.seek(pos--);
       }
-    while (readLeInt() != ENDSIG);
+    while (readLeInt(raf) != ENDSIG);
     if (raf.skipBytes(ENDTOT - ENDNRD) != ENDTOT - ENDNRD)
-      throw new EOFException();
-    int count = readLeShort();
+      throw new EOFException(name);
+    int count = readLeShort(raf);
     if (raf.skipBytes(ENDOFF - ENDSIZ) != ENDOFF - ENDSIZ)
-      throw new EOFException();
-    int centralOffset = readLeInt();
+      throw new EOFException(name);
+    int centralOffset = readLeInt(raf);
 
     entries = new ZipEntry[count];
     raf.seek(centralOffset);
+    byte[] ebs  = new byte[24];
+    ByteArrayInputStream ebais = new ByteArrayInputStream(ebs);
+    DataInputStream edip = new DataInputStream(ebais);
     for (int i = 0; i < count; i++)
       {
-	if (readLeInt() != CENSIG)
-	  throw new ZipException("Wrong Central Directory signature");
+	if (readLeInt(raf) != CENSIG)
+	  throw new ZipException("Wrong Central Directory signature: " + name);
 	if (raf.skipBytes(CENHOW - CENVEM) != CENHOW - CENVEM)
-	  throw new EOFException();
-	int method = readLeShort();
-	int dostime = readLeInt();
-	int crc = readLeInt();
-	int csize = readLeInt();
-	int size = readLeInt();
-	int nameLen = readLeShort();
-	int extraLen = readLeShort();
-	int commentLen = readLeShort();
+	  throw new EOFException(name);
+
+	raf.readFully(ebs);
+	ebais.reset();
+	int method = readLeShort(edip);
+	int dostime = readLeInt(edip);
+	int crc = readLeInt(edip);
+	int csize = readLeInt(edip);
+	int size = readLeInt(edip);
+	int nameLen = readLeShort(edip);
+	int extraLen = readLeShort(edip);
+	int commentLen = readLeShort(edip);
+
 	if (raf.skipBytes(CENOFF - CENDSK) != CENOFF - CENDSK)
-	  throw new EOFException();
-	int offset = readLeInt();
+	  throw new EOFException(name);
+	int offset = readLeInt(raf);
 
 	byte[] buffer = new byte[Math.max(nameLen, commentLen)];
 
@@ -244,7 +263,7 @@ public class ZipFile implements ZipConstants
   public Enumeration entries()
   {
     if (entries == null)
-      throw new IllegalStateException("ZipFile has closed");
+      throw new IllegalStateException("ZipFile has closed: " + name);
     return new ZipEntryEnumeration(entries);
   }
 
@@ -265,7 +284,7 @@ public class ZipFile implements ZipConstants
   public ZipEntry getEntry(String name)
   {
     if (entries == null)
-      throw new IllegalStateException("ZipFile has closed");
+      throw new IllegalStateException("ZipFile has closed: " + name);
     int index = getEntryIndex(name);
     return index >= 0 ? (ZipEntry) entries[index].clone() : null;
   }
@@ -283,24 +302,24 @@ public class ZipFile implements ZipConstants
     synchronized (raf)
       {
 	raf.seek(entry.offset);
-	if (readLeInt() != LOCSIG)
-	  throw new ZipException("Wrong Local header signature");
+	if (readLeInt(raf) != LOCSIG)
+	  throw new ZipException("Wrong Local header signature: " + name);
 
 	/* skip version and flags */
 	if (raf.skipBytes(LOCHOW - LOCVER) != LOCHOW - LOCVER)
-	  throw new EOFException();
+	  throw new EOFException(name);
 
-	if (entry.getMethod() != readLeShort())
-	  throw new ZipException("Compression method mismatch");
+	if (entry.getMethod() != readLeShort(raf))
+	  throw new ZipException("Compression method mismatch: " + name);
 
 	/* Skip time, crc, size and csize */
 	if (raf.skipBytes(LOCNAM - LOCTIM) != LOCNAM - LOCTIM)
-	  throw new EOFException();
+	  throw new EOFException(name);
 
-	if (entry.getName().length() != readLeShort())
-	  throw new ZipException("file name length mismatch");
+	if (entry.getName().length() != readLeShort(raf))
+	  throw new ZipException("file name length mismatch: " + name);
 
-	int extraLen = entry.getName().length() + readLeShort();
+	int extraLen = entry.getName().length() + readLeShort(raf);
 	return entry.offset + LOCHDR + extraLen;
       }
   }
