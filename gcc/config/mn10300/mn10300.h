@@ -818,6 +818,8 @@ struct cum_arg {int nbytes; };
   ((CLASS1 == CLASS2 && (CLASS1 == ADDRESS_REGS || CLASS1 == DATA_REGS)) ? 2 :\
    CLASS1 == CLASS2 && CLASS1 == EXTENDED_REGS ? 6 : 4)
 
+#define ADDRESS_COST(X) mn10300_address_cost((X), 0)
+
 /* A crude cut at RTX_COSTS for the MN10300.  */
 
 /* Provide the costs of a rtl expression.  This is in the body of a

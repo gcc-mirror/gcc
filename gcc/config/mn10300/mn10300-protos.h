@@ -36,6 +36,8 @@ extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int call_address_operand PARAMS ((rtx, enum machine_mode));
 extern int impossible_plus_operand PARAMS ((rtx, enum machine_mode));
 extern int const_8bit_operand PARAMS ((rtx, enum machine_mode));
+
+extern int mn10300_address_cost PARAMS ((rtx, int *));
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE

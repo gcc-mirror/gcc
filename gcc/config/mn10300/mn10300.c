@@ -1049,3 +1049,84 @@ legitimize_address (x, oldx, mode)
     }
   return x;
 }
+
+int
+mn10300_address_cost (x, unsig)
+     rtx x;
+     int *unsig;
+{
+  int _s = 0;
+  if (unsig == 0)
+    unsig = &_s;
+  
+  switch (GET_CODE (x))
+    {
+    case REG:
+      switch (REGNO_REG_CLASS (REGNO (x)))
+	{
+	case SP_REGS:
+	  *unsig = 1;
+	  return 0;
+
+	case ADDRESS_REGS:
+	  return 1;
+
+	case DATA_REGS:
+	case EXTENDED_REGS:
+	  return 3;
+
+	case NO_REGS:
+	  return 5;
+
+	default:
+	  abort ();
+	}
+
+    case PLUS:
+    case MINUS:
+    case IOR:
+      return (mn10300_address_cost (XEXP (x, 0), unsig)
+	      + mn10300_address_cost (XEXP (x, 1), unsig));
+
+    case EXPR_LIST:
+    case SUBREG:
+    case MEM:
+      return ADDRESS_COST (XEXP (x, 0));
+
+    case ZERO_EXTEND:
+      *unsig = 1;
+      return mn10300_address_cost (XEXP (x, 0), unsig);
+
+    case CONST_INT:
+      if (INTVAL (x) == 0)
+	return 0;
+      if (INTVAL (x) + (*unsig ? 0 : 0x80) < 0x100)
+	return 1;
+      if (INTVAL (x) + (*unsig ? 0 : 0x8000) < 0x10000)
+	return 3;
+      if (INTVAL (x) + (*unsig ? 0 : 0x800000) < 0x1000000)
+	return 5;
+      return 7;
+
+    case CONST:
+    case SYMBOL_REF:
+      return 8;
+
+    case ADDRESSOF:
+      switch (GET_CODE (XEXP (x, 0)))
+	{
+	case MEM:
+	  return ADDRESS_COST (XEXP (x, 0));
+
+	case REG:
+	  return 1;
+
+	default:
+	  abort ();
+	}
+
+    default:
+      abort ();
+
+    }
+}
