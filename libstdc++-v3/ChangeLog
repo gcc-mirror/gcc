@@ -1,13 +1,31 @@
-2001-05-18  Alexandre Oliva  <aoliva@redhat.com>
+2001-05-18  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* configure.target (ATOMICITYH): Actually use AIX-specific code on
-	earlier versions of AIX 4.*.
+	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Set glibcpp_srcdir
+	amd glibcpp_prefixdir with absolute paths.
+
+	* include/bits/c++config (__GLIBCPP__): Bump.
+	* acinclude.m4 (GLIBCPP_CONFIGURE): Correct version number.
 
 2001-05-18  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* include/bits/std_valarray.h (valarray<>::operator[] const):
 	Return a const reference.
 	* testsuite/26_numerics/valarray_const_bracket.cc: New test.
+
+2001-05-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.target (ATOMICITYH): Actually use AIX-specific code on
+	earlier versions of AIX 4.*.
+
+2001-05-18  Angela Marie Thomas <angela@cygnus.com>
+
+        * testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-dg-test):  Set
+        output_file based on the name of the testcase.
+
+2001-05-18  Angela Marie Thomas <angela@cygnus.com>
+
+        * testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init):  Build
+        gluefile and use it if needs_status_wrapper is set.
 
 2001-05-18  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -18,6 +36,10 @@
 
 	* configure.target (ATOMICITYH): Don't use AIX 4.3-specific code
 	on earlier versions of AIX.
+
+2001-05-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite_flags.in (query): Add backwards, ext directories.
 
 2001-05-15  Mark Mitchell  <mark@codesourcery.com>
 

@@ -17,7 +17,7 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
   glibcpp_basedir=$auxdir/$1/libstdc++-v3
   AC_SUBST(glibcpp_basedir)
 
-  AM_INIT_AUTOMAKE(libstdc++, 2.91)
+  AM_INIT_AUTOMAKE(libstdc++, 2.92)
 
   # Never versions of autoconf add an underscore to these functions.
   # Prevent future problems ...
@@ -1578,10 +1578,10 @@ glibcpp_toolexecdir=no
 glibcpp_toolexeclibdir=no
 
 # Export build and source directories.
-tmp_builddir=`pwd`
-glibcpp_builddir=$tmp_builddir
-glibcpp_srcdir=${srcdir}
-glibcpp_prefixdir=${prefix}
+# These need to be absolute paths, thus the use of pwd.
+glibcpp_builddir=`pwd`
+glibcpp_srcdir=`cd ${srcdir} && pwd`
+glibcpp_prefixdir=`cd ${prefix} && pwd`
 
 AC_MSG_CHECKING([for interface version number])
 libstdcxx_interface=$INTERFACE
