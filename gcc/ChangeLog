@@ -1,3 +1,7 @@
+2002-05-12  Tom Tromey  <tromey@redhat.com>
+
+	* tree.h (copy_node): Don't mention TREE_PERMANENT.
+
 2002-05-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* gensupport.c (n_comma_elts): Moved here from genattrtab.c.
