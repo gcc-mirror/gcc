@@ -2201,6 +2201,7 @@ output_block_move (insn, operands, num_regs, move_type)
   int offset		= 0;
   int use_lwl_lwr	= FALSE;
   int last_operand	= num_regs+4;
+  int safe_regs		= 4;
   int i;
   rtx xoperands[10];
 
@@ -2215,20 +2216,31 @@ output_block_move (insn, operands, num_regs, move_type)
   } load_store[4];
 
   /* Detect a bug in GCC, where it can give us a register
-     the same as one of the addressing registers.  */
-  for (i = 4; i < last_operand; i++)
+     the same as one of the addressing registers and reduce
+     the number of registers available.  */
+  for (i = 4;
+       i < last_operand && safe_regs < (sizeof(xoperands) / sizeof(xoperands[0]));
+       i++)
     {
-      if (reg_mentioned_p (operands[i], operands[0])
-	  || reg_mentioned_p (operands[i], operands[1]))
-	{
-	  abort_with_insn (insn, "register passed as address and temp register to block move");
-	}
+      if (!reg_mentioned_p (operands[i], operands[0])
+	  && !reg_mentioned_p (operands[i], operands[1]))
+
+	xoperands[safe_regs++] = operands[i];
+    }
+
+  if (safe_regs < last_operand)
+    {
+      xoperands[0] = operands[0];
+      xoperands[1] = operands[1];
+      xoperands[2] = operands[2];
+      xoperands[3] = operands[3];
+      return output_block_move (insn, xoperands, safe_regs-4, move_type);
     }
 
   /* If we are given global or static addresses, and we would be
      emitting a few instructions, try to save time by using a
      temporary register for the pointer.  */
-  if (bytes > 2*align || move_type != BLOCK_MOVE_NORMAL)
+  if (num_regs > 2 && (bytes > 2*align || move_type != BLOCK_MOVE_NORMAL))
     {
       if (CONSTANT_P (src_reg))
 	{
@@ -2263,7 +2275,7 @@ output_block_move (insn, operands, num_regs, move_type)
     num_regs = (sizeof (load_store) / sizeof (load_store[0]));
 
   else if (num_regs < 1)
-    abort ();
+    abort_with_insn (insn, "Cannot do block move, not enough scratch registers");
 
   if (TARGET_GAS && move_type != BLOCK_MOVE_LAST && set_noreorder++ == 0)
     output_asm_insn (".set\tnoreorder", operands);
