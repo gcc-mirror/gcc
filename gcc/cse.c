@@ -2277,10 +2277,10 @@ canon_hash (x, mode)
 	    && (global_regs[regno]
 		|| (SMALL_REGISTER_CLASSES
 		    && ! fixed_regs[regno]
-		    && regno != FRAME_POINTER_REGNUM
-		    && regno != HARD_FRAME_POINTER_REGNUM
-		    && regno != ARG_POINTER_REGNUM
-		    && regno != STACK_POINTER_REGNUM
+		    && x != frame_pointer_rtx
+		    && x != hard_frame_pointer_rtx
+		    && x != arg_pointer_rtx
+		    && x != stack_pointer_rtx
 		    && GET_MODE_CLASS (GET_MODE (x)) != MODE_CC)))
 	  {
 	    do_not_record = 1;

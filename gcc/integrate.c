@@ -1225,6 +1225,7 @@ copy_insn_list (insns, map, static_chain_value)
 #ifdef HAVE_cc0
   rtx cc0_insn = 0;
 #endif
+  rtx static_chain_mem = 0;
 
   /* Copy the insns one by one.  Do this in two passes, first the insns and
      then their REG_NOTES.  */
@@ -1288,25 +1289,62 @@ copy_insn_list (insns, map, static_chain_value)
 		   && REG_FUNCTION_VALUE_P (XEXP (pattern, 0)))
 	    break;
 
+	  /* Look for the address of the static chain slot. The
+             rtx_equal_p comparisons against the
+             static_chain_incoming_rtx below may fail if the static
+             chain is in memory and the address specified is not
+             "legitimate".  This happens on Xtensa where the static
+             chain is at a negative offset from argp and where only
+             positive offsets are legitimate.  When the RTL is
+             generated, the address is "legitimized" by copying it
+             into a register, causing the rtx_equal_p comparisons to
+             fail.  This workaround looks for code that sets a
+             register to the address of the static chain.  Subsequent
+             memory references via that register can then be
+             identified as static chain references.  We assume that
+             the register is only assigned once, and that the static
+             chain address is only live in one register at a time. */
+
+	  else if (static_chain_value != 0
+		   && set != 0
+		   && GET_CODE (static_chain_incoming_rtx) == MEM
+		   && GET_CODE (SET_DEST (set)) == REG
+		   && rtx_equal_p (SET_SRC (set),
+				   XEXP (static_chain_incoming_rtx, 0)))
+	    {
+	      static_chain_mem =
+		  gen_rtx_MEM (GET_MODE (static_chain_incoming_rtx),
+			       SET_DEST (set));
+
+	      /* emit the instruction in case it is used for something
+		 other than setting the static chain; if it's not used,
+		 it can always be removed as dead code */
+	      copy = emit_insn (copy_rtx_and_substitute (pattern, map, 0));
+	    }
+
 	  /* If this is setting the static chain rtx, omit it.  */
 	  else if (static_chain_value != 0
 		   && set != 0
-		   && GET_CODE (SET_DEST (set)) == REG
-		   && rtx_equal_p (SET_DEST (set),
-				   static_chain_incoming_rtx))
+		   && (rtx_equal_p (SET_DEST (set),
+				    static_chain_incoming_rtx)
+		       || (static_chain_mem
+			   && rtx_equal_p (SET_DEST (set), static_chain_mem))))
 	    break;
 
 	  /* If this is setting the static chain pseudo, set it from
 	     the value we want to give it instead.  */
 	  else if (static_chain_value != 0
 		   && set != 0
-		   && rtx_equal_p (SET_SRC (set),
-				   static_chain_incoming_rtx))
+		   && (rtx_equal_p (SET_SRC (set),
+				    static_chain_incoming_rtx)
+		       || (static_chain_mem
+			   && rtx_equal_p (SET_SRC (set), static_chain_mem))))
 	    {
 	      rtx newdest = copy_rtx_and_substitute (SET_DEST (set), map, 1);
 
 	      copy = emit_move_insn (newdest, static_chain_value);
-	      static_chain_value = 0;
+	      if (GET_CODE (static_chain_incoming_rtx) != MEM)
+		static_chain_value = 0;
 	    }
 
 	  /* If this is setting the virtual stack vars register, this must

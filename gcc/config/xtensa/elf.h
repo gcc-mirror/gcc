@@ -28,6 +28,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
+/* Debug format: prefer DWARF2 */
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 
@@ -101,10 +105,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    doesn't allow $ in symbol names.  */
 #undef NO_DOLLAR_IN_LABEL
 
-/* Don't switch sections in the middle of a literal pool! */
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)
-  
 /* Do not force "-fpic" for this target.  */
 #define XTENSA_ALWAYS_PIC 0
 

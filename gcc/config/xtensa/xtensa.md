@@ -357,7 +357,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
 		(match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT_RECIP && flag_unsafe_math_optimizations"
+  "TARGET_HARD_FLOAT_RECIP && flag_fast_math"
   "recip.s\\t%0, %2"
   [(set_attr "type"	"fdiv")
    (set_attr "mode"	"SF")
@@ -414,7 +414,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
 		(sqrt:SF (match_operand:SF 2 "register_operand" "f"))))]
-  "TARGET_HARD_FLOAT_RSQRT && flag_unsafe_math_optimizations"
+  "TARGET_HARD_FLOAT_RSQRT && flag_fast_math"
   "rsqrt.s\\t%0, %2"
   [(set_attr "type"	"fsqrt")
    (set_attr "mode"	"SF")
@@ -511,12 +511,12 @@
   "TARGET_NSA"
   "
 {
-  rtx temp = gen_reg_rtx (SImode);
-  emit_insn (gen_negsi2 (temp, operands[1]));
-  emit_insn (gen_andsi3 (temp, temp, operands[1]));
-  emit_insn (gen_nsau (temp, temp));
-  emit_insn (gen_negsi2 (temp, temp));
-  emit_insn (gen_addsi3 (operands[0], temp, GEN_INT (32)));
+  rtx temp = gen_reg_rtx(SImode);
+  emit_insn(gen_negsi2(temp, operands[1]));
+  emit_insn(gen_andsi3(temp, temp, operands[1]));
+  emit_insn(gen_nsau(temp, temp));
+  emit_insn(gen_negsi2(temp, temp));
+  emit_insn(gen_addsi3(operands[0], temp, GEN_INT(32)));
   DONE;
 }")
 
@@ -554,9 +554,9 @@
   ""
   "
 {
-  rtx temp = gen_reg_rtx (SImode);
-  emit_insn (gen_movsi (temp, constm1_rtx));
-  emit_insn (gen_xorsi3 (operands[0], temp, operands[1]));
+  rtx temp = gen_reg_rtx(SImode);
+  emit_insn(gen_movsi(temp, constm1_rtx));
+  emit_insn(gen_xorsi3(operands[0], temp, operands[1]));
   DONE;
 }")
 
@@ -764,9 +764,9 @@
 {
   int shift;
   if (BITS_BIG_ENDIAN)
-    shift = (32 - (INTVAL (operands[2]) + INTVAL (operands[3]))) & 0x1f;
+    shift = (32 - (INTVAL(operands[2]) + INTVAL(operands[3]))) & 0x1f;
   else
-    shift = INTVAL (operands[3]) & 0x1f;
+    shift = INTVAL(operands[3]) & 0x1f;
   operands[3] = GEN_INT (shift);
   return \"extui\\t%0, %1, %3, %2\";
 }"
@@ -1030,7 +1030,7 @@
   "
 {
   if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    operands[1] = force_const_mem (SFmode, operands[1]);
+    operands[1] = force_const_mem(SFmode, operands[1]);
 
   if (!(reload_in_progress | reload_completed))
     {
@@ -1086,7 +1086,7 @@
   "*
 {
   if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
-    output_asm_insn (\"memw\", operands);
+    output_asm_insn(\"memw\", operands);
   return \"lsiu\\t%0, %1, %2\";
 }"
   [(set_attr "type"	"fload")
@@ -1104,7 +1104,7 @@
   "*
 {
   if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
-    output_asm_insn (\"memw\", operands);
+    output_asm_insn(\"memw\", operands);
   return \"ssiu\\t%2, %0, %1\";
 }"
   [(set_attr "type"	"fstore")
@@ -1119,8 +1119,8 @@
   ""
   "
 {
-  if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    operands[1] = force_const_mem (DFmode, operands[1]);
+  if (GET_CODE(operands[1]) == CONST_DOUBLE)
+    operands[1] = force_const_mem(DFmode, operands[1]);
 
   if (!(reload_in_progress | reload_completed))
     {
@@ -1164,7 +1164,7 @@
 	if (GET_CODE (dstreg) == SUBREG)
 	  dstreg = SUBREG_REG (dstreg);
 	if (GET_CODE (dstreg) != REG)
-	  abort ();
+	  abort();
 
 	if (reg_mentioned_p (dstreg, operands[1]))
 	  {
@@ -1506,7 +1506,7 @@
 	default:	break;
 	}
     }
-  else if (INTVAL (operands[1]) == 0)
+  else if (INTVAL(operands[1]) == 0)
     {
       switch (GET_CODE (operands[3]))
 	{
@@ -1560,7 +1560,7 @@
 	default:	break;
 	}
     }
-  else if (INTVAL (operands[1]) == 0)
+  else if (INTVAL(operands[1]) == 0)
     {
       switch (GET_CODE (operands[3]))
 	{
@@ -1720,8 +1720,8 @@
 {
   if (which_alternative == 0)
     {
-      unsigned bitnum = INTVAL (operands[1]) & 0x1f;
-      operands[1] = GEN_INT (bitnum);
+      unsigned bitnum = INTVAL(operands[1]) & 0x1f;
+      operands[1] = GEN_INT(bitnum);
       switch (GET_CODE (operands[3]))
 	{
 	case EQ:    return \"bbsi\\t%0, %d1, %2\";
@@ -2164,7 +2164,7 @@
   if (GET_CODE (dest) != REG || GET_MODE (dest) != Pmode)
     operands[0] = copy_to_mode_reg (Pmode, dest);
 
-  emit_jump_insn (gen_indirect_jump_internal (dest));
+  emit_jump_insn(gen_indirect_jump_internal(dest));
   DONE;
 }")
 

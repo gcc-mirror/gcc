@@ -3449,6 +3449,22 @@ xscale-*-coff)
 	xm_file=arm/xm-arm.h
 	md_file=arm/arm.md
 	;;
+xtensa-*-elf*)
+	tm_file="svr4.h xtensa/elf.h ${tm_file}"
+	with_newlib=yes
+	tmake_file=xtensa/t-xtensa
+	extra_parts="crtbegin.o crtend.o"
+	fixincludes=Makefile.in # newlib headers should be OK
+	;;
+xtensa-*-linux*)
+	tm_file="linux.h xtensa/linux.h ${tm_file}"
+	tmake_file="t-slibgcc-elf-ver t-linux xtensa/t-xtensa"
+	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	gas=yes gnu_ld=yes
+	if test x$enable_threads = xyes; then
+		thread_file='posix'
+	fi
+	;;
 *)
 	echo "Configuration $machine not supported" 1>&2
 	exit 1

@@ -22,6 +22,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef TARGET_VERSION
 #define TARGET_VERSION fputs (" (Xtensa GNU/Linux with ELF)", stderr);
 
+/* Debug format: prefer DWARF2 */
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
 #undef ASM_SPEC
 #define ASM_SPEC "%{v} %{mno-density:--no-density} \
                   %{mtext-section-literals:--text-section-literals} \
@@ -56,10 +60,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"."
-
-/* Don't switch sections in the middle of a literal pool! */
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)
 
 /* Always enable "-fpic" for Xtensa Linux.  */
 #define XTENSA_ALWAYS_PIC 1

@@ -1530,6 +1530,10 @@ as new information becomes available.
 @item
 @uref{#we32k-*-*,,we32k-*-*}
 @item
+@uref{#xtensa-*-elf,,xtensa-*-elf}
+@item
+@uref{#xtensa-*-linux*,,xtensa-*-linux*}
+@item
 @uref{#windows,,Microsoft Windows}
 @item
 @uref{#os2,,OS/2}
@@ -3424,6 +3428,38 @@ make CC=stage2/xgcc CFLAGS="-Bstage2/ -g -O"
 
 You may need to raise the ULIMIT setting to build a C++ compiler,
 as the file @file{cc1plus} is larger than one megabyte.
+
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{xtensa-*-elf}xtensa-*-elf
+
+This target is intended for embedded Xtensa systems using the
+@samp{newlib} C library.  It uses ELF but does not support shared
+objects.  Designed-defined instructions specified via the
+Tensilica Instruction Extension (TIE) language are only supported
+through inline assembly.
+
+The Xtensa configuration information must be specified prior to
+building GCC@.  The @file{gcc/config/xtensa/xtensa-config.h} header
+file contains the configuration information.  If you created your
+own Xtensa configuration with the Xtensa Processor Generator, the
+downloaded files include a customized copy of this header file,
+which you can use to replace the default header file.
+
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{xtensa-*-linux*}xtensa-*-linux*
+
+This target is for Xtensa systems running GNU/Linux.  It supports ELF
+shared objects and the GNU C library (glibc).  It also generates
+position-independent code (PIC) regardless of whether the
+@option{-fpic} or @option{-fPIC} options are used.  In other
+respects, this target is the same as the 
+@uref{#xtensa-*-elf,,@samp{xtensa-*-elf}} target.
 
 @html
 </p>

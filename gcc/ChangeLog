@@ -1,3 +1,30 @@
+2002-01-31  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/elf.h: New file.
+	* config/xtensa/lib1funcs.asm: New file.
+	* config/xtensa/lib2funcs.S: New file.
+	* config/xtensa/linux.h: New file.
+	* config/xtensa/t-xtensa: New file.
+	* config/xtensa/xm-xtensa.h: New file.
+	* config/xtensa/xtensa-config.h: New file.
+	* config/xtensa/xtensa-protos.h: New file.
+	* config/xtensa/xtensa.c: New file.
+	* config/xtensa/xtensa.h: New file.
+	* config/xtensa/xtensa.md: New file.
+	* config.gcc (xtensa-*-elf*): New target.
+	(xtensa-*-linux*): New target.
+	* cse.c (canon_hash): Compare rtx pointers instead of register
+	numbers.  This is required for the Xtensa port.
+	* integrate.c (copy_insn_list): Handle case where the static
+	chain is in memory and the memory address has to be copied to
+	a register.
+	* doc/invoke.texi (Option Summary): Add Xtensa options.
+	(Xtensa Options): New node.
+	* doc/md.texi (Machine Constraints): Add Xtensa machine constraints.
+	* doc/install.texi (xtensa-*-elf): New target.
+	(xtensa-*-linux*): New target.
+	* doc/contrib.texi: Add myself.
+
 2002-01-29  Richard Henderson  <rth@redhat.com>
 
 	2001-10-19  Jakub Jelinek  <jakub@redhat.com>

@@ -41,10 +41,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "function.h"
 #include "toplev.h"
-#include "optabs.h"
-#include "libfuncs.h"
-#include "target.h"
-#include "target-def.h"
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
@@ -73,7 +69,8 @@ enum cmp_type branch_type;
 
 /* Array giving truth value on whether or not a given hard register
    can support a given mode.  */
-char xtensa_hard_regno_mode_ok[(int) MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
+char xtensa_hard_regno_mode_ok
+    [(int) MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
 
 /* Current frame size calculated by compute_frame_size.  */
 unsigned xtensa_current_frame_size;
@@ -89,11 +86,22 @@ struct machine_function
   int accesses_prev_frame;
 };
 
+/* Hardware names for the registers. */
+char xtensa_reg_names[][MAX_REGFILE_NAME_LEN] =
+{
+ "a0",   "sp",   "a2",   "a3",   "a4",   "a5",   "a6",   "a7",
+ "a8",   "a9",   "a10",  "a11",  "a12",  "a13",  "a14",  "a15",
+ "fp",   "argp", "b0",
+ "f0",   "f1",   "f2",   "f3",   "f4",   "f5",   "f6",   "f7",
+ "f8",   "f9",   "f10",  "f11",  "f12",  "f13",  "f14",  "f15",
+ "acc",
+};
+
 /* Vector, indexed by hard register number, which contains 1 for a
    register that is allowable in a candidate for leaf function
    treatment. */
 
-const char xtensa_leaf_regs[FIRST_PSEUDO_REGISTER] =
+char xtensa_leaf_regs[] =
 {
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
   1, 1, 1,
@@ -102,7 +110,7 @@ const char xtensa_leaf_regs[FIRST_PSEUDO_REGISTER] =
 };
 
 /* Map hard register number to register class */
-const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER] =
+enum reg_class xtensa_regno_to_class[] =
 {
   GR_REGS,	SP_REG,		GR_REGS,	GR_REGS,
   GR_REGS,	GR_REGS,	GR_REGS,	GR_REGS,
@@ -185,47 +193,19 @@ enum reg_class xtensa_char_to_class[256] =
   NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
 };
 
-/* This macro generates the assembly code for function entry.
-   FILE is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.
-   Refer to the array 'regs_ever_live' to determine which registers
-   to save; 'regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  */
-
-#undef TARGET_ASM_FUNCTION_PROLOGUE
-#define TARGET_ASM_FUNCTION_PROLOGUE xtensa_function_prologue
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.  */
-
-#undef TARGET_ASM_FUNCTION_EPILOGUE
-#define TARGET_ASM_FUNCTION_EPILOGUE xtensa_function_epilogue
-
-/* These hooks specify assembly directives for creating certain kinds
-   of integer object.  */
-
-#undef TARGET_ASM_ALIGNED_SI_OP
-#define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
-
-struct gcc_target targetm = TARGET_INITIALIZER;
 
 static int b4const_or_zero PARAMS ((int));
 static enum internal_test map_test_to_internal_test PARAMS ((enum rtx_code));
 static rtx gen_int_relational PARAMS ((enum rtx_code, rtx, rtx, int *));
 static rtx gen_float_relational PARAMS ((enum rtx_code, rtx, rtx));
 static rtx gen_conditional_move PARAMS ((rtx));
-static rtx fixup_subreg_mem PARAMS ((rtx x));
 static enum machine_mode xtensa_find_mode_for_size PARAMS ((unsigned));
 static void xtensa_init_machine_status PARAMS ((struct function *p));
 static void xtensa_free_machine_status PARAMS ((struct function *p));
 static void printx PARAMS ((FILE *, signed int));
 static rtx frame_size_const;
 static int current_function_arg_words;
-static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
-  REG_ALLOC_ORDER;
+static int reg_nonleaf_alloc_order[] = REG_ALLOC_ORDER;
 
 
 /*
@@ -376,9 +356,7 @@ xt_true_regnum (x)
     {
       int base = xt_true_regnum (SUBREG_REG (x));
       if (base >= 0 && base < FIRST_PSEUDO_REGISTER)
-        return base + subreg_regno_offset (REGNO (SUBREG_REG (x)),
-                                           GET_MODE (SUBREG_REG (x)),
-                                           SUBREG_BYTE (x), GET_MODE (x));
+	return SUBREG_WORD (x) + base;
     }
   return -1;
 }
@@ -615,7 +593,7 @@ smalloffset_double_mem_p (op)
 {
   if (!smalloffset_mem_p (op))
     return FALSE;
-  return smalloffset_mem_p (adjust_address (op, GET_MODE (op), 4));
+  return smalloffset_mem_p (adj_offsettable_operand (op, 4));
 }
 
 
@@ -724,12 +702,25 @@ xtensa_extend_reg (dst, src)
      rtx dst;
      rtx src;
 {
+  int src_subword = 0;
+  int dst_subword = 0;
   rtx temp = gen_reg_rtx (SImode);
   rtx shift = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (GET_MODE (src)));
 
-  /* generate paradoxical subregs as needed so that the modes match */
-  src = simplify_gen_subreg (SImode, src, GET_MODE (src), 0);
-  dst = simplify_gen_subreg (SImode, dst, GET_MODE (dst), 0);
+  if (GET_CODE (src) == SUBREG)
+    {
+      src_subword = SUBREG_WORD (src);
+      src = SUBREG_REG (src);
+    }
+  if (GET_CODE (dst) == SUBREG)
+    {
+      dst_subword = SUBREG_WORD (dst);
+      dst = SUBREG_REG (dst);
+    }
+
+  src = gen_rtx_SUBREG (SImode, src, src_subword);
+  if (GET_MODE (dst) != SImode || dst_subword != 0)
+    dst = gen_rtx_SUBREG (SImode, dst, dst_subword);
 
   emit_insn (gen_ashlsi3 (temp, src, shift));
   emit_insn (gen_ashrsi3 (dst, temp, shift));
@@ -750,11 +741,19 @@ xtensa_load_constant (dst, src)
   if (mode != SImode)
     {
       if (register_operand (dst, mode))
-	dst = simplify_gen_subreg (SImode, dst, mode, 0);
+	{
+	  int dst_subword = 0;
+	  if (GET_CODE (dst) == SUBREG)
+	    {
+	      dst_subword = SUBREG_WORD (dst);
+	      dst = SUBREG_REG (dst);
+	    }
+	  dst = gen_rtx_SUBREG (SImode, dst, dst_subword);
+	}
       else
 	{
 	  src = force_reg (SImode, src);
-	  src = gen_lowpart_SUBREG (mode, src);
+	  src = gen_rtx_SUBREG (mode, src, 0);
 	}
     }
 
@@ -1287,29 +1286,25 @@ xtensa_emit_move_sequence (operands, mode)
   /* During reload we don't want to emit (subreg:X (mem:Y)) since that
      instruction won't be recognized after reload. So we remove the
      subreg and adjust mem accordingly. */
-  if (reload_in_progress)
+  if (reload_in_progress && GET_CODE (operands[0]) == SUBREG
+      && GET_CODE (SUBREG_REG (operands[0])) == REG
+      && REGNO (SUBREG_REG (operands[0])) >= FIRST_PSEUDO_REGISTER)
     {
-      operands[0] = fixup_subreg_mem (operands[0]);
-      operands[1] = fixup_subreg_mem (operands[1]);
+      SUBREG_REG (operands[0]) =
+	reg_equiv_mem[REGNO (SUBREG_REG (operands[0]))];
+      operands[0] = alter_subreg (operands[0]);
     }
-  return 0;
-}
 
-static rtx
-fixup_subreg_mem (x)
-     rtx x;
-{
-  if (GET_CODE (x) == SUBREG
-      && GET_CODE (SUBREG_REG (x)) == REG
-      && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER)
+  if (reload_in_progress && GET_CODE (operands[1]) == SUBREG
+      && GET_CODE (SUBREG_REG (operands[1])) == REG
+      && REGNO (SUBREG_REG (operands[1])) >= FIRST_PSEUDO_REGISTER)
     {
-      rtx temp =
-	gen_rtx_SUBREG (GET_MODE (x),
-			reg_equiv_mem [REGNO (SUBREG_REG (x))],
-			SUBREG_BYTE (x));
-      x = alter_subreg (&temp);
+      SUBREG_REG (operands[1]) =
+	reg_equiv_mem[REGNO (SUBREG_REG (operands[1]))];
+      operands[1] = alter_subreg (operands[1]);
     }
-  return x;
+
+  return 0;
 }
 
 
@@ -1888,7 +1883,7 @@ print_operand (file, op, letter)
      rtx op;		/* operand to print */
      int letter;		/* %<letter> or 0 */
 {
-  enum rtx_code code;
+  register enum rtx_code code;
 
   if (! op)
     error ("PRINT_OPERAND null pointer");
@@ -1918,7 +1913,7 @@ print_operand (file, op, letter)
 	    break;
 	  }
  	else if (letter == 'N')
-	  op = adjust_address (op, GET_MODE (op), 4);
+	  op = adj_offsettable_operand (op, 4);
 
 	output_address (XEXP (op, 0));
 	break;
@@ -2344,6 +2339,15 @@ xtensa_builtin_saveregs ()
 		      gen_raw_REG (SImode, GP_ARG_FIRST + arg_words + i));
     }
 
+  if (current_function_check_memory_usage)
+    {
+      emit_library_call
+	(chkr_set_right_libfunc, 1, VOIDmode, 3, dest, ptr_mode,
+	 GEN_INT (UNITS_PER_WORD * gp_left),
+	 TYPE_MODE (sizetype),
+	 GEN_INT (MEMORY_USE_RW), QImode);
+    }
+
   return XEXP (gp_regs, 0);
 }
 
@@ -2469,7 +2473,7 @@ xtensa_va_arg (valist, type)
 
   emit_cmp_and_jump_insns (expand_expr (ndx, NULL_RTX, SImode, EXPAND_NORMAL),
 			   GEN_INT (MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD),
-			   GT, const1_rtx, SImode, 0, lab_false);
+			   GT, const1_rtx, SImode, 0, 1, lab_false);
 
   r = expand_expr (reg, array, Pmode, EXPAND_NORMAL);
   if (r != array)
@@ -2494,7 +2498,7 @@ xtensa_va_arg (valist, type)
   lab_false2 = gen_label_rtx ();
   emit_cmp_and_jump_insns (orig_ndx,
 			   GEN_INT (MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD),
-			   GE, const1_rtx, SImode, 0, lab_false2);
+			   GE, const1_rtx, SImode, 0, 1, lab_false2);
 
   tmp = build_int_2 ((MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD) + va_size, 0);
   tmp = build (MODIFY_EXPR, integer_type_node, ndx, tmp);
@@ -2571,8 +2575,8 @@ order_regs_for_local_alloc ()
 {
   if (!leaf_function_p ())
     {
-      memcpy (reg_alloc_order, reg_nonleaf_alloc_order,
-	      FIRST_PSEUDO_REGISTER * sizeof (int));
+      bcopy ((char *) reg_nonleaf_alloc_order,
+	     (char *) reg_alloc_order,  FIRST_PSEUDO_REGISTER * sizeof (int));
     }
   else
     {
@@ -2631,7 +2635,7 @@ a7_overlap_mentioned_p (x)
       && GET_CODE (SUBREG_REG (x)) == REG
       && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER)
     {
-      x_regno = subreg_regno (x);
+      x_regno = REGNO (SUBREG_REG (x)) + SUBREG_WORD (x);
       return (SUBREG_REG (x) != hard_frame_pointer_rtx
 	      && x_regno < A7_REG + 1
 	      && x_regno + HARD_REGNO_NREGS (A7_REG, GET_MODE (x)) > A7_REG);

@@ -571,6 +571,9 @@ Zack Weinberg for major work on cpplib and various other bugfixes.
 Dale Wiles helped port GCC to the Tahoe.
 
 @item
+Bob Wilson from Tensilica, Inc.@: for the Xtensa port.
+
+@item
 Jim Wilson for his direction via the steering committee, tackling hard
 problems in various places that nobody else wanted to work on, strength
 reduction and other loop optimizations.

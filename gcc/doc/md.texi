@@ -1948,6 +1948,31 @@ Symbolic constant suitable for use with the @code{larl} instruction
 
 @end table
 
+@item Xtensa---@file{xtensa.h}
+@table @code
+@item a
+General-purpose 32-bit register
+
+@item b
+One-bit boolean register
+
+@item A
+MAC16 40-bit accumulator register
+
+@item I
+Signed 12-bit integer constant, for use in MOVI instructions
+
+@item J
+Signed 8-bit integer constant, for use in ADDI instructions
+
+@item K
+Integer constant valid for BccI instructions
+
+@item L
+Unsigned constant valid for BccUI instructions
+
+@end table
+
 @end table
 
 @ifset INTERNALS
