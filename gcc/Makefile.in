@@ -1417,8 +1417,10 @@ integrate.o : integrate.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    function.h output.h $(RECOG_H) except.h toplev.h
 
 jump.o : jump.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h regs.h \
-   insn-config.h insn-codes.h insn-flags.h $(RECOG_H) expr.h real.h except.h
-stupid.o : stupid.c $(CONFIG_H) system.h $(RTL_H) regs.h hard-reg-set.h flags.h
+   insn-config.h insn-codes.h insn-flags.h $(RECOG_H) expr.h real.h except.h \
+   toplev.h
+stupid.o : stupid.c $(CONFIG_H) system.h $(RTL_H) regs.h hard-reg-set.h \
+   flags.h toplev.h
 
 cse.o : cse.c $(CONFIG_H) system.h $(RTL_H) regs.h hard-reg-set.h flags.h \
    real.h insn-config.h insn-codes.h $(RECOG_H) expr.h toplev.h output.h
@@ -1427,24 +1429,25 @@ gcse.o : gcse.c $(CONFIG_H) system.h $(RTL_H) regs.h hard-reg-set.h flags.h \
 profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-flags.h \
    gcov-io.h $(TREE_H) output.h regs.h toplev.h
 loop.o : loop.c $(CONFIG_H) system.h $(RTL_H) flags.h loop.h insn-config.h \
-   insn-flags.h insn-codes.h regs.h hard-reg-set.h $(RECOG_H) expr.h real.h
+   insn-flags.h insn-codes.h regs.h hard-reg-set.h $(RECOG_H) expr.h real.h \
+   toplev.h
 unroll.o : unroll.c $(CONFIG_H) system.h $(RTL_H) insn-config.h insn-codes.h \
-   integrate.h regs.h $(RECOG_H) flags.h expr.h loop.h
+   integrate.h regs.h $(RECOG_H) flags.h expr.h loop.h toplev.h
 flow.o : flow.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-config.h \
-   $(BASIC_BLOCK_H) regs.h hard-reg-set.h output.h
+   $(BASIC_BLOCK_H) regs.h hard-reg-set.h output.h toplev.h
 combine.o : combine.c $(CONFIG_H) system.h $(RTL_H) flags.h  \
    insn-config.h insn-flags.h insn-codes.h insn-attr.h regs.h expr.h \
-   $(BASIC_BLOCK_H) $(RECOG_H) real.h hard-reg-set.h
+   $(BASIC_BLOCK_H) $(RECOG_H) real.h hard-reg-set.h toplev.h
 regclass.o : regclass.c $(CONFIG_H) system.h $(RTL_H) hard-reg-set.h flags.h \
    $(BASIC_BLOCK_H) regs.h insn-config.h $(RECOG_H) reload.h real.h toplev.h \
    output.h
 local-alloc.o : local-alloc.c $(CONFIG_H) system.h $(RTL_H) flags.h \
    $(BASIC_BLOCK_H) regs.h hard-reg-set.h insn-config.h $(RECOG_H) output.h \
-   insn-attr.h
+   insn-attr.h toplev.h
 bitmap.o : bitmap.c $(CONFIG_H) system.h $(RTL_H) flags.h $(BASIC_BLOCK_H) \
    regs.h
 global.o : global.c $(CONFIG_H) system.h $(RTL_H) flags.h  \
-   $(BASIC_BLOCK_H) regs.h hard-reg-set.h insn-config.h output.h
+   $(BASIC_BLOCK_H) regs.h hard-reg-set.h insn-config.h output.h toplev.h
 
 reload.o : reload.c $(CONFIG_H) system.h $(RTL_H) flags.h output.h expr.h \
    reload.h $(RECOG_H) hard-reg-set.h insn-config.h insn-codes.h regs.h \
@@ -1453,16 +1456,16 @@ reload1.o : reload1.c $(CONFIG_H) system.h $(RTL_H) real.h flags.h expr.h \
    reload.h regs.h hard-reg-set.h insn-config.h insn-flags.h insn-codes.h \
    $(BASIC_BLOCK_H) $(RECOG_H) output.h toplev.h
 caller-save.o : caller-save.c $(CONFIG_H) system.h $(RTL_H) flags.h \
-   regs.h hard-reg-set.h insn-codes.h insn-config.h $(BASIC_BLOCK_H) $(RECOG_H) \
-   reload.h expr.h
+   regs.h hard-reg-set.h insn-codes.h insn-config.h $(BASIC_BLOCK_H) \
+   $(RECOG_H) reload.h expr.h toplev.h
 reorg.o : reorg.c $(CONFIG_H) system.h $(RTL_H) conditions.h hard-reg-set.h \
    $(BASIC_BLOCK_H) regs.h insn-config.h insn-codes.h insn-attr.h \
    insn-flags.h $(RECOG_H) flags.h output.h expr.h
 alias.o : alias.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h regs.h \
-   insn-codes.h
+   insn-codes.h toplev.h
 regmove.o : regmove.c $(CONFIG_H) system.h $(RTL_H) insn-config.h \
    insn-codes.h recog.h output.h reload.h regs.h hard-reg-set.h flags.h \
-   expr.h insn-flags.h $(BASIC_BLOCK_H)
+   expr.h insn-flags.h $(BASIC_BLOCK_H) toplev.h
 $(SCHED_PREFIX)sched.o : $(SCHED_PREFIX)sched.c $(CONFIG_H) system.h $(RTL_H) \
    $(BASIC_BLOCK_H) regs.h hard-reg-set.h flags.h insn-config.h insn-attr.h \
    toplev.h

@@ -49,6 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "regs.h"
 #include "flags.h"
+#include "toplev.h"
 
 /* Vector mapping INSN_UIDs to suids.
    The suids are like uids but increase monotonically always.

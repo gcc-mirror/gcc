@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "flags.h"
+#include "toplev.h"
 
 static rtx canon_rtx			PROTO((rtx));
 static int rtx_equal_for_memref_p	PROTO((rtx, rtx));

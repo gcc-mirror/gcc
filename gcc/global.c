@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "insn-config.h"
 #include "output.h"
+#include "toplev.h"
 
 /* This pass of the compiler performs global register allocation.
    It assigns hard register numbers to all the pseudo registers

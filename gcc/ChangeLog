@@ -1,3 +1,18 @@
+Sat Jun 20 00:27:40 1998  Graham  <grahams@rcp.co.uk>
+
+	* alias.c: Include toplev.h
+	* caller-save.c: Include toplev.h
+	* combine.c: Include toplev.h
+	* flow.c Include toplev.h
+	* global.c: Include toplev.h
+	* jump.c: Include toplev.h
+	* local-alloc.c: Include toplev.h
+	* loop.c: Include toplev.h
+	* regmove.c: Include toplev.h
+	* stupid.c: Include toplev.h
+	* unroll.c: Include toplev.h
+	* Makefile.in: Add toplev.h dependencies.
+
 Fri Jun 19 22:40:25 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* regmove.c (copy_src_to_dest): Add decl for loop_depth.
