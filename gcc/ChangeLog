@@ -1,3 +1,8 @@
+2004-10-21  Nicolas Pitre <nico@cam.org>
+
+	* config/arm/ieee754-sf.S: Large speed improvements. Fix NAN handling.
+	* config/arm/ieee754-df.S: Ditto.
+
 2004-10-20  Zack Weinberg  <zack@codesourcery.com>
 
 	* dbxout.c (asmfile): Delete.  All uses changed to asm_out_file.
