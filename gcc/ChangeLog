@@ -1,3 +1,10 @@
+2002-08-30  Denis Chertykov  <denisc@overta.ru>
+
+	* config/ip2k/ip2k.c (ip2k_set_compare): Remove all const_double
+	stuff.
+	(ip2k_gen_unsigned_comp_branch): Handle CONST_INT and
+	CONST_DOUBLE constants.
+	
 2002-08-30  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/alpha/alpha.h (TARGET_CPU_CPP_BUILTINS): Move language-
