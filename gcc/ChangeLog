@@ -1,3 +1,23 @@
+2003-07-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-decl.c (c_finish_incomplete_decl): Don't use xxx_with_decl.
+	(pop_label_level): Likewise.
+	(duplicate_decls): Likewise.
+	(implicitly_declare): Likewise.
+	(shadow_label): Likewise.
+	(start_decl): Likewise.
+	(finish_decl): Likewise.
+	(grokdeclarator): Likewise.
+	(get_parm_info): Likewise.
+	(detect_field_duplicates): Likewise.
+	(finish_struct): Likewise.
+	(start_function): Likewise.
+	(store_parm_decls): Likewise.
+	(finish_function): Likewise.
+	(c_expand_body_1): Likewise.
+	(check_for_loop_decls): Likewise.
+	(merge_translation_unit_decls): Likewise.
+
 2003-07-19  Neil Booth  <neil@daikokuya.co.uk>
 
 	* common.opt:  Document --param.
