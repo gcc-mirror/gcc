@@ -86,9 +86,6 @@ static int lookup_fnfields_here PROTO((tree, tree));
 static int is_subobject_of_p PROTO((tree, tree));
 static int hides PROTO((tree, tree));
 static tree virtual_context PROTO((tree, tree, tree));
-static tree get_template_base_recursive
-	PROTO((tree, tree, tree, int));
-static void dfs_walk PROTO((tree, void (*) (tree), int (*) (tree)));
 static void dfs_check_overlap PROTO((tree));
 static int dfs_no_overlap_yet PROTO((tree));
 static void envelope_add_decl PROTO((tree, tree, tree *));
@@ -100,7 +97,6 @@ static void expand_upcast_fixups
 static void fixup_virtual_upcast_offsets
 	PROTO((tree, tree, int, int, tree, tree, tree, tree,
 	       tree *));
-static int markedp PROTO((tree));
 static int unmarkedp PROTO((tree));
 static int marked_vtable_pathp PROTO((tree));
 static int unmarked_vtable_pathp PROTO((tree));
@@ -110,7 +106,6 @@ static int dfs_debug_unmarkedp PROTO((tree));
 static void dfs_debug_mark PROTO((tree));
 static void dfs_find_vbases PROTO((tree));
 static void dfs_clear_vbase_slots PROTO((tree));
-static void dfs_unmark PROTO((tree));
 static void dfs_init_vbase_pointers PROTO((tree));
 static void dfs_get_vbase_types PROTO((tree));
 static void dfs_pushdecls PROTO((tree));
@@ -2102,7 +2097,7 @@ convert_pointer_to_single_level (to_type, expr)
    dfs_init_vbase_pointers is the work function, as otherwise there
    would be no record.  */
 
-static void
+void
 dfs_walk (binfo, fn, qfn)
      tree binfo;
      void (*fn) PROTO((tree));
@@ -2201,7 +2196,7 @@ dfs_search (binfo, fn, start)
   return fn (binfo);
 }
 
-static int markedp (binfo) tree binfo;
+int markedp (binfo) tree binfo;
 { return BINFO_MARKED (binfo); }
 static int unmarkedp (binfo) tree binfo;
 { return BINFO_MARKED (binfo) == 0; }
@@ -2252,7 +2247,7 @@ dfs_mark (binfo) tree binfo;
 { SET_BINFO_MARKED (binfo); }
 #endif
 
-static void
+void
 dfs_unmark (binfo) tree binfo;
 { CLEAR_BINFO_MARKED (binfo); }
 
@@ -3345,85 +3340,6 @@ lookup_conversions (type)
     IDENTIFIER_MARKED (DECL_NAME (OVL_CURRENT (TREE_VALUE (t)))) = 0;
 
   return conversions;
-}
-
-/* Subroutine of get_template_base.  */
-
-static tree
-get_template_base_recursive (binfo, rval, template, via_virtual)
-     tree binfo, template, rval;
-     int via_virtual;
-{
-  tree binfos;
-  int i, n_baselinks;
-  tree type = BINFO_TYPE (binfo);
-
-  if (CLASSTYPE_TEMPLATE_INFO (type)
-      && CLASSTYPE_TI_TEMPLATE (type) == template)
-    {
-      if (rval == NULL_TREE || rval == type)
-	return type;
-      else
-	return error_mark_node;
-    }
-
-  binfos = BINFO_BASETYPES (binfo);
-  n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-  /* Process base types.  */
-  for (i = 0; i < n_baselinks; i++)
-    {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-
-      /* Find any specific instance of a virtual base, when searching with
-	 a binfo...  */
-      if (BINFO_MARKED (base_binfo) == 0)
-	{
-	  int this_virtual = via_virtual || TREE_VIA_VIRTUAL (base_binfo);
-
-	  /* When searching for a non-virtual, we cannot mark
-	     virtually found binfos.  */
-	  if (! this_virtual)
-	    SET_BINFO_MARKED (base_binfo);
-
-	  rval = get_template_base_recursive
-	    (base_binfo, rval, template, this_virtual);
-	  if (rval == error_mark_node)
-	    return rval;
-	}
-    }
-
-  return rval;
-}
-
-/* Given a class template TEMPLATE and a class type or binfo node BINFO,
-   find the unique base type in BINFO that is an instance of TEMPLATE.
-   If there are more than one, return error_mark_node.  Used by unify.  */
-
-tree
-get_template_base (template, binfo)
-     register tree template, binfo;
-{
-  tree type = NULL_TREE, rval;
-
-  if (TREE_CODE (binfo) == TREE_VEC)
-    type = BINFO_TYPE (binfo);
-  else if (IS_AGGR_TYPE_CODE (TREE_CODE (binfo)))
-    {
-      type = complete_type (binfo);
-      binfo = TYPE_BINFO (type);
-    }
-  else
-    my_friendly_abort (92);
-
-  if (CLASSTYPE_TEMPLATE_INFO (type)
-      && CLASSTYPE_TI_TEMPLATE (type) == template)
-    return type;
-
-  rval = get_template_base_recursive (binfo, NULL_TREE, template, 0);
-  dfs_walk (binfo, dfs_unmark, markedp);
-
-  return rval;
 }
 
 /* Check whether the empty class indicated by EMPTY_BINFO is also present

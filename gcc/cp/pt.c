@@ -77,7 +77,6 @@ static tree saved_trees;
 #define UNIFY_ALLOW_DERIVED 4
 #define UNIFY_ALLOW_INTEGER 8
 
-static int unify PROTO((tree, tree, tree, tree, int, int*));
 static int resolve_overloaded_unification PROTO((tree, tree, tree, tree,
 						 unification_kind_t, int,
 						 int*));
@@ -137,6 +136,9 @@ static tree process_partial_specialization PROTO((tree));
 static void set_current_access_from_decl PROTO((tree));
 static void check_default_tmpl_args PROTO((tree, tree, int, int));
 static tree tsubst_call_declarator_parms PROTO((tree, tree, tree));
+static tree get_template_base_recursive PROTO((tree, tree, int *, tree, tree,
+					       tree, int)); 
+static tree get_template_base PROTO((tree, tree, int *, tree, tree));
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -7360,6 +7362,120 @@ try_one_overload (tparms, orig_targs, targs, parm, arg, strict,
   return 1;
 }
 
+/* Subroutine of get_template_base.  */
+
+static tree
+get_template_base_recursive (tparms, targs, explicit_mask,
+			     binfo, rval, template,
+			     via_virtual)
+     tree tparms;
+     tree targs;
+     int *explicit_mask;
+     tree binfo;
+     tree rval;
+     tree template;
+     int via_virtual;
+{
+  tree binfos;
+  int i, n_baselinks;
+  tree type = BINFO_TYPE (binfo);
+  tree tmpl = CLASSTYPE_TI_TEMPLATE (template);
+
+  if (CLASSTYPE_TEMPLATE_INFO (type)
+      && CLASSTYPE_TI_TEMPLATE (type) == tmpl)
+    {
+      /* Copy the TPARMS and TARGS since we're only doing a
+	 speculative unification here.  */
+      tree copy_of_tparms;
+      tree copy_of_targs;
+      
+      push_momentary ();
+      push_expression_obstack ();
+      copy_of_tparms = copy_node (tparms);
+      copy_of_targs = copy_node (targs);
+      pop_obstacks ();
+      
+      i = unify (copy_of_tparms,
+		 copy_of_targs,
+		 CLASSTYPE_TI_ARGS (template),
+		 CLASSTYPE_TI_ARGS (type),
+		 UNIFY_ALLOW_NONE, explicit_mask);
+
+      pop_momentary ();
+
+      if (i == 0)
+	{
+	  if (rval == NULL_TREE || rval == type)
+	    return type;
+	  else
+	    return error_mark_node;
+	}
+    }
+
+  binfos = BINFO_BASETYPES (binfo);
+  n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
+  /* Process base types.  */
+  for (i = 0; i < n_baselinks; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+
+      /* Find any specific instance of a virtual base, when searching with
+	 a binfo...  */
+      if (BINFO_MARKED (base_binfo) == 0)
+	{
+	  int this_virtual = via_virtual || TREE_VIA_VIRTUAL (base_binfo);
+
+	  /* When searching for a non-virtual, we cannot mark
+	     virtually found binfos.  */
+	  if (! this_virtual)
+	    SET_BINFO_MARKED (base_binfo);
+
+	  rval = get_template_base_recursive (tparms, targs, explicit_mask,
+					      base_binfo, rval,
+					      template, this_virtual);
+	  if (rval == error_mark_node)
+	    return rval;
+	}
+    }
+
+  return rval;
+}
+
+/* Given a template type TEMPLATE and a class type or binfo node BINFO,
+   find the unique base type in BINFO that is an instance of TEMPLATE.
+   If there are more than one, return error_mark_node.  TEMPLATE may
+   be the type of a partial specialization, as well as a plain
+   template type.  Used by unify.  */
+
+static tree
+get_template_base (tparms, targs, explicit_mask, template, binfo)
+     tree tparms;
+     tree targs;
+     int *explicit_mask;
+     tree template;
+     tree binfo;
+{
+  tree type = NULL_TREE, rval;
+
+  if (TREE_CODE (binfo) == TREE_VEC)
+    type = BINFO_TYPE (binfo);
+  else if (IS_AGGR_TYPE_CODE (TREE_CODE (binfo)))
+    {
+      type = complete_type (binfo);
+      binfo = TYPE_BINFO (type);
+    }
+  else
+    my_friendly_abort (92);
+
+  rval = get_template_base_recursive (tparms, targs, explicit_mask,
+				      binfo, NULL_TREE,
+				      template, 0); 
+  dfs_walk (binfo, dfs_unmark, markedp);
+
+  return rval;
+}
+
 /* Returns the level of DECL, which declares a template parameter.  */
 
 int
@@ -7766,7 +7882,8 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 	       The call to get_template_base also handles the case
 	       where PARM and ARG are the same type, i.e., where no
 	       derivation is involved.  */
-	    t = get_template_base (CLASSTYPE_TI_TEMPLATE (parm), arg);
+	    t = get_template_base (tparms, targs, explicit_mask,
+				   parm, arg);
 	  else if (CLASSTYPE_TEMPLATE_INFO (arg) 
 		   && (CLASSTYPE_TI_TEMPLATE (parm) 
 		       == CLASSTYPE_TI_TEMPLATE (arg)))
@@ -8059,18 +8176,8 @@ get_class_bindings (tparms, parms, args)
 
   args = innermost_args (args);
 
-  for (i = 0; i < TREE_VEC_LENGTH (parms); ++i)
-    {
-      switch (unify (tparms, vec, 
-		     TREE_VEC_ELT (parms, i), TREE_VEC_ELT (args, i),
-		     UNIFY_ALLOW_NONE, 0))
-	{
-	case 0:
-	  break;
-	case 1:
-	  return NULL_TREE;
-	}
-    }
+  if (unify (tparms, vec, parms, args, UNIFY_ALLOW_NONE, 0))
+    return NULL_TREE;
 
   for (i =  0; i < ntparms; ++i)
     if (! TREE_VEC_ELT (vec, i))
