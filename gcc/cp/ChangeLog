@@ -1,3 +1,13 @@
+2003-12-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10603
+	PR c++/12827
+	* parser.c (cp_parser_error): Help c_parse_error print good
+	messages if the next token is a keyword.
+	(cp_parser_parameter_declaration_list): When resynchronizing after
+	a bad parameter declaration, stop if a comma is found.
+	(cp_parser_parameter_declaration): Avoid backtracking.
+
 2003-12-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12696

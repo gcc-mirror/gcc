@@ -3,4 +3,4 @@
 static void InstantiateConstraint(const float&, unsigned,
                                   void(*AddFunction)(const TYPE&,bool&, // { dg-error "" }
                                                      char*, char*,
-                                                     unsigned*));
+                                                     unsigned*)); // { dg-error "" }

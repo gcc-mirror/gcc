@@ -1771,7 +1771,12 @@ cp_parser_error (cp_parser* parser, const char* message)
     {
       cp_token *token;
       token = cp_lexer_peek_token (parser->lexer);
-      c_parse_error (message, token->type, token->value);
+      c_parse_error (message, 
+		     /* Because c_parser_error does not understand
+			CPP_KEYWORD, keywords are treated like
+			identifiers.  */
+		     (token->type == CPP_KEYWORD ? CPP_NAME : token->type), 
+		     token->value);
     }
 }
 
@@ -10804,7 +10809,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser)
 	      || cp_parser_committed_to_tentative_parse (parser))
 	    cp_parser_skip_to_closing_parenthesis (parser, 
 						   /*recovering=*/true,
-						   /*or_comma=*/true,
+						   /*or_comma=*/false,
 						   /*consume_paren=*/false);
 	  break;
 	}
@@ -10900,6 +10905,16 @@ cp_parser_parameter_declaration (cp_parser *parser,
       bool saved_default_arg_ok_p = parser->default_arg_ok_p;
       parser->default_arg_ok_p = false;
   
+      /* After seeing a decl-specifier-seq, if the next token is not a
+	 "(", there is no possibility that the code is a valid
+	 expression initializer.  Therefore, if parsing tentatively,
+	 we commit at this point.  */
+      if (!parser->in_template_argument_list_p
+	  && cp_parser_parsing_tentatively (parser)
+	  && !cp_parser_committed_to_tentative_parse (parser)
+	  && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN))
+	cp_parser_commit_to_tentative_parse (parser);
+      /* Parse the declarator.  */
       declarator = cp_parser_declarator (parser,
 					 CP_PARSER_DECLARATOR_EITHER,
 					 /*ctor_dtor_or_conv_p=*/NULL,
