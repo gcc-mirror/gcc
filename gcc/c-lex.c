@@ -1,5 +1,5 @@
 /* Lexical analyzer for C and Objective C.
-   Copyright (C) 1987, 1988, 1989, 1992, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -644,7 +644,20 @@ linenum:
       if (token == CONSTANT
 	  && TREE_CODE (yylval.ttype) == INTEGER_CST
 	  && TREE_INT_CST_LOW (yylval.ttype) == 3)
-	in_system_header = 1;
+	in_system_header = 1, used_up = 1;
+
+      if (used_up)
+	{
+	  /* Is this the last nonwhite stuff on the line?  */
+	  c = getc (finput);
+	  while (c == ' ' || c == '\t')
+	    c = getc (finput);
+	  if (c == '\n')
+	    return c;
+	  ungetc (c, finput);
+	}
+
+      warning ("unrecognized text at end of #line");
     }
   else
     error ("invalid #-line");
@@ -1797,6 +1810,9 @@ yylex ()
 	    c = getc (finput);
 	  }
 	*p = 0;
+
+	if (c < 0)
+	  error ("Unterminated string constant");
 
 	/* We have read the entire constant.
 	   Construct a STRING_CST for the result.  */
