@@ -1,3 +1,7 @@
+2003-05-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (save_fpregs_{si,di}): Add length attribute.
+
 2003-05-24  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/rs6000/440.md, config/stormy16/stormy16protos.h,
