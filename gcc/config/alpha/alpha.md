@@ -85,7 +85,23 @@
    cvtql %1,%0\;cvtlq %0,%0"
   [(set_attr "type" "iaddlog,ld,fpop")])
 
-(define_insn "addsi3"
+;; Do addsi3 the way expand_binop would do if we didn't have one.  This
+;; generates better code.  We have the anonymous addsi3 pattern below in
+;; case combine wants to make it.
+(define_expand "addsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "")
+		 (match_operand:SI 2 "add_operand" "")))]
+  ""
+  "
+{ emit_insn (gen_rtx (SET, VOIDmode, gen_lowpart (DImode, operands[0]),
+		      gen_rtx (PLUS, DImode,
+			       gen_lowpart (DImode, operands[1]),
+			       gen_lowpart (DImode, operands[2]))));
+  DONE;
+} ")
+
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
 	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ,rJ,rJ,rJ")
 		 (match_operand:SI 2 "add_operand" "rI,O,K,L")))]
@@ -273,7 +289,21 @@
   "subq $31,%1,%0"
   [(set_attr "type" "iaddlog")])
 
-(define_insn "subsi3"
+(define_expand "subsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(minus:SI (match_operand:SI 1 "reg_or_0_operand" "")
+		  (match_operand:SI 2 "reg_or_8bit_operand" "")))]
+  ""
+  "
+{ emit_insn (gen_rtx (SET, VOIDmode, gen_lowpart (DImode, operands[0]),
+		      gen_rtx (MINUS, DImode,
+			       gen_lowpart (DImode, operands[1]),
+			       gen_lowpart (DImode, operands[2]))));
+  DONE;
+
+} ")
+
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
 		  (match_operand:SI 2 "reg_or_8bit_operand" "rI")))]
