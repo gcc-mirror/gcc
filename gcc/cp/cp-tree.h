@@ -2962,6 +2962,7 @@ extern void begin_inline_definitions            PROTO((void));
 extern tree finish_member_class_template        PROTO((tree, tree));
 extern void finish_template_decl                PROTO((tree));
 extern tree finish_template_type                PROTO((tree, tree, int));
+extern void enter_scope_of                      PROTO((tree));
 
 /* in sig.c */
 extern tree build_signature_pointer_type	PROTO((tree, int, int));

@@ -1427,3 +1427,24 @@ finish_template_type (name, args, entering_scope)
 
   return decl;
 }
+
+/* SR is a SCOPE_REF node.  Enter the scope of SR, whether it is a
+   namespace scope or a class scope.  */
+
+void
+enter_scope_of (sr)
+     tree sr;
+{
+  tree scope = TREE_OPERAND (sr, 0);
+
+  if (TREE_CODE (scope) == NAMESPACE_DECL)
+    {
+      push_decl_namespace (scope);
+      TREE_COMPLEXITY (sr) = -1;
+    }
+  else if (scope != current_class_type)
+    {
+      push_nested_class (scope, 3);
+      TREE_COMPLEXITY (sr) = current_class_depth;
+    }
+}

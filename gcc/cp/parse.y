@@ -2818,25 +2818,11 @@ complex_direct_notype_declarator:
 	| direct_notype_declarator '[' ']'
 		{ $$ = build_parse_node (ARRAY_REF, $$, NULL_TREE); }
 	| notype_qualified_id
-		{ if (TREE_CODE (OP0 ($1)) == NAMESPACE_DECL)
-		    {
-		      push_decl_namespace (OP0 ($1));
-		      TREE_COMPLEXITY ($1) = -1;
-		    }
-		  else if (OP0 ($1) != current_class_type)
-		    {
-		      push_nested_class (OP0 ($1), 3);
-		      TREE_COMPLEXITY ($1) = current_class_depth;
-		    }
-		}
+                { enter_scope_of ($1); }
         | nested_name_specifier notype_template_declarator
                 { got_scope = NULL_TREE;
 		  $$ = build_parse_node (SCOPE_REF, $1, $2);
-		  if ($1 != current_class_type)
-		    {
-		      push_nested_class ($1, 3);
-		      TREE_COMPLEXITY ($$) = current_class_depth;
-		    }
+		  enter_scope_of ($$);
 		}
 	;
 
