@@ -1,5 +1,14 @@
 2003-01-14  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/InetSocketAddress.java
+	(serialVersionUID): New member variable.
+	* java/net/NetPermission.java
+	(NetPermission): Dont implement java.io.Serialization directly.
+	* java/net/SocketAddress.java:
+	(serialVersionUID): Documentation added.
+	
+2003-01-14  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/Label.java
 	(Label): Implements javax.accessibility.Accessible;
 	* java/awt/List.java
