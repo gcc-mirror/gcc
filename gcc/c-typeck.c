@@ -3819,7 +3819,8 @@ build_c_cast (type, expr)
 	{
 	  tree in_type = type;
 	  tree in_otype = otype;
-	  int warn = 0;
+	  int added = 0;
+	  int discarded = 0;
 
 	  /* Check that the qualifiers on IN_TYPE are a superset of
 	     the qualifiers of IN_OTYPE.  The outermost level of
@@ -3829,12 +3830,24 @@ build_c_cast (type, expr)
 	    {
 	      in_otype = TREE_TYPE (in_otype);
 	      in_type = TREE_TYPE (in_type);
-	      warn |= (TYPE_QUALS (in_otype) & ~TYPE_QUALS (in_type));
+
+	      /* GNU C allows cv-qualified function types.  'const'
+		 means the function is very pure, 'volatile' means it
+		 can't return.  We need to warn when such qualifiers
+		 are added, not when they're taken away.  */
+	      if (TREE_CODE (in_otype) == FUNCTION_TYPE
+		  && TREE_CODE (in_type) == FUNCTION_TYPE)
+		added |= (TYPE_QUALS (in_type) & ~TYPE_QUALS (in_otype));
+	      else
+		discarded |= (TYPE_QUALS (in_otype) & ~TYPE_QUALS (in_type));
 	    }
 	  while (TREE_CODE (in_type) == POINTER_TYPE
 		 && TREE_CODE (in_otype) == POINTER_TYPE);
 
-	  if (warn)
+	  if (added)
+	    warning ("cast adds new qualifiers to function type");
+
+	  if (discarded)
 	    /* There are qualifiers present in IN_OTYPE that are not
 	       present in IN_TYPE.  */
 	    warning ("cast discards qualifiers from pointer target type");

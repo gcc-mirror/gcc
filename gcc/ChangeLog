@@ -1,3 +1,8 @@
+2002-02-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* c-typeck.c (build_c_cast): Warn when qualifiers are added to
+	function types, not when they're taken away.
+
 Mon Feb  4 09:05:58 2002  Jeffrey A Law  (law@redhat.com)
 
 	* cfgrtl.c (try_redirect_by_replacing_jump): Remove associated
