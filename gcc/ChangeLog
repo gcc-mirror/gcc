@@ -1,3 +1,27 @@
+2003-04-07  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/invoke.texi (RS/6000 and PowerPC Options): Document
+        -mfloat-gprs.
+
+        * config/rs6000/rs6000.c: Delete rs6000_fprs.
+        Declare rs6000_float_gprs.
+        Declare rs6000_float_gprs_string.
+        (rs6000_parse_float_gprs_option): New.
+        (rs6000_override_options): Genericize rs6000_parse_* calls to use
+        rs6000_parse_yes_no_option.
+        Change check for cpu=8540, to use TARGET_E500.
+        (rs6000_parse_isel_option): Delete.
+        (rs6000_parse_spe_option): Delete.
+        (rs6000_parse_vrsave_option): Delete.
+
+        * config/rs6000/rs6000.h: Rename rs6000_fprs to rs6000_float_gprs.
+        Define rs6000_float_gprs_string.
+        (TARGET_OPTIONS): Add rs6000_float_gprs option.
+
+        * config/rs6000/eabi.h (TARGET_FPRS): Change to use rs6000_float_gprs.
+
+        * config/rs6000/eabispe.h: Set rs6000_float_gprs.
+
 Mon Apr  7 14:36:24 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/10024

@@ -98,8 +98,11 @@ int rs6000_isel;
 /* Whether SPE simd instructions should be generated.  */
 int rs6000_spe;
 
-/* Nonzero if we have FPRs.  */
-int rs6000_fprs = 1;
+/* Nonzero if floating point operations are done in the GPRs.  */
+int rs6000_float_gprs = 0;
+
+/* String from -mfloat-gprs=.  */
+const char *rs6000_float_gprs_string;
 
 /* String from -misel=.  */
 const char *rs6000_isel_string;
@@ -274,9 +277,7 @@ static rtx altivec_expand_abs_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx altivec_expand_predicate_builtin PARAMS ((enum insn_code, const char *, tree, rtx));
 static rtx altivec_expand_stv_builtin PARAMS ((enum insn_code, tree));
 static void rs6000_parse_abi_options PARAMS ((void));
-static void rs6000_parse_vrsave_option PARAMS ((void));
-static void rs6000_parse_isel_option PARAMS ((void));
-static void rs6000_parse_spe_option (void);
+static void rs6000_parse_yes_no_option (const char *, const char *, int *);
 static int first_altivec_reg_to_save PARAMS ((void));
 static unsigned int compute_vrsave_mask PARAMS ((void));
 static void is_altivec_return_reg PARAMS ((rtx, void *));
@@ -702,14 +703,14 @@ rs6000_override_options (default_cpu)
   /* Handle -mabi= options.  */
   rs6000_parse_abi_options ();
 
-  /* Handle -mvrsave= option.  */
-  rs6000_parse_vrsave_option ();
-
-  /* Handle -misel= option.  */
-  rs6000_parse_isel_option ();
-
-  /* Handle -mspe= option.  */
-  rs6000_parse_spe_option ();
+  /* Handle generic -mFOO=YES/NO options.  */
+  rs6000_parse_yes_no_option ("vrsave", rs6000_altivec_vrsave_string,
+			      &rs6000_altivec_vrsave);
+  rs6000_parse_yes_no_option ("isel", rs6000_isel_string,
+			      &rs6000_isel);
+  rs6000_parse_yes_no_option ("spe", rs6000_spe_string, &rs6000_spe);
+  rs6000_parse_yes_no_option ("float-gprs", rs6000_float_gprs_string,
+			      &rs6000_float_gprs);
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
@@ -718,10 +719,27 @@ rs6000_override_options (default_cpu)
   SUBSUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
-  /* The e500 does not have string instructions, and we set
-     MASK_STRING above when optimizing for size.  */
-  if (rs6000_cpu == PROCESSOR_PPC8540 && (target_flags & MASK_STRING) != 0)
-    target_flags = target_flags & ~MASK_STRING;
+  if (TARGET_E500)
+    {
+      /* The e500 does not have string instructions, and we set
+	 MASK_STRING above when optimizing for size.  */
+      if ((target_flags & MASK_STRING) != 0)
+	target_flags = target_flags & ~MASK_STRING;
+    }
+  else if (rs6000_select[1].string != NULL)
+    {
+      /* For the powerpc-eabispe configuration, we set all these by
+	 default, so let's unset them if we manually set another
+	 CPU that is not the E500.  */
+      if (rs6000_abi_string == 0)
+	rs6000_spe_abi = 0;
+      if (rs6000_spe_string == 0)
+	rs6000_spe = 0;
+      if (rs6000_float_gprs_string == 0)
+	rs6000_float_gprs = 0;
+      if (rs6000_isel_string == 0)
+	rs6000_isel = 0;
+    }
 
   /* Handle -m(no-)longcall option.  This is a bit of a cheap hack,
      using TARGET_OPTIONS to handle a toggle switch, but we're out of
@@ -783,48 +801,22 @@ rs6000_override_options (default_cpu)
   init_machine_status = rs6000_init_machine_status;
 }
 
-/* Handle -misel= option.  */
+/* Handle generic options of the form -mfoo=yes/no.
+   NAME is the option name.
+   VALUE is the option value.
+   FLAG is the pointer to the flag where to store a 1 or 0, depending on
+   whether the option value is 'yes' or 'no' respectively.  */
 static void
-rs6000_parse_isel_option ()
+rs6000_parse_yes_no_option (const char *name, const char *value, int *flag)
 {
-  if (rs6000_isel_string == 0)
+  if (value == 0)
     return;
-  else if (! strcmp (rs6000_isel_string, "yes"))
-    rs6000_isel = 1;
-  else if (! strcmp (rs6000_isel_string, "no"))
-    rs6000_isel = 0;
+  else if (!strcmp (value, "yes"))
+    *flag = 1;
+  else if (!strcmp (value, "no"))
+    *flag = 0;
   else
-    error ("unknown -misel= option specified: '%s'",
-         rs6000_isel_string);
-}
-
-/* Handle -mspe= option.  */
-static void
-rs6000_parse_spe_option (void)
-{
-  if (rs6000_spe_string == 0)
-    return;
-  else if (!strcmp (rs6000_spe_string, "yes"))
-    rs6000_spe = 1;
-  else if (!strcmp (rs6000_spe_string, "no"))
-    rs6000_spe = 0;
-  else
-    error ("unknown -mspe= option specified: '%s'", rs6000_spe_string);
-}
-
-/* Handle -mvrsave= options.  */
-static void
-rs6000_parse_vrsave_option ()
-{
-  /* Generate VRSAVE instructions by default.  */
-  if (rs6000_altivec_vrsave_string == 0
-      || ! strcmp (rs6000_altivec_vrsave_string, "yes"))
-    rs6000_altivec_vrsave = 1;
-  else if (! strcmp (rs6000_altivec_vrsave_string, "no"))
-    rs6000_altivec_vrsave = 0;
-  else
-    error ("unknown -mvrsave= option specified: '%s'",
-	   rs6000_altivec_vrsave_string);
+    error ("unknown -m%s= option specified: '%s'", name, value);
 }
 
 /* Handle -mabi= options.  */

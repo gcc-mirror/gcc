@@ -53,4 +53,4 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_SPE rs6000_spe
 #define TARGET_E500 (rs6000_cpu == PROCESSOR_PPC8540)
 #define TARGET_ISEL rs6000_isel
-#define TARGET_FPRS rs6000_fprs
+#define TARGET_FPRS (!rs6000_float_gprs)
