@@ -1405,7 +1405,7 @@ __builtin_saveregs ()
 /* This is used by the `assert' macro.  */
 void
 __eprintf (const char *string, const char *expression,
-	   int line, const char *filename)
+	   unsigned int line, const char *filename)
 {
   fprintf (stderr, string, expression, line, filename);
   fflush (stderr);
