@@ -106,4 +106,15 @@ public abstract class Configuration
   public abstract AppConfigurationEntry[] getAppConfigurationEntry (String applicationName);
 
   public abstract void refresh();
+
+  // Package-private methods.
+  // -------------------------------------------------------------------------
+
+  /**
+   * Get the current configuration, bypassing security checks.
+   */
+  static Configuration getConfig()
+  {
+    return config;
+  }
 }

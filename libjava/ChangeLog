@@ -1,3 +1,15 @@
+2004-11-16  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* Makefile.am: Add imported files.
+	* Makefile.in: Regenerate.
+
+	2004-10-24  Casey Marshall  <csm@gnu.org>
+
+	* javax/security/auth/login/LoginContext.java: Implemented.
+	* javax/security/auth/login/Configuration.java (getConfig): New method.
+	* javax/security/auth/spi/LoginModule.java,
+	* gnu/java/security/action/GetSecurityPropertyAction.java: New files.
+
 2004-11-15  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	Import/Merge the X.509 certificate code from Classpath.
