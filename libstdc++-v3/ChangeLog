@@ -1,3 +1,15 @@
+2002-01-02  Nathan Myers  <ncm@cantrip.org>
+            Loren Rittle <ljrittle@acm.org>
+
+        libstdc++/5037 (copy from trunk 2001-12-07 and 2001-12-11)
+        * config/cpu/sparc/sparc32/bits/atomicity.h
+        (struct __Atomicity_lock<__inst>): Add.
+        (__Atomicity_lock<__inst>::_S_atomicity_lock): Add.
+        (__Atomicity_lock<0>::_S_atomicity_lock): Add.
+        (__exchange_and_add): Use __Atomicity_lock<0>::_S_atomicity_lock
+        instead of lock local to static function.
+        (__atomic_add): Likewise.
+
 2001-12-20  Release Manager
 
 	* GCC 3.0.3 Released.
