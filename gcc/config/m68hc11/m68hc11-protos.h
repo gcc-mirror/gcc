@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in m68hc11.c
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GNU CC.
@@ -117,6 +117,7 @@ extern int arith_src_operand PARAMS((rtx, enum machine_mode));
 extern int m68hc11_logical_operator PARAMS((rtx, enum machine_mode));
 extern int m68hc11_arith_operator PARAMS((rtx, enum machine_mode));
 extern int m68hc11_non_shift_operator PARAMS((rtx, enum machine_mode));
+extern int m68hc11_shift_operator PARAMS((rtx, enum machine_mode));
 extern int m68hc11_unary_operator PARAMS((rtx, enum machine_mode));
 extern int non_push_operand PARAMS((rtx, enum machine_mode));
 extern int hard_reg_operand PARAMS((rtx, enum machine_mode));
