@@ -2578,17 +2578,13 @@ emit_move_insn_1 (x, y)
 	}
       else
 	{
-	  /* Show the output dies here.  This is only necessary for pseudos.  */
-	  if (x != y)
+	  /* Show the output dies here.  This is necessary for pseudos;
+	     hard regs shouldn't appear here except as return values.
+	     We never want to emit such a clobber after reload.  */
+	  if (x != y
+	      && ! (reload_in_progress || reload_completed))
 	    {
-	      rtx reg = x;
-	      
-	      while (GET_CODE (reg) == SUBREG)
-		reg = SUBREG_REG (reg);
-	      
-	      if (GET_CODE (reg) == REG
-		  && REGNO (reg) >= FIRST_PSEUDO_REGISTER)
-		emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
+	      emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
 	    }
 
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
@@ -2618,17 +2614,13 @@ emit_move_insn_1 (x, y)
 	}
 #endif
 			     
-      /* Show the output dies here.  This is only necessary for pseudos.  */
-      if (x != y)
+      /* Show the output dies here.  This is necessary for pseudos;
+	 hard regs shouldn't appear here except as return values.
+	 We never want to emit such a clobber after reload.  */
+      if (x != y
+	  && ! (reload_in_progress || reload_completed))
 	{
-	  rtx reg = x;
-	  
-	  while (GET_CODE (reg) == SUBREG)
-	    reg = SUBREG_REG (reg);
-	  
-	  if (GET_CODE (reg) == REG
-	      && REGNO (reg) >= FIRST_PSEUDO_REGISTER)
-	    emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
+	  emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
 	}
 
       for (i = 0;
