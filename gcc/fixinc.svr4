@@ -389,8 +389,7 @@ if [ \! -z "$file_to_fix" ]; then
   chmod +w /tmp/$base
   sed -e '/^extern caddr_t mmap();$/c\
 #ifdef __STDC__\
-extern caddr_t mmap (caddr_t addr, size_t len, int prot, int flags,\
-                     int fd, off_t off);\
+extern caddr_t mmap (caddr_t, size_t, int, int, int, off_t);\
 #else /* !defined(__STDC__) */\
 extern caddr_t mmap ();\
 #endif /* !defined(__STDC__) */' /tmp/$base > /tmp/$base.sed
