@@ -1,3 +1,7 @@
+2002-05-21  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/stl_pair.h:  Tweak comment markup.
+
 2002-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (AC_CHECK_HEADERS): Check for string.h & stdlib.h.
