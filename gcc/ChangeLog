@@ -1,3 +1,8 @@
+Thu May 20 11:28:53 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* optabs.c (expand_cmplxdiv_straight, expand_cmplxdiv_wide):
+	Change function definitions to K&R style.
+
 Thu May 20 08:16:39 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* fixinc/fixincl.c: We must not ignore SIGCLD now.
