@@ -1,3 +1,28 @@
+Tue Mar 23 07:50:20 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* function.c: Include hash.h.
+	(insns_for_mem_entry): New struct.
+	(put_reg_into_stack): Take an optional hash-table mapping MEMs to
+	the INSNs that use them.
+	(fixup_var_refs): Likewise.
+	(put_addressof_into_stack): Likewise.
+	(purge_addressof_1): Likewise.  Keep the hash-table up to date if
+	we add new instructions.
+	(fixup_var_refs_insns): Use it to avoid searching the entire
+	instruction chain.
+	(insns_for_mem_newfunc): New function.
+	(insns_for_mem_comp): Likewise.
+	(insns_for_mem_walk): Likewise.
+	(compute_insns_for_mem): Likewise.
+	(pop_function_context_from): Pass NULL for the hash-table.
+	(put_var_into_stack): Likewise.
+	(gen_mem_addressof): Likewise.
+	(flush_addressof): Likewise.
+	(purge_addressof): Call compute_insns_for_mem to pre-compute the
+	hash table.
+	* Makefile.in (OBJS): Include hash.o.
+	(function.o): Depend on hash.h.
+	
 Tue Mar 23 00:39:14 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* crtstuff.c: Use ANSI function definitions.  Fix minor whitespace
