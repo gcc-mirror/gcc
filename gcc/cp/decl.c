@@ -11275,6 +11275,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && TYPE_ANONYMOUS_P (type)
+	  /* Don't do this if there are attributes.  */
+	  && (!attrlist || !*attrlist)
 	  && cp_type_quals (type) == TYPE_UNQUALIFIED)
 	{
 	  tree oldname = TYPE_NAME (type);
