@@ -4694,6 +4694,19 @@ typically be a series of @code{asm} statements.  Both @var{beg} and
 @var{end} are both pointer expressions.
 @end defmac
 
+The operating system may also require the stack to be made executable
+before calling the trampoline.  To implement this requirement, define
+the following macro.
+
+@defmac ENABLE_EXECUTE_STACK
+Define this macro if certain operations must be performed before executing
+code located on the stack.  The macro should expand to a series of C
+file-scope constructs (e.g. functions) and provide a unique entry point
+named @code{__enable_execute_stack}.  The target is responsible for
+emitting calls to the entry point in the code, for example from the
+@code{INITIALIZE_TRAMPOLINE} macro.
+@end defmac
+
 To use a standard subroutine, define the following macro.  In addition,
 you must make sure that the instructions in a trampoline fill an entire
 cache line with identical instructions, or else ensure that the

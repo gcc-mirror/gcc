@@ -1,3 +1,30 @@
+2004-07-17  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* libgcc2.c (__enable_execute_stack): New symbol.
+	* libgcc-std.ver (GCC_3.4.2): New version.  Inherit from GCC_3.4
+	and declare __enable_execute_stack.
+	* mklibgcc.in (lib2funcs): Add _enable_execute_stack.
+	* config/netbsd.h (NETBSD_ENABLE_EXECUTE_STACK): ANSIfy.
+	* config/sol2.h (TRANSFER_FROM_TRAMPOLINE): Rename into
+	ENABLE_EXECUTE_STACK.
+	* config/alpha/alpha.c (alpha_initialize_trampoline): Conditionalize
+	on ENABLE_EXECUTE_STACK instead of TRANSFER_FROM_TRAMPOLINE.
+	* config/alpha/netbsd.h (TRANSFER_FROM_TRAMPOLINE): Rename into
+	ENABLE_EXECUTE_STACK.
+	* config/alpha/osf.h (TRANSFER_FROM_TRAMPOLINE): Likewise.
+	* config/i386/i386.c (x86_initialize_trampoline): Conditionalize
+	on ENABLE_EXECUTE_STACK instead of TRANSFER_FROM_TRAMPOLINE.
+	* config/i386/netbsd-elf.h (TRANSFER_FROM_TRAMPOLINE): Rename into
+	ENABLE_EXECUTE_STACK.
+	* config/i386/netbsd.h (TRANSFER_FROM_TRAMPOLINE): Likewise.
+	* config/i386/netbsd64.h (TRANSFER_FROM_TRAMPOLINE): Likewise.
+	* config/sparc/freebsd.h (TRANSFER_FROM_TRAMPOLINE): Likewise.
+	* config/sparc/netbsd-elf.h (TRANSFER_FROM_TRAMPOLINE): Likewise.
+	* config/sparc/sparc.c (sparc_initialize_trampoline): Conditionalize
+	on ENABLE_EXECUTE_STACK instead of TRANSFER_FROM_TRAMPOLINE.
+	(sparc64_initialize_trampoline): Likewise.
+	* doc/tm.texi (trampolines): Add ENABLE_EXECUTE_STACK macro.
+
 2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* langhooks.h (builtin_function): New langhook.

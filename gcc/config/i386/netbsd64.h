@@ -68,6 +68,6 @@ Boston, MA 02111-1307, USA.  */
 }
 
 /* Attempt to enable execute permissions on the stack.  */
-#define TRANSFER_FROM_TRAMPOLINE NETBSD_ENABLE_EXECUTE_STACK
+#define ENABLE_EXECUTE_STACK NETBSD_ENABLE_EXECUTE_STACK
 
 #define TARGET_VERSION fprintf (stderr, " (NetBSD/x86_64 ELF)");

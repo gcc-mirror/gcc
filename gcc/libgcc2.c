@@ -1487,6 +1487,19 @@ __clear_cache (char *beg __attribute__((__unused__)),
 
 #endif /* L_clear_cache */
 
+#ifdef L_enable_execute_stack
+/* Attempt to turn on execute permission for the stack.  */
+
+#ifdef ENABLE_EXECUTE_STACK
+  ENABLE_EXECUTE_STACK
+#else
+void
+__enable_execute_stack (void *addr __attribute__((__unused__)))
+{}
+#endif /* ENABLE_EXECUTE_STACK */
+
+#endif /* L_enable_execute_stack */
+
 #ifdef L_trampoline
 
 /* Jump to a trampoline, loading the static chain address.  */
