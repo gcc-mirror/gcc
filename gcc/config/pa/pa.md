@@ -2648,34 +2648,59 @@
 
 
 ;;- zero extension instructions
+;; We have define_expand for zero extension patterns to make sure the
+;; operands get loaded into registers.  The define_insns accept
+;; memory operands.  This gives us better overall code than just
+;; having a pattern that does or does not accept memory operands.
 
-(define_insn "zero_extendhisi2"
+(define_expand "zero_extendhisi2"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(zero_extend:SI
+	 (match_operand:HI 1 "register_operand" "")))]
+  ""
+  "")
+
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(zero_extend:SI
-	 (match_operand:HI 1 "reg_or_nonsymb_mem_operand" "r,Q")))]
-  ""
+	 (match_operand:HI 1 "move_operand" "r,RQ")))]
+  "GET_CODE (operands[1]) != CONST_INT"
   "@
    extru %1,31,16,%0
    ldh%M1 %1,%0"
   [(set_attr "type" "shift,load")
    (set_attr "length" "4,4")])
 
-(define_insn "zero_extendqihi2"
+(define_expand "zero_extendqihi2"
+  [(set (match_operand:HI 0 "register_operand" "")
+	(zero_extend:HI
+	 (match_operand:QI 1 "register_operand" "")))]
+  ""
+  "")
+
+(define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r,r")
 	(zero_extend:HI
-	 (match_operand:QI 1 "reg_or_nonsymb_mem_operand" "r,Q")))]
-  ""
+	 (match_operand:QI 1 "move_operand" "r,RQ")))]
+  "GET_CODE (operands[1]) != CONST_INT"
   "@
    extru %1,31,8,%0
    ldb%M1 %1,%0"
   [(set_attr "type" "shift,load")
    (set_attr "length" "4,4")])
 
-(define_insn "zero_extendqisi2"
+(define_expand "zero_extendqisi2"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(zero_extend:SI
+	 (match_operand:QI 1 "register_operand" "")))]
+  ""
+  "")
+
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(zero_extend:SI
-	 (match_operand:QI 1 "reg_or_nonsymb_mem_operand" "r,Q")))]
-  ""
+	 (match_operand:QI 1 "move_operand" "r,RQ")))]
+  "GET_CODE (operands[1]) != CONST_INT"
   "@
    extru %1,31,8,%0
    ldb%M1 %1,%0"
