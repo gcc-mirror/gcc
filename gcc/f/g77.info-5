@@ -1,0 +1,1305 @@
+This is Info file g77.info, produced by Makeinfo version 1.68 from the
+input file g77.texi.
+
+   This file explains how to use the GNU Fortran system.
+
+   Published by the Free Software Foundation 59 Temple Place - Suite 330
+Boston, MA 02111-1307 USA
+
+   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "GNU General Public License," "Funding for
+Free Software," and "Protect Your Freedom--Fight `Look And Feel'" are
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "GNU General Public
+License," "Funding for Free Software," and "Protect Your Freedom--Fight
+`Look And Feel'", and this permission notice, may be included in
+translations approved by the Free Software Foundation instead of in the
+original English.
+
+   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
+Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
+contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+
+INFO-DIR-SECTION Fortran Programming
+START-INFO-DIR-ENTRY
+* g77: (g77).               The GNU Fortran compilation system.
+END-INFO-DIR-ENTRY
+
+
+File: g77.info,  Node: Changes,  Next: Language,  Prev: News,  Up: Top
+
+User-visible Changes
+********************
+
+   This section describes changes to `g77' that are visible to the
+programmers who actually write and maintain Fortran code they compile
+with `g77'.  Information on changes to installation procedures, changes
+to the documentation, and bug fixes is not provided here, unless it is
+likely to affect how users use `g77'.  *Note News About GNU Fortran:
+News, for information on such changes to `g77'.
+
+   To find out about existing bugs and ongoing plans for GNU Fortran,
+retrieve `ftp://alpha.gnu.ai.mit.edu/g77.plan' or, if you cannot do
+that, email <fortran@gnu.ai.mit.edu> asking for a recent copy of the
+GNU Fortran `.plan' file.
+
+In 0.5.21:
+==========
+
+   * When the `-W' option is specified, `gcc', `g77', and other GNU
+     compilers that incorporate the `gcc' back end as modified by
+     `g77', issue a warning about integer division by constant zero.
+
+   * New option `-Wno-globals' disables warnings about "suspicious" use
+     of a name both as a global name and as the implicit name of an
+     intrinsic, and warnings about disagreements over the number or
+     natures of arguments passed to global procedures, or the natures
+     of the procedures themselves.
+
+     The default is to issue such warnings, which are new as of this
+     version of `g77'.
+
+   * New option `-fno-globals' disables diagnostics about potentially
+     fatal disagreements analysis problems, such as disagreements over
+     the number or natures of arguments passed to global procedures, or
+     the natures of those procedures themselves.
+
+     The default is to issue such diagnostics and flag the compilation
+     as unsuccessful.  With this option, the diagnostics are issued as
+     warnings, or, if `-Wno-globals' is specified, are not issued at
+     all.
+
+     This option also disables inlining of global procedures, to avoid
+     compiler crashes resulting from coding errors that these
+     diagnostics normally would identify.
+
+   * Fix `libU77' routines that accept file names to strip trailing
+     spaces from them, for consistency with other implementations.
+
+   * Fix `SIGNAL' intrinsic so it accepts an optional third `Status'
+     argument.
+
+   * Make many changes to `libU77' intrinsics to support existing code
+     more directly.
+
+     Such changes include allowing both subroutine and function forms
+     of many routines, changing `MCLOCK()' and `TIME()' to return
+     `INTEGER(KIND=1)' values, introducing `MCLOCK8()' and `TIME8()' to
+     return `INTEGER(KIND=2)' values, and placing functions that are
+     intended to perform side effects in a new intrinsic group,
+     `badu77'.
+
+   * Add options `-fbadu77-intrinsics-delete',
+     `-fbadu77-intrinsics-hide', and so on.
+
+   * Add `INT2' and `INT8' intrinsics.
+
+   * Add `CPU_TIME' intrinsic.
+
+   * `CTIME' intrinsic now accepts any `INTEGER' argument, not just
+     `INTEGER(KIND=2)'.
+
+In 0.5.20:
+==========
+
+   * The `-fno-typeless-boz' option is now the default.
+
+     This option specifies that non-decimal-radix constants using the
+     prefixed-radix form (such as `Z'1234'') are to be interpreted as
+     `INTEGER(KIND=1)' constants.  Specify `-ftypeless-boz' to cause
+     such constants to be interpreted as typeless.
+
+     (Version 0.5.19 introduced `-fno-typeless-boz' and its inverse.)
+
+     *Note Options Controlling Fortran Dialect: Fortran Dialect Options,
+     for information on the `-ftypeless-boz' option.
+
+   * Options `-ff90-intrinsics-enable' and `-fvxt-intrinsics-enable'
+     now are the defaults.
+
+     Some programs might use names that clash with intrinsic names
+     defined (and now enabled) by these options or by the new `libU77'
+     intrinsics.  Users of such programs might need to compile them
+     differently (using, for example, `-ff90-intrinsics-disable') or,
+     better yet, insert appropriate `EXTERNAL' statements specifying
+     that these names are not intended to be names of intrinsics.
+
+   * The `ALWAYS_FLUSH' macro is no longer defined when building
+     `libf2c', which should result in improved I/O performance,
+     especially over NFS.
+
+     *Note:* If you have code that depends on the behavior of `libf2c'
+     when built with `ALWAYS_FLUSH' defined, you will have to modify
+     `libf2c' accordingly before building it from this and future
+     versions of `g77'.
+
+     *Note Output Assumed To Flush::, for more information.
+
+   * Dave Love's implementation of `libU77' has been added to the
+     version of `libf2c' distributed with and built by `g77'.  `g77'
+     now knows about the routines in this library as intrinsics.
+
+   * New option `-fvxt' specifies that the source file is written in
+     VXT Fortran, instead of GNU Fortran.
+
+     *Note VXT Fortran::, for more information on the constructs
+     recognized when the `-fvxt' option is specified.
+
+   * The `-fvxt-not-f90' option has been deleted, along with its
+     inverse, `-ff90-not-vxt'.
+
+     If you used one of these deleted options, you should re-read the
+     pertinent documentation to determine which options, if any, are
+     appropriate for compiling your code with this version of `g77'.
+
+     *Note Other Dialects::, for more information.
+
+   * The `-fugly' option now issues a warning, as it likely will be
+     removed in a future version.
+
+     (Enabling all the `-fugly-*' options is unlikely to be feasible,
+     or sensible, in the future, so users should learn to specify only
+     those `-fugly-*' options they really need for a particular source
+     file.)
+
+   * The `-fugly-assumed' option, introduced in version 0.5.19, has
+     been changed to better accommodate old and new code.  *Note Ugly
+     Assumed-Size Arrays::, for more information.
+
+   * Related to supporting Alpha (AXP) machines, the `LOC()' intrinsic
+     and `%LOC()' construct now return values of `INTEGER(KIND=0)' type,
+     as defined by the GNU Fortran language.
+
+     This type is wide enough (holds the same number of bits) as the
+     character-pointer type on the machine.
+
+     On most systems, this won't make a noticable difference, whereas
+     on Alphas and other systems with 64-bit pointers, the
+     `INTEGER(KIND=0)' type is equivalent to `INTEGER(KIND=2)' (often
+     referred to as `INTEGER*8') instead of the more common
+     `INTEGER(KIND=1)' (often referred to as `INTEGER*4').
+
+   * Emulate `COMPLEX' arithmetic in the `g77' front end, to avoid bugs
+     in `complex' support in the `gcc' back end.  New option
+     `-fno-emulate-complex' causes `g77' to revert the 0.5.19 behavior.
+
+   * Dummy arguments are no longer assumed to potentially alias
+     (overlap) other dummy arguments or `COMMON' areas when any of
+     these are defined (assigned to) by Fortran code.
+
+     This can result in faster and/or smaller programs when compiling
+     with optimization enabled, though on some systems this effect is
+     observed only when `-fforce-addr' also is specified.
+
+     New options `-falias-check', `-fargument-alias',
+     `-fargument-noalias', and `-fno-argument-noalias-global' control
+     the way `g77' handles potential aliasing.
+
+     *Note Aliasing Assumed To Work::, for detailed information on why
+     the new defaults might result in some programs no longer working
+     the way they did when compiled by previous versions of `g77'.
+
+   * New option `-fugly-assign' specifies that the same memory
+     locations are to be used to hold the values assigned by both
+     statements `I = 3' and `ASSIGN 10 TO I', for example.  (Normally,
+     `g77' uses a separate memory location to hold assigned statement
+     labels.)
+
+     *Note Ugly Assigned Labels::, for more information.
+
+   * `FORMAT' and `ENTRY' statements now are allowed to precede
+     `IMPLICIT NONE' statements.
+
+   * Enable full support of `INTEGER(KIND=2)' (often referred to as
+     `INTEGER*8') available in `libf2c' and `f2c.h' so that `f2c' users
+     may make full use of its features via the `g77' version of `f2c.h'
+     and the `INTEGER(KIND=2)' support routines in the `g77' version of
+     `libf2c'.
+
+   * Improve `g77' driver and `libf2c' so that `g77 -v' yields version
+     information on the library.
+
+   * The `SNGL' and `FLOAT' intrinsics now are specific intrinsics,
+     instead of synonyms for the generic intrinsic `REAL'.
+
+   * New intrinsics have been added.  These are `REALPART', `IMAGPART',
+     `COMPLEX', `LONG', and `SHORT'.
+
+   * A new group of intrinsics, `gnu', has been added to contain the
+     new `REALPART', `IMAGPART', and `COMPLEX' intrinsics.  An old
+     group, `dcp', has been removed.
+
+In 0.5.19:
+==========
+
+   * A temporary kludge option provides bare-bones information on
+     `COMMON' and `EQUIVALENCE' members at debug time.  *Note Options
+     for Code Generation Conventions: Code Gen Options, for information
+     on the `-fdebug-kludge' option.
+
+   * New `-fonetrip' option specifies FORTRAN-66-style one-trip `DO'
+     loops.
+
+   * New `-fno-silent' option causes names of program units to be
+     printed as they are compiled, in a fashion similar to UNIX `f77'
+     and `f2c'.
+
+   * New `-fugly-assumed' option specifies that arrays dimensioned via
+     `DIMENSION X(1)', for example, are to be treated as assumed-size.
+
+   * New `-fno-typeless-boz' option specifies that non-decimal-radix
+     constants using the prefixed-radix form (such as `Z'1234'') are to
+     be interpreted as `INTEGER(KIND=1)' constants.
+
+   * New `-ff66' option is a "shorthand" option that specifies
+     behaviors considered appropriate for FORTRAN 66 programs.
+
+   * New `-ff77' option is a "shorthand" option that specifies
+     behaviors considered appropriate for UNIX `f77' programs.
+
+   * New `-fugly-comma' and `-fugly-logint' options provided to perform
+     some of what `-fugly' used to do.  `-fugly' and `-fno-ugly' are
+     now "shorthand" options, in that they do nothing more than enable
+     (or disable) other `-fugly-*' options.
+
+   * Change code generation for list-directed I/O so it allows for new
+     versions of `libf2c' that might return non-zero status codes for
+     some operations previously assumed to always return zero.
+
+     This change not only affects how `IOSTAT=' variables are set by
+     list-directed I/O, it also affects whether `END=' and `ERR='
+     labels are reached by these operations.
+
+   * Add intrinsic support for new `FTELL' and `FSEEK' procedures in
+     `libf2c'.
+
+   * Add options `--help' and `--version' to the `g77' command, to
+     conform to GNU coding guidelines.  Also add printing of `g77'
+     version number when the `--verbose' (`-v') option is used.
+
+In 0.5.18:
+==========
+
+   * The `BYTE' and `WORD' statements now are supported, to a limited
+     extent.
+
+   * `INTEGER*1', `INTEGER*2', `INTEGER*8', and their `LOGICAL'
+     equivalents, now are supported to a limited extent.  Among the
+     missing elements are complete intrinsic and constant support.
+
+   * Support automatic arrays in procedures.  For example, `REAL A(N)',
+     where `A' is not a dummy argument, specifies that `A' is an
+     automatic array.  The size of `A' is calculated from the value of
+     `N' each time the procedure is called, that amount of space is
+     allocated, and that space is freed when the procedure returns to
+     its caller.
+
+   * Add `-fno-zeros' option, enabled by default, to reduce
+     compile-time CPU and memory usage for code that provides initial
+     zero values for variables and arrays.
+
+   * Introduce three new options that apply to all compilations by
+     `g77'-aware GNU compilers--`-fmove-all-movables',
+     `-freduce-all-givs', and `-frerun-loop-opt'--which can improve the
+     run-time performance of some programs.
+
+   * Replace much of the existing documentation with a single Info
+     document.
+
+   * New option `-fno-second-underscore'.
+
+In 0.5.17:
+==========
+
+   * The `ERF()' and `ERFC()' intrinsics now are generic intrinsics,
+     mapping to `ERF'/`DERF' and `ERFC'/`DERFC', respectively.  *Note:*
+     Use `INTRINSIC ERF,ERFC' in any code that might reference these as
+     generic intrinsics, to improve the likelihood of diagnostics
+     (instead of subtle run-time bugs) when using compilers that don't
+     support these as intrinsics.
+
+   * New option `-Wsurprising'.
+
+   * DO loops with non-`INTEGER' variables now diagnosed only when
+     `-Wsurprising' specified.  Previously, this was diagnosed *unless*
+     `-fpedantic' or `-fugly' was specified.
+
+In 0.5.16:
+==========
+
+   * `libf2c' changed to output a leading zero (0) digit for
+     floating-point values output via list-directed and formatted
+     output (to bring `g77' more into line with many existing Fortran
+     implementations--the ANSI FORTRAN 77 standard leaves this choice
+     to the implementation).
+
+   * `libf2c' no longer built with debugging information intact, making
+     it much smaller.
+
+   * Automatic installation of the `g77' command now works.
+
+   * Diagnostic messages now more informative, a la `gcc', including
+     messages like `In function `foo':' and `In file included from...:'.
+
+   * New group of intrinsics called `unix', including `ABORT', `DERF',
+     `DERFC', `ERF', `ERFC', `EXIT', `FLUSH', `GETARG', `GETENV',
+     `SIGNAL', and `SYSTEM'.
+
+   * `-funix-intrinsics-{delete,hide,disable,enable}' options added.
+
+   * `-fno-underscoring' option added.
+
+   * `--driver' option added to the `g77' command.
+
+   * Support for the `gcc' options `-fident' and `-fno-ident' added.
+
+   * `g77 -v' returns much more version info, making the submission of
+     better bug reports easily.
+
+   * Many improvements to the `g77' command to better fulfill its role
+     as a front-end to the `gcc' driver.  For example, `g77' now
+     recognizes `--verbose' as a verbose way of specifying `-v'.
+
+   * Compiling preprocessed (`*.F' and `*.fpp') files now results in
+     better diagnostics and debugging information, as the
+     source-location info now is passed all the way through the
+     compilation process instead of being lost.
+
+
+File: g77.info,  Node: Language,  Next: Compiler,  Prev: Changes,  Up: Top
+
+The GNU Fortran Language
+************************
+
+   GNU Fortran supports a variety of extensions to, and dialects of,
+the Fortran language.  Its primary base is the ANSI FORTRAN 77
+standard, currently available on the network at
+`http://kumo.swcp.com/fortran/F77_std/f77_std.html' or in
+`ftp://ftp.ast.cam.ac.uk/pub/michael/'.  It offers some extensions that
+are popular among users of UNIX `f77' and `f2c' compilers, some that
+are popular among users of other compilers (such as Digital products),
+some that are popular among users of the newer Fortran 90 standard, and
+some that are introduced by GNU Fortran.
+
+   (If you need a text on Fortran, a few freely available electronic
+references have pointers from `http://www.fortran.com/fortran/Books/'.)
+
+   Part of what defines a particular implementation of a Fortran
+system, such as `g77', is the particular characteristics of how it
+supports types, constants, and so on.  Much of this is left up to the
+implementation by the various Fortran standards and accepted practice
+in the industry.
+
+   The GNU Fortran *language* is described below.  Much of the material
+is organized along the same lines as the ANSI FORTRAN 77 standard
+itself.
+
+   *Note Other Dialects::, for information on features `g77' supports
+that are not part of the GNU Fortran language.
+
+   *Note*: This portion of the documentation definitely needs a lot of
+work!
+
+* Menu:
+
+Relationship to the ANSI FORTRAN 77 standard:
+* Direction of Language Development::  Where GNU Fortran is headed.
+* Standard Support::  Degree of support for the standard.
+
+Extensions to the ANSI FORTRAN 77 standard:
+* Conformance::
+* Notation Used::
+* Terms and Concepts::
+* Characters Lines Sequence::
+* Data Types and Constants::
+* Expressions::
+* Specification Statements::
+* Control Statements::
+* Functions and Subroutines::
+* Scope and Classes of Names::
+
+
+File: g77.info,  Node: Direction of Language Development,  Next: Standard Support,  Up: Language
+
+Direction of Language Development
+=================================
+
+   The purpose of the following description of the GNU Fortran language
+is to promote wide portability of GNU Fortran programs.
+
+   GNU Fortran is an evolving language, due to the fact that `g77'
+itself is in beta test.  Some current features of the language might
+later be redefined as dialects of Fortran supported by `g77' when
+better ways to express these features are added to `g77', for example.
+Such features would still be supported by `g77', but would be available
+only when one or more command-line options were used.
+
+   The GNU Fortran *language* is distinct from the GNU Fortran
+*compilation system* (`g77').
+
+   For example, `g77' supports various dialects of Fortran--in a sense,
+these are languages other than GNU Fortran--though its primary purpose
+is to support the GNU Fortran language, which also is described in its
+documentation and by its implementation.
+
+   On the other hand, non-GNU compilers might offer support for the GNU
+Fortran language, and are encouraged to do so.
+
+   Currently, the GNU Fortran language is a fairly fuzzy object.  It
+represents something of a cross between what `g77' accepts when
+compiling using the prevailing defaults and what this document
+describes as being part of the language.
+
+   Future versions of `g77' are expected to clarify the definition of
+the language in the documentation.  Often, this will mean adding new
+features to the language, in the form of both new documentation and new
+support in `g77'.  However, it might occasionally mean removing a
+feature from the language itself to "dialect" status.  In such a case,
+the documentation would be adjusted to reflect the change, and `g77'
+itself would likely be changed to require one or more command-line
+options to continue supporting the feature.
+
+   The development of the GNU Fortran language is intended to strike a
+balance between:
+
+   * Serving as a mostly-upwards-compatible language from the de facto
+     UNIX Fortran dialect as supported by `f77'.
+
+   * Offering new, well-designed language features.  Attributes of such
+     features include not making existing code any harder to read (for
+     those who might be unaware that the new features are not in use)
+     and not making state-of-the-art compilers take longer to issue
+     diagnostics, among others.
+
+   * Supporting existing, well-written code without gratuitously
+     rejecting non-standard constructs, regardless of the origin of the
+     code (its dialect).
+
+   * Offering default behavior and command-line options to reduce and,
+     where reasonable, eliminate the need for programmers to make any
+     modifications to code that already works in existing production
+     environments.
+
+   * Diagnosing constructs that have different meanings in different
+     systems, languages, and dialects, while offering clear, less
+     ambiguous ways to express each of the different meanings so
+     programmers can change their code appropriately.
+
+   One of the biggest practical challenges for the developers of the
+GNU Fortran language is meeting the sometimes contradictory demands of
+the above items.
+
+   For example, a feature might be widely used in one popular
+environment, but the exact same code that utilizes that feature might
+not work as expected--perhaps it might mean something entirely
+different--in another popular environment.
+
+   Traditionally, Fortran compilers--even portable ones--have solved
+this problem by simply offering the appropriate feature to users of the
+respective systems.  This approach treats users of various Fortran
+systems and dialects as remote "islands", or camps, of programmers, and
+assume that these camps rarely come into contact with each other (or,
+especially, with each other's code).
+
+   Project GNU takes a radically different approach to software and
+language design, in that it assumes that users of GNU software do not
+necessarily care what kind of underlying system they are using,
+regardless of whether they are using software (at the user-interface
+level) or writing it (for example, writing Fortran or C code).
+
+   As such, GNU users rarely need consider just what kind of underlying
+hardware (or, in many cases, operating system) they are using at any
+particular time.  They can use and write software designed for a
+general-purpose, widely portable, heteregenous environment--the GNU
+environment.
+
+   In line with this philosophy, GNU Fortran must evolve into a product
+that is widely ported and portable not only in the sense that it can be
+successfully built, installed, and run by users, but in the larger
+sense that its users can use it in the same way, and expect largely the
+same behaviors from it, regardless of the kind of system they are using
+at any particular time.
+
+   This approach constrains the solutions `g77' can use to resolve
+conflicts between various camps of Fortran users.  If these two camps
+disagree about what a particular construct should mean, `g77' cannot
+simply be changed to treat that particular construct as having one
+meaning without comment (such as a warning), lest the users expecting
+it to have the other meaning are unpleasantly surprised that their code
+misbehaves when executed.
+
+   The use of the ASCII backslash character in character constants is
+an excellent (and still somewhat unresolved) example of this kind of
+controversy.  *Note Backslash in Constants::.  Other examples are
+likely to arise in the future, as `g77' developers strive to improve
+its ability to accept an ever-wider variety of existing Fortran code
+without requiring significant modifications to said code.
+
+   Development of GNU Fortran is further constrained by the desire to
+avoid requiring programmers to change their code.  This is important
+because it allows programmers, administrators, and others to more
+faithfully evaluate and validate `g77' (as an overall product and as
+new versions are distributed) without having to support multiple
+versions of their programs so that they continue to work the same way
+on their existing systems (non-GNU perhaps, but possibly also earlier
+versions of `g77').
+
+
+File: g77.info,  Node: Standard Support,  Next: Conformance,  Prev: Direction of Language Development,  Up: Language
+
+ANSI FORTRAN 77 Standard Support
+================================
+
+   GNU Fortran supports ANSI FORTRAN 77 with the following caveats.  In
+summary, the only ANSI FORTRAN 77 features `g77' doesn't support are
+those that are probably rarely used in actual code, some of which are
+explicitly disallowed by the Fortran 90 standard.
+
+* Menu:
+
+* No Passing External Assumed-length::  CHAR*(*) CFUNC restriction.
+* No Passing Dummy Assumed-length::     CHAR*(*) CFUNC restriction.
+* No Pathological Implied-DO::          No `((..., I=...), I=...)'.
+* No Useless Implied-DO::               No `(A, I=1, 1)'.
+
+
+File: g77.info,  Node: No Passing External Assumed-length,  Next: No Passing Dummy Assumed-length,  Up: Standard Support
+
+No Passing External Assumed-length
+----------------------------------
+
+   `g77' disallows passing of an external procedure as an actual
+argument if the procedure's type is declared `CHARACTER*(*)'.  For
+example:
+
+     CHARACTER*(*) CFUNC
+     EXTERNAL CFUNC
+     CALL FOO(CFUNC)
+     END
+
+It isn't clear whether the standard considers this conforming.
+
+
+File: g77.info,  Node: No Passing Dummy Assumed-length,  Next: No Pathological Implied-DO,  Prev: No Passing External Assumed-length,  Up: Standard Support
+
+No Passing Dummy Assumed-length
+-------------------------------
+
+   `g77' disallows passing of a dummy procedure as an actual argument
+if the procedure's type is declared `CHARACTER*(*)'.
+
+     SUBROUTINE BAR(CFUNC)
+     CHARACTER*(*) CFUNC
+     EXTERNAL CFUNC
+     CALL FOO(CFUNC)
+     END
+
+It isn't clear whether the standard considers this conforming.
+
+
+File: g77.info,  Node: No Pathological Implied-DO,  Next: No Useless Implied-DO,  Prev: No Passing Dummy Assumed-length,  Up: Standard Support
+
+No Pathological Implied-DO
+--------------------------
+
+   The `DO' variable for an implied-`DO' construct in a `DATA'
+statement may not be used as the `DO' variable for an outer
+implied-`DO' construct.  For example, this fragment is disallowed by
+`g77':
+
+     DATA ((A(I, I), I= 1, 10), I= 1, 10) /.../
+
+This also is disallowed by Fortran 90, as it offers no additional
+capabilities and would have a variety of possible meanings.
+
+   Note that it is *very* unlikely that any production Fortran code
+tries to use this unsupported construct.
+
+
+File: g77.info,  Node: No Useless Implied-DO,  Prev: No Pathological Implied-DO,  Up: Standard Support
+
+No Useless Implied-DO
+---------------------
+
+   An array element initializer in an implied-`DO' construct in a
+`DATA' statement must contain at least one reference to the `DO'
+variables of each outer implied-`DO' construct.  For example, this
+fragment is disallowed by `g77':
+
+     DATA (A, I= 1, 1) /1./
+
+This also is disallowed by Fortran 90, as FORTRAN 77's more permissive
+requirements offer no additional capabilities.  However, `g77' doesn't
+necessarily diagnose all cases where this requirement is not met.
+
+   Note that it is *very* unlikely that any production Fortran code
+tries to use this unsupported construct.
+
+
+File: g77.info,  Node: Conformance,  Next: Notation Used,  Prev: Standard Support,  Up: Language
+
+Conformance
+===========
+
+   (The following information augments or overrides the information in
+Section 1.4 of ANSI X3.9-1978 FORTRAN 77 in specifying the GNU Fortran
+language.  Chapter 1 of that document otherwise serves as the basis for
+the relevant aspects of GNU Fortran.)
+
+   The definition of the GNU Fortran language is akin to that of the
+ANSI FORTRAN 77 language in that it does not generally require
+conforming implementations to diagnose cases where programs do not
+conform to the language.
+
+   However, `g77' as a compiler is being developed in a way that is
+intended to enable it to diagnose such cases in an easy-to-understand
+manner.
+
+   A program that conforms to the GNU Fortran language should, when
+compiled, linked, and executed using a properly installed `g77' system,
+perform as described by the GNU Fortran language definition.  Reasons
+for different behavior include, among others:
+
+   * Use of resources (memory--heap, stack, and so on; disk space; CPU
+     time; etc.) exceeds those of the system.
+
+   * Range and/or precision of calculations required by the program
+     exceeds that of the system.
+
+   * Excessive reliance on behaviors that are system-dependent
+     (non-portable Fortran code).
+
+   * Bugs in the program.
+
+   * Bug in `g77'.
+
+   * Bugs in the system.
+
+   Despite these "loopholes", the availability of a clear specification
+of the language of programs submitted to `g77', as this document is
+intended to provide, is considered an important aspect of providing a
+robust, clean, predictable Fortran implementation.
+
+   The definition of the GNU Fortran language, while having no special
+legal status, can therefore be viewed as a sort of contract, or
+agreement.  This agreement says, in essence, "if you write a program in
+this language, and run it in an environment (such as a `g77' system)
+that supports this language, the program should behave in a largely
+predictable way".
+
+
+File: g77.info,  Node: Notation Used,  Next: Terms and Concepts,  Prev: Conformance,  Up: Language
+
+Notation Used in This Chapter
+=============================
+
+   (The following information augments or overrides the information in
+Section 1.5 of ANSI X3.9-1978 FORTRAN 77 in specifying the GNU Fortran
+language.  Chapter 1 of that document otherwise serves as the basis for
+the relevant aspects of GNU Fortran.)
+
+   In this chapter, "must" denotes a requirement, "may" denotes
+permission, and "must not" and "may not" denote prohibition.  Terms
+such as "might", "should", and "can" generally add little or nothing in
+the way of weight to the GNU Fortran language itself, but are used to
+explain or illustrate the language.
+
+   For example:
+
+     ``The `FROBNITZ' statement must precede all executable
+     statements in a program unit, and may not specify any dummy
+     arguments.  It may specify local or common variables and arrays.
+     Its use should be limited to portions of the program designed to
+     be non-portable and system-specific, because it might cause the
+     containing program unit to behave quite differently on different
+     systems.''
+
+   Insofar as the GNU Fortran language is specified, the requirements
+and permissions denoted by the above sample statement are limited to
+the placement of the statement and the kinds of things it may specify.
+The rest of the statement--the content regarding non-portable portions
+of the program and the differing behavior of program units containing
+the `FROBNITZ' statement--does not pertain the GNU Fortran language
+itself.  That content offers advice and warnings about the `FROBNITZ'
+statement.
+
+   *Remember:* The GNU Fortran language definition specifies both what
+constitutes a valid GNU Fortran program and how, given such a program,
+a valid GNU Fortran implementation is to interpret that program.
+
+   It is *not* incumbent upon a valid GNU Fortran implementation to
+behave in any particular way, any consistent way, or any predictable
+way when it is asked to interpret input that is *not* a valid GNU
+Fortran program.
+
+   Such input is said to have "undefined" behavior when interpreted by
+a valid GNU Fortran implementation, though an implementation may choose
+to specify behaviors for some cases of inputs that are not valid GNU
+Fortran programs.
+
+   Other notation used herein is that of the GNU texinfo format, which
+is used to generate printed hardcopy, on-line hypertext (Info), and
+on-line HTML versions, all from a single source document.  This
+notation is used as follows:
+
+   * Keywords defined by the GNU Fortran language are shown in
+     uppercase, as in: `COMMON', `INTEGER', and `BLOCK DATA'.
+
+     Note that, in practice, many Fortran programs are written in
+     lowercase--uppercase is used in this manual as a means to readily
+     distinguish keywords and sample Fortran-related text from the
+     prose in this document.
+
+   * Portions of actual sample program, input, or output text look like
+     this: `Actual program text'.
+
+     Generally, uppercase is used for all Fortran-specific and
+     Fortran-related text, though this does not always include literal
+     text within Fortran code.
+
+     For example: `PRINT *, 'My name is Bob''.
+
+   * A metasyntactic variable--that is, a name used in this document to
+     serve as a placeholder for whatever text is used by the user or
+     programmer-appears as shown in the following example:
+
+     "The `INTEGER IVAR' statement specifies that IVAR is a variable or
+     array of type `INTEGER'."
+
+     In the above example, any valid text may be substituted for the
+     metasyntactic variable IVAR to make the statement apply to a
+     specific instance, as long as the same text is substituted for
+     *both* occurrences of IVAR.
+
+   * Ellipses ("...") are used to indicate further text that is either
+     unimportant or expanded upon further, elsewhere.
+
+   * Names of data types are in the style of Fortran 90, in most cases.
+
+     *Note Kind Notation::, for information on the relationship between
+     Fortran 90 nomenclature (such as `INTEGER(KIND=1)') and the more
+     traditional, less portably concise nomenclature (such as
+     `INTEGER*4').
+
+
+File: g77.info,  Node: Terms and Concepts,  Next: Characters Lines Sequence,  Prev: Notation Used,  Up: Language
+
+Fortran Terms and Concepts
+==========================
+
+   (The following information augments or overrides the information in
+Chapter 2 of ANSI X3.9-1978 FORTRAN 77 in specifying the GNU Fortran
+language.  Chapter 2 of that document otherwise serves as the basis for
+the relevant aspects of GNU Fortran.)
+
+* Menu:
+
+* Syntactic Items::
+* Statements Comments Lines::
+* Scope of Names and Labels::
+
+
+File: g77.info,  Node: Syntactic Items,  Next: Statements Comments Lines,  Up: Terms and Concepts
+
+Syntactic Items
+---------------
+
+   (Corresponds to Section 2.2 of ANSI X3.9-1978 FORTRAN 77.)
+
+   In GNU Fortran, a symbolic name is at least one character long, and
+has no arbitrary upper limit on length.  However, names of entities
+requiring external linkage (such as external functions, external
+subroutines, and `COMMON' areas) might be restricted to some arbitrary
+length by the system.  Such a restriction is no more constrained than
+that of one through six characters.
+
+   Underscores (`_') are accepted in symbol names after the first
+character (which must be a letter).
+
+
+File: g77.info,  Node: Statements Comments Lines,  Next: Scope of Names and Labels,  Prev: Syntactic Items,  Up: Terms and Concepts
+
+Statements, Comments, and Lines
+-------------------------------
+
+   (Corresponds to Section 2.3 of ANSI X3.9-1978 FORTRAN 77.)
+
+   Use of an exclamation point (`!') to begin a trailing comment (a
+comment that extends to the end of the same source line) is permitted
+under the following conditions:
+
+   * The exclamation point does not appear in column 6.  Otherwise, it
+     is treated as an indicator of a continuation line.
+
+   * The exclamation point appears outside a character or hollerith
+     constant.  Otherwise, the exclamation point is considered part of
+     the constant.
+
+   * The exclamation point appears to the left of any other possible
+     trailing comment.  That is, a trailing comment may contain
+     exclamation points in their commentary text.
+
+   Use of a semicolon (`;') as a statement separator is permitted under
+the following conditions:
+
+   * The semicolon appears outside a character or hollerith constant.
+     Otherwise, the semicolon is considered part of the constant.
+
+   * The semicolon appears to the left of a trailing comment.
+     Otherwise, the semicolon is considered part of that comment.
+
+   * Neither a logical `IF' statement nor a non-construct `WHERE'
+     statement (a Fortran 90 feature) may be followed (in the same,
+     possibly continued, line) by a semicolon used as a statement
+     separator.
+
+     This restriction avoids the confusion that can result when reading
+     a line such as:
+
+          IF (VALIDP) CALL FOO; CALL BAR
+
+     Some readers might think the `CALL BAR' is executed only if
+     `VALIDP' is `.TRUE.', while others might assume its execution is
+     unconditional.
+
+     (At present, `g77' does not diagnose code that violates this
+     restriction.)
+
+
+File: g77.info,  Node: Scope of Names and Labels,  Prev: Statements Comments Lines,  Up: Terms and Concepts
+
+Scope of Symbolic Names and Statement Labels
+--------------------------------------------
+
+   (Corresponds to Section 2.9 of ANSI X3.9-1978 FORTRAN 77.)
+
+   Included in the list of entities that have a scope of a program unit
+are construct names (a Fortran 90 feature).  *Note Construct Names::,
+for more information.
+
+
+File: g77.info,  Node: Characters Lines Sequence,  Next: Data Types and Constants,  Prev: Terms and Concepts,  Up: Language
+
+Characters, Lines, and Execution Sequence
+=========================================
+
+   (The following information augments or overrides the information in
+Chapter 3 of ANSI X3.9-1978 FORTRAN 77 in specifying the GNU Fortran
+language.  Chapter 3 of that document otherwise serves as the basis for
+the relevant aspects of GNU Fortran.)
+
+* Menu:
+
+* Character Set::
+* Lines::
+* Continuation Line::
+* Statements::
+* Statement Labels::
+* Order::
+* INCLUDE::
+
+
+File: g77.info,  Node: Character Set,  Next: Lines,  Up: Characters Lines Sequence
+
+GNU Fortran Character Set
+-------------------------
+
+   (Corresponds to Section 3.1 of ANSI X3.9-1978 FORTRAN 77.)
+
+   Letters include uppercase letters (the twenty-six characters of the
+English alphabet) and lowercase letters (their lowercase equivalent).
+Generally, lowercase letters may be used in place of uppercase letters,
+though in character and hollerith constants, they are distinct.
+
+   Special characters include:
+
+   * Semicolon (`;')
+
+   * Exclamation point (`!')
+
+   * Double quote (`"')
+
+   * Backslash (`\')
+
+   * Question mark (`?')
+
+   * Hash mark (`#')
+
+   * Ampersand (`&')
+
+   * Percent sign (`%')
+
+   * Underscore (`_')
+
+   * Open angle (`<')
+
+   * Close angle (`>')
+
+   * The FORTRAN 77 special characters (<SPC>, `=', `+', `-', `*', `/',
+     `(', `)', `,', `.', `$', `'', and `:')
+
+   Note that this document refers to <SPC> as "space", while X3.9-1978
+FORTRAN 77 refers to it as "blank".
+
+
+File: g77.info,  Node: Lines,  Next: Continuation Line,  Prev: Character Set,  Up: Characters Lines Sequence
+
+Lines
+-----
+
+   (Corresponds to Section 3.2 of ANSI X3.9-1978 FORTRAN 77.)
+
+   The way a Fortran compiler views source files depends entirely on the
+implementation choices made for the compiler, since those choices are
+explicitly left to the implementation by the published Fortran
+standards.
+
+   The GNU Fortran language mandates a view applicable to UNIX-like
+text files--files that are made up of an arbitrary number of lines,
+each with an arbitrary number of characters (sometimes called
+stream-based files).
+
+   This view does not apply to types of files that are specified as
+having a particular number of characters on every single line (sometimes
+referred to as record-based files).
+
+   Because a "line in a program unit is a sequence of 72 characters",
+to quote X3.9-1978, the GNU Fortran language specifies that a
+stream-based text file is translated to GNU Fortran lines as follows:
+
+   * A newline in the file is the character that represents the end of
+     a line of text to the underlying system.  For example, on
+     ASCII-based systems, a newline is the <NL> character, which has
+     ASCII value 12 (decimal).
+
+   * Each newline in the file serves to end the line of text that
+     precedes it (and that does not contain a newline).
+
+   * The end-of-file marker (`EOF') also serves to end the line of text
+     that precedes it (and that does not contain a newline).
+
+   * Any line of text that is shorter than 72 characters is padded to
+     that length with spaces (called "blanks" in the standard).
+
+   * Any line of text that is longer than 72 characters is truncated to
+     that length, but the truncated remainder must consist entirely of
+     spaces.
+
+   * Characters other than newline and the GNU Fortran character set
+     are invalid.
+
+   For the purposes of the remainder of this description of the GNU
+Fortran language, the translation described above has already taken
+place, unless otherwise specified.
+
+   The result of the above translation is that the source file appears,
+in terms of the remainder of this description of the GNU Fortran
+language, as if it had an arbitrary number of 72-character lines, each
+character being among the GNU Fortran character set.
+
+   For example, if the source file itself has two newlines in a row,
+the second newline becomes, after the above translation, a single line
+containing 72 spaces.
+
+
+File: g77.info,  Node: Continuation Line,  Next: Statements,  Prev: Lines,  Up: Characters Lines Sequence
+
+Continuation Line
+-----------------
+
+   (Corresponds to Section 3.2.3 of ANSI X3.9-1978 FORTRAN 77.)
+
+   A continuation line is any line that both
+
+   * Contains a continuation character, and
+
+   * Contains only spaces in columns 1 through 5
+
+   A continuation character is any character of the GNU Fortran
+character set other than space (<SPC>) or zero (`0') in column 6, or a
+digit (`0' through `9') in column 7 through 72 of a line that has only
+spaces to the left of that digit.
+
+   The continuation character is ignored as far as the content of the
+statement is concerned.
+
+   The GNU Fortran language places no limit on the number of
+continuation lines in a statement.  In practice, the limit depends on a
+variety of factors, such as available memory, statement content, and so
+on, but no GNU Fortran system may impose an arbitrary limit.
+
+
+File: g77.info,  Node: Statements,  Next: Statement Labels,  Prev: Continuation Line,  Up: Characters Lines Sequence
+
+Statements
+----------
+
+   (Corresponds to Section 3.3 of ANSI X3.9-1978 FORTRAN 77.)
+
+   Statements may be written using an arbitrary number of continuation
+lines.
+
+   Statements may be separated using the semicolon (`;'), except that
+the logical `IF' and non-construct `WHERE' statements may not be
+separated from subsequent statements using only a semicolon as
+statement separator.
+
+   The `END PROGRAM', `END SUBROUTINE', `END FUNCTION', and `END BLOCK
+DATA' statements are alternatives to the `END' statement.  These
+alternatives may be written as normal statements--they are not subject
+to the restrictions of the `END' statement.
+
+   However, no statement other than `END' may have an initial line that
+appears to be an `END' statement--even `END PROGRAM', for example, must
+not be written as:
+
+           END
+          &PROGRAM
+
+
+File: g77.info,  Node: Statement Labels,  Next: Order,  Prev: Statements,  Up: Characters Lines Sequence
+
+Statement Labels
+----------------
+
+   (Corresponds to Section 3.4 of ANSI X3.9-1978 FORTRAN 77.)
+
+   A statement separated from its predecessor via a semicolon may be
+labeled as follows:
+
+   * The semicolon is followed by the label for the statement, which in
+     turn follows the label.
+
+   * The label must be no more than five digits in length.
+
+   * The first digit of the label for the statement is not the first
+     non-space character on a line.  Otherwise, that character is
+     treated as a continuation character.
+
+   A statement may have only one label defined for it.
+
+
+File: g77.info,  Node: Order,  Next: INCLUDE,  Prev: Statement Labels,  Up: Characters Lines Sequence
+
+Order of Statements and Lines
+-----------------------------
+
+   (Corresponds to Section 3.5 of ANSI X3.9-1978 FORTRAN 77.)
+
+   Generally, `DATA' statements may precede executable statements.
+However, specification statements pertaining to any entities
+initialized by a `DATA' statement must precede that `DATA' statement.
+For example, after `DATA I/1/', `INTEGER I' is not permitted, but
+`INTEGER J' is permitted.
+
+   The last line of a program unit may be an `END' statement, or may be:
+
+   * An `END PROGRAM' statement, if the program unit is a main program.
+
+   * An `END SUBROUTINE' statement, if the program unit is a subroutine.
+
+   * An `END FUNCTION' statement, if the program unit is a function.
+
+   * An `END BLOCK DATA' statement, if the program unit is a block data.
+
+
+File: g77.info,  Node: INCLUDE,  Prev: Order,  Up: Characters Lines Sequence
+
+Including Source Text
+---------------------
+
+   Additional source text may be included in the processing of the
+source file via the `INCLUDE' directive:
+
+     INCLUDE FILENAME
+
+The source text to be included is identified by FILENAME, which is a
+literal GNU Fortran character constant.  The meaning and interpretation
+of FILENAME depends on the implementation, but typically is a filename.
+
+   (`g77' treats it as a filename that it searches for in the current
+directory and/or directories specified via the `-I' command-line
+option.)
+
+   The effect of the `INCLUDE' directive is as if the included text
+directly replaced the directive in the source file prior to
+interpretation of the program.  Included text may itself use `INCLUDE'.
+The depth of nested `INCLUDE' references depends on the implementation,
+but typically is a positive integer.
+
+   This virtual replacement treats the statements and `INCLUDE'
+directives in the included text as syntactically distinct from those in
+the including text.
+
+   Therefore, the first non-comment line of the included text must not
+be a continuation line.  The included text must therefore have, after
+the non-comment lines, either an initial line (statement), an `INCLUDE'
+directive, or nothing (the end of the included text).
+
+   Similarly, the including text may end the `INCLUDE' directive with a
+semicolon or the end of the line, but it cannot follow an `INCLUDE'
+directive at the end of its line with a continuation line.  Thus, the
+last statement in an included text may not be continued.
+
+   Any statements between two `INCLUDE' directives on the same line are
+treated as if they appeared in between the respective included texts.
+For example:
+
+     INCLUDE 'A'; PRINT *, 'B'; INCLUDE 'C'; END PROGRAM
+
+If the text included by `INCLUDE 'A'' constitutes a `PRINT *, 'A''
+statement and the text included by `INCLUDE 'C'' constitutes a `PRINT
+*, 'C'' statement, then the output of the above sample program would be
+
+     A
+     B
+     C
+
+(with suitable allowances for how an implementation defines its
+handling of output).
+
+   Included text must not include itself directly or indirectly,
+regardless of whether the FILENAME used to reference the text is the
+same.
+
+   Note that `INCLUDE' is *not* a statement.  As such, it is neither a
+non-executable or executable statement.  However, if the text it
+includes constitutes one or more executable statements, then the
+placement of `INCLUDE' is subject to effectively the same restrictions
+as those on executable statements.
+
+   An `INCLUDE' directive may be continued across multiple lines as if
+it were a statement.  This permits long names to be used for FILENAME.
+
+
+File: g77.info,  Node: Data Types and Constants,  Next: Expressions,  Prev: Characters Lines Sequence,  Up: Language
+
+Data Types and Constants
+========================
+
+   (The following information augments or overrides the information in
+Chapter 4 of ANSI X3.9-1978 FORTRAN 77 in specifying the GNU Fortran
+language.  Chapter 4 of that document otherwise serves as the basis for
+the relevant aspects of GNU Fortran.)
+
+   To more concisely express the appropriate types for entities, this
+document uses the more concise Fortran 90 nomenclature such as
+`INTEGER(KIND=1)' instead of the more traditional, but less portably
+concise, byte-size-based nomenclature such as `INTEGER*4', wherever
+reasonable.
+
+   When referring to generic types--in contexts where the specific
+precision and range of a type are not important--this document uses the
+generic type names `INTEGER', `LOGICAL', `REAL', `COMPLEX', and
+`CHARACTER'.
+
+   In some cases, the context requires specification of a particular
+type.  This document uses the `KIND=' notation to accomplish this
+throughout, sometimes supplying the more traditional notation for
+clarification, though the traditional notation might not work the same
+way on all GNU Fortran implementations.
+
+   Use of `KIND=' makes this document more concise because `g77' is
+able to define values for `KIND=' that have the same meanings on all
+systems, due to the way the Fortran 90 standard specifies these values
+are to be used.
+
+   (In particular, that standard permits an implementation to
+arbitrarily assign nonnegative values.  There are four distinct sets of
+assignments: one to the `CHARACTER' type; one to the `INTEGER' type;
+one to the `LOGICAL' type; and the fourth to both the `REAL' and
+`COMPLEX' types.  Implementations are free to assign these values in
+any order, leave gaps in the ordering of assignments, and assign more
+than one value to a representation.)
+
+   This makes `KIND=' values superior to the values used in
+non-standard statements such as `INTEGER*4', because the meanings of
+the values in those statements vary from machine to machine, compiler
+to compiler, even operating system to operating system.
+
+   However, use of `KIND=' is *not* generally recommended when writing
+portable code (unless, for example, the code is going to be compiled
+only via `g77', which is a widely ported compiler).  GNU Fortran does
+not yet have adequate language constructs to permit use of `KIND=' in a
+fashion that would make the code portable to Fortran 90
+implementations; and, this construct is known to *not* be accepted by
+many popular FORTRAN 77 implementations, so it cannot be used in code
+that is to be ported to those.
+
+   The distinction here is that this document is able to use specific
+values for `KIND=' to concisely document the types of various
+operations and operands.
+
+   A Fortran program should use the FORTRAN 77 designations for the
+appropriate GNU Fortran types--such as `INTEGER' for `INTEGER(KIND=1)',
+`REAL' for `REAL(KIND=1)', and `DOUBLE COMPLEX' for
+`COMPLEX(KIND=2)'--and, where no such designations exist, make use of
+appropriate techniques (preprocessor macros, parameters, and so on) to
+specify the types in a fashion that may be easily adjusted to suit each
+particular implementation to which the program is ported.  (These types
+generally won't need to be adjusted for ports of `g77'.)
+
+   Further details regarding GNU Fortran data types and constants are
+provided below.
+
+* Menu:
+
+* Types::
+* Constants::
+* Integer Type::
+* Character Type::
+
+
+File: g77.info,  Node: Types,  Next: Constants,  Up: Data Types and Constants
+
+Data Types
+----------
+
+   (Corresponds to Section 4.1 of ANSI X3.9-1978 FORTRAN 77.)
+
+   GNU Fortran supports these types:
+
+  1. Integer (generic type `INTEGER')
+
+  2. Real (generic type `REAL')
+
+  3. Double precision
+
+  4. Complex (generic type `COMPLEX')
+
+  5. Logical (generic type `LOGICAL')
+
+  6. Character (generic type `CHARACTER')
+
+  7. Double Complex
+
+   (The types numbered 1 through 6 above are standard FORTRAN 77 types.)
+
+   The generic types shown above are referred to in this document using
+only their generic type names.  Such references usually indicate that
+any specific type (kind) of that generic type is valid.
+
+   For example, a context described in this document as accepting the
+`COMPLEX' type also is likely to accept the `DOUBLE COMPLEX' type.
+
+   The GNU Fortran language supports three ways to specify a specific
+kind of a generic type.
+
+* Menu:
+
+* Double Notation::  As in `DOUBLE COMPLEX'.
+* Star Notation::    As in `INTEGER*4'.
+* Kind Notation::    As in `INTEGER(KIND=1)'.
+

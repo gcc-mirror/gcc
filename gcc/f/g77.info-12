@@ -1,0 +1,1443 @@
+This is Info file g77.info, produced by Makeinfo version 1.68 from the
+input file g77.texi.
+
+   This file explains how to use the GNU Fortran system.
+
+   Published by the Free Software Foundation 59 Temple Place - Suite 330
+Boston, MA 02111-1307 USA
+
+   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "GNU General Public License," "Funding for
+Free Software," and "Protect Your Freedom--Fight `Look And Feel'" are
+included exactly as in the original, and provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "GNU General Public
+License," "Funding for Free Software," and "Protect Your Freedom--Fight
+`Look And Feel'", and this permission notice, may be included in
+translations approved by the Free Software Foundation instead of in the
+original English.
+
+   Contributed by James Craig Burley (<burley@gnu.ai.mit.edu>).
+Inspired by a first pass at translating `g77-0.5.16/f/DOC' that was
+contributed to Craig by David Ronis (<ronis@onsager.chem.mcgill.ca>).
+
+INFO-DIR-SECTION Fortran Programming
+START-INFO-DIR-ENTRY
+* g77: (g77).               The GNU Fortran compilation system.
+END-INFO-DIR-ENTRY
+
+
+File: g77.info,  Node: JIBSet Intrinsic,  Next: JIDiM Intrinsic,  Prev: JIBits Intrinsic,  Up: Other Intrinsics
+
+JIBSet Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIBSet' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JIDiM Intrinsic,  Next: JIDInt Intrinsic,  Prev: JIBSet Intrinsic,  Up: Other Intrinsics
+
+JIDiM Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIDiM' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JIDInt Intrinsic,  Next: JIDNnt Intrinsic,  Prev: JIDiM Intrinsic,  Up: Other Intrinsics
+
+JIDInt Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIDInt' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JIDNnt Intrinsic,  Next: JIEOr Intrinsic,  Prev: JIDInt Intrinsic,  Up: Other Intrinsics
+
+JIDNnt Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIDNnt' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JIEOr Intrinsic,  Next: JIFix Intrinsic,  Prev: JIDNnt Intrinsic,  Up: Other Intrinsics
+
+JIEOr Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIEOr' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JIFix Intrinsic,  Next: JInt Intrinsic,  Prev: JIEOr Intrinsic,  Up: Other Intrinsics
+
+JIFix Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIFix' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JInt Intrinsic,  Next: JIOr Intrinsic,  Prev: JIFix Intrinsic,  Up: Other Intrinsics
+
+JInt Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JInt' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JIOr Intrinsic,  Next: JIQint Intrinsic,  Prev: JInt Intrinsic,  Up: Other Intrinsics
+
+JIOr Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIOr' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JIQint Intrinsic,  Next: JIQNnt Intrinsic,  Prev: JIOr Intrinsic,  Up: Other Intrinsics
+
+JIQint Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIQint' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JIQNnt Intrinsic,  Next: JIShft Intrinsic,  Prev: JIQint Intrinsic,  Up: Other Intrinsics
+
+JIQNnt Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIQNnt' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JIShft Intrinsic,  Next: JIShftC Intrinsic,  Prev: JIQNnt Intrinsic,  Up: Other Intrinsics
+
+JIShft Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIShft' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JIShftC Intrinsic,  Next: JISign Intrinsic,  Prev: JIShft Intrinsic,  Up: Other Intrinsics
+
+JIShftC Intrinsic
+.................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JIShftC' to use this name for
+an external procedure.
+
+
+File: g77.info,  Node: JISign Intrinsic,  Next: JMax0 Intrinsic,  Prev: JIShftC Intrinsic,  Up: Other Intrinsics
+
+JISign Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JISign' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JMax0 Intrinsic,  Next: JMax1 Intrinsic,  Prev: JISign Intrinsic,  Up: Other Intrinsics
+
+JMax0 Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JMax0' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JMax1 Intrinsic,  Next: JMin0 Intrinsic,  Prev: JMax0 Intrinsic,  Up: Other Intrinsics
+
+JMax1 Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JMax1' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JMin0 Intrinsic,  Next: JMin1 Intrinsic,  Prev: JMax1 Intrinsic,  Up: Other Intrinsics
+
+JMin0 Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JMin0' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JMin1 Intrinsic,  Next: JMod Intrinsic,  Prev: JMin0 Intrinsic,  Up: Other Intrinsics
+
+JMin1 Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JMin1' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JMod Intrinsic,  Next: JNInt Intrinsic,  Prev: JMin1 Intrinsic,  Up: Other Intrinsics
+
+JMod Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JMod' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JNInt Intrinsic,  Next: JNot Intrinsic,  Prev: JMod Intrinsic,  Up: Other Intrinsics
+
+JNInt Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JNInt' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JNot Intrinsic,  Next: JZExt Intrinsic,  Prev: JNInt Intrinsic,  Up: Other Intrinsics
+
+JNot Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JNot' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: JZExt Intrinsic,  Next: Kill Intrinsic (function),  Prev: JNot Intrinsic,  Up: Other Intrinsics
+
+JZExt Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL JZExt' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: Kill Intrinsic (function),  Next: Link Intrinsic (function),  Prev: JZExt Intrinsic,  Up: Other Intrinsics
+
+Kill Intrinsic (function)
+.........................
+
+     Kill(PID, SIGNAL)
+
+Kill: `INTEGER(KIND=1)' function.
+
+PID: `INTEGER'; scalar; INTENT(IN).
+
+SIGNAL: `INTEGER'; scalar; INTENT(IN).
+
+Intrinsic groups: `badu77'.
+
+Description:
+
+   Sends the signal specified by SIGNAL to the process PID.  Returns 0
+on success or a non-zero error code.  See `kill(2)'.
+
+   Due to the side effects performed by this intrinsic, the function
+form is not recommended.
+
+   For information on other intrinsics with the same name: *Note Kill
+Intrinsic (subroutine)::.
+
+
+File: g77.info,  Node: Link Intrinsic (function),  Next: QAbs Intrinsic,  Prev: Kill Intrinsic (function),  Up: Other Intrinsics
+
+Link Intrinsic (function)
+.........................
+
+     Link(PATH1, PATH2)
+
+Link: `INTEGER(KIND=1)' function.
+
+PATH1: `CHARACTER'; scalar; INTENT(IN).
+
+PATH2: `CHARACTER'; scalar; INTENT(IN).
+
+Intrinsic groups: `badu77'.
+
+Description:
+
+   Makes a (hard) link from file PATH1 to PATH2.  A null character
+(`CHAR(0)') marks the end of the names in PATH1 and PATH2--otherwise,
+trailing blanks in PATH1 and PATH2 are ignored.  Returns 0 on success
+or a non-zero error code.  See `link(2)'.
+
+   Due to the side effects performed by this intrinsic, the function
+form is not recommended.
+
+   For information on other intrinsics with the same name: *Note Link
+Intrinsic (subroutine)::.
+
+
+File: g77.info,  Node: QAbs Intrinsic,  Next: QACos Intrinsic,  Prev: Link Intrinsic (function),  Up: Other Intrinsics
+
+QAbs Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QAbs' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QACos Intrinsic,  Next: QACosD Intrinsic,  Prev: QAbs Intrinsic,  Up: Other Intrinsics
+
+QACos Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QACos' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QACosD Intrinsic,  Next: QASin Intrinsic,  Prev: QACos Intrinsic,  Up: Other Intrinsics
+
+QACosD Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QACosD' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QASin Intrinsic,  Next: QASinD Intrinsic,  Prev: QACosD Intrinsic,  Up: Other Intrinsics
+
+QASin Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QASin' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QASinD Intrinsic,  Next: QATan Intrinsic,  Prev: QASin Intrinsic,  Up: Other Intrinsics
+
+QASinD Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QASinD' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QATan Intrinsic,  Next: QATan2 Intrinsic,  Prev: QASinD Intrinsic,  Up: Other Intrinsics
+
+QATan Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QATan' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QATan2 Intrinsic,  Next: QATan2D Intrinsic,  Prev: QATan Intrinsic,  Up: Other Intrinsics
+
+QATan2 Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QATan2' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QATan2D Intrinsic,  Next: QATanD Intrinsic,  Prev: QATan2 Intrinsic,  Up: Other Intrinsics
+
+QATan2D Intrinsic
+.................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QATan2D' to use this name for
+an external procedure.
+
+
+File: g77.info,  Node: QATanD Intrinsic,  Next: QCos Intrinsic,  Prev: QATan2D Intrinsic,  Up: Other Intrinsics
+
+QATanD Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QATanD' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QCos Intrinsic,  Next: QCosD Intrinsic,  Prev: QATanD Intrinsic,  Up: Other Intrinsics
+
+QCos Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QCos' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QCosD Intrinsic,  Next: QCosH Intrinsic,  Prev: QCos Intrinsic,  Up: Other Intrinsics
+
+QCosD Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QCosD' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QCosH Intrinsic,  Next: QDiM Intrinsic,  Prev: QCosD Intrinsic,  Up: Other Intrinsics
+
+QCosH Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QCosH' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QDiM Intrinsic,  Next: QExp Intrinsic,  Prev: QCosH Intrinsic,  Up: Other Intrinsics
+
+QDiM Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QDiM' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QExp Intrinsic,  Next: QExt Intrinsic,  Prev: QDiM Intrinsic,  Up: Other Intrinsics
+
+QExp Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QExp' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QExt Intrinsic,  Next: QExtD Intrinsic,  Prev: QExp Intrinsic,  Up: Other Intrinsics
+
+QExt Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QExt' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QExtD Intrinsic,  Next: QFloat Intrinsic,  Prev: QExt Intrinsic,  Up: Other Intrinsics
+
+QExtD Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QExtD' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QFloat Intrinsic,  Next: QInt Intrinsic,  Prev: QExtD Intrinsic,  Up: Other Intrinsics
+
+QFloat Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QFloat' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QInt Intrinsic,  Next: QLog Intrinsic,  Prev: QFloat Intrinsic,  Up: Other Intrinsics
+
+QInt Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QInt' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QLog Intrinsic,  Next: QLog10 Intrinsic,  Prev: QInt Intrinsic,  Up: Other Intrinsics
+
+QLog Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QLog' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QLog10 Intrinsic,  Next: QMax1 Intrinsic,  Prev: QLog Intrinsic,  Up: Other Intrinsics
+
+QLog10 Intrinsic
+................
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QLog10' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QMax1 Intrinsic,  Next: QMin1 Intrinsic,  Prev: QLog10 Intrinsic,  Up: Other Intrinsics
+
+QMax1 Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QMax1' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QMin1 Intrinsic,  Next: QMod Intrinsic,  Prev: QMax1 Intrinsic,  Up: Other Intrinsics
+
+QMin1 Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QMin1' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QMod Intrinsic,  Next: QNInt Intrinsic,  Prev: QMin1 Intrinsic,  Up: Other Intrinsics
+
+QMod Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QMod' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QNInt Intrinsic,  Next: QSin Intrinsic,  Prev: QMod Intrinsic,  Up: Other Intrinsics
+
+QNInt Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QNInt' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QSin Intrinsic,  Next: QSinD Intrinsic,  Prev: QNInt Intrinsic,  Up: Other Intrinsics
+
+QSin Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QSin' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QSinD Intrinsic,  Next: QSinH Intrinsic,  Prev: QSin Intrinsic,  Up: Other Intrinsics
+
+QSinD Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QSinD' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QSinH Intrinsic,  Next: QSqRt Intrinsic,  Prev: QSinD Intrinsic,  Up: Other Intrinsics
+
+QSinH Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QSinH' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QSqRt Intrinsic,  Next: QTan Intrinsic,  Prev: QSinH Intrinsic,  Up: Other Intrinsics
+
+QSqRt Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QSqRt' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QTan Intrinsic,  Next: QTanD Intrinsic,  Prev: QSqRt Intrinsic,  Up: Other Intrinsics
+
+QTan Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QTan' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QTanD Intrinsic,  Next: QTanH Intrinsic,  Prev: QTan Intrinsic,  Up: Other Intrinsics
+
+QTanD Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QTanD' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: QTanH Intrinsic,  Next: Rename Intrinsic (function),  Prev: QTanD Intrinsic,  Up: Other Intrinsics
+
+QTanH Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL QTanH' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: Rename Intrinsic (function),  Next: Secnds Intrinsic,  Prev: QTanH Intrinsic,  Up: Other Intrinsics
+
+Rename Intrinsic (function)
+...........................
+
+     Rename(PATH1, PATH2)
+
+Rename: `INTEGER(KIND=1)' function.
+
+PATH1: `CHARACTER'; scalar; INTENT(IN).
+
+PATH2: `CHARACTER'; scalar; INTENT(IN).
+
+Intrinsic groups: `badu77'.
+
+Description:
+
+   Renames the file PATH1 to PATH2.  A null character (`CHAR(0)') marks
+the end of the names in PATH1 and PATH2--otherwise, trailing blanks in
+PATH1 and PATH2 are ignored.  See `rename(2)'.  Returns 0 on success or
+a non-zero error code.
+
+   Due to the side effects performed by this intrinsic, the function
+form is not recommended.
+
+   For information on other intrinsics with the same name: *Note Rename
+Intrinsic (subroutine)::.
+
+
+File: g77.info,  Node: Secnds Intrinsic,  Next: Signal Intrinsic (function),  Prev: Rename Intrinsic (function),  Up: Other Intrinsics
+
+Secnds Intrinsic
+................
+
+     Secnds(T)
+
+Secnds: `REAL(KIND=1)' function.
+
+T: `REAL(KIND=1)'; scalar; INTENT(IN).
+
+Intrinsic groups: `vxt'.
+
+Description:
+
+   Returns the local time in seconds since midnight minus the value T.
+
+
+File: g77.info,  Node: Signal Intrinsic (function),  Next: SinD Intrinsic,  Prev: Secnds Intrinsic,  Up: Other Intrinsics
+
+Signal Intrinsic (function)
+...........................
+
+     Signal(NUMBER, HANDLER)
+
+Signal: `INTEGER(KIND=1)' function.
+
+NUMBER: `INTEGER'; scalar; INTENT(IN).
+
+HANDLER: Signal handler (`INTEGER FUNCTION' or `SUBROUTINE') or
+dummy/global `INTEGER(KIND=1)' scalar.
+
+Intrinsic groups: `badu77'.
+
+Description:
+
+   If HANDLER is a an `EXTERNAL' routine, arranges for it to be invoked
+with a single integer argument (of system-dependent length) when signal
+NUMBER occurs.  If NUMBER is an integer, it can be used to turn off
+handling of signal HANDLER or revert to its default action.  See
+`signal(2)'.
+
+   Note that HANDLER will be called using C conventions, so its value in
+Fortran terms is obtained by applying `%LOC()' (or LOC()) to it.
+
+   The value returned by `signal(2)' is returned.
+
+   Due to the side effects performed by this intrinsic, the function
+form is not recommended.
+
+   For information on other intrinsics with the same name: *Note Signal
+Intrinsic (subroutine)::.
+
+
+File: g77.info,  Node: SinD Intrinsic,  Next: SnglQ Intrinsic,  Prev: Signal Intrinsic (function),  Up: Other Intrinsics
+
+SinD Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL SinD' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: SnglQ Intrinsic,  Next: SymLnk Intrinsic (function),  Prev: SinD Intrinsic,  Up: Other Intrinsics
+
+SnglQ Intrinsic
+...............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL SnglQ' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: SymLnk Intrinsic (function),  Next: System Intrinsic (function),  Prev: SnglQ Intrinsic,  Up: Other Intrinsics
+
+SymLnk Intrinsic (function)
+...........................
+
+     SymLnk(PATH1, PATH2)
+
+SymLnk: `INTEGER(KIND=1)' function.
+
+PATH1: `CHARACTER'; scalar; INTENT(IN).
+
+PATH2: `CHARACTER'; scalar; INTENT(IN).
+
+Intrinsic groups: `badu77'.
+
+Description:
+
+   Makes a symbolic link from file PATH1 to PATH2.  A null character
+(`CHAR(0)') marks the end of the names in PATH1 and PATH2--otherwise,
+trailing blanks in PATH1 and PATH2 are ignored.  Returns 0 on success
+or a non-zero error code (`ENOSYS' if the system does not provide
+`symlink(2)').
+
+   Due to the side effects performed by this intrinsic, the function
+form is not recommended.
+
+   For information on other intrinsics with the same name: *Note SymLnk
+Intrinsic (subroutine)::.
+
+
+File: g77.info,  Node: System Intrinsic (function),  Next: TanD Intrinsic,  Prev: SymLnk Intrinsic (function),  Up: Other Intrinsics
+
+System Intrinsic (function)
+...........................
+
+     System(COMMAND)
+
+System: `INTEGER(KIND=1)' function.
+
+COMMAND: `CHARACTER'; scalar; INTENT(IN).
+
+Intrinsic groups: `badu77'.
+
+Description:
+
+   Passes the command COMMAND to a shell (see `system(3)').  Returns
+the value returned by `system(3)', presumably 0 if the shell command
+succeeded.  Note that which shell is used to invoke the command is
+system-dependent and environment-dependent.
+
+   Due to the side effects performed by this intrinsic, the function
+form is not recommended.  However, the function form can be valid in
+cases where the actual side effects performed by the call are
+unimportant to the application.
+
+   For example, on a UNIX system, `SAME = SYSTEM('cmp a b')' does not
+perform any side effects likely to be important to the program, so the
+programmer would not care if the actual system call (and invocation of
+`cmp') was optimized away in a situation where the return value could
+be determined otherwise, or was not actually needed (`SAME' not
+actually referenced after the sample assignment statement).
+
+   For information on other intrinsics with the same name: *Note System
+Intrinsic (subroutine)::.
+
+
+File: g77.info,  Node: TanD Intrinsic,  Next: Time Intrinsic (VXT),  Prev: System Intrinsic (function),  Up: Other Intrinsics
+
+TanD Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL TanD' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: Time Intrinsic (VXT),  Next: UMask Intrinsic (function),  Prev: TanD Intrinsic,  Up: Other Intrinsics
+
+Time Intrinsic (VXT)
+....................
+
+     CALL Time(TIME)
+
+TIME: `CHARACTER*8'; scalar; INTENT(OUT).
+
+Intrinsic groups: `vxt'.
+
+Description:
+
+   Returns in TIME a character representation of the current time as
+obtained from `ctime(3)'.
+
+   *Note Fdate Intrinsic (subroutine):: for an equivalent routine.
+
+   For information on other intrinsics with the same name: *Note Time
+Intrinsic (UNIX)::.
+
+
+File: g77.info,  Node: UMask Intrinsic (function),  Next: Unlink Intrinsic (function),  Prev: Time Intrinsic (VXT),  Up: Other Intrinsics
+
+UMask Intrinsic (function)
+..........................
+
+     UMask(MASK)
+
+UMask: `INTEGER(KIND=1)' function.
+
+MASK: `INTEGER'; scalar; INTENT(IN).
+
+Intrinsic groups: `badu77'.
+
+Description:
+
+   Sets the file creation mask to MASK and returns the old value.  See
+`umask(2)'.
+
+   Due to the side effects performed by this intrinsic, the function
+form is not recommended.
+
+   For information on other intrinsics with the same name: *Note UMask
+Intrinsic (subroutine)::.
+
+
+File: g77.info,  Node: Unlink Intrinsic (function),  Next: ZExt Intrinsic,  Prev: UMask Intrinsic (function),  Up: Other Intrinsics
+
+Unlink Intrinsic (function)
+...........................
+
+     Unlink(FILE)
+
+Unlink: `INTEGER(KIND=1)' function.
+
+FILE: `CHARACTER'; scalar; INTENT(IN).
+
+Intrinsic groups: `badu77'.
+
+Description:
+
+   Unlink the file FILE.  A null character (`CHAR(0)') marks the end of
+the name in FILE--otherwise, trailing blanks in FILE are ignored.
+Returns 0 on success or a non-zero error code.  See `unlink(2)'.
+
+   Due to the side effects performed by this intrinsic, the function
+form is not recommended.
+
+   For information on other intrinsics with the same name: *Note Unlink
+Intrinsic (subroutine)::.
+
+
+File: g77.info,  Node: ZExt Intrinsic,  Prev: Unlink Intrinsic (function),  Up: Other Intrinsics
+
+ZExt Intrinsic
+..............
+
+   This intrinsic is not yet implemented.  The name is, however,
+reserved as an intrinsic.  Use `EXTERNAL ZExt' to use this name for an
+external procedure.
+
+
+File: g77.info,  Node: Other Compilers,  Next: Other Languages,  Prev: Other Dialects,  Up: Top
+
+Other Compilers
+***************
+
+   An individual Fortran source file can be compiled to an object
+(`*.o') file instead of to the final program executable.  This allows
+several portions of a program to be compiled at different times and
+linked together whenever a new version of the program is needed.
+However, it introduces the issue of "object compatibility" across the
+various object files (and libraries, or `*.a' files) that are linked
+together to produce any particular executable file.
+
+   Object compatibility is an issue when combining, in one program,
+Fortran code compiled by more than one compiler (or more than one
+configuration of a compiler).  If the compilers disagree on how to
+transform the names of procedures, there will normally be errors when
+linking such programs.  Worse, if the compilers agree on naming, but
+disagree on issues like how to pass parameters, return arguments, and
+lay out `COMMON' areas, the earliest detected errors might be the
+incorrect results produced by the program (and that assumes these
+errors are detected, which is not always the case).
+
+   Normally, `g77' generates code that is object-compatible with code
+generated by a version of `f2c' configured (with, for example, `f2c.h'
+definitions) to be generally compatible with `g77' as built by `gcc'.
+(Normally, `f2c' will, by default, conform to the appropriate
+configuration, but it is possible that older or perhaps even newer
+versions of `f2c', or versions having certain configuration changes to
+`f2c' internals, will produce object files that are incompatible with
+`g77'.)
+
+   For example, a Fortran string subroutine argument will become two
+arguments on the C side: a `char *' and an `int' length.
+
+   Much of this compatibility results from the fact that `g77' uses the
+same run-time library, `libf2c', used by `f2c'.
+
+   Other compilers might or might not generate code that is
+object-compatible with `libf2c' and current `g77', and some might offer
+such compatibility only when explicitly selected via a command-line
+option to the compiler.
+
+   *Note: This portion of the documentation definitely needs a lot of
+work!*
+
+* Menu:
+
+* Dropping f2c Compatibility::  When speed is more important.
+* Compilers Other Than f2c::    Interoperation with code from other compilers.
+
+
+File: g77.info,  Node: Dropping f2c Compatibility,  Next: Compilers Other Than f2c,  Up: Other Compilers
+
+Dropping `f2c' Compatibility
+============================
+
+   Specifying `-fno-f2c' allows `g77' to generate, in some cases,
+faster code, by not needing to allow to the possibility of linking with
+code compiled by `f2c'.
+
+   For example, this affects how `REAL(KIND=1)', `COMPLEX(KIND=1)', and
+`COMPLEX(KIND=2)' functions are called.  With `-fno-f2c', they are
+compiled as returning the appropriate `gcc' type (`float', `__complex__
+float', `__complex__ double', in many configurations).
+
+   With `-ff2c' in force, they are compiled differently (with perhaps
+slower run-time performance) to accommodate the restrictions inherent
+in `f2c''s use of K&R C as an intermediate language--`REAL(KIND=1)'
+functions return C's `double' type, while `COMPLEX' functions return
+`void' and use an extra argument pointing to a place for the functions
+to return their values.
+
+   It is possible that, in some cases, leaving `-ff2c' in force might
+produce faster code than using `-fno-f2c'.  Feel free to experiment,
+but remember to experiment with changing the way *entire programs and
+their Fortran libraries are compiled* at a time, since this sort of
+experimentation affects the interface of code generated for a Fortran
+source file--that is, it affects object compatibility.
+
+   Note that `f2c' compatibility is a fairly static target to achieve,
+though not necessarily perfectly so, since, like `g77', it is still
+being improved.  However, specifying `-fno-f2c' causes `g77' to
+generate code that will probably be incompatible with code generated by
+future versions of `g77' when the same option is in force.  You should
+make sure you are always able to recompile complete programs from
+source code when upgrading to new versions of `g77' or `f2c',
+especially when using options such as `-fno-f2c'.
+
+   Therefore, if you are using `g77' to compile libraries and other
+object files for possible future use and you don't want to require
+recompilation for future use with subsequent versions of `g77', you
+might want to stick with `f2c' compatibility for now, and carefully
+watch for any announcements about changes to the `f2c'/`libf2c'
+interface that might affect existing programs (thus requiring
+recompilation).
+
+   It is probable that a future version of `g77' will not, by default,
+generate object files compatible with `f2c', and that version probably
+would no longer use `libf2c'.  If you expect to depend on this
+compatibility in the long term, use the options `-ff2c -ff2c-library'
+when compiling all of the applicable code.  This should cause future
+versions of `g77' either to produce compatible code (at the expense of
+the availability of some features and performance), or at the very
+least, to produce diagnostics.
+
+
+File: g77.info,  Node: Compilers Other Than f2c,  Prev: Dropping f2c Compatibility,  Up: Other Compilers
+
+Compilers Other Than `f2c'
+==========================
+
+   On systems with Fortran compilers other than `f2c' and `g77', code
+compiled by `g77' is not expected to work well with code compiled by
+the native compiler.  (This is true for `f2c'-compiled objects as
+well.)  Libraries compiled with the native compiler probably will have
+to be recompiled with `g77' to be used with `g77'-compiled code.
+
+   Reasons for such incompatibilities include:
+
+   * There might be differences in the way names of Fortran procedures
+     are translated for use in the system's object-file format.  For
+     example, the statement `CALL FOO' might be compiled by `g77' to
+     call a procedure the linker `ld' sees given the name `_foo_',
+     while the apparently corresponding statement `SUBROUTINE FOO'
+     might be compiled by the native compiler to define the
+     linker-visible name `_foo', or `_FOO_', and so on.
+
+   * There might be subtle type mismatches which cause subroutine
+     arguments and function return values to get corrupted.
+
+     This is why simply getting `g77' to transform procedure names the
+     same way a native compiler does is not usually a good idea--unless
+     some effort has been made to ensure that, aside from the way the
+     two compilers transform procedure names, everything else about the
+     way they generate code for procedure interfaces is identical.
+
+   * Native compilers use libraries of private I/O routines which will
+     not be available at link time unless you have the native
+     compiler--and you would have to explicitly ask for them.
+
+     For example, on the Sun you would have to add `-L/usr/lang/SCx.x
+     -lF77 -lV77' to the link command.
+
+
+File: g77.info,  Node: Other Languages,  Next: Installation,  Prev: Other Compilers,  Up: Top
+
+Other Languages
+***************
+
+   *Note: This portion of the documentation definitely needs a lot of
+work!*
+
+* Menu:
+
+* Interoperating with C and C++::
+
+
+File: g77.info,  Node: Interoperating with C and C++,  Up: Other Languages
+
+Tools and advice for interoperating with C and C++
+==================================================
+
+   The following discussion assumes that you are running `g77' in `f2c'
+compatibility mode, i.e. not using `-fno-f2c'.  It provides some advice
+about quick and simple techniques for linking Fortran and C (or C++),
+the most common requirement.  For the full story consult the
+description of code generation.  *Note Debugging and Interfacing::.
+
+   When linking Fortran and C, it's usually best to use `g77' to do the
+linking so that the correct libraries are included (including the maths
+one).  If you're linking with C++ you will want to add `-lstdc++',
+`-lg++' or whatever.  If you need to use another driver program (or
+`ld' directly), you can find out what linkage options `g77' passes by
+running `g77 -v'.
+
+* Menu:
+
+* C Interfacing Tools::
+* C Access to Type Information::
+* f2c Skeletons and Prototypes::
+* C++ Considerations::
+* Startup Code::
+
+
+File: g77.info,  Node: C Interfacing Tools,  Next: C Access to Type Information,  Up: Interoperating with C and C++
+
+C Interfacing Tools
+-------------------
+
+   Even if you don't actually use it as a compiler, `f2c' from
+`ftp://ftp.netlib.org/f2c/src', can be a useful tool when you're
+interfacing (linking) Fortran and C.  *Note Generating Skeletons and
+Prototypes with `f2c': f2c Skeletons and Prototypes.
+
+   To use `f2c' for this purpose you only need retrieve and build the
+`src' directory from the distribution, consult the `README'
+instructions there for machine-specifics, and install the `f2c' program
+on your path.
+
+   Something else that might be useful is `cfortran.h' from
+`ftp://zebra/desy.de/cfortran'.  This is a fairly general tool which
+can be used to generate interfaces for calling in both directions
+between Fortran and C.  It can be used in `f2c' mode with
+`g77'--consult its documentation for details.
+
+
+File: g77.info,  Node: C Access to Type Information,  Next: f2c Skeletons and Prototypes,  Prev: C Interfacing Tools,  Up: Interoperating with C and C++
+
+Accessing Type Information in C
+-------------------------------
+
+   Generally, C code written to link with `g77' code--calling and/or
+being called from Fortran--should `#include <f2c.h>' to define the C
+versions of the Fortran types.  Don't assume Fortran `INTEGER' types
+correspond to C `int's, for instance; instead, declare them as
+`integer', a type defined by `f2c.h'.  `f2c.h' is installed where `gcc'
+will find it by default, assuming you use a copy of `gcc' compatible
+with `g77', probably built at the same time as `g77'.
+
+
+File: g77.info,  Node: f2c Skeletons and Prototypes,  Next: C++ Considerations,  Prev: C Access to Type Information,  Up: Interoperating with C and C++
+
+Generating Skeletons and Prototypes with `f2c'
+----------------------------------------------
+
+   A simple and foolproof way to write `g77'-callable C routines--e.g.
+to interface with an existing library--is to write a file (named, for
+example, `fred.f') of dummy Fortran skeletons comprising just the
+declaration of the routine(s) and dummy arguments plus `END' statements.
+Then run `f2c' on file `fred.f' to produce `fred.c' into which you can
+edit useful code, confident the calling sequence is correct, at least.
+(There are some errors otherwise commonly made in generating C
+interfaces with f2c conventions, such as not using `doublereal' as the
+return type of a `REAL' `FUNCTION'.)
+
+   `f2c' also can help with calling Fortran from C, using its `-P'
+option to generate C prototypes appropriate for calling the Fortran.(1)
+If the Fortran code containing any routines to be called from C is in
+file `joe.f', use the command `f2c -P joe.f' to generate the file
+`joe.P' containing prototype information.  `#include' this in the C
+which has to call the Fortran routines to make sure you get it right.
+
+   *Note Arrays (DIMENSION: Arrays, for information on the differences
+between the way Fortran (including compilers like `g77') and C handle
+arrays.
+
+   ---------- Footnotes ----------
+
+   (1) The files generated like this can also be used for inter-unit
+consistency checking of dummy and actual arguments, although the
+`ftnchek' tool from `ftp://ftp.netlib.org/fortran' or
+`ftp://ftp.dsm.fordham.edu' is probably better for this purpose.
+
+
+File: g77.info,  Node: C++ Considerations,  Next: Startup Code,  Prev: f2c Skeletons and Prototypes,  Up: Interoperating with C and C++
+
+C++ Considerations
+------------------
+
+   `f2c' can be used to generate suitable code for compilation with a
+C++ system using the `-C++' option.  The important thing about linking
+`g77'-compiled code with C++ is that the prototypes for the `g77'
+routines must specify C linkage to avoid name mangling.  So, use an
+`extern "C"' declaration.  `f2c''s `-C++' option will take care of this
+when generating skeletons or prototype files as above, and also avoid
+clashes with C++ reserved words in addition to those in C.
+
+
+File: g77.info,  Node: Startup Code,  Prev: C++ Considerations,  Up: Interoperating with C and C++
+
+Startup Code
+------------
+
+   Unlike with some runtime systems, it shouldn't be necessary (unless
+there are bugs) to use a Fortran main program to ensure the
+runtime--specifically the i/o system--is initialized.  However, to use
+the `g77' intrinsics `GETARG()' and `IARGC()' the `main()' routine from
+the `libf2c' library must be used, either explicitly or implicitly by
+using a Fortran main program.  This `main()' program calls `MAIN__()'
+(where the names are C-type `extern' names, i.e. not mangled).  You
+need to provide this nullary procedure as the entry point for your C
+code if using `libf2c''s `main'.  In some cases it might be necessary to
+provide a dummy version of this to avoid linkers complaining about
+failure to resolve `MAIN__()' if linking against `libf2c' and not using
+`main()' from it.
+
+
+File: g77.info,  Node: Installation,  Next: Debugging and Interfacing,  Prev: Other Languages,  Up: Top
+
+Installing GNU Fortran
+**********************
+
+   The following information describes how to install `g77'.
+
+   The information in this file generally pertains to dealing with
+*source* distributions of `g77' and `gcc'.  It is possible that some of
+this information will be applicable to some *binary* distributions of
+these products--however, since these distributions are not made by the
+maintainers of `g77', responsibility for binary distributions rests with
+whoever built and first distributed them.
+
+   Nevertheless, efforts to make `g77' easier to both build and install
+from source and package up as a binary distribution are ongoing.
+
+* Menu:
+
+* Prerequisites::          Make sure your system is ready for `g77'.
+* Problems Installing::    Known trouble areas.
+* Settings::               Changing `g77' internals before building.
+* Quick Start::            The easier procedure for non-experts.
+* Complete Installation::  For experts, or those who want to be: the details.
+* Distributing Binaries::  If you plan on distributing your `g77'.
+
+
+File: g77.info,  Node: Prerequisites,  Next: Problems Installing,  Up: Installation
+
+Prerequisites
+=============
+
+   The procedures described to unpack, configure, build, and install
+`g77' assume your system has certain programs already installed.
+
+   The following prerequisites should be met by your system before you
+follow the `g77' installation instructions:
+
+`gzip'
+     To unpack the `gcc' and `g77' distributions, you'll need the
+     `gunzip' utility in the `gzip' distribution.  Most UNIX systems
+     already have `gzip' installed.  If yours doesn't, you can get it
+     from the FSF.
+
+     Note that you'll need `tar' and other utilities as well, but all
+     UNIX systems have these.  There are GNU versions of all these
+     available--in fact, a complete GNU UNIX system can be put together
+     on most systems, if desired.
+
+     The version of GNU `gzip' used to package this release is 1.24.
+     (The version of GNU `tar' used to package this release is 1.11.2.)
+
+`gcc-2.7.2.3.tar.gz'
+     You need to have this, or some other applicable, version of `gcc'
+     on your system.  The version should be an exact copy of a
+     distribution from the FSF.  Its size is approximately 7.1MB.
+
+     If you've already unpacked `gcc-2.7.2.3.tar.gz' into a directory
+     (named `gcc-2.7.2.3') called the "source tree" for `gcc', you can
+     delete the distribution itself, but you'll need to remember to
+     skip any instructions to unpack this distribution.
+
+     Without an applicable `gcc' source tree, you cannot build `g77'.
+     You can obtain an FSF distribution of `gcc' from the FSF.
+
+`g77-0.5.21.tar.gz'
+     You probably have already unpacked this package, or you are
+     reading an advance copy of these installation instructions, which
+     are contained in this distribution.  The size of this package is
+     approximately 1.5MB.
+
+     You can obtain an FSF distribution of `g77' from the FSF, the same
+     way you obtained `gcc'.
+
+Enough disk space
+     The amount of disk space needed to unpack, build, install, and use
+     `g77' depends on the type of system you're using, how you build
+     `g77', and how much of it you install (primarily, which languages
+     you install).
+
+     The sizes shown below assume all languages distributed in
+     `gcc-2.7.2.3', plus `g77', will be built and installed.  These
+     sizes are indicative of GNU/Linux systems on Intel x86 running
+     COFF and on Digital Alpha (AXP) systems running ELF.  These should
+     be fairly representative of 32-bit and 64-bit systems,
+     respectively.
+
+     Note that all sizes are approximate and subject to change without
+     notice!  They are based on preliminary releases of g77 made shortly
+     before the public beta release.
+
+        -- `gcc' and `g77' distributions occupy 8.6MB packed, 35MB
+          unpacked.  These consist of the source code and documentation,
+          plus some derived files (mostly documentation), for `gcc' and
+          `g77'.  Any deviations from these numbers for different kinds
+          of systems are likely to be very minor.
+
+        -- A "bootstrap" build requires an additional 67.3MB for a
+          total of 102MB on an ix86, and an additional 98MB for a total
+          of 165MB on an Alpha.
+
+        -- Removing `gcc/stage1' after the build recovers 10.7MB for a
+          total of 91MB on an ix86, and recovers ??MB for a total of
+          ??MB on an Alpha.
+
+          After doing this, the integrity of the build can still be
+          verified via `make compare', and the `gcc' compiler modified
+          and used to build itself for testing fairly quickly, using
+          the copy of the compiler kept in `gcc/stage2'.
+
+        -- Removing `gcc/stage2' after the build further recovers
+          27.3MB for a total of 64.3MB, and recovers ??MB for a total
+          of ??MB on an Alpha.
+
+          After doing this, the compiler can still be installed,
+          especially if GNU `make' is used to avoid gratuitous rebuilds
+          (or, the installation can be done by hand).
+
+        -- Installing `gcc' and `g77' copies 14.9MB onto the `--prefix'
+          disk for a total of 79.2MB on an ix86, and copies ??MB onto
+          the `--prefix' disk for a total of ??MB on an Alpha.
+
+     After installation, if no further modifications and builds of
+     `gcc' or `g77' are planned, the source and build directory may be
+     removed, leaving the total impact on a system's disk storage as
+     that of the amount copied during installation.
+
+     Systems with the appropriate version of `gcc' installed don't
+     require the complete bootstrap build.  Doing a "straight build"
+     requires about as much space as does a bootstrap build followed by
+     removing both the `gcc/stage1' and `gcc/stage2' directories.
+
+     Installing `gcc' and `g77' over existing versions might require
+     less *new* disk space, but note that, unlike many products, `gcc'
+     installs itself in a way that avoids overwriting other installed
+     versions of itself, so that other versions may easily be invoked
+     (via `gcc -V VERSION').
+
+     So, the amount of space saved as a result of having an existing
+     version of `gcc' and `g77' already installed is not
+     much--typically only the command drivers (`gcc', `g77', `g++', and
+     so on, which are small) and the documentation is overwritten by
+     the new installation.  The rest of the new installation is done
+     without replacing existing installed versions (assuming they have
+     different version numbers).
+
+`patch'
+     Although you can do everything `patch' does yourself, by hand,
+     without much trouble, having `patch' installed makes installation
+     of new versions of GNU utilities such as `g77' so much easier that
+     it is worth getting.  You can obtain `patch' the same way you
+     obtained `gcc' and `g77'.
+
+     In any case, you can apply patches by hand--patch files are
+     designed for humans to read them.
+
+     The version of GNU `patch' used to develop this release is 2.4.
+
+`make'
+     Your system must have `make', and you will probably save yourself
+     a lot of trouble if it is GNU `make' (sometimes referred to as
+     `gmake').
+
+     The version of GNU `make' used to develop this release is 3.73.
+
+`cc'
+     Your system must have a working C compiler.
+
+     *Note Installing GNU CC: (gcc)Installation, for more information
+     on prerequisites for installing `gcc'.
+
+`bison'
+     If you do not have `bison' installed, you can usually work around
+     any need for it, since `g77' itself does not use it, and `gcc'
+     normally includes all files generated by running it in its
+     distribution.  You can obtain `bison' the same way you obtained
+     `gcc' and `g77'.
+
+     The version of GNU `bison' used to develop this release is 1.25.
+
+     *Note Missing bison?::, for information on how to work around not
+     having `bison'.
+
+`makeinfo'
+     If you are missing `makeinfo', you can usually work around any
+     need for it.  You can obtain `makeinfo' the same way you obtained
+     `gcc' and `g77'.
+
+     The version of GNU `makeinfo' used to develop this release is
+     1.68, from GNU `texinfo' version 3.11.
+
+     *Note Missing makeinfo?::, for information on getting around the
+     lack of `makeinfo'.
+
+`sed'
+     All UNIX systems have `sed', but some have a broken version that
+     cannot handle configuring, building, or installing `gcc' or `g77'.
+
+     The version of GNU `sed' used to develop this release is 2.05.
+     (Note that GNU `sed' version 3.0 was withdrawn by the FSF--if you
+     happen to have this version installed, replace it with version
+     2.05 immediately.  See a GNU distribution site for further
+     explanation.)
+
+`root' access or equivalent
+     To perform the complete installation procedures on a system, you
+     need to have `root' access to that system, or equivalent access to
+     the `--prefix' directory tree specified on the `configure' command
+     line.
+
+     Portions of the procedure (such as configuring and building `g77')
+     can be performed by any user with enough disk space and virtual
+     memory.
+
+     However, these instructions are oriented towards less-experienced
+     users who want to install `g77' on their own personal systems.
+
+     System administrators with more experience will want to determine
+     for themselves how they want to modify the procedures described
+     below to suit the needs of their installation.
+
+
+File: g77.info,  Node: Problems Installing,  Next: Settings,  Prev: Prerequisites,  Up: Installation
+
+Problems Installing
+===================
+
+   This is a list of problems (and some apparent problems which don't
+really mean anything is wrong) that show up when configuring, building,
+installing, or porting GNU Fortran.
+
+   *Note Installation Problems: (gcc)Installation Problems, for more
+information on installation problems that can afflict either `gcc' or
+`g77'.
+
+* Menu:
+
+* General Problems::         Problems afflicting most or all systems.
+* Cross-compiler Problems::  Problems afflicting cross-compilation setups.
+
+
+File: g77.info,  Node: General Problems,  Next: Cross-compiler Problems,  Up: Problems Installing
+
+General Problems
+----------------
+
+   These problems can occur on most or all systems.
+
+* Menu:
+
+* GNU C Required::	       Why even ANSI C is not enough.
+* Patching GNU CC Necessary::  Why `gcc' must be patched first.
+* Building GNU CC Necessary::  Why you can't build *just* Fortran.
+* Missing strtoul::	       If linking `f771' fails due to an
+                                unresolved reference to `strtoul'.
+* Object File Differences::    It's okay that `make compare' will
+                                flag `f/zzz.o'.
+* Cleanup Kills Stage Directories::  A minor nit for `g77' developers.
+* Missing gperf?::             When building requires `gperf'.
+
+
+File: g77.info,  Node: GNU C Required,  Next: Patching GNU CC Necessary,  Up: General Problems
+
+GNU C Required
+..............
+
+   Compiling `g77' requires GNU C, not just ANSI C.  Fixing this
+wouldn't be very hard (just tedious), but the code using GNU extensions
+to the C language is expected to be rewritten for 0.6 anyway, so there
+are no plans for an interim fix.
+
+   This requirement does not mean you must already have `gcc' installed
+to build `g77'.  As long as you have a working C compiler, you can use a
+bootstrap build to automate the process of first building `gcc' using
+the working C compiler you have, then building `g77' and rebuilding
+`gcc' using that just-built `gcc', and so on.
+
