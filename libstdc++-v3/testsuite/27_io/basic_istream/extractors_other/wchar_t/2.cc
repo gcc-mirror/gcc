@@ -1,6 +1,4 @@
-// 1999-07-28 bkoz
-
-// Copyright (C) 1999, 2001, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,9 +29,9 @@ void test02()
 {
   bool test __attribute__((unused)) = true;
   const char name_01[] = "istream_extractor_other-1.txt"; //read 
-  const char name_02[] = "istream_extractor_other-2.txt"; //write
+  const char name_02[] = "wistream_extractor_other-2.txt"; //write
 
-  std::filebuf fbin, fbout;
+  std::wfilebuf fbin, fbout;
   fbin.open(name_01, std::ios_base::in);
   fbout.open(name_02, std::ios_base::out | std::ios_base::trunc);
   VERIFY( fbin.is_open() );
@@ -41,7 +39,7 @@ void test02()
 
   if (test)
     {
-      std::istream is(&fbin);
+      std::wistream is(&fbin);
       is.unsetf(std::ios_base::skipws);
       is >> &fbout;
     }

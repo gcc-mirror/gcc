@@ -1,6 +1,4 @@
-// 1999-07-28 bkoz
-
-// Copyright (C) 1999, 2001, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,42 +16,52 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.6.1.2.3 basic_istream::operator>>
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// 27.6.1.2.2 arithmetic extractors
 
 #include <istream>
-#include <fstream>
+#include <sstream>
+#include <locale>
 #include <testsuite_hooks.h>
 
-// filebufs.
-void test02() 
+// libstdc++/3720 part two
+void test13()
 {
+  using namespace std;
   bool test __attribute__((unused)) = true;
-  const char name_01[] = "istream_extractor_other-1.txt"; //read 
-  const char name_02[] = "istream_extractor_other-2.txt"; //write
+  const wchar_t* l2 = L"1.2345678901234567890123456789012345678901234567890123456"
+                      L"  "
+                      L"1246.9";
 
-  std::filebuf fbin, fbout;
-  fbin.open(name_01, std::ios_base::in);
-  fbout.open(name_02, std::ios_base::out | std::ios_base::trunc);
-  VERIFY( fbin.is_open() );
-  VERIFY( fbout.is_open() );
+  // 1 
+  // used to core.
+  double d;
+  wistringstream iss1(l2);
+  iss1 >> d;
+  iss1 >> d;
+  VERIFY ( d > 1246 && d < 1247 );
 
-  if (test)
-    {
-      std::istream is(&fbin);
-      is.unsetf(std::ios_base::skipws);
-      is >> &fbout;
-    }
+  // 2
+  // quick test for failbit on maximum length extraction.
+  int i;
+  int max_digits = numeric_limits<int>::digits10 + 1;
+  wstring digits;
+  for (int j = 0; j < max_digits; ++j)
+    digits += L'1';
+  wistringstream iss2(digits);
+  iss2 >> i;
+  VERIFY( !iss2.fail() );
 
-  fbout.close();
-  fbin.close();
-  VERIFY( !fbin.is_open() );
-  VERIFY( !fbout.is_open() );
+  digits += L'1';
+  i = 0;
+  iss2.str(digits);
+  iss2.clear();
+  iss2 >> i;
+  VERIFY( i == 0 );
+  VERIFY( iss2.fail() );
 }
 
 int main()
 {
-  test02();
+  test13();
   return 0;
 }

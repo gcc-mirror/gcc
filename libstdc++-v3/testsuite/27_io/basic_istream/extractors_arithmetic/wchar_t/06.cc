@@ -1,6 +1,4 @@
-// 1999-07-28 bkoz
-
-// Copyright (C) 1999, 2001, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,42 +16,44 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.6.1.2.3 basic_istream::operator>>
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// 27.6.1.2.2 arithmetic extractors
 
 #include <istream>
-#include <fstream>
+#include <sstream>
+#include <locale>
 #include <testsuite_hooks.h>
 
-// filebufs.
-void test02() 
+// http://gcc.gnu.org/ml/libstdc++/2000-q1/msg00081.html
+// Jim Parsons
+void test06()
 {
+  // default locale, grouping is turned off
   bool test __attribute__((unused)) = true;
-  const char name_01[] = "istream_extractor_other-1.txt"; //read 
-  const char name_02[] = "istream_extractor_other-2.txt"; //write
+  unsigned int h4;
+  wchar_t c;
+  std::wstring s(L"205,199,144");
+  std::wistringstream is(s);
+  
+  is >> h4; // 205
+  VERIFY( h4 == 205 );
+  is >> c; // L','
+  VERIFY( c == L',' );
 
-  std::filebuf fbin, fbout;
-  fbin.open(name_01, std::ios_base::in);
-  fbout.open(name_02, std::ios_base::out | std::ios_base::trunc);
-  VERIFY( fbin.is_open() );
-  VERIFY( fbout.is_open() );
+  is >> h4; // 199
+  VERIFY( h4 == 199 );
+  is >> c; // L','
+  VERIFY( c == L',' );
 
-  if (test)
-    {
-      std::istream is(&fbin);
-      is.unsetf(std::ios_base::skipws);
-      is >> &fbout;
-    }
-
-  fbout.close();
-  fbin.close();
-  VERIFY( !fbin.is_open() );
-  VERIFY( !fbout.is_open() );
+  is >> h4; // 144
+  VERIFY( is.rdstate() == std::ios_base::eofbit );
+  VERIFY( h4 == 144 );
+  is >> c; // EOF
+  VERIFY( c == L',' );
+  VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::failbit) );
 }
 
 int main()
 {
-  test02();
+  test06();
   return 0;
 }

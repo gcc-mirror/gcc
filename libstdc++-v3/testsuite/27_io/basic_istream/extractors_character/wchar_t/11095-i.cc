@@ -1,6 +1,4 @@
-// 1999-07-28 bkoz
-
-// Copyright (C) 1999, 2001, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,42 +16,38 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.6.1.2.3 basic_istream::operator>>
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// 27.6.1.2.3 character extractors
 
 #include <istream>
-#include <fstream>
+#include <sstream>
 #include <testsuite_hooks.h>
 
-// filebufs.
-void test02() 
+// libstdc++/11095
+// operator>>(basic_istream&, _CharT*)
+void test01() 
 {
   bool test __attribute__((unused)) = true;
-  const char name_01[] = "istream_extractor_other-1.txt"; //read 
-  const char name_02[] = "istream_extractor_other-2.txt"; //write
+  const std::wstring str_01(L"Consoli ");
 
-  std::filebuf fbin, fbout;
-  fbin.open(name_01, std::ios_base::in);
-  fbout.open(name_02, std::ios_base::out | std::ios_base::trunc);
-  VERIFY( fbin.is_open() );
-  VERIFY( fbout.is_open() );
+  std::wstringbuf isbuf_01(str_01, std::ios_base::in);
+  std::wistream is_01(&isbuf_01);
 
-  if (test)
-    {
-      std::istream is(&fbin);
-      is.unsetf(std::ios_base::skipws);
-      is >> &fbout;
-    }
+  std::ios_base::iostate state1, state2;
 
-  fbout.close();
-  fbin.close();
-  VERIFY( !fbin.is_open() );
-  VERIFY( !fbout.is_open() );
+  wchar_t array1[10];
+  typedef std::wios::traits_type ctraits_type;
+
+  is_01.width(-60);
+  state1 = is_01.rdstate();
+  is_01 >> array1;
+  state2 = is_01.rdstate();
+  VERIFY( state1 == state2 );
+  VERIFY( !ctraits_type::compare(array1, L"Consoli", 7) );
 }
 
 int main()
 {
-  test02();
+  test01();
   return 0;
 }
+
