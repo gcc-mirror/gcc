@@ -1,3 +1,10 @@
+2005-02-09  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/19597
+	* config/avr/avr.c (default_rtx_costs): Delete.
+	(avr_operand_rtx_cost): New function.
+	(avr_rtx_costs): Completely rewrite.
+
 2005-02-08  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/19806
