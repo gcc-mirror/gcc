@@ -9412,25 +9412,82 @@ rs6000_return_addr (count, frame)
   return get_hard_reg_initial_val (Pmode, LINK_REGISTER_REGNUM);
 }
 
+/* Say whether a function is a candidate for sibcall handling or not.
+   We do not allow indirect calls to be optimized into sibling calls.
+   Also, we can't do it if there are any vector parameters; there's
+   nowhere to put the VRsave code so it works; note that functions with
+   vector parameters are required to have a prototype, so the argument
+   type info must be available here.  (The tail recursion case can work
+   with vector parameters, but there's no way to distinguish here.) */
+int
+function_ok_for_sibcall (fndecl)
+    tree fndecl;
+{
+  tree type;
+  if (fndecl)
+    {
+      if (TARGET_ALTIVEC_VRSAVE)
+        {
+	  for (type = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	       type; type = TREE_CHAIN (type))
+	    {
+	      if (TREE_CODE (TREE_VALUE (type)) == VECTOR_TYPE )
+		return 0;
+	    }
+        }
+      if (DEFAULT_ABI == ABI_DARWIN
+            || (TREE_ASM_WRITTEN (fndecl) && !flag_pic) || !TREE_PUBLIC (fndecl))
+        return 1;
+    }
+  return 0;
+}
+
+/* function rewritten to handle sibcalls */
 static int
 rs6000_ra_ever_killed ()
 {
   rtx top;
+  rtx reg;
+  rtx insn;
 
 #ifdef ASM_OUTPUT_MI_THUNK
   if (current_function_is_thunk)
     return 0;
 #endif
-  if (!has_hard_reg_initial_val (Pmode, LINK_REGISTER_REGNUM)
-      || cfun->machine->ra_needs_full_frame)
-    return regs_ever_live[LINK_REGISTER_REGNUM];
-
+  /* regs_ever_live has LR marked as used if any sibcalls
+     are present.  Which it is, but this should not force
+     saving and restoring in the prologue/epilog.  Likewise,
+     reg_set_between_p thinks a sibcall clobbers LR, so
+     that is inappropriate. */
+  /* Also, the prologue can generate a store into LR that
+     doesn't really count, like this:
+        move LR->R0
+        bcl to set PIC register
+        move LR->R31
+        move R0->LR
+     When we're called from the epilog, we need to avoid counting
+     this as a store; thus we ignore any insns with a REG_MAYBE_DEAD note. */
+         
   push_topmost_sequence ();
   top = get_insns ();
   pop_topmost_sequence ();
+  reg = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
 
-  return reg_set_between_p (gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM), 
-			    top, NULL_RTX);
+  for (insn = NEXT_INSN (top); insn != NULL_RTX; insn = NEXT_INSN (insn))
+    {
+      if (INSN_P (insn))
+	{
+	  if (FIND_REG_INC_NOTE (insn, reg))
+	    return 1;
+	  else if (GET_CODE (insn) == CALL_INSN 
+		    && !SIBLING_CALL_P (insn))
+	    return 1;
+	  else if (set_of (reg, insn) != NULL_RTX 
+		    && find_reg_note (insn, REG_MAYBE_DEAD, NULL_RTX) == 0)
+	    return 1;
+    	}
+    }
+  return 0;
 }
 
 /* Add a REG_MAYBE_DEAD note to the insn.  */
