@@ -1,3 +1,7 @@
+2001-10-11  Zack Weinberg  <zack@codesourcery.com>
+
+	* cpplex.c (digraph_spellings, token_spellings): Make static.
+
 2001-10-11  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* unroll.c (loop_iterations): Fixup last patch.
