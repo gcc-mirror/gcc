@@ -1545,15 +1545,15 @@ namespace tr1
     struct tuple_element<1, std::pair<_Tp1, _Tp2> >
     { typedef _Tp2 type; };
 
-  template<int _I, class _Tp1, class _Tp2>
-    typename tuple_element<_I, tuple<_Tp1, _Tp2> >::type
+  template<int _Int, class _Tp1, class _Tp2>
+    typename tuple_element<_Int, tuple<_Tp1, _Tp2> >::type
     get(pair<_Tp1, _Tp2>& __in)
-    { return get<_I>(tie(__in.first, __in.second)); }
+    { return get<_Int>(tie(__in.first, __in.second)); }
 
-  template<int _I, class _Tp1, class _Tp2>
-    typename tuple_element<_I, tuple<_Tp1, _Tp2> >::type
+  template<int _Int, class _Tp1, class _Tp2>
+    typename tuple_element<_Int, tuple<_Tp1, _Tp2> >::type
     get(const pair<_Tp1, _Tp2>& __in)
-    { return get<_I>(tie(__in.first, __in.second)); }
+    { return get<_Int>(tie(__in.first, __in.second)); }
 
 }
 }
