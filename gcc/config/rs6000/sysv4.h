@@ -865,7 +865,7 @@ do {									\
  */
 
 #undef	ASM_OUTPUT_SECTION_NAME
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME)			\
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC)		\
 do {									\
   static struct section_info						\
     {									\
@@ -883,7 +883,7 @@ do {									\
 									\
   if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)			\
     type = SECT_EXEC, mode = "ax";					\
-  else if (DECL && TREE_READONLY (DECL) && !TARGET_RELOCATABLE && !flag_pic) \
+  else if (DECL && DECL_READONLY_SECTION (DECL, RELOC) && !TARGET_RELOCATABLE && !flag_pic) \
     type = SECT_RO, mode = "a";						\
   else									\
     type = SECT_RW, mode = "aw";					\

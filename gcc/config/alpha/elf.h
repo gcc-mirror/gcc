@@ -276,10 +276,10 @@ dtors_section ()							\
 
    We make the section read-only and executable for a function decl,
    read-only for a const data decl, and writable for a non-const data decl.  */
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
   fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", NAME, \
 	   (DECL) && TREE_CODE (DECL) == FUNCTION_DECL ? "ax" : \
-	   (DECL) && TREE_READONLY (DECL) ? "a" : "aw")
+	   (DECL) && DECL_READONLY_SECTION (DECL, RELOC) ? "a" : "aw")
 
 
 /* A C statement (sans semicolon) to output an element in the table of

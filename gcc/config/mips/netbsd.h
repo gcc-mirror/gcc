@@ -211,12 +211,12 @@ do {									 \
  NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
  define this macro in such cases.
 */
-#define ASM_OUTPUT_SECTION_NAME(F, DECL, NAME)                               \
+#define ASM_OUTPUT_SECTION_NAME(F, DECL, NAME, RELOC)                        \
 do {                                                                         \
   extern FILE *asm_out_text_file;                                            \
   if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)                           \
     fprintf (asm_out_text_file, "\t.section %s,\"ax\",@progbits\n", (NAME)); \
-  else if ((DECL) && TREE_READONLY (DECL))                                   \
+  else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))                    \
     fprintf (F, "\t.section %s,\"a\",@progbits\n", (NAME));                  \
   else                                                                       \
     fprintf (F, "\t.section %s,\"aw\",@progbits\n", (NAME));                 \

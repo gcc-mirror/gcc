@@ -67,8 +67,9 @@ gen_stdcall_suffix (decl)
 /* Cover function for UNIQUE_SECTION.  */
 
 tree
-i386_pe_unique_section (decl)
+i386_pe_unique_section (decl, reloc)
      tree decl;
+     int reloc;
 {
   int len;
   char *name,*string,*prefix;
@@ -80,7 +81,7 @@ i386_pe_unique_section (decl)
      (everything from the $ on is stripped).  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
     prefix = ".text$";
-  else if (TREE_READONLY (decl))
+  else if (DECL_READONLY_SECTION (decl, reloc))
     prefix = ".rdata$";
   else
     prefix = ".data$";

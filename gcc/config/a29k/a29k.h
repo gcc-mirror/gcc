@@ -1450,7 +1450,7 @@ extern int a29k_debug_reg_map[];
 /* This how to write an assembler directive to FILE to switch to
    section NAME for DECL.  */
 
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
   fprintf (FILE, "\t.sect %s, bss\n\t.use %s\n", NAME, NAME)
 
 /* This is how to output the definition of a user-level label named NAME,

@@ -134,8 +134,9 @@ extern int in_text_section		PROTO((void));
 #ifdef TREE_CODE
 /* Tell assembler to change to section NAME for DECL.
    If DECL is NULL, just switch to section NAME.
-   If NAME is NULL, get the name from DECL.  */
-extern void named_section		PROTO((tree, char *));
+   If NAME is NULL, get the name from DECL.
+   If RELOC is 1, the initializer for DECL contains relocs.  */
+extern void named_section		PROTO((tree, char *, int));
 
 /* Tell assembler to switch to the section for function DECL.  */
 extern void function_section		PROTO((tree));
@@ -429,3 +430,14 @@ extern int sdb_begin_function_line;
 #ifdef BUFSIZ
 extern FILE *asm_out_file;
 #endif
+
+/* Decide whether DECL needs to be in a writable section.  RELOC is the same
+   as for SELECT_SECTION.  */
+
+#define DECL_READONLY_SECTION(DECL,RELOC)		\
+  (TREE_READONLY (DECL)					\
+   && ! TREE_THIS_VOLATILE (DECL)			\
+   && DECL_INITIAL (DECL)				\
+   && (DECL_INITIAL (DECL) == error_mark_node		\
+       || TREE_CONSTANT (DECL_INITIAL (DECL)))		\
+   && ! (RELOC && (flag_pic || DECL_ONE_ONLY (DECL))))

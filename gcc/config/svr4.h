@@ -593,19 +593,17 @@ dtors_section ()							\
     }									\
 }
 
+/* Switch into a generic section.
+ 
+   We make the section read-only and executable for a function decl,
+   read-only for a const data decl, and writable for a non-const data decl.
+ 
+   If the section has already been defined, we must not
+   emit the attributes here. The SVR4 assembler does not
+   recognize section redefinitions.
+   If DECL is NULL, no attributes are emitted.  */
 
-/*
- * Switch into a generic section.
- *
- * We make the section read-only and executable for a function decl,
- * read-only for a const data decl, and writable for a non-const data decl.
- *
- * If the section has already been defined, we must not
- * emit the attributes here. The SVR4 assembler does not
- * recognize section redefinitions.
- * If DECL is NULL, no attributes are emitted.
- */
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME)			\
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC)		\
 do {									\
   static struct section_info						\
     {									\
@@ -623,7 +621,7 @@ do {									\
 									\
   if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)			\
     type = SECT_EXEC, mode = "ax";					\
-  else if (DECL && TREE_READONLY (DECL))				\
+  else if (DECL && DECL_READONLY_SECTION (DECL, RELOC))			\
     type = SECT_RO, mode = "a";						\
   else									\
     type = SECT_RW, mode = "aw";					\
@@ -647,21 +645,20 @@ do {									\
     }									\
 } while (0)
 
-/* A C statement (sans semicolon) to mark DECL to be emitted as a
-   public symbol such that extra copies in multiple translation units will
-   be discarded by the linker.  */
-#define MAKE_DECL_ONE_ONLY(DECL)				\
+#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
+#define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL))
+#define UNIQUE_SECTION(DECL,RELOC)				\
 do {								\
   int len;							\
   char *name, *string, *prefix;					\
 								\
-  DECL_WEAK (DECL) = 1;						\
-  								\
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
 								\
-  if (TREE_CODE (DECL) == FUNCTION_DECL)			\
+  if (! DECL_ONE_ONLY (DECL))					\
+    prefix = ".";						\
+  else if (TREE_CODE (DECL) == FUNCTION_DECL)			\
     prefix = ".gnu.linkonce.t.";				\
-  else if (TREE_READONLY (DECL))				\
+  else if (DECL_READONLY_SECTION (DECL, RELOC))			\
     prefix = ".gnu.linkonce.r.";				\
   else								\
     prefix = ".gnu.linkonce.d.";				\
@@ -711,10 +708,7 @@ do {								\
     }									\
   else if (TREE_CODE (DECL) == VAR_DECL)				\
     {									\
-      if (!TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
-	  || !DECL_INITIAL (DECL)					\
-	  || (DECL_INITIAL (DECL) != error_mark_node			\
-	      && !TREE_CONSTANT (DECL_INITIAL (DECL))))			\
+      if (! DECL_READONLY_SECTION (DECL, RELOC))			\
 	data_section ();						\
       else								\
 	const_section ();						\
