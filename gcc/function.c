@@ -5309,7 +5309,9 @@ expand_function_end (filename, line, end_bindings)
   register int i;
   tree link;
 
+#ifdef TRAMPOLINE_TEMPLATE
   static rtx initial_trampoline;
+#endif
 
   if (output_bytecode)
     {
@@ -5342,8 +5344,10 @@ expand_function_end (filename, line, end_bindings)
       tree function = TREE_PURPOSE (link);
       rtx context = lookup_static_chain (function);
       rtx tramp = RTL_EXPR_RTL (TREE_VALUE (link));
+      rtx blktramp;
       rtx seq;
 
+#ifdef TRAMPOLINE_TEMPLATE
       /* First make sure this compilation has a template for
 	 initializing trampolines.  */
       if (initial_trampoline == 0)
@@ -5353,15 +5357,18 @@ expand_function_end (filename, line, end_bindings)
 	    = gen_rtx (MEM, BLKmode, assemble_trampoline_template ());
 	  resume_temporary_allocation ();
 	}
+#endif
 
       /* Generate insns to initialize the trampoline.  */
       start_sequence ();
-      tramp = change_address (initial_trampoline, BLKmode,
-			      round_trampoline_addr (XEXP (tramp, 0)));
-      emit_block_move (tramp, initial_trampoline, GEN_INT (TRAMPOLINE_SIZE),
+      tramp = round_trampoline_addr (XEXP (tramp, 0));
+#ifdef TRAMPOLINE_TEMPLATE
+      blktramp = change_address (initial_trampoline, BLKmode, tramp);
+      emit_block_move (blktramp, initial_trampoline,
+		       GEN_INT (TRAMPOLINE_SIZE),
 		       FUNCTION_BOUNDARY / BITS_PER_UNIT);
-      INITIALIZE_TRAMPOLINE (XEXP (tramp, 0),
-			     XEXP (DECL_RTL (function), 0), context);
+#endif
+      INITIALIZE_TRAMPOLINE (tramp, XEXP (DECL_RTL (function), 0), context);
       seq = get_insns ();
       end_sequence ();
 
