@@ -5876,7 +5876,6 @@ schedule_block (bb, rgn_n_insns)
 		    || (insn_issue_delay (insn) <= 3
 			&& check_live (insn, bb_src)
 			&& is_exception_free (insn, bb_src, target_bb))))
-
 	      {
 		rtx next;
 
@@ -5885,7 +5884,8 @@ schedule_block (bb, rgn_n_insns)
 		   speculative insn, NEXT might otherwise be a note.  */
 		next = next_nonnote_insn (insn);
 		if (INSN_DEP_COUNT (insn) == 0
-		    && (SCHED_GROUP_P (next) == 0
+		    && (! next
+			|| SCHED_GROUP_P (next) == 0
 			|| GET_RTX_CLASS (GET_CODE (next)) != 'i'))
 		  ready[n_ready++] = insn;
 	      }
@@ -6226,10 +6226,10 @@ add_branch_dependences (head, tail)
 
   rtx insn, last;
 
-  /* For all branches, calls, uses, and cc0 setters, force them to remain
-     in order at the end of the block by adding dependencies and giving
-     the last a high priority.  There may be notes present, and prev_head
-     may also be a note.
+  /* For all branches, calls, uses, clobbers, and cc0 setters, force them
+     to remain in order at the end of the block by adding dependencies and
+     giving the last a high priority.  There may be notes present, and
+     prev_head may also be a note.
 
      Branches must obviously remain at the end.  Calls should remain at the
      end since moving them results in worse register allocation.  Uses remain
@@ -6237,9 +6237,11 @@ add_branch_dependences (head, tail)
      at the end because they can't be moved away from their cc0 user.  */
   insn = tail;
   last = 0;
-  while (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN
+  while (GET_CODE (insn) == CALL_INSN
+	 || GET_CODE (insn) == JUMP_INSN
 	 || (GET_CODE (insn) == INSN
 	     && (GET_CODE (PATTERN (insn)) == USE
+		 || GET_CODE (PATTERN (insn)) == CLOBBER
 #ifdef HAVE_cc0
 		 || sets_cc0_p (PATTERN (insn))
 #endif
