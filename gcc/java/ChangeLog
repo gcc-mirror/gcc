@@ -1,3 +1,9 @@
+2005-02-14  Tom Tromey  <tromey@redhat.com>
+
+	PR java/19921:
+	* jcf-write.c (generate_bytecode_insns) <CALL_EXPR>: Note the
+	stack effect of multianewarray.
+
 2005-02-14  Andrew Haley  <aph@redhat.com>
 
 	PR java/19907

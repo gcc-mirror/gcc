@@ -1,3 +1,9 @@
+2005-02-14  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/19929:
+	* testsuite/libjava.lang/PR19929.out: New file.
+	* testsuite/libjava.lang/PR19929.java: New file.
+
 2005-02-14  Anthony Green  <green@redhat.com>
 
 	PR libgcj/18116
