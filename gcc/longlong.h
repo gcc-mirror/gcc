@@ -865,7 +865,7 @@ UDItype __umulsidi3 (USItype, USItype);
   } while (0)
 #define SMUL_TIME 14
 #define UDIV_TIME 120
-#elif defined (_ARCH_POWER)
+#elif defined (_ARCH_PWR)
 #define umul_ppmm(xh, xl, m0, m1) \
   do {									\
     USItype __m0 = (m0), __m1 = (m1);					\

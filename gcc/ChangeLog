@@ -1,3 +1,11 @@
+2000-08-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* collect2.c: Remove use of AIX import file.
+
+	* longlong.h: Test ARCH_PWR not ARCH_POWER.
+
+	* rs6000.c (print_operand, case 'E'): Add else.
+
 2000-08-14  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.md (movdi): Delay calling ia64_expand_load_address.
