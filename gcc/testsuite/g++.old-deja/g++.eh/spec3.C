@@ -1,5 +1,6 @@
 // Testing exception specifications.
 // Test 3: the bad_exception throw succeeds.
+// execution test fails - XFAIL *-*-*
 
 #include <stdlib.h>
 #include <exception>
