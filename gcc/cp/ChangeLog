@@ -1,5 +1,10 @@
 2003-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* error.c (print_instantiation_partial_context): Take a
+	location_t.
+	(print_instantiation_full_context): Adjust.
+	(print_instantiation_context): Adjust.
+
 	* cp-tree.h (cp_line_of, cp_file_of): Remove.
 	* error.c (cp_line_of, cp_file_of): Merge into ...
 	(location_of): ... here. Make static, return a location_t.
