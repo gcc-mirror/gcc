@@ -1040,12 +1040,19 @@ preserve_temp_slots (x)
     p = find_temp_slot_from_address (x);
 
   /* If X is not in memory or is at a constant address, it cannot be in
-     a temporary slot.  */
+     a temporary slot, but it can contain something whose address was
+     taken.  */
   if (p == 0 && (GET_CODE (x) != MEM || CONSTANT_P (XEXP (x, 0))))
-    return;
+    {
+      for (p = temp_slots; p; p = p->next)
+	if (p->in_use && p->level == temp_slot_level && p->addr_taken)
+	  p->level--;
+
+      return;
+    }
 
   /* First see if we can find a match.  */
-  if (p== 0)
+  if ( p== 0)
     p = find_temp_slot_from_address (XEXP (x, 0));
 
   if (p != 0)
