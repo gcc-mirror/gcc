@@ -1,3 +1,8 @@
+2003-01-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* genattrtab.c (write_attr_get): Mark 'insn' paramter
+	as ATTRIBUTE_UNUSED.
+
 2003-01-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (thumb_base_register_rtx_p): New function.
