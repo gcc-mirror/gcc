@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -399,7 +399,7 @@ void *function_arg ();
 #define STARTFILE_SPEC ""
 
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC "gnu_cc:[000000]crt0.obj"
+#define ENDFILE_SPEC "gnu:[000000]crt0.obj"
 
 /* Define the names of the division and modulus functions.  */
 #define DIVSI3_LIBCALL "ots$div_i"
