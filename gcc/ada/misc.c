@@ -79,6 +79,7 @@ extern FILE *asm_out_file;
 extern int save_argc;
 extern char **save_argv;
 
+static size_t gnat_tree_size		PARAMS ((enum tree_code));
 static bool gnat_init			PARAMS ((void));
 static void gnat_init_options		PARAMS ((void));
 static int gnat_decode_option		PARAMS ((int, char **));
@@ -98,6 +99,8 @@ static rtx gnat_expand_expr		PARAMS ((tree, rtx, enum machine_mode,
 #define LANG_HOOKS_NAME			"GNU Ada"
 #undef  LANG_HOOKS_IDENTIFIER_SIZE
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct tree_identifier)
+#undef  LANG_HOOKS_TREE_SIZE
+#define LANG_HOOKS_TREE_SIZE		gnat_tree_size
 #undef  LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT			gnat_init
 #undef  LANG_HOOKS_INIT_OPTIONS
@@ -333,6 +336,19 @@ internal_error_function (msgid, ap)
 
   Current_Error_Node = error_gnat_node;
   Compiler_Abort (fp, -1);
+}
+
+/* Langhook for tree_size: determine size of our 'x' and 'c' nodes.  */
+static size_t
+gnat_tree_size (enum tree_code code)
+{
+  switch (code)
+    {
+    case GNAT_LOOP_ID:	return sizeof (struct tree_loop_id);
+    default:
+      abort ();
+    }
+  /* NOTREACHED */
 }
 
 /* Perform all the initialization steps that are language-specific.  */

@@ -458,6 +458,17 @@ lhd_expr_size (exp)
     return size_in_bytes (TREE_TYPE (exp));
 }
 
+/* lang_hooks.tree_size: Determine the size of a tree with code C,
+   which is a language-specific tree code in category 'x'.  The
+   default expects never to be called.  */
+size_t
+lhd_tree_size (c)
+     enum tree_code c ATTRIBUTE_UNUSED;
+{
+  abort ();
+  return 0;
+}
+
 /* lang_hooks.decls.final_write_globals: perform final processing on
    global variables.  */
 void

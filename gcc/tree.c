@@ -182,28 +182,32 @@ tree_size (node)
 	      + TREE_CODE_LENGTH (code) * sizeof (char *) - sizeof (char *));
 
     case 'c':  /* a constant */
-      /* We can't use TREE_CODE_LENGTH for INTEGER_CST, since the number of
-	 words is machine-dependent due to varying length of HOST_WIDE_INT,
-	 which might be wider than a pointer (e.g., long long).  Similarly
-	 for REAL_CST, since the number of words is machine-dependent due
-	 to varying size and alignment of `double'.  */
-      if (code == INTEGER_CST)
-	return sizeof (struct tree_int_cst);
-      else if (code == REAL_CST)
-	return sizeof (struct tree_real_cst);
-      else
-	return (sizeof (struct tree_common)
-		+ TREE_CODE_LENGTH (code) * sizeof (char *));
+      switch (code)
+	{
+	case INTEGER_CST:	return sizeof (struct tree_int_cst);
+	case REAL_CST:		return sizeof (struct tree_real_cst);
+	case COMPLEX_CST:	return sizeof (struct tree_complex);
+	case VECTOR_CST:	return sizeof (struct tree_vector);
+	case STRING_CST:	return sizeof (struct tree_string);
+	default:
+	  return (*lang_hooks.tree_size) (code);
+	}
 
     case 'x':  /* something random, like an identifier.  */
-      {
-	size_t length;
-	length = (sizeof (struct tree_common)
-		  + TREE_CODE_LENGTH (code) * sizeof (char *));
-	if (code == TREE_VEC)
-	  length += TREE_VEC_LENGTH (node) * sizeof (char *) - sizeof (char *);
-	return length;
-      }
+      switch (code)
+	{
+	case IDENTIFIER_NODE:	return lang_hooks.identifier_size;
+	case TREE_LIST:		return sizeof (struct tree_list);
+	case TREE_VEC:		return (sizeof (struct tree_vec)
+					+ TREE_VEC_LENGTH(node) * sizeof(char *)
+					- sizeof (char *));
+
+	case ERROR_MARK:
+	case PLACEHOLDER_EXPR:	return sizeof (struct tree_common);
+
+	default:
+	  return (*lang_hooks.tree_size) (code);
+	}
 
     default:
       abort ();
@@ -4817,7 +4821,7 @@ initializer_zerop (init)
       {
 	if (AGGREGATE_TYPE_P (TREE_TYPE (init)))
 	  {
-	    tree aggr_init = TREE_OPERAND (init, 1);
+	    tree aggr_init = CONSTRUCTOR_ELTS (init);
 
 	    while (aggr_init)
 	      {

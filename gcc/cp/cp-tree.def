@@ -47,7 +47,7 @@ DEFTREECODE (OFFSET_REF, "offset_ref", 'r', 2)
 /* A pointer-to-member constant.  For a pointer-to-member constant
    `X::Y' The PTRMEM_CST_CLASS is the RECORD_TYPE for `X' and the
    PTRMEM_CST_MEMBER is the _DECL for `Y'.  */
-DEFTREECODE (PTRMEM_CST, "ptrmem_cst", 'c', 2)
+DEFTREECODE (PTRMEM_CST, "ptrmem_cst", 'c', 0)
 
 /* For NEW_EXPR, operand 0 is the placement list.
    Operand 1 is the new-declarator.
@@ -105,7 +105,7 @@ DEFTREECODE (ALIAS_DECL, "alias_decl", 'd', 0)
    the type of the expression.  This type is either a FUNCTION_TYPE,
    METHOD_TYPE, or `unknown_type_node' indicating that the function is
    overloaded. */
-DEFTREECODE (BASELINK, "baselink", 'x', 3)
+DEFTREECODE (BASELINK, "baselink", 'x', 0)
 
 /* Template definition.  The following fields have the specified uses,
    although there are other macros in cp-tree.h that should be used for
@@ -157,16 +157,7 @@ DEFTREECODE (TEMPLATE_DECL, "template_decl", 'd', 0)
    The LEVEL is the level of the parameter when we are worrying about
    the types of things; the ORIG_LEVEL is the level when we are
    worrying about instantiating things.  */
-DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", 'x', 
-	     /* The addition of (sizeof(tree) - 1) in the next expression
-		is to handle the case when padding pushes us past an even
-		multiple of sizeof(tree).  */
-	     /* We used to try to calculate this using
-		1+3*sizeof(HOST_WIDE_INT), but that fails if alignment
-		makes it bigger.  */
-	     ((sizeof (template_parm_index) - sizeof (struct tree_common))
-	      + sizeof (tree) - 1)
-	     / sizeof (tree))
+DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", 'x', 0)
 
 /* Index into a template parameter list.  This parameter must be a type.
    The TYPE_FIELDS value will be a TEMPLATE_PARM_INDEX.  */
@@ -212,7 +203,7 @@ DEFTREECODE (USING_DECL, "using_decl", 'd', 0)
 DEFTREECODE (USING_STMT, "using_directive", 'e', 1)
 
 /* An un-parsed default argument.  Looks like an IDENTIFIER_NODE.  */
-DEFTREECODE (DEFAULT_ARG, "default_arg", 'x', 2)
+DEFTREECODE (DEFAULT_ARG, "default_arg", 'x', 0)
 
 /* A template-id, like foo<int>.  The first operand is the template.
    The second is the TREE_LIST or TREE_VEC of explicitly specified
@@ -224,11 +215,11 @@ DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", 'e', 2)
 
 /* A list-like node for chaining overloading candidates. TREE_TYPE is 
    the original name, and the parameter is the FUNCTION_DECL.  */
-DEFTREECODE (OVERLOAD, "overload", 'x', 1)
+DEFTREECODE (OVERLOAD, "overload", 'x', 0)
 
 /* A generic wrapper for something not tree that we want to include in
    tree structure.  */
-DEFTREECODE (WRAPPER, "wrapper", 'x', 1)
+DEFTREECODE (WRAPPER, "wrapper", 'x', 0)
 
 /* Used to represent deferred name lookup for dependent names while
    parsing a template declaration.  The first argument is an

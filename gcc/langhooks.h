@@ -193,6 +193,11 @@ struct lang_hooks
      identifier nodes long enough for the language-specific slots.  */
   size_t identifier_size;
 
+  /* Determines the size of any language-specific 'x' or 'c' nodes.
+     Since it is called from make_node, the only information available
+     is the tree code.  Expected to abort on unrecognized codes.  */
+  size_t (*tree_size) PARAMS ((enum tree_code));
+
   /* The first callback made to the front end, for simple
      initialization needed before any calls to decode_option.  */
   void (*init_options) PARAMS ((void));

@@ -353,17 +353,6 @@ struct tree_wrapper GTY(())
   struct z_candidate *z_c;
 };
 
-#define SOURCE_LOCUS(NODE) \
-   (((struct tree_srcloc*)SRCLOC_CHECK (NODE))->locus)
-#define SRCLOC_FILE(NODE) SOURCE_LOCUS (NODE).file
-#define SRCLOC_LINE(NODE) SOURCE_LOCUS (NODE).line
-
-struct tree_srcloc GTY(())
-{
-  struct tree_common common;
-  location_t locus;
-};
-
 /* Macros for access to language-specific slots in an identifier.  */
 
 #define IDENTIFIER_NAMESPACE_BINDINGS(NODE)	\
@@ -466,7 +455,6 @@ struct tree_default_arg GTY (())
 };
 
 enum cp_tree_node_structure_enum {
-  TS_CP_COMMON,
   TS_CP_GENERIC,
   TS_CP_IDENTIFIER,
   TS_CP_TPI,
@@ -475,7 +463,6 @@ enum cp_tree_node_structure_enum {
   TS_CP_OVERLOAD,
   TS_CP_BASELINK,
   TS_CP_WRAPPER,
-  TS_CP_SRCLOC,
   TS_CP_DEFAULT_ARG,
   LAST_TS_CP_ENUM
 };
@@ -484,7 +471,6 @@ enum cp_tree_node_structure_enum {
 union lang_tree_node GTY((desc ("cp_tree_node_structure (&%h)"),
        chain_next ("(union lang_tree_node *)TREE_CHAIN (&%h.generic)")))
 {
-  struct tree_common GTY ((tag ("TS_CP_COMMON"))) common;
   union tree_node GTY ((tag ("TS_CP_GENERIC"),
 			desc ("tree_node_structure (&%h)"))) generic;
   struct template_parm_index_s GTY ((tag ("TS_CP_TPI"))) tpi;
@@ -492,7 +478,6 @@ union lang_tree_node GTY((desc ("cp_tree_node_structure (&%h)"),
   struct tree_overload GTY ((tag ("TS_CP_OVERLOAD"))) overload;
   struct tree_baselink GTY ((tag ("TS_CP_BASELINK"))) baselink;
   struct tree_wrapper GTY ((tag ("TS_CP_WRAPPER"))) wrapper;
-  struct tree_srcloc GTY ((tag ("TS_CP_SRCLOC"))) srcloc;
   struct tree_default_arg GTY ((tag ("TS_CP_DEFAULT_ARG"))) default_arg;
   struct lang_identifier GTY ((tag ("TS_CP_IDENTIFIER"))) identifier;
 };
@@ -4212,7 +4197,6 @@ extern tree decl_namespace_context		(tree);
 extern tree lvalue_type				(tree);
 extern tree error_type				(tree);
 extern tree build_zc_wrapper			(struct z_candidate *);
-extern tree build_srcloc_here			(void);
 extern int varargs_function_p			(tree);
 extern int really_overloaded_fn			(tree);
 extern int cp_tree_equal			(tree, tree);

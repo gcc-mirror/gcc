@@ -25,9 +25,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Tree nodes relevant to both C and C++. These were originally in
 cp-tree.def in the cp subdir.  */
 
-/* A node to remember a source position.  */
-DEFTREECODE (SRCLOC, "srcloc", 'x', 2)
-
 DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", '1', 1)
 DEFTREECODE (ARROW_EXPR, "arrow_expr", 'e', 1)
 DEFTREECODE (ALIGNOF_EXPR, "alignof_expr", '1', 1)

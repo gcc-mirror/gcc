@@ -49,11 +49,10 @@ typedef int (*tree_fn_t) PARAMS ((tree, void*));
 
 /* The PENDING_TEMPLATES is a TREE_LIST of templates whose
    instantiations have been deferred, either because their definitions
-   were not yet available, or because we were putting off doing the
-   work.  The TREE_PURPOSE of each entry is a SRCLOC indicating where
-   the instantiate request occurred; the TREE_VALUE is either a DECL
-   (for a function or static data member), or a TYPE (for a class)
-   indicating what we are hoping to instantiate.  */
+   were not yet available, or because we were putting off doing the work.
+   The TREE_PURPOSE of each entry is either a DECL (for a function or
+   static data member), or a TYPE (for a class) indicating what we are
+   hoping to instantiate.  The TREE_VALUE is not used.  */
 static GTY(()) tree pending_templates;
 static GTY(()) tree last_pending_template;
 

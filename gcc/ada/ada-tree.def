@@ -77,4 +77,4 @@ DEFTREECODE (GNAT_NOP_EXPR, "gnat_nop_expr", '1', 1)
 
    ??? This should be redone at some point.  */
 
-DEFTREECODE (GNAT_LOOP_ID, "gnat_loop_id", 'x', 1)
+DEFTREECODE (GNAT_LOOP_ID, "gnat_loop_id", 'x', 0)

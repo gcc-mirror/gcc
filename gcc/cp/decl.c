@@ -14405,7 +14405,6 @@ cp_tree_node_structure (union lang_tree_node * t)
     case PTRMEM_CST:		return TS_CP_PTRMEM;
     case BASELINK:              return TS_CP_BASELINK;
     case WRAPPER:		return TS_CP_WRAPPER;
-    case SRCLOC:		return TS_CP_SRCLOC;
     default:			return TS_CP_GENERIC;
     }
 }

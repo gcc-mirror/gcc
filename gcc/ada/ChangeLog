@@ -1,3 +1,9 @@
+2003-04-06  Zack Weinberg  <zack@codesourcery.com>
+
+	* ada-tree.def: Make fourth element for GNAT_LOOP_ID zero.
+	* misc.c (gnat_tree_size): New function.
+	(LANG_HOOKS_TREE_SIZE): Override.
+
 2003-04-03  Jason Merrill  <jason@redhat.com>
 
 	* misc.c (gnat_adjust_rli): #if 0.
@@ -90,10 +96,10 @@
 
 2003-01-29  Laurent Guerby <guerby@acm.org>
 
-        PR ada/8344
-        * final.c: rename to adafinal.c to avoid file name conflicts with gcc file.
-        * Makefile.in: match previous change.
-        * Make-lang.in: match previous change.
+	PR ada/8344
+	* final.c: rename to adafinal.c to avoid file name conflicts with gcc file.
+	* Makefile.in: match previous change.
+	* Make-lang.in: match previous change.
 
 2003-01-29	Joel Sherrill <joel@OARcorp.com>
 

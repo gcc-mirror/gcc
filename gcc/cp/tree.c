@@ -43,7 +43,6 @@ static hashval_t list_hash_pieces PARAMS ((tree, tree, tree));
 static hashval_t list_hash PARAMS ((const void *));
 static cp_lvalue_kind lvalue_p_1 PARAMS ((tree, int, int));
 static tree no_linkage_helper PARAMS ((tree *, int *, void *));
-static tree build_srcloc PARAMS ((const char *, int));
 static tree mark_local_for_remap_r PARAMS ((tree *, int *, void *));
 static tree cp_unsave_r PARAMS ((tree *, int *, void *));
 static tree build_target_expr PARAMS ((tree, tree));
@@ -1822,26 +1821,6 @@ build_zc_wrapper (ptr)
   tree t = make_node (WRAPPER);
   WRAPPER_ZC (t) = ptr;
   return t;
-}
-
-static tree
-build_srcloc (file, line)
-     const char *file;
-     int line;
-{
-  tree t;
-
-  t = make_node (SRCLOC);
-  SRCLOC_FILE (t) = file;
-  SRCLOC_LINE (t) = line;
-
-  return t;
-}
-
-tree
-build_srcloc_here ()
-{
-  return build_srcloc (input_filename, lineno);
 }
 
 /* The type of ARG when used as an lvalue.  */

@@ -34,10 +34,13 @@ static HOST_WIDE_INT cxx_get_alias_set (tree);
 static bool ok_to_generate_alias_set_for_type (tree);
 static bool cxx_warn_unused_global_decl (tree);
 static tree cp_expr_size (tree);
+static size_t cp_tree_size (enum tree_code);
 static bool cp_var_mod_type_p (tree);
 
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME "GNU C++"
+#undef LANG_HOOKS_TREE_SIZE
+#define LANG_HOOKS_TREE_SIZE cp_tree_size
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT cxx_init
 #undef LANG_HOOKS_FINISH
@@ -316,6 +319,24 @@ cp_expr_size (tree exp)
   else
     /* Use the default code.  */
     return lhd_expr_size (exp);
+}
+
+/* Langhook for tree_size: determine size of our 'x' and 'c' nodes.  */
+static size_t
+cp_tree_size (enum tree_code code)
+{
+  switch (code)
+    {
+    case PTRMEM_CST: 		return sizeof (struct ptrmem_cst);
+    case BASELINK:		return sizeof (struct tree_baselink);
+    case TEMPLATE_PARM_INDEX: 	return sizeof (template_parm_index);
+    case DEFAULT_ARG:		return sizeof (struct tree_default_arg);
+    case OVERLOAD:		return sizeof (struct tree_overload);
+    case WRAPPER:		return sizeof (struct tree_wrapper);
+    default:
+      abort ();
+    }
+  /* NOTREACHED */
 }
 
 /* Returns true if T is a variably modified type, in the sense of C99.
