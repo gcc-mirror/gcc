@@ -813,8 +813,6 @@ java/io/PushbackInputStream.java \
 java/io/PushbackReader.java \
 java/io/RandomAccessFile.java \
 java/io/Reader.java \
-java/io/Replaceable.java \
-java/io/Resolvable.java	\
 java/io/SequenceInputStream.java \
 java/io/Serializable.java \
 java/io/SerializablePermission.java \

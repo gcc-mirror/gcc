@@ -1,5 +1,5 @@
 /* Provider.java -- Security provider information
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,6 +67,8 @@ private String name;
   * This is the version number of the provider
   */
 private double version;
+
+private static final long serialVersionUID = -4298000515446427739L;
 
 /*************************************************************************/
 

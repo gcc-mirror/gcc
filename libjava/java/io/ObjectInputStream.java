@@ -1,5 +1,5 @@
 /* ObjectInputStream.java -- Class used to read serialized objects
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,7 @@ import gnu.java.io.ObjectIdentityWrapper;
 import gnu.java.lang.reflect.TypeSignature;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 
 
@@ -189,7 +190,7 @@ public class ObjectInputStream extends InputStream
       {
 //	DEBUG ("STRING ");
 	String s = this.realInputStream.readUTF ();
-	ret_val = processResoultion (s, assignNewHandle (s));
+	ret_val = processResolution (s, assignNewHandle (s));
 	break;
       }
 
@@ -202,7 +203,7 @@ public class ObjectInputStream extends InputStream
 	Object array = Array.newInstance (componenetType, length);
 	int handle = assignNewHandle (array);
 	readArrayElements (array, componenetType);
-	ret_val = processResoultion (array, handle);
+	ret_val = processResolution (array, handle);
 	break;
       }
 
@@ -250,7 +251,7 @@ public class ObjectInputStream extends InputStream
 	  if (read_from_blocks)
 	    setBlockDataMode (false);
 
-	  ret_val = processResoultion (obj, handle);
+	  ret_val = processResolution (obj, handle);
 	  break;
 	} // end if (Externalizable.class.isAssignableFrom (clazz))
 
@@ -315,7 +316,7 @@ public class ObjectInputStream extends InputStream
 
 	this.currentObject = null;
 	this.currentObjectStreamClass = null;
-	ret_val = processResoultion (obj, handle);
+	ret_val = processResolution (obj, handle);
 	break;
       }
 
@@ -937,11 +938,30 @@ public class ObjectInputStream extends InputStream
   }
 
 
-  private Object processResoultion (Object obj, int handle)
+  private Object processResolution (Object obj, int handle)
     throws IOException
   {
-    if (obj instanceof Resolvable)
-      obj = ((Resolvable)obj).readResolve ();
+    if (obj instanceof Serializable)
+      {
+        Method m = null; 
+	try
+	{
+	  Class classArgs[] = {};
+	  m = obj.getClass ().getDeclaredMethod ("readResolve", classArgs);
+	  // m can't be null by definition since an exception would
+	  // have been thrown so a check for null is not needed.
+	  obj = m.invoke (obj, new Object[] {});	
+	}
+	catch (NoSuchMethodException ignore)
+	{
+	}
+	catch (IllegalAccessException ignore)
+	{
+	}
+	catch (InvocationTargetException ignore)
+	{
+	}
+      }
 
     if (this.resolveEnabled)
       obj = resolveObject (obj);

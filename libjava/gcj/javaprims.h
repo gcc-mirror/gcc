@@ -103,8 +103,6 @@ extern "Java"
       class PushbackReader;
       class RandomAccessFile;
       class Reader;
-      class Replaceable;
-      class Resolvable;
       class SequenceInputStream;
       class Serializable;
       class SerializablePermission;

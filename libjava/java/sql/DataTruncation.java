@@ -1,5 +1,5 @@
 /* DataTruncation.java -- Warning when data has been truncated.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -71,6 +71,8 @@ private boolean read;
   * @serialized
   */
 private int transferSize;
+
+private static final long serialVersionUID = 6464298989504059473L;
 
 /*************************************************************************/
 

@@ -21,8 +21,7 @@ import java.math.BigInteger;
  
 public interface DSAPublicKey extends DSAKey, PublicKey
 {
-  // FIXME: need to set this at some point when serialization is implemented.
-  // public static final long serialVersionUID = 0L;
+  public static final long serialVersionUID = 1234526332779022332L;
 
   public BigInteger getY();
 }
