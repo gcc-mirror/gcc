@@ -39,10 +39,10 @@ Thu Aug  3 01:46:33 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-08-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
-	* gcc.c-torture/execute/20000801-3.c, gcc.c-torture/20000801-4.c:
-	New tests.
-	* gcc.c-torture/execute/20000801-3.x, gcc/c-torture/20000801-4.x:
-	Xfail.
+	* gcc.c-torture/execute/20000801-3.c,
+	gcc.c-torture/execute/20000801-4.c: New tests.
+	* gcc.c-torture/execute/20000801-3.x,
+	gcc.c-torture/execute/20000801-4.x: Xfail.
 
 2000-08-02  Geoff Keating  <geoffk@cygnus.com>
 
@@ -215,15 +215,15 @@ Mon Jul 17 03:13:12 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/formatz-1.c: New test.
 
-	* gcc.dg/c90-digraph-1.c, gcc.dg/c94-digraph.c,
-	* gcc.dg/c99-digraph.c: New tests.
+	* gcc.dg/c90-digraph-1.c, gcc.dg/c94-digraph-1.c,
+	* gcc.dg/c99-digraph-1.c: New tests.
 
 	* gcc.dg/c90-hexfloat-1.c, gcc.dg/c90-hexfloat-2.c,
 	* gcc.dg/c99-hexfloat-1.c, gcc.dg/c99-hexfloat-2.c: New tests.
 
 	* gcc.dg/c90-enum-comma-1.c, gcc.dg/c90-idem-qual-1.c,
 	* gcc.dg/c90-impl-decl-1.c, gcc.dg/c90-impl-int-1.c,
-	* gcc.dg/c90-longlong.c, gcc.dg/c90-restrict-1.c,
+	* gcc.dg/c90-longlong-1.c, gcc.dg/c90-restrict-1.c,
 	* gcc.dg/c90-return-1.c, gcc.dg/c99-enum-comma-1.c,
 	* gcc.dg/c99-idem-qual-1.c, gcc.dg/c99-impl-decl-1.c,
 	* gcc.dg/c99-impl-int-1.c, gcc.dg/c99-longlong-1.c,
