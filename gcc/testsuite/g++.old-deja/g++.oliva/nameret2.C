@@ -4,7 +4,7 @@
 
 // distilled from libg++'s Integer.cc
 
-// Special g++ Options:
+// Special g++ Options: -O1
 // crash test - XFAIL *-*-*
 
 inline int bar () return r {}
