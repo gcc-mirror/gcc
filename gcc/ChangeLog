@@ -1,3 +1,9 @@
+2004-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/18231
+	* tree.c (staticp) <case FUNCTION_DECL>: Nested functions are static
+	also.
+
 2004-11-03  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/18270
