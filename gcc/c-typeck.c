@@ -4943,8 +4943,8 @@ digest_init (type, init, require_constant, constructor_constant)
      from an expression of the same type, optionally with braces.  */
 
   if (inside_init && TREE_TYPE (inside_init) != 0
-      && ((TYPE_MAIN_VARIANT (TREE_TYPE (inside_init))
-	   == TYPE_MAIN_VARIANT (type))
+      && (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (inside_init)),
+		     TYPE_MAIN_VARIANT (type))
 	  || (code == ARRAY_TYPE
 	      && comptypes (TREE_TYPE (inside_init), type))
 	  || (code == POINTER_TYPE
