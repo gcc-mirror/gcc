@@ -1,5 +1,12 @@
 2005-01-27  Laurent GUERBY <laurent@guerby.net>
 
+	* Makefile.in: Fix a-intnam.ads from previous commit,
+	add 2005 to copyright.
+	* a-intman-rtems.ads: Renamed to...
+	* a-intnam-rtems.ads:
+
+2005-01-27  Laurent GUERBY <laurent@guerby.net>
+
 	* Makefile.in: Rename GNAT RTEMS specific files.
 	* 5rtpopsp.adb, 4rintnam.ads, 5rosinte.adb,  
  	5rosinte.ads, 5rparame.adb: Replaced by files below.
