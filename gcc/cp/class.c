@@ -4971,27 +4971,245 @@ pop_lang_context ()
 
 /* Type instantiation routines.  */
 
-static tree
-validate_lhs (lhstype, complain)
-     tree lhstype;
-     int complain;
-{
-  if (TYPE_PTRMEMFUNC_P (lhstype))
-    lhstype = TYPE_PTRMEMFUNC_FN_TYPE (lhstype);
+/* Given an OVERLOAD and a TARGET_TYPE, return the function that
+   matches the TARGET_TYPE.  If there is no satisfactory match, return
+   error_mark_node, and issue an error message if COMPLAIN is
+   non-zero.  If TEMPLATE_ONLY, the name of the overloaded function
+   was a template-id, and EXPLICIT_TARGS are the explicitly provided
+   template arguments.  */
 
-  if (TREE_CODE (lhstype) == POINTER_TYPE)
+static tree
+resolve_address_of_overloaded_function (target_type, 
+					overload,
+					complain, 
+					template_only,
+					explicit_targs)
+     tree target_type;
+     tree overload;
+     int complain;
+     int template_only;
+     tree explicit_targs;
+{
+  /* Here's what the standard says:
+     
+       [over.over]
+
+       If the name is a function template, template argument deduction
+       is done, and if the argument deduction succeeds, the deduced
+       arguments are used to generate a single template function, which
+       is added to the set of overloaded functions considered.
+
+       Non-member functions and static member functions match targets of
+       type "pointer-to-function" or "reference-to-function."  Nonstatic
+       member functions match targets of type "pointer-to-member
+       function;" the function type of the pointer to member is used to
+       select the member function from the set of overloaded member
+       functions.  If a nonstatic member function is selected, the
+       reference to the overloaded function name is required to have the
+       form of a pointer to member as described in 5.3.1.
+
+       If more than one function is selected, any template functions in
+       the set are eliminated if the set also contains a non-template
+       function, and any given template function is eliminated if the
+       set contains a second template function that is more specialized
+       than the first according to the partial ordering rules 14.5.5.2.
+       After such eliminations, if any, there shall remain exactly one
+       selected function.  */
+
+  int is_ptrmem = 0;
+  int is_reference = 0;
+  /* We store the matches in a TREE_LIST rooted here.  The functions
+     are the TREE_PURPOSE, not the TREE_VALUE, in this list, for easy
+     interoperability with most_specialized_instantiation.  */
+  tree matches = NULL_TREE;
+
+  /* If the TARGET_TYPE is a pointer-to-a-method, we convert it to
+     proper pointer-to-member type here.  */
+  if (TREE_CODE (target_type) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (target_type)) == METHOD_TYPE)
+    target_type = build_ptrmemfunc_type (target_type);
+
+  /* Check that the TARGET_TYPE is reasonable.  */
+  if (TYPE_PTRFN_P (target_type))
+    /* This is OK.  */
+    ;
+  else if (TYPE_PTRMEMFUNC_P (target_type))
+    /* This is OK, too.  */
+    is_ptrmem = 1;
+  else if (TREE_CODE (target_type) == FUNCTION_TYPE)
     {
-      if (TREE_CODE (TREE_TYPE (lhstype)) == FUNCTION_TYPE
-	  || TREE_CODE (TREE_TYPE (lhstype)) == METHOD_TYPE)
-	lhstype = TREE_TYPE (lhstype);
-      else
+      /* This is OK, too.  This comes from a conversion to reference
+	 type.  */
+      target_type = build_reference_type (target_type);
+      is_reference = 1;
+    }
+  else 
+    {
+      if (complain)
+	cp_error("cannot resolve overloaded function `%D' based on conversion to type `%T'", 
+		 DECL_NAME (OVL_FUNCTION (overload)), target_type);
+      return error_mark_node;
+    }
+  
+  /* If we can find a non-template function that matches, we can just
+     use it.  There's no point in generating template instantiations
+     if we're just going to throw them out anyhow.  But, of course, we
+     can only do this when we don't *need* a template function.  */
+  if (!template_only)
+    {
+      tree fns;
+
+      for (fns = overload; fns; fns = OVL_CHAIN (fns))
 	{
-	  if (complain)
-	    error ("invalid type combination for overload");
-	  return error_mark_node;
+	  tree fn = OVL_FUNCTION (fns);
+	  tree fntype;
+
+	  if (TREE_CODE (fn) == TEMPLATE_DECL)
+	    /* We're not looking for templates just yet.  */
+	    continue;
+
+	  if ((TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
+	      != is_ptrmem)
+	    /* We're looking for a non-static member, and this isn't
+	       one, or vice versa.  */
+	    continue;
+	
+	  /* See if there's a match.  */
+	  fntype = TREE_TYPE (fn);
+	  if (is_ptrmem)
+	    fntype = build_ptrmemfunc_type (build_pointer_type (fntype));
+	  else if (!is_reference)
+	    fntype = build_pointer_type (fntype);
+
+	  if (can_convert_arg (target_type, fntype, fn))
+	    matches = scratch_tree_cons (fn, NULL_TREE, matches);
 	}
     }
-  return lhstype;
+
+  /* Now, if we've already got a match (or matches), there's no need
+     to proceed to the template functions.  But, if we don't have a
+     match we need to look at them, too.  */
+  if (!matches) 
+    {
+      tree target_fn_type;
+      tree target_arg_types;
+      tree fns;
+
+      if (is_ptrmem)
+	{
+	  target_fn_type
+	    = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (target_type));
+	  target_arg_types = TREE_CHAIN (TYPE_ARG_TYPES (target_fn_type));
+	}
+      else
+	{
+	  target_fn_type = TREE_TYPE (target_type);
+	  target_arg_types = TYPE_ARG_TYPES (target_fn_type);
+	}
+
+      for (fns = overload; fns; fns = OVL_CHAIN (fns))
+	{
+	  tree fn = OVL_FUNCTION (fns);
+	  tree fn_arg_types;
+	  tree instantiation;
+	  tree instantiation_type;
+	  tree targs;
+
+	  if (TREE_CODE (fn) != TEMPLATE_DECL)
+	    /* We're only looking for templates.  */
+	    continue;
+
+	  if ((TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
+	      != is_ptrmem)
+	    /* We're looking for a non-static member, and this isn't
+	       one, or vice versa.  */
+	    continue;
+
+	  /* We don't use the `this' argument to do argument deduction
+	     since that would prevent us from converting a base class
+	     pointer-to-member to a derived class pointer-to-member.  */
+	  fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
+	  if (is_ptrmem)
+	    fn_arg_types = TREE_CHAIN (fn_arg_types);
+
+	  /* Try to do argument deduction.  */
+	  targs = make_scratch_vec (DECL_NTPARMS (fn));
+	  if (type_unification (DECL_INNERMOST_TEMPLATE_PARMS (fn),
+				targs,
+				fn_arg_types,
+				target_arg_types,
+				explicit_targs,
+				DEDUCE_EXACT,
+				/*allow_incomplete=*/1) != 0)
+	    /* Argument deduction failed.  */
+	    continue;
+
+	  /* Instantiate the template.  */
+	  instantiation = instantiate_template (fn, targs);
+	  if (instantiation == error_mark_node)
+	    /* Instantiation failed.  */
+	    continue;
+
+	  /* See if there's a match.  */
+	  instantiation_type = TREE_TYPE (instantiation);
+	  if (is_ptrmem)
+	    instantiation_type = 
+	      build_ptrmemfunc_type (build_pointer_type (instantiation_type));
+	  else if (!is_reference)
+	    instantiation_type = build_pointer_type (instantiation_type);
+	  if (can_convert_arg (target_type, instantiation_type, instantiation))
+	    matches = scratch_tree_cons (instantiation, fn, matches);
+	}
+
+      /* Now, remove all but the most specialized of the matches.  */
+      if (matches)
+	{
+	  tree match = most_specialized_instantiation (matches, 
+						       explicit_targs);
+
+	  if (match != error_mark_node)
+	    matches = scratch_tree_cons (match, NULL_TREE, NULL_TREE);
+	}
+    }
+
+  /* Now we should have exactly one function in MATCHES.  */
+  if (matches == NULL_TREE)
+    {
+      /* There were *no* matches.  */
+      if (complain)
+	{
+ 	  cp_error ("cannot convert overloaded function `%D' to type `%#T'", 
+		    DECL_NAME (OVL_FUNCTION (overload)),
+		    target_type);
+	  cp_error ("because no suitable overload exists");
+	}
+      return error_mark_node;
+    }
+  else if (TREE_CHAIN (matches))
+    {
+      /* There were too many matches.  */
+
+      if (complain)
+	{
+	  tree match;
+
+ 	  cp_error ("converting overloaded function `%D' to type `%#T' is ambiguous", 
+		    DECL_NAME (OVL_FUNCTION (overload)),
+		    target_type);
+
+	  /* Since print_candidates expects the functions in the
+	     TREE_VALUE slot, we flip them here.  */
+	  for (match = matches; match; match = TREE_CHAIN (match))
+	    TREE_VALUE (match) = TREE_PURPOSE (match);
+
+	  print_candidates (matches);
+	}
+      
+      return error_mark_node;
+    }
+
+  /* Good, exactly one match.  */
+  return TREE_PURPOSE (matches);
 }
 
 /* This function will instantiate the type of the expression given in
@@ -5009,9 +5227,6 @@ instantiate_type (lhstype, rhs, complain)
      tree lhstype, rhs;
      int complain;
 {
-  tree explicit_targs = NULL_TREE;
-  int template_only = 0;
-
   if (TREE_CODE (lhstype) == UNKNOWN_TYPE)
     {
       if (complain)
@@ -5109,141 +5324,20 @@ instantiate_type (lhstype, rhs, complain)
       /* Fall through.  */
 
     case TEMPLATE_ID_EXPR:
-      {
-	explicit_targs = TREE_OPERAND (rhs, 1);
-	template_only = 1;
-	rhs = TREE_OPERAND (rhs, 0);
-      }
-      /* fall through */
-      my_friendly_assert (TREE_CODE (rhs) == OVERLOAD, 980401);
+      return 
+	resolve_address_of_overloaded_function (lhstype,
+						TREE_OPERAND (rhs, 0),
+						complain,
+						/*template_only=*/1,
+						TREE_OPERAND (rhs, 1));
 
     case OVERLOAD:
-      {
-	tree elem, elems;
-
-	/* Check that the LHSTYPE and the RHS are reasonable.  */
-	lhstype = validate_lhs (lhstype, complain);
-	if (lhstype == error_mark_node)
-	  return lhstype;
-
-	if (TREE_CODE (lhstype) != FUNCTION_TYPE
-	    && TREE_CODE (lhstype) != METHOD_TYPE)
-	  {
-	    if (complain)
-	      cp_error("cannot resolve overloaded function `%D' " 
-		       "based on non-function type `%T'", 
-		       DECL_NAME (OVL_FUNCTION (rhs)), lhstype);
-	    return error_mark_node;
-	  }
-	
-	/* Look for an exact match, by searching through the
-	   overloaded functions.  */
-	if (template_only)
-	  /* If we're processing a template-id, only a template
-	     function can match, so we don't look through the
-	     overloaded functions.  */
-	  ;
-	else for (elems = rhs; elems; elems = OVL_CHAIN (elems))
-	  {
-	    elem = OVL_FUNCTION (elems);
-	    if (TREE_CODE (elem) == FUNCTION_DECL
-		&& same_type_p (lhstype, TREE_TYPE (elem)))
-	      {
-		mark_used (elem);
-		return elem;
-	      }
-	  }
-
-	/* No overloaded function was an exact match.  See if we can
-	   instantiate some template to match.  */
-	{
-	  tree save_elem = 0;
-	  elems = rhs;
-	  if (TREE_CODE (elems) == TREE_LIST)
-	    elems = TREE_VALUE (rhs);
-	  for (; elems; elems = OVL_NEXT (elems))
-	    if (TREE_CODE (elem = OVL_CURRENT (elems)) == TEMPLATE_DECL)
-	      {
-		int n = DECL_NTPARMS (elem);
-		tree t = make_scratch_vec (n);
-		int i;
-		i = type_unification
-		  (DECL_INNERMOST_TEMPLATE_PARMS (elem), t,
-		   TYPE_ARG_TYPES (TREE_TYPE (elem)),
-		   TYPE_ARG_TYPES (lhstype), explicit_targs, DEDUCE_EXACT, 1);
-		if (i == 0)
-		  {
-		    if (save_elem)
-		      {
-			cp_error ("ambiguous template instantiation converting to `%#T'", lhstype);
-			return error_mark_node;
-		      }
-		    save_elem = instantiate_template (elem, t);
-		    /* Check the return type.  */
-		    if (!same_type_p (TREE_TYPE (lhstype),
-				      TREE_TYPE (TREE_TYPE (save_elem))))
-		      save_elem = 0;
-		  }
-	      }
-	  if (save_elem)
-	    {
-	      mark_used (save_elem);
-	      return save_elem;
-	    }
-	}
-
-	/* There's no exact match, and no templates can be
-	   instantiated to match.  The last thing we try is to see if
-	   some ordinary overloaded function is close enough.  If
-	   we're only looking for template functions, we don't do
-	   this.  */
-	if (!template_only)
-	  {
-	    for (elems = rhs; elems; elems = OVL_NEXT (elems))
-	      {
-		elem = OVL_CURRENT (elems);
-		if (TREE_CODE (elem) == FUNCTION_DECL
-		    && comp_target_types (lhstype, TREE_TYPE (elem), 1) > 0)
-		  break;
-	      }
-	    if (elems)
-	      {
-		tree save_elem = elem;
-		for (elems = OVL_CHAIN (elems); elems; 
-		     elems = OVL_CHAIN (elems))
-		  {
-		    elem = OVL_FUNCTION (elems);
-		    if (TREE_CODE (elem) == FUNCTION_DECL
-			&& comp_target_types (lhstype, TREE_TYPE (elem), 0) >0)
-		      break;
-		  }
-		if (elems)
-		  {
-		    if (complain)
-		      {
-			cp_error 
-			  ("cannot resolve overload to target type `%#T'",
-			   lhstype);
-			cp_error_at ("  ambiguity between `%#D'", save_elem); 
-			cp_error_at ("  and `%#D', at least", elem);
-		      }
-		    return error_mark_node;
-		  }
-		mark_used (save_elem);
-		return save_elem;
-	      }
-	  }
-
-	/* We failed to find a match.  */
-	if (complain)
-	  {
-	    cp_error ("cannot resolve overload to target type `%#T'", lhstype);
-	    cp_error 
-	      ("  because no suitable overload of function `%D' exists",
-	       DECL_NAME (OVL_FUNCTION (rhs)));
-	  }
-	return error_mark_node;
-      }
+      return 
+	resolve_address_of_overloaded_function (lhstype, 
+						rhs,
+						complain,
+						/*template_only=*/0,
+						/*explicit_targs=*/NULL_TREE);
 
     case TREE_LIST:
       {
@@ -5370,16 +5464,8 @@ instantiate_type (lhstype, rhs, complain)
       return rhs;
       
     case ADDR_EXPR:
-      if (TYPE_PTRMEMFUNC_P (lhstype))
-	lhstype = TYPE_PTRMEMFUNC_FN_TYPE (lhstype);
-      else if (TREE_CODE (lhstype) != POINTER_TYPE)
-	{
-	  if (complain)
-	    error ("type for resolving address of overloaded function must be pointer type");
-	  return error_mark_node;
-	}
       {
-	tree fn = instantiate_type (TREE_TYPE (lhstype), TREE_OPERAND (rhs, 0), complain);
+	tree fn = instantiate_type (lhstype, TREE_OPERAND (rhs, 0), complain);
 	if (fn == error_mark_node)
 	  return error_mark_node;
 	mark_addressable (fn);

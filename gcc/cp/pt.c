@@ -112,7 +112,6 @@ static void push_inline_template_parms_recursive PROTO((tree, int));
 static tree retrieve_specialization PROTO((tree, tree));
 static tree register_specialization PROTO((tree, tree, tree));
 static int unregister_specialization PROTO((tree, tree));
-static void print_candidates PROTO((tree));
 static tree reduce_template_parm_level PROTO((tree, tree, int));
 static tree build_template_decl PROTO((tree, tree));
 static int mark_template_parm PROTO((tree, void *));
@@ -883,7 +882,7 @@ unregister_specialization (spec, tmpl)
 
 /* Print the list of candidate FNS in an error message.  */
 
-static void
+void
 print_candidates (fns)
      tree fns;
 {
@@ -1996,7 +1995,7 @@ process_partial_specialization (decl)
 		  /* We haven't yet initialized TPD2.  Do so now.  */
 		  tpd2.arg_uses_template_parms 
 		    =  (int*) alloca (sizeof (int) * nargs);
-		  /* The number of paramters here is the number in the
+		  /* The number of parameters here is the number in the
 		     main template, which, as checked in the assertion
 		     above, is NARGS.  */
 		  tpd2.parms = (int*) alloca (sizeof (int) * nargs);
@@ -2004,7 +2003,7 @@ process_partial_specialization (decl)
 		    TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (maintmpl));
 		}
 
-	      /* Mark the template paramters.  But this time, we're
+	      /* Mark the template parameters.  But this time, we're
 		 looking for the template parameters of the main
 		 template, not in the specialization.  */
 	      tpd2.current_arg = i;
@@ -2024,7 +2023,7 @@ process_partial_specialization (decl)
 		    if (tpd2.parms[j] != 0
 			&& tpd.arg_uses_template_parms [j])
 		      {
-			cp_error ("type `%T' of template argument `%E' depends on template paramter(s)", 
+			cp_error ("type `%T' of template argument `%E' depends on template parameter(s)", 
 				  type,
 				  arg);
 			break;
@@ -2106,7 +2105,7 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
 
   if (current_class_type && TYPE_BEING_DEFINED (current_class_type))
     /* If we're inside a class definition, there's no need to
-       examine the paramters to the class itself.  On the one
+       examine the parameters to the class itself.  On the one
        hand, they will be checked when the class is defined, and,
        on the other, default arguments are legal in things like:
          template <class T = double>
@@ -8024,6 +8023,55 @@ get_class_bindings (tparms, parms, args)
   return vec;
 }
 
+/* In INSTANTIATIONS is a list of <INSTANTIATION, TEMPLATE> pairs.
+   Pick the most specialized template, and return the corresponding
+   instantiation, or if there is no corresponding instantiation, the
+   template itself.  EXPLICIT_ARGS is any template arguments explicity
+   mentioned in a template-id.  If there is no most specialized
+   tempalte, error_mark_node is returned.  If there are no templates
+   at all, NULL_TREE is returned.  */
+
+tree
+most_specialized_instantiation (instantiations, explicit_args)
+     tree instantiations;
+     tree explicit_args;
+{
+  tree fn, champ;
+  int fate;
+
+  if (!instantiations)
+    return NULL_TREE;
+
+  champ = instantiations;
+  for (fn = TREE_CHAIN (instantiations); fn; fn = TREE_CHAIN (fn))
+    {
+      fate = more_specialized (TREE_VALUE (champ), 
+			       TREE_VALUE (fn), explicit_args);
+      if (fate == 1)
+	;
+      else
+	{
+	  if (fate == 0)
+	    {
+	      fn = TREE_CHAIN (fn);
+	      if (! fn)
+		return error_mark_node;
+	    }
+	  champ = fn;
+	}
+    }
+
+  for (fn = instantiations; fn && fn != champ; fn = TREE_CHAIN (fn))
+    {
+      fate = more_specialized (TREE_VALUE (champ), 
+			       TREE_VALUE (fn), explicit_args);
+      if (fate != 1)
+	return error_mark_node;
+    }
+
+  return TREE_PURPOSE (champ) ? TREE_PURPOSE (champ) : TREE_VALUE (champ);
+}
+
 /* Return the most specialized of the list of templates in FNS that can
    produce an instantiation matching DECL, given the explicit template
    arguments EXPLICIT_ARGS.  */
@@ -8033,8 +8081,7 @@ most_specialized (fns, decl, explicit_args)
      tree fns, decl, explicit_args;
 {
   tree candidates = NULL_TREE;
-  tree fn, champ, args;
-  int fate;
+  tree fn, args;
 
   for (fn = fns; fn; fn = TREE_CHAIN (fn))
     {
@@ -8046,35 +8093,7 @@ most_specialized (fns, decl, explicit_args)
 					candidates);
     }
 
-  if (!candidates)
-    return NULL_TREE;
-
-  champ = TREE_VALUE (candidates);
-  for (fn = TREE_CHAIN (candidates); fn; fn = TREE_CHAIN (fn))
-    {
-      fate = more_specialized (champ, TREE_VALUE (fn), explicit_args);
-      if (fate == 1)
-	;
-      else
-	{
-	  if (fate == 0)
-	    {
-	      fn = TREE_CHAIN (fn);
-	      if (! fn)
-		return error_mark_node;
-	    }
-	  champ = TREE_VALUE (fn);
-	}
-    }
-
-  for (fn = candidates; fn && TREE_VALUE (fn) != champ; fn = TREE_CHAIN (fn))
-    {
-      fate = more_specialized (champ, TREE_VALUE (fn), explicit_args);
-      if (fate != 1)
-	return error_mark_node;
-    }
-
-  return champ;
+  return most_specialized_instantiation (candidates, explicit_args);
 }
 
 /* If DECL is a specialization of some template, return the most
