@@ -1,3 +1,8 @@
+2004-06-07  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/tree-ssa/20030728-1.c: Fixup return value to not match
+	if temporaries.
+
 2004-06-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* g++.dg/eh/elide1.C: Remove XFAIL.

@@ -899,54 +899,11 @@ gimplify_return_expr (tree stmt, tree *pre_p)
 
   /* We need to pass the full MODIFY_EXPR down so that special handling
      can replace it with something else.  */
-  gimplify_stmt (&ret_expr);
+  gimplify_stmt (&TREE_OPERAND (stmt, 0));
+  append_to_statement_list (TREE_OPERAND (stmt, 0), pre_p);
 
-  if (result == NULL_TREE)
-    TREE_OPERAND (stmt, 0) = NULL_TREE;
-  else if (ret_expr == TREE_OPERAND (stmt, 0))
-    /* It was already GIMPLE.  */
-    return GS_ALL_DONE;
-  else
-    {
-      /* If there's still a MODIFY_EXPR of the RESULT_DECL after
-	 gimplification, find it so we can put it in the RETURN_EXPR.  */
-      tree ret = NULL_TREE;
+  TREE_OPERAND (stmt, 0) = result;
 
-      if (TREE_CODE (ret_expr) == STATEMENT_LIST)
-	{
-	  tree_stmt_iterator si;
-	  for (si = tsi_start (ret_expr); !tsi_end_p (si); tsi_next (&si))
-	    {
-	      tree sub = tsi_stmt (si);
-	      if (TREE_CODE (sub) == MODIFY_EXPR
-		  && TREE_OPERAND (sub, 0) == result)
-		{
-		  ret = sub;
-		  if (tsi_one_before_end_p (si))
-		    tsi_delink (&si);
-		  else
-		    {
-		      /* If there were posteffects after the MODIFY_EXPR,
-			 we need a temporary.  */
-		      tree tmp = create_tmp_var (TREE_TYPE (result), "retval");
-		      TREE_OPERAND (ret, 0) = tmp;
-		      ret = build (MODIFY_EXPR, TREE_TYPE (result),
-				   result, tmp);
-		    }
-		  break;
-		}
-	    }
-	}
-
-      if (ret)
-	TREE_OPERAND (stmt, 0) = ret;
-      else
-	/* The return value must be set up some other way.  Just tell
-	   expand_return that we're returning the RESULT_DECL.  */
-	TREE_OPERAND (stmt, 0) = result;
-    }
-
-  append_to_statement_list (ret_expr, pre_p);
   return GS_ALL_DONE;
 }
 

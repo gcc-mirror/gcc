@@ -187,6 +187,13 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
       return;
     }
 
+  if ((TREE_CODE (root1) == RESULT_DECL) != (TREE_CODE (root2) == RESULT_DECL))
+    {
+      if (debug)
+        fprintf (debug, " : One root a RESULT_DECL. No coalesce.\n");
+      return;
+    }
+
   gimp1 = is_gimple_tmp_var (root1);
   gimp2 = is_gimple_tmp_var (root2);
 
