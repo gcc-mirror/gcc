@@ -1,3 +1,13 @@
+2004-04-27  Paolo Bonzini  <bonzini@gnu.org>
+
+	Revert:
+	2004-04-26  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.def (flags_to_pass): Remove *dir variables that
+	are passed to the modules via TOPLEVEL_CONFIGURE_ARGUMENTS,
+	as well as prefix and exec_prefix.
+	* Makefile.in: Regenerate.
+
 2004-04-26  Robert Millan  <robertmh@gnu.org>
 
 	Add patches from libtool CVS.
