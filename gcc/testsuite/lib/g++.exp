@@ -1,4 +1,4 @@
-# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 2000 Free Software Foundation, Inc.
+# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 2000, 2001 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -97,6 +97,7 @@ proc g++_include_flags { args } {
 }
 
 proc g++_link_flags { args } {
+    global rootme
     global srcdir
     global ld_library_path
 
@@ -127,6 +128,7 @@ proc g++_link_flags { args } {
       if [file exists "${gccpath}/librx/librx.a"] {
           append flags "-L${gccpath}/librx "
       }
+      append ld_library_path ":${rootme}"
     } else {
       global tool_root_dir;
 

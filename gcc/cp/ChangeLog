@@ -1,3 +1,10 @@
+2001-02-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (g++spec.o): Add DRIVER_DEFINES to the list
+	of macros used when compiling g++spec.c.
+	* g++spec.c (lang_specific_driver): Link with the shared
+	libgcc by default.
+
 2001-01-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* decl2.c (build_expr_from_tree), lex.c (make_pointer_declarator,

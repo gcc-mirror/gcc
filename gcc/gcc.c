@@ -268,6 +268,9 @@ static int execute			PARAMS ((void));
 static void clear_args			PARAMS ((void));
 static void fatal_error			PARAMS ((int));
 static void set_input			PARAMS ((const char *));
+static void init_gcc_specs              PARAMS ((struct obstack *,
+						 const char *,
+						 const char *));
 
 /* Specs are strings containing lines, each of which (if not blank)
 is made up of a program name, and arguments separated by spaces.
@@ -1252,6 +1255,35 @@ static struct spec_list *extra_specs = (struct spec_list *) 0;
 
 static struct spec_list *specs = (struct spec_list *) 0;
 
+/* Add appropriate libgcc specs to OBSTACK, taking into account
+   various permutations of -shared-libgcc, -shared, and such.  */
+
+static void
+init_gcc_specs (obstack, shared_name, static_name)
+     struct obstack *obstack;
+     const char *shared_name;
+     const char *static_name;
+{
+  char buffer[128];
+
+  /* If we see -shared-libgcc, then use the shared version.  */
+  sprintf (buffer, "%%{shared-libgcc:%s}", shared_name);
+  obstack_grow (obstack, buffer, strlen (buffer));
+  /* If we see -static-libgcc, then use the shared version.  */
+  sprintf (buffer, "%%{static-libgcc:%s}", static_name);
+  obstack_grow (obstack, buffer, strlen (buffer));
+  /* Otherwise, if we see -shared, then use the shared version.  */
+  sprintf (buffer,
+	   "%%{!shared-libgcc:%%{!static-libgcc:%%{shared:%s}}}", 
+	   shared_name);
+  obstack_grow (obstack, buffer, strlen (buffer));
+  /* Otherwise, use the static version.  */
+  sprintf (buffer, 
+	   "%%{!shared-libgcc:%%{!static-libgcc:%%{!shared:%s}}}", 
+	   static_name);
+  obstack_grow (obstack, buffer, strlen (buffer));
+}
+
 /* Initialize the specs lookup routines.  */
 
 static void
@@ -1326,15 +1358,16 @@ init_spec ()
        when given the proper command line arguments.  */
     while (*p)
       {
-	const char *r;
         if (in_sep && *p == '-' && strncmp (p, "-lgcc", 5) == 0)
 	  {
+	    init_gcc_specs (&obstack,
 #ifdef NO_SHARED_LIBGCC_MULTILIB
-	    r = "%{shared-libgcc:-lgcc_s}%{!shared-libgcc:-lgcc}";
+			    "-lgcc_s"
 #else
-	    r = "%{shared-libgcc:-lgcc_s%M}%{!shared-libgcc:-lgcc}";
+			    "-lgcc_s%M"
 #endif
-	    obstack_grow (&obstack, r, strlen(r));
+			    ,
+			    "-lgcc");
 	    p += 5;
 	    in_sep = 0;
 	  }
@@ -1342,12 +1375,14 @@ init_spec ()
 	  {
 	    /* Ug.  We don't know shared library extensions.  Hope that
 	       systems that use this form don't do shared libraries.  */
+	    init_gcc_specs (&obstack,
 #ifdef NO_SHARED_LIBGCC_MULTILIB
-	    r = "%{shared-libgcc:-lgcc_s}%{!shared-libgcc:libgcc.a%s}";
+			    "-lgcc_s"
 #else
-	    r = "%{shared-libgcc:-lgcc_s%M}%{!shared-libgcc:libgcc.a%s}";
+			    "-lgcc_s%M"
 #endif
-	    obstack_grow (&obstack, r, strlen(r));
+			    ,
+			    "libgcc.a%s");
 	    p += 10;
 	    in_sep = 0;
 	  }
