@@ -1,3 +1,9 @@
+2001-05-12  Richard Henderson  <rth@redhat.com>
+
+	* decl.c (end_java_method): Rename asynchronous_exceptions to
+	flag_non_call_exceptions.
+	* parse.y (source_end_java_method): Likewise.
+
 2001-05-07  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (build_unresolved_array_type): Set
