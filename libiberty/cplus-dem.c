@@ -293,9 +293,6 @@ string_prependn PARAMS ((string *, const char *, int));
 static int
 get_count PARAMS ((const char **, int *));
 
-static int 
-consume_count_with_underscores PARAMS ((const char**));
-
 static int
 consume_count PARAMS ((const char **));
 
@@ -342,42 +339,6 @@ consume_count (type)
       (*type)++;
     }
   return (count);
-}
-
-
-/* Like consume_count, but for counts that are preceeded and followed
-   by '_' if they are greater than 10.  Also, -1 is returned for
-   failure, since 0 can be a valid value.  */
-
-static int
-consume_count_with_underscores (mangled)
-     const char **mangled;
-{
-  int idx;
-
-  if (**mangled == '_')
-    {
-      (*mangled)++;
-      if (!isdigit (**mangled))
-	return -1;
-
-      idx = consume_count (mangled);
-      if (**mangled != '_')
-	/* The trailing underscore was missing. */
-	return -1;
-	    
-      (*mangled)++;
-    }
-  else
-    {
-      if (**mangled < '0' || **mangled > '9')
-	return -1;
-	    
-      idx = **mangled - '0';
-      (*mangled)++;
-    }
-
-  return idx;
 }
 
 
@@ -2355,37 +2316,6 @@ do_type (work, mangled, result)
     case 'Q':
       success = demangle_qualified (work, mangled, result, 0, 1);
       break;
-
-    case 'X':
-    case 'Y':
-      /* A template parm.  We substitute the corresponding argument. */
-      {
-	int idx;
-	int lvl;
-
-	(*mangled)++;
-	idx = consume_count_with_underscores (mangled);
-
-	if (idx == -1 
-	    || (work->tmpl_argvec && idx >= work->ntmpl_args)
-	    || consume_count_with_underscores (mangled) == -1)
-	  {
-	    success = 0;
-	    break;
-	  }
-
-	if (work->tmpl_argvec)
-	  string_append (result, work->tmpl_argvec[idx]);
-	else
-	  {
-	    char buf[10];
-	    sprintf(buf, "T%d", idx);
-	    string_append (result, buf);
-	  }
-
-	success = 1;
-      }
-    break;
 
     case 'X':
     case 'Y':
