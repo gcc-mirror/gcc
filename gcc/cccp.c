@@ -146,6 +146,10 @@ extern char *rindex ();
 #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #endif
 
+#ifndef S_ISDIR
+#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#endif
+
 /* Define a generic NULL if one hasn't already been defined.  */
 
 #ifndef NULL
@@ -4151,7 +4155,11 @@ finclude (f, fname, op, system_header_p, dirptr)
       st_size -= i;
     }
   }
-  else {
+  else if (S_ISDIR (st_mode)) {
+    error ("directory `%s' specified in #include", fname);
+    close (f);
+    return;
+  } else {
     /* Cannot count its file size before reading.
        First read the entire file into heap and
        copy them into buffer on stack. */
