@@ -7521,7 +7521,7 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
       bp++;
     } else if (c == '\n') {
       if (traditional) {
- 	/* Unterminated strings and character constants are 'legal'.  */
+ 	/* Unterminated strings and character constants are 'valid'.  */
  	bp--;	/* Don't consume the newline. */
  	if (eofp)
  	  *eofp = 1;

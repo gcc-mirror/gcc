@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -6261,7 +6261,7 @@ cse_insn (insn, in_libcall_block)
 
       /* If this is a STRICT_LOW_PART assignment, src_eqv corresponds to the
 	 value of the INNER register, not the destination.  So it is not
-	 a legal substitution for the source.  But save it for later.  */
+	 a valid substitution for the source.  But save it for later.  */
       if (GET_CODE (dest) == STRICT_LOW_PART)
 	src_eqv_here = 0;
       else

@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the NS32000.
-   Copyright (C) 1988, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -202,7 +202,7 @@ gen_indexed_expr (base, index, scale)
 {
   rtx addr;
 
-  /* This generates an illegal addressing mode, if BASE is
+  /* This generates an invalid addressing mode, if BASE is
      fp or sp.  This is handled by PRINT_OPERAND_ADDRESS.  */
   if (GET_CODE (base) != REG && GET_CODE (base) != CONST_INT)
     base = gen_rtx (MEM, SImode, base);

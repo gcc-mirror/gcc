@@ -1538,7 +1538,7 @@
    (set_attr "length" "2")])
 
 ;;; ??? This pattern originally clobbered a scratch register.  However, this
-;;; is illegal, the movdi pattern may not use a temp register because it
+;;; is invalid, the movdi pattern may not use a temp register because it
 ;;; may be called from reload to reload a DImode value.  In that case, we
 ;;; end up with a scratch register that never gets allocated.  To avoid this,
 ;;; we use global register 1 which is never otherwise used by gcc as a temp.
@@ -3441,7 +3441,7 @@
   "smul %1,%2,%R0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
-;; Extra pattern, because sign_extend of a constant isn't legal.
+;; Extra pattern, because sign_extend of a constant isn't valid.
 
 (define_insn "const_mulsidi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3509,7 +3509,7 @@
   "umul %1,%2,%R0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
-;; Extra pattern, because sign_extend of a constant isn't legal.
+;; Extra pattern, because sign_extend of a constant isn't valid.
 
 (define_insn "const_umulsidi3"
   [(set (match_operand:DI 0 "register_operand" "=r")

@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    Enhanced by, and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -3426,7 +3426,7 @@ schedule_block (b, file)
 		  {
 		    if ((REG_NOTE_KIND (link) == REG_DEAD
 			 || REG_NOTE_KIND (link) == REG_UNUSED)
-			/* Verify that the REG_NOTE has a legal value.  */
+			/* Verify that the REG_NOTE has a valid value.  */
 			&& GET_CODE (XEXP (link, 0)) == REG)
 		      {
 			register int regno = REGNO (XEXP (link, 0));
@@ -3529,7 +3529,7 @@ schedule_block (b, file)
 	      next = XEXP (link, 1);
 	      if ((REG_NOTE_KIND (link) == REG_DEAD
 		   || REG_NOTE_KIND (link) == REG_UNUSED)
-		  /* Verify that the REG_NOTE has a legal value.  */
+		  /* Verify that the REG_NOTE has a valid value.  */
 		  && GET_CODE (XEXP (link, 0)) == REG)
 		{
 		  register int regno = REGNO (XEXP (link, 0));
