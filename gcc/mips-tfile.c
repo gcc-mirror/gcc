@@ -3297,7 +3297,12 @@ parse_def (name_start)
 
 	  t.num_sizes = i + 1;
 	  for ( i--; i >= 0; i-- )
-	    t.sizes[ i ] = t.sizes[ i+1 ] / t.dimensions[ i+1 ];
+	    {
+	      if (t.dimensions[ i+1 ])
+		t.sizes[ i ] = t.sizes[ i+1 ] / t.dimensions[ i+1 ];
+	      else
+		t.sizes[ i ] = t.sizes[ i+1 ];
+	    }
 	}
     }
 
