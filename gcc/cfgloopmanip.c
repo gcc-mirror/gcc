@@ -28,6 +28,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "cfglayout.h"
+#include "cfghooks.h"
 #include "output.h"
 
 static void duplicate_subloops (struct loops *, struct loop *, struct loop *);
@@ -837,7 +838,7 @@ update_single_exits_after_duplication (basic_block *bbs, unsigned nbbs,
    original LOOP body, the other copies are numbered in order given by control
    flow through them) into TO_REMOVE array.  Returns false if duplication is
    impossible.  */
-int
+bool
 duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
 			       unsigned int ndupl, sbitmap wont_exit,
 			       edge orig, edge *to_remove,
@@ -1352,6 +1353,135 @@ create_loop_notes (void)
       free (stack);
     }
   flow_loops_free (&loops);
+}
+
+/* This function is called from loop_version.  It splits the entry edge
+   of the loop we want to version, adds the versioning condition, and
+   adjust the edges to the two versions of the loop appropriately.
+   e is an incoming edge. Returns the basic block containing the
+   condition.
+
+   --- edge e ---- > [second_head]
+
+   Split it and insert new conditional expression and adjust edges.
+
+    --- edge e ---> [cond expr] ---> [first_head]
+                        |
+                        +---------> [second_head]
+*/
+
+static basic_block
+lv_adjust_loop_entry_edge (basic_block first_head,
+			   basic_block second_head,
+			   edge e,
+			   tree cond_expr)
+{
+  basic_block new_head = NULL;
+  edge e1;
+
+  gcc_assert (e->dest == second_head);
+
+  /* Split edge 'e'. This will create a new basic block, where we can
+     insert conditional expr.  */
+  new_head = split_edge (e);
+
+
+  lv_add_condition_to_bb (first_head, second_head, new_head,
+			  cond_expr);
+
+  e1 = make_edge (new_head, first_head, EDGE_TRUE_VALUE);
+  set_immediate_dominator (CDI_DOMINATORS, first_head, new_head);
+  set_immediate_dominator (CDI_DOMINATORS, second_head, new_head);
+
+  /* Adjust loop header phi nodes.  */
+  lv_adjust_loop_header_phi (first_head, second_head, new_head, e1);
+
+  return new_head;
+}
+
+/* Main entry point for Loop Versioning transformation.
+   
+This transformation given a condition and a loop, creates
+-if (condition) { loop_copy1 } else { loop_copy2 },
+where loop_copy1 is the loop transformed in one way, and loop_copy2
+is the loop transformed in another way (or unchanged). 'condition'
+may be a run time test for things that were not resolved by static
+analysis (overlapping ranges (anti-aliasing), alignment, etc.).  */
+
+struct loop *
+loop_version (struct loops *loops, struct loop * loop, 
+	      void *cond_expr, basic_block *condition_bb)
+{
+  basic_block first_head, second_head;
+  edge entry, latch_edge, exit, true_edge, false_edge;
+  int irred_flag;
+  struct loop *nloop;
+
+  /* CHECKME: Loop versioning does not handle nested loop at this point.  */
+  if (loop->inner)
+    return NULL;
+
+  /* Record entry and latch edges for the loop */
+  entry = loop_preheader_edge (loop);
+  irred_flag = entry->flags & EDGE_IRREDUCIBLE_LOOP;
+  entry->flags &= ~EDGE_IRREDUCIBLE_LOOP;
+  
+  /* Note down head of loop as first_head.  */
+  first_head = entry->dest;
+
+  /* Duplicate loop.  */
+  if (!cfg_hook_duplicate_loop_to_header_edge (loop, entry, loops, 1,
+  					       NULL, NULL, NULL, NULL, 0))
+    return NULL;
+
+  /* After duplication entry edge now points to new loop head block.
+     Note down new head as second_head.  */
+  second_head = entry->dest;
+
+  /* Split loop entry edge and insert new block with cond expr.  */
+  *condition_bb =  lv_adjust_loop_entry_edge (first_head, second_head,
+					      entry, cond_expr);
+  if (!*condition_bb)
+    {
+      entry->flags |= irred_flag;
+      return NULL;
+    }
+
+  latch_edge = single_succ_edge (loop->latch->rbi->copy);
+  
+  extract_cond_bb_edges (*condition_bb, &true_edge, &false_edge);
+  nloop = loopify (loops,
+		   latch_edge,
+		   single_pred_edge (loop->header->rbi->copy),
+		   *condition_bb, true_edge, false_edge,
+		   false /* Do not redirect all edges.  */);
+
+  exit = loop->single_exit;
+  if (exit)
+    nloop->single_exit = find_edge (exit->src->rbi->copy, exit->dest);
+
+  /* loopify redirected latch_edge. Update its PENDING_STMTS.  */ 
+  lv_flush_pending_stmts (latch_edge);
+
+  /* loopify redirected condition_bb's succ edge. Update its PENDING_STMTS.  */ 
+  extract_cond_bb_edges (*condition_bb, &true_edge, &false_edge);
+  lv_flush_pending_stmts (false_edge);
+  /* Adjust irreducible flag.  */
+  if (irred_flag)
+    {
+      (*condition_bb)->flags |= BB_IRREDUCIBLE_LOOP;
+      loop_preheader_edge (loop)->flags |= EDGE_IRREDUCIBLE_LOOP;
+      loop_preheader_edge (nloop)->flags |= EDGE_IRREDUCIBLE_LOOP;
+      single_pred_edge ((*condition_bb))->flags |= EDGE_IRREDUCIBLE_LOOP;
+    }
+
+  /* At this point condition_bb is loop predheader with two successors, 
+     first_head and second_head.   Make sure that loop predheader has only 
+     one successor.  */
+  loop_split_edge_with (loop_preheader_edge (loop), NULL);
+  loop_split_edge_with (loop_preheader_edge (nloop), NULL);
+
+  return nloop;
 }
 
 /* The structure of LOOPS might have changed.  Some loops might get removed

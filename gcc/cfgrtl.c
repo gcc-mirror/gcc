@@ -57,7 +57,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cfglayout.h"
 #include "expr.h"
 #include "target.h"
-
+#include "cfgloop.h"
 
 /* The labels mentioned in non-jump rtl.  Valid during find_basic_blocks.  */
 /* ??? Should probably be using LABEL_NUSES instead.  It would take a
@@ -2028,7 +2028,7 @@ rtl_verify_flow_info_1 (void)
 	  err = 1;
 	}
       if (n_branch != 1 && any_condjump_p (BB_END (bb))
-	  && JUMP_LABEL (BB_END (bb)) != BB_HEAD (fallthru->dest))
+	  && JUMP_LABEL (BB_END (bb)) == BB_HEAD (fallthru->dest))
 	{
 	  error ("Wrong amount of branch edges after conditional jump %i", bb->index);
 	  err = 1;
@@ -2997,6 +2997,66 @@ rtl_flow_call_edges_add (sbitmap blocks)
   return blocks_split;
 }
 
+/* Add COMP_RTX as a condition at end of COND_BB.  FIRST_HEAD is
+   the conditional branch traget, SECOND_HEAD should be the fall-thru
+   there is no need to handle this here the loop versioning code handles
+   this.  the reason for SECON_HEAD is that it is needed for condition
+   in trees, and this should be of the same type since it is a hook.  */
+static void
+rtl_lv_add_condition_to_bb (basic_block first_head ,
+			    basic_block second_head ATTRIBUTE_UNUSED, 
+			    basic_block cond_bb, void *comp_rtx)  
+{
+  rtx label, seq, jump;
+  rtx op0 = XEXP ((rtx)comp_rtx, 0);
+  rtx op1 = XEXP ((rtx)comp_rtx, 1);
+  enum rtx_code comp = GET_CODE ((rtx)comp_rtx);
+  enum machine_mode mode;
+
+
+  label = block_label (first_head);
+  mode = GET_MODE (op0);
+  if (mode == VOIDmode)
+    mode = GET_MODE (op1);
+
+  start_sequence ();
+  op0 = force_operand (op0, NULL_RTX);
+  op1 = force_operand (op1, NULL_RTX);
+  do_compare_rtx_and_jump (op0, op1, comp, 0,
+			   mode, NULL_RTX, NULL_RTX, label);
+  jump = get_last_insn ();
+  JUMP_LABEL (jump) = label;
+  LABEL_NUSES (label)++;
+  seq = get_insns ();
+  end_sequence ();
+
+  /* Add the new cond , in the new head.  */
+  emit_insn_after(seq, BB_END(cond_bb));
+}
+
+
+/* Given a block B with unconditional branch at its end, get the
+   store the return the branch edge and the fall-thru edge in
+   BRANCH_EDGE and FALLTHRU_EDGE respectively.  */
+static void
+rtl_extract_cond_bb_edges (basic_block b, edge *branch_edge,
+			   edge *fallthru_edge)
+{
+  edge e = EDGE_SUCC (b, 0);
+
+  if (e->flags & EDGE_FALLTHRU)
+    {
+      *fallthru_edge = e;
+      *branch_edge = EDGE_SUCC (b, 1);
+    }
+  else
+    {
+      *branch_edge = e;
+      *fallthru_edge = EDGE_SUCC (b, 1);
+    }
+}
+
+
 /* Implementation of CFG manipulation for linearized RTL.  */
 struct cfg_hooks rtl_cfg_hooks = {
   "rtl",
@@ -3021,7 +3081,12 @@ struct cfg_hooks rtl_cfg_hooks = {
   rtl_block_ends_with_condjump_p,
   rtl_flow_call_edges_add,
   NULL, /* execute_on_growing_pred */
-  NULL /* execute_on_shrinking_pred */
+  NULL, /* execute_on_shrinking_pred */
+  NULL, /* duplicate loop for trees */
+  NULL, /* lv_add_condition_to_bb */
+  NULL, /* lv_adjust_loop_header_phi*/
+  NULL, /* extract_cond_bb_edges */
+  NULL 		/* flush_pending_stmts */
 };
 
 /* Implementation of CFG manipulation for cfg layout RTL, where
@@ -3059,6 +3124,11 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   rtl_block_ends_with_condjump_p,
   rtl_flow_call_edges_add,
   NULL, /* execute_on_growing_pred */
-  NULL /* execute_on_shrinking_pred */
+  NULL, /* execute_on_shrinking_pred */
+  duplicate_loop_to_header_edge, /* duplicate loop for trees */
+  rtl_lv_add_condition_to_bb, /* lv_add_condition_to_bb */
+  NULL, /* lv_adjust_loop_header_phi*/
+  rtl_extract_cond_bb_edges, /* extract_cond_bb_edges */
+  NULL 		/* flush_pending_stmts */  
 };
 

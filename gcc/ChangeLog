@@ -1,3 +1,32 @@
+2005-04-03 Mostafa Hagog <mustafa@il.ibm.com>
+
+	* cfghooks.c (lv_flush_pending_stmts,
+	cfg_hook_duplicate_loop_to_header_edge, extract_cond_bb_edges,
+	lv_adjust_loop_header_phi, lv_add_condition_to_bb): New.
+	* cfghooks.h (cfg_hook_duplicate_loop_to_header_edge,
+	lv_add_condition_to_bb,
+	lv_adjust_loop_header_phi, extract_cond_bb_edges,
+	flush_pending_stmts): New in cfg_hooks structure.
+	(cfg_hook_duplicate_loop_to_header_edge, lv_flush_pending_stmts,
+	extract_cond_bb_edges, lv_adjust_loop_header_phi,
+	lv_add_condition_to_bb): New declarations.
+	* cfgloop.h (duplicate_loop_to_header_edge): Change return type to
+	bool.
+	(loop_version): Declare.
+	* cfgloopmanip.c (cfghooks.h): Include.
+	(duplicate_loop_to_header_edge): Change return type to bool.
+	(loop_version, lv_adjust_loop_entry_edge): Move here.
+	* cfgrtl.c (cfgloop.h): Include.
+	(rtl_verify_flow_info_1): Fix.
+	(rtl_lv_add_condition_to_bb, rtl_extract_cond_bb_edges): New.
+	(rtl_cfg_hooks, cfg_layout_rtl_cfg_hook): Add hooks to
+	initialization.
+	* tree-cfg.c (tree_lv_adjust_loop_header_phi,
+	tree_lv_add_condition_to_bb): New.
+	(tree_cfg_hooks): Add new hooks to initialization.
+	* tree-ssa-loop-manip.c (lv_adjust_loop_header_phi,
+	lv_adjust_loop_entry_edge, tree_ssa_loop_version): Remove.
+
 2005-04-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/stormy16/stormy16.h (PREDICATE_CODES): Add SUBREG to
