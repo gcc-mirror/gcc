@@ -1,3 +1,7 @@
+2004-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20041126-1.c: New test.
+
 2004-11-27  Falk Hueffner  <falk@debian.org>
 
 	* gcc.dg/loop-6.c: New test.
