@@ -1650,7 +1650,8 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	    abort ();
 
 	  lo &= ~(UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD (1) - 1);
-	  lo |= INTVAL (SET_SRC (PATTERN (i3)));
+	  lo |= (INTVAL (SET_SRC (PATTERN (i3))) 
+		 & (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD (1) - 1));
 	}
       else if (HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
 	hi = INTVAL (SET_SRC (PATTERN (i3)));
