@@ -3782,24 +3782,14 @@ GCC.  If @samp{USE_PROTOTYPES} is not defined, it will be
 determined automatically whether your compiler supports
 prototypes by checking if @samp{__STDC__} is defined.
 
-@findex NO_MD_PROTOTYPES
-@item NO_MD_PROTOTYPES
-Define this if you wish suppression of prototypes generated from
-the machine description file, but to use other prototypes within
-GCC.  If @samp{USE_PROTOTYPES} is defined to be 0, or the
-host compiler does not support prototypes, this macro has no
-effect.
-
 @findex MD_CALL_PROTOTYPES
 @item MD_CALL_PROTOTYPES
-Define this if you wish to generate prototypes for the
-@code{gen_call} or @code{gen_call_value} functions generated from
-the machine description file.  If @samp{USE_PROTOTYPES} is
-defined to be 0, or the host compiler does not support
-prototypes, or @samp{NO_MD_PROTOTYPES} is defined, this macro has
-no effect.  As soon as all of the machine descriptions are
-modified to have the appropriate number of arguments, this macro
-will be removed.
+Define this if you wish to generate prototypes for the @code{gen_call}
+or @code{gen_call_value} functions generated from the machine
+description file.  If @samp{USE_PROTOTYPES} is defined to be 0, or the
+host compiler does not support prototypes, this macro has no effect.  As
+soon as all of the machine descriptions are modified to have the
+appropriate number of arguments, this macro will be removed.
 
 @findex PATH_SEPARATOR
 @item PATH_SEPARATOR

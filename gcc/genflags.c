@@ -39,48 +39,63 @@ static struct obstack call_obstack, normal_obstack;
 /* Max size of names encountered.  */
 static int max_id_len;
 
-static int num_operands PARAMS ((rtx));
-static void gen_proto PARAMS ((rtx));
-static void gen_nonproto PARAMS ((rtx));
-static void gen_insn PARAMS ((rtx));
+/* Max operand encountered in a scan over some insn.  */
+static int max_opno;
 
+static void max_operand_1	PARAMS ((rtx));
+static int num_operands		PARAMS ((rtx));
+static void gen_proto		PARAMS ((rtx));
+static void gen_nonproto	PARAMS ((rtx));
+static void gen_insn		PARAMS ((rtx));
 
 /* Count the number of match_operand's found.  */
 
-static int
-num_operands (x)
+static void
+max_operand_1 (x)
      rtx x;
 {
-  int count = 0;
-  int i, j;
-  enum rtx_code code = GET_CODE (x);
-  const char *format_ptr = GET_RTX_FORMAT (code);
+  register RTX_CODE code;
+  register int i;
+  register int len;
+  register const char *fmt;
 
-  if (code == MATCH_OPERAND)
-    return 1;
+  if (x == 0)
+    return;
 
-  if (code == MATCH_OPERATOR || code == MATCH_PARALLEL)
-    count++;
+  code = GET_CODE (x);
 
-  for (i = 0; i < GET_RTX_LENGTH (code); i++)
+  if (code == MATCH_OPERAND || code == MATCH_OPERATOR
+      || code == MATCH_PARALLEL)
+    max_opno = MAX (max_opno, XINT (x, 0));
+
+  fmt = GET_RTX_FORMAT (code);
+  len = GET_RTX_LENGTH (code);
+  for (i = 0; i < len; i++)
     {
-      switch (*format_ptr++)
+      if (fmt[i] == 'e' || fmt[i] == 'u')
+	max_operand_1 (XEXP (x, i));
+      else if (fmt[i] == 'E')
 	{
-	case 'u':
-	case 'e':
-	  count += num_operands (XEXP (x, i));
-	  break;
-
-	case 'E':
-	  if (XVEC (x, i) != NULL)
-	    for (j = 0; j < XVECLEN (x, i); j++)
-	      count += num_operands (XVECEXP (x, i, j));
-
-	  break;
+	  int j;
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    max_operand_1 (XVECEXP (x, i, j));
 	}
     }
+}
 
-  return count;
+static int
+num_operands (insn)
+     rtx insn;
+{
+  register int len = XVECLEN (insn, 1);
+  register int i;
+
+  max_opno = -1;
+
+  for (i = 0; i < len; i++)
+    max_operand_1 (XVECEXP (insn, 1, i));
+
+  return max_opno + 1;
 }
 
 /* Print out prototype information for a function.  */
@@ -251,7 +266,6 @@ from the machine description file `md'.  */\n\n");
   obstack_grow (&normal_obstack, &dummy, sizeof (rtx));
   normal_insns = (rtx *) obstack_finish (&normal_obstack);
 
-  printf ("\n#ifndef NO_MD_PROTOTYPES\n");
   for (insn_ptr = normal_insns; *insn_ptr; insn_ptr++)
     gen_proto (*insn_ptr);
 
@@ -264,14 +278,6 @@ from the machine description file `md'.  */\n\n");
     gen_nonproto (*insn_ptr);
 
   printf ("#endif /* !MD_CALL_PROTOTYPES */\n");
-  printf ("\n#else  /* NO_MD_PROTOTYPES */\n");
-  for (insn_ptr = normal_insns; *insn_ptr; insn_ptr++)
-    gen_nonproto (*insn_ptr);
-
-  for (insn_ptr = call_insns; *insn_ptr; insn_ptr++)
-    gen_nonproto (*insn_ptr);
-
-  printf ("#endif  /* NO_MD_PROTOTYPES */\n");
 
   fflush (stdout);
   return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);

@@ -221,7 +221,6 @@ output_prologue ()
   printf ("/* Generated automatically by the program `genoutput'\n\
 from the machine description file `md'.  */\n\n");
 
-  printf ("#define NO_MD_PROTOTYPES\n");
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
   printf ("#include \"flags.h\"\n");
@@ -369,7 +368,7 @@ output_insn_data ()
 	}
 
       if (d->name && d->name[0] != '*')
-	printf ("    gen_%s,\n", d->name);
+	printf ("    (insn_gen_fn) gen_%s,\n", d->name);
       else
 	printf ("    0,\n");
 

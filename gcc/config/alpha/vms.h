@@ -366,7 +366,6 @@ do {									\
   fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
 } while (0)
 
-#define NO_MD_PROTOTYPES
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.
