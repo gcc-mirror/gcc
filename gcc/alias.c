@@ -119,6 +119,7 @@ static int nonlocal_referenced_p_1      PARAMS ((rtx *, void *));
 static int nonlocal_referenced_p        PARAMS ((rtx));
 static int nonlocal_set_p_1             PARAMS ((rtx *, void *));
 static int nonlocal_set_p               PARAMS ((rtx));
+static void memory_modified_1		PARAMS ((rtx, rtx, void *));
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
@@ -2701,6 +2702,35 @@ init_alias_once ()
 #endif
 
   alias_sets = splay_tree_new (splay_tree_compare_ints, 0, 0);
+}
+
+/* Set MEMORY_MODIFIED when X modifies DATA (that is assumed
+   to be memory reference.  */
+static bool memory_modified;
+static void
+memory_modified_1 (x, pat, data)
+	rtx x, pat ATTRIBUTE_UNUSED;
+	void *data;
+{
+  if (GET_CODE (x) == MEM)
+    {
+      if (anti_dependence (x, (rtx)data) || output_dependence (x, (rtx)data))
+	memory_modified = true;
+    }
+}
+
+
+/* Return true when INSN possibly modify memory contents of MEM
+   (ie address can be modified).  */
+bool
+memory_modified_in_insn_p (mem, insn)
+     rtx mem, insn;
+{
+  if (!INSN_P (insn))
+    return false;
+  memory_modified = false;
+  note_stores (PATTERN (insn), memory_modified_1, mem);
+  return memory_modified;
 }
 
 /* Initialize the aliasing machinery.  Initialize the REG_KNOWN_VALUE

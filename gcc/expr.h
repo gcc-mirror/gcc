@@ -307,6 +307,9 @@ rtx emit_conditional_move PARAMS ((rtx, enum rtx_code, rtx, rtx,
 int can_conditionally_move_p PARAMS ((enum machine_mode mode));
 
 #endif
+rtx emit_conditional_add (rtx, enum rtx_code, rtx, rtx,
+			  enum machine_mode, rtx, rtx,
+			  enum machine_mode, int);
 
 
 /* Functions from expmed.c:  */

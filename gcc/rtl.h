@@ -2251,6 +2251,7 @@ extern void init_alias_once		PARAMS ((void));
 extern void init_alias_analysis		PARAMS ((void));
 extern void end_alias_analysis		PARAMS ((void));
 extern rtx addr_side_effect_eval	PARAMS ((rtx, int, int));
+extern bool memory_modified_in_insn_p	PARAMS ((rtx, rtx));
 
 /* In sibcall.c */
 typedef enum {
