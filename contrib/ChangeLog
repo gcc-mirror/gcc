@@ -1,3 +1,7 @@
+2005-03-18  Andreas Schwab  <schwab@suse.de>
+
+	* gcc_update (apply_patch): Properly quote $1.
+
 2005-03-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc_update: Add --silent option.
