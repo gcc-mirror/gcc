@@ -1,3 +1,8 @@
+2002-04-17  Hans Boehm  <Hans_Boehm@hp.com>
+
+	* include/private/gcconfig.h: Use LINUX_STACKBOTTOM for
+	SPARC Linux.
+
 2002-04-09  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/private/gcconfig.h (DATAEND): Update comment example

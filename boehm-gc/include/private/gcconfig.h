@@ -820,11 +820,10 @@
       extern int _etext[];
 #     define DATAEND (_end)
 #     define SVR4
+#     define LINUX_STACKBOTTOM
 #     ifdef __arch64__
-#       define STACKBOTTOM ((ptr_t) 0x80000000000ULL)
 #	define DATASTART (ptr_t)GC_SysVGetDataStart(0x100000, _etext)
 #     else
-#       define STACKBOTTOM ((ptr_t) 0xf0000000)
 #	define DATASTART (ptr_t)GC_SysVGetDataStart(0x10000, _etext)
 #     endif
 #   endif
