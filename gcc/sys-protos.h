@@ -445,7 +445,7 @@ extern gid_t                  getgid(void);
 extern struct group *         getgrent(void);
 extern struct group *         getgrgid(gid_t);
 extern struct group *         getgrnam(const char *);
-extern int                    getgroups(int, gid_t *);
+extern int                    getgroups(int, TARGET_GETGROUPS_T []);
 extern struct hostent *       gethostbyaddr(/* ??? */);
 extern struct hostent *       gethostbyname(/* ??? */);
 extern struct hostent *       gethostent(/* ??? */);

@@ -480,6 +480,26 @@ AC_CHECK_FUNCS(strtoul bsearch putenv popen bcopy bzero bcmp \
 
 AC_CHECK_TYPE(ssize_t, int)
 
+# Try to determine the array type of the second argument of getgroups
+# for the target system (int or gid_t).
+AC_TYPE_GETGROUPS
+if test "${target}" = "${build}"; then
+  TARGET_GETGROUPS_T=$ac_cv_type_getgroups
+else
+  case "${target}" in
+	# This condition may need some tweaking.  It should include all
+	# targets where the array type of the second argument of getgroups
+	# is int and the type of gid_t is not equivalent to int.
+	*-*-sunos* | *-*-ultrix*)
+		TARGET_GETGROUPS_T=int
+		;;
+	*)
+		TARGET_GETGROUPS_T=gid_t
+		;;
+  esac
+fi
+AC_SUBST(TARGET_GETGROUPS_T)
+
 gcc_AC_FUNC_VFPRINTF_DOPRNT
 gcc_AC_FUNC_PRINTF_PTR
 

@@ -1,3 +1,11 @@
+2000-07-17  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* Makefile.in (TARGET_GETGROUPS_T): New configuration variable.
+	* configure.in (TARGET_GETGROUPS_T): Evaluate.
+	* sys-protos.h (getgroups): Use TARGET_GETGROUPS_T for array type
+	of second argument of getgroups.
+	* configure, config.in: Rebuilt.
+
 2000-07-17  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* simplify-rtx.c (simplify_relational_operation): Two signed
