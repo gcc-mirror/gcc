@@ -1,3 +1,8 @@
+2004-12-01  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/18291
+	* testsuite/gcc.c-torture/compile/pr18291.c: New test.
+
 2004-12-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR C++/18729
