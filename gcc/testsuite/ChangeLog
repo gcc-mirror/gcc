@@ -1,3 +1,9 @@
+2005-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/20043
+	* gcc.dg/transparent-union-1.c: New test.
+	* gcc.dg/transparent-union-2.c: New test.
+
 2005-02-18  James E Wilson  <wilson@specifixinc.com>
 
 	PR tree-optimization/18977

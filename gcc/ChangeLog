@@ -1,3 +1,9 @@
+2005-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/20043
+	* c-typeck.c (composite_type): Handle quals in transparent unions.
+	(type_lists_compatible_p): Likewise.
+
 2005-02-18  Stan Shebs  <shebs@apple.com>
 
 	* config/darwin.c (machopic_select_rtx_section): Don't put relocatable
