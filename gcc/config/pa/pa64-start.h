@@ -3,4 +3,4 @@
    checking for TARGET_64BIT.  */
 #define TARGET_64BIT 1
 #define TARGET_PA_11 1
-#defien TARGET_PA_20 1
+#define TARGET_PA_20 1

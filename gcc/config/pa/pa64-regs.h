@@ -56,7 +56,7 @@ Boston, MA 02111-1307, USA.  */
    Reg 20-22	= Temporary Registers
    Reg 23-26	= Temporary/Parameter Registers
    Reg 27	= Global Data Pointer (hp)
-   Reg 28	= Temporary/???/Return Value register
+   Reg 28	= Temporary/Return Value register
    Reg 29	= Temporary/Static Chain/Return Value register #2
    Reg 30	= stack pointer
    Reg 31	= Temporary/Millicode Return Pointer (hp)

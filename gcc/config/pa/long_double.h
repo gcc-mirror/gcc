@@ -48,7 +48,10 @@ do { long value[4];                                                     \
 #define TRUNCTFDF2_LIBCALL "_U_Qfcnvff_quad_to_dbl"
 #define FLOATSITF2_LIBCALL "_U_Qfcnvxf_sgl_to_quad"
 #define FLOATDITF2_LIBCALL "_U_Qfcnvxf_dbl_to_quad"
-#define FIX_TRUNCTFSI2_LIBCALL "_U_Qfcnvfxt_quad_to_sgl"
+/* We need to put a wrapper function around _U_Qfcnvfxt_quad_to_sgl so that
+   we can massage its return value for PA64.  */
+#define FIX_TRUNCTFSI2_LIBCALL \
+  (TARGET_64BIT ? "__U_Qfcnvfxt_quad_to_sgl" : "_U_Qfcnvfxt_quad_to_sgl")
 #define FIX_TRUNCTFDI2_LIBCALL "_U_Qfcnvfxt_quad_to_dbl"
 #define EQTF2_LIBCALL "_U_Qfeq"
 #define NETF2_LIBCALL "_U_Qfne"
