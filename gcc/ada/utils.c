@@ -2877,18 +2877,13 @@ convert (type, expr)
     case CONSTRUCTOR:
       /* If we are converting a STRING_CST to another constrained array type,
 	 just make a new one in the proper type.  Likewise for a
-	 CONSTRUCTOR.  But if the mode of the type is different, we must
-	 ensure a new RTL is made for the constant.  */
+	 CONSTRUCTOR.  */
       if (code == ecode && AGGREGATE_TYPE_P (etype)
 	  && ! (TREE_CODE (TYPE_SIZE (etype)) == INTEGER_CST
 		&& TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST))
 	{
 	  expr = copy_node (expr);
 	  TREE_TYPE (expr) = type;
-
-	  if (TYPE_MODE (type) != TYPE_MODE (etype))
-	    TREE_CST_RTL (expr) = 0;
-
 	  return expr;
 	}
       break;

@@ -1,3 +1,7 @@
+2003-04-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* utils.c (convert): No need to clear TREE_CST_RTL.
+
 2003-04-23   Geert Bosch <bosch@gnat.com>
 
 	* 1aexcept.adb, 1aexcept.ads, 1ic.ads, 1ssecsta.adb,

@@ -295,13 +295,6 @@ struct tree_common GTY(())
     __t; })
 
 /* These checks have to be special cased.  */
-#define CST_OR_CONSTRUCTOR_CHECK(t) __extension__			\
-({  const tree __t = (t);						\
-    enum tree_code const __c = TREE_CODE(__t);				\
-    if (__c != CONSTRUCTOR && TREE_CODE_CLASS(__c) != 'c')		\
-      tree_check_failed (__t, CONSTRUCTOR, __FILE__, __LINE__,		\
-			 __FUNCTION__);					\
-    __t; })
 #define EXPR_CHECK(t) __extension__					\
 ({  const tree __t = (t);						\
     char const __c = TREE_CODE_CLASS(TREE_CODE(__t));			\
@@ -748,8 +741,6 @@ extern void tree_operand_check_failed PARAMS ((int, enum tree_code,
 struct tree_int_cst GTY(())
 {
   struct tree_common common;
-  rtx rtl;	/* acts as link to register transfer language
-			   (rtl) info */
   /* A sub-struct is necessary here because the function `const_hash'
      wants to scan both words as a unit and taking the address of the
      sub-struct yields the properly inclusive bounded pointer.  */
@@ -758,12 +749,6 @@ struct tree_int_cst GTY(())
     HOST_WIDE_INT high;
   } int_cst;
 };
-
-/* In REAL_CST, STRING_CST, COMPLEX_CST, VECTOR_CST nodes, and
-   CONSTRUCTOR nodes, and generally in all kinds of constants that
-   could be given labels (rather than being immediate).  */
-
-#define TREE_CST_RTL(NODE) (CST_OR_CONSTRUCTOR_CHECK (NODE)->real_cst.rtl)
 
 /* In a REAL_CST node.  struct real_value is an opaque entity, with
    manipulators defined in real.h.  We don't want tree.h depending on
@@ -776,7 +761,6 @@ struct real_value;
 struct tree_real_cst GTY(())
 {
   struct tree_common common;
-  rtx rtl;	/* acts as link to register transfer language (rtl) info */
   struct real_value * real_cst_ptr;
 };
 
@@ -787,7 +771,6 @@ struct tree_real_cst GTY(())
 struct tree_string GTY(())
 {
   struct tree_common common;
-  rtx rtl;	/* acts as link to register transfer language (rtl) info */
   int length;
   const char *pointer;
 };
@@ -799,7 +782,6 @@ struct tree_string GTY(())
 struct tree_complex GTY(())
 {
   struct tree_common common;
-  rtx rtl;	/* acts as link to register transfer language (rtl) info */
   tree real;
   tree imag;
 };
@@ -810,7 +792,6 @@ struct tree_complex GTY(())
 struct tree_vector GTY(())
 {
   struct tree_common common;
-  rtx rtl;
   tree elements;
 };
 
@@ -883,7 +864,7 @@ struct tree_vec GTY(())
   TREE_RTL_OPERAND_CHECK (NODE, WITH_CLEANUP_EXPR, 2)
 
 /* In a CONSTRUCTOR node.  */
-#define CONSTRUCTOR_ELTS(NODE) TREE_OPERAND_CHECK_CODE (NODE, CONSTRUCTOR, 1)
+#define CONSTRUCTOR_ELTS(NODE) TREE_OPERAND_CHECK_CODE (NODE, CONSTRUCTOR, 0)
 
 /* In ordinary expression nodes.  */
 #define TREE_OPERAND(NODE, I) TREE_OPERAND_CHECK (NODE, I)

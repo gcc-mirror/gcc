@@ -2093,8 +2093,6 @@ decode_addr_const (exp, value)
     case COMPLEX_CST:
     case CONSTRUCTOR:
     case INTEGER_CST:
-      /* This constant should have been output already, but we can't simply
-	 use TREE_CST_RTL since INTEGER_CST doesn't have one.  */
       x = output_constant_def (target, 1);
       break;
 
@@ -2554,7 +2552,6 @@ build_constant_desc (exp)
    If DEFER is nonzero, the output of string constants can be deferred
    and output only if referenced in the function after all optimizations.
 
-   The TREE_CST_RTL of EXP is set up to point to that rtx.
    The const_hash_table records which constants already have label strings.  */
 
 rtx
@@ -2564,12 +2561,6 @@ output_constant_def (exp, defer)
 {
   int hash;
   struct constant_descriptor_tree *desc;
-
-  /* We can't just use the saved RTL if this is a deferred string constant
-     and we are not to defer anymore.  */
-  if (TREE_CST_RTL (exp)
-      && (defer || !STRING_POOL_ADDRESS_P (XEXP (TREE_CST_RTL (exp), 0))))
-    return TREE_CST_RTL (exp);
 
   /* Compute hash code of EXP.  Search the descriptors for that hash code
      to see if any of them describes EXP.  If yes, the descriptor records
@@ -2597,7 +2588,6 @@ output_constant_def (exp, defer)
       maybe_output_constant_def_contents (exp, desc->rtl, 0);
     }
 
-  TREE_CST_RTL (exp) = desc->rtl;
   return desc->rtl;
 }
 

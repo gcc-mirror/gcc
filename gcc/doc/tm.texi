@@ -6062,8 +6062,7 @@ The hook is executed immediately after rtl has been created for
 @var{decl}, which may be a variable or function declaration or
 an entry in the constant pool.  In either case, @var{rtl} is the
 rtl in question.  Do @emph{not} use @code{DECL_RTL (@var{decl})}
-or @code{TREE_CST_RTL (@var{decl})} in this hook; that field may
-not have been initialized yet.
+in this hook; that field may not have been initialized yet.
 
 In the case of a constant, it is safe to assume that the rtl is
 a @code{mem} whose address is a @code{symbol_ref}.  Most decls
