@@ -1,3 +1,16 @@
+2005-04-04  Andreas Krebbel  <krebbel1@de.ibm.com>
+	    Adrian Straetling  <straetling@de.ibm.com>
+
+	* config/s390/2064.md ("z_mul", "z_inf"): New insn reservations.
+	* config/s390/2084.md ("x_mul_hi", "x_mul_sidi", "x_div"): Likewise.
+	* config/s390/s390.md ("imulhi", "imulsi", "imuldi"): Added to "type"
+	attribute.
+	("imul"): Removed from "type" attribute.
+	("*muldi3_sign", "muldi3"): Changed type to imuldi.
+	("mulsi3/1", "mulsi3/3", "mulsi/4", "mulsidi3", "umulsidi3"): 
+	Changed type to imulsi.
+	("*mulsi3_sign", "mulsi3/2"): Changed type to imulhi.
+
 2005-04-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mcore/mcore.h (target_flags, HARDLIT_BIT, ALIGN8_BIT, DIV_BIT)
