@@ -1,3 +1,13 @@
+2004-01-27  Jerry Quinn  <jlquinn@optonline.net>
+
+	PR libstdc++/11584
+	* include/bits/ios_base.h (ios_base::_M_grow_words):  Add
+        iword/pword selector.
+	(ios_base::iword, ios_base::pword):  Use it.
+	* src/ios.cc (ios_base::_M_grow_words):  Clear _M_word_zero
+        iword or pword member on alloc failure.
+	* testsuite/27_io/ios_base/storage/11584.cc:  New test.
+
 2004-01-27  Ulrich Weigand  <uweigand@de.ibm.com>
 	    PJ Darcy  <darcypj@us.ibm.com>
 
