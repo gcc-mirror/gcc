@@ -1,5 +1,9 @@
 2002-11-07  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (add_vcall_offset_vtbl_entries_1): Correct ordering of
+	vcall offfsets.  Split out ...
+	(add_vcall_offset): ... new function.
+
 	PR c++/8338
 	* pt.c (for_each_template_parm): Add htab parameter.
 	(process_partial_specialization): Adjust call.

@@ -1,5 +1,7 @@
 2002-11-07  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/abi/vthunk3.C: New test.
+
 	PR c++/8338
 	* g++.dg/template/crash2.C: New test.
 
