@@ -2886,70 +2886,67 @@ simplify_unary_operation (code, mode, op, op_mode)
      check the wrong mode (input vs. output) for a conversion operation,
      such as FIX.  At some point, this should be simplified.  */
 
-#if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
-  if (code == FLOAT && GET_CODE (op) == CONST_INT)
+#if !defined(REAL_IS_NOT_DOUBLE) || defined(REAL_ARITHMETIC)
+
+  if (code == FLOAT && GET_MODE (op) == VOIDmode
+      && (GET_CODE (op) == CONST_DOUBLE || GET_CODE (op) == CONST_INT))
     {
+      HOST_WIDE_INT hv, lv;
       REAL_VALUE_TYPE d;
 
-#ifdef REAL_ARITHMETIC
-      REAL_VALUE_FROM_INT (d, INTVAL (op), INTVAL (op) < 0 ? ~0 : 0);
-#else
-      d = (double) INTVAL (op);
-#endif
-      return CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
-    }
-  else if (code == UNSIGNED_FLOAT && GET_CODE (op) == CONST_INT)
-    {
-      REAL_VALUE_TYPE d;
+      if (GET_CODE (op) == CONST_INT)
+	lv = INTVAL (op), hv = INTVAL (op) < 0 ? -1 : 0;
+      else
+	lv = CONST_DOUBLE_HIGH (op),  hv = CONST_DOUBLE_LOW (op);
 
 #ifdef REAL_ARITHMETIC
-      REAL_VALUE_FROM_INT (d, INTVAL (op), 0);
+      REAL_VALUE_FROM_INT (d, lv, hv);
 #else
-      d = (double) (unsigned int) INTVAL (op);
-#endif
-      return CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
-    }
-
-  else if (code == FLOAT && GET_CODE (op) == CONST_DOUBLE
-	   && GET_MODE (op) == VOIDmode)
-    {
-      REAL_VALUE_TYPE d;
-
-#ifdef REAL_ARITHMETIC
-      REAL_VALUE_FROM_INT (d, CONST_DOUBLE_LOW (op), CONST_DOUBLE_HIGH (op));
-#else
-      if (CONST_DOUBLE_HIGH (op) < 0)
+      if (hv < 0)
 	{
-	  d = (double) (~ CONST_DOUBLE_HIGH (op));
+	  d = (double) (~ hv);
 	  d *= ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
 		* (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
-	  d += (double) (unsigned HOST_WIDE_INT) (~ CONST_DOUBLE_LOW (op));
+	  d += (double) (unsigned HOST_WIDE_INT) (~ lv);
 	  d = (- d - 1.0);
 	}
       else
 	{
-	  d = (double) CONST_DOUBLE_HIGH (op);
+	  d = (double) hv;
 	  d *= ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
 		* (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
-	  d += (double) (unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (op);
+	  d += (double) (unsigned HOST_WIDE_INT) lv;
 	}
 #endif  /* REAL_ARITHMETIC */
+
       return CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
     }
-  else if (code == UNSIGNED_FLOAT && GET_CODE (op) == CONST_DOUBLE
-	   && GET_MODE (op) == VOIDmode)
+  else if (code == UNSIGNED_FLOAT && GET_MODE (op) == VOIDmode
+	   && (GET_CODE (op) == CONST_DOUBLE || GET_CODE (op) == CONST_INT))
     {
+      HOST_WIDE_INT hv, lv;
       REAL_VALUE_TYPE d;
 
+      if (GET_CODE (op) == CONST_INT)
+	lv = INTVAL (op), hv = INTVAL (op) < 0 ? -1 : 0;
+      else
+	lv = CONST_DOUBLE_HIGH (op),  hv = CONST_DOUBLE_LOW (op);
+
+      if (GET_MODE_BITSIZE (op_mode) >= HOST_BITS_PER_WIDE_INT * 2)
+	;
+      else
+	hv = 0, lv &= GET_MODE_MASK (op_mode);
+
 #ifdef REAL_ARITHMETIC
-      REAL_VALUE_FROM_UNSIGNED_INT (d, CONST_DOUBLE_LOW (op),
-				    CONST_DOUBLE_HIGH (op));
+      REAL_VALUE_FROM_UNSIGNED_INT (d, lv, hv);
 #else
-      d = (double) CONST_DOUBLE_HIGH (op);
+
+      d = (double) hv;
       d *= ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
 	    * (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
-      d += (double) (unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (op);
+      d += (double) (unsigned HOST_WIDE_INT) lv;
 #endif  /* REAL_ARITHMETIC */
+
       return CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
     }
 #endif
