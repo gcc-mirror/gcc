@@ -1,6 +1,13 @@
+2002-03-20  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* posix-threads.cc (_Jv_ThreadSelf_out_of_line): Use write_barrier,
+	not release_set.
+	* sysdep/powerpc/locks.h (write_barrier): New function.
+	* sysdep/i386/locks.h (write_barrier): New function.
+
 2002-03-19  Martin Kahlert  <martin.kahlert@infineon.com>
 
-	* include/jni.h Use correct C comments 
+	* include/jni.h Use correct C comments.
 
 2002-03-18  Tom Tromey  <tromey@redhat.com>
 
