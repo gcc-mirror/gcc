@@ -1,3 +1,7 @@
+Tue Mar 16 23:40:09 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.md (movsi_i): Move t/r alternative after r/rI alternative.
+
 Tue Mar 16 13:44:50 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* mn10200/mn10200.md (addsi3, subsi3, ashlsi3, lshrsi3, ashrsi3):
