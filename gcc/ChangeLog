@@ -1,5 +1,10 @@
 2004-03-22  Joel Brobecker  <brobecker@gnat.com>
 
+	* dwarf2out.c (is_subrange_type): Do not emit a subrange_type DIE
+	for base types.
+
+2004-03-22  Joel Brobecker  <brobecker@gnat.com>
+
 	* dwarf2out.c (is_subrange_type): Minor code rework. No behavior
 	change.
 
