@@ -4128,7 +4128,23 @@ output_toc (file, x, labelno)
 
       fputs ("[TC],", file);
     }
-  output_addr_const (file, x);
+
+  /* Currently C++ toc references to vtables can be emitted before it
+     is decided whether the vtable is public or private.  If this is
+     the case, then the linker will eventually complain that there is
+     a TOC reference to an unknown section.  Thus, for vtables only,
+     we emit the TOC reference to reference the symbol and not the
+     section.  */
+  if (!strncmp ("_vt.", real_name, 4))
+    {
+      RS6000_OUTPUT_BASENAME (file, real_name);
+      if (offset < 0)
+	fprintf (file, "%d", offset);
+      else if (offset > 0)
+	fprintf (file, "+%d", offset);
+    }
+  else
+    output_addr_const (file, x);
   putc ('\n', file);
 }
 
