@@ -222,23 +222,23 @@ enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
 	    A_UNUSED, A_FORMAT, A_FORMAT_ARG, A_WEAK, A_ALIAS, A_MALLOC,
 	    A_NO_LIMIT_STACK, A_PURE};
 
-/* Information about how a function name is generated. */
+/* Information about how a function name is generated.  */
 struct fname_var_t
 {
-  tree *decl;	/* pointer to the VAR_DECL. */
-  unsigned rid;	/* RID number for the identifier. */
+  tree *decl;	/* pointer to the VAR_DECL.  */
+  unsigned rid;	/* RID number for the identifier.  */
   int pretty;	/* How pretty is it? */
 };
 
-/* The three ways of getting then name of the current function. */
+/* The three ways of getting then name of the current function.  */
 
 const struct fname_var_t fname_vars[] =
 {
-  /* C99 compliant __func__, must be first. */
+  /* C99 compliant __func__, must be first.  */
   {&c99_function_name_decl_node, RID_C99_FUNCTION_NAME, 0},
-  /* GCC __FUNCTION__ compliant. */
+  /* GCC __FUNCTION__ compliant.  */
   {&function_name_decl_node, RID_FUNCTION_NAME, 0},
-  /* GCC __PRETTY_FUNCTION__ compliant. */
+  /* GCC __PRETTY_FUNCTION__ compliant.  */
   {&pretty_function_name_decl_node, RID_PRETTY_FUNCTION_NAME, 1},
   {NULL, 0, 0},
 };
@@ -359,7 +359,7 @@ c_finish_else ()
   RECHAIN_STMTS (if_stmt, ELSE_CLAUSE (if_stmt));
 }
 
-/* Push current bindings for the function name VAR_DECLS. */
+/* Push current bindings for the function name VAR_DECLS.  */
 
 void
 start_fname_decls ()
@@ -389,7 +389,7 @@ start_fname_decls ()
    function's body in a COMPOUND_STMT containing these decls too. This
    must be done _before_ finish_stmt_tree is called. If there is no
    current function, we must be at file scope and no statements are
-   involved. Pop the previous bindings. */
+   involved. Pop the previous bindings.  */
 
 void
 finish_fname_decls ()
@@ -403,7 +403,7 @@ finish_fname_decls ()
   
   if (body)
     {
-      /* They were called into existance, so add to statement tree. */
+      /* They were called into existance, so add to statement tree.  */
       body = chainon (body,
 		      TREE_CHAIN (DECL_SAVED_TREE (current_function_decl)));
       body = build_stmt (COMPOUND_STMT, body);
@@ -417,7 +417,7 @@ finish_fname_decls ()
   
   if (stack)
     {
-      /* We had saved values, restore them. */
+      /* We had saved values, restore them.  */
       tree saved;
 
       for (saved = TREE_PURPOSE (stack); saved; saved = TREE_CHAIN (saved))
@@ -433,7 +433,7 @@ finish_fname_decls ()
 }
 
 /* Return the text name of the current function, suitable prettified
-   by PRETTY_P. */
+   by PRETTY_P.  */
 
 const char *
 fname_as_string (pretty_p)
@@ -496,7 +496,7 @@ fname_decl (rid, id)
 	{
 	  /* We created some statement tree for the decl. This belongs
 	     at the start of the function, so remove it now and reinsert
-	     it after the function is complete. */
+	     it after the function is complete.  */
 	  tree stmts = TREE_CHAIN (saved_last_tree);
 
 	  TREE_CHAIN (saved_last_tree) = NULL_TREE;
@@ -1975,7 +1975,7 @@ type_for_mode (mode, unsignedp)
   return 0;
 }
 
-/* Return an unsigned type the same as TYPE in other respects. */
+/* Return an unsigned type the same as TYPE in other respects.  */
 tree
 unsigned_type (type)
      tree type;
@@ -3951,7 +3951,7 @@ c_unsafe_for_reeval (exp)
   return -1;
 }
 
-/* Tree code classes. */
+/* Tree code classes.  */
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
@@ -3984,7 +3984,7 @@ static const char *c_tree_code_name[] = {
 #undef DEFTREECODE
 
 /* Adds the tree codes specific to the C front end to the list of all
-   tree codes. */
+   tree codes.  */
 
 void
 add_c_tree_codes ()
@@ -4053,33 +4053,33 @@ c_expand_builtin (exp, target, tmode, modifier)
 
 /* Check an arglist to *printf for problems.  The arglist should start
    at the format specifier, with the remaining arguments immediately
-   following it. */
+   following it.  */
 static int
 is_valid_printf_arglist (arglist)
   tree arglist;
 {
-  /* Save this value so we can restore it later. */
+  /* Save this value so we can restore it later.  */
   const int SAVE_pedantic = pedantic;
   int diagnostic_occurred = 0;
 
   /* Set this to a known value so the user setting won't affect code
      generation.  */
   pedantic = 1;
-  /* Check to make sure there are no format specifier errors. */
+  /* Check to make sure there are no format specifier errors.  */
   check_function_format (&diagnostic_occurred,
 			 maybe_get_identifier("printf"),
 			 NULL_TREE, arglist);
 
-  /* Restore the value of `pedantic'. */
+  /* Restore the value of `pedantic'.  */
   pedantic = SAVE_pedantic;
 
   /* If calling `check_function_format_ptr' produces a warning, we
-     return false, otherwise we return true. */
+     return false, otherwise we return true.  */
   return ! diagnostic_occurred;
 }
 
 /* If the arguments passed to printf are suitable for optimizations,
-   we attempt to transform the call. */
+   we attempt to transform the call.  */
 static rtx
 c_expand_builtin_printf (arglist, target, tmode, modifier, ignore)
      tree arglist;
@@ -4093,16 +4093,16 @@ c_expand_builtin_printf (arglist, target, tmode, modifier, ignore)
   tree fn, format_arg, stripped_string;
 
   /* If the return value is used, or the replacement _DECL isn't
-     initialized, don't do the transformation. */
+     initialized, don't do the transformation.  */
   if (!ignore || !fn_putchar || !fn_puts)
     return 0;
 
-  /* Verify the required arguments in the original call. */
+  /* Verify the required arguments in the original call.  */
   if (arglist == 0
       || (TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE))
     return 0;
   
-  /* Check the specifier vs. the parameters. */
+  /* Check the specifier vs. the parameters.  */
   if (!is_valid_printf_arglist (arglist))
     return 0;
   
@@ -4118,13 +4118,13 @@ c_expand_builtin_printf (arglist, target, tmode, modifier, ignore)
   
   /* OK!  We can attempt optimization.  */
 
-  /* If the format specifier was "%s\n", call __builtin_puts(arg2). */
+  /* If the format specifier was "%s\n", call __builtin_puts(arg2).  */
   if (strcmp (TREE_STRING_POINTER (stripped_string), "%s\n") == 0)
     {
       arglist = TREE_CHAIN (arglist);
       fn = fn_puts;
     }
-  /* If the format specifier was "%c", call __builtin_putchar (arg2). */
+  /* If the format specifier was "%c", call __builtin_putchar (arg2).  */
   else if (strcmp (TREE_STRING_POINTER (stripped_string), "%c") == 0)
     {
       arglist = TREE_CHAIN (arglist);
@@ -4132,7 +4132,7 @@ c_expand_builtin_printf (arglist, target, tmode, modifier, ignore)
     }
   else
     {
-     /* We can't handle anything else with % args or %% ... yet. */
+     /* We can't handle anything else with % args or %% ... yet.  */
       if (strchr (TREE_STRING_POINTER (stripped_string), '%'))
 	return 0;
       
@@ -4143,7 +4143,7 @@ c_expand_builtin_printf (arglist, target, tmode, modifier, ignore)
         {
 	  /* Given printf("c"), (where c is any one character,)
              convert "c"[0] to an int and pass that to the replacement
-             function. */
+             function.  */
 	  arglist = build_int_2 (TREE_STRING_POINTER (stripped_string)[0], 0);
 	  arglist = build_tree_list (NULL_TREE, arglist);
 	  
@@ -4180,7 +4180,7 @@ c_expand_builtin_printf (arglist, target, tmode, modifier, ignore)
 }
 
 /* If the arguments passed to fprintf are suitable for optimizations,
-   we attempt to transform the call. */
+   we attempt to transform the call.  */
 static rtx
 c_expand_builtin_fprintf (arglist, target, tmode, modifier, ignore)
      tree arglist;
@@ -4194,11 +4194,11 @@ c_expand_builtin_fprintf (arglist, target, tmode, modifier, ignore)
   tree fn, format_arg, stripped_string;
 
   /* If the return value is used, or the replacement _DECL isn't
-     initialized, don't do the transformation. */
+     initialized, don't do the transformation.  */
   if (!ignore || !fn_fputc || !fn_fputs)
     return 0;
 
-  /* Verify the required arguments in the original call. */
+  /* Verify the required arguments in the original call.  */
   if (arglist == 0
       || (TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
       || (TREE_CHAIN (arglist) == 0)
@@ -4206,7 +4206,7 @@ c_expand_builtin_fprintf (arglist, target, tmode, modifier, ignore)
 	  POINTER_TYPE))
     return 0;
   
-  /* Check the specifier vs. the parameters. */
+  /* Check the specifier vs. the parameters.  */
   if (!is_valid_printf_arglist (TREE_CHAIN (arglist)))
     return 0;
   
@@ -4222,7 +4222,7 @@ c_expand_builtin_fprintf (arglist, target, tmode, modifier, ignore)
   
   /* OK!  We can attempt optimization.  */
 
-  /* If the format specifier was "%s", call __builtin_fputs(arg3, arg1). */
+  /* If the format specifier was "%s", call __builtin_fputs(arg3, arg1).  */
   if (strcmp (TREE_STRING_POINTER (stripped_string), "%s") == 0)
     {
       tree newarglist = build_tree_list (NULL_TREE, TREE_VALUE (arglist));
@@ -4231,7 +4231,7 @@ c_expand_builtin_fprintf (arglist, target, tmode, modifier, ignore)
 			   newarglist);
       fn = fn_fputs;
     }
-  /* If the format specifier was "%c", call __builtin_fputc (arg3, arg1). */
+  /* If the format specifier was "%c", call __builtin_fputc (arg3, arg1).  */
   else if (strcmp (TREE_STRING_POINTER (stripped_string), "%c") == 0)
     {
       tree newarglist = build_tree_list (NULL_TREE, TREE_VALUE (arglist));
@@ -4242,7 +4242,7 @@ c_expand_builtin_fprintf (arglist, target, tmode, modifier, ignore)
     }
   else
     {
-     /* We can't handle anything else with % args or %% ... yet. */
+     /* We can't handle anything else with % args or %% ... yet.  */
       if (strchr (TREE_STRING_POINTER (stripped_string), '%'))
 	return 0;
       

@@ -556,13 +556,13 @@ STATIC ui32 __FRAME_END__[] __attribute__ ((__unused__)) = { 0 };
    by putting a constructor in crtbegin.o and a destructor in crtend.o.
 
    crtend.o also puts in the terminating zero in the frame information
-   segment. */
+   segment.  */
 
 /* The crtstuff for other object formats use the symbol __EH_FRAME_BEGIN__
    to figure out the start of the exception frame, but here we use
    getsectbynamefromheader to find this value. Either method would work,
    but this method avoids creating any global symbols, which seems
-   cleaner. */
+   cleaner.  */
 
 #include <mach-o/ldsyms.h>
 extern const struct section *
@@ -600,7 +600,7 @@ __dereg_frame_dtor (void)
   __deregister_frame_info ((void *) eh_frame->addr);
 }
 
-/* Terminate the frame section with a final zero. */
+/* Terminate the frame section with a final zero.  */
 
 /* Force cc1 to switch to .data section.  */
 static void * force_to_data[1] __attribute__ ((__unused__)) = { };

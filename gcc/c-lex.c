@@ -73,7 +73,7 @@ extern FILE *asm_out_file;
 /* Number of bytes in a wide character.  */
 #define WCHAR_BYTES (WCHAR_TYPE_SIZE / BITS_PER_UNIT)
 
-int indent_level;        /* Number of { minus number of }. */
+int indent_level;        /* Number of { minus number of }.  */
 int pending_lang_change; /* If we need to switch languages - C++ only */
 int c_header_level;	 /* depth in C headers - C++ only */
 
@@ -309,7 +309,7 @@ cb_def_pragma (pfile)
 {
   /* Issue a warning message if we have been asked to do so.  Ignore
      unknown pragmas in system headers unless an explicit
-     -Wunknown-pragmas has been given. */
+     -Wunknown-pragmas has been given.  */
   if (warn_unknown_pragmas > in_system_header)
     {
       const unsigned char *space, *name = 0;
@@ -826,7 +826,7 @@ lex_number (str, len)
      Two HOST_WIDE_INTs is the largest int literal we can store.
      In order to detect overflow below, the number of parts (TOTAL_PARTS)
      must be exactly the number of parts needed to hold the bits
-     of two HOST_WIDE_INTs. */
+     of two HOST_WIDE_INTs.  */
 #define TOTAL_PARTS ((HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR) * 2)
   unsigned int parts[TOTAL_PARTS];
   
@@ -936,7 +936,7 @@ lex_number (str, len)
 	  /* If the highest-order part overflows (gets larger than
 	     a host char will hold) then the whole number has 
 	     overflowed.  Record this and truncate the highest-order
-	     part. */
+	     part.  */
 	  if (parts[TOTAL_PARTS - 1] >> HOST_BITS_PER_CHAR)
 	    {
 	      overflow = 1;
@@ -1123,7 +1123,7 @@ lex_number (str, len)
 	    }
 	}
 
-      /* If the literal overflowed, pedwarn about it now. */
+      /* If the literal overflowed, pedwarn about it now.  */
       if (overflow)
 	{
 	  warn = 1;
@@ -1264,7 +1264,7 @@ lex_number (str, len)
 	TREE_TYPE (value) = type;
 
       /* If it's still an integer (not a complex), and it doesn't
-	 fit in the type we choose for it, then pedwarn. */
+	 fit in the type we choose for it, then pedwarn.  */
 
       if (! warn
 	  && TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE

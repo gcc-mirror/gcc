@@ -219,11 +219,11 @@ open_file (pfile, filename)
       return 0;
     }
 
-  /* Don't reopen an idempotent file. */
+  /* Don't reopen an idempotent file.  */
   if (DO_NOT_REREAD (file))
     return file;
       
-  /* Don't reopen one which is already loaded. */
+  /* Don't reopen one which is already loaded.  */
   if (file->buffer != NULL)
     return file;
 
@@ -1066,11 +1066,11 @@ _cpp_simplify_pathname (path)
     return path;
 
 #if defined (HAVE_DOS_BASED_FILE_SYSTEM)
-  /* Convert all backslashes to slashes. */
+  /* Convert all backslashes to slashes.  */
   for (from = path; *from; from++)
     if (*from == '\\') *from = '/';
     
-  /* Skip over leading drive letter if present. */
+  /* Skip over leading drive letter if present.  */
   if (ISALPHA (path[0]) && path[1] == ':')
     from = to = &path[2];
   else

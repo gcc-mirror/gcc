@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
    are errors.  It defaults to -x c for files with unrecognized
    extensions, unless -x options appear in argv, in which case we
    assume the user knows what they're doing.  If no explicit input is
-   mentioned, it will read stdin. */
+   mentioned, it will read stdin.  */
 
 /* Snarfed from gcc.c: */
 
@@ -69,7 +69,7 @@ static const char *const known_suffixes[] =
   NULL
 };
 
-/* Filter argc and argv before processing by the gcc driver proper. */
+/* Filter argc and argv before processing by the gcc driver proper.  */
 void
 lang_specific_driver (in_argc, in_argv, in_added_libraries)
      int *in_argc;
@@ -92,7 +92,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   int seen_input = 0;
   
   /* Positions to insert -xc, -xassembler-with-cpp, and -o, if necessary.
-     0 means unnecessary. */
+     0 means unnecessary.  */
   int lang_c_here = 0;
   int lang_S_here = 0;
   int o_here = 0;
@@ -227,11 +227,11 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   *in_argv = new_argv;
 } 
 
-/* Called before linking.  Returns 0 on success and -1 on failure. */
+/* Called before linking.  Returns 0 on success and -1 on failure.  */
 int lang_specific_pre_link ()
 {
-  return 0;  /* Not used for cpp. */
+  return 0;  /* Not used for cpp.  */
 }
 
-/* Number of extra output files that lang_specific_pre_link may generate. */
-int lang_specific_extra_outfiles = 0;  /* Not used for cpp. */
+/* Number of extra output files that lang_specific_pre_link may generate.  */
+int lang_specific_extra_outfiles = 0;  /* Not used for cpp.  */

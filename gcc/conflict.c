@@ -103,7 +103,7 @@ struct conflict_graph_def
      conflicts exist involving that reg.  */
   conflict_graph_arc *neighbor_heads;
 
-  /* Arcs are allocated from here. */
+  /* Arcs are allocated from here.  */
   struct obstack arc_obstack;
 };
 
@@ -122,7 +122,7 @@ static int print_conflict	PARAMS ((int, int, void *));
 static void mark_reg		PARAMS ((rtx, rtx, void *));
 
 /* Callback function to compute the hash value of an arc.  Uses
-   current_graph to locate the graph to which the arc belongs. */
+   current_graph to locate the graph to which the arc belongs.  */
 
 static unsigned
 arc_hash (arcp)

@@ -154,7 +154,7 @@ SCCS_ENTRY						   /* 0 SVR4? */
    instead of void, because some old compilers have trouble with
    pointers to functions returning void.  */
 
-/* Don't invoke CONCAT2 with any whitespace or K&R cc will fail. */
+/* Don't invoke CONCAT2 with any whitespace or K&R cc will fail.  */
 #define D(name, t, o, f) static void CONCAT2(do_,name) PARAMS ((cpp_reader *));
 DIRECTIVE_TABLE
 #undef D
@@ -167,7 +167,7 @@ enum
 };
 #undef D
 
-/* Don't invoke CONCAT2 with any whitespace or K&R cc will fail. */
+/* Don't invoke CONCAT2 with any whitespace or K&R cc will fail.  */
 #define D(name, t, origin, flags) \
 { CONCAT2(do_,name), (const U_CHAR *) STRINGX(name), \
   sizeof STRINGX(name) - 1, origin, flags },
@@ -914,7 +914,7 @@ do_ident (pfile)
    This implementation never macro-expands the text after #pragma.  */
 
 /* Sub-handlers for the pragmas needing treatment here.
-   They return 1 if the token buffer is to be popped, 0 if not. */
+   They return 1 if the token buffer is to be popped, 0 if not.  */
 struct pragma_entry
 {
   struct pragma_entry *next;
@@ -1647,7 +1647,7 @@ do_unassert (pfile)
 /* Process the string STR as if it appeared as the body of a #define.
    If STR is just an identifier, define it with value 1.
    If STR has anything after the identifier, then it should
-   be identifier=definition. */
+   be identifier=definition.  */
 
 void
 cpp_define (pfile, str)
@@ -1696,7 +1696,7 @@ cpp_undef (pfile, macro)
   run_directive (pfile, T_UNDEF, BUF_CL_OPTION, macro, strlen (macro));
 }
 
-/* Process the string STR as if it appeared as the body of a #assert. */
+/* Process the string STR as if it appeared as the body of a #assert.  */
 void
 cpp_assert (pfile, str)
      cpp_reader *pfile;
@@ -1705,7 +1705,7 @@ cpp_assert (pfile, str)
   handle_assertion (pfile, str, T_ASSERT);
 }
 
-/* Process STR as if it appeared as the body of an #unassert. */
+/* Process STR as if it appeared as the body of an #unassert.  */
 void
 cpp_unassert (pfile, str)
      cpp_reader *pfile;
