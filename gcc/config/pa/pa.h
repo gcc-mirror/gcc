@@ -1668,9 +1668,20 @@ readonly_data ()							\
  "%fr28", "%fr28R", "%fr29", "%fr29R", "%fr30", "%fr30R", "%fr31", "%fr31R",\
  "SAR"}
 
-/* How to renumber registers for dbx and gdb.  */
+/* How to renumber registers for dbx and gdb.
 
-#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
+   Registers 0  - 31 remain unchanged.
+
+   Registers 32 - 43 are mapped to 72 - 94 (even numbers only)
+
+   Registers 44 - 100 are mapped to 72 - 128 
+
+   Register 101 is mapped to 32.  */
+
+#define DBX_REGISTER_NUMBER(REGNO) \
+  ((REGNO) <= 31 ? (REGNO) : 					\
+   ((REGNO) > 31 && (REGNO) <= 43 ? ((REGNO) - 32) * 2 + 72 : 	\
+    ((REGNO) > 43 && (REGNO) <= 100 ? (REGNO) + 28 : 32)))
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
