@@ -306,8 +306,8 @@ get_coverage_counts (unsigned counter, unsigned expected,
       static int warned = 0;
 
       if (!warned++)
-	warning ("file %s not found, execution counts assumed to be zero",
-		 da_file_name);
+	inform ("file %s not found, execution counts assumed to be zero",
+		da_file_name);
       return NULL;
     }
 
