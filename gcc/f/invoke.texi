@@ -132,43 +132,43 @@ by type.  Explanations are in the following sections.
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options Controlling Fortran Dialect}.
 @gccoptlist{
--ffree-form  -fno-fixed-form  -ff90
--fvxt  -fdollar-ok  -fno-backslash
--fno-ugly-args  -fno-ugly-assign  -fno-ugly-assumed
--fugly-comma  -fugly-complex  -fugly-init  -fugly-logint
--fonetrip  -ftypeless-boz
--fintrin-case-initcap  -fintrin-case-upper
--fintrin-case-lower  -fintrin-case-any
--fmatch-case-initcap  -fmatch-case-upper
--fmatch-case-lower  -fmatch-case-any
--fsource-case-upper  -fsource-case-lower
--fsource-case-preserve
--fsymbol-case-initcap  -fsymbol-case-upper
--fsymbol-case-lower  -fsymbol-case-any
--fcase-strict-upper  -fcase-strict-lower
--fcase-initcap  -fcase-upper  -fcase-lower  -fcase-preserve
--ff2c-intrinsics-delete  -ff2c-intrinsics-hide
--ff2c-intrinsics-disable  -ff2c-intrinsics-enable
--fbadu77-intrinsics-delete  -fbadu77-intrinsics-hide
--fbadu77-intrinsics-disable  -fbadu77-intrinsics-enable
--ff90-intrinsics-delete  -ff90-intrinsics-hide
--ff90-intrinsics-disable  -ff90-intrinsics-enable
--fgnu-intrinsics-delete  -fgnu-intrinsics-hide
--fgnu-intrinsics-disable  -fgnu-intrinsics-enable
--fmil-intrinsics-delete  -fmil-intrinsics-hide
--fmil-intrinsics-disable  -fmil-intrinsics-enable
--funix-intrinsics-delete  -funix-intrinsics-hide
--funix-intrinsics-disable  -funix-intrinsics-enable
--fvxt-intrinsics-delete  -fvxt-intrinsics-hide
--fvxt-intrinsics-disable  -fvxt-intrinsics-enable
+-ffree-form  -fno-fixed-form  -ff90 @gol
+-fvxt  -fdollar-ok  -fno-backslash @gol
+-fno-ugly-args  -fno-ugly-assign  -fno-ugly-assumed @gol
+-fugly-comma  -fugly-complex  -fugly-init  -fugly-logint @gol
+-fonetrip  -ftypeless-boz @gol
+-fintrin-case-initcap  -fintrin-case-upper @gol
+-fintrin-case-lower  -fintrin-case-any @gol
+-fmatch-case-initcap  -fmatch-case-upper @gol
+-fmatch-case-lower  -fmatch-case-any @gol
+-fsource-case-upper  -fsource-case-lower @gol
+-fsource-case-preserve @gol
+-fsymbol-case-initcap  -fsymbol-case-upper @gol
+-fsymbol-case-lower  -fsymbol-case-any @gol
+-fcase-strict-upper  -fcase-strict-lower @gol
+-fcase-initcap  -fcase-upper  -fcase-lower  -fcase-preserve @gol
+-ff2c-intrinsics-delete  -ff2c-intrinsics-hide @gol
+-ff2c-intrinsics-disable  -ff2c-intrinsics-enable @gol
+-fbadu77-intrinsics-delete  -fbadu77-intrinsics-hide @gol
+-fbadu77-intrinsics-disable  -fbadu77-intrinsics-enable @gol
+-ff90-intrinsics-delete  -ff90-intrinsics-hide @gol
+-ff90-intrinsics-disable  -ff90-intrinsics-enable @gol
+-fgnu-intrinsics-delete  -fgnu-intrinsics-hide @gol
+-fgnu-intrinsics-disable  -fgnu-intrinsics-enable @gol
+-fmil-intrinsics-delete  -fmil-intrinsics-hide @gol
+-fmil-intrinsics-disable  -fmil-intrinsics-enable @gol
+-funix-intrinsics-delete  -funix-intrinsics-hide @gol
+-funix-intrinsics-disable  -funix-intrinsics-enable @gol
+-fvxt-intrinsics-delete  -fvxt-intrinsics-hide @gol
+-fvxt-intrinsics-disable  -fvxt-intrinsics-enable @gol
 -ffixed-line-length-@var{n}  -ffixed-line-length-none}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{
--fsyntax-only  -pedantic  -pedantic-errors  -fpedantic
--w  -Wno-globals  -Wimplicit  -Wunused  -Wuninitialized
--Wall  -Wsurprising
+-fsyntax-only  -pedantic  -pedantic-errors  -fpedantic @gol
+-w  -Wno-globals  -Wimplicit  -Wunused  -Wuninitialized @gol
+-Wall  -Wsurprising @gol
 -Werror  -W}
 
 @item Debugging Options
@@ -179,14 +179,14 @@ by type.  Explanations are in the following sections.
 @item Optimization Options
 @xref{Optimize Options,,Options that Control Optimization}.
 @gccoptlist{
--malign-double
--ffloat-store  -fforce-mem  -fforce-addr  -fno-inline
--ffast-math  -fstrength-reduce  -frerun-cse-after-loop
--funsafe-math-optimizations -fno-trapping-math
--fexpensive-optimizations  -fdelayed-branch
--fschedule-insns  -fschedule-insn2  -fcaller-saves
--funroll-loops  -funroll-all-loops
--fno-move-all-movables  -fno-reduce-all-givs
+-malign-double @gol
+-ffloat-store  -fforce-mem  -fforce-addr  -fno-inline @gol
+-ffast-math  -fstrength-reduce  -frerun-cse-after-loop @gol
+-funsafe-math-optimizations -fno-trapping-math @gol
+-fexpensive-optimizations  -fdelayed-branch @gol
+-fschedule-insns  -fschedule-insn2  -fcaller-saves @gol
+-funroll-loops  -funroll-all-loops @gol
+-fno-move-all-movables  -fno-reduce-all-givs @gol
 -fno-rerun-loop-opt}
 
 @item Directory Options
@@ -197,15 +197,15 @@ by type.  Explanations are in the following sections.
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @gccoptlist{
--fno-automatic  -finit-local-zero  -fno-f2c
--ff2c-library  -fno-underscoring  -fno-ident
--fpcc-struct-return  -freg-struct-return
--fshort-double  -fno-common  -fpack-struct
--fzeros  -fno-second-underscore
--femulate-complex
--falias-check  -fargument-alias
--fargument-noalias  -fno-argument-noalias-global
--fno-globals  -fflatten-arrays
+-fno-automatic  -finit-local-zero  -fno-f2c @gol
+-ff2c-library  -fno-underscoring  -fno-ident @gol
+-fpcc-struct-return  -freg-struct-return @gol
+-fshort-double  -fno-common  -fpack-struct @gol
+-fzeros  -fno-second-underscore @gol
+-femulate-complex @gol
+-falias-check  -fargument-alias @gol
+-fargument-noalias  -fno-argument-noalias-global @gol
+-fno-globals  -fflatten-arrays @gol
 -fbounds-check  -ffortran-bounds-check}
 @end table
 

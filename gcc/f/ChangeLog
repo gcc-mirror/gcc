@@ -1,3 +1,8 @@
+2002-04-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* invoke.texi: Use @gol at ends of lines inside @gccoptlist.
+	* g77.texi: Update last update date.
+
 Thu Apr 25 07:44:44 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.h (ffe_parse_file): Update.
