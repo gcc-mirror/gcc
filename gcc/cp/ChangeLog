@@ -1,3 +1,14 @@
+2000-11-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (binfo_from_vbase): Return the virtual base's binfo.
+	* cvt.c (cp_convert_to_pointer): Add force parameter.
+	Allow conversions via virtual base if forced.
+	(convert_to_pointer_force): Adjust call to cp_convert_to_pointer.
+	(ocp_convert): Likewise.
+	* search.c (binfo_from_vbase): Return the virtual base's binfo.
+	* typeck.c (get_delta_difference): Adjust handling of virtual
+	bases.
+
 2000-11-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (struct list_hash): Remove.
