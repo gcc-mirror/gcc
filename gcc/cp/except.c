@@ -857,7 +857,7 @@ expand_throw (exp)
       tree args = tree_cons (NULL_TREE, exp, NULL);
 
       fn = get_identifier (exceptions_via_longjmp
-			   ? "_Jv_Sjlj_throw"
+			   ? "_Jv_Sjlj_Throw"
 			   : "_Jv_Throw");
       if (IDENTIFIER_GLOBAL_VALUE (fn))
 	fn = IDENTIFIER_GLOBAL_VALUE (fn);
