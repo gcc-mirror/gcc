@@ -1,3 +1,19 @@
+1999-09-28  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+        * pt.c (most_general_template): Adjust declaration.
+
+        * cp-tree.h: (most_general_template): Declare.
+
+        * error.c (dump_template_value): Rename to ...
+        (dump_template_argument): This.
+        (dump_template_argument_list): New function.
+        (dump_type): Use it.
+        (dump_template_parameter): New function.
+        (dump_template_decl): Use it.
+        (dump_template_bindings): New function.
+        (dump_function_decl): Use it. Pretty print function template
+        instantiations.
+
 1999-09-28  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (grokdeclarator): Distinguish parameter context for

@@ -3644,6 +3644,7 @@ extern tree most_specialized_instantiation      PROTO((tree, tree));
 extern void print_candidates                    PROTO((tree));
 extern int instantiate_pending_templates        PROTO((void));
 extern tree tsubst_default_argument             PROTO((tree, tree, tree));
+extern tree most_general_template		PROTO((tree));
 
 extern int processing_template_parmlist;
 

@@ -89,7 +89,10 @@ static void dump_parameters PROTO((tree, enum tree_string_flags));
 static void dump_exception_spec PROTO((tree, enum tree_string_flags));
 static const char *aggr_variety PROTO((tree));
 static tree ident_fndecl PROTO((tree));
-static void dump_template_value PROTO((tree, enum tree_string_flags));
+static void dump_template_argument PROTO((tree, enum tree_string_flags));
+static void dump_template_argument_list PROTO((tree, enum tree_string_flags));
+static void dump_template_parameter PROTO((tree, enum tree_string_flags));
+static void dump_template_bindings PROTO((tree, tree, enum tree_string_flags));
 static void dump_scope PROTO((tree, enum tree_string_flags));
 static void dump_template_parms PROTO((tree, int, enum tree_string_flags));
 
@@ -211,20 +214,119 @@ dump_qualifiers (t, p)
    value.  */
 static char digit_buffer[128];
 
-/* Dump a template parameter or template argument VALUE under
-   control of FLAGS. */
+/* Dump the template ARGument under control of FLAGS.  */
 
 static void
-dump_template_value (value, flags)
-     tree value;
+dump_template_argument (arg, flags)
+     tree arg;
      enum tree_string_flags flags;
 {
-  if (TREE_CODE_CLASS (TREE_CODE (value)) == 't'
-      || TREE_CODE (value) == TEMPLATE_DECL)
-    dump_type (value, flags & ~TS_AGGR_TAGS);
+  if (TREE_CODE_CLASS (TREE_CODE (arg)) == 't'
+      || TREE_CODE (arg) == TEMPLATE_DECL)
+    dump_type (arg, flags & ~TS_AGGR_TAGS);
   else
-    dump_expr (value, (flags | TS_EXPR_PARENS) & ~TS_AGGR_TAGS);
+    dump_expr (arg, (flags | TS_EXPR_PARENS) & ~TS_AGGR_TAGS);
 }
+
+/* Dump a template-argument-list ARGS (always a TREE_VEC) under control
+   of FLAGS.  */
+
+static void
+dump_template_argument_list (args, flags)
+     tree args;
+     enum tree_string_flags flags;
+{
+  int n = TREE_VEC_LENGTH (args);
+  int need_comma = 0;
+  int i;
+
+  for (i = 0; i< n; ++i)
+    {
+      if (need_comma)
+        OB_PUTS (", ");
+      dump_template_argument (TREE_VEC_ELT (args, i), flags);
+      need_comma = 1;
+    }
+}
+
+/* Dump a template parameter PARM (a TREE_LIST) under control of FLAGS.  */
+
+static void
+dump_template_parameter (parm, flags)
+     tree parm;
+     enum tree_string_flags flags;
+{
+  tree p = TREE_VALUE (parm);
+  tree a = TREE_PURPOSE (parm);
+
+  if (TREE_CODE (p) == TYPE_DECL)
+    {
+      if (flags & TS_DECL_TYPE)
+        {
+          OB_PUTS ("class");
+          if (DECL_NAME (p))
+            {
+              OB_PUTC (' ');
+              OB_PUTID (DECL_NAME (p));
+            }
+        }
+      else if (DECL_NAME (p))
+        OB_PUTID (DECL_NAME (p));
+      else
+        OB_PUTS ("{template default argument error}");
+    }
+  else
+    dump_decl (p, flags | TS_DECL_TYPE);
+
+  if ((flags & TS_PARM_DEFAULTS) && a != NULL_TREE)
+    {
+      OB_PUTS (" = ");
+      if (TREE_CODE (a) == TYPE_DECL || TREE_CODE (a) == TEMPLATE_DECL)
+        dump_type (a, flags & ~TS_CHASE_TYPEDEFS);
+      else
+        dump_expr (a, flags | TS_EXPR_PARENS);
+    }
+}
+
+/* Dump, under control of FLAGS, a template-parameter-list binding.
+   PARMS is a TREE_LIST of TREE_VEC of TREE_LIST and ARGS is a
+   TREE_VEC.  */
+
+static void
+dump_template_bindings (parms, args, flags)
+     tree parms, args;
+     enum tree_string_flags flags;
+{
+  int arg_idx = 0;
+  int need_comma = 0;
+
+  while (parms)
+    {
+      tree p = TREE_VALUE (parms);
+      int i;
+
+      for (i = 0; i < TREE_VEC_LENGTH (p); ++i)
+        {
+          tree arg = TREE_VEC_ELT (args, arg_idx);
+
+          if (need_comma)
+            OB_PUTS (", ");
+          dump_template_parameter (TREE_VEC_ELT (p, i), TS_PLAIN);
+          OB_PUTS (" = ");
+          if (arg)
+            dump_template_argument (arg, TS_PLAIN);
+          else
+            OB_PUTS ("{missing}");
+          
+          ++arg_idx;
+          need_comma = 1;
+        }
+
+      parms = TREE_CHAIN (parms);
+    }
+}
+
+
 
 /* Dump into the obstack a human-readable equivalent of TYPE.  FLAGS
    controls the format.  */
@@ -315,21 +417,14 @@ dump_type (t, flags)
 	  if (TYPE_IDENTIFIER (t))
 	    OB_PUTID (TYPE_IDENTIFIER (t));
 	  else
-	    OB_PUTS ("{anonymous template template parm}");
+	    OB_PUTS ("{anonymous template template parameter}");
 	}
       else
 	{
-	  int i;
 	  tree args = TYPE_TI_ARGS (t);
 	  OB_PUTID (TYPE_IDENTIFIER (t));
 	  OB_PUTC ('<');
-	  for (i = 0; i < TREE_VEC_LENGTH (args); i++)
-	    {
-	      tree arg = TREE_VEC_ELT (args, i);
-	      if (i)
-	        OB_PUTS (", ");
-	      dump_template_value (arg, flags);
-	    }
+          dump_template_argument_list (args, flags);
 	  OB_END_TEMPLATE_ID ();
 	}
       break;
@@ -339,7 +434,7 @@ dump_type (t, flags)
       if (TYPE_IDENTIFIER (t))
 	OB_PUTID (TYPE_IDENTIFIER (t));
       else
-	OB_PUTS ("{anonymous template type parm}");
+	OB_PUTS ("{anonymous template type parameter}");
       break;
 
       /* This is not always necessary for pointers and such, but doing this
@@ -375,7 +470,7 @@ dump_type (t, flags)
       /* Fall through to error. */
 
     case ERROR_MARK:
-      OB_PUTS ("{typeerror}");
+      OB_PUTS ("{type error}");
       break;
     }
 }
@@ -742,7 +837,7 @@ dump_simple_decl (t, type, flags)
   if (DECL_NAME (t))
     dump_decl (DECL_NAME (t), flags);
   else
-    OB_PUTS ("{anon}");
+    OB_PUTS ("{anonymous}");
   if (flags & TS_DECL_TYPE)
     dump_type_suffix (type, flags);
 }
@@ -802,7 +897,7 @@ dump_decl (t, flags)
     case NAMESPACE_DECL:
       dump_scope (CP_DECL_CONTEXT (t), flags);
       if (DECL_NAME (t) == anonymous_namespace_name)
-	OB_PUTS ("{anonymous}");
+	OB_PUTS ("{unnamed}");
       else
 	OB_PUTID (DECL_NAME (t));
       break;
@@ -892,7 +987,7 @@ dump_decl (t, flags)
 	OB_PUTC ('<');
 	for (args = TREE_OPERAND (t, 1); args; args = TREE_CHAIN (args))
 	  {
-	    dump_template_value (TREE_VALUE (args), flags);
+	    dump_template_argument (TREE_VALUE (args), flags);
 	    if (TREE_CHAIN (args))
 	      OB_PUTS (", ");
 	  }
@@ -934,7 +1029,7 @@ dump_decl (t, flags)
       /* Fallthrough to error.  */
 
     case ERROR_MARK:
-      OB_PUTS ("{declerror}");
+      OB_PUTS ("{declaration error}");
       break;
     }
 }
@@ -962,33 +1057,9 @@ dump_template_decl (t, flags)
           OB_PUTS ("template <");
           for (i = 0; i < len; i++)
             {
-	      tree arg = TREE_VEC_ELT (TREE_VALUE (args), i);
-	      tree defval = TREE_PURPOSE (arg);
-	      arg = TREE_VALUE (arg);
               if (i)
                 OB_PUTS (", ");
-	      if (TREE_CODE (arg) == TYPE_DECL)
-	        {
-	          if (DECL_NAME (arg))
-	            {
-		      OB_PUTS ("class ");
-		      OB_PUTID (DECL_NAME (arg));
-	            }
-	          else
-	            OB_PUTS ("class");
-	        }
-	      else
-	        dump_decl (arg, flags | TS_DECL_TYPE);
-	      
-	      if (defval)
-	        {
-	          OB_PUTS (" = ");
-	          if (TREE_CODE (arg) == TYPE_DECL
-		      || TREE_CODE (arg) == TEMPLATE_DECL)
-	            dump_type (defval, flags);
-	          else
-	            dump_expr (defval, flags | TS_EXPR_PARENS);
-	        }
+              dump_template_parameter (TREE_VEC_ELT (args, i), flags);
             }
           OB_END_TEMPLATE_ID ();
           OB_PUTC (' ');
@@ -1034,10 +1105,20 @@ dump_function_decl (t, flags)
   tree fntype;
   tree parmtypes;
   tree cname = NULL_TREE;
+  tree template_args = NULL_TREE;
+  tree template_parms = NULL_TREE;
   int show_return = !(flags & TS_FUNC_NORETURN) && (flags & TS_DECL_TYPE);
 
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
+
+  /* Pretty print template instantiations only.  */
+  if (DECL_USE_TEMPLATE (t) == 1 || DECL_USE_TEMPLATE (t) == 3)
+    {
+      template_args = DECL_TI_ARGS (t);
+      t = most_general_template (t);
+      template_parms = DECL_TEMPLATE_PARMS (t);
+    }
 
   fntype = TREE_TYPE (t);
   parmtypes = TYPE_ARG_TYPES (fntype);
@@ -1098,6 +1179,14 @@ dump_function_decl (t, flags)
   
   if (flags & TS_FUNC_THROW)
     dump_exception_spec (TYPE_RAISES_EXCEPTIONS (fntype), flags);
+
+  /* If T is a template instantiation, dump the parameter binding.  */
+  if (template_parms != NULL_TREE && template_args != NULL_TREE)
+    {
+      OB_PUTS (" [with ");
+      dump_template_bindings (template_parms, template_args, flags);
+      OB_PUTC (']');
+    }
 }
 
 /* Print a parameter list. If this is for a member function, the
@@ -1255,9 +1344,9 @@ dump_template_parms (info, primary, flags)
             OB_PUTS (", ");
               
           if (!arg)
-            OB_PUTS ("{tplparmerror}");
+            OB_PUTS ("{template parameter error}");
           else
-            dump_template_value (arg, flags);
+            dump_template_argument (arg, flags);
           need_comma = 1;
         }
     }
@@ -1956,7 +2045,7 @@ dump_expr (t, flags)
 
       /* fall through to ERROR_MARK...  */
     case ERROR_MARK:
-      OB_PUTCP ("{exprerror}");
+      OB_PUTCP ("{expression error}");
       break;
     }
 }

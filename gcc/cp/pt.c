@@ -136,7 +136,6 @@ static tree tsubst_template_parms PROTO((tree, tree, int));
 static void regenerate_decl_from_template PROTO((tree, tree));
 static tree most_specialized PROTO((tree, tree, tree));
 static tree most_specialized_class PROTO((tree, tree));
-static tree most_general_template PROTO((tree));
 static void set_mangled_name_for_template_decl PROTO((tree));
 static int template_class_depth_real PROTO((tree, int));
 static tree tsubst_aggr_type PROTO((tree, tree, int, tree, int));
@@ -9088,7 +9087,7 @@ most_specialized (fns, decl, explicit_args)
    if TMPL is `template <class U> void S<int*>::f(U)' this will return
    `template <class T> template <class U> S<T*>::f(U)'.  */
 
-static tree
+tree
 most_general_template (decl)
      tree decl;
 {
