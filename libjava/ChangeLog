@@ -1,3 +1,11 @@
+2002-06-04  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in (--with-newlib): New option:
+	Check ${with_newlib} instead of ${with_cross_host} for newlib.
+	(HAVE_PROC_SELF_EXE): Defined to 1 only for cross compiling to
+	Linux.
+	* configure: Regenerated.
+
 2002-06-04  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/natTimeZone.cc: Include <stdio.h>.
