@@ -1,3 +1,9 @@
+2000-02-23  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.jni/noclass.c: New file.
+	* libjava.jni/noclass.out: New file.
+	* libjava.jni/noclass.java: New file.
+
 2000-02-18  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.jni/register.java: New file.
