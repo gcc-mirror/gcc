@@ -1,5 +1,9 @@
 2001-12-29  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.dg/template/crash1.C: New test.
+
+2001-12-29  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.dg/other/const1.C: New test.
 
 2001-12-29  Hans-Peter Nilsson  <hp@bitrange.com>

@@ -2627,7 +2627,7 @@ push_template_decl_real (decl, is_friend)
 	      return decl;
 	    }
 	}
-      else if (! DECL_TEMPLATE_INFO (decl))
+      else if (!DECL_LANG_SPECIFIC (decl) || !DECL_TEMPLATE_INFO (decl))
 	{
 	  error ("template definition of non-template `%#D'", decl);
 	  return decl;
