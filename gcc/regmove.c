@@ -1289,7 +1289,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	      if (GET_CODE (dst) != REG
 		  || REGNO (dst) < FIRST_PSEUDO_REGISTER
 		  || REG_LIVE_LENGTH (REGNO (dst)) < 0
-		  || RTX_UNCHANGING_P (dst))
+		  || RTX_UNCHANGING_P (dst)
+		  || GET_MODE (src) != GET_MODE (dst))
 		continue;
 
 	      /* If the operands already match, then there is nothing to do.  */
