@@ -1,3 +1,8 @@
+Fri Mar 24 13:49:45 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* integrate.c (save_for_inline_nocopy): Clear in_nonparm_insns here.
+	(save_parm_insns): Not here.
+
 2000-03-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_bzero): New function.
