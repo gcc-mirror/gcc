@@ -1516,7 +1516,8 @@ stormy16_print_operand (file, x, code)
 	/* There is either one bit set, or one bit clear, in X.
 	   Print it preceded by '#'.  */
       {
-	HOST_WIDE_INT xx, l;
+	HOST_WIDE_INT xx = 1;
+	HOST_WIDE_INT l;
 
 	if (GET_CODE (x) == CONST_INT)
 	  xx = INTVAL (x);
@@ -1547,7 +1548,7 @@ stormy16_print_operand (file, x, code)
       /* Print the immediate operand less one, preceded by '#'.  
          For 'O', negate it first.  */
       {
-	HOST_WIDE_INT xx;
+	HOST_WIDE_INT xx = 0;
 	
 	if (GET_CODE (x) == CONST_INT)
 	  xx = INTVAL (x);
