@@ -1,3 +1,8 @@
+2000-08-24  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* error.c (print_instantiation_context): Don't forget to flush the
+	buffer.
+
 2000-08-23  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (build_ptrmemfunc): Save the input pmf.

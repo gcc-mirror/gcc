@@ -168,6 +168,7 @@ void initialize_diagnostics     PARAMS ((void));
 void reshape_diagnostic_buffer  PARAMS ((void));
 void default_initialize_buffer  PARAMS ((output_buffer *));
 void init_output_buffer		PARAMS ((output_buffer *, const char *, int));
+void flush_diagnostic_buffer    PARAMS ((void));
 void output_clear		PARAMS ((output_buffer *));
 const char *output_get_prefix	PARAMS ((const output_buffer *));
 void output_set_prefix		PARAMS ((output_buffer *, const char *));
