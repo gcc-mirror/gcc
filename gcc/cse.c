@@ -7432,6 +7432,14 @@ cse_basic_block (from, to, next_branch, around_loop)
 	  if (JUMP_LABEL (insn) == to)
 	    to_usage = 1;
 
+	  /* Maybe TO was deleted because the jump is unconditional.
+	     If so, there is nothing left in this basic block.  */
+	  /* ??? Perhaps it would be smarter to set TO
+	     to whatever follows this insn, 
+	     and pretend the basic block had always ended here.  */
+	  if (INSN_DELETED_P (to))
+	    break;
+
 	  insn = PREV_INSN (to);
 	}
 
