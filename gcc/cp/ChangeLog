@@ -1,3 +1,8 @@
+1998-09-08  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (grokparms): Distinguish between references and pointers
+	in error message.
+
 1998-09-08  Richard Henderson  <rth@cygnus.com>
 	    Mark Mitchell  <mark@markmitchell.com>	
 	

@@ -10916,8 +10916,9 @@ grokparms (first_parm, funcdef_flag)
 				 && TYPE_DOMAIN (t) != NULL_TREE))
 			t = TREE_TYPE (t);
 		      if (TREE_CODE (t) == ARRAY_TYPE)
-			cp_error ("parameter type `%T' includes pointer to array of unknown bound",
-				  type);
+			cp_error ("parameter type `%T' includes %s to array of unknown bound",
+				  type,
+				  TYPE_PTR_P (type) ? "pointer" : "reference");
 		    }
 		}
 
