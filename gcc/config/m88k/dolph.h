@@ -26,8 +26,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    Error messages like
    as: "/usr/tmp/cca22733.s": cannot reduce symbol table, unused symbols remain
    when compiling some programs.
-   example program (C++): struct bad { bad(); }; bad::bad() {}  */
-#undef SDB_ALLOW_FORWARD_REFERENCES
+   example program (C++): struct bad { bad(); }; bad::bad() {}
+
+   This problem seems to have gone away, perhaps with release 3.6 of the O/S
+   from Dolphin.  */
+/* #undef SDB_ALLOW_FORWARD_REFERENCES */
 
 /* Use T_ARG as T_VOID.  T_VOID is not defined in <syms.h> as it should be.  */
 #define T_VOID T_ARG
