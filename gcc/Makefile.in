@@ -1771,7 +1771,7 @@ mostlyclean: bytecode.mostlyclean lang.mostlyclean
 # Delete other temporary files.
 	-rm -f tmp-float.h tmp-gcc.xtar.gz
 	-rm -f tmp-foo1 tmp-foo2 tmp-proto.* tmp-unproto.1 tmp-SYSCALLS.s
-	-rm tmp-c-parse.y tmp-objc-parse.y tmp-gperf.h
+	-rm -f tmp-c-parse.y tmp-objc-parse.y tmp-gperf.h
 # Delete the stamp files.
 	-rm -f stamp-* tmp-*
 	-rm -f */stamp-* */tmp-*
