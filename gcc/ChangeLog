@@ -1,3 +1,8 @@
+2003-10-17  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* config/i386/i386.c (ix86_expand_prologue):  Use
+	gen_allocate_stack_worker.
+
 2003-10-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config.gcc (mips-sgi-irix6*o32): Only enable use_collect2
