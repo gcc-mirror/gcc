@@ -347,19 +347,23 @@ static int
 java_lineterminator (c)
      unicode_t c;
 {
-  int unicode_escape_p;
-  if (c == '\n')		/* CR */
+  if (c == '\n')		/* LF */
+    return 1;
+  else if (c == '\r')		/* CR */
     {
-      if ((c = java_read_unicode (1, &unicode_escape_p)) != '\r')
+      int unicode_escape_p;
+      c = java_read_unicode (1, &unicode_escape_p);
+      if (c == '\r')
 	{
-	  ctxp->c_line->ahead [0] = c;
-	  ctxp->c_line->unicode_escape_ahead_p = unicode_escape_p;
+	  /* In this case we will have another terminator.  For some
+	     reason the lexer has several different unget methods.  We
+	     can't use the `ahead' method because then the \r will end
+	     up in the actual text of the line, causing an error.  So
+	     instead we choose a very low-level method.  FIXME: this
+	     is incredibly ugly.  */
+	  UNGETC (c);
 	}
-      return 1;
-    }
-  else if (c == '\r')		/* LF */
-    {
-      if ((c = java_read_unicode (1, &unicode_escape_p)) != '\n')
+      else if (c != '\n')
 	{
 	  ctxp->c_line->ahead [0] = c;
 	  ctxp->c_line->unicode_escape_ahead_p = unicode_escape_p;
