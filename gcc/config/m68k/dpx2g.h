@@ -3,7 +3,7 @@
  */
 
 #define USE_GAS
-#include "dpx2.h"
+#include "m68k/dpx2.h"
 
 #ifndef USE_COLLECT2
 /* We use set vectors for the constructors/destructors. */ 

@@ -27,7 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SGS_SWITCH_TABLES	/* Different switch table handling */
 #define CRDS			/* Charles River Data Systems assembler */
 
-#include "m68k.h"
+#include "m68k/m68k.h"
 
 /* Without STRUCTURE_SIZE_BOUNDARY, we can't ensure that structures are
    aligned such that we can correctly extract bitfields from them.

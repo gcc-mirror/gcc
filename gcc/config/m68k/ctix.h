@@ -28,7 +28,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "3b1g.h"
+#include "m68k/3b1g.h"
 
 /* Names to predefine in the preprocessor for this target machine.  */
 #undef CPP_PREDEFINES

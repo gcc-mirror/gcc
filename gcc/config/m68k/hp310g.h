@@ -9,4 +9,4 @@
 
 #define USE_GAS
 
-#include "hp310.h"
+#include "m68k/hp310.h"
