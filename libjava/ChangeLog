@@ -1,3 +1,13 @@
+2005-04-05  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (lib_gnu_java_awt_peer_gtk_la_SOURCES): Removed
+	gtk_awt_peer_sources.
+	(lib_gnu_java_awt_peer_gtk_la_LIBADD): Added gtk-awt-peer.lo.
+	(lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES): Likewise.
+	($(gtk_awt_peer_sources:.java=.lo)): Removed.
+	(gtk-awt-peer.lo): New target.
+
 2005-04-04  Steve Pribyl <steve@netfuel.com>
 
 	PR libgcj/20761

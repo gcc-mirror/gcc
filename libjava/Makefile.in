@@ -141,51 +141,6 @@ lib_gnu_awt_xlib_la_OBJECTS = $(am_lib_gnu_awt_xlib_la_OBJECTS)
 @XLIB_AWT_TRUE@am_lib_gnu_awt_xlib_la_rpath = -rpath $(toolexeclibdir)
 am__DEPENDENCIES_1 =
 am__lib_gnu_java_awt_peer_gtk_la_SOURCES_DIST =  \
-	gnu/java/awt/peer/gtk/GdkTextLayout.java \
-	gnu/java/awt/peer/gtk/GdkFontMetrics.java \
-	gnu/java/awt/peer/gtk/GdkFontPeer.java \
-	gnu/java/awt/peer/gtk/GdkGlyphVector.java \
-	gnu/java/awt/peer/gtk/GdkGraphics.java \
-	gnu/java/awt/peer/gtk/GdkGraphics2D.java \
-	gnu/java/awt/peer/gtk/GdkGraphicsConfiguration.java \
-	gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java \
-	gnu/java/awt/peer/gtk/GdkPixbufDecoder.java \
-	gnu/java/awt/peer/gtk/GdkRobotPeer.java \
-	gnu/java/awt/peer/gtk/GdkScreenGraphicsDevice.java \
-	gnu/java/awt/peer/gtk/GtkButtonPeer.java \
-	gnu/java/awt/peer/gtk/GtkCanvasPeer.java \
-	gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.java \
-	gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.java \
-	gnu/java/awt/peer/gtk/GtkCheckboxPeer.java \
-	gnu/java/awt/peer/gtk/GtkChoicePeer.java \
-	gnu/java/awt/peer/gtk/GtkClipboard.java \
-	gnu/java/awt/peer/gtk/GtkComponentPeer.java \
-	gnu/java/awt/peer/gtk/GtkContainerPeer.java \
-	gnu/java/awt/peer/gtk/GtkDialogPeer.java \
-	gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java \
-	gnu/java/awt/peer/gtk/GtkFileDialogPeer.java \
-	gnu/java/awt/peer/gtk/GtkFramePeer.java \
-	gnu/java/awt/peer/gtk/GtkGenericPeer.java \
-	gnu/java/awt/peer/gtk/GtkImage.java \
-	gnu/java/awt/peer/gtk/GtkImagePainter.java \
-	gnu/java/awt/peer/gtk/GtkLabelPeer.java \
-	gnu/java/awt/peer/gtk/GtkListPeer.java \
-	gnu/java/awt/peer/gtk/GtkMenuBarPeer.java \
-	gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java \
-	gnu/java/awt/peer/gtk/GtkMenuItemPeer.java \
-	gnu/java/awt/peer/gtk/GtkMenuPeer.java \
-	gnu/java/awt/peer/gtk/GtkOffScreenImage.java \
-	gnu/java/awt/peer/gtk/GtkPanelPeer.java \
-	gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java \
-	gnu/java/awt/peer/gtk/GtkScrollPanePeer.java \
-	gnu/java/awt/peer/gtk/GtkScrollbarPeer.java \
-	gnu/java/awt/peer/gtk/GtkTextAreaPeer.java \
-	gnu/java/awt/peer/gtk/GtkTextComponentPeer.java \
-	gnu/java/awt/peer/gtk/GtkTextFieldPeer.java \
-	gnu/java/awt/peer/gtk/GtkToolkit.java \
-	gnu/java/awt/peer/gtk/GtkWindowPeer.java \
-	gnu/java/awt/peer/gtk/GThreadMutex.java \
-	gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java \
 	jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c \
 	jni/gtk-peer/gnu_java_awt_peer_gtk_GdkTextLayout.c \
 	jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c \
@@ -226,53 +181,8 @@ am__lib_gnu_java_awt_peer_gtk_la_SOURCES_DIST =  \
 	jni/gtk-peer/gthread-jni.c jni/gtk-peer/gtk_jawt.c \
 	jni/classpath/native_state.c jni/gtk-peer/gthread-jni.h \
 	jni/gtk-peer/gtkpeer.h jni/classpath/native_state.h
-am__objects_3 = gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImage.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.lo \
-	gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.lo
-@GTK_CAIRO_TRUE@am__objects_4 = jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GdkGraphics2D.lo
-am__objects_5 = $(am__objects_4) \
+@GTK_CAIRO_TRUE@am__objects_3 = jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GdkGraphics2D.lo
+am__objects_4 = $(am__objects_3) \
 	jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GdkTextLayout.lo \
 	jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GdkFontPeer.lo \
 	jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gnu_java_awt_peer_gtk_GdkGraphics.lo \
@@ -312,8 +222,7 @@ am__objects_5 = $(am__objects_4) \
 	jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gthread-jni.lo \
 	jni/gtk-peer/lib_gnu_java_awt_peer_gtk_la-gtk_jawt.lo \
 	jni/classpath/lib_gnu_java_awt_peer_gtk_la-native_state.lo
-am_lib_gnu_java_awt_peer_gtk_la_OBJECTS = $(am__objects_3) \
-	$(am__objects_5)
+am_lib_gnu_java_awt_peer_gtk_la_OBJECTS = $(am__objects_4)
 lib_gnu_java_awt_peer_gtk_la_OBJECTS =  \
 	$(am_lib_gnu_java_awt_peer_gtk_la_OBJECTS)
 @GTK_AWT_TRUE@am_lib_gnu_java_awt_peer_gtk_la_rpath = -rpath \
@@ -2307,7 +2216,7 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/classpath/Configuration.java boehm.cc nogc.cc \
 	sysdep/dwarf2-backtrace.cc posix.cc win32.cc darwin.cc \
 	posix-threads.cc win32-threads.cc no-threads.cc
-am__objects_6 = gnu/gcj/natCore.lo \
+am__objects_5 = gnu/gcj/natCore.lo \
 	gnu/gcj/convert/JIS0208_to_Unicode.lo \
 	gnu/gcj/convert/JIS0212_to_Unicode.lo \
 	gnu/gcj/convert/Unicode_to_JIS.lo gnu/gcj/convert/natIconv.lo \
@@ -2345,7 +2254,7 @@ am__objects_6 = gnu/gcj/natCore.lo \
 	java/util/natResourceBundle.lo java/util/natVMTimeZone.lo \
 	java/util/logging/natLogger.lo java/util/zip/natDeflater.lo \
 	java/util/zip/natInflater.lo
-am__objects_7 = java/lang/dtoa.lo java/lang/k_rem_pio2.lo \
+am__objects_6 = java/lang/dtoa.lo java/lang/k_rem_pio2.lo \
 	java/lang/s_tan.lo java/lang/e_acos.lo java/lang/k_sin.lo \
 	java/lang/strtod.lo java/lang/e_asin.lo java/lang/k_tan.lo \
 	java/lang/w_acos.lo java/lang/e_atan2.lo java/lang/mprec.lo \
@@ -2359,8 +2268,8 @@ am__objects_7 = java/lang/dtoa.lo java/lang/k_rem_pio2.lo \
 	java/lang/e_scalb.lo java/lang/s_rint.lo java/lang/w_sqrt.lo \
 	java/lang/e_sqrt.lo java/lang/s_scalbn.lo java/lang/sf_rint.lo \
 	java/lang/k_cos.lo java/lang/s_sin.lo java/lang/sf_fabs.lo
-am__objects_8 = java/lang/Class.lo java/lang/Object.lo
-am__objects_9 = java/lang/AbstractMethodError.lo \
+am__objects_7 = java/lang/Class.lo java/lang/Object.lo
+am__objects_8 = java/lang/AbstractMethodError.lo \
 	java/lang/ArithmeticException.lo \
 	java/lang/ArrayIndexOutOfBoundsException.lo \
 	java/lang/ArrayStoreException.lo java/lang/AssertionError.lo \
@@ -2508,7 +2417,7 @@ am__objects_9 = java/lang/AbstractMethodError.lo \
 	java/util/prefs/PreferencesFactory.lo \
 	java/util/regex/Matcher.lo java/util/regex/Pattern.lo \
 	java/util/regex/PatternSyntaxException.lo
-am__objects_10 = java/rmi/activation/Activatable.lo \
+am__objects_9 = java/rmi/activation/Activatable.lo \
 	java/rmi/activation/ActivateFailedException.lo \
 	java/rmi/activation/ActivationDesc.lo \
 	java/rmi/activation/ActivationException.lo \
@@ -2586,7 +2495,7 @@ am__objects_10 = java/rmi/activation/Activatable.lo \
 	gnu/java/rmi/server/UnicastRemoteStub.lo \
 	gnu/java/rmi/server/UnicastServer.lo \
 	gnu/java/rmi/server/UnicastServerRef.lo
-am__objects_11 = gnu/awt/LightweightRedirector.lo \
+am__objects_10 = gnu/awt/LightweightRedirector.lo \
 	gnu/awt/j2d/AbstractGraphicsState.lo \
 	gnu/awt/j2d/DirectRasterGraphics.lo \
 	gnu/awt/j2d/Graphics2DImpl.lo \
@@ -3178,7 +3087,7 @@ am__objects_11 = gnu/awt/LightweightRedirector.lo \
 	javax/swing/ProgressMonitorInputStream.lo \
 	javax/swing/RepaintManager.lo javax/swing/ScrollPaneLayout.lo \
 	javax/swing/ViewportLayout.lo
-am__objects_12 = gnu/gcj/convert/BytesToUnicode.lo \
+am__objects_11 = gnu/gcj/convert/BytesToUnicode.lo \
 	gnu/gcj/convert/Convert.lo gnu/gcj/convert/Input_8859_1.lo \
 	gnu/gcj/convert/Input_ASCII.lo gnu/gcj/convert/Input_EUCJIS.lo \
 	gnu/gcj/convert/Input_JavaSrc.lo gnu/gcj/convert/Input_SJIS.lo \
@@ -3194,7 +3103,7 @@ am__objects_12 = gnu/gcj/convert/BytesToUnicode.lo \
 	gnu/gcj/convert/Output_UnicodeLittleUnmarked.lo \
 	gnu/gcj/convert/Output_UTF8.lo gnu/gcj/convert/Output_iconv.lo \
 	gnu/gcj/convert/UnicodeToBytes.lo
-am__objects_13 = javax/net/VanillaSocketFactory.lo \
+am__objects_12 = javax/net/VanillaSocketFactory.lo \
 	javax/net/ssl/TrustManagerFactorySpi.lo \
 	javax/net/ssl/SSLKeyException.lo javax/net/ssl/TrustManager.lo \
 	javax/net/ssl/SSLServerSocket.lo \
@@ -3540,12 +3449,12 @@ am__objects_13 = javax/net/VanillaSocketFactory.lo \
 	javax/crypto/ExemptionMechanismException.lo \
 	javax/crypto/ExemptionMechanismSpi.lo \
 	javax/crypto/EncryptedPrivateKeyInfo.lo javax/crypto/Mac.lo
-am__objects_14 = org/ietf/jgss/GSSManager.lo \
+am__objects_13 = org/ietf/jgss/GSSManager.lo \
 	org/ietf/jgss/GSSException.lo org/ietf/jgss/MessageProp.lo \
 	org/ietf/jgss/GSSName.lo org/ietf/jgss/GSSContext.lo \
 	org/ietf/jgss/Oid.lo org/ietf/jgss/GSSCredential.lo \
 	org/ietf/jgss/ChannelBinding.lo
-am__objects_15 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
+am__objects_14 = $(am__objects_8) gnu/classpath/ServiceFactory.lo \
 	gnu/classpath/ServiceProviderLoadingAction.lo gnu/gcj/Core.lo \
 	gnu/gcj/RawData.lo gnu/gcj/RawDataManaged.lo \
 	gnu/gcj/io/DefaultMimeTypes.lo gnu/gcj/io/MimeTypes.lo \
@@ -4156,29 +4065,29 @@ am__objects_15 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	java/util/zip/ZipConstants.lo java/util/zip/ZipEntry.lo \
 	java/util/zip/ZipException.lo java/util/zip/ZipFile.lo \
 	java/util/zip/ZipInputStream.lo \
-	java/util/zip/ZipOutputStream.lo $(am__objects_10) \
-	$(am__objects_11) $(am__objects_12) $(am__objects_13) \
-	$(am__objects_14)
-am__objects_16 = $(am__objects_8) $(am__objects_15)
-am__objects_17 = java/lang/ConcreteProcess.lo \
+	java/util/zip/ZipOutputStream.lo $(am__objects_9) \
+	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
+	$(am__objects_13)
+am__objects_15 = $(am__objects_7) $(am__objects_14)
+am__objects_16 = java/lang/ConcreteProcess.lo \
 	gnu/classpath/Configuration.lo
-@USING_BOEHMGC_TRUE@am__objects_18 = boehm.lo
-@USING_NOGC_TRUE@am__objects_19 = nogc.lo
-@SUPPLY_BACKTRACE_TRUE@am__objects_20 = sysdep/dwarf2-backtrace.lo
-@USING_POSIX_PLATFORM_TRUE@am__objects_21 = posix.lo
-@USING_WIN32_PLATFORM_TRUE@am__objects_22 = win32.lo
-@USING_ECOS_PLATFORM_TRUE@am__objects_23 = posix.lo
-@USING_DARWIN_CRT_TRUE@am__objects_24 = darwin.lo
-@USING_POSIX_THREADS_TRUE@am__objects_25 = posix-threads.lo
-@USING_WIN32_THREADS_TRUE@am__objects_26 = win32-threads.lo
-@USING_NO_THREADS_TRUE@am__objects_27 = no-threads.lo
+@USING_BOEHMGC_TRUE@am__objects_17 = boehm.lo
+@USING_NOGC_TRUE@am__objects_18 = nogc.lo
+@SUPPLY_BACKTRACE_TRUE@am__objects_19 = sysdep/dwarf2-backtrace.lo
+@USING_POSIX_PLATFORM_TRUE@am__objects_20 = posix.lo
+@USING_WIN32_PLATFORM_TRUE@am__objects_21 = win32.lo
+@USING_ECOS_PLATFORM_TRUE@am__objects_22 = posix.lo
+@USING_DARWIN_CRT_TRUE@am__objects_23 = darwin.lo
+@USING_POSIX_THREADS_TRUE@am__objects_24 = posix-threads.lo
+@USING_WIN32_THREADS_TRUE@am__objects_25 = win32-threads.lo
+@USING_NO_THREADS_TRUE@am__objects_26 = no-threads.lo
 am_libgcj0_convenience_la_OBJECTS = prims.lo jni.lo exception.lo \
 	stacktrace.lo link.lo defineclass.lo interpret.lo verify.lo \
-	$(am__objects_6) $(am__objects_7) $(am__objects_16) \
-	$(am__objects_17) $(am__objects_18) $(am__objects_19) \
-	$(am__objects_20) $(am__objects_21) $(am__objects_22) \
-	$(am__objects_23) $(am__objects_24) $(am__objects_25) \
-	$(am__objects_26) $(am__objects_27)
+	$(am__objects_5) $(am__objects_6) $(am__objects_15) \
+	$(am__objects_16) $(am__objects_17) $(am__objects_18) \
+	$(am__objects_19) $(am__objects_20) $(am__objects_21) \
+	$(am__objects_22) $(am__objects_23) $(am__objects_24) \
+	$(am__objects_25) $(am__objects_26)
 libgcj0_convenience_la_OBJECTS = $(am_libgcj0_convenience_la_OBJECTS)
 am_libgij_la_OBJECTS = gij.lo
 libgij_la_OBJECTS = $(am_libgij_la_OBJECTS)
@@ -4734,7 +4643,6 @@ gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java
 
 gtk_jni_headers = $(patsubst %.java,jniinclude/%.h,$(subst /,_,$(gtk_awt_peer_sources)))
 lib_gnu_java_awt_peer_gtk_la_SOURCES = \
-$(gtk_awt_peer_sources) \
 $(gtk_c_source_files) \
 jni/gtk-peer/gthread-jni.h \
 jni/gtk-peer/gtkpeer.h \
@@ -4746,8 +4654,8 @@ lib_gnu_java_awt_peer_gtk_la_CFLAGS = \
 	$(X_CFLAGS) $(CAIRO_CFLAGS) $(PANGOFT2_CFLAGS)
 
 lib_gnu_java_awt_peer_gtk_la_GCJFLAGS = $(AM_GCJFLAGS) -fjni
-lib_gnu_java_awt_peer_gtk_la_LIBADD = $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS) $(CAIRO_LIBS) $(PANGOFT2_LIBS)
-lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = $(gtk_jni_headers) libgcj-$(gcc_version).jar libgcj.la libgcj.spec
+lib_gnu_java_awt_peer_gtk_la_LIBADD = gtk-awt-peer.lo $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS) $(CAIRO_LIBS) $(PANGOFT2_LIBS)
+lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = gtk-awt-peer.lo $(gtk_jni_headers) libgcj-$(gcc_version).jar libgcj.la libgcj.spec
 lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC) $(X_LIBS) -lXtst
 
@@ -7893,147 +7801,6 @@ gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXImage.lo:  \
 gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo:  \
 	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/awt/peer/gtk
-	@: > gnu/java/awt/peer/gtk/$(am__dirstamp)
-gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/awt/peer/gtk/$(DEPDIR)
-	@: > gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImage.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.lo:  \
-	gnu/java/awt/peer/gtk/$(am__dirstamp) \
-	gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
 jni/gtk-peer/$(am__dirstamp):
 	@$(mkdir_p) jni/gtk-peer
 	@: > jni/gtk-peer/$(am__dirstamp)
@@ -15021,96 +14788,6 @@ mostlyclean-compile:
 	-rm -f gnu/java/awt/peer/EmbeddedWindowPeer.lo
 	-rm -f gnu/java/awt/peer/GLightweightPeer.$(OBJEXT)
 	-rm -f gnu/java/awt/peer/GLightweightPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImage.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImage.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.lo
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.$(OBJEXT)
-	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.lo
 	-rm -f gnu/java/io/ASN1ParsingException.$(OBJEXT)
 	-rm -f gnu/java/io/ASN1ParsingException.lo
 	-rm -f gnu/java/io/Base64InputStream.$(OBJEXT)
@@ -19910,51 +19587,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/$(DEPDIR)/ClasspathTextLayoutPeer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/$(DEPDIR)/EmbeddedWindowPeer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/$(DEPDIR)/GLightweightPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkImage.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/io/$(DEPDIR)/ASN1ParsingException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/io/$(DEPDIR)/Base64InputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/io/$(DEPDIR)/ClassLoaderObjectInputStream.Plo@am__quote@
@@ -22769,321 +22401,6 @@ gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo: gnu/gcj/xlib/natXUnmapEvent.
 @AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepGCJ_FALSE@	$(LTGCJCOMPILE) -c -o $@ $<
 
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.lo: gnu/java/awt/peer/gtk/GdkTextLayout.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.lo `test -f 'gnu/java/awt/peer/gtk/GdkTextLayout.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkTextLayout.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GdkTextLayout.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkTextLayout.lo `test -f 'gnu/java/awt/peer/gtk/GdkTextLayout.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkTextLayout.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.lo: gnu/java/awt/peer/gtk/GdkFontMetrics.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.lo `test -f 'gnu/java/awt/peer/gtk/GdkFontMetrics.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkFontMetrics.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GdkFontMetrics.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontMetrics.lo `test -f 'gnu/java/awt/peer/gtk/GdkFontMetrics.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkFontMetrics.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.lo: gnu/java/awt/peer/gtk/GdkFontPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.lo `test -f 'gnu/java/awt/peer/gtk/GdkFontPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkFontPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GdkFontPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkFontPeer.lo `test -f 'gnu/java/awt/peer/gtk/GdkFontPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkFontPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.lo: gnu/java/awt/peer/gtk/GdkGlyphVector.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.lo `test -f 'gnu/java/awt/peer/gtk/GdkGlyphVector.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkGlyphVector.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GdkGlyphVector.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGlyphVector.lo `test -f 'gnu/java/awt/peer/gtk/GdkGlyphVector.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkGlyphVector.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.lo: gnu/java/awt/peer/gtk/GdkGraphics.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.lo `test -f 'gnu/java/awt/peer/gtk/GdkGraphics.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkGraphics.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GdkGraphics.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics.lo `test -f 'gnu/java/awt/peer/gtk/GdkGraphics.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkGraphics.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.lo: gnu/java/awt/peer/gtk/GdkGraphics2D.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.lo `test -f 'gnu/java/awt/peer/gtk/GdkGraphics2D.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkGraphics2D.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GdkGraphics2D.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphics2D.lo `test -f 'gnu/java/awt/peer/gtk/GdkGraphics2D.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkGraphics2D.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.lo: gnu/java/awt/peer/gtk/GdkGraphicsConfiguration.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.lo `test -f 'gnu/java/awt/peer/gtk/GdkGraphicsConfiguration.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkGraphicsConfiguration.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GdkGraphicsConfiguration.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsConfiguration.lo `test -f 'gnu/java/awt/peer/gtk/GdkGraphicsConfiguration.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkGraphicsConfiguration.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.lo: gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.lo `test -f 'gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkGraphicsEnvironment.lo `test -f 'gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.lo: gnu/java/awt/peer/gtk/GdkPixbufDecoder.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.lo `test -f 'gnu/java/awt/peer/gtk/GdkPixbufDecoder.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkPixbufDecoder.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GdkPixbufDecoder.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkPixbufDecoder.lo `test -f 'gnu/java/awt/peer/gtk/GdkPixbufDecoder.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkPixbufDecoder.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.lo: gnu/java/awt/peer/gtk/GdkRobotPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.lo `test -f 'gnu/java/awt/peer/gtk/GdkRobotPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkRobotPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GdkRobotPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkRobotPeer.lo `test -f 'gnu/java/awt/peer/gtk/GdkRobotPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkRobotPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.lo: gnu/java/awt/peer/gtk/GdkScreenGraphicsDevice.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.lo `test -f 'gnu/java/awt/peer/gtk/GdkScreenGraphicsDevice.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkScreenGraphicsDevice.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GdkScreenGraphicsDevice.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GdkScreenGraphicsDevice.lo `test -f 'gnu/java/awt/peer/gtk/GdkScreenGraphicsDevice.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GdkScreenGraphicsDevice.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.lo: gnu/java/awt/peer/gtk/GtkButtonPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkButtonPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkButtonPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkButtonPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkButtonPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkButtonPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkButtonPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.lo: gnu/java/awt/peer/gtk/GtkCanvasPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkCanvasPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkCanvasPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkCanvasPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCanvasPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkCanvasPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkCanvasPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.lo: gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxGroupPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.lo: gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxMenuItemPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.lo: gnu/java/awt/peer/gtk/GtkCheckboxPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkCheckboxPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkCheckboxPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkCheckboxPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkCheckboxPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkCheckboxPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkCheckboxPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.lo: gnu/java/awt/peer/gtk/GtkChoicePeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkChoicePeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkChoicePeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkChoicePeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkChoicePeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkChoicePeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkChoicePeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.lo: gnu/java/awt/peer/gtk/GtkClipboard.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.lo `test -f 'gnu/java/awt/peer/gtk/GtkClipboard.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkClipboard.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkClipboard.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkClipboard.lo `test -f 'gnu/java/awt/peer/gtk/GtkClipboard.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkClipboard.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.lo: gnu/java/awt/peer/gtk/GtkComponentPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkComponentPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkComponentPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkComponentPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkComponentPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkComponentPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkComponentPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.lo: gnu/java/awt/peer/gtk/GtkContainerPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkContainerPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkContainerPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkContainerPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkContainerPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkContainerPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkContainerPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.lo: gnu/java/awt/peer/gtk/GtkDialogPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkDialogPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkDialogPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkDialogPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkDialogPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkDialogPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkDialogPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.lo: gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkEmbeddedWindowPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.lo: gnu/java/awt/peer/gtk/GtkFileDialogPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkFileDialogPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkFileDialogPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkFileDialogPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFileDialogPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkFileDialogPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkFileDialogPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.lo: gnu/java/awt/peer/gtk/GtkFramePeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkFramePeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkFramePeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkFramePeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkFramePeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkFramePeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkFramePeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.lo: gnu/java/awt/peer/gtk/GtkGenericPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkGenericPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkGenericPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkGenericPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkGenericPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkGenericPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkGenericPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImage.lo: gnu/java/awt/peer/gtk/GtkImage.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImage.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkImage.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImage.lo `test -f 'gnu/java/awt/peer/gtk/GtkImage.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkImage.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkImage.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkImage.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkImage.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkImage.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImage.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImage.lo `test -f 'gnu/java/awt/peer/gtk/GtkImage.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkImage.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.lo: gnu/java/awt/peer/gtk/GtkImagePainter.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.lo `test -f 'gnu/java/awt/peer/gtk/GtkImagePainter.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkImagePainter.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkImagePainter.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkImagePainter.lo `test -f 'gnu/java/awt/peer/gtk/GtkImagePainter.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkImagePainter.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.lo: gnu/java/awt/peer/gtk/GtkLabelPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkLabelPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkLabelPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkLabelPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkLabelPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkLabelPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkLabelPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.lo: gnu/java/awt/peer/gtk/GtkListPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkListPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkListPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkListPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkListPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkListPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkListPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.lo: gnu/java/awt/peer/gtk/GtkMenuBarPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkMenuBarPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkMenuBarPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkMenuBarPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuBarPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkMenuBarPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkMenuBarPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.lo: gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuComponentPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.lo: gnu/java/awt/peer/gtk/GtkMenuItemPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkMenuItemPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkMenuItemPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkMenuItemPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuItemPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkMenuItemPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkMenuItemPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.lo: gnu/java/awt/peer/gtk/GtkMenuPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkMenuPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkMenuPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkMenuPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkMenuPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkMenuPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkMenuPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.lo: gnu/java/awt/peer/gtk/GtkOffScreenImage.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.lo `test -f 'gnu/java/awt/peer/gtk/GtkOffScreenImage.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkOffScreenImage.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkOffScreenImage.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkOffScreenImage.lo `test -f 'gnu/java/awt/peer/gtk/GtkOffScreenImage.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkOffScreenImage.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.lo: gnu/java/awt/peer/gtk/GtkPanelPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkPanelPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkPanelPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkPanelPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPanelPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkPanelPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkPanelPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.lo: gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkPopupMenuPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.lo: gnu/java/awt/peer/gtk/GtkScrollPanePeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkScrollPanePeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkScrollPanePeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkScrollPanePeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollPanePeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkScrollPanePeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkScrollPanePeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.lo: gnu/java/awt/peer/gtk/GtkScrollbarPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkScrollbarPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkScrollbarPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkScrollbarPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkScrollbarPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkScrollbarPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkScrollbarPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.lo: gnu/java/awt/peer/gtk/GtkTextAreaPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkTextAreaPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkTextAreaPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkTextAreaPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextAreaPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkTextAreaPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkTextAreaPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.lo: gnu/java/awt/peer/gtk/GtkTextComponentPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkTextComponentPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkTextComponentPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkTextComponentPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextComponentPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkTextComponentPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkTextComponentPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.lo: gnu/java/awt/peer/gtk/GtkTextFieldPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkTextFieldPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkTextFieldPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkTextFieldPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkTextFieldPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkTextFieldPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkTextFieldPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.lo: gnu/java/awt/peer/gtk/GtkToolkit.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.lo `test -f 'gnu/java/awt/peer/gtk/GtkToolkit.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkToolkit.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkToolkit.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.lo `test -f 'gnu/java/awt/peer/gtk/GtkToolkit.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkToolkit.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.lo: gnu/java/awt/peer/gtk/GtkWindowPeer.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkWindowPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkWindowPeer.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GtkWindowPeer.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.lo `test -f 'gnu/java/awt/peer/gtk/GtkWindowPeer.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GtkWindowPeer.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.lo: gnu/java/awt/peer/gtk/GThreadMutex.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.lo `test -f 'gnu/java/awt/peer/gtk/GThreadMutex.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GThreadMutex.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GThreadMutex.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadMutex.lo `test -f 'gnu/java/awt/peer/gtk/GThreadMutex.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GThreadMutex.java
-
-gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.lo: gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java
-@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -MT gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.lo -MD -MP -MF "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.Tpo" -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.lo `test -f 'gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java; \
-@am__fastdepGCJ_TRUE@	then mv -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.Tpo" "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.Plo"; else rm -f "gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java' object='gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(lib_gnu_java_awt_peer_gtk_la_GCJFLAGS) $(GCJFLAGS) -c -o gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GThreadNativeMethodRunner.lo `test -f 'gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java' || echo '$(srcdir)/'`gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java
-
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -23103,7 +22420,6 @@ clean-libtool:
 	-rm -rf gnu/java/awt/color/.libs gnu/java/awt/color/_libs
 	-rm -rf gnu/java/awt/image/.libs gnu/java/awt/image/_libs
 	-rm -rf gnu/java/awt/peer/.libs gnu/java/awt/peer/_libs
-	-rm -rf gnu/java/awt/peer/gtk/.libs gnu/java/awt/peer/gtk/_libs
 	-rm -rf gnu/java/io/.libs gnu/java/io/_libs
 	-rm -rf gnu/java/lang/.libs gnu/java/lang/_libs
 	-rm -rf gnu/java/lang/reflect/.libs gnu/java/lang/reflect/_libs
@@ -23621,8 +22937,6 @@ distclean-generic:
 	-rm -f gnu/java/awt/image/$(am__dirstamp)
 	-rm -f gnu/java/awt/peer/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/awt/peer/$(am__dirstamp)
-	-rm -f gnu/java/awt/peer/gtk/$(DEPDIR)/$(am__dirstamp)
-	-rm -f gnu/java/awt/peer/gtk/$(am__dirstamp)
 	-rm -f gnu/java/io/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/io/$(am__dirstamp)
 	-rm -f gnu/java/lang/$(DEPDIR)/$(am__dirstamp)
@@ -23881,7 +23195,7 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool clean-local \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -23912,7 +23226,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -24112,9 +23426,6 @@ clean-nat:
 $(javao_files) $(xlib_javao_files): %.lo: %.java
 	$(LTGCJCOMPILE) -o $@ -c $<
 
-$(gtk_awt_peer_sources:.java=.lo): %.lo: %.java
-	$(LTGCJCOMPILE) -fjni -o $@ -c $<
-
 libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	@echo Creating list of files to link...
 	@: $(call write_entries_to_file,$(libgcj_la_OBJECTS),libgcj.objectlist)
@@ -24147,6 +23458,11 @@ gnu-java-beans.lo: $(gnu_java_beans_source_files)
 	$(MAKE) classes.stamp
 	$(LTGCJCOMPILE) -findirect-dispatch -c -o gnu-java-beans.lo \
 		`find gnu/java/beans -name '*.class' -print`
+
+gtk-awt-peer.lo: $(gtk_awt_peer_sources)
+	$(MAKE) classes.stamp
+	$(LTGCJCOMPILE) -findirect-dispatch -fjni -c -o gtk-awt-peer.lo \
+		`find gnu/java/awt/peer/gtk -name '*.class' -print`
 
 %.h: %.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) $(basename $<)
