@@ -1,3 +1,13 @@
+Fri Jun 19 02:10:10 1998  John Wehle  (john@feith.com)
+
+	* i386.md (movsfcc, movdfcc, movxfcc): Use emit_store_flag
+	to support LT, LE, GE, and GT signed integer comparisons.
+	(movsfcc+1, movsfcc+2, movdfcc+1, movdfcc+2,
+	movxfcc+1, movxfcc+2): Pattern doesn't match if the comparison
+	is LT, LE, GE, or GT.
+	(movdicc): Remove code resulting from an earlier patch which
+	didn't apply correctly.
+
 Fri Jun 19 02:00:19 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload1.c (reload_cse_regno_equal_p): If -ffloat-store, don't
