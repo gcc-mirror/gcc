@@ -273,46 +273,58 @@ dtors_section ()							\
    If DECL is NULL, no attributes are emitted.  */
 
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC)		\
-do {									\
-  static struct section_info						\
+  do									\
     {									\
-      struct section_info *next;				        \
-      char *name;						        \
-      enum sect_enum {SECT_RW, SECT_RO, SECT_EXEC} type;		\
-    } *sections;							\
-  struct section_info *s;						\
-  char *mode;								\
-  enum sect_enum type;							\
-									\
-  for (s = sections; s; s = s->next)					\
-    if (!strcmp (NAME, s->name))					\
-      break;								\
-									\
-  if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)			\
-    type = SECT_EXEC, mode = "ax";					\
-  else if (DECL && DECL_READONLY_SECTION (DECL, RELOC))			\
-    type = SECT_RO, mode = "a";						\
-  else									\
-    type = SECT_RW, mode = "aw";					\
-									\
-  if (s == 0)								\
-    {									\
-      s = (struct section_info *) xmalloc (sizeof (struct section_info));  \
-      s->name = xmalloc ((strlen (NAME) + 1) * sizeof (*NAME));		\
-      strcpy (s->name, NAME);						\
-      s->type = type;							\
-      s->next = sections;						\
-      sections = s;							\
-      fprintf (FILE, "\t.section\t%s,\"%s\",@progbits\n", NAME, mode);	\
+      static htab_t htab;                                               \
+                                                                        \
+      struct section_info                                               \
+      {									\
+	enum sect_enum {SECT_RW, SECT_RO, SECT_EXEC} type;		\
+      };                                                                \
+                                                                        \
+      struct section_info *s;						\
+      const char *mode;							\
+      enum sect_enum type;                                              \
+      PTR* slot;                                                        \
+                                                                        \
+      /* The names we put in the hashtable will always be the unique    \
+	 versions gived to us by the stringtable, so we can just use    \
+	 their addresses as the keys.  */                               \
+      if (!htab)                                                        \
+	htab = htab_create (31,                                         \
+			    htab_hash_pointer,                          \
+			    htab_eq_pointer,                            \
+			    NULL);                                      \
+                                                                        \
+      if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)			\
+	type = SECT_EXEC, mode = "ax";					\
+      else if (DECL && DECL_READONLY_SECTION (DECL, RELOC))		\
+	type = SECT_RO, mode = "a";					\
+      else								\
+	type = SECT_RW, mode = "aw";					\
+      									\
+                                                                        \
+      /* See if we already have an entry for this section.  */          \
+      slot = htab_find_slot (htab, NAME, INSERT);                       \
+      if (!*slot)                                                       \
+	{                                                               \
+	  s = (struct section_info *) xmalloc (sizeof (* s));		\
+	  s->type = type;						\
+	  *slot = s;							\
+	  fprintf (FILE, "\t.section\t%s,\"%s\",@progbits\n",		\
+		   NAME, mode);						\
+	}								\
+      else								\
+	{								\
+	  s = (struct section_info *) *slot;                            \
+	  if (DECL && s->type != type)					\
+	    error_with_decl (DECL,                                      \
+			     "%s causes a section type conflict");      \
+	  								\
+	  fprintf (FILE, "\t.section\t%s\n", NAME);			\
+	}								\
     }									\
-  else									\
-    {									\
-      if (DECL && s->type != type)					\
-	error_with_decl (DECL, "%s causes a section type conflict");	\
-									\
-      fprintf (FILE, "\t.section\t%s\n", NAME);				\
-    }									\
-} while (0)
+  while (0)
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
 #define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL))

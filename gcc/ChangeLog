@@ -1,3 +1,8 @@
+Tue Nov 28 21:56:45 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* pa/pa-64.h (ASM_OUTPUT_SECTION_NAME): Use a hash table, not
+	a list, to keep track of the sections.
+
 2000-11-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.md (pic_load_addr): Split into
