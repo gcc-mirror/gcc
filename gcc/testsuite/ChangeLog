@@ -1,3 +1,7 @@
+2001-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/eh/template1.C: New test.
+
 2001-08-16  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* g77.f-torture/compile/pr3743.x: Do not return 1 for xfail.

@@ -1293,9 +1293,11 @@ add_exception_specifier (list, spec, complain)
     ok = is_ptr;
   else if (TREE_CODE (core) == TEMPLATE_TYPE_PARM)
     ok = 1;
+  else if (processing_template_decl)
+    ok = 1;
   else
     ok = COMPLETE_TYPE_P (complete_type (core));
-  
+
   if (ok)
     {
       tree probe;
