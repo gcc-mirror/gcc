@@ -1,3 +1,15 @@
+2004-01-06  Michael Koch  <konqueror@gmx.de>
+
+	* java/text/CollationElementIterator.java: Reformated.
+	(CollationElementIterator): Changed order of arguments.
+	* java/text/RuleBasedCollator.java
+	(RuleBasedCollator): Merged class documentation.
+	(CollationElement): Added documentation.
+	(compare): Reformated, renamed arguments.
+	(equals): Likewise.
+	(getCollationElementIterator): Likewise.
+	(getCollationKey): Likewise.
+
 2004-01-06  Graydon Hoare  <graydon@redhat.com>
 
 	* javax/swing/JLayeredPane.java: Fix semantics, add javadocs.
