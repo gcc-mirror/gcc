@@ -1,3 +1,7 @@
+2001-04-15  Jim Wilson  <wilson@redhat.com>
+
+	* function.c (expand_function_end): Handle PARALLEL real_decl_rtl.
+
 Sat Apr 14 16:24:19 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (ashldi3_1_rex64): Add 'J' to the constraints
