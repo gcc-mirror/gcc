@@ -1,3 +1,7 @@
+Thu Nov 19 20:33:37 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (runtime-info.h): Avoid GNU make extensions.
+
 Sun Nov  8 17:46:14 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (INCLUDES): Add -I$(srcdir)/$(MULTISRCTOP)../include.
