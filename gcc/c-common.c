@@ -1246,6 +1246,26 @@ enum format_std_version
 };
 
 
+/* Flags that may apply to a particular kind of format checked by GCC.  */
+enum
+{
+  /* This format converts arguments of types determined by the
+     format string.  */
+  FMT_FLAG_ARG_CONVERT = 1,
+  /* The scanf allocation 'a' kludge applies to this format kind.  */
+  FMT_FLAG_SCANF_A_KLUDGE = 2,
+  /* A % during parsing a specifier is allowed to be a modified % rather
+     that indicating the format is broken and we are out-of-sync.  */
+  FMT_FLAG_FANCY_PERCENT_OK = 4
+  /* Not included here: details of whether width or precision may occur
+     (controlled by width_char and precision_char); details of whether
+     '*' can be used for these (width_type and precision_type); details
+     of whether length modifiers can occur (length_char_specs); details
+     of when $ operand numbers are allowed (always, for the formats
+     supported, if arguments are converted).  */
+};
+
+
 /* Structure describing a length modifier supported in format checking, and
    possibly a doubled version such as "hh".  */
 typedef struct
@@ -1302,13 +1322,56 @@ typedef struct
   /* List of additional flags describing these conversion specifiers.
      "c" for generic character pointers being allowed, "2" for strftime
      two digit year formats, "3" for strftime formats giving two digit
-     years in some locales, "o" if use of strftime "O"
-     is a GNU extension beyond C99, "W" if the argument is a pointer
-     which is dereferenced and written into, "i" for printf integer
-     formats where the '0' flag is ignored with precision, and "["
-     for the starting character of a scanf scanset.  */
+     years in some locales, "4" for "2" which becomes "3" with an "E" modifier,
+     "o" if use of strftime "O" is a GNU extension beyond C99,
+     "W" if the argument is a pointer which is dereferenced and written into,
+     "i" for printf integer formats where the '0' flag is ignored with
+     precision, and "[" for the starting character of a scanf scanset.  */
   const char *flags2;
 } format_char_info;
+
+
+/* Structure describing a flag accepted by some kind of format.  */
+typedef struct
+{
+  /* The flag character in question (0 for end of array).  */
+  int flag_char;
+  /* Zero if this entry describes the flag character in general, or a
+     non-zero character that may be found in flags2 if it describes the
+     flag when used with certain formats only.  If the latter, only
+     the first such entry found that applies to the current conversion
+     specifier is used; the values of `name' and `long_name' it supplies
+     will be used, if non-NULL and the standard version is higher than
+     the unpredicated one, for any pedantic warning.  For example, 'o'
+     for strftime formats (meaning 'O' is an extension over C99).  */
+  int predicate;
+  /* The name to use for this flag in diagnostic messages.  For example,
+     N_("`0' flag"), N_("field width").  */
+  const char *name;
+  /* Long name for this flag in diagnostic messages; currently only used for
+     "ISO C does not support ...".  For example, N_("the `I' printf flag").  */
+  const char *long_name;
+  /* The standard version in which it appeared.  */
+  enum format_std_version std;
+} format_flag_spec;
+
+
+/* Structure describing a combination of flags that is bad for some kind
+   of format.  */
+typedef struct
+{
+  /* The first flag character in question (0 for end of array).  */
+  int flag_char1;
+  /* The second flag character.  */
+  int flag_char2;
+  /* Non-zero if the message should say that the first flag is ignored with
+     the second, zero if the combination should simply be objected to.  */
+  int ignored;
+  /* Zero if this entry applies whenever this flag combination occurs,
+     a non-zero character from flags2 if it only applies in some
+     circumstances (e.g. 'i' for printf formats ignoring 0 with precision).  */
+  int predicate;
+} format_flag_pair;
 
 
 /* Structure describing a particular kind of format processed by GCC.  */
@@ -1320,6 +1383,34 @@ typedef struct
   const format_length_info *length_char_specs;
   /* Details of the conversion specification characters accepted.  */
   const format_char_info *conversion_specs;
+  /* String listing the flag characters that are accepted.  */
+  const char *flag_chars;
+  /* String listing modifier characters (strftime) accepted.  May be NULL.  */
+  const char *modifier_chars;
+  /* Details of the flag characters, including pseudo-flags.  */
+  const format_flag_spec *flag_specs;
+  /* Details of bad combinations of flags.  */
+  const format_flag_pair *bad_flag_pairs;
+  /* Flags applicable to this kind of format.  */
+  int flags;
+  /* Flag character to treat a width as, or 0 if width not used.  */
+  int width_char;
+  /* Flag character to treat a precision as, or 0 if precision not used.  */
+  int precision_char;
+  /* If a flag character has the effect of suppressing the conversion of
+     an argument ('*' in scanf), that flag character, otherwise 0.  */
+  int suppression_char;
+  /* Flag character to treat a length modifier as (ignored if length
+     modifiers not used).  Need not be placed in flag_chars for conversion
+     specifiers, but is used to check for bad combinations such as length
+     modifier with assignment suppression in scanf.  */
+  int length_code_char;
+  /* Pointer to type of argument expected if '*' is used for a width,
+     or NULL if '*' not used for widths.  */
+  tree *width_type;
+  /* Pointer to type of argument expected if '*' is used for a precision,
+     or NULL if '*' not used for precisions.  */
+  tree *precision_type;
 } format_kind_info;
 
 
@@ -1380,6 +1471,70 @@ static const format_length_info scanf_length_specs[] =
   { "t", FMT_LEN_t, STD_C99, NULL, 0, 0 },
   { "j", FMT_LEN_j, STD_C99, NULL, 0, 0 },
   { NULL, 0, 0, NULL, 0, 0 }
+};
+
+
+static const format_flag_spec printf_flag_specs[] =
+{
+  { ' ',  0, N_("` ' flag"),        N_("the ` ' printf flag"),              STD_C89 },
+  { '+',  0, N_("`+' flag"),        N_("the `+' printf flag"),              STD_C89 },
+  { '#',  0, N_("`#' flag"),        N_("the `#' printf flag"),              STD_C89 },
+  { '0',  0, N_("`0' flag"),        N_("the `0' printf flag"),              STD_C89 },
+  { '-',  0, N_("`-' flag"),        N_("the `-' printf flag"),              STD_C89 },
+  { '\'', 0, N_("`'' flag"),        N_("the `'' printf flag"),              STD_EXT },
+  { 'I',  0, N_("`I' flag"),        N_("the `I' printf flag"),              STD_EXT },
+  { 'w',  0, N_("field width"),     N_("field width in printf format"),     STD_C89 },
+  { 'p',  0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
+  { 'L',  0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
+  { 0, 0, NULL, NULL, 0 }
+};
+
+
+static const format_flag_pair printf_flag_pairs[] =
+{
+  { ' ', '+', 1, 0   },
+  { '0', '-', 1, 0   },
+  { '0', 'p', 1, 'i' },
+  { 0, 0, 0, 0 }
+};
+
+
+static const format_flag_spec scanf_flag_specs[] =
+{
+  { '*', 0, N_("assignment suppression"), N_("assignment suppression"),          STD_C89 },
+  { 'a', 0, N_("`a' flag"),               N_("the `a' scanf flag"),              STD_EXT },
+  { 'w', 0, N_("field width"),            N_("field width in scanf format"),     STD_C89 },
+  { 'L', 0, N_("length modifier"),        N_("length modifier in scanf format"), STD_C89 },
+  { 0, 0, NULL, NULL, 0 }
+};
+
+
+static const format_flag_pair scanf_flag_pairs[] =
+{
+  { '*', 'L', 0, 0 },
+  { 0, 0, 0, 0 }
+};
+
+
+static const format_flag_spec strftime_flag_specs[] =
+{
+  { '_', 0,   N_("`_' flag"),     N_("the `_' strftime flag"),          STD_EXT },
+  { '-', 0,   N_("`-' flag"),     N_("the `-' strftime flag"),          STD_EXT },
+  { '0', 0,   N_("`0' flag"),     N_("the `0' strftime flag"),          STD_EXT },
+  { '^', 0,   N_("`^' flag"),     N_("the `^' strftime flag"),          STD_EXT },
+  { '#', 0,   N_("`#' flag"),     N_("the `#' strftime flag"),          STD_EXT },
+  { 'w', 0,   N_("field width"),  N_("field width in strftime format"), STD_EXT },
+  { 'E', 0,   N_("`E' modifier"), N_("the `E' strftime modifier"),      STD_C99 },
+  { 'O', 0,   N_("`O' modifier"), N_("the `O' strftime modifier"),      STD_C99 },
+  { 'O', 'o', NULL,               N_("the `O' modifier"),               STD_EXT },
+  { 0, 0, NULL, NULL, 0 }
+};
+
+
+static const format_flag_pair strftime_flag_pairs[] =
+{
+  { 'E', 'O', 0, 0 },
+  { 0, 0, 0, 0 }
 };
 
 
@@ -1490,7 +1645,7 @@ static format_char_info time_char_table[] =
   { "j",		0, STD_C89, NOLENGTHS, "-_0Ow",  "o"  },
   { "p",		0, STD_C89, NOLENGTHS, "#",      ""   },
   { "X",		0, STD_C89, NOLENGTHS, "E",      ""   },
-  { "y", 		0, STD_C89, NOLENGTHS, "EO-_0w", "2"  },
+  { "y", 		0, STD_C89, NOLENGTHS, "EO-_0w", "4"  },
   { "Y",		0, STD_C89, NOLENGTHS, "-_0EOw", "o"  },
   { "%",		0, STD_C89, NOLENGTHS, "",       ""   },
   /* C99 conversion specifiers.  */
@@ -1512,9 +1667,21 @@ static format_char_info time_char_table[] =
 /* This must be in the same order as enum format_type.  */
 static const format_kind_info format_types[] =
 {
-  { "printf",   printf_length_specs, print_char_table },
-  { "scanf",    scanf_length_specs,  scan_char_table  },
-  { "strftime", NULL,                time_char_table  }
+  { "printf",   printf_length_specs, print_char_table, " +#0-'I", NULL, 
+    printf_flag_specs, printf_flag_pairs,
+    FMT_FLAG_ARG_CONVERT, 'w', 'p', 0, 'L',
+    &integer_type_node, &integer_type_node
+  },
+  { "scanf",    scanf_length_specs,  scan_char_table,  "*", NULL, 
+    scanf_flag_specs, scanf_flag_pairs,
+    FMT_FLAG_ARG_CONVERT|FMT_FLAG_SCANF_A_KLUDGE, 'w', 0, '*', 'L',
+    NULL, NULL
+  },
+  { "strftime", NULL,                time_char_table,  "_-0^#", "EO",
+    strftime_flag_specs, strftime_flag_pairs,
+    FMT_FLAG_FANCY_PERCENT_OK, 'w', 0, 0, 0,
+    NULL, NULL
+  }
 };
 
 
@@ -1548,6 +1715,9 @@ static void init_dollar_format_checking		PARAMS ((int, tree));
 static int maybe_read_dollar_number		PARAMS ((int *, const char **, int,
 							 tree, tree *));
 static void finish_dollar_format_checking	PARAMS ((int *));
+
+static const format_flag_spec *get_flag_spec	PARAMS ((const format_flag_spec *,
+							 int, const char *));
 
 static void check_format_types	PARAMS ((int *, format_wanted_type *));
 static int is_valid_printf_arglist PARAMS ((tree));
@@ -1928,6 +2098,41 @@ finish_dollar_format_checking (status)
 }
 
 
+/* Retrieve the specification for a format flag.  SPEC contains the
+   specifications for format flags for the applicable kind of format.
+   FLAG is the flag in question.  If PREDICATES is NULL, the basic
+   spec for that flag must be retrieved and this function aborts if
+   it cannot be found.  If PREDICATES is not NULL, it is a string listing
+   possible predicates for the spec entry; if an entry predicated on any
+   of these is found, it is returned, otherwise NULL is returned.  */
+
+static const format_flag_spec *
+get_flag_spec (spec, flag, predicates)
+     const format_flag_spec *spec;
+     int flag;
+     const char *predicates;
+{
+  int i;
+  for (i = 0; spec[i].flag_char != 0; i++)
+    {
+      if (spec[i].flag_char != flag)
+	continue;
+      if (predicates != NULL)
+	{
+	  if (spec[i].predicate != 0
+	      && index (predicates, spec[i].predicate) != 0)
+	    return &spec[i];
+	}
+      else if (spec[i].predicate == 0)
+	return &spec[i];
+    }
+  if (predicates == NULL)
+    abort ();
+  else
+    return NULL;
+}
+
+
 /* Check the argument list of a call to printf, scanf, etc.
    INFO points to the function_format_info structure.
    PARAMS is the list of argument values.  */
@@ -1940,7 +2145,7 @@ check_format_info (status, info, params)
 {
   int i;
   int arg_num;
-  int suppressed, wide, precise;
+  int suppressed;
   const char *length_chars = NULL;
   enum format_lengths length_chars_val = FMT_LEN_none;
   enum format_std_version length_chars_std = STD_C89;
@@ -1961,9 +2166,11 @@ check_format_info (status, info, params)
   tree first_fillin_param;
   const char *format_chars;
   const format_kind_info *fki = NULL;
+  const format_flag_spec *flag_specs = NULL;
+  const format_flag_pair *bad_flag_pairs = NULL;
   const format_length_info *fli = NULL;
   const format_char_info *fci = NULL;
-  char flag_chars[8];
+  char flag_chars[256];
   /* -1 if no conversions taking an operand have been found; 0 if one has
      and it didn't use $; 1 if $ formats are in use.  */
   int has_operand_number = -1;
@@ -2073,6 +2280,8 @@ check_format_info (status, info, params)
   first_fillin_param = params;
   init_dollar_format_checking (info->first_arg_num, first_fillin_param);
   fki = &format_types[info->format_type];
+  flag_specs = fki->flag_specs;
+  bad_flag_pairs = fki->bad_flag_pairs;
   while (1)
     {
       int aflag;
@@ -2102,127 +2311,57 @@ check_format_info (status, info, params)
 	  continue;
 	}
       flag_chars[0] = 0;
-      suppressed = wide = precise = FALSE;
+      suppressed = FALSE;
       main_arg_num = 0;
       main_arg_params = 0;
-      if (info->format_type == scanf_format_type)
+
+      if ((fki->flags & FMT_FLAG_ARG_CONVERT) && has_operand_number != 0)
 	{
-	  int non_zero_width_char = FALSE;
-	  suppressed = *format_chars == '*';
-	  if (suppressed)
-	    ++format_chars;
-	  else if (has_operand_number != 0)
+	  /* Possibly read a $ operand number at the start of the format.
+	     If one was previously used, one is required here.  If one
+	     is not used here, we can't immediately conclude this is a
+	     format without them, since it could be printf %m or scanf %*.  */
+	  int opnum;
+	  opnum = maybe_read_dollar_number (status, &format_chars, 0,
+					    first_fillin_param,
+					    &main_arg_params);
+	  if (opnum == -1)
+	    return;
+	  else if (opnum > 0)
 	    {
-	      int opnum;
-	      opnum = maybe_read_dollar_number (status, &format_chars,
-						has_operand_number == 1,
-						first_fillin_param,
-						&main_arg_params);
-	      if (opnum == -1)
-		return;
-	      else if (opnum > 0)
-		{
-		  has_operand_number = 1;
-		  main_arg_num = opnum + info->first_arg_num - 1;
-		}
-	      else
-		has_operand_number = 0;
+	      has_operand_number = 1;
+	      main_arg_num = opnum + info->first_arg_num - 1;
 	    }
-	  while (ISDIGIT (*format_chars))
-	    {
-	      wide = TRUE;
-	      if (*format_chars != '0')
-		non_zero_width_char = TRUE;
-	      ++format_chars;
-	    }
-	  if (wide && !non_zero_width_char)
-	    status_warning (status, "zero width in scanf format");
 	}
-      else if (info->format_type == strftime_format_type)
-        {
-	  while (*format_chars != 0 && index ("_-0^#", *format_chars) != 0)
+
+      /* Read any format flags, but do not yet validate them beyond removing
+	 duplicates, since in general validation depends on the rest of
+	 the format.  */
+      while (*format_chars != 0 && index (fki->flag_chars, *format_chars) != 0)
+	{
+	  if (index (flag_chars, *format_chars) != 0)
 	    {
-	      if (pedantic)
-		status_warning (status, "ISO C does not support the strftime `%c' flag",
-			 *format_chars);
-	      if (index (flag_chars, *format_chars) != 0)
-		{
-		  status_warning (status, "repeated `%c' flag in format",
-			   *format_chars);
-		  ++format_chars;
-		}
-	      else
-		{
-		  i = strlen (flag_chars);
-		  flag_chars[i++] = *format_chars++;
-		  flag_chars[i] = 0;
-		}
+	      const format_flag_spec *s = get_flag_spec (flag_specs,
+							 *format_chars, NULL);
+	      status_warning (status, "repeated %s in format", _(s->name));
 	    }
-	  while (ISDIGIT ((unsigned char) *format_chars))
-	    {
-	      wide = TRUE;
-              ++format_chars;
-	    }
-	  if (wide && pedantic)
-	    status_warning (status, "ISO C does not support strftime format width");
-	  if (*format_chars == 'E' || *format_chars == 'O')
+	  else
 	    {
 	      i = strlen (flag_chars);
-	      flag_chars[i++] = *format_chars++;
+	      flag_chars[i++] = *format_chars;
 	      flag_chars[i] = 0;
-	      if (*format_chars == 'E' || *format_chars == 'O')
-	        {
-		  status_warning (status, "multiple E/O modifiers in format");
-		  while (*format_chars == 'E' || *format_chars == 'O')
-		    ++format_chars;
-		}
 	    }
+	  ++format_chars;
 	}
-      else if (info->format_type == printf_format_type)
-	{
-	  if (has_operand_number != 0)
-	    {
-	      int opnum;
-	      opnum = maybe_read_dollar_number (status, &format_chars,
-						0, first_fillin_param,
-						&main_arg_params);
-	      if (opnum == -1)
-		return;
-	      else if (opnum > 0)
-		{
-		  has_operand_number = 1;
-		  main_arg_num = opnum + info->first_arg_num - 1;
-		}
-	    }
 
-	  while (*format_chars != 0 && index (" +#0-'I", *format_chars) != 0)
+      /* Read any format width, possibly * or *m$.  */
+      if (fki->width_char != 0)
+	{
+	  if (fki->width_type != NULL && *format_chars == '*')
 	    {
-	      if (index (flag_chars, *format_chars) != 0)
-		status_warning (status, "repeated `%c' flag in format", *format_chars++);
-	      else
-		{
-		  i = strlen (flag_chars);
-		  flag_chars[i++] = *format_chars++;
-		  flag_chars[i] = 0;
-		}
-	    }
-	  /* "If the space and + flags both appear,
-	     the space flag will be ignored."  */
-	  if (index (flag_chars, ' ') != 0
-	      && index (flag_chars, '+') != 0)
-	    status_warning (status, "use of both ` ' and `+' flags in format");
-	  /* "If the 0 and - flags both appear,
-	     the 0 flag will be ignored."  */
-	  if (index (flag_chars, '0') != 0
-	      && index (flag_chars, '-') != 0)
-	    status_warning (status, "use of both `0' and `-' flags in format");
-	  if (index (flag_chars, '\'') && pedantic)
-	    status_warning (status, "ISO C does not support the `'' format flag");
-	  if (index (flag_chars, 'I') && pedantic)
-	    status_warning (status, "ISO C does not support the `I' format flag");
-	  if (*format_chars == '*')
-	    {
-	      wide = TRUE;
+	      i = strlen (flag_chars);
+	      flag_chars[i++] = fki->width_char;
+	      flag_chars[i] = 0;
 	      /* "...a field width...may be indicated by an asterisk.
 		 In this case, an int argument supplies the field width..."  */
 	      ++format_chars;
@@ -2256,7 +2395,7 @@ check_format_info (status, info, params)
 		      params = TREE_CHAIN (params);
 		      ++arg_num;
 		    }
-		  width_wanted_type.wanted_type = integer_type_node;
+		  width_wanted_type.wanted_type = *fki->width_type;
 		  width_wanted_type.wanted_type_name = NULL;
 		  width_wanted_type.pointer_count = 0;
 		  width_wanted_type.char_lenient_flag = 0;
@@ -2274,78 +2413,100 @@ check_format_info (status, info, params)
 	    }
 	  else
 	    {
+	      /* Possibly read a numeric width.  If the width is zero,
+		 we complain; for scanf this is bad according to the
+		 standard, and for printf and strftime it cannot occur
+		 because 0 is a flag.  */
+	      int non_zero_width_char = FALSE;
+	      int found_width = FALSE;
 	      while (ISDIGIT (*format_chars))
 		{
-		  wide = TRUE;
+		  found_width = TRUE;
+		  if (*format_chars != '0')
+		    non_zero_width_char = TRUE;
 		  ++format_chars;
 		}
-	    }
-	  if (*format_chars == '.')
-	    {
-	      precise = TRUE;
-	      ++format_chars;
-	      /* "...a...precision...may be indicated by an asterisk.
-		 In this case, an int argument supplies the...precision."  */
-	      if (*format_chars == '*')
+	      if (found_width && !non_zero_width_char)
+		status_warning (status, "zero width in scanf format");
+	      if (found_width)
 		{
-		  ++format_chars;
-		  if (has_operand_number != 0)
-		    {
-		      int opnum;
-		      opnum = maybe_read_dollar_number (status, &format_chars,
-							has_operand_number == 1,
-							first_fillin_param,
-							&params);
-		      if (opnum == -1)
-			return;
-		      else if (opnum > 0)
-			{
-			  has_operand_number = 1;
-			  arg_num = opnum + info->first_arg_num - 1;
-			}
-		      else
-			has_operand_number = 0;
-		    }
-		  if (info->first_arg_num != 0)
-		    {
-		      if (params == 0)
-		        {
-			  status_warning (status, "too few arguments for format");
-			  return;
-			}
-		      cur_param = TREE_VALUE (params);
-		      if (has_operand_number <= 0)
-			{
-			  params = TREE_CHAIN (params);
-			  ++arg_num;
-			}
-		      precision_wanted_type.wanted_type = integer_type_node;
-		      precision_wanted_type.wanted_type_name = NULL;
-		      precision_wanted_type.pointer_count = 0;
-		      precision_wanted_type.char_lenient_flag = 0;
-		      precision_wanted_type.writing_in_flag = 0;
-		      precision_wanted_type.name = _("field precision");
-		      precision_wanted_type.param = cur_param;
-		      precision_wanted_type.arg_num = arg_num;
-		      precision_wanted_type.next = NULL;
-		      if (last_wanted_type != 0)
-			last_wanted_type->next = &precision_wanted_type;
-		      if (first_wanted_type == 0)
-			first_wanted_type = &precision_wanted_type;
-		      last_wanted_type = &precision_wanted_type;
-		    }
-		}
-	      else
-		{
-		  while (ISDIGIT (*format_chars))
-		    ++format_chars;
+		  i = strlen (flag_chars);
+		  flag_chars[i++] = fki->width_char;
+		  flag_chars[i] = 0;
 		}
 	    }
 	}
 
-      aflag = 0;
+      /* Read any format precision, possibly * or *m$.  */
+      if (fki->precision_char != 0 && *format_chars == '.')
+	{
+	  ++format_chars;
+	  i = strlen (flag_chars);
+	  flag_chars[i++] = fki->precision_char;
+	  flag_chars[i] = 0;
+	  if (fki->precision_type != NULL && *format_chars == '*')
+	    {
+	      /* "...a...precision...may be indicated by an asterisk.
+		 In this case, an int argument supplies the...precision."  */
+	      ++format_chars;
+	      if (has_operand_number != 0)
+		{
+		  int opnum;
+		  opnum = maybe_read_dollar_number (status, &format_chars,
+						    has_operand_number == 1,
+						    first_fillin_param,
+						    &params);
+		  if (opnum == -1)
+		    return;
+		  else if (opnum > 0)
+		    {
+		      has_operand_number = 1;
+		      arg_num = opnum + info->first_arg_num - 1;
+		    }
+		  else
+		    has_operand_number = 0;
+		}
+	      if (info->first_arg_num != 0)
+		{
+		  if (params == 0)
+		    {
+		      status_warning (status, "too few arguments for format");
+		      return;
+		    }
+		  cur_param = TREE_VALUE (params);
+		  if (has_operand_number <= 0)
+		    {
+		      params = TREE_CHAIN (params);
+		      ++arg_num;
+		    }
+		  precision_wanted_type.wanted_type = *fki->precision_type;
+		  precision_wanted_type.wanted_type_name = NULL;
+		  precision_wanted_type.pointer_count = 0;
+		  precision_wanted_type.char_lenient_flag = 0;
+		  precision_wanted_type.writing_in_flag = 0;
+		  precision_wanted_type.name = _("field precision");
+		  precision_wanted_type.param = cur_param;
+		  precision_wanted_type.arg_num = arg_num;
+		  precision_wanted_type.next = NULL;
+		  if (last_wanted_type != 0)
+		    last_wanted_type->next = &precision_wanted_type;
+		  if (first_wanted_type == 0)
+		    first_wanted_type = &precision_wanted_type;
+		  last_wanted_type = &precision_wanted_type;
+		}
+	    }
+	  else
+	    {
+	      while (ISDIGIT (*format_chars))
+		++format_chars;
+	    }
+	}
 
+      /* Read any length modifier, if this kind of format has them.  */
       fli = fki->length_char_specs;
+      length_chars = NULL;
+      length_chars_val = FMT_LEN_none;
+      length_chars_std = STD_C89;
       if (fli)
 	{
 	  while (fli->name != 0 && fli->name[0] != *format_chars)
@@ -2366,12 +2527,9 @@ check_format_info (status, info, params)
 		  length_chars_val = fli->index;
 		  length_chars_std = fli->std;
 		}
-	    }
-	  else
-	    {
-	      length_chars = NULL;
-	      length_chars_val = FMT_LEN_none;
-	      length_chars_std = STD_C89;
+	      i = strlen (flag_chars);
+	      flag_chars[i++] = fki->length_code_char;
+	      flag_chars[i] = 0;
 	    }
 	  if (pedantic)
 	    {
@@ -2384,23 +2542,50 @@ check_format_info (status, info, params)
 		status_warning (status, "ISO C89 does not support the `%s' %s length modifier",
 			 length_chars, fki->name);
 	    }
-	  if (*format_chars == 'a' && info->format_type == scanf_format_type
-	      && !flag_isoc99)
+	}
+
+      /* Read any modifier (strftime E/O).  */
+      if (fki->modifier_chars != NULL)
+	{
+	  while (*format_chars != 0
+		 && index (fki->modifier_chars, *format_chars) != 0)
+	    {
+	      if (index (flag_chars, *format_chars) != 0)
+		{
+		  const format_flag_spec *s = get_flag_spec (flag_specs,
+							     *format_chars, NULL);
+		  status_warning (status, "repeated %s in format", _(s->name));
+		}
+	      else
+		{
+		  i = strlen (flag_chars);
+		  flag_chars[i++] = *format_chars;
+		  flag_chars[i] = 0;
+		}
+	      ++format_chars;
+	    }
+	}
+
+      /* Handle the scanf allocation kludge.  */
+      if (fki->flags & FMT_FLAG_SCANF_A_KLUDGE)
+	{
+	  if (*format_chars == 'a' && !flag_isoc99)
 	    {
 	      if (format_chars[1] == 's' || format_chars[1] == 'S'
 		  || format_chars[1] == '[')
 		{
 		  /* `a' is used as a flag.  */
-		  aflag = 1;
+		  i = strlen (flag_chars);
+		  flag_chars[i++] = 'a';
+		  flag_chars[i] = 0;
 		  format_chars++;
 		}
 	    }
-	  if (suppressed && length_chars_val != FMT_LEN_none)
-	    status_warning (status, "use of `*' and `%s' together in format", length_chars);
 	}
+
       format_char = *format_chars;
       if (format_char == 0
-	  || (info->format_type != strftime_format_type && format_char == '%'))
+	  || (!(fki->flags & FMT_FLAG_FANCY_PERCENT_OK) && format_char == '%'))
 	{
 	  status_warning (status, "conversion lacks type at end of format");
 	  continue;
@@ -2429,35 +2614,117 @@ check_format_info (status, info, params)
 		   || (fci->std == STD_C94 && !flag_isoc94))
 	    status_warning (status, "ISO C89 does not support the `%%%c' %s format",
 		     format_char, fki->name);
-	  if (index (flag_chars, 'O') != 0)
-	    {
-	      if (index (fci->flags2, 'o') != 0)
-		status_warning (status, "ISO C does not support `%%O%c'", format_char);
-	      else if (!flag_isoc99 && index (fci->flag_chars, 'O') != 0)
-		status_warning (status, "ISO C89 does not support `%%O%c'", format_char);
-	    }
-	  if (!flag_isoc99 && index (flag_chars, 'E'))
-	    status_warning (status, "ISO C89 does not support `%%E%c'", format_char);
 	}
-      if (wide && index (fci->flag_chars, 'w') == 0)
-	status_warning (status, "width used with `%c' format", format_char);
-      if (index (fci->flags2, '3') != 0
-	  || (format_char == 'y' && index (flag_chars, 'E')))
-	status_warning (status, "`%%%c' yields only last 2 digits of year in some locales",
-		 format_char);
-      else if (index (fci->flags2, '2') != 0)
-	status_warning (status, "`%%%c' yields only last 2 digits of year", format_char);
-      if (precise && index (fci->flag_chars, 'p') == 0)
-	status_warning (status, "precision used with `%c' format", format_char);
-      if (aflag && index (fci->flag_chars, 'a') == 0)
+
+      /* Validate the individual flags used, removing any that are invalid.  */
+      {
+	int d = 0;
+	for (i = 0; flag_chars[i] != 0; i++)
+	  {
+	    const format_flag_spec *s = get_flag_spec (flag_specs,
+						       flag_chars[i], NULL);
+	    flag_chars[i - d] = flag_chars[i];
+	    if (flag_chars[i] == fki->length_code_char)
+	      continue;
+	    if (index (fci->flag_chars, flag_chars[i]) == 0)
+	      {
+		status_warning (status, "%s used with `%%%c' %s format",
+				_(s->name), format_char, fki->name);
+		d++;
+		continue;
+	      }
+	    if (pedantic)
+	      {
+		const format_flag_spec *t;
+		if (s->std == STD_EXT)
+		  status_warning (status, "ISO C does not support %s",
+				  _(s->long_name));
+		else if ((s->std == STD_C99 && !flag_isoc99)
+			 || (s->std == STD_C94 && !flag_isoc94))
+		  status_warning (status, "ISO C89 does not support %s",
+				  _(s->long_name));
+		t = get_flag_spec (flag_specs, flag_chars[i], fci->flags2);
+		if (t != NULL && t->std > s->std)
+		  {
+		    const char *long_name = (t->long_name != NULL
+					     ? t->long_name
+					     : s->long_name);
+		    if (t->std == STD_EXT)
+		      status_warning (status, "ISO C does not support %s with the `%%%c' %s format",
+				      _(long_name), format_char, fki->name);
+		    else if ((t->std == STD_C99 && !flag_isoc99)
+			     || (t->std == STD_C94 && !flag_isoc94))
+		      status_warning (status, "ISO C89 does not support %s with the `%%%c' %s format",
+				      _(long_name), format_char, fki->name);
+		  }
+	      }
+	  }
+	flag_chars[i - d] = 0;
+      }
+
+      aflag = 0;
+      if ((fki->flags & FMT_FLAG_SCANF_A_KLUDGE)
+	  && index (flag_chars, 'a') != 0)
+	aflag = 1;
+
+      if (fki->suppression_char
+	  && index (flag_chars, fki->suppression_char) != 0)
+	suppressed = 1;
+
+      /* Validate the pairs of flags used.  */
+      for (i = 0; bad_flag_pairs[i].flag_char1 != 0; i++)
 	{
-	  status_warning (status, "`a' flag used with `%c' format", format_char);
-	  /* To simplify the following code.  */
-	  aflag = 0;
+	  const format_flag_spec *s, *t;
+	  if (index (flag_chars, bad_flag_pairs[i].flag_char1) == 0)
+	    continue;
+	  if (index (flag_chars, bad_flag_pairs[i].flag_char2) == 0)
+	    continue;
+	  if (bad_flag_pairs[i].predicate != 0
+	      && index (fci->flags2, bad_flag_pairs[i].predicate) == 0)
+	    continue;
+	  s = get_flag_spec (flag_specs, bad_flag_pairs[i].flag_char1, NULL);
+	  t = get_flag_spec (flag_specs, bad_flag_pairs[i].flag_char2, NULL);
+	  if (bad_flag_pairs[i].ignored)
+	    {
+	      if (bad_flag_pairs[i].predicate != 0)
+		status_warning (status, "%s ignored with %s and `%%%c' %s format",
+				_(s->name), _(t->name), format_char,
+				fki->name);
+	      else
+		status_warning (status, "%s ignored with %s in %s format",
+				_(s->name), _(t->name), fki->name);
+	    }
+	  else
+	    {
+	      if (bad_flag_pairs[i].predicate != 0)
+		status_warning (status, "use of %s and %s together with `%%%c' %s format",
+				_(s->name), _(t->name), format_char,
+				fki->name);
+	      else
+		status_warning (status, "use of %s and %s together in %s format",
+				_(s->name), _(t->name), fki->name);
+	    }
 	}
-      /* The a flag is a GNU extension.  */
-      else if (pedantic && aflag)
-	status_warning (status, "ISO C does not support the `a' flag");
+
+      /* Give Y2K warnings.  */
+      {
+	int y2k_level = 0;
+	if (index (fci->flags2, '4') != 0)
+	  if (index (flag_chars, 'E') != 0)
+	    y2k_level = 3;
+	  else
+	    y2k_level = 2;
+	else if (index (fci->flags2, '3') != 0)
+	  y2k_level = 3;
+	else if (index (fci->flags2, '2') != 0)
+	  y2k_level = 2;
+	if (y2k_level == 3)
+	  status_warning (status, "`%%%c' yields only last 2 digits of year in some locales",
+			  format_char);
+	else if (y2k_level == 2)
+	  status_warning (status, "`%%%c' yields only last 2 digits of year", format_char);
+      }
+
       if (index (fci->flags2, '[') != 0)
 	{
 	  /* Skip over scan set, in case it happens to have '%' in it.  */
@@ -2473,66 +2740,58 @@ check_format_info (status, info, params)
 	    /* The end of the format string was reached.  */
 	    status_warning (status, "no closing `]' for `%%[' format");
 	}
-      if (suppressed)
+
+      if (fki->flags & FMT_FLAG_ARG_CONVERT)
 	{
-	  if (index (fci->flag_chars, '*') == 0)
-	    status_warning (status, "suppression of `%c' conversion in format", format_char);
-	  continue;
-	}
-      for (i = 0; flag_chars[i] != 0; ++i)
-	{
-	  if (index (fci->flag_chars, flag_chars[i]) == 0)
-	    status_warning (status, "flag `%c' used with type `%c'",
-		     flag_chars[i], format_char);
-	}
-      if (info->format_type == strftime_format_type)
-	continue;
-      if (precise && index (flag_chars, '0') != 0
-	  && (index (fci->flags2, 'i') != 0))
-	status_warning (status, "`0' flag ignored with precision specifier and `%c' format",
-		 format_char);
-      wanted_type = (fci->types[length_chars_val].type
-		     ? *fci->types[length_chars_val].type : 0);
-      wanted_type_name = fci->types[length_chars_val].name;
-      wanted_type_std = fci->types[length_chars_val].std;
-      if (wanted_type == 0)
-	{
-	  status_warning (status, "use of `%s' length modifier with `%c' type character",
-		   length_chars, format_char);
-	  /* Heuristic: skip one argument when an invalid length/type
-	     combination is encountered.  */
-	  arg_num++;
-	  if (params == 0)
+	  wanted_type = (fci->types[length_chars_val].type
+			 ? *fci->types[length_chars_val].type : 0);
+	  wanted_type_name = fci->types[length_chars_val].name;
+	  wanted_type_std = fci->types[length_chars_val].std;
+	  if (wanted_type == 0)
 	    {
-	      status_warning (status, "too few arguments for format");
-	      return;
+	      status_warning (status, "use of `%s' length modifier with `%c' type character",
+			      length_chars, format_char);
+	      /* Heuristic: skip one argument when an invalid length/type
+		 combination is encountered.  */
+	      arg_num++;
+	      if (params == 0)
+		{
+		  status_warning (status, "too few arguments for format");
+		  return;
+		}
+	      params = TREE_CHAIN (params);
+	      continue;
 	    }
-	  params = TREE_CHAIN (params);
-	  continue;
-	}
-      else if (pedantic
-	       /* Warn if non-standard, provided it is more non-standard
-		  than the length and type characters that may already
-		  have been warned for.  */
-	       && wanted_type_std > length_chars_std
-	       && wanted_type_std > fci->std)
-	{
-	  if (wanted_type_std == STD_EXT)
-	    status_warning (status, "ISO C does not support the `%%%s%c' %s format",
-		     length_chars, format_char, fki->name);
-	  else if ((wanted_type_std == STD_C99 && !flag_isoc99)
-		   || (wanted_type_std == STD_C94 && !flag_isoc94))
-	    status_warning (status, "ISO C89 does not support the `%%%s%c' %s format",
-		     length_chars, format_char, fki->name);
+	  else if (pedantic
+		   /* Warn if non-standard, provided it is more non-standard
+		      than the length and type characters that may already
+		      have been warned for.  */
+		   && wanted_type_std > length_chars_std
+		   && wanted_type_std > fci->std)
+	    {
+	      if (wanted_type_std == STD_EXT)
+		status_warning (status, "ISO C does not support the `%%%s%c' %s format",
+				length_chars, format_char, fki->name);
+	      else if ((wanted_type_std == STD_C99 && !flag_isoc99)
+		       || (wanted_type_std == STD_C94 && !flag_isoc94))
+		status_warning (status, "ISO C89 does not support the `%%%s%c' %s format",
+				length_chars, format_char, fki->name);
+	    }
 	}
 
       /* Finally. . .check type of argument against desired type!  */
       if (info->first_arg_num == 0)
 	continue;
-      if (fci->pointer_count == 0 && wanted_type == void_type_node)
+      if ((fci->pointer_count == 0 && wanted_type == void_type_node)
+	  || suppressed)
 	{
 	  if (main_arg_num != 0)
-	    status_warning (status, "operand number specified for format taking no argument");
+	    {
+	      if (suppressed)
+		status_warning (status, "operand number specified with suppressed assignment");
+	      else
+		status_warning (status, "operand number specified for format taking no argument");
+	    }
 	}
       else
 	{

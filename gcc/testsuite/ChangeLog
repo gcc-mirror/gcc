@@ -1,3 +1,12 @@
+2000-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-printf-1.c, gcc.dg/c90-scanf-1.c,
+	gcc.dg/c99-printf-1.c, gcc.dg/c99-scanf-1.c,
+	gcc.dg/c99-strftime-1.c, gcc.dg/format-ext-3.c: Adjust error
+	regexps and details of expected handling of some bad formats.
+	* gcc.dg/format-xopen-1.c: Add test for $ format with assignment
+	suppression.
+
 2000-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g++.old-deja/g++.eh/cond1.C, g++.old-deja/g++.other/bitfld3.C,

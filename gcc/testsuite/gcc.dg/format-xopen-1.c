@@ -119,4 +119,5 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   printf ("%3$d%1$d", i, i, i); /* { dg-warning "before used" "unused $ operand" } */
   printf ("%2$d%1$d", i, i, i); /* { dg-warning "unused" "unused $ operand" } */
   vprintf ("%3$d%1$d", va); /* { dg-warning "before used" "unused $ operand" } */
+  scanf ("%1$*d%1$d", ip); /* { dg-warning "operand" "operand number with suppression" } */
 }

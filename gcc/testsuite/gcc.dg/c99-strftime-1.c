@@ -31,69 +31,71 @@ foo (char *s, size_t m, const struct tm *tp)
   */
   strftime (s, m, "%Ey", tp); /* { dg-warning "some locales" "2-digit year" } */
   /* Bad uses of %E and %O.  */
-  strftime (s, m, "%EEY", tp); /* { dg-warning "multiple" "multiple %E/%O" } */
-  strftime (s, m, "%EOY", tp); /* { dg-warning "multiple" "multiple %E/%O" } */
-  strftime (s, m, "%OEV", tp); /* { dg-warning "multiple" "multiple %E/%O" } */
-  strftime (s, m, "%OOV", tp); /* { dg-warning "multiple" "multiple %E/%O" } */
-  strftime (s, m, "%Ea", tp); /* { dg-warning "flag" "bad %Ea" } */
-  strftime (s, m, "%EA", tp); /* { dg-warning "flag" "bad %EA" } */
-  strftime (s, m, "%Eb", tp); /* { dg-warning "flag" "bad %Eb" } */
-  strftime (s, m, "%EB", tp); /* { dg-warning "flag" "bad %EB" } */
-  strftime (s, m, "%Ed", tp); /* { dg-warning "flag" "bad %Ed" } */
-  strftime (s, m, "%ED", tp); /* { dg-warning "flag" "bad %ED" } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 43 } */
-  strftime (s, m, "%Ee", tp); /* { dg-warning "flag" "bad %Ee" } */
-  strftime (s, m, "%EF", tp); /* { dg-warning "flag" "bad %EF" } */
-  strftime (s, m, "%Eg", tp); /* { dg-warning "flag" "bad %Eg" } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 47 } */
-  strftime (s, m, "%EG", tp); /* { dg-warning "flag" "bad %EG" } */
-  strftime (s, m, "%Eh", tp); /* { dg-warning "flag" "bad %Eh" } */
-  strftime (s, m, "%EH", tp); /* { dg-warning "flag" "bad %EH" } */
-  strftime (s, m, "%EI", tp); /* { dg-warning "flag" "bad %EI" } */
-  strftime (s, m, "%Ej", tp); /* { dg-warning "flag" "bad %Ej" } */
-  strftime (s, m, "%Em", tp); /* { dg-warning "flag" "bad %Em" } */
-  strftime (s, m, "%EM", tp); /* { dg-warning "flag" "bad %EM" } */
-  strftime (s, m, "%En", tp); /* { dg-warning "flag" "bad %En" } */
-  strftime (s, m, "%Ep", tp); /* { dg-warning "flag" "bad %Ep" } */
-  strftime (s, m, "%Er", tp); /* { dg-warning "flag" "bad %Er" } */
-  strftime (s, m, "%ER", tp); /* { dg-warning "flag" "bad %ER" } */
-  strftime (s, m, "%ES", tp); /* { dg-warning "flag" "bad %ES" } */
-  strftime (s, m, "%Et", tp); /* { dg-warning "flag" "bad %Et" } */
-  strftime (s, m, "%ET", tp); /* { dg-warning "flag" "bad %ET" } */
-  strftime (s, m, "%Eu", tp); /* { dg-warning "flag" "bad %Eu" } */
-  strftime (s, m, "%EU", tp); /* { dg-warning "flag" "bad %EU" } */
-  strftime (s, m, "%EV", tp); /* { dg-warning "flag" "bad %EV" } */
-  strftime (s, m, "%Ew", tp); /* { dg-warning "flag" "bad %Ew" } */
-  strftime (s, m, "%EW", tp); /* { dg-warning "flag" "bad %EW" } */
-  strftime (s, m, "%Ez", tp); /* { dg-warning "flag" "bad %Ez" } */
-  strftime (s, m, "%EZ", tp); /* { dg-warning "flag" "bad %EZ" } */
-  strftime (s, m, "%E%", tp); /* { dg-warning "flag" "bad %E%" } */
-  strftime (s, m, "%Oa", tp); /* { dg-warning "flag" "bad %Oa" } */
-  strftime (s, m, "%OA", tp); /* { dg-warning "flag" "bad %OA" } */
-  strftime (s, m, "%Ob", tp); /* { dg-warning "flag" "bad %Ob" } */
-  strftime (s, m, "%OB", tp); /* { dg-warning "flag" "bad %OB" } */
-  strftime (s, m, "%Oc", tp); /* { dg-warning "flag" "bad %Oc" } */
-  /* { dg-warning "in some locales" "2-digit year" { target *-*-* } 75 } */
-  strftime (s, m, "%OC", tp); /* { dg-warning "flag|C" "bad %OC" } */
-  strftime (s, m, "%OD", tp); /* { dg-warning "flag" "bad %OD" } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 78 } */
-  strftime (s, m, "%OF", tp); /* { dg-warning "flag" "bad %OF" } */
-  strftime (s, m, "%Og", tp); /* { dg-warning "flag|C" "bad %Og" } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 81 } */
-  strftime (s, m, "%OG", tp); /* { dg-warning "flag|C" "bad %OG" } */
-  strftime (s, m, "%Oh", tp); /* { dg-warning "flag" "bad %Oh" } */
-  strftime (s, m, "%Oj", tp); /* { dg-warning "flag|C" "bad %Oj" } */
-  strftime (s, m, "%On", tp); /* { dg-warning "flag" "bad %On" } */
-  strftime (s, m, "%Op", tp); /* { dg-warning "flag" "bad %Op" } */
-  strftime (s, m, "%Or", tp); /* { dg-warning "flag" "bad %Or" } */
-  strftime (s, m, "%OR", tp); /* { dg-warning "flag" "bad %OR" } */
-  strftime (s, m, "%Ot", tp); /* { dg-warning "flag" "bad %Ot" } */
-  strftime (s, m, "%OT", tp); /* { dg-warning "flag" "bad %OT" } */
-  strftime (s, m, "%Ox", tp); /* { dg-warning "flag" "bad %Ox" } */
-  /* { dg-warning "in some locales" "2-digit year" { target *-*-* } 92 } */
-  strftime (s, m, "%OX", tp); /* { dg-warning "flag" "bad %OX" } */
-  strftime (s, m, "%OY", tp); /* { dg-warning "flag|C" "bad %OY" } */
-  strftime (s, m, "%Oz", tp); /* { dg-warning "flag|C" "bad %Oz" } */
-  strftime (s, m, "%OZ", tp); /* { dg-warning "flag" "bad %OZ" } */
-  strftime (s, m, "%O%", tp); /* { dg-warning "flag" "bad %O%" } */
+  strftime (s, m, "%EEY", tp); /* { dg-warning "multiple|repeated" "multiple %E/%O" } */
+  strftime (s, m, "%EOy", tp); /* { dg-warning "multiple|together" "multiple %E/%O" } */
+  strftime (s, m, "%OEy", tp); /* { dg-warning "multiple|together" "multiple %E/%O" } */
+  strftime (s, m, "%OOV", tp); /* { dg-warning "multiple|repeated" "multiple %E/%O" } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 35 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 36 } */
+  strftime (s, m, "%Ea", tp); /* { dg-warning "flag|modifier" "bad %Ea" } */
+  strftime (s, m, "%EA", tp); /* { dg-warning "flag|modifier" "bad %EA" } */
+  strftime (s, m, "%Eb", tp); /* { dg-warning "flag|modifier" "bad %Eb" } */
+  strftime (s, m, "%EB", tp); /* { dg-warning "flag|modifier" "bad %EB" } */
+  strftime (s, m, "%Ed", tp); /* { dg-warning "flag|modifier" "bad %Ed" } */
+  strftime (s, m, "%ED", tp); /* { dg-warning "flag|modifier" "bad %ED" } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 45 } */
+  strftime (s, m, "%Ee", tp); /* { dg-warning "flag|modifier" "bad %Ee" } */
+  strftime (s, m, "%EF", tp); /* { dg-warning "flag|modifier" "bad %EF" } */
+  strftime (s, m, "%Eg", tp); /* { dg-warning "flag|modifier" "bad %Eg" } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 49 } */
+  strftime (s, m, "%EG", tp); /* { dg-warning "flag|modifier" "bad %EG" } */
+  strftime (s, m, "%Eh", tp); /* { dg-warning "flag|modifier" "bad %Eh" } */
+  strftime (s, m, "%EH", tp); /* { dg-warning "flag|modifier" "bad %EH" } */
+  strftime (s, m, "%EI", tp); /* { dg-warning "flag|modifier" "bad %EI" } */
+  strftime (s, m, "%Ej", tp); /* { dg-warning "flag|modifier" "bad %Ej" } */
+  strftime (s, m, "%Em", tp); /* { dg-warning "flag|modifier" "bad %Em" } */
+  strftime (s, m, "%EM", tp); /* { dg-warning "flag|modifier" "bad %EM" } */
+  strftime (s, m, "%En", tp); /* { dg-warning "flag|modifier" "bad %En" } */
+  strftime (s, m, "%Ep", tp); /* { dg-warning "flag|modifier" "bad %Ep" } */
+  strftime (s, m, "%Er", tp); /* { dg-warning "flag|modifier" "bad %Er" } */
+  strftime (s, m, "%ER", tp); /* { dg-warning "flag|modifier" "bad %ER" } */
+  strftime (s, m, "%ES", tp); /* { dg-warning "flag|modifier" "bad %ES" } */
+  strftime (s, m, "%Et", tp); /* { dg-warning "flag|modifier" "bad %Et" } */
+  strftime (s, m, "%ET", tp); /* { dg-warning "flag|modifier" "bad %ET" } */
+  strftime (s, m, "%Eu", tp); /* { dg-warning "flag|modifier" "bad %Eu" } */
+  strftime (s, m, "%EU", tp); /* { dg-warning "flag|modifier" "bad %EU" } */
+  strftime (s, m, "%EV", tp); /* { dg-warning "flag|modifier" "bad %EV" } */
+  strftime (s, m, "%Ew", tp); /* { dg-warning "flag|modifier" "bad %Ew" } */
+  strftime (s, m, "%EW", tp); /* { dg-warning "flag|modifier" "bad %EW" } */
+  strftime (s, m, "%Ez", tp); /* { dg-warning "flag|modifier" "bad %Ez" } */
+  strftime (s, m, "%EZ", tp); /* { dg-warning "flag|modifier" "bad %EZ" } */
+  strftime (s, m, "%E%", tp); /* { dg-warning "flag|modifier" "bad %E%" } */
+  strftime (s, m, "%Oa", tp); /* { dg-warning "flag|modifier" "bad %Oa" } */
+  strftime (s, m, "%OA", tp); /* { dg-warning "flag|modifier" "bad %OA" } */
+  strftime (s, m, "%Ob", tp); /* { dg-warning "flag|modifier" "bad %Ob" } */
+  strftime (s, m, "%OB", tp); /* { dg-warning "flag|modifier" "bad %OB" } */
+  strftime (s, m, "%Oc", tp); /* { dg-warning "flag|modifier" "bad %Oc" } */
+  /* { dg-warning "in some locales" "2-digit year" { target *-*-* } 77 } */
+  strftime (s, m, "%OC", tp); /* { dg-warning "flag|modifier|C" "bad %OC" } */
+  strftime (s, m, "%OD", tp); /* { dg-warning "flag|modifier" "bad %OD" } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 80 } */
+  strftime (s, m, "%OF", tp); /* { dg-warning "flag|modifier" "bad %OF" } */
+  strftime (s, m, "%Og", tp); /* { dg-warning "flag|modifier|C" "bad %Og" } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 83 } */
+  strftime (s, m, "%OG", tp); /* { dg-warning "flag|modifier|C" "bad %OG" } */
+  strftime (s, m, "%Oh", tp); /* { dg-warning "flag|modifier" "bad %Oh" } */
+  strftime (s, m, "%Oj", tp); /* { dg-warning "flag|modifier|C" "bad %Oj" } */
+  strftime (s, m, "%On", tp); /* { dg-warning "flag|modifier" "bad %On" } */
+  strftime (s, m, "%Op", tp); /* { dg-warning "flag|modifier" "bad %Op" } */
+  strftime (s, m, "%Or", tp); /* { dg-warning "flag|modifier" "bad %Or" } */
+  strftime (s, m, "%OR", tp); /* { dg-warning "flag|modifier" "bad %OR" } */
+  strftime (s, m, "%Ot", tp); /* { dg-warning "flag|modifier" "bad %Ot" } */
+  strftime (s, m, "%OT", tp); /* { dg-warning "flag|modifier" "bad %OT" } */
+  strftime (s, m, "%Ox", tp); /* { dg-warning "flag|modifier" "bad %Ox" } */
+  /* { dg-warning "in some locales" "2-digit year" { target *-*-* } 94 } */
+  strftime (s, m, "%OX", tp); /* { dg-warning "flag|modifier" "bad %OX" } */
+  strftime (s, m, "%OY", tp); /* { dg-warning "flag|modifier|C" "bad %OY" } */
+  strftime (s, m, "%Oz", tp); /* { dg-warning "flag|modifier|C" "bad %Oz" } */
+  strftime (s, m, "%OZ", tp); /* { dg-warning "flag|modifier" "bad %OZ" } */
+  strftime (s, m, "%O%", tp); /* { dg-warning "flag|modifier" "bad %O%" } */
 }

@@ -155,8 +155,8 @@ foo (int i, unsigned int u, double d, char *s, void *p, int *n,
   /* Uses of the space flag (valid on signed conversions only, and ignored
      with +).
   */
-  printf ("% +d", i); /* { dg-warning "use of both" "use of space and + flags" } */
-  printf ("%+ d", i); /* { dg-warning "use of both" "use of space and + flags" } */
+  printf ("% +d", i); /* { dg-warning "use of both|ignored" "use of space and + flags" } */
+  printf ("%+ d", i); /* { dg-warning "use of both|ignored" "use of space and + flags" } */
   printf ("% d% i% f% F% e% E% g% G% a% A\n", i, i, d, d, d, d, d, d, d, d);
   printf ("% o", u); /* { dg-warning "flag" "bad use of space flag" } */
   printf ("% u", u); /* { dg-warning "flag" "bad use of space flag" } */
@@ -193,20 +193,20 @@ foo (int i, unsigned int u, double d, char *s, void *p, int *n,
   printf ("%08.5f%08.5F%08.5e%08.5E%08.5g%08.5G%08.5a%08.5A",
 	  d, d, d, d, d, d, d, d);
   /* 0 flag ignored with - flag.  */
-  printf ("%-08d", i); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08i", i); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08o", u); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08u", u); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08x", u); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08X", u); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08e", d); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08E", d); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08f", d); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08F", d); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08g", d); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08G", d); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08a", d); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08A", d); /* { dg-warning "flags" "0 flag ignored with - flag" } */
+  printf ("%-08d", i); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08i", i); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08o", u); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08u", u); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08x", u); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08X", u); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08e", d); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08E", d); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08f", d); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08F", d); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08g", d); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08G", d); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08a", d); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08A", d); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
   /* Various tests of bad argument types.  Mostly covered in c90-printf-1.c;
      here just test for pointer target sign with %hhn.  (Probably allowed
      by the standard, but a bad idea, so GCC should diagnose if what
