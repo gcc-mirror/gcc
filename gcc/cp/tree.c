@@ -1811,8 +1811,8 @@ handle_java_interface_attribute (tree* node,
       || !CLASS_TYPE_P (*node)
       || !TYPE_FOR_JAVA (*node))
     {
-      error ("`%s' attribute can only be applied to Java class definitions",
-	     IDENTIFIER_POINTER (name));
+      error ("`%E' attribute can only be applied to Java class definitions",
+	     name);
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -1840,14 +1840,14 @@ handle_com_interface_attribute (tree* node,
       || !CLASS_TYPE_P (*node)
       || *node != TYPE_MAIN_VARIANT (*node))
     {
-      warning ("`%s' attribute can only be applied to class definitions",
-	       IDENTIFIER_POINTER (name));
+      warning ("`%E' attribute can only be applied to class definitions",
+	       name);
       return NULL_TREE;
     }
 
   if (!warned++)
-    warning ("`%s' is obsolete; g++ vtables are now COM-compatible by default",
-	     IDENTIFIER_POINTER (name));
+    warning ("`%E' is obsolete; g++ vtables are now COM-compatible by default",
+	     name);
 
   return NULL_TREE;
 }
@@ -1891,8 +1891,8 @@ handle_init_priority_attribute (tree* node,
 	 init_priority value, so don't allow it.  */
       || current_function_decl) 
     {
-      error ("can only use `%s' attribute on file-scope definitions of objects of class type",
-	     IDENTIFIER_POINTER (name));
+      error ("can only use `%E' attribute on file-scope definitions "
+             "of objects of class type", name);
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -1919,8 +1919,7 @@ handle_init_priority_attribute (tree* node,
     }
   else
     {
-      error ("`%s' attribute is not supported on this platform",
-	     IDENTIFIER_POINTER (name));
+      error ("`%E' attribute is not supported on this platform", name);
       *no_add_attrs = true;
       return NULL_TREE;
     }

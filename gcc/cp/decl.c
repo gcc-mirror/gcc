@@ -2066,8 +2066,7 @@ lookup_label (tree id)
   /* You can't use labels at global scope.  */
   if (current_function_decl == NULL_TREE)
     {
-      error ("label `%s' referenced outside of any function",
-	     IDENTIFIER_POINTER (id));
+      error ("label `%E' referenced outside of any function", id);
       POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
     }
 
@@ -6746,7 +6745,7 @@ grokdeclarator (tree declarator,
 			longlong = 1;
 		    }
 		  else if (RIDBIT_SETP (i, specbits))
-		    pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
+		    pedwarn ("duplicate `%E'", id);
 
 		  /* Diagnose "__thread extern" or "__thread static".  */
 		  if (RIDBIT_SETP (RID_THREAD, specbits))
@@ -6786,8 +6785,7 @@ grokdeclarator (tree declarator,
 	{
 	  tree t = lookup_name (id, 1);
 	  if (!t || TREE_CODE (t) != TYPE_DECL)
-	    error ("`%s' fails to be a typedef or built in type",
-		   IDENTIFIER_POINTER (id));
+	    error ("`%E' fails to be a typedef or built in type", id);
 	  else
 	    {
 	      type = TREE_TYPE (t);
@@ -7343,8 +7341,8 @@ grokdeclarator (tree declarator,
 		      error ("destructor cannot be static member function");
 		    if (quals)
 		      {
-			error ("destructors may not be `%s'",
-				  IDENTIFIER_POINTER (TREE_VALUE (quals)));
+			error ("destructors may not be `%E'",
+				  TREE_VALUE (quals));
 			quals = NULL_TREE;
 		      }
 		    if (decl_context == FIELD)
@@ -7372,8 +7370,8 @@ grokdeclarator (tree declarator,
 		      }
 		    if (quals)
 		      {
-			error ("constructors may not be `%s'",
-				  IDENTIFIER_POINTER (TREE_VALUE (quals)));
+			error ("constructors may not be `%E'",
+                               TREE_VALUE (quals));
 			quals = NULL_TREE;
 		      }
 		    {
@@ -8179,8 +8177,8 @@ grokdeclarator (tree declarator,
 	  {
 	    if (friendp)
 	      {
-		error ("`%s' is neither function nor member function; cannot be declared friend",
-		       IDENTIFIER_POINTER (declarator));
+		error ("`%E' is neither function nor member function; "
+                       "cannot be declared friend", declarator);
 		friendp = 0;
 	      }
 	    decl = NULL_TREE;

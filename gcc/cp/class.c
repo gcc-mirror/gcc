@@ -1055,8 +1055,8 @@ alter_access (tree t, tree fdecl, tree access)
 	  if (TREE_CODE (TREE_TYPE (fdecl)) == FUNCTION_DECL)
 	    cp_error_at ("conflicting access specifications for method `%D', ignored", TREE_TYPE (fdecl));
 	  else
-	    error ("conflicting access specifications for field `%s', ignored",
-		   IDENTIFIER_POINTER (DECL_NAME (fdecl)));
+	    error ("conflicting access specifications for field `%E', ignored",
+		   DECL_NAME (fdecl));
 	}
       else
 	{
@@ -5706,7 +5706,7 @@ push_lang_context (tree name)
       current_lang_name = name;
     }
   else
-    error ("language string `\"%s\"' not recognized", IDENTIFIER_POINTER (name));
+    error ("language string `\"%E\"' not recognized", name);
 }
   
 /* Get out of the current language scope.  */
