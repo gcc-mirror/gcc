@@ -1,5 +1,14 @@
 2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* builtins.c (expand_builtin_va_end): Don't use
+	EXPAND_BUILTIN_VA_END.
+	* system.h (EXPAND_BUILTIN_VA_END): Poison.
+	* config/d30v/d30v.h: Remove a commented-out definition of
+	EXPAND_BUILTIN_VA_END.
+	* config/stormy16/stormy16.h: Likewise.
+
+2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* system.h (STRUCT_VALUE_INCOMING_REGNUM): Poison.
 	* targhooks.c (default_struct_value_rtx): Don't use
 	STRUCT_VALUE_INCOMING_REGNUM.
