@@ -1389,9 +1389,6 @@ Warn when a declaration does not specify a type.
 Give a warning (or error) whenever a function is used before being
 declared.
 
-@item -Wfloat-equal
-Warn if floating point values are used in equality comparisons.
-
 @item -Wimplicit
 Same as @samp{-Wimplicit-int} and @samp{-Wimplicit-function-}@*
 @samp{declaration}.
@@ -1646,6 +1643,9 @@ struct s @{ int f, g, h; @};
 struct s x = @{ 3, 4 @};
 @end smallexample
 @end itemize
+
+@item -Wfloat-equal
+Warn if floating point values are used in equality comparisons.
 
 @item -Wtraditional
 Warn about certain constructs that behave differently in traditional and
