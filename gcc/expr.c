@@ -1559,7 +1559,7 @@ gen_group_rtx (rtx orig)
 
 /* A subroutine of emit_group_load.  Arguments as for emit_group_load,
    except that values are placed in TMPS[i], and must later be moved
-   into corrosponding XEXP (XVECEXP (DST, 0, i), 0) element.  */
+   into corresponding XEXP (XVECEXP (DST, 0, i), 0) element.  */
 
 static void
 emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
