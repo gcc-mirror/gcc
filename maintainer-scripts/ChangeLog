@@ -1,3 +1,25 @@
+2003-07-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	
+	* gcc_release (announce_snapshot): Add substitution of @BRANCH
+	for README and index.html.  Remove substitution of @LONG_DATE.
+	Put index.html into the respective snapshot directory.
+	Adjust subject of the notification mail to the new naming scheme
+	for CVS tags.
+	Adjust name of the LATEST-IS-... files to the new naming scheme
+	for snapshot directories.
+	(FTP_PATH): Ditto.
+	(LAST_DIR): Ditto.
+	(LAST_LONG_DATE): Remove.
+
+	* snapshot-README: Adjust to the new naming schemes for directories
+	and snapshots per se.
+	Dynamically fill in the respective branch instead of hardcoding it.
+
+	* snapshot-index.html: Replace individual links to diffs with a
+	general link to the diff/ subdirectory.
+	Mention the concrete snapshot in <title> and <h1>.
+	Adjust links to the new location of index.html.
+	
 2003-07-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release: Move handling of complex modes directly after

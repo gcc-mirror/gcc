@@ -1,13 +1,11 @@
 <html>
 
 <head>
-<title>GCC Snapshots</title>
+<title>GCC @BRANCH@-@DATE@ Snapshot</title>
 </head>
 
 <body>
-<h1>GCC Snapshots</h1>
-
-<hr />
+<h1>GCC @BRANCH@-@DATE@ Snapshot</h1>
 
 <p>The <a href ="http://gcc.gnu.org/">GCC Project</a> makes
 periodic snapshots of the GCC source tree available to the public
@@ -19,62 +17,37 @@ how to sign up can be found on the GCC project home page.</p>
 
 
 <blockquote>
-    <p> <a href="@LONG_DATE@/gcc-@DATE@.tar.bz2">
+    <p> <a href="gcc-@DATE@.tar.bz2">
 	 gcc</a> @TEXT_DATE@ snapshot, includes all languages.
 
-    <p> <a href="@LONG_DATE@/diffs/gcc-@LAST_DATE@-@DATE@.diff.bz2">
-	gcc-@LAST_DATE@-@DATE@</a> patch file to bring gcc-@LAST_DATE@ up to
-	gcc-@DATE@.
-
-    <p> <a href="@LONG_DATE@/gcc-core-@DATE@.tar.bz2">
+    <p> <a href="gcc-core-@DATE@.tar.bz2">
 	 gcc-core</a> @TEXT_DATE@ snapshot, includes just the C front
 	 end and core compiler.
 
-    <p> <a href="@LONG_DATE@/diffs/gcc-core-@LAST_DATE@-@DATE@.diff.bz2">
-	gcc-core-@LAST_DATE@-@DATE@</a> patch file to bring gcc-core-@LAST_DATE@
-	up to gcc-core-@DATE@.
-
-    <p> <a href="@LONG_DATE@/gcc-g++-@DATE@.tar.bz2">
+    <p> <a href="gcc-g++-@DATE@.tar.bz2">
 	 gcc-g++</a> @TEXT_DATE@ snapshot, includes just the C++ front
 	 end and runtime.
 
-    <p> <a href="@LONG_DATE@/diffs/gcc-g++-@LAST_DATE@-@DATE@.diff.bz2">
-	gcc-g++-@LAST_DATE@-@DATE@</a> patch file to bring gcc-g++-@LAST_DATE@
-	up to gcc-g++-@DATE@.
-
-    <p> <a href="@LONG_DATE@/gcc-g77-@DATE@.tar.bz2">
+    <p> <a href="gcc-g77-@DATE@.tar.bz2">
 	 gcc-g77</a> @TEXT_DATE@ snapshot, includes just the F77 front
 	 end and runtime.
 
-    <p> <a href="@LONG_DATE@/diffs/gcc-g77-@LAST_DATE@-@DATE@.diff.bz2">
-	gcc-g77-@LAST_DATE@-@DATE@</a> patch file to bring gcc-g77-@LAST_DATE@
-	up to gcc-g77-@DATE@.
-
-    <p> <a href="@LONG_DATE@/gcc-java-@DATE@.tar.bz2">
+    <p> <a href="gcc-java-@DATE@.tar.bz2">
 	 gcc-java</a> @TEXT_DATE@ snapshot, includes just the Java
 	 front end and runtime.
 
-    <p> <a href="@LONG_DATE@/diffs/gcc-java-@LAST_DATE@-@DATE@.diff.bz2">
-	gcc-java-@LAST_DATE@-@DATE@</a> patch file to bring gcc-java-@LAST_DATE@
-	up to gcc-java-@DATE@.
-
-    <p> <a href="@LONG_DATE@/gcc-objc-@DATE@.tar.bz2">
+    <p> <a href="gcc-objc-@DATE@.tar.bz2">
 	 gcc-objc</a> @TEXT_DATE@ snapshot, includes just the Objective-C
 	 front end and runtime.
 
-    <p> <a href="@LONG_DATE@/diffs/gcc-objc-@LAST_DATE@-@DATE@.diff.bz2">
-	gcc-objc-@LAST_DATE@-@DATE@</a> patch file to bring gcc-objc-@LAST_DATE@
-	up to gcc-objc-@DATE@.
-
-    <p> <a href="@LONG_DATE@/gcc-ada-@DATE@.tar.bz2">
+    <p> <a href="gcc-ada-@DATE@.tar.bz2">
 	 gcc-ada</a> @TEXT_DATE@ snapshot, includes just the Ada
 	 front end and runtime.
 
-    <p> <a href="@LONG_DATE@/diffs/gcc-ada-@LAST_DATE@-@DATE@.diff.bz2">
-	gcc-ada-@LAST_DATE@-@DATE@</a> patch file to bring gcc-ada-@LAST_DATE@
-	up to gcc-ada-@DATE@.
-
 </blockquote>
+
+<p>Diffs from @BRANCH@-@LAST_DATE@ are available in the
+<a href="diffs/">diffs/ subdirectory</a>.</p>
 
 </p>When a particular snapshot is ready for public consumption the LATEST-IS-
 file is updated and a message is sent to the gcc list.  Please do not use
