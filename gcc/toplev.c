@@ -3553,6 +3553,7 @@ main (argc, argv, envp)
       flag_strength_reduce = 1;
       flag_rerun_cse_after_loop = 1;
       flag_caller_saves = 1;
+      flag_force_mem = 1;
 #ifdef INSN_SCHEDULING
       flag_schedule_insns = 1;
       flag_schedule_insns_after_reload = 1;
