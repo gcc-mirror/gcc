@@ -19,6 +19,11 @@ Fri Jul 31 17:08:59 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* ns32k/netbsd.h: Fix typo.
 
+Thu Jul 30 19:50:15 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000/x-aix43 (AR_FOR_TARGET_FLAGS): Delete.
+	(AR_FOR_TARGET): Define.
+
 Thu Jul 30 19:11:30 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (fp cmp): Replicate patterns for ALPHA_TP_INSN.
