@@ -1592,8 +1592,7 @@
   "@
    extru %1,31,8,%0
    ldb%M1 %1,%0"
-  [(set_attr "type" "unary,load")
-   (set_attr "length" "4,4")])
+  [(set_attr "type" "unary,load")])
 
 (define_insn "zero_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -1603,8 +1602,7 @@
   "@
    extru %1,31,8,%0
    ldb%M1 %1,%0"
-  [(set_attr "type" "unary,load")
-   (set_attr "length" "4,4")])
+  [(set_attr "type" "unary,load")])
 
 ;;- sign extension instructions
 
@@ -1671,8 +1669,7 @@
 	(float:SF (match_operand:SI 1 "register_operand" "fx")))]
   ""
   "fcnvxf,sgl,sgl %1,%0"
-  [(set_attr "type" "fpalu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "fpalu")])
 
 ;; This pattern forces (set (reg:DF ...) (float:DF (const_int ...)))
 ;; to be reloaded by putting the constant into memory.
@@ -1690,8 +1687,7 @@
 	(float:DF (match_operand:SI 1 "register_operand" "fx")))]
   ""
   "fcnvxf,sgl,dbl %1,%0"
-  [(set_attr "type" "fpalu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "fpalu")])
 
 (define_expand "floatunssisf2"
   [(set (subreg:SI (match_dup 2) 1)
@@ -1718,16 +1714,14 @@
 	(float:SF (match_operand:DI 1 "register_operand" "x")))]
   "TARGET_SNAKE"
   "fcnvxf,dbl,sgl %1,%0"
-  [(set_attr "type" "fpalu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "fpalu")])
 
 (define_insn "floatdidf2"
   [(set (match_operand:DF 0 "general_operand" "=x")
 	(float:DF (match_operand:DI 1 "register_operand" "x")))]
   "TARGET_SNAKE"
   "fcnvxf,dbl,dbl %1,%0"
-  [(set_attr "type" "fpalu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "fpalu")])
 
 ;; Convert a float to an actual integer.
 ;; Truncation is performed as part of the conversion.
@@ -1737,32 +1731,28 @@
 	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" "fx"))))]
   ""
   "fcnvfxt,sgl,sgl %1,%0"
-  [(set_attr "type" "fpalu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "fpalu")])
 
 (define_insn "fix_truncdfsi2"
   [(set (match_operand:SI 0 "register_operand" "=fx")
 	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "fx"))))]
   ""
   "fcnvfxt,dbl,sgl %1,%0"
-  [(set_attr "type" "fpalu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "fpalu")])
 
 (define_insn "fix_truncsfdi2"
   [(set (match_operand:DI 0 "register_operand" "=x")
 	(fix:DI (fix:SF (match_operand:SF 1 "register_operand" "x"))))]
   "TARGET_SNAKE"
   "fcnvfxt,sgl,dbl %1,%0"
-  [(set_attr "type" "fpalu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "fpalu")])
 
 (define_insn "fix_truncdfdi2"
   [(set (match_operand:DI 0 "register_operand" "=x")
 	(fix:DI (fix:DF (match_operand:DF 1 "register_operand" "x"))))]
   "TARGET_SNAKE"
   "fcnvfxt,dbl,dbl %1,%0"
-  [(set_attr "type" "fpalu")
-   (set_attr "length" "4")])
+  [(set_attr "type" "fpalu")])
 
 ;;- arithmetic instructions
 
