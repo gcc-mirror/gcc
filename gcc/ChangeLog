@@ -1,3 +1,11 @@
+2001-09-29  Per Bothner  <per@bothner.com>
+
+	* cppdefault.c (cpp_include_defaults):  Also search PREFIX_INCLUDE_DIR.
+	* Makefile.in (includedir):  Rename to local_includedir.
+	(includedir):  Define as $(prefix)/include.
+	* config.in (PREFIX_INCLUDE_DIR):  New variable.
+	* configure.in (PREFIX_INCLUDE_DIR):  Test for new variable.
+
 2001-09-29  Bernd Schmidt  <bernds@redhat.com>
 
 	* config/i386/i386.c (init_mmx_sse_builtins): Fix type of storelps and
