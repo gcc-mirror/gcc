@@ -1,3 +1,29 @@
+2001-11-07  David O'Brien  <obrien@FreeBSD.org>
+
+	* config.gcc: Add FreeBSD/IA-64 target. Expand config/i64/elf.h headers.
+	* config/i64/ia64.h (TARGET_VERSION,ASM_SPEC,LINK_SPEC): Remove,
+	they are OS specific.  Use CPP_CPU_SPEC rather than CPP_PREDEFINES,
+	so OS specific files and use CPP_PREDEFINES for their needs.
+	* config/i64/elf.h (TARGET_VERSION): Add.  Also, move inclusion of
+	target headers to tm_file.
+	* config/ia64/aix.h (TARGET_VERSION): Likewise.
+	* config/ia64/hpux.h (TARGET_VERSION): Likewise.
+	* config/ia64/linux.h (TARGET_VERSION): Likewise.
+	(FUNCTION_PROFILER): Remove.
+	* config/ia64/ia64.h (FUNCTION_PROFILER): Update defintion using the
+	version in config/ia64/linux.h.
+	* config/ia64/freebsd.h: New file.
+	* config/freebsd.h: Tidy up.
+	(_USING_CONFIG_FREEBSD): Define.
+	(FBSD_CPP_PREDEFINES): Add __KPRINTF_ATTRIBUTE__.
+	(FBSD_CPP_SPEC): Define generic FreeBSD spec.
+	(FBSD_STARTFILE_SPEC): Likewise.
+	(FBSD_ENDFILE_SPEC): Likewise.
+	(FBSD_LIB_SPEC): Likewise.
+	(WCHAR_UNSIGNED): Undefine, FreeBSD's wchars are signed.
+	(USER_LABEL_PREFIX): Define to ELF compatible value as some CPU headers
+	set an ELF-improper one.
+
 2001-11-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (emit_move_sequence): Use cint_ok_for_move to check whether a

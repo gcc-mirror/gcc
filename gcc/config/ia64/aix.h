@@ -22,6 +22,11 @@ Boston, MA 02111-1307, USA.  */
 /* AIX5 (aka Monterey): a mix of AIX and UnixWare.  
    This file is loosely based on ia64/linux.h. */
 
+/* This macro is a C statement to print on `stderr' a string describing the
+   particular machine description choice.  */
+
+#define TARGET_VERSION fprintf (stderr, " (IA-64) AIX");
+
 #undef ASM_APP_ON
 #define ASM_APP_ON "#APP\n"
 

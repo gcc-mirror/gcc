@@ -1,5 +1,10 @@
 /* Definitions for ia64-linux target.  */
 
+/* This macro is a C statement to print on `stderr' a string describing the
+   particular machine description choice.  */
+
+#define TARGET_VERSION fprintf (stderr, " (IA-64) Linux");
+
 /* This is for -profile to use -lc_p instead of -lc. */
 #undef CC1_SPEC
 #define CC1_SPEC "%{profile:-p} %{G*}"
@@ -39,28 +44,5 @@
 
 #undef PROFILE_BEFORE_PROLOGUE
 #define PROFILE_BEFORE_PROLOGUE 1
-
-/* A C statement or compound statement to output to FILE some assembler code to
-   call the profiling subroutine `mcount'.  */
-
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)		\
-do {							\
-  char buf[20];						\
-  ASM_GENERATE_INTERNAL_LABEL (buf, "LP", LABELNO);	\
-  fputs ("\talloc out0 = ar.pfs, 8, 0, 4, 0\n", FILE);	\
-  if (TARGET_AUTO_PIC)					\
-    fputs ("\tmovl out3 = @gprel(", FILE);		\
-  else							\
-    fputs ("\taddl out3 = @ltoff(", FILE);		\
-  assemble_name (FILE, buf);				\
-  if (TARGET_AUTO_PIC)					\
-    fputs (");;\n", FILE);				\
-  else							\
-    fputs ("), r1;;\n", FILE);				\
-  fputs ("\tmov out1 = r1\n", FILE);			\
-  fputs ("\tmov out2 = b0\n", FILE);			\
-  fputs ("\tbr.call.sptk.many b0 = _mcount;;\n", FILE);	\
-} while (0)
 
 /* End of linux.h */
