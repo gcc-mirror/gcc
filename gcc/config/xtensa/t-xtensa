@@ -8,21 +8,20 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define FLOAT' > fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
-########################################################################
-
 # Don't run fixproto
 STMP_FIXPROTO =
-
-# Build crtbegin and crtend with the "longcalls" option
-CRTSTUFF_T_CFLAGS += -mlongcalls
-CRTSTUFF_T_CFLAGS_S += -mlongcalls
 
 LIB1ASMSRC = xtensa/lib1funcs.asm
 LIB1ASMFUNCS = _mulsi3 _nsau _divsi3 _modsi3 _udivsi3 _umodsi3
 
-TARGET_LIBGCC2_CFLAGS += -mlongcalls
-
 LIB2FUNCS_EXTRA += $(srcdir)/config/xtensa/lib2funcs.S
+
+$(T)crti.o: $(srcdir)/config/xtensa/crti.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)crti.o \
+	  -x assembler-with-cpp $(srcdir)/config/xtensa/crti.asm
+$(T)crtn.o: $(srcdir)/config/xtensa/crtn.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)crtn.o \
+	  -x assembler-with-cpp $(srcdir)/config/xtensa/crtn.asm
 
 $(out_object_file): gt-xtensa.h
 gt-xtensa.h : s-gtype ; @true

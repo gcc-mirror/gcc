@@ -2666,14 +2666,11 @@ xstormy16-*-elf)
 	;;
 xtensa-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h xtensa/elf.h"
-	with_newlib=yes
-	tmake_file=xtensa/t-xtensa
-	extra_parts="crtbegin.o crtend.o"
-	fixincludes=Makefile.in # newlib headers should be OK
+	tmake_file="xtensa/t-xtensa xtensa/t-elf"
 	;;
 xtensa-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h xtensa/linux.h"
-	tmake_file="t-linux xtensa/t-xtensa"
+	tmake_file="t-linux xtensa/t-xtensa xtensa/t-linux"
 	;;
 *)
 	echo "*** Configuration $machine not supported" 1>&2
