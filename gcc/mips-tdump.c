@@ -78,7 +78,7 @@ xmalloc (size)
   return value;
 }
 
-/* Do to size_t being defined in sys/types.h and different
+/* Due to size_t being defined in sys/types.h and different
    in stddef.h, we have to do this by hand.....  Note, these
    types are correct for MIPS based systems, and may not be
    correct for other systems.  */
@@ -269,11 +269,11 @@ void  print_file_desc	__proto((FDR *, int));
 void  print_symbol	__proto((SYMR *, int, char *, AUXU *, int, FDR *));
 void  print_aux		__proto((AUXU, int, int));
 void  emit_aggregate	__proto((char *, AUXU, AUXU, const char *, FDR *));
-char *st_to_string	__proto((st_t));
-char *sc_to_string	__proto((sc_t));
-char *glevel_to_string	__proto((glevel_t));
-char *lang_to_string	__proto((lang_t));
-char *type_to_string	__proto((AUXU *, int, FDR *));
+const char *st_to_string	__proto((st_t));
+const char *sc_to_string	__proto((sc_t));
+const char *glevel_to_string	__proto((glevel_t));
+const char *lang_to_string	__proto((lang_t));
+const char *type_to_string	__proto((AUXU *, int, FDR *));
 
 #ifndef __alpha
 # ifdef NEED_DECLARATION_MALLOC
@@ -336,7 +336,7 @@ read_seek (ptr, size, offset, context)
 
 /* Convert language code to string format.  */
 
-char *
+const char *
 lang_to_string (lang)
      lang_t lang;
 {
@@ -359,7 +359,7 @@ lang_to_string (lang)
 
 /* Convert storage class to string.  */
 
-char *
+const char *
 sc_to_string(storage_class)
      sc_t storage_class;
 {
@@ -397,7 +397,7 @@ sc_to_string(storage_class)
 
 /* Convert symbol type to string.  */
 
-char *
+const char *
 st_to_string(symbol_type)
      st_t symbol_type;
 {
@@ -438,7 +438,7 @@ st_to_string(symbol_type)
 
 /* Convert debug level to string.  */
 
-char *
+const char *
 glevel_to_string (g_level)
      glevel_t g_level;
 {
@@ -456,7 +456,7 @@ glevel_to_string (g_level)
 
 /* Convert the type information to string format.  */
 
-char *
+const char *
 type_to_string (aux_ptr, index, fdp)
      AUXU *aux_ptr;
      int index;
@@ -1025,7 +1025,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
 	       scope_ptr != (scope_t *) 0;
 	       scope_ptr = scope_ptr->prev)
 	    {
-	      char *class;
+	      const char *class;
 	      if (scope_ptr->st == st_Proc || scope_ptr->st == st_StaticProc)
 		class = "func.";
 	      else if (scope_ptr->st == st_File)
@@ -1057,7 +1057,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
   if (MIPS_IS_STAB(sym_ptr))
     {
       register int i = sizeof(stab_names) / sizeof(stab_names[0]);
-      char *stab_name = "stab";
+      const char *stab_name = "stab";
       short code = MIPS_UNMARK_STAB(sym_ptr->index);
       while (--i >= 0)
 	if (stab_names[i].code == code)
@@ -1275,7 +1275,7 @@ print_file_desc (fdp, number)
 	      (ulong) fdp->rfdBase);
 
       rfd_ptr = rfile_desc + fdp->rfdBase;
-      for (i = 0; i < fdp->crfd; i++)
+      for (i = 0; i < (ulong) fdp->crfd; i++)
 	{
 	  printf ("\t#%-5ld %11ld, 0x%08lx\n", i, *rfd_ptr, *rfd_ptr);
 	  rfd_ptr++;
