@@ -1148,17 +1148,10 @@ move\\t%0,%z4\\n\\
 ;;  ....................
 ;;
 
-;; Be more liberal in allowing logical operations than the machine
-;; actually supports, until the reload phase forces the large integers
-;; into registers.  This causes better code to be generated for
-;; bitfields, since the optimizer can fold things together, at the
-;; expense of not CSE'ing or moving the constant out of loops, and
-;; having reload load the constant into a scratch register.
-
 (define_insn "andsi3"
   [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(and:SI (match_operand:SI 1 "arith32_operand" "%d,d")
-		(match_operand:SI 2 "arith32_operand" "d,K")))]
+	(and:SI (match_operand:SI 1 "uns_arith_operand" "%d,d")
+		(match_operand:SI 2 "uns_arith_operand" "d,K")))]
   ""
   "@
    and\\t%0,%1,%2
@@ -1192,8 +1185,8 @@ move\\t%0,%z4\\n\\
 
 (define_insn "iorsi3"
   [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(ior:SI (match_operand:SI 1 "arith32_operand" "%d,d")
-		(match_operand:SI 2 "arith32_operand" "d,K")))]
+	(ior:SI (match_operand:SI 1 "uns_arith_operand" "%d,d")
+		(match_operand:SI 2 "uns_arith_operand" "d,K")))]
   ""
   "@
    or\\t%0,%1,%2
@@ -1227,8 +1220,8 @@ move\\t%0,%z4\\n\\
 
 (define_insn "xorsi3"
   [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(xor:SI (match_operand:SI 1 "arith32_operand" "%d,d")
-		(match_operand:SI 2 "arith32_operand" "d,K")))]
+	(xor:SI (match_operand:SI 1 "uns_arith_operand" "%d,d")
+		(match_operand:SI 2 "uns_arith_operand" "d,K")))]
   ""
   "@
    xor\\t%0,%1,%2
