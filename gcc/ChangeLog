@@ -1,3 +1,18 @@
+2002-01-30  Andrew Haley  <aph@cambridge.redhat.com>
+
+        * config/stormy16/stormy16.md (pushqi): New.
+        (popqi): New.
+        (pushhi): New.
+        (pophi): New.
+        (movhi): Remove stack operands.
+        (movqi): Likewise.
+        * config/stormy16/stormy16.h (PREDICATE_CODES): Add
+        nonimmediate_nonstack_operand.
+        * config/stormy16/stormy16.c (nonimmediate_nonstack_operand): 
+        New.
+        * config/stormy16/stormy16-protos.h (nonimmediate_nonstack_operand)
+        New.
+
 2002-01-31  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (c-parse.c): Handle .output file.

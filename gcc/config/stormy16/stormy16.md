@@ -72,21 +72,46 @@
 ;; :: Moves
 ;; ::
 ;; ::::::::::::::::::::
+;; push/pop qi and hi are here as separate insns rather than part of
+;; the movqi/hi patterns because we need to ensure that reload isn't
+;; passed anything it can't cope with.  Without these patterns, we
+;; might end up with
+
+;; (set (mem (post_inc (sp))) mem (post_inc (reg)))
+
+;; If, in this example, reg needs reloading, reload will read reg from
+;; the stack , adjust sp, and store reg back at what is now the wrong
+;; offset.  By using separate patterns for push and pop we ensure that
+;; insns like this one are never generated.
+
+(define_insn "pushqi"
+  [(set (mem:QI (post_inc (reg:HI 15)))
+	(match_operand:QI 0 "register_operand" "r"))]
+  ""
+  "push %0"
+  [(set_attr "psw_operand" "nop")
+   (set_attr "length" "2")])
+
+(define_insn "popqi"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(mem:QI (pre_dec (reg:HI 15))))]
+  ""
+  "pop %0"
+  [(set_attr "psw_operand" "nop")
+   (set_attr "length" "2")])
 
 (define_expand "movqi"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "")
+  [(set (match_operand:QI 0 "nonimmediate_nonstack_operand" "")
 	(match_operand:QI 1 "general_operand" ""))]
   ""
   "{ xstormy16_expand_move (QImode, operands[0], operands[1]); DONE; }")
 
 (define_insn "*movqi_internal"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,Q,r,m,e,e,T,r,S")
-	(match_operand:QI 1 "general_operand"       "r,r,R,e,m,i,i,i,i"))]
+  [(set (match_operand:QI 0 "nonimmediate_nonstack_operand" "=r,m,e,e,T,r,S")
+	(match_operand:QI 1 "general_operand"       "r,e,m,i,i,i,i"))]
   ""
   "@
    mov %0,%1
-   push %1
-   pop %0
    mov.b %0,%1
    mov.b %0,%1
    mov %0,%1
@@ -95,8 +120,6 @@
    mov.b %0,%1"
   [(set_attr_alternative "length" 
 	     [(const_int 2)
-	      (const_int 2)
-	      (const_int 2)
 	      (if_then_else (match_operand:QI 0 "short_memory_operand" "")
 			    (const_int 2)
 			    (const_int 4))
@@ -107,22 +130,36 @@
 	      (const_int 2)
 	      (const_int 4)
 	      (const_int 4)])
-   (set_attr "psw_operand" "0,nop,nop,0,0,0,nop,0,nop")])
+   (set_attr "psw_operand" "0,0,0,0,nop,0,nop")])
+
+(define_insn "pushhi"
+  [(set (mem:HI (post_inc (reg:HI 15)))
+	(match_operand:HI 0 "register_operand" "r"))]
+  ""
+  "push %0"
+  [(set_attr "psw_operand" "nop")
+   (set_attr "length" "2")])
+
+(define_insn "pophi"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(mem:HI (pre_dec (reg:HI 15))))]
+  ""
+  "pop %0"
+  [(set_attr "psw_operand" "nop")
+   (set_attr "length" "2")])
 
 (define_expand "movhi"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "")
+  [(set (match_operand:HI 0 "nonimmediate_nonstack_operand" "")
 	(match_operand:HI 1 "general_operand" ""))]
   ""
   "{ xstormy16_expand_move (HImode, operands[0], operands[1]); DONE; }")
 
 (define_insn "*movhi_internal"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,Q,r,m,e,e,T,r,S")
-	(match_operand:HI 1 "general_operand"       "r,r,R,e,m,L,L,i,i"))]
+  [(set (match_operand:HI 0 "nonimmediate_nonstack_operand" "=r,m,e,e,T,r,S")
+	(match_operand:HI 1 "general_operand"       "r,e,m,L,L,i,i"))]
   ""
   "@
    mov %0,%1
-   push %1
-   pop %0
    mov.w %0,%1
    mov.w %0,%1
    mov.w %0,%1
@@ -131,8 +168,6 @@
    mov.w %0,%1"
   [(set_attr_alternative "length" 
 	     [(const_int 2)
-	      (const_int 2)
-	      (const_int 2)
 	      (if_then_else (match_operand:QI 0 "short_memory_operand" "")
 			    (const_int 2)
 			    (const_int 4))
@@ -143,7 +178,7 @@
 	      (const_int 2)
 	      (const_int 4)
 	      (const_int 4)])
-   (set_attr "psw_operand" "0,nop,nop,0,0,0,nop,0,nop")])
+   (set_attr "psw_operand" "0,0,0,0,nop,0,nop")])
 
 (define_expand "movsi"
   [(set (match_operand:SI 0 "nonimmediate_operand" "")
