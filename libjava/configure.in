@@ -61,8 +61,13 @@ dnl See if the user has the interpreter included.
 AC_ARG_ENABLE(interpreter,
 [  --enable-interpreter    enable interpreter],
   if test "$enable_interpreter" = yes; then
-     AC_DEFINE(INTERPRETER)
+    # This can also be set in configure.host.
+    libgcj_interpreter=yes
   fi)
+
+if test "$libgcj_interpreter" = yes; then
+   AC_DEFINE(INTERPRETER)
+fi
 
 EXCEPTIONSPEC=
 dnl See if we should use setjmp/longjmp exceptions

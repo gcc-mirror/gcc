@@ -24,6 +24,7 @@ libgcj_cflags=
 libgcj_cxxflags=
 libgcj_javaflags=
 libgcj_sjlj=
+libgcj_interpreter=
 
 case "${target_optspace}:${host}" in
   yes:*)
@@ -58,6 +59,7 @@ case "${host}" in
 	;;
   i686-*|i586-*)
 	libgcj_flags="${libgcj_flags} -ffloat-store"
+	libgcj_interpreter=yes
 	DIVIDESPEC=-fno-use-divide-subroutine
 	;;
   sparc-*)

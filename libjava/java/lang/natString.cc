@@ -328,7 +328,8 @@ java::lang::String::init(jcharArray chars, jint offset, jint count,
   if (! chars)
     JvThrow (new NullPointerException);
   jsize data_size = JvGetArrayLength (chars);
-  if (offset < 0 || count < 0 || offset + count > data_size)
+  if (offset < 0 || count < 0 || offset + count < 0
+      || offset + count > data_size)
     JvThrow (new StringIndexOutOfBoundsException());
   jcharArray array;
   jchar *pdst;
@@ -451,7 +452,7 @@ java::lang::String::getChars(jint srcBegin, jint srcEnd,
   jint dst_length = JvGetArrayLength (dst);
   if (srcBegin < 0 || srcBegin > srcEnd || srcEnd > count
       || dstBegin < 0 || dstBegin + (srcEnd-srcBegin) > dst_length)
-    JvThrow (new java::lang::ArrayIndexOutOfBoundsException());
+    JvThrow (new java::lang::StringIndexOutOfBoundsException());
   register jchar *dPtr = elements (dst) + dstBegin;
   register jchar *sPtr = JvGetStringChars (this) + srcBegin;
   register jint i = srcEnd-srcBegin;
@@ -501,7 +502,7 @@ java::lang::String::getBytes(jint srcBegin, jint srcEnd,
   jint dst_length = JvGetArrayLength (dst);
   if (srcBegin < 0 || srcBegin > srcEnd || srcEnd > count
       || dstBegin < 0 || dstBegin + (srcEnd-srcBegin) > dst_length)
-    JvThrow (new java::lang::ArrayIndexOutOfBoundsException());
+    JvThrow (new java::lang::StringIndexOutOfBoundsException());
   register jbyte *dPtr = elements (dst) + dstBegin;
   register jchar *sPtr = JvGetStringChars (this) + srcBegin;
   register jint i = srcEnd-srcBegin;
@@ -591,19 +592,25 @@ java::lang::String::regionMatches (jboolean ignoreCase, jint toffset,
   register jchar *tptr = JvGetStringChars (this) + toffset;
   register jchar *optr = JvGetStringChars (other) + ooffset;
   register jint i = len;
-  while (--i >= 0)
-    {
-      jchar tch = *tptr++;
-      jchar och = *optr++;
-      if (tch != och)
-	return false;
-      if (ignoreCase
-	  && (java::lang::Character::toLowerCase (tch)
-	      != java::lang::Character::toLowerCase (och))
-	  && (java::lang::Character::toUpperCase (tch)
-	      != java::lang::Character::toUpperCase (och)))
-	return false;
-    }
+  if (ignoreCase)
+    while (--i >= 0)
+      {
+	jchar tch = *tptr++;
+	jchar och = *optr++;
+	if ((java::lang::Character::toLowerCase (tch)
+	     != java::lang::Character::toLowerCase (och))
+	    && (java::lang::Character::toUpperCase (tch)
+		!= java::lang::Character::toUpperCase (och)))
+	  return false;
+      }
+  else
+    while (--i >= 0)
+      {
+	jchar tch = *tptr++;
+	jchar och = *optr++;
+	if (tch != och)
+	  return false;
+      }
   return true;
 }
 

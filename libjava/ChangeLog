@@ -1,3 +1,17 @@
+2000-01-09  Anthony Green  <green@cygnus.com>
+
+	* java/lang/natString.cc (init): Test for overflow condition
+	during out of bounds check.
+	(getChars): Throw StringIndexOutOfBoundsException, not
+	ArrayIndexOutOfBoundsException.
+	(getBytes): Ditto.
+	(regionMatches): Obey case option during string comparison.
+
+	* configure.host (ligcj_interpreter): New variable.  Enable
+	interpreter by default on IA-32.
+	* configure.in:  Examine libgcj_interpreter.
+	* configure: Rebuilt.
+
 2000-01-07  Tom Tromey  <tromey@cygnus.com>
 
 	* mauve-libgcj: Don't disable ClassTest.
