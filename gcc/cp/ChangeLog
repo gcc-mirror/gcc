@@ -1,3 +1,8 @@
+Fri Mar 29 09:41:02 1996  Jeffrey A. Law  <law@cygnus.com
+
+	* method.c (emit_thunk): Remove current_call_is_indirect nonsense.
+	Add additional argument to INIT_CUMULATIVE_ARGS.
+
 Fri Mar 22 13:48:29 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (tsubst, case TYPE_DECL): Set DECL_CONTEXT.
