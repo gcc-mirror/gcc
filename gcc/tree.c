@@ -2528,7 +2528,7 @@ tree
 build_nt VPROTO((register enum tree_code code, ...))
 {
 #ifndef __STDC__
-  register enum tree_code code;
+  enum tree_code code;
 #endif
   va_list p;
   register tree t;
@@ -2558,7 +2558,7 @@ tree
 build_parse_node VPROTO((register enum tree_code code, ...))
 {
 #ifndef __STDC__
-  register enum tree_code code;
+  enum tree_code code;
 #endif
   register struct obstack *ambient_obstack = expression_obstack;
   va_list p;
