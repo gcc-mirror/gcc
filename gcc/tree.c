@@ -2783,7 +2783,6 @@ build_block (vars, tags, subblocks, supercontext, chain)
   BLOCK_CHAIN (block) = chain;
   return block;
 }
-
 
 /* Return a declaration like DDECL except that its DECL_MACHINE_ATTRIBUTE
    is ATTRIBUTE. */
@@ -2799,8 +2798,7 @@ build_decl_attribute_variant (ddecl, attribute)
 /* Return a type like TTYPE except that its TYPE_ATTRIBUTE
    is ATTRIBUTE.
 
-   Such modified types already made are recorded so that duplicates
-   are not made. */
+   Record such modified types already made so we don't make duplicates.  */
 
 tree
 build_type_attribute_variant (ttype, attribute)
@@ -2870,9 +2868,7 @@ valid_machine_attribute (new_attr, decl, type)
   tree type_attr_list = TYPE_ATTRIBUTES (type);
 
 #ifdef VALID_MACHINE_DECL_ATTRIBUTE
-  if (VALID_MACHINE_DECL_ATTRIBUTE (decl, 
-                                    decl_attr_list, 
-                                    new_attr))
+  if (VALID_MACHINE_DECL_ATTRIBUTE (decl, decl_attr_list, new_attr))
     {
       tree attr_list;
       int in_list = 0;
@@ -2892,9 +2888,7 @@ valid_machine_attribute (new_attr, decl, type)
 #endif
 
 #ifdef VALID_MACHINE_TYPE_ATTRIBUTE
-  if (VALID_MACHINE_TYPE_ATTRIBUTE (type,
-                                    type_attr_list, 
-                                    new_attr))
+  if (VALID_MACHINE_TYPE_ATTRIBUTE (type, type_attr_list, new_attr))
     {
       tree attr_list;
       int in_list = 0;
@@ -2905,7 +2899,7 @@ valid_machine_attribute (new_attr, decl, type)
 	if (TREE_VALUE (attr_list) == new_attr)
 	  in_list = 1;
 
-      if (!in_list)
+      if (! in_list)
         type_attr_list = tree_cons (NULL_TREE, new_attr, type_attr_list);
 
       decl = build_type_attribute_variant (type, type_attr_list);
