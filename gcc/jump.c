@@ -232,25 +232,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
   last_insn = delete_unreferenced_labels (f);
 
-#ifdef HAVE_return
-  if (optimize && HAVE_return)
-    {
-      /* If we fall through to the epilogue, see if we can insert a RETURN insn
-	 in front of it.  If the machine allows it at this point (we might be
-	 after reload for a leaf routine), it will improve optimization for it
-	 to be there.  */
-      insn = get_last_insn ();
-      while (insn && GET_CODE (insn) == NOTE)
-	insn = PREV_INSN (insn);
-
-      if (insn && GET_CODE (insn) != BARRIER)
-	{
-	  emit_jump_insn (gen_return ());
-	  emit_barrier ();
-	}
-    }
-#endif
-
   if (noop_moves)
     delete_noop_moves (f);
 
@@ -2141,26 +2122,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 	  last_note = insn;
 	}
   }
-
-#ifdef HAVE_return
-  if (HAVE_return)
-    {
-      /* If we fall through to the epilogue, see if we can insert a RETURN insn
-	 in front of it.  If the machine allows it at this point (we might be
-	 after reload for a leaf routine), it will improve optimization for it
-	 to be there.  We do this both here and at the start of this pass since
-	 the RETURN might have been deleted by some of our optimizations.  */
-      insn = get_last_insn ();
-      while (insn && GET_CODE (insn) == NOTE)
-	insn = PREV_INSN (insn);
-
-      if (insn && GET_CODE (insn) != BARRIER)
-	{
-	  emit_jump_insn (gen_return ());
-	  emit_barrier ();
-	}
-    }
-#endif
 
   /* CAN_REACH_END is persistent for each function.  Once set it should
      not be cleared.  This is especially true for the case where we

@@ -2084,6 +2084,17 @@ prev_real_insn (insn)
    does not look inside SEQUENCEs.  Until reload has completed, this is the
    same as next_real_insn.  */
 
+int
+active_insn_p (insn)
+     rtx insn;
+{
+  return (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN
+	  || (GET_CODE (insn) == INSN
+	      && (! reload_completed
+		  || (GET_CODE (PATTERN (insn)) != USE
+		      && GET_CODE (PATTERN (insn)) != CLOBBER))));
+}
+
 rtx
 next_active_insn (insn)
      rtx insn;
@@ -2091,12 +2102,7 @@ next_active_insn (insn)
   while (insn)
     {
       insn = NEXT_INSN (insn);
-      if (insn == 0
-	  || GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN
-	  || (GET_CODE (insn) == INSN
-	      && (! reload_completed
-		  || (GET_CODE (PATTERN (insn)) != USE
-		      && GET_CODE (PATTERN (insn)) != CLOBBER))))
+      if (insn == 0 || active_insn_p (insn))
 	break;
     }
 
@@ -2114,12 +2120,7 @@ prev_active_insn (insn)
   while (insn)
     {
       insn = PREV_INSN (insn);
-      if (insn == 0
-	  || GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN
-	  || (GET_CODE (insn) == INSN
-	      && (! reload_completed
-		  || (GET_CODE (PATTERN (insn)) != USE
-		      && GET_CODE (PATTERN (insn)) != CLOBBER))))
+      if (insn == 0 || active_insn_p (insn))
 	break;
     }
 

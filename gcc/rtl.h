@@ -1051,6 +1051,7 @@ extern rtx prev_real_insn		PARAMS ((rtx));
 extern rtx next_real_insn		PARAMS ((rtx));
 extern rtx prev_active_insn		PARAMS ((rtx));
 extern rtx next_active_insn		PARAMS ((rtx));
+extern int active_insn_p		PARAMS ((rtx));
 extern rtx prev_label			PARAMS ((rtx));
 extern rtx next_label			PARAMS ((rtx));
 extern rtx next_cc0_user		PARAMS ((rtx));

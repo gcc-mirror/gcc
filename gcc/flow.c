@@ -285,8 +285,6 @@ static rtx find_basic_blocks_1		PARAMS ((rtx));
 static void create_basic_block		PARAMS ((int, rtx, rtx, rtx));
 static void clear_edges			PARAMS ((void));
 static void make_edges			PARAMS ((rtx));
-static void make_edge			PARAMS ((sbitmap *, basic_block,
-						 basic_block, int));
 static void make_label_edge		PARAMS ((sbitmap *, basic_block,
 						 rtx, int));
 static void make_eh_edge		PARAMS ((sbitmap *, eh_nesting_info *,
@@ -302,7 +300,6 @@ static void delete_eh_regions		PARAMS ((void));
 static int can_delete_note_p		PARAMS ((rtx));
 static int delete_block			PARAMS ((basic_block));
 static void expunge_block		PARAMS ((basic_block));
-static rtx flow_delete_insn		PARAMS ((rtx));
 static int can_delete_label_p		PARAMS ((rtx));
 static int merge_blocks_move_predecessor_nojumps PARAMS ((basic_block,
 							  basic_block));
@@ -346,7 +343,6 @@ static void count_reg_sets_1		PARAMS ((rtx));
 static void count_reg_sets		PARAMS ((rtx));
 static void count_reg_references	PARAMS ((rtx));
 static void invalidate_mems_from_autoinc PARAMS ((rtx));
-static void remove_edge			PARAMS ((edge));
 static void remove_fake_successors	PARAMS ((basic_block));
 static void flow_nodes_print	PARAMS ((const char *, const sbitmap, FILE *));
 static void flow_exits_print PARAMS ((const char *, const edge *, int, FILE *));
@@ -1056,7 +1052,7 @@ make_edges (label_value_list)
 /* Create an edge between two basic blocks.  FLAGS are auxiliary information
    about the edge that is accumulated between calls.  */
 
-static void
+void
 make_edge (edge_cache, src, dst, flags)
      sbitmap *edge_cache;
      basic_block src, dst;
@@ -1982,7 +1978,7 @@ expunge_block (b)
 
 /* Delete INSN by patching it out.  Return the next insn.  */
 
-static rtx
+rtx
 flow_delete_insn (insn)
      rtx insn;
 {
@@ -6215,7 +6211,7 @@ find_edge_index (edge_list, pred, succ)
 }
 
 /* This function will remove an edge from the flow graph.  */
-static void
+void
 remove_edge (e)
      edge e;
 {
