@@ -40,7 +40,7 @@ details.  */
 #include <name-finder.h>
 
 #ifdef __ia64__
-extern "C" int _Jv_ia64_backtrace (void **array, int size);
+extern "C" int __ia64_backtrace (void **array, int size);
 #endif
 
 /* FIXME: size of the stack trace is limited to 128 elements.  It's
@@ -56,7 +56,7 @@ java::lang::Throwable::fillInStackTrace (void)
   // We subtract 1 from the number of elements because we don't want
   // to include the call to fillInStackTrace in the trace.
 #if defined (__ia64__)
-  int n = _Jv_ia64_backtrace (p, 128) - 1;  
+  int n = __ia64_backtrace (p, 128) - 1;  
 #else
   int n = backtrace (p, 128) - 1;  
 #endif
