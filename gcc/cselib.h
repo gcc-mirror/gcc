@@ -65,3 +65,4 @@ extern void cselib_finish		PARAMS ((void));
 extern void cselib_process_insn		PARAMS ((rtx));
 extern int rtx_equal_for_cselib_p	PARAMS ((rtx, rtx));
 extern int references_value_p		PARAMS ((rtx, int));
+extern rtx cselib_subst_to_values	PARAMS ((rtx));
