@@ -26,20 +26,24 @@
 # Suppress smart makes who think they know how to automake Yacc files
 .y.c:
 
+# Directory where sources are, from where we are.
+srcdir = @srcdir@
+VPATH = @srcdir@
+
 # Variables that exist for you to override.
 # See below for how to change them for certain systems.
 
 # List of language subdirectories.
 # This is overridden by configure.
-SUBDIRS =
+SUBDIRS =@subdirs@
 
 # Selection of languages to be made.
 # This is overridden by configure.
-LANGUAGES = c objective-c proto gcov
+LANGUAGES = c objective-c proto gcov @all_languages@
 
 # Selection of languages to be made during stage1 build.
 # This is overridden by configure.
-BOOT_LANGUAGES = c
+BOOT_LANGUAGES = c @all_boot_languages@
 
 ALLOCA =
 ALLOCA_FLAGS =
@@ -72,7 +76,7 @@ OLDAR_FLAGS = qc
 AR_FLAGS = rc
 SHELL = /bin/sh
 # on sysV, define this as cp.
-INSTALL = install -c
+INSTALL = @INSTALL@
 # These permit overriding just for certain files.
 INSTALL_PROGRAM = $(INSTALL)
 INSTALL_DATA = $(INSTALL)
@@ -81,6 +85,7 @@ MAKEINFOFLAGS =
 TEXI2DVI = texi2dvi
 # For GNUmake: let us decide what gets passed to recursive makes.
 MAKEOVERRIDES =
+@SET_MAKE@
 
 # Define this as & to perform parallel make on a Sequent.
 # Note that this has some bugs, and it seems currently necessary 
@@ -107,7 +112,7 @@ OLDAR = ar
 
 # Target to use when installing include directory.  Either
 # install-headers-tar or install-headers-cpio.
-INSTALL_HEADERS_DIR = install-headers-tar
+INSTALL_HEADERS_DIR = @build_install_headers_dir@
 
 # Header files that are made available under the same name
 # to programs compiled with GCC.
@@ -173,38 +178,36 @@ LIMITS_H_TEST = [ -f $(SYSTEM_HEADER_DIR)/limits.h ]
 PREMADE_ATTRTAB_MD = Makefile  # Guaranteed not to cmp equal to md.
 PREMADE_ATTRTAB = 
 
-target= ... `configure' substitutes actual target name here.
-target_alias= ... `configure' substitutes specified target name here.
-xmake_file= ... `configure' substitutes actual x- file name here.
-tmake_file= ... `configure' substitutes actual t- file name here.
-out_file= ... `configure' substitutes actual out file name here.
-out_object_file= ... `configure' substitutes actual out object file name here.
-md_file= ... `configure' substitutes actual md file name here.
-tm_file= ... `configure' substitutes actual tm file name here.
-build_xm_file= ... `configure' substitutes actual build xm- file name here.
-host_xm_file= ... `configure' substitutes actual host xm- file name here.
-lang_specs_files= ... `configure' substitutes actual lang spec file names here.
-lang_options_files= ... `configure' puts actual lang options file names here.
-OBJC_THREAD_FILE= ... `configure' puts actual objc thread file name here.
-version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < $(srcdir)/version.c`
+target=@target@
+target_alias=@target@
+xmake_file=@dep_host_xmake_file@
+tmake_file=@dep_tmake_file@
+out_file=$(srcdir)/config/@out_file@
+out_object_file=@out_object_file@
+md_file=$(srcdir)/config/@md_file@
+tm_file=@tm_file_list@
+build_xm_file=@build_xm_file_list@
+host_xm_file=@host_xm_file_list@
+lang_specs_files=@lang_specs_files@
+lang_options_files=@lang_options_files@
+OBJC_THREAD_FILE=thr-@objc_thread_file@
+version=@version@
 mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
 
-# Directory where sources are, from where we are.
-srcdir = .
 # Common prefix for installation directories.
 # NOTE: This directory must exist when you start installation.
-prefix = /usr/local
+prefix = @prefix@
 # Directory in which to put localized header files. On the systems with
 # gcc as the native cc, `local_prefix' may not be `prefix' which is
 # `/usr'.
 # NOTE: local_prefix *should not* default from prefix.
-local_prefix = /usr/local
+local_prefix = @local_prefix@
 # Directory in which to put host dependent programs and libraries
-exec_prefix = $(prefix)
+exec_prefix = @exec_prefix@
 # Directory in which to put the executable for the command `gcc'
-bindir = $(exec_prefix)/bin
+bindir = @bindir@
 # Directory in which to put the directories used by the compiler.
-libdir = $(exec_prefix)/lib
+libdir = @libdir@
 # Directory in which the compiler finds executables, libraries, etc.
 libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(version)
 # Directory in which the compiler finds g++ includes.
@@ -217,14 +220,14 @@ includedir = $(local_prefix)/include
 # (But this currently agrees with what is in cross-make.)
 assertdir = $(tooldir)/include
 # where the info files go
-infodir = $(prefix)/info
+infodir = @infodir@
 # Extension (if any) to put in installed man-page filename.
 manext = .1
 objext = .o
-exeext =
+exeext = @exeext@
 
 # Directory in which to put man pages.
-mandir = $(prefix)/man/man1
+mandir = @mandir@/man1
 # Directory in which to find other cross-compilation tools and headers.
 # Used in install-cross.
 tooldir = $(exec_prefix)/$(target_alias)
@@ -283,29 +286,30 @@ LIBGCC1_TEST = libgcc1-test
 # List of extra executables that should be compiled for this target machine
 # that are used for compiling from source code to object code.
 # The rules for compiling them should be in the t-* file for the machine.
-EXTRA_PASSES =
+EXTRA_PASSES =@extra_passes@
 
 # Like EXTRA_PASSES, but these are used when linking.
-EXTRA_PROGRAMS = 
+EXTRA_PROGRAMS = @extra_programs@
 
 # List of extra object files that should be compiled for this target machine.
 # The rules for compiling them should be in the t-* file for the machine.
-EXTRA_PARTS =
+EXTRA_PARTS = @extra_parts@
 
 # List of extra object files that should be compiled and linked with
 # compiler proper (cc1, cc1obj, cc1plus).
-EXTRA_OBJS =
+EXTRA_OBJS = @extra_objs@
 
 # List of extra object files that should be compiled and linked with
 # the gcc driver.
-EXTRA_GCC_OBJS =
+EXTRA_GCC_OBJS =@host_extra_gcc_objs@
 
 # List of additional header files to install.
 # Often this is edited directly by `configure'.
-EXTRA_HEADERS =
+EXTRA_HEADERS =@extra_headers_list@
 
 # Set this to `ld' to enable use of collect2.
-# USE_COLLECT2 =
+USE_COLLECT2 = @will_use_collect2@
+MAYBE_USE_COLLECT = @maybe_use_collect2@
 # It is convenient for configure to add the assignment at the beginning,
 # so don't override it here.
 
@@ -319,7 +323,7 @@ LIB2FUNCS_EXTRA =
 
 # Default float.h source to use for cross-compiler.
 # This is overidden by configure.
-CROSS_FLOAT_H=float.h-cross
+CROSS_FLOAT_H=$(srcdir)/config/float-@float_format@.h
 
 # Program to convert libraries.
 LIBCONVERT = 
@@ -332,7 +336,7 @@ TAROUTOPTS = xpBf
 
 # Select which version of fixincludes to use (I.E. regular versus SVR4)
 # This value is overridden directly by configure.
-FIXINCLUDES=fixincludes
+FIXINCLUDES = @fixincludes@
 
 # Additional directories of header files to run fixincludes on.
 # These should be directories searched automatically by default
@@ -344,11 +348,11 @@ OTHER_FIXINCLUDES_DIRS=
 
 # A list of all the language-specific executables.
 # This is overridden by configure.
-COMPILERS = cc1$(exeext) cc1obj$(exeext)
+COMPILERS = cc1$(exeext) cc1obj$(exeext) @all_compilers@
 
 # List of things which should already be built whenever we try to use xgcc
 # to compile anything (without linking).
-GCC_PASSES=xgcc$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES)
+GCC_PASSES=xgcc$(exeext) $(COMPILERS) cpp$(exeext) $(EXTRA_PASSES)
 
 # List of things which should already be built whenever we try to use xgcc
 # to link anything.
@@ -416,9 +420,17 @@ all: all.indirect
 
 # sed inserts variable overrides after the following line.
 ####target overrides
+@target_overrides@
+
 ####host overrides
+@host_overrides@
+
 ####cross overrides
+@cross_defines@
+@cross_overrides@
+
 ####build overrides
+@build_overrides@
 
 # Now figure out from those variables how to compile and link.
 
@@ -481,11 +493,11 @@ INCLUDES = -I. -I$(srcdir) -I$(srcdir)/config
 # ??? objc can be supported this way too (leave for later).
 
 # These next lines are overridden by configure.
-LANG_MAKEFILES =
-LANG_STAGESTUFF =
-LANG_DIFF_EXCLUDES =
-LANG_LIB2FUNCS =
-LANG_EXTRA_HEADERS =
+LANG_MAKEFILES = @all_lang_makefiles@
+LANG_STAGESTUFF = @all_stagestuff@
+LANG_DIFF_EXCLUDES = @all_diff_excludes@
+LANG_LIB2FUNCS = @all_lib2funcs@
+LANG_EXTRA_HEADERS = @all_headers@
 
 # Flags to pass to recursive makes.
 # CC is set by configure.  Hosts without symlinks need special handling
@@ -497,7 +509,7 @@ FLAGS_TO_PASS = \
 	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
 	"BISON=$(BISON)" \
 	"BISONFLAGS=$(BISONFLAGS)" \
-	"CC=set-by-configure" \
+	"CC=@cc_set_by_configure@" \
 	"CFLAGS=$(CFLAGS)" \
 	"CLIB=$(CLIB)" \
 	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
@@ -509,7 +521,7 @@ FLAGS_TO_PASS = \
 	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
 	"RANLIB_TEST_FOR_TARGET=$(RANLIB_TEST_FOR_TARGET)" \
 	"SHELL=$(SHELL)" \
-	"STAGE_PREFIX=set-by-configure" \
+	"STAGE_PREFIX=@stage_prefix_set_by_configure@" \
 	"exeext=$(exeext)" \
 	"objext=$(objext)" \
 	"exec_prefix=$(exec_prefix)" \
@@ -629,9 +641,11 @@ T =
 # Configure computes and adds these here.
 
 ####language hooks
+@language_hooks@
 
 # sed inserts language fragments after the following line.
 ####language fragments
+@language_fragments@
 
 # End of language makefile fragments.
 
@@ -644,6 +658,9 @@ Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
 	cp config.status config.run
 	$(SHELL) config.run
 	rm -f config.run
+
+configure: $(srcdir)/configure.in
+	cd $(srcdir); autoconf
 
 all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
@@ -1984,7 +2001,7 @@ dvi: $(srcdir)/gcc.dvi $(srcdir)/cpp.dvi lang.dvi
 
 # This works with GNU Make's default rule.
 $(srcdir)/gcc.dvi: gcc.texi extend.texi install.texi invoke.texi \
-		md.texi rtl.texi tm.texi gcov.texi 
+		md.texi rtl.texi tm.texi gcov.texi
 	$(TEXI2DVI) $<
 
 # This works with GNU Make's default rule.
@@ -2082,7 +2099,8 @@ clean: mostlyclean bytecode.clean lang.clean
 # while building and installing GCC.
 distclean: clean bytecode.distclean lang.distclean
 	-rm -f tm.h config.h tconfig.h hconfig.h md
-	-rm -f config.status config.run
+	-rm -f config.status config.run config.cache
+	-rm -f Make-host Make-target Make-lang Make-hooks
 	-rm -f Makefile specs.h options.h *.oaux
 	-rm -fr stage1 stage2 stage3 stage4
 	-rm -f */stage1 */stage2 */stage3 */stage4 */include
@@ -2215,7 +2233,7 @@ install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 	fi
 	-rm -f $(libsubdir)/cpp$(exeext)
 	$(INSTALL_PROGRAM) cpp$(exeext) $(libsubdir)/cpp$(exeext)
-# Install gcov if it was compiled.
+	# Install gcov if it was compiled.
 	-if [ -f gcov$(exeext) ]; \
 	then \
 	    rm -f $(bindir)/gcov$(exeext); \
