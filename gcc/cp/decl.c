@@ -6608,6 +6608,7 @@ cp_make_fname_decl (id, name, type_dep)
   DECL_SOURCE_LINE (decl) = 0;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IN_SYSTEM_HEADER (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
   pushdecl (decl);
   if (processing_template_decl)
     decl = push_template_decl (decl);
