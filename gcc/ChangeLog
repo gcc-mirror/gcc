@@ -1,3 +1,8 @@
+Tue Sep  7 03:42:45 1999  Mark Klein (mklein@dis.com)
+
+	* configure.in: Add hppa1.0-*-mpeix for MPE port.
+	* configure: Rebuilt.
+
 Tue Sep  7 10:08:40 1999  Andreas Schwab  <schwab@suse.de>
 
 	* final.c (shorten_branches): Fix last change.
