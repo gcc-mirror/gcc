@@ -118,7 +118,7 @@ typedef enum
      scalarization loop.  */
   GFC_SS_SCALAR,
 
-  /* Like GFC_SS_SCALAR except it evaluates a pointer the the expression.
+  /* Like GFC_SS_SCALAR except it evaluates a pointer to the expression.
      Used for elemental function parameters.  */
   GFC_SS_REFERENCE,
 
