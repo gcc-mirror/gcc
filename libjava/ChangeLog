@@ -1,3 +1,18 @@
+2000-12-27  Warren Levy  <warrenl@redhat.com>
+
+	Fix for PR libgcj/1358:
+	* java/lang/System.java: Update Copyright date properly.
+	* java/util/Calendar.java: Fix typo in comment.
+	(set): Set 24-hour clock hour instead of 12-hour clock hour.
+	* java/util/GregorianCalendar.java (GregorianCalendar): Properly
+	initialize times.  Spec says to set H:M:S values to zero only if
+	a date is given.
+	* java/util/TimeZone.java (getDefaultDisplayName): Casts to char
+	needed for evaluating numbers '0' to '9' in printouts of GMT offsets.
+	* java/util/natGregorianCalendar.cc (computeTime): Properly handle
+	timezones and GMT offsets, being careful to account for units of
+	milliseconds vs. seconds.
+
 2000-12-28  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Primitive TYPEs can

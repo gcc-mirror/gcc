@@ -39,15 +39,16 @@ java::util::GregorianCalendar::computeTime ()
   // Adjust for local timezone (introduced by mktime) and our
   // timezone.
 #if defined (STRUCT_TM_HAS_GMTOFF)
-  t += tim.tm_gmtoff;
+  t -= tim.tm_gmtoff;
 #elif defined (HAVE_TIMEZONE)
-  t -= timezone;
+  t += timezone;
 #endif
-  java::util::TimeZone *zone = getTimeZone ();
-  t += zone->getRawOffset();
-
   // Adjust for milliseconds.
   time = t * (jlong) 1000 + elements(fields)[MILLISECOND];
+
+  // Now adjust for the real timezone, i.e. our timezone, which is in millis.
+  java::util::TimeZone *zone = getTimeZone ();
+  time += zone->getRawOffset();
 
   isTimeSet = true;
 }
