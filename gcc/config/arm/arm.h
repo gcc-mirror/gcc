@@ -373,6 +373,9 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 /* Nonzero means target uses VFP FP.  */
 #define ARM_FLAG_VFP		(1 << 21)
 
+/* Nonzero means to use ARM/Thumb Procedure Call Standard conventions.  */
+#define ARM_FLAG_ATPCS		(1 << 22)
+
 #define TARGET_APCS_FRAME		(target_flags & ARM_FLAG_APCS_FRAME)
 #define TARGET_POKE_FUNCTION_NAME	(target_flags & ARM_FLAG_POKE)
 #define TARGET_FPE			(target_flags & ARM_FLAG_FPE)
@@ -380,6 +383,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define TARGET_APCS_STACK		(target_flags & ARM_FLAG_APCS_STACK)
 #define TARGET_APCS_FLOAT		(target_flags & ARM_FLAG_APCS_FLOAT)
 #define TARGET_APCS_REENT		(target_flags & ARM_FLAG_APCS_REENT)
+#define TARGET_ATPCS			(target_flags & ARM_FLAG_ATPCS)
 #define TARGET_MMU_TRAPS		(target_flags & ARM_FLAG_MMU_TRAPS)
 #define TARGET_SOFT_FLOAT		(target_flags & ARM_FLAG_SOFT_FLOAT)
 #define TARGET_HARD_FLOAT		(! TARGET_SOFT_FLOAT)
