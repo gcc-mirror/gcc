@@ -7403,7 +7403,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       if (!processing_template_decl)
 	{
 	  tree stmt_expr = begin_stmt_expr ();
-	  tsubst_expr (STMT_EXPR_STMT (t), args, complain, in_decl);
+	  
+	  tsubst_expr (STMT_EXPR_STMT (t), args,
+		       complain | tf_stmt_expr_cmpd, in_decl);
 	  return finish_stmt_expr (stmt_expr);
 	}
       
@@ -7530,7 +7532,10 @@ static tree
 tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
   tree stmt, tmp;
+  tsubst_flags_t stmt_expr
+    = complain & (tf_stmt_expr_cmpd | tf_stmt_expr_body);
 
+  complain ^= stmt_expr;
   if (t == NULL_TREE || t == error_mark_node)
     return t;
 
@@ -7556,10 +7561,18 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       break;
 
     case EXPR_STMT:
-      prep_stmt (t);
-      finish_expr_stmt (tsubst_expr (EXPR_STMT_EXPR (t),
-				     args, complain, in_decl));
-      break;
+      {
+	tree r;
+	
+	prep_stmt (t);
+
+	r = tsubst_expr (EXPR_STMT_EXPR (t), args, complain, in_decl);
+	if (stmt_expr & tf_stmt_expr_body && !TREE_CHAIN (t))
+	  finish_stmt_expr_expr (r);
+	else
+	  finish_expr_stmt (r);
+	break;
+      }
 
     case USING_STMT:
       prep_stmt (t);
@@ -7711,7 +7724,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	else
 	  stmt = begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
 
-	tsubst_expr (COMPOUND_BODY (t), args, complain, in_decl);
+	tsubst_expr (COMPOUND_BODY (t), args,
+		     complain | ((stmt_expr & tf_stmt_expr_cmpd) << 1),
+		     in_decl);
 
 	if (COMPOUND_STMT_BODY_BLOCK (t))
 	  finish_function_body (stmt);
@@ -7849,7 +7864,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       abort ();
     }
 
-  return tsubst_expr (TREE_CHAIN (t), args, complain, in_decl);
+  return tsubst_expr (TREE_CHAIN (t), args, complain | stmt_expr, in_decl);
 }
 
 /* T is a postfix-expression that is not being used in a function

@@ -3056,8 +3056,13 @@ typedef enum tsubst_flags_t {
 				   (make_typename_type use) */
   tf_ptrmem_ok = 1 << 4,        /* pointers to member ok (internal
 				   instantiate_type use) */
-  tf_user = 1 << 5		/* Found template must be a user template
+  tf_user = 1 << 5,		/* found template must be a user template
 				   (lookup_template_class use) */
+  tf_stmt_expr_cmpd = 1 << 6,   /* tsubsting the compound statement of
+				   a statement expr.  */
+  tf_stmt_expr_body = 1 << 7    /* tsubsting the statements in the
+			       	   body of the compound statement of a
+			       	   statement expr.  */
 } tsubst_flags_t;
 
 /* The kind of checking we can do looking in a class hierarchy.  */
@@ -4134,6 +4139,7 @@ extern void finish_subobject                    (tree);
 extern tree finish_parenthesized_expr           (tree);
 extern tree finish_non_static_data_member       (tree, tree, tree);
 extern tree begin_stmt_expr                     (void);
+extern tree finish_stmt_expr_expr 		(tree);
 extern tree finish_stmt_expr                    (tree);
 extern tree perform_koenig_lookup               (tree, tree);
 extern tree finish_call_expr                    (tree, tree, bool);
