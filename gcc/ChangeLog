@@ -1,3 +1,7 @@
+Sat May 23 18:35:07 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Makefile.in (uninstall): Delete info files.
+
 Sat May 23 18:28:27 1998  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* c-decl.c (start_decl): Use new macro SET_DEFAULT_DECL_ATTRIBUTES.
