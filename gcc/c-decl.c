@@ -3577,7 +3577,7 @@ shadow_tag_warned (declspecs, warned)
      following code.  */
   split_specs_attrs (declspecs, &specs, &attrs);
 
-  for (link = declspecs; link; link = TREE_CHAIN (link))
+  for (link = specs; link; link = TREE_CHAIN (link))
     {
       register tree value = TREE_VALUE (link);
       register enum tree_code code = TREE_CODE (value);
