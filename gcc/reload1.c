@@ -3198,6 +3198,14 @@ eliminate_regs_in_insn (insn, replace)
       if ((GET_CODE (old_body) == SET && GET_CODE (SET_SRC (old_body)) == REG
 	   && (GET_CODE (new_body) != SET
 	       || GET_CODE (SET_SRC (new_body)) != REG))
+	  /* If this was a load from or store to memory, compare
+	     the MEM in recog_operand to the one in the insn.  If they
+	     are not equal, then rerecognize the insn.  */
+	  || (GET_CODE (old_body) == SET
+	      && ((GET_CODE (SET_SRC (old_body)) == MEM
+		   && SET_SRC (old_body) != recog_operand[1])
+		  || (GET_CODE (SET_DEST (old_body)) == MEM
+		      && SET_DEST (old_body) != recog_operand[0])))
 	  /* If this was an add insn before, rerecognize.  */
 	  ||
 	  (GET_CODE (old_body) == SET
