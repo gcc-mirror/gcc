@@ -92,9 +92,7 @@ char *xcoff_read_only_section_name;
 
 #define ASM_OUTPUT_LFE(FILE,LINENUM) \
   do {						\
-    int linenum = LINENUM;				\
-    MAKE_LINE_SAFE (linenum);			\
-    fprintf (FILE, "\t.ef\t%d\n", ABS_OR_RELATIVE_LINENO (linenum)); \
+    fprintf (FILE, "\t.ef\t%d\n", (LINENUM));	\
     xcoff_begin_function_line = -1;		\
   } while (0)
 
