@@ -794,19 +794,16 @@ member_init:
 		{ expand_member_init (current_class_ref, $1, $3); }
 	| notype_identifier LEFT_RIGHT
 		{ expand_member_init (current_class_ref, $1, void_type_node); }
-	| complete_type_name '(' nonnull_exprlist ')'
+	| nonnested_type '(' nonnull_exprlist ')'
 		{ expand_member_init (current_class_ref, $1, $3); }
-	| complete_type_name LEFT_RIGHT
+	| nonnested_type LEFT_RIGHT
 		{ expand_member_init (current_class_ref, $1, void_type_node); }
-	/* GNU extension */
-	| notype_qualified_id '(' nonnull_exprlist ')'
-		{
-		  do_member_init (OP0 ($1), OP1 ($1), $3);
-		}
-	| notype_qualified_id LEFT_RIGHT
-		{
-		  do_member_init (OP0 ($1), OP1 ($1), void_type_node);
-		}
+	| typename_sub '(' nonnull_exprlist ')'
+		{ expand_member_init (current_class_ref, TYPE_MAIN_DECL ($1),
+				      $3); }
+	| typename_sub LEFT_RIGHT
+		{ expand_member_init (current_class_ref, TYPE_MAIN_DECL ($1),
+				      void_type_node); }
 	;
 
 identifier:
