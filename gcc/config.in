@@ -98,9 +98,6 @@
 /* Define if you have the atoq function.  */
 #undef HAVE_ATOQ
 
-/* Define if you have the bcopy function.  */
-#undef HAVE_BCOPY
-
 /* Define if you have the bsearch function.  */
 #undef HAVE_BSEARCH
 
@@ -358,9 +355,6 @@
 
 /* Define if read-only mmap of a plain file works. */
 #undef HAVE_MMAP_FILE
-
-/* Define to 1 if we found this declaration otherwise define to 0. */
-#undef HAVE_DECL_BCOPY
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_GETENV
