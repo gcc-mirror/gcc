@@ -475,8 +475,10 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
   /* For foo.i, read the original filename foo.c now, for the benefit
      of the front ends.  */
   if (CPP_OPTION (pfile, preprocessed))
-    read_original_filename (pfile);
-
+    {
+      read_original_filename (pfile);
+      fname = pfile->map->to_file;
+    }
   return fname;
 }
 

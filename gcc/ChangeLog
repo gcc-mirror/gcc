@@ -1,3 +1,9 @@
+2004-04-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* cppinit.c (cpp_read_main_file): Return file name obtained by
+	read_original_filename.  Missed in 2004-02-04's check in to 3.4
+	branch by Per Bothner.
+
 2004-04-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sol2-bi.h (PREFERRED_DEBUGGING_TYPE): Set
