@@ -330,7 +330,7 @@ fix = {
     /*
      *  Test that the file-to-fix does not look like a C++ file
      */
-    test     = '-z "`echo ${file}|egrep \'cxx/|++$|\.hh$|\.H$\'`"';
+    test     = '-z "`echo ${file}|egrep \'(cxx/|\+\+$|\.hh$|\.H$|\.hxx$)\'`"';
     select = '//[^"*]';
     sed    = '/\/\/[^"*]/' "s|//.*$||g";
 };

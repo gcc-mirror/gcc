@@ -10,6 +10,7 @@ Fri Apr  2 11:53:37 1999  John Wehle  (john@feith.com)
 	from ./fixinc.interix.  Untested (needs interix box).
 	* fixinc/inclhack.def:
 	Complete the change to the 'fixinc.tmp' file
+	Fixed regex for finding C++ headers
 	* fixincl.x, fixincl.sh, inclhack.sh: regenerate
 
 Fri Apr  2 11:36:12 1999  Jan Hubicka  (hubicka@paru.cas.cz)
