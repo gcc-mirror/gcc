@@ -30,7 +30,8 @@
 	
 	PR c++/9285
 	PR c++/9294
-	* parser.c (cp_parser_simple_declaration): 
+	* parser.c (cp_parser_simple_declaration): Return quickly when
+        encountering errors.
 
 2003-01-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
