@@ -1,3 +1,8 @@
+2001-08-17  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.h (RETURN_IN_MEMORY): Return types with a size that is varable
+	or larger than an integer in memory.
+
 2001-08-17  Zack Weinberg  <zackw@panix.com>
 
 	* system.h: Forward-declare struct rtx_def, struct rtvec_def,
