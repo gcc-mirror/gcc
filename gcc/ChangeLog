@@ -1,3 +1,8 @@
+2002-09-20  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppmacro.c: Don't warn about function-like macros without
+	'(' during pre-expandion.
+
 2002-09-20  Jim Wilson  <wilson@redhat.com>
 
 	* config/v850/v850.c (current_function_anonymous_args): Delete.

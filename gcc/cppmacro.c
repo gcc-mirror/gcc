@@ -1032,9 +1032,14 @@ expand_arg (pfile, arg)
      macro_arg *arg;
 {
   unsigned int capacity;
+  bool saved_warn_trad;
 
   if (arg->count == 0)
     return;
+
+  /* Don't warn about funlike macros when pre-expanding.  */
+  saved_warn_trad = CPP_WTRADITIONAL (pfile);
+  CPP_WTRADITIONAL (pfile) = 0;
 
   /* Loop, reading in the arguments.  */
   capacity = 256;
@@ -1062,6 +1067,8 @@ expand_arg (pfile, arg)
     }
 
   _cpp_pop_context (pfile);
+
+  CPP_WTRADITIONAL (pfile) = saved_warn_trad;
 }
 
 /* Pop the current context off the stack, re-enabling the macro if the

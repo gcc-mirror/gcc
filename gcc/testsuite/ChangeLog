@@ -1,3 +1,7 @@
+2002-09-20  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/tr-warn2.c: Update.
+
 2002-09-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.c-torture/execute/20020720-1.x: Skip test on ARM-based systems.
