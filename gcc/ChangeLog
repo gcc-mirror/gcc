@@ -1,3 +1,8 @@
+2003-02-22  Josef Zlomek  <zlomekj@suse.cz>
+
+	* config/i386/i386.md: Use gen_lowpart instead of gen_rtx_REG
+	for copying a register.
+
 2003-02-22  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	PR other/3782
