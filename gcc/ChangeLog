@@ -1,3 +1,12 @@
+2004-10-06  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-typeck.c (convert_arguments): Take expression for called
+	function rather than its name.  Handle ObjC selectors directly
+	rather than relying on warn_for_assignment to do so.  Call warning
+	directly rather than warn_for_assignment.  Use %qE in diagnostics.
+	Say "argument" rather than "arg" in diagnostics.
+	(build_function_call): Update call to convert_arguments.
+
 2004-10-06  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR debug/17787
