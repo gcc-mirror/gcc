@@ -24,7 +24,7 @@ the executable file might be covered by the GNU General Public License. */
 
 /*
 
-@deftypefn Supplemental long clock ()
+@deftypefn Supplemental long clock (void)
 
 Returns an approximation of the CPU time used by the process as a
 @code{clock_t}; divide this number by @samp{CLOCKS_PER_SEC} to get the

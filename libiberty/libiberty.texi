@@ -65,7 +65,8 @@ Copyright @copyright{} 2001 Free Software Foundation, Inc.
       section entitled ``GNU Free Documentation License''.
 
 @end titlepage
-
+@contents
+@page
 
 @ifnottex
 @node    Top,Using,,
@@ -319,6 +320,5 @@ SUCH DAMAGE.
 
 @printindex cp
 
-@contents
 @bye
 

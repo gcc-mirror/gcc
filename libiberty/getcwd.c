@@ -3,13 +3,13 @@
 
 /*
 
-@deftypefn Supplemental char* getcwd (char *@var{pathname}, @var{len})
+@deftypefn Supplemental char* getcwd (char *@var{pathname}, int @var{len})
 
 Copy the absolute pathname for the current working directory into
 @var{pathname}, which is assumed to point to a buffer of at least
 @var{len} bytes, and return a pointer to the buffer.  If the current
 directory's path doesn't fit in @var{len} characters, the result is
-NULL and @var{errno} is set.  If @var{pathname} is a null pointer,
+@code{NULL} and @code{errno} is set.  If @var{pathname} is a null pointer,
 @code{getcwd} will obtain @var{len} bytes of space using
 @code{malloc}.
 

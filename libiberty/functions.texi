@@ -4,7 +4,7 @@
 @c and let gather-docs build you a new copy.
 
 @c alloca.c:26
-@deftypefn Replacement void* alloca (size_t)
+@deftypefn Replacement void* alloca (size_t @var{size})
 
 This function allocates memory which will be automatically reclaimed
 after the procedure exits.  The @libib{} implementation does not free
@@ -17,7 +17,7 @@ GNU Autoconf test @code{AC_FUNC_ALLOCA} to test for and properly make
 available this function.  The @code{AC_FUNC_ALLOCA} test requires that
 client code use a block of preprocessor code to be safe (see the Autoconf
 manual for more); this header incorporates that logic and more, including
-the possibility of a GCC builtin function.
+the possibility of a GCC built-in function.
 
 @end deftypefn
 
@@ -86,7 +86,7 @@ Uses @code{malloc} to allocate storage for @var{nelem} objects of
 @end deftypefn
 
 @c clock.c:27
-@deftypefn Supplemental long clock ()
+@deftypefn Supplemental long clock (void)
 
 Returns an approximation of the CPU time used by the process as a
 @code{clock_t}; divide this number by @samp{CLOCKS_PER_SEC} to get the
@@ -105,7 +105,7 @@ fact, the manual page for @code{perror(3C)} explicitly warns that one
 should check the size of the table (@code{sys_nerr}) before indexing
 it, since new error codes may be added to the system before they are
 added to the table.  Thus @code{sys_nerr} might be smaller than value
-implied by the largest @code{errno} value defined in @file{errno.h}.
+implied by the largest @code{errno} value defined in @code{<errno.h>}.
 
 We return the maximum value that can be used to obtain a meaningful
 symbolic name or message.
@@ -113,20 +113,20 @@ symbolic name or message.
 @end deftypefn
 
 @c getcwd.c:6
-@deftypefn Supplemental char* getcwd (char *@var{pathname}, @var{len})
+@deftypefn Supplemental char* getcwd (char *@var{pathname}, int @var{len})
 
 Copy the absolute pathname for the current working directory into
 @var{pathname}, which is assumed to point to a buffer of at least
 @var{len} bytes, and return a pointer to the buffer.  If the current
 directory's path doesn't fit in @var{len} characters, the result is
-NULL and @var{errno} is set.  If @var{pathname} is a null pointer,
+@code{NULL} and @code{errno} is set.  If @var{pathname} is a null pointer,
 @code{getcwd} will obtain @var{len} bytes of space using
 @code{malloc}.
 
 @end deftypefn
 
 @c getpagesize.c:5
-@deftypefn Supplemental int getpagesize ()
+@deftypefn Supplemental int getpagesize (void)
 
 Returns the number of bytes in a page of memory.  This is the
 granularity of many of the system memory management routines.  No
@@ -136,7 +136,7 @@ memory management hardware page size.
 @end deftypefn
 
 @c getpwd.c:5
-@deftypefn Supplemental char* getpwd ()
+@deftypefn Supplemental char* getpwd (void)
 
 Returns the current working directory.  This implementation caches the
 result on the assumption that the process will not call @code{chdir}
@@ -148,7 +148,7 @@ between calls to @code{getpwd}.
 @deftypefn Supplemental char* index (char *@var{s}, int @var{c})
 
 Returns a pointer to the first occurrence of the character @var{c} in
-the string @var{s}, or NULL if not found.  The use of @code{index} is
+the string @var{s}, or @code{NULL} if not found.  The use of @code{index} is
 deprecated in new programs in favor of @code{strchr}.
 
 @end deftypefn
@@ -156,12 +156,12 @@ deprecated in new programs in favor of @code{strchr}.
 @c memchr.c:3
 @deftypefn Supplemental void* memchr (const void *@var{s}, int @var{c}, size_t @var{n})
 
-This function searches memory starting at @code{*}@var{src} for the
+This function searches memory starting at @code{*@var{s}} for the
 character @var{c}.  The search only ends with the first occurrence of
 @var{c}, or after @var{length} characters; in particular, a null
 character does not terminate the search.  If the character @var{c} is
-found within @var{length} characters of @code{*}@var{src}, a pointer
-to the character is returned. If @var{c} is not found, then NULL is
+found within @var{length} characters of @code{*@var{s}}, a pointer
+to the character is returned.  If @var{c} is not found, then @code{NULL} is
 returned.
 
 @end deftypefn
@@ -206,7 +206,7 @@ Sets the first @var{count} bytes of @var{s} to the constant byte
 
 Uses @code{setenv} or @code{unsetenv} to put @var{string} into
 the environment or remove it.  If @var{string} is of the form
-@samp{name=value} the string is added; if no `=' is present the
+@samp{name=value} the string is added; if no @samp{=} is present the
 name is unset/removed.
 
 @end deftypefn
@@ -223,7 +223,7 @@ exists, it is removed.
 @deftypefn Supplemental char* rindex (const char *@var{s}, int @var{c})
 
 Returns a pointer to the last occurrence of the character @var{c} in
-the string @var{s}, or NULL if not found.  The use of @code{rindex} is
+the string @var{s}, or @code{NULL} if not found.  The use of @code{rindex} is
 deprecated in new programs in favor of @code{strrchr}.
 
 @end deftypefn
@@ -260,7 +260,7 @@ A case-insensitive @code{strcmp}.
 @deftypefn Supplemental char* strchr (const char *@var{s}, int @var{c})
 
 Returns a pointer to the first occurrence of the character @var{c} in
-the string @var{s}, or NULL if not found.  If @var{c} is itself the
+the string @var{s}, or @code{NULL} if not found.  If @var{c} is itself the
 null character, the results are undefined.
 
 @end deftypefn
@@ -269,7 +269,7 @@ null character, the results are undefined.
 @deftypefn Supplemental char* strdup (const char *@var{s})
 
 Returns a pointer to a copy of @var{s} in memory obtained from
-@code{malloc}, or NULL if insufficient memory was available.
+@code{malloc}, or @code{NULL} if insufficient memory was available.
 
 @end deftypefn
 
@@ -278,7 +278,7 @@ Returns a pointer to a copy of @var{s} in memory obtained from
 
 Given an error number returned from a system call (typically returned
 in @code{errno}), returns a pointer to a string containing the
-symbolic name of that error number, as found in @file{errno.h}.
+symbolic name of that error number, as found in @code{<errno.h>}.
 
 If the supplied error number is within the valid range of indices for
 symbolic names, but no name is available for the particular error
@@ -286,7 +286,7 @@ number, then returns the string @samp{"Error @var{num}"}, where @var{num}
 is the error number.
 
 If the supplied error number is not within the range of valid
-indices, then returns NULL.
+indices, then returns @code{NULL}.
 
 The contents of the location pointed to are only guaranteed to be
 valid until the next call to @code{strerrno}.
@@ -307,7 +307,7 @@ error number, then returns the string @samp{"Error @var{num}"}, where
 @var{num} is the error number.
 
 If the supplied error number is not a valid index into
-@code{sys_errlist}, returns NULL.
+@code{sys_errlist}, returns @code{NULL}.
 
 The returned string is only guaranteed to be valid only until the
 next call to @code{strerror}.
@@ -333,7 +333,7 @@ Compares the first @var{n} bytes of two strings, returning a value as
 @deftypefn Supplemental char* strrchr (const char *@var{s}, int @var{c})
 
 Returns a pointer to the last occurrence of the character @var{c} in
-the string @var{s}, or NULL if not found.  If @var{c} is itself the
+the string @var{s}, or @code{NULL} if not found.  If @var{c} is itself the
 null character, the results are undefined.
 
 @end deftypefn
@@ -343,7 +343,7 @@ null character, the results are undefined.
 
 This function searches for the substring @var{sub} in the string
 @var{string}, not including the terminating null characters.  A pointer
-to the first occurrence of @var{sub} is returned, or NULL if the
+to the first occurrence of @var{sub} is returned, or @code{NULL} if the
 substring is absent.  If @var{sub} points to a string with zero
 length, the function returns @var{string}.
 
@@ -353,7 +353,7 @@ length, the function returns @var{string}.
 @deftypefn Supplemental double strtod (const char *@var{string}, char **@var{endptr})
 
 This ANSI C function converts the initial portion of @var{string} to a
-@code{double}.  If @var{endptr} is not NULL, a pointer to the
+@code{double}.  If @var{endptr} is not @code{NULL}, a pointer to the
 character after the last character used in the conversion is stored in
 the location referenced by @var{endptr}.  If no conversion is
 performed, zero is returned and the value of @var{string} is stored in
@@ -364,7 +364,7 @@ the location referenced by @var{endptr}.
 @c strerror.c:730
 @deftypefn Replacement int strtoerrno (const char *@var{name})
 
-Given the symbolic name of a error number (e.g., @code{EACCESS}), map it
+Given the symbolic name of a error number (e.g., @code{EACCES}), map it
 to an errno value.  If no translation is found, returns 0.
 
 @end deftypefn
@@ -389,13 +389,13 @@ When the base is 16 (either explicitly or implicitly), a prefix of
 This function attempts to create a name for a temporary file, which
 will be a valid file name yet not exist when @code{tmpnam} checks for
 it.  @var{s} must point to a buffer of at least @code{L_tmpnam} bytes,
-or be NULL.  Use of this function creates a security risk, and it must
+or be @code{NULL}.  Use of this function creates a security risk, and it must
 not be used in new projects.  Use @code{mkstemp} instead.
 
 @end deftypefn
 
 @c vfork.c:6
-@deftypefn Supplemental int vfork ()
+@deftypefn Supplemental int vfork (void)
 
 Emulates @code{vfork} by calling @code{fork} and returning its value.
 
@@ -428,14 +428,14 @@ does the return value.  The third argument is unused in @libib{}.
 @deftypefun int xatexit (void (*@var{fn}) (void))
 
 Behaves as the standard @code{atexit} function, but with no limit on
-the number of registered functions.  Returns 0 on success, or -1 on
+the number of registered functions.  Returns 0 on success, or @minus{}1 on
 failure.  If you use @code{xatexit} to register functions, you must use
 @code{xexit} to terminate your program.
 
 @end deftypefun
 
 @c xmalloc.c:38
-@deftypefn Replacement void* xcalloc (size_t, size_t)
+@deftypefn Replacement void* xcalloc (size_t @var{nelem}, size_t @var{elsize})
 
 Allocate memory without fail, and set it to zero.  This routine functions
 like @code{calloc}, but will behave the same as @code{xmalloc} if memory
@@ -491,7 +491,7 @@ allocated, the remaining memory is zeroed.
 @end deftypefn
 
 @c xmalloc.c:32
-@deftypefn Replacement void* xrealloc (void*, size_t)
+@deftypefn Replacement void* xrealloc (void *@var{ptr}, size_t @var{size})
 Reallocate memory without fail.  This routine functions like @code{realloc},
 but will behave the same as @code{xmalloc} if memory cannot be found.
 
@@ -509,7 +509,7 @@ obtain memory.
 @deftypefn Replacement char* xstrerror (int @var{errnum})
 
 Behaves exactly like the standard @code{strerror} function, but
-will never return a NULL pointer.
+will never return a @code{NULL} pointer.
 
 @end deftypefn
 

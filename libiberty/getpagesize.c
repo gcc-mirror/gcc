@@ -2,7 +2,7 @@
 
 /*
 
-@deftypefn Supplemental int getpagesize ()
+@deftypefn Supplemental int getpagesize (void)
 
 Returns the number of bytes in a page of memory.  This is the
 granularity of many of the system memory management routines.  No

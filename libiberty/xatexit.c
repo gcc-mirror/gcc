@@ -11,7 +11,7 @@
 @deftypefun int xatexit (void (*@var{fn}) (void))
 
 Behaves as the standard @code{atexit} function, but with no limit on
-the number of registered functions.  Returns 0 on success, or -1 on
+the number of registered functions.  Returns 0 on success, or @minus{}1 on
 failure.  If you use @code{xatexit} to register functions, you must use
 @code{xexit} to terminate your program.
 
