@@ -75,6 +75,9 @@
 @settitle Porting the GNU Compiler Collection
 @end ifclear
 
+@c Create a separate index for command line options.
+@defindex op
+@c Merge the standard indexes into a single one.
 @syncodeindex fn cp
 @syncodeindex vr cp
 @syncodeindex ky cp
@@ -264,6 +267,7 @@ bugs.  It corresponds to GCC version 3.1.
 * GNU Free Documentation License:: How you can copy and share this manual.
 * Contributors::    People who have contributed to GCC.
 
+* Option Index::    Index to command line options.
 * Index::	    Index of concepts and symbol names.
 @end menu
 
@@ -369,6 +373,10 @@ with some exceptions, and possibly with some extensions.
 GCC supports three versions of the C standard, although support for
 the most recent version is not yet complete.
 
+@opindex std
+@opindex ansi
+@opindex pedantic
+@opindex pedantic-errors
 The original ANSI C standard (X3.159-1989) was ratified in 1989 and
 published in 1990.  This standard was ratified as an ISO standard
 (ISO/IEC 9899:1990) later in 1990.  There were no technical
@@ -404,6 +412,7 @@ standard, use @samp{-std=c99} or @samp{-std=iso9899:1999}.  (While in
 development, drafts of this standard version were referred to as
 @dfn{C9X}.)
 
+@opindex traditional
 GCC also has some limited support for traditional (pre-ISO) C with the
 @samp{-traditional} option.  This support may be of use for compiling
 some very old programs that have not been updated to ISO C, but should
@@ -443,6 +452,7 @@ char *[])}.  An OS kernel would be a freestanding environment; a
 program using the facilities of an operating system would normally be
 in a hosted implementation.
 
+@opindex ffreestanding
 GNU CC aims towards being usable as a conforming freestanding
 implementation, or as the compiler for a conforming hosted
 implementation.  By default, it will act as the compiler for a hosted
@@ -547,6 +557,7 @@ edit the offending file and place the typedef in front of the
 prototypes.
 
 @item
+@opindex pedantic-errors
 When @samp{-pedantic-errors} is specified, GCC will incorrectly give
 an error message when a function name is specified in an expression
 involving the comma operator.
@@ -852,6 +863,7 @@ If you have this problem, set the LANG environment variable to "C" or
 "En_US".
 
 @item
+@opindex fdollars-in-identifiers
 Even if you specify @samp{-fdollars-in-identifiers},
 you cannot successfully use @samp{$} in identifiers on the RS/6000 due
 to a restriction in the IBM assembler.  GAS supports these
@@ -863,6 +875,7 @@ version 1.3.0.1 or later fixes this problem.  You can obtain XLC-1.3.0.2
 by requesting PTF 421749 from IBM.
 
 @item
+@opindex mno-serialize-volatile
 There is an assembler bug in versions of DG/UX prior to 5.4.2.01 that
 occurs when the @samp{fldcr} instruction is used.  GCC uses
 @samp{fldcr} on the 88100 to serialize volatile memory references.  Use
@@ -896,6 +909,7 @@ what options are used.
 @cindex RT PC
 @cindex IBM RT PC
 @item
+@opindex mhc-struct-return
 On the IBM RT PC, the MetaWare HighC compiler (hc) uses a different
 convention for structure and union returning.  Use the option
 @samp{-mhc-struct-return} to tell GCC to use a convention compatible
@@ -904,6 +918,7 @@ with it.
 @cindex Vax calling convention
 @cindex Ultrix calling convention
 @item
+@opindex fcall-saved
 On Ultrix, the Fortran compiler expects registers 2 through 5 to be saved
 by function calls.  However, the C compiler uses conventions compatible
 with BSD Unix: registers 2 through 5 may be clobbered by function calls.
@@ -945,6 +960,7 @@ sometimes reorders instructions incorrectly when optimization is turned
 on.  If you think this may be happening to you, try using the GNU
 assembler; GAS version 2.1 supports ECOFF on Irix.
 
+@opindex noasmopt
 Or use the @samp{-noasmopt} option when you compile GCC with itself,
 and then again when you compile your program.  (This is a temporary
 kludge to turn off assembler optimization on Irix.)  If this proves to
@@ -1003,6 +1019,7 @@ MALLOC=gmalloc.o
 @node Incompatibilities
 @section Incompatibilities of GCC
 @cindex incompatibilities of GCC
+@opindex traditional
 
 There are several noteworthy incompatibilities between GNU C and K&R
 (non-ISO) versions of C.  The @samp{-traditional} option
@@ -1031,6 +1048,7 @@ when passed a string constant as its format control string or input.
 This is because @code{sscanf} incorrectly tries to write into the string
 constant.  Likewise @code{fscanf} and @code{scanf}.
 
+@opindex fwritable-strings
 The best solution to these problems is to change the program to use
 @code{char}-array variables with initialization strings for these
 purposes instead of string constants.  But if this is not possible,
@@ -1089,6 +1107,7 @@ Here @code{a} may or may not be restored to its first value when the
 its first value is restored; otherwise, it keeps the last value stored
 in it.
 
+@opindex W
 If you use the @samp{-W} option with the @samp{-O} option, you will
 get a warning when GCC thinks such a problem might be possible.
 
@@ -1240,6 +1259,7 @@ structure and union returning.  GCC on most of these machines uses a
 compatible convention when returning structures and unions in memory,
 but still returns small structures and unions in registers.
 
+@opindex fpcc-struct-return
 You can tell GCC to use a compatible convention for all structure and
 union returning with the option @samp{-fpcc-struct-return}.
 
@@ -1318,6 +1338,7 @@ does mean that there's nothing for us to do about them.
 @node Standard Libraries
 @section Standard Libraries
 
+@opindex Wall
 GCC by itself attempts to be a conforming freestanding implementation.
 @xref{Standards,,Language Standards Supported by GCC}, for details of
 what this means.  Beyond the library facilities required of such an
@@ -1424,6 +1445,7 @@ hold a few more bits of precision than fit in a @code{double} in memory.
 Compiled code moves values between memory and floating point registers
 at its convenience, and moving them into memory truncates them.
 
+@opindex ffloat-store
 You can partially avoid this problem by using the @samp{-ffloat-store}
 option (@pxref{Optimize Options}).
 
@@ -1644,6 +1666,7 @@ you are removing prototypes that were made with @code{protoize}; if
 the program worked before without any prototypes, it will work again
 without them.
 
+@opindex Wconversion
 You can find all the places where this problem might occur by compiling
 the program with the @samp{-Wconversion} option.  It prints a warning
 whenever an argument is converted.
@@ -1735,6 +1758,7 @@ clutter the program with a cast to @code{void} whenever the value isn't
 useful.
 
 @item
+@opindex fshort-enums
 Making @samp{-fshort-enums} the default.
 
 This would cause storage layout to be incompatible with most other C
@@ -1751,6 +1775,8 @@ The ISO C standard leaves it up to the implementation whether a bitfield
 declared plain @code{int} is signed or not.  This in effect creates two
 alternative dialects of C.
 
+@opindex fsigned-bitfields
+@opindex funsigned-bitfields
 The GNU C compiler supports both dialects; you can specify the signed
 dialect with @samp{-fsigned-bitfields} and the unsigned dialect with
 @samp{-funsigned-bitfields}.  However, this leaves open the question of
@@ -1800,6 +1826,9 @@ explicitly in each bitfield whether it is signed or not.  In this way,
 they write programs which have the same meaning in both C dialects.)
 
 @item
+@opindex ansi
+@opindex traditional
+@opindex std
 Undefining @code{__STDC__} when @samp{-ansi} is not used.
 
 Currently, GCC defines @code{__STDC__} as long as you don't use
@@ -1868,6 +1897,7 @@ However, the rationale here is that optimization of a nonempty loop
 cannot produce an empty one, which holds for C but is not always the
 case for C++.
 
+@opindex funroll-loops
 Moreover, with @samp{-funroll-loops} small ``empty'' loops are already
 removed, so the current behavior is both sub-optimal and inconsistent
 and will change in the future.
@@ -1907,6 +1937,7 @@ Making certain warnings into errors by default.
 Some ISO C testsuites report failure when the compiler does not produce
 an error message for a certain program.
 
+@opindex pedantic-errors
 ISO C requires a ``diagnostic'' message for certain kinds of invalid
 programs, but a warning is defined by GCC to count as a diagnostic.  If
 GCC produces a warning but not an error, that is correct ISO C support.
@@ -1946,6 +1977,8 @@ warnings are issued only if you ask for them, with one of the @samp{-W}
 options (for instance, @samp{-Wall} requests a variety of useful
 warnings).
 
+@opindex pedantic
+@opindex pedantic-errors
 GCC always tries to compile your program if possible; it never
 gratuitously rejects a program whose meaning is clear merely because
 (for instance) it fails to conform to a standard.  In some cases,
@@ -3052,6 +3085,7 @@ go in a register:
 
 @cindex arithmetic libraries
 @cindex math libraries
+@opindex msoft-float
 Code compiled with GCC may call certain library routines.  Most of
 them handle arithmetic for which there are no instructions.  This
 includes multiply and divide on some machines, and floating point
@@ -3225,6 +3259,7 @@ the code to save a function's rtl for later inlining and to inline that
 rtl when the function is called.  The header file @file{integrate.h}
 is also used for this purpose.
 
+@opindex dr
 The option @samp{-dr} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.rtl} to
 the input file name.
@@ -3251,6 +3286,7 @@ optimizations described above.
 
 The source file of this pass is @file{jump.c}.
 
+@opindex dj
 The option @samp{-dj} causes a debugging dump of the RTL code after
 this pass is run for the first time.  This dump file's name is made by
 appending @samp{.jump} to the input file name.
@@ -3263,6 +3299,7 @@ is in @file{regclass.c}.
 
 @cindex jump threading
 @item
+@opindex fthread-jumps
 Jump threading.  This pass detects a condition jump that branches to an
 identical or inverse test.  Such jumps can be @samp{threaded} through
 the second conditional test.  The source code for this pass is in
@@ -3277,6 +3314,7 @@ propagation.  Its source file is @file{cse.c}.  If constant
 propagation causes conditional jumps to become unconditional or to
 become no-ops, jump optimization is run again when CSE is finished.
 
+@opindex ds
 The option @samp{-ds} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.cse} to
 the input file name.
@@ -3293,6 +3331,7 @@ and copy propagation.
 
 The source file for this pass is gcse.c.
 
+@opindex dG
 The option @samp{-dG} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.gcse} to
 the input file name.
@@ -3307,15 +3346,18 @@ Its source files are @file{loop.c} and @file{unroll.c}, plus the header
 @file{loop.h} used for communication between them.  Loop unrolling uses
 some functions in @file{integrate.c} and the header @file{integrate.h}.
 
+@opindex dL
 The option @samp{-dL} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.loop} to
 the input file name.
 
 @item
+@opindex frerun-cse-after-loop
 If @samp{-frerun-cse-after-loop} was enabled, a second common
 subexpression elimination pass is performed after the loop optimization
 pass.  Jump threading is also done again at this time if it was specified.
 
+@opindex dt
 The option @samp{-dt} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.cse2} to
 the input file name.
@@ -3335,6 +3377,7 @@ This pass also deletes computations whose results are never used, and
 combines memory references with add or subtract instructions to make
 autoincrement or autodecrement addressing.
 
+@opindex df
 The option @samp{-df} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.flow} to
 the input file name.  If stupid register allocation is in use, this
@@ -3348,6 +3391,7 @@ flow into single instructions.  It combines the RTL expressions for
 the instructions by substitution, simplifies the result using algebra,
 and then attempts to match the result against the machine description.
 
+@opindex dc
 The option @samp{-dc} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.combine}
 to the input file name.
@@ -3360,6 +3404,7 @@ this reload would be a register to register move.  It then attempts
 to change the registers used by the instruction to avoid the move
 instruction.
 
+@opindex dN
 The option @samp{-dN} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.regmove}
 to the input file name.
@@ -3377,6 +3422,7 @@ use of items that otherwise would cause pipeline stalls.
 Instruction scheduling is performed twice.  The first time is immediately
 after instruction combination and the second is immediately after reload.
 
+@opindex dS
 The option @samp{-dS} causes a debugging dump of the RTL code after this
 pass is run for the first time.  The dump file's name is made by
 appending @samp{.sched} to the input file name.
@@ -3395,6 +3441,7 @@ hard registers to pseudo registers that are used only within one basic
 block.  Because the basic block is linear, it can use fast and
 powerful techniques to do a very good job.
 
+@opindex dl
 The option @samp{-dl} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.lreg} to
 the input file name.
@@ -3422,6 +3469,7 @@ instructions to save and restore call-clobbered registers around calls.
 Source files are @file{reload.c} and @file{reload1.c}, plus the header
 @file{reload.h} used for communication between them.
 
+@opindex dg
 The option @samp{-dg} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.greg} to
 the input file name.
@@ -3432,6 +3480,7 @@ the input file name.
 Instruction scheduling is repeated here to try to avoid pipeline stalls
 due to memory loads generated for spilled pseudo registers.
 
+@opindex dR
 The option @samp{-dR} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.sched2}
 to the input file name.
@@ -3442,6 +3491,7 @@ to the input file name.
 Jump optimization is repeated, this time including cross-jumping
 and deletion of no-op move instructions.
 
+@opindex dJ
 The option @samp{-dJ} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.jump2}
 to the input file name.
@@ -3453,6 +3503,7 @@ Delayed branch scheduling.  This optional pass attempts to find
 instructions that can go into the delay slots of other instructions,
 usually jumps and calls.  The source file name is @file{reorg.c}.
 
+@opindex dd
 The option @samp{-dd} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.dbr}
 to the input file name.
@@ -3473,6 +3524,7 @@ stack may be done at this point.  Currently, this is supported only
 for the floating-point registers of the Intel 80387 coprocessor.   The
 source file name is @file{reg-stack.c}.
 
+@opindex dk
 The options @samp{-dk} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.stack}
 to the input file name.
@@ -4491,8 +4543,19 @@ Public License instead of this License.
 @include contrib.texi
 
 @c ---------------------------------------------------------------------
-@c Node Index
+@c Indexes
 @c ---------------------------------------------------------------------
+
+@node Option Index
+@unnumbered Option Index
+
+GCC's command line options are indexed here without any initial @samp{-}
+or @samp{--}.  Where an option has both positive and negative forms
+(such as @option{-f@var{option}} and @option{-fno-@var{option}}),
+relevant entries in the manual are indexed under the most appropriate
+form; it may sometimes be useful to look up both forms.
+
+@printindex op
 
 @node Index
 @unnumbered Index
