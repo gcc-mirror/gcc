@@ -1298,15 +1298,20 @@ output_move_quad (operands)
     }
   else if (optype1 == CNSTOP)
     {
-      /* This case isn't implemented yet, because there is no internal
-	 representation for quad-word constants, and there is no split_quad
-	 function.  */
-#if 0
-      split_quad (op1, &wordpart[0][1], &wordpart[1][1],
-		  &wordpart[2][1], &wordpart[3][1]);
-#else
-      abort ();
-#endif
+      REAL_VALUE_TYPE r;
+      long l[4];
+
+      /* This only works for TFmode floating point constants.  */
+      if (GET_CODE (op1) != CONST_DOUBLE || GET_MODE (op1) != TFmode)
+	abort ();
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, op1);
+      REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
+      
+      wordpart[0][1] = GEN_INT (l[0]);
+      wordpart[1][1] = GEN_INT (l[1]);
+      wordpart[2][1] = GEN_INT (l[2]);
+      wordpart[3][1] = GEN_INT (l[3]);
     }
   else
     {
