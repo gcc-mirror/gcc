@@ -1936,9 +1936,6 @@ bss_section ()							   \
 /* This is the kind of divide that is easiest to do in the general case.  */
 #define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
-/* Define this if the library function 'vprintf' is available on your system. */
-#define HAVE_VPRINTF
-
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX 1
