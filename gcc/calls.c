@@ -4594,10 +4594,10 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
           {
 	    rtx size_rtx1 = GEN_INT (reg_parm_stack_space - arg->offset.constant);
 	    emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx1,
-		            TYPE_ALIGN (TREE_TYPE (pval)) / BITS_PER_UNIT, 
-			    partial, reg, excess, argblock, 
-			    ARGS_SIZE_RTX (arg->offset), reg_parm_stack_space,
-		            ARGS_SIZE_RTX (arg->alignment_pad));
+		            TYPE_ALIGN (TREE_TYPE (pval)), partial, reg,
+			    excess, argblock, ARGS_SIZE_RTX (arg->offset),
+			    reg_parm_stack_space,
+			    ARGS_SIZE_RTX (arg->alignment_pad));
 
 	    size_rtx = GEN_INT (INTVAL(size_rtx) - reg_parm_stack_space);
 	  }

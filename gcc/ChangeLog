@@ -1,4 +1,8 @@
-2000-05-04  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+2001-05-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* calls.c (store_one_arg): Don't divide align by BITS_PER_UNIT.
+
+2001-05-04  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/rs6000.md (ashldi3 splits): Guard with TARGET_POWERPC64.
 
