@@ -269,6 +269,7 @@ static void combine_reloads	PROTO((void));
 static rtx find_dummy_reload	PROTO((rtx, rtx, rtx *, rtx *,
 				       enum machine_mode, enum machine_mode,
 				       enum reg_class, int));
+static int earlyclobber_operand_p PROTO((rtx));
 static int hard_reg_set_here_p	PROTO((int, int, rtx));
 static struct decomposition decompose PROTO((rtx));
 static int immune_p		PROTO((rtx, rtx, struct decomposition));
@@ -1448,10 +1449,8 @@ combine_reloads ()
     return;
 
   /* If this reload is for an earlyclobber operand, we can't do anything.  */
-
-  for (i = 0; i < n_earlyclobbers; i++)
-    if (reload_out[output_reload] == reload_earlyclobbers[i])
-      return;
+  if (earlyclobber_operand_p (reload_out[output_reload]))
+    return;
 
   /* Check each input reload; can we combine it?  */
 
@@ -1731,6 +1730,21 @@ find_dummy_reload (real_in, real_out, inloc, outloc,
 /* This page contains subroutines used mainly for determining
    whether the IN or an OUT of a reload can serve as the
    reload register.  */
+
+/* Return 1 if X is an operand of an insn that is being earlyclobbered.  */
+
+static int
+earlyclobber_operand_p (x)
+     rtx x;
+{
+  int i;
+
+  for (i = 0; i < n_earlyclobbers; i++)
+    if (reload_earlyclobbers[i] == x)
+      return 1;
+
+  return 0;
+}
 
 /* Return 1 if expression X alters a hard reg in the range
    from BEG_REGNO (inclusive) to END_REGNO (exclusive),
@@ -3276,6 +3290,12 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  goal_alternative_win[i] = 1;
       }
 
+  /* Record the values of the earlyclobber operands for the caller.  */
+  if (goal_earlyclobber)
+    for (i = 0; i < noperands; i++)
+      if (goal_alternative_earlyclobber[i])
+	reload_earlyclobbers[n_earlyclobbers++] = recog_operand[i];
+
   /* Now record reloads for all the operands that need them.  */
   for (i = 0; i < noperands; i++)
     if (! goal_alternative_win[i])
@@ -3434,12 +3454,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			   0, 1, goal_alternative_matches[i], RELOAD_OTHER);
       }
   
-  /* Record the values of the earlyclobber operands for the caller.  */
-  if (goal_earlyclobber)
-    for (i = 0; i < noperands; i++)
-      if (goal_alternative_earlyclobber[i])
-	reload_earlyclobbers[n_earlyclobbers++] = recog_operand[i];
-
   /* If this insn pattern contains any MATCH_DUP's, make sure that
      they will be substituted if the operands they match are substituted.
      Also do now any substitutions we already did on the operands.
@@ -4854,7 +4868,7 @@ find_replacement (loc)
 
 /* Return nonzero if register in range [REGNO, ENDREGNO)
    appears either explicitly or implicitly in X
-   other than being stored into.
+   other than being stored into (except for earlyclobber operands).
 
    References contained within the substructure at LOC do not count.
    LOC may be zero, meaning don't ignore anything.
@@ -4931,7 +4945,10 @@ refers_to_regno_for_reload_p (regno, endregno, x, loc)
 	       && refers_to_regno_for_reload_p (regno, endregno,
 						SUBREG_REG (SET_DEST (x)),
 						loc))
-	      || (GET_CODE (SET_DEST (x)) != REG
+	      /* If the ouput is an earlyclobber operand, this is
+		 a conflict.  */
+	      || ((GET_CODE (SET_DEST (x)) != REG
+		   || earlyclobber_operand_p (SET_DEST (x)))
 		  && refers_to_regno_for_reload_p (regno, endregno,
 						   SET_DEST (x), loc))))
 	return 1;
