@@ -57,18 +57,18 @@ Boston, MA 02111-1307, USA.  */
    of EQ, NE, etc.  */
 
 enum internal_test {
-    ITEST_EQ,
-    ITEST_NE,
-    ITEST_GT,
-    ITEST_GE,
-    ITEST_LT,
-    ITEST_LE,
-    ITEST_GTU,
-    ITEST_GEU,
-    ITEST_LTU,
-    ITEST_LEU,
-    ITEST_MAX
-  };
+  ITEST_EQ,
+  ITEST_NE,
+  ITEST_GT,
+  ITEST_GE,
+  ITEST_LT,
+  ITEST_LE,
+  ITEST_GTU,
+  ITEST_GEU,
+  ITEST_LTU,
+  ITEST_LEU,
+  ITEST_MAX
+};
 
 /* Return true if it is likely that the given mode will be accessed
    using only a single instruction.  */
@@ -4690,9 +4690,6 @@ override_options ()
   if (mips_arch_string != 0)
     mips_set_architecture (mips_parse_cpu ("-march", mips_arch_string));
 
-  if (mips_tune_string != 0)
-    mips_set_tune (mips_parse_cpu ("-mtune", mips_tune_string));
-
   if (mips_isa_string != 0)
     {
       /* Handle -mipsN.  */
@@ -4729,6 +4726,9 @@ override_options ()
 	   mips_arch_info->name);
 
   /* Optimize for mips_arch, unless -mtune selects a different processor.  */
+  if (mips_tune_string != 0)
+    mips_set_tune (mips_parse_cpu ("-mtune", mips_tune_string));
+
   if (mips_tune_info == 0)
     mips_set_tune (mips_arch_info);
 
@@ -9940,11 +9940,11 @@ mips_issue_rate ()
 {
   switch (mips_tune)
     {
-    case PROCESSOR_R3000: return 1;
-    case PROCESSOR_R5400: return 2;
-    case PROCESSOR_R5500: return 2;
-    case PROCESSOR_R7000: return 2;
-    case PROCESSOR_R9000: return 2;
+    case PROCESSOR_R5400:
+    case PROCESSOR_R5500:
+    case PROCESSOR_R7000:
+    case PROCESSOR_R9000:
+      return 2;
 
     default:
       return 1;
@@ -9979,30 +9979,30 @@ const char *
 mips_emit_prefetch (operands)
      rtx operands[];
 {
- /* For the mips32/64 architectures the hint fields are arranged
-    by operation (load/store) and locality (normal/streamed/retained).
-    Irritatingly, numbers 2 and 3 are reserved leaving no simple
-    algorithm for figuring the hint.  */
+  /* For the mips32/64 architectures the hint fields are arranged
+     by operation (load/store) and locality (normal/streamed/retained).
+     Irritatingly, numbers 2 and 3 are reserved leaving no simple
+     algorithm for figuring the hint.  */
 
-    int write = INTVAL (operands[1]);
-    int locality = INTVAL (operands[2]);
+  int write = INTVAL (operands[1]);
+  int locality = INTVAL (operands[2]);
 
-    static const char * const alt[2][4] = {
-	{
-	 "pref\t4,%a0",
-	 "pref\t0,%a0",
-	 "pref\t0,%a0",
-	 "pref\t6,%a0"
-	},
-	{
-	 "pref\t5,%a0",
-	 "pref\t1,%a0",
-	 "pref\t1,%a0",
-	 "pref\t7,%a0"
-	}
-    };
+  static const char * const alt[2][4] = {
+    {
+      "pref\t4,%a0",
+      "pref\t0,%a0",
+      "pref\t0,%a0",
+      "pref\t6,%a0"
+    },
+    {
+      "pref\t5,%a0",
+      "pref\t1,%a0",
+      "pref\t1,%a0",
+      "pref\t7,%a0"
+    }
+  };
 
-    return alt[write][locality];
+  return alt[write][locality];
 }
 
 

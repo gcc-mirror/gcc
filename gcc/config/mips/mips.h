@@ -114,6 +114,7 @@ extern enum cmp_type branch_type;	/* what type of branch to use */
 extern enum processor_type mips_arch;   /* which cpu to codegen for */
 extern enum processor_type mips_tune;   /* which cpu to schedule for */
 extern int mips_isa;			/* architectural level */
+extern int mips_abi;			/* which ABI to use */
 extern int mips16_hard_float;		/* mips16 without -msoft-float */
 extern int mips_entry;			/* generate entry/exit for mips16 */
 extern const char *mips_arch_string;    /* for -march=<xxx> */
@@ -363,7 +364,7 @@ extern const struct mips_cpu_info *mips_tune_info;
       /* We do this here because __mips is defined below	\
 	 and so we can't use builtin_define_std.  */		\
       if (!flag_iso)						\
-	  builtin_define ("mips");				\
+	builtin_define ("mips");				\
 								\
       /* Treat _R3000 and _R4000 like register-size defines,	\
 	 which is how they've historically been used.  */	\
@@ -379,12 +380,12 @@ extern const struct mips_cpu_info *mips_tune_info;
 	  builtin_define ("_R3000");				\
 	}							\
       if (TARGET_FLOAT64)					\
-	  builtin_define ("__mips_fpr=64");			\
+	builtin_define ("__mips_fpr=64");			\
       else							\
-	  builtin_define ("__mips_fpr=32");			\
+	builtin_define ("__mips_fpr=32");			\
 								\
       if (TARGET_MIPS16)					\
-	  builtin_define ("__mips16");				\
+	builtin_define ("__mips16");				\
 								\
       MIPS_CPP_SET_PROCESSOR ("_MIPS_ARCH", mips_arch_info);	\
       MIPS_CPP_SET_PROCESSOR ("_MIPS_TUNE", mips_tune_info);	\
@@ -429,12 +430,12 @@ extern const struct mips_cpu_info *mips_tune_info;
 	}							\
 								\
       if (TARGET_HARD_FLOAT)					\
-	  builtin_define ("__mips_hard_float");			\
+	builtin_define ("__mips_hard_float");			\
       else if (TARGET_SOFT_FLOAT)				\
-	  builtin_define ("__mips_soft_float");			\
+	builtin_define ("__mips_soft_float");			\
 								\
       if (TARGET_SINGLE_FLOAT)					\
-	  builtin_define ("__mips_single_float");		\
+	builtin_define ("__mips_single_float");		\
 								\
       if (TARGET_BIG_ENDIAN)					\
 	{							\
@@ -976,8 +977,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 #define SUBTARGET_TARGET_SWITCHES
 
-extern int mips_abi;
-
 #ifndef MIPS_ABI_DEFAULT
 #define MIPS_ABI_DEFAULT ABI_32
 #endif
@@ -1223,7 +1222,9 @@ extern int mips_abi;
 #define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (VOIDmode, GP_REG_FIRST + 31)
 
 /* Describe how we implement __builtin_eh_return.  */
-#define EH_RETURN_DATA_REGNO(N) ((N) < (TARGET_MIPS16 ? 2 : 4) ? (N) + GP_ARG_FIRST : INVALID_REGNUM)
+#define EH_RETURN_DATA_REGNO(N) \
+  ((N) < (TARGET_MIPS16 ? 2 : 4) ? (N) + GP_ARG_FIRST : INVALID_REGNUM)
+
 #define EH_RETURN_STACKADJ_RTX  gen_rtx_REG (Pmode, GP_REG_FIRST + 3)
 
 /* Offsets recorded in opcodes are a multiple of this alignment factor.

@@ -1,3 +1,13 @@
+2003-08-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c: Various formatting fixes.
+	(override_options): Resync -mtune handling with gas.
+	(mips_issue_rate): Rearrange like mips_use_dfa_pipeline_interface.
+	* config/mips/mips.h: More formatting fixes.
+	(mips_abi): Move declaration.
+	* config/mips/mips.md (exception_receiver): Add mode to
+	unspec_volatile.
+
 2003-08-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.c (spe_init_builtins): Handle evsplati and
