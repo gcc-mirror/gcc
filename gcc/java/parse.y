@@ -3265,7 +3265,6 @@ static void
 maybe_generate_clinit ()
 {
   tree mdecl, c;
-  int has_non_primitive_fields = 0;
 
   if (!ctxp->static_initialized || java_error_count)
     return;
@@ -5150,9 +5149,9 @@ static int
 find_in_imports_on_demand (class_type)
      tree class_type;
 {
-  tree node, import, node_to_use;
+  tree node, import, node_to_use = NULL_TREE;
   int seen_once = -1;
-  tree cl;
+  tree cl = NULL_TREE;
 
   for (import = ctxp->import_demand_list; import; import = TREE_CHAIN (import))
     {
@@ -9226,7 +9225,7 @@ patch_binop (node, wfl_op1, wfl_op2)
   tree op2 = TREE_OPERAND (node, 1);
   tree op1_type = TREE_TYPE (op1);
   tree op2_type = TREE_TYPE (op2);
-  tree prom_type;
+  tree prom_type = NULL_TREE;
   int code = TREE_CODE (node);
 
   /* If 1, tell the routine that we have to return error_mark_node
@@ -9852,7 +9851,7 @@ patch_unaryop (node, wfl_op)
 {
   tree op = TREE_OPERAND (node, 0);
   tree op_type = TREE_TYPE (op);
-  tree prom_type, value, decl;
+  tree prom_type = NULL_TREE, value, decl;
   int code = TREE_CODE (node);
   int error_found = 0;
 

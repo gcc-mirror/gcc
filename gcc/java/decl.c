@@ -432,7 +432,7 @@ void
 init_decl_processing ()
 {
   register tree endlink;
-  tree field;
+  tree field = NULL_TREE;
   tree t;
 
   current_function_decl = NULL;

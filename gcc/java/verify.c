@@ -1039,7 +1039,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 
 	case OPCODE_lookupswitch:
 	  {
-	    jint npairs, last, not_registered = 1;
+	    jint npairs, last = 0, not_registered = 1;
 
 	    pop_type (int_type_node);
 	    while (PC%4)

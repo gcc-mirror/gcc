@@ -1,3 +1,28 @@
+1999-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (build_utf8_ref): Initialize variable `field'.
+
+	* decl.c (init_decl_processing): Initialize variable `field'.
+
+	* expr.c (build_known_method_ref): Mark parameters `method_type',
+	`method_signature' and `arg_list' with ATTRIBUTE_UNUSED.
+	(process_jvm_instruction): Likewise for parameter `length'.
+
+	* jvspec.c (lang_specific_driver): Mark variables `saw_math',
+	`saw_libc', `saw_gc', `saw_threadlib' and `saw_libgcj' with
+	ATTRIBUTE_UNUSED.
+
+	* parse.y (maybe_generate_clinit): Remove unused variable
+	`has_non_primitive_fields'.
+	(find_in_imports_on_demand): Initialize variables `node_to_use'
+	and `cl'.
+	(patch_binop): Likewise for variable `prom_type'.
+	(patch_unaryop): Likewise for variable `prom_type'.
+
+	* verify.c (verify_jvm_instructions): Likewise for variable `last'.
+
+	* xref.c (xref_table): Add missing initializer.
+
 1999-05-14  Tom Tromey  <tromey@cygnus.com>
 
 	* java-except.h (struct eh_range): Removed unused `next' member.
@@ -70,13 +95,13 @@ Thu May 13 13:23:38 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* xref.h (xref_get_data): New function, declared.
 	(XREF_GET_DATA): Use xref_get_data.
 	
-1999-05-13  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
+1999-05-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * gjavah.c (print_include): Cast the result of `strlen' to int
         when comparing against a signed value.
         (add_namelet): Likewise.
 
-1999-05-12  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
+1999-05-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* expr.c (expand_invoke): Mark parameter `nargs' with
 	ATTRIBUTE_UNUSED.

@@ -1431,7 +1431,8 @@ tree dtable_ident = NULL_TREE;
 
 tree
 build_known_method_ref (method, method_type, self_type, method_signature, arg_list)
-     tree method, method_type, self_type, method_signature, arg_list;
+     tree method, method_type ATTRIBUTE_UNUSED, self_type,
+          method_signature ATTRIBUTE_UNUSED, arg_list ATTRIBUTE_UNUSED;
 {
   tree func;
   if (is_compiled_class (self_type))
@@ -2230,7 +2231,7 @@ int
 process_jvm_instruction (PC, byte_ops, length)
      int PC;
      unsigned char* byte_ops;
-     long length;
+     long length ATTRIBUTE_UNUSED;
 { 
   const char *opname; /* Temporary ??? */
   int oldpc = PC; /* PC at instruction start. */
