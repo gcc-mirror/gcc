@@ -1,5 +1,9 @@
 2004-03-01  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/14369
+	* pt.c (build_non_dependent_expr): Do not create a
+	NON_DEPENDENT_EXPR for a THROW_EXPR.
+
 	PR c++/14360
 	* parser.c (cp_parser_postfix_expression): Do not perform Koenig
 	lookup if ordinary name-lookup finds a non-function.

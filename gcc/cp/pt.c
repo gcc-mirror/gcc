@@ -12110,6 +12110,13 @@ build_non_dependent_expr (tree expr)
      reason to create a new node.  */
   if (TREE_CODE (expr) == INTEGER_CST || TREE_CODE (expr) == REAL_CST)
     return expr;
+  /* Preserve THROW_EXPRs -- all throw-expressions have type "void".
+     There is at least one place where we want to know that a
+     particular expression is a throw-expression: when checking a ?:
+     expression, there are special rules if the second or third
+     argument is a throw-expresion.  */
+  if (TREE_CODE (expr) == THROW_EXPR)
+    return expr;
 
   if (TREE_CODE (expr) == COND_EXPR)
     return build (COND_EXPR,

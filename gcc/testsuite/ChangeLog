@@ -1,5 +1,8 @@
 2004-03-01  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/14369
+	* g++.dg/template/cond4.C: New test.
+
 	PR c++/14360
 	* g++.old-deja/g++.ns/koenig5.C: Remove some error markers.
 	
