@@ -1,3 +1,8 @@
+2002-10-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* testsuite/gcc.dg/i386-sse-3.c: Add tests for _mm_srli_si128 and
+	_mm_slli_si128.
+
 2002-10-19  Andreas Schwab  <schwab@suse.de>
 
 	* lib/compat.exp (compat-run): Prepend "./" when $dest has no

@@ -1,5 +1,5 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -msse" } */
+/* { dg-options "-O2 -msse -msse2" } */
 
 /* Test that the intrinsics compile with optimization.  These were not
    tested in i386-sse-[12].c because these builtins require immediate
@@ -34,4 +34,16 @@ test_prefetch (char *p)
   _mm_prefetch (p+4, _MM_HINT_T1);
   _mm_prefetch (p+8, _MM_HINT_T2);
   _mm_prefetch (p+12, _MM_HINT_NTA);
+}
+
+__m128i
+test__slli_si128 (__m128i a)
+{
+  return _mm_slli_si128 (a, 3);
+}
+
+__m128i
+test__srli_si128 (__m128i a)
+{
+  return _mm_srli_si128 (a, 3);
 }
