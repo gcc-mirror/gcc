@@ -1,3 +1,15 @@
+2004-08-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* config.gcc (arm*-*-symbianelf*): Add t-symbian Makefile
+	fragment.
+	* config/arm/bpabi.h (RENAME_LIBRARY_SET): Fix typo.
+	(SUBTARGET_EXTRA_ASM_SPEC): Pass -meabi=3 to the assembler.
+	* config/arm/symbian.h (SUBTARGET_CPU_DEFAULT): Assume ARMV5
+	architecture.
+	(SUBTARGET_ASM_FLOAT_SPEC): Default to -mfpu=vfp for hard-float
+	configurations.
+	* config/arm/t-symbian: New file.
+
 2004-08-20  Andrew Pinski  <apinski@apple.com>
 
 	* regrename.c (kill_value_regno): ANSIfy.
