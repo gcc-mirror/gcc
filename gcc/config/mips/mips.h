@@ -1173,12 +1173,14 @@ do {                                                  \
    even those that are not normally considered general registers.
 
    On the Mips, we have 32 integer registers, 32 floating point
-   registers and the special registers hi, lo, hilo, and fp status.
+   registers and the special registers hi, lo, hilo, fp status, and rap.
    The hilo register is only used in 64 bit mode.  It represents a 64
    bit value stored as two 32 bit values in the hi and lo registers;
-   this is the result of the mult instruction.  */
+   this is the result of the mult instruction.  rap is a pointer to the
+   stack where the return address reg ($31) was stored.  This is needed
+   for C++ exception handling.  */
 
-#define FIRST_PSEUDO_REGISTER 68
+#define FIRST_PSEUDO_REGISTER 69
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
@@ -1191,7 +1193,7 @@ do {                                                  \
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
-  0, 0, 0, 1								\
+  0, 0, 0, 1, 1								\
 }
 
 
@@ -1208,7 +1210,7 @@ do {                                                  \
   0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1,			\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
-  1, 1, 1, 1								\
+  1, 1, 1, 1, 1								\
 }
 
 
@@ -1233,6 +1235,8 @@ do {                                                  \
 #define ST_REG_FIRST 67
 #define ST_REG_LAST  67
 #define ST_REG_NUM   (ST_REG_LAST - ST_REG_FIRST + 1)
+
+#define RAP_REG_NUM   68
 
 #define AT_REGNUM	(GP_REG_FIRST + 1)
 #define HI_REGNUM	(MD_REG_FIRST + 0)
@@ -1305,6 +1309,10 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM GP_REG_FIRST
+
+/* Fake register that holds the address on the stack of the
+   current function's return address.  */
+#define RETURN_ADDRESS_POINTER_REGNUM RAP_REG_NUM
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 2)
@@ -1675,6 +1683,25 @@ extern enum reg_class	mips_secondary_reload_class ();
 	: current_function_outgoing_args_size)
 #endif
 
+/* The return address for the current frame is in r31 is this is a leaf
+   function.  Otherwise, it is on the stack.  It is at a variable offset
+   from sp/fp/ap, so we define a fake hard register rap which is a
+   poiner to the return address on the stack.  This always gets eliminated
+   during reload to be either the frame pointer or the stack pointer plus
+   an offset.  */
+
+/* ??? This definition fails for leaf functions.  There is currently no
+   general solution for this problem.  */
+
+/* ??? There appears to be no way to get the return address of any previous
+   frame except by disassembling instructions in the prologue/epilogue.
+   So currently we support only the current frame.  */
+
+#define RETURN_ADDR_RTX(count, frame)			\
+  ((count == 0)						\
+   ? gen_rtx (MEM, Pmode, gen_rtx (REG, Pmode, RETURN_ADDRESS_POINTER_REGNUM))\
+   : (fatal ("RETURN_ADDR_RTX not supported for count != 0"), (rtx) 0))
+
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
 
@@ -1736,8 +1763,9 @@ extern struct mips_frame_info current_frame_info;
 #define ELIMINABLE_REGS							\
 {{ ARG_POINTER_REGNUM,   STACK_POINTER_REGNUM},				\
  { ARG_POINTER_REGNUM,   FRAME_POINTER_REGNUM},				\
+ { RETURN_ADDRESS_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
+ { RETURN_ADDRESS_POINTER_REGNUM, FRAME_POINTER_REGNUM},		\
  { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
-
 
 /* A C expression that returns non-zero if the compiler is allowed to
    try to replace register number FROM-REG with register number
@@ -1748,7 +1776,9 @@ extern struct mips_frame_info current_frame_info;
 
 #define CAN_ELIMINATE(FROM, TO)						\
   (!frame_pointer_needed						\
-   || ((FROM) == ARG_POINTER_REGNUM && (TO) == FRAME_POINTER_REGNUM))
+   || ((FROM) == ARG_POINTER_REGNUM && (TO) == FRAME_POINTER_REGNUM)	\
+   || ((FROM) == RETURN_ADDRESS_POINTER_REGNUM				\
+       && (TO) == FRAME_POINTER_REGNUM))
 
 /* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It
    specifies the initial difference between the specified pair of
@@ -1766,6 +1796,10 @@ extern struct mips_frame_info current_frame_info;
 		- (ABI_64BIT && mips_isa >= 3				 \
 		   ? current_function_pretend_args_size			 \
 		   : 0));						 \
+  else if ((FROM) == RETURN_ADDRESS_POINTER_REGNUM			 \
+	   && ((TO) == FRAME_POINTER_REGNUM				 \
+	       || (TO) == STACK_POINTER_REGNUM))			 \
+    (OFFSET) = current_frame_info.gp_sp_offset;				 \
   else									 \
     abort ();								 \
 }
@@ -3135,6 +3169,7 @@ while (0)
   &mips_reg_names[65][0],						\
   &mips_reg_names[66][0],						\
   &mips_reg_names[67][0],						\
+  &mips_reg_names[68][0],						\
 }
 
 /* print-rtl.c can't use REGISTER_NAMES, since it depends on mips.c.
@@ -3149,7 +3184,7 @@ while (0)
   "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",	\
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",	\
   "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",	\
-  "hi",   "lo",   "accum","$fcr31"					\
+  "hi",   "lo",   "accum","$fcr31","$rap"				\
 }
 
 /* If defined, a C initializer for an array of structures
