@@ -1350,7 +1350,8 @@ if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   fi
 elif test x$gcc_cv_as != x; then
 	# Check if this is GAS.
-	as_ver=`$gcc_cv_as --version 2>/dev/null | head -1`
+	as_ver=`$gcc_cv_as --version < /dev/null 2> /dev/null | head -1`
+	rm -f a.out 2> /dev/null
 	if echo "$as_ver" | grep GNU > /dev/null; then
 		# Versions up to and including 2.11.0 may mis-optimize
 		# .eh_frame data.  Try something.

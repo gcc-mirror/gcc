@@ -6273,7 +6273,8 @@ if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   fi
 elif test x$gcc_cv_as != x; then
 	# Check if this is GAS.
-	as_ver=`$gcc_cv_as --version 2>/dev/null | head -1`
+	as_ver=`$gcc_cv_as --version < /dev/null 2> /dev/null | head -1`
+	rm -f a.out 2> /dev/null
 	if echo "$as_ver" | grep GNU > /dev/null; then
 		# Versions up to and including 2.11.0 may mis-optimize
 		# .eh_frame data.  Try something.
@@ -6341,7 +6342,7 @@ echo "$ac_t""$gcc_cv_as_eh_frame" 1>&6
 case "$target" in 
   sparc*-*-*)
     echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
-echo "configure:6345: checking assembler .register pseudo-op support" >&5
+echo "configure:6346: checking assembler .register pseudo-op support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_register_pseudo_op'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -6369,7 +6370,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler supports -relax""... $ac_c" 1>&6
-echo "configure:6373: checking assembler supports -relax" >&5
+echo "configure:6374: checking assembler supports -relax" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_relax_opt'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -6399,7 +6400,7 @@ EOF
     case "$tm_file" in
     *64*)
 	echo $ac_n "checking for 64 bit support in assembler ($gcc_cv_as)""... $ac_c" 1>&6
-echo "configure:6403: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
+echo "configure:6404: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_flags64'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -6444,7 +6445,7 @@ EOF
 
     if test "x$gcc_cv_as_flags64" != xno; then
 	echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
-echo "configure:6448: checking for assembler offsetable %lo() support" >&5
+echo "configure:6449: checking for assembler offsetable %lo() support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_offsetable_lo10'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -6483,7 +6484,7 @@ EOF
 
   i[34567]86-*-*)
     echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
-echo "configure:6487: checking assembler instructions" >&5
+echo "configure:6488: checking assembler instructions" >&5
     gcc_cv_as_instructions=
     if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
       if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2; then
@@ -6512,7 +6513,7 @@ EOF
 esac
 
 echo $ac_n "checking assembler dwarf2 debug_line support""... $ac_c" 1>&6
-echo "configure:6516: checking assembler dwarf2 debug_line support" >&5
+echo "configure:6517: checking assembler dwarf2 debug_line support" >&5
 gcc_cv_as_dwarf2_debug_line=no
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
@@ -6701,7 +6702,7 @@ EOF
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:6705: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:6706: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
