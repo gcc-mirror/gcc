@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "output.h"
 #include "basic-block.h"
+#include "integrate.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "hashtab.h"
@@ -8705,6 +8706,8 @@ rs6000_elf_section_type_flags (decl, name, reloc)
 
   /* Solaris doesn't like @nobits, and gas can handle .sbss without it.  */
   flags &= ~SECTION_BSS;
+
+  return flags;
 }
 #endif
 
