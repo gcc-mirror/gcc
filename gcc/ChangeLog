@@ -1,3 +1,70 @@
+2002-05-04  Bernd Schmidt  <bernds@redhat.com>
+
+	* config/i386/i386.c (bdesc_2arg): Add a couple of missing SSE2
+	builtins.  Use V2DI patterns instead of TI for logical operations.
+	(ix86_init_mmx_sse_builtins): Add a couple of missing SSE2 builtins.
+	Correct definitions of psadbw, pmovmskb128, movntdq, cvtdq2ps.
+	(ix86_expand_builtins): Change the pattern used for movntdq.
+	* config/i386/i386.md (sse2_andv2di3, sse2_iorv2di3, sse2_xorv2di3,
+	sse2_nandv2di3): New patterns.
+	(sse2_anddf3, sse2_nanddf3, sse2_iordf3, sse2_xordf3): Correct modes
+	on operands.
+	(sse2_movntv2di): Renamed from sse2_movntti and modes adjusted.
+	(cvtdq2pd): Correct mode on operand 1.
+	(sse2_umulsidi3): Describe without unspec.
+	(sse2_psadbw, mmx_psadbw): Describe with unspec; use more appropriate
+	machine modes.
+	(lshrv2di3): Renamed from sse2_lshrv2di3 and removed unspec.
+	(ashlv2di3): Likewise, from sse2_ashlv2di3.
+	(ashrv8hi3, ashrv4si3, lshrv8hi3, lshrv4si3, lshrv2di3, ashlv8hi3,
+	ashlv4si3, ashlv2di3): Use SImode for shift count.
+	(ashrv8hi3_ti, ashrv4si3_ti, lshrv8hi3_ti, lshrv4si3_ti, lshrv2di3_ti,
+	lshrv4si3_ti, lshrv2di3_ti, ashlv8hi3_ti, ashlv4si3_ti, ashlv2di3_ti):
+	New patterns.
+	* config/i386/xmmintrin.h (__v2df, __v2di, __v4si, __v8hi, __v16qi):
+	New typedefs.
+	(__m128i, __m128d): New macros.
+	(_mm_add_pd, _mm_add_sd, _mm_sub_pd, _mm_sub_sd, _mm_mul_pd,
+	_mm_mul_sd, _mm_div_pd, _mm_div_sd, _mm_sqrt_pd, _mm_sqrt_sd,
+	_mm_min_pd, _mm_min_sd, _mm_max_sd, _mm_max_pd, _mm_and_pd,
+	_mm_andnot_pd, _mm_xor_pd, _mm_or_pd, _mm_cmpeq_pd, _mm_cmplt_pd,
+	_mm_cmple_pd, _mm_cmpgt_pd, _mm_cmpge_pd, _mm_cmpneq_pd,
+	_mm_cmpnlt_pd, _mm_cmpnle_pd, _mm_cmpngt_pd, _mm_cmpnge_pd, 
+	_mm_cmpord_pd, _mm_cmpunord_pd, _mm_cmpeq_sd, _mm_cmplt_sd,
+	_mm_cmple_sd, _mm_cmpgt_sd, _mm_cmpge_sd, _mm_cmpneq_sd,
+	_mm_cmpnlt_sd, _mm_cmpnle_sd, _mm_cmpngt_sd, _mm_cmpnge_sd, 
+	_mm_cmpord_sd, _mm_cmpunord_sd, _mm_comieq_sd, _mm_comilt_sd,
+	_mm_comile_sd, _mm_comigt_sd, _mm_comige_sd, _mm_comineq_sd,
+	_mm_ucomieq_sd, _mm_ucomieq_sd, _mm_ucomilt_sd, _mm_ucomile_sd,
+	_mm_ucomigt_sd, _mm_ucomige_sd, _mm_ucomineq_sd, _mm_cvtepi32_pd,
+	_mm_cvtepi32_ps, _mm_cvtpd_epi32, _mm_cvtpd_pi32, _mm_cvtpd_ps,
+	_mm_cvttpd_epi32, _mm_cvttpd_pi32, _mm_cvtpi32_pd, _mm_cvtps_epi32,
+	_mm_cvttps_epi32, _mm_cvtps_pd, _mm_cvtsd_si32, _mm_cvttsd_si32,
+	_mm_cvtsd_ss, _mm_cvtsi32_sd, _mm_cvtss_sd, _mm_unpackhi_pd,
+	_mm_unpacklo_pd, _mm_loadh_pd, _mm_storeh_pd, _mm_storel_pd,
+	_mm_movemask_pd, _mm_packs_epi16, _mm_packs_epi32, _mm_packus_epi16,
+	_mm_unpackhi_epi8, _mm_unpackhi_epi16, _mm_unpackhi_epi32,
+	_mm_unpacklo_epi8, _mm_unpacklo_epi16, _mm_unpacklo_epi32,
+	_mm_add_epi8, _mm_add_epi16, _mm_add_epi32, _mm_add_epi64,
+	_mm_adds_epi8, _mm_adds_epi16, _mm_adds_epu8, _mm_adds_epu16,
+	_mm_sub_epi8, _mm_sub_epi16, _mm_sub_epi32, _mm_sub_epi64,
+	_mm_subs_epi8, _mm_subs_epi16, _mm_subs_epu8, _mm_subs_epu16,
+	_mm_madd_epi16, _mm_mulhi_epi16, _mm_mullo_epi16, _mm_mul_pu16,
+	_mm_mul_epu16, _mm_sll_epi16, _mm_sll_epi32, _mm_sll_epi64,
+	_mm_sra_epi16, _mm_sra_epi32, _mm_srl_epi16, _mm_srl_epi32,
+	_mm_srl_epi64, _mm_slli_epi16, _mm_slli_epi32, _mm_slli_epi64,
+	_mm_srai_epi16, _mm_srai_epi32, _mm_srli_epi16, _mm_srli_epi32,
+	_mm_srli_epi64, _mm_and_si128, _mm_andnot_si128, _mm_or_si128,
+	_mm_xor_si128, _mm_cmpeq_epi8, _mm_cmpeq_epi16, _mm_cmpeq_epi32,
+	_mm_cmpgt_epi8, _mm_cmpgt_epi16, _mm_cmpgt_epi32, _mm_max_epi16,
+	_mm_max_epu8, _mm_min_epi16, _mm_min_epu8, _mm_movemask_epi8,
+	_mm_mulhi_epu16, _mm_maskmoveu_si128, _mm_avg_epu8, _mm_avg_epu16,
+	_mm_sad_epu8, _mm_stream_si32, _mm_stream_si128, _mm_stream_pd,
+	_mm_movpi64_epi64, _mm_clflush, _mm_lfence, _mm_mfence): New
+	functions.
+	(_mm_shufflehi_epi16, _mm_shufflelo_epi16, _mm_shuffle_epi32, 
+	_mm_extract_epi16, _mm_insert_epi16, _mm_shuffle_pd): New macros.
+
 2002-05-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* dwarf2out.c: Fix formatting.
