@@ -338,6 +338,13 @@ int flag_omit_frame_pointer = 0;
 
 int flag_no_peephole = 0;
 
+/* Nonzero allows GCC to violate some IEEE or ANSI rules regarding math
+   operations in the interest of optimization.  For example it allows
+   GCC to assume arguments to sqrt are nonnegative numbers, allowing
+   faster code for sqrt to be generated. */
+
+int flag_fast_math = 0;
+
 /* Nonzero means all references through pointers are volatile.  */
 
 int flag_volatile;
@@ -468,6 +475,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"schedule-insns2", &flag_schedule_insns_after_reload, 1},
   {"pic", &flag_pic, 1},
   {"PIC", &flag_pic, 2},
+  {"fast-math", &flag_fast_math, 1},
   {"common", &flag_no_common, 0},
   {"inhibit-size-directive", &flag_inhibit_size_directive, 1},
   {"gnu-linker", &flag_gnu_linker, 1}
