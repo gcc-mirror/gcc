@@ -1,3 +1,18 @@
+2001-12-05  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (push_tinst_level): No longer static.
+	* cp-tree.h: Declare it.
+	* optimize.c (expand_call_inline): Record template instantiation
+	context.
+
+	* rtti.c (create_pseudo_type_info): Set CLASSTYPE_INTERFACE_ONLY
+	on the __*_type_info type if we haven't seen a definition.
+
+2001-12-03  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* decl.c (xref_basetypes): Don't use C99 construct in tag_code
+	declaration and initialization.
+
 2001-12-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* mangle.c (write_expression): Handle CAST_EXPR, STATIC_CAST_EXPR,

@@ -12792,6 +12792,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
   tree base;
 
   int i, len;
+  enum tag_types tag_code;
 
   /* If we are called from the parser, code_type_node will sometimes be a
      TREE_LIST.  This indicates that the user wrote
@@ -12800,7 +12801,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
   if (TREE_CODE (code_type_node) == TREE_LIST)
     code_type_node = TREE_VALUE (code_type_node);
 
-  enum tag_types tag_code = (enum tag_types) tree_low_cst (code_type_node, 1);
+  tag_code = (enum tag_types) tree_low_cst (code_type_node, 1);
 
   if (tag_code == union_type)
     {

@@ -4173,6 +4173,7 @@ extern void do_decl_instantiation		PARAMS ((tree, tree, tree));
 extern void do_type_instantiation		PARAMS ((tree, tree, int));
 extern tree instantiate_decl			PARAMS ((tree, int));
 extern tree get_bindings			PARAMS ((tree, tree, tree));
+extern int push_tinst_level			PARAMS ((tree));
 extern void pop_tinst_level			PARAMS ((void));
 extern int more_specialized_class		PARAMS ((tree, tree));
 extern int is_member_template                   PARAMS ((tree));
