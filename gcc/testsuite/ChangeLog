@@ -1,5 +1,9 @@
 2004-11-11  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.misc-tests/linkage.exp: Prepend directory name to pass/fail
+	message, delete generated files, use more descriptive name for
+	executable, and make the test unsupported when it cannot be run.
+
 	* lib/gcc-dg.exp (skip_test_and_clear_xfail): New procedure.
 	(dg-require-weak, dg-require-visibility, dg-require-alias,
 	dg-require-gc-sections, dg-require-profiling, dg-require-dll,

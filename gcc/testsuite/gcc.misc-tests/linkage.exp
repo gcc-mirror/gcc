@@ -21,7 +21,7 @@
 if [isnative] then {
     set lines [gcc_target_compile "$srcdir/$subdir/linkage-x.c" "linkage-x.o" object {additional_flags="-w"}]
     if ![string match "" $lines] then {
-	fail "linkage.c"
+	fail "$subdir/linkage.c compile"
     } else {
 	# This is a completely bogus test. Sorry.
 
@@ -65,7 +65,9 @@ if [isnative] then {
 	    }
 	}
 
-	catch { exec rm -f linkage-y.o }
+	if [file exists "linkage-y.o"] then {
+	    file delete "linkage-y.o"
+	}
 	send_log "cc -c $native_cflags $srcdir/$subdir/linkage-y.c >&/dev/null\n"
 	catch { exec cc -c $native_cflags "$srcdir/$subdir/linkage-y.c" >&/dev/null }
 	if ![file exists "linkage-y.o"] then {
@@ -73,12 +75,17 @@ if [isnative] then {
 	    catch { exec c89 -c $native_cflags "$srcdir/$subdir/linkage-y.c" >&/dev/null }
 	}
 	if [file exists "linkage-y.o"] then {
-	    set lines [gcc_target_compile "linkage-y.o linkage-x.o" "x" executable ""]
+	    set lines [gcc_target_compile "linkage-y.o linkage-x.o" "linkage.exe" executable ""]
 	    if [string match "" $lines] then {
-		pass "linkage.c"
+		pass "$subdir/linkage.c link"
+		file delete "linkage.exe"
 	    } else {
-		fail "linkage.c"
+		fail "$subdir/linkage.c link"
 	    }
+	    file delete "linkage-y.o"
+	} else {
+	    unsupported "$subdir/linkage.c native compile failed"
 	}
+	file delete "linkage-x.o"
     }
 }
