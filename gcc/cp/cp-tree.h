@@ -4186,7 +4186,6 @@ extern tree lookup_template_function            PARAMS ((tree, tree));
 extern int uses_template_parms			PARAMS ((tree));
 extern tree instantiate_class_template		PARAMS ((tree));
 extern tree instantiate_template		PARAMS ((tree, tree));
-extern void overload_template_name		PARAMS ((tree));
 extern int fn_type_unification                  PARAMS ((tree, tree, tree, tree, tree, unification_kind_t, int));
 extern tree tinst_for_decl			PARAMS ((void));
 extern void mark_decl_instantiated		PARAMS ((tree, int));

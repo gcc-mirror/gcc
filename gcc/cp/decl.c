@@ -2447,18 +2447,14 @@ store_bindings (names, old_bindings)
 	if (TREE_VEC_ELT (t1, 0) == id)
 	  goto skip_it;
 
+      my_friendly_assert (TREE_CODE (id) == IDENTIFIER_NODE, 135);
       binding = make_tree_vec (4);
-
-      if (id)
-	{
-	  my_friendly_assert (TREE_CODE (id) == IDENTIFIER_NODE, 135);
-	  TREE_VEC_ELT (binding, 0) = id;
-	  TREE_VEC_ELT (binding, 1) = REAL_IDENTIFIER_TYPE_VALUE (id);
-	  TREE_VEC_ELT (binding, 2) = IDENTIFIER_BINDING (id);
-	  TREE_VEC_ELT (binding, 3) = IDENTIFIER_CLASS_VALUE (id);
-	  IDENTIFIER_BINDING (id) = NULL_TREE;
-	  IDENTIFIER_CLASS_VALUE (id) = NULL_TREE;
-	}
+      TREE_VEC_ELT (binding, 0) = id;
+      TREE_VEC_ELT (binding, 1) = REAL_IDENTIFIER_TYPE_VALUE (id);
+      TREE_VEC_ELT (binding, 2) = IDENTIFIER_BINDING (id);
+      TREE_VEC_ELT (binding, 3) = IDENTIFIER_CLASS_VALUE (id);
+      IDENTIFIER_BINDING (id) = NULL_TREE;
+      IDENTIFIER_CLASS_VALUE (id) = NULL_TREE;
       TREE_CHAIN (binding) = old_bindings;
       old_bindings = binding;
     skip_it:
@@ -2552,12 +2548,10 @@ pop_from_top_level ()
   for (t = s->old_bindings; t; t = TREE_CHAIN (t))
     {
       tree id = TREE_VEC_ELT (t, 0);
-      if (id)
-	{
-	  SET_IDENTIFIER_TYPE_VALUE (id, TREE_VEC_ELT (t, 1));
-	  IDENTIFIER_BINDING (id) = TREE_VEC_ELT (t, 2);
-	  IDENTIFIER_CLASS_VALUE (id) = TREE_VEC_ELT (t, 3);
- 	}
+
+      SET_IDENTIFIER_TYPE_VALUE (id, TREE_VEC_ELT (t, 1));
+      IDENTIFIER_BINDING (id) = TREE_VEC_ELT (t, 2);
+      IDENTIFIER_CLASS_VALUE (id) = TREE_VEC_ELT (t, 3);
     }
 
   /* If we were in the middle of compiling a function, restore our

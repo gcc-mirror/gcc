@@ -7558,24 +7558,6 @@ instantiate_template (tmpl, targ_ptr)
   return fndecl;
 }
 
-/* Push the name of the class template into the scope of the instantiation.  */
-
-void
-overload_template_name (type)
-     tree type;
-{
-  tree id = DECL_NAME (CLASSTYPE_TI_TEMPLATE (type));
-  tree decl;
-
-  if (IDENTIFIER_CLASS_VALUE (id)
-      && TREE_TYPE (IDENTIFIER_CLASS_VALUE (id)) == type)
-    return;
-
-  decl = build_decl (TYPE_DECL, id, type);
-  DECL_ARTIFICIAL (decl) = 1;
-  pushdecl_class_level (decl);
-}
-
 /* The FN is a TEMPLATE_DECL for a function.  The ARGS are the
    arguments that are being used when calling it.  TARGS is a vector
    into which the deduced template arguments are placed.  
@@ -9621,6 +9603,7 @@ instantiate_decl (d, defer_ok)
   tree gen_tmpl;
   int pattern_defined;
   int line = lineno;
+  int need_push;
   const char *file = input_filename;
 
   /* This function should only be used to instantiate templates for
@@ -9776,7 +9759,9 @@ instantiate_decl (d, defer_ok)
       goto out;
     }
 
-  push_to_top_level ();
+  need_push = !global_bindings_p ();
+  if (need_push)
+    push_to_top_level ();
 
   /* We're now committed to instantiating this template.  Mark it as
      instantiated so that recursive calls to instantiate_decl do not
@@ -9840,7 +9825,8 @@ instantiate_decl (d, defer_ok)
   /* We're not deferring instantiation any more.  */
   TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (d)) = 0;
 
-  pop_from_top_level ();
+  if (need_push)
+    pop_from_top_level ();
 
 out:
   lineno = line;

@@ -5603,11 +5603,6 @@ pushclass (type, modify)
 
   pushlevel_class ();
 
-#if 0
-  if (CLASSTYPE_TEMPLATE_INFO (type))
-    overload_template_name (type);
-#endif
-
   if (modify)
     {
       if (type != previous_class_type || current_class_depth > 1)
