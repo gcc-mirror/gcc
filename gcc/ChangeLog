@@ -1,3 +1,8 @@
+2001-12-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* cfgrtl.c (verify_flow_info): Allow jump table data in fallthru if
+	CASE_DROPS_THROUGH.
+
 2001-12-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* rtl.h (initialize_uninitialized_subregs): New prototype.
