@@ -1,5 +1,7 @@
 2000-03-03  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* config/vax/xm-vms.h: Define OBJECT_SUFFIX and EXECUTABLE_SUFFIX.
+	
 	* cpplib.h (_dollar_ok): New macro.
 	(is_idchar, is_idstart): Use it.
 	(IStable): Rename to _cpp_IStable.  Declare it const if

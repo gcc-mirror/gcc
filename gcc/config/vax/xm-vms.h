@@ -204,3 +204,6 @@ extern void *alloca(unsigned);
 extern char *alloca();
 #endif
 #endif
+
+#define OBJECT_SUFFIX ".obj"
+#define EXECUTABLE_SUFFIX ".exe"
