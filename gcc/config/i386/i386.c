@@ -3548,6 +3548,7 @@ output_float_compare (insn, operands)
   int stack_top_dies;
   rtx body = XVECEXP (PATTERN (insn), 0, 0);
   int unordered_compare = GET_MODE (SET_SRC (body)) == CCFPEQmode;
+  int target_fcomi = TARGET_CMOVE && STACK_REG_P (operands[1]);
 
   rtx tmp;
   if (! STACK_TOP_P (operands[0]))
@@ -3585,9 +3586,9 @@ output_float_compare (insn, operands)
 	 unordered float compare. */
 
       if (unordered_compare)
-	strcpy (buf, "fucom");
+	strcpy (buf, target_fcomi ? "fucomi" : "fucom");
       else if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_FLOAT)
-	strcpy (buf, "fcom");
+	strcpy (buf, target_fcomi ? "fcomi" : "fcom");
       else
 	strcpy (buf, "ficom");
 
@@ -3598,6 +3599,13 @@ output_float_compare (insn, operands)
 
       if (NON_STACK_REG_P (operands[1]))
 	output_op_from_reg (operands[1], strcat (buf, AS1 (%z0,%1)));
+      else if (target_fcomi) 
+	{
+	  rtx xops[] = {operands[0], operands[1], operands[0]};
+	  
+	  output_asm_insn (strcat (buf, AS2 (%z1,%y1,%2)), xops);
+	  RET;
+	}
       else
         output_asm_insn (strcat (buf, AS1 (%z1,%y1)), operands);
     }
