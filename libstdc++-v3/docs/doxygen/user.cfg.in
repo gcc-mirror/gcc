@@ -197,7 +197,7 @@ SORT_MEMBER_DOCS       = YES
 # member in the group (if any) for the other members of the group. By default 
 # all members of a group must be documented explicitly.
 
-DISTRIBUTE_GROUP_DOC   = NO
+DISTRIBUTE_GROUP_DOC   = YES
 
 # The TAB_SIZE tag can be used to set the number of spaces in a tab. 
 # Doxygen uses this value to replace tabs by spaces in code fragments. 
@@ -305,7 +305,22 @@ WARN_LOGFILE           =
 INPUT                  = docs/doxygen \
                          libsupc++ \
                          include \
-                         src
+                         src \
+libsupc++/exception libsupc++/new libsupc++/typeinfo include/ext/hash_map \
+include/ext/hash_set include/ext/rope include/ext/slist include/std/algorithm \
+include/std/bitset include/std/cassert include/std/cctype \
+include/std/cerrno include/std/cfloat include/std/ciso646 include/std/climits \
+include/std/clocale include/std/cmath include/std/complex include/std/csetjmp \
+include/std/csignal include/std/cstdarg include/std/cstddef \
+include/std/cstdio include/std/cstdlib include/std/cstring \
+include/std/ctime include/std/cwchar include/std/cwctype include/std/deque \
+include/std/fstream include/std/functional include/std/iomanip \
+include/std/ios include/std/iosfwd include/std/iostream include/std/istream \
+include/std/iterator include/std/limits include/std/list include/std/locale \
+include/std/map include/std/memory include/std/numeric include/std/ostream \
+include/std/queue include/std/set include/std/sstream include/std/stack \
+include/std/stdexcept include/std/streambuf include/std/string \
+include/std/utility include/std/valarray include/std/vector
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
