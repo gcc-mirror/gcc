@@ -1097,6 +1097,7 @@ set_fast_math_flags (int set)
     {
       flag_signaling_nans = 0;
       flag_rounding_math = 0;
+      flag_cx_limited_range = 1;
     }
 }
 

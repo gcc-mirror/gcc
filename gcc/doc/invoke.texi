@@ -285,8 +285,8 @@ Objective-C and Objective-C++ Dialects}.
 -fbounds-check -fmudflap -fmudflapth -fmudflapir @gol
 -fbranch-probabilities -fprofile-values -fvpt -fbranch-target-load-optimize @gol
 -fbranch-target-load-optimize2 -fbtr-bb-exclusive @gol
--fcaller-saves  -fcprop-registers @gol
--fcse-follow-jumps  -fcse-skip-blocks  -fdata-sections @gol
+-fcaller-saves  -fcprop-registers  -fcse-follow-jumps @gol
+-fcse-follow-jumps  -fcse-skip-blocks  -fcx-limited-range  -fdata-sections @gol
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
 -fforce-addr  -fforce-mem  -ffunction-sections @gol
@@ -5072,7 +5072,8 @@ them to store all pertinent intermediate computations into variables.
 @opindex ffast-math
 Sets @option{-fno-math-errno}, @option{-funsafe-math-optimizations}, @*
 @option{-fno-trapping-math}, @option{-ffinite-math-only},
-@option{-fno-rounding-math} and @option{-fno-signaling-nans}.
+@option{-fno-rounding-math}, @option{-fno-signaling-nans}
+and @option{fcx-limited-range}.
 
 This option causes the preprocessor macro @code{__FAST_MATH__} to be defined.
 
@@ -5176,6 +5177,17 @@ disable all GCC optimizations that affect signaling NaN behavior.
 Treat floating point constant as single precision constant instead of
 implicitly converting it to double precision constant.
 
+@item -fcx-limited-range
+@itemx -fno-cx-limited-range
+@opindex fcx-limited-range
+@opindex fno-cx-limited-range
+When enabled, this option states that a range reduction step is not
+needed when performing complex division.  The default is
+@option{-fno-cx-limited-range}, but is enabled by @option{-ffast-math}.
+
+This option controls the default setting of the ISO C99 
+@code{CX_LIMITED_RANGE} pragma.  Nevertheless, the option applies to
+all languages.
 
 @end table
 

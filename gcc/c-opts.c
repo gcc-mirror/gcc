@@ -978,6 +978,11 @@ c_common_post_options (const char **pfilename)
   if (warn_missing_format_attribute && !warn_format)
     warning ("-Wmissing-format-attribute ignored without -Wformat");
 
+  /* C99 requires special handling of complex multiplication and division;
+     -ffast-math and -fcx-limited-range are handled in process_options.  */
+  if (flag_isoc99)
+    flag_complex_method = 2;
+
   if (flag_preprocess_only)
     {
       /* Open the output now.  We must do so even if flag_no_output is
