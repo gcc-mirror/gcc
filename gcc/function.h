@@ -440,6 +440,9 @@ struct function
   /* tm.h can use this to store whatever it likes.  */
   struct machine_function *machine;
 
+  /* Language-specific code can use this to store whatever it likes.  */
+  struct language_function *language;
+
   /* For reorg.  */
 
   /* If some insns can be deferred to the delay slots of the epilogue, the
@@ -540,6 +543,10 @@ extern HOST_WIDE_INT get_func_frame_size PROTO((struct function *));
    in push_function_context and pop_function_context.  */
 extern void (*save_machine_status) PROTO((struct function *));
 extern void (*restore_machine_status) PROTO((struct function *));
+
+/* Likewise, but for language-specific data.  */
+extern void (*save_lang_status)		PROTO((struct function *));
+extern void (*restore_lang_status)	PROTO((struct function *));
 
 /* Save and restore status information for a nested function.  */
 extern void save_tree_status		PROTO((struct function *, tree));
