@@ -84,10 +84,6 @@ static void init_operators PARAMS ((void));
 
 #include "cpplib.h"
 
-/* Pending language change.
-   Positive is push count, negative is pop count.  */
-int pending_lang_change = 0;
-
 extern int yychar;		/*  the lookahead symbol		*/
 extern YYSTYPE yylval;		/*  the semantic value of the		*/
 				/*  lookahead symbol			*/
@@ -1109,7 +1105,7 @@ handle_pragma_interface (dfile)
   if (fname == (tree)-1)
     return;
   else if (fname == 0)
-    main_filename = file_name_nondirectory (input_filename);
+    main_filename = lbasename (input_filename);
   else
     main_filename = TREE_STRING_POINTER (fname);
 
@@ -1158,7 +1154,7 @@ handle_pragma_implementation (dfile)
 	main_filename = main_input_filename;
       else
 	main_filename = input_filename;
-      main_filename = file_name_nondirectory (main_filename);
+      main_filename = lbasename (main_filename);
     }
   else
     {

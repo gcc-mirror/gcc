@@ -36,7 +36,6 @@ extern int read_integral_parameter	PARAMS ((const char *, const char *,
 						const int));
 extern int count_error			PARAMS ((int));
 extern void strip_off_ending		PARAMS ((char *, int));
-extern char *file_name_nondirectory	PARAMS ((const char *));
 extern void print_time			PARAMS ((const char *, long));
 extern void debug_start_source_file	PARAMS ((const char *));
 extern void debug_end_source_file	PARAMS ((unsigned));
