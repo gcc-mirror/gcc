@@ -1402,16 +1402,6 @@ dbxout_symbol (decl, local)
 	    fprintf (asmfile, "%s \"%s:", ASM_STABS_OP,
 		     IDENTIFIER_POINTER (DECL_NAME (decl)));
 
-/* #ifndef DBX_NO_EXTRA_TAGS   rms: I think this is no longer needed.  */
-	    /* This section makes absolutely no sense to me. Why would a tag
-	       ever be needed at this point? The result of this is that any
-	       structure typedef with the tag omitted is treated as if the
-	       tag was given to be the same as the typedef name. Probably
-	       no harm in it, unless the programmer used the same name for
-	       the tag of a *different* structure. At any rate, Alliant's
-	       debugger would want the tag output before the typedef, so
-	       this code still loses.  -- hyc */
-
 	    /* Short cut way to output a tag also.  */
 	    if ((TREE_CODE (type) == RECORD_TYPE
 		 || TREE_CODE (type) == UNION_TYPE)
@@ -1427,7 +1417,6 @@ dbxout_symbol (decl, local)
 		  tag_needed = 1;
 #endif
 	      }
-/* #endif */
 
 	    putc ('t', asmfile);
 	    current_sym_code = DBX_TYPE_DECL_STABS_CODE;
