@@ -1,5 +1,7 @@
 2004-08-25  Mark Mitchell  <mark@codesourcery.com>
 
+	* mangle.c (get_identifier_nocopy): Add cast.
+
 	* cp-tree.h (mangle_type): Remove.
 	* mangle.c (globals): GTY it.
 	(mangle_obstack): New variable.

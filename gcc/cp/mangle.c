@@ -2491,7 +2491,7 @@ mangle_decl_string (const tree decl)
 static inline tree
 get_identifier_nocopy (const char *name)
 {
-  hashnode ht_node = ht_lookup (ident_hash, name, 
+  hashnode ht_node = ht_lookup (ident_hash, (const unsigned char *) name, 
 				strlen (name), HT_ALLOCED);
   return HT_IDENT_TO_GCC_IDENT (ht_node);
 }
