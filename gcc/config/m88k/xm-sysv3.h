@@ -28,3 +28,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* for the emacs version of alloca */
 #define STACK_DIRECTION -1
+
+/* We need POSIX/XOPEN symbols; otherwise make check will fail.  */
+#define ADD_MISSING_POSIX 1
+#define ADD_MISSING_XOPEN 1
