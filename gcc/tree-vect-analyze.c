@@ -1183,8 +1183,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	}
 
       DR_MISALIGNMENT (dr0) = 0;
-      if (vect_print_dump_info (REPORT_ALIGNMENT, LOOP_LOC (loop_vinfo)))
-	fprintf (vect_dump, "Alignment of access forced using peeling.");
     }
 }
 
@@ -1260,6 +1258,9 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
 	  && (vect_print_dump_info (REPORT_ALIGNMENT, LOOP_LOC (loop_vinfo))))
 	fprintf (vect_dump, "Vectorizing an unaligned access.");
     }
+  if (LOOP_VINFO_UNALIGNED_DR (loop_vinfo)
+      && vect_print_dump_info (REPORT_ALIGNMENT, LOOP_LOC (loop_vinfo)))
+    fprintf (vect_dump, "Alignment of access forced using peeling.");
 
   return true;
 }
