@@ -3054,6 +3054,8 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 				      GET_MODE_SIZE (GET_MODE (target)), 0);
       rtx blk_object = copy_rtx (object);
 
+      MEM_IN_STRUCT_P (object) = 1;
+      MEM_IN_STRUCT_P (blk_object) = 1;
       PUT_MODE (blk_object, BLKmode);
 
       if (bitsize != GET_MODE_BITSIZE (GET_MODE (target)))
