@@ -43,13 +43,17 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (arc)")
 
 /* Names to predefine in the preprocessor for this target machine.  */
-#define CPP_PREDEFINES "-Acpu=arc -Amachine=arc -D__arc__"
-
-/* Additional flags for the preprocessor.  */
-#define CPP_SPEC "\
-%{!mcpu=*:-D__base__} %{mcpu=base:-D__base__} \
-%{EB:-D__big_endian__} \
-"
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define ("__arc__");		\
+	if (TARGET_BIG_ENDIAN)			\
+	  builtin_define ("__big_endian__");	\
+	if (arc_cpu_type == 0)			\
+	  builtin_define ("__base__");		\
+	builtin_assert ("cpu=arc");		\
+	builtin_assert ("machine=arc");		\
+    } while (0)
 
 /* Pass -mmangle-cpu if we get -mcpu=*.
    Doing it this way lets one have it on as default with -mcpu=*,
