@@ -205,6 +205,7 @@ finish_expr_stmt (expr)
      tree expr;
 {
   tree r = NULL_TREE;
+  tree expr_type = NULL_TREE;;
 
   if (expr != NULL_TREE)
     {
@@ -215,6 +216,9 @@ finish_expr_stmt (expr)
 	      || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE))
 	expr = default_conversion (expr);
       
+      /* Remember the type of the expression.  */
+      expr_type = TREE_TYPE (expr);
+
       if (stmts_are_full_exprs_p ())
 	expr = convert_to_void (expr, "statement");
       
@@ -225,7 +229,7 @@ finish_expr_stmt (expr)
 
   /* This was an expression-statement, so we save the type of the
      expression.  */
-  last_expr_type = expr ? TREE_TYPE (expr) : NULL_TREE;
+  last_expr_type = expr_type;
 
   return r;
 }
