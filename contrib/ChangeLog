@@ -1,3 +1,7 @@
+2003-07-15  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* texi2pod.pl: Default @itemize's parameter to @bullet.
+
 2003-07-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc_update: gcc/acconfig.h no longer exists.
