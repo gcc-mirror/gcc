@@ -58,13 +58,17 @@ reg_or_0_operand (op, mode)
   return (op == CONST0_RTX (mode) || register_operand (op, mode));
 }
 
+/* Return non-zero if OP is suitable for use in a call to a named
+   function.
+
+   (???) For 2.5 try to eliminate either call_operand_address or 
+   function_label_operand, they perform very similar functions.  */
 int
 call_operand_address (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return (REG_P (op) 
-	  || (CONSTANT_P (op) && ! TARGET_LONG_CALLS));
+  return (CONSTANT_P (op) && ! TARGET_LONG_CALLS);
 }
 
 /* Return 1 if X contains a symbolic expression.  We know these 
