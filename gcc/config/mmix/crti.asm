@@ -25,9 +25,10 @@ along with this program; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-% This is crt0 for mmix-knuth-mmixware, for setting up things for
-% compiler-generated assembler and for setting up things between where the
-% simulator calls and main, and shutting things down on the way back.
+% This is the crt0 equivalent for mmix-knuth-mmixware, for setting up
+% things for compiler-generated assembly-code and for setting up things
+% between where the simulator calls and main, and shutting things down on
+% the way back.  There's an actual crt0.o elsewhere, but that's a dummy.
 
 % This file and the GCC output are supposed to be *reasonably*
 % mmixal-compatible to enable people to re-use output with Knuth's mmixal.
@@ -42,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 % This little treasure is here so the 32 lowest address bits of user data
 % will not be zero.  Because of truncation, that would cause test-case
 % gcc.c-torture/execute/980701-1.c to incorrectly fail.
+
 	.data	! mmixal:= 8H LOC Data_Segment
 	.p2align 3
 	LOC @+(8-@)@7
@@ -74,8 +76,8 @@ Main	SETL	$255,32
 #ifdef __MMIX_ABI_GNU__
 % Copy argc and argv from their initial position to argument registers
 % where necessary.
-	SET	$232,$0
-	SET	$233,$1
+	SET	$231,$0
+	SET	$232,$1
 #else
 % For the mmixware ABI, we need to move arguments.  The return value will
 % appear in $0.
@@ -86,11 +88,11 @@ Main	SETL	$255,32
 	PUSHJ	$0,main
 	JMP	exit
 
-% Provide first part of _init and _fini.  Save the return address on the
+% Provide the first part of _init and _fini.  Save the return address on the
 % register stack.  We eventually ignore the return address of these
 % PUSHJ:s, so it doesn't matter that whether .init and .fini code calls
-% functions or where they store rJ.  We shouldn't get there, so abort if
-% that happens
+% functions or where they store rJ.  We shouldn't get there, so abort
+% (TRAP Halt) if that happens.
 
 	.section .init,"ax",@progbits
 	.global	_init
