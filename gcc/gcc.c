@@ -48,7 +48,7 @@ compilation is specified by a string called a "spec".  */
 #include <sys/resource.h>
 #endif
 #ifdef NEED_DECLARATION_GETRUSAGE
-extern int getrusage(int, struct rusage *);
+extern int getrusage PROTO ((int, struct rusage *));
 #endif
 
 /* By default there is no special suffix for executables.  */
