@@ -1,5 +1,10 @@
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
+	* par-ch3.adb (P_Subtype_Mark_Resync): for an anonymous array 
+        return Error rather than Empty so that analysis can proceed.
+
+2001-10-25  Ed Schonberg <schonber@gnat.com>
+
 	* sem_util.adb (Enter_Name): better handling of cascaded error 
         messages when a unit appears in its own context.
 

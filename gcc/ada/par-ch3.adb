@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.148 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -796,7 +796,7 @@ package body Ch3 is
       if Token = Tok_Array then
          Error_Msg_SC ("anonymous array definition not allowed here");
          Discard_Junk_Node (P_Array_Type_Definition);
-         return Empty;
+         return Error;
 
       else
          Type_Node := P_Qualified_Simple_Name_Resync;
