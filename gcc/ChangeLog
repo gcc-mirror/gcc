@@ -1,3 +1,10 @@
+Sat Mar  8 19:22:30 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (cgraph.o): Depend on gt-cgraph.h and varray.h.
+	* gt-cgraph.h: New GC file.
+	* cgraph.c (known_fns): New static variable.
+	(cgraph_node): Add the decl into varray.
+
 2003-03-08  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.md ("*movcc_expanded"): Add missing alternatives.

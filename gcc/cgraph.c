@@ -33,6 +33,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "debug.h"
 #include "target.h"
 #include "cgraph.h"
+#include "varray.h"
+
+/* The known declarations must not get garbage collected.  Callgraph
+   datastructures should not get saved via PCH code since this would
+   make it difficult to extend into intra-module optimizer later.  So
+   we store only the references into the array to prevent gabrage
+   collector from deleting live data.  */
+static GTY(()) varray_type known_fns;
 
 /* Hash table used to convert declarations into nodes.  */
 static htab_t cgraph_hash = 0;
@@ -82,8 +90,14 @@ cgraph_node (decl)
   struct cgraph_node *node;
   struct cgraph_node **slot;
 
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    abort ();
+
   if (!cgraph_hash)
-    cgraph_hash = htab_create (10, hash_node, eq_node, NULL);
+    {
+      cgraph_hash = htab_create (10, hash_node, eq_node, NULL);
+      VARRAY_TREE_INIT (known_fns, 32, "known_fns");
+    }
 
   slot =
     (struct cgraph_node **) htab_find_slot_with_hash (cgraph_hash, decl,
@@ -107,6 +121,7 @@ cgraph_node (decl)
       node->next_nested = node->origin->nested;
       node->origin->nested = node;
     }
+  VARRAY_PUSH_TREE (known_fns, decl);
   return node;
 }
 
@@ -290,3 +305,5 @@ dump_cgraph (f)
       fprintf (f, "\n");
     }
 }
+
+#include "gt-cgraph.h"
