@@ -678,7 +678,7 @@ inlinable_function_p (fn, id)
   /* Assume it is not inlinable.  */
   inlinable = 0;
        
-  /* The number of instructions (estimated) of current function. */
+  /* The number of instructions (estimated) of current function.  */
   currfn_insns = DECL_NUM_STMTS (fn) * INSNS_PER_STMT;
 
   /* If we're not inlining things, then nothing is inlinable.  */
@@ -709,7 +709,7 @@ inlinable_function_p (fn, id)
   DECL_UNINLINABLE (fn) = ! inlinable;
 
   /* In case we don't disregard the inlining limits and we basically
-     can inline this function, investigate further. */
+     can inline this function, investigate further.  */
   if (! (*lang_hooks.tree_inlining.disregard_inline_limits) (fn)
       && inlinable)
     { 
@@ -717,13 +717,13 @@ inlinable_function_p (fn, id)
 		     + currfn_insns;
       /* In the extreme case that we have exceeded the recursive inlining
          limit by a huge factor (128), we just say no. Should not happen
-         in real life. */
+         in real life.  */
       if (sum_insns > MAX_INLINE_INSNS * 128)
 	 inlinable = 0;
       /* If we did not hit the extreme limit, we use a linear function
          with slope -1/MAX_INLINE_SLOPE to exceedingly decrease the
          allowable size. We always allow a size of MIN_INLINE_INSNS
-         though. */
+         though.  */
       else if ((sum_insns > MAX_INLINE_INSNS)
 	       && (currfn_insns > MIN_INLINE_INSNS))
         {
@@ -988,7 +988,7 @@ expand_call_inline (tp, walk_subtrees, data)
 
   /* Our function now has more statements than it did before.  */
   DECL_NUM_STMTS (VARRAY_TREE (id->fns, 0)) += DECL_NUM_STMTS (fn);
-  /* For accounting, subtract one for the saved call/ret. */
+  /* For accounting, subtract one for the saved call/ret.  */
   id->inlined_stmts += DECL_NUM_STMTS (fn) - 1;
 
   /* Recurse into the body of the just inlined function.  */
