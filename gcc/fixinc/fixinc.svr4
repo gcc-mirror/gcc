@@ -197,8 +197,6 @@ while [ $# != 0 ]; do
 	  /#[a-z]*if.*[	 (]m68k/		s/\([^_]\)m68k/\1__m68k__/g
 	  /#[a-z]*if.*[	 (]__i386\([^_]\)/	s/__i386/__i386__/g
 	  /#[a-z]*if.*[	 (]i386/		s/\([^_]\)i386/\1__i386__/g
-	  /#[a-z]*if.*[	 (!]__i860\([^_]\)/	s/__i860/__i860__/g
-	  /#[a-z]*if.*[	 (!]i860/		s/\([^_]\)i860/\1__i860__/g
 	  /#[a-z]*if.*[	 (]sparc/	s/\([^_]\)sparc/\1__sparc__/g
 	  /#[a-z]*if.*[	 (]mc68000/	s/\([^_]\)mc68000/\1__mc68000__/g
 	  /#[a-z]*if.*[	 (]vax/		s/\([^_]\)vax/\1__vax__/g
@@ -659,8 +657,8 @@ if [ \! -z "$file_to_fix" ]; then
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
   sed -e '/#define[ 	]*__i386 /d' -e '/#define[ 	]*__sparc /d' \
-      -e '/#define[ 	]*__i860 /d' -e '/#define[ 	]*__m88k /d' \
-      -e '/#define[ 	]*__mips /d' -e '/#define[ 	]*__m68k /d' \
+      -e '/#define[ 	]*__m88k /d' -e '/#define[ 	]*__mips /d'  \
+      -e '/#define[ 	]*__m68k /d' \
      /tmp/$base > /tmp/$base.sed
   if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
     true
@@ -1274,79 +1272,6 @@ s/;$/)/
   rm -f /tmp/$base /tmp/$base.sed
 fi
 
-# Sony NEWSOS 5.0 does not support the complete ANSI C standard.
-
-if [ -x /bin/sony ]; then
-  if /bin/sony; then
-
-    # Change <stdio.h> to not define __filbuf, __flsbuf, and __iob
-
-    file=stdio.h
-    base=`basename $file`.$$
-    if [ -r ${LIB}/$file ]; then
-      file_to_fix=${LIB}/$file
-    else
-      if [ -r ${INPUT}/$file ]; then
-        file_to_fix=${INPUT}/$file
-      else
-        file_to_fix=""
-      fi
-    fi
-    if [ \! -z "$file_to_fix" ]; then
-      echo Checking $file_to_fix
-      cp $file_to_fix /tmp/$base
-      chmod +w /tmp/$base
-      sed -e '
-        s/__filbuf/_filbuf/g
-        s/__flsbuf/_flsbuf/g
-        s/__iob/_iob/g
-      ' /tmp/$base > /tmp/$base.sed
-      mv /tmp/$base.sed /tmp/$base
-      if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then
-        true
-      else
-        echo Fixed $file_to_fix
-        rm -f ${LIB}/$file
-        cp /tmp/$base ${LIB}/$file
-        chmod a+r ${LIB}/$file
-      fi
-      rm -f /tmp/$base
-    fi
-
-    # Change <ctype.h> to not define __ctype
-
-    file=ctype.h
-    base=`basename $file`.$$
-    if [ -r ${LIB}/$file ]; then
-      file_to_fix=${LIB}/$file
-    else
-      if [ -r ${INPUT}/$file ]; then
-        file_to_fix=${INPUT}/$file
-      else
-        file_to_fix=""
-      fi
-    fi
-    if [ \! -z "$file_to_fix" ]; then
-      echo Checking $file_to_fix
-      cp $file_to_fix /tmp/$base
-      chmod +w /tmp/$base
-      sed -e '
-        s/__ctype/_ctype/g
-      ' /tmp/$base > /tmp/$base.sed
-      mv /tmp/$base.sed /tmp/$base
-      if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then
-        true
-      else
-        echo Fixed $file_to_fix
-        rm -f ${LIB}/$file
-        cp /tmp/$base ${LIB}/$file
-        chmod a+r ${LIB}/$file
-      fi
-      rm -f /tmp/$base
-    fi
-  fi
-fi
-
 # In limits.h, put #ifndefs around things that are supposed to be defined
 # in float.h to avoid redefinition errors if float.h is included first.
 # Solaris 2.1 has this problem.
@@ -1701,9 +1626,7 @@ htons (unsigned int __arg)
   return __result;
 }
 
-#elif ((defined (__i860__) && !defined (__i860_big_endian__))	\
-       || defined (__ns32k__) || defined (__vax__)		\
-       || defined (__spur__) || defined (__arm__))
+#elif (defined (__ns32k__) || defined (__vax__) || defined (__arm__))
 
 #ifndef __BYTE_ORDER__
 #define __BYTE_ORDER__ __LITTLE_ENDIAN__

@@ -9,11 +9,6 @@
 
 
 
-#if defined( M88K_BAD_S_IF_CHECK )
-#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG) /* is regular? */
-#endif  /* M88K_BAD_S_IF_CHECK */
-
-
 #if defined( RS6000_FCHMOD_CHECK )
 extern int fchmod(int, mode_t);
 #endif  /* RS6000_FCHMOD_CHECK */

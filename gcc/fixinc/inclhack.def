@@ -21,80 +21,6 @@ FIXINC_DEBUG = yes;
 #endif
 
 /*
- *  Completely replace <_int_varargs.h> with a file that includes gcc's
- *  stdarg.h or varargs.h files as appropriate on DG/UX
- */
-fix = {
-    hackname = AAB_dgux_int_varargs;
-    files    = _int_varargs.h;
-    replace  = <<- _EOF_
-	#ifndef __INT_VARARGS_H
-	#define __INT_VARARGS_H
-	
-	/********************************************************/
-	/*  Define the common stuff for varargs/stdarg/stdio.   */
-	/********************************************************/
-	
-	/*
-	** This file is a DG internal header.  Never include this
-	** file directly.
-	*/
-	
-	#ifndef ___int_features_h
-	#include <sys/_int_features.h>
-	#endif
-	
-	#if !(defined(_VA_LIST) || defined(_VA_LIST_))
-	#define _VA_LIST
-	#define _VA_LIST_
-	
-	#ifdef __LINT__
-	
-	#ifdef __STDC__
-	typedef void * va_list;
-	#else
-	typedef char * va_list;
-	#endif
-	
-	#else
-	#if _M88K_ANY
-	
-	#if defined(__DCC__)
-	
-	typedef struct {
-	      int     next_arg;
-	      int     *mem_ptr;
-	      int     *reg_ptr;
-	} va_list;
-	
-	#else  /* ! defined(__DCC__) */
-	
-	typedef struct {
-	      int  __va_arg;       /* argument number */
-	      int *__va_stk;       /* start of args passed on stack */
-	      int *__va_reg;       /* start of args passed in regs */
-	} va_list;
-	
-	#endif  /* ! defined(__DCC__) */
-	
-	#elif _IX86_ANY
-	
-	#if defined(__GNUC__) || defined(__STDC__)
-	typedef void * va_list;
-	#else
-	typedef char * va_list;
-	#endif
-	
-	#endif  /*  _IX86_ANY */
-	
-	#endif /* __LINT__ */
-	#endif /*  !(defined(_VA_LIST) || defined(_VA_LIST_)) */
-	#endif /*  #ifndef __INT_VARARGS_H  */
-	_EOF_;
-};
-
-
-/*
  *  This fixes __FD_ZERO bug for linux 2.x.y (x <= 2 && y <= some n)
  */
 fix = {
@@ -109,7 +35,7 @@ fix = {
      * the wrapper, this will follow the #include_next chain until
      * we arrive at the real <asm/posix_types.h>.
      */
-    replace  = <<-  _EOF_
+    replace  = <<-  _EndOfHeader_
 	/* This file fixes a bug in the __FD_ZERO macro
 	   for older versions of the Linux kernel. */
 	#ifndef _POSIX_TYPES_H_WRAPPER
@@ -130,7 +56,7 @@ fix = {
 	
 	#define _POSIX_TYPES_H_WRAPPER
 	#endif /* _POSIX_TYPES_H_WRAPPER */
-	_EOF_;
+	_EndOfHeader_;
 };
 
 
@@ -148,28 +74,27 @@ fix = {
      * the wrapper, this will follow the #include_next chain until
      * we arrive at the real <gnu/types.h>.
      */
-    replace  =
+    replace  = <<-  _EndOfHeader_
+	/* This file fixes a bug in the __FD_ZERO macro present in glibc 1.x. */
+	#ifndef _TYPES_H_WRAPPER
+	#include <features.h>
+	#include_next <gnu/types.h>
 
-'/* This file fixes a bug in the __FD_ZERO macro present in glibc 1.x. */
-\#ifndef _TYPES_H_WRAPPER
-\#include <features.h>
- \#include_next <gnu/types.h>
-
-\#if defined(__FD_ZERO) && !defined(__GLIBC__)
-\#undef __FD_ZERO
-\# define __FD_ZERO(fdsetp) \\
-  do { \\
-    int __d0, __d1; \\
-	__asm__ __volatile__("cld ; rep ; stosl" \\
+	#if defined(__FD_ZERO) && !defined(__GLIBC__)
+	#undef __FD_ZERO
+	# define __FD_ZERO(fdsetp) \\
+	  do { \\
+	    int __d0, __d1; \\
+		__asm__ __volatile__("cld ; rep ; stosl" \\
         	: "=&c" (__d0), "=&D" (__d1) \\
         	: "a" (0), "0" (__FDSET_LONGS), \\
 		  "1" ((__fd_set *) (fdsetp)) :"memory"); \\
-  } while (0)
-\#endif
+	  } while (0)
+	#endif
 
-\#define _TYPES_H_WRAPPER
-\#endif /* _TYPES_H_WRAPPER */
-';
+	#define _TYPES_H_WRAPPER
+	#endif /* _TYPES_H_WRAPPER */
+	_EndOfHeader_;
 };
 
 
@@ -187,32 +112,31 @@ fix = {
      * the wrapper, this will follow the #include_next chain until
      * we arrive at the real <selectbits.h>.
      */
-    replace  =
+    replace  = <<-  _EndOfHeader_
+	/* This file fixes a bug in the __FD_ZERO macro present in glibc 2.0.x. */
+	#ifndef _SELECTBITS_H_WRAPPER
+	  #include <features.h>
+	  #include_next <selectbits.h>
 
-'/* This file fixes a bug in the __FD_ZERO macro present in glibc 2.0.x. */
-\#ifndef _SELECTBITS_H_WRAPPER
-\#include <features.h>
- \#include_next <selectbits.h>
-
-\#if defined(__FD_ZERO) && defined(__GLIBC__) \\
-	&& defined(__GLIBC_MINOR__) && __GLIBC__ == 2 \\
-	&& __GLIBC_MINOR__ == 0
-\#undef __FD_ZERO
-\#define __FD_ZERO(fdsetp) \\
-  do { \\
-    int __d0, __d1; \\
-  __asm__ __volatile__ ("cld; rep; stosl" \\
+	  #if defined(__FD_ZERO) && defined(__GLIBC__) \\
+	  && defined(__GLIBC_MINOR__) && __GLIBC__ == 2 \\
+	  && __GLIBC_MINOR__ == 0
+	     #undef __FD_ZERO
+	     #define __FD_ZERO(fdsetp) \\
+	     do { \\
+	        int __d0, __d1; \\
+	      __asm__ __volatile__ ("cld; rep; stosl" \\
                         : "=&c" (__d0), "=&D" (__d1) \\
                         : "a" (0), "0" (sizeof (__fd_set) \\
                                         / sizeof (__fd_mask)), \\
                           "1" ((__fd_mask *) (fdsetp)) \\
                         : "memory"); \\
-  } while (0)
-\#endif
+	      } while (0)
+	  #endif
 
-\#define _SELECTBITS_H_WRAPPER
-\#endif /* _SELECTBITS_H_WRAPPER */
-';
+	  #define _SELECTBITS_H_WRAPPER
+	#endif /* _SELECTBITS_H_WRAPPER */
+	_EndOfHeader_;
 };
 
 
@@ -225,11 +149,13 @@ fix = {
     hackname = AAB_solaris_sys_varargs_h;
     files    = "sys/varargs.h";
     mach     = '*-*-solaris*';
-    replace  = "#ifdef __STDC__\n"
-	       "#include <stdarg.h>\n"
-	       "#else\n"
-	       "#include <varargs.h>\n"
-	       "#endif\n";
+    replace  = <<-  _EndOfHeader_
+	#ifdef __STDC__
+	  #include <stdarg.h>
+	#else
+	  #include <varargs.h>
+	#endif
+	_EndOfHeader_;
 };
 
 
@@ -243,32 +169,31 @@ fix = {
 fix = {
     hackname = AAB_sun_memcpy;
     files    = memory.h;
-    select = "/\\*\t@\\(#\\)"
+    select   = "/\\*\t@\\(#\\)"
              "(head/memory.h\t50.1\t "
              "|memory\\.h 1\\.[2-4] 8./../.. SMI; from S5R2 1\\.2\t)\\*/";
 
-    replace =
-'/* This file was generated by fixincludes */
-\#ifndef __memory_h__
-\#define __memory_h__
+    replace = <<-  _EndOfHeader_
+	/* This file was generated by fixincludes */
+	#ifndef __memory_h__
+	  #define __memory_h__
 
-\#ifdef __STDC__
-extern void *memccpy();
-extern void *memchr();
-extern void *memcpy();
-extern void *memset();
-\#else
-extern char *memccpy();
-extern char *memchr();
-extern char *memcpy();
-extern char *memset();
-\#endif /* __STDC__ */
+	  #ifdef __STDC__
+	    extern void *memccpy();
+	    extern void *memchr();
+	    extern void *memcpy();
+	    extern void *memset();
+	  #else
+	    extern char *memccpy();
+	    extern char *memchr();
+	    extern char *memcpy();
+	    extern char *memset();
+	  #endif /* __STDC__ */
 
-extern int memcmp();
+	  extern int memcmp();
 
-\#endif /* __memory_h__ */
-';
-
+	#endif /* __memory_h__ */
+	_EndOfHeader;
 };
 
 
@@ -283,13 +208,13 @@ fix = {
     replace  = "/* This file was generated by fixincludes.  */\n"
                "#ifndef _SYS_VARARGS_H\n"
                "#define _SYS_VARARGS_H\n\n"
-
+                                                                                
                "#ifdef __STDC__\n"
                "#include <stdarg.h>\n"
                "#else\n"
                "#include <varargs.h>\n"
                "#endif\n\n"
-
+                                                                                
                "#endif  /* _SYS_VARARGS_H */\n";
 };
 #endif
@@ -303,158 +228,157 @@ fix = {
 fix = {
     hackname = AAB_svr4_replace_byteorder;
 #ifndef SVR5
-    mach = "*-*-sysv4*";
-    mach = "i[34567]86-*-sysv5*";
-    mach = "i[34567]86-*-udk*";
-    mach = "i[34567]86-*-solaris2.[0-4]";
-    mach = "powerpcle-*-solaris2.[0-4]";
-    mach = "sparc-*-solaris2.[0-4]";
+    mach     = "*-*-sysv4*";
+    mach     = "i[34567]86-*-sysv5*";
+    mach     = "i[34567]86-*-udk*";
+    mach     = "i[34567]86-*-solaris2.[0-4]";
+    mach     = "powerpcle-*-solaris2.[0-4]";
+    mach     = "sparc-*-solaris2.[0-4]";
 #endif /* SVR5 */
     files    = sys/byteorder.h;
-    replace  = '#ifndef _SYS_BYTEORDER_H
-\#define _SYS_BYTEORDER_H
+    replace  = <<-  _EndOfHeader_
+	#ifndef _SYS_BYTEORDER_H
+	#define _SYS_BYTEORDER_H
 
-/* Functions to convert `short\' and `long\' quantities from host byte order
-   to (internet) network byte order (i.e. big-endian).
+	/* Functions to convert `short' and `long' quantities from host byte order
+	   to (internet) network byte order (i.e. big-endian).
 
-   Written by Ron Guilmette (rfg@ncd.com).
+	   Written by Ron Guilmette (rfg@ncd.com).
 
-   This isn\'t actually used by GCC.  It is installed by fixinc.svr4.
+	   This isn't actually used by GCC.  It is installed by fixinc.svr4.
 
-   For big-endian machines these functions are essentially no-ops.
+	   For big-endian machines these functions are essentially no-ops.
 
-   For little-endian machines, we define the functions using specialized
-   asm sequences in cases where doing so yields better code (e.g. i386).  */
+	   For little-endian machines, we define the functions using specialized
+	   asm sequences in cases where doing so yields better code (e.g. i386).  */
 
-\#if !defined (__GNUC__) && !defined (__GNUG__)
-\#error You lose!  This file is only useful with GNU compilers.
-\#endif
+	#if !defined (__GNUC__) && !defined (__GNUG__)
+	  #error You lose!  This file is only useful with GNU compilers.
+	#endif
 
-\#ifndef __BYTE_ORDER__
-/* Byte order defines.  These are as defined on UnixWare 1.1, but with
-   double underscores added at the front and back.  */
-\#define __LITTLE_ENDIAN__   1234
-\#define __BIG_ENDIAN__      4321
-\#define __PDP_ENDIAN__      3412
-\#endif
+	#ifndef __BYTE_ORDER__
+	  /* Byte order defines.  These are as defined on UnixWare 1.1, but with
+	     double underscores added at the front and back.  */
+	  #define __LITTLE_ENDIAN__   1234
+	  #define __BIG_ENDIAN__      4321
+	  #define __PDP_ENDIAN__      3412
+	#endif
 
-\#ifdef __STDC__
-static __inline__ unsigned long htonl (unsigned long);
-static __inline__ unsigned short htons (unsigned int);
-static __inline__ unsigned long ntohl (unsigned long);
-static __inline__ unsigned short ntohs (unsigned int);
-\#endif /* defined (__STDC__) */
+	#ifdef __STDC__
+	  static __inline__ unsigned long htonl (unsigned long);
+	  static __inline__ unsigned short htons (unsigned int);
+	  static __inline__ unsigned long ntohl (unsigned long);
+	  static __inline__ unsigned short ntohs (unsigned int);
+	#endif /* defined (__STDC__) */
 
-\#if defined (__i386__)
+	#if defined (__i386__)
 
-\#ifndef __BYTE_ORDER__
-\#define __BYTE_ORDER__ __LITTLE_ENDIAN__
-\#endif
+	  #ifndef __BYTE_ORDER__
+	    #define __BYTE_ORDER__ __LITTLE_ENDIAN__
+	  #endif
 
-/* Convert a host long to a network long.  */
+	  /* Convert a host long to a network long.  */
 
-/* We must use a new-style function definition, so that this will also
-   be valid for C++.  */
-static __inline__ unsigned long
-htonl (unsigned long __arg)
-{
-  register unsigned long __result;
+	  /* We must use a new-style function definition, so that this will also
+	     be valid for C++.  */
+	  static __inline__ unsigned long
+	  htonl (unsigned long __arg)
+	  {
+	    register unsigned long __result;
 
-  __asm__ ("xchg%B0 %b0,%h0
-	ror%L0 $16,%0
-	xchg%B0 %b0,%h0" : "=q" (__result) : "0" (__arg));
-  return __result;
-}
+	    __asm__ ("xchg%B0 %b0,%h0
+		  ror%L0 $16,%0
+		  xchg%B0 %b0,%h0" : "=q" (__result) : "0" (__arg));
+	    return __result;
+	  }
 
-/* Convert a host short to a network short.  */
+	  /* Convert a host short to a network short.  */
 
-static __inline__ unsigned short
-htons (unsigned int __arg)
-{
-  register unsigned short __result;
+	  static __inline__ unsigned short
+	  htons (unsigned int __arg)
+	  {
+	    register unsigned short __result;
 
-  __asm__ ("xchg%B0 %b0,%h0" : "=q" (__result) : "0" (__arg));
-  return __result;
-}
+	    __asm__ ("xchg%B0 %b0,%h0" : "=q" (__result) : "0" (__arg));
+	    return __result;
+	  }
 
-\#elif ((defined (__i860__) && !defined (__i860_big_endian__))	\\
-       || defined (__ns32k__) || defined (__vax__)		\\
-       || defined (__spur__) || defined (__arm__))
+	#elif (defined (__ns32k__) || defined (__vax__) || defined (__arm__))
 
-\#ifndef __BYTE_ORDER__
-\#define __BYTE_ORDER__ __LITTLE_ENDIAN__
-\#endif
+	  #ifndef __BYTE_ORDER__
+	    #define __BYTE_ORDER__ __LITTLE_ENDIAN__
+	  #endif
 
-/* For other little-endian machines, using C code is just as efficient as
-   using assembly code.  */
+	  /* For other little-endian machines, using C code is just as efficient as
+	     using assembly code.  */
 
-/* Convert a host long to a network long.  */
+	  /* Convert a host long to a network long.  */
 
-static __inline__ unsigned long
-htonl (unsigned long __arg)
-{
-  register unsigned long __result;
+	  static __inline__ unsigned long
+	  htonl (unsigned long __arg)
+	  {
+	    register unsigned long __result;
 
-  __result = (__arg >> 24) & 0x000000ff;
-  __result |= (__arg >> 8) & 0x0000ff00;
-  __result |= (__arg << 8) & 0x00ff0000;
-  __result |= (__arg << 24) & 0xff000000;
-  return __result;
-}
+	    __result = (__arg >> 24) & 0x000000ff;
+	    __result |= (__arg >> 8) & 0x0000ff00;
+	    __result |= (__arg << 8) & 0x00ff0000;
+	    __result |= (__arg << 24) & 0xff000000;
+	    return __result;
+	  }
 
-/* Convert a host short to a network short.  */
+	  /* Convert a host short to a network short.  */
 
-static __inline__ unsigned short
-htons (unsigned int __arg)
-{
-  register unsigned short __result;
+	  static __inline__ unsigned short
+	  htons (unsigned int __arg)
+	  {
+	    register unsigned short __result;
 
-  __result = (__arg << 8) & 0xff00;
-  __result |= (__arg >> 8) & 0x00ff;
-  return __result;
-}
+	    __result = (__arg << 8) & 0xff00;
+	    __result |= (__arg >> 8) & 0x00ff;
+	    return __result;
+	  }
 
-\#else /* must be a big-endian machine */
+	#else /* must be a big-endian machine */
 
-\#ifndef __BYTE_ORDER__
-\#define __BYTE_ORDER__ __BIG_ENDIAN__
-\#endif
+	  #ifndef __BYTE_ORDER__
+	    #define __BYTE_ORDER__ __BIG_ENDIAN__
+	  #endif
 
-/* Convert a host long to a network long.  */
+	  /* Convert a host long to a network long.  */
 
-static __inline__ unsigned long
-htonl (unsigned long __arg)
-{
-  return __arg;
-}
+	  static __inline__ unsigned long
+	  htonl (unsigned long __arg)
+	  {
+	    return __arg;
+	  }
 
-/* Convert a host short to a network short.  */
+	  /* Convert a host short to a network short.  */
 
-static __inline__ unsigned short
-htons (unsigned int __arg)
-{
-  return __arg;
-}
+	  static __inline__ unsigned short
+	  htons (unsigned int __arg)
+	  {
+	    return __arg;
+	  }
 
-\#endif /* big-endian */
+	#endif /* big-endian */
 
-/* Convert a network long to a host long.  */
+	/* Convert a network long to a host long.  */
 
-static __inline__ unsigned long
-ntohl (unsigned long __arg)
-{
-  return htonl (__arg);
-}
+	static __inline__ unsigned long
+	ntohl (unsigned long __arg)
+	{
+	  return htonl (__arg);
+	}
 
-/* Convert a network short to a host short.  */
+	/* Convert a network short to a host short.  */
 
-static __inline__ unsigned short
-ntohs (unsigned int __arg)
-{
-  return htons (__arg);
-}
-\#endif
-';
+	static __inline__ unsigned short
+	ntohs (unsigned int __arg)
+	{
+	  return htons (__arg);
+	}
+	#endif
+	_EndOfHeader_;
 };
 
 
@@ -477,12 +401,12 @@ fix = {
     hackname = AAB_ultrix_limits;
     files    = limits.h;
     mach     = "*-*-ultrix4.3";
-    replace  =
-'#ifndef _LIMITS_INCLUDED
-\#define _LIMITS_INCLUDED
-\#include <sys/limits.h>
-\#endif /* _LIMITS_INCLUDED */
-';
+    replace  = <<-  _EndOfHeader_
+	#ifndef _LIMITS_INCLUDED
+	  #define _LIMITS_INCLUDED
+	  #include <sys/limits.h>
+	#endif /* _LIMITS_INCLUDED */
+	_EndOfHeader_;
 };
 
 
@@ -495,12 +419,12 @@ fix = {
     hackname = AAB_ultrix_memory;
     files    = memory.h;
     mach     = "*-*-ultrix4.3";
-    replace  =
-'#ifndef _MEMORY_INCLUDED
-\#define _MEMORY_INCLUDED
-\#include <strings.h>
-\#endif /* _MEMORY_INCLUDED */
-';
+    replace  = <<-  _EndOfHeader_
+	#ifndef _MEMORY_INCLUDED
+	  #define _MEMORY_INCLUDED
+	  #include <strings.h>
+	#endif /* _MEMORY_INCLUDED */
+	_EndOfHeader_;
 };
 
 
@@ -513,12 +437,12 @@ fix = {
     hackname = AAB_ultrix_string;
     files    = string.h;
     mach     = "*-*-ultrix4.3";
-    replace  =
-'#ifndef _STRING_INCLUDED
-\#define _STRING_INCLUDED
-\#include <strings.h>
-\#endif /* _STRING_INCLUDED */
-';
+    replace  = <<-  _EndOfHeader_
+	#ifndef _STRING_INCLUDED
+	  #define _STRING_INCLUDED
+	  #include <strings.h>
+	#endif /* _STRING_INCLUDED */
+	_EndOfHeader_;
 };
 
 
@@ -653,58 +577,6 @@ fix = {
 
 
 /*
- *  Fix this ARM/RISCiX file where ___type is a Compiler
- *  hint that is specific to the Norcroft compiler.
- */
-fix = {
-    hackname  = arm_norcroft_hint;
-    select    = "___type p_type";
-    files     = "X11/Intrinsic.h";
-    c_fix     = format;
-    c_fix_arg = "p_type";
-    test_text = "___type p_type mumble;";
-};
-
-
-/*
- *  Fix this ARM/RISCiX file to avoid interfering
- *  with the use of __wchar_t in cc1plus.
- */
-fix = {
-    hackname = arm_wchar;
-    files  = stdlib.h;
-    select = "#[ \t]*define[ \t]*__wchar_t";
-
-    c_fix     = format;
-    c_fix_arg = "%1_GCC_WCHAR_T";
-    c_fix_arg = "(#[ \t]*(ifndef|define)[ \t]+)__wchar_t";
-
-    test_text =
-    "# ifndef \t __wchar_t /* we don't have wchar_t yet, ... */\n"
-    "#  define  __wchar_t  short\n"
-    "# endif /* __wchar_t */";
-};
-
-
-/*
- *  This file in A/UX 3.0.x/3.1.x contains an __asm directive for c89;
- *  gcc doesn't understand it.
- */
-fix = {
-    hackname = aux_asm;
-    files    = sys/param.h;
-    select   = "#ifndef NOINLINE";
-
-    c_fix     = format;
-    c_fix_arg = "#if !defined(NOINLINE) && !defined(__GNUC__)";
-
-    test_text =
-    "#ifndef NOINLINE /* ain't got no inline, so we got it */\n"
-    "#endif /* NOINLINE */";
-};
-
-
-/*
  *  For C++, avoid any typedef or macro definition of bool,
  *  and use the built in type instead.
  *  HP/UX 10.20 also has it in curses_colr/curses.h.
@@ -726,6 +598,7 @@ fix = {
     test_text = "# define bool\t char \n";
 };
 
+
 fix = {
     hackname = avoid_bool_type;
     files    = curses.h;
@@ -742,6 +615,7 @@ fix = {
     test_text = "typedef unsigned int\tbool \t; /* bool\n type */";
 };
 
+
 /*
  *  For C++, avoid any typedef definition of wchar_t,
  *  and use the built in type instead.
@@ -757,6 +631,7 @@ fix = {
 
     test_text = "typedef unsigned short\twchar_t \t; /* wchar_t\n type */";
 };
+
 
 /*
  *  Fix #defines under Alpha OSF/1:
@@ -988,6 +863,7 @@ fix = {
                 "extern __DJ_wint_t x;\n";
 };
 
+
 /*
  * Fix these Sun OS files to avoid an invalid identifier in an #ifdef.
  */
@@ -1000,22 +876,6 @@ fix = {
     c_fix_arg = 'ecd_cursor';
 
     test_text = "#ifdef ecd.cursor\n#error bogus\n#endif /* ecd+cursor */";
-};
-
-
-/*
- *  fix-header doesn't fix fabs' prototype, and I have no idea why.
- */
-fix = {
-    hackname  = fix_header_breakage;
-    mach      = "m88k-motorola-sysv3*";
-    files     = "math.h";
-
-    select    = 'extern double floor\(\), ceil\(\), fmod\(\), fabs\(\);';
-    c_fix     = format;
-    c_fix_arg =
-    'extern double floor(), ceil(), fmod(), fabs _PARAMS((double));';
-    test_text = 'extern double floor(), ceil(), fmod(), fabs();';
 };
 
 
@@ -1581,67 +1441,6 @@ fix = {
 
 
 /*
- *  libm.a on m88k-motorola-sysv3 contains a stupid optimization for
- *  function hypot(), which returns the second argument without even
- *  looking at its value, if the other is 0.0.
- */
-fix = {
-    hackname  = m88k_bad_hypot_opt;
-    mach      = "m88k-motorola-sysv3*";
-    files     = "math.h";
-    select    = "^extern double hypot\\(\\);\n";
-    c_fix     = format;
-    c_fix_arg = "%0"
-          "/* Workaround a stupid Motorola optimization if one\n"
-          "   of x or y is 0.0 and the other is negative!  */\n"
-          "#ifdef __STDC__\n"
-          "static __inline__ double fake_hypot (double x, double y)\n"
-          "#else\n"
-          "static __inline__ double fake_hypot (x, y)\n"
-          "\tdouble x, y;\n"
-          "#endif\n"
-          "{\n"
-          "\treturn fabs (hypot (x, y));\n"
-          "}\n"
-          "#define hypot\tfake_hypot\n";
-    test_text = "extern double hypot();";
-};
-
-
-/*
- *  Fix incorrect S_IF* definitions on m88k-sysv3.
- */
-fix = {
-    hackname = m88k_bad_s_if;
-    mach     = "m88k-*-sysv3*";
-    files    = sys/stat.h;
-    select   = "#define[ \t]+S_IS[A-Z]+\\(m\\)[ \t]+\\(m[ \t]*&";
-
-    c_fix     = format;
-    c_fix_arg = '#define %1(m) (((m) & S_IFMT) == %2)';
-    c_fix_arg = "#define[ \t]+(S_IS[A-Z]+)\\(m\\)[ \t]+"
-                  "\\(m[ \t]*&[ \t]*"
-                    "(S_IF[A-Z][A-Z][A-Z]+|0[0-9]+)"
-                  "[ \t]*\\)";
-    test_text = '#define S_ISREG(m) (m & S_IFREG) /* is regular? */';
-};
-
-
-/*
- * Put cpp wrappers around these include files to avoid redeclaration
- * errors during multiple inclusion on m88k-tektronix-sysv3.
- */
-fix = {
-    hackname = m88k_multi_incl;
-    mach     = "m88k-tektronix-sysv3*";
-    files    = "time.h";
-    bypass   = "#ifndef";
-    c_fix    = wrap;
-    test_text = "";
-};
-
-
-/*
  * Fix BSD machine/ansi.h to use __builtin_va_list to define _BSD_VA_LIST_.
  *
  * On NetBSD, machine is a symbolic link to an architecture specific
@@ -1803,19 +1602,6 @@ fix = {
     sed    = "/OPEN_MAX/s,/\\* Max, Max,";
     test_text = "/*\n#define CHILD_MAX 20 /* Max, Max, ... */ /*\n"
                 "#define OPEN_MAX  20 /* Max, Max, ... */\n";
-};
-
-/*
- *  fix bogus recursive stdlib.h in NEWS-OS 4.0C
- */
-fix = {
-    hackname = news_os_recursion;
-    files    = stdlib.h;
-    select   = "[ \t]*#include <stdlib\\.h>.*";
-
-    c_fix     = format;
-    c_fix_arg = "#ifdef BOGUS_RECURSION\n%0\n#endif";
-    test_text = "#include <stdlib.h>";
 };
 
 
@@ -2134,35 +1920,6 @@ fix = {
     c_fix_arg = "%0\n#include <wchar.h>";
     test_text = "#include <euc.h>";
 };
-
-/*
- *  Sony NEWSOS 5.0 does not support the complete ANSI C standard.
- */
-#ifdef SONY
-fix = {
-    hackname = sony_ctype;
-    files    = ctype.h;
-    test     = " -x /bin/sony";
-    test     = " ! -z \"`if /bin/sony ; then echo true ; fi`\"";
-    sed      = "s/__ctype/_ctype/g";
-};
-#endif
-
-
-/*
- *  Sony NEWSOS 5.0 does not support the complete ANSI C standard.
- */
-#ifdef SONY
-fix = {
-    hackname = sony_stdio;
-    files    = stdio.h;
-    test     = " -x /bin/sony";
-    test     = " ! -z \"`if /bin/sony ; then echo true ; fi`\"";
-    sed      = "s/__filbuf/_filbuf/g\n"
-               "s/__flsbuf/_flsbuf/g\n"
-               "s/__iob/_iob/g";
-};
-#endif
 
 
 /*
@@ -2684,8 +2441,8 @@ fix = {
 fix = {
     hackname = svr4_mach_defines;
     files    = ieeefp.h;
-    select   = "#define[ \t]*__(i386|i860|mips|sparc|m88k|m68k)[ \t]";
-    sed      = "/#define[ \t]*__\\(i386|i860|mips|sparc|m88k|m68k\\)[ \t]/d";
+    select   = "#define[ \t]*__(i386|mips|sparc|m88k|m68k)[ \t]";
+    sed      = "/#define[ \t]*__\\(i386|mips|sparc|m88k|m68k\\)[ \t]/d";
 };
 #endif
 
