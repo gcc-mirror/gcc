@@ -227,6 +227,9 @@ extern tree return_address_type_node;
 extern tree boolean_true_node, boolean_false_node;
 
 /* Integer constants not declared in tree.h. */
+extern tree long_zero_node;
+extern tree float_zero_node;
+extern tree double_zero_node;
 extern tree integer_negative_one_node;
 extern tree integer_two_node;
 extern tree integer_four_node;
