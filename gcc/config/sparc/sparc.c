@@ -709,9 +709,9 @@ cc_arithopn (op, mode)
 	  || GET_CODE (op) == IOR);
 }
 
-/* Return true if OP is a register, or is a CONST_INT that can fit in a 13
-   bit immediate field.  This is an acceptable SImode operand for most 3
-   address instructions.  */
+/* Return true if OP is a register, or is a CONST_INT that can fit in a
+   signed 13 bit immediate field.  This is an acceptable SImode operand for
+   most 3 address instructions.  */
 
 int
 arith_operand (op, mode)
@@ -722,9 +722,9 @@ arith_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && SMALL_INT (op)));
 }
 
-/* Return true if OP is a register, or is a CONST_INT that can fit in an 11
-   bit immediate field.  This is an acceptable SImode operand for the movcc
-   instructions.  */
+/* Return true if OP is a register, or is a CONST_INT that can fit in a
+   signed 11 bit immediate field.  This is an acceptable SImode operand for
+   the movcc instructions.  */
 
 int
 arith11_operand (op, mode)
@@ -732,13 +732,12 @@ arith11_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT
-	      && ((unsigned) (INTVAL (op) + 0x400) < 0x800)));
+	  || (GET_CODE (op) == CONST_INT && SPARC_SIMM11_P (INTVAL (op))));
 }
 
-/* Return true if OP is a register, or is a CONST_INT that can fit in an 10
-   bit immediate field.  This is an acceptable SImode operand for the movrcc
-   instructions.  */
+/* Return true if OP is a register, or is a CONST_INT that can fit in a
+   signed 10 bit immediate field.  This is an acceptable SImode operand for
+   the movrcc instructions.  */
 
 int
 arith10_operand (op, mode)
@@ -746,8 +745,7 @@ arith10_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT
-	      && ((unsigned) (INTVAL (op) + 0x200) < 0x400)));
+	  || (GET_CODE (op) == CONST_INT && SPARC_SIMM10_P (INTVAL (op))));
 }
 
 /* Return true if OP is a register, is a CONST_INT that fits in a 13 bit
