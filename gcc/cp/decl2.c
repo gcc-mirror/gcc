@@ -215,7 +215,7 @@ int warn_extern_inline;
 #endif
 int dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
 
-/* Nonzero for -no-strict-prototype switch: do not consider empty
+/* Nonzero for -fno-strict-prototype switch: do not consider empty
    argument prototype to mean function takes no arguments.  */
 
 int strict_prototype = 1;

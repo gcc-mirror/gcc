@@ -5336,6 +5336,7 @@ build_modify_expr (lhs, modifycode, rhs)
   tree newrhs = rhs;
   tree lhstype = TREE_TYPE (lhs);
   tree olhstype = lhstype;
+  tree olhs = lhs;
 
   /* Types that aren't fully specified cannot be used in assignments.  */
   lhs = require_complete_type (lhs);
@@ -5933,7 +5934,11 @@ build_modify_expr (lhs, modifycode, rhs)
      for enum bit fields. */
   if (TREE_CODE (TREE_TYPE (result)) == INTEGER_TYPE
       && TREE_CODE (olhstype) == ENUMERAL_TYPE)
-    return convert_force (olhstype, result);
+    {
+      result = build (COMPOUND_EXPR, olhstype, result, olhs);
+      TREE_NO_UNUSED_WARNING (result) = 1;
+      return result;
+    }
   return convert_for_assignment (olhstype, result, "assignment",
 				 NULL_TREE, 0);
 }

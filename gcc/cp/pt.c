@@ -2377,6 +2377,9 @@ do_function_instantiation (declspecs, declarator, storage)
   if (flag_external_templates)
     return;
 
+  if (DECL_EXPLICIT_INSTANTIATION (result) && ! DECL_EXTERNAL (result))
+    return;
+
   SET_DECL_EXPLICIT_INSTANTIATION (result);
   TREE_PUBLIC (result) = 1;
 
@@ -2397,6 +2400,9 @@ do_type_instantiation (name, storage)
   int extern_p;
 
   if (flag_external_templates)
+    return;
+
+  if (CLASSTYPE_EXPLICIT_INSTANTIATION (t) && ! CLASSTYPE_INTERFACE_ONLY (t))
     return;
 
   if (TYPE_SIZE (t) == NULL_TREE)

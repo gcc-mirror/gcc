@@ -844,7 +844,6 @@ static tree
 process_init_constructor (type, init, elts)
      tree type, init, *elts;
 {
-  extern tree empty_init_node;
   register tree tail;
   /* List of the elements of the result constructor,
      in reverse order.  */
@@ -917,7 +916,7 @@ process_init_constructor (type, init, elts)
 	  members = tree_cons (NULL_TREE, next1, members);
 	}
     }
-  if (TREE_CODE (type) == RECORD_TYPE && init != empty_init_node)
+  if (TREE_CODE (type) == RECORD_TYPE)
     {
       register tree field;
 
@@ -1010,7 +1009,7 @@ process_init_constructor (type, init, elts)
 	}
     }
 
-  if (TREE_CODE (type) == UNION_TYPE && init != empty_init_node)
+  if (TREE_CODE (type) == UNION_TYPE)
     {
       register tree field = TYPE_FIELDS (type);
       register tree next1;
@@ -1438,7 +1437,7 @@ build_functional_cast (exp, parms)
     return error_mark_node;
 
   if (current_function_decl)
-    return build_cplus_new (type, expr_as_ctor, 0);
+    return build_cplus_new (type, expr_as_ctor, 1);
 
   {
     register tree parm = TREE_OPERAND (expr_as_ctor, 1);

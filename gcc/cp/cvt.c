@@ -337,7 +337,20 @@ build_up_reference (type, arg, flags, checkconst)
 	  TREE_READONLY (arg) = 0;
 	}
 
+#if 0
+      if (TREE_CODE (TREE_TYPE (arg)) == REFERENCE_TYPE)
+	{
+	  rval = copy_node (arg);
+	  TREE_TYPE (rval) = build_pointer_type (TREE_TYPE (TREE_TYPE (arg)));
+	}
+      else
+	rval = arg;
+
+      rval = convert (build_pointer_type (TREE_TYPE (type)), rval);
+      TREE_TYPE (rval) = type;
+#else
       rval = build1 (CONVERT_EXPR, type, arg);
+#endif
       TREE_REFERENCE_EXPR (rval) = 1;
 
       /* propagate the const flag on something like:
@@ -372,7 +385,7 @@ build_up_reference (type, arg, flags, checkconst)
 	}
       literal_flag = TREE_CONSTANT (arg);
 
-      goto done_but_maybe_warn;
+      goto done;
 
       /* Get this out of a register if we happened to be in one by accident.
 	 Also, build up references to non-lvalues it we must.  */
@@ -409,7 +422,7 @@ build_up_reference (type, arg, flags, checkconst)
       TREE_TYPE (rval) = type;
       literal_flag = staticp (TREE_OPERAND (targ, 0));
 
-      goto done_but_maybe_warn;
+      goto done;
 
       /* Anything not already handled and not a true memory reference
 	 needs to have a reference built up.  Do so silently for
@@ -537,7 +550,12 @@ build_up_reference (type, arg, flags, checkconst)
       if (TREE_CODE (targ) == CALL_EXPR && IS_AGGR_TYPE (argtype))
 	{
 	  temp = build_cplus_new (argtype, targ, 1);
-	  rval = build1 (ADDR_EXPR, type, temp);
+	  if (TREE_CODE (temp) == WITH_CLEANUP_EXPR)
+	    rval = build (WITH_CLEANUP_EXPR, type,
+			  build1 (ADDR_EXPR, type, TREE_OPERAND (temp, 0)),
+			  0, TREE_OPERAND (temp, 2));
+	  else
+	    rval = build1 (ADDR_EXPR, type, temp);
 	  goto done;
 	}
       else
@@ -571,10 +589,6 @@ build_up_reference (type, arg, flags, checkconst)
     }
   else
     rval = build1 (ADDR_EXPR, type, arg);
-
- done_but_maybe_warn:
-  if (checkconst && TREE_READONLY (arg) && ! TYPE_READONLY (target_type))
-    readonly_error (arg, "conversion to reference", 1);
 
  done:
   if (TYPE_USES_COMPLEX_INHERITANCE (argtype))
@@ -636,7 +650,11 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	  if (form == REFERENCE_TYPE)
 	    ttr = TREE_TYPE (TREE_TYPE (expr));
 	  else
-	    ttr = TREE_TYPE (expr);
+	    {
+	      int r = TREE_READONLY (expr);
+	      int v = TREE_THIS_VOLATILE (expr);
+	      ttr = c_build_type_variant (TREE_TYPE (expr), r, v);
+	    }
 
 	  if (! lvalue_p (expr) &&
 	      (decl == NULL_TREE || ! TYPE_READONLY (ttl)))
@@ -653,46 +671,20 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	    {
 	      if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
 		cp_pedwarn ("conversion from `%T' to `%T' discards const",
-			    TREE_TYPE (expr), reftype);
+			    ttr, reftype);
 	      else if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
 		cp_pedwarn ("conversion from `%T' to `%T' discards volatile",
-			    TREE_TYPE (expr), reftype);
+			    ttr, reftype);
 	    }
 	}
-      
-      /* If EXPR is of aggregate type, and is really a CALL_EXPR,
-	 then we don't need to convert it to reference type if
-	 it is only being used to initialize DECL which is also
-	 of the same aggregate type.  */
-      if (decl != NULL_TREE && decl != error_mark_node
-	  && IS_AGGR_TYPE (type)
-	  && TREE_CODE (expr) == CALL_EXPR
-	  && TYPE_MAIN_VARIANT (type) == intype)
-	{
-	  tree e1 = build (INIT_EXPR, void_type_node, decl, expr);
-	  tree e2;
 
-	  TREE_SIDE_EFFECTS (e1) = 1;
-	  if (form == REFERENCE_TYPE)
-	    e2 = build1 (NOP_EXPR, reftype, decl);
-	  else
-	    {
-	      e2 = build_unary_op (ADDR_EXPR, decl, 0);
-	      TREE_TYPE (e2) = reftype;
-	      TREE_REFERENCE_EXPR (e2) = 1;
-	    }
-	  return build_compound_expr
-	    (tree_cons (NULL_TREE, e1, build_tree_list (NULL_TREE, e2)));
-	}
-
-      else if (form == REFERENCE_TYPE)
+      if (form == REFERENCE_TYPE)
 	{
-	  rval = build1 (NOP_EXPR,
-			 build_pointer_type (TREE_TYPE (TREE_TYPE (expr))),
-			 expr);
+	  rval = copy_node (expr);
+	  TREE_TYPE (rval) = build_pointer_type (TREE_TYPE (TREE_TYPE (expr)));
 	  rval = cp_convert (build_pointer_type (TREE_TYPE (reftype)), rval,
 			     convtype, flags);
-	  rval = build1 (NOP_EXPR, reftype, rval);
+	  TREE_TYPE (rval) = reftype;
 	  return rval;
 	}
 
@@ -1364,7 +1356,7 @@ cp_convert (type, expr, convtype, flags)
 		      return error_mark_node;
 		    }
 		  /* call to constructor successful.  */
-		  rval = build_cplus_new (type, rval, 0);
+		  rval = build_cplus_new (type, rval, 1);
 		  return rval;
 		}
 	    }
@@ -1415,7 +1407,7 @@ cp_convert (type, expr, convtype, flags)
 	      cp_error ("in conversion to type `%T'", type);
 	      return error_mark_node;
 	    }
-	  rval = build_cplus_new (type, init, 0);
+	  rval = build_cplus_new (type, init, 1);
 	  return rval;
 	}
     }

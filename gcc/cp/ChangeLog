@@ -1,3 +1,91 @@
+Thu Jun 23 00:22:28 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (grokdeclarator): Set explicit_int for decls that just
+	specify, say, 'long'.
+
+	* init.c (do_friend): Do overload C functions (or call pushdecl,
+        anyaway).
+
+Wed Jun 22 13:40:49 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* cvt.c (build_up_reference): Don't call readonly_error.
+	(convert_to_reference): Propagate const and volatile from expr to
+	its type.
+
+	* tree.c (lvalue_p): Random CALL_EXPRs are not lvalues.
+
+	* cvt.c (build_up_reference): Break out WITH_CLEANUP_EXPR when
+	creating a temporary.
+	(convert_to_reference): Lose excessive and incorrect trickiness.
+	(cp_convert): Call build_cplus_new with with_cleanup_p set.
+
+	* typeck2.c (build_functional_cast): Ditto.
+
+Tue Jun 21 17:38:38 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (grokdeclarator): signed, unsigned, long and short all
+	imply 'int'.
+
+	* decl.c (grokdeclarator): Allow "this is a type" syntax.
+	(grok_reference_init): Simplify and fix.
+
+Sun Jun 19 17:08:48 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (grokdeclarator): pedwarn about a typedef that specifies no
+	type.
+
+Sat Jun 18 04:16:50 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (start_function): Move TREE_PUBLIC and DECL_EXTERNAL
+	tinkering to after call to pushdecl.
+
+Fri Jun 17 14:48:28 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* call.c (build_method_call): Handle destructors for non-aggregate
+	types properly.
+
+Thu Jun 16 16:48:05 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* call.c (build_method_call): Make sure that the name given for the
+	destructor matches the constructor_name of the instance.
+
+	* pt.c (do_function_instantiation): A non-extern instantiation
+	overrides a later extern one.
+	(do_type_instantiation): Ditto.
+
+Wed Jun 15 19:34:54 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* init.c (expand_aggr_init): Use TYPE_MAIN_VARIANT to get the
+	unqualified array type.
+
+	* cp-tree.h (EMPTY_CONSTRUCTOR_P): Tests whether NODE is a
+	CONSTRUCTOR with no elements.
+
+	* decl.c (various): Lose empty_init_node.
+	(finish_decl): Use EMPTY_CONSTRUCTOR_P, do the empty CONSTRUCTOR
+	thing depending on the value of DECL_COMMON instead of
+	flag_conserve_space, do the empty CONSTRUCTOR thing for types that
+	don't have constructors, don't treat a real empty CONSTRUCTOR
+	specially.
+
+	* typeck2.c (process_init_constructor): Don't treat empty_init_node
+	specially.
+
+Wed Jun 15 19:05:25 1994  Mike Stump  (mrs@cygnus.com)
+
+	* class.c (override_one_vtable): Don't forget to merge in an old
+	overrider when we wanted to reuse a vtable, but couldn't.
+
+Wed Jun 15 15:03:16 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (start_decl): Put statics in common again.
+
+	* decl.c (grokdeclarator): Return NULL_TREE for an error rather than
+	setting the type to error_mark_node.
+
+	* typeck.c (build_modify_expr): Build up a COMPOUND_EXPR for enum
+	bitfield assignments.
+
 Tue Jun 14 12:23:38 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* decl.c (grok_op_properties): Const objects can be passed by value.

@@ -74,12 +74,6 @@ lvalue_p (ref)
 	case WITH_CLEANUP_EXPR:
 	  return 1;
 
-	case CALL_EXPR:
-	  /* unary_complex_lvalue knows how to deal with this case.  */
-	  if (TREE_ADDRESSABLE (TREE_TYPE (ref)))
-	    return 1;
-	  break;
-
 	  /* A currently unresolved scope ref.  */
 	case SCOPE_REF:
 	  my_friendly_abort (103);
