@@ -2854,6 +2854,13 @@ codes and vice versa.
 If the machine does not have conditional move instructions, do not
 define these patterns.
 
+@cindex @code{add@var{mode}cc} instruction pattern
+@item @samp{mov@var{mode}cc}
+Similar to @samp{mov@var{mode}cc} but for conditional addition.  Conditionally
+move operand 2 or (operands 2 + operand 3) into operand 0 according to the
+comparison in operand 1.  If the comparison is true, operand 2 is moved into
+operand 0, otherwise operand 3 is moved.
+
 @cindex @code{s@var{cond}} instruction pattern
 @item @samp{s@var{cond}}
 Store zero or nonzero in the operand according to the condition codes.

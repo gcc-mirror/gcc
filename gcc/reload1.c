@@ -7608,6 +7608,11 @@ delete_output_reload (insn, j, last_reload_reg)
   rtx i1;
   rtx substed;
 
+  /* It is possible that this reload has been only used to set another reload
+     we eliminated earlier and thus deleted this instruction too.  */
+  if (INSN_DELETED_P (output_reload_insn))
+    return;
+
   /* Get the raw pseudo-register referred to.  */
 
   while (GET_CODE (reg) == SUBREG)
