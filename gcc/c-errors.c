@@ -1,5 +1,5 @@
 /* Various diagnostic subroutines for the GNU C language.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -38,7 +38,7 @@ pedwarn_c99 VPARAMS ((const char *msgid, ...))
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, lineno,
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
                        flag_isoc99 ? pedantic_error_kind () : DK_WARNING);
   report_diagnostic (&diagnostic);
   VA_CLOSE (ap);

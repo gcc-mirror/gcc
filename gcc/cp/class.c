@@ -5252,7 +5252,7 @@ tree
 finish_struct (tree t, tree attributes)
 {
   const char *saved_filename = input_filename;
-  int saved_lineno = lineno;
+  int saved_lineno = input_line;
 
   /* Now that we've got all the field declarations, reverse everything
      as necessary.  */
@@ -5263,7 +5263,7 @@ finish_struct (tree t, tree attributes)
   /* Nadger the current location so that diagnostics point to the start of
      the struct, not the end.  */
   input_filename = DECL_SOURCE_FILE (TYPE_NAME (t));
-  lineno = DECL_SOURCE_LINE (TYPE_NAME (t));
+  input_line = DECL_SOURCE_LINE (TYPE_NAME (t));
 
   if (processing_template_decl)
     {
@@ -5274,7 +5274,7 @@ finish_struct (tree t, tree attributes)
     finish_struct_1 (t);
 
   input_filename = saved_filename;
-  lineno = saved_lineno;
+  input_line = saved_lineno;
 
   TYPE_BEING_DEFINED (t) = 0;
 

@@ -190,7 +190,7 @@ treelang_init ()
   in_fname = main_input_filename;
 
   /* Set up the declarations needed for this front end.  */
-  lineno = 0;
+  input_line = 0;
 
   /* Init decls etc.  */
 

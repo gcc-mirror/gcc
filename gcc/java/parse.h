@@ -70,7 +70,7 @@ extern tree stabilize_reference (tree);
 #define RECOVER     {yyerrok; RECOVERED;}
 
 #define YYERROR_NOW ctxp->java_error_flag = 1
-#define YYNOT_TWICE if (ctxp->prevent_ese != lineno)
+#define YYNOT_TWICE if (ctxp->prevent_ese != input_line)
 
 /* Accepted modifiers */
 #define CLASS_MODIFIERS ACC_PUBLIC|ACC_ABSTRACT|ACC_FINAL|ACC_STRICT

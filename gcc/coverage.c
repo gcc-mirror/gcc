@@ -800,7 +800,7 @@ create_coverage ()
   current_function_decl = ctor;
   DECL_INITIAL (ctor) = error_mark_node;
   make_decl_rtl (ctor, NULL);
-  init_function_start (ctor, input_filename, lineno);
+  init_function_start (ctor, input_filename, input_line);
   (*lang_hooks.decls.pushlevel) (0);
   expand_function_start (ctor, 0);
   cfun->arc_profile = 0;
@@ -810,7 +810,7 @@ create_coverage ()
   emit_library_call (gcov_init_libfunc, LCT_NORMAL, VOIDmode, 1,
 		     gcov_info_address, Pmode);
 
-  expand_function_end (input_filename, lineno, 0);
+  expand_function_end (input_filename, input_line, 0);
   (*lang_hooks.decls.poplevel) (1, 0, 1);
 
   /* Since ctor isn't in the list of globals, it would never be emitted

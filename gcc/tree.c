@@ -1,6 +1,6 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -308,7 +308,7 @@ make_node (code)
 	DECL_ALIGN (t) = 1;
       DECL_USER_ALIGN (t) = 0;
       DECL_IN_SYSTEM_HEADER (t) = in_system_header;
-      DECL_SOURCE_LINE (t) = lineno;
+      DECL_SOURCE_LINE (t) = input_line;
       DECL_SOURCE_FILE (t) =
 	(input_filename) ? input_filename : "<built-in>";
       DECL_UID (t) = next_decl_uid++;

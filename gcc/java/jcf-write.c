@@ -1425,17 +1425,17 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
       {
 	const char *saved_input_filename = input_filename;
 	tree body = EXPR_WFL_NODE (exp);
-	int saved_lineno = lineno;
+	int saved_lineno = input_line;
 	if (body == empty_stmt_node)
 	  break;
 	input_filename = EXPR_WFL_FILENAME (exp);
-	lineno = EXPR_WFL_LINENO (exp);
-	if (EXPR_WFL_EMIT_LINE_NOTE (exp) && lineno > 0
+	input_line = EXPR_WFL_LINENO (exp);
+	if (EXPR_WFL_EMIT_LINE_NOTE (exp) && input_line > 0
 	    && debug_info_level > DINFO_LEVEL_NONE)
-	  put_linenumber (lineno, state);
+	  put_linenumber (input_line, state);
 	generate_bytecode_insns (body, target, state);
 	input_filename = saved_input_filename;
-	lineno = saved_lineno;
+	input_line = saved_lineno;
       }
       break;
     case INTEGER_CST:

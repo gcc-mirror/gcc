@@ -441,7 +441,7 @@ objc_init ()
   /* Force the line number back to 0; check_newline will have
      raised it to 1, which will make the builtin functions appear
      not to be built in.  */
-  lineno = 0;
+  input_line = 0;
 
   /* If gen_declaration desired, open the output file.  */
   if (flag_gen_declaration)
@@ -1697,24 +1697,24 @@ build_module_descriptor ()
 
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_LONG]);
   field_decl = get_identifier ("version");
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   field_decl_chain = field_decl;
 
   /* long  size; */
 
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_LONG]);
   field_decl = get_identifier ("size");
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* char  *name; */
 
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_CHAR]);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("name"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* struct objc_symtab *symtab; */
@@ -1722,8 +1722,8 @@ build_module_descriptor ()
   decl_specs = get_identifier (UTAG_SYMTAB);
   decl_specs = build_tree_list (NULL_TREE, xref_tag (RECORD_TYPE, decl_specs));
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("symtab"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   finish_struct (objc_module_template, field_decl_chain, NULL_TREE);
@@ -2049,12 +2049,12 @@ build_selector_translation_table ()
         if (!found)
           {
             /* Adjust line number for warning message.  */
-            int save_lineno = lineno;
+            int save_lineno = input_line;
             if (flag_next_runtime && TREE_PURPOSE (chain))
-              lineno = DECL_SOURCE_LINE (TREE_PURPOSE (chain));
+              input_line = DECL_SOURCE_LINE (TREE_PURPOSE (chain));
             warning ("creating selector for non existant method %s",
                      IDENTIFIER_POINTER (TREE_VALUE (chain)));
-            lineno = save_lineno;
+            input_line = save_lineno;
           }
       }
 
@@ -2565,8 +2565,8 @@ build_protocol_template ()
   decl_specs = build_tree_list (NULL_TREE, xref_tag (RECORD_TYPE,
 					get_identifier (UTAG_CLASS)));
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("isa"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   field_decl_chain = field_decl;
 
   /* char *protocol_name; */
@@ -2574,8 +2574,8 @@ build_protocol_template ()
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_CHAR]);
   field_decl
     = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("protocol_name"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* struct objc_protocol **protocol_list; */
@@ -2584,8 +2584,8 @@ build_protocol_template ()
   field_decl
     = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("protocol_list"));
   field_decl = build1 (INDIRECT_REF, NULL_TREE, field_decl);
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* struct objc_method_list *instance_methods; */
@@ -2596,8 +2596,8 @@ build_protocol_template ()
 				 get_identifier (UTAG_METHOD_PROTOTYPE_LIST)));
   field_decl
     = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("instance_methods"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* struct objc_method_list *class_methods; */
@@ -2608,8 +2608,8 @@ build_protocol_template ()
 				 get_identifier (UTAG_METHOD_PROTOTYPE_LIST)));
   field_decl
     = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("class_methods"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   return finish_struct (template, field_decl_chain, NULL_TREE);
@@ -2672,9 +2672,8 @@ build_method_prototype_list_template (list_type, size)
 
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_INT]);
   field_decl = get_identifier ("method_count");
-
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   field_decl_chain = field_decl;
 
   /* struct objc_method method_list[]; */
@@ -2682,9 +2681,8 @@ build_method_prototype_list_template (list_type, size)
   decl_specs = build_tree_list (NULL_TREE, list_type);
   field_decl = build_nt (ARRAY_REF, get_identifier ("method_list"),
 			 build_int_2 (size, 0));
-
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   finish_struct (objc_ivar_list_record, field_decl_chain, NULL_TREE);
@@ -2705,16 +2703,15 @@ build_method_prototype_template ()
   decl_specs = tree_cons (NULL_TREE, xref_tag (RECORD_TYPE,
 		          get_identifier (TAG_SELECTOR)), NULL_TREE);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("_cmd"));
-
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   field_decl_chain = field_decl;
 
   decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_CHAR], NULL_TREE);
   field_decl
     = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("method_types"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   finish_struct (proto_record, field_decl_chain, NULL_TREE);
@@ -3249,16 +3246,16 @@ build_category_template ()
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_CHAR]);
   field_decl
     = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("category_name"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   field_decl_chain = field_decl;
 
   /* char *class_name; */
 
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_CHAR]);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("class_name"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* struct objc_method_list *instance_methods; */
@@ -3268,8 +3265,8 @@ build_category_template ()
 					  get_identifier (UTAG_METHOD_LIST)));
   field_decl
     = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("instance_methods"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* struct objc_method_list *class_methods; */
@@ -3279,8 +3276,8 @@ build_category_template ()
 					  get_identifier (UTAG_METHOD_LIST)));
   field_decl
     = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("class_methods"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* struct objc_protocol **protocol_list; */
@@ -3291,8 +3288,8 @@ build_category_template ()
   field_decl
     = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("protocol_list"));
   field_decl = build1 (INDIRECT_REF, NULL_TREE, field_decl);
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   finish_struct (objc_category_template, field_decl_chain, NULL_TREE);
@@ -3316,16 +3313,16 @@ build_selector_template ()
 
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_VOID]);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("sel_id"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   field_decl_chain = field_decl;
 
   /* char *sel_type; */
 
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_CHAR]);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("sel_type"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   finish_struct (objc_selector_template, field_decl_chain, NULL_TREE);
@@ -3363,8 +3360,8 @@ build_class_template ()
 
   decl_specs = build_tree_list (NULL_TREE, objc_class_template);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("isa"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   field_decl_chain = field_decl;
 
   /* struct objc_class *super_class; */
@@ -3372,40 +3369,40 @@ build_class_template ()
   decl_specs = build_tree_list (NULL_TREE, objc_class_template);
   field_decl
     = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("super_class"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* char *name; */
 
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_CHAR]);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("name"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* long version; */
 
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_LONG]);
   field_decl = get_identifier ("version");
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* long info; */
 
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_LONG]);
   field_decl = get_identifier ("info");
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* long instance_size; */
 
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_LONG]);
   field_decl = get_identifier ("instance_size");
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* struct objc_ivar_list *ivars; */
@@ -3414,8 +3411,8 @@ build_class_template ()
 				xref_tag (RECORD_TYPE,
 					  get_identifier (UTAG_IVAR_LIST)));
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("ivars"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* struct objc_method_list *methods; */
@@ -3424,8 +3421,8 @@ build_class_template ()
 				xref_tag (RECORD_TYPE,
 					  get_identifier (UTAG_METHOD_LIST)));
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("methods"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   if (flag_next_runtime)
@@ -3436,7 +3433,7 @@ build_class_template ()
 				    xref_tag (RECORD_TYPE,
 					      get_identifier ("objc_cache")));
       field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("cache"));
-      field_decl = grokfield (input_filename, lineno, field_decl,
+      field_decl = grokfield (input_filename, input_line, field_decl,
 			      decl_specs, NULL_TREE);
       chainon (field_decl_chain, field_decl);
     }
@@ -3448,7 +3445,7 @@ build_class_template ()
 				    xref_tag (RECORD_TYPE,
 					      get_identifier ("sarray")));
       field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("dtable"));
-      field_decl = grokfield (input_filename, lineno, field_decl,
+      field_decl = grokfield (input_filename, input_line, field_decl,
 			      decl_specs, NULL_TREE);
       chainon (field_decl_chain, field_decl);
 
@@ -3457,7 +3454,7 @@ build_class_template ()
       decl_specs = build_tree_list (NULL_TREE, objc_class_template);
       field_decl
 	= build1 (INDIRECT_REF, NULL_TREE, get_identifier ("subclass_list"));
-      field_decl = grokfield (input_filename, lineno, field_decl,
+      field_decl = grokfield (input_filename, input_line, field_decl,
 			      decl_specs, NULL_TREE);
       chainon (field_decl_chain, field_decl);
 
@@ -3466,7 +3463,7 @@ build_class_template ()
       decl_specs = build_tree_list (NULL_TREE, objc_class_template);
       field_decl
 	= build1 (INDIRECT_REF, NULL_TREE, get_identifier ("sibling_class"));
-      field_decl = grokfield (input_filename, lineno, field_decl,
+      field_decl = grokfield (input_filename, input_line, field_decl,
 			      decl_specs, NULL_TREE);
       chainon (field_decl_chain, field_decl);
     }
@@ -3480,7 +3477,7 @@ build_class_template ()
     = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("protocol_list"));
   field_decl
     = build1 (INDIRECT_REF, NULL_TREE, field_decl);
-  field_decl = grokfield (input_filename, lineno, field_decl,
+  field_decl = grokfield (input_filename, input_line, field_decl,
 			  decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
@@ -3488,16 +3485,16 @@ build_class_template ()
 
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_VOID]);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("sel_id"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   /* void *gc_object_type; */
 
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_VOID]);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("gc_object_type"));
-  field_decl
-    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  field_decl = grokfield (input_filename, input_line,
+			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
   finish_struct (objc_class_template, field_decl_chain, NULL_TREE);
@@ -3624,7 +3621,7 @@ build_super_template ()
   decl_specs = build_tree_list (NULL_TREE, objc_object_reference);
   field_decl = get_identifier ("self");
   field_decl = build1 (INDIRECT_REF, NULL_TREE, field_decl);
-  field_decl = grokfield (input_filename, lineno,
+  field_decl = grokfield (input_filename, input_line,
 			  field_decl, decl_specs, NULL_TREE);
   field_decl_chain = field_decl;
 
@@ -3634,7 +3631,7 @@ build_super_template ()
   decl_specs = build_tree_list (NULL_TREE, xref_tag (RECORD_TYPE, decl_specs));
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("class"));
 
-  field_decl = grokfield (input_filename, lineno,
+  field_decl = grokfield (input_filename, input_line,
 			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
@@ -3668,7 +3665,7 @@ build_ivar_template ()
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_CHAR]);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("ivar_name"));
 
-  field_decl = grokfield (input_filename, lineno, field_decl,
+  field_decl = grokfield (input_filename, input_line, field_decl,
 			  decl_specs, NULL_TREE);
   field_decl_chain = field_decl;
 
@@ -3677,7 +3674,7 @@ build_ivar_template ()
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_CHAR]);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("ivar_type"));
 
-  field_decl = grokfield (input_filename, lineno, field_decl,
+  field_decl = grokfield (input_filename, input_line, field_decl,
 			  decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
@@ -3686,7 +3683,7 @@ build_ivar_template ()
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_INT]);
   field_decl = get_identifier ("ivar_offset");
 
-  field_decl = grokfield (input_filename, lineno, field_decl,
+  field_decl = grokfield (input_filename, input_line, field_decl,
 			  decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
@@ -3715,7 +3712,7 @@ build_ivar_list_template (list_type, size)
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_INT]);
   field_decl = get_identifier ("ivar_count");
 
-  field_decl = grokfield (input_filename, lineno, field_decl,
+  field_decl = grokfield (input_filename, input_line, field_decl,
 			  decl_specs, NULL_TREE);
   field_decl_chain = field_decl;
 
@@ -3725,7 +3722,7 @@ build_ivar_list_template (list_type, size)
   field_decl = build_nt (ARRAY_REF, get_identifier ("ivar_list"),
 			 build_int_2 (size, 0));
 
-  field_decl = grokfield (input_filename, lineno,
+  field_decl = grokfield (input_filename, input_line,
 			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
@@ -3759,7 +3756,7 @@ build_method_list_template (list_type, size)
 		 get_identifier (UTAG_METHOD_PROTOTYPE_LIST)));
   field_decl
     = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("method_next"));
-  field_decl = grokfield (input_filename, lineno, field_decl,
+  field_decl = grokfield (input_filename, input_line, field_decl,
 			  decl_specs, NULL_TREE);
   field_decl_chain = field_decl;
 
@@ -3768,7 +3765,7 @@ build_method_list_template (list_type, size)
   decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_INT]);
   field_decl = get_identifier ("method_count");
 
-  field_decl = grokfield (input_filename, lineno,
+  field_decl = grokfield (input_filename, input_line,
 			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
@@ -3778,7 +3775,7 @@ build_method_list_template (list_type, size)
   field_decl = build_nt (ARRAY_REF, get_identifier ("method_list"),
 			 build_int_2 (size, 0));
 
-  field_decl = grokfield (input_filename, lineno,
+  field_decl = grokfield (input_filename, input_line,
 			  field_decl, decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
@@ -3983,14 +3980,14 @@ build_method_template ()
 			  NULL_TREE);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("_cmd"));
 
-  field_decl = grokfield (input_filename, lineno, field_decl,
+  field_decl = grokfield (input_filename, input_line, field_decl,
 			  decl_specs, NULL_TREE);
   field_decl_chain = field_decl;
 
   decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_CHAR], NULL_TREE);
   field_decl = build1 (INDIRECT_REF, NULL_TREE,
 		       get_identifier ("method_types"));
-  field_decl = grokfield (input_filename, lineno, field_decl,
+  field_decl = grokfield (input_filename, input_line, field_decl,
 			  decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
@@ -3998,7 +3995,7 @@ build_method_template ()
 
   decl_specs = tree_cons (NULL_TREE, ridpointers[(int) RID_VOID], NULL_TREE);
   field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("_imp"));
-  field_decl = grokfield (input_filename, lineno, field_decl,
+  field_decl = grokfield (input_filename, input_line, field_decl,
 			  decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
@@ -5828,7 +5825,7 @@ add_instance_variable (class, public, declarator, declspecs, width)
   else
     CLASS_RAW_IVARS (class) = raw_decl;
 
-  field_decl = grokfield (input_filename, lineno,
+  field_decl = grokfield (input_filename, input_line,
 			  declarator, declspecs, width);
 
   /* Overload the public attribute, it is not used for FIELD_DECLs.  */

@@ -228,7 +228,7 @@ fe_file_change (new_map)
 	{
           int included_at = SOURCE_LINE (new_map - 1, new_map->from_line - 1);
 
-	  lineno = included_at;
+	  input_line = included_at;
 	  push_srcloc (new_map->to_file, 1);
 	  (*debug_hooks->start_source_file) (included_at, new_map->to_file);
 #ifndef NO_IMPLICIT_EXTERN_C
@@ -260,7 +260,7 @@ fe_file_change (new_map)
   update_header_times (new_map->to_file);
   in_system_header = new_map->sysp != 0;
   input_filename = new_map->to_file;
-  lineno = to_line;
+  input_line = to_line;
   map = new_map;
 
   /* Hook for C++.  */
@@ -290,7 +290,7 @@ cb_def_pragma (pfile, line)
 	    name = cpp_token_as_text (pfile, s);
 	}
 
-      lineno = SOURCE_LINE (map, line);
+      input_line = SOURCE_LINE (map, line);
       warning ("ignoring #pragma %s %s", space, name);
     }
 }
@@ -333,7 +333,7 @@ c_lex (value)
   /* The C++ front end does horrible things with the current line
      number.  To ensure an accurate line number, we must reset it
      every time we return a token.  */
-  lineno = src_lineno;
+  input_line = src_lineno;
 
   *value = NULL_TREE;
   switch (tok->type)

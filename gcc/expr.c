@@ -6933,15 +6933,15 @@ expand_expr (exp, target, tmode, modifier)
       {
 	rtx to_return;
 	const char *saved_input_filename = input_filename;
-	int saved_lineno = lineno;
+	int saved_lineno = input_line;
 	input_filename = EXPR_WFL_FILENAME (exp);
-	lineno = EXPR_WFL_LINENO (exp);
+	input_line = EXPR_WFL_LINENO (exp);
 	if (EXPR_WFL_EMIT_LINE_NOTE (exp))
-	  emit_line_note (input_filename, lineno);
+	  emit_line_note (input_filename, input_line);
 	/* Possibly avoid switching back and forth here.  */
 	to_return = expand_expr (EXPR_WFL_NODE (exp), target, tmode, modifier);
 	input_filename = saved_input_filename;
-	lineno = saved_lineno;
+	input_line = saved_lineno;
 	return to_return;
       }
 

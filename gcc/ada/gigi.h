@@ -7,7 +7,7 @@
  *                              C Header File                               *
  *                                                                          *
  *                                                                          *
- *          Copyright (C) 1992-2002 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -192,9 +192,9 @@ extern tree gnat_to_gnu		PARAMS ((Node_Id));
 
 extern void process_type	PARAMS ((Entity_Id));
 
-/* Determine the input_filename and the lineno from the source location
+/* Determine the input_filename and the input_line from the source location
    (Sloc) of GNAT_NODE node.  Set the global variable input_filename and
-   lineno.  If WRITE_NOTE_P is true, emit a line number note. */
+   input_line.  If WRITE_NOTE_P is true, emit a line number note. */
 extern void set_lineno		PARAMS ((Node_Id, int));
 
 /* Post an error message.  MSG is the error message, properly annotated.

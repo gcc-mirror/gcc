@@ -890,15 +890,15 @@ check_init (tree exp, words before)
 	const char *saved_input_filename = input_filename;
 	tree saved_wfl = wfl;
 	tree body = EXPR_WFL_NODE (exp);
-	int saved_lineno = lineno;
+	int saved_lineno = input_line;
 	if (body == empty_stmt_node)
 	  break;
 	wfl = exp;
 	input_filename = EXPR_WFL_FILENAME (exp);
-	lineno = EXPR_WFL_LINENO (exp);
+	input_line = EXPR_WFL_LINENO (exp);
 	check_init (body, before);
 	input_filename = saved_input_filename;
-	lineno = saved_lineno;
+	input_line = saved_lineno;
 	wfl = saved_wfl;
       }
       break;

@@ -7,7 +7,7 @@
  *                          C Implementation File                           *
  *                                                                          *
  *                                                                          *
- *          Copyright (C) 1992-2002, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2003, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -479,7 +479,7 @@ pushdecl (decl)
 void
 gnat_init_decl_processing ()
 {
-  lineno = 0;
+  input_line = 0;
 
   /* Make the binding_level structure for global names.  */
   current_function_decl = 0;
@@ -1663,7 +1663,7 @@ create_label_decl (label_name)
 
   DECL_CONTEXT (label_decl)     = current_function_decl;
   DECL_MODE (label_decl)        = VOIDmode;
-  DECL_SOURCE_LINE (label_decl) = lineno;
+  DECL_SOURCE_LINE (label_decl) = input_line;
   DECL_SOURCE_FILE (label_decl) = input_filename;
 
   return label_decl;
@@ -1781,7 +1781,7 @@ begin_subprog_body (subprog_decl)
   /* Store back the PARM_DECL nodes. They appear in the right order. */
   DECL_ARGUMENTS (subprog_decl) = getdecls ();
 
-  init_function_start (subprog_decl, input_filename, lineno);
+  init_function_start (subprog_decl, input_filename, input_line);
   expand_function_start (subprog_decl, 0);
 
   /* If this function is `main', emit a call to `__main'
@@ -1808,7 +1808,7 @@ end_subprog_body ()
   /* Mark the RESULT_DECL as being in this subprogram. */
   DECL_CONTEXT (DECL_RESULT (current_function_decl)) = current_function_decl;
 
-  expand_function_end (input_filename, lineno, 0);
+  expand_function_end (input_filename, input_line, 0);
 
   /* If this is a nested function, push a new GC context.  That will keep
      local variables on the stack from being collected while we're doing

@@ -1,7 +1,7 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -429,7 +429,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       DECL_RESULT (thunk_fndecl)
 	= build_decl (RESULT_DECL, 0, integer_type_node);
       fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
-      init_function_start (thunk_fndecl, input_filename, lineno);
+      init_function_start (thunk_fndecl, input_filename, input_line);
       current_function_is_thunk = 1;
       assemble_start_function (thunk_fndecl, fnname);
 
@@ -754,7 +754,7 @@ synthesize_method (tree fndecl)
      where the attempt to generate the function occurs, giving the
      user a hint as to why we are attempting to generate the
      function.  */
-  DECL_SOURCE_LINE (fndecl) = lineno;
+  DECL_SOURCE_LINE (fndecl) = input_line;
   DECL_SOURCE_FILE (fndecl) = input_filename;
 
   interface_unknown = 1;

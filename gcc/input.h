@@ -1,6 +1,6 @@
 /* Declarations for variables relating to reading the source file.
    Used by parsers, lexical analyzers, and error message routines.
-   Copyright (C) 1993, 1997, 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1997, 1998, 2000, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,7 +26,7 @@ extern const char *input_filename;
 extern const char *main_input_filename;
 
 /* Line number in current source file.  */
-extern int lineno;
+extern int input_line;
 
 /* Stream for reading from input file.  */
 extern FILE *finput;

@@ -1512,7 +1512,7 @@ build_min_nt VPARAMS ((enum tree_code code, ...))
 
   t = make_node (code);
   length = TREE_CODE_LENGTH (code);
-  TREE_COMPLEXITY (t) = lineno;
+  TREE_COMPLEXITY (t) = input_line;
 
   for (i = 0; i < length; i++)
     {
@@ -1541,7 +1541,7 @@ build_min VPARAMS ((enum tree_code code, tree tt, ...))
   t = make_node (code);
   length = TREE_CODE_LENGTH (code);
   TREE_TYPE (t) = tt;
-  TREE_COMPLEXITY (t) = lineno;
+  TREE_COMPLEXITY (t) = input_line;
 
   for (i = 0; i < length; i++)
     {

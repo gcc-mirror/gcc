@@ -418,7 +418,7 @@ give_name_to_class (JCF *jcf, int i)
 					    JPOOL_UTF_LENGTH (jcf, j));
       this_class = lookup_class (class_name);
       input_filename = DECL_SOURCE_FILE (TYPE_NAME (this_class));
-      lineno = 0;
+      input_line = 0;
       if (main_input_filename == NULL && jcf == main_jcf)
 	main_input_filename = input_filename;
 
@@ -703,13 +703,13 @@ parse_class_file (void)
 {
   tree method, field;
   const char *save_input_filename = input_filename;
-  int save_lineno = lineno;
+  int save_lineno = input_line;
 
   java_layout_seen_class_methods ();
 
   input_filename = DECL_SOURCE_FILE (TYPE_NAME (current_class));
-  lineno = 0;
-  (*debug_hooks->start_source_file) (lineno, input_filename);
+  input_line = 0;
+  (*debug_hooks->start_source_file) (input_line, input_filename);
   init_outgoing_cpool ();
 
   /* Currently we always have to emit calls to _Jv_InitClass when
@@ -760,7 +760,7 @@ parse_class_file (void)
 	  continue;
 	}
 
-      lineno = 0;
+      input_line = 0;
       if (DECL_LINENUMBERS_OFFSET (method))
 	{
 	  register int i;
@@ -774,8 +774,8 @@ parse_class_file (void)
 	      int line = GET_u2 (ptr);
 	      /* Set initial lineno lineno to smallest linenumber.
 	       * Needs to be set before init_function_start. */
-	      if (lineno == 0 || line < lineno)
-		lineno = line;
+	      if (input_line == 0 || line < input_line)
+		input_line = line;
 	    }  
 	}
       else
@@ -803,7 +803,7 @@ parse_class_file (void)
 
   (*debug_hooks->end_source_file) (save_lineno);
   input_filename = save_input_filename;
-  lineno = save_lineno;
+  input_line = save_lineno;
 }
 
 /* Parse a source file, as pointed by the current value of INPUT_FILENAME. */

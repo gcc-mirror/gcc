@@ -745,7 +745,7 @@ genrtl_try_block (t)
   else
     {
       if (!FN_TRY_BLOCK_P (t)) 
-	emit_line_note (input_filename, lineno);
+	emit_line_note (input_filename, input_line);
 
       expand_eh_region_start ();
       expand_stmt (TRY_STMTS (t));
@@ -1105,7 +1105,7 @@ tree
 finish_label_stmt (name)
      tree name;
 {
-  tree decl = define_label (input_filename, lineno, name);
+  tree decl = define_label (input_filename, input_line, name);
   return add_stmt (build_stmt (LABEL_STMT, decl));
 }
 
@@ -1805,7 +1805,7 @@ begin_class_definition (t)
 
   /* Update the location of the decl.  */
   DECL_SOURCE_FILE (TYPE_NAME (t)) = input_filename;
-  DECL_SOURCE_LINE (TYPE_NAME (t)) = lineno;
+  DECL_SOURCE_LINE (TYPE_NAME (t)) = input_line;
   
   if (TYPE_BEING_DEFINED (t))
     {
@@ -2386,10 +2386,10 @@ expand_body (fn)
   /* Save the current file name and line number.  When we expand the
      body of the function, we'll set LINENO and INPUT_FILENAME so that
      error-mesages come out in the right places.  */
-  saved_lineno = lineno;
+  saved_lineno = input_line;
   saved_input_filename = input_filename;
   saved_function = current_function_decl;
-  lineno = DECL_SOURCE_LINE (fn);
+  input_line = DECL_SOURCE_LINE (fn);
   input_filename = DECL_SOURCE_FILE (fn);
   current_function_decl = fn;
 
@@ -2413,7 +2413,7 @@ expand_body (fn)
 
   /* The outermost statement for a function contains the line number
      recorded when we finished processing the function.  */
-  lineno = STMT_LINENO (DECL_SAVED_TREE (fn));
+  input_line = STMT_LINENO (DECL_SAVED_TREE (fn));
 
   /* Generate code for the function.  */
   genrtl_finish_function (fn);
@@ -2433,7 +2433,7 @@ expand_body (fn)
 
   /* And restore the current source position.  */
   current_function_decl = saved_function;
-  lineno = saved_lineno;
+  input_line = saved_lineno;
   input_filename = saved_input_filename;
   extract_interface_info ();
 
@@ -2577,7 +2577,7 @@ genrtl_finish_function (fn)
   immediate_size_expand = 1;
 
   /* Generate rtl for function exit.  */
-  expand_function_end (input_filename, lineno, 0);
+  expand_function_end (input_filename, input_line, 0);
 
   /* If this is a nested function (like a template instantiation that
      we're compiling in the midst of compiling something else), push a

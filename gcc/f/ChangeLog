@@ -1,5 +1,19 @@
 2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* ansify.c (die_unless): Rename lineno to input_line.
+	* com.c (ffecom_subscript_check_, ffecom_do_entry_,
+	ffecom_gen_sfuncdef_, ffecom_start_progunit_,
+	ffecom_sym_transform_, ffecom_sym_transform_assign_,
+	bison_rule_pushlevel_, bison_rule_compstmt_, finish_function,
+	store_parm_decls): Likewise.
+	* intrin.c (ffeintrin_fulfill_generic): Likewise.
+	* lex.c (ffelex_hash_, ffelex_include_, ffelex_next_line_,
+	ffelex_file_fixed, ffelex_file_free): Likewise.
+	* std.c (ffestd_exec_end): Likewise.
+	* ste.c (ffeste_emit_line_note_, ffeste_start_block_,
+	ffeste_start_stmt_): Likewise.
+	* ste.h (ffeste_filelinenum, ffeste_set_line): Likewise.
+
 	* lex.c (ffelex_file_pop_): Rename parameter from input_filename.
 	(ffelex_file_push_): Likewise.
 	

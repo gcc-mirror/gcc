@@ -495,7 +495,7 @@ push_binding_level (struct cp_binding_level *newlevel,
   newlevel->binding_depth = binding_depth;
   indent ();
   fprintf (stderr, "push %s level 0x%08x line %d\n",
-	   (is_class_level) ? "class" : "block", newlevel, lineno);
+	   (is_class_level) ? "class" : "block", newlevel, input_line);
   is_class_level = 0;
   binding_depth++;
 #endif /* defined(DEBUG_BINDING_LEVELS) */
@@ -532,7 +532,7 @@ pop_binding_level (void)
   indent ();
   fprintf (stderr, "pop  %s level 0x%08x line %d\n",
 	  (is_class_level) ? "class" : "block",
-	  current_binding_level, lineno);
+	  current_binding_level, input_line);
   if (is_class_level != (current_binding_level == class_binding_level))
     {
       indent ();
@@ -571,7 +571,7 @@ suspend_binding_level (void)
   indent ();
   fprintf (stderr, "suspend  %s level 0x%08x line %d\n",
 	  (is_class_level) ? "class" : "block",
-	  current_binding_level, lineno);
+	  current_binding_level, input_line);
   if (is_class_level != (current_binding_level == class_binding_level))
     {
       indent ();
@@ -596,7 +596,7 @@ resume_binding_level (struct cp_binding_level* b)
   b->binding_depth = binding_depth;
   indent ();
   fprintf (stderr, "resume %s level 0x%08x line %d\n",
-	   (is_class_level) ? "class" : "block", b, lineno);
+	   (is_class_level) ? "class" : "block", b, input_line);
   is_class_level = 0;
   binding_depth++;
 #endif /* defined(DEBUG_BINDING_LEVELS) */
@@ -4598,7 +4598,7 @@ make_label_decl (tree id, int local_p)
 
   /* Say where one reference is to the label, for the sake of the
      error if it is not defined.  */
-  DECL_SOURCE_LINE (decl) = lineno;
+  DECL_SOURCE_LINE (decl) = input_line;
   DECL_SOURCE_FILE (decl) = input_filename;
 
   /* Record the fact that this identifier is bound to this label.  */
@@ -4625,7 +4625,7 @@ use_label (tree decl)
       new_ent->label_decl = decl;
       new_ent->names_in_scope = current_binding_level->names;
       new_ent->binding_level = current_binding_level;
-      new_ent->o_goto_locus.line = lineno;
+      new_ent->o_goto_locus.line = input_line;
       new_ent->o_goto_locus.file = input_filename;
       new_ent->next = named_label_uses;
       named_label_uses = new_ent;
@@ -13486,7 +13486,7 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
      CFUN set up, and our per-function variables initialized.
      FIXME factor out the non-RTL stuff.  */
   bl = current_binding_level;
-  init_function_start (decl1, input_filename, lineno);
+  init_function_start (decl1, input_filename, input_line);
   current_binding_level = bl;
 
   /* Even though we're inside a function body, we still don't want to

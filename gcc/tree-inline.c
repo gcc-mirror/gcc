@@ -1,5 +1,5 @@
 /* Control and data flow functions for trees.
-   Copyright 2001, 2002 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -900,10 +900,10 @@ static tree
 find_alloca_call (exp)
      tree exp;
 {
-  int line = lineno;
+  int line = input_line;
   const char *file = input_filename;
   tree ret = walk_tree (&exp, find_alloca_call_1, NULL, NULL);
-  lineno = line;
+  input_line = line;
   input_filename = file;
   return ret;
 }
@@ -931,10 +931,10 @@ static tree
 find_builtin_longjmp_call (exp)
      tree exp;
 {
-  int line = lineno;
+  int line = input_line;
   const char *file = input_filename;
   tree ret = walk_tree (&exp, find_builtin_longjmp_call_1, NULL, NULL);
-  lineno = line;
+  input_line = line;
   input_filename = file;
   return ret;
 }
@@ -1639,7 +1639,7 @@ walk_tree (tp, func, data, htab_)
       /* Set lineno here so we get the right instantiation context
 	 if we call instantiate_decl from inlinable_function_p.  */
       if (STATEMENT_CODE_P (code) && !STMT_LINENO_FOR_FN_P (*tp))
-	lineno = STMT_LINENO (*tp);
+	input_line = STMT_LINENO (*tp);
 #endif /* not INLINER_FOR_JAVA */
 
       /* Walk over all the sub-trees of this operand.  */

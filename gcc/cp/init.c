@@ -2676,7 +2676,7 @@ create_temporary_var (type)
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_SOURCE_FILE (decl) = input_filename;
-  DECL_SOURCE_LINE (decl) = lineno;
+  DECL_SOURCE_LINE (decl) = input_line;
   DECL_IGNORED_P (decl) = 1;
   DECL_CONTEXT (decl) = current_function_decl;
 

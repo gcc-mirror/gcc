@@ -58,7 +58,7 @@ static struct parser_ctxt *ctxp;
    elsewhere  */
 int java_error_count;
 int java_warning_count;
-int lineno;
+int input_line;
 
 /* Tweak default rules when necessary.  */
 static int absorber;
@@ -1354,6 +1354,6 @@ void reset_report (void)
 void
 yyerror (const char *msg ATTRIBUTE_UNUSED)
 {
-  fprintf (stderr, "%s: %d: %s\n", input_filename, lineno, msg);
+  fprintf (stderr, "%s: %d: %s\n", input_filename, input_line, msg);
   exit (1);
 }

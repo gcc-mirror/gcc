@@ -7,7 +7,7 @@
  *                          C Implementation File                           *
  *                                                                          *
  *                                                                          *
- *          Copyright (C) 1992-2002, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2003, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -5343,7 +5343,7 @@ build_unit_elab (gnat_unit, body_p, gnu_elab_list)
 	tree lhs = TREE_PURPOSE (gnu_elab_list);
 
 	input_filename = DECL_SOURCE_FILE (lhs);
-	lineno = DECL_SOURCE_LINE (lhs);
+	input_line = DECL_SOURCE_LINE (lhs);
 
 	/* If LHS has a padded type, convert it to the unpadded type
 	   so the assignment is done properly.  */
@@ -5414,7 +5414,7 @@ set_lineno (gnat_node, write_note_p)
       (get_identifier
        (Get_Name_String
 	(Reference_Name (Get_Source_File_Index (source_location)))));;
-  lineno = Get_Logical_Line_Number (source_location);
+  input_line = Get_Logical_Line_Number (source_location);
 
   if (write_note_p)
     emit_line_note (input_filename, lineno);

@@ -178,17 +178,17 @@ warn_if_unknown_interface (tree decl)
   if (flag_alt_external_templates)
     {
       tree til = tinst_for_decl ();
-      int sl = lineno;
+      int sl = input_line;
       const char *sf = input_filename;
 
       if (til)
 	{
-	  lineno = TINST_LINE (til);
+	  input_line = TINST_LINE (til);
 	  input_filename = TINST_FILE (til);
 	}
       warning ("template `%#D' instantiated in file without #pragma interface",
 		  decl);
-      lineno = sl;
+      input_line = sl;
       input_filename = sf;
     }
   else
@@ -2234,7 +2234,7 @@ start_static_initialization_or_destruction (tree decl, int initp)
      that the debugger will show somewhat sensible file and line
      information.  */
   input_filename = DECL_SOURCE_FILE (decl);
-  lineno = DECL_SOURCE_LINE (decl);
+  input_line = DECL_SOURCE_LINE (decl);
 
   /* Because of:
 
@@ -2475,7 +2475,7 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
   size_t i;
 
   input_filename = locus->file;
-  lineno = locus->line++;
+  input_line = locus->line++;
   
   /* We use `I' to indicate initialization and `D' to indicate
      destruction.  */
@@ -2555,7 +2555,7 @@ finish_file ()
   unsigned ssdf_count = 0;
 
   locus.file = input_filename;
-  locus.line = lineno;
+  locus.line = input_line;
   at_eof = 1;
 
   /* Bad parse errors.  Just forget about it.  */
@@ -2567,7 +2567,7 @@ finish_file ()
 
   /* Otherwise, GDB can get confused, because in only knows
      about source for LINENO-1 lines.  */
-  lineno -= 1;
+  input_line -= 1;
 
   interface_unknown = 1;
   interface_only = 0;
@@ -2687,7 +2687,7 @@ finish_file ()
 	  /* Set the line and file, so that it is obviously not from
 	     the source file.  */
 	  input_filename = locus.file;
-	  lineno = locus.line;
+	  input_line = locus.line;
 	  ssdf_body = start_static_storage_duration_function (ssdf_count);
 
 	  /* Make sure the back end knows about all the variables.  */
@@ -2716,7 +2716,7 @@ finish_file ()
 	  /* Finish up the static storage duration function for this
 	     round.  */
 	  input_filename = locus.file;
-	  lineno = locus.line;
+	  input_line = locus.line;
 	  finish_static_storage_duration_function (ssdf_body);
 
 	  /* All those initializations and finalizations might cause
@@ -2906,7 +2906,7 @@ finish_file ()
       dump_time_statistics ();
     }
   input_filename = locus.file;
-  lineno = locus.line;
+  input_line = locus.line;
 }
 
 /* T is the parse tree for an expression.  Return the expression after

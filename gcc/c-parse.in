@@ -1,6 +1,6 @@
-/* YACC parser for C syntax and for Objective C.  -*-c-*-
+ /* YACC parser for C syntax and for Objective C.  -*-c-*-
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996,
-   1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1997, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -138,6 +138,7 @@ do {									\
 
 /* String constants in raw form.
    yylval is a STRING_CST node.  */
+
 %token STRING
 
 /* "...", used for functions with variable arglists.  */
@@ -2250,7 +2251,7 @@ save_filename:
 save_lineno:
 		{ if (yychar == YYEMPTY)
 		    yychar = YYLEX;
-		  $$ = lineno; }
+		  $$ = input_line; }
 	;
 
 lineno_labeled_stmt:
@@ -2455,10 +2456,10 @@ label:	  CASE expr_no_commas ':'
 
 maybe_type_qual:
 	/* empty */
-		{ emit_line_note (input_filename, lineno);
+		{ emit_line_note (input_filename, input_line);
 		  $$ = NULL_TREE; }
 	| TYPE_QUAL
-		{ emit_line_note (input_filename, lineno); }
+		{ emit_line_note (input_filename, input_line); }
 	;
 
 xexpr:
@@ -3690,11 +3691,11 @@ ifc
       static int last_lineno = 0;
       static const char *last_input_filename = 0;
       if (warn_traditional && !in_system_header
-	  && (lineno != last_lineno || !last_input_filename ||
+	  && (input_line != last_lineno || !last_input_filename ||
 	      strcmp (last_input_filename, input_filename)))
 	{
 	  warning ("traditional C rejects string concatenation");
-	  last_lineno = lineno;
+	  last_lineno = input_line;
 	  last_input_filename = input_filename;
 	}
 end ifc

@@ -791,7 +791,7 @@ ffecom_subscript_check_ (tree array, tree element, int dim, int total_dims,
 		     arg3);
 
     arg4 = convert (ffecom_f2c_ftnint_type_node,
-		    build_int_2 (lineno, 0));
+		    build_int_2 (input_line, 0));
 
     arg1 = build_tree_list (NULL_TREE, arg1);
     arg2 = build_tree_list (NULL_TREE, arg2);
@@ -2583,11 +2583,11 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
   bool cmplxfunc;		/* Use f2c way of returning COMPLEX. */
   bool multi;			/* Master fn has multiple return types. */
   bool altreturning = FALSE;	/* This entry point has alternate returns. */
-  int old_lineno = lineno;
+  int old_lineno = input_line;
   const char *old_input_filename = input_filename;
 
   input_filename = ffesymbol_where_filename (fn);
-  lineno = ffesymbol_where_filelinenum (fn);
+  input_line = ffesymbol_where_filelinenum (fn);
 
   ffecom_doing_entry_ = TRUE;	/* Don't bother with array dimensions. */
 
@@ -2917,7 +2917,7 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
 
   finish_function (0);
 
-  lineno = old_lineno;
+  input_line = old_lineno;
   input_filename = old_input_filename;
 
   ffecom_doing_entry_ = FALSE;
@@ -6110,7 +6110,7 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
   tree result;
   bool charfunc = (bt == FFEINFO_basictypeCHARACTER);
   static bool recurse = FALSE;
-  int old_lineno = lineno;
+  int old_lineno = input_line;
   const char *old_input_filename = input_filename;
 
   ffecom_nested_entry_ = s;
@@ -6124,7 +6124,7 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
      see how it works at this point.  */
 
   input_filename = ffesymbol_where_filename (s);
-  lineno = ffesymbol_where_filelinenum (s);
+  input_line = ffesymbol_where_filelinenum (s);
 
   /* Pretransform the expression so any newly discovered things belong to the
      outer program unit, not to the statement function. */
@@ -6221,7 +6221,7 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
 
   recurse = FALSE;
 
-  lineno = old_lineno;
+  input_line = old_lineno;
   input_filename = old_input_filename;
 
   ffecom_nested_entry_ = NULL;
@@ -7080,14 +7080,14 @@ ffecom_start_progunit_ ()
   && (ffecom_primary_entry_kind_ == FFEINFO_kindFUNCTION)
   && (ffecom_master_bt_ == FFEINFO_basictypeNONE);
   bool main_program = FALSE;
-  int old_lineno = lineno;
+  int old_lineno = input_line;
   const char *old_input_filename = input_filename;
 
   assert (fn != NULL);
   assert (ffesymbol_hook (fn).decl_tree == NULL_TREE);
 
   input_filename = ffesymbol_where_filename (fn);
-  lineno = ffesymbol_where_filelinenum (fn);
+  input_line = ffesymbol_where_filelinenum (fn);
 
   switch (ffecom_primary_entry_kind_)
     {
@@ -7269,7 +7269,7 @@ ffecom_start_progunit_ ()
   /* Disallow temp vars at this level.  */
   current_binding_level->prep_state = 2;
 
-  lineno = old_lineno;
+  input_line = old_lineno;
   input_filename = old_input_filename;
 
   /* This handles any symbols still untransformed, in case -g specified.
@@ -7298,7 +7298,7 @@ ffecom_sym_transform_ (ffesymbol s)
   ffeinfoBasictype bt;
   ffeinfoKindtype kt;
   ffeglobal g;
-  int old_lineno = lineno;
+  int old_lineno = input_line;
   const char *old_input_filename = input_filename;
 
   /* Must ensure special ASSIGN variables are declared at top of outermost
@@ -7318,14 +7318,14 @@ ffecom_sym_transform_ (ffesymbol s)
   if (ffesymbol_sfdummyparent (s) == NULL)
     {
       input_filename = ffesymbol_where_filename (s);
-      lineno = ffesymbol_where_filelinenum (s);
+      input_line = ffesymbol_where_filelinenum (s);
     }
   else
     {
       ffesymbol sf = ffesymbol_sfdummyparent (s);
 
       input_filename = ffesymbol_where_filename (sf);
-      lineno = ffesymbol_where_filelinenum (sf);
+      input_line = ffesymbol_where_filelinenum (sf);
     }
 
   bt = ffeinfo_basictype (ffebld_info (s));
@@ -8294,7 +8294,7 @@ ffecom_sym_transform_ (ffesymbol s)
   ffesymbol_hook (s).length_tree = tlen;
   ffesymbol_hook (s).addr = addr;
 
-  lineno = old_lineno;
+  input_line = old_lineno;
   input_filename = old_input_filename;
 
   return s;
@@ -8312,20 +8312,20 @@ static ffesymbol
 ffecom_sym_transform_assign_ (ffesymbol s)
 {
   tree t;			/* Transformed thingy. */
-  int old_lineno = lineno;
+  int old_lineno = input_line;
   const char *old_input_filename = input_filename;
 
   if (ffesymbol_sfdummyparent (s) == NULL)
     {
       input_filename = ffesymbol_where_filename (s);
-      lineno = ffesymbol_where_filelinenum (s);
+      input_line = ffesymbol_where_filelinenum (s);
     }
   else
     {
       ffesymbol sf = ffesymbol_sfdummyparent (s);
 
       input_filename = ffesymbol_where_filename (sf);
-      lineno = ffesymbol_where_filelinenum (sf);
+      input_line = ffesymbol_where_filelinenum (sf);
     }
 
   assert (!ffecom_transform_only_dummies_);
@@ -8375,7 +8375,7 @@ ffecom_sym_transform_assign_ (ffesymbol s)
 
   ffesymbol_hook (s).assign_tree = t;
 
-  lineno = old_lineno;
+  input_line = old_lineno;
   input_filename = old_input_filename;
 
   return s;
@@ -13115,7 +13115,7 @@ ffecom_which_entrypoint_decl ()
 static void
 bison_rule_pushlevel_ ()
 {
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
   pushlevel (0);
   clear_last_expr ();
   expand_start_bindings (0);
@@ -13131,7 +13131,7 @@ bison_rule_compstmt_ ()
   if (! keep)
     current_binding_level->names = NULL_TREE;
 
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
   expand_end_bindings (getdecls (), keep, 0);
   t = poplevel (keep, 1, 0);
 
@@ -13585,7 +13585,7 @@ finish_function (int nested)
 
       /* Obey `register' declarations if `setjmp' is called in this fn.  */
       /* Generate rtl for function exit.  */
-      expand_function_end (input_filename, lineno, 0);
+      expand_function_end (input_filename, input_line, 0);
 
       /* If this is a nested function, protect the local variables in the stack
 	 above us from being collected while we're compiling this function.  */
@@ -13866,7 +13866,7 @@ store_parm_decls (int is_main_program UNUSED)
 
   /* Initialize the RTL code for the function.  */
 
-  init_function_start (fndecl, input_filename, lineno);
+  init_function_start (fndecl, input_filename, input_line);
 
   /* Set up parameters and prepare for return, for the function.  */
 

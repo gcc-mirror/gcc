@@ -1307,7 +1307,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   if (flag_test_coverage)
     emit_note (0, NOTE_INSN_REPEATED_LINE_NUMBER);
 
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
 
   /* If the function returns a BLKmode object in a register, copy it
      out of the temp register into a BLKmode memory object.  */
@@ -3041,7 +3041,7 @@ output_inline_function (fndecl)
   /* Make sure warnings emitted by the optimizers (e.g. control reaches
      end of non-void function) is not wildly incorrect.  */
   input_filename = DECL_SOURCE_FILE (fndecl);
-  lineno = DECL_SOURCE_LINE (fndecl);
+  input_line = DECL_SOURCE_LINE (fndecl);
 
   /* Compile this function all the way down to assembly code.  As a
      side effect this destroys the saved RTL representation, but

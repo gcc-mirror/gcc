@@ -1,5 +1,5 @@
 /* Implementation of Fortran lexer
-   Copyright (C) 1995, 1996, 1997, 1998, 2001, 2002
+   Copyright (C) 1995, 1996, 1997, 1998, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
@@ -1096,7 +1096,7 @@ ffelex_hash_ (FILE *finput)
 	      c = ffelex_get_directive_line_ (&text, finput);
 
 	      if (debug_info_level == DINFO_LEVEL_VERBOSE)
-		(*debug_hooks->define) (lineno, text);
+		(*debug_hooks->define) (input_line, text);
 
 	      goto skipline;
 	    }
@@ -1115,7 +1115,7 @@ ffelex_hash_ (FILE *finput)
 	      c = ffelex_get_directive_line_ (&text, finput);
 
 	      if (debug_info_level == DINFO_LEVEL_VERBOSE)
-		(*debug_hooks->undef) (lineno, text);
+		(*debug_hooks->undef) (input_line, text);
 
 	      goto skipline;
 	    }
@@ -1193,7 +1193,7 @@ ffelex_hash_ (FILE *finput)
   if ((token != NULL)
       && (ffelex_token_type (token) == FFELEX_typeNUMBER))
     {
-      int old_lineno = lineno;
+      int old_lineno = input_line;
       const char *old_input_filename = input_filename;
       ffewhereFile wf;
 
@@ -1207,7 +1207,7 @@ ffelex_hash_ (FILE *finput)
       if (c == '\n' || c == EOF)
 	{
 	  /* No more: store the line number and check following line.  */
-	  lineno = l;
+	  input_line = l;
 	  if (!ffelex_kludge_flag_)
 	    {
 	      ffewhere_file_set (NULL, TRUE, (ffewhereLineNumber) l);
@@ -1230,7 +1230,7 @@ ffelex_hash_ (FILE *finput)
 	  goto skipline;
 	}
 
-      lineno = l;
+      input_line = l;
 
       if (ffelex_kludge_flag_)
 	input_filename = ggc_strdup (ffelex_token_text (token));
@@ -1280,7 +1280,7 @@ ffelex_hash_ (FILE *finput)
 
 	  if (ffelex_kludge_flag_)
 	    {
-	      lineno = 1;
+	      input_line = 1;
 	      input_filename = old_input_filename;
 	      error ("use `#line ...' instead of `# ...' in first line");
 	    }
@@ -1324,7 +1324,7 @@ ffelex_hash_ (FILE *finput)
 	   || (c != '\n' && c != EOF))
 	  && ffelex_kludge_flag_)
 	{
-	  lineno = 1;
+	  input_line = 1;
 	  input_filename = old_input_filename;
 	  error ("use `#line ...' instead of `# ...' in first line");
 	}
@@ -1470,7 +1470,7 @@ ffelex_include_ ()
   ffewhereLineNumber linecount_current = ffelex_linecount_current_;
   ffewhereLineNumber linecount_offset
     = ffewhere_line_filelinenum (current_wl);
-  int old_lineno = lineno;
+  int old_lineno = input_line;
   const char *old_input_filename = input_filename;
 
   if (card_length != 0)
@@ -1513,7 +1513,7 @@ ffelex_include_ ()
   ffelex_card_image_[card_length] = '\0';
 
   input_filename = old_input_filename;
-  lineno = old_lineno;
+  input_line = old_lineno;
   ffelex_linecount_current_ = linecount_current;
   ffelex_current_wf_ = current_wf;
   ffelex_final_nontab_column_ = final_nontab_column;
@@ -1571,7 +1571,7 @@ ffelex_next_line_ ()
 {
   ffelex_linecount_current_ = ffelex_linecount_next_;
   ++ffelex_linecount_next_;
-  ++lineno;
+  ++input_line;
 }
 
 static void
@@ -1787,7 +1787,7 @@ ffelex_file_fixed (ffewhereFile wf, FILE *f)
 
   assert (ffelex_handler_ != NULL);
 
-  lineno = 0;
+  input_line = 0;
   input_filename = ffewhere_file_name (wf);
   ffelex_current_wf_ = wf;
   disallow_continuation_line = TRUE;
@@ -2977,7 +2977,7 @@ ffelex_file_free (ffewhereFile wf, FILE *f)
 
   assert (ffelex_handler_ != NULL);
 
-  lineno = 0;
+  input_line = 0;
   input_filename = ffewhere_file_name (wf);
   ffelex_current_wf_ = wf;
   continuation_line = FALSE;
