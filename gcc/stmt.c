@@ -3856,7 +3856,7 @@ expand_end_case (orig_index)
 	  emit_label (table_label);
 
 	  /* This would be a lot nicer if CASE_VECTOR_PC_RELATIVE
-	     were an expression, instead of a an #ifdef/#ifndef.  */
+	     were an expression, instead of an #ifdef/#ifndef.  */
 	  if (
 #ifdef CASE_VECTOR_PC_RELATIVE
 	      1 ||

@@ -1719,7 +1719,7 @@ integrate_parm_decls (args, map, arg_vector)
    LEVEL indicates how far down into the BLOCK tree is the node we are
    currently traversing.  It is always zero except for recursive calls.
 
-   MAP, if nonzero, is a pointer to a inline_remap map which indicates how
+   MAP, if nonzero, is a pointer to an inline_remap map which indicates how
    registers used in the DECL_RTL field should be remapped.  If it is zero,
    no mapping is necessary.  */
 

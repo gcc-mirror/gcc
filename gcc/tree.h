@@ -236,7 +236,7 @@ struct tree_common
 
 /* In a VAR_DECL or FUNCTION_DECL,
    nonzero means name is to be accessible from outside this module.
-   In an identifier node, nonzero means a external declaration
+   In an identifier node, nonzero means an external declaration
    accessible from outside this module was previously seen
    for this name in an inner scope.  */
 #define TREE_PUBLIC(NODE) ((NODE)->common.public_flag)

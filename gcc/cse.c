@@ -4442,7 +4442,7 @@ fold_rtx (x, insn)
 	}
 
       /* If this is a narrowing SUBREG and our operand is a REG, see if
-	 we can find an equivalence for REG that is a arithmetic operation
+	 we can find an equivalence for REG that is an arithmetic operation
 	 in a wider mode where both operands are paradoxical SUBREGs
 	 from objects of our result mode.  In that case, we couldn't report
 	 an equivalent value for that operation, since we don't know what the
