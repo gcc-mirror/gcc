@@ -1,3 +1,8 @@
+2002-09-26  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.c (ia64_expand_load_address): Ensure correct mode
+	for symbol address.
+
 2002-09-24  Eric Christopher  <echristo@redhat.com>
 
         * config/mips/elf.h: Add HANDLE_SYSV_PRAGMA.
