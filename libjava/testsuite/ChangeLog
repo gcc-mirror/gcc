@@ -1,3 +1,8 @@
+2000-05-16  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.lang/instance.out: New file.
+	* libjava.lang/instance.java: New file.
+
 2000-05-10  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* libjava.lang/StringBuffer_1.java: New file.
