@@ -8830,7 +8830,7 @@ load_mems (loop)
      never executed.  Also check if there is a goto out of the loop other
      than right after the end of the loop.  */
   for (p = next_insn_in_loop (loop, loop->scan_start);
-       p != NULL_RTX && ! maybe_never;
+       p != NULL_RTX;
        p = next_insn_in_loop (loop, p))
     {
       if (GET_CODE (p) == CODE_LABEL)
