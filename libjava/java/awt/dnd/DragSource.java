@@ -44,12 +44,20 @@ import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.datatransfer.FlavorMap;
+import java.awt.datatransfer.SystemFlavorMap;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.peer.DragSourceContextPeer;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.EventListener;
 
+/**
+ * @since 1.2
+ */
 public class DragSource implements Serializable
 {
   /**
@@ -63,6 +71,11 @@ public class DragSource implements Serializable
   public static final Cursor DefaultCopyNoDrop = null;
   public static final Cursor DefaultMoveNoDrop = null;
   public static final Cursor DefaultLinkNoDrop = null;
+
+  private transient FlavorMap flavorMap = SystemFlavorMap.getDefaultFlavorMap ();
+
+  private transient DragSourceListener dragSourceListener;
+  private transient DragSourceMotionListener dragSourceMotionListener;
 
   /**
    * Initializes the drag source.
@@ -159,51 +172,89 @@ public class DragSource implements Serializable
 
   public FlavorMap getFlavorMap()
   {
-    return null;
+    return flavorMap;
   }
 
   public DragGestureRecognizer
     createDragGestureRecognizer(Class recognizer, Component c, int actions,
                                 DragGestureListener dgl)
   {
-    return null;
+    return Toolkit.getDefaultToolkit ()
+                  .createDragGestureRecognizer (recognizer, this, c, actions,
+                                                dgl);
   }
 
   public DragGestureRecognizer
     createDefaultDragGestureRecognizer(Component c, int actions,
                                        DragGestureListener dgl)
   {
-    return null;
+    return createDragGestureRecognizer (MouseDragGestureRecognizer.class, c,
+                                        actions, dgl);
   }
 
+  /**
+   * @since 1.4
+   */
   public void addDragSourceListener(DragSourceListener l)
   {
+    DnDEventMulticaster.add (dragSourceListener, l);
   }
 
+  /**
+   * @since 1.4
+   */
   public void removeDragSourceListener(DragSourceListener l)
   {
+    DnDEventMulticaster.remove (dragSourceListener, l);
   }
 
+  /**
+   * @since 1.4
+   */
   public DragSourceListener[] getDragSourceListeners()
   {
-    return null;
+    return (DragSourceListener[]) getListeners (DragSourceListener.class);
   }
 
+  /**
+   * @since 1.4
+   */
   public void addDragSourceMotionListener(DragSourceMotionListener l)
   {
+    DnDEventMulticaster.add (dragSourceMotionListener, l);
   }
 
+  /**
+   * @since 1.4
+   */
   public void removeDragSourceMotionListener(DragSourceMotionListener l)
   {
+    DnDEventMulticaster.remove (dragSourceMotionListener, l);
   }
 
-  public DragSourceMotionListener[] getDragSourceMotionListeners()
+  /**
+   * @since 1.4
+   */
+  public DragSourceMotionListener[] getDragSourceMotionListeners ()
   {
-    return null;
+    return (DragSourceMotionListener[]) getListeners
+                                         (DragSourceMotionListener.class);
   }
 
-  public EventListener[] getListeners(Class type)
+  /**
+   * @since 1.4
+   */
+  public EventListener[] getListeners (Class listenerType)
   {
-    return null;
+    if (listenerType == DragSourceListener.class)
+      return DnDEventMulticaster.getListeners (dragSourceListener,
+                                               listenerType);
+
+    if (listenerType == DragSourceMotionListener.class)
+      return DnDEventMulticaster.getListeners (dragSourceMotionListener,
+                                               listenerType);
+
+    // Return an empty EventListener array.
+    return new EventListener [0];
   }
 } // class DragSource

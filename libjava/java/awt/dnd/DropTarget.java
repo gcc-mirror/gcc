@@ -39,6 +39,8 @@ package java.awt.dnd;
 
 import java.awt.Point;
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
 import java.awt.datatransfer.FlavorMap;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,7 +48,10 @@ import java.io.Serializable;
 import java.util.EventListener;
 import java.util.TooManyListenersException;
 
-/** STUB CLASS ONLY */
+/**
+ * @author Michael Koch
+ * @since 1.2
+ */
 public class DropTarget
   implements DropTargetListener, EventListener, Serializable
 {
@@ -58,12 +63,18 @@ public class DropTarget
   protected static class DropTargetAutoScroller
     implements ActionListener
   {
+    private Component component;
+    private Point point;
+    
     protected DropTargetAutoScroller (Component c, Point p)
     {
+      component = c;
+      point = p;
     }
 
     protected void updateLocation (Point newLocn)
     {
+      point = newLocn;
     }
 
     protected void stop ()
@@ -74,9 +85,13 @@ public class DropTarget
     {
     }
   }
-  
-  // FIXME: check the correctness of default value.
-  private boolean isActive = false;
+
+  private Component component;
+  private FlavorMap flavorMap;
+  private int actions;
+  private DropTargetContext dropTargetContext;
+  private DropTargetListener dropTargetListener;
+  private boolean active = true;
     
   /**
    * Creates a <code>DropTarget</code> object.
@@ -131,6 +146,15 @@ public class DropTarget
   public DropTarget (Component c, int i, DropTargetListener dtl, boolean b,
                      FlavorMap fm)
   {
+    if (GraphicsEnvironment.isHeadless ())
+      throw new HeadlessException ();
+
+    component = c;
+    actions = i;
+    dropTargetListener = dtl;
+    flavorMap = fm;
+    
+    setActive (b);
   }
 
   /**
@@ -138,6 +162,7 @@ public class DropTarget
    */
   public void setComponent (Component c)
   {
+    component = c;
   }
 
   /**
@@ -145,7 +170,7 @@ public class DropTarget
    */
   public Component getComponent ()
   {
-    return null;
+    return component;
   }
 
   /**
@@ -153,6 +178,7 @@ public class DropTarget
    */
   public void setDefaultActions (int ops)
   {
+    actions = ops;
   }
 
   /**
@@ -160,17 +186,17 @@ public class DropTarget
    */
   public int getDefaultActions ()
   {
-    return 0;
+    return actions;
   }
 
-  public void setActive(boolean isActive)
+  public void setActive (boolean active)
   {
-    this.isActive = isActive;
+    this.active = active;
   }
 
   public boolean isActive()
   {
-    return this.isActive;
+    return active;
   }
 
   /**
@@ -182,10 +208,16 @@ public class DropTarget
   public void addDropTargetListener (DropTargetListener dtl)
     throws TooManyListenersException
   {
+    if (dtl != null)
+      throw new TooManyListenersException ();
+    
+    dropTargetListener = dtl;
   }
 
   public void removeDropTargetListener(DropTargetListener dtl)
   {
+    // FIXME: Do we need to do something with dtl ?
+    dropTargetListener = null;
   }
 
   public void dragEnter(DropTargetDragEvent dtde)
@@ -210,11 +242,12 @@ public class DropTarget
 
   public FlavorMap getFlavorMap()
   {
-    return null;
+    return flavorMap;
   }
 
   public void setFlavorMap(FlavorMap fm)
   {
+    flavorMap = fm;
   }
 
   public void addNotify(java.awt.peer.ComponentPeer peer)
@@ -227,18 +260,21 @@ public class DropTarget
 
   public DropTargetContext getDropTargetContext()
   {
-    return null;
+    if (dropTargetContext == null)
+      dropTargetContext = createDropTargetContext ();
+    
+    return dropTargetContext;
   }
 
   protected DropTargetContext createDropTargetContext()
   {
-    return null;
+    return new DropTargetContext (this);
   }
 
   protected DropTarget.DropTargetAutoScroller createDropTargetAutoScroller
                                                        (Component c, Point p)
   {
-    return null;
+    return new DropTarget.DropTargetAutoScroller (c, p);
   }
 
   protected void initializeAutoscrolling(Point p)

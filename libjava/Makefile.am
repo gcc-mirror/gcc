@@ -1037,6 +1037,7 @@ java/awt/dnd/peer/DragSourceContextPeer.java \
 java/awt/dnd/peer/DropTargetContextPeer.java \
 java/awt/dnd/peer/DropTargetPeer.java \
 java/awt/dnd/DnDConstants.java \
+java/awt/dnd/DnDEventMulticaster.java \
 java/awt/dnd/DragGestureEvent.java \
 java/awt/dnd/DragGestureListener.java \
 java/awt/dnd/DragGestureRecognizer.java	\

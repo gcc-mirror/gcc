@@ -84,12 +84,14 @@ public abstract class MouseDragGestureRecognizer
 
   protected void registerListeners ()
   {
-    // FIXME: implement this
+    component.addMouseListener (this);
+    component.addMouseMotionListener (this);
   }
 
   protected void unregisterListeners ()
   {
-    // FIXME: implement this
+    component.removeMouseListener (this);
+    component.removeMouseMotionListener (this);
   }
 
   public void mouseClicked (MouseEvent e)

@@ -805,6 +805,7 @@ java/awt/dnd/peer/DragSourceContextPeer.java \
 java/awt/dnd/peer/DropTargetContextPeer.java \
 java/awt/dnd/peer/DropTargetPeer.java \
 java/awt/dnd/DnDConstants.java \
+java/awt/dnd/DnDEventMulticaster.java \
 java/awt/dnd/DragGestureEvent.java \
 java/awt/dnd/DragGestureListener.java \
 java/awt/dnd/DragGestureRecognizer.java	\
@@ -3042,6 +3043,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/datatransfer/Transferable.P \
 .deps/java/awt/datatransfer/UnsupportedFlavorException.P \
 .deps/java/awt/dnd/Autoscroll.P .deps/java/awt/dnd/DnDConstants.P \
+.deps/java/awt/dnd/DnDEventMulticaster.P \
 .deps/java/awt/dnd/DragGestureEvent.P \
 .deps/java/awt/dnd/DragGestureListener.P \
 .deps/java/awt/dnd/DragGestureRecognizer.P \

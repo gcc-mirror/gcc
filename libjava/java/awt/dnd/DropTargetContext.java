@@ -67,46 +67,49 @@ public class DropTargetContext implements Serializable
     
     public DataFlavor[] getTransferDataFlavors ()
     {
-      // FIXME: implement this
-      return null;
+      return transferable.getTransferDataFlavors ();
     }
 
     public boolean isDataFlavorSupported (DataFlavor flavor)
     {
-      // FIXME: implement this
-      return false;
+      return transferable.isDataFlavorSupported (flavor);
     }
 
     public Object getTransferData (DataFlavor flavor)
       throws UnsupportedFlavorException, IOException
     {
-      // FIXME: implement this
-      return null;
+      return transferable.getTransferData (flavor);
     }
   }
 
+  private DropTarget dropTarget;
   private int targetActions;
+  private java.awt.dnd.peer.DropTargetContextPeer dtcp;
+
+  // package private
+  DropTargetContext (DropTarget dropTarget)
+  {
+    this.dropTarget = dropTarget;
+  }
 
   public DropTarget getDropTarget ()
   {
-    // FIXME: implement this
-    return null;
+    return dropTarget;
   }
 
   public Component getComponent ()
   {
-    // FIXME: implement this
-    return null;
+    return dropTarget.getComponent ();
   }
 
   public void addNotify (java.awt.dnd.peer.DropTargetContextPeer dtcp)
   {
-    // FIXME: implement this
+    this.dtcp = dtcp;
   }
 
   public void removeNotify ()
   {
-    // FIXME: implement this
+    this.dtcp = null;
   }
 
   protected void setTargetActions (int actions)
@@ -157,14 +160,12 @@ public class DropTargetContext implements Serializable
 
   protected List getCurrentDataFlavorsAsList ()
   {
-    // FIXME: implement this
-    return null;
+    return Arrays.asList (getCurrentDataFlavors ());
   }
 
   protected boolean isDataFlavorSupported (DataFlavor flavor)
   {
-    // FIXME: implement this
-    return false;
+    return getCurrentDataFlavorsAsList ().contains (flavor);
   }
 
   /**
