@@ -1,3 +1,9 @@
+2001-02-03  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* c4x.c (c4x_hard_regno_rename_ok): New.
+	* c4x-protos.h (c4x_hard_regno_rename_ok): New.
+	* c4x.h (HARD_REGNO_RENAME_OK): Define.
+
 Fri Feb  2 20:03:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* diagnostic.h: Add missing "extern" in all declarations.

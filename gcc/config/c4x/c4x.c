@@ -429,6 +429,29 @@ c4x_hard_regno_mode_ok (regno, mode)
   return 0;
 }
 
+/* Return non-zero if REGNO1 can be renamed to REGNO2.  */
+int
+c4x_hard_regno_rename_ok (regno1, regno2)
+     unsigned int regno1;
+     unsigned int regno2;
+{
+  /* We can not copy call saved registers from mode QI into QF or from
+     mode QF into QI.  */
+  if ((regno1 == R6_REGNO || regno1 == R7_REGNO)
+      && (regno2 == R4_REGNO || regno2 == R5_REGNO || regno2 == R8_REGNO))
+    return 0;
+  if ((regno1 == R4_REGNO || regno1 == R5_REGNO || regno1 == R8_REGNO)
+      && (regno2 == R6_REGNO || regno2 == R7_REGNO))
+    return 0;
+  /* We cannot copy from an extended (40 bit) register to a standard
+     (32 bit) register because we only set the condition codes for
+     extended registers.  */
+  if (IS_EXT_REGNO (regno1) && ! IS_EXT_REGNO (regno2))
+    return 0;
+  if (IS_EXT_REGNO (regno2) && ! IS_EXT_REGNO (regno1))
+    return 0;
+  return 1;
+}
 
 /* The TI C3x C compiler register argument runtime model uses 6 registers,
    AR2, R2, R3, RC, RS, RE.

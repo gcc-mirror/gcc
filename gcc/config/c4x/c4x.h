@@ -614,6 +614,11 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
  IR0_REGNO, IR1_REGNO,					\
  SP_REGNO, DP_REGNO, ST_REGNO, IE_REGNO, IF_REGNO, IOF_REGNO}
 
+/* A C expression that is nonzero if hard register number REGNO2 can be
+   considered for use as a rename register for REGNO1 */
+
+#define HARD_REGNO_RENAME_OK(REGNO1,REGNO2) \
+  c4x_hard_regno_rename_ok((REGNO1), (REGNO2))
 
 /* Determine which register classes are very likely used by spill registers.
    local-alloc.c won't allocate pseudos that have these classes as their
