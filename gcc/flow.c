@@ -1387,7 +1387,8 @@ split_edge (edge_in)
 	  pos = emit_jump_insn_after (gen_jump (old_succ->head),
 				      jump_block->end);
 	  jump_block->end = pos;
-	  set_block_for_insn (pos, jump_block);
+	  if (basic_block_for_insn)
+	    set_block_for_insn (pos, jump_block);
 	  emit_barrier_after (pos);
 
 	  /* ... let jump know that label is in use, ...  */

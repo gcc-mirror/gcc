@@ -1,5 +1,8 @@
 Fri Jan 14 00:28:06 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* flow.c (split_edge): Do not call set_block_for_insn if we
+	do not have a basic_block_for_insn structure.
+
 	* fr30.h (TRAMPOLINE_TEMPLATE): Use nops to ensure the static chain
 	and destination functions are 32bit aligned within the trampoline.
 	(TRAMPOLINE_SIZE, INITIALIZE_TRAMPOLINE): Corresponding changes.
