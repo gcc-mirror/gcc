@@ -1,5 +1,12 @@
 2003-10-20  Mark Mitchell  <mark@codesourcery.com>
 
+	* Make-lang.in (gnat_ug_unx.info): Add dependency on stmp-docobjdir.
+	(gnat_ug_vmx.info): Likewise.
+	(gnat_ug_vxw.info): Likewise.
+	(gnat_ug_wnt.info): Likewise.
+	(gnat_rm.info): Likewise.
+	(gnat-style.info): Likewise.
+
 	* Make-lang.in (ada.install-info): Remove target.
 	(info): New target.
 	(install-info): Likewise.

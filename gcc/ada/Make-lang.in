@@ -370,27 +370,33 @@ $(srcdir)/ada/gnat_ug_wnt.texi : ada/doctools/xgnatug \
 	ada/doctools/xgnatug wnt $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_wnt.texi
 
 $(docobjdir)/gnat_ug_unx.info : $(srcdir)/ada/gnat_ug_unx.texi \
-	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
+	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi \
+	stmp-docobjdir
 	$(MAKEINFO) -I $(docdir)/include -I $(srcdir)/ada -o $@ $<
 
 $(docobjdir)/gnat_ug_vms.info : $(srcdir)/ada/gnat_ug_vms.texi \
-	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
+	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi \
+	stmp-docobjdir
 	$(MAKEINFO) -I $(docdir)/include -I $(srcdir)/ada -o $@ $<
 
 $(docobjdir)/gnat_ug_vxw.info : $(srcdir)/ada/gnat_ug_vxw.texi \
-	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
+	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi \
+	stmp-docobjdir
 	$(MAKEINFO) -I $(docdir)/include -I $(srcdir)/ada -o $@ $<
 
 $(docobjdir)/gnat_ug_wnt.info : $(srcdir)/ada/gnat_ug_wnt.texi \
-	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
+	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi \
+	stmp-docobjdir
 	$(MAKEINFO) -I $(docdir)/include -I $(srcdir)/ada -o $@ $<
 
 $(docobjdir)/gnat_rm.info : $(srcdir)/ada/gnat_rm.texi \
-	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
+	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi \
+	stmp-docobjdir
 	$(MAKEINFO) -I $(docdir)/include -I $(srcdir)/ada -o $@ $<
 
 $(docobjdir)/gnat-style.info : $(srcdir)/ada/gnat-style.texi \
-	$(srcdir)/doc/include/fdl.texi
+	$(srcdir)/doc/include/fdl.texi \
+	stmp-docobjdir
 	$(MAKEINFO) -I $(docdir)/include -I $(srcdir)/ada -o $@ $<
 
 info:: $(docobjdir)/gnat_ug_vms.info $(docobjdir)/gnat_ug_wnt.info \
