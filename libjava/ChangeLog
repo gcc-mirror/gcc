@@ -1,5 +1,12 @@
 2003-02-12  Ranjit Mathew  <rmathew@hotmail.com>
 
+	* include/win32.h: Include ws2tcpip.h instead of
+	winsock.h to obtain definition of the socklen_t type.
+	Remove IP_TOS definition - not needed with ws2tcpip.h
+	(_Jv_connect): Correct slight formatting error.
+
+2003-02-12  Ranjit Mathew  <rmathew@hotmail.com>
+
 	* jni.cc (_Jv_LookupJNIMethod): Modify to accept the
 	size of the arguments for a JNI function. For Win32,
 	modify to search for all forms of possible exported
