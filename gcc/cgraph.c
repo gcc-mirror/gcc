@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -613,7 +613,9 @@ bool
 cgraph_function_possibly_inlined_p (tree decl)
 {
   if (!cgraph_global_info_ready)
-    return (DECL_INLINE (decl) && !flag_really_no_inline);
+    return (DECL_INLINE (decl)
+	    && (!flag_really_no_inline
+		|| (*lang_hooks.tree_inlining.disregard_inline_limits) (decl)));
   return cgraph_node (decl)->global.inlined;
 }
 

@@ -1,2 +1,26 @@
+2003-12-31  Jan Hubicka  <jh@suse.cz>
+
+	PR opt/13473
+	* recog.c (validate_replace_rtx_1):  Take care for RTL sharing inside
+	ASM input operands
+
+	PR opt/12617
+	* toplev.c (dump_file_index): Reorder ce3 and bbro.
+	(dump_file): Likewise.
+	(rest_of_compilation): Likewise.
+
+	PR debug/13367
+	* cgraph.c (cgraph_function_possibly_inlined):  Even with
+	flag_really_no_inline we inline always_inline functions.
+	* cgraphunit.c (cgraph_analyze_function): Clear inlinable flag
+	for non-always_inline functions when there is flag_really_no_inline.
+	(cgraph_decide_inlining): Limit work done when not inlining.
+	(cgraph_decide_inlining_incrementally): Likewise.
+	(cgraph_optimize_function): Check whether something got inlined.
+	* c-objc-common.c (c_disregard_inline_limits): Do not always inline
+	extern inline functions when not inlining.
+
+	* opts.c (decode_options):  Disable crossjumping at -O1
+	* invoke.texi (-O1): Document change.
 
 See ChangeLog.10 for earlier changes.

@@ -1,3 +1,9 @@
+2004-01-01  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/debug/20031231-1.c: New.
+	* gcc.c-torture/compile/20040101-1.c: New.
+	* gcc.dg/dwarf-die-[1-7].c: New.
+
 2004-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/13521
