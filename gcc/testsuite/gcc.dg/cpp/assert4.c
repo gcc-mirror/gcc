@@ -78,7 +78,7 @@
 # error
 #endif
 
-#if defined __unix__ || defined _AIX
+#if ( defined __unix__ && !defined __CYGWIN__ ) || defined _AIX
 # if !#system(unix)
 #  error
 # endif
@@ -118,7 +118,7 @@
 # error
 #endif
 
-#if defined __WINNT__
+#if defined __WINNT__ || defined __CYGWIN__
 # if !#system(winnt)
 #  error
 # endif
