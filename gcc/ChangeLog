@@ -1,5 +1,7 @@
 2001-01-11  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* version.c: Bump.
+
 	2001-01-09  Mark Mitchell  <mark@codesourcery.com>
 	Remove support for using UWIN as a host machine.
 	* configure.in: Issue an error message.
