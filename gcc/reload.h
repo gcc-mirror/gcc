@@ -331,7 +331,12 @@ extern int regno_clobbered_p PARAMS ((unsigned int, rtx, enum machine_mode,
 				      int));
 
 /* Return 1 if X is an operand of an insn that is being earlyclobbered.  */
-int earlyclobber_operand_p PARAMS ((rtx));
+extern int earlyclobber_operand_p PARAMS ((rtx));
+
+/* Record one reload that needs to be performed.  */
+extern int push_reload PARAMS ((rtx, rtx, rtx *, rtx *, enum reg_class,
+				enum machine_mode, enum machine_mode,
+				int, int, int, enum reload_type));
 
 /* Functions in reload1.c:  */
 

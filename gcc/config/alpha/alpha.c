@@ -42,8 +42,8 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "toplev.h"
 #include "ggc.h"
-#include "tm_p.h"
 #include "integrate.h"
+#include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
 
@@ -1152,6 +1152,129 @@ alpha_tablejump_best_label (insn)
     }
 
   return best_label ? best_label : const0_rtx;
+}
+
+/* Try machine-dependent ways of modifying an illegitimate address
+   to be legitimate.  If we find one, return the new, valid address.  */
+
+rtx
+alpha_legitimize_address (x, oldx, mode)
+     rtx x;
+     rtx oldx ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  HOST_WIDE_INT addend;
+
+  /* If the address is (plus reg const_int) and the CONST_INT is not a
+     valid offset, compute the high part of the constant and add it to
+     the register.  Then our address is (plus temp low-part-const).  */
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == REG
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && ! CONSTANT_ADDRESS_P (XEXP (x, 1)))
+    {
+      addend = INTVAL (XEXP (x, 1));
+      x = XEXP (x, 0);
+      goto split_addend;
+    }
+
+  /* If the address is (const (plus FOO const_int)), find the low-order
+     part of the CONST_INT.  Then load FOO plus any high-order part of the
+     CONST_INT into a register.  Our address is (plus reg low-part-const).
+     This is done to reduce the number of GOT entries.  */
+  if (GET_CODE (x) == CONST
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+    {
+      addend = INTVAL (XEXP (XEXP (x, 0), 1));
+      x = force_reg (Pmode, XEXP (XEXP (x, 0), 0));
+      goto split_addend;
+    }
+
+  /* If we have a (plus reg const), emit the load as in (2), then add
+     the two registers, and finally generate (plus reg low-part-const) as
+     our address.  */
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == REG
+      && GET_CODE (XEXP (x, 1)) == CONST
+      && GET_CODE (XEXP (XEXP (x, 1), 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (XEXP (x, 1), 0), 1)) == CONST_INT)
+    {
+      addend = INTVAL (XEXP (XEXP (XEXP (x, 1), 0), 1));
+      x = expand_simple_binop (Pmode, PLUS, XEXP (x, 0),
+			       XEXP (XEXP (XEXP (x, 1), 0), 0),
+			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+      goto split_addend;
+    }
+
+  return NULL;
+
+ split_addend:
+  {
+    HOST_WIDE_INT lowpart = (addend & 0xffff) - 2 * (addend & 0x8000);
+    HOST_WIDE_INT highpart = addend - lowpart;
+    x = expand_simple_binop (Pmode, PLUS, x, GEN_INT (highpart),
+			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
+    return plus_constant (x, lowpart);
+  }
+}
+
+/* Try a machine-dependent way of reloading an illegitimate address
+   operand.  If we find one, push the reload and return the new rtx.  */
+   
+rtx
+alpha_legitimize_reload_address (x, mode, opnum, type, ind_levels)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     int opnum;
+     int type;
+     int ind_levels ATTRIBUTE_UNUSED;
+{
+  /* We must recognize output that we have already generated ourselves.  */
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+    {
+      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
+		   BASE_REG_CLASS, GET_MODE (x), VOIDmode, 0, 0,
+		   opnum, type);
+      return x;
+    }
+
+  /* We wish to handle large displacements off a base register by
+     splitting the addend across an ldah and the mem insn.  This
+     cuts number of extra insns needed from 3 to 1.  */
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == REG
+      && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
+      && REGNO_OK_FOR_BASE_P (REGNO (XEXP (x, 0)))
+      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+    {
+      HOST_WIDE_INT val = INTVAL (XEXP (x, 1));
+      HOST_WIDE_INT low = ((val & 0xffff) ^ 0x8000) - 0x8000;
+      HOST_WIDE_INT high
+	= (((val - low) & 0xffffffff) ^ 0x80000000) - 0x80000000;
+
+      /* Check for 32-bit overflow.  */
+      if (high + low != val)
+	return NULL_RTX;
+
+      /* Reload the high part into a base reg; leave the low part
+	 in the mem directly.  */
+      x = gen_rtx_PLUS (GET_MODE (x),
+			gen_rtx_PLUS (GET_MODE (x), XEXP (x, 0),
+				      GEN_INT (high)),
+			GEN_INT (low));
+
+      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
+		   BASE_REG_CLASS, GET_MODE (x), VOIDmode, 0, 0,
+		   opnum, type);
+      return x;
+    }
+
+  return NULL_RTX;
 }
 
 /* REF is an alignable memory location.  Place an aligned SImode

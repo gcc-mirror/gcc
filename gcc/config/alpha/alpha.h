@@ -1460,122 +1460,30 @@ do {						\
    GO_IF_LEGITIMATE_ADDRESS.
 
    It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output. 
+   opportunities to optimize the output.  */
 
-   For the Alpha, there are three cases we handle:
-
-   (1) If the address is (plus reg const_int) and the CONST_INT is not a
-       valid offset, compute the high part of the constant and add it to the
-       register.  Then our address is (plus temp low-part-const).
-   (2) If the address is (const (plus FOO const_int)), find the low-order
-       part of the CONST_INT.  Then load FOO plus any high-order part of the
-       CONST_INT into a register.  Our address is (plus reg low-part-const).
-       This is done to reduce the number of GOT entries.
-   (3) If we have a (plus reg const), emit the load as in (2), then add
-       the two registers, and finally generate (plus reg low-part-const) as
-       our address.  */
-
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)			\
-{ if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
-      && GET_CODE (XEXP (X, 1)) == CONST_INT			\
-      && ! CONSTANT_ADDRESS_P (XEXP (X, 1)))			\
-    {								\
-      HOST_WIDE_INT val = INTVAL (XEXP (X, 1));			\
-      HOST_WIDE_INT lowpart = (val & 0xffff) - 2 * (val & 0x8000); \
-      HOST_WIDE_INT highpart = val - lowpart;			\
-      rtx high = GEN_INT (highpart);				\
-      rtx temp = expand_binop (Pmode, add_optab, XEXP (x, 0),	\
-			       high, NULL_RTX, 1, OPTAB_LIB_WIDEN); \
-								\
-      (X) = plus_constant (temp, lowpart);			\
-      goto WIN;							\
-    }								\
-  else if (GET_CODE (X) == CONST				\
-	   && GET_CODE (XEXP (X, 0)) == PLUS			\
-	   && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT)	\
-    {								\
-      HOST_WIDE_INT val = INTVAL (XEXP (XEXP (X, 0), 1));	\
-      HOST_WIDE_INT lowpart = (val & 0xffff) - 2 * (val & 0x8000); \
-      HOST_WIDE_INT highpart = val - lowpart;			\
-      rtx high = XEXP (XEXP (X, 0), 0);				\
-								\
-      if (highpart)						\
-	high = plus_constant (high, highpart);			\
-								\
-      (X) = plus_constant (force_reg (Pmode, high), lowpart);	\
-      goto WIN;							\
-    }								\
-  else if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG \
-	   && GET_CODE (XEXP (X, 1)) == CONST			\
-	   && GET_CODE (XEXP (XEXP (X, 1), 0)) == PLUS		\
-	   && GET_CODE (XEXP (XEXP (XEXP (X, 1), 0), 1)) == CONST_INT) \
-    {								\
-      HOST_WIDE_INT val = INTVAL (XEXP (XEXP (XEXP (X, 1), 0), 1)); \
-      HOST_WIDE_INT lowpart = (val & 0xffff) - 2 * (val & 0x8000); \
-      HOST_WIDE_INT highpart = val - lowpart;			\
-      rtx high = XEXP (XEXP (XEXP (X, 1), 0), 0);		\
-								\
-      if (highpart)						\
-	high = plus_constant (high, highpart);			\
-								\
-      high = expand_binop (Pmode, add_optab, XEXP (X, 0),	\
-			   force_reg (Pmode, high),		\
-			   high, 1, OPTAB_LIB_WIDEN);		\
-      (X) = plus_constant (high, lowpart);			\
-      goto WIN;							\
-    }								\
-}
+#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)		\
+do {							\
+  rtx new_x = alpha_legitimize_address (X, OLDX, MODE);	\
+  if (new_x)						\
+    {							\
+      X = new_x;					\
+      goto WIN;						\
+    }							\
+} while (0)
 
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
-   macro is used in only one place: `find_reloads_address' in reload.c.
-
-   For the Alpha, we wish to handle large displacements off a base
-   register by splitting the addend across an ldah and the mem insn.
-   This cuts number of extra insns needed from 3 to 1.  */
+   macro is used in only one place: `find_reloads_address' in reload.c.  */
    
-#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	\
-do {									\
-  /* We must recognize output that we have already generated ourselves.  */ \
-  if (GET_CODE (X) == PLUS						\
-      && GET_CODE (XEXP (X, 0)) == PLUS					\
-      && GET_CODE (XEXP (XEXP (X, 0), 0)) == REG			\
-      && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT			\
-      && GET_CODE (XEXP (X, 1)) == CONST_INT)				\
-    {									\
-      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,	\
-		   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	\
-		   OPNUM, TYPE);					\
-      goto WIN;								\
-    }									\
-  if (GET_CODE (X) == PLUS						\
-      && GET_CODE (XEXP (X, 0)) == REG					\
-      && REGNO (XEXP (X, 0)) < FIRST_PSEUDO_REGISTER			\
-      && REG_MODE_OK_FOR_BASE_P (XEXP (X, 0), MODE)			\
-      && GET_CODE (XEXP (X, 1)) == CONST_INT)				\
-    {									\
-      HOST_WIDE_INT val = INTVAL (XEXP (X, 1));				\
-      HOST_WIDE_INT low = ((val & 0xffff) ^ 0x8000) - 0x8000;		\
-      HOST_WIDE_INT high						\
-	= (((val - low) & 0xffffffff) ^ 0x80000000) - 0x80000000;	\
-									\
-      /* Check for 32-bit overflow.  */					\
-      if (high + low != val)						\
-	break;								\
-									\
-      /* Reload the high part into a base reg; leave the low part	\
-	 in the mem directly.  */					\
-									\
-      X = gen_rtx_PLUS (GET_MODE (X),					\
-			gen_rtx_PLUS (GET_MODE (X), XEXP (X, 0),	\
-				      GEN_INT (high)),			\
-			GEN_INT (low));					\
-	  								\
-      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,	\
-		   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	\
-		   OPNUM, TYPE);					\
-      goto WIN;								\
-    }									\
+#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_L,WIN)		     \
+do {									     \
+  rtx new_x = alpha_legitimize_reload_address (X, MODE, OPNUM, TYPE, IND_L); \
+  if (new_x)								     \
+    {									     \
+      X = new_x;							     \
+      goto WIN;								     \
+    }									     \
 } while (0)
 
 /* Go to LABEL if ADDR (a legitimate address expression)

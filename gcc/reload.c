@@ -242,9 +242,6 @@ static int push_secondary_reload PARAMS ((int, rtx, int, int, enum reg_class,
 #endif
 static enum reg_class find_valid_class PARAMS ((enum machine_mode, int));
 static int reload_inner_reg_of_subreg PARAMS ((rtx, enum machine_mode));
-static int push_reload		PARAMS ((rtx, rtx, rtx *, rtx *, enum reg_class,
-				       enum machine_mode, enum machine_mode,
-				       int, int, int, enum reload_type));
 static void push_replacement	PARAMS ((rtx *, int, enum machine_mode));
 static void combine_reloads	PARAMS ((void));
 static int find_reusable_reload	PARAMS ((rtx *, rtx, enum reg_class,
@@ -845,7 +842,7 @@ reload_inner_reg_of_subreg (x, mode)
    the two reload-numbers are equal, but the caller should be careful to
    distinguish them.  */
 
-static int
+int
 push_reload (in, out, inloc, outloc, class,
 	     inmode, outmode, strict_low, optional, opnum, type)
      rtx in, out;
