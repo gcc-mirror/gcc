@@ -1,3 +1,7 @@
+2004-10-28  Diego Novillo  <dnovillo@redhat.com>
+
+	* opts.c (decode_options): Don't run PRE at -Os.
+
 2004-10-28  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (movqicc_internal): Allow exactly one
