@@ -1,4 +1,4 @@
-// 2000-06-22 -=dbv=-  (shamelessy copied from bkoz' find.cc)
+// from tstring.cc, from jason merrill, et. al.
 
 // Copyright (C) 2000, 2003 Free Software Foundation, Inc.
 //
@@ -25,8 +25,37 @@
 bool test03()
 {
   bool test = true;
+  typedef std::wstring::size_type csize_type;
+  std::wstring::size_type pos;
+  csize_type npos = std::wstring::npos;
 
-  // test find_last_not_of
+  std::wstring x;
+  pos = x.find_last_not_of(L'X');
+  VERIFY( pos == npos );
+  pos = x.find_last_not_of(L"XYZ");
+  VERIFY( pos == npos );
+
+  std::wstring y(L"a");
+  pos = y.find_last_not_of(L'X');
+  VERIFY( pos == 0 );
+  pos = y.find_last_not_of(L'a');
+  VERIFY( pos == npos );
+  pos = y.find_last_not_of(L"XYZ");
+  VERIFY( pos == 0 );
+  pos = y.find_last_not_of(L"a");
+  VERIFY( pos == npos );
+
+  std::wstring z(L"ab");
+  pos = z.find_last_not_of(L'X');
+  VERIFY( pos == 1 );
+  pos = z.find_last_not_of(L"XYZ");
+  VERIFY( pos == 1 );
+  pos = z.find_last_not_of(L'b');
+  VERIFY( pos == 0 );
+  pos = z.find_last_not_of(L"Xb");
+  VERIFY( pos == 0 );
+  pos = z.find_last_not_of(L"Xa");
+  VERIFY( pos == 1 );
 
 #ifdef DEBUG_ASSERT
   assert(test);

@@ -18,17 +18,15 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 21.3.6.1 basic_string find
+// 21.3.6.3 basic_string find_first_of
 
 #include <string>
 #include <testsuite_hooks.h>
 
-bool test01(void)
+bool test02(void)
 {
   bool test = true;
   typedef std::string::size_type csize_type;
-  typedef std::string::const_reference cref;
-  typedef std::string::reference ref;
   csize_type npos = std::string::npos;
   csize_type csz01, csz02;
 
@@ -38,53 +36,54 @@ bool test01(void)
   std::string str03("s, s");
   std::string str04;
 
-  // size_type find(const string&, size_type pos = 0) const;
-  csz01 = str01.find(str01);
+  // size_type find_first_of(const string&, size_type pos = 0) const;
+  std::string str05("xena rulez");
+  csz01 = str01.find_first_of(str01);
   VERIFY( csz01 == 0 );
-  csz01 = str01.find(str01, 4);
-  VERIFY( csz01 == npos );
-  csz01 = str01.find(str02, 0);
+  csz01 = str01.find_first_of(str01, 4);
+  VERIFY( csz01 == 4 );
+  csz01 = str01.find_first_of(str02, 0);
   VERIFY( csz01 == 0 );
-  csz01 = str01.find(str02, 3);
-  VERIFY( csz01 == npos );
-  csz01 = str01.find(str03, 0);
+  csz01 = str01.find_first_of(str02, 3);
+  VERIFY( csz01 == 3 );
+  csz01 = str01.find_first_of(str03, 0);
   VERIFY( csz01 == 8 );
-  csz01 = str01.find(str03, 3);
+  csz01 = str01.find_first_of(str03, 3);
   VERIFY( csz01 == 8 );
-  csz01 = str01.find(str03, 12);
-  VERIFY( csz01 == npos );
+  csz01 = str01.find_first_of(str03, 12);
+  VERIFY( csz01 == 16 );
+  csz01 = str01.find_first_of(str05, 0);
+  VERIFY( csz01 == 1 );
+  csz01 = str01.find_first_of(str05, 4);
+  VERIFY( csz01 == 4 );
 
   // An empty string consists of no characters
   // therefore it should be found at every point in a string,
   // except beyond the end
-  csz01 = str01.find(str04, 0);
-  VERIFY( csz01 == 0 );
-  csz01 = str01.find(str04, 5);
-  VERIFY( csz01 == 5 );
-  csz01 = str01.find(str04, str01.size());
-  VERIFY( csz01 == str01.size() ); 
-  csz01 = str01.find(str04, str01.size()+1);
-  VERIFY( csz01 == npos ); 
+  // However, str1.find_first_of(str2,pos) finds the first character in 
+  // str1 (starting at pos) that exists in str2, which is none for empty str2
+  csz01 = str01.find_first_of(str04, 0);
+  VERIFY( csz01 == npos );
+  csz01 = str01.find_first_of(str04, 5);
+  VERIFY( csz01 == npos );
   
-  // size_type find(const char* s, size_type pos, size_type n) const;
-  csz01 = str01.find(str_lit01, 0, 3);
+  // size_type find_first_of(const char* s, size_type pos, size_type n) const;
+  csz01 = str01.find_first_of(str_lit01, 0, 3);
   VERIFY( csz01 == 0 );
-  csz01 = str01.find(str_lit01, 3, 0);
+  csz01 = str01.find_first_of(str_lit01, 3, 0);
+  VERIFY( csz01 == npos );
+
+  // size_type find_first_of(const char* s, size_type pos = 0) const;
+  csz01 = str01.find_first_of(str_lit01);
+  VERIFY( csz01 == 0 );
+  csz01 = str01.find_first_of(str_lit01, 3);
   VERIFY( csz01 == 3 );
 
-  // size_type find(const char* s, size_type pos = 0) const;
-  csz01 = str01.find(str_lit01);
-  VERIFY( csz01 == 0 );
-  csz01 = str01.find(str_lit01, 3);
-  VERIFY( csz01 == npos );
-
-  // size_type find(char c, size_type pos = 0) const;
-  csz01 = str01.find('z');
+  // size_type find_first_of(char c, size_type pos = 0) const;
+  csz01 = str01.find_first_of('z');
   csz02 = str01.size() - 1;
   VERIFY( csz01 == csz02 );
-  csz01 = str01.find('/');
-  VERIFY( csz01 == npos );
-   
+
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
@@ -93,6 +92,6 @@ bool test01(void)
 
 int main()
 { 
-  test01();
+  test02();
   return 0;
 }

@@ -1,4 +1,4 @@
-// 2000-06-22 -=dbv=-  (shamelessy copied from bkoz' find.cc)
+// from tstring.cc, from jason merrill, et. al.
 
 // Copyright (C) 2000, 2003 Free Software Foundation, Inc.
 //
@@ -25,8 +25,22 @@
 bool test02()
 {
   bool test = true;
-
-  // test find_last_of
+  std::wstring::size_type pos;
+  std::wstring z(L"ab");
+  pos = z.find_last_of(L"ab");
+  VERIFY( pos == 1 );
+  pos = z.find_last_of(L"Xa");
+  VERIFY( pos == 0 );
+  pos = z.find_last_of(L"Xb");
+  VERIFY( pos == 1 );
+  pos = z.find_last_of(L"XYZ");
+  VERIFY( pos == std::wstring::npos );
+  pos = z.find_last_of(L'a');
+  VERIFY( pos == 0 );
+  pos = z.find_last_of(L'b');
+  VERIFY( pos == 1 );
+  pos = z.find_last_of(L'X');
+  VERIFY( pos == std::wstring::npos );
 
 #ifdef DEBUG_ASSERT
   assert(test);

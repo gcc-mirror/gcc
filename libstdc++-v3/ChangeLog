@@ -1,3 +1,22 @@
+2003-03-24  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/21_strings/basic_string/find/char/1.cc: Remove
+	find_first_of, find_last_of and find_last_not_of tests.
+	* testsuite/21_strings/basic_string/find/char/2.cc: find_first_of
+	tests here, new file.
+	* testsuite/21_strings/basic_string/find/wchar_t/1.cc: Likewise,
+	remove wchar_t find_first_of, find_last_of and find_last_not_of tests.
+	* testsuite/21_strings/basic_string/find/wchar_t/2.cc: Likewise,
+	wchar_t find_first_of tests here, new file.
+	* testsuite/21_strings/basic_string/rfind/char/2.cc: find_last_of
+	tests here.
+	* testsuite/21_strings/basic_string/rfind/char/3.cc: find_last_not_of
+	tests here.
+	* testsuite/21_strings/basic_string/rfind/wchar_t/2.cc: likewise,
+	wchar_t find_last_of tests here.
+	* testsuite/21_strings/basic_string/rfind/wchar_t/3.cc: likewise,
+	wchar_t find_last_not_of tests here.	
+
 2003-03-22  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config/os/hpux/ctype_noninline.h (ctype<char>::classic_table):
