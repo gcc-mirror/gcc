@@ -1,3 +1,7 @@
+2003-04-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_expand_cmpstr): Disable CLC loop.
+
 2003-04-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (TARGET_OPTIONS): Add value field.
