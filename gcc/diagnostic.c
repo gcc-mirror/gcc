@@ -1080,22 +1080,6 @@ diagnostic_report_current_function (context)
 }
 
 void
-error_with_file_and_line VPARAMS ((const char *file, int line,
-				   const char *msgid, ...))
-{
-  diagnostic_info diagnostic;
-
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, file);
-  VA_FIXEDARG (ap, int, line);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  diagnostic_set_info (&diagnostic, msgid, &ap, file, line, DK_ERROR);
-  report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
-}
-
-void
 error_with_decl VPARAMS ((tree decl, const char *msgid, ...))
 {
   diagnostic_info diagnostic;
@@ -1180,22 +1164,6 @@ internal_error VPARAMS ((const char *msgid, ...))
 with preprocessed source if appropriate.\n\
 See %s for instructions.\n", bug_report_url);
   exit (FATAL_EXIT_CODE);
-}
-
-void
-warning_with_file_and_line VPARAMS ((const char *file, int line,
-				     const char *msgid, ...))
-{
-  diagnostic_info diagnostic;
-
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, file);
-  VA_FIXEDARG (ap, int, line);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  diagnostic_set_info (&diagnostic, msgid, &ap, file, line, DK_WARNING);
-  report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
 }
 
 void
