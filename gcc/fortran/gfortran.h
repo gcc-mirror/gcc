@@ -243,7 +243,7 @@ sym_intent;
 
 /* Access types.  */
 typedef enum
-{ ACCESS_PUBLIC = 1, ACCESS_PRIVATE, ACCESS_UNKNOWN
+{ ACCESS_UNKNOWN = 0, ACCESS_PUBLIC, ACCESS_PRIVATE, 
 }
 gfc_access;
 
