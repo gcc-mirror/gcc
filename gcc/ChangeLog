@@ -1,5 +1,18 @@
 2004-07-13  Richard Sandiford  <rsandifo@redhat.com>
 
+	* doc/invoke.texi: Remove documentation for MIPS -mrnames option.
+	* config/mips/mips.h (mips_reg_names): Don't declare.
+	(MASK_NAME_REGS): Delete.  Shuffle other MASK_* values down.
+	(TARGET_NAME_REGS): Delete.
+	(TARGET_SWITCHES): Remove -mrnames.
+	(REGISTER_NAMES): Initialise with the old contents of mips_reg_names[].
+	(ADDITIONAL_REGISTER_NAMES): Remove entries for names mentioned
+	in REGISTER_NAMES.
+	* config/mips/mips.c (mips_reg_names, mips_sw_reg_names): Delete.
+	(override_options): Remove handling of TARGET_NAME_REGS.
+
+2004-07-13  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.h (TARGET_*): Boolify.
 
 2004-07-12  James E Wilson  <wilson@specifixinc.com>

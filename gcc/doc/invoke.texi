@@ -537,7 +537,6 @@ in the following sections.
 -muninit-const-in-rodata  -mno-uninit-const-in-rodata @gol
 -msplit-addresses  -mno-split-addresses  @gol
 -mexplicit-relocs  -mno-explicit-relocs  @gol
--mrnames  -mno-rnames @gol
 -mcheck-zero-division  -mno-check-zero-division @gol
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
 -mmad  -mno-mad  -mfused-madd  -mno-fused-madd  -nocpp @gol
@@ -9162,16 +9161,6 @@ This is because, when generating abicalls, the choice of relocation
 depends on whether a symbol is local or global.  In some rare cases,
 GCC will not be able to decide this until the whole compilation unit
 has been read.
-
-@item -mrnames
-@itemx -mno-rnames
-@opindex mrnames
-@opindex mno-rnames
-Generate (do not generate) code that refers to registers using their
-software names.  The default is @option{-mno-rnames}, which tells GCC
-to use hardware names like @samp{$4} instead of software names like
-@samp{a0}.  The only assembler known to support @option{-rnames} is
-the Algorithmics assembler.
 
 @item -mcheck-zero-division
 @itemx -mno-check-zero-division
