@@ -122,7 +122,7 @@ case "${host}" in
   mips*-*-sysv4*)	  host_makefile_frag=config/mh-sysv4 ;;
   mips*-*-sysv*)	  host_makefile_frag=config/mh-riscos ;;
   i[3456]86-*-dgux*)	  host_makefile_frag=config/mh-dgux386 ;;
-  i[3456]86-ncr-sysv4.3)  host_makefile_frag=config/mh-ncrsvr43 ;;
+  i[3456]86-ncr-sysv4.3*) host_makefile_frag=config/mh-ncrsvr43 ;;
   i[3456]86-ncr-sysv4*)   host_makefile_frag=config/mh-ncr3000 ;;
   i[3456]86-*-sco3.2v5*)  host_makefile_frag=config/mh-sysv ;;
   i[3456]86-*-sco*)       host_makefile_frag=config/mh-sco ;;
