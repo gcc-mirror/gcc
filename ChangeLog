@@ -1,3 +1,10 @@
+2005-01-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.in (noconfigdirs) <crisv32-*-*>: Match like cris-*-*.
+	<crisv32-*-*, cris-*-*>: Only disable target-newlib and
+	target-libgloss when not *-*-elf and *-*-aout.
+	* configure: Regenerate.
+
 2005-01-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* MAINTAINERS: Remove obsolete entries.

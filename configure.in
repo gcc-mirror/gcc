@@ -500,8 +500,13 @@ case "${target}" in
   c54x*-*-* | tic54x-*-*)
     noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj} gcc gdb newlib"
     ;;
-  cris-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj} target-newlib target-libgloss"
+  cris-*-* | crisv32-*-*)
+    case "${target}" in
+      *-*-elf | *-*-aout)
+	noconfigdirs="$noconfigdirs ${libgcj}";;
+      *)
+	noconfigdirs="$noconfigdirs ${libgcj} target-newlib target-libgloss";;
+    esac
     ;;
   crx-*-*)
     noconfigdirs="$noconfigdirs target-libstdc++-v3 target-mudflap ${libgcj}"
