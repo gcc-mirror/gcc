@@ -77,30 +77,13 @@ static char *context_as_prefix PARAMS ((const char *, int, int));
 static void output_do_printf PARAMS ((output_buffer *, const char *));
 static void line_wrapper_printf PARAMS ((FILE *, const char *, ...))
      ATTRIBUTE_PRINTF_2;
-static void vline_wrapper_message_with_location PARAMS ((const char *, int,
-							 int, const char *,
-							 va_list));
 static void notice PARAMS ((const char *s, ...)) ATTRIBUTE_PRINTF_1;
-static void v_message_with_file_and_line PARAMS ((const char *, int, int,
-						  const char *, va_list));
 static void v_message_with_decl PARAMS ((tree, int, const char *, va_list));
 static void file_and_line_for_asm PARAMS ((rtx, const char **, int *));
-static void v_error_with_file_and_line PARAMS ((const char *, int,
-						const char *, va_list));
+static void diagnostic_for_asm PARAMS ((rtx, const char *, va_list, int));
 static void v_error_with_decl PARAMS ((tree, const char *, va_list));
-static void v_error_for_asm PARAMS ((rtx, const char *, va_list));
-static void vfatal PARAMS ((const char *, va_list)) ATTRIBUTE_NORETURN;
-static void v_warning_with_file_and_line PARAMS ((const char *, int,
-						  const char *, va_list));
 static void v_warning_with_decl PARAMS ((tree, const char *, va_list));
-static void v_warning_for_asm PARAMS ((rtx, const char *, va_list));
 static void v_pedwarn_with_decl PARAMS ((tree, const char *, va_list));
-static void v_pedwarn_with_file_and_line PARAMS ((const char *, int,
-						  const char *, va_list));
-static void vsorry PARAMS ((const char *, va_list));
-static void verror PARAMS ((const char *, va_list));
-static void vwarning PARAMS ((const char *, va_list));
-static void vpedwarn PARAMS ((const char *, va_list));
 static void report_file_and_line PARAMS ((const char *, int, int));
 static void vnotice PARAMS ((FILE *, const char *, va_list));
 static void set_real_maximum_length PARAMS ((output_buffer *));
@@ -834,27 +817,6 @@ line_wrapper_printf VPARAMS ((FILE *file, const char *msgid, ...))
   va_end (ap);
 }
 
-
-static void
-vline_wrapper_message_with_location (file, line, warn, msgid, ap)
-     const char *file;
-     int line;
-     int warn;
-     const char *msgid;
-     va_list ap;
-{
-  output_buffer buffer;
-  
-  init_output_buffer (&buffer, context_as_prefix (file, line, warn),
-		      diagnostic_message_length_per_line);
-  output_buffer_ptr_to_format_args (&buffer) = &ap;
-  output_do_printf (&buffer, msgid);
-  output_to_stream (&buffer, stderr);
-  fputc ('\n', stderr);
-  output_destroy_prefix (&buffer);
-}
-
-
 /* Print the message MSGID in FILE.  */
 
 static void
@@ -901,21 +863,6 @@ report_file_and_line (file, line, warn)
 
   if (warn)
     notice ("warning: ");
-}
-
-/* Print a message relevant to line LINE of file FILE.  */
-
-static void
-v_message_with_file_and_line (file, line, warn, msgid, ap)
-     const char *file;
-     int line;
-     int warn;
-     const char *msgid;
-     va_list ap;
-{
-  report_file_and_line (file, line, warn);
-  vnotice (stderr, msgid, ap);
-  fputc ('\n', stderr);
 }
 
 /* Print a message relevant to the given DECL.  */
@@ -1040,21 +987,21 @@ file_and_line_for_asm (insn, pfile, pline)
     }
 }
 
-/* Report an error at line LINE of file FILE.  */
-
+/* Report a diagnostic MESSAGE (an errror or a WARNING) at the line number
+   of the insn INSN.  This is used only when INSN is an `asm' with operands,
+   and each ASM_OPERANDS records its own source file and line.  */
 static void
-v_error_with_file_and_line (file, line, msgid, ap)
-     const char *file;
-     int line;
-     const char *msgid;
-     va_list ap;
+diagnostic_for_asm (insn, msg, args, warn)
+     rtx insn;
+     const char *msg;
+     va_list args;
+     int warn;
 {
-  count_error (0);
-  report_error_function (file);
-  if (doing_line_wrapping ())
-    vline_wrapper_message_with_location (file, line, 0, msgid, ap);
-  else
-    v_message_with_file_and_line (file, line, 0, msgid, ap);
+  const char *file;
+  int line;
+
+  file_and_line_for_asm (insn, &file, &line);
+  report_diagnostic (msg, args, file, line, warn);
 }
 
 /* Report an error at the declaration DECL.
@@ -1071,75 +1018,6 @@ v_error_with_decl (decl, msgid, ap)
   report_error_function (DECL_SOURCE_FILE (decl));
   v_message_with_decl (decl, 0, msgid, ap);
 }
-
-
-/* Report an error at the line number of the insn INSN.
-   This is used only when INSN is an `asm' with operands,
-   and each ASM_OPERANDS records its own source file and line.  */
-
-static void
-v_error_for_asm (insn, msgid, ap)
-     rtx insn;
-     const char *msgid;
-     va_list ap;
-{
-  const char *file;
-  int line;
-
-  count_error (0);
-  file_and_line_for_asm (insn, &file, &line);
-  report_error_function (file);
-  v_message_with_file_and_line (file, line, 0, msgid, ap);
-}
-
-
-/* Report an error at the current line number.  */
-
-static void
-verror (msgid, ap)
-     const char *msgid;
-     va_list ap;
-{
-  v_error_with_file_and_line (input_filename, lineno, msgid, ap);
-}
-
-
-/* Report a fatal error at the current line number.  Allow a front end to
-   intercept the message.  */
-
-static void (*fatal_function) PARAMS ((const char *, va_list));
-
-static void
-vfatal (msgid, ap)
-     const char *msgid;
-     va_list ap;
-{
-   if (fatal_function != 0)
-     (*fatal_function) (_(msgid), ap);
-
-  verror (msgid, ap);
-  exit (FATAL_EXIT_CODE);
-}
-
-/* Report a warning at line LINE of file FILE.  */
-
-static void
-v_warning_with_file_and_line (file, line, msgid, ap)
-     const char *file;
-     int line;
-     const char *msgid;
-     va_list ap;
-{
-  if (count_error (1))
-    {
-      report_error_function (file);
-      if (doing_line_wrapping ())
-        vline_wrapper_message_with_location (file, line, 1, msgid, ap);
-      else
-        v_message_with_file_and_line (file, line, 1, msgid, ap);
-    }
-}
-
 
 /* Report a warning at the declaration DECL.
    MSGID is a format string which uses %s to substitute the declaration
@@ -1158,53 +1036,8 @@ v_warning_with_decl (decl, msgid, ap)
     }
 }
 
-
-/* Report a warning at the line number of the insn INSN.
-   This is used only when INSN is an `asm' with operands,
-   and each ASM_OPERANDS records its own source file and line.  */
-
-static void
-v_warning_for_asm (insn, msgid, ap)
-     rtx insn;
-     const char *msgid;
-     va_list ap;
-{
-  if (count_error (1))
-    {
-      const char *file;
-      int line;
-
-      file_and_line_for_asm (insn, &file, &line);
-      report_error_function (file);
-      v_message_with_file_and_line (file, line, 1, msgid, ap);
-    }
-}
-
-
-/* Report a warning at the current line number.  */
-
-static void
-vwarning (msgid, ap)
-     const char *msgid;
-     va_list ap;
-{
-  v_warning_with_file_and_line (input_filename, lineno, msgid, ap);
-}
-
 /* These functions issue either warnings or errors depending on
    -pedantic-errors.  */
-
-static void
-vpedwarn (msgid, ap)
-     const char *msgid;
-     va_list ap;
-{
-  if (flag_pedantic_errors)
-    verror (msgid, ap);
-  else
-    vwarning (msgid, ap);
-}
-
 
 static void
 v_pedwarn_with_decl (decl, msgid, ap)
@@ -1226,38 +1059,6 @@ v_pedwarn_with_decl (decl, msgid, ap)
       else
 	v_warning_with_decl (decl, msgid, ap);
     }
-}
-
-
-static void
-v_pedwarn_with_file_and_line (file, line, msgid, ap)
-     const char *file;
-     int line;
-     const char *msgid;
-     va_list ap;
-{
-  if (flag_pedantic_errors)
-    v_error_with_file_and_line (file, line, msgid, ap);
-  else
-    v_warning_with_file_and_line (file, line, msgid, ap);
-}
-
-
-/* Apologize for not implementing some feature.  */
-
-static void
-vsorry (msgid, ap)
-     const char *msgid;
-     va_list ap;
-{
-  sorrycount++;
-  if (input_filename)
-    fprintf (stderr, "%s:%d: ", input_filename, lineno);
-  else
-    fprintf (stderr, "%s: ", progname);
-  notice ("sorry, not implemented: ");
-  vnotice (stderr, msgid, ap);
-  fputc ('\n', stderr);
 }
 
 
@@ -1344,7 +1145,7 @@ pedwarn VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  vpedwarn (msgid, ap);
+  report_diagnostic (msgid, ap, input_filename, lineno, !flag_pedantic_errors);
   va_end (ap);
 }
 
@@ -1389,7 +1190,7 @@ pedwarn_with_file_and_line VPARAMS ((const char *file, int line,
   msgid = va_arg (ap, const char *);
 #endif
 
-  v_pedwarn_with_file_and_line (file, line, msgid, ap);
+  report_diagnostic (msgid, ap, file, line, !flag_pedantic_errors);
   va_end (ap);
 }
 
@@ -1401,14 +1202,23 @@ sorry VPARAMS ((const char *msgid, ...))
   const char *msgid;
 #endif
   va_list ap;
+  output_state os;
 
+  os = diagnostic_buffer->state;
   VA_START (ap, msgid);
 
 #ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, const char *);
 #endif
-
-  vsorry (msgid, ap);
+  ++sorrycount;
+  output_set_prefix
+    (diagnostic_buffer, context_as_prefix (input_filename, lineno, 0));
+  output_printf (diagnostic_buffer, "sorry, not implemented: ");
+  output_buffer_ptr_to_format_args (diagnostic_buffer) = &ap;
+  output_buffer_text_cursor (diagnostic_buffer) = msgid;
+  output_format (diagnostic_buffer);
+  finish_diagnostic ();
+  diagnostic_buffer->state = os;
   va_end (ap);
 }
 
@@ -1551,7 +1361,7 @@ error_with_file_and_line VPARAMS ((const char *file, int line,
   msgid = va_arg (ap, const char *);
 #endif
 
-  v_error_with_file_and_line (file, line, msgid, ap);
+  report_diagnostic (msgid, ap, file, line, /* warn = */ 0);
   va_end (ap);
 }
 
@@ -1591,7 +1401,7 @@ error_for_asm VPARAMS ((rtx insn, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  v_error_for_asm (insn, msgid, ap);
+  diagnostic_for_asm (insn, msgid, ap, /* warn = */ 0);
   va_end (ap);
 }
 
@@ -1609,11 +1419,13 @@ error VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  verror (msgid, ap);
+  report_diagnostic (msgid, ap, input_filename, lineno, /* warn = */ 0);
   va_end (ap);
 }
 
 /* Set the function to call when a fatal error occurs.  */
+
+static void (*fatal_function) PARAMS ((const char *, va_list));
 
 void
 set_fatal_function (f)
@@ -1622,6 +1434,8 @@ set_fatal_function (f)
   fatal_function = f;
 }
 
+/* Report a fatal error at the current line number.  Allow a front end to
+   intercept the message.  */
 void
 fatal VPARAMS ((const char *msgid, ...))
 {
@@ -1629,15 +1443,21 @@ fatal VPARAMS ((const char *msgid, ...))
   const char *msgid;
 #endif
   va_list ap;
+  va_list args_for_fatal_msg;
 
   VA_START (ap, msgid);
 
 #ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, const char *);
 #endif
+  va_copy (args_for_fatal_msg, ap);
 
-  vfatal (msgid, ap);
+  if (fatal_function != NULL)
+    (*fatal_function) (_(msgid), args_for_fatal_msg);
+  va_end (args_for_fatal_msg);
+  report_diagnostic (msgid, ap, input_filename, lineno, 0);
   va_end (ap);
+  exit (FATAL_EXIT_CODE);
 }
 
 void
@@ -1686,7 +1506,7 @@ warning_with_file_and_line VPARAMS ((const char *file, int line,
   msgid = va_arg (ap, const char *);
 #endif
 
-  v_warning_with_file_and_line (file, line, msgid, ap);
+  report_diagnostic (msgid, ap, file, line, /* warn = */ 1);
   va_end (ap);
 }
 
@@ -1726,7 +1546,7 @@ warning_for_asm VPARAMS ((rtx insn, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  v_warning_for_asm (insn, msgid, ap);
+  diagnostic_for_asm (insn, msgid, ap, /* warn = */ 1);
   va_end (ap);
 }
 
@@ -1744,7 +1564,7 @@ warning VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  vwarning (msgid, ap);
+  report_diagnostic (msgid, ap, input_filename, lineno, /* warn = */ 1);
   va_end (ap);
 }
 
@@ -1753,6 +1573,7 @@ static void
 finish_diagnostic ()
 {
   output_to_stream (diagnostic_buffer, stderr);
+  clear_diagnostic_info (diagnostic_buffer);
   fputc ('\n', stderr);
   fflush (stderr);
 }
@@ -1765,8 +1586,9 @@ output_do_verbatim (buffer, msg, args)
      const char *msg;
      va_list args;
 {
-  output_state os = buffer->state;
+  output_state os;
 
+  os = buffer->state;
   output_prefix (buffer) = NULL;
   prefixing_policy (buffer) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
   output_buffer_text_cursor (buffer) = msg;
@@ -1827,8 +1649,9 @@ report_diagnostic (msg, args, file, line, warn)
      int line;
      int warn;
 {
-  output_state os = diagnostic_buffer->state;
+  output_state os;
 
+  os = diagnostic_buffer->state;
   diagnostic_msg = msg;
   diagnostic_args = &args;
   if (count_error (warn))
