@@ -15,7 +15,7 @@ AM_GCJFLAGS = \
 	--encoding=UTF-8 \
 	-Wno-deprecated
 
-all-local: classes.stamp
+BUILT_SOURCES = classes.stamp
 
 classes.stamp:	$(libw3c_convenience_la_SOURCES)
 	here=`pwd`; cd $(srcdir); \
@@ -23,8 +23,8 @@ classes.stamp:	$(libw3c_convenience_la_SOURCES)
 	echo > classes.stamp
 
 mostlyclean-local:
-	find . -name '*.class' | xargs rm
-	rm classes.stamp
+	-find . -name '*.class' | xargs rm
+	-rm classes.stamp
 
 noinst_LTLIBRARIES = libw3c_convenience.la
 

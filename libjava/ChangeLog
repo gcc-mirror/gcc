@@ -1,3 +1,14 @@
+2005-02-10  Tom Tromey  <tromey@redhat.com>
+
+	* external/sax/Makefile.in: Rebuilt.
+	* external/sax/Makefile.am (all-local): Removed.
+	(BUILT_SOURCES): New variable.
+	(mostlyclean-local): No error if no classes to delete.
+	* external/w3c_dom/Makefile.in: Rebuilt.
+	* external/w3c_dom/Makefile.am (all-local): Removed.
+	(BUILT_SOURCES): New variable.
+	(mostlyclean-local): No error if no classes to delete.
+
 2005-02-10  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* testsuite/libjava.mauve/xfails: Updated to reflect current state 
