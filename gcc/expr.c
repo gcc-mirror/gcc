@@ -3675,7 +3675,7 @@ expand_assignment (to, from, want_value, suggest_reg)
      problem.  */
 
   if (TREE_CODE (to) == COMPONENT_REF || TREE_CODE (to) == BIT_FIELD_REF
-      || TREE_CODE (to) == ARRAY_REF)
+      || TREE_CODE (to) == ARRAY_REF || TREE_CODE (to) == ARRAY_RANGE_REF)
     {
       enum machine_mode mode1;
       HOST_WIDE_INT bitsize, bitpos;
@@ -5333,8 +5333,8 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 }
 
 /* Given an expression EXP that may be a COMPONENT_REF, a BIT_FIELD_REF,
-   or an ARRAY_REF, look for nested COMPONENT_REFs, BIT_FIELD_REFs, or
-   ARRAY_REFs and find the ultimate containing object, which we return.
+   an ARRAY_REF, or an ARRAY_RANGE_REF, look for nested operations of these
+   codes and find the ultimate containing object, which we return.
 
    We set *PBITSIZE to the size in bits that we want, *PBITPOS to the
    bit position, and *PUNSIGNEDP to the signedness of the field.
@@ -5438,12 +5438,14 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	    alignment = MIN (alignment, DECL_OFFSET_ALIGN (field));
 	}
 
-      else if (TREE_CODE (exp) == ARRAY_REF)
+      else if (TREE_CODE (exp) == ARRAY_REF
+	       || TREE_CODE (exp) == ARRAY_RANGE_REF)
 	{
 	  tree index = TREE_OPERAND (exp, 1);
-	  tree domain = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (exp, 0)));
+	  tree array = TREE_OPERAND (exp, 0);
+	  tree domain = TYPE_DOMAIN (TREE_TYPE (array));
 	  tree low_bound = (domain ? TYPE_MIN_VALUE (domain) : 0);
-	  tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (exp));
+	  tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (array)));
 
 	  /* We assume all arrays have sizes that are a multiple of a byte.
 	     First subtract the lower bound, if any, in the type of the
@@ -5461,8 +5463,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	    index = build (WITH_RECORD_EXPR, TREE_TYPE (index), index, exp);
 	  if (! TREE_CONSTANT (unit_size)
 	      && contains_placeholder_p (unit_size))
-	    unit_size = build (WITH_RECORD_EXPR, sizetype, unit_size,
-			       TREE_OPERAND (exp, 0));
+	    unit_size = build (WITH_RECORD_EXPR, sizetype, unit_size, array);
 
 	  offset = size_binop (PLUS_EXPR, offset,
 			       size_binop (MULT_EXPR,
@@ -6117,10 +6118,12 @@ expand_expr (exp, target, tmode, modifier)
 	return expand_expr (TREE_OPERAND (exp, 0), const0_rtx,
 			    VOIDmode, ro_modifier);
       else if (TREE_CODE_CLASS (code) == '2' || TREE_CODE_CLASS (code) == '<'
-	       || code == ARRAY_REF)
+	       || code == ARRAY_REF || code == ARRAY_RANGE_REF)
 	{
-	  expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, ro_modifier);
-	  expand_expr (TREE_OPERAND (exp, 1), const0_rtx, VOIDmode, ro_modifier);
+	  expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
+		       ro_modifier);
+	  expand_expr (TREE_OPERAND (exp, 1), const0_rtx, VOIDmode,
+		       ro_modifier);
 	  return const0_rtx;
 	}
       else if ((code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
@@ -6131,9 +6134,12 @@ expand_expr (exp, target, tmode, modifier)
 			    VOIDmode, ro_modifier);
       else if (code == BIT_FIELD_REF)
 	{
-	  expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, ro_modifier);
-	  expand_expr (TREE_OPERAND (exp, 1), const0_rtx, VOIDmode, ro_modifier);
-	  expand_expr (TREE_OPERAND (exp, 2), const0_rtx, VOIDmode, ro_modifier);
+	  expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
+		       ro_modifier);
+	  expand_expr (TREE_OPERAND (exp, 1), const0_rtx, VOIDmode,
+		       ro_modifier);
+	  expand_expr (TREE_OPERAND (exp, 2), const0_rtx, VOIDmode,
+		       ro_modifier);
 	  return const0_rtx;
 	}
       ;
@@ -6150,6 +6156,7 @@ expand_expr (exp, target, tmode, modifier)
       && TREE_CODE (exp) != INTEGER_CST
       && TREE_CODE (exp) != PARM_DECL
       && TREE_CODE (exp) != ARRAY_REF
+      && TREE_CODE (exp) != ARRAY_RANGE_REF
       && TREE_CODE (exp) != COMPONENT_REF
       && TREE_CODE (exp) != BIT_FIELD_REF
       && TREE_CODE (exp) != INDIRECT_REF
@@ -6168,6 +6175,7 @@ expand_expr (exp, target, tmode, modifier)
       && TREE_CODE (exp) != INTEGER_CST
       && TREE_CODE (exp) != PARM_DECL
       && TREE_CODE (exp) != ARRAY_REF
+      && TREE_CODE (exp) != ARRAY_RANGE_REF
       && TREE_CODE (exp) != COMPONENT_REF
       && TREE_CODE (exp) != BIT_FIELD_REF
       && TREE_CODE (exp) != INDIRECT_REF
@@ -6906,11 +6914,12 @@ expand_expr (exp, target, tmode, modifier)
 
     case COMPONENT_REF:
     case BIT_FIELD_REF:
+    case ARRAY_RANGE_REF:
       /* If the operand is a CONSTRUCTOR, we can just extract the
 	 appropriate field if it is present.  Don't do this if we have
 	 already written the data since we want to refer to that copy
 	 and varasm.c assumes that's what we'll do.  */
-      if (code != ARRAY_REF
+      if (code == COMPONENT_REF
 	  && TREE_CODE (TREE_OPERAND (exp, 0)) == CONSTRUCTOR
 	  && TREE_CST_RTL (TREE_OPERAND (exp, 0)) == 0)
 	{
@@ -8468,8 +8477,10 @@ expand_expr (exp, target, tmode, modifier)
 
 	temp = expand_assignment (lhs, rhs, ! ignore, original_target != 0);
 	if (TYPE_NONCOPIED_PARTS (lhs_type) != 0 && !fixed_type_p (rhs))
-	  noncopied_parts = init_noncopied_parts (stabilize_reference (lhs),
-						  TYPE_NONCOPIED_PARTS (lhs_type));
+	  noncopied_parts
+	    = init_noncopied_parts (stabilize_reference (lhs),
+				    TYPE_NONCOPIED_PARTS (lhs_type));
+
 	while (noncopied_parts != 0)
 	  {
 	    expand_assignment (TREE_VALUE (noncopied_parts),
@@ -8529,8 +8540,9 @@ expand_expr (exp, target, tmode, modifier)
 
 	if (TYPE_NONCOPIED_PARTS (lhs_type) != 0
 	    && ! (fixed_type_p (lhs) && fixed_type_p (rhs)))
-	  noncopied_parts = save_noncopied_parts (stabilize_reference (lhs),
-						  TYPE_NONCOPIED_PARTS (lhs_type));
+	  noncopied_parts
+	    = save_noncopied_parts (stabilize_reference (lhs),
+				    TYPE_NONCOPIED_PARTS (lhs_type));
 
 	temp = expand_assignment (lhs, rhs, ! ignore, original_target != 0);
 	while (noncopied_parts != 0)
@@ -8946,11 +8958,12 @@ expand_expr_unaligned (exp, palign)
 
     case COMPONENT_REF:
     case BIT_FIELD_REF:
+    case ARRAY_RANGE_REF:
       /* If the operand is a CONSTRUCTOR, we can just extract the
 	 appropriate field if it is present.  Don't do this if we have
 	 already written the data since we want to refer to that copy
 	 and varasm.c assumes that's what we'll do.  */
-      if (TREE_CODE (exp) != ARRAY_REF
+      if (TREE_CODE (exp) == COMPONENT_REF
 	  && TREE_CODE (TREE_OPERAND (exp, 0)) == CONSTRUCTOR
 	  && TREE_CST_RTL (TREE_OPERAND (exp, 0)) == 0)
 	{
@@ -9522,7 +9535,8 @@ do_jump (exp, if_false_label, if_true_label)
     case NOP_EXPR:
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == COMPONENT_REF
 	  || TREE_CODE (TREE_OPERAND (exp, 0)) == BIT_FIELD_REF
-	  || TREE_CODE (TREE_OPERAND (exp, 0)) == ARRAY_REF)
+	  || TREE_CODE (TREE_OPERAND (exp, 0)) == ARRAY_REF
+	  || TREE_CODE (TREE_OPERAND (exp, 0)) == ARRAY_RANGE_REF)
 	goto normal;
     case CONVERT_EXPR:
       /* If we are narrowing the operand, we have to do the compare in the
@@ -9628,6 +9642,7 @@ do_jump (exp, if_false_label, if_true_label)
     case COMPONENT_REF:
     case BIT_FIELD_REF:
     case ARRAY_REF:
+    case ARRAY_RANGE_REF:
       {
 	HOST_WIDE_INT bitsize, bitpos;
 	int unsignedp;

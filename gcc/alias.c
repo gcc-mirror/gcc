@@ -412,6 +412,7 @@ handled_component_p (t)
     case BIT_FIELD_REF:
     case COMPONENT_REF:
     case ARRAY_REF:
+    case ARRAY_RANGE_REF:
     case NON_LVALUE_EXPR:
       return 1;
 
@@ -445,7 +446,7 @@ can_address_p (t)
 	   && can_address_p (TREE_OPERAND (t, 0)))
     return 1;
 
-  else if (TREE_CODE (t) == ARRAY_REF
+  else if ((TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	   && ! TYPE_NONALIASED_COMPONENT (TREE_TYPE (TREE_OPERAND (t, 0)))
 	   && can_address_p (TREE_OPERAND (t, 0)))
     return 1;
