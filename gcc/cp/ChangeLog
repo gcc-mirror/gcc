@@ -1,3 +1,11 @@
+2002-02-19  Jason Merrill  <jason@redhat.com>
+
+	ABI change: Mangle `void (A::*)() const' as 
+	M1AKFvvE, not MK1AFvvE.
+	* mangle.c (write_function_type): Write cv-quals for member
+	function type here.
+	(write_pointer_to_member_type): Not here.
+
 2002-02-18  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (do_type_instantiation): Don't pedwarn if in_system_header.
