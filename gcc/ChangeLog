@@ -1,5 +1,8 @@
 Sun Nov 11 05:56:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* config/rs6000/rs6000.c (rs6000_hash_constant, toc_hash_eq):
+	Adjust operand number in CONST_DOUBLE.
+
 	* expmed.c (extract_bit_field): No longer pass in alignment.
 	(extract_fixed_bit_field, extract_split_bit_field): Likewise.
 	(store_bit_field, store_fixed_bit_field, store_split_bit_field):

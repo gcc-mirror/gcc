@@ -7937,7 +7937,7 @@ rs6000_hash_constant (k)
     return result * 1231 + X0INT (XEXP (k, 0), 3);
 
   if (GET_CODE (k) == CONST_DOUBLE)
-    fidx = 2;
+    fidx = 1;
   else if (GET_CODE (k) == CODE_LABEL)
     fidx = 3;
   else
@@ -8016,7 +8016,7 @@ toc_hash_eq (h1, h2)
     {
       int format_len = strlen (GET_RTX_FORMAT (CONST_DOUBLE));
       int i;
-      for (i = 2; i < format_len; i++)
+      for (i = 1; i < format_len; i++)
 	if (XWINT (r1, i) != XWINT (r2, i))
 	  return 0;
       
