@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA. */
 #undef CPP_SPEC
 #define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   -include /usr/include/astwin32.h \
-  -iprefix /usr/gnu/include -iwithprefix /mingw32"
+  -idirafter /usr/gnu/include/mingw32"
 
 /* For Windows applications, include more libraries, but always include
    kernel32.  */
