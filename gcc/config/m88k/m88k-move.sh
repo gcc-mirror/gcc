@@ -3,15 +3,15 @@
 #	If your shell doesn't support functions (true for some BSD users),
 #	you might try using GNU's bash.
 #
-#ident "@(#) movstr-m88k.sh 17-Oct-90"
+#ident "@(#) m88k-move.sh 3-Jan-92"
 #
-#	This file provided by Data General, Feburary 1990.
+#	This file provided by Data General, February 1990.
 #
 #	This script generates the necessary movstr library functions
-#	for the m88000.  These functions are called from the expansion
+#	for the m88100.  These functions are called from the expansion
 #	of movstrsi.  There are eight modules created by this script,
-#	each with multiple entry points.  One module, movstrSI64n
-#	implements a word aligned loop; the other modules, movstrXINx
+#	each with multiple entry points.  One module, moveSI64n
+#	implements a word aligned loop; the other modules, moveXINx
 #	implement a straight line copy of N bytes in mode XI.
 #
 #	By analysis of the best memcpy function, it can be determined
@@ -27,12 +27,11 @@
 #
 #	Changes to these functions should not be taken lightly if you
 #	want to be able to link programs built with older movstr
-#	parameters.  For this reason, Makefile regards movstr*.s as
-#	source modules and does not have a rule for creating them
-#	automatically.
+#	parameters.
 #
 #.Revision History
 #
+#	 2-Jan-92   Tom Wood   Renamed files to comply with SVR3 14 char limit.
 #	26-Oct-90   Tom Wood   Delete movstr.h; moved to out-m88k.c.
 #	17-Oct-90   Tom Wood   Files are named *.asm rather than *.s.
 #	11-Sep-90   Jeffrey Friedl
@@ -79,7 +78,7 @@ while [ $# -gt 0 ] ; do
     shift
 done
 
-rm -f movstr?I*[xn].s movstr?I*[xn].asm
+rm -f move?I*[xn].s move?I*[xn].asm
 
 #.Implementation_continued[=-----------------------------------------------
 #
@@ -155,7 +154,7 @@ gen_movstrN() {
 }
 
 (do_file '"movstrSI64n.s"';
- echo 'SI::4:16' | gen_movstrN) > movstrSI64n.asm
+ echo 'SI::4:16' | gen_movstrN) > moveSI64n.asm
 
 #.Implementation_continued[=-----------------------------------------------
 #
@@ -220,11 +219,11 @@ gen_movstrX0() {
 }
 
 (do_file '"movstrQI16x.s"';
- echo 'QI:.b:1:16' | gen_movstrX0) > movstrQI16x.asm
+ echo 'QI:.b:1:16' | gen_movstrX0) > moveQI16x.asm
 (do_file '"movstrHI48x.s"';
- echo 'HI:.h:2:48' | gen_movstrX0) > movstrHI48x.asm
+ echo 'HI:.h:2:48' | gen_movstrX0) > moveHI48x.asm
 (do_file '"movstrSI96x.s"';
- echo 'SI::4:96'   | gen_movstrX0) > movstrSI96x.asm
+ echo 'SI::4:96'   | gen_movstrX0) > moveSI96x.asm
 
 #.Implementation_continued[=-----------------------------------------------
 #
@@ -291,10 +290,10 @@ gen_movstrXr() {
 }
 
 (do_file '"movstrSI47x.s"';
- echo 'SI:1:4:48' | gen_movstrXr) > movstrSI47x.asm
+ echo 'SI:1:4:48' | gen_movstrXr) > moveSI47x.asm
 (do_file '"movstrSI46x.s"';
- echo 'SI:2:4:48' | gen_movstrXr) > movstrSI46x.asm
+ echo 'SI:2:4:48' | gen_movstrXr) > moveSI46x.asm
 (do_file '"movstrSI45x.s"';
- echo 'SI:3:4:48' | gen_movstrXr) > movstrSI45x.asm
+ echo 'SI:3:4:48' | gen_movstrXr) > moveSI45x.asm
 (do_file '"movstrHI15x.s"';
- echo 'HI:1:2:16' | gen_movstrXr) > movstrHI15x.asm
+ echo 'HI:1:2:16' | gen_movstrXr) > moveHI15x.asm

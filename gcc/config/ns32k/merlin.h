@@ -23,7 +23,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SEQUENT_ADDRESS_BUG 1
 #define SEQUENT_BASE_REGS
 
-#include "tm-ns32k.h"
+#include "ns32k.h"
 
 /* This is BSD, so it wants DBX format.  */
 #define DBX_DEBUGGING_INFO
@@ -53,7 +53,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef ASM_OUTPUT_ALIGN_CODE
 
-/* Assember pseudo-op for shared data segment. */
+/* Assembler pseudo-op for shared data segment. */
 #define SHARED_SECTION_ASM_OP ".shdata"
 
 /* %$ means print the prefix for an immediate operand. */
@@ -123,7 +123,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef  FUNCTION_PROLOGUE
 
-/* This differs from the one in tm-ns32k.h in printing a bitmask
+/* This differs from the one in ns32k.h in printing a bitmask
    rather than a register list in the enter or save instruction.  */
 
 #define FUNCTION_PROLOGUE(FILE, SIZE)     \
@@ -175,7 +175,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef  FUNCTION_EPILOGUE
 
-/* This differs from the one in tm-ns32k.h in printing a bitmask
+/* This differs from the one in ns32k.h in printing a bitmask
    rather than a register list in the exit or restore instruction.  */
 
 #define FUNCTION_EPILOGUE(FILE, SIZE) \
