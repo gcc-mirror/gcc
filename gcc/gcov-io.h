@@ -176,15 +176,46 @@ typedef HOST_WIDEST_INT gcov_type;
 #endif
 #endif
 
-/* In lib gcov we want function linkage to be static, so we do not
-   polute the global namespace. In the compiler we want it extern, so
-   that they can be accessed from elsewhere.  */
-#if IN_LIBGCOV || IN_GCOV
+/* In gcov we want function linkage to be static, so we do not
+   polute the global namespace. In libgcov we need these functions
+   to be extern, so prefix them with __gcov so that we do not conflict.
+   In the compiler we want it extern, so that they can be accessed from
+   elsewhere.  */
+#if IN_LIBGCOV
+
+#define GCOV_LINKAGE /* nothing */
+#define gcov_var __gcov_var
+#define gcov_open __gcov_open
+#define gcov_close __gcov_close
+#define gcov_write_bytes __gcov_write_bytes
+#define gcov_write_unsigned __gcov_write_unsigned
+#define gcov_write_counter __gcov_write_counter
+#define gcov_write_string __gcov_write_string
+#define gcov_write_tag __gcov_write_tag
+#define gcov_write_length __gcov_write_length
+#define gcov_write_summary __gcov_write_summary
+#define gcov_read_bytes __gcov_read_bytes
+#define gcov_read_unsigned __gcov_read_unsigned
+#define gcov_read_counter __gcov_read_counter
+#define gcov_read_string __gcov_read_string
+#define gcov_read_summary __gcov_read_summary
+#define gcov_position __gcov_position
+#define gcov_seek __gcov_seek
+#define gcov_seek_end __gcov_seek_end
+#define gcov_is_eof __gcov_is_eof
+#define gcov_is_error __gcov_is_error
+#define gcov_time __gcov_time
+
+#elif IN_GCOV
+
 #define GCOV_LINKAGE static
-#else
+
+#else /* !IN_LIBGCOV && !IN_GCOV */
+
 #ifndef GCOV_LINKAGE
 #define GCOV_LINKAGE extern
 #endif
+
 #endif
 
 /* File suffixes.  */
@@ -219,6 +250,9 @@ typedef HOST_WIDEST_INT gcov_type;
 
 /* A list of human readable names of the counters */
 #define GCOV_COUNTER_NAMES	{"arcs"}
+
+/* Names of merge functions for counters.  */
+#define GCOV_MERGE_FUNCTIONS	{"__gcov_merge_add"}
 
 /* Convert a counter index to a tag. */
 #define GCOV_TAG_FOR_COUNTER(COUNT)				\
@@ -286,11 +320,15 @@ struct gcov_fn_info
   unsigned n_ctrs[0];		/* instrumented counters */
 };
 
+/* Type of function used to merge counters.  */
+typedef void (*gcov_merge_fn) (gcov_type *, unsigned);
+
 /* Information about counters.  */
 struct gcov_ctr_info
 {
   unsigned num;		/* number of counters.  */
   gcov_type *values;	/* their values.  */
+  gcov_merge_fn merge;  /* The function used to merge them.  */
 };
 
 /* Information about a single object file.  */
@@ -317,6 +355,8 @@ extern void __gcov_init (struct gcov_info *);
 /* Called before fork, to avoid double counting.  */
 extern void __gcov_flush (void);
 
+/* The merge function that just sums the counters.  */
+extern void __gcov_merge_add (gcov_type *, unsigned);
 #endif /* IN_LIBGCOV */
 
 /* Because small reads and writes, interspersed with seeks cause lots
