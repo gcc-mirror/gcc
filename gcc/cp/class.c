@@ -5777,7 +5777,11 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
 	    /* We're looking for a non-static member, and this isn't
 	       one, or vice versa.  */
 	    continue;
-	
+
+	  /* Ignore anticipated decls of undeclared builtins.  */
+	  if (DECL_ANTICIPATED (fn))
+	    continue;
+
 	  /* See if there's a match.  */
 	  fntype = TREE_TYPE (fn);
 	  if (is_ptrmem)
