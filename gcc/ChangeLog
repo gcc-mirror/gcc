@@ -1,3 +1,7 @@
+2003-02-27  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.md: Add TI constant splitter.
+
 Wed Feb 26 20:17:56 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (emit_group_store):  Fix crash when converting single
@@ -81,6 +85,7 @@ Tue Feb 25 12:39:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 	
 2003-02-24  Alan Modra  <amodra@bigpond.net.au>
 
+	PR 9297, PR 9722
 	* calls.c (store_one_arg): Revert 1999-02-16 change.  Revert
 	2000-12-17 change.  Pass EXPAND_STACK_PARM to expand_expr.
 	* expr.h (enum expand_modifier): Define EXPAND_STACK_PARM.
