@@ -1,3 +1,9 @@
+2003-04-29 Joel Sherrill  <joel.sherrill@OARcorp.com>
+	   Loren J. Rittle <ljrittle@acm.org>
+	   Martin v. Loewis  <martin@v.loewis.de>
+
+	* config/cpu/i386/atomicity.h: New file.
+
 2003-04-29  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/fstream.tcc (open): Change to single return.
