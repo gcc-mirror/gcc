@@ -1,3 +1,8 @@
+2004-05-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* decl.c (reshape_init): Do not apply TYPE_DOMAIN to a VECTOR_TYPE.
+	Instead, dig into the representation type to find the array bound.
+
 2004-04-30  Jason Merrill  <jason@redhat.com>
 
 	Refer to base members using COMPONENT_REFs where possible.
@@ -23,7 +28,7 @@
 
 	* init.c (build_aggr_init): Fix accidental use of C99 construct in
 	previous change.
-	
+
 	* class.c (initialize_array): Don't set TREE_HAS_CONSTRUCTOR on
 	braced initializer.
 	* cp-tree.h (BRACE_ENCLOSED_INITIALIZER_P): New macro.
@@ -42,7 +47,7 @@
 	(class_initializer): Likewise.
 	(get_pseudo_ti_init): Likewise.
 	* typeck2.c (digest_init): Use BRACE_ENCLOSED_INITIALIZER_P.
-	
+
 2004-04-22  Alan Modra  <amodra@bigpond.net.au>
 
 	* name-lookup.c (anonymous_namespace_name): Make static.
