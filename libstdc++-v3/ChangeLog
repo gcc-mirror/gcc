@@ -1,5 +1,9 @@
 2001-06-08  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/c_std/bits/std_cstdlib.h: Remove _Exit, strtof injections.
+
+2001-06-08  Benjamin Kosnik  <bkoz@redhat.com>
+
 	libstdc++/2767
 	libstdc++/2989
 	libstdc++/2992

@@ -44,7 +44,7 @@
 #undef atoi
 #undef atol
 #undef strtod
-#undef strtof
+//#undef strtof
 #undef strtol
 #undef strtoul
 #undef rand
@@ -56,7 +56,7 @@
 #undef abort
 #undef atexit
 #undef exit
-#undef _Exit
+//#undef _Exit
 #undef getenv
 #undef system
 #undef bsearch
@@ -88,7 +88,7 @@ namespace std
   using ::atoi;
   using ::atol;
   using ::strtod;
-  using ::strtof;
+  //  using ::strtof;
   using ::strtol;
   using ::strtoul;
   using ::rand;
@@ -100,7 +100,7 @@ namespace std
   using ::abort;
   using ::atexit;
   using ::exit;
-  using ::_Exit;
+  // using ::_Exit;
   using ::getenv;
   using ::system;
   using ::bsearch;
