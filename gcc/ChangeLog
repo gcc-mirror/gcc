@@ -1,3 +1,7 @@
+2002-06-30  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/i386/i386.c (ix86_init_mmx_sse_builtins): Fix typos.
+
 2002-06-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gengtype.c (oprintf): Move VA_CLOSE after all fixedarg uses.
