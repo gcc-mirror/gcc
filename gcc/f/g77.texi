@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 1999-04-03
+@set last-update 1999-04-17
 @set copyrights-g77 1995-1999
 
 @include root.texi
@@ -1388,7 +1388,7 @@ by type.  Explanations are in the following sections.
 @item Shorthand Options
 @xref{Shorthand Options}.
 @smallexample
--ff66  -fno-f66  -ff77  -fno-f77  -fugly  -fno-ugly
+-ff66  -fno-f66  -ff77  -fno-f77  -fno-ugly
 @end smallexample
 
 @item Fortran Language Options
@@ -1529,7 +1529,7 @@ Fortran source code that should not be preprocessed.
 Such source code cannot contain any preprocessor directives, such
 as @code{#include}, @code{#define}, @code{#if}, and so on.
 
-You can force @samp{.f} files to be preprocessed by @samp{cpp} by using
+You can force @samp{.f} files to be preprocessed by @code{cpp} by using
 @samp{-x f77-cpp-input}.
 @xref{LEX}.
 
@@ -1656,7 +1656,7 @@ and when the resulting commands compile Fortran source files.
 This option is obsolete in @code{egcs}
 as of version 1.1.
 The effect is instead achieved
-by the @samp{lang_init_options} routine
+by the @code{lang_init_options} routine
 in @file{egcs/gcc/f/com.c}.
 
 @cindex consistency checks
@@ -1720,6 +1720,10 @@ for other options accepted by the compiler:
 @item -fugly
 @cindex ugly features
 @cindex features, ugly
+@emph{Note:} This option is no longer supported.
+The information, below, is provided to aid
+in the conversion of old scripts.
+
 Specify that certain ``ugly'' constructs are to be quietly accepted.
 Same as:
 
@@ -1733,14 +1737,6 @@ These constructs are considered inappropriate to use in new
 or well-maintained portable Fortran code, but widely used
 in old code.
 @xref{Distensions}, for more information.
-
-@emph{Note:} The @samp{-fugly} option is likely to
-be removed in a future version.
-Implicitly enabling all the @samp{-fugly-*} options
-is unlikely to be feasible, or sensible, in the future,
-so users should learn to specify only those
-@samp{-fugly-*} options they really need for a
-particular source file.
 
 @cindex -fno-ugly option
 @cindex options, -fno-ugly
@@ -2733,7 +2729,7 @@ some machines, but might slow down a program that doesn't.
 
 This option is effective when the floating-point unit is set to work in
 IEEE 854 `extended precision'---as it typically is on x86 and m68k GNU
-systems---rather than IEEE 754 double precision.  @code{-ffloat-store}
+systems---rather than IEEE 754 double precision.  @samp{-ffloat-store}
 tries to remove the extra precision by spilling data from floating-point
 registers into memory and this typically involves a big performance
 hit.  However, it doesn't affect intermediate results, so that it is
@@ -2852,7 +2848,7 @@ currently recognized as such.  This option unrolls only iterative
 @c DL: Check my understanding of -funroll-all-loops v. -funroll-loops is correct.
 Probably improves performance on code using @code{DO WHILE} loops by
 unrolling them in addition to iterative @code{DO} loops.  In the absence
-of @code{DO WHILE}, this option is equivalent to @code{-funroll-loops}
+of @code{DO WHILE}, this option is equivalent to @samp{-funroll-loops}
 but possibly slower.
 
 @item -fno-move-all-movables
@@ -3877,7 +3873,7 @@ For example: @samp{PRINT *, 'My name is Bob'}.
 @item
 A metasyntactic variable---that is, a name used in this document
 to serve as a placeholder for whatever text is used by the
-user or programmer--appears as shown in the following example:
+user or programmer---appears as shown in the following example:
 
 ``The @code{INTEGER @var{ivar}} statement specifies that
 @var{ivar} is a variable or array of type @code{INTEGER}.''
@@ -5666,7 +5662,7 @@ These disagreements strongly suggest that Fortran programmers,
 and certainly existing Fortran programs, disagree about the
 meaning of such invocations.
 
-The first version of @samp{JCB002} didn't accommodate some compilers'
+The first version of @code{JCB002} didn't accommodate some compilers'
 treatment of @samp{INT(I1-I2)} where @samp{I1} and @samp{I2} are
 @code{INTEGER*2}.
 In such a case, these compilers apparently convert both
@@ -5678,7 +5674,7 @@ However, the results of the careful analyses done on the outputs
 of programs compiled by these various compilers show that they
 all implement either @samp{Interp 1} or @samp{Interp 2} above.
 
-Specifically, it is believed that the new version of @samp{JCB002}
+Specifically, it is believed that the new version of @code{JCB002}
 above will confirm that:
 
 @itemize @bullet
@@ -6396,7 +6392,7 @@ but that seems to be overkill for a product in beta test.
 
 Note 2: Rules for InitialCaps names are:
 
-@itemize --
+@itemize @minus
 @item
 Must be a single uppercase letter, @strong{or}
 @item
@@ -6409,7 +6405,7 @@ valid InitialCaps names, but @samp{AB}, @samp{A2}, and @samp{ABC} are
 not.
 Note that most, but not all, built-in names meet these
 requirements---the exceptions are some of the two-letter format
-specifiers, such as @samp{BN} and @samp{BZ}.
+specifiers, such as @code{BN} and @code{BZ}.
 
 Here are the names of the corresponding command-line options:
 
@@ -6603,7 +6599,7 @@ meaning is to be assumed.
 
 @code{g77} treats double-quote (@samp{"})
 as beginning an octal constant of @code{INTEGER(KIND=1)} type
-when the @code{-fvxt} option is specified.
+when the @samp{-fvxt} option is specified.
 The form of this octal constant is
 
 @example
@@ -6614,7 +6610,7 @@ The form of this octal constant is
 where @var{octal-digits} is a nonempty string of characters in
 the set @samp{01234567}.
 
-For example, the @code{-fvxt} option permits this:
+For example, the @samp{-fvxt} option permits this:
 
 @example
 PRINT *, "20
@@ -6647,7 +6643,7 @@ a fixed-form source file
 as a continuation character rather than
 as the beginning of a comment
 (as it does in any other column)
-when the @code{-fvxt} option is specified.
+when the @samp{-fvxt} option is specified.
 
 The following program, when run, prints a message indicating
 whether it is interpreted according to GNU Fortran (and Fortran 90)
@@ -6758,7 +6754,7 @@ provided for by that standard.
 Automatic conversion of numeric
 expressions to @code{INTEGER(KIND=1)} in contexts such as:
 
-@itemize --
+@itemize @minus
 @item
 Array-reference indexes.
 @item
@@ -6876,18 +6872,6 @@ too ugly to be in code that can be changed to use safer and/or more
 portable constructs, are accepted.
 These are humorously referred to as ``distensions'',
 extensions that just plain look ugly in the harsh light of day.
-
-@emph{Note:} The @samp{-fugly} option, which currently serves
-as shorthand to enable all of the distensions below, is likely to
-be removed in a future version of @code{g77}.
-That's because it's likely new distensions will be added that
-conflict with existing ones in terms of assigning meaning to
-a given chunk of code.
-(Also, it's pretty clear that users should not use @samp{-fugly}
-as shorthand when the next release of @code{g77} might add a
-distension to that that causes their existing code, when recompiled,
-to behave differently---perhaps even fail to compile or run
-correctly.)
 
 @menu
 * Ugly Implicit Argument Conversion::  Disabled via @samp{-fno-ugly-args}.
@@ -7182,7 +7166,7 @@ ASSIGN 10 TO I
 Normally, for portability and improved diagnostics, @code{g77}
 reserves distinct storage for a ``sibling'' of @samp{I}, used
 only for @code{ASSIGN} statements to that variable (along with
-the corresponding assigned-@code{GOTO} and assigned-@samp{FORMAT}-I/O
+the corresponding assigned-@code{GOTO} and assigned-@code{FORMAT}-I/O
 statements that reference the variable).
 
 However, some code (that violates the ANSI FORTRAN 77 standard)
@@ -7411,15 +7395,15 @@ on at least some systems:
 The @code{libg2c} library
 shipped with any @code{g77} that warns
 about invocation of a non-Y2K-compliant intrinsic
-has renamed the @samp{EXTERNAL} procedure names
+has renamed the @code{EXTERNAL} procedure names
 of those intrinsics.
 This is done so that
 the @code{libg2c} implementations of these intrinsics
 cannot be directly linked to
-as @samp{EXTERNAL} names
+as @code{EXTERNAL} names
 (which normally would avoid the non-Y2K-intrinsic warning).
 
-The renamed forms of the @samp{EXTERNAL} names
+The renamed forms of the @code{EXTERNAL} names
 of these renamed procedures
 may be linked to
 by appending the string @samp{_y2kbug}
@@ -7435,27 +7419,27 @@ CALL DATE_Y2KBUG (STR)
 CALL VXTIDATE_Y2KBUG (MM, DD, YY)
 @end smallexample
 
-(Note that the @samp{EXTERNAL} statement
+(Note that the @code{EXTERNAL} statement
 is not actually required,
 since the modified names are not recognized as intrinsics
 by the current version of @code{g77}.
 But it is shown in this specific case,
 for purposes of illustration.)
 
-The renaming of @samp{EXTERNAL} procedure names of these intrinsics
+The renaming of @code{EXTERNAL} procedure names of these intrinsics
 causes unresolved references at link time.
 For example, @samp{EXTERNAL DATE; CALL DATE(STR)}
 is normally compiled by @code{g77}
 as, in C, @samp{date_(&str, 20);}.
-This, in turn, links to the @samp{date_} procedure
-in the @samp{libE77} portion of @code{libg2c},
+This, in turn, links to the @code{date_} procedure
+in the @code{libE77} portion of @code{libg2c},
 which purposely calls a nonexistent procedure
-named @samp{G77_date_y2kbuggy_0}.
+named @code{G77_date_y2kbuggy_0}.
 The resulting link-time error is designed, via this name,
 to encourage the programmer to look up the
 index entries to this portion of the @code{g77} documentation.
 
-Generally, we recommend that the @samp{EXTERNAL} method
+Generally, we recommend that the @code{EXTERNAL} method
 of invoking procedures in @code{libg2c}
 @emph{not} be used.
 When used, some of the correctness checking
@@ -7463,7 +7447,7 @@ normally performed by @code{g77}
 is skipped.
 
 In particular, it is probably better to use the
-@samp{INTRINSIC} method of invoking
+@code{INTRINSIC} method of invoking
 non-Y2K-compliant procedures,
 so anyone compiling the code
 can quickly notice the potential Y2K problems
@@ -7491,14 +7475,14 @@ So, linking newly-compiled code
 (invoking one of the intrinsics in question)
 to an old library
 might yield an unresolved reference
-to @samp{G77_date_y2kbug_0}.
-(The old library calls it @samp{G77_date_0}.)
+to @code{G77_date_y2kbug_0}.
+(The old library calls it @code{G77_date_0}.)
 
 Similarly, linking previously-compiled code
 to a new library
 might yield an unresolved reference
-to @samp{G77_vxtidate_0}.
-(The new library calls it @samp{G77_vxtidate_y2kbug_0}.)
+to @code{G77_vxtidate_0}.
+(The new library calls it @code{G77_vxtidate_y2kbug_0}.)
 
 The proper fix for the above problems
 is to obtain the latest release of @code{g77}
@@ -8160,7 +8144,7 @@ options @code{g77} passes by running @samp{g77 -v}.
 @pindex f2c
 @cindex cfortran.h
 @cindex Netlib
-Even if you don't actually use it as a compiler, @samp{f2c} from
+Even if you don't actually use it as a compiler, @code{f2c} from
 @uref{ftp://ftp.netlib.org/f2c/src}, can be a useful tool when you're
 interfacing (linking) Fortran and C@.
 @xref{f2c Skeletons and Prototypes,,Generating Skeletons and Prototypes with @code{f2c}}.
@@ -8187,7 +8171,7 @@ Generally, C code written to link with
 called from Fortran---should @samp{#include <g2c.h>} to define the C
 versions of the Fortran types.
 Don't assume Fortran @code{INTEGER} types
-correspond to C @samp{int}s, for instance; instead, declare them as
+correspond to C @code{int}s, for instance; instead, declare them as
 @code{integer}, a type defined by @file{g2c.h}.
 @file{g2c.h} is installed where @code{gcc} will find it by
 default, assuming you use a copy of @code{gcc} compatible with
@@ -8202,7 +8186,7 @@ A simple and foolproof way to write @code{g77}-callable C routines---e.g.@: to
 interface with an existing library---is to write a file (named, for
 example, @file{fred.f}) of dummy Fortran
 skeletons comprising just the declaration of the routine(s) and dummy
-arguments plus @samp{END} statements.
+arguments plus @code{END} statements.
 Then run @code{f2c} on file @file{fred.f} to produce @file{fred.c}
 into which you can edit
 useful code, confident the calling sequence is correct, at least.
@@ -8216,7 +8200,7 @@ as the return type of a @code{REAL} @code{FUNCTION}.)
 @samp{-P} option to generate C prototypes appropriate for calling the
 Fortran.@footnote{The files generated like this can also be used for
 inter-unit consistency checking of dummy and actual arguments, although
-the @samp{ftnchek} tool from @uref{ftp://ftp.netlib.org/fortran}
+the @code{ftnchek} tool from @uref{ftp://ftp.netlib.org/fortran}
 or @uref{ftp://ftp.dsm.fordham.edu} is
 probably better for this purpose.}
 If the Fortran code containing any
@@ -8462,11 +8446,11 @@ described in this section.
 @cindex statements, PROGRAM
 
 When @code{g77} compiles a main program unit, it gives it the public
-procedure name @samp{MAIN__}.
+procedure name @code{MAIN__}.
 The @code{libg2c} library has the actual @code{main()} procedure
 as is typical of C-based environments, and
 it is this procedure that performs some initial start-up
-activity and then calls @samp{MAIN__}.
+activity and then calls @code{MAIN__}.
 
 Generally, @code{g77} and @code{libg2c} are designed so that you need not
 include a main program unit written in Fortran in your program---it
@@ -8508,7 +8492,7 @@ Fortran code.
 
 The standard way to get around this problem is to set a break
 point (a one-time, or temporary, break point will do) at
-the entrance to @samp{MAIN__}, and then run the program.
+the entrance to @code{MAIN__}, and then run the program.
 A convenient way to do so is to add the @code{gdb} command
 
 @example
@@ -8525,7 +8509,7 @@ unit of your program.
 
 Of course, if you really want to set a break point at some
 other place in your program and just start the program
-running, without first breaking at @samp{MAIN__},
+running, without first breaking at @code{MAIN__},
 that should work fine.
 
 @node Procedures
@@ -9322,7 +9306,7 @@ Instead, make a separate @code{INCLUDE} file that defines
 so you can more easily change the actual numbers in the future.
 
 The information below is culled from the definition
-of @samp{F_err} in @file{f/runtime/libI77/err.c} in the
+of @code{F_err} in @file{f/runtime/libI77/err.c} in the
 @code{g77} source tree.
 
 @smallexample
@@ -10234,7 +10218,7 @@ it provides either form of detection are welcome.
 
 For several versions prior to 0.5.20, @code{g77} configured its
 version of the @code{libf2c} run-time library so that one of
-its configuration macros, @samp{ALWAYS_FLUSH}, was defined.
+its configuration macros, @code{ALWAYS_FLUSH}, was defined.
 
 This was done as a result of a belief that many programs expected
 output to be flushed to the operating system (under UNIX, via
@@ -10259,7 +10243,7 @@ non-flushing library routines.)
 
 @xref{Always Flush Output}, for information on how to modify
 the @code{g77} source tree so that a version of @code{libg2c}
-can be built and installed with the @samp{ALWAYS_FLUSH} macro defined.
+can be built and installed with the @code{ALWAYS_FLUSH} macro defined.
 
 @node Large File Unit Numbers
 @subsection Large File Unit Numbers
@@ -10278,13 +10262,13 @@ file unit number that is out of the range accepted by
 @code{libg2c}.
 Normally, this range is 0 through 99, and the high end
 of the range is controlled by a @code{libg2c} source-file
-macro named @samp{MXUNIT}.
+macro named @code{MXUNIT}.
 
 If you can easily change your program to use unit numbers
 in the range 0 through 99, you should do so.
 
 Otherwise, see @ref{Larger File Unit Numbers}, for information on how
-to change @samp{MXUNIT} in @code{libg2c} so you can build and
+to change @code{MXUNIT} in @code{libg2c} so you can build and
 install a new version of @code{libg2c} that supports the larger
 unit numbers you need.
 
@@ -10306,11 +10290,11 @@ in your system's documentation.
 @cindex x86 floating-point
 If your program depends on exact IEEE 754 floating-point handling it may
 help on some systems---specifically x86 or m68k hardware---to use
-the @code{-ffloat-store} option or to reset the precision flag on the
+the @samp{-ffloat-store} option or to reset the precision flag on the
 floating-point unit @xref{Optimize Options}.
 
 However, it might be better simply to put the FPU into double precision
-mode and not take the performance hit of @code{-ffloat-store}.  On x86
+mode and not take the performance hit of @samp{-ffloat-store}.  On x86
 and m68k GNU systems you can do this with a technique similar to that
 for turning on floating-point exceptions @xref{Floating-point Exception
 Handling}.  The control word could be set to double precision by
@@ -10429,15 +10413,6 @@ arrays).
 Currently, @code{g77} supports only automatic arrays, not
 @code{RECURSIVE} procedures or other means of explicitly
 specifying that variables or arrays are automatic.
-
-@cindex -fugly option
-@cindex options, -fugly
-@item -fugly
-Fix the source code so that @samp{-fno-ugly} will work.
-Note that, for many programs, it is difficult to practically
-avoid using the features enabled via @samp{-fugly-init}, and these
-features pose the lowest risk of writing nonportable code, among the
-various ``ugly'' features.
 
 @cindex -f@var{group}-intrinsics-hide option
 @cindex options, -f@var{group}-intrinsics-hide
@@ -10975,8 +10950,8 @@ simply too large for the system, or buggy.)
 @subsection Nothing Happens
 @cindex nothing happens
 @cindex naming programs
-@cindex @samp{test} programs
-@cindex programs, @samp{test}
+@cindex @code{test} programs
+@cindex programs, @code{test}
 It is occasionally reported that a ``simple'' program,
 such as a ``Hello, World!'' program, does nothing when
 it is run, even though the compiler reported no errors,
@@ -10984,7 +10959,7 @@ despite the program containing nothing other than a
 simple @code{PRINT} statement.
 
 This most often happens because the program has been
-compiled and linked on a UNIX system and named @samp{test},
+compiled and linked on a UNIX system and named @code{test},
 though other names can lead to similarly unexpected
 run-time behavior on various systems.
 
@@ -11151,7 +11126,7 @@ used by @code{g77}, handles only double-precision values.
 Since @samp{0.2} in the program is a single-precision value, it
 is converted to double precision (still in binary notation)
 before being converted back to decimal.
-The conversion to binary appends _binary_ zero digits to the
+The conversion to binary appends @emph{binary} zero digits to the
 original value---which, again, is an inexact approximation of
 0.2---resulting in an approximation that is much less exact
 than is connoted by the use of double precision.
@@ -11196,7 +11171,7 @@ with that produced by some other Fortran implementations.
 A useful source of information on floating-point computation is David
 Goldberg, `What Every Computer Scientist Should Know About
 Floating-Point Arithmetic', Computing Surveys, 23, March 1991, pp.@:
-5--48.
+5-48.
 An online version is available at
 @uref{http://docs.sun.com},
 and there is a supplemented version, in PostScript form, at
@@ -11259,6 +11234,7 @@ GNU Fortran language:
 * Array Bounds Expressions::
 * POINTER Statements::
 * Sensible Non-standard Constructs::
+* READONLY Keyword::
 * FLUSH Statement::
 * Expressions in FORMAT Statements::
 * Explicit Assembler Code::
@@ -11344,7 +11320,7 @@ but one of the most frequent bugs encountered by new users is
 accidentally writing fixed-form source code into and beyond
 column 73.
 So, maybe the users of old code would be able to more easily handle
-having to specify, say, a @code{-Wno-col73to80} option.
+having to specify, say, a @samp{-Wno-col73to80} option.
 
 @node Fortran 90 Support
 @subsection Fortran 90 Support
@@ -11587,6 +11563,34 @@ specification of an attribute), please submit a
 bug report with an explanation, so we can consider
 fixing @code{g77} just for cases like yours.
 
+@node READONLY Keyword
+@subsection @code{READONLY} Keyword
+@cindex READONLY
+
+Support for @code{READONLY}, in @code{OPEN} statements,
+requires @code{libg2c} support,
+to make sure that @samp{CLOSE(@dots{},STATUS='DELETE')}
+does not delete a file opened on a unit
+with the @code{READONLY} keyword,
+and perhaps to trigger a fatal diagnostic
+if a @code{WRITE} or @code{PRINT}
+to such a unit is attempted.
+
+@emph{Note:} It is not sufficient for @code{g77} and @code{libg2c}
+(its version of @code{libf2c})
+to assume that @code{READONLY} does not need some kind of explicit support
+at run time,
+due to UNIX systems not (generally) needing it.
+@code{g77} is not just a UNIX-based compiler!
+
+Further, mounting of non-UNIX filesystems on UNIX systems
+(such as via NFS)
+might require proper @code{READONLY} support.
+
+@cindex SHARED
+(Similar issues might be involved with supporting the @code{SHARED}
+keyword.)
+
 @node FLUSH Statement
 @subsection @code{FLUSH} Statement
 
@@ -11811,22 +11815,36 @@ be supported by a future version of @code{g77}.
 @cindex automatic variables
 @cindex variables, automatic
 
-@code{g77} doesn't support the @code{AUTOMATIC} keyword that
+@code{g77} doesn't support the @code{AUTOMATIC} statement that
 @code{f2c} does.
 
-It is not yet clear exactly what this statement would achieve.
-The semantic equivalent would be provided by @code{RECURSIVE}
-combined with lack of @code{SAVE}.
-In that sense, perhaps all it would provide is an
-overriding of an unadorned (blanket) @code{SAVE} statement
-for specific variables.
+@code{AUTOMATIC} would identify a variable or array
+as not being @code{SAVE}'d, which is normally the default,
+but which would be especially useful for code that, @emph{generally},
+needed to be compiled with the @samp{-fno-automatic} option.
 
-It might also serve as a hint to the compiler that placing
-even a very large array on the stack is acceptable.
+@code{AUTOMATIC} also would serve as a hint to the compiler that placing
+the variable or array---even a very large array--on the stack is acceptable.
 
-Perhaps it should disallow @code{DATA}
-or other specification of any initial values
-for affected variables as well.
+@code{AUTOMATIC} would not, by itself, designate the containing procedure
+as recursive.
+
+@code{AUTOMATIC} should work syntactically like @code{SAVE},
+in that @code{AUTOMATIC} with no variables listed should apply to
+all pertinent variables and arrays
+(which would not include common blocks or their members).
+
+Variables and arrays denoted as @code{AUTOMATIC}
+would not be permitted to be initialized via @code{DATA}
+or other specification of any initial values,
+requiring explicit initialization,
+such as via assignment statements.
+
+@cindex UNSAVE
+@cindex STATIC
+Perhaps @code{UNSAVE} and @code{STATIC},
+as strict semantic opposites to @code{SAVE} and @code{AUTOMATIC},
+should be provided as well.
 
 @node Suppressing Space Padding
 @subsection Suppressing Space Padding of Source Lines
@@ -11934,7 +11952,7 @@ A convenient trick is to compile this something like:
 @smallexample
 gcc -o libtrapfpe.a trapfpe.c
 @end smallexample
-and then use it by adding @code{-trapfpe} to the @code{g77} command line
+and then use it by adding @samp{-trapfpe} to the @code{g77} command line
 when linking.
 
 @node Nonportable Conversions
@@ -11949,7 +11967,7 @@ is type @code{REAL}), that other compilers might
 quietly accept.
 
 Some of these conversions are accepted by @code{g77}
-when the @samp{-fugly} option is specified.
+when the @samp{-fugly-logint} option is specified.
 Perhaps it should accept more or all of them.
 
 @node Large Automatic Arrays
@@ -12625,7 +12643,7 @@ could be very helpful.
 @cindex logical expressions, comparing
 
 Use of @code{.EQ.} and @code{.NE.} on @code{LOGICAL} operands
-is not supported, except via @samp{-fugly}, which is not
+is not supported, except via @samp{-fugly-logint}, which is not
 recommended except for legacy code (where the behavior expected
 by the @emph{code} is assumed).
 
@@ -12682,6 +12700,20 @@ that were well-designed in the first place.
 @samp{(a) & (b)} and @samp{(a) - (b)}---they cannot even tell
 you, without knowing more context, whether the @samp{&} and @samp{-}
 operators are infix (binary) or unary!)
+
+Most dangerous of all is the fact that,
+even assuming consensus on its meaning,
+an expression like @samp{L.AND.M.EQ.N},
+if it is the result of a typographical error,
+doesn't @emph{look} like it has such a typo.
+Even experienced Fortran programmers would not likely notice that
+@samp{L.AND.M.EQV.N} was, in fact, intended.
+
+So, this is a prime example of a circumstance in which
+a quality compiler diagnoses the code,
+instead of leaving it up to someone debugging it
+to know to turn on special compiler options
+that might diagnose it.
 
 @node Order of Side Effects
 @subsection Order of Side Effects
@@ -13539,13 +13571,13 @@ when compiling most any kind of program.
 which is used during the build of @code{gcc} to
 build a list of all options that are accepted by
 at least one language's compiler.
-This list goes into the @samp{lang_options} array
+This list goes into the @code{lang_options} array
 in @file{gcc/toplev.c}, which uses this array to
 determine whether a particular option should be
 offered to the linked-in front end for processing
-by calling @samp{lang_option_decode}, which, for
+by calling @code{lang_option_decode}, which, for
 @code{g77}, is in @file{@value{path-g77}/com.c} and just
-calls @samp{ffe_decode_option}.
+calls @code{ffe_decode_option}.
 
 If the linked-in front end ``rejects'' a
 particular option passed to it, @file{toplev.c}
@@ -13555,7 +13587,7 @@ language's compiler is willing to accept it.
 This allows commands like @samp{gcc -fno-asm foo.c bar.f}
 to work, even though Fortran compilation does
 not currently support the @samp{-fno-asm} option;
-even though the @code{f771} version of @samp{lang_decode_option}
+even though the @code{f771} version of @code{lang_decode_option}
 rejects @samp{-fno-asm}, @file{toplev.c} doesn't
 produce a diagnostic because some other language (C)
 does accept it.
@@ -13568,7 +13600,7 @@ a warning about this would be helpful if it were
 possible.
 
 Code that processes Fortran options is found in
-@file{@value{path-g77}/top.c}, function @samp{ffe_decode_option}.
+@file{@value{path-g77}/top.c}, function @code{ffe_decode_option}.
 This code needs to check positive and negative forms
 of each option.
 
@@ -13588,9 +13620,9 @@ Accessor macros for Fortran options, used by code
 in the @code{g77} FFE, are defined in @file{@value{path-g77}/top.h}.
 
 @emph{Compiler options} are listed in @file{gcc/toplev.c}
-in the array @samp{f_options}.
-An option not listed in @samp{lang_options} is
-looked up in @samp{f_options} and handled from there.
+in the array @code{f_options}.
+An option not listed in @code{lang_options} is
+looked up in @code{f_options} and handled from there.
 
 The defaults for compiler options are set in the
 global definitions for the corresponding variables,
@@ -13608,7 +13640,7 @@ Change the way @code{f771} handles the @samp{-fset-g77-defaults}
 option, which is always provided as the first option when
 called by @code{g77} or @code{gcc}.
 
-This code is in @samp{ffe_decode_options} in @file{@value{path-g77}/top.c}.
+This code is in @code{ffe_decode_options} in @file{@value{path-g77}/top.c}.
 Have it change just the variables that you want to default
 to a different setting for Fortran compiles compared to
 compiles of other languages.
@@ -13630,7 +13662,7 @@ are passed via this mechanism.
 
 @item EGCS-1.1
 @itemx EGCS-1.2
-Change the @samp{lang_init_options} routine in @file{egcs/gcc/f/com.c}.
+Change the @code{lang_init_options} routine in @file{egcs/gcc/f/com.c}.
 
 (Note that these versions of @code{g77}
 perform internal consistency checking automatically
@@ -13670,7 +13702,7 @@ them show up only given certain kinds of (popular) input.
 
 @itemize @bullet
 @item
-Improve @samp{malloc} package and its uses to specify more info about
+Improve @code{malloc} package and its uses to specify more info about
 memory pools and, where feasible, use obstacks to implement them.
 
 @item
@@ -13697,11 +13729,11 @@ unimplemented-statement catch-all.
 
 @item
 Throughout @code{g77}, don't pass line/column pairs where
-a simple @samp{ffewhere} type, which points to the error as much as is
-desired by the configuration, will do, and don't pass @samp{ffelexToken} types
-where a simple @samp{ffewhere} type will do.
+a simple @code{ffewhere} type, which points to the error as much as is
+desired by the configuration, will do, and don't pass @code{ffelexToken} types
+where a simple @code{ffewhere} type will do.
 Then, allow new default
-configuration of @samp{ffewhere} such that the source line text is not
+configuration of @code{ffewhere} such that the source line text is not
 preserved, and leave it to things like Emacs' next-error function
 to point to them (now that @samp{next-error} supports column,
 or, perhaps, character-offset, numbers).
@@ -13751,7 +13783,7 @@ that are at all worth inlining.
 @item
 When doing @samp{CHAR_VAR = CHAR_FUNC(@dots{})},
 and it's clear that types line up
-and @samp{CHAR_VAR} is addressable or not a @samp{VAR_DECL},
+and @samp{CHAR_VAR} is addressable or not a @code{VAR_DECL},
 make @samp{CHAR_VAR}, not a
 temporary, be the receiver for @samp{CHAR_FUNC}.
 (This is now done for @code{COMPLEX} variables.)
@@ -13799,7 +13831,7 @@ external names for @code{COMPLEX} functions in some cases once @code{g77} uses
 @code{gcc} rather than @code{f2c} calling conventions.)
 
 @item
-Do something useful with @samp{doiter} references where possible.
+Do something useful with @code{doiter} references where possible.
 For example, @samp{CALL FOO(I)} cannot modify @samp{I} if within
 a @code{DO} loop that uses @samp{I} as the
 iteration variable, and the back end might find that info useful
@@ -13963,7 +13995,7 @@ provides it via its configuration.
 
 @itemize @bullet
 @item
-Switch to using @samp{REAL_VALUE_TYPE} to represent floating-point constants
+Switch to using @code{REAL_VALUE_TYPE} to represent floating-point constants
 exclusively so the target float format need not be required.
 This
 means changing the way @code{g77} handles initialization of aggregate areas
@@ -14016,13 +14048,13 @@ Come up with better naming conventions for @samp{-D} to establish requirements
 to achieve desired implementation dialect via @file{proj.h}.
 
 @item
-Clean up used tokens and @samp{ffewhere}s in @samp{ffeglobal_terminate_1}.
+Clean up used tokens and @code{ffewhere}s in @code{ffeglobal_terminate_1}.
 
 @item
-Replace @file{sta.c} @samp{outpooldisp} mechanism with @samp{malloc_pool_use}.
+Replace @file{sta.c} @code{outpooldisp} mechanism with @code{malloc_pool_use}.
 
 @item
-Check for @samp{opANY} in more places in @file{com.c}, @file{std.c},
+Check for @code{opANY} in more places in @file{com.c}, @file{std.c},
 and @file{ste.c}, and get rid of the @samp{opCONVERT(opANY)} kludge
 (after determining if there is indeed no real need for it).
 
@@ -14064,22 +14096,22 @@ to the official standard, or put documentation of the rules as used
 in the code@dots{}uh@dots{}in the code.
 
 @item
-Some @samp{ffebld_new} calls (those outside of @file{ffeexpr.c} or
-inside but invoked via paths not involving @samp{ffeexpr_lhs} or
-@samp{ffeexpr_rhs}) might be creating things
+Some @code{ffebld_new} calls (those outside of @file{ffeexpr.c} or
+inside but invoked via paths not involving @code{ffeexpr_lhs} or
+@code{ffeexpr_rhs}) might be creating things
 in improper pools, leading to such things staying around too long or
 (doubtful, but possible and dangerous) not long enough.
 
 @item
-Some @samp{ffebld_list_new} (or whatever) calls might not be matched by
-@samp{ffebld_list_bottom} (or whatever) calls, which might someday matter.
+Some @code{ffebld_list_new} (or whatever) calls might not be matched by
+@code{ffebld_list_bottom} (or whatever) calls, which might someday matter.
 (It definitely is not a problem just yet.)
 
 @item
 Probably not doing clean things when we fail to @code{EQUIVALENCE} something
 due to alignment/mismatch or other problems---they end up without
-@samp{ffestorag} objects, so maybe the backend (and other parts of the front
-end) can notice that and handle like an @samp{opANY} (do what it wants, just
+@code{ffestorag} objects, so maybe the backend (and other parts of the front
+end) can notice that and handle like an @code{opANY} (do what it wants, just
 don't complain or crash).
 Most of this seems to have been addressed
 by now, but a code review wouldn't hurt.
@@ -14097,7 +14129,7 @@ clutter.
 @item
 When @code{FUNCTION} and @code{ENTRY} point types disagree (@code{CHARACTER}
 lengths, type classes, and so on),
-@samp{ANY}-ize the offending @code{ENTRY} point and any @emph{new} dummies
+@code{ANY}-ize the offending @code{ENTRY} point and any @emph{new} dummies
 it specifies.
 
 @item
@@ -14166,7 +14198,7 @@ as the above is just a sample, no such section exists.
 * INTGLOB::     Intrinsic also used as name of global.
 * LEX::         Various lexer messages
 * GLOBALS::     Disagreements about globals.
-* LINKFAIL::    When linking @samp{f771} fails.
+* LINKFAIL::    When linking @code{f771} fails.
 * Y2KBAD::      Use of non-Y2K-compliant intrinsic.
 @end menu
 
@@ -14285,8 +14317,8 @@ expects the Fortran 90 interpretation, you can:
 @itemize @bullet
 @item
 Change it to @samp{DBLE(@var{expr})} (if @var{intrinsic} is
-@samp{REAL}) or @samp{DIMAG(@var{expr})} (if @var{intrinsic}
-is @samp{AIMAG})
+@code{REAL}) or @samp{DIMAG(@var{expr})} (if @var{intrinsic}
+is @code{AIMAG})
 if it expected the Fortran 90 interpretation.
 
 This assumes @var{expr} is @code{COMPLEX(KIND=2)}---if it is
@@ -14574,13 +14606,13 @@ C On XYZZY systems, remove "C" on next line:
      CALL XYZZY_RESET
 @end smallexample
 
-However, that leaves the first @samp{C} in the @samp{CALL}
+However, that leaves the first @samp{C} in the @code{CALL}
 statement in column 6, making it a comment line, which is
 not really what the author intended, and which is likely
 to result in one of the above-listed diagnostics.
 
 @emph{Replacing} the @samp{C} in column 1 with a space
-is the proper change to make, to ensure the @samp{CALL}
+is the proper change to make, to ensure the @code{CALL}
 keyword starts in or after column 7.
 
 Another common mistake like this is to forget that fixed-form

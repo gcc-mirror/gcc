@@ -235,18 +235,6 @@ ffe_decode_option (argc, argv)
 	warning ("%s no longer supported -- try -fvxt", opt);
       else if (strcmp (&opt[2], "f90-not-vxt") == 0)
 	warning ("%s no longer supported -- try -fno-vxt -ff90", opt);
-      else if (strcmp (&opt[2], "ugly") == 0)
-	{
-	  warning ("%s is overloaded with meanings and likely to be removed;", opt);
-	  warning ("use only the specific -fugly-* options you need");
-	  ffe_set_is_ugly_args (TRUE);
-	  ffe_set_is_ugly_assign (TRUE);
-	  ffe_set_is_ugly_assumed (TRUE);
-	  ffe_set_is_ugly_comma (TRUE);
-	  ffe_set_is_ugly_complex (TRUE);
-	  ffe_set_is_ugly_init (TRUE);
-	  ffe_set_is_ugly_logint (TRUE);
-	}
       else if (strcmp (&opt[2], "no-ugly") == 0)
 	{
 	  ffe_set_is_ugly_args (FALSE);

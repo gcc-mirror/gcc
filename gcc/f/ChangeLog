@@ -1,3 +1,22 @@
+Sat Apr 17 16:55:59 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi, ffe.texi, g77.texi, g77install.texi, news.texi:
+	Clean up @code{} vs. @samp{}.
+	Clean up dashes (`--') vs. @minus{} vs. `---'.
+
+	* ffe.texi: Add copyright header.
+
+	* g77.texi, lang-options.h, news.texi, top.c (ffe_decode_option):
+	Remove support for -fugly option.
+	Clarify that -fugly-logint is needed instead of -fugly
+	to work around using .EQ./.NE. on LOGICAL operands.
+	Explain more about why -fugly-logint is bad juju.
+
+	* g77.texi (Missing Features): Describe READONLY as a missing
+	feature.  Describe AUTOMATIC better.
+
+	* news.texi: Mention libf2c upgrade.
+
 Sat Apr 17 14:05:53 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Make a place for front-end internals documentation:
