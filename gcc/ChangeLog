@@ -1,3 +1,9 @@
+2003-11-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Fix links in online manuals.
+	* doc/invoke.texi (H8/300 Options): @xref to ld, not ld.info.
+	(Precompiled Headers): @pxref to cpp, not cpp.info.
+
 2003-11-16  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in, objc/Make-lang.in (objc.tags): Create TAGS.sub
