@@ -1,3 +1,12 @@
+2000-11-28  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc.dg/noncompile/940510-1.c: Update to test c89 functionality.
+	Move from here ...
+	* gcc.dg/940510-1.c: ... to here.
+
+	* gcc.dg/20000926-1.c: GNU C now allows initializations of
+	zero-size arrays in toplevel structures.
+
 2000-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/loop-8.c: New test.
@@ -160,7 +169,6 @@
 
 	* gcc.dg/20001117-1.c: New test.
 
->>>>>>> 1.855
 2000-11-18  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/nestfunc-3.c (main): Mask result to 32 bits.
