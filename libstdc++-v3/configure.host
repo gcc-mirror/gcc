@@ -173,6 +173,12 @@ case "${host_os}" in
     os_include_dir="os/qnx/qnx6.1"
     c_model=c
     ;;
+  solaris2)
+    # This too-vague configuration does not provide enough information
+    # to select a ctype include, and thus os_include_dir is a crap shoot.
+    echo "Please specify the full version of Solaris, ie. solaris2.9 " 1>&2
+    exit 1;
+    ;;
   solaris2.5*)
     os_include_dir="os/solaris/solaris2.5"
     ;;
