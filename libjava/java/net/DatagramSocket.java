@@ -1,6 +1,6 @@
 // DatagramSocket.java
 
-/* Copyright (C) 1999  Red Hat, Inc.
+/* Copyright (C) 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -66,7 +66,7 @@ public class DatagramSocket
     if (this instanceof MulticastSocket)
       impl.setOption(SocketOptions.SO_REUSEADDR, new Boolean(true));
 
-    impl.bind(port, laddr);
+    impl.bind(port, laddr == null ? ServerSocket.ANY_IF : laddr);
   }
 
   public void close()
