@@ -2166,11 +2166,17 @@ pop_srcloc ()
   input_file_stack = fs->next;
   free (fs);
   input_file_stack_tick++;
-  /* The initial source file is never popped.  */
-  if (!input_file_stack)
-    abort ();
-  input_filename = input_file_stack->name;
-  lineno = input_file_stack->line;
+
+  if (input_file_stack)
+    {
+      input_filename = input_file_stack->name;
+      lineno = input_file_stack->line;
+    }
+  else
+    {
+      input_filename = NULL;
+      lineno = 0;
+    }
 }
 
 /* Compile an entire translation unit.  Write a file of assembly
