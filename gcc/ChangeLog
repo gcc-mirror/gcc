@@ -1,3 +1,11 @@
+Thu Feb 24 22:06:52 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	Fix bug exposed by reload.c no longer rounding the frame
+	size to BIGGEST_ALIGNMENT:
+	* sh.c (rounded_frame_size): New function.
+	(sh_expand_prologue, sh_expand_epilogue): Use it.
+	(initial_elimination_offset): Likewise.
+
 Thu Feb 24 20:04:11 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	Fix breakage from 6th Feb thread_prologue_and_epilogue_insns change:
