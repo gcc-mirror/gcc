@@ -1,3 +1,9 @@
+Sun Apr 12 19:04:56 1998  David Mosberger-Tang  <David.Mosberger@acm.org>
+
+	* alpha.c (print_operand, case '('): New case.
+	* alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Add '('.
+	* alpha.md (fix_trunc[ds]fdi2): Use %( and show trapping.
+
 Sun Apr 12 13:09:46 1998  Scott Christley  <scottc@net-community.com>
 
 	* objc/encoding.c (objc_sizeof_type, _C_VOID): New case.
