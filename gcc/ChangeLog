@@ -1,3 +1,32 @@
+Wed Aug 25 13:41:47 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* lists.c (unused_insn_list, unused_expr_list): New file for
+	maintaining various types of lists. New statics for maintaining a 
+	cache of available INSN_LIST and EXPR_LIST nodes.
+	(free_list): Static function for freeing a list of INSN/EXPR nodes.
+	(alloc_INSN_LIST): Function to get a free INSN_LIST node.
+	(alloc_EXPR_LIST): Function to get a free EXPR_LIST node.
+	(init_EXPR_INSN_LIST_cache): Initialize the cache lists.
+	(free_EXPR_LIST_list): Free an entire list of EXPR_LIST nodes.
+	(free_INSN_LIST_list): Free an entire list of INSN_LIST nodes.
+	(free_EXPR_LIST_node): Free an individual EXPR_LIST node.
+	(free_INSN_LIST_node): Free an individual INSN_LIST node.
+	* haifa-sched.c (unused_insn_list, unused_expr_list): Moved to flow.c
+	(free_list, alloc_INSN_LIST, alloc_EXPR_LIST): Moved to flow.c
+	(remove_dependence, free_pending_lists): Use new global routines.
+	(flush_pending_lists, sched_analyze_insn): Use new global routines.
+	(sched_analyze, compute_block_backward_dependences): Use new routines.
+	(sched_analyze_1, sched_analyze_2): Use new routines.
+	(schedule_insns): Use new global routines.
+	* rtl.h (init_EXPR_INSN_LIST_cache, free_EXPR_LIST_list): Add function
+	prototypes.
+	(free_INSN_LIST_list, free_EXPR_LIST_node): Add prototypes.
+	(free_INSN_LIST_node, alloc_INSN_LIST, alloc_EXPR_LIST): Add function
+	prototypes.
+	* toplev.c (rest_of_compilation): Initialize node cache.
+	* Makefile.in (OBJS): Add lists.o to list of object files.
+	(lists.o): Add dependancies.
+
 Wed Aug 25 17:31:56 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/v850/v850.md: Fix compile time warning messages.

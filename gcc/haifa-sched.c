@@ -766,82 +766,6 @@ static void schedule_region PROTO ((int));
 
 #define SIZE_FOR_MODE(X) (GET_MODE_SIZE (GET_MODE (X)))
 
-/* Helper functions for instruction scheduling.  */
-
-/* An INSN_LIST containing all INSN_LISTs allocated but currently unused.  */
-static rtx unused_insn_list;
-
-/* An EXPR_LIST containing all EXPR_LISTs allocated but currently unused.  */
-static rtx unused_expr_list;
-
-static void free_list PROTO ((rtx *, rtx *));
-static rtx alloc_INSN_LIST PROTO ((rtx, rtx));
-static rtx alloc_EXPR_LIST PROTO ((int, rtx, rtx));
-
-static void
-free_list (listp, unused_listp)
-     rtx *listp, *unused_listp;
-{
-  register rtx link, prev_link;
-
-  if (*listp == 0)
-    return;
-
-  prev_link = *listp;
-  link = XEXP (prev_link, 1);
-
-  while (link)
-    {
-      prev_link = link;
-      link = XEXP (link, 1);
-    }
-
-  XEXP (prev_link, 1) = *unused_listp;
-  *unused_listp = *listp;
-  *listp = 0;
-}
-
-static rtx
-alloc_INSN_LIST (val, next)
-     rtx val, next;
-{
-  rtx r;
-
-  if (unused_insn_list)
-    {
-      r = unused_insn_list;
-      unused_insn_list = XEXP (r, 1);
-      XEXP (r, 0) = val;
-      XEXP (r, 1) = next;
-      PUT_REG_NOTE_KIND (r, VOIDmode);
-    }
-  else
-    r = gen_rtx_INSN_LIST (VOIDmode, val, next);
-
-  return r;
-}
-
-static rtx
-alloc_EXPR_LIST (kind, val, next)
-     int kind;
-     rtx val, next;
-{
-  rtx r;
-
-  if (unused_expr_list)
-    {
-      r = unused_expr_list;
-      unused_expr_list = XEXP (r, 1);
-      XEXP (r, 0) = val;
-      XEXP (r, 1) = next;
-      PUT_REG_NOTE_KIND (r, kind);
-    }
-  else
-    r = gen_rtx_EXPR_LIST (kind, val, next);
-
-  return r;
-}
-
 /* Add ELEM wrapped in an INSN_LIST with reg note kind DEP_TYPE to the
    LOG_LINKS of INSN, if not already there.  DEP_TYPE indicates the type
    of dependence that this link represents.  */
@@ -949,9 +873,7 @@ remove_dependence (insn, elem)
 	    XEXP (prev, 1) = next;
 	  else
 	    LOG_LINKS (insn) = next;
-
-	  XEXP (link, 1) = unused_insn_list;
-	  unused_insn_list = link;
+	  free_INSN_LIST_node (link);
 
 	  found = 1;
 	}
@@ -3226,10 +3148,10 @@ free_pending_lists ()
 {
   if (current_nr_blocks <= 1)
     {
-      free_list (&pending_read_insns, &unused_insn_list);
-      free_list (&pending_write_insns, &unused_insn_list);
-      free_list (&pending_read_mems, &unused_expr_list);
-      free_list (&pending_write_mems, &unused_expr_list);
+      free_INSN_LIST_list (&pending_read_insns);
+      free_INSN_LIST_list (&pending_write_insns);
+      free_EXPR_LIST_list (&pending_read_mems);
+      free_EXPR_LIST_list (&pending_write_mems);
     }
   else
     {
@@ -3238,10 +3160,10 @@ free_pending_lists ()
 
       for (bb = 0; bb < current_nr_blocks; bb++)
 	{
-	  free_list (&bb_pending_read_insns[bb], &unused_insn_list);
-	  free_list (&bb_pending_write_insns[bb], &unused_insn_list);
-	  free_list (&bb_pending_read_mems[bb], &unused_expr_list);
-	  free_list (&bb_pending_write_mems[bb], &unused_expr_list);
+	  free_INSN_LIST_list (&bb_pending_read_insns[bb]);
+	  free_INSN_LIST_list (&bb_pending_write_insns[bb]);
+	  free_EXPR_LIST_list (&bb_pending_read_mems[bb]);
+	  free_EXPR_LIST_list (&bb_pending_write_mems[bb]);
 	}
     }
 }
@@ -3284,13 +3206,11 @@ flush_pending_lists (insn, only_write)
 
       link = pending_read_insns;
       pending_read_insns = XEXP (pending_read_insns, 1);
-      XEXP (link, 1) = unused_insn_list;
-      unused_insn_list = link;
+      free_INSN_LIST_node (link);
 
       link = pending_read_mems;
       pending_read_mems = XEXP (pending_read_mems, 1);
-      XEXP (link, 1) = unused_expr_list;
-      unused_expr_list = link;
+      free_EXPR_LIST_node (link);
     }
   while (pending_write_insns)
     {
@@ -3298,13 +3218,11 @@ flush_pending_lists (insn, only_write)
 
       link = pending_write_insns;
       pending_write_insns = XEXP (pending_write_insns, 1);
-      XEXP (link, 1) = unused_insn_list;
-      unused_insn_list = link;
+      free_INSN_LIST_node (link);
 
       link = pending_write_mems;
       pending_write_mems = XEXP (pending_write_mems, 1);
-      XEXP (link, 1) = unused_expr_list;
-      unused_expr_list = link;
+      free_EXPR_LIST_node (link);
     }
   pending_lists_length = 0;
 
@@ -3312,7 +3230,7 @@ flush_pending_lists (insn, only_write)
   for (u = last_pending_memory_flush; u; u = XEXP (u, 1))
     add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
-  free_list (&last_pending_memory_flush, &unused_insn_list);
+  free_INSN_LIST_list (&last_pending_memory_flush);
   last_pending_memory_flush = alloc_INSN_LIST (insn, NULL_RTX);
 }
 
@@ -3379,7 +3297,7 @@ sched_analyze_1 (x, insn)
 		 but sets must be ordered with respect to a pending clobber. */
 	      if (code == SET)
 		{
-		  free_list (&reg_last_uses[regno + i], &unused_insn_list);
+		  free_INSN_LIST_list (&reg_last_uses[regno + i]);
 	          for (u = reg_last_clobbers[regno + i]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 	          SET_REGNO_REG_SET (reg_pending_sets, regno + i);
@@ -3406,7 +3324,7 @@ sched_analyze_1 (x, insn)
 
 	  if (code == SET)
 	    {
-	      free_list (&reg_last_uses[regno], &unused_insn_list);
+	      free_INSN_LIST_list (&reg_last_uses[regno]);
 	      for (u = reg_last_clobbers[regno]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 	      SET_REGNO_REG_SET (reg_pending_sets, regno);
@@ -3672,7 +3590,7 @@ sched_analyze_2 (x, insn)
 	      {
 		for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-		free_list (&reg_last_uses[i], &unused_insn_list);
+		free_INSN_LIST_list (&reg_last_uses[i]);
 
 		for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
@@ -3805,7 +3723,7 @@ sched_analyze_insn (x, insn, loop_notes)
 	      rtx u;
 	      for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-	      free_list (&reg_last_uses[i], &unused_insn_list);
+	      free_INSN_LIST_list (&reg_last_uses[i]);
 
 	      for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), 0);
@@ -3825,9 +3743,8 @@ sched_analyze_insn (x, insn, loop_notes)
      subsequent sets will be output dependant on it.  */
   EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i,
 			     {
-			       free_list (&reg_last_sets[i], &unused_insn_list);
-			       free_list (&reg_last_clobbers[i],
-					  &unused_insn_list);
+			       free_INSN_LIST_list (&reg_last_sets[i]);
+			       free_INSN_LIST_list (&reg_last_clobbers[i]);
 			       reg_last_sets[i]
 				 = alloc_INSN_LIST (insn, NULL_RTX);
 			     });
@@ -3843,7 +3760,7 @@ sched_analyze_insn (x, insn, loop_notes)
     {
       for (i = 0; i < maxreg; i++)
 	{
-	  free_list (&reg_last_sets[i], &unused_insn_list);
+	  free_INSN_LIST_list (&reg_last_sets[i]);
 	  reg_last_sets[i] = alloc_INSN_LIST (insn, NULL_RTX);
 	}
 
@@ -3937,7 +3854,7 @@ sched_analyze (head, tail)
 		{
 		  for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-		  free_list (&reg_last_uses[i], &unused_insn_list);
+		  free_INSN_LIST_list (&reg_last_uses[i]);
 
 		  for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), 0);
@@ -3995,7 +3912,7 @@ sched_analyze (head, tail)
 	     function call) on all hard register clobberage.  */
 
 	  /* last_function_call is now a list of insns */
-	  free_list(&last_function_call, &unused_insn_list);
+	  free_INSN_LIST_list(&last_function_call);
 	  last_function_call = alloc_INSN_LIST (insn, NULL_RTX);
 	}
 
@@ -7455,18 +7372,18 @@ compute_block_backward_dependences (bb)
   /* Free up the INSN_LISTs 
 
      Note this loop is executed max_reg * nr_regions times.  It's first 
-     implementation accounted for over 90% of the calls to free_list.
-     The list was empty for the vast majority of those calls.  On the PA,
-     not calling free_list in those cases improves -O2 compile times by
+     implementation accounted for over 90% of the calls to free_INSN_LIST_list.
+     The list was empty for the vast majority of those calls.  On the PA, not 
+     calling free_INSN_LIST_list in those cases improves -O2 compile times by
      3-5% on average.  */
   for (b = 0; b < max_reg; ++b)
     {
       if (reg_last_clobbers[b])
-	free_list (&reg_last_clobbers[b], &unused_insn_list);
+	free_INSN_LIST_list (&reg_last_clobbers[b]);
       if (reg_last_sets[b])
-	free_list (&reg_last_sets[b], &unused_insn_list);
+	free_INSN_LIST_list (&reg_last_sets[b]);
       if (reg_last_uses[b])
-	free_list (&reg_last_uses[b], &unused_insn_list);
+	free_INSN_LIST_list (&reg_last_uses[b]);
     }
 
   /* Assert that we won't need bb_reg_last_* for this block anymore.  */
@@ -7822,18 +7739,6 @@ schedule_insns (dump_file)
 
   nr_inter = 0;
   nr_spec = 0;
-
-  /* Initialize the unused_*_lists.  We can't use the ones left over from
-     the previous function, because gcc has freed that memory.  We can use
-     the ones left over from the first sched pass in the second pass however,
-     so only clear them on the first sched pass.  The first pass is before
-     reload if flag_schedule_insns is set, otherwise it is afterwards.  */
-
-  if (reload_completed == 0 || !flag_schedule_insns)
-    {
-      unused_insn_list = 0;
-      unused_expr_list = 0;
-    }
 
   /* initialize issue_rate */
   issue_rate = ISSUE_RATE;

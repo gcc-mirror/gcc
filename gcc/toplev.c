@@ -3821,6 +3821,8 @@ rest_of_compilation (decl)
 
   unshare_all_rtl (insns);
 
+  init_EXPR_INSN_LIST_cache ();
+
 #ifdef SETJMP_VIA_SAVE_AREA
   /* This must be performed before virutal register instantiation.  */
   if (current_function_calls_alloca)
