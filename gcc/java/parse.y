@@ -6789,6 +6789,7 @@ check_inner_class_access (decl, enclosing_decl, cl)
      tree decl, enclosing_decl, cl;
 {
   const char *access;
+  tree enclosing_decl_type;
 
   /* We don't issue an error message when CL is null. CL can be null
      as a result of processing a JDEP crafted by source_start_java_method
@@ -6798,7 +6799,7 @@ check_inner_class_access (decl, enclosing_decl, cl)
   if (!decl || !cl)
     return;
 
-  tree enclosing_decl_type = TREE_TYPE (enclosing_decl);
+  enclosing_decl_type = TREE_TYPE (enclosing_decl);
 
   if (CLASS_PRIVATE (decl))
     {
