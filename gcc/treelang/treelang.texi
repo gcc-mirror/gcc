@@ -92,7 +92,7 @@
 @c \global\normaloffset =0.75in
 @c @end tex
 
-@ifinfo
+@ifnottex
 @dircategory Programming
 @direntry
 * treelang: (treelang).                  The GNU Treelang compiler.
@@ -137,7 +137,7 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
      You have freedom to copy and modify this GNU Manual, like GNU
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development.
-@end ifinfo
+@end ifnottex
 
 treelang was Contributed by Tim Josling (@email{@value{email-josling}}).
 Inspired by and based on the 'toy' language, written by Richard Kenner.
@@ -199,7 +199,7 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 @end titlepage
 @page
 
-@ifinfo
+@ifnottex
 
 @node Top, Copying,, (dir)
 @top Introduction
@@ -226,7 +226,7 @@ new features and incompatibilities, and how to report bugs.  It
 corresponds to the @value{which-treelang} version of @code{treelang}.
 @end ifclear
 
-@end ifinfo
+@end ifnottex
 
 @ifset DEVELOPMENT
 @emph{Warning:} This document is still under development, and might not

@@ -1,3 +1,7 @@
+2002-12-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* treelang.texi: Use @ifnottex instead of @ifinfo.
+
 2002-09-09  Tim Josling  <tej@melbpc.org.au>
 
 	* treetree.c (objc_is_id): New.
