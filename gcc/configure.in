@@ -1725,6 +1725,57 @@ if test x"$gcc_cv_as_dwarf2_debug_line" = xyes; then
 fi
 AC_MSG_RESULT($gcc_cv_as_dwarf2_debug_line)
 
+AC_MSG_CHECKING(assembler --gdwarf2 support)
+gcc_cv_as_gdwarf2_flag=no
+if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x;
+then
+  if test "$gcc_cv_gas_major_version" -eq 2 \
+	-a "$gcc_cv_gas_minor_version" -ge 11 \
+	-o "$gcc_cv_gas_major_version" -gt 2 \
+     && grep 'obj_format = elf' ../gas/Makefile > /dev/null \
+     && test x"$insn" != x ; then
+    gcc_cv_as_gdwarf2_debug_flag="yes"
+  fi
+elif test x$gcc_cv_as != x -a x"$insn" != x ; then
+	echo '' > conftest.s
+	# ??? This fails with non-gnu grep.
+	if $gcc_cv_as --gdwarf2 -o conftest.o conftest.s > /dev/null 2>&1
+	  then
+	  gcc_cv_as_gdwarf2_flag="yes"
+	fi
+	rm -f conftest.s conftest.o
+fi
+if test x"$gcc_cv_as_gdwarf2_flag" = xyes; then
+	AC_DEFINE(HAVE_AS_GDWARF2_DEBUG_FLAG, 1,
+[Define if your assembler supports the --gdwarf2 option.])
+fi
+AC_MSG_RESULT($gcc_cv_as_gdwarf2_flag)
+
+AC_MSG_CHECKING(assembler --gstabs support)
+gcc_cv_as_gstabs_flag=no
+if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x;
+then
+  if test "$gcc_cv_gas_major_version" -eq 2 \
+	-a "$gcc_cv_gas_minor_version" -ge 11 \
+	-o "$gcc_cv_gas_major_version" -gt 2 \
+     && grep 'obj_format = elf' ../gas/Makefile > /dev/null \
+     && test x"$insn" != x ; then
+    gcc_cv_as_gstabs_debug_flag="yes"
+  fi
+elif test x$gcc_cv_as != x -a x"$insn" != x ; then
+	echo '' > conftest.s
+	# ??? This fails with non-gnu grep.
+	if $gcc_cv_as --gstabs -o conftest.o conftest.s > /dev/null 2>&1 ; then
+	  gcc_cv_as_gstabs_flag="yes"
+	fi
+	rm -f conftest.s conftest.o
+fi
+if test x"$gcc_cv_as_gstabs_flag" = xyes; then
+	AC_DEFINE(HAVE_AS_GSTABS_DEBUG_FLAG, 1,
+[Define if your assembler supports the --gstabs option.])
+fi
+AC_MSG_RESULT($gcc_cv_as_gstabs_flag)
+
 if test "$prefix" != "/usr" && test "$prefix" != "/usr/local" ; then
   AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include")
 fi
