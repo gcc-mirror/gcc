@@ -37,6 +37,7 @@
 #include <list>
 #include <typeinfo>
 #include <sstream>
+#include <pthread.h>
 #include <ext/mt_allocator.h>
 #include <ext/malloc_allocator.h>
 #include <testsuite_performance.h>
@@ -59,13 +60,21 @@ int iterations;
 int insert_values = 128;
 
 template<typename Container>
-  int
-  do_loop()
+  void*
+  do_loop(void* p = NULL)
   {
-    int test_iterations = 0;
+    Container obj;    
     try
       {
-	Container obj;
+	int test_iterations = 0;
+	while (test_iterations < iterations)
+	  {
+	    for (int j = 0; j < insert_values; ++j)
+	      obj.push_back(test_iterations);
+	    ++test_iterations;
+	  }
+	obj.clear();
+	test_iterations = 0;
 	while (test_iterations < iterations)
 	  {
 	    for (int j = 0; j < insert_values; ++j)
@@ -77,7 +86,6 @@ template<typename Container>
       {
 	// No point allocating all available memory, repeatedly.	
       }
-    return test_iterations;
   }
 
 template<typename Container>
@@ -85,22 +93,16 @@ template<typename Container>
   calibrate_iterations()
   {
     int try_iterations = iterations = 100000;
-    int test_iterations;
 
     __gnu_test::time_counter timer;
     timer.start();
-    test_iterations = do_loop<Container>();
+    do_loop<Container>();
     timer.stop();
 
-    if (try_iterations > test_iterations && test_iterations > iterations)
-      iterations = test_iterations - 100;
-    else
-      {
-	double tics = timer.real_time();
-	double iterpc = test_iterations / tics; //iterations per clock
-	double xtics = 200; // works for linux 2gig x86
-	iterations = static_cast<int>(xtics * iterpc);
-      }
+    double tics = timer.real_time();
+    double iterpc = iterations / tics; //iterations per clock
+    double xtics = 100; // works for linux 2gig x86
+    iterations = static_cast<int>(xtics * iterpc);
   }
 
 template<typename Container>
@@ -108,16 +110,27 @@ template<typename Container>
   test_container(Container obj)
   {
     using namespace __gnu_test;
-
     time_counter time;
     resource_counter resource;
+
     clear_counters(time, resource);
     start_counters(time, resource);
-    int test_iterations = do_loop<Container>();
+    
+    pthread_t  t1, t2, t3, t4;
+    pthread_create(&t1, 0, &do_loop<Container>, 0);
+    pthread_create(&t2, 0, &do_loop<Container>, 0);
+    pthread_create(&t3, 0, &do_loop<Container>, 0);
+    pthread_create(&t4, 0, &do_loop<Container>, 0);
+
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+    pthread_join(t3, NULL);
+    pthread_join(t4, NULL);
+
     stop_counters(time, resource);
  
     std::ostringstream comment;
-    comment << "iterations: " << test_iterations << '\t';
+    comment << "iterations: " << iterations << '\t';
     comment << "type: " << typeid(obj).name();
     report_header(__FILE__, comment.str());
     report_performance(__FILE__, string(), time, resource);

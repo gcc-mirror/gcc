@@ -1,3 +1,10 @@
+2004-01-06  Benjamin Kosnik  <bkoz@redhat.com>
+            Stefan Olsson  <stefan@snon.net>
+
+	* scripts/check_performance: Use -pthread.
+	* testsuite/performance/allocator.cc: Tweaks, add list.
+	* testsuite/performance/allocator_thread.cc: New.
+
 2003-01-06  Jerry Quinn  <jlquinn@optonline.net>
 
 	* include/bits/locale_facets.h: Document public classes and
