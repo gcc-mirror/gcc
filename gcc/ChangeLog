@@ -1,3 +1,18 @@
+2004-09-01  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-parse.in (primary): Call objc_build_message_expr(),
+	objc_build_selector_expr(), objc_build_protocol_expr(),
+	objc_build_encode_expr() and objc_build_string_object() instead of
+	build_message_expr(), build_selector_expr(), build_protocol_expr(),
+	build_encode_expr() and build_objc_string_object(), respectively.
+	(component_decl_list2): Call objc_get_class_ivars() instead of
+	get_class_ivars_from_name().
+	(keyworddecl): Call objc_build_keyword_decl() instead of
+	build_keyword_decl().
+	(receiver): Call objc_get_class_reference() instead of
+	get_class_reference().
+	(reswords): Add blank line before @@ifobjc section, for clarity.
+
 2002-09-01  Fariborz Jahanian <fjahanian@apple.com>
 
 	* config/rs6000/darwin.h (ROUND_TYPE_ALIGN): Restrict alignment

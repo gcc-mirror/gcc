@@ -54,18 +54,18 @@ tree add_instance_variable (tree, int, tree, tree, tree);
 tree objc_add_method (tree, tree, int);
 tree get_super_receiver (void);
 void objc_clear_super_receiver (void);
-tree get_class_ivars_from_name (tree);
-tree get_class_reference (tree);
+tree objc_get_class_ivars (tree);
+tree objc_get_class_reference (tree);
 tree get_static_reference (tree, tree);
 tree get_protocol_reference (tree);
-tree build_message_expr (tree);
+tree objc_build_message_expr (tree);
 tree finish_message_expr (tree, tree, tree);
-tree build_selector_expr (tree);
+tree objc_build_selector_expr (tree);
 tree build_ivar_reference (tree);
-tree build_keyword_decl (tree, tree, tree);
+tree objc_build_keyword_decl (tree, tree, tree);
 tree build_method_decl (enum tree_code, tree, tree, tree);
-tree build_protocol_expr (tree);
-tree build_objc_string_object (tree);
+tree objc_build_protocol_expr (tree);
+tree objc_build_string_object (tree);
 
 void objc_declare_alias (tree, tree);
 void objc_declare_class (tree);
@@ -78,7 +78,7 @@ void objc_check_decl (tree);
 
 /* NeXT extensions */
 
-tree build_encode_expr (tree);
+tree objc_build_encode_expr (tree);
 
 /* Objective-C structures */
 

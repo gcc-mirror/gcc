@@ -1,5 +1,29 @@
 2004-09-01  Ziemowit Laski  <zlaski@apple.com>
 
+	* objc-act.c (objc_check_decl): Use OBJC_TYPE_NAME macro instead of
+	TYPE_NAME.
+	(build_objc_string_object): Rename to objc_build_string_object().
+	(get_class_reference): Rename to objc_get_class_reference().
+	(get_class_ivars_from_name): Rename to objc_get_class_ivars().
+	(next_sjlj_build_catch_list, get_super_receiver): Call
+	objc_get_class_reference() instead of get_class_reference().
+	(build_keyword_decl): Rename to objc_build_keyword_decl().
+	(build_message_expr): Rename to objc_build_message_expr().
+	(build_protocol_expr): Rename to objc_build_protocol_expr().
+	(build_selector_expr): Rename to objc_build_selector_expr().
+	(build_encode_expr): Rename to objc_build_encode_expr().
+	* objc-act.h (get_class_ivars_from_name): Rename prototype to
+	objc_get_class_ivars().
+	(get_class_reference): Rename prototype to objc_get_class_reference().
+	(build_message_expr): Rename prototype to objc_build_message_expr().
+	(build_selector_expr): Rename prototype to objc_build_selector_expr().
+	(build_keyword_decl): Rename prototype to objc_build_keyword_decl().
+	(build_protocol_expr): Rename prototype to objc_build_prototype_expr().
+	(build_objc_string_object): Rename prototype to
+	objc_build_string_object().
+	
+2004-09-01  Ziemowit Laski  <zlaski@apple.com>
+
 	* objc-act.c (lookup_interface): Make function 'static' and add a
 	local prototype.
 	(objc_check_decl, get_class_reference, objc_declare_alias,

@@ -744,19 +744,19 @@ primary:
 		  $$.original_code = ERROR_MARK; }
 @@ifobjc
 	| objcmessageexpr
-		{ $$.value = build_message_expr ($1);
+		{ $$.value = objc_build_message_expr ($1);
 		  $$.original_code = ERROR_MARK; }
 	| objcselectorexpr
-		{ $$.value = build_selector_expr ($1);
+		{ $$.value = objc_build_selector_expr ($1);
 		  $$.original_code = ERROR_MARK; }
 	| objcprotocolexpr
-		{ $$.value = build_protocol_expr ($1);
+		{ $$.value = objc_build_protocol_expr ($1);
 		  $$.original_code = ERROR_MARK; }
 	| objcencodeexpr
-		{ $$.value = build_encode_expr ($1);
+		{ $$.value = objc_build_encode_expr ($1);
 		  $$.original_code = ERROR_MARK; }
 	| OBJC_STRING
-		{ $$.value = build_objc_string_object ($1);
+		{ $$.value = objc_build_string_object ($1);
 		  $$.original_code = ERROR_MARK; }
 @@end_ifobjc
 	;
@@ -1808,7 +1808,7 @@ component_decl_list2:	/* empty */
 @@ifobjc
 	/* foo(sizeof(struct{ @defs(ClassName)})); */
 	| AT_DEFS '(' CLASSNAME ')'
-		{ $$ = nreverse (get_class_ivars_from_name ($3)); }
+		{ $$ = nreverse (objc_get_class_ivars ($3)); }
 @@end_ifobjc
 	;
 
@@ -3047,22 +3047,22 @@ reservedwords:
 keyworddecl:
 	  selector ':' '(' typename ')' identifier
 		{
-		  $$ = build_keyword_decl ($1, $4, $6);
+		  $$ = objc_build_keyword_decl ($1, $4, $6);
 		}
 
 	| selector ':' identifier
 		{
-		  $$ = build_keyword_decl ($1, NULL_TREE, $3);
+		  $$ = objc_build_keyword_decl ($1, NULL_TREE, $3);
 		}
 
 	| ':' '(' typename ')' identifier
 		{
-		  $$ = build_keyword_decl (NULL_TREE, $3, $5);
+		  $$ = objc_build_keyword_decl (NULL_TREE, $3, $5);
 		}
 
 	| ':' identifier
 		{
-		  $$ = build_keyword_decl (NULL_TREE, NULL_TREE, $2);
+		  $$ = objc_build_keyword_decl (NULL_TREE, NULL_TREE, $2);
 		}
 	;
 
@@ -3108,11 +3108,11 @@ receiver:
 		{ $$ = $1.value; }
 	| CLASSNAME
 		{
-		  $$ = get_class_reference ($1);
+		  $$ = objc_get_class_reference ($1);
 		}
 	| TYPENAME
 		{
-		  $$ = get_class_reference ($1);
+		  $$ = objc_get_class_reference ($1);
 		}
 	;
 
@@ -3271,6 +3271,7 @@ static const struct resword reswords[] =
   { "void",		RID_VOID,	0 },
   { "volatile",		RID_VOLATILE,	0 },
   { "while",		RID_WHILE,	0 },
+
 @@ifobjc
   { "id",		RID_ID,			D_OBJC },
 
