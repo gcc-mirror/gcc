@@ -8757,7 +8757,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       /* Check the results by default.  But if flag_fast_math is turned on,
 	 then assume sqrt will always be called with valid arguments.  */
 
-      if (! flag_fast_math)
+      if (flag_errno_math && ! flag_fast_math)
 	{
 	  /* Don't define the builtin FP instructions
 	     if your machine is not IEEE.  */
