@@ -5600,7 +5600,7 @@ build_c_cast (type, expr)
   return value;
 }
 
-tree
+static tree
 expand_target_expr (t)
      tree t;
 {
