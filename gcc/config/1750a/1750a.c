@@ -369,68 +369,6 @@ simple_memory_operand (op, mode)
 }
 
 
-/* destructively add one to memory address */
-add_1_to_mem (opnd)	/* returns 0 for success, -1 for failure */
-     rtx opnd;		/* OPND must be a MEM rtx */
-{
-  rtx inner = XEXP (opnd, 0);
-
-  if (GET_CODE (opnd) != MEM)
-    {
-      fprintf (stderr, "add_1_to_mem: input is not MEM\n");
-      return -1;  /* failure */
-    }
-  switch (GET_CODE (inner))
-    {
-    case CONST:
-      inner = XEXP (inner, 0);
-      if (GET_CODE (inner) != PLUS
-       || GET_CODE (XEXP (inner, 1)) != CONST_INT)
-	{
-	  fprintf (stderr, "add_1_to_mem: CONST failure\n");
-	  return -1;
-	}
-      INTVAL (XEXP (XEXP (XEXP (opnd, 0), 0), 1)) += 1;
-      break;
-    case REG:
-      XEXP (opnd, 0) = gen_rtx (PLUS, Pmode, inner, const1_rtx);
-      break;
-    case SYMBOL_REF:
-    case LABEL_REF:
-      XEXP (opnd, 0) = gen_rtx (CONST, VOIDmode,
-			 gen_rtx (PLUS, Pmode, inner, const1_rtx));
-      break;
-    case PLUS:
-      inner = XEXP (inner, 1);
-      switch (GET_CODE (inner))
-	{
-	case CONST:
-	  inner = XEXP (inner, 0);
-	  if (GET_CODE (inner) != PLUS
-	   || GET_CODE (XEXP (inner, 1)) != CONST_INT)
-	    {
-	      fprintf (stderr, "add_1_to_mem: PLUS CONST failure\n");
-	      return -1;
-	    }
-	  INTVAL (XEXP (XEXP (XEXP (XEXP (opnd, 0), 1), 0), 1)) += 1;
-	  break;
-	case CONST_INT:
-	  INTVAL (XEXP (XEXP (opnd, 0), 1)) += 1;
-	  break;
-	case SYMBOL_REF:
-	case LABEL_REF:
-	  XEXP (XEXP (opnd, 0), 1) = gen_rtx (CONST, VOIDmode,
-				     gen_rtx (PLUS, Pmode, inner, const1_rtx));
-	  break;
-	default:
-	  fprintf (stderr, "add_1_to_mem: PLUS failure\n");
-	  return -1;
-	}
-    }
-  return 0;
-}
-
-
 /* Decide whether to output a conditional jump as a "Jump Conditional"
    or as a "Branch Conditional": */
 
@@ -504,6 +442,7 @@ next_cc_user_is_unsigned (insn)
 }
 
 
+static int addr_inc;
 
 /* The PRINT_OPERAND and PRINT_OPERAND_ADDRESS macros have been
    made functions: */
@@ -520,6 +459,8 @@ print_operand (file, x, kode)
       break;
     case SYMBOL_REF:
       fprintf (file, "%s", XSTR (x, 0));
+      if (kode == 'A')
+	fprintf (file, "+1");
       break;
     case LABEL_REF:
     case CONST:
@@ -541,7 +482,10 @@ print_operand (file, x, kode)
 	    }
 	}
       else
-        output_address (XEXP (x, 0));
+	{
+	  addr_inc = (kode == 'A' ? 1 : 0);
+	  output_address (XEXP (x, 0));
+	}
       break;
     case CONST_DOUBLE:
 /*    {
@@ -647,6 +591,7 @@ print_operand (file, x, kode)
     default:
       fprintf (file, "p_o_UFO code=%d", GET_CODE (x));
     }
+  addr_inc = 0;
 }
 
 print_operand_address (file, addr)
@@ -656,7 +601,7 @@ print_operand_address (file, addr)
   switch (GET_CODE (addr))
     {
     case REG:
-      fprintf (file, "0,r%d ; P_O_A", REGNO (addr));
+      fprintf (file, "%d,r%d ; P_O_A", addr_inc, REGNO (addr));
       break;
     case PLUS:
       {
@@ -671,11 +616,13 @@ print_operand_address (file, addr)
 		fprintf (file, ",r%d ;P_O_A reg + const expr", REGNO (x));
 		break;
 	      case CONST_INT:
-		fprintf (file, "%d,r%d", INTVAL (y), REGNO (x));
+		fprintf (file, "%d,r%d", INTVAL (y) + addr_inc, REGNO (x));
 		break;
 	      case SYMBOL_REF:
-		fprintf (file, "%s,r%d  ; P_O_A reg + sym",
-			 XSTR (y, 0), REGNO (x));
+		fprintf (file, "%s", XSTR (y, 0));
+		if (addr_inc)
+		  fprintf (file, "+%d", addr_inc);
+		fprintf (file, ",r%d  ; P_O_A reg + sym", REGNO (x));
 		break;
 	      case LABEL_REF:
 		output_address (XEXP (y, 0));
@@ -693,7 +640,7 @@ print_operand_address (file, addr)
 	    switch (GET_CODE (y))
 	      {
 	      case CONST_INT:
-		fprintf (file, "%d+%s", INTVAL (y), XSTR (x, 0));
+		fprintf (file, "%d+%s", INTVAL (y) + addr_inc, XSTR (x, 0));
 		break;
 	      case REG:
 		fprintf (file, "%s,r%d ;P_O_A sym + reg",
@@ -735,6 +682,8 @@ print_operand_address (file, addr)
     case LABEL_REF:
     case SYMBOL_REF:
       fprintf (file, "%s", XSTR (addr, 0));
+      if (addr_inc)
+	fprintf (file, "+%d", addr_inc);
       break;
     case MEM:
       fprintf (file, "[memUFO:");
@@ -753,5 +702,6 @@ print_operand_address (file, addr)
 	       (int) GET_CODE (addr), INTVAL (addr));
       break;
     }
+  addr_inc = 0;
 }
 
