@@ -1066,7 +1066,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  break;
 
 	case OPCODE_athrow:
-	  // FIXME: athrow also empties the stack.
+	  /* FIXME: athrow also empties the stack. */
 	  pop_type (throwable_type_node);
 	  INVALIDATE_PC;
 	  break;

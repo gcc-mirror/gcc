@@ -840,7 +840,7 @@ DEFUN(print_c_decl, (stream, jcf, name_index, signature_index, is_init,
     }
 }
 
-// Print the unqualified method name followed by the signature.
+/* Print the unqualified method name followed by the signature. */
 static void
 DEFUN(print_full_cxx_name, (stream, jcf, name_index, signature_index, is_init, name_override),
       FILE* stream AND JCF* jcf
