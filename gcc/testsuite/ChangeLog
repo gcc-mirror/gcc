@@ -1,3 +1,8 @@
+2005-03-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19916
+	* g++.dg/init/ptrmem2.C: New test.
+
 2005-03-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/overload/using2.C: New.
