@@ -2346,7 +2346,7 @@ simplify_subreg (outermode, op, innermode, byte)
      suppress this simplification.  If the hard register is the stack,
      frame, or argument pointer, leave this as a SUBREG.  */
 
-  if (REG_P (op) == REG
+  if (REG_P (op)
       && REGNO (op) < FIRST_PSEUDO_REGISTER
       && REGNO (op) != FRAME_POINTER_REGNUM
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
@@ -2389,7 +2389,7 @@ simplify_subreg (outermode, op, innermode, byte)
       rtx part = is_realpart ? XEXP (op, 0) : XEXP (op, 1);
       unsigned int final_offset;
 
-      final_offset = SUBREG_BYTE (op) % (GET_MODE_UNIT_SIZE (innermode) / 2);
+      final_offset = byte % (GET_MODE_UNIT_SIZE (innermode) / 2);
       return simplify_subreg (outermode, part, GET_MODE (part), final_offset);
     }
 
