@@ -3168,7 +3168,8 @@ rs6000_stack_info ()
 
   else if (abi == ABI_V4 || abi == ABI_NT || abi == ABI_SOLARIS)
     info_ptr->push_p = (total_raw_size > info_ptr->fixed_size
-			|| info_ptr->lr_save_p);
+			|| (abi == ABI_NT ? info_ptr->lr_save_p
+			    : info_ptr->calls_p));
 
   else
     info_ptr->push_p = (frame_pointer_needed

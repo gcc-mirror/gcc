@@ -1,3 +1,8 @@
+Tue Oct 21 18:34:01 1997  Geoffrey KEATING  <geoffk@ozemail.com.au>
+
+	* rs6000.c: Avoid creating a stack frame under SYSV ABI if we
+	only need to save LR.
+
 Tue Oct 21 10:06:40 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10200.c (expand_prologue): Fix typo.
