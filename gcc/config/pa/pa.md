@@ -3060,7 +3060,8 @@
 ;; is sufficient.
 (define_insn "cacheflush"
   [(unspec_volatile [(const_int 1)] 0)
-   (use (mem:SI (match_operand:SI 0 "register_operand" "r")))]
+   (use (mem:SI (match_operand:SI 0 "register_operand" "r")))
+   (use (mem:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "fdc 0(0,%0)\;sync\;fic 0(0,%0)\;sync\;nop\;nop\;nop\;nop\;nop\;nop\;nop"
-  [(set_attr "length" "11")])
+  "fdc 0(0,%0)\;sync\;fic 0(0,%0)\;sync\;fdc 0(0,%1)\;sync\;fic 0(0,%1)\;sync\;nop\;nop\;nop\;nop\;nop\;nop\;nop"
+  [(set_attr "length" "15")])
