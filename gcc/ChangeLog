@@ -1,3 +1,12 @@
+Fri May 18 15:39:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (try_replace_reg): First try global replace, later try to
+	simplify the expression.
+
+	* gcse.c (find_used_regs): Change calling convention; work via
+	note_uses.
+	(cprop_insn): Update call of find_used_regs; work for CALL_INSNs too.
+
 2001-05-18  Bernd Schmidt  <bernds@redhat.com>
 
 	Revert
