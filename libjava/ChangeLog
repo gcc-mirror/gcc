@@ -1,3 +1,8 @@
+2005-04-02  Anthony Green  <green@redhat.com>
+
+	PR libgcj/20727
+	* java/nio/DirectByteBufferImpl.java: Fix buffer ownership bug.
+
 2005-04-02  Mark Wielaard  <mark@klomp.org>
 
 	* javax/naming/directory/BasicAttributes.java (equals): Compare to any
