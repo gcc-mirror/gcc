@@ -120,10 +120,14 @@ void test04()
 {
   bool test = true;
 
-  std::string loc1 = setlocale(LC_ALL, "ja_JP.eucjp");
-  test01();
-  std::string loc2 = setlocale(LC_ALL, NULL);
-  VERIFY( loc1 == loc2 );
+  const char* tentLANG = setlocale(LC_ALL, "ja_JP.eucjp");
+  if (tentLANG != NULL)
+    {
+      std::string preLANG = tentLANG;
+      test01();
+      std::string postLANG = setlocale(LC_ALL, NULL);
+      VERIFY( preLANG == postLANG );
+    }
 }
 #endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
 

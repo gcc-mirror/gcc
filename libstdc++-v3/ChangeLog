@@ -1,3 +1,30 @@
+2002-05-13  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/22_locale/codecvt_members_char_char.cc
+        (test03): Robustify wrt localedata.
+	* testsuite/22_locale/codecvt_members_wchar_t_char.cc (test03): Likewise.
+	* testsuite/22_locale/collate_members_char.cc (test04): Likewise.
+	* testsuite/22_locale/collate_members_wchar_t.cc (test04): Likewise.
+	* testsuite/22_locale/ctype_members_char.cc (test05): Likewise.
+	* testsuite/22_locale/ctype_members_wchar_t.cc (test04): Likewise.
+	* testsuite/22_locale/messages_members_char.cc (test03): Likewise.
+	* testsuite/22_locale/money_get_members_char.cc (test08): Likewise.
+	* testsuite/22_locale/money_get_members_wchar_t.cc (test08): Likewise.
+	* testsuite/22_locale/money_put_members_char.cc (test07): Likewise.
+	* testsuite/22_locale/money_put_members_wchar_t.cc (test07): Likewise.
+	* testsuite/22_locale/moneypunct_members_char.cc (test03): Likewise.
+	* testsuite/22_locale/moneypunct_members_wchar_t.cc (test03): Likewise.
+	* testsuite/22_locale/num_get_members_char.cc (test06): Likewise.
+	* testsuite/22_locale/num_get_members_wchar_t.cc (test06): Likewise.
+	* testsuite/22_locale/num_put_members_char.cc (test04): Add comment.
+	* testsuite/22_locale/num_put_members_wchar_t.cc (test04): Likewise.
+	* testsuite/22_locale/numpunct_members_char.cc (test03): Likewise.
+	* testsuite/22_locale/numpunct_members_wchar_t.cc (test03): Likewise.
+	* testsuite/22_locale/time_get_members_char.cc (test08): Likewise.
+	* testsuite/22_locale/time_get_members_wchar_t.cc (test08): Likewise.
+	* testsuite/22_locale/time_put_members_char.cc (test04): Likewise.
+	* testsuite/22_locale/time_put_members_wchar_t.cc (test04): Likewise.
+
 2002-05-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/os/irix/irix5.2/bits/os_defines.h: Revert 2002-05-06
