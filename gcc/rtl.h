@@ -139,23 +139,8 @@ typedef struct rtx_def
      The number of operands and their types are controlled
      by the `code' field, according to rtl.def.  */
   rtunion fld[1];
-
-  /* The rest is used instead of the above if bytecode is being output */
-
-  /* For static or external objects.  */
-  char *label;
-
-  /* From the named label, or the local variable pointer or the
-     argument pointer, depending on context.  */
-
-  int offset;
-
-  /* For goto labels inside bytecode functions.  */
-  struct bc_label *bc_label;
-
-  /* A unique identifier */
-  int uid;
 } *rtx;
+
 
 /* Add prototype support.  */
 #ifndef PROTO
@@ -433,6 +418,17 @@ extern char *note_insn_name[];
 /* In jump.c, each label contains a count of the number
    of LABEL_REFs that point at it, so unused labels can be deleted.  */
 #define LABEL_NUSES(LABEL) ((LABEL)->fld[5].rtint)
+
+/* The rest is used instead of the above, in a CODE_LABEL,
+   if bytecode is being output.
+   We make the slightly klugy assumption that a LABEL has enough slots
+   to hold these things.  That happens to be true.  */
+
+/* For static or external objects.  */
+#define BYTECODE_LABEL(X) (XEXP ((X), 0))
+
+/* For goto labels inside bytecode functions.  */
+#define BYTECODE_BC_LABEL(X) (*(struct bc_label **) &XEXP ((X), 1))
 
 /* In jump.c, each JUMP_INSN can point to a label that it can jump to,
    so that if the JUMP_INSN is deleted, the label's LABEL_NUSES can
