@@ -333,9 +333,9 @@ static void einfin	PARAMS ((UEMUSHORT *));
 static void enan	PARAMS ((UEMUSHORT *, int));
 static void einan	PARAMS ((UEMUSHORT *));
 static int eiisnan	PARAMS ((const UEMUSHORT *));
-static int eiisneg	PARAMS ((const UEMUSHORT *));
 static void make_nan	PARAMS ((UEMUSHORT *, int, enum machine_mode));
 #endif
+static int eiisneg	PARAMS ((const UEMUSHORT *));
 static void saturate	PARAMS ((UEMUSHORT *, int, int, int));
 static void emovi	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 static void emovo	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
@@ -1883,7 +1883,6 @@ eiisnan (x)
 
 /* Return nonzero if sign of exploded e-type X is nonzero.  */
 
-#ifdef NANS
 static int
 eiisneg (x)
      const UEMUSHORT x[];
@@ -1891,7 +1890,6 @@ eiisneg (x)
 
   return x[0] != 0;
 }
-#endif /* NANS */
 
 #if 0
 /* Fill exploded e-type X with infinity pattern.
