@@ -1,3 +1,7 @@
+Tue Mar 10 14:27:51 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* vax.c (check_float_value): Cast bcopy args to char *.
+
 Tue Mar 10 13:56:12 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* mips/abi64.h (LONG_MAX_SPEC): Check MIPS_ABI_DEFAULT and
