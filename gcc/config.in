@@ -140,6 +140,12 @@
 /* Define if you have the bzero function.  */
 #undef HAVE_BZERO
 
+/* Define if you have the fputc_unlocked function.  */
+#undef HAVE_FPUTC_UNLOCKED
+
+/* Define if you have the fputs_unlocked function.  */
+#undef HAVE_FPUTS_UNLOCKED
+
 /* Define if you have the getrlimit function.  */
 #undef HAVE_GETRLIMIT
 
@@ -157,6 +163,9 @@
 
 /* Define if you have the popen function.  */
 #undef HAVE_POPEN
+
+/* Define if you have the putc_unlocked function.  */
+#undef HAVE_PUTC_UNLOCKED
 
 /* Define if you have the putenv function.  */
 #undef HAVE_PUTENV

@@ -21,6 +21,21 @@
 #define NULL 0
 #endif
 
+/* The compiler is not a multi-threaded application and therefore we
+   do not have to use the locking functions.  */
+#ifdef HAVE_PUTC_UNLOCKED
+# undef putc
+# define putc(C, Stream) putc_unlocked (C, Stream)
+#endif
+#ifdef HAVE_FPUTC_UNLOCKED
+# undef fputc
+# define fputc(C, Stream) fputc_unlocked (C, Stream)
+#endif
+#ifdef HAVE_FPUTS_UNLOCKED
+# undef fputs
+# define fputs(String, Stream) fputs_unlocked (String, Stream)
+#endif
+
 #include <ctype.h>
 
 /* Jim Meyering writes:
