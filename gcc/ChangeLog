@@ -1,3 +1,8 @@
+2001-05-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cpplex.c (_cpp_lex_token, '/' case): Comments can't appear
+	after stage3.
+
 2001-05-16  Dean Wakerley  <dean@wakerley.com>
 
 	* doc/install.texi: New file. Converted to texinfo from the HTML
