@@ -2523,18 +2523,21 @@
 (define_insn "*setcc_internal"
   [(set (match_operand 0 "register_operand" "=r")
 	(match_operator 1 "alpha_comparison_operator"
-			   [(match_operand:DI 2 "reg_or_0_operand" "rJ")
+			   [(match_operand:DI 2 "register_operand" "r")
 			    (match_operand:DI 3 "reg_or_8bit_operand" "rI")]))]
   "GET_MODE_CLASS (GET_MODE (operands[0])) == MODE_INT
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= 8
    && GET_MODE (operands[0]) == GET_MODE (operands[1])"
-  "cmp%C1 %r2,%3,%0"
+  "cmp%C1 %2,%3,%0"
   [(set_attr "type" "icmp")])
 
+;; Yes, we can technically support reg_or_8bit_operand in operand 2,
+;; but that's non-canonical rtl and allowing that causes inefficiencies
+;; from cse on.
 (define_insn "*setcc_swapped_internal"
   [(set (match_operand 0 "register_operand" "=r")
         (match_operator 1 "alpha_swapped_comparison_operator"
-			   [(match_operand:DI 2 "reg_or_8bit_operand" "rI")
+			   [(match_operand:DI 2 "register_operand" "r")
 			    (match_operand:DI 3 "reg_or_0_operand" "rJ")]))]
   "GET_MODE_CLASS (GET_MODE (operands[0])) == MODE_INT
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= 8
@@ -2542,10 +2545,12 @@
   "cmp%c1 %r3,%2,%0"
   [(set_attr "type" "icmp")])
 
+;; Use match_operator rather than ne directly so that we can match
+;; multiple integer modes.
 (define_insn "*setne_internal"
   [(set (match_operand 0 "register_operand" "=r")
 	(match_operator 1 "signed_comparison_operator"
-			  [(match_operand:DI 2 "reg_or_8bit_operand" "rI")
+			  [(match_operand:DI 2 "register_operand" "r")
 			   (const_int 0)]))]
   "GET_MODE_CLASS (GET_MODE (operands[0])) == MODE_INT
    && GET_MODE_SIZE (GET_MODE (operands[0])) <= 8

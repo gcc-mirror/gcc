@@ -1,3 +1,12 @@
+2000-10-05  Richard Henderson  <rth@cygnus.com>
+
+	* config/alpha/alpha.c (alpha_emit_setcc): Don't swap GT tests
+	when second op1 is const0_rtx.  Validate op0 as a register.
+	* config/alpha/alpha.md (setcc_internal): Don't allow constants
+	in the first argument of the compare.
+	(setcc_swapped_internal): Likewise.
+	(setne_internal): Likewise.
+
 2000-10-05  Geoff Keating  <geoffk@cygnus.com>
 
 	* tree.c (tree_size): New function split out of copy_node.
