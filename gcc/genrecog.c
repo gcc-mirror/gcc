@@ -226,6 +226,9 @@ static int error_count;
 #define TRISTATE_NOT(a)				\
   ((a) == I ? I : !(a))
 
+/* 0 means no warning about that code yet, 1 means warned.  */
+static char did_you_mean_codes[NUM_RTX_CODE];
+
 /* Recursively calculate the set of rtx codes accepted by the
    predicate expression EXP, writing the result to CODES.  */
 static void
@@ -285,14 +288,30 @@ compute_predicate_codes (rtx exp, char codes[NUM_RTX_CODE])
 	while ((code = scan_comma_elt (&next_code)) != 0)
 	  {
 	    size_t n = next_code - code;
+	    int found_it = 0;
 	    
 	    for (i = 0; i < NUM_RTX_CODE; i++)
 	      if (!strncmp (code, GET_RTX_NAME (i), n)
 		  && GET_RTX_NAME (i)[n] == '\0')
 		{
 		  codes[i] = Y;
+		  found_it = 1;
 		  break;
 		}
+	    if (!found_it)
+	      {
+		message_with_line (pattern_lineno, "match_code \"%.*s\" matches nothing", n, code);
+		error_count ++;
+		for (i = 0; i < NUM_RTX_CODE; i++)
+		  if (!strncasecmp (code, GET_RTX_NAME (i), n)
+		      && GET_RTX_NAME (i)[n] == '\0'
+		      && !did_you_mean_codes[i])
+		    {
+		      did_you_mean_codes[i] = 1;
+		      message_with_line (pattern_lineno, "(did you mean \"%s\"?)", GET_RTX_NAME (i));
+		    }
+	      }
+
 	  }
       }
       break;
