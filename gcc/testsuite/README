@@ -48,3 +48,24 @@ DejaGnu drivers. But just because its old, doesn't mean its redundant!
 Tests that want to use the normal dg.exp driver can be put in g++.dg instead.
 This may be required for platform-specific tests, or tests with other
 special requirements.
+
+
+Finally, some random last minute notes by Mike Stump <mrs@cygnus.com>, on
+how to run tests (in the GCC 2.7 era):
+
+	runtest --tool g++ --srcdir ./testsuite
+
+where 
+
+	runtest	Is the name used to invoke DejaGnu.   If DejaGnu is not
+		install this will be the relative path name for runtest.
+
+	--tool	This tells DejaGnu which tool you are testing. It is
+		mainly used to find the testsuite directories for a
+		particular tool when several testsuites are in the
+		same directory. (like the gcc and g++ testsuites)
+
+	--srcdir This points to the top level of the directory
+		containing the sources of the testsuite. This is
+		./testsuite if you are in the directory that has the
+		testsuite directory.

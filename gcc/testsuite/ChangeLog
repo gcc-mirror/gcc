@@ -1,3 +1,9 @@
+2003-01-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README: Move relevant parts from README.g++.
+
+	* README.g++: Remove this file.
+
 2003-01-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/abi/dcast1.C: New test.
