@@ -1,5 +1,11 @@
 2001-05-23  Tom Tromey  <tromey@redhat.com>
 
+	Revert patch of 2001-05-21:
+	* Makefile.am (libgcj_la_DEPENDENCIES): Removed nat_files.
+	(libgcj_la_LIBADD): Likewise.
+	(libgcjx_la_DEPENDENCIES): Removed x_nat_files.
+	(libgcjx_la_LIBADD): Likewise.
+
 	* posix-threads.cc (_Jv_self_cache): Renamed from self_cache.
 	* gcj/Makefile.in: Rebuilt.
 	* gcj/Makefile.am (gcj_HEADERS): Added libgcj-config.h.
