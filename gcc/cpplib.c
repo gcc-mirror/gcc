@@ -188,7 +188,7 @@ cpp_define (pfile, str)
   memcpy (buf, str, count - 2);
   /* Change the first "=" in the string to a space.  If there is none,
      tack " 1" on the end. */
-  p = strchr (buf, '=');
+  p = (U_CHAR *) strchr (buf, '=');
   if (p)
     {
       *p = ' ';
@@ -755,7 +755,7 @@ cpp_push_buffer (pfile, buffer, length)
       return NULL;
     }
 
-  new = xcalloc (sizeof (cpp_buffer), 1);
+  new = (cpp_buffer *) xcalloc (sizeof (cpp_buffer), 1);
 
   new->if_stack = pfile->if_stack;
   new->cleanup = null_cleanup;
@@ -1006,7 +1006,7 @@ do_include (pfile, keyword)
   int angle_brackets = 0;	/* 0 for "...", 1 for <...> */
   int before;  /* included before? */
   long flen;
-  char *fbeg, *fend;
+  unsigned char *fbeg, *fend;
   cpp_buffer *fp;
 
   enum cpp_token token;
@@ -2025,7 +2025,7 @@ do_endif (pfile, keyword)
 	      for (ip = CPP_BUFFER (pfile); ; ip = CPP_PREV_BUFFER (ip))
 		if (ip->fname != NULL)
 		  break;
-	      ip->ihash->control_macro = temp->control_macro;
+	      ip->ihash->control_macro = (char *) temp->control_macro;
 	    }
         }
       free (temp);
@@ -2748,7 +2748,7 @@ do_assert (pfile, keyword)
     cpp_pedwarn (pfile, "ANSI C does not allow `#assert'");
 
   cpp_skip_hspace (pfile);
-  sym = CPP_PWRITTEN (pfile);	/* remember where it starts */
+  sym = (char *) CPP_PWRITTEN (pfile);	/* remember where it starts */
   ret = parse_assertion (pfile);
   if (ret == 0)
     goto error;
@@ -2790,11 +2790,11 @@ do_assert (pfile, keyword)
 		      (char *)base->value.aschain, -1);
   base->value.aschain = this;
   
-  pfile->limit = sym; /* Pop */
+  pfile->limit = (unsigned char *) sym; /* Pop */
   return 0;
 
  error:
-  pfile->limit = sym; /* Pop */
+  pfile->limit = (unsigned char *) sym; /* Pop */
   skip_rest_of_line (pfile);
   return 1;
 }
@@ -2815,7 +2815,7 @@ do_unassert (pfile, keyword)
 
   cpp_skip_hspace (pfile);
 
-  sym = CPP_PWRITTEN (pfile);	/* remember where it starts */
+  sym = (char *) CPP_PWRITTEN (pfile);	/* remember where it starts */
   ret = parse_assertion (pfile);
   if (ret == 0)
     goto error;
@@ -2860,10 +2860,10 @@ do_unassert (pfile, keyword)
 	delete_macro (base);  /* Last answer for this predicate deleted. */
     }
   
-  pfile->limit = sym; /* Pop */
+  pfile->limit = (unsigned char *) sym; /* Pop */
   return 0;
  error:
-  pfile->limit = sym; /* Pop */
+  pfile->limit = (unsigned char *) sym; /* Pop */
   skip_rest_of_line (pfile);
   return 1;
 }
@@ -2885,7 +2885,7 @@ int
 cpp_read_check_assertion (pfile)
      cpp_reader *pfile;
 {
-  char *name = CPP_PWRITTEN (pfile);
+  U_CHAR *name = CPP_PWRITTEN (pfile);
   int result;
   HASHNODE *hp;
   
@@ -2895,7 +2895,7 @@ cpp_read_check_assertion (pfile)
     result = 0;
   else
     {
-      hp = cpp_lookup (pfile, name, (char *)CPP_PWRITTEN (pfile) - name, -1);
+      hp = cpp_lookup (pfile, name, CPP_PWRITTEN (pfile) - name, -1);
       result = (hp != 0);
     }
 

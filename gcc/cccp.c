@@ -5861,7 +5861,7 @@ create_definition (buf, limit, op)
       if (bp == temp->name && rest_args == 1)
 	{
 	  /* This is the ISO C 9x style.  */
-	  temp->name = va_args_name;
+	  temp->name = (U_CHAR *) va_args_name;
 	  temp->length = VA_ARGS_NAME_LENGTH;
 	}
       else

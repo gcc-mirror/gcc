@@ -221,8 +221,9 @@ make_insn_sequence (insn, type)
       {
 	int new_size;
 	new_size = (insn_name_ptr_size ? insn_name_ptr_size * 2 : 512);
-	insn_name_ptr = xrealloc (insn_name_ptr, sizeof(char *) * new_size);
-	bzero (insn_name_ptr + insn_name_ptr_size,
+	insn_name_ptr =
+	  (char **) xrealloc (insn_name_ptr, sizeof(char *) * new_size);
+	bzero ((PTR)(insn_name_ptr + insn_name_ptr_size),
 	       sizeof(char *) * (new_size - insn_name_ptr_size));
 	insn_name_ptr_size = new_size;
       }
