@@ -1,6 +1,6 @@
 /* This is a software floating point library which can be used
    for targets without hardware floating point. 
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001, 2002
    Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
@@ -181,7 +181,15 @@ pack_d ( fp_number_type *  src)
   int sign = src->sign;
   int exp = 0;
 
-  if (isnan (src))
+  if (LARGEST_EXPONENT_IS_NORMAL (FRAC_NBITS) && (isnan (src) || isinf (src)))
+    {
+      /* We can't represent these values accurately.  By using the
+	 largest possible magnitude, we guarantee that the conversion
+	 of infinity is at least as big as any finite number.  */
+      exp = EXPMAX;
+      fraction = ((fractype) 1 << FRACBITS) - 1;
+    }
+  else if (isnan (src))
     {
       exp = EXPMAX;
       if (src->class == CLASS_QNAN || 1)
@@ -207,6 +215,13 @@ pack_d ( fp_number_type *  src)
     {
       if (src->normal_exp < NORMAL_EXPMIN)
 	{
+#ifdef NO_DENORMALS
+	  /* Go straight to a zero representation if denormals are not
+ 	     supported.  The denormal handling would be harmless but
+ 	     isn't unnecessary.  */
+	  exp = 0;
+	  fraction = 0;
+#else /* NO_DENORMALS */
 	  /* This number's exponent is too low to fit into the bits
 	     available in the number, so we'll store 0 in the exponent and
 	     shift the fraction to the right to make up for it.  */
@@ -242,8 +257,10 @@ pack_d ( fp_number_type *  src)
 	      exp += 1;
 	    }
 	  fraction >>= NGARDS;
+#endif /* NO_DENORMALS */
 	}
-      else if (src->normal_exp > EXPBIAS)
+      else if (!LARGEST_EXPONENT_IS_NORMAL (FRAC_NBITS)
+	       && src->normal_exp > EXPBIAS)
 	{
 	  exp = EXPMAX;
 	  fraction = 0;
@@ -251,25 +268,35 @@ pack_d ( fp_number_type *  src)
       else
 	{
 	  exp = src->normal_exp + EXPBIAS;
-	  /* IF the gard bits are the all zero, but the first, then we're
-	     half way between two numbers, choose the one which makes the
-	     lsb of the answer 0.  */
-	  if ((fraction & GARDMASK) == GARDMSB)
+	  if (!ROUND_TOWARDS_ZERO)
 	    {
-	      if (fraction & (1 << NGARDS))
-		fraction += GARDROUND + 1;
-	    }
-	  else
-	    {
-	      /* Add a one to the guards to round up */
-	      fraction += GARDROUND;
-	    }
-	  if (fraction >= IMPLICIT_2)
-	    {
-	      fraction >>= 1;
-	      exp += 1;
+	      /* IF the gard bits are the all zero, but the first, then we're
+		 half way between two numbers, choose the one which makes the
+		 lsb of the answer 0.  */
+	      if ((fraction & GARDMASK) == GARDMSB)
+		{
+		  if (fraction & (1 << NGARDS))
+		    fraction += GARDROUND + 1;
+		}
+	      else
+		{
+		  /* Add a one to the guards to round up */
+		  fraction += GARDROUND;
+		}
+	      if (fraction >= IMPLICIT_2)
+		{
+		  fraction >>= 1;
+		  exp += 1;
+		}
 	    }
 	  fraction >>= NGARDS;
+
+	  if (LARGEST_EXPONENT_IS_NORMAL (FRAC_NBITS) && exp > EXPMAX)
+	    {
+	      /* Saturate on overflow.  */
+	      exp = EXPMAX;
+	      fraction = ((fractype) 1 << FRACBITS) - 1;
+	    }
 	}
     }
 
@@ -359,7 +386,7 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
 	  dst->fraction.ll = fraction;
 	}
     }
-  else if (exp == EXPMAX)
+  else if (!LARGEST_EXPONENT_IS_NORMAL (FRAC_NBITS) && exp == EXPMAX)
     {
       /* Huge exponent*/
       if (fraction == 0)
@@ -729,7 +756,7 @@ _fpmul_parts ( fp_number_type *  a,
 	}
     }
 #endif
-  if ((high & GARDMASK) == GARDMSB)
+  if (!ROUND_TOWARDS_ZERO && (high & GARDMASK) == GARDMSB)
     {
       if (high & (1 << NGARDS))
 	{
@@ -839,7 +866,7 @@ _fpdiv_parts (fp_number_type * a,
 	numerator *= 2;
       }
 
-    if ((quotient & GARDMASK) == GARDMSB)
+    if (!ROUND_TOWARDS_ZERO && (quotient & GARDMASK) == GARDMSB)
       {
 	if (quotient & (1 << NGARDS))
 	  {

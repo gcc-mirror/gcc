@@ -1,3 +1,26 @@
+2002-03-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	* defaults.h (LARGEST_EXPONENT_IS_NORMAL, ROUND_TOWARDS_ZERO): New.
+	(MODE_HAS_NANS, MODE_HAS_INFINITIES): Evaluate to false if
+	LARGEST_EXPONENT_IS_NORMAL for the given mode.
+	(MODE_HAS_SIGN_DEPENDENT_ROUNDING): False when ROUND_TOWARDS_ZERO.
+	* real.c (eadd1): Make rounding dependent on !ROUND_TOWARDS_ZERO.
+	(ediv, emul, eldexp, esqrt): Likewise.
+	(etoe113, etoe64, etoe53, etoe24, etodec, etoibm, etoc4x): Likewise.
+	(e24toe): Only check NaNs & infinities if !LARGEST_EXPONENT_IS_NORMAL.
+	(saturate): New function.
+	(toe53, toe24): Saturate on overflow if LARGEST_EXPONENT_IS_NORMAL.
+	(make_nan): Use a saturation value instead of a NaN if
+	LARGEST_EXPONENT_IS_NORMAL.  Warn when this happens.
+	* fp-bit.c (pack_d): Saturate on NaN, infinite or overflowing
+	inputs if LARGEST_EXPONENT_IS_NORMAL.  Represent subnormals as
+	zero if NO_DENORMALS.  Only round to nearest if !ROUND_TOWARDS_ZERO.
+	(unpack_d): No NaNs or infinities if LARGEST_EXPONENT_IS_NORMAL.
+	(_fpmul_parts, _fpdiv_parts): Only round to nearest if
+	!ROUND_TOWARDS_ZERO.
+	* doc/tm.texi (LARGEST_EXPONENT_IS_NORMAL): Document.
+	(ROUND_TOWARDS_ZERO): Document.
+
 2002-03-11  Andreas Jaeger  <aj@suse.de>
 
 	* cfg.c (dump_flow_info): Remove unused variable.
