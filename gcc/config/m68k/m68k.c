@@ -3213,7 +3213,7 @@ output_andsi3 (rtx *operands)
 {
   int logval;
   if (GET_CODE (operands[2]) == CONST_INT
-      && (INTVAL (operands[2]) | 0xffff) == (HOST_WIDE_INT)0xffffffff
+      && (INTVAL (operands[2]) | 0xffff) == -1
       && (DATA_REG_P (operands[0])
 	  || offsettable_memref_p (operands[0]))
       && !TARGET_COLDFIRE)
