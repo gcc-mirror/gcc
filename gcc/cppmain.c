@@ -24,6 +24,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
+#include "cpphash.h"
 #include "intl.h"
 
 /* Encapsulates state used to convert the stream of tokens coming from
@@ -42,6 +43,7 @@ static void setup_callbacks PARAMS ((cpp_reader *));
 
 /* General output routines.  */
 static void scan_translation_unit PARAMS ((cpp_reader *));
+static void scan_translation_unit_trad PARAMS ((cpp_reader *));
 static void check_multiline_token PARAMS ((const cpp_string *));
 static int dump_macro PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 
@@ -104,6 +106,8 @@ cpp_preprocess_file (pfile)
 	 cpp_scan_nooutput or cpp_get_token next.  */
       if (options->no_output)
 	cpp_scan_nooutput (pfile);
+      else if (options->traditional)
+	scan_translation_unit_trad (pfile);
       else
 	scan_translation_unit (pfile);
 
@@ -215,6 +219,22 @@ check_multiline_token (str)
   for (i = 0; i < str->len; i++)
     if (str->text[i] == '\n')
       print.line++;
+}
+
+static void
+scan_translation_unit_trad (pfile)
+     cpp_reader *pfile;
+{
+  bool more;
+  size_t len;
+
+  do
+    {
+      more = _cpp_read_logical_line_trad (pfile, false);
+      len = pfile->trad_out_cur - pfile->trad_out_base;
+      fwrite (pfile->trad_out_base, 1, len, print.outf);
+    }
+  while (more);
 }
 
 /* If the token read on logical line LINE needs to be output on a

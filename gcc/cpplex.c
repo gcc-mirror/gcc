@@ -891,7 +891,7 @@ continue_after_nul (pfile)
 
   buffer->saved_flags = BOL;
   if (CPP_OPTION (pfile, traditional))
-    more = _cpp_read_logical_line_trad (pfile);
+    more = _cpp_read_logical_line_trad (pfile, true);
   else
     {
       /* Stop parsing arguments with a CPP_EOF.  When we finally come
