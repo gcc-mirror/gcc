@@ -697,33 +697,38 @@ c_sizeof (type)
      tree type;
 {
   enum tree_code code = TREE_CODE (type);
+  tree size;
 
   if (code == FUNCTION_TYPE)
     {
       if (pedantic || warn_pointer_arith)
 	pedwarn ("sizeof applied to a function type");
-      return size_one_node;
+      size = size_one_node;
     }
-  if (code == VOID_TYPE)
+  else if (code == VOID_TYPE)
     {
       if (pedantic || warn_pointer_arith)
 	pedwarn ("sizeof applied to a void type");
-      return size_one_node;
+      size = size_one_node;
     }
-
-  if (code == ERROR_MARK)
-    return size_one_node;
-
-  if (!COMPLETE_TYPE_P (type))
+  else if (code == ERROR_MARK)
+    size = size_one_node;
+  else if (!COMPLETE_TYPE_P (type))
     {
       error ("sizeof applied to an incomplete type");
-      return size_zero_node;
+      size = size_zero_node;
     }
+  else
+    /* Convert in case a char is more than one unit.  */
+    size = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
+		       size_int (TYPE_PRECISION (char_type_node)
+			         / BITS_PER_UNIT));
 
-  /* Convert in case a char is more than one unit.  */
-  return size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
-		     size_int (TYPE_PRECISION (char_type_node)
-			       / BITS_PER_UNIT));
+  /* SIZE will have an integer type with TYPE_IS_SIZETYPE set.
+     TYPE_IS_SIZETYPE means that certain things (like overflow) will
+     never happen.  However, this node should really have type
+     `size_t', which is just a typedef for an ordinary integer type.  */
+  return fold (build1 (NOP_EXPR, c_size_type_node, size));
 }
 
 tree
@@ -731,17 +736,23 @@ c_sizeof_nowarn (type)
      tree type;
 {
   enum tree_code code = TREE_CODE (type);
+  tree size;
 
   if (code == FUNCTION_TYPE || code == VOID_TYPE || code == ERROR_MARK)
-    return size_one_node;
+    size = size_one_node;
+  else if (!COMPLETE_TYPE_P (type))
+    size = size_zero_node;
+  else
+    /* Convert in case a char is more than one unit.  */
+    size = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
+		       size_int (TYPE_PRECISION (char_type_node)
+			         / BITS_PER_UNIT));
 
-  if (!COMPLETE_TYPE_P (type))
-    return size_zero_node;
-
-  /* Convert in case a char is more than one unit.  */
-  return size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
-		     size_int (TYPE_PRECISION (char_type_node)
-			       / BITS_PER_UNIT));
+  /* SIZE will have an integer type with TYPE_IS_SIZETYPE set.
+     TYPE_IS_SIZETYPE means that certain things (like overflow) will
+     never happen.  However, this node should really have type
+     `size_t', which is just a typedef for an ordinary integer type.  */
+  return fold (build1 (NOP_EXPR, c_size_type_node, size));
 }
 
 /* Compute the size to increment a pointer by.  */
@@ -775,20 +786,23 @@ c_alignof (type)
      tree type;
 {
   enum tree_code code = TREE_CODE (type);
+  tree t;
 
   if (code == FUNCTION_TYPE)
-    return size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
-
-  if (code == VOID_TYPE || code == ERROR_MARK)
-    return size_one_node;
-
-  if (!COMPLETE_TYPE_P (type))
+    t = size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
+  else if (code == VOID_TYPE || code == ERROR_MARK)
+    t = size_one_node;
+  else if (code == ERROR_MARK)
+    t = size_one_node;
+  else if (!COMPLETE_TYPE_P (type))
     {
       error ("__alignof__ applied to an incomplete type");
-      return size_zero_node;
+      t = size_zero_node;
     }
+  else
+    t = size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
 
-  return size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
+  return fold (build1 (NOP_EXPR, c_size_type_node, t));
 }
 
 /* Implement the __alignof keyword: Return the minimum required
@@ -800,20 +814,22 @@ tree
 c_alignof_expr (expr)
      tree expr;
 {
+  tree t;
+
   if (TREE_CODE (expr) == VAR_DECL)
-    return size_int (DECL_ALIGN (expr) / BITS_PER_UNIT);
+    t = size_int (DECL_ALIGN (expr) / BITS_PER_UNIT);
  
-  if (TREE_CODE (expr) == COMPONENT_REF
-      && DECL_C_BIT_FIELD (TREE_OPERAND (expr, 1)))
+  else if (TREE_CODE (expr) == COMPONENT_REF
+	   && DECL_C_BIT_FIELD (TREE_OPERAND (expr, 1)))
     {
       error ("`__alignof' applied to a bit-field");
-      return size_one_node;
+      t = size_one_node;
     }
   else if (TREE_CODE (expr) == COMPONENT_REF
       && TREE_CODE (TREE_OPERAND (expr, 1)) == FIELD_DECL)
-    return size_int (DECL_ALIGN (TREE_OPERAND (expr, 1)) / BITS_PER_UNIT);
+    t = size_int (DECL_ALIGN (TREE_OPERAND (expr, 1)) / BITS_PER_UNIT);
  
-  if (TREE_CODE (expr) == INDIRECT_REF)
+  else if (TREE_CODE (expr) == INDIRECT_REF)
     {
       tree t = TREE_OPERAND (expr, 0);
       tree best = t;
@@ -833,6 +849,8 @@ c_alignof_expr (expr)
     }
   else
     return c_alignof (TREE_TYPE (expr));
+
+  return fold (build1 (NOP_EXPR, c_size_type_node, t));
 }
 
 /* Return either DECL or its known constant value (if it has one).  */
