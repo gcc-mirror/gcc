@@ -3762,6 +3762,8 @@ output_387_binary_op (insn, operands)
 {
   static char buf[30];
   const char *p;
+  const char *ssep;
+  int is_sse = SSE_REG_P (operands[0]) | SSE_REG_P (operands[1]) | SSE_REG_P (operands[2]);
 
 #ifdef ENABLE_CHECKING
   /* Even if we do not want to check the inputs, this documents input
@@ -3775,7 +3777,7 @@ output_387_binary_op (insn, operands)
 	      && (STACK_REG_P (operands[1]) || GET_CODE (operands[1]) == MEM)))
       && (STACK_TOP_P (operands[1]) || STACK_TOP_P (operands[2])))
     ; /* ok */
-  else
+  else if (!is_sse)
     abort ();
 #endif
 
@@ -3787,6 +3789,7 @@ output_387_binary_op (insn, operands)
 	p = "fiadd";
       else
 	p = "fadd";
+      ssep = "add";
       break;
 
     case MINUS:
@@ -3795,6 +3798,7 @@ output_387_binary_op (insn, operands)
 	p = "fisub";
       else
 	p = "fsub";
+      ssep = "sub";
       break;
 
     case MULT:
@@ -3803,6 +3807,7 @@ output_387_binary_op (insn, operands)
 	p = "fimul";
       else
 	p = "fmul";
+      ssep = "mul";
       break;
 
     case DIV:
@@ -3811,12 +3816,22 @@ output_387_binary_op (insn, operands)
 	p = "fidiv";
       else
 	p = "fdiv";
+      ssep = "div";
       break;
 
     default:
       abort ();
     }
 
+  if (is_sse)
+   {
+      strcpy (buf, ssep);
+      if (GET_MODE (operands[0]) == SFmode)
+	strcat (buf, "ss\t{%2, %0|%0, %2}");
+      else
+	strcat (buf, "sd\t{%2, %0|%0, %2}");
+      return buf;
+   }
   strcpy (buf, p);
 
   switch (GET_CODE (operands[3]))

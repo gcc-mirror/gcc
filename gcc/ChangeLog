@@ -1,3 +1,13 @@
+Tue Feb 13 14:53:16 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (add?f3, sub?f3, mul?f3, dif?f3): Enable for TARGET_SSE(2)
+	too.
+	(fop_sf_comm, fop_df_comm, fop_sf_1, fop_df_1): Support SSE.
+	(fop_sf_comm_sse, fop_df_comm_sse): New patterns.
+	(fop_sf_1_sse, fop_df_1_sse): New patterns
+	(fop_*): Disable float_extend and float patterns for SSE compilation.
+	* i386.c (output_387_binary_op): Support SSE.
+
 Tue Feb 13 14:16:34 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (dummy_extendsfdf2): Support SSE2
