@@ -1,5 +1,10 @@
 2003-01-03  Tom Tromey  <tromey@redhat.com>
 
+	* gcj.texi (Standard Properties): Document http.proxyHost and
+	http.proxyPort.
+
+2003-01-03  Tom Tromey  <tromey@redhat.com>
+
 	* gcj.texi (GNU Classpath Properties): Document new properties.
 
 2002-12-30  DJ Delorie  <dj@redhat.com>
