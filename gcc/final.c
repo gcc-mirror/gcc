@@ -1058,7 +1058,6 @@ profile_function (file)
 #endif
 #endif
 
-#if 0
 #ifdef STATIC_CHAIN_INCOMING_REGNUM
   if (cxt)
     ASM_OUTPUT_REG_PUSH (file, STATIC_CHAIN_INCOMING_REGNUM);
@@ -1068,11 +1067,9 @@ profile_function (file)
     ASM_OUTPUT_REG_PUSH (file, STATIC_CHAIN_REGNUM);
 #endif
 #endif
-#endif				/* 0 */
 
   FUNCTION_PROFILER (file, profile_label_no);
 
-#if 0
 #ifdef STATIC_CHAIN_INCOMING_REGNUM
   if (cxt)
     ASM_OUTPUT_REG_POP (file, STATIC_CHAIN_INCOMING_REGNUM);
@@ -1082,7 +1079,6 @@ profile_function (file)
     ASM_OUTPUT_REG_POP (file, STATIC_CHAIN_REGNUM);
 #endif
 #endif
-#endif				/* 0 */
 
 #ifdef STRUCT_VALUE_INCOMING_REGNUM
   if (sval)
