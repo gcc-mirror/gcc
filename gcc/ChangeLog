@@ -1,3 +1,17 @@
+2004-07-27  Brian Booth  <bbooth@redhat.com>
+
+	* tree-optimize.c (register_one_dump_file): Update condition that uses
+	static_pass_number.
+	(dup_pass_1): Replace with...
+	(next_pass_1): This.
+	(NEXT_PASS): Call next_pass_1.
+	(DUP_PASS): Remove.
+	(init_tree_optimization_passes): Remove uses of DUP_PASS.
+	(execute_one_pass): Update condition that uses
+	static_pass_number.
+	* tree-pass.h (tree_opt_pass): Declare static_pass_number as a signed
+	integer.
+
 2004-07-27  Nick Clifton  <nickc@redhat.com>
 
 	* config/m32r/m32r.c: Include integrate.h in order to get the

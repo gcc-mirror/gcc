@@ -213,9 +213,9 @@ register_one_dump_file (struct tree_opt_pass *pass)
   if (!pass->name)
     return;
 
-  /* See below in dup_pass_1.  */
+  /* See below in next_pass_1.  */
   num[0] = '\0';
-  if (pass->static_pass_number)
+  if (pass->static_pass_number != -1)
     sprintf (num, "%d", ((int) pass->static_pass_number < 0
 			 ? 1 : pass->static_pass_number));
 
@@ -252,34 +252,42 @@ register_dump_files (struct tree_opt_pass *pass, int properties)
   return properties;
 }
 
-/* Duplicate a pass that's to be run more than once.  */
+/* Add a pass to the pass list. Duplicate the pass if it's already
+   in the list.  */
 
-static struct tree_opt_pass *
-dup_pass_1 (struct tree_opt_pass *pass)
+static struct tree_opt_pass **
+next_pass_1 (struct tree_opt_pass **list, struct tree_opt_pass *pass)
 {
-  struct tree_opt_pass *new;
 
-  new = xmalloc (sizeof (*new));
-  memcpy (new, pass, sizeof (*new));
-
-  /* Indicate to register_dump_files that this pass has duplicates,
-     and so it should rename the dump file.  The first instance will
-     be < 0, and be number of duplicates = -static_pass_number + 1.
-     Subsequent instances will be > 0 and just the duplicate number.  */
-  if (pass->name)
+  /* A non-zero static_pass_number indicates that the
+     pass is already in the list. */
+  if (pass->static_pass_number)
     {
-      int n, p = pass->static_pass_number;
-	
-      if (p)
-	n = -(--p) + 1;
-      else
-	n = 2, p = -1;
+      struct tree_opt_pass *new;
 
-      pass->static_pass_number = p;
-      new->static_pass_number = n;
+      new = xmalloc (sizeof (*new));
+      memcpy (new, pass, sizeof (*new));
+
+      /* Indicate to register_dump_files that this pass has duplicates,
+         and so it should rename the dump file.  The first instance will
+         be -1, and be number of duplicates = -static_pass_number - 1.
+         Subsequent instances will be > 0 and just the duplicate number.  */
+      if (pass->name)
+        {
+          pass->static_pass_number -= 1;
+          new->static_pass_number = -pass->static_pass_number;
+	}
+      
+      *list = new;
     }
-
-  return new;
+  else
+    {
+      pass->static_pass_number = -1;
+      *list = pass;
+    }  
+  
+  return &(*list)->next;
+          
 }
 
 /* Construct the pass tree.  */
@@ -289,8 +297,7 @@ init_tree_optimization_passes (void)
 {
   struct tree_opt_pass **p;
 
-#define NEXT_PASS(PASS) (*p = &PASS, p = &(*p)->next)
-#define DUP_PASS(PASS)  (*dup_pass_1 (&PASS))
+#define NEXT_PASS(PASS)  (p = next_pass_1 (p, &PASS))
 
   p = &all_passes;
   NEXT_PASS (pass_gimple);
@@ -319,7 +326,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_dce);
   NEXT_PASS (pass_dominator);
   NEXT_PASS (pass_redundant_phi);
-  NEXT_PASS (DUP_PASS (pass_dce));
+  NEXT_PASS (pass_dce);
   NEXT_PASS (pass_forwprop);
   NEXT_PASS (pass_phiopt);
   NEXT_PASS (pass_may_alias);
@@ -327,26 +334,26 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_ch);
   NEXT_PASS (pass_profile);
   NEXT_PASS (pass_sra);
-  NEXT_PASS (DUP_PASS (pass_rename_ssa_copies));
-  NEXT_PASS (DUP_PASS (pass_dominator));
-  NEXT_PASS (DUP_PASS (pass_redundant_phi));
-  NEXT_PASS (DUP_PASS (pass_dce));
+  NEXT_PASS (pass_rename_ssa_copies);
+  NEXT_PASS (pass_dominator);
+  NEXT_PASS (pass_redundant_phi);
+  NEXT_PASS (pass_dce);
   NEXT_PASS (pass_dse);
-  NEXT_PASS (DUP_PASS (pass_may_alias));
-  NEXT_PASS (DUP_PASS (pass_forwprop));
-  NEXT_PASS (DUP_PASS (pass_phiopt));
+  NEXT_PASS (pass_may_alias);
+  NEXT_PASS (pass_forwprop);
+  NEXT_PASS (pass_phiopt);
   NEXT_PASS (pass_ccp);
-  NEXT_PASS (DUP_PASS (pass_redundant_phi));
+  NEXT_PASS (pass_redundant_phi);
   NEXT_PASS (pass_fold_builtins);
   NEXT_PASS (pass_split_crit_edges);
   NEXT_PASS (pass_pre);
   NEXT_PASS (pass_loop);
-  NEXT_PASS (DUP_PASS (pass_dominator));
-  NEXT_PASS (DUP_PASS (pass_redundant_phi));
+  NEXT_PASS (pass_dominator);
+  NEXT_PASS (pass_redundant_phi);
   NEXT_PASS (pass_cd_dce);
-  NEXT_PASS (DUP_PASS (pass_dse));
-  NEXT_PASS (DUP_PASS (pass_forwprop));
-  NEXT_PASS (DUP_PASS (pass_phiopt));
+  NEXT_PASS (pass_dse);
+  NEXT_PASS (pass_forwprop);
+  NEXT_PASS (pass_phiopt);
   NEXT_PASS (pass_tail_calls);
   NEXT_PASS (pass_late_warn_uninitialized);
   NEXT_PASS (pass_del_pta);
@@ -363,7 +370,6 @@ init_tree_optimization_passes (void)
   *p = NULL;
 
 #undef NEXT_PASS
-#undef DUP_PASS
 
   /* Register the passes with the tree dump code.  */
   register_dump_files (all_passes, 0);
@@ -424,7 +430,7 @@ execute_one_pass (struct tree_opt_pass *pass)
     execute_todo (todo);
 
   /* If a dump file name is present, open it if enabled.  */
-  if (pass->static_pass_number)
+  if (pass->static_pass_number != -1)
     {
       dump_file = dump_begin (pass->static_pass_number, &dump_flags);
       if (dump_file)
