@@ -32,8 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #define MATH_LIBRARY "-lm"
 #endif
 
-extern char *xmalloc PROTO((size_t));
-
 void
 lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
      void (*fn)();

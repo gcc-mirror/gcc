@@ -1,3 +1,7 @@
+Fri Nov 27 13:07:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++spec.c: Don't prototype xmalloc.
+
 1998-11-25  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (expand_throw): Use TYPE_PTR_P to check for pointers.
