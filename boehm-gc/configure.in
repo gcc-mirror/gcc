@@ -66,7 +66,7 @@ if test "$THREADS" = yes; then
 fi
 
 INCLUDES=
-THREADLIB=
+THREADLIBS=
 case "$THREADS" in
  no | none | single)
     THREADS=none
@@ -86,7 +86,7 @@ case "$THREADS" in
 	AC_DEFINE(IRIX_THREADS)
 	;;
     esac
-    THREADLIB=-lpthread
+    THREADLIBS=-lpthread
     ;;
  decosf1 | irix | mach | os2 | solaris | win32 | dce | vxworks)
     AC_MSG_ERROR(thread package $THREADS not yet supported)
@@ -96,7 +96,7 @@ case "$THREADS" in
     ;;
 esac
 AC_MSG_RESULT($THREADS)
-AC_SUBST(THREADLIB)
+AC_SUBST(THREADLIBS)
 
 AC_CHECK_LIB(dl, dlopen, EXTRA_TEST_LIBS="$EXTRA_TEST_LIBS -ldl")
 AC_SUBST(EXTRA_TEST_LIBS)

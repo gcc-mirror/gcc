@@ -1,3 +1,16 @@
+2000-12-30  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* configure.in: Rename THREADLIB to THREADLIBS.
+	* Makefile.am (LINK): Add $(THREADLIBS) to libtool command line. This
+	ensures that we link the correct version of the linuxthreads semaphore
+	functions.
+	* Makefile.in: Rebuilt.
+	* configure: Rebuilt.
+	
+	* linux_thread.c (GC_thr_init, GC_suspend_handler): Add SIGABRT to the 
+	list of signals which are not blocked during suspend in the NO_SIGNALS
+	case.
+
 2000-12-23  Hans Boehm  <Hans_Boehm@hp.com>
 
 	* gcj_mlc.c (GC_gcj_malloc): Don't release allocation lock twice.

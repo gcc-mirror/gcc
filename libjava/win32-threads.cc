@@ -123,16 +123,19 @@ _Jv_InitThreads (void)
   non_daemon_count = 0;
 }
 
-void
-_Jv_ThreadInitData (_Jv_Thread_t **data, java::lang::Thread *)
+_Jv_Thread_t *
+_Jv_ThreadInitData (java::lang::Thread *)
 {
-  _Jv_Thread_t *info = new _Jv_Thread_t;
-  info->flags = 0;
+  _Jv_Thread_t *data = new _Jv_Thread_t;
+  data->flags = 0;
 
-  // FIXME register a finalizer for INFO here.
-  // FIXME also must mark INFO somehow.
+  return data;
+}
 
-  *data = info;
+void
+_Jv_ThreadDestroyData (_Jv_Thread_t *data)
+{
+  delete data;
 }
 
 void

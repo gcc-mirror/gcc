@@ -1,3 +1,25 @@
+2000-12-30  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Makefile.am (libgcj_la_LIBADD): Add $(THREADLIBS). This ensures that
+	the correct versions of various linuxthreads functions get linked.
+	* Makefile.in: Rebuilt.
+	* java/lang/natThread.cc (finalize_native): New static function. Call
+	_Jv_ThreadDestroyData.
+	(initialize_native): Register finalizer for "data".
+	* include/posix-threads.h (_Jv_ThreadInitData): New simpler prototype.
+	(_Jv_ThreadDestroyData): New prototype.
+	* include/win32-threads.h: Ditto.
+	* include/no-threads.h: Ditto.
+	* posix-threads.cc (_Jv_ThreadInitData): Implement new prototype.
+	(_Jv_ThreadDestroyData): New function. Free native thread "data" and 
+	move mutex and condition variable destroy code from:
+	(really_start): ...here.
+	(_Jv_ThreadStart): Set PTHREAD_CREATE_DETACHED.
+	* win32-threads.cc (_Jv_ThreadInitData): Implement new prototype.
+	(_Jv_ThreadDestroyData): Implemented.
+	* nogc.cc (_Jv_AllocObject): Use "void *" not "ptr_t".
+	(_Jv_AllocArray): Ditto.	
+	
 2000-12-27  Jeff Sturm  <jeff.sturm@commerceone.com>
 
 	* java/sql/DriverManager.java (getConnection): Don't set user/password

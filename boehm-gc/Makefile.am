@@ -32,7 +32,10 @@ hpux_irix_threads.c linux_threads.c malloc.c mallocx.c mark.c mark_rts.c \
 misc.c new_hblk.c obj_map.c os_dep.c pcr_interface.c ptr_chck.c	\
 real_malloc.c reclaim.c solaris_pthreads.c solaris_threads.c \
 solaris_threads.h stubborn.c typd_mlc.c version.h weakpointer.h
-libgcjgc_la_LIBADD = @addobjs@
+
+# Include THREADLIBS here to ensure that the correct versions of
+# linuxthread semaphore functions get linked:
+libgcjgc_la_LIBADD = @addobjs@ $(THREADLIBS)
 libgcjgc_la_DEPENDENCIES = @addobjs@
 libgcjgc_la_LDFLAGS = -version-info 1:1:0 -rpath $(toolexeclibdir)
 
@@ -45,7 +48,7 @@ AM_CFLAGS = @BOEHM_GC_CFLAGS@
 
 check_PROGRAMS = gctest
 gctest_SOURCES = test.c
-gctest_LDADD = ./libgcjgc.la $(THREADLIB) $(EXTRA_TEST_LIBS)
+gctest_LDADD = ./libgcjgc.la $(THREADLIBS) $(EXTRA_TEST_LIBS)
 
 TESTS = gctest
 
