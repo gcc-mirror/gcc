@@ -1,3 +1,15 @@
+2002-09-05  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* real.c: Avoid parse error if FLOAT_WORDS_BIG_ENDIAN is
+	not a compile-time constant for the non-IBM case.
+	* config/arm/arm-protos.h (arm_float_words_big_endian): New
+	prototype. 
+	* config/arm/arm.c (arm_float_words_big_endian): New function.
+	(TARGET_CPU_CPP_BUILTINS): Define __VFP_FP__ if TARGET_VFP  
+	and not TARGET_HARD_FLOAT. 
+	(ARM_FLAG_VFP, TARGET_VFP): Define. 
+	(FLOAT_WORDS_BIG_ENDIAN): Use arm_float_words_big_endian.
+
 2002-09-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi: Correct text of s390-*-linux* and s390x-*-linux*
