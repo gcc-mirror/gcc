@@ -3,6 +3,10 @@
 	PR middle-end/15054
 	* g++.dg/opt/pr15054.C: New test.
 
+2004-05-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* gcc.dg/loop-4.c: New test.
+
 2004-05-07  Eric Botcazou <ebotcazou@libertysurf.fr>
 
 	* g++.dg/other/pragma-re-2.C: New test.
