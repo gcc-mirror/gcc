@@ -1,5 +1,7 @@
 Mon Jul 31 21:14:49 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc-c-torture/execute/20000731-2.c: New test.
+
 	* gcc.c-torture/execute/20000731-1.c: New test.
 	* gcc.c-torture/execute/20000731-1.x: Expected to fail for i?86-*-*.
 
