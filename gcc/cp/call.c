@@ -605,8 +605,16 @@ build_conv (code, type, from)
      enum tree_code code;
      tree type, from;
 {
-  tree t = build1 (code, type, from);
+  tree t;
   int rank = ICS_STD_RANK (from);
+
+  /* We can't use buidl1 here because CODE could be USER_CONV, which
+     takes two arguments.  In that case, the caller is responsible for
+     filling in the second argument.  */
+  t = make_node (code);
+  TREE_TYPE (t) = type;
+  TREE_OPERAND (t, 0) = from;
+
   switch (code)
     {
     case PTR_CONV:
