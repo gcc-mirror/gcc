@@ -1193,7 +1193,7 @@ namespace std
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 91. Description of operator>> and getline() for string<>
 	      // might cause endless loop
-	      // 27.6.1.2.1 Common requirements.
+	      // 27.6.1.3 paragraph 1.
 	      // Turn this on without causing an ios::failure to be thrown.
 	      __in.setstate(ios_base::badbit);
 	      if ((__in.exceptions() & ios_base::badbit) != 0)
