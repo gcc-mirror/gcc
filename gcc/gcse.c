@@ -1,4 +1,4 @@
-/* Global common subexpression elimination
+/* Global common subexpression elimination/Partial redundancy elimination
    and global constant/copy propagation for GNU compiler.
    Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
 
@@ -24,18 +24,17 @@ Boston, MA 02111-1307, USA.  */
    - do rough calc of how many regs are needed in each block, and a rough
      calc of how many regs are available in each class and use that to
      throttle back the code in cases where RTX_COST is minimal.
-   - memory aliasing support
+   - dead store elimination
+   - a store to the same address as a load does not kill the load if the
+     source of the store is also the destination of the load.  Handling this
+     allows more load motion, particularly out of loops.
    - ability to realloc sbitmap vectors would allow one initial computation
      of reg_set_in_block with only subsequent additions, rather than
      recomputing it for each pass
 
-   NOTES
-   - the classic gcse implementation is kept in for now for comparison
 */
 
 /* References searched while implementing this.
-   This list will eventually be deleted but I wanted to have a record of it
-   for now.
 
    Compilers Principles, Techniques and Tools
    Aho, Sethi, Ullman
@@ -49,12 +48,6 @@ Boston, MA 02111-1307, USA.  */
    Frederick Chow
    Stanford Ph.D. thesis, Dec. 1983
 
-xxx
-   Elimination Algorithms for Data Flow Analysis
-   B.G. Ryder, M.C. Paull
-   ACM Computing Surveys, Vol. 18, Num. 3, Sep. 1986
-
-reread
    A Fast Algorithm for Code Movement Optimization
    D.M. Dhamdhere
    SIGPLAN Notices, Vol. 23, Num. 10, Oct. 1988
@@ -73,11 +66,6 @@ reread
    Dependence Graph
    R. Cytron, J. Ferrante, B.K. Rosen, M.N. Wegman, and F.K. Zadeck
    ACM TOPLAS, Vol. 13, Num. 4, Oct. 1991
-
-yyy
-   How to Analyze Large Programs Efficiently and Informatively
-   D.M. Dhamdhere, B.K. Rosen, F.K. Zadeck
-   ACM SIGPLAN Notices Vol. 27, Num. 7, Jul. 1992, '92 Conference on PLDI
 
    Lazy Code Motion
    J. Knoop, O. Ruthing, B. Steffen
@@ -134,13 +122,24 @@ yyy
    Michael Wolfe
    Addison-Wesley, 1996
 
-   People wishing to speed up the code here should read xxx, yyy.
+   Advanced Compiler Design and Implementation
+   Steven Muchnick
+   Morgan Kaufmann, 1997
+
+   People wishing to speed up the code here should read:
+     Elimination Algorithms for Data Flow Analysis
+     B.G. Ryder, M.C. Paull
+     ACM Computing Surveys, Vol. 18, Num. 3, Sep. 1986
+
+     How to Analyze Large Programs Efficiently and Informatively
+     D.M. Dhamdhere, B.K. Rosen, F.K. Zadeck
+     ACM SIGPLAN Notices Vol. 27, Num. 7, Jul. 1992, '92 Conference on PLDI
+
    People wishing to do something different can find various possibilities
    in the above papers and elsewhere.
 */
 
 #include "config.h"
-/* Must precede rtl.h for FFS.  */
 #include "system.h"
 
 #include "rtl.h"
@@ -174,11 +173,10 @@ yyy
    heuristics into gcse.c.  */
 #define FOLLOW_BACK_EDGES 1
 
-/* We support two GCSE implementations: Classic GCSE (i.e. Dragon Book)
-   and PRE (Partial Redundancy Elimination) GCSE (based on Fred Chow's thesis).
-   The default is PRE.
+/* We support GCSE via Partial Redundancy Elimination.  PRE optimizations
+   are a superset of those done by GCSE.
 
-   In either case we perform the following steps:
+   We perform the following steps:
 
    1) Compute basic block information.
 
@@ -202,10 +200,7 @@ yyy
    Function want_to_gcse_p says what these are.
 
    PRE handles moving invariant expressions out of loops (by treating them as
-   partially redundant).  This feature of PRE is disabled here (by not
-   propagating dataflow information along back edges) because loop.c has more
-   involved (and thus typically better) heuristics for what to move out of
-   loops.
+   partially redundant).
 
    Eventually it would be nice to replace cse.c/gcse.c with SSA (static single
    assignment) based GVN (global value numbering).  L. T. Simpson's paper
@@ -254,41 +249,12 @@ yyy
    argue it is not.  The number of iterations for the algorithm to converge
    is typically 2-4 so I don't view it as that expensive (relatively speaking).
 
-   PRE GCSE depends heavily on the seconds CSE pass to clean up the copies
+   PRE GCSE depends heavily on the second CSE pass to clean up the copies
    we create.  To make an expression reach the place where it's redundant,
    the result of the expression is copied to a new register, and the redundant
    expression is deleted by replacing it with this new register.  Classic GCSE
    doesn't have this problem as much as it computes the reaching defs of
    each register in each block and thus can try to use an existing register.
-
-   **********************
-
-   When -fclassic-gcse, we perform a classic global CSE pass.
-   It is based on the algorithms in the Dragon book, and is based on code
-   written by Devor Tevi at Intel.
-
-   The steps for Classic GCSE are:
-
-   1) Build the hash table of expressions we wish to GCSE (expr_hash_table).
-      Also recorded are reaching definition "gen" statements (rd_gen)
-
-   2) Compute the reaching definitions (reaching_defs).
-      This is a bitmap for each basic block indexed by INSN_CUID that is 1
-      for each statement containing a definition that reaches the block.
-
-   3) Compute the available expressions (ae_in).
-      This is a bitmap for each basic block indexed by expression number
-      that is 1 for each expression that is available at the beginning of
-      the block.
-
-   4) Perform GCSE.
-      This is done by scanning each instruction looking for sets of the form
-      (set (pseudo-reg) (expression)) and checking if `expression' is in the
-      hash table.  If it is, and if the expression is available, and if only
-      one computation of the expression reaches the instruction, we substitute
-      the expression for a register containing its value.  If there is no
-      such register, but the expression is expensive enough we create an
-      instruction to copy the result of the expression into and use that.
 
    **********************
 
@@ -306,6 +272,23 @@ yyy
 
 /* -dG dump file.  */
 static FILE *gcse_file;
+
+/* Note whether or not we should run jump optimization after gcse.  We
+   want to do this for two cases.
+
+    * If we changed any jumps via cprop.
+
+    * If we added any labels via edge splitting.  */
+
+static int run_jump_opt_after_gcse;
+
+/* Element I is a list of I's predecessors/successors.  */
+static int_list_ptr *s_preds;
+static int_list_ptr *s_succs;
+
+/* Element I is the number of predecessors/successors of basic block I.  */
+static int *num_preds;
+static int *num_succs;
 
 /* Bitmaps are normally not included in debugging dumps.
    However it's useful to be able to print them from GDB.
@@ -325,23 +308,6 @@ static char can_copy_p[(int) NUM_MACHINE_MODES];
 /* Non-zero if can_copy_p has been initialized.  */
 static int can_copy_init_p;
 
-/* Element I is a list of I's predecessors/successors.  */
-static int_list_ptr *s_preds;
-static int_list_ptr *s_succs;
-
-/* Element I is the number of predecessors/successors of basic block I.  */
-static int *num_preds;
-static int *num_succs;
-
-/* Note whether or not we should run jump optimization after gcse.  We
-   want to do this for two cases.
-
-    * If we changed any jumps via cprop.
-
-    * If we added any labels via edge splitting.  */
-
-static int run_jump_opt_after_gcse;
-
 /* Hash table of expressions.  */
 
 struct expr
@@ -354,8 +320,9 @@ struct expr
   struct expr *next_same_hash;
   /* List of anticipatable occurrences in basic blocks in the function.
      An "anticipatable occurrence" is one that is the first occurrence in the
-     basic block and the operands are not modified in the basic block prior
-     to the occurrence.  */
+     basic block, the operands are not modified in the basic block prior
+     to the occurrence and the output is not used between the start of
+     the block and the occurrence.  */
   struct occr *antic_occr;
   /* List of available occurrence in basic blocks in the function.
      An "available occurrence" is one that is the last occurrence in the
@@ -444,11 +411,10 @@ static int n_sets;
 
    For simplicity, GCSE is done on sets of pseudo-regs only.  PRE GCSE only
    requires knowledge of which blocks kill which regs [and thus could use
-   a bitmap instead of the lists `reg_set_table' uses].  The classic GCSE
-   uses the information in lists.
+   a bitmap instead of the lists `reg_set_table' uses].
 
-   If the classic GCSE pass is deleted `reg_set_table' and could be turned
-   into an array of bitmaps (num-bbs x num-regs)
+   `reg_set_table' and could be turned into an array of bitmaps
+   (num-bbs x num-regs)
    [however perhaps it may be useful to keep the data as is].
    One advantage of recording things this way is that `reg_set_table' is
    fairly sparse with respect to pseudo regs but for hard regs could be
@@ -515,7 +481,6 @@ static int copy_prop_count;
 
 extern char *current_function_name;
 extern int current_function_calls_setjmp;
-extern int current_function_calls_longjmp;
 
 /* These variables are used by classic GCSE.
    Normally they'd be defined a bit later, but `rd_gen' needs to
