@@ -59,7 +59,7 @@ case $LIB in
 /*)
 	;;
 *)
-	cd $LIB; LIB=`${PWDCMD-pwd}`
+ 	LIB=$ORIG_DIR/$LIB
 	;;
 esac
 
