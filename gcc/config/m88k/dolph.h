@@ -41,14 +41,3 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPU_DEFAULT
 #define CPU_DEFAULT MASK_88000
-
-#undef INITIALIZE_TRAMPOLINE 
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-{									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 40)), FNADDR); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 36)), CXT); \
-  emit_call_insn (gen_call( gen_rtx (MEM, SImode,			\
-				     gen_rtx(SYMBOL_REF,Pmode,		\
-					     "__enable_execute_stack")), \
-			   const0_rtx));				\
-}

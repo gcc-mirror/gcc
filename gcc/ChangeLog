@@ -1,3 +1,11 @@
+Wed Sep 10 16:01:15 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* m88k/m88k.c (struct option): Rename to struct options.
+	* m88k/dolph.h (INITIALIZE_TRAMPOLINE): Delete here.
+	* m88k/sysv3.h (INITIALIZE_TRAMPOLINE): Delete ifdef and comments.
+	* libgcc2.c (__enable_execute_stack): Check for __sysV88__ not
+	__DOLPHIN__ or sysV88.
+
 Wed Sep 10 16:16:07 1997  Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 	* Makefile.in (LN): Add new symbol.  
