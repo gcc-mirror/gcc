@@ -180,23 +180,83 @@ public class DatagramSocket
   // {
   // }
 
-  // JDK1.2
-  // public int getReceiveBufferSize() throws SocketException
-  // {
-  // }
+  /**
+   * This method returns the value of the system level socket option
+   * SO_RCVBUF, which is used by the operating system to tune buffer
+   * sizes for data transfers.
+   *
+   * @return The receive buffer size.
+   *
+   * @exception SocketException If an error occurs.
+   *
+   * @since 1.2
+   */
+  public int getReceiveBufferSize() throws SocketException
+  {
+    Object obj = impl.getOption(SocketOptions.SO_RCVBUF);
+  
+    if (obj instanceof Integer)
+      return(((Integer)obj).intValue());
+    else 
+      throw new SocketException("Unexpected type");
+  }
 
-  // JDK1.2
-  // public int getSendBufferSize() throws SocketException
-  // {
-  // }
+  /**
+   * This method returns the value of the system level socket option
+   * SO_SNDBUF, which is used by the operating system to tune buffer
+   * sizes for data transfers.
+   *
+   * @return The send buffer size.
+   *
+   * @exception SocketException If an error occurs.
+   *
+   * @since 1.2
+   */
+  public int getSendBufferSize() throws SocketException
+  {
+    Object obj = impl.getOption(SocketOptions.SO_SNDBUF);
 
-  // JDK1.2
-  // public void setReceiveBufferSize(int size) throws SocketException
-  // {
-  // }
+    if (obj instanceof Integer)
+      return(((Integer)obj).intValue());
+    else
+      throw new SocketException("Unexpected type");
+  }
 
-  // JDK1.2
-  // public void setSendBufferSize(int size) throws SocketException
-  // {
-  // }
+  /**
+   * This method sets the value for the system level socket option
+   * SO_RCVBUF to the specified value.  Note that valid values for this
+   * option are specific to a given operating system.
+   *
+   * @param size The new receive buffer size.
+   *
+   * @exception SocketException If an error occurs.
+   *  
+   * @since 1.2
+   */
+  public void setReceiveBufferSize(int size) throws SocketException
+  {
+    if (size < 0)
+      throw new IllegalArgumentException("Buffer size is less than 0");
+
+    impl.setOption(SocketOptions.SO_RCVBUF, new Integer(size));
+  }
+
+  /**
+   * This method sets the value for the system level socket option
+   * SO_SNDBUF to the specified value.  Note that valid values for this
+   * option are specific to a given operating system.
+   *
+   * @param size The new send buffer size.
+   *
+   * @exception SocketException If an error occurs.
+   *
+   * @since 1.2
+   */
+  public void setSendBufferSize(int size) throws SocketException
+  {
+    if (size < 0)
+      throw new IllegalArgumentException("Buffer size is less than 0");
+  
+    impl.setOption(SocketOptions.SO_SNDBUF, new Integer(size));
+  }
 }
