@@ -1308,8 +1308,15 @@ struct tree_type
 #define DECL_SIZE_UNIT(NODE) (DECL_CHECK (NODE)->decl.size_unit)
 /* Holds the alignment required for the datum.  */
 #define DECL_ALIGN(NODE) (DECL_CHECK (NODE)->decl.u1.a.align)
-/* For FIELD_DECLs, holds the alignment that DECL_FIELD_OFFSET has.  */
-#define DECL_OFFSET_ALIGN(NODE) (FIELD_DECL_CHECK (NODE)->decl.u1.a.off_align)
+/* For FIELD_DECLs, off_align holds the number of low-order bits of
+   DECL_FIELD_OFFSET which are known to be always zero.
+   DECL_OFFSET_ALIGN thus returns the alignment that DECL_FIELD_OFFSET
+   has.  */
+#define DECL_OFFSET_ALIGN(NODE) \
+  (((unsigned HOST_WIDE_INT)1) << FIELD_DECL_CHECK (NODE)->decl.u1.a.off_align)
+/* Specify that DECL_ALIGN(NODE) is a multiple of X.  */
+#define SET_DECL_OFFSET_ALIGN(NODE, X) \
+  (FIELD_DECL_CHECK (NODE)->decl.u1.a.off_align	= exact_log2 ((X) & -(X)))
 /* 1 if the alignment for this type was requested by "aligned" attribute,
    0 if it is the default for this type.  */
 #define DECL_USER_ALIGN(NODE) (DECL_CHECK (NODE)->decl.user_align)

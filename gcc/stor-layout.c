@@ -584,7 +584,7 @@ place_union_field (rli, field)
   
   DECL_FIELD_OFFSET (field) = size_zero_node;
   DECL_FIELD_BIT_OFFSET (field) = bitsize_zero_node;
-  DECL_OFFSET_ALIGN (field) = BIGGEST_ALIGNMENT;
+  SET_DECL_OFFSET_ALIGN (field, BIGGEST_ALIGNMENT);
 
   desired_align = DECL_ALIGN (field);
 
@@ -859,7 +859,7 @@ place_field (rli, field)
   normalize_rli (rli);
   DECL_FIELD_OFFSET (field) = rli->offset;
   DECL_FIELD_BIT_OFFSET (field) = rli->bitpos;
-  DECL_OFFSET_ALIGN (field) = rli->offset_align;
+  SET_DECL_OFFSET_ALIGN (field, rli->offset_align);
 
   /* If this field ended up more aligned than we thought it would be (we
      approximate this by seeing if its position changed), lay out the field

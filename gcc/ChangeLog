@@ -1,3 +1,15 @@
+2000-05-13  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* tree.h (DECL_OFFSET_ALIGN): Make the off_align field of
+	the tree structure an exponent rather than an explicit alignment
+	so it doesn't overflow.
+	(SET_DECL_OFFSET_ALIGN): New macro.
+	* stor-layout.c (place_union_field): Use SET_DECL_OFFSET_ALIGN
+	rather than DECL_OFFSET_ALIGN.
+	(place_field): Likewise.
+	* expmed.c (store_bit_field): Abort on align==0 to avoid
+	antisocial machine behaviour.
+
 2000-08-12  Richard Henderson  <rth@cygnus.com>
 
 	* sibcall.c (uses_addressof): Accept both addressof and
