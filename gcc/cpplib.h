@@ -34,26 +34,13 @@ typedef struct cpp_options cpp_options;
 typedef struct cpp_printer cpp_printer;
 typedef struct cpp_token cpp_token;
 typedef struct cpp_toklist cpp_toklist;
-typedef struct cpp_name cpp_name;
 
-/* The first two groups, apart from '=', can appear in preprocessor
-   expressions.  This allows a lookup table to be implemented in
-   _cpp_parse_expr.
-
-   The first group, to CPP_LAST_EQ, can be immediately followed by an
-   '='.  The lexer needs operators ending in '=', like ">>=", to be in
-   the same order as their counterparts without the '=', like ">>".  */
-
-/* Positions in the table.  */
-#define CPP_LAST_EQ CPP_LSHIFT
-#define CPP_FIRST_DIGRAPH CPP_HASH
-
+  /* Put operators that can appear in a preprocessor expression first.
+     This allows a lookup table to be implemented in _cpp_parse_expr.
+     Ordering within this group is currently not significant, apart
+     from those ending in '=' being at the end.  */
 #define TTYPE_TABLE				\
-  T(CPP_EQ = 0,		"=")			\
-  T(CPP_NOT,		"!")			\
-  T(CPP_GREATER,	">")	/* compare */	\
-  T(CPP_LESS,		"<")			\
-  T(CPP_PLUS,		"+")	/* math */	\
+  T(CPP_PLUS = 0,	"+")	/* math */	\
   T(CPP_MINUS,		"-")			\
   T(CPP_MULT,		"*")			\
   T(CPP_DIV,		"/")			\
@@ -64,19 +51,22 @@ typedef struct cpp_name cpp_name;
   T(CPP_COMPL,		"~")			\
   T(CPP_RSHIFT,		">>")			\
   T(CPP_LSHIFT,		"<<")			\
-\
-  T(CPP_AND_AND,	"&&")	/* logical */	\
+  T(CPP_NOT,		"!")	/* logicals */	\
+  T(CPP_AND_AND,	"&&")			\
   T(CPP_OR_OR,		"||")			\
   T(CPP_QUERY,		"?")			\
   T(CPP_COLON,		":")			\
   T(CPP_COMMA,		",")	/* grouping */	\
   T(CPP_OPEN_PAREN,	"(")			\
   T(CPP_CLOSE_PAREN,	")")			\
-  T(CPP_EQ_EQ,		"==")	/* compare */	\
+  T(CPP_GREATER,	">")	/* compare */	\
+  T(CPP_LESS,		"<")			\
+  T(CPP_EQ_EQ,		"==")			\
   T(CPP_NOT_EQ,		"!=")			\
   T(CPP_GREATER_EQ,	">=")			\
   T(CPP_LESS_EQ,	"<=")			\
 \
+  /* The remainder of the punctuation.  Order is not significant. */	\
   T(CPP_PLUS_EQ,	"+=")	/* math */	\
   T(CPP_MINUS_EQ,	"-=")			\
   T(CPP_MULT_EQ,	"*=")			\
@@ -88,67 +78,55 @@ typedef struct cpp_name cpp_name;
   T(CPP_COMPL_EQ,	"~=")			\
   T(CPP_RSHIFT_EQ,	">>=")			\
   T(CPP_LSHIFT_EQ,	"<<=")			\
-  /* Digraphs together, beginning with CPP_FIRST_DIGRAPH.  */	\
-  T(CPP_HASH,		"#")	/* digraphs */	\
-  T(CPP_PASTE,		"##")			\
-  T(CPP_OPEN_SQUARE,	"[")			\
-  T(CPP_CLOSE_SQUARE,	"]")			\
-  T(CPP_OPEN_BRACE,	"{")			\
-  T(CPP_CLOSE_BRACE,	"}")			\
-  /* The remainder of the punctuation.  Order is not significant. */	\
-  T(CPP_SEMICOLON,	";")	/* structure */	\
-  T(CPP_ELLIPSIS,	"...")			\
-  T(CPP_BACKSLASH,	"\\")			\
+  T(CPP_EQ,		"=")	/* assign */	\
   T(CPP_PLUS_PLUS,	"++")	/* increment */	\
   T(CPP_MINUS_MINUS,	"--")			\
   T(CPP_DEREF,		"->")	/* accessors */	\
   T(CPP_DOT,		".")			\
+  T(CPP_OPEN_SQUARE,	"[")			\
+  T(CPP_CLOSE_SQUARE,	"]")			\
   T(CPP_SCOPE,		"::")			\
   T(CPP_DEREF_STAR,	"->*")			\
   T(CPP_DOT_STAR,	".*")			\
+  T(CPP_OPEN_BRACE,	"{")	/* structure */	\
+  T(CPP_CLOSE_BRACE,	"}")			\
+  T(CPP_SEMICOLON,	";")			\
+  T(CPP_ELLIPSIS,	"...")			\
+  T(CPP_HASH,		"#")			\
+  T(CPP_PASTE,		"##")			\
+  T(CPP_BACKSLASH,	"\\")			\
   T(CPP_MIN,		"<?")	/* extension */	\
   T(CPP_MAX,		">?")			\
-  H(CPP_OTHER,		spell_other) /* stray punctuation */ \
+  T(CPP_OTHER,		spell_other) /* stray punctuation */ \
 \
-  H(CPP_NAME,		spell_name)	/* word */	\
-  N(CPP_INT,		0)		/* 23 */	\
-  N(CPP_FLOAT,		0)		/* 3.14159 */	\
-  H(CPP_NUMBER,		spell_name)	/* 34_be+ta  */	\
-  H(CPP_CHAR,		spell_char)	/* 'char' */	\
-  H(CPP_WCHAR,		spell_char)	/* L'char' */	\
-  H(CPP_STRING,		spell_string)	/* "string" */	\
-  H(CPP_WSTRING,	spell_string)	/* L"string" */	\
+  T(CPP_NAME,		spell_name)	/* word */	\
+  T(CPP_INT,		0)		/* 23 */	\
+  T(CPP_FLOAT,		0)		/* 3.14159 */	\
+  T(CPP_NUMBER,		spell_name)	/* 34_be+ta  */	\
+  T(CPP_CHAR,		spell_char)	/* 'char' */	\
+  T(CPP_WCHAR,		spell_char)	/* L'char' */	\
+  T(CPP_STRING,		spell_string)	/* "string" */	\
+  T(CPP_WSTRING,	spell_string)	/* L"string" */	\
 \
-  H(CPP_C_COMMENT,	spell_comment)	/* Only if output comments.  */ \
-  H(CPP_CPP_COMMENT,	spell_comment)	/* Only if output comments.  */ \
-  H(CPP_CHILL_COMMENT,	spell_comment)	/* Only if output comments.  */ \
-  N(CPP_MACRO_ARG,      0)              /* Macro argument.  */          \
-  N(CPP_SUBLIST,        0)	        /* Sublist.  */                 \
-  E(CPP_VSPACE,		"\n")		/* End of line.  */		\
-  N(CPP_EOF,		0)		/* End of file.  */		\
-  N(CPP_HEADER_NAME,	0)		/* <stdio.h> in #include */	\
-  N(CPP_ASSERTION,	0)		/* (...) in #assert */		\
+  T(CPP_COMMENT,	spell_comment)	/* Only if output comments.  */ \
+  T(CPP_VSPACE,		"\n")		/* End of line.  */		\
+  T(CPP_EOF,		0)		/* End of file.  */		\
+  T(CPP_HEADER_NAME,	0)		/* <stdio.h> in #include */	\
+  T(CPP_ASSERTION,	0)		/* (...) in #assert */		\
 \
   /* Obsolete - will be removed when no code uses them still.  */	\
-  H(CPP_COMMENT,	0)		/* Only if output comments.  */ \
-  N(CPP_HSPACE,		0)		/* Horizontal white space.  */	\
-  N(CPP_POP,		0)		/* End of buffer.  */		\
-  N(CPP_DIRECTIVE,	0)		/* #define and the like */	\
-  N(CPP_MACRO,		0)		/* Like a NAME, but expanded.  */
+  T(CPP_HSPACE,		0)		/* Horizontal white space.  */	\
+  T(CPP_POP,		0)		/* End of buffer.  */		\
+  T(CPP_DIRECTIVE,	0)		/* #define and the like */	\
+  T(CPP_MACRO,		0)		/* Like a NAME, but expanded.  */
 
 #define T(e, s) e,
-#define H(e, s) e,
-#define N(e, s) e,
-#define E(e, s) e,
 enum cpp_ttype
 {
   TTYPE_TABLE
   N_TTYPES
 };
 #undef T
-#undef H
-#undef N
-#undef E
 
 /* Payload of a NAME, NUMBER, FLOAT, STRING, or COMMENT token.  */
 struct cpp_name
@@ -157,12 +135,8 @@ struct cpp_name
   unsigned int offset;		/* from list->namebuf */
 };
 
-#define TOK_NAME(list, token) ((list)->namebuf + (token)->val.name.offset)
-
-/* Flags for the cpp_token structure.  */
-#define PREV_WHITESPACE     1	/* If whitespace before this token.  */
-#define DIGRAPH             2	/* If it was a digraph.  */
-#define UNSIGNED_INT        4   /* If int preprocessing token unsigned.  */
+/* Per token flags.  */
+#define HSPACE_BEFORE	(1 << 0)	/* token preceded by hspace */
 
 /* A preprocessing token.
    This has been carefully packed and should occupy 16 bytes on
@@ -176,9 +150,8 @@ struct cpp_token
   unsigned char type;
 #endif
   unsigned char flags;			/* flags - see above */
-  unsigned int aux;			/* CPP_OTHER character.  Hash of a
-					   NAME, or something - see uses
-					   in the code */
+  unsigned int aux;			/* hash of a NAME, or something -
+					   see uses in the code */
   union
   {
     struct cpp_name name;		/* a string */
@@ -195,7 +168,7 @@ typedef int (*parse_cleanup_t) PARAMS ((cpp_buffer *, cpp_reader *));
 
 struct cpp_toklist
 {
-  cpp_token *tokens;		/* actual tokens as an array */
+  struct cpp_token *tokens;	/* actual tokens as an array */
   unsigned int tokens_used;	/* tokens used */
   unsigned int tokens_cap;	/* tokens allocated */
 
@@ -204,11 +177,6 @@ struct cpp_toklist
   unsigned int name_cap;	/* _bytes_ allocated */
 
   unsigned int line;		/* starting line number */
-
-  /* Comment copying.  */
-  cpp_token *comments;		/* comment tokens.  */
-  unsigned int comments_used;	/* comment tokens used.  */
-  unsigned int comments_cap;	/* comment token capacity.  */
 
   /* Only used if tokens[0].type == CPP_DIRECTIVE.  This is the
      handler to call after lexing the rest of this line.  The flags
@@ -593,7 +561,6 @@ struct cpp_printer
 /* Name under which this program was invoked.  */
 extern const char *progname;
 
-extern void _cpp_lex_file PARAMS((cpp_reader *));
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
 extern enum cpp_ttype cpp_get_token PARAMS ((cpp_reader *));
 extern enum cpp_ttype cpp_get_non_space_token PARAMS ((cpp_reader *));
@@ -612,8 +579,6 @@ extern void cpp_define PARAMS ((cpp_reader *, const char *));
 extern void cpp_assert PARAMS ((cpp_reader *, const char *));
 extern void cpp_undef  PARAMS ((cpp_reader *, const char *));
 extern void cpp_unassert PARAMS ((cpp_reader *, const char *));
-
-extern void cpp_free_token_list PARAMS ((cpp_toklist *));
 
 /* N.B. The error-message-printer prototypes have not been nicely
    formatted because exgettext needs to see 'msgid' on the same line

@@ -459,8 +459,7 @@ collect_objlike_expansion (pfile, list)
 	default:;
 	}
 
-      if (i > 1 && !last_was_paste
-	  && (list->tokens[i].flags & PREV_WHITESPACE))
+      if (i > 1 && !last_was_paste && (list->tokens[i].flags & HSPACE_BEFORE))
 	CPP_PUTC (pfile, ' ');
 
       CPP_PUTS (pfile,
@@ -572,10 +571,10 @@ collect_funlike_expansion (pfile, list, arglist, replacement)
 	}
 
       if (last_token != PASTE && last_token != START
-	  && (list->tokens[i].flags & PREV_WHITESPACE))
+	  && (list->tokens[i].flags & HSPACE_BEFORE))
 	CPP_PUTC (pfile, ' ');
       if (last_token == ARG && CPP_TRADITIONAL (pfile)
-	  && !(list->tokens[i].flags & PREV_WHITESPACE))
+	  && !(list->tokens[i].flags & HSPACE_BEFORE))
 	endpat->raw_after = 1;
 
       switch (token)
@@ -617,7 +616,7 @@ collect_funlike_expansion (pfile, list, arglist, replacement)
       {
 	int raw_before = (last_token == PASTE
 			  || (CPP_TRADITIONAL (pfile)
-			      && !(list->tokens[i].flags & PREV_WHITESPACE)));
+			      && !(list->tokens[i].flags & HSPACE_BEFORE)));
       
 	add_pat (&pat, &endpat,
 		 CPP_WRITTEN (pfile) - last /* nchars */, j /* argno */,
@@ -866,7 +865,7 @@ _cpp_create_definition (pfile, list, hp)
   /* The macro is function-like only if the next character,
      with no intervening whitespace, is '('.  */
   else if (list->tokens[1].type == CPP_OPEN_PAREN
-	   && ! (list->tokens[1].flags & PREV_WHITESPACE))
+	   && ! (list->tokens[1].flags & HSPACE_BEFORE))
     {
       struct arglist args;
       int replacement;

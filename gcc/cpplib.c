@@ -150,29 +150,6 @@ DIRECTIVE_TABLE
 #undef D
 #undef DIRECTIVE_TABLE
 
-/* Check if a token's name matches that of a known directive.  Put in
-   this file to save exporting dtable and other unneeded information.  */
-void
-_cpp_check_directive (list, token)
-     cpp_toklist *list;
-     cpp_token *token;
-{
-  const char *name = list->namebuf + token->val.name.offset;
-  size_t len = token->val.name.len;
-  unsigned int i;
-
-  list->dir_handler = 0;
-  list->dir_flags = 0;
-
-  for (i = 0; i < N_DIRECTIVES; i++)
-    if (dtable[i].length == len && !strncmp (dtable[i].name, name, len)) 
-      {
-	list->dir_handler = dtable[i].func;
-	list->dir_flags = dtable[i].flags;
-	break;
-      }
-}
-
 /* Handle a possible # directive.
    '#' has already been read.  */
 

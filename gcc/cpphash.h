@@ -317,6 +317,5 @@ extern void _cpp_scan_line		PARAMS ((cpp_reader *, cpp_toklist *));
 /* In cpplib.c */
 extern int _cpp_handle_directive	PARAMS ((cpp_reader *));
 extern void _cpp_handle_eof		PARAMS ((cpp_reader *));
-extern void _cpp_check_directive        PARAMS((cpp_toklist *, cpp_token *));
 
 #endif
