@@ -69,11 +69,9 @@ istream& istream::get(char* buf, int len, char delim)
     {
       streambuf *sbuf = rdbuf();
       int ch;
-      long count = _IO_getline_info(sbuf, buf, len - 1, delim, -1, &ch);
+      _gcount = _IO_getline_info(sbuf, buf, len - 1, delim, -1, &ch);
       if (_gcount == 0 && ch == EOF)
 	set(ios::failbit|ios::eofbit);
-      else
-	_gcount = count;
     }
   buf[_gcount] = '\0';
   return *this;
