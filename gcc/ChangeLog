@@ -1,5 +1,8 @@
 1999-11-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* loop.c (loop_optimize): Always find_loop_tree_blocks and
+	unroll_block_trees when generating debuggable code.
+
 	* tree.h (unsave_expr_1): New function.
 	(lang_unsave): New variable.
 	(get_callee_fndecl): New function.

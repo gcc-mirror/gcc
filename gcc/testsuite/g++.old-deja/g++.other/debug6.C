@@ -6,8 +6,6 @@
 
 // This causes assember relocation errors
 
-// excess errors test - XFAIL *-*-*
-
 struct X
 {
   virtual ~X () {}
