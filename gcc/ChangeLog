@@ -1,4 +1,5 @@
 2004-07-30  Geoffrey Keating  <geoffk@apple.com>
+	    Fariborz Jahanian <fjahanian@apple.com>
 
 	* config/rs6000/rs6000.c (legitimate_lo_sum_address_p): Permit
 	non-offsettable addresses even for DImode.
