@@ -2044,13 +2044,14 @@ tree
 i960_round_size (tsize)
      tree tsize;
 {
-  int size, align;
+  int size, byte_size, align;
 
   if (TREE_CODE (tsize) != INTEGER_CST)
     return tsize;
 
   size = TREE_INT_CST_LOW (tsize);
-  align = i960_object_bytes_bitalign (size / BITS_PER_UNIT);
+  byte_size = (size + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
+  align = i960_object_bytes_bitalign (byte_size);
 
   /* Handle #pragma align.  */
   if (align > i960_maxbitalignment)
@@ -2069,11 +2070,13 @@ i960_round_align (align, tsize)
      int align;
      tree tsize;
 {
+  int byte_size;
+
   if (TREE_CODE (tsize) != INTEGER_CST)
     return align;
 
-  align = i960_object_bytes_bitalign (TREE_INT_CST_LOW (tsize)
-				      / BITS_PER_UNIT);
+  byte_size = (TREE_INT_CST_LOW (tsize) + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
+  align = i960_object_bytes_bitalign (byte_size);
   return align;
 }
 
