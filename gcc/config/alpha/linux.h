@@ -41,3 +41,6 @@ SUB_CPP_PREDEFINES
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
+
+/* Define this so that all GNU/Linux targets handle the same pragmas.  */
+#define HANDLE_PRAGMA_PACK_PUSH_POP
