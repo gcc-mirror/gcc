@@ -10122,14 +10122,26 @@ mips_parse_cpu (cpu_string)
   const char *p = cpu_string;
   int seen_v = 0;
   enum processor_type cpu;
+  int warn_upper_case = 0;
 
   /* We need to cope with the various "vr" prefixes for the NEC 4300
      and 4100 processors.  */
   if (*p == 'v' || *p == 'V')
-    seen_v = 1, p++;
+    {
+      if (*p == 'V')
+	warn_upper_case = 1;
+      seen_v = 1, p++;
+    }
 
   if (*p == 'r' || *p == 'R')
-    p++;
+    {
+      if (*p == 'R')
+	warn_upper_case = 1;
+      p++;
+    }
+
+  if (warn_upper_case)
+    warning ("the cpu name must be lower case");
 
   /* Since there is no difference between a R2000 and R3000 in
      terms of the scheduler, we collapse them into just an R3000.  */
