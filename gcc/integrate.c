@@ -1106,7 +1106,7 @@ rtx *global_const_equiv_map;
   (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == CONST_INT	\
    && GET_CODE (XEXP (X, 0)) == REG				\
    && REGNO (XEXP (X, 0)) >= FIRST_VIRTUAL_REGISTER		\
-   && REGNO (XEXP (X, 0)) < LAST_VIRTUAL_REGISTER)
+   && REGNO (XEXP (X, 0)) <= LAST_VIRTUAL_REGISTER)
 
 /* Integrate the procedure defined by FNDECL.  Note that this function
    may wind up calling itself.  Since the static variables are not
