@@ -1,3 +1,8 @@
+2004-05-01  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR middle-end/15054
+	* g++.dg/opt/pr15054.C: New test.
+
 2004-04-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-rounding-1.c: New test.
