@@ -1,3 +1,7 @@
+1999-10-11  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (fixed_type_or_null): Always set *nonnull.
+
 1999-10-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h: Use HAVE_GCC_VERSION instead of explicitly testing
