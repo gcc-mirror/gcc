@@ -2522,7 +2522,16 @@ build_new (placement, decl, init, use_global_new)
       TREE_CALLS_NEW (rval) = 1;
     }
 
-  if ((flag_exceptions || check_new) && rval)
+  if (flag_exceptions && rval)
+    {
+      /* This must last longer so we can use it in the cleanup.
+         The subexpressions don't need to last, because we won't look at
+	 them when expanding the cleanup.  */
+      int yes = suspend_momentary ();
+      alloc_expr = rval = save_expr (rval);
+      resume_momentary (yes);
+    }
+  else if (check_new && rval)
     alloc_expr = rval = save_expr (rval);
   else
     alloc_expr = NULL_TREE;
@@ -2715,6 +2724,9 @@ build_new (placement, decl, init, use_global_new)
 	{
 	  tree cleanup = alloc_expr;
 
+	  /* All cleanups must last longer than normal.  */
+	  int yes = suspend_momentary ();
+
 	  if (! use_global_new && TYPE_LANG_SPECIFIC (true_type)
 	      && (TYPE_GETS_DELETE (true_type) & (1 << has_array)))
 	    cleanup = build_opfncall (has_array? VEC_DELETE_EXPR : DELETE_EXPR,
@@ -2723,6 +2735,8 @@ build_new (placement, decl, init, use_global_new)
 	    cleanup = build_builtin_call
 	      (void_type_node, has_array ? BIVD : BID,
 	       build_expr_list (NULL_TREE, cleanup));
+
+	  resume_momentary (yes);
 					 
 	  rval = build (TRY_CATCH_EXPR, TREE_TYPE (rval), rval, cleanup);
 	  rval = build (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
@@ -3132,6 +3146,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	    TREE_TYPE (cleanup) = void_type_node;
 	    RTL_EXPR_RTL (cleanup) = const0_rtx;
 	    TREE_SIDE_EFFECTS (cleanup) = 1;
+	    do_pending_stack_adjust ();
 	    start_sequence_for_rtl_expr (cleanup);
 
 	    e1 = build_array_eh_cleanup
@@ -3139,6 +3154,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	       build_binary_op (MINUS_EXPR, maxindex, iterator, 1),
 	       type);
 	    expand_expr (e1, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	    do_pending_stack_adjust ();
 	    RTL_EXPR_SEQUENCE (cleanup) = get_insns ();
 	    end_sequence ();
 
