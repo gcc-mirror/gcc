@@ -1,3 +1,9 @@
+Mon Oct 20 12:06:34 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (expand_exception_blocks): Call do_pending_stack_adust.
+	(expand_end_catch_block): Likewise.
+	(expand_end_eh_spec): Likewise.
+
 Mon Oct 20 11:44:20 1997  Mark Mitchell  <mmitchell@usa.net>
 
 	* decl.c (duplicate_decls): Handle template specializations
