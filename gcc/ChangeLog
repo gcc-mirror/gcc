@@ -1,3 +1,20 @@
+2003-10-23  Fariborz Jahanian  <fjahanian@apple.com>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (UNITS_PER_WORD): Use TARGET_32BIT, not
+	TARGET_POWREPC64.
+	(UNITS_PER_GPR_WORD): Define.
+	(HARD_REGNO_NREGS): Use UNITS_PER_GPR_WORD.
+	(HARD_REGNO_CALL_PART_CLOBBERED): Define.
+	(HARD_REGNO_MODE_OK): Use UNITS_PER_GPR_WORD.
+	(CLASS_MAX_NREGS): Use UNITS_PER_GPR_WORD.
+	* config/rs6000/rs6000.c (function_arg): Generate PARALLEL for
+	DFmode and DImode in 32-bit ABI / 64-bit computation mode.
+	(rs6000_emit_prologue): Select reg_mode and reg_size using
+	TARGET_32BIT, not TARGET_POWERPC64.
+	(rs6000_function_value): Generate PARALLEL for DImode in 32-bit
+	ABI / 64-bit computation mode
+
 2003-10-22  Andrew Haley  <aph@redhat.com>
 
 	* toplev.c (output_file_directive): Allow for null input_name.
