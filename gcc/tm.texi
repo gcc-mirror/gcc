@@ -222,8 +222,7 @@ linker command line.  This constant is placed both before and after
 the value of @code{LIB_SPEC}.
 
 If this macro is not defined, the GCC driver provides a default that
-passes the string @samp{-lgcc} to the linker unless the @samp{-shared}
-option is specified.
+passes the string @samp{-lgcc} to the linker.
 
 @findex STARTFILE_SPEC
 @item STARTFILE_SPEC
