@@ -2,7 +2,7 @@
 
 // Origin:  Adapted by Nathan Sidwell 29 Apr 1999 <nathan@acm.org>
 //          from a test case submitted by Corey Kosak <kosak@cs.cmu.edu>
-//          http://egcs.cygnus.com/ml/egcs-bugs/1999-04/msg00502.html
+//          http://gcc.gnu.org/ml/gcc-bugs/1999-04n/msg00505.html
 
 // We should not allow arrays of abstract type. [class.abstract/2]
 

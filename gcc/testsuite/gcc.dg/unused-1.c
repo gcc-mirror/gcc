@@ -1,6 +1,6 @@
 /* Missing `unused parameter' warning.
    egcs-1.1.2 fails, egcs-ss-19990418 passes.
-   http://www.cygnus.com/ml/egcs-bugs/1998-Sep/0199.html */
+   http://gcc.gnu.org/ml/gcc-bugs/1998-09/msg00199.html */
 /* { dg-do compile } */
 /* { dg-options "-O -Wall -W" } */
 int

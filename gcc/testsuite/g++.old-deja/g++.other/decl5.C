@@ -1,9 +1,9 @@
 // Build don't link:
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 22 Apr 1999 <nathan@acm.org>
 // derived from a bug report by <rch@larissa.sd.bi.ruhr-uni-bochum.de>
-// http://egcs.cygnus.com/ml/egcs-bugs/1999-04/msg00626.html
+// http://gcc.gnu.org/ml/gcc-bugs/1999-04n/msg00631.html
 // the code is wrong, but we fell over badly
 
 

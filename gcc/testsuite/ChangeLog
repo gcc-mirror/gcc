@@ -1,3 +1,11 @@
+2000-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g++.old-deja/g++.eh/cond1.C, g++.old-deja/g++.other/bitfld3.C,
+	g++.old-deja/g++.other/cond5.C, g++.old-deja/g++.other/decl3.C,
+	g++.old-deja/g++.other/decl5.C, gcc.dg/cast-qual-1.c,
+	gcc.dg/return-type-1.c, gcc.dg/unused-1.c: Update URLs of messages
+	in list archives.
+
 2000-10-06  Richard Henderson  <rth@cygnus.com>
 
 	* g++.old-deja/g++.brendan/crash13.C: Pass -Wreturn-type.

@@ -1,6 +1,6 @@
 /* Missing warning for falling off the end of a non-void function.
    egcs-1.1.2 passes, egcs-ss-19990428 fails.
-   http://egcs.cygnus.com/ml/egcs-bugs/1999-03/msg00220.html */
+   http://gcc.gnu.org/ml/gcc-bugs/1999-03n/msg00221.html */
 /* { dg-do compile } */
 /* { dg-options "-O -Wreturn-type" } */
 int
