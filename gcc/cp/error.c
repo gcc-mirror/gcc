@@ -1,6 +1,6 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2002
    Free Software Foundation, Inc.
    This file is part of GNU CC.
 
@@ -35,24 +35,24 @@ enum pad { none, before, after };
    sorry ("`%s' not supported by %s", tree_code_name[(int) TREE_CODE (T)], \
              __FUNCTION__)
 
-#define print_scope_operator(BUFFER)  output_add_string (BUFFER, "::")
-#define print_left_paren(BUFFER)      output_add_character (BUFFER, '(')
-#define print_right_paren(BUFFER)     output_add_character (BUFFER, ')')
-#define print_left_bracket(BUFFER)    output_add_character (BUFFER, '[')
-#define print_right_bracket(BUFFER)   output_add_character (BUFFER, ']')
+#define print_scope_operator(BUFFER)  output_add_string ((BUFFER), "::")
+#define print_left_paren(BUFFER)      output_add_character ((BUFFER), '(')
+#define print_right_paren(BUFFER)     output_add_character ((BUFFER), ')')
+#define print_left_bracket(BUFFER)    output_add_character ((BUFFER), '[')
+#define print_right_bracket(BUFFER)   output_add_character ((BUFFER), ']')
 #define print_template_argument_list_start(BUFFER) \
-   print_non_consecutive_character (BUFFER, '<')
+   print_non_consecutive_character ((BUFFER), '<')
 #define print_template_argument_list_end(BUFFER)  \
-   print_non_consecutive_character (BUFFER, '>')
+   print_non_consecutive_character ((BUFFER), '>')
 #define print_whitespace(BUFFER, TFI)        \
    do {                                      \
      output_add_space (BUFFER);              \
      put_whitespace (TFI) = none;            \
    } while (0)
 #define print_tree_identifier(BUFFER, TID) \
-   output_add_string (BUFFER, IDENTIFIER_POINTER (TID))
-#define print_identifier(BUFFER, ID) output_add_string (BUFFER, ID)
-#define separate_with_comma(BUFFER) output_add_string (BUFFER, ", ")
+   output_add_string ((BUFFER), IDENTIFIER_POINTER (TID))
+#define print_identifier(BUFFER, ID) output_add_string ((BUFFER), (ID))
+#define separate_with_comma(BUFFER) output_add_string ((BUFFER), ", ")
 
 /* The global buffer where we dump everything.  It is there only for
    transitional purpose.  It is expected, in the near future, to be
@@ -60,7 +60,7 @@ enum pad { none, before, after };
 static output_buffer scratch_buffer_rec;
 static output_buffer *scratch_buffer = &scratch_buffer_rec;
 
-# define NEXT_CODE(t) (TREE_CODE (TREE_TYPE (t)))
+# define NEXT_CODE(T) (TREE_CODE (TREE_TYPE (T)))
 
 #define reinit_global_formatting_buffer() \
    output_clear_message_text (scratch_buffer)
@@ -96,7 +96,6 @@ static void dump_char PARAMS ((int));
 static void dump_parameters PARAMS ((tree, int));
 static void dump_exception_spec PARAMS ((tree, int));
 static const char *class_key_or_enum PARAMS ((tree));
-static tree ident_fndecl PARAMS ((tree));
 static void dump_template_argument PARAMS ((tree, int));
 static void dump_template_argument_list PARAMS ((tree, int));
 static void dump_template_parameter PARAMS ((tree, int));
@@ -792,30 +791,6 @@ dump_type_suffix (t, flags)
       break;
     }
 }
-
-/* Return a function declaration which corresponds to the IDENTIFIER_NODE
-   argument.  */
-
-static tree
-ident_fndecl (t)
-     tree t;
-{
-  tree n = lookup_name (t, 0);
-
-  if (n == NULL_TREE)
-    return NULL_TREE;
-
-  if (TREE_CODE (n) == FUNCTION_DECL)
-    return n;
-  else if (TREE_CODE (n) == TREE_LIST
-	   && TREE_CODE (TREE_VALUE (n)) == FUNCTION_DECL)
-    return TREE_VALUE (n);
-
-  my_friendly_abort (66);
-  return NULL_TREE;
-}
-
-#define GLOBAL_THING "_GLOBAL__"
 
 static void
 dump_global_iord (t)
