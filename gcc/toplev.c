@@ -63,6 +63,7 @@ Boston, MA 02111-1307, USA.  */
 #include "timevar.h"
 #include "diagnostic.h"
 #include "ssa.h"
+#include "params.h"
 
 #ifndef ACCUMULATE_OUTGOING_ARGS
 #define ACCUMULATE_OUTGOING_ARGS 0
@@ -957,6 +958,14 @@ int flag_leading_underscore = -1;
 
 /* The user symbol prefix after having resolved same.  */
 const char *user_label_prefix;
+
+static const param_info lang_independent_params[] = {
+#define DEFPARAM(ENUM, OPTION, HELP, DEFAULT) \
+  { OPTION, DEFAULT },
+#include "params.def"
+#undef DEFPARAM
+  { NULL, 0 }
+};
 
 /* A default for same.  */
 #ifndef USER_LABEL_PREFIX
@@ -4088,8 +4097,12 @@ decode_f_option (arg)
 
   if ((option_value = skip_leading_substring (arg, "inline-limit-"))
       || (option_value = skip_leading_substring (arg, "inline-limit=")))
-    inline_max_insns =
-      read_integral_parameter (option_value, arg - 2, inline_max_insns);
+    {
+      int val =
+      read_integral_parameter (option_value, arg - 2,
+                               MAX_INLINE_INSNS);
+      set_param_value ("max-inline-insns", val);
+    }
 #ifdef INSN_SCHEDULING
   else if ((option_value = skip_leading_substring (arg, "sched-verbose=")))
     fix_sched_param ("verbose", option_value);
@@ -4375,6 +4388,40 @@ independent_decode_option (argc, argv)
       exit (0);
     }
 
+  /* Handle '--param <name>=<value>'.  */
+  if (strcmp (arg, "-param") == 0)
+    {
+      char *equal;
+
+      if (argc == 1)
+      {
+        error ("-param option missing argument");
+        return 1;
+      }
+
+      /* Get the '<name>=<value' parameter.  */
+      arg = argv[1];
+      /* Look for the `='.  */
+      equal = strchr (arg, '=');
+      if (!equal)
+      error ("invalid --param option: %s", arg);
+      else
+      {
+        int val;
+
+        /* Zero out the `=' sign so that we get two separate strings.  */
+        *equal = '\0';
+        /* Figure out what value is specified.  */
+        val = read_integral_parameter (equal + 1, NULL, INVALID_PARAM_VAL);
+        if (val != INVALID_PARAM_VAL)
+          set_param_value (arg, val);
+        else
+          error ("invalid parameter value `%s'", equal + 1);
+      }
+
+      return 2;
+    }
+
   if (*arg == 'Y')
     arg++;
 
@@ -4615,6 +4662,9 @@ main (argc, argv)
 
   /* Initialize the diagnostics reporting machinery.  */
   initialize_diagnostics ();
+
+  /* Register the language-independent parameters.  */
+  add_params (lang_independent_params, LAST_PARAM);
 
   /* Perform language-specific options intialization.  */
   if (lang_hooks.init_options)

@@ -139,6 +139,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "insn-attr.h"
 #include "resource.h"
+#include "params.h"
 
 #ifdef DELAY_SLOTS
 
@@ -1635,6 +1636,7 @@ redundant_insn (insn, target, delay_list)
   rtx trial, pat;
   struct resources needed, set;
   int i;
+  unsigned insns_to_search;
 
   /* If INSN has any REG_UNUSED notes, it can't match anything since we
      are allowed to not actually assign to such a register.  */
@@ -1642,7 +1644,10 @@ redundant_insn (insn, target, delay_list)
     return 0;
 
   /* Scan backwards looking for a match.  */
-  for (trial = PREV_INSN (target); trial; trial = PREV_INSN (trial))
+  for (trial = PREV_INSN (target),
+       insns_to_search = MAX_DELAY_SLOT_INSN_SEARCH;
+       trial && insns_to_search > 0;
+       trial = PREV_INSN (trial), --insns_to_search)
     {
       if (GET_CODE (trial) == CODE_LABEL)
 	return 0;
@@ -1743,9 +1748,10 @@ redundant_insn (insn, target, delay_list)
   /* Scan backwards until we reach a label or an insn that uses something
      INSN sets or sets something insn uses or sets.  */
 
-  for (trial = PREV_INSN (target);
-       trial && GET_CODE (trial) != CODE_LABEL;
-       trial = PREV_INSN (trial))
+  for (trial = PREV_INSN (target),
+       insns_to_search = MAX_DELAY_SLOT_INSN_SEARCH;
+       trial && GET_CODE (trial) != CODE_LABEL && insns_to_search > 0;
+       trial = PREV_INSN (trial), --insns_to_search)
     {
       if (GET_CODE (trial) != INSN && GET_CODE (trial) != CALL_INSN
 	  && GET_CODE (trial) != JUMP_INSN)
@@ -2223,9 +2229,11 @@ fill_simple_delay_slots (non_jumps_p)
 		  && ! simplejump_p (insn)
 		  && JUMP_LABEL (insn) != 0)))
 	{
+	  /* Invariant: If insn is a JUMP_INSN, the insn's jump
+	     label.  Otherwise, zero.  */
 	  rtx target = 0;
 	  int maybe_never = 0;
-	  struct resources needed_at_jump;
+	  rtx pat, trial_delay;
 
 	  CLEAR_RESOURCE (&needed);
 	  CLEAR_RESOURCE (&set);
@@ -2244,92 +2252,73 @@ fill_simple_delay_slots (non_jumps_p)
 		target = JUMP_LABEL (insn);
 	    }
 
-	  for (trial = next_nonnote_insn (insn); trial; trial = next_trial)
-	    {
-	      rtx pat, trial_delay;
+	  if (target == 0)
+	    for (trial = next_nonnote_insn (insn); trial; trial = next_trial)
+	      {
+		next_trial = next_nonnote_insn (trial);
 
-	      next_trial = next_nonnote_insn (trial);
+		if (GET_CODE (trial) == CODE_LABEL
+		    || GET_CODE (trial) == BARRIER)
+		  break;
 
-	      if (GET_CODE (trial) == CODE_LABEL
-		  || GET_CODE (trial) == BARRIER)
-		break;
+		/* We must have an INSN, JUMP_INSN, or CALL_INSN.  */
+		pat = PATTERN (trial);
 
-	      /* We must have an INSN, JUMP_INSN, or CALL_INSN.  */
-	      pat = PATTERN (trial);
-
-	      /* Stand-alone USE and CLOBBER are just for flow.  */
-	      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
-		continue;
-
-	      /* If this already has filled delay slots, get the insn needing
-		 the delay slots.  */
-	      if (GET_CODE (pat) == SEQUENCE)
-		trial_delay = XVECEXP (pat, 0, 0);
-	      else
-		trial_delay = trial;
-
-	      /* If this is a jump insn to our target, indicate that we have
-		 seen another jump to it.  If we aren't handling a conditional
-		 jump, stop our search. Otherwise, compute the needs at its
-		 target and add them to NEEDED.  */
-	      if (GET_CODE (trial_delay) == JUMP_INSN)
-		{
-		  if (target == 0)
-		    break;
-		  else if (JUMP_LABEL (trial_delay) != target)
-		    {
-		      rtx ninsn =
-			next_active_insn (JUMP_LABEL (trial_delay));
-
-		      mark_target_live_regs (get_insns (), ninsn,
-					     &needed_at_jump);
-		      needed.memory |= needed_at_jump.memory;
-		      needed.unch_memory |= needed_at_jump.unch_memory;
-		      IOR_HARD_REG_SET (needed.regs, needed_at_jump.regs);
-		    }
-		}
-
-	      /* See if we have a resource problem before we try to
-		 split.   */
-	      if (target == 0
-		  && GET_CODE (pat) != SEQUENCE
-		  && ! insn_references_resource_p (trial, &set, 1)
-		  && ! insn_sets_resource_p (trial, &set, 1)
-		  && ! insn_sets_resource_p (trial, &needed, 1)
-#ifdef HAVE_cc0
-		  && ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat))
-#endif
-		  && ! (maybe_never && may_trap_p (pat))
-		  && (trial = try_split (pat, trial, 0))
-		  && eligible_for_delay (insn, slots_filled, trial, flags))
-		{
-		  next_trial = next_nonnote_insn (trial);
-		  delay_list = add_to_delay_list (trial, delay_list);
-
-#ifdef HAVE_cc0
-		  if (reg_mentioned_p (cc0_rtx, pat))
-		    link_cc0_insns (trial);
-#endif
-
-		  delete_insn (trial);
-		  if (slots_to_fill == ++slots_filled)
-		    break;
+		/* Stand-alone USE and CLOBBER are just for flow.  */
+		if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 		  continue;
-		}
 
-	      mark_set_resources (trial, &set, 0, MARK_SRC_DEST_CALL);
-	      mark_referenced_resources (trial, &needed, 1);
+		/* If this already has filled delay slots, get the insn needing
+		   the delay slots.  */
+		if (GET_CODE (pat) == SEQUENCE)
+		  trial_delay = XVECEXP (pat, 0, 0);
+		else
+		  trial_delay = trial;
 
-	      /* Ensure we don't put insns between the setting of cc and the
-		 comparison by moving a setting of cc into an earlier delay
-		 slot since these insns could clobber the condition code.  */
-	      set.cc = 1;
+		/* Stop our search when seeing an unconditional jump.  */
+		if (GET_CODE (trial_delay) == JUMP_INSN)
+		  break;
 
-	      /* If this is a call or jump, we might not get here.  */
-	      if (GET_CODE (trial_delay) == CALL_INSN
-		  || GET_CODE (trial_delay) == JUMP_INSN)
-		maybe_never = 1;
-	    }
+		/* See if we have a resource problem before we try to
+		   split.   */
+		if (GET_CODE (pat) != SEQUENCE
+		    && ! insn_references_resource_p (trial, &set, 1)
+		    && ! insn_sets_resource_p (trial, &set, 1)
+		    && ! insn_sets_resource_p (trial, &needed, 1)
+#ifdef HAVE_cc0
+		    && ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat))
+#endif
+		    && ! (maybe_never && may_trap_p (pat))
+		    && (trial = try_split (pat, trial, 0))
+		    && eligible_for_delay (insn, slots_filled, trial, flags))
+		  {
+		    next_trial = next_nonnote_insn (trial);
+		    delay_list = add_to_delay_list (trial, delay_list);
+
+#ifdef HAVE_cc0
+		    if (reg_mentioned_p (cc0_rtx, pat))
+		      link_cc0_insns (trial);
+#endif
+
+		    delete_insn (trial);
+		    if (slots_to_fill == ++slots_filled)
+		      break;
+		    continue;
+		  }
+
+		mark_set_resources (trial, &set, 0, MARK_SRC_DEST_CALL);
+		mark_referenced_resources (trial, &needed, 1);
+
+		/* Ensure we don't put insns between the setting of cc and the
+		   comparison by moving a setting of cc into an earlier delay
+		   slot since these insns could clobber the condition code.  */
+		set.cc = 1;
+
+		/* If this is a call or jump, we might not get here.  */
+		if (GET_CODE (trial_delay) == CALL_INSN
+		    || GET_CODE (trial_delay) == JUMP_INSN)
+		  maybe_never = 1;
+	      }
 
 	  /* If there are slots left to fill and our search was stopped by an
 	     unconditional branch, try the insn at the branch target.  We can
@@ -2982,7 +2971,7 @@ fill_eager_delay_slots ()
 	}
 
       /* If this insn is expected to branch, first try to get insns from our
-	 target, then our fallthrough insns.  If it is not, expected to branch,
+	 target, then our fallthrough insns.  If it is not expected to branch,
 	 try the other order.  */
 
       if (prediction > 0)

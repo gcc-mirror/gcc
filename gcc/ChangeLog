@@ -1,3 +1,58 @@
+2001-02-23  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* Makefile.in (resource.o): Add params.h dependence.
+	* params.def (MAX_DELAY_SLOT_LIVE_SEARCH): New parameter.
+	* params.h (MAX_DELAY_SLOT_LIVE_SEARCH): Likewise.
+	* resource.c: Add dependence on params.h.
+	(current_live_regs): Fix explanatory comment.
+	(find_basic_block): Add new parameter to permit limiting search
+	for a BARRIER.
+	(mark_target_live_regs): Add new argument to find_basic_block call.
+	(incr_ticks_for_insn): Likewise.
+
+2001-02-21  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* Makefile.in (reorg.o): Add params.h dependence.
+	* params.def: Fix typographical error in comment.
+	(MAX_DELAY_SLOT_INSN_SEARCH): New parameter.
+	* params.h: Modify introductory comment.
+	(MAX_DELAY_SLOT_INSN_SEARCH): New parameter.
+	* reorg.c: Add dependence on params.h.
+	(redundant_insn): Add parameterized throttle for search.
+	(fill_simple_delay_slots): Add a comment explaining a variable.
+	Move conditional out of loop, simplifying code.
+	(fill_eager_delay_slots): Fix typographical error in comment.
+
+2001-02-21  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* gcc.c (cc1_options): Add "-param".
+	(DEFAULT_WORD_SWITCH_TAKES_ARG): Likewise.
+	(option_map): Likewise.
+	* toplev.c (display_help): Add entry for "--param".
+	(independent_decode_option): Fix typographical error.
+
+2001-02-14  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* Makefile.in (OBJS): Add params.o.
+
+2001-02-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (toplev.o): Depend on params.h.
+	(intergate.o): Likewise.
+	(params.o): New target.
+	* flags.h (inline_max_insns): Remove.
+	* integrate.c: Include params.h.
+	Use MAX_INLINE_INSNS instead of inline_max_insns.
+	* params.c: New file.
+	* params.h: Likewise.
+	* params.def: Likewise.
+	* toplev.c: Include params.h.
+	(lang_independent_params): New variable.
+	(decode_f_option): Use the param machinery instead of setting
+	max_inline_insns.
+	(independent_decode_option): Handle "--param name=value".
+	(main): Register language-independent parameters.
+
 Thu Mar  1 09:44:15 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (emit_move_sequence): Verify operand0 is a hard register

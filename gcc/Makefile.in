@@ -745,7 +745,7 @@ OBJS = diagnostic.o version.o tree.o print-tree.o stor-layout.o fold-const.o  \
  mbchar.o splay-tree.o graph.o sbitmap.o resource.o hash.o predict.o	      \
  lists.o ggc-common.o $(GGC) stringpool.o simplify-rtx.o ssa.o bb-reorder.o   \
  sibcall.o conflict.o timevar.o ifcvt.o dominance.o dependence.o dce.o \
- sched-vis.o sched-deps.o sched-rgn.o sched-ebb.o hashtab.o
+ sched-vis.o sched-deps.o sched-rgn.o sched-ebb.o hashtab.o params.o
 
 BACKEND = toplev.o libbackend.a
 
@@ -1340,7 +1340,8 @@ toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
    flags.h input.h $(INSN_ATTR_H) xcoffout.h output.h diagnostic.h \
    insn-codes.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h dwarfout.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
-   graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) $(lang_options_files) ssa.h
+   graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) $(lang_options_files) \
+   ssa.h params.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c $(srcdir)/toplev.c
@@ -1406,7 +1407,8 @@ emit-rtl.o : emit-rtl.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
 real.o : real.c $(CONFIG_H) system.h $(TREE_H) toplev.h
 integrate.o : integrate.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    $(INTEGRATE_H) insn-flags.h insn-config.h $(EXPR_H) real.h $(REGS_H) \
-   intl.h function.h output.h $(RECOG_H) except.h toplev.h $(LOOP_H)
+   intl.h function.h output.h $(RECOG_H) except.h toplev.h $(LOOP_H) \
+   params.h
 jump.o : jump.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h $(REGS_H) \
    insn-config.h insn-flags.h $(RECOG_H) $(EXPR_H) real.h except.h function.h \
    toplev.h $(INSN_ATTR_H)
@@ -1424,7 +1426,7 @@ sibcall.o : sibcall.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) function.h \
    hard-reg-set.h flags.h insn-config.h $(RECOG_H) $(BASIC_BLOCK_H)
 resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h system.h \
    $(BASIC_BLOCK_H) $(REGS_H) flags.h output.h resource.h function.h toplev.h \
-   $(INSN_ATTR_H) except.h
+   $(INSN_ATTR_H) except.h params.h
 lcm.o : lcm.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h $(INSN_ATTR_H) $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H)
 ssa.o : ssa.c $(CONFIG_H) system.h $(REGS_H) varray.h			\
@@ -1476,7 +1478,7 @@ caller-save.o : caller-save.c $(CONFIG_H) system.h $(RTL_H) flags.h \
    $(RECOG_H) reload.h $(EXPR_H) toplev.h
 reorg.o : reorg.c $(CONFIG_H) system.h $(RTL_H) conditions.h hard-reg-set.h \
    $(BASIC_BLOCK_H) $(REGS_H) insn-config.h $(INSN_ATTR_H) insn-flags.h \
-   $(RECOG_H) function.h flags.h output.h $(EXPR_H) toplev.h
+   $(RECOG_H) function.h flags.h output.h $(EXPR_H) toplev.h params.h
 alias.o : alias.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h \
    $(BASIC_BLOCK_H) $(REGS_H) toplev.h output.h $(EXPR_H) insn-flags.h \
    $(GGC_H) function.h cselib.h $(TREE_H)
@@ -1524,6 +1526,7 @@ ifcvt.o : ifcvt.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) \
    output.h
 dependence.o : dependence.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) \
    $(C_COMMON_H) flags.h varray.h $(EXPR_H)
+params.o : params.c $(CONFIG_H) system.h params.h toplev.h
 
 $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) $(GGC_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h real.h insn-config.h conditions.h \

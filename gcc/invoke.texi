@@ -255,6 +255,7 @@ in the following sections.
 -fsingle-precision-constant  -fssa @gol
 -fstrength-reduce  -fstrict-aliasing  -fthread-jumps  -ftrapv @gol
 -funroll-all-loops  -funroll-loops  @gol
+--param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
 @item Preprocessor Options
@@ -3237,6 +3238,24 @@ of registers left over after register allocation.  This optimization
 will most benefit processors with lots of registers.  It can, however,
 make debugging impossible, since variables will no longer stay in
 a ``home register''.
+
+@item --param @var{name}=@var{value}
+In some places, GCC uses various constants to control the amount of
+optimization that is done.  For example, GCC will not inline functions
+that contain more that a certain number of instructions.  You can
+control some of these constants on the command-line using the
+@samp{--param} option.
+
+In each case, the @var{value} is a integer.  The allowable choices for
+@var{name} are given in the following table:
+
+@table @gcctabopt
+@item max-inline-insns
+If an function contains more than this many instructions, it
+will not be inlined.  This option is precisely equivalent to
+@samp{-finline-limit}.
+@end table
+
 @end table
 
 @node Preprocessor Options
