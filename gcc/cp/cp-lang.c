@@ -317,9 +317,23 @@ cp_var_mod_type_p (tree type, tree fn)
   return false;
 }
 
+/* This compares two types for equivalence ("compatible" in C-based languages).
+   This routine should only return 1 if it is sure.  It should not be used
+   in contexts where erroneously returning 0 causes problems.  */
+
 static int cxx_types_compatible_p (tree x, tree y)
 {
-  return same_type_ignoring_top_level_qualifiers_p (x, y);
+  if (same_type_ignoring_top_level_qualifiers_p (x, y))
+    return 1;
+
+  /* Once we get to the middle-end, references and pointers are
+     interchangeable.  FIXME should we try to replace all references with
+     pointers?  */
+  if (POINTER_TYPE_P (x) && POINTER_TYPE_P (y)
+      && same_type_p (TREE_TYPE (x), TREE_TYPE (y)))
+    return 1;
+
+  return 0;
 }
 
 /* Construct a C++-aware pretty-printer for CONTEXT.  It is assumed

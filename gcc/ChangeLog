@@ -1,3 +1,9 @@
+2004-07-14  Jason Merrill  <jason@redhat.com>
+
+	PR middle-end/15885
+	* gimplify.c (gimplify_arg): New fn, split out from...
+	(gimplify_call_expr): Here.  Special-case BUILT_IN_VA_START.
+
 2004-07-15  Roman Zippel  <zippel@linux-m68k.org>
 
 	* config/m68k/m68k.c (output_move_qimode): Abort on an attempt to 
@@ -12,14 +18,14 @@
 
 2004-07-15  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.md ("bunordered"): Disable for e500.
-        ("bordered"): Same.
+	* config/rs6000/rs6000.md ("bunordered"): Disable for e500.
+	("bordered"): Same.
 
 2004-07-15  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.md ("*cceq_ior_compare"): Allow
-        unconditionally.
-        * config/rs6000/spe.md ("e500_cceq_ior_compare"): Remove.
+	* config/rs6000/rs6000.md ("*cceq_ior_compare"): Allow
+	unconditionally.
+	* config/rs6000/spe.md ("e500_cceq_ior_compare"): Remove.
 
 2004-07-15  Richard Sandiford  <rsandifo@redhat.com>
 
@@ -59,7 +65,7 @@
 
 	* print-tree.c (print_node): Fix casts last change.
 
-2004-07-15  Paul Brook  <paul@codesourcery.com>
+2004-07-15  Paul Brook	<paul@codesourcery.com>
 
 	* dwarf2out.c (dwarf2out_begin_prologue): Rename IA64_UNWIND_INFO
 	to TARGET_UNWIND_INFO.
@@ -95,7 +101,7 @@
 	Use alias set 0 for memory, do proper mode calculations and adjust
 	address for memories.
 
-2004-07-14  Per Bothner  <per@bothner.com>
+2004-07-14  Per Bothner	 <per@bothner.com>
 
 	* input.h:  If USE_MAPPED_LOCATION, define separate expanded_location
 	structure with extra column field.
@@ -124,10 +130,10 @@
 	* config/sh/sh.c (sh_gimplify_va_arg_expr): Likewise.
 	* config/xtensa/xtensa.c (xtensa_gimplify_va_arg_expr): Likewise.
 
-2004-07-14  Mike Stump  <mrs@apple.com>
+2004-07-14  Mike Stump	<mrs@apple.com>
 
 	* config/darwin.h (WINT_TYPE): Define to be int to match
-        system header files.
+	system header files.
 
 2004-07-14  Bob Wilson  <bob.wilson@acm.org>
 

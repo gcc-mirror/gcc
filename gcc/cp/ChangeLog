@@ -1,3 +1,8 @@
+2004-07-15  Jason Merrill  <jason@redhat.com>
+
+	* cp-lang.c (cxx_types_compatible_p): To the middle-end,
+	references and pointers are compatible.
+
 2004-07-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (xref_basetypes): Refactor.
@@ -16,7 +21,7 @@
 
 2004-07-15  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* class.c(finish_struct_bits): Don't set TYPE_HAS_CONVERSION here.
+	* class.c (finish_struct_bits): Don't set TYPE_HAS_CONVERSION here.
 	* decl.c (xref_basetypes): Set it here.
 
 	* class.c (check_bases): Don't set CLASSTYPE_NON_AGGREGATE here.
