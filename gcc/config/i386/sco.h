@@ -60,17 +60,19 @@
 /* If no 387, use the general regs to return floating values,
    since this system does not emulate the 80387.  */
 
+#undef VALUE_REGNO
 #define VALUE_REGNO(MODE) \
   ((TARGET_80387 && ((MODE) == SFmode || (MODE) == DFmode))
    ? FIRST_FLOAT_REG : 0)
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  ((REGNO) < 2 ? 1							\
-   : (REGNO) < 4 ? 1							\
-   : (REGNO) >= 8 ? ((GET_MODE_CLASS (MODE) == MODE_FLOAT		\
-		      || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)	\
-		     && TARGET_80387					\
-		     && GET_MODE_UNIT_SIZE (MODE) <= 8)			\
+#undef HARD_REGNO_MODE_OK
+#define HARD_REGNO_MODE_OK(REGNO, MODE)					  \
+  ((REGNO) < 2 ? 1							  \
+   : (REGNO) < 4 ? 1							  \
+   : FP_REGNO_P (REGNO) ? ((GET_MODE_CLASS (MODE) == MODE_FLOAT		  \
+                          || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
+                         && TARGET_80387				  \
+                         && GET_MODE_UNIT_SIZE (MODE) <= 8)		  \
    : (MODE) != QImode)
 #endif
 
