@@ -85,7 +85,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
      o optional transformation of nondeterministic finite state
        automata into deterministic ones if the alternative operator
-       `|' is treated nondeterministicly in the description (major
+       `|' is treated nondeterministically in the description (major
        function is NDFA_to_DFA).
 
      o optional minimization of the finite state automata by merging
@@ -815,7 +815,7 @@ struct reserv_decl
   int loop_pass_num;
 };
 
-/* This describes define_insn_reservartion (see file rtl.def).  */
+/* This describes define_insn_reservation (see file rtl.def).  */
 struct insn_reserv_decl
 {
   rtx condexp;
@@ -842,7 +842,7 @@ struct insn_reserv_decl
      insn `cycle advancing'.  */
   regexp_t transformed_regexp;
   /* The following field value is list of arcs marked given
-     insn.  The field is used in transfromation NDFA -> DFA.  */
+     insn.  The field is used in transformation NDFA -> DFA.  */
   arc_t arcs_marked_by_insn;
   /* The two following fields are used during minimization of a finite state
      automaton.  */
@@ -962,7 +962,7 @@ struct regexp
   } regexp;
 };
 
-/* Reperesents description of pipeline hazard description based on
+/* Represents description of pipeline hazard description based on
    NDFA.  */
 struct description
 {
@@ -1089,7 +1089,7 @@ struct arc
      state.  */
   arc_t next_out_arc;
   /* List of arcs marked given insn is formed with the following
-     field.  The field is used in transfromation NDFA -> DFA.  */
+     field.  The field is used in transformation NDFA -> DFA.  */
   arc_t next_arc_marked_by_insn;
   /* The following field is defined if NDFA_FLAG is zero.  The member
      value is number of alternative reservations which can be used for
@@ -1493,7 +1493,7 @@ check_name (name, pos)
   return name;
 }
 
-/* Pointers top all declartions during IR generation are stored in the
+/* Pointers to all declarations during IR generation are stored in the
    following.  */
 static vla_ptr_t decls;
 
@@ -2091,7 +2091,7 @@ string_hash (string)
 
 /* This page contains abstract data `table of automaton declarations'.
    Elements of the table is nodes representing automaton declarations.
-   Key of the table elements is name of given automaton.  Rememeber
+   Key of the table elements is name of given automaton.  Remember
    that automaton names have own space.  */
 
 /* The function evaluates hash value of an automaton declaration.  The
@@ -2195,7 +2195,7 @@ finish_automaton_decl_table ()
 /* This page contains abstract data `table of insn declarations'.
    Elements of the table is nodes representing insn declarations.  Key
    of the table elements is name of given insn (in corresponding
-   define_insn_reservation).  Rememeber that insn names have own
+   define_insn_reservation).  Remember that insn names have own
    space.  */
 
 /* The function evaluates hash value of an insn declaration.  The
@@ -2834,7 +2834,7 @@ process_decls ()
 	}
     }
 
-  /* Check exclusion set declarations and form exclussion sets.  */
+  /* Check exclusion set declarations and form exclusion sets.  */
   for (i = 0; i < description->decls_num; i++)
     {
       decl = description->decls [i];
@@ -3333,7 +3333,7 @@ print_active_time (f, ticker)
    really being created.  This value is defined on the base of
    argument of option `-split'.  If the variable has zero value the
    number of automata is defined by the constructions `%automaton'.
-   This case occures when option `-split' is absent or has zero
+   This case occurs when option `-split' is absent or has zero
    argument.  If constructions `define_automaton' is absent only one
    automaton is created.  */
 static int automata_num;
@@ -3383,7 +3383,7 @@ add_advance_cycle_insn_decl ()
 }
 
 
-/* Abstract data `alternative states' which reperesents
+/* Abstract data `alternative states' which represents
    nondeterministic nature of the description (see comments for
    structures alt_state and state).  */
 
@@ -3397,7 +3397,7 @@ static int allocated_alt_states_num = 0;
 #endif
 
 /* The following function returns free node alt_state.  It may be new
-   allocated node or node freed eralier.  */
+   allocated node or node freed earlier.  */
 static alt_state_t 
 get_free_alt_state ()
 {
@@ -3924,7 +3924,7 @@ output_reserv_sets (f, reservs)
 }
 
 /* The following function returns free node state for AUTOMATON.  It
-   may be new allocated node or node freed eralier.  The function also
+   may be new allocated node or node freed earlier.  The function also
    allocates reservation set if WITH_RESERVS has nonzero value.  */
 static state_t
 get_free_state (with_reservs, automaton)
@@ -5742,7 +5742,7 @@ create_composed_state (original_state, arcs_marked_by_insn, state_stack)
     }
 }
 
-/* The function transformes nondeterminstic AUTOMATON into
+/* The function transforms nondeterministic AUTOMATON into
    deterministic.  */
 static void
 NDFA_to_DFA (automaton)
@@ -5942,7 +5942,7 @@ init_equiv_class (states, states_num)
 
 /* The function processes equivalence class given by its pointer
    EQUIV_CLASS_PTR on odd iteration if ODD_ITERATION_FLAG.  If there
-   are not equvalent states, the function partitions the class
+   are not equivalent states, the function partitions the class
    removing nonequivalent states and placing them in
    *NEXT_ITERATION_CLASSES, increments *NEW_EQUIV_CLASS_NUM_PTR ans
    assigns it to the state equivalence number.  If the class has been
@@ -6450,7 +6450,7 @@ estimate_one_automaton_bound ()
   return one_automaton_estimation_bound;
 }
 
-/* The function compares unit declarations acoording to their maximal
+/* The function compares unit declarations according to their maximal
    cycle in reservations.  */
 static int
 compare_max_occ_cycle_nums (unit_decl_1, unit_decl_2)
@@ -7254,7 +7254,7 @@ output_chip_definitions ()
 
 /* The function outputs translate vector of internal insn code into
    insn equivalence class number.  The equivalence class number is
-   used to access to table and vectors reprewsenting DFA(s).  */
+   used to access to table and vectors representing DFA(s).  */
 static void
 output_translate_vect (automaton)
      automaton_t automaton;
@@ -8946,7 +8946,7 @@ add_state_reservs (state)
     }
 }
 
-/* The function outputs readable represenatation of all out arcs of
+/* The function outputs readable representation of all out arcs of
    STATE.  */
 static void
 output_state_arcs (state)
@@ -9032,7 +9032,7 @@ remove_state_duplicate_reservs ()
 
 /* The following function output readable representation of DFA(s)
    state used for fast recognition of pipeline hazards.  State is
-   described by possible (current and scehduled) cpu unit
+   described by possible (current and scheduled) cpu unit
    reservations.  */
 static void
 output_state (state)
@@ -9186,7 +9186,7 @@ output_time_statistics (f)
   fprintf (f, "\n");
 }
 
-/* The function generates DFA (deterministic finate state automaton)
+/* The function generates DFA (deterministic finite state automaton)
    for fast recognition of pipeline hazards.  No errors during
    checking must be fixed before this function call.  */
 static void
