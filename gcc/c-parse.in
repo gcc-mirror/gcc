@@ -3788,19 +3788,17 @@ ifobjc
 	tree after_at;
 	enum cpp_ttype after_at_type;
 
-	cpp_start_lookahead (parse_in);
 	after_at_type = c_lex (&after_at);
 
 	if (after_at_type == CPP_NAME
 	    && C_IS_RESERVED_WORD (after_at)
 	    && OBJC_IS_AT_KEYWORD (C_RID_CODE (after_at)))
 	  {
-	    cpp_stop_lookahead (parse_in, 1);  /* accept this token */
 	    yylval.ttype = after_at;
 	    last_token = after_at_type;
 	    return rid_to_yy [(int) C_RID_CODE (after_at)];
 	  }
-	cpp_stop_lookahead (parse_in, 0);  /* put back this token */
+	_cpp_backup_tokens (parse_in, 1);
 	return '@';
       }
 end ifobjc

@@ -1,3 +1,8 @@
+2001-09-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/directiv.c: Update.
+	* gcc.dg/cpp/undef1.c: Update.
+
 2001-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20010912-1.c: New test.

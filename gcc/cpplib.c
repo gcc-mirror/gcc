@@ -176,7 +176,7 @@ DIRECTIVE_TABLE
 #undef D
 #undef DIRECTIVE_TABLE
 
-#define SEEN_EOL() (pfile->lexer_pos.output_line > pfile->line)
+#define SEEN_EOL() (pfile->cur_token[-1].type == CPP_EOF)
 
 /* Skip any remaining tokens in a directive.  */
 static void
@@ -184,10 +184,6 @@ skip_rest_of_line (pfile)
      cpp_reader *pfile;
 {
   cpp_token token;
-
-  /* Discard all input lookaheads.  */
-  while (pfile->la_read)
-    _cpp_release_lookahead (pfile);
 
   /* Discard all stacked contexts.  */
   while (pfile->context != &pfile->base_context)
@@ -227,10 +223,6 @@ start_directive (pfile)
   pfile->directive_pos = pfile->lexer_pos;
   pfile->directive_pos.line = pfile->line;
   pfile->directive_line = pfile->line;
-
-  /* Don't save directive tokens for external clients.  */
-  pfile->la_saved = pfile->la_write;
-  pfile->la_write = 0;
 }
 
 /* Called when leaving a directive, _Pragma or command-line directive.  */
@@ -243,12 +235,14 @@ end_directive (pfile, skip_line)
   if (skip_line)
     {
       skip_rest_of_line (pfile);
-      /*  "Accept" the newline now.  */
-      pfile->line++;
+      if (!pfile->keep_tokens)
+	{
+	  pfile->cur_run = &pfile->base_run;
+	  pfile->cur_token = pfile->base_run.base;
+	}
     }
 
   /* Restore state.  */
-  pfile->la_write = pfile->la_saved;
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
   pfile->state.in_directive = 0;
   pfile->state.angled_headers = 0;
@@ -289,7 +283,7 @@ _cpp_handle_directive (pfile, indented)
 	{
 	  dir = &dtable[T_LINE];
 	  pfile->state.line_extension = 1;
-	  _cpp_push_token (pfile, &dname, &pfile->directive_pos);
+	  _cpp_backup_tokens (pfile, 1);
 	  if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, preprocessed))
 	    cpp_pedwarn (pfile, "# followed by integer");
 	}
@@ -324,7 +318,7 @@ _cpp_handle_directive (pfile, indented)
 	      /* We don't want to process this directive.  Put back the
 		 tokens so caller will see them (and issue an error,
 		 probably).  */
-	      _cpp_push_token (pfile, &dname, &pfile->directive_pos);
+	      _cpp_backup_tokens (pfile, 1);
 	      skip = 0;
 	    }
 	}
@@ -376,8 +370,8 @@ _cpp_handle_directive (pfile, indented)
 	 directives in skipped conditional groups (6.10 p4).  */
       if (CPP_OPTION (pfile, lang) == CLK_ASM)
 	{
-	  /* Output the # and lookahead token for the assembler.  */
-	  _cpp_push_token (pfile, &dname, &pfile->directive_pos);
+	  /* Output the # and this token for the assembler.  */
+	  _cpp_backup_tokens (pfile, 1);
 	  skip = 0;
 	}
       else
@@ -402,12 +396,11 @@ run_directive (pfile, dir_no, buf, count)
   cpp_push_buffer (pfile, (const U_CHAR *) buf, count,
 		   /* from_stage3 */ true, 1);
   start_directive (pfile);
-  pfile->state.bol = 0;
+  pfile->buffer->saved_flags = 0; /* We don't want to recognise directives.  */
   pfile->state.prevent_expansion++;
   pfile->directive = &dtable[dir_no];
   (void) (*pfile->directive->handler) (pfile);
   pfile->state.prevent_expansion--;
-  check_eol (pfile);
   end_directive (pfile, 1);
   _cpp_pop_buffer (pfile);
 }
@@ -618,7 +611,7 @@ do_include_common (pfile, type)
 	{
 	  check_eol (pfile);
 	  /* Get out of macro context, if we are.  */
-	  end_directive (pfile, 1);
+	  skip_rest_of_line (pfile);
 	  if (pfile->cb.include)
 	    (*pfile->cb.include) (pfile, pfile->directive_line,
 				  pfile->directive->name, &header);
@@ -772,7 +765,7 @@ do_line (pfile)
       return;
     }
 
-  end_directive (pfile, 1);
+  skip_rest_of_line (pfile);
   _cpp_do_file_change (pfile, reason, new_file, new_lineno, new_sysp);
 }
 
@@ -961,12 +954,13 @@ do_pragma (pfile)
   pragma_cb handler = NULL;
   const struct pragma_entry *p;
   cpp_token tok;
+  unsigned int count = 0;
 
   p = pfile->pragmas;
   pfile->state.prevent_expansion++;
-  cpp_start_lookahead (pfile);
 
  new_space:
+  count++;
   cpp_get_token (pfile, &tok);
   if (tok.type == CPP_NAME)
     {
@@ -993,13 +987,14 @@ do_pragma (pfile)
 	}
     }
 
-  cpp_stop_lookahead (pfile, handler != NULL);
   pfile->state.prevent_expansion--;
-
   if (handler)
     (*handler) (pfile);
   else if (pfile->cb.def_pragma)
-    (*pfile->cb.def_pragma) (pfile, pfile->directive_line);
+    {
+      _cpp_backup_tokens (pfile, count);
+      (*pfile->cb.def_pragma) (pfile, pfile->directive_line);
+    }
 }
 
 static void
@@ -1066,7 +1061,7 @@ do_pragma_system_header (pfile)
   else
     {
       check_eol (pfile);
-      end_directive (pfile, 1);
+      skip_rest_of_line (pfile);
       cpp_make_system_header (pfile, 1, 0);
     }
 }
@@ -1092,11 +1087,12 @@ do_pragma_dependency (pfile)
     {
       cpp_warning (pfile, "current file is older than %s",
 		   cpp_token_as_text (pfile, &header));
-      cpp_start_lookahead (pfile);
       cpp_get_token (pfile, &msg);
-      cpp_stop_lookahead (pfile, msg.type == CPP_EOF);
       if (msg.type != CPP_EOF)
-	do_diagnostic (pfile, WARNING, 0);
+	{
+	  _cpp_backup_tokens (pfile, 1);
+	  do_diagnostic (pfile, WARNING, 0);
+	}
     }
 }
 
@@ -1387,11 +1383,7 @@ parse_answer (pfile, answerp, type)
 
   /* In a conditional, it is legal to not have an open paren.  We
      should save the following token in this case.  */
-  if (type == T_IF)
-    cpp_start_lookahead (pfile);
   cpp_get_token (pfile, &paren);
-  if (type == T_IF)
-    cpp_stop_lookahead (pfile, paren.type == CPP_OPEN_PAREN);
 
   /* If not a paren, see if we're OK.  */
   if (paren.type != CPP_OPEN_PAREN)
@@ -1399,7 +1391,10 @@ parse_answer (pfile, answerp, type)
       /* In a conditional no answer is a test for any answer.  It
          could be followed by any token.  */
       if (type == T_IF)
-	return 0;
+	{
+	  _cpp_backup_tokens (pfile, 1);
+	  return 0;
+	}
 
       /* #unassert with no answer is valid - it removes all answers.  */
       if (type == T_UNASSERT && paren.type == CPP_EOF)
@@ -1755,6 +1750,7 @@ cpp_push_buffer (pfile, buffer, len, from_stage3, return_at_eof)
   new->from_stage3 = from_stage3;
   new->prev = pfile->buffer;
   new->return_at_eof = return_at_eof;
+  new->saved_flags = BOL;
 
   pfile->buffer = new;
 
@@ -1783,7 +1779,6 @@ _cpp_pop_buffer (pfile)
      case of a missing #endif.  */
   pfile->lexer_pos.output_line = pfile->line;
   pfile->state.skipping = 0;
-  pfile->state.bol = 1;
 
   /* Update the reader's buffer before _cpp_do_file_change.  */
   pfile->buffer = buffer->prev;

@@ -77,13 +77,6 @@ static int funlike_invocation_p PARAMS ((cpp_reader *, const cpp_hashnode *,
 static void replace_args PARAMS ((cpp_reader *, cpp_macro *, macro_arg *,
 				  struct toklist *));
 
-/* Lookaheads.  */
-
-static void save_lookahead_token PARAMS ((cpp_reader *, const cpp_token *));
-static void take_lookahead_token PARAMS ((cpp_reader *, cpp_token *));
-static cpp_lookahead *alloc_lookahead PARAMS ((cpp_reader *));
-static void free_lookahead PARAMS ((cpp_lookahead *));
-
 /* #define directive parsing and handling.  */
 
 static cpp_token *lex_expansion_token PARAMS ((cpp_reader *, cpp_macro *));
@@ -175,7 +168,7 @@ builtin_macro (pfile, token)
 	 line of the macro's invocation, not its definition.
 	 Otherwise things like assert() will not work properly.  */
       make_number_token (pfile, token,
-			 SOURCE_LINE (pfile->map, cpp_get_line (pfile)->line));
+			 SOURCE_LINE (pfile->map, pfile->cur_token[-1].line));
       break;
 
     case BT_STDC:
@@ -224,6 +217,12 @@ const cpp_lexer_pos *
 cpp_get_line (pfile)
      cpp_reader *pfile;
 {
+  if (pfile->context->prev == NULL)
+    {
+      pfile->lexer_pos.line = pfile->cur_token[-1].line;
+      pfile->lexer_pos.col = pfile->cur_token[-1].col;
+    }
+
   return &pfile->lexer_pos;
 }
 
@@ -486,10 +485,12 @@ parse_arg (pfile, arg, variadic)
       /* Newlines in arguments are white space (6.10.3.10).  */
       line = pfile->line;
       cpp_get_token (pfile, token);
+
       if (line != pfile->line)
 	token->flags |= PREV_WHITE;
 
       result = token->type;
+
       if (result == CPP_OPEN_PAREN)
 	paren++;
       else if (result == CPP_CLOSE_PAREN && paren-- == 0)
@@ -498,11 +499,37 @@ parse_arg (pfile, arg, variadic)
       else if (result == CPP_COMMA && paren == 0 && !variadic)
 	break;
       else if (result == CPP_EOF)
-	break;		/* Error reported by caller.  */
+	{
+	  /* We still need the EOF (added below) to end pre-expansion
+	     and directives.  */
+	  if (pfile->context->prev || pfile->state.in_directive)
+	    _cpp_backup_tokens (pfile, 1);
+	  /* Error reported by caller.  */
+	  break;
+	}
+      else if (result == CPP_HASH && token->flags & BOL)
+	{
+	  /* 6.10.3 paragraph 11: If there are sequences of
+	     preprocessing tokens within the list of arguments that
+	     would otherwise act as preprocessing directives, the
+	     behavior is undefined.
+
+	     This implementation will report a hard error, terminate
+	     the macro invocation, and proceed to process the
+	     directive.  */
+	  cpp_error (pfile,
+		     "directives may not be used inside a macro argument");
+	  _cpp_backup_tokens (pfile, 1);
+	  result = CPP_EOF;
+	  break;
+	}
     }
 
-  /* Commit the memory used to store the arguments.  */
-  POOL_COMMIT (&pfile->argument_pool, arg->count * sizeof (cpp_token));
+  /* Commit the memory used to store the arguments.  We make the last
+     argument a CPP_EOF, so that it terminates macro pre-expansion,
+     but it is not included in arg->count.  */
+  arg->first[arg->count].type = CPP_EOF;  
+  POOL_COMMIT (&pfile->argument_pool, (arg->count + 1) * sizeof (cpp_token));
 
   return result;
 }
@@ -600,17 +627,19 @@ funlike_invocation_p (pfile, node, list)
   pfile->state.prevent_expansion++;
 
   pfile->keep_tokens++;
-  cpp_start_lookahead (pfile);
   cpp_get_token (pfile, &maybe_paren);
-  cpp_stop_lookahead (pfile, maybe_paren.type == CPP_OPEN_PAREN);
   pfile->state.parsing_args = 2;
 
   if (maybe_paren.type == CPP_OPEN_PAREN)
     args = parse_args (pfile, node);
-  else if (CPP_WTRADITIONAL (pfile) && ! node->value.macro->syshdr)
-    cpp_warning (pfile,
-	 "function-like macro \"%s\" must be used with arguments in traditional C",
-		 NODE_NAME (node));
+  else
+    {
+      _cpp_backup_tokens (pfile, 1);
+      if (CPP_WTRADITIONAL (pfile) && ! node->value.macro->syshdr)
+	cpp_warning (pfile,
+ "function-like macro \"%s\" must be used with arguments in traditional C",
+		     NODE_NAME (node));
+    }
 
   pfile->state.prevent_expansion--;
   pfile->state.parsing_args = 0;
@@ -623,13 +652,7 @@ funlike_invocation_p (pfile, node, list)
   if (args)
     {
       if (node->value.macro->paramc > 0)
-	{
-	  /* Don't save tokens during pre-expansion.  */
-	  struct cpp_lookahead *la_saved = pfile->la_write;
-	  pfile->la_write = 0;
-	  replace_args (pfile, node->value.macro, args, list);
-	  pfile->la_write = la_saved;
-	}
+	replace_args (pfile, node->value.macro, args, list);
       free (args);
     }
 
@@ -838,7 +861,7 @@ push_arg_context (pfile, arg)
   cpp_context *context = next_context (pfile);
   context->macro = 0;
   context->list.first = arg->first;
-  context->list.limit = arg->first + arg->count;
+  context->list.limit = arg->first + arg->count + 1;
 
   return context;
 }
@@ -908,10 +931,8 @@ cpp_get_token (pfile, token)
     {
       cpp_context *context = pfile->context;
 
-      if (pfile->la_read)
-	take_lookahead_token (pfile, token);
       /* Context->prev == 0 <=> base context.  */
-      else if (!context->prev)
+      if (!context->prev)
 	_cpp_lex_token (pfile, token);
       else if (context->list.first != context->list.limit)
 	{
@@ -928,17 +949,13 @@ cpp_get_token (pfile, token)
 	}
       else
 	{
-	  if (context->macro)
-	    {
-	      /* Avoid accidental paste at the end of a macro.  */
-	      pfile->buffer->saved_flags |= AVOID_LPASTE;
-	      _cpp_pop_context (pfile);
-	      continue;
-	    }
-	  /* End of argument pre-expansion.  */
-	  token->type = CPP_EOF;
-	  token->flags = 0;
-	  return;
+	  if (!context->macro)
+	    cpp_ice (pfile, "context->macro == 0");
+
+	  /* Avoid accidental paste at the end of a macro.  */
+	  pfile->buffer->saved_flags |= AVOID_LPASTE;
+	  _cpp_pop_context (pfile);
+	  continue;
 	}
 
       if (token->type != CPP_NAME)
@@ -983,9 +1000,6 @@ cpp_get_token (pfile, token)
          since this token came from either the lexer or a macro.  */
       _cpp_do__Pragma (pfile);
     }
-
-  if (pfile->la_write)
-    save_lookahead_token (pfile, token);
 }
 
 /* Returns true if we're expanding an object-like macro that was
@@ -1013,152 +1027,34 @@ cpp_scan_nooutput (pfile)
   while (token.type != CPP_EOF);
 }
 
-/* Lookahead handling.  */
-
-static void
-save_lookahead_token (pfile, token)
-     cpp_reader *pfile;
-     const cpp_token *token;
-{
-  cpp_lookahead *la = pfile->la_write;
-  cpp_token_with_pos *twp;
-
-  if (la->count == la->cap)
-    {
-      la->cap += la->cap + 8;
-      la->tokens = (cpp_token_with_pos *)
-	xrealloc (la->tokens, la->cap * sizeof (cpp_token_with_pos));
-    }
-
-  twp = &la->tokens[la->count++];
-  twp->token = *token;
-  twp->pos = *cpp_get_line (pfile);
-}
-
-static void
-take_lookahead_token (pfile, token)
-     cpp_reader *pfile;
-     cpp_token *token;
-{
-  cpp_lookahead *la = pfile->la_read;
-  cpp_token_with_pos *twp = &la->tokens[la->cur];
-
-  *token = twp->token;
-  pfile->lexer_pos = twp->pos;
-
-  if (++la->cur == la->count)
-    _cpp_release_lookahead (pfile);
-}
-
-/* Moves the lookahead at the front of the read list to the free store.  */
+/* Step back one (or more) tokens.  Can only step mack more than 1 if
+   they are from the lexer, and not from macro expansion.  */
 void
-_cpp_release_lookahead (pfile)
+_cpp_backup_tokens (pfile, count)
      cpp_reader *pfile;
+     unsigned int count;
 {
-  cpp_lookahead *la = pfile->la_read;
-
-  pfile->la_read = la->next;
-  la->next = pfile->la_unused;
-  pfile->la_unused = la;
-  unlock_pools (pfile);
-}
-
-/* Take a new lookahead from the free store, or allocate one if none.  */
-static cpp_lookahead *
-alloc_lookahead (pfile)
-     cpp_reader *pfile;
-{
-  cpp_lookahead *la = pfile->la_unused;
-
-  if (la)
-    pfile->la_unused = la->next;
+  if (pfile->context->prev == NULL)
+    {
+      pfile->lookaheads += count;
+      while (count--)
+	{
+	  pfile->cur_token--;
+	  if (pfile->cur_token == pfile->cur_run->base)
+	    {
+	      if (pfile->cur_run == NULL)
+		abort ();
+	      pfile->cur_run = pfile->cur_run->prev;
+	      pfile->cur_token = pfile->cur_run->limit;
+	    }
+	}
+    }
   else
     {
-      la = xnew (cpp_lookahead);
-      la->tokens = 0;
-      la->cap = 0;
+      if (count != 1)
+	abort ();
+      pfile->context->list.first--;
     }
-
-  la->cur = la->count = 0;
-  return la;
-}
-
-/* Free memory associated with a lookahead list.  */
-static void
-free_lookahead (la)
-     cpp_lookahead *la;
-{
-  if (la->tokens)
-    free ((PTR) la->tokens);
-  free ((PTR) la);
-}
-
-/* Free all the lookaheads of a cpp_reader.  */
-void
-_cpp_free_lookaheads (pfile)
-     cpp_reader *pfile;
-{
-  cpp_lookahead *la, *lan;
-
-  if (pfile->la_read)
-    free_lookahead (pfile->la_read);
-  if (pfile->la_write)
-    free_lookahead (pfile->la_write);
-
-  for (la = pfile->la_unused; la; la = lan)
-    {
-      lan = la->next;
-      free_lookahead (la);
-    }
-}
-
-/* Allocate a lookahead and move it to the front of the write list.  */
-void
-cpp_start_lookahead (pfile)
-     cpp_reader *pfile;
-{
-  cpp_lookahead *la = alloc_lookahead (pfile);
-
-  la->next = pfile->la_write;
-  pfile->la_write = la;
-
-  la->pos = *cpp_get_line (pfile);
-
-  /* Don't allow memory pools to be re-used whilst we're reading ahead.  */
-  lock_pools (pfile);
-}
-
-/* Stop reading ahead - either step back, or drop the read ahead.  */
-void
-cpp_stop_lookahead (pfile, drop)
-     cpp_reader *pfile;
-     int drop;
-{
-  cpp_lookahead *la = pfile->la_write;
-
-  pfile->la_write = la->next;
-  la->next = pfile->la_read;
-  pfile->la_read = la;
-
-  if (drop || la->count == 0)
-    _cpp_release_lookahead (pfile);
-  else
-    pfile->lexer_pos = la->pos;
-}
-
-/* Push a single token back to the front of the queue.  Only to be
-   used by cpplib, and only then when necessary.  POS is the position
-   to report for the preceding token.  */
-void
-_cpp_push_token (pfile, token, pos)
-     cpp_reader *pfile;
-     const cpp_token *token;
-     const cpp_lexer_pos *pos;
-{
-  cpp_start_lookahead (pfile);
-  save_lookahead_token (pfile, token);
-  cpp_stop_lookahead (pfile, 0);
-  pfile->lexer_pos = *pos;
 }
 
 /* #define directive parsing and handling.  */

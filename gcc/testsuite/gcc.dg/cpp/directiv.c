@@ -28,7 +28,7 @@ EMPTY #define bar
 /* Check that directives always start a line, even if in middle of
    macro expansion.  */
 #define func(x) x
-func (2		/* { dg-error "unterminated" "" { target *-*-* } 32 } */
+func (2		/* { dg-error "unterminated" "" } */
 #define foobar	/* { dg-error "directives may not" } */
 
 /* Check newlines end directives, even in function-like macro

@@ -105,7 +105,7 @@ struct toklist
 typedef struct tokenrun tokenrun;
 struct tokenrun
 {
-  tokenrun *next;
+  tokenrun *next, *prev;
   cpp_token *base, *limit;
 };
 
@@ -130,9 +130,6 @@ struct lexer_state
 
   /* True if we are skipping a failed conditional group.  */
   unsigned char skipping;
-
-  /* Nonzero if next token is the start of a line.  */
-  unsigned char bol;
 
   /* Nonzero if in a directive that takes angle-bracketed headers.  */
   unsigned char angled_headers;
@@ -271,15 +268,10 @@ struct cpp_reader
   /* Lexing.  */
   cpp_token *cur_token;
   tokenrun base_run, *cur_run;
+  unsigned int lookaheads;
 
   /* Non-zero prevents the lexer from re-using the token runs.  */
   unsigned int keep_tokens;
-
-  /* Token lookahead.  */
-  struct cpp_lookahead *la_read;	/* Read from this lookahead.  */
-  struct cpp_lookahead *la_write;	/* Write to this lookahead.  */
-  struct cpp_lookahead *la_unused;	/* Free store.  */
-  struct cpp_lookahead *la_saved;	/* Backup when entering directive.  */
 
   /* Error counter for exit code.  */
   unsigned int errors;
@@ -382,10 +374,6 @@ extern int _cpp_begin_message PARAMS ((cpp_reader *, enum error_type,
 extern void _cpp_free_definition	PARAMS ((cpp_hashnode *));
 extern int _cpp_create_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
 extern void _cpp_pop_context		PARAMS ((cpp_reader *));
-extern void _cpp_free_lookaheads	PARAMS ((cpp_reader *));
-extern void _cpp_release_lookahead	PARAMS ((cpp_reader *));
-extern void _cpp_push_token		PARAMS ((cpp_reader *, const cpp_token *,
-						 const cpp_lexer_pos *));
 
 /* In cpphash.c */
 extern void _cpp_init_hashtable		PARAMS ((cpp_reader *, hash_table *));

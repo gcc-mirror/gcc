@@ -167,6 +167,7 @@ struct cpp_string
 #define NAMED_OP	(1 << 4) /* C++ named operators.  */
 #define NO_EXPAND	(1 << 5) /* Do not macro-expand this token.  */
 #define AVOID_LPASTE	(1 << 6) /* Check left for accidental pastes.  */
+#define BOL		(1 << 7) /* Token at beginning of line.  */
 
 /* A preprocessing token.  This has been carefully packed and should
    occupy 12 bytes on 32-bit hosts and 16 bytes on 64-bit hosts.  */
@@ -524,6 +525,7 @@ extern void cpp_get_token PARAMS ((cpp_reader *, cpp_token *));
 extern const cpp_lexer_pos *cpp_get_line PARAMS ((cpp_reader *));
 extern const unsigned char *cpp_macro_definition PARAMS ((cpp_reader *,
 						  const cpp_hashnode *));
+extern void _cpp_backup_tokens PARAMS ((cpp_reader *, unsigned int));
 
 /* Evaluate a CPP_CHAR or CPP_WCHAR token.  */
 extern HOST_WIDE_INT
