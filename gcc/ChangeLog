@@ -1,3 +1,10 @@
+2003-07-16  Richard Henderson  <rth@redhat.com>
+
+	PR target/10907
+        * config/ia64/ia64.c (ia64_epilogue_uses): GP is live at end
+        even with !TARGET_CONST_GP.
+        (ia64_function_ok_for_sibcall): Reject non-local functions.
+
 2003-07-15  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.c (machopic_select_section): Use decl_readonly_section
