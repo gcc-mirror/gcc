@@ -369,7 +369,8 @@ namespace std
 
     _Impl(const _Impl&, size_t __refs);
     _Impl(const _Impl&, const string&, category, size_t __refs);
-    _Impl(size_t __facets, size_t __refs, bool __has_name, string __name);
+    _Impl(size_t __facets, size_t __refs, bool __has_name, 
+	  string __name = "*");
    ~_Impl() throw();
 
     void 
