@@ -441,6 +441,11 @@ namespace std
 
       void
       _M_cache_locale(const locale& __loc);
+
+      // Internal state setter that won't throw, only set the state bits.
+      // Used to guarantee we don't throw when setting badbit.
+      void
+      _M_setstate(iostate __state) { _M_streambuf_state |= __state; }
     };
 } // namespace std
 

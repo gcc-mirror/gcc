@@ -1,3 +1,14 @@
+2003-03-08  Jerry Quinn  <jlquinn@optonline.net>
+
+	PR libstdc++/9561
+	* include/bits/basic_ios.h (_M_setstate): New.
+	* include/bits/ostream.tcc (operator<<): Use it.
+	* include/bits/istream.tcc (operator>>): Use it.
+	* include/std/std_ostream.h (operator<<): Make friends.
+	* include/std/std_istream.h (operator>>): Make friends.
+	* testsuite/27_io/ostream_exception.cc,
+	testsuite/27_io/istream_exception.cc: New tests.
+
 2003-03-08  Benjamin Kosnik  <bkoz@redhat.com>	
 
 	* include/bits/locale_facets.tcc: Fix typo.
