@@ -79,19 +79,5 @@ Boston, MA 02111-1307, USA.  */
    %{!shared:crtend%O%s} %{shared:crtendS%O%s}"
 
 
-/* Make gcc agree with <machine/ansi.h> */
-
-#undef WCHAR_TYPE
-#define WCHAR_TYPE "int"
-
-#undef WCHAR_UNSIGNED
-#define WCHAR_UNSIGNED 0
-
-#undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE 32
-
-#undef WINT_TYPE
-#define WINT_TYPE "int"
-
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (NetBSD/alpha ELF)");
