@@ -989,7 +989,7 @@ typedef struct gfc_expr
 gfc_expr;
 
 
-#define gfc_get_shape(rank) ((mpz_t *) gfc_getmem(rank*sizeof(mpz_t)))
+#define gfc_get_shape(rank) ((mpz_t *) gfc_getmem((rank)*sizeof(mpz_t)))
 
 /* Structures for information associated with different kinds of
    numbers.  The first set of integer parameters define all there is
@@ -1584,6 +1584,7 @@ void gfc_replace_expr (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_int_expr (int);
 gfc_expr *gfc_logical_expr (int, locus *);
 mpz_t *gfc_copy_shape (mpz_t *, int);
+mpz_t *gfc_copy_shape_excluding (mpz_t *, int, gfc_expr *);
 gfc_expr *gfc_copy_expr (gfc_expr *);
 
 try gfc_specification_expr (gfc_expr *);
