@@ -2,6 +2,31 @@
 
 	* name-finder.cc (lookup): Ignore a null dli_fname from dladdr.
 
+	* Makefile.am: New friends for java/lang/Thread.h.
+	* prims.cc (runFirst): Removed.
+	(JvRunMain): Merged into _Jv_RunMain. Now just calls that.
+	(_Jv_RunMain): Now takes either a klass or class name parameter.
+	Create a gnu.gcj.runtime.FirstThread and attach the native thread
+	to that, then run it using _Jv_ThreadRun. Remove special handling of
+	jar files, instead pass is_jar parameter through to FirstThread.
+	* gcj/javaprims.h: Add prototypes for _Jv_ThreadRun and new variant
+	of _Jv_AttachCurrentThread.
+	* gnu/gcj/runtime/FirstThread.java (FirstThread): Now extends Thread.
+	(run): New method. Take care of looking up main class manifest 
+	attribute and calling forName if neccessary. Then call call_main.
+	(call_main): New native method.
+	* gnu/gcj/runtime/natFirstThread.cc (call_main): New function, code 
+	relocated from prims.cc. Look up and call main method. 
+	* java/lang/Thread.java (run_): Removed.
+	* java/lang/natThread.cc (run_): Renamed to...
+	(_Jv_ThreadRun): this. JVMPI notification code moved to ...
+	(_Jv_NotifyThreadStart): here. New function.
+	(countStackFrames, destroy, resume, suspend, stop): Throw
+	UnsupportedOperationExceptions rather than JvFail'ing.
+	(_Jv_AttachCurrentThread): New variant takes a Thread argument.
+	Existing version wraps new variant.
+	
+
 2001-08-23  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/reflect/Field.java (toString): Use

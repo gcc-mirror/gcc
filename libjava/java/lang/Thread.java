@@ -109,8 +109,6 @@ public class Thread implements Runnable
 
   public final native void resume ();
 
-  // This method exists only to avoid a warning from the C++ compiler.
-  private static final native void run_ (Object obj);
   private final native void finish_ ();
 
   // Check the thread's interrupted status. If clear_flag is true, the 

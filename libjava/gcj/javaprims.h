@@ -398,6 +398,11 @@ extern "C" jsize _Jv_GetStringUTFLength (jstring);
 extern "C" jsize _Jv_GetStringUTFRegion (jstring, jsize, jsize, char *);
 
 extern jint _Jv_CreateJavaVM (void* /*vm_args*/);
+
+void
+_Jv_ThreadRun (java::lang::Thread* thread);
+jint
+_Jv_AttachCurrentThread(java::lang::Thread* thread);
 extern "C" java::lang::Thread*
 _Jv_AttachCurrentThread(jstring name, java::lang::ThreadGroup* group);
 extern "C" jint _Jv_DetachCurrentThread (void);

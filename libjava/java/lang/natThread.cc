@@ -87,7 +87,8 @@ jint
 java::lang::Thread::countStackFrames (void)
 {
   // NOTE: This is deprecated in JDK 1.2.
-  JvFail ("java::lang::Thread::countStackFrames unimplemented");
+  throw new UnsupportedOperationException
+    (JvNewStringLatin1 ("Thread.countStackFrames unimplemented"));
   return 0;
 }
 
@@ -102,7 +103,8 @@ java::lang::Thread::destroy (void)
 {
   // NOTE: This is marked as unimplemented in the JDK 1.2
   // documentation.
-  JvFail ("java::lang::Thread::destroy unimplemented");
+  throw new UnsupportedOperationException
+    (JvNewStringLatin1 ("Thread.destroy unimplemented"));
 }
 
 void
@@ -142,7 +144,8 @@ void
 java::lang::Thread::resume (void)
 {
   checkAccess ();
-  JvFail ("java::lang::Thread::resume unimplemented");
+  throw new UnsupportedOperationException
+    (JvNewStringLatin1 ("Thread.resume unimplemented"));
 }
 
 void
@@ -213,12 +216,11 @@ java::lang::Thread::finish_ ()
   _Jv_MutexUnlock (&nt->join_mutex);  
 }
 
-void
-java::lang::Thread::run_ (jobject obj)
+// Run once at thread startup, either when thread is attached or when 
+// _Jv_ThreadRun is called.
+static void
+_Jv_NotifyThreadStart (java::lang::Thread* thread)
 {
-  java::lang::Thread *thread = (java::lang::Thread *) obj;
-  try
-    {
 #ifdef ENABLE_JVMPI
       if (_Jv_JVMPI_Notify_THREAD_START)
 	{
@@ -272,7 +274,14 @@ java::lang::Thread::run_ (jobject obj)
 	  _Jv_EnableGC ();
 	}
 #endif
+}
 
+void
+_Jv_ThreadRun (java::lang::Thread* thread)
+{
+  try
+    {
+      _Jv_NotifyThreadStart (thread);
       thread->run ();
     }
   catch (java::lang::Throwable *t)
@@ -304,14 +313,14 @@ java::lang::Thread::start (void)
   alive_flag = true;
   startable_flag = false;
   natThread *nt = (natThread *) data;
-  _Jv_ThreadStart (this, nt->thread, (_Jv_ThreadStartFunc *) &run_);
+  _Jv_ThreadStart (this, nt->thread, (_Jv_ThreadStartFunc *) &_Jv_ThreadRun);
 }
 
 void
 java::lang::Thread::stop (java::lang::Throwable *)
 {
   throw new UnsupportedOperationException
-    (JvNewStringLatin1 ("java::lang::Thread::stop unimplemented"));
+    (JvNewStringLatin1 ("Thread.stop unimplemented"));
 }
 
 void
@@ -319,7 +328,7 @@ java::lang::Thread::suspend (void)
 {
   checkAccess ();
   throw new UnsupportedOperationException 
-    (JvNewStringLatin1 ("java::lang::Thread::suspend unimplemented"));
+    (JvNewStringLatin1 ("Thread.suspend unimplemented"));
 }
 
 static int nextThreadNumber = 0;
@@ -373,6 +382,20 @@ _Jv_SetCurrentJNIEnv (JNIEnv *env)
   ((natThread *) t->data)->jni_env = env;
 }
 
+// Attach the current native thread to an existing (but unstarted) Thread 
+// object. Returns -1 on failure, 0 upon success.
+jint
+_Jv_AttachCurrentThread(java::lang::Thread* thread)
+{
+  if (thread == NULL || thread->startable_flag == false)
+    return -1;
+  thread->startable_flag = false;
+  thread->alive_flag = true;
+  natThread *nt = (natThread *) thread->data;
+  _Jv_ThreadRegister (nt->thread);
+  return 0;
+}
+
 java::lang::Thread*
 _Jv_AttachCurrentThread(jstring name, java::lang::ThreadGroup* group)
 {
@@ -382,10 +405,8 @@ _Jv_AttachCurrentThread(jstring name, java::lang::ThreadGroup* group)
   if (name == NULL)
     name = java::lang::Thread::gen_name ();
   thread = new java::lang::Thread (NULL, group, NULL, name);
-  thread->startable_flag = false;
-  thread->alive_flag = true;
-  natThread *nt = (natThread *) thread->data;
-  _Jv_ThreadRegister (nt->thread);
+  _Jv_AttachCurrentThread (thread);
+  _Jv_NotifyThreadStart (thread);
   return thread;
 }
 
