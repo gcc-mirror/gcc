@@ -1,3 +1,7 @@
+2000-11-26  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* makefile.vms: Remove EGCS references.
+
 2000-11-26  Ulrich Drepper  <drepper@redhat.com>
 
 	* dwarf2out.c (output_file_names): New function.  Compute minimal
