@@ -1,3 +1,24 @@
+2000-05-14  Nathan Myers  <ncm@cantrip.org>
+
+        * mkcshadow: build in more-correct directory, create cshadow/
+        directory if needed, report progress.
+
+2000-05-14  LLeweLLyn Reese  <llewelly@dbritsch.dsl.xmission.com>
+
+        * src/Makefile.am: Fix tr commands.
+        * src/Makefile.am: Remove references to [w]stringCTORDUPAL.[lo,cc]
+        * src/string-inst.cc: Remove extra instantiation of
+          S::basic_string(S::size_type, C, S::allocator_type const&);
+        * src/string-inst.cc: Remove extra template keyword.
+
+2000-05-14  Loren J. Rittle  <ljrittle@acm.org>
+
+        * config/bsd/bits/ctype_base.h: Add support for plain BSD4.4.
+        * acinclude.m4 (GLIBCPP_CHECK_CTYPE): Enhance bsd tests.
+        * aclocal.m4: Regenerate.
+        * configure: Regenerate.
+        * */Makefile.in: Regenerate.
+
 2000-05-11  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* acinclude.m4:  Fix minor typo with ctypes, add more sanity to

@@ -4,9 +4,17 @@
 #   from stdin, and creates shadow headers under cshadow/, except where
 #   a header of the same name is already in shadow/.
 
+SCRIPTDIR=${0%/*}
+
+if [ ! -d cshadow ]; then
+  echo "Creating cshadow."
+  mkdir cshadow
+fi
+
+echo "Creating..."
 while read header; do
 
-  if [ ! -f shadow/$header ]; then
+  if [ ! -f $SCRIPTDIR/shadow/$header ]; then
 
     # strip off directory names while making 
     #   any necessary directories
@@ -21,12 +29,13 @@ while read header; do
       done
       ;;
     esac
- 
+
+    echo "  cshadow/$header"
     UPNAME=`echo $header | tr 'a-z./-' 'A-Z___'`
     cat >"cshadow/$header" <<EOF
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,11 +82,7 @@ while read header; do
   
 # endif /* _IN_C_SWAMP_ */
 #endif /* _INCLUDED_CPP_${UPNAME}_ */
-    
 EOF
-
+#################### end ####################
   fi
 done
-
-
-
