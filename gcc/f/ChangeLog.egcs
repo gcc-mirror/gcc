@@ -1,3 +1,10 @@
+Sun Sep 14 21:01:23 1997  Jeffrey A Law  (law@cygnus.com)
+
+        * Make-lang.in: Various changes to build info files
+        in the object tree rather than the source tree.
+
+	* proj.h: Include ctype.h.
+
 Sun Sep 14 12:35:20 1997  Fred Fish (fnf@ninemoons.com)
 
 	* proj.h (isascii): Provide a default definition if none is available.

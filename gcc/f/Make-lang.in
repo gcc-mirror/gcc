@@ -325,15 +325,19 @@ f77.all.cross: g77-cross maybe-f2c f77-runtime
 f77.start.encap: g77 maybe-f2c
 f77.rest.encap: f77-runtime
 
-f77.info: $(srcdir)/f/g77.info
-f77.dvi: $(srcdir)/f/g77.dvi
+f77.info: f/g77.info
+f77.dvi: f/g77.dvi
 
 # g77 documentation.
-$(srcdir)/f/g77.info: f/g77.texi f/bugs.texi f/install.texi f/news.texi f/intdoc.texi
-	cd $(srcdir)/f; $(MAKEINFO) g77.texi
+f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
+	    $(srcdir)/f/install.texi $(srcdir)/f/news.texi \
+	    $(srcdir)/f/intdoc.texi
+	$(MAKEINFO) -I$(srcdir)/f $(srcdir)/f/g77.texi -o f/g77.info
 
-$(srcdir)/f/g77.dvi: f/g77.texi f/bugs.texi f/install.texi f/news.texi f/intdoc.texi
-	cd $(srcdir)/f; $(TEXI2DVI) g77.texi
+f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
+		     $(srcdir)/f/install.texi $(srcdir)/f/news.texi \
+		     $(srcdir)/f/intdoc.texi
+	$(TEXI2DVI) -I$(srcdir)/f $(srcdir)/f/g77.texi -o f/g77.dvi
 
 # This dance is all about producing accurate documentation for g77's
 # intrinsics with minimum fuss.  f/ansify appends "\n\" to C strings
@@ -466,7 +470,7 @@ f77.install-common:
 # to do the install.  The sed rule was copied from stmp-int-hdrs.
 f77.install-info:
 	-rm -f $(infodir)/g77.info*
-	for f in $(srcdir)/f/g77.info*; do \
+	for f in f/g77.info*; do \
 	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	    $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
 	done
