@@ -1,3 +1,7 @@
+Tue Mar 18 13:15:08 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (cvtts?2si peep2): New.
+
 2003-03-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*iorsi3_two_qi_zext): New.
