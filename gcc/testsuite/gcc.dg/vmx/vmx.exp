@@ -20,7 +20,8 @@
 load_lib gcc-dg.exp
 
 # Skip these tests for non-PowerPC targets and for Aix, where AltiVec
-# is not yet supported.
+# is not yet supported.  Also, skip these tests on the SPE because
+# AltiVec and E500 opcodes conflict.
 if {![istarget powerpc*-*-*] || [istarget powerpc*-*-aix*]
     || [istarget powerpc*-*eabispe*] } {
     return
