@@ -108,28 +108,17 @@ Boston, MA 02111-1307, USA.  */
 /* But indicate that it isn't supported by the hardware.  */
 #define WIDEST_HARDWARE_FP_SIZE 64
 
-#define MULDI3_LIBCALL "__mul64"
-#define DIVDI3_LIBCALL "__div64"
-#define UDIVDI3_LIBCALL "__udiv64"
-#define MODDI3_LIBCALL "__rem64"
-#define UMODDI3_LIBCALL "__urem64"
-
 /* Solaris's _Qp_* library routine implementation clobbers the output
    memory before the inputs are fully consumed.  */
 
 #undef TARGET_BUGGY_QP_LIB
 #define TARGET_BUGGY_QP_LIB	1
 
-#undef INIT_SUBTARGET_OPTABS
-#define INIT_SUBTARGET_OPTABS						\
-  fixsfdi_libfunc							\
-    = init_one_libfunc (TARGET_ARCH64 ? "__ftol" : "__ftoll");		\
-  fixunssfdi_libfunc							\
-    = init_one_libfunc (TARGET_ARCH64 ? "__ftoul" : "__ftoull");	\
-  fixdfdi_libfunc							\
-    = init_one_libfunc (TARGET_ARCH64 ? "__dtol" : "__dtoll");		\
-  fixunsdfdi_libfunc							\
-    = init_one_libfunc (TARGET_ARCH64 ? "__dtoul" : "__dtoull")
+#undef SOLARIS_CONVERSION_LIBFUNCS
+#define SOLARIS_CONVERSION_LIBFUNCS 1
+
+#undef SUN_INTEGER_MULTIPLY_64
+#define SUN_INTEGER_MULTIPLY_64 1
 
 /* Solaris allows 64 bit out and global registers in 32 bit mode.
    sparc_override_options will disable V8+ if not generating V9 code.  */

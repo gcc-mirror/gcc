@@ -470,16 +470,6 @@ do {									\
 #undef LIB_SPEC
 #define LIB_SPEC "-lc"
 
-/* Define the names of the division and modulus functions.  */
-#define DIVSI3_LIBCALL "OTS$DIV_I"
-#define DIVDI3_LIBCALL "OTS$DIV_L"
-#define UDIVSI3_LIBCALL "OTS$DIV_UI"
-#define UDIVDI3_LIBCALL "OTS$DIV_UL"
-#define MODSI3_LIBCALL "OTS$REM_I"
-#define MODDI3_LIBCALL "OTS$REM_L"
-#define UMODSI3_LIBCALL "OTS$REM_UI"
-#define UMODDI3_LIBCALL "OTS$REM_UL"
-
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain
 

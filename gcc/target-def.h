@@ -261,7 +261,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_ADDRESS_COST default_address_cost
 
 /* In builtins.c.  */
-#define TARGET_INIT_BUILTINS default_init_builtins
+#define TARGET_INIT_BUILTINS hook_void_void
 #define TARGET_EXPAND_BUILTIN default_expand_builtin
 
 /* In varasm.c.  */
@@ -299,6 +299,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P hook_bool_tree_false
 #define TARGET_MS_BITFIELD_LAYOUT_P hook_bool_tree_false
 #define TARGET_RTX_COSTS hook_bool_rtx_int_int_intp_false
+
+#ifndef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS hook_void_void
+#endif
 
 #ifndef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P hook_bool_tree_false
@@ -349,6 +353,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_MS_BITFIELD_LAYOUT_P,			\
   TARGET_INIT_BUILTINS,				\
   TARGET_EXPAND_BUILTIN,			\
+  TARGET_INIT_LIBFUNCS,				\
   TARGET_SECTION_TYPE_FLAGS,			\
   TARGET_CANNOT_MODIFY_JUMPS_P,			\
   TARGET_BRANCH_TARGET_REGISTER_CLASS,	\

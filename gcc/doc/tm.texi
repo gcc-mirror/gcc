@@ -4630,76 +4630,6 @@ special assembler code.
 @c prevent bad page break with this line
 Here is an explanation of implicit calls to library routines.
 
-@defmac MULSI3_LIBCALL
-A C string constant giving the name of the function to call for
-multiplication of one signed full-word by another.  If you do not
-define this macro, the default name is used, which is @code{__mulsi3},
-a function defined in @file{libgcc.a}.
-@end defmac
-
-@defmac DIVSI3_LIBCALL
-A C string constant giving the name of the function to call for
-division of one signed full-word by another.  If you do not define
-this macro, the default name is used, which is @code{__divsi3}, a
-function defined in @file{libgcc.a}.
-@end defmac
-
-@defmac UDIVSI3_LIBCALL
-A C string constant giving the name of the function to call for
-division of one unsigned full-word by another.  If you do not define
-this macro, the default name is used, which is @code{__udivsi3}, a
-function defined in @file{libgcc.a}.
-@end defmac
-
-@defmac MODSI3_LIBCALL
-A C string constant giving the name of the function to call for the
-remainder in division of one signed full-word by another.  If you do
-not define this macro, the default name is used, which is
-@code{__modsi3}, a function defined in @file{libgcc.a}.
-@end defmac
-
-@defmac UMODSI3_LIBCALL
-A C string constant giving the name of the function to call for the
-remainder in division of one unsigned full-word by another.  If you do
-not define this macro, the default name is used, which is
-@code{__umodsi3}, a function defined in @file{libgcc.a}.
-@end defmac
-
-@defmac MULDI3_LIBCALL
-A C string constant giving the name of the function to call for
-multiplication of one signed double-word by another.  If you do not
-define this macro, the default name is used, which is @code{__muldi3},
-a function defined in @file{libgcc.a}.
-@end defmac
-
-@defmac DIVDI3_LIBCALL
-A C string constant giving the name of the function to call for
-division of one signed double-word by another.  If you do not define
-this macro, the default name is used, which is @code{__divdi3}, a
-function defined in @file{libgcc.a}.
-@end defmac
-
-@defmac UDIVDI3_LIBCALL
-A C string constant giving the name of the function to call for
-division of one unsigned full-word by another.  If you do not define
-this macro, the default name is used, which is @code{__udivdi3}, a
-function defined in @file{libgcc.a}.
-@end defmac
-
-@defmac MODDI3_LIBCALL
-A C string constant giving the name of the function to call for the
-remainder in division of one signed double-word by another.  If you do
-not define this macro, the default name is used, which is
-@code{__moddi3}, a function defined in @file{libgcc.a}.
-@end defmac
-
-@defmac UMODDI3_LIBCALL
-A C string constant giving the name of the function to call for the
-remainder in division of one unsigned full-word by another.  If you do
-not define this macro, the default name is used, which is
-@code{__umoddi3}, a function defined in @file{libgcc.a}.
-@end defmac
-
 @defmac DECLARE_LIBRARY_RENAMES
 This macro, if defined, should expand to a piece of C code that will get
 expanded when compiling functions for libgcc.a.  It can be used to
@@ -4707,19 +4637,47 @@ provide alternate names for gcc's internal library functions if there
 are ABI-mandated names that the compiler should provide.
 @end defmac
 
-@defmac INIT_TARGET_OPTABS
-Define this macro as a C statement that declares additional library
-routines renames existing ones.  @code{init_optabs} calls this macro after
-initializing all the normal library routines.
+@findex init_one_libfunc
+@findex set_optab_libfunc
+@deftypefn {Target Hook} void TARGET_INIT_LIBFUNCS (void)
+This hook should declare additional library routines or rename
+existing ones, using the functions @code{set_optab_libfunc} and
+@code{init_one_libfunc} defined in @file{optabs.c}.
+@code{init_optabs} calls this macro after initializing all the normal
+library routines.
+
+The default is to do nothing.  Most ports don't need to define this hook.
+@end deftypefn
+
+@defmac TARGET_FLOAT_LIB_COMPARE_RETURNS_BOOL (@var{mode}, @var{comparison})
+This macro should return @code{true} if the library routine that
+implements the floating point comparison operator @var{comparison} in
+mode @var{mode} will return a boolean, and @var{false} if it will
+return a tristate.
+
+GCC's own floating point libraries return tristates from the
+comparison operators, so the default returns false always.  Most ports
+don't need to define this macro.
 @end defmac
 
-@defmac FLOAT_LIB_COMPARE_RETURNS_BOOL (@var{mode}, @var{comparison})
-Define this macro as a C statement that returns nonzero if a call to
-the floating point comparison library function will return a boolean
-value that indicates the result of the comparison.  It should return
-zero if one of gcc's own libgcc functions is called.
+@cindex US Software GOFAST, floating point emulation library
+@cindex floating point emulation library, US Software GOFAST
+@cindex GOFAST, floating point emulation library
+@findex gofast_maybe_init_libfuncs
+@defmac US_SOFTWARE_GOFAST
+Define this macro if your system C library uses the US Software GOFAST
+library to provide floating point emulation.  
 
-Most ports don't need to define this macro.
+In addition to defining this macro, your architecture must set
+@code{TARGET_INIT_LIBFUNCS} to @code{gofast_maybe_init_libfuncs}, or
+else call that function from its version of that hook.  It is defined
+in @file{config/gofast.h}, which must be included by your
+architecture's @file{@var{cpu}.c} file.  See @file{sparc/sparc.c} for
+an example.
+
+If this macro is defined, the
+@code{TARGET_FLOAT_LIB_COMPARE_RETURNS_BOOL} target hook must return
+false for @code{SFmode} and @code{DFmode} comparisons.
 @end defmac
 
 @cindex @code{EDOM}, implicit usage

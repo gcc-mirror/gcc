@@ -1,3 +1,77 @@
+2003-10-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* target.h (init_libfuncs): New hook.
+	* target-def.h: Default TARGET_INIT_BUILTINS and
+	TARGET_INIT_LIBFUNCS to hook_void_void.  Add
+	TARGET_INIT_LIBFUNCS to TARGET_INITIALIZER.
+	* builtins.c (default_init_builtins): Delete.
+	* expr.h (default_init_builtins): Delete prototype.
+	* doc/tm.texi: Document TARGET_INIT_LIBFUNCS and US_SOFTWARE_GOFAST.
+	Tweak documentation of TARGET_FLOAT_LIB_COMPARE_RETURNS_BOOL.
+	Remove documentation of INIT_TARGET_OPTABS, MULSI3_LIBCALL,
+	DIVSI3_LIBCALL, UDIVSI3_LIBCALL, MODSI3_LIBCALL, UMODSI3_LIBCALL,
+	MULDI3_LIBCALL, DIVDI3_LIBCALL, UDIVDI3_LIBCALL, MODDI3_LIBCALL,
+	and UMODDI3_LIBCALL,
+
+	* Makefile.in (optabs.o): Depends on target.h.
+	* defaults.h: Provide default for FLOAT_LIB_COMPARE_RETURNS_BOOL.
+	* optabs.c: Include target.h.
+	(prepare_float_lib_cmp): No need for #ifdef around use of
+	FLOAT_LIB_COMPARE_RETURNS_BOOL.
+	(set_optab_libfunc): New function.
+	(init_optabs): Delete use of all *_LIBCALL defines.
+	Call targetm.init_libfuncs not INIT_TARGET_OPTABS.
+	* optabs.h: Prototype set_optab_libfunc.
+
+	* config.gcc: Remove all references to pa/long_double.h,
+	ia64/hpux_longdouble.h, and gofast.h.
+	(mips-*-*): When --enable-gofast, just add US_SOFTWARE_GOFAST
+	to tm_defines; don't set INIT_SUBTARGET_OPTABS or change tm_file.
+
+	* config/alpha/alpha.c, config/c4x/c4x.c, config/cris/cris.c
+	* config/frv/frv.c, config/h8300/h8300.c, config/i860/i860.c
+	* config/ia64/ia64.c, config/ip2k/ip2k.c, config/m68hc11/m68hc11.c
+	* config/mips/mips.c, config/pa/pa.c, config/rs6000/rs6000.c
+	* config/sparc/sparc.c, config/vax/vax.c:
+	Provide a definition for TARGET_INIT_LIBFUNCS.  Where
+	necessary, include optabs.h, libfuncs.h, and/or config/gofast.h.
+
+	* config/alpha/unicosmk.h, config/alpha/vms.h, config/c4x/c4x.h
+	* config/avr/avr.h, config/cris/cris.h, config/frv/frv.h
+	* config/h8300/h8300.h, config/i860/i860.h, config/ip2k/ip2k.h
+	* config/iq2000/iq2000.h, config/m68hc11/m68hc11.h, config/mips/mips.h
+	* config/rs6000/aix.h, config/rs6000/sysv4.h, config/sparc/elf.h
+	* config/sparc/lite.h, config/sparc/netbsd-elf.h, config/sparc/sol2.h
+	* config/sparc/sparc.h, config/v850/v850.h, config/vax/vax.h
+	* config/vax/elf.h: Don't define or use INIT_TARGET_OPTABS,
+	INIT_SUBTARGET_OPTABS, or any *_LIBCALL macros.
+
+	* config/ia64/hpux.h: Redefine INTEL_EXTENDED_IEEE_FORMAT to 0.
+	Set TARGET_INIT_LIBFUNCS and FLOAT_LIB_COMPARE_RETURNS_BOOL here.
+	* config/pa/pa-hpux.h: Define LONG_DOUBLE_TYPE_SIZE,
+	HPUX_LONG_DOUBLE_LIBRARY, and FLOAT_LIB_COMPARE_RETURNS_BOOL here.
+	* config/ia64/hpux_longdouble.h, config/pa/long_double.h: Delete.
+
+	* config/rs6000/xcoff.h: Don't define RS6000_ITRUNC nor RS6000_UITRUNC.
+	* config/sparc/sparc.h: Default SUN_CONVERSION_LIBFUNCS and
+	SUN_INTEGER_MULTIPLY_64 to 0.
+	* config/sparc/sol2.h: Redefine SUN_CONVERSION_LIBFUNCS and
+	SUN_INTEGER_MULTIPLY_64 to 1.
+	* config/sparc/elf.h: Redefine SUN_CONVERSION_LIBFUNCS and
+	SUN_INTEGER_MULTIPLY_64 to 0.
+	* config/sparc/lite.h, config/sparc/liteelf.h, config/sparc/sp86x-elf.h:
+	Define US_SOFTWARE_GOFAST.
+	* config/vax/vax.h: Default TARGET_ELF to 0.
+	* config/vax/elf.h: Redefine TARGET_ELF to 1.
+
+	* config/gofast.h: Don't define any macros here.  Provide one
+	static function, gofast_maybe_init_libfuncs, which does what
+	INIT_GOFAST_LIBFUNCS used to do but only if US_SOFTWARE_GOFAST
+	is already defined.  Do not clear negation libfuncs.  Do
+	not mess with HFmode, XFmode, or TFmode libfuncs.
+
+	* config/avr/avr.c (avr_init_once): #if 0 out; mark FIXME.
+
 2003-10-01  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	PR C/12466

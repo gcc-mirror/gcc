@@ -98,19 +98,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (%s)", TARGET_NAME);
 
-/*
- * Clean up afterwards generic SPARC ELF configuration.
- */
-
-/* FIXME: Aren't these supposed to be available for SPARC ELF?  */
-#undef MULDI3_LIBCALL
-#undef DIVDI3_LIBCALL
-#undef UDIVDI3_LIBCALL
-#undef MODDI3_LIBCALL
-#undef UMODDI3_LIBCALL
-#undef INIT_SUBTARGET_OPTABS  
-#define INIT_SUBTARGET_OPTABS  
-
 /* Below here exists the merged NetBSD/sparc & NetBSD/sparc64 compiler
    description, allowing one to build 32 bit or 64 bit applications
    on either.  We define the sparc & sparc64 versions of things,

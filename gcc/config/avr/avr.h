@@ -2476,15 +2476,6 @@ extern int avr_case_values_threshold;
 #define OUT_AS2(a,b,c) output_asm_insn (AS2(a,b,c), operands)
 #define CR_TAB "\n\t"
 
-/* Define this macro as a C statement that declares additional library
-   routines renames existing ones. `init_optabs' calls this macro
-   after initializing all the normal library routines.  */
-
-#define INIT_TARGET_OPTABS				\
-{							\
-  avr_init_once ();					\
-}
-
 /* Temporary register r0 */
 #define TMP_REGNO 0
 

@@ -574,6 +574,10 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
    && !ROUND_TOWARDS_ZERO)
 #endif
 
+#ifndef FLOAT_LIB_COMPARE_RETURNS_BOOL
+#define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) false
+#endif
+
 /* If FLOAT_WORDS_BIG_ENDIAN is not defined in the header files,
    then the word-endianness is the same as for integers.  */
 #ifndef FLOAT_WORDS_BIG_ENDIAN

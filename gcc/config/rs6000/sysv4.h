@@ -1275,63 +1275,6 @@ ncrtn.o%s"
 
 #define HANDLE_PRAGMA_PACK_PUSH_POP 1
 
-/* Define library calls for quad FP operations.  These are all part of the
-   PowerPC 32bit ABI.  */
-#define ADDTF3_LIBCALL "_q_add"
-#define DIVTF3_LIBCALL "_q_div"
-#define EXTENDDFTF2_LIBCALL "_q_dtoq"
-#define EQTF2_LIBCALL "_q_feq"
-#define GETF2_LIBCALL "_q_fge"
-#define GTTF2_LIBCALL "_q_fgt"
-#define LETF2_LIBCALL "_q_fle"
-#define LTTF2_LIBCALL "_q_flt"
-#define NETF2_LIBCALL "_q_fne"
-#define FLOATSITF2_LIBCALL "_q_itoq"
-#define MULTF3_LIBCALL "_q_mul"
-#define NEGTF2_LIBCALL "_q_neg"
-#define TRUNCTFDF2_LIBCALL "_q_qtod"
-#define FIX_TRUNCTFSI2_LIBCALL "_q_qtoi"
-#define TRUNCTFSF2_LIBCALL "_q_qtos"
-#define FIXUNS_TRUNCTFSI2_LIBCALL "_q_qtou"
-#define SQRTTF_LIBCALL "_q_sqrt"
-#define EXTENDSFTF2_LIBCALL "_q_stoq"
-#define SUBTF3_LIBCALL "_q_sub"
-#define FLOATUNSSITF2_LIBCALL "_q_utoq"
-
-#define INIT_TARGET_OPTABS						\
-  do {									\
-    if (TARGET_HARD_FLOAT)						\
-      {									\
-	add_optab->handlers[(int) TFmode].libfunc			\
-	  = init_one_libfunc (ADDTF3_LIBCALL);				\
-	sub_optab->handlers[(int) TFmode].libfunc			\
-	  = init_one_libfunc (SUBTF3_LIBCALL);				\
-	neg_optab->handlers[(int) TFmode].libfunc			\
-	  = init_one_libfunc (NEGTF2_LIBCALL);				\
-	smul_optab->handlers[(int) TFmode].libfunc			\
-	  = init_one_libfunc (MULTF3_LIBCALL);				\
-	sdiv_optab->handlers[(int) TFmode].libfunc			\
-	  = init_one_libfunc (DIVTF3_LIBCALL);				\
-	eqtf2_libfunc = init_one_libfunc (EQTF2_LIBCALL);		\
-	netf2_libfunc = init_one_libfunc (NETF2_LIBCALL);		\
-	gttf2_libfunc = init_one_libfunc (GTTF2_LIBCALL);		\
-	getf2_libfunc = init_one_libfunc (GETF2_LIBCALL);		\
-	lttf2_libfunc = init_one_libfunc (LTTF2_LIBCALL);		\
-	letf2_libfunc = init_one_libfunc (LETF2_LIBCALL);		\
-	trunctfsf2_libfunc = init_one_libfunc (TRUNCTFSF2_LIBCALL);	\
-	trunctfdf2_libfunc = init_one_libfunc (TRUNCTFDF2_LIBCALL);	\
-	extendsftf2_libfunc = init_one_libfunc (EXTENDSFTF2_LIBCALL);	\
-	extenddftf2_libfunc = init_one_libfunc (EXTENDDFTF2_LIBCALL);	\
-	floatsitf_libfunc = init_one_libfunc (FLOATSITF2_LIBCALL);	\
-	fixtfsi_libfunc = init_one_libfunc (FIX_TRUNCTFSI2_LIBCALL);	\
-	fixunstfsi_libfunc						\
-	  = init_one_libfunc (FIXUNS_TRUNCTFSI2_LIBCALL);		\
-	if (TARGET_PPC_GPOPT || TARGET_POWER2) 				\
-	  sqrt_optab->handlers[(int) TFmode].libfunc			\
-	    = init_one_libfunc (SQRTTF_LIBCALL);			\
-      }									\
-  } while (0)
-
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
    true if the symbol may be affected by dynamic relocations.  */

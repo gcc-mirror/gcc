@@ -643,16 +643,6 @@ typedef struct iq2000_args {
 }
 
 
-/* Implicit Calls to Library Routines.  */
-
-#define INIT_TARGET_OPTABS						\
-do									\
-  {									\
-    INIT_SUBTARGET_OPTABS;						\
-  }									\
-while (0)
-
-
 /* Addressing Modes.  */
 
 #define CONSTANT_ADDRESS_P(X)						\
@@ -1419,10 +1409,6 @@ extern void		sbss_section (void);
 
 #define DONT_ACCESS_GBLS_AFTER_EPILOGUE 0
 
-
-#ifndef INIT_SUBTARGET_OPTABS
-#define INIT_SUBTARGET_OPTABS
-#endif
 
 enum iq2000_builtins
 {

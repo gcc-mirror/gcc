@@ -50,6 +50,7 @@ Note:
 #include "flags.h"
 #include "recog.h"
 #include "expr.h"
+#include "libfuncs.h"
 #include "toplev.h"
 #include "basic-block.h"
 #include "function.h"
@@ -85,6 +86,7 @@ static void m68hc11_file_start PARAMS ((void));
 static void m68hc11_encode_section_info PARAMS((tree, rtx, int));
 static int autoinc_mode PARAMS((rtx));
 static int m68hc11_make_autoinc_notes PARAMS((rtx *, void *));
+static void m68hc11_init_libfuncs PARAMS ((void));
 
 /* Must be set to 1 to produce debug messages.  */
 int debug_m6811 = 0;
@@ -245,6 +247,9 @@ static int nb_soft_regs;
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG m68hc11_reorg
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS m68hc11_init_libfuncs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5256,6 +5261,17 @@ m68hc11_reorg ()
       }
   }
 }
+
+/* Override memcpy */
+
+static void
+m68hc11_init_libfuncs (void)
+{
+  memcpy_libfunc = init_one_libfunc ("__memcpy");
+  memcmp_libfunc = init_one_libfunc ("__memcmp");
+  memset_libfunc = init_one_libfunc ("__memset");
+}
+
 
 
 /* Cost functions.  */

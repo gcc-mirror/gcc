@@ -43,6 +43,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "real.h"
 #include "basic-block.h"
+#include "target.h"
 
 /* Each optab contains info on how this target machine
    can perform a particular operation
@@ -4198,12 +4199,9 @@ prepare_float_lib_cmp (rtx *px, rtx *py, enum rtx_code *pcomparison,
   *px = result;
   *py = const0_rtx;
   *pmode = word_mode;
-  if (comparison == UNORDERED)
+  if (comparison == UNORDERED
+      || FLOAT_LIB_COMPARE_RETURNS_BOOL (mode, comparison))
     *pcomparison = NE;
-#ifdef FLOAT_LIB_COMPARE_RETURNS_BOOL
-  else if (FLOAT_LIB_COMPARE_RETURNS_BOOL (mode, comparison))
-    *pcomparison = NE;
-#endif
   *punsignedp = 0;
 }
 
@@ -5342,6 +5340,17 @@ init_one_libfunc (const char *name)
   return symbol;
 }
 
+/* Call this to reset the function entry for one optab (OPTABLE) in mode
+   MODE to NAME, which should be either 0 or a string constant.  */
+void
+set_optab_libfunc (optab optable, enum machine_mode mode, const char *name)
+{
+  if (name)
+    optable->handlers[mode].libfunc = init_one_libfunc (name);
+  else
+    optable->handlers[mode].libfunc = 0;
+}
+
 /* Call this once to initialize the contents of the optabs
    appropriately for the current target machine.  */
 
@@ -5521,51 +5530,6 @@ init_optabs (void)
   init_integral_libfuncs (ucmp_optab, "ucmp", '2');
   init_floating_libfuncs (cmp_optab, "cmp", '2');
 
-#ifdef MULSI3_LIBCALL
-  smul_optab->handlers[(int) SImode].libfunc
-    = init_one_libfunc (MULSI3_LIBCALL);
-#endif
-#ifdef MULDI3_LIBCALL
-  smul_optab->handlers[(int) DImode].libfunc
-    = init_one_libfunc (MULDI3_LIBCALL);
-#endif
-
-#ifdef DIVSI3_LIBCALL
-  sdiv_optab->handlers[(int) SImode].libfunc
-    = init_one_libfunc (DIVSI3_LIBCALL);
-#endif
-#ifdef DIVDI3_LIBCALL
-  sdiv_optab->handlers[(int) DImode].libfunc
-    = init_one_libfunc (DIVDI3_LIBCALL);
-#endif
-
-#ifdef UDIVSI3_LIBCALL
-  udiv_optab->handlers[(int) SImode].libfunc
-    = init_one_libfunc (UDIVSI3_LIBCALL);
-#endif
-#ifdef UDIVDI3_LIBCALL
-  udiv_optab->handlers[(int) DImode].libfunc
-    = init_one_libfunc (UDIVDI3_LIBCALL);
-#endif
-
-#ifdef MODSI3_LIBCALL
-  smod_optab->handlers[(int) SImode].libfunc
-    = init_one_libfunc (MODSI3_LIBCALL);
-#endif
-#ifdef MODDI3_LIBCALL
-  smod_optab->handlers[(int) DImode].libfunc
-    = init_one_libfunc (MODDI3_LIBCALL);
-#endif
-
-#ifdef UMODSI3_LIBCALL
-  umod_optab->handlers[(int) SImode].libfunc
-    = init_one_libfunc (UMODSI3_LIBCALL);
-#endif
-#ifdef UMODDI3_LIBCALL
-  umod_optab->handlers[(int) DImode].libfunc
-    = init_one_libfunc (UMODDI3_LIBCALL);
-#endif
-
   /* Use cabs for DC complex abs, since systems generally have cabs.
      Don't define any libcall for SCmode, so that cabs will be used.  */
   abs_optab->handlers[(int) DCmode].libfunc
@@ -5711,10 +5675,8 @@ init_optabs (void)
   if (HAVE_conditional_trap)
     trap_rtx = gen_rtx_fmt_ee (EQ, VOIDmode, NULL_RTX, NULL_RTX);
 
-#ifdef INIT_TARGET_OPTABS
   /* Allow the target to add more libcalls or rename some, etc.  */
-  INIT_TARGET_OPTABS;
-#endif
+  targetm.init_libfuncs ();
 }
 
 /* Generate insns to trap with code TCODE if OP1 and OP2 satisfy condition

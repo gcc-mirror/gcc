@@ -187,3 +187,10 @@ do {								\
 #undef TARGET_C99_FUNCTIONS
 #define TARGET_C99_FUNCTIONS  1
 
+/* We are using IEEE quad precision, not a double-extended with padding.  */
+#undef INTEL_EXTENDED_IEEE_FORMAT
+#define INTEL_EXTENDED_IEEE_FORMAT 0
+
+#define TARGET_INIT_LIBFUNCS ia64_hpux_init_libfuncs
+
+#define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) ((MODE) == TFmode)

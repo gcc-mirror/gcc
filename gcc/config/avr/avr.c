@@ -276,7 +276,7 @@ avr_override_options ()
     avr_case_values_threshold = (!AVR_MEGA || TARGET_CALL_PROLOGUES) ? 8 : 17;
 }
 
-
+#if 0 /* Does not play nice with GC.  FIXME. */
 /* Initialize TMP_REG_RTX and ZERO_REG_RTX */
 void
 avr_init_once ()
@@ -296,6 +296,7 @@ avr_init_once ()
   PUT_MODE (ldi_reg_rtx, QImode);
   XINT (ldi_reg_rtx, 0) = LDI_REG_REGNO;
 }
+#endif
 
 /*  return register class from register number */
 

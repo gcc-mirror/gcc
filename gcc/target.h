@@ -289,6 +289,9 @@ struct gcc_target
   rtx (* expand_builtin) (tree exp, rtx target, rtx subtarget,
 			  enum machine_mode mode, int ignore);
 
+  /* Make any adjustments to libfunc names needed for this target.  */
+  void (* init_libfuncs) (void);
+
   /* Given a decl, a section name, and whether the decl initializer
      has relocs, choose attributes for the section.  */
   /* ??? Should be merged with SELECT_SECTION and UNIQUE_SECTION.  */

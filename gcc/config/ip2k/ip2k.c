@@ -38,6 +38,7 @@
 #include "reload.h"
 #include "tree.h"
 #include "expr.h"
+#include "optabs.h"
 #include "toplev.h"
 #include "obstack.h"
 #include "function.h"
@@ -81,6 +82,7 @@ static tree ip2k_handle_fndecl_attribute PARAMS ((tree *, tree, tree, int,
 						  bool *));
 static bool ip2k_rtx_costs PARAMS ((rtx, int, int, int *));
 static int ip2k_address_cost PARAMS ((rtx));
+static void ip2k_init_libfuncs PARAMS ((void));
 
 const struct attribute_spec ip2k_attribute_table[];
 
@@ -108,6 +110,9 @@ const struct attribute_spec ip2k_attribute_table[];
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG ip2k_reorg
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS ip2k_init_libfuncs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5501,6 +5506,15 @@ ip2k_reorg ()
   find_basic_blocks (first_insn, max_reg_num (), 0);
   life_analysis (first_insn, 0, PROP_FINAL);
 #endif
+}
+
+static void
+ip2k_init_libfuncs (void)
+{
+  set_optab_libfunc (smul_optab, SImode, "_mulsi3");
+  set_optab_libfunc (smul_optab, DImode, "_muldi3");
+  set_optab_libfunc (cmp_optab,  HImode, "_cmphi2");
+  set_optab_libfunc (cmp_optab,  SImode, "_cmpsi2");
 }
 
 /* Returns a bit position if mask contains only a single bit.  Returns -1 if

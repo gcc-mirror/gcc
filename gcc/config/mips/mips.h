@@ -3451,78 +3451,6 @@ while (0)
 					 && mips_abi != ABI_32		\
 					 && mips_abi != ABI_O64)
 
-/* We need to use a special set of functions to handle hard floating
-   point code in mips16 mode.  */
-
-#ifndef INIT_SUBTARGET_OPTABS
-#define INIT_SUBTARGET_OPTABS
-#endif
-
-#define INIT_TARGET_OPTABS						\
-do									\
-  {									\
-    if (! TARGET_MIPS16 || ! mips16_hard_float)				\
-      INIT_SUBTARGET_OPTABS;						\
-    else								\
-      {									\
-	add_optab->handlers[(int) SFmode].libfunc =			\
-	  init_one_libfunc ("__mips16_addsf3");				\
-	sub_optab->handlers[(int) SFmode].libfunc =			\
-	  init_one_libfunc ("__mips16_subsf3");				\
-	smul_optab->handlers[(int) SFmode].libfunc =			\
-	  init_one_libfunc ("__mips16_mulsf3");				\
-	sdiv_optab->handlers[(int) SFmode].libfunc =			\
-	  init_one_libfunc ("__mips16_divsf3");				\
-									\
-	eqsf2_libfunc = init_one_libfunc ("__mips16_eqsf2");		\
-	nesf2_libfunc = init_one_libfunc ("__mips16_nesf2");		\
-	gtsf2_libfunc = init_one_libfunc ("__mips16_gtsf2");		\
-	gesf2_libfunc = init_one_libfunc ("__mips16_gesf2");		\
-	ltsf2_libfunc = init_one_libfunc ("__mips16_ltsf2");		\
-	lesf2_libfunc = init_one_libfunc ("__mips16_lesf2");		\
-									\
-	floatsisf_libfunc =						\
-	  init_one_libfunc ("__mips16_floatsisf");			\
-	fixsfsi_libfunc =						\
-	  init_one_libfunc ("__mips16_fixsfsi");			\
-									\
-	if (TARGET_DOUBLE_FLOAT)					\
-	  {								\
-	    add_optab->handlers[(int) DFmode].libfunc =			\
-	      init_one_libfunc ("__mips16_adddf3");			\
-	    sub_optab->handlers[(int) DFmode].libfunc =			\
-	      init_one_libfunc ("__mips16_subdf3");			\
-	    smul_optab->handlers[(int) DFmode].libfunc =		\
-	      init_one_libfunc ("__mips16_muldf3");			\
-	    sdiv_optab->handlers[(int) DFmode].libfunc =		\
-	      init_one_libfunc ("__mips16_divdf3");			\
-									\
-	    extendsfdf2_libfunc =					\
-	      init_one_libfunc ("__mips16_extendsfdf2");		\
-	    truncdfsf2_libfunc =					\
-	      init_one_libfunc ("__mips16_truncdfsf2");			\
-									\
-	    eqdf2_libfunc =						\
-	      init_one_libfunc ("__mips16_eqdf2");			\
-	    nedf2_libfunc =						\
-	      init_one_libfunc ("__mips16_nedf2");			\
-	    gtdf2_libfunc =						\
-	      init_one_libfunc ("__mips16_gtdf2");			\
-	    gedf2_libfunc =						\
-	      init_one_libfunc ("__mips16_gedf2");			\
-	    ltdf2_libfunc =						\
-	      init_one_libfunc ("__mips16_ltdf2");			\
-	    ledf2_libfunc =						\
-	      init_one_libfunc ("__mips16_ledf2");			\
-									\
-	    floatsidf_libfunc =						\
-	      init_one_libfunc ("__mips16_floatsidf");			\
-	    fixdfsi_libfunc =						\
-	      init_one_libfunc ("__mips16_fixdfsi");			\
-	  }								\
-      }									\
-  }									\
-while (0)
 
 #define DFMODE_NAN \
 	unsigned short DFbignan[4] = {0x7ff7, 0xffff, 0xffff, 0xffff}; \

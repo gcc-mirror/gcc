@@ -1176,23 +1176,6 @@ typedef struct m68hc11_args
   m68hc11_initialize_trampoline ((TRAMP), (FNADDR), (CXT))
 
 
-/* `INIT_TARGET_OPTABS'
-     Define this macro as a C statement that declares additional library
-     routines renames existing ones. `init_optabs' calls this macro
-     after initializing all the normal library routines.
-
-     Overrides the memcpy */
-
-#define INIT_TARGET_OPTABS						\
-do									\
-  {									\
-    memcpy_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__memcpy");		\
-    memcmp_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__memcmp");		\
-    memset_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__memset");		\
-  }									\
-while (0)
-
-
 /* Addressing modes, and classification of registers for them.  */
 
 /* The 68HC12 has all the post/pre increment/decrement modes.  */

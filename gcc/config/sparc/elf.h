@@ -42,14 +42,9 @@ Boston, MA 02111-1307, USA.  */
 #undef STDC_0_IN_SYSTEM_HEADERS
 
 /* We don't want to use the Solaris2 specific long long int conversion
-   routines.  */
-#undef INIT_SUBTARGET_OPTABS
-#define INIT_SUBTARGET_OPTABS
+   routines or 64-bit integer multiply and divide routines.  */
+#undef SUN_CONVERSION_LIBFUNCS
+#define SUN_CONVERSION_LIBFUNCS 0
 
-/* ??? We haven't added Solaris2 equivalent 64 bit library routines to
-   lb1sp*.asm, so we need to avoid using them.  */
-#undef MULDI3_LIBCALL
-#undef DIVDI3_LIBCALL
-#undef UDIVDI3_LIBCALL
-#undef MODDI3_LIBCALL
-#undef UMODDI3_LIBCALL
+#undef SUN_INTEGER_MULTIPLY_64
+#define SUN_INTEGER_MULTIPLY_64 0

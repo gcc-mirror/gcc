@@ -366,6 +366,9 @@ extern rtx gen_extend_insn (rtx, rtx, enum machine_mode,
 extern void init_fixtab (void);
 extern void init_floattab (void);
 
+/* Call this to reset the function entry for one optab.  */
+extern void set_optab_libfunc (optab, enum machine_mode, const char *);
+
 /* Generate code for a FLOAT_EXPR.  */
 extern void expand_float (rtx, rtx, int);
 

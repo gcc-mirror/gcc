@@ -41,6 +41,8 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "function.h"
 #include "expr.h"
+#include "optabs.h"
+#include "libfuncs.h"
 #include "flags.h"
 #include "reload.h"
 #include "tm_p.h"
@@ -255,6 +257,7 @@ static const struct mips_cpu_info *mips_cpu_info_from_isa (int);
 static int mips_adjust_cost (rtx, rtx, rtx, int);
 static int mips_issue_rate (void);
 static int mips_use_dfa_pipeline_interface (void);
+static void mips_init_libfuncs (void);
 
 #ifdef TARGET_IRIX6
 static void iris6_asm_named_section_1 (const char *, unsigned int,
@@ -786,6 +789,9 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #undef TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS iris6_section_type_flags
 #endif
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS mips_init_libfuncs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8986,6 +8992,55 @@ mips_reorg (void)
     }
 }
 
+/* We need to use a special set of functions to handle hard floating
+   point code in mips16 mode.  Also, allow for --enable-gofast.  */
+
+#include "config/gofast.h"
+
+static void
+mips_init_libfuncs (void)
+{
+  if (TARGET_MIPS16 && mips16_hard_float)
+    {
+      set_optab_libfunc (add_optab, SFmode, "__mips16_addsf3");
+      set_optab_libfunc (sub_optab, SFmode, "__mips16_subsf3");
+      set_optab_libfunc (smul_optab, SFmode, "__mips16_mulsf3");
+      set_optab_libfunc (sdiv_optab, SFmode, "__mips16_divsf3");
+
+      eqsf2_libfunc     = init_one_libfunc ("__mips16_eqsf2");
+      nesf2_libfunc     = init_one_libfunc ("__mips16_nesf2");
+      gtsf2_libfunc     = init_one_libfunc ("__mips16_gtsf2");
+      gesf2_libfunc     = init_one_libfunc ("__mips16_gesf2");
+      ltsf2_libfunc     = init_one_libfunc ("__mips16_ltsf2");
+      lesf2_libfunc     = init_one_libfunc ("__mips16_lesf2");
+
+      floatsisf_libfunc = init_one_libfunc ("__mips16_floatsisf");
+      fixsfsi_libfunc   = init_one_libfunc ("__mips16_fixsfsi");
+
+      if (TARGET_DOUBLE_FLOAT)
+	{
+	  set_optab_libfunc (add_optab, DFmode, "__mips16_adddf3");
+	  set_optab_libfunc (sub_optab, DFmode, "__mips16_subdf3");
+	  set_optab_libfunc (smul_optab, DFmode, "__mips16_muldf3");
+	  set_optab_libfunc (sdiv_optab, DFmode, "__mips16_divdf3");
+
+	  eqdf2_libfunc       = init_one_libfunc ("__mips16_eqdf2");
+	  nedf2_libfunc       = init_one_libfunc ("__mips16_nedf2");
+	  gtdf2_libfunc       = init_one_libfunc ("__mips16_gtdf2");
+	  gedf2_libfunc       = init_one_libfunc ("__mips16_gedf2");
+	  ltdf2_libfunc       = init_one_libfunc ("__mips16_ltdf2");
+	  ledf2_libfunc       = init_one_libfunc ("__mips16_ledf2");
+
+	  floatsidf_libfunc   = init_one_libfunc ("__mips16_floatsidf");
+	  fixdfsi_libfunc     = init_one_libfunc ("__mips16_fixdfsi");
+
+	  extendsfdf2_libfunc =	init_one_libfunc ("__mips16_extendsfdf2");
+	  truncdfsf2_libfunc  =	init_one_libfunc ("__mips16_truncdfsf2");
+	}
+    }
+  else
+    gofast_maybe_init_libfuncs ();
+}
 
 /* Return a number assessing the cost of moving a register in class
    FROM to class TO.  The classes are expressed using the enumeration

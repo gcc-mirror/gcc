@@ -78,6 +78,9 @@ extern int target_flags;
 /* Nonzero if compiling with `G'-format floating point */
 #define TARGET_G_FLOAT (target_flags & MASK_G_FLOAT)
 
+/* Nonzero if ELF.  Redefined by vax/elf.h.  */
+#define TARGET_ELF 0
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -855,14 +858,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    used to replace branches can be expensive.  */
 
 #define BRANCH_COST 0
-
-/*
- * We can use the BSD C library routines for the libgcc calls that are
- * still generated, since that's what they boil down to anyways.
- */
-
-#define UDIVSI3_LIBCALL "*udiv"
-#define UMODSI3_LIBCALL "*urem"
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 
