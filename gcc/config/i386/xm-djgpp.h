@@ -79,13 +79,13 @@ Boston, MA 02111-1307, USA.  */
     standard_exec_prefix = update_path (standard_exec_prefix, NULL); \
     standard_bindir_prefix = update_path (standard_bindir_prefix, NULL); \
     standard_startfile_prefix = update_path (standard_startfile_prefix, NULL); \
-    md_exec_prefix = update_path (md_exec_prefix, NULL); \
   } while (0)
 
 /* Canonicalize paths containing '/dev/env/'; used in prefix.c.
    _fixpath is a djgpp-specific function to canonicalize a path.
    "/dev/env/DJDIR" evaluates to "c:/djgpp" if DJDIR is "c:/djgpp" for
    example.  It removes any trailing '/', so add it back.  */
+/* We cannot free PATH below as it can point to string constant  */
 #define UPDATE_PATH_HOST_CANONICALIZE(PATH) \
   if (memcmp ((PATH), "/dev/env/", sizeof("/dev/env/") - 1) == 0) \
     {						\
@@ -93,6 +93,5 @@ Boston, MA 02111-1307, USA.  */
 						\
       _fixpath ((PATH), fixed_path);		\
       strcat (fixed_path, "/");			\
-      free (PATH);				\
       (PATH) = xstrdup (fixed_path);		\
     } 
