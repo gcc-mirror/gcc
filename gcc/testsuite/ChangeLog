@@ -1,3 +1,7 @@
+2001-10-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* g++.dg/other/exception-specification.C: New test
+
 2001-10-13  Tom Rix  <trix@redhat.com>
 
 	* gcc.c-torture/execute/990826-0.x: AIX XFAIL -msoft-float.
