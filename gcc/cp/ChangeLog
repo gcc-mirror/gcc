@@ -1,3 +1,10 @@
+2001-04-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (import_export_decl): Don't call import_export_class 
+	when processing an inline member function.
+	* semantics.c (expand_body): Call import_export_decl before
+	emitting inline functions.
+
 2001-03-26  Mike Yang <yang@research.att.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 
