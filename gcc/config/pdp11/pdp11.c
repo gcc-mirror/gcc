@@ -180,10 +180,12 @@ output_function_prologue(stream, size)
    second register file - this way we don't have to save regs!
    leaf functions are ~ 50% of all functions (dynamically!) 
 
-   set/clear bit 11 (dec. 2048) to status word for switching - 
-   but how can we do this? pdp11/45 says bit may only be set (p.24) 
+   set/clear bit 11 (dec. 2048) of status word for switching register files - 
+   but how can we do this? the pdp11/45 manual says bit may only 
+   be set (p.24), but not cleared!
+
    switching to kernel is probably more expensive, so we'll leave it 
-   like this 
+   like this and not use the second set of registers... 
 
    maybe as option if you want to generate code for kernel mode? */
 
@@ -910,7 +912,7 @@ static int move_costs[N_REG_CLASSES][N_REG_CLASSES] =
 
 
 /* -- note that some moves are tremendously expensive, 
-   because they require lots of tricks? do we have to 
+   because they require lots of tricks! do we have to 
    charge the costs incurred by secondary reload class 
    -- as we do here with 22 -- or not ? */
 
