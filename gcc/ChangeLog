@@ -1,3 +1,8 @@
+2001-03-16  Jim Wilson  <wilson@redhat.com>
+
+	* config/ia64/ia64.c (ia64_compute_frame_size): If reg_fp is zero,
+	then set it to LOC_REG (79) instead of aborting.
+
 2001-03-16  Laurynas Biveinis  <lauras@softhome.net>
 
 	* fixinc/Makefile.in: Set SHELL.

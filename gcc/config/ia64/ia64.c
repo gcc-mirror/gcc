@@ -1390,10 +1390,15 @@ ia64_compute_frame_size (size)
   if (frame_pointer_needed)
     {
       current_frame_info.reg_fp = find_gr_spill (1);
-      /* We should have gotten at least LOC79, since that's what
-	 HARD_FRAME_POINTER_REGNUM is.  */
+      /* If we did not get a register, then we take LOC79.  This is guaranteed
+	 to be free, even if regs_ever_live is already set, because this is
+	 HARD_FRAME_POINTER_REGNUM.  This requires incrementing n_local_regs,
+	 as we don't count loc79 above.  */
       if (current_frame_info.reg_fp == 0)
-	abort ();
+	{
+	  current_frame_info.reg_fp = LOC_REG (79);
+	  current_frame_info.n_local_regs++;
+	}
     }
 
   if (! current_function_is_leaf)
