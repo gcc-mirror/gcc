@@ -2057,8 +2057,8 @@ typedef struct rs6000_args
    the value in the macro.  */
 
 #define MY_ISCOFF(magic) \
-  ((magic) == U802WRMAGIC || (magic) == U802ROMAGIC
-   || (magic) == U802TOCMAGIC) || (magic) == 0757)
+  ((magic) == U802WRMAGIC || (magic) == U802ROMAGIC \
+   || (magic) == U802TOCMAGIC || (magic) == 0757)
 
 /* This is the only version of nm that collect2 can work with.  */
 #define REAL_NM_FILE_NAME "/usr/ucb/nm"
