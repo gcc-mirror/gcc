@@ -1,3 +1,7 @@
+2001-07-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/cppinternals.texi: Improve formatting and logical markup.
+
 2001-07-03  Andreas Jaeger  <aj@suse.de>
 
 	* Makefile.in (insn-recog.o): Add dependency on reload.h.
