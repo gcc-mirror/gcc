@@ -1,3 +1,9 @@
+2002-02-06  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (type::isnull): New method.
+	(require_array_type): Handle case where array is null.
+	(verify_instructions_0) [op_arraylength]: Likewise.
+
 2002-02-05  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* configure.in: Set up PLATFORMOBJS not PLATFORM_SPECIFIC_SOURCES.

@@ -522,6 +522,11 @@ private:
       return false;
     }
 
+    bool isnull () const
+    {
+      return key == null_type;
+    }
+
     bool isinterface (_Jv_BytecodeVerifier *verifier)
     {
       resolve (verifier);
@@ -1161,6 +1166,10 @@ private:
   // compatible with type ELEMENT.  Returns the actual element type.
   type require_array_type (type array, type element)
   {
+    // An odd case.  Here we just pretend that everything went ok.
+    if (array.isnull ())
+      return element;
+
     if (! array.isarray ())
       verify_fail ("array required");
 
@@ -2796,7 +2805,7 @@ private:
 	  case op_arraylength:
 	    {
 	      type t = pop_type (reference_type);
-	      if (! t.isarray ())
+	      if (! t.isarray () && ! t.isnull ())
 		verify_fail ("array type expected");
 	      push_type (int_type);
 	    }
