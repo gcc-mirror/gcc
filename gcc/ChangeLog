@@ -1,3 +1,12 @@
+Tue Aug 14 14:57:07 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+        * genattrtab.c (simplify_test_exp_in_temp): New function.
+        (simplify_test_exp): Avoid explicit use of temporary obstack.
+        (simplify_cond, insert_right_side, evaluate_eq_attr,
+        simplify_and_tree, simplify_or_tree, eliminate_known_true):
+        Use simplify_test_exp_in_temp.
+        (optimize_attrs): Iterate until expression stabilizes.
+
 2001-08-13  Ulrich Weigand  <uweigand@de.ibm.com>:
  
 	* glimits.h: Remove the __LONG_MAX__ special case for s390x.
