@@ -1,3 +1,10 @@
+Mon Sep 21 22:05:28 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Revert this patch.
+	* reload.c (find_reloads): Do not replace a pseudo with
+	(MEM (reg_equiv_addr)) in the initializing insn for the
+	pseudo.
+
 Mon Sep 21 20:19:41 1998  John Carr  <jfc@mit.edu>
 
 	* final.c (final_scan_insn): Disable tracking CC across branches.
