@@ -197,9 +197,11 @@ perform_member_init (member, name, init, explicit)
 	{
 	  if (explicit)
 	    {
-	      cp_error ("incomplete initializer for member `%D' of class `%T' which has no constructor",
-			member, current_class_type);
-	      init = error_mark_node;
+	      /* default-initialization.  */
+	      if (AGGREGATE_TYPE_P (type))
+		init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+	      else
+		init = integer_zero_node;
 	    }
 	  /* member traversal: note it leaves init NULL */
 	  else if (TREE_CODE (TREE_TYPE (member)) == REFERENCE_TYPE)
@@ -222,7 +224,8 @@ perform_member_init (member, name, init, explicit)
 	 current_member_init_list.  */
       if (init || explicit)
 	{
-	  decl = build_component_ref (current_class_ref, name, NULL_TREE, explicit);
+	  decl = build_component_ref (current_class_ref, name, NULL_TREE,
+				      explicit);
 	  expand_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 	}
     }
@@ -238,7 +241,8 @@ perform_member_init (member, name, init, explicit)
       push_obstacks_nochange ();
       resume_temporary_allocation ();
 
-      expr = build_component_ref (current_class_ref, name, NULL_TREE, explicit);
+      expr = build_component_ref (current_class_ref, name, NULL_TREE,
+				  explicit);
       expr = build_delete (type, expr, integer_zero_node,
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
 

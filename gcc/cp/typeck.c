@@ -2564,8 +2564,19 @@ build_x_function_call (function, params, decl)
 	decl = current_class_ref;
 
       decl_addr = build_unary_op (ADDR_EXPR, decl, 0);
-      function = get_member_function_from_ptrfunc (&decl_addr,
-						   TREE_OPERAND (function, 1));
+
+      /* Sigh.  OFFSET_REFs are being used for too many things.
+	 They're being used both for -> and ->*, and we want to resolve
+	 the -> cases here, but leave the ->*.  We could use
+	 resolve_offset_ref for those, too, but it would call
+         get_member_function_from_ptrfunc and decl_addr wouldn't get
+         updated properly.  Nasty.  */
+      if (TREE_CODE (TREE_OPERAND (function, 1)) == FIELD_DECL)
+	function = resolve_offset_ref (function);
+      else
+	function = TREE_OPERAND (function, 1);
+
+      function = get_member_function_from_ptrfunc (&decl_addr, function);
       params = expr_tree_cons (NULL_TREE, decl_addr, params);
       return build_function_call (function, params);
     }
@@ -7271,8 +7282,7 @@ c_expand_return (retval)
   if (valtype == NULL_TREE || TREE_CODE (valtype) == VOID_TYPE)
     {
       current_function_returns_null = 1;
-      if ((pedantic && ! DECL_ARTIFICIAL (current_function_decl))
-	  || TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
+      if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
 	pedwarn ("`return' with a value, in function returning void");
       expand_return (retval);
       return;
@@ -7477,22 +7487,17 @@ comp_ptr_ttypes_real (to, from, constp)
 	 so the usual checks are not appropriate.  */
       if (TREE_CODE (to) != FUNCTION_TYPE && TREE_CODE (to) != METHOD_TYPE)
 	{
-	  switch (comp_cv_qualification (from, to))
-	    {
-	    case 1:
-	      /* FROM is more cv-qualified than TO.  */
-	      return 0;
+	  if (TYPE_READONLY (from) > TYPE_READONLY (to)
+	      || TYPE_VOLATILE (from) > TYPE_VOLATILE (to))
+	    return 0;
 
-	    case -1:
-	      /* TO is more cv-qualified than FROM.  */
+	  if (TYPE_READONLY (to) > TYPE_READONLY (from)
+	      || TYPE_VOLATILE (to) > TYPE_VOLATILE (from))
+	    {
 	      if (constp == 0)
 		return 0;
-	      else 
+	      else
 		++to_more_cv_qualified;
-	      break;
-
-	    default:
-	      break;
 	    }
 
 	  if (constp > 0)

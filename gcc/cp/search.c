@@ -961,15 +961,14 @@ compute_access (basetype_path, field)
     return access_public_node;
 
   previous_scope = current_scope ();
-  
-  context = DECL_CLASS_CONTEXT (field);
-  if (context == NULL_TREE)
-    context = DECL_CONTEXT (field);
+
+  context = DECL_REAL_CONTEXT (field);
 
   /* Fields coming from nested anonymous unions have their DECL_CLASS_CONTEXT
      slot set to the union type rather than the record type containing
      the anonymous union.  */
-  if (context && ANON_UNION_TYPE_P (context))
+  if (context && ANON_UNION_TYPE_P (context)
+      && TREE_CODE (field) == FIELD_DECL)
     context = TYPE_CONTEXT (context);
 
   /* Virtual function tables are never private.  But we should know that

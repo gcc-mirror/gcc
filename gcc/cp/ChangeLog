@@ -1,3 +1,27 @@
+1998-06-10  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (resolve_offset_ref): Handle default-initialization.
+
+	* except.c (build_throw): Handle throwing NULL.
+
+	* typeck.c (build_x_function_call): Use resolve_offset_ref.
+
+	* search.c (compute_access): Only strip an anonymous union
+	for a FIELD_DECL.
+
+	* call.c (add_builtin_candidates): Tweak.
+
+	* cvt.c (build_expr_type_conversion): Restore code for conversion
+	from class types.
+	* decl2.c (delete_sanity): Use it.  Clean up.
+
+	* typeck.c (comp_ptr_ttypes_real): Fix cv-qual comparisons.
+
+1998-06-10  Branko Cibej  <branko.cibej@hermes.si>
+
+        * typeck.c (c_expand_return): Don't warn about void expressions on
+        return statements in functions returning void.
+
 1998-06-09  Mark Mitchell  <mark@markmitchell.com>
 
 	* pt.c (fn_type_unification): Revise documentation.  Tidy.

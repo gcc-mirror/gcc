@@ -941,36 +941,99 @@ build_expr_type_conversion (desires, expr, complain)
      int complain;
 {
   tree basetype = TREE_TYPE (expr);
+  tree conv;
+  tree winner = NULL_TREE;
 
   if (TREE_CODE (basetype) == OFFSET_TYPE)
     expr = resolve_offset_ref (expr);
   expr = convert_from_reference (expr);
   basetype = TREE_TYPE (expr);
 
-  switch (TREE_CODE (basetype))
-    {
-    case INTEGER_TYPE:
-      if ((desires & WANT_NULL) && TREE_CODE (expr) == INTEGER_CST
-	  && integer_zerop (expr))
-	return expr;
-      /* else fall through...  */
+  if (! IS_AGGR_TYPE (basetype))
+    switch (TREE_CODE (basetype))
+      {
+      case INTEGER_TYPE:
+	if ((desires & WANT_NULL) && TREE_CODE (expr) == INTEGER_CST
+	    && integer_zerop (expr))
+	  return expr;
+	/* else fall through...  */
 
-    case BOOLEAN_TYPE:
-      return (desires & WANT_INT) ? expr : NULL_TREE;
-    case ENUMERAL_TYPE:
-      return (desires & WANT_ENUM) ? expr : NULL_TREE;
-    case REAL_TYPE:
-      return (desires & WANT_FLOAT) ? expr : NULL_TREE;
-    case POINTER_TYPE:
-      return (desires & WANT_POINTER) ? expr : NULL_TREE;
+      case BOOLEAN_TYPE:
+	return (desires & WANT_INT) ? expr : NULL_TREE;
+      case ENUMERAL_TYPE:
+	return (desires & WANT_ENUM) ? expr : NULL_TREE;
+      case REAL_TYPE:
+	return (desires & WANT_FLOAT) ? expr : NULL_TREE;
+      case POINTER_TYPE:
+	return (desires & WANT_POINTER) ? expr : NULL_TREE;
 	
-    case FUNCTION_TYPE:
-    case ARRAY_TYPE:
-      return ((desires & WANT_POINTER) ? default_conversion (expr)
-	      : NULL_TREE);
+      case FUNCTION_TYPE:
+      case ARRAY_TYPE:
+	return (desires & WANT_POINTER) ? default_conversion (expr)
+     	                                : NULL_TREE;
+      default:
+	return NULL_TREE;
+      }
 
-    default:
-      break;
+  /* The code for conversions from class type is currently only used for
+     delete expressions.  Other expressions are handled by build_new_op.  */
+
+  if (! TYPE_HAS_CONVERSION (basetype))
+    return NULL_TREE;
+
+  for (conv = lookup_conversions (basetype); conv; conv = TREE_CHAIN (conv))
+    {
+      int win = 0;
+      tree candidate;
+      tree cand = TREE_VALUE (conv);
+
+      if (winner && winner == cand)
+	continue;
+
+      candidate = TREE_TYPE (TREE_TYPE (cand));
+      if (TREE_CODE (candidate) == REFERENCE_TYPE)
+	candidate = TREE_TYPE (candidate);
+
+      switch (TREE_CODE (candidate))
+	{
+	case BOOLEAN_TYPE:
+	case INTEGER_TYPE:
+	  win = (desires & WANT_INT); break;
+	case ENUMERAL_TYPE:
+	  win = (desires & WANT_ENUM); break;
+	case REAL_TYPE:
+	  win = (desires & WANT_FLOAT); break;
+	case POINTER_TYPE:
+	  win = (desires & WANT_POINTER); break;
+
+	default:
+	  break;
+	}
+
+      if (win)
+	{
+	  if (winner)
+	    {
+	      if (complain)
+		{
+		  cp_error ("ambiguous default type conversion from `%T'",
+			    basetype);
+		  cp_error ("  candidate conversions include `%D' and `%D'",
+			    winner, cand);
+		}
+	      return error_mark_node;
+	    }
+	  else
+	    winner = cand;
+	}
+    }
+
+  if (winner)
+    {
+      tree type = TREE_TYPE (TREE_TYPE (winner));
+      if (TREE_CODE (type) == REFERENCE_TYPE)
+	type = TREE_TYPE (type);
+      return build_user_type_conversion (type, expr, LOOKUP_NORMAL);
     }
 
   return NULL_TREE;

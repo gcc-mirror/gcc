@@ -1077,13 +1077,21 @@ tree
 build_throw (e)
      tree e;
 {
-  if (e != error_mark_node)
+  if (e == error_mark_node)
+    return e;
+
+  if (processing_template_decl)
+    return build_min (THROW_EXPR, void_type_node, e);
+
+  if (! flag_ansi && e == null_node)
     {
-      if (processing_template_decl)
-	return build_min (THROW_EXPR, void_type_node, e);
-      e = build1 (THROW_EXPR, void_type_node, e);
-      TREE_SIDE_EFFECTS (e) = 1;
-      TREE_USED (e) = 1;
+      cp_warning ("throwing NULL");
+      e = integer_zero_node;
     }
+
+  e = build1 (THROW_EXPR, void_type_node, e);
+  TREE_SIDE_EFFECTS (e) = 1;
+  TREE_USED (e) = 1;
+
   return e;
 }
