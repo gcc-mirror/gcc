@@ -1,3 +1,7 @@
+2004-05-25  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.def (__builtin_expect):  Mark the function as const&nothrow.
+
 2004-05-25  Ayal Zaks  <zaks@il.ibm.com>
 	Mostafa Hagog  <mustafa@il.ibm.com>
 
