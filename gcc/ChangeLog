@@ -1,5 +1,11 @@
 2005-03-22  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/i860/i860.h (target_flags, TARGET_XP, TARGET_SWITCHES)
+	(TARGET_DEFAULT): Delete.
+	* config/i860/i860.opt: New file.
+
+2005-03-22  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/frv/frv-protos.h (frv_branch_cost_string, frv_branch_cost_int)
 	(frv_cpu_string, frv_condexec_insns_str, frv_condexec_insns)
 	(frv_condexec_temps_str, frv_condexec_temps, frv_sched_lookahead_str)

@@ -36,33 +36,6 @@ do {                                            \
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION fprintf (stderr, " (i860)");
-
-/* Run-time compilation parameters selecting different hardware subsets
-   or supersets.
-
-   On the i860, we have one: TARGET_XP.  This option allows gcc to generate
-   additional instructions available only on the newer i860 XP (but not on
-   the older i860 XR).
-*/
-
-extern int target_flags;
-
-/* Nonzero if we should generate code to use the fpu.  */
-#define TARGET_XP (target_flags & 1)
-
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
-
-#define TARGET_SWITCHES  \
-  { {"xp", 1, N_("Generate code which uses the FPU")},			\
-    {"noxp", -1, N_("Do not generate code which uses the FPU")},	\
-    {"xr", -1, N_("Do not generate code which uses the FPU")},		\
-    { "", TARGET_DEFAULT, NULL}}
-
-#define TARGET_DEFAULT 0
 
 /* target machine storage layout */
 
