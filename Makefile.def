@@ -98,7 +98,6 @@ host_modules= { module= gdb; with_x=true; };
 host_modules= { module= expect; with_x=true; };
 host_modules= { module= guile; with_x=true; };
 host_modules= { module= tk; with_x=true; };
-host_modules= { module= tix; with_x=true; };
 host_modules= { module= libtermcap; no_check=true; 
                 missing=mostlyclean;
                 missing=clean;
@@ -275,7 +274,6 @@ dependencies = { module=all-gdb; on=all-sim; };
 dependencies = { module=install-gdb; on=install-tcl; };
 dependencies = { module=install-gdb; on=install-tk; };
 dependencies = { module=install-gdb; on=install-itcl; };
-dependencies = { module=install-gdb; on=install-tix; };
 dependencies = { module=install-gdb; on=install-libgui; };
 
 dependencies = { module=configure-libgui; on=configure-tcl; };
@@ -343,10 +341,6 @@ dependencies = { module=install-itcl; on=install-tcl; };
 
 dependencies = { module=configure-tk; on=configure-tcl; };
 dependencies = { module=all-tk; on=all-tcl; };
-dependencies = { module=configure-tix; on=configure-tcl; };
-dependencies = { module=configure-tix; on=configure-tk; };
-dependencies = { module=all-tix; on=all-tcl; };
-dependencies = { module=all-tix; on=all-tk; };
 
 dependencies = { module=all-sid; on=all-libiberty; };
 dependencies = { module=all-sid; on=all-bfd; };
