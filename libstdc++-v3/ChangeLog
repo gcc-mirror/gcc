@@ -1,3 +1,9 @@
+2002-06-25  Jessica Han  <jessica@cup.hp.com>
+
+	* config/os/hpux/os_defines.h Define _GLIBCPP_VTABLE_PADDING
+	* libsupc++/tinfo.cc Handle the 8 byte aligned vtable entries when
+	_GLIBCPP_VTABLE_PADDING is defined.
+
 2002-06-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/stl_alloc.h: Additional formatting.
