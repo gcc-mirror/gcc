@@ -119,3 +119,7 @@ do {									\
 #undef FINI_SECTION_ASM_OP
 #undef STARTFILE_SPEC
 #undef ENDFILE_SPEC
+
+/* HANDLE_SYSV_PRAGMA (defined by svr4.h) takes precedence over HANDLE_PRAGMA.
+   We want to use the HANDLE_PRAGMA from sh.h.  */
+#undef HANDLE_SYSV_PRAGMA
