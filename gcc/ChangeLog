@@ -1,3 +1,8 @@
+2000-08-24  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.md (movdi): Don't call gen_movdi_symbolic if
+	we have a SYMBOL_REF with SYMBOL_REF_FLAG set.
+
 2000-08-24  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (AT_flag, AT_int, AT_unsigned, AT_string, AT_ref,
