@@ -1746,6 +1746,7 @@ asm_operand_ok (rtx op, const char *constraint)
 
 	case 'X':
 	  result = 1;
+	  break;
 
 	case 'g':
 	  if (general_operand (op, VOIDmode))
@@ -1764,20 +1765,16 @@ asm_operand_ok (rtx op, const char *constraint)
 		result = 1;
 	    }
 #ifdef EXTRA_CONSTRAINT_STR
-	  if (EXTRA_CONSTRAINT_STR (op, c, constraint))
+	  else if (EXTRA_CONSTRAINT_STR (op, c, constraint))
 	    result = 1;
-	  if (EXTRA_MEMORY_CONSTRAINT (c, constraint))
-	    {
-	      /* Every memory operand can be reloaded to fit.  */
-	      if (memory_operand (op, VOIDmode))
-	        result = 1;
-	    }
-	  if (EXTRA_ADDRESS_CONSTRAINT (c, constraint))
-	    {
-	      /* Every address operand can be reloaded to fit.  */
-	      if (address_operand (op, VOIDmode))
-	        result = 1;
-	    }
+	  else if (EXTRA_MEMORY_CONSTRAINT (c, constraint)
+		   /* Every memory operand can be reloaded to fit.  */
+		   && memory_operand (op, VOIDmode))
+	    result = 1;
+	  else if (EXTRA_ADDRESS_CONSTRAINT (c, constraint)
+		   /* Every address operand can be reloaded to fit.  */
+		   && address_operand (op, VOIDmode))
+	    result = 1;
 #endif
 	  break;
 	}
@@ -1970,7 +1967,7 @@ extract_insn_cached (rtx insn)
   extract_insn (insn);
   recog_data.insn = insn;
 }
-/* Do cached extract_insn, constrain_operand and complain about failures.
+/* Do cached extract_insn, constrain_operands and complain about failures.
    Used by insn_attrtab.  */
 void
 extract_constrain_insn_cached (rtx insn)
@@ -1980,7 +1977,7 @@ extract_constrain_insn_cached (rtx insn)
       && !constrain_operands (reload_completed))
     fatal_insn_not_found (insn);
 }
-/* Do cached constrain_operand and complain about failures.  */
+/* Do cached constrain_operands and complain about failures.  */
 int
 constrain_operands_cached (int strict)
 {
@@ -2535,27 +2532,20 @@ constrain_operands (int strict)
 		  else if (EXTRA_CONSTRAINT_STR (op, c, p))
 		    win = 1;
 
-		  if (EXTRA_MEMORY_CONSTRAINT (c, p))
-		    {
-		      /* Every memory operand can be reloaded to fit.  */
-		      if (strict < 0 && GET_CODE (op) == MEM)
-			win = 1;
-
-		      /* Before reload, accept what reload can turn into mem.  */
-		      if (strict < 0 && CONSTANT_P (op))
-			win = 1;
-
-		      /* During reload, accept a pseudo  */
-		      if (reload_in_progress && GET_CODE (op) == REG
-			  && REGNO (op) >= FIRST_PSEUDO_REGISTER)
-			win = 1;
-		    }
-		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
-		    {
-		      /* Every address operand can be reloaded to fit.  */
-		      if (strict < 0)
-		        win = 1;
-		    }
+		  else if (EXTRA_MEMORY_CONSTRAINT (c, p)
+			   /* Every memory operand can be reloaded to fit.  */
+			   && ((strict < 0 && GET_CODE (op) == MEM)
+			       /* Before reload, accept what reload can turn
+				  into mem.  */
+			       || (strict < 0 && CONSTANT_P (op))
+			       /* During reload, accept a pseudo  */
+			       || (reload_in_progress && GET_CODE (op) == REG
+				   && REGNO (op) >= FIRST_PSEUDO_REGISTER)))
+		    win = 1;
+		  else if (EXTRA_ADDRESS_CONSTRAINT (c, p)
+			   /* Every address operand can be reloaded to fit.  */
+			   && strict < 0)
+		    win = 1;
 #endif
 		  break;
 		}
