@@ -1,3 +1,7 @@
+2003-10-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (c++.install-info): Remove.
+
 2003-10-20  Jason Merrill  <jason@redhat.com>
 
 	* class.c (layout_class_type): Set DECL_ARTIFICIAL on padding

@@ -27,7 +27,7 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
+# foo.install-normal, foo.install-common, foo.install-man,
 # foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
@@ -160,7 +160,7 @@ java.rest.encap:
 java.tags: force
 	cd $(srcdir)/java; etags *.y *.c *.h --language=none --regex='/DEFTREECODE [(]\([A-Z_]+\)/\1/' java-tree.def
 
-info:: $(srcdir)/java/gcj.info
+info:: $(docobjdir)/gcj.info
 dvi:: java/gcj.dvi
 generated-manpages:: $(srcdir)/java/gcj.1 $(srcdir)/java/gcjh.1 \
 	$(srcdir)/java/jv-scan.1 $(srcdir)/java/jcf-dump.1 \
@@ -211,22 +211,7 @@ java.uninstall:
 	-rm -rf $(DESTDIR)$(man1dir)/gij$(man1ext)
 	-rm -rf $(DESTDIR)$(man1dir)/jv-convert$(man1ext)
 
-java.install-info: installdirs
-	if [ -f jc1$(exeext) ] ; then \
-	  if [ -f $(srcdir)/java/gcj.info ]; then \
-	    rm -f $(DESTDIR)$(infodir)/gcj.info*; \
-	    for f in $(srcdir)/java/gcj.info*; do \
-	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	      $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/$$realfile; \
-	    done; \
-	    chmod a-x $(DESTDIR)$(infodir)/gcj.info*; \
-	  else true; fi; \
-	else true; fi
-	-if [ -f jc1$(exeext) ] && [ -f $(DESTDIR)$(infodir)/gcj.info ]; then \
-	  if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
-	    install-info --dir-file=$(DESTDIR)$(infodir)/dir $(DESTDIR)$(infodir)/gcj.info; \
-	  else true; fi; \
-	else true; fi
+install-info:: $(DESTDIR)$(infodir)/gcj.info
 
 #
 # Clean hooks:
@@ -360,12 +345,12 @@ java/jcf-path.o: java/jcf-path.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	  $(srcdir)/java/jcf-path.c $(OUTPUT_OPTION)
 
 # Documentation
-$(srcdir)/java/gcj.info: $(srcdir)/java/gcj.texi \
+$(docobjdir)/gcj.info: $(srcdir)/java/gcj.texi \
 	 $(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gpl.texi \
 	 $(srcdir)/doc/include/gcc-common.texi
 	if test "x$(BUILD_INFO)" = xinfo; then \
-	  rm -f $(srcdir)/java/gcc.info*; \
-	  cd $(srcdir)/java && $(MAKEINFO) -I../doc/include -o gcj.info gcj.texi; \
+	  rm -f $(@)*; \
+	  cd $(srcdir)/java && $(MAKEINFO) -I../doc/include -o $@ gcj.texi; \
 	else true; fi
 
 java/gcj.dvi: $(srcdir)/java/gcj.texi $(srcdir)/doc/include/fdl.texi \

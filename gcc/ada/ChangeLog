@@ -1,3 +1,15 @@
+2003-10-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (ada.install-info): Remove target.
+	(info): New target.
+	(install-info): Likewise.
+	(gnat_ug_unx.info): Simplify rule.
+	(gnat_ug_vmx.info): Likewise.
+	(gnat_ug_vxw.info): Likewise.
+	(gnat_ug_wnt.info): Likewise.
+	(gnat_rm.info): Likewise.
+	(gnat-style.info): Likewise.
+
 2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Make-lang.in: Replace uses of $(target_alias) with

@@ -2959,27 +2959,28 @@ install-driver: installdirs xgcc$(exeext)
 # Install the info files.
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir
 # to do the install.
-install-info: doc installdirs lang.install-info
-	-rm -f $(DESTDIR)$(infodir)/cpp.info* $(DESTDIR)$(infodir)/gcc.info*
-	-rm -f $(DESTDIR)$(infodir)/cppinternals.info* $(DESTDIR)$(infodir)/gccint.info*
-	if [ -f $(docobjdir)/gcc.info ]; then \
-	  for f in $(docobjdir)/cpp.info* $(docobjdir)/gcc.info* \
-		$(docobjdir)/cppinternals.info* $(docobjdir)/gccint.info*; do \
+install-info:: doc installdirs \
+	$(DESTDIR)$(infodir)/cpp.info \
+	$(DESTDIR)$(infodir)/gcc.info \
+	$(DESTDIR)$(infodir)/cppinternals.info \
+	$(DESTDIR)$(infodir)/gccint.info
+
+$(DESTDIR)$(infodir)/%.info: $(docobjdir)/%.info installdirs
+	rm -f $@
+	if [ -f $< ]; then \
+	  for f in $(<)*; do \
 	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	    $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/$$realfile; \
 	  done; \
 	else true; fi
 	-if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
 	  if [ -f $(DESTDIR)$(infodir)/dir ] ; then \
-	    for f in cpp.info gcc.info gccint.info cppinternals.info; do \
-		if [ -f $(DESTDIR)$(infodir)/$$f ]; then \
-		  install-info --dir-file=$(DESTDIR)$(infodir)/dir $(DESTDIR)$(infodir)/$$f; \
-		else true; fi; \
-	    done; \
+	    if [ -f $@ ]; then \
+	      install-info --dir-file=$(DESTDIR)$(infodir)/dir $@ \
+	    else true; fi; \
 	  else true; fi; \
 	else true; fi;
-	-chmod a-x $(DESTDIR)$(infodir)/cpp.info* $(DESTDIR)$(infodir)/gcc.info*
-	-chmod a-x $(DESTDIR)$(infodir)/cppinternals.info* $(DESTDIR)$(infodir)/gccint.info*
+	chmod a-x $(@)*
 
 # Install the man pages.
 install-man: installdirs $(GENERATED_MANPAGES) lang.install-man

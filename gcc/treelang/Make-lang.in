@@ -24,7 +24,7 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
+# foo.install-normal, foo.install-common, foo.install-man,
 # foo.uninstall, foo.distdir,
 # foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
@@ -144,15 +144,15 @@ treelang.tags: force
 	cd $(srcdir)/treelang; etags *.y *.l *.c *.h
 
 .phony:treelang.info
-info:: $(srcdir)/treelang/treelang.info
+info:: $(docobjdir)/treelang.info
 
-$(srcdir)/treelang/treelang.info: $(srcdir)/treelang/treelang.texi \
+$(docobjdir)/treelang.info: $(srcdir)/treelang/treelang.texi \
 	 $(srcdir)/doc/include/gcc-common.texi \
 	 $(srcdir)/doc/include/gpl.texi \
 	 $(srcdir)/doc/include/fdl.texi \
 	 $(srcdir)/doc/include/funding.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -Idoc/include \
-	-o treelang/treelang.info treelang/treelang.texi
+	  -o $@ treelang/treelang.texi
 
 dvi:: $(srcdir)/treelang/treelang.texi \
 	 $(srcdir)/doc/include/gcc-common.texi \
@@ -187,21 +187,8 @@ treelang.install.common.done:  installdirs treelang.done
 	done
 	$(STAMP) treelang.install.common.done
 
-treelang.install-info:
-	if [ -f $(srcdir)/treelang/treelang.info ] ; then \
-	  rm -f $(DESTDIR)$(infodir)/treelang.info*; \
-	  for f in $(srcdir)/treelang/treelang.info*; do \
-	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	      $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/$$realfile; \
-	  done; \
-	  chmod a-x $(DESTDIR)$(infodir)/treelang.info*; \
-	else true; fi
-	@if [ -f $(srcdir)/treelang/treelang.info ] ; then \
-	  if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
-	    echo " install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/treelang.info"; \
-	    install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/treelang.info || : ; \
-	  else : ; fi; \
-	else : ; fi
+# We might not be able to build the info files
+install-info:: $(DESTDIR)$(infodir)/treelang.info
 
 treelang.install-man:
 
