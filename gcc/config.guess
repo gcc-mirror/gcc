@@ -306,6 +306,9 @@ EOF
     Intel:Mach:3*:*)
 	echo i386-unknown-mach3
 	exit 0 ;;
+    paragon:*:*:*)
+	echo i860-intel-osf1
+	exit 0 ;;
     i860:*:4.*:*) # i860-SVR4
 	if grep Stardent /usr/include/sys/uadmin.h >/dev/null 2>&1 ; then
 	  echo i860-stardent-sysv${UNAME_RELEASE} # Stardent Vistra i860-SVR4
