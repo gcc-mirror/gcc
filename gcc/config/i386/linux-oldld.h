@@ -20,12 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This is tested by i386/gas.h.  */
-#define YES_UNDERSCORES
-
-#include <i386/gstabs.h>
-#include <linux-aout.h>	/* some common stuff */
-
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START "#"
 

@@ -24,6 +24,9 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__rtems__ -Asystem=rtems"
 
+#undef  TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (80386, RTEMS)"); 
+
 /* Generate calls to memcpy, memcmp and memset.  */
 #ifndef TARGET_MEM_FUNCTIONS
 #define TARGET_MEM_FUNCTIONS

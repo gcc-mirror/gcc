@@ -1,11 +1,4 @@
-/* This is tested by i386gas.h.  */
-#define YES_UNDERSCORES
-
-#include <i386/gstabs.h>
-
-/* Get generic NetBSD definitions.  */
-#include <netbsd.h>
-#include <netbsd-aout.h>
+#define TARGET_VERSION fprintf (stderr, " (NetBSD/i386 a.out)");
 
 /* This goes away when the math-emulator is fixed */
 #undef TARGET_SUBTARGET_DEFAULT

@@ -1,8 +1,9 @@
 /* Definitions of target machine for GNU compiler for Intel 80386
    running FreeBSD.
-   Copyright (C) 1988, 1992, 1994, 1996, 1997, 1999, 2000, 2002 Free Software
-   Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994, 1996, 1997, 1999, 2000, 2002
+   Free Software Foundation, Inc.
    Contributed by Poul-Henning Kamp <phk@login.dkuug.dk>
+   Continued development by David O'Brien <obrien@NUXI.org>
 
 This file is part of GNU CC.
 
@@ -21,13 +22,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This is tested by i386gas.h.  */
-#define YES_UNDERSCORES
-
 /* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
-
-#include "i386/gstabs.h"
 
 /* This goes away when the math-emulator is fixed */
 #undef TARGET_SUBTARGET_DEFAULT

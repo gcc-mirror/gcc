@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Intel 386 (OSF/1 with OSF/rose) version.
-   Copyright (C) 1991, 1992, 1993, 1996, 1998, 1999, 2000
+   Copyright (C) 1991, 1992, 1993, 1996, 1998, 1999, 2000, 2002
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -19,9 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-#include "halfpic.h"
-#include "i386/gstabs.h"
 
 #define OSF_OS
 
@@ -149,7 +146,6 @@ Boston, MA 02111-1307, USA.  */
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
 
 #undef TARGET_VERSION_INTERNAL
-#undef TARGET_VERSION
 
 #define I386_VERSION " 80386, OSF/rose objects"
 

@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running system V, using gas.
-   Copyright (C) 1992, 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1996, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,7 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "i386/gas.h"
+#define TARGET_VERSION fprintf (stderr, " (80386, ATT syntax)"); 
 
 /* Add stuff that normally comes from i386/sysv3.h */
 

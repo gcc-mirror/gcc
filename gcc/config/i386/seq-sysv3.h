@@ -1,6 +1,6 @@
 /* Sequent DYNIX/ptx 1.x (SVr3) */
 
-#include "i386/sysv3.h"
+#define TARGET_VERSION fprintf (stderr, " (80386, ATT syntax)"); 
 
 /* Sequent Symmetry SVr3 doesn't have crtn.o; crt1.o doesn't work
    but crt0.o does.  */

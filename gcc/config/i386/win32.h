@@ -22,8 +22,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#define YES_UNDERSCORES
-
 /* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP 1
 
@@ -31,6 +29,8 @@ Boston, MA 02111-1307, USA.  */
 #define SDB_DEBUGGING_INFO 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
+#include "i386/unix.h"
+#include "i386/bsd.h"
 #include "i386/gas.h"
 #include "dbxcoff.h"
 

@@ -1,5 +1,5 @@
 /* Definitions for IBM PS2 running AIX/386.
-   Copyright (C) 1988, 1996, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996, 1998, 2002 Free Software Foundation, Inc.
    Contributed by Minh Tran-Le <TRANLE@intellicorp.com>.
 
 This file is part of GNU CC.
@@ -19,17 +19,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-#include "i386/i386.h"
-
-/* Get the generic definitions for system V.3.  */
-
-#include "svr3.h"
-
-/* Use the ATT assembler syntax.
-   This overrides at least one macro (USER_LABEL_PREFIX) from svr3.h.  */
-
-#include "i386/att.h"
+#define TARGET_VERSION fprintf (stderr, " (80386, AIX)"); 
 
 /* Use crt1.o as a startup file and crtn.o as a closing file.  */
 

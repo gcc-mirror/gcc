@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80386 running Interix
-   Parts Copyright (C) 1991, 1999, 2000 Free Software Foundation, Inc.
+   Parts Copyright (C) 1991, 1999, 2000, 2002 Free Software Foundation, Inc.
 
    Parts:
      by Douglas B. Rupp (drupp@cs.washington.edu).
@@ -24,10 +24,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#define YES_UNDERSCORES
-
-/* YES_UNDERSCORES must precede gas.h */
-#include <i386/gas.h>
 /* The rest must follow.  */
 
 #define DBX_DEBUGGING_INFO
@@ -85,7 +81,6 @@ Boston, MA 02111-1307, USA.  */
 %{posix:-D_POSIX_SOURCE} \
 -isystem %$INTERIX_ROOT/usr/include"
 
-#undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 Interix)");
 
 /* The global __fltused is necessary to cause the printf/scanf routines

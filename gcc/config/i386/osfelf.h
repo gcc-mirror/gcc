@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Intel 386 (OSF/1 with ELF) version.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-#include "config/i386/osfrose.h"
 
 #undef	CPP_PREDEFINES
 #define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Asystem=xpg4"
@@ -68,7 +66,6 @@ Boston, MA 02111-1307, USA.  */
 			%{!noshrlib: %{!pic-none: -dy}}}}}}}}"
 
 #undef TARGET_VERSION_INTERNAL
-#undef TARGET_VERSION
 
 #undef	I386_VERSION
 #define I386_VERSION " 80386, ELF objects"

@@ -1,3 +1,68 @@
+2002-04-02  David O'Brien  <obrien@FreeBSD.org>
+
+	* config.gcc (i386-dg-dgux, i386-go32-msdos , i386-go32-rtems,
+	i386-ibm-aix, i386-moss-msdos, i386-ncr-sysv4, i386-next-,
+	i386-pc-msdosdjgpp, i386-sequent-bsd, i386-sequent-ptx1,
+	i386-sequent-ptx2, i386-sequent-ptx4, i386-sun-sunos,
+	i386-wrs-vxworks, i386-*-aout, i386-*-beoself, i386-*-bsd,
+	i386-*-bsdi, i386-*-chorusos, i386-*-coff, i386-*-elf,
+	i386-*-freebsd5, i386-*-freebsd-aout, i386-*-gnu, i386-*-interix,
+	i386-*-interix3, i386-*-isc, i386-*-linux, i386-*-linuxaout,
+	i386-*-linuxoldld, i386-*-lynxos, i386-*-mach, i386-*-mingw32,
+	i386-*-netbsd, i386-*-netbsdelf, i386-*-netware, i386-*-openbsd,
+	i386-*-osf1, i386-*-osfrose, i386-*-pe , i386-*-rtems,
+	i386-*-rtemscoff, i386-*-sco3.2v5, i386-*-solaris2, i386-*-sysv,
+	i386-*-sysv4, i386-*-sysv5, i386-*-udk, i386-*-uwin, i386-*-vsta,
+	i386-*-win32, x86_64-*-freebsd5, x86_64-*-linux, x86_64-*-netbsd):
+	Include as many configury headers via tm_file as possible.  This
+	includes among others i386/unix.h, i386/bsd.h, i386/gas.h.
+	* config/openbsd-oldgas.h: New file.
+	* config/i386/386bsd.h, config/i386/aix386ng.h, config/i386/att.h,
+	config/i386/bsd.h, config/i386/djgpp.h, config/i386/freebsd-aout.h,
+	config/i386/gas.h, config/i386/gstabs.h, config/i386/i386-aout.h,
+	config/i386/i386-coff.h, config/i386/i386-interix.h,
+	config/i386/iscdbx.h, config/i386/linux-aout.h,
+	config/i386/linux-oldld.h, config/i386/lynx-ng.h, config/i386/lynx.h,
+	config/i386/mach.h, config/i386/netbsd.h, config/i386/next.h,
+	config/i386/openbsd.h, config/i386/osfelf.h, config/i386/osfrose.h,
+	config/i386/sco5.h, config/i386/seq-gas.h, config/i386/seq-sysv3.h,
+	config/i386/seq2-sysv3.h, config/i386/sequent.h, config/i386/sun.h,
+	config/i386/sun386.h, config/i386/svr3dbx.h, config/i386/svr3gas.h,
+	config/i386/sysv3.h, config/i386/uwin.h, config/i386/vsta.h,
+	config/i386/vxi386.h: Do not directly include configury headers.
+	* config/i386/cygwin.h, config/i386/djgpp.h, config/i386/win32.h:
+	Directly include configury headers that are no longer automatically
+	included by the above headers.
+	* config/i386/att.h, config/i386/bsd.h (TARGET_VERSION): Do not define.
+	* config/i386/386bsd.h, config/i386/aix386ng.h, config/i386/cygwin.h,
+	config/i386/djgpp.h, config/i386/i386-aout.h, config/i386/i386-coff.h,
+	config/i386/lynx-ng.h, config/i386/lynx.h, config/i386/mach.h,
+	config/i386/netbsd.h, config/i386/openbsd.h, config/i386/rtems.h,
+	config/i386/seq-sysv3.h, config/i386/sequent.h, config/i386/svr3gas.h,
+	config/i386/sysv3.h, config/i386/vsta.h, config/i386/vxi386.h
+	(TARGET_VERSION): Define.
+	* config/i386/beos-elf.h, config/i386/freebsd.h,
+	config/i386/i386-interix.h, config/i386/i386elf.h, config/i386/linux.h,
+	config/i386/linux64.h, config/i386/netbsd-elf.h, config/i386/netbsd64.h,
+	config/i386/osfelf.h, config/i386/osfrose.h, config/i386/ptx4-i.h,
+	config/i386/sco5.h, config/i386/sysv4.h
+	(TARGET_VERSION): Do not need to protect.
+	* config/i386/freebsd64.h (TARGET_VERSION): Fix style.
+	* config/i386/386bsd.h, config/i386/cygwin.h, config/i386/djgpp.h,
+	config/i386/freebsd-aout.h, config/i386/i386-aout.h,
+	config/i386/i386-interix.h, config/i386/linux-aout.h,
+	config/i386/linux-oldld.h, config/i386/mach.h, config/i386/netbsd.h,
+	config/i386/openbsd.h, config/i386/vsta.h, config/i386/win32.h
+	(YES_UNDERSCORES): Do not define - not needed.
+	* config/i386/bsd.h, config/i386/gas.h (LPREFIX,
+	ASM_GENERATE_INTERNAL_LABEL, ASM_OUTPUT_INTERNAL_LABEL,
+	USER_LABEL_PREFIX): Do not handle the "NO_UNDERSCORES" case.
+	* config/i386/i386-coff.h, config/i386/lynx.h, config/i386/lynx-ng.h
+	(LPREFIX, ASM_GENERATE_INTERNAL_LABEL, ASM_OUTPUT_INTERNAL_LABEL,
+	USER_LABEL_PREFIX): Define. (handles the "NO_UNDERSCORES" case)
+	* config/i386/isc.h: Preserve comment from config/i386/isccoff.h.
+	* config/i386/isccoff.h, config/i386/v3gas.h: Remove.
+
 2002-04-02  Eric Botcazou  <ebotcazou@multimania.com>
 	    Richard Henderson  <rth@redhat.com>
 

@@ -20,15 +20,17 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#define YES_UNDERSCORES
-
 #define DBX_DEBUGGING_INFO 
 #define SDB_DEBUGGING_INFO 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
+#define TARGET_VERSION fprintf (stderr, " (x86 Cygwin)"); 
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
 
 #include <stdio.h>
+#include "i386/i386.h"
+#include "i386/unix.h"
+#include "i386/bsd.h"
 #include "i386/gas.h"
 #include "dbxcoff.h"
 

@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80386 running Dynix/ptx v4
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 2002 Free Software Foundation, Inc.
 
    Modified from sysv4.h
    Originally written by Ron Guilmette (rfg@netcom.com).
@@ -23,7 +23,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 Sequent Dynix/ptx Version 4)");
 
 /* The svr4 ABI for the i386 says that records and unions are returned

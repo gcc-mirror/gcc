@@ -1,9 +1,7 @@
 /* Definitions for Sequent Intel 386 using GAS.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 2002 Free Software Foundation, Inc.
 
 /* Mostly it's like a Sequent 386 without GAS.  */
-
-#include "i386/sequent.h"
 
 /* A C statement or statements which output an assembler instruction
    opcode to the stdio stream STREAM.  The macro-operand PTR is a

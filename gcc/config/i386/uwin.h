@@ -2,7 +2,7 @@
    hosting on U/WIN (Windows32), using GNU tools and the Windows32 API 
    Library, as distinct from winnt.h, which is used to build GCC for use 
    with a windows style library and tool set and uses the Microsoft tools.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
    Contributed by Mumit Khan  <khan@xraylith.wisc.edu>.
 
 This file is part of GNU CC.
@@ -24,8 +24,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Most of this is the same as for Cygwin32, except for changing some
    specs.  */
-
-#include "i386/cygwin.h"
 
 #define STANDARD_INCLUDE_COMPONENT "UWIN"
 #define SYSTEM_INCLUDE_DIR "/usr/gnu/include"

@@ -1,5 +1,6 @@
 /* Target definitions for GNU compiler for Intel 80386 using ELF
-   Copyright (C) 1988, 1991, 1995, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1991, 1995, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
    Derived from sysv4.h written by Ron Guilmette (rfg@netcom.com).
 
@@ -24,7 +25,6 @@ Boston, MA 02111-1307, USA.  */
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-#undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 bare ELF target)");
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,

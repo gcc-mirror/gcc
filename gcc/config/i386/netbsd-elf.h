@@ -114,5 +114,4 @@ Boston, MA 02111-1307, USA.  */
    we don't care about compatibility with older gcc versions.  */
 #define DEFAULT_PCC_STRUCT_RETURN 1
 
-#undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (NetBSD/i386 ELF)");
