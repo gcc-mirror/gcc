@@ -2925,13 +2925,13 @@ check_field_decls (tree t, tree *access_decls,
 {
   tree *field;
   tree *next;
-  int has_pointers;
+  bool has_pointers;
   int any_default_members;
 
   /* Assume there are no access declarations.  */
   *access_decls = NULL_TREE;
   /* Assume this class has no pointer members.  */
-  has_pointers = 0;
+  has_pointers = false;
   /* Assume none of the members of this class have default
      initializations.  */
   any_default_members = 0;
@@ -3072,9 +3072,14 @@ check_field_decls (tree t, tree *access_decls,
 	}
 
       type = strip_array_types (type);
-      
-      if (TYPE_PTR_P (type))
-	has_pointers = 1;
+
+      /* This is used by -Weffc++ (see below). Warn only for pointers
+	 to members which might hold dynamic memory. So do not warn
+	 for pointers to functions or pointers to members.  */
+      if (TYPE_PTR_P (type)
+	  && !TYPE_PTRFN_P (type)
+	  && !TYPE_PTR_TO_MEMBER_P (type))
+	has_pointers = true;
 
       if (CLASS_TYPE_P (type))
 	{
@@ -3140,9 +3145,25 @@ check_field_decls (tree t, tree *access_decls,
 			  &any_default_members);
     }
 
-  /* Effective C++ rule 11.  */
-  if (has_pointers && warn_ecpp && TYPE_HAS_CONSTRUCTOR (t)
-      && ! (TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
+  /* Effective C++ rule 11: if a class has dynamic memory held by pointers,
+     it should also define a copy constructor and an assignment operator to
+     implement the correct copy semantic (deep vs shallow, etc.). As it is
+     not feasible to check whether the constructors do allocate dynamic memory
+     and store it within members, we approximate the warning like this:
+
+     -- Warn only if there are members which are pointers
+     -- Warn only if there is a non-trivial constructor (otherwise,
+	there cannot be memory allocated).
+     -- Warn only if there is a non-trivial destructor. We assume that the
+	user at least implemented the cleanup correctly, and a destructor
+	is needed to free dynamic memory.
+	
+     This seems enough for pratical purposes.  */
+    if (warn_ecpp
+	&& has_pointers
+	&& TYPE_HAS_CONSTRUCTOR (t)
+	&& TYPE_HAS_DESTRUCTOR (t)
+	&& !(TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
     {
       warning ("`%#T' has pointer data members", t);
       
