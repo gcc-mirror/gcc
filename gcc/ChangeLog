@@ -1,3 +1,8 @@
+2003-05-28  Daniel Jacobowitz  <drow@mvista.com>
+
+	* config/mips/linux.h (LIB_SPEC): Add missing -lc and correct
+	-lthread to -lpthread.
+
 2003-05-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Bruce Korb  <bkorb@gnu.org>
             Arno Klaassen  <arno@heho.snv.jussieu.fr>

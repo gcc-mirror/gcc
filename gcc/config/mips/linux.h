@@ -254,6 +254,7 @@ void FN ()							\
 
 #undef LIB_SPEC
 #define LIB_SPEC "\
+%{shared: -lc} \
 %{!static:-rpath-link %R/lib:%R/usr/lib} \
-%{!shared: %{pthread:-lthread} \
+%{!shared: %{pthread:-lpthread} \
   %{profile:-lc_p} %{!profile: -lc}}"
