@@ -1,3 +1,7 @@
+2003-10-21  Robert Bowdidge   <bowdidge@apple.com>
+	* decl.c (cp_finish_decl): Remove clause intended for asm directives 
+          in struct or class fields: this code is never executed.
+
 2003-10-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* decl.c (start_decl): Exit if push_template_decl returns
