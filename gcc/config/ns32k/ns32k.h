@@ -1174,51 +1174,7 @@ __transfer_from_trampoline ()		\
    Do not alter them if the instruction would not alter the cc's.  */
 
 #define NOTICE_UPDATE_CC(EXP, INSN) \
-{ if (GET_CODE (EXP) == SET)					\
-    { if (GET_CODE (SET_DEST (EXP)) == CC0)			\
-	{ cc_status.flags = 0;					\
-	  cc_status.value1 = SET_DEST (EXP);			\
-	  cc_status.value2 = SET_SRC (EXP);			\
-	}							\
-      else if (GET_CODE (SET_SRC (EXP)) == CALL)		\
-	{ CC_STATUS_INIT; }					\
-      else if (GET_CODE (SET_DEST (EXP)) == REG)		\
-	{ if (cc_status.value1					\
-	      && reg_overlap_mentioned_p (SET_DEST (EXP), cc_status.value1)) \
-	    cc_status.value1 = 0;				\
-	  if (cc_status.value2					\
-	      && reg_overlap_mentioned_p (SET_DEST (EXP), cc_status.value2)) \
-	    cc_status.value2 = 0;				\
-	}							\
-      else if (GET_CODE (SET_DEST (EXP)) == MEM)		\
-	{ CC_STATUS_INIT; }					\
-    }								\
-  else if (GET_CODE (EXP) == PARALLEL				\
-	   && GET_CODE (XVECEXP (EXP, 0, 0)) == SET)		\
-    { if (GET_CODE (SET_DEST (XVECEXP (EXP, 0, 0))) == CC0)	\
-	{ cc_status.flags = 0;					\
-	  cc_status.value1 = SET_DEST (XVECEXP (EXP, 0, 0));	\
-	  cc_status.value2 = SET_SRC (XVECEXP (EXP, 0, 0));	\
-	}							\
-      else if (GET_CODE (SET_DEST (XVECEXP (EXP, 0, 0))) == REG) \
-	{ if (cc_status.value1					\
-	      && reg_overlap_mentioned_p (SET_DEST (XVECEXP (EXP, 0, 0)), cc_status.value1)) \
-	    cc_status.value1 = 0;				\
-	  if (cc_status.value2					\
-	      && reg_overlap_mentioned_p (SET_DEST (XVECEXP (EXP, 0, 0)), cc_status.value2)) \
-	    cc_status.value2 = 0;				\
-	}							\
-      else if (GET_CODE (SET_DEST (XVECEXP (EXP, 0, 0))) == MEM) \
-	{ CC_STATUS_INIT; }					\
-    }								\
-  else if (GET_CODE (EXP) == CALL)				\
-    { /* all bets are off */ CC_STATUS_INIT; }			\
-  else { /* nothing happens? CC_STATUS_INIT; */}		\
-  if (cc_status.value1 && GET_CODE (cc_status.value1) == REG	\
-      && cc_status.value2					\
-      && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))	\
-    abort ();			\
-}
+  ns32k_notice_update_cc ((EXP), (INSN))
 
 /* Describe the costs of the following register moves which are discouraged:
    1.) Moves between the Floating point registers and the frame pointer and stack pointer

@@ -1,3 +1,11 @@
+2004-03-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/ns32k/ns32k-protos.h: Add a prototype for
+	ns32k_notice_update_cc.
+	* config/ns32k/ns32k.c (ns32k_notice_update_cc): New.
+	* config/ns32k/ns32k.h (NOTICE_UPDATE_CC): Call
+	ns32k_notice_update_cc.
+
 2004-03-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("load_multiple", "*load_multiple_di",

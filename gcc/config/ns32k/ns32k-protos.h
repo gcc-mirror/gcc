@@ -34,6 +34,7 @@ extern void print_operand_address (FILE *, rtx);
 extern const char *output_move_double (rtx *);
 extern const char *output_shift_insn (rtx *);
 extern int symbolic_reference_mentioned_p (rtx);
+extern void ns32k_notice_update_cc (rtx, rtx);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE

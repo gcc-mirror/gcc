@@ -1568,3 +1568,74 @@ ns32k_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 {
   return gen_rtx_REG (Pmode, NS32K_STRUCT_VALUE_REGNUM);
 }
+
+/* Worker function for NOTICE_UPDATE_CC.  */
+
+void
+ns32k_notice_update_cc (rtx exp, rtx insn ATTRIBUTE_UNUSED)
+{
+  if (GET_CODE (exp) == SET)
+    {
+      if (GET_CODE (SET_DEST (exp)) == CC0)
+	{
+	  cc_status.flags = 0;
+	  cc_status.value1 = SET_DEST (exp);
+	  cc_status.value2 = SET_SRC (exp);
+	}
+      else if (GET_CODE (SET_SRC (exp)) == CALL)
+	{
+	  CC_STATUS_INIT;
+	}
+      else if (GET_CODE (SET_DEST (exp)) == REG)
+	{
+	  if (cc_status.value1
+	      && reg_overlap_mentioned_p (SET_DEST (exp), cc_status.value1))
+	    cc_status.value1 = 0;
+	  if (cc_status.value2
+	      && reg_overlap_mentioned_p (SET_DEST (exp), cc_status.value2))
+	    cc_status.value2 = 0;
+	}
+      else if (GET_CODE (SET_DEST (exp)) == MEM)
+	{
+	  CC_STATUS_INIT;
+	}
+    }
+  else if (GET_CODE (exp) == PARALLEL
+	   && GET_CODE (XVECEXP (exp, 0, 0)) == SET)
+    {
+      if (GET_CODE (SET_DEST (XVECEXP (exp, 0, 0))) == CC0)
+	{
+	  cc_status.flags = 0;
+	  cc_status.value1 = SET_DEST (XVECEXP (exp, 0, 0));
+	  cc_status.value2 = SET_SRC (XVECEXP (exp, 0, 0));
+	}
+      else if (GET_CODE (SET_DEST (XVECEXP (exp, 0, 0))) == REG)
+	{
+	  if (cc_status.value1
+	      && reg_overlap_mentioned_p (SET_DEST (XVECEXP (exp, 0, 0)),
+					  cc_status.value1))
+	    cc_status.value1 = 0;
+	  if (cc_status.value2
+	      && reg_overlap_mentioned_p (SET_DEST (XVECEXP (exp, 0, 0)),
+					  cc_status.value2))
+	    cc_status.value2 = 0;
+	}
+      else if (GET_CODE (SET_DEST (XVECEXP (exp, 0, 0))) == MEM)
+	{
+	  CC_STATUS_INIT;
+	}
+    }
+  else if (GET_CODE (exp) == CALL)
+    {
+      /* all bets are off */
+      CC_STATUS_INIT;
+    }
+  else
+    {
+      /* nothing happens? CC_STATUS_INIT; */
+    }
+  if (cc_status.value1 && GET_CODE (cc_status.value1) == REG
+      && cc_status.value2
+      && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))
+    abort ();
+}
