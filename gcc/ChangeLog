@@ -1,5 +1,11 @@
 2004-12-21  James A. Morrison  <phython@gcc.gnu.org>
 
+	PR c/18963
+	* c-decl.c (pushdecl): Remove block trying to merge static function
+	declarations at block scope to file scope declarations.
+
+2004-12-21  James A. Morrison  <phython@gcc.gnu.org>
+
 	PR c/18596
 	* c-parse.in (initdcl): Don't process a declaration if start_decl fails.
 	(notype_initdcl):  Don't process a declaration if start_decl fails.
