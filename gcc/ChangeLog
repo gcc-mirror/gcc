@@ -1,3 +1,12 @@
+2004-09-27  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (STAGESTUFF): Split into ...
+	(STAGECOPYSTUFF, STAGEMOVESTUFF): ... these.
+	(mostlyclean): Update.
+	(stage1-start, stage2-start, stage3-start, stage4-start,
+	stageprofile-start, stagefeedback-start): Copy the STAGECOPYSTUFF.
+	Move the STAGEMOVESTUFF.
+
 2004-09-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* system.h (getpagesize): Return 'int' instead of 'long'.
