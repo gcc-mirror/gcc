@@ -75,6 +75,14 @@
 #undef STACKBASE
 #endif
 
+/* Dont unnecessarily call GC_register_main_static_data() in case      */
+/* dyn_load.c isn't linked in.                                         */
+#ifdef DYNAMIC_LOADING
+# define GC_REGISTER_MAIN_STATIC_DATA() GC_register_main_static_data()
+#else
+# define GC_REGISTER_MAIN_STATIC_DATA() TRUE
+#endif
+
 GC_FAR struct _GC_arrays GC_arrays /* = { 0 } */;
 
 
@@ -619,7 +627,7 @@ void GC_init_inner()
     
     /* Add initial guess of root sets.  Do this first, since sbrk(0)	*/
     /* might be used.							*/
-      GC_register_data_segments();
+      if (GC_REGISTER_MAIN_STATIC_DATA()) GC_register_data_segments();
     GC_init_headers();
     GC_bl_init();
     GC_mark_init();

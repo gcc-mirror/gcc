@@ -506,6 +506,17 @@ void GC_push_gc_structures GC_PROTO((void))
   void GC_mark_thread_local_free_lists();
 #endif
 
+void GC_cond_register_dynamic_libraries()
+{
+# if (defined(DYNAMIC_LOADING) || defined(MSWIN32) || defined(MSWINCE) \
+     || defined(PCR)) && !defined(SRC_M3)
+    GC_remove_tmp_roots();
+    if (!GC_no_dls) GC_register_dynamic_libraries();
+# else
+    GC_no_dls = TRUE;
+# endif
+}
+
 /*
  * Call the mark routines (GC_tl_push for a single pointer, GC_push_conditional
  * on groups of pointers) on every top level accessible pointer.
@@ -519,19 +530,20 @@ void GC_push_roots(all, cold_gc_frame)
 GC_bool all;
 ptr_t cold_gc_frame;
 {
-    register int i;
+    int i;
+    int kind;
 
     /*
      * Next push static data.  This must happen early on, since it's
      * not robust against mark stack overflow.
      */
-     /* Reregister dynamic libraries, in case one got added.	*/
-#      if (defined(DYNAMIC_LOADING) || defined(MSWIN32) || defined(MSWINCE) \
-	   || defined(PCR)) && !defined(SRC_M3)
-         GC_remove_tmp_roots();
-         if (!GC_no_dls) GC_register_dynamic_libraries();
-#      else
-	 GC_no_dls = TRUE;
+     /* Reregister dynamic libraries, in case one got added.		*/
+     /* There is some argument for doing this as late as possible,	*/
+     /* especially on win32, where it can change asynchronously.	*/
+     /* In those cases, we do it here.  But on other platforms, it's	*/
+     /* not safe with the world stopped, so we do it earlier.		*/
+#      if !defined(REGISTER_LIBRARIES_EARLY)
+         GC_cond_register_dynamic_libraries();
 #      endif
 
      /* Mark everything in static data areas                             */
@@ -541,6 +553,18 @@ ptr_t cold_gc_frame;
 			     GC_static_roots[i].r_end, all);
        }
 
+     /* Mark all free list header blocks, if those were allocated from	*/
+     /* the garbage collected heap.  This makes sure they don't 	*/
+     /* disappear if we are not marking from static data.  It also 	*/
+     /* saves us the trouble of scanning them, and possibly that of	*/
+     /* marking the freelists.						*/
+       for (kind = 0; kind < GC_n_kinds; kind++) {
+	 GC_PTR base = GC_base(GC_obj_kinds[kind].ok_freelist);
+	 if (0 != base) {
+	   GC_set_mark_bit(base);
+	 }
+       }
+       
      /* Mark from GC internal roots if those might otherwise have	*/
      /* been excluded.							*/
        if (GC_no_dls || roots_were_cleared) {

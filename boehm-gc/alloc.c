@@ -306,6 +306,7 @@ void GC_maybe_gc()
 GC_bool GC_try_to_collect_inner(stop_func)
 GC_stop_func stop_func;
 {
+    if (GC_dont_gc) return FALSE;
     if (GC_incremental && GC_collection_in_progress()) {
 #   ifdef CONDPRINT
       if (GC_print_stats) {
@@ -386,6 +387,7 @@ int n;
 {
     register int i;
     
+    if (GC_dont_gc) return;
     if (GC_incremental && GC_collection_in_progress()) {
     	for (i = GC_deficit; i < GC_RATE*n; i++) {
     	    if (GC_mark_some((ptr_t)0)) {
@@ -446,6 +448,9 @@ GC_stop_func stop_func;
 	CLOCK_TYPE start_time, current_time;
 #   endif
 	
+#   if defined(REGISTER_LIBRARIES_EARLY)
+        GC_cond_register_dynamic_libraries();
+#   endif
     STOP_WORLD();
 #   ifdef PRINTTIMES
 	GET_TIME(start_time);

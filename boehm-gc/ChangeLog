@@ -1,3 +1,19 @@
+2003-03-03  Hans Boehm  <Hans.Boehm@hp.com>
+	* mark_rts.c (GC_cond_register_dynamic_libraries): add.
+	(GC_push_roots): explicitly mark free list headers, register
+	dynamic libraries only if !REGISTER_LIBRARIES_EARLY.
+	* alloc.c (GC_stopped_mark): Conditionally call
+	GC_cond_register_dynamic_libraries().
+	(GC_collect_a_little_inner, GC_try_to_collect_inner): Check GC_dont_gc.
+	* dyn_load.c (GC_register_main_static_data): define.
+	(GC_register_dyn_libraries (Linux /proc, Linux ELF versions)):
+	no longer skip main data. Register main data for static executable.
+	* misc.c (GC_REGISTER_MAIN_STATIC_DATA): define.
+	(GC_init_inner): Make main data registration conditional.
+	* include/private/gc_priv.h (GC_register_main_static_data): declare.
+	* include/private/gcconfig.h (REGISTER_LIBRARIES_EARLY): define
+	for LINUX.
+
 2003-02-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Propagate ORIGINAL_LD_FOR_MULTILIBS to

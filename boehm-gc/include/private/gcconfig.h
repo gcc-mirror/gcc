@@ -1801,6 +1801,15 @@
 #   define CACHE_LINE_SIZE 32	/* Wild guess	*/
 # endif
 
+# ifdef LINUX
+#   define REGISTER_LIBRARIES_EARLY
+    /* We sometimes use dl_iterate_phdr, which may acquire an internal	*/
+    /* lock.  This isn't safe after the world has stopped.  So we must	*/
+    /* call GC_register_dynamic_libraries before stopping the world.	*/
+    /* For performance reasons, this may be beneficial on other		*/
+    /* platforms as well, though it should be avoided in win32.		*/
+# endif /* LINUX */
+
 # ifndef CLEAR_DOUBLE
 #   define CLEAR_DOUBLE(x) \
 	((word*)x)[0] = 0; \
