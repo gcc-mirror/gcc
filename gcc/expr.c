@@ -6453,7 +6453,7 @@ expand_expr (exp, target, tmode, modifier)
 
     case LABELED_BLOCK_EXPR:
       if (LABELED_BLOCK_BODY (exp))
-	expand_expr_stmt_value (LABELED_BLOCK_BODY (exp), 0);
+	expand_expr_stmt_value (LABELED_BLOCK_BODY (exp), 0, 1);
       /* Should perhaps use expand_label, but this is simpler and safer.  */
       do_pending_stack_adjust ();
       emit_label (label_rtx (LABELED_BLOCK_LABEL (exp)));
@@ -6468,7 +6468,7 @@ expand_expr (exp, target, tmode, modifier)
     case LOOP_EXPR:
       push_temp_slots ();
       expand_start_loop (1);
-      expand_expr_stmt_value (TREE_OPERAND (exp, 0), 0);
+      expand_expr_stmt_value (TREE_OPERAND (exp, 0), 0, 1);
       expand_end_loop ();
       pop_temp_slots ();
 

@@ -2190,7 +2190,7 @@ void
 expand_expr_stmt (exp)
      tree exp;
 {
-  expand_expr_stmt_value (exp, -1);
+  expand_expr_stmt_value (exp, -1, 1);
 }
 
 /* Generate RTL to evaluate the expression EXP.  WANT_VALUE tells
@@ -2199,9 +2199,9 @@ expand_expr_stmt (exp)
    deprecated, and retained only for backward compatibility.  */
 
 void
-expand_expr_stmt_value (exp, want_value)
+expand_expr_stmt_value (exp, want_value, maybe_last)
      tree exp;
-     int want_value;
+     int want_value, maybe_last;
 {
   rtx value;
   tree type;
@@ -2211,8 +2211,10 @@ expand_expr_stmt_value (exp, want_value)
 
   /* If -W, warn about statements with no side effects,
      except for an explicit cast to void (e.g. for assert()), and
-     except inside a ({...}) where they may be useful.  */
-  if (! want_value && exp != error_mark_node)
+     except for last statement in ({...}) where they may be useful.  */
+  if (! want_value
+      && (expr_stmts_for_value == 0 || ! maybe_last)
+      && exp != error_mark_node)
     {
       if (! TREE_SIDE_EFFECTS (exp))
 	{

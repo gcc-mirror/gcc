@@ -1,3 +1,19 @@
+2002-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (expand_expr_stmt_value): Add maybe_last argument.
+	* c-common.h (genrtl_expr_stmt_value): Likewise.
+	* stmt.c (expand_expr_stmt): Pass 1 as maybe_last.
+	(expand_expr_stmt_value): Add maybe_last argument.
+	Don't warn about statement with no effect if it is the last statement
+	in expression statement.
+	* c-semantics.c (genrtl_expr_stmt): Pass 1 as maybe_last.
+	(genrtl_expr_stmt_value): Add maybe_last argument, pass it down to
+	expand_expr_stmt_value.
+	(expand_stmt) [EXPR_STMT]: Pass 1 as maybe_last to
+	genrtl_expr_stmt_value if t is the last EXPR_STMT in its scope.
+	* expr.c (expand_expr) [LABELED_BLOCK_EXPR, LOOP_EXPR]: Pass 1
+	as maybe_last to expand_expr_stmt_value.
+
 Fri Jan  4 11:45:05 2002  Jeffrey A Law  (law@redhat.com)
 
         * c-common.c (c_expand_start_cond): Expect the IF_STMT node to

@@ -313,18 +313,20 @@ void
 genrtl_expr_stmt (expr)
      tree expr;
 {
-  genrtl_expr_stmt_value (expr, -1);
+  genrtl_expr_stmt_value (expr, -1, 1);
 }
 
 /* Generate the RTL for EXPR, which is an EXPR_STMT.  WANT_VALUE tells
    whether to (1) save the value of the expression, (0) discard it or
    (-1) use expr_stmts_for_value to tell.  The use of -1 is
-   deprecated, and retained only for backward compatibility.  */
+   deprecated, and retained only for backward compatibility.
+   MAYBE_LAST is non-zero if this EXPR_STMT might be the last statement
+   in expression statement.  */
 
 void 
-genrtl_expr_stmt_value (expr, want_value)
+genrtl_expr_stmt_value (expr, want_value, maybe_last)
      tree expr;
-     int want_value;
+     int want_value, maybe_last;
 {
   if (expr != NULL_TREE)
     {
@@ -334,7 +336,7 @@ genrtl_expr_stmt_value (expr, want_value)
 	expand_start_target_temps ();
       
       if (expr != error_mark_node)
-	expand_expr_stmt_value (expr, want_value);
+	expand_expr_stmt_value (expr, want_value, maybe_last);
       
       if (stmts_are_full_exprs_p ())
 	expand_end_target_temps ();
@@ -763,7 +765,10 @@ expand_stmt (t)
 	  break;
 
 	case EXPR_STMT:
-	  genrtl_expr_stmt_value (EXPR_STMT_EXPR (t), TREE_ADDRESSABLE (t));
+	  genrtl_expr_stmt_value (EXPR_STMT_EXPR (t), TREE_ADDRESSABLE (t),
+				  TREE_CHAIN (t) == NULL
+				  || (TREE_CODE (TREE_CHAIN (t)) == SCOPE_STMT
+				      && TREE_CHAIN (TREE_CHAIN (t)) == NULL));
 	  break;
 
 	case DECL_STMT:

@@ -721,7 +721,7 @@ extern void add_c_tree_codes		        PARAMS ((void));
 extern void genrtl_do_pushlevel                 PARAMS ((void));
 extern void genrtl_goto_stmt                    PARAMS ((tree));
 extern void genrtl_expr_stmt                    PARAMS ((tree));
-extern void genrtl_expr_stmt_value              PARAMS ((tree, int));
+extern void genrtl_expr_stmt_value              PARAMS ((tree, int, int));
 extern void genrtl_decl_stmt                    PARAMS ((tree));
 extern void genrtl_if_stmt                      PARAMS ((tree));
 extern void genrtl_while_stmt                   PARAMS ((tree));
