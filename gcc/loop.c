@@ -7643,6 +7643,7 @@ is_power_of_2(n)
 }
 
 /* return 1 iff insn is a conditional jump */
+static int
 is_conditional_branch (insn)
      rtx insn;
 {
