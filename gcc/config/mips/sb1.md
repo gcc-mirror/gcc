@@ -424,14 +424,14 @@
 (define_insn_reservation "ir_sb1_divdf_2pipes" 32
   (and (eq_attr "cpu" "sb1")
        (and (eq_attr "type" "fdiv")
-	    (and (eq_attr "mode" "SF")
+	    (and (eq_attr "mode" "DF")
 		 (eq_attr "sb1_fp_pipes" "two"))))
   "sb1_fp1 | sb1_fp0")
 
 (define_insn_reservation "ir_sb1_divdf_1pipe" 32
   (and (eq_attr "cpu" "sb1")
        (and (eq_attr "type" "fdiv")
-	    (and (eq_attr "mode" "SF")
+	    (and (eq_attr "mode" "DF")
 		 (eq_attr "sb1_fp_pipes" "one"))))
   "sb1_fp1")
 

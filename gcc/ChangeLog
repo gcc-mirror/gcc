@@ -1,3 +1,8 @@
+2004-08-13  James E Wilson  <wilson@specifixinc.com>
+
+	* config/mips/sb1.md (ir_sb1_divdf_2pipes, ir_sb1_divdf_1pipe):
+	Correct mode from SFmode to DFmode.
+
 2004-08-13  Ziemowit Laski  <zlaski@apple.com>
 
 	* config/darwin.h (EXTRA_SECTION_FUNCTIONS): Mark the __sel_fixup,
