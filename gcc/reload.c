@@ -1006,6 +1006,21 @@ push_reload (in, out, inloc, outloc, class,
 	       : type == RELOAD_FOR_OUTPUT ? RELOAD_FOR_OUTPUT_ADDRESS
 	       : type);
 
+	  /* This case isn't valid, so fail.  Reload is allowed to use the
+	     same register for RELOAD_FOR_INPUT_ADDRESS and RELOAD_FOR_INPUT
+	     reloads, but in the case of a secondary register, we actually
+	     need two different registers for correct code.  We fail here
+	     to prevent the possibility of silently generating incorrect code
+	     later.
+
+	     The convention is that secondary input reloads are valid only if
+	     the secondary_class is different from class.  If you have such
+	     a case, you can not use secondary reloads, you must work around
+	     the problem some other way.  */
+
+	  if (type == RELOAD_FOR_INPUT && secondary_class == class)
+	    abort ();
+
 	  /* If we need a tertiary reload, see if we have one we can reuse
 	     or else make one.  */
 
