@@ -1051,9 +1051,9 @@ do { char dstr[30];					\
 #define INIT_TARGET_OPTABS \
   do { \
     sdiv_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx_SYMBOL_REF (Pmode, DIVHI3_LIBCALL);	\
+      = init_one_libfunc (DIVHI3_LIBCALL);		\
     smod_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx_SYMBOL_REF (Pmode, MODHI3_LIBCALL);	\
+      = init_one_libfunc (MODHI3_LIBCALL);		\
   } while (0)
 
 /* The assembler op to get a word.  */

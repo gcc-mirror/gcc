@@ -1388,15 +1388,15 @@ extern int handle_pragma ();
 #define INIT_TARGET_OPTABS \
   do { \
     smul_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx_SYMBOL_REF (Pmode, MULHI3_LIBCALL);	\
+      = init_one_libfunc (MULHI3_LIBCALL);		\
     sdiv_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx_SYMBOL_REF (Pmode, DIVHI3_LIBCALL);	\
+      = init_one_libfunc (DIVHI3_LIBCALL);		\
     udiv_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx_SYMBOL_REF (Pmode, UDIVHI3_LIBCALL);	\
+      = init_one_libfunc (UDIVHI3_LIBCALL);		\
     smod_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx_SYMBOL_REF (Pmode, MODHI3_LIBCALL);	\
+      = init_one_libfunc (MODHI3_LIBCALL);		\
     umod_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx_SYMBOL_REF (Pmode, UMODHI3_LIBCALL);	\
+      = init_one_libfunc (UMODHI3_LIBCALL);		\
   } while (0)
 
 #define MOVE_RATIO 3
