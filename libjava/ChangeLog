@@ -1,5 +1,8 @@
 2003-03-29  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/String.java: Reordered to follow Classpath; merged in
+	javadoc.
+
 	* java/text/MessageFormat.java: Removed some whitespace.
 
 	* Makefile.in: Rebuilt.
