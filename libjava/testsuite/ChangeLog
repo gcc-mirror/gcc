@@ -1,3 +1,10 @@
+2002-08-16  H.J. Lu <hjl@gnu.org>
+
+	* lib/libjava.exp (gcc_version): Removed.
+	(libgcj_jar): New.
+	(libjava_init): Set libgcj_jar with tcl glob.
+	(libjava_arguments): Use libgcj_jar.
+
 2002-07-22  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.compile/zeroexp.java: New file.
