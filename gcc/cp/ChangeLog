@@ -1,3 +1,19 @@
+2003-01-03  Matt Austern  <austern@apple.com>
+
+	* cp-tree.h (struct lang_type_class): add field for key method
+	(cp_global_trees): rename dynamic_classes to keyed_classes
+	(key_method): add definition
+	* class.c (finish_struct_1): compute class's key method, and add
+	the class to keyed_classes list if there is no key method.
+	* decl.c (finish_function): add class to keyed_classes list if we
+	see a definition of the class's key method.
+	* pt.c (instantiate_class_template): add template specialization
+	of a dynamic class to keyed_classes list.
+	* decl2.c (key_method): remove
+	(finish_file): iterate only through keyed_classes list when
+	deciding whether to emit vtables, remove class from its list after
+	we do the emission.
+	
 2003-01-02  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (cp_make_fname_decl): Push the decls inside the

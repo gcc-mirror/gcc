@@ -5487,6 +5487,9 @@ instantiate_class_template (type)
   pop_from_top_level ();
   pop_tinst_level ();
 
+  if (TYPE_CONTAINS_VPTR_P (type))
+    keyed_classes = tree_cons (NULL_TREE, type, keyed_classes);
+
   return type;
 }
 

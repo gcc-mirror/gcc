@@ -5224,6 +5224,30 @@ layout_class_type (tree t, tree *virtuals_p)
   splay_tree_delete (empty_base_offsets);
 }
 
+/* Returns the virtual function with which the vtable for TYPE is
+   emitted, or NULL_TREE if that heuristic is not applicable to TYPE.  */
+
+static tree
+key_method (tree type)
+{
+  tree method;
+
+  if (TYPE_FOR_JAVA (type)
+      || processing_template_decl
+      || CLASSTYPE_TEMPLATE_INSTANTIATION (type)
+      || CLASSTYPE_INTERFACE_KNOWN (type))
+    return NULL_TREE;
+
+  for (method = TYPE_METHODS (type); method != NULL_TREE;
+       method = TREE_CHAIN (method))
+    if (DECL_VINDEX (method) != NULL_TREE
+	&& ! DECL_DECLARED_INLINE_P (method)
+	&& ! DECL_PURE_VIRTUAL_P (method))
+      return method;
+
+  return NULL_TREE;
+}
+
 /* Perform processing required when the definition of T (a class type)
    is complete.  */
 
@@ -5264,6 +5288,17 @@ finish_struct_1 (t)
   /* Do end-of-class semantic processing: checking the validity of the
      bases and members and add implicitly generated methods.  */
   check_bases_and_members (t);
+
+  /* Find the key method */
+    if (TYPE_CONTAINS_VPTR_P (t))
+    {
+      CLASSTYPE_KEY_METHOD (t) = key_method (t);
+
+      /* If a polymorphic class has no key method, we may emit the vtable
+	 in every translation unit where the class definition appears. */
+      if (CLASSTYPE_KEY_METHOD (t) == NULL_TREE)
+	keyed_classes = tree_cons (NULL_TREE, t, keyed_classes);
+    }
 
   /* Layout the class itself.  */
   layout_class_type (t, &virtuals);
@@ -5342,9 +5377,6 @@ finish_struct_1 (t)
 	  else if (TREE_CODE (DECL_VINDEX (fndecl)) != INTEGER_CST)
 	    DECL_VINDEX (fndecl) = build_shared_int_cst (vindex);
 	}
-
-      /* Add this class to the list of dynamic classes.  */
-      dynamic_classes = tree_cons (NULL_TREE, t, dynamic_classes);
     }
 
   finish_struct_bits (t);
