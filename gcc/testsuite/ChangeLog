@@ -1,5 +1,10 @@
 2003-12-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	PR c++/10126
+	* g++.dg/template/ptrmem8.C: New test.
+
+2003-12-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	PR c++/12573
 	* g++.dg/template/dependent-expr3.C: New test.
 
