@@ -1846,11 +1846,13 @@ mapcar (t, func)
            void g() { const int i = 7; f<i>(7); }
 
 	 however, we must actually return the constant initializer.  */
-      tmp = decl_constant_value (t);
-      if (tmp != t)
-	return mapcar (tmp, func);
-      else
-	return error_mark_node;
+      if (TREE_READONLY_DECL_P (t))
+	{
+	  tmp = decl_constant_value (t);
+	  if (tmp != t)
+	    return mapcar (tmp, func);
+	}
+      return error_mark_node;
 
     case PARM_DECL:
       {

@@ -1,5 +1,13 @@
 1999-02-26  Mark Mitchell  <mark@markmitchell.com>
 
+	* decl.c (duplicate_decls): Copy DECL_TEMPLATE_INSTANTIATED when
+	merging decls.
+	* pt.c (regenerate_decl_from_template): Tweak for clarity.
+	(instantiate_decl): Mark a decl instantiated before regenerating
+	it to avoid recursion.
+	* tree.c (mapcar): Don't call decl_constant_value unless we know
+	something is TREE_READONLY_DECL_P.
+
 	* class.c (check_for_override): Don't stop checking when we find
 	the first overridden function.  Delete #if 0'd code.
 	* search.c (get_matching_virtual): Likewise.

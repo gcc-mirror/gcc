@@ -3319,6 +3319,8 @@ duplicate_decls (newdecl, olddecl)
       DECL_INTERFACE_KNOWN (newdecl) |= DECL_INTERFACE_KNOWN (olddecl);
       DECL_NOT_REALLY_EXTERN (newdecl) |= DECL_NOT_REALLY_EXTERN (olddecl);
       DECL_COMDAT (newdecl) |= DECL_COMDAT (olddecl);
+      DECL_TEMPLATE_INSTANTIATED (newdecl) 
+	|= DECL_TEMPLATE_INSTANTIATED (olddecl);
       /* Don't really know how much of the language-specific
 	 values we should copy from old to new.  */
       DECL_IN_AGGR_P (newdecl) = DECL_IN_AGGR_P (olddecl);
