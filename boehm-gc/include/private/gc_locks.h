@@ -100,17 +100,13 @@
 #      define GC_TEST_AND_SET_DEFINED
 #    endif
 #    if defined(IA64)
+#     include <ia64intrin.h>
        inline static int GC_test_and_set(volatile unsigned int *addr) {
-	  long oldval, n = 1;
-	  __asm__ __volatile__("xchg4 %0=%1,%2"
-		: "=r"(oldval), "=m"(*addr)
-		: "r"(n), "1"(*addr) : "memory");
-	  return oldval;
+	  return __sync_lock_test_and_set(addr, 1);
        }
 #      define GC_TEST_AND_SET_DEFINED
-       /* Should this handle post-increment addressing?? */
        inline static void GC_clear(volatile unsigned int *addr) {
-	 __asm__ __volatile__("st4.rel %0=r0" : "=m" (*addr) : : "memory");
+	  *addr = 0;
        }
 #      define GC_CLEAR_DEFINED
 #    endif
@@ -326,20 +322,17 @@
 #     if defined(IA64)
 #      if !defined(GENERIC_COMPARE_AND_SWAP)
          inline static GC_bool GC_compare_and_exchange(volatile GC_word *addr,
-						       GC_word old, GC_word new_val) 
+						       GC_word old,
+						       GC_word new_val) 
 	 {
-	  unsigned long oldval;
-	  __asm__ __volatile__("mov ar.ccv=%4 ;; cmpxchg8.rel %0=%1,%2,ar.ccv"
-		: "=r"(oldval), "=m"(*addr)
-		: "r"(new_val), "1"(*addr), "r"(old) : "memory");
-	  return (oldval == old);
+	   return __sync_bool_compare_and_swap (addr, old, new_val);
          }
 #      endif /* !GENERIC_COMPARE_AND_SWAP */
 #      if 0
 	/* Shouldn't be needed; we use volatile stores instead. */
         inline static void GC_memory_write_barrier()
         {
-          __asm__ __volatile__("mf" : : : "memory");
+          __sync_synchronize ();
         }
 #      endif /* 0 */
 #     endif /* IA64 */
