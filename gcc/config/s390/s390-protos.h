@@ -42,6 +42,7 @@ extern int s390_single_hi PARAMS ((rtx, enum machine_mode, int));
 extern int s390_extract_hi PARAMS ((rtx, enum machine_mode, int));
 extern int s390_single_qi PARAMS ((rtx, enum machine_mode, int));
 extern int s390_extract_qi PARAMS ((rtx, enum machine_mode, int));
+extern bool s390_split_ok_p PARAMS ((rtx, rtx, enum machine_mode, int));
 extern int tls_symbolic_operand PARAMS ((rtx));
 
 extern int s390_match_ccmode PARAMS ((rtx, enum machine_mode));
@@ -60,6 +61,7 @@ extern rtx legitimize_pic_address PARAMS ((rtx, rtx));
 extern rtx legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
 extern enum reg_class s390_preferred_reload_class PARAMS ((rtx, enum reg_class));
 extern enum reg_class s390_secondary_input_reload_class PARAMS ((enum reg_class, enum machine_mode, rtx));
+extern enum reg_class s390_secondary_output_reload_class PARAMS ((enum reg_class, enum machine_mode, rtx));
 extern int s390_plus_operand PARAMS ((rtx, enum machine_mode));
 extern void s390_expand_plus_operand PARAMS ((rtx, rtx, rtx));
 extern void emit_symbolic_move PARAMS ((rtx *));
