@@ -503,6 +503,9 @@ extern HARD_REG_SET never_use_colors;
 extern HARD_REG_SET usable_regs[N_REG_CLASSES];
 /* For each class C the count of hardregs in usable_regs[C].  */
 extern unsigned int num_free_regs[N_REG_CLASSES];
+/* For each class C which has num_free_regs[C]==1, the color of the
+   single register in that class, -1 otherwise.  */
+extern int single_reg_in_regclass[N_REG_CLASSES];
 /* For each mode M the hardregs, which are MODE_OK for M, and have
    enough space behind them to hold an M value.  Additionally
    if reg R is OK for mode M, but it needs two hardregs, then R+1 will

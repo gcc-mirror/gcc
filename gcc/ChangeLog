@@ -1,3 +1,12 @@
+2004-07-29  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* ra.h (single_reg_in_regclass): Declare.
+	* ra.c (single_reg_in_regclass): Define.
+	(first_hard_reg): New.
+	(init_ra): Initialize single_reg_in_regclass.
+	* ra-colorize.c (ok_class): New.
+	(coalesce, aggressive_coalesce, extended_coalesce_2): Use it.
+
 2004-07-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov-io.h: Allow zero tag as EOF indicator.

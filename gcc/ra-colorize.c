@@ -92,6 +92,7 @@ static void add_web_pair_cost (struct web *, struct web *,
 		               unsigned HOST_WIDE_INT, unsigned int);
 static int comp_web_pairs (const void *, const void *);
 static void sort_and_combine_web_pairs (int);
+static int ok_class (struct web *, struct web *);
 static void aggressive_coalesce (void);
 static void extended_coalesce_2 (void);
 static void check_uncoalesced_moves (void);
@@ -841,7 +842,8 @@ coalesce (void)
     }
   else if (target->type == PRECOLORED
 	   || TEST_BIT (sup_igraph, source->id * num_webs + target->id)
-	   || TEST_BIT (sup_igraph, target->id * num_webs + source->id))
+	   || TEST_BIT (sup_igraph, target->id * num_webs + source->id)
+	   || !ok_class (target, source))
     {
       remove_move (source, m);
       remove_move (target, m);
@@ -2464,6 +2466,39 @@ sort_and_combine_web_pairs (int for_move)
   free (sorted);
 }
 
+/* Returns nonzero if source/target reg classes are ok for coalesce.  */
+
+static int
+ok_class (struct web *target, struct web *source)
+{
+  /* Don't coalesce if preferred classes are different and at least one
+     of them has a size of 1. This was preventing things such as the
+     branch on count transformation (i.e. DoLoop) since the target, which
+     prefers the CTR, was being coalesced with a source which preferred
+     GENERAL_REGS. If only one web has a preferred class with 1 free reg
+     then set it as the preferred color of the other web.   */
+  enum reg_class t_class, s_class;
+  t_class = reg_preferred_class (target->regno);
+  s_class = reg_preferred_class (source->regno);
+  if (t_class != s_class)
+    {
+      if (num_free_regs[t_class] == 1)
+	{
+	  if (num_free_regs[s_class] != 1)
+	    SET_HARD_REG_BIT (source->prefer_colors,
+			      single_reg_in_regclass[t_class]);
+	  return 0;
+	}
+      else if (num_free_regs[s_class] == 1)
+	{
+	    SET_HARD_REG_BIT (target->prefer_colors,
+			      single_reg_in_regclass[s_class]);
+	  return 0;
+	}
+    }
+  return 1;
+}
+
 /* Greedily coalesce all moves possible.  Begin with the web pair
    giving the most saving if coalesced.  */
 
@@ -2487,7 +2522,8 @@ aggressive_coalesce (void)
 	if (s != t
 	    && t->type != PRECOLORED
 	    && !TEST_BIT (sup_igraph, s->id * num_webs + t->id)
-	    && !TEST_BIT (sup_igraph, t->id * num_webs + s->id))
+	    && !TEST_BIT (sup_igraph, t->id * num_webs + s->id)
+	    && ok_class (t, s))
 	  {
 	    if ((s->type == PRECOLORED && ok (t, s))
 		|| s->type != PRECOLORED)
@@ -2557,6 +2593,7 @@ extended_coalesce_2 (void)
 				    dest->id * num_webs + source->id)
 		      && !TEST_BIT (sup_igraph,
 				    source->id * num_webs + dest->id)
+		      && ok_class (dest, source)
 		      && hard_regs_intersect_p (&source->usable_regs,
 						&dest->usable_regs))
 		    add_web_pair_cost (dest, source,
