@@ -631,7 +631,15 @@ expand_call (exp, target, ignore)
 #ifdef PCC_STATIC_STRUCT_RETURN
       {
 	pcc_struct_value = 1;
-	is_integrable = 0;  /* Easier than making that case work right.  */
+	/* Easier than making that case work right.  */
+	if (is_integrable)
+	  {
+	    /* In case this is a static function, note that it has been
+	       used.  */
+	    if (! TREE_ADDRESSABLE (fndecl))
+	      mark_addressable (fndecl);
+	    is_integrable = 0;
+	  }
       }
 #else /* not PCC_STATIC_STRUCT_RETURN */
       {
