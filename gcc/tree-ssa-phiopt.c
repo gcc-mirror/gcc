@@ -41,10 +41,13 @@ static bool conditional_replacement (basic_block, basic_block, basic_block,
 				     edge, edge, tree, tree, tree);
 static bool value_replacement (basic_block, basic_block, basic_block,
 			       edge, edge, tree, tree, tree);
+static bool minmax_replacement (basic_block, basic_block, basic_block,
+				edge, edge, tree, tree, tree);
 static bool abs_replacement (basic_block, basic_block, basic_block,
 			     edge, edge, tree, tree, tree);
 static void replace_phi_edge_with_variable (basic_block, basic_block, edge,
 					    tree, tree);
+static basic_block *blocks_in_phiopt_order (void);
 
 /* This pass eliminates PHI nodes which can be trivially implemented as
    an assignment from a conditional expression.  i.e. if we have something
@@ -102,6 +105,21 @@ static void replace_phi_edge_with_variable (basic_block, basic_block, edge,
      bb2:
       x = ABS_EXPR< a >;
 
+   Similarly,
+
+     bb0:
+      if (a <= b) goto bb2; else goto bb1;
+     bb1:
+      goto bb2;
+     bb2:
+      x = PHI (b (bb1), a (bb0));
+
+   Becomes
+
+     x = MIN_EXPR (a, b)
+
+   And the same transformation for MAX_EXPR.
+
    bb1 will become unreachable and bb0 and bb2 will almost always be merged
    into a single block.  Similar transformations are done by the ifcvt
    RTL optimizer.  */
@@ -110,15 +128,28 @@ static void
 tree_ssa_phiopt (void)
 {
   basic_block bb;
+  basic_block *bb_order;
+  unsigned n, i;
 
-  /* Search every basic block for COND_EXPR we may be able to optimize
-     in reverse order so we can find more.  */
-  FOR_EACH_BB_REVERSE (bb)
+  /* Search every basic block for COND_EXPR we may be able to optimize.
+
+     We walk the blocks in order that guarantees that a block with
+     a single predecessor is processed before the predecessor.
+     This ensures that we collapse inner ifs before visiting the
+     outer ones, and also that we do not try to visit a removed
+     block.  */
+  bb_order = blocks_in_phiopt_order ();
+  n = n_basic_blocks;
+
+  for (i = 0; i < n; i++)
     {
       tree cond_expr;
       tree phi;
       basic_block bb1, bb2;
       edge e1, e2;
+      tree arg0, arg1;
+
+      bb = bb_order[i];
 
       cond_expr = last_stmt (bb);
       /* Check to see if the last statement is a COND_EXPR.  */
@@ -174,25 +205,80 @@ tree_ssa_phiopt (void)
       /* Check to make sure that there is only one PHI node.
          TODO: we could do it with more than one iff the other PHI nodes
 	 have the same elements for these two edges.  */
-      if (phi && PHI_CHAIN (phi) == NULL)
-	{
-	  tree arg0 = NULL, arg1 = NULL;
+      if (!phi || PHI_CHAIN (phi) != NULL)
+	continue;
 
-	  arg0 = PHI_ARG_DEF_TREE (phi, e1->dest_idx);
-	  arg1 = PHI_ARG_DEF_TREE (phi, e2->dest_idx);
+      arg0 = PHI_ARG_DEF_TREE (phi, e1->dest_idx);
+      arg1 = PHI_ARG_DEF_TREE (phi, e2->dest_idx);
 
-	  /* We know something is wrong if we cannot find the edges in the PHI
-	     node.  */
-	  gcc_assert (arg0 != NULL && arg1 != NULL);
+      /* We know something is wrong if we cannot find the edges in the PHI
+	 node.  */
+      gcc_assert (arg0 != NULL && arg1 != NULL);
 
-	  /* Do the replacement of conditional if it can be done.  */
-	  if (conditional_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1)
-	      || value_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1)
-	      || abs_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1))
-	    {
-	    }
-	}
+      /* Do the replacement of conditional if it can be done.  */
+      if (conditional_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1))
+	;
+      else if (value_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1))
+	;
+      else if (abs_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1))
+	;
+      else
+	minmax_replacement (bb, bb1, bb2, e1, e2, phi, arg0, arg1);
     }
+
+  free (bb_order);
+}
+
+/* Returns the list of basic blocks in the function in an order that guarantees
+   that if a block X has just a single predecessor Y, then Y is after X in the
+   ordering.  */
+
+static basic_block *
+blocks_in_phiopt_order (void)
+{
+  basic_block x, y;
+  basic_block *order = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  unsigned n = n_basic_blocks, np, i;
+  sbitmap visited = sbitmap_alloc (last_basic_block + 2);
+
+#define MARK_VISITED(BB) (SET_BIT (visited, (BB)->index + 2))
+#define VISITED_P(BB) (TEST_BIT (visited, (BB)->index + 2))
+
+  sbitmap_zero (visited);
+
+  MARK_VISITED (ENTRY_BLOCK_PTR);
+  FOR_EACH_BB (x)
+    {
+      if (VISITED_P (x))
+	continue;
+
+      /* Walk the predecessors of x as long as they have precisely one
+	 predecessor and add them to the list, so that they get stored
+	 after x.  */
+      for (y = x, np = 1;
+	   single_pred_p (y) && !VISITED_P (single_pred (y));
+	   y = single_pred (y))
+	np++;
+      for (y = x, i = n - np;
+	   single_pred_p (y) && !VISITED_P (single_pred (y));
+	   y = single_pred (y), i++)
+	{
+	  order[i] = y;
+	  MARK_VISITED (y);
+	}
+      order[i] = y;
+      MARK_VISITED (y);
+
+      gcc_assert (i == n - 1);
+      n -= np;
+    }
+
+  sbitmap_free (visited);
+  gcc_assert (n == 0);
+  return order;
+
+#undef MARK_VISITED
+#undef VISITED_P
 }
 
 /* Return TRUE if block BB has no executable statements, otherwise return
@@ -324,11 +410,11 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
       if (!COMPARISON_CLASS_P (old_result))
 	return false;
 
-      new1 = build (TREE_CODE (old_result), TREE_TYPE (old_result),
-		    TREE_OPERAND (old_result, 0),
-		    TREE_OPERAND (old_result, 1));
+      new1 = build2 (TREE_CODE (old_result), TREE_TYPE (old_result),
+		     TREE_OPERAND (old_result, 0),
+		     TREE_OPERAND (old_result, 1));
 
-      new1 = build (MODIFY_EXPR, TREE_TYPE (old_result), new_var, new1);
+      new1 = build2 (MODIFY_EXPR, TREE_TYPE (old_result), new_var, new1);
       bsi_insert_after (&bsi, new1, BSI_NEW_STMT);
     }
 
@@ -357,7 +443,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
       || (e1 == true_edge && integer_onep (arg1))
       || (e1 == false_edge && integer_zerop (arg1)))
     {
-      new = build (MODIFY_EXPR, TREE_TYPE (new_var1), new_var1, cond);
+      new = build2 (MODIFY_EXPR, TREE_TYPE (new_var1), new_var1, cond);
     }
   else
     {
@@ -379,7 +465,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 	{
 	  tree temp = TREE_OPERAND (cond, 0);
 	  tree new_var_1 = make_rename_temp (TREE_TYPE (temp), NULL);
-	  new = build (MODIFY_EXPR, TREE_TYPE (new_var_1), new_var_1, temp);
+	  new = build2 (MODIFY_EXPR, TREE_TYPE (new_var_1), new_var_1, temp);
 	  bsi_insert_after (&bsi, new, BSI_NEW_STMT);
 	  cond = fold_convert (TREE_TYPE (result), new_var_1);
 	}
@@ -391,7 +477,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 	  return false;
 	}
 
-      new = build (MODIFY_EXPR, TREE_TYPE (new_var1), new_var1, cond);
+      new = build2 (MODIFY_EXPR, TREE_TYPE (new_var1), new_var1, cond);
     }
 
   bsi_insert_after (&bsi, new, BSI_NEW_STMT);
@@ -482,6 +568,257 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
   return false;
 }
 
+/*  The function minmax_replacement does the main work of doing the minmax
+    replacement.  Return true if the replacement is done.  Otherwise return
+    false.
+    BB is the basic block where the replacement is going to be done on.  ARG0
+    is argument 0 from the PHI.  Likewise for ARG1.  */
+
+static bool
+minmax_replacement (basic_block cond_bb, basic_block middle_bb,
+		    basic_block phi_bb, edge e0, edge e1, tree phi,
+		    tree arg0, tree arg1)
+{
+  tree result, type;
+  tree cond, new;
+  edge true_edge, false_edge;
+  enum tree_code cmp, minmax, ass_code;
+  tree smaller, larger, arg_true, arg_false;
+  block_stmt_iterator bsi, bsi_from;
+
+  type = TREE_TYPE (PHI_RESULT (phi));
+
+  /* The optimization may be unsafe due to NaNs.  */
+  if (HONOR_NANS (TYPE_MODE (type)))
+    return false;
+
+  cond = COND_EXPR_COND (last_stmt (cond_bb));
+  cmp = TREE_CODE (cond);
+  result = PHI_RESULT (phi);
+
+  /* This transformation is only valid for order comparisons.  Record which
+     operand is smaller/larger if the result of the comparison is true.  */
+  if (cmp == LT_EXPR || cmp == LE_EXPR)
+    {
+      smaller = TREE_OPERAND (cond, 0);
+      larger = TREE_OPERAND (cond, 1);
+    }
+  else if (cmp == GT_EXPR || cmp == GE_EXPR)
+    {
+      smaller = TREE_OPERAND (cond, 1);
+      larger = TREE_OPERAND (cond, 0);
+    }
+  else
+    return false;
+
+  /* We need to know which is the true edge and which is the false
+      edge so that we know if have abs or negative abs.  */
+  extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
+
+  /* Forward the edges over the middle basic block.  */
+  if (true_edge->dest == middle_bb)
+    true_edge = EDGE_SUCC (true_edge->dest, 0);
+  if (false_edge->dest == middle_bb)
+    false_edge = EDGE_SUCC (false_edge->dest, 0);
+
+  if (true_edge == e0)
+    {
+      gcc_assert (false_edge == e1);
+      arg_true = arg0;
+      arg_false = arg1;
+    }
+  else
+    {
+      gcc_assert (false_edge == e0);
+      gcc_assert (true_edge == e1);
+      arg_true = arg1;
+      arg_false = arg0;
+    }
+
+  if (empty_block_p (middle_bb))
+    {
+      if (operand_equal_for_phi_arg_p (arg_true, smaller)
+	  && operand_equal_for_phi_arg_p (arg_false, larger))
+	{
+	  /* Case
+	 
+	     if (smaller < larger)
+	     rslt = smaller;
+	     else
+	     rslt = larger;  */
+	  minmax = MIN_EXPR;
+	}
+      else if (operand_equal_for_phi_arg_p (arg_false, smaller)
+	       && operand_equal_for_phi_arg_p (arg_true, larger))
+	minmax = MAX_EXPR;
+      else
+	return false;
+    }
+  else
+    {
+      /* Recognize the following case, assuming d <= u:
+
+	 if (a <= u)
+	   b = MAX (a, d);
+	 x = PHI <b, u>
+
+	 This is equivalent to
+
+	 b = MAX (a, d);
+	 x = MIN (b, u);  */
+
+      tree assign = last_and_only_stmt (middle_bb);
+      tree lhs, rhs, op0, op1, bound;
+
+      if (!assign
+	  || TREE_CODE (assign) != MODIFY_EXPR)
+	return false;
+
+      lhs = TREE_OPERAND (assign, 0);
+      rhs = TREE_OPERAND (assign, 1);
+      ass_code = TREE_CODE (rhs);
+      if (ass_code != MAX_EXPR && ass_code != MIN_EXPR)
+	return false;
+      op0 = TREE_OPERAND (rhs, 0);
+      op1 = TREE_OPERAND (rhs, 1);
+
+      if (true_edge->src == middle_bb)
+	{
+	  /* We got here if the condition is true, i.e., SMALLER < LARGER.  */
+	  if (!operand_equal_for_phi_arg_p (lhs, arg_true))
+	    return false;
+
+	  if (operand_equal_for_phi_arg_p (arg_false, larger))
+	    {
+	      /* Case
+
+		 if (smaller < larger)
+		   {
+		     r' = MAX_EXPR (smaller, bound)
+		   }
+		 r = PHI <r', larger>  --> to be turned to MIN_EXPR.  */
+	      if (ass_code != MAX_EXPR)
+		return false;
+
+	      minmax = MIN_EXPR;
+	      if (operand_equal_for_phi_arg_p (op0, smaller))
+		bound = op1;
+	      else if (operand_equal_for_phi_arg_p (op1, smaller))
+		bound = op0;
+	      else
+		return false;
+
+	      /* We need BOUND <= LARGER.  */
+	      if (!integer_nonzerop (fold (build2 (LE_EXPR, boolean_type_node,
+						   bound, larger))))
+		return false;
+	    }
+	  else if (operand_equal_for_phi_arg_p (arg_false, smaller))
+	    {
+	      /* Case
+
+		 if (smaller < larger)
+		   {
+		     r' = MIN_EXPR (larger, bound)
+		   }
+		 r = PHI <r', smaller>  --> to be turned to MAX_EXPR.  */
+	      if (ass_code != MIN_EXPR)
+		return false;
+
+	      minmax = MAX_EXPR;
+	      if (operand_equal_for_phi_arg_p (op0, larger))
+		bound = op1;
+	      else if (operand_equal_for_phi_arg_p (op1, larger))
+		bound = op0;
+	      else
+		return false;
+
+	      /* We need BOUND >= SMALLER.  */
+	      if (!integer_nonzerop (fold (build2 (GE_EXPR, boolean_type_node,
+						   bound, smaller))))
+		return false;
+	    }
+	  else
+	    return false;
+	}
+      else
+	{
+	  /* We got here if the condition is false, i.e., SMALLER > LARGER.  */
+	  if (!operand_equal_for_phi_arg_p (lhs, arg_false))
+	    return false;
+
+	  if (operand_equal_for_phi_arg_p (arg_true, larger))
+	    {
+	      /* Case
+
+		 if (smaller > larger)
+		   {
+		     r' = MIN_EXPR (smaller, bound)
+		   }
+		 r = PHI <r', larger>  --> to be turned to MAX_EXPR.  */
+	      if (ass_code != MIN_EXPR)
+		return false;
+
+	      minmax = MAX_EXPR;
+	      if (operand_equal_for_phi_arg_p (op0, smaller))
+		bound = op1;
+	      else if (operand_equal_for_phi_arg_p (op1, smaller))
+		bound = op0;
+	      else
+		return false;
+
+	      /* We need BOUND >= LARGER.  */
+	      if (!integer_nonzerop (fold (build2 (GE_EXPR, boolean_type_node,
+						   bound, larger))))
+		return false;
+	    }
+	  else if (operand_equal_for_phi_arg_p (arg_true, smaller))
+	    {
+	      /* Case
+
+		 if (smaller > larger)
+		   {
+		     r' = MAX_EXPR (larger, bound)
+		   }
+		 r = PHI <r', smaller>  --> to be turned to MIN_EXPR.  */
+	      if (ass_code != MAX_EXPR)
+		return false;
+
+	      minmax = MIN_EXPR;
+	      if (operand_equal_for_phi_arg_p (op0, larger))
+		bound = op1;
+	      else if (operand_equal_for_phi_arg_p (op1, larger))
+		bound = op0;
+	      else
+		return false;
+
+	      /* We need BOUND <= SMALLER.  */
+	      if (!integer_nonzerop (fold (build2 (LE_EXPR, boolean_type_node,
+						   bound, smaller))))
+		return false;
+	    }
+	  else
+	    return false;
+	}
+
+      /* Move the statement from the middle block.  */
+      bsi = bsi_last (cond_bb);
+      bsi_from = bsi_last (middle_bb);
+      bsi_move_before (&bsi_from, &bsi);
+    }
+
+  /* Emit the statement to compute min/max.  */
+  result = duplicate_ssa_name (PHI_RESULT (phi), NULL);
+  new = build2 (MODIFY_EXPR, type, result,
+		build2 (minmax, type, arg0, arg1));
+  SSA_NAME_DEF_STMT (result) = new;
+  bsi = bsi_last (cond_bb);
+  bsi_insert_before (&bsi, new, BSI_NEW_STMT);
+
+  replace_phi_edge_with_variable (cond_bb, phi_bb, e1, phi, result);
+  return true;
+}
+
 /*  The function absolute_replacement does the main work of doing the absolute
     replacement.  Return true if the replacement is done.  Otherwise return
     false.
@@ -497,9 +834,9 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
   tree new, cond;
   block_stmt_iterator bsi;
   edge true_edge, false_edge;
-  tree assign = NULL;
+  tree assign;
   edge e;
-  tree rhs = NULL, lhs = NULL;
+  tree rhs, lhs;
   bool negate;
   enum tree_code cond_code;
 
@@ -510,56 +847,30 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* OTHER_BLOCK must have only one executable statement which must have the
      form arg0 = -arg1 or arg1 = -arg0.  */
-  bsi = bsi_start (middle_bb);
-  while (!bsi_end_p (bsi))
-    {
-      tree stmt = bsi_stmt (bsi);
 
-      /* Empty statements and labels are uninteresting.  */
-      if (TREE_CODE (stmt) == LABEL_EXPR
-          || IS_EMPTY_STMT (stmt))
-        {
-          bsi_next (&bsi);
-          continue;
-        }
-
-      /* If we found the assignment, but it was not the only executable
-	 statement in OTHER_BLOCK, then we can not optimize.  */
-      if (assign)
-	return false;
-
-      /* If we got here, then we have found the first executable statement
-	 in OTHER_BLOCK.  If it is anything other than arg = -arg1 or
-	 arg1 = -arg0, then we can not optimize.  */
-      if (TREE_CODE (stmt) == MODIFY_EXPR)
-        {
-          lhs = TREE_OPERAND (stmt, 0);
-          rhs = TREE_OPERAND (stmt, 1);
-
-          if (TREE_CODE (rhs) == NEGATE_EXPR)
-            {
-              rhs = TREE_OPERAND (rhs, 0);
-
-              /* The assignment has to be arg0 = -arg1 or arg1 = -arg0.  */
-              if ((lhs == arg0 && rhs == arg1)
-		  || (lhs == arg1 && rhs == arg0))
-		{
-		  assign = stmt;
-		  bsi_next (&bsi);
-		}
-	      else
-		return false;
-            }
-	  else
-	    return false;
-        }
-      else
-	return false;
-    }
-
+  assign = last_and_only_stmt (middle_bb);
   /* If we did not find the proper negation assignment, then we can not
      optimize.  */
   if (assign == NULL)
+    return false;
+      
+  /* If we got here, then we have found the only executable statement
+     in OTHER_BLOCK.  If it is anything other than arg = -arg1 or
+     arg1 = -arg0, then we can not optimize.  */
+  if (TREE_CODE (assign) != MODIFY_EXPR)
+    return false;
+
+  lhs = TREE_OPERAND (assign, 0);
+  rhs = TREE_OPERAND (assign, 1);
+
+  if (TREE_CODE (rhs) != NEGATE_EXPR)
+    return false;
+
+  rhs = TREE_OPERAND (rhs, 0);
+              
+  /* The assignment has to be arg0 = -arg1 or arg1 = -arg0.  */
+  if (!(lhs == arg0 && rhs == arg1)
+      && !(lhs == arg1 && rhs == arg0))
     return false;
 
   cond = COND_EXPR_COND (last_stmt (cond_bb));
@@ -607,8 +918,8 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
     lhs = result;
 
   /* Build the modify expression with abs expression.  */
-  new = build (MODIFY_EXPR, TREE_TYPE (lhs),
-               lhs, build1 (ABS_EXPR, TREE_TYPE (lhs), rhs));
+  new = build2 (MODIFY_EXPR, TREE_TYPE (lhs),
+		lhs, build1 (ABS_EXPR, TREE_TYPE (lhs), rhs));
 
   bsi = bsi_last (cond_bb);
   bsi_insert_before (&bsi, new, BSI_NEW_STMT);
@@ -618,8 +929,8 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
       /* Get the right BSI.  We want to insert after the recently
 	 added ABS_EXPR statement (which we know is the first statement
 	 in the block.  */
-      new = build (MODIFY_EXPR, TREE_TYPE (result),
-                   result, build1 (NEGATE_EXPR, TREE_TYPE (lhs), lhs));
+      new = build2 (MODIFY_EXPR, TREE_TYPE (result),
+		    result, build1 (NEGATE_EXPR, TREE_TYPE (lhs), lhs));
 
       bsi_insert_after (&bsi, new, BSI_NEW_STMT);
     }
