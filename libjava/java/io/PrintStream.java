@@ -99,7 +99,7 @@ public class PrintStream extends FilterOutputStream
 
   public void print (String str)
   {
-    print (str, true);
+    print (str == null ? "null" : str, true);
   }
 
   public void print (char ch)
@@ -157,7 +157,7 @@ public class PrintStream extends FilterOutputStream
 
   public void println (String str)
   {
-    print (str, false);
+    print (str == null ? "null" : str, false);
     println ();
   }
 
