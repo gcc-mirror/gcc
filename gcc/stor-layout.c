@@ -123,8 +123,8 @@ variable_size (size)
        Also, we would like to pass const0_rtx here, but don't have it.  */
     expand_expr (size, expand_expr (integer_zero_node, NULL_PTR, VOIDmode, 0),
 		 VOIDmode, 0);
-  else if (current_function != 0
-	   && current_function->x_dont_save_pending_sizes_p)
+  else if (cfun != 0
+	   && cfun->x_dont_save_pending_sizes_p)
     /* The front-end doesn't want us to keep a list of the expressions
        that determine sizes for variable size objects.  */
     ;

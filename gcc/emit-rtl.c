@@ -156,12 +156,12 @@ static rtx sequence_result[SEQUENCE_RESULT_SIZE];
 /* During RTL generation, we also keep a list of free INSN rtl codes.  */
 static rtx free_insn;
 
-#define first_insn (current_function->emit->x_first_insn)
-#define last_insn (current_function->emit->x_last_insn)
-#define cur_insn_uid (current_function->emit->x_cur_insn_uid)
-#define last_linenum (current_function->emit->x_last_linenum)
-#define last_filename (current_function->emit->x_last_filename)
-#define first_label_num (current_function->emit->x_first_label_num)
+#define first_insn (cfun->emit->x_first_insn)
+#define last_insn (cfun->emit->x_last_insn)
+#define cur_insn_uid (cfun->emit->x_cur_insn_uid)
+#define last_linenum (cfun->emit->x_last_linenum)
+#define last_filename (cfun->emit->x_last_filename)
+#define first_label_num (cfun->emit->x_first_label_num)
 
 /* This is where the pointer to the obstack being used for RTL is stored.  */
 extern struct obstack *rtl_obstack;
@@ -453,7 +453,7 @@ rtx
 gen_reg_rtx (mode)
      enum machine_mode mode;
 {
-  struct function *f = current_function;
+  struct function *f = cfun;
   register rtx val;
 
   /* Don't let anything called after initial flow analysis create new
@@ -3643,7 +3643,7 @@ copy_insn (insn)
 void
 init_emit ()
 {
-  struct function *f = current_function;
+  struct function *f = cfun;
 
   f->emit = (struct emit_status *) xmalloc (sizeof (struct emit_status));
   first_insn = NULL;

@@ -2598,8 +2598,7 @@ init_eh ()
 void
 init_eh_for_function ()
 {
-  current_function->eh
-    = (struct eh_status *) xcalloc (1, sizeof (struct eh_status));
+  cfun->eh = (struct eh_status *) xcalloc (1, sizeof (struct eh_status));
   ehqueue = (struct eh_queue *) xcalloc (1, sizeof (struct eh_queue));
   eh_return_context = NULL_RTX;
   eh_return_stack_adjust = NULL_RTX;

@@ -140,7 +140,7 @@ void (*free_lang_status) PROTO((struct function *));
 tree inline_function_decl;
 
 /* The currently compiled function.  */
-struct function *current_function = 0;
+struct function *cfun = 0;
 
 /* Global list of all compiled functions.  */
 struct function *all_functions = 0;
@@ -322,14 +322,14 @@ push_function_context_to (context)
   if (context)
     {
       context_data = (context == current_function_decl
-		      ? current_function
+		      ? cfun
 		      : find_function_data (context));
       context_data->contains_functions = 1;
     }
 
-  if (current_function == 0)
+  if (cfun == 0)
     init_dummy_function_start ();
-  p = current_function;
+  p = cfun;
 
   p->next = outer_function_chain;
   outer_function_chain = p;
@@ -341,7 +341,7 @@ push_function_context_to (context)
   if (save_machine_status)
     (*save_machine_status) (p);
 
-  current_function = 0;
+  cfun = 0;
 }
 
 void
@@ -361,7 +361,7 @@ pop_function_context_from (context)
   struct var_refs_queue *queue;
   struct var_refs_queue *next;
 
-  current_function = p;
+  cfun = p;
   outer_function_chain = p->next;
 
   current_function_decl = p->decl;
@@ -487,7 +487,7 @@ get_func_frame_size (f)
 HOST_WIDE_INT
 get_frame_size ()
 {
-  return get_func_frame_size (current_function);
+  return get_func_frame_size (cfun);
 }
 
 /* Allocate a stack slot of SIZE bytes and return a MEM rtx for it
@@ -515,7 +515,7 @@ assign_stack_local_1 (mode, size, align, function)
 
   /* Allocate in the memory associated with the function in whose frame
      we are assigning.  */
-  if (function != current_function)
+  if (function != cfun)
     push_obstacks (function->function_obstack,
 		   function->function_maybepermanent_obstack);
 
@@ -572,7 +572,7 @@ assign_stack_local_1 (mode, size, align, function)
 
   /* If we have already instantiated virtual registers, return the actual
      address relative to the frame pointer.  */
-  if (function == current_function && virtuals_instantiated)
+  if (function == cfun && virtuals_instantiated)
     addr = plus_constant (frame_pointer_rtx,
 			  (frame_offset + bigend_correction
 			   + STARTING_FRAME_OFFSET));
@@ -589,7 +589,7 @@ assign_stack_local_1 (mode, size, align, function)
   function->x_stack_slot_list
     = gen_rtx_EXPR_LIST (VOIDmode, x, function->x_stack_slot_list);
 
-  if (function != current_function)
+  if (function != cfun)
     pop_obstacks ();
 
   return x;
@@ -603,7 +603,7 @@ assign_stack_local (mode, size, align)
      HOST_WIDE_INT size;
      int align;
 {
-  return assign_stack_local_1 (mode, size, align, current_function);
+  return assign_stack_local_1 (mode, size, align, cfun);
 }
 
 /* Allocate a temporary stack slot and record it for possible later
@@ -1410,7 +1410,7 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
      int used_p;
      struct hash_table *ht;
 {
-  struct function *func = function ? function : current_function;
+  struct function *func = function ? function : cfun;
   rtx new = 0;
   int regno = original_regno;
 
@@ -5442,7 +5442,7 @@ trampoline_address (function)
 #define TRAMPOLINE_REAL_SIZE (TRAMPOLINE_SIZE)
 #endif
   tramp = assign_stack_local_1 (BLKmode, TRAMPOLINE_REAL_SIZE, 0,
-				fp ? fp : current_function);
+				fp ? fp : cfun);
 #endif
 
   /* Record the trampoline for reuse and note it for later initialization
@@ -5558,7 +5558,7 @@ identify_blocks (block, insns)
   /* In whole-function mode, we might not have seen the whole function
      yet, so we might not use up all the blocks.  */
   if (n_blocks != current_block_number 
-      && !current_function->x_whole_function_mode_p)
+      && !cfun->x_whole_function_mode_p)
     abort ();
 
   free (block_vector);
@@ -5665,7 +5665,7 @@ all_blocks (block, vector)
 static void
 prepare_function_start ()
 {
-  current_function = (struct function *) xcalloc (1, sizeof (struct function));
+  cfun = (struct function *) xcalloc (1, sizeof (struct function));
 
   init_stmt_for_function ();
   init_eh_for_function ();
@@ -5706,14 +5706,14 @@ prepare_function_start ()
   /* We haven't done register allocation yet.  */
   reg_renumber = 0;
 
-  init_varasm_status (current_function);
+  init_varasm_status (cfun);
 
   /* Clear out data used for inlining.  */
-  current_function->inlinable = 0;
-  current_function->original_decl_initial = 0;
-  current_function->original_arg_vector = 0;  
+  cfun->inlinable = 0;
+  cfun->original_decl_initial = 0;
+  cfun->original_arg_vector = 0;  
 
-  current_function->stack_alignment_needed = 0;
+  cfun->stack_alignment_needed = 0;
 
   /* Set if a call to setjmp is seen.  */
   current_function_calls_setjmp = 0;
@@ -5777,9 +5777,9 @@ prepare_function_start ()
   current_function_outgoing_args_size = 0;
 
   if (init_lang_status)
-    (*init_lang_status) (current_function);
+    (*init_lang_status) (cfun);
   if (init_machine_status)
-    (*init_machine_status) (current_function);
+    (*init_machine_status) (cfun);
 }
 
 /* Initialize the rtl expansion mechanism so that we can do simple things
@@ -5804,11 +5804,11 @@ init_function_start (subr, filename, line)
   prepare_function_start ();
 
   /* Remember this function for later.  */
-  current_function->next_global = all_functions;
-  all_functions = current_function;
+  cfun->next_global = all_functions;
+  all_functions = cfun;
   
   current_function_name = (*decl_printable_name) (subr, 2);
-  current_function->decl = subr;
+  cfun->decl = subr;
 
   /* Nonzero if this is a nested function that uses a static chain.  */
 
@@ -6158,10 +6158,10 @@ expand_dummy_function_end ()
   /* Outside function body, can't compute type's actual size
      until next function's body starts.  */
 
-  free_after_parsing (current_function);
-  free_after_compilation (current_function);
-  free (current_function);
-  current_function = 0;
+  free_after_parsing (cfun);
+  free_after_compilation (cfun);
+  free (cfun);
+  cfun = 0;
 }
 
 /* Emit CODE for each register of the return value.  Useful values for

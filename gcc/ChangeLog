@@ -1,5 +1,9 @@
 1999-12-20  Bernd Schmidt  <bernds@cygnus.co.uk>
 
+	* function.c (cfun): Renamed from current_function.  All users
+	changed.
+	* function.h (cfun): Rename declaration as well.
+
 	* reload.h (struct insn_chain): Change live_throughout and dead_or_set
 	to be of type regset_head, not regset.  All users changed by adding
 	address operator.

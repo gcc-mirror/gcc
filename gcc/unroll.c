@@ -1180,8 +1180,8 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
     }
 
   /* Use our current register alignment and pointer flags.  */
-  map->regno_pointer_flag = current_function->emit->regno_pointer_flag;
-  map->regno_pointer_align = current_function->emit->regno_pointer_align;
+  map->regno_pointer_flag = cfun->emit->regno_pointer_flag;
+  map->regno_pointer_align = cfun->emit->regno_pointer_align;
 
   /* If the loop is being partially unrolled, and the iteration variables
      are being split, and are being renamed for the split, then must fix up

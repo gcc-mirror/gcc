@@ -976,7 +976,7 @@ begin_compound_stmt (has_no_scope)
 
   /* If this is the outermost block of the function, declare the
      variables __FUNCTION__, __PRETTY_FUNCTION__, and so forth.  */
-  if (current_function
+  if (cfun
       && !current_function_name_declared 
       && !has_no_scope)
     {
@@ -1351,7 +1351,7 @@ do_pushlevel ()
     {
       pushlevel (0);
       if (!building_stmt_tree ()
-	  && !current_function->x_whole_function_mode_p)
+	  && !cfun->x_whole_function_mode_p)
 	my_friendly_abort (19991129);
 
       if (building_stmt_tree () && !processing_template_decl)
@@ -1408,7 +1408,7 @@ begin_stmt_expr ()
   /* If we're outside a function, we won't have a statement-tree to
      work with.  But, if we see a statement-expression we need to
      create one.  */
-  if (!current_function && !last_tree)
+  if (! cfun && !last_tree)
     begin_stmt_tree (&scope_chain->x_saved_tree);
 
   keep_next_level (1);
@@ -1452,7 +1452,7 @@ finish_stmt_expr (rtl_expr)
 
   /* If we created a statement-tree for this statement-expression,
      remove it now.  */ 
-  if (!current_function 
+  if (! cfun
       && TREE_CHAIN (scope_chain->x_saved_tree) == NULL_TREE)
     finish_stmt_tree (&scope_chain->x_saved_tree);
 
@@ -2259,7 +2259,7 @@ finish_stmt_tree (t)
   *t = stmt;
   SET_LAST_STMT (NULL_TREE);
 
-  if (current_function)
+  if (cfun)
     {
       /* The line-number recorded in the outermost statement in a function
 	 is the line number of the end of the function.  */

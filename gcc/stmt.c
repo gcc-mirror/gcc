@@ -378,20 +378,20 @@ struct stmt_status
   struct goto_fixup *x_goto_fixup_chain;
 };
 
-#define block_stack (current_function->stmt->x_block_stack)
-#define stack_block_stack (current_function->stmt->x_stack_block_stack)
-#define cond_stack (current_function->stmt->x_cond_stack)
-#define loop_stack (current_function->stmt->x_loop_stack)
-#define case_stack (current_function->stmt->x_case_stack)
-#define nesting_stack (current_function->stmt->x_nesting_stack)
-#define nesting_depth (current_function->stmt->x_nesting_depth)
-#define current_block_start_count (current_function->stmt->x_block_start_count)
-#define last_expr_type (current_function->stmt->x_last_expr_type)
-#define last_expr_value (current_function->stmt->x_last_expr_value)
-#define expr_stmts_for_value (current_function->stmt->x_expr_stmts_for_value)
-#define emit_filename (current_function->stmt->x_emit_filename)
-#define emit_lineno (current_function->stmt->x_emit_lineno)
-#define goto_fixup_chain (current_function->stmt->x_goto_fixup_chain)
+#define block_stack (cfun->stmt->x_block_stack)
+#define stack_block_stack (cfun->stmt->x_stack_block_stack)
+#define cond_stack (cfun->stmt->x_cond_stack)
+#define loop_stack (cfun->stmt->x_loop_stack)
+#define case_stack (cfun->stmt->x_case_stack)
+#define nesting_stack (cfun->stmt->x_nesting_stack)
+#define nesting_depth (cfun->stmt->x_nesting_depth)
+#define current_block_start_count (cfun->stmt->x_block_start_count)
+#define last_expr_type (cfun->stmt->x_last_expr_type)
+#define last_expr_value (cfun->stmt->x_last_expr_value)
+#define expr_stmts_for_value (cfun->stmt->x_expr_stmts_for_value)
+#define emit_filename (cfun->stmt->x_emit_filename)
+#define emit_lineno (cfun->stmt->x_emit_lineno)
+#define goto_fixup_chain (cfun->stmt->x_goto_fixup_chain)
 
 /* Non-zero if we are using EH to handle cleanus.  */
 static int using_eh_for_cleanups_p = 0;
@@ -605,8 +605,7 @@ init_stmt ()
 void
 init_stmt_for_function ()
 {
-  current_function->stmt
-    = (struct stmt_status *) xmalloc (sizeof (struct stmt_status));
+  cfun->stmt = (struct stmt_status *) xmalloc (sizeof (struct stmt_status));
 
   /* We are not currently within any block, conditional, loop or case.  */
   block_stack = 0;
@@ -1030,7 +1029,7 @@ expand_fixup (tree_label, rtl_label, last_insn)
 	block = make_node (BLOCK);
 	TREE_USED (block) = 1;
 
-	if (!current_function->x_whole_function_mode_p)
+	if (!cfun->x_whole_function_mode_p)
 	  insert_block (block);
 	else
 	  {
@@ -1042,11 +1041,11 @@ expand_fixup (tree_label, rtl_label, last_insn)
 
         start_sequence ();
         start = emit_note (NULL_PTR, NOTE_INSN_BLOCK_BEG);
-	if (current_function->x_whole_function_mode_p)
+	if (cfun->x_whole_function_mode_p)
 	  NOTE_BLOCK (start) = block;
 	fixup->before_jump = emit_note (NULL_PTR, NOTE_INSN_DELETED);
 	end = emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
-	if (current_function->x_whole_function_mode_p)
+	if (cfun->x_whole_function_mode_p)
 	  NOTE_BLOCK (end) = block;
         fixup->context = block;
         end_sequence ();
@@ -2630,8 +2629,7 @@ preserve_subexpressions_p ()
   if (flag_expensive_optimizations)
     return 1;
 
-  if (optimize == 0 || current_function == 0 
-      || current_function->stmt == 0 || loop_stack == 0)
+  if (optimize == 0 || cfun == 0 || cfun->stmt == 0 || loop_stack == 0)
     return 0;
 
   insn = get_last_insn_anywhere ();
@@ -3359,8 +3357,7 @@ mark_block_as_not_eh_region ()
 int
 is_eh_region ()
 {
-  return (current_function && block_stack
-	  && block_stack->data.block.exception_region);
+  return cfun && block_stack && block_stack->data.block.exception_region;
 }
 
 /* Emit a handler label for a nonlocal goto handler.
@@ -3970,7 +3967,7 @@ expand_decl_cleanup (decl, cleanup)
   struct nesting *thisblock;
 
   /* Error if we are not in any block.  */
-  if (current_function == 0 || block_stack == 0)
+  if (cfun == 0 || block_stack == 0)
     return 0;
 
   thisblock = block_stack;
@@ -4104,7 +4101,7 @@ expand_dcc_cleanup (decl)
   tree cleanup;
 
   /* Error if we are not in any block.  */
-  if (current_function == 0 || block_stack == 0)
+  if (cfun == 0 || block_stack == 0)
     return 0;
   thisblock = block_stack;
 
@@ -4146,7 +4143,7 @@ expand_dhc_cleanup (decl)
   tree cleanup;
 
   /* Error if we are not in any block.  */
-  if (current_function == 0 || block_stack == 0)
+  if (cfun == 0 || block_stack == 0)
     return 0;
   thisblock = block_stack;
 
@@ -4175,7 +4172,7 @@ void
 expand_anon_union_decl (decl, cleanup, decl_elts)
      tree decl, cleanup, decl_elts;
 {
-  struct nesting *thisblock = current_function == 0 ? 0 : block_stack;
+  struct nesting *thisblock = cfun == 0 ? 0 : block_stack;
   rtx x;
   tree t;
 
@@ -4381,8 +4378,7 @@ any_pending_cleanups (this_contour)
 {
   struct nesting *block;
 
-  if (current_function == NULL || current_function->stmt == NULL
-      || block_stack == 0)
+  if (cfun == NULL || cfun->stmt == NULL || block_stack == 0)
     return 0;
 
   if (this_contour && block_stack->data.block.cleanups != NULL)

@@ -5003,7 +5003,7 @@ mark_addressable (exp)
 		      x);
 	TREE_ADDRESSABLE (x) = 1;
 	TREE_USED (x) = 1;
-	if (current_function && expanding_p)
+	if (cfun && expanding_p)
 	  put_var_into_stack (x);
 	return 1;
 

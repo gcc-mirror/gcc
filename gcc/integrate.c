@@ -430,11 +430,11 @@ save_for_inline_nocopy (fndecl)
 
   preserve_data ();
 
-  current_function->inl_max_label_num = max_label_num ();
-  current_function->inl_last_parm_insn = current_function->x_last_parm_insn;
-  current_function->original_arg_vector = argvec;
-  current_function->original_decl_initial = DECL_INITIAL (fndecl);
-  DECL_SAVED_INSNS (fndecl) = current_function;
+  cfun->inl_max_label_num = max_label_num ();
+  cfun->inl_last_parm_insn = cfun->x_last_parm_insn;
+  cfun->original_arg_vector = argvec;
+  cfun->original_decl_initial = DECL_INITIAL (fndecl);
+  DECL_SAVED_INSNS (fndecl) = cfun;
 
   /* Clean up.  */
   free (parmdecl_map);
@@ -1395,7 +1395,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   if (inl_f->calls_alloca)
     emit_stack_restore (SAVE_BLOCK, stack_save, NULL_RTX);
 
-  if (!current_function->x_whole_function_mode_p)
+  if (! cfun->x_whole_function_mode_p)
     /* In statement-at-a-time mode, we just tell the front-end to add
        this block to the list of blocks at this binding level.  We
        can't do it the way it's done for function-at-a-time mode the
@@ -1810,7 +1810,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	 remapped label.  Otherwise, symbols are returned unchanged.  */
       if (CONSTANT_POOL_ADDRESS_P (orig))
 	{
-	  struct function *f = inlining ? inlining : current_function;
+	  struct function *f = inlining ? inlining : cfun;
 	  rtx constant = get_pool_constant_for_function (f, orig);
 	  enum machine_mode const_mode = get_pool_mode_for_function (f, orig);
 	  if (inlining)
@@ -2572,10 +2572,10 @@ void
 output_inline_function (fndecl)
      tree fndecl;
 {
-  struct function *curf = current_function;
+  struct function *old_cfun = cfun;
   struct function *f = DECL_SAVED_INSNS (fndecl);
 
-  current_function = f;
+  cfun = f;
   current_function_decl = fndecl;
   clear_emit_caches ();
 
@@ -2606,6 +2606,6 @@ output_inline_function (fndecl)
   /* Compile this function all the way down to assembly code.  */
   rest_of_compilation (fndecl);
 
-  current_function = curf;
-  current_function_decl = curf ? curf->decl : 0;
+  cfun = old_cfun;
+  current_function_decl = old_cfun ? old_cfun->decl : 0;
 }

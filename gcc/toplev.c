@@ -2752,7 +2752,7 @@ rest_of_compilation (decl)
 
   /* In function-at-a-time mode, we do not attempt to keep the BLOCK
      tree in sensible shape.  So, we just recalculate it here.  */
-  if (current_function->x_whole_function_mode_p)
+  if (cfun->x_whole_function_mode_p)
     {
       find_loop_tree_blocks ();
       unroll_block_trees ();
@@ -3676,10 +3676,10 @@ rest_of_compilation (decl)
   init_recog_no_volatile ();
 
   /* We're done with this function.  Free up memory if we can.  */
-  free_after_parsing (current_function);
+  free_after_parsing (cfun);
   if (! DECL_DEFER_OUTPUT (decl))
-    free_after_compilation (current_function);
-  current_function = 0;
+    free_after_compilation (cfun);
+  cfun = 0;
 
   if (ggc_p)
     ggc_collect ();

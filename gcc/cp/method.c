@@ -2150,7 +2150,7 @@ emit_thunk (thunk_fndecl)
       ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);
       assemble_end_function (thunk_fndecl, fnname);
       current_function_decl = 0;
-      current_function = 0;
+      cfun = 0;
     }
 #else /* ASM_OUTPUT_MI_THUNK */
   {
