@@ -120,13 +120,12 @@ namespace std
 	  bool __testfail = false;
 	  try
 	    {
-	      const int_type __eof = traits_type::eof();
 	      const bool __testput = this->_M_out_beg < this->_M_out_lim;
 
 	      if (__testput 
-		  && traits_type::eq_int_type(this->overflow(), __eof))
+		  && traits_type::eq_int_type(this->overflow(),
+					      traits_type::eof()))
 		__testfail = true;
-
 #if 0
 	      // XXX not done
 	      if (_M_last_overflowed)

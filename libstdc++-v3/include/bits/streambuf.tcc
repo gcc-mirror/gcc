@@ -47,9 +47,8 @@ namespace std
       int_type __ret;
       if (_M_in_cur < _M_in_end)
 	{
-	  char_type __c = *this->_M_in_cur;
+	  __ret = traits_type::to_int_type(*this->_M_in_cur);
 	  _M_move_in_cur(1);
-	  __ret = traits_type::to_int_type(__c);
 	}
       else 
 	__ret = this->uflow();

@@ -191,8 +191,7 @@ namespace std
 	if (_M_pback_init)
 	  {
 	    // Length _M_in_cur moved in the pback buffer.
-	    if (_M_pback_cur_save)
-	      _M_pback_cur_save += this->_M_in_cur != this->_M_in_beg;
+	    _M_pback_cur_save += this->_M_in_cur != this->_M_in_beg;
 	    this->setg(this->_M_buf, _M_pback_cur_save, _M_pback_end_save);
 	    _M_pback_init = false;
 	  }
@@ -373,7 +372,7 @@ namespace std
 	if (__testput)
 	  {
 	    // Need to restore current position after the write.
-	    off_type __off = this->_M_out_cur - this->_M_out_lim;
+	    const off_type __off = this->_M_out_cur - this->_M_out_lim;
 
 	    // _M_file.sync() will be called within.
 	    if (traits_type::eq_int_type(this->overflow(), traits_type::eof()))
