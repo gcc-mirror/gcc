@@ -188,6 +188,7 @@ extern char *version_string;
 extern struct tm *localtime ();
 extern int sys_nerr;
 extern char *sys_errlist[];
+extern int parse_escape ();
 
 #ifndef errno
 extern int errno;
@@ -308,7 +309,7 @@ static char *macarg ();
 static U_CHAR *skip_to_end_of_comment ();
 static U_CHAR *skip_quoted_string ();
 static U_CHAR *skip_paren_group ();
-static void quote_string ();
+static char *quote_string ();
 
 static char *check_precompiled ();
 /* static struct macrodef create_definition ();	[moved below] */
@@ -3664,7 +3665,7 @@ special_symbol (hp, op)
 
       if (string)
 	{
-	  buf = (char *) alloca (3 + 2 * strlen (string));
+	  buf = (char *) alloca (3 + 4 * strlen (string));
 	  quote_string (buf, string);
 	}
       else
@@ -4734,12 +4735,14 @@ write_output ()
     if (next_string
 	&& cur_buf_loc - outbuf.buf == next_string->output_mark) {
       if (next_string->writeflag) {
-	len = strlen (next_string->filename);
-	if (len > line_command_len)
+	len = 4 * strlen (next_string->filename) + 32;
+	while (len > line_command_len)
 	  line_command = xrealloc (line_command, 
 				   line_command_len *= 2);
-	sprintf (line_command, "\n# %d \"%s\"\n",
-		 next_string->lineno, next_string->filename);
+	sprintf (line_command, "\n# %d ", next_string->lineno);
+	strcpy (quote_string (line_command + strlen (line_command),
+		              next_string->filename),
+		"\n");
 	if (write (fileno (stdout), line_command, strlen (line_command)) < 0)
 	  pfatal_with_name (out_fname);
 	if (write (fileno (stdout), next_string->contents, next_string->len) < 0)
@@ -5888,21 +5891,39 @@ do_line (buf, limit, op, keyword)
   if (*bp == '\"') {
     static HASHNODE *fname_table[FNAME_HASHSIZE];
     HASHNODE *hp, **hash_bucket;
-    U_CHAR *fname;
+    U_CHAR *fname, *p;
     int fname_length;
 
     fname = ++bp;
 
-    while (*bp && *bp != '\"')
-      bp++;
-    if (*bp != '\"') {
-      error ("invalid format `#line' command");
-      return 0;
-    }
+    /* Turn the file name, which is a character string literal,
+       into a null-terminated string.  Do this in place.  */
+    p = bp;
+    for (;;)
+      switch ((*p++ = *bp++)) {
+      case '\0':
+	error ("invalid format `#line' command");
+	return 0;
 
-    fname_length = bp - fname;
+      case '\\':
+	{
+	  char *bpc = (char *) bp;
+	  int c = parse_escape (&bpc);
+	  bp = (U_CHAR *) bpc;
+	  if (c < 0)
+	    p--;
+	  else
+	    p[-1] = c;
+	}
+	break;
 
-    bp++;
+      case '\"':
+	p[-1] = 0;
+	goto fname_done;
+      }
+  fname_done:
+    fname_length = p - fname;
+
     SKIP_WHITE_SPACE (bp);
     if (*bp) {
       if (pedantic)
@@ -6908,28 +6929,38 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
   return bp;
 }
 
-/* Place into DST a quoted string representing the string SRC.  */
-static void
+/* Place into DST a quoted string representing the string SRC.
+   Return the address of DST's terminating null.  */
+static char *
 quote_string (dst, src)
      char *dst, *src;
 {
-  char c;
+  U_CHAR c;
 
-  for (*dst++ = '\"'; ; *dst++ = c)
+  *dst++ = '\"';
+  for (;;)
     switch ((c = *src++))
       {
-      case '\n':
-	c = 'n';
-	/* fall through */
+      default:
+        if (isprint (c))
+	  *dst++ = c;
+	else
+	  {
+	    sprintf (dst, "\\%03o", c);
+	    dst += 4;
+	  }
+	break;
+
       case '\"':
       case '\\':
 	*dst++ = '\\';
+	*dst++ = c;
 	break;
       
       case '\0':
 	*dst++ = '\"';
 	*dst = '\0';
-	return;
+	return dst;
       }
 }
 
@@ -6999,7 +7030,7 @@ output_line_command (ip, op, conditional, file_change)
      enum file_change_code file_change;
 {
   int len;
-  char *line_cmd_buf;
+  char *line_cmd_buf, *line_end;
 
   if (no_line_commands
       || ip->fname == NULL
@@ -7031,19 +7062,25 @@ output_line_command (ip, op, conditional, file_change)
     ip->bufp++;
   }
 
-  line_cmd_buf = (char *) alloca (strlen (ip->nominal_fname) + 100);
+  line_cmd_buf = (char *) alloca (4 * strlen (ip->nominal_fname) + 100);
 #ifdef OUTPUT_LINE_COMMANDS
-  sprintf (line_cmd_buf, "#line %d \"%s\"", ip->lineno, ip->nominal_fname);
+  sprintf (line_cmd_buf, "#line %d ", ip->lineno);
 #else
-  sprintf (line_cmd_buf, "# %d \"%s\"", ip->lineno, ip->nominal_fname);
+  sprintf (line_cmd_buf, "# %d ", ip->lineno);
 #endif
-  if (file_change != same_file)
-    strcat (line_cmd_buf, file_change == enter_file ? " 1" : " 2");
+  line_end = quote_string (line_cmd_buf + strlen (line_cmd_buf),
+			   ip->nominal_fname);
+  if (file_change != same_file) {
+    *line_end++ = ' ';
+    *line_end++ = file_change == enter_file ? '1' : '2';
+  }
   /* Tell cc1 if following text comes from a system header file.  */
-  if (ip->system_header_p)
-    strcat (line_cmd_buf, " 3");
-  len = strlen (line_cmd_buf);
-  line_cmd_buf[len++] = '\n';
+  if (ip->system_header_p) {
+    *line_end++ = ' ';
+    *line_end++ = '3';
+  }
+  *line_end++ = '\n';
+  len = line_end - line_cmd_buf;
   check_expand (op, len + 1);
   if (op->bufp > op->buf && op->bufp[-1] != '\n')
     *op->bufp++ = '\n';
