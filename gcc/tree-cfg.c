@@ -717,15 +717,21 @@ cleanup_tree_cfg (void)
 
   timevar_push (TV_TREE_CLEANUP_CFG);
 
-  /* These three transformations can cascade, so we iterate on them until
+  retval = cleanup_control_flow ();
+
+  /* These two transformations can cascade, so we iterate on them until
      nothing changes.  */
   while (something_changed)
     {
-      something_changed = cleanup_control_flow ();
-      something_changed |= delete_unreachable_blocks ();
+      something_changed = delete_unreachable_blocks ();
       something_changed |= thread_jumps ();
       retval |= something_changed;
     }
+
+#ifdef ENABLE_CHECKING
+  if (retval)
+    gcc_assert (!cleanup_control_flow ());
+#endif
 
   /* Merging the blocks creates no new opportunities for the other
      optimizations, so do it here.  */
