@@ -1,6 +1,9 @@
 Fri Jul  2 00:46:47 1999  Richard Henderson  <rth@cygnus.com>
 			  Jeff Law <law@cygnus.com>
 
+	* ginclude/varargs.h (va_dcl): Use word_mode for type of
+	__builtin_va_list.
+
 	* except.c: Include intl.h.
 	(expand_eh_return): Set current_function_cannot_inline.
 	(save_eh_status, restore_eh_status): Twiddle eh_return_stub_label.
