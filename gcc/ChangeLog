@@ -1,3 +1,19 @@
+2005-03-30  Tom Tromey  <tromey@redhat.com>
+
+	* tree.def (FILE_TYPE): Removed.
+	* typeclass.h (enum type_class): Removed file_type_class.
+	* dwarf2out.c (is_base_type): Updated.
+	(gen_type_die): Likewise.
+	* dbxout.c (dbxout_type): Updated.
+	* builtins.c (type_to_class): Updated.
+	* tree.c (type_contains_placeholder_1): Updated.
+	* config/sparc/sparc.c (sparc_type_code): Updated.
+	* config/ia64/ia64.c (hfa_element_mode): Updated.
+	* expr.c (count_type_elements): Updated.
+	* stor-layout.c (layout_type): Updated.
+	* tree-inline.c (remap_type): Updated.
+	* tree-pretty-print.c (dump_generic_node): Updated.
+
 2005-03-30 Fariborz Jahanian <fjahanian@apple.com>
 
 	* builtins.c (expand_builtin_powi): Fix mode of

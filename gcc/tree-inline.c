@@ -321,7 +321,6 @@ remap_type (tree type, inline_data *id)
       walk_tree (&TYPE_FIELDS (new), copy_body_r, id, NULL);
       break;
 
-    case FILE_TYPE:
     case OFFSET_TYPE:
     default:
       /* Shouldn't have been thought variable sized.  */
