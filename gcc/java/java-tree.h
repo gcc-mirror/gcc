@@ -1731,6 +1731,8 @@ while (0)
 #define BLOCK_EXPR_BODY(NODE)   BLOCK_SUBBLOCKS(NODE)
 /* True for an implicit block surrounding declaration not at start of {...}. */
 #define BLOCK_IS_IMPLICIT(NODE) TREE_LANG_FLAG_1 (NODE)
+#define BLOCK_EMPTY_P(NODE) \
+  (TREE_CODE (NODE) == BLOCK && BLOCK_EXPR_BODY (NODE) == empty_stmt_node)
 
 #define BUILD_MONITOR_ENTER(WHERE, ARG)				\
   {								\
