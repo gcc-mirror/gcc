@@ -1,3 +1,34 @@
+1999-07-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (NEED_TEMPORARY_P): New macro.
+	(standard_conversion): Set it, for derived-to-base conversions.
+	(reference_related_p): New function.
+	(reference_compatible_p): Likewise.
+	(convert_class_to_reference): Likewise.
+	(direct_reference_binding): Likewise.
+	(reference_binding): Rework for standards-compliance.
+	(convert_like): Adjust accordingly.
+	(maybe_handle_ref_bind): Simplify; the right conversion sequences
+	are now built up in reference_binding.
+	(initialize_reference): New function.
+	* cp-tree.h (ICS_USER_FLAG): Document.
+	(ICS_THIS_FLAG): Likewise.
+	(ICS_BAD_FLAG): Likewise.
+	(NEED_TEMPORARY_P): Likewise.
+	(cp_lvalue_kind): New type.
+	(real_lvalue_p): Return it.
+	* error.c (dump_expr): Provide more accurate representation for
+	AGGR_INIT_EXPRs.
+	* init.c (expand_default_init): Do not try to perform implicit
+	conversions for a brace-enclosed initializer.
+	* search.c (lookup_conversions): Document.
+	* tree.c (lvalue_p_1): Return a cp_lvalue_kind.  Calculate
+	appropriately.
+	(real_lvalue_p): Adjust accordingly.
+	(lvalue_p): Likewise.
+	(build_cplus_new): Don't allow the creation of an abstract class.
+	* typeck.c (convert_for_initialization): Use initialize_reference.
+	
 1999-07-21  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* lex.c (real_yylex) : Correct the test for overflow when lexing

@@ -3150,6 +3150,12 @@ add_conversions (binfo, data)
   return NULL_TREE;
 }
 
+/* Return a TREE_LIST containing all the non-hidden user-defined
+   conversion functions for TYPE (and its base-classes).  The
+   TREE_VALUE of each node is a FUNCTION_DECL or an OVERLOAD
+   containing the conversion functions.  The TREE_PURPOSE is the BINFO
+   from which the conversion functions in this node were selected.  */
+
 tree
 lookup_conversions (type)
      tree type;

@@ -1177,6 +1177,10 @@ expand_default_init (binfo, true_exp, exp, init, flags)
 	   to run a new constructor; and catching an exception, where we
 	   have already built up the constructor call so we could wrap it
 	   in an exception region.  */;
+      else if (TREE_CODE (init) == CONSTRUCTOR)
+	/* A brace-enclosed initializer has whatever type is
+	   required.  There's no need to convert it.  */
+	;
       else
 	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
 

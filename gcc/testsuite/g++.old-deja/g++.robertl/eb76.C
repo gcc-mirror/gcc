@@ -1,6 +1,5 @@
 //Build don't link:
 // the template operator!= interferes.  It should be in a namespace.
-// excess errors test - XFAIL *-*-*
 
 #include <utility>
 
