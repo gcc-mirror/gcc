@@ -1,3 +1,8 @@
+2002-04-03  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/reflect/Modifier.java (toString(int,StringBuffer)): Fix
+	ordering.
+
 2002-04-02  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/Long.java (getLong(String,Long)): Actually decode property
