@@ -787,11 +787,15 @@ struct tree_block
 #define TYPE_NAME(NODE) (TYPE_CHECK (NODE)->type.name)
 #define TYPE_NEXT_VARIANT(NODE) (TYPE_CHECK (NODE)->type.next_variant)
 #define TYPE_MAIN_VARIANT(NODE) (TYPE_CHECK (NODE)->type.main_variant)
-#define TYPE_BINFO(NODE) (TYPE_CHECK (NODE)->type.binfo)
 #define TYPE_NONCOPIED_PARTS(NODE) (TYPE_CHECK (NODE)->type.noncopied_parts)
 #define TYPE_CONTEXT(NODE) (TYPE_CHECK (NODE)->type.context)
 #define TYPE_OBSTACK(NODE) (TYPE_CHECK (NODE)->type.obstack)
 #define TYPE_LANG_SPECIFIC(NODE) (TYPE_CHECK (NODE)->type.lang_specific)
+
+/* For aggregate types, information about this type, as a base type
+   for itself.  Used in a language-dependent way for types that are
+   neither a RECORD_TYPE, QUAL_UNION_TYPE, nor a UNION_TYPE.  */
+#define TYPE_BINFO(NODE) (TYPE_CHECK (NODE)->type.binfo)
 
 /* The (language-specific) typed-based alias set for this type.
    Objects whose TYPE_ALIAS_SETs are different cannot alias each
