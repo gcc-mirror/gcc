@@ -414,6 +414,7 @@ CONSTRAINT(ridbits_fit, RID_LAST_MODIFIER < sizeof(unsigned long) * CHAR_BIT);
 
 static const struct resword reswords[] =
 {
+  { "_Complex",		RID_COMPLEX,	0 },
   { "__alignof", 	RID_ALIGNOF,	0 },
   { "__alignof__",	RID_ALIGNOF,	0 },
   { "__asm",		RID_ASM,	0 },
