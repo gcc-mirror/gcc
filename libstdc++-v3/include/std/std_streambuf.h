@@ -234,8 +234,7 @@ namespace std
        *  @if maint
        *  Necessary bits for putback buffer management. Only used in
        *  the basic_filebuf class, as necessary for the standard
-       *  requirements. The only basic_streambuf member function that
-       *  needs access to these data members is in_avail...
+       *  requirements.
        *  
        *  @note pbacks of over one character are not currently supported.
        *  @endif
@@ -452,10 +451,12 @@ namespace std
       int_type 
       sgetc()
       {
+	int_type __ret;
 	if (_M_in_cur < _M_in_end)
-	  return traits_type::to_int_type(*(this->gptr()));
+	  __ret = traits_type::to_int_type(*(this->gptr()));
 	else 
-	  return this->underflow();
+	  __ret = this->underflow();
+	return __ret;
       }
 
       /**
@@ -787,13 +788,10 @@ namespace std
 	int_type __ret = traits_type::eof();
 	const bool __testeof =
 	  traits_type::eq_int_type(this->underflow(), __ret);
-	const bool __testpending = _M_in_cur < _M_in_end;
-	if (!__testeof && __testpending)
+	if (!__testeof && _M_in_cur < _M_in_end)
 	  {
 	    __ret = traits_type::to_int_type(*_M_in_cur);
 	    ++_M_in_cur;
-	    if (_M_buf_unified && _M_mode & ios_base::out)
-	      ++_M_out_cur;
 	  }
 	return __ret;    
       }

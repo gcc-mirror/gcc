@@ -1,3 +1,11 @@
+2003-04-21  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_streambuf.h (uflow()): It's used only by
+	basic_stringbuf (i.e., basic_filebuf provide its own uflow()),
+	therefore do not consider the _M_buf_unified == true case.
+
+	* include/std/std_streambuf.h (sgetc()): Restore __ret variable.
+
 2003-04-20  Paolo Carlini  <pcarlini@unitus.it>
 
 	* docs/html/ext/howto.html ('LWG Issues'):
