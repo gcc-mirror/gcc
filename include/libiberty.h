@@ -10,6 +10,10 @@
 #ifndef LIBIBERTY_H
 #define LIBIBERTY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "ansidecl.h"
 
 /* Build an argument vector from a string.  Allocates memory using
@@ -20,6 +24,12 @@ extern char **buildargv PARAMS ((char *));
 /* Free a vector returned by buildargv.  */
 
 extern void freeargv PARAMS ((char **));
+
+/* Duplicate an argument vector. Allocates memory using malloc.  Use
+   freeargv to free the vector.  */
+
+extern char **dupargv PARAMS ((char **));
+
 
 /* Return the last component of a path name.  Note that we can't use a
    prototype here because the parameter is declared inconsistently
@@ -157,5 +167,10 @@ extern int pexecute PARAMS ((const char *, char * const *, const char *,
 /* Wait for pexecute to finish.  */
 
 extern int pwait PARAMS ((int, int *, int));
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* ! defined (LIBIBERTY_H) */
