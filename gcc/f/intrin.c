@@ -32,22 +32,22 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct _ffeintrin_name_
   {
-    char *name_uc;
-    char *name_lc;
-    char *name_ic;
+    const char *name_uc;
+    const char *name_lc;
+    const char *name_ic;
     ffeintrinGen generic;
     ffeintrinSpec specific;
   };
 
 struct _ffeintrin_gen_
   {
-    char *name;			/* Name as seen in program. */
+    const char *name;			/* Name as seen in program. */
     ffeintrinSpec specs[2];
   };
 
 struct _ffeintrin_spec_
   {
-    char *name;			/* Uppercase name as seen in source code,
+    const char *name;		/* Uppercase name as seen in source code,
 				   lowercase if no source name, "none" if no
 				   name at all (NONE case). */
     bool is_actualarg;		/* Ok to pass as actual arg if -pedantic. */
@@ -57,13 +57,13 @@ struct _ffeintrin_spec_
 
 struct _ffeintrin_imp_
   {
-    char *name;			/* Name of implementation. */
+    const char *name;		/* Name of implementation. */
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
     ffecomGfrt gfrt_direct;	/* library routine, direct-callable form. */
     ffecomGfrt gfrt_f2c;	/* library routine, f2c-callable form. */
     ffecomGfrt gfrt_gnu;	/* library routine, gnu-callable form. */
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
-    char *control;
+    const char *control;
     char y2kbad;
   };
 
@@ -166,9 +166,9 @@ ffeintrin_check_ (ffeintrinImp imp, ffebldOp op,
 		  ffelexToken t,
 		  bool commit)
 {
-  char *c = ffeintrin_imps_[imp].control;
+  const char *c = ffeintrin_imps_[imp].control;
   bool subr = (c[0] == '-');
-  char *argc;
+  const char *argc;
   ffebld arg;
   ffeinfoBasictype bt;
   ffeinfoKindtype kt;
@@ -1165,9 +1165,9 @@ ffeintrin_check_any_ (ffebld arglist)
 static int
 ffeintrin_cmp_name_ (const void *name, const void *intrinsic)
 {
-  char *uc = (char *) ((struct _ffeintrin_name_ *) intrinsic)->name_uc;
-  char *lc = (char *) ((struct _ffeintrin_name_ *) intrinsic)->name_lc;
-  char *ic = (char *) ((struct _ffeintrin_name_ *) intrinsic)->name_ic;
+  const char *uc = ((struct _ffeintrin_name_ *) intrinsic)->name_uc;
+  const char *lc = ((struct _ffeintrin_name_ *) intrinsic)->name_lc;
+  const char *ic = ((struct _ffeintrin_name_ *) intrinsic)->name_ic;
 
   return ffesrc_strcmp_2c (ffe_case_intrin (), name, uc, lc, ic);
 }
@@ -1429,7 +1429,7 @@ ffeintrin_fulfill_specific (ffebld *expr, ffeinfo *info,
   ffeIntrinsicState state;
   ffebad error;
   bool any = FALSE;
-  char *name;
+  const char *name;
 
   op = ffebld_op (*expr);
   assert ((op == FFEBLD_opFUNCREF) || (op == FFEBLD_opSUBRREF));
@@ -1551,9 +1551,9 @@ void
 ffeintrin_init_0 ()
 {
   int i;
-  char *p1;
-  char *p2;
-  char *p3;
+  const char *p1;
+  const char *p2;
+  const char *p3;
   int colon;
 
   if (!ffe_is_do_internal_checks ())
@@ -1597,7 +1597,7 @@ ffeintrin_init_0 ()
 
   for (i = 0; ((size_t) i) < ARRAY_SIZE (ffeintrin_imps_); ++i)
     {
-      char *c = ffeintrin_imps_[i].control;
+      const char *c = ffeintrin_imps_[i].control;
 
       if (c[0] == '\0')
 	continue;
@@ -1775,7 +1775,7 @@ ffeintrin_is_actualarg (ffeintrinSpec spec)
 
 /* Determine if name is intrinsic, return info.
 
-   char *name;			// C-string name of possible intrinsic.
+   const char *name;		// C-string name of possible intrinsic.
    ffelexToken t;		// NULL if no diagnostic to be given.
    bool explicit;		// TRUE if INTRINSIC name.
    ffeintrinGen gen;		// (TRUE only) Generic id of intrinsic.
@@ -1787,7 +1787,7 @@ ffeintrin_is_actualarg (ffeintrinSpec spec)
 				// kind accordingly.  */
 
 bool
-ffeintrin_is_intrinsic (char *name, ffelexToken t, bool explicit,
+ffeintrin_is_intrinsic (const char *name, ffelexToken t, bool explicit,
 			ffeintrinGen *xgen, ffeintrinSpec *xspec,
 			ffeintrinImp *ximp)
 {
@@ -1998,7 +1998,7 @@ ffeintrin_kindtype (ffeintrinSpec spec)
 
 /* Return name of generic intrinsic.  */
 
-char *
+const char *
 ffeintrin_name_generic (ffeintrinGen gen)
 {
   assert (gen < FFEINTRIN_gen);
@@ -2007,7 +2007,7 @@ ffeintrin_name_generic (ffeintrinGen gen)
 
 /* Return name of intrinsic implementation.  */
 
-char *
+const char *
 ffeintrin_name_implementation (ffeintrinImp imp)
 {
   assert (imp < FFEINTRIN_imp);
@@ -2016,7 +2016,7 @@ ffeintrin_name_implementation (ffeintrinImp imp)
 
 /* Return external/internal name of specific intrinsic.	 */
 
-char *
+const char *
 ffeintrin_name_specific (ffeintrinSpec spec)
 {
   assert (spec < FFEINTRIN_spec);

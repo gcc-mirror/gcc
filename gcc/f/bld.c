@@ -203,7 +203,7 @@ static ffebldConstant ffebld_constant_hollerith_;
 static ffebldConstant ffebld_constant_typeless_[FFEBLD_constTYPELESS_LAST
 					  - FFEBLD_constTYPELESS_FIRST + 1];
 
-static char *ffebld_op_string_[]
+static const char *ffebld_op_string_[]
 =
 {
 #define FFEBLD_OP(KWD,NAME,ARITY) NAME,
@@ -5745,7 +5745,7 @@ ffebld_pool_push (mallocPool pool)
 
    Returns a short string (uppercase) containing the name of the op.  */
 
-char *
+const char *
 ffebld_op_string (ffebldOp o)
 {
   if (o >= ARRAY_SIZE (ffebld_op_string_))

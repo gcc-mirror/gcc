@@ -60,7 +60,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #if FFEGLOBAL_ENABLED
 static ffenameSpace ffeglobal_filewide_ = NULL;
-static char *ffeglobal_type_string_[] =
+static const char *ffeglobal_type_string_[] =
 {
   [FFEGLOBAL_typeNONE] "??",
   [FFEGLOBAL_typeMAIN] "main program",
@@ -86,7 +86,7 @@ static char *ffeglobal_type_string_[] =
 
 #if FFEGLOBAL_ENABLED
 void
-ffeglobal_drive (ffeglobal (*fn) ())
+ffeglobal_drive (ffeglobal (*fn) (ffeglobal))
 {
   if (ffeglobal_filewide_ != NULL)
     ffename_space_drive_global (ffeglobal_filewide_, fn);
@@ -514,7 +514,7 @@ ffeglobal_pad_common (ffesymbol s, ffetargetAlign pad, ffewhereLine wl,
 /* Collect info for a global's argument.  */
 
 void
-ffeglobal_proc_def_arg (ffesymbol s, int argno, char *name, ffeglobalArgSummary as,
+ffeglobal_proc_def_arg (ffesymbol s, int argno, const char *name, ffeglobalArgSummary as,
 			ffeinfoBasictype bt, ffeinfoKindtype kt,
 			bool array)
 {
@@ -538,8 +538,8 @@ ffeglobal_proc_def_arg (ffesymbol s, int argno, char *name, ffeglobalArgSummary 
   if ((ai->t != NULL)
       && ffe_is_warn_globals ())
     {
-      char *refwhy = NULL;
-      char *defwhy = NULL;
+      const char *refwhy = NULL;
+      const char *defwhy = NULL;
       bool warn = FALSE;
 
       switch (as)
@@ -816,8 +816,8 @@ ffeglobal_proc_ref_arg (ffesymbol s, int argno, ffeglobalArgSummary as,
 
   if (ai->t != NULL)
     {
-      char *refwhy = NULL;
-      char *defwhy = NULL;
+      const char *refwhy = NULL;
+      const char *defwhy = NULL;
       bool fail = FALSE;
       bool warn = FALSE;
 

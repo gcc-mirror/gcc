@@ -469,7 +469,7 @@ ffetarget_iszero_hollerith (ffetargetHollerith constant)
    data type info and the number of elements an array (1 for a scalar).	 */
 
 void
-ffetarget_layout (char *error_text UNUSED, ffetargetAlign *alignment,
+ffetarget_layout (const char *error_text UNUSED, ffetargetAlign *alignment,
 		  ffetargetAlign *modulo, ffetargetOffset *size,
 		  ffeinfoBasictype bt, ffeinfoKindtype kt,
 		  ffetargetCharacterSize charsize,

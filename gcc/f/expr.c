@@ -268,7 +268,7 @@ static void ffeexpr_update_impdo_sym_ (ffebld expr, ffesymbol dovar);
 static ffeexprContext ffeexpr_context_outer_ (ffeexprStack_ s);
 static ffeexprExpr_ ffeexpr_expr_new_ (void);
 static void ffeexpr_fulfill_call_ (ffebld *expr, ffelexToken t);
-static bool ffeexpr_isdigits_ (char *p);
+static bool ffeexpr_isdigits_ (const char *p);
 static ffelexHandler ffeexpr_token_first_lhs_ (ffelexToken t);
 static ffelexHandler ffeexpr_token_first_lhs_1_ (ffelexToken t);
 static ffelexHandler ffeexpr_token_first_rhs_ (ffelexToken t);
@@ -8584,7 +8584,7 @@ ffeexpr_context_outer_ (ffeexprStack_ s)
 static ffeexprPercent_
 ffeexpr_percent_ (ffelexToken t)
 {
-  char *p;
+  const char *p;
 
   switch (ffelex_token_length (t))
     {
@@ -9537,7 +9537,7 @@ ffeexpr_fulfill_call_ (ffebld *expr, ffelexToken t)
 /* Check whether rest of string is all decimal digits.  */
 
 static bool
-ffeexpr_isdigits_ (char *p)
+ffeexpr_isdigits_ (const char *p)
 {
   for (; *p != '\0'; ++p)
     if (! ISDIGIT (*p))
@@ -10378,7 +10378,7 @@ ffeexpr_reduced_concatenate_ (ffebld reduced, ffeexprExpr_ l, ffeexprExpr_ op,
       if ((lkd != FFEINFO_kindANY)
 	  && ffebad_start (FFEBAD_CONCAT_ARG_KIND))
 	{
-	  char *what;
+	  const char *what;
 
 	  if (lrk != 0)
 	    what = "an array";
@@ -10394,7 +10394,7 @@ ffeexpr_reduced_concatenate_ (ffebld reduced, ffeexprExpr_ l, ffeexprExpr_ op,
     {
       if (ffebad_start (FFEBAD_CONCAT_ARG_KIND))
 	{
-	  char *what;
+	  const char *what;
 
 	  if (rrk != 0)
 	    what = "an array";
@@ -11666,7 +11666,7 @@ static ffelexHandler
 ffeexpr_nil_real_ (ffelexToken t)
 {
   char d;
-  char *p;
+  const char *p;
 
   if (((ffelex_token_type (t) != FFELEX_typeNAME)
        && (ffelex_token_type (t) != FFELEX_typeNAMES))
@@ -11704,7 +11704,7 @@ static ffelexHandler
 ffeexpr_nil_number_ (ffelexToken t)
 {
   char d;
-  char *p;
+  const char *p;
 
   if (ffeexpr_hollerith_count_ > 0)
     ffelex_set_expecting_hollerith (0, '\0',
@@ -11779,7 +11779,7 @@ ffeexpr_nil_number_period_ (ffelexToken t)
 {
   ffelexHandler nexthandler;
   char d;
-  char *p;
+  const char *p;
 
   switch (ffelex_token_type (t))
     {
@@ -11836,7 +11836,7 @@ static ffelexHandler
 ffeexpr_nil_number_real_ (ffelexToken t)
 {
   char d;
-  char *p;
+  const char *p;
 
   if (((ffelex_token_type (t) != FFELEX_typeNAME)
        && (ffelex_token_type (t) != FFELEX_typeNAMES))
@@ -13652,7 +13652,7 @@ static ffelexHandler
 ffeexpr_token_real_ (ffelexToken t)
 {
   char d;
-  char *p;
+  const char *p;
 
   if (((ffelex_token_type (t) != FFELEX_typeNAME)
        && (ffelex_token_type (t) != FFELEX_typeNAMES))
@@ -13809,7 +13809,7 @@ ffeexpr_token_number_ (ffelexToken t)
   ffeexprExpr_ e;
   ffeinfo ni;
   char d;
-  char *p;
+  const char *p;
 
   if (ffeexpr_hollerith_count_ > 0)
     ffelex_set_expecting_hollerith (0, '\0',
@@ -13965,7 +13965,7 @@ ffeexpr_token_number_period_ (ffelexToken t)
 {
   ffeexprExpr_ e;
   ffelexHandler nexthandler;
-  char *p;
+  const char *p;
   char d;
 
   switch (ffelex_token_type (t))
@@ -14083,7 +14083,7 @@ static ffelexHandler
 ffeexpr_token_number_real_ (ffelexToken t)
 {
   char d;
-  char *p;
+  const char *p;
 
   if (((ffelex_token_type (t) != FFELEX_typeNAME)
        && (ffelex_token_type (t) != FFELEX_typeNAMES))

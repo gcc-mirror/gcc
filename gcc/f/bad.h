@@ -82,8 +82,8 @@ void ffebad_init_0 (void);
 bool ffebad_is_fatal (ffebad errnum);
 ffebadSeverity ffebad_severity (ffebad errnum);
 bool ffebad_start_ (bool lex_override, ffebad errnum, ffebadSeverity sev,
-		    char *message);
-void ffebad_string (char *string);
+		    const char *message);
+void ffebad_string (const char *string);
 
 /* Define macros. */
 

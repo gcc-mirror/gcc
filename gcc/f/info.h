@@ -127,15 +127,15 @@ struct _ffeinfo_
 
 ffeinfoBasictype ffeinfo_basictype_combine (ffeinfoBasictype l,
 					    ffeinfoBasictype r);
-char *ffeinfo_basictype_string (ffeinfoBasictype basictype);
+const char *ffeinfo_basictype_string (ffeinfoBasictype basictype);
 void ffeinfo_init_0 (void);
-char *ffeinfo_kind_message (ffeinfoKind kind);
-char *ffeinfo_kind_string (ffeinfoKind kind);
+const char *ffeinfo_kind_message (ffeinfoKind kind);
+const char *ffeinfo_kind_string (ffeinfoKind kind);
 ffeinfoKindtype ffeinfo_kindtype_max(ffeinfoBasictype bt,
 				     ffeinfoKindtype k1,
 				     ffeinfoKindtype k2);
-char *ffeinfo_kindtype_string (ffeinfoKindtype kind_type);
-char *ffeinfo_where_string (ffeinfoWhere where);
+const char *ffeinfo_kindtype_string (ffeinfoKindtype kind_type);
+const char *ffeinfo_where_string (ffeinfoWhere where);
 ffeinfo ffeinfo_new (ffeinfoBasictype basictype, ffeinfoKindtype kindtype,
 		     ffeinfoRank rank, ffeinfoKind kind, ffeinfoWhere where,
 		     ffetargetCharacterSize size);

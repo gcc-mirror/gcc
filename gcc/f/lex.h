@@ -148,14 +148,14 @@ ffelexToken ffelex_token_names_from_names (ffelexToken t,
 					   ffeTokenLength start,
 					   ffeTokenLength len);
 ffelexToken ffelex_token_new (void);
-ffelexToken ffelex_token_new_character (char *s, ffewhereLine l,
+ffelexToken ffelex_token_new_character (const char *s, ffewhereLine l,
 					ffewhereColumn c);
 ffelexToken ffelex_token_new_eof (void);
-ffelexToken ffelex_token_new_name (char *s, ffewhereLine l,
+ffelexToken ffelex_token_new_name (const char *s, ffewhereLine l,
 				   ffewhereColumn c);
-ffelexToken ffelex_token_new_names (char *s, ffewhereLine l,
+ffelexToken ffelex_token_new_names (const char *s, ffewhereLine l,
 				    ffewhereColumn c);
-ffelexToken ffelex_token_new_number (char *s, ffewhereLine l,
+ffelexToken ffelex_token_new_number (const char *s, ffewhereLine l,
 				     ffewhereColumn c);
 ffelexToken ffelex_token_new_simple_ (ffelexType type, ffewhereLine l,
 				      ffewhereColumn c);

@@ -70,7 +70,7 @@ struct _malloc_root_ malloc_root_
 
 static void *malloc_reserve_ = NULL;	/* For crashes. */
 #if MALLOC_DEBUG
-static char *malloc_types_[] =
+static const char *malloc_types_[] =
 {"KS", "KSR", "NF", "NFR", "US", "USR"};
 #endif
 
@@ -234,7 +234,7 @@ malloc_pool_kill (mallocPool p)
    Makes a new pool with the given name and default new-chunk allocation.  */
 
 mallocPool
-malloc_pool_new (char *name, mallocPool parent,
+malloc_pool_new (const char *name, mallocPool parent,
 		 unsigned long chunks UNUSED)
 {
   mallocPool p;
@@ -384,7 +384,7 @@ malloc_new_ (mallocSize s)
    add it to the list of mallocArea_s for the pool.  */
 
 void *
-malloc_new_inpool_ (mallocPool pool, mallocType_ type, char *name, mallocSize s)
+malloc_new_inpool_ (mallocPool pool, mallocType_ type, const char *name, mallocSize s)
 {
   void *ptr;
   mallocArea_ a;
@@ -437,7 +437,7 @@ malloc_new_inpool_ (mallocPool pool, mallocType_ type, char *name, mallocSize s)
    you pass it a 0).  */
 
 void *
-malloc_new_zinpool_ (mallocPool pool, mallocType_ type, char *name, mallocSize s,
+malloc_new_zinpool_ (mallocPool pool, mallocType_ type, const char *name, mallocSize s,
 		     int z)
 {
   void *ptr;

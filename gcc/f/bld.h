@@ -726,7 +726,7 @@ ffebld ffebld_new_symter (ffesymbol s, ffeintrinGen gen, ffeintrinSpec spec,
 			  ffeintrinImp imp);
 ffebld ffebld_new_one (ffebldOp o, ffebld left);
 ffebld ffebld_new_two (ffebldOp o, ffebld left, ffebld right);
-char *ffebld_op_string (ffebldOp o);
+const char *ffebld_op_string (ffebldOp o);
 void ffebld_pool_pop (void);
 void ffebld_pool_push (mallocPool pool);
 ffetargetCharacterSize ffebld_size_max (ffebld b);

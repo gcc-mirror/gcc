@@ -732,7 +732,7 @@ void ffetarget_integer_bad_magical_precedence_binary (ffelexToken integer,
 bool ffetarget_iszero_character1 (ffetargetCharacter1 constant);
 #endif
 bool ffetarget_iszero_hollerith (ffetargetHollerith constant);
-void ffetarget_layout (char *error_text, ffetargetAlign *alignment,
+void ffetarget_layout (const char *error_text, ffetargetAlign *alignment,
 		       ffetargetAlign *modulo, ffetargetOffset *size,
 		       ffeinfoBasictype bt, ffeinfoKindtype kt,
 		       ffetargetCharacterSize charsize,

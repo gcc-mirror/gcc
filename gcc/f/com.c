@@ -403,7 +403,7 @@ struct _ffecom_temp_
 /* Static functions (internal). */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-static tree ffecom_arglist_expr_ (char *argstring, ffebld args);
+static tree ffecom_arglist_expr_ (const char *argstring, ffebld args);
 static tree ffecom_widest_expr_type_ (ffebld list);
 static bool ffecom_overlap_ (tree dest_decl, tree dest_offset,
 			     tree dest_size, tree source_tree,
@@ -411,7 +411,7 @@ static bool ffecom_overlap_ (tree dest_decl, tree dest_offset,
 static bool ffecom_args_overlapping_ (tree dest_tree, ffebld dest,
 				      tree args, tree callee_commons,
 				      bool scalar_args);
-static tree ffecom_build_f2c_string_ (int i, char *s);
+static tree ffecom_build_f2c_string_ (int i, const char *s);
 static tree ffecom_call_ (tree fn, ffeinfoKindtype kt,
 			  bool is_f2c_complex, tree type,
 			  tree args, tree dest_tree,
@@ -434,8 +434,9 @@ static ffecomConcatList_
 static void ffecom_concat_list_kill_ (ffecomConcatList_ catlist);
 static ffecomConcatList_ ffecom_concat_list_new_ (ffebld expr,
 						ffetargetCharacterSize max);
-static void ffecom_debug_kludge_ (tree aggr, char *aggr_type, ffesymbol member,
-				  tree member_type, ffetargetOffset offset);
+static void ffecom_debug_kludge_ (tree aggr, const char *aggr_type,
+				  ffesymbol member, tree member_type,
+				  ffetargetOffset offset);
 static void ffecom_do_entry_ (ffesymbol fn, int entrynum);
 static tree ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 			  bool *dest_used, bool assignp, bool widenp);
@@ -443,18 +444,18 @@ static tree ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 				    ffebld dest, bool *dest_used);
 static tree ffecom_expr_power_integer_ (ffebld left, ffebld right);
 static void ffecom_expr_transform_ (ffebld expr);
-static void ffecom_f2c_make_type_ (tree *type, int tcode, char *name);
+static void ffecom_f2c_make_type_ (tree *type, int tcode, const char *name);
 static void ffecom_f2c_set_lio_code_ (ffeinfoBasictype bt, int size,
 				      int code);
 static ffeglobal ffecom_finish_global_ (ffeglobal global);
 static ffesymbol ffecom_finish_symbol_transform_ (ffesymbol s);
-static tree ffecom_get_appended_identifier_ (char us, char *text);
+static tree ffecom_get_appended_identifier_ (char us, const char *text);
 static tree ffecom_get_external_identifier_ (ffesymbol s);
-static tree ffecom_get_identifier_ (char *text);
+static tree ffecom_get_identifier_ (const char *text);
 static tree ffecom_gen_sfuncdef_ (ffesymbol s,
 				  ffeinfoBasictype bt,
 				  ffeinfoKindtype kt);
-static char *ffecom_gfrt_args_ (ffecomGfrt ix);
+static const char *ffecom_gfrt_args_ (ffecomGfrt ix);
 static tree ffecom_gfrt_tree_ (ffecomGfrt ix);
 static tree ffecom_init_zero_ (tree decl);
 static tree ffecom_intrinsic_ichar_ (tree tree_type, ffebld arg,
@@ -495,6 +496,8 @@ static tree ffecom_type_vardesc_ (void);
 static tree ffecom_vardesc_ (ffebld expr);
 static tree ffecom_vardesc_array_ (ffesymbol s);
 static tree ffecom_vardesc_dims_ (ffesymbol s);
+static tree ffecom_convert_narrow_ (tree type, tree expr);
+static tree ffecom_convert_widen_ (tree type, tree expr);
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
 /* These are static functions that parallel those found in the C front
@@ -503,9 +506,9 @@ static tree ffecom_vardesc_dims_ (ffesymbol s);
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void bison_rule_compstmt_ (void);
 static void bison_rule_pushlevel_ (void);
-static tree builtin_function (char *name, tree type,
+static tree builtin_function (const char *name, tree type,
 			      enum built_in_function function_code,
-			      char *library_name);
+			      const char *library_name);
 static int duplicate_decls (tree newdecl, tree olddecl);
 static void finish_decl (tree decl, tree init, bool is_top_level);
 static void finish_function (int nested);
@@ -577,7 +580,7 @@ static tree ffecom_gfrt_[FFECOM_gfrt]
 
 /* Holds the external names of the functions.  */
 
-static char *ffecom_gfrt_name_[FFECOM_gfrt]
+static const char *ffecom_gfrt_name_[FFECOM_gfrt]
 =
 {
 #define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX) NAME,
@@ -617,7 +620,7 @@ static ffecomRttype_ ffecom_gfrt_type_[FFECOM_gfrt]
 
 /* String of codes for the function's arguments.  */
 
-static char *ffecom_gfrt_argstring_[FFECOM_gfrt]
+static const char *ffecom_gfrt_argstring_[FFECOM_gfrt]
 =
 {
 #define DEFGFRT(CODE,NAME,TYPE,ARGS,VOLATILE,COMPLEX) ARGS,
@@ -1097,7 +1100,7 @@ ffecom_build_complex_constant_ (tree type, tree realpart, tree imagpart)
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
-ffecom_arglist_expr_ (char *c, ffebld expr)
+ffecom_arglist_expr_ (const char *c, ffebld expr)
 {
   tree list;
   tree *plist = &list;
@@ -1519,14 +1522,14 @@ ffecom_args_overlapping_ (tree dest_tree, ffebld dest UNUSED,
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
-ffecom_build_f2c_string_ (int i, char *s)
+ffecom_build_f2c_string_ (int i, const char *s)
 {
   if (!ffe_is_f2c_library ())
     return build_string (i, s);
 
   {
     char *tmp;
-    char *p;
+    const char *p;
     char *q;
     char space[34];
     tree t;
@@ -2268,7 +2271,7 @@ ffecom_concat_list_new_ (ffebld expr, ffetargetCharacterSize max)
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
-ffecom_debug_kludge_ (tree aggr, char *aggr_type, ffesymbol member,
+ffecom_debug_kludge_ (tree aggr, const char *aggr_type, ffesymbol member,
 		      tree member_type UNUSED, ffetargetOffset offset)
 {
   tree value;
@@ -6562,7 +6565,7 @@ tail_recurse:			/* :::::::::::::::::::: */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
-ffecom_f2c_make_type_ (tree *type, int tcode, char *name)
+ffecom_f2c_make_type_ (tree *type, int tcode, const char *name)
 {
   switch (tcode)
     {
@@ -6762,7 +6765,7 @@ ffecom_finish_symbol_transform_ (ffesymbol s)
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
-ffecom_get_appended_identifier_ (char us, char *name)
+ffecom_get_appended_identifier_ (char us, const char *name)
 {
   int i;
   char *newname;
@@ -6791,7 +6794,7 @@ static tree
 ffecom_get_external_identifier_ (ffesymbol s)
 {
   char us;
-  char *name = ffesymbol_text (s);
+  const char *name = ffesymbol_text (s);
 
   /* If name is a built-in name, just return it as is.  */
 
@@ -6830,7 +6833,7 @@ ffecom_get_external_identifier_ (ffesymbol s)
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
-ffecom_get_identifier_ (char *name)
+ffecom_get_identifier_ (const char *name)
 {
   /* If name does not contain an underscore, just return it as is.  */
 
@@ -6991,7 +6994,7 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
 #endif
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-static char *
+static const char *
 ffecom_gfrt_args_ (ffecomGfrt ix)
 {
   return ffecom_gfrt_argstring_[ix];
@@ -11478,7 +11481,7 @@ ffecom_constantunion (ffebldConstantUnion *cu, ffeinfoBasictype bt,
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 tree
 ffecom_decl_field (tree context, tree prevfield,
-		   char *name, tree type)
+		   const char *name, tree type)
 {
   tree field;
 
@@ -11788,7 +11791,7 @@ ffecom_finish_progunit ()
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 tree
-ffecom_get_invented_identifier (char *pattern, char *text, int number)
+ffecom_get_invented_identifier (const char *pattern, const char *text, int number)
 {
   tree decl;
   char *nam;
@@ -13813,8 +13816,9 @@ bison_rule_pushlevel_ ()
    the name to be called if we can't opencode the function.  */
 
 static tree
-builtin_function (char *name, tree type,
-		  enum built_in_function function_code, char *library_name)
+builtin_function (const char *name, tree type,
+		  enum built_in_function function_code,
+		  const char *library_name)
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
   DECL_EXTERNAL (decl) = 1;
@@ -14418,7 +14422,7 @@ lang_print_error_function (file)
   static ffesymbol last_s = NULL;
   ffeglobal g;
   ffesymbol s;
-  char *kind;
+  const char *kind;
 
   if ((ffecom_primary_entry_ == NULL)
       || (ffesymbol_global (ffecom_primary_entry_) == NULL))
@@ -14472,7 +14476,7 @@ lang_print_error_function (file)
 	fprintf (stderr, "Outside of any program unit:\n");
       else
 	{
-	  char *name = ffesymbol_text (s);
+	  const char *name = ffesymbol_text (s);
 
 	  fprintf (stderr, "In %s `%s':\n", kind, name);
 	}
@@ -15824,8 +15828,8 @@ unsigned_type (type)
 /* Skip leading "./" from a directory name.
    This may yield the empty string, which represents the current directory.  */
 
-static char *
-skip_redundant_dir_prefix (char *dir)
+static const char *
+skip_redundant_dir_prefix (const char *dir)
 {
   while (dir[0] == '.' && dir[1] == '/')
     for (dir += 2; *dir == '/'; dir++)
@@ -15923,10 +15927,9 @@ static void append_include_chain (struct file_name_list *first,
 static FILE *open_include_file (char *filename,
 				struct file_name_list *searchptr);
 static void print_containing_files (ffebadSeverity sev);
-static char *skip_redundant_dir_prefix (char *);
+static const char *skip_redundant_dir_prefix (const char *);
 static char *read_filename_string (int ch, FILE *f);
-static struct file_name_map *read_name_map (char *dirname);
-static char *savestring (char *input);
+static struct file_name_map *read_name_map (const char *dirname);
 
 /* Append a chain of `struct file_name_list's
    to the end of the main include chain.
@@ -16048,8 +16051,8 @@ print_containing_files (ffebadSeverity sev)
   FILE_BUF *ip = NULL;
   int i;
   int first = 1;
-  char *str1;
-  char *str2;
+  const char *str1;
+  const char *str2;
 
   /* If stack of files hasn't changed since we last printed
      this info, don't repeat it.  */
@@ -16134,7 +16137,7 @@ read_filename_string (ch, f)
 
 static struct file_name_map *
 read_name_map (dirname)
-     char *dirname;
+     const char *dirname;
 {
   /* This structure holds a linked list of file name maps, one per
      directory.  */
@@ -16160,7 +16163,7 @@ read_name_map (dirname)
 
   map_list_ptr = ((struct file_name_map_list *)
 		  xmalloc (sizeof (struct file_name_map_list)));
-  map_list_ptr->map_list_name = savestring (dirname);
+  map_list_ptr->map_list_name = xstrdup (dirname);
   map_list_ptr->map_list_map = NULL;
 
   dirlen = strlen (dirname);
@@ -16219,16 +16222,6 @@ read_name_map (dirname)
   map_list = map_list_ptr;
 
   return map_list_ptr->map_list_map;
-}
-
-static char *
-savestring (input)
-     char *input;
-{
-  unsigned size = strlen (input);
-  char *output = xmalloc (size + 1);
-  strcpy (output, input);
-  return output;
 }
 
 static void

@@ -62,7 +62,7 @@ bool ffebad_is_inhibited_ = FALSE;
 struct _ffebad_message_
   {
     ffebadSeverity severity;
-    char *message;
+    const char *message;
   };
 
 /* Static objects accessed by functions in this module.	 */
@@ -89,11 +89,11 @@ static struct
   }
 
 ffebad_here_[FFEBAD_MAX_];
-static char *ffebad_string_[FFEBAD_MAX_];
+static const char *ffebad_string_[FFEBAD_MAX_];
 static ffebadIndex ffebad_order_[FFEBAD_MAX_];
 static ffebad ffebad_errnum_;
 static ffebadSeverity ffebad_severity_;
-static char *ffebad_message_;
+static const char *ffebad_message_;
 static unsigned char ffebad_index_;
 static ffebadIndex ffebad_places_;
 static bool ffebad_is_temp_inhibited_;	/* Effective setting of
@@ -102,7 +102,7 @@ static bool ffebad_is_temp_inhibited_;	/* Effective setting of
 
 /* Static functions (internal). */
 
-static int ffebad_bufputs_ (char buf[], int bufi, char *s);
+static int ffebad_bufputs_ (char buf[], int bufi, const char *s);
 
 /* Internal macros. */
 
@@ -115,7 +115,7 @@ static int ffebad_bufputs_ (char buf[], int bufi, char *s);
 
 
 static int
-ffebad_bufputs_ (char buf[], int bufi, char *s)
+ffebad_bufputs_ (char buf[], int bufi, const char *s)
 {
   for (; *s != '\0'; ++s)
     bufi = ffebad_bufputc_ (buf, bufi, *s);
@@ -161,7 +161,7 @@ ffebad_severity (ffebad errnum)
 
 bool
 ffebad_start_ (bool lex_override, ffebad errnum, ffebadSeverity sev,
-	       char *message)
+	       const char *message)
 {
   unsigned char i;
 
@@ -321,7 +321,7 @@ ffebad_here (ffebadIndex index, ffewhereLine line, ffewhereColumn col)
 
 /* Establish string for next index (always in order) of message
 
-   ffebad_string(char *string);
+   ffebad_string(const char *string);
 
    Call ffebad_start to establish the message, ffebad_here and ffebad_string
    to send run-time data to it as necessary, then ffebad_finish when through
@@ -330,7 +330,7 @@ ffebad_here (ffebadIndex index, ffewhereLine line, ffewhereColumn col)
    the argument passed in until then.  */
 
 void
-ffebad_string (char *string)
+ffebad_string (const char *string)
 {
   if (ffebad_is_temp_inhibited_)
     return;
@@ -351,7 +351,7 @@ void
 ffebad_finish ()
 {
 #define MAX_SPACES 132
-  static char *spaces
+  static const char *spaces
   = "...>\
 \040\040\040\040\040\040\040\040\040\040\040\040\040\040\040\040\
 \040\040\040\040\040\040\040\040\040\040\040\040\040\040\040\040\
@@ -373,8 +373,8 @@ ffebad_finish ()
   unsigned short i;
   char pointer;
   unsigned char c;
-  unsigned char *s;
-  char *fn;
+  unsigned const char *s;
+  const char *fn;
   static char buf[1024];
   int bufi;
   int index;
