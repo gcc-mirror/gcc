@@ -2955,20 +2955,20 @@
    (set_attr "length" "4")])
 
 ;; The definition of this insn does not really explain what it does,
-;; but it should suffice
-;; that anything generated as this insn will be recognized as one
-;; and that it will not successfully combine with anything.
+;; but it should suffice that anything generated as this insn will be
+;; recognized as a movstrsi operation, and that it will not successfully
+;; combine with anything.
 (define_expand "movstrsi"
   [(parallel [(set (match_operand:BLK 0 "" "")
 		   (match_operand:BLK 1 "" ""))
-	      (clobber (match_scratch:SI 7 ""))
-	      (clobber (match_scratch:SI 8 ""))
 	      (clobber (match_dup 4))
 	      (clobber (match_dup 5))
 	      (clobber (match_dup 6))
+	      (clobber (match_dup 7))
+	      (clobber (match_dup 8))
 	      (use (match_operand:SI 2 "arith_operand" ""))
 	      (use (match_operand:SI 3 "const_int_operand" ""))])]
-  "!TARGET_64BIT"
+  "!TARGET_64BIT && optimize > 0"
   "
 {
   int size, align;
@@ -2990,7 +2990,7 @@
 	If the size is large in respect to the known alignment, then use
 	the library routines.
 
-	If the size is small in repsect to the known alignment, then open
+	If the size is small in respect to the known alignment, then open
 	code the copy (since that will lead to better scheduling).
 
         Else use the block move pattern.   */
@@ -3003,8 +3003,7 @@
   align = INTVAL (operands[3]);
   align = align > 4 ? 4 : align;
 
-  /* If size/alignment > 8 (eg size is large in respect to alignment),
-     then use the library routines.  */
+  /* If size/alignment is large, then use the library routines.  */
   if (size / align > 16)
     FAIL;
 
@@ -3022,27 +3021,469 @@
   operands[4] = gen_reg_rtx (SImode);
   operands[5] = gen_reg_rtx (SImode);
   operands[6] = gen_reg_rtx (SImode);
-  operands[7] = XEXP (operands[0], 0);
-  operands[8] = XEXP (operands[1], 0);
+  operands[7] = gen_reg_rtx (SImode);
+  operands[8] = gen_reg_rtx (SImode);
 }")
 
 ;; The operand constraints are written like this to support both compile-time
-;; and run-time determined byte count.  If the count is run-time determined,
-;; the register with the byte count is clobbered by the copying code, and
-;; therefore it is forced to operand 2.  If the count is compile-time
-;; determined, we need two scratch registers for the unrolled code.
-(define_insn "movstrsi_internal"
+;; and run-time determined byte counts.  The expander and output_block_move
+;; only support compile-time determined counts at this time.
+;;
+;; If the count is run-time determined, the register with the byte count
+;; is clobbered by the copying code, and therefore it is forced to operand 2.
+;;
+;; We used to clobber operands 0 and 1.  However, a change to regrename.c
+;; broke this semantic for pseudo registers.  We can't use match_scratch
+;; as this requires two registers in the class R1_REGS when the MEMs for
+;; operands 0 and 1 are both equivalent to symbolic MEMs.  Thus, we are
+;; forced to internally copy operands 0 and 1 to operands 7 and 8,
+;; respectively.  We then split or peephole optimize after reload.
+(define_insn "movstrsi_prereload"
   [(set (mem:BLK (match_operand:SI 0 "register_operand" "r,r"))
 	(mem:BLK (match_operand:SI 1 "register_operand" "r,r")))
-   (clobber (match_scratch:SI 7 "=0,0"))
-   (clobber (match_scratch:SI 8 "=1,1"))
    (clobber (match_operand:SI 2 "register_operand" "=r,r"))	;loop cnt/tmp
-   (clobber (match_operand:SI 3 "register_operand" "=&r,&r"))	;item tmp
+   (clobber (match_operand:SI 3 "register_operand" "=&r,&r"))	;item tmp1
    (clobber (match_operand:SI 6 "register_operand" "=&r,&r"))	;item tmp2
+   (clobber (match_operand:SI 7 "register_operand" "=&r,&r"))	;item tmp3
+   (clobber (match_operand:SI 8 "register_operand" "=&r,&r"))	;item tmp4
    (use (match_operand:SI 4 "arith_operand" "J,2"))	 ;byte count
    (use (match_operand:SI 5 "const_int_operand" "n,n"))] ;alignment
   "!TARGET_64BIT"
+  "#"
+  [(set_attr "type" "multi,multi")])
+
+(define_split
+  [(parallel [(set (mem:BLK (match_operand:SI 0 "register_operand" ""))
+		   (mem:BLK (match_operand:SI 1 "register_operand" "")))
+	      (clobber (match_operand:SI 2 "register_operand" ""))
+	      (clobber (match_operand:SI 3 "register_operand" ""))
+	      (clobber (match_operand:SI 6 "register_operand" ""))
+	      (clobber (match_operand:SI 7 "register_operand" ""))
+	      (clobber (match_operand:SI 8 "register_operand" ""))
+	      (use (match_operand:SI 4 "arith_operand" ""))
+	      (use (match_operand:SI 5 "const_int_operand" ""))])]
+  "!TARGET_64BIT && reload_completed && !flag_peephole2"
+  [(set (match_dup 7) (match_dup 0))
+   (set (match_dup 8) (match_dup 1))
+   (parallel [(set (mem:BLK (match_dup 7)) (mem:BLK (match_dup 8)))
+   	      (clobber (match_dup 2))
+   	      (clobber (match_dup 3))
+   	      (clobber (match_dup 6))
+   	      (clobber (match_dup 7))
+   	      (clobber (match_dup 8))
+   	      (use (match_dup 4))
+   	      (use (match_dup 5))
+	      (const_int 0)])]
+  "")
+
+(define_peephole2
+  [(parallel [(set (mem:BLK (match_operand:SI 0 "register_operand" ""))
+		   (mem:BLK (match_operand:SI 1 "register_operand" "")))
+	      (clobber (match_operand:SI 2 "register_operand" ""))
+	      (clobber (match_operand:SI 3 "register_operand" ""))
+	      (clobber (match_operand:SI 6 "register_operand" ""))
+	      (clobber (match_operand:SI 7 "register_operand" ""))
+	      (clobber (match_operand:SI 8 "register_operand" ""))
+	      (use (match_operand:SI 4 "arith_operand" ""))
+	      (use (match_operand:SI 5 "const_int_operand" ""))])]
+  "!TARGET_64BIT"
+  [(parallel [(set (mem:BLK (match_dup 7)) (mem:BLK (match_dup 8)))
+   	      (clobber (match_dup 2))
+   	      (clobber (match_dup 3))
+   	      (clobber (match_dup 6))
+   	      (clobber (match_dup 7))
+   	      (clobber (match_dup 8))
+   	      (use (match_dup 4))
+   	      (use (match_dup 5))
+	      (const_int 0)])]
+  "
+{
+  if (dead_or_set_p (curr_insn, operands[0]))
+    operands[7] = operands[0];
+  else
+    emit_insn (gen_rtx_SET (VOIDmode, operands[7], operands[0]));
+
+  if (dead_or_set_p (curr_insn, operands[1]))
+    operands[8] = operands[1];
+  else
+    emit_insn (gen_rtx_SET (VOIDmode, operands[8], operands[1]));
+}")
+
+(define_insn "movstrsi_postreload"
+  [(set (mem:BLK (match_operand:SI 0 "register_operand" "r,r"))
+	(mem:BLK (match_operand:SI 1 "register_operand" "r,r")))
+   (clobber (match_operand:SI 2 "register_operand" "=r,r"))	;loop cnt/tmp
+   (clobber (match_operand:SI 3 "register_operand" "=&r,&r"))	;item tmp1
+   (clobber (match_operand:SI 6 "register_operand" "=&r,&r"))	;item tmp2
+   (clobber (match_dup 0))
+   (clobber (match_dup 1))
+   (use (match_operand:SI 4 "arith_operand" "J,2"))	 ;byte count
+   (use (match_operand:SI 5 "const_int_operand" "n,n"))  ;alignment
+   (const_int 0)]
+  "!TARGET_64BIT && reload_completed"
   "* return output_block_move (operands, !which_alternative);"
+  [(set_attr "type" "multi,multi")])
+
+(define_expand "movstrdi"
+  [(parallel [(set (match_operand:BLK 0 "" "")
+		   (match_operand:BLK 1 "" ""))
+	      (clobber (match_dup 4))
+	      (clobber (match_dup 5))
+	      (clobber (match_dup 6))
+	      (clobber (match_dup 7))
+	      (clobber (match_dup 8))
+	      (use (match_operand:DI 2 "arith_operand" ""))
+	      (use (match_operand:DI 3 "const_int_operand" ""))])]
+  "TARGET_64BIT && optimize > 0"
+  "
+{
+  int size, align;
+
+  /* HP provides very fast block move library routine for the PA;
+     this routine includes:
+
+	4x4 byte at a time block moves,
+	1x4 byte at a time with alignment checked at runtime with
+	    attempts to align the source and destination as needed
+	1x1 byte loop
+
+     With that in mind, here's the heuristics to try and guess when
+     the inlined block move will be better than the library block
+     move:
+
+	If the size isn't constant, then always use the library routines.
+
+	If the size is large in respect to the known alignment, then use
+	the library routines.
+
+	If the size is small in respect to the known alignment, then open
+	code the copy (since that will lead to better scheduling).
+
+        Else use the block move pattern.   */
+
+  /* Undetermined size, use the library routine.  */
+  if (GET_CODE (operands[2]) != CONST_INT)
+    FAIL;
+
+  size = INTVAL (operands[2]);
+  align = INTVAL (operands[3]);
+  align = align > 8 ? 8 : align;
+
+  /* If size/alignment is large, then use the library routines.  */
+  if (size / align > 16)
+    FAIL;
+
+  /* This does happen, but not often enough to worry much about.  */
+  if (size / align < MOVE_RATIO)
+    FAIL;
+  
+  /* Fall through means we're going to use our block move pattern.  */
+  operands[0]
+    = replace_equiv_address (operands[0],
+			     copy_to_mode_reg (DImode, XEXP (operands[0], 0)));
+  operands[1]
+    = replace_equiv_address (operands[1],
+			     copy_to_mode_reg (DImode, XEXP (operands[1], 0)));
+  operands[4] = gen_reg_rtx (DImode);
+  operands[5] = gen_reg_rtx (DImode);
+  operands[6] = gen_reg_rtx (DImode);
+  operands[7] = gen_reg_rtx (DImode);
+  operands[8] = gen_reg_rtx (DImode);
+}")
+
+;; The operand constraints are written like this to support both compile-time
+;; and run-time determined byte counts.  The expander and output_block_move
+;; only support compile-time determined counts at this time.
+;;
+;; If the count is run-time determined, the register with the byte count
+;; is clobbered by the copying code, and therefore it is forced to operand 2.
+;;
+;; We used to clobber operands 0 and 1.  However, a change to regrename.c
+;; broke this semantic for pseudo registers.  We can't use match_scratch
+;; as this requires two registers in the class R1_REGS when the MEMs for
+;; operands 0 and 1 are both equivalent to symbolic MEMs.  Thus, we are
+;; forced to internally copy operands 0 and 1 to operands 7 and 8,
+;; respectively.  We then split or peephole optimize after reload.
+(define_insn "movstrdi_prereload"
+  [(set (mem:BLK (match_operand:DI 0 "register_operand" "r,r"))
+	(mem:BLK (match_operand:DI 1 "register_operand" "r,r")))
+   (clobber (match_operand:DI 2 "register_operand" "=r,r"))	;loop cnt/tmp
+   (clobber (match_operand:DI 3 "register_operand" "=&r,&r"))	;item tmp1
+   (clobber (match_operand:DI 6 "register_operand" "=&r,&r"))	;item tmp2
+   (clobber (match_operand:DI 7 "register_operand" "=&r,&r"))	;item tmp3
+   (clobber (match_operand:DI 8 "register_operand" "=&r,&r"))	;item tmp4
+   (use (match_operand:DI 4 "arith_operand" "J,2"))	 ;byte count
+   (use (match_operand:DI 5 "const_int_operand" "n,n"))] ;alignment
+  "TARGET_64BIT"
+  "#"
+  [(set_attr "type" "multi,multi")])
+
+(define_split
+  [(parallel [(set (mem:BLK (match_operand:DI 0 "register_operand" ""))
+		   (mem:BLK (match_operand:DI 1 "register_operand" "")))
+	      (clobber (match_operand:DI 2 "register_operand" ""))
+	      (clobber (match_operand:DI 3 "register_operand" ""))
+	      (clobber (match_operand:DI 6 "register_operand" ""))
+	      (clobber (match_operand:DI 7 "register_operand" ""))
+	      (clobber (match_operand:DI 8 "register_operand" ""))
+	      (use (match_operand:DI 4 "arith_operand" ""))
+	      (use (match_operand:DI 5 "const_int_operand" ""))])]
+  "TARGET_64BIT && reload_completed && !flag_peephole2"
+  [(set (match_dup 7) (match_dup 0))
+   (set (match_dup 8) (match_dup 1))
+   (parallel [(set (mem:BLK (match_dup 7)) (mem:BLK (match_dup 8)))
+   	      (clobber (match_dup 2))
+   	      (clobber (match_dup 3))
+   	      (clobber (match_dup 6))
+   	      (clobber (match_dup 7))
+   	      (clobber (match_dup 8))
+   	      (use (match_dup 4))
+   	      (use (match_dup 5))
+	      (const_int 0)])]
+  "")
+
+(define_peephole2
+  [(parallel [(set (mem:BLK (match_operand:DI 0 "register_operand" ""))
+		   (mem:BLK (match_operand:DI 1 "register_operand" "")))
+	      (clobber (match_operand:DI 2 "register_operand" ""))
+	      (clobber (match_operand:DI 3 "register_operand" ""))
+	      (clobber (match_operand:DI 6 "register_operand" ""))
+	      (clobber (match_operand:DI 7 "register_operand" ""))
+	      (clobber (match_operand:DI 8 "register_operand" ""))
+	      (use (match_operand:DI 4 "arith_operand" ""))
+	      (use (match_operand:DI 5 "const_int_operand" ""))])]
+  "TARGET_64BIT"
+  [(parallel [(set (mem:BLK (match_dup 7)) (mem:BLK (match_dup 8)))
+   	      (clobber (match_dup 2))
+   	      (clobber (match_dup 3))
+   	      (clobber (match_dup 6))
+   	      (clobber (match_dup 7))
+   	      (clobber (match_dup 8))
+   	      (use (match_dup 4))
+   	      (use (match_dup 5))
+	      (const_int 0)])]
+  "
+{
+  if (dead_or_set_p (curr_insn, operands[0]))
+    operands[7] = operands[0];
+  else
+    emit_insn (gen_rtx_SET (VOIDmode, operands[7], operands[0]));
+
+  if (dead_or_set_p (curr_insn, operands[1]))
+    operands[8] = operands[1];
+  else
+    emit_insn (gen_rtx_SET (VOIDmode, operands[8], operands[1]));
+}")
+
+(define_insn "movstrdi_postreload"
+  [(set (mem:BLK (match_operand:DI 0 "register_operand" "r,r"))
+	(mem:BLK (match_operand:DI 1 "register_operand" "r,r")))
+   (clobber (match_operand:DI 2 "register_operand" "=r,r"))	;loop cnt/tmp
+   (clobber (match_operand:DI 3 "register_operand" "=&r,&r"))	;item tmp1
+   (clobber (match_operand:DI 6 "register_operand" "=&r,&r"))	;item tmp2
+   (clobber (match_dup 0))
+   (clobber (match_dup 1))
+   (use (match_operand:DI 4 "arith_operand" "J,2"))	 ;byte count
+   (use (match_operand:DI 5 "const_int_operand" "n,n"))  ;alignment
+   (const_int 0)]
+  "TARGET_64BIT && reload_completed"
+  "* return output_block_move (operands, !which_alternative);"
+  [(set_attr "type" "multi,multi")])
+
+(define_expand "clrstrsi"
+  [(parallel [(set (match_operand:BLK 0 "" "")
+		   (const_int 0))
+	      (clobber (match_dup 3))
+	      (clobber (match_dup 4))
+	      (use (match_operand:SI 1 "arith_operand" ""))
+	      (use (match_operand:SI 2 "const_int_operand" ""))])]
+  "!TARGET_64BIT && optimize > 0"
+  "
+{
+  int size, align;
+
+  /* Undetermined size, use the library routine.  */
+  if (GET_CODE (operands[1]) != CONST_INT)
+    FAIL;
+
+  size = INTVAL (operands[1]);
+  align = INTVAL (operands[2]);
+  align = align > 4 ? 4 : align;
+
+  /* If size/alignment is large, then use the library routines.  */
+  if (size / align > 16)
+    FAIL;
+
+  /* This does happen, but not often enough to worry much about.  */
+  if (size / align < MOVE_RATIO)
+    FAIL;
+  
+  /* Fall through means we're going to use our block clear pattern.  */
+  operands[0]
+    = replace_equiv_address (operands[0],
+			     copy_to_mode_reg (SImode, XEXP (operands[0], 0)));
+  operands[3] = gen_reg_rtx (SImode);
+  operands[4] = gen_reg_rtx (SImode);
+}")
+
+(define_insn "clrstrsi_prereload"
+  [(set (mem:BLK (match_operand:SI 0 "register_operand" "r,r"))
+	(const_int 0))
+   (clobber (match_operand:SI 1 "register_operand" "=r,r"))	;loop cnt/tmp
+   (clobber (match_operand:SI 4 "register_operand" "=&r,&r"))	;tmp1
+   (use (match_operand:SI 2 "arith_operand" "J,1"))	 ;byte count
+   (use (match_operand:SI 3 "const_int_operand" "n,n"))] ;alignment
+  "!TARGET_64BIT"
+  "#"
+  [(set_attr "type" "multi,multi")])
+
+(define_split
+  [(parallel [(set (mem:BLK (match_operand:SI 0 "register_operand" ""))
+		   (const_int 0))
+	      (clobber (match_operand:SI 1 "register_operand" ""))
+	      (clobber (match_operand:SI 4 "register_operand" ""))
+	      (use (match_operand:SI 2 "arith_operand" ""))
+	      (use (match_operand:SI 3 "const_int_operand" ""))])]
+  "!TARGET_64BIT && reload_completed && !flag_peephole2"
+  [(set (match_dup 4) (match_dup 0))
+   (parallel [(set (mem:BLK (match_dup 4)) (const_int 0))
+   	      (clobber (match_dup 1))
+   	      (clobber (match_dup 4))
+   	      (use (match_dup 2))
+   	      (use (match_dup 3))
+	      (const_int 0)])]
+  "")
+
+(define_peephole2
+  [(parallel [(set (mem:BLK (match_operand:SI 0 "register_operand" ""))
+		   (const_int 0))
+	      (clobber (match_operand:SI 1 "register_operand" ""))
+	      (clobber (match_operand:SI 4 "register_operand" ""))
+	      (use (match_operand:SI 2 "arith_operand" ""))
+	      (use (match_operand:SI 3 "const_int_operand" ""))])]
+  "!TARGET_64BIT"
+  [(parallel [(set (mem:BLK (match_dup 4)) (const_int 0))
+   	      (clobber (match_dup 1))
+   	      (clobber (match_dup 4))
+   	      (use (match_dup 2))
+   	      (use (match_dup 3))
+	      (const_int 0)])]
+  "
+{
+  if (dead_or_set_p (curr_insn, operands[0]))
+    operands[4] = operands[0];
+  else
+    emit_insn (gen_rtx_SET (VOIDmode, operands[4], operands[0]));
+}")
+
+(define_insn "clrstrsi_postreload"
+  [(set (mem:BLK (match_operand:SI 0 "register_operand" "r,r"))
+	(const_int 0))
+   (clobber (match_operand:SI 1 "register_operand" "=r,r"))	;loop cnt/tmp
+   (clobber (match_dup 0))
+   (use (match_operand:SI 2 "arith_operand" "J,1"))	 ;byte count
+   (use (match_operand:SI 3 "const_int_operand" "n,n"))  ;alignment
+   (const_int 0)]
+  "!TARGET_64BIT && reload_completed"
+  "* return output_block_clear (operands, !which_alternative);"
+  [(set_attr "type" "multi,multi")])
+
+(define_expand "clrstrdi"
+  [(parallel [(set (match_operand:BLK 0 "" "")
+		   (const_int 0))
+	      (clobber (match_dup 3))
+	      (clobber (match_dup 4))
+	      (use (match_operand:DI 1 "arith_operand" ""))
+	      (use (match_operand:DI 2 "const_int_operand" ""))])]
+  "TARGET_64BIT && optimize > 0"
+  "
+{
+  int size, align;
+
+  /* Undetermined size, use the library routine.  */
+  if (GET_CODE (operands[1]) != CONST_INT)
+    FAIL;
+
+  size = INTVAL (operands[1]);
+  align = INTVAL (operands[2]);
+  align = align > 8 ? 8 : align;
+
+  /* If size/alignment is large, then use the library routines.  */
+  if (size / align > 16)
+    FAIL;
+
+  /* This does happen, but not often enough to worry much about.  */
+  if (size / align < MOVE_RATIO)
+    FAIL;
+  
+  /* Fall through means we're going to use our block clear pattern.  */
+  operands[0]
+    = replace_equiv_address (operands[0],
+			     copy_to_mode_reg (DImode, XEXP (operands[0], 0)));
+  operands[3] = gen_reg_rtx (DImode);
+  operands[4] = gen_reg_rtx (DImode);
+}")
+
+(define_insn "clrstrdi_prereload"
+  [(set (mem:BLK (match_operand:DI 0 "register_operand" "r,r"))
+	(const_int 0))
+   (clobber (match_operand:DI 1 "register_operand" "=r,r"))	;loop cnt/tmp
+   (clobber (match_operand:DI 4 "register_operand" "=&r,&r"))	;item tmp1
+   (use (match_operand:DI 2 "arith_operand" "J,1"))	 ;byte count
+   (use (match_operand:DI 3 "const_int_operand" "n,n"))] ;alignment
+  "TARGET_64BIT"
+  "#"
+  [(set_attr "type" "multi,multi")])
+
+(define_split
+  [(parallel [(set (mem:BLK (match_operand:DI 0 "register_operand" ""))
+		   (const_int 0))
+	      (clobber (match_operand:DI 1 "register_operand" ""))
+	      (clobber (match_operand:DI 4 "register_operand" ""))
+	      (use (match_operand:DI 2 "arith_operand" ""))
+	      (use (match_operand:DI 3 "const_int_operand" ""))])]
+  "TARGET_64BIT && reload_completed && !flag_peephole2"
+  [(set (match_dup 4) (match_dup 0))
+   (parallel [(set (mem:BLK (match_dup 4)) (const_int 0))
+   	      (clobber (match_dup 1))
+   	      (clobber (match_dup 4))
+   	      (use (match_dup 2))
+   	      (use (match_dup 3))
+	      (const_int 0)])]
+  "")
+
+(define_peephole2
+  [(parallel [(set (mem:BLK (match_operand:DI 0 "register_operand" ""))
+		   (const_int 0))
+	      (clobber (match_operand:DI 1 "register_operand" ""))
+	      (clobber (match_operand:DI 4 "register_operand" ""))
+	      (use (match_operand:DI 2 "arith_operand" ""))
+	      (use (match_operand:DI 3 "const_int_operand" ""))])]
+  "TARGET_64BIT"
+  [(parallel [(set (mem:BLK (match_dup 4)) (const_int 0))
+   	      (clobber (match_dup 1))
+   	      (clobber (match_dup 4))
+   	      (use (match_dup 2))
+   	      (use (match_dup 3))
+	      (const_int 0)])]
+  "
+{  
+  if (dead_or_set_p (curr_insn, operands[0]))
+    operands[4] = operands[0];
+  else
+    emit_insn (gen_rtx_SET (VOIDmode, operands[4], operands[0]));
+}")
+
+(define_insn "clrstrdi_postreload"
+  [(set (mem:BLK (match_operand:DI 0 "register_operand" "r,r"))
+	(const_int 0))
+   (clobber (match_operand:DI 1 "register_operand" "=r,r"))	;loop cnt/tmp
+   (clobber (match_dup 0))
+   (use (match_operand:DI 2 "arith_operand" "J,1"))	 ;byte count
+   (use (match_operand:DI 3 "const_int_operand" "n,n"))  ;alignment
+   (const_int 0)]
+  "TARGET_64BIT && reload_completed"
+  "* return output_block_clear (operands, !which_alternative);"
   [(set_attr "type" "multi,multi")])
 
 ;; Floating point move insns
