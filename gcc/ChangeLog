@@ -1,3 +1,8 @@
+2000-07-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* .cvsignore: Add generated YACC files.
+	* objc/.cvsignore: New file.
+	
 2000-07-14  Neil Booth  <NeilB@earthling.net>
 
 	* cpplex.c (adjust_column): New funcion.
