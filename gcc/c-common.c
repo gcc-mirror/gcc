@@ -1638,7 +1638,7 @@ check_format_info (info, params)
 	    {
 	      cur_type = TREE_TYPE (cur_type);
 
-	      if (TREE_CODE (cur_param) == ADDR_EXPR)
+	      if (cur_param != 0 && TREE_CODE (cur_param) == ADDR_EXPR)
 		cur_param = TREE_OPERAND (cur_param, 0);
 	      else
 		cur_param = 0;
