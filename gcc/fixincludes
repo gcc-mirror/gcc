@@ -1889,9 +1889,9 @@ for files in curses.h; do
 #ifndef __cplusplus'\
 	-e '/^#[ 	]*define[ 	][ 	]*bool[ 	][ 	]*char[ 	]*$/a\
 #endif'\
-	-e '/^typedef[ 	][ 	]*char[ 	][ 	]*bool;[ 	]*$/i\
+	-e '/^typedef[ 	][ 	]*char[ 	][ 	]*bool[		]*;[ 	]*$/i\
 #ifndef __cplusplus'\
-	-e '/^typedef[ 	][ 	]*char[ 	][ 	]*bool;[ 	]*$/a\
+	-e '/^typedef[ 	][ 	]*char[ 	][ 	]*bool[		]*;[ 	]*$/a\
 #endif'\
 	${LIB}/$file > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
