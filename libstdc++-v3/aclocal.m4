@@ -2131,18 +2131,30 @@ dnl the testsuite_hooks.h header.
 dnl
 dnl GLIBCPP_CONFIGURE_TESTSUITE  [no args]
 AC_DEFUN(GLIBCPP_CONFIGURE_TESTSUITE, [
-  GLIBCPP_CHECK_SETRLIMIT
+  if test  x"$GLIBCPP_IS_CROSS_COMPILING" = xfalse; then
+    # Do checks for memory limit functions.
+    GLIBCPP_CHECK_SETRLIMIT
 
-  # Look for setenv, so that extended locale tests can be performed.
-  GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_3(setenv)
+    # Look for setenv, so that extended locale tests can be performed.
+    GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_3(setenv)
+  fi
 
   # Export file names for ABI checking.
-  baseline_file="${glibcpp_srcdir}/config/abi/${abi_baseline_triplet}/baseline_symbols.txt"
-  AC_SUBST(baseline_file)
+  baseline_dir="${glibcpp_srcdir}/config/abi/${abi_baseline_pair}\$(MULTISUBDIR)"
+  AC_SUBST(baseline_dir)
 
-  # Don't do ABI checking unless native.
-  AM_CONDITIONAL(GLIBCPP_BUILD_ABI_CHECK,
-                 test x"$build" = x"$host" && test -z "$with_cross_host")
+  # Determine if checking the ABI is desirable.
+  if test x$enable_symvers = xno; then
+    enable_abi_check=no
+  else
+    case "$host" in
+      *-*-cygwin*) 
+        enable_abi_check=no ;;
+      *) 
+        enable_abi_check=yes ;;
+    esac
+  fi
+  AM_CONDITIONAL(GLIBCPP_TEST_ABI, test "$enable_abi_check" = yes)
 ])
 
 
@@ -2345,7 +2357,6 @@ AC_MSG_CHECKING([versioning on shared library symbols])
 AC_MSG_RESULT($enable_symvers)
 ])
 
-
 # isc-posix.m4 serial 2 (gettext-0.11.2)
 dnl Copyright (C) 1995-2002 Free Software Foundation, Inc.
 dnl This file is free software, distributed under the terms of the GNU
@@ -2372,6 +2383,7 @@ AC_DEFUN([AC_ISC_POSIX],
     AC_CHECK_LIB(cposix, strerror, [LIBS="$LIBS -lcposix"])
   ]
 )
+
 
 # Add --enable-maintainer-mode option to configure.
 # From Jim Meyering

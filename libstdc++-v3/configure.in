@@ -428,12 +428,13 @@ else
 
   AC_FUNC_MMAP
 
-  # Establish limits on memory usage during 'make check'
-  GLIBCPP_CONFIGURE_TESTSUITE
 fi
 
-# This depends on the possibly-skipped linker test above.
+# This depends on GLIBCPP_CHECK_LINKER_FEATURES, but without it assumes no.
 GLIBCPP_ENABLE_SYMVERS([yes])
+
+# This depends on GLIBCPP_ENABLE_SYMVERS and GLIBCPP_IS_CROSS_COMPILING.
+GLIBCPP_CONFIGURE_TESTSUITE
 
 # Propagate the target-specific source directories through the build chain.
 # (Nothing currently uses cpu_include_dir directly; only ATOMICITYH 

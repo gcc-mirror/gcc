@@ -17,27 +17,27 @@
 # It sets the following shell variables:
 #
 #   cpu_include_dir        CPU-specific directory, defaults to cpu/generic
-#                              if cpu/target_cpu doesn't exist.  This is
-#                              used to set ATOMICITYH.
+#                          if cpu/target_cpu doesn't exist.  This is
+#                          used to set ATOMICITYH.
 #
 #   os_include_dir         OS-specific directory, defaults to os/generic.
 #
 #   c_model                the model to use for "C" headers, defaults to c_std.
 #
 #   c_compatibility        if "C" compatibility headers are necessary,
-#                              defaults to no.
+#                          defaults to no.
 #
-#   abi_baseline_triplet   directory name for ABI compat testing,
-#                              defaults to target (as per config.guess)
+#   abi_baseline_pair      directory name for ABI compat testing,
+#                          defaults to target (as per config.guess)
 #
 #   ATOMICITYH             location of atomicity.h,
-#                              defaults to cpu_include_dir
+#                          defaults to cpu_include_dir
 #
 # It possibly modifies the following variables:
 #
 #   OPT_LDFLAGS            extra flags to pass when linking the library, of
-#                              the form '-Wl,blah'
-#                              (defaults to empty in acinclude.m4)
+#                          the form '-Wl,blah'
+#                          (defaults to empty in acinclude.m4)
 #
 #
 # If the defaults will not work for your platform, you need only change the
@@ -50,14 +50,8 @@
 # Try to guess a default cpu_include_dir based on the name of the CPU.  We
 # cannot do this for os_include_dir; there are too many portable operating
 # systems out there.  :-)
-abi_baseline_triplet=${target}
 c_model=c_std
 c_compatibility=no
-if test -d ${glibcpp_srcdir}/config/cpu/${target_cpu}; then
-    cpu_include_dir="cpu/${target_cpu}"
-else
-    cpu_include_dir="cpu/generic"
-fi
 
 
 # TARGET-SPECIFIC OVERRIDES
@@ -65,43 +59,44 @@ fi
 # Here we override defaults and catch more general cases due to naming
 # conventions (e.g., chip_name* to catch all variants).
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
+if test -d ${glibcpp_srcdir}/config/cpu/${host_cpu}; then
+  try_cpu=${host_cpu}
+fi
+
 case "${target_cpu}" in
   alpha*)
-    cpu_include_dir="cpu/alpha"
+    try_cpu=alpha
     ;;
   athlon* | i586 | i686 | i786 | x86_64)
-    cpu_include_dir="cpu/i486"
+    try_cpu=i486
     ;;
   hppa*)
-    cpu_include_dir="cpu/hppa"
+    try_cpu=hppa
     ;;
   m680[246]0)
-    cpu_include_dir="cpu/m68k"
+    try_cpu=m68k
     ;;
   powerpc* | rs6000)
-    cpu_include_dir="cpu/powerpc"
+    try_cpu=powerpc
     ;;
   s390x)
-    cpu_include_dir="cpu/s390"
+    try_cpu=s390
     ;;
   sparc* | ultrasparc)
-    cpu_include_dir="cpu/sparc"
+    try_cpu=sparc
+    ;;
+  *)
+    try_cpu=generic
     ;;
 esac
 
 
-# Now look for the file(s) usually tied to a CPU model, and make default
-# choices for those if they haven't been explicitly set already.
-_cpu_incdir_fullpath=${glibcpp_srcdir}/config/${cpu_include_dir}
-if test x${ATOMICITYH+set} != xset; then
-  if test -f ${_cpu_incdir_fullpath}/atomicity.h; then
-    ATOMICITYH=$cpu_include_dir
-  else
-    ATOMICITYH="cpu/generic"
-  fi
-fi
-unset _cpu_incdir_fullpath
-
+# Now look for the file(s) usually tied to a CPU model, and make
+# default choices for those if they haven't been explicitly set
+# already.  
+cpu_include_dir="cpu/${try_cpu}"
+ATOMICITYH=$cpu_include_dir
+abi_baseline_pair=${try_cpu}-${host_os}
 
 # Set any OS-dependent bits.
 # Set the os_include_dir.
@@ -136,8 +131,6 @@ case "${target_os}" in
     ;;
   freebsd*)
     os_include_dir="os/bsd/freebsd"
-    # The FreeBSD ABI is expressed in the major version number only.
-    abi_baseline_triplet=`echo ${target} | sed 's,\(\.[0-9]*\)*$,,'`
     ;;
   gnu* | linux*)
     os_include_dir="os/gnu-linux"
@@ -187,5 +180,11 @@ esac
 case "${target}" in
   mips*-*-linux*)
     ATOMICITYH="cpu/mips"
+    ;;
+  x86_64-*-linux*)
+    abi_baseline_pair="x86_64-linux-gnu"
+    ;;
+  i*86-*-freebsd4*)
+    abi_baseline_pair="i386-freebsd4"
     ;;
 esac

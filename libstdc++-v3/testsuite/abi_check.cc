@@ -311,17 +311,20 @@ main(int argc, char** argv)
   using namespace std;
 
   // Get arguments.  (Heading towards getopt_long, I can feel it.)
-  string argv1;
-  if (argc < 4 || (string("--help") == (argv1 = argv[1])))
+  bool verbose = false;
+  string argv1 = argc > 1 ? argv[1] : "";
+  if (argv1 == "--help" || argc < 4)
     {
-      cerr << "Usage:  abi_check --check    cur baseline\n"
-              "                  --help\n\n"
-              "Where CUR is a file containing the current results from\n"
+      cerr << "usage: abi_check --check current baseline\n"
+              "                 --check-verbose current baseline\n"
+              "                 --help\n\n"
+              "Where CURRENT is a file containing the current results from\n"
               "extract_symvers, and BASELINE is one from config/abi.\n"
 	   << endl;
       exit(1);
     }
-
+  else if (argv1 == "--check-verbose")
+    verbose = true;
 
   // Quick sanity/setup check for arguments.
   const char* test_file = argv[2];
@@ -410,25 +413,42 @@ main(int argc, char** argv)
     }
 
   // Report results.
-  cout << added_names.size() << " added symbols " << endl;
-  for (size_t j = 0; j < added_names.size() ; ++j)
-    report_symbol_info(test_symbols[added_names[j]], j + 1);
-
-  cout << missing_names.size() << " missing symbols " << endl;
-  for (size_t j = 0; j < missing_names.size() ; ++j)
-    report_symbol_info(baseline_symbols[missing_names[j]], j + 1);
-
-  cout << incompatible.size() << " incompatible symbols " << endl;
-  for (size_t j = 0; j < incompatible.size() ; ++j)
+  if (verbose && added_names.size())
     {
-      // First, report name.
-      const symbol_info& base = incompatible[j].first;
-      const symbol_info& test = incompatible[j].second;
-      report_symbol_info(test, j + 1, false);
-
-      // Second, report reason or reasons incompatible.
-      check_compatible(base, test, true);
+      cout << added_names.size() << " added symbols " << endl;
+      for (size_t j = 0; j < added_names.size() ; ++j)
+	report_symbol_info(test_symbols[added_names[j]], j + 1);
     }
+  
+  if (verbose && missing_names.size())
+    {
+      cout << missing_names.size() << " missing symbols " << endl;
+      for (size_t j = 0; j < missing_names.size() ; ++j)
+	report_symbol_info(baseline_symbols[missing_names[j]], j + 1);
+    }
+  
+  if (verbose && incompatible.size())
+    {
+      cout << incompatible.size() << " incompatible symbols " << endl;
+      for (size_t j = 0; j < incompatible.size() ; ++j)
+	{
+	  // First, report name.
+	  const symbol_info& base = incompatible[j].first;
+	  const symbol_info& test = incompatible[j].second;
+	  report_symbol_info(test, j + 1, false);
+	  
+	  // Second, report reason or reasons incompatible.
+	  check_compatible(base, test, true);
+	}
+    }
+  
+  cout << "\n\t\t=== libstdc++-v3 check-abi Summary ===" << endl;
+  cout << endl;
+  cout << "# of added symbols:\t\t " << added_names.size() << endl;
+  cout << "# of missing symbols:\t\t " << missing_names.size() << endl;
+  cout << "# of incompatible symbols:\t " << incompatible.size() << endl;
+  cout << endl;
+  cout << "using: " << baseline_file << endl;
 
   return 0;
 }
