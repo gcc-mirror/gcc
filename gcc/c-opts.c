@@ -149,8 +149,10 @@ static void finish_options PARAMS ((void));
 #define COMMAND_LINE_OPTIONS						     \
   OPT("-help",                  CL_ALL,   OPT__help)			     \
   OPT("-output-pch=",		CL_ALL | CL_ARG, OPT__output_pch)	     \
+  OPT("A",                      CL_ALL | CL_ARG, OPT_A)			     \
   OPT("C",                      CL_ALL,   OPT_C)			     \
   OPT("CC",                     CL_ALL,   OPT_CC)			     \
+  OPT("D",                      CL_ALL | CL_ARG, OPT_D)			     \
   OPT("E",			CL_ALL,   OPT_E)			     \
   OPT("H",                      CL_ALL,   OPT_H)			     \
   OPT("I",                      CL_ALL | CL_ARG, OPT_I)			     \
@@ -164,6 +166,7 @@ static void finish_options PARAMS ((void));
   OPT("MQ",                     CL_ALL | CL_ARG, OPT_MQ)		     \
   OPT("MT",                     CL_ALL | CL_ARG, OPT_MT)		     \
   OPT("P",                      CL_ALL,   OPT_P)			     \
+  OPT("U",                      CL_ALL | CL_ARG, OPT_U)			     \
   OPT("Wabi",                   CL_CXX,   OPT_Wabi)                          \
   OPT("Wall",			CL_ALL,   OPT_Wall)			     \
   OPT("Wbad-function-cast",	CL_C,     OPT_Wbad_function_cast)	     \
@@ -413,6 +416,15 @@ missing_arg (opt_index)
       error ("no class name specified with \"-%s\"", opt_text);
       break;
 
+    case OPT_A:
+      error ("assertion missing after \"-%s\"", opt_text);
+      break;
+
+    case OPT_D:
+    case OPT_U:
+      error ("macro name missing after \"-%s\"", opt_text);
+      break;
+
     case OPT_I:
     case OPT_idirafter:
     case OPT_isysroot:
@@ -595,7 +607,7 @@ c_common_decode_option (argc, argv)
   const char *opt, *arg = 0;
   char *dup = 0;
   bool on = true;
-  int result, lang_flag;
+  int result = 0, lang_flag;
   const struct cl_option *option;
   enum opt_code code;
 
@@ -631,8 +643,6 @@ c_common_decode_option (argc, argv)
       opt = dup;
       on = false;
     }
-
-  result = cpp_handle_option (parse_in, argc, argv);
 
   /* Skip over '-'.  */
   lang_flag = lang_flags[(c_language << 1) + flag_objc];
@@ -694,6 +704,10 @@ c_common_decode_option (argc, argv)
       pch_file = arg;
       break;
 
+    case OPT_A:
+      defer_opt (code, arg);
+      break;
+
     case OPT_C:
       cpp_opts->discard_comments = 0;
       break;
@@ -701,6 +715,10 @@ c_common_decode_option (argc, argv)
     case OPT_CC:
       cpp_opts->discard_comments = 0;
       cpp_opts->discard_comments_in_macro_exp = 0;
+      break;
+
+    case OPT_D:
+      defer_opt (code, arg);
       break;
 
     case OPT_E:
@@ -763,6 +781,10 @@ c_common_decode_option (argc, argv)
 
     case OPT_P:
       flag_no_line_commands = 1;
+      break;
+
+    case OPT_U:
+      defer_opt (code, arg);
       break;
 
     case OPT_Wabi:
@@ -1689,20 +1711,8 @@ handle_deferred_opts ()
     {
       struct deferred_opt *opt = &deferred_opts[i];
 
-      switch (opt->code)
-	{
-	case OPT_MT:
-	case OPT_MQ:
-	  cpp_add_dependency_target (parse_in, opt->arg, opt->code == OPT_MQ);
-	  break;
-
-	case OPT_include:
-	case OPT_imacros:
-	  break;
-
-	default:
-	  abort ();
-	}
+      if (opt->code == OPT_MT || opt->code == OPT_MQ)
+	cpp_add_dependency_target (parse_in, opt->arg, opt->code == OPT_MQ);
     }
 }
 
@@ -1765,13 +1775,32 @@ add_prefixed_path (suffix, chain)
 static void
 finish_options ()
 {
-  cpp_finish_options (parse_in);
-
   if (!cpp_opts->preprocessed)
     {
-      unsigned int i;
+      size_t i;
 
-      /* Handle -imacros after -D, -U and -A.  */
+      cpp_rename_file (parse_in, _("<built-in>"));
+      cpp_init_builtins (parse_in);
+      c_cpp_builtins (parse_in);
+      cpp_rename_file (parse_in, _("<command line>"));
+      for (i = 0; i < deferred_count; i++)
+	{
+	  struct deferred_opt *opt = &deferred_opts[i];
+
+	  if (opt->code == OPT_D)
+	    cpp_define (parse_in, opt->arg);
+	  else if (opt->code == OPT_U)
+	    cpp_undef (parse_in, opt->arg);
+	  else if (opt->code == OPT_A)
+	    {
+	      if (opt->arg[0] == '-')
+		cpp_unassert (parse_in, opt->arg + 1);
+	      else
+		cpp_assert (parse_in, opt->arg);
+	    }
+	}
+
+      /* Handle -imacros after -D and -U.  */
       for (i = 0; i < deferred_count; i++)
 	{
 	  struct deferred_opt *opt = &deferred_opts[i];

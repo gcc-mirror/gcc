@@ -1,3 +1,29 @@
+2003-03-15  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in: Update.
+	* c-common.h (cb_register_builtins): Rename c_cpp_builtins.
+	* c-lex.c (init_c_lex): Register builtins hook is dead.
+	* c-opts.c (COMMAND_LINE_OPTIONS, missing_arg): Handle -A, -D and -U.
+	(c_common_decode_option): Don't call cpp_handle_option.
+	Handle -A, -D and -U.
+	(handle_deferred_opts): Simplify.
+	(finish_options): Define builtins and command line macros.
+	* c-ppoutput.c (init_pp_output): Register builtins hook is dead.
+	* cppinit.c: Don't include intl.h.
+	(init_builtins): Rename cpp_init_builtins.  No hook to call.
+	(init_library): Don't need to sort options.
+	(cpp_create_reader): Don't set pending.
+	(cpp_destroy): Don't free pending.
+	(struct pending_option, cl_directive_handler, struct cpp_pending,
+	APPEND, free_chain, new_pending_directive, parse_option, opt_comp,
+	cpp_finish_options, COMMAND_LINE_OPTIONS, DEF_OPT, struct cl_option,
+	cl_options, cpp_handle_option): Remove.
+	* cpplib.h (struct cpp_pending, register_builtins, cpp_handle_option,
+	cpp_finish_options): Remove.
+	(cpp_init_builtins): New.
+	* fix-header.c (read_scan_file): Update to handle -D.  Fix
+	handling of -I.  Replace call to cpp_finish_options.
+
 2003-03-15  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	PR optimization/9387

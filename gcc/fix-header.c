@@ -1,6 +1,6 @@
 /* fix-header.c - Make C header file suitable for C++.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -67,7 +67,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    * INFILE.H is a full pathname for the input file (e.g. /usr/include/stdio.h)
    * OUTFILE.H is the full pathname for where to write the output file,
    if anything needs to be done.  (e.g. ./include/stdio.h)
-   * OPTIONS are such as you would pass to cpp.
+   * OPTIONS can be -D or -I switches as you would pass to cpp.
 
    Written by Per Bothner <bothner@cygnus.com>, July 1993.  */
 
@@ -634,17 +634,28 @@ read_scan_file (in_fname, argc, argv)
 
   for (i = 0; i < argc; i += strings_processed)
     {
-      if (argv[i][0] == 'I')
+      strings_processed = 0;
+      if (argv[i][0] == '-')
 	{
-	  if (argv[i][1] != '\0')
-	    strings_processed = 1, add_path (argv[i] + 1, BRACKET, false);
-	  else if (i + 1 == argc)
-	    strings_processed = 0;
-	  else
-	    strings_processed = 2, add_path (argv[i + 1], BRACKET, false);
+	  if (argv[i][1] == 'I')
+	    {
+	      if (argv[i][2] != '\0')
+		strings_processed = 1, add_path (argv[i] + 2, BRACKET, false);
+	      else if (i + 1 == argc)
+		strings_processed = 0;
+	      else
+		strings_processed = 2, add_path (argv[i + 2], BRACKET, false);
+	    }
+	  else if (argv[i][1] == 'D')
+	    {
+	      if (argv[i][2] != '\0')
+		strings_processed = 1, cpp_define (scan_in, argv[i] + 2);
+	      else if (i + 1 == argc)
+		strings_processed = 0;
+	      else	
+		strings_processed = 2, cpp_define (scan_in, argv[i + 1]);
+	    }
 	}
-      else
-	strings_processed = cpp_handle_option (scan_in, argc - i, argv + i);
 
       if (strings_processed == 0)
 	break;
@@ -661,7 +672,9 @@ read_scan_file (in_fname, argc, argv)
   if (! cpp_read_main_file (scan_in, in_fname, NULL))
     exit (FATAL_EXIT_CODE);
 
-  cpp_finish_options (scan_in);
+  cpp_rename_file (scan_in, "<built-in>");
+  cpp_init_builtins (scan_in);
+  cpp_rename_file (scan_in, in_fname);
 
   /* We are scanning a system header, so mark it as such.  */
   cpp_make_system_header (scan_in, 1, 0);

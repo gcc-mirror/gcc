@@ -1263,7 +1263,7 @@ extern int c_common_unsafe_for_reeval		PARAMS ((tree));
 
 extern void init_c_lex				PARAMS ((void));
 
-extern void cb_register_builtins		PARAMS ((cpp_reader *));
+extern void c_cpp_builtins			PARAMS ((cpp_reader *));
 
 /* Positive if an implicit `extern "C"' scope has just been entered;
    negative if such a scope has just been exited.  */

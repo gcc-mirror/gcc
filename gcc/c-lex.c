@@ -112,7 +112,6 @@ init_c_lex ()
   
   cb = cpp_get_callbacks (parse_in);
 
-  cb->register_builtins = cb_register_builtins;
   cb->line_change = cb_line_change;
   cb->ident = cb_ident;
   cb->def_pragma = cb_def_pragma;

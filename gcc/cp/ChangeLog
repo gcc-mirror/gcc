@@ -1,3 +1,7 @@
+2003-03-15  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in: Update.
+
 2003-03-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/6440
