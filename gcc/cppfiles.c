@@ -73,8 +73,7 @@ static struct file_name_list *actual_directory
 static struct include_file *find_include_file
 				PARAMS ((cpp_reader *, const char *,
 					 struct file_name_list *));
-static struct include_file *lookup_include_file
-				PARAMS ((cpp_reader *, const char *));
+static struct include_file *open_file PARAMS ((cpp_reader *, const char *));
 static int read_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static int stack_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static void purge_cache 	PARAMS ((struct include_file *));
@@ -98,7 +97,7 @@ destroy_include_file_node (v)
   if (f)
     {
       purge_cache (f);
-      free (f);
+      free (f);  /* The tree is registered with free to free f->name.  */
     }
 }
 
@@ -120,23 +119,44 @@ _cpp_cleanup_includes (pfile)
 }
 
 /* Given a file name, look it up in the cache; if there is no entry,
-   create one.  Returns 0 if the file doesn't exist or is
-   inaccessible, otherwise the cache entry.  */
+   create one with a non-NULL value (regardless of success in opening
+   the file).  If the file doesn't exist or is inaccessible, this
+   entry is flagged so we don't attempt to open it again in the
+   future.  If the file isn't open, open it.
+
+   Returns an include_file structure with an open file descriptor on
+   success, or NULL on failure.  */
 
 static struct include_file *
-lookup_include_file (pfile, filename)
+open_file (pfile, filename)
      cpp_reader *pfile;
      const char *filename;
-{     
+{
   splay_tree_node nd;
-  struct include_file *file = 0;
-  int fd;
-  struct stat st;
+  struct include_file *file;
 
   nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) filename);
 
   if (nd)
-    return (struct include_file *)nd->value;
+    {
+      file = (struct include_file *) nd->value;
+
+      /* Don't retry opening if we failed previously.  */
+      if (file->fd == -2)
+	return 0;
+
+      /* -1 indicates a file we've opened previously, and since closed.  */
+      if (file->fd != -1)
+	return file;
+    }
+  else
+    {
+      file = xcnew (struct include_file);
+      file->name = xstrdup (filename);
+      splay_tree_insert (pfile->all_include_files,
+			 (splay_tree_key) file->name,
+			 (splay_tree_value) file);
+    }
 
   /* We used to open files in nonblocking mode, but that caused more
      problems than it solved.  Do take care not to acquire a
@@ -153,37 +173,26 @@ lookup_include_file (pfile, filename)
      Special case: the empty string is translated to stdin.  */
 
   if (filename[0] == '\0')
-    fd = 0;
+    file->fd = 0;
   else
-    fd = open (filename, O_RDONLY|O_NOCTTY|O_BINARY, 0666);
-  if (fd == -1)
-    goto fail;
+    file->fd = open (filename, O_RDONLY | O_NOCTTY | O_BINARY, 0666);
 
-  if (fstat (fd, &st) < 0)
-    goto fail;
-  
-  file = xcnew (struct include_file);
-  file->name = xstrdup (filename);
-  file->st = st;
-  file->fd = fd;
+  if (file->fd != -1 && fstat (file->fd, &file->st) == 0)
+    {
+      /* Mark a regular, zero-length file never-reread now.  */
+      if (S_ISREG (file->st.st_mode) && file->st.st_size == 0)
+	file->cmacro = NEVER_REREAD;
 
-  /* If the file is plain and zero length, mark it never-reread now.  */
-  if (S_ISREG (st.st_mode) && st.st_size == 0)
-    file->cmacro = NEVER_REREAD;
-
-  splay_tree_insert (pfile->all_include_files,
-		     (splay_tree_key) file->name, (splay_tree_value) file);
-  return file;
-
- fail:
+      return file;
+    }
 
   /* Don't issue an error message if the file doesn't exist.  */
   if (errno != ENOENT && errno != ENOTDIR)
     cpp_error_from_errno (pfile, filename);
 
-  /* Create a negative node for this path.  */
-  splay_tree_insert (pfile->all_include_files,
-		     (splay_tree_key) xstrdup (filename), 0);
+  /* Create a negative node for this path, and return null.  */
+  file->fd = -2;
+
   return 0;
 }
 
@@ -419,7 +428,7 @@ find_include_file (pfile, fname, search_start)
   struct include_file *file;
 
   if (fname[0] == '/')
-    return lookup_include_file (pfile, fname);
+    return open_file (pfile, fname);
       
   /* Search directory path for the file.  */
   name = (char *) alloca (strlen (fname) + pfile->max_include_len
@@ -433,7 +442,7 @@ find_include_file (pfile, fname, search_start)
       if (CPP_OPTION (pfile, remap))
 	name = remap_filename (pfile, name, path);
 
-      file = lookup_include_file (pfile, name);
+      file = open_file (pfile, name);
       if (file)
 	{
 	  file->sysp = path->sysp;
@@ -479,8 +488,13 @@ _cpp_fake_include (pfile, fname)
       return (const char *) nd->key;
     }
 
-  splay_tree_insert (pfile->all_include_files, (splay_tree_key) name, 0);
-  return (const char *)name;
+  file = xcnew (struct include_file);
+  file->name = name;
+  file->fd = -2;
+  splay_tree_insert (pfile->all_include_files, (splay_tree_key) name,
+		     (splay_tree_value) file);
+
+  return file->name;
 }
 
 /* Not everyone who wants to set system-header-ness on a buffer can
@@ -701,7 +715,7 @@ cpp_read_file (pfile, fname)
   if (fname == NULL)
     fname = "";
 
-  f = lookup_include_file (pfile, fname);
+  f = open_file (pfile, fname);
 
   if (f == NULL)
     {
