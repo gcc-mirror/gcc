@@ -46,12 +46,12 @@ _Jv_StringFindSlot (jchar* data, jint len, jint hash)
   int start_index = hash & (strhash_size - 1);
   int deleted_index = -1;
 
-  register int index = start_index;
+  int index = start_index;
   /* step must be non-zero, and relatively prime with strhash_size. */
   int step = 8 * hash + 7;
   for (;;)
     {
-      register jstring* ptr = &strhash[index];
+      jstring* ptr = &strhash[index];
       if (*ptr == NULL)
 	{
 	  if (deleted_index >= 0)
@@ -75,7 +75,7 @@ _Jv_StringFindSlot (jchar* data, jint len, jint hash)
 static jint
 hashChars (jchar* ptr, jint length)
 {
-  register jchar* limit = ptr + length;
+  jchar* limit = ptr + length;
   jint hash = 0;
   // Updated specification from
   // http://www.javasoft.com/docs/books/jls/clarify.html.
@@ -111,8 +111,8 @@ java::lang::String::rehash()
     }
   else
     {
-      register int i = strhash_size;
-      register jstring* ptr = strhash + i;
+      int i = strhash_size;
+      jstring* ptr = strhash + i;
       strhash_size *= 2;
       strhash = (jstring *) _Jv_AllocBytes (strhash_size * sizeof (jstring));
       memset (strhash, 0, strhash_size * sizeof (jstring));
@@ -198,8 +198,8 @@ _Jv_NewStringUtf8Const (Utf8Const* str)
   jchar *chrs;
   jchar buffer[100];
   jstring jstr;
-  register unsigned char* data = (unsigned char*) str->data;
-  register unsigned char* limit = data + str->length;
+  unsigned char* data = (unsigned char*) str->data;
+  unsigned char* limit = data + str->length;
   int length = _Jv_strLengthUtf8(str->data, str->length);
 
   if (length <= (int) (sizeof(buffer) / sizeof(jchar)))
@@ -239,12 +239,12 @@ _Jv_NewStringUtf8Const (Utf8Const* str)
 jsize
 _Jv_GetStringUTFLength (jstring string)
 {
-  register jsize len = 0;
-  register jchar *ptr = JvGetStringChars (string);
-  register jsize i = string->length();
+  jsize len = 0;
+  jchar *ptr = JvGetStringChars (string);
+  jsize i = string->length();
   while (--i >= 0)
     {
-      register jchar ch = *ptr++;
+      jchar ch = *ptr++;
       if (ch > 0 && ch <= 0x7F)
 	len += 1;
       else if (ch <= 0x7FF)
@@ -260,9 +260,9 @@ _Jv_GetStringUTFLength (jstring string)
 jsize
 _Jv_GetStringUTFRegion (jstring str, jsize start, jsize len, char *buf)
 {
-  register jchar *sptr = JvGetStringChars (str) + start;
-  register jsize i = len;
-  register char *dptr = buf;
+  jchar *sptr = JvGetStringChars (str) + start;
+  jsize i = len;
+  char *dptr = buf;
   while (--i >= 0)
     {
       jchar ch = *sptr++;
@@ -429,9 +429,9 @@ java::lang::String::equals(jobject anObject)
   if (count != other->count)
     return false;
   /* if both are interned, return false. */
-  register jint i = count;
-  register jchar *xptr = JvGetStringChars (this);
-  register jchar *yptr = JvGetStringChars (other);
+  jint i = count;
+  jchar *xptr = JvGetStringChars (this);
+  jchar *yptr = JvGetStringChars (other);
   while (--i >= 0)
     {
       if (*xptr++ != *yptr++)
@@ -456,9 +456,9 @@ java::lang::String::getChars(jint srcBegin, jint srcEnd,
   if (srcBegin < 0 || srcBegin > srcEnd || srcEnd > count
       || dstBegin < 0 || dstBegin + (srcEnd-srcBegin) > dst_length)
     JvThrow (new java::lang::StringIndexOutOfBoundsException());
-  register jchar *dPtr = elements (dst) + dstBegin;
-  register jchar *sPtr = JvGetStringChars (this) + srcBegin;
-  register jint i = srcEnd-srcBegin;
+  jchar *dPtr = elements (dst) + dstBegin;
+  jchar *sPtr = JvGetStringChars (this) + srcBegin;
+  jint i = srcEnd-srcBegin;
   while (--i >= 0)
     *dPtr++ = *sPtr++;
 }
@@ -506,9 +506,9 @@ java::lang::String::getBytes(jint srcBegin, jint srcEnd,
   if (srcBegin < 0 || srcBegin > srcEnd || srcEnd > count
       || dstBegin < 0 || dstBegin + (srcEnd-srcBegin) > dst_length)
     JvThrow (new java::lang::StringIndexOutOfBoundsException());
-  register jbyte *dPtr = elements (dst) + dstBegin;
-  register jchar *sPtr = JvGetStringChars (this) + srcBegin;
-  register jint i = srcEnd-srcBegin;
+  jbyte *dPtr = elements (dst) + dstBegin;
+  jchar *sPtr = JvGetStringChars (this) + srcBegin;
+  jint i = srcEnd-srcBegin;
   while (--i >= 0)
     *dPtr++ = (jbyte) *sPtr++;
 }
@@ -517,9 +517,9 @@ jcharArray
 java::lang::String::toCharArray()
 {
   jcharArray array = JvNewCharArray(count);
-  register jchar *dPtr = elements (array);
-  register jchar *sPtr = JvGetStringChars (this);
-  register jint i = count;
+  jchar *dPtr = elements (array);
+  jchar *sPtr = JvGetStringChars (this);
+  jint i = count;
   while (--i >= 0)
     *dPtr++ = *sPtr++;
   return array;
@@ -530,9 +530,9 @@ java::lang::String::equalsIgnoreCase (jstring anotherString)
 {
   if (anotherString == NULL || count != anotherString->count)
     return false;
-  register jchar *tptr = JvGetStringChars (this);
-  register jchar *optr = JvGetStringChars (anotherString);
-  register jint i = count;
+  jchar *tptr = JvGetStringChars (this);
+  jchar *optr = JvGetStringChars (anotherString);
+  jint i = count;
   while (--i >= 0)
     {
       jchar tch = *tptr++;
@@ -555,9 +555,9 @@ java::lang::String::regionMatches (jint toffset,
       || toffset + len > count
       || ooffset + len > other->count)
     return false;
-  register jchar *tptr = JvGetStringChars (this) + toffset;
-  register jchar *optr = JvGetStringChars (other) + ooffset;
-  register jint i = len;
+  jchar *tptr = JvGetStringChars (this) + toffset;
+  jchar *optr = JvGetStringChars (other) + ooffset;
+  jint i = len;
   while (--i >= 0)
     {
       if (*tptr++ != *optr++)
@@ -569,11 +569,11 @@ java::lang::String::regionMatches (jint toffset,
 jint
 java::lang::String::compareTo (jstring anotherString)
 {
-  register jchar *tptr = JvGetStringChars (this);
-  register jchar *optr = JvGetStringChars (anotherString);
+  jchar *tptr = JvGetStringChars (this);
+  jchar *optr = JvGetStringChars (anotherString);
   jint tlen = this->count;
   jint olen = anotherString->count;
-  register jint i = tlen > olen ? olen : tlen;
+  jint i = tlen > olen ? olen : tlen;
   while (--i >= 0)
     {
       jchar tch = *tptr++;
@@ -592,9 +592,9 @@ java::lang::String::regionMatches (jboolean ignoreCase, jint toffset,
       || toffset + len > count
       || ooffset + len > other->count)
     return false;
-  register jchar *tptr = JvGetStringChars (this) + toffset;
-  register jchar *optr = JvGetStringChars (other) + ooffset;
-  register jint i = len;
+  jchar *tptr = JvGetStringChars (this) + toffset;
+  jchar *optr = JvGetStringChars (other) + ooffset;
+  jint i = len;
   if (ignoreCase)
     while (--i >= 0)
       {
@@ -620,11 +620,11 @@ java::lang::String::regionMatches (jboolean ignoreCase, jint toffset,
 jboolean
 java::lang::String::startsWith (jstring prefix, jint toffset)
 {
-  register jint i = prefix->count;
+  jint i = prefix->count;
   if (toffset < 0 || toffset + i > count)
     return false;
-  register jchar *xptr = JvGetStringChars (this) + toffset;
-  register jchar *yptr = JvGetStringChars (prefix);
+  jchar *xptr = JvGetStringChars (this) + toffset;
+  jchar *yptr = JvGetStringChars (prefix);
   while (--i >= 0)
     {
       if (*xptr++ != *yptr++)
@@ -638,7 +638,7 @@ java::lang::String::indexOf (jint ch, jint fromIndex)
 {
   if (fromIndex < 0)
     fromIndex = 0;
-  register jchar *ptr = JvGetStringChars(this);
+  jchar *ptr = JvGetStringChars(this);
   for (;; ++fromIndex)
     {
       if (fromIndex >= count)
@@ -682,7 +682,7 @@ java::lang::String::lastIndexOf (jint ch, jint fromIndex)
 {
   if (fromIndex >= count)
     fromIndex = count - 1;
-  register jchar *ptr = JvGetStringChars(this);
+  jchar *ptr = JvGetStringChars(this);
   for (;; --fromIndex)
     {
       if (fromIndex < 0)
@@ -716,9 +716,9 @@ java::lang::String::concat(jstring str)
   if (str_count == 0)
     return this;
   jstring result = JvAllocString(count + str_count);
-  register jchar *dstPtr = JvGetStringChars(result);
-  register jchar *srcPtr = JvGetStringChars(this);
-  register jint i = count;
+  jchar *dstPtr = JvGetStringChars(result);
+  jchar *srcPtr = JvGetStringChars(this);
+  jint i = count;
   while (--i >= 0)
     *dstPtr++ = *srcPtr++;
   srcPtr = JvGetStringChars(str);
@@ -834,9 +834,9 @@ java::lang::String::valueOf(jcharArray data, jint offset, jint count)
   jint data_length = JvGetArrayLength (data);
   if (offset < 0 || count < 0 || offset+count > data_length)
     JvThrow (new java::lang::IndexOutOfBoundsException());
-  register jstring result = JvAllocString(count);
-  register jchar *sPtr = elements (data) + offset;
-  register jchar *dPtr = JvGetStringChars(result);
+  jstring result = JvAllocString(count);
+  jchar *sPtr = elements (data) + offset;
+  jchar *dPtr = JvGetStringChars(result);
   while (--count >= 0)
     *dPtr++ = *sPtr++;
   return result;
@@ -845,7 +845,7 @@ java::lang::String::valueOf(jcharArray data, jint offset, jint count)
 jstring
 java::lang::String::valueOf(jchar c)
 {
-  register jstring result = JvAllocString(1);
+  jstring result = JvAllocString(1);
   JvGetStringChars (result)[0] = c;
   return result;
 }

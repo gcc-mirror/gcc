@@ -329,6 +329,20 @@ public final class URL implements Serializable
     // If a non-default factory has been set, use it to find the protocol.
     if (factory != null)
       handler = factory.createURLStreamHandler(protocol);
+    else if (protocol.equals ("file"))
+      {
+	// This is an interesting case.  It's tempting to think that we
+	// could call Class.forName ("gnu.gcj.protocol.file.Handler") to
+	// get the appropriate class.  Unfortunately, if we do that the
+	// program will never terminate, because setURLStreamHandler is
+	// eventually called by Class.forName.
+	//
+	// Treating "file" as a special case is the minimum that will
+	// fix this problem.  If other protocols are required in a
+	// statically linked application they will need to be handled in
+	// the same way as "file".
+	handler = new gnu.gcj.protocol.file.Handler ();
+      }
 
     // Non-default factory may have returned null or a factory wasn't set.
     // Use the default search algorithm to find a handler for this protocol.

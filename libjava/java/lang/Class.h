@@ -130,6 +130,9 @@ private:
   java::lang::reflect::Field *getField (jstring, jint);
   jint _getMethods (JArray<java::lang::reflect::Method *> *result,
 		    jint offset);
+  java::lang::reflect::Field *getPrivateField (jstring);
+  java::lang::reflect::Method *getPrivateMethod (jstring, JArray<jclass> *);
+
 public:
   JArray<java::lang::reflect::Field *> *getFields (void);
 
@@ -233,6 +236,10 @@ private:
 
   // Friends classes and functions to implement the ClassLoader
   friend class java::lang::ClassLoader;
+
+  friend class java::io::ObjectOutputStream;
+  friend class java::io::ObjectInputStream;
+  friend class java::io::ObjectStreamClass;
 
   friend void _Jv_WaitForState (jclass, int);
   friend void _Jv_RegisterClasses (jclass *classes);

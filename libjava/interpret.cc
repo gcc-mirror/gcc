@@ -48,11 +48,6 @@ static void throw_incompatible_class_change_error (jstring msg)
 static void throw_null_pointer_exception ()
   __attribute__ ((__noreturn__));
 #endif
-#ifndef HANDLE_FPE
-static void throw_arithmetic_exception ()
-  __attribute__ ((__noreturn__));
-#endif
-
 
 extern "C" double __ieee754_fmod __P((double,double));
 
@@ -193,12 +188,6 @@ static jint get4(unsigned char* loc) {
   do { if ((X)==NULL) throw_null_pointer_exception (); } while (0)
 #endif
 
-#ifdef HANDLE_FPE
-#define ZEROCHECK(X)
-#else
-#define ZEROCHECK(X) \
-  do { if ((X) == 0) throw_arithmetic_exception (); } while (0)
-#endif
 
 // this method starts the actual running of the method.  It is inlined
 // in three different variants in the static methods run_normal,
@@ -408,8 +397,8 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 {
   using namespace java::lang::reflect;
 
-  register _Jv_word      *sp     = inv->sp;
-  register unsigned char *pc     = inv->pc;
+  _Jv_word      *sp     = inv->sp;
+  unsigned char *pc     = inv->pc;
   _Jv_word               *locals = inv->local_base ();
 
   _Jv_word *pool_data   = defining_class->constants.data;
@@ -1390,8 +1379,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jint value2 = POPI();
 	jint value1 = POPI();
-	ZEROCHECK (value2);
-	jint res = value1 / value2;
+	jint res = _Jv_divI (value1, value2);
 	PUSHI (res);
       }
       NEXT_INSN;
@@ -1401,8 +1389,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jlong value2 = POPL();
 	jlong value1 = POPL();
-	ZEROCHECK (value2);
-	jlong res = value1 / value2;
+	jlong res = _Jv_divJ (value1, value2);
 	PUSHL (res);
       }
       NEXT_INSN;
@@ -1412,7 +1399,6 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jfloat value2 = POPF();
 	jfloat value1 = POPF();
-	ZEROCHECK (value2);
 	jfloat res = value1 / value2;
 	PUSHF (res);
       }
@@ -1423,7 +1409,6 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jdouble value2 = POPD();
 	jdouble value1 = POPD();
-	ZEROCHECK (value2);
 	jdouble res = value1 / value2;
 	PUSHD (res);
       }
@@ -1433,9 +1418,8 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       SAVE_PC;
       {
 	jint value2 = POPI();
-	jint value1 = POPI();
-	ZEROCHECK (value2);	
-	jint res = value1 % value2;
+	jint value1 =  POPI();
+	jint res = _Jv_remI (value1, value2);
 	PUSHI (res);
       }
       NEXT_INSN;
@@ -1445,8 +1429,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jlong value2 = POPL();
 	jlong value1 = POPL();
-	ZEROCHECK (value2);
-	jlong res = value1 % value2;
+	jlong res = _Jv_remJ (value1, value2);
 	PUSHL (res);
       }
       NEXT_INSN;
@@ -1456,7 +1439,6 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jfloat value2 = POPF();
 	jfloat value1 = POPF();
-	ZEROCHECK (value2);
 	jfloat res    = __ieee754_fmod (value1, value2);
 	PUSHF (res);
       }
@@ -1467,7 +1449,6 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       {
 	jdouble value2 = POPD();
 	jdouble value1 = POPD();
-	ZEROCHECK (value2);
 	jdouble res    = __ieee754_fmod (value1, value2);
 	PUSHD (res);
       }
@@ -2446,19 +2427,5 @@ throw_null_pointer_exception ()
   JvThrow (null_pointer_exc);
 }
 #endif
-
-#ifndef HANDLE_FPE
-static java::lang::ArithmeticException *arithmetic_exc;
-static void 
-throw_arithmetic_exception ()
-{
-  if (arithmetic_exc == NULL)
-    arithmetic_exc = new java::lang::ArithmeticException
-      (JvNewStringLatin1 ("/ by zero"));
-
-  JvThrow (arithmetic_exc);
-}
-#endif
-
 
 #endif // INTERPRETER

@@ -46,7 +46,8 @@ extern java::lang::Class ClassClass;
 extern java::lang::Class VMClassLoader;
 #define ClassLoaderClass _CL_Q34java4lang11ClassLoader
 extern java::lang::Class ClassLoaderClass;
-
+#define SerializableClass _CL_Q34java2io12Serializable
+extern java::lang::Class SerializableClass;
 /////////// java.lang.ClassLoader native methods ////////////
 
 java::lang::ClassLoader *
@@ -579,10 +580,9 @@ _Jv_FindArrayClass (jclass element, java::lang::ClassLoader *loader)
       array_class->methods = (_Jv_Method *) element;
 
       // Register our interfaces.
-      // FIXME: for JDK 1.2 we need Serializable.
-      static jclass interfaces[] = { &CloneableClass };
+      static jclass interfaces[] = { &CloneableClass, &SerializableClass };
       array_class->interfaces = interfaces;
-      array_class->interface_count = 1;
+      array_class->interface_count = sizeof interfaces / sizeof interfaces[0];
 
       // Generate the interface dispatch table.
       _Jv_PrepareConstantTimeTables (array_class);

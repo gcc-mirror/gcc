@@ -66,6 +66,11 @@ case "${host}" in
 	;;
   sparc-*)
         ;;
+  ia64-*)
+        libgcj_flags="${libgcj_flags} -funwind-tables"
+	libgcj_sjlj=yes
+	libgcj_interpreter=yes
+	;;
   *)
         libgcj_sjlj=yes
 	;;

@@ -74,19 +74,15 @@ PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 VERSION = @VERSION@
 
-AUTOMAKE_OPTIONS = no-dependencies foreign
+AUTOMAKE_OPTIONS = no-dependencies foreign no-installinfo
 
 INCLUDES = $(GCINCS)
 
-@INSTALL_LTDL_TRUE@include_HEADERS = \
-@INSTALL_LTDL_TRUE@ltdl.h
-@INSTALL_LTDL_TRUE@lib_LTLIBRARIES = \
-@INSTALL_LTDL_TRUE@libltdl.la
-@INSTALL_LTDL_FALSE@noinst_HEADERS = \
-@INSTALL_LTDL_FALSE@ltdl.h
+@INSTALL_LTDL_TRUE@include_HEADERS = @INSTALL_LTDL_TRUE@ltdl.h
+@INSTALL_LTDL_TRUE@lib_LTLIBRARIES = @INSTALL_LTDL_TRUE@libltdl.la
+@INSTALL_LTDL_FALSE@noinst_HEADERS = @INSTALL_LTDL_FALSE@ltdl.h
 
-@CONVENIENCE_LTDL_TRUE@noinst_LTLIBRARIES = \
-@CONVENIENCE_LTDL_TRUE@libltdlc.la
+@CONVENIENCE_LTDL_TRUE@noinst_LTLIBRARIES = @CONVENIENCE_LTDL_TRUE@libltdlc.la
 
 libltdl_la_SOURCES = ltdl.c
 libltdl_la_LDFLAGS = -version-info 1:2:1
@@ -124,7 +120,7 @@ configure.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 SOURCES = $(libltdl_la_SOURCES) $(libltdlc_la_SOURCES)
 OBJECTS = $(libltdl_la_OBJECTS) $(libltdlc_la_OBJECTS)
@@ -338,7 +334,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -353,6 +349,8 @@ check-am: all-am
 check: check-am
 installcheck-am:
 installcheck: installcheck-am
+install-info-am: 
+install-info: install-info-am
 all-recursive-am: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -429,11 +427,12 @@ maintainer-clean-compile mostlyclean-libtool distclean-libtool \
 clean-libtool maintainer-clean-libtool uninstall-includeHEADERS \
 install-includeHEADERS tags mostlyclean-tags distclean-tags clean-tags \
 maintainer-clean-tags distdir info-am info dvi-am dvi check check-am \
-installcheck-am installcheck all-recursive-am install-exec-am \
-install-exec install-data-am install-data install-am install \
-uninstall-am uninstall all-redirect all-am all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
-maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+installcheck-am installcheck install-info-am install-info \
+all-recursive-am install-exec-am install-exec install-data-am \
+install-data install-am install uninstall-am uninstall all-redirect \
+all-am all installdirs mostlyclean-generic distclean-generic \
+clean-generic maintainer-clean-generic clean mostlyclean distclean \
+maintainer-clean
 
 
 ltdl.lo: ltdl.h config.h

@@ -1,6 +1,6 @@
 // default-signal.h - Catch runtime signals and turn them into exceptions.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -38,7 +38,7 @@ do								\
   }								\
 while (0)
 
-#define MAKE_THROW_FRAME  do {} while (0)
+#define MAKE_THROW_FRAME(_exception)  do {} while (0)
 
 #else /* SJLJ_EXCEPTIONS */
 

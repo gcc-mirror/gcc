@@ -39,6 +39,10 @@ details.  */
 
 #include <name-finder.h>
 
+#ifdef __ia64__
+extern "C" int _Jv_ia64_backtrace (void **array, int size);
+#endif
+
 /* FIXME: size of the stack trace is limited to 128 elements.  It's
    undoubtedly sensible to limit the stack trace, but 128 is rather
    arbitrary.  It may be better to configure this.  */
@@ -46,16 +50,21 @@ details.  */
 java::lang::Throwable *
 java::lang::Throwable::fillInStackTrace (void)
 {
-#ifdef HAVE_BACKTRACE
+#if defined (HAVE_BACKTRACE) || defined (__ia64__)
   void *p[128];
   
   // We subtract 1 from the number of elements because we don't want
   // to include the call to fillInStackTrace in the trace.
+#if defined (__ia64__)
+  int n = _Jv_ia64_backtrace (p, 128) - 1;  
+#else
   int n = backtrace (p, 128) - 1;  
+#endif
 
   // ???  Might this cause a problem if the byte array isn't aligned?
   stackTrace = JvNewByteArray (n * sizeof p[0]);
   memcpy (elements (stackTrace), p+1, (n * sizeof p[0]));
+
 #endif
 
   return this;
@@ -83,11 +92,15 @@ java::lang::Throwable::printRawStackTrace (java::io::PrintWriter *wr)
 	{
 	  wr->print (JvNewStringLatin1 (": "));
 	  wr->print (JvNewStringLatin1 (finder.method_name));
-	  wr->print (JvNewStringLatin1 (" ("));
-	  wr->print (JvNewStringLatin1 (finder.file_name));
-	  wr->print (JvNewStringLatin1 (")"));
+	  if (finder.file_name[0])
+	    {
+	      wr->print (JvNewStringLatin1 (" ("));
+	      wr->print (JvNewStringLatin1 (finder.file_name));
+	      wr->print (JvNewStringLatin1 (")"));
+	    }
 	}
       wr->println ();
     }
 #endif /* HAVE_BACKTRACE */
+  wr->flush ();
 }

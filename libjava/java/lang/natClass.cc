@@ -918,11 +918,27 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
       return _Jv_IsAssignableFrom(target->getComponentType(), 
                                   source->getComponentType());
     }
-        
+
   if (target->isInterface())
     {
+      // Abstract classes have no IDTs, so compare superclasses instead.
+      if (java::lang::reflect::Modifier::isAbstract (source->accflags))
+	{
+	  jclass super = source->getSuperclass();
+	  return super ? _Jv_IsAssignableFrom (target, super) : false;
+	}
+
+      if (source->state != JV_STATE_DONE)
+	source->initializeClass ();
+      if (target->state != JV_STATE_DONE)
+	target->initializeClass ();
+
       _Jv_IDispatchTable *cl_idt = source->idt;
       _Jv_IDispatchTable *if_idt = target->idt;
+
+      if (if_idt == NULL) // The interface has no implementations
+	return false;
+
       if (__builtin_expect ((if_idt == NULL), false))
 	return false; // No class implementing TARGET has been loaded.    
       jshort cl_iindex = cl_idt->cls.iindex;
@@ -1305,3 +1321,61 @@ _Jv_FindIIndex (jclass *ifaces, jshort *offsets, jshort num)
 
   return i;
 }
+
+// Only used by serialization
+java::lang::reflect::Field *
+java::lang::Class::getPrivateField (jstring name)
+{
+  int hash = name->hashCode ();
+
+  java::lang::reflect::Field* rfield;
+  for (int i = 0;  i < field_count;  i++)
+    {
+      _Jv_Field *field = &fields[i];
+      if (! _Jv_equal (field->name, name, hash))
+	continue;
+      rfield = new java::lang::reflect::Field ();
+      rfield->offset = (char*) field - (char*) fields;
+      rfield->declaringClass = this;
+      rfield->name = name;
+      return rfield;
+    }
+  jclass superclass = getSuperclass();
+  if (superclass == NULL)
+    return NULL;
+  rfield = superclass->getPrivateField(name);
+  for (int i = 0; i < interface_count && rfield == NULL; ++i)
+    rfield = interfaces[i]->getPrivateField (name);
+  return rfield;
+}
+
+// Only used by serialization
+java::lang::reflect::Method *
+java::lang::Class::getPrivateMethod (jstring name, JArray<jclass> *param_types)
+{
+  jstring partial_sig = getSignature (param_types, false);
+  jint p_len = partial_sig->length();
+  _Jv_Utf8Const *utf_name = _Jv_makeUtf8Const (name);
+  for (Class *klass = this; klass; klass = klass->getSuperclass())
+    {
+      int i = klass->isPrimitive () ? 0 : klass->method_count;
+      while (--i >= 0)
+	{
+	  // FIXME: access checks.
+	  if (_Jv_equalUtf8Consts (klass->methods[i].name, utf_name)
+	      && _Jv_equaln (klass->methods[i].signature, partial_sig, p_len))
+	    {
+	      // Found it.
+	      using namespace java::lang::reflect;
+
+	      Method *rmethod = new Method ();
+	      rmethod->offset = ((char *) (&klass->methods[i])
+				 - (char *) klass->methods);
+	      rmethod->declaringClass = klass;
+	      return rmethod;
+	    }
+	}
+    }
+  JvThrow (new java::lang::NoSuchMethodException);
+}
+

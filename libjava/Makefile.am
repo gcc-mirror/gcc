@@ -41,6 +41,8 @@ if NATIVE
 bin_PROGRAMS = jv-convert gij
 endif
 
+bin_SCRIPTS = addr2name.awk
+
 ## ################################################################
 
 ##
@@ -232,7 +234,9 @@ $(awto_files) $(javao_files): libgcj.zip
 ## Header files used when compiling some of the nat* files.
 nat_headers = $(ordinary_java_source_files:.java=.h) \
 	$(built_java_source_files:.java=.h) \
-	$(cond_awt_java_source_files:.java=.h)
+	$(cond_awt_java_source_files:.java=.h) \
+	java/io/ObjectOutputStream$$PutField.h \
+	java/io/ObjectInputStream$$GetField.h
 
 $(nat_headers): libgcj.zip
 
@@ -297,6 +301,14 @@ gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'java::lang::ClassLoader;' \
 	    $(basename $<)
+
+java/io/ObjectInputStream$$GetField.h: java/io/ObjectInputStream$$GetField.class libgcj.zip
+	$(GCJH) -classpath $(top_builddir) \
+	'java/io/ObjectInputStream$$GetField'
+
+java/io/ObjectOutputStream$$PutField.h: java/io/ObjectOutputStream$$PutField.class libgcj.zip
+	$(GCJH) -classpath $(top_builddir) \
+	'java/io/ObjectOutputStream$$PutField'
 
 ## Headers we maintain by hand and which we want to install.
 extra_headers = java/lang/Object.h java/lang/Class.h
@@ -492,23 +504,48 @@ gnu/gcj/convert/UnicodeToBytes.java
 special_java_source_files = java/lang/Class.java java/lang/Object.java
 
 awt_java_source_files =	\
-java/awt/AWTError.java \
+java/awt/event/ActionEvent.java	\
+java/awt/event/ActionListener.java \
+java/awt/event/ComponentEvent.java \
+java/awt/event/KeyAdapter.java \
+java/awt/event/InputEvent.java \
+java/awt/event/KeyEvent.java \
+java/awt/event/KeyListener.java	\
+java/awt/event/TextEvent.java \
+java/awt/event/TextListener.java \
+java/awt/event/WindowAdapter.java \
+java/awt/event/WindowEvent.java	\
+java/awt/event/WindowListener.java \
+java/awt/event/InputMethodListener.java	\
+java/awt/event/ComponentListener.java \
+java/awt/event/AdjustmentListener.java \
+java/awt/event/AWTEventListener.java \
+java/awt/event/FocusListener.java \
+java/awt/event/AdjustmentEvent.java \
+java/awt/event/ItemListener.java \
+java/awt/event/ContainerListener.java \
+java/awt/event/MouseListener.java \
+java/awt/event/MouseMotionListener.java	\
+java/awt/event/ComponentAdapter.java \
+java/awt/event/ContainerAdapter.java \
+java/awt/event/FocusAdapter.java \
+java/awt/event/MouseAdapter.java \
+java/awt/event/MouseMotionAdapter.java \
+java/awt/event/FocusEvent.java \
+java/awt/event/InputMethodEvent.java \
+java/awt/event/MouseEvent.java \
+java/awt/event/ItemEvent.java \
+java/awt/event/InvocationEvent.java \
+java/awt/event/PaintEvent.java \
+java/awt/event/ContainerEvent.java \
 java/awt/AWTEvent.java \
-java/awt/AWTException.java \
-java/awt/ActiveEvent.java \
-java/awt/Adjustable.java \
 java/awt/BorderLayout.java \
-java/awt/Color.java \
 java/awt/Component.java	\
 java/awt/Container.java	\
 java/awt/Dimension.java	\
 java/awt/Event.java \
 java/awt/Font.java \
 java/awt/Frame.java \
-java/awt/Graphics.java \
-java/awt/IllegalComponentStateException.java \
-java/awt/Image.java \
-java/awt/ItemSelectable.java \
 java/awt/LayoutManager.java \
 java/awt/LayoutManager2.java \
 java/awt/Menu.java \
@@ -516,56 +553,31 @@ java/awt/MenuBar.java \
 java/awt/MenuComponent.java \
 java/awt/MenuContainer.java \
 java/awt/MenuItem.java \
-java/awt/Paint.java \
-java/awt/PaintContext.java \
 java/awt/Point.java \
-java/awt/Rectangle.java	\
+java/awt/AWTError.java \
 java/awt/Shape.java \
 java/awt/TextArea.java \
 java/awt/TextComponent.java \
 java/awt/Toolkit.java \
-java/awt/Transparency.java \
 java/awt/Window.java \
-java/awt/event/AWTEventListener.java \
-java/awt/event/ActionEvent.java	\
-java/awt/event/ActionListener.java \
-java/awt/event/AdjustmentEvent.java \
-java/awt/event/AdjustmentListener.java \
-java/awt/event/ComponentAdapter.java \
-java/awt/event/ComponentEvent.java \
-java/awt/event/ComponentListener.java \
-java/awt/event/ContainerAdapter.java \
-java/awt/event/ContainerEvent.java \
-java/awt/event/ContainerListener.java \
-java/awt/event/FocusAdapter.java \
-java/awt/event/FocusEvent.java \
-java/awt/event/FocusListener.java \
-java/awt/event/InputEvent.java \
-java/awt/event/InputMethodEvent.java \
-java/awt/event/InputMethodListener.java	\
-java/awt/event/InvocationEvent.java \
-java/awt/event/ItemEvent.java \
-java/awt/event/ItemListener.java \
-java/awt/event/KeyAdapter.java \
-java/awt/event/KeyEvent.java \
-java/awt/event/KeyListener.java	\
-java/awt/event/MouseAdapter.java \
-java/awt/event/MouseEvent.java \
-java/awt/event/MouseListener.java \
-java/awt/event/MouseMotionAdapter.java \
-java/awt/event/MouseMotionListener.java	\
-java/awt/event/PaintEvent.java \
-java/awt/event/TextEvent.java \
-java/awt/event/TextListener.java \
-java/awt/event/WindowAdapter.java \
-java/awt/event/WindowEvent.java	\
-java/awt/event/WindowListener.java \
 java/awt/geom/Dimension2D.java \
 java/awt/geom/Point2D.java \
 java/awt/peer/ComponentPeer.java \
 java/awt/peer/ContainerPeer.java \
 java/awt/peer/FramePeer.java \
-java/awt/peer/WindowPeer.java
+java/awt/peer/WindowPeer.java \
+java/awt/Adjustable.java \
+java/awt/Color.java \
+java/awt/Graphics.java \
+java/awt/Image.java \
+java/awt/Paint.java \
+java/awt/PaintContext.java \
+java/awt/Transparency.java \
+java/awt/ItemSelectable.java \
+java/awt/AWTException.java \
+java/awt/ActiveEvent.java \
+java/awt/Rectangle.java	\
+java/awt/IllegalComponentStateException.java
 
 if AWT
 cond_awt_java_source_files = $(awt_java_source_files)
@@ -582,11 +594,12 @@ built_java_source_files = java/lang/ConcreteProcess.java
 ## convert_source_files.  If the .java file has a hand-maintained
 ## header, please list it in special_java_source_files.
 ordinary_java_source_files =  $(convert_source_files) \
-gnu/gcj/io/DefaultMimeTypes.java \
-gnu/gcj/io/MimeTypes.java \
-gnu/gcj/jni/NativeThread.java \
-gnu/gcj/runtime/VMClassLoader.java \
-gnu/gcj/runtime/FirstThread.java \
+gnu/gcj/protocol/http/Connection.java \
+gnu/gcj/protocol/http/Handler.java \
+gnu/gcj/protocol/file/Connection.java \
+gnu/gcj/protocol/file/Handler.java \
+gnu/gcj/protocol/jar/Connection.java \
+gnu/gcj/protocol/jar/Handler.java \
 gnu/gcj/text/BaseBreakIterator.java \
 gnu/gcj/text/CharacterBreakIterator.java \
 gnu/gcj/text/LineBreakIterator.java \
@@ -594,15 +607,36 @@ gnu/gcj/text/LocaleData_en.java	\
 gnu/gcj/text/LocaleData_en_US.java \
 gnu/gcj/text/SentenceBreakIterator.java	\
 gnu/gcj/text/WordBreakIterator.java \
-gnu/gcj/math/MPN.java \
-gnu/gcj/protocol/file/Connection.java \
-gnu/gcj/protocol/file/Handler.java \
-gnu/gcj/protocol/http/Connection.java \
-gnu/gcj/protocol/http/Handler.java \
-gnu/gcj/protocol/jar/Handler.java \
-gnu/gcj/protocol/jar/Connection.java \
-gnu/gcj/RawData.java \
 gnu/gcj/util/EnumerationChain.java \
+gnu/gcj/RawData.java \
+gnu/gcj/math/MPN.java \
+gnu/gcj/runtime/VMClassLoader.java \
+gnu/gcj/runtime/FirstThread.java \
+gnu/gcj/jni/NativeThread.java \
+gnu/gcj/io/DefaultMimeTypes.java \
+gnu/gcj/io/MimeTypes.java \
+gnu/gcj/io/SimpleSHSStream.java	\
+gnu/java/beans/editors/ColorEditor.java	\
+gnu/java/beans/editors/FontEditor.java \
+gnu/java/beans/editors/NativeBooleanEditor.java	\
+gnu/java/beans/editors/NativeByteEditor.java \
+gnu/java/beans/editors/NativeDoubleEditor.java \
+gnu/java/beans/editors/NativeFloatEditor.java \
+gnu/java/beans/editors/NativeIntEditor.java \
+gnu/java/beans/editors/NativeLongEditor.java \
+gnu/java/beans/editors/NativeShortEditor.java \
+gnu/java/beans/editors/StringEditor.java \
+gnu/java/beans/info/ComponentBeanInfo.java \
+gnu/java/beans/BeanInfoEmbryo.java \
+gnu/java/beans/EmptyBeanInfo.java \
+gnu/java/beans/ExplicitBeanInfo.java \
+gnu/java/beans/IntrospectionIncubator.java \
+gnu/java/io/ClassLoaderObjectInputStream.java \
+gnu/java/io/NullOutputStream.java \
+gnu/java/io/ObjectIdentityWrapper.java \
+gnu/java/lang/reflect/TypeSignature.java \
+gnu/java/lang/ArrayHelper.java \
+gnu/java/lang/ClassHelper.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
 java/io/BufferedReader.java \
@@ -618,7 +652,6 @@ java/io/DataOutput.java	\
 java/io/DataOutputStream.java \
 java/io/EOFException.java \
 java/io/File.java \
-java/io/FileDescriptor.java \
 java/io/FileInputStream.java \
 java/io/FileNotFoundException.java \
 java/io/FileOutputStream.java \
@@ -635,11 +668,10 @@ java/io/InputStreamReader.java \
 java/io/InterruptedIOException.java \
 java/io/LineNumberInputStream.java \
 java/io/LineNumberReader.java \
-java/io/ObjectStreamException.java \
-java/io/OptionalDataException.java \
 java/io/OutputStream.java \
 java/io/OutputStreamWriter.java	\
-java/io/PipedInputStream.java \
+java/io/Externalizable.java \
+java/io/FileDescriptor.java \
 java/io/PipedOutputStream.java \
 java/io/PipedReader.java \
 java/io/PipedWriter.java \
@@ -651,7 +683,6 @@ java/io/RandomAccessFile.java \
 java/io/Reader.java \
 java/io/SequenceInputStream.java \
 java/io/Serializable.java \
-java/io/StreamCorruptedException.java \
 java/io/StreamTokenizer.java \
 java/io/StringBufferInputStream.java \
 java/io/StringReader.java \
@@ -660,6 +691,35 @@ java/io/SyncFailedException.java \
 java/io/UTFDataFormatException.java \
 java/io/UnsupportedEncodingException.java \
 java/io/Writer.java \
+java/io/ObjectStreamException.java \
+java/io/OptionalDataException.java \
+java/io/StreamCorruptedException.java \
+java/io/BlockDataException.java	\
+java/io/InvalidClassException.java \
+java/io/InvalidObjectException.java \
+java/io/NotActiveException.java	\
+java/io/NotSerializableException.java \
+java/io/ObjectInput.java \
+java/io/ObjectInputStream.java \
+java/io/ObjectInputValidation.java \
+java/io/ObjectOutput.java \
+java/io/ObjectOutputStream.java	\
+java/io/ObjectStreamClass.java \
+java/io/ObjectStreamConstants.java \
+java/io/ObjectStreamField.java \
+java/io/Replaceable.java \
+java/io/Resolvable.java	\
+java/io/SerializablePermission.java \
+java/io/WriteAbortedException.java \
+java/io/PipedInputStream.java \
+java/lang/reflect/Constructor.java \
+java/lang/reflect/AccessibleObject.java	\
+java/lang/reflect/Array.java \
+java/lang/reflect/Method.java \
+java/lang/reflect/Field.java \
+java/lang/reflect/InvocationTargetException.java \
+java/lang/reflect/Member.java \
+java/lang/reflect/Modifier.java	\
 java/lang/AbstractMethodError.java \
 java/lang/ArithmeticException.java \
 java/lang/ArrayIndexOutOfBoundsException.java \
@@ -688,10 +748,10 @@ java/lang/IllegalMonitorStateException.java \
 java/lang/IllegalStateException.java \
 java/lang/IllegalThreadStateException.java \
 java/lang/IncompatibleClassChangeError.java \
-java/lang/IndexOutOfBoundsException.java \
 java/lang/InstantiationError.java \
-java/lang/InstantiationException.java \
 java/lang/Integer.java \
+java/lang/IndexOutOfBoundsException.java \
+java/lang/InstantiationException.java \
 java/lang/InternalError.java \
 java/lang/InterruptedException.java \
 java/lang/LinkageError.java \
@@ -729,107 +789,42 @@ java/lang/UnsupportedOperationException.java \
 java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
 java/lang/Void.java \
-java/lang/reflect/AccessibleObject.java	\
-java/lang/reflect/Array.java \
-java/lang/reflect/Constructor.java \
-java/lang/reflect/Field.java \
-java/lang/reflect/InvocationTargetException.java \
-java/lang/reflect/Member.java \
-java/lang/reflect/Method.java \
-java/lang/reflect/Modifier.java	\
-java/math/BigDecimal.java \
-java/math/BigInteger.java \
 java/net/BindException.java \
 java/net/ConnectException.java \
 java/net/ContentHandler.java \
 java/net/ContentHandlerFactory.java \
-java/net/DatagramPacket.java \
-java/net/DatagramSocket.java \
-java/net/DatagramSocketImpl.java \
 java/net/FileNameMap.java \
-java/net/HttpURLConnection.java \
+java/net/HttpURLConnection.java	\
 java/net/InetAddress.java \
-java/net/JarURLConnection.java \
 java/net/MalformedURLException.java \
-java/net/MulticastSocket.java \
 java/net/NoRouteToHostException.java \
-java/net/PlainDatagramSocketImpl.java \
 java/net/PlainSocketImpl.java \
 java/net/ProtocolException.java	\
 java/net/ServerSocket.java \
+java/net/URL.java \
 java/net/Socket.java \
 java/net/SocketException.java \
 java/net/SocketImpl.java \
 java/net/SocketImplFactory.java	\
-java/net/SocketOptions.java \
-java/net/URL.java \
-java/net/URLClassLoader.java \
 java/net/URLConnection.java \
-java/net/URLDecoder.java \
-java/net/URLEncoder.java \
 java/net/URLStreamHandler.java \
 java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
-java/security/AlgorithmParameterGeneratorSpi.java \
-java/security/DigestException.java \
-java/security/GeneralSecurityException.java \
-java/security/InvalidAlgorithmParameterException.java \
-java/security/InvalidKeyException.java \
-java/security/InvalidParameterException.java \
-java/security/Key.java \
-java/security/KeyException.java \
-java/security/KeyPair.java \
-java/security/KeyPairGenerator.java \
-java/security/KeyPairGeneratorSpi.java \
-java/security/MessageDigest.java \
-java/security/NoSuchAlgorithmException.java \
-java/security/NoSuchProviderException.java \
-java/security/PrivateKey.java \
-java/security/Provider.java \
-java/security/PublicKey.java \
-java/security/SecureClassLoader.java \
-java/security/SecureRandom.java \
-java/security/Security.java \
-java/security/Signature.java \
-java/security/SignatureException.java \
-java/security/interfaces/DSAKey.java \
-java/security/interfaces/DSAParams.java \
-java/security/interfaces/DSAPrivateKey.java \
-java/security/interfaces/DSAPublicKey.java \
-java/security/interfaces/RSAPrivateCrtKey.java \
-java/security/interfaces/RSAPrivateKey.java \
-java/security/interfaces/RSAPublicKey.java \
-java/security/spec/AlgorithmParameterSpec.java \
-java/security/spec/InvalidKeySpecException.java \
-java/security/spec/InvalidParameterSpecException.java \
-java/security/spec/KeySpec.java \
-java/security/spec/RSAPrivateCrtKeySpec.java \
-java/security/spec/RSAPrivateKeySpec.java \
-java/security/spec/RSAPublicKeySpec.java \
-java/sql/CallableStatement.java \
-java/sql/Connection.java \
-java/sql/DataTruncation.java \
-java/sql/DatabaseMetaData.java \
-java/sql/Date.java \
-java/sql/Driver.java \
-java/sql/DriverManager.java \
-java/sql/DriverPropertyInfo.java \
-java/sql/PreparedStatement.java \
-java/sql/ResultSet.java \
-java/sql/ResultSetMetaData.java \
-java/sql/SQLException.java \
-java/sql/SQLWarning.java \
-java/sql/Statement.java \
-java/sql/Time.java \
-java/sql/Timestamp.java \
-java/sql/Types.java \
+java/net/URLDecoder.java \
+java/net/URLEncoder.java \
+java/net/DatagramPacket.java \
+java/net/DatagramSocket.java \
+java/net/DatagramSocketImpl.java \
+java/net/MulticastSocket.java \
+java/net/PlainDatagramSocketImpl.java \
+java/net/SocketOptions.java \
+java/net/JarURLConnection.java \
+java/net/URLClassLoader.java \
+java/text/Collator.java	\
 java/text/BreakIterator.java \
 java/text/CharacterIterator.java \
 java/text/ChoiceFormat.java \
-java/text/CollationElementIterator.java \
-java/text/CollationKey.java \
-java/text/Collator.java \
 java/text/DateFormat.java \
 java/text/DateFormatSymbols.java \
 java/text/DecimalFormat.java \
@@ -840,13 +835,34 @@ java/text/MessageFormat.java \
 java/text/NumberFormat.java \
 java/text/ParseException.java \
 java/text/ParsePosition.java \
-java/text/RuleBasedCollator.java \
 java/text/SimpleDateFormat.java	\
 java/text/StringCharacterIterator.java \
+java/text/CollationElementIterator.java	\
+java/text/CollationKey.java \
+java/text/RuleBasedCollator.java \
+java/util/zip/Adler32.java \
+java/util/zip/CRC32.java \
+java/util/zip/Checksum.java \
+java/util/zip/Deflater.java \
+java/util/zip/DeflaterOutputStream.java	\
+java/util/zip/ZipConstants.java	\
+java/util/zip/ZipEntry.java \
+java/util/zip/ZipException.java	\
+java/util/zip/ZipFile.java \
+java/util/zip/ZipOutputStream.java \
+java/util/zip/InflaterInputStream.java \
+java/util/zip/ZipInputStream.java \
+java/util/zip/DataFormatException.java \
+java/util/zip/CheckedInputStream.java \
+java/util/zip/CheckedOutputStream.java \
+java/util/zip/Inflater.java \
+java/util/zip/GZIPInputStream.java \
+java/util/zip/GZIPOutputStream.java \
+java/util/jar/JarEntry.java \
+java/util/jar/JarFile.java \
+java/util/jar/JarInputStream.java \
 java/util/BitSet.java \
 java/util/Calendar.java	\
-java/util/Collection.java \
-java/util/Comparator.java \
 java/util/ConcurrentModificationException.java \
 java/util/Date.java \
 java/util/Dictionary.java \
@@ -856,9 +872,6 @@ java/util/EventListener.java \
 java/util/EventObject.java \
 java/util/GregorianCalendar.java \
 java/util/Hashtable.java \
-java/util/Iterator.java \
-java/util/List.java \
-java/util/ListIterator.java \
 java/util/ListResourceBundle.java \
 java/util/Locale.java \
 java/util/MissingResourceException.java	\
@@ -866,7 +879,6 @@ java/util/NoSuchElementException.java \
 java/util/Observable.java \
 java/util/Observer.java	\
 java/util/Properties.java \
-java/util/PropertyResourceBundle.java \
 java/util/Random.java \
 java/util/ResourceBundle.java \
 java/util/SimpleTimeZone.java \
@@ -875,27 +887,115 @@ java/util/StringTokenizer.java \
 java/util/TimeZone.java	\
 java/util/TooManyListenersException.java \
 java/util/Vector.java \
-java/util/jar/JarFile.java \
-java/util/jar/JarInputStream.java \
-java/util/jar/JarEntry.java \
-java/util/zip/Adler32.java \
-java/util/zip/CRC32.java \
-java/util/zip/CheckedInputStream.java \
-java/util/zip/CheckedOutputStream.java \
-java/util/zip/Checksum.java \
-java/util/zip/DataFormatException.java \
-java/util/zip/Deflater.java \
-java/util/zip/DeflaterOutputStream.java	\
-java/util/zip/GZIPInputStream.java \
-java/util/zip/GZIPOutputStream.java \
-java/util/zip/Inflater.java \
-java/util/zip/InflaterInputStream.java	\
-java/util/zip/ZipConstants.java	\
-java/util/zip/ZipEntry.java \
-java/util/zip/ZipException.java	\
-java/util/zip/ZipFile.java \
-java/util/zip/ZipInputStream.java \
-java/util/zip/ZipOutputStream.java
+java/util/List.java \
+java/util/Collection.java \
+java/util/Comparator.java \
+java/util/Iterator.java	\
+java/util/PropertyResourceBundle.java \
+java/util/Arrays.java \
+java/util/ListIterator.java \
+java/util/AbstractCollection.java \
+java/util/AbstractList.java \
+java/security/MessageDigest.java \
+java/security/NoSuchAlgorithmException.java \
+java/security/SecureClassLoader.java \
+java/security/interfaces/DSAKey.java \
+java/security/interfaces/DSAParams.java	\
+java/security/interfaces/DSAPrivateKey.java \
+java/security/interfaces/DSAPublicKey.java \
+java/security/interfaces/RSAPrivateCrtKey.java \
+java/security/interfaces/RSAPrivateKey.java \
+java/security/interfaces/RSAPublicKey.java \
+java/security/AlgorithmParameterGeneratorSpi.java \
+java/security/DigestException.java \
+java/security/GeneralSecurityException.java \
+java/security/InvalidAlgorithmParameterException.java \
+java/security/InvalidKeyException.java \
+java/security/InvalidParameterException.java \
+java/security/Key.java \
+java/security/KeyException.java	\
+java/security/KeyPair.java \
+java/security/KeyPairGenerator.java \
+java/security/KeyPairGeneratorSpi.java \
+java/security/NoSuchProviderException.java \
+java/security/PrivateKey.java \
+java/security/Provider.java \
+java/security/PublicKey.java \
+java/security/SecureRandom.java	\
+java/security/Security.java \
+java/security/Signature.java \
+java/security/SignatureException.java \
+java/security/spec/AlgorithmParameterSpec.java \
+java/security/spec/InvalidKeySpecException.java	\
+java/security/spec/InvalidParameterSpecException.java \
+java/security/spec/KeySpec.java	\
+java/security/spec/RSAPrivateCrtKeySpec.java \
+java/security/spec/RSAPrivateKeySpec.java \
+java/security/spec/RSAPublicKeySpec.java \
+java/security/BasicPermission.java \
+java/security/Guard.java \
+java/security/DigestOutputStream.java \
+java/security/Permission.java \
+java/security/PermissionCollection.java	\
+java/math/BigDecimal.java \
+java/math/BigInteger.java \
+java/sql/CallableStatement.java	\
+java/sql/Connection.java \
+java/sql/DataTruncation.java \
+java/sql/DatabaseMetaData.java \
+java/sql/Date.java \
+java/sql/Driver.java \
+java/sql/DriverManager.java \
+java/sql/DriverPropertyInfo.java \
+java/sql/PreparedStatement.java	\
+java/sql/ResultSet.java	\
+java/sql/ResultSetMetaData.java	\
+java/sql/SQLException.java \
+java/sql/SQLWarning.java \
+java/sql/Statement.java	\
+java/sql/Time.java \
+java/sql/Timestamp.java	\
+java/sql/Types.java \
+java/beans/beancontext/BeanContext.java	\
+java/beans/beancontext/BeanContextChild.java \
+java/beans/beancontext/BeanContextChildComponentProxy.java \
+java/beans/beancontext/BeanContextChildSupport.java \
+java/beans/beancontext/BeanContextContainerProxy.java \
+java/beans/beancontext/BeanContextEvent.java \
+java/beans/beancontext/BeanContextMembershipEvent.java \
+java/beans/beancontext/BeanContextMembershipListener.java \
+java/beans/beancontext/BeanContextProxy.java \
+java/beans/beancontext/BeanContextServiceAvailableEvent.java \
+java/beans/beancontext/BeanContextServiceProvider.java \
+java/beans/beancontext/BeanContextServiceProviderBeanInfo.java \
+java/beans/beancontext/BeanContextServiceRevokedEvent.java \
+java/beans/beancontext/BeanContextServiceRevokedListener.java \
+java/beans/beancontext/BeanContextServices.java	\
+java/beans/beancontext/BeanContextServicesListener.java	\
+java/beans/BeanDescriptor.java \
+java/beans/BeanInfo.java \
+java/beans/Beans.java \
+java/beans/Customizer.java \
+java/beans/DesignMode.java \
+java/beans/EventSetDescriptor.java \
+java/beans/FeatureDescriptor.java \
+java/beans/IndexedPropertyDescriptor.java \
+java/beans/IntrospectionException.java \
+java/beans/Introspector.java \
+java/beans/MethodDescriptor.java \
+java/beans/ParameterDescriptor.java \
+java/beans/PropertyChangeEvent.java \
+java/beans/PropertyChangeListener.java \
+java/beans/PropertyChangeSupport.java \
+java/beans/PropertyDescriptor.java \
+java/beans/PropertyEditor.java \
+java/beans/PropertyEditorManager.java \
+java/beans/PropertyEditorSupport.java \
+java/beans/PropertyVetoException.java \
+java/beans/SimpleBeanInfo.java \
+java/beans/VetoableChangeListener.java \
+java/beans/VetoableChangeSupport.java \
+java/beans/Visibility.java
 
 java_source_files = $(ordinary_java_source_files) $(special_java_source_files)
 
@@ -927,10 +1027,14 @@ gnu/gcj/convert/natInput_EUCJIS.cc \
 gnu/gcj/convert/natInput_SJIS.cc \
 gnu/gcj/convert/natOutput_EUCJIS.cc \
 gnu/gcj/convert/natOutput_SJIS.cc \
+gnu/gcj/io/natSimpleSHSStream.cc \
+gnu/gcj/io/shs.cc \
 gnu/gcj/jni/natNativeThread.cc \
 gnu/gcj/runtime/natFirstThread.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
+java/io/natObjectInputStream.cc \
+java/io/natObjectOutputStream.cc \
 java/lang/natCharacter.cc \
 java/lang/natClass.cc \
 java/lang/natClassLoader.cc \
@@ -1035,12 +1139,3 @@ distclean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean
 maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean
-
-
-## ################################################################
-
-
-## See above.
-cygnus_hack =
-
-

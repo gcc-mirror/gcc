@@ -8,6 +8,8 @@ details.  */
 
 package java.lang;
 import java.io.UnsupportedEncodingException;
+import java.io.Serializable;
+import java.lang.Comparable;
 
 /**
  * @author Per Bothner <bothner@cygnus.com>
@@ -18,7 +20,7 @@ import java.io.UnsupportedEncodingException;
  * Status:  Complete to 1.1, but see FIXMEs. Also see testsuite results.
  */
 
-public final class String
+public final class String implements Serializable, Comparable
 {
   private Object data;
   private int boffset; // Note this is a byte offset - don't use in Java code!
@@ -171,6 +173,11 @@ public final class String
   public native boolean equalsIgnoreCase (String anotherString);
 
   public native int compareTo (String anotherString);
+
+  public int compareTo (Object obj)
+  {
+    return compareTo ((String)obj);
+  }
 
   public native boolean regionMatches (int toffset,
 				       String other, int ooffset, int len);

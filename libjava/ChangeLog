@@ -1,3 +1,489 @@
+2000-05-16  Andrew Haley  <aph@cygnus.com>
+
+	* sysdep/ia64.c (ia64_backtrace_helper): Pass NULL pointer to
+	build_ia64_frame_state.
+	* sysdep/ia64-frame.h (build_ia64_frame_state): Match with
+	defintion in gcc.
+
+2000-05-15  Warren Levy  <warrenl@cygnus.com>
+
+	* gnu/gcj/beans/BeanInfoEmbryo.java: Removed.
+	* gnu/gcj/beans/EmptyBeanInfo.java: Removed.
+	* gnu/gcj/beans/ExplicitBeanInfo.java: Removed.
+	* gnu/gcj/beans/IntrospectionIncubator.java: Removed.
+	* gnu/gcj/beans/editors/ColorEditor.java: Removed.
+	* gnu/gcj/beans/editors/FontEditor.java: Removed.
+	* gnu/gcj/beans/editors/NativeBooleanEditor.java: Removed.
+	* gnu/gcj/beans/editors/NativeByteEditor.java: Removed.
+	* gnu/gcj/beans/editors/NativeDoubleEditor.java: Removed.
+	* gnu/gcj/beans/editors/NativeFloatEditor.java: Removed.
+	* gnu/gcj/beans/editors/NativeIntEditor.java: Removed.
+	* gnu/gcj/beans/editors/NativeLongEditor.java: Removed.
+	* gnu/gcj/beans/editors/NativeShortEditor.java: Removed.
+	* gnu/gcj/beans/editors/StringEditor.java: Removed.
+	* gnu/gcj/beans/info/ComponentBeanInfo.java: Removed.
+	* gnu/gcj/io/ClassLoaderObjectInputStream.java: Removed.
+	* gnu/gcj/io/NullOutputStream.java: Removed.
+	* gnu/gcj/io/ObjectIdentityWrapper.java: Removed.
+	* gnu/gcj/lang/ArrayHelper.java: Removed.
+	* gnu/gcj/lang/ClassHelper.java: Removed.
+	* gnu/gcj/lang/reflect/TypeSignature.java: Removed.
+
+	* gnu/java/beans/BeanInfoEmbryo.java: New file.
+	* gnu/java/beans/EmptyBeanInfo.java: New file.
+	* gnu/java/beans/ExplicitBeanInfo.java: New file.
+	* gnu/java/beans/IntrospectionIncubator.java: New file.
+	* gnu/java/beans/editors/ColorEditor.java: New file.
+	* gnu/java/beans/editors/FontEditor.java: New file.
+	* gnu/java/beans/editors/NativeBooleanEditor.java: New file.
+	* gnu/java/beans/editors/NativeByteEditor.java: New file.
+	* gnu/java/beans/editors/NativeDoubleEditor.java: New file.
+	* gnu/java/beans/editors/NativeFloatEditor.java: New file.
+	* gnu/java/beans/editors/NativeIntEditor.java: New file.
+	* gnu/java/beans/editors/NativeLongEditor.java: New file.
+	* gnu/java/beans/editors/NativeShortEditor.java: New file.
+	* gnu/java/beans/editors/StringEditor.java: New file.
+	* gnu/java/beans/info/ComponentBeanInfo.java: New file.
+	* gnu/java/io/ClassLoaderObjectInputStream.java: New file.
+	* gnu/java/io/NullOutputStream.java: New file.
+	* gnu/java/io/ObjectIdentityWrapper.java: New file.
+	* gnu/java/lang/ArrayHelper.java: New file.
+	* gnu/java/lang/ClassHelper.java: New file.
+	* gnu/java/lang/reflect/TypeSignature.java: New file.
+
+	* Makefile.am: Updated for moving Classpath files from gnu/gcj
+	namespace back to the original Classpath gnu/java namespace.
+	* Makefile.in: Rebuilt.
+
+	* java/beans/Beans.java: Namespace change.
+	* java/beans/EventSetDescriptor.java: Namespace change.
+	* java/beans/Introspector.java: Namespace change.
+	* java/beans/PropertyEditorManager.java: Namespace change.
+	* java/io/ObjectInputStream.java: Namespace change.
+	* java/io/ObjectOutputStream.java: Namespace change.
+	* java/io/ObjectStreamClass.java: Namespace change.
+	* java/io/ObjectStreamField.java: Namespace change.
+
+2000-04-21  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/ObjectInputStream.java: Reverted workarounds of 2000-04-13
+	now that compiler patch is available.
+	Removed unneeded System.loadLibrary.
+	* java/io/ObjectOutputStream.java: Removed unneeded System.loadLibrary.
+	* java/io/ObjectStreamClass.java: Removed unneeded System.loadLibrary.
+
+2000-04-19  Andrew Haley  <aph@cygnus.com>
+
+	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Make sure source
+	and target classes have been initialized.
+
+2000-04-19  Andrew Haley  <aph@cygnus.com>
+
+	* java/lang/String.java: implement Serializable, Comparable.
+	(compareTo (Object)): New method.
+
+2000-04-19  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/ObjectStreamClass.java (getDefinedSUID): Use getDeclaredField
+	instead of getField to retrieve non-public field.
+	(getSerialPersistantFields): Ditto.
+
+2000-04-18  Warren Levy  <warrenl@cygnus.com>
+
+	* mauve-libgcj: Turned off object serialization tests temporarily
+	due to compiler error.
+
+2000-04-17  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/ObjectInputStream.java (DEBUG): Disabled unused method
+	to avoid build problem.
+	(DEBUGln): Ditto.
+	* mauve-libgcj: Turned on object serialization tests.
+
+2000-04-17  Tom Tromey  <tromey@cygnus.com>
+
+	* libgcj.spec.in (*lib): Added -lgcjawt.
+
+2000-04-17  Andrew Haley  <aph@cygnus.com>
+
+	* Makefile.am: Add new files: 
+	gnu/gcj/io/SimpleSHSStream.java, gnu/gcj/io/natSimpleSHSStream.cc,
+	gnu/gcj/io/shs.cc.
+	* Makefile.in: Rebuilt.
+
+	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Check for an
+	interface that has no implementations.
+	Check for an attempt to assign an abstract class to an interface.
+
+	* java/io/ObjectStreamClass.java (setUID): Use a SimpleSHSStream
+	if we fail to find MessageDigest.getInstance ("SHA").
+
+	* gnu/gcj/io/SimpleSHSStream.java: New file.
+	* gnu/gcj/io/natSimpleSHSStream.java: New file.
+	* gnu/gcj/io/shs.cc: New file.
+	* gnu/gcj/io/shs.h: new file.
+
+	* java/lang/natClassLoader.cc (_Jv_FindArrayClass): Make arrays
+	serializable.
+
+	* gnu/gcj/lang/reflect/TypeSignature.java: Don't remove
+	punctuation from the classname of an array element.
+
+	* gcj/javaprims.h: Add SimpleDigestStream.
+	
+2000-04-17  Andrew Haley  <aph@cygnus.com>
+
+	* java/lang/natClass.cc (getPrivateField): Make recursive calls
+	to getPrivateField for superclasses.
+ 
+2000-04-14  Andrew Haley  <aph@cygnus.com>
+
+	* Makefile.am: Add new files:
+	java/io/ObjectOutputStream$PutField.h,
+	java/io/ObjectInputStream$GetField.h,java/io/natObjectInputStream.cc,
+	java/io/natObjectOutputStream.cc
+	* Makefile.in: Rebuilt.
+	* gcj/Makefile.in: Rebuilt.
+	* include/Makefile.in: Rebuilt.
+	* java/lang/Class.h (getPrivateField): New method.
+	(getPrivateMethod): Ditto.
+	Make java::io::ObjectOutputStream, java::io::ObjectInputStream,
+	and java::io::ObjectStreamClass our friends.
+	* java/lang/natClass.cc (getPrivateField): New method.
+	(getPrivateMethod): Ditto.
+	(_Jv_IsAssignableFrom): Return false for Interface with no IDT.
+	* gcj/javaprims.h: Add serialization classes.	
+	* java/io/ObjectInputStream.java (setBooleanField): Rewrite in Java.
+	(setByteField): Ditto.
+	(setCharField): Ditto.
+	(setDoubleField): Ditto.
+	(setFloatField): Ditto.
+	(setIntField): Ditto.
+	(setLongField): Ditto.
+	(setShortField): Ditto.
+	(setObjectField): Ditto.
+	* java/io/ObjectOutputStream.java: (getBooleanField): Rewrite in
+	Java.
+	(getByteField): Ditto.
+	(getCharField): Ditto.
+	(getDoubleField): Ditto.
+	(getFloatField): Ditto.
+	(getIntField): Ditto.
+	(getLongField): Ditto.
+	(getShortField): Ditto.
+	(getObjectField): Ditto.
+	* java/io/ObjectStreamClass.java (hasClassInitializer): Rewrite in
+	Java.
+	(getSerialPersistantFields): Ditto.
+	(getDefinedSUID): Ditto.
+	* java/io/natObjectOutputStream.cc: New file.
+	* java/io/natObjectInputStream.cc: New file.
+	
+2000-04-13  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/ObjectInputStream.java: Temporary workarounds for compiler
+	problems.  Revert to previous version to reproduce and when fixed.
+
+2000-04-13  Warren Levy  <warrenl@cygnus.com>
+
+	* gnu/gcj/io/ClassLoaderObjectInputStream.java: New file.
+	* gnu/gcj/io/NullOutputStream.java: New file.
+	* gnu/gcj/lang/reflect/TypeSignature.java: New file.
+	* java/io/BlockDataException.java: New file.
+	* java/io/Externalizable.java: New file.
+	* java/io/InvalidClassException.java: New file.
+	* java/io/InvalidObjectException.java: New file.
+	* java/io/NotActiveException.java: New file.
+	* java/io/NotSerializableException.java: New file.
+	* java/io/ObjectInput.java: New file.
+	* java/io/ObjectInputStream.java: New file.
+	* java/io/ObjectInputValidation.java: New file.
+	* java/io/ObjectOutput.java: New file.
+	* java/io/ObjectOutputStream.java: New file.
+	* java/io/ObjectStreamClass.java: New file.
+	* java/io/ObjectStreamConstants.java: New file.
+	* java/io/ObjectStreamField.java: New file.
+	* java/io/Replaceable.java: New file.
+	* java/io/Resolvable.java: New file.
+	* java/io/SerializablePermission.java: New file.
+	* java/io/WriteAbortedException.java: New file.
+	* java/security/BasicPermission.java: New file.
+	* java/security/DigestOutputStream.java: New file.
+	* java/security/Guard.java: New file.
+	* java/security/Permission.java: New file.
+	* java/security/PermissionCollection.java: New file.
+	* Makefile.am: Added above files.
+	* Makefile.in: Rebuilt.
+
+	* java/beans/Beans.java (instantiate): Activated serialization code.
+	* java/lang/SecurityManager.java (checkPermission): New method.
+
+2000-04-12  Warren Levy  <warrenl@cygnus.com>
+
+	* gnu/gcj/beans/BeanInfoEmbryo.java: New file.
+	* gnu/gcj/beans/EmptyBeanInfo.java: New file.
+	* gnu/gcj/beans/ExplicitBeanInfo.java: New file.
+	* gnu/gcj/beans/IntrospectionIncubator.java: New file.
+	* gnu/gcj/beans/editors/ColorEditor.java: New file.
+	* gnu/gcj/beans/editors/FontEditor.java: New file.
+	* gnu/gcj/beans/editors/NativeBooleanEditor.java: New file.
+	* gnu/gcj/beans/editors/NativeByteEditor.java: New file.
+	* gnu/gcj/beans/editors/NativeDoubleEditor.java: New file.
+	* gnu/gcj/beans/editors/NativeFloatEditor.java: New file.
+	* gnu/gcj/beans/editors/NativeIntEditor.java: New file.
+	* gnu/gcj/beans/editors/NativeLongEditor.java: New file.
+	* gnu/gcj/beans/editors/NativeShortEditor.java: New file.
+	* gnu/gcj/beans/editors/StringEditor.java: New file.
+	* gnu/gcj/beans/info/ComponentBeanInfo.java: New file.
+	* gnu/gcj/io/ObjectIdentityWrapper.java: New file.
+	* gnu/gcj/lang/ArrayHelper.java: New file.
+	* gnu/gcj/lang/ClassHelper.java: New file.
+	* java/beans/BeanDescriptor.java: New file.
+	* java/beans/BeanInfo.java: New file.
+	* java/beans/Beans.java: New file.
+	* java/beans/Customizer.java: New file.
+	* java/beans/DesignMode.java: New file.
+	* java/beans/EventSetDescriptor.java: New file.
+	* java/beans/FeatureDescriptor.java: New file.
+	* java/beans/IndexedPropertyDescriptor.java: New file.
+	* java/beans/IntrospectionException.java: New file.
+	* java/beans/Introspector.java: New file.
+	* java/beans/MethodDescriptor.java: New file.
+	* java/beans/ParameterDescriptor.java: New file.
+	* java/beans/PropertyChangeEvent.java: New file.
+	* java/beans/PropertyChangeListener.java: New file.
+	* java/beans/PropertyChangeSupport.java: New file.
+	* java/beans/PropertyDescriptor.java: New file.
+	* java/beans/PropertyEditor.java: New file.
+	* java/beans/PropertyEditorManager.java: New file.
+	* java/beans/PropertyEditorSupport.java: New file.
+	* java/beans/PropertyVetoException.java: New file.
+	* java/beans/SimpleBeanInfo.java: New file.
+	* java/beans/VetoableChangeListener.java: New file.
+	* java/beans/VetoableChangeSupport.java: New file.
+	* java/beans/Visibility.java: New file.
+	* java/beans/beancontext/BeanContext.java: New file.
+	* java/beans/beancontext/BeanContextChild.java: New file.
+	* java/beans/beancontext/BeanContextChildComponentProxy.java: New file.
+	* java/beans/beancontext/BeanContextChildSupport.java: New file.
+	* java/beans/beancontext/BeanContextContainerProxy.java: New file.
+	* java/beans/beancontext/BeanContextEvent.java: New file.
+	* java/beans/beancontext/BeanContextMembershipEvent.java: New file.
+	* java/beans/beancontext/BeanContextMembershipListener.java: New file.
+	* java/beans/beancontext/BeanContextProxy.java: New file.
+	* java/beans/beancontext/BeanContextServiceAvailableEvent.java:
+	New file.
+	* java/beans/beancontext/BeanContextServiceProvider.java: New file.
+	* java/beans/beancontext/BeanContextServiceProviderBeanInfo.java:
+	New file.
+	* java/beans/beancontext/BeanContextServiceRevokedEvent.java: New file.
+	* java/beans/beancontext/BeanContextServiceRevokedListener.java:
+	New file.
+	* java/beans/beancontext/BeanContextServices.java: New file.
+	* java/beans/beancontext/BeanContextServicesListener.java: New file.
+	* java/util/AbstractCollection.java: New file.
+	* java/util/AbstractList.java: New file.
+	* java/util/Arrays.java: New file.
+	* Makefile.am: Added above files.
+	* Makefile.in: Rebuilt.
+
+2000-04-11  Warren Levy  <warrenl@cygnus.com>
+
+	* java/awt/AWTError.java: New file.
+	* java/awt/AWTEvent.java: New file.
+	* java/awt/AWTException.java: New file.
+	* java/awt/ActiveEvent.java: New file.
+	* java/awt/Adjustable.java: New file.
+	* java/awt/BorderLayout.java: New file.
+	* java/awt/Color.java: New file.
+	* java/awt/Component.java: New file.
+	* java/awt/Container.java: New file.
+	* java/awt/Dimension.java: New file.
+	* java/awt/Event.java: New file.
+	* java/awt/Font.java: New file.
+	* java/awt/Frame.java: New file.
+	* java/awt/Graphics.java: New file.
+	* java/awt/IllegalComponentStateException.java: New file.
+	* java/awt/Image.java: New file.
+	* java/awt/ItemSelectable.java: New file.
+	* java/awt/LayoutManager.java: New file.
+	* java/awt/LayoutManager2.java: New file.
+	* java/awt/Menu.java: New file.
+	* java/awt/MenuBar.java: New file.
+	* java/awt/MenuComponent.java: New file.
+	* java/awt/MenuContainer.java: New file.
+	* java/awt/MenuItem.java: New file.
+	* java/awt/Paint.java: New file.
+	* java/awt/PaintContext.java: New file.
+	* java/awt/Point.java: New file.
+	* java/awt/Rectangle.java: New file.
+	* java/awt/Shape.java: New file.
+	* java/awt/TextArea.java: New file.
+	* java/awt/TextComponent.java: New file.
+	* java/awt/Toolkit.java: New file.
+	* java/awt/Transparency.java: New file.
+	* java/awt/Window.java: New file.
+	* java/awt/natToolkit.cc: New file.
+	* java/awt/event/AWTEventListener.java: New file.
+	* java/awt/event/ActionEvent.java: New file.
+	* java/awt/event/ActionListener.java: New file.
+	* java/awt/event/AdjustmentEvent.java: New file.
+	* java/awt/event/AdjustmentListener.java: New file.
+	* java/awt/event/ComponentAdapter.java: New file.
+	* java/awt/event/ComponentEvent.java: New file.
+	* java/awt/event/ComponentListener.java: New file.
+	* java/awt/event/ContainerAdapter.java: New file.
+	* java/awt/event/ContainerEvent.java: New file.
+	* java/awt/event/ContainerListener.java: New file.
+	* java/awt/event/FocusAdapter.java: New file.
+	* java/awt/event/FocusEvent.java: New file.
+	* java/awt/event/FocusListener.java: New file.
+	* java/awt/event/InputEvent.java: New file.
+	* java/awt/event/InputMethodEvent.java: New file.
+	* java/awt/event/InputMethodListener.java: New file.
+	* java/awt/event/InvocationEvent.java: New file.
+	* java/awt/event/ItemEvent.java: New file.
+	* java/awt/event/ItemListener.java: New file.
+	* java/awt/event/KeyAdapter.java: New file.
+	* java/awt/event/KeyEvent.java: New file.
+	* java/awt/event/KeyListener.java: New file.
+	* java/awt/event/MouseAdapter.java: New file.
+	* java/awt/event/MouseEvent.java: New file.
+	* java/awt/event/MouseListener.java: New file.
+	* java/awt/event/MouseMotionAdapter.java: New file.
+	* java/awt/event/MouseMotionListener.java: New file.
+	* java/awt/event/PaintEvent.java: New file.
+	* java/awt/event/TextEvent.java: New file.
+	* java/awt/event/TextListener.java: New file.
+	* java/awt/event/WindowAdapter.java: New file.
+	* java/awt/event/WindowEvent.java: New file.
+	* java/awt/event/WindowListener.java: New file.
+	* java/awt/geom/Dimension2D.java: New file.
+	* java/awt/geom/Point2D.java: New file.
+	* java/awt/peer/ComponentPeer.java: New file.
+	* java/awt/peer/ContainerPeer.java: New file.
+	* java/awt/peer/FramePeer.java: New file.
+	* java/awt/peer/WindowPeer.java: New file.
+	* java/util/Collection.java: New file.
+	* java/util/Comparator.java: New file.
+	* java/util/Iterator.java: New file.
+	* java/util/List.java: New file.
+	* java/util/ListIterator.java: New file.
+	* Makefile.am: Added above files.
+	* Makefile.in: Rebuilt.
+
+2000-04-10  Warren Levy  <warrenl@cygnus.com>
+
+	* gnu/gcj/runtime/MethodInvocation.java: Fixed copyright.
+	* java/lang/FirstThread.java: Ditto.
+	* java/lang/StringBuffer.java: Ditto.
+	* mauve-libgcj: Turned on java.math, java.sql and java.security tests.
+
+	* gnu/gcj/math/MPN.java (rshift): Undid Boehm's patch of 03-14.
+	Special case handled in java.math.BigInteger.
+	* java/math/BigInteger.java (divide): Handle the special case when
+	dividing by 1 and the high bit of the dividend is set.
+	(setShiftRight): Handle case when count == 0.
+
+2000-04-05  Andrew Haley  <aph@cygnus.com>
+
+	* java/net/URL.java (setURLStreamHandler): Make "file" protocol a
+	special case.
+
+2000-04-05  Andrew Haley  <aph@cygnus.com>
+
+	* sysdep/ia64.c (rse_address_add): Delete.
+	(IS_NaT_COLLECTION_ADDR): Delete.
+	(ia64_backtrace_helper): check for null unwind_info.
+	
+	* sysdep/ia64-frame.h: add calc_caller_bsp.
+
+	* java/lang/natThrowable.cc (printRawStackTrace): Flush
+	PrintWriter.
+
+	* prims.cc (_Jv_divI): Use _Jv_ThrowSignal.
+	(_Jv_remI): Likewise.
+	(_Jv_divJ): Likewise.
+	(_Jv_remJ): Likewise.
+	
+	* interpret.cc (continue1): Use divide subroutines to guarantee
+	correct Java standard behaviour.
+	Floating-point division should not abort; make it so.
+
+2000-03-29  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Test against `libgcj_sjlj', not
+	`enable_sjlj_exceptions'.  Rearranged code to allow SYSDEP_SOURCES
+	to be set even when using sjlj.
+
+2000-03-24  Andrew Haley  <aph@cygnus.com>
+
+	* Makefile.am: Add file addr2name.awk.
+	* Makefile.in: Rebuilt.
+	* addr2name.awk: New file.
+	* name-finder.cc (_Jv_name_finder): Call addr2name.awk to do name
+	lookups on ia64.
+	* java/lang/natThrowable.cc(printRawStackTrace): Don't print out a
+	blank line.
+	
+2000-03-22  Andrew Haley  <aph@cygnus.com>
+
+	* configure.host: Add -funwind-tables for IA64.
+	* Makefile.am (c_source_files): Add SYSDEP_SORCES.
+	* Makefile.in: Rebuilt.
+	* java/lang/natThrowable.cc (fillInStackTrace): Add ia64 case.
+	* sysdep/ia64.c: New file.
+	* sysdep/ia64-frame.h: New file.
+	* configure.in: Add sysdep/ia64.c for ia64.
+	* configure: Rebuilt.
+	
+2000-03-17  Andrew Haley  <aph@cygnus.com>
+
+	* java/lang/natString.cc: Remove `register' keyword.
+	interpret.cc: ditto.
+
+2000-03-16  Andrew Haley  <aph@cygnus.com>
+
+	* configure.host (ia64): Enable interpreter.
+
+2000-03-14  Hans Boehm  <boehm@acm.org>
+
+	* gnu/gcj/math/MPN.java (rshift): Handle shift 32 specially.
+
+	* include/java-cpool.h (_Jv_storeLong, _Jv_loadLong,
+	_Jv_storeDouble, _Jv_loadDouble): Define differently on 64 bit
+	machine.
+	* java/lang/ieeefp.h: Define __IEEE_BIG_ENDIAN or
+	__IEEE_LITTLE_ENDIAN appropriately on IA64.
+	* java/lang/mprec.h: Don't define Pack_32 on 64 bit machine.
+	* javaprims.h (_Jv_word): Added `l' and `d' entries in 64 bit
+	case.
+	* resolve.cc (FFI_PREP_RAW_CLOSURE): New define.
+	(FFI_RAW_SIZE): Likewise.
+	(_Jv_InterpMethod::ncode): Use them.
+	* interpret.cc (PUSHL, PUSHD, POPL, POPD, LOADL, LOADD, STOREL,
+	STORED): Define differently on a 64 bit machine.
+	(continue1): Use ffi_java_raw_call when appropriate.
+
+2000-03-14  Andrew Haley  <aph@cygnus.com>
+
+	* include/default-signal.h (MAKE_THROW_FRAME): Add arg
+	`_exception'.
+
+2000-03-10  Andrew Haley  <aph@cygnus.com>
+
+	* java/lang/ieeefp.h: Import latest version from fdlibm.
+
+2000-03-14  Andrew Haley  <aph@cygnus.com>
+
+	* prims.cc (_Jv_ThrowSignal): New function.
+	(catch_segv): Add arg `_exception' to MAKE_THROW_FRAME.
+	(catch_fpe): Ditto.
+	* include/sparc-signal.h (MAKE_THROW_FRAME): Ditto
+	* include/i386-signal.h (MAKE_THROW_FRAME): Ditto.
+	* include/ppc-signal.h: New file.
+
 2000-05-18  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/Thread.java: Declare `data' as Object, not RawData.

@@ -64,10 +64,14 @@ _Jv_name_finder::_Jv_name_finder (char *executable)
   char *argv[6];
   {
     int arg = 0;
+#ifdef __ia64__
+    argv[arg++] = "addr2name.awk";
+#else
     argv[arg++] = "addr2line";
     argv[arg++] = "-C";
     argv[arg++] = "-f";
     argv[arg++] = "-e";
+#endif
     argv[arg++] = executable;
     argv[arg] = NULL;
   }
