@@ -1,3 +1,7 @@
+2004-10-27  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.h (GTHREAD_USE_WEAK): Define.
+
 2004-10-28  Ben Elliston  <bje@au.ibm.com>
 
 	* params.def (PARAM_SRA_MAX_STRUCTURE_SIZE): New.

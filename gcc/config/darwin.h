@@ -393,6 +393,10 @@ extern const char *darwin_fix_and_continue_switch;
     fputc ('\n', FILE);							\
   } while (0)
 
+/* Darwin has the pthread routines in libSystem, which every program
+   links to, so there's no need for weak-ness for that.  */
+#define GTHREAD_USE_WEAK 0
+
 /* We support hidden visibility */
 #undef TARGET_SUPPORTS_HIDDEN
 #define TARGET_SUPPORTS_HIDDEN 1
