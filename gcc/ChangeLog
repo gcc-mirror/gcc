@@ -1,5 +1,10 @@
 2005-04-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* doc/invoke.texi (SPARC options): Document that
+	-mlittle-endian is not supported on Linux either.
+
+2005-04-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR target/4198
 	PR target/12027
 	* config.gcc (Obsolete configurations): Remove
