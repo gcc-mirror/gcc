@@ -4,6 +4,10 @@
 	* config/linker-map.gnu: Add typeinfo and typeinfo name for
 	__gnu_cxx::stdio_sync_filebuf<char, std::char_traits<char> >.
 
+	PR libstdc++/14097
+	* config/linker-map.gnu: Add typeinfo and typeinfo name for
+	__gnu_cxx::stdio_filebuf<char, std::char_traits<char> >.
+
 2004-02-09  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/ext/pool_allocator.h: Include c++config.h.
