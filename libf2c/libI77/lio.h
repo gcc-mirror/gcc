@@ -43,7 +43,10 @@
 
 typedef union
 {
-	char	flchar;
+#ifndef KR_headers
+	signed
+#endif
+		char	flchar;
 	short	flshort;
 	ftnint	flint;
 #ifdef Allow_TYQUAD
