@@ -37,6 +37,18 @@ Boston, MA 02111-1307, USA. */
 #include "function.h"
 #include "recog.h"
 
+#if HAVE_STDLIB_H
+#include <stdlib.h>                                                
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>                                                   
+#else                                                  
+#ifdef HAVE_STRINGS_H
+#include <strings.h>               
+#endif                                                                   
+#endif 
+
 #ifdef EXTRA_CONSTRAINT
 /* If EXTRA_CONSTRAINT is defined, then the 'S'
    constraint in REG_CLASS_FROM_LETTER will no longer work, and various
