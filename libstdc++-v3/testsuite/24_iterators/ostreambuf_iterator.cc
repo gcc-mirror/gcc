@@ -30,7 +30,9 @@ bool test01(void)
   typedef costreambuf_iter::streambuf_type cstreambuf_type;
   bool test = true;
   const char slit01[] = "playa hermosa, liberia, guanacaste";
+  const char slit02[] = "bodega bay, lost coast, california";
   std::string str01(slit01);
+  std::string str02(slit02);
   std::string tmp;
   std::stringbuf     strbuf01;
   std::stringbuf     strbuf02(str01);
@@ -61,21 +63,25 @@ bool test01(void)
   // charT operator*() const
   // ostreambuf_iterator& operator++();
   // ostreambuf_iterator& operator++(int);
-  costreambuf_iter ostrb_it27(ostrs00);
+  costreambuf_iter ostrb_it27(ostrs01);
   VERIFY( !ostrb_it27.failed() );
-  for (int i = 0; i < strlen(slit01) - 2; ++i)
-    ostrb_it27 = 'a';
+  int j = str02.size();
+  for (int i = 0; i < j; ++i)
+    ostrb_it27 = str02[i];
   VERIFY( !ostrb_it27.failed() );
-  tmp = ostrs00.str();
-  VERIFY ( tmp == str01 );
-
-  costreambuf_iter ostrb_it28(ostrs01);
-  VERIFY( !ostrb_it28.failed() );
-  for (int i = 0; i < strlen(slit01) + 1; ++i)
-    ostrb_it28 = 'b';
-  VERIFY( !ostrb_it28.failed() );
   tmp = ostrs01.str();
   VERIFY ( tmp != str01 );
+  VERIFY ( tmp == str02 );
+
+  costreambuf_iter ostrb_it28(ostrs00);
+  VERIFY( !ostrb_it28.failed() );
+  j = ostrs00.str().size();
+  for (int i = 0; i < j + 2; ++i)
+    ostrb_it28 = 'b';
+  VERIFY( !ostrb_it28.failed() );
+  tmp = ostrs00.str();
+  VERIFY ( tmp != str01 );
+  VERIFY ( tmp != str02 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
