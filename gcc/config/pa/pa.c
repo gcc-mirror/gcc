@@ -845,6 +845,13 @@ output_move_double (operands)
       return singlemove_string (operands);
     }
 
+  if (optype0 == REGOP && optype1 == REGOP
+      && REGNO (operands[0]) == REGNO (operands[1]) + 1)
+    {
+      output_asm_insn (singlemove_string (latehalf), latehalf);
+      return singlemove_string (operands);
+    }
+
   /* Normal case: do the two words, low-numbered first.  */
 
   output_asm_insn (singlemove_string (operands), operands);
