@@ -1,3 +1,8 @@
+#include <float.h>
+
+/* If double is not wider than float, we probably don't have DFmode,
+   or at least it's not as wide as double.  */
+#if DBL_MANT_DIG > FLT_MANT_DIG
 typedef float floatvect2 __attribute__((mode(V2DF)));
 
 typedef union
@@ -15,3 +20,4 @@ void tempf(double *x, double *y)
         x[0]=temp2.f[0];
         x[1]=temp2.f[1];
 }
+#endif
