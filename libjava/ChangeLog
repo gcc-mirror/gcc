@@ -1,3 +1,32 @@
+2003-03-10  2003-02-27  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* include/jvm.h: removed declaration of _Jv_ThisExecutable()
+	setter; made return value of getter const char* instead of char*
+	* prims.cc: removed all references to _Jv_ThisExecutable().
+	These are in the platform-specific sections now.
+	* posix.cc: define platform-specific _Jv_ThisExecutable().
+	Handle DISABLE_MAIN_ARGS and HAVE_PROC_SELF_EXE cases
+	* win32.cc: define platform-specific _Jv_ThisExecutable()
+	using GetModuleFilename()
+	* java/lang/natRuntime.cc: set gnu.gcj.progname property
+	to argv[0] instead of _Jv_ThisExecutable()
+
+2003-03-10  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* gnu/gcj/runtime/NameFinder.java (usingAddr2name): New flag
+	that is set if we are using addr2name.awk instead of addr2line.
+	(NameFinder): Set usingAddr2name if using addr2name.awk.
+	(getExternalLabel): New native method to convert a method 
+	name to an external label.
+	(lookup): Convert name given by addr2line to an external label
+	before demangling.
+
+	* gnu/gcj/runtime/natNameFinder.cc (LABEL_PREFIX): New string
+	constant representing the prefix attached to method names to
+	convert them to an external label.
+	(gnu::gcj::runtime::NameFinder::getExternalLabel): Define 
+	using LABEL_PREFIX.
+
 2003-03-10  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
