@@ -1218,7 +1218,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
       /* If this is a sibling call and the machine has register windows, the
 	 register window has to be unwinded before calling the routine, so
 	 arguments have to go into the incoming registers.  */
-      if (ecf_flags & ECF_SIBCALL)
+      if (*ecf_flags & ECF_SIBCALL)
 	args[i].reg = FUNCTION_INCOMING_ARG (*args_so_far, mode, type,
 					     argpos < n_named_args);
       else
