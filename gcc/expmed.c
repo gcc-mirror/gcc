@@ -392,6 +392,15 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, total_size)
       }
   }
 
+  /* We may be accessing data outside the field, which means
+     we can alias adjacent data.  */
+  if (GET_CODE (op0) == MEM)
+    {
+      op0 = shallow_copy_rtx (op0);
+      set_mem_alias_set (op0, 0);
+      set_mem_expr (op0, 0);
+    }
+
   /* If OP0 is a register, BITPOS must count within a word.
      But as we have it, it counts within whatever size OP0 now has.
      On a bigendian machine, these are not the same, so convert.  */
@@ -1068,6 +1077,15 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  abort ();
       }
   }
+
+  /* We may be accessing data outside the field, which means
+     we can alias adjacent data.  */
+  if (GET_CODE (op0) == MEM)
+    {
+      op0 = shallow_copy_rtx (op0);
+      set_mem_alias_set (op0, 0);
+      set_mem_expr (op0, 0);
+    }
 
   /* ??? We currently assume TARGET is at least as big as BITSIZE.
      If that's wrong, the solution is to test for it and set TARGET to 0
