@@ -14,7 +14,7 @@ struct A {
 
 class CBase {
 public:
-   void BaseFunc();
+   virtual void BaseFunc();
 };
 
 class MMixin {
