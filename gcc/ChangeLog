@@ -1,5 +1,6 @@
 2004-08-10  Jason Merrill  <jason@redhat.com>
 
+	PR middle-end/16948
 	* function.c (expand_function_start): Handle DECL_BY_REFERENCE on
 	the RESULT_DECL.
 
