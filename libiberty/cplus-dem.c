@@ -403,7 +403,7 @@ consume_count (type)
 {
   int count = 0;
 
-  while (isdigit (**type))
+  while (isdigit ((unsigned char)**type))
     {
       count *= 10;
       count += **type - '0';
@@ -426,7 +426,7 @@ consume_count_with_underscores (mangled)
   if (**mangled == '_')
     {
       (*mangled)++;
-      if (!isdigit (**mangled))
+      if (!isdigit ((unsigned char)**mangled))
 	return -1;
 
       idx = consume_count (mangled);
@@ -532,7 +532,7 @@ cplus_demangle_opname (opname, result, options)
 	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
 	    {
 	      len1 = len - 10;
-	      if (strlen (optable[i].in) == len1
+	      if ((int) strlen (optable[i].in) == len1
 		  && memcmp (optable[i].in, opname + 10, len1) == 0)
 		{
 		  strcat (result, "operator");
@@ -549,7 +549,7 @@ cplus_demangle_opname (opname, result, options)
 	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
 	    {
 	      len1 = len - 3;
-	      if (strlen (optable[i].in) == len1 
+	      if ((int) strlen (optable[i].in) == len1 
 		  && memcmp (optable[i].in, opname + 3, len1) == 0)
 		{
 		  strcat (result, "operator");
@@ -594,7 +594,7 @@ cplus_mangle_opname (opname, options)
   len = strlen (opname);
   for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
     {
-      if (strlen (optable[i].out) == len
+      if ((int) strlen (optable[i].out) == len
 	  && (options & DMGL_ANSI) == (optable[i].flags & DMGL_ANSI)
 	  && memcmp (optable[i].out, opname, len) == 0)
 	return optable[i].in;
@@ -1228,7 +1228,7 @@ demangle_integral_value (work, mangled, s)
 	  string_appendn (s, "-", 1);
 	  (*mangled)++;
 	}
-      while (isdigit (**mangled))	
+      while (isdigit ((unsigned char)**mangled))
 	{
 	  string_appendn (s, *mangled, 1);
 	  (*mangled)++;
@@ -1305,7 +1305,7 @@ demangle_template_value_parm (work, mangled, s, tk)
 	  string_appendn (s, "-", 1);
 	  (*mangled)++;
 	}
-      while (isdigit (**mangled))	
+      while (isdigit ((unsigned char)**mangled))
 	{
 	  string_appendn (s, *mangled, 1);
 	  (*mangled)++;
@@ -1314,7 +1314,7 @@ demangle_template_value_parm (work, mangled, s, tk)
 	{
 	  string_appendn (s, ".", 1);
 	  (*mangled)++;
-	  while (isdigit (**mangled))	
+	  while (isdigit ((unsigned char)**mangled))
 	    {
 	      string_appendn (s, *mangled, 1);
 	      (*mangled)++;
@@ -1324,7 +1324,7 @@ demangle_template_value_parm (work, mangled, s, tk)
 	{
 	  string_appendn (s, "e", 1);
 	  (*mangled)++;
-	  while (isdigit (**mangled))	
+	  while (isdigit ((unsigned char)**mangled))
 	    {
 	      string_appendn (s, *mangled, 1);
 	      (*mangled)++;
@@ -1383,7 +1383,7 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
   int success = 0;
   const char *start;
   string temp;
-  int bindex;
+  int bindex = 0;
 
   (*mangled)++;
   if (is_type)
@@ -1421,7 +1421,8 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 	}
       else
 	{
-	  if ((r = consume_count (mangled)) == 0 || strlen (*mangled) < r)
+	  if ((r = consume_count (mangled)) == 0
+	      || (int) strlen (*mangled) < r)
 	    {
 	      return (0);
 	    }
@@ -1484,7 +1485,8 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 	  success = demangle_template_template_parm (work, mangled, tname);
 	  
 	  if (success
-	      && (r2 = consume_count (mangled)) > 0 && strlen (*mangled) >= r2)
+	      && (r2 = consume_count (mangled)) > 0
+	      && (int) strlen (*mangled) >= r2)
 	    {
 	      string_append (tname, " ");
 	      string_appendn (tname, *mangled, r2);
@@ -1507,7 +1509,6 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 	{
 	  string  param;
 	  string* s;
-	  const char* start_of_value_parm = *mangled;
 
 	  /* otherwise, value parameter */
 
@@ -1650,7 +1651,7 @@ demangle_class_name (work, mangled, declp)
   int success = 0;
 
   n = consume_count (mangled);
-  if (strlen (*mangled) >= n)
+  if ((int) strlen (*mangled) >= n)
     {
       demangle_arm_pt (work, mangled, n, declp);
       success = 1;
@@ -1849,19 +1850,20 @@ demangle_prefix (work, mangled, declp)
     }
   else if (work -> static_type)
     {
-      if (!isdigit (scan[0]) && (scan[0] != 't'))
+      if (!isdigit ((unsigned char)scan[0]) && (scan[0] != 't'))
 	{
 	  success = 0;
 	}
     }
   else if ((scan == *mangled)
-	   && (isdigit (scan[2]) || (scan[2] == 'Q') || (scan[2] == 't')
-	       || (scan[2] == 'K') || (scan[2] == 'H')))
+	   && (isdigit ((unsigned char)scan[2]) || (scan[2] == 'Q')
+	       || (scan[2] == 't') || (scan[2] == 'K') || (scan[2] == 'H')))
     {
       /* The ARM says nothing about the mangling of local variables.
 	 But cfront mangles local variables by prepending __<nesting_level>
 	 to them. As an extension to ARM demangling we handle this case.  */
-      if ((LUCID_DEMANGLING || ARM_DEMANGLING) && isdigit (scan[2]))
+      if ((LUCID_DEMANGLING || ARM_DEMANGLING)
+	  && isdigit ((unsigned char)scan[2]))
 	{
 	  *mangled = scan + 2;
 	  consume_count (mangled);
@@ -1880,7 +1882,8 @@ demangle_prefix (work, mangled, declp)
 	  *mangled = scan + 2;
 	}
     }
-  else if ((scan == *mangled) && !isdigit (scan[2]) && (scan[2] != 't'))
+  else if ((scan == *mangled) && !isdigit ((unsigned char)scan[2])
+	   && (scan[2] != 't'))
     {
       /* Mangled name starts with "__".  Skip over any leading '_' characters,
 	 then find the next "__" that separates the prefix from the signature.
@@ -2011,14 +2014,14 @@ gnu_special (work, mangled, declp)
 					   1);
 	      break;
 	    default:
-	      if (isdigit(*mangled[0]))
+	      if (isdigit((unsigned char)*mangled[0]))
 		{
 		  n = consume_count(mangled);
 		  /* We may be seeing a too-large size, or else a
 		     ".<digits>" indicating a static local symbol.  In
 		     any case, declare victory and move on; *don't* try
 		     to use n to allocate.  */
-		  if (n > strlen (*mangled))
+		  if (n > (int) strlen (*mangled))
 		    {
 		      success = 1;
 		      break;
@@ -2282,11 +2285,11 @@ demangle_qualified (work, mangled, result, isfuncname, append)
 	 by an underscore.  */
       p = *mangled + 2;
       qualifiers = atoi (p);
-      if (!isdigit (*p) || *p == '0')
+      if (!isdigit ((unsigned char)*p) || *p == '0')
 	success = 0;
 
       /* Skip the digits.  */
-      while (isdigit (*p))
+      while (isdigit ((unsigned char)*p))
 	++p;
 
       if (*p != '_')
@@ -2435,7 +2438,7 @@ get_count (type, count)
   const char *p;
   int n;
 
-  if (!isdigit (**type))
+  if (!isdigit ((unsigned char)**type))
     {
       return (0);
     }
@@ -2443,7 +2446,7 @@ get_count (type, count)
     {
       *count = **type - '0';
       (*type)++;
-      if (isdigit (**type))
+      if (isdigit ((unsigned char)**type))
 	{
 	  p = *type;
 	  n = *count;
@@ -2453,7 +2456,7 @@ get_count (type, count)
 	      n += *p - '0';
 	      p++;
 	    } 
-	  while (isdigit (*p));
+	  while (isdigit ((unsigned char)*p));
 	  if (*p == '_')
 	    {
 	      *type = p + 1;
@@ -2576,7 +2579,7 @@ do_type (work, mangled, result)
 
 	    member = **mangled == 'M';
 	    (*mangled)++;
-	    if (!isdigit (**mangled) && **mangled != 't')
+	    if (!isdigit ((unsigned char)**mangled) && **mangled != 't')
 	      {
 		success = 0;
 		break;
@@ -2584,10 +2587,10 @@ do_type (work, mangled, result)
 
 	    string_append (&decl, ")");
 	    string_prepend (&decl, SCOPE_STRING (work));
-	    if (isdigit (**mangled)) 
+	    if (isdigit ((unsigned char)**mangled))
 	      {
 		n = consume_count (mangled);
-		if (strlen (*mangled) < n)
+		if ((int) strlen (*mangled) < n)
 		  {
 		    success = 0;
 		    break;
@@ -2897,7 +2900,7 @@ demangle_fund_type (work, mangled, result)
       break;
     case 'G':
       (*mangled)++;
-      if (!isdigit (**mangled))
+      if (!isdigit ((unsigned char)**mangled))
 	{
 	  success = 0;
 	  break;
@@ -3430,7 +3433,7 @@ demangle_function_name (work, mangled, declp, scan)
 	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
 	    {
 	      int len = declp->p - declp->b - 10;
-	      if (strlen (optable[i].in) == len
+	      if ((int) strlen (optable[i].in) == len
 		  && memcmp (optable[i].in, declp->b + 10, len) == 0)
 		{
 		  string_clear (declp);
@@ -3446,7 +3449,7 @@ demangle_function_name (work, mangled, declp, scan)
 	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
 	    {
 	      int len = declp->p - declp->b - 3;
-	      if (strlen (optable[i].in) == len 
+	      if ((int) strlen (optable[i].in) == len 
 		  && memcmp (optable[i].in, declp->b + 3, len) == 0)
 		{
 		  string_clear (declp);

@@ -1,3 +1,34 @@
+Thu Oct 15 18:51:12 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* choose-temp.c: Prototype mkstemps() when IN_GCC.
+
+	* cplus-dem.c (consume_count): Cast argument of ctype macro to
+	`unsigned char'.
+	(cplus_demangle_opname): Cast the result of `strlen' to (int) when
+	comparing against one.
+	(cplus_mangle_opname): Likewise.
+	(demangle_integral_value): Cast argument of ctype macro to
+	`unsigned char'.
+	(demangle_template_value_parm): Likewise.
+	(demangle_template): Initialize variable `bindex'.  Cast the
+	result of `strlen' to (int) when comparing against one.  Remove
+	unused variable `start_of_value_parm'.
+	(demangle_class_name): Cast the result of `strlen' to (int) when
+	comparing against one.
+	(demangle_prefix): Cast argument of ctype macro to `unsigned char'.
+	(gnu_special): Likewise.  Cast the result of `strlen' to (int)
+	when comparing against one.
+	(demangle_qualified): Cast argument of ctype macro to `unsigned char'.
+	(get_count): Likewise.
+	(do_type): Likewise.  Cast the result of `strlen' to (int) when
+	comparing against one.
+	(demangle_fund_type): Cast argument of ctype macro to `unsigned char'.
+	(demangle_function_name): Cast the result of `strlen' to (int)
+	when comparing against one.
+
+	* mkstemp.c (mkstemps): Cast variable `len' to (int) when
+	comparing against one.
+
 Tue Oct 13 23:51:51 1998  Jeffrey A Law  (law@cygnus.com)
 
         * mkstemp.c: Check HAVE_SYS_TIME_H before including sys/time.h
