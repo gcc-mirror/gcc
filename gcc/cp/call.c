@@ -4835,7 +4835,7 @@ build_over_call (struct z_candidate *cand, int flags)
       if (DECL_CONTEXT (fn) && TYPE_JAVA_INTERFACE (DECL_CONTEXT (fn)))
 	fn = build_java_interface_fn_ref (fn, *p);
       else
-	fn = build_vfn_ref (build_indirect_ref (*p, 0), DECL_VINDEX (fn));
+	fn = build_vfn_ref (*p, DECL_VINDEX (fn));
       TREE_TYPE (fn) = t;
     }
   else if (DECL_INLINE (fn))

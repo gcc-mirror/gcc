@@ -1,5 +1,29 @@
 2004-06-22  Richard Henderson  <rth@redhat.com>
 
+	* tree.def (VTABLE_REF): Remove.
+	(OBJ_TYPE_REF): New.
+	(TRY_CATCH_EXPR, TRY_FINALLY_EXPR): Set type 's'.
+	* expr.c (expand_expr_real_1): Replace VTABLE_REF with OBJ_TYPE_REF.
+	* fold-const.c (non_lvalue): Likewise.
+	* gimplify.c (gimplify_expr): Likewise.
+	(gimplify_call_expr): Use is_gimple_call_addr.
+	* langhooks-def.h (LANG_HOOKS_FOLD_OBJ_TYPE_REF): New.
+	* langhooks.h (fold_obj_type_ref): New.
+	* tree-gimple.c (is_gimple_call_addr): New.
+	* tree-gimple.h (is_gimple_call_addr): Declare.
+	* tree-inline.c (inlinable_function_p): Fix merge error.
+	(estimate_num_insns_1): Replace VTABLE_REF with OBJ_TYPE_REF.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	(print_call_name): Handle OBJ_TYPE_REF.
+	* tree-ssa-ccp.c (fold_stmt): Fold OBJ_TYPE_REF.
+	* tree-ssa-operands.c (get_expr_operands): Handle OBJ_TYPE_REF.
+	* tree.h (OBJ_TYPE_REF_EXPR): New.
+	(OBJ_TYPE_REF_OBJECT, OBJ_TYPE_REF_TOKEN): New.
+	* doc/c-tree.texi (VTABLE_REF): Remove.
+	* objc/objc-act.c (build_objc_method_call): Build an OBJ_TYPE_REF.
+
+2004-06-22  Richard Henderson  <rth@redhat.com>
+
 	PR middle-end/16026
 	* function.c (assign_parms): Don't abort for overaligned PARALLEL.
 

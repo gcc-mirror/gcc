@@ -1136,12 +1136,6 @@ inlinable_function_p (tree fn)
   else if (!DECL_INLINE (fn) && !flag_unit_at_a_time)
     inlinable = false;
 
-#ifdef INLINER_FOR_JAVA
-  /* Synchronized methods can't be inlined.  This is a bug.  */
-  else if (METHOD_SYNCHRONIZED (fn))
-    inlinable = false;
-#endif /* INLINER_FOR_JAVA */
-
   else if (inline_forbidden_p (fn))
     {
       /* See if we should warn about uninlinable functions.  Previously,
@@ -1203,7 +1197,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case BUFFER_REF:
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
-    case VTABLE_REF:
+    case OBJ_TYPE_REF:
     case EXC_PTR_EXPR: /* ??? */
     case FILTER_EXPR: /* ??? */
     case COMPOUND_EXPR:

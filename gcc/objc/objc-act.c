@@ -5866,6 +5866,7 @@ build_objc_method_call (int super_flag, tree method_prototype,
        (ret_type,
 	get_arg_type_list
 	(method_prototype, METHOD_REF, super_flag)));
+  tree method, t;
 
   lookup_object = build_c_cast (rcv_p, lookup_object);
 
@@ -5886,38 +5887,33 @@ build_objc_method_call (int super_flag, tree method_prototype,
       method_params = tree_cons (NULL_TREE, lookup_object,
 				 tree_cons (NULL_TREE, selector,
 					    method_params));
-      TREE_USED (sender) = 1;
-      assemble_external (sender);
-      /* We want to cast the sender, not convert it.  */
-      return build_function_call (build_c_cast (sender_cast, sender),
-				  method_params);
+      method = build_fold_addr_expr (sender);
     }
   else
     {
       /* This is the portable (GNU) way.  */
-      tree method, object;
+      tree object;
 
       /* First, call the lookup function to get a pointer to the method,
 	 then cast the pointer, then call it with the method arguments.
 	 Use SAVE_EXPR to avoid evaluating the receiver twice.  */
       lookup_object = save_expr (lookup_object);
       object = (super_flag ? self_decl : lookup_object);
-      TREE_USED (sender) = 1;
-      assemble_external (sender);
-      method
-	= build_function_call (sender,
-			       tree_cons (NULL_TREE, lookup_object,
-					  tree_cons (NULL_TREE, selector,
-						     NULL_TREE)));
+
+      t = tree_cons (NULL_TREE, selector, NULL_TREE);
+      t = tree_cons (NULL_TREE, lookup_object, t);
+      method = build_function_call (sender, t);
 
       /* Pass the object to the method.  */
-      TREE_USED (method) = 1;
-      assemble_external (method);
-      return build_function_call
-	     (build_c_cast (sender_cast, method),
-	      tree_cons (NULL_TREE, object,
-			 tree_cons (NULL_TREE, selector, method_params)));
+      method_params = tree_cons (NULL_TREE, object,
+				 tree_cons (NULL_TREE, selector,
+					    method_params));
     }
+
+  /* ??? Selector is not at this point something we can use inside
+     the compiler itself.  Set it to garbage for the nonce.  */
+  t = build (OBJ_TYPE_REF, sender_cast, method, lookup_object, size_zero_node);
+  return build_function_call (t, method_params);
 }
 
 static void
@@ -7607,7 +7603,8 @@ comp_method_with_proto (tree method, tree proto)
     function1_template = make_node (FUNCTION_TYPE);
 
   /* Install argument types - normally set by build_function_type.  */
-  TYPE_ARG_TYPES (function1_template) = get_arg_type_list (proto, METHOD_DEF, 0);
+  TYPE_ARG_TYPES (function1_template)
+    = get_arg_type_list (proto, METHOD_DEF, 0);
 
   /* install return type */
   TREE_TYPE (function1_template) = groktypename (TREE_TYPE (proto));

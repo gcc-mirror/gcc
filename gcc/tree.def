@@ -387,12 +387,17 @@ DEFTREECODE (ARRAY_REF, "array_ref", 'r', 4)
    of the range is taken from the type of the expression.  */
 DEFTREECODE (ARRAY_RANGE_REF, "array_range_ref", 'r', 4)
 
-/* Vtable indexing.  Carries data useful for emitting information
-   for vtable garbage collection.
-   Operand 0: an array_ref (or equivalent expression)
-   Operand 1: the vtable base (must be a var_decl)
-   Operand 2: index into vtable (must be an integer_cst).  */
-DEFTREECODE (VTABLE_REF, "vtable_ref", 'r', 3)
+/* Used to represent lookup of runtime type dependent data.  Often this is
+   a reference to a vtable, but it needn't be.  Operands are:
+   OBJ_TYPE_REF_EXPR: An expression that evaluates the value to use.
+   OBJ_TYPE_REF_OBJECT: Is the object on whose behalf the lookup is
+   being performed.  Through this the optimizers may be able to statically
+   determine the dynamic type of the object.
+   OBJ_TYPE_REF_TOKEN: Something front-end specific used to resolve the
+   reference to something simpler, usually to the address of a DECL.
+   Never touched by the middle-end.  Good choices would be either an
+   identifier or a vtable index.  */
+DEFTREECODE (OBJ_TYPE_REF, "obj_type_ref", 'e', 3)
 
 /* The exception object from the runtime.  */
 DEFTREECODE (EXC_PTR_EXPR, "exc_ptr_expr", 'e', 0)
@@ -790,12 +795,12 @@ DEFTREECODE (VA_ARG_EXPR, "va_arg_expr", 'e', 1)
 
    This differs from TRY_FINALLY_EXPR in that operand 2 is not evaluated
    on a normal or jump exit, only on an exception.  */
-DEFTREECODE (TRY_CATCH_EXPR, "try_catch_expr", 'e', 2)
+DEFTREECODE (TRY_CATCH_EXPR, "try_catch_expr", 's', 2)
 
 /* Evaluate the first operand.
    The second operand is a cleanup expression which is evaluated
    on any exit (normal, exception, or jump out) from this expression.  */
-DEFTREECODE (TRY_FINALLY_EXPR, "try_finally", 'e', 2)
+DEFTREECODE (TRY_FINALLY_EXPR, "try_finally", 's', 2)
 
 /* These types of expressions have no useful value,
    and always have side effects.  */

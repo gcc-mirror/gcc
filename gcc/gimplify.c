@@ -2179,7 +2179,7 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool (*gimple_test_f) (tree))
      the calling expression must occur before the actual call.  Force
      gimplify_expr to use an internal post queue.  */
   ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, NULL,
-		       is_gimple_val, fb_rvalue);
+		       is_gimple_call_addr, fb_rvalue);
 
   if (PUSH_ARGS_REVERSED)
     TREE_OPERAND (*expr_p, 1) = nreverse (TREE_OPERAND (*expr_p, 1));
@@ -3709,12 +3709,15 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  ret = GS_ALL_DONE;
 	  break;
 
-	case VTABLE_REF:
-	  /* This moves much of the actual computation out of the
-	     VTABLE_REF.  Perhaps this should be revisited once we want to
-	     do clever things with VTABLE_REFs.  */
-	  ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
-			       is_gimple_min_lval, fb_lvalue);
+	case OBJ_TYPE_REF:
+	  {
+	    enum gimplify_status r0, r1;
+	    r0 = gimplify_expr (&OBJ_TYPE_REF_OBJECT (*expr_p), pre_p, post_p,
+			        is_gimple_val, fb_rvalue);
+	    r1 = gimplify_expr (&OBJ_TYPE_REF_EXPR (*expr_p), pre_p, post_p,
+			        is_gimple_val, fb_rvalue);
+	    ret = MIN (r0, r1);
+	  }
 	  break;
 
 	case MIN_EXPR:

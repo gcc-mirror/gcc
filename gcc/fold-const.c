@@ -2022,7 +2022,7 @@ non_lvalue (tree x)
   case ARRAY_RANGE_REF:
   case BIT_FIELD_REF:
   case BUFFER_REF:
-  case VTABLE_REF:
+  case OBJ_TYPE_REF:
 
   case REALPART_EXPR:
   case IMAGPART_EXPR:

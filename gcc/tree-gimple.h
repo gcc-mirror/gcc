@@ -75,6 +75,8 @@ extern bool is_gimple_constructor_elt (tree);
 /* Returns true iff T is a variable that does not need to live in memory.  */
 extern bool is_gimple_non_addressable (tree t);
 
+/* Returns true iff T is a valid call address expression.  */
+bool is_gimple_call_addr (tree);
 /* If T makes a function call, returns the CALL_EXPR operand.  */
 extern tree get_call_expr_in (tree t);
 
