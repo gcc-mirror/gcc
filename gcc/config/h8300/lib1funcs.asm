@@ -633,13 +633,16 @@ divmod_L21:
 	mov.w	e2,e2
 	bne	divmod_L21
 #else
-	bra	divmod_L22
+	shlr.l	#2,er2		; make divisor < 2^16
+	mov.w	e2,e2
+	beq	divmod_L22A
 divmod_L21:
 	shlr.l	#2,er0
 divmod_L22:
 	shlr.l	#2,er2		; make divisor < 2^16
 	mov.w	e2,e2
 	bne	divmod_L21
+divmod_L22A:
 	rotxl.w	r2
 	bcs	divmod_L23
 	shlr.l	er0
