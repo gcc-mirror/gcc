@@ -2177,10 +2177,8 @@ do_build_copy_constructor (fndecl)
      tree fndecl;
 {
   tree parm = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
+  tree compound_stmt;
   tree t;
-
-  clear_last_expr ();
-  push_momentary ();
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
     parm = TREE_CHAIN (parm);
@@ -2194,7 +2192,7 @@ do_build_copy_constructor (fndecl)
     {
       t = build (INIT_EXPR, void_type_node, current_class_ref, parm);
       TREE_SIDE_EFFECTS (t) = 1;
-      cplus_expand_expr_stmt (t);
+      finish_expr_stmt (t);
     }
   else
     {
@@ -2257,7 +2255,8 @@ do_build_copy_constructor (fndecl)
       setup_vtbl_ptr ();
     }
 
-  pop_momentary ();
+  compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
+  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
 }
 
 static void
@@ -2265,10 +2264,9 @@ do_build_assign_ref (fndecl)
      tree fndecl;
 {
   tree parm = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
+  tree compound_stmt;
 
-  clear_last_expr ();
-  push_momentary ();
-
+  compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
   parm = convert_from_reference (parm);
 
   if (TYPE_HAS_TRIVIAL_ASSIGN_REF (current_class_type)
@@ -2279,7 +2277,7 @@ do_build_assign_ref (fndecl)
     {
       tree t = build (MODIFY_EXPR, void_type_node, current_class_ref, parm);
       TREE_SIDE_EFFECTS (t) = 1;
-      cplus_expand_expr_stmt (t);
+      finish_expr_stmt (t);
     }
   else
     {
@@ -2353,7 +2351,7 @@ do_build_assign_ref (fndecl)
 	}
     }
   c_expand_return (current_class_ref);
-  pop_momentary ();
+  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
 }
 
 void
@@ -2374,6 +2372,7 @@ synthesize_method (fndecl)
   interface_unknown = 1;
   start_function (NULL_TREE, fndecl, NULL_TREE, 1);
   store_parm_decls ();
+  clear_last_expr ();
 
   if (DECL_NAME (fndecl) == ansi_opname[MODIFY_EXPR])
     do_build_assign_ref (fndecl);

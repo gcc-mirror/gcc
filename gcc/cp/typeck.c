@@ -5989,32 +5989,11 @@ build_modify_expr (lhs, modifycode, rhs)
       if (pedantic && ! DECL_ARTIFICIAL (current_function_decl))
 	pedwarn ("ANSI C++ forbids assignment of arrays");
 
-      /* Have to wrap this in RTL_EXPR for two cases:
-	 in base or member initialization and if we
-	 are a branch of a ?: operator.  Since we
-	 can't easily know the latter, just do it always.  */
-
-      result = make_node (RTL_EXPR);
-
-      TREE_TYPE (result) = void_type_node;
-      do_pending_stack_adjust ();
-      start_sequence_for_rtl_expr (result);
-
-      /* As a matter of principle, `start_sequence' should do this.  */
-      emit_note (0, -1);
-
       from_array = TREE_CODE (TREE_TYPE (newrhs)) == ARRAY_TYPE
 	           ? 1 + (modifycode != INIT_EXPR): 0;
-      expand_vec_init (lhs, lhs, array_type_nelts (lhstype), newrhs,
-		       from_array);
-
-      do_pending_stack_adjust ();
-
-      TREE_SIDE_EFFECTS (result) = 1;
-      RTL_EXPR_SEQUENCE (result) = get_insns ();
-      RTL_EXPR_RTL (result) = const0_rtx;
-      end_sequence ();
-      return result;
+      return (build_vec_init
+	      (lhs, lhs, array_type_nelts (lhstype), newrhs,
+	       from_array));
     }
 
   if (modifycode == INIT_EXPR)
