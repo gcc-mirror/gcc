@@ -186,36 +186,6 @@ CC_MODE (CC);
 COMPLEX_MODES (INT);
 COMPLEX_MODES (FLOAT);
 
-/* Vector modes.  */
-VECTOR_MODES (INT, 2);        /*                 V2QI */
-VECTOR_MODES (INT, 4);        /*            V4QI V2HI */
-VECTOR_MODES (INT, 8);        /*       V8QI V4HI V2SI */
-VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI */
-/* VECTOR_MODES (INT, 32);             V8SI V4DI      */
-/* VECTOR_MODES (INT, 64);             V8DI           */
-
-VECTOR_MODE (INT, SI, 8)
-VECTOR_MODE (INT, DI, 4);
-VECTOR_MODE (INT, DI, 8);
-
-/* PPC uses this to distinguish between DImode passed in
-   float registers and DImode passed in vector registers.
-   It would be in rs6000-modes.def but it's referenced in
-   c-common.c.  FIXME.  */
-
-VECTOR_MODE (INT, DI, 1);
-
-VECTOR_MODES (FLOAT, 4);      /*                 V2HF */
-VECTOR_MODES (FLOAT, 8);      /*            V4HF V2SF */
-VECTOR_MODES (FLOAT, 16);     /*       V8HF V4SF V2DF */
-/* VECTOR_MODES (FLOAT, 32);           V8SF V4DF      */
-/* VECTOR_MODES (FLOAT, 64);     V16SF V8DF           */
-
-VECTOR_MODE (FLOAT, SF, 8);
-VECTOR_MODE (FLOAT, SF, 16);
-VECTOR_MODE (FLOAT, DF, 4);
-VECTOR_MODE (FLOAT, DF, 8);
-
 /* The symbol Pmode stands for one of the above machine modes (usually SImode).
    The tm.h file specifies which one.  It is not a distinct mode.  */
 
