@@ -1,3 +1,16 @@
+2003-11-30  Jeff Sturm <jsturm@one-point.com>
+
+	* java/net/InetAddress.java:
+	(static): Don'f force DNS request for ANY_IF address.
+
+2003-11-30  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/InetAddress.java,
+	java/net/natInetAddressNoNet.cc,
+	java/net/natInetAddressPosix.cc,
+	java/net/natInetAddressWin32.cc:
+	Reverted my last patch.
+
 2003-11-28  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/InetAddress.java
