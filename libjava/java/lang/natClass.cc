@@ -688,7 +688,7 @@ java::lang::Class::newInstance (void)
 
   _Jv_Method *meth = _Jv_GetMethodLocal (this, init_name, void_signature);
   if (! meth)
-    throw new java::lang::NoSuchMethodException (_Jv_NewStringUtf8Const (init_name));
+    throw new java::lang::InstantiationException (getName());
 
   jobject r = JvAllocObject (this);
   ((void (*) (jobject)) meth->ncode) (r);
