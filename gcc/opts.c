@@ -176,13 +176,13 @@ find_opt (const char *input, int lang_mask)
     {
       const struct cl_option *opt = &cl_options[mn];
 
-      /* Is this switch a prefix of the input?  */
-      if (!strncmp (input, opt->opt_text + 1, opt->opt_len))
+      /* Is the input either an exact match or a prefix that takes a
+	 joined argument?  */
+      if (!strncmp (input, opt->opt_text + 1, opt->opt_len)
+	  && (input[opt->opt_len] == '\0' || (opt->flags & CL_JOINED)))
 	{
-	  /* If language is OK, and the match is exact or the switch
-	     takes a joined argument, return it.  */
-	  if ((opt->flags & lang_mask)
-	      && (input[opt->opt_len] == '\0' || (opt->flags & CL_JOINED)))
+	  /* If language is OK, return it.  */
+	  if (opt->flags & lang_mask)
 	    return mn;
 
 	  /* If we haven't remembered a prior match, remember this

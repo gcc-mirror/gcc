@@ -1,3 +1,10 @@
+2004-11-28  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	PR diagnostic/17594
+	* opts.c (find_opt): Require that the input match a switch exactly
+	or that the switch take a joined option to be interpreted as a
+	match for another language.
+
 2004-11-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* timevar.def (TV_TREE_REDPHI): New timevar.

@@ -1,3 +1,7 @@
+2004-11-28  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* gcc.dg/funroll-loops-all.c: New.
+
 2004-11-28  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/18489
