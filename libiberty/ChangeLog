@@ -1,3 +1,8 @@
+2001-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-demangle.c (demangle_discriminator): `_0' is discriminator #1,
+	`_' not followed by a digit is invalid.
+
 2001-03-22  Jim Blandy  <jimb@redhat.com>
 
 	* cp-demangle.c (string_list_delete): Use dyn_string_delete
