@@ -1088,7 +1088,7 @@ resolve_fixup_regions ()
   for (i = 1; i <= n; ++i)
     {
       struct eh_region *fixup = cfun->eh->region_array[i];
-      struct eh_region *cleanup;
+      struct eh_region *cleanup = 0;
 
       if (! fixup || fixup->type != ERT_FIXUP)
 	continue;
