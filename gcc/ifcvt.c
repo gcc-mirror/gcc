@@ -1417,8 +1417,9 @@ noce_operand_ok (op)
       default:
 	switch (GET_RTX_CLASS (GET_CODE (op)))
 	  {
-	  case 'c':
 	  case '1':
+	    return ! may_trap_p (XEXP (op, 0));
+	  case 'c':
 	  case '2':
 	    return ! may_trap_p (XEXP (op, 0)) && ! may_trap_p (XEXP (op, 1));
 	  }

@@ -1,3 +1,7 @@
+Fri Mar  2 11:59:43 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* ifcvt.c (noce_operand_ok): Handle properly unarry operations.
+
 2001-03-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppfiles.c (struct include_file): Update.
