@@ -2604,8 +2604,7 @@ legitimize_pic_address (rtx orig, rtx reg)
           new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOT);
           new = gen_rtx_CONST (Pmode, new);
           new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
-          new = gen_rtx_MEM (Pmode, new);
-	  MEM_READONLY_P (new) = 1;
+          new = gen_const_mem (Pmode, new);
           emit_move_insn (reg, new);
           new = reg;
         }
@@ -2620,8 +2619,7 @@ legitimize_pic_address (rtx orig, rtx reg)
           new = gen_rtx_CONST (Pmode, new);
           emit_move_insn (temp, new);
 
-          new = gen_rtx_MEM (Pmode, temp);
-	  MEM_READONLY_P (new) = 1;
+          new = gen_const_mem (Pmode, temp);
           emit_move_insn (reg, new);
           new = reg;
         }
@@ -2641,8 +2639,7 @@ legitimize_pic_address (rtx orig, rtx reg)
           emit_move_insn (temp, addr);
 
           new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
-          new = gen_rtx_MEM (Pmode, new);
-	  MEM_READONLY_P (new) = 1;
+          new = gen_const_mem (Pmode, new);
           emit_move_insn (reg, new);
           new = reg;
         }
@@ -2932,8 +2929,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	    new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTNTPOFF);
 	    new = gen_rtx_CONST (Pmode, new);
 	    new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
-	    new = gen_rtx_MEM (Pmode, new);
-	    MEM_READONLY_P (new) = 1;
+	    new = gen_const_mem (Pmode, new);
 	    temp = gen_reg_rtx (Pmode);
 	    emit_move_insn (temp, new);
 	  }
@@ -2947,8 +2943,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	    temp = gen_reg_rtx (Pmode);
 	    emit_move_insn (temp, new);
 
-	    new = gen_rtx_MEM (Pmode, temp);
-	    MEM_READONLY_P (new) = 1;
+	    new = gen_const_mem (Pmode, temp);
 	    temp = gen_reg_rtx (Pmode);
 	    emit_move_insn (temp, new);
 	  }
@@ -2967,8 +2962,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	    emit_move_insn (temp, new);
 
             new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
-	    new = gen_rtx_MEM (Pmode, new);
-	    MEM_READONLY_P (new) = 1;
+	    new = gen_const_mem (Pmode, new);
 
 	    new = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, new, addr), UNSPEC_TLS_LOAD);
 	    temp = gen_reg_rtx (Pmode);
@@ -2986,9 +2980,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	    emit_move_insn (temp, new);
 
 	    new = temp;
-	    new = gen_rtx_MEM (Pmode, new);
-	    MEM_READONLY_P (new) = 1;
-
+	    new = gen_const_mem (Pmode, new);
 	    new = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, new, addr), UNSPEC_TLS_LOAD);
 	    temp = gen_reg_rtx (Pmode);
 	    emit_insn (gen_rtx_SET (Pmode, temp, new));

@@ -607,6 +607,17 @@ gen_rtx_MEM (enum machine_mode mode, rtx addr)
   return rt;
 }
 
+/* Generate a memory referring to non-trapping constant memory.  */
+
+rtx
+gen_const_mem (enum machine_mode mode, rtx addr)
+{
+  rtx mem = gen_rtx_MEM (mode, addr);
+  MEM_READONLY_P (mem) = 1;
+  MEM_NOTRAP_P (mem) = 1;
+  return mem;
+}
+
 rtx
 gen_rtx_SUBREG (enum machine_mode mode, rtx reg, int offset)
 {

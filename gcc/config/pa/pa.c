@@ -1013,15 +1013,13 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 		      gen_rtx_PLUS (word_mode, pic_offset_table_rtx,
 				    gen_rtx_HIGH (word_mode, orig)));
       pic_ref
-	= gen_rtx_MEM (Pmode,
-		       gen_rtx_LO_SUM (Pmode, tmp_reg,
-				       gen_rtx_UNSPEC (Pmode,
-						       gen_rtvec (1, orig),
-						       UNSPEC_DLTIND14R)));
+	= gen_const_mem (Pmode,
+		         gen_rtx_LO_SUM (Pmode, tmp_reg,
+				         gen_rtx_UNSPEC (Pmode,
+						         gen_rtvec (1, orig),
+						         UNSPEC_DLTIND14R)));
 
       current_function_uses_pic_offset_table = 1;
-      MEM_NOTRAP_P (pic_ref) = 1;
-      MEM_READONLY_P (pic_ref) = 1;
       mark_reg_pointer (reg, BITS_PER_UNIT);
       insn = emit_move_insn (reg, pic_ref);
 
