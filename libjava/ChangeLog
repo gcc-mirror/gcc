@@ -1,3 +1,10 @@
+2005-02-13  Anthony Green  <green@redhat.com>
+
+	* jni.cc (nathash_add): Don't strdup the method signature.
+	(_Jv_JNI_RegisterNatives): Convert the slashes to dots in the
+	method signature.
+	Update copyright.
+
 2005-02-12  Mark Wielaard  <mark@klomp.org>
 
 	Fixes bug libgcj/8170
