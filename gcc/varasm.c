@@ -4915,41 +4915,41 @@ default_elf_select_section_1 (tree decl, int reloc,
       mergeable_constant_section (DECL_MODE (decl), align, 0);
       break;
     case SECCAT_SRODATA:
-      named_section (NULL_TREE, ".sdata2", reloc);
+      named_section (decl, ".sdata2", reloc);
       break;
     case SECCAT_DATA:
       data_section ();
       break;
     case SECCAT_DATA_REL:
-      named_section (NULL_TREE, ".data.rel", reloc);
+      named_section (decl, ".data.rel", reloc);
       break;
     case SECCAT_DATA_REL_LOCAL:
-      named_section (NULL_TREE, ".data.rel.local", reloc);
+      named_section (decl, ".data.rel.local", reloc);
       break;
     case SECCAT_DATA_REL_RO:
-      named_section (NULL_TREE, ".data.rel.ro", reloc);
+      named_section (decl, ".data.rel.ro", reloc);
       break;
     case SECCAT_DATA_REL_RO_LOCAL:
-      named_section (NULL_TREE, ".data.rel.ro.local", reloc);
+      named_section (decl, ".data.rel.ro.local", reloc);
       break;
     case SECCAT_SDATA:
-      named_section (NULL_TREE, ".sdata", reloc);
+      named_section (decl, ".sdata", reloc);
       break;
     case SECCAT_TDATA:
-      named_section (NULL_TREE, ".tdata", reloc);
+      named_section (decl, ".tdata", reloc);
       break;
     case SECCAT_BSS:
 #ifdef BSS_SECTION_ASM_OP
       bss_section ();
 #else
-      named_section (NULL_TREE, ".bss", reloc);
+      named_section (decl, ".bss", reloc);
 #endif
       break;
     case SECCAT_SBSS:
-      named_section (NULL_TREE, ".sbss", reloc);
+      named_section (decl, ".sbss", reloc);
       break;
     case SECCAT_TBSS:
-      named_section (NULL_TREE, ".tbss", reloc);
+      named_section (decl, ".tbss", reloc);
       break;
     default:
       abort ();

@@ -1,11 +1,16 @@
-2004-11-18  Andrew Pinski  <pinskia@physics.uc.edu>
+2004-11-29  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/9571
+	* varasm.c (default_elf_select_section_1): Pass decl to named_section.
+
+2004-11-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/18164
 	* gimplify.c (gimplify_asm_expr): If the length of an output operand
 	is zero, do not process it, just let it go through.
 
 2004-11-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
-	    Diego Novillo  <dnovillo@redhat.com>	    
+	    Diego Novillo  <dnovillo@redhat.com>
 
 	PR/18662, also backported from tree-cleanup-branch.
 	* tree-ssa-ccp.c (substitute_and_fold): If replaced anything,
