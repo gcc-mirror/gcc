@@ -96,10 +96,6 @@ const char * const *h8_reg_names;
 
 /* Various operations needed by the following, indexed by CPU_TYPE.  */
 
-static const char *const h8_push_ops[2] = { "push", "push.l" };
-static const char *const h8_pop_ops[2] = { "pop", "pop.l" };
-static const char *const h8_mov_ops[2] = { "mov.w", "mov.l" };
-
 const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 
 /* Initialize the GCC target structure.  */
@@ -121,6 +117,10 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 void
 h8300_init_once ()
 {
+  static const char *const h8_push_ops[2] = { "push" , "push.l" };
+  static const char *const h8_pop_ops[2]  = { "pop"  , "pop.l"  };
+  static const char *const h8_mov_ops[2]  = { "mov.w", "mov.l"  };
+
   if (TARGET_H8300)
     {
       cpu_type = (int) CPU_H8300;
