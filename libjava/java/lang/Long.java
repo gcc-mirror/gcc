@@ -186,8 +186,8 @@ public final class Long extends Number implements Comparable
    */
   public static Long getLong(String nm, Long def)
   {
-    String val = System.getProperty(nm);
-    if (val == null)
+    nm = System.getProperty(nm);
+    if (nm == null || "".equals(nm))
       return def;
     try
       {
