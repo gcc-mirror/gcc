@@ -621,6 +621,10 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define EXTRA_CONSTRAINT_STR(OP, C,STR) EXTRA_CONSTRAINT (OP, C)
 #endif
 
+#ifndef REGISTER_MOVE_COST
+#define REGISTER_MOVE_COST(m, x, y) 2
+#endif
+
 /* Determine whether the the entire c99 runtime
    is present in the runtime library.  */
 #ifndef TARGET_C99_FUNCTIONS

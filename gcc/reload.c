@@ -105,10 +105,6 @@ a register with any other reload.  */
 #include "function.h"
 #include "toplev.h"
 
-#ifndef REGISTER_MOVE_COST
-#define REGISTER_MOVE_COST(m, x, y) 2
-#endif
-
 #ifndef REGNO_MODE_OK_FOR_BASE_P
 #define REGNO_MODE_OK_FOR_BASE_P(REGNO, MODE) REGNO_OK_FOR_BASE_P (REGNO)
 #endif

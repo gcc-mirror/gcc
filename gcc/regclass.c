@@ -45,10 +45,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "timevar.h"
 
-#ifndef REGISTER_MOVE_COST
-#define REGISTER_MOVE_COST(m, x, y) 2
-#endif
-
 static void init_reg_sets_1	PARAMS ((void));
 static void init_reg_modes	PARAMS ((void));
 static void init_reg_autoinc	PARAMS ((void));
