@@ -29,6 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    do not apply.  */
 
 #include "tconfig.h"
+#include "machmode.h"
 #ifndef L_trampoline
 #include "gstddef.h"
 #endif
