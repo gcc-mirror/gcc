@@ -1820,7 +1820,7 @@ print_operand (file, op, letter)
       REAL_VALUE_FROM_CONST_DOUBLE (r, op);
       ASM_OUTPUT_LONG_DOUBLE_OPERAND (file, r);
     }
-  else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) != DImode)
+  else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == DFmode)
     {
       REAL_VALUE_TYPE r;
       REAL_VALUE_FROM_CONST_DOUBLE (r, op);
