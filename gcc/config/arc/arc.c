@@ -1185,7 +1185,7 @@ arc_output_function_prologue (file, size)
 }
 
 /* Do any necessary cleanup after a function to restore stack, frame,
-   and regs. */
+   and regs.  */
 
 static void
 arc_output_function_epilogue (file, size)
@@ -1920,7 +1920,7 @@ arc_final_prescan_insn (insn, opvec, noperands)
      an if/then/else), and things need to be reversed.  */
   int reverse = 0;
 
-  /* If we start with a return insn, we only succeed if we find another one. */
+  /* If we start with a return insn, we only succeed if we find another one.  */
   int seeking_return = 0;
   
   /* START_INSN will hold the insn from where we start looking.  This is the
@@ -2079,7 +2079,7 @@ arc_final_prescan_insn (insn, opvec, noperands)
 	      /* Succeed if the following insn is the target label.
 		 Otherwise fail.  
 		 If return insns are used then the last insn in a function 
-		 will be a barrier. */
+		 will be a barrier.  */
 	      next_must_be_target_label_p = TRUE;
 	      break;
 
@@ -2098,7 +2098,7 @@ arc_final_prescan_insn (insn, opvec, noperands)
       	      /* If this is an unconditional branch to the same label, succeed.
 		 If it is to another label, do nothing.  If it is conditional,
 		 fail.  */
-	      /* ??? Probably, the test for the SET and the PC are unnecessary. */
+	      /* ??? Probably, the test for the SET and the PC are unnecessary.  */
 
 	      if (GET_CODE (scanbody) == SET
 		  && GET_CODE (SET_DEST (scanbody)) == PC)
@@ -2183,7 +2183,7 @@ arc_final_prescan_insn (insn, opvec, noperands)
       /* Restore recog_data.  Getting the attributes of other insns can
 	 destroy this array, but final.c assumes that it remains intact
 	 across this call; since the insn has been recognized already we
-	 call insn_extract direct. */
+	 call insn_extract direct.  */
       insn_extract (insn);
     }
 }
