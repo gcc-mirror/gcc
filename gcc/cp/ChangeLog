@@ -1,3 +1,40 @@
+2000-01-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (BINFO_VIRTUALS): Tweak documentation.
+	(CLASSTYPE_PRIMARY_BINFO): Use BINFO_PRIMARY_BINFO.
+	(BINFO_PRIMARY_BINFO): New macro.
+	(BF_DELTA): Rename to ...
+	(BV_DELTA): ... this.
+	(BF_VCALL_INDEX): Rename to ...
+	(BV_VCALL_INDEX): ... this.
+	(BF_FN): Rename to ...
+	(BV_FN): ... this.
+	* class.c (build_vbase_path): Adjust for changes to reverse_path.
+	(set_rtti_entry): Rename BF_ macros to BV_ variants.
+	(modify_vtable_entry): Simplify.
+	(add_virtual_function): Rename BF_ macros to BV_ variants.
+	(build_vtable_initializer): Likewise.
+	(get_class_offset_1): Remove.
+	(dfs_get_class_offset): Likewise.
+	(get_class_offset): Likewise.
+	(dfs_find_final_overrider): New function.
+	(find_final_overrider): Likewise.
+	(modify_one_vtable): Remove.
+	(dfs_find_base): New function.
+	(dfs_modify_vtables): Fold modify_one_vtable in here.  Use
+	find_final_overrider.
+	(modify_all_vtables): Adjust.  Set BV_VCALL_INDEX on new
+	virtuals.
+	(dfs_fixup_vtable_deltas): Remove.
+	(override_one_vtable): Remove.
+	(merge_overrides): Likewise.
+	(layout_virtual_bases): Make sure BINFO_OFFSET is set right for
+	unreal chilren of virtual bases.
+	(finish_struct_1): Don't use merge_overrides.  Don't use
+	dfs_fixup_vtable_deltas.
+	* tree.c (reverse_path): Return a TREE_LIST, not a chain of 
+	BINFOs.
+	
 2000-01-31  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 	    Jason Merrill  <jason@yorick.cygnus.com>
 
