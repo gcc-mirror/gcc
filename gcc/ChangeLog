@@ -1,5 +1,11 @@
 2004-01-05  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.h (TARGET_OPTIONS): Correctly record -mhard-float and
+	-msoft-float in target_float_switch.
+	* arm.c (arm_override_options): Fix processing of target_float_switch.
+
+2004-01-05  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm/vfp.md (arm_movsi_vfp): Hide VFP register classes from register
 	preferencing.
 

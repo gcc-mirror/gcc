@@ -1088,7 +1088,7 @@ arm_override_options (void)
   else if (target_float_switch)
     {
       /* This is a bit of a hack to avoid needing target flags for these.  */
-      if (target_float_switch[1] == 'h')
+      if (target_float_switch[0] == 'h')
 	arm_float_abi = ARM_FLOAT_ABI_HARD;
       else
 	arm_float_abi = ARM_FLOAT_ABI_SOFT;
