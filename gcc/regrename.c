@@ -714,10 +714,15 @@ build_def_use (bb, regs_used)
 		scan_rtx (insn, loc, class, mark_read, type);
 	    }
 
-	  /* Step 4: Close chains for registers that die here.  */
+	  /* Step 4: Close chains for registers that die here.
+	     Also record updates for REG_INC notes.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	    if (REG_NOTE_KIND (note) == REG_DEAD)
-	      scan_rtx (insn, &XEXP (note, 0), NO_REGS, terminate_dead, OP_IN);
+	    {
+	      if (REG_NOTE_KIND (note) == REG_DEAD)
+		scan_rtx (insn, &XEXP (note, 0), NO_REGS, terminate_dead, OP_IN);
+	      else if (REG_NOTE_KIND (note) == REG_INC)
+		scan_rtx (insn, &XEXP (note, 0), ALL_REGS, mark_read, OP_INOUT);
+	    }
 
 	  /* Step 4B: If this is a call, any chain live at this point
 	     requires a caller-saved reg.  */
