@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -9,19 +9,21 @@ details.  */
 package gnu.gcj.protocol.jar;
 
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.JarURLConnection;
 import java.net.URLStreamHandler;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.jar.JarFile;
+import java.util.zip.ZipFile;
 import java.util.Hashtable;
 
 /**
  * Written using on-line Java Platform 1.2 API Specification.
- * Status: Needs a way to download jar files and store them in the local file
- * system.  I don't know how to do that in a portable way.  For now, it can only handle 
- * connections to a jar:file: url's.
  *
  * @author Kresten Krab Thorup <krab@gnu.org>
  * @date Aug 10, 1999.
@@ -70,14 +72,19 @@ public class Connection extends JarURLConnection
       }
     else
       {
-	/*
-	  FIXME: Here we need to download and cache the jar
-	  file in the local file system!  Stupid design.  Why
-	  can't we just create a JarFile from a bag of bytes?
-	*/
-
-	throw new java.io.IOException("cannot create jar file from " +
-				      jarFileURL);
+	URLConnection urlconn = jarFileURL.openConnection();
+	InputStream is = urlconn.getInputStream();
+	byte[] buf = new byte[4*1024];
+	File f = File.createTempFile("cache", "jar");
+	FileOutputStream fos = new FileOutputStream(f);
+	int len = 0;
+	while((len = is.read(buf)) != -1)
+	  fos.write(buf, 0, len);
+        fos.close();
+	// Always verify the Manifest, open read only and delete when done.
+	// XXX ZipFile.OPEN_DELETE not yet implemented.
+	// jf = new JarFile(f, true, ZipFile.OPEN_READ | ZipFile.OPEN_DELETE);
+	jarfile = new JarFile(f, true, ZipFile.OPEN_READ);
       }
 
     return jarfile;

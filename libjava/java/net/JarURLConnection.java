@@ -134,7 +134,11 @@ public abstract class JarURLConnection extends URLConnection
     if (jarfile != null)
       {
 	// this is the easy way...
-	return jarfile.getInputStream (jarfile.getEntry (element));
+	ZipEntry entry = jarfile.getEntry(element);
+	if (entry != null)
+	  return jarfile.getInputStream (entry);
+	else
+	  return null;
       }
     else
       {
@@ -320,12 +324,17 @@ public abstract class JarURLConnection extends URLConnection
     // to add others later and for consistency, we'll implement it this way.
 
     // Add the only header we know about right now:  Content-length.
-    long len;
+    long len = -1;
 
     if (element == null)
-      len = jarFileURLConnection.getContentLength ();
+      if (jarFileURLConnection != null)
+	len = jarFileURLConnection.getContentLength ();
     else
-      len = getJarEntry ().getSize ();
+      {
+	JarEntry entry = getJarEntry();
+	if (entry != null)
+	  len = entry.getSize ();
+      }
 
     String line = "Content-length: " + len;
     hdrVec.addElement(line);
@@ -381,7 +390,6 @@ public abstract class JarURLConnection extends URLConnection
   {
     JarFile file = getJarFile ();
 
-    // FIXME: implement this
-    return null;
+    return (file != null) ? file.getManifest() : null;
   }
 }

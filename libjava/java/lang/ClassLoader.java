@@ -13,7 +13,6 @@ package java.lang;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.Permission;
@@ -23,13 +22,68 @@ import java.security.ProtectionDomain;
 import java.util.*;
 
 /**
- * The class <code>ClassLoader</code> is intended to be subclassed by
- * applications in order to describe new ways of loading classes,
- * such as over the network.
+ * The ClassLoader is a way of customizing the way Java gets its classes
+ * and loads them into memory.  The verifier and other standard Java things
+ * still run, but the ClassLoader is allowed great flexibility in determining
+ * where to get the classfiles and when to load and resolve them. For that
+ * matter, a custom ClassLoader can perform on-the-fly code generation or
+ * modification!
  *
- * @author  Kresten Krab Thorup
+ * <p>Every classloader has a parent classloader that is consulted before
+ * the 'child' classloader when classes or resources should be loaded.   
+ * This is done to make sure that classes can be loaded from an hierarchy of
+ * multiple classloaders and classloaders do not accidentially redefine   
+ * already loaded classes by classloaders higher in the hierarchy.
+ *   
+ * <p>The grandparent of all classloaders is the bootstrap classloader, which
+ * loads all the standard system classes as implemented by GNU Classpath. The
+ * other special classloader is the system classloader (also called
+ * application classloader) that loads all classes from the CLASSPATH
+ * (<code>java.class.path</code> system property). The system classloader
+ * is responsible for finding the application classes from the classpath,
+ * and delegates all requests for the standard library classes to its parent
+ * the bootstrap classloader. Most programs will load all their classes
+ * through the system classloaders.
+ *
+ * <p>The bootstrap classloader in GNU Classpath is implemented as a couple of
+ * static (native) methods on the package private class
+ * <code>java.lang.VMClassLoader</code>, the system classloader is an
+ * instance of <code>gnu.java.lang.SystemClassLoader</code>
+ * (which is a subclass of <code>java.net.URLClassLoader</code>).
+ *
+ * <p>Users of a <code>ClassLoader</code> will normally just use the methods
+ * <ul>
+ *  <li> <code>loadClass()</code> to load a class.</li>
+ *  <li> <code>getResource()</code> or <code>getResourceAsStream()</code>
+ *       to access a resource.</li>
+ *  <li> <code>getResources()</code> to get an Enumeration of URLs to all
+ *       the resources provided by the classloader and its parents with the
+ *       same name.</li>
+ * </ul>
+ *
+ * <p>Subclasses should implement the methods
+ * <ul>
+ *  <li> <code>findClass()</code> which is called by <code>loadClass()</code>
+ *       when the parent classloader cannot provide a named class.</li>
+ *  <li> <code>findResource()</code> which is called by
+ *       <code>getResource()</code> when the parent classloader cannot provide
+ *       a named resource.</li>
+ *  <li> <code>findResources()</code> which is called by
+ *       <code>getResource()</code> to combine all the resources with the
+ *       same name from the classloader and its parents.</li>
+ *  <li> <code>findLibrary()</code> which is called by
+ *       <code>Runtime.loadLibrary()</code> when a class defined by the
+ *       classloader wants to load a native library.</li>
+ * </ul>
+ *
+ * @author John Keiser
+ * @author Mark Wielaard
+ * @author Eric Blake
+ * @author Kresten Krab Thorup
+ * @see Class
+ * @since 1.0
+ * @status still missing 1.4 functionality
  */
-
 public abstract class ClassLoader
 {
   /**
@@ -73,12 +127,40 @@ public abstract class ClassLoader
   // Package visible for use by Class.
   Map classAssertionStatus;
 
-  private ClassLoader parent;
+  /**
+   * The classloader that is consulted before this classloader.
+   * If null then the parent is the bootstrap classloader.
+   */
+  private final ClassLoader parent;
+
+  /**
+   * All packages defined by this classloader. It is not private in order to
+   * allow native code (and trusted subclasses) access to this field.
+   */
   private HashMap definedPackages = new HashMap();
 
+  /**
+   * Returns the parent of this classloader. If the parent of this
+   * classloader is the bootstrap classloader then this method returns
+   * <code>null</code>. A security check may be performed on
+   * <code>RuntimePermission("getClassLoader")</code>.
+   *
+   * @throws SecurityException if the security check fails
+   * @since 1.2
+   */
   public final ClassLoader getParent ()
   {
-    /* FIXME: security */
+    // Check if we may return the parent classloader
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      {
+	/* FIXME: security, getClassContext() not implemented.
+	Class c = VMSecurityManager.getClassContext()[1];
+	ClassLoader cl = c.getClassLoader();
+	if (cl != null && cl != this)
+	  sm.checkPermission(new RuntimePermission("getClassLoader"));
+	*/
+      }
     return parent;
   }
 
@@ -449,7 +531,8 @@ public abstract class ClassLoader
 	    else
 	      {
 		InternalError e
-		  = new InternalError ("unexpected exception during linking");
+		  = new InternalError ("unexpected exception during linking: "
+				       + clazz.getName());
 		e.initCause (x);
 		throw e;
 	      }
@@ -521,6 +604,8 @@ public abstract class ClassLoader
    * null when the package is not defined by this classloader or one of its
    * parents.
    *
+   * @param name the package name to find
+   * @return the package, if defined
    * @since 1.2
    */
   protected Package getPackage(String name)
@@ -546,6 +631,7 @@ public abstract class ClassLoader
   /**
    * Returns all Package objects defined by this classloader and its parents.
    *
+   * @return an array of all defined packages
    * @since 1.2
    */
   protected Package[] getPackages()
@@ -575,6 +661,26 @@ public abstract class ClassLoader
       allPackages = packages;
 
     return allPackages;
+  }
+
+  /**
+   * Called by <code>Runtime.loadLibrary()</code> to get an absolute path
+   * to a (system specific) library that was requested by a class loaded
+   * by this classloader. The default implementation returns
+   * <code>null</code>. It should be implemented by subclasses when they
+   * have a way to find the absolute path to a library. If this method
+   * returns null the library is searched for in the default locations
+   * (the directories listed in the <code>java.library.path</code> system
+   * property).
+   *
+   * @param name the (system specific) name of the requested library
+   * @return the full pathname to the requested library, or null
+   * @see Runtime#loadLibrary()
+   * @since 1.2
+   */
+  protected String findLibrary(String name)
+  {
+    return null;
   }
 
   /** 
