@@ -1,3 +1,22 @@
+2004-05-31  Paolo Bonzini  <bonzini@gnu.org>
+
+	Revert this patch:
+	2004-05-27  Paolo Bonzini  <bonzini@gnu.org>
+
+	* combine.c (gen_binary): Remove.
+	(known_cond, simplify_shift_const
+	find_split_point, combine_simplify_rtx,
+	simplify_if_then_else, simplify_set,
+	simplify_logical, expand_field_assignment,
+	extract_left_shift, force_to_mode,
+	if_then_else_cond, apply_distributive_law,
+	simplify_and_const_int, simplify_shift_const,
+	gen_lowpart_for_combine, simplify_comparison,
+	reversed_comparison): Replace with
+	simplify_gen_binary, simplify_gen_relational or
+	distribute_and_simplify_rtx.
+	(distribute_and_simplify_rtx): New function.
+
 2004-05-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (emit_move_sequence): Fix loading of non 14-bit CONST operands
@@ -269,7 +288,7 @@
 
 	* cfgbuild.c (control_flow_insn_p):  Notice noreturn call
 
-2004-05-25  Paolo Bonzini  <bonzini@gnu.org>
+2004-05-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (gen_binary): Remove.
 	(known_cond, simplify_shift_const
