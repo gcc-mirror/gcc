@@ -473,7 +473,7 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
      ((C) == 'Q' ?  q_constraint (OP) : 			\
       (C) == 'S' ?  larl_operand (OP, GET_MODE (OP)) : 0)
 
-#define EXTRA_MEMORY_CONSTRAINT(C) ((C) == 'Q')
+#define EXTRA_MEMORY_CONSTRAINT(C,STR) ((C) == 'Q')
 
 
 /* Stack layout and calling conventions.  */

@@ -1681,18 +1681,21 @@ asm_operand_ok (op, constraint)
 
   while (*constraint)
     {
-      char c = *constraint++;
+      char c = *constraint;
+      int len;
       switch (c)
 	{
+	case ',':
+	  constraint++;
+	  continue;
 	case '=':
 	case '+':
 	case '*':
 	case '%':
-	case '?':
 	case '!':
 	case '#':
 	case '&':
-	case ',':
+	case '?':
 	  break;
 
 	case '0': case '1': case '2': case '3': case '4':
@@ -1701,25 +1704,27 @@ asm_operand_ok (op, constraint)
 	     proper matching constraint, but we can't actually fail
 	     the check if they didn't.  Indicate that results are
 	     inconclusive.  */
-	  while (ISDIGIT (*constraint))
+	  do
 	    constraint++;
-	  result = -1;
-	  break;
+	  while (ISDIGIT (*constraint));
+	  if (! result)
+	    result = -1;
+	  continue;
 
 	case 'p':
 	  if (address_operand (op, VOIDmode))
-	    return 1;
+	    result = 1;
 	  break;
 
 	case 'm':
 	case 'V': /* non-offsettable */
 	  if (memory_operand (op, VOIDmode))
-	    return 1;
+	    result = 1;
 	  break;
 
 	case 'o': /* offsettable */
 	  if (offsettable_nonstrict_memref_p (op))
-	    return 1;
+	    result = 1;
 	  break;
 
 	case '<':
@@ -1734,7 +1739,7 @@ asm_operand_ok (op, constraint)
 	      && (1
 		  || GET_CODE (XEXP (op, 0)) == PRE_DEC
 		  || GET_CODE (XEXP (op, 0)) == POST_DEC))
-	    return 1;
+	    result = 1;
 	  break;
 
 	case '>':
@@ -1742,7 +1747,7 @@ asm_operand_ok (op, constraint)
 	      && (1
 		  || GET_CODE (XEXP (op, 0)) == PRE_INC
 		  || GET_CODE (XEXP (op, 0)) == POST_INC))
-	    return 1;
+	    result = 1;
 	  break;
 
 	case 'E':
@@ -1750,18 +1755,18 @@ asm_operand_ok (op, constraint)
 	  if (GET_CODE (op) == CONST_DOUBLE
 	      || (GET_CODE (op) == CONST_VECTOR
 		  && GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_FLOAT))
-	    return 1;
+	    result = 1;
 	  break;
 
 	case 'G':
 	  if (GET_CODE (op) == CONST_DOUBLE
-	      && CONST_DOUBLE_OK_FOR_LETTER_P (op, 'G'))
-	    return 1;
+	      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, 'G', constraint))
+	    result = 1;
 	  break;
 	case 'H':
 	  if (GET_CODE (op) == CONST_DOUBLE
-	      && CONST_DOUBLE_OK_FOR_LETTER_P (op, 'H'))
-	    return 1;
+	      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, 'H', constraint))
+	    result = 1;
 	  break;
 
 	case 's':
@@ -1777,94 +1782,100 @@ asm_operand_ok (op, constraint)
 	      && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))
 #endif
 	      )
-	    return 1;
+	    result = 1;
 	  break;
 
 	case 'n':
 	  if (GET_CODE (op) == CONST_INT
 	      || (GET_CODE (op) == CONST_DOUBLE
 		  && GET_MODE (op) == VOIDmode))
-	    return 1;
+	    result = 1;
 	  break;
 
 	case 'I':
 	  if (GET_CODE (op) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'I'))
-	    return 1;
+	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'I', constraint))
+	    result = 1;
 	  break;
 	case 'J':
 	  if (GET_CODE (op) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'J'))
-	    return 1;
+	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'J', constraint))
+	    result = 1;
 	  break;
 	case 'K':
 	  if (GET_CODE (op) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'K'))
-	    return 1;
+	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'K', constraint))
+	    result = 1;
 	  break;
 	case 'L':
 	  if (GET_CODE (op) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'L'))
-	    return 1;
+	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'L', constraint))
+	    result = 1;
 	  break;
 	case 'M':
 	  if (GET_CODE (op) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'M'))
-	    return 1;
+	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'M', constraint))
+	    result = 1;
 	  break;
 	case 'N':
 	  if (GET_CODE (op) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'N'))
-	    return 1;
+	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'N', constraint))
+	    result = 1;
 	  break;
 	case 'O':
 	  if (GET_CODE (op) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'O'))
-	    return 1;
+	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'O', constraint))
+	    result = 1;
 	  break;
 	case 'P':
 	  if (GET_CODE (op) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'P'))
-	    return 1;
+	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'P', constraint))
+	    result = 1;
 	  break;
 
 	case 'X':
-	  return 1;
+	  result = 1;
 
 	case 'g':
 	  if (general_operand (op, VOIDmode))
-	    return 1;
+	    result = 1;
 	  break;
 
 	default:
 	  /* For all other letters, we first check for a register class,
 	     otherwise it is an EXTRA_CONSTRAINT.  */
-	  if (REG_CLASS_FROM_LETTER (c) != NO_REGS)
+	  if (REG_CLASS_FROM_CONSTRAINT (c, constraint) != NO_REGS)
 	    {
 	    case 'r':
 	      if (GET_MODE (op) == BLKmode)
 		break;
 	      if (register_operand (op, VOIDmode))
-		return 1;
+		result = 1;
 	    }
-#ifdef EXTRA_CONSTRAINT
-	  if (EXTRA_CONSTRAINT (op, c))
-	    return 1;
-	  if (EXTRA_MEMORY_CONSTRAINT (c))
+#ifdef EXTRA_CONSTRAINT_STR
+	  if (EXTRA_CONSTRAINT_STR (op, c, constraint))
+	    result = 1;
+	  if (EXTRA_MEMORY_CONSTRAINT (c, constraint))
 	    {
 	      /* Every memory operand can be reloaded to fit.  */
 	      if (memory_operand (op, VOIDmode))
-	        return 1;
+	        result = 1;
 	    }
-	  if (EXTRA_ADDRESS_CONSTRAINT (c))
+	  if (EXTRA_ADDRESS_CONSTRAINT (c, constraint))
 	    {
 	      /* Every address operand can be reloaded to fit.  */
 	      if (address_operand (op, VOIDmode))
-	        return 1;
+	        result = 1;
 	    }
 #endif
 	  break;
 	}
+      len = CONSTRAINT_LEN (c, constraint);
+      do
+	constraint++;
+      while (--len && *constraint);
+      if (len)
+	return 0;
     }
 
   return result;
@@ -2233,13 +2244,16 @@ preprocess_constraints ()
 
 	  for (;;)
 	    {
-	      char c = *p++;
+	      char c = *p;
 	      if (c == '#')
 		do
-		  c = *p++;
+		  c = *++p;
 		while (c != ',' && c != '\0');
 	      if (c == ',' || c == '\0')
-		break;
+		{
+		  p++;
+		  break;
+		}
 
 	      switch (c)
 		{
@@ -2265,11 +2279,11 @@ preprocess_constraints ()
 		case '5': case '6': case '7': case '8': case '9':
 		  {
 		    char *end;
-		    op_alt[j].matches = strtoul (p - 1, &end, 10);
+		    op_alt[j].matches = strtoul (p, &end, 10);
 		    recog_op_alt[op_alt[j].matches][j].matched = i;
 		    p = end;
 		  }
-		  break;
+		  continue;
 
 		case 'm':
 		  op_alt[j].memory_ok = 1;
@@ -2301,22 +2315,28 @@ preprocess_constraints ()
 		  break;
 
 		default:
-		  if (EXTRA_MEMORY_CONSTRAINT (c))
+		  if (EXTRA_MEMORY_CONSTRAINT (c, p))
 		    {
 		      op_alt[j].memory_ok = 1;
 		      break;
 		    }
-		  if (EXTRA_ADDRESS_CONSTRAINT (c))
+		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
 		    {
 		      op_alt[j].is_address = 1;
-		      op_alt[j].class = reg_class_subunion[(int) op_alt[j].class]
-		        [(int) MODE_BASE_REG_CLASS (VOIDmode)];
+		      op_alt[j].class
+			= (reg_class_subunion
+			   [(int) op_alt[j].class]
+			   [(int) MODE_BASE_REG_CLASS (VOIDmode)]);
 		      break;
 		    }
 
-		  op_alt[j].class = reg_class_subunion[(int) op_alt[j].class][(int) REG_CLASS_FROM_LETTER ((unsigned char) c)];
+		  op_alt[j].class
+		    = (reg_class_subunion
+		       [(int) op_alt[j].class]
+		       [(int) REG_CLASS_FROM_CONSTRAINT ((unsigned char) c, p)]);
 		  break;
 		}
+	      p += CONSTRAINT_LEN (c, p);
 	    }
 	}
     }
@@ -2331,7 +2351,7 @@ preprocess_constraints ()
    alternative of constraints was matched: 0 for the first alternative,
    1 for the next, etc.
 
-   In addition, when two operands are match
+   In addition, when two operands are required to match
    and it happens that the output operand is (reg) while the
    input operand is --(reg) or ++(reg) (a pre-inc or pre-dec),
    make the output operand look like the input.
@@ -2390,6 +2410,7 @@ constrain_operands (strict)
 	  int offset = 0;
 	  int win = 0;
 	  int val;
+	  int len;
 
 	  earlyclobber[opno] = 0;
 
@@ -2414,9 +2435,16 @@ constrain_operands (strict)
 	  if (*p == 0 || *p == ',')
 	    win = 1;
 
-	  while (*p && (c = *p++) != ',')
-	    switch (c)
+	  do
+	    switch (c = *p, len = CONSTRAINT_LEN (c, p), c)
 	      {
+	      case '\0':
+		len = 0;
+		break;
+	      case ',':
+		c = '\0';
+		break;
+
 	      case '?':  case '!': case '*':  case '%':
 	      case '=':  case '+':
 		break;
@@ -2424,8 +2452,10 @@ constrain_operands (strict)
 	      case '#':
 		/* Ignore rest of this alternative as far as
 		   constraint checking is concerned.  */
-		while (*p && *p != ',')
+		do
 		  p++;
+		while (*p && *p != ',');
+		len = 0;
 		break;
 
 	      case '&':
@@ -2447,7 +2477,7 @@ constrain_operands (strict)
 		  char *end;
 		  int match;
 
-		  match = strtoul (p - 1, &end, 10);
+		  match = strtoul (p, &end, 10);
 		  p = end;
 
 		  if (strict < 0)
@@ -2482,6 +2512,7 @@ constrain_operands (strict)
 		      funny_match[funny_match_index++].other = match;
 		    }
 		}
+		len = 0;
 		break;
 
 	      case 'p':
@@ -2551,7 +2582,7 @@ constrain_operands (strict)
 	      case 'G':
 	      case 'H':
 		if (GET_CODE (op) == CONST_DOUBLE
-		    && CONST_DOUBLE_OK_FOR_LETTER_P (op, c))
+		    && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, p))
 		  win = 1;
 		break;
 
@@ -2581,7 +2612,7 @@ constrain_operands (strict)
 	      case 'O':
 	      case 'P':
 		if (GET_CODE (op) == CONST_INT
-		    && CONST_OK_FOR_LETTER_P (INTVAL (op), c))
+		    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, p))
 		  win = 1;
 		break;
 
@@ -2612,7 +2643,8 @@ constrain_operands (strict)
 		{
 		  enum reg_class class;
 
-		  class = (c == 'r' ? GENERAL_REGS : REG_CLASS_FROM_LETTER (c));
+		  class = (c == 'r'
+			   ? GENERAL_REGS : REG_CLASS_FROM_CONSTRAINT (c, p));
 		  if (class != NO_REGS)
 		    {
 		      if (strict < 0
@@ -2624,11 +2656,11 @@ constrain_operands (strict)
 			      && reg_fits_class_p (op, class, offset, mode)))
 		        win = 1;
 		    }
-#ifdef EXTRA_CONSTRAINT
-		  else if (EXTRA_CONSTRAINT (op, c))
+#ifdef EXTRA_CONSTRAINT_STR
+		  else if (EXTRA_CONSTRAINT_STR (op, c, p))
 		    win = 1;
 
-		  if (EXTRA_MEMORY_CONSTRAINT (c))
+		  if (EXTRA_MEMORY_CONSTRAINT (c, p))
 		    {
 		      /* Every memory operand can be reloaded to fit.  */
 		      if (strict < 0 && GET_CODE (op) == MEM)
@@ -2643,7 +2675,7 @@ constrain_operands (strict)
 			  && REGNO (op) >= FIRST_PSEUDO_REGISTER)
 			win = 1;
 		    }
-		  if (EXTRA_ADDRESS_CONSTRAINT (c))
+		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
 		    {
 		      /* Every address operand can be reloaded to fit.  */
 		      if (strict < 0)
@@ -2653,6 +2685,7 @@ constrain_operands (strict)
 		  break;
 		}
 	      }
+	  while (p += len, c);
 
 	  constraints[opno] = p;
 	  /* If this operand did not win somehow,
@@ -3009,7 +3042,7 @@ peep2_find_free_register (from, to, class_str, mode, reg_set)
     }
 
   class = (class_str[0] == 'r' ? GENERAL_REGS
-	   : REG_CLASS_FROM_LETTER (class_str[0]));
+	   : REG_CLASS_FROM_CONSTRAINT (class_str[0], class_str));
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
