@@ -19,11 +19,13 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
+#define TARGET_MEM_FUNCTIONS
+
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC ""
 
 #undef LINK_SPEC
-#define LINK_SPEC "-align:0x1000 -stack:1000000,1000000"
+#define LINK_SPEC "-stack:1000000,1000000"
 
 #undef CPP_SPEC
 #define CPP_SPEC "-lang-c-c++-comments"
