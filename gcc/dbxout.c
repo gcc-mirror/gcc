@@ -1244,9 +1244,18 @@ dbxout_type (type, full, show_arg_types)
       CHARS (1);
       for (tem = TYPE_VALUES (type); tem; tem = TREE_CHAIN (tem))
 	{
-	  fprintf (asmfile, "%s:%d,", IDENTIFIER_POINTER (TREE_PURPOSE (tem)),
-		   TREE_INT_CST_LOW (TREE_VALUE (tem)));
-	  CHARS (11 + IDENTIFIER_LENGTH (TREE_PURPOSE (tem)));
+	  fprintf (asmfile, "%s:", IDENTIFIER_POINTER (TREE_PURPOSE (tem)));
+	  if (TREE_INT_CST_HIGH (TREE_VALUE (tem)) == 0)
+	    {
+	      if (TREE_INT_CST_LOW (TREE_VALUE (tem)) < 0)
+		fprintf (asmfile, "%u", TREE_INT_CST_LOW (TREE_VALUE (tem)));
+	      else
+		fprintf (asmfile, "%d", TREE_INT_CST_LOW (TREE_VALUE (tem)));
+	    }
+	  else
+	    print_int_cst_octal (TREE_VALUE (tem));
+	  fprintf (asmfile, ",");
+	  CHARS (20 + IDENTIFIER_LENGTH (TREE_PURPOSE (tem)));
 	  if (TREE_CHAIN (tem) != 0)
 	    CONTIN;
 	}
