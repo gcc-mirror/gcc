@@ -6764,6 +6764,13 @@ mips_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
 	      mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
 	    }
 	}
+
+      /* For EABI, the class of return register depends entirely on MODE.
+	 For example, "struct { some_type x; }" and "union { some_type x; }"
+	 are returned in the same way as a bare "some_type" would be.
+	 Other ABIs only use FPRs for scalar, complex or vector types.  */
+      if (mips_abi != ABI_EABI && !FLOAT_TYPE_P (valtype))
+	return gen_rtx_REG (mode, GP_RETURN);
     }
 
   if ((GET_MODE_CLASS (mode) == MODE_FLOAT

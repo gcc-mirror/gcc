@@ -1,3 +1,8 @@
+2004-09-22  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_function_value): For o32, o64, n32 and n64,
+	use FPRs for scalar, complex and vector types only.
+
 2004-09-21 Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (opt_stats): Move so that it lives just after
