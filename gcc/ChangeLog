@@ -1,5 +1,21 @@
 2003-01-15  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.h (ASM_SPEC): Handle -m68hcs12; Pass -mshort
+	and -mshort-double to the assembler to specify the ABI.
+	(LINK_SPEC): Likewise.
+	(CPP_SPEC): Pass HCS12 specific define.
+	(MASK_M68S12): New define.
+	(TARGET_M68S12): Likewise.
+	(TARGET_SWITCHES): New options -m68hcs12 and -m68S12.
+	(TARGET_VERSION): Update.
+	* config/m68hc11/m68hc12.h (CPP_SPEC): Pass HCS12 specific define.
+	(LINK_SPEC): Update.
+	(ASM_SPEC): Update.
+	* config/m68hc11/m68hc11.c (m68hc11_asm_file_start): Update.
+	* doc/invoke.texi (M68hc1x Options): Document -m68hcs12.
+
+2003-01-15  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.md ("return"): Use emit_jump_insn to emit
 	the return code.
 

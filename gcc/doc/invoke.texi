@@ -345,7 +345,7 @@ in the following sections.
 
 @emph{M68hc1x Options}
 @gccoptlist{
--m6811  -m6812  -m68hc11  -m68hc12 @gol
+-m6811  -m6812  -m68hc11  -m68hc12   -m68hcs12 @gol
 -mauto-incdec  -minmax  -mlong-calls  -mshort @gol
 -msoft-reg-count=@var{count}}
 
@@ -5504,6 +5504,12 @@ when the compiler is configured for 68HC11-based systems.
 @opindex m68hc12
 Generate output for a 68HC12.  This is the default
 when the compiler is configured for 68HC12-based systems.
+
+@item -m68S12
+@itemx -m68hcs12
+@opindex m68S12
+@opindex m68hcs12
+Generate output for a 68HCS12.  
 
 @item -mauto-incdec
 @opindex mauto-incdec
