@@ -1,3 +1,7 @@
+2000-07-08  Angela Marie Thomas <angela@cygnus.com>
+
+	* lib/c-torture.exp: Make compiler_conditional_xfail_data global.
+
 2000-07-09  Neil Booth  <NeilB@earthling.net>
 
 	* gcc.dg/cpp/macsyntx.c: Add test for #define defined.

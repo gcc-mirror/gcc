@@ -99,7 +99,7 @@ proc c-torture-compile { src option } {
 # to more than 14 chars.
 #
 proc c-torture-execute { src args } {
-    global tmpdir tool srcdir output
+    global tmpdir tool srcdir output compiler_conditional_xfail_data
 
     if { [llength $args] > 0 } {
 	set additional_flags [lindex $args 0];
