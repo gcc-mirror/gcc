@@ -676,14 +676,6 @@ struct lang_type
 #define TYPE_HAS_ASSIGNMENT(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_assignment)
 #define TYPE_HAS_REAL_ASSIGNMENT(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_real_assignment)
 
-/* Returns the canonical version of TYPE.  In other words, if TYPE is
-   a typedef, returns the underlying type.  The cv-qualification of
-   the type returned matches the type input; they will always be
-   compatible types.  */
-#define CANONICAL_TYPE_VARIANT(NODE) 					\
-  (cp_build_type_variant (TYPE_MAIN_VARIANT (NODE), 			\
-			  TYPE_READONLY (NODE), TYPE_VOLATILE (NODE)))
-
 /* Nonzero for _CLASSTYPE means that operator new and delete are defined,
    respectively.  */
 #define TYPE_GETS_NEW(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.gets_new)
@@ -1728,6 +1720,7 @@ extern void check_function_format		PROTO((tree, tree, tree));
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error                     PROTO((enum tree_code));
 extern tree cp_build_type_variant                PROTO((tree, int, int));
+extern tree canonical_type_variant              PROTO((tree));
 extern void c_expand_expr_stmt                  PROTO((tree));
 /* Validate the expression after `case' and apply default promotions.  */
 extern tree check_case_value                    PROTO((tree));

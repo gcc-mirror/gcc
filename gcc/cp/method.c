@@ -1005,7 +1005,7 @@ build_mangled_name_for_type_with_Gcode (type, extra_Gcode)
 {
   if (TYPE_PTRMEMFUNC_P (type))
     type = TYPE_PTRMEMFUNC_FN_TYPE (type);
-  type = CANONICAL_TYPE_VARIANT (type);
+  type = canonical_type_variant (type);
   process_modifiers (type);
   process_overload_item (type, extra_Gcode);
 }
@@ -1069,7 +1069,7 @@ build_mangled_name (parmtypes, begin, end)
       for (; parmtypes && parmtypes != void_list_node;
 	   parmtypes = TREE_CHAIN (parmtypes))
 	{
-	  tree parmtype = CANONICAL_TYPE_VARIANT (TREE_VALUE (parmtypes));
+	  tree parmtype = canonical_type_variant (TREE_VALUE (parmtypes));
 
 	  if (old_style_repeats)
 	    {
@@ -1245,12 +1245,18 @@ process_overload_item (parmtype, extra_Gcode)
         if (TYPE_DOMAIN (parmtype) == NULL_TREE)
           error("pointer/reference to array of unknown bound in parm type");
         else
-          {
-            length = array_type_nelts (parmtype);
-            if (TREE_CODE (length) == INTEGER_CST)
-              icat (TREE_INT_CST_LOW (length) + 1);
-          }
-        OB_PUTC ('_');
+	  {
+	    tree length = array_type_nelts (parmtype);
+	    if (TREE_CODE (length) != INTEGER_CST || flag_do_squangling)
+	      {
+		length = fold (build (PLUS_EXPR, TREE_TYPE (length),
+				      length, integer_one_node));
+		STRIP_NOPS (length);
+	      }
+	    build_overload_value (sizetype, length, 1);
+	  }
+	if (numeric_output_need_bar && ! flag_do_squangling)
+	  OB_PUTC ('_');
         goto more;
       }
 #else
@@ -1611,7 +1617,7 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
               tree temp = TREE_VALUE (t);
               TREE_USED (temp) = 0;
               /* clear out the type variant in case we used it */
-              temp = CANONICAL_TYPE_VARIANT (temp);
+              temp = canonical_type_variant (temp);
               TREE_USED (temp) = 0;
               t = TREE_CHAIN (t);
             }

@@ -1,3 +1,11 @@
+1998-07-21  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (canonical_type_variant): New fn to handle arrays.
+	* cp-tree.h (CANONICAL_TYPE_VARIANT): Remove.
+	* pt.c (unify, default case): Also fold arg.  Fix array bounds case.
+	* method.c (process_overload_item): Use build_overload_value for
+	arrays.
+
 1998-07-20  Dave Brolley  <brolley@cygnus.com>
 
 	* lex.c (mbchar.h): #include it.
