@@ -559,10 +559,12 @@ make_function_rtl (decl)
       DECL_RTL (decl)
 	= gen_rtx_MEM (DECL_MODE (decl),
 		       gen_rtx_SYMBOL_REF (Pmode, name));
+      set_mem_attributes (DECL_RTL (decl), decl, 1);
 
-      /* Optionally set flags or add text to the name to record information
-	 such as that it is a function name.  If the name is changed, the macro
-	 ASM_OUTPUT_LABELREF will have to know how to strip this information.  */
+      /* Optionally set flags or add text to the name to record
+	 information such as that it is a function name.  If the name
+	 is changed, the macro ASM_OUTPUT_LABELREF will have to know
+	 how to strip this information.  */
 #ifdef ENCODE_SECTION_INFO
       ENCODE_SECTION_INFO (decl);
 #endif
@@ -798,30 +800,19 @@ make_decl_rtl (decl, asmspec, top_level)
 	      name = new_name;
 	    }
 
+	  /* If this variable is to be treated as volatile, show its
+	     tree node has side effects.   */
+	  if ((flag_volatile_global && TREE_CODE (decl) == VAR_DECL
+	       && TREE_PUBLIC (decl))
+	      || ((flag_volatile_static && TREE_CODE (decl) == VAR_DECL
+		   && (TREE_PUBLIC (decl) || TREE_STATIC (decl)))))
+	    TREE_SIDE_EFFECTS (decl) = 1;
+
 	  DECL_ASSEMBLER_NAME (decl)
 	    = get_identifier (name[0] == '*' ? name + 1 : name);
 	  DECL_RTL (decl) = gen_rtx_MEM (DECL_MODE (decl),
 					 gen_rtx_SYMBOL_REF (Pmode, name));
-	  MEM_ALIAS_SET (DECL_RTL (decl)) = get_alias_set (decl);
-
-	  /* If this variable is to be treated as volatile, show its
-	     tree node has side effects.  If it has side effects, either
-	     because of this test or from TREE_THIS_VOLATILE also
-	     being set, show the MEM is volatile.  */
-	  if (flag_volatile_global && TREE_CODE (decl) == VAR_DECL
-	      && TREE_PUBLIC (decl))
-	    TREE_SIDE_EFFECTS (decl) = 1;
-	  else if (flag_volatile_static && TREE_CODE (decl) == VAR_DECL
-	       && (TREE_PUBLIC (decl) || TREE_STATIC (decl)))
-	    TREE_SIDE_EFFECTS (decl) = 1;
-
-	  if (TREE_SIDE_EFFECTS (decl))
-	    MEM_VOLATILE_P (DECL_RTL (decl)) = 1;
-
-	  if (TREE_READONLY (decl))
-	    RTX_UNCHANGING_P (DECL_RTL (decl)) = 1;
-	  MEM_SET_IN_STRUCT_P (DECL_RTL (decl),
-			       AGGREGATE_TYPE_P (TREE_TYPE (decl)));
+	  set_mem_attributes (DECL_RTL (decl), decl, 1);
 
 	  /* Optionally set flags or add text to the name to record information
 	     such as that it is a function name.
@@ -3109,10 +3100,7 @@ output_constant_def (exp)
 	= gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)),
 		       gen_rtx_SYMBOL_REF (Pmode, desc->label));
 
-      RTX_UNCHANGING_P (desc->rtl) = 1;
-      if (AGGREGATE_TYPE_P (TREE_TYPE (exp)))
-	MEM_SET_IN_STRUCT_P (desc->rtl, 1);
-
+      set_mem_attributes (desc->rtl, exp, 1);
       pop_obstacks ();
 
       found = 0;
@@ -3668,8 +3656,9 @@ force_const_mem (mode, x)
   /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
 
   def = gen_rtx_MEM (mode, gen_rtx_SYMBOL_REF (Pmode, found));
-
+  set_mem_attributes (def, type_for_mode (mode, 0), 1);
   RTX_UNCHANGING_P (def) = 1;
+
   /* Mark the symbol_ref as belonging to this constants pool.  */
   CONSTANT_POOL_ADDRESS_P (XEXP (def, 0)) = 1;
   current_function_uses_const_pool = 1;

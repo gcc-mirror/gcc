@@ -1186,7 +1186,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       target = gen_rtx_MEM (TYPE_MODE (type),
 			    memory_address (TYPE_MODE (type),
 					    structure_value_addr));
-      MEM_SET_IN_STRUCT_P (target, 1);
+      set_mem_attributes (target, type, 1);
     }
 
   /* Make sure we free the things we explicitly allocated with xmalloc.  */
