@@ -2805,6 +2805,12 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 		      ? DECL_FIELD_BITPOS (TREE_OPERAND (exp, 1))
 		      : TREE_OPERAND (exp, 2));
 
+	  /* If this field hasn't been filled in yet, don't go
+	     past it.  This should only happen when folding expressions
+	     made during type construction.  */
+	  if (pos == 0)
+	    break;
+
 	  if (TREE_CODE (pos) == PLUS_EXPR)
 	    {
 	      tree constant, var;
@@ -2885,7 +2891,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 
   /* If this was a bit-field, see if there is a mode that allows direct
      access in case EXP is in memory.  */
-  if (mode == VOIDmode && *pbitpos % *pbitsize == 0)
+  if (mode == VOIDmode && *pbitsize != 0 && *pbitpos % *pbitsize == 0)
     {
       mode = mode_for_size (*pbitsize, MODE_INT, 0);
       if (mode == BLKmode)
@@ -3620,7 +3626,8 @@ expand_expr (exp, target, tmode, modifier)
 		  enum tree_code c = TREE_CODE (type);
 		  target
 		    = assign_stack_temp (mode, int_size_in_bytes (type), 0);
-		  if (c == RECORD_TYPE || c == UNION_TYPE || c == ARRAY_TYPE)
+		  if (c == RECORD_TYPE || c == UNION_TYPE
+		      || c == QUAL_UNION_TYPE || c == ARRAY_TYPE)
 		    MEM_IN_STRUCT_P (target) = 1;
 		}
 	    }
@@ -3666,11 +3673,13 @@ expand_expr (exp, target, tmode, modifier)
 	    || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
 	    || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
 	    || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
+	    || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE
 	    || (TREE_CODE (exp1) == ADDR_EXPR
 		&& (exp2 = TREE_OPERAND (exp1, 0))
 		&& (TREE_CODE (TREE_TYPE (exp2)) == ARRAY_TYPE
 		    || TREE_CODE (TREE_TYPE (exp2)) == RECORD_TYPE
-		    || TREE_CODE (TREE_TYPE (exp2)) == UNION_TYPE)))
+		    || TREE_CODE (TREE_TYPE (exp2)) == UNION_TYPE
+		    || TREE_CODE (TREE_TYPE (exp2)) == QUAL_UNION_TYPE)))
 	  MEM_IN_STRUCT_P (temp) = 1;
 	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp);
 #if 0 /* It is incorrect to set RTX_UNCHANGING_P here, because the fact that
@@ -3847,6 +3856,12 @@ expand_expr (exp, target, tmode, modifier)
 	int volatilep = 0;
 	tree tem = get_inner_reference (exp, &bitsize, &bitpos, &offset,
 					&mode1, &unsignedp, &volatilep);
+
+	/* If we got back the original object, something is wrong.  Perhaps
+	   we are evaluating an expression too early.  In any event, don't
+	   infinitely recurse.  */
+	if (tem == exp)
+	  abort ();
 
 	/* In some cases, we will be offsetting OP0's address by a constant.
 	   So get it as a sum, if possible.  If we will be using it
@@ -5867,7 +5882,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    return GEN_INT (method_type_class);
 	  if (code == RECORD_TYPE)
 	    return GEN_INT (record_type_class);
-	  if (code == UNION_TYPE)
+	  if (code == UNION_TYPE || code == QUAL_UNION_TYPE)
 	    return GEN_INT (union_type_class);
 	  if (code == ARRAY_TYPE)
 	    return GEN_INT (array_type_class);
