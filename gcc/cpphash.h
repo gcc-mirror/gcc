@@ -298,7 +298,7 @@ struct cpp_buffer
   struct search_path dir;
 
   /* Used for buffer overlays by cpptrad.c.  */
-  const uchar *saved_cur, *saved_rlimit, *saved_line_base;
+  const uchar *saved_cur, *saved_rlimit;
 };
 
 /* A cpp_reader encapsulates the "state" of a pre-processor run.

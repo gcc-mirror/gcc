@@ -1,3 +1,17 @@
+2002-06-14  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (struct cpp_buffer): Remove saved_line_base.
+	* cpptrad.c: Update comments.
+	(skip_whitespace, copy_comment): Take a new parameter.
+	(skip_escaped_newlines): Don't duplicate escaped newline test.
+	(copy_comment): Different location for CUR, decide here how
+	to copy / replace the comment.
+	(skip_whitespace): Copy whitespace.
+	(_cpp_overlay_buffer, _cpp_remove_overlay): Don't play with line_base.
+	(scan_out_logical_line): Let copy comment handle keeping or
+	replacing comments.
+	(scan_parameters, _cpp_create_trad_definition): Update.
+
 2002-06-13  Alan Lehotsky  <apl@alum.mit.edu>
 
 	* reload.c (get_secondary_mem,find_reloads_address,
