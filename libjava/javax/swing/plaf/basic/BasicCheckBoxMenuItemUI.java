@@ -39,8 +39,6 @@ package javax.swing.plaf.basic;
 
 import java.awt.event.MouseEvent;
 
-import javax.swing.AbstractButton;
-import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.MenuElement;

@@ -38,15 +38,13 @@ exception statement from your version. */
 package javax.swing.plaf.basic;
 
 import java.awt.event.MouseEvent;
-import javax.swing.AbstractButton;
-import javax.swing.Icon;
+
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
-
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 
 

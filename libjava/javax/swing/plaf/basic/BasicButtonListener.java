@@ -45,13 +45,12 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import javax.swing.AbstractButton;
 import javax.swing.ButtonModel;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.JComponent;
 
 public class BasicButtonListener
   implements MouseListener, MouseMotionListener, FocusListener, 

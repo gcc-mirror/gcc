@@ -1,5 +1,5 @@
 /* BasicPanelUI.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,9 +38,9 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import javax.swing.*;
-import javax.swing.plaf.*;
-import java.awt.*;
+import javax.swing.JComponent;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.RootPaneUI;
 
 
 public class BasicRootPaneUI extends RootPaneUI

@@ -40,8 +40,8 @@ package javax.swing.plaf.basic;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+
 import javax.swing.JComponent;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneLayout;
 import javax.swing.plaf.ComponentUI;

@@ -1,5 +1,5 @@
 /* JOptionPane.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Frame;
-import javax.accessibility.Accessible;
+
 import javax.accessibility.AccessibleContext;
 import javax.swing.plaf.OptionPaneUI;
 

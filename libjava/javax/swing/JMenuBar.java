@@ -1,5 +1,5 @@
 /* JMenuBar.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,10 +38,6 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.awt.Component;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import javax.accessibility.Accessible;
 
 public class JMenuBar extends JComponent
 {

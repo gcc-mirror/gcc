@@ -40,17 +40,16 @@ package javax.swing;
 
 import java.awt.Component;
 import java.awt.ComponentOrientation;
-import java.awt.LayoutManager;
 import java.awt.Insets;
+import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 
-import javax.swing.border.Border;
 import javax.accessibility.Accessible;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ScrollPaneUI;
-import javax.swing.plaf.UIResource;
 
 /**
  * <table>

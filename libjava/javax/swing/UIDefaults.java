@@ -1,5 +1,5 @@
 /* UIDefaults.java -- database for all settings and interface bindings.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,17 +44,16 @@ import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
-import java.lang.reflect.Constructor;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
 import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.Locale;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Set;
+
 import javax.swing.border.Border;
 import javax.swing.plaf.ComponentUI;
 

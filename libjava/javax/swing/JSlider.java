@@ -37,16 +37,14 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.awt.ComponentOrientation;
-import java.awt.MenuContainer;
 import java.awt.Dimension;
+import java.awt.MenuContainer;
 import java.awt.image.ImageObserver;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Hashtable;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -54,7 +52,6 @@ import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleValue;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
 import javax.swing.plaf.SliderUI;
 
 
