@@ -2789,7 +2789,8 @@ emit_libcall_block (insns, target, result, equiv)
       if (set != 0 && GET_CODE (SET_DEST (set)) == REG
 	  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
 	  && (insn == insns
-	      || (! reg_mentioned_p (SET_DEST (set), PATTERN (insns))
+	      || ((! INSN_P(insns)
+		   || ! reg_mentioned_p (SET_DEST (set), PATTERN (insns)))
 		  && ! reg_used_between_p (SET_DEST (set), insns, insn)
 		  && ! modified_in_p (SET_SRC (set), insns)
 		  && ! modified_between_p (SET_SRC (set), insns, insn))))
