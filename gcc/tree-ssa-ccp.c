@@ -2068,7 +2068,12 @@ fold_stmt (tree *stmt_p)
 	    {
 	      tree t;
 
-	      t = TREE_TYPE (TREE_OPERAND (OBJ_TYPE_REF_OBJECT (callee), 0));
+	      /* ??? Caution: Broken ADDR_EXPR semantics means that
+		 looking at the type of the operand of the addr_expr
+		 can yield an array type.  See silly exception in
+		 check_pointer_types_r.  */
+
+	      t = TREE_TYPE (TREE_TYPE (OBJ_TYPE_REF_OBJECT (callee)));
 	      t = lang_hooks.fold_obj_type_ref (callee, t);
 	      if (t)
 		{

@@ -1,3 +1,8 @@
+2004-07-08  Richard Henderson  <rth@redhat.com>
+
+	* tree-ssa-ccp.c (fold_stmt): Get type directly from
+	OBJ_TYPE_REF_OBJECT.
+
 2004-07-08  Joseph S. Myers  <jsm@polyomino.org.uk>
             Neil Booth  <neil@daikokuya.co.uk>
 
