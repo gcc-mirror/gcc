@@ -3,6 +3,8 @@
 int count;
 int bail = 0;
 
+extern "C" void _exit (int);
+
 struct base {
   base () { ++count; }
   ~base () { --count; }
