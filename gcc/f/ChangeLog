@@ -1,3 +1,7 @@
+Sat Feb  6 18:02:17 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* g77.texi: Update email addresses.
+
 Wed Feb  3 22:50:17 1999  Marc Espie <Marc.Espie@liafa.jussieu.fr>
 
 	* Make-lang.in (g77$(exeext)): Get choose-temp.o, pexecute.o and
