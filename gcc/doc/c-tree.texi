@@ -64,7 +64,7 @@ should submit your patches for inclusion in GCC@.
 @node Deficiencies
 @section Deficiencies
 
-There are many places in which this document is incomplete and incorrect.
+There are many places in which this document is incomplet and incorrekt.
 It is, as of yet, only @emph{preliminary} documentation.
 
 @c ---------------------------------------------------------------------
