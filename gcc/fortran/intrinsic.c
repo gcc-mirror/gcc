@@ -434,8 +434,8 @@ static void add_sym_2 (const char *name, int elemental, int actual_ok, bt type,
 
 static void add_sym_2s (const char *name, int elemental, int actual_ok, bt type,
 		       int kind,
-		       try (*check)(gfc_expr *,gfc_expr *,gfc_expr *),
-		       gfc_expr *(*simplify)(gfc_expr *,gfc_expr *,gfc_expr *),
+		       try (*check)(gfc_expr *,gfc_expr *),
+		       gfc_expr *(*simplify)(gfc_expr *,gfc_expr *),
 		       void (*resolve)(gfc_code *),
 		       const char* a1, bt type1, int kind1, int optional1,
 		       const char* a2, bt type2, int kind2, int optional2
@@ -444,8 +444,8 @@ static void add_sym_2s (const char *name, int elemental, int actual_ok, bt type,
   gfc_simplify_f sf;
   gfc_resolve_f rf;
 
-  cf.f3 = check;
-  sf.f3 = simplify;
+  cf.f2 = check;
+  sf.f2 = simplify;
   rf.s1 = resolve;
 
   add_sym (name, elemental, actual_ok, type, kind, cf, sf, rf,
