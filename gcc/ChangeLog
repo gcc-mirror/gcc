@@ -1,5 +1,8 @@
 2002-05-29  Jeff Law <law@redhat.com>
 
+	* flow.c (propagate_one_insn): Do not remove a dead insn if it
+	contains a REG_RETVAL note.
+
 	* haifa-sched (sched_analyze): Remove another useless clearing
 	of SCHED_GROUP_P I missed yesterday.
 
