@@ -1,5 +1,54 @@
 2004-02-05  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/AbstractCellEditor.java
+	(getCellEditorValue): Removed.
+	* javax/swing/Box.java: Reformated.
+	(serialVersionUID): New field.
+	* javax/swing/ButtonGroup.java:
+	Removed some weird whitespace.
+	* javax/swing/CellEditor.java: Reformated.
+	* javax/swing/CellRendererPane.java
+	(serialVersionUID): New field.
+	(AccessibleCellRendererPaneserialVersionUID): New field.
+	* javax/swing/DefaultListModel.java
+	(serialVersionUID): New field.
+	* javax/swing/JEditorPane.java
+	(serialVersionUID): New field.
+	(setPage): Throws IOException.
+	(addHyperlinkListener): Implemented.
+	(removeHyperlinkListener): Implemented.
+	(getHyperlinkListener): New method.
+	* javax/swing/JFileChooser.java
+	(serialVersionUID): New field.
+	(AccessibleJFileChooser.serialVersionUID): New field.
+	(addActionListener): Implemented.
+	(removeActionListener): Implemented.
+	(getActionListeners): New method.
+	* javax/swing/JFormattedTextField.java
+	(serialVersionUID): New field.
+	(AbstractFormatter.serialVersionUID): New field.
+	(clone): Throws CloneNotSupportedException
+	(setEditValid): Add missing argument.
+	(stringToValue): Throws ParseExcpetion.
+	(valueToString): Throws ParseException.
+	(commitEdit): Throws ParseException.
+	* javax/swing/JLabel.java
+	(serialVersionUID): New field.
+	* javax/swing/JList.java
+	(serialVersionUID): New field.
+	(addListSelectionListener): Reformated.
+	(removeListSelectionListener): Reformated.
+	(getListSelectionListeners): New method.
+	* javax/swing/colorchooser/AbstractColorChooserPanel.java:
+	Reformated.
+	(serialVersionUID): New field.
+	* javax/swing/table/AbstractTableModel.java
+	(getValueAt): Removed.
+	(getColumnCount): Removed.
+	(getRowCount): Removed.
+
+2004-02-05  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/datatransfer/DataFlavor.java
 	(imageFlavor): Javadoc added.
 	(javaJVMLocalObjectType): Fixed.

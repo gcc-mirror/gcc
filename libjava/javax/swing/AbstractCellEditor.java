@@ -104,12 +104,6 @@ public abstract class AbstractCellEditor
 		// TODO
 	} // cancelCellEditing()
 
-	/**
-	 * getCellEditorValue
-	 * @returns Object
-	 */
-	public abstract Object getCellEditorValue();
-
   /**
    * addCellEditorListener
    *

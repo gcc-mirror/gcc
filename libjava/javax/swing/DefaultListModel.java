@@ -50,6 +50,7 @@ import java.util.Vector;
  */
 public class DefaultListModel extends AbstractListModel
 {
+  private static final long serialVersionUID = 2315945659722172272L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

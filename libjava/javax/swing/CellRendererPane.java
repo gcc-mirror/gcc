@@ -52,7 +52,9 @@ import javax.accessibility.AccessibleRole;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class CellRendererPane extends Container implements Accessible {
+public class CellRendererPane extends Container implements Accessible
+{
+  private static final long serialVersionUID = -7642183829532984273L;
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------
@@ -62,6 +64,8 @@ public class CellRendererPane extends Container implements Accessible {
 	 * AccessibleCellRendererPane
 	 */
 	protected class AccessibleCellRendererPane extends AccessibleAWTContainer {
+
+          private static final long serialVersionUID = 7300340301783504481L;
 
 		//-------------------------------------------------------------
 		// Initialization ---------------------------------------------

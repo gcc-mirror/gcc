@@ -47,9 +47,10 @@ import javax.accessibility.Accessible;
  */
 public class Box extends JComponent implements Accessible
 {
-    Box(int a)
-    {
-        setLayout(new BoxLayout(this, 
-				a));	
-    }
+  private static final long serialVersionUID = 1525417495883046342L;
+  
+  public Box(int a)
+  {
+    setLayout(new BoxLayout(this, a));	
+  }
 }

@@ -52,14 +52,19 @@ import javax.swing.text.NavigationFilter;
  */
 public class JFormattedTextField extends JTextField
 {
+  private static final long serialVersionUID = 2889768923115424035L;
+
   public abstract static class AbstractFormatter implements Serializable
   {
+    private static final long serialVersionUID = -5193212041738979680L;
+    
     public AbstractFormatter ()
     {
       //Do nothing here.
     }
 
     protected Object clone ()
+      throws CloneNotSupportedException
     {
       throw new InternalError ("not implemented");
     }
@@ -99,14 +104,16 @@ public class JFormattedTextField extends JTextField
       throw new InternalError ("not implemented");
     }
 
-    protected void setEditValid ()
+    protected void setEditValid (boolean valid)
     {
       throw new InternalError ("not implemented");
     }
 
-    public abstract Object stringToValue (String text);
+    public abstract Object stringToValue (String text)
+      throws ParseException;
 
-    public abstract String valueToString (Object value);
+    public abstract String valueToString (Object value)
+      throws ParseException;
   }
   
   public abstract static class AbstractFormatterFactory
@@ -155,6 +162,7 @@ public class JFormattedTextField extends JTextField
   }
 
   public void commitEdit ()
+    throws ParseException
   {
     throw new InternalError ("not implemented");
   }

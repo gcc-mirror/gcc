@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing.table;
 
 import java.io.Serializable;
@@ -271,25 +270,4 @@ public abstract class AbstractTableModel implements TableModel, Serializable
   {
     return listenerList.getListeners (listenerType);
   }
-
-  /**
-   * getValueAt
-   * @param value0 TODO
-   * @param value1 TODO
-   * @return Object
-   */
-  public abstract Object getValueAt (int row, int column);
-
-  /**
-   * getColumnCount
-   * @return int
-   */
-  public abstract int getColumnCount();
-
-  /**
-   * getRowCount
-   * @return int
-   */
-  public abstract int getRowCount();
-
-} // AbstractTableModel
+}
