@@ -1117,12 +1117,7 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 	 insns.  Eliminate this problem by not combining with such an insn.
 
 	 Also, on some machines we don't want to extend the life of a hard
-	 register.
-
-	 This is the same test done in can_combine except that we don't test
-	 if SRC is a CALL operation to permit a hard register with
-	 SMALL_REGISTER_CLASSES, and that we have to take all_adjacent
-	 into account.  */
+	 register.  */
 
       if (GET_CODE (src) == REG
 	  && ((REGNO (dest) < FIRST_PSEUDO_REGISTER
@@ -1135,11 +1130,7 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 		 reload can't handle a conflict with constraints of other
 		 inputs.  */
 	      || (REGNO (src) < FIRST_PSEUDO_REGISTER
-		  && (! HARD_REGNO_MODE_OK (REGNO (src), GET_MODE (src))
-		      || (SMALL_REGISTER_CLASSES
-			  && ((! all_adjacent && ! REG_USERVAR_P (src))
-			      || (FUNCTION_VALUE_REGNO_P (REGNO (src))
-				  && ! REG_USERVAR_P (src))))))))
+		  && ! HARD_REGNO_MODE_OK (REGNO (src), GET_MODE (src)))))
 	return 0;
     }
   else if (GET_CODE (dest) != CC0)
@@ -1292,10 +1283,6 @@ sets_function_arg_p (pat)
    If I1_NOT_IN_SRC is non-zero, it means that finding I1 in the source
    of a SET must prevent combination from occurring.
 
-   On machines where SMALL_REGISTER_CLASSES is non-zero, we don't combine
-   if the destination of a SET is a hard register that isn't a user
-   variable.
-
    Before doing the above check, we first try to expand a field assignment
    into a set of logical operations.
 
@@ -1364,11 +1351,10 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
 	   && (reg_overlap_mentioned_p (i2dest, inner_dest)
 	       || (i1dest && reg_overlap_mentioned_p (i1dest, inner_dest))))
 
-	  /* This is the same test done in can_combine_p except that we
-	     allow a hard register with SMALL_REGISTER_CLASSES if SRC is a
-	     CALL operation. Moreover, we can't test all_adjacent; we don't
-	     have to, since this instruction will stay in place, thus we are
-	     not considering increasing the lifetime of INNER_DEST.
+	  /* This is the same test done in can_combine_p except we can't test
+	     all_adjacent; we don't have to, since this instruction will stay
+	     in place, thus we are not considering increasing the lifetime of
+	     INNER_DEST.
 
 	     Also, if this insn sets a function argument, combining it with
 	     something that might need a spill could clobber a previous
@@ -1378,13 +1364,7 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
 	  || (GET_CODE (inner_dest) == REG
 	      && REGNO (inner_dest) < FIRST_PSEUDO_REGISTER
 	      && (! HARD_REGNO_MODE_OK (REGNO (inner_dest),
-					GET_MODE (inner_dest))
-		 || (SMALL_REGISTER_CLASSES && GET_CODE (src) != CALL
-		     && ! REG_USERVAR_P (inner_dest)
-		     && (FUNCTION_VALUE_REGNO_P (REGNO (inner_dest))
-			 || (FUNCTION_ARG_REGNO_P (REGNO (inner_dest))
-			     && i3 != 0
-			     && sets_function_arg_p (prev_nonnote_insn (i3)))))))
+					GET_MODE (inner_dest))))
 	  || (i1_not_in_src && reg_overlap_mentioned_p (i1dest, src)))
 	return 0;
 
@@ -1485,14 +1465,13 @@ cant_combine_insn_p (insn)
     return 0;
   src = SET_SRC (set);
   dest = SET_DEST (set);
-  if (REG_P (src)
-      && REGNO (src) < FIRST_PSEUDO_REGISTER
-      && ! fixed_regs[REGNO (src)])
+  if (REG_P (src) && REG_P (dest)
+      && ((REGNO (src) < FIRST_PSEUDO_REGISTER
+	   && ! fixed_regs[REGNO (src)])
+	  || (REGNO (dest) < FIRST_PSEUDO_REGISTER
+	      && ! fixed_regs[REGNO (dest)])))
     return 1;
-  if (REG_P (dest)
-      && REGNO (dest) < FIRST_PSEUDO_REGISTER
-      && ! fixed_regs[REGNO (dest)])
-    return 1;
+
   return 0;
 }
 
@@ -1595,10 +1574,6 @@ try_combine (i3, i2, i1, new_direct_jump_p)
   if (i1 == 0 && GET_CODE (i3) == INSN && GET_CODE (PATTERN (i3)) == SET
       && GET_CODE (SET_SRC (PATTERN (i3))) == REG
       && REGNO (SET_SRC (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER
-      && (! SMALL_REGISTER_CLASSES
-	  || (GET_CODE (SET_DEST (PATTERN (i3))) != REG
-	      || REGNO (SET_DEST (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER
-	      || REG_USERVAR_P (SET_DEST (PATTERN (i3)))))
       && find_reg_note (i3, REG_DEAD, SET_SRC (PATTERN (i3)))
       && GET_CODE (PATTERN (i2)) == PARALLEL
       && ! side_effects_p (SET_DEST (PATTERN (i3)))
