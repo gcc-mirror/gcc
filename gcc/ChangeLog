@@ -1,3 +1,7 @@
+2000-03-09  Benjamin Kosnik  <bkoz@cygnus.com>
+
+	* config/alpha/linux.h (WCHAR_TYPE): Make consistent.
+
 Thu Mar  9 18:10:02 2000  Jeffrey A Law  (law@cygnus.com)
 
         * config/pa/pa-hpux10.h (LIB_SPEC): Correct typo in !p case.

@@ -41,3 +41,6 @@ SUB_CPP_PREDEFINES
 /* Don't care about faults in the prologue.  */
 #undef TARGET_CAN_FAULT_IN_PROLOGUE
 #define TARGET_CAN_FAULT_IN_PROLOGUE 1
+
+#undef WCHAR_TYPE
+#define WCHAR_TYPE "int"
