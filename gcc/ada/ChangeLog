@@ -1,5 +1,9 @@
 2002-05-01   Geert Bosch <bosch@gnat.com>
 
+	* comperr.adb : Fix typo.
+
+2002-05-01   Geert Bosch <bosch@gnat.com>
+
 	* bindgen.adb (Public_Version_Warning): Remove.
 
 	* gnatvsn.ads : Change to match GCC 3.1 version.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision: 1.3.10.1 $
 --                                                                          --
 --          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -251,7 +251,7 @@ package body Comperr is
 
             else
                Write_Str
-                 ("| Please submit bug a report, see" &
+                 ("| Please submit a bug report, see" &
                   " http://gcc.gnu.org/bugs.html.");
                End_Line;
 
