@@ -338,6 +338,9 @@ byte_reg (rtx x, int b)
     "r4l", "r4h", "r5l", "r5h", "r6l", "r6h", "r7l", "r7h"
   };
 
+  if (!REG_P (x))
+    abort ();
+
   return names_small[REGNO (x) * 2 + b];
 }
 
