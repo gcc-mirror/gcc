@@ -2049,7 +2049,6 @@ extern void pop_topmost_sequence (void);
 extern int subreg_realpart_p (rtx);
 extern void reverse_comparison (rtx);
 extern void set_new_first_and_last_insn (rtx, rtx);
-extern void set_new_first_and_last_label_num (int, int);
 extern void set_new_last_label_num (int);
 extern void unshare_all_rtl_again (rtx);
 extern void unshare_all_rtl_in_chain (rtx);

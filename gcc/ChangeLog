@@ -1,3 +1,8 @@
+2003-12-17  Per Bothner  <per@bothner.com>
+
+	* emit-rtl.c (set_new_first_and_last_label_num):  Remove function.
+	* rtl.h (set_new_first_and_last_label_num):  Remove declaration.
+
 2003-12-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/frv/frv.c (frv_ifcvt_modify_insn): Don't leave alone

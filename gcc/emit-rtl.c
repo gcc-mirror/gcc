@@ -77,7 +77,7 @@ static GTY(()) int label_num = 1;
 
 static int last_label_num;
 
-/* Value label_num had when set_new_first_and_last_label_number was called.
+/* Value label_num had when set_new_last_label_num was called.
    If label_num has not changed since then, last_label_num is valid.  */
 
 static int base_label_num;
@@ -2404,17 +2404,6 @@ set_new_first_and_last_insn (rtx first, rtx last)
     cur_insn_uid = MAX (cur_insn_uid, INSN_UID (insn));
 
   cur_insn_uid++;
-}
-
-/* Set the range of label numbers found in the current function.
-   This is used when belatedly compiling an inline function.  */
-
-void
-set_new_first_and_last_label_num (int first, int last)
-{
-  base_label_num = label_num;
-  first_label_num = first;
-  last_label_num = last;
 }
 
 /* Set the last label number found in the current function.
