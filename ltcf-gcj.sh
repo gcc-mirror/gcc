@@ -41,7 +41,7 @@ lt_simple_compile_test_code="class foo {}"
 lt_simple_link_test_code='public class conftest { public static void main(String[] argv) {}; }'
 
 ## Linker Characteristics
-case "$host_os" in
+case $host_os in
 cygwin* | mingw*)
   # FIXME: the MSVC++ port hasn't been tested in a loooong time
   # When not using gcc, we currently assume that we are using
@@ -59,7 +59,7 @@ if test "$with_gnu_ld" = yes; then
   wlarc='${wl}'
 
   # See if GNU ld supports shared libraries.
-  case "$host_os" in
+  case $host_os in
   aix3* | aix4*)
     # On AIX, the GNU linker is very broken
     ld_shlibs=no
@@ -120,7 +120,7 @@ EOF
     # FIXME: what about values for MSVC?
     dll_entry=__cygwin_dll_entry@12
     dll_exclude_symbols=DllMain@12,_cygwin_dll_entry@12,_cygwin_noncygwin_dll_entry@12~
-    case "$host_os" in
+    case $host_os in
     mingw*)
       # mingw values
       dll_entry=_DllMainCRTStartup@12
@@ -151,17 +151,23 @@ EOF
       $DLLTOOL --export-all --exclude-symbols '$dll_exclude_symbols' --output-def $output_objdir/$soname-def '$ltdll_obj'$libobjs $convenience~
       sed -e "1,/EXPORTS/d" -e "s/ @ [0-9]*//" -e "s/ *;.*$//" < $output_objdir/$soname-def > $export_symbols'
 
+    # If the export-symbols file already is a .def file (1st line
+    # is EXPORTS), use it as is.
     # If DATA tags from a recent dlltool are present, honour them!
-    archive_expsym_cmds='echo EXPORTS > $output_objdir/$soname-def~
-      _lt_hint=1;
-      cat $export_symbols | while read symbol; do
-	set dummy \$symbol;
-	case \$# in
-	  2) echo "	\$2 @ \$_lt_hint ; " >> $output_objdir/$soname-def;;
-	  *) echo "     \$2 @ \$_lt_hint \$3 ; " >> $output_objdir/$soname-def;;
-	esac;
-	_lt_hint=`expr 1 + \$_lt_hint`;
-      done~
+    archive_expsym_cmds='if test "x`head -1 $export_symbols`" = xEXPORTS; then
+        cp $export_symbols $output_objdir/$soname-def;
+      else
+        echo EXPORTS > $output_objdir/$soname-def;
+        _lt_hint=1;
+        cat $export_symbols | while read symbol; do
+         set dummy \$symbol;
+         case \[$]# in
+           2) echo "   \[$]2 @ \$_lt_hint ; " >> $output_objdir/$soname-def;;
+           *) echo "     \[$]2 @ \$_lt_hint \[$]3 ; " >> $output_objdir/$soname-def;;
+         esac;
+         _lt_hint=`expr 1 + \$_lt_hint`;
+        done;
+      fi~
       '"$ltdll_cmds"'
       $CC -Wl,--base-file,$output_objdir/$soname-base '$lt_cv_gcj_dll_switch' -Wl,-e,'$dll_entry' -o $lib '$ltdll_obj'$libobjs $deplibs $compiler_flags~
       $DLLTOOL --as=$AS --dllname $soname --exclude-symbols '$dll_exclude_symbols' --def $output_objdir/$soname-def --base-file $output_objdir/$soname-base --output-exp $output_objdir/$soname-exp~
@@ -239,7 +245,7 @@ EOF
   fi
 else
   # PORTME fill in a description of your system's linker (not GNU ld)
-  case "$host_os" in
+  case $host_os in
   aix3*)
     allow_undefined_flag=unsupported
     always_export_symbols=yes
@@ -254,45 +260,91 @@ else
     fi
     ;;
 
-  aix4*)
-    hardcode_libdir_flag_spec='${wl}-b ${wl}nolibpath ${wl}-b ${wl}libpath:$libdir:/usr/lib:/lib'
+  aix4* | aix5*)
+    hardcode_direct=yes
     hardcode_libdir_separator=':'
+    link_all_deplibs=yes
+    # When large executables or shared objects are built, AIX ld can
+    # have problems creating the table of contents.  If linking a library
+    # or program results in "error TOC overflow" add -mminimal-toc to
+    # CXXFLAGS/CFLAGS for g++/gcc.  In the cases where that is not
+    # enough to fix the problem, add -Wl,-bbigtoc to LDFLAGS.
     if test "$with_gcc" = yes; then
-      collect2name=`${CC} -print-prog-name=collect2`
-      if test -f "$collect2name" && \
-	 strings "$collect2name" | grep resolve_lib_name >/dev/null
-      then
-	# We have reworked collect2
-	hardcode_direct=yes
-      else
-	# We have old collect2
-	hardcode_direct=unsupported
-	# It fails to find uninstalled libraries when the uninstalled
-	# path is not listed in the libpath.  Setting hardcode_minus_L
-	# to unsupported forces relinking
-	hardcode_minus_L=yes
-	hardcode_libdir_flag_spec='-L$libdir'
-	hardcode_libdir_separator=
-      fi
+      case $host_os in aix4.[012]|aix4.[012].*)
+      # We only want to do this on AIX 4.2 and lower, the check
+      # below for broken collect2 doesn't work under 4.3+
+        collect2name=`${CC} -print-prog-name=collect2`
+        if test -f "$collect2name" && \
+	   strings "$collect2name" | grep resolve_lib_name >/dev/null
+        then
+	  # We have reworked collect2
+	  hardcode_direct=yes
+        else
+	  # We have old collect2
+	  hardcode_direct=unsupported
+	  # It fails to find uninstalled libraries when the uninstalled
+	  # path is not listed in the libpath.  Setting hardcode_minus_L
+	  # to unsupported forces relinking
+	  hardcode_minus_L=yes
+	  hardcode_libdir_flag_spec='-L$libdir'
+	  hardcode_libdir_separator=
+        fi
+      esac
       shared_flag='-shared'
     else
-      shared_flag='${wl}-bM:SRE'
-      hardcode_direct=yes
+      # not using gcc
+      if test "$host_cpu" = ia64; then
+        shared_flag='${wl}-G'
+      else
+        shared_flag='${wl}-bM:SRE'
+      fi
     fi
-    allow_undefined_flag=' ${wl}-berok'
-    archive_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs $compiler_flags ${wl}-bexpall ${wl}-bnoentry${allow_undefined_flag}'
-    archive_expsym_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs $compiler_flags ${wl}-bE:$export_symbols ${wl}-bnoentry${allow_undefined_flag}'
-    case "$host_os" in aix4.[01]|aix4.[01].*)
-      # According to Greg Wooledge, -bexpall is only supported from AIX 4.2 on
-      always_export_symbols=yes ;;
-    esac
 
-    # We don't want to build shared libraries on unknown CPU types.
-    case $host_cpu in
-    powerpc | rs6000) ;;
-    *) ld_shlibs=no ;;
-    esac
-   ;;
+    if test "$host_cpu" = ia64; then
+      # On IA64, the linker does run time linking by default, so we don't
+      # have to do anything special.
+      aix_use_runtimelinking=no
+      exp_sym_flag='-Bexport'
+      no_entry_flag=""
+    else
+      # Test if we are trying to use run time linking, or normal AIX style linking.
+      # If -brtl is somewhere in LDFLAGS, we need to do run time linking.
+      aix_use_runtimelinking=no
+      for ld_flag in $LDFLAGS; do
+        if (test $ld_flag = "-brtl" || test $ld_flag = "-Wl,-brtl" ); then
+          aix_use_runtimelinking=yes
+          break
+        fi
+      done
+      exp_sym_flag='-bexport'
+      no_entry_flag='-bnoentry'
+    fi
+    # -bexpall does not export symbols beginning with underscore (_)
+    always_export_symbols=yes
+    if test "$aix_use_runtimelinking" = yes; then
+      # Warning - without using the other run time loading flags (-brtl), -berok will
+      #           link without error, but may produce a broken library.
+      allow_undefined_flag=' ${wl}-berok'
+      hardcode_libdir_flag_spec='${wl}-blibpath:$libdir:/usr/lib:/lib'
+      archive_expsym_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs $compiler_flags ${allow_undefined_flag} '"\${wl}$no_entry_flag \${wl}$exp_sym_flag:\$export_symbols"
+    else
+      if test "$host_cpu" = ia64; then
+        hardcode_libdir_flag_spec='${wl}-R $libdir:/usr/lib:/lib'
+        allow_undefined_flag="-z nodefs"
+        archive_expsym_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs $compiler_flags ${wl}${allow_undefined_flag} '"\${wl}$no_entry_flag \${wl}$exp_sym_flag:\$export_symbols"
+      else
+        allow_undefined_flag=' ${wl}-berok'
+        # -bexpall does not export symbols beginning with underscore (_)
+        always_export_symbols=yes
+        # Exported symbols can be pulled into shared objects from archives
+        whole_archive_flag_spec=' '
+        build_libtool_need_lc=yes
+        hardcode_libdir_flag_spec='${wl}-blibpath:$libdir:/usr/lib:/lib'
+        # This is similar to how AIX traditionally builds it's shared libraries.
+        archive_expsym_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs $compiler_flags ${wl}-bE:$export_symbols ${wl}-bnoentry${allow_undefined_flag}~$AR $AR_FLAGS $output_objdir/$libname$release.a $output_objdir/$soname'
+      fi
+    fi
+  ;;
 
   amigaos*)
     archive_cmds='$rm $output_objdir/a2ixlibrary.data~$echo "#define NAME $libname" > $output_objdir/a2ixlibrary.data~$echo "#define LIBRARY_ID 1" >> $output_objdir/a2ixlibrary.data~$echo "#define VERSION $major" >> $output_objdir/a2ixlibrary.data~$echo "#define REVISION $revision" >> $output_objdir/a2ixlibrary.data~$AR $AR_FLAGS $lib $libobjs~$RANLIB $lib~(cd $output_objdir && a2ixlibrary -32)'
@@ -317,7 +369,7 @@ else
     old_archive_from_new_cmds='true'
     # FIXME: Should let the user specify the lib program.
     old_archive_cmds='lib /OUT:$oldlib$oldobjs$old_deplibs'
-    fix_srcfile_path='`cygpath -w $srcfile`'
+    fix_srcfile_path='`cygpath -w "$srcfile"`'
     ;;
 
   freebsd1*)
@@ -352,7 +404,7 @@ else
     ;;
 
   hpux9* | hpux10* | hpux11*)
-    case "$host_os" in
+    case $host_os in
     hpux9*) archive_cmds='$rm $output_objdir/$soname~$LD -b +b $install_libdir -o $output_objdir/$soname $libobjs $deplibs $linker_flags~test $output_objdir/$soname = $lib || mv $output_objdir/$soname $lib' ;;
     *) archive_cmds='$LD -b +h $soname +b $install_libdir -o $lib $libobjs $deplibs $linker_flags' ;;
     esac
@@ -441,7 +493,7 @@ else
 		$LD -G${allow_undefined_flag} -M $lib.exp -h $soname -o $lib $libobjs $deplibs $linker_flags~$rm $lib.exp'
     hardcode_libdir_flag_spec='-R$libdir'
     hardcode_shlibpath_var=no
-    case "$host_os" in
+    case $host_os in
     solaris2.[0-5] | solaris2.[0-5].*) ;;
     *) # Supported since Solaris 2.6 (maybe 2.5.1?)
       whole_archive_flag_spec='-z allextract$convenience -z defaultextract' ;;
@@ -539,7 +591,7 @@ fi
     ac_cv_prog_cc_wl='-Wl,'
     ac_cv_prog_cc_static='-static'
 
-    case "$host_os" in
+    case $host_os in
     beos* | irix5* | irix6* | osf3* | osf4* | osf5*)
       # PIC is the default for these OSes.
       ;;
@@ -551,10 +603,6 @@ fi
       # This hack allows C programs to be linked with "-static -ldl", but
       # we not sure about C++ programs.
       ac_cv_prog_cc_static="$ac_cv_prog_cc_static ${ac_cv_prog_cc_wl}-lC"
-      ;;
-    *djgpp*)
-      # DJGPP does not support shared libraries at all
-      ac_cv_prog_cc_pic=
       ;;
     cygwin* | mingw* | os2*)
       # This hack is so that the source file can tell whether it is being
@@ -579,3 +627,6 @@ fi
 
 # GCJ did not exist at the time GCC didn't implicitly link libc in.
 need_lc=no
+
+# All existing releases of GCJ support `-c -o'.
+lt_cv_compiler_c_o=yes
