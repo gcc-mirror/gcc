@@ -556,10 +556,10 @@ parse_number (olen)
   }
 
   if (base <= largest_digit)
-    warning ("integer constant contains digits beyond the radix");
+    pedwarn ("integer constant contains digits beyond the radix");
 
   if (overflow)
-    warning ("integer constant out of range");
+    pedwarn ("integer constant out of range");
 
   /* If too big to be signed, consider it unsigned.  */
   if (((HOST_WIDE_INT) n & yylval.integer.signedp) < 0)
@@ -764,7 +764,7 @@ yylex ()
 	      if (mbtowc (& wc, token_buffer, num_chars) == num_chars)
 		result = wc;
 	      else
-		warning ("Ignoring invalid multibyte character");
+		pedwarn ("Ignoring invalid multibyte character");
 	    }
 #endif
 	  yylval.integer.value = result;
