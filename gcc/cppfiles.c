@@ -74,7 +74,7 @@ append_include_chain (pfile, list, dir, sysp)
   struct stat st;
   unsigned int len;
 
-  dir = savestring (dir);
+  dir = xstrdup (dir);
   simplify_pathname (dir);
   if (stat (dir, &st))
     {
@@ -410,7 +410,7 @@ find_include_file (pfile, fname, search_start, ihash, before)
     }
   *before = 0;
   *ihash = ih;
-  ih->nshort = savestring (fname);
+  ih->nshort = xstrdup (fname);
   ih->control_macro = NULL;
   
   /* If the pathname is absolute, just open it. */ 
@@ -539,7 +539,7 @@ read_name_map (pfile, dirname)
 
   map_list_ptr = ((struct file_name_map_list *)
 		  xmalloc (sizeof (struct file_name_map_list)));
-  map_list_ptr->map_list_name = savestring (dirname);
+  map_list_ptr->map_list_name = xstrdup (dirname);
 
   name = (char *) alloca (strlen (dirname) + strlen (FILE_NAME_MAP_FILE) + 2);
   strcpy (name, dirname);
@@ -772,7 +772,7 @@ actual_directory (pfile, fname)
   size_t dlen;
   struct file_name_list *x;
   
-  dir = savestring (fname);
+  dir = xstrdup (fname);
   last_slash = rindex (dir, '/');
   if (last_slash)
     {
