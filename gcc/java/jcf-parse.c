@@ -151,9 +151,11 @@ set_source_filename (JCF *jcf, int index)
       char *dot = strrchr (class_name, '.');
       if (dot != NULL)
 	{
-	  int i = dot - class_name;
+	  int i = dot - class_name + 1;
 	  /* Concatenate current package prefix with new sfname. */
 	  char *buf = xmalloc (i+new_len+3);
+	  memcpy (buf, class_name, i);
+	  strcpy (buf + i, sfname);
 	  /* Replace '.' by DIR_SEPARATOR. */
 	  for (; i >= 0;  i--)
 	    {
