@@ -169,7 +169,7 @@ extern int safe_from_earlyclobber PROTO((rtx, rtx));
 
 /* Search the body of INSN for values that need reloading and record them
    with push_reload.  REPLACE nonzero means record also where the values occur
-   so that subst_reloads can be used.
+   so that subst_reloads can be used.  */
 extern void find_reloads PROTO((rtx, int, int, int, short *));
 
 /* Compute the sum of X and Y, making canonicalizations assumed in an
