@@ -38,8 +38,9 @@ exception statement from your version. */
 
 package javax.crypto;
 
-import java.lang.reflect.InvocationTargetException;
+import gnu.java.security.Engine;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -47,8 +48,6 @@ import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.spec.AlgorithmParameterSpec;
-
-import gnu.java.security.Engine;
 
 /**
  * A generic producer of keys for symmetric cryptography. The keys

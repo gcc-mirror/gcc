@@ -39,6 +39,7 @@ exception statement from your version. */
 package javax.crypto.spec;
 
 import java.security.spec.KeySpec;
+
 import javax.crypto.SecretKey;
 
 /**

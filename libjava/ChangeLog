@@ -1,5 +1,18 @@
 2004-10-21  Michael Koch  <konqueror@gmx.de>
 
+	* javax/crypto/Cipher.java,
+	javax/crypto/EncryptedPrivateKeyInfo.java,
+	javax/crypto/ExemptionMechanism.java,
+	javax/crypto/KeyAgreement.java,
+	javax/crypto/KeyGenerator.java,
+	javax/crypto/Mac.java,
+	javax/crypto/SecretKeyFactory.java,
+	javax/crypto/SecretKeyFactorySpi.java,
+	javax/crypto/spec/SecretKeySpec.java:
+	Import cleanup.
+
+2004-10-21  Michael Koch  <konqueror@gmx.de>
+
 	* java/security/AlgorithmParameterGenerator.java,
 	java/security/AlgorithmParameters.java,
 	java/security/AlgorithmParametersSpi.java,

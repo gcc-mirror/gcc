@@ -38,17 +38,16 @@ exception statement from your version. */
 
 package javax.crypto;
 
-import java.lang.reflect.InvocationTargetException;
+import gnu.java.security.Engine;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.Security;
-import java.security.spec.KeySpec;
 import java.security.spec.InvalidKeySpecException;
-
-import gnu.java.security.Engine;
+import java.security.spec.KeySpec;
 
 /**
  * A secret key factory translates {@link SecretKey} objects to and from

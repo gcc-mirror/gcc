@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.crypto;
 
+import gnu.java.security.Engine;
+
 import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -50,10 +52,7 @@ import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
-
 import java.util.StringTokenizer;
-
-import gnu.java.security.Engine;
 
 /**
  * <p>This class implements a cryptographic cipher for transforming

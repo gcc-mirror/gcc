@@ -44,14 +44,12 @@ import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
 
 import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import java.security.AlgorithmParameters;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An implementation of the <code>EncryptedPrivateKeyInfo</code> ASN.1

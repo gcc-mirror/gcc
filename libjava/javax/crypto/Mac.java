@@ -38,8 +38,9 @@ exception statement from your version. */
 
 package javax.crypto;
 
-import java.lang.reflect.InvocationTargetException;
+import gnu.java.security.Engine;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -48,8 +49,6 @@ import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.Security;
 import java.security.spec.AlgorithmParameterSpec;
-
-import gnu.java.security.Engine;
 
 /**
  * This class implements a "message authentication code" (MAC), a method
