@@ -1807,6 +1807,11 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
 	{
 	  tree convs = lookup_conversions (argtypes[i]);
 
+	  if (i == 0 && code == MODIFY_EXPR && code2 == NOP_EXPR)
+	    return candidates;
+
+	  convs = lookup_conversions (argtypes[i]);
+
 	  if (code == COND_EXPR)
 	    {
 	      if (real_lvalue_p (args[i]))
@@ -1816,9 +1821,8 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
 	      types[i] = scratch_tree_cons
 		(NULL_TREE, TYPE_MAIN_VARIANT (argtypes[i]), types[i]);
 	    }
-		
-	  else if (! convs || (i == 0 && code == MODIFY_EXPR
-			       && code2 == NOP_EXPR))
+
+	  else if (! convs)
 	    return candidates;
 
 	  for (; convs; convs = TREE_CHAIN (convs))

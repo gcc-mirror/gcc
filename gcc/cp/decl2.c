@@ -1236,9 +1236,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
      tree exp, size;
      int doing_vec, use_global_delete;
 {
-  tree t;
-  tree type;
-  enum tree_code code;
+  tree t, type;
   /* For a regular vector delete (aka, no size argument) we will pass
      this down as a NULL_TREE into build_vec_delete.  */
   tree maxindex = NULL_TREE;
@@ -1254,65 +1252,45 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
       return t;
     }
 
-  t = exp;
-  if (TREE_CODE (t) == OFFSET_REF)
-    t = resolve_offset_ref (t);
-  t = stabilize_reference (convert_from_reference (t));
-  type = TREE_TYPE (t);
-  code = TREE_CODE (type);
+  if (TREE_CODE (exp) == OFFSET_REF)
+    exp = resolve_offset_ref (exp);
+  exp = convert_from_reference (exp);
+  t = stabilize_reference (exp);
+  t = build_expr_type_conversion (WANT_POINTER, t, 1);
 
-  switch (doing_vec)
+  if (t == NULL_TREE || t == error_mark_node)
     {
-    case 2:
+      cp_error ("type `%#T' argument given to `delete', expected pointer",
+		TREE_TYPE (exp));
+      return error_mark_node;
+    }
+
+  if (doing_vec == 2)
+    {
       maxindex = build_binary_op (MINUS_EXPR, size, integer_one_node, 1);
       pedwarn ("anachronistic use of array size in vector delete");
-      /* Fall through.  */
-    case 1:
-      break;
-    default:
-      if (code != POINTER_TYPE)
-	{
-	  cp_error ("type `%#T' argument given to `delete', expected pointer",
-		    type);
-	  return error_mark_node;
-	}
-
-      /* Deleting a pointer with the value zero is valid and has no effect.  */
-      if (integer_zerop (t))
-	return build1 (NOP_EXPR, void_type_node, t);
     }
 
-  if (code == POINTER_TYPE)
+  type = TREE_TYPE (t);
+
+  /* As of Valley Forge, you can delete a pointer to const.  */
+
+  /* You can't delete functions.  */
+  if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
     {
-#if 0
-      /* As of Valley Forge, you can delete a pointer to const.  */
-      if (TREE_READONLY (TREE_TYPE (type)))
-	{
-	  error ("`const *' cannot be deleted");
-	  return error_mark_node;
-	}
-#endif
-      /* You can't delete functions.  */
-      if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
-	{
-	  error ("cannot delete a function");
-	  return error_mark_node;
-	}
+      error ("cannot delete a function");
+      return error_mark_node;
     }
 
-#if 0
-  /* If the type has no destructor, then we should build a regular
-     delete, instead of a vector delete.  Otherwise, we would end
-     up passing a bogus offset into __builtin_delete, which is
-     not expecting it.  */ 
-  if (doing_vec
-      && TREE_CODE (type) == POINTER_TYPE
-      && !TYPE_HAS_DESTRUCTOR (TREE_TYPE (type)))
-    {
-      doing_vec = 0;
-      use_global_delete = 1;
-    }
-#endif
+  /* An array can't have been allocated by new, so complain.  */
+  if (TREE_CODE (t) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (t, 0)) == VAR_DECL
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == ARRAY_TYPE)
+    cp_warning ("deleting array `%#D'", TREE_OPERAND (t, 0));
+
+  /* Deleting a pointer with the value zero is valid and has no effect.  */
+  if (integer_zerop (t))
+    return build1 (NOP_EXPR, void_type_node, t);
 
   if (doing_vec)
     return build_vec_delete (t, maxindex, integer_one_node,
