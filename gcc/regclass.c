@@ -427,6 +427,17 @@ init_reg_sets_1 (void)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
+#ifdef ENABLE_CHECKING
+      /* call_used_regs must include fixed_regs.  */
+      if (fixed_regs[i] && !call_used_regs[i])
+	abort ();
+#ifdef CALL_REALLY_USED_REGISTERS
+      /* call_used_regs must include call_really_used_regs.  */
+      if (call_really_used_regs[i] && !call_used_regs[i])
+	abort ();
+#endif
+#endif
+
       if (fixed_regs[i])
 	SET_HARD_REG_BIT (fixed_reg_set, i);
       else
