@@ -562,44 +562,30 @@ build_overload_name (parmtypes, begin, end)
 
     only_one:
 
-      if (! nofold)
+      if (! nofold && ! just_one)
 	{
-	  if (! just_one)
-	    /* Every argument gets counted.  */
-	    typevec[maxtype++] = parmtype;
+	  /* Every argument gets counted.  */
+	  typevec[maxtype++] = parmtype;
+
+	  if (TREE_USED (parmtype) && parmtype == typevec[maxtype-2])
+	    {
+	      nrepeats++;
+	      goto next;
+	    }
+
+	  if (nrepeats)
+	    flush_repeats (typevec[maxtype-2]);
 
 	  if (TREE_USED (parmtype))
 	    {
-	      if (! just_one && parmtype == typevec[maxtype-2])
-		nrepeats++;
-	      else
-		{
-		  if (nrepeats)
-		    flush_repeats (parmtype);
-		  if (! just_one && TREE_CHAIN (parmtypes)
-		      && parmtype == TREE_VALUE (TREE_CHAIN (parmtypes)))
-		    nrepeats++;
-		  else
-		    {
-		      int tindex = 0;
-
-		      while (typevec[tindex] != parmtype)
-			tindex++;
-		      OB_PUTC ('T');
-		      icat (tindex);
-		      if (tindex > 9)
-			OB_PUTC ('_');
-		    }
-		}
+	      flush_repeats (parmtype);
 	      goto next;
 	    }
-	  if (nrepeats)
-	    flush_repeats (typevec[maxtype-2]);
-	  if (! just_one
-	      /* Only cache types which take more than one character.  */
-	      && (parmtype != TYPE_MAIN_VARIANT (parmtype)
-		  || (TREE_CODE (parmtype) != INTEGER_TYPE
-		      && TREE_CODE (parmtype) != REAL_TYPE)))
+
+	  /* Only cache types which take more than one character.  */
+	  if (parmtype != TYPE_MAIN_VARIANT (parmtype)
+	      || (TREE_CODE (parmtype) != INTEGER_TYPE
+		  && TREE_CODE (parmtype) != REAL_TYPE))
 	    TREE_USED (parmtype) = 1;
 	}
 
@@ -1496,23 +1482,7 @@ hack_identifier (value, name, yychar)
 	  return error_mark_node;
 	}
       TREE_USED (current_class_decl) = 1;
-      if (yychar == '(')
-	if (! ((TYPE_LANG_SPECIFIC (type)
-		&& TYPE_OVERLOADS_CALL_EXPR (type))
-	       || (TREE_CODE (type) == REFERENCE_TYPE
-		   && TYPE_LANG_SPECIFIC (TREE_TYPE (type))
-		   && TYPE_OVERLOADS_CALL_EXPR (TREE_TYPE (type))))
-	    && TREE_CODE (type) != FUNCTION_TYPE
-	    && TREE_CODE (type) != METHOD_TYPE
-	    && !TYPE_PTRMEMFUNC_P (type)
-	    && (TREE_CODE (type) != POINTER_TYPE
-		|| (TREE_CODE (TREE_TYPE (type)) != FUNCTION_TYPE
-		    && TREE_CODE (TREE_TYPE (type)) != METHOD_TYPE)))
-	  {
-	    error ("component `%s' is not a method",
-		   IDENTIFIER_POINTER (name));
-	    return error_mark_node;
-	  }
+
       /* Mark so that if we are in a constructor, and then find that
 	 this field was initialized by a base initializer,
 	 we can emit an error message.  */
@@ -2094,32 +2064,34 @@ do_build_copy_constructor (fndecl)
       for (; fields; fields = TREE_CHAIN (fields))
 	{
 	  tree name, init, t;
-	  if (TREE_CODE (fields) != FIELD_DECL)
+	  tree field = fields;
+
+	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
-	  if (DECL_NAME (fields))
+	  if (DECL_NAME (field))
 	    {
-	      if (VFIELD_NAME_P (DECL_NAME (fields)))
+	      if (VFIELD_NAME_P (DECL_NAME (field)))
 		continue;
-	      if (VBASE_NAME_P (DECL_NAME (fields)))
+	      if (VBASE_NAME_P (DECL_NAME (field)))
 		continue;
 
 	      /* True for duplicate members.  */
-	      if (IDENTIFIER_CLASS_VALUE (DECL_NAME (fields)) != fields)
+	      if (IDENTIFIER_CLASS_VALUE (DECL_NAME (field)) != field)
 		continue;
 	    }
-	  else if ((t = TREE_TYPE (fields)) != NULL_TREE
+	  else if ((t = TREE_TYPE (field)) != NULL_TREE
 		   && TREE_CODE (t) == UNION_TYPE
 		   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))
 		   && TYPE_FIELDS (t) != NULL_TREE)
-	    fields = largest_union_member (t);
+	    field = largest_union_member (t);
 	  else
 	    continue;
 
-	  init = build (COMPONENT_REF, TREE_TYPE (fields), parm, fields);
+	  init = build (COMPONENT_REF, TREE_TYPE (field), parm, field);
 	  init = build_tree_list (NULL_TREE, init);
 
 	  current_member_init_list
-	    = tree_cons (DECL_NAME (fields), init, current_member_init_list);
+	    = tree_cons (DECL_NAME (field), init, current_member_init_list);
 	}
       current_member_init_list = nreverse (current_member_init_list);
       current_base_init_list = nreverse (current_base_init_list);
@@ -2171,29 +2143,31 @@ do_build_assign_ref (fndecl)
       for (; fields; fields = TREE_CHAIN (fields))
 	{
 	  tree comp, init, t;
-	  if (TREE_CODE (fields) != FIELD_DECL)
+	  tree field = fields;
+
+	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
-	  if (DECL_NAME (fields))
+	  if (DECL_NAME (field))
 	    {
-	      if (VFIELD_NAME_P (DECL_NAME (fields)))
+	      if (VFIELD_NAME_P (DECL_NAME (field)))
 		continue;
-	      if (VBASE_NAME_P (DECL_NAME (fields)))
+	      if (VBASE_NAME_P (DECL_NAME (field)))
 		continue;
 
 	      /* True for duplicate members.  */
-	      if (IDENTIFIER_CLASS_VALUE (DECL_NAME (fields)) != fields)
+	      if (IDENTIFIER_CLASS_VALUE (DECL_NAME (field)) != field)
 		continue;
 	    }
-	  else if ((t = TREE_TYPE (fields)) != NULL_TREE
+	  else if ((t = TREE_TYPE (field)) != NULL_TREE
 		   && TREE_CODE (t) == UNION_TYPE
 		   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))
 		   && TYPE_FIELDS (t) != NULL_TREE)
-	    fields = largest_union_member (t);
+	    field = largest_union_member (t);
 	  else
 	    continue;
 
-	  comp = build (COMPONENT_REF, TREE_TYPE (fields), C_C_D, fields);
-	  init = build (COMPONENT_REF, TREE_TYPE (fields), parm, fields);
+	  comp = build (COMPONENT_REF, TREE_TYPE (field), C_C_D, field);
+	  init = build (COMPONENT_REF, TREE_TYPE (field), parm, field);
 
 	  expand_expr_stmt (build_modify_expr (comp, NOP_EXPR, init));
 	}

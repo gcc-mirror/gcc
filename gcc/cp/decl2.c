@@ -2078,6 +2078,7 @@ mark_inline_for_output (decl)
     return;
   my_friendly_assert (TREE_PERMANENT (decl), 363);
   DECL_SAVED_INLINE (decl) = 1;
+#if 0
   if (DECL_PENDING_INLINE_INFO (decl) != 0
       && ! DECL_PENDING_INLINE_INFO (decl)->deja_vu)
     {
@@ -2097,6 +2098,7 @@ mark_inline_for_output (decl)
 	}
       DECL_PENDING_INLINE_INFO (decl) = 0;
     }
+#endif
   saved_inlines = perm_tree_cons (NULL_TREE, decl, saved_inlines);
 }
 

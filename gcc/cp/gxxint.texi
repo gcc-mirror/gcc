@@ -1321,6 +1321,17 @@ main()
 @}
 @end example
 
+@section Linkage
+The linkage code in g++ is horribly twisted in order to meet two design goals:
+
+1) Avoid unnecessary emission of inlines and vtables.
+
+2) Support pedantic assemblers like the one in AIX.
+
+To meet the first goal, we defer emission of inlines and vtables until
+the end of the translation unit, where we can decide whether or not they
+are needed, and how to emit them if they are.
+
 @node Concept Index,  , Free Store, Top
 @section Concept Index
 

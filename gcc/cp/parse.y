@@ -25,20 +25,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    all derivations; this is applied before the explicit action, if one
    is given.  Keep this in mind when reading the actions.  */
 
-/* Also note: this version contains experimental exception
-   handling features.  They could break, change, disappear,
-   or otherwise exhibit volatile behavior.  Don't depend on
-   me (Michael Tiemann) to protect you from any negative impact
-   this may have on your professional, personal, or spiritual life.
-
-   NEWS FLASH:  This version now supports the exception handling
-   syntax of Stroustrup's 2nd edition, if -fansi-exceptions is given.
-   THIS IS WORK IN PROGRESS!!!  The type of the 'throw' and the
-   'catch' much match EXACTLY (no inheritance support or coercions).
-   Also, throw-specifications of functions don't work.
-   Destructors aren't called correctly.  Etc, etc.  --Per Bothner.
-  */
-
 %{
 /* Cause the `yydebug' variable to be defined.  */
 #define YYDEBUG 1
@@ -251,7 +237,7 @@ empty_parms ()
 %type <ttype> object aggr
 %type <itype> new delete
 /* %type <ttype> primary_no_id */
-%type <ttype> nonmomentary_expr
+%type <ttype> nonmomentary_expr maybe_parmlist
 %type <itype> forhead.2 initdcl0 notype_initdcl0 member_init_list
 %type <ttype> template_header template_parm_list template_parm
 %type <ttype> template_type_parm
@@ -346,7 +332,8 @@ lang_extdef:
 	  { if (pending_lang_change) do_pending_lang_change(); }
 	  extdef
 	  { if (! global_bindings_p () && ! pseudo_global_level_p())
-	      pop_everything (); }
+	      pop_everything ();
+	    prefix_attributes = NULL_TREE; }
 	;
 
 extdef:
@@ -2600,7 +2587,6 @@ component_decl_list:
 			$$ = $2;
 		    }
 		}
-	| component_decl_list ';'
 	;
 
 component_decl:
@@ -2614,6 +2600,8 @@ component_decl:
 		{ $$ = finish_method ($$); }
 	| fn.def2 '{' /* nodecls compstmt */
 		{ $$ = finish_method ($$); }
+	| ';'
+		{ $$ = NULL_TREE; }
 	;
 
 component_decl_1:
@@ -2796,10 +2784,25 @@ nonempty_type_quals:
 /* These rules must follow the rules for function declarations
    and component declarations.  That way, longer rules are preferred.  */
 
+suspend_mom:
+	{ $<itype>$ = suspend_momentary (); } 
+
 /* An expression which will not live on the momentary obstack.  */
 nonmomentary_expr:
-	{ $<itype>$ = suspend_momentary (); } expr
+	suspend_mom expr
 	{ resume_momentary ((int) $<itype>1); $$ = $2; }
+	;
+
+/* An expression which will not live on the momentary obstack.  */
+maybe_parmlist:
+	  suspend_mom '(' nonnull_exprlist ')'
+		{ resume_momentary ((int) $<itype>1); $$ = $3; }
+	| suspend_mom '(' parmlist ')'
+		{ resume_momentary ((int) $<itype>1); $$ = $3; }
+	| suspend_mom LEFT_RIGHT
+		{ resume_momentary ((int) $<itype>1); $$ = empty_parms (); }
+	| suspend_mom '(' error ')'
+		{ resume_momentary ((int) $<itype>1); $$ = NULL_TREE; }
 	;
 
 /* A declarator that is allowed only after an explicit typespec.  */
@@ -2843,14 +2846,8 @@ nested_type:
 	;
 
 direct_after_type_declarator:
-	  direct_after_type_declarator '(' nonnull_exprlist ')' type_quals %prec '.'
-		{ $$ = build_parse_node (CALL_EXPR, $$, $3, $5); }
-	| direct_after_type_declarator '(' parmlist ')' type_quals %prec '.'
-		{ $$ = build_parse_node (CALL_EXPR, $$, $3, $5); }
-	| direct_after_type_declarator LEFT_RIGHT type_quals %prec '.'
-		{ $$ = build_parse_node (CALL_EXPR, $$, empty_parms (), $3); }
-	| direct_after_type_declarator '(' error ')' type_quals %prec '.'
-		{ $$ = build_parse_node (CALL_EXPR, $$, NULL_TREE, NULL_TREE); }
+	  direct_after_type_declarator maybe_parmlist type_quals %prec '.'
+		{ $$ = build_parse_node (CALL_EXPR, $$, $2, $3); }
 	| direct_after_type_declarator '[' nonmomentary_expr ']'
 		{ $$ = build_parse_node (ARRAY_REF, $$, $3); }
 	| direct_after_type_declarator '[' ']'
@@ -2900,14 +2897,8 @@ complex_notype_declarator:
 	;
 
 complex_direct_notype_declarator:
-	  direct_notype_declarator '(' nonnull_exprlist ')' type_quals  %prec '.'
-		{ $$ = build_parse_node (CALL_EXPR, $$, $3, $5); }
-	| direct_notype_declarator '(' parmlist ')' type_quals  %prec '.'
-		{ $$ = build_parse_node (CALL_EXPR, $$, $3, $5); }
-	| direct_notype_declarator LEFT_RIGHT type_quals  %prec '.'
-		{ $$ = build_parse_node (CALL_EXPR, $$, empty_parms (), $3); }
-	| direct_notype_declarator '(' error ')' type_quals  %prec '.'
-		{ $$ = build_parse_node (CALL_EXPR, $$, NULL_TREE, NULL_TREE); }
+	  direct_notype_declarator maybe_parmlist type_quals  %prec '.'
+		{ $$ = build_parse_node (CALL_EXPR, $$, $2, $3); }
 	| '(' complex_notype_declarator ')'
 		{ $$ = $2; }
 	| direct_notype_declarator '[' nonmomentary_expr ']'
@@ -3192,7 +3183,8 @@ stmt:
 
 simple_stmt:
 	  decl
-		{ finish_stmt (); }
+		{ finish_stmt ();
+		  prefix_attributes = NULL_TREE; }
 	| expr ';'
 		{
 		  tree expr = $1;
@@ -3294,12 +3286,14 @@ simple_stmt:
 	| SWITCH .pushlevel '(' condition ')'
 		{ emit_line_note (input_filename, lineno);
 		  c_expand_start_case ($4);
+		  push_switch ();
 		  /* Don't let the tree nodes for $4 be discarded by
 		     clear_momentary during the parsing of the next stmt.  */
 		  push_momentary (); }
 	  implicitly_scoped_stmt
 		{ expand_end_case ($4);
 		  pop_momentary ();
+		  pop_switch ();
 		  expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  poplevel (kept_level_p (), 1, 0);
 		  pop_momentary ();

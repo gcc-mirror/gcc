@@ -586,6 +586,47 @@ convert_harshness (type, parmtype, parm)
 }
 
 int
+user_harshness (type, parmtype, parm)
+     register tree type, parmtype;
+     tree parm;
+{
+  tree conv;
+  tree winner = NULL_TREE;
+  int code;
+
+  {
+    tree typename = build_typename_overload (type);
+    if (lookup_fnfields (TYPE_BINFO (parmtype), typename, 0))
+      return 0;
+  }
+			
+  for (conv = lookup_conversions (parmtype); conv; conv = TREE_CHAIN (conv))
+    {
+      struct harshness_code tmp;
+
+      if (winner && TREE_PURPOSE (winner) == TREE_PURPOSE (conv))
+	continue;
+
+      if (tmp = convert_harshness (type, TREE_VALUE (conv), NULL_TREE),
+	  tmp.code < USER_CODE)
+	{
+	  if (winner)
+	    return EVIL_CODE;
+	  else
+	    {
+	      winner = conv;
+	      code = tmp.code;
+	    }
+	}
+    }
+
+  if (winner)
+    return code;
+
+  return -1;
+}
+
+int
 can_convert (to, from)
      tree to, from;
 {
@@ -884,30 +925,14 @@ compute_conversion_costs (function, tta_in, cp, arglen)
 		  if (TYPE_LANG_SPECIFIC (actual_type)
 		      && TYPE_HAS_CONVERSION (actual_type))
 		    {
-		      tree conv;
-		      /* Don't issue warnings since we're only groping
-			 around for the right answer, we haven't yet
-			 committed to going with this solution.  */
-		      int old_inhibit_warnings = inhibit_warnings;
+		      int extra = user_harshness (formal_type, actual_type);
 
-		      inhibit_warnings = 1;
-		      conv = build_type_conversion
-			(CALL_EXPR, formal_type, TREE_VALUE (tta), 0);
-		      inhibit_warnings = old_inhibit_warnings;
-
-		      if (conv)
+		      if (extra == EVIL_CODE)
+			win += 2;
+		      else if (extra >= 0)
 			{
-			  if (conv == error_mark_node
-			      || (TREE_CODE (TREE_VALUE (ttf)) == REFERENCE_TYPE
-				  && ! TYPE_READONLY (TREE_VALUE (TREE_VALUE (ttf)))
-				  && ! lvalue_p (conv)))
-			    win += 2;
-			  else
-			    {
-			      win++;
-			      if (TREE_CODE (conv) != CALL_EXPR)
-				extra_conversions = 1;
-			    }
+			  win++;
+			  extra_conversions = extra;
 			}
 		    }
 		}
@@ -1789,11 +1814,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	    }
 	  else
 	    {
-	      if (TREE_CODE (instance) != CALL_EXPR
-#ifdef PCC_STATIC_STRUCT_RETURN
-		  && TREE_CODE (instance) != RTL_EXPR
-#endif
-		  )
+	      if (TREE_CODE (instance) != CALL_EXPR)
 		my_friendly_abort (125);
 	      if (TYPE_NEEDS_CONSTRUCTING (basetype))
 		instance = build_cplus_new (basetype, instance, 0);
@@ -2397,12 +2418,15 @@ build_method_call (instance, name, parms, basetype_path, flags)
 #if 1
   /* Is it a synthesized method that needs to be synthesized?  */
   if (DECL_ARTIFICIAL (function) && ! flag_no_inline
-      && DECL_SAVED_INSNS (function) == 0
-      && ! TREE_ASM_WRITTEN (function)
+      && ! DECL_INITIAL (function)
       /* Kludge: don't synthesize for default args.  */
       && current_function_decl)
     synthesize_method (function);
 #endif
+
+  if (pedantic && DECL_THIS_INLINE (function) && ! DECL_ARTIFICIAL (function)
+       && ! DECL_INITIAL (function) && ! DECL_PENDING_INLINE_INFO (function))
+    cp_pedwarn ("inline function `%#D' called before definition", function);
 
   fntype = TREE_TYPE (function);
   if (TREE_CODE (fntype) == POINTER_TYPE)
