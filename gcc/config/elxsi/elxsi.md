@@ -854,7 +854,7 @@
 ;; gcc 2.1 does not widen ~si into ~di.
 (define_insn "one_cmplsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(not:DI (match_operand:SI 1 "register_operand" "r")))]
+	(not:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
   "not\\t%0,%1")
 
