@@ -1,3 +1,8 @@
+Sun Aug 30 17:38:20 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.dg/980626-1.c: Delete this test.  We've declared the warning
+	this test triggers valid.
+
 Thu Aug 27 23:59:18 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980827-1.c: New test.
