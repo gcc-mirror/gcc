@@ -1,3 +1,9 @@
+2004-02-01  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/13957
+	* pt.c (tsubst_qualified_id): Improved error message when a type
+	is expected but	not found.
+
 2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* class.c: Fix comment typos.
