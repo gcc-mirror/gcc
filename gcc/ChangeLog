@@ -1,3 +1,11 @@
+2003-09-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ra.c: Convert to ISO C90 prototypes.
+	* ra-build.c: Likewise.
+	* ra-colorize.c: Likewise.
+	* ra-debug.c: Likewise.
+	* ra-rewrite.c: Likewise.
+
 2003-09-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	* Makefile.in (%.dvi): Remove excess $(docdir).

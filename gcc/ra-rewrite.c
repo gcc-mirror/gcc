@@ -44,33 +44,32 @@
 struct rewrite_info;
 struct rtx_list;
 
-static void spill_coalescing PARAMS ((sbitmap, sbitmap));
-static unsigned HOST_WIDE_INT spill_prop_savings PARAMS ((struct web *,
-							  sbitmap));
-static void spill_prop_insert PARAMS ((struct web *, sbitmap, sbitmap));
-static int spill_propagation PARAMS ((sbitmap, sbitmap, sbitmap));
-static void spill_coalprop PARAMS ((void));
-static void allocate_spill_web PARAMS ((struct web *));
-static void choose_spill_colors PARAMS ((void));
-static void rewrite_program PARAMS ((bitmap));
-static void remember_slot PARAMS ((struct rtx_list **, rtx));
-static int slots_overlap_p PARAMS ((rtx, rtx));
-static void delete_overlapping_slots PARAMS ((struct rtx_list **, rtx));
-static int slot_member_p PARAMS ((struct rtx_list *, rtx));
-static void insert_stores PARAMS ((bitmap));
-static int spill_same_color_p PARAMS ((struct web *, struct web *));
-static bool is_partly_live_1 PARAMS ((sbitmap, struct web *));
-static void update_spill_colors PARAMS ((HARD_REG_SET *, struct web *, int));
-static int spill_is_free PARAMS ((HARD_REG_SET *, struct web *));
-static void emit_loads PARAMS ((struct rewrite_info *, int, rtx));
-static void reloads_to_loads PARAMS ((struct rewrite_info *, struct ref **,
-				      unsigned int, struct web **));
-static void rewrite_program2 PARAMS ((bitmap));
-static void mark_refs_for_checking PARAMS ((struct web *, bitmap));
-static void detect_web_parts_to_rebuild PARAMS ((void));
-static void delete_useless_defs PARAMS ((void));
-static void detect_non_changed_webs PARAMS ((void));
-static void reset_changed_flag PARAMS ((void));
+static void spill_coalescing (sbitmap, sbitmap);
+static unsigned HOST_WIDE_INT spill_prop_savings (struct web *, sbitmap);
+static void spill_prop_insert (struct web *, sbitmap, sbitmap);
+static int spill_propagation (sbitmap, sbitmap, sbitmap);
+static void spill_coalprop (void);
+static void allocate_spill_web (struct web *);
+static void choose_spill_colors (void);
+static void rewrite_program (bitmap);
+static void remember_slot (struct rtx_list **, rtx);
+static int slots_overlap_p (rtx, rtx);
+static void delete_overlapping_slots (struct rtx_list **, rtx);
+static int slot_member_p (struct rtx_list *, rtx);
+static void insert_stores (bitmap);
+static int spill_same_color_p (struct web *, struct web *);
+static bool is_partly_live_1 (sbitmap, struct web *);
+static void update_spill_colors (HARD_REG_SET *, struct web *, int);
+static int spill_is_free (HARD_REG_SET *, struct web *);
+static void emit_loads (struct rewrite_info *, int, rtx);
+static void reloads_to_loads (struct rewrite_info *, struct ref **,
+			      unsigned int, struct web **);
+static void rewrite_program2 (bitmap);
+static void mark_refs_for_checking (struct web *, bitmap);
+static void detect_web_parts_to_rebuild (void);
+static void delete_useless_defs (void);
+static void detect_non_changed_webs (void);
+static void reset_changed_flag (void);
 
 /* For tracking some statistics, we count the number (and cost)
    of deleted move insns.  */
@@ -84,8 +83,7 @@ static unsigned HOST_WIDE_INT deleted_move_cost;
    reduces memory shuffling.  */
 
 static void
-spill_coalescing (coalesce, spilled)
-     sbitmap coalesce, spilled;
+spill_coalescing (sbitmap coalesce, sbitmap spilled)
 {
   struct move_list *ml;
   struct move *m;
@@ -160,9 +158,7 @@ spill_coalescing (coalesce, spilled)
    SPILLED, in terms of removed move insn cost.  */
 
 static unsigned HOST_WIDE_INT
-spill_prop_savings (web, spilled)
-     struct web *web;
-     sbitmap spilled;
+spill_prop_savings (struct web *web, sbitmap spilled)
 {
   unsigned HOST_WIDE_INT savings = 0;
   struct move_list *ml;
@@ -196,9 +192,7 @@ spill_prop_savings (web, spilled)
    to LIST and PROCESSED.  */
 
 static void
-spill_prop_insert (web, list, processed)
-     struct web *web;
-     sbitmap list, processed;
+spill_prop_insert (struct web *web, sbitmap list, sbitmap processed)
 {
   struct move_list *ml;
   struct move *m;
@@ -232,8 +226,7 @@ spill_prop_insert (web, list, processed)
    of all webs processed so far, so we don't do work twice.  */
 
 static int
-spill_propagation (to_prop, spilled, processed)
-     sbitmap to_prop, spilled, processed;
+spill_propagation (sbitmap to_prop, sbitmap spilled, sbitmap processed)
 {
   int id;
   int again = 0;
@@ -275,7 +268,7 @@ spill_propagation (to_prop, spilled, processed)
    spill coalescing and spill propagation, until nothing changes.  */
 
 static void
-spill_coalprop ()
+spill_coalprop (void)
 {
   sbitmap spilled, processed, to_prop;
   struct dlist *d;
@@ -311,8 +304,7 @@ spill_coalprop ()
    MEM references.  */
 
 static void
-allocate_spill_web (web)
-     struct web *web;
+allocate_spill_web (struct web *web)
 {
   int regno = web->regno;
   rtx slot;
@@ -326,7 +318,7 @@ allocate_spill_web (web)
    spilling.  The heuristic isn't good in any way.  */
 
 static void
-choose_spill_colors ()
+choose_spill_colors (void)
 {
   struct dlist *d;
   unsigned HOST_WIDE_INT *costs = xmalloc (FIRST_PSEUDO_REGISTER * sizeof (costs[0]));
@@ -397,8 +389,7 @@ static bitmap useless_defs;
    deaths.  */
 
 static void
-rewrite_program (new_deaths)
-     bitmap new_deaths;
+rewrite_program (bitmap new_deaths)
 {
   unsigned int i;
   struct dlist *d;
@@ -538,9 +529,7 @@ struct rtx_list
 /* Adds X to *LIST.  */
 
 static void
-remember_slot (list, x)
-     struct rtx_list **list;
-     rtx x;
+remember_slot (struct rtx_list **list, rtx x)
 {
   struct rtx_list *l;
   /* PRE: X is not already in LIST.  */
@@ -556,8 +545,7 @@ remember_slot (list, x)
    (plus (basereg) (const_inst x)), otherwise they overlap.  */
 
 static int
-slots_overlap_p (s1, s2)
-     rtx s1, s2;
+slots_overlap_p (rtx s1, rtx s2)
 {
   rtx base1, base2;
   HOST_WIDE_INT ofs1 = 0, ofs2 = 0;
@@ -607,9 +595,7 @@ slots_overlap_p (s1, s2)
    of slots_overlap_p().  */
 
 static void
-delete_overlapping_slots (list, x)
-     struct rtx_list **list;
-     rtx x;
+delete_overlapping_slots (struct rtx_list **list, rtx x)
 {
   while (*list)
     {
@@ -623,9 +609,7 @@ delete_overlapping_slots (list, x)
 /* Returns nonzero, of X is member of LIST.  */
 
 static int
-slot_member_p (list, x)
-     struct rtx_list *list;
-     rtx x;
+slot_member_p (struct rtx_list *list, rtx x)
 {
   for (;list; list = list->next)
     if (rtx_equal_p (list->x, x))
@@ -640,8 +624,7 @@ slot_member_p (list, x)
    containing deaths.  */
 
 static void
-insert_stores (new_deaths)
-     bitmap new_deaths;
+insert_stores (bitmap new_deaths)
 {
   rtx insn;
   rtx last_slot = NULL_RTX;
@@ -750,8 +733,7 @@ insert_stores (new_deaths)
    they are not the same width.  */
 
 static int
-spill_same_color_p (web1, web2)
-     struct web *web1, *web2;
+spill_same_color_p (struct web *web1, struct web *web2)
 {
   int c1, size1, c2, size2;
   if ((c1 = alias (web1)->color) < 0 || c1 == an_unusable_color)
@@ -772,9 +754,7 @@ spill_same_color_p (web1, web2)
    subwebs (or WEB itself) is live.  */
 
 static bool
-is_partly_live_1 (live, web)
-     sbitmap live;
-     struct web *web;
+is_partly_live_1 (sbitmap live, struct web *web)
 {
   do
     if (TEST_BIT (live, web->id))
@@ -793,10 +773,7 @@ is_partly_live_1 (live, web)
    is nonzero), or remove them.  */
 
 static void
-update_spill_colors (in_use, web, add)
-     HARD_REG_SET *in_use;
-     struct web *web;
-     int add;
+update_spill_colors (HARD_REG_SET *in_use, struct web *web, int add)
 {
   int c, size;
   if ((c = alias (find_web_for_subweb (web))->color) < 0
@@ -825,9 +802,7 @@ update_spill_colors (in_use, web, add)
    Generally, if WEB can't be left colorized return 1.  */
 
 static int
-spill_is_free (in_use, web)
-     HARD_REG_SET *in_use;
-     struct web *web;
+spill_is_free (HARD_REG_SET *in_use, struct web *web)
 {
   int c, size;
   if ((c = alias (web)->color) < 0)
@@ -881,10 +856,7 @@ struct rewrite_info
    loads.  LAST_BLOCK_INSN is the last insn of the current basic block.  */
 
 static void
-emit_loads (ri, nl_first_reload, last_block_insn)
-     struct rewrite_info *ri;
-     int nl_first_reload;
-     rtx last_block_insn;
+emit_loads (struct rewrite_info *ri, int nl_first_reload, rtx last_block_insn)
 {
   int j;
   for (j = ri->nl_size; j;)
@@ -1018,11 +990,8 @@ emit_loads (ri, nl_first_reload, last_block_insn)
    and whose colors isn't free anymore, on the needed_loads list.  */
 
 static void
-reloads_to_loads (ri, refs, num_refs, ref2web)
-     struct rewrite_info *ri;
-     struct ref **refs;
-     unsigned int num_refs;
-     struct web **ref2web;
+reloads_to_loads (struct rewrite_info *ri, struct ref **refs,
+		  unsigned int num_refs, struct web **ref2web)
 {
   unsigned int n;
   int num_reloads = ri->num_reloads;
@@ -1081,8 +1050,7 @@ reloads_to_loads (ri, refs, num_refs, ref2web)
    containing deaths).  */
 
 static void
-rewrite_program2 (new_deaths)
-     bitmap new_deaths;
+rewrite_program2 (bitmap new_deaths)
 {
   basic_block bb = NULL;
   int nl_first_reload;
@@ -1445,9 +1413,7 @@ rewrite_program2 (new_deaths)
    Also remember all IDs of its uses in USES_AS_BITMAP.  */
 
 static void
-mark_refs_for_checking (web, uses_as_bitmap)
-     struct web *web;
-     bitmap uses_as_bitmap;
+mark_refs_for_checking (struct web *web, bitmap uses_as_bitmap)
 {
   unsigned int i;
   for (i = 0; i < web->num_uses; i++)
@@ -1473,7 +1439,7 @@ mark_refs_for_checking (web, uses_as_bitmap)
    information, we will rebuild.  */
 
 static void
-detect_web_parts_to_rebuild ()
+detect_web_parts_to_rebuild (void)
 {
   bitmap uses_as_bitmap;
   unsigned int i, pass;
@@ -1585,7 +1551,7 @@ static unsigned HOST_WIDE_INT deleted_def_cost;
    which wasn't live.  Try to delete all those insns.  */
 
 static void
-delete_useless_defs ()
+delete_useless_defs (void)
 {
   unsigned int i;
   /* If the insn only sets the def without any sideeffect (besides
@@ -1613,7 +1579,7 @@ delete_useless_defs ()
    in this pass).  */
 
 static void
-detect_non_changed_webs ()
+detect_non_changed_webs (void)
 {
   struct dlist *d, *d_next;
   for (d = WEBS(SPILLED); d; d = d_next)
@@ -1639,7 +1605,7 @@ detect_non_changed_webs ()
 /* Before spilling we clear the changed flags for all spilled webs.  */
 
 static void
-reset_changed_flag ()
+reset_changed_flag (void)
 {
   struct dlist *d;
   for (d = WEBS(SPILLED); d; d = d->next)
@@ -1652,7 +1618,7 @@ reset_changed_flag ()
    building the interference graph in the next pass.  */
 
 void
-actual_spill ()
+actual_spill (void)
 {
   int i;
   bitmap new_deaths = BITMAP_XMALLOC ();
@@ -1840,7 +1806,7 @@ emit_colors (df)
 /* Delete some coalesced moves from the insn stream.  */
 
 void
-delete_moves ()
+delete_moves (void)
 {
   struct move_list *ml;
   struct web *s, *t;
@@ -1898,7 +1864,7 @@ delete_moves ()
    that comes later) Bah.  */
 
 void
-remove_suspicious_death_notes ()
+remove_suspicious_death_notes (void)
 {
   rtx insn;
   for (insn = get_insns(); insn; insn = NEXT_INSN (insn))
@@ -1927,8 +1893,7 @@ remove_suspicious_death_notes ()
    is nonzero, also free ra_reg_renumber and reset ra_max_regno.  */
 
 void
-setup_renumber (free_it)
-     int free_it;
+setup_renumber (int free_it)
 {
   int i;
   max_regno = max_reg_num ();
@@ -1949,8 +1914,7 @@ setup_renumber (free_it)
    and removed moves or useless defs.  */
 
 void
-dump_cost (level)
-     unsigned int level;
+dump_cost (unsigned int level)
 {
   ra_debug_msg (level, "Instructions for spilling\n added:\n");
   ra_debug_msg (level, "  loads =%d cost=" HOST_WIDE_INT_PRINT_UNSIGNED "\n",
@@ -1969,7 +1933,7 @@ dump_cost (level)
 /* Initialization of the rewrite phase.  */
 
 void
-ra_rewrite_init ()
+ra_rewrite_init (void)
 {
   emitted_spill_loads = 0;
   emitted_spill_stores = 0;
