@@ -49,7 +49,8 @@ enum cmp_type {
 enum delay_type {
   DELAY_NONE,				/* no delay slot */
   DELAY_LOAD,				/* load from memory delay */
-  DELAY_HILO				/* move from/to hi/lo registers */
+  DELAY_HILO,				/* move from/to hi/lo registers */
+  DELAY_FCMP				/* delay after doing c.<xx>.{d,s} */
 };
 
 /* Which processor to schedule for.  Since there is no difference between
@@ -120,12 +121,14 @@ extern unsigned long	compute_frame_size ();
 extern void		expand_block_move ();
 extern int		equality_op ();
 extern int		fcmp_op ();
+extern int		fpsw_register_operand ();
 extern struct rtx_def *	function_arg ();
 extern void		function_arg_advance ();
 extern int		function_arg_partial_nregs ();
 extern void		function_epilogue ();
 extern void		function_prologue ();
 extern void		gen_conditional_branch ();
+extern struct rtx_def * gen_int_relational ();
 extern void		init_cumulative_args ();
 extern int		large_int ();
 extern int		md_register_operand ();
@@ -145,6 +148,7 @@ extern void		mips_output_filename ();
 extern void		mips_output_lineno ();
 extern char	       *output_block_move ();
 extern void		override_options ();
+extern int		pc_or_label_operand ();
 extern void		print_operand_address ();
 extern void		print_operand ();
 extern void		print_options ();
@@ -416,7 +420,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 15]"
+#define MIPS_VERSION "[AL 1.1, MM 16]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -646,7 +650,7 @@ do {							\
 #define MASK_DEBUG	0x40000000	/* Eliminate version # in .s file */
 #define MASK_DEBUG_A	0x20000000	/* don't allow <label>($reg) addrs */
 #define MASK_DEBUG_B	0x10000000	/* GO_IF_LEGITIMATE_ADDRESS debug */
-#define MASK_DEBUG_C	0x08000000	/* suppress normal divmod patterns */
+#define MASK_DEBUG_C	0x08000000	/* allow new seq, sne, etc. patterns */
 #define MASK_DEBUG_D	0x04000000	/* don't do define_split's */
 #define MASK_DEBUG_E	0x02000000	/* function_arg debug */
 #define MASK_DEBUG_F	0x01000000	/* don't try to suppress load nop's */
@@ -1280,8 +1284,8 @@ extern enum reg_class mips_regno_to_class[];
    'f'	Floating point registers
    'h'	Hi register
    'l'	Lo register
-   's'	Status registers
-   'x'	Multiply/divide registers  */
+   'x'	Multiply/divide registers
+   'z'	FP Status register */
 
 extern enum reg_class mips_char_to_class[];
 
@@ -2547,47 +2551,34 @@ do									\
   }									\
 while (0)
 
-/* A list of names to be used for additional modes for condition
-   code values in registers (*note Jump Patterns::.).  These names
-   are added to `enum machine_mode' and all have class `MODE_CC'. 
-   By convention, they should start with `CC' and end with `mode'.
+/* A list of names to be used for additional modes for condition code
+   values in registers.  These names are added to `enum machine_mode'
+   and all have class `MODE_CC'.  By convention, they should start
+   with `CC' and end with `mode'.
 
    You should only define this macro if your machine does not use
    `cc0' and only if additional modes are required.
 
-   On the MIPS, we use CC_FPmode for all floating point, CC_EQmode for
-   integer equality/inequality comparisons, CC_0mode for comparisons
-   against 0, and CCmode for other integer comparisons.  */
+   On the MIPS, we use CC_FPmode for all floating point except for not
+   equal, CC_REV_FPmode for not equal (to reverse the sense of the
+   jump), CC_EQmode for integer equality/inequality comparisons,
+   CC_0mode for comparisons against 0, and CCmode for other integer
+   comparisons. */
 
-#define EXTRA_CC_MODES CC_EQmode, CC_FPmode, CC_0mode
+#define EXTRA_CC_MODES CC_EQmode, CC_FPmode, CC_0mode, CC_REV_FPmode
 
 /* A list of C strings giving the names for the modes listed in
-   `EXTRA_CC_MODES'.  For example, the Sparc defines this macro and
-   `EXTRA_CC_MODES' as
+   `EXTRA_CC_MODES'.  */
 
-          #define EXTRA_CC_MODES CC_NOOVmode, CCFPmode
-          #define EXTRA_CC_NAMES "CC_NOOV", "CCFP"
-
-   This macro is not required if `EXTRA_CC_MODES' is not defined.  */
-
-#define EXTRA_CC_NAMES "CC_EQ", "CC_FP", "CC_0"
+#define EXTRA_CC_NAMES "CC_EQ", "CC_FP", "CC_0", "CC_REV_FP"
 
 /* Returns a mode from class `MODE_CC' to be used when comparison
-   operation code OP is applied to rtx X.  For example, on the
-   Sparc, `SELECT_CC_MODE' is defined as (see *note Jump
-   Patterns::. for a description of the reason for this definition)
+   operation code OP is applied to rtx X.  */
 
-          #define SELECT_CC_MODE(OP,X)					\
-            (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT ? CCFPmode	\
-             : (GET_CODE (X) == PLUS || GET_CODE (X) == MINUS		\
-                || GET_CODE (X) == NEG)					\
-             ? CC_NOOVmode : CCmode)
-
-   This macro is not required if `EXTRA_CC_MODES' is not defined.  */
-
-#define SELECT_CC_MODE (OP, X)						\
-  (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT ? CC_FPmode :		\
-   (OP == EQ || OP == NE) ? CC_EQmode : CCmode)
+#define SELECT_CC_MODE(OP, X)						\
+  (GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT				\
+	? SImode							\
+	: ((OP == NE) ? CC_REV_FPmode : CC_FPmode))
 
 
 /* Control the assembler format that we output.  */
