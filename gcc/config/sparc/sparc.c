@@ -294,7 +294,7 @@ call_operand (op, mode)
   if (GET_CODE (op) != MEM)
     abort ();
   op = XEXP (op, 0);
-  return (CONSTANT_P (op) || memory_address_p (Pmode, op));
+  return (symbolic_operand (op, mode) || memory_address_p (Pmode, op));
 }
 
 int
@@ -302,7 +302,7 @@ call_operand_address (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return (CONSTANT_P (op) || memory_address_p (Pmode, op));
+  return (symbolic_operand (op, mode) || memory_address_p (Pmode, op));
 }
 
 /* Returns 1 if OP is either a symbol reference or a sum of a symbol
