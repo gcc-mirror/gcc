@@ -1,4 +1,4 @@
-2002-12-29  Nathanael Nerode  <neroden@gcc.gnu.org>
+2002-12-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Revert HJL's change.
 	* Makefile.in: Regenerated.
