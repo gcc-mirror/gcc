@@ -104,10 +104,10 @@ do {									\
 			  %{pg:crt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}} \
 			  %{pg:gmon.o%s}}} \
 			%{pg:crti.o%s}%{!pg:crti.o%s} \
-			%{ansi:/usr/ccs/lib/values-Xc.o%s} \
+			%{ansi:values-Xc.o%s} \
 			%{!ansi: \
-			 %{traditional:/usr/ccs/lib/values-Xt.o%s} \
-			 %{!traditional:/usr/ccs/lib/values-Xa.o%s}} \
+			 %{traditional:values-Xt.o%s} \
+			 %{!traditional:values-Xa.o%s}} \
 			crtbegin.o%s"
 
 /* ??? Note: in order for -compat-bsd to work fully,
