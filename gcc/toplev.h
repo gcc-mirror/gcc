@@ -39,8 +39,8 @@ extern char *file_name_nondirectory	PARAMS ((const char *));
 extern void print_time			PARAMS ((const char *, long));
 extern void debug_start_source_file	PARAMS ((const char *));
 extern void debug_end_source_file	PARAMS ((unsigned));
-extern void debug_define		PARAMS ((unsigned, char *));
-extern void debug_undef			PARAMS ((unsigned, char *));
+extern void debug_define		PARAMS ((unsigned, const char *));
+extern void debug_undef			PARAMS ((unsigned, const char *));
 extern int debug_ignore_block		PARAMS ((union tree_node *));
 extern void fatal			PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;

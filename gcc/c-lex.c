@@ -92,6 +92,8 @@ static int dump_one_header	PARAMS ((splay_tree_node, void *));
 static void cb_ident		PARAMS ((cpp_reader *, const cpp_string *));
 static void cb_file_change    PARAMS ((cpp_reader *, const cpp_file_change *));
 static void cb_def_pragma	PARAMS ((cpp_reader *));
+static void cb_define		PARAMS ((cpp_reader *, cpp_hashnode *));
+static void cb_undef		PARAMS ((cpp_reader *, cpp_hashnode *));
 
 const char *
 init_c_lex (filename)
@@ -122,6 +124,14 @@ init_c_lex (filename)
   parse_in->cb.ident = cb_ident;
   parse_in->cb.file_change = cb_file_change;
   parse_in->cb.def_pragma = cb_def_pragma;
+
+  /* Set the debug callbacks if we can use them.  */
+  if (debug_info_level == DINFO_LEVEL_VERBOSE
+      && (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG))
+    {
+      parse_in->cb.define = cb_define;
+      parse_in->cb.undef = cb_undef;
+    }
 
   if (filename == 0 || !strcmp (filename, "-"))
     filename = "stdin";
@@ -315,6 +325,24 @@ cb_def_pragma (pfile)
       else
 	warning ("ignoring #pragma %s", space);
     }
+}
+
+/* #define callback for DWARF and DWARF2 debug info.  */
+static void
+cb_define (pfile, node)
+     cpp_reader *pfile;
+     cpp_hashnode *node;
+{
+  debug_define (lineno, (const char *) cpp_macro_definition (pfile, node));
+}
+
+/* #undef callback for DWARF and DWARF2 debug info.  */
+static void
+cb_undef (pfile, node)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     cpp_hashnode *node;
+{
+  debug_undef (lineno, (const char *) node->name);
 }
 
 /* Parse a '\uNNNN' or '\UNNNNNNNN' sequence.

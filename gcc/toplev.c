@@ -5109,44 +5109,40 @@ debug_end_source_file (lineno)
 #endif
 }
 
-/* Called from check_newline in c-parse.y.  The `buffer' parameter contains
+/* Called from cb_define in c-lex.c.  The `buffer' parameter contains
    the tail part of the directive line, i.e. the part which is past the
    initial whitespace, #, whitespace, directive-name, whitespace part.  */
 
 void
 debug_define (lineno, buffer)
      register unsigned lineno ATTRIBUTE_UNUSED;
-     register char *buffer ATTRIBUTE_UNUSED;
+     register const char *buffer ATTRIBUTE_UNUSED;
 {
 #ifdef DWARF_DEBUGGING_INFO
-  if (debug_info_level == DINFO_LEVEL_VERBOSE
-      && write_symbols == DWARF_DEBUG)
+  if (write_symbols == DWARF_DEBUG)
     dwarfout_define (lineno, buffer);
 #endif /* DWARF_DEBUGGING_INFO  */
 #ifdef DWARF2_DEBUGGING_INFO
-  if (debug_info_level == DINFO_LEVEL_VERBOSE
-      && write_symbols == DWARF2_DEBUG)
+  if (write_symbols == DWARF2_DEBUG)
     dwarf2out_define (lineno, buffer);
 #endif /* DWARF2_DEBUGGING_INFO  */
 }
 
-/* Called from check_newline in c-parse.y.  The `buffer' parameter contains
+/* Called from cb_undef in c-lex.c.  The `buffer' parameter contains
    the tail part of the directive line, i.e. the part which is past the
    initial whitespace, #, whitespace, directive-name, whitespace part.  */
 
 void
 debug_undef (lineno, buffer)
      register unsigned lineno ATTRIBUTE_UNUSED;
-     register char *buffer ATTRIBUTE_UNUSED;
+     register const char *buffer ATTRIBUTE_UNUSED;
 {
 #ifdef DWARF_DEBUGGING_INFO
-  if (debug_info_level == DINFO_LEVEL_VERBOSE
-      && write_symbols == DWARF_DEBUG)
+  if (write_symbols == DWARF_DEBUG)
     dwarfout_undef (lineno, buffer);
 #endif /* DWARF_DEBUGGING_INFO  */
 #ifdef DWARF2_DEBUGGING_INFO
-  if (debug_info_level == DINFO_LEVEL_VERBOSE
-      && write_symbols == DWARF2_DEBUG)
+  if (write_symbols == DWARF2_DEBUG)
     dwarf2out_undef (lineno, buffer);
 #endif /* DWARF2_DEBUGGING_INFO  */
 }
