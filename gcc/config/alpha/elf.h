@@ -58,7 +58,7 @@ do {								\
     }								\
   fprintf (FILE, "\t.set noat\n");				\
   fprintf (FILE, "\t.set noreorder\n");				\
-  if (TARGET_BWX | TARGET_MAX | TARGET_CIX)			\
+  if (TARGET_BWX | TARGET_MAX | TARGET_FIX | TARGET_CIX)	\
     {								\
       fprintf (FILE, "\t.arch %s\n",				\
                (alpha_cpu == PROCESSOR_EV6 ? "ev6"		\
