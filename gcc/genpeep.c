@@ -44,7 +44,6 @@ struct link
 };
 
 char *xmalloc PROTO((unsigned));
-static void match_rtx PROTO((rtx, struct link *, int));
 static void fatal ();
 void fancy_abort PROTO((void));
 
@@ -59,6 +58,8 @@ static int n_operands;
 
 static int insn_code_number = 0;
 
+static void gen_peephole PROTO((rtx));
+static void match_rtx PROTO((rtx, struct link *, int));
 static void print_path PROTO((struct link *));
 static void print_code PROTO((RTX_CODE));
 

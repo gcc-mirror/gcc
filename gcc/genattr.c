@@ -57,6 +57,12 @@ struct function_unit
   struct range issue_delay;	/* Range of issue delay values.  */
 };
 
+static void extend_range PROTO((struct range *, int, int));
+static void write_upcase PROTO((char *));
+static void gen_attr PROTO((rtx));
+static void write_units PROTO((int, struct range *, struct range *,
+			       struct range *, struct range *,
+			       struct range *));
 static void
 extend_range (range, min, max)
      struct range *range;
