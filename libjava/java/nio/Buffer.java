@@ -148,11 +148,11 @@ public abstract class Buffer
     if ((newLimit < 0) || (newLimit > cap))
       throw new IllegalArgumentException ();
 
-    if (newLimit <= mark)
+    if (newLimit < mark)
         mark = -1;
 
     if (pos > newLimit)
-        pos = newLimit - 1;
+        pos = newLimit;
 
     limit = newLimit;
     return this;
