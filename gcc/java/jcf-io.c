@@ -227,7 +227,7 @@ DEFUN(open_class, (filename, jcf, fd),
 
 
 char *
-DEFUN(find_classfile, (filename_length, jcf),
+DEFUN(find_classfile, (filename, jcf),
       char *filename AND JCF *jcf)
 {
 #if JCF_USE_STDIO

@@ -609,7 +609,7 @@ print_class_decls (out, jcf)
 }
 
 static void
-DEFUN(process_file, (file, out),
+DEFUN(process_file, (jcf, out),
       JCF *jcf AND FILE *out)
 {
   int code, i;
