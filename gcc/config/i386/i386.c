@@ -951,17 +951,12 @@ enum x86_64_reg_class
     X86_64_COMPLEX_X87_CLASS,
     X86_64_MEMORY_CLASS
   };
-static const char * const x86_64_reg_class_name[] =
-   {"no", "integer", "integerSI", "sse", "sseSF", "sseDF", "sseup", "x87", "x87up", "cplx87", "no"};
+static const char * const x86_64_reg_class_name[] = {
+  "no", "integer", "integerSI", "sse", "sseSF", "sseDF",
+  "sseup", "x87", "x87up", "cplx87", "no"
+};
 
 #define MAX_CLASSES 4
-static int classify_argument (enum machine_mode, tree,
-			      enum x86_64_reg_class [MAX_CLASSES], int);
-static int examine_argument (enum machine_mode, tree, int, int *, int *);
-static rtx construct_container (enum machine_mode, tree, int, int, int,
-				const int *, int);
-static enum x86_64_reg_class merge_classes (enum x86_64_reg_class,
-					    enum x86_64_reg_class);
 
 /* Table of constants used by fldpi, fldln2, etc....  */
 static REAL_VALUE_TYPE ext_80387_constants_table [5];
@@ -2040,6 +2035,71 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
   return;
 }
 
+/* Return the "natural" mode for TYPE.  In most cases, this is just TYPE_MODE.
+   But in the case of vector types, it is some vector mode.
+
+   When we have only some of our vector isa extensions enabled, then there
+   are some modes for which vector_mode_supported_p is false.  For these
+   modes, the generic vector support in gcc will choose some non-vector mode
+   in order to implement the type.  By computing the natural mode, we'll 
+   select the proper ABI location for the operand and not depend on whatever
+   the middle-end decides to do with these vector types.  */
+
+static enum machine_mode
+type_natural_mode (tree type)
+{
+  enum machine_mode mode = TYPE_MODE (type);
+
+  if (TREE_CODE (type) == VECTOR_TYPE && !VECTOR_MODE_P (mode))
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (type);
+      if ((size == 8 || size == 16)
+	  /* ??? Generic code allows us to create width 1 vectors.  Ignore.  */
+	  && TYPE_VECTOR_SUBPARTS (type) > 1)
+	{
+	  enum machine_mode innermode = TYPE_MODE (TREE_TYPE (type));
+
+	  if (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE)
+	    mode = MIN_MODE_VECTOR_FLOAT;
+	  else
+	    mode = MIN_MODE_VECTOR_INT;
+
+	  /* Get the mode which has this inner mode and number of units.  */
+	  for (; mode != VOIDmode; mode = GET_MODE_WIDER_MODE (mode))
+	    if (GET_MODE_NUNITS (mode) == TYPE_VECTOR_SUBPARTS (type)
+		&& GET_MODE_INNER (mode) == innermode)
+	      return mode;
+
+	  abort ();
+	}
+    }
+
+  return mode;
+}
+
+/* We want to pass a value in REGNO whose "natural" mode is MODE.  However,
+   this may not agree with the mode that the type system has chosen for the
+   register, which is ORIG_MODE.  If ORIG_MODE is not BLKmode, then we can
+   go ahead and use it.  Otherwise we have to build a PARALLEL instead.  */
+
+static rtx
+gen_reg_or_parallel (enum machine_mode mode, enum machine_mode orig_mode,
+		     unsigned int regno)
+{
+  rtx tmp;
+
+  if (orig_mode != BLKmode)
+    tmp = gen_rtx_REG (orig_mode, regno);
+  else
+    {
+      tmp = gen_rtx_REG (mode, regno);
+      tmp = gen_rtx_EXPR_LIST (VOIDmode, tmp, const0_rtx);
+      tmp = gen_rtx_PARALLEL (orig_mode, gen_rtvec (1, tmp));
+    }
+
+  return tmp;
+}
+
 /* x86-64 register passing implementation.  See x86-64 ABI for details.  Goal
    of this code is to classify each 8bytes of incoming argument by the register
    class and assign registers accordingly.  */
@@ -2442,12 +2502,14 @@ examine_argument (enum machine_mode mode, tree type, int in_return,
       }
   return 1;
 }
+
 /* Construct container for the argument used by GCC interface.  See
    FUNCTION_ARG for the detailed description.  */
+
 static rtx
-construct_container (enum machine_mode mode, tree type, int in_return,
-		     int nintregs, int nsseregs, const int * intreg,
-		     int sse_regno)
+construct_container (enum machine_mode mode, enum machine_mode orig_mode,
+		     tree type, int in_return, int nintregs, int nsseregs,
+		     const int *intreg, int sse_regno)
 {
   enum machine_mode tmpmode;
   int bytes =
@@ -2477,7 +2539,8 @@ construct_container (enum machine_mode mode, tree type, int in_return,
     }
   if (!n)
     return NULL;
-  if (!examine_argument (mode, type, in_return, &needed_intregs, &needed_sseregs))
+  if (!examine_argument (mode, type, in_return, &needed_intregs,
+			 &needed_sseregs))
     return NULL;
   if (needed_intregs > nintregs || needed_sseregs > nsseregs)
     return NULL;
@@ -2493,7 +2556,7 @@ construct_container (enum machine_mode mode, tree type, int in_return,
       case X86_64_SSE_CLASS:
       case X86_64_SSESF_CLASS:
       case X86_64_SSEDF_CLASS:
-	return gen_rtx_REG (mode, SSE_REGNO (sse_regno));
+	return gen_reg_or_parallel (mode, orig_mode, SSE_REGNO (sse_regno));
       case X86_64_X87_CLASS:
       case X86_64_COMPLEX_X87_CLASS:
 	return gen_rtx_REG (mode, FIRST_STACK_REG);
@@ -2581,19 +2644,18 @@ construct_container (enum machine_mode mode, tree type, int in_return,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 void
-function_arg_advance (CUMULATIVE_ARGS *cum,	/* current arg information */
-		      enum machine_mode mode,	/* current arg mode */
-		      tree type,	/* type of the argument or 0 if lib support */
-		      int named)	/* whether or not the argument was named */
+function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		      tree type, int named)
 {
   int bytes =
     (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   if (TARGET_DEBUG_ARG)
-    fprintf (stderr,
-	     "function_adv (sz=%d, wds=%2d, nregs=%d, ssenregs=%d, mode=%s, named=%d)\n\n",
-	     words, cum->words, cum->nregs, cum->sse_nregs, GET_MODE_NAME (mode), named);
+    fprintf (stderr, "function_adv (sz=%d, wds=%2d, nregs=%d, ssenregs=%d, "
+	     "mode=%s, named=%d)\n\n",
+	     words, cum->words, cum->nregs, cum->sse_nregs,
+	     GET_MODE_NAME (mode), named);
   if (TARGET_64BIT)
     {
       int int_nregs, sse_nregs;
@@ -2651,34 +2713,6 @@ function_arg_advance (CUMULATIVE_ARGS *cum,	/* current arg information */
   return;
 }
 
-/* A subroutine of function_arg.  We want to pass a parameter whose nominal
-   type is MODE in REGNO.  We try to minimize ABI variation, so MODE may not
-   actually be valid for REGNO with the current ISA.  In this case, ALT_MODE
-   is used instead.  It must be the same size as MODE, and must be known to
-   be valid for REGNO.  Finally, ORIG_MODE is the original mode of the 
-   parameter, as seen by the type system.  This may be different from MODE
-   when we're mucking with things minimizing ABI variations.
-
-   Returns a REG or a PARALLEL as appropriate.  */
-
-static rtx
-gen_reg_or_parallel (enum machine_mode mode, enum machine_mode alt_mode,
-		     enum machine_mode orig_mode, unsigned int regno)
-{
-  rtx tmp;
-
-  if (HARD_REGNO_MODE_OK (regno, mode))
-    tmp = gen_rtx_REG (mode, regno);
-  else
-    {
-      tmp = gen_rtx_REG (alt_mode, regno);
-      tmp = gen_rtx_EXPR_LIST (VOIDmode, tmp, const0_rtx);
-      tmp = gen_rtx_PARALLEL (orig_mode, gen_rtvec (1, tmp));
-    }
-
-  return tmp;
-}
-
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
@@ -2705,26 +2739,8 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode orig_mode,
 
   /* To simplify the code below, represent vector types with a vector mode
      even if MMX/SSE are not active.  */
-  if (type
-      && TREE_CODE (type) == VECTOR_TYPE
-      && (bytes == 8 || bytes == 16)
-      && GET_MODE_CLASS (TYPE_MODE (type)) != MODE_VECTOR_INT
-      && GET_MODE_CLASS (TYPE_MODE (type)) != MODE_VECTOR_FLOAT)
-    {
-      enum machine_mode innermode = TYPE_MODE (TREE_TYPE (type));
-      enum machine_mode newmode
-	= TREE_CODE (TREE_TYPE (type)) == REAL_TYPE
-	  ? MIN_MODE_VECTOR_FLOAT : MIN_MODE_VECTOR_INT;
-
-      /* Get the mode which has this inner mode and number of units.  */
-      for (; newmode != VOIDmode; newmode = GET_MODE_WIDER_MODE (newmode))
-	if (GET_MODE_NUNITS (newmode) == TYPE_VECTOR_SUBPARTS (type)
-	    && GET_MODE_INNER (newmode) == innermode)
-	  {
-	    mode = newmode;
-	    break;
-	  }
-    }
+  if (type && TREE_CODE (type) == VECTOR_TYPE)
+    mode = type_natural_mode (type);
 
   /* Handle a hidden AL argument containing number of registers for varargs
      x86-64 functions.  For i386 ABI just return constm1_rtx to avoid
@@ -2741,7 +2757,8 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode orig_mode,
 	return constm1_rtx;
     }
   if (TARGET_64BIT)
-    ret = construct_container (mode, type, 0, cum->nregs, cum->sse_nregs,
+    ret = construct_container (mode, orig_mode, type, 0, cum->nregs,
+			       cum->sse_nregs,
 			       &x86_64_int_parameter_registers [cum->regno],
 			       cum->sse_regno);
   else
@@ -2793,7 +2810,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode orig_mode,
 			 "changes the ABI");
 	      }
 	    if (cum->sse_nregs)
-	      ret = gen_reg_or_parallel (mode, TImode, orig_mode,
+	      ret = gen_reg_or_parallel (mode, orig_mode,
 					 cum->sse_regno + FIRST_SSE_REG);
 	  }
 	break;
@@ -2810,7 +2827,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode orig_mode,
 			 "changes the ABI");
 	      }
 	    if (cum->mmx_nregs)
-	      ret = gen_reg_or_parallel (mode, DImode, orig_mode,
+	      ret = gen_reg_or_parallel (mode, orig_mode,
 					 cum->mmx_regno + FIRST_MMX_REG);
 	  }
 	break;
@@ -2972,11 +2989,12 @@ ix86_function_value (tree valtype)
 {
   if (TARGET_64BIT)
     {
-      rtx ret = construct_container (TYPE_MODE (valtype), valtype, 1,
-				     REGPARM_MAX, SSE_REGPARM_MAX,
+      rtx ret = construct_container (type_natural_mode (valtype),
+				     TYPE_MODE (valtype), valtype,
+				     1, REGPARM_MAX, SSE_REGPARM_MAX,
 				     x86_64_int_return_registers, 0);
-      /* For zero sized structures, construct_container return NULL, but we need
-         to keep rest of compiler happy by returning meaningful value.  */
+      /* For zero sized structures, construct_container return NULL, but we
+	 need to keep rest of compiler happy by returning meaningful value.  */
       if (!ret)
 	ret = gen_rtx_REG (TYPE_MODE (valtype), 0);
       return ret;
@@ -3342,11 +3360,11 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   size = int_size_in_bytes (type);
   rsize = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
-  container = construct_container (TYPE_MODE (type), type, 0,
-				   REGPARM_MAX, SSE_REGPARM_MAX, intreg, 0);
-  /*
-   * Pull the value out of the saved registers ...
-   */
+  container = construct_container (type_natural_mode (type), TYPE_MODE (type),
+				   type, 0, REGPARM_MAX, SSE_REGPARM_MAX,
+				   intreg, 0);
+
+  /* Pull the value out of the saved registers.  */
 
   addr = create_tmp_var (ptr_type_node, "addr");
   DECL_POINTER_ALIAS_SET (addr) = get_varargs_alias_set ();
@@ -14032,18 +14050,21 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     return VALID_FP_MODE_P (mode);
   if (SSE_REGNO_P (regno))
     {
-      if (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
-	return 1;
-      if (TARGET_SSE && VALID_SSE_REG_MODE (mode))
-	return 1;
-      return 0;
+      /* We implement the move patterns for all vector modes into and
+	 out of SSE registers, even when no operation instructions
+	 are available.  */
+      return (VALID_SSE_REG_MODE (mode)
+	      || VALID_SSE2_REG_MODE (mode)
+	      || VALID_MMX_REG_MODE (mode)
+	      || VALID_MMX_REG_MODE_3DNOW (mode));
     }
   if (MMX_REGNO_P (regno))
     {
-      if (TARGET_3DNOW && VALID_MMX_REG_MODE_3DNOW (mode))
-	return 1;
-      if (TARGET_MMX && VALID_MMX_REG_MODE (mode))
-	return 1;
+      /* We implement the move patterns for 3DNOW modes even in MMX mode,
+	 so if the register is available at all, then we can move data of
+	 the given mode into or out of it.  */
+      return (VALID_MMX_REG_MODE (mode)
+	      || VALID_MMX_REG_MODE_3DNOW (mode));
     }
   /* We handle both integer and floats in the general purpose registers.
      In future we should be able to handle vector modes as well.  */
