@@ -179,28 +179,21 @@ private:
   // This method.
   _Jv_InterpMethod *current_method;
 
-  // A linked list of utf8 objects we allocate.  This is really ugly,
-  // but without this our utf8 objects would be collected.
+  // A linked list of utf8 objects we allocate.
   linked<_Jv_Utf8Const> *utf8_list;
 
   // A linked list of all ref_intersection objects we allocate.
   ref_intersection *isect_list;
 
   // Create a new Utf-8 constant and return it.  We do this to avoid
-  // having our Utf-8 constants prematurely collected.  FIXME this is
-  // ugly.
+  // having our Utf-8 constants prematurely collected.
   _Jv_Utf8Const *make_utf8_const (char *s, int len)
   {
-    _Jv_Utf8Const *val = _Jv_makeUtf8Const (s, len);
-    _Jv_Utf8Const *r = (_Jv_Utf8Const *) _Jv_Malloc (sizeof (_Jv_Utf8Const)
-						     + val->length
-						     + 1);
-    r->length = val->length;
-    r->hash = val->hash;
-    memcpy (r->data, val->data, val->length + 1);
-
-    linked<_Jv_Utf8Const> *lu
-      = (linked<_Jv_Utf8Const> *) _Jv_Malloc (sizeof (linked<_Jv_Utf8Const>));
+    linked<_Jv_Utf8Const> *lu = (linked<_Jv_Utf8Const> *)
+      _Jv_Malloc (sizeof (linked<_Jv_Utf8Const>)
+		  + _Jv_Utf8Const::space_needed(s, len));
+    _Jv_Utf8Const *r = (_Jv_Utf8Const *) (lu + 1);
+    r->init(s, len);
     lu->val = r;
     lu->next = utf8_list;
     utf8_list = lu;
@@ -226,9 +219,9 @@ private:
     buf->append (JvNewStringLatin1 (" in "));
     buf->append (current_class->getName());
     buf->append ((jchar) ':');
-    buf->append (JvNewStringUTF (method->get_method()->name->data));
+    buf->append (method->get_method()->name->toString());
     buf->append ((jchar) '(');
-    buf->append (JvNewStringUTF (method->get_method()->signature->data));
+    buf->append (method->get_method()->signature->toString());
     buf->append ((jchar) ')');
 
     buf->append (JvNewStringLatin1 (": "));
@@ -372,9 +365,8 @@ private:
       java::lang::ClassLoader *loader
 	= verifier->current_class->getClassLoaderInternal();
       // We might see either kind of name.  Sigh.
-      if (data.name->data[0] == 'L'
-	  && data.name->data[data.name->length - 1] == ';')
-	data.klass = _Jv_FindClassFromSignature (data.name->data, loader);
+      if (data.name->first() == 'L' && data.name->limit()[-1] == ';')
+	data.klass = _Jv_FindClassFromSignature (data.name->chars(), loader);
       else
 	data.klass = Class::forName (_Jv_NewStringUtf8Const (data.name),
 				     false, loader);
@@ -422,7 +414,7 @@ private:
       if (is_resolved)
 	return data.klass->isArray ();
       else
-	return data.name->data[0] == '[';
+	return data.name->first() == '[';
     }
 
     bool isinterface (_Jv_BytecodeVerifier *verifier)
@@ -463,7 +455,7 @@ private:
 	}
       else
 	{
-	  char *p = data.name->data;
+	  char *p = data.name->chars();
 	  while (*p++ == '[')
 	    ++ndims;
 	}
@@ -1992,9 +1984,9 @@ private:
 				      &name, &field_type);
     if (class_type)
       *class_type = ct;
-    if (field_type->data[0] == '[' || field_type->data[0] == 'L')
+    if (field_type->first() == '[' || field_type->first() == 'L')
       return type (field_type, this);
-    return get_type_val_for_signature (field_type->data[0]);
+    return get_type_val_for_signature (field_type->first());
   }
 
   type check_method_constant (int index, bool is_interface,
@@ -2050,7 +2042,8 @@ private:
   void compute_argument_types (_Jv_Utf8Const *signature,
 			       type *types)
   {
-    char *p = signature->data;
+    char *p = signature->chars();
+
     // Skip `('.
     ++p;
 
@@ -2061,7 +2054,7 @@ private:
 
   type compute_return_type (_Jv_Utf8Const *signature)
   {
-    char *p = signature->data;
+    char *p = signature->chars();
     while (*p != ')')
       ++p;
     ++p;
@@ -2845,7 +2838,7 @@ private:
 		  if (opcode != op_invokespecial)
 		    verify_fail ("can't invoke <init>");
 		}
-	      else if (method_name->data[0] == '<')
+	      else if (method_name->first() == '<')
 		verify_fail ("can't invoke method starting with `<'");
 
 	      // Pop arguments and check types.
@@ -3060,7 +3053,7 @@ public:
     // We just print the text as utf-8.  This is just for debugging
     // anyway.
     debug_print ("--------------------------------\n");
-    debug_print ("-- Verifying method `%s'\n", m->self->name->data);
+    debug_print ("-- Verifying method `%s'\n", m->self->name->chars());
 
     current_method = m;
     bytecode = m->bytecode ();
@@ -3081,7 +3074,6 @@ public:
     while (utf8_list != NULL)
       {
 	linked<_Jv_Utf8Const> *n = utf8_list->next;
-	_Jv_Free (utf8_list->val);
 	_Jv_Free (utf8_list);
 	utf8_list = n;
       }

@@ -212,7 +212,7 @@ public:
 
   inline jboolean isArray (void)
     {
-      return name->data[0] == '[';
+      return name->first() == '[';
     }
 
   inline jclass getComponentType (void)

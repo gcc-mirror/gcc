@@ -1,3 +1,25 @@
+2004-08-09  Per Bothner  <per@bothner.com>
+
+	* gcj/javaprims.h (_Jv_Utf8Const): Change struct to a class,
+	with private fields and access methods.
+	(_Jv_NewStringUTF, _Jv_hashUtf8String): New function declarations.
+	* gcj/cni.h (_Jv_NewStringUTF): Move to javaprims.h.
+	* prims.cc (_Jv_Utf8COnst::init): New method implementation.
+	( _Jv_makeUtf8Const): Rewrite using new constructors.
+	(hashUtf8String): Rename to +_Jv_hashUtf8String and make non-static.
+	* defineclass.cc: Use new _Utf8Const access/convenience methods.
+	* jni.cc: Likewise.
+	* resolve.cc: Likewise.
+	* gcj/field.h: Likewise.
+	* include/jvm.h: Likewise.
+	* java/lang/Class.h: Likewise.
+	* java/lang/natClass.cc: Likwise.
+	* java/lang/natClassLoader.cc: Likewise
+	* java/lang/reflect/natMethod.cc: Likewise
+	* verify.cc: Likewise.
+	(_Jv_BytecodeVerifier::make_utf8_const):  Optimize.
+	(~_Jv_BytecodeVerifier):  Don't need second _Jv_Free call.
+
 2004-08-10  Andrew Haley  <aph@redhat.com>
 
 	* testsuite/libjava.lang/err14.java: New file.

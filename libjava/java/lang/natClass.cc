@@ -83,7 +83,7 @@ java::lang::Class::forName (jstring className, jboolean initialize,
     throw new java::lang::ClassNotFoundException (className);
 
   jclass klass = (buffer[0] == '[' 
-		  ? _Jv_FindClassFromSignature (name->data, loader)
+		  ? _Jv_FindClassFromSignature (name->chars(), loader)
 		  : _Jv_FindClass (name, loader));
 
   if (klass == NULL)
@@ -443,10 +443,7 @@ java::lang::Class::getDeclaredMethods (void)
 jstring
 java::lang::Class::getName (void)
 {
-  char buffer[name->length + 1];  
-  memcpy (buffer, name->data, name->length); 
-  buffer[name->length] = '\0';
-  return _Jv_NewStringUTF (buffer);
+  return name->toString();
 }
 
 JArray<jclass> *
@@ -889,7 +886,7 @@ _Jv_FindMethodInCache (jclass klass,
                        _Jv_Utf8Const *name,
                        _Jv_Utf8Const *signature)
 {
-  int index = name->hash & MCACHE_SIZE;
+  int index = name->hash16() & MCACHE_SIZE;
   _Jv_mcache *mc = method_cache + index;
   _Jv_Method *m = mc->method;
 
@@ -907,7 +904,7 @@ _Jv_AddMethodToCache (jclass klass,
 {
   _Jv_MonitorEnter (&java::lang::Class::class$); 
 
-  int index = method->name->hash & MCACHE_SIZE;
+  int index = method->name->hash16() & MCACHE_SIZE;
 
   method_cache[index].method = method;
   method_cache[index].klass = klass;
@@ -1285,9 +1282,9 @@ _Jv_GenerateITable (jclass klass, _Jv_ifaces *ifaces, jshort *itable_offsets)
 jstring
 _Jv_GetMethodString (jclass klass, _Jv_Utf8Const *name)
 {
-  jstring r = JvNewStringUTF (klass->name->data);
+  jstring r = klass->name->toString();
   r = r->concat (JvNewStringUTF ("."));
-  r = r->concat (JvNewStringUTF (name->data));
+  r = r->concat (name->toString());
   return r;
 }
 
@@ -1329,7 +1326,7 @@ _Jv_AppendPartialITable (jclass klass, jclass iface, void **itable,
 	    break;
 	}
 
-      if (meth && (meth->name->data[0] == '<'))
+      if (meth && (meth->name->first() == '<'))
 	{
 	  // leave a placeholder in the itable for hidden init methods.
           itable[pos] = NULL;	
@@ -1588,8 +1585,7 @@ _Jv_LinkSymbolTable(jclass klass)
 
       // We're looking for a field or a method, and we can tell
       // which is needed by looking at the signature.
-      if (signature->length >= 2
-	  && signature->data[0] == '(')
+      if (signature->first() == '(' && signature->len() >= 2)
 	{
  	  // If the target class does not have a vtable_method_count yet, 
 	  // then we can't tell the offsets for its methods, so we must lay 
@@ -1683,8 +1679,7 @@ _Jv_LinkSymbolTable(jclass klass)
       
       // We're looking for a static field or a static method, and we
       // can tell which is needed by looking at the signature.
-      if (signature->length >= 2
-	  && signature->data[0] == '(')
+      if (signature->first() == '(' && signature->len() >= 2)
 	{
  	  // If the target class does not have a vtable_method_count yet, 
 	  // then we can't tell the offsets for its methods, so we must lay 
@@ -1695,7 +1690,7 @@ _Jv_LinkSymbolTable(jclass klass)
 	      _Jv_LayoutVTableMethods (target_class);
 	    }
 	  
-	  meth = _Jv_LookupDeclaredMethod(target_class, sym.name, 
+	  meth = _Jv_LookupDeclaredMethod(target_class, sym.name,
 					  sym.signature);
 	  
 	  if (meth != NULL)
@@ -1829,8 +1824,7 @@ _Jv_LayoutVTableMethods (jclass klass)
 	  superclass = _Jv_FindClass (name, klass->loader);
 	  if (! superclass)
 	    {
-	      jstring str = _Jv_NewStringUTF (name->data);
-	      throw new java::lang::NoClassDefFoundError (str);
+	      throw new java::lang::NoClassDefFoundError (name->toString());
 	    }
 	}
       else

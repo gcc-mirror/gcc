@@ -43,7 +43,7 @@ _Jv_ResolveField (_Jv_Field *field, java::lang::ClassLoader *loader)
   if (! field->isResolved ())
     {
       _Jv_Utf8Const *sig = (_Jv_Utf8Const*)field->type;
-      field->type = _Jv_FindClassFromSignature (sig->data, loader);
+      field->type = _Jv_FindClassFromSignature (sig->chars(), loader);
       field->flags &= ~_Jv_FIELD_UNRESOLVED_FLAG;
     }
 }
@@ -87,15 +87,15 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
       _Jv_Utf8Const *name = pool->data[index].utf8;
 
       jclass found;
-      if (name->data[0] == '[')
-	found = _Jv_FindClassFromSignature (&name->data[0],
+      if (name->first() == '[')
+	found = _Jv_FindClassFromSignature (name->chars(),
 					    klass->loader);
       else
 	found = _Jv_FindClass (name, klass->loader);
 
       if (! found)
 	{
-	  jstring str = _Jv_NewStringUTF (name->data);
+	  jstring str = name->toString();
 	  // This exception is specified in JLS 2nd Ed, section 5.1.
 	  throw new java::lang::NoClassDefFoundError (str);
 	}
@@ -154,7 +154,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
       jclass field_type = 0;
 
       if (owner->loader != klass->loader)
-	field_type = _Jv_FindClassFromSignature (field_type_name->data,
+	field_type = _Jv_FindClassFromSignature (field_type_name->chars(),
 						 klass->loader);
       
       _Jv_Field* the_field = 0;
@@ -204,7 +204,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	  sb->append(JvNewStringLatin1("field "));
 	  sb->append(owner->getName());
 	  sb->append(JvNewStringLatin1("."));
-	  sb->append(_Jv_NewStringUTF(field_name->data));
+	  sb->append(field_name->toString());
 	  sb->append(JvNewStringLatin1(" was not found."));
 	  throw_incompatible_class_change_error(sb->toString());
 	}
@@ -306,7 +306,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	  sb->append(JvNewStringLatin1("method "));
 	  sb->append(owner->getName());
 	  sb->append(JvNewStringLatin1("."));
-	  sb->append(_Jv_NewStringUTF(method_name->data));
+	  sb->append(method_name->toString());
 	  sb->append(JvNewStringLatin1(" was not found."));
 	  throw new java::lang::NoSuchMethodError (sb->toString());
 	}
@@ -356,8 +356,8 @@ _Jv_SearchMethodInClass (jclass cls, jclass klass,
 	  sb->append(JvNewStringLatin1(": "));
 	  sb->append(cls->getName());
 	  sb->append(JvNewStringLatin1("."));
-	  sb->append(_Jv_NewStringUTF(method_name->data));
-	  sb->append(_Jv_NewStringUTF(method_signature->data));
+	  sb->append(method_name->toString());
+	  sb->append(method_signature->toString());
 	  throw new java::lang::IllegalAccessError (sb->toString());
 	}
     }
@@ -376,7 +376,7 @@ _Jv_PrepareMissingMethods (jclass base, jclass iface_class)
 	{
 	  _Jv_Method *meth = &iface_class->interfaces[i]->methods[j];
 	  // Don't bother with <clinit>.
-	  if (meth->name->data[0] == '<')
+	  if (meth->name->first() == '<')
 	    continue;
 	  _Jv_Method *new_meth = _Jv_LookupDeclaredMethod (base, meth->name,
 							   meth->signature);
@@ -859,7 +859,7 @@ int
 _Jv_count_arguments (_Jv_Utf8Const *signature,
 		     jboolean staticp)
 {
-  unsigned char *ptr = (unsigned char*) signature->data;
+  unsigned char *ptr = (unsigned char*) signature->chars();
   int arg_count = staticp ? 0 : 1;
 
   /* first, count number of arguments */
@@ -890,7 +890,7 @@ init_cif (_Jv_Utf8Const* signature,
 	  ffi_type **arg_types,
 	  ffi_type **rtype_p)
 {
-  unsigned char *ptr = (unsigned char*) signature->data;
+  unsigned char *ptr = (unsigned char*) signature->chars();
 
   int arg_index = 0;		// arg number
   int item_count = 0;		// stack-item count
@@ -923,7 +923,7 @@ init_cif (_Jv_Utf8Const* signature,
   ffi_type *rtype = get_ffi_type_from_signature (ptr);
 
   ptr = skip_one_type (ptr);
-  if (ptr != (unsigned char*)signature->data + signature->length)
+  if (ptr != (unsigned char*)signature->chars() + signature->len())
     throw_internal_error ("did not find end of signature");
 
   if (ffi_prep_cif (cif, FFI_DEFAULT_ABI,

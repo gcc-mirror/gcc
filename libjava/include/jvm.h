@@ -352,7 +352,7 @@ static inline jboolean _Jv_isVirtualMethod (_Jv_Method *meth)
 {
   using namespace java::lang::reflect;
   return (((meth->accflags & (Modifier::STATIC | Modifier::PRIVATE)) == 0)
-          && meth->name->data[0] != '<');
+          && meth->name->first() != '<');
 }
 
 // This function is used to determine the hash code of an object.

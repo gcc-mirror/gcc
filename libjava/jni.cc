@@ -1880,8 +1880,8 @@ _Jv_JNI_RegisterNatives (JNIEnv *env, jclass klass,
 	{
 	  _Jv_Method *self = &imeths[i];
 
-	  if (! strcmp (self->name->data, methods[j].name)
-	      && ! strcmp (self->signature->data, methods[j].signature))
+	  if (! strcmp (self->name->chars (), methods[j].name)
+	      && ! strcmp (self->signature->chars (), methods[j].signature))
 	    {
 	      if (! (self->accflags
 		     & java::lang::reflect::Modifier::NATIVE))
@@ -1985,8 +1985,8 @@ mangled_name (jclass klass, _Jv_Utf8Const *func_name,
   // Don't use add_char because we need a literal `_'.
   buf[here++] = '_';
 
-  const unsigned char *fn = (const unsigned char *) func_name->data;
-  const unsigned char *limit = fn + func_name->length;
+  const unsigned char *fn = (const unsigned char *) func_name->chars ();
+  const unsigned char *limit = fn + func_name->len ();
   for (int i = 0; ; ++i)
     {
       int ch = UTF8_GET (fn, limit);
@@ -2000,8 +2000,8 @@ mangled_name (jclass klass, _Jv_Utf8Const *func_name,
   buf[here++] = '_';
   buf[here++] = '_';
 
-  const unsigned char *sig = (const unsigned char *) signature->data;
-  limit = sig + signature->length;
+  const unsigned char *sig = (const unsigned char *) signature->chars ();
+  limit = sig + signature->len ();
   JvAssert (sig[0] == '(');
   ++sig;
   while (1)
@@ -2058,7 +2058,9 @@ extern "C" void *
 _Jv_LookupJNIMethod (jclass klass, _Jv_Utf8Const *name,
 		     _Jv_Utf8Const *signature, MAYBE_UNUSED int args_size)
 {
-  char buf[10 + 6 * (name->length + signature->length) + 12];
+  int name_length = name->len();
+  int sig_length = signature->len();
+  char buf[10 + 6 * (name_length + sig_length) + 12];
   int long_start;
   void *function;
 
@@ -2066,13 +2068,13 @@ _Jv_LookupJNIMethod (jclass klass, _Jv_Utf8Const *name,
   JvSynchronize sync (global_ref_table);
 
   // First see if we have an override in the hash table.
-  strncpy (buf, name->data, name->length);
-  buf[name->length] = '\0';
-  strncpy (buf + name->length + 1, signature->data, signature->length);
-  buf[name->length + signature->length + 1] = '\0';
+  strncpy (buf, name->chars (), name_length);
+  buf[name_length] = '\0';
+  strncpy (buf + name_length + 1, signature->chars (), sig_length);
+  buf[name_length + sig_length + 1] = '\0';
   JNINativeMethod meth;
   meth.name = buf;
-  meth.signature = buf + name->length + 1;
+  meth.signature = buf + name_length + 1;
   function = nathash_find (&meth);
   if (function != NULL)
     return function;
@@ -2139,7 +2141,7 @@ _Jv_LookupJNIMethod (jclass klass, _Jv_Utf8Const *name,
           if (function == NULL)
 #endif /* WIN32 */
             {
-              jstring str = JvNewStringUTF (name->data);
+              jstring str = JvNewStringUTF (name->chars ());
               throw new java::lang::UnsatisfiedLinkError (str);
             }
 	}
