@@ -188,8 +188,8 @@ EOF
       archive_cmds='$LD -Bshareable $libobjs $deplibs $linker_flags -o $lib'
       wlarc=
     else
-      archive_cmds='$CC -shared $libobjs $deplibs $compiler_flags ${wl}-soname $wl$soname -o $lib'
-      archive_expsym_cmds='$CC -shared $libobjs $deplibs $compiler_flags ${wl}-soname $wl$soname ${wl}-retain-symbols-file $wl$export_symbols -o $lib'
+      archive_cmds='$CC -shared -nodefaultlibs $libobjs $deplibs $compiler_flags ${wl}-soname $wl$soname -o $lib'
+      archive_expsym_cmds='$CC -shared -nodefaultlibs $libobjs $deplibs $compiler_flags ${wl}-soname $wl$soname ${wl}-retain-symbols-file $wl$export_symbols -o $lib'
     fi
     ;;
 
@@ -585,8 +585,13 @@ else
     runpath_var=LD_RUN_PATH
     ;;
 
-  unixware7*)
-    archive_cmds='$LD -G -h $soname -o $lib $libobjs $deplibs $linker_flags'
+  sysv5uw7* | unixware7*)
+    no_undefined_flag='${wl}-z ${wl}text'
+    if test "$GCC" = yes; then
+      archive_cmds='$CC -shared ${wl}-h ${wl}$soname -o $lib $libobjs $deplibs $compiler_flags'
+    else
+      archive_cmds='$CC -G ${wl}-h ${wl}$soname -o $lib $libobjs $deplibs $compiler_flags'
+    fi
     runpath_var='LD_RUN_PATH'
     hardcode_shlibpath_var=no
     ;;
