@@ -1,3 +1,9 @@
+2003-04-01  Geoffrey Keating  <geoffk@apple.com>
+
+	* unwind-dw2-fde-darwin.c (DESTRUCTOR_MAY_BE_CALLED_LIVE): New.
+	(live_image_destructor): Reset image to initial state.
+	(examine_objects): Set DESTRUCTOR_MAY_BE_CALLED_LIVE.
+
 2003-04-01  Dale Johannesen  <dalej@apple.com>
 
         * cse.c (count_reg_usage): Fix handling of REG_EQUAL notes.
