@@ -99,7 +99,8 @@ else
 cond_gtk_ltlibrary =
 endif
 
-toolexeclib_LTLIBRARIES = libgcj.la libgij.la lib-org-xml-sax.la lib-org-w3c-dom.la \
+toolexeclib_LTLIBRARIES = libgcj.la libgij.la lib-org-xml-sax.la \
+	lib-org-w3c-dom.la lib-org-ietf-jgss.la \
     $(cond_gtk_ltlibrary) $(cond_xlib_ltlibrary)
 toolexecmainlib_DATA = libgcj.spec
 
@@ -353,6 +354,24 @@ lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 lib_gnu_java_awt_peer_gtk_la_LINK = $(LIBLINK)
 
+lib_org_ietf_jgss_la_SOURCES = \
+org/ietf/jgss/ChannelBinding.java \
+org/ietf/jgss/GSSContext.java \
+org/ietf/jgss/GSSCredential.java \
+org/ietf/jgss/GSSException.java \
+org/ietf/jgss/GSSManager.java \
+org/ietf/jgss/GSSName.java \
+org/ietf/jgss/MessageProp.java \
+org/ietf/jgss/Oid.java
+
+lib_org_ietf_jgss_la_DEPENDENCIES= $(jgss_propertyo_files)
+## See jv_convert_LDADD.
+lib_org_ietf_jgss_la_LIBADD = -L$(here)/.libs  $(jgss_propertyo_files)
+
+## The mysterious backslash in the grep pattern is consumed by make.
+lib_org_ietf_jgss_la_LDFLAGS = -rpath $(toolexeclibdir) \
+	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
+
 lib_org_w3c_dom_la_SOURCES = org/w3c/dom/Attr.java \
 org/w3c/dom/CDATASection.java \
 org/w3c/dom/CharacterData.java \
@@ -440,6 +459,7 @@ lib_gnu_awt_xlib_la_LINK = $(LIBLINK)
 all_java_source_files = \
     $(java_source_files) \
     $(built_java_source_files) \
+    $(lib_org_ietf_jgss_la_SOURCES) \
     $(lib_org_xml_sax_la_SOURCES) \
     $(lib_org_w3c_dom_la_SOURCES) \
     $(gtk_awt_peer_sources) \
@@ -450,9 +470,18 @@ all_java_class_files = $(all_java_source_files:.java=.class)
 ## Build property files into the library.
 property_files = \
 gnu/regexp/MessagesBundle.properties \
-gnu/regexp/MessagesBundle_fr.properties 
+gnu/regexp/MessagesBundle_fr.properties
 
 propertyo_files = $(property_files:.properties=.properties.lo) 
+
+%.properties.lo: %.properties
+	$(LTGCJCOMPILE) -o $@ -c $< -Wc,--resource,`echo $@ | sed "s/\.lo$$//"`
+
+## Build property files into the lib-org-ietf-jgss library.
+jgss_property_files = \
+org/ietf/jgss/MessagesBundle.properties
+
+jgss_propertyo_files = $(jgss_property_files:.properties=.properties.lo)
 
 %.properties.lo: %.properties
 	$(LTGCJCOMPILE) -o $@ -c $< -Wc,--resource,`echo $@ | sed "s/\.lo$$//"`
@@ -520,7 +549,7 @@ SUFFIXES = .class .java .h .properties
 
 ## Note: we omit StackTrace here, since it has an explicit rule a bit
 ## later, and GNU make will warn in this case.
-$(filter-out gnu/gcj/runtime/StackTrace.lo, $(javao_files)) $(xlib_javao_files) $(lib_org_w3c_dom_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS): %.lo: %.java
+$(filter-out gnu/gcj/runtime/StackTrace.lo, $(javao_files)) $(xlib_javao_files) $(lib_org_w3c_dom_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS) $(lib_org_ietf_jgss_la_OBJECTS): %.lo: %.java
 	$(LTGCJCOMPILE) -o $@ -c $<
 
 $(gtk_awt_peer_sources:.java=.lo): %.lo: %.java
@@ -1797,6 +1826,46 @@ javax/accessibility/AccessibleTable.java \
 javax/accessibility/AccessibleTableModelChange.java \
 javax/accessibility/AccessibleText.java \
 javax/accessibility/AccessibleValue.java \
+javax/crypto/BadPaddingException.java \
+javax/crypto/Cipher.java \
+javax/crypto/CipherInputStream.java \
+javax/crypto/CipherOutputStream.java \
+javax/crypto/CipherSpi.java \
+javax/crypto/EncryptedPrivateKeyInfo.java \
+javax/crypto/KeyGeneratorSpi.java \
+javax/crypto/ExemptionMechanism.java \
+javax/crypto/ExemptionMechanismException.java \
+javax/crypto/ExemptionMechanismSpi.java \
+javax/crypto/IllegalBlockSizeException.java \
+javax/crypto/KeyAgreement.java \
+javax/crypto/KeyAgreementSpi.java \
+javax/crypto/KeyGenerator.java \
+javax/crypto/Mac.java \
+javax/crypto/MacSpi.java \
+javax/crypto/NoSuchPaddingException.java \
+javax/crypto/NullCipher.java \
+javax/crypto/NullCipherImpl.java \
+javax/crypto/SealedObject.java \
+javax/crypto/SecretKey.java \
+javax/crypto/SecretKeyFactory.java \
+javax/crypto/SecretKeyFactorySpi.java \
+javax/crypto/ShortBufferException.java \
+javax/crypto/interfaces/DHKey.java \
+javax/crypto/interfaces/DHPrivateKey.java \
+javax/crypto/interfaces/DHPublicKey.java \
+javax/crypto/interfaces/PBEKey.java \
+javax/crypto/spec/DESKeySpec.java \
+javax/crypto/spec/DESedeKeySpec.java \
+javax/crypto/spec/DHGenParameterSpec.java \
+javax/crypto/spec/DHParameterSpec.java \
+javax/crypto/spec/DHPrivateKeySpec.java \
+javax/crypto/spec/DHPublicKeySpec.java \
+javax/crypto/spec/IvParameterSpec.java \
+javax/crypto/spec/PBEKeySpec.java \
+javax/crypto/spec/PBEParameterSpec.java \
+javax/crypto/spec/RC2ParameterSpec.java \
+javax/crypto/spec/RC5ParameterSpec.java \
+javax/crypto/spec/SecretKeySpec.java \
 javax/imageio/IIOException.java \
 javax/imageio/ImageReader.java \
 javax/imageio/ImageTranscoder.java \
@@ -1904,6 +1973,40 @@ javax/naming/ldap/UnsolicitedNotification.java \
 javax/naming/ldap/UnsolicitedNotificationEvent.java \
 javax/naming/ldap/UnsolicitedNotificationListener.java \
 javax/naming/OperationNotSupportedException.java \
+javax/net/ServerSocketFactory.java \
+javax/net/SocketFactory.java \
+javax/net/ssl/HandshakeCompletedEvent.java \
+javax/net/ssl/HandshakeCompletedListener.java \
+javax/net/ssl/HostnameVerifier.java \
+javax/net/ssl/HttpsURLConnection.java \
+javax/net/ssl/KeyManager.java \
+javax/net/ssl/KeyManagerFactory.java \
+javax/net/ssl/KeyManagerFactorySpi.java \
+javax/net/ssl/ManagerFactoryParameters.java \
+javax/net/ssl/SSLProtocolException.java \
+javax/net/ssl/SSLContext.java \
+javax/net/ssl/SSLContextSpi.java \
+javax/net/ssl/SSLException.java \
+javax/net/ssl/SSLHandshakeException.java \
+javax/net/ssl/SSLKeyException.java \
+javax/net/ssl/SSLPeerUnverifiedException.java \
+javax/net/ssl/SSLPermission.java \
+javax/net/ssl/SSLServerSocket.java \
+javax/net/ssl/SSLServerSocketFactory.java \
+javax/net/ssl/SSLSession.java \
+javax/net/ssl/SSLSessionBindingEvent.java \
+javax/net/ssl/SSLSessionBindingListener.java \
+javax/net/ssl/SSLSessionContext.java \
+javax/net/ssl/SSLSocket.java \
+javax/net/ssl/SSLSocketFactory.java \
+javax/net/ssl/TrivialHostnameVerifier.java \
+javax/net/ssl/TrustManager.java \
+javax/net/ssl/TrustManagerFactory.java \
+javax/net/ssl/TrustManagerFactorySpi.java \
+javax/net/ssl/X509KeyManager.java \
+javax/net/ssl/X509TrustManager.java \
+javax/net/VanillaSocketFactory.java \
+javax/net/VanillaServerSocketFactory.java \
 javax/print/AttributeException.java \
 javax/print/CancelablePrintJob.java \
 javax/print/Doc.java \
@@ -2016,7 +2119,53 @@ javax/print/event/PrintJobEvent.java \
 javax/print/event/PrintJobListener.java \
 javax/print/event/PrintServiceAttributeEvent.java \
 javax/print/event/PrintServiceAttributeListener.java \
+javax/security/auth/AuthPermission.java \
+javax/security/auth/Destroyable.java \
+javax/security/auth/DestroyFailedException.java \
+javax/security/auth/login/AccountExpiredException.java \
+javax/security/auth/login/AppConfigurationEntry.java \
+javax/security/auth/login/Configuration.java \
+javax/security/auth/login/CredentialExpiredException.java \
+javax/security/auth/login/FailedLoginException.java \
+javax/security/auth/login/LoginContext.java \
+javax/security/auth/login/LoginException.java \
+javax/security/auth/login/NullConfiguration.java \
+javax/security/auth/Policy.java \
+javax/security/auth/PrivateCredentialPermission.java \
+javax/security/auth/Refreshable.java \
+javax/security/auth/RefreshFailedException.java \
+javax/security/auth/Subject.java \
+javax/security/auth/SubjectDomainCombiner.java \
 javax/security/auth/x500/X500Principal.java \
+javax/security/auth/x500/X500PrivateCredential.java \
+javax/security/auth/callback/Callback.java \
+javax/security/auth/callback/CallbackHandler.java \
+javax/security/auth/callback/ChoiceCallback.java \
+javax/security/auth/callback/ConfirmationCallback.java \
+javax/security/auth/callback/LanguageCallback.java \
+javax/security/auth/callback/NameCallback.java \
+javax/security/auth/callback/PasswordCallback.java \
+javax/security/auth/callback/TextInputCallback.java \
+javax/security/auth/callback/TextOutputCallback.java \
+javax/security/auth/callback/UnsupportedCallbackException.java \
+javax/security/cert/Certificate.java \
+javax/security/cert/CertificateEncodingException.java \
+javax/security/cert/CertificateException.java \
+javax/security/cert/CertificateExpiredException.java \
+javax/security/cert/CertificateNotYetValidException.java \
+javax/security/cert/CertificateParsingException.java \
+javax/security/cert/X509CertBridge.java \
+javax/security/cert/X509Certificate.java \
+javax/security/sasl/AuthenticationException.java \
+javax/security/sasl/AuthorizeCallback.java \
+javax/security/sasl/RealmCallback.java \
+javax/security/sasl/RealmChoiceCallback.java \
+javax/security/sasl/Sasl.java \
+javax/security/sasl/SaslClient.java \
+javax/security/sasl/SaslClientFactory.java \
+javax/security/sasl/SaslException.java \
+javax/security/sasl/SaslServer.java \
+javax/security/sasl/SaslServerFactory.java \
 javax/sql/ConnectionEvent.java \
 javax/sql/ConnectionEventListener.java \
 javax/sql/ConnectionPoolDataSource.java \
@@ -2848,7 +2997,9 @@ java/security/cert/PolicyQualifierInfo.java \
 java/security/cert/TrustAnchor.java \
 java/security/cert/X509CRL.java \
 java/security/cert/X509CRLEntry.java \
+java/security/cert/X509CRLSelector.java \
 java/security/cert/X509Certificate.java \
+java/security/cert/X509CertSelector.java \
 java/security/cert/X509Extension.java \
 java/security/interfaces/DSAKey.java \
 java/security/interfaces/DSAKeyPairGenerator.java \
