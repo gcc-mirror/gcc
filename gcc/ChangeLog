@@ -1,3 +1,7 @@
+2003-06-07  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h (CRT_CALL_STATIC_FUNCTION): Define.
+
 2003-06-06  James E Wilson  <wilson@tuliptree.org>
 
 	PR inline-asm/10890
