@@ -1,5 +1,10 @@
 2004-10-27  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR other/18186
+	* common.opt (--param): Fix spelling of parameter.
+
+2004-10-27  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR tree-opt/17529
 	* tree-cfg.c (remove_useless_stmts_1) <case SWITCH_EXPR>:
 	Don't fold statement.
