@@ -826,9 +826,11 @@ extern int c_unsafe_for_reeval			PARAMS ((tree));
 enum tree_dump_index
 {
   TDI_all,			/* dump the whole translation unit */
-  TDI_original,			/* dump each function before optimizing it */
-  TDI_optimized,			/* dump each function after optimizing it */
   TDI_class,			/* dump class heirarchy */
+  TDI_original,			/* dump each function before optimizing it */
+  TDI_optimized,		/* dump each function after optimizing it */
+  TDI_inlined,			/* dump each function after inlining
+				   within it. */
   TDI_end
 };
 
@@ -852,6 +854,7 @@ extern FILE *dump_begin			PARAMS ((enum tree_dump_index, int *));
 extern void dump_end			PARAMS ((enum tree_dump_index, FILE *));
 extern void dump_node			PARAMS ((tree, int, FILE *));
 extern int dump_switch_p                PARAMS ((const char *));
+extern const char *dump_flag_name	PARAMS ((enum tree_dump_index));
 
 /* Information recorded about each file examined during compilation.  */
 

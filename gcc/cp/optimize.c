@@ -78,7 +78,7 @@ typedef struct inline_data
   int inlined_stmts;
   /* We use the same mechanism to build clones that we do to perform
      inlining.  However, there are a few places where we need to
-     distinguish between those two situations.  This flag is true nif
+     distinguish between those two situations.  This flag is true if
      we are cloning, rather than inlining.  */
   bool cloning_p;
   /* Hash table used to prevent walk_tree from visiting the same node
@@ -98,6 +98,7 @@ static int inlinable_function_p PARAMS ((tree, inline_data *));
 static tree remap_decl PARAMS ((tree, inline_data *));
 static void remap_block PARAMS ((tree, tree, inline_data *));
 static void copy_scope_stmt PARAMS ((tree *, int *, inline_data *));
+static void optimize_inline_calls PARAMS ((tree));
 static tree calls_setjmp_r PARAMS ((tree *, int *, void *));
 static void update_cloned_parm PARAMS ((tree, tree));
 static void dump_function PARAMS ((enum tree_dump_index, tree));
@@ -934,6 +935,69 @@ expand_calls_inline (tp, id)
   walk_tree (tp, expand_call_inline, id, id->tree_pruner);
 }
 
+/* Expand calls to inline functions in the body of FN.  */
+
+static void
+optimize_inline_calls (fn)
+     tree fn;
+{
+  inline_data id;
+  tree prev_fn;
+  struct saved_scope *s;
+  
+  /* Clear out ID.  */
+  memset (&id, 0, sizeof (id));
+
+  /* Don't allow recursion into FN.  */
+  VARRAY_TREE_INIT (id.fns, 32, "fns");
+  VARRAY_PUSH_TREE (id.fns, fn);
+  /* Or any functions that aren't finished yet.  */
+  prev_fn = NULL_TREE;
+  if (current_function_decl)
+    {
+      VARRAY_PUSH_TREE (id.fns, current_function_decl);
+      prev_fn = current_function_decl;
+    }
+  for (s = scope_chain; s; s = s->prev)
+    if (s->function_decl && s->function_decl != prev_fn)
+      {
+	VARRAY_PUSH_TREE (id.fns, s->function_decl);
+	prev_fn = s->function_decl;
+      }
+  
+  /* Create the stack of TARGET_EXPRs.  */
+  VARRAY_TREE_INIT (id.target_exprs, 32, "target_exprs");
+
+  /* Create the list of functions this call will inline.  */
+  VARRAY_TREE_INIT (id.inlined_fns, 32, "inlined_fns");
+
+  /* Keep track of the low-water mark, i.e., the point where the first
+     real inlining is represented in ID.FNS.  */
+  id.first_inlined_fn = VARRAY_ACTIVE_SIZE (id.fns);
+
+  /* Replace all calls to inline functions with the bodies of those
+     functions.  */
+  id.tree_pruner = htab_create (37, htab_hash_pointer,
+				htab_eq_pointer, NULL);
+  expand_calls_inline (&DECL_SAVED_TREE (fn), &id);
+
+  /* Clean up.  */
+  htab_delete (id.tree_pruner);
+  VARRAY_FREE (id.fns);
+  VARRAY_FREE (id.target_exprs);
+  if (DECL_LANG_SPECIFIC (fn))
+    {
+      tree ifn = make_tree_vec (VARRAY_ACTIVE_SIZE (id.inlined_fns));
+      
+      memcpy (&TREE_VEC_ELT (ifn, 0), &VARRAY_TREE (id.inlined_fns, 0),
+	      VARRAY_ACTIVE_SIZE (id.inlined_fns) * sizeof (tree));
+      DECL_INLINED_FNS (fn) = ifn;
+    }
+  VARRAY_FREE (id.inlined_fns);
+  
+  dump_function (TDI_inlined, fn);
+}
+
 /* Optimize the body of FN. */
 
 void
@@ -953,64 +1017,14 @@ optimize_function (fn)
      of the function.  */
   ++function_depth;
 
-  /* Expand calls to inline functions.  */
-  if (flag_inline_trees)
-    {
-      inline_data id;
-      tree prev_fn;
-      struct saved_scope *s;
-
-      /* Clear out ID.  */
-      memset (&id, 0, sizeof (id));
-
-      /* Don't allow recursion into FN.  */
-      VARRAY_TREE_INIT (id.fns, 32, "fns");
-      VARRAY_PUSH_TREE (id.fns, fn);
-      /* Or any functions that aren't finished yet.  */
-      prev_fn = NULL_TREE;
-      if (current_function_decl)
-	{
-	  VARRAY_PUSH_TREE (id.fns, current_function_decl);
-	  prev_fn = current_function_decl;
-	}
-      for (s = scope_chain; s; s = s->prev)
-	if (s->function_decl && s->function_decl != prev_fn)
-	  {
-	    VARRAY_PUSH_TREE (id.fns, s->function_decl);
-	    prev_fn = s->function_decl;
-	  }
-
-      /* Create the stack of TARGET_EXPRs.  */
-      VARRAY_TREE_INIT (id.target_exprs, 32, "target_exprs");
-
-      /* Create the list of functions this call will inline.  */
-      VARRAY_TREE_INIT (id.inlined_fns, 32, "inlined_fns");
-
-      /* Keep track of the low-water mark, i.e., the point where
-	 the first real inlining is represented in ID.FNS.  */
-      id.first_inlined_fn = VARRAY_ACTIVE_SIZE (id.fns);
-
-      /* Replace all calls to inline functions with the bodies of those
-	 functions.  */
-      id.tree_pruner = htab_create (37, htab_hash_pointer,
-				    htab_eq_pointer, NULL);
-      expand_calls_inline (&DECL_SAVED_TREE (fn), &id);
-
-      /* Clean up.  */
-      htab_delete (id.tree_pruner);
-      VARRAY_FREE (id.fns);
-      VARRAY_FREE (id.target_exprs);
-      if (DECL_LANG_SPECIFIC (fn))
-	{
-	  tree ifn = make_tree_vec (VARRAY_ACTIVE_SIZE (id.inlined_fns));
-
-	  memcpy (&TREE_VEC_ELT (ifn, 0), &VARRAY_TREE (id.inlined_fns, 0),
-		  VARRAY_ACTIVE_SIZE (id.inlined_fns) * sizeof (tree));
-	  DECL_INLINED_FNS (fn) = ifn;
-	}
-      VARRAY_FREE (id.inlined_fns);
-    }
-
+  if (flag_inline_trees
+      /* We do not inline thunks, as (a) the backend tries to optimize
+         the call to the thunkee, (b) tree based inlining breaks that
+         optimization, (c) virtual functions are rarely inlineable,
+         and (d) ASM_OUTPUT_MI_THUNK is there to DTRT anyway.  */
+      && !DECL_THUNK_P (fn))
+    optimize_inline_calls (fn);
+  
   /* Undo the call to ggc_push_context above.  */
   --function_depth;
   
@@ -1246,8 +1260,10 @@ dump_function (phase, fn)
     {
       fprintf (stream, "\n;; Function %s",
 	       decl_as_string (fn, TFF_DECL_SPECIFIERS));
-      fprintf (stream, " (%s)", decl_as_string (DECL_ASSEMBLER_NAME (fn), 0));
-      fprintf (stream, "\n\n");
+      fprintf (stream, " (%s)\n",
+	       decl_as_string (DECL_ASSEMBLER_NAME (fn), 0));
+      fprintf (stream, ";; enabled by -%s\n", dump_flag_name (phase));
+      fprintf (stream, "\n");
       
       dump_node (fn, TDF_SLIM | flags, stream);
       dump_end (phase, stream);

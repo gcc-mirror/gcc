@@ -1,3 +1,13 @@
+2001-07-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* optimize.c (optimize_inline_calls): New function, broken out
+	of ...
+	(optimize_function): ... here. Call it. Don't inline if it is
+	a thunk.
+	(dump_function): Print name of dump flag causing this dump.
+	* semantics.c (expand_body): Move thunk inline check to
+	optimize_function.
+
 2001-06-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* typeck.c (COMP_TYPE_ATTRIBUTES): Don't define.
