@@ -3209,8 +3209,7 @@ c4x_label_conflict (insn, jump, db)
 
 /* Validate combination of operands for parallel load/store instructions.  */
 
-int
-valid_parallel_operands_4 (operands, mode)
+valid_parallel_load_store (operands, mode)
      rtx *operands;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
@@ -3233,11 +3232,11 @@ valid_parallel_operands_4 (operands, mode)
      should be REGs and the other 2 should be MEMs.  */
 
   /* This test prevents the multipack pass from using this pattern if
-     op0 is used as an index or base register in op3, since this combination
-     will require reloading.  */
+     op0 is used as an index or base register in op2 or op3, since
+     this combination will require reloading.  */
   if (GET_CODE (op0) == REG
-      && GET_CODE (op3) == MEM
-      && reg_mentioned_p (op0, XEXP (op3, 0)))
+      && ((GET_CODE (op2) == MEM && reg_mentioned_p (op0, XEXP (op2, 0)))
+	  || (GET_CODE (op3) == MEM && reg_mentioned_p (op0, XEXP (op3, 0)))))
     return 0;
 
   /* LDI||LDI  */
@@ -3265,8 +3264,32 @@ valid_parallel_operands_4 (operands, mode)
 }
 
 
-/* We only use this to check operands 1 and 2 since these may be
-   commutative.  It will need extending for the C32 opcodes.  */
+int
+valid_parallel_operands_4 (operands, mode)
+     rtx *operands;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  int regs = 0;
+  rtx op0 = operands[0];
+  rtx op2 = operands[2];
+
+  if (GET_CODE (op0) == SUBREG)
+    op0 = SUBREG_REG (op0);
+  if (GET_CODE (op2) == SUBREG)
+    op2 = SUBREG_REG (op2);
+
+  /* This test prevents the multipack pass from using this pattern if
+     op0 is used as an index or base register in op2, since this combination
+     will require reloading.  */
+  if (GET_CODE (op0) == REG
+      && GET_CODE (op2) == MEM
+      && reg_mentioned_p (op0, XEXP (op2, 0)))
+    return 0;
+
+  return 1;
+}
+
+
 int
 valid_parallel_operands_5 (operands, mode)
      rtx *operands;
@@ -3274,18 +3297,21 @@ valid_parallel_operands_5 (operands, mode)
 {
   int regs = 0;
   rtx op0 = operands[0];
+  rtx op1 = operands[1];
   rtx op2 = operands[2];
   rtx op3 = operands[3];
 
   if (GET_CODE (op0) == SUBREG)
     op0 = SUBREG_REG (op0);
+  if (GET_CODE (op1) == SUBREG)
+    op1 = SUBREG_REG (op1);
   if (GET_CODE (op2) == SUBREG)
     op2 = SUBREG_REG (op2);
 
   /* The patterns should only allow ext_low_reg_operand() or
-     par_ind_operand() operands. */
-
-  if (GET_CODE (op0) == REG)
+     par_ind_operand() operands.  Operands 1 and 2 may be commutative
+     but only one of them can be a register.  */
+  if (GET_CODE (op1) == REG)
     regs++;
   if (GET_CODE (op2) == REG)
     regs++;

@@ -1262,7 +1262,7 @@
         (match_operand:QI 1 "parallel_operand" "S<>,q,S<>,q"))
    (set (match_operand:QI 2 "parallel_operand" "=q,S<>,S<>,q")
         (match_operand:QI 3 "parallel_operand" "S<>,q,q,S<>"))]
-  "valid_parallel_operands_4 (operands, QImode)"
+  "valid_parallel_load_store (operands, QImode)"
   "@
    ldi1\\t%1,%0\\n||\\tldi2\\t%3,%2
    sti1\\t%1,%0\\n||\\tsti2\\t%3,%2
@@ -2952,7 +2952,7 @@
        (match_operand:QF 1 "parallel_operand" "S<>,q,S<>,q"))
   (set (match_operand:QF 2 "parallel_operand" "=q,S<>,S<>,q")
        (match_operand:QF 3 "parallel_operand" "S<>,q,q,S<>"))]
- "valid_parallel_operands_4 (operands, QFmode)"
+ "valid_parallel_load_store (operands, QFmode)"
  "@
   ldf1\\t%1,%0\\n||\\tldf2\\t%3,%2
   stf1\\t%1,%0\\n||\\tstf2\\t%3,%2
@@ -3800,7 +3800,7 @@
    (set (match_operand:QF 2 "par_ind_operand" "=S<>")
         (match_operand:QF 3 "ext_low_reg_operand" "q"))
    (clobber (reg:CC_NOOV 21))]
-  "TARGET_PARALLEL"
+  "TARGET_PARALLEL && valid_parallel_operands_4 (operands, QFmode)"
   "absf\\t%1,%0\\n||\\tstf\\t%3,%2"
   [(set_attr "type" "binarycc")])
 
@@ -3823,13 +3823,13 @@
 ; FLOAT/STF
 ;
 
-(define_insn "*floatqiqf_movqf_clobber"
+(define_insn "*floatqiqf2_movqf_clobber"
   [(set (match_operand:QF 0 "ext_low_reg_operand" "=q")
         (float:QF (match_operand:QI 1 "par_ind_operand" "S<>")))
    (set (match_operand:QF 2 "par_ind_operand" "=S<>")
         (match_operand:QF 3 "ext_low_reg_operand" "q"))
    (clobber (reg:CC 21))]
-  "TARGET_PARALLEL"
+  "TARGET_PARALLEL && valid_parallel_operands_4 (operands, QFmode)"
   "float\\t%1,%0\\n||\\tstf\\t%3,%2"
   [(set_attr "type" "binarycc")])
 
@@ -3891,7 +3891,7 @@
    (set (match_operand:QF 2 "par_ind_operand" "=S<>")
         (match_operand:QF 3 "ext_low_reg_operand" "q"))
    (clobber (reg:CC 21))]
-  "TARGET_PARALLEL"
+  "TARGET_PARALLEL && valid_parallel_operands_4 (operands, QFmode)"
   "negf\\t%1,%0\\n||\\tstf\\t%3,%2"
   [(set_attr "type" "binarycc")])
 
@@ -3902,11 +3902,11 @@
 (define_insn "*subqf3_movqf_clobber"
   [(set (match_operand:QF 0 "ext_low_reg_operand" "=q")
         (minus:QF (match_operand:QF 1 "ext_low_reg_operand" "q")
-                 (match_operand:QF 2 "par_ind_operand" "S<>")))
+                  (match_operand:QF 2 "par_ind_operand" "S<>")))
    (set (match_operand:QF 3 "par_ind_operand" "=S<>")
         (match_operand:QF 4 "ext_low_reg_operand" "q"))
    (clobber (reg:CC 21))]
-  "TARGET_PARALLEL"
+  "TARGET_PARALLEL && valid_parallel_operands_5 (operands, QFmode)"
   "subf3\\t%2,%1,%0\\n||\\tstf\\t%4,%3"
   [(set_attr "type" "binarycc")])
 
@@ -3925,7 +3925,7 @@
    (set (match_operand:QI 2 "par_ind_operand" "=S<>")
         (match_operand:QI 3 "ext_low_reg_operand" "q"))
    (clobber (reg:CC_NOOV 21))]
-  "TARGET_PARALLEL"
+  "TARGET_PARALLEL && valid_parallel_operands_4 (operands, QImode)"
   "absi\\t%1,%0\\n||\\tsti\\t%3,%2"
   [(set_attr "type" "binarycc")])
 
@@ -3970,7 +3970,7 @@
    (set (match_operand:QI 3 "par_ind_operand" "=S<>")
         (match_operand:QI 4 "ext_low_reg_operand" "q"))
    (clobber (reg:CC 21))]
-  "TARGET_PARALLEL"
+  "TARGET_PARALLEL && valid_parallel_operands_5 (operands, QImode)"
   "ash3\\t%2,%1,%0\\n||\\tsti\\t%4,%3"
   [(set_attr "type" "binarycc")])
 
@@ -3978,14 +3978,14 @@
 ; ASH(right)/STI 
 ;
 
-(define_insn "*ashlqi3_movqi_clobber"
+(define_insn "*ashrqi3_movqi_clobber"
   [(set (match_operand:QI 0 "ext_low_reg_operand" "=q")
         (ashiftrt:QI (match_operand:QI 1 "par_ind_operand" "S<>")
                      (neg:QI (match_operand:QI 2 "ext_low_reg_operand" "q"))))
    (set (match_operand:QI 3 "par_ind_operand" "=S<>")
         (match_operand:QI 4 "ext_low_reg_operand" "q"))
    (clobber (reg:CC 21))]
-  "TARGET_PARALLEL"
+  "TARGET_PARALLEL && valid_parallel_operands_5 (operands, QImode)"
   "ash3\\t%2,%1,%0\\n||\\tsti\\t%4,%3"
   [(set_attr "type" "binarycc")])
 
@@ -3999,7 +3999,7 @@
    (set (match_operand:QI 2 "par_ind_operand" "=S<>")
         (match_operand:QI 3 "ext_low_reg_operand" "q"))
    (clobber (reg:CC 21))]
-  "TARGET_PARALLEL"
+  "TARGET_PARALLEL && valid_parallel_operands_4 (operands, QImode)"
   "fix\\t%1,%0\\n||\\tsti\\t%3,%2"
   [(set_attr "type" "binarycc")])
 
@@ -4014,7 +4014,7 @@
    (set (match_operand:QI 3 "par_ind_operand" "=S<>")
         (match_operand:QI 4 "ext_low_reg_operand" "q"))
    (clobber (reg:CC 21))]
-  "TARGET_PARALLEL"
+  "TARGET_PARALLEL && valid_parallel_operands_5 (operands, QImode)"
   "lsh3\\t%2,%1,%0\\n||\\tsti\\t%4,%3"
   [(set_attr "type" "binarycc")])
 
@@ -4078,7 +4078,7 @@
    (set (match_operand:QI 2 "par_ind_operand" "=S<>")
         (match_operand:QI 3 "ext_low_reg_operand" "q"))
    (clobber (reg:CC 21))]
-  "TARGET_PARALLEL"
+  "TARGET_PARALLEL && valid_parallel_operands_4 (operands, QImode)"
   "negi\\t%1,%0\\n||\\tsti\\t%3,%2"
   [(set_attr "type" "binarycc")])
 
@@ -4092,7 +4092,7 @@
    (set (match_operand:QI 2 "par_ind_operand" "=S<>")
         (match_operand:QI 3 "ext_low_reg_operand" "q"))
    (clobber (reg:CC 21))]
-  "TARGET_PARALLEL"
+  "TARGET_PARALLEL && valid_parallel_operands_4 (operands, QImode)"
   "not\\t%1,%0\\n||\\tsti\\t%3,%2"
   [(set_attr "type" "binarycc")])
 
@@ -4122,7 +4122,7 @@
    (set (match_operand:QI 3 "par_ind_operand" "=S<>")
         (match_operand:QI 4 "ext_low_reg_operand" "q"))
    (clobber (reg:CC 21))]
-  "TARGET_PARALLEL"
+  "TARGET_PARALLEL && valid_parallel_operands_5 (operands, QImode)"
   "subi3\\t%2,%1,%0\\n||\\tsti\\t%4,%3"
   [(set_attr "type" "binarycc")])
 
