@@ -7949,7 +7949,7 @@ is wrong.
 
 @findex TARGET_HAS_F_SETLKW
 @item TARGET_HAS_F_SETLKW
-Define this macro iff the target supports file locking with fcntl / F_SETLKW.
+Define this macro if the target supports file locking with fcntl / F_SETLKW.
 Note that this functionality is part of POSIX.
 Defining @code{TARGET_HAS_F_SETLKW} will enable the test coverage code
 to use file locking when exiting a program, which avoids race conditions

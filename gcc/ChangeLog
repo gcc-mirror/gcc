@@ -1,3 +1,7 @@
+2000-05-01 Laurynas Biveinis <lauras@softhome.net>
+
+	* tm.texi (TARGET_HAS_F_SETFLKW): Fix typo.
+
 2000-05-01 Mark Elbrecht <snowball3@bigfoot.com>
 
 	* config/i386/djgpp.h (INT_ASM_OP): Define.
