@@ -1,4 +1,14 @@
 2002-02-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/std_iomanip.h: Inline, tweaks.
+	* config/linker-map.gnu: Remove hacks.
+
+	* testsuite/21_strings/capacity.cc: Add explicit instantiations.
+	* testsuite/27_io/ios_init.cc: Same.
+	* testsuite/22_locale/money_get_members_char.cc (test07): Fix.
+	* testsuite/22_locale/money_get_members_wchar_t.cc (test07): Same.
+
+2002-02-19  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* config/linker-map.gnu: Export global vtable, typeinfo, guard
 	variable, and thunk info as per CXXABI docs.

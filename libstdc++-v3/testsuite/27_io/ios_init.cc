@@ -131,6 +131,15 @@ void test02()
   VERIFY( test );
 }
 
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template 
+  std::basic_string<unsigned short>::size_type 
+  std::basic_string<unsigned short>::_Rep::_S_max_size;
+
+template 
+  unsigned short
+  std::basic_string<unsigned short>::_Rep::_S_terminal;
+
 int main()
 {
   test01();
