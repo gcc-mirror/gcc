@@ -1023,9 +1023,10 @@ java_lex (java_lval)
 	    }
 	  else if (JAVA_ASCII_DIGIT (c))
 	    radix = 8;
-	  else if (c == '.')
+	  else if (c == '.' || c == 'e' || c =='E')
 	    {
-	      /* Push the '.' back and prepare for a FP parsing...  */
+	      /* Push the '.', 'e', or 'E' back and prepare for a FP
+		 parsing...  */
 	      java_unget_unicode ();
 	      c = '0';
 	    }
