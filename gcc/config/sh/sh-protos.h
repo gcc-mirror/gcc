@@ -138,5 +138,6 @@ extern rtx sh_get_pr_initial_val (void);
 extern rtx sh_function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern void sh_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern int sh_pass_in_reg_p (CUMULATIVE_ARGS *, enum machine_mode, tree);
+extern const char *sh_pch_valid_p (const void *data_p, size_t sz);
 
 #endif /* ! GCC_SH_PROTOS_H */
