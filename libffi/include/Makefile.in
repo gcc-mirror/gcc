@@ -43,7 +43,6 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/ffi.h.in $(toollibffi_HEADERS)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/accross.m4 \
-	$(top_srcdir)/../config/gcc-version.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -179,9 +178,6 @@ build_os = @build_os@
 build_vendor = @build_vendor@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
-gcc_version = @gcc_version@
-gcc_version_full = @gcc_version_full@
-gcc_version_trigger = @gcc_version_trigger@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -207,7 +203,6 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-tool_include_dir = @tool_include_dir@
 toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 AUTOMAKE_OPTIONS = foreign
@@ -215,7 +210,10 @@ DISTCLEANFILES = ffitarget.h
 EXTRA_DIST = ffi.h.in ffi_common.h
 hackdir = $(includedir)
 hack_DATA = ffi.h
-toollibffidir = @tool_include_dir@/libffi
+
+# Where generated headers like ffitarget.h get installed.
+gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+toollibffidir := $(libdir)/gcc/$(target_alias)/$(gcc_version)/include/libffi
 toollibffi_HEADERS = ffitarget.h
 all: all-am
 

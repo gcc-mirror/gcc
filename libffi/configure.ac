@@ -226,12 +226,6 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
-TL_AC_GCC_VERSION([$srcdir/..])
-
-#Figure out where generated headers like ffitarget.h get installed.
-tool_include_dir='$(libdir)/gcc/$(target_alias)/'${gcc_version}/include
-AC_SUBST(tool_include_dir)
-
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
 else
