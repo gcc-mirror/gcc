@@ -1,3 +1,10 @@
+2002-01-31  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-lex.c (yyparse): Call debug_hooks->start_source_file for
+	the primary source file; this has not been done yet.
+	* c-decl.c (c_expand_body): Reset input_filename from
+	DECL_SOURCE_FILE (fndecl) before calling init_function_start.
+
 2002-01-31  Kazu Hirata  <kazu@hxi.com>
 
 	* rtlanal.c (subreg_regno_offset): Do not use
@@ -76,13 +83,13 @@
 
 2002-01-29  Aldy Hernandez  <aldyh@redhat.com>
 
-        * rs6000.md ("*call_value_local32"): Remove constraints.
-        ("*call_value_local64"): Same.
-        ("*call_value_indirect_nonlocal_aix32"): Same.
-        ("*call_value_nonlocal_aix32"): Same.
-        ("*call_value_indirect_nonlocal_aix64"): Same.
-        ("*call_value_nonlocal_aix64"): Same.
-        ("*call_value_nonlocal_sysv"): Same.
+	* rs6000.md ("*call_value_local32"): Remove constraints.
+	("*call_value_local64"): Same.
+	("*call_value_indirect_nonlocal_aix32"): Same.
+	("*call_value_nonlocal_aix32"): Same.
+	("*call_value_indirect_nonlocal_aix64"): Same.
+	("*call_value_nonlocal_aix64"): Same.
+	("*call_value_nonlocal_sysv"): Same.
 
 2002-01-29  Richard Henderson  <rth@redhat.com>
 
@@ -114,18 +121,18 @@
 
 2002-01-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * tree.c (build_nonstandard_integer_type): Correct prototype.
+	* tree.c (build_nonstandard_integer_type): Correct prototype.
 
 2002-01-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390.md (movstrsico, movstrdix_64, 
+	* config/s390/s390.md (movstrsico, movstrdix_64,
 	movstrsix_31): Remove, replace by ...
-	(movstrdi_short, movstrsi_short, movstrdi_long, 
+	(movstrdi_short, movstrsi_short, movstrdi_long,
 	movstrsi_long): ... these.  New.
 	(movstrdi, movstrsi): Adapt.
 
 	(rotldi3, rotlsi3, ashldi3, *ashldi3_31, *ashldi3_64,
-	ashlsi3, lshrdi3, *lshrdi3_31, *lshrdi3_64, lshrsi3): 
+	ashlsi3, lshrdi3, *lshrdi3_31, *lshrdi3_64, lshrsi3):
 	Remove unnecessary CC clobber.
 	(*ashrdi3_cc_31, *ashrdi3_cconly_31, *ashrdi3_cc_64,
 	*ashrdi3_cconly_64, *ashrsi3_cc, *ashrsi3_cconly): New.
@@ -157,7 +164,7 @@
 	grokdeclarator.
 	(build_bitfield_integer_type): New function.
 	(finish_struct): Move bitfield validation to grokdeclarator
-	and build_bitfield_integer_type. 
+	and build_bitfield_integer_type.
 	* tree.c (build_nonstandard_integer_type): New function.
 	* tree.h (build_nonstandard_integer_type): New prototype.
 objc:
@@ -542,7 +549,7 @@ Fri Jan 25 20:43:56 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-01-14  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* emit_rtl.c (gen_lowpart_common): Conversion from const_int 
+	* emit_rtl.c (gen_lowpart_common): Conversion from const_int
 	to const_double needs to be done right for big-endian systems.
 
 2002-01-24  Jason Merrill  <jason@redhat.com>
