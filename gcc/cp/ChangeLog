@@ -1,5 +1,11 @@
 2004-02-26  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	PR c++/14284
+	* pt.c (dependent_type_p_r): A template template parameter is a
+	dependent type.
+
+2004-02-26  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	PR c++/14246
 	* mangle.c (write_template_arg_literal): Don't rely on identity for
 	boolean constants.
