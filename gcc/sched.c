@@ -2915,7 +2915,7 @@ attach_deaths (x, insn, set_p)
 			   register that is set in the insn.  */
 			for (i = HARD_REGNO_NREGS (regno, GET_MODE (x)) - 1;
 			     i >= 0; i--)
-			  if (REGNO_REG_SET_P (old_live_regs, regno + i)
+			  if (! REGNO_REG_SET_P (old_live_regs, regno + i)
 			      && ! dead_or_set_regno_p (insn, regno + i))
 			    create_reg_dead_note (gen_rtx (REG,
 							   reg_raw_mode[regno + i],
