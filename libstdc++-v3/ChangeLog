@@ -1,3 +1,17 @@
+2004-01-12  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.h (struct __numpunct_cache):
+	Add members _M_truename_len and _M_falsename_len, caching
+	the lengths of _M_truename and _M_falsename.
+	(__numpunct_cache<>::_M_cache): Assign the latter.
+	* include/bits/locale_facets.tcc (num_get::do_get(bool&),
+	num_put::do_put(bool)): Use the new members, thus avoiding
+	computing string lengths again and again.
+	* config/locale/generic/numeric_members.cc
+	(numpunct<>::_M_initialize_numpunct): Assign the new members.
+	* config/locale/gnu/numeric_members.cc
+	(numpunct<>::_M_initialize_numpunct): Likewise.
+
 2004-01-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/testsuite_hooks.h (__gnu_test::try_mkfifo): Declare it.
