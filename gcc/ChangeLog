@@ -1,3 +1,8 @@
+2004-04-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/extend.texi (Strong Using): Warn users against using this
+	feature.
+
 2004-04-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (m16_usym8_4, m16_usym5_4): Delete.
