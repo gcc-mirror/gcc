@@ -5791,7 +5791,6 @@
    operands[7] = c4x_operand_subword (operands[1], 1, 1, HImode);
    operands[8] = c4x_operand_subword (operands[2], 1, 1, HImode);")
 
-; This should do all the dirty work with define_split
 (define_expand "ashlhi3"
  [(parallel [(set (match_operand:HI 0 "reg_operand" "")
              (ashift:HI (match_operand:HI 1 "src_operand" "")
@@ -5812,14 +5811,17 @@
        emit_insn (gen_movqi (op0lo, const0_rtx));
        DONE;
     }
-    emit_insn (gen_ashlhi3_reg (operands[0], operands[1], operands[2]));
-    DONE;")
+  if (! REG_P (operands[1]))
+    operands[1] = force_reg (HImode, operands[1]);
+  emit_insn (gen_ashlhi3_reg (operands[0], operands[1], operands[2]));
+  DONE;
+ ")
 
 ; %0.lo = %1.lo << %2
 ; %0.hi = (%1.hi << %2 ) | (%1.lo >> (32 - %2))
 ; This algorithm should work for shift counts greater than 32
 (define_expand "ashlhi3_reg" 
- [(use (match_operand:HI 1 "src_operand" ""))
+ [(use (match_operand:HI 1 "reg_operand" ""))
   (use (match_operand:HI 0 "reg_operand" ""))
   /* If the shift count is greater than 32 this will give zero.  */
   (parallel [(set (match_dup 7)
@@ -5874,14 +5876,16 @@
        emit_insn (gen_movqi (op0hi, const0_rtx));
        DONE;
     }
-    emit_insn (gen_lshrhi3_reg (operands[0], operands[1], operands[2]));
-    DONE;")
+  if (! REG_P (operands[1]))
+    operands[1] = force_reg (HImode, operands[1]);
+  emit_insn (gen_lshrhi3_reg (operands[0], operands[1], operands[2]));
+  DONE;")
 
 ; %0.hi = %1.hi >> %2
 ; %0.lo = (%1.lo >> %2 ) | (%1.hi << (32 - %2))
 ; This algorithm should work for shift counts greater than 32
 (define_expand "lshrhi3_reg" 
- [(use (match_operand:HI 1 "src_operand" ""))
+ [(use (match_operand:HI 1 "reg_operand" ""))
   (use (match_operand:HI 0 "reg_operand" ""))
   (parallel [(set (match_dup 11)
                   (neg:QI (match_operand:QI 2 "reg_operand" "")))
@@ -5942,14 +5946,16 @@
        emit_insn (gen_ashrqi3 (op0hi, op1hi, GEN_INT (31)));
        DONE;
     }
-    emit_insn (gen_ashrhi3_reg (operands[0], operands[1], operands[2]));
-    DONE;")
+  if (! REG_P (operands[1]))
+    operands[1] = force_reg (HImode, operands[1]);
+  emit_insn (gen_ashrhi3_reg (operands[0], operands[1], operands[2]));
+  DONE;")
 
 ; %0.hi = %1.hi >> %2
 ; %0.lo = (%1.lo >> %2 ) | (%1.hi << (32 - %2))
 ; This algorithm should work for shift counts greater than 32
 (define_expand "ashrhi3_reg" 
- [(use (match_operand:HI 1 "src_operand" ""))
+ [(use (match_operand:HI 1 "reg_operand" ""))
   (use (match_operand:HI 0 "reg_operand" ""))
   (parallel [(set (match_dup 11)
                   (neg:QI (match_operand:QI 2 "reg_operand" "")))
