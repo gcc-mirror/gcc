@@ -1,5 +1,9 @@
 2003-10-05  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/invoke.texi: Fix typos.
+
+2003-10-05  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* fold-const.c: Follow spelling conventions.
 	* function.c: Likewise.
 	* config/c4x/c4x.h: Likewise.
