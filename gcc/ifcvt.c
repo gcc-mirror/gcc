@@ -1500,11 +1500,23 @@ find_if_block (test_bb, then_edge, else_edge)
 
   /* If the THEN block has no successors, conditional execution can still
      make a conditional call.  Don't do this unless the ELSE block has
-     only one incoming edge -- the CFG manipulation is too ugly otherwise.  */
+     only one incoming edge -- the CFG manipulation is too ugly otherwise.
+     Check for the last insn of the THEN block being an indirect jump, which
+     is listed as not having any successors, but confuses the rest of the CE
+     code processing.  XXX we should fix this in the future.  */
   if (then_succ == NULL)
     {
       if (else_bb->pred->pred_next == NULL_EDGE)
 	{
+	  rtx last_insn = then_bb->end;
+
+	  if (GET_CODE (last_insn) == NOTE)
+	    last_insn = prev_nonnote_insn (last_insn);
+
+	  if (GET_CODE (last_insn) == JUMP_INSN
+	      && ! simplejump_p (last_insn))
+	    return FALSE;
+
 	  join_bb = else_bb;
 	  else_bb = NULL_BLOCK;
 	}

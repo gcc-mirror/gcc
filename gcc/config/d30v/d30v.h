@@ -1953,7 +1953,7 @@ typedef struct d30v_stack {
    once for every function before code is generated.  */
 
 #define INIT_EXPANDERS  d30v_init_expanders ()
-extern void d30v_init_expanders ();
+
 
 /* Stack Checking.  */
 

@@ -1,3 +1,12 @@
+2000-08-19  Michael Meissner  <meissner@redhat.com>
+
+	* ifcvt.c (find_if_block): Do not consider a THEN block that ends
+	in a indirect jump as a potential for conditional execution.
+
+	* d30v.h (d30v_init_expanders): Don't declare here.
+	* d30v-protos.h (d30v_init_expanders): Declare here with a valid
+	prototype.
+
 Sat 19-Aug-2000 21:11:45 BST  Neil Booth  <NeilB@earthling.net>
 
 	* cpp.texi: Add @section for assertions.

@@ -132,6 +132,7 @@ extern void d30v_machine_dependent_reorg PARAMS ((rtx));
 extern int d30v_adjust_cost		PARAMS ((rtx, rtx, rtx, int));
 extern rtx d30v_return_addr		PARAMS ((void));
 #endif
+extern void d30v_init_expanders		PARAMS ((void));
 
 
 /* External variables referenced */
