@@ -1,3 +1,9 @@
+2004-07-08  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* testsuite/22_locale/time_put_members_char.cc (test01): Allow either 
+	"Son" or "So" as abbreviated name for Sunday in de_DE locale.
+	* testsuite/22_locale/time_put_members_wchar_t.cc (test01): Likewise.
+
 2004-06-28  David Asher  <david.asher@cavium.com>
 
 	PR libstdc++/11352

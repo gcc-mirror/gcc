@@ -1,6 +1,6 @@
 // 2001-10-02 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002 Free Software Foundation
+// Copyright (C) 2001, 2002, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -91,7 +91,7 @@ void test01()
   oss.imbue(loc_de);
   iterator_type os_it02 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'a');
   wstring result2 = oss.str();
-  VERIFY( result2 == L"Son" );
+  VERIFY( result2 == L"Son" || result2 == L"So" );
 
   oss.str(empty); // "%d.%m.%Y"
   iterator_type os_it23 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x');
