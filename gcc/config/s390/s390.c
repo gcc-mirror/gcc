@@ -50,6 +50,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "debug.h"
 #include "langhooks.h"
 #include "optabs.h"
+#include "tree-gimple.h"
 
 /* Machine-specific symbol_ref flags.  */
 #define SYMBOL_FLAG_ALIGN1	(SYMBOL_FLAG_MACH_DEP << 0)
@@ -78,6 +79,7 @@ static int s390_address_cost (rtx);
 static void s390_reorg (void);
 static bool s390_valid_pointer_mode (enum machine_mode);
 static tree s390_build_builtin_va_list (void);
+static tree s390_gimplify_va_arg (tree, tree, tree *, tree *);
 static bool s390_function_ok_for_sibcall (tree, tree);
 static bool s390_call_saved_register_used (tree);
 
@@ -147,6 +149,8 @@ static bool s390_call_saved_register_used (tree);
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST s390_build_builtin_va_list
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR s390_gimplify_va_arg
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
 #define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
@@ -6306,13 +6310,14 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
        ret = **args.overflow_arg_area++;
    } */
 
-rtx
-s390_va_arg (tree valist, tree type)
+tree
+s390_gimplify_va_arg (tree valist, tree type, tree *pre_p, 
+		      tree *post_p ATTRIBUTE_UNUSED)
 {
   tree f_gpr, f_fpr, f_ovf, f_sav;
   tree gpr, fpr, ovf, sav, reg, t, u;
   int indirect_p, size, n_reg, sav_ofs, sav_scale, max_reg;
-  rtx lab_false, lab_over, addr_rtx, r;
+  tree lab_false, lab_over, addr;
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
   f_fpr = TREE_CHAIN (f_gpr);
@@ -6387,79 +6392,75 @@ s390_va_arg (tree valist, tree type)
 
   /* Pull the value out of the saved registers ...  */
 
-  lab_false = gen_label_rtx ();
-  lab_over = gen_label_rtx ();
-  addr_rtx = gen_reg_rtx (Pmode);
+  lab_false = create_artificial_label ();
+  lab_over = create_artificial_label ();
+  addr = create_tmp_var (ptr_type_node, "addr");
 
-  emit_cmp_and_jump_insns (expand_expr (reg, NULL_RTX, Pmode, EXPAND_NORMAL),
-			   GEN_INT (max_reg),
-			   GT, const1_rtx, Pmode, 0, lab_false);
+  t = build_int_2 (max_reg, 0);
+  TREE_TYPE (t) = TREE_TYPE (reg);
+  t = build2 (GT_EXPR, boolean_type_node, reg, t);
+  u = build1 (GOTO_EXPR, void_type_node, lab_false);
+  t = build3 (COND_EXPR, void_type_node, t, u, NULL_TREE);
+  gimplify_and_add (t, pre_p);
 
   if (sav_ofs)
-    t = build (PLUS_EXPR, ptr_type_node, sav, build_int_2 (sav_ofs, 0));
+    t = build2 (PLUS_EXPR, ptr_type_node, sav, build_int_2 (sav_ofs, 0));
   else
     t = sav;
 
-  u = build (MULT_EXPR, long_integer_type_node,
-	     reg, build_int_2 (sav_scale, 0));
-  TREE_SIDE_EFFECTS (u) = 1;
+  u = build2 (MULT_EXPR, long_integer_type_node,
+	      reg, build_int_2 (sav_scale, 0));
+  t = build2 (PLUS_EXPR, ptr_type_node, t, u);
 
-  t = build (PLUS_EXPR, ptr_type_node, t, u);
-  TREE_SIDE_EFFECTS (t) = 1;
+  t = build2 (MODIFY_EXPR, void_type_node, addr, t);
+  gimplify_and_add (t, pre_p);
 
-  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-  if (r != addr_rtx)
-    emit_move_insn (addr_rtx, r);
+  t = build1 (GOTO_EXPR, void_type_node, lab_over);
+  gimplify_and_add (t, pre_p);
 
+  t = build1 (LABEL_EXPR, void_type_node, lab_false);
+  append_to_statement_list (t, pre_p);
 
-  emit_jump_insn (gen_jump (lab_over));
-  emit_barrier ();
-  emit_label (lab_false);
 
   /* ... Otherwise out of the overflow area.  */
 
-  t = save_expr (ovf);
-
-
-  /* In 64 BIT for each argument on stack, a full 64 bit slot is allocated.  */
+  t = ovf;
   if (size < UNITS_PER_WORD)
-    {
-      t = build (PLUS_EXPR, TREE_TYPE (t), t, build_int_2 (UNITS_PER_WORD-size, 0));
-      t = build (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    t = build2 (PLUS_EXPR, TREE_TYPE (t), t, 
+		build_int_2 (UNITS_PER_WORD - size, 0));
 
-      t = save_expr (ovf);
-    }
+  gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
 
-  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-  if (r != addr_rtx)
-    emit_move_insn (addr_rtx, r);
+  u = build2 (MODIFY_EXPR, void_type_node, addr, t);
+  gimplify_and_add (u, pre_p);
 
-  t = build (PLUS_EXPR, TREE_TYPE (t), t, build_int_2 (size, 0));
-  t = build (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
-  TREE_SIDE_EFFECTS (t) = 1;
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+  t = build2 (PLUS_EXPR, TREE_TYPE (t), t, build_int_2 (size, 0));
+  t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
+  gimplify_and_add (t, pre_p);
 
-  emit_label (lab_over);
+  t = build1 (LABEL_EXPR, void_type_node, lab_over);
+  append_to_statement_list (t, pre_p);
 
-  /* If less than max_regs a registers are retrieved out
-     of register save area, increment.  */
 
-  u = build (PREINCREMENT_EXPR, TREE_TYPE (reg), reg,
-	     build_int_2 (n_reg, 0));
-  TREE_SIDE_EFFECTS (u) = 1;
-  expand_expr (u, const0_rtx, VOIDmode, EXPAND_NORMAL);
+  /* Increment register save count.  */
+
+  u = build2 (PREINCREMENT_EXPR, TREE_TYPE (reg), reg,
+	      build_int_2 (n_reg, 0));
+  gimplify_and_add (u, pre_p);
 
   if (indirect_p)
     {
-      r = gen_rtx_MEM (Pmode, addr_rtx);
-      set_mem_alias_set (r, get_varargs_alias_set ());
-      emit_move_insn (addr_rtx, r);
+      t = build_pointer_type (build_pointer_type (type));
+      addr = fold_convert (t, addr);
+      addr = build_fold_indirect_ref (addr);
+    }
+  else
+    {
+      t = build_pointer_type (type);
+      addr = fold_convert (t, addr);
     }
 
-
-  return addr_rtx;
+  return build_fold_indirect_ref (addr);
 }
 
 

@@ -1,3 +1,12 @@
+2004-06-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c: Include "tree-gimple.h".
+	(s390_gimplify_va_arg): New function.
+	(TARGET_GIMPLIFY_VA_ARG_EXPR): Define.
+	(s390_va_arg): Remove.
+	* config/s390/s390-protos.h (s390_va_arg): Remove.
+	* config/s390/s390.h (EXPAND_BUILTIN_VA_ARG): Call abort ().
+
 2004-06-14  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* basic-block.h (could_fall_through): Declare.
