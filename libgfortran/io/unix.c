@@ -982,7 +982,7 @@ regular_file (unit_action action, unit_status status)
       break;
 
     case STATUS_REPLACE:
-      mode |= O_TRUNC;
+        mode |= O_CREAT | O_TRUNC;
       break;
 
     default:
