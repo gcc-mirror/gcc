@@ -195,7 +195,7 @@ clean: mostlyclean
 	@$(MULTICLEAN) multi-clean DO=clean
 distclean: clean
 	@$(MULTICLEAN) multi-clean DO=distclean
-	rm -f *~ Makefile config.status alloca-conf.h xhost-mkfrag TAGS multilib.out
+	rm -f *~ Makefile config.status xhost-mkfrag TAGS multilib.out
 maintainer-clean realclean: distclean
 
 force:
