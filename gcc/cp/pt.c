@@ -3389,7 +3389,7 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
 	      tree t = no_linkage_check (val);
 	      if (t)
 		{
-		  if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
+		  if (TYPE_ANONYMOUS_P (t))
 		    cp_pedwarn
 		      ("template-argument `%T' uses anonymous type", val);
 		  else
