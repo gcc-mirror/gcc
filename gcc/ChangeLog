@@ -1,3 +1,10 @@
+Wed Nov 12 09:37:01 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (find_basic_blocks): Refine further to get a more correct
+	cfg, especially in the presense of exception handling, computed
+	gotos, and other non-trivial cases.  Call abort if an inaccuracy
+	is detected in the cfg.
+
 Mon Nov 10 03:02:19 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* stmt.c (expand_decl_cleanup_no_eh): New fn.

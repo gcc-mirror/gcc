@@ -372,22 +372,28 @@ find_basic_blocks (f, nonlocal_label_list)
   register int i;
   register char *block_live = (char *) alloca (n_basic_blocks);
   register char *block_marked = (char *) alloca (n_basic_blocks);
+  /* An array of CODE_LABELs, indexed by UID for the start of the active
+     EH handler for each insn in F.  */
+  rtx *active_eh_handler;
   /* List of label_refs to all labels whose addresses are taken
      and used as data.  */
   rtx label_value_list;
-  int label_value_list_marked_live;
-  rtx x, note;
+  /* List of label_refs from REG_LABEL notes.  */
+  rtx reg_label_list;
+  rtx x, note, eh_note;
   enum rtx_code prev_code, code;
   int depth, pass;
 
   pass = 1;
+  active_eh_handler = (rtx *) alloca ((max_uid_for_flow + 1) * sizeof (rtx));
  restart:
 
   label_value_list = 0;
-  label_value_list_marked_live = 0;
+  reg_label_list = 0;
   block_live_static = block_live;
   bzero (block_live, n_basic_blocks);
   bzero (block_marked, n_basic_blocks);
+  bzero (active_eh_handler, (max_uid_for_flow + 1) * sizeof (rtx));
 
   /* Initialize with just block 0 reachable and no blocks marked.  */
   if (n_basic_blocks > 0)
@@ -398,7 +404,7 @@ find_basic_blocks (f, nonlocal_label_list)
      the block it is in.   Also mark as reachable any blocks headed by labels
      that must not be deleted.  */
 
-  for (insn = f, i = -1, prev_code = JUMP_INSN, depth = 1;
+  for (eh_note = NULL_RTX, insn = f, i = -1, prev_code = JUMP_INSN, depth = 1;
        insn; insn = NEXT_INSN (insn))
     {
       code = GET_CODE (insn);
@@ -448,6 +454,35 @@ find_basic_blocks (f, nonlocal_label_list)
 					  label_value_list);
 	}
 
+      /* Keep a lifo list of the currently active exception handlers.  */
+      if (GET_CODE (insn) == NOTE)
+	{
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
+	    {
+	      for (x = exception_handler_labels; x; x = XEXP (x, 1))
+		if (CODE_LABEL_NUMBER (XEXP (x, 0)) == NOTE_BLOCK_NUMBER (insn))
+		  {
+		    eh_note = gen_rtx (EXPR_LIST, VOIDmode,
+				       XEXP (x, 0), eh_note);
+		    break;
+		  }
+	      if (x == NULL_RTX)
+		abort ();
+	    }
+	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
+	    eh_note = XEXP (eh_note, 1);
+	}
+      /* If we encounter a CALL_INSN, note which exception handler it
+	 might pass control to.
+
+	 If doing asynchronous exceptions, record the active EH handler
+	 for every insn, since most insns can throw.  */
+      else if (eh_note
+	       && (asynchronous_exceptions
+		   || (GET_CODE (insn) == CALL_INSN
+		       && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))))
+	active_eh_handler[INSN_UID (insn)] = XEXP (eh_note, 0);
+
       BLOCK_NUM (insn) = i;
 
       if (code != NOTE)
@@ -460,14 +495,6 @@ find_basic_blocks (f, nonlocal_label_list)
   if (pass == 1 && i + 1 != n_basic_blocks)
     abort ();
   n_basic_blocks = i + 1;
-
-  for (x = forced_labels; x; x = XEXP (x, 1))
-    if (! LABEL_REF_NONLOCAL_P (x))
-      block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
-
-  if (asynchronous_exceptions)
-    for (x = exception_handler_labels; x; x = XEXP (x, 1))
-      block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
 
   /* Record which basic blocks control can drop in to.  */
 
@@ -489,91 +516,6 @@ find_basic_blocks (f, nonlocal_label_list)
       int something_marked = 1;
       int deleted;
 
-      /* Find all indirect jump insns and mark them as possibly jumping to all
-	 the labels whose addresses are explicitly used.  This is because,
-	 when there are computed gotos, we can't tell which labels they jump
-	 to, of all the possibilities.  */
-
-      for (insn = f; insn; insn = NEXT_INSN (insn))
-	if (computed_jump_p (insn))
-	  {
-	    if (label_value_list_marked_live == 0)
-	      {
-		label_value_list_marked_live = 1;
-
-		/* This could be made smarter by only considering
-		   these live, if the computed goto is live.  */
-
-		/* Don't delete the labels (in this function) that
-		   are referenced by non-jump instructions.  */
-
-		for (x = label_value_list; x; x = XEXP (x, 1))
-		  if (! LABEL_REF_NONLOCAL_P (x))
-		    block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
-	      }
-
-	    for (x = label_value_list; x; x = XEXP (x, 1))
-	      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
-			      insn, 0);
-
-	    for (x = forced_labels; x; x = XEXP (x, 1))
-	      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
-			      insn, 0);
-	  }
-
-      /* Find all call insns and mark them as possibly jumping
-	 to all the nonlocal goto handler labels, or to the current
-	 exception handler.  */
-
-      for (note = NULL_RTX, insn = f; insn; insn = NEXT_INSN (insn))
-	{
-	  if (! asynchronous_exceptions && GET_CODE (insn) == NOTE)
-	    {
-	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
-		{
-		  for (x = exception_handler_labels; x; x = XEXP (x, 1))
-		    if (CODE_LABEL_NUMBER (XEXP (x, 0))
-			== NOTE_BLOCK_NUMBER (insn))
-		      {
-			note = gen_rtx (EXPR_LIST, VOIDmode,
-					 XEXP (x, 0), note);
-			break;
-		      }
-		  if (x == NULL_RTX)
-		    abort ();
-		}
-	      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
-		note = XEXP (note, 1);
-	    }
-	  else if (GET_CODE (insn) == CALL_INSN
-		   && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	    {
-	      if (note)
-		mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (note, 0)),
-				insn, 0);
-
-	      for (x = nonlocal_label_list; x; x = XEXP (x, 1))
-		mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
-				insn, 0);
-	    /* ??? This could be made smarter:
-	       in some cases it's possible to tell that certain
-	       calls will not do a nonlocal goto.
-
-	       For example, if the nested functions that do the
-	       nonlocal gotos do not have their addresses taken, then
-	       only calls to those functions or to other nested
-	       functions that use them could possibly do nonlocal
-	       gotos.  */
-	    }
-	}
-
-      /* All blocks associated with labels in label_value_list are
-	 trivially considered as marked live, if the list is empty.
-	 We do this to speed up the below code.  */
-
-      if (label_value_list == 0)
-	label_value_list_marked_live = 1;
-
       /* Pass over all blocks, marking each block that is reachable
 	 and has not yet been marked.
 	 Keep doing this until, in one pass, no blocks have been marked.
@@ -594,43 +536,130 @@ find_basic_blocks (f, nonlocal_label_list)
 		if (GET_CODE (insn) == JUMP_INSN)
 		  mark_label_ref (PATTERN (insn), insn, 0);
 
-		if (label_value_list_marked_live == 0)
-		  /* Now that we know that this block is live, mark as
-		     live, all the blocks that we might be able to get
-		     to as live.  */
+		/* If we have any forced labels, mark them as potentially
+		   reachable from this block.  */
+		for (x = forced_labels; x; x = XEXP (x, 1))
+		  if (! LABEL_REF_NONLOCAL_P (x))
+		    mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
+				    insn, 0);
 
-		  for (insn = basic_block_head[i];
-		       insn != NEXT_INSN (basic_block_end[i]);
-		       insn = NEXT_INSN (insn))
-		    {
-		      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-			{
-			  for (note = REG_NOTES (insn);
-			       note;
-			       note = XEXP (note, 1))
+		/* Now scan the insns for this block, we may need to make
+		   edges for some of them to various non-obvious locations
+		   (exception handlers, nonlocal labels, etc).  */
+		for (insn = basic_block_head[i];
+		     insn != NEXT_INSN (basic_block_end[i]);
+		     insn = NEXT_INSN (insn))
+		  {
+		    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+		      {
+			
+			/* We have no idea where the label referenced by this
+			   insn will actually be used.
+
+			   To create an accurate cfg we mark the target blocks
+			   as live and create a list of all the labels
+			   mentioned in REG_LABEL notes.  After we're done
+			   marking blocks, we go back and create an edge from
+			   every live block to labels on the list.  */ 
+			for (note = REG_NOTES (insn);
+			     note;
+			     note = XEXP (note, 1))
+			  {
 			    if (REG_NOTE_KIND (note) == REG_LABEL)
 			      {
 				x = XEXP (note, 0);
 				block_live[BLOCK_NUM (x)] = 1;
+				reg_label_list
+				  = gen_rtx (EXPR_LIST, VOIDmode, x,
+					     reg_label_list);
 			      }
-			}
-		    }
+			  }
+
+			/* If this is a computed jump, then mark it as
+			   reaching everything on the label_value_list
+			   and forced_labels list.  */
+			if (computed_jump_p (insn))
+			  {
+			    for (x = label_value_list; x; x = XEXP (x, 1))
+			      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode,
+						       XEXP (x, 0)),
+					      insn, 0);
+
+			    for (x = forced_labels; x; x = XEXP (x, 1))
+			      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode,
+						       XEXP (x, 0)),
+					      insn, 0);
+			    }
+
+			/* If this is a CALL_INSN, then mark it as reaching
+			   the active EH handler for this CALL_INSN.  If
+			   we're handling asynchronous exceptions mark every
+			   insn as reaching the active EH handler.
+
+			   Also mark the CALL_INSN as reaching any nonlocal
+			   goto sites.  */
+			else if (asynchronous_exceptions
+				 || (GET_CODE (insn) == CALL_INSN
+				     && ! find_reg_note (insn, REG_RETVAL,
+							 NULL_RTX)))
+			  {
+			    if (active_eh_handler[INSN_UID (insn)])
+			      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode,
+						       active_eh_handler[INSN_UID (insn)]),
+					      insn, 0);
+
+			    if (!asynchronous_exceptions)
+			      {
+				for (x = nonlocal_label_list;
+				     x;
+				     x = XEXP (x, 1))
+				  mark_label_ref (gen_rtx (LABEL_REF, VOIDmode,
+							   XEXP (x, 0)),
+						  insn, 0);
+			      }
+			    /* ??? This could be made smarter:
+			       in some cases it's possible to tell that
+			       certain calls will not do a nonlocal goto.
+
+			       For example, if the nested functions that
+			       do the nonlocal gotos do not have their
+			       addresses taken, then only calls to those
+			       functions or to other nested functions that
+			       use them could possibly do nonlocal gotos.  */
+			  }
+		      }
+		  }
 	      }
 	}
 
-      /* ??? See if we have a "live" basic block that is not reachable.
-	 This can happen if it is headed by a label that is preserved or
-	 in one of the label lists, but no call or computed jump is in
-	 the loop.  It's not clear if we can delete the block or not,
-	 but don't for now.  However, we will mess up register status if
-	 it remains unreachable, so add a fake reachability from the
-	 previous block.  */
+      /* We couldn't determine what edges are needed for labels on the
+	 reg_label_list above.  So make an edge from every live block to
+	 to every label on the reg_label_list.  */
+      if (reg_label_list)
+	{
+	  for (i = 1; i < n_basic_blocks; i++)
+	  if (block_live[i])
+	    {
+	      rtx x;
 
+	      for (x = reg_label_list; x; x = XEXP (x, 1))
+		mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
+				basic_block_end[i], 0);
+	    }
+	}
+
+      /* This should never happen.  If it does that means we've computed an
+	 incorrect flow graph, which can lead to aborts/crashes later in the
+	 compiler or incorrect code generation.
+
+	 We used to try and continue here, but that's just asking for trouble
+	 later during the compile or at runtime.  It's easier to debug the
+	 problem here than later!  */
       for (i = 1; i < n_basic_blocks; i++)
 	if (block_live[i] && ! basic_block_drops_in[i]
 	    && GET_CODE (basic_block_head[i]) == CODE_LABEL
 	    && LABEL_REFS (basic_block_head[i]) == basic_block_head[i])
-	  basic_block_drops_in[i] = 1;
+	  abort ();
 
       /* Now delete the code for any basic blocks that can't be reached.
 	 They can occur because jump_optimize does not recognize
