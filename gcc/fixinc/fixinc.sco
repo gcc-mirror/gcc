@@ -39,9 +39,6 @@
 #
 #	See README-fixinc for more information.
 
-# Directory containing the original header files.
-INPUT=${2-${INPUT-/usr/include}}
-
 # Fail if no arg to specify a directory for the output.
 if [ x$1 = x ]
 then echo fixincludes: no output directory specified
@@ -56,7 +53,7 @@ if [ ! -d $LIB ]; then
   mkdir $LIB || exit 1
 fi
 
-ORIG_DIR=`pwd`
+ORIG_DIR=`${PWDCMD-pwd}`
 
 # Make LIB absolute if it is relative.
 # Don't do this if not necessary, since may screw up automounters.
@@ -79,7 +76,18 @@ else
 fi
 
 echo 'Making directories:'
+# Directory containing the original header files.
+shift
+if [ $# -eq 0 ] ; then
+  set /usr/include
+fi
+
+INLIST="$@"
+
+for INPUT in ${INLIST} ; do
+cd ${ORIG_DIR}
 cd ${INPUT}
+
 if $LINKS; then
   files=`ls -LR | sed -n s/:$//p`
 else
@@ -422,6 +430,16 @@ if $LINKS; then
       fi
     fi
   done
+fi
+
+done
+
+if [ x${INSTALL_ASSERT_H} != x ] ;
+then
+  cd ${ORIG_DIR}
+  rm -f include/assert.h;
+  cp $(srcdir)/assert.h include/assert.h;
+  chmod a+r include/assert.h;
 fi
 
 exit 0
