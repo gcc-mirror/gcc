@@ -10,6 +10,8 @@ details.  */
 
 package gnu.gcj.runtime;
 
+import java.util.jar.*;
+
 /**
  * @author Tom Tromey <tromey@cygnus.com>
  * @date August 24, 1998 
@@ -42,6 +44,27 @@ final class FirstThread extends Thread
     System.err.println(s);
     System.exit(1);
   }
+
+  public static void main (String[] args)
+  {
+    try {
+
+      JarFile j = new JarFile (args[0]);
+
+      Attributes a = j.getManifest().getMainAttributes();
+
+      jarMainClassName = a.getValue(Attributes.Name.MAIN_CLASS);
+
+    } catch (Exception e) {
+
+      System.err.println ("Failed to load Main-Class manifest attribute from\n" + args[0]);
+
+    }
+  }
+
+  // If interpreter is invoked with -jar, the main class name is recorded
+  // here.
+  public static String jarMainClassName;
 
   // Private data.
   private Class klass;

@@ -1057,6 +1057,7 @@ java/util/NoSuchElementException.java \
 java/util/Observable.java \
 java/util/Observer.java	\
 java/util/Properties.java \
+java/util/PropertyPermission.java \
 java/util/PropertyResourceBundle.java \
 java/util/Random.java \
 java/util/ResourceBundle.java \

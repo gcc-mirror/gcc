@@ -460,7 +460,7 @@ public class Attributes implements Cloneable, Map {
     }
 
     /**
-     * Gives a Set of atrribute name and values pairs as MapEntries.
+     * Gives a Set of attribute name and values pairs as MapEntries.
      * @see java.util.Map.Entry
      * @see java.util.Map#entrySet()
      *

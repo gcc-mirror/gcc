@@ -157,7 +157,7 @@ void _Jv_SetMaximumHeapSize (const char *arg);
 void *_Jv_AllocBytesChecked (jsize size) __attribute__((__malloc__));
 
 extern "C" void JvRunMain (jclass klass, int argc, const char **argv);
-void _Jv_RunMain (const char* name, int argc, const char **argv);
+void _Jv_RunMain (const char* name, int argc, const char **argv, bool is_jar);
 
 // This function is used to determine the hash code of an object.
 inline jint

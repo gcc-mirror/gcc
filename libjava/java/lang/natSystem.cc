@@ -32,6 +32,7 @@ details.  */
 #include <java/lang/ArrayStoreException.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/NullPointerException.h>
+#include <java/lang/StringBuffer.h>
 #include <java/util/Properties.h>
 #include <java/io/PrintStream.h>
 #include <java/io/InputStream.h>
@@ -216,7 +217,7 @@ java::lang::System::init_properties (void)
   // (introduced in 1.2), and earlier versioning properties.
   SET ("java.version", VERSION);
   SET ("java.vendor", "Free Software Foundation");
-  SET ("java.vendor.url", "http://sourceware.cygnus.com/java/");
+  SET ("java.vendor.url", "http://sources.redhat.com/java/");
   SET ("java.class.version", GCJVERSION);
   SET ("java.vm.specification.version", "1.1");
   SET ("java.vm.specification.name", "Java(tm) Virtual Machine Specification");
@@ -262,13 +263,6 @@ java::lang::System::init_properties (void)
       SET ("os.version", "unknown");
     }
 #endif /* HAVE_UNAME */
-
-  char *classpath = ::getenv("CLASSPATH");
-  // FIXME: find libgcj.zip and append its path?
-  if (classpath != NULL)
-    SET ("java.class.path", classpath);
-  else
-    SET ("java.class.path", ".");
 
 #ifndef NO_GETUID
 #ifdef HAVE_PWD_H
@@ -353,4 +347,35 @@ java::lang::System::init_properties (void)
 	  i++;
 	}
     }
+
+  // FIXME: find libgcj.zip and append its path?
+  char *classpath = ::getenv("CLASSPATH");
+  jstring cp = properties->getProperty (JvNewStringLatin1("java.class.path"));
+  java::lang::StringBuffer *sb = new java::lang::StringBuffer ();
+
+  if (_Jv_Jar_Class_Path)
+    {
+      sb->append (JvNewStringLatin1 (_Jv_Jar_Class_Path));
+#ifdef WIN32
+      sb->append ((jchar) ';');
+#else
+      sb->append ((jchar) ':');
+#endif;
+    }
+  if (classpath)
+    {
+      sb->append (JvNewStringLatin1 (classpath));
+#ifdef WIN32
+      sb->append ((jchar) ';');
+#else
+      sb->append ((jchar) ':');
+#endif;
+    }
+  if (cp != NULL)
+    sb->append (cp);
+  else
+    sb->append ((jchar) '.');
+
+  properties->put(JvNewStringLatin1 ("java.class.path"),
+		  sb->toString ());
 }

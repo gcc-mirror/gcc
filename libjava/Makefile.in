@@ -827,6 +827,7 @@ java/util/NoSuchElementException.java \
 java/util/Observable.java \
 java/util/Observer.java	\
 java/util/Properties.java \
+java/util/PropertyPermission.java \
 java/util/PropertyResourceBundle.java \
 java/util/Random.java \
 java/util/ResourceBundle.java \
@@ -1443,6 +1444,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/MissingResourceException.P \
 .deps/java/util/NoSuchElementException.P .deps/java/util/Observable.P \
 .deps/java/util/Observer.P .deps/java/util/Properties.P \
+.deps/java/util/PropertyPermission.P \
 .deps/java/util/PropertyResourceBundle.P .deps/java/util/Random.P \
 .deps/java/util/ResourceBundle.P .deps/java/util/Set.P \
 .deps/java/util/SimpleTimeZone.P .deps/java/util/Stack.P \

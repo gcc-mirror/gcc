@@ -79,6 +79,9 @@ static java::lang::OutOfMemoryError *no_memory;
 // Properties set at compile time.
 const char **_Jv_Compiler_Properties;
 
+// The JAR file to add to the beginning of java.class.path.
+const char *_Jv_Jar_Class_Path;
+
 #ifndef DISABLE_GETENV_PROPERTIES
 // Property key/value pairs.
 property_pair *_Jv_Environment_Properties;
@@ -888,8 +891,9 @@ JvRunMain (jclass klass, int argc, const char **argv)
 }
 
 void
-_Jv_RunMain (const char *class_name, int argc, const char **argv)
+_Jv_RunMain (const char *name, int argc, const char **argv, bool is_jar)
 {
+  jstring class_name;
   PROCESS_GCJ_PROPERTIES;
 
   main_init ();
@@ -900,12 +904,31 @@ _Jv_RunMain (const char *class_name, int argc, const char **argv)
   _Jv_ThisExecutable (exec_name);
 #endif
 
-  arg_vec = JvConvertArgv (argc - 1, argv + 1);
-  main_thread = new gnu::gcj::runtime::FirstThread (JvNewStringLatin1 (class_name),
-						    arg_vec);
-  main_thread->start();
-  _Jv_ThreadWait ();
+  if (is_jar)
+    {
+      _Jv_Jar_Class_Path = strdup (name);
+      arg_vec = JvConvertArgv (1, &_Jv_Jar_Class_Path);
 
+      main_thread = 
+	new gnu::gcj::runtime::FirstThread (&_CL_Q43gnu3gcj7runtime11FirstThread,
+					    arg_vec);
+      main_thread->start();
+      _Jv_ThreadWait ();
+      
+      class_name = gnu::gcj::runtime::FirstThread::jarMainClassName;
+    }
+  else
+    class_name = JvNewStringLatin1 (name);
+
+  arg_vec = JvConvertArgv (argc - 1, argv + 1);
+
+  if (class_name)
+    {
+      main_thread = new gnu::gcj::runtime::FirstThread (class_name, arg_vec);
+      main_thread->start();
+      _Jv_ThreadWait ();
+    }
+  
   java::lang::Runtime::getRuntime ()->exit (0);
 }
 

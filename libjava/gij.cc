@@ -24,8 +24,10 @@ details.  */
 static void
 help ()
 {
-  printf ("Usage: gij [OPTION] ... CLASS [ARGS] ...\n\n");
-  printf ("Interpret Java bytecodes\n\n");
+  printf ("Usage: gij [OPTION] ... CLASS [ARGS] ...\n");
+  printf ("          to interpret Java bytecodes, or\n");
+  printf ("       gij -jar [OPTION] ... JARFILE [ARGS] ...\n");
+  printf ("          to execute a jar file\n\n");
   printf ("  -DVAR=VAL         define property VAR with value VAL\n");
   printf ("  --help            print this help, then exit\n");
   printf ("  --ms=NUMBER       set initial heap size\n");
@@ -51,6 +53,7 @@ main (int argc, const char **argv)
   /* We rearrange ARGV so that all the -D options appear near the
      beginning.  */
   int last_D_option = 0;
+  bool jar_mode = false;
 
   int i;
   for (i = 1; i < argc; ++i)
@@ -70,6 +73,12 @@ main (int argc, const char **argv)
       if (! strncmp (arg, "-D", 2))
 	{
 	  argv[last_D_option++] = arg + 2;
+	  continue;
+	}
+
+      if (! strcmp (arg, "-jar"))
+	{
+	  jar_mode = true;
 	  continue;
 	}
 
@@ -120,9 +129,12 @@ main (int argc, const char **argv)
   if (argc - i < 1)
     {
       fprintf (stderr, "Usage: gij [OPTION] ... CLASS [ARGS] ...\n");
+      fprintf (stderr, "          to interpret Java bytecodes, or\n");
+      fprintf (stderr, "       gij -jar [OPTION] ... JARFILE [ARGS] ...\n");
+      fprintf (stderr, "          to execute a jar file\n");
       fprintf (stderr, "Try `gij --help' for more information.\n");
       exit (1);
     }
 
-  _Jv_RunMain (argv[i], argc - i, argv + i);
+  _Jv_RunMain (argv[i], argc - i, argv + i, jar_mode);
 }
