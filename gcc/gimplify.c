@@ -665,7 +665,19 @@ copy_if_shared_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 
   /* Otherwise, mark the tree as visited and keep looking.  */
   else
-    TREE_VISITED (t) = 1;
+    {
+      TREE_VISITED (t) = 1;
+      if (TREE_CODE (*tp) == VA_ARG_EXPR)
+	{
+	  /* Mark any _DECL inside the operand as volatile to avoid
+	     the optimizers messing around with it. We have to do this
+	     early, otherwise we might mark a variable as volatile
+	     after we gimplify other statements that use the variable
+	     assuming it's not volatile.  */
+	  walk_tree (&TREE_OPERAND (*tp, 0), mark_decls_volatile_r,
+		     NULL, NULL);
+	}
+    }
 
   return NULL_TREE;
 }

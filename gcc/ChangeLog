@@ -1,3 +1,9 @@
+2004-06-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gimplify.c (copy_if_shared_r): Revert:
+	2004-05-21  Richard Henderson  <rth@redhat.com>
+	* gimplify.c [...] Don't mark VA_ARG_EXPRs volatile here.
+
 2004-06-07  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (add_cost, neg_cost, sdiv_pow2_cheap, smod_pow2_cheap):
