@@ -1,5 +1,8 @@
 2000-05-29  Richard Henderson  <rth@cygnus.com>
 
+	* combine.c (force_to_mode) [MINUS]: Convert subtraction from
+	a constant to NEG or NOT when conditions allow.
+
 	* combine.c (combine_simplify_rtx): Don't create an if_then_else
 	unless both args are general_operand.  Don't canonicalize plus
 	to ior unless it helps.
