@@ -1,3 +1,8 @@
+1999-10-16  Manfred Hollstein  <mhollstein@cygnus.com>
+
+	* Makefile.in (LANGUAGES): Omit "proto".
+	(clean): Remove stale comment about removing unprotoize.c.
+
 Sat Oct 16 11:29:14 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* protoize.c (safe_read, safe_write): Avoid the gcc extension of
