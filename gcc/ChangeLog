@@ -1,3 +1,7 @@
+2005-01-20  Paul Brook  <paul@codesourcery.com>
+
+	* doc/rtl.texi: Document value extension requirements for CONST_INT.
+
 2005-01-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (tree_verify_flow_info): Check that a nonlocal
