@@ -3755,6 +3755,41 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
 	emit_move_insn (str_rtx, result);
       return true;
 
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+      if (TREE_CODE (op1) != INTEGER_CST)
+	break;
+      value = expand_expr (op1, NULL_RTX, GET_MODE (str_rtx), 0);
+      value = convert_modes (GET_MODE (str_rtx),
+			     TYPE_MODE (TREE_TYPE (op1)), value,
+			     TYPE_UNSIGNED (TREE_TYPE (op1)));
+
+      /* We may be accessing data outside the field, which means
+	 we can alias adjacent data.  */
+      if (MEM_P (str_rtx))
+	{
+	  str_rtx = shallow_copy_rtx (str_rtx);
+	  set_mem_alias_set (str_rtx, 0);
+	  set_mem_expr (str_rtx, 0);
+	}
+
+      binop = TREE_CODE (src) == BIT_IOR_EXPR ? ior_optab : xor_optab;
+      if (bitpos + bitsize != GET_MODE_BITSIZE (GET_MODE (str_rtx)))
+	{
+	  rtx mask = GEN_INT (((unsigned HOST_WIDE_INT) 1 << bitsize)
+			      - 1);
+	  value = expand_and (GET_MODE (str_rtx), value, mask,
+			      NULL_RTX);
+	}
+      value = expand_shift (LSHIFT_EXPR, GET_MODE (str_rtx), value,
+			    build_int_cst (NULL_TREE, bitpos),
+			    NULL_RTX, 1);
+      result = expand_binop (GET_MODE (str_rtx), binop, str_rtx,
+			     value, str_rtx, 1, OPTAB_WIDEN);
+      if (result != str_rtx)
+	emit_move_insn (str_rtx, result);
+      return true;
+
     default:
       break;
     }
