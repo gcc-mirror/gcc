@@ -702,6 +702,7 @@ window_property_changed_cb (GtkWidget *widget __attribute__((unused)),
 						      gtkwindowpeer,
 						      "postInsetsChangedEvent",
 						      "(IIII)V");
+      id_set = 1;
     }
 
   if (gdk_atom_intern ("_NET_FRAME_EXTENTS", FALSE) == event->atom
