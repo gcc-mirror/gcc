@@ -80,7 +80,7 @@ site.exp: ./config.status Makefile
 	-@rm -f ./tmp?
 
 just-check: site.exp
-	rootme=`pwd`; export rootme; \
+	-rootme=`pwd`; export rootme; \
 	srcdir=${srcdir} ; export srcdir ; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../../../expect/expect ] ; then  \
