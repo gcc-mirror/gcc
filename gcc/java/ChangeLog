@@ -1,5 +1,10 @@
 2001-03-15  Per Bothner  <per@bothner.com>
 
+	* java-tree.h (BLOCK_IS_IMPLICIT):  New flag.
+	* parse.h (BLOCK_EXPR_ORIGIN):  Removed macro.
+	* parse.y (declare_local_variables, maybe_absorb_scoping_blocks):
+	Use BLOCK_IS_IMPLICIT rather than BLOCK_EXPR_ORIGIN.
+	
 	* jcf-parse.c (yyparse):  Set/reset input_filename for source file.
 	* parse.y (java_expand_classes):  Likewise.
 	
