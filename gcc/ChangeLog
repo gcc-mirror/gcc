@@ -1,3 +1,23 @@
+2004-04-30  Paul Brook  <paul@codesourcery.com>
+
+	* configure.gcc: Default ep9312 to hard-float.
+	* config/arm/arm-cores.def: Add ARCH field.
+	* config/arm/arm.c (FL_FOR_ARCH*): Define.
+	(arm_arch_cirrus): New variable.
+	(all_cores): Set and use arch.
+	(all_architectures): Ditto.
+	(arm_arch_name): New variable.
+	(arm_override_options): Set it. Use [SUB]TARGET_CPU_DEFAULT.
+	Set and use arm_arch_cirrus.
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Set arch defines.
+	(enum processor_type): Update ARM_CORE define.
+	(enum target_cpus): Add.  Replaces TARGET_CPU_* defines.
+	(CPP_SPEC): Remove %(cpp_cpu_arch).
+	(CPP_ARCH_DEFAULT_SPEC): Remove.
+	(CPP_CPU_ARCH_SPEC): Remove.
+	(EXTRA_SPECS): Don't use CPP_*ARCH*_SPEC.
+	(FPUTYPE_DEFAULT): Don't define here.
+
 2004-04-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (store_constructor): SIZE operand is now in bits; CLEARED

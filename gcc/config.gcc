@@ -2173,6 +2173,15 @@ if test x$with_cpu = x ; then
   esac
 fi
 
+# Similarly for --with-float
+if test x$with_fpu = x; then
+	case ${target} in
+	ep9312-*-*)
+		with_float=hard
+		;;
+	esac
+fi
+
 	# Similarly for --with-schedule.
 	if test x$with_schedule = x; then
 		case ${target} in

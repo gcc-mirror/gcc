@@ -26,6 +26,9 @@
 #ifndef GCC_ARM_H
 #define GCC_ARM_H
 
+/* The archetecture define.  */
+extern char arm_arch_name[];
+
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()			\
   do							\
@@ -69,50 +72,34 @@
 							\
 	builtin_assert ("cpu=arm");			\
 	builtin_assert ("machine=arm");			\
+							\
+	builtin_define (arm_arch_name);			\
+	if (arm_arch_cirrus)				\
+	  builtin_define ("__MAVERICK__");		\
+	if (arm_arch_xscale)				\
+	  builtin_define ("__XSCALE__");		\
+	if (arm_arch_iwmmxt)				\
+	  builtin_define ("__IWMMXT__");		\
     } while (0)
-
-#define TARGET_CPU_arm2		0x0000
-#define TARGET_CPU_arm250	0x0000
-#define TARGET_CPU_arm3		0x0000
-#define TARGET_CPU_arm6		0x0001
-#define TARGET_CPU_arm600	0x0001
-#define TARGET_CPU_arm610	0x0002
-#define TARGET_CPU_arm7		0x0001
-#define TARGET_CPU_arm7m	0x0004
-#define TARGET_CPU_arm7dm	0x0004
-#define TARGET_CPU_arm7dmi	0x0004
-#define TARGET_CPU_arm700	0x0001
-#define TARGET_CPU_arm710	0x0002
-#define TARGET_CPU_arm7100	0x0002
-#define TARGET_CPU_arm7500	0x0002
-#define TARGET_CPU_arm7500fe	0x1001
-#define TARGET_CPU_arm7tdmi	0x0008
-#define TARGET_CPU_arm8		0x0010
-#define TARGET_CPU_arm810	0x0020
-#define TARGET_CPU_strongarm	0x0040
-#define TARGET_CPU_strongarm110 0x0040
-#define TARGET_CPU_strongarm1100 0x0040
-#define TARGET_CPU_arm9		0x0080
-#define TARGET_CPU_arm9tdmi	0x0080
-#define TARGET_CPU_xscale       0x0100
-#define TARGET_CPU_ep9312	0x0200
-#define TARGET_CPU_iwmmxt	0x0400
-#define TARGET_CPU_arm926ejs	0x0800
-#define TARGET_CPU_arm1026ejs	0x1000
-#define TARGET_CPU_arm1136js	0x2000
-#define TARGET_CPU_arm1136jfs	0x4000
-/* Configure didn't specify.  */
-#define TARGET_CPU_generic	0x8000
 
 /* The various ARM cores.  */
 enum processor_type
 {
-#define ARM_CORE(NAME, FLAGS, COSTS) \
+#define ARM_CORE(NAME, ARCH, FLAGS, COSTS) \
   NAME,
 #include "arm-cores.def"
 #undef ARM_CORE
   /* Used to indicate that no processor has been specified.  */
   arm_none
+};
+
+enum target_cpus
+{
+#define ARM_CORE(NAME, ARCH, FLAGS, COSTS) \
+  TARGET_CPU_##NAME,
+#include "arm-cores.def"
+#undef ARM_CORE
+  TARGET_CPU_generic
 };
 
 /* The processor for which instructions should be scheduled.  */
@@ -159,165 +146,15 @@ extern GTY(()) rtx aof_pic_label;
 #define TARGET_CPU_DEFAULT TARGET_CPU_generic
 #endif
 
-/* If the configuration file doesn't specify the cpu, the subtarget may
-   override it.  If it doesn't, then default to an ARM6.  */
-#if TARGET_CPU_DEFAULT == TARGET_CPU_generic
-#undef TARGET_CPU_DEFAULT
-
-#ifdef SUBTARGET_CPU_DEFAULT
-#define TARGET_CPU_DEFAULT SUBTARGET_CPU_DEFAULT
-#else
-#define TARGET_CPU_DEFAULT TARGET_CPU_arm6
-#endif
-#endif
-
-#if TARGET_CPU_DEFAULT == TARGET_CPU_arm2
-#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_2__"
-#else
-#if TARGET_CPU_DEFAULT == TARGET_CPU_arm6 || TARGET_CPU_DEFAULT == TARGET_CPU_arm610 || TARGET_CPU_DEFAULT == TARGET_CPU_arm7500fe
-#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_3__"
-#else
-#if TARGET_CPU_DEFAULT == TARGET_CPU_arm7m
-#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_3M__"
-#else
-#if TARGET_CPU_DEFAULT == TARGET_CPU_arm7tdmi || TARGET_CPU_DEFAULT == TARGET_CPU_arm9 || TARGET_CPU_DEFAULT == TARGET_CPU_arm9tdmi
-#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_4T__"
-#else
-#if TARGET_CPU_DEFAULT == TARGET_CPU_arm8 || TARGET_CPU_DEFAULT == TARGET_CPU_arm810 || TARGET_CPU_DEFAULT == TARGET_CPU_strongarm || TARGET_CPU_DEFAULT == TARGET_CPU_strongarm110 || TARGET_CPU_DEFAULT == TARGET_CPU_strongarm1100 
-#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_4__"
-#else
-#if TARGET_CPU_DEFAULT == TARGET_CPU_xscale
-#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_5TE__ -D__XSCALE__"
-#else
-#if TARGET_CPU_DEFAULT == TARGET_CPU_ep9312
-#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_4T__ -D__MAVERICK__"
-/* Set TARGET_DEFAULT to the default, but without soft-float.  */
-#ifdef  TARGET_DEFAULT
-#undef  TARGET_DEFAULT
-#define TARGET_DEFAULT	(ARM_FLAG_APCS_32 | ARM_FLAG_APCS_FRAME)
-#endif
-#else
-#if TARGET_CPU_DEFAULT == TARGET_CPU_iwmmxt
-#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_5TE__ -D__XSCALE__ -D__IWMMXT__"
-#else
-#if (TARGET_CPU_DEFAULT == TARGET_CPU_arm926ejs || \
-     TARGET_CPU_DEFAULT == TARGET_CPU_arm1026ejs)
-#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_5TEJ__"
-#else
-#if (TARGET_CPU_DEFAULT == TARGET_CPU_arm1136js || \
-     TARGET_CPU_DEFAULT == TARGET_CPU_arm1136jfs)
-#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_6J__"
-#else
-#error Unrecognized value in TARGET_CPU_DEFAULT.
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
 
 #undef  CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu_arch) %(subtarget_cpp_spec)			\
+#define CPP_SPEC "%(subtarget_cpp_spec)					\
 %{mapcs-32:%{mapcs-26:							\
 	%e-mapcs-26 and -mapcs-32 may not be used together}}		\
 %{msoft-float:%{mhard-float:						\
 	%e-msoft-float and -mhard_float may not be used together}}	\
 %{mbig-endian:%{mlittle-endian:						\
 	%e-mbig-endian and -mlittle-endian may not be used together}}"
-
-/* Set the architecture define -- if -march= is set, then it overrides
-   the -mcpu= setting.  */
-#define CPP_CPU_ARCH_SPEC "\
-%{march=arm2:-D__ARM_ARCH_2__} \
-%{march=arm250:-D__ARM_ARCH_2__} \
-%{march=arm3:-D__ARM_ARCH_2__} \
-%{march=arm6:-D__ARM_ARCH_3__} \
-%{march=arm600:-D__ARM_ARCH_3__} \
-%{march=arm610:-D__ARM_ARCH_3__} \
-%{march=arm7:-D__ARM_ARCH_3__} \
-%{march=arm700:-D__ARM_ARCH_3__} \
-%{march=arm710:-D__ARM_ARCH_3__} \
-%{march=arm720:-D__ARM_ARCH_3__} \
-%{march=arm7100:-D__ARM_ARCH_3__} \
-%{march=arm7500:-D__ARM_ARCH_3__} \
-%{march=arm7500fe:-D__ARM_ARCH_3__} \
-%{march=arm7m:-D__ARM_ARCH_3M__} \
-%{march=arm7dm:-D__ARM_ARCH_3M__} \
-%{march=arm7dmi:-D__ARM_ARCH_3M__} \
-%{march=arm7tdmi:-D__ARM_ARCH_4T__} \
-%{march=arm8:-D__ARM_ARCH_4__} \
-%{march=arm810:-D__ARM_ARCH_4__} \
-%{march=arm9:-D__ARM_ARCH_4T__} \
-%{march=arm920:-D__ARM_ARCH_4__} \
-%{march=arm920t:-D__ARM_ARCH_4T__} \
-%{march=arm926ejs:-D__ARM_ARCH_5TEJ__} \
-%{march=arm9tdmi:-D__ARM_ARCH_4T__} \
-%{march=arm1026ejs:-D__ARM_ARCH_5TEJ__} \
-%{march=arm1136js:-D__ARM_ARCH_6J__} \
-%{march=arm1136jfs:-D__ARM_ARCH_6J__} \
-%{march=strongarm:-D__ARM_ARCH_4__} \
-%{march=strongarm110:-D__ARM_ARCH_4__} \
-%{march=strongarm1100:-D__ARM_ARCH_4__} \
-%{march=xscale:-D__ARM_ARCH_5TE__} \
-%{march=xscale:-D__XSCALE__} \
-%{march=ep9312:-D__ARM_ARCH_4T__} \
-%{march=ep9312:-D__MAVERICK__} \
-%{march=armv2:-D__ARM_ARCH_2__} \
-%{march=armv2a:-D__ARM_ARCH_2__} \
-%{march=armv3:-D__ARM_ARCH_3__} \
-%{march=armv3m:-D__ARM_ARCH_3M__} \
-%{march=armv4:-D__ARM_ARCH_4__} \
-%{march=armv4t:-D__ARM_ARCH_4T__} \
-%{march=armv5:-D__ARM_ARCH_5__} \
-%{march=armv5t:-D__ARM_ARCH_5T__} \
-%{march=armv5e:-D__ARM_ARCH_5E__} \
-%{march=armv5te:-D__ARM_ARCH_5TE__} \
-%{march=armv6:-D__ARM_ARCH6__} \
-%{march=armv6j:-D__ARM_ARCH6J__} \
-%{!march=*: \
- %{mcpu=arm2:-D__ARM_ARCH_2__} \
- %{mcpu=arm250:-D__ARM_ARCH_2__} \
- %{mcpu=arm3:-D__ARM_ARCH_2__} \
- %{mcpu=arm6:-D__ARM_ARCH_3__} \
- %{mcpu=arm600:-D__ARM_ARCH_3__} \
- %{mcpu=arm610:-D__ARM_ARCH_3__} \
- %{mcpu=arm7:-D__ARM_ARCH_3__} \
- %{mcpu=arm700:-D__ARM_ARCH_3__} \
- %{mcpu=arm710:-D__ARM_ARCH_3__} \
- %{mcpu=arm720:-D__ARM_ARCH_3__} \
- %{mcpu=arm7100:-D__ARM_ARCH_3__} \
- %{mcpu=arm7500:-D__ARM_ARCH_3__} \
- %{mcpu=arm7500fe:-D__ARM_ARCH_3__} \
- %{mcpu=arm7m:-D__ARM_ARCH_3M__} \
- %{mcpu=arm7dm:-D__ARM_ARCH_3M__} \
- %{mcpu=arm7dmi:-D__ARM_ARCH_3M__} \
- %{mcpu=arm7tdmi:-D__ARM_ARCH_4T__} \
- %{mcpu=arm8:-D__ARM_ARCH_4__} \
- %{mcpu=arm810:-D__ARM_ARCH_4__} \
- %{mcpu=arm9:-D__ARM_ARCH_4T__} \
- %{mcpu=arm920:-D__ARM_ARCH_4__} \
- %{mcpu=arm920t:-D__ARM_ARCH_4T__} \
- %{mcpu=arm926ejs:-D__ARM_ARCH_5TEJ__} \
- %{mcpu=arm9tdmi:-D__ARM_ARCH_4T__} \
- %{mcpu=arm1026ejs:-D__ARM_ARCH_5TEJ__} \
- %{mcpu=arm1136js:-D__ARM_ARCH_6J__} \
- %{mcpu=arm1136jfs:-D__ARM_ARCH_6J__} \
- %{mcpu=strongarm:-D__ARM_ARCH_4__} \
- %{mcpu=strongarm110:-D__ARM_ARCH_4__} \
- %{mcpu=strongarm1100:-D__ARM_ARCH_4__} \
- %{mcpu=xscale:-D__ARM_ARCH_5TE__} \
- %{mcpu=xscale:-D__XSCALE__} \
- %{mcpu=ep9312:-D__ARM_ARCH_4T__} \
- %{mcpu=ep9312:-D__MAVERICK__} \
- %{mcpu=iwmmxt:-D__ARM_ARCH_5TE__} \
- %{mcpu=iwmmxt:-D__XSCALE__} \
- %{mcpu=iwmmxt:-D__IWMMXT__} \
- %{!mcpu*:%(cpp_cpu_arch_default)}} \
-"
 
 #ifndef CC1_SPEC
 #define CC1_SPEC ""
@@ -333,8 +170,6 @@ extern GTY(()) rtx aof_pic_label;
 
    Do not define this macro if it does not need to do anything.  */
 #define EXTRA_SPECS						\
-  { "cpp_cpu_arch",		CPP_CPU_ARCH_SPEC },		\
-  { "cpp_cpu_arch_default",	CPP_ARCH_DEFAULT_SPEC },	\
   { "subtarget_cpp_spec",	SUBTARGET_CPP_SPEC },           \
   SUBTARGET_EXTRA_SPECS
 
@@ -669,21 +504,6 @@ enum float_abi_type
 
 extern enum float_abi_type arm_float_abi;
 
-/* Default floating point architecture.  Override in sub-target if
-   necessary.
-   FIXME: Is this still necessary/desirable?  Do we want VFP chips to
-   default to VFP unless overridden by a subtarget?  If so it would be best
-   to remove these definitions.  It also assumes there is only one cpu model
-   with a Maverick fpu.  */
-#ifndef FPUTYPE_DEFAULT
-#define FPUTYPE_DEFAULT FPUTYPE_FPA_EMU2
-#endif
-
-#if TARGET_CPU_DEFAULT == TARGET_CPU_ep9312
-#undef  FPUTYPE_DEFAULT
-#define FPUTYPE_DEFAULT FPUTYPE_MAVERICK
-#endif
-
 /* Which ABI to use.  */
 enum arm_abi_type
 {
@@ -724,7 +544,7 @@ extern int thumb_code;
 extern int arm_is_strong;
 
 /* Nonzero if this chip is a Cirrus variant.  */
-extern int arm_is_cirrus;
+extern int arm_arch_cirrus;
 
 /* Nonzero if this chip supports Intel XScale with Wireless MMX technology.  */
 extern int arm_arch_iwmmxt;
