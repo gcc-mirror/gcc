@@ -1,3 +1,7 @@
+2003-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/extend.texi: Remove duplicate 2003 copyright date.
+
 2003-04-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* Makefile.in (LIBGCC_DEPS): Add gcov headers.
