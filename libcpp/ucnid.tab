@@ -1,47 +1,25 @@
-/* Table of UCNs which are valid in identifiers.
-   Copyright (C) 2003 Free Software Foundation, Inc.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the
-Free Software Foundation; either version 2, or (at your option) any
-later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
-
-[dne]
-
-/* This file reproduces the table in ISO/IEC 9899:1999 (C99) Annex
-   D, which is itself a reproduction from ISO/IEC TR 10176:1998, and
-   the similar table from ISO/IEC 14882:1988 (C++98) Annex E, which is
-   a reproduction of ISO/IEC PDTR 10176.  Unfortunately these tables
-   are not identical.  */
-
-#ifndef LIBCPP_UCNID_H
-#define LIBCPP_UCNID_H
-
-#define C99 1
-#define CXX 2
-#define DIG 4
-
-struct ucnrange
-{
-  unsigned short lo, hi;
-  unsigned short flags;
-};
-
-static const struct ucnrange ucnranges[] = {
-[table]
-};
-
-#endif /* LIBCPP_UCNID_H */
-%%
+; Table of UCNs which are valid in identifiers.
+; Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+; 
+; This program is free software; you can redistribute it and/or modify it
+; under the terms of the GNU General Public License as published by the
+; Free Software Foundation; either version 2, or (at your option) any
+; later version.
+; 
+; This program is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+; 
+; You should have received a copy of the GNU General Public License
+; along with this program; if not, write to the Free Software
+; Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+; 
+; This file reproduces the table in ISO/IEC 9899:1999 (C99) Annex
+; D, which is itself a reproduction from ISO/IEC TR 10176:1998, and
+; the similar table from ISO/IEC 14882:1988 (C++98) Annex E, which is
+; a reproduction of ISO/IEC PDTR 10176.  Unfortunately these tables
+; are not identical.
 
 [C99]
 
@@ -141,7 +119,6 @@ ac00-d7a3
 0b3d 1fbe 203f-2040 2102 2107 210a-2113 2115 2118-211d 2124 2126 2128
 212a-2131 2133-2138 2160-2182 3005-3007 3021-3029
 
-[C99|DIG]
 ; Digits
 0660-0669 06f0-06f9 0966-096f 09e6-09ef 0a66-0a6f 0ae6-0aef 0b66-0b6f
 0be7-0bef 0c66-0c6f 0ce6-0cef 0d66-0d6f 0e50-0e59 0ed0-0ed9 0f20-0f33
@@ -201,16 +178,12 @@ ac00-d7a3
 ; Malayalam
 0d05-0d0c 0d0e-0d10 0d12-0d28 0d2a-0d39 0d60-0d61
 
-# CORRECTION: Exclude 0e50-0e59 from the Thai range and make a fake
-# Digits range for it, to match C99.  cppcharset.c knows that C++
-# doesn't distinguish digits from other UCNs valid in identifiers.
 ; Thai
-0e01-0e30 0e32-0e33 0e40-0e46 0e4f-0e49 0e5a-0e5b
+0e01-0e30 0e32-0e33 0e40-0e46 0e4f-0e5b
 
 ; Digits
 0e50-0e59
 
-# CORRECTION: Change 0e0d to 0e8d (typo in standard; see C++ DR 131)
 ; Lao
 0e81-0e82 0e84 0e87-0e88 0e8a 0e8d 0e94-0e97 0e99-0e9f 0ea1-0ea3 0ea5
 0ea7 0eaa-0eab 0ead-0eb0 0eb2 0eb3 0ebd 0ec0-0ec4 0ec6
@@ -224,7 +197,6 @@ ac00-d7a3
 ; Katakana
 30a1-30fe
 
-# CORRECTION: language spelled "Bopmofo" in C++98.
 ; Bopomofo
 3105-312c
 

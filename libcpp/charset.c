@@ -22,7 +22,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "cpplib.h"
 #include "internal.h"
-#include "ucnid.h"
 
 /* Character set handling for C-family languages.
 
@@ -786,43 +785,128 @@ width_to_mask (size_t width)
     return ((size_t) 1 << width) - 1;
 }
 
+/* A large table of unicode character information.  */
+enum {
+  /* Valid in a C99 identifier?  */
+  C99 = 1,
+  /* Valid in a C99 identifier, but not as the first character?  */
+  DIG = 2,
+  /* Valid in a C++ identifier?  */
+  CXX = 4,
+  /* NFC representation is not valid in an identifier?  */
+  CID = 8,
+  /* Might be valid NFC form?  */
+  NFC = 16,
+  /* Might be valid NFKC form?  */
+  NKC = 32,
+  /* Certain preceding characters might make it not valid NFC/NKFC form?  */
+  CTX = 64
+};
+
+static const struct {
+  /* Bitmap of flags above.  */
+  unsigned char flags;
+  /* Combining class of the character.  */
+  unsigned char combine;
+  /* Last character in the range described by this entry.  */
+  unsigned short end;
+} ucnranges[] = {
+#include "ucnid.h"
+};
+
 /* Returns 1 if C is valid in an identifier, 2 if C is valid except at
    the start of an identifier, and 0 if C is not valid in an
    identifier.  We assume C has already gone through the checks of
-   _cpp_valid_ucn.  The algorithm is a simple binary search on the
-   table defined in cppucnid.h.  */
+   _cpp_valid_ucn.  Also update NST for C if returning nonzero.  The
+   algorithm is a simple binary search on the table defined in
+   ucnid.h.  */
 
 static int
-ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c)
+ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
+			 struct normalize_state *nst)
 {
   int mn, mx, md;
 
-  mn = -1;
-  mx = ARRAY_SIZE (ucnranges);
-  while (mx - mn > 1)
+  if (c > 0xFFFF)
+    return 0;
+
+  mn = 0;
+  mx = ARRAY_SIZE (ucnranges) - 1;
+  while (mx != mn)
     {
       md = (mn + mx) / 2;
-      if (c < ucnranges[md].lo)
+      if (c <= ucnranges[md].end)
 	mx = md;
-      else if (c > ucnranges[md].hi)
-	mn = md;
       else
-	goto found;
+	mn = md + 1;
     }
-  return 0;
 
- found:
   /* When -pedantic, we require the character to have been listed by
      the standard for the current language.  Otherwise, we accept the
      union of the acceptable sets for C++98 and C99.  */
+  if (! (ucnranges[mn].flags & (C99 | CXX)))
+      return 0;
+
   if (CPP_PEDANTIC (pfile)
-      && ((CPP_OPTION (pfile, c99) && !(ucnranges[md].flags & C99))
+      && ((CPP_OPTION (pfile, c99) && !(ucnranges[mn].flags & C99))
 	  || (CPP_OPTION (pfile, cplusplus)
-	      && !(ucnranges[md].flags & CXX))))
+	      && !(ucnranges[mn].flags & CXX))))
     return 0;
 
+  /* Update NST.  */
+  if (ucnranges[mn].combine != 0 && ucnranges[mn].combine < nst->prev_class)
+    nst->level = normalized_none;
+  else if (ucnranges[mn].flags & CTX)
+    {
+      bool safe;
+      cppchar_t p = nst->previous;
+
+      /* Easy cases from Bengali, Oriya, Tamil, Jannada, and Malayalam.  */
+      if (c == 0x09BE)
+	safe = p != 0x09C7;  /* Use 09CB instead of 09C7 09BE.  */
+      else if (c == 0x0B3E)
+	safe = p != 0x0B47;  /* Use 0B4B instead of 0B47 0B3E.  */
+      else if (c == 0x0BBE)
+	safe = p != 0x0BC6 && p != 0x0BC7;  /* Use 0BCA/0BCB instead.  */
+      else if (c == 0x0CC2)
+	safe = p != 0x0CC6;  /* Use 0CCA instead of 0CC6 0CC2.  */
+      else if (c == 0x0D3E)
+	safe = p != 0x0D46 && p != 0x0D47;  /* Use 0D4A/0D4B instead.  */
+      /* For Hangul, characters in the range AC00-D7A3 are NFC/NFKC,
+	 and are combined algorithmically from a sequence of the form
+	 1100-1112 1161-1175 11A8-11C2
+	 (if the third is not present, it is treated as 11A7, which is not
+	 really a valid character).
+	 Unfortunately, C99 allows (only) the NFC form, but C++ allows
+	 only the combining characters.  */
+      else if (c >= 0x1161 && c <= 0x1175)
+	safe = p < 0x1100 || p > 0x1112;
+      else if (c >= 0x11A8 && c <= 0x11C2)
+	safe = (p < 0xAC00 || p > 0xD7A3 || (p - 0xAC00) % 28 != 0);
+      else
+	{
+	  /* Uh-oh, someone updated ucnid.h without updating this code.  */
+	  cpp_error (pfile, CPP_DL_ICE, "Character %x might not be NFKC", c);
+	  safe = true;
+	}
+      if (!safe && c < 0x1161)
+	nst->level = normalized_none;
+      else if (!safe)
+	nst->level = MAX (nst->level, normalized_identifier_C);
+    }
+  else if (ucnranges[mn].flags & NKC)
+    ;
+  else if (ucnranges[mn].flags & NFC)
+    nst->level = MAX (nst->level, normalized_C);
+  else if (ucnranges[mn].flags & CID)
+    nst->level = MAX (nst->level, normalized_identifier_C);
+  else
+    nst->level = normalized_none;
+  nst->previous = c;
+  nst->prev_class = ucnranges[mn].combine;
+
   /* In C99, UCN digits may not begin identifiers.  */
-  if (CPP_OPTION (pfile, c99) && (ucnranges[md].flags & DIG))
+  if (CPP_OPTION (pfile, c99) && (ucnranges[mn].flags & DIG))
     return 2;
 
   return 1;
@@ -853,7 +937,8 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c)
 
 cppchar_t
 _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
-		const uchar *limit, int identifier_pos)
+		const uchar *limit, int identifier_pos,
+		struct normalize_state *nst)
 {
   cppchar_t result, c;
   unsigned int length;
@@ -873,7 +958,10 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
   else if (str[-1] == 'U')
     length = 8;
   else
-    abort();
+    {
+      cpp_error (pfile, CPP_DL_ICE, "In _cpp_valid_ucn but not a UCN");
+      length = 4;
+    }
 
   result = 0;
   do
@@ -915,10 +1003,11 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 	  CPP_OPTION (pfile, warn_dollars) = 0;
 	  cpp_error (pfile, CPP_DL_PEDWARN, "'$' in identifier or number");
 	}
+      NORMALIZE_STATE_UPDATE_IDNUM (nst);
     }
   else if (identifier_pos)
     {
-      int validity = ucn_valid_in_identifier (pfile, result);
+      int validity = ucn_valid_in_identifier (pfile, result, nst);
 
       if (validity == 0)
 	cpp_error (pfile, CPP_DL_ERROR,
@@ -950,9 +1039,10 @@ convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
   int rval;
   struct cset_converter cvt
     = wide ? pfile->wide_cset_desc : pfile->narrow_cset_desc;
+  struct normalize_state nst = INITIAL_NORMALIZE_STATE;
 
   from++;  /* Skip u/U.  */
-  ucn = _cpp_valid_ucn (pfile, &from, limit, 0);
+  ucn = _cpp_valid_ucn (pfile, &from, limit, 0, &nst);
 
   rval = one_cppchar_to_utf8 (ucn, &bufp, &bytesleft);
   if (rval)

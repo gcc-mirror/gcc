@@ -53,9 +53,6 @@ static const struct token_spelling token_spellings[N_TTYPES] = { TTYPE_TABLE };
 static void add_line_note (cpp_buffer *, const uchar *, unsigned int);
 static int skip_line_comment (cpp_reader *);
 static void skip_whitespace (cpp_reader *, cppchar_t);
-static cpp_hashnode *lex_identifier (cpp_reader *, const uchar *, bool);
-static void lex_number (cpp_reader *, cpp_string *);
-static bool forms_identifier_p (cpp_reader *, int);
 static void lex_string (cpp_reader *, cpp_token *, const uchar *);
 static void save_comment (cpp_reader *, cpp_token *, const uchar *, cppchar_t);
 static void create_literal (cpp_reader *, cpp_token *, const uchar *,
@@ -430,10 +427,36 @@ name_p (cpp_reader *pfile, const cpp_string *string)
   return 1;
 }
 
+/* After parsing an identifier or other sequence, produce a warning about
+   sequences not in NFC/NFKC.  */
+static void
+warn_about_normalization (cpp_reader *pfile, 
+			  const cpp_token *token,
+			  const struct normalize_state *s)
+{
+  if (CPP_OPTION (pfile, warn_normalize) < NORMALIZE_STATE_RESULT (s)
+      && !pfile->state.skipping)
+    {
+      /* Make sure that the token is printed using UCNs, even
+	 if we'd otherwise happily print UTF-8.  */
+      unsigned char *buf = xmalloc (cpp_token_len (token));
+      size_t sz;
+
+      sz = cpp_spell_token (pfile, token, buf, false) - buf;
+      if (NORMALIZE_STATE_RESULT (s) == normalized_C)
+	cpp_error_with_line (pfile, CPP_DL_WARNING, token->src_loc, 0,
+			     "`%.*s' is not in NFKC", sz, buf);
+      else
+	cpp_error_with_line (pfile, CPP_DL_WARNING, token->src_loc, 0,
+			     "`%.*s' is not in NFC", sz, buf);
+    }
+}
+
 /* Returns TRUE if the sequence starting at buffer->cur is invalid in
    an identifier.  FIRST is TRUE if this starts an identifier.  */
 static bool
-forms_identifier_p (cpp_reader *pfile, int first)
+forms_identifier_p (cpp_reader *pfile, int first,
+		    struct normalize_state *state)
 {
   cpp_buffer *buffer = pfile->buffer;
 
@@ -457,7 +480,8 @@ forms_identifier_p (cpp_reader *pfile, int first)
       && (buffer->cur[1] == 'u' || buffer->cur[1] == 'U'))
     {
       buffer->cur += 2;
-      if (_cpp_valid_ucn (pfile, &buffer->cur, buffer->rlimit, 1 + !first))
+      if (_cpp_valid_ucn (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
+			  state))
 	return true;
       buffer->cur -= 2;
     }
@@ -467,7 +491,8 @@ forms_identifier_p (cpp_reader *pfile, int first)
 
 /* Lex an identifier starting at BUFFER->CUR - 1.  */
 static cpp_hashnode *
-lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn)
+lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
+		struct normalize_state *nst)
 {
   cpp_hashnode *result;
   const uchar *cur;
@@ -482,13 +507,16 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn)
 	cur++;
       }
   pfile->buffer->cur = cur;
-  if (starts_ucn || forms_identifier_p (pfile, false))
+  if (starts_ucn || forms_identifier_p (pfile, false, nst))
     {
       /* Slower version for identifiers containing UCNs (or $).  */
       do {
 	while (ISIDNUM (*pfile->buffer->cur))
-	  pfile->buffer->cur++;
-      } while (forms_identifier_p (pfile, false));
+	  {
+	    pfile->buffer->cur++;
+	    NORMALIZE_STATE_UPDATE_IDNUM (nst);
+	  }
+      } while (forms_identifier_p (pfile, false, nst));
       result = _cpp_interpret_identifier (pfile, base,
 					  pfile->buffer->cur - base);
     }
@@ -524,7 +552,8 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn)
 
 /* Lex a number to NUMBER starting at BUFFER->CUR - 1.  */
 static void
-lex_number (cpp_reader *pfile, cpp_string *number)
+lex_number (cpp_reader *pfile, cpp_string *number,
+	    struct normalize_state *nst)
 {
   const uchar *cur;
   const uchar *base;
@@ -537,11 +566,14 @@ lex_number (cpp_reader *pfile, cpp_string *number)
 
       /* N.B. ISIDNUM does not include $.  */
       while (ISIDNUM (*cur) || *cur == '.' || VALID_SIGN (*cur, cur[-1]))
-	cur++;
+	{
+	  cur++;
+	  NORMALIZE_STATE_UPDATE_IDNUM (nst);
+	}
 
       pfile->buffer->cur = cur;
     }
-  while (forms_identifier_p (pfile, false));
+  while (forms_identifier_p (pfile, false, nst));
 
   number->len = cur - base;
   dest = _cpp_unaligned_alloc (pfile, number->len + 1);
@@ -897,9 +929,13 @@ _cpp_lex_direct (cpp_reader *pfile)
 
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
-      result->type = CPP_NUMBER;
-      lex_number (pfile, &result->val.str);
-      break;
+      {
+	struct normalize_state nst = INITIAL_NORMALIZE_STATE;
+	result->type = CPP_NUMBER;
+	lex_number (pfile, &result->val.str, &nst);
+	warn_about_normalization (pfile, result, &nst);
+	break;
+      }
 
     case 'L':
       /* 'L' may introduce wide characters or strings.  */
@@ -922,7 +958,12 @@ _cpp_lex_direct (cpp_reader *pfile)
     case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
     case 'Y': case 'Z':
       result->type = CPP_NAME;
-      result->val.node = lex_identifier (pfile, buffer->cur - 1, false);
+      {
+	struct normalize_state nst = INITIAL_NORMALIZE_STATE;
+	result->val.node = lex_identifier (pfile, buffer->cur - 1, false,
+					   &nst);
+	warn_about_normalization (pfile, result, &nst);
+      }
 
       /* Convert named operators to their proper types.  */
       if (result->val.node->flags & NODE_OPERATOR)
@@ -1067,8 +1108,10 @@ _cpp_lex_direct (cpp_reader *pfile)
       result->type = CPP_DOT;
       if (ISDIGIT (*buffer->cur))
 	{
+	  struct normalize_state nst = INITIAL_NORMALIZE_STATE;
 	  result->type = CPP_NUMBER;
-	  lex_number (pfile, &result->val.str);
+	  lex_number (pfile, &result->val.str, &nst);
+	  warn_about_normalization (pfile, result, &nst);
 	}
       else if (*buffer->cur == '.' && buffer->cur[1] == '.')
 	buffer->cur += 2, result->type = CPP_ELLIPSIS;
@@ -1151,11 +1194,13 @@ _cpp_lex_direct (cpp_reader *pfile)
     case '\\':
       {
 	const uchar *base = --buffer->cur;
+	struct normalize_state nst = INITIAL_NORMALIZE_STATE;
 
-	if (forms_identifier_p (pfile, true))
+	if (forms_identifier_p (pfile, true, &nst))
 	  {
 	    result->type = CPP_NAME;
-	    result->val.node = lex_identifier (pfile, base, true);
+	    result->val.node = lex_identifier (pfile, base, true, &nst);
+	    warn_about_normalization (pfile, result, &nst);
 	    break;
 	  }
 	buffer->cur++;

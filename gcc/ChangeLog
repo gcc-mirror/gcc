@@ -1,3 +1,12 @@
+2005-03-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/cppopts.texi (-fexec-charset): Add concept index entry.
+	(-fwide-exec-charset): Likewise.
+	(-finput-charset): Likewise.
+	* doc/invoke.texi (Warning Options): Document -Wnormalized=.
+	* c-opts.c (c_common_handle_option): Handle -Wnormalized=.
+	* c.opt (Wnormalized): New.
+
 2005-03-14  Devang Patel  <dpatel@apple.com>
 
 	* doc/invoke.texi: Add reference to Visibility document.

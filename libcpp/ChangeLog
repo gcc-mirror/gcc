@@ -1,3 +1,32 @@
+2005-03-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* init.c (cpp_create_reader): Default warn_normalize to normalized_C.
+	* charset.c: Update for new format of ucnid.h.
+	(ucn_valid_in_identifier): Update for new format of ucnid.h.
+	Add NST parameter, and update it; update callers.
+	(cpp_valid_ucn): Add NST parameter, update callers.  Replace abort
+	with cpp_error.
+	(convert_ucn): Pass normalize_state to cpp_valid_ucn.
+	* internal.h (struct normalize_state): New.
+	(INITIAL_NORMALIZE_STATE): New.
+	(NORMALIZE_STATE_RESULT): New.
+	(NORMALIZE_STATE_UPDATE_IDNUM): New.
+	(_cpp_valid_ucn): New.
+	* lex.c (warn_about_normalization): New.
+	(forms_identifier_p): Add normalize_state parameter, update callers.
+	(lex_identifier): Add normalize_state parameter, update callers.  Keep
+	the state current.
+	(lex_number): Likewise.
+	(_cpp_lex_direct): Pass normalize_state to subroutines.  Check
+	it with warn_about_normalization.
+	* makeucnid.c: New.
+	* ucnid.h: Replace.
+	* ucnid.pl: Remove.
+	* ucnid.tab: Make appropriate for input to makeucnid.c.  Remove
+	comments about obsolete version of C++.
+	* include/cpplib.h (enum cpp_normalize_level): New.
+	(struct cpp_options): Add warn_normalize field.
+
 2005-03-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* directives.c (glue_header_name): Update call to cpp_spell_token.
