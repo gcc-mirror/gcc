@@ -610,6 +610,9 @@ verify_cgraph (void)
 {
   struct cgraph_node *node;
 
+  if (sorrycount || errorcount)
+    return;
+
   for (node = cgraph_nodes; node; node = node->next)
     verify_cgraph_node (node);
 }
@@ -800,12 +803,15 @@ cgraph_expand_function (struct cgraph_node *node)
   gcc_assert (TREE_ASM_WRITTEN (node->decl));
 
   current_function_decl = NULL;
-  if (DECL_SAVED_TREE (node->decl)
-      && !cgraph_preserve_function_body_p (node->decl))
+  if (!cgraph_preserve_function_body_p (node->decl))
     {
       DECL_SAVED_TREE (node->decl) = NULL;
       DECL_STRUCT_FUNCTION (node->decl) = NULL;
       DECL_INITIAL (node->decl) = error_mark_node;
+      /* Elliminate all call edges.  This is important so the call_expr no longer
+	 points to the dead function body.  */
+      while (node->callees)
+	cgraph_remove_edge (node->callees);
     }
 }
 

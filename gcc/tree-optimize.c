@@ -604,6 +604,11 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
 	}
     }
 
+  /* We are not going to maintain the cgraph edges up to date.
+     Kill it so it won't confuse us.  */
+  while (node->callees)
+    cgraph_remove_edge (node->callees);
+
   if (!vars_to_rename)
     vars_to_rename = BITMAP_XMALLOC ();
 
@@ -632,8 +637,12 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
 	    cgraph_remove_edge (node->callees);
 	  node->callees = saved_node->callees;
 	  saved_node->callees = NULL;
-	  for (e = saved_node->callees; e; e = e->next_callee)
-	    e->caller = node;
+	  for (e = node->callees; e; e = e->next_callee)
+	    {
+	      if (e->callee->global.inlined_to)
+		e->callee->global.inlined_to = node;
+	      e->caller = node;
+	    }
 	  cgraph_remove_node (saved_node);
 	}
     }
