@@ -11989,7 +11989,7 @@ grokparms (first_parm)
 
   for (parm = first_parm; parm != NULL_TREE; parm = chain)
     {
-      tree type = NULL_TREE, list_node = parm;
+      tree type = NULL_TREE;
       register tree decl = TREE_VALUE (parm);
       tree init = TREE_PURPOSE (parm);
 
@@ -12022,6 +12022,10 @@ grokparms (first_parm)
             /* this is a parmlist of `(void)', which is ok.  */
             break;
           incomplete_type_error (decl, type);
+	  /* It's not a good idea to actually create parameters of
+	     type `void'; other parts of the compiler assume that a
+	     void type terminates the parameter list.  */
+	  TREE_TYPE (decl) = error_mark_node;
         }
       
       /* Top-level qualifiers on the parameters are
@@ -12069,9 +12073,7 @@ grokparms (first_parm)
 
       TREE_CHAIN (decl) = decls;
       decls = decl;
-      list_node = tree_cons (init, type, NULL_TREE);
-      TREE_CHAIN (list_node) = result;
-      result = list_node;
+      result = tree_cons (init, type, result);
     }
   decls = nreverse (decls);
   result = nreverse (result);
