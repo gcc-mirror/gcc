@@ -1,3 +1,13 @@
+Fri Nov  5 10:07:25 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* function.c (is_addressof): New function.  Returns true if
+	the given piece of RTL is an ADDRESSOF.
+	(purge_addressof_1): Make boolean.  Return false if the
+	ADDRESSOFs could not be purged.
+	(purge_addressof): If ADDRESSOFs could not be purged from the
+	notes attached to an insn, remove the offending note(s),
+	unless they are attached to a libcall.
+
 1999-11-05  Andreas Jaeger  <aj@suse.de>
 
 	* genoutput.c (null_operand =): Initialize all fields.
