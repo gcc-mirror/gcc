@@ -374,6 +374,9 @@ tree void_list_node;
 /* Nodes for types `void *' and `const void *'.  */
 tree ptr_type_node, const_ptr_type_node;
 
+/* __builtin_va_list; not used by chill, but referenced in target files.  */
+tree va_list_type_node;
+
 /* type of initializer structure, which points to
    a module's module-level code, and to the next
    such structure. */

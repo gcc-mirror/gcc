@@ -1,3 +1,7 @@
+1999-07-25  Richard Henderson  <rth@cygnus.com>
+
+	* decl.c (va_list_type_node): New.
+
 1999-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (CHILL.stage1): Depend on stage1-start.

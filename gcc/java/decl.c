@@ -370,6 +370,8 @@ tree soft_irem_node;
 tree soft_ldiv_node;
 tree soft_lrem_node;
 
+/* __builtin_va_list; unused by java, but referenced by target files.  */
+tree va_list_type_node;
 
 /* Build (and pushdecl) a "promoted type" for all standard
    types shorter than int.  */
