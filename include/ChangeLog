@@ -1,3 +1,7 @@
+2000-08-24  Greg McGary  <greg@mcgary.org>
+
+	* libiberty.h (ARRAY_SIZE): New macro.
+
 2000-06-21  Alex Samuel  <samuel@codesourcery.com>
 
 	* dyn-string.h (dyn_string_init, dyn_string_new,
