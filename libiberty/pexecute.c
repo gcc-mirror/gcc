@@ -1,6 +1,6 @@
 /* Utilities to execute a program in a subprocess (possibly linked by pipes
    with other subprocesses), and wait for it.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -25,10 +25,12 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef IN_GCC
 #include "config.h"
-#endif
-
+#include "system.h"
+#else
 #include <stdio.h>
 #include <errno.h>
+#define ISSPACE (x) isspace(x)
+#endif
 
 #ifdef IN_GCC
 #include "gansidecl.h"
@@ -166,7 +168,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
       char *cp;
       for (cp = argv[i]; *cp; cp++)
 	{
-	  if (*cp == '"' || *cp == '\'' || *cp == '\\' || isspace (*cp))
+	  if (*cp == '"' || *cp == '\'' || *cp == '\\' || ISSPACE (*cp))
 	    fputc ('\\', argfile);
 	  fputc (*cp, argfile);
 	}
@@ -509,7 +511,7 @@ static int first_time = 1;
 int
 pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
      const char *program;
-     char **argv;
+     char * const *argv;
      const char *this_pname;
      const char *temp_base;
      char **errmsg_fmt, **errmsg_arg;
@@ -538,14 +540,18 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
       fputc (' ', stdout);
       for (i=1; argv[i]; i++)
 	{
-	  /* We have to quote every arg, so that when the echo is
-	     executed, the quotes are stripped and the original arg
-	     is left. */
 	  fputc ('\'', stdout);
+	  /* See if we have an argument that needs fixing.  */
+	  if (strchr(argv[i], '/'))
+	    {
+	      tmpname = (char *) xmalloc (256);
+	      mpwify_filename (argv[i], tmpname);
+	      argv[i] = tmpname;
+	    }
 	  for (cp = argv[i]; *cp; cp++)
 	    {
-	      /* Write an Option-d esc char in front of special chars.  */
-	      if (strchr ("\"'+", *cp))
+	      /* Write an Option-d escape char in front of special chars.  */
+	      if (strchr("'+", *cp))
 		fputc ('\266', stdout);
 	      fputc (*cp, stdout);
 	    }
@@ -560,15 +566,20 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 
   for (i=1; argv[i]; i++)
     {
+      /* See if we have an argument that needs fixing.  */
+      if (strchr(argv[i], '/'))
+	{
+	  tmpname = (char *) xmalloc (256);
+	  mpwify_filename (argv[i], tmpname);
+	  argv[i] = tmpname;
+	}
       if (strchr (argv[i], ' '))
 	fputc ('\'', stdout);
       for (cp = argv[i]; *cp; cp++)
 	{
-	  /* Write an Option-d esc char in front of special chars.  */
-	  if (strchr ("\"'+", *cp))
-	    {
-	      fputc ('\266', stdout);
-	    }
+	  /* Write an Option-d escape char in front of special chars.  */
+	  if (strchr("'+", *cp))
+	    fputc ('\266', stdout);
 	  fputc (*cp, stdout);
 	}
       if (strchr (argv[i], ' '))
@@ -628,6 +639,9 @@ pfinish ()
 
 extern int execv ();
 extern int execvp ();
+#ifdef IN_GCC
+extern char * my_strerror			PROTO ((int));
+#endif
 
 int
 pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)

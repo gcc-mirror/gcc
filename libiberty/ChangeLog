@@ -1,3 +1,8 @@
+Sat Sep  5 03:24:49 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* pexecute.c: Updates from gcc.  Copy in gcc has been removed.  This
+	is the canonical copy.  Define ISSPACE if !IN_GCC.
+
 Wed Aug 19 14:05:01 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* cplus-dem.c (work_stuff): Add dllimported.
