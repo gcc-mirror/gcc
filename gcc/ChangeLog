@@ -1,3 +1,8 @@
+2001-03-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppfiles.c (search_from): Use lbasename.
+	* mkdeps.c (deps_add_default_target): Use lbasename.
+
 2001-03-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/server.c (load_data, run_shell): Use xmalloc, xrealloc &
