@@ -5020,7 +5020,6 @@ lang_independent_init ()
      provide a dummy function context for them.  */
   init_dummy_function_start ();
   init_expmed ();
-  init_expr_once ();
   if (flag_caller_saves)
     init_caller_save ();
   expand_dummy_function_end ();
@@ -5051,6 +5050,7 @@ lang_dependent_init (name)
      front end is initialized.  */
   init_eh ();
   init_optabs ();
+  init_expr_once ();
 
   /* Put an entry on the input file stack for the main input file.  */
   push_srcloc (input_filename, 0);
