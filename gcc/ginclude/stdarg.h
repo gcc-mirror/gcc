@@ -20,7 +20,7 @@
 #include "va-i860.h"
 #else
 #ifdef __hp9000s800__
-#include "va-hp800.h"
+#include "va-pa.h"
 #else
 #ifdef __mips__
 #include "va-mips.h"
