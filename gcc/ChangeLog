@@ -1,3 +1,7 @@
+2003-01-09  Andreas Jaeger  <aj@suse.de>
+
+	* unwind-dw2-fde.h (last_fde): Revert last patch.
+
 2003-01-08  Danny Smith  <dannysmith@users.sourceforge.net>
 
         PR optimization/8750
