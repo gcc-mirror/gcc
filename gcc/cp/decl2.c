@@ -1710,6 +1710,9 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       DECL_NONLOCAL (value) = 1;
       DECL_CONTEXT (value) = current_class_type;
 
+      if (CLASS_TYPE_P (TREE_TYPE (value)))
+        CLASSTYPE_GOT_SEMICOLON (TREE_TYPE (value)) = 1;
+      
       /* Now that we've updated the context, we need to remangle the
 	 name for this TYPE_DECL.  */
       DECL_ASSEMBLER_NAME (value) = DECL_NAME (value);
