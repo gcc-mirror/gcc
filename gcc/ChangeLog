@@ -1,5 +1,10 @@
 Wed Jul  8 21:43:14 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.h (LEGITIMIZE_RELOAD_ADDRESS): Handle addresses created by
+	LEGITIMIZE_RELOAD_ADDRESS.
+	* tm.texi (LEGITIMIZE_RELOAD_ADDRESS): Note that this macro must be
+	able to handle addresses created by previous invocations of the macro.
+
 	* flow.c (find_auto_inc): Remove most recent change.  Real bug was
 	elsewhere.
 
