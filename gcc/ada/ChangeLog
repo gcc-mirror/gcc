@@ -1,3 +1,8 @@
+2001-10-25  Ed Schonberg <schonber@gnat.com>
+	
+	* sem_elab.adb (Check_A_Call): check for renaming before finding the 
+	enclosing unit, which may already be different from the calling unit.
+
 2001-10-25  Geert Bosch <bosch@gnat.com>
 
 	* 4gintnam.ads: fix header format.
