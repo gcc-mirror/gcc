@@ -6681,6 +6681,11 @@ expand_function_end (filename, line, end_bindings)
 
   finish_expr_for_function ();
 
+  /* If arg_pointer_save_area was referenced only from a nested
+     function, we will not have initialized it yet.  Do that now.  */
+  if (arg_pointer_save_area && ! cfun->arg_pointer_save_area_init)
+    get_arg_pointer_save_area (cfun);
+
 #ifdef NON_SAVING_SETJMP
   /* Don't put any variables in registers if we call setjmp
      on a machine that fails to restore the registers.  */
@@ -6998,27 +7003,25 @@ get_arg_pointer_save_area (f)
 
   if (! ret)
     {
-      rtx seq;
-
       ret = assign_stack_local_1 (Pmode, GET_MODE_SIZE (Pmode), 0, f);
       f->x_arg_pointer_save_area = ret;
+    }
+
+  if (f == cfun && ! f->arg_pointer_save_area_init)
+    {
+      rtx seq;
 
       /* Save the arg pointer at the beginning of the function.  The 
-	 generated stack slot may not be a valid memory address, so w
+	 generated stack slot may not be a valid memory address, so we
 	 have to check it and fix it if necessary.  */
       start_sequence ();
       emit_move_insn (validize_mem (ret), virtual_incoming_args_rtx);
       seq = gen_sequence ();
       end_sequence ();
 
-      if (f == cfun)
-	{
-	  push_topmost_sequence ();
-	  emit_insn_after (seq, get_insns ());
-	  pop_topmost_sequence ();
-	}
-      else
-	emit_insn_before (seq, f->x_tail_recursion_reentry);
+      push_topmost_sequence ();
+      emit_insn_after (seq, get_insns ());
+      pop_topmost_sequence ();
     }
 
   return ret;

@@ -477,6 +477,9 @@ struct function
 
   /* Nonzero if the current function needs an lsda for exception handling.  */
   unsigned int uses_eh_lsda : 1;
+
+  /* Nonzero if code to initialize arg_pointer_save_area has been emited.  */
+  unsigned int arg_pointer_save_area_init : 1;
 };
 
 /* The function currently being compiled.  */
