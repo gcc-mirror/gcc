@@ -1067,7 +1067,8 @@ extern enum cmp_type hppa_branch_type;
 					  DECL_ARG_TYPE (parm));	\
 		     /* Passing structs by invisible reference uses	\
 			one general register.  */			\
-		     if (arg_size > 2)					\
+		     if (arg_size > 2					\
+			 || TYPE_NEEDS_CONSTRUCTING (DECL_ARG_TYPE (parm)))\
 		       arg_size = 1;					\
 		     if (arg_size == 2 && i <= 2)			\
 		       {						\
