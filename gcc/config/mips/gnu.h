@@ -75,7 +75,6 @@ Boston, MA 02111-1307, USA.  */
     fprintf (STREAM, TYPE_OPERAND_FMT, "function");			\
     putc ('\n', STREAM);						\
     ASM_DECLARE_RESULT (STREAM, DECL_RESULT (DECL));			\
-    current_function_name = NAME;					\
     HALF_PIC_DECLARE (NAME);						\
   } while (0)
 
