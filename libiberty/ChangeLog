@@ -1,5 +1,10 @@
 2000-07-23  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
+	* aclocal.m4 (libiberty_AC_DECLARE_ERRNO): New macro.
+	* configure.in (libiberty_AC_DECLARE_ERRNO): Add check.
+	* configure, config.in: Regenerate.
+	* pexecute.c, strtol.c, strtoul.c: Declare errno if necessary.
+
 	* cp-demangle.c, mkstemps.c: #include <sys/types.h>.
 
 2000-07-21  Mike Stump  <mrs@wrs.com>

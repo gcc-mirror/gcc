@@ -69,3 +69,17 @@ if test $ac_cv_func_strncmp_works = no ; then
   LIBOBJS="$LIBOBJS strncmp.o"
 fi
 ])
+
+dnl See if errno must be declared even when <errno.h> is included.
+AC_DEFUN(libiberty_AC_DECLARE_ERRNO,
+[AC_CACHE_CHECK(whether errno must be declared, libiberty_cv_declare_errno,
+[AC_TRY_COMPILE(
+[#include <errno.h>],
+[int x = errno;],
+libiberty_cv_declare_errno=no,
+libiberty_cv_declare_errno=yes)])
+if test $libiberty_cv_declare_errno = yes
+then AC_DEFINE(NEED_DECLARATION_ERRNO, 1,
+  [Define if errno must be declared even when <errno.h> is included.])
+fi
+])

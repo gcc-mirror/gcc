@@ -231,3 +231,7 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
+
+/* Define if errno must be declared even when <errno.h> is included. */
+#undef NEED_DECLARATION_ERRNO
+
