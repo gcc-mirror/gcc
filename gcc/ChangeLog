@@ -1,4 +1,10 @@
-Sun Mar 15 23:17:30 1998  Jeffrey A Law  (law@cygnus.com)
+Sun Mar 15 23:29:25 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* config/m68k/mot3300.h (ASM_BYTE_OP): Don't include '\t' in the
+	definition.
+	(ASM_OUTPUT_ASCII): Prefix ASM_BYTE_OP by one single '\t'.
+
+Sun Mar 15 23:29:18 1998  Jeffrey A Law  (law@cygnus.com)
 
         * m68k.h: Fix mis-applied fix from the mainline branch.
 
