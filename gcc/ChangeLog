@@ -1,5 +1,9 @@
 2000-05-22  Richard Henderson  <rth@cygnus.com>
 
+	* stor-layout.c (place_field): Change rli->size to rli->offset.
+
+2000-05-22  Richard Henderson  <rth@cygnus.com>
+
 	* function.c (thread_prologue_and_epilogue_insns): Make sure 
 	existing line number notes appear after the prologue.
 
