@@ -1,5 +1,11 @@
 2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR target/16430
+	* config/sparc/sparc.c (function_value): In 64-bit mode,
+	return the aggregates larger than 16 bytes like unions.
+
+2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR target/16199
 	* config/sparc/sparc.c (sparc_emit_set_symbolic_const64): When
 	'temp' is zero, generate new pseudos as needed and emit the
