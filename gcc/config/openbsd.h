@@ -300,3 +300,9 @@ do {									 \
    #pragma weak.  */
 #define GTHREAD_USE_WEAK 0
 
+/* bug work around: we don't want to support #pragma weak, but the current
+   code layout needs HANDLE_PRAGMA_WEAK asserted for __attribute((weak)) to
+   work.  On the other hand, we don't define HANDLE_PRAGMA_WEAK directly,
+   as this depends on a few other details as well...  */
+#define HANDLE_SYSV_PRAGMA
+

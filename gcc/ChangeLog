@@ -1,3 +1,7 @@
+Mon Mar  8 18:55:21 1999  Marc Espie <espie@cvs.openbsd.org>
+
+        * config/openbsd.h (HANDLE_SYSV_PRAGMA): Define.
+
 Mon Mar  8 16:04:44 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* local-alloc.c (combine_regs): Don't combine if we have a hard reg
@@ -7,6 +11,12 @@ Mon Mar  8 16:04:44 1999  Jim Wilson  <wilson@cygnus.com>
 	have a REG or SUBREG.
 
 Mon Mar  8 15:27:42 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* rs6000/xm-sysv4.h (HOST_BITS_PER_LONGLONG): Remove #if 0.
+
+	* mn10300.h (CASE_DROPS_THROUGH): Delete.
+	* mn10200.h (CASE_DROPS_THROUGH): Delete.
+	* h8300.h (CASE_DROPS_THROUGH): Delete.
 
 	* flow.c (merge_blocks_nomove): For HAVE_cc0 targets, make sure
 	to also delete the cc0 setter when deleting a conditional branch

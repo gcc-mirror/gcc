@@ -991,11 +991,6 @@ do { char dstr[30];					\
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE Pmode
 
-/* Define this if the case instruction drops through after the table
-   when the index is out of range.  Don't define it if the case insn
-   jumps to the default label instead.  */
-#define CASE_DROPS_THROUGH
-
 /* Dispatch tables on the mn10200 are extremely expensive in terms of code
    and readonly data size.  So we crank up the case threshold value to
    encourage a series of if/else comparisons to implement many small switch

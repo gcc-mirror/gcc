@@ -987,11 +987,6 @@ do { char dstr[30];					\
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE Pmode
 
-/* Define this if the case instruction drops through after the table
-   when the index is out of range.  Don't define it if the case insn
-   jumps to the default label instead.  */
-#define CASE_DROPS_THROUGH
-
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
 #define WORD_REGISTER_OPERATIONS
