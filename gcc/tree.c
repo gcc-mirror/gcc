@@ -3958,10 +3958,13 @@ simple_cst_equal (t1, t2)
   code2 = TREE_CODE (t2);
 
   if (code1 == NOP_EXPR || code1 == CONVERT_EXPR || code1 == NON_LVALUE_EXPR)
-    if (code2 == NOP_EXPR || code2 == CONVERT_EXPR || code2 == NON_LVALUE_EXPR)
-      return simple_cst_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
-    else
-      return simple_cst_equal (TREE_OPERAND (t1, 0), t2);
+    {
+      if (code2 == NOP_EXPR || code2 == CONVERT_EXPR
+	  || code2 == NON_LVALUE_EXPR)
+	return simple_cst_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
+      else
+	return simple_cst_equal (TREE_OPERAND (t1, 0), t2);
+    }
   else if (code2 == NOP_EXPR || code2 == CONVERT_EXPR
 	   || code2 == NON_LVALUE_EXPR)
     return simple_cst_equal (t1, TREE_OPERAND (t2, 0));
