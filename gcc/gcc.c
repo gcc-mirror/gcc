@@ -1626,6 +1626,23 @@ find_a_file (pprefix, name, mode)
       {
 	if (machine_suffix)
 	  {
+	    /* Some systems have a suffix for executable files.
+	       So try appending that first.  */
+	    if (file_suffix[0] != 0)
+	      {
+		strcpy (temp, pl->prefix);
+		strcat (temp, machine_suffix);
+		strcat (temp, name);
+		strcat (temp, file_suffix);
+		if (access (temp, mode) == 0)
+		  {
+		    if (pl->used_flag_ptr != 0)
+		      *pl->used_flag_ptr = 1;
+		    return temp;
+		  }
+	      }
+
+	    /* Now try just the name.  */
 	    strcpy (temp, pl->prefix);
 	    strcat (temp, machine_suffix);
 	    strcat (temp, name);
@@ -1635,10 +1652,19 @@ find_a_file (pprefix, name, mode)
 		  *pl->used_flag_ptr = 1;
 		return temp;
 	      }
+	  }
+
+	/* Certain prefixes are tried with just the machine type,
+	   not the version.  This is used for finding as, ld, etc.  */
+	if (just_machine_suffix && pl->require_machine_suffix == 2)
+	  {
 	    /* Some systems have a suffix for executable files.
-	       So try appending that.  */
+	       So try appending that first.  */
 	    if (file_suffix[0] != 0)
 	      {
+		strcpy (temp, pl->prefix);
+		strcat (temp, just_machine_suffix);
+		strcat (temp, name);
 		strcat (temp, file_suffix);
 		if (access (temp, mode) == 0)
 		  {
@@ -1647,11 +1673,7 @@ find_a_file (pprefix, name, mode)
 		    return temp;
 		  }
 	      }
-	  }
-	/* Certain prefixes are tried with just the machine type,
-	   not the version.  This is used for finding as, ld, etc.  */
-	if (just_machine_suffix && pl->require_machine_suffix == 2)
-	  {
+
 	    strcpy (temp, pl->prefix);
 	    strcat (temp, just_machine_suffix);
 	    strcat (temp, name);
@@ -1661,10 +1683,18 @@ find_a_file (pprefix, name, mode)
 		  *pl->used_flag_ptr = 1;
 		return temp;
 	      }
+	  }
+
+	/* Certain prefixes can't be used without the machine suffix
+	   when the machine or version is explicitly specified.  */
+	if (!pl->require_machine_suffix)
+	  {
 	    /* Some systems have a suffix for executable files.
-	       So try appending that.  */
+	       So try appending that first.  */
 	    if (file_suffix[0] != 0)
 	      {
+		strcpy (temp, pl->prefix);
+		strcat (temp, name);
 		strcat (temp, file_suffix);
 		if (access (temp, mode) == 0)
 		  {
@@ -1673,11 +1703,7 @@ find_a_file (pprefix, name, mode)
 		    return temp;
 		  }
 	      }
-	  }
-	/* Certain prefixes can't be used without the machine suffix
-	   when the machine or version is explicitly specified.  */
-	if (!pl->require_machine_suffix)
-	  {
+
 	    strcpy (temp, pl->prefix);
 	    strcat (temp, name);
 	    if (access (temp, mode) == 0)
@@ -1685,18 +1711,6 @@ find_a_file (pprefix, name, mode)
 		if (pl->used_flag_ptr != 0)
 		  *pl->used_flag_ptr = 1;
 		return temp;
-	      }
-	    /* Some systems have a suffix for executable files.
-	       So try appending that.  */
-	    if (file_suffix[0] != 0)
-	      {
-		strcat (temp, file_suffix);
-		if (access (temp, mode) == 0)
-		  {
-		    if (pl->used_flag_ptr != 0)
-		      *pl->used_flag_ptr = 1;
-		    return temp;
-		  }
 	      }
 	  }
       }
