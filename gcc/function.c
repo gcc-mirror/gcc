@@ -5351,8 +5351,10 @@ init_function_start (subr, filename, line)
   current_function_outgoing_args_size = 0;
 
   /* Prevent ever trying to delete the first instruction of a function.
-     Also tell final how to output a linenum before the function prologue.  */
-  emit_line_note (filename, line);
+     Also tell final how to output a linenum before the function prologue.
+     Note linenums could be missing, e.g. when compiling a Java .class file. */
+  if (line > 0)
+    emit_line_note (filename, line);
 
   /* Make sure first insn is a note even if we don't want linenums.
      This makes sure the first insn will never be deleted.
