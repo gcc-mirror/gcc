@@ -116,7 +116,7 @@ extern rtx frv_split_minmax		(rtx *);
 extern rtx frv_split_abs		(rtx *);
 extern void frv_split_double_load	(rtx, rtx);
 extern void frv_split_double_store	(rtx, rtx);
-#ifdef BLOCK_HEAD
+#ifdef BB_HEAD
 extern void frv_ifcvt_init_extra_fields	(ce_if_block_t *);
 extern void frv_ifcvt_modify_tests	(ce_if_block_t *, rtx *, rtx *);
 extern void frv_ifcvt_modify_multiple_tests
