@@ -1,3 +1,10 @@
+Mon Dec 22 09:58:51 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* haifa-sched.c (create_reg_dead_note): Detect and handle another
+	case where we kill more regs after sched than were killed before
+	sched.
+	* sched.c (create_reg_dead_note): Similarly.
+
 Mon Dec 22 09:18:37 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* c-pragma.c: Include flags.h.
