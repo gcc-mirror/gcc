@@ -1,3 +1,13 @@
+2002-11-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/8389
+	* pt.c (instantiate_template): Push class scope for member
+	functions.
+	(get_mostly_instantiated_function_type): Likewise.  Don't call
+	tsubst on context.  Remove CONTEXTP and TPARMSP parameters.
+	* cp-tree.h (get_mostly_instantiated_function_type): Adjust.
+	* mangle.c (write_encoding, write_unqualified_name): Adjust.
+
 2002-11-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (add_vcall_offset_vtbl_entries_1): Correct ordering of
