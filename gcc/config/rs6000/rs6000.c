@@ -134,6 +134,8 @@ static rtx rs6000_emit_set_long_const PARAMS ((rtx,
 #if TARGET_ELF
 static unsigned int rs6000_elf_section_type_flags PARAMS ((tree, const char *,
 							   int));
+static void rs6000_elf_asm_out_constructor PARAMS ((rtx, int));
+static void rs6000_elf_asm_out_destructor PARAMS ((rtx, int));
 #endif
 #ifdef OBJECT_FORMAT_COFF
 static void xcoff_asm_named_section PARAMS ((const char *, unsigned int,
@@ -8706,6 +8708,73 @@ rs6000_elf_section_type_flags (decl, name, reloc)
   flags &= ~SECTION_BSS;
 
   return flags;
+}
+
+/* Record an element in the table of global constructors.  SYMBOL is
+   a SYMBOL_REF of the function to be called; PRIORITY is a number
+   between 0 and MAX_INIT_PRIORITY.
+
+   This differs from default_named_section_asm_out_constructor in
+   that we have special handling for -mrelocatable.  */
+
+static void
+rs6000_elf_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority;
+{
+  const char *section = ".ctors";
+  char buf[16];
+
+  if (priority != DEFAULT_INIT_PRIORITY)
+    {
+      sprintf (buf, ".ctors.%.5u",
+               /* Invert the numbering so the linker puts us in the proper
+                  order; constructors are run from right to left, and the
+                  linker sorts in increasing order.  */
+               MAX_INIT_PRIORITY - priority);
+      section = buf;
+    }
+
+  named_section_flags (section, SECTION_WRITE, POINTER_SIZE / BITS_PER_UNIT);
+
+  if (TARGET_RELOCATABLE)
+    {
+      fputs ("\t.long (", asm_out_file);
+      output_addr_const (asm_out_file, symbol);
+      fputs (")@fixup\n", asm_out_file);
+    }
+  else
+    assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+}
+
+static void
+rs6000_elf_asm_out_destructor (symbol, priority)
+     rtx symbol;
+     int priority;
+{
+  const char *section = ".dtors";
+  char buf[16];
+
+  if (priority != DEFAULT_INIT_PRIORITY)
+    {
+      sprintf (buf, ".dtors.%.5u",
+               /* Invert the numbering so the linker puts us in the proper
+                  order; constructors are run from right to left, and the
+                  linker sorts in increasing order.  */
+               MAX_INIT_PRIORITY - priority);
+      section = buf;
+    }
+
+  named_section_flags (section, SECTION_WRITE, POINTER_SIZE / BITS_PER_UNIT);
+
+  if (TARGET_RELOCATABLE)
+    {
+      fputs ("\t.long (", asm_out_file);
+      output_addr_const (asm_out_file, symbol);
+      fputs (")@fixup\n", asm_out_file);
+    }
+  else
+    assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
 }
 #endif
 
