@@ -34,8 +34,8 @@ LIB2FUNCS_EXTRA = $(srcdir)/config/udivmodsi4.c \
 	$(srcdir)/config/divmod.c $(srcdir)/config/udivmod.c
 
 # Don't compile with -g1 this reduces the size of some sections (.eh_frame).
-LIBGCC2_DEBUG_CFLAGS =
-LIBGCC2_CFLAGS = -Os $(LIBGCC2_INCLUDES) $(TARGET_LIBGCC2_CFLAGS) $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) -DIN_LIBGCC2
+LIBGCC2_DEBUG_CFLAGS =-g
+LIBGCC2_CFLAGS = -Os -mrelax $(LIBGCC2_INCLUDES) $(TARGET_LIBGCC2_CFLAGS) $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) -DIN_LIBGCC2
 
 MULTILIB_OPTIONS  = m68hc11/m68hc12 mshort fshort-double mlong-calls
 MULTILIB_DIRNAMES =
