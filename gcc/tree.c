@@ -4273,6 +4273,8 @@ int_fits_type_p (tree c, tree type)
 bool
 variably_modified_type_p (tree type)
 {
+  tree t;
+
   if (type == error_mark_node)
     return false;
 
@@ -4281,39 +4283,50 @@ variably_modified_type_p (tree type)
      We do not yet have a representation of the C99 '[*]' syntax.
      When a representation is chosen, this function should be modified
      to test for that case as well.  */
-  if (TYPE_SIZE (type)
-      && TYPE_SIZE (type) != error_mark_node
-      && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+  t = TYPE_SIZE (type);
+  if (t && t != error_mark_node && TREE_CODE (t) != INTEGER_CST)
     return true;
 
-  /* If TYPE is a pointer or reference, it is variably modified if
-     the type pointed to is variably modified.  */
-  if ((TREE_CODE (type) == POINTER_TYPE
-       || TREE_CODE (type) == REFERENCE_TYPE)
-      && variably_modified_type_p (TREE_TYPE (type)))
-    return true;
-
-  /* If TYPE is an array, it is variably modified if the array
-     elements are.  (Note that the VLA case has already been checked
-     above.)  */
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && variably_modified_type_p (TREE_TYPE (type)))
-    return true;
-
-  /* If TYPE is a function type, it is variably modified if any of the
-     parameters or the return type are variably modified.  */
-  if (TREE_CODE (type) == FUNCTION_TYPE
-      || TREE_CODE (type) == METHOD_TYPE)
+  switch (TREE_CODE (type))
     {
-      tree parm;
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+    case ARRAY_TYPE:
+      /* If TYPE is a pointer or reference, it is variably modified if
+	 the type pointed to is variably modified.  Similarly for arrays;
+	 note that VLAs are handled by the TYPE_SIZE check above.  */
+      return variably_modified_type_p (TREE_TYPE (type));
 
-      if (variably_modified_type_p (TREE_TYPE (type)))
-	return true;
-      for (parm = TYPE_ARG_TYPES (type);
-	   parm && parm != void_list_node;
-	   parm = TREE_CHAIN (parm))
-	if (variably_modified_type_p (TREE_VALUE (parm)))
+    case FUNCTION_TYPE:
+    case METHOD_TYPE:
+      /* If TYPE is a function type, it is variably modified if any of the
+         parameters or the return type are variably modified.  */
+      {
+	tree parm;
+
+	if (variably_modified_type_p (TREE_TYPE (type)))
 	  return true;
+	for (parm = TYPE_ARG_TYPES (type);
+	     parm && parm != void_list_node;
+	     parm = TREE_CHAIN (parm))
+	  if (variably_modified_type_p (TREE_VALUE (parm)))
+	    return true;
+      }
+      break;
+
+    case INTEGER_TYPE:
+      /* Scalar types are variably modified if their end points
+	 aren't constant.  */
+      t = TYPE_MIN_VALUE (type);
+      if (t && t != error_mark_node && TREE_CODE (t) != INTEGER_CST)
+	return true;
+      t = TYPE_MAX_VALUE (type);
+      if (t && t != error_mark_node && TREE_CODE (t) != INTEGER_CST)
+	return true;
+      return false;
+
+    default:
+      break;
     }
 
   /* The current language may have other cases to check, but in general,

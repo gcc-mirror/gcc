@@ -121,6 +121,7 @@ static void expand_calls_inline (tree *, inline_data *);
 static bool inlinable_function_p (tree);
 static int limits_allow_inlining (tree, inline_data *);
 static tree remap_decl (tree, inline_data *);
+static tree remap_type (tree, inline_data *);
 #ifndef INLINER_FOR_JAVA
 static tree initialize_inlined_parameters (inline_data *, tree, tree);
 static void remap_block (tree, tree, inline_data *);
@@ -146,6 +147,7 @@ remap_decl (tree decl, inline_data *id)
 
   /* See if we have remapped this declaration.  */
   n = splay_tree_lookup (id->decl_map, (splay_tree_key) decl);
+
   /* If we didn't already have an equivalent for this declaration,
      create one now.  */
   if (!n)
@@ -153,29 +155,26 @@ remap_decl (tree decl, inline_data *id)
       tree t;
 
       /* Make a copy of the variable or label.  */
-      t = copy_decl_for_inlining (decl, fn,
-				  VARRAY_TREE (id->fns, 0));
+      t = copy_decl_for_inlining (decl, fn, VARRAY_TREE (id->fns, 0));
 
-      /* The decl T could be a dynamic array or other variable size type,
-	 in which case some fields need to be remapped because they may
-	 contain SAVE_EXPRs.  */
-      if (TREE_TYPE (t) && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE
-	  && TYPE_DOMAIN (TREE_TYPE (t)))
-	{
-	  TREE_TYPE (t) = copy_node (TREE_TYPE (t));
-	  TYPE_DOMAIN (TREE_TYPE (t))
-	    = copy_node (TYPE_DOMAIN (TREE_TYPE (t)));
-	  walk_tree (&TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (t))),
-		     copy_body_r, id, NULL);
-	}
+      /* Remap types, if necessary.  */
+      TREE_TYPE (t) = remap_type (TREE_TYPE (t), id);
+      if (TREE_CODE (t) == TYPE_DECL)
+        DECL_ORIGINAL_TYPE (t) = remap_type (DECL_ORIGINAL_TYPE (t), id);
+      else if (TREE_CODE (t) == PARM_DECL)
+        DECL_ARG_TYPE_AS_WRITTEN (t)
+	  = remap_type (DECL_ARG_TYPE_AS_WRITTEN (t), id);
+
+      /* Remap sizes as necessary.  */
+      walk_tree (&DECL_SIZE (t), copy_body_r, id, NULL);
+      walk_tree (&DECL_SIZE_UNIT (t), copy_body_r, id, NULL);
 
 #ifndef INLINER_FOR_JAVA
       if (! DECL_NAME (t) && TREE_TYPE (t)
 	  && (*lang_hooks.tree_inlining.anon_aggr_type_p) (TREE_TYPE (t)))
 	{
 	  /* For a VAR_DECL of anonymous type, we must also copy the
-	     member VAR_DECLS here and rechain the
-	     DECL_ANON_UNION_ELEMS.  */
+	     member VAR_DECLS here and rechain the DECL_ANON_UNION_ELEMS.  */
 	  tree members = NULL;
 	  tree src;
 
@@ -200,6 +199,111 @@ remap_decl (tree decl, inline_data *id)
     }
 
   return (tree) n->value;
+}
+
+static tree
+remap_type (tree type, inline_data *id)
+{
+  splay_tree_node node;
+  tree new, t;
+
+  if (type == NULL)
+    return type;
+
+  /* See if we have remapped this type.  */
+  node = splay_tree_lookup (id->decl_map, (splay_tree_key) type);
+  if (node)
+    return (tree) node->value;
+
+  /* The type only needs remapping if it's variably modified.  */
+  if (! variably_modified_type_p (type))
+    {
+      splay_tree_insert (id->decl_map, (splay_tree_key) type,
+			 (splay_tree_value) type);
+      return type;
+    }
+  
+  /* We do need a copy.  build and register it now.  */
+  new = copy_node (type);
+  splay_tree_insert (id->decl_map, (splay_tree_key) type,
+		     (splay_tree_value) new);
+
+  /* This is a new type, not a copy of an old type.  Need to reassociate
+     variants.  We can handle everything except the main variant lazily.  */
+  t = TYPE_MAIN_VARIANT (type);
+  if (type != t)
+    {
+      t = remap_type (t, id);
+      TYPE_MAIN_VARIANT (new) = t;
+      TYPE_NEXT_VARIANT (new) = TYPE_MAIN_VARIANT (t);
+      TYPE_NEXT_VARIANT (t) = new;
+    }
+  else
+    {
+      TYPE_MAIN_VARIANT (new) = new;
+      TYPE_NEXT_VARIANT (new) = NULL;
+    }
+
+  /* Lazily create pointer and reference types.  */
+  TYPE_POINTER_TO (new) = NULL;
+  TYPE_REFERENCE_TO (new) = NULL;
+
+  switch (TREE_CODE (new))
+    {
+    case INTEGER_TYPE:
+    case REAL_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+    case CHAR_TYPE:
+      t = TYPE_MIN_VALUE (new);
+      if (t && TREE_CODE (t) != INTEGER_CST)
+        walk_tree (&TYPE_MIN_VALUE (new), copy_body_r, id, NULL);
+      t = TYPE_MAX_VALUE (new);
+      if (t && TREE_CODE (t) != INTEGER_CST)
+        walk_tree (&TYPE_MAX_VALUE (new), copy_body_r, id, NULL);
+      return new;
+    
+    case POINTER_TYPE:
+      TREE_TYPE (new) = t = remap_type (TREE_TYPE (new), id);
+      if (TYPE_MODE (new) == ptr_mode)
+        TYPE_POINTER_TO (t) = new;
+      return new;
+
+    case REFERENCE_TYPE:
+      TREE_TYPE (new) = t = remap_type (TREE_TYPE (new), id);
+      if (TYPE_MODE (new) == ptr_mode)
+        TYPE_REFERENCE_TO (t) = new;
+      return new;
+
+    case METHOD_TYPE:
+    case FUNCTION_TYPE:
+      TREE_TYPE (new) = remap_type (TREE_TYPE (new), id);
+      walk_tree (&TYPE_ARG_TYPES (new), copy_body_r, id, NULL);
+      return new;
+
+    case ARRAY_TYPE:
+      TREE_TYPE (new) = remap_type (TREE_TYPE (new), id);
+      TYPE_DOMAIN (new) = remap_type (TYPE_DOMAIN (new), id);
+      break;
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      walk_tree (&TYPE_FIELDS (new), copy_body_r, id, NULL);
+      break;
+
+    case FILE_TYPE:
+    case SET_TYPE:
+    case OFFSET_TYPE:
+    default:
+      /* Shouldn't have been thought variable sized.  */
+      abort ();
+    }
+
+  walk_tree (&TYPE_SIZE (new), copy_body_r, id, NULL);
+  walk_tree (&TYPE_SIZE_UNIT (new), copy_body_r, id, NULL);
+
+  return new;
 }
 
 #ifndef INLINER_FOR_JAVA
@@ -525,6 +629,10 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
       TREE_OPERAND (*tp, 0) = (tree) n->value;
     }
 #endif /* INLINER_FOR_JAVA */
+  /* Types may need remapping as well.  */
+  else if (TYPE_P (*tp))
+    *tp = remap_type (*tp, id);
+
   /* Otherwise, just copy the node.  Note that copy_tree_r already
      knows not to copy VAR_DECLs, etc., so this is safe.  */
   else
@@ -575,6 +683,8 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	}
 
       copy_tree_r (tp, walk_subtrees, NULL);
+
+      TREE_TYPE (*tp) = remap_type (TREE_TYPE (*tp), id);
 
       /* The copied TARGET_EXPR has never been expanded, even if the
 	 original node was expanded already.  */
@@ -1787,6 +1897,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 	      WALK_SUBTREE (DECL_INITIAL (DECL_STMT_DECL (*tp)));
 	      WALK_SUBTREE (DECL_SIZE (DECL_STMT_DECL (*tp)));
 	      WALK_SUBTREE (DECL_SIZE_UNIT (DECL_STMT_DECL (*tp)));
+	      WALK_SUBTREE (TREE_TYPE (*tp));
 	    }
 
 	  /* This can be tail-recursion optimized if we write it this way.  */
@@ -1968,8 +2079,7 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	TREE_CHAIN (*tp) = chain;
 #endif /* INLINER_FOR_JAVA */
     }
-  else if (TREE_CODE_CLASS (code) == 't' && !variably_modified_type_p (*tp))
-    /* Types only need to be copied if they are variably modified.  */
+  else if (TREE_CODE_CLASS (code) == 't')
     *walk_subtrees = 0;
 
   return NULL_TREE;
