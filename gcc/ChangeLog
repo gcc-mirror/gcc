@@ -1,3 +1,8 @@
+2003-04-26 Stephane Carrez <stcarrez@nerim.fr>
+
+	* doc/extend.texi (Function Attributes): Document "near" and "far"
+	for 68HC11 and 68HC12.
+
 2003-04-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (store_field): When making temporary for store, don't
