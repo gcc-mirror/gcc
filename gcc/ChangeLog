@@ -1,3 +1,10 @@
+2001-08-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppinit.c (cpp_finish): Pop the final buffer without comment.
+	* cpplex.c (_cpp_lex_token): Don't pop the final buffer; and
+	take care to avoid multiple no-newline at EOF warnings in that
+	case.
+
 Tue Aug  7 22:18:06 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (expand_call): Do not emit INSN_SETJMP note.

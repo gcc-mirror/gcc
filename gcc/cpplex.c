@@ -897,21 +897,26 @@ _cpp_lex_token (pfile, result)
 	pfile->line--;
       else if (! pfile->state.parsing_args)
 	{
-	  unsigned char ret = pfile->buffer->return_at_eof;
-
 	  /* Non-empty files should end in a newline.  Don't warn for
 	     command line and _Pragma buffers.  */
 	  if (pfile->lexer_pos.col != 0)
 	    {
-	      /* Account for the missing \n.  */
+	      /* Account for the missing \n, prevent multiple warnings.  */
 	      pfile->line++;
+	      pfile->lexer_pos.col = 0;
 	      if (!buffer->from_stage3)
 		cpp_pedwarn (pfile, "no newline at end of file");
 	    }
 
-	  _cpp_pop_buffer (pfile);
-	  if (pfile->buffer && !ret)
-	    goto next_token;
+	  /* Don't pop the last file.  */
+	  if (buffer->prev)
+	    {
+	      unsigned char stop = buffer->return_at_eof;
+
+	      _cpp_pop_buffer (pfile);
+	      if (!stop)
+		goto next_token;
+	    }
 	}
       result->type = CPP_EOF;
       return;
