@@ -2,7 +2,7 @@
 /* Contributed by Ziemowit Laski <zlaski@apple.com> */
 
 /* { dg-do compile } */
-/* { dg-skip-if "No stabs" { mmix-*-* *-*-aix* alpha*-*-* ia64-*-* } { "*" } { "" } } */
+/* { dg-skip-if "No stabs" { mmix-*-* *-*-aix* alpha*-*-* hppa*64*-*-* ia64-*-* } { "*" } { "" } } */
 /* { dg-options "-gstabs" } */
 
 @interface MyClass
