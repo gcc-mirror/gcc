@@ -113,7 +113,7 @@ static int	 arm_barrier_cost		PARAMS ((rtx));
 static Mfix *    create_fix_barrier		PARAMS ((Mfix *, Hint));
 static void	 push_minipool_barrier	        PARAMS ((rtx, Hint));
 static void	 push_minipool_fix		PARAMS ((rtx, Hint, rtx *, Mmode, rtx));
-static bool	 note_invalid_constants	        PARAMS ((rtx, Hint, bool));
+static bool	 note_invalid_constants	        PARAMS ((rtx, Hint, int));
 static int       current_file_function_operand	PARAMS ((rtx));
 static Ulong	 arm_compute_save_reg0_reg12_mask  PARAMS ((void));
 static Ulong     arm_compute_save_reg_mask	PARAMS ((void));
@@ -6923,7 +6923,7 @@ static bool
 note_invalid_constants (insn, address, do_pushes)
      rtx insn;
      HOST_WIDE_INT address;
-     bool do_pushes;
+     int do_pushes;
 {
   bool result = false;
   int opno;
