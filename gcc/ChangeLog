@@ -1,3 +1,8 @@
+2004-12-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* xcoffout.c (xcoffout_declare_function): Always strip storage
+	class encoding.
+
 2004-12-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/18964
