@@ -1,3 +1,8 @@
+2000-09-09  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* typeck.c (build_java_array_type): Correct first parameter
+	in ADJUST_FIELD_ALIGN invocation.
+
 2000-09-06  Tom Tromey  <tromey@cygnus.com>
 
 	* lang-specs.h: Also recognize `-femit-class-files'.
