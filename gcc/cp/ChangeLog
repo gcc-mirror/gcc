@@ -1,3 +1,8 @@
+2002-02-13  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (digest_init, process_init_constructor): Treat vectors
+	like arrays.
+
 2002-02-11  Jason Merrill  <jason@redhat.com>
 
 	* parse.y (reserved_declspecs): Don't handle attributes.

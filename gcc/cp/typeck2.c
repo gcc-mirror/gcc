@@ -544,7 +544,7 @@ digest_init (type, init, tail)
 
   if (code == INTEGER_TYPE || code == REAL_TYPE || code == POINTER_TYPE
       || code == ENUMERAL_TYPE || code == REFERENCE_TYPE
-      || code == BOOLEAN_TYPE || code == COMPLEX_TYPE || code == VECTOR_TYPE
+      || code == BOOLEAN_TYPE || code == COMPLEX_TYPE
       || TYPE_PTRMEMFUNC_P (type))
     {
       if (raw_constructor)
@@ -578,7 +578,7 @@ digest_init (type, init, tail)
       return error_mark_node;
     }
 
-  if (code == ARRAY_TYPE || IS_AGGR_TYPE_CODE (code))
+  if (code == ARRAY_TYPE || code == VECTOR_TYPE || IS_AGGR_TYPE_CODE (code))
     {
       if (raw_constructor && TYPE_NON_AGGREGATE_CLASS (type)
 	  && TREE_HAS_CONSTRUCTOR (init))
@@ -598,7 +598,7 @@ digest_init (type, init, tail)
 	  return process_init_constructor (type, 0, tail);
 	}
 
-      if (code != ARRAY_TYPE)
+      if (CLASS_TYPE_P (type))
 	{
 	  int flags = LOOKUP_NORMAL;
 	  /* Initialization from { } is copy-initialization.  */
@@ -659,18 +659,26 @@ process_init_constructor (type, init, elts)
      for each element of this aggregate.  Chain them together in result.
      If there are too few, use 0 for each scalar ultimate component.  */
 
-  if (TREE_CODE (type) == ARRAY_TYPE)
+  if (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == VECTOR_TYPE)
     {
-      tree domain = TYPE_DOMAIN (type);
       register long len;
       register int i;
 
-      if (domain)
-	len = (TREE_INT_CST_LOW (TYPE_MAX_VALUE (domain))
-	       - TREE_INT_CST_LOW (TYPE_MIN_VALUE (domain))
-	       + 1);
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  tree domain = TYPE_DOMAIN (type);
+	  if (domain)
+	    len = (TREE_INT_CST_LOW (TYPE_MAX_VALUE (domain))
+		   - TREE_INT_CST_LOW (TYPE_MIN_VALUE (domain))
+		   + 1);
+	  else
+	    len = -1;  /* Take as many as there are */
+	}
       else
-	len = -1;  /* Take as many as there are */
+	{
+	  /* Vectors are like simple fixed-size arrays.  */
+	  len = TYPE_VECTOR_SUBPARTS (type);
+	}
 
       for (i = 0; len < 0 || i < len; i++)
 	{
