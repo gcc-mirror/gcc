@@ -27,6 +27,10 @@ G77_fnum_0 (integer * lunit)
 {
   if (*lunit >= MXUNIT || *lunit < 0)
     err (1, 101, "fnum");
+
+  if (f__units[*lunit].ufd == NULL)
+    err (1, 114, "fnum");
+
   /* f__units is a table of descriptions for the unit numbers (defined
      in io.h).  Use file descriptor (ufd) and fileno rather than udev
      field since udev is unix specific */

@@ -1,3 +1,10 @@
+2003-09-21  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR libf2c/11918
+	* fstat_.c: Call f_init().
+	* isatty_.c: Ditto.
+	* fnum_.c: Check file descriptor before handing it back.
+
 Tue Sep  9 15:22:57 2003  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure: Regenerate.

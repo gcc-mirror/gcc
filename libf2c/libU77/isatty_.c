@@ -30,6 +30,7 @@ extern integer G77_fnum_0 (integer *);
 logical
 G77_isatty_0 (integer * lunit)
 {
+  if (f__init != 1) f_init();
   if (*lunit >= MXUNIT || *lunit < 0)
     err (1, 101, "isatty");
   /* f__units is a table of descriptions for the unit numbers (defined
