@@ -155,6 +155,26 @@ struct processor_costs k6_cost = {
   {4, 4, 4}				/* cost of loading integer registers */
 };
 
+struct processor_costs athlon_cost = {
+  1,					/* cost of an add instruction */
+  1,					/* cost of a lea instruction */
+  1,					/* variable shift costs */
+  1,					/* constant shift costs */
+  5,					/* cost of starting a multiply */
+  0,					/* cost of multiply per each bit set */
+  19,					/* cost of a divide/mod */
+  8,					/* "large" insn */
+  4,					/* cost for loading QImode using movzbl */
+  {4, 5, 4},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2). */
+  {2, 3, 2},				/* cost of storing integer registers */
+  4,					/* cost of reg,reg fld/fst */
+  {6, 6, 6},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {4, 4, 4}				/* cost of loading integer registers */
+};
+
 struct processor_costs *ix86_cost = &pentium_cost;
 
 /* Processor feature/optimization bitmasks.  */
@@ -163,22 +183,23 @@ struct processor_costs *ix86_cost = &pentium_cost;
 #define m_PENT (1<<PROCESSOR_PENTIUM)
 #define m_PPRO (1<<PROCESSOR_PENTIUMPRO)
 #define m_K6  (1<<PROCESSOR_K6)
+#define m_ATHLON  (1<<PROCESSOR_ATHLON)
 
-const int x86_use_leave = m_386 | m_K6;
-const int x86_push_memory = m_386 | m_K6;
+const int x86_use_leave = m_386 | m_K6 | m_ATHLON;
+const int x86_push_memory = m_386 | m_K6 | m_ATHLON;
 const int x86_zero_extend_with_and = m_486 | m_PENT;
-const int x86_movx = 0 /* m_386 | m_PPRO | m_K6 */;
+const int x86_movx = m_ATHLON /* m_386 | m_PPRO | m_K6 */;
 const int x86_double_with_add = ~m_386;
 const int x86_use_bit_test = m_386;
 const int x86_unroll_strlen = m_486 | m_PENT;
 const int x86_use_q_reg = m_PENT | m_PPRO | m_K6;
 const int x86_use_any_reg = m_486;
-const int x86_cmove = m_PPRO;
-const int x86_deep_branch = m_PPRO | m_K6;
-const int x86_use_sahf = m_PPRO | m_K6;
+const int x86_cmove = m_PPRO | m_ATHLON;
+const int x86_deep_branch = m_PPRO | m_K6 | m_ATHLON;
+const int x86_use_sahf = m_PPRO | m_K6 | m_ATHLON;
 const int x86_partial_reg_stall = m_PPRO;
 const int x86_use_loop = m_K6;
-const int x86_use_fiop = ~m_PPRO;
+const int x86_use_fiop = ~(m_PPRO | m_ATHLON | m_PENT);
 const int x86_use_mov0 = m_K6;
 const int x86_use_cltd = ~(m_PENT | m_K6);
 const int x86_read_modify_write = ~m_PENT;
@@ -334,7 +355,8 @@ override_options ()
       {&i486_cost, 0, 0, 4, 4, 4, 1},
       {&pentium_cost, 0, 0, -4, -4, -4, 1},
       {&pentiumpro_cost, 0, 0, 4, -4, 4, 1},
-      {&k6_cost, 0, 0, -5, -5, 4, 1}
+      {&k6_cost, 0, 0, -5, -5, 4, 1},
+      {&athlon_cost, 0, 0, 4, -4, 4, 1}
     };
 
   static struct pta
@@ -351,6 +373,7 @@ override_options ()
       {"i686", PROCESSOR_PENTIUMPRO},
       {"pentiumpro", PROCESSOR_PENTIUMPRO},
       {"k6", PROCESSOR_K6},
+      {"athlon", PROCESSOR_ATHLON},
     };
 
   int const pta_size = sizeof(processor_alias_table)/sizeof(struct pta);
@@ -5582,9 +5605,9 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
   rtx set, set2;
   int dep_insn_code_number;
 
-  /* We describe no anti or output depenancies.  */
+  /* Anti and output depenancies have zero cost on all CPUs.  */
   if (REG_NOTE_KIND (link) != 0)
-    return cost;
+    return 0;
 
   dep_insn_code_number = recog_memoized (dep_insn);
 
@@ -5660,6 +5683,20 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
 	cost += 5;
       break;
 
+    case PROCESSOR_ATHLON:
+      /* Address Generation Interlock cause problems on the Athlon CPU because
+         the loads and stores are done in order so once one load or store has
+	 to wait, others must too, so penalize the AGIs slightly by one cycle.
+	 We might experiment with this value later.  */
+      if (ix86_agi_dependant (insn, dep_insn, insn_type))
+	cost += 1;
+
+      /* Since we can't represent delayed latencies of load+operation, 
+	 increase the cost here for non-imov insns.  */
+      if (dep_insn_type != TYPE_IMOV
+	  && dep_insn_type != TYPE_FMOV
+	  && get_attr_memory (dep_insn) == MEMORY_LOAD)
+	cost += 2;
     default:
       break;
     }

@@ -1,3 +1,22 @@
+Fri Dec 10 00:52:13 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* i386.md (cpu attribute): Add "athlon".
+	(athlon_decode): New attribute.
+	(Athlon scheduling units definitions): New.
+	(fcmp and shld patterns): Set athlon_decode to "vector".
+	* i386.c (athlon_cost): New.
+	(m_ATHLON): New.
+	(x86_use_leave, x86_push_memory, x86_movx, x86_cmove, x86_deep_branch,
+	x86_use_sahf): Set for Athlon.
+	(x86_use_fiop): Unset for Athlon.
+	(override_options): Define Athlon alignments and "athlon" name.
+	(x86_adjust_cost): Penalize AGI and delayed latencies for Athlon.
+	* i386.h (TARGET_ATHLON): New.
+	(enum processor_type): Add PROCESSOR_ATHLON.
+	(TARGET_CPU_DEFAULT_SPEC): Set to "-D__tune_athlon__"
+	for CPU_DEFAULT==5
+	(TARGET_CPP_CPU_SPECS): Set -D__tune_athlon__ for Athlon.
+
 1999-12-09  Andreas Jaeger  <aj@suse.de>
 
 	* loop.c (record_biv): Declare parameter as int.

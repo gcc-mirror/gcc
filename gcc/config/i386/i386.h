@@ -151,6 +151,7 @@ extern int target_flags;
 #define TARGET_PENTIUM (ix86_cpu == PROCESSOR_PENTIUM)
 #define TARGET_PENTIUMPRO (ix86_cpu == PROCESSOR_PENTIUMPRO)
 #define TARGET_K6 (ix86_cpu == PROCESSOR_K6)
+#define TARGET_ATHLON (ix86_cpu == PROCESSOR_ATHLON)
 
 #define CPUMASK (1 << ix86_cpu)
 extern const int x86_use_leave, x86_push_memory, x86_zero_extend_with_and;
@@ -245,6 +246,7 @@ enum processor_type
   PROCESSOR_PENTIUM,
   PROCESSOR_PENTIUMPRO,
   PROCESSOR_K6,
+  PROCESSOR_ATHLON,
   PROCESSOR_max
 };
 
@@ -326,6 +328,9 @@ extern int ix86_arch;
 #if TARGET_CPU_DEFAULT == 4
 #define CPP_CPU_DEFAULT_SPEC "-D__tune_k6__"
 #endif
+#if TARGET_CPU_DEFAULT == 5
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_athlon__"
+#endif
 #ifndef CPP_CPU_DEFAULT_SPEC
 #define CPP_CPU_DEFAULT_SPEC "-D__tune_i386__"
 #endif
@@ -342,11 +347,13 @@ extern int ix86_arch;
 %{march=pentiumpro|march=i686:-D__pentiumpro -D__pentiumpro__ \
   %{!mcpu*:-D__tune_pentiumpro__ }}\
 %{march=k6:-D__k6 -D__k6__ %{!mcpu*:-D__tune_k6__ }}\
+%{march=athlon:-D__athlon -D__athlon__ %{!mcpu*:-D__tune_athlon__ }}\
 %{m386|mcpu=i386:-D__tune_i386__ }\
 %{m486|mcpu=i486:-D__tune_i486__ }\
 %{mpentium|mcpu=pentium|mcpu=i586:-D__tune_pentium__ }\
 %{mpentiumpro|mcpu=pentiumpro|mcpu=i686:-D__tune_pentiumpro__ }\
 %{mcpu=k6:-D__tune_k6__ }\
+%{mcpu=athlon:-D__tune_athlon__ }\
 %{!march*:%{!mcpu*:%{!m386:%{!m486:%{!mpentium*:%(cpp_cpu_default)}}}}}"
 #endif
 
