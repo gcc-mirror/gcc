@@ -1,3 +1,12 @@
+2000-02-26  Anthony Green  <green@cygnus.com>
+
+	* gnu/gcj/io/MimeTypes.java: Test for null.
+
+	* jni.cc (_Jv_JNI_AttachCurrentThread): Minor cleanup.
+	(JNI_GetCreatedJavaVMs): Remove compiler warning.
+
+	* java/net/URLConnection.java: Update copyright notice.
+
 2000-02-25  Tom Tromey  <tromey@cygnus.com>
 
 	* jni.cc (_Jv_JNI_RegisterNatives): Conditionalize body on

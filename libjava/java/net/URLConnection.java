@@ -1,7 +1,7 @@
 // URLConnection.java - Superclass of all communications links between
 //			an application and a URL.
 
-/* Copyright (C) 1999  Red Hat, Inc.
+/* Copyright (C) 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
