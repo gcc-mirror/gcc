@@ -1,3 +1,9 @@
+2002-01-30  Richard Henderson  <rth@redhat.com>
+
+	* testsuite/27_io/ostream_inserter_arith.cc (test03_check): Break
+	out from test03 and templatize.
+	(test03): Use it.
+
 2002-01-30  Paolo Carlini  <pcarlini@unitus.it>
 
 	* config/locale/numpunct_members_gnu.cc

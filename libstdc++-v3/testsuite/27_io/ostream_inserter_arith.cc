@@ -298,6 +298,30 @@ test02()
   return 0;
 }
 
+template<typename T>
+bool
+test03_check(T n)
+{
+  stringbuf strbuf;
+  ostream o(&strbuf);
+  const char *expect;
+  bool test = true;
+
+  if (numeric_limits<T>::digits + 1 == 16)
+    expect = "177777 ffff";
+  else if (numeric_limits<T>::digits + 1 == 32)
+    expect = "37777777777 ffffffff";
+  else if (numeric_limits<T>::digits + 1 == 64)
+    expect = "1777777777777777777777 ffffffffffffffff";
+  else
+    expect = "wow, you've got some big numbers here";
+
+  o << oct << n << ' ' << hex << n;
+  VERIFY ( strbuf.str() == expect );
+
+  return test;
+}
+
 int 
 test03()
 {
@@ -306,41 +330,10 @@ test03()
   long l = -1;
   bool test = true;
 
-  const string str_blank;
-  string str_tmp;
-  stringbuf strbuf;
-  ostream o(&strbuf);
+  test &= test03_check (s);
+  test &= test03_check (i);
+  test &= test03_check (l);
 
-  o << oct << s << ' ' << hex << s;
-  if (numeric_limits<short>::digits + 1 == 16)
-    VERIFY( strbuf.str() == "177777 ffff" );
-  else
-    VERIFY( strbuf.str() == "37777777777 ffffffff" );
-  strbuf.str(str_blank);
-
-  o << oct << i << ' ' << hex << i;
-  if (numeric_limits<int>::digits + 1 == 16)
-    VERIFY( strbuf.str() == "177777 ffff" );
-  else if (numeric_limits<int>::digits + 1 == 32)
-    VERIFY( strbuf.str() == "37777777777 ffffffff" );
-  else
-    VERIFY( strbuf.str() == "1777777777777777777777 "
-	    "ffffffffffffffff" );
-  strbuf.str(str_blank);
-
-  o << oct << l << ' ' << hex << l;
-  if (numeric_limits<long>::digits + 1 == 32)
-    VERIFY( strbuf.str() == "37777777777 ffffffff" );
-  else
-    VERIFY( strbuf.str() == "1777777777777777777777 "
-	    "ffffffffffffffff" );
-  strbuf.str(str_blank);
-
-  o << showpos << hex << showbase << 11;
-  VERIFY( strbuf.str() == "0xb" );
-  
-  VERIFY(test);
-  
   return 0;
 }
 
@@ -350,12 +343,15 @@ test04()
 {
   stringbuf strbuf1, strbuf2;
   ostream o1(&strbuf1), o2(&strbuf2);
+  bool test = true;
+
   o1 << hex << showbase << setw(6) << internal << 0xff;
   VERIFY( strbuf1.str() == "0x  ff" );
   
   // ... vs internal-adjusted const char*-type objects
   o2 << hex << showbase << setw(6) << internal << "0xff";
   VERIFY( strbuf2.str() == "  0xff" );
+
   return 0;
 }
 
