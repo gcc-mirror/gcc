@@ -297,6 +297,38 @@ extern int memcmp();\n\n\
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Aab_Solaris_Sys_Varargs_H fix
+ */
+tSCC zAab_Solaris_Sys_Varargs_HName[] =
+     "AAB_solaris_sys_varargs_h";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zAab_Solaris_Sys_Varargs_HList[] =
+  "|sys/varargs.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzAab_Solaris_Sys_Varargs_HMachs[] = {
+        "*-*-solaris*",
+        (const char*)NULL };
+#define AAB_SOLARIS_SYS_VARARGS_H_TEST_CT  0
+#define aAab_Solaris_Sys_Varargs_HTests   (tTestDesc*)NULL
+
+/*
+ *  Fix Command Arguments for Aab_Solaris_Sys_Varargs_H
+ */
+static const char* apzAab_Solaris_Sys_Varargs_HPatch[] = {
+"#ifdef __STDC__\n\
+#include <stdarg.h>\n\
+#else\n\
+#include <varargs.h>\n\
+#endif\n",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Aab_Svr4_Replace_Byteorder fix
  */
 tSCC zAab_Svr4_Replace_ByteorderName[] =
@@ -3696,38 +3728,6 @@ static const char* apzSolaris_Stdio_TagPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description of Solaris_Sys_Varargs_H fix
- */
-tSCC zSolaris_Sys_Varargs_HName[] =
-     "solaris_sys_varargs_h";
-
-/*
- *  File name selection pattern
- */
-tSCC zSolaris_Sys_Varargs_HList[] =
-  "|sys/varargs.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzSolaris_Sys_Varargs_HMachs[] = {
-        "*-*-solaris*",
-        (const char*)NULL };
-#define SOLARIS_SYS_VARARGS_H_TEST_CT  0
-#define aSolaris_Sys_Varargs_HTests   (tTestDesc*)NULL
-
-/*
- *  Fix Command Arguments for Solaris_Sys_Varargs_H
- */
-static const char* apzSolaris_Sys_Varargs_HPatch[] = {
-"#ifdef __STDC__\n\
-#include <stdarg.h>\n\
-#else\n\
-#include <varargs.h>\n\
-#endif\n",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
  *  Description of Statsswtch fix
  */
 tSCC zStatsswtchName[] =
@@ -5549,6 +5549,7 @@ typedef enum {
     AAB_FD_ZERO_GNU_TYPES_H_FIXIDX,
     AAB_FD_ZERO_SELECTBITS_H_FIXIDX,
     AAB_SUN_MEMCPY_FIXIDX,
+    AAB_SOLARIS_SYS_VARARGS_H_FIXIDX,
     AAB_SVR4_REPLACE_BYTEORDER_FIXIDX,
     AAB_ULTRIX_ANSI_COMPAT_FIXIDX,
     AAB_ULTRIX_LIMITS_FIXIDX,
@@ -5637,7 +5638,6 @@ typedef enum {
     SCO_UTIME_FIXIDX,
     SOLARIS_MUTEX_INIT_FIXIDX,
     SOLARIS_STDIO_TAG_FIXIDX,
-    SOLARIS_SYS_VARARGS_H_FIXIDX,
     STATSSWTCH_FIXIDX,
     STDIO_STDARG_H_FIXIDX,
     STDIO_VA_LIST_FIXIDX,
@@ -5712,6 +5712,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzAab_Sun_MemcpyMachs,
      AAB_SUN_MEMCPY_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAab_Sun_MemcpyTests,   apzAab_Sun_MemcpyPatch, 0 },
+
+  {  zAab_Solaris_Sys_Varargs_HName,    zAab_Solaris_Sys_Varargs_HList,
+     apzAab_Solaris_Sys_Varargs_HMachs,
+     AAB_SOLARIS_SYS_VARARGS_H_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
+     aAab_Solaris_Sys_Varargs_HTests,   apzAab_Solaris_Sys_Varargs_HPatch, 0 },
 
   {  zAab_Svr4_Replace_ByteorderName,    zAab_Svr4_Replace_ByteorderList,
      apzAab_Svr4_Replace_ByteorderMachs,
@@ -6152,11 +6157,6 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzSolaris_Stdio_TagMachs,
      SOLARIS_STDIO_TAG_TEST_CT, FD_MACH_ONLY,
      aSolaris_Stdio_TagTests,   apzSolaris_Stdio_TagPatch, 0 },
-
-  {  zSolaris_Sys_Varargs_HName,    zSolaris_Sys_Varargs_HList,
-     apzSolaris_Sys_Varargs_HMachs,
-     SOLARIS_SYS_VARARGS_H_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aSolaris_Sys_Varargs_HTests,   apzSolaris_Sys_Varargs_HPatch, 0 },
 
   {  zStatsswtchName,    zStatsswtchList,
      apzStatsswtchMachs,
