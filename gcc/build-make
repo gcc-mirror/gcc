@@ -24,6 +24,9 @@ HOST_OBSTACK=$(OBSTACK)
 # target.
 FIXINCLUDES=Makefile.in
 
+# Don't run fixproto either
+STMP_FIXPROTO =
+
 # Cause installation using install-build. We do nothing here.
 INSTALL_TARGET = install-build
 
