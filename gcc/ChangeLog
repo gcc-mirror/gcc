@@ -1,5 +1,10 @@
 2000-11-06  Neil Booth  <neilb@earthling.net>
 
+	* cpplex.c (_cpp_equiv_tokens): Check arg_no in the
+	CPP_MACRO_ARG case.
+
+2000-11-06  Neil Booth  <neilb@earthling.net>
+
 	* c-lex.c (c_lex): Replace tok.val.aux with tok.val.c or
 	tok.val.arg_no as appropriate.
 	* cppexp.c (lex): Similarly.
