@@ -1,3 +1,12 @@
+2000-01-27  Fred Fish  <fnf@be.com>
+
+	* gthr-posix.h: Fix typo; compatibily -> compatibility.
+	* gthr-single.h: Likewise.
+	* gthr-solaris.h: Likewise.
+	* gthr-vxworks.h: Likewise.
+	* gthr-win32.h: Likewise.
+	* gthr.h: Likewise.
+
 2000-01-27  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppinit.c: Add " (cpplib)" to end of string printed by
