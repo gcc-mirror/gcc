@@ -253,6 +253,8 @@ GLIBCXX_3.4.1 {
  
 GLIBCXX_3.4.2 {
 
+    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE4fileEv;
+
     _ZN9__gnu_cxx11__pool_base9_M_refillE[jm];
     _ZN9__gnu_cxx11__pool_base16_M_get_free_listE[jm];
     _ZN9__gnu_cxx11__pool_base12_M_get_mutexEv;
