@@ -1,3 +1,9 @@
+2001-12-11  Daniel Berlin  <dan@cgsoftware.com>
+
+	* sched-rgn.c (CONST_BASED_ADDRESS_P): CONST_INT -> CONSTANT_P.
+	(may_trap_exp): Stores only are risk if they trap, too, not just
+	if code == MEM.
+
 2001-12-11  Aldy Hernandez  <aldyh@redhat.com>
 
         * flow.c (find_regno_partial): Indent properly.  Add a default to

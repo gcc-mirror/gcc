@@ -1566,8 +1566,8 @@ enum INSN_TRAP_CLASS
   (GET_CODE (x) == REG					\
    || ((GET_CODE (x) == PLUS || GET_CODE (x) == MINUS   \
 	|| (GET_CODE (x) == LO_SUM))	                \
-       && (GET_CODE (XEXP (x, 0)) == CONST_INT		\
-	   || GET_CODE (XEXP (x, 1)) == CONST_INT)))
+       && (CONSTANT_P (XEXP (x, 0))		\
+	   || CONSTANT_P (XEXP (x, 1)))))
 
 /* Turns on the fed_by_spec_load flag for insns fed by load_insn.  */
 
@@ -1738,7 +1738,7 @@ may_trap_exp (x, is_store)
   code = GET_CODE (x);
   if (is_store)
     {
-      if (code == MEM)
+      if (code == MEM && may_trap_p (x))
 	return TRAP_RISKY;
       else
 	return TRAP_FREE;
