@@ -2652,46 +2652,55 @@ read_complex_part (rtx cplx, bool imag_p)
 			    true, NULL_RTX, imode, imode);
 }
 
+/* A subroutine of emit_move_via_alt_mode.  Yet another lowpart generator.
+   NEW_MODE and OLD_MODE are the same size.  Return NULL if X cannot be
+   represented in NEW_MODE.  */
+
+static rtx
+emit_move_change_mode (enum machine_mode new_mode,
+		       enum machine_mode old_mode, rtx x)
+{
+  rtx ret;
+
+  if (reload_in_progress && MEM_P (x))
+    {
+      /* We can't use gen_lowpart here because it may call change_address
+	 which is not appropriate if we were called when a reload was in
+	 progress.  We don't have to worry about changing the address since
+	 the size in bytes is supposed to be the same.  Copy the MEM to
+	 change the mode and move any substitutions from the old MEM to
+	 the new one.  */
+
+      ret = adjust_address_nv (x, new_mode, 0);
+      copy_replacements (x, ret);
+    }
+  else
+    {
+      /* Note that we do want simplify_subreg's behaviour of validating
+	 that the new mode is ok for a hard register.  If we were to use
+	 simplify_gen_subreg, we would create the subreg, but would
+	 probably run into the target not being able to implement it.  */
+      ret = simplify_subreg (new_mode, x, old_mode, 0);
+    }
+
+  return ret;
+}
+
 /* A subroutine of emit_move_insn_1.  Generate a move from Y into X using
    ALT_MODE instead of the operand's natural mode, MODE.  CODE is the insn
    code for the move in ALT_MODE, and is known to be valid.  Returns the
-   instruction emitted.  */
+   instruction emitted, or NULL if X or Y cannot be represented in ALT_MODE.  */
 
 static rtx
 emit_move_via_alt_mode (enum machine_mode alt_mode, enum machine_mode mode,
 			enum insn_code code, rtx x, rtx y)
 {
-  /* Get X and Y in ALT_MODE.  We can't use gen_lowpart here because it
-     may call change_address which is not appropriate if we were
-     called when a reload was in progress.  We don't have to worry
-     about changing the address since the size in bytes is supposed to
-     be the same.  Copy the MEM to change the mode and move any
-     substitutions from the old MEM to the new one.  */
-
-  if (reload_in_progress)
-    {
-      rtx x1 = x, y1 = y;
-
-      x = gen_lowpart_common (alt_mode, x1);
-      if (x == 0 && MEM_P (x1))
-	{
-	  x = adjust_address_nv (x1, alt_mode, 0);
-	  copy_replacements (x1, x);
-	}
-
-      y = gen_lowpart_common (alt_mode, y1);
-      if (y == 0 && MEM_P (y1))
-	{
-	  y = adjust_address_nv (y1, alt_mode, 0);
-	  copy_replacements (y1, y);
-	}
-    }
-  else
-    {
-      x = simplify_gen_subreg (alt_mode, x, mode, 0);
-      y = simplify_gen_subreg (alt_mode, y, mode, 0);
-    }
-
+  x = emit_move_change_mode (alt_mode, mode, x);
+  if (x == NULL_RTX)
+    return NULL_RTX;
+  y = emit_move_change_mode (alt_mode, mode, y);
+  if (y == NULL_RTX)
+    return NULL_RTX;
   return emit_insn (GEN_FCN (code) (x, y));
 }
 

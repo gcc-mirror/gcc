@@ -1,3 +1,8 @@
+2004-12-12  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (emit_move_change_mode): New.
+	(emit_move_via_alt_mode): Use it.
+
 2004-12-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
