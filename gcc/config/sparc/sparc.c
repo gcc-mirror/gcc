@@ -1,6 +1,8 @@
 /* Subroutines for insn-output.c for Sun SPARC.
    Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
+   64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
+   at Cygnus Support.
 
 This file is part of GNU CC.
 
@@ -34,12 +36,41 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "expr.h"
 #include "recog.h"
 
+/* 1 if the caller has placed an "unimp" insn immediately after the call.
+   This is used in v8 code when calling a function that returns a structure.
+   v9 doesn't have this.  */
+
+#define SKIP_CALLERS_UNIMP_P (!TARGET_V9 && current_function_returns_struct)
+
 /* Global variables for machine-dependent things.  */
+
+/* Says what cpu we're compiling for.  */
+enum cpu_type sparc_cpu_type;
+
+/* Size of frame.  Need to know this to emit return insns from leaf procedures.
+   ACTUAL_FSIZE is set by compute_frame_size() which is called during the
+   reload pass.  This is important as the value is later used in insn
+   scheduling (to see what can go in a delay slot).
+   APPARENT_FSIZE is the size of the stack less the register save area and less
+   the outgoing argument area.  It is used when saving call preserved regs.  */
+static int apparent_fsize;
+static int actual_fsize;
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
 
 rtx sparc_compare_op0, sparc_compare_op1;
+
+/* Count of named arguments (v9 only).
+   ??? INIT_CUMULATIVE_ARGS initializes these, and FUNCTION_ARG_ADVANCE
+   increments SPARC_ARG_COUNT. They are then used by
+   FUNCTION_ARG_CALLEE_COPIES to determine if the argument is really a named
+   argument or not.  This hack is necessary because the NAMED argument to the
+   FUNCTION_ARG_XXX macros is not what it says it is: it does not include the
+   last named argument.  */
+
+int sparc_arg_count;
+int sparc_n_named_args;
 
 /* We may need an epilogue if we spill too many registers.
    If this is non-zero, then we branch here for the epilogue.  */
@@ -60,23 +91,123 @@ char leaf_reg_remap[] =
   32, 33, 34, 35, 36, 37, 38, 39,
   40, 41, 42, 43, 44, 45, 46, 47,
   48, 49, 50, 51, 52, 53, 54, 55,
-  56, 57, 58, 59, 60, 61, 62, 63};
+  56, 57, 58, 59, 60, 61, 62, 63,
+  64, 65, 66, 67, 68, 69, 70, 71,
+  72, 73, 74, 75, 76, 77, 78, 79,
+  80, 81, 82, 83, 84, 85, 86, 87,
+  88, 89, 90, 91, 92, 93, 94, 95,
+  96, 97, 98, 99};
 
 #endif
 
-/* Global variables set by FUNCTION_PROLOGUE.  */
-/* Size of frame.  Need to know this to emit return insns from
-   leaf procedures.  */
-static int apparent_fsize;
-static int actual_fsize;
-
 /* Name of where we pretend to think the frame pointer points.
    Normally, this is "%fp", but if we are in a leaf procedure,
-   this is "%sp+something".  */
-char *frame_base_name;
+   this is "%sp+something".  We record "something" separately as it may be
+   too big for reg+constant addressing.  */
+
+static char *frame_base_name;
+static int frame_base_offset;
 
 static rtx find_addr_reg ();
+static void sparc_init_modes ();
+
+/* Option handling.  */
 
+/* Contains one of: medium-low, medium-anywhere.  */
+/* ??? These names are quite long.  */
+
+char *sparc_code_model;
+
+/* Validate and override various options, and do some machine dependent
+   initialization.  */
+
+void
+sparc_override_options ()
+{
+  if (sparc_code_model == 0)
+    /* Nothing to do.  */
+    ;
+  else if (! TARGET_V9)
+    error ("code model support is only available with -mv9");
+  else if (strcmp (sparc_code_model, "medium-low") == 0)
+    {
+      target_flags &= ~MASK_CODE_MODEL;
+      target_flags |= MASK_MEDLOW;
+    }
+  else if (strcmp (sparc_code_model, "medium-anywhere") == 0)
+    {
+      target_flags &= ~MASK_CODE_MODEL;
+      target_flags |= MASK_MEDANY;
+    }
+  else
+    error ("bad value (%s) for -mcode-model switch", sparc_code_model);
+
+  /* Check for any conflicts in the choice of options.  */
+  /* ??? This stuff isn't really usable yet.  */
+
+  if (! TARGET_V9)
+    {
+      if (TARGET_INT64)
+	error ("-mint64 is only available with -mv9");
+      if (TARGET_LONG64)
+	error ("-mlong64 is only available with -mv9");
+      if (TARGET_PTR64)
+	error ("-mptr64 is only available with -mv9");
+      if (TARGET_ENV32)
+	error ("-menv32 is only available with -mv9");
+      if (TARGET_STACK_BIAS)
+	error ("-mstack-bias is only available with -mv9");
+    }
+  else
+    {
+      /* ??? Are there any options that aren't usable with v9.
+	 -munaligned-doubles?  */
+    }
+
+  /* Check for conflicts in cpu specification.
+     If we use -mcpu=xxx, this can be removed.  */
+
+  if ((TARGET_V8 != 0) + (TARGET_SPARCLITE != 0) + (TARGET_V9 != 0) > 1)
+    error ("conflicting architectures defined");
+
+  /* Do various machine dependent initializations.  */
+  sparc_init_modes ();
+}
+
+/* Float conversions (v9 only).
+
+   The floating point registers cannot hold DImode values because SUBREG's
+   on them get the wrong register.   "(subreg:SI (reg:DI M int-reg) 0)" is the
+   same as "(subreg:SI (reg:DI N float-reg) 1)", but gcc doesn't know how to
+   turn the "0" to a "1".  Therefore, we must explicitly do the conversions
+   to/from int/fp regs.  `sparc64_fpconv_stack_slot' is the address of an
+   8 byte stack slot used during the transfer.
+   ??? I could have used [%fp-16] but I didn't want to add yet another
+   dependence on this.  */
+/* ??? Can we use assign_stack_temp here?  */
+
+static rtx fpconv_stack_temp;
+
+/* Called once for each function.  */
+
+void
+sparc64_init_expanders ()
+{
+  fpconv_stack_temp = NULL_RTX;
+}
+
+/* Assign a stack temp for fp/int DImode conversions.  */
+
+rtx
+sparc64_fpconv_stack_temp ()
+{
+  if (fpconv_stack_temp == NULL_RTX)
+      fpconv_stack_temp =
+	assign_stack_local (DImode, GET_MODE_SIZE (DImode), 0);
+
+    return fpconv_stack_temp;
+}
+
 /* Return non-zero only if OP is a register of mode MODE,
    or const0_rtx.  */
 int
@@ -106,6 +237,40 @@ fp_zero_operand (op)
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, op);
   return REAL_VALUES_EQUAL (r, dconst0);
+}
+
+/* Nonzero if OP is an integer register.  */
+
+int
+intreg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, SImode)
+	  || (TARGET_V9 && register_operand (op, DImode)));
+}
+
+/* Nonzero if OP is a floating point condition code register.  */
+
+int
+ccfp_reg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  /* This can happen when recog is called from combine.  Op may be a MEM.
+     Fail instead of calling abort in this case.  */
+  if (GET_CODE (op) != REG || REGNO (op) == 0)
+    return 0;
+  if (GET_MODE (op) != mode)
+    return 0;
+
+#if 0	/* ??? ==> 1 when %fcc1-3 are pseudos first.  See gen_compare_reg().  */
+  if (reg_renumber == 0)
+    return REGNO (op) >= FIRST_PSEUDO_REGISTER;
+  return REGNO_OK_FOR_CCFP_P (REGNO (op));
+#else
+  return (unsigned) REGNO (op) - 96 < 4;
+#endif
 }
 
 /* Nonzero if OP can appear as the dest of a RESTORE insn.  */
@@ -184,6 +349,52 @@ symbolic_memory_operand (op, mode)
   op = XEXP (op, 0);
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == CONST
 	  || GET_CODE (op) == HIGH || GET_CODE (op) == LABEL_REF);
+}
+
+/* Return 1 if the operand is a data segment reference.  This includes
+   the readonly data segment, or in other words anything but the text segment.
+   This is needed in the medium/anywhere code model on v9.  These values
+   are accessed with MEDANY_BASE_REG.  */
+
+int
+data_segment_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  switch (GET_CODE (op))
+    {
+    case SYMBOL_REF :
+      return ! SYMBOL_REF_FLAG (op);
+    case PLUS :
+      /* Assume canonical format of symbol + constant.  */
+    case CONST :
+      return data_segment_operand (XEXP (op, 0));
+    default :
+      return 0;
+    }
+}
+
+/* Return 1 if the operand is a text segment reference.
+   This is needed in the medium/anywhere code model on v9.  */
+
+int
+text_segment_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  switch (GET_CODE (op))
+    {
+    case LABEL_REF :
+      return 1;
+    case SYMBOL_REF :
+      return SYMBOL_REF_FLAG (op);
+    case PLUS :
+      /* Assume canonical format of symbol + constant.  */
+    case CONST :
+      return text_segment_operand (XEXP (op, 0));
+    default :
+      return 0;
+    }
 }
 
 /* Return 1 if the operand is either a register or a memory operand that is
@@ -321,6 +532,23 @@ noov_compare_op (op, mode)
   return 1;
 }
 
+/* Nonzero if OP is a comparison operator suitable for use in v9
+   conditional move or branch on register contents instructions.  */
+
+int
+v9_regcmp_op (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  enum rtx_code code = GET_CODE (op);
+
+  if (GET_RTX_CLASS (code) != '<')
+    return 0;
+
+  return (code == EQ || code == NE || code == GE || code == LT
+	  || code == LE || code == GT);
+}
+
 /* Return 1 if this is a SIGN_EXTEND or ZERO_EXTEND operation.  */
 
 int
@@ -375,9 +603,40 @@ arith_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && SMALL_INT (op)));
 }
 
+/* Return true if OP is a register, or is a CONST_INT that can fit in an 11
+   bit immediate field.  This is an acceptable SImode operand for the movcc
+   instructions.  */
+
+int
+arith11_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT
+	      && ((unsigned) (INTVAL (op) + 0x400) < 0x800)));
+}
+
+/* Return true if OP is a register, or is a CONST_INT that can fit in an 10
+   bit immediate field.  This is an acceptable SImode operand for the movrcc
+   instructions.  */
+
+int
+arith10_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT
+	      && ((unsigned) (INTVAL (op) + 0x200) < 0x400)));
+}
+
 /* Return true if OP is a register, is a CONST_INT that fits in a 13 bit
    immediate field, or is a CONST_DOUBLE whose both parts fit in a 13 bit
-   immediate field.  */
+   immediate field.
+   v9: Return true if OP is a register, or is a CONST_INT or CONST_DOUBLE that
+   can fit in a 13 bit immediate field.  This is an acceptable DImode operand
+   for most 3 address instructions.  */
 
 int
 arith_double_operand (op, mode)
@@ -386,9 +645,63 @@ arith_double_operand (op, mode)
 {
   return (register_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && SMALL_INT (op))
-	  || (GET_CODE (op) == CONST_DOUBLE
+	  || (! TARGET_V9
+	      && GET_CODE (op) == CONST_DOUBLE
 	      && (unsigned) (CONST_DOUBLE_LOW (op) + 0x1000) < 0x2000
-	      && (unsigned) (CONST_DOUBLE_HIGH (op) + 0x1000) < 0x2000));
+	      && (unsigned) (CONST_DOUBLE_HIGH (op) + 0x1000) < 0x2000)
+	  || (TARGET_V9
+	      && GET_CODE (op) == CONST_DOUBLE
+	      && (unsigned) (CONST_DOUBLE_LOW (op) + 0x1000) < 0x2000
+	      && ((CONST_DOUBLE_HIGH (op) == -1
+		   && (CONST_DOUBLE_LOW (op) & 0x1000) == 0x1000)
+		  || (CONST_DOUBLE_HIGH (op) == 0
+		      && (CONST_DOUBLE_LOW (op) & 0x1000) == 0))));
+}
+
+/* Return true if OP is a register, or is a CONST_INT or CONST_DOUBLE that
+   can fit in an 11 bit immediate field.  This is an acceptable DImode
+   operand for the movcc instructions.  */
+/* ??? Replace with arith11_operand?  */
+
+int
+arith11_double_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  || (GET_CODE (op) == CONST_DOUBLE
+	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
+	      && (unsigned) (CONST_DOUBLE_LOW (op) + 0x400) < 0x800
+	      && ((CONST_DOUBLE_HIGH (op) == -1
+		   && (CONST_DOUBLE_LOW (op) & 0x400) == 0x400)
+		  || (CONST_DOUBLE_HIGH (op) == 0
+		      && (CONST_DOUBLE_LOW (op) & 0x400) == 0)))
+	  || (GET_CODE (op) == CONST_INT
+	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
+	      && (unsigned) (INTVAL (op) + 0x400) < 0x800));
+}
+
+/* Return true if OP is a register, or is a CONST_INT or CONST_DOUBLE that
+   can fit in an 10 bit immediate field.  This is an acceptable DImode
+   operand for the movrcc instructions.  */
+/* ??? Replace with arith10_operand?  */
+
+int
+arith10_double_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  || (GET_CODE (op) == CONST_DOUBLE
+	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
+	      && (unsigned) (CONST_DOUBLE_LOW (op) + 0x200) < 0x400
+	      && ((CONST_DOUBLE_HIGH (op) == -1
+		   && (CONST_DOUBLE_LOW (op) & 0x200) == 0x200)
+		  || (CONST_DOUBLE_HIGH (op) == 0
+		      && (CONST_DOUBLE_LOW (op) & 0x200) == 0)))
+	  || (GET_CODE (op) == CONST_INT
+	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
+	      && (unsigned) (INTVAL (op) + 0x200) < 0x400));
 }
 
 /* Return truth value of whether OP is a integer which fits the
@@ -443,7 +756,7 @@ clobbered_register (op, mode)
 }
 
 /* X and Y are two things to compare using CODE.  Emit the compare insn and
-   return the rtx for register 0 in the proper mode.  */
+   return the rtx for the cc reg in the proper mode.  */
 
 rtx
 gen_compare_reg (code, x, y)
@@ -451,12 +764,182 @@ gen_compare_reg (code, x, y)
      rtx x, y;
 {
   enum machine_mode mode = SELECT_CC_MODE (code, x, y);
-  rtx cc_reg = gen_rtx (REG, mode, 0);
+  rtx cc_reg;
+
+  /* ??? We don't have movcc patterns so we cannot generate pseudo regs for the
+     fpcc regs (cse can't tell they're really call clobbered regs and will
+     remove a duplicate comparison even if there is an intervening function
+     call - it will then try to reload the cc reg via an int reg which is why
+     we need the movcc patterns).  It is possible to provide the movcc
+     patterns by using the ldxfsr/stxfsr v9 insns.  I tried it: you need two
+     registers (say %g1,%g5) and it takes about 6 insns.  A better fix would be
+     to tell cse that CCFPE mode registers (even pseudoes) are call
+     clobbered.  */
+
+  /* ??? This is an experiment.  Rather than making changes to cse which may
+     or may not be easy/clean, we do our own cse.  This is possible because
+     we will generate hard registers.  Cse knows they're call clobbered (it
+     doesn't know the same thing about pseudos). If we guess wrong, no big
+     deal, but if we win, great!  */
+
+  if (TARGET_V9 && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+#if 1 /* experiment */
+    {
+      int reg;
+      /* We cycle through the registers to ensure they're all exercised.  */
+      static int next_fpcc_reg = 0;
+      /* Previous x,y for each fpcc reg.  */
+      static rtx prev_args[4][2];
+
+      /* Scan prev_args for x,y.  */
+      for (reg = 0; reg < 4; reg++)
+	if (prev_args[reg][0] == x && prev_args[reg][1] == y)
+	  break;
+      if (reg == 4)
+	{
+	  reg = next_fpcc_reg;
+	  prev_args[reg][0] = x;
+	  prev_args[reg][1] = y;
+	  next_fpcc_reg = (next_fpcc_reg + 1) & 3;
+	}
+      cc_reg = gen_rtx (REG, mode, reg + 96);
+    }
+#else
+    cc_reg = gen_reg_rtx (mode);
+#endif /* ! experiment */
+  else
+    cc_reg = gen_rtx (REG, mode, 0);
 
   emit_insn (gen_rtx (SET, VOIDmode, cc_reg,
 		      gen_rtx (COMPARE, mode, x, y)));
 
   return cc_reg;
+}
+
+/* This function is used for v9 only.
+   CODE is the code for an Scc's comparison.
+   OPERANDS[0] is the target of the Scc insn.
+   OPERANDS[1] is the value we compare against const0_rtx (which hasn't
+   been generated yet).
+
+   This function is needed to turn
+
+	   (set (reg:SI 110)
+	       (gt (reg:CCX 0 %g0)
+	           (const_int 0)))
+   into
+	   (set (reg:SI 110)
+	       (gt:DI (reg:CCX 0 %g0)
+	           (const_int 0)))
+
+   IE: The instruction recognizer needs to see the mode of the comparison to
+   find the right instruction. We could use "gt:DI" right in the
+   define_expand, but leaving it out allows us to handle DI, SI, etc.
+
+   We refer to the global sparc compare operands sparc_compare_op0 and
+   sparc_compare_op1.  
+
+   ??? Some of this is outdated as the scc insns set the mode of the
+   comparison now.
+
+   ??? We optimize for the case where op1 is 0 and the comparison allows us to
+   use the "movrCC" insns. This reduces the generated code from three to two
+   insns.  This way seems too brute force though.  Is there a more elegant way
+   to achieve the same effect?
+
+   Currently, this function always returns 1.  ??? Can it ever fail?  */
+
+int
+gen_v9_scc (compare_code, operands)
+     enum rtx_code compare_code;
+     register rtx *operands;
+{
+  rtx temp;
+
+  if (GET_MODE_CLASS (GET_MODE (sparc_compare_op0)) == MODE_INT
+      && sparc_compare_op1 == const0_rtx
+      && (compare_code == EQ || compare_code == NE
+	  || compare_code == LT || compare_code == LE
+	  || compare_code == GT || compare_code == GE))
+    {
+      /* Special case for op0 != 0.  This can be done with one instruction if
+	 op0 can be clobbered.  We store to a temp, and then clobber the temp,
+	 but the combiner will remove the first insn.  */
+
+      if (compare_code == NE
+	  && GET_MODE (operands[0]) == DImode
+	  && GET_MODE (sparc_compare_op0) == DImode)
+	{
+	  emit_insn (gen_rtx (SET, VOIDmode, operands[0], sparc_compare_op0));
+	  emit_insn (gen_rtx (SET, VOIDmode, operands[0],
+			      gen_rtx (IF_THEN_ELSE, VOIDmode,
+				       gen_rtx (compare_code, DImode,
+						sparc_compare_op0, const0_rtx),
+				       const1_rtx,
+				       operands[0])));
+	  return 1;
+	}
+
+      emit_insn (gen_rtx (SET, VOIDmode, operands[0], const0_rtx));
+      if (GET_MODE (sparc_compare_op0) != DImode)
+	{
+	  temp = gen_reg_rtx (DImode);
+	  convert_move (temp, sparc_compare_op0, 0);
+	}
+      else
+	{
+	  temp = sparc_compare_op0;
+	}
+      emit_insn (gen_rtx (SET, VOIDmode, operands[0],
+			  gen_rtx (IF_THEN_ELSE, VOIDmode,
+				   gen_rtx (compare_code, DImode,
+					    temp, const0_rtx),
+				   const1_rtx,
+				   operands[0])));
+      return 1;
+    }
+  else
+    {
+      operands[1] = gen_compare_reg (compare_code,
+				     sparc_compare_op0, sparc_compare_op1);
+
+      switch (GET_MODE (operands[1]))
+	{
+	  case CCmode :
+	  case CCXmode :
+	  case CCFPEmode :
+	  case CCFPmode :
+	    break;
+	  default :
+	    abort ();
+	}
+	emit_insn (gen_rtx (SET, VOIDmode, operands[0], const0_rtx));
+	emit_insn (gen_rtx (SET, VOIDmode, operands[0],
+			    gen_rtx (IF_THEN_ELSE, VOIDmode,
+				     gen_rtx (compare_code,
+					      GET_MODE (operands[1]),
+					      operands[1], const0_rtx),
+					      const1_rtx, operands[0])));
+	return 1;
+    }
+}
+
+/* Emit a conditional jump insn for the v9 architecture using comparison code
+   CODE and jump target LABEL.
+   This function exists to take advantage of the v9 brxx insns.  */
+
+void
+emit_v9_brxx_insn (code, op0, label)
+     enum rtx_code code;
+     rtx op0, label;
+{
+  emit_jump_insn (gen_rtx (SET, VOIDmode,
+			   pc_rtx,
+			   gen_rtx (IF_THEN_ELSE, VOIDmode,
+				    gen_rtx (code, GET_MODE (op0),
+					     op0, const0_rtx),
+				    gen_rtx (LABEL_REF, VOIDmode, label),
+				    pc_rtx)));
 }
 
 /* Return nonzero if a return peephole merging return with
@@ -779,8 +1262,16 @@ finalize_pic ()
 						   gen_rtx (LABEL_REF, VOIDmode, l1),
 						   pc_rtx))));
 
-  emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
-		      gen_rtx (HIGH, Pmode, pic_pc_rtx)));
+  if (Pmode == DImode)
+    emit_insn (gen_rtx (PARALLEL, VOIDmode,
+			gen_rtvec (2,
+				   gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
+					    gen_rtx (HIGH, Pmode, pic_pc_rtx)),
+				   gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, Pmode, 1)))));
+  else
+    emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
+			gen_rtx (HIGH, Pmode, pic_pc_rtx)));
+
   emit_insn (gen_rtx (SET, VOIDmode,
 		      pic_offset_table_rtx,
 		      gen_rtx (LO_SUM, Pmode,
@@ -886,8 +1377,34 @@ emit_move_sequence (operands, mode)
 	  rtx temp = ((reload_in_progress || mode == DImode)
 		      ? operand0 : gen_reg_rtx (mode));
 
-	  emit_insn (gen_rtx (SET, VOIDmode, temp,
-			      gen_rtx (HIGH, mode, operand1)));
+	  if (TARGET_V9 && mode == DImode)
+	    {
+	      int high_operand = 0;
+
+	      /* If the operand is already a HIGH, then remove the HIGH so
+		 that we won't get duplicate HIGH operators in this insn.
+		 Also, we must store the result into the original dest,
+		 because that is where the following LO_SUM expects it.  */
+	      if (GET_CODE (operand1) == HIGH)
+		{
+		  operand1 = XEXP (operand1, 0);
+		  high_operand = 1;
+		}
+
+	      emit_insn (gen_rtx (PARALLEL, VOIDmode,
+				  gen_rtvec (2,
+					     gen_rtx (SET, VOIDmode, temp,
+						      gen_rtx (HIGH, mode, operand1)),
+					     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, DImode, 1)))));
+
+	      /* If this was a high operand, then we are now finished.  */
+	      if (high_operand)
+		return 1;
+	    }
+	  else
+	    emit_insn (gen_rtx (SET, VOIDmode, temp,
+				gen_rtx (HIGH, mode, operand1)));
+
 	  operands[1] = gen_rtx (LO_SUM, mode, temp, operand1);
 	}
     }
@@ -1009,7 +1526,7 @@ mem_aligned_8 (mem)
       && (REGNO (base) == FRAME_POINTER_REGNUM
 	  || REGNO (base) == STACK_POINTER_REGNUM))
     {
-      if ((INTVAL (offset) & 0x7) == 0)
+      if (((INTVAL (offset) - SPARC_STACK_BIAS) & 0x7) == 0)
 	return 1;
     }
   /* Anything else we know is properly aligned unless TARGET_UNALIGNED_DOUBLES
@@ -1103,26 +1620,72 @@ output_move_double (operands)
   else if (optype1 == OFFSOP)
     latehalf[1] = adj_offsettable_operand (op1, 4);
   else if (optype1 == CNSTOP)
-    split_double (op1, &operands[1], &latehalf[1]);
+    {
+      if (TARGET_V9)
+	{
+	  if (arith_double_operand (op1, DImode))
+	    {
+	      operands[1] = gen_rtx (CONST_INT, VOIDmode,
+				     CONST_DOUBLE_LOW (op1));
+	      return "mov %1,%0";
+	    }
+	  else
+	    {
+	      /* The only way to handle CONST_DOUBLEs or other 64 bit
+		 constants here is to use a temporary, such as is done
+		 for the V9 DImode sethi insn pattern.  This is not
+		 a practical solution, so abort if we reach here.
+		 The md file should always force such constants to
+		 memory.  */
+	      abort ();
+	    }
+	}
+      else
+	split_double (op1, &operands[1], &latehalf[1]);
+    }
   else
     latehalf[1] = op1;
 
   /* Easy case: try moving both words at once.  Check for moving between
      an even/odd register pair and a memory location.  */
   if ((optype0 == REGOP && optype1 != REGOP && optype1 != CNSTOP
-       && (REGNO (op0) & 1) == 0)
+       && (TARGET_V9 || (REGNO (op0) & 1) == 0))
       || (optype0 != REGOP && optype0 != CNSTOP && optype1 == REGOP
-	  && (REGNO (op1) & 1) == 0))
+	  && (TARGET_V9 || (REGNO (op1) & 1) == 0)))
     {
-      register rtx mem;
+      register rtx mem,reg;
 
       if (optype0 == REGOP)
-	mem = op1;
+	mem = op1, reg = op0;
       else
-	mem = op0;
+	mem = op0, reg = op1;
 
-      if (mem_aligned_8 (mem))
-	return (mem == op1 ? "ldd %1,%0" : "std %1,%0");
+      /* In v9, ldd can be used for word aligned addresses, so technically
+	 some of this logic is unneeded.  We still avoid ldd if the address
+	 is obviously unaligned though.  */
+
+      if (mem_aligned_8 (mem)
+	  /* If this is a floating point register higher than %f31,
+	     then we *must* use an aligned load, since `ld' will not accept
+	     the register number.  */
+	  || (TARGET_V9 && REGNO (reg) >= 64))
+	{
+	  if (FP_REG_P (reg) || ! TARGET_V9)
+	    return (mem == op1 ? "ldd %1,%0" : "std %1,%0");
+	  else
+	    return (mem == op1 ? "ldx %1,%0" : "stx %1,%0");
+	}
+    }
+
+  if (TARGET_V9)
+    {
+      if (optype0 == REGOP && optype1 == REGOP)
+	{
+	  if (FP_REG_P (op0))
+	    return "fmovd %1,%0";
+	  else
+	    return "mov %1,%0";
+	}
     }
 
   /* If the first move would clobber the source of the second one,
@@ -1317,27 +1880,38 @@ output_move_quad (operands)
     }
 
   /* Easy case: try moving the quad as two pairs.  Check for moving between
-     an even/odd register pair and a memory location.  */
+     an even/odd register pair and a memory location.
+     Also handle new v9 fp regs here.  */
   /* ??? Should also handle the case of non-offsettable addresses here.
      We can at least do the first pair as a ldd/std, and then do the third
      and fourth words individually.  */
   if ((optype0 == REGOP && optype1 == OFFSOP && (REGNO (op0) & 1) == 0)
       || (optype0 == OFFSOP && optype1 == REGOP && (REGNO (op1) & 1) == 0))
     {
-      rtx mem;
+      rtx mem, reg;
 
       if (optype0 == REGOP)
-	mem = op1;
+	mem = op1, reg = op0;
       else
-	mem = op0;
+	mem = op0, reg = op1;
 
-      if (mem_aligned_8 (mem))
+      if (mem_aligned_8 (mem)
+	  /* If this is a floating point register higher than %f31,
+	     then we *must* use an aligned load, since `ld' will not accept
+	     the register number.  */
+	  || (TARGET_V9 && REGNO (reg) >= 64))
 	{
+	  if (TARGET_V9 && FP_REG_P (reg))
+	    {
+	      if ((REGNO (reg) & 3) != 0)
+		abort ();
+	      return (mem == op1 ? "ldq %1,%0" : "stq %1,%0");
+	    }
 	  operands[2] = adj_offsettable_operand (mem, 8);
 	  if (mem == op1)
-	    return "ldd %1,%0;ldd %2,%S0";
+	    return TARGET_V9 ? "ldx %1,%0;ldx %2,%R0" : "ldd %1,%0;ldd %2,%S0";
 	  else
-	    return "std %1,%0;std %S1,%2";
+	    return TARGET_V9 ? "stx %1,%0;stx %R1,%2" : "std %1,%0;std %S1,%2";
 	}
     }
 
@@ -1421,7 +1995,12 @@ output_fp_move_double (operands)
   if (FP_REG_P (operands[0]))
     {
       if (FP_REG_P (operands[1]))
-	return "fmovs %1,%0\n\tfmovs %R1,%R0";
+	{
+	  if (TARGET_V9)
+	    return "fmovd %1,%0";
+	  else
+	    return "fmovs %1,%0\n\tfmovs %R1,%R0";
+	}
       else if (GET_CODE (operands[1]) == REG)
 	abort ();
       else
@@ -1450,7 +2029,12 @@ output_fp_move_quad (operands)
   if (FP_REG_P (op0))
     {
       if (FP_REG_P (op1))
-	return "fmovs %1,%0\n\tfmovs %R1,%R0\n\tfmovs %S1,%S0\n\tfmovs %T1,%T0";
+	{
+	  if (TARGET_V9)
+	    return "fmovq %1,%0";
+	  else
+	    return "fmovs %1,%0\n\tfmovs %R1,%R0\n\tfmovs %S1,%S0\n\tfmovs %T1,%T0";
+	}
       else if (GET_CODE (op1) == REG)
 	abort ();
       else
@@ -1705,8 +2289,22 @@ output_block_move (operands)
 
       /* This case is currently not handled.  Abort instead of generating
 	 bad code.  */
-      if (align > 4)
+      if (align > UNITS_PER_WORD)
 	abort ();
+
+      if (TARGET_V9 && align >= 8)
+	{
+	  for (i = (size >> 3) - 1; i >= 0; i--)
+	    {
+	      INTVAL (xoperands[2]) = (i << 3) + offset;
+	      output_asm_insn ("ldx [%a1+%2],%%g1\n\tstx %%g1,[%a0+%2]",
+			       xoperands);
+	    }
+	  offset += (size & ~0x7);
+	  size = size & 0x7;
+	  if (size == 0)
+	    return "";
+	}
 
       if (align >= 4)
 	{
@@ -1814,8 +2412,10 @@ output_block_move (operands)
 
   {
     char pattern[200];
-    register char *ld_suffix = (align == 1) ? "ub" : (align == 2) ? "uh" : "";
-    register char *st_suffix = (align == 1) ? "b" : (align == 2) ? "h" : "";
+    register char *ld_suffix = ((align == 1) ? "ub" : (align == 2) ? "uh"
+				: (align == 8 && TARGET_V9) ? "x" : "");
+    register char *st_suffix = ((align == 1) ? "b" : (align == 2) ? "h"
+				: (align == 8 && TARGET_V9) ? "x" : "");
 
     sprintf (pattern, "ld%s [%%1+%%2],%%%%g1\n\tsubcc %%2,%%4,%%2\n\tbge %s\n\tst%s %%%%g1,[%%0+%%2]\n%s:", ld_suffix, &label3[1], st_suffix, &label5[1]);
     output_asm_insn (pattern, xoperands);
@@ -1899,12 +2499,12 @@ output_scc_insn (operands, insn)
   if (final_sequence)
     {
       strcpy (string, "mov 0,%0\n\t");
-      strcat (string, output_cbranch (operands[1], 2, 0, 1, 0));
+      strcat (string, output_cbranch (operands[1], 0, 2, 0, 1, 0));
       strcat (string, "\n\tmov 1,%0");
     }
   else
     {
-      strcpy (string, output_cbranch (operands[1], 2, 0, 1, 0));
+      strcpy (string, output_cbranch (operands[1], 0, 2, 0, 1, 0));
       strcat (string, "\n\tmov 1,%0\n\tmov 0,%0");
     }
 
@@ -1914,40 +2514,60 @@ output_scc_insn (operands, insn)
   return string;
 }
 
-/* Vectors to keep interesting information about registers where
-   it can easily be got.  */
+/* Vectors to keep interesting information about registers where it can easily
+   be got.  We use to use the actual mode value as the bit number, but there
+   are more than 32 modes now.  Instead we use two tables: one indexed by
+   hard register number, and one indexed by mode.  */
+
+/* The purpose of sparc_mode_class is to shrink the range of modes so that
+   they all fit (as bit numbers) in a 32 bit word (again).  Each real mode is
+   mapped into one sparc_mode_class mode.  */
+
+enum sparc_mode_class {
+  C_MODE, CCFP_MODE,
+  S_MODE, D_MODE, T_MODE, O_MODE,
+  SF_MODE, DF_MODE, TF_MODE, OF_MODE
+};
 
 /* Modes for condition codes.  */
-#define C_MODES						\
-  ((1 << (int) CCmode) | (1 << (int) CC_NOOVmode)	\
-   | (1 << (int) CCFPmode) | (1 << (int) CCFPEmode))
+#define C_MODES ((1 << (int) C_MODE) | (1 << (int) CCFP_MODE))
+#define CCFP_MODES (1 << (int) CCFP_MODE)
 
-/* Modes for single-word (and smaller) quantities.  */
-#define S_MODES								\
- ((1 << (int) QImode) | (1 << (int) HImode) | (1 << (int) SImode)	\
-  | (1 << (int) QFmode) | (1 << (int) HFmode) | (1 << (int) SFmode)	\
-  | (1 << (int) CQImode) | (1 << (int) CHImode))
+/* Modes for single-word and smaller quantities.  */
+#define S_MODES ((1 << (int) S_MODE) | (1 << (int) SF_MODE))
 
-/* Modes for double-word (and smaller) quantities.  */
-#define D_MODES						\
- (S_MODES | (1 << (int) DImode) | (1 << (int) DFmode)	\
-  | (1 << (int) CSImode) | (1 << (int) SCmode))
+/* Modes for double-word and smaller quantities.  */
+#define D_MODES (S_MODES | (1 << (int) D_MODE) | (1 << DF_MODE))
 
-/* Modes for quad-word quantities.  */
-#define T_MODES						\
- (D_MODES | (1 << (int) TImode) | (1 << (int) TFmode)	\
-  | (1 << (int) DCmode) | (1 << (int) CDImode))
+/* Modes for quad-word and smaller quantities.  */
+#define T_MODES (D_MODES | (1 << (int) T_MODE) | (1 << (int) TF_MODE))
 
 /* Modes for single-float quantities.  We must allow any single word or
    smaller quantity.  This is because the fix/float conversion instructions
    take integer inputs/outputs from the float registers.  */
 #define SF_MODES (S_MODES)
 
-/* Modes for double-float quantities.  */
-#define DF_MODES (SF_MODES | (1 << (int) DFmode) | (1 << (int) SCmode))
+/* Modes for double-float and smaller quantities.  */
+#define DF_MODES (S_MODES | D_MODES)
 
-/* Modes for quad-float quantities.  */
-#define TF_MODES (DF_MODES | (1 << (int) TFmode) | (1 << (int) DCmode))
+/* ??? Sparc64 fp regs cannot hold DImode values.  */
+#define DF_MODES64 (SF_MODES | DF_MODE /* | D_MODE*/)
+
+/* Modes for double-float only quantities.  */
+/* ??? Sparc64 fp regs cannot hold DImode values.  */
+#define DF_ONLY_MODES ((1 << (int) DF_MODE) /*| (1 << (int) D_MODE)*/)
+
+/* Modes for double-float and larger quantities.  */
+#define DF_UP_MODES (DF_ONLY_MODES | TF_ONLY_MODES)
+
+/* Modes for quad-float only quantities.  */
+#define TF_ONLY_MODES (1 << (int) TF_MODE)
+
+/* Modes for quad-float and smaller quantities.  */
+#define TF_MODES (DF_MODES | TF_ONLY_MODES)
+
+/* ??? Sparc64 fp regs cannot hold DImode values.  */
+#define TF_MODES64 (DF_MODES64 | TF_ONLY_MODES)
 
 /* Value is 1 if register/mode pair is acceptable on sparc.
    The funny mixture of D and T modes is because integer operations
@@ -1955,7 +2575,10 @@ output_scc_insn (operands, insn)
    registers can hold quadword quantities (except %o4 and %i4 because
    they cross fixed registers.  */
 
-int hard_regno_mode_ok[] = {
+/* This points to either the 32 bit or the 64 bit version.  */
+int *hard_regno_mode_classes;
+
+static int hard_32bit_mode_classes[] = {
   C_MODES, S_MODES, T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
   T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES, D_MODES, S_MODES,
   T_MODES, S_MODES, T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
@@ -1964,116 +2587,298 @@ int hard_regno_mode_ok[] = {
   TF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES,
   TF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES,
   TF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES,
-  TF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES};
+  TF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES,
+};
+
+static int hard_64bit_mode_classes[] = {
+  C_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
+  T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
+  T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
+  T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
+
+  TF_MODES64, SF_MODES, DF_MODES64, SF_MODES, TF_MODES64, SF_MODES, DF_MODES64, SF_MODES,
+  TF_MODES64, SF_MODES, DF_MODES64, SF_MODES, TF_MODES64, SF_MODES, DF_MODES64, SF_MODES,
+  TF_MODES64, SF_MODES, DF_MODES64, SF_MODES, TF_MODES64, SF_MODES, DF_MODES64, SF_MODES,
+  TF_MODES64, SF_MODES, DF_MODES64, SF_MODES, TF_MODES64, SF_MODES, DF_MODES64, SF_MODES,
+
+  /* The remaining registers do not exist on a non-v9 sparc machine.
+     FP regs f32 to f63.  Only the even numbered registers actually exist,
+     and none can hold SFmode/SImode values.  */
+  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
+  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
+  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
+  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
+
+  /* %fcc[0123] */
+  CCFP_MODE, CCFP_MODE, CCFP_MODE, CCFP_MODE
+};
+
+int sparc_mode_class [NUM_MACHINE_MODES];
+
+static void
+sparc_init_modes ()
+{
+  int i;
+
+  sparc_cpu_type = TARGET_V9 ? CPU_64BIT : CPU_32BIT;
+
+  for (i = 0; i < NUM_MACHINE_MODES; i++)
+    {
+      switch (GET_MODE_CLASS (i))
+	{
+	case MODE_INT:
+	case MODE_PARTIAL_INT:
+	case MODE_COMPLEX_INT:
+	  if (GET_MODE_SIZE (i) <= 4)
+	    sparc_mode_class[i] = 1 << (int) S_MODE;
+	  else if (GET_MODE_SIZE (i) == 8)
+	    sparc_mode_class[i] = 1 << (int) D_MODE;
+	  else if (GET_MODE_SIZE (i) == 16)
+	    sparc_mode_class[i] = 1 << (int) T_MODE;
+	  else if (GET_MODE_SIZE (i) == 32)
+	    sparc_mode_class[i] = 1 << (int) O_MODE;
+	  else 
+	    sparc_mode_class[i] = 0;
+	  break;
+	case MODE_FLOAT:
+	case MODE_COMPLEX_FLOAT:
+	  if (GET_MODE_SIZE (i) <= 4)
+	    sparc_mode_class[i] = 1 << (int) SF_MODE;
+	  else if (GET_MODE_SIZE (i) == 8)
+	    sparc_mode_class[i] = 1 << (int) DF_MODE;
+	  else if (GET_MODE_SIZE (i) == 16)
+	    sparc_mode_class[i] = 1 << (int) TF_MODE;
+	  else if (GET_MODE_SIZE (i) == 32)
+	    sparc_mode_class[i] = 1 << (int) OF_MODE;
+	  else 
+	    sparc_mode_class[i] = 0;
+	  break;
+	case MODE_CC:
+	default:
+	  /* mode_class hasn't been initialized yet for EXTRA_CC_MODES, so
+	     we must explicitly check for them here.  */
+	  if (i == (int) CCFPmode || i == (int) CCFPEmode)
+	    sparc_mode_class[i] = 1 << (int) CCFP_MODE;
+	  else if (i == (int) CCmode || i == (int) CC_NOOVmode
+#ifdef SPARCV9
+		   || i == (int) CCXmode
+		   || i == (int) CCX_NOOVmode
+#endif
+		   )
+	    sparc_mode_class[i] = 1 << (int) C_MODE;
+	  else
+	    sparc_mode_class[i] = 0;
+	  break;
+	}
+    }
+
+  if (TARGET_V9)
+    hard_regno_mode_classes = hard_64bit_mode_classes;
+  else
+    hard_regno_mode_classes = hard_32bit_mode_classes;
+}
 
+/* Save non call used registers from LOW to HIGH at BASE+OFFSET.
+   N_REGS is the number of 4-byte regs saved thus far.  This applies even to
+   v9 int regs as it simplifies the code.  */
+
 #ifdef __GNUC__
 __inline__
 #endif
 static int
-save_regs (file, low, high, base, offset, n_fregs)
+save_regs (file, low, high, base, offset, n_regs)
      FILE *file;
      int low, high;
      char *base;
      int offset;
-     int n_fregs;
+     int n_regs;
 {
   int i;
 
-  for (i = low; i < high; i += 2)
+  if (TARGET_V9 && high <= 32)
     {
-      if (regs_ever_live[i] && ! call_used_regs[i])
-	if (regs_ever_live[i+1] && ! call_used_regs[i+1])
-	  fprintf (file, "\tstd %s,[%s+%d]\n",
-		   reg_names[i], base, offset + 4 * n_fregs),
-	  n_fregs += 2;
-	else
-	  fprintf (file, "\tst %s,[%s+%d]\n",
-		   reg_names[i], base, offset + 4 * n_fregs),
-	  n_fregs += 2;
-      else if (regs_ever_live[i+1] && ! call_used_regs[i+1])
-	fprintf (file, "\tst %s,[%s+%d]\n",
-		 reg_names[i+1], base, offset + 4 * n_fregs),
-	n_fregs += 2;
+      for (i = low; i < high; i++)
+	{
+	  if (regs_ever_live[i] && ! call_used_regs[i])
+	    fprintf (file, "\tstx %s,[%s+%d]\n",
+	      reg_names[i], base, offset + 4 * n_regs),
+	    n_regs += 2;
+	}
     }
-  return n_fregs;
+  else
+    {
+      for (i = low; i < high; i += 2)
+	{
+	  if (regs_ever_live[i] && ! call_used_regs[i])
+	    if (regs_ever_live[i+1] && ! call_used_regs[i+1])
+	      fprintf (file, "\tstd %s,[%s+%d]\n",
+		       reg_names[i], base, offset + 4 * n_regs),
+	      n_regs += 2;
+	    else
+	      fprintf (file, "\tst %s,[%s+%d]\n",
+		       reg_names[i], base, offset + 4 * n_regs),
+	      n_regs += 2;
+	  else if (regs_ever_live[i+1] && ! call_used_regs[i+1])
+	    fprintf (file, "\tst %s,[%s+%d]\n",
+		     reg_names[i+1], base, offset + 4 * n_regs + 4),
+	    n_regs += 2;
+	}
+    }
+  return n_regs;
 }
 
+/* Restore non call used registers from LOW to HIGH at BASE+OFFSET.
+
+   N_REGS is the number of 4-byte regs saved thus far.  This applies even to
+   v9 int regs as it simplifies the code.  */
+
 #ifdef __GNUC__
 __inline__
 #endif
 static int
-restore_regs (file, low, high, base, offset, n_fregs)
+restore_regs (file, low, high, base, offset, n_regs)
      FILE *file;
      int low, high;
      char *base;
      int offset;
+     int n_regs;
 {
   int i;
 
-  for (i = low; i < high; i += 2)
+  if (TARGET_V9 && high <= 32)
     {
-      if (regs_ever_live[i] && ! call_used_regs[i])
-	if (regs_ever_live[i+1] && ! call_used_regs[i+1])
-	  fprintf (file, "\tldd [%s+%d], %s\n",
-		   base, offset + 4 * n_fregs, reg_names[i]),
-	  n_fregs += 2;
-	else
-	  fprintf (file, "\tld [%s+%d],%s\n",
-		   base, offset + 4 * n_fregs, reg_names[i]),
-	  n_fregs += 2;
-      else if (regs_ever_live[i+1] && ! call_used_regs[i+1])
-	fprintf (file, "\tld [%s+%d],%s\n",
-		 base, offset + 4 * n_fregs, reg_names[i+1]),
-	n_fregs += 2;
+      for (i = low; i < high; i++)
+	{
+	  if (regs_ever_live[i] && ! call_used_regs[i])
+	    fprintf (file, "\tldx [%s+%d], %s\n",
+	      base, offset + 4 * n_regs, reg_names[i]),
+	    n_regs += 2;
+	}
     }
-  return n_fregs;
+  else
+    {
+      for (i = low; i < high; i += 2)
+	{
+	  if (regs_ever_live[i] && ! call_used_regs[i])
+	    if (regs_ever_live[i+1] && ! call_used_regs[i+1])
+	      fprintf (file, "\tldd [%s+%d], %s\n",
+		       base, offset + 4 * n_regs, reg_names[i]),
+	      n_regs += 2;
+	    else
+	      fprintf (file, "\tld [%s+%d],%s\n",
+		       base, offset + 4 * n_regs, reg_names[i]),
+	      n_regs += 2;
+	  else if (regs_ever_live[i+1] && ! call_used_regs[i+1])
+	    fprintf (file, "\tld [%s+%d],%s\n",
+		     base, offset + 4 * n_regs + 4, reg_names[i+1]),
+	    n_regs += 2;
+	}
+    }
+  return n_regs;
 }
 
 /* Static variables we want to share between prologue and epilogue.  */
 
-/* Number of live floating point registers needed to be saved.  */
-static int num_fregs;
+/* Number of live general or floating point registers needed to be saved
+   (as 4-byte quantities).  This is only done if TARGET_EPILOGUE.  */
+static int num_gfregs;
+
+/* Compute the frame size required by the function.  This function is called
+   during the reload pass and also by output_function_prologue().  */
 
 int
 compute_frame_size (size, leaf_function)
      int size;
      int leaf_function;
 {
-  int fregs_ever_live = 0;
-  int n_fregs = 0, i;
+  int n_regs = 0, i;
   int outgoing_args_size = (current_function_outgoing_args_size
-			    + REG_PARM_STACK_SPACE (current_function_decl));
+#ifndef SPARCV9
+			    + REG_PARM_STACK_SPACE (current_function_decl)
+#endif
+			    );
 
-  apparent_fsize = ((size) + 7 - STARTING_FRAME_OFFSET) & -8;
-  for (i = 32; i < FIRST_PSEUDO_REGISTER; i += 2)
-    fregs_ever_live |= regs_ever_live[i]|regs_ever_live[i+1];
-
-  if (TARGET_EPILOGUE && fregs_ever_live)
+  if (TARGET_EPILOGUE)
     {
-      for (i = 32; i < FIRST_PSEUDO_REGISTER; i += 2)
+      /* N_REGS is the number of 4-byte regs saved thus far.  This applies
+	 even to v9 int regs to be consistent with save_regs/restore_regs.  */
+
+      if (TARGET_V9)
+	{
+	  for (i = 0; i < 8; i++)
+	    if (regs_ever_live[i] && ! call_used_regs[i])
+	      n_regs += 2;
+	}
+      else
+	{
+	  for (i = 0; i < 8; i += 2)
+	    if ((regs_ever_live[i] && ! call_used_regs[i])
+		|| (regs_ever_live[i+1] && ! call_used_regs[i+1]))
+	      n_regs += 2;
+	}
+
+      for (i = 32; i < (TARGET_V9 ? 96 : 64); i += 2)
 	if ((regs_ever_live[i] && ! call_used_regs[i])
 	    || (regs_ever_live[i+1] && ! call_used_regs[i+1]))
-	  n_fregs += 2;
+	  n_regs += 2;
     }
 
   /* Set up values for use in `function_epilogue'.  */
-  num_fregs = n_fregs;
+  num_gfregs = n_regs;
 
-  apparent_fsize += (outgoing_args_size+7) & -8;
-  if (leaf_function && n_fregs == 0
-      && apparent_fsize == (REG_PARM_STACK_SPACE (current_function_decl)
-			    - STARTING_FRAME_OFFSET))
-    apparent_fsize = 0;
-
-  actual_fsize = apparent_fsize + n_fregs*4;
+  if (leaf_function && n_regs == 0
+      && size == 0 && current_function_outgoing_args_size == 0)
+    {
+      actual_fsize = apparent_fsize = 0;
+    }
+  else
+    {
+      /* We subtract STARTING_FRAME_OFFSET, remember it's negative.
+         The stack bias (if any) is taken out to undo its effects.  */
+      apparent_fsize = (size - STARTING_FRAME_OFFSET + SPARC_STACK_BIAS + 7) & -8;
+      apparent_fsize += n_regs * 4;
+      actual_fsize = apparent_fsize + ((outgoing_args_size + 7) & -8);
+    }
 
   /* Make sure nothing can clobber our register windows.
      If a SAVE must be done, or there is a stack-local variable,
-     the register window area must be allocated.  */
+     the register window area must be allocated.
+     ??? For v9 we need an additional 8 bytes of reserved space, apparently
+     it's needed by v8 as well.  */
   if (leaf_function == 0 || size > 0)
-    actual_fsize += (16 * UNITS_PER_WORD)+8;
+    actual_fsize += (16 * UNITS_PER_WORD) + 8;
 
-  return actual_fsize;
+  return SPARC_STACK_ALIGN (actual_fsize);
+}
+
+/* Build a (32 bit) big number in a register.  */
+
+static void
+build_big_number (file, num, reg)
+     FILE *file;
+     int num;
+     char *reg;
+{
+  if (num >= 0 || ! TARGET_V9)
+    {
+      fprintf (file, "\tsethi %%hi(%d),%s\n", num, reg);
+      if ((num & 0x3ff) != 0)
+	fprintf (file, "\tor %s,%%lo(%d),%s\n", reg, num, reg);
+    }
+  else /* num < 0 && TARGET_V9 */
+    {
+      /* Sethi does not sign extend, so we must use a little trickery
+	 to use it for negative numbers.  Invert the constant before
+	 loading it in, then use xor immediate to invert the loaded bits
+	 (along with the upper 32 bits) to the desired constant.  This
+	 works because the sethi and immediate fields overlap.  */
+      int asize = num;
+      int inv = ~asize;
+      int low = -0x400 + (asize & 0x3FF);
+	  
+      fprintf (file, "\tsethi %%hi(%d),%s\n\txor %s,%d,%s\n",
+	       inv, reg, reg, low, reg);
+    }
 }
 
 /* Output code for the function prologue.  */
@@ -2084,16 +2889,20 @@ output_function_prologue (file, size, leaf_function)
      int size;
      int leaf_function;
 {
-  /* ??? This should be %sp+actual_fsize for a leaf function.  I think it
-     works only because it is never used.  */
-  if (leaf_function)
-    frame_base_name = "%sp+80";
-  else
-    frame_base_name = "%fp";
-
   /* Need to use actual_fsize, since we are also allocating
      space for our callee (and our own register save area).  */
   actual_fsize = compute_frame_size (size, leaf_function);
+
+  if (leaf_function)
+    {
+      frame_base_name = "%sp";
+      frame_base_offset = actual_fsize + SPARC_STACK_BIAS;
+    }
+  else
+    {
+      frame_base_name = "%fp";
+      frame_base_offset = SPARC_STACK_BIAS;
+    }
 
   /* This is only for the human reader.  */
   fprintf (file, "\t!#PROLOGUE# 0\n");
@@ -2123,44 +2932,50 @@ output_function_prologue (file, size, leaf_function)
     }
   else
     {
+      build_big_number (file, -actual_fsize, "%g1");
       if (! leaf_function)
-	{
-	  fprintf (file, "\tsethi %%hi(-%d),%%g1\n", actual_fsize);
-	  if ((actual_fsize & 0x3ff) != 0)
-	    fprintf (file, "\tor %%g1,%%lo(-%d),%%g1\n", actual_fsize);
-	  fprintf (file, "\tsave %%sp,%%g1,%%sp\n");
-	}
+	fprintf (file, "\tsave %%sp,%%g1,%%sp\n");
       else
-	{
-	  fprintf (file, "\tsethi %%hi(-%d),%%g1\n", actual_fsize);
-	  if ((actual_fsize & 0x3ff) != 0)
-	    fprintf (file, "\tor %%g1,%%lo(-%d),%%g1\n", actual_fsize);
-	  fprintf (file, "\tadd %%sp,%%g1,%%sp\n");
-	}
+	fprintf (file, "\tadd %%sp,%%g1,%%sp\n");
     }
 
   /* If doing anything with PIC, do it now.  */
   if (! flag_pic)
     fprintf (file, "\t!#PROLOGUE# 1\n");
 
-  /* Figure out where to save any special registers.  */
-  if (num_fregs)
+  /* Call saved registers are saved just above the outgoing argument area.  */
+  if (num_gfregs)
     {
-      int offset, n_fregs = num_fregs;
+      int offset, n_regs;
+      char *base;
 
-      /* ??? This should always be -apparent_fsize.  */
-      if (! leaf_function)
-	offset = -apparent_fsize;
+      offset = -apparent_fsize + frame_base_offset;
+      if (offset < -4096 || offset + num_gfregs * 4 > 4096)
+	{
+	  /* ??? This might be optimized a little as %g1 might already have a
+	     value close enough that a single add insn will do.  */
+	  /* ??? Although, all of this is probably only a temporary fix
+	     because if %g1 can hold a function result, then
+	     output_function_epilogue will lose (the result will get
+	     clobbered).  */
+	  build_big_number (file, offset, "%g1");
+	  fprintf (file, "\tadd %s,%%g1,%%g1\n", frame_base_name);
+	  base = "%g1";
+	  offset = 0;
+	}
       else
-	offset = 0;
+	{
+	  base = frame_base_name;
+	}
 
       if (TARGET_EPILOGUE && ! leaf_function)
-	n_fregs = save_regs (file, 0, 16, frame_base_name, offset, 0);
+	/* ??? Originally saved regs 0-15 here.  */
+	n_regs = save_regs (file, 0, 8, base, offset, 0);
       else if (leaf_function)
-	n_fregs = save_regs (file, 0, 32, frame_base_name, offset, 0);
+	/* ??? Originally saved regs 0-31 here.  */
+	n_regs = save_regs (file, 0, 8, base, offset, 0);
       if (TARGET_EPILOGUE)
-	save_regs (file, 32, FIRST_PSEUDO_REGISTER,
-		   frame_base_name, offset, n_fregs);
+	save_regs (file, 32, TARGET_V9 ? 96 : 64, base, offset, n_regs);
     }
 
   leaf_label = 0;
@@ -2188,30 +3003,40 @@ output_function_epilogue (file, size, leaf_function)
       final_scan_insn (get_last_insn (), file, 0, 0, 1);
     }
 
-  if (num_fregs)
+  /* Restore any call saved registers.  */
+  if (num_gfregs)
     {
-      int offset, n_fregs = num_fregs;
+      int offset, n_regs;
+      char *base;
 
-      /* ??? This should always be -apparent_fsize.  */
-      if (! leaf_function)
-	offset = -apparent_fsize;
+      offset = -apparent_fsize + frame_base_offset;
+      if (offset < -4096 || offset + num_gfregs * 4 > 4096 - 8 /*double*/)
+	{
+	  build_big_number (file, offset, "%g1");
+	  fprintf (file, "\tadd %s,%%g1,%%g1\n", frame_base_name);
+	  base = "%g1";
+	  offset = 0;
+	}
       else
-	offset = 0;
+	{
+	  base = frame_base_name;
+	}
 
       if (TARGET_EPILOGUE && ! leaf_function)
-	n_fregs = restore_regs (file, 0, 16, frame_base_name, offset, 0);
+	/* ??? Originally saved regs 0-15 here.  */
+	n_regs = restore_regs (file, 0, 8, base, offset, 0);
       else if (leaf_function)
-	n_fregs = restore_regs (file, 0, 32, frame_base_name, offset, 0);
+	/* ??? Originally saved regs 0-31 here.  */
+	n_regs = restore_regs (file, 0, 8, base, offset, 0);
       if (TARGET_EPILOGUE)
-	restore_regs (file, 32, FIRST_PSEUDO_REGISTER,
-		      frame_base_name, offset, n_fregs);
+	restore_regs (file, 32, TARGET_V9 ? 96 : 64, base, offset, n_regs);
     }
 
   /* Work out how to skip the caller's unimp instruction if required.  */
   if (leaf_function)
-    ret = (current_function_returns_struct ? "jmp %o7+12" : "retl");
+    ret = (SKIP_CALLERS_UNIMP_P ? "jmp %o7+12" : "retl");
   else
-    ret = (current_function_returns_struct ? "jmp %i7+12" : "ret");
+    ret = (SKIP_CALLERS_UNIMP_P ? "jmp %i7+12" : "ret");
 
   if (TARGET_EPILOGUE || leaf_label)
     {
@@ -2266,9 +3091,76 @@ output_function_epilogue (file, size, leaf_function)
     }
 }
 
-/* Do what is necessary for `va_start'.  The argument is ignored;
-   We look at the current function to determine if stdarg or varargs
-   is used and return the address of the first unnamed parameter.  */
+/* Do what is necessary for `va_start'.  The argument is ignored.
+   !v9: We look at the current function to determine if stdarg or varargs
+   is used and return the address of the first unnamed parameter.
+   v9: We save the argument integer and floating point regs in a buffer, and
+   return the address of this buffer.  The rest is handled in va-sparc.h.  */
+/* ??? This is currently conditioned on #ifdef SPARCV9 because
+   current_function_args_info is different in each compiler.  */
+
+#ifdef SPARCV9
+
+rtx
+sparc_builtin_saveregs (arglist)
+     tree arglist;
+{
+  tree fntype = TREE_TYPE (current_function_decl);
+  /* First unnamed integer register.  */
+  int first_intreg = current_function_args_info.arg_count[0];
+  /* Number of integer registers we need to save.  */
+  int n_intregs = MAX (0, NPARM_REGS (SImode) - first_intreg);
+  /* First unnamed SFmode float reg (no, you can't pass SFmode floats as
+     unnamed arguments, we just number them that way).  */
+  int first_floatreg = current_function_args_info.arg_count[1] + 1 & ~1;
+  /* Number of SFmode float regs to save.  */
+  int n_floatregs = MAX (0, NPARM_REGS (SFmode) - first_floatreg);
+  int ptrsize = GET_MODE_SIZE (Pmode);
+  rtx valist, regbuf, fpregs;
+  int regno;
+
+  /* Allocate block of memory for the regs.
+     We only allocate as much as we need.  */
+  /* ??? If n_intregs + n_floatregs == 0, should we allocate at least 1 byte?
+     Or can assign_stack_local accept a 0 SIZE argument?  */
+
+  regbuf = assign_stack_local (BLKmode,
+			       (n_intregs * UNITS_PER_WORD
+				+ n_floatregs * FLOAT_TYPE_SIZE/BITS_PER_UNIT),
+			       BITS_PER_WORD);
+  MEM_IN_STRUCT_P (regbuf) = 1;
+
+  /* Save int args.
+     This is optimized to only save the regs that are necessary.  Explicitly
+     named args need not be saved.  */
+
+  if (n_intregs > 0)
+    move_block_from_reg (BASE_INCOMING_ARG_REG (SImode) + first_intreg,
+			 regbuf, n_intregs, n_intregs * UNITS_PER_WORD);
+
+  /* Save float args.
+     This is optimized to only save the regs that are necessary.  Explicitly
+     named args need not be saved.
+     We explicitly build a pointer to the buffer because it halves the insn
+     count when not optimizing (otherwise the pointer is built for each reg
+     saved).  */
+
+  fpregs = gen_reg_rtx (Pmode);
+  emit_move_insn (fpregs, plus_constant (XEXP (regbuf, 0),
+					 n_intregs * UNITS_PER_WORD));
+  for (regno = first_floatreg; regno < NPARM_REGS (SFmode); regno += 2)
+    emit_move_insn (gen_rtx (MEM, DFmode,
+			     plus_constant (fpregs,
+					    GET_MODE_SIZE (SFmode) * regno)),
+		    gen_rtx (REG, DFmode, BASE_INCOMING_ARG_REG (DFmode)
+			     + regno));
+
+  /* Return the address of the regbuf.  */
+
+  return XEXP (regbuf, 0);
+}
+
+#else /* ! SPARCV9 */
 
 rtx
 sparc_builtin_saveregs (arglist)
@@ -2288,7 +3180,7 @@ sparc_builtin_saveregs (arglist)
     first_reg = 0;
 #endif
 
-  for (regno = first_reg; regno < NPARM_REGS; regno++)
+  for (regno = first_reg; regno < NPARM_REGS (SImode); regno++)
     emit_move_insn (gen_rtx (MEM, word_mode,
 			     gen_rtx (PLUS, Pmode,
 				      frame_pointer_rtx,
@@ -2304,10 +3196,15 @@ sparc_builtin_saveregs (arglist)
 
   return address;
 }
+
+#endif /* ! SPARCV9 */
 
 /* Return the string to output a conditional branch to LABEL, which is
    the operand number of the label.  OP is the conditional expression.  The
    mode of register 0 says what kind of comparison we made.
+
+   FP_COND_REG indicates which fp condition code register to use if this is
+   a floating point branch.
 
    REVERSED is non-zero if we should reverse the sense of the comparison.
 
@@ -2316,22 +3213,29 @@ sparc_builtin_saveregs (arglist)
    NOOP is non-zero if we have to follow this branch by a noop.  */
 
 char *
-output_cbranch (op, label, reversed, annul, noop)
-     rtx op;
+output_cbranch (op, fp_cond_reg, label, reversed, annul, noop)
+     rtx op, fp_cond_reg;
      int label;
      int reversed, annul, noop;
 {
   static char string[20];
   enum rtx_code code = GET_CODE (op);
   enum machine_mode mode = GET_MODE (XEXP (op, 0));
-  static char labelno[] = " %lX";
+  static char v8_labelno[] = " %lX";
+  static char v9_icc_labelno[] = " %%icc,%lX";
+  static char v9_xcc_labelno[] = " %%xcc,%lX";
+  static char v9_fcc_labelno[] = " %%fccX,%lY";
+  char *labelno;
+  int labeloff;
 
-  /* ??? FP branches can not be preceded by another floating point insn.
+  /* ??? !v9: FP branches cannot be preceded by another floating point insn.
      Because there is currently no concept of pre-delay slots, we can fix
      this only by always emitting a nop before a floating point branch.  */
 
-  if (mode == CCFPmode || mode == CCFPEmode)
+  if ((mode == CCFPmode || mode == CCFPEmode) && ! TARGET_V9)
     strcpy (string, "nop\n\t");
+  else
+    string[0] = '\0';
 
   /* If not floating-point or if EQ or NE, we can just reverse the code.  */
   if (reversed
@@ -2428,7 +3332,109 @@ output_cbranch (op, label, reversed, annul, noop)
   if (annul)
     strcat (string, ",a");
 
-  labelno[3] = label + '0';
+  /* ??? If v9, optional prediction bit ",pt" or ",pf" goes here.  */
+
+  if (! TARGET_V9)
+    {
+      labeloff = 3;
+      labelno = v8_labelno;
+    }
+  else
+    {
+      labeloff = 9;
+      if (mode == CCFPmode || mode == CCFPEmode)
+	{
+	  labeloff = 10;
+	  labelno = v9_fcc_labelno;
+	  /* Set the char indicating the number of the fcc reg to use.  */
+	  labelno[6] = REGNO (fp_cond_reg) - 96 + '0';
+	}
+      else if (mode == CCXmode || mode == CCX_NOOVmode)
+	labelno = v9_xcc_labelno;
+      else
+	labelno = v9_icc_labelno;
+    }
+  /* Set the char indicating the number of the operand containing the
+     label_ref.  */
+  labelno[labeloff] = label + '0';
+  strcat (string, labelno);
+
+  if (noop)
+    strcat (string, "\n\tnop");
+
+  return string;
+}
+
+/* Return the string to output a conditional branch to LABEL, testing
+   register REG.  LABEL is the operand number of the label; REG is the
+   operand number of the reg.  OP is the conditional expression.  The mode
+   of REG says what kind of comparison we made.
+
+   REVERSED is non-zero if we should reverse the sense of the comparison.
+
+   ANNUL is non-zero if we should generate an annulling branch.
+
+   NOOP is non-zero if we have to follow this branch by a noop.  */
+
+char *
+output_v9branch (op, reg, label, reversed, annul, noop)
+     rtx op;
+     int reg, label;
+     int reversed, annul, noop;
+{
+  static char string[20];
+  enum rtx_code code = GET_CODE (op);
+  enum machine_mode mode = GET_MODE (XEXP (op, 0));
+  static char labelno[] = " %X,%lX";
+
+  /* If not floating-point or if EQ or NE, we can just reverse the code.  */
+  if (reversed)
+    code = reverse_condition (code), reversed = 0;
+
+  /* Only 64 bit versions of these instructions exist.  */
+  if (mode != DImode)
+    abort ();
+
+  /* Start by writing the branch condition.  */
+
+  switch (code)
+    {
+    case NE:
+      strcpy (string, "brnz");
+      break;
+
+    case EQ:
+      strcpy (string, "brz");
+      break;
+
+    case GE:
+      strcpy (string, "brgez");
+      break;
+
+    case LT:
+      strcpy (string, "brlz");
+      break;
+
+    case LE:
+      strcpy (string, "brlez");
+      break;
+
+    case GT:
+      strcpy (string, "brgz");
+      break;
+
+    default:
+      abort ();
+    }
+
+  /* Now add the annulling, reg, label, and nop.  */
+  if (annul)
+    strcat (string, ",a");
+
+  /* ??? Optional prediction bit ",pt" or ",pf" goes here.  */
+
+  labelno[2] = reg + '0';
+  labelno[6] = label + '0';
   strcat (string, labelno);
 
   if (noop)
@@ -2438,6 +3444,9 @@ output_cbranch (op, label, reversed, annul, noop)
 }
 
 /* Output assembler code to return from a function.  */
+
+/* ??? v9: Update to use the new `return' instruction.  Also, add patterns to
+   md file for the `return' instruction.  */
 
 char *
 output_return (operands)
@@ -2461,7 +3470,7 @@ output_return (operands)
 
       if (actual_fsize <= 4096)
 	{
-	  if (current_function_returns_struct)
+	  if (SKIP_CALLERS_UNIMP_P)
 	    return "jmp %%o7+12\n\tsub %%sp,-%0,%%sp";
 	  else
 	    return "retl\n\tsub %%sp,-%0,%%sp";
@@ -2469,12 +3478,12 @@ output_return (operands)
       else if (actual_fsize <= 8192)
 	{
 	  operands[0] = gen_rtx (CONST_INT, VOIDmode, actual_fsize - 4096);
-	  if (current_function_returns_struct)
+	  if (SKIP_CALLERS_UNIMP_P)
 	    return "sub %%sp,-4096,%%sp\n\tjmp %%o7+12\n\tsub %%sp,-%0,%%sp";
 	  else
 	    return "sub %%sp,-4096,%%sp\n\tretl\n\tsub %%sp,-%0,%%sp";
 	}
-      else if (current_function_returns_struct)
+      else if (SKIP_CALLERS_UNIMP_P)
 	{
 	  if ((actual_fsize & 0x3ff) != 0)
 	    return "sethi %%hi(%a0),%%g1\n\tor %%g1,%%lo(%a0),%%g1\n\tjmp %%o7+12\n\tadd %%sp,%%g1,%%sp";
@@ -2491,7 +3500,7 @@ output_return (operands)
     }
   else
     {
-      if (current_function_returns_struct)
+      if (SKIP_CALLERS_UNIMP_P)
 	return "jmp %%i7+12\n\trestore";
       else
 	return "ret\n\trestore";
@@ -2533,7 +3542,6 @@ int
 registers_ok_for_ldd_peep (reg1, reg2)
      rtx reg1, reg2;
 {
-
   /* We might have been passed a SUBREG.  */
   if (GET_CODE (reg1) != REG || GET_CODE (reg2) != REG) 
     return 0;
@@ -2542,7 +3550,6 @@ registers_ok_for_ldd_peep (reg1, reg2)
     return 0;
 
   return (REGNO (reg1) == REGNO (reg2) - 1);
-  
 }
 
 /* Return 1 if addr1 and addr2 are suitable for use in an ldd or 
@@ -2627,7 +3634,6 @@ int
 register_ok_for_ldd (reg)
      rtx reg;
 {
-
   /* We might have been passed a SUBREG.  */
   if (GET_CODE (reg) != REG) 
     return 0;
@@ -2636,7 +3642,6 @@ register_ok_for_ldd (reg)
     return (REGNO (reg) % 2 == 0);
   else 
     return 1;
-
 }
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
@@ -2669,6 +3674,16 @@ print_operand (file, x, code)
 	 not optimizing.  This is always used with '*' above.  */
       if (dbr_sequence_length () == 0 && ! optimize)
 	fputs ("\n\tnop", file);
+      return;
+    case '_':
+      /* Output the Medium/Anywhere code model base register.  */
+      fputs (MEDANY_BASE_REG, file);
+      return;
+    case '@':
+      /* Print out what we are using as the frame pointer.  This might
+	 be %fp, or might be %sp+offset.  */
+      /* ??? What if offset is too big? Perhaps the caller knows it isn't? */
+      fprintf (file, "%s+%d", frame_base_name, frame_base_offset);
       return;
     case 'Y':
       /* Adjust the operand to take into account a RESTORE operation.  */
@@ -2712,7 +3727,7 @@ print_operand (file, x, code)
       else
 	break;
 
-    case  'A':
+    case 'A':
       switch (GET_CODE (x))
 	{
 	case IOR: fputs ("or", file); break;
@@ -2729,6 +3744,38 @@ print_operand (file, x, code)
 	case AND: fputs ("andn", file); break;
 	case XOR: fputs ("xnor", file); break;
 	default: output_operand_lossage ("Invalid %%B operand");
+	}
+      return;
+
+      /* This is used by the conditional move instructions.  */
+    case 'C':
+      switch (GET_CODE (x))
+	{
+	case NE: fputs ("ne", file); break;
+	case EQ: fputs ("e", file); break;
+	case GE: fputs ("ge", file); break;
+	case GT: fputs ("g", file); break;
+	case LE: fputs ("le", file); break;
+	case LT: fputs ("l", file); break;
+	case GEU: fputs ("geu", file); break;
+	case GTU: fputs ("gu", file); break;
+	case LEU: fputs ("leu", file); break;
+	case LTU: fputs ("lu", file); break;
+	default: output_operand_lossage ("Invalid %%C operand");
+	}
+      return;
+
+      /* This is used by the movr instruction pattern.  */
+    case 'D':
+      switch (GET_CODE (x))
+	{
+	case NE: fputs ("ne", file); break;
+	case EQ: fputs ("e", file); break;
+	case GE: fputs ("gez", file); break;
+	case LT: fputs ("lz", file); break;
+	case LE: fputs ("lez", file); break;
+	case GT: fputs ("gz", file); break;
+	default: output_operand_lossage ("Invalid %%D operand");
 	}
       return;
 
@@ -2797,6 +3844,8 @@ print_operand (file, x, code)
 
 /* ??? If there is a 64 bit counterpart to .word that the assembler
    understands, then using that would simply this code greatly.  */
+/* ??? We only output .xword's for symbols and only then in environments
+   where the assembler can handle them.  */
 
 void
 output_double_int (file, value)
@@ -2820,11 +3869,22 @@ output_double_int (file, value)
     }
   else if (GET_CODE (value) == SYMBOL_REF
 	   || GET_CODE (value) == CONST
-	   || GET_CODE (value) == PLUS)
+	   || GET_CODE (value) == PLUS
+	   || (TARGET_V9 &&
+	       (GET_CODE (value) == LABEL_REF
+		|| GET_CODE (value) == MINUS)))
     {
-      /* Addresses are only 32 bits.  */
-      ASM_OUTPUT_INT (file, const0_rtx);
-      ASM_OUTPUT_INT (file, value);
+      if (!TARGET_V9 || TARGET_ENV32)
+	{
+	  ASM_OUTPUT_INT (file, const0_rtx);
+	  ASM_OUTPUT_INT (file, value);
+	}
+      else
+	{
+	  fprintf (file, "\t%s\t", ASM_LONGLONG);
+	  output_addr_const (file, value);
+	  fprintf (file, "\n");
+	}
     }
   else
     abort ();
@@ -2983,6 +4043,112 @@ sparc_type_code (type)
     }
 }
 
+/* Nested function support.  */
+
+/* Emit RTL insns to initialize the variable parts of a trampoline.
+   FNADDR is an RTX for the address of the function's pure code.
+   CXT is an RTX for the static chain value for the function.
+
+   This takes 16 insns: 2 shifts & 2 ands (to split up addresses), 4 sethi
+   (to load in opcodes), 4 iors (to merge address and opcodes), and 4 writes
+   (to store insns).  This is a bit excessive.  Perhaps a different
+   mechanism would be better here.
+
+   Emit 3 FLUSH instructions (UNSPEC_VOLATILE 2) to synchonize the data
+   and instruction caches.
+
+   ??? v9: We assume the top 32 bits of function addresses are 0.  */
+
+void
+sparc_initialize_trampoline (tramp, fnaddr, cxt)
+     rtx tramp, fnaddr, cxt;
+{
+  rtx high_cxt = expand_shift (RSHIFT_EXPR, SImode, cxt,
+			      size_int (10), 0, 1);
+  rtx high_fn = expand_shift (RSHIFT_EXPR, SImode, fnaddr,
+			     size_int (10), 0, 1);
+  rtx low_cxt = expand_and (cxt, gen_rtx (CONST_INT, VOIDmode, 0x3ff), 0);
+  rtx low_fn = expand_and (fnaddr, gen_rtx (CONST_INT, VOIDmode, 0x3ff), 0);
+  rtx g1_sethi = gen_rtx (HIGH, SImode,
+			  gen_rtx (CONST_INT, VOIDmode, 0x03000000));
+  rtx g2_sethi = gen_rtx (HIGH, SImode,
+			  gen_rtx (CONST_INT, VOIDmode, 0x05000000));
+  rtx g1_ori = gen_rtx (HIGH, SImode,
+			gen_rtx (CONST_INT, VOIDmode, 0x82106000));
+  rtx g2_ori = gen_rtx (HIGH, SImode,
+			gen_rtx (CONST_INT, VOIDmode, 0x8410A000));
+  rtx tem = gen_reg_rtx (SImode);
+  emit_move_insn (tem, g1_sethi);
+  emit_insn (gen_iorsi3 (high_fn, high_fn, tem));
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 0)), high_fn);
+  emit_move_insn (tem, g1_ori);
+  emit_insn (gen_iorsi3 (low_fn, low_fn, tem));
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 4)), low_fn);
+  emit_move_insn (tem, g2_sethi);
+  emit_insn (gen_iorsi3 (high_cxt, high_cxt, tem));
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 8)), high_cxt);
+  emit_move_insn (tem, g2_ori);
+  emit_insn (gen_iorsi3 (low_cxt, low_cxt, tem));
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 16)), low_cxt);
+  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
+		      gen_rtvec (1, plus_constant (tramp, 0)),
+		      2));
+  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
+		      gen_rtvec (1, plus_constant (tramp, 8)),
+		      2));
+  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
+		      gen_rtvec (1, plus_constant (tramp, 16)),
+		      2));
+}
+
+void
+sparc64_initialize_trampoline (tramp, fnaddr, cxt)
+     rtx tramp, fnaddr, cxt;
+{
+  rtx fnaddrdi = gen_reg_rtx (Pmode);
+  rtx fnaddrsi = (emit_move_insn (fnaddrdi, fnaddr),
+		gen_rtx (SUBREG, SImode, fnaddrdi, 0));
+  rtx cxtdi = gen_reg_rtx (Pmode);
+  rtx cxtsi = (emit_move_insn (cxtdi, cxt),
+		gen_rtx (SUBREG, SImode, cxtdi, 0));
+  rtx high_cxt = expand_shift (RSHIFT_EXPR, SImode, cxtsi,
+			      size_int (10), 0, 1);
+  rtx high_fn = expand_shift (RSHIFT_EXPR, SImode, fnaddrsi,
+			     size_int (10), 0, 1);
+  rtx low_cxt = expand_and (cxtsi, gen_rtx (CONST_INT, VOIDmode, 0x3ff), 0); 
+  rtx low_fn = expand_and (fnaddrsi, gen_rtx (CONST_INT, VOIDmode, 0x3ff), 0); 
+  rtx g1_sethi = gen_rtx (HIGH, SImode,
+			  gen_rtx (CONST_INT, VOIDmode, 0x03000000));
+  rtx g2_sethi = gen_rtx (HIGH, SImode,
+			  gen_rtx (CONST_INT, VOIDmode, 0x05000000));
+  rtx g1_ori = gen_rtx (HIGH, SImode,
+			gen_rtx (CONST_INT, VOIDmode, 0x82106000));
+  rtx g2_ori = gen_rtx (HIGH, SImode,
+			gen_rtx (CONST_INT, VOIDmode, 0x8410A000));
+  rtx tem = gen_reg_rtx (SImode);
+  emit_move_insn (tem, g2_sethi);
+  emit_insn (gen_iorsi3 (high_fn, high_fn, tem));
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 0)), high_fn);
+  emit_move_insn (tem, g2_ori);
+  emit_insn (gen_iorsi3 (low_fn, low_fn, tem));
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 4)), low_fn);
+  emit_move_insn (tem, g1_sethi);
+  emit_insn (gen_iorsi3 (high_cxt, high_cxt, tem));
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 8)), high_cxt);
+  emit_move_insn (tem, g1_ori);
+  emit_insn (gen_iorsi3 (low_cxt, low_cxt, tem));
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 16)), low_cxt);
+  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
+		      gen_rtvec (1, plus_constant (tramp, 0)),
+		      2));
+  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
+		      gen_rtvec (1, plus_constant (tramp, 8)),
+		      2));
+  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
+		      gen_rtvec (1, plus_constant (tramp, 16)),
+		      2));
+}
+
 /* Subroutines to support a flat (single) register window calling
    convention.  */
 
@@ -3095,6 +4261,7 @@ sparc_flat_compute_frame_size (size)
 
   /* This is the size of the 16 word reg save area, 1 word struct addr
      area, and 4 word fp/alu register copy area.  */
+  /* ??? Is the stack bias taken into account here?  */
   extra_size	 = -STARTING_FRAME_OFFSET + FIRST_PARM_OFFSET(0);
   var_size	 = size;
   /* Also include the size needed for the 6 parameter registers.  */
