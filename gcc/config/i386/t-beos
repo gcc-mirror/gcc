@@ -1,0 +1,14 @@
+# Do not build libgcc1.
+LIBGCC1 =
+CROSS_LIBGCC1 =
+
+# There are system headers elsewhere, but these are the ones that
+# we are most likely to want to apply any fixes to.
+SYSTEM_HEADER_DIR = /boot/develop/headers/posix
+CROSS_SYSTEM_HEADER_DIR = $(tooldir)/sys-include/posix
+
+# Use the system assert.h
+INSTALL_ASSERT_H =
+
+winnt.o: $(srcdir)/config/i386/winnt.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i386/winnt.c

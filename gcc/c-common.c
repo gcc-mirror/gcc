@@ -3650,10 +3650,12 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
      Declare _exit just to mark it as volatile.  */
   if (! no_builtins && ! no_nonansi_builtins)
     {
+#ifndef SMALL_STACK
       temp = builtin_function ("alloca", ptr_ftype_sizetype,
 			       BUILT_IN_ALLOCA, BUILT_IN_NORMAL, NULL_PTR);
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
+#endif
       temp = builtin_function ("ffs", int_ftype_int, BUILT_IN_FFS,
 			       BUILT_IN_NORMAL, NULL_PTR);
       /* Suppress error if redefined as a non-function.  */
