@@ -1,0 +1,45 @@
+/*
+ *      svr3.ifile - for collectless G++ on i386 System V.
+ *	Leaves memory configured at address 0.
+ *	
+ *      Install this file as $prefix/gcc-lib/TARGET/VERSION/gcc.ifile
+ *
+ *	BLOCK to an offset that leaves room for many headers ( the value
+ *	here allows for a file header, an outheader, and up to 11 section 
+ *	headers on most systems.
+ *	BIND to an address that includes page 0 in mapped memory. The value
+ *	used for BLOCK should be or'd into this value. Here I'm setting BLOCK
+ *	to 0x200 and BIND to ( value_used_for(BLOCK) )
+ *	If you are using shared libraries, watch that you don't overlap the
+ *	address ranges assigned for shared libs.
+ *
+ *	GROUP BIND to a location in the next segment.  Here, the only value
+ *	that you should change (I think) is that within NEXT, which I've set
+ *	to my hardware segment size. You can always use a larger size, but not
+ *	a smaller one.
+ */
+SECTIONS
+{
+	.text BIND(0x000200) BLOCK (0x200) :
+	{
+		 /* plenty for room for headers */
+		*(.init)
+		*(.text)
+		vfork = fork; /* I got tired of editing peoples sloppy code */
+		*(.fini)
+	}
+	GROUP BIND( NEXT(0x400000) + (ADDR(.text) + (SIZEOF(.text)) % 0x1000)):
+	{
+			.data : {
+				__CTOR_LIST__ = . ; 
+				. += 4 ;	/* leading NULL */
+				*(.ctor) 
+				. += 4 ;	/* trailing NULL */
+				__DTOR_LIST__ = . ;
+				. += 4 ;	/* leading NULL */
+				*(.dtor) 
+				. += 4 ; 	/* trailing NULL */
+			 }
+			.bss : { }
+	}
+}
