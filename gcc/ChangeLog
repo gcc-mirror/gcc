@@ -1,5 +1,15 @@
 2001-07-20  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.md ("movdi", "movdi_internal"): Use an
+	expand to emit the pattern; put a REG_INC note for push/pop 
+	instructions.
+	("movdf", "movdf_internal"): Likewise.
+	("movsi", "movsi_internal"): Likewise.
+	("movsf", "movsf_internal"): Likewise.
+	("movhi", "movqi"): Emit a REG_INC note for push/pop instructions.
+
+2001-07-20  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.c (m68hc11_gen_highpart): Don't use
 	gen_highpart.
 
