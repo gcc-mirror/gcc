@@ -1,5 +1,9 @@
 2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* bt-load.c: Follow spelling conventions.
+
+2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* expr.c (emit_move_insn_1): Fix a comment typo.
 
 2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>

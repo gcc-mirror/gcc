@@ -1161,7 +1161,7 @@ can_move_up (basic_block bb, rtx insn, int n_insns)
    there is another definition with cost == MIN_COST which now
    has a higher priority than this definition.
 
-   Return non-zero if there may be benefit from attempting to
+   Return nonzero if there may be benefit from attempting to
    migrate this DEF further (i.e. we have reduced the cost below
    MIN_COST, but we may be able to reduce it further).
    Return zero if no further migration is possible. */
