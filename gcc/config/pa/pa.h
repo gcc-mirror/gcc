@@ -428,8 +428,7 @@ extern int leaf_function;
    it's not, there's no point in trying to eliminate the
    frame pointer.  If it is a leaf function, we guessed right!  */
 #define INITIAL_FRAME_POINTER_OFFSET(VAR) \
-  do { int __fsize = compute_frame_size (get_frame_size (), 1, 0) + 32;	\
-       (VAR) = -(TARGET_SNAKE ? (__fsize + 63) & ~63 : __fsize); } while (0)
+  do {(VAR) = - compute_frame_size (get_frame_size (), 0);} while (0)
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 4
@@ -891,7 +890,7 @@ extern int apparent_fsize;
    to do this is made in regclass.c.  */
 
 #define FUNCTION_PROLOGUE(FILE, SIZE) \
-  output_function_prologue (FILE, SIZE, leaf_function)
+  output_function_prologue (FILE, SIZE)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.
@@ -933,8 +932,9 @@ extern int current_function_pretend_args_size;
 extern union tree_node *current_function_decl;
 
 #define FUNCTION_EPILOGUE(FILE, SIZE)			\
-  output_function_epilogue (FILE, SIZE, leaf_function)
-#define DELAY_SLOTS_FOR_EPILOGUE 1
+  output_function_epilogue (FILE, SIZE)
+#define DELAY_SLOTS_FOR_EPILOGUE hppa_epilogue_delay_slots ()
+
 #define ELIGIBLE_FOR_EPILOGUE_DELAY(trial, slots_filled)	\
   eligible_for_epilogue_delay (trial, slots_filled)
 
