@@ -5183,6 +5183,21 @@ fold (expr)
       if (t1 != NULL_TREE)
 	return t1;
 
+      /* Convert (or (not arg0) (not arg1)) to (not (and (arg0) (arg1))).
+
+	 This results in more efficient code for machines without a NAND 
+	 instruction.  Combine will canonicalize to the first form
+	 which will allow use of NAND instructions provided by the
+	 backend if they exist.  */
+      if (TREE_CODE (arg0) == BIT_NOT_EXPR
+	  && TREE_CODE (arg1) == BIT_NOT_EXPR)
+	{
+	  return fold (build1 (BIT_NOT_EXPR, type,
+			       build (BIT_AND_EXPR, type,
+				      TREE_OPERAND (arg0, 0),
+				      TREE_OPERAND (arg1, 0))));
+	}
+
       /* See if this can be simplified into a rotate first.  If that
 	 is unsuccessful continue in the association code.  */
       goto bit_rotate;
@@ -5241,6 +5256,22 @@ fold (expr)
 		  & (((HOST_WIDE_INT) 1 << prec) - 1)) == 0)
 	    return build1 (NOP_EXPR, type, TREE_OPERAND (arg0, 0));
 	}
+
+      /* Convert (or (not arg0) (not arg1)) to (not (and (arg0) (arg1))).
+
+	 This results in more efficient code for machines without a NOR 
+	 instruction.  Combine will canonicalize to the first form
+	 which will allow use of NOR instructions provided by the
+	 backend if they exist.  */
+      if (TREE_CODE (arg0) == BIT_NOT_EXPR
+	  && TREE_CODE (arg1) == BIT_NOT_EXPR)
+	{
+	  return fold (build1 (BIT_NOT_EXPR, type,
+			       build (BIT_IOR_EXPR, type,
+				      TREE_OPERAND (arg0, 0),
+				      TREE_OPERAND (arg1, 0))));
+	}
+
       goto associate;
 
     case BIT_ANDTC_EXPR:
