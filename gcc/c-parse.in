@@ -1475,6 +1475,7 @@ designator:
 	  '.' identifier
 		{ set_init_label ($2); }
 	| array_designator
+	;
 
 array_designator:
 	  '[' expr_no_commas ELLIPSIS expr_no_commas ']'
