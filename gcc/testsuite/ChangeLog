@@ -1,3 +1,7 @@
+2000-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/eh2.C: New test.
+
 2000-10-27  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* gcc.c-torture/execute/20001027-1.c: New test.

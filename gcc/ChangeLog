@@ -1,3 +1,8 @@
+2000-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* calls.c (expand_call): If sibcall_failure is set during pass 1,
+	clear tail_call_insns as well.
+
 2000-10-27  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm-protos.h (arm_function_ok_for_sibcall): Add
