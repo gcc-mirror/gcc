@@ -297,6 +297,7 @@ struct mips_frame_info GTY(())
   long total_size;		/* # bytes that the entire frame takes up */
   long var_size;		/* # bytes that variables take up */
   long args_size;		/* # bytes that outgoing arguments take up */
+  long cprestore_size;		/* # bytes that the .cprestore slot takes up */
   int  gp_reg_size;		/* # bytes needed to store gp regs */
   int  fp_reg_size;		/* # bytes needed to store fp regs */
   long mask;			/* mask of saved gp registers */
@@ -5107,7 +5108,7 @@ mips_debugger_offset (rtx addr, HOST_WIDE_INT offset)
 
       /* MIPS16 frame is smaller */
       if (frame_pointer_needed && TARGET_MIPS16)
-	frame_size -= current_function_outgoing_args_size;
+	frame_size -= cfun->machine->frame.args_size;
 
       offset = offset - frame_size;
     }
@@ -6102,6 +6103,7 @@ compute_frame_size (HOST_WIDE_INT size)
   HOST_WIDE_INT total_size;	/* # bytes that the entire frame takes up */
   HOST_WIDE_INT var_size;	/* # bytes that variables take up */
   HOST_WIDE_INT args_size;	/* # bytes that outgoing arguments take up */
+  HOST_WIDE_INT cprestore_size; /* # bytes that the cprestore slot takes up */
   HOST_WIDE_INT gp_reg_rounded;	/* # bytes needed to store gp after rounding */
   HOST_WIDE_INT gp_reg_size;	/* # bytes needed to store gp regs */
   HOST_WIDE_INT fp_reg_size;	/* # bytes needed to store fp regs */
@@ -6115,13 +6117,14 @@ compute_frame_size (HOST_WIDE_INT size)
   mask = 0;
   fmask	= 0;
   var_size = MIPS_STACK_ALIGN (size);
-  args_size = MIPS_STACK_ALIGN (STARTING_FRAME_OFFSET);
+  args_size = current_function_outgoing_args_size;
+  cprestore_size = MIPS_STACK_ALIGN (STARTING_FRAME_OFFSET) - args_size;
 
   /* The space set aside by STARTING_FRAME_OFFSET isn't needed in leaf
      functions.  If the function has local variables, we're committed
      to allocating it anyway.  Otherwise reclaim it here.  */
   if (var_size == 0 && current_function_is_leaf)
-    args_size = 0;
+    cprestore_size = args_size = 0;
 
   /* The MIPS 3.0 linker does not like functions that dynamically
      allocate the stack and have 0 for STACK_DYNAMIC_OFFSET, since it
@@ -6131,7 +6134,7 @@ compute_frame_size (HOST_WIDE_INT size)
   if (args_size == 0 && current_function_calls_alloca)
     args_size = 4 * UNITS_PER_WORD;
 
-  total_size = var_size + args_size;
+  total_size = var_size + args_size + cprestore_size;
 
   /* Calculate space needed for gp registers.  */
   for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
@@ -6180,6 +6183,7 @@ compute_frame_size (HOST_WIDE_INT size)
   cfun->machine->frame.total_size = total_size;
   cfun->machine->frame.var_size = var_size;
   cfun->machine->frame.args_size = args_size;
+  cfun->machine->frame.cprestore_size = cprestore_size;
   cfun->machine->frame.gp_reg_size = gp_reg_size;
   cfun->machine->frame.fp_reg_size = fp_reg_size;
   cfun->machine->frame.mask = mask;
@@ -6192,7 +6196,8 @@ compute_frame_size (HOST_WIDE_INT size)
     {
       unsigned long offset;
 
-      offset = args_size + var_size + gp_reg_size - GET_MODE_SIZE (gpr_mode);
+      offset = (args_size + cprestore_size + var_size
+		+ gp_reg_size - GET_MODE_SIZE (gpr_mode));
       cfun->machine->frame.gp_sp_offset = offset;
       cfun->machine->frame.gp_save_offset = offset - total_size;
     }
@@ -6204,7 +6209,7 @@ compute_frame_size (HOST_WIDE_INT size)
 
   if (fmask)
     {
-      unsigned long offset = (args_size + var_size
+      unsigned long offset = (args_size + cprestore_size + var_size
 			      + gp_reg_rounded + fp_reg_size
 			      - FP_INC * UNITS_PER_FPREG);
       cfun->machine->frame.fp_sp_offset = offset;
@@ -6229,6 +6234,8 @@ mips_initial_elimination_offset (int from, int to)
 {
   int offset;
 
+  compute_frame_size (get_frame_size ());
+
   /* Set OFFSET to the offset from the stack pointer.  */
   switch (from)
     {
@@ -6237,7 +6244,6 @@ mips_initial_elimination_offset (int from, int to)
       break;
 
     case ARG_POINTER_REGNUM:
-      compute_frame_size (get_frame_size ());
       offset = cfun->machine->frame.total_size;
       if (mips_abi == ABI_N32 || mips_abi == ABI_64)
 	offset -= current_function_pretend_args_size;
@@ -6248,7 +6254,7 @@ mips_initial_elimination_offset (int from, int to)
     }
 
   if (TARGET_MIPS16 && to == HARD_FRAME_POINTER_REGNUM)
-    offset -= current_function_outgoing_args_size;
+    offset -= cfun->machine->frame.args_size;
 
   return offset;
 }
@@ -6372,19 +6378,18 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
     {
       /* .frame FRAMEREG, FRAMESIZE, RETREG */
       fprintf (file,
-	       "\t.frame\t%s,%ld,%s\t\t# vars= %ld, regs= %d/%d, args= %d, gp= %ld\n",
+	       "\t.frame\t%s,%ld,%s\t\t# vars= %ld, regs= %d/%d, args= %ld, gp= %ld\n",
 	       (reg_names[(frame_pointer_needed)
 			  ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM]),
 	       ((frame_pointer_needed && TARGET_MIPS16)
-		? ((long) tsize - current_function_outgoing_args_size)
+		? ((long) tsize - cfun->machine->frame.args_size)
 		: (long) tsize),
 	       reg_names[GP_REG_FIRST + 31],
 	       cfun->machine->frame.var_size,
 	       cfun->machine->frame.num_gp,
 	       cfun->machine->frame.num_fp,
-	       current_function_outgoing_args_size,
-	       cfun->machine->frame.args_size
-	       - current_function_outgoing_args_size);
+	       cfun->machine->frame.args_size,
+	       cfun->machine->frame.cprestore_size);
 
       /* .mask MASK, GPOFFSET; .fmask FPOFFSET */
       fprintf (file, "\t.mask\t0x%08lx,%ld\n\t.fmask\t0x%08lx,%ld\n",
@@ -6562,9 +6567,9 @@ mips_expand_prologue (void)
      acceesed with unextended instructions.  */
   if (frame_pointer_needed)
     {
-      if (TARGET_MIPS16 && current_function_outgoing_args_size != 0)
+      if (TARGET_MIPS16 && cfun->machine->frame.args_size != 0)
 	{
-	  rtx offset = GEN_INT (current_function_outgoing_args_size);
+	  rtx offset = GEN_INT (cfun->machine->frame.args_size);
 	  RTX_FRAME_RELATED_P
 	    (emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
 				       stack_pointer_rtx,
@@ -6718,7 +6723,7 @@ mips_expand_epilogue (int sibcall_p)
     {
       base = hard_frame_pointer_rtx;
       if (TARGET_MIPS16)
-	step1 -= current_function_outgoing_args_size;
+	step1 -= cfun->machine->frame.args_size;
     }
 
   /* If we need to restore registers, deallocate as much stack as
