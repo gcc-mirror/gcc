@@ -1,3 +1,11 @@
+2002-05-08  Janis Johnson  <janis187@us.ibm.com>
+
+	* rtl.h (RTL_FLAG_CHECK*): Add an argument for the macro name,
+	and use it in all invocations of these macros.  Clean up comments.
+	* rtl.c (rtl_check_failed_flag): Add an argument for the name
+	of the flag access macro whose check failed.
+	* doc/rtl.texi (Flags): Document additional flag uses.
+
 2002-05-08  Robert Spier <rspier@pobox.com>
 	    Neil Booth  <neil@daikokuya.demon.co.uk>
 
