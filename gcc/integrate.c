@@ -2846,6 +2846,10 @@ output_inline_function (fndecl)
   if (f->no_debugging_symbols)
     write_symbols = NO_DEBUG;
 
+  /* Do any preparation, such as emitting abstract debug info for the inline
+     before it gets mangled by optimization.  */
+  note_outlining_of_inline_function (fndecl);
+
   /* Compile this function all the way down to assembly code.  */
   rest_of_compilation (fndecl);
 

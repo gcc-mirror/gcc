@@ -1928,6 +1928,19 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
   /* For functions, static overrides non-static.  */
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
+      /* If we're redefining a function previously defined as extern
+	 inline, make sure we emit debug info for the inline before we
+	 throw it away, in case it was inlined into a function that hasn't
+	 been written out yet.  */
+      if (new_is_definition && DECL_INITIAL (olddecl) && TREE_USED (olddecl))
+	{
+	  note_outlining_of_inline_function (olddecl);
+
+	  /* The new defn must not be inline.
+	     FIXME what about -finline-functions? */
+	  DECL_INLINE (newdecl) = 0;
+	}
+
       TREE_PUBLIC (newdecl) &= TREE_PUBLIC (olddecl);
       /* This is since we don't automatically
 	 copy the attributes of NEWDECL into OLDDECL.  */
