@@ -1,3 +1,7 @@
+2002-07-18  Bo Thorsen  <bo@berlioz.suse.de>
+
+	* config/i386/linux64.h (STARTFILE_PREFIX_SPEC): Define this always.
+
 Thu Jul 18 19:39:18 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh-protos.h (sh_expand_unop_v2sf): Move inside #ifdef RTX_CODE guard.
