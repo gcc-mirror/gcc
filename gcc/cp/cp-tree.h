@@ -24,6 +24,58 @@ Boston, MA 02111-1307, USA.  */
 
 #include "gansidecl.h"
 
+/* Usage of TREE_LANG_FLAG_?:
+   0: TREE_NONLOCAL_FLAG (in TREE_LIST or _TYPE).
+      BINFO_MARKED (BINFO nodes).
+      TI_USES_TEMPLATE_PARMS.
+      COMPOUND_STMT_NO_SCOPE (in COMPOUND_STMT).
+      NEW_EXPR_USE_GLOBAL (in NEW_EXPR).
+      DELETE_EXPR_USE_GLOBAL (in DELETE_EXPR).
+      LOOKUP_EXPR_GLOBAL (in LOOKUP_EXPR).
+      TREE_NEGATED_INT (in INTEGER_CST).
+      (TREE_MANGLED) (in IDENTIFIER_NODE) (commented-out).
+   1:  IDENTIFIER_VIRTUAL_P.
+      TI_PENDING_TEMPLATE_FLAG.
+      TI_PENDING_SPECIALIZATION_FLAG.
+      TEMPLATE_PARMS_FOR_INLINE.
+      DELETE_EXPR_USE_VEC (in DELETE_EXPR).
+      (TREE_CALLS_NEW) (in _EXPR or _REF) (commented-out).
+      TYPE_USES_COMPLEX_INHERITANCE (in _TYPE).
+      C_DECLARED_LABEL_FLAG.
+   2: IDENTIFIER_OPNAME_P.
+      BINFO_FIELDS_MARKED.
+      TYPE_VIRTUAL_P.
+      PARM_DECL_EXPR (in SAVE_EXPR).
+   3: TYPE_USES_VIRTUAL_BASECLASSES (in a class TYPE).
+      BINFO_VTABLE_PATH_MARKED.
+      (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
+   4: BINFO_NEW_VTABLE_MARKED.
+      TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
+          or FIELD_DECL).
+   5: BINFO_VIA_PUBLIC.
+      BINFO_VBASE_INIT_MARKED.
+   6: Not used.
+
+   Usage of TYPE_LANG_FLAG_?:
+   0: C_TYPE_FIELDS_READONLY (in RECORD_TYPE or UNION_TYPE).
+   1: TYPE_HAS_CONSTRUCTOR.
+   2: TYPE_HAS_DESTRUCTOR.
+   3: Not used.
+   4: TYPE_NEEDS_DESTRUCTOR.
+   5: IS_AGGR_TYPE.
+   6: TYPE_BUILT_IN
+
+   Usage of DECL_LANG_FLAG_?:
+   0: DECL_ERROR_REPORTED (in VAR_DECL).
+   1: C_TYPEDEF_EXPLICITLY_SIGNED (in TYPE_DECL).
+   2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
+   3: DECL_IN_AGGR_P.
+   4: DECL_MAYBE_TEMPLATE.
+   5: DECL_INTERFACE_KNOWN.
+   6: DECL_THIS_STATIC (in VAR_DECL or FUNCTION_DECL).
+   7: DECL_DEAD_FOR_LOCAL (in VAR_DECL).
+*/
+
 /* Language-dependent contents of an identifier.  */
 
 struct lang_identifier
@@ -1196,7 +1248,7 @@ struct lang_decl
 
 #define TYPENAME_TYPE_FULLNAME(NODE)	CLASSTYPE_SIZE (NODE)
 
-/* Nonzero in INT_CST means that this int is negative by dint of
+/* Nonzero in INTEGER_CST means that this int is negative by dint of
    using a twos-complement negated operand.  */
 #define TREE_NEGATED_INT(NODE) (TREE_LANG_FLAG_0 (NODE))
 
@@ -1270,11 +1322,6 @@ extern int flag_new_for_scope;
    These may be shadowed, and may be referenced from nested functions.  */
 #define C_DECLARED_LABEL_FLAG(label) TREE_LANG_FLAG_1 (label)
 
-/* Record whether a type or decl was written with nonconstant size.
-   Note that TYPE_SIZE may have simplified to a constant.  */
-#define C_TYPE_VARIABLE_SIZE(type) TREE_LANG_FLAG_4 (type)
-#define C_DECL_VARIABLE_SIZE(type) DECL_LANG_FLAG_8 (type)
-
 /* Nonzero for _TYPE means that the _TYPE defines
    at least one constructor.  */
 #define TYPE_HAS_CONSTRUCTOR(NODE) (TYPE_LANG_FLAG_1(NODE))
@@ -1312,7 +1359,7 @@ extern int flag_new_for_scope;
 /* Nonzero for _TYPE node means that creating an object of this type
    will involve a call to a constructor.  This can apply to objects
    of ARRAY_TYPE if the type of the elements needs a constructor.  */
-#define TYPE_NEEDS_CONSTRUCTING(NODE) (TYPE_LANG_FLAG_3(NODE))
+#define TYPE_NEEDS_CONSTRUCTING(NODE) ... defined in ../tree.h ...
 #endif
 
 /* Nonzero means that an object of this type can not be initialized using
