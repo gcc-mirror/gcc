@@ -1,3 +1,10 @@
+Mon Aug 31 10:54:03 1998  Richard Henderson  <rth@cygnus.com>
+
+	* print-rtl.c (print_rtx): NOTE_INSN_LIVE has an rtx not a bitmap.
+	* haifa-sched.c (sched_analyze): Handle NOTE_INSN_RANGE_START
+	and NOTE_INSN_RANGE_END specially.
+	(reemit_notes): Likewise.
+
 Mon Aug 31 10:18:52 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* sparc.c (TMASK, UMASK): Use `(unsigned)1' not `1U'.
