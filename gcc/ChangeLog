@@ -1,3 +1,8 @@
+Thu Nov 15 08:36:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* toplev.c (toplev_main): Don't start timing until after
+	command-line options are parsed.
+
 2001-11-15  Andreas Schwab  <schwab@suse.de>
 
 	* config.gcc: Set STMP_FIXPROTO and FIXPROTO_DEFINES in target

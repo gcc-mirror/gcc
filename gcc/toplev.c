@@ -5180,11 +5180,14 @@ toplev_main (argc, argv)
     return (SUCCESS_EXIT_CODE);
 
   /* Start timing total execution time.  */
-  init_timevar ();
-  timevar_start (TV_TOTAL);
 
   /* The bulk of command line switch processing.  */
   process_options ();
+
+  /* We cannot start timing until after options are processed since that
+     says if we run timers or not.  */
+  init_timevar ();
+  timevar_start (TV_TOTAL);
 
   /* Language-independent initialization.  Also sets up GC, identifier
      hashes etc.  */
