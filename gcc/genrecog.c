@@ -231,7 +231,7 @@ static struct decision_test *new_decision_test
 static rtx find_operand
   PARAMS ((rtx, int));
 static void validate_pattern
-  PARAMS ((rtx, rtx, rtx));
+  PARAMS ((rtx, rtx, rtx, int));
 static struct decision *add_to_sequence
   PARAMS ((rtx, struct decision_head *, const char *, enum routine_type, int));
 
@@ -397,13 +397,15 @@ find_operand (pattern, n)
 }
 
 /* Check for various errors in patterns.  SET is nonnull for a destination,
-   and is the complete set pattern.  */
+   and is the complete set pattern.  SET_CODE is '=' for normal sets, and
+   '+' within a context that requires in-out constraints.  */
 
 static void
-validate_pattern (pattern, insn, set)
+validate_pattern (pattern, insn, set, set_code)
      rtx pattern;
      rtx insn;
      rtx set;
+     int set_code;
 {
   const char *fmt;
   RTX_CODE code;
@@ -482,16 +484,26 @@ validate_pattern (pattern, insn, set)
 	  }
 
 	/* A MATCH_OPERAND that is a SET should have an output reload.  */
-	if (set
-	    && code == MATCH_OPERAND
-	    && XSTR (pattern, 2)[0] != '\0'
-	    && XSTR (pattern, 2)[0] != '='
-	    && XSTR (pattern, 2)[0] != '+')
+	if (set && code == MATCH_OPERAND)
 	  {
-	    message_with_line (pattern_lineno,
-			       "operand %d missing output reload", 
-			       XINT (pattern, 0));
-	    error_count++;
+	    if (set_code == '+'
+		&& XSTR (pattern, 2)[0] != '\0'
+		&& XSTR (pattern, 2)[0] != '+')
+	      {
+		message_with_line (pattern_lineno,
+				   "operand %d missing in-out reload",
+				   XINT (pattern, 0));
+		error_count++;
+	      }
+	    else if (XSTR (pattern, 2)[0] != '\0'
+		     && XSTR (pattern, 2)[0] != '='
+		     && XSTR (pattern, 2)[0] != '+')
+	      {
+		message_with_line (pattern_lineno,
+				   "operand %d missing output reload", 
+				   XINT (pattern, 0));
+		error_count++;
+	      }
 	  }
 
 	/* Allowing non-lvalues in destinations -- particularly CONST_INT --
@@ -593,14 +605,25 @@ validate_pattern (pattern, insn, set)
 	  }
 
 	if (dest != SET_DEST (pattern))
-	  validate_pattern (dest, insn, pattern);
-	validate_pattern (SET_DEST (pattern), insn, pattern);
-        validate_pattern (SET_SRC (pattern), insn, NULL_RTX);
+	  validate_pattern (dest, insn, pattern, '=');
+	validate_pattern (SET_DEST (pattern), insn, pattern, '=');
+        validate_pattern (SET_SRC (pattern), insn, NULL_RTX, 0);
         return;
       }
 
     case CLOBBER:
-      validate_pattern (SET_DEST (pattern), insn, pattern);
+      validate_pattern (SET_DEST (pattern), insn, pattern, '=');
+      return;
+
+    case ZERO_EXTRACT:
+      validate_pattern (XEXP (pattern, 0), insn, set, set ? '+' : 0);
+      validate_pattern (XEXP (pattern, 1), insn, NULL_RTX, 0);
+      validate_pattern (XEXP (pattern, 2), insn, NULL_RTX, 0);
+      return;
+
+    case STRICT_LOW_PART:
+      validate_pattern (XEXP (pattern, 0), insn, set, set ? '+' : 0);
+      validate_pattern (XEXP (pattern, 1), insn, NULL, 0);
       return;
 
     case LABEL_REF:
@@ -624,12 +647,12 @@ validate_pattern (pattern, insn, set)
       switch (fmt[i])
 	{
 	case 'e': case 'u':
-	  validate_pattern (XEXP (pattern, i), insn, NULL_RTX);
+	  validate_pattern (XEXP (pattern, i), insn, NULL_RTX, 0);
 	  break;
 
 	case 'E':
 	  for (j = 0; j < XVECLEN (pattern, i); j++)
-	    validate_pattern (XVECEXP (pattern, i, j), insn, NULL_RTX);
+	    validate_pattern (XVECEXP (pattern, i, j), insn, NULL_RTX, 0);
 	  break;
 
 	case 'i': case 'w': case '0': case 's':
@@ -2337,7 +2360,7 @@ make_insn_sequence (insn, type)
       PUT_MODE (x, VOIDmode);
     }
 
-  validate_pattern (x, insn, NULL_RTX);
+  validate_pattern (x, insn, NULL_RTX, 0);
 
   memset(&head, 0, sizeof(head));
   last = add_to_sequence (x, &head, "", type, 1);
