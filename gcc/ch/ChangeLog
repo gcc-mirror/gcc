@@ -1,3 +1,7 @@
+2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* chill.texi: Move contents to just after title page.
+
 2001-05-23  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* Make-lang.in (dvi): Use ch/chill.dvi not chill.dvi.

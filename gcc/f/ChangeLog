@@ -1,3 +1,7 @@
+2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77.texi: Move contents to just after title page.
+
 2001-06-02  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* com.c (ffecom_init_0): Make CHARACTER*1 unsigned.

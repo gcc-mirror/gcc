@@ -86,6 +86,7 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development.
 @end titlepage
+@contents
 @page
 
 
@@ -997,5 +998,4 @@ a free software Java class library test suite which is being written
 because the JCK is not free.  See
 @uref{http://sources.redhat.com/mauve/} for more information.
 
-@contents
 @bye

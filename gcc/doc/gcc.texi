@@ -200,6 +200,8 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development.
 @end titlepage
+@summarycontents
+@contents
 @page
 
 @node Top, G++ and GCC,, (DIR)
@@ -4788,6 +4790,4 @@ Public License instead of this License.
 @c Epilogue
 @c ---------------------------------------------------------------------
 
-@summarycontents
-@contents
 @bye
