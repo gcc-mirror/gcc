@@ -1,5 +1,5 @@
 /* longlong.h -- definitions for mixed size 32/64 bit arithmetic.
-   Copyright (C) 1991, 1992, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1994, 1995 Free Software Foundation, Inc.
 
    This definition file is free software; you can redistribute it
    and/or modify it under the terms of the GNU General Public
@@ -730,20 +730,17 @@
 	     "g" ((USItype)(bh)),					\
 	     "1" ((USItype)(al)),					\
 	     "g" ((USItype)(bl)))
-/* This insn doesn't work on ancient pyramids.  */
+/* This insn works on Pyramids with AP, XP, or MI CPUs, but not with SP.  */
 #define umul_ppmm(w1, w0, u, v) \
-  ({union {								\
-	UDItype __ll;							\
-	struct {USItype __h, __l;} __i;					\
-     } __xx;								\
-  __xx.__i.__l = u;							\
-  __asm__ ("uemul %3,%0"						\
-	   : "=r" (__xx.__i.__h),					\
-	     "=r" (__xx.__i.__l)					\
-	   : "1" (__xx.__i.__l),					\
+  ({union {UDItype __ll;						\
+	   struct {USItype __h, __l;} __i;				\
+	  } __xx;							\
+  __asm__ ("movw %1,%R0
+	uemul %2,%0"							\
+	   : "=&r" (__xx.__ll)						\
+	   : "g" ((USItype) (u)),					\
 	     "g" ((USItype)(v)));					\
-  (w1) = __xx.__i.__h;							\
-  (w0) = __xx.__i.__l;})
+  (w1) = __xx.__i.__h; (w0) = __xx.__i.__l;})
 #endif /* __pyr__ */
 
 #if defined (__ibm032__) /* RT/ROMP */
@@ -1172,7 +1169,7 @@ extern const UQItype __clz_tab[];
       }									\
     else								\
       {									\
-	for (__a = SI_TYPE_SIZE - 8; __a > 0; __a -= 8)		\
+	for (__a = SI_TYPE_SIZE - 8; __a > 0; __a -= 8)			\
 	  if (((__xr >> __a) & 0xff) != 0)				\
 	    break;							\
       }									\
