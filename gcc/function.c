@@ -289,6 +289,7 @@ static void compute_insns_for_mem PARAMS ((rtx, rtx, htab_t));
 static void prepare_function_start PARAMS ((void));
 static void do_clobber_return_reg PARAMS ((rtx, void *));
 static void do_use_return_reg PARAMS ((rtx, void *));
+static void instantiate_virtual_regs_lossage PARAMS ((rtx));
 
 /* Pointer to chain of `struct function' for containing functions.  */
 static GTY(()) struct function *outer_function_chain;
@@ -3559,6 +3560,8 @@ instantiate_virtual_regs (fndecl, insns)
 	|| GET_CODE (insn) == CALL_INSN)
       {
 	instantiate_virtual_regs_1 (&PATTERN (insn), insn, 1);
+	if (INSN_DELETED_P (insn))
+	  continue;
 	instantiate_virtual_regs_1 (&REG_NOTES (insn), NULL_RTX, 0);
 	/* Instantiate any virtual registers in CALL_INSN_FUNCTION_USAGE.  */
 	if (GET_CODE (insn) == CALL_INSN)
@@ -3731,6 +3734,22 @@ instantiate_new_reg (x, poffset)
   return new;
 }
 
+
+/* Called when instantiate_virtual_regs has failed to update the instruction.
+   Usually this means that non-matching instruction has been emit, however for
+   asm statements it may be the problem in the constraints.  */
+static void
+instantiate_virtual_regs_lossage (insn)
+     rtx insn;
+{
+  if (asm_noperands (PATTERN (insn)) >= 0)
+    {
+      error_for_asm (insn, "impossible constraint in `asm'");
+      delete_insn (insn);
+    }
+  else
+    abort ();
+}
 /* Given a pointer to a piece of rtx and an optional pointer to the
    containing object, instantiate any virtual registers present in it.
 
@@ -3765,6 +3784,10 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 
   x = *loc;
   if (x == 0)
+    return 1;
+
+  /* We may have detected and deleted invalid asm statements.  */
+  if (object && INSN_P (object) && INSN_DELETED_P (object))
     return 1;
 
   code = GET_CODE (x);
@@ -3804,7 +3827,10 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	  /* The only valid sources here are PLUS or REG.  Just do
 	     the simplest possible thing to handle them.  */
 	  if (GET_CODE (src) != REG && GET_CODE (src) != PLUS)
-	    abort ();
+	    {
+	      instantiate_virtual_regs_lossage (object);
+	      return 1;
+	    }
 
 	  start_sequence ();
 	  if (GET_CODE (src) != REG)
@@ -3820,7 +3846,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 
 	  if (! validate_change (object, &SET_SRC (x), temp, 0)
 	      || ! extra_insns)
-	    abort ();
+	    instantiate_virtual_regs_lossage (object);
 
 	  return 1;
 	}
@@ -3930,7 +3956,10 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 		  emit_insn_before (seq, object);
 		  if (! validate_change (object, loc, temp, 0)
 		      && ! validate_replace_rtx (x, temp, object))
-		    abort ();
+		    {
+		      instantiate_virtual_regs_lossage (object);
+		      return 1;
+		    }
 		}
 	    }
 
@@ -4084,7 +4113,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	      emit_insn_before (seq, object);
 	      if (! validate_change (object, loc, temp, 0)
 		  && ! validate_replace_rtx (x, temp, object))
-		abort ();
+	        instantiate_virtual_regs_lossage (object);
 	    }
 	}
 

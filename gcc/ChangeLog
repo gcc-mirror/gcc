@@ -1,3 +1,12 @@
+Fri Mar 21 23:14:11 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR inline-asm/7916
+
+	* function.c (instantiate_virtual_regs_lossage): New function.
+	(instantiate_virtual_regs_1): Use it.
+	(instantiate_virtual_regs): Do not continue in substition when insn has
+	been deleted.
+
 2003-03-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h: Do not include fixdfdi.h on s390x.
