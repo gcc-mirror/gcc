@@ -1,6 +1,34 @@
-/* $Id: compress.c,v 1.1 2000/12/09 03:08:23 apbianco Exp $
+/* $Id: compress.c,v 1.2 2000/12/14 18:45:35 ghazi Exp $
 
    $Log: compress.c,v $
+   Revision 1.2  2000/12/14 18:45:35  ghazi
+   Warning fixes:
+
+   	* compress.c: Include stdlib.h and compress.h.
+   	(rcsid): Delete.
+   	(report_str_error): Make static.
+   	(ez_inflate_str): Delete unused variable.  Add parens in if-stmt.
+   	(hrd_inflate_str): Likewise.
+
+   	* compress.h (init_compression, end_compression, init_inflation,
+   	end_inflation): Prototype void arguments.
+
+   	* dostime.c (rcsid): Delete.
+
+   	* jargrep.c: Include ctype.h, stdlib.h, zlib.h and compress.h.
+   	Make functions static.  Cast ctype function argument to `unsigned
+   	char'.  Add parens in if-stmts.  Constify.
+   	(Usage): Change into a macro.
+   	(jargrep): Remove unused parameter.
+
+   	* jartool.c: Constify.  Add parens in if-stmts.  Align
+   	signed/unsigned char pointers in functions calls using casts.
+   	(rcsid): Delete.
+   	(list_jar): Fix printf format specifier.
+   	(usage): Chop long string into bits.  Reformat.
+
+   	* pushback.c (rcsid): Delete.
+
    Revision 1.1  2000/12/09 03:08:23  apbianco
    2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
@@ -110,6 +138,7 @@ int compress_file(int in_fd, int out_fd, struct zipentry *ze){
   Bytef out_buff[RDSZ];
   unsigned int rdamt, wramt;
   unsigned long tr = 0;
+  int rtval;
 
   rdamt = 0;
 
@@ -125,14 +154,16 @@ int compress_file(int in_fd, int out_fd, struct zipentry *ze){
     
     /* If deflate is out of input, fill the input buffer for it */
     if(zs.avail_in == 0 && zs.avail_out > 0){
-      if((rdamt = read(in_fd, in_buff, RDSZ)) == 0)
+      if((rtval = read(in_fd, in_buff, RDSZ)) == 0)
         break;
 
-      if(rdamt == -1){
+      if(rtval == -1){
         perror("read");
         exit(1);
       }
-      
+
+      rdamt = rtval;
+
       /* compute the CRC while we're at it */
       ze->crc = crc32(ze->crc, in_buff, rdamt); 
 
@@ -170,7 +201,7 @@ int compress_file(int in_fd, int out_fd, struct zipentry *ze){
 
     wramt = RDSZ - zs.avail_out;
 
-    if(write(out_fd, out_buff, wramt) != wramt){
+    if(write(out_fd, out_buff, wramt) != (int)wramt){
       perror("write");
       exit(1);
     }
@@ -184,7 +215,7 @@ int compress_file(int in_fd, int out_fd, struct zipentry *ze){
   while(deflate(&zs, Z_FINISH) == Z_OK){
     wramt = RDSZ - zs.avail_out;
 
-    if(write(out_fd, out_buff, wramt) != wramt){
+    if(write(out_fd, out_buff, wramt) != (int)wramt){
       perror("write");
       exit(1);
     }
@@ -197,7 +228,7 @@ int compress_file(int in_fd, int out_fd, struct zipentry *ze){
   if(zs.avail_out != RDSZ){
     wramt = RDSZ - zs.avail_out;
 
-    if(write(out_fd, out_buff, wramt) != wramt){
+    if(write(out_fd, out_buff, wramt) != (int)wramt){
       perror("write");
       exit(1);
     }
@@ -261,7 +292,7 @@ int inflate_file(pb_file *pbf, int out_fd, struct zipentry *ze){
     if(zs.avail_in == 0){
       if((rdamt = pb_read(pbf, in_buff, RDSZ)) == 0)
         break;
-      else if(rdamt < 0){
+      else if((int)rdamt < 0){
         perror("read");
         exit(1);
       }
@@ -287,7 +318,7 @@ int inflate_file(pb_file *pbf, int out_fd, struct zipentry *ze){
 
           if(out_fd >= 0)
             if(write(out_fd, out_buff, (RDSZ - zs.avail_out)) != 
-               (RDSZ - zs.avail_out)){
+               (int)(RDSZ - zs.avail_out)){
               perror("write");
               exit(1);
             }
@@ -304,7 +335,7 @@ int inflate_file(pb_file *pbf, int out_fd, struct zipentry *ze){
 
         if(out_fd >= 0)
           if(write(out_fd, out_buff, (RDSZ - zs.avail_out)) != 
-             (RDSZ - zs.avail_out)){
+             (int)(RDSZ - zs.avail_out)){
             perror("write");
             exit(1);
           }

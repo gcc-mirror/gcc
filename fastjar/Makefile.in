@@ -77,46 +77,12 @@ ZINCS = @ZINCS@
 ZLIBS = @ZLIBS@
 fastjar_warn_cflags = @fastjar_warn_cflags@
 
-AM_MAKEFLAGS = \
-	"AR_FLAGS=$(AR_FLAGS)" \
-	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
-	"CFLAGS=$(CFLAGS)" \
-	"CXXFLAGS=$(CXXFLAGS)" \
-	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
-	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
-	"INSTALL=$(INSTALL)" \
-	"INSTALL_DATA=$(INSTALL_DATA)" \
-	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
-	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
-	"JC1FLAGS=$(JC1FLAGS)" \
-	"LDFLAGS=$(LDFLAGS)" \
-	"LIBCFLAGS=$(LIBCFLAGS)" \
-	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
-	"MAKE=$(MAKE)" \
-	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
-	"PICFLAG=$(PICFLAG)" \
-	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
-	"SHELL=$(SHELL)" \
-	"exec_prefix=$(exec_prefix)" \
-	"infodir=$(infodir)" \
-	"libdir=$(libdir)" \
-	"prefix=$(prefix)" \
-	"AR=$(AR)" \
-	"AS=$(AS)" \
-	"CC=$(CC)" \
-	"CXX=$(CXX)" \
-	"LD=$(LD)" \
-	"LIBCFLAGS=$(LIBCFLAGS)" \
-	"NM=$(NM)" \
-	"PICFLAG=$(PICFLAG)" \
-	"RANLIB=$(RANLIB)" \
-	"DESTDIR=$(DESTDIR)"
+AM_MAKEFLAGS =  	"AR_FLAGS=$(AR_FLAGS)" 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" 	"CFLAGS=$(CFLAGS)" 	"CXXFLAGS=$(CXXFLAGS)" 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" 	"INSTALL=$(INSTALL)" 	"INSTALL_DATA=$(INSTALL_DATA)" 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" 	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" 	"JC1FLAGS=$(JC1FLAGS)" 	"LDFLAGS=$(LDFLAGS)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" 	"MAKE=$(MAKE)" 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" 	"SHELL=$(SHELL)" 	"exec_prefix=$(exec_prefix)" 	"infodir=$(infodir)" 	"libdir=$(libdir)" 	"prefix=$(prefix)" 	"AR=$(AR)" 	"AS=$(AS)" 	"CC=$(CC)" 	"CXX=$(CXX)" 	"LD=$(LD)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"NM=$(NM)" 	"PICFLAG=$(PICFLAG)" 	"RANLIB=$(RANLIB)" 	"DESTDIR=$(DESTDIR)"
 
 
 INCLUDES = -I. -I$(top_srcdir) $(ZINCS)
 
-bin_PROGRAMS = jar
-EXTRA_PROGRAMS = grepjar
+bin_PROGRAMS = jar grepjar
 jar_SOURCES = jartool.c dostime.c compress.c pushback.c jartool.h zipfile.h dostime.h compress.h pushback.h
 jar_LDADD = $(ZLIBS)
 jar_DEPENDENCIES = $(ZDEPS)
@@ -129,7 +95,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =  install-defs.sh
-bin_PROGRAMS =  jar$(EXEEXT)
+bin_PROGRAMS =  jar$(EXEEXT) grepjar$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 
@@ -137,10 +103,10 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I.
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-grepjar_OBJECTS =  jargrep.o dostime.o compress.o pushback.o
-grepjar_LDFLAGS = 
 jar_OBJECTS =  jartool.o dostime.o compress.o pushback.o
 jar_LDFLAGS = 
+grepjar_OBJECTS =  jargrep.o dostime.o compress.o pushback.o
+grepjar_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -152,10 +118,10 @@ configure.in install-defs.sh.in install-sh missing mkinstalldirs
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(grepjar_SOURCES) $(jar_SOURCES)
-OBJECTS = $(grepjar_OBJECTS) $(jar_OBJECTS)
+SOURCES = $(jar_SOURCES) $(grepjar_SOURCES)
+OBJECTS = $(jar_OBJECTS) $(grepjar_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -249,13 +215,13 @@ distclean-compile:
 
 maintainer-clean-compile:
 
-grepjar$(EXEEXT): $(grepjar_OBJECTS) $(grepjar_DEPENDENCIES)
-	@rm -f grepjar$(EXEEXT)
-	$(LINK) $(grepjar_LDFLAGS) $(grepjar_OBJECTS) $(grepjar_LDADD) $(LIBS)
-
 jar$(EXEEXT): $(jar_OBJECTS) $(jar_DEPENDENCIES)
 	@rm -f jar$(EXEEXT)
 	$(LINK) $(jar_LDFLAGS) $(jar_OBJECTS) $(jar_LDADD) $(LIBS)
+
+grepjar$(EXEEXT): $(grepjar_OBJECTS) $(grepjar_DEPENDENCIES)
+	@rm -f grepjar$(EXEEXT)
+	$(LINK) $(grepjar_LDFLAGS) $(grepjar_OBJECTS) $(grepjar_LDADD) $(LIBS)
 
 tags: TAGS
 
@@ -327,7 +293,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

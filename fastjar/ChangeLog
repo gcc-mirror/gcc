@@ -1,3 +1,16 @@
+2001-01-02  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR bootstrap/5117
+	* configure.in (AC_CHECK_HEADERS): Check for stdlib.h.
+	* Makefile.am: Move grepjar to bin_PROGRAMS.
+	* config.h.in: Regenerated.
+	* Makefile.in: Regenerated.
+	* jargrep.c: Eliminate some signed/unsigned and default
+	uninitialized warnings. Use HAVE_STDLIB_H instead of 
+	STDC_HEADERS macro.
+	* jartool.c: Likewise.
+	* compress.c: Likewise.
+
 2001-09-17  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/4295:

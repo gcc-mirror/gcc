@@ -17,9 +17,13 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/* $Id: jartool.c,v 1.8 2001/08/29 01:35:31 apbianco Exp $
+/* $Id: jartool.c,v 1.9 2001/10/12 00:49:42 bryce Exp $
 
    $Log: jartool.c,v $
+   Revision 1.9  2001/10/12 00:49:42  bryce
+           * jatool.c (extract_jar): Account for null termination when
+   	determining whether to expand "filename".
+
    Revision 1.8  2001/08/29 01:35:31  apbianco
    2001-08-28  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
@@ -176,7 +180,7 @@
 
 #include <zlib.h>
 
-#ifdef STDC_HEADERS
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
 
@@ -1444,7 +1448,7 @@ int extract_jar(int fd, char **files, int file_num){
 
       ze.crc = crc32(ze.crc, NULL, 0); /* initialize the crc */
 
-      while(out_a < csize){
+      while(out_a < (int)csize){
         rdamt = (in_a > RDSZ ? RDSZ : in_a);
         if(pb_read(&pbf, rd_buff, rdamt) != rdamt){
           perror("read");
@@ -1587,7 +1591,7 @@ int list_jar(int fd, char **files, int file_num){
 
     /*   printf("Central header offset = %d\n", tmp); */
 
-    if(lseek(fd, tmp, SEEK_SET) != tmp){
+    if(lseek(fd, tmp, SEEK_SET) != (int)tmp){
       perror("lseek");
       exit(1);
     }
