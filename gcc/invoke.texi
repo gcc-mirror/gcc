@@ -4905,12 +4905,18 @@ startup modules.
 
 @item -malign-loops=@var{num}
 Align loops to a 2 raised to a @var{num} byte boundary.  If
-@samp{-malign-loops} is not specified, the default is 2.
+@samp{-malign-loops} is not specified, the default is 2 unless
+gas 2.8 (or later) is being used in which case the default is
+to align the loop on a 16 byte boundary if it is less than 8
+bytes away.
 
 @item -malign-jumps=@var{num}
 Align instructions that are only jumped to to a 2 raised to a @var{num}
 byte boundary.  If @samp{-malign-jumps} is not specified, the default is
-2 if optimizing for a 386, and 4 if optimizing for a 486.
+2 if optimizing for a 386, and 4 if optimizing for a 486 unless
+gas 2.8 (or later) is being used in which case the default is
+to align the instruction on a 16 byte boundary if it is less
+than 8 bytes away.
 
 @item -malign-functions=@var{num}
 Align the start of functions to a 2 raised to @var{num} byte boundary.

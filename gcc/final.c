@@ -649,9 +649,14 @@ int insn_current_align;
    for each insn we'll call the alignment chain of this insn in the following
    comments.  */
 
-rtx *uid_align;
-int *uid_shuid;
-short *label_align;
+struct label_alignment {
+  short alignment;
+  short max_skip;
+};
+
+static rtx *uid_align;
+static int *uid_shuid;
+static struct label_alignment *label_align;
 
 /* Indicate that branch shortening hasn't yet been done.  */
 
@@ -794,12 +799,24 @@ get_attr_length (insn)
 #define LABEL_ALIGN(LABEL) 0
 #endif
 
+#ifndef LABEL_ALIGN_MAX_SKIP
+#define LABEL_ALIGN_MAX_SKIP 0
+#endif
+
 #ifndef LOOP_ALIGN
 #define LOOP_ALIGN(LABEL) 0
 #endif
 
+#ifndef LOOP_ALIGN_MAX_SKIP
+#define LOOP_ALIGN_MAX_SKIP 0
+#endif
+
 #ifndef LABEL_ALIGN_AFTER_BARRIER
 #define LABEL_ALIGN_AFTER_BARRIER(LABEL) 0
+#endif
+
+#ifndef LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
+#define LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP 0
 #endif
 
 #ifndef ADDR_VEC_ALIGN
@@ -826,7 +843,10 @@ final_addr_vec_align (addr_vec)
 static int min_labelno, max_labelno;
 
 #define LABEL_TO_ALIGNMENT(LABEL) \
-  (label_align[CODE_LABEL_NUMBER (LABEL) - min_labelno])
+  (label_align[CODE_LABEL_NUMBER (LABEL) - min_labelno].alignment)
+
+#define LABEL_TO_MAX_SKIP(LABEL) \
+  (label_align[CODE_LABEL_NUMBER (LABEL) - min_labelno].max_skip)
 
 /* For the benefit of port specific code do this also as a function.  */
 int
@@ -962,6 +982,7 @@ shorten_branches (first)
   int max_uid;
   int i;
   int max_log;
+  int max_skip;
 #ifdef HAVE_ATTR_length
 #define MAX_CODE_ALIGN 16
   rtx seq;
@@ -1001,10 +1022,10 @@ shorten_branches (first)
 
   max_labelno = max_label_num ();
   min_labelno = get_first_label_num ();
-  label_align
-    = (short*) xmalloc ((max_labelno - min_labelno + 1) * sizeof (short));
-  bzero ((char *) label_align,
-	 (max_labelno - min_labelno + 1) * sizeof (short));
+  label_align = (struct label_alignment *) xmalloc (
+    (max_labelno - min_labelno + 1) * sizeof (struct label_alignment));
+  bzero (label_align,
+    (max_labelno - min_labelno + 1) * sizeof (struct label_alignment));
 
   uid_shuid = (int *) xmalloc (max_uid * sizeof *uid_shuid);
 
@@ -1014,7 +1035,10 @@ shorten_branches (first)
      impose on the next CODE_LABEL (or the current one if we are processing
      the CODE_LABEL itself).  */
      
-  for (max_log = 0, insn = get_insns (), i = 1; insn; insn = NEXT_INSN (insn))
+  max_log = 0;
+  max_skip = 0;
+
+  for (insn = get_insns (), i = 1; insn; insn = NEXT_INSN (insn))
     {
       int log;
 
@@ -1033,7 +1057,10 @@ shorten_branches (first)
 
 	  log = LABEL_ALIGN (insn);
 	  if (max_log < log)
-	    max_log = log;
+	    {
+	      max_log = log;
+	      max_skip = LABEL_ALIGN_MAX_SKIP;
+	    }
 	  next = NEXT_INSN (insn);
 /* ADDR_VECs only take room if read-only data goes into the text section.  */
 #if !defined(READONLY_DATA_SECTION) || defined(JUMP_TABLES_IN_TEXT_SECTION)
@@ -1045,12 +1072,17 @@ shorten_branches (first)
 		{
 		  log = ADDR_VEC_ALIGN (next);
 		  if (max_log < log)
-		    max_log = log;
+		    {
+		      max_log = log;
+		      max_skip = LABEL_ALIGN_MAX_SKIP;
+		    }
 		}
 	    }
 #endif
 	  LABEL_TO_ALIGNMENT (insn) = max_log;
+	  LABEL_TO_MAX_SKIP (insn) = max_skip;
 	  max_log = 0;
+	  max_skip = 0;
 	}
       else if (GET_CODE (insn) == BARRIER)
 	{
@@ -1062,7 +1094,10 @@ shorten_branches (first)
 	      {
 		log = LABEL_ALIGN_AFTER_BARRIER (insn);
 		if (max_log < log)
-		  max_log = log;
+		  {
+		    max_log = log;
+		    max_skip = LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP;
+		  }
 		break;
 	      }
 	}
@@ -1078,7 +1113,10 @@ shorten_branches (first)
 	      {
 		log = LOOP_ALIGN (insn);
 		if (max_log < log)
-		  max_log = log;
+		  {
+		    max_log = log;
+		    max_skip = LOOP_ALIGN_MAX_SKIP;
+		  }
 		break;
 	      }
 	}
@@ -2222,9 +2260,14 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       if (CODE_LABEL_NUMBER (insn) <= max_labelno)
 	{
 	  int align = LABEL_TO_ALIGNMENT (insn);
+	  int max_skip = LABEL_TO_MAX_SKIP (insn);
 
 	  if (align && NEXT_INSN (insn))
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
+	    ASM_OUTPUT_MAX_SKIP_ALIGN (file, align, max_skip);
+#else
 	    ASM_OUTPUT_ALIGN (file, align);
+#endif
 	}
       CC_STATUS_INIT;
       if (prescan > 0)

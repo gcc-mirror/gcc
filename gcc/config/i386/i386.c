@@ -332,7 +332,11 @@ override_options ()
 	       i386_align_loops, MAX_CODE_ALIGN);
     }
   else
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
+    i386_align_loops = 4;
+#else
     i386_align_loops = 2;
+#endif
 
   /* Validate -malign-jumps= value, or provide default.  */
   if (i386_align_jumps_string)
@@ -343,7 +347,11 @@ override_options ()
 	       i386_align_jumps, MAX_CODE_ALIGN);
     }
   else
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
+    i386_align_jumps = 4;
+#else
     i386_align_jumps = def_align;
+#endif
 
   /* Validate -malign-functions= value, or provide default. */
   if (i386_align_funcs_string)

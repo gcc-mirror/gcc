@@ -10,6 +10,10 @@
 /* Define if your compiler understands volatile.  */
 #undef HAVE_VOLATILE
 
+/* Define if your assembler supports specifying the maximum number
+   of bytes to skip when using the GAS .p2align command. */
+#undef HAVE_GAS_MAX_SKIP_P2ALIGN
+
 /* Define if you have a working <inttypes.h> header file.  */
 #undef HAVE_INTTYPES_H
 

@@ -506,11 +506,13 @@ extern int ix86_arch;
 
 /* Align loop starts for optimal branching.  */
 #define LOOP_ALIGN(LABEL) (i386_align_loops)
+#define LOOP_ALIGN_MAX_SKIP (i386_align_loops_string ? 0 : 7)
 
 /* This is how to align an instruction for optimal branching.
    On i486 we'll get better performance by aligning on a
    cache line (i.e. 16 byte) boundary.  */
 #define LABEL_ALIGN_AFTER_BARRIER(LABEL) (i386_align_jumps)
+#define LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP (i386_align_jumps_string ? 0 : 7)
 
 
 /* Standard register usage.  */
