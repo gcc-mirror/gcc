@@ -1769,44 +1769,43 @@ ix86_compute_frame_size (size, nregs_on_stack, rpadding1, rpadding2)
   int padding2 = 0;
   HOST_WIDE_INT total_size;
   int stack_alignment_needed = cfun->stack_alignment_needed / BITS_PER_UNIT;
+  int offset;
+  int preferred_alignment = cfun->preferred_stack_boundary / BITS_PER_UNIT;
 
   nregs = ix86_nsaved_regs ();
   total_size = size;
 
-#ifdef PREFERRED_STACK_BOUNDARY
-  {
-    int offset;
-    int preferred_alignment = cfun->preferred_stack_boundary / BITS_PER_UNIT;
+  offset = frame_pointer_needed ? 8 : 4;
 
-    offset = frame_pointer_needed ? 8 : 4;
+  /* Do some sanity checking of stack_alignment_needed and preferred_alignment,
+     since i386 port is the only using those features that may break easilly.  */
 
-    /* When frame is not empty we ought to have recorded the alignment.  */
-    if (size && !stack_alignment_needed)
-      abort ();
+  if (size && !stack_alignment_needed)
+    abort ();
+  if (!size && stack_alignment_needed)
+    abort ();
+  if (preferred_alignment < STACK_BOUNDARY / BITS_PER_UNIT)
+    abort ();
+  if (preferred_alignment > PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
+    abort ();
+  if (stack_alignment_needed > PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
+    abort ();
 
-    if (stack_alignment_needed < 4)
-      stack_alignment_needed = 4;
+  if (stack_alignment_needed < 4)
+    stack_alignment_needed = 4;
 
-    if (stack_alignment_needed > PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
-      abort ();
+  offset += nregs * UNITS_PER_WORD;
 
-    offset += nregs * UNITS_PER_WORD;
+  total_size += offset;
 
-    total_size += offset;
+  /* Align start of frame for local function.  */
+  padding1 = ((offset + stack_alignment_needed - 1)
+	      & -stack_alignment_needed) - offset;
+  total_size += padding1;
 
-    /* Align start of frame for local function.  */
-    if (size > 0)
-      {
-        padding1 = ((offset + stack_alignment_needed - 1)
-		    & -stack_alignment_needed) - offset;
-        total_size += padding1;
-      }
-
-    /* Align stack boundary. */
-    padding2 = ((total_size + preferred_alignment - 1)
-		& -preferred_alignment) - total_size;
-  }
-#endif
+  /* Align stack boundary. */
+  padding2 = ((total_size + preferred_alignment - 1)
+	      & -preferred_alignment) - total_size;
 
   if (nregs_on_stack)
     *nregs_on_stack = nregs;

@@ -605,9 +605,6 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   if (cfun->preferred_stack_boundary < inl_f->preferred_stack_boundary)
     cfun->preferred_stack_boundary = inl_f->preferred_stack_boundary;
 
-  if (cfun->stack_alignment_needed < inl_f->stack_alignment_needed)
-    cfun->stack_alignment_needed = inl_f->stack_alignment_needed;
-
   /* Check that the parms type match and that sufficient arguments were
      passed.  Since the appropriate conversions or default promotions have
      already been applied, the machine modes should match exactly.  */

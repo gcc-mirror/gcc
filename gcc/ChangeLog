@@ -1,3 +1,12 @@
+Thu Feb 10 18:28:59 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* function.c (assign_temp): Change zero-sized arrays to size 1.
+	* integrate.c (expand_inline_function): Do not update
+	stack_alignment_needed
+	* i386.c (compute_frame_size): Remove #ifdef PREFERRED_FRAME_BOUNDARY,
+	add some sanity checking, remove optimization for function with
+	zero frame size.
+
 2000-02-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* flow.c (mark_regs_live_at_end): Delete unused variables.
