@@ -1,3 +1,11 @@
+2002-05-09  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (get_member_function_from_ptrfunc): Reorganize.
+	Use subtraction rather than a bitmask to get the index.
+	* cvt.c (cp_convert_to_pointer): Bail on an error_mark_node.
+
+	* pt.c (tsubst_expr) [ASM_STMT]: Copy ASM_INPUT_P.
+
 2002-05-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Make-lang.in (decl2.o): Update.
