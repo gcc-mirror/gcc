@@ -194,7 +194,19 @@ rtxfun bcc_gen_fctn[NUM_RTX_CODE];
 
 enum insn_code setcc_gen_code[NUM_RTX_CODE];
 
-static void emit_float_lib_cmp ();
+static int add_equal_note	PROTO((rtx, rtx, enum rtx_code, rtx, rtx));
+static void emit_float_lib_cmp	PROTO((rtx, rtx, enum rtx_code));
+static void init_extends	PROTO((void));
+static enum insn_code can_fix_p	PROTO((enum machine_mode, enum machine_mode,
+				       int, int *));
+static enum insn_code can_float_p PROTO((enum machine_mode, enum machine_mode,
+					 int));
+static rtx ftruncify	PROTO((rtx));
+static optab init_optab	PROTO((enum rtx_code));
+static void init_libfuncs PROTO((optab, int, int, char *, int));
+static void init_integral_libfuncs PROTO((optab, char *, int));
+static void init_floating_libfuncs PROTO((optab, char *, int));
+static void init_complex_libfuncs PROTO((optab, char *, int));
 
 /* Add a REG_EQUAL note to the last insn in SEQ.  TARGET is being set to
    the result of operation CODE applied to OP0 (and OP1 if it is a binary
@@ -3920,9 +3932,9 @@ init_optab (code)
 static void
 init_libfuncs (optable, first_mode, last_mode, opname, suffix)
     register optab optable;
-    register char *opname;
     register int first_mode;
     register int last_mode;
+    register char *opname;
     register char suffix;
 {
   register int mode;
