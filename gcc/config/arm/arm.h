@@ -874,7 +874,7 @@ enum reg_class
 
 /* If we need to load shorts byte-at-a-time, then we need a scratch. */
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,X)		\
-  (((MODE) == HImode && TARGET_SHORT_BY_BYTES			\
+  (((MODE) == HImode && ! arm_arch4 && TARGET_SHORT_BY_BYTES	\
     && (GET_CODE (X) == MEM					\
 	|| ((GET_CODE (X) == REG || GET_CODE (X) == SUBREG)	\
 	    && true_regnum (X) == -1)))				\
