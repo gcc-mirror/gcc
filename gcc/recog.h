@@ -77,6 +77,7 @@ extern int recog_memoized_1		PARAMS ((rtx));
 extern int check_asm_operands		PARAMS ((rtx));
 extern int asm_operand_ok		PARAMS ((rtx, const char *));
 extern int validate_change		PARAMS ((rtx, rtx *, rtx, int));
+extern int insn_invalid_p		PARAMS ((rtx));
 extern int apply_change_group		PARAMS ((void));
 extern int num_validated_changes	PARAMS ((void));
 extern void cancel_changes		PARAMS ((int));

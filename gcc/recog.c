@@ -58,7 +58,6 @@ Boston, MA 02111-1307, USA.  */
 static void validate_replace_rtx_1	PARAMS ((rtx *, rtx, rtx, rtx));
 static rtx *find_single_use_1		PARAMS ((rtx, rtx *));
 static rtx *find_constant_term_loc	PARAMS ((rtx *));
-static int insn_invalid_p		PARAMS ((rtx));
 static void validate_replace_src_1 	PARAMS ((rtx *, void *));
 
 /* Nonzero means allow operands to be volatile.
@@ -217,7 +216,7 @@ validate_change (object, loc, new, in_group)
   if (in_group == 0 && num_changes != 0)
     abort ();
 
-  *loc = new;
+   *loc = new;
 
   /* Save the information describing this change.  */
   if (num_changes >= changes_allocated)
@@ -260,17 +259,42 @@ validate_change (object, loc, new, in_group)
 /* This subroutine of apply_change_group verifies whether the changes to INSN
    were valid; i.e. whether INSN can still be recognized.  */
 
-static int
+int
 insn_invalid_p (insn)
      rtx insn;
 {
-  int icode = recog_memoized (insn);
+  rtx pat = PATTERN (insn);
+  int num_clobbers = 0;
+  /* If we are before reload and the pattern is a SET, see if we can add
+     clobbers.  */
+  int icode = recog (pat, insn,
+		     (GET_CODE (pat) == SET
+		      && ! reload_completed && ! reload_in_progress)
+		     ? &num_clobbers : NULL_PTR);
   int is_asm = icode < 0 && asm_noperands (PATTERN (insn)) >= 0;
 
-  if (is_asm && ! check_asm_operands (PATTERN (insn)))
+  
+  /* If this is an asm and the operand aren't legal, then fail.  Likewise if
+     this is not an asm and the insn wasn't recognized.  */
+  if ((is_asm && ! check_asm_operands (PATTERN (insn)))
+      || (!is_asm && icode < 0))
     return 1;
-  if (! is_asm && icode < 0)
-    return 1;
+
+  /* If we have to add CLOBBERs, fail if we have to add ones that reference
+     hard registers since our callers can't know if they are live or not.
+     Otherwise, add them.  */
+  if (num_clobbers > 0)
+    {
+      rtx newpat;
+
+      if (added_clobbers_hard_reg_p (icode))
+	return 1;
+
+      newpat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_clobbers + 1));
+      XVECEXP (newpat, 0, 0) = pat;
+      add_clobbers (newpat, icode);
+      PATTERN (insn) = pat = newpat;
+    }
 
   /* After reload, verify that all constraints are satisfied.  */
   if (reload_completed)
@@ -281,6 +305,7 @@ insn_invalid_p (insn)
 	return 1;
     }
 
+  INSN_CODE (insn) = icode;
   return 0;
 }
 
@@ -744,9 +769,11 @@ validate_replace_rtx_group (from, to, insn)
 
 /* Function called by note_uses to replace used subexpressions.  */
 struct validate_replace_src_data
-  {
-    rtx from, to, insn;
-  };
+{
+  rtx from;			/* Old RTX */
+  rtx to;			/* New RTX */
+  rtx insn;			/* Insn in which substitution is occurring.  */
+};
 
 static void
 validate_replace_src_1 (x, data)

@@ -159,6 +159,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "function.h"
 #include "expr.h" 
+#include "ggc.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc gmalloc
@@ -1187,13 +1188,17 @@ static int *reg_last_set;
 static int mem_first_set;
 static int mem_last_set;
 
-/* Perform a quick check whether X, the source of a set, is something
-   we want to consider for GCSE.  */
+/* See whether X, the source of a set, is something we want to consider for
+   GCSE.  */
 
 static int
 want_to_gcse_p (x)
      rtx x;
 {
+  static rtx test_insn = 0;
+  int num_clobbers = 0;
+  int icode;
+
   switch (GET_CODE (x))
     {
     case REG:
@@ -1207,7 +1212,31 @@ want_to_gcse_p (x)
       break;
     }
 
-  return 1;
+  /* If this is a valid operand, we are OK.  If it's VOIDmode, we aren't.  */
+  if (general_operand (x, GET_MODE (x)))
+    return 1;
+  else if (GET_MODE (x) == VOIDmode)
+    return 0;
+
+  /* Otherwise, check if we can make a valid insn from it.  First initialize
+     our test insn if we haven't already.  */
+  if (test_insn == 0)
+    {
+      test_insn
+	= make_insn_raw (gen_rtx_SET (VOIDmode,
+				      gen_rtx_REG (word_mode,
+						   FIRST_PSEUDO_REGISTER * 2),
+				      const0_rtx));
+      NEXT_INSN (test_insn) = PREV_INSN (test_insn) = 0;
+      ggc_add_rtx_root (&test_insn, 1);
+    }
+
+  /* Now make an insn like the one we would make when GCSE'ing and see if
+     valid.  */
+  PUT_MODE (SET_DEST (PATTERN (test_insn)), GET_MODE (x));
+  SET_SRC (PATTERN (test_insn)) = x;
+  return ((icode = recog (PATTERN (test_insn), test_insn, &num_clobbers)) >= 0
+	  && (num_clobbers == 0 || ! added_clobbers_hard_reg_p (icode)));
 }
 
 /* Return non-zero if the operands of expression X are unchanged from the
@@ -3612,7 +3641,7 @@ try_replace_reg (from, to, insn)
      rtx from, to, insn;
 {
   rtx note = find_reg_equal_equiv_note (insn);
-  rtx src;
+  rtx src = 0;
   int success = 0;
   rtx set = single_set (insn);
 
@@ -3640,10 +3669,10 @@ try_replace_reg (from, to, insn)
   if (!success)
     success = validate_replace_src (from, to, insn);
 
-  /* We've failed to do replacement, have a single SET, and don't already
-     have a note, two to add a REG_EQUAL note to not lose information.  */
+  /* If we've failed to do replacement, have a single SET, and don't already
+     have a note, add a REG_EQUAL note to not lose information.  */
   if (!success && note == 0 && set != 0)
-    note= REG_NOTES (insn)
+    note = REG_NOTES (insn)
       = gen_rtx_EXPR_LIST (REG_EQUAL, src, REG_NOTES (insn));
 
   /* If there is already a NOTE, update the expression in it with our
@@ -4265,13 +4294,22 @@ process_insert_insn (expr)
      struct expr *expr;
 {
   rtx reg = expr->reaching_reg;
-  rtx pat, copied_expr;
-  rtx first_new_insn;
+  rtx exp = copy_rtx (expr->expr);
+  rtx pat;
 
   start_sequence ();
-  copied_expr = copy_rtx (expr->expr);
-  emit_move_insn (reg, copied_expr);
-  first_new_insn = get_insns ();
+
+  /* If the expression is something that's an operand, like a constant,
+     just copy it to a register.  */
+  if (general_operand (exp, GET_MODE (reg)))
+    emit_move_insn (reg, exp);
+
+  /* Otherwise, make a new insn to compute this expression and make sure the
+     insn will be recognized (this also adds any needed CLOBBERs).  Copy the
+     expression to make sure we don't have any sharing issues.  */
+  if (insn_invalid_p (emit_insn (gen_rtx_SET (VOIDmode, reg, exp))))
+    abort ();
+  
   pat = gen_sequence ();
   end_sequence ();
 
