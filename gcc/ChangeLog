@@ -1,3 +1,9 @@
+2002-07-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (stack_tie): New insn.  Use an idiom that the alias code
+	understands to be a memory clobber.
+	* arm.c (arm_expand_prologue): Use it.
+
 2002-07-16  Daniel Berlin  <dberlin@dberlin.org>
 
 	* ra-rewrite.c: #include reload.h, insn-config.h
