@@ -977,7 +977,7 @@ const_costs (r, c)
 
 /* Documentation for the machine specific operand escapes:
 
-   'A' print rn in h8/300 mode, erN in H8/300H mode
+   'A' print rn in H8/300 mode, erN in H8/300H mode
    'C' print (operand - 2).
    'E' like s but negative.
    'F' like t but negative.

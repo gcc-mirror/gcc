@@ -866,9 +866,9 @@ struct cum_arg
         && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT) \
         && (TARGET_H8300S || SYMBOL_REF_FLAG (XEXP (XEXP (OP, 0), 0)))) \
    || (GET_CODE (OP) == MEM						\
-       && EIGHTBIT_CONSTANT_ADDRESS_P (XEXP (OP, 0))))
-
-
+       && EIGHTBIT_CONSTANT_ADDRESS_P (XEXP (OP, 0)))	\
+   || (GET_CODE (OP) == MEM && TARGET_H8300S		\
+       && GET_CODE (XEXP (OP, 0)) == CONST_INT))
 
 #define EXTRA_CONSTRAINT(OP, C)			\
   ((C) == 'T' ? OK_FOR_T (OP) :			\
