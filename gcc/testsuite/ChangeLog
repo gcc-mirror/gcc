@@ -1,3 +1,8 @@
+2003-10-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR libgcj/10610
+	* gcc.dg/ppc-stackalign-1.c: New test.
+
 2003-10-28  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* ada/acats/run_all.sh: Change output to be more compliant with
