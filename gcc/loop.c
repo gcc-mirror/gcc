@@ -4198,6 +4198,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		  VARRAY_GROW (set_in_loop, nregs);
 		  VARRAY_GROW (n_times_set, nregs);
 		  VARRAY_GROW (may_not_optimize, nregs);
+		  VARRAY_GROW (reg_single_usage, nregs);
 		}
     
 	      if (! validate_change (next->insn, next->location, add_val, 0))

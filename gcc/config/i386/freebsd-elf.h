@@ -187,9 +187,7 @@ Boston, MA 02111-1307, USA.  */
       %{!static: \
 	%{rdynamic:-export-dynamic} \
 	%{!dynamic-linker:-dynamic-linker /usr/libexec/ld-elf.so.1}} \
-	%{static:-static}}}"
-
-/* Get perform_* macros to build libgcc.a.  */
+	%{static:-Bstatic}}}"
 
 /* A C statement to output to the stdio stream FILE an assembler
    command to advance the location counter to a multiple of 1<<LOG
