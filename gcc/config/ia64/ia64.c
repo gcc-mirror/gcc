@@ -2033,6 +2033,7 @@ ia64_expand_prologue (void)
   if (optimize)
     {
       edge e;
+      edge_iterator ei;
 
       FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
 	if ((e->flags & EDGE_FAKE) == 0
