@@ -45,6 +45,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    target switches.  */
 
 #define CPP_SPEC "\
+%{posix: -D_POSIX_SOURCE} \
 %{!mcpu*: \
   %{mpower: %{!mpower2: -D_ARCH_PWR}} \
   %{mpower2: -D_ARCH_PWR2} \
