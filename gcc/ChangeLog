@@ -1,3 +1,8 @@
+2000-04-25  Richard Henderson  <rth@cygnus.com>
+
+	* toplev.c (rest_of_compilation): Delay sibcall optimization
+	until after emit_eh_context.
+
 2000-04-24  Nick Clifton  <nickc@redhat.com>
 
 	* combine.c (combine_instructions): Do not try to combine a

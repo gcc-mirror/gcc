@@ -2897,16 +2897,6 @@ rest_of_compilation (decl)
 
   init_EXPR_INSN_LIST_cache ();
 
-  /* We may have potential sibling or tail recursion sites.  Select one
-     (of possibly multiple) methods of performing the call.  */
-  open_dump_file (DFI_sibling, decl);
-  TIMEVAR (jump_time,
-	   {
-	     if (flag_optimize_sibling_calls)
-	       optimize_sibling_and_tail_recursive_calls ();
-	   });
-  close_dump_file (DFI_sibling, print_rtl, get_insns ());
-  
   if (ggc_p)
     ggc_collect ();
 
@@ -2928,6 +2918,17 @@ rest_of_compilation (decl)
   /* Emit code to get eh context, if needed. */
   emit_eh_context ();
 
+  /* We may have potential sibling or tail recursion sites.  Select one
+     (of possibly multiple) methods of performing the call.  */
+  if (flag_optimize_sibling_calls)
+    {
+      open_dump_file (DFI_sibling, decl);
+
+      TIMEVAR (jump_time, optimize_sibling_and_tail_recursive_calls ());
+
+      close_dump_file (DFI_sibling, print_rtl, get_insns ());
+    }
+  
 #ifdef FINALIZE_PIC
   /* If we are doing position-independent code generation, now
      is the time to output special prologues and epilogues.
