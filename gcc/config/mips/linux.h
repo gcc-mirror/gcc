@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #define DEFAULT_VTABLE_THUNKS 1
 
 /* Specify predefined symbols in preprocessor.  */
+#undef CPP_PREDEFINES
 #if TARGET_ENDIAN_DEFAULT == 0
 #define CPP_PREDEFINES "-DMIPSEL -D_MIPSEL -Dunix -Dmips -D_mips \
 -DR3000 -D_R3000 -Dlinux -Asystem(posix) -Acpu(mips) \
