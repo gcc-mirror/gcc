@@ -1,5 +1,11 @@
 2004-03-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* lib/compat.exp (skip_list): New global variable.
+	Use it to hold the user defined COMPAT_SKIPS list if any.
+	(compat-obj): Add the members of skip_list to optall.
+
+2004-03-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/compat/union-by-value-1_main.c,
 	union-by-value-1_x.c, union-by-value-1_y.c,
 	union-check.h, union-defs.h,

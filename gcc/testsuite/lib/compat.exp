@@ -49,6 +49,21 @@ if ![info exists COMPAT_OPTIONS] {
 
 set option_list $COMPAT_OPTIONS
 
+# Subsets of tests can be selectively disabled by members of this list:
+#  - ATTRIBUTE: disable all tests using the __attribute__ extension,
+#  - COMPLEX_INT: disable all tests using the complex integral types extension,
+#  - VA: disable all tests using the variable number of arguments feature,
+#  - ZERO_ARRAY: disable all tests using the zero-sized arrays extension.
+# The default skip lists can be overriden by
+# COMPAT_SKIPS="[list {skip_1}...{skip_n}]"
+# where skip_i are skip identifiers.  You can put this in the environment
+# before site.exp is written or add it to site.exp directly.
+if ![info exists COMPAT_SKIPS] {
+    set COMPAT_SKIPS [list {}]
+}
+
+set skip_list $COMPAT_SKIPS
+
 load_lib dg.exp
 load_lib gcc-dg.exp
 
@@ -66,6 +81,14 @@ proc compat-obj { source dest optall optfile optstr xfaildata } {
     global testcase
     global tool
     global compiler_conditional_xfail_data
+    global skip_list
+
+    # Add the skip specifiers.
+    foreach skip $skip_list {
+	if { ![string match $skip ""] } {
+	    lappend optall "-DSKIP_$skip"
+	}
+    }
 
     # Set up the options for compiling this file.
     set options ""
