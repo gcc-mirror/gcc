@@ -20,6 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "bitmap.h"
+#include "sbitmap.h"
 
 typedef bitmap regset;		/* Head of register set linked list.  */
 
@@ -188,114 +189,12 @@ extern void free_regset_vector PROTO ((regset *, int nelts));
 extern int *uid_block_number;
 #define BLOCK_NUM(INSN)    uid_block_number[INSN_UID (INSN)]
 
-extern void compute_preds_succs PROTO ((int_list_ptr *, int_list_ptr *,
-				        int *, int *));
 extern void dump_bb_data       PROTO ((FILE *, int_list_ptr *, int_list_ptr *,
 				       int));
 extern void free_bb_mem        PROTO ((void));
 extern void free_basic_block_vars	PROTO ((int));
 
-
-/* Simple bitmaps.
-   It's not clear yet whether using bitmap.[ch] will be a win.
-   It should be straightforward to convert so for now we keep things simple
-   while more important issues are dealt with.  */
-
-#define SBITMAP_ELT_BITS HOST_BITS_PER_WIDE_INT
-#define SBITMAP_ELT_TYPE unsigned HOST_WIDE_INT
-
-typedef struct simple_bitmap_def {
-  /* Number of bits.  */
-  int n_bits;
-  /* Size in elements.  */
-  int size;
-  /* Size in bytes.  */
-  int bytes;
-  /* The elements.  */
-  SBITMAP_ELT_TYPE elms[1];
-} *sbitmap;
-
-typedef SBITMAP_ELT_TYPE *sbitmap_ptr;
-
-/* Return the set size needed for N elements.  */
-#define SBITMAP_SET_SIZE(n) (((n) + SBITMAP_ELT_BITS - 1) / SBITMAP_ELT_BITS)
-
-/* set bit number bitno in the bitmap */
-#define SET_BIT(bitmap, bitno) \
-do { \
-  (bitmap)->elms [(bitno) / SBITMAP_ELT_BITS] |= (SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS; \
-} while (0)
-
-/* test if bit number bitno in the bitmap is set */
-#define TEST_BIT(bitmap, bitno) \
-((bitmap)->elms [(bitno) / SBITMAP_ELT_BITS] & ((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS))
-
-/* reset bit number bitno in the bitmap  */
-#define RESET_BIT(bitmap, bitno) \
-do { \
-  (bitmap)->elms [(bitno) / SBITMAP_ELT_BITS] &= ~((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS); \
-} while (0)
-
-/* Loop over all elements of SBITSET, starting with MIN.  */
-#define EXECUTE_IF_SET_IN_SBITMAP(SBITMAP, MIN, N, CODE)		\
-do {									\
-  unsigned int bit_num_ = (MIN) % (unsigned) SBITMAP_ELT_BITS;		\
-  unsigned int word_num_ = (MIN) / (unsigned) SBITMAP_ELT_BITS;		\
-  unsigned int size_ = (SBITMAP)->size;					\
-  SBITMAP_ELT_TYPE *ptr_ = (SBITMAP)->elms;				\
-									\
-  while (word_num_ < size_)						\
-    {									\
-      SBITMAP_ELT_TYPE word_ = ptr_[word_num_];				\
-      if (word_ != 0)							\
-	{								\
-	  for (; bit_num_ < SBITMAP_ELT_BITS; ++bit_num_)		\
-	    {								\
-	      SBITMAP_ELT_TYPE mask_ = (SBITMAP_ELT_TYPE)1 << bit_num_;	\
-	      if ((word_ & mask_) != 0)					\
-		{							\
-		  word_ &= ~mask_;					\
-		  (N) = word_num_ * SBITMAP_ELT_BITS + bit_num_;	\
-		  CODE;							\
-		  if (word_ == 0)					\
-		    break;						\
-		}							\
-	    }								\
-	}								\
-      bit_num_ = 0;							\
-      word_num_++;							\
-   }									\
-} while (0)
-
-#define sbitmap_free(map)		free(map)
-#define sbitmap_vector_free(vec)	free(vec)
-
-extern void dump_sbitmap PROTO ((FILE *, sbitmap));
-extern void dump_sbitmap_vector PROTO ((FILE *, char *, char *,
-					sbitmap *, int));
-extern sbitmap sbitmap_alloc PROTO ((int));
-extern sbitmap *sbitmap_vector_alloc PROTO ((int, int));
-extern void sbitmap_copy PROTO ((sbitmap, sbitmap));
-extern void sbitmap_zero PROTO ((sbitmap));
-extern void sbitmap_ones PROTO ((sbitmap));
-extern void sbitmap_vector_zero PROTO ((sbitmap *, int));
-extern void sbitmap_vector_ones PROTO ((sbitmap *, int));
-extern int sbitmap_union_of_diff PROTO ((sbitmap, sbitmap, sbitmap, sbitmap));
-extern void sbitmap_difference PROTO ((sbitmap, sbitmap, sbitmap));
-extern void sbitmap_not PROTO ((sbitmap, sbitmap));
-extern int sbitmap_a_or_b_and_c PROTO ((sbitmap, sbitmap, sbitmap, sbitmap));
-extern int sbitmap_a_and_b_or_c PROTO ((sbitmap, sbitmap, sbitmap, sbitmap));
-extern int sbitmap_a_and_b PROTO ((sbitmap, sbitmap, sbitmap));
-extern int sbitmap_a_or_b PROTO ((sbitmap, sbitmap, sbitmap));
-extern void sbitmap_intersect_of_predsucc PROTO ((sbitmap, sbitmap *,
-						  int, int_list_ptr *));
-extern void sbitmap_intersect_of_predecessors PROTO ((sbitmap, sbitmap *, int,
-						      int_list_ptr *));
-extern void sbitmap_intersect_of_successors PROTO ((sbitmap, sbitmap *, int,
-						    int_list_ptr *));
-extern void sbitmap_union_of_predecessors PROTO ((sbitmap, sbitmap *, int,
-						  int_list_ptr *));
-extern void sbitmap_union_of_successors PROTO ((sbitmap, sbitmap *, int,
-						int_list_ptr *));
+extern void compute_preds_succs PROTO ((int_list_ptr *, int_list_ptr *,
+                                        int *, int *));
 extern void compute_dominators PROTO ((sbitmap *, sbitmap *,
 				       int_list_ptr *, int_list_ptr *));

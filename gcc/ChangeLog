@@ -1,3 +1,11 @@
+Tue Jan 12 00:06:00 1999  Richard Henderson  <rth@cygnus.com>
+
+        * Makefile.in (OBJECTS): Add sbitmap.o.
+        (BASIC_BLOCK_H): Add sbitmap.h.
+        * basic-block.h: Move simple bitmap code to sbitmap.h.
+        * flow.c: Move simple bitmap code to sbitmap.c
+        * sbitmap.h, sbitmap.c: New files.
+
 Mon Jan 11 23:51:50 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (TARGET_SWITCHES): Document switches.
