@@ -1,3 +1,8 @@
+2000-09-06  Jeff Sturm  <jeff.sturm@appnet.com>
+
+	* include/jvm.h (_Jv_HashCode): Cast object ptr to `unsigned long'
+	to avoid long long division.
+
 2000-09-06  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/reflect/Constructor.java (toString): Use `getName' for
