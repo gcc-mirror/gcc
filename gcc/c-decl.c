@@ -1221,10 +1221,10 @@ duplicate_decls (newdecl, olddecl)
 	}
       else if (!types_match)
 	{
-	  /* If the types don't match, use whatever the program declares,
-	     not the predeclared type.  Preserve volatility indication.  */
+	  /* If the types don't match, preserve volatility indication.
+	     Later on, we will discard everything else about the
+	     default declaration.  */
 	  TREE_THIS_VOLATILE (newdecl) |= TREE_THIS_VOLATILE (olddecl);
-	  return 0;
 	}
     }
   else if (!types_match
@@ -1417,6 +1417,9 @@ duplicate_decls (newdecl, olddecl)
 	DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
       /* Keep the old rtl since we can safely use it.  */
       DECL_RTL (newdecl) = DECL_RTL (olddecl);
+      if (TREE_CODE (newdecl) == VAR_DECL
+	  && TREE_THIS_VOLATILE (newdecl))
+	make_var_volatile (newdecl);
     }
   /* If cannot merge, then use the new type and qualifiers,
      and don't preserve the old rtl.  */
