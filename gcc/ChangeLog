@@ -1,3 +1,18 @@
+2001-12-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* ChangeLog.2, ChangeLog.3, ChangeLog.5, ChangeLog, alias.c,
+	cfgbuild.c, expmed.c, expr.c, final.c, flow.c, fold-const.c,
+	function.c, config/alpha/alpha.md, config/alpha/vms-ld.c,
+	config/arm/arm.c, config/arm/arm.h, config/c4x/libgcc.S,
+	config/i370/i370.c, config/i386/i386.c,
+	config/i386/i386-interix.h, config/i386/i386.md,
+	config/i386/i386.h, config/i386/netbsd-elf.h, config/ia64/ia64.c,
+	config/m32r/m32r-protos.h, config/mcore/mcore.h,
+	config/rs6000/rs6000.h, config/sparc/linux64.h,
+	config/sparc/sparc.c, config/v850/v850-protos.h,
+	config/cris/cris.h, config/s390/s390.md, config/elfos.h: Fix
+	spelling errors.
+
 2001-12-09  Daniel Berlin  <dan@cgsoftware.com>
 
 	* config/rs6000/rs6000.h (enum rs6000_builtins): Add remaining
@@ -101,7 +116,7 @@
 	* arm.h (arm_builtins): Delete ARM_BUILTIN_PREFETCH).
 	* arm.c (arm_init_builtins): Don't initialize a builtin for
 	__builtin_prefetch here.
-	(arm_expand_builtin): Dont expand __builtin_prefetch here.
+	(arm_expand_builtin): Don't expand __builtin_prefetch here.
 
 2001-12-08  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -1104,11 +1119,11 @@ objc:
 
 	* config/rs6000/rs6000.md: Add attribute types vecsimple,
 	veccomplex, vecfloat, and vecperm, for altivec instructions.
-	Modify altivec patterns to use approriate attribute type.
-	Modify altivec patterns to match RTL operations where approriate
+	Modify altivec patterns to use appropriate attribute type.
+	Modify altivec patterns to match RTL operations where appropriate
 	(IE no unspec where we can avoid it).
 	Add vector unit scheduling for ppc7450.
-	Rename patterns to what they are where approriate
+	Rename patterns to what they are where appropriate
 	(altivec_vaddfp->addv4sf3, etc)
 
 	* config/rs6000/rs6000.h (enum rs6000_builtins): Change VRS->VSR.

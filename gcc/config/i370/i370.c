@@ -504,7 +504,7 @@ i370_label_scan ()
                else 
                  {
 /* XXX hack alert.
-   Compiling the execption handling (L_eh) in libgcc2.a will trip
+   Compiling the exception handling (L_eh) in libgcc2.a will trip
    up right here, with something that looks like
    (set (pc) (mem:SI (plus:SI (reg/v:SI 1 r1) (const_int 4))))
       {indirect_jump} 

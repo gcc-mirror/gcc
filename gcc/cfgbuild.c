@@ -133,7 +133,7 @@ control_flow_insn_p (insn)
 
       case BARRIER:
 	/* It is nonsence to reach barrier when looking for the
-	   end of basic block, but before dead code is elliminated
+	   end of basic block, but before dead code is eliminated
 	   this may happen.  */
 	return false;
 

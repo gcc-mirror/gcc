@@ -358,7 +358,7 @@ const_section ()						\
      relocations, so they get grouped together and dynamic linker
      will visit fewer pages in memory.
    .ro
-     Marks data read only otherwise.  This is usefull with prelinking
+     Marks data read only otherwise.  This is useful with prelinking
      as most of relocations won't be dynamically linked and thus
      stay read only.
    .local

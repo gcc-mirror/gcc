@@ -2132,8 +2132,8 @@ current_file_function_operand (sym_ref)
     return 1;
 
   /* The current function is always defined within the current compilation
-     unit.  if it s a weak defintion however, then this may not be the real
-     defintion of the function, and so we have to say no.  */
+     unit.  if it s a weak definition however, then this may not be the real
+     definition of the function, and so we have to say no.  */
   if (sym_ref == XEXP (DECL_RTL (current_function_decl), 0)
       && !DECL_WEAK (current_function_decl))
     return 1;
@@ -5348,7 +5348,7 @@ move_minipool_fix_forward_ref (mp, max_mp, max_address)
   /* Save the new entry.  */
   max_mp = mp;
 
-  /* Scan over the preceeding entries and adjust their addresses as
+  /* Scan over the preceding entries and adjust their addresses as
      required.  */
   while (mp->prev != NULL
 	 && mp->prev->max_address > mp->max_address - mp->prev->fix_size)
@@ -5454,7 +5454,7 @@ add_minipool_forward_ref (fix)
   /* Save the new entry.  */
   max_mp = mp;
 
-  /* Scan over the preceeding entries and adjust their addresses as
+  /* Scan over the preceding entries and adjust their addresses as
      required.  */
   while (mp->prev != NULL
 	 && mp->prev->max_address > mp->max_address - mp->prev->fix_size)

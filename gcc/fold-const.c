@@ -2087,7 +2087,7 @@ struct fc_args
 {
   tree arg1;			/* Input: value to convert.  */
   tree type;			/* Input: type to convert value to.  */
-  tree t;			/* Ouput: result of conversion.  */
+  tree t;			/* Output: result of conversion.  */
 };
 
 /* Function to convert floating-point constants, protected by floating
@@ -4834,7 +4834,7 @@ fold_binary_op_with_conditional_arg (code, type, cond, arg, cond_first_p)
      side of the expression to be executed if the condition is true
      will be pointed to by TRUE_LHS.  Similarly, the right-hand side
      of the expression to be executed if the condition is true will be
-     pointed to by TRUE_RHS.  FALSE_LHS and FALSE_RHS are analagous --
+     pointed to by TRUE_RHS.  FALSE_LHS and FALSE_RHS are analogous --
      but apply to the expression to be executed if the conditional is
      false.  */
   tree *true_lhs;

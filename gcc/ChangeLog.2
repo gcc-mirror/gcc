@@ -5307,7 +5307,7 @@ Thu Oct 14 01:49:54 1999  Richard Henderson  <rth@cygnus.com>
 	(NUM_SPECIAL_MODE_PREDS): New.
 	(find_operand): New.
 	(validate_pattern): New argument `insn'.  Warn for assignment to
-	any predicate accepting non-lvalues.  Conditionaly warn for
+	any predicate accepting non-lvalues.  Conditionally warn for
 	match_operand without a mode.  Try much harder to match source
 	and destination modes on a set.
 	* tm.texi (SPECIAL_MODE_PREDICATES): Document.
@@ -14051,7 +14051,7 @@ Fri Jun  4 03:20:40 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* sh.h (PREDICATE_CODES): Remove braf_label_ref_operand.
 	* sh.md (casesi_jump_2): Operand1 is now the inside of a
 	label_ref, and has no predicate.
-	The patten has a predicate to guard against invalid substitutions.
+	The pattern has a predicate to guard against invalid substitutions.
 	(dummy_jump): Delete.
 	(casesi): Update use of casesi_jump_2.
 

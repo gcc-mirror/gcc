@@ -3915,8 +3915,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
       if (rem_flag)
 	{
 	  /* Try to produce the remainder without producing the quotient.
-	     If we seem to have a divmod patten that does not require widening,
-	     don't try windening here.  We should really have an WIDEN argument
+	     If we seem to have a divmod pattern that does not require widening,
+	     don't try widening here.  We should really have an WIDEN argument
 	     to expand_twoval_binop, since what we'd really like to do here is
 	     1) try a mod insn in compute_mode
 	     2) try a divmod insn in compute_mode

@@ -66,7 +66,7 @@ Boston, MA 02111-1307, USA.  */
 %{!mbig-endian: -D__MCORELE__}						\
 %{!m210: -D__M340__}							\
 "
-/* If -m4align is ever re-enabled then add this line to the defintion of CPP_SPEC
+/* If -m4align is ever re-enabled then add this line to the definition of CPP_SPEC
    %{!m4align:-D__MCORE_ALIGN_8__} %{m4align:-D__MCORE__ALIGN_4__} */
 
 /* We don't have a -lg library, so don't put it in the list.  */

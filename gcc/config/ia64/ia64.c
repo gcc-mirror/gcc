@@ -1673,7 +1673,7 @@ ia64_initial_elimination_offset (from, to)
 
 struct spill_fill_data
 {
-  rtx init_after;		/* point at which to emit intializations */
+  rtx init_after;		/* point at which to emit initializations */
   rtx init_reg[2];		/* initial base register */
   rtx iter_reg[2];		/* the iterator registers */
   rtx *prev_addr[2];		/* address of last memory use */
