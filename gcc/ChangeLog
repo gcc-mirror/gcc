@@ -1,3 +1,8 @@
+2004-10-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* sbitmap.h (EXECUTE_IF_SET_IN_SBITMAP): Don't access PTR
+	beyond its end.
+
 2004-10-22  Eric Christopher  <echristo@redhat.com>
 
         * config/rs6000/rs6000.c (setup_incoming_varargs): Align DFmode
