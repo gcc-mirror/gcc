@@ -588,15 +588,18 @@ a single lexeme.
 
 (This is a horrible misfeature of the Fortran 90 language.
 It's one of many such misfeatures that almost make me want
-to not support them, and forge ahead with designing a true
+to not support them, and forge ahead with designing a new
 ``GNU Fortran'' language that has the features,
-without the misfeatures, of Fortran 90,
-and provide programs to do the conversion automatically.)
+but not the misfeatures, of Fortran 90,
+and provide utility programs to do the conversion automatically.)
 
 So, the lexer must gather distinct chunks of decimal strings into
 a single lexeme in contexts where a single decimal lexeme might
 start a Hollerith constant.
-(Which means it might as well do that all the time.)
+
+(Which probably means it might as well do that all the time
+for all multi-character lexemes, even in free-form mode,
+leaving it to subsequent phases to pull them apart as they see fit.)
 
 Compare the treatment of this to how
 
@@ -612,6 +615,140 @@ CHARACTER * 12 HEY
 
 must be treated---the former must be diagnosed, due to the separation
 between lexemes, the latter must be accepted as a proper declaration.
+
+@subsubsection Hollerith Constants
+
+Recognizing a Hollerith constant---specifically,
+that an @samp{H} or @samp{h} after a digit string begins
+such a constant---requires some knowledge of context.
+
+Hollerith constants (such as @samp{2HAB}) can appear after:
+
+@itemize @bullet
+@item
+@samp{FORMAT(}
+
+@item
+@samp{,}
+
+@item
+@samp{=}
+
+@item
+@samp{+}, @samp{-}, @samp{/}
+
+@item
+@samp{*}, except as noted below
+@end itemize
+
+Hollerith constants don't appear after:
+
+@itemize @bullet
+@item
+@samp{CHARACTER*},
+which can be treated generally as
+any @samp{*} that is the second lexeme of a statement
+@end itemize
+
+@subsubsection Confusing Function Keyword
+
+While
+
+@smallexample
+REAL FUNCTION FOO ()
+@end smallexample
+
+must be a @code{FUNCTION} statement and
+
+@smallexample
+REAL FUNCTION FOO (5)
+@end smallexample
+
+must be a type-definition statement,
+
+@smallexample
+REAL FUNCTION FOO (@var{names})
+@end smallexample
+
+where @var{names} is a comma-separated list of names,
+can be one or the other.
+
+The only way to disambiguate that statement
+(short of mandating free-form source or a short maximum
+length for name for external procedures)
+is based on the context of the statement.
+
+In particular, the statement is known to be within an
+already-started program unit
+(but not at the outer level of the @code{CONTAINS} block),
+it is a type-declaration statement.
+
+Otherwise, the statement is a @code{FUNCTION} statement,
+in that it begins a function program unit
+(external, or, within @code{CONTAINS}, nested).
+
+@subsubsection Weird READ
+
+The statement
+
+@smallexample
+READ (N)
+@end smallexample
+
+is equivalent to either
+
+@smallexample
+READ (UNIT=(N))
+@end smallexample
+
+or
+
+@smallexample
+READ (FMT=(N))
+@end smallexample
+
+depending on which would be valid in context.
+
+Specifically, if @samp{N} is type @code{INTEGER},
+@samp{READ (FMT=(N))} would not be valid,
+because parentheses may not be used around @samp{N},
+whereas they may around it in @samp{READ (UNIT=(N))}.
+
+Further, if @samp{N} is type @code{CHARACTER},
+the opposite is true---@samp{READ (UNIT=(N))} is not valid,
+but @samp{READ (FMT=(N))} is.
+
+Strictly speaking, if anything follows
+
+@smallexample
+READ (N)
+@end smallexample
+
+in the statement, whether the first lexeme after the close
+parenthese is a comma could be used to disambiguate the two cases,
+without looking at the type of @samp{N},
+because the comma is required for the @samp{READ (FMT=(N))}
+interpretation and disallowed for the @samp{READ (UNIT=(N))}
+interpretation.
+
+However, in practice, many Fortran compilers allow
+the comma for the @samp{READ (UNIT=(N))}
+interpretation anyway
+(in that they generally allow a leading comma before
+an I/O list in an I/O statement),
+and much code takes advantage of this allowance.
+
+(This is quite a reasonable allowance, since the
+juxtaposition of a comma-separated list immediately
+after an I/O control-specification list, which is also comma-separated,
+without an intervening comma,
+looks sufficiently ``wrong'' to programmers
+that they can't resist the itch to insert the comma.
+@samp{READ (I, J), K, L} simply looks cleaner than
+@samp{READ (I, J) K, L}.)
+
+So, type-based disambiguation is needed unless strict adherence
+to the standard is always assumed, and we're not going to assume that.
 
 @node TBD (Transforming)
 @subsection TBD (Transforming)
