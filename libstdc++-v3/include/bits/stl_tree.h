@@ -90,7 +90,7 @@ iterators invalidated are those referring to the deleted node.
 
 namespace std
 { 
-  enum _Rb_tree_color { _M_red = false, _M_black = true };
+  enum _Rb_tree_color { _S_red = false, _S_black = true };
 
   struct _Rb_tree_node_base
   {
@@ -156,7 +156,7 @@ namespace std
     void 
     _M_decrement()
     {
-      if (_M_node->_M_color == _M_red 
+      if (_M_node->_M_color == _S_red 
 	  && _M_node->_M_parent->_M_parent == _M_node)
 	_M_node = _M_node->_M_right;
       else if (_M_node->_M_left != 0) 
@@ -305,18 +305,18 @@ namespace std
   inline void 
   _Rb_tree_rebalance(_Rb_tree_node_base* __x, _Rb_tree_node_base*& __root)
   {
-    __x->_M_color = _M_red;
+    __x->_M_color = _S_red;
     while (__x != __root 
-	   && __x->_M_parent->_M_color == _M_red) 
+	   && __x->_M_parent->_M_color == _S_red) 
       {
 	if (__x->_M_parent == __x->_M_parent->_M_parent->_M_left) 
 	  {
 	    _Rb_tree_node_base* __y = __x->_M_parent->_M_parent->_M_right;
-	    if (__y && __y->_M_color == _M_red) 
+	    if (__y && __y->_M_color == _S_red) 
 	      {
-		__x->_M_parent->_M_color = _M_black;
-		__y->_M_color = _M_black;
-		__x->_M_parent->_M_parent->_M_color = _M_red;
+		__x->_M_parent->_M_color = _S_black;
+		__y->_M_color = _S_black;
+		__x->_M_parent->_M_parent->_M_color = _S_red;
 		__x = __x->_M_parent->_M_parent;
 	      }
 	    else 
@@ -326,19 +326,19 @@ namespace std
 		    __x = __x->_M_parent;
 		    _Rb_tree_rotate_left(__x, __root);
 		  }
-		__x->_M_parent->_M_color = _M_black;
-		__x->_M_parent->_M_parent->_M_color = _M_red;
+		__x->_M_parent->_M_color = _S_black;
+		__x->_M_parent->_M_parent->_M_color = _S_red;
 		_Rb_tree_rotate_right(__x->_M_parent->_M_parent, __root);
 	      }
 	  }
 	else 
 	  {
 	    _Rb_tree_node_base* __y = __x->_M_parent->_M_parent->_M_left;
-	    if (__y && __y->_M_color == _M_red) 
+	    if (__y && __y->_M_color == _S_red) 
 	      {
-		__x->_M_parent->_M_color = _M_black;
-		__y->_M_color = _M_black;
-		__x->_M_parent->_M_parent->_M_color = _M_red;
+		__x->_M_parent->_M_color = _S_black;
+		__y->_M_color = _S_black;
+		__x->_M_parent->_M_parent->_M_color = _S_red;
 		__x = __x->_M_parent->_M_parent;
 	      }
 	    else 
@@ -348,13 +348,13 @@ namespace std
 		    __x = __x->_M_parent;
 		    _Rb_tree_rotate_right(__x, __root);
 		  }
-		__x->_M_parent->_M_color = _M_black;
-		__x->_M_parent->_M_parent->_M_color = _M_red;
+		__x->_M_parent->_M_color = _S_black;
+		__x->_M_parent->_M_parent->_M_color = _S_red;
 		_Rb_tree_rotate_left(__x->_M_parent->_M_parent, __root);
 	      }
 	  }
       }
-    __root->_M_color = _M_black;
+    __root->_M_color = _S_black;
   }
 
   inline _Rb_tree_node_base*
@@ -430,42 +430,42 @@ namespace std
 	  else                      // __x == __z->_M_left
 	    __rightmost = _Rb_tree_node_base::_S_maximum(__x);
       }
-    if (__y->_M_color != _M_red) 
+    if (__y->_M_color != _S_red) 
       { 
-	while (__x != __root && (__x == 0 || __x->_M_color == _M_black))
+	while (__x != __root && (__x == 0 || __x->_M_color == _S_black))
 	  if (__x == __x_parent->_M_left) 
 	    {
 	      _Rb_tree_node_base* __w = __x_parent->_M_right;
-	      if (__w->_M_color == _M_red) 
+	      if (__w->_M_color == _S_red) 
 		{
-		  __w->_M_color = _M_black;
-		  __x_parent->_M_color = _M_red;
+		  __w->_M_color = _S_black;
+		  __x_parent->_M_color = _S_red;
 		  _Rb_tree_rotate_left(__x_parent, __root);
 		  __w = __x_parent->_M_right;
 		}
 	      if ((__w->_M_left == 0 || 
-		   __w->_M_left->_M_color == _M_black) &&
+		   __w->_M_left->_M_color == _S_black) &&
 		  (__w->_M_right == 0 || 
-		   __w->_M_right->_M_color == _M_black)) 
+		   __w->_M_right->_M_color == _S_black)) 
 		{
-		  __w->_M_color = _M_red;
+		  __w->_M_color = _S_red;
 		  __x = __x_parent;
 		  __x_parent = __x_parent->_M_parent;
 		} 
 	      else 
 		{
 		  if (__w->_M_right == 0 
-		      || __w->_M_right->_M_color == _M_black) 
+		      || __w->_M_right->_M_color == _S_black) 
 		    {
-		      __w->_M_left->_M_color = _M_black;
-		      __w->_M_color = _M_red;
+		      __w->_M_left->_M_color = _S_black;
+		      __w->_M_color = _S_red;
 		      _Rb_tree_rotate_right(__w, __root);
 		      __w = __x_parent->_M_right;
 		    }
 		  __w->_M_color = __x_parent->_M_color;
-		  __x_parent->_M_color = _M_black;
+		  __x_parent->_M_color = _S_black;
 		  if (__w->_M_right) 
-		    __w->_M_right->_M_color = _M_black;
+		    __w->_M_right->_M_color = _S_black;
 		  _Rb_tree_rotate_left(__x_parent, __root);
 		  break;
 		}
@@ -474,40 +474,40 @@ namespace std
 	    {   
 	      // same as above, with _M_right <-> _M_left.
 	      _Rb_tree_node_base* __w = __x_parent->_M_left;
-	      if (__w->_M_color == _M_red) 
+	      if (__w->_M_color == _S_red) 
 		{
-		  __w->_M_color = _M_black;
-		  __x_parent->_M_color = _M_red;
+		  __w->_M_color = _S_black;
+		  __x_parent->_M_color = _S_red;
 		  _Rb_tree_rotate_right(__x_parent, __root);
 		  __w = __x_parent->_M_left;
 		}
 	      if ((__w->_M_right == 0 || 
-		   __w->_M_right->_M_color == _M_black) &&
+		   __w->_M_right->_M_color == _S_black) &&
 		  (__w->_M_left == 0 || 
-		   __w->_M_left->_M_color == _M_black)) 
+		   __w->_M_left->_M_color == _S_black)) 
 		{
-		  __w->_M_color = _M_red;
+		  __w->_M_color = _S_red;
 		  __x = __x_parent;
 		  __x_parent = __x_parent->_M_parent;
 		} 
 	      else 
 		{
-		  if (__w->_M_left == 0 || __w->_M_left->_M_color == _M_black) 
+		  if (__w->_M_left == 0 || __w->_M_left->_M_color == _S_black) 
 		    {
-		      __w->_M_right->_M_color = _M_black;
-		      __w->_M_color = _M_red;
+		      __w->_M_right->_M_color = _S_black;
+		      __w->_M_color = _S_red;
 		      _Rb_tree_rotate_left(__w, __root);
 		      __w = __x_parent->_M_left;
 		    }
 		  __w->_M_color = __x_parent->_M_color;
-		  __x_parent->_M_color = _M_black;
+		  __x_parent->_M_color = _S_black;
 		  if (__w->_M_left) 
-		    __w->_M_left->_M_color = _M_black;
+		    __w->_M_left->_M_color = _S_black;
 		  _Rb_tree_rotate_right(__x_parent, __root);
 		  break;
 		}
 	    }
-	if (__x) __x->_M_color = _M_black;
+	if (__x) __x->_M_color = _S_black;
       }
     return __y;
   }
@@ -737,7 +737,7 @@ namespace std
 	  _M_empty_initialize();
 	else 
 	  {
-	    _S_color(this->_M_header) = _M_red;
+	    _S_color(this->_M_header) = _S_red;
 	    _M_root() = _M_copy(__x._M_root(), this->_M_header);
 	    _M_leftmost() = _S_minimum(_M_root());
 	    _M_rightmost() = _S_maximum(_M_root());
@@ -753,7 +753,7 @@ namespace std
     private:
       void _M_empty_initialize() 
       {
-	_S_color(this->_M_header) = _M_red; // used to distinguish header from 
+	_S_color(this->_M_header) = _S_red; // used to distinguish header from 
 	// __root, in iterator.operator++
 	_M_root() = 0;
 	_M_leftmost() = this->_M_header;
@@ -1417,7 +1417,7 @@ namespace std
     int __sum = 0;
     do 
       {
-	if (__node->_M_color == _M_black) 
+	if (__node->_M_color == _S_black) 
 	  ++__sum;
 	if (__node == __root) 
 	  break;
@@ -1444,9 +1444,9 @@ namespace std
 	_Link_type __L = _S_left(__x);
 	_Link_type __R = _S_right(__x);
 	
-	if (__x->_M_color == _M_red)
-	  if ((__L && __L->_M_color == _M_red) 
-	      || (__R && __R->_M_color == _M_red))
+	if (__x->_M_color == _S_red)
+	  if ((__L && __L->_M_color == _S_red) 
+	      || (__R && __R->_M_color == _S_red))
 	    return false;
 	
 	if (__L && _M_key_compare(_S_key(__x), _S_key(__L)))

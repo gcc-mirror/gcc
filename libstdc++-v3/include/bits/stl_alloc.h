@@ -260,7 +260,7 @@ namespace std
    *
    *  Important implementation properties:
    *  0. If globally mandated, then allocate objects from __new_alloc
-   *  1. If the clients request an object of size > _MAX_BYTES, the resulting
+   *  1. If the clients request an object of size > _S_max_bytes, the resulting
    *     object will be obtained directly from __new_alloc
    *  2. In all other cases, we allocate an object of size exactly
    *     _S_round_up(requested_size).  Thus the client has enough size
@@ -286,9 +286,9 @@ namespace std
     class __pool_alloc
     {
     private:
-      enum {_ALIGN = 8};
-      enum {_MAX_BYTES = 128};
-      enum {_NFREELISTS = _MAX_BYTES / _ALIGN};
+      enum {_S_align = 8};
+      enum {_S_max_bytes = 128};
+      enum {_S_freelists = _S_max_bytes / _S_align};
 
       union _Obj
       {
@@ -296,7 +296,7 @@ namespace std
         char        _M_client_data[1];    // The client sees this.
       };
 
-      static _Obj* volatile         _S_free_list[_NFREELISTS];
+      static _Obj* volatile         _S_free_list[_S_freelists];
 
       // Chunk allocation state.
       static char*                  _S_start_free;
@@ -308,11 +308,11 @@ namespace std
 
       static size_t
       _S_round_up(size_t __bytes)
-      { return (((__bytes) + (size_t) _ALIGN-1) & ~((size_t) _ALIGN - 1)); }
+      { return (((__bytes) + (size_t) _S_align-1) & ~((size_t) _S_align - 1)); }
 
       static size_t
       _S_freelist_index(size_t __bytes)
-      { return (((__bytes) + (size_t)_ALIGN - 1)/(size_t)_ALIGN - 1); }
+      { return (((__bytes) + (size_t)_S_align - 1)/(size_t)_S_align - 1); }
 
       // Returns an object of size __n, and optionally adds to size __n
       // free list.
@@ -351,7 +351,7 @@ namespace std
 	      __atomic_add(&_S_force_new, -1);
 	  }
 
-	if ((__n > (size_t) _MAX_BYTES) || (_S_force_new > 0))
+	if ((__n > (size_t) _S_max_bytes) || (_S_force_new > 0))
 	  __ret = __new_alloc::allocate(__n);
 	else
 	  {
@@ -379,7 +379,7 @@ namespace std
       static void
       deallocate(void* __p, size_t __n)
       {
-	if ((__n > (size_t) _MAX_BYTES) || (_S_force_new > 0))
+	if ((__n > (size_t) _S_max_bytes) || (_S_force_new > 0))
 	  __new_alloc::deallocate(__p, __n);
 	else
 	  {
@@ -462,7 +462,7 @@ namespace std
               // do not try smaller requests, since that tends to result
               // in disaster on multi-process machines.
               __i = __size;
-              for (; __i <= (size_t) _MAX_BYTES; __i += (size_t) _ALIGN)
+              for (; __i <= (size_t) _S_max_bytes; __i += (size_t) _S_align)
                 {
                   __my_free_list = _S_free_list + _S_freelist_index(__i);
                   __p = *__my_free_list;
@@ -541,7 +541,7 @@ namespace std
 
   template<bool __threads, int __inst>
     typename __pool_alloc<__threads,__inst>::_Obj* volatile
-    __pool_alloc<__threads,__inst>::_S_free_list[_NFREELISTS];
+    __pool_alloc<__threads,__inst>::_S_free_list[_S_freelists];
 
   typedef __pool_alloc<true,0>    __alloc;
   typedef __pool_alloc<false,0>   __single_client_alloc;

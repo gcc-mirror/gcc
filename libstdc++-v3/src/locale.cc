@@ -531,32 +531,5 @@ namespace std
       *__fptr++ = (__flags & ios_base::uppercase) ? 'G' : 'g';
     *__fptr = '\0';
   }
-  
-  void
-  __num_base::_S_format_int(const ios_base& __io, char* __fptr, char __mod, 
-			    char __modl)
-  {
-    ios_base::fmtflags __flags = __io.flags();
-    *__fptr++ = '%';
-    // [22.2.2.2.2] Table 60
-    if (__flags & ios_base::showpos)
-      *__fptr++ = '+';
-    if (__flags & ios_base::showbase)
-      *__fptr++ = '#';
-    *__fptr++ = 'l';
-
-    // For long long types.
-    if (__modl)
-      *__fptr++ = __modl;
-
-    ios_base::fmtflags __bsefield = __flags & ios_base::basefield;
-    if (__bsefield == ios_base::hex)
-      *__fptr++ = (__flags & ios_base::uppercase) ? 'X' : 'x';
-    else if (__bsefield == ios_base::oct)
-      *__fptr++ = 'o';
-    else
-      *__fptr++ = __mod;
-    *__fptr = '\0';
-  }
 } // namespace std
 
