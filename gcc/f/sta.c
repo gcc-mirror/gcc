@@ -1792,9 +1792,11 @@ ffesta_ffebad_2t (ffebad errnum, ffelexToken t1, ffelexToken t2)
     }
 }
 
-/* ffesta_set_outpooldisp -- Set disposition of statement output pool
-
-   ffesta_set_outpooldisp(FFESTA_pooldispPRESERVE);  */
+ffestaPooldisp
+ffesta_outpooldisp ()
+{
+  return ffesta_outpooldisp_;
+}
 
 void
 ffesta_set_outpooldisp (ffestaPooldisp d)

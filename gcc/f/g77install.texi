@@ -5,7 +5,7 @@
 @c The text of this file appears in the file INSTALL
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1997-09-09
+@c 1997-12-23
 
 Note most of this information is out of date and superceded by the EGCS
 install procedures.  It is provided for historical reference only.
@@ -66,9 +66,9 @@ most systems, if desired.
 
 =======
 The version of GNU @code{gzip} used to package this release
-is 1.24.
+is 1.2.4.
 (The version of GNU @code{tar} used to package this release
-is 1.11.2.)
+is 1.12.)
 
 @item @file{gcc-2.7.2.3.tar.gz}
 You need to have this, or some other applicable, version
@@ -202,7 +202,7 @@ In any case, you can apply patches by hand---patch files
 are designed for humans to read them.
 
 The version of GNU @code{patch} used to develop this release
-is 2.4.
+is 2.5.
 
 @item @code{make}
 Your system must have @code{make}, and you will probably save
@@ -210,7 +210,7 @@ yourself a lot of trouble if it is GNU @code{make} (sometimes
 referred to as @code{gmake}).
 
 The version of GNU @code{make} used to develop this release
-is 3.73.
+is 3.76.1.
 
 @item @code{cc}
 Your system must have a working C compiler.
@@ -300,10 +300,10 @@ either @code{gcc} or @code{g77}.
 These problems can occur on most or all systems.
 
 @menu
-* GNU C Required::	       Why even ANSI C is not enough.
+* GNU C Required::             Why even ANSI C is not enough.
 * Patching GNU CC Necessary::  Why @code{gcc} must be patched first.
 * Building GNU CC Necessary::  Why you can't build @emph{just} Fortran.
-* Missing strtoul::	       If linking @code{f771} fails due to an
+* Missing strtoul::            If linking @code{f771} fails due to an
                                 unresolved reference to @code{strtoul}.
 * Cleanup Kills Stage Directories::  A minor nit for @code{g77} developers.
 * Missing gperf?::             When building requires @code{gperf}.

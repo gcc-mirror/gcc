@@ -6659,7 +6659,7 @@ ffecom_finish_global_ (ffeglobal global)
 static ffesymbol
 ffecom_finish_symbol_transform_ (ffesymbol s)
 {
-  if (s == NULL)
+  if ((s == NULL) || (TREE_CODE (current_function_decl) == ERROR_MARK))
     return s;
 
   /* It's easy to know to transform an untransformed symbol, to make sure
@@ -7948,7 +7948,8 @@ ffecom_start_progunit_ ()
 
   resume_momentary (yes);
 
-  store_parm_decls (main_program ? 1 : 0);
+  if (TREE_CODE (current_function_decl) != ERROR_MARK)
+    store_parm_decls (main_program ? 1 : 0);
 
   ffecom_start_compstmt_ ();
 
@@ -14206,31 +14207,38 @@ finish_function (int nested)
   register tree fndecl = current_function_decl;
 
   assert (fndecl != NULL_TREE);
-  if (nested)
-    assert (DECL_CONTEXT (fndecl) != NULL_TREE);
-  else
-    assert (DECL_CONTEXT (fndecl) == NULL_TREE);
+  if (TREE_CODE (fndecl) != ERROR_MARK)
+    {
+      if (nested)
+	assert (DECL_CONTEXT (fndecl) != NULL_TREE);
+      else
+	assert (DECL_CONTEXT (fndecl) == NULL_TREE);
+    }
 
 /*  TREE_READONLY (fndecl) = 1;
     This caused &foo to be of type ptr-to-const-function
     which then got a warning when stored in a ptr-to-function variable.  */
 
   poplevel (1, 0, 1);
-  BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
-  /* Must mark the RESULT_DECL as being in this function.  */
+  if (TREE_CODE (fndecl) != ERROR_MARK)
+    {
+      BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
-  DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
+      /* Must mark the RESULT_DECL as being in this function.  */
 
-  /* Obey `register' declarations if `setjmp' is called in this fn.  */
-  /* Generate rtl for function exit.  */
-  expand_function_end (input_filename, lineno, 0);
+      DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
 
-  /* So we can tell if jump_optimize sets it to 1.  */
-  can_reach_end = 0;
+      /* Obey `register' declarations if `setjmp' is called in this fn.  */
+      /* Generate rtl for function exit.  */
+      expand_function_end (input_filename, lineno, 0);
 
-  /* Run the optimizers and output the assembler code for this function.  */
-  rest_of_compilation (fndecl);
+      /* So we can tell if jump_optimize sets it to 1.  */
+      can_reach_end = 0;
+
+      /* Run the optimizers and output the assembler code for this function.  */
+      rest_of_compilation (fndecl);
+    }
 
   /* Free all the tree nodes making up this function.  */
   /* Switch back to allocating nodes permanently until we start another
@@ -14238,7 +14246,7 @@ finish_function (int nested)
   if (!nested)
     permanent_allocation (1);
 
-  if (DECL_SAVED_INSNS (fndecl) == 0 && !nested)
+  if (DECL_SAVED_INSNS (fndecl) == 0 && !nested && (TREE_CODE (fndecl) != ERROR_MARK))
     {
       /* Stop pointing to the local nodes about to be freed.  */
       /* But DECL_INITIAL must remain nonzero so we know this was an actual
@@ -14276,6 +14284,8 @@ lang_printable_name (tree decl, int v)
   switch (v)
     {
     default:
+      if (TREE_CODE (decl) == ERROR_MARK)
+	return "erroneous code";
       return IDENTIFIER_POINTER (DECL_NAME (decl));
     }
 }
@@ -14288,48 +14298,56 @@ void
 lang_print_error_function (file)
      char *file;
 {
+  static ffeglobal last_g = NULL;
   static ffesymbol last_s = NULL;
+  ffeglobal g;
   ffesymbol s;
   char *kind;
 
-  if (ffecom_primary_entry_ == NULL)
+  if ((ffecom_primary_entry_ == NULL)
+      || (ffesymbol_global (ffecom_primary_entry_) == NULL))
     {
+      g = NULL;
       s = NULL;
       kind = NULL;
     }
-  else if (ffecom_nested_entry_ == NULL)
-    {
-      s = ffecom_primary_entry_;
-      switch (ffesymbol_kind (s))
-	{
-	case FFEINFO_kindFUNCTION:
-	  kind = "function";
-	  break;
-
-	case FFEINFO_kindSUBROUTINE:
-	  kind = "subroutine";
-	  break;
-
-	case FFEINFO_kindPROGRAM:
-	  kind = "program";
-	  break;
-
-	case FFEINFO_kindBLOCKDATA:
-	  kind = "block-data";
-	  break;
-
-	default:
-	  kind = ffeinfo_kind_message (ffesymbol_kind (s));
-	  break;
-	}
-    }
   else
     {
-      s = ffecom_nested_entry_;
-      kind = "statement function";
+      g = ffesymbol_global (ffecom_primary_entry_);
+      if (ffecom_nested_entry_ == NULL)
+	{
+	  s = ffecom_primary_entry_;
+	  switch (ffesymbol_kind (s))
+	    {
+	    case FFEINFO_kindFUNCTION:
+	      kind = "function";
+	      break;
+
+	    case FFEINFO_kindSUBROUTINE:
+	      kind = "subroutine";
+	      break;
+
+	    case FFEINFO_kindPROGRAM:
+	      kind = "program";
+	      break;
+
+	    case FFEINFO_kindBLOCKDATA:
+	      kind = "block-data";
+	      break;
+
+	    default:
+	      kind = ffeinfo_kind_message (ffesymbol_kind (s));
+	      break;
+	    }
+	}
+      else
+	{
+	  s = ffecom_nested_entry_;
+	  kind = "statement function";
+	}
     }
 
-  if (last_s != s)
+  if ((last_g != g) || (last_s != s))
     {
       if (file)
 	fprintf (stderr, "%s: ", file);
@@ -14343,6 +14361,7 @@ lang_print_error_function (file)
 	  fprintf (stderr, "In %s `%s':\n", kind, name);
 	}
 
+      last_g = g;
       last_s = s;
     }
 }
@@ -14615,42 +14634,51 @@ start_function (tree name, tree type, int nested, int public)
       assert (current_function_decl == NULL_TREE);
     }
 
-  decl1 = build_decl (FUNCTION_DECL,
-		      name,
-		      type);
-  TREE_PUBLIC (decl1) = public ? 1 : 0;
-  if (nested)
-    DECL_INLINE (decl1) = 1;
-  TREE_STATIC (decl1) = 1;
-  DECL_EXTERNAL (decl1) = 0;
+  if (TREE_CODE (type) == ERROR_MARK)
+    decl1 = current_function_decl = error_mark_node;
+  else
+    {
+      decl1 = build_decl (FUNCTION_DECL,
+			  name,
+			  type);
+      TREE_PUBLIC (decl1) = public ? 1 : 0;
+      if (nested)
+	DECL_INLINE (decl1) = 1;
+      TREE_STATIC (decl1) = 1;
+      DECL_EXTERNAL (decl1) = 0;
 
-  announce_function (decl1);
+      announce_function (decl1);
 
-  /* Make the init_value nonzero so pushdecl knows this is not tentative.
-     error_mark_node is replaced below (in poplevel) with the BLOCK.  */
-  DECL_INITIAL (decl1) = error_mark_node;
+      /* Make the init_value nonzero so pushdecl knows this is not tentative.
+	 error_mark_node is replaced below (in poplevel) with the BLOCK.  */
+      DECL_INITIAL (decl1) = error_mark_node;
 
-  /* Record the decl so that the function name is defined. If we already have
-     a decl for this name, and it is a FUNCTION_DECL, use the old decl.  */
+      /* Record the decl so that the function name is defined. If we already have
+	 a decl for this name, and it is a FUNCTION_DECL, use the old decl.  */
 
-  current_function_decl = pushdecl (decl1);
+      current_function_decl = pushdecl (decl1);
+    }
+
   if (!nested)
     ffecom_outer_function_decl_ = current_function_decl;
 
   pushlevel (0);
 
-  make_function_rtl (current_function_decl);
+  if (TREE_CODE (current_function_decl) != ERROR_MARK)
+    {
+      make_function_rtl (current_function_decl);
 
-  restype = TREE_TYPE (TREE_TYPE (current_function_decl));
-  DECL_RESULT (current_function_decl)
-    = build_decl (RESULT_DECL, NULL_TREE, restype);
+      restype = TREE_TYPE (TREE_TYPE (current_function_decl));
+      DECL_RESULT (current_function_decl)
+	= build_decl (RESULT_DECL, NULL_TREE, restype);
+    }
 
   if (!nested)
     /* Allocate further tree nodes temporarily during compilation of this
        function only.  */
     temporary_allocation ();
 
-  if (!nested)
+  if (!nested && (TREE_CODE (current_function_decl) != ERROR_MARK))
     TREE_ADDRESSABLE (current_function_decl) = 1;
 
   immediate_size_expand = old_immediate_size_expand;

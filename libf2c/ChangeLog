@@ -5,6 +5,10 @@ Tue Dec 23 22:56:01 1997  Craig Burley  <burley@gnu.org>
 	handler on 64-bit systems like Alphas.
 	* f2cext.c (signal_): Changed accordingly.
 
+Wed Oct 29 01:01:04 1997  Mumit Khan  <khan@brahma.xraylith.wisc.edu>
+
+	* configure.in: Set CC to CC_FOR_TARGET when cross-compiling.
+
 Tue Sep 30 00:41:39 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	Do a better job of printing the offending FORMAT string
