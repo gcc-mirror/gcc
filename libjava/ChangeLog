@@ -1,3 +1,8 @@
+2002-04-01  Mark Wielaard  <mark@klomp.org>
+
+	* mauve-libgcj: Add JDK1.3, JDK1.4, JLS1.2 tests, remove ignored tests
+	that can be compiled now and add testsuite crashers to ignore list.
+
 2002-03-31  Alexandre Oliva  <aoliva@redhat.com>
 
 	* libgcj.spec.in, libgcj-test.spec.in: Revert for now.
