@@ -2817,7 +2817,7 @@ expand_return (retval)
 	 on the USE insn for the return register.   */
       bytes = int_size_in_bytes (TREE_TYPE (retval_rhs));
       for (tmpmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   tmpmode != MAX_MACHINE_MODE;
+	   tmpmode != VOIDmode;
 	   tmpmode = GET_MODE_WIDER_MODE (tmpmode))
 	{
 	  /* Have we found a large enough mode?  */
@@ -2826,7 +2826,7 @@ expand_return (retval)
 	}
 
       /* No suitable mode found.  */
-      if (tmpmode == MAX_MACHINE_MODE)
+      if (tmpmode == VOIDmode)
 	abort ();
 
       PUT_MODE (DECL_RTL (DECL_RESULT (current_function_decl)), tmpmode);
