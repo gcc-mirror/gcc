@@ -2244,7 +2244,7 @@ while (0)
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE Pmode
+#define CASE_VECTOR_MODE (!TARGET_64BIT || flag_pic ? SImode : DImode)
 
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
