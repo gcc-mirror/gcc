@@ -1,3 +1,56 @@
+2001-03-06  Zack Weinberg  <zackw@stanford.edu>
+
+	* aclocal.m4 (AM_GNU_GETTEXT): Don't AC_REQUIRE
+	AC_FUNC_ALLOCA.
+	* configure, config.in: Regenerate.
+	* config.gcc: Remove references to deleted files.
+
+	* genattr.c, genattrtab.c, genextract.c, genoutput.c,
+	genrecog.c, rtl.c: Do not use alloca anywhere.
+
+	* Makefile.in, build-make, system.h, config/x-interix,
+	config/x-svr4, config/xm-interix.h, config/xm-openbsd.h,
+	config/alpha/xm-alpha.h, config/alpha/xm-vms.h,
+	config/arc/xm-arc.h, config/arm/xm-arm.h,
+	config/d30v/xm-d30v.h, config/dsp16xx/xm-dsp16xx.h,
+	config/h8300/xm-h8300.h, config/i370/x-oe,
+	config/i370/xm-linux.h, config/i386/x-aix, config/i386/x-beos,
+	config/i386/x-ncr3000, config/i386/x-sco5,
+	config/i386/xm-dgux.h, config/i860/x-sysv4,
+	config/i960/xm-i960.h, config/m32r/xm-m32r.h,
+	config/m68k/x-crds, config/m68k/x-dpx2, config/m68k/x-hp320,
+	config/m68k/x-hp320g, config/m69k/x-mot3300,
+	config/m68k/x-mot3300-gas, config/m68k/xm-amix.h,
+	config/m68k/xm-hp320.h, config/m68k/xm-m68kv.h,
+	config/m68k/xm-mot3300.h, config/m88k/x-dolph,
+	config/m88k/x-sysv4, config/m88k/x-tekXD88,
+	config/m88k/xm-m88k.h, config/mcore/xm-mcore.h,
+	config/mips/x-iris, config/mips/x-iris3,
+	config/mips/x-sni-svr4, config/mips/x-sysv,
+	config/mips/xm-iris6.h, config/mips/xm-mips.h,
+	config/mips/xm-nws3250v4.h, config/pa/x-hpux,
+	config/pa/x-pa-mpeix, config/pa/xm-pa.h,
+	config/pa/xm-pa64hpux.h, config/pa/xm-pahpux.h,
+	config/pa/xm-papro.h, config/romp/xm-romp.h,
+	config/rs6000/x-aix31, config/rs6000/x-aix41,
+	config/rs6000/x-beos, config/rs6000/x-lynx,
+	config/rs6000/x-mach, config/rs6000/x-rs6000,
+	config/rs6000/x-sysv4, config/rs6000/xm-rs6000.h,
+	config/rs6000/xm-sysv4.h, config/sh/xm-sh.h,
+	config/sparc/x-sysv4, config/sparc/xm-linux.h,
+	config/sparc/xm-pbd.h, config/sparc/xm-sparc.h,
+	config/vax/xm-vms.h: Eradicate all references to alloca and
+	related stuff.
+
+	* config/xm-alloca.h, config/clipper/x-clix,
+	config/i386/xm-sysv4.h, config/i860/x-fx2800,
+	config/i860/x-sysv3, config/m88k/x-sysv3,
+	config/sparc/xm-sol2.h, config/we32k/x-we32k: Delete
+	(contained only alloca related hacks).
+
+	* config/i386/xm-beos.h, config/rs6000/xm-beos.h: Just define
+	USE_C_ALLOCA.
+
 2001-03-05  Brad Lucier  <lucier@math.purdue.edu>
 
 	* invoke.texi: Document __FAST_MATH__.
@@ -45,7 +98,7 @@
 	* config/i386/djgpp.h: Define NO_AUTO_EXE_SUFFIX.
 
 2001-03-03  David O'Brien  <obrien@FreeBSD.org>
-	
+
 	from 2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
 	* c-parse.gperf, c-gperf.h: Delete.
 	(c-gperf.h was accidently re-added to the CVS repo in the rev 1.16 commit
@@ -88,7 +141,7 @@ Sat Mar  3 19:47:13 CET 2001  Jan Hubicka  <jh@suse.cz>
 2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpp.texi: Update.
-	* cppexp.c (parse_number): Update. 
+	* cppexp.c (parse_number): Update.
 	* cpplex.c (parse_string): Pedwarn if multiline string does not
 	result from a system header's macro.
 	* cpplib.h (sys_objmacro_p): Rename sys_macro_p.

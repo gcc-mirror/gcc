@@ -1,3 +1,8 @@
+2001-03-06  Zack Weinberg  <zackw@stanford.edu>
+
+	* libiberty.h: Prototype C_alloca; define alloca to either
+	__builtin_alloca or C_alloca as appropriate.
+
 2001-03-01  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* safe-ctype.h (_sch_test): Cast enum bit to unsigned short int for pcc
