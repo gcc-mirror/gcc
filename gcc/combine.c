@@ -366,6 +366,7 @@ static void do_SUBST_INT		PARAMS ((unsigned int *,
 static void init_reg_last_arrays	PARAMS ((void));
 static void setup_incoming_promotions   PARAMS ((void));
 static void set_nonzero_bits_and_sign_copies  PARAMS ((rtx, rtx, void *));
+static int cant_combine_insn_p	PARAMS ((rtx));
 static int can_combine_p	PARAMS ((rtx, rtx, rtx, rtx, rtx *, rtx *));
 static int sets_function_arg_p	PARAMS ((rtx));
 static int combinable_i3pat	PARAMS ((rtx, rtx *, rtx, rtx, int, rtx *));
@@ -1455,6 +1456,46 @@ contains_muldiv (x)
     }
 }
 
+/* Determine whether INSN can be used in a combination.  Return nonzero if
+   not.  This is used in try_combine to detect early some cases where we
+   can't perform combinations.  */
+
+static int
+cant_combine_insn_p (insn)
+     rtx insn;
+{
+  rtx set;
+  rtx src, dest;
+  
+  /* If this isn't really an insn, we can't do anything.
+     This can occur when flow deletes an insn that it has merged into an
+     auto-increment address.  */
+  if (! INSN_P (insn))
+    return 1;
+
+  /* Never combine loads and stores involving hard regs.  The register
+     allocator can usually handle such reg-reg moves by tying.  If we allow
+     the combiner to make substitutions of hard regs, we risk aborting in
+     reload on machines that have SMALL_REGISTER_CLASSES.
+     As an exception, we allow combinations involving fixed regs; these are
+     not available to the register allocator so there's no risk involved.  */
+
+  set = single_set (insn);
+  if (! set)
+    return 0;
+  src = SET_SRC (set);
+  dest = SET_DEST (set);
+  if (REG_P (src)
+      && REGNO (src) < FIRST_PSEUDO_REGISTER
+      && ! fixed_regs[REGNO (src)])
+    return 1;
+  if (REG_P (dest)
+      && REGNO (dest) < FIRST_PSEUDO_REGISTER
+      && ! fixed_regs[REGNO (dest)])
+    return 1;
+  return 0;
+}
+
 /* Try to combine the insns I1 and I2 into I3.
    Here I1 and I2 appear earlier than I3.
    I1 can be zero; then we combine just I2 into I3.
@@ -1509,13 +1550,14 @@ try_combine (i3, i2, i1, new_direct_jump_p)
   register rtx link;
   int i;
 
-  /* If any of I1, I2, and I3 isn't really an insn, we can't do anything.
-     This can occur when flow deletes an insn that it has merged into an
-     auto-increment address.  We also can't do anything if I3 has a
-     REG_LIBCALL note since we don't want to disrupt the contiguity of a
-     libcall.  */
-
-  if (! INSN_P (i3) || ! INSN_P (i2) || (i1 && ! INSN_P (i1))
+  /* Exit early if one of the insns involved can't be used for
+     combinations.  */
+  if (cant_combine_insn_p (i3)
+      || cant_combine_insn_p (i2)
+      || (i1 && cant_combine_insn_p (i1))
+      /* We also can't do anything if I3 has a
+	 REG_LIBCALL note since we don't want to disrupt the contiguity of a
+	 libcall.  */
 #if 0
       /* ??? This gives worse code, and appears to be unnecessary, since no
 	 pass after flow uses REG_LIBCALL/REG_RETVAL notes.  */
