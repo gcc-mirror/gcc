@@ -1,3 +1,10 @@
+2001-04-11  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (insn-recog.o): Depend on toplev.h.
+	(insn-emit.o, doloop.o): Likewise.
+	* genrecog.c, genemit.c: Include toplev.h in generated file.
+	* doloop.c: Include toplev.h.
+
 2001-04-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (gcse.o): Depend on params.h.

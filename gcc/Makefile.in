@@ -1488,7 +1488,7 @@ loop.o : loop.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h $(LOOP_H) insn-config.h
    $(REGS_H) hard-reg-set.h $(RECOG_H) $(EXPR_H) real.h \
    $(BASIC_BLOCK_H) function.h toplev.h varray.h except.h cselib.h $(TM_P_H)
 doloop.o : doloop.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h $(LOOP_H) \
-   $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) $(TM_P_H)
+   $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) $(TM_P_H) toplev.h
 unroll.o : unroll.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) insn-config.h function.h \
    $(INTEGRATE_H) $(REGS_H) $(RECOG_H) flags.h $(EXPR_H) $(LOOP_H) toplev.h \
    hard-reg-set.h varray.h $(BASIC_BLOCK_H) $(TM_P_H)
@@ -1641,7 +1641,7 @@ s-codes : $(md_file) gencodes$(build_exeext) $(srcdir)/move-if-change
 	touch s-codes
 
 insn-emit.o : insn-emit.c $(CONFIG_H) $(RTL_H) $(EXPR_H) real.h output.h \
-  insn-config.h $(SYSTEM_H) reload.h $(RECOG_H) \
+  insn-config.h $(SYSTEM_H) reload.h $(RECOG_H) toplev.h \
   function.h flags.h hard-reg-set.h resource.h $(TM_P_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-emit.c
 
@@ -1653,7 +1653,7 @@ s-emit : $(md_file) genemit$(build_exeext) $(srcdir)/move-if-change
 
 insn-recog.o : insn-recog.c $(CONFIG_H) $(RTL_H) insn-config.h $(RECOG_H) \
   real.h output.h flags.h $(SYSTEM_H) function.h hard-reg-set.h resource.h \
-  $(TM_P_H)
+  $(TM_P_H) toplev.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-recog.c
 
 insn-recog.c: s-recog ; @true

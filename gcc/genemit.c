@@ -817,6 +817,7 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"recog.h\"\n");
   printf ("#include \"resource.h\"\n");
   printf ("#include \"reload.h\"\n");
+  printf ("#include \"toplev.h\"\n");
   printf ("#include \"ggc.h\"\n\n");
   printf ("#define FAIL return (end_sequence (), _val)\n");
   printf ("#define DONE return (_val = gen_sequence (), end_sequence (), _val)\n");

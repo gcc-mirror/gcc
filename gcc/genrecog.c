@@ -2368,6 +2368,7 @@ write_header ()
 #include \"flags.h\"\n\
 #include \"hard-reg-set.h\"\n\
 #include \"resource.h\"\n\
+#include \"toplev.h\"\n\
 \n");
 
   puts ("\n\
