@@ -1130,7 +1130,7 @@ extern union tree_node *current_function_decl;
 
    `R' is unused.
 
-   `S' handles constraints for calls.
+   `S' is unused.
 
    `T' is for fp loads and stores.  */
 #define EXTRA_CONSTRAINT(OP, C)				\
@@ -1145,15 +1145,7 @@ extern union tree_node *current_function_decl;
       (GET_CODE (OP) == MEM				\
        /* Using DFmode forces only short displacements	\
 	  to be recognized as valid in reg+d addresses.  */\
-       && memory_address_p (DFmode, XEXP (OP, 0)))	\
-   : ((C) == 'S' ?					\
-      ((CONSTANT_P (OP) && ! TARGET_LONG_CALLS)		\
-        || (reload_in_progress 				\
-	    ? strict_memory_address_p (Pmode, OP)	\
-	    : memory_address_p (Pmode, OP))		\
-	|| (reload_in_progress				\
-	    && GET_CODE (OP) == REG			\
-	    && reg_renumber[REGNO (OP)] > 0)) : 0)))
+       && memory_address_p (DFmode, XEXP (OP, 0))) : 0))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
