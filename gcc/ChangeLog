@@ -1,3 +1,8 @@
+Mon Dec 14 16:23:27 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* real.c (endian): Disable last change unless
+	HOST_BITS_PER_WIDE_INT is greater than 32.
+
 Mon Dec 14 17:13:36 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* output.h (force_data_section): New prototype.
