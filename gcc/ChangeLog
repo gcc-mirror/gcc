@@ -1,3 +1,46 @@
+2001-07-04  Daniel Berlin  <dan@cgsoftware.com>
+
+	* c-lex.c (cb_file_change): Pass line number to
+	debug_start_source_file. 
+	(cb_undefine): Pass correct line number to debug_undef.
+
+	* toplev.c (debug_start_source_file): Add line number to
+	parameters. Pass it along to dwarf2out_start_source_file.
+	(decode_g_option): Stop resetting debug level back to normal when
+	we change debug formats, unless the current level is
+	none. (Before, -g3 -gdwarf-2 would use debug level 2, rather than
+	3).
+	
+	* toplev.h (debug_start_source_file): Add line number to
+	parameters.
+	
+	* dwarf2out.h (dwarf2out_start_source_file): Add line number to parameters.
+
+	* dwarf2out.c (dwarf2out_start_source_file): Add line number to
+	parameters.
+	Output debug_macinfo data for starting file if requested. 
+	(dwarf2out_end_source_file): Output debug_macinfo data for ending
+	file if requested.
+	(dwarf2out_define): Output debug_macinfo data for defining a macro if requested.
+	(dwarf2out_undef): Output debug_macinfo data for undefining a
+	macro if requested.
+	(DEBUG_MACINFO_SECTION): New. DWARF2 macro info section name.
+	(DEBUG_MACINFO_SECTION_LABEL): New. DWARF2 macro info section label.
+	(macinfo_section_label): New. DWARF2 macro info section label.
+	(dwarf2out_init): If we want macro info, output the start label
+	for the section.
+	(dwarf2out_finish): If we want macro info, add a DW_AT_macro_info
+	attribute to the compilation unit die pointing to the macro info.
+
+2001-07-04  Daniel Berlin  <dan@cgsoftware.com>
+
+	* dwarf2out.c (new_loc_list): Move to inside #ifdef
+	DWARF2_DEBUGGING_INFO.
+	(add_loc_descr_to_loc_list): Ditto.
+	(output_loc_list): Ditto.
+	Also, fix thinko in curr not being initialized.
+	(gen_internal_sym): Ditto.
+     
 Wed Jul  4 13:40:02 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* emit-rtl.c (replace_equiv_address): New function.

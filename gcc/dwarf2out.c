@@ -2223,14 +2223,6 @@ static unsigned long size_of_locs	PARAMS ((dw_loc_descr_ref));
 static void output_loc_operands		PARAMS ((dw_loc_descr_ref));
 static void output_loc_sequence		PARAMS ((dw_loc_descr_ref));
 
-static dw_loc_list_ref new_loc_list     PARAMS ((dw_loc_descr_ref, 
-						 const char *, const char *,
-						 const char *, unsigned));
-static void add_loc_descr_to_loc_list   PARAMS ((dw_loc_list_ref *,
-						 dw_loc_descr_ref,
-						 const char *, const char *, const char *));
-static void output_loc_list		PARAMS ((dw_loc_list_ref));
-static char *gen_internal_sym 		PARAMS ((const char *));
 /* Convert a DWARF stack opcode into its string name.  */
 
 static const char *
@@ -2558,28 +2550,6 @@ new_loc_descr (op, oprnd1, oprnd2)
   return descr;
 }
 
-/* Return a new location list, given the begin and end range, and the
-   expression. gensym tells us whether to generate a new internal
-   symbol for this location list node, which is done for the head of
-   the list only. */ 
-static inline dw_loc_list_ref
-new_loc_list (expr, begin, end, section, gensym)
-     register dw_loc_descr_ref expr;
-     register const char *begin;
-     register const char *end;
-     register const char *section;
-     register unsigned gensym;
-{
-  register dw_loc_list_ref retlist
-    = (dw_loc_list_ref) xcalloc (1, sizeof (dw_loc_list_node));
-  retlist->begin = begin;
-  retlist->end = end;
-  retlist->expr = expr;
-  retlist->section = section;
-  if (gensym) 
-    retlist->ll_symbol = gen_internal_sym ("LLST");
-  return retlist;
-}
 
 /* Add a location description term to a location description expression.  */
 
@@ -2595,24 +2565,6 @@ add_loc_descr (list_head, descr)
     ;
 
   *d = descr;
-}
-
-/* Add a location description expression to a location list */
-static inline void
-add_loc_descr_to_loc_list (list_head, descr, begin, end, section)
-     register dw_loc_list_ref *list_head;
-     register dw_loc_descr_ref descr;
-     register const char *begin;
-     register const char *end;
-     register const char *section;
-{
-  register dw_loc_list_ref *d;
-  
-  /* Find the end of the chain. */
-  for (d = list_head; (*d) != NULL; d = &(*d)->dw_loc_next)
-    ;
-  /* Add a new location list node to the list */
-  *d = new_loc_list (descr, begin, end, section, 0);
 }
 
 /* Return the size of a location descriptor.  */
@@ -3592,6 +3544,14 @@ static void gen_type_die_for_member	PARAMS ((tree, tree, dw_die_ref));
 static rtx save_rtx			PARAMS ((rtx));
 static void splice_child_die		PARAMS ((dw_die_ref, dw_die_ref));
 static int file_info_cmp		PARAMS ((const void *, const void *));
+static dw_loc_list_ref new_loc_list     PARAMS ((dw_loc_descr_ref, 
+						 const char *, const char *,
+						 const char *, unsigned));
+static void add_loc_descr_to_loc_list   PARAMS ((dw_loc_list_ref *,
+						 dw_loc_descr_ref,
+						 const char *, const char *, const char *));
+static void output_loc_list		PARAMS ((dw_loc_list_ref));
+static char *gen_internal_sym 		PARAMS ((const char *));
 
 /* Section names used to hold DWARF debugging information.  */
 #ifndef DEBUG_INFO_SECTION
@@ -3648,7 +3608,9 @@ static int file_info_cmp		PARAMS ((const void *, const void *));
 #ifndef DEBUG_LOC_SECTION_LABEL
 #define DEBUG_LOC_SECTION_LABEL		"Ldebug_loc"
 #endif
-
+#ifndef DEBUG_MACINFO_SECTION_LABEL
+#define DEBUG_MACINFO_SECTION_LABEL     "Ldebug_macinfo"
+#endif
 /* Definitions of defaults for formats and names of various special
    (artificial) labels which may be generated within this file (when the -g
    options is used and DWARF_DEBUGGING_INFO is in effect.
@@ -3660,6 +3622,7 @@ static char text_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char abbrev_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char debug_info_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char debug_line_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
+static char macinfo_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 static char loc_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #ifndef TEXT_END_LABEL
 #define TEXT_END_LABEL		"Letext"
@@ -5931,21 +5894,64 @@ output_die_symbol (die)
   ASM_OUTPUT_LABEL (asm_out_file, sym);
 }
 
+/* Return a new location list, given the begin and end range, and the
+   expression. gensym tells us whether to generate a new internal
+   symbol for this location list node, which is done for the head of
+   the list only. */ 
+static inline dw_loc_list_ref
+new_loc_list (expr, begin, end, section, gensym)
+     register dw_loc_descr_ref expr;
+     register const char *begin;
+     register const char *end;
+     register const char *section;
+     register unsigned gensym;
+{
+  register dw_loc_list_ref retlist
+    = (dw_loc_list_ref) xcalloc (1, sizeof (dw_loc_list_node));
+  retlist->begin = begin;
+  retlist->end = end;
+  retlist->expr = expr;
+  retlist->section = section;
+  if (gensym) 
+    retlist->ll_symbol = gen_internal_sym ("LLST");
+  return retlist;
+}
+
+/* Add a location description expression to a location list */
+static inline void
+add_loc_descr_to_loc_list (list_head, descr, begin, end, section)
+     register dw_loc_list_ref *list_head;
+     register dw_loc_descr_ref descr;
+     register const char *begin;
+     register const char *end;
+     register const char *section;
+{
+  register dw_loc_list_ref *d;
+  
+  /* Find the end of the chain. */
+  for (d = list_head; (*d) != NULL; d = &(*d)->dw_loc_next)
+    ;
+  /* Add a new location list node to the list */
+  *d = new_loc_list (descr, begin, end, section, 0);
+}
+
+
+
 /* Output the location list given to us */
 static void
 output_loc_list (list_head)
      register dw_loc_list_ref list_head;
 {
-  register dw_loc_list_ref curr;
+  register dw_loc_list_ref curr=list_head;
   ASM_OUTPUT_LABEL (asm_out_file, list_head->ll_symbol);
   if (strcmp (curr->section, ".text") == 0)
     {
       if (DWARF2_ADDR_SIZE == 4)
-        dw2_asm_output_data (DWARF2_ADDR_SIZE, 0xffffffff, "Location list base address specifier fake entry");
+	dw2_asm_output_data (DWARF2_ADDR_SIZE, 0xffffffff, "Location list base address specifier fake entry");
       else if (DWARF2_ADDR_SIZE == 8)
 	dw2_asm_output_data (DWARF2_ADDR_SIZE, 0xffffffffffffffffLL, "Location list base address specifier fake entry");
       else
-        abort();
+	abort();
       dw2_asm_output_offset (DWARF2_ADDR_SIZE, curr->section, "Location list base address specifier base");
     }
   for (curr = list_head; curr != NULL; curr=curr->dw_loc_next)
@@ -11263,10 +11269,11 @@ dwarf2out_line (filename, line)
 }
 
 /* Record the beginning of a new source file, for later output
-   of the .debug_macinfo section.  At present, unimplemented.  */
+   of the .debug_macinfo section.*/
 
 void
-dwarf2out_start_source_file (filename)
+dwarf2out_start_source_file (lineno, filename)
+     register unsigned int lineno ATTRIBUTE_UNUSED;
      register const char *filename ATTRIBUTE_UNUSED;
 {
   if (flag_eliminate_dwarf2_dups)
@@ -11274,6 +11281,13 @@ dwarf2out_start_source_file (filename)
       /* Record the beginning of the file for break_out_includes.  */
       dw_die_ref bincl_die = new_die (DW_TAG_GNU_BINCL, comp_unit_die);
       add_AT_string (bincl_die, DW_AT_name, filename);
+    }
+  if (debug_info_level >= DINFO_LEVEL_VERBOSE)
+    {
+      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
+      dw2_asm_output_data (1, DW_MACINFO_start_file, "Start new file");
+      dw2_asm_output_data_uleb128 (lineno, "Included from line number %d", lineno);
+      dw2_asm_output_data_uleb128 (lookup_filename (filename), "Filename we just started");
     }
 }
 
@@ -11287,6 +11301,11 @@ dwarf2out_end_source_file ()
     {
       /* Record the end of the file for break_out_includes.  */
       new_die (DW_TAG_GNU_EINCL, comp_unit_die);
+    }
+  if (debug_info_level >= DINFO_LEVEL_VERBOSE)
+    {
+      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
+      dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
     }
 }
 
@@ -11302,8 +11321,15 @@ dwarf2out_define (lineno, buffer)
   static int initialized = 0;
   if (!initialized)
     {
-      dwarf2out_start_source_file (primary_filename);
+      dwarf2out_start_source_file (0, primary_filename);
       initialized = 1;
+    }
+  if (debug_info_level >= DINFO_LEVEL_VERBOSE)
+    {
+      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
+      dw2_asm_output_data (1, DW_MACINFO_define, "Define macro");
+      dw2_asm_output_data_uleb128 (lineno, "At line number %d", lineno);
+      dw2_asm_output_nstring (buffer, -1, "The macro");
     }
 }
 
@@ -11316,6 +11342,13 @@ dwarf2out_undef (lineno, buffer)
      register unsigned lineno ATTRIBUTE_UNUSED;
      register const char *buffer ATTRIBUTE_UNUSED;
 {
+  if (debug_info_level >= DINFO_LEVEL_VERBOSE)
+    {
+      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
+      dw2_asm_output_data (1, DW_MACINFO_undef, "Undefine macro");
+      dw2_asm_output_data_uleb128 (lineno, "At line number %d", lineno);
+      dw2_asm_output_nstring (buffer, -1, "The macro");
+    }
 }
 
 /* Set up for Dwarf output at the start of compilation.  */
@@ -11398,6 +11431,13 @@ dwarf2out_init (asm_out_file, main_input_filename)
   ASM_OUTPUT_LABEL (asm_out_file, debug_info_section_label);
   ASM_OUTPUT_SECTION (asm_out_file, DEBUG_LINE_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, debug_line_section_label);
+  if (debug_info_level >= DINFO_LEVEL_VERBOSE)
+    {
+      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
+      ASM_GENERATE_INTERNAL_LABEL (macinfo_section_label,
+				   DEBUG_MACINFO_SECTION_LABEL, 0);
+      ASM_OUTPUT_LABEL (asm_out_file, macinfo_section_label);
+    }
 }
 
 /* Output stuff that dwarf requires at the end of every file,
@@ -11489,10 +11529,8 @@ dwarf2out_finish ()
     add_AT_lbl_offset (comp_unit_die, DW_AT_stmt_list,
 		       debug_line_section_label);
 
-#if 0 /* unimplemented */
-  if (debug_info_level >= DINFO_LEVEL_VERBOSE && primary)
-    add_AT_unsigned (die, DW_AT_macro_info, 0);
-#endif
+  if (debug_info_level >= DINFO_LEVEL_VERBOSE)
+    add_AT_lbl_offset (comp_unit_die, DW_AT_macro_info, macinfo_section_label);
 
   /* Output all of the compilation units.  We put the main one last so that
      the offsets are available to output_pubnames.  */

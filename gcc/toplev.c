@@ -4272,7 +4272,7 @@ static int
 decode_g_option (arg)
      const char *arg;
 {
-  unsigned level;
+  static unsigned level=0;
   /* A lot of code assumes write_symbols == NO_DEBUG if the
      debugging level is 0 (thus -gstabs1 -gstabs0 would lose track
      of what debugging type has been selected).  This records the
@@ -4316,7 +4316,7 @@ decode_g_option (arg)
 	  if (*p)
 	    level = read_integral_parameter (p, 0, max_debug_level + 1);
 	  else
-	    level = 2;
+	    level = (level == 0) ? 2 : level;
 
 	  if (da_len > 1 && *p && !strncmp (arg, "dwarf", da_len))
 	    {
@@ -5177,7 +5177,8 @@ print_switch_values (file, pos, max, indent, sep, term)
 /* Record the beginning of a new source file, named FILENAME.  */
 
 void
-debug_start_source_file (filename)
+debug_start_source_file (lineno, filename)
+     register unsigned int lineno ATTRIBUTE_UNUSED;
      register const char *filename ATTRIBUTE_UNUSED;
 {
 #ifdef DBX_DEBUGGING_INFO
@@ -5191,7 +5192,7 @@ debug_start_source_file (filename)
 #endif /* DWARF_DEBUGGING_INFO  */
 #ifdef DWARF2_DEBUGGING_INFO
   if (write_symbols == DWARF2_DEBUG)
-    dwarf2out_start_source_file (filename);
+    dwarf2out_start_source_file (lineno, filename);
 #endif /* DWARF2_DEBUGGING_INFO  */
 #ifdef SDB_DEBUGGING_INFO
   if (write_symbols == SDB_DEBUG)
