@@ -1729,9 +1729,11 @@ arm_return_in_memory (type)
   /* For the arm-wince targets we choose to be compitable with Microsoft's
      ARM and Thumb compilers, which always return aggregates in memory.  */
 #ifndef ARM_WINCE
-  
-  if (int_size_in_bytes (type) > 4)
-    /* All structures/unions bigger than one word are returned in memory.  */
+  /* All structures/unions bigger than one word are returned in memory.
+     Also catch the case where int_size_in_bytes returns -1.  In this case
+     the aggregate is either huge or of varaible size, and in either case
+     we will want to return it via memory and not in a register.  */
+  if (((unsigned int) int_size_in_bytes (type)) > UNITS_PER_WORD)
     return 1;
   
   if (TREE_CODE (type) == RECORD_TYPE)
