@@ -1,3 +1,8 @@
+2003-10-26  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10371
+	* g++.dg/lookup/scoped8.C: New test.
+
 2003-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/reg-stack3.C: New test.
