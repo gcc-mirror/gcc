@@ -12346,18 +12346,7 @@ patch_binop (node, wfl_op1, wfl_op2)
 	    }
 	  /* Otherwise we have to invoke instance of to figure it out */
 	  else
-	    {
-	      tree call =
-		build (CALL_EXPR, boolean_type_node,
-		       build_address_of (soft_instanceof_node),
-		       tree_cons 
-		       (NULL_TREE, op1,
-			build_tree_list (NULL_TREE,
-					 build_class_ref (op2_type))),
-		       NULL_TREE);
-	      TREE_SIDE_EFFECTS (call) = TREE_SIDE_EFFECTS (op1);
-	      return call;
-	    }
+	    return build_instanceof (op1, op2_type);
 	}
       /* There is no way the expression operand can be an instance of
 	 the type operand. This is a compile time error. */
@@ -14604,8 +14593,6 @@ fold_constant_for_init (node, context)
 
   if (code == INTEGER_CST || code == REAL_CST)
     return convert (TREE_TYPE (context), node);
-  if (TREE_TYPE (node) != NULL_TREE && code != VAR_DECL && code != FIELD_DECL)
-    return NULL_TREE;
 
   switch (code)
     {

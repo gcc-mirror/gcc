@@ -1165,4 +1165,25 @@ extern int java_error_count;					\
        return;								\
    }
 
+/* These are the possible values for the `state' field of the class
+   structure.  This must be kept in sync with libgcj.  */
+enum
+{
+  JV_STATE_NOTHING = 0,		/* Set by compiler.  */
+
+  JV_STATE_PRELOADING = 1,	/* Can do _Jv_FindClass.  */
+  JV_STATE_LOADING = 3,		/* Has super installed.  */
+  JV_STATE_LOADED = 5,		/* Is complete.  */
+
+  JV_STATE_COMPILED = 6,	/* This was a compiled class.  */
+
+  JV_STATE_PREPARED = 7,	/* Layout & static init done.  */
+  JV_STATE_LINKED = 9,		/* Strings interned.  */
+
+  JV_STATE_IN_PROGRESS = 10,	/* <Clinit> running.  */
+  JV_STATE_DONE = 12,
+
+  JV_STATE_ERROR = 14		/* must be last.  */
+};
+
 #undef DEBUG_JAVA_BINDING_LEVELS

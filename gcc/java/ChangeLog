@@ -1,5 +1,11 @@
 2000-05-19  Tom Tromey  <tromey@cygnus.com>
 
+	* java-tree.h: Added init state enum.
+	* decl.c (emit_init_test_initialization): Initialize class
+	initialization check variable by looking at class' state.
+
+2000-05-19  Tom Tromey  <tromey@cygnus.com>
+
 	* java-tree.h (build_instanceof): Declare.
 	(build_get_class): Declare.
 	* parse.y (patch_binop): Use build_instanceof.
