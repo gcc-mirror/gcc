@@ -4199,7 +4199,15 @@ emit_prefetch_instructions (loop)
 		 non-constant INIT_VAL to have the same mode as REG, which
 		 in this case we know to be Pmode.  */
 	      if (GET_MODE (init_val) != Pmode && !CONSTANT_P (init_val))
-		init_val = convert_to_mode (Pmode, init_val, 0);
+		{
+		  rtx seq;
+
+		  start_sequence ();
+		  init_val = convert_to_mode (Pmode, init_val, 0);
+		  seq = get_insns ();
+		  end_sequence ();
+		  loop_insn_emit_before (loop, 0, loop_start, seq);
+		}
 	      loop_iv_add_mult_emit_before (loop, init_val,
 					    info[i].giv->mult_val,
 					    add_val, reg, 0, loop_start);
