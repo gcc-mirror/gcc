@@ -1,6 +1,6 @@
-// 1999-10-14 bkoz
+// 2003-02-06  Paolo Carlini  <pcarlini@unitus.it>
 
-// Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,75 +27,27 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// 27.6.1.1.2 class basic_istream::sentry
+// 27.6.2.3 class basic_ostream::sentry
 
-#include <istream>
+#include <ostream>
 #include <sstream>
 #include <testsuite_hooks.h>
 
-void test01()
-{
-  bool test = true;
-  const char* lit01 = "stereolab on the bolsinga tip";
-  const std::string str01(lit01);
-
-  std::stringbuf strbuf01;
-  std::stringbuf strbuf02(str01);
-  std::istream istr01(&strbuf01);
-  std::istream istr02(&strbuf02);
-  
-  // test negatives
-  std::istream::sentry sentry01(istr01);	
-  VERIFY( bool(sentry01) == false ); 
-
-  std::istream::sentry sentry02(istr01, true);
-  VERIFY( bool(sentry02) == false ); 
-
-  // positive tests
-  std::istream::sentry sentry03(istr02);	
-  VERIFY( bool(sentry03) == true ); 
-
-  std::istream::sentry sentry04(istr02, true);
-  VERIFY( bool(sentry04) == true ); 
-}
-
-// libstdc++/944
-void 
-test02()
-{
-  using namespace std;
-  istringstream in("80.21 56.89 12.3");
-  bool test = true;
-  int i = 0;
-  double x;
-
-  // ios_base::eof == 2
-  while (in >> x)
-    {
-      ++i;
-      if (i > 3) 
-	break;
-    }
-  VERIFY( i == 3 );
-}    
-
 // libstdc++/9562
 void
-test03()
+test01()
 {
   bool test = true;
 
   std::stringbuf strbuf01;
-  std::istream strm1(&strbuf01);
-  const std::istream::sentry sentry1(strm1);
+  std::ostream strm1(&strbuf01);
+  const std::ostream::sentry sentry1(strm1);
 
-  VERIFY( bool(sentry1) == false );
+  VERIFY( bool(sentry1) == true );
 }
 
 int main() 
 {
   test01();
-  test02();
-  test03();
   return 0;
 }

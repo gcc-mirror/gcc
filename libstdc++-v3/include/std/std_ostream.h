@@ -394,7 +394,7 @@ namespace std
        *  For ease of use, sentries may be converted to booleans.  The
        *  return value is that of the sentry state (true == okay).
       */
-      operator bool() 
+      operator bool() const
       { return _M_ok; }
     };
 
