@@ -45,7 +45,7 @@ typedef void *__gnuc_va_list;
 
 /* Define the standard macros for the user,
    if this invocation was from the user program.  */
-#ifdef __STDARG_H
+#ifdef _STDARG_H
 
 /* Amount of space required in an argument list for an arg of type TYPE.
    TYPE may alternatively be an expression whose type is used.  */
