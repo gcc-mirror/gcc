@@ -1,3 +1,7 @@
+Sun Apr 25 23:03:32 1999  Richard Henderson  <rth@cygnus.com>
+
+	* stmt.c (expand_asm_operands): Reload in-out reg-only memory operands.
+
 Sun Apr 25 13:06:13 1999  Richard Henderson  <rth@cygnus.com>
 
 	* function.c (assign_parms/STACK_BYTES): Revert last change,
