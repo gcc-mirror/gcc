@@ -1,3 +1,8 @@
+Thu Nov 30 01:28:08 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* POTFILES.in: Move divmod routines from config/mn10200 to config/
+	Add dominance.c
+
 2000-11-25  Philipp Thomas  <pthomas@suse.de>
 	* sv.po: New swedish translation file.
 	* en_GB.po: Removed.

@@ -132,6 +132,7 @@ config/convex/convex.h
 config/convex/xm-convex.h
 config/dbx.h
 config/dbxcoff.h
+config/divmod.c
 config/dsp16xx/dsp16xx.c
 config/dsp16xx/dsp16xx.h
 config/dsp16xx/xm-dsp16xx.h
@@ -385,11 +386,8 @@ config/mips/svr4-t.h
 config/mips/ultrix.h
 config/mips/xm-iris6.h
 config/mips/xm-mips.h
-config/mn10200/divmod.c
 config/mn10200/mn10200.c
 config/mn10200/mn10200.h
-config/mn10200/udivmod.c
-config/mn10200/udivmodsi4.c
 config/mn10200/xm-mn10200.h
 config/mn10300/mn10300.c
 config/mn10300/mn10300.h
@@ -510,6 +508,8 @@ config/sparc/xm-sparc.h
 config/sparc/xm-sysv4.h
 config/svr3.h
 config/svr4.h
+config/udivmod.c
+config/udivmodsi4.c
 config/v850/v850.c
 config/v850/v850.h
 config/v850/xm-v850.h
@@ -595,6 +595,7 @@ defaults.h
 ../include/demangle.h
 diagnostic.c
 diagnostic.h
+dominance.c  
 #doprint.c
 doschk.c
 dwarf.h
