@@ -9431,12 +9431,12 @@ function_ok_for_sibcall (fndecl)
 	  for (type = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
 	       type; type = TREE_CHAIN (type))
 	    {
-	      if (TREE_CODE (TREE_VALUE (type)) == VECTOR_TYPE )
+	      if (TREE_CODE (TREE_VALUE (type)) == VECTOR_TYPE)
 		return 0;
 	    }
         }
       if (DEFAULT_ABI == ABI_DARWIN
-            || (TREE_ASM_WRITTEN (fndecl) && !flag_pic) || !TREE_PUBLIC (fndecl))
+	  || (TREE_ASM_WRITTEN (fndecl) && !flag_pic) || !TREE_PUBLIC (fndecl))
         return 1;
     }
   return 0;
@@ -9480,10 +9480,10 @@ rs6000_ra_ever_killed ()
 	  if (FIND_REG_INC_NOTE (insn, reg))
 	    return 1;
 	  else if (GET_CODE (insn) == CALL_INSN 
-		    && !SIBLING_CALL_P (insn))
+		   && !SIBLING_CALL_P (insn))
 	    return 1;
 	  else if (set_of (reg, insn) != NULL_RTX 
-		    && find_reg_note (insn, REG_MAYBE_DEAD, NULL_RTX) == 0)
+		   && find_reg_note (insn, REG_MAYBE_DEAD, NULL_RTX) == 0)
 	    return 1;
     	}
     }
