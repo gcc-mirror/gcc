@@ -1987,12 +1987,21 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
       else
         address = reg;
 
+      current_function_uses_pic_offset_table = 1;
+
+      if (GET_CODE (orig) == LABEL_REF
+          || (GET_CODE (orig) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (orig)))
+        {
+          emit_insn (gen_gotoff_load_addr (reg, orig));
+          emit_insn (gen_addsi3 (reg, reg, pic_offset_table_rtx));
+          return reg;
+        }
+
       emit_insn (gen_pic_load_addr (address, orig));
 
       emit_insn (gen_addsi3 (address, address, pic_offset_table_rtx));
       pic_ref = gen_const_mem (Pmode, address);
       insn = emit_move_insn (reg, pic_ref);
-      current_function_uses_pic_offset_table = 1;
 #if 0
       /* Put a REG_EQUAL note on this insn, so that it can be optimized
          by loop.  */

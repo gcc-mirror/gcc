@@ -3,6 +3,11 @@
 	* config/m32r/m32r.h (PREFERRED_DEBUGGING_TYPE):
 	Use DWARF2_DEBUG.
 
+	* config/m32r.c (m32r_legitimize_pic_address): Changed
+	to support GOTOFF relocation.
+	* config/m32r.md (UNSPEC_GOTOFF): New.
+	(gotoff_load_addr): New.
+
 2004-12-15  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_arg_info): Use FUNCTION_ARG_BOUNDARY to
