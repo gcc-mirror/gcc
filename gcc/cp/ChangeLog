@@ -1,3 +1,10 @@
+1998-09-28  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (grokdeclarator): Tighten checks for invalid
+	destructors.  Improve error-messages and error-recovery.
+	* decl2.c (check_classfn): Don't assume that mangled destructor 
+	names contain type information.
+	
 1998-09-25  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* search.c (get_base_distance): Remove assert.
