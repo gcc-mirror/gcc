@@ -1,3 +1,8 @@
+Tue Aug 25 00:57:54 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_cse_regs_1): When deleting a no-op move that
+	loads the function result, substitute with a USE.
+
 Mon Aug 24 15:20:19 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.h (GO_IF_LEGITIMATE_ADDRESS): Use TARGET_POWERPC64
