@@ -7164,41 +7164,6 @@ each translation unit will contain instances of each of the templates it
 uses.  In a large program, this can lead to an unacceptable amount of code
 duplication.
 
-@item
-@opindex fexternal-templates
-Add @samp{#pragma interface} to all files containing template
-definitions.  For each of these files, add @samp{#pragma implementation
-"@var{filename}"} to the top of some @samp{.C} file which
-@samp{#include}s it.  Then compile everything with
-@option{-fexternal-templates}.  The templates will then only be expanded
-in the translation unit which implements them (i.e.@: has a @samp{#pragma
-implementation} line for the file where they live); all other files will
-use external references.  If you're lucky, everything should work
-properly.  If you get undefined symbol errors, you need to make sure
-that each template instance which is used in the program is used in the
-file which implements that template.  If you don't have any use for a
-particular instance in that file, you can just instantiate it
-explicitly, using the syntax from the latest C++ working paper:
-
-@example
-template class A<int>;
-template ostream& operator << (ostream&, const A<int>&);
-@end example
-
-This strategy will work with code written for either model.  If you are
-using code written for the Cfront model, the file containing a class
-template and the file containing its member templates should be
-implemented in the same translation unit.
-
-@item
-@opindex falt-external-templates
-A slight variation on this approach is to use the flag
-@option{-falt-external-templates} instead.  This flag causes template
-instances to be emitted in the translation unit that implements the
-header where they are first instantiated, rather than the one which
-implements the file where the templates are defined.  This header must
-be the same in all translation units, or things are likely to break.
-
 @xref{C++ Interface,,Declarations and Definitions in One Header}, for
 more discussion of these pragmas.
 @end enumerate
