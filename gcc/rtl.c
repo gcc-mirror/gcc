@@ -800,8 +800,9 @@ init_rtl ()
       *s++ = 'e';
       *s++ = '0';
       /* Set the GET_RTX_FORMAT of CONST_DOUBLE to a string
-	 of as many `i's as we now have elements.  */
-      for (i = 0; i < rtx_length[(int) CONST_DOUBLE]; i++)
+	 of as many `w's as we now have elements.  Subtract two from
+	 the size to account for the 'e' and the '0'.  */
+      for (i = 2; i < rtx_length[(int) CONST_DOUBLE]; i++)
 	*s++ = 'w';
       *s++ = 0;
     }
