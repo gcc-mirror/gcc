@@ -409,7 +409,7 @@ else
    AC_CHECK_FUNCS(iconv nl_langinfo setlocale)
    AC_CHECK_FUNCS(inet_aton inet_addr, break)
    AC_CHECK_FUNCS(inet_pton uname inet_ntoa)
-   AC_CHECK_FUNCS(backtrace fork execvp pipe)
+   AC_CHECK_FUNCS(backtrace fork execvp pipe sigaction)
    AC_CHECK_HEADERS(execinfo.h unistd.h dlfcn.h) 
    AC_CHECK_LIB(dl, dladdr, [
      AC_DEFINE(HAVE_DLADDR)])
