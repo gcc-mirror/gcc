@@ -1,3 +1,11 @@
+Mon May 15 19:01:42 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (scan_loop, strength_reduce, loop_optimize): Change unroll_p
+	and bct_p parameters to flags.
+	* loop.h (LOOP_UNROLL, LOOP_BCT): New constants.
+	* rtl.h (loop_optimize): Update prototype.
+	* toplev.c (rest_of_compilation): Update call of loop_optimize.
+
 2000-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* calls.c (expand_call): Move expand_start_target_temps call after

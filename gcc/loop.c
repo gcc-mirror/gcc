@@ -246,7 +246,7 @@ static void count_loop_regs_set PARAMS ((rtx, rtx, varray_type, varray_type,
 static void note_addr_stored PARAMS ((rtx, rtx, void *));
 static void note_set_pseudo_multiple_uses PARAMS ((rtx, rtx, void *));
 static int loop_reg_used_before_p PARAMS ((const struct loop *, rtx, rtx));
-static void scan_loop PARAMS ((struct loop*, int, int));
+static void scan_loop PARAMS ((struct loop*, int));
 #if 0
 static void replace_call_address PARAMS ((rtx, rtx, rtx));
 #endif
@@ -261,7 +261,7 @@ static void add_label_notes PARAMS ((rtx, rtx));
 static void move_movables PARAMS ((struct loop *loop, struct movable *, 
 				   int, int, int));
 static int count_nonfixed_reads PARAMS ((const struct loop *, rtx));
-static void strength_reduce PARAMS ((struct loop *, int, int, int));
+static void strength_reduce PARAMS ((struct loop *, int, int));
 static void find_single_use_in_loop PARAMS ((rtx, rtx, varray_type));
 static int valid_initial_value_p PARAMS ((rtx, rtx, int, rtx));
 static void find_mem_givs PARAMS ((const struct loop *, rtx, rtx, int, int));
@@ -417,11 +417,11 @@ compute_luids (start, end, prev_luid)
    (or 0 if none should be output).  */
 
 void
-loop_optimize (f, dumpfile, unroll_p, bct_p)
+loop_optimize (f, dumpfile, flags)
      /* f is the first instruction of a chain of insns for one function */
      rtx f;
      FILE *dumpfile;
-     int unroll_p, bct_p;
+     int flags;
 {
   register rtx insn;
   register int i;
@@ -527,7 +527,7 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
       struct loop *loop = &loops->array[i];
 
       if (! loop->invalid && loop->end)
-	scan_loop (loop, unroll_p, bct_p);
+	scan_loop (loop, flags);
     }
 
   /* If there were lexical blocks inside the loop, they have been
@@ -586,9 +586,9 @@ next_insn_in_loop (loop, insn)
    write, then we can also mark the memory read as invariant.  */
 
 static void
-scan_loop (loop, unroll_p, bct_p)
+scan_loop (loop, flags)
      struct loop *loop;
-     int unroll_p, bct_p;
+     int flags;
 {
   register int i;
   rtx loop_start = loop->start;
@@ -1140,7 +1140,7 @@ scan_loop (loop, unroll_p, bct_p)
   if (flag_strength_reduce)
     {
       the_movables = movables;
-      strength_reduce (loop, insn_count, unroll_p, bct_p);
+      strength_reduce (loop, insn_count, flags);
 
       reg_scan_update (update_start, update_end, loop_max_reg);
       loop_max_reg = max_reg_num ();
@@ -3853,10 +3853,10 @@ for_each_insn_in_loop (loop, fncall)
    But scan_loop must check regnos to make sure they are in bounds.   */
 
 static void
-strength_reduce (loop, insn_count, unroll_p, bct_p)
+strength_reduce (loop, insn_count, flags)
      struct loop *loop;
      int insn_count;
-     int unroll_p, bct_p ATTRIBUTE_UNUSED;
+     int flags;
 {
   rtx p;
   /* Temporary list pointers for traversing loop_iv_list.  */
@@ -3956,7 +3956,7 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
     {
       /* Can still unroll the loop anyways, but indicate that there is no
 	 strength reduction info available.  */
-      if (unroll_p)
+      if (flags & LOOP_UNROLL)
 	unroll_loop (loop, insn_count, end_insert_before, 0);
 
       goto egress;
@@ -4633,7 +4633,7 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
 	  VARRAY_GROW (reg_iv_type, nregs);
 	  VARRAY_GROW (reg_iv_info, nregs);
 	}
-      recombine_givs (loop, bl, unroll_p);
+      recombine_givs (loop, bl, flags & LOOP_UNROLL);
 
       /* Reduce each giv that we decided to reduce.  */
 
@@ -5027,14 +5027,14 @@ strength_reduce (loop, insn_count, unroll_p, bct_p)
      induction variable information that strength_reduce has already
      collected.  Always unroll loops that would be as small or smaller
      unrolled than when rolled.  */
-  if (unroll_p
+  if ((flags & LOOP_UNROLL)
       || (loop_info->n_iterations > 0
 	  && unrolled_insn_copies <= insn_count))
     unroll_loop (loop, insn_count, end_insert_before, 1);
 
 #ifdef HAVE_decrement_and_branch_on_count
   /* Instrument the loop with BCT insn.  */
-  if (HAVE_decrement_and_branch_on_count && bct_p
+  if (HAVE_decrement_and_branch_on_count && (flags & LOOP_BCT)
       && flag_branch_on_count_reg)
     insert_bct (loop);
 #endif  /* HAVE_decrement_and_branch_on_count */

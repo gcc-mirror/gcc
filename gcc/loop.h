@@ -20,6 +20,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include "varray.h"
 #include "basic-block.h"
+/* Flags passed to loop_optimize.  */
+#define LOOP_UNROLL 1
+#define LOOP_BCT 2
+
 
 /* Get the loop info pointer of a loop.  */
 #define LOOP_INFO(LOOP) ((struct loop_info *) (LOOP)->aux) 
