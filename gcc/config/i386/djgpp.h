@@ -33,6 +33,16 @@ Boston, MA 02111-1307, USA.  */
 
 #include "i386/gas.h"
 
+/* If defined, a C expression whose value is a string containing the
+   assembler operation to identify the following data as
+   uninitialized global data.  If not defined, and neither
+   `ASM_OUTPUT_BSS' nor `ASM_OUTPUT_ALIGNED_BSS' are defined,
+   uninitialized global data will be output in the data section if
+   `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
+   used.  */
+#undef BSS_SECTION_ASM_OP
+#define BSS_SECTION_ASM_OP "\t.section\t.bss"
+
 /* Enable alias attribute support.  */
 #ifndef SET_ASM_OP
 #define SET_ASM_OP "\t.set"
