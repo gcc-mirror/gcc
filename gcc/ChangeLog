@@ -3,6 +3,7 @@
 	* insn-notes.def, reg-notes.def: New files.
 	* rtl.h: Use them to define enum insn_note and enum reg_note.
 	* rtl.c: Use them to define note_insn_name and reg_note_name.
+	* Makefile.in (RTL_BASE_H): Update.
 
 	* modulo-sched.c, sched-rgn.c, final.c: NOTE_DISABLE_SCHED_OF_BLOCK
 	renamed to NOTE_INSN_DISABLE_SCHED_OF_BLOCK.
