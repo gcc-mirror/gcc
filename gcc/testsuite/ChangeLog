@@ -1,3 +1,7 @@
+2000-08-22  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c-torture/execute/20000822-1.c: New test.
+
 2000-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20000819-1.x: Remove.
