@@ -348,7 +348,7 @@ build_worklists (df)
       unsigned int i, num, max_num;
       struct web **order2web;
       max_num = num_webs - num_subwebs;
-      order2web = (struct web **) xmalloc (max_num * sizeof (order2web[0]));
+      order2web = xmalloc (max_num * sizeof (order2web[0]));
       for (i = 0, num = 0; i < max_num; i++)
 	if (id2web[i]->regno >= max_normal_pseudo)
 	  order2web[num++] = id2web[i];
@@ -397,7 +397,7 @@ build_worklists (df)
     if (ml->move)
       {
 	struct move *m = ml->move;
-        d = (struct dlist *) ra_calloc (sizeof (struct dlist));
+        d = ra_calloc (sizeof (struct dlist));
         DLIST_MOVE (d) = m;
         m->dlink = d;
 	put_move (m, WORKLIST);
@@ -1702,11 +1702,10 @@ try_recolor_web (web)
   int newcol, c;
   HARD_REG_SET precolored_neighbors, spill_temps;
   HARD_REG_SET possible_begin, wide_seen;
-  cost_neighbors = (unsigned HOST_WIDE_INT *)
-    xcalloc (FIRST_PSEUDO_REGISTER, sizeof (cost_neighbors[0]));
+  cost_neighbors = xcalloc (FIRST_PSEUDO_REGISTER, sizeof (cost_neighbors[0]));
   /* For each hard-regs count the number of preceding hardregs, which
      would overlap this color, if used in WEB's mode.  */
-  min_color = (unsigned int *) xcalloc (FIRST_PSEUDO_REGISTER, sizeof (int));
+  min_color = xcalloc (FIRST_PSEUDO_REGISTER, sizeof (int));
   CLEAR_HARD_REG_SET (possible_begin);
   for (c = 0; c < FIRST_PSEUDO_REGISTER; c++)
     {
@@ -1805,7 +1804,7 @@ try_recolor_web (web)
       remove_list (web->dlink, &WEBS(SPILLED));
       put_web (web, COLORED);
       web->color = newcol;
-      old_colors = (int *) xcalloc (num_webs, sizeof (int));
+      old_colors = xcalloc (num_webs, sizeof (int));
       for (wl = web->conflict_list; wl; wl = wl_next)
 	{
 	  struct web *web2 = alias (wl->t);
@@ -1972,7 +1971,7 @@ recolor_spills ()
   unsigned int i, num;
   struct web **order2web;
   num = num_webs - num_subwebs;
-  order2web = (struct web **) xmalloc (num * sizeof (order2web[0]));
+  order2web = xmalloc (num * sizeof (order2web[0]));
   for (i = 0; i < num; i++)
     {
       order2web[i] = id2web[i];
@@ -2431,7 +2430,7 @@ add_web_pair_cost (web1, web2, cost, conflicts)
 	p->conflicts += conflicts;
 	return;
       }
-  p = (struct web_pair *) ra_alloc (sizeof *p);
+  p = ra_alloc (sizeof *p);
   p->next_hash = web_pair_hash[hash];
   p->next_list = web_pair_list;
   p->smaller = web1;
@@ -2477,7 +2476,7 @@ sort_and_combine_web_pairs (for_move)
   struct web_pair *p;
   if (!num_web_pairs)
     return;
-  sorted = (struct web_pair **) xmalloc (num_web_pairs * sizeof (sorted[0]));
+  sorted = xmalloc (num_web_pairs * sizeof (sorted[0]));
   for (p = web_pair_list, i = 0; p; p = p->next_list)
     sorted[i++] = p;
   if (i != num_web_pairs)

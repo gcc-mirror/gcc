@@ -194,7 +194,7 @@ regrename_optimize (void)
   memset (tick, 0, sizeof tick);
 
   gcc_obstack_init (&rename_obstack);
-  first_obj = (char *) obstack_alloc (&rename_obstack, 0);
+  first_obj = obstack_alloc (&rename_obstack, 0);
 
   FOR_EACH_BB (bb)
     {
@@ -395,8 +395,8 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class class,
     {
       if (type == OP_OUT)
 	{
-	  struct du_chain *this = (struct du_chain *)
-	    obstack_alloc (&rename_obstack, sizeof (struct du_chain));
+	  struct du_chain *this
+	    = obstack_alloc (&rename_obstack, sizeof (struct du_chain));
 	  this->next_use = 0;
 	  this->next_chain = open_chains;
 	  this->loc = loc;
@@ -450,8 +450,7 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class class,
 		 be replaced with, terminate the chain.  */
 	      if (class != NO_REGS)
 		{
-		  this = (struct du_chain *)
-		    obstack_alloc (&rename_obstack, sizeof (struct du_chain));
+		  this = obstack_alloc (&rename_obstack, sizeof (struct du_chain));
 		  this->next_use = 0;
 		  this->next_chain = (*p)->next_chain;
 		  this->loc = loc;

@@ -1452,7 +1452,7 @@ sdbout_finish (const char *main_filename ATTRIBUTE_UNUSED)
 {
   tree decl = (*lang_hooks.decls.getdecls) ();
   unsigned int len = list_length (decl);
-  tree *vec = (tree *) xmalloc (sizeof (tree) * len);
+  tree *vec = xmalloc (sizeof (tree) * len);
   unsigned int i;
 
   /* Process the decls in reverse order--earliest first.  Put them
@@ -1645,7 +1645,7 @@ sdbout_start_source_file (unsigned int line ATTRIBUTE_UNUSED,
 			  const char *filename ATTRIBUTE_UNUSED)
 {
 #ifdef MIPS_DEBUGGING_INFO
-  struct sdb_file *n = (struct sdb_file *) xmalloc (sizeof *n);
+  struct sdb_file *n = xmalloc (sizeof *n);
 
   n->next = current_file;
   n->name = filename;
@@ -1675,7 +1675,7 @@ static void
 sdbout_init (const char *input_file_name ATTRIBUTE_UNUSED)
 {
 #ifdef MIPS_DEBUGGING_INFO
-  current_file = (struct sdb_file *) xmalloc (sizeof *current_file);
+  current_file = xmalloc (sizeof *current_file);
   current_file->next = NULL;
   current_file->name = input_file_name;
 #endif

@@ -106,8 +106,7 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
-  qin = qout = worklist
-    = (basic_block *) xmalloc (sizeof (basic_block) * n_basic_blocks);
+  qin = qout = worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
 
   /* We want a maximal solution, so make an optimistic initialization of
      ANTIN.  */
@@ -259,7 +258,7 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
   qin = qout = worklist
-    = (basic_block *) xmalloc (sizeof (basic_block) * (n_basic_blocks + 1));
+    = xmalloc (sizeof (basic_block) * (n_basic_blocks + 1));
 
   /* Initialize a mapping from each edge to its index.  */
   for (i = 0; i < num_edges; i++)
@@ -480,8 +479,7 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
-  qin = qout = worklist
-    = (basic_block *) xmalloc (sizeof (basic_block) * n_basic_blocks);
+  qin = qout = worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
 
   /* We want a maximal solution.  */
   sbitmap_vector_ones (avout, last_basic_block);
@@ -608,8 +606,7 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
-  tos = worklist
-    = (basic_block *) xmalloc (sizeof (basic_block) * (n_basic_blocks + 1));
+  tos = worklist = xmalloc (sizeof (basic_block) * (n_basic_blocks + 1));
 
   /* Initialize NEARER for each edge and build a mapping from an edge to
      its index.  */
@@ -717,8 +714,8 @@ pre_edge_rev_lcm (FILE *file ATTRIBUTE_UNUSED, int n_exprs, sbitmap *transp,
   edge_list = create_edge_list ();
   num_edges = NUM_EDGES (edge_list);
 
-  st_antin = (sbitmap *) sbitmap_vector_alloc (last_basic_block, n_exprs);
-  st_antout = (sbitmap *) sbitmap_vector_alloc (last_basic_block, n_exprs);
+  st_antin = sbitmap_vector_alloc (last_basic_block, n_exprs);
+  st_antout = sbitmap_vector_alloc (last_basic_block, n_exprs);
   sbitmap_vector_zero (st_antin, last_basic_block);
   sbitmap_vector_zero (st_antout, last_basic_block);
   compute_antinout_edge (st_antloc, transp, st_antin, st_antout);
@@ -997,8 +994,7 @@ optimize_mode_switching (FILE *file)
 	entry_exit_extra = 2;
 #endif
 	bb_info[n_entities]
-	  = (struct bb_info *) xcalloc (last_basic_block + entry_exit_extra,
-					sizeof **bb_info);
+	  = xcalloc (last_basic_block + entry_exit_extra, sizeof **bb_info);
 	entity_map[n_entities++] = e;
 	if (num_modes[e] > max_num_modes)
 	  max_num_modes = num_modes[e];

@@ -1907,7 +1907,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
   int first, negate, changed;
   int i, j;
 
-  memset ((char *) ops, 0, sizeof ops);
+  memset (ops, 0, sizeof ops);
 
   /* Set up the two operands and then expand them until nothing has been
      changed.  If we run out of room in our array, give up; this should

@@ -398,14 +398,14 @@ global_alloc (FILE *file)
   /* Establish mappings from register number to allocation number
      and vice versa.  In the process, count the allocnos.  */
 
-  reg_allocno = (int *) xmalloc (max_regno * sizeof (int));
+  reg_allocno = xmalloc (max_regno * sizeof (int));
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     reg_allocno[i] = -1;
 
   /* Initialize the shared-hard-reg mapping
      from the list of pairs that may share.  */
-  reg_may_share = (int *) xcalloc (max_regno, sizeof (int));
+  reg_may_share = xcalloc (max_regno, sizeof (int));
   for (x = regs_may_share; x; x = XEXP (XEXP (x, 1), 1))
     {
       int r1 = REGNO (XEXP (x, 0));
@@ -436,7 +436,7 @@ global_alloc (FILE *file)
     else
       reg_allocno[i] = -1;
 
-  allocno = (struct allocno *) xcalloc (max_allocno, sizeof (struct allocno));
+  allocno = xcalloc (max_allocno, sizeof (struct allocno));
 
   for (i = FIRST_PSEUDO_REGISTER; i < (size_t) max_regno; i++)
     if (reg_allocno[i] >= 0)
@@ -454,9 +454,9 @@ global_alloc (FILE *file)
   /* Calculate amount of usage of each hard reg by pseudos
      allocated by local-alloc.  This is to see if we want to
      override it.  */
-  memset ((char *) local_reg_live_length, 0, sizeof local_reg_live_length);
-  memset ((char *) local_reg_n_refs, 0, sizeof local_reg_n_refs);
-  memset ((char *) local_reg_freq, 0, sizeof local_reg_freq);
+  memset (local_reg_live_length, 0, sizeof local_reg_live_length);
+  memset (local_reg_n_refs, 0, sizeof local_reg_n_refs);
+  memset (local_reg_freq, 0, sizeof local_reg_freq);
   for (i = FIRST_PSEUDO_REGISTER; i < (size_t) max_regno; i++)
     if (reg_renumber[i] >= 0)
       {
@@ -482,10 +482,9 @@ global_alloc (FILE *file)
   /* We used to use alloca here, but the size of what it would try to
      allocate would occasionally cause it to exceed the stack limit and
      cause unpredictable core dumps.  Some examples were > 2Mb in size.  */
-  conflicts = (INT_TYPE *) xcalloc (max_allocno * allocno_row_words,
-				    sizeof (INT_TYPE));
+  conflicts = xcalloc (max_allocno * allocno_row_words, sizeof (INT_TYPE));
 
-  allocnos_live = (INT_TYPE *) xmalloc (allocno_row_words * sizeof (INT_TYPE));
+  allocnos_live = xmalloc (allocno_row_words * sizeof (INT_TYPE));
 
   /* If there is work to be done (at least one reg to allocate),
      perform global conflict analysis and allocate the regs.  */
@@ -522,7 +521,7 @@ global_alloc (FILE *file)
 
       /* Determine the order to allocate the remaining pseudo registers.  */
 
-      allocno_order = (int *) xmalloc (max_allocno * sizeof (int));
+      allocno_order = xmalloc (max_allocno * sizeof (int));
       for (i = 0; i < (size_t) max_allocno; i++)
 	allocno_order[i] = i;
 
@@ -633,13 +632,13 @@ global_conflicts (void)
   int *block_start_allocnos;
 
   /* Make a vector that mark_reg_{store,clobber} will store in.  */
-  regs_set = (rtx *) xmalloc (max_parallel * sizeof (rtx) * 2);
+  regs_set = xmalloc (max_parallel * sizeof (rtx) * 2);
 
-  block_start_allocnos = (int *) xmalloc (max_allocno * sizeof (int));
+  block_start_allocnos = xmalloc (max_allocno * sizeof (int));
 
   FOR_EACH_BB (b)
     {
-      memset ((char *) allocnos_live, 0, allocno_row_words * sizeof (INT_TYPE));
+      memset (allocnos_live, 0, allocno_row_words * sizeof (INT_TYPE));
 
       /* Initialize table of registers currently live
 	 to the state at the beginning of this basic block.
@@ -903,7 +902,7 @@ prune_preferences (void)
 {
   int i;
   int num;
-  int *allocno_to_order = (int *) xmalloc (max_allocno * sizeof (int));
+  int *allocno_to_order = xmalloc (max_allocno * sizeof (int));
 
   /* Scan least most important to most important.
      For each allocno, remove from preferences registers that cannot be used,

@@ -458,8 +458,7 @@ init_eh (void)
 void
 init_eh_for_function (void)
 {
-  cfun->eh = (struct eh_status *)
-    ggc_alloc_cleared (sizeof (struct eh_status));
+  cfun->eh = ggc_alloc_cleared (sizeof (struct eh_status));
 }
 
 /* Start an exception handling region.  All instructions emitted
@@ -477,7 +476,7 @@ expand_eh_region_start (void)
     return;
 
   /* Insert a new blank region as a leaf in the tree.  */
-  new_region = (struct eh_region *) ggc_alloc_cleared (sizeof (*new_region));
+  new_region = ggc_alloc_cleared (sizeof (*new_region));
   cur_region = cfun->eh->cur_region;
   new_region->outer = cur_region;
   if (cur_region)
@@ -1158,7 +1157,7 @@ add_ehl_entry (rtx label, struct eh_region *region)
 
   LABEL_PRESERVE_P (label) = 1;
 
-  entry = (struct ehl_map_entry *) ggc_alloc (sizeof (*entry));
+  entry = ggc_alloc (sizeof (*entry));
   entry->label = label;
   entry->region = region;
 
@@ -1237,8 +1236,7 @@ current_function_has_exception_handlers (void)
 static struct eh_region *
 duplicate_eh_region_1 (struct eh_region *o, struct inline_remap *map)
 {
-  struct eh_region *n
-    = (struct eh_region *) ggc_alloc_cleared (sizeof (struct eh_region));
+  struct eh_region *n = ggc_alloc_cleared (sizeof (struct eh_region));
 
   n->region_number = o->region_number + cfun->eh->last_region_number;
   n->type = o->type;
@@ -1493,7 +1491,7 @@ add_ttypes_entry (htab_t ttypes_hash, tree type)
     {
       /* Filter value is a 1 based table index.  */
 
-      n = (struct ttypes_filter *) xmalloc (sizeof (*n));
+      n = xmalloc (sizeof (*n));
       n->t = type;
       n->filter = VARRAY_ACTIVE_SIZE (cfun->eh->ttype_data) + 1;
       *slot = n;
@@ -1521,7 +1519,7 @@ add_ehspec_entry (htab_t ehspec_hash, htab_t ttypes_hash, tree list)
     {
       /* Filter value is a -1 based byte index into a uleb128 buffer.  */
 
-      n = (struct ttypes_filter *) xmalloc (sizeof (*n));
+      n = xmalloc (sizeof (*n));
       n->t = list;
       n->filter = -(VARRAY_ACTIVE_SIZE (cfun->eh->ehspec_data) + 1);
       *slot = n;
@@ -2187,8 +2185,8 @@ sjlj_build_landing_pads (void)
 {
   struct sjlj_lp_info *lp_info;
 
-  lp_info = (struct sjlj_lp_info *) xcalloc (cfun->eh->last_region_number + 1,
-					     sizeof (struct sjlj_lp_info));
+  lp_info = xcalloc (cfun->eh->last_region_number + 1,
+		     sizeof (struct sjlj_lp_info));
 
   if (sjlj_find_directly_reachable_regions (lp_info))
     {
@@ -3108,7 +3106,7 @@ add_action_record (htab_t ar_hash, int filter, int next)
 
   if ((new = *slot) == NULL)
     {
-      new = (struct action_record *) xmalloc (sizeof (*new));
+      new = xmalloc (sizeof (*new));
       new->offset = VARRAY_ACTIVE_SIZE (cfun->eh->action_record_data) + 1;
       new->filter = filter;
       new->next = next;
@@ -3239,8 +3237,7 @@ add_call_site (rtx landing_pad, int action)
   if (used >= size)
     {
       size = (size ? size * 2 : 64);
-      data = (struct call_site_record *)
-	ggc_realloc (data, sizeof (*data) * size);
+      data = ggc_realloc (data, sizeof (*data) * size);
       cfun->eh->call_site_data = data;
       cfun->eh->call_site_data_size = size;
     }

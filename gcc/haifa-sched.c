@@ -658,9 +658,9 @@ get_unit_last_insn (int instance)
 static void
 clear_units (void)
 {
-  memset ((char *) unit_last_insn, 0, sizeof (unit_last_insn));
-  memset ((char *) unit_tick, 0, sizeof (unit_tick));
-  memset ((char *) unit_n_insns, 0, sizeof (unit_n_insns));
+  memset (unit_last_insn, 0, sizeof (unit_last_insn));
+  memset (unit_tick, 0, sizeof (unit_tick));
+  memset (unit_n_insns, 0, sizeof (unit_n_insns));
 }
 
 /* Return the issue-delay of an insn.  The scheduler using only DFA
@@ -2130,7 +2130,7 @@ schedule_block (int b, int rgn_n_insns)
   /* Allocate the ready list.  */
   ready.veclen = rgn_n_insns + 1 + issue_rate;
   ready.first = ready.veclen - 1;
-  ready.vec = (rtx *) xmalloc (ready.veclen * sizeof (rtx));
+  ready.vec = xmalloc (ready.veclen * sizeof (rtx));
   ready.n_ready = 0;
 
   if (targetm.sched.use_dfa_pipeline_interface
@@ -2138,13 +2138,12 @@ schedule_block (int b, int rgn_n_insns)
     {
       /* It is used for first cycle multipass scheduling.  */
       temp_state = alloca (dfa_state_size);
-      ready_try = (char *) xmalloc ((rgn_n_insns + 1) * sizeof (char));
+      ready_try = xmalloc ((rgn_n_insns + 1) * sizeof (char));
       memset (ready_try, 0, (rgn_n_insns + 1) * sizeof (char));
-      choice_stack
-	= (struct choice_entry *) xmalloc ((rgn_n_insns + 1)
-					   * sizeof (struct choice_entry));
+      choice_stack = xmalloc ((rgn_n_insns + 1)
+			      * sizeof (struct choice_entry));
       for (i = 0; i <= rgn_n_insns; i++)
-	choice_stack[i].state = (state_t) xmalloc (dfa_state_size);
+	choice_stack[i].state = xmalloc (dfa_state_size);
     }
 
   (*current_sched_info->init_ready_list) (&ready);
@@ -2166,8 +2165,8 @@ schedule_block (int b, int rgn_n_insns)
   else
     max_insn_queue_index_macro_value = max_insn_queue_index;
 
-  insn_queue = (rtx *) alloca ((MAX_INSN_QUEUE_INDEX + 1) * sizeof (rtx));
-  memset ((char *) insn_queue, 0, (MAX_INSN_QUEUE_INDEX + 1) * sizeof (rtx));
+  insn_queue = alloca ((MAX_INSN_QUEUE_INDEX + 1) * sizeof (rtx));
+  memset (insn_queue, 0, (MAX_INSN_QUEUE_INDEX + 1) * sizeof (rtx));
   last_clock_var = -1;
 
   /* Start just before the beginning of time.  */
@@ -2582,7 +2581,7 @@ sched_init (FILE *dump_file)
      pseudos which do not cross calls.  */
   old_max_uid = get_max_uid () + 1;
 
-  h_i_d = (struct haifa_insn_data *) xcalloc (old_max_uid, sizeof (*h_i_d));
+  h_i_d = xcalloc (old_max_uid, sizeof (*h_i_d));
 
   for (i = 0; i < old_max_uid; i++)
     h_i_d [i].cost = -1;
@@ -2632,7 +2631,7 @@ sched_init (FILE *dump_file)
     {
       rtx line;
 
-      line_note_head = (rtx *) xcalloc (last_basic_block, sizeof (rtx));
+      line_note_head = xcalloc (last_basic_block, sizeof (rtx));
 
       /* Save-line-note-head:
          Determine the line-number at the start of each basic block.

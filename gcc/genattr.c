@@ -268,8 +268,7 @@ main (int argc, char **argv)
 
 	  if (unit == 0)
 	    {
-	      unit = (struct function_unit *)
-		xmalloc (sizeof (struct function_unit));
+	      unit = xmalloc (sizeof (struct function_unit));
 	      unit->name = xstrdup (name);
 	      unit->multiplicity = multiplicity;
 	      unit->simultaneity = simultaneity;

@@ -131,8 +131,7 @@ bitmap_element_allocate (bitmap head)
 					  obstack_chunk_free);
 	    }
 
-	  element = (bitmap_element *) obstack_alloc (&bitmap_obstack,
-						      sizeof (bitmap_element));
+	  element = obstack_alloc (&bitmap_obstack, sizeof (bitmap_element));
 	}
     }
   else

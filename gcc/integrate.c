@@ -283,7 +283,7 @@ initialize_for_inline (tree fndecl)
   tree parms;
 
   /* Clear out PARMDECL_MAP.  It was allocated in the caller's frame.  */
-  memset ((char *) parmdecl_map, 0, max_parm_reg * sizeof (tree));
+  memset (parmdecl_map, 0, max_parm_reg * sizeof (tree));
   arg_vector = rtvec_alloc (list_length (DECL_ARGUMENTS (fndecl)));
 
   for (parms = DECL_ARGUMENTS (fndecl), i = 0;
@@ -442,7 +442,7 @@ save_for_inline (tree fndecl)
      for the parms, prior to elimination of virtual registers.
      These values are needed for substituting parms properly.  */
   if (! flag_no_inline)
-    parmdecl_map = (tree *) xmalloc (max_parm_reg * sizeof (tree));
+    parmdecl_map = xmalloc (max_parm_reg * sizeof (tree));
 
   /* Make and emit a return-label if we have not already done so.  */
 
@@ -724,8 +724,8 @@ expand_inline_function (tree fndecl, tree parms, rtx target, int ignore,
   /* Expand the function arguments.  Do this first so that any
      new registers get created before we allocate the maps.  */
 
-  arg_vals = (rtx *) xmalloc (nargs * sizeof (rtx));
-  arg_trees = (tree *) xmalloc (nargs * sizeof (tree));
+  arg_vals = xmalloc (nargs * sizeof (rtx));
+  arg_trees = xmalloc (nargs * sizeof (tree));
 
   for (formal = DECL_ARGUMENTS (fndecl), actual = parms, i = 0;
        formal;
@@ -820,22 +820,21 @@ expand_inline_function (tree fndecl, tree parms, rtx target, int ignore,
 
   /* Allocate the structures we use to remap things.  */
 
-  map = (struct inline_remap *) xcalloc (1, sizeof (struct inline_remap));
+  map = xcalloc (1, sizeof (struct inline_remap));
   map->fndecl = fndecl;
 
   VARRAY_TREE_INIT (map->block_map, 10, "block_map");
-  map->reg_map = (rtx *) xcalloc (max_regno, sizeof (rtx));
+  map->reg_map = xcalloc (max_regno, sizeof (rtx));
 
   /* We used to use alloca here, but the size of what it would try to
      allocate would occasionally cause it to exceed the stack limit and
      cause unpredictable core dumps.  */
-  real_label_map
-    = (rtx *) xmalloc ((max_labelno) * sizeof (rtx));
+  real_label_map = xmalloc ((max_labelno) * sizeof (rtx));
   map->label_map = real_label_map;
   map->local_return_label = NULL_RTX;
 
   inl_max_uid = (inl_f->emit->x_cur_insn_uid + 1);
-  map->insn_map = (rtx *) xcalloc (inl_max_uid, sizeof (rtx));
+  map->insn_map = xcalloc (inl_max_uid, sizeof (rtx));
   map->min_insnno = 0;
   map->max_insnno = inl_max_uid;
 
@@ -1185,8 +1184,8 @@ expand_inline_function (tree fndecl, tree parms, rtx target, int ignore,
 
   /* Initialize label_map.  get_label_from_map will actually make
      the labels.  */
-  memset ((char *) &map->label_map[min_labelno], 0,
-	 (max_labelno - min_labelno) * sizeof (rtx));
+  memset (&map->label_map[min_labelno], 0,
+	  (max_labelno - min_labelno) * sizeof (rtx));
 
   /* Make copies of the decls of the symbols in the inline function, so that
      the copies of the variables get declared in the current function.  Set
@@ -3051,20 +3050,19 @@ get_func_hard_reg_initial_val (struct function *fun, rtx reg)
 
   if (ivs == 0)
     {
-      fun->hard_reg_initial_vals = (void *) ggc_alloc (sizeof (initial_value_struct));
+      fun->hard_reg_initial_vals = ggc_alloc (sizeof (initial_value_struct));
       ivs = fun->hard_reg_initial_vals;
       ivs->num_entries = 0;
       ivs->max_entries = 5;
-      ivs->entries = (initial_value_pair *) ggc_alloc (5 * sizeof (initial_value_pair));
+      ivs->entries = ggc_alloc (5 * sizeof (initial_value_pair));
     }
 
   if (ivs->num_entries >= ivs->max_entries)
     {
       ivs->max_entries += 5;
-      ivs->entries =
-	(initial_value_pair *) ggc_realloc (ivs->entries,
-					    ivs->max_entries
-					    * sizeof (initial_value_pair));
+      ivs->entries = ggc_realloc (ivs->entries,
+				  ivs->max_entries
+				  * sizeof (initial_value_pair));
     }
 
   ivs->entries[ivs->num_entries].hard_reg = reg;

@@ -1805,7 +1805,7 @@ cpp_define (cpp_reader *pfile, const char *str)
      tack " 1" on the end.  */
 
   count = strlen (str);
-  buf = (char *) alloca (count + 3);
+  buf = alloca (count + 3);
   memcpy (buf, str, count);
 
   p = strchr (str, '=');
@@ -1866,7 +1866,7 @@ handle_assertion (cpp_reader *pfile, const char *str, int type)
 
   /* Copy the entire option so we can modify it.  Change the first
      "=" in the string to a '(', and tack a ')' on the end.  */
-  char *buf = (char *) alloca (count + 2);
+  char *buf = alloca (count + 2);
 
   memcpy (buf, str, count);
   if (p)

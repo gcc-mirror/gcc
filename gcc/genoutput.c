@@ -782,7 +782,7 @@ validate_insn_operands (struct data *d)
 static void
 gen_insn (rtx insn, int lineno)
 {
-  struct data *d = (struct data *) xmalloc (sizeof (struct data));
+  struct data *d = xmalloc (sizeof (struct data));
   int i;
 
   d->code_number = next_code_number;
@@ -823,7 +823,7 @@ gen_insn (rtx insn, int lineno)
 static void
 gen_peephole (rtx peep, int lineno)
 {
-  struct data *d = (struct data *) xmalloc (sizeof (struct data));
+  struct data *d = xmalloc (sizeof (struct data));
   int i;
 
   d->code_number = next_code_number;
@@ -861,7 +861,7 @@ gen_peephole (rtx peep, int lineno)
 static void
 gen_expand (rtx insn, int lineno)
 {
-  struct data *d = (struct data *) xmalloc (sizeof (struct data));
+  struct data *d = xmalloc (sizeof (struct data));
   int i;
 
   d->code_number = next_code_number;
@@ -904,7 +904,7 @@ gen_expand (rtx insn, int lineno)
 static void
 gen_split (rtx split, int lineno)
 {
-  struct data *d = (struct data *) xmalloc (sizeof (struct data));
+  struct data *d = xmalloc (sizeof (struct data));
   int i;
 
   d->code_number = next_code_number;

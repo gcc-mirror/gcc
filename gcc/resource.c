@@ -947,7 +947,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 	{
 	  /* Allocate a place to put our results and chain it into the
 	     hash table.  */
-	  tinfo = (struct target_info *) xmalloc (sizeof (struct target_info));
+	  tinfo = xmalloc (sizeof (struct target_info));
 	  tinfo->uid = INSN_UID (target);
 	  tinfo->block = b;
 	  tinfo->next
@@ -1223,9 +1223,8 @@ init_resource_info (rtx epilogue_insn)
 			MARK_SRC_DEST_CALL);
 
   /* Allocate and initialize the tables used by mark_target_live_regs.  */
-  target_hash_table = (struct target_info **)
-    xcalloc (TARGET_HASH_PRIME, sizeof (struct target_info *));
-  bb_ticks = (int *) xcalloc (last_basic_block, sizeof (int));
+  target_hash_table = xcalloc (TARGET_HASH_PRIME, sizeof (struct target_info *));
+  bb_ticks = xcalloc (last_basic_block, sizeof (int));
 }
 
 /* Free up the resources allocated to mark_target_live_regs ().  This

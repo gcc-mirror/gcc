@@ -316,8 +316,7 @@ df_insn_table_realloc (struct df *df, unsigned int size)
      to enlarge it so often.  */
   size += df->insn_size / 4;
 
-  df->insns = (struct insn_info *)
-    xrealloc (df->insns, size * sizeof (struct insn_info));
+  df->insns = xrealloc (df->insns, size * sizeof (struct insn_info));
 
   memset (df->insns + df->insn_size, 0,
 	  (size - df->insn_size) * sizeof (struct insn_info));
@@ -344,8 +343,7 @@ df_reg_table_realloc (struct df *df, int size)
   if (size < max_reg_num ())
     size = max_reg_num ();
 
-  df->regs = (struct reg_info *)
-    xrealloc (df->regs, size * sizeof (struct reg_info));
+  df->regs = xrealloc (df->regs, size * sizeof (struct reg_info));
 
   /* Zero the new entries.  */
   memset (df->regs + df->reg_size, 0,

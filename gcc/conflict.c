@@ -148,8 +148,7 @@ arc_eq (const void *arcp1, const void *arcp2)
 conflict_graph
 conflict_graph_new (int num_regs)
 {
-  conflict_graph graph
-    = (conflict_graph) xmalloc (sizeof (struct conflict_graph_def));
+  conflict_graph graph = xmalloc (sizeof (struct conflict_graph_def));
   graph->num_regs = num_regs;
 
   /* Set up the hash table.  No delete action is specified; memory
@@ -161,8 +160,7 @@ conflict_graph_new (int num_regs)
   obstack_init (&graph->arc_obstack);
 	     
   /* Create and zero the lookup table by register number.  */
-  graph->neighbor_heads
-    = (conflict_graph_arc *) xmalloc (num_regs * sizeof (conflict_graph_arc));
+  graph->neighbor_heads = xmalloc (num_regs * sizeof (conflict_graph_arc));
 
   memset (graph->neighbor_heads, 0, num_regs * sizeof (conflict_graph_arc));
   return graph;
@@ -206,8 +204,7 @@ conflict_graph_add (conflict_graph graph, int reg1, int reg2)
 
   /* Allocate an arc.  */
   arc
-    = (conflict_graph_arc)
-      obstack_alloc (&graph->arc_obstack,
+    = obstack_alloc (&graph->arc_obstack,
 		     sizeof (struct conflict_graph_arc_def));
   
   /* Record the reg numbers.  */

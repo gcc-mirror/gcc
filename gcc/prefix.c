@@ -155,12 +155,12 @@ lookup_key (char *key)
     }
 
   size = 32;
-  dst = (char *) xmalloc (size);
+  dst = xmalloc (size);
 
   res = RegQueryValueExA (reg_key, key, 0, &type, dst, &size);
   if (res == ERROR_MORE_DATA && type == REG_SZ)
     {
-      dst = (char *) xrealloc (dst, size);
+      dst = xrealloc (dst, size);
       res = RegQueryValueExA (reg_key, key, 0, &type, dst, &size);
     }
 
@@ -197,7 +197,7 @@ translate_name (char *name)
 	   keylen++)
 	;
 
-      key = (char *) alloca (keylen + 1);
+      key = alloca (keylen + 1);
       strncpy (key, &name[1], keylen);
       key[keylen] = 0;
 

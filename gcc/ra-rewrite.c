@@ -329,8 +329,7 @@ static void
 choose_spill_colors ()
 {
   struct dlist *d;
-  unsigned HOST_WIDE_INT *costs = (unsigned HOST_WIDE_INT *)
-    xmalloc (FIRST_PSEUDO_REGISTER * sizeof (costs[0]));
+  unsigned HOST_WIDE_INT *costs = xmalloc (FIRST_PSEUDO_REGISTER * sizeof (costs[0]));
   for (d = WEBS(SPILLED); d; d = d->next)
     {
       struct web *web = DLIST_WEB (d);
@@ -545,7 +544,7 @@ remember_slot (list, x)
 {
   struct rtx_list *l;
   /* PRE: X is not already in LIST.  */
-  l = (struct rtx_list *) ra_alloc (sizeof (*l));
+  l = ra_alloc (sizeof (*l));
   l->next = *list;
   l->x = x;
   *list = l;
@@ -1089,7 +1088,7 @@ rewrite_program2 (new_deaths)
   int nl_first_reload;
   struct rewrite_info ri;
   rtx insn;
-  ri.needed_loads = (struct web **) xmalloc (num_webs * sizeof (struct web *));
+  ri.needed_loads = xmalloc (num_webs * sizeof (struct web *));
   ri.need_reload = BITMAP_XMALLOC ();
   ri.scratch = BITMAP_XMALLOC ();
   ri.live = sbitmap_alloc (num_webs);
@@ -1750,7 +1749,7 @@ emit_colors (df)
     }
   ra_max_regno = max_regno = max_reg_num ();
   allocate_reg_info (max_regno, FALSE, FALSE);
-  ra_reg_renumber = (short *) xmalloc (max_regno * sizeof (short));
+  ra_reg_renumber = xmalloc (max_regno * sizeof (short));
   for (si = 0; si < max_regno; si++)
     ra_reg_renumber[si] = -1;
 

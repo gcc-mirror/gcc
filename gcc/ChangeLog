@@ -1,3 +1,27 @@
+2003-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alias.c alloc-pool.c bitmap.c bitmap.h bt-load.c builtins.c
+	c-common.c c-decl.c c-incpath.c c-lex.c c-opts.c c-parse.in
+	c-pragma.c c-typeck.c calls.c cfg.c cfganal.c cfgloop.c cfgrtl.c
+	collect2.c combine.c conflict.c coverage.c cppexp.c cppfiles.c
+	cpphash.c cppinit.c cpplex.c cpplib.c cppmacro.c cppspec.c
+	cpptrad.c cse.c cselib.c dbxout.c defaults.h df.c dominance.c
+	dwarf2out.c dwarfout.c emit-rtl.c except.c expmed.c expr.c final.c
+	fix-header.c flow.c fold-const.c function.c gcc.c gccspec.c gcov.c
+	gcse.c genattr.c genattrtab.c genautomata.c genconditions.c
+	genemit.c genextract.c genoutput.c genrecog.c gensupport.c
+	ggc-page.c ggc-simple.c global.c graph.c haifa-sched.c hashtable.c
+	integrate.c jump.c langhooks.c lcm.c line-map.c local-alloc.c
+	loop.c mips-tdump.c mips-tfile.c mkdeps.c optabs.c params.c
+	postreload.c prefix.c print-tree.c protoize.c ra-build.c
+	ra-colorize.c ra-rewrite.c ra.c recog.c reg-stack.c regclass.c
+	regmove.c regrename.c reload.c reload1.c reorg.c resource.c
+	sbitmap.c sched-deps.c sched-rgn.c sched-vis.c sdbout.c
+	simplify-rtx.c ssa-ccp.c ssa.c stmt.c stor-layout.c timevar.c
+	tlink.c toplev.c tree-dump.c tree.c unroll.c unwind-dw2-fde.c
+	varasm.c varray.c vmsdbgout.c xcoffout.c: Remove unnecessary
+	casts.
+
 2003-07-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-pragma.c (apply_pragma_weak): Don't use warning_with_decl.

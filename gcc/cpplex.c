@@ -88,8 +88,8 @@ add_line_note (cpp_buffer *buffer, const uchar *pos, unsigned int type)
   if (buffer->notes_used == buffer->notes_cap)
     {
       buffer->notes_cap = buffer->notes_cap * 2 + 200;
-      buffer->notes = (_cpp_line_note *)
-	xrealloc (buffer->notes, buffer->notes_cap * sizeof (_cpp_line_note));
+      buffer->notes = xrealloc (buffer->notes,
+				buffer->notes_cap * sizeof (_cpp_line_note));
     }
 
   buffer->notes[buffer->notes_used].pos = pos;

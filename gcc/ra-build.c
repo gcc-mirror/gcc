@@ -331,8 +331,7 @@ get_sub_conflicts (wp, size_word)
   bitmap b = find_sub_conflicts (wp, size_word);
   if (!b)
     {
-      struct tagged_conflict *cl =
-	(struct tagged_conflict *) ra_alloc (sizeof *cl);
+      struct tagged_conflict *cl = ra_alloc (sizeof *cl);
       cl->conflicts = BITMAP_XMALLOC ();
       cl->size_word = size_word;
       cl->next = wp->sub_conflicts;
@@ -583,10 +582,10 @@ remember_move (insn)
 	 subwebs could be source and target of coalescing).  */
       if (GET_CODE (s) == REG && GET_CODE (d) == REG)
 	{
-	  struct move *m = (struct move *) ra_calloc (sizeof (struct move));
+	  struct move *m = ra_calloc (sizeof (struct move));
 	  struct move_list *ml;
 	  m->insn = insn;
-	  ml = (struct move_list *) ra_alloc (sizeof (struct move_list));
+	  ml = ra_alloc (sizeof (struct move_list));
 	  ml->move = m;
 	  ml->next = wl_moves;
 	  wl_moves = ml;
@@ -1112,8 +1111,7 @@ init_bb_info ()
   basic_block bb;
   FOR_ALL_BB (bb)
     {
-      struct ra_bb_info *info =
-	(struct ra_bb_info *) xcalloc (1, sizeof *info);
+      struct ra_bb_info *info = xcalloc (1, sizeof *info);
       info->regnos_mentioned = BITMAP_XMALLOC ();
       info->live_throughout = BITMAP_XMALLOC ();
       info->old_aux = bb->aux;
@@ -1149,9 +1147,8 @@ build_web_parts_and_conflicts (df)
   struct curr_use use;
   basic_block bb;
 
-  number_seen = (int *) xcalloc (get_max_uid (), sizeof (int));
-  visit_trace = (struct visit_trace *) xcalloc (get_max_uid (),
-						sizeof (visit_trace[0]));
+  number_seen = xcalloc (get_max_uid (), sizeof (int));
+  visit_trace = xcalloc (get_max_uid (), sizeof (visit_trace[0]));
   update_regnos_mentioned ();
 
   /* Here's the main loop.
@@ -1252,7 +1249,7 @@ init_one_web_common (web, reg)
   web->orig_x = reg;
   if (!web->dlink)
     {
-      web->dlink = (struct dlist *) ra_calloc (sizeof (struct dlist));
+      web->dlink = ra_calloc (sizeof (struct dlist));
       DLIST_WEB (web->dlink) = web;
     }
   /* XXX
@@ -1384,7 +1381,7 @@ add_subweb (web, reg)
   struct web *w;
   if (GET_CODE (reg) != SUBREG)
     abort ();
-  w = (struct web *) xmalloc (sizeof (struct web));
+  w = xmalloc (sizeof (struct web));
   /* Copy most content from parent-web.  */
   *w = *web;
   /* And initialize the private stuff.  */
@@ -1519,7 +1516,7 @@ copy_conflict_list (web)
   for (cl = web->conflict_list; cl; cl = cl->next)
     {
       struct conflict_link *ncl;
-      ncl = (struct conflict_link *) ra_alloc (sizeof *ncl);
+      ncl = ra_alloc (sizeof *ncl);
       ncl->t = cl->t;
       ncl->sub = NULL;
       ncl->next = web->orig_conflict_list;
@@ -1529,7 +1526,7 @@ copy_conflict_list (web)
 	  struct sub_conflict *sl, *nsl;
 	  for (sl = cl->sub; sl; sl = sl->next)
 	    {
-	      nsl = (struct sub_conflict *) ra_alloc (sizeof *nsl);
+	      nsl = ra_alloc (sizeof *nsl);
 	      nsl->s = sl->s;
 	      nsl->t = sl->t;
 	      nsl->next = ncl->sub;
@@ -1571,7 +1568,7 @@ add_conflict_edge (from, to)
 	copy_conflict_list (pfrom);
       if (!TEST_BIT (sup_igraph, (pfrom->id * num_webs + pto->id)))
 	{
-	  cl = (struct conflict_link *) ra_alloc (sizeof (*cl));
+	  cl = ra_alloc (sizeof (*cl));
 	  cl->t = pto;
 	  cl->sub = NULL;
 	  cl->next = pfrom->conflict_list;
@@ -1596,7 +1593,7 @@ add_conflict_edge (from, to)
 	     means we are not interested in this subconflict.  */
 	  if (!may_delete || cl->sub != NULL)
 	    {
-	      sl = (struct sub_conflict *) ra_alloc (sizeof (*sl));
+	      sl = ra_alloc (sizeof (*sl));
 	      sl->s = from;
 	      sl->t = to;
 	      sl->next = cl->sub;
@@ -1698,8 +1695,8 @@ copy_web (web, wl)
      struct web *web;
      struct web_link **wl;
 {
-  struct web *cweb = (struct web *) xmalloc (sizeof *cweb);
-  struct web_link *link = (struct web_link *) ra_alloc (sizeof *link);
+  struct web *cweb = xmalloc (sizeof *cweb);
+  struct web_link *link = ra_alloc (sizeof *link);
   link->next = *wl;
   *wl = link;
   link->web = cweb;
@@ -1776,11 +1773,9 @@ init_webs_defs_uses ()
 	  continue;
 	}
       if (web->num_defs)
-        web->defs = (struct ref **) xmalloc (web->num_defs *
-					     sizeof (web->defs[0]));
+        web->defs = xmalloc (web->num_defs * sizeof (web->defs[0]));
       if (web->num_uses)
-        web->uses = (struct ref **) xmalloc (web->num_uses *
-					     sizeof (web->uses[0]));
+        web->uses = xmalloc (web->num_uses * sizeof (web->uses[0]));
       def_i = use_i = 0;
       for (link = web->temp_refs; link; link = link->next)
 	{
@@ -1840,7 +1835,7 @@ parts_to_webs_1 (df, copy_webs, all_refs)
 	     allocate a new one.  */
 	  if (ra_pass == 1)
 	    {
-	      web = (struct web *) xmalloc (sizeof (struct web));
+	      web = xmalloc (sizeof (struct web));
 	      newid = last_num_webs++;
 	      init_one_web (web, GET_CODE (reg) == SUBREG
 			         ? SUBREG_REG (reg) : reg);
@@ -1873,7 +1868,7 @@ parts_to_webs_1 (df, copy_webs, all_refs)
 		  else
 		    {
 		      /* Else allocate a new one.  */
-		      web = (struct web *) xmalloc (sizeof (struct web));
+		      web = xmalloc (sizeof (struct web));
 		      newid = last_num_webs++;
 		    }
 		}
@@ -2032,8 +2027,7 @@ parts_to_webs (df)
   num_subwebs = 0;
 
   /* First build webs and ordinary subwebs.  */
-  all_refs = (struct df_link *) xcalloc (df->def_id + df->use_id,
-					 sizeof (all_refs[0]));
+  all_refs = xcalloc (df->def_id + df->use_id, sizeof (all_refs[0]));
   webnum = parts_to_webs_1 (df, &copy_webs, all_refs);
 
   /* Setup the webs for hardregs which are still missing (weren't
@@ -2041,7 +2035,7 @@ parts_to_webs (df)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (!hardreg2web[i])
       {
-	struct web *web = (struct web *) xmalloc (sizeof (struct web));
+	struct web *web = xmalloc (sizeof (struct web));
 	init_one_web (web, gen_rtx_REG (reg_raw_mode[i], i));
 	web->id = last_num_webs++;
 	hardreg2web[web->regno] = web;
@@ -2089,7 +2083,7 @@ parts_to_webs (df)
     }
 
   /* Now that everyone has an ID, we can setup the id2web array.  */
-  id2web = (struct web **) xcalloc (webnum, sizeof (id2web[0]));
+  id2web = xcalloc (webnum, sizeof (id2web[0]));
   for (d = WEBS(INITIAL); d; d = d->next)
     {
       struct web *web = DLIST_WEB (d);
@@ -2243,7 +2237,7 @@ conflicts_between_webs (df)
 #endif
   bitmap ignore_defs = BITMAP_XMALLOC ();
   unsigned int have_ignored;
-  unsigned int *pass_cache = (unsigned int *) xcalloc (num_webs, sizeof (int));
+  unsigned int *pass_cache = xcalloc (num_webs, sizeof (int));
   unsigned int pass = 0;
 
   if (ra_pass > 1)
@@ -2831,8 +2825,7 @@ moves_to_webs (df)
 	      for (; test && test->move != m; test = test->next);
 	      if (! test)
 		{
-		  newml = (struct move_list*)
-		    ra_alloc (sizeof (struct move_list));
+		  newml = ra_alloc (sizeof (struct move_list));
 		  newml->move = m;
 		  newml->next = m->source_web->moves;
 		  m->source_web->moves = newml;
@@ -2841,8 +2834,7 @@ moves_to_webs (df)
 	      for (; test && test->move != m; test = test->next);
 	      if (! test)
 		{
-		  newml = (struct move_list*)
-		    ra_alloc (sizeof (struct move_list));
+		  newml = ra_alloc (sizeof (struct move_list));
 		  newml->move = m;
 		  newml->next = m->target_web->moves;
 		  m->target_web->moves = newml;
@@ -3079,10 +3071,8 @@ ra_build_realloc (df)
   unsigned int i;
   struct dlist *d;
   move_handled = sbitmap_alloc (get_max_uid () );
-  web_parts = (struct web_part *) xcalloc (df->def_id + df->use_id,
-					   sizeof web_parts[0]);
-  def2web = (struct web **) xcalloc (df->def_id + df->use_id,
-				     sizeof def2web[0]);
+  web_parts = xcalloc (df->def_id + df->use_id, sizeof web_parts[0]);
+  def2web = xcalloc (df->def_id + df->use_id, sizeof def2web[0]);
   use2web = &def2web[df->def_id];
   live_over_abnormal = sbitmap_alloc (df->use_id);
   sbitmap_zero (live_over_abnormal);
@@ -3172,14 +3162,12 @@ ra_build_realloc (df)
   if (!last_max_uid)
     {
       /* Setup copy cache, for copy_insn_p ().  */
-      copy_cache = (struct copy_p_cache *)
-	xcalloc (get_max_uid (), sizeof (copy_cache[0]));
+      copy_cache = xcalloc (get_max_uid (), sizeof (copy_cache[0]));
       init_bb_info ();
     }
   else
     {
-      copy_cache = (struct copy_p_cache *)
-	xrealloc (copy_cache, get_max_uid () * sizeof (copy_cache[0]));
+      copy_cache = xrealloc (copy_cache, get_max_uid () * sizeof (copy_cache[0]));
       memset (&copy_cache[last_max_uid], 0,
 	      (get_max_uid () - last_max_uid) * sizeof (copy_cache[0]));
     }

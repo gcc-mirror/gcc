@@ -110,7 +110,7 @@ munge (const char *filename)
 struct deps *
 deps_init (void)
 {
-  struct deps *d = (struct deps *) xmalloc (sizeof (struct deps));
+  struct deps *d = xmalloc (sizeof (struct deps));
 
   /* Allocate space for the vectors only if we need it.  */
 
@@ -155,7 +155,7 @@ deps_add_target (struct deps *d, const char *t, int quote)
   if (d->ntargets == d->targets_size)
     {
       d->targets_size = d->targets_size * 2 + 4;
-      d->targetv = (const char **) xrealloc (d->targetv,
+      d->targetv = xrealloc (d->targetv,
 			     d->targets_size * sizeof (const char *));
     }
 
@@ -185,7 +185,7 @@ deps_add_default_target (struct deps *d, const char *tgt)
 # define TARGET_OBJECT_SUFFIX ".o"
 #endif
       const char *start = lbasename (tgt);
-      char *o = (char *) alloca (strlen (start) + strlen (TARGET_OBJECT_SUFFIX) + 1);
+      char *o = alloca (strlen (start) + strlen (TARGET_OBJECT_SUFFIX) + 1);
       char *suffix;
 
       strcpy (o, start);
@@ -207,8 +207,7 @@ deps_add_dep (struct deps *d, const char *t)
   if (d->ndeps == d->deps_size)
     {
       d->deps_size = d->deps_size * 2 + 8;
-      d->depv = (const char **)
-	xrealloc (d->depv, d->deps_size * sizeof (const char *));
+      d->depv = xrealloc (d->depv, d->deps_size * sizeof (const char *));
     }
   d->depv[d->ndeps++] = t;
 }
@@ -315,7 +314,7 @@ deps_restore (struct deps *deps, FILE *fd, const char *self)
   unsigned int i, count;
   size_t num_to_read;
   size_t buf_size = 512;
-  char *buf = (char *) xmalloc (buf_size);
+  char *buf = xmalloc (buf_size);
 
   /* Number of dependences.  */
   if (fread (&count, 1, sizeof (count), fd) != sizeof (count))

@@ -400,7 +400,7 @@ xcoffout_declare_function (FILE *file, tree decl, const char *name)
       {
 	if (name[i] == '[')
 	  {
-	    char *n = (char *) alloca (i + 1);
+	    char *n = alloca (i + 1);
 	    strncpy (n, name, i);
 	    n[i] = '\0';
 	    name = n;

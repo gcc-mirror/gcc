@@ -105,7 +105,7 @@ create_alloc_pool (const char *name, size_t size, size_t num)
   pool_size = sizeof (struct alloc_pool_def);
 
   /* and allocate that much memory.  */
-  pool = (alloc_pool) xmalloc (pool_size);
+  pool = xmalloc (pool_size);
 
   /* Now init the various pieces of our pool structure.  */
   pool->name = xstrdup (name);
@@ -176,7 +176,7 @@ pool_alloc (alloc_pool pool)
       alloc_pool_list block_header;
 
       /* Make the block.  */
-      block = (char *) xmalloc (pool->block_size);
+      block = xmalloc (pool->block_size);
       block_header = (alloc_pool_list) block;
       block += align_eight (sizeof (struct alloc_pool_list_def));
 

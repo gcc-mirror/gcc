@@ -372,7 +372,7 @@ set_named_section_flags (const char *section, unsigned int flags)
 
   if (!entry)
     {
-      entry = (struct in_named_entry *) ggc_alloc (sizeof (*entry));
+      entry = ggc_alloc (sizeof (*entry));
       *slot = entry;
       entry->name = ggc_strdup (section);
       entry->flags = flags;
@@ -2128,7 +2128,7 @@ const_hash_1 (const tree exp)
 	  char *tmp;
 
 	  len = int_size_in_bytes (TREE_TYPE (exp));
-	  tmp = (char *) alloca (len);
+	  tmp = alloca (len);
 	  get_set_constructor_bytes (exp, (unsigned char *) tmp, len);
 	  p = tmp;
 	  break;
@@ -2258,8 +2258,8 @@ compare_constant (const tree t1, const tree t2)
 	  if (int_size_in_bytes (TREE_TYPE (t1)) != len)
 	    return 0;
 
-	  tmp1 = (unsigned char *) alloca (len);
-	  tmp2 = (unsigned char *) alloca (len);
+	  tmp1 = alloca (len);
+	  tmp2 = alloca (len);
 
 	  if (get_set_constructor_bytes (t1, tmp1, len) != NULL_TREE)
 	    return 0;
@@ -2634,16 +2634,14 @@ void
 init_varasm_status (struct function *f)
 {
   struct varasm_status *p;
-  p = (struct varasm_status *) ggc_alloc (sizeof (struct varasm_status));
+  p = ggc_alloc (sizeof (struct varasm_status));
   f->varasm = p;
   p->x_const_rtx_hash_table
-    = ((struct constant_descriptor_rtx **)
-       ggc_alloc_cleared (MAX_RTX_HASH_TABLE
-			  * sizeof (struct constant_descriptor_rtx *)));
+    = ggc_alloc_cleared (MAX_RTX_HASH_TABLE
+			 * sizeof (struct constant_descriptor_rtx *));
   p->x_const_rtx_sym_hash_table
-    = ((struct pool_constant **)
-       ggc_alloc_cleared (MAX_RTX_HASH_TABLE
-			  * sizeof (struct pool_constant *)));
+    = ggc_alloc_cleared (MAX_RTX_HASH_TABLE
+			 * sizeof (struct pool_constant *));
 
   p->x_first_pool = p->x_last_pool = 0;
   p->x_pool_offset = 0;
@@ -2896,7 +2894,7 @@ record_constant_rtx (enum machine_mode mode, rtx x)
 {
   struct constant_descriptor_rtx *ptr;
 
-  ptr = (struct constant_descriptor_rtx *) ggc_alloc (sizeof (*ptr));
+  ptr = ggc_alloc (sizeof (*ptr));
   decode_rtx_const (mode, x, &ptr->value);
 
   return ptr;
@@ -2950,7 +2948,7 @@ force_const_mem (enum machine_mode mode, rtx x)
     LABEL_PRESERVE_P (XEXP (x, 0)) = 1;
 
   /* Allocate a pool constant descriptor, fill it in, and chain it in.  */
-  pool = (struct pool_constant *) ggc_alloc (sizeof (struct pool_constant));
+  pool = ggc_alloc (sizeof (struct pool_constant));
   pool->desc = desc;
   pool->constant = x;
   pool->mode = mode;
@@ -3767,7 +3765,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 			  thissize, align, 1);
       else if (TREE_CODE (exp) == CONSTRUCTOR)
 	{
-	  unsigned char *buffer = (unsigned char *) alloca (thissize);
+	  unsigned char *buffer = alloca (thissize);
 	  if (get_set_constructor_bytes (exp, buffer, thissize))
 	    abort ();
 	  assemble_string ((char *) buffer, thissize);

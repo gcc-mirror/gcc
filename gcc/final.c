@@ -658,8 +658,8 @@ compute_alignments (void)
 
   max_labelno = max_label_num ();
   min_labelno = get_first_label_num ();
-  label_align = (struct label_alignment *)
-    xcalloc (max_labelno - min_labelno + 1, sizeof (struct label_alignment));
+  label_align = xcalloc (max_labelno - min_labelno + 1,
+			 sizeof (struct label_alignment));
 
   /* If not optimizing or optimizing for size, don't assign any alignments.  */
   if (! optimize || optimize_size)
@@ -766,7 +766,7 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
   /* Compute maximum UID and allocate label_align / uid_shuid.  */
   max_uid = get_max_uid ();
 
-  uid_shuid = (int *) xmalloc (max_uid * sizeof *uid_shuid);
+  uid_shuid = xmalloc (max_uid * sizeof *uid_shuid);
 
   if (max_labelno != max_label_num ())
     {
@@ -779,8 +779,8 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
       n_labels = max_labelno - min_labelno + 1;
       n_old_labels = old - min_labelno + 1;
 
-      label_align = (struct label_alignment *) xrealloc
-	(label_align, n_labels * sizeof (struct label_alignment));
+      label_align = xrealloc (label_align,
+			      n_labels * sizeof (struct label_alignment));
 
       /* Range of labels grows monotonically in the function.  Abort here
          means that the initialization of array got lost.  */
@@ -875,20 +875,20 @@ shorten_branches (rtx first ATTRIBUTE_UNUSED)
 #ifdef HAVE_ATTR_length
 
   /* Allocate the rest of the arrays.  */
-  insn_lengths = (int *) xmalloc (max_uid * sizeof (*insn_lengths));
+  insn_lengths = xmalloc (max_uid * sizeof (*insn_lengths));
   insn_lengths_max_uid = max_uid;
   /* Syntax errors can lead to labels being outside of the main insn stream.
      Initialize insn_addresses, so that we get reproducible results.  */
   INSN_ADDRESSES_ALLOC (max_uid);
 
-  varying_length = (char *) xcalloc (max_uid, sizeof (char));
+  varying_length = xcalloc (max_uid, sizeof (char));
 
   /* Initialize uid_align.  We scan instructions
      from end to start, and keep in align_tab[n] the last seen insn
      that does an alignment of at least n+1, i.e. the successor
      in the alignment chain for an insn that does / has a known
      alignment of n.  */
-  uid_align = (rtx *) xcalloc (max_uid, sizeof *uid_align);
+  uid_align = xcalloc (max_uid, sizeof *uid_align);
 
   for (i = MAX_CODE_ALIGN; --i >= 0;)
     align_tab[i] = NULL_RTX;
@@ -1566,7 +1566,7 @@ final (rtx first, FILE *file, int optimize, int prescan)
 	  max_line = NOTE_LINE_NUMBER (insn);
     }
 
-  line_note_exists = (char *) xcalloc (max_line + 1, sizeof (char));
+  line_note_exists = xcalloc (max_line + 1, sizeof (char));
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
@@ -2055,7 +2055,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	if (asm_noperands (body) >= 0)
 	  {
 	    unsigned int noperands = asm_noperands (body);
-	    rtx *ops = (rtx *) alloca (noperands * sizeof (rtx));
+	    rtx *ops = alloca (noperands * sizeof (rtx));
 	    const char *string;
 
 	    /* There's no telling what that did to the condition codes.  */
@@ -3865,8 +3865,8 @@ debug_queue_symbol (tree decl)
   if (symbol_queue_index >= symbol_queue_size)
     {
       symbol_queue_size += 10;
-      symbol_queue = (tree *) xrealloc (symbol_queue,
-                                        symbol_queue_size * sizeof (tree));
+      symbol_queue = xrealloc (symbol_queue,
+			       symbol_queue_size * sizeof (tree));
     }
 
   symbol_queue[symbol_queue_index++] = decl;

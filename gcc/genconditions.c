@@ -57,7 +57,7 @@ add_condition (const char *expr)
   if (expr[0] == 0)
     return;
 
-  test = (struct c_test *) xmalloc (sizeof (struct c_test));
+  test = xmalloc (sizeof (struct c_test));
   test->expr = expr;
 
   *(htab_find_slot (condition_table, test, INSERT)) = test;

@@ -929,7 +929,7 @@ get_cse_reg_info (unsigned int regno)
 	  cse_reg_info_free_list = p->next;
 	}
       else
-	p = (struct cse_reg_info *) xmalloc (sizeof (struct cse_reg_info));
+	p = xmalloc (sizeof (struct cse_reg_info));
 
       /* Insert into hash table.  */
       p->hash_next = *hash_head;
@@ -967,7 +967,7 @@ new_basic_block (void)
 
   /* Clear out hash table state for this pass.  */
 
-  memset ((char *) reg_hash, 0, sizeof reg_hash);
+  memset (reg_hash, 0, sizeof reg_hash);
 
   if (cse_reg_info_used_list)
     {
@@ -1540,7 +1540,7 @@ insert (rtx x, struct table_elt *classp, unsigned int hash, enum machine_mode mo
   else
     {
       n_elements_made++;
-      elt = (struct table_elt *) xmalloc (sizeof (struct table_elt));
+      elt = xmalloc (sizeof (struct table_elt));
     }
 
   elt->exp = x;
@@ -4693,7 +4693,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 
   if (GET_CODE (x) == SET)
     {
-      sets = (struct set *) alloca (sizeof (struct set));
+      sets = alloca (sizeof (struct set));
       sets[0].rtl = x;
 
       /* Ignore SETs that are unconditional jumps.
@@ -4728,7 +4728,7 @@ cse_insn (rtx insn, rtx libcall_insn)
     {
       int lim = XVECLEN (x, 0);
 
-      sets = (struct set *) alloca (lim * sizeof (struct set));
+      sets = alloca (lim * sizeof (struct set));
 
       /* Find all regs explicitly clobbered in this insn,
 	 and ensure they are not replaced with any other regs
@@ -6940,8 +6940,7 @@ cse_main (rtx f, int nregs, int after_loop, FILE *file)
 
   max_insn_uid = get_max_uid ();
 
-  reg_eqv_table = (struct reg_eqv_elem *)
-    xmalloc (nregs * sizeof (struct reg_eqv_elem));
+  reg_eqv_table = xmalloc (nregs * sizeof (struct reg_eqv_elem));
 
 #ifdef LOAD_EXTEND_OP
 
@@ -6957,7 +6956,7 @@ cse_main (rtx f, int nregs, int after_loop, FILE *file)
   /* Find the largest uid.  */
 
   max_uid = get_max_uid ();
-  uid_cuid = (int *) xcalloc (max_uid + 1, sizeof (int));
+  uid_cuid = xcalloc (max_uid + 1, sizeof (int));
 
   /* Compute the mapping from uids to cuids.
      CUIDs are numbers assigned to insns, like uids,
@@ -7076,9 +7075,7 @@ cse_basic_block (rtx from, rtx to, struct branch_path *next_branch,
   /* This array is undefined before max_reg, so only allocate
      the space actually needed and adjust the start.  */
 
-  qty_table
-    = (struct qty_table_elem *) xmalloc ((max_qty - max_reg)
-					 * sizeof (struct qty_table_elem));
+  qty_table = xmalloc ((max_qty - max_reg) * sizeof (struct qty_table_elem));
   qty_table -= max_reg;
 
   new_basic_block ();
@@ -7537,7 +7534,7 @@ delete_trivially_dead_insns (rtx insns, int nreg)
 
   timevar_push (TV_DELETE_TRIVIALLY_DEAD);
   /* First count the number of times each register is used.  */
-  counts = (int *) xcalloc (nreg, sizeof (int));
+  counts = xcalloc (nreg, sizeof (int));
   for (insn = next_real_insn (insns); insn; insn = next_real_insn (insn))
     count_reg_usage (insn, counts, NULL_RTX, 1);
 

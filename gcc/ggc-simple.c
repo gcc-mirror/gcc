@@ -166,7 +166,7 @@ ggc_alloc (size_t size)
 {
   struct ggc_mem *x;
 
-  x = (struct ggc_mem *) xmalloc (offsetof (struct ggc_mem, u) + size);
+  x = xmalloc (offsetof (struct ggc_mem, u) + size);
   x->sub[0] = NULL;
   x->sub[1] = NULL;
   x->mark = 0;

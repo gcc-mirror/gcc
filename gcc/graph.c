@@ -225,7 +225,7 @@ print_rtl_graph_with_bb (const char *base, const char *suffix, rtx rtx_first)
   size_t namelen = strlen (base);
   size_t suffixlen = strlen (suffix);
   size_t extlen = strlen (graph_ext[graph_dump_format]) + 1;
-  char *buf = (char *) alloca (namelen + suffixlen + extlen);
+  char *buf = alloca (namelen + suffixlen + extlen);
   FILE *fp;
 
   if (basic_block_info == NULL)
@@ -245,10 +245,9 @@ print_rtl_graph_with_bb (const char *base, const char *suffix, rtx rtx_first)
     {
       enum bb_state { NOT_IN_BB, IN_ONE_BB, IN_MULTIPLE_BB };
       int max_uid = get_max_uid ();
-      int *start = (int *) xmalloc (max_uid * sizeof (int));
-      int *end = (int *) xmalloc (max_uid * sizeof (int));
-      enum bb_state *in_bb_p = (enum bb_state *)
-	xmalloc (max_uid * sizeof (enum bb_state));
+      int *start = xmalloc (max_uid * sizeof (int));
+      int *end = xmalloc (max_uid * sizeof (int));
+      enum bb_state *in_bb_p = xmalloc (max_uid * sizeof (enum bb_state));
       basic_block bb;
       int i;
 
@@ -390,7 +389,7 @@ clean_graph_dump_file (const char *base, const char *suffix)
   size_t namelen = strlen (base);
   size_t suffixlen = strlen (suffix);
   size_t extlen = strlen (graph_ext[graph_dump_format]) + 1;
-  char *buf = (char *) alloca (namelen + extlen + suffixlen);
+  char *buf = alloca (namelen + extlen + suffixlen);
   FILE *fp;
 
   memcpy (buf, base, namelen);
@@ -422,7 +421,7 @@ finish_graph_dump_file (const char *base, const char *suffix)
   size_t namelen = strlen (base);
   size_t suffixlen = strlen (suffix);
   size_t extlen = strlen (graph_ext[graph_dump_format]) + 1;
-  char *buf = (char *) alloca (namelen + suffixlen + extlen);
+  char *buf = alloca (namelen + suffixlen + extlen);
   FILE *fp;
 
   memcpy (buf, base, namelen);

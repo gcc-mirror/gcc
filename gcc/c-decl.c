@@ -360,8 +360,7 @@ make_binding_level (void)
       memset (result, 0, sizeof(struct binding_level));
     }
   else
-    result = (struct binding_level *)
-      ggc_alloc_cleared (sizeof (struct binding_level));
+    result = ggc_alloc_cleared (sizeof (struct binding_level));
 
   return result;
 }
@@ -1732,8 +1731,7 @@ pushdecl (tree x)
 
   /* Functions need the lang_decl data.  */
   if (TREE_CODE (x) == FUNCTION_DECL && ! DECL_LANG_SPECIFIC (x))
-    DECL_LANG_SPECIFIC (x) = (struct lang_decl *)
-      ggc_alloc_cleared (sizeof (struct lang_decl));
+    DECL_LANG_SPECIFIC (x) = ggc_alloc_cleared (sizeof (struct lang_decl));
 
   /* A local extern declaration for a function doesn't constitute nesting.
      A local auto declaration does, since it's a forward decl
@@ -4375,8 +4373,8 @@ grokdeclarator (tree declarator, tree declspecs,
 	decl = build_decl (FUNCTION_DECL, declarator, type);
 	decl = build_decl_attribute_variant (decl, decl_attr);
 
-	DECL_LANG_SPECIFIC (decl) = (struct lang_decl *)
-	  ggc_alloc_cleared (sizeof (struct lang_decl));
+	DECL_LANG_SPECIFIC (decl)
+	  = ggc_alloc_cleared (sizeof (struct lang_decl));
 
 	if (pedantic && type_quals && ! DECL_IN_SYSTEM_HEADER (decl))
 	  pedwarn ("ISO C forbids qualified function types");
@@ -6630,8 +6628,7 @@ void
 c_push_function_context (struct function *f)
 {
   struct language_function *p;
-  p = ((struct language_function *)
-       ggc_alloc (sizeof (struct language_function)));
+  p = ggc_alloc (sizeof (struct language_function));
   f->language = p;
 
   p->base.x_stmt_tree = c_stmt_tree;
@@ -6694,9 +6691,8 @@ c_dup_lang_specific_decl (tree decl)
   if (!DECL_LANG_SPECIFIC (decl))
     return;
 
-  ld = (struct lang_decl *) ggc_alloc (sizeof (struct lang_decl));
-  memcpy ((char *) ld, (char *) DECL_LANG_SPECIFIC (decl),
-	  sizeof (struct lang_decl));
+  ld = ggc_alloc (sizeof (struct lang_decl));
+  memcpy (ld, DECL_LANG_SPECIFIC (decl), sizeof (struct lang_decl));
   DECL_LANG_SPECIFIC (decl) = ld;
 }
 
@@ -6943,7 +6939,7 @@ merge_translation_unit_decls (void)
       if (TREE_PUBLIC (decl) && DECL_EXTERNAL (decl))
 	{
 	  tree global_decl;
-	  global_decl = (tree) htab_find (link_hash_table, decl);
+	  global_decl = htab_find (link_hash_table, decl);
 	  
 	  if (! global_decl)
 	    continue;
@@ -6967,7 +6963,7 @@ c_write_global_declarations(void)
     {
       tree globals = BLOCK_VARS (DECL_INITIAL (link));
       int len = list_length (globals);
-      tree *vec = (tree *) xmalloc (sizeof (tree) * len);
+      tree *vec = xmalloc (sizeof (tree) * len);
       int i;
       tree decl;
       

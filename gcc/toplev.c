@@ -1706,7 +1706,7 @@ push_srcloc (const char *file, int line)
 {
   struct file_stack *fs;
 
-  fs = (struct file_stack *) xmalloc (sizeof (struct file_stack));
+  fs = xmalloc (sizeof (struct file_stack));
   fs->location = input_location;
   fs->next = input_file_stack;
   input_filename = file;
@@ -2135,7 +2135,7 @@ rest_of_handle_old_regalloc (tree decl, rtx insns, int *rebuild_notes)
   allocate_reg_info (max_regno, FALSE, TRUE);
 
   /* And the reg_equiv_memory_loc array.  */
-  reg_equiv_memory_loc = (rtx *) xcalloc (max_regno, sizeof (rtx));
+  reg_equiv_memory_loc = xcalloc (max_regno, sizeof (rtx));
 
   allocate_initial_values (reg_equiv_memory_loc);
 
@@ -4053,7 +4053,7 @@ init_asm_output (const char *name)
       if (asm_file_name == 0)
 	{
 	  int len = strlen (dump_base_name);
-	  char *dumpname = (char *) xmalloc (len + 6);
+	  char *dumpname = xmalloc (len + 6);
 	  memcpy (dumpname, dump_base_name, len + 1);
 	  strip_off_ending (dumpname, len);
 	  strcat (dumpname, ".s");
@@ -4068,7 +4068,7 @@ init_asm_output (const char *name)
     }
 
 #ifdef IO_BUFFER_SIZE
-  setvbuf (asm_out_file, (char *) xmalloc (IO_BUFFER_SIZE),
+  setvbuf (asm_out_file, xmalloc (IO_BUFFER_SIZE),
 	   _IOFBF, IO_BUFFER_SIZE);
 #endif
 

@@ -68,9 +68,9 @@ varray_init (size_t num_elements, enum varray_data_enum element_kind,
   size_t data_size = num_elements * element[element_kind].size;
   varray_type ptr;
   if (element[element_kind].uses_ggc)
-    ptr = (varray_type) ggc_alloc_cleared (VARRAY_HDR_SIZE + data_size);
+    ptr = ggc_alloc_cleared (VARRAY_HDR_SIZE + data_size);
   else
-    ptr = (varray_type) xcalloc (VARRAY_HDR_SIZE + data_size, 1);
+    ptr = xcalloc (VARRAY_HDR_SIZE + data_size, 1);
 
   ptr->num_elements = num_elements;
   ptr->elements_used = 0;
@@ -93,9 +93,9 @@ varray_grow (varray_type va, size_t n)
       size_t data_size = n * elem_size;
 
       if (element[va->type].uses_ggc)
-	va = (varray_type) ggc_realloc (va, VARRAY_HDR_SIZE + data_size);
+	va = ggc_realloc (va, VARRAY_HDR_SIZE + data_size);
       else
-	va = (varray_type) xrealloc ((char *) va, VARRAY_HDR_SIZE + data_size);
+	va = xrealloc (va, VARRAY_HDR_SIZE + data_size);
       va->num_elements = n;
       if (n > old_elements)
 	memset (&va->data.c[old_data_size], 0, data_size - old_data_size);

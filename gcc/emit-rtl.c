@@ -772,7 +772,7 @@ gen_rtvec (int n, ...)
   if (n == 0)
     return NULL_RTVEC;		/* Don't allocate an empty rtvec...	*/
 
-  vector = (rtx *) alloca (n * sizeof (rtx));
+  vector = alloca (n * sizeof (rtx));
 
   for (i = 0; i < n; i++)
     vector[i] = va_arg (p, rtx);
@@ -845,8 +845,8 @@ gen_reg_rtx (enum machine_mode mode)
       memset (new + old_size, 0, old_size);
       f->emit->regno_pointer_align = (unsigned char *) new;
 
-      new1 = (rtx *) ggc_realloc (f->emit->x_regno_reg_rtx,
-				  old_size * 2 * sizeof (rtx));
+      new1 = ggc_realloc (f->emit->x_regno_reg_rtx,
+			  old_size * 2 * sizeof (rtx));
       memset (new1 + old_size, 0, old_size * sizeof (rtx));
       regno_reg_rtx = new1;
 
@@ -4874,7 +4874,7 @@ start_sequence (void)
       free_sequence_stack = tem->next;
     }
   else
-    tem = (struct sequence_stack *) ggc_alloc (sizeof (struct sequence_stack));
+    tem = ggc_alloc (sizeof (struct sequence_stack));
 
   tem->next = seq_stack;
   tem->first = first_insn;
@@ -5205,7 +5205,7 @@ init_emit (void)
 {
   struct function *f = cfun;
 
-  f->emit = (struct emit_status *) ggc_alloc (sizeof (struct emit_status));
+  f->emit = ggc_alloc (sizeof (struct emit_status));
   first_insn = NULL;
   last_insn = NULL;
   seq_rtl_expr = NULL;
@@ -5222,11 +5222,11 @@ init_emit (void)
   f->emit->regno_pointer_align_length = LAST_VIRTUAL_REGISTER + 101;
 
   f->emit->regno_pointer_align
-    = (unsigned char *) ggc_alloc_cleared (f->emit->regno_pointer_align_length
-					   * sizeof (unsigned char));
+    = ggc_alloc_cleared (f->emit->regno_pointer_align_length
+			 * sizeof (unsigned char));
 
   regno_reg_rtx
-    = (rtx *) ggc_alloc (f->emit->regno_pointer_align_length * sizeof (rtx));
+    = ggc_alloc (f->emit->regno_pointer_align_length * sizeof (rtx));
 
   /* Put copies of all the hard registers into regno_reg_rtx.  */
   memcpy (regno_reg_rtx,

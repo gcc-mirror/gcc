@@ -377,11 +377,11 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
   if (! constrain_operands (1))
     fatal_insn_not_found (insn);
 
-  alternative_reject = (int *) alloca (recog_data.n_alternatives * sizeof (int));
-  alternative_nregs = (int *) alloca (recog_data.n_alternatives * sizeof (int));
-  alternative_order = (int *) alloca (recog_data.n_alternatives * sizeof (int));
-  memset ((char *) alternative_reject, 0, recog_data.n_alternatives * sizeof (int));
-  memset ((char *) alternative_nregs, 0, recog_data.n_alternatives * sizeof (int));
+  alternative_reject = alloca (recog_data.n_alternatives * sizeof (int));
+  alternative_nregs = alloca (recog_data.n_alternatives * sizeof (int));
+  alternative_order = alloca (recog_data.n_alternatives * sizeof (int));
+  memset (alternative_reject, 0, recog_data.n_alternatives * sizeof (int));
+  memset (alternative_nregs, 0, recog_data.n_alternatives * sizeof (int));
 
   /* For each operand, find out which regs are equivalent.  */
   for (i = 0; i < recog_data.n_operands; i++)
@@ -414,7 +414,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
       int regno;
       const char *p;
 
-      op_alt_regno[i] = (int *) alloca (recog_data.n_alternatives * sizeof (int));
+      op_alt_regno[i] = alloca (recog_data.n_alternatives * sizeof (int));
       for (j = 0; j < recog_data.n_alternatives; j++)
 	op_alt_regno[i][j] = -1;
 
@@ -659,7 +659,7 @@ reload_combine (void)
      destination.  */
   min_labelno = get_first_label_num ();
   n_labels = max_label_num () - min_labelno;
-  label_live = (HARD_REG_SET *) xmalloc (n_labels * sizeof (HARD_REG_SET));
+  label_live = xmalloc (n_labels * sizeof (HARD_REG_SET));
   CLEAR_HARD_REG_SET (ever_live_at_start);
 
   FOR_EACH_BB_REVERSE (bb)

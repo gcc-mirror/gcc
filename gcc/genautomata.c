@@ -1922,15 +1922,15 @@ gen_automaton (rtx def)
 void
 gen_automata_option (rtx def)
 {
-  if (strcmp ((char *) XSTR (def, 0), NO_MINIMIZATION_OPTION + 1) == 0)
+  if (strcmp (XSTR (def, 0), NO_MINIMIZATION_OPTION + 1) == 0)
     no_minimization_flag = 1;
-  else if (strcmp ((char *) XSTR (def, 0), TIME_OPTION + 1) == 0)
+  else if (strcmp (XSTR (def, 0), TIME_OPTION + 1) == 0)
     time_flag = 1;
-  else if (strcmp ((char *) XSTR (def, 0), V_OPTION + 1) == 0)
+  else if (strcmp (XSTR (def, 0), V_OPTION + 1) == 0)
     v_flag = 1;
-  else if (strcmp ((char *) XSTR (def, 0), W_OPTION + 1) == 0)
+  else if (strcmp (XSTR (def, 0), W_OPTION + 1) == 0)
     w_flag = 1;
-  else if (strcmp ((char *) XSTR (def, 0), NDFA_OPTION + 1) == 0)
+  else if (strcmp (XSTR (def, 0), NDFA_OPTION + 1) == 0)
     ndfa_flag = 1;
   else
     fatal ("invalid option `%s' in automata_option", XSTR (def, 0));
@@ -8842,8 +8842,7 @@ output_get_cpu_unit_code_func (void)
 	   LOW_VARIABLE_NAME, MIDDLE_VARIABLE_NAME, HIGH_VARIABLE_NAME);
   fprintf (output_file, "  static struct %s %s [] =\n    {\n",
 	   NAME_CODE_STRUCT_NAME, NAME_CODE_TABLE_NAME);
-  units = (unit_decl_t *) xmalloc (sizeof (unit_decl_t)
-				   * description->units_num);
+  units = xmalloc (sizeof (unit_decl_t) * description->units_num);
   memcpy (units, units_array, sizeof (unit_decl_t) * description->units_num);
   qsort (units, description->units_num, sizeof (unit_decl_t), units_cmp);
   for (i = 0; i < description->units_num; i++)
@@ -8927,7 +8926,7 @@ output_dfa_start_func (void)
   fprintf (output_file,
 	   "void\n%s (void)\n{\n  %s = get_max_uid ();\n",
 	   DFA_START_FUNC_NAME, DFA_INSN_CODES_LENGTH_VARIABLE_NAME);
-  fprintf (output_file, "  %s = (int *) xmalloc (%s * sizeof (int));\n",
+  fprintf (output_file, "  %s = xmalloc (%s * sizeof (int));\n",
 	   DFA_INSN_CODES_VARIABLE_NAME, DFA_INSN_CODES_LENGTH_VARIABLE_NAME);
   fprintf (output_file, "  %s ();\n}\n\n", DFA_CLEAN_INSN_CACHE_FUNC_NAME);
 }

@@ -888,12 +888,12 @@ coverage_init (const char *filename)
   int len = strlen (filename);
 
   /* Name of da file.  */
-  da_file_name = (char *) xmalloc (len + strlen (GCOV_DATA_SUFFIX) + 1);
+  da_file_name = xmalloc (len + strlen (GCOV_DATA_SUFFIX) + 1);
   strcpy (da_file_name, filename);
   strcat (da_file_name, GCOV_DATA_SUFFIX);
 
   /* Name of bbg file.  */
-  bbg_file_name = (char *) xmalloc (len + strlen (GCOV_NOTE_SUFFIX) + 1);
+  bbg_file_name = xmalloc (len + strlen (GCOV_NOTE_SUFFIX) + 1);
   strcpy (bbg_file_name, filename);
   strcat (bbg_file_name, GCOV_NOTE_SUFFIX);
 

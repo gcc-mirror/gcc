@@ -989,7 +989,7 @@ ssa_const_prop (void)
   edges = create_edge_list ();
 
   /* Initialize the values array with everything as undefined.  */
-  values = (value *) xmalloc (VARRAY_SIZE (ssa_definition) * sizeof (value));
+  values = xmalloc (VARRAY_SIZE (ssa_definition) * sizeof (value));
   for (i = 0; i < VARRAY_SIZE (ssa_definition); i++)
     {
       if (i < FIRST_PSEUDO_REGISTER)
@@ -1008,7 +1008,7 @@ ssa_const_prop (void)
   executable_edges = sbitmap_alloc (NUM_EDGES (edges));
   sbitmap_zero (executable_edges);
 
-  edge_info = (edge *) xmalloc (NUM_EDGES (edges) * sizeof (edge));
+  edge_info = xmalloc (NUM_EDGES (edges) * sizeof (edge));
   flow_edges = ENTRY_BLOCK_PTR->succ;
 
   /* Add the successors of the entry block to the edge worklist.  That

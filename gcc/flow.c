@@ -1082,7 +1082,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
   /* Create a worklist.  Allocate an extra slot for ENTRY_BLOCK, and one
      because the `head == tail' style test for an empty queue doesn't
      work with a full queue.  */
-  queue = (basic_block *) xmalloc ((n_basic_blocks + 2) * sizeof (*queue));
+  queue = xmalloc ((n_basic_blocks + 2) * sizeof (*queue));
   qtail = queue;
   qhead = qend = queue + n_basic_blocks + 2;
 
@@ -1850,7 +1850,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
   pbi->flags = flags;
 
   if (flags & (PROP_LOG_LINKS | PROP_AUTOINC))
-    pbi->reg_next_use = (rtx *) xcalloc (max_reg_num (), sizeof (rtx));
+    pbi->reg_next_use = xcalloc (max_reg_num (), sizeof (rtx));
   else
     pbi->reg_next_use = NULL;
 
@@ -1932,7 +1932,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 	       struct reg_cond_life_info *rcli;
 	       rtx cond;
 
-	       rcli = (struct reg_cond_life_info *) xmalloc (sizeof (*rcli));
+	       rcli = xmalloc (sizeof (*rcli));
 
 	       if (REGNO_REG_SET_P (bb_true->global_live_at_start, i))
 		 cond = cond_false;
@@ -2867,7 +2867,7 @@ mark_regno_cond_dead (struct propagate_block_info *pbi, int regno, rtx cond)
 	  /* The register was unconditionally live previously.
 	     Record the current condition as the condition under
 	     which it is dead.  */
-	  rcli = (struct reg_cond_life_info *) xmalloc (sizeof (*rcli));
+	  rcli = xmalloc (sizeof (*rcli));
 	  rcli->condition = cond;
 	  rcli->stores = cond;
 	  rcli->orig_condition = const0_rtx;
@@ -3644,7 +3644,7 @@ mark_used_reg (struct propagate_block_info *pbi, rtx reg,
 	    {
 	      /* The register was not previously live at all.  Record
 		 the condition under which it is still dead.  */
-	      rcli = (struct reg_cond_life_info *) xmalloc (sizeof (*rcli));
+	      rcli = xmalloc (sizeof (*rcli));
 	      rcli->condition = not_reg_cond (cond);
 	      rcli->stores = const0_rtx;
 	      rcli->orig_condition = const0_rtx;

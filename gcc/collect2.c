@@ -689,7 +689,7 @@ add_prefix (struct path_prefix *pprefix, const char *prefix)
   if (len > pprefix->max_len)
     pprefix->max_len = len;
 
-  pl = (struct prefix_list *) xmalloc (sizeof (struct prefix_list));
+  pl = xmalloc (sizeof (struct prefix_list));
   pl->prefix = xstrdup (prefix);
 
   if (*prev)
@@ -716,7 +716,7 @@ static void
 prefix_from_string (const char *p, struct path_prefix *pprefix)
 {
   const char *startp, *endp;
-  char *nstore = (char *) xmalloc (strlen (p) + 3);
+  char *nstore = xmalloc (strlen (p) + 3);
 
   if (debug)
     fprintf (stderr, "Convert string '%s' into prefixes, separator = '%c'\n", p, PATH_SEPARATOR);
@@ -838,9 +838,9 @@ main (int argc, char **argv)
   /* Do not invoke xcalloc before this point, since locale needs to be
      set first, in case a diagnostic is issued.  */
 
-  ld1 = (const char **)(ld1_argv = (char **) xcalloc(sizeof (char *), argc+3));
-  ld2 = (const char **)(ld2_argv = (char **) xcalloc(sizeof (char *), argc+10));
-  object = (const char **)(object_lst = (char **) xcalloc(sizeof (char *), argc));
+  ld1 = (const char **)(ld1_argv = xcalloc(sizeof (char *), argc+3));
+  ld2 = (const char **)(ld2_argv = xcalloc(sizeof (char *), argc+10));
+  object = (const char **)(object_lst = xcalloc(sizeof (char *), argc));
 
 #ifdef DEBUG
   debug = 1;
@@ -865,7 +865,7 @@ main (int argc, char **argv)
 #endif
 
   obstack_begin (&temporary_obstack, 0);
-  temporary_firstobj = (char *) obstack_alloc (&temporary_obstack, 0);
+  temporary_firstobj = obstack_alloc (&temporary_obstack, 0);
 
   current_demangling_style = auto_demangling;
   p = getenv ("COLLECT_GCC_OPTIONS");
@@ -880,8 +880,7 @@ main (int argc, char **argv)
   /* -fno-exceptions -w */
   num_c_args += 2;
 
-  c_ptr = (const char **)
-    (c_argv = (char **) xcalloc (sizeof (char *), num_c_args));
+  c_ptr = (const char **) (c_argv = xcalloc (sizeof (char *), num_c_args));
 
   if (argc < 2)
     fatal ("no arguments");
@@ -1337,7 +1336,7 @@ main (int argc, char **argv)
       /* Strip now if it was requested on the command line.  */
       if (strip_flag)
 	{
-	  char **real_strip_argv = (char **) xcalloc (sizeof (char *), 3);
+	  char **real_strip_argv = xcalloc (sizeof (char *), 3);
 	  const char ** strip_argv = (const char **) real_strip_argv;
 
 	  strip_argv[0] = strip_file_name;
@@ -1579,8 +1578,7 @@ static long sequence_number = 0;
 static void
 add_to_list (struct head *head_ptr, const char *name)
 {
-  struct id *newid
-    = (struct id *) xcalloc (sizeof (struct id) + strlen (name), 1);
+  struct id *newid = xcalloc (sizeof (struct id) + strlen (name), 1);
   struct id *p;
   strcpy (newid->name, name);
 
@@ -2278,7 +2276,7 @@ locatelib (const char *name)
 	      cnt++;
 	  q = xstrdup (p);
 	}
-      l = (const char **) xmalloc ((cnt + 3) * sizeof (char *));
+      l = xmalloc ((cnt + 3) * sizeof (char *));
       pp = l;
       if (ldr)
 	{

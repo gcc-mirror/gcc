@@ -478,8 +478,7 @@ push_depth (unsigned int i)
   if (G.depth_in_use >= G.depth_max)
     {
       G.depth_max *= 2;
-      G.depth = (unsigned int *) xrealloc ((char *) G.depth,
-					   G.depth_max * sizeof (unsigned int));
+      G.depth = xrealloc (G.depth, G.depth_max * sizeof (unsigned int));
     }
   G.depth[G.depth_in_use++] = i;
 }
@@ -492,10 +491,10 @@ push_by_depth (page_entry *p, unsigned long *s)
   if (G.by_depth_in_use >= G.by_depth_max)
     {
       G.by_depth_max *= 2;
-      G.by_depth = (page_entry **) xrealloc ((char *) G.by_depth,
-					     G.by_depth_max * sizeof (page_entry *));
-      G.save_in_use = (unsigned long **) xrealloc ((char *) G.save_in_use,
-						   G.by_depth_max * sizeof (unsigned long *));
+      G.by_depth = xrealloc (G.by_depth,
+			     G.by_depth_max * sizeof (page_entry *));
+      G.save_in_use = xrealloc (G.save_in_use,
+				G.by_depth_max * sizeof (unsigned long *));
     }
   G.by_depth[G.by_depth_in_use] = p;
   G.save_in_use[G.by_depth_in_use++] = s;
@@ -587,7 +586,7 @@ set_page_table_entry (void *p, page_entry *entry)
       goto found;
 
   /* Not found -- allocate a new table.  */
-  table = (page_table) xcalloc (1, sizeof(*table));
+  table = xcalloc (1, sizeof(*table));
   table->next = G.lookup;
   table->high_bits = high_bits;
   G.lookup = table;
@@ -600,7 +599,7 @@ found:
   L2 = LOOKUP_L2 (p);
 
   if (base[L1] == NULL)
-    base[L1] = (page_entry **) xcalloc (PAGE_L2_SIZE, sizeof (page_entry *));
+    base[L1] = xcalloc (PAGE_L2_SIZE, sizeof (page_entry *));
 
   base[L1][L2] = entry;
 }
@@ -748,7 +747,7 @@ alloc_page (unsigned order)
 	 memory order.  */
       for (i = GGC_QUIRE_SIZE - 1; i >= 1; i--)
 	{
-	  e = (struct page_entry *) xcalloc (1, page_entry_size);
+	  e = xcalloc (1, page_entry_size);
 	  e->order = order;
 	  e->bytes = G.pagesize;
 	  e->page = page + (i << G.lg_pagesize);
@@ -820,7 +819,7 @@ alloc_page (unsigned order)
 	  struct page_entry *e, *f = G.free_pages;
 	  for (a = enda - G.pagesize; a != page; a -= G.pagesize)
 	    {
-	      e = (struct page_entry *) xcalloc (1, page_entry_size);
+	      e = xcalloc (1, page_entry_size);
 	      e->order = order;
 	      e->bytes = G.pagesize;
 	      e->page = a;
@@ -834,7 +833,7 @@ alloc_page (unsigned order)
 #endif
 
   if (entry == NULL)
-    entry = (struct page_entry *) xcalloc (1, page_entry_size);
+    entry = xcalloc (1, page_entry_size);
 
   entry->bytes = entry_size;
   entry->page = page;
@@ -1327,7 +1326,7 @@ init_ggc (void)
       }
 
     /* We have a good page, might as well hold onto it...  */
-    e = (struct page_entry *) xcalloc (1, sizeof (struct page_entry));
+    e = xcalloc (1, sizeof (struct page_entry));
     e->bytes = G.pagesize;
     e->page = p;
     e->next = G.free_pages;
@@ -1373,12 +1372,12 @@ init_ggc (void)
 
   G.depth_in_use = 0;
   G.depth_max = 10;
-  G.depth = (unsigned int *) xmalloc (G.depth_max * sizeof (unsigned int));
+  G.depth = xmalloc (G.depth_max * sizeof (unsigned int));
 
   G.by_depth_in_use = 0;
   G.by_depth_max = INITIAL_PTE_COUNT;
-  G.by_depth = (page_entry **) xmalloc (G.by_depth_max * sizeof (page_entry *));
-  G.save_in_use = (unsigned long **) xmalloc (G.by_depth_max * sizeof (unsigned long *));
+  G.by_depth = xmalloc (G.by_depth_max * sizeof (page_entry *));
+  G.save_in_use = xmalloc (G.by_depth_max * sizeof (unsigned long *));
 }
 
 /* Increment the `GC context'.  Objects allocated in an outer context
@@ -2017,8 +2016,8 @@ move_ptes_to_front (int count_old_page_tables, int count_new_page_tables)
   page_entry **new_by_depth;
   unsigned long **new_save_in_use;
 
-  new_by_depth = (page_entry **) xmalloc (G.by_depth_max * sizeof (page_entry *));
-  new_save_in_use = (unsigned long **) xmalloc (G.by_depth_max * sizeof (unsigned long *));
+  new_by_depth = xmalloc (G.by_depth_max * sizeof (page_entry *));
+  new_save_in_use = xmalloc (G.by_depth_max * sizeof (unsigned long *));
 
   memcpy (&new_by_depth[0],
 	  &G.by_depth[count_old_page_tables],

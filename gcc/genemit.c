@@ -317,8 +317,7 @@ gen_insn (rtx insn, int lineno)
       if (i != XVECLEN (insn, 1) - 1)
 	{
 	  struct clobber_pat *p;
-	  struct clobber_ent *link
-	    = (struct clobber_ent *) xmalloc (sizeof (struct clobber_ent));
+	  struct clobber_ent *link = xmalloc (sizeof (struct clobber_ent));
 	  int j;
 
 	  link->code_number = insn_code_number;
@@ -354,7 +353,7 @@ gen_insn (rtx insn, int lineno)
 
 	  if (p == 0)
 	    {
-	      p = (struct clobber_pat *) xmalloc (sizeof (struct clobber_pat));
+	      p = xmalloc (sizeof (struct clobber_pat));
 
 	      p->insns = 0;
 	      p->pattern = insn;

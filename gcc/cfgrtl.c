@@ -1721,12 +1721,9 @@ print_rtl_with_bb (FILE *outf, rtx rtx_first)
     {
       enum bb_state { NOT_IN_BB, IN_ONE_BB, IN_MULTIPLE_BB };
       int max_uid = get_max_uid ();
-      basic_block *start
-	= (basic_block *) xcalloc (max_uid, sizeof (basic_block));
-      basic_block *end
-	= (basic_block *) xcalloc (max_uid, sizeof (basic_block));
-      enum bb_state *in_bb_p
-	= (enum bb_state *) xcalloc (max_uid, sizeof (enum bb_state));
+      basic_block *start = xcalloc (max_uid, sizeof (basic_block));
+      basic_block *end = xcalloc (max_uid, sizeof (basic_block));
+      enum bb_state *in_bb_p = xcalloc (max_uid, sizeof (enum bb_state));
 
       basic_block bb;
 
@@ -1832,7 +1829,7 @@ rtl_verify_flow_info_1 (void)
   int err = 0;
   basic_block bb, last_bb_seen;
 
-  bb_info = (basic_block *) xcalloc (max_uid, sizeof (basic_block));
+  bb_info = xcalloc (max_uid, sizeof (basic_block));
 
   /* Check bb chain & numbers.  */
   last_bb_seen = ENTRY_BLOCK_PTR;

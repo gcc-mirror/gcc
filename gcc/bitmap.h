@@ -128,7 +128,7 @@ extern int bitmap_last_set_bit (bitmap);
 
 /* Allocate a bitmap with oballoc.  */
 #define BITMAP_OBSTACK_ALLOC(OBSTACK)				\
-  bitmap_initialize ((bitmap) obstack_alloc (OBSTACK, sizeof (bitmap_head)), 1)
+  bitmap_initialize (obstack_alloc (OBSTACK, sizeof (bitmap_head)), 1)
 
 /* Allocate a bitmap with ggc_alloc.  */
 #define BITMAP_GGC_ALLOC()			\
@@ -136,7 +136,7 @@ extern int bitmap_last_set_bit (bitmap);
 
 /* Allocate a bitmap with xmalloc.  */
 #define BITMAP_XMALLOC()                                        \
-  bitmap_initialize ((bitmap) xmalloc (sizeof (bitmap_head)), 1)
+  bitmap_initialize (xmalloc (sizeof (bitmap_head)), 1)
 
 /* Do any cleanup needed on a bitmap when it is no longer used.  */
 #define BITMAP_FREE(BITMAP)			\

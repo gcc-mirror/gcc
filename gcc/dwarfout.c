@@ -3517,8 +3517,8 @@ dienum_push (void)
     {
       pending_siblings_allocated += PENDING_SIBLINGS_INCREMENT;
       pending_sibling_stack
-	= (unsigned *) xrealloc (pending_sibling_stack,
-				 pending_siblings_allocated * sizeof(unsigned));
+	= xrealloc (pending_sibling_stack,
+		    pending_siblings_allocated * sizeof(unsigned));
     }
 
   pending_siblings++;
@@ -4406,8 +4406,8 @@ pend_type (tree type)
     {
       pending_types_allocated += PENDING_TYPES_INCREMENT;
       pending_types_list
-	= (tree *) xrealloc (pending_types_list,
-			     sizeof (tree) * pending_types_allocated);
+	= xrealloc (pending_types_list,
+		    sizeof (tree) * pending_types_allocated);
     }
   pending_types_list[pending_types++] = type;
 
@@ -4533,8 +4533,8 @@ add_incomplete_type (tree type)
     {
       incomplete_types_allocated += INCOMPLETE_TYPES_INCREMENT;
       incomplete_types_list
-	= (tree *) xrealloc (incomplete_types_list,
-			     sizeof (tree) * incomplete_types_allocated);
+	= xrealloc (incomplete_types_list,
+		    sizeof (tree) * incomplete_types_allocated);
     }
 
   incomplete_types_list[incomplete_types++] = type;
@@ -5851,8 +5851,7 @@ lookup_filename (const char *file_name)
     {
       ft_entries_allocated += FT_ENTRIES_INCREMENT;
       filename_table
-	= (filename_entry *)
-	  xrealloc (filename_table,
+	= xrealloc (filename_table,
 		    ft_entries_allocated * sizeof (filename_entry));
     }
 
@@ -6035,23 +6034,19 @@ dwarfout_init (const char *main_input_filename)
   /* Allocate the initial hunk of the pending_sibling_stack.  */
 
   pending_sibling_stack
-    = (unsigned *)
-	xmalloc (PENDING_SIBLINGS_INCREMENT * sizeof (unsigned));
+    = xmalloc (PENDING_SIBLINGS_INCREMENT * sizeof (unsigned));
   pending_siblings_allocated = PENDING_SIBLINGS_INCREMENT;
   pending_siblings = 1;
 
   /* Allocate the initial hunk of the filename_table.  */
 
-  filename_table
-    = (filename_entry *)
-	xmalloc (FT_ENTRIES_INCREMENT * sizeof (filename_entry));
+  filename_table = xmalloc (FT_ENTRIES_INCREMENT * sizeof (filename_entry));
   ft_entries_allocated = FT_ENTRIES_INCREMENT;
   ft_entries = 0;
 
   /* Allocate the initial hunk of the pending_types_list.  */
 
-  pending_types_list
-    = (tree *) xmalloc (PENDING_TYPES_INCREMENT * sizeof (tree));
+  pending_types_list = xmalloc (PENDING_TYPES_INCREMENT * sizeof (tree));
   pending_types_allocated = PENDING_TYPES_INCREMENT;
   pending_types = 0;
 

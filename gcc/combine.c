@@ -456,7 +456,7 @@ do_SUBST (rtx *into, rtx newval)
   if (undobuf.frees)
     buf = undobuf.frees, undobuf.frees = buf->next;
   else
-    buf = (struct undo *) xmalloc (sizeof (struct undo));
+    buf = xmalloc (sizeof (struct undo));
 
   buf->is_int = 0;
   buf->where.r = into;
@@ -484,7 +484,7 @@ do_SUBST_INT (int *into, int newval)
   if (undobuf.frees)
     buf = undobuf.frees, undobuf.frees = buf->next;
   else
-    buf = (struct undo *) xmalloc (sizeof (struct undo));
+    buf = xmalloc (sizeof (struct undo));
 
   buf->is_int = 1;
   buf->where.i = into;
@@ -520,23 +520,18 @@ combine_instructions (rtx f, unsigned int nregs)
 
   combine_max_regno = nregs;
 
-  reg_nonzero_bits = ((unsigned HOST_WIDE_INT *)
-		      xcalloc (nregs, sizeof (unsigned HOST_WIDE_INT)));
-  reg_sign_bit_copies
-    = (unsigned char *) xcalloc (nregs, sizeof (unsigned char));
+  reg_nonzero_bits = xcalloc (nregs, sizeof (unsigned HOST_WIDE_INT));
+  reg_sign_bit_copies = xcalloc (nregs, sizeof (unsigned char));
 
-  reg_last_death = (rtx *) xmalloc (nregs * sizeof (rtx));
-  reg_last_set = (rtx *) xmalloc (nregs * sizeof (rtx));
-  reg_last_set_value = (rtx *) xmalloc (nregs * sizeof (rtx));
-  reg_last_set_table_tick = (int *) xmalloc (nregs * sizeof (int));
-  reg_last_set_label = (int *) xmalloc (nregs * sizeof (int));
-  reg_last_set_invalid = (char *) xmalloc (nregs * sizeof (char));
-  reg_last_set_mode
-    = (enum machine_mode *) xmalloc (nregs * sizeof (enum machine_mode));
-  reg_last_set_nonzero_bits
-    = (unsigned HOST_WIDE_INT *) xmalloc (nregs * sizeof (HOST_WIDE_INT));
-  reg_last_set_sign_bit_copies
-    = (char *) xmalloc (nregs * sizeof (char));
+  reg_last_death = xmalloc (nregs * sizeof (rtx));
+  reg_last_set = xmalloc (nregs * sizeof (rtx));
+  reg_last_set_value = xmalloc (nregs * sizeof (rtx));
+  reg_last_set_table_tick = xmalloc (nregs * sizeof (int));
+  reg_last_set_label = xmalloc (nregs * sizeof (int));
+  reg_last_set_invalid = xmalloc (nregs * sizeof (char));
+  reg_last_set_mode = xmalloc (nregs * sizeof (enum machine_mode));
+  reg_last_set_nonzero_bits = xmalloc (nregs * sizeof (HOST_WIDE_INT));
+  reg_last_set_sign_bit_copies = xmalloc (nregs * sizeof (char));
 
   init_reg_last_arrays ();
 
@@ -548,7 +543,7 @@ combine_instructions (rtx f, unsigned int nregs)
     if (INSN_UID (insn) > i)
       i = INSN_UID (insn);
 
-  uid_cuid = (int *) xmalloc ((i + 1) * sizeof (int));
+  uid_cuid = xmalloc ((i + 1) * sizeof (int));
   max_uid_cuid = i;
 
   nonzero_bits_mode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
@@ -788,14 +783,14 @@ init_reg_last_arrays (void)
 {
   unsigned int nregs = combine_max_regno;
 
-  memset ((char *) reg_last_death, 0, nregs * sizeof (rtx));
-  memset ((char *) reg_last_set, 0, nregs * sizeof (rtx));
-  memset ((char *) reg_last_set_value, 0, nregs * sizeof (rtx));
-  memset ((char *) reg_last_set_table_tick, 0, nregs * sizeof (int));
-  memset ((char *) reg_last_set_label, 0, nregs * sizeof (int));
+  memset (reg_last_death, 0, nregs * sizeof (rtx));
+  memset (reg_last_set, 0, nregs * sizeof (rtx));
+  memset (reg_last_set_value, 0, nregs * sizeof (rtx));
+  memset (reg_last_set_table_tick, 0, nregs * sizeof (int));
+  memset (reg_last_set_label, 0, nregs * sizeof (int));
   memset (reg_last_set_invalid, 0, nregs * sizeof (char));
-  memset ((char *) reg_last_set_mode, 0, nregs * sizeof (enum machine_mode));
-  memset ((char *) reg_last_set_nonzero_bits, 0, nregs * sizeof (HOST_WIDE_INT));
+  memset (reg_last_set_mode, 0, nregs * sizeof (enum machine_mode));
+  memset (reg_last_set_nonzero_bits, 0, nregs * sizeof (HOST_WIDE_INT));
   memset (reg_last_set_sign_bit_copies, 0, nregs * sizeof (char));
 }
 

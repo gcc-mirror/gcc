@@ -966,8 +966,7 @@ _cpp_expand_op_stack (cpp_reader *pfile)
   size_t old_size = (size_t) (pfile->op_limit - pfile->op_stack);
   size_t new_size = old_size * 2 + 20;
 
-  pfile->op_stack = (struct op *) xrealloc (pfile->op_stack,
-					    new_size * sizeof (struct op));
+  pfile->op_stack = xrealloc (pfile->op_stack, new_size * sizeof (struct op));
   pfile->op_limit = pfile->op_stack + new_size;
 
   return pfile->op_stack + old_size;

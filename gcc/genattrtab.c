@@ -500,8 +500,7 @@ attr_hash_add_rtx (int hashcode, rtx rtl)
 {
   struct attr_hash *h;
 
-  h = (struct attr_hash *) obstack_alloc (hash_obstack,
-					  sizeof (struct attr_hash));
+  h = obstack_alloc (hash_obstack, sizeof (struct attr_hash));
   h->hashcode = hashcode;
   h->u.rtl = rtl;
   h->next = attr_hash_table[hashcode % RTL_HASH_SIZE];
@@ -515,8 +514,7 @@ attr_hash_add_string (int hashcode, char *str)
 {
   struct attr_hash *h;
 
-  h = (struct attr_hash *) obstack_alloc (hash_obstack,
-					  sizeof (struct attr_hash));
+  h = obstack_alloc (hash_obstack, sizeof (struct attr_hash));
   h->hashcode = -hashcode;
   h->u.str = str;
   h->next = attr_hash_table[hashcode % RTL_HASH_SIZE];
@@ -779,7 +777,7 @@ attr_string (const char *str, int len)
       return h->u.str;			/* <-- return if found.  */
 
   /* Not found; create a permanent copy and add it to the hash table.  */
-  new_str = (char *) obstack_alloc (hash_obstack, len + 1);
+  new_str = obstack_alloc (hash_obstack, len + 1);
   memcpy (new_str, str, len);
   new_str[len] = '\0';
   attr_hash_add_string (hashcode, new_str);
@@ -1459,7 +1457,7 @@ get_attr_value (rtx value, struct attr_desc *attr, int insn_code)
 	    || insn_alternatives[av->first_insn->insn_code]))
       return av;
 
-  av = (struct attr_value *) oballoc (sizeof (struct attr_value));
+  av = oballoc (sizeof (struct attr_value));
   av->value = value;
   av->next = attr->first_value;
   attr->first_value = av;
@@ -1875,13 +1873,10 @@ expand_units (void)
 
   /* Create an array of ops for each unit.  Add an extra unit for the
      result_ready_cost function that has the ops of all other units.  */
-  unit_ops = (struct function_unit_op ***)
-    xmalloc ((num_units + 1) * sizeof (struct function_unit_op **));
-  unit_num = (struct function_unit **)
-    xmalloc ((num_units + 1) * sizeof (struct function_unit *));
+  unit_ops = xmalloc ((num_units + 1) * sizeof (struct function_unit_op **));
+  unit_num = xmalloc ((num_units + 1) * sizeof (struct function_unit *));
 
-  unit_num[num_units] = unit = (struct function_unit *)
-    xmalloc (sizeof (struct function_unit));
+  unit_num[num_units] = unit = xmalloc (sizeof (struct function_unit));
   unit->num = num_units;
   unit->num_opclasses = 0;
 
@@ -1889,7 +1884,7 @@ expand_units (void)
     {
       unit_num[num_units]->num_opclasses += unit->num_opclasses;
       unit_num[unit->num] = unit;
-      unit_ops[unit->num] = op_array = (struct function_unit_op **)
+      unit_ops[unit->num] = op_array =
 	xmalloc (unit->num_opclasses * sizeof (struct function_unit_op *));
 
       for (op = unit->ops; op; op = op->next)
@@ -1897,7 +1892,7 @@ expand_units (void)
     }
 
   /* Compose the array of ops for the extra unit.  */
-  unit_ops[num_units] = op_array = (struct function_unit_op **)
+  unit_ops[num_units] = op_array =
     xmalloc (unit_num[num_units]->num_opclasses
 	    * sizeof (struct function_unit_op *));
 
@@ -2253,7 +2248,7 @@ fill_attr (struct attr_desc *attr)
       else
 	av = get_attr_value (value, attr, id->insn_code);
 
-      ie = (struct insn_ent *) oballoc (sizeof (struct insn_ent));
+      ie = oballoc (sizeof (struct insn_ent));
       ie->insn_code = id->insn_code;
       ie->insn_index = id->insn_code;
       insert_insn_ent (av, ie);
@@ -2379,7 +2374,7 @@ make_length_attrs (void)
 							 no_address_fn[i],
 							 address_fn[i]),
 				     new_attr, ie->insn_code);
-	    new_ie = (struct insn_ent *) oballoc (sizeof (struct insn_ent));
+	    new_ie = oballoc (sizeof (struct insn_ent));
 	    new_ie->insn_code = ie->insn_code;
 	    new_ie->insn_index = ie->insn_index;
 	    insert_insn_ent (new_av, new_ie);
@@ -2458,7 +2453,7 @@ simplify_cond (rtx exp, int insn_code, int insn_index)
   rtx defval = XEXP (exp, 1);
   rtx new_defval = XEXP (exp, 1);
   int len = XVECLEN (exp, 0);
-  rtx *tests = (rtx *) xmalloc (len * sizeof (rtx));
+  rtx *tests = xmalloc (len * sizeof (rtx));
   int allsame = 1;
   rtx ret;
 
@@ -3398,17 +3393,15 @@ optimize_attrs (void)
     return;
 
   /* Make 2 extra elements, for "code" values -2 and -1.  */
-  insn_code_values
-    = (struct attr_value_list **) xmalloc ((insn_code_number + 2)
-					  * sizeof (struct attr_value_list *));
-  memset ((char *) insn_code_values, 0,
-	 (insn_code_number + 2) * sizeof (struct attr_value_list *));
+  insn_code_values = xmalloc ((insn_code_number + 2)
+			      * sizeof (struct attr_value_list *));
+  memset (insn_code_values, 0,
+	  (insn_code_number + 2) * sizeof (struct attr_value_list *));
 
   /* Offset the table address so we can index by -2 or -1.  */
   insn_code_values += 2;
 
-  iv = ivbuf = ((struct attr_value_list *)
-		xmalloc (num_insn_ents * sizeof (struct attr_value_list)));
+  iv = ivbuf = xmalloc (num_insn_ents * sizeof (struct attr_value_list));
 
   for (i = 0; i < MAX_ATTRS_INDEX; i++)
     for (attr = attrs[i]; attr; attr = attr->next)
@@ -3499,7 +3492,7 @@ simplify_by_exploding (rtx exp)
      cover the domain of the attribute.  This makes the expanded COND form
      order independent.  */
 
-  space = (struct dimension *) xmalloc (ndim * sizeof (struct dimension));
+  space = xmalloc (ndim * sizeof (struct dimension));
 
   total = 1;
   for (ndim = 0; list; ndim++)
@@ -3554,8 +3547,8 @@ simplify_by_exploding (rtx exp)
   for (i = 0; i < ndim; i++)
     space[i].current_value = space[i].values;
 
-  condtest = (rtx *) xmalloc (total * sizeof (rtx));
-  condval = (rtx *) xmalloc (total * sizeof (rtx));
+  condtest = xmalloc (total * sizeof (rtx));
+  condval = xmalloc (total * sizeof (rtx));
 
   /* Expand the tests and values by iterating over all values in the
      attribute space.  */
@@ -4052,7 +4045,7 @@ gen_attr (rtx exp, int lineno)
       name_ptr = XSTR (exp, 1);
       while ((p = next_comma_elt (&name_ptr)) != NULL)
 	{
-	  av = (struct attr_value *) oballoc (sizeof (struct attr_value));
+	  av = oballoc (sizeof (struct attr_value));
 	  av->value = attr_rtx (CONST_STRING, p);
 	  av->next = attr->first_value;
 	  attr->first_value = av;
@@ -4196,7 +4189,7 @@ gen_insn (rtx exp, int lineno)
 {
   struct insn_def *id;
 
-  id = (struct insn_def *) oballoc (sizeof (struct insn_def));
+  id = oballoc (sizeof (struct insn_def));
   id->next = defs;
   defs = id;
   id->def = exp;
@@ -4260,7 +4253,7 @@ gen_delay (rtx def, int lineno)
 	have_annul_false = 1;
     }
 
-  delay = (struct delay_desc *) oballoc (sizeof (struct delay_desc));
+  delay = oballoc (sizeof (struct delay_desc));
   delay->def = def;
   delay->num = ++num_delays;
   delay->next = delays;
@@ -4307,7 +4300,7 @@ gen_unit (rtx def, int lineno)
 
   if (unit == 0)
     {
-      unit = (struct function_unit *) oballoc (sizeof (struct function_unit));
+      unit = oballoc (sizeof (struct function_unit));
       unit->name = name;
       unit->multiplicity = multiplicity;
       unit->simultaneity = simultaneity;
@@ -4322,7 +4315,7 @@ gen_unit (rtx def, int lineno)
     }
 
   /* Make a new operation class structure entry and initialize it.  */
-  op = (struct function_unit_op *) oballoc (sizeof (struct function_unit_op));
+  op = oballoc (sizeof (struct function_unit_op));
   op->condexp = condexp;
   op->num = unit->num_opclasses++;
   op->ready = ready_cost;
@@ -5579,7 +5572,7 @@ find_attr (const char *name, int create)
   if (! create)
     return NULL;
 
-  attr = (struct attr_desc *) oballoc (sizeof (struct attr_desc));
+  attr = oballoc (sizeof (struct attr_desc));
   attr->name = attr_string (name, strlen (name));
   attr->first_value = attr->default_val = NULL;
   attr->is_numeric = attr->negative_ok = attr->is_const = attr->is_special = 0;
@@ -5896,13 +5889,13 @@ from the machine description file `md'.  */\n\n");
   printf ("#define operands recog_data.operand\n\n");
 
   /* Make `insn_alternatives'.  */
-  insn_alternatives = (int *) oballoc (insn_code_number * sizeof (int));
+  insn_alternatives = oballoc (insn_code_number * sizeof (int));
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
       insn_alternatives[id->insn_code] = (1 << id->num_alternatives) - 1;
 
   /* Make `insn_n_alternatives'.  */
-  insn_n_alternatives = (int *) oballoc (insn_code_number * sizeof (int));
+  insn_n_alternatives = oballoc (insn_code_number * sizeof (int));
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
       insn_n_alternatives[id->insn_code] = id->num_alternatives;

@@ -942,8 +942,7 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
 	int endian_correction = 0;
 
 	args[i].n_aligned_regs = args[i].partial ? args[i].partial : nregs;
-	args[i].aligned_regs = (rtx *) xmalloc (sizeof (rtx)
-						* args[i].n_aligned_regs);
+	args[i].aligned_regs = xmalloc (sizeof (rtx) * args[i].n_aligned_regs);
 
 	/* Structures smaller than a word are normally aligned to the
 	   least significant byte.  On a BYTES_BIG_ENDIAN machine,
@@ -2367,8 +2366,8 @@ expand_call (tree exp, rtx target, int ignore)
   INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_RTX, fndecl);
 
   /* Make a vector to hold all the information about each arg.  */
-  args = (struct arg_data *) alloca (num_actuals * sizeof (struct arg_data));
-  memset ((char *) args, 0, num_actuals * sizeof (struct arg_data));
+  args = alloca (num_actuals * sizeof (struct arg_data));
+  memset (args, 0, num_actuals * sizeof (struct arg_data));
 
   /* Build up entries in the ARGS array, compute the size of the
      arguments into ARGS_SIZE, etc.  */
@@ -2758,8 +2757,7 @@ expand_call (tree exp, rtx target, int ignore)
 		  highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
 						     needed);
 #endif
-		  stack_usage_map
-		    = (char *) alloca (highest_outgoing_arg_in_use);
+		  stack_usage_map = alloca (highest_outgoing_arg_in_use);
 
 		  if (initial_highest_arg_in_use)
 		    memcpy (stack_usage_map, initial_stack_usage_map,
@@ -2864,8 +2862,7 @@ expand_call (tree exp, rtx target, int ignore)
 		    = stack_arg_under_construction;
 		  stack_arg_under_construction = 0;
 		  /* Make a new map for the new argument list.  */
-		  stack_usage_map = (char *)
-		    alloca (highest_outgoing_arg_in_use);
+		  stack_usage_map = alloca (highest_outgoing_arg_in_use);
 		  memset (stack_usage_map, 0, highest_outgoing_arg_in_use);
 		  highest_outgoing_arg_in_use = 0;
 		}
@@ -3659,8 +3656,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
      of the full argument passing conventions to limit complexity here since
      library functions shouldn't have many args.  */
 
-  argvec = (struct arg *) alloca ((nargs + 1) * sizeof (struct arg));
-  memset ((char *) argvec, 0, (nargs + 1) * sizeof (struct arg));
+  argvec = alloca ((nargs + 1) * sizeof (struct arg));
+  memset (argvec, 0, (nargs + 1) * sizeof (struct arg));
 
 #ifdef INIT_CUMULATIVE_LIBCALL_ARGS
   INIT_CUMULATIVE_LIBCALL_ARGS (args_so_far, outmode, fun);
@@ -3895,7 +3892,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
 					 needed);
 #endif
-      stack_usage_map = (char *) alloca (highest_outgoing_arg_in_use);
+      stack_usage_map = alloca (highest_outgoing_arg_in_use);
 
       if (initial_highest_arg_in_use)
 	memcpy (stack_usage_map, initial_stack_usage_map,

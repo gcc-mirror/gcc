@@ -1390,8 +1390,7 @@ init_deps (struct deps *deps)
   int max_reg = (reload_completed ? FIRST_PSEUDO_REGISTER : max_reg_num ());
 
   deps->max_reg = max_reg;
-  deps->reg_last = (struct deps_reg *)
-    xcalloc (max_reg, sizeof (struct deps_reg));
+  deps->reg_last = xcalloc (max_reg, sizeof (struct deps_reg));
   INIT_REG_SET (&deps->reg_last_in_use);
   INIT_REG_SET (&deps->reg_conditional_sets);
 

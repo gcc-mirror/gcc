@@ -459,7 +459,7 @@ read_include_file (cpp_reader *pfile, struct include_file *inc)
       size = inc->st.st_size;
 
 	{
-	  buf = (uchar *) xmalloc (size + 1);
+	  buf = xmalloc (size + 1);
 	  offset = 0;
 	  while (offset < size)
 	    {
@@ -494,7 +494,7 @@ read_include_file (cpp_reader *pfile, struct include_file *inc)
 	 bigger than the majority of C source files.  */
       size = 8 * 1024;
 
-      buf = (uchar *) xmalloc (size + 1);
+      buf = xmalloc (size + 1);
       offset = 0;
       while ((count = read (inc->fd, buf + offset, size - offset)) > 0)
 	{
@@ -553,7 +553,7 @@ cpp_included (cpp_reader *pfile, const char *fname)
     }
 
   /* Search directory path for the file.  */
-  name = (char *) alloca (strlen (fname) + pfile->max_include_len + 2);
+  name = alloca (strlen (fname) + pfile->max_include_len + 2);
   for (path = pfile->quote_include; path; path = path->next)
     {
       memcpy (name, path->name, path->len);
@@ -611,7 +611,7 @@ find_include_file (cpp_reader *pfile, const char *fname, int angle_brackets,
     }
 
   /* Search directory path for the file.  */
-  name = (char *) alloca (strlen (fname) + pfile->max_include_len + 2);
+  name = alloca (strlen (fname) + pfile->max_include_len + 2);
   for (; path; path = path->next)
     {
       int len = path->len;
@@ -924,14 +924,13 @@ read_name_map (cpp_reader *pfile, const char *dirname)
     if (! strcmp (map_list_ptr->map_list_name, dirname))
       return map_list_ptr->map_list_map;
 
-  map_list_ptr = ((struct file_name_map_list *)
-		  xmalloc (sizeof (struct file_name_map_list)));
+  map_list_ptr = xmalloc (sizeof (struct file_name_map_list));
   map_list_ptr->map_list_name = xstrdup (dirname);
 
   /* The end of the list ends in NULL.  */
   map_list_ptr->map_list_map = NULL;
 
-  name = (char *) alloca (strlen (dirname) + strlen (FILE_NAME_MAP_FILE) + 2);
+  name = alloca (strlen (dirname) + strlen (FILE_NAME_MAP_FILE) + 2);
   strcpy (name, dirname);
   if (*dirname)
     strcat (name, "/");
@@ -955,8 +954,7 @@ read_name_map (cpp_reader *pfile, const char *dirname)
 	    ;
 	  to = read_filename_string (ch, f);
 
-	  ptr = ((struct file_name_map *)
-		 xmalloc (sizeof (struct file_name_map)));
+	  ptr = xmalloc (sizeof (struct file_name_map));
 	  ptr->map_from = from;
 
 	  /* Make the real filename absolute.  */
@@ -1025,7 +1023,7 @@ remap_filename (cpp_reader *pfile, char *name, struct cpp_path *loc)
   if (p == name)
     cpp_error (pfile, DL_ICE, "absolute file name in remap_filename");
 
-  dir = (char *) alloca (p - name + 1);
+  dir = alloca (p - name + 1);
   memcpy (dir, name, p - name);
   dir[p - name] = '\0';
   from = p + 1;

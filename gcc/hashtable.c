@@ -57,7 +57,7 @@ ht_create (unsigned int order)
   unsigned int nslots = 1 << order;
   hash_table *table;
 
-  table = (hash_table *) xmalloc (sizeof (hash_table));
+  table = xmalloc (sizeof (hash_table));
   memset (table, 0, sizeof (hash_table));
 
   /* Strings need no alignment.  */
@@ -67,7 +67,7 @@ ht_create (unsigned int order)
 
   obstack_alignment_mask (&table->stack) = 0;
 
-  table->entries = (hashnode *) xcalloc (nslots, sizeof (hashnode));
+  table->entries = xcalloc (nslots, sizeof (hashnode));
   table->nslots = nslots;
   return table;
 }
@@ -158,7 +158,7 @@ ht_expand (hash_table *table)
   unsigned int size, sizemask;
 
   size = table->nslots * 2;
-  nentries = (hashnode *) xcalloc (size, sizeof (hashnode));
+  nentries = xcalloc (size, sizeof (hashnode));
   sizemask = size - 1;
 
   p = table->entries;
