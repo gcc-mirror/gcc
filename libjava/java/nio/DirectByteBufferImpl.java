@@ -41,7 +41,7 @@ package java.nio;
 import gnu.classpath.Configuration;
 import gnu.gcj.RawData;
 
-class DirectByteBufferImpl extends ByteBuffer
+final class DirectByteBufferImpl extends ByteBuffer
 {
   static
   {
@@ -229,133 +229,133 @@ class DirectByteBufferImpl extends ByteBuffer
     return new DoubleViewBufferImpl (this, remaining() >> 3);
   }
 
-  final public char getChar ()
+  public char getChar ()
   {
     return ByteBufferHelper.getChar(this, order());
   }
   
-  final public ByteBuffer putChar (char value)
+  public ByteBuffer putChar (char value)
   {
     ByteBufferHelper.putChar(this, value, order());
     return this;
   }
   
-  final public char getChar (int index)
+  public char getChar (int index)
   {
     return ByteBufferHelper.getChar(this, index, order());
   }
   
-  final public ByteBuffer putChar (int index, char value)
+  public ByteBuffer putChar (int index, char value)
   {
     ByteBufferHelper.putChar(this, index, value, order());
     return this;
   }
 
-  final public short getShort ()
+  public short getShort ()
   {
     return ByteBufferHelper.getShort(this, order());
   }
   
-  final public ByteBuffer putShort (short value)
+  public ByteBuffer putShort (short value)
   {
     ByteBufferHelper.putShort(this, value, order());
     return this;
   }
   
-  final public short getShort (int index)
+  public short getShort (int index)
   {
     return ByteBufferHelper.getShort(this, index, order());
   }
   
-  final public ByteBuffer putShort (int index, short value)
+  public ByteBuffer putShort (int index, short value)
   {
     ByteBufferHelper.putShort(this, index, value, order());
     return this;
   }
 
-  final public int getInt ()
+  public int getInt ()
   {
     return ByteBufferHelper.getInt(this, order());
   }
   
-  final public ByteBuffer putInt (int value)
+  public ByteBuffer putInt (int value)
   {
     ByteBufferHelper.putInt(this, value, order());
     return this;
   }
   
-  final public int getInt (int index)
+  public int getInt (int index)
   {
     return ByteBufferHelper.getInt(this, index, order());
   }
   
-  final public ByteBuffer putInt (int index, int value)
+  public ByteBuffer putInt (int index, int value)
   {
     ByteBufferHelper.putInt(this, index, value, order());
     return this;
   }
 
-  final public long getLong ()
+  public long getLong ()
   {
     return ByteBufferHelper.getLong(this, order());
   }
   
-  final public ByteBuffer putLong (long value)
+  public ByteBuffer putLong (long value)
   {
     ByteBufferHelper.putLong (this, value, order());
     return this;
   }
   
-  final public long getLong (int index)
+  public long getLong (int index)
   {
     return ByteBufferHelper.getLong (this, index, order());
   }
   
-  final public ByteBuffer putLong (int index, long value)
+  public ByteBuffer putLong (int index, long value)
   {
     ByteBufferHelper.putLong (this, index, value, order());
     return this;
   }
 
-  final public float getFloat ()
+  public float getFloat ()
   {
     return ByteBufferHelper.getFloat (this, order());
   }
   
-  final public ByteBuffer putFloat (float value)
+  public ByteBuffer putFloat (float value)
   {
     ByteBufferHelper.putFloat (this, value, order());
     return this;
   }
   
-  public final float getFloat (int index)
+  public float getFloat (int index)
   {
     return ByteBufferHelper.getFloat (this, index, order());
   }
 
-  final public ByteBuffer putFloat (int index, float value)
+  public ByteBuffer putFloat (int index, float value)
   {
     ByteBufferHelper.putFloat (this, index, value, order());
     return this;
   }
 
-  final public double getDouble ()
+  public double getDouble ()
   {
     return ByteBufferHelper.getDouble (this, order());
   }
 
-  final public ByteBuffer putDouble (double value)
+  public ByteBuffer putDouble (double value)
   {
     ByteBufferHelper.putDouble (this, value, order());
     return this;
   }
   
-  final public double getDouble (int index)
+  public double getDouble (int index)
   {
     return ByteBufferHelper.getDouble (this, index, order());
   }
   
-  final public ByteBuffer putDouble (int index, double value)
+  public ByteBuffer putDouble (int index, double value)
   {
     ByteBufferHelper.putDouble (this, index, value, order());
     return this;

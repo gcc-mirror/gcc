@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.nio;
 
-class DoubleViewBufferImpl extends DoubleBuffer
+final class DoubleViewBufferImpl extends DoubleBuffer
 {
   /** Position in bb (i.e. a byte offset) where this buffer starts. */
   private int offset;

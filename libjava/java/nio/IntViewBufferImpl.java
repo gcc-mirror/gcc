@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.nio;
 
-class IntViewBufferImpl extends IntBuffer
+final class IntViewBufferImpl extends IntBuffer
 {
   /** Position in bb (i.e. a byte offset) where this buffer starts. */
   private int offset;
