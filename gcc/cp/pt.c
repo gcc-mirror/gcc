@@ -7142,10 +7142,6 @@ tsubst_qualified_id (tree qualified_id, tree args,
 
   my_friendly_assert (TREE_CODE (qualified_id) == SCOPE_REF, 20030706);
 
-  /* Look up the qualified name.  */
-  scope = TREE_OPERAND (qualified_id, 0);
-  scope = tsubst (scope, args, complain, in_decl);
-
   /* Figure out what name to look up.  */
   name = TREE_OPERAND (qualified_id, 1);
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
@@ -7161,7 +7157,18 @@ tsubst_qualified_id (tree qualified_id, tree args,
       template_args = NULL_TREE;
     }
 
-  expr = tsubst_copy (name, args, complain, in_decl);
+  /* Substitute into the qualifying scope.  When there are no ARGS, we
+     are just trying to simplify a non-dependent expression.  In that
+     case the qualifying scope may be dependent, and, in any case,
+     substituting will not help.  */
+  scope = TREE_OPERAND (qualified_id, 0);
+  if (args)
+    {
+      scope = tsubst (scope, args, complain, in_decl);
+      expr = tsubst_copy (name, args, complain, in_decl);
+    }
+  else
+    expr = name;
   if (!BASELINK_P (name)
       && !DECL_P (expr))
     expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0);
@@ -7169,10 +7176,14 @@ tsubst_qualified_id (tree qualified_id, tree args,
     check_accessibility_of_qualified_id (expr, 
 					 /*object_type=*/NULL_TREE,
 					 scope);
-
+  
   /* Remember that there was a reference to this entity.  */
   if (DECL_P (expr))
-    mark_used (expr);
+    {
+      mark_used (expr);
+      if (!args && TREE_CODE (expr) == VAR_DECL)
+	expr = DECL_INITIAL (expr);
+    }
 
   if (is_template)
     lookup_template_function (expr, template_args);
@@ -11592,6 +11603,31 @@ type_dependent_expression_p (tree expression)
 		    (TREE_OPERAND (TREE_VALUE (type), 1));
       else
 	return dependent_type_p (type);
+    }
+
+  /* [temp.dep.expr]
+
+     An id-expression is type-dependent if it contains a
+     nested-name-specifier that contains a class-name that names a
+     dependent type.  */
+  if (TREE_CODE (expression) == SCOPE_REF
+      && TYPE_P (TREE_OPERAND (expression, 0)))
+    {
+      tree scope;
+      tree name;
+
+      scope = TREE_OPERAND (expression, 0);
+      name = TREE_OPERAND (expression, 1);
+
+      /* The suggested resolution to Core Issue 2 implies that if the
+	 qualifying type is the current class, then we must peek
+	 inside it.  */
+      if (DECL_P (name) 
+	  && currently_open_class (scope)
+	  && !type_dependent_expression_p (name))
+	return false;
+      if (dependent_type_p (scope))
+	return true;
     }
 
   if (TREE_CODE (expression) == FUNCTION_DECL

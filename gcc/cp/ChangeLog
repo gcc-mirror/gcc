@@ -1,3 +1,10 @@
+2003-07-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8327
+	* pt.c (tsubst_qualified_id): Implement suggested resolution for
+	Core Issue 2.
+	(type_dependent_expression_p): Likewise.
+
 2003-07-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* typeck.c (build_binary_op): Do not warn about signed
