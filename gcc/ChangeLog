@@ -1,3 +1,10 @@
+2003-02-18  Ben Elliston  <bje@redhat.com>
+
+	PR c++/1607
+	* doc/extend.texi (Function Attributes): Document the effect of
+	the C++ "this" parameter on the counting of arguments for the
+	"format" and "format_arg" attributes.
+
 2003-02-17  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/spe.h (__ev_stdd): Cast 2nd arg.

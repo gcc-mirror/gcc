@@ -2101,6 +2101,9 @@ functions where the arguments are not available to be checked (such as
 @code{vprintf}), specify the third parameter as zero.  In this case the
 compiler only checks the format string for consistency.  For
 @code{strftime} formats, the third parameter is required to be zero.
+Since non-static C++ methods have an implicit @code{this} argument, the
+arguments of such methods should be counted from two, not one, when
+giving values for @var{string-index} and @var{first-to-check}.
 
 In the example above, the format string (@code{my_format}) is the second
 argument of the function @code{my_print}, and the arguments to check
@@ -2153,7 +2156,9 @@ string argument is not constant; this would generate a warning when
 without the attribute.
 
 The parameter @var{string-index} specifies which argument is the format
-string argument (starting from 1).
+string argument (starting from one).  Since non-static C++ methods have
+an implicit @code{this} argument, the arguments of such methods should
+be counted from two.
 
 The @code{format-arg} attribute allows you to identify your own
 functions which modify format strings, so that GCC can check the
