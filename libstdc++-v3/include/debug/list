@@ -1,6 +1,6 @@
 // Debugging list implementation -*- C++ -*-
 
-// Copyright (C) 2003
+// Copyright (C) 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -40,10 +40,10 @@ namespace __gnu_debug_def
 {
   template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
     class list
-    : public __gnu_norm::list<_Tp, _Allocator>,
+    : public _GLIBCXX_STD::list<_Tp, _Allocator>,
       public __gnu_debug::_Safe_sequence<list<_Tp, _Allocator> >
     {
-      typedef __gnu_norm::list<_Tp, _Allocator> _Base;
+      typedef _GLIBCXX_STD::list<_Tp, _Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<list>  _Safe_base;
 
     public:
@@ -76,7 +76,7 @@ namespace __gnu_debug_def
       template<class _InputIterator>
       list(_InputIterator __first, _InputIterator __last,
 	   const _Allocator& __a = _Allocator())
-	: _Base(__gnu_debug::__check_valid_range(__first, __last), __last, __a)
+      : _Base(__gnu_debug::__check_valid_range(__first, __last), __last, __a)
       { }
 
 

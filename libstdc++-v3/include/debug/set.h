@@ -1,6 +1,6 @@
 // Debugging set implementation -*- C++ -*-
 
-// Copyright (C) 2003
+// Copyright (C) 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -40,10 +40,10 @@ namespace __gnu_debug_def
   template<typename _Key, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<_Key> >
     class set
-    : public __gnu_norm::set<_Key,_Compare,_Allocator>,
+    : public _GLIBCXX_STD::set<_Key,_Compare,_Allocator>,
       public __gnu_debug::_Safe_sequence<set<_Key, _Compare, _Allocator> >
     {
-      typedef __gnu_norm::set<_Key,_Compare,_Allocator> _Base;
+      typedef _GLIBCXX_STD::set<_Key,_Compare,_Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<set> _Safe_base;
 
     public:

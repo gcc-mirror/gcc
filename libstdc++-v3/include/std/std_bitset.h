@@ -59,12 +59,11 @@
 #include <ostream>     // For ostream (operator<<)
 #include <istream>     // For istream (operator>>)
 
-
 #define _GLIBCXX_BITSET_BITS_PER_WORD  numeric_limits<unsigned long>::digits
 #define _GLIBCXX_BITSET_WORDS(__n) \
  ((__n) < 1 ? 0 : ((__n) + _GLIBCXX_BITSET_BITS_PER_WORD - 1)/_GLIBCXX_BITSET_BITS_PER_WORD)
 
-namespace __gnu_norm
+namespace _GLIBCXX_STD
 {
   /**
    *  @if maint
@@ -1218,7 +1217,7 @@ namespace __gnu_norm
       return __os << __tmp;
     }
   //@}
-} // namespace __gnu_norm
+} // namespace std
 
 #undef _GLIBCXX_BITSET_WORDS
 #undef _GLIBCXX_BITSET_BITS_PER_WORD

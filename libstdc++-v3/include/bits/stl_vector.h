@@ -65,7 +65,7 @@
 #include <bits/functexcept.h>
 #include <bits/concept_check.h>
 
-namespace __gnu_norm
+namespace _GLIBCXX_STD
 {
   /**
    *  @if maint
@@ -927,6 +927,6 @@ namespace __gnu_norm
     inline void
     swap(vector<_Tp,_Alloc>& __x, vector<_Tp,_Alloc>& __y)
     { __x.swap(__y); }
-} // namespace __gnu_norm
+} // namespace std
 
 #endif /* _VECTOR_H */

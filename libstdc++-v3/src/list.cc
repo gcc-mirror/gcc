@@ -55,7 +55,7 @@
 
 #include <list>
 
-namespace __gnu_norm
+namespace _GLIBCXX_STD
 {
   void
   _List_node_base::swap(_List_node_base& __x, _List_node_base& __y)
@@ -121,7 +121,7 @@ namespace __gnu_norm
   }
 
   void
-  _List_node_base::hook(_List_node_base * const __position)
+  _List_node_base::hook(_List_node_base* const __position)
   {
     this->_M_next = __position;
     this->_M_prev = __position->_M_prev;
@@ -137,5 +137,5 @@ namespace __gnu_norm
     __prev_node->_M_next = __next_node;
     __next_node->_M_prev = __prev_node;
   }
-} // namespace __gnu_norm
+} // namespace std
 

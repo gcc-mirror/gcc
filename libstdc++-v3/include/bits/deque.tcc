@@ -61,7 +61,7 @@
 #ifndef _DEQUE_TCC
 #define _DEQUE_TCC 1
 
-namespace __gnu_norm
+namespace _GLIBCXX_STD
 {
   template <typename _Tp, typename _Alloc>
     deque<_Tp,_Alloc>&
@@ -714,6 +714,6 @@ namespace __gnu_norm
       this->_M_impl._M_start._M_set_node(__new_nstart);
       this->_M_impl._M_finish._M_set_node(__new_nstart + __old_num_nodes - 1);
     }
-} // namespace __gnu_norm
+} // namespace std
 
 #endif

@@ -1,6 +1,6 @@
 // Debugging bitset implementation -*- C++ -*-
 
-// Copyright (C) 2003
+// Copyright (C) 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -39,9 +39,10 @@ namespace __gnu_debug_def
 {
   template<size_t _Nb>
     class bitset
-    : public __gnu_norm::bitset<_Nb>, public __gnu_debug::_Safe_sequence_base
+    : public _GLIBCXX_STD::bitset<_Nb>, 
+      public __gnu_debug::_Safe_sequence_base
     {
-      typedef  __gnu_norm::bitset<_Nb>		_Base;
+      typedef _GLIBCXX_STD::bitset<_Nb> _Base;
       typedef __gnu_debug::_Safe_sequence_base  _Safe_base;
 
     public:

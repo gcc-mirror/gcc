@@ -55,6 +55,11 @@ GLIBCXX_3.4 {
       std::locale::_S_normalize_category*;
       std::locale::_[T-Za-z]*;
       std::[A-Zm-z]*;
+      std::_List_node_base::hook*;
+      std::_List_node_base::swap*;
+      std::_List_node_base::unhook*;
+      std::_List_node_base::reverse*;
+      std::_List_node_base::transfer*;
       std::__throw_*;
       std::__basic_file*;
       std::__timepunct*;
@@ -66,10 +71,14 @@ GLIBCXX_3.4 {
       std::__moneypunct_cache*;
       std::__numpunct_cache*;
       std::__timepunct_cache*;
-      __gnu_norm::*;
       __gnu_debug::_Safe_iterator_base*;
       __gnu_debug::_Safe_sequence_base*;
-      __gnu_debug::_Error_formatter*
+      __gnu_debug::_Error_formatter*;
+      __gnu_norm::_List_node_base::hook*;
+      __gnu_norm::_List_node_base::swap*;
+      __gnu_norm::_List_node_base::unhook*;
+      __gnu_norm::_List_node_base::reverse*;
+      __gnu_norm::_List_node_base::transfer*
     };
 
     # Names not in an 'extern' block are mangled names.

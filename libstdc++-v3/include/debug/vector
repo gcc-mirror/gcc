@@ -1,6 +1,6 @@
 // Debugging vector implementation -*- C++ -*-
 
-// Copyright (C) 2003
+// Copyright (C) 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -41,10 +41,10 @@ namespace __gnu_debug_def
   template<typename _Tp,
 	   typename _Allocator = std::allocator<_Tp> >
     class vector
-    : public __gnu_norm::vector<_Tp, _Allocator>,
+    : public _GLIBCXX_STD::vector<_Tp, _Allocator>,
       public __gnu_debug::_Safe_sequence<vector<_Tp, _Allocator> >
     {
-      typedef __gnu_norm::vector<_Tp, _Allocator> _Base;
+      typedef _GLIBCXX_STD::vector<_Tp, _Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<vector>              _Safe_base;
 
       typedef typename _Base::const_iterator _Base_const_iterator;

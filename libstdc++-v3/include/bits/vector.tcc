@@ -61,7 +61,7 @@
 #ifndef _VECTOR_TCC
 #define _VECTOR_TCC 1
 
-namespace __gnu_norm
+namespace _GLIBCXX_STD
 {
   template<typename _Tp, typename _Alloc>
     void
@@ -409,6 +409,6 @@ namespace __gnu_norm
         }
       }
     }
-} // namespace __gnu_norm
+} // namespace std
 
 #endif /* _VECTOR_TCC */

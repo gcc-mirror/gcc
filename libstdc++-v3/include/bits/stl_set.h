@@ -63,7 +63,7 @@
 
 #include <bits/concept_check.h>
 
-namespace __gnu_norm
+namespace _GLIBCXX_STD
 {
   // Forward declarations of operators < and ==, needed for friend declaration.
   template<class _Key, class _Compare = less<_Key>,
@@ -588,6 +588,6 @@ namespace __gnu_norm
     swap(set<_Key,_Compare,_Alloc>& __x, set<_Key,_Compare,_Alloc>& __y)
     { __x.swap(__y); }
 
-} // namespace __gnu_norm
+} // namespace std
 
 #endif /* _SET_H */
