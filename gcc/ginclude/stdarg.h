@@ -6,6 +6,10 @@
 #ifndef _STDARG_H
 #define _STDARG_H
 
+#ifndef __GNUC__
+/* Use the system's macros with the system's compiler.  */
+#include <stdarg.h>
+#else
 #ifdef __m88k__
 #include "va-m88k.h"
 #else
@@ -55,4 +59,5 @@ void va_end (va_list);		/* Defined in libgcc.a */
 #endif /* not hp9000s800 */
 #endif /* not i860 */
 #endif /* not m88k */
+#endif /* __GNUC__ */
 #endif /* _STDARG_H */
