@@ -51,7 +51,7 @@ define_operator(neverneverland, abort\(\), (()))
 
 # Stack manipulations.
 define_operator(drop, 0, ((, (SI))))
-define_operator(dup, 0, ((, (SI), (SI, SI))))
+define_operator(duplicate, 0, ((, (SI), (SI, SI))))
 define_operator(over, 0, ((, (SI), (SI, SI))))
 
 # Adjust stack pointer
