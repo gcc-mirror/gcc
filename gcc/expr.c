@@ -4545,7 +4545,7 @@ store_constructor (exp, target, align, cleared, size)
 	  store_constructor_field (to_rtx, bitsize, bitpos, mode,
 				   TREE_VALUE (elt), type, align, cleared,
 				   (DECL_NONADDRESSABLE_P (field)
-				   && GET_CODE (to_rtx) == MEM)
+				    && GET_CODE (to_rtx) == MEM)
 				   ? MEM_ALIAS_SET (to_rtx)
 				   : get_alias_set (TREE_TYPE (field)));
 	}
