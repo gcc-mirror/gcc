@@ -1312,17 +1312,28 @@ extern char *current_function_name;
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.
 
-   We only care about the cost if it is valid in an insn, so all constants
-   are cheap.  */
+   If this is an 8-bit constant, return zero since it can be used
+   nearly anywhere with no cost.  If it is a valid operand for an
+   ADD or AND, likewise return 0 if we know it will be used in that
+   context.  Otherwise, return 2 since it might be used there later.
+   All other constants take at least two insns.  */
 
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
+    if (INTVAL (RTX) >= 0 && INTVAL (RTX) < 2546)		\
+      return 0;							\
   case CONST_DOUBLE:						\
-    return 0;							\
+    if (((OUTER_CODE) == PLUS && add_operand (RTX, VOIDmode))	\
+	|| ((OUTER_CODE) == AND && and_operand (RTX, VOIDmode))) \
+      return 0;							\
+    else if (add_operand (RTX, VOIDmode) || and_operand (RTX, VOIDmode)) \
+      return 2;							\
+    else							\
+      return COSTS_N_INSNS (2);					\
   case CONST:							\
   case SYMBOL_REF:						\
   case LABEL_REF:						\
-    return 6;							\
+    return COSTS_N_INSNS (3);
     
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE.  */
