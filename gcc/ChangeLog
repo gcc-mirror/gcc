@@ -1,3 +1,15 @@
+2004-06-23  Pat Haugen  <pthaugen@us.ibm.com>
+
+	PR optimization/15633
+	* value-prof.c (divmod_fixed_value_transform): Compute probability
+	of taking optimal path and pass along to gen_ routine.
+	(mod_pow2_value_transform): Same.
+	(mod_subtract_transform): Same.
+	(gen_divmod_fixed_value): Add new probability parameter.
+	Add probability to newly created jump.
+	(gen_mod_pow2): Same.
+	(gen_mod_subtract): Same.
+
 2004-06-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	* PR target/15948
