@@ -149,50 +149,23 @@ AC_PROG_INSTALL
 AC_HEADER_STDC
 AC_HEADER_TIME
 GCC_HEADER_STRING
+GCC_HEADER_INTTYPES
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h \
-		 fcntl.h unistd.h stab.h sys/file.h sys/time.h \
+		 fcntl.h unistd.h stab.h sys/file.h sys/time.h malloc.h \
 		 sys/resource.h sys/param.h sys/times.h sys/types.h sys/stat.h)
 
-# See if the system preprocessor understands the ANSI C preprocessor
-# stringification operator.
-AC_MSG_CHECKING(whether cpp understands the stringify operator)
-AC_CACHE_VAL(gcc_cv_c_have_stringify,
-[AC_TRY_COMPILE(,
-[#define S(x)   #x
-char *test = S(foo);],
-gcc_cv_c_have_stringify=yes, gcc_cv_c_have_stringify=no)])
-AC_MSG_RESULT($gcc_cv_c_have_stringify)
-if test $gcc_cv_c_have_stringify = yes; then
-  AC_DEFINE(HAVE_CPP_STRINGIFY)
-fi
+AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen bcopy bzero bcmp index \
+	       rindex kill getrlimit setrlimit atoll atoq sysconf isascii \
+	       gettimeofday strsignal)
 
-# Use <inttypes.h> only if it exists,
-# doesn't clash with <sys/types.h>, and declares intmax_t.
-AC_MSG_CHECKING(for inttypes.h)
-AC_CACHE_VAL(gcc_cv_header_inttypes_h,
-[AC_TRY_COMPILE(
-  [#include <sys/types.h>
-#include <inttypes.h>],
-  [intmax_t i = -1;],
-  gcc_cv_header_inttypes_h=yes,
-  gcc_cv_header_inttypes_h=no)])
-AC_MSG_RESULT($gcc_cv_header_inttypes_h)
-if test $gcc_cv_header_inttypes_h = yes; then
-  AC_DEFINE(HAVE_INTTYPES_H)
-fi
-
-AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen bcopy bzero bcmp \
-	       index rindex kill getrlimit setrlimit atoll atoq sysconf \
-	       isascii gettimeofday strsignal)
 
 GCC_FUNC_VFPRINTF_DOPRNT
 GCC_FUNC_PRINTF_PTR
 AC_FUNC_VFORK
 
-GCC_NEED_DECLARATIONS(malloc realloc calloc free bcopy bzero bcmp \
-		      index rindex getenv atol sbrk abort strerror getcwd \
-		      getwd strsignal)
+GCC_NEED_DECLARATIONS(bcopy bzero bcmp index rindex getenv atol sbrk abort \
+		      strerror getcwd getwd strsignal)
 
 GCC_NEED_DECLARATIONS(getrlimit setrlimit, [
 #include <sys/types.h>
@@ -201,6 +174,13 @@ GCC_NEED_DECLARATIONS(getrlimit setrlimit, [
 #endif
 ])
 
+GCC_NEED_DECLARATIONS(malloc realloc calloc free, [
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+])
+
+GCC_CHECK_STRINGIFY
 AC_DECL_SYS_SIGLIST
 
 # File extensions
