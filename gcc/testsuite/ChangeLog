@@ -1,3 +1,8 @@
+2003-07-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR c/11449
+	* gcc.c-torture/compile/20030707-1.c: New.
+
 2003-07-10  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10849
