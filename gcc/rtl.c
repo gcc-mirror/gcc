@@ -170,13 +170,13 @@ char rtx_class[] = {
 
 /* Names for kinds of NOTEs and REG_NOTEs.  */
 
-char *note_insn_name[] = { "NOTE_INSN_FUNCTION_BEG", "NOTE_INSN_DELETED",
+char *note_insn_name[] = { 0                    , "NOTE_INSN_DELETED",
 			   "NOTE_INSN_BLOCK_BEG", "NOTE_INSN_BLOCK_END",
 			   "NOTE_INSN_LOOP_BEG", "NOTE_INSN_LOOP_END",
 			   "NOTE_INSN_FUNCTION_END", "NOTE_INSN_SETJMP",
 			   "NOTE_INSN_LOOP_CONT", "NOTE_INSN_LOOP_VTOP",
 			   "NOTE_INSN_PROLOGUE_END", "NOTE_INSN_EPILOGUE_BEG",
-			   "NOTE_INSN_DELETED_LABEL"};
+			   "NOTE_INSN_DELETED_LABEL", "NOTE_INSN_FUNCTION_BEG"};
 
 char *reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "REG_WAS_0",
 			  "REG_EQUAL", "REG_RETVAL", "REG_LIBCALL",
