@@ -145,13 +145,13 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_LIMITED_STRING(FILE, STR)				\
   do									\
     {									\
-      register const unsigned char *_limited_str =			\
+      const unsigned char *_limited_str =				\
         (const unsigned char *) (STR);					\
-      register unsigned ch;						\
+      unsigned ch;							\
       fprintf ((FILE), "%s\"", STRING_ASM_OP);				\
       for (; (ch = *_limited_str); _limited_str++)			\
         {								\
-	  register int escape = ESCAPES[ch];				\
+	  int escape = ESCAPES[ch];					\
 	  switch (escape)						\
 	    {								\
 	    case 0:							\
@@ -181,13 +181,13 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)				\
   do									\
     {									\
-      register const unsigned char *_ascii_bytes =			\
+      const unsigned char *_ascii_bytes =				\
         (const unsigned char *) (STR);					\
-      register const unsigned char *limit = _ascii_bytes + (LENGTH);	\
-      register unsigned bytes_in_chunk = 0;				\
+      const unsigned char *limit = _ascii_bytes + (LENGTH);		\
+      unsigned bytes_in_chunk = 0;					\
       for (; _ascii_bytes < limit; _ascii_bytes++)			\
         {								\
-	  register const unsigned char *p;				\
+	  const unsigned char *p;					\
 	  if (bytes_in_chunk >= 64)					\
 	    {								\
 	      fputc ('\n', (FILE));					\
