@@ -2403,9 +2403,9 @@
   "&& reload_completed"
   [(set (match_dup 2) (match_op_dup 4 [(float_extend:DF (match_dup 1))]))
    (set (match_dup 3) (unspec:SF [(match_dup 2)] UNSPEC_CVTQL))
-   (set (match_dup 4) (match_dup 3))]
+   (set (match_dup 5) (match_dup 3))]
 {
-  operands[4] = adjust_address (operands[0], SFmode, 0);
+  operands[5] = adjust_address (operands[0], SFmode, 0);
 }
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
