@@ -1,5 +1,8 @@
 2004-02-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/14267
+	* g++.dg/expr/crash2.C: New test.
+
 	PR middle-end/13448
 	* gcc.dg/inline-5.c: New test.
 	* gcc.dg/always-inline.c: Split out tests into ...

@@ -5098,52 +5098,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 			  20011220);
     }
 
-  /* Handle a cast used as an "lvalue".
-     We have already performed any binary operator using the value as cast.
-     Now convert the result to the cast type of the lhs,
-     and then true type of the lhs and store it there;
-     then convert result back to the cast type to be the value
-     of the assignment.  */
-
-  switch (TREE_CODE (lhs))
-    {
-    case NOP_EXPR:
-    case CONVERT_EXPR:
-    case FLOAT_EXPR:
-    case FIX_TRUNC_EXPR:
-    case FIX_FLOOR_EXPR:
-    case FIX_ROUND_EXPR:
-    case FIX_CEIL_EXPR:
-      {
-	tree inner_lhs = TREE_OPERAND (lhs, 0);
-	tree result;
-
-	if (TREE_CODE (TREE_TYPE (newrhs)) == ARRAY_TYPE
-	    || TREE_CODE (TREE_TYPE (newrhs)) == FUNCTION_TYPE
-	    || TREE_CODE (TREE_TYPE (newrhs)) == METHOD_TYPE
-	    || TREE_CODE (TREE_TYPE (newrhs)) == OFFSET_TYPE)
-	  newrhs = decay_conversion (newrhs);
-	
-	/* ISO C++ 5.4/1: The result is an lvalue if T is a reference
-	   type, otherwise the result is an rvalue.  */
-	if (! lvalue_p (lhs))
-	  pedwarn ("ISO C++ forbids cast to non-reference type used as lvalue");
-
-	result = build_modify_expr (inner_lhs, NOP_EXPR,
-				    cp_convert (TREE_TYPE (inner_lhs),
-						cp_convert (lhstype, newrhs)));
-	if (result == error_mark_node)
-	  return result;
-	return cp_convert (TREE_TYPE (lhs), result);
-      }
-
-    default:
-      break;
-    }
-
-  /* Now we have handled acceptable kinds of LHS that are not truly lvalues.
-     Reject anything strange now.  */
-
+  /* The left-hand side must be an lvalue.  */
   if (!lvalue_or_else (lhs, "assignment"))
     return error_mark_node;
 

@@ -1,5 +1,9 @@
 2004-02-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/14267
+	* typeck.c (build_modify_expr): Remove more of the cast-as-lvalue
+	extension.
+
 	PR debug/12103
 	* class.c (update_vtable_entry_for_fn): Do not go through
 	covariance machinery if the type returned by an overrider is the
