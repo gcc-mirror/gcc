@@ -387,7 +387,9 @@ static int reload_reg_reaches_end_p	PROTO((int, int, enum reload_type));
 static int reloads_conflict 		PROTO((int, int));
 static int allocate_reload_reg		PROTO((int, rtx, int, int));
 static void choose_reload_regs		PROTO((rtx, rtx));
+#ifdef SMALL_REGISTER_CLASSES
 static void merge_assigned_reloads	PROTO((rtx));
+#endif
 static void emit_reload_insns		PROTO((rtx));
 static void delete_output_reload	PROTO((rtx, int, rtx));
 static void inc_for_reload		PROTO((rtx, rtx, int));
