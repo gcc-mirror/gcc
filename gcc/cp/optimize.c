@@ -53,8 +53,6 @@ typedef struct inline_data
      inlining the body of `h', the stack will contain, `h', followed
      by `g', followed by `f'.  */
   varray_type fns;
-  /* The last SCOPE_STMT we have encountered.  */
-  tree scope_stmt;
   /* The label to jump to when a return statement is encountered.  */
   tree ret_label;
   /* The map from local declarations in the inlined function to
@@ -146,6 +144,7 @@ remap_block (scope_stmt, decls, id)
       tree old_block;
       tree new_block;
       tree old_var;
+      tree fn;
 
       /* Make the new block.  */
       old_block = SCOPE_STMT_BLOCK (scope_stmt);
@@ -175,13 +174,12 @@ remap_block (scope_stmt, decls, id)
 	}
       /* We put the BLOCK_VARS in reverse order; fix that now.  */
       BLOCK_VARS (new_block) = nreverse (BLOCK_VARS (new_block));
-      /* Graft the new block into the tree.  */
-      insert_block_after_note (new_block,
-			       SCOPE_STMT_BLOCK (id->scope_stmt),
-			       SCOPE_BEGIN_P (id->scope_stmt));
-      /* Remember that this is now the last scope statement with
-	 an associated block.  */
-      id->scope_stmt = scope_stmt;
+      /* Attach this new block after the DECL_INITIAL block for the
+	 function into which this block is being inlined.  In
+	 rest_of_compilation we will straighten out the BLOCK tree.  */
+      fn = VARRAY_TREE (id->fns, 0);
+      BLOCK_CHAIN (new_block) = BLOCK_CHAIN (DECL_INITIAL (fn));
+      BLOCK_CHAIN (DECL_INITIAL (fn)) = new_block;
       /* Remember the remapped block.  */
       splay_tree_insert (id->decl_map,
 			 (splay_tree_key) old_block,
@@ -198,10 +196,6 @@ remap_block (scope_stmt, decls, id)
 			     (splay_tree_key) SCOPE_STMT_BLOCK (scope_stmt));
       my_friendly_assert (n != NULL, 19991203);
       SCOPE_STMT_BLOCK (scope_stmt) = (tree) n->value;
-
-      /* Remember that this is now the last scope statement with an
-	 associated block.  */
-      id->scope_stmt = scope_stmt;
     }
 }
 
@@ -520,14 +514,6 @@ expand_call_inline (tp, walk_subtrees, data)
   id = (inline_data *) data;
   t = *tp;  
 
-  /* Keep track of the last SCOPE_STMT we've seen.  */
-  if (TREE_CODE (t) == SCOPE_STMT)
-    {
-      if (SCOPE_STMT_BLOCK (t) && !id->in_target_cleanup_p)
-	id->scope_stmt = t;
-      return NULL_TREE;
-    }
-
   /* Recurse, but letting recursive invocations know that we are
      inside the body of a TARGET_EXPR.  */
   if (TREE_CODE (*tp) == TARGET_EXPR)
@@ -608,11 +594,9 @@ expand_call_inline (tp, walk_subtrees, data)
   remap_block (scope_stmt, DECL_ARGUMENTS (fn), id);
   TREE_CHAIN (scope_stmt) = STMT_EXPR_STMT (expr);
   STMT_EXPR_STMT (expr) = scope_stmt;
-  id->scope_stmt = scope_stmt;
 
   /* Tell the debugging backends that this block represents the
-     outermost scope of the inlined function.  FIXME what to do for
-     inlines in cleanups?  */
+     outermost scope of the inlined function.  */
   if (SCOPE_STMT_BLOCK (scope_stmt))
     BLOCK_ABSTRACT_ORIGIN (SCOPE_STMT_BLOCK (scope_stmt)) = DECL_ORIGIN (fn);
 
@@ -722,12 +706,6 @@ optimize_function (fn)
 	    VARRAY_PUSH_TREE (id.fns, s->function_decl);
 	    prev_fn = s->function_decl;
 	  }
-
-      /* Initialize id->scope_stmt with a fake SCOPE_STMT for the outermost
-	 block of the function (i.e. the BLOCK with __FUNCTION__ et al).  */
-      id.scope_stmt = build_min_nt (SCOPE_STMT,
-				    BLOCK_SUBBLOCKS (DECL_INITIAL (fn)));
-      SCOPE_BEGIN_P (id.scope_stmt) = 1;
 
       /* Replace all calls to inline functions with the bodies of those
 	 functions.  */

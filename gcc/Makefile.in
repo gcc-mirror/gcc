@@ -748,7 +748,7 @@ DEMANGLE_H = $(srcdir)/../include/demangle.h
 RECOG_H = recog.h
 EXPR_H = expr.h insn-codes.h
 REGS_H = regs.h varray.h $(MACHMODE_H)
-INTREGRATE_H = integrate.h varray.h
+INTEGRATE_H = integrate.h varray.h
 LOOP_H = loop.h varray.h
 #
 # Language makefile fragments.

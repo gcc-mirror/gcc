@@ -78,6 +78,8 @@ static void process_reg_param		PROTO((struct inline_remap *, rtx,
 void set_decl_abstract_flags		PROTO((tree, int));
 static rtx expand_inline_function_eh_labelmap PROTO((rtx));
 static void mark_stores                 PROTO((rtx, rtx, void *));
+static int compare_blocks               PROTO((const PTR, const PTR));
+static int find_block                   PROTO((const PTR, const PTR));
 
 /* The maximum number of instructions accepted for inlining a
    function.  Increasing values mean more agressive inlining.
@@ -505,6 +507,35 @@ expand_inline_function_eh_labelmap (label)
   return get_label_from_map (eif_eh_map, index);
 }
 
+/* Compare two BLOCKs for qsort.  The key we sort on is the
+   BLOCK_ABSTRACT_ORIGIN of the blocks.  */
+
+static int
+compare_blocks (v1, v2)
+     const PTR v1;
+     const PTR v2;
+{
+  tree b1 = *((tree *) v1);
+  tree b2 = *((tree *) v2);
+
+  return ((char *) BLOCK_ABSTRACT_ORIGIN (b1) 
+	  - (char *) BLOCK_ABSTRACT_ORIGIN (b2));
+}
+
+/* Compare two BLOCKs for bsearch.  The first pointer corresponds to
+   an original block; the second to a remapped equivalent.  */
+
+static int
+find_block (v1, v2)
+     const PTR v1;
+     const PTR v2;
+{
+  tree b1 = (tree) v1;
+  tree b2 = *((tree *) v2);
+
+  return ((char *) b1 - (char *) BLOCK_ABSTRACT_ORIGIN (b2));
+}
+
 /* Integrate the procedure defined by FNDECL.  Note that this function
    may wind up calling itself.  Since the static variables are not
    reentrant, we do not assign them until after the possibility
@@ -687,6 +718,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   map = (struct inline_remap *) xmalloc (sizeof (struct inline_remap));
   map->fndecl = fndecl;
 
+  VARRAY_TREE_INIT (map->block_map, 10, "block_map");
   map->reg_map = (rtx *) xcalloc (max_regno, sizeof (rtx));
 
   /* We used to use alloca here, but the size of what it would try to
@@ -756,11 +788,6 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       if (note)
 	RTX_INTEGRATED_P (note) = 1;
     }
-
-  /* Figure out where the blocks are if we're going to have to insert
-     new BLOCKs into the existing block tree.  */
-  if (current_function->x_whole_function_mode_p)
-    find_loop_tree_blocks ();
 
   /* Process each argument.  For each, set up things so that the function's
      reference to the argument will refer to the argument being passed.
@@ -1006,14 +1033,31 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   else
     abort ();
 
-  /* Make a fresh binding contour that we can easily remove.  Do this after
-     expanding our arguments so cleanups are properly scoped.  */
-  expand_start_bindings (0);
-
   /* Initialize label_map.  get_label_from_map will actually make
      the labels.  */
   bzero ((char *) &map->label_map [min_labelno],
 	 (max_labelno - min_labelno) * sizeof (rtx));
+
+  /* Make copies of the decls of the symbols in the inline function, so that
+     the copies of the variables get declared in the current function.  Set
+     up things so that lookup_static_chain knows that to interpret registers
+     in SAVE_EXPRs for TYPE_SIZEs as local.  */
+  inline_function_decl = fndecl;
+  integrate_parm_decls (DECL_ARGUMENTS (fndecl), map, arg_vector);
+  block = integrate_decl_tree (inl_f->original_decl_initial, map);
+  BLOCK_ABSTRACT_ORIGIN (block) = DECL_ORIGIN (fndecl);
+  inline_function_decl = 0;
+
+  /* Make a fresh binding contour that we can easily remove.  Do this after
+     expanding our arguments so cleanups are properly scoped.  */
+  expand_start_bindings_and_block (0, block);
+
+  /* Sort the block-map so that it will be easy to find remapped
+     blocks later.  */
+  qsort (&VARRAY_TREE (map->block_map, 0), 
+	 map->block_map->elements_used,
+	 sizeof (tree),
+	 compare_blocks);
 
   /* Perform postincrements before actually calling the function.  */
   emit_queue ();
@@ -1292,6 +1336,25 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 		     region.  */
 		  NOTE_EH_HANDLER (copy) = CODE_LABEL_NUMBER (label);
 		}
+	      else if (copy
+		       && (NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_BEG
+			   || NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_END)
+		       && NOTE_BLOCK (insn))
+		{
+		  tree *mapped_block_p;
+
+		  mapped_block_p
+		    = (tree *) bsearch (NOTE_BLOCK (insn), 
+					&VARRAY_TREE (map->block_map, 0),
+					map->block_map->elements_used,
+					sizeof (tree),
+					find_block);
+		  
+		  if (!mapped_block_p)
+		    abort ();
+		  else
+		    NOTE_BLOCK (copy) = *mapped_block_p;
+		}
 	    }
 	  else
 	    copy = 0;
@@ -1332,27 +1395,18 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   if (inl_f->calls_alloca)
     emit_stack_restore (SAVE_BLOCK, stack_save, NULL_RTX);
 
-  /* Make copies of the decls of the symbols in the inline function, so that
-     the copies of the variables get declared in the current function.  Set
-     up things so that lookup_static_chain knows that to interpret registers
-     in SAVE_EXPRs for TYPE_SIZEs as local.  */
-
-  inline_function_decl = fndecl;
-  integrate_parm_decls (DECL_ARGUMENTS (fndecl), map, arg_vector);
-  block = integrate_decl_tree (inl_f->original_decl_initial, map);
-  BLOCK_ABSTRACT_ORIGIN (block) = (DECL_ABSTRACT_ORIGIN (fndecl) == NULL
-				   ? fndecl : DECL_ABSTRACT_ORIGIN (fndecl));
-  inline_function_decl = 0;
-
-  if (current_function->x_whole_function_mode_p)
-    /* Insert the block into the already existing block-tree.  */
-    retrofit_block (block, map->insns_at_start);
-  else
+  if (!current_function->x_whole_function_mode_p)
     /* In statement-at-a-time mode, we just tell the front-end to add
        this block to the list of blocks at this binding level.  We
        can't do it the way it's done for function-at-a-time mode the
        superblocks have not been created yet.  */
     insert_block (block);
+  else
+    {
+      BLOCK_CHAIN (block) 
+	= BLOCK_CHAIN (DECL_INITIAL (current_function_decl));
+      BLOCK_CHAIN (DECL_INITIAL (current_function_decl)) = block;
+    }
 
   /* End the scope containing the copied formal parameter variables
      and copied LABEL_DECLs.  We pass NULL_TREE for the variables list
@@ -1392,6 +1446,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
     free (real_label_map);
   VARRAY_FREE (map->const_equiv_varray);
   free (map->reg_map);
+  VARRAY_FREE (map->block_map);
   free (map->insn_map);
   free (map);
   free (arg_vals);
@@ -1451,6 +1506,7 @@ integrate_decl_tree (let, map)
   tree *next;
 
   new_block = make_node (BLOCK);
+  VARRAY_PUSH_TREE (map->block_map, new_block);
   next = &BLOCK_VARS (new_block);
 
   for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
