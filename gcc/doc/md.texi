@@ -4678,9 +4678,9 @@ an equality comparison of a register and a large constant:
    (set (match_dup 0) (compare:CC (match_dup 3) (match_dup 5)))]
   "
 @{
-  /* Get the constant we are comparing against, C, and see what it
+  /* @r{Get the constant we are comparing against, C, and see what it
      looks like sign-extended to 16 bits.  Then see what constant
-     could be XOR'ed with C to get the sign-extended value.  */
+     could be XOR'ed with C to get the sign-extended value.}  */
 
   int c = INTVAL (operands[2]);
   int sextc = (c << 16) >> 16;

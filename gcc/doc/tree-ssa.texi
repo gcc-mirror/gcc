@@ -938,14 +938,14 @@ tree            FOR_EACH_SSA_TREE_OPERAND
     @file{tree-ssa-operands.h}:
 
 @smallexample
-#define SSA_OP_USE              0x01    /* Real USE operands.  */
-#define SSA_OP_DEF              0x02    /* Real DEF operands.  */
-#define SSA_OP_VUSE             0x04    /* VUSE operands.  */
-#define SSA_OP_VMAYUSE          0x08    /* USE portion of V_MAY_DEFS.  */
-#define SSA_OP_VMAYDEF          0x10    /* DEF portion of V_MAY_DEFS.  */
-#define SSA_OP_VMUSTDEF         0x20    /* V_MUST_DEF definitions.  */
+#define SSA_OP_USE              0x01    /* @r{Real USE operands.}  */
+#define SSA_OP_DEF              0x02    /* @r{Real DEF operands.}  */
+#define SSA_OP_VUSE             0x04    /* @r{VUSE operands.}  */
+#define SSA_OP_VMAYUSE          0x08    /* @r{USE portion of V_MAY_DEFS.}  */
+#define SSA_OP_VMAYDEF          0x10    /* @r{DEF portion of V_MAY_DEFS.}  */
+#define SSA_OP_VMUSTDEF         0x20    /* @r{V_MUST_DEF definitions.}  */
 
-/* These are commonly grouped operand flags.  */
+/* @r{These are commonly grouped operand flags.}  */
 #define SSA_OP_VIRTUAL_USES     (SSA_OP_VUSE | SSA_OP_VMAYUSE)
 #define SSA_OP_VIRTUAL_DEFS     (SSA_OP_VMAYDEF | SSA_OP_VMUSTDEF)
 #define SSA_OP_ALL_USES         (SSA_OP_VIRTUAL_USES | SSA_OP_USE)
