@@ -140,8 +140,8 @@ struct bb_info {
 
 struct arcdata
 {
-  int hits;
-  int total;
+  gcov_type hits;
+  gcov_type total;
   int call_insn;
   struct arcdata *next;
 };
