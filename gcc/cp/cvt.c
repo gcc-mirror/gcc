@@ -99,7 +99,7 @@ cp_convert_to_pointer (type, expr)
   /* Handle anachronistic conversions from (::*)() to cv void* or (*)().  */
   if (TREE_CODE (type) == POINTER_TYPE
       && (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
-	  || TYPE_MAIN_VARIANT (TREE_TYPE (type)) == void_type_node))
+	  || VOID_TYPE_P (TREE_TYPE (type))))
     {
       /* Allow an implicit this pointer for pointer to member
 	 functions.  */
@@ -860,7 +860,7 @@ convert_to_void (expr, implicit)
     return error_mark_node;
   if (!TREE_TYPE (expr))
     return expr;
-  if (same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (expr)), void_type_node))
+  if (VOID_TYPE_P (TREE_TYPE (expr)))
     return expr;
   switch (TREE_CODE (expr))
     {
@@ -958,8 +958,7 @@ convert_to_void (expr, implicit)
                     implicit, expr);
   }
   
-  if (expr != error_mark_node
-      && !same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (expr)), void_type_node))
+  if (expr != error_mark_node && !VOID_TYPE_P (TREE_TYPE (expr)))
     {
       /* FIXME: This is where we should check for expressions with no
          effects.  At the moment we do that in both build_x_component_expr

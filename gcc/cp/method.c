@@ -2271,10 +2271,10 @@ emit_thunk (thunk_fndecl)
       t = tree_cons (NULL_TREE, a, t);
     t = nreverse (t);
     t = build_call (function, t);
-    if (!same_type_p (TREE_TYPE (t), void_type_node))
-      finish_return_stmt (t);
-    else
+    if (VOID_TYPE_P (TREE_TYPE (t)))
       finish_expr_stmt (t);
+    else
+      finish_return_stmt (t);
 
     /* The back-end expects DECL_INITIAL to contain a BLOCK, so we
        create one.  */

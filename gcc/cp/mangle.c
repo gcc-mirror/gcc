@@ -1467,7 +1467,7 @@ write_method_parms (parm_list, method_p)
     {
       tree parm = TREE_VALUE (parm_list);
 
-      if (same_type_p (parm, void_type_node))
+      if (parm == void_type_node)
 	{
 	  /* "Empty parameter lists, whether declared as () or
 	     conventionally as (void), are encoded with a void parameter

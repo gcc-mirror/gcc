@@ -1,3 +1,27 @@
+2000-06-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (build_conditional_expr): Use VOID_TYPE_P.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	(convert_to_void): Likewise.
+	* error.c (dump_expr): Likewise.
+	* except.c (complete_ptr_ref_or_void_ptr_p): Likewise.
+	* init.c (build_delete): Likewise.
+	* method.c (emit_thunk): Likewise.
+	* optmize.c (declare_return_variable): Likewise.
+	* rtti.c (get_tinfo_decl_dynamic): Likewise.
+	(get_typeid): Likewise.
+	(build_dynamic_cast_1): Likewise.
+	* typeck.c (composite_pointer_type): Likewise.
+	(common_type): Likewise.
+	(build_indirect_ref): Likewise.
+	(build_binary_op): Likewise.
+	(build_x_compound_expr): Likewise.
+	(check_return_expr): Likewise.
+	* typeck2.c (add_exception_specifier): Likewise.
+	
+	* mangle.c (write_method_parms): Use direct comparison for end
+	of parmlist.
+
 2000-06-19  Benjamin Chelf  <chelf@cabriolet.stanford.edu>
 
 	* cp-tree.h (genrtl_try_block): Declare function.

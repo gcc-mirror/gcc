@@ -1730,9 +1730,11 @@ dump_expr (t, flags)
       break;
 
     case CONVERT_EXPR:
-      if (same_type_p (TREE_TYPE (t), void_type_node))
+      if (VOID_TYPE_P (TREE_TYPE (t)))
 	{
-	  OB_PUTS ("(void)");
+	  OB_PUTC ('(');
+	  dump_type (TREE_TYPE (t), flags);
+	  OB_PUTC (')');
 	  dump_expr (TREE_OPERAND (t, 0), flags);
 	}
       else
