@@ -118,6 +118,7 @@ gnu::gcj::convert::Input_iconv::read (jcharArray outbuffer,
 void
 gnu::gcj::convert::Input_iconv::done ()
 {
+#ifdef HAVE_ICONV
   // 50 bytes should be enough for any reset sequence.
   size_t avail = 50;
   char tmp[avail];
@@ -127,6 +128,9 @@ gnu::gcj::convert::Input_iconv::done ()
   // might be generated in that situation.
   iconv_adapter (iconv, (iconv_t) handle, NULL, NULL, &p, &avail);
   BytesToUnicode::done ();
+#else /* HAVE_ICONV */
+  // If no iconv, do nothing
+#endif /* HAVE_ICONV */
 }
 
 void
@@ -269,6 +273,7 @@ gnu::gcj::convert::IOConverter::iconv_init (void)
 void
 gnu::gcj::convert::Output_iconv::done ()
 {
+#ifdef HAVE_ICONV
   // 50 bytes should be enough for any reset sequence.
   size_t avail = 50;
   char tmp[avail];
@@ -278,4 +283,7 @@ gnu::gcj::convert::Output_iconv::done ()
   // might be generated in that situation.
   iconv_adapter (iconv, (iconv_t) handle, NULL, NULL, &p, &avail);
   UnicodeToBytes::done ();
+#else /* HAVE_ICONV */
+  // If no iconv, do nothing
+#endif /* HAVE_ICONV */
 }
