@@ -834,11 +834,19 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
      force expensive constants into a register.  */
   if (CONSTANT_P (op0) && optimize
       && rtx_cost (op0, binoptab->code) > COSTS_N_INSNS (1))
-    op0 = force_reg (mode, op0);
+    {
+      if (GET_MODE (op0) != VOIDmode)
+	op0 = convert_modes (mode, VOIDmode, op0, unsignedp);
+      op0 = force_reg (mode, op0);
+    }
 
   if (CONSTANT_P (op1) && optimize
       && ! shift_op && rtx_cost (op1, binoptab->code) > COSTS_N_INSNS (1))
-    op1 = force_reg (mode, op1);
+    {
+      if (GET_MODE (op1) != VOIDmode)
+	op1 = convert_modes (mode, VOIDmode, op1, unsignedp);
+      op1 = force_reg (mode, op1);
+    }
 
   /* Record where to delete back to if we backtrack.  */
   last = get_last_insn ();
