@@ -1,3 +1,7 @@
+Fri Jul 24 18:58:37 1998  Klaus Espenlaub  <kespenla@student.informatik.uni-ulm.de>
+
+        * rs6000.h (ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR): Delete.
+
 Thu Jul 23 18:53:20 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* dbxout.c (dbxout_range_type): Only call dbxout_type_index for
