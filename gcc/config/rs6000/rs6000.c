@@ -16520,8 +16520,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 
   switch (code)
     {
-      /* On the RS/6000, if it is valid in the insn, it is free.
-	 So this always returns 0.  */
+      /* On the RS/6000, if it is valid in the insn, it is free.  */
     case CONST_INT:
       if (((outer_code == SET
 	    || outer_code == PLUS
@@ -16591,13 +16590,16 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 
     case CONST:
     case HIGH:
-    case LABEL_REF:
     case SYMBOL_REF:
     case MEM:
       /* When optimizing for size, MEM should be slightly more expensive
 	 than generating address, e.g., (plus (reg) (const)).
 	 L1 cache latecy is about two instructions.  */
       *total = optimize_size ? COSTS_N_INSNS (1) + 1 : COSTS_N_INSNS (2);
+      return true;
+
+    case LABEL_REF:
+      *total = 0;
       return true;
 
     case PLUS:
