@@ -1,3 +1,9 @@
+2001-06-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-semantics.c (genrtl_scope_stmt): Write out nested inline
+	functions here, instead of ...
+	* c-decl.c (c_expand_body): ... here.
+
 2001-06-05  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc, config/sparc/bsd.h:  Do not directly include
