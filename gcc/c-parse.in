@@ -1291,8 +1291,9 @@ component_declarator:
 	  declarator ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, $5);
 		  decl_attributes ($$, $6); }
-	| save_filename save_lineno ':' expr_no_commas
-		{ $$ = grokfield ($1, $2, NULL_TREE, current_declspecs, $4); }
+	| save_filename save_lineno ':' expr_no_commas maybe_attribute
+		{ $$ = grokfield ($1, $2, NULL_TREE, current_declspecs, $4);
+		  decl_attributes ($$, $5); }
 	;
 
 /* We chain the enumerators in reverse order.
