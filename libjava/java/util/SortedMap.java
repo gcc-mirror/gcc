@@ -97,10 +97,10 @@ public interface SortedMap extends Map
    * <p>
    *
    * The returned map throws an IllegalArgumentException any time a key is
-   * used which is out of the range of toKey. Note that the endpoint is not
-   * included; if you want the endpoint, pass the successor object in to
-   * toKey.  For example, for Strings, you can request
-   * <code>headMap(limit + "\0")</code>.
+   * used which is out of the range of toKey. Note that the endpoint, toKey,
+   * is not included; if you want this value to be included, pass its successor
+   * object in to toKey.  For example, for Integers, you could request
+   * <code>headMap(new Integer(limit.intValue() + 1))</code>.
    *
    * @param toKey the exclusive upper range of the submap
    * @return the submap
@@ -130,9 +130,10 @@ public interface SortedMap extends Map
    * The returned map throws an IllegalArgumentException any time a key is
    * used which is out of the range of fromKey and toKey. Note that the
    * lower endpoint is included, but the upper is not; if you want to
-   * change the inclusion or exclusion of an endpoint, pass the successor
-   * object in instead.  For example, for Strings, you can request
-   * <code>subMap(lowlimit + "\0", highlimit + "\0")</code> to reverse
+   * change the inclusion or exclusion of an endpoint, pass its successor
+   * object in instead.  For example, for Integers, you could request
+   * <code>subMap(new Integer(lowlimit.intValue() + 1),
+   * new Integer(highlimit.intValue() + 1))</code> to reverse
    * the inclusiveness of both endpoints.
    *
    * @param fromKey the inclusive lower range of the submap
@@ -154,10 +155,10 @@ public interface SortedMap extends Map
    * <p>
    *
    * The returned map throws an IllegalArgumentException any time a key is
-   * used which is out of the range of fromKey. Note that the endpoint is
-   * included; if you do not want the endpoint, pass the successor object in
-   * to fromKey.  For example, for Strings, you can request
-   * <code>tailMap(limit + "\0")</code>.
+   * used which is out of the range of fromKey. Note that the endpoint, fromKey, is
+   * included; if you do not want this value to be included, pass its successor object in
+   * to fromKey.  For example, for Integers, you could request
+   * <code>tailMap(new Integer(limit.intValue() + 1))</code>.
    *
    * @param fromKey the inclusive lower range of the submap
    * @return the submap

@@ -99,10 +99,10 @@ public interface SortedSet extends Set
    * <p>
    *
    * The returned set throws an IllegalArgumentException any time an element is
-   * used which is out of the range of toElement. Note that the endpoint is not
-   * included; if you want the endpoint, pass the successor object in to
-   * toElement.  For example, for Strings, you can request
-   * <code>headSet(limit + "\0")</code>.
+   * used which is out of the range of toElement. Note that the endpoint, toElement,
+   * is not included; if you want this value included, pass its successor object in to
+   * toElement.  For example, for Integers, you could request
+   * <code>headSet(new Integer(limit.intValue() + 1))</code>.
    *
    * @param toElement the exclusive upper range of the subset
    * @return the subset
@@ -133,9 +133,10 @@ public interface SortedSet extends Set
    * The returned set throws an IllegalArgumentException any time an element is
    * used which is out of the range of fromElement and toElement. Note that the
    * lower endpoint is included, but the upper is not; if you want to
-   * change the inclusion or exclusion of an endpoint, pass the successor
-   * object in instead.  For example, for Strings, you can request
-   * <code>subSet(lowlimit + "\0", highlimit + "\0")</code> to reverse
+   * change the inclusion or exclusion of an endpoint, pass its successor
+   * object in instead.  For example, for Integers, you can request
+   * <code>subSet(new Integer(lowlimit.intValue() + 1),
+   * new Integer(highlimit.intValue() + 1))</code> to reverse
    * the inclusiveness of both endpoints.
    *
    * @param fromElement the inclusive lower range of the subset
@@ -157,10 +158,10 @@ public interface SortedSet extends Set
    * <p>
    *
    * The returned set throws an IllegalArgumentException any time an element is
-   * used which is out of the range of fromElement. Note that the endpoint is
-   * included; if you do not want the endpoint, pass the successor object in
-   * to fromElement.  For example, for Strings, you can request
-   * <code>tailSet(limit + "\0")</code>.
+   * used which is out of the range of fromElement. Note that the endpoint,
+   * fromElement, is included; if you do not want this value to be included, pass its
+   * successor object in to fromElement.  For example, for Integers, you could request
+   * <code>tailSet(new Integer(limit.intValue() + 1))</code>.
    *
    * @param fromElement the inclusive lower range of the subset
    * @return the subset
