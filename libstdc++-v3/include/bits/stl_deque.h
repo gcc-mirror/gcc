@@ -446,7 +446,7 @@ namespace _GLIBCXX_STD
       size_t __num_nodes = __num_elements / __deque_buf_size(sizeof(_Tp)) + 1;
 
       this->_M_impl._M_map_size = std::max((size_t) _S_initial_map_size,
-				   __num_nodes + 2);
+				   size_t(__num_nodes + 2));
       this->_M_impl._M_map = _M_allocate_map(this->_M_impl._M_map_size);
 
       // For "small" maps (needing less than _M_map_size nodes), allocation
