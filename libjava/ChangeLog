@@ -1,3 +1,8 @@
+2001-03-01  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natThrowable.cc (printRawStackTrace): Copy the
+	stackTrace buffer to a correctly aligned pointer array.
+ 
 2001-03-12  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/Runtime.java (_exit): Declare new package-private native.
