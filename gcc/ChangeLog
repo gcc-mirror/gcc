@@ -19,6 +19,9 @@ Mon Oct 19 13:26:24 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 Mon Oct 19 11:40:56 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* gcse.c (compute_hash_table): Correctly identify hard regs which are
+	clobbered across calls.
+
 	* loop.c (scan_loop): Be more selective about what invariants are
 	moved out of a loop.
 

@@ -2075,7 +2075,20 @@ compute_hash_table (f, set_p)
 	  if (GET_CODE (insn) == CALL_INSN)
 	    {
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (call_used_regs[regno])
+		if ((call_used_regs[regno]
+		     && regno != STACK_POINTER_REGNUM
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+		     && regno != HARD_FRAME_POINTER_REGNUM
+#endif
+#if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
+		     && ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
+#endif
+#if defined (PIC_OFFSET_TABLE_REGNUM) && !defined (PIC_OFFSET_TABLE_REG_CALL_CLOBBERED)
+		     && ! (regno == PIC_OFFSET_TABLE_REGNUM && flag_pic)
+#endif
+
+		     && regno != FRAME_POINTER_REGNUM)
+		    || global_regs[regno])
 		  record_last_reg_set_info (insn, regno);
 	      if (! CONST_CALL_P (insn))
 		record_last_mem_set_info (insn);
@@ -2548,7 +2561,20 @@ compute_kill_rd ()
 
 		  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
                     {
-		      if (call_used_regs[regno])
+		      if ((call_used_regs[regno]
+			   && regno != STACK_POINTER_REGNUM
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+			   && regno != HARD_FRAME_POINTER_REGNUM
+#endif
+#if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
+			   && ! (regno == ARG_POINTER_REGNUM
+				 && fixed_regs[regno])
+#endif
+#if defined (PIC_OFFSET_TABLE_REGNUM) && !defined (PIC_OFFSET_TABLE_REG_CALL_CLOBBERED)
+			   && ! (regno == PIC_OFFSET_TABLE_REGNUM && flag_pic)
+#endif
+			   && regno != FRAME_POINTER_REGNUM)
+			  || global_regs[regno])
 			handle_rd_kill_set (insn, regno, bb);
                     }
                 }
