@@ -1,3 +1,8 @@
+2003-07-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10108
+	* g++.dg/template/crash7.C: New test.
+
 2003-07-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR target/10795

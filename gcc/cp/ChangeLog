@@ -1,3 +1,9 @@
+2003-07-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10108
+	* pt.c (tsubst_decl) <TEMPLATE_DECL>: Add a check for
+	error_mark_node.
+
 2003-07-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11509
