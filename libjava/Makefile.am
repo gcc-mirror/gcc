@@ -2513,6 +2513,8 @@ gnu/java/security/der/DEREncodingException.java \
 gnu/java/security/der/DERReader.java \
 gnu/java/security/der/DERValue.java \
 gnu/java/security/der/DERWriter.java \
+gnu/java/security/action/GetPropertyAction.java \
+gnu/java/security/action/SetAccessibleAction.java \
 gnu/java/security/provider/DefaultPolicy.java \
 gnu/java/security/provider/DSAKeyFactory.java \
 gnu/java/security/provider/DSAKeyPairGenerator.java \

@@ -2196,6 +2196,8 @@ gnu/java/security/der/DEREncodingException.java \
 gnu/java/security/der/DERReader.java \
 gnu/java/security/der/DERValue.java \
 gnu/java/security/der/DERWriter.java \
+gnu/java/security/action/GetPropertyAction.java \
+gnu/java/security/action/SetAccessibleAction.java \
 gnu/java/security/provider/DefaultPolicy.java \
 gnu/java/security/provider/DSAKeyFactory.java \
 gnu/java/security/provider/DSAKeyPairGenerator.java \
@@ -3468,6 +3470,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/rmi/server/UnicastServer.P \
 .deps/gnu/java/rmi/server/UnicastServerRef.P \
 .deps/gnu/java/security/Engine.P .deps/gnu/java/security/OID.P \
+.deps/gnu/java/security/action/GetPropertyAction.P \
+.deps/gnu/java/security/action/SetAccessibleAction.P \
 .deps/gnu/java/security/der/BitString.P \
 .deps/gnu/java/security/der/DER.P \
 .deps/gnu/java/security/der/DEREncodingException.P \

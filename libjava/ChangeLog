@@ -1,3 +1,9 @@
+2004-07-24  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* Makefile.am: Add gnu/java/security/action/GetPropertyAction.java
+	and gnu/java/security/action/SetAccessibleAction.java.
+	* Makefile.in: Rebuilt.
+
 2004-07-23  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* prims.cc (_Jv_InitPrimClass): Don't create an array class.
