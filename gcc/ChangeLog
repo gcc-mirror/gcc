@@ -1,3 +1,15 @@
+2002-04-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppexp.c (lex): Move some code to _cpp_parse_expr, but
+	keep most cases as function eval_token.
+	(eval_token): New function.
+	(_cpp_parse_expr): Read token here for improved diagnostics.
+	Don't use op_as_text.  Detect bad ':' here.
+	(reduce): Don't detect bad ':' here.
+	(op_as_text): Remove.
+	* cpphash.h (_cpp_test_assertion): Change prototype.
+	* cpplib.c (_cpp_test_assertion): Change prototype.
+
 2002-04-28  Richard Henderson  <rth@redhat.com>
 
 	PR c/5154

@@ -36,8 +36,7 @@ static HOST_WIDEST_INT right_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT,
 					    unsigned HOST_WIDEST_INT));
 static struct op parse_number PARAMS ((cpp_reader *, const cpp_token *));
 static struct op parse_defined PARAMS ((cpp_reader *));
-static struct op lex PARAMS ((cpp_reader *));
-static const unsigned char *op_as_text PARAMS ((cpp_reader *, enum cpp_ttype));
+static struct op eval_token PARAMS ((cpp_reader *, const cpp_token *));
 static struct op *reduce PARAMS ((cpp_reader *, struct op *, enum cpp_ttype));
 
 struct op
@@ -275,45 +274,30 @@ parse_defined (pfile)
   return op;
 }
 
-/* Read a token.  The returned type is CPP_NUMBER for a valid number
-   (an interpreted preprocessing number or character constant, or the
-   result of the "defined" or "#" operators), CPP_ERROR on error,
-   CPP_EOF, or the type of an operator token.  */
+/* Convert a token into a CPP_NUMBER (an interpreted preprocessing
+   number or character constant, or the result of the "defined" or "#"
+   operators), or CPP_ERROR on error.  */
 static struct op
-lex (pfile)
+eval_token (pfile, token)
      cpp_reader *pfile;
+     const cpp_token *token;
 {
+  unsigned int temp;
   struct op op;
-  const cpp_token *token = cpp_get_token (pfile);
+
+  op.op = CPP_NUMBER;
+  op.unsignedp = 0;
 
   switch (token->type)
     {
     case CPP_NUMBER:
       return parse_number (pfile, token);
 
-    case CPP_CHAR:
     case CPP_WCHAR:
-      {
-	unsigned int chars_seen;
-
-	if (token->type == CPP_CHAR)
-	  op.unsignedp = 0;
-	else
-	  op.unsignedp = WCHAR_UNSIGNED;
-	op.op = CPP_NUMBER;
-	op.value = cpp_interpret_charconst (pfile, token, 1, &chars_seen);
-	return op;
-      }
-
-    case CPP_STRING:
-    case CPP_WSTRING:
-      SYNTAX_ERROR ("string constants are not valid in #if");
-
-    case CPP_OTHER:
-      if (ISGRAPH (token->val.c))
-	SYNTAX_ERROR2 ("invalid character '%c' in #if", token->val.c);
-      else
-	SYNTAX_ERROR2 ("invalid character '\\%03o' in #if", token->val.c);
+      op.unsignedp = WCHAR_UNSIGNED;
+    case CPP_CHAR:		/* Always unsigned.  */
+      op.value = cpp_interpret_charconst (pfile, token, 1, &temp);
+      break;
 
     case CPP_NAME:
       if (token->val.node == pfile->spec_nodes.n_defined)
@@ -322,8 +306,6 @@ lex (pfile)
 	       && (token->val.node == pfile->spec_nodes.n_true
 		   || token->val.node == pfile->spec_nodes.n_false))
 	{
-	  op.op = CPP_NUMBER;
-	  op.unsignedp = 0;
 	  op.value = (token->val.node == pfile->spec_nodes.n_true);
 
 	  /* Warn about use of true or false in #if when pedantic
@@ -333,46 +315,22 @@ lex (pfile)
 	    cpp_error (pfile, DL_PEDWARN,
 		       "ISO C++ does not permit \"%s\" in #if",
 		       NODE_NAME (token->val.node));
-	  return op;
 	}
       else
 	{
-	  op.op = CPP_NUMBER;
-	  op.unsignedp = 0;
 	  op.value = 0;
-
 	  if (CPP_OPTION (pfile, warn_undef) && !pfile->state.skip_eval)
 	    cpp_error (pfile, DL_WARNING, "\"%s\" is not defined",
 		       NODE_NAME (token->val.node));
-	  return op;
 	}
+      break;
 
-    case CPP_HASH:
-      {
-	int temp;
-
-	op.op = CPP_NUMBER;
-	if (_cpp_test_assertion (pfile, &temp))
-	  op.op = CPP_ERROR;
-	op.unsignedp = 0;
-	op.value = temp;
-	return op;
-      }
-
-    default:
-      if (((int) token->type > (int) CPP_EQ
-	   && (int) token->type < (int) CPP_PLUS_EQ))
-	{
-	  op.op = token->type;
-	  return op;
-	}
-
-      SYNTAX_ERROR2 ("\"%s\" is not valid in #if expressions",
-		     cpp_token_as_text (pfile, token));
+    default: /* CPP_HASH */
+      if (_cpp_test_assertion (pfile, &temp))
+	op.op = CPP_ERROR;
+      op.value = temp;
     }
 
- syntax_error:
-  op.op = CPP_ERROR;
   return op;
 }
 
@@ -459,7 +417,7 @@ extra semantics need to be handled with operator-specific code.  */
    N entries of enum cpp_ttype.  */
 static const struct operator
 {
-  uchar prio;			/* Priorities are even.  */
+  uchar prio;
   uchar flags;
 } optab[] =
 {
@@ -539,6 +497,7 @@ _cpp_parse_expr (pfile)
      cpp_reader *pfile;
 {
   struct op *top = pfile->op_stack;
+  const cpp_token *token = NULL, *prev_token;
   unsigned int lex_count;
   bool saw_leading_not, want_value = true;
 
@@ -556,19 +515,26 @@ _cpp_parse_expr (pfile)
     {
       struct op op;
 
-      /* Read a token */
-      op = lex (pfile);
+      prev_token = token;
+      token = cpp_get_token (pfile);
       lex_count++;
+      op.op = token->type;
 
       switch (op.op)
 	{
-	case CPP_ERROR:
-	  goto syntax_error;
+	  /* These tokens convert into values.  */
 	case CPP_NUMBER:
-	  /* Push a value onto the stack.  */
+	case CPP_CHAR:
+	case CPP_WCHAR:
+	case CPP_NAME:
+	case CPP_HASH:
 	  if (!want_value)
-	    SYNTAX_ERROR ("missing binary operator");
+	    SYNTAX_ERROR2 ("missing binary operator before token \"%s\"",
+			   cpp_token_as_text (pfile, token));
 	  want_value = false;
+	  op = eval_token (pfile, token);
+	  if (op.op == CPP_ERROR)
+	    goto syntax_error;
 	  top->value = op.value;
 	  top->unsignedp = op.unsignedp;
 	  continue;
@@ -584,7 +550,16 @@ _cpp_parse_expr (pfile)
 	  if (want_value)
 	    op.op = CPP_UMINUS;
 	  break;
+	case CPP_OTHER:
+	  if (ISGRAPH (token->val.c))
+	    SYNTAX_ERROR2 ("invalid character '%c' in #if", token->val.c);
+	  else
+	    SYNTAX_ERROR2 ("invalid character '\\%03o' in #if", token->val.c);
+
 	default:
+	  if ((int) op.op <= (int) CPP_EQ || (int) op.op >= (int) CPP_PLUS_EQ)
+	    SYNTAX_ERROR2 ("token \"%s\" is not valid in #if expressions",
+			   cpp_token_as_text (pfile, token));
 	  break;
 	}
 
@@ -592,11 +567,13 @@ _cpp_parse_expr (pfile)
       if (optab[op.op].flags & NO_L_OPERAND)
 	{
 	  if (!want_value)
-	    SYNTAX_ERROR2 ("missing binary operator before '%s'",
-			   op_as_text (pfile, op.op));
+	    SYNTAX_ERROR2 ("missing binary operator before token \"%s\"",
+			   cpp_token_as_text (pfile, token));
 	}
       else if (want_value)
 	{
+	  /* Ordering here is subtle and intended to favour the
+	     missing parenthesis diagnostics over alternatives.  */
 	  if (op.op == CPP_CLOSE_PAREN)
 	    {
 	      if (top->op == CPP_OPEN_PAREN)
@@ -606,19 +583,20 @@ _cpp_parse_expr (pfile)
 	    SYNTAX_ERROR ("#if with no expression");
 	  if (top->op != CPP_EOF && top->op != CPP_OPEN_PAREN)
 	    SYNTAX_ERROR2 ("operator '%s' has no right operand",
-			   op_as_text (pfile, top->op));
+			   cpp_token_as_text (pfile, prev_token));
 	}
 
       top = reduce (pfile, top, op.op);
       if (!top)
 	goto syntax_error;
 
+      if (op.op == CPP_EOF)
+	break;
+
       switch (op.op)
 	{
 	case CPP_CLOSE_PAREN:
 	  continue;
-	case CPP_EOF:
-	  goto done;
 	case CPP_OR_OR:
 	  if (top->value)
 	    pfile->state.skip_eval++;
@@ -629,6 +607,8 @@ _cpp_parse_expr (pfile)
 	    pfile->state.skip_eval++;
 	  break;
 	case CPP_COLON:
+	  if (top->op != CPP_QUERY)
+	    SYNTAX_ERROR (" ':' without preceding '?'");
 	  if (top[-1].value) /* Was '?' condition true?  */
 	    pfile->state.skip_eval++;
 	  else
@@ -646,7 +626,6 @@ _cpp_parse_expr (pfile)
       top->op = op.op;
     }
 
-done:
   /* The controlling macro expression is only valid if we called lex 3
      times: <!> <defined expression> and <EOF>.  push_conditional ()
      checks that we are at top-of-file.  */
@@ -693,8 +672,7 @@ reduce (pfile, top, op)
       switch (top[1].op)
 	{
 	default:
-	  cpp_error (pfile, DL_ICE, "impossible operator '%s'",
-		     op_as_text (pfile, top[1].op));
+	  cpp_error (pfile, DL_ICE, "impossible operator '%u'", top[1].op);
 	  return 0;
 
 	case CPP_NOT:	 UNARY(!);	break;
@@ -806,11 +784,6 @@ reduce (pfile, top, op)
 	  cpp_error (pfile, DL_ERROR, "'?' without following ':'");
 	  return 0;
 	case CPP_COLON:
-	  if (top->op != CPP_QUERY)
-	    {
-	      cpp_error (pfile, DL_ERROR, " ':' without preceding '?'");
-	      return 0;
-	    }
 	  top--;
 	  if (top->value) pfile->state.skip_eval--;
 	  top->value = top->value ? v1 : v2;
@@ -848,22 +821,4 @@ _cpp_expand_op_stack (pfile)
 					    (n * 2 + 20) * sizeof (struct op));
 
   return pfile->op_stack + n;
-}
-
-/* Output OP as text for diagnostics.  */
-static const unsigned char *
-op_as_text (pfile, op)
-     cpp_reader *pfile;
-     enum cpp_ttype op;
-{
-  cpp_token token;
-
-  if (op == CPP_UPLUS)
-    op = CPP_PLUS;
-  else if (op == CPP_UMINUS)
-    op = CPP_MINUS;
-
-  token.type = op;
-  token.flags = 0;
-  return cpp_token_as_text (pfile, &token);
 }
