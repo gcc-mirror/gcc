@@ -34,7 +34,7 @@
 #include <bits/os_defines.h>
 
 // The current version of the C++ library in compressed ISO date format.
-#define __GLIBCPP__ 20021230
+#define __GLIBCPP__ 20021231
 
 // This is necessary until GCC supports separate template
 // compilation.  
