@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2003 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -83,7 +83,6 @@ rotate_right (gfc_unit * t)
 static int
 compare (int a, int b)
 {
-
   if (a < b)
     return -1;
   if (a > b)
@@ -132,7 +131,6 @@ insert (gfc_unit * new, gfc_unit * t)
 void
 insert_unit (gfc_unit * new)
 {
-
   new->priority = pseudo_random ();
   g.unit_root = insert (new, g.unit_root);
 }
@@ -194,7 +192,6 @@ delete_treap (gfc_unit * old, gfc_unit * t)
 static void
 delete_unit (gfc_unit * old)
 {
-
   g.unit_root = delete_treap (old, g.unit_root);
 }
 
@@ -244,8 +241,6 @@ find_unit (int n)
 gfc_unit *
 get_unit (int read_flag)
 {
-  gfc_unit *u;
-
   if (ioparm.internal_unit != NULL)
     {
       internal_unit.s =
@@ -263,9 +258,7 @@ get_unit (int read_flag)
 
   /* Has to be an external unit */
 
-  u = find_unit (ioparm.unit);
-
-  return u;
+  return find_unit (ioparm.unit);
 }
 
 
@@ -275,7 +268,6 @@ get_unit (int read_flag)
 int
 is_internal_unit ()
 {
-
   return current_unit == &internal_unit;
 }
 
@@ -372,7 +364,6 @@ close_unit (gfc_unit * u)
 void
 close_units (void)
 {
-
   while (g.unit_root != NULL)
     close_unit (g.unit_root);
 }
