@@ -130,6 +130,21 @@ struct move_by_pieces
   int reverse;
 };
 
+/* This structure is used by clear_by_pieces to describe the clear to
+   be performed.  */
+
+struct clear_by_pieces
+{
+  rtx to;
+  rtx to_addr;
+  int autinc_to;
+  int explicit_inc_to;
+  int to_struct;
+  int len;
+  int offset;
+  int reverse;
+};
+
 /* Used to generate bytecodes: keep track of size of local variables,
    as well as depth of arithmetic stack. (Notice that variables are
    stored on the machine's stack, not the arithmetic stack.) */
@@ -147,6 +162,11 @@ static void move_by_pieces	PROTO((rtx, rtx, int, int));
 static int move_by_pieces_ninsns PROTO((unsigned int, int));
 static void move_by_pieces_1	PROTO((rtx (*) (), enum machine_mode,
 				       struct move_by_pieces *));
+static void clear_by_pieces	PROTO((rtx, int, int));
+static void clear_by_pieces_1	PROTO((rtx (*) (), enum machine_mode,
+				       struct clear_by_pieces *));
+static int is_zeros_p		PROTO((tree));
+static int mostly_zeros_p	PROTO((tree));
 static void store_constructor	PROTO((tree, rtx));
 static rtx store_field		PROTO((rtx, int, int, enum machine_mode, tree,
 				       enum machine_mode, int, int, int));
@@ -215,6 +235,9 @@ static char direct_store[NUM_MACHINE_MODES];
 
 /* This array records the insn_code of insns to perform block moves.  */
 enum insn_code movstr_optab[NUM_MACHINE_MODES];
+
+/* This array records the insn_code of insns to perform block clears.  */
+enum insn_code clrstr_optab[NUM_MACHINE_MODES];
 
 /* SLOW_UNALIGNED_ACCESS is non-zero if unaligned accesses are very slow. */
 
@@ -1828,33 +1851,224 @@ use_regs (call_fusage, regno, nregs)
     use_reg (call_fusage, gen_rtx (REG, reg_raw_mode[regno + i], regno + i));
 }
 
+/* Generate several move instructions to clear LEN bytes of block TO.
+   (A MEM rtx with BLKmode).   The caller must pass TO through
+   protect_from_queue before calling. ALIGN (in bytes) is maximum alignment
+   we can assume.  */
+
+static void
+clear_by_pieces (to, len, align)
+     rtx to;
+     int len, align;
+{
+  struct clear_by_pieces data;
+  rtx to_addr = XEXP (to, 0);
+  int max_size = MOVE_MAX + 1;
+
+  data.offset = 0;
+  data.to_addr = to_addr;
+  data.to = to;
+  data.autinc_to
+    = (GET_CODE (to_addr) == PRE_INC || GET_CODE (to_addr) == PRE_DEC
+       || GET_CODE (to_addr) == POST_INC || GET_CODE (to_addr) == POST_DEC);
+
+  data.explicit_inc_to = 0;
+  data.reverse
+    = (GET_CODE (to_addr) == PRE_DEC || GET_CODE (to_addr) == POST_DEC);
+  if (data.reverse) data.offset = len;
+  data.len = len;
+
+  data.to_struct = MEM_IN_STRUCT_P (to);
+
+  /* If copying requires more than two move insns,
+     copy addresses to registers (to make displacements shorter)
+     and use post-increment if available.  */
+  if (!data.autinc_to
+      && move_by_pieces_ninsns (len, align) > 2)
+    {
+#ifdef HAVE_PRE_DECREMENT
+      if (data.reverse && ! data.autinc_to)
+	{
+	  data.to_addr = copy_addr_to_reg (plus_constant (to_addr, len));
+	  data.autinc_to = 1;
+	  data.explicit_inc_to = -1;
+	}
+#endif
+#ifdef HAVE_POST_INCREMENT
+      if (! data.reverse && ! data.autinc_to)
+	{
+	  data.to_addr = copy_addr_to_reg (to_addr);
+	  data.autinc_to = 1;
+	  data.explicit_inc_to = 1;
+	}
+#endif
+      if (!data.autinc_to && CONSTANT_P (to_addr))
+	data.to_addr = copy_addr_to_reg (to_addr);
+    }
+
+  if (! SLOW_UNALIGNED_ACCESS
+      || align > MOVE_MAX || align >= BIGGEST_ALIGNMENT / BITS_PER_UNIT)
+    align = MOVE_MAX;
+
+  /* First move what we can in the largest integer mode, then go to
+     successively smaller modes.  */
+
+  while (max_size > 1)
+    {
+      enum machine_mode mode = VOIDmode, tmode;
+      enum insn_code icode;
+
+      for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+	   tmode != VOIDmode; tmode = GET_MODE_WIDER_MODE (tmode))
+	if (GET_MODE_SIZE (tmode) < max_size)
+	  mode = tmode;
+
+      if (mode == VOIDmode)
+	break;
+
+      icode = mov_optab->handlers[(int) mode].insn_code;
+      if (icode != CODE_FOR_nothing
+	  && align >= MIN (BIGGEST_ALIGNMENT / BITS_PER_UNIT,
+			   GET_MODE_SIZE (mode)))
+	clear_by_pieces_1 (GEN_FCN (icode), mode, &data);
+
+      max_size = GET_MODE_SIZE (mode);
+    }
+
+  /* The code above should have handled everything.  */
+  if (data.len != 0)
+    abort ();
+}
+
+/* Subroutine of clear_by_pieces.  Clear as many bytes as appropriate
+   with move instructions for mode MODE.  GENFUN is the gen_... function
+   to make a move insn for that mode.  DATA has all the other info.  */
+
+static void
+clear_by_pieces_1 (genfun, mode, data)
+     rtx (*genfun) ();
+     enum machine_mode mode;
+     struct clear_by_pieces *data;
+{
+  register int size = GET_MODE_SIZE (mode);
+  register rtx to1;
+
+  while (data->len >= size)
+    {
+      if (data->reverse) data->offset -= size;
+
+      to1 = (data->autinc_to
+	     ? gen_rtx (MEM, mode, data->to_addr)
+	     : change_address (data->to, mode,
+			       plus_constant (data->to_addr, data->offset)));
+      MEM_IN_STRUCT_P (to1) = data->to_struct;
+
+#ifdef HAVE_PRE_DECREMENT
+      if (data->explicit_inc_to < 0)
+	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (-size)));
+#endif
+
+      emit_insn ((*genfun) (to1, const0_rtx));
+#ifdef HAVE_POST_INCREMENT
+      if (data->explicit_inc_to > 0)
+	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (size)));
+#endif
+
+      if (! data->reverse) data->offset += size;
+
+      data->len -= size;
+    }
+}
+
 /* Write zeros through the storage of OBJECT.
-   If OBJECT has BLKmode, SIZE is its length in bytes.  */
+   If OBJECT has BLKmode, SIZE is its length in bytes and ALIGN is
+   the maximum alignment we can is has, measured in bytes.  */
 
 void
-clear_storage (object, size)
+clear_storage (object, size, align)
      rtx object;
      rtx size;
+     int align;
 {
   if (GET_MODE (object) == BLKmode)
     {
+      object = protect_from_queue (object, 1);
+      size = protect_from_queue (size, 0);
+
+      if (GET_CODE (size) == CONST_INT
+	  && (move_by_pieces_ninsns (INTVAL (size), align) < MOVE_RATIO))
+	clear_by_pieces (object, INTVAL (size), align);
+
+      else
+	{
+	  /* Try the most limited insn first, because there's no point
+	     including more than one in the machine description unless
+	     the more limited one has some advantage.  */
+
+	  rtx opalign = GEN_INT (align);
+	  enum machine_mode mode;
+
+	  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
+	       mode = GET_MODE_WIDER_MODE (mode))
+	    {
+	      enum insn_code code = clrstr_optab[(int) mode];
+
+	      if (code != CODE_FOR_nothing
+		  /* We don't need MODE to be narrower than
+		     BITS_PER_HOST_WIDE_INT here because if SIZE is less than
+		     the mode mask, as it is returned by the macro, it will
+		     definitely be less than the actual mode mask.  */
+		  && ((GET_CODE (size) == CONST_INT
+		       && ((unsigned HOST_WIDE_INT) INTVAL (size)
+			   <= GET_MODE_MASK (mode)))
+		      || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD)
+		  && (insn_operand_predicate[(int) code][0] == 0
+		      || (*insn_operand_predicate[(int) code][0]) (object,
+								   BLKmode))
+		  && (insn_operand_predicate[(int) code][2] == 0
+		      || (*insn_operand_predicate[(int) code][2]) (opalign,
+								   VOIDmode)))
+		{
+		  rtx op1;
+		  rtx last = get_last_insn ();
+		  rtx pat;
+
+		  op1 = convert_to_mode (mode, size, 1);
+		  if (insn_operand_predicate[(int) code][1] != 0
+		      && ! (*insn_operand_predicate[(int) code][1]) (op1,
+								     mode))
+		    op1 = copy_to_mode_reg (mode, op1);
+
+		  pat = GEN_FCN ((int) code) (object, op1, opalign);
+		  if (pat)
+		    {
+		      emit_insn (pat);
+		      return;
+		    }
+		  else
+		    delete_insns_since (last);
+		}
+	    }
+
+
 #ifdef TARGET_MEM_FUNCTIONS
-      emit_library_call (memset_libfunc, 0,
-			 VOIDmode, 3,
-			 XEXP (object, 0), Pmode,
-			 const0_rtx, TYPE_MODE (integer_type_node),
-			 convert_to_mode (TYPE_MODE (sizetype),
-					  size, TREE_UNSIGNED (sizetype)),
-			 TYPE_MODE (sizetype));
+	  emit_library_call (memset_libfunc, 0,
+			     VOIDmode, 3,
+			     XEXP (object, 0), Pmode,
+			     const0_rtx, TYPE_MODE (integer_type_node),
+			     convert_to_mode (TYPE_MODE (sizetype),
+					      size, TREE_UNSIGNED (sizetype)),
+			     TYPE_MODE (sizetype));
 #else
-      emit_library_call (bzero_libfunc, 0,
-			 VOIDmode, 2,
-			 XEXP (object, 0), Pmode,	
-			 convert_to_mode (TYPE_MODE (integer_type_node),
-					  size,
-					  TREE_UNSIGNED (integer_type_node)),
-			 TYPE_MODE (integer_type_node));
+	  emit_library_call (bzero_libfunc, 0,
+			     VOIDmode, 2,
+			     XEXP (object, 0), Pmode,	
+			     convert_to_mode (TYPE_MODE (integer_type_node),
+					      size,
+					      TREE_UNSIGNED (integer_type_node)),
+			     TYPE_MODE (integer_type_node));
 #endif
+	}
     }
   else
     emit_move_insn (object, const0_rtx);
@@ -2971,6 +3185,63 @@ store_expr (exp, target, want_value)
     return target;
 }
 
+/* Return 1 if EXP just contains zeros.  */
+
+static int
+is_zeros_p (exp)
+     tree exp;
+{
+  tree elt;
+
+  switch (TREE_CODE (exp))
+    {
+    case CONVERT_EXPR:
+    case NOP_EXPR:
+    case NON_LVALUE_EXPR:
+      return is_zeros_p (TREE_OPERAND (exp, 0));
+
+    case INTEGER_CST:
+      return TREE_INT_CST_LOW (exp) == 0 && TREE_INT_CST_HIGH (exp) == 0;
+
+    case COMPLEX_CST:
+      return
+	is_zeros_p (TREE_REALPART (exp)) && is_zeros_p (TREE_IMAGPART (exp));
+
+    case REAL_CST:
+      return REAL_VALUES_EQUAL (TREE_REAL_CST (exp), dconst0);
+
+    case CONSTRUCTOR:
+      for (elt = CONSTRUCTOR_ELTS (exp); elt; elt = TREE_CHAIN (elt))
+	if (! is_zeros_p (TREE_VALUE (elt)))
+	  return 0;
+
+      return 1;
+    }
+
+  return 0;
+}
+
+/* Return 1 if EXP contains mostly (3/4)  zeros.  */
+
+static int
+mostly_zeros_p (exp)
+     tree exp;
+{
+  tree elt;
+  int elts = 0, zeros = 0;
+
+  if (TREE_CODE (exp) == CONSTRUCTOR)
+    {
+      for (elt = CONSTRUCTOR_ELTS (exp); elt; elt = TREE_CHAIN (elt), elts++)
+	if (mostly_zeros_p (TREE_VALUE (elt)))
+	  zeros++;
+
+      return 4 * zeros >= 3 * elts;
+    }
+
+  return is_zeros_p (exp);
+}
+
 /* Store the value of constructor EXP into the rtx TARGET.
    TARGET is either a REG or a MEM.  */
 
@@ -2999,6 +3270,7 @@ store_constructor (exp, target)
       || TREE_CODE (type) == QUAL_UNION_TYPE)
     {
       register tree elt;
+      int cleared = CONSTRUCTOR_TARGET_CLEARED_P (exp);
 
       /* Inform later passes that the whole union value is dead.  */
       if (TREE_CODE (type) == UNION_TYPE
@@ -3011,13 +3283,26 @@ store_constructor (exp, target)
 	 this probably loses.  */
       else if (GET_CODE (target) == REG && TREE_STATIC (exp)
 	       && GET_MODE_SIZE (GET_MODE (target)) <= UNITS_PER_WORD)
-	emit_move_insn (target, const0_rtx);
+	{
+	  if (! cleared)
+	    emit_move_insn (target, const0_rtx);
 
-      /* If the constructor has fewer fields than the structure,
+	  cleared = 1;
+	}
+
+      /* If the constructor has fewer fields than the structure
+	 or if we are initializing the structure to mostly zeros,
 	 clear the whole structure first.  */
-      else if (list_length (CONSTRUCTOR_ELTS (exp))
-	       != list_length (TYPE_FIELDS (type)))
-	clear_storage (target, expr_size (exp));
+      else if ((list_length (CONSTRUCTOR_ELTS (exp))
+		!= list_length (TYPE_FIELDS (type)))
+	       || mostly_zeros_p (exp))
+	{
+	  if (! cleared)
+	    clear_storage (target, expr_size (exp),
+			   TYPE_ALIGN (type) / BITS_PER_UNIT);
+
+	  cleared = 1;
+	}
       else
 	/* Inform later passes that the old value is dead.  */
 	emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
@@ -3040,6 +3325,15 @@ store_constructor (exp, target)
 	     if any fields are missing.  */
 	  if (field == 0)
 	    continue;
+
+	  if (cleared)
+	    {
+	      if (is_zeros_p (TREE_VALUE (elt)))
+		continue;
+
+	      else if (TREE_CODE (TREE_VALUE (elt)) == CONSTRUCTOR)
+		CONSTRUCTOR_TARGET_CLEARED_P (TREE_VALUE (elt)) = cleared;
+	    }
 
 	  bitsize = TREE_INT_CST_LOW (DECL_SIZE (field));
 	  unsignedp = TREE_UNSIGNED (field);
@@ -3094,6 +3388,9 @@ store_constructor (exp, target)
 		       VOIDmode, 0,
 		       TYPE_ALIGN (type) / BITS_PER_UNIT,
 		       int_size_in_bytes (type));
+
+	  if (TREE_CODE (TREE_VALUE (elt)) == CONSTRUCTOR)
+	    CONSTRUCTOR_TARGET_CLEARED_P (TREE_VALUE (elt)) = 0;
 	}
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
@@ -3104,14 +3401,22 @@ store_constructor (exp, target)
       HOST_WIDE_INT minelt = TREE_INT_CST_LOW (TYPE_MIN_VALUE (domain));
       HOST_WIDE_INT maxelt = TREE_INT_CST_LOW (TYPE_MAX_VALUE (domain));
       tree elttype = TREE_TYPE (type);
+      int cleared = CONSTRUCTOR_TARGET_CLEARED_P (exp);
 
       /* If the constructor has fewer fields than the structure,
 	 clear the whole structure first.  Similarly if this this is
 	 static constructor of a non-BLKmode object.  */
 
       if (list_length (CONSTRUCTOR_ELTS (exp)) < maxelt - minelt + 1
+	  || mostly_zeros_p (exp)
 	  || (GET_CODE (target) == REG && TREE_STATIC (exp)))
-	clear_storage (target, expr_size (exp));
+	{
+	  if (! cleared)
+	    clear_storage (target, expr_size (exp),
+			   TYPE_ALIGN (type) / BITS_PER_UNIT);
+
+	  cleared = 1;
+	}
       else
 	/* Inform later passes that the old value is dead.  */
 	emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
@@ -3129,6 +3434,15 @@ store_constructor (exp, target)
 	  int unsignedp;
 	  tree index = TREE_PURPOSE (elt);
 	  rtx xtarget = target;
+
+	  if (cleared)
+	    {
+	      if (is_zeros_p (TREE_VALUE (elt)))
+		continue;
+
+	      else if (TREE_CODE (TREE_VALUE (elt)) == CONSTRUCTOR)
+		CONSTRUCTOR_TARGET_CLEARED_P (TREE_VALUE (elt)) = cleared;
+	    }
 
 	  mode = TYPE_MODE (elttype);
 	  bitsize = GET_MODE_BITSIZE (mode);
@@ -3166,6 +3480,9 @@ store_constructor (exp, target)
 			   TYPE_ALIGN (type) / BITS_PER_UNIT,
 			   int_size_in_bytes (type));
 	    }
+
+	  if (TREE_CODE (TREE_VALUE (elt)) == CONSTRUCTOR)
+	    CONSTRUCTOR_TARGET_CLEARED_P (TREE_VALUE (elt)) = 0;
 	}
     }
   /* set constructor assignments */
@@ -3193,7 +3510,8 @@ store_constructor (exp, target)
       /* Check for all zeros. */
       if (CONSTRUCTOR_ELTS (exp) == NULL_TREE)
 	{
-	  clear_storage (target, expr_size (exp));
+	  clear_storage (target, expr_size (exp),
+			 TYPE_ALIGN (type) / BITS_PER_UNIT);
 	  return;
 	}
 
@@ -3315,7 +3633,8 @@ store_constructor (exp, target)
 		
 	      if (need_to_clear_first
 		  && endb - startb != nbytes * BITS_PER_UNIT)
-		clear_storage (target, expr_size (exp));
+		clear_storage (target, expr_size (exp),
+			       TYPE_ALIGN (type) / BITS_PER_UNIT);
 	      need_to_clear_first = 0;
 	      emit_library_call (memset_libfunc, 0,
 				 VOIDmode, 3,
@@ -3330,7 +3649,8 @@ store_constructor (exp, target)
 	    {
 	      if (need_to_clear_first)
 		{
-		  clear_storage (target, expr_size (exp));
+		  clear_storage (target, expr_size (exp),
+				 TYPE_ALIGN (type) / BITS_PER_UNIT);
 		  need_to_clear_first = 0;
 		}
 	      emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__setbits"),
@@ -4521,7 +4841,8 @@ expand_expr (exp, target, tmode, modifier)
 			&& (move_by_pieces_ninsns
 			    (TREE_INT_CST_LOW (TYPE_SIZE (type))/BITS_PER_UNIT,
 			     TYPE_ALIGN (type) / BITS_PER_UNIT)
-			    > MOVE_RATIO))))
+			    > MOVE_RATIO)
+			&& ! mostly_zeros_p (exp))))
 	       || (modifier == EXPAND_INITIALIZER && TREE_CONSTANT (exp)))
 	{
 	  rtx constructor = output_constant_def (exp);
