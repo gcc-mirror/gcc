@@ -1,3 +1,12 @@
+2001-03-16  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (TESTS_ENVIRONMENT): New macro.
+
+2001-01-23  Rod Stewart <stewart@lab43.org>
+
+	* gcconfig.h: Check for `__arm__', not `arm'.
+
 2000-12-30  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* configure.in: Rename THREADLIB to THREADLIBS.
