@@ -4558,7 +4558,12 @@ extract_muldiv_1 (t, c, code, wide_type)
 	      /* ...and its type is larger than ctype,
 		 then we cannot pass through this truncation.  */
 	      || (GET_MODE_SIZE (TYPE_MODE (ctype))
-		  < GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0))))))
+		  < GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0))))
+	      /* ... or signedness changes for division or modulus,
+		 then we cannot pass through this conversion.  */
+	      || (code != MULT_EXPR
+		  && (TREE_UNSIGNED (ctype)
+		      != TREE_UNSIGNED (TREE_TYPE (op0))))))
 	break;
 
       /* Pass the constant down and see if we can make a simplification.  If
