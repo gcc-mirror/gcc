@@ -1462,7 +1462,7 @@ struct lang_type GTY(())
 
 /* Nonzero if this binfo is for a dependent base - one that should not
    be searched.  */
-#define BINFO_DEPENDENT_BASE_P(NODE) TREE_LANG_FLAG_1(NODE)
+#define BINFO_DEPENDENT_BASE_P(NODE) TREE_LANG_FLAG_1 (NODE)
 
 /* Nonzero if this binfo has lost its primary base binfo (because that
    is a nearly-empty virtual base that has been taken by some other
@@ -2256,17 +2256,21 @@ struct lang_decl GTY(())
   (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))	\
    ->u.f.u.saved_language_function)
 
-#define NEW_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
-#define DELETE_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
-#define DELETE_EXPR_USE_VEC(NODE)	TREE_LANG_FLAG_1 (NODE)
+#define NEW_EXPR_USE_GLOBAL(NODE) \
+  TREE_LANG_FLAG_0 (NEW_EXPR_CHECK (NODE))
+#define DELETE_EXPR_USE_GLOBAL(NODE) \
+  TREE_LANG_FLAG_0 (DELETE_EXPR_CHECK (NODE))
+#define DELETE_EXPR_USE_VEC(NODE) \
+  TREE_LANG_FLAG_1 (DELETE_EXPR_CHECK (NODE))
 
 /* Indicates that this is a non-dependent COMPOUND_EXPR which will
    resolve to a function call.  */
-#define COMPOUND_EXPR_OVERLOADED(NODE)	TREE_LANG_FLAG_0 (NODE)
+#define COMPOUND_EXPR_OVERLOADED(NODE) \
+  TREE_LANG_FLAG_0 (COMPOUND_EXPR_CHECK (NODE))
 
 /* In a CALL_EXPR appearing in a template, true if Koenig lookup
    should be performed at instantiation time.  */
-#define KOENIG_LOOKUP_P(NODE) TREE_LANG_FLAG_0(NODE)
+#define KOENIG_LOOKUP_P(NODE) TREE_LANG_FLAG_0 (CALL_EXPR_CHECK (NODE))
 
 /* Nonzero if this AGGR_INIT_EXPR provides for initialization via a
    constructor call, rather than an ordinary function call.  */
@@ -2286,7 +2290,7 @@ struct lang_decl GTY(())
    this is an IDENTIFIER_NODE, and the same as the DECL_NAME on the
    corresponding TYPE_DECL.  However, this may also be a
    TEMPLATE_ID_EXPR if we had something like `typename X::Y<T>'.  */
-#define TYPENAME_TYPE_FULLNAME(NODE) (TYPE_FIELDS (NODE))
+#define TYPENAME_TYPE_FULLNAME(NODE) (TYPENAME_TYPE_CHECK (NODE))->type.values
 
 /* Nonzero in INTEGER_CST means that this int is negative by dint of
    using a twos-complement negated operand.  */
@@ -2490,7 +2494,8 @@ struct lang_decl GTY(())
 
 /* Indicates when overload resolution may resolve to a pointer to
    member function. [expr.unary.op]/3 */
-#define PTRMEM_OK_P(NODE) TREE_LANG_FLAG_0 (NODE)
+#define PTRMEM_OK_P(NODE) \
+  TREE_LANG_FLAG_0 (TREE_CHECK2 ((NODE), ADDR_EXPR, OFFSET_REF))
 
 /* Get the POINTER_TYPE to the METHOD_TYPE associated with this
    pointer to member function.  TYPE_PTRMEMFUNC_P _must_ be true,
@@ -2543,6 +2548,9 @@ struct lang_decl GTY(())
 /* For a pointer-to-member constant `X::Y' this is the _DECL for
    `Y'.  */
 #define PTRMEM_CST_MEMBER(NODE) (((ptrmem_cst_t)PTRMEM_CST_CHECK (NODE))->member)
+
+/* The expression in question for a TYPEOF_TYPE.  */
+#define TYPEOF_TYPE_EXPR(NODE) (TYPEOF_TYPE_CHECK (NODE))->type.values
 
 /* Nonzero for VAR_DECL and FUNCTION_DECL node means that `extern' was
    specified in its declaration.  This can also be set for an
@@ -3401,7 +3409,9 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 
 /* These macros are for accessing the fields of TEMPLATE_TYPE_PARM,
    TEMPLATE_TEMPLATE_PARM and BOUND_TEMPLATE_TEMPLATE_PARM nodes.  */
-#define TEMPLATE_TYPE_PARM_INDEX(NODE) (TYPE_FIELDS (NODE))
+#define TEMPLATE_TYPE_PARM_INDEX(NODE)					 \
+  (TREE_CHECK3 ((NODE), TEMPLATE_TYPE_PARM, TEMPLATE_TEMPLATE_PARM,	\
+		BOUND_TEMPLATE_TEMPLATE_PARM))->type.values
 #define TEMPLATE_TYPE_IDX(NODE) \
   (TEMPLATE_PARM_IDX (TEMPLATE_TYPE_PARM_INDEX (NODE)))
 #define TEMPLATE_TYPE_LEVEL(NODE) \

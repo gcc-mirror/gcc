@@ -159,7 +159,7 @@ DEFTREECODE (TEMPLATE_DECL, "template_decl", 'd', 0)
 DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", 'x', 0)
 
 /* Index into a template parameter list.  This parameter must be a type.
-   The TYPE_FIELDS value will be a TEMPLATE_PARM_INDEX.  */
+   The type.value field will be a TEMPLATE_PARM_INDEX.  */
 DEFTREECODE (TEMPLATE_TYPE_PARM, "template_type_parm", 't', 0)
 
 /* Index into a template parameter list for template template parameters.
@@ -190,7 +190,7 @@ DEFTREECODE (TYPENAME_TYPE, "typename_type", 't', 0)
    TYPE_NAME is an IDENTIFIER_NODE for `C', the member class template.  */
 DEFTREECODE (UNBOUND_CLASS_TEMPLATE, "unbound_class_template", 't', 0)
 
-/* A type designated by `__typeof (expr)'.  TYPE_FIELDS is the
+/* A type designated by `__typeof (expr)'.  TYPEOF_TYPE_EXPR is the
    expression in question.  */
 DEFTREECODE (TYPEOF_TYPE, "typeof_type", 't', 0)
 

@@ -1,5 +1,11 @@
 2004-03-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* cp-tree.def (TEMPLATE_TYPE_PARM, TYPEOF_TYPE): Update comments.
+	* cp-tree.h (NEW_EXPR_USE_GLOBAL, DELETE_EXPR_USE_GLOBAL): Add check.
+	(DELETE_EXPR_USE_VEC, COMPOUND_EXPR_OVERLOADED): Likewise.
+	(KOENIG_LOOKUP_P, PTRMEM_OK_P, TEMPLATE_TYPE_PARM_INDEX): Likewise.
+	(TYPENAME_TYPE_FULLNAME): Add check and use type.values.
+	(TYPEOF_TYPE_EXPR): New macro.
 	* class.c (finish_struct_bits): Use TYPE_VFIELD and TYPE_METHODS.
 	* error.c (dump_type): Use TYPEOF_TYPE_EXPR.
 	* pt.c (tsubst): Likewise.
