@@ -1205,6 +1205,19 @@ duplicate_decls (newdecl, olddecl)
 	}
       else if (!types_match)
 	{
+          /* Accept the return type of the new declaration if same modes.  */
+	  tree oldreturntype = TREE_TYPE (TREE_TYPE (olddecl));
+	  tree newreturntype = TREE_TYPE (TREE_TYPE (newdecl));
+          if (TYPE_MODE (oldreturntype) == TYPE_MODE (newreturntype))
+            {
+              TREE_TYPE (TREE_TYPE (olddecl)) = newreturntype;
+              types_match = comptypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
+	      if (!types_match)
+		TREE_TYPE (TREE_TYPE (olddecl)) = oldreturntype;
+	    }
+	}
+      if (!types_match)
+	{
 	  /* If types don't match for a built-in, throw away the built-in.  */
 	  warning_with_decl (newdecl, "conflicting types for built-in function `%s'");
 	  return 0;
