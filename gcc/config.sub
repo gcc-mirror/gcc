@@ -344,7 +344,7 @@ case $basic_machine in
 		    -ns2*)
 			;;
 		    *)
-		      $os=-ns3
+		      os=-ns3
 			;;
 		esac
 		;;
