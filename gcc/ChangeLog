@@ -1,3 +1,34 @@
+Fri Mar 26 10:43:47 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/svr4.h: Include new header file dbxelf.h.
+	(DBX_DEBUGGING_INFO): Remove definition.
+	(DBX_USE_BINCL): Remove definition.
+	(DBX_BLOCKS_FUNCTION_RELATIVE): Remove definition.
+	(ASM_IDENTIFY_GCC): Remove definition.
+	(ASM_IDENTIFY_GCC_AFTER_SOURCE): Remove definition.
+	(ASM_OUTPUT_SOURCE_LINE): Remove definition.
+	(DBX_FUNCTION_FIRST): Remove definition.
+	(DBX_OUTPUT_MAIN_SOURCE_FILE_END): Remove definition.
+
+	* config/elfos.h: Include new header file dbxelf.h.
+	(DBX_DEBUGGING_INFO): Remove definition.
+	(DBX_BLOCKS_FUNCTION_RELATIVE): Remove definition.
+	(ASM_IDENTIFY_GCC): Remove definition.
+	(ASM_IDENTIFY_GCC_AFTER_SOURCE): Remove definition.
+	(ASM_OUTPUT_SOURCE_LINE): Remove definition.
+	(DBX_FUNCTION_FIRST): Remove definition.
+
+	* config/dbxelf.h: New header file.
+	(DBX_DEBUGGING_INFO): Define.
+	(DBX_BLOCKS_FUNCTION_RELATIVE): Define.
+	(DBX_FUNCTION_FIRST): Define.
+	(DBX_USE_BINCL): Define.
+	(DBX_CONTIN_LENGTH): Define.
+	(ASM_IDENTIFY_GCC): Define.
+	(ASM_IDENTIFY_GCC_AFTER_SOURCE): Define.
+	(ASM_OUTPUT_SOURCE_LINE): Define.
+	(DBX_OUTPUT_MAIN_SOURCE_FILE_END): Define.
+
 Fri Mar 26 01:59:15 1999  "Charles M. Hannum" <root@ihack.net>
 
 	* fold-const.c (fold_truthop): Verify that the lhs and rhs are
