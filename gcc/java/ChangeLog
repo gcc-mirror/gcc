@@ -1,3 +1,7 @@
+2001-02-09  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* jvgenmain.c (error): Reversed 2001-02-01 deletion.
+
 2001-02-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Make-lang.in (JAVA_OBJS): Added java/mangle_name.o
