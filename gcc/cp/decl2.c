@@ -4772,6 +4772,8 @@ arg_assoc (k, n)
     n = TREE_OPERAND (n, 0);
   if (TREE_CODE (n) == COMPONENT_REF)
     n = TREE_OPERAND (n, 1);
+  if (TREE_CODE (n) == OFFSET_REF)
+    n = TREE_OPERAND (n, 1);
   while (TREE_CODE (n) == TREE_LIST)
     n = TREE_VALUE (n);
 

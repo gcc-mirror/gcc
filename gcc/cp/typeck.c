@@ -1638,6 +1638,11 @@ expr_sizeof (e)
       pedwarn ("ANSI C++ forbids taking the sizeof a function type");
       return size_int (1);
     }
+  else if (type_unknown_p (e))
+    {
+      incomplete_type_error (e, TREE_TYPE (e));
+      return size_int (1);
+    }
 
   return c_sizeof (TREE_TYPE (e));
 }
@@ -1717,7 +1722,7 @@ decay_conversion (exp)
   register tree type;
   register enum tree_code code;
 
-  if (TREE_CODE (exp) == OFFSET_REF || BASELINK_P (exp))
+  if (TREE_CODE (exp) == OFFSET_REF)
     exp = resolve_offset_ref (exp);
 
   type = TREE_TYPE (exp);
@@ -5731,7 +5736,7 @@ build_c_cast (type, expr)
       && TREE_TYPE (value) == TREE_TYPE (TREE_OPERAND (value, 0)))
     value = TREE_OPERAND (value, 0);
 
-  if (TREE_CODE (value) == OFFSET_REF || BASELINK_P (value))
+  if (TREE_CODE (value) == OFFSET_REF)
     value = resolve_offset_ref (value);
 
   if (TREE_CODE (type) == ARRAY_TYPE)
@@ -6703,7 +6708,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
   if (codel == OFFSET_TYPE)
     my_friendly_abort (990505);
 
-  if (TREE_CODE (rhs) == OFFSET_REF || BASELINK_P (rhs))
+  if (TREE_CODE (rhs) == OFFSET_REF)
     rhs = resolve_offset_ref (rhs);
 
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
@@ -7133,7 +7138,7 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
       || (TREE_CODE (rhs) == TREE_LIST && TREE_VALUE (rhs) == error_mark_node))
     return error_mark_node;
 
-  if (TREE_CODE (rhs) == OFFSET_REF || BASELINK_P (rhs))
+  if (TREE_CODE (rhs) == OFFSET_REF)
     {
       rhs = resolve_offset_ref (rhs);
       if (rhs == error_mark_node)

@@ -5004,11 +5004,14 @@ instantiate_type (lhstype, rhs, flags)
       }
 
     case OFFSET_REF:
+      rhs = TREE_OPERAND (rhs, 1);
+      if (BASELINK_P (rhs))
+	return instantiate_type (lhstype, TREE_VALUE (rhs), flags);
+
       /* This can happen if we are forming a pointer-to-member for a
 	 member template.  */
-      rhs = TREE_OPERAND (rhs, 1);
       my_friendly_assert (TREE_CODE (rhs) == TEMPLATE_ID_EXPR, 0);
-	
+
       /* Fall through.  */
 
     case TEMPLATE_ID_EXPR:

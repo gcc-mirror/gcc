@@ -1,3 +1,20 @@
+1999-05-10  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_offset_ref): Wrap baselinks in OFFSET_REF, too.
+	Don't bother wrapping an OFFSET_TYPE around unknown_type_node.
+	(resolve_offset_ref): Don't handle a raw baselink.
+	* cvt.c (build_expr_type_conversion): Likewise.
+	* typeck.c (decay_conversion, build_c_cast, convert_for_assignment,
+	convert_for_initialization): Likewise.
+	* class.c (instantiate_type): Handle seeing a baselink under an
+	OFFSET_REF.
+	* error.c (dump_expr): Likewise.	
+	* pt.c (for_each_template_parm): Likewise.
+	(resolve_overloaded_unification): Likewise.
+	* tree.c (is_overloaded_fn, really_overloaded_fn): Likewise.
+	* typeck.c (expr_sizeof): Also complain about other permutations
+	of overloaded functions.
+
 1999-05-07  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* init.c (resolve_offset_ref): Don't return a raw method.

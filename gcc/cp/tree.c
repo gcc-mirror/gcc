@@ -1224,6 +1224,8 @@ is_overloaded_fn (x)
      tree x;
 {
   /* A baselink is also considered an overloaded function.  */
+  if (TREE_CODE (x) == OFFSET_REF)
+    x = TREE_OPERAND (x, 1);
   if (BASELINK_P (x))
     x = TREE_VALUE (x);
   return (TREE_CODE (x) == FUNCTION_DECL
@@ -1237,6 +1239,8 @@ really_overloaded_fn (x)
      tree x;
 {     
   /* A baselink is also considered an overloaded function.  */
+  if (TREE_CODE (x) == OFFSET_REF)
+    x = TREE_OPERAND (x, 1);
   if (BASELINK_P (x))
     x = TREE_VALUE (x);
   return (TREE_CODE (x) == OVERLOAD 
