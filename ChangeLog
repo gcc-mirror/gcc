@@ -6,6 +6,10 @@ Thu May 20 10:00:42 1999   Stephen L Moshier  <moshier@world.std.com>
 
          * Makefile.in (GCC_FOR_TARGET): Add -I$(build_tooldir)/include.
 
+1999-04-23  Tom Tromey  <tromey@cygnus.com>
+
+	* ltconfig, ltmain.sh: Update to libtool 1.2f.
+
 Tue Apr 13 22:50:54 1999  Donn Terry (donn@interix.com)
                           Martin Heller (Ing.-Buero_Heller@t-online.de)
 
