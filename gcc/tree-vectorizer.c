@@ -3058,7 +3058,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
 	vect_create_addr_base_for_vector_ref (dr_stmt, &new_stmts, NULL_TREE);
   tree ptr_type = TREE_TYPE (start_addr);
   tree size = TYPE_SIZE (ptr_type);
-  tree type = lang_hooks.types.type_for_size (TREE_INT_CST_LOW (size), 1);
+  tree type = lang_hooks.types.type_for_size (tree_low_cst (size, 1), 1);
   tree vectype_size_minus_1 = build_int_cst (type, vectype_align - 1);
   tree vf_minus_1 = build_int_cst (unsigned_type_node, vf - 1);
   tree niters_type = TREE_TYPE (loop_niters);
