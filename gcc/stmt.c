@@ -3168,15 +3168,30 @@ tail_recursion_args (actuals, formals)
 /* Generate the RTL code for entering a binding contour.
    The variables are declared one by one, by calls to `expand_decl'.
 
-   EXIT_FLAG is nonzero if this construct should be visible to
-   `exit_something'.  */
+   FLAGS is a bitwise or of the following flags:
+
+     1 - Nonzero if this construct should be visible to
+         `exit_something'.
+
+     2 - Nonzero if this contour does not require a
+	 NOTE_INSN_BLOCK_BEG note.  Virtually all calls from
+	 language-independent code should set this flag because they
+	 will not create corresponding BLOCK nodes.  (There should be
+	 a one-to-one correspondence between NOTE_INSN_BLOCK_BEG notes
+	 and BLOCKs.)  If this flag is set, MARK_ENDS should be zero
+	 when expand_end_bindings is called.  */
 
 void
-expand_start_bindings (exit_flag)
-     int exit_flag;
+expand_start_bindings (flags)
+     int flags;
 {
   struct nesting *thisblock = ALLOC_NESTING ();
-  rtx note = emit_note (NULL_PTR, NOTE_INSN_BLOCK_BEG);
+  rtx note;
+  int exit_flag = ((flags & 1) != 0);
+  int block_flag = ((flags & 2) == 0);
+
+  note = emit_note (NULL_PTR, 
+		    block_flag ? NOTE_INSN_BLOCK_BEG : NOTE_INSN_DELETED);
 
   /* Make an entry on block_stack for the block we are entering.  */
 
@@ -3228,7 +3243,7 @@ expand_start_target_temps ()
 
   /* Start a new binding layer that will keep track of all cleanup
      actions to be performed.  */
-  expand_start_bindings (0);
+  expand_start_bindings (2);
 
   target_temp_slot_level = temp_slot_level;
 }

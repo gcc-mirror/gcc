@@ -1,3 +1,11 @@
+Fri Sep 17 15:03:16 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* stmt.c (expand_start_bindings): Allow callers to pass a flag
+	indicating that no NOTE_INSN_BLOCK_BEG note is required.
+	(expand_start_target_temps): Use it.
+	* except.c (expand_eh_region_start_for_decl): Likewise.
+	* expr.c (expand_expr): Likewise.
+
 Fri Sep 17 15:05:27 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* fold-const.c (operand_equal_p): Pay attention to side effects.
