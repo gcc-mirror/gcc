@@ -376,7 +376,7 @@ namespace std
       streamsize __elen = 0;
       streamsize __plen = 0;
 
-      if (__check_facet(_M_codecvt).always_noconv() && __ilen)
+      if (__check_facet(_M_codecvt).always_noconv())
 	{
 	  __elen += _M_file.xsputn(reinterpret_cast<char*>(__ibuf), __ilen);
 	  __plen += __ilen;

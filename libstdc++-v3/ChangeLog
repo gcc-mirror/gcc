@@ -1,3 +1,8 @@
+2003-05-30  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/fstream.tcc (_M_convert_to_external): Don't
+	check for __ilen > 0.
+
 2003-05-29  Sylvain Pion  <Sylvain.Pion@mpi-sb.mpg.de>
 
 	PR libstdc++/10783
