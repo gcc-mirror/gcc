@@ -2201,7 +2201,8 @@ i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 	  move_block_from_reg
 	    (first_reg_offset,
 	     gen_rtx (MEM, BLKmode, virtual_incoming_args_rtx),
-	     NPARM_REGS - first_reg_offset);
+	     NPARM_REGS - first_reg_offset,
+	     (NPARM_REGS - first_reg_offset) * UNITS_PER_WORD);
 	}
       *pretend_size = (NPARM_REGS - first_reg_offset) * UNITS_PER_WORD;
     }

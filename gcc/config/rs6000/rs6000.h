@@ -799,7 +799,7 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 	   gen_rtx (MEM, BLKmode,					\
 		    plus_constant (virtual_incoming_args_rtx,		\
 				   first_reg_offset * 4)),		\
-	   8 - first_reg_offset);					\
+	   8 - first_reg_offset, (8 - first_reg_offset) * UNITS_PER_WORD); \
       PRETEND_SIZE = (8 - first_reg_offset) * UNITS_PER_WORD;		\
     }									\
 }

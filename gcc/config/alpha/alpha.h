@@ -806,13 +806,13 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 	     gen_rtx (MEM, BLKmode,					\
 		      plus_constant (virtual_incoming_args_rtx,		\
 				     ((CUM) + 6)* UNITS_PER_WORD)),	\
-	     6 - (CUM));						\
+	     6 - (CUM), (6 - (CUM)) * UNITS_PER_WORD);			\
 	  move_block_from_reg						\
 	    (16 + 32 + CUM,						\
 	     gen_rtx (MEM, BLKmode,					\
 		      plus_constant (virtual_incoming_args_rtx,		\
 				     (CUM) * UNITS_PER_WORD)),		\
-	     6 - (CUM));						\
+	     6 - (CUM), (6 - (CUM)) * UNITS_PER_WORD);			\
 	 }								\
       PRETEND_SIZE = 12 * UNITS_PER_WORD;				\
     }									\
