@@ -49,7 +49,10 @@ import java.util.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public abstract class AbstractAction implements Action, Cloneable, Serializable {
+public abstract class AbstractAction
+  implements Action, Cloneable, Serializable
+{
+  static final long serialVersionUID = -6803159439231523484L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

@@ -1,5 +1,15 @@
 2003-03-31  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/AbstractAction.java
+	(AbstractAction): Reformatted.
+	(serialVersionUID): New private member variable.
+	* javax/swing/plaf/BorderUIResource.java
+	(serialVersionUID): New private member variable.
+	* javax/swing/plaf/basic/BasicLookAndFeel.java
+	(serialVersionUID): New private member variable.
+
+2003-03-31  Michael Koch  <konqueror@gmx.de>
+
 	* java/sql/Date.java
 	(valueOf): Deprecated, reformatted.
 	(toString): Deprecated, reformatted.

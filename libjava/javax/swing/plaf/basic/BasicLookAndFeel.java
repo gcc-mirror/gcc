@@ -64,6 +64,8 @@ import javax.swing.text.JTextComponent;
 public abstract class BasicLookAndFeel extends LookAndFeel
   implements Serializable
 {
+  static final long serialVersionUID = 5484702182266873258L;
+
   /**
    * Constructor BasicLookAndFeel
    */
