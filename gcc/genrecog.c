@@ -193,7 +193,7 @@ static void write_tree		PROTO((struct decision *, const char *,
 				       struct decision *, int,
 				       enum routine_type));
 static void change_state	PROTO((const char *, const char *, int));
-static void fatal		PVPROTO((const char *, ...))
+void fatal		PVPROTO((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort		PROTO((void)) ATTRIBUTE_NORETURN;
 
@@ -1697,7 +1697,7 @@ xmalloc (size)
   return val;
 }
 
-static void
+void
 fatal VPROTO ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES

@@ -111,4 +111,7 @@ extern void fnotice			PROTO ((FILE *, const char *, ...))
   ATTRIBUTE_PRINTF_2;
 #endif
 
+#undef trim_filename
+extern const char *trim_filename	PROTO ((const char *));
+
 #endif /* __GCC_TOPLEV_H */

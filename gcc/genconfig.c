@@ -49,7 +49,7 @@ static int max_insns_per_split = 1;
 static int clobbers_seen_this_insn;
 static int dup_operands_seen_this_insn;
 
-static void fatal PVPROTO ((const char *, ...))
+void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 
@@ -271,7 +271,7 @@ xrealloc (old, size)
   return ptr;
 }
 
-static void
+void
 fatal VPROTO ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES

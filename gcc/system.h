@@ -378,40 +378,27 @@ extern int setrlimit ();
 #endif
 
 /* Redefine abort to report an internal error w/o coredump, and reporting the
-   location of the error in the source file.  */
-#ifndef abort
-#ifndef __STDC__
-#ifndef __GNUC__
-#ifndef USE_SYSTEM_ABORT
-#define USE_SYSTEM_ABORT
-#endif /* !USE_SYSTEM_ABORT */
-#endif /* !__GNUC__ */
-#endif /* !__STDC__ */
-
-#ifdef USE_SYSTEM_ABORT
-# ifdef NEED_DECLARATION_ABORT
+   location of the error in the source file.
+   Some files undefine abort again, so we must prototype the real thing
+   for their sake.  */
+#ifdef NEED_DECLARATION_ABORT
 extern void abort ();
-# endif
-#else
+#endif
+extern void fatal PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
-#define abort()								\
-(fprintf (stderr,							\
-	  "%s:%d: Internal compiler error\n", __FILE__, __LINE__),	\
- exit (FATAL_EXIT_CODE))
-
+#define abort() fatal ("Internal compiler error at %s:%d\n", \
+		       trim_filename (__FILE__), __LINE__)
 #else
-#define abort()								\
-(fprintf (stderr,							\
-	  "%s:%d: Internal compiler error in function %s\n"             \
-	  "Please submit a full bug report to `egcs-bugs@egcs.cygnus.com'.\n"  \
-	  "See <URL:http://egcs.cygnus.com/faq.html#bugreport> for details.\n", \
-	  __FILE__, __LINE__, __PRETTY_FUNCTION__),			\
- exit (FATAL_EXIT_CODE))
-
+#define abort() fatal ("Internal compiler error in `%s', at %s:%d\n"	\
+  "Please submit a full bug report to `egcs-bugs@egcs.cygnus.com'.\n"	\
+  "See <URL:http://egcs.cygnus.com/faq.html#bugreport> for details.", \
+  __PRETTY_FUNCTION__, trim_filename (__FILE__), __LINE__)
 #endif /* recent gcc */
-#endif /* USE_SYSTEM_ABORT */
-#endif /* !abort */
 
+/* trim_filename is in toplev.c.  Define a stub macro for files that
+   don't link toplev.c.  toplev.h will reset it to the real version.  */
+#define trim_filename(x) (x)
 
 /* Define a STRINGIFY macro that's right for ANSI or traditional C.
    HAVE_CPP_STRINGIFY only refers to the stage1 compiler.  Assume that

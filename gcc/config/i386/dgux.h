@@ -124,7 +124,6 @@ Boston, MA 02111-1307, USA.  */
   do {							\
     extern int flag_signed_bitfields;			\
     flag_signed_bitfields = 0;				\
-    abort_helper ();					\
     optimization_options (LEVEL,SIZE);			\
   } while (0)
 
@@ -219,23 +218,6 @@ Boston, MA 02111-1307, USA.  */
 #define ENDFILE_SPEC "crtend.o%s %{pg:gcrtn.o}%{!pg:/lib/crtn.o}"
 
 #endif /* CROSS_COMPILE */
-
-#if !defined (no_abort) || defined (CRT_BEGIN) || defined (CRT_END)
-#undef abort
-
-char insn; int insn_; char * file_; int line_;
-#define abort()			\
-  (insn_ = (int) insn,		\
-   file_ = __FILE__,		\
-   line_ = __LINE__,		\
-   fancy_abort ())
-#define abort_helper()		\
-  do {				\
-    extern void abort_aux ();	\
-    atexit (abort_aux);		\
-  } while (0)
-#define _abort_aux
-#endif /* no abort */
 
 /* The maximum alignment which the object file format can support.
    page alignment would seem to be enough */

@@ -30,7 +30,7 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-static void fatal PVPROTO ((const char *, ...))
+void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 
@@ -705,7 +705,7 @@ xrealloc (old, size)
   return ptr;
 }
 
-static void
+void
 fatal VPROTO ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES

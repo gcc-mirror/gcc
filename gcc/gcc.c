@@ -204,8 +204,6 @@ static void pfatal_with_name	PROTO((const char *)) ATTRIBUTE_NORETURN;
 static void perror_with_name	PROTO((const char *));
 static void pfatal_pexecute	PROTO((const char *, const char *))
   ATTRIBUTE_NORETURN;
-static void fatal		PVPROTO((const char *, ...))
-  ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF_1;
 static void error		PVPROTO((const char *, ...))
   ATTRIBUTE_PRINTF_1;
 static void notice		PVPROTO((const char *, ...))
@@ -5324,7 +5322,7 @@ fancy_abort ()
 
 /* Output an error message and exit */
 
-static void
+void
 fatal VPROTO((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES

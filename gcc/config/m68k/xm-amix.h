@@ -32,14 +32,3 @@ Boston, MA 02111-1307, USA.  */
 #if defined (__GNUC__) && __GNUC__ == 1
 #define alloca __builtin_alloca
 #endif
-
-#if 0 /* I don't want individual ports to be inconsistent about this.
-	 I regard fancy_abort as a half-solution and not the right way
-	 to do things. --rms.  */
-/* The m88k and mips ports make use of fancy_abort to give possibly helpful
-   abort information rather than just dumping core.  They do it in their
-   tm-* files.  It seems more logical that this is a characteristic of
-   the host machine and not the target machine, so we do it here. */
-
-#define abort fancy_abort	/* give possibly helpful abort info */
-#endif
