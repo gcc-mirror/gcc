@@ -999,9 +999,11 @@ union tree_node
 
 #ifndef VPROTO
 #ifdef __STDC__
+#define PVPROTO(ARGS)		ARGS
 #define VPROTO(ARGS)            ARGS
 #define VA_START(va_list,var)  va_start(va_list,var)
 #else
+#define PVPROTO(ARGS)		()
 #define VPROTO(ARGS)            (va_alist) va_dcl
 #define VA_START(va_list,var)  va_start(va_list)
 #endif
@@ -1082,9 +1084,9 @@ extern tree get_identifier		PROTO((char *));
 #define build_int_2(LO,HI)  \
   build_int_2_wide ((HOST_WIDE_INT) (LO), (HOST_WIDE_INT) (HI))
 
-extern tree build			PROTO((enum tree_code, tree, ...));
-extern tree build_nt			PROTO((enum tree_code, ...));
-extern tree build_parse_node		PROTO((enum tree_code, ...));
+extern tree build			PVPROTO((enum tree_code, tree, ...));
+extern tree build_nt			PVPROTO((enum tree_code, ...));
+extern tree build_parse_node		PVPROTO((enum tree_code, ...));
 
 extern tree build_int_2_wide		PROTO((HOST_WIDE_INT, HOST_WIDE_INT));
 extern tree build_real			PROTO((tree, REAL_VALUE_TYPE));

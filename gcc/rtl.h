@@ -153,9 +153,11 @@ typedef struct rtx_def
 
 #ifndef VPROTO
 #ifdef __STDC__
+#define PVPROTO(ARGS)		ARGS
 #define VPROTO(ARGS)		ARGS
 #define VA_START(va_list,var)	va_start(va_list,var)
 #else
+#define PVPROTO(ARGS)		()
 #define VPROTO(ARGS)		(va_alist) va_dcl
 #define VA_START(va_list,var)	va_start(va_list)
 #endif
@@ -655,8 +657,9 @@ extern rtx plus_constant_for_output_wide PROTO((rtx, HOST_WIDE_INT));
 
 extern rtx bc_gen_rtx ();
 
-extern rtx gen_rtx			PROTO((enum rtx_code, enum machine_mode, ...));
-extern rtvec gen_rtvec			PROTO((int, ...));
+extern rtx gen_rtx			PVPROTO((enum rtx_code,
+						 enum machine_mode, ...));
+extern rtvec gen_rtvec			PVPROTO((int, ...));
 
 #ifdef BUFSIZ			/* stdio.h has been included */
 extern rtx read_rtx			PROTO((FILE *));
