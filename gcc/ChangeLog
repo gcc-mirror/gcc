@@ -1,3 +1,7 @@
+2004-0630  Akos Kiss  <akiss@inf.u-szeged.hu>
+
+	* arm.md (cond_return_inverted): Add "length" attribute.
+
 2004-06-29  Per Bothner  <per@bothner.com>
 
 	* config/i386/winnt.c (i386_pe_encode_section_info):  Smash rtlname's 
