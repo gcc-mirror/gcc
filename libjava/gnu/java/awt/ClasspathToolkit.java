@@ -59,6 +59,7 @@ import java.text.AttributedString;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.imageio.spi.IIORegistry;
 
 /**
  * An abstract superclass for Classpath toolkits.
@@ -347,5 +348,13 @@ public abstract class ClasspathToolkit
   public ImageProducer createImageProducer(URL url)
   {
     return null;
+  }
+
+  /** 
+   * Used to register ImageIO SPIs provided by the toolkit.
+   */
+
+  public void registerImageIOSpis(IIORegistry reg)
+  {
   }
 }
