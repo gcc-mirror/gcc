@@ -2181,7 +2181,11 @@ print_operand (file, op, letter)
 	       && INTVAL (XEXP (op, 0)) < 0x8000
 	       && INTVAL (XEXP (op, 0)) >= -0x8000))
 	{
+#ifdef MOTOROLA
+	  fprintf (file, ".l");
+#else
 	  fprintf (file, ":l");
+#endif
 	}
     }
 #ifdef SUPPORT_SUN_FPA
