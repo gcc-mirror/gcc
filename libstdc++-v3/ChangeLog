@@ -1,3 +1,10 @@
+2001-12-03  Steve Ellcey  <sje@cup.hp.com>
+
+        * libstdc++-v3/configure.in: Add support for hpux cross compiles,
+        combine common linux/hpux/generic cross compile support to reduce
+        redundent lines.
+        * libstdc++-v3/configure: Regenerate.
+
 2001-12-03  Loren J. Rittle  <ljrittle@acm.org>
 
 	* docs/html/ext/howto.html: Update commentary.
