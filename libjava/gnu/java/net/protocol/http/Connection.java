@@ -72,12 +72,6 @@ public final class Connection extends HttpURLConnection
    * The socket we are connected to
    */
   private Socket socket;
-  private static Hashtable defRequestProperties = new Hashtable();
-  private Hashtable requestProperties;
-  private Hashtable hdrHash = new Hashtable();
-  private Vector hdrVec = new Vector();
-  private BufferedInputStream bufferedIn;
-
   private static int proxyPort = 80;
   private static boolean proxyInUse = false;
   private static String proxyHost = null;
@@ -106,27 +100,25 @@ public final class Connection extends HttpURLConnection
   }
 
   /**
+   * The InputStream for this connection.
+   */
+  private BufferedInputStream inputStream;
+
+  /**
+   * This is the object that holds the header field information
+   */
+  private Hashtable requestProperties = new Hashtable();
+  private Hashtable hdrHash = new Hashtable();
+  private Vector hdrVec = new Vector();
+
+  /**
    * Calls superclass constructor to initialize
    */
   protected Connection(URL url)
   {
     super(url);
-    requestProperties = (Hashtable) defRequestProperties.clone();
   }
 
-  // Override method in URLConnection.
-  public static void setDefaultRequestProperty(String key, String value)
-  {
-    defRequestProperties.put(key, value);
-  }
-
-  // Override method in URLConnection.
-  public static String getDefaultRequestProperty(String key)
-  {
-    return (String) defRequestProperties.get(key);
-  }
-
-  // Override method in URLConnection.
   public void setRequestProperty(String key, String value)
   {
     if (connected)
@@ -135,7 +127,6 @@ public final class Connection extends HttpURLConnection
     requestProperties.put(key, value);
   }
 
-  // Override method in URLConnection.
   public String getRequestProperty(String key)
   {
     if (connected)
@@ -195,7 +186,7 @@ public final class Connection extends HttpURLConnection
 	  {
 	    socket.close();
 	  }
-	catch (IOException ex)
+	catch (IOException e)
 	  {
 	    // Ignore errors in closing socket.
 	  }
@@ -203,12 +194,17 @@ public final class Connection extends HttpURLConnection
       }
   }
 
+  /**
+   * Return a boolean indicating whether or not this connection is
+   * going through a proxy
+   *
+   * @return true if using a proxy, false otherwise
+   */
   public boolean usingProxy()
   {
     return proxyInUse;
   }
 
-  // Override default method in URLConnection.
   public InputStream getInputStream() throws IOException
   {
     if (!connected)
@@ -216,10 +212,10 @@ public final class Connection extends HttpURLConnection
 
     if (!doInput)
       throw new ProtocolException("Can't open InputStream if doInput is false");
-    return bufferedIn;
+    
+    return inputStream;
   }
 
-  // Override default method in URLConnection.
   public OutputStream getOutputStream() throws IOException
   {
     if (!connected)
@@ -231,7 +227,6 @@ public final class Connection extends HttpURLConnection
     return socket.getOutputStream();
   }
 
-  // Override default method in URLConnection.
   public String getHeaderField(String name)
   {
     if (!connected)
@@ -247,7 +242,6 @@ public final class Connection extends HttpURLConnection
     return (String) hdrHash.get(name.toLowerCase());
   }
 
-  // Override default method in URLConnection.
   public Map getHeaderFields()
   {
     if (!connected)
@@ -263,7 +257,6 @@ public final class Connection extends HttpURLConnection
     return hdrHash;
   }
 
-  // Override default method in URLConnection.
   public String getHeaderField(int n)
   {
     if (!connected)
@@ -281,7 +274,6 @@ public final class Connection extends HttpURLConnection
     return null;
   }
 
-  // Override default method in URLConnection.
   public String getHeaderFieldKey(int n)
   {
     if (!connected)
@@ -321,6 +313,9 @@ public final class Connection extends HttpURLConnection
       return str;
   }
 
+  /**
+   * Read HTTP reply from inputStream.
+   */
   private void getHttpHeaders() throws IOException
   {
     // Originally tried using a BufferedReader here to take advantage of
@@ -329,7 +324,7 @@ public final class Connection extends HttpURLConnection
     // It is probably more robust than it needs to be, e.g. the byte[]
     // is unlikely to overflow and a '\r' should always be followed by a '\n',
     // but it is better to be safe just in case.
-    bufferedIn = new BufferedInputStream(socket.getInputStream());
+    inputStream = new BufferedInputStream(socket.getInputStream());
 
     int buflen = 100;
     byte[] buf = new byte[buflen];
@@ -348,12 +343,12 @@ public final class Connection extends HttpURLConnection
 	// FIXME: This is rather inefficient.
 	for (i = 0; i < buflen; i++)
 	  {
-	    buf[i] = (byte) bufferedIn.read();
+	    buf[i] = (byte) inputStream.read();
 	    if (buf[i] == -1)
 	      throw new IOException("Malformed HTTP header");
 	    if (buf[i] == '\r')
 	      {
-	        bufferedIn.read(ch, 0, 1);
+	        inputStream.read(ch, 0, 1);
 		if (ch[0] == '\n')
 		  gotnl = true;
 		break;
