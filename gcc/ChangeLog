@@ -1,3 +1,7 @@
+2004-09-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/linux64.h (PROCESSOR_DEFAULT): Define.
+
 2004-09-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.c (make_node_stat): Fix uninitialized warning.  Replace
