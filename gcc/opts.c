@@ -1003,8 +1003,10 @@ common_handle_option (size_t scode, const char *arg, int value)
     default:
       /* If the flag was handled in a standard way, assume the lack of
 	 processing here is intentional.  */
-      gcc_assert (cl_options[scode].flag_var);
-      break;
+      if (cl_options[scode].flag_var)
+	break;
+
+      abort ();
     }
 
   return 1;
