@@ -1,3 +1,7 @@
+2004-08-14  Paul Brook  <paul@codesourcery.com>
+
+	* trans-arry.c (gfc_trans_auto_array_allocation): Remove unused var.
+
 2004-08-13  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.h: Add comments.
