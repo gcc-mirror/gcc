@@ -3854,7 +3854,7 @@ expand_and (op0, op1, target)
    to perform the operation.  It says to use zero-extension.
 
    NORMALIZEP is 1 if we should convert the result to be either zero
-   or one one.  Normalize is -1 if we should convert the result to be
+   or one.  Normalize is -1 if we should convert the result to be
    either zero or -1.  If NORMALIZEP is zero, the result will be left
    "raw" out of the scc insn.  */
 
