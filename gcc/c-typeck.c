@@ -4976,7 +4976,7 @@ really_start_incremental_init (type)
   p->unfilled_index = constructor_unfilled_index;
   p->unfilled_fields = constructor_unfilled_fields;
   p->bit_index = constructor_bit_index;
-  p->elements = 0;
+  p->elements = constructor_elements;
   p->constant = constructor_constant;
   p->simple = constructor_simple;
   p->erroneous = constructor_erroneous;
