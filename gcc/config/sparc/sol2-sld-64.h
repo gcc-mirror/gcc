@@ -1,9 +1,15 @@
 /* Definitions of target machine for GNU compiler, for 64-bit SPARC
    running Solaris 2 using the system linker.  */
 
+#ifdef AS_SPARC64_FLAG
+
 #define SPARC_BI_ARCH
 
+#endif
+
 #include "sparc/sol2.h"
+
+#ifdef AS_SPARC64_FLAG
 
 /* At least up through Solaris 2.6,
    the system linker does not work with DWARF or DWARF2,
@@ -31,7 +37,7 @@
 #undef ASM_CPU32_DEFAULT_SPEC
 #define ASM_CPU32_DEFAULT_SPEC	""
 #undef ASM_CPU64_DEFAULT_SPEC
-#define ASM_CPU64_DEFAULT_SPEC	"-xarch=v9"
+#define ASM_CPU64_DEFAULT_SPEC	AS_SPARC64_FLAG
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v9
 #undef CPP_CPU64_DEFAULT_SPEC
@@ -45,7 +51,7 @@
 #undef ASM_CPU32_DEFAULT_SPEC
 #define ASM_CPU32_DEFAULT_SPEC "-xarch=v8plusa"
 #undef ASM_CPU64_DEFAULT_SPEC
-#define ASM_CPU64_DEFAULT_SPEC "-xarch=v9a"
+#define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG "a"
 #endif
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
@@ -84,9 +90,9 @@
 
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC "\
-%{mcpu=ultrasparc:" DEF_ARCH32_SPEC("-xarch=v8plusa") DEF_ARCH64_SPEC("-xarch=v9a") "} \
-%{mcpu=v9:" DEF_ARCH32_SPEC("-xarch=v8plus") DEF_ARCH64_SPEC("-xarch=v9") "} \
-%{!mcpu=ultrasparc:%{!mcpu=v9:%{mcpu*:" DEF_ARCH32_SPEC("-xarch=v8") DEF_ARCH64_SPEC("-xarch=v9") "}}} \
+%{mcpu=ultrasparc:" DEF_ARCH32_SPEC("-xarch=v8plusa") DEF_ARCH64_SPEC(AS_SPARC64_FLAG "a") "} \
+%{mcpu=v9:" DEF_ARCH32_SPEC("-xarch=v8plus") DEF_ARCH64_SPEC(AS_SPARC64_FLAG) "} \
+%{!mcpu=ultrasparc:%{!mcpu=v9:%{mcpu*:" DEF_ARCH32_SPEC("-xarch=v8") DEF_ARCH64_SPEC(AS_SPARC64_FLAG) "}}} \
 %{!mcpu*:%(asm_cpu_default)} \
 "
 
@@ -364,3 +370,4 @@ __enable_execute_stack (addr)						\
     fprintf (FILE, "\n");						\
   } while (0)
 
+#endif

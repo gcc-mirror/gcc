@@ -1,3 +1,16 @@
+1999-12-08  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>,  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in: When target is sparc* and tm_file contains 64,
+	test for 64bit support in assembler.  If not supported, remove
+	sparc/t-sol2-64 from target-dependent Makefile fragments.
+	(AS_SPARC64_FLAG): Define to the assembler flag for 64bit.
+	(HAVE_AS_OFFSETABLE_LO10): Rework test to use these flags.
+	(HAVE_AS_REGISTER_PSEUDO_OP): Use config.cache.
+	* acconfig.h (AS_SPARC64_FLAG): Added.
+	* configure, config.in: Rebuilt.
+	* config/sparc/sol2-sld-64.h: Same as sol2.h, if without 64bit
+	support.  Use AS_SPARC64_FLAG.
+
 1999-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.c (hard_32bit_mode_classes): Mark registers

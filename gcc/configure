@@ -1337,7 +1337,7 @@ else
 fi
 
 # Find some useful tools
-for ac_prog in gawk mawk nawk awk
+for ac_prog in mawk gawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -5990,7 +5990,7 @@ for machine in $build $host $target; do
 		xmake_file=sparc/x-sysv4
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		case $machine in
-		*-*-solaris2.[0-6]*) ;;
+		*-*-solaris2.[0-6] | *-*-solaris2.[0-6].*) ;;
 		*-*-solaris2*)
 			tm_file=sparc/sol2-sld-64.h
 			tmake_file="$tmake_file sparc/t-sol2-64"
@@ -8602,60 +8602,120 @@ case "$target" in
   sparc*-*-*)
     echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
 echo "configure:8605: checking assembler .register pseudo-op support" >&5
-    gcc_cv_as_register_pseudo_op=
-    if test x$gcc_cv_as != x; then
-	# Check if we have .register
-	echo ".register %g2, #scratch" > conftest.s
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+if eval "test \"`echo '$''{'gcc_cv_as_register_pseudo_op'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+	gcc_cv_as_register_pseudo_op=unknown
+	if test x$gcc_cv_as != x; then
+	    # Check if we have .register
+	    echo ".register %g2, #scratch" > conftest.s
+	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
 		gcc_cv_as_register_pseudo_op=yes
-		cat >> confdefs.h <<\EOF
+	    else
+		gcc_cv_as_register_pseudo_op=no
+	    fi
+	    rm -f conftest.s conftest.o
+	fi
+    
+fi
+
+echo "$ac_t""$gcc_cv_as_register_pseudo_op" 1>&6
+    if test "x$gcc_cv_as_register_pseudo_op" = xyes; then
+	cat >> confdefs.h <<\EOF
 #define HAVE_AS_REGISTER_PSEUDO_OP 1
 EOF
 
-	fi
-	rm -f conftest.s conftest.o
     fi
-    echo "$ac_t""$gcc_cv_as_register_pseudo_op" 1>&6
 
-    echo $ac_n "checking assembler offsetable %lo() support""... $ac_c" 1>&6
-echo "configure:8622: checking assembler offsetable %lo() support" >&5
-    gcc_cv_as_offsetable_lo10=
-    if test x$gcc_cv_as != x; then
-	# Check if assembler has offsetable %lo()
-	echo "or %g1, %lo(ab) + 12, %g1" > conftest.s
-	echo "or %g1, %lo(ab + 12), %g1" > conftest1.s
-	gcc_cv_as_flags64="-xarch=v9"
-	if $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s > /dev/null 2>&1; then
-		:
-	else	      
-		gcc_cv_as_flags64="-64"
-		if $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s > /dev/null 2>&1; then
-			:
-		else	      
-			gcc_cv_as_flags64=""
+    case "$tm_file" in
+    *64*)
+	echo $ac_n "checking for 64 bit support in assembler ($gcc_cv_as)""... $ac_c" 1>&6
+echo "configure:8635: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_flags64'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+		if test -n "$gcc_cv_as"; then
+		    echo ".xword foo" > conftest.s
+		    gcc_cv_as_flags64=no
+		    for flag in "-xarch=v9" "64 -Av9"; do
+			if $gcc_cv_as $flag -o conftest.o conftest.s \
+			    > /dev/null 2>&1; then
+			    gcc_cv_as_flags64=$flag
+			    break
+			fi
+		    done
+		    rm -f conftest.s conftest.o
+		else
+		    if test "$gas" = yes; then
+			gcc_cv_as_flags64="-64 -Av9"
+		    else
+			gcc_cv_as_flags64="-xarch=v9"
+		    fi
 		fi
+	
+fi
+
+echo "$ac_t""$gcc_cv_as_flags64" 1>&6
+	if test "x$gcc_cv_as_flags64" = xno; then
+
+	    tmake_file=`echo " $tmake_file " | sed -e 's, sparc/t-sol2-64 , ,' -e 's,^ ,,' -e 's, $,,'`
+	    dep_tmake_file=`echo " $dep_tmake_file " | sed -e 's, [^ ]*/config/sparc/t-sol2-64 , ,' -e 's,^ ,,' -e 's, $,,'`
+
+	else
+	    cat >> confdefs.h <<EOF
+#define AS_SPARC64_FLAG "$gcc_cv_as_flags64"
+EOF
+
 	fi
-	if test -n "$gcc_cv_as_flags64" ; then
-		if $gcc_cv_as $gcc_cv_as_flags64 -o conftest1.o conftest1.s > /dev/null 2>&1; then
-			if cmp conftest.o conftest1.o > /dev/null 2>&1; then
-				:
-			else
-				gcc_cv_as_offsetable_lo10=yes
-				cat >> confdefs.h <<\EOF
+	;;
+    *) gcc_cv_as_flags64=${gcc_cv_as_flags64-no}
+	;;
+    esac
+
+    if test "x$gcc_cv_as_flags64" != xno; then
+	echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
+echo "configure:8680: checking for assembler offsetable %lo() support" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_offsetable_lo10'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+	    gcc_cv_as_offsetable_lo10=unknown
+	    if test "x$gcc_cv_as" != x; then
+		# Check if assembler has offsetable %lo()
+		echo "or %g1, %lo(ab) + 12, %g1" > conftest.s
+		echo "or %g1, %lo(ab + 12), %g1" > conftest1.s
+		if $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s \
+			> /dev/null 2>&1 &&
+		   $gcc_cv_as $gcc_cv_as_flags64 -o conftest1.o conftest1.s \
+			> /dev/null 2>&1; then
+		    if cmp conftest.o conftest1.o > /dev/null 2>&1; then
+			gcc_cv_as_offsetable_lo10=no
+		    else
+			gcc_cv_as_offsetable_lo10=yes
+		    fi
+		else
+		    gcc_cv_as_offsetable_lo10=no
+		fi
+		rm -f conftest.s conftest.o conftest1.s conftest1.o
+	    fi
+	
+fi
+
+echo "$ac_t""$gcc_cv_as_offsetable_lo10" 1>&6
+	if test "x$gcc_cv_as_offsetable_lo10" = xyes; then
+	    cat >> confdefs.h <<\EOF
 #define HAVE_AS_OFFSETABLE_LO10 1
 EOF
 
-			fi
-		fi
 	fi
-	rm -f conftest.s conftest.o conftest1.s conftest1.o
     fi
-    echo "$ac_t""$gcc_cv_as_offsetable_lo10" 1>&6
     ;;
 
   i[34567]86-*-*)
     echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
-echo "configure:8659: checking assembler instructions" >&5
+echo "configure:8719: checking assembler instructions" >&5
     gcc_cv_as_instructions=
     if test x$gcc_cv_as != x; then
 	set "filds fists" "filds mem; fists mem"
