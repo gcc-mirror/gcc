@@ -59,13 +59,14 @@ getAddr (java::lang::reflect::Field* field, jclass caller, jobject obj)
   // calls.  However, we never implemented that, so we have to find
   // the caller by hand instead.
   gnu::gcj::runtime::StackTrace *t 
-    = new gnu::gcj::runtime::StackTrace(4);
+    = new gnu::gcj::runtime::StackTrace(7);
   try
     {
-      for (int i = 1; !caller; i++)
-	{
-	  caller = t->classAt (i);
-	}
+      // We want to skip all the frames on the stack from this class.
+      for (int i = 1;
+	   !caller || caller == &java::lang::reflect::Field::class$;
+	   i++)
+	caller = t->classAt (i);
     }
   catch (::java::lang::ArrayIndexOutOfBoundsException *e)
     {

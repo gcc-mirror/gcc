@@ -1,5 +1,9 @@
 2003-08-05  Tom Tromey  <tromey@redhat.com>
 
+	Fix for PR libgcj/11779:
+	* java/lang/reflect/natField.cc (getAddr): Skip frames in Field
+	class.
+
 	* java/lang/reflect/Method.java: Updated status comment.
 	Imported javadoc from Classpath and re-ordered methods.
 	* java/lang/reflect/Constructor.java: Reindented.  Updated
