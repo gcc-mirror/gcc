@@ -1088,6 +1088,9 @@ update_equiv_regs ()
 		 once and used once.  (If it were only set, but not used,
 		 flow would have deleted the setting insns.)  Hence
 		 there can only be one insn in reg_equiv[REGNO].init_insns.  */
+	      if (reg_equiv[regno].init_insns == NULL_RTX
+		  || XEXP (reg_equiv[regno].init_insns, 1) != NULL_RTX)
+		abort ();
 	      equiv_insn = XEXP (reg_equiv[regno].init_insns, 0);
 
 	      if (asm_noperands (PATTERN (equiv_insn)) < 0
@@ -1123,20 +1126,27 @@ update_equiv_regs ()
 		  PUT_CODE (equiv_insn, NOTE);
 		  NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
 		  NOTE_SOURCE_FILE (equiv_insn) = 0;
+		  
+		  reg_equiv[regno].init_insns = 
+		    XEXP (reg_equiv[regno].init_insns, 1);
 		}
 	      /* Move the initialization of the register to just before
 		 INSN.  Update the flow information.  */
 	      else if (PREV_INSN (insn) != equiv_insn)
 		{
 		  int l;
+		  rtx new_insn;
 
-		  emit_insn_before (copy_rtx (PATTERN (equiv_insn)), insn);
+		  new_insn = emit_insn_before (copy_rtx (PATTERN (equiv_insn)),
+					       insn);
 		  REG_NOTES (PREV_INSN (insn)) = REG_NOTES (equiv_insn);
 		  REG_NOTES (equiv_insn) = 0;
 
 		  PUT_CODE (equiv_insn, NOTE);
 		  NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
 		  NOTE_SOURCE_FILE (equiv_insn) = 0;
+
+		  XEXP (reg_equiv[regno].init_insns, 0) = new_insn;
 
 		  REG_BASIC_BLOCK (regno) = block >= 0 ? block : 0;
 		  REG_N_CALLS_CROSSED (regno) = 0;
