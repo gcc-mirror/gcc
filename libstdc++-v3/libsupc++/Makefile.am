@@ -99,8 +99,6 @@ libsupc__convenience_la_SOURCES = $(sources)
 glibcppinstalldir = @gxx_include_dir@
 glibcppinstall_HEADERS = $(headers)
 
-# Flags to force separate libtool library to be static only.
-LIBTOOL = @LIBTOOL@ --tag disable-shared
 LIBSUPCXX_CXXFLAGS = -prefer-pic
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
@@ -146,11 +144,6 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared \
 # course is problematic at this point.  So, we get the top-level
 # directory to configure libstdc++-v3 to use gcc as the C++
 # compilation driver.
-CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) \
-	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
-
-
-
-
-
-
+CXXLINK = $(LIBTOOL) --tag CXX --tag disable-shared \
+          --mode=link $(CXX) \
+          @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
