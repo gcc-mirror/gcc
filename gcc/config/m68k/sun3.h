@@ -61,7 +61,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CC1_SPEC "%{sun3:} %{target:}"
 
 #define PTRDIFF_TYPE "int"
-#define SIZE_TYPE "int"
 
 /* We must override m68k.h.  */
 #undef WCHAR_TYPE
