@@ -942,23 +942,23 @@ expand_class_desc (tdecl, type)
       base_desc_type_node = make_aggr_type (RECORD_TYPE);
 
       /* Actually const __user_type_info * */
-      fields [0] = build_lang_decl
+      fields [0] = build_decl
 	(FIELD_DECL, NULL_TREE,
 	 build_pointer_type (build_qualified_type
 			     (type_info_type_node,
 			      TYPE_QUAL_CONST)));
-      fields [1] = build_lang_decl
+      fields [1] = build_decl
 	(FIELD_DECL, NULL_TREE, 
 	 flag_new_abi ? intSI_type_node : unsigned_intSI_type_node);
       DECL_BIT_FIELD (fields[1]) = 1;
       DECL_SIZE (fields[1]) = bitsize_int (29);
 
-      fields [2] = build_lang_decl (FIELD_DECL, NULL_TREE, boolean_type_node);
+      fields [2] = build_decl (FIELD_DECL, NULL_TREE, boolean_type_node);
       DECL_BIT_FIELD (fields[2]) = 1;
       DECL_SIZE (fields[2]) = bitsize_one_node;
 
       /* Actually enum access */
-      fields [3] = build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node);
+      fields [3] = build_decl (FIELD_DECL, NULL_TREE, integer_type_node);
       DECL_BIT_FIELD (fields[3]) = 1;
       DECL_SIZE (fields[3]) = bitsize_int (2);
 
@@ -1758,7 +1758,7 @@ create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
     }
 
   /* First field is the pseudo type_info base class. */
-  fields[0] = build_lang_decl (FIELD_DECL, NULL_TREE, ti_desc_type_node);
+  fields[0] = build_decl (FIELD_DECL, NULL_TREE, ti_desc_type_node);
   
   /* Now add the derived fields.  */
   for (ix = 0; (field_decl = va_arg (ap, tree));)
@@ -1808,9 +1808,9 @@ get_vmi_pseudo_type_info (num_bases)
 
   desc = create_pseudo_type_info
             ("__vmi_class_type_info", num_bases,
-             build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node),
-             build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node),
-             build_lang_decl (FIELD_DECL, NULL_TREE, base_array),
+             build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
+             build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
+             build_decl (FIELD_DECL, NULL_TREE, base_array),
              NULL);
 
   pop_nested_namespace (abi_node);
@@ -1841,8 +1841,8 @@ create_tinfo_types ()
     tree fields[2];
 
     ti_desc_type_node = make_aggr_type (RECORD_TYPE);
-    fields[0] = build_lang_decl (FIELD_DECL, NULL_TREE, const_ptr_type_node);
-    fields[1] = build_lang_decl (FIELD_DECL, NULL_TREE, const_string_type_node);
+    fields[0] = build_decl (FIELD_DECL, NULL_TREE, const_ptr_type_node);
+    fields[1] = build_decl (FIELD_DECL, NULL_TREE, const_string_type_node);
     finish_builtin_type (ti_desc_type_node, "__type_info_pseudo",
                          fields, 1, ptr_type_node);
     TYPE_HAS_CONSTRUCTOR (ti_desc_type_node) = 1;
@@ -1857,8 +1857,8 @@ create_tinfo_types ()
      and pointer to the pointed to type.  */
   ptr_desc_type_node = create_pseudo_type_info
       ("__pointer_type_info", 0,
-       build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node),
-       build_lang_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
+       build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
+       build_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
        NULL);
 
   /* Array, function and enum type_info. No additional fields. */
@@ -1881,7 +1881,7 @@ create_tinfo_types ()
      This is really a descendant of __class_type_info.  */
   si_class_desc_type_node = create_pseudo_type_info
            ("__si_class_type_info", 0,
-            build_lang_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
+            build_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
             NULL);
   
   /* Base class internal helper. Pointer to base type, offset to base,
@@ -1889,8 +1889,8 @@ create_tinfo_types ()
   {
     tree fields[2];
     
-    fields[0] = build_lang_decl (FIELD_DECL, NULL_TREE, ptr_type_info);
-    fields[1] = build_lang_decl (FIELD_DECL, NULL_TREE, integer_types[itk_long]);
+    fields[0] = build_decl (FIELD_DECL, NULL_TREE, ptr_type_info);
+    fields[1] = build_decl (FIELD_DECL, NULL_TREE, integer_types[itk_long]);
     base_desc_type_node = make_aggr_type (RECORD_TYPE);
     finish_builtin_type (base_desc_type_node, "__base_class_type_info_pseudo",
                          fields, 1, ptr_type_node);
@@ -1905,9 +1905,9 @@ create_tinfo_types ()
      This is really a descendant of __pointer_type_info.  */
   ptmd_desc_type_node = create_pseudo_type_info
        ("__pointer_to_member_type_info", 0,
-        build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node),
-        build_lang_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
-        build_lang_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
+        build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
+        build_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
+        build_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
         NULL);
 
   pop_nested_namespace (abi_node);

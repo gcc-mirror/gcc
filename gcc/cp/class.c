@@ -1435,7 +1435,12 @@ alter_access (t, fdecl, access)
      tree fdecl;
      tree access;
 {
-  tree elem = purpose_member (t, DECL_ACCESS (fdecl));
+  tree elem;
+
+  if (!DECL_LANG_SPECIFIC (fdecl))
+    retrofit_lang_decl (fdecl);
+
+  elem = purpose_member (t, DECL_ACCESS (fdecl));
   if (elem)
     {
       if (TREE_VALUE (elem) != access)
@@ -1516,8 +1521,6 @@ handle_using_decl (using_decl, t)
 
   if (is_overloaded_fn (fdecl))
     flist = fdecl;
-  else if (! DECL_LANG_SPECIFIC (fdecl))
-    my_friendly_abort (20000221);
 
   if (! old_value)
     ;
@@ -3540,7 +3543,7 @@ build_vtbl_or_vbase_field (name, assembler_name, type, class_type, fcontext,
   *empty_p = 0;
 
   /* Build the FIELD_DECL.  */
-  field = build_lang_decl (FIELD_DECL, name, type);
+  field = build_decl (FIELD_DECL, name, type);
   DECL_ASSEMBLER_NAME (field) = assembler_name;
   DECL_VIRTUAL_P (field) = 1;
   DECL_ARTIFICIAL (field) = 1;
@@ -3760,7 +3763,7 @@ build_base_field (rli, binfo, empty_p, base_align, v)
        location information.  */
     return;
   
-  decl = build_lang_decl (FIELD_DECL, NULL_TREE, basetype);
+  decl = build_decl (FIELD_DECL, NULL_TREE, basetype);
   DECL_ARTIFICIAL (decl) = 1;
   DECL_FIELD_CONTEXT (decl) = rli->t;
   DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
@@ -4755,7 +4758,7 @@ layout_class_type (t, empty_p, vfuns_p,
     {
       tree padding;
 
-      padding = build_lang_decl (FIELD_DECL, NULL_TREE, char_type_node);
+      padding = build_decl (FIELD_DECL, NULL_TREE, char_type_node);
       place_field (rli, padding);
       TYPE_NONCOPIED_PARTS (t) 
 	= tree_cons (NULL_TREE, padding, TYPE_NONCOPIED_PARTS (t));

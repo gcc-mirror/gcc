@@ -90,8 +90,10 @@ Boston, MA 02111-1307, USA.  */
    0: DECL_ERROR_REPORTED (in VAR_DECL).
       DECL_TEMPLATE_PARM_P (in CONST_DECL, TYPE_DECL, or TEMPLATE_DECL)
       DECL_LOCAL_FUNCTION_P (in FUNCTION_DECL)
+      DECL_MUTABLE_P (in FIELD_DECL)
    1: C_TYPEDEF_EXPLICITLY_SIGNED (in TYPE_DECL).
       DECL_TEMPLATE_INSTANTIATED (in a VAR_DECL or a FUNCTION_DECL)
+      DECL_C_BITFIELD (in FIELD_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
    3: DECL_IN_AGGR_P.
@@ -1829,20 +1831,20 @@ struct lang_decl_flags
   unsigned static_function : 1;
   unsigned pure_virtual : 1;
   unsigned has_in_charge_parm_p : 1;
-  unsigned bitfield : 1;
+  unsigned uninlinable : 1;
 
-  unsigned mutable_flag : 1;
   unsigned deferred : 1;
   unsigned use_template : 2;
   unsigned nonconverting : 1;
   unsigned declared_inline : 1;
   unsigned not_really_extern : 1;
   unsigned needs_final_overrider : 1;
-
   unsigned defined_in_class : 1;
+
   unsigned pending_inline_p : 1;
   unsigned global_ctor_p : 1;
   unsigned global_dtor_p : 1;
+  unsigned tinfo_fn_p : 1;
   unsigned dummy : 4;
 
   tree context;
@@ -1989,11 +1991,11 @@ struct lang_decl
 #define DECL_TINFO_FN_P(NODE) 					\
   (TREE_CODE (NODE) == FUNCTION_DECL				\
    && DECL_ARTIFICIAL (NODE)					\
-   && DECL_LANG_SPECIFIC(NODE)->decl_flags.mutable_flag)
+   && DECL_LANG_SPECIFIC(NODE)->decl_flags.tinfo_fn_p)
 
 /* Mark NODE as a type-info function.  */
 #define SET_DECL_TINFO_FN_P(NODE) \
-  (DECL_LANG_SPECIFIC((NODE))->decl_flags.mutable_flag = 1)
+  (DECL_LANG_SPECIFIC((NODE))->decl_flags.tinfo_fn_p = 1)
 
 /* Nonzero if NODE is an overloaded `operator delete[]' function.  */
 #define DECL_ARRAY_DELETE_OPERATOR_P(NODE) \
@@ -2055,7 +2057,7 @@ struct lang_decl
 
 /* Nonzero for _DECL means that this member object type
    is mutable.  */
-#define DECL_MUTABLE_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.mutable_flag)
+#define DECL_MUTABLE_P(NODE) (DECL_LANG_FLAG_0 (NODE))
 
 /* Nonzero for _DECL means that this constructor is a non-converting
    constructor.  */
@@ -2427,16 +2429,15 @@ extern int flag_new_for_scope;
 
 /* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
 #define DECL_C_BIT_FIELD(NODE) \
-  (DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))\
-   && DECL_LANG_SPECIFIC (NODE)->decl_flags.bitfield)
+  (DECL_LANG_FLAG_1 (FIELD_DECL_CHECK (NODE)) == 1)
 #define SET_DECL_C_BIT_FIELD(NODE) \
-  (DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))->decl_flags.bitfield = 1)
+  (DECL_LANG_FLAG_1 (FIELD_DECL_CHECK (NODE)) = 1)
 #define CLEAR_DECL_C_BIT_FIELD(NODE) \
-  (DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))->decl_flags.bitfield = 0)
+  (DECL_LANG_FLAG_1 (FIELD_DECL_CHECK (NODE)) = 0)
 
 /* In a FUNCTION_DECL, nonzero if the function cannot be inlined.  */
 #define DECL_UNINLINABLE(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.bitfield)
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.uninlinable)
 
 #define INTEGRAL_CODE_P(CODE) \
   (CODE == INTEGER_TYPE || CODE == ENUMERAL_TYPE || CODE == BOOLEAN_TYPE)

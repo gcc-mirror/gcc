@@ -914,7 +914,7 @@ grok_x_components (specs)
     return;
 
   fixup_anonymous_aggr (t);
-  finish_member_declaration (build_lang_decl (FIELD_DECL, NULL_TREE, t)); 
+  finish_member_declaration (build_decl (FIELD_DECL, NULL_TREE, t)); 
 
   /* Ignore any inline function definitions in the anonymous union
      since an anonymous union may not have function members.  */
