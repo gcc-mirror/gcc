@@ -4151,8 +4151,7 @@ reshape_init (tree type, tree *initp)
      enclosed elements.  Advance past the brace-enclosed initializer
      now.  */
   if (TREE_CODE (old_init_value) == CONSTRUCTOR
-      && TREE_TYPE (old_init_value) == NULL_TREE
-      && TREE_HAS_CONSTRUCTOR (old_init_value))
+      && BRACE_ENCLOSED_INITIALIZER_P (old_init_value))
     {
       *initp = TREE_CHAIN (old_init);
       TREE_CHAIN (old_init) = NULL_TREE;
@@ -4222,8 +4221,7 @@ reshape_init (tree type, tree *initp)
   else
     {
       /* Build a CONSTRUCTOR to hold the contents of the aggregate.  */  
-      new_init = build_constructor (type, NULL_TREE);
-      TREE_HAS_CONSTRUCTOR (new_init) = 1;
+      new_init = build_constructor (NULL_TREE, NULL_TREE);
 
       if (CLASS_TYPE_P (type))
 	{
@@ -4283,7 +4281,8 @@ reshape_init (tree type, tree *initp)
 		}
 	    }
 	}
-      else if ((TREE_CODE (type) == ARRAY_TYPE)|| (TREE_CODE (type) == VECTOR_TYPE))
+      else if (TREE_CODE (type) == ARRAY_TYPE
+	       || TREE_CODE (type) == VECTOR_TYPE)
 	{
 	  tree index;
 	  tree max_index;
@@ -4399,7 +4398,8 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
     init = grok_reference_init (decl, type, init, cleanup);
   else if (init)
     {
-      if (TREE_CODE (init) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (init))
+      if (TREE_CODE (init) == CONSTRUCTOR 
+	  && BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
 	  /* [dcl.init] paragraph 13,
 	     If T is a scalar type, then a declaration of the form
@@ -4424,15 +4424,13 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 	 array size from the initializer.  */
       maybe_deduce_size_from_array_init (decl, init);
       type = TREE_TYPE (decl);
-      if (TREE_CODE (init) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (init))
-	TREE_TYPE (init) = type;
 
       if (TYPE_HAS_CONSTRUCTOR (type) || TYPE_NEEDS_CONSTRUCTING (type))
 	{
 	  if (TREE_CODE (type) == ARRAY_TYPE)
 	    goto initialize_aggr;
 	  else if (TREE_CODE (init) == CONSTRUCTOR
-		   && TREE_HAS_CONSTRUCTOR (init))
+		   && BRACE_ENCLOSED_INITIALIZER_P (init))
 	    {
 	      if (TYPE_NON_AGGREGATE_CLASS (type))
 		{

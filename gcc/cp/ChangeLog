@@ -1,3 +1,23 @@
+2004-04-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (initialize_array): Don't set TREE_HAS_CONSTRUCTOR on
+	braced initializer.
+	* cp-tree.h (BRACE_ENCLOSED_INITIALIZER_P): New macro.
+	* decl.c (reshape_init): Use it.
+	* init.c (perform_member_init): Remove redundant condition.
+	(build_aggr_init): Adjust to handle brace-enclosed initializers
+	correctly.
+	(expand_default_init): Use BRACE_ENCLOSED_INITIALIZER_P.
+	* parser.c (cp_parser_initializer_clause): Do not set
+	TREE_HAS_CONSTRUCTOR on the initializer.
+	* rtti.c (tinfo_base_init): Likewise.
+	(generic_initializer): Likewise.
+	(ptr_initializer): Likewise.
+	(ptm_initializer): Likewise.
+	(class_initializer): Likewise.
+	(get_pseudo_ti_init): Likewise.
+	* typeck2.c (digest_init): Use BRACE_ENCLOSED_INITIALIZER_P.
+	
 2004-04-22  Alan Modra  <amodra@bigpond.net.au>
 
 	* name-lookup.c (anonymous_namespace_name): Make static.

@@ -340,8 +340,7 @@ perform_member_init (tree member, tree init)
 	  finish_expr_stmt (init);
 	}
     }
-  else if (TYPE_NEEDS_CONSTRUCTING (type)
-	   || (init && TYPE_HAS_CONSTRUCTOR (type)))
+  else if (TYPE_NEEDS_CONSTRUCTING (type))
     {
       if (explicit
 	  && TREE_CODE (type) == ARRAY_TYPE
@@ -1091,34 +1090,23 @@ build_aggr_init (tree exp, tree init, int flags)
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      /* Must arrange to initialize each element of EXP
-	 from elements of INIT.  */
-      tree itype = init ? TREE_TYPE (init) : NULL_TREE;
-      
-      if (init && !itype)
+      /* An array may not be initialized use the parenthesized
+	 initialization form -- unless the initializer is "()".  */
+      if (init && TREE_CODE (init) == TREE_LIST)
 	{
-	  /* Handle bad initializers like:
-	     class COMPLEX {
-	     public:
-	       double re, im;
-	       COMPLEX(double r = 0.0, double i = 0.0) {re = r; im = i;};
-	       ~COMPLEX() {};
-	     };
-
-	     int main(int argc, char **argv) {
-	       COMPLEX zees(1.0, 0.0)[10];
-	     }
-	  */
 	  error ("bad array initializer");
 	  return error_mark_node;
 	}
+      /* Must arrange to initialize each element of EXP
+	 from elements of INIT.  */
+      tree itype = init ? TREE_TYPE (init) : NULL_TREE;
       if (cp_type_quals (type) != TYPE_UNQUALIFIED)
 	TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
       if (itype && cp_type_quals (itype) != TYPE_UNQUALIFIED)
-	TREE_TYPE (init) = TYPE_MAIN_VARIANT (itype);
+	itype = TREE_TYPE (init) = TYPE_MAIN_VARIANT (itype);
       stmt_expr = build_vec_init (exp, NULL_TREE, init,
-				  init && same_type_p (TREE_TYPE (init),
-						       TREE_TYPE (exp)));
+				  itype && same_type_p (itype,
+							TREE_TYPE (exp)));
       TREE_READONLY (exp) = was_const;
       TREE_THIS_VOLATILE (exp) = was_volatile;
       TREE_TYPE (exp) = type;
@@ -1190,8 +1178,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags)
 	   to run a new constructor; and catching an exception, where we
 	   have already built up the constructor call so we could wrap it
 	   in an exception region.  */;
-      else if (TREE_CODE (init) == CONSTRUCTOR 
-	       && TREE_HAS_CONSTRUCTOR (init))
+      else if (BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
 	  /* A brace-enclosed initializer for an aggregate.  */
 	  my_friendly_assert (CP_AGGREGATE_TYPE_P (type), 20021016);

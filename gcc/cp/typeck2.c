@@ -488,8 +488,6 @@ digest_init (tree type, tree init, tree* tail)
   enum tree_code code = TREE_CODE (type);
   tree element = NULL_TREE;
   tree old_tail_contents = NULL_TREE;
-  /* Nonzero if INIT is a braced grouping.  */
-  int raw_constructor;
 
   /* By default, assume we use one element from a list.
      We correct this later in the sole case where it is not true.  */
@@ -519,10 +517,7 @@ digest_init (tree type, tree init, tree* tail)
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     init = TREE_OPERAND (init, 0);
 
-  raw_constructor = (TREE_CODE (init) == CONSTRUCTOR 
-		     && TREE_HAS_CONSTRUCTOR (init));
-
-  if (raw_constructor
+  if (BRACE_ENCLOSED_INITIALIZER_P (init)
       && CONSTRUCTOR_ELTS (init) != 0
       && TREE_CHAIN (CONSTRUCTOR_ELTS (init)) == 0)
     {
@@ -594,7 +589,7 @@ digest_init (tree type, tree init, tree* tail)
       || code == BOOLEAN_TYPE || code == COMPLEX_TYPE
       || TYPE_PTR_TO_MEMBER_P (type))
     {
-      if (raw_constructor)
+      if (BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
 	  if (element == 0)
 	    {
@@ -603,7 +598,7 @@ digest_init (tree type, tree init, tree* tail)
 	    }
 	  init = element;
 	}
-      while (TREE_CODE (init) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (init))
+      while (BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
 	  pedwarn ("braces around scalar initializer for `%T'", type);
 	  init = CONSTRUCTOR_ELTS (init);
@@ -627,15 +622,16 @@ digest_init (tree type, tree init, tree* tail)
 
   if (code == ARRAY_TYPE || code == VECTOR_TYPE || IS_AGGR_TYPE_CODE (code))
     {
-      if (raw_constructor && TYPE_NON_AGGREGATE_CLASS (type)
-	  && TREE_HAS_CONSTRUCTOR (init))
+      if (BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
-	  error ("subobject of type `%T' must be initialized by constructor, not by `%E'",
-		    type, init);
-	  return error_mark_node;
+	  if (TYPE_NON_AGGREGATE_CLASS (type))
+	    {
+	      error ("subobject of type `%T' must be initialized by constructor, not by `%E'",
+		     type, init);
+	      return error_mark_node;
+	    }
+	  return process_init_constructor (type, init, (tree *)0);
 	}
-      else if (raw_constructor)
-	return process_init_constructor (type, init, (tree *)0);
       else if (can_convert_arg (type, TREE_TYPE (init), init)
 	       || TYPE_NON_AGGREGATE_CLASS (type))
 	/* These are never initialized from multiple constructor elements.  */;
@@ -877,7 +873,7 @@ process_init_constructor (tree type, tree init, tree* elts)
 
 	      /* Warn when some struct elements are implicitly initialized.  */
 	      if (extra_warnings
-	          && (!init || TREE_HAS_CONSTRUCTOR (init)))
+	          && (!init || BRACE_ENCLOSED_INITIALIZER_P (init)))
 		warning ("missing initializer for member `%D'", field);
 	    }
 	  else
@@ -893,7 +889,7 @@ process_init_constructor (tree type, tree init, tree* elts)
 	      /* Warn when some struct elements are implicitly initialized
 		 to zero.  */
 	      if (extra_warnings
-	          && (!init || TREE_HAS_CONSTRUCTOR (init)))
+	          && (!init || BRACE_ENCLOSED_INITIALIZER_P (init)))
 		warning ("missing initializer for member `%D'", field);
 
 	      if (! zero_init_p (TREE_TYPE (field)))
