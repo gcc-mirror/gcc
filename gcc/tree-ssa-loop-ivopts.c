@@ -158,7 +158,8 @@ struct iv_use
   struct iv *iv;	/* The induction variable it is based on.  */
   tree stmt;		/* Statement in that it occurs.  */
   tree *op_p;		/* The place where it occurs.  */
-  bitmap related_cands;	/* The set of "related" iv candidates.  */
+  bitmap related_cands;	/* The set of "related" iv candidates, plus the common
+			   important ones.  */
 
   unsigned n_map_members; /* Number of candidates in the cost_map list.  */
   struct cost_pair *cost_map;
@@ -225,6 +226,58 @@ struct ivopts_data
   /* Whether to consider just related and important candidates when replacing a
      use.  */
   bool consider_all_candidates;
+};
+
+/* An assignment of iv candidates to uses.  */
+
+struct iv_ca
+{
+  /* The number of uses covered by the assignment.  */
+  unsigned upto;
+
+  /* Number of uses that cannot be expressed by the candidates in the set.  */
+  unsigned bad_uses;
+
+  /* Candidate assigned to a use, together with the related costs.  */
+  struct cost_pair **cand_for_use;
+
+  /* Number of times each candidate is used.  */
+  unsigned *n_cand_uses;
+
+  /* The candidates used.  */
+  bitmap cands;
+
+  /* Total number of registers needed.  */
+  unsigned n_regs;
+
+  /* Total cost of expressing uses.  */
+  unsigned cand_use_cost;
+
+  /* Total cost of candidates.  */
+  unsigned cand_cost;
+
+  /* Number of times each invariant is used.  */
+  unsigned *n_invariant_uses;
+
+  /* Total cost of the assignment.  */
+  unsigned cost;
+};
+
+/* Difference of two iv candidate assignments.  */
+
+struct iv_ca_delta
+{
+  /* Changed use.  */
+  struct iv_use *use;
+
+  /* An old assignment (for rollback purposes).  */
+  struct cost_pair *old_cp;
+
+  /* A new assignment.  */
+  struct cost_pair *new_cp;
+
+  /* Next change in the list.  */
+  struct iv_ca_delta *next_change;
 };
 
 /* Bound on number of candidates below that all candidates are considered.  */
@@ -589,6 +642,7 @@ tree_ssa_iv_optimize_init (struct loops *loops, struct ivopts_data *data)
   data->version_info = xcalloc (data->version_info_size,
 				sizeof (struct version_info));
   data->relevant = BITMAP_XMALLOC ();
+  data->important_candidates = BITMAP_XMALLOC ();
   data->max_inv_id = 0;
 
   for (i = 1; i < loops->num; i++)
@@ -1889,6 +1943,45 @@ add_derived_ivs_candidates (struct ivopts_data *data)
     }
 }
 
+/* Record important candidates and add them to related_cands bitmaps
+   if needed.  */
+
+static void
+record_important_candidates (struct ivopts_data *data)
+{
+  unsigned i;
+  struct iv_use *use;
+
+  for (i = 0; i < n_iv_cands (data); i++)
+    {
+      struct iv_cand *cand = iv_cand (data, i);
+
+      if (cand->important)
+	bitmap_set_bit (data->important_candidates, i);
+    }
+
+  data->consider_all_candidates = (n_iv_cands (data)
+				   <= CONSIDER_ALL_CANDIDATES_BOUND);
+
+  if (data->consider_all_candidates)
+    {
+      /* We will not need "related_cands" bitmaps in this case,
+	 so release them to decrease peak memory consumption.  */
+      for (i = 0; i < n_iv_uses (data); i++)
+	{
+	  use = iv_use (data, i);
+	  BITMAP_XFREE (use->related_cands);
+	}
+    }
+  else
+    {
+      /* Add important candidates to the related_cands bitmaps.  */
+      for (i = 0; i < n_iv_uses (data); i++)
+	bitmap_ior_into (iv_use (data, i)->related_cands,
+			 data->important_candidates);
+    }
+}
+
 /* Finds the candidates for the induction variables.  */
 
 static void
@@ -1902,6 +1995,9 @@ find_iv_candidates (struct ivopts_data *data)
 
   /* Add induction variables derived from uses.  */
   add_derived_ivs_candidates (data);
+
+  /* Record the important candidates.  */
+  record_important_candidates (data);
 }
 
 /* Allocates the data structure mapping the (use, candidate) pairs to costs.
@@ -1911,17 +2007,7 @@ find_iv_candidates (struct ivopts_data *data)
 static void
 alloc_use_cost_map (struct ivopts_data *data)
 {
-  unsigned i, n_imp = 0, size, j;
-
-  if (!data->consider_all_candidates)
-    {
-      for (i = 0; i < n_iv_cands (data); i++)
-	{
-	  struct iv_cand *cand = iv_cand (data, i);
-	  if (cand->important)
-	    n_imp++;
-	}
-    }
+  unsigned i, size, s, j;
 
   for (i = 0; i < n_iv_uses (data); i++)
     {
@@ -1929,20 +2015,21 @@ alloc_use_cost_map (struct ivopts_data *data)
       bitmap_iterator bi;
 
       if (data->consider_all_candidates)
-	{
-	  size = n_iv_cands (data);
-	  use->n_map_members = size;
-	}
+	size = n_iv_cands (data);
       else
 	{
-	  size = n_imp;
+	  s = 0;
 	  EXECUTE_IF_SET_IN_BITMAP (use->related_cands, 0, j, bi)
 	    {
-	      size++;
+	      s++;
 	    }
-	  use->n_map_members = 0;
+
+	  /* Round up to the power of two, so that moduling by it is fast.  */
+	  for (size = 1; size < s; size <<= 1)
+	    continue;
 	}
 
+      use->n_map_members = size;
       use->cost_map = xcalloc (size, sizeof (struct cost_pair));
     }
 }
@@ -1955,11 +2042,13 @@ set_use_iv_cost (struct ivopts_data *data,
 		 struct iv_use *use, struct iv_cand *cand, unsigned cost,
 		 bitmap depends_on)
 {
-  if (cost == INFTY
-      && depends_on)
+  unsigned i, s;
+
+  if (cost == INFTY)
     {
-      BITMAP_XFREE (depends_on);
-      depends_on = NULL;
+      if (depends_on)
+	BITMAP_XFREE (depends_on);
+      return;
     }
 
   if (data->consider_all_candidates)
@@ -1970,42 +2059,55 @@ set_use_iv_cost (struct ivopts_data *data,
       return;
     }
 
-  if (cost == INFTY)
-    return;
+  /* n_map_members is a power of two, so this computes modulo.  */
+  s = cand->id & (use->n_map_members - 1);
+  for (i = s; i < use->n_map_members; i++)
+    if (!use->cost_map[i].cand)
+      goto found;
+  for (i = 0; i < s; i++)
+    if (!use->cost_map[i].cand)
+      goto found;
 
-  use->cost_map[use->n_map_members].cand = cand;
-  use->cost_map[use->n_map_members].cost = cost;
-  use->cost_map[use->n_map_members].depends_on = depends_on;
-  use->n_map_members++;
+  gcc_unreachable ();
+
+found:
+  use->cost_map[i].cand = cand;
+  use->cost_map[i].cost = cost;
+  use->cost_map[i].depends_on = depends_on;
 }
 
-/* Gets cost of (USE, CANDIDATE) pair.  Stores the bitmap of dependencies to
-   DEPENDS_ON.  */
+/* Gets cost of (USE, CANDIDATE) pair.  */
 
-static unsigned
-get_use_iv_cost (struct ivopts_data *data,
-		 struct iv_use *use, struct iv_cand *cand, bitmap *depends_on)
+static struct cost_pair *
+get_use_iv_cost (struct ivopts_data *data, struct iv_use *use,
+		 struct iv_cand *cand)
 {
-  unsigned i;
+  unsigned i, s;
+  struct cost_pair *ret;
 
   if (!cand)
-    return INFTY;
+    return NULL;
 
   if (data->consider_all_candidates)
-    i = cand->id;
-  else
     {
-      for (i = 0; i < use->n_map_members; i++)
-	if (use->cost_map[i].cand == cand)
-	  break;
+      ret = use->cost_map + cand->id;
+      if (!ret->cand)
+	return NULL;
 
-      if (i == use->n_map_members)
-	return INFTY;
+      return ret;
     }
+      
+  /* n_map_members is a power of two, so this computes modulo.  */
+  s = cand->id & (use->n_map_members - 1);
+  for (i = s; i < use->n_map_members; i++)
+    if (use->cost_map[i].cand == cand)
+      return use->cost_map + i;
 
-  if (depends_on)
-    *depends_on = use->cost_map[i].depends_on;
-  return use->cost_map[i].cost;
+  for (i = 0; i < s; i++)
+    if (use->cost_map[i].cand == cand)
+      return use->cost_map + i;
+
+  return NULL;
 }
 
 /* Returns estimate on cost of computing SEQ.  */
@@ -2948,7 +3050,7 @@ get_computation_cost (struct ivopts_data *data,
 /* Determines cost of basing replacement of USE on CAND in a generic
    expression.  */
 
-static void
+static bool
 determine_use_iv_cost_generic (struct ivopts_data *data,
 			       struct iv_use *use, struct iv_cand *cand)
 {
@@ -2956,11 +3058,13 @@ determine_use_iv_cost_generic (struct ivopts_data *data,
   unsigned cost = get_computation_cost (data, use, cand, false, &depends_on);
 
   set_use_iv_cost (data, use, cand, cost, depends_on);
+
+  return cost != INFTY;
 }
 
 /* Determines cost of basing replacement of USE on CAND in an address.  */
 
-static void
+static bool
 determine_use_iv_cost_address (struct ivopts_data *data,
 			       struct iv_use *use, struct iv_cand *cand)
 {
@@ -2968,6 +3072,8 @@ determine_use_iv_cost_address (struct ivopts_data *data,
   unsigned cost = get_computation_cost (data, use, cand, true, &depends_on);
 
   set_use_iv_cost (data, use, cand, cost, depends_on);
+
+  return cost != INFTY;
 }
 
 /* Computes value of induction variable IV in iteration NITER.  */
@@ -3069,7 +3175,7 @@ may_eliminate_iv (struct loop *loop,
 
 /* Determines cost of basing replacement of USE on CAND in a condition.  */
 
-static void
+static bool
 determine_use_iv_cost_condition (struct ivopts_data *data,
 				 struct iv_use *use, struct iv_cand *cand)
 {
@@ -3080,7 +3186,7 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
   if (!cand->iv)
     {
       set_use_iv_cost (data, use, cand, INFTY, NULL);
-      return;
+      return false;
     }
 
   if (may_eliminate_iv (data->current_loop, use, cand, &compare, &bound))
@@ -3089,7 +3195,7 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
       unsigned cost = force_var_cost (data, bound, &depends_on);
 
       set_use_iv_cost (data, use, cand, cost, depends_on);
-      return;
+      return cost != INFTY;
     }
 
   /* The induction variable elimination failed; just express the original
@@ -3103,7 +3209,7 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
       record_invariant (data, TREE_OPERAND (*use->op_p, 1), true);
     }
 
-  determine_use_iv_cost_generic (data, use, cand);
+  return determine_use_iv_cost_generic (data, use, cand);
 }
 
 /* Checks whether it is possible to replace the final value of USE by
@@ -3135,7 +3241,7 @@ may_replace_final_value (struct loop *loop, struct iv_use *use, tree *value)
 
 /* Determines cost of replacing final value of USE using CAND.  */
 
-static void
+static bool
 determine_use_iv_cost_outer (struct ivopts_data *data,
 			     struct iv_use *use, struct iv_cand *cand)
 {
@@ -3150,7 +3256,7 @@ determine_use_iv_cost_outer (struct ivopts_data *data,
       if (!may_replace_final_value (loop, use, &value))
 	{
 	  set_use_iv_cost (data, use, cand, INFTY, NULL);
-	  return;
+	  return false;
 	}
 
       depends_on = NULL;
@@ -3159,7 +3265,7 @@ determine_use_iv_cost_outer (struct ivopts_data *data,
       cost /= AVG_LOOP_NITER (loop);
 
       set_use_iv_cost (data, use, cand, cost, depends_on);
-      return;
+      return cost != INFTY;
     }
 
   exit = single_dom_exit (loop);
@@ -3179,31 +3285,30 @@ determine_use_iv_cost_outer (struct ivopts_data *data,
     }
 				   
   set_use_iv_cost (data, use, cand, cost, depends_on);
+
+  return cost != INFTY;
 }
 
-/* Determines cost of basing replacement of USE on CAND.  */
+/* Determines cost of basing replacement of USE on CAND.  Returns false
+   if USE cannot be based on CAND.  */
 
-static void
+static bool
 determine_use_iv_cost (struct ivopts_data *data,
 		       struct iv_use *use, struct iv_cand *cand)
 {
   switch (use->type)
     {
     case USE_NONLINEAR_EXPR:
-      determine_use_iv_cost_generic (data, use, cand);
-      break;
+      return determine_use_iv_cost_generic (data, use, cand);
 
     case USE_OUTER:
-      determine_use_iv_cost_outer (data, use, cand);
-      break;
+      return determine_use_iv_cost_outer (data, use, cand);
 
     case USE_ADDRESS:
-      determine_use_iv_cost_address (data, use, cand);
-      break;
+      return determine_use_iv_cost_address (data, use, cand);
 
     case USE_COMPARE:
-      determine_use_iv_cost_condition (data, use, cand);
-      break;
+      return determine_use_iv_cost_condition (data, use, cand);
 
     default:
       gcc_unreachable ();
@@ -3218,27 +3323,9 @@ determine_use_iv_costs (struct ivopts_data *data)
   unsigned i, j;
   struct iv_use *use;
   struct iv_cand *cand;
-
-  data->consider_all_candidates = (n_iv_cands (data)
-				   <= CONSIDER_ALL_CANDIDATES_BOUND);
+  bitmap to_clear = BITMAP_XMALLOC ();
 
   alloc_use_cost_map (data);
-
-  if (!data->consider_all_candidates)
-    {
-      /* Add the important candidate entries.  */
-      for (j = 0; j < n_iv_cands (data); j++)
-	{
-	  cand = iv_cand (data, j);
-	  if (!cand->important)
-	    continue;
-	  for (i = 0; i < n_iv_uses (data); i++)
-	    {
-	      use = iv_use (data, i);
-	      determine_use_iv_cost (data, use, cand);
-	    }
-	}
-    }
 
   for (i = 0; i < n_iv_uses (data); i++)
     {
@@ -3259,11 +3346,18 @@ determine_use_iv_costs (struct ivopts_data *data)
 	  EXECUTE_IF_SET_IN_BITMAP (use->related_cands, 0, j, bi)
 	    {
 	      cand = iv_cand (data, j);
-	      if (!cand->important)
-	        determine_use_iv_cost (data, use, cand);
+	      if (!determine_use_iv_cost (data, use, cand))
+		bitmap_set_bit (to_clear, j);
 	    }
+
+	  /* Remove the candidates for that the cost is infinite from
+	     the list of related candidates.  */
+	  bitmap_and_compl_into (use->related_cands, to_clear);
+	  bitmap_clear (to_clear);
 	}
     }
+
+  BITMAP_XFREE (to_clear);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -3451,159 +3545,476 @@ determine_set_costs (struct ivopts_data *data)
     }
 }
 
-/* Finds a best candidate for USE and stores it to CAND.  The candidates are
-   taken from the set SOL and they may depend on invariants in the set INV.
-   The really used candidate and invariants are noted to USED_IVS and
-   USED_INV.  */
+/* Returns true if A is a cheaper cost pair than B.  */
 
-static unsigned
-find_best_candidate (struct ivopts_data *data,
-		     struct iv_use *use, bitmap sol, bitmap inv,
-		     bitmap used_ivs, bitmap used_inv, struct iv_cand **cand)
+static bool
+cheaper_cost_pair (struct cost_pair *a, struct cost_pair *b)
 {
-  unsigned c, d;
-  unsigned best_cost = INFTY, cost;
-  struct iv_cand *cnd = NULL, *acnd;
-  bitmap depends_on = NULL, asol;
-  bitmap_iterator bi, bi1;
+  if (!a)
+    return false;
 
-  if (data->consider_all_candidates)
-    asol = sol;
-  else
-    {
-      asol = BITMAP_XMALLOC ();
+  if (!b)
+    return true;
 
-      bitmap_ior (asol, data->important_candidates, use->related_cands);
-      bitmap_and_into (asol, sol);
-    }
+  if (a->cost < b->cost)
+    return true;
 
-  EXECUTE_IF_SET_IN_BITMAP (asol, 0, c, bi)
-    {
-      acnd = iv_cand (data, c);
-      cost = get_use_iv_cost (data, use, acnd, &depends_on);
+  if (a->cost > b->cost)
+    return false;
 
-      if (cost == INFTY)
-	continue;
-      if (cost > best_cost)
-	continue;
-      if (cost == best_cost)
-	{
-	  /* Prefer the cheaper iv.  */
-	  if (acnd->cost >= cnd->cost)
-	    continue;
-	}
+  /* In case the costs are the same, prefer the cheaper candidate.  */
+  if (a->cand->cost < b->cand->cost)
+    return true;
 
-      if (depends_on)
-	{
-	  EXECUTE_IF_AND_COMPL_IN_BITMAP (depends_on, inv, 0, d, bi1)
-	    {
-	      goto next_cand;
-	    }
-	  if (used_inv)
-	    bitmap_ior_into (used_inv, depends_on);
-	}
-
-      cnd = acnd;
-      best_cost = cost;
-
-next_cand: ;
-    }
-
-  if (cnd && used_ivs)
-    bitmap_set_bit (used_ivs, cnd->id);
-
-  if (cand)
-    *cand = cnd;
-
-  if (!data->consider_all_candidates)
-    BITMAP_XFREE (asol);
-
-  return best_cost;
+  return false;
 }
 
-/* Returns cost of set of ivs SOL + invariants INV.  Removes unnecessary
-   induction variable candidates and invariants from the sets.  Only
-   uses 0 .. MAX_USE - 1 are taken into account.  */
+/* Computes the cost field of IVS structure.  */
 
-static unsigned
-set_cost_up_to (struct ivopts_data *data, bitmap sol, bitmap inv,
-		unsigned max_use)
+static void
+iv_ca_recount_cost (struct ivopts_data *data, struct iv_ca *ivs)
 {
-  unsigned i;
-  unsigned cost = 0, size = 0, acost;
-  struct iv_use *use;
-  struct iv_cand *cand;
-  bitmap used_ivs = BITMAP_XMALLOC (), used_inv = BITMAP_XMALLOC ();
+  unsigned cost = 0;
+
+  cost += ivs->cand_use_cost;
+  cost += ivs->cand_cost;
+  cost += ivopts_global_cost_for_size (data, ivs->n_regs);
+
+  ivs->cost = cost;
+}
+
+/* Set USE not to be expressed by any candidate in IVS.  */
+
+static void
+iv_ca_set_no_cp (struct ivopts_data *data, struct iv_ca *ivs,
+		 struct iv_use *use)
+{
+  unsigned uid = use->id, cid, iid;
+  bitmap deps;
+  struct cost_pair *cp;
   bitmap_iterator bi;
 
-  for (i = 0; i < max_use; i++)
+  cp = ivs->cand_for_use[uid];
+  if (!cp)
+    return;
+  cid = cp->cand->id;
+
+  ivs->bad_uses++;
+  ivs->cand_for_use[uid] = NULL;
+  ivs->n_cand_uses[cid]--;
+
+  if (ivs->n_cand_uses[cid] == 0)
+    {
+      bitmap_clear_bit (ivs->cands, cid);
+      /* Do not count the pseudocandidates.  */
+      if (cp->cand->iv)
+	ivs->n_regs--;
+      ivs->cand_cost -= cp->cand->cost;
+    }
+
+  ivs->cand_use_cost -= cp->cost;
+
+  deps = cp->depends_on;
+
+  if (deps)
+    {
+      EXECUTE_IF_SET_IN_BITMAP (deps, 0, iid, bi)
+	{
+	  ivs->n_invariant_uses[iid]--;
+	  if (ivs->n_invariant_uses[iid] == 0)
+	    ivs->n_regs--;
+	}
+    }
+
+  iv_ca_recount_cost (data, ivs);
+}
+
+/* Set cost pair for USE in set IVS to CP.  */
+
+static void
+iv_ca_set_cp (struct ivopts_data *data, struct iv_ca *ivs,
+	      struct iv_use *use, struct cost_pair *cp)
+{
+  unsigned uid = use->id, cid, iid;
+  bitmap deps;
+  bitmap_iterator bi;
+
+  if (ivs->cand_for_use[uid] == cp)
+    return;
+
+  if (ivs->cand_for_use[uid])
+    iv_ca_set_no_cp (data, ivs, use);
+
+  if (cp)
+    {
+      cid = cp->cand->id;
+
+      ivs->bad_uses--;
+      ivs->cand_for_use[uid] = cp;
+      ivs->n_cand_uses[cid]++;
+      if (ivs->n_cand_uses[cid] == 1)
+	{
+	  bitmap_set_bit (ivs->cands, cid);
+	  /* Do not count the pseudocandidates.  */
+	  if (cp->cand->iv)
+	    ivs->n_regs++;
+	  ivs->cand_cost += cp->cand->cost;
+	}
+
+      ivs->cand_use_cost += cp->cost;
+
+      deps = cp->depends_on;
+
+      if (deps)
+	{
+	  EXECUTE_IF_SET_IN_BITMAP (deps, 0, iid, bi)
+	    {
+	      ivs->n_invariant_uses[iid]++;
+	      if (ivs->n_invariant_uses[iid] == 1)
+		ivs->n_regs++;
+	    }
+	}
+
+      iv_ca_recount_cost (data, ivs);
+    }
+}
+
+/* Extend set IVS by expressing USE by some of the candidates in it
+   if possible.  */
+
+static void
+iv_ca_add_use (struct ivopts_data *data, struct iv_ca *ivs,
+	       struct iv_use *use)
+{
+  struct cost_pair *best_cp = NULL, *cp;
+  bitmap_iterator bi;
+  unsigned i;
+
+  gcc_assert (ivs->upto >= use->id);
+
+  if (ivs->upto == use->id)
+    {
+      ivs->upto++;
+      ivs->bad_uses++;
+    }
+
+  EXECUTE_IF_SET_IN_BITMAP (ivs->cands, 0, i, bi)
+    {
+      cp = get_use_iv_cost (data, use, iv_cand (data, i));
+
+      if (cheaper_cost_pair (cp, best_cp))
+	best_cp = cp;
+    }
+
+  iv_ca_set_cp (data, ivs, use, best_cp);
+}
+
+/* Get cost for assignment IVS.  */
+
+static unsigned
+iv_ca_cost (struct iv_ca *ivs)
+{
+  return (ivs->bad_uses ? INFTY : ivs->cost);
+}
+
+/* Returns true if all dependences of CP are among invariants in IVS.  */
+
+static bool
+iv_ca_has_deps (struct iv_ca *ivs, struct cost_pair *cp)
+{
+  unsigned i;
+  bitmap_iterator bi;
+
+  if (!cp->depends_on)
+    return true;
+
+  EXECUTE_IF_SET_IN_BITMAP (cp->depends_on, 0, i, bi)
+    {
+      if (ivs->n_invariant_uses[i] == 0)
+	return false;
+    }
+
+  return true;
+}
+
+/* Creates change of expressing USE by NEW_CP instead of OLD_CP and chains
+   it before NEXT_CHANGE.  */
+
+static struct iv_ca_delta *
+iv_ca_delta_add (struct iv_use *use, struct cost_pair *old_cp,
+		 struct cost_pair *new_cp, struct iv_ca_delta *next_change)
+{
+  struct iv_ca_delta *change = xmalloc (sizeof (struct iv_ca_delta));
+
+  change->use = use;
+  change->old_cp = old_cp;
+  change->new_cp = new_cp;
+  change->next_change = next_change;
+
+  return change;
+}
+
+/* Returns candidate by that USE is expressed in IVS.  */
+
+static struct cost_pair *
+iv_ca_cand_for_use (struct iv_ca *ivs, struct iv_use *use)
+{
+  return ivs->cand_for_use[use->id];
+}
+
+/* Commit changes in DELTA to IVS.  If FORWARD is false, the changes are
+   reverted instead.  */
+
+static void
+iv_ca_delta_commit (struct ivopts_data *data, struct iv_ca *ivs,
+		    struct iv_ca_delta *delta, bool forward)
+{
+  struct cost_pair *from, *to;
+
+  for (; delta; delta = delta->next_change)
+    {
+      if (forward)
+	{
+	  from = delta->old_cp;
+	  to = delta->new_cp;
+	}
+      else
+	{
+	  from = delta->new_cp;
+	  to = delta->old_cp;
+	}
+
+      gcc_assert (iv_ca_cand_for_use (ivs, delta->use) == from);
+      iv_ca_set_cp (data, ivs, delta->use, to);
+    }
+}
+
+/* Returns true if CAND is used in IVS.  */
+
+static bool
+iv_ca_cand_used_p (struct iv_ca *ivs, struct iv_cand *cand)
+{
+  return ivs->n_cand_uses[cand->id] > 0;
+}
+
+/* Free the list of changes DELTA.  */
+
+static void
+iv_ca_delta_free (struct iv_ca_delta **delta)
+{
+  struct iv_ca_delta *act, *next;
+
+  for (act = *delta; act; act = next)
+    {
+      next = act->next_change;
+      free (act);
+    }
+
+  *delta = NULL;
+}
+
+/* Allocates new iv candidates assignment.  */
+
+static struct iv_ca *
+iv_ca_new (struct ivopts_data *data)
+{
+  struct iv_ca *nw = xmalloc (sizeof (struct iv_ca));
+
+  nw->upto = 0;
+  nw->bad_uses = 0;
+  nw->cand_for_use = xcalloc (n_iv_uses (data), sizeof (struct cost_pair *));
+  nw->n_cand_uses = xcalloc (n_iv_cands (data), sizeof (unsigned));
+  nw->cands = BITMAP_XMALLOC ();
+  nw->n_regs = 0;
+  nw->cand_use_cost = 0;
+  nw->cand_cost = 0;
+  nw->n_invariant_uses = xcalloc (data->max_inv_id + 1, sizeof (unsigned));
+  nw->cost = 0;
+
+  return nw;
+}
+
+/* Free memory occupied by the set IVS.  */
+
+static void
+iv_ca_free (struct iv_ca **ivs)
+{
+  free ((*ivs)->cand_for_use);
+  free ((*ivs)->n_cand_uses);
+  BITMAP_XFREE ((*ivs)->cands);
+  free ((*ivs)->n_invariant_uses);
+  free (*ivs);
+  *ivs = NULL;
+}
+
+/* Dumps IVS to FILE.  */
+
+static void
+iv_ca_dump (struct ivopts_data *data, FILE *file, struct iv_ca *ivs)
+{
+  const char *pref = "  invariants ";
+  unsigned i;
+
+  fprintf (file, "  cost %d\n", iv_ca_cost (ivs));
+  bitmap_print (file, ivs->cands, "  candidates ","\n");
+
+  for (i = 1; i <= data->max_inv_id; i++)
+    if (ivs->n_invariant_uses[i])
+      {
+	fprintf (file, "%s%d", pref, i);
+	pref = ", ";
+      }
+  fprintf (file, "\n");
+}
+
+/* Try changing candidate in IVS to CAND for each use.  Return cost of the
+   new set, and store differences in DELTA.  */
+
+static unsigned
+iv_ca_extend (struct ivopts_data *data, struct iv_ca *ivs,
+	      struct iv_cand *cand, struct iv_ca_delta **delta)
+{
+  unsigned i, cost;
+  struct iv_use *use;
+  struct cost_pair *old_cp, *new_cp;
+
+  *delta = NULL;
+  for (i = 0; i < ivs->upto; i++)
     {
       use = iv_use (data, i);
-      acost = find_best_candidate (data, use, sol, inv,
-				   used_ivs, used_inv, NULL);
-      if (acost == INFTY)
-	{
-	  BITMAP_XFREE (used_ivs);
-	  BITMAP_XFREE (used_inv);
-	  return INFTY;
-	}
-      cost += acost;
+      old_cp = iv_ca_cand_for_use (ivs, use);
+
+      if (old_cp
+	  && old_cp->cand == cand)
+	continue;
+
+      new_cp = get_use_iv_cost (data, use, cand);
+      if (!new_cp)
+	continue;
+
+      if (!iv_ca_has_deps (ivs, new_cp))
+	continue;
+      
+      if (!cheaper_cost_pair (new_cp, old_cp))
+	continue;
+
+      *delta = iv_ca_delta_add (use, old_cp, new_cp, *delta);
     }
 
-  EXECUTE_IF_SET_IN_BITMAP (used_ivs, 0, i, bi)
-    {
-      cand = iv_cand (data, i);
-
-      /* Do not count the pseudocandidates.  */
-      if (cand->iv)
-	size++;
-
-      cost += cand->cost;
-    }
-  EXECUTE_IF_SET_IN_BITMAP (used_inv, 0, i, bi)
-    {
-      size++;
-    }
-  cost += ivopts_global_cost_for_size (data, size);
-
-  bitmap_copy (sol, used_ivs);
-  bitmap_copy (inv, used_inv);
-
-  BITMAP_XFREE (used_ivs);
-  BITMAP_XFREE (used_inv);
+  iv_ca_delta_commit (data, ivs, *delta, true);
+  cost = iv_ca_cost (ivs);
+  iv_ca_delta_commit (data, ivs, *delta, false);
 
   return cost;
 }
 
-/* Computes cost of set of ivs SOL + invariants INV.  Removes unnecessary
-   induction variable candidates and invariants from the sets.  */
+/* Try narowing set IVS by removing CAND.  Return the cost of
+   the new set and store the differences in DELTA.  */
 
 static unsigned
-set_cost (struct ivopts_data *data, bitmap sol, bitmap inv)
+iv_ca_narrow (struct ivopts_data *data, struct iv_ca *ivs,
+	      struct iv_cand *cand, struct iv_ca_delta **delta)
 {
-  return set_cost_up_to (data, sol, inv, n_iv_uses (data));
+  unsigned i, ci;
+  struct iv_use *use;
+  struct cost_pair *old_cp, *new_cp, *cp;
+  bitmap_iterator bi;
+  struct iv_cand *cnd;
+  unsigned cost;
+
+  *delta = NULL;
+  for (i = 0; i < n_iv_uses (data); i++)
+    {
+      use = iv_use (data, i);
+
+      old_cp = iv_ca_cand_for_use (ivs, use);
+      if (old_cp->cand != cand)
+	continue;
+
+      new_cp = NULL;
+
+      if (data->consider_all_candidates)
+	{
+	  EXECUTE_IF_SET_IN_BITMAP (ivs->cands, 0, ci, bi)
+	    {
+	      if (ci == cand->id)
+		continue;
+
+	      cnd = iv_cand (data, ci);
+
+	      cp = get_use_iv_cost (data, use, cnd);
+	      if (!cp)
+		continue;
+	      if (!iv_ca_has_deps (ivs, cp))
+		continue;
+      
+	      if (!cheaper_cost_pair (cp, new_cp))
+		continue;
+
+	      new_cp = cp;
+	    }
+	}
+      else
+	{
+	  EXECUTE_IF_AND_IN_BITMAP (use->related_cands, ivs->cands, 0, ci, bi)
+	    {
+	      if (ci == cand->id)
+		continue;
+
+	      cnd = iv_cand (data, ci);
+
+	      cp = get_use_iv_cost (data, use, cnd);
+	      if (!cp)
+		continue;
+	      if (!iv_ca_has_deps (ivs, cp))
+		continue;
+      
+	      if (!cheaper_cost_pair (cp, new_cp))
+		continue;
+
+	      new_cp = cp;
+	    }
+	}
+
+      if (!new_cp)
+	{
+	  iv_ca_delta_free (delta);
+	  return INFTY;
+	}
+
+      *delta = iv_ca_delta_add (use, old_cp, new_cp, *delta);
+    }
+
+  iv_ca_delta_commit (data, ivs, *delta, true);
+  cost = iv_ca_cost (ivs);
+  iv_ca_delta_commit (data, ivs, *delta, false);
+
+  return cost;
 }
 
-/* Tries to extend the sets IVS and INV in the best possible way in order
+/* Tries to extend the sets IVS in the best possible way in order
    to express the USE.  */
 
 static bool
-try_add_cand_for (struct ivopts_data *data, bitmap ivs, bitmap inv,
+try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
 		  struct iv_use *use)
 {
-  unsigned best_cost = set_cost_up_to (data, ivs, inv, use->id + 1), act_cost;
-  bitmap best_ivs = BITMAP_XMALLOC ();
-  bitmap best_inv = BITMAP_XMALLOC ();
-  bitmap act_ivs = BITMAP_XMALLOC ();
-  bitmap act_inv = BITMAP_XMALLOC ();
+  unsigned best_cost, act_cost;
   unsigned i;
-  struct cost_pair *cp;
   bitmap_iterator bi;
   struct iv_cand *cand;
-  bitmap depends_on;
+  struct iv_ca_delta *best_delta = NULL, *act_delta;
+  struct cost_pair *cp;
 
-  bitmap_copy (best_ivs, ivs);
-  bitmap_copy (best_inv, inv);
+  iv_ca_add_use (data, ivs, use);
+  best_cost = iv_ca_cost (ivs);
+
+  cp = iv_ca_cand_for_use (ivs, use);
+  if (cp)
+    {
+      best_delta = iv_ca_delta_add (use, NULL, cp, NULL);
+      iv_ca_set_no_cp (data, ivs, use);
+    }
 
   /* First try important candidates.  Only if it fails, try the specific ones.
      Rationale -- in loops with many variables the best choice often is to use
@@ -3617,23 +4028,27 @@ try_add_cand_for (struct ivopts_data *data, bitmap ivs, bitmap inv,
     {
       cand = iv_cand (data, i);
 
-      if (get_use_iv_cost (data, use, cand, &depends_on) == INFTY)
+      if (iv_ca_cand_used_p (ivs, cand))
 	continue;
 
-      bitmap_copy (act_ivs, ivs);
-      bitmap_set_bit (act_ivs, cand->id);
-      if (depends_on)
-	bitmap_ior (act_inv, inv, depends_on);
-      else
-	bitmap_copy (act_inv, inv);
-      act_cost = set_cost_up_to (data, act_ivs, act_inv, use->id + 1);
+      cp = get_use_iv_cost (data, use, cand);
+      if (!cp)
+	continue;
+
+      iv_ca_set_cp (data, ivs, use, cp);
+      act_cost = iv_ca_extend (data, ivs, cand, &act_delta);
+      iv_ca_set_no_cp (data, ivs, use);
+      act_delta = iv_ca_delta_add (use, NULL, cp, act_delta);
 
       if (act_cost < best_cost)
 	{
 	  best_cost = act_cost;
-	  bitmap_copy (best_ivs, act_ivs);
-	  bitmap_copy (best_inv, act_inv);
+
+	  iv_ca_delta_free (&best_delta);
+	  best_delta = act_delta;
 	}
+      else
+	iv_ca_delta_free (&act_delta);
     }
 
   if (best_cost == INFTY)
@@ -3641,132 +4056,96 @@ try_add_cand_for (struct ivopts_data *data, bitmap ivs, bitmap inv,
       for (i = 0; i < use->n_map_members; i++)
 	{
 	  cp = use->cost_map + i;
-	  if (cp->cost == INFTY)
+	  cand = cp->cand;
+	  if (!cand)
 	    continue;
 
 	  /* Already tried this.  */
-	  if (cp->cand->important)
+	  if (cand->important)
+	    continue;
+      
+	  if (iv_ca_cand_used_p (ivs, cand))
 	    continue;
 
-	  bitmap_copy (act_ivs, ivs);
-	  bitmap_set_bit (act_ivs, cp->cand->id);
-	  if (cp->depends_on)
-	    bitmap_ior (act_inv, inv, cp->depends_on);
-	  else
-	    bitmap_copy (act_inv, inv);
-	  act_cost = set_cost_up_to (data, act_ivs, act_inv, use->id + 1);
+	  act_delta = NULL;
+	  iv_ca_set_cp (data, ivs, use, cp);
+	  act_cost = iv_ca_extend (data, ivs, cand, &act_delta);
+	  iv_ca_set_no_cp (data, ivs, use);
+	  act_delta = iv_ca_delta_add (use, iv_ca_cand_for_use (ivs, use),
+				       cp, act_delta);
 
 	  if (act_cost < best_cost)
 	    {
 	      best_cost = act_cost;
-	      bitmap_copy (best_ivs, act_ivs);
-	      bitmap_copy (best_inv, act_inv);
+
+	      if (best_delta)
+		iv_ca_delta_free (&best_delta);
+	      best_delta = act_delta;
 	    }
+	  else
+	    iv_ca_delta_free (&act_delta);
 	}
     }
 
-  bitmap_copy (ivs, best_ivs);
-  bitmap_copy (inv, best_inv);
-
-  BITMAP_XFREE (best_ivs);
-  BITMAP_XFREE (best_inv);
-  BITMAP_XFREE (act_ivs);
-  BITMAP_XFREE (act_inv);
+  iv_ca_delta_commit (data, ivs, best_delta, true);
+  iv_ca_delta_free (&best_delta);
 
   return (best_cost != INFTY);
 }
 
-/* Finds an initial set of IVS and invariants INV.  We do this by simply
-   choosing the best candidate for each use.  */
+/* Finds an initial assignment of candidates to uses.  */
 
-static unsigned
-get_initial_solution (struct ivopts_data *data, bitmap ivs, bitmap inv)
+static struct iv_ca *
+get_initial_solution (struct ivopts_data *data)
 {
+  struct iv_ca *ivs = iv_ca_new (data);
   unsigned i;
 
   for (i = 0; i < n_iv_uses (data); i++)
-    if (!try_add_cand_for (data, ivs, inv, iv_use (data, i)))
-      return INFTY;
+    if (!try_add_cand_for (data, ivs, iv_use (data, i)))
+      {
+	iv_ca_free (&ivs);
+	return NULL;
+      }
 
-  return set_cost (data, ivs, inv);
+  return ivs;
 }
 
-/* Tries to improve set of induction variables IVS and invariants INV to get
-   it better than COST.  */
+/* Tries to improve set of induction variables IVS.  */
 
 static bool
-try_improve_iv_set (struct ivopts_data *data,
-		    bitmap ivs, bitmap inv, unsigned *cost)
+try_improve_iv_set (struct ivopts_data *data, struct iv_ca *ivs)
 {
-  unsigned i, acost;
-  bitmap new_ivs = BITMAP_XMALLOC (), new_inv = BITMAP_XMALLOC ();
-  bitmap best_new_ivs = NULL, best_new_inv = NULL;
+  unsigned i, acost, best_cost = iv_ca_cost (ivs);
+  struct iv_ca_delta *best_delta = NULL, *act_delta;
+  struct iv_cand *cand;
 
   /* Try altering the set of induction variables by one.  */
   for (i = 0; i < n_iv_cands (data); i++)
     {
-      bitmap_copy (new_ivs, ivs);
-      bitmap_copy (new_inv, inv);
-
-      if (bitmap_bit_p (ivs, i))
-	bitmap_clear_bit (new_ivs, i);
+      cand = iv_cand (data, i);
+      
+      if (iv_ca_cand_used_p (ivs, cand))
+	acost = iv_ca_narrow (data, ivs, cand, &act_delta);
       else
-	bitmap_set_bit (new_ivs, i);
+	acost = iv_ca_extend (data, ivs, cand, &act_delta);
 
-      acost = set_cost (data, new_ivs, new_inv);
-      if (acost >= *cost)
-	continue;
-
-      if (!best_new_ivs)
+      if (acost < best_cost)
 	{
-	  best_new_ivs = BITMAP_XMALLOC ();
-	  best_new_inv = BITMAP_XMALLOC ();
+	  best_cost = acost;
+	  if (best_delta)
+	    iv_ca_delta_free (&best_delta);
+	  best_delta = act_delta;
 	}
-
-      *cost = acost;
-      bitmap_copy (best_new_ivs, new_ivs);
-      bitmap_copy (best_new_inv, new_inv);
+      else
+	iv_ca_delta_free (&act_delta);
     }
 
-  /* Ditto for invariants.  */
-  for (i = 1; i <= data->max_inv_id; i++)
-    {
-      if (ver_info (data, i)->has_nonlin_use)
-	continue;
-
-      bitmap_copy (new_ivs, ivs);
-      bitmap_copy (new_inv, inv);
-
-      if (bitmap_bit_p (inv, i))
-	bitmap_clear_bit (new_inv, i);
-      else
-	bitmap_set_bit (new_inv, i);
-
-      acost = set_cost (data, new_ivs, new_inv);
-      if (acost >= *cost)
-	continue;
-
-      if (!best_new_ivs)
-	{
-	  best_new_ivs = BITMAP_XMALLOC ();
-	  best_new_inv = BITMAP_XMALLOC ();
-	}
-
-      *cost = acost;
-      bitmap_copy (best_new_ivs, new_ivs);
-      bitmap_copy (best_new_inv, new_inv);
-    }
-
-  BITMAP_XFREE (new_ivs);
-  BITMAP_XFREE (new_inv);
-
-  if (!best_new_ivs)
+  if (!best_delta)
     return false;
 
-  bitmap_copy (ivs, best_new_ivs);
-  bitmap_copy (inv, best_new_inv);
-  BITMAP_XFREE (best_new_ivs);
-  BITMAP_XFREE (best_new_inv);
+  iv_ca_delta_commit (data, ivs, best_delta, true);
+  iv_ca_delta_free (&best_delta);
   return true;
 }
 
@@ -3774,66 +4153,45 @@ try_improve_iv_set (struct ivopts_data *data,
    greedy heuristic -- we try to replace at most one candidate in the selected
    solution and remove the unused ivs while this improves the cost.  */
 
-static bitmap
+static struct iv_ca *
 find_optimal_iv_set (struct ivopts_data *data)
 {
-  unsigned cost, i;
-  bitmap set = BITMAP_XMALLOC ();
-  bitmap inv = BITMAP_XMALLOC ();
+  unsigned i;
+  struct iv_ca *set;
   struct iv_use *use;
 
-  data->important_candidates = BITMAP_XMALLOC ();
-  for (i = 0; i < n_iv_cands (data); i++)
-    {
-      struct iv_cand *cand = iv_cand (data, i);
-
-      if (cand->important)
-	bitmap_set_bit (data->important_candidates, i);
-    }
-
-  /* Set the upper bound.  */
-  cost = get_initial_solution (data, set, inv);
-  if (cost == INFTY)
+  /* Get the initial solution.  */
+  set = get_initial_solution (data);
+  if (!set)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Unable to substitute for ivs, failed.\n");
-      BITMAP_XFREE (inv);
-      BITMAP_XFREE (set);
       return NULL;
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Initial set of candidates (cost %d): ", cost);
-      bitmap_print (dump_file, set, "", "");
-      fprintf (dump_file, " invariants ");
-      bitmap_print (dump_file, inv, "", "");
-      fprintf (dump_file, "\n");
+      fprintf (dump_file, "Initial set of candidates:\n");
+      iv_ca_dump (data, dump_file, set);
     }
 
-  while (try_improve_iv_set (data, set, inv, &cost))
+  while (try_improve_iv_set (data, set))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  fprintf (dump_file, "Improved to (cost %d): ", cost);
-	  bitmap_print (dump_file, set, "", "");
-	  fprintf (dump_file, " invariants ");
-	  bitmap_print (dump_file, inv, "", "");
-	  fprintf (dump_file, "\n");
+	  fprintf (dump_file, "Improved to:\n");
+	  iv_ca_dump (data, dump_file, set);
 	}
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Final cost %d\n\n", cost);
+    fprintf (dump_file, "Final cost %d\n\n", iv_ca_cost (set));
 
   for (i = 0; i < n_iv_uses (data); i++)
     {
       use = iv_use (data, i);
-      find_best_candidate (data, use, set, inv, NULL, NULL, &use->selected);
+      use->selected = iv_ca_cand_for_use (set, use)->cand;
     }
-
-  BITMAP_XFREE (inv);
-  BITMAP_XFREE (data->important_candidates);
 
   return set;
 }
@@ -3884,13 +4242,13 @@ create_new_iv (struct ivopts_data *data, struct iv_cand *cand)
 /* Creates new induction variables described in SET.  */
 
 static void
-create_new_ivs (struct ivopts_data *data, bitmap set)
+create_new_ivs (struct ivopts_data *data, struct iv_ca *set)
 {
   unsigned i;
   struct iv_cand *cand;
   bitmap_iterator bi;
 
-  EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
+  EXECUTE_IF_SET_IN_BITMAP (set->cands, 0, i, bi)
     {
       cand = iv_cand (data, i);
       create_new_iv (data, cand);
@@ -4422,6 +4780,7 @@ free_loop_data (struct ivopts_data *data)
       info->inv_id = 0;
     }
   bitmap_clear (data->relevant);
+  bitmap_clear (data->important_candidates);
 
   for (i = 0; i < n_iv_uses (data); i++)
     {
@@ -4484,6 +4843,7 @@ tree_ssa_iv_optimize_finalize (struct loops *loops, struct ivopts_data *data)
   free_loop_data (data);
   free (data->version_info);
   BITMAP_XFREE (data->relevant);
+  BITMAP_XFREE (data->important_candidates);
 
   VARRAY_FREE (decl_rtl_to_reset);
   VARRAY_FREE (data->iv_uses);
@@ -4496,7 +4856,7 @@ static bool
 tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
 {
   bool changed = false;
-  bitmap iv_set;
+  struct iv_ca *iv_ca;
   edge exit;
 
   data->current_loop = loop;
@@ -4536,13 +4896,14 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
   determine_set_costs (data);
 
   /* Find the optimal set of induction variables (item 3, part 2).  */
-  iv_set = find_optimal_iv_set (data);
-  if (!iv_set)
+  iv_ca = find_optimal_iv_set (data);
+  if (!iv_ca)
     goto finish;
   changed = true;
 
   /* Create the new induction variables (item 4, part 1).  */
-  create_new_ivs (data, iv_set);
+  create_new_ivs (data, iv_ca);
+  iv_ca_free (&iv_ca);
   
   /* Rewrite the uses (item 4, part 2).  */
   rewrite_uses (data);
@@ -4551,8 +4912,6 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
   remove_unused_ivs (data);
 
   loop_commit_inserts ();
-
-  BITMAP_XFREE (iv_set);
 
   /* We have changed the structure of induction variables; it might happen
      that definitions in the scev database refer to some of them that were
