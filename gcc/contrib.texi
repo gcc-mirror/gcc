@@ -358,7 +358,8 @@ kernels.
 Philippe De Muyter for his work on the m68k port.
 
 @item
-Joseph Myers for his work on the PDP-11 port.
+Joseph Myers for his work on the PDP-11 port, format checking and ISO
+C99 support.
 
 @item
 Nathan Myers for his work on libstdc++-v3.
