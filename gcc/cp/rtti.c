@@ -1075,7 +1075,7 @@ synthesize_tinfo_var (target_type, real_name)
 	  var_init = generic_initializer (var_type, target_type);
 	  break;
 	}
-      my_friendly_abort (20000117);
+      abort ();
     }
   
   return create_real_tinfo_var (target_type,

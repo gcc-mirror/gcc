@@ -803,7 +803,7 @@ dump_global_iord (t)
   else if (DECL_GLOBAL_DTOR_P (t))
     p = "destructors";
   else
-    my_friendly_abort (352);
+    abort ();
 
   output_printf (scratch_buffer, "(static %s for %s)", p, input_filename);
 }
@@ -910,7 +910,7 @@ dump_decl (t, flags)
       break;
 
     case TYPE_EXPR:
-      my_friendly_abort (69);
+      abort ();
       break;
 
       /* These special cases are duplicated here so that other functions
@@ -1050,7 +1050,7 @@ dump_template_decl (t, flags)
   else if (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == VAR_DECL)
     dump_decl (DECL_TEMPLATE_RESULT (t), flags | TFF_TEMPLATE_NAME);
   else if (TREE_TYPE (t) == NULL_TREE)
-    my_friendly_abort (353);
+    abort ();
   else
     switch (NEXT_CODE (t))
     {
@@ -2272,7 +2272,7 @@ language_to_string (c, v)
       return "Java";
 
     default:
-      my_friendly_abort (355);
+      abort ();
       return 0;
     }
 }

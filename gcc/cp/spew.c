@@ -675,7 +675,7 @@ do_aggr ()
       nth_token (1)->yychar = IDENTIFIER_DEFN;
       break;
     default:
-      my_friendly_abort (102);
+      abort ();
     }
 }  
 
@@ -917,7 +917,7 @@ frob_id (yyc, peek, idp)
             lastiddecl = trrr;
             break;
           default:
-            my_friendly_abort (20000907);
+            abort ();
         }
     }
   else

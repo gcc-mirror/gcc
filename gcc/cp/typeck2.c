@@ -248,7 +248,7 @@ retry:
       break;
     
     default:
-      my_friendly_abort (108);
+      abort ();
     }
 }
 
@@ -318,7 +318,7 @@ store_init_value (decl, init)
     {
       if (! TYPE_HAS_TRIVIAL_INIT_REF (type)
 	  && TREE_CODE (init) != CONSTRUCTOR)
-	my_friendly_abort (109);
+	abort ();
 
       if (TREE_CODE (init) == TREE_LIST)
 	{
@@ -925,7 +925,7 @@ process_init_constructor (type, init, elts)
 	  next1 = digest_init (TREE_TYPE (field),
 			       TREE_VALUE (tail), &tail1);
 	  if (tail1 != 0 && TREE_CODE (tail1) != TREE_LIST)
-	    my_friendly_abort (357);
+	    abort ();
 	  tail = tail1;
 	}
       else

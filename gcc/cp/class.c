@@ -5044,7 +5044,7 @@ finish_struct_1 (t)
       if (IS_AGGR_TYPE (t))
 	error ("redefinition of `%#T'", t);
       else
-	my_friendly_abort (172);
+	abort ();
       popclass ();
       return;
     }
@@ -6090,7 +6090,7 @@ instantiate_type (lhstype, rhs, flags)
     case SAVE_EXPR:
     case CONSTRUCTOR:
     case BUFFER_REF:
-      my_friendly_abort (177);
+      abort ();
       return error_mark_node;
 
     case INDIRECT_REF:
@@ -6159,7 +6159,7 @@ instantiate_type (lhstype, rhs, flags)
 
     case CALL_EXPR:
       /* This is too hard for now.  */
-      my_friendly_abort (183);
+      abort ();
       return error_mark_node;
 
     case PLUS_EXPR:
@@ -6266,14 +6266,14 @@ instantiate_type (lhstype, rhs, flags)
       return instantiate_type (lhstype, TREE_OPERAND (rhs, 0), flags);
     }
     case ENTRY_VALUE_EXPR:
-      my_friendly_abort (184);
+      abort ();
       return error_mark_node;
 
     case ERROR_MARK:
       return error_mark_node;
 
     default:
-      my_friendly_abort (185);
+      abort ();
       return error_mark_node;
     }
 }
@@ -6386,7 +6386,7 @@ get_enclosing_class (type)
 	  break;
 
 	default:
-	  my_friendly_abort (0);
+	  abort ();
 	}
     }
   return NULL_TREE;
@@ -6550,7 +6550,7 @@ get_primary_binfo (binfo)
 	}
 
       /* We should always find the primary base.  */
-      my_friendly_abort (20000729);
+      abort ();
     }
 
   /* For a primary virtual base, we have to scan the entire hierarchy
@@ -6960,7 +6960,7 @@ get_original_base (base_binfo, binfo)
     if (same_type_p (BINFO_TYPE (base_binfo),
                      BINFO_TYPE (BINFO_BASETYPE (derived, ix))))
       return BINFO_BASETYPE (derived, ix);
-  my_friendly_abort (20010223);
+  abort ();
   return NULL;
 }
 
@@ -7718,7 +7718,7 @@ build_vbase_offset_vtbl_entries (binfo, vid)
 	  /* The vbase offset had better be the same.  */
 	  if (!tree_int_cst_equal (delta,
 				   BINFO_VPTR_FIELD (orig_vbase)))
-	    my_friendly_abort (20000403);
+	    abort ();
 	}
 
       /* The next vbase will come at a more negative offset.  */

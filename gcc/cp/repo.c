@@ -103,7 +103,7 @@ repo_get_id (t)
 	 the vtable, so going ahead would give the wrong answer.
          See g++.pt/instantiate4.C.  */
       if (!COMPLETE_TYPE_P (t) || TYPE_BEING_DEFINED (t))
-	my_friendly_abort (981113);
+	abort ();
 
       vtable = get_vtbl_decl_for_binfo (TYPE_BINFO (t));
 
@@ -147,7 +147,7 @@ repo_template_used (t)
 				0);
     }
   else
-    my_friendly_abort (1);
+    abort ();
 
   if (! IDENTIFIER_REPO_USED (id))
     {

@@ -585,7 +585,7 @@ common_type (t1, t2)
     case REAL_TYPE:
       /* We should have called type_after_usual_arithmetic_conversions
 	 above.  */
-      my_friendly_abort (19990725);
+      abort ();
       break;
 
     case POINTER_TYPE:
@@ -759,7 +759,7 @@ common_type (t1, t2)
     case OFFSET_TYPE:
       /* Pointers to members should now be handled by the POINTER_TYPE
 	 case above.  */
-      my_friendly_abort (990325);
+      abort ();
 
     default:
       return build_type_attribute_variant (t1, attributes);
@@ -1729,7 +1729,7 @@ decay_conversion (exp)
       return error_mark_node;
     }
   if (code == METHOD_TYPE)
-    my_friendly_abort (990506);
+    abort ();
   if (code == FUNCTION_TYPE || is_overloaded_fn (exp))
     return build_unary_op (ADDR_EXPR, exp, 0);
   if (code == ARRAY_TYPE)
@@ -2057,7 +2057,7 @@ build_component_ref (datum, component, basetype_path, protect)
   if (TREE_CODE (component) == TREE_LIST)
     {
       /* I could not trigger this code. MvL */
-      my_friendly_abort (980326);
+      abort ();
 #ifdef DEAD
       my_friendly_assert (!(TREE_CHAIN (component) == NULL_TREE
 		&& DECL_CHAIN (TREE_VALUE (component)) == NULL_TREE), 309);
@@ -2811,7 +2811,7 @@ build_x_function_call (function, params, decl)
 	}
       /* Unexpected node type?  */
       else
-	my_friendly_abort (116);
+	abort ();
       if (decl == NULL_TREE)
 	{
 	  if (current_function_decl
@@ -3705,7 +3705,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		&& same_type_p (TYPE_PTRMEMFUNC_FN_TYPE (type0), type1))
 	       || (TYPE_PTRMEMFUNC_P (type1)
 		   && same_type_p (TYPE_PTRMEMFUNC_FN_TYPE (type1), type0)))
-	my_friendly_abort (20000221);
+	abort ();
       break;
 
     case MAX_EXPR:
@@ -4672,7 +4672,7 @@ build_unary_op (code, xarg, noconvert)
       if (TREE_CODE (arg) == IDENTIFIER_NODE
 	  && IDENTIFIER_OPNAME_P (arg))
 	{
-	  my_friendly_abort (117);
+	  abort ();
 	  /* We don't know the type yet, so just work around the problem.
 	     We know that this will resolve to an lvalue.  */
 	  return build1 (ADDR_EXPR, unknown_type_node, arg);
@@ -6263,7 +6263,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
   register enum tree_code coder;
 
   if (codel == OFFSET_TYPE)
-    my_friendly_abort (990505);
+    abort ();
 
   if (TREE_CODE (rhs) == OFFSET_REF)
     rhs = resolve_offset_ref (rhs);

@@ -2168,7 +2168,7 @@ cp_expand_stmt (t)
       break;
     
     default:
-      my_friendly_abort (19990810);
+      abort ();
       break;
     }
 }

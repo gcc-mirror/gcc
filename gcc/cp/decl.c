@@ -547,7 +547,7 @@ pop_binding_level ()
     {
       /* Cannot pop a level, if there are none left to pop.  */
       if (current_binding_level == global_binding_level)
-	my_friendly_abort (123);
+	abort ();
     }
   /* Pop the current level, and free the structure for reuse.  */
 #if defined(DEBUG_CP_BINDING_LEVELS)
@@ -586,7 +586,7 @@ suspend_binding_level ()
     {
       /* Cannot suspend a level, if there are none left to suspend.  */
       if (current_binding_level == global_binding_level)
-	my_friendly_abort (123);
+	abort ();
     }
   /* Suspend the current level.  */
 #if defined(DEBUG_CP_BINDING_LEVELS)
@@ -887,7 +887,7 @@ begin_scope (sk)
       break;
 
     default:
-      my_friendly_abort (20000309);
+      abort ();
     }
 }
 
@@ -1187,7 +1187,7 @@ pop_binding (id, decl)
   else if (BINDING_TYPE (binding) == decl)
     BINDING_TYPE (binding) = NULL_TREE;
   else
-    my_friendly_abort (0);
+    abort ();
 
   if (!BINDING_VALUE (binding) && !BINDING_TYPE (binding))
     {
@@ -1491,7 +1491,7 @@ poplevel (keep, reverse, functionbody)
 	  else if (TREE_CODE (decl) == OVERLOAD)
 	    pop_binding (DECL_NAME (OVL_FUNCTION (decl)), decl);
 	  else
-	    my_friendly_abort (0);
+	    abort ();
 	}
     }
 
@@ -4677,7 +4677,7 @@ push_overloaded_decl (decl, flags)
 	      }
 
 	  /* We should always find a previous binding in this case.  */
-	  my_friendly_abort (0);
+	  abort ();
 	}
 
       /* Install the new binding.  */
@@ -5662,7 +5662,7 @@ make_typename_type (context, name, complain)
       return error_mark_node;
     }
   if (TREE_CODE (name) != IDENTIFIER_NODE)
-    my_friendly_abort (2000);
+    abort ();
 
   if (TREE_CODE (context) == NAMESPACE_DECL)
     {
@@ -5743,7 +5743,7 @@ make_unbound_class_template (context, name, complain)
   else if (DECL_P (name))
     name = DECL_NAME (name);
   if (TREE_CODE (name) != IDENTIFIER_NODE)
-    my_friendly_abort (20010902);
+    abort ();
 
   if (!uses_template_parms (context)
       || currently_open_class (context))
@@ -9534,7 +9534,7 @@ check_special_function_return_type (sfk, type, optype)
       break;
 
     default:
-      my_friendly_abort (20000408);
+      abort ();
       break;
     }
 
@@ -10923,7 +10923,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		TREE_COMPLEXITY (declarator) = current_class_depth;
 	      }
 	    else
-	      my_friendly_abort (16);
+	      abort ();
 
 	    if (TREE_OPERAND (declarator, 0) == NULL_TREE)
 	      {
@@ -11016,7 +11016,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		declarator = sname;
 	      }
 	    else if (TREE_CODE (sname) == SCOPE_REF)
-	      my_friendly_abort (17);
+	      abort ();
 	    else
 	      {
 	      done_scoping:
@@ -11051,7 +11051,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  break;
 
 	default:
-	  my_friendly_abort (158);
+	  abort ();
 	}
     }
 
@@ -11128,7 +11128,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     }
   else
     /* Unexpected declarator format.  */
-    my_friendly_abort (990210);
+    abort ();
 
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
 
@@ -11352,7 +11352,7 @@ friend declaration requires class-key, i.e. `friend %#T'",
       else if (TREE_CODE (declarator) == IDENTIFIER_NODE)
 	{
 	  if (IDENTIFIER_OPNAME_P (declarator))
-	    my_friendly_abort (356);
+	    abort ();
 	  else
 	    error ("variable or field `%s' declared void", name);
 	}
@@ -12322,7 +12322,7 @@ grok_op_properties (decl, friendp)
 #include "operators.def"
 #undef DEF_OPERATOR
 
-	my_friendly_abort (20000527);
+	abort ();
       }
     while (0);
   my_friendly_assert (operator_code != LAST_CPLUS_TREE_CODE, 20000526);
@@ -12495,7 +12495,7 @@ grok_op_properties (decl, friendp)
 		  break;
 
 		default:
-		  my_friendly_abort (20000527);
+		  abort ();
 		}
 
 	      SET_OVERLOADED_OPERATOR_CODE (decl, operator_code);
@@ -12623,7 +12623,7 @@ tag_name (code)
     case enum_type:
       return "enum";
     default:
-      my_friendly_abort (981122);
+      abort ();
     }
 }
 
@@ -12675,7 +12675,7 @@ xref_tag (code_type_node, name, globalize)
       code = ENUMERAL_TYPE;
       break;
     default:
-      my_friendly_abort (18);
+      abort ();
     }
 
   /* If a cross reference is requested, look up the type
@@ -14168,7 +14168,7 @@ finish_function (flags)
      have declarations (from inline functions) that need to go into
      this function's blocks.  */
   if (current_binding_level->parm_flag != 1)
-    my_friendly_abort (122);
+    abort ();
   poplevel (1, 0, 1);
 
   /* Set up the named return value optimization, if we can.  Here, we

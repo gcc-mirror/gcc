@@ -780,7 +780,7 @@ yyprint (file, yychar, yylval)
       else if (yylval.ttype == enum_type_node)
 	fprintf (file, " `enum'");
       else
-	my_friendly_abort (80);
+	abort ();
       break;
 
     case CONSTANT:
@@ -1012,7 +1012,7 @@ note_got_semicolon (type)
      tree type;
 {
   if (!TYPE_P (type))
-    my_friendly_abort (60);
+    abort ();
   if (CLASS_TYPE_P (type))
     CLASSTYPE_GOT_SEMICOLON (type) = 1;
 }
@@ -1514,7 +1514,7 @@ retrofit_lang_decl (t)
     SET_DECL_LANGUAGE (t, lang_c);
   else if (current_lang_name == lang_name_java)
     SET_DECL_LANGUAGE (t, lang_java);
-  else my_friendly_abort (64);
+  else abort ();
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)lang_decl] += 1;
@@ -1687,6 +1687,6 @@ cp_type_qual_from_rid (rid)
   else if (rid == ridpointers[(int) RID_RESTRICT])
     return TYPE_QUAL_RESTRICT;
 
-  my_friendly_abort (0);
+  abort ();
   return TYPE_UNQUALIFIED;
 }

@@ -106,7 +106,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 
     case OFFSET_REF:
       /* Offset refs should not make it through to here. */
-      my_friendly_abort (20010724);
+      abort ();
       return const0_rtx;
       
     case THROW_EXPR:
@@ -126,7 +126,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
     default:
       return c_expand_expr (exp, target, tmode, modifier);
     }
-  my_friendly_abort (40);
+  abort ();
   /* NOTREACHED */
   return NULL;
 }

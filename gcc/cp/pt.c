@@ -352,7 +352,7 @@ push_inline_template_parms_recursive (parmlist, levels)
 	  break;
 
 	default:
-	  my_friendly_abort (0);
+	  abort ();
 	}
     }
 }
@@ -1448,7 +1448,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
       break;
 
     default:
-      my_friendly_abort (20000309);
+      abort ();
     }
 
   if (specialization || member_specialization)
@@ -3158,7 +3158,7 @@ convert_nontype_argument (type, expr)
 
     default:
       /* All non-type parameters must have one of these types.  */
-      my_friendly_abort (0);
+      abort ();
       break;
     }
 
@@ -3247,7 +3247,7 @@ coerce_template_template_parms (parm_parms, arg_parms, complain,
 	  break;
 	  
 	default:
-	  my_friendly_abort (0);
+	  abort ();
 	}
     }
   return 1;
@@ -5210,7 +5210,7 @@ instantiate_class_template (type)
 		      tsubst_friend_function (TREE_VALUE (friends),
 					      args));
 	else
-	  my_friendly_abort (20000216);
+	  abort ();
     }
 
   for (t = CLASSTYPE_FRIEND_CLASSES (pattern);
@@ -6058,7 +6058,7 @@ tsubst_decl (t, args, type)
       break;
 
     default:
-      my_friendly_abort (0);
+      abort ();
     } 
 
   /* Restore the file and line information.  */
@@ -6259,7 +6259,7 @@ tsubst (t, args, complain, in_decl)
   else
     type = TREE_TYPE (t);
   if (type == unknown_type_node)
-    my_friendly_abort (42);
+    abort ();
 
   if (type && TREE_CODE (t) != FUNCTION_DECL
       && TREE_CODE (t) != TYPENAME_TYPE
@@ -6432,7 +6432,7 @@ tsubst (t, args, complain, in_decl)
 	      }
 	  }
 	else
-	  my_friendly_abort (981018);
+	  abort ();
 
 	if (level == 1)
 	  /* This can happen during the attempted tsubst'ing in
@@ -6483,7 +6483,7 @@ tsubst (t, args, complain, in_decl)
 	    break;
 	   
 	  default:
-	    my_friendly_abort (0);
+	    abort ();
 	  }
 
 	return r;
@@ -6931,7 +6931,7 @@ tsubst_copy (t, args, complain, in_decl)
 	  /* We didn't find the name.  That should never happen; if
 	     name-lookup found it during preliminary parsing, we
 	     should find it again here during instantiation.  */
-	my_friendly_abort (0);
+	abort ();
       }
       return t;
 
@@ -7592,7 +7592,7 @@ instantiate_template (tmpl, targ_ptr)
 	if (DECL_NAME (clone) == DECL_NAME (tmpl))
 	  return clone;
       /* We should always have found the clone by now.  */
-      my_friendly_abort (20000411);
+      abort ();
       return NULL_TREE;
     }
   
@@ -7844,7 +7844,7 @@ maybe_adjust_types_for_deduction (strict, parm, arg)
         }
       break;
     default:
-      my_friendly_abort (0);
+      abort ();
     }
 
   if (TREE_CODE (*parm) != REFERENCE_TYPE)
@@ -7939,7 +7939,7 @@ type_unification_real (tparms, targs, xparms, xargs, subr,
       break;
       
     default:
-      my_friendly_abort (0);
+      abort ();
     }
 
   if (xlen == 0)
@@ -8137,7 +8137,7 @@ resolve_overloaded_unification (tparms, targs, parm, arg, strict,
 	}
     }
   else
-    my_friendly_abort (981006);
+    abort ();
 
   /* [temp.deduct.type] A template-argument can be deduced from a pointer
      to function or pointer to member function argument if the set of
@@ -8455,7 +8455,7 @@ template_decl_level (decl)
       return TEMPLATE_PARM_LEVEL (DECL_INITIAL (decl));
 
     default:
-      my_friendly_abort (0);
+      abort ();
       return 0;
     }
 }
@@ -8731,7 +8731,7 @@ unify (tparms, targs, parm, arg, strict)
 	  else if (i == 0)
 	    return 1;
 	  else
-	    my_friendly_abort (42);
+	    abort ();
 	}
 
       /* [temp.deduct.type] If, in the declaration of a function template
