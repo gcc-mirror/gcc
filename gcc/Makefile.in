@@ -1352,7 +1352,7 @@ c-errors.o: c-errors.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(C_TREE_H) $(FLAGS_H) $(DIAGNOSTIC_H) $(TM_P_H)
 c-parse.o : c-parse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(GGC_H) intl.h $(C_TREE_H) input.h $(FLAGS_H) toplev.h output.h $(CPPLIB_H) \
-    varray.h gt-c-parse.h langhooks.h
+    varray.h gt-c-parse.h langhooks.h $(C_COMMON_H)
 
 srcextra: gcc.srcextra lang.srcextra
 

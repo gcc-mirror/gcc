@@ -66,18 +66,17 @@ objc/objc-lang.o : objc/objc-lang.c \
 
 objc/objc-parse.o : objc/objc-parse.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_TREE_H) \
-   toplev.h $(GGC_H) c-pragma.h input.h flags.h output.h objc/objc-act.h \
-   langhooks.h
+   toplev.h $(GGC_H) c-pragma.h input.h flags.h output.h langhooks.h $(C_COMMON_H)
 
 objc/objc-act.o : objc/objc-act.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) $(TM_P_H) \
    $(EXPR_H) $(TARGET_H) $(C_TREE_H) diagnostic.h toplev.h flags.h \
    objc/objc-act.h input.h function.h output.h debug.h langhooks.h \
-   $(LANGHOOKS_DEF_H) gt-objc-objc-act.h
+   $(LANGHOOKS_DEF_H) $(HASHTAB_H) gt-objc-objc-act.h
 
 objc.srcextra: objc/objc-parse.c objc/objc-parse.y
 	-cp -p $^ $(srcdir)/objc
- 
+
 objc/objc-parse.c : objc/objc-parse.y
 	-$(BISON) $(BISONFLAGS) -o $@ $<
 
