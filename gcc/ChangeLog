@@ -1,10 +1,57 @@
+2003-05-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* config.gcc: Purge all targets obsoleted in GCC 3.3.  Also
+	remove hppa*-*-mpeix* which could not be built, and prune
+	files from tmake_file= or tm_file= lists that don't exist.
+
+	* config/alpha/alpha-interix.h, config/alpha/alpha32.h
+	* config/alpha/t-interix, config/arm/conix-elf.h
+	* config/arm/t-arm-aout, config/arm/t-strongarm-coff
+	* config/arm/unknown-elf-oabi.h, config/i386/win32.h
+	* config/m68k/3b1.h, config/m68k/3b1g.h, config/m68k/amix.h
+	* config/m68k/atari.h, config/m68k/ccur-GAS.h, config/m68k/crds.h
+	* config/m68k/hp2bsd.h, config/m68k/hp3bsd.h
+	* config/m68k/hp3bsd44.h, config/m68k/linux-aout.h
+	* config/m68k/m68k-psos.h, config/m68k/mot3300.h
+	* config/m68k/pbb.h, config/m68k/plexus.h, config/m68k/sun2.h
+	* config/m68k/sun2o4.h, config/m68k/sun3.h, config/m68k/sun3mach.h
+	* config/m68k/sun3n.h, config/m68k/sun3n3.h, config/m68k/sun3o3.h
+	* config/m68k/t-mot3300, config/m68k/t-mot3300-gald
+	* config/m68k/t-mot3300-gas, config/m68k/t-mot3300-gld
+	* config/m68k/tower-as.h, config/m68k/tower.h
+	* config/m88k/aout-dbx.h, config/m88k/m88k-aout.h
+	* config/m88k/m88k-modes.def, config/m88k/m88k-move.sh
+	* config/m88k/m88k-protos.h, config/m88k/m88k.c
+	* config/m88k/m88k.h, config/m88k/m88k.md, config/m88k/openbsd.h
+	* config/m88k/sysv4.h, config/m88k/t-luna, config/m88k/t-luna-gas
+	* config/m88k/t-m88k, config/m88k/t-sysv4, config/mcore/gfloat.h
+	* config/mips/rtems64.h, config/mips/sni-gas.h
+	* config/mips/sni-svr4.h, config/mips/t-ecoff
+	* config/mn10200/lib1funcs.asm, config/mn10200/mn10200-protos.h
+	* config/mn10200/mn10200.c, config/mn10200/mn10200.h
+	* config/mn10200/mn10200.md, config/mn10200/t-mn10200
+	* config/pa/pa-hiux.h, config/pa/pa-hpux7.h, config/pa/pa-hpux9.h
+	* config/pa/pa-oldas.h, config/pa/t-mpeix, config/psos.h
+	* config/romp/romp-protos.h, config/romp/romp.c
+	* config/romp/romp.h, config/romp/romp.md, config/rs6000/aix31.h
+	* config/rs6000/aix3newas.h, config/rs6000/mach.h
+	* config/sparc/bsd.h, config/sparc/hal.h
+	* config/sparc/linux-aout.h, config/sparc/lynx-ng.h
+	* config/sparc/lynx.h, config/sparc/netbsd.h
+	* config/sparc/sp86x-aout.h, config/sparc/splet.h
+	* config/sparc/sun4gas.h, config/sparc/sun4o3.h
+	* config/sparc/sunos4.h, config/sparc/t-chorus-elf
+	* config/sparc/t-halos, config/sparc/t-sparcbare
+	* config/sparc/t-splet, config/sparc/t-sunos41
+	* config/v850/rtems.h: Delete file.
+
 2003-05-15  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000-protos.h (function_value): Protoize.
+	* config/rs6000/rs6000-protos.h (function_value): Protoize.
 
-        * config/rs6000/rs6000.h (FUNCTION_VALUE): Call function.
+	* config/rs6000/rs6000.h (FUNCTION_VALUE): Call function.
 
-        * config/rs6000/rs6000.c (rs6000_function_value): New.
+	* config/rs6000/rs6000.c (rs6000_function_value): New.
 
 2003-05-15  Philip Blundell  <philb@gnu.org>
 
