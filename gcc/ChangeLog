@@ -1,3 +1,7 @@
+2002-09-13  Andreas Jaeger  <aj@suse.de>
+
+	* Makefile.in (print-rtl.o): Depend on CONFIG_H.
+
 2002-09-13  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/t-hpux (LIBGCC1_TEST, STMP_FIXPROTO,
