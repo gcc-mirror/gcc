@@ -1,3 +1,8 @@
+2001-12-04  DJ Delorie  <dj@redhat.com>
+
+	* fixinc/fixincl.c (initialize): Avoid problemsome macro
+	parameter names (PR 3388).
+
 2001-12-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	bootstrap/4422
