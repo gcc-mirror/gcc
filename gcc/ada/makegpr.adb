@@ -1176,6 +1176,11 @@ package body Makegpr is
             Write_Line  ("      -> up to date");
          end if;
 
+         --  No need to create a global archive, if there is no object
+         --  file to put into.
+
+         Global_Archive_Exists := Last_Source /= 0;
+
       --  Archive needs to be rebuilt
 
       else
@@ -2169,9 +2174,16 @@ package body Makegpr is
            (Lang_Names (Source.Language), Verbose_Mode);
       end if;
 
+      Add_Argument (Dash_c, True);
+
+      --  Add the compiling switches for this source found in
+      --  package Compiler of the project file, if they exist.
+
+      Add_Switches
+        (Data, Compiler, Source.Language, Source.File_Name);
+
       --  Specify the source to be compiled
 
-      Add_Argument (Dash_c, True);
       Add_Argument (Get_Name_String (Source.Path_Name), True);
 
       --  If non static library project, compile with the PIC option if there
@@ -2196,12 +2208,6 @@ package body Makegpr is
            ("-Wp,-MD," & Get_Name_String (Source.Dep_Name),
             Verbose_Mode);
       end if;
-
-      --  Add the compiling switches for this source found in
-      --  package Compiler of the project file, if they exist.
-
-      Add_Switches
-        (Data, Compiler, Source.Language, Source.File_Name);
 
       --  Add the compiling switches for the language specified
       --  on the command line, if any.
