@@ -220,8 +220,8 @@ thunk_adjust (tree ptr, bool this_adjusting,
 {
   if (this_adjusting)
     /* Adjust the pointer by the constant.  */
-    ptr = fold (build2 (PLUS_EXPR, TREE_TYPE (ptr), ptr,
-			ssize_int (fixed_offset)));
+    ptr = fold_build2 (PLUS_EXPR, TREE_TYPE (ptr), ptr,
+		       ssize_int (fixed_offset));
 
   /* If there's a virtual offset, look up that value in the vtable and
      adjust the pointer again.  */
@@ -242,13 +242,13 @@ thunk_adjust (tree ptr, bool this_adjusting,
       /* Get the offset itself.  */
       vtable = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (vtable)), vtable);
       /* Adjust the `this' pointer.  */
-      ptr = fold (build2 (PLUS_EXPR, TREE_TYPE (ptr), ptr, vtable));
+      ptr = fold_build2 (PLUS_EXPR, TREE_TYPE (ptr), ptr, vtable);
     }
   
   if (!this_adjusting)
     /* Adjust the pointer by the constant.  */
-    ptr = fold (build2 (PLUS_EXPR, TREE_TYPE (ptr), ptr,
-			ssize_int (fixed_offset)));
+    ptr = fold_build2 (PLUS_EXPR, TREE_TYPE (ptr), ptr,
+		       ssize_int (fixed_offset));
 
   return ptr;
 }

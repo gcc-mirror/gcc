@@ -905,8 +905,6 @@ comp_array_types (tree t1, tree t2, bool allow_redeclaration)
 bool
 comptypes (tree t1, tree t2, int strict)
 {
-  int retval;
-
   if (t1 == t2)
     return true;
 
@@ -969,9 +967,7 @@ comptypes (tree t1, tree t2, int strict)
       && TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
     return true;
 
-  if (!(*targetm.comp_type_attributes) (t1, t2))
-    return false;
-
+  /* Compare the types.  Break out if they could be the same.  */
   switch (TREE_CODE (t1))
     {
     case TEMPLATE_TEMPLATE_PARM:
@@ -984,7 +980,7 @@ comptypes (tree t1, tree t2, int strict)
 	   DECL_TEMPLATE_PARMS (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (t2))))
 	return false;
       if (TREE_CODE (t1) == TEMPLATE_TEMPLATE_PARM)
-	return true;
+	break;
       /* Don't check inheritance.  */
       strict = COMPARE_STRICT;
       /* Fall through.  */
@@ -995,18 +991,17 @@ comptypes (tree t1, tree t2, int strict)
 	  && (TYPE_TI_TEMPLATE (t1) == TYPE_TI_TEMPLATE (t2)
 	      || TREE_CODE (t1) == BOUND_TEMPLATE_TEMPLATE_PARM)
 	  && comp_template_args (TYPE_TI_ARGS (t1), TYPE_TI_ARGS (t2)))
-	return true;
+	break;
       
       if ((strict & COMPARE_BASE) && DERIVED_FROM_P (t1, t2))
-	return true;
+	break;
       else if ((strict & COMPARE_DERIVED) && DERIVED_FROM_P (t2, t1))
-	return true;
+	break;
       
-      /* We may be dealing with Objective-C instances...  */
+      /* We may be dealing with Objective-C instances.  */
       if (TREE_CODE (t1) == RECORD_TYPE
-	  && ((retval = objc_comptypes (t1, t2, 0)) >= 0))
-         return retval;
-      /* ...but fall through if we are not.  */
+	  && objc_comptypes (t1, t2, 0) > 0)
+	break;
 
       return false;
 
@@ -1014,51 +1009,72 @@ comptypes (tree t1, tree t2, int strict)
       if (!comptypes (TYPE_OFFSET_BASETYPE (t1), TYPE_OFFSET_BASETYPE (t2),
 		      strict & ~COMPARE_REDECLARATION))
 	return false;
-      return same_type_p (TREE_TYPE (t1), TREE_TYPE (t2));
+      if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	return false;
+      break;
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      return TYPE_MODE (t1) == TYPE_MODE (t2)
-	     && TYPE_REF_CAN_ALIAS_ALL (t1) == TYPE_REF_CAN_ALIAS_ALL (t2)
-	     && same_type_p (TREE_TYPE (t1), TREE_TYPE (t2));
+      if (TYPE_MODE (t1) != TYPE_MODE (t2)
+	  || TYPE_REF_CAN_ALIAS_ALL (t1) != TYPE_REF_CAN_ALIAS_ALL (t2)
+	  || !same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	return false;
+      break;
 
     case METHOD_TYPE:
     case FUNCTION_TYPE:
       if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	return false;
-      return compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2));
+      if (!compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2)))
+	return false;
+      break;
 
     case ARRAY_TYPE:
       /* Target types must match incl. qualifiers.  */
-      return comp_array_types (t1, t2, !!(strict & COMPARE_REDECLARATION));
+      if (!comp_array_types (t1, t2, !!(strict & COMPARE_REDECLARATION)))
+	return false;
+      break;
 
     case TEMPLATE_TYPE_PARM:
-      return (TEMPLATE_TYPE_IDX (t1) == TEMPLATE_TYPE_IDX (t2)
-	      && TEMPLATE_TYPE_LEVEL (t1) == TEMPLATE_TYPE_LEVEL (t2));
+      if (TEMPLATE_TYPE_IDX (t1) != TEMPLATE_TYPE_IDX (t2)
+	  || TEMPLATE_TYPE_LEVEL (t1) != TEMPLATE_TYPE_LEVEL (t2))
+	return false;
+      break;
 
     case TYPENAME_TYPE:
       if (!cp_tree_equal (TYPENAME_TYPE_FULLNAME (t1),
 			  TYPENAME_TYPE_FULLNAME (t2)))
         return false;
-      return same_type_p (TYPE_CONTEXT (t1), TYPE_CONTEXT (t2));
+      if (!same_type_p (TYPE_CONTEXT (t1), TYPE_CONTEXT (t2)))
+	return false;
+      break;
 
     case UNBOUND_CLASS_TEMPLATE:
       if (!cp_tree_equal (TYPE_IDENTIFIER (t1), TYPE_IDENTIFIER (t2)))
         return false;
-      return same_type_p (TYPE_CONTEXT (t1), TYPE_CONTEXT (t2));
+      if (!same_type_p (TYPE_CONTEXT (t1), TYPE_CONTEXT (t2)))
+	return false;
+      break;
 
     case COMPLEX_TYPE:
-      return same_type_p (TREE_TYPE (t1), TREE_TYPE (t2));
+      if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	return false;
+      break;
 
     case VECTOR_TYPE:
-      return TYPE_VECTOR_SUBPARTS (t1) == TYPE_VECTOR_SUBPARTS (t2)
-	     && same_type_p (TREE_TYPE (t1), TREE_TYPE (t2));
+      if (TYPE_VECTOR_SUBPARTS (t1) != TYPE_VECTOR_SUBPARTS (t2)
+	  || !same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	return false;
       break;
 
     default:
-      break;
+      return false;
     }
-  return false;
+
+  /* If we get here, we know that from a target independent POV the
+     types are the same.  Make sure the target attributes are also
+     the same.  */
+  return targetm.comp_type_attributes (t1, t2);
 }
 
 /* Returns 1 if TYPE1 is at least as qualified as TYPE2.  */
@@ -1995,8 +2011,8 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
 			  /*want_type=*/false);
   member_type = cp_build_qualified_type (TREE_TYPE (member),
 					 cp_type_quals (ptrmem_type));
-  return fold (build3 (COMPONENT_REF, member_type,
-		       ptrmem, member, NULL_TREE));
+  return fold_build3 (COMPONENT_REF, member_type,
+		      ptrmem, member, NULL_TREE);
 }
 
 /* Given an expression PTR for a pointer, return an expression
@@ -2343,7 +2359,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
       vtbl = build_indirect_ref (vtbl, NULL);
 
       /* Finally, extract the function pointer from the vtable.  */
-      e2 = fold (build2 (PLUS_EXPR, TREE_TYPE (vtbl), vtbl, idx));
+      e2 = fold_build2 (PLUS_EXPR, TREE_TYPE (vtbl), vtbl, idx);
       e2 = build_indirect_ref (e2, NULL);
       TREE_CONSTANT (e2) = 1;
       TREE_INVARIANT (e2) = 1;

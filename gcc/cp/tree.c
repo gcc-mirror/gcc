@@ -1112,9 +1112,9 @@ cxx_print_statistics (void)
 tree
 array_type_nelts_top (tree type)
 {
-  return fold (build2 (PLUS_EXPR, sizetype,
-		       array_type_nelts (type),
-		       integer_one_node));
+  return fold_build2 (PLUS_EXPR, sizetype,
+		      array_type_nelts (type),
+		      integer_one_node);
 }
 
 /* Return, as an INTEGER_CST node, the number of elements for TYPE
@@ -1129,7 +1129,7 @@ array_type_nelts_total (tree type)
   while (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree n = array_type_nelts_top (type);
-      sz = fold (build2 (MULT_EXPR, sizetype, sz, n));
+      sz = fold_build2 (MULT_EXPR, sizetype, sz, n);
       type = TREE_TYPE (type);
     }
   return sz;
