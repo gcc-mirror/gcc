@@ -11,6 +11,8 @@ Sat Apr 10 05:25:28 1999  Daniel Jacobowitz <dan@debian.org>
 
 Sat Apr 10 05:14:50 1999  Mark Elbrecht  <snowball3@usa.net>
 
+	* i386/djgpp.h (SET_ASM_OP): Define.
+
 	* collect2.c (find_a_file): Use HAVE_DOS_BASED_FILE_SYSTEM in place
 	of the DIR_SEPARATOR test.
 	Consider any file starting with a drivename to be absolute.
