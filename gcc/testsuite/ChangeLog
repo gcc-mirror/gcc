@@ -1,3 +1,7 @@
+2000-10-04  Will Cohen  <wcohen@redhat.com>
+
+	* gcc.dg/20000926-1.c: New test.
+
 2000-10-03  Geoff Keating  <geoffk@cygnus.com>
 
 	* g++.old-deja/g++.pt/memtemp77.C (main): Update demangled
