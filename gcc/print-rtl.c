@@ -121,6 +121,12 @@ print_rtx (in_rtx)
       if (in_rtx->frame_related)
 	fputs ("/f", outfile);
 
+      if (in_rtx->jump)
+	fputs ("/j", outfile);
+
+      if (in_rtx->call)
+	fputs ("/c", outfile);
+
       if (GET_MODE (in_rtx) != VOIDmode)
 	{
 	  /* Print REG_NOTE names for EXPR_LIST and INSN_LIST.  */
