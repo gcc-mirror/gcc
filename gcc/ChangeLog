@@ -6,6 +6,8 @@ Sun Mar 22 00:50:42 1998  Nick Clifton  <nickc@cygnus.com>
         * objc/Makefile.in: Various fixes for building cygwin32 native toolchains.
         * objc/Make-lang.in: Likewise.
 
+	* config/i386/xm-cygwin32.h (PATH_SEPARATOR): Set to a semi-colon.
+
 Sun Mar 22 00:21:46 1998  R. Ganesan  <rganesan@novell.com>
 
 	* configure.in: Handle with-PACKAGE=no correctly
