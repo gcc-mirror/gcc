@@ -28,45 +28,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "intl.h"
 
-static const char *my_strerror		PARAMS ((int));
 static void cpp_print_containing_files	PARAMS ((cpp_reader *, cpp_buffer *));
 static void cpp_print_file_and_line	PARAMS ((const char *, long, long));
 static void v_cpp_message		PARAMS ((cpp_reader *, int,
 						 const char *, long, long,
 						 const char *, va_list));
-
-/* my_strerror - return the descriptive text associated with an
-   `errno' code.
-   XXX - link with libiberty so we can use its strerror().  */
-
-static const char *
-my_strerror (errnum)
-     int errnum;
-{
-  const char *result;
-
-#ifndef VMS
-#ifndef HAVE_STRERROR
-  result = (char *) ((errnum < sys_nerr) ? sys_errlist[errnum] : 0);
-#else
-  result = strerror (errnum);
-#endif
-#else	/* VMS */
-  /* VAXCRTL's strerror() takes an optional second argument, which only
-     matters when the first argument is EVMSERR.  However, it's simplest
-     just to pass it unconditionally.  `vaxc$errno' is declared in
-     <errno.h>, and maintained by the library in parallel with `errno'.
-     We assume that caller's `errnum' either matches the last setting of
-     `errno' by the library or else does not have the value `EVMSERR'.  */
-
-  result = strerror (errnum, vaxc$errno);
-#endif
-
-  if (!result)
-    result = "errno = ?";
-
-  return result;
-}
 
 /* Print the file names and line numbers of the #include
    commands which led to the current file.  */
@@ -294,7 +260,7 @@ cpp_error_from_errno (pfile, name)
      cpp_reader *pfile;
      const char *name;
 {
-  cpp_error (pfile, "%s: %s", name, my_strerror (errno));
+  cpp_error (pfile, "%s: %s", name, xstrerror (errno));
 }
 
 void
@@ -473,5 +439,5 @@ cpp_notice_from_errno (pfile, name)
      cpp_reader *pfile;
      const char *name;
 {
-  cpp_notice (pfile, "%s: %s", name, my_strerror (errno));
+  cpp_notice (pfile, "%s: %s", name, xstrerror (errno));
 }

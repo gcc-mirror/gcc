@@ -124,9 +124,6 @@
 /* Whether abort must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_ABORT
 
-/* Whether strerror must be declared even if <string.h> is included.  */
-#undef NEED_DECLARATION_STRERROR
-
 /* Whether strsignal must be declared even if <string.h> is included.  */
 #undef NEED_DECLARATION_STRSIGNAL
 
@@ -334,9 +331,6 @@
 
 /* Define if you have the strdup function.  */
 #undef HAVE_STRDUP
-
-/* Define if you have the strerror function.  */
-#undef HAVE_STRERROR
 
 /* Define if you have the strrchr function.  */
 #undef HAVE_STRRCHR

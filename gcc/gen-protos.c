@@ -192,21 +192,3 @@ main (argc, argv)
   
   return 0;
 }
-
-/* Needed by scan.o.  We can't use libiberty here.  */
-PTR
-xrealloc (p, s)
-     PTR p;
-     size_t s;
-{
-  PTR r;
-  if (s == 0)
-    s = 1;
-  if (p)
-    r = realloc (p, s);
-  else
-    r = malloc (s);
-  if (!r)
-    abort ();
-  return r;
-}

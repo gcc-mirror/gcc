@@ -1,3 +1,30 @@
+2000-02-26  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Makefile.in (STMP_FIXINC): New toggle.
+	(LIBGCC2_DEPS): Delete all references.
+	(stmp-headers): Delete target.  All references either deleted
+	or changed to stmp-int-headers.
+	(all.cross): Don't depend on stmp-headers or STMP_FIXPROTO.
+	(LIBCPP_OBJS): Take out cppalloc.o.
+	(cppalloc.o): Delete target.
+	(stmp-int-hdrs): Depend on $(STMP_FIXINC).
+	(gen-protos, fix-header): Link with libiberty.a.
+	* build-make: Don't change FIXINCLUDES.  Override STMP_FIXINC
+	to empty.
+
+	* configure.in: Remove refs to strerror.
+	* acconfig.h: Take out NEED_DECLARATION_STRERROR.
+	* system.h: Take out strerror stanza.
+
+	* cpperror.c (my_strerror): Delete function.
+	(cpp_error_from_errno, cpp_notice_from_errno): Use xstrerror.
+	* cppmain.c (main): Call xmalloc_set_program_name first thing.
+	* cppalloc.c: Delete file.
+	* gen-protos.c: Don't provide xrealloc.
+
+	* fixinc/fixincl.c, fixinc/fixlib.c, fixinc/procopen.c: Use
+	xstrerror throughout.
+
 2000-02-26  Bruce Korb  <bkorb@gnu.org>
 
 	fixinc/inclhack.def(undefine_null): the bypass pattern needs to

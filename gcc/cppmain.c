@@ -46,6 +46,8 @@ main (argc, argv)
   while (p != argv[0] && p[-1] != '/') --p;
   progname = p;
 
+  xmalloc_set_program_name (progname);
+
 #ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");
 #endif

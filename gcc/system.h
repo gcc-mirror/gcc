@@ -399,17 +399,6 @@ extern PTR calloc PARAMS ((size_t, size_t));
 extern PTR realloc PARAMS ((PTR, size_t));
 #endif
 
-#ifdef HAVE_STRERROR
-# ifdef NEED_DECLARATION_STRERROR
-#  ifndef strerror
-extern char *strerror PARAMS ((int));
-#  endif
-# endif
-#else /* ! HAVE_STRERROR */
-extern int sys_nerr;
-extern char *sys_errlist[];
-#endif /* HAVE_STRERROR */
-
 /* If the system doesn't provide strsignal, we get it defined in
    libiberty but no declaration is supplied. */
 #ifdef NEED_DECLARATION_STRSIGNAL

@@ -1,3 +1,7 @@
+2000-02-26  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Make-lang.in: Delete refs to LIBGCC2_DEPS.
+
 Fri Feb 25 14:52:33 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* optimize.c (expand_call_inline): Emit the return label before

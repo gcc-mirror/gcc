@@ -219,8 +219,9 @@ SYSTEM_HEADER_DIR = /usr/include
 # Default cross SYSTEM_HEADER_DIR, to be overridden by targets.
 CROSS_SYSTEM_HEADER_DIR = $(tooldir)/sys-include
 
-# Control whether to run fixproto.
+# Control whether to run fixproto and fixincludes.
 STMP_FIXPROTO = stmp-fixproto
+STMP_FIXINC = stmp-fixinc
 
 # Test to see whether <limits.h> exists in the system header files.
 LIMITS_H_TEST = [ -f $(SYSTEM_HEADER_DIR)/limits.h ]
@@ -358,10 +359,6 @@ LIBGCC2_INCLUDES =
 
 # Additional target-dependent options for compiling libgcc2.a.
 TARGET_LIBGCC2_CFLAGS =
-
-# Things which must be built before building libgcc2.a.
-# Some targets override this to stmp-int-hdrs
-LIBGCC2_DEPS =
 
 # libgcc1-test target (must also be overridable for a target)
 LIBGCC1_TEST = libgcc1-test
@@ -836,7 +833,7 @@ all.internal: start.encap rest.encap doc
 # This is what to compile if making a cross-compiler.
 # Note that we can compile enquire using the cross-compiler just built,
 # although we can't run it on this machine.
-all.cross: native gcc-cross xcpp$(exeext) specs stmp-headers $(STMP_FIXPROTO) \
+all.cross: native gcc-cross xcpp$(exeext) specs \
 	$(LIBGCC) $(LIBGCC1_TEST) $(EXTRA_PARTS) lang.all.cross doc
 # This is what to compile if making gcc with a cross-compiler.
 all.build: native xgcc$(exeext) xcpp$(exeext) $(EXTRA_PARTS) lang.all.build
@@ -844,7 +841,7 @@ all.build: native xgcc$(exeext) xcpp$(exeext) $(EXTRA_PARTS) lang.all.build
 start.encap: native xgcc$(exeext) xcpp$(exeext) specs $(LIBGCC1) \
 	xlimits.h lang.start.encap
 # These can't be made until after GCC can run.
-rest.encap: stmp-headers $(STMP_FIXPROTO) $(LIBGCC) $(EXTRA_PARTS) lang.rest.encap
+rest.encap: $(STMP_FIXPROTO) $(LIBGCC) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
 native: config.status auto-host.h cpp$(exeext) intl.all $(LANGUAGES) \
@@ -1047,7 +1044,7 @@ libgcc1.S: libgcc1.c $(CONFIG_H) config.status
 # Compiling libgcc2.a requires making sure that cc1, etc. have been compiled.
 # But recompiling cc1 should not force recompilation of libgcc2.a.
 # If you want to force recompilation, delete libgcc2.a.
-libgcc2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs $(STMP_FIXPROTO)
+libgcc2.ready: $(GCC_PASSES) stmp-int-hdrs $(STMP_FIXPROTO)
 	-if [ -f libgcc2.ready ] ; then \
 		true; \
 	else \
@@ -2023,7 +2020,7 @@ cccp.o: cccp.c $(CONFIG_H) intl.h pcp.h version.c config.status system.h \
 	  $(PREPROCESSOR_DEFINES) \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
-LIBCPP_OBJS =	cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o cppfiles.o \
+LIBCPP_OBJS =	cpplib.o cpphash.o cpperror.o cppexp.o cppfiles.o \
 		cppinit.o cppulp.o prefix.o version.o mbchar.o @extra_cpp_objs@
 
 # All the other archives built/used by this makefile are for targets.  This
@@ -2042,7 +2039,6 @@ cppmain.o: cppmain.c $(CONFIG_H) cpplib.h intl.h system.h
 cppulp.o:  cppulp.c  $(CONFIG_H) system.h output.h
 cpplib.o:  cpplib.c  $(CONFIG_H) cpplib.h intl.h system.h cpphash.h
 cpphash.o: cpphash.c $(CONFIG_H) cpplib.h intl.h system.h cpphash.h version.h
-cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h intl.h system.h
 cpperror.o: cpperror.c $(CONFIG_H) cpplib.h intl.h system.h
 cppexp.o:   cppexp.c   $(CONFIG_H) cpplib.h intl.h system.h
 cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h intl.h system.h
@@ -2131,7 +2127,7 @@ gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
 
 # Build the include directory including float.h (which no longer depends upon
 # enquire).
-stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h
+stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h
 # Copy in the headers provided with gcc.
 # The sed command gets just the last file name component;
 # this is necessary because VPATH could add a dirname.
@@ -2158,10 +2154,6 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h
 	rm -f include/README
 	cp $(srcdir)/README-fixinc include/README
 	chmod a+r include/README
-	touch $@
-
-# Now that float.h no longer depends upon enquire, this is actually a no-op.
-stmp-headers:
 	touch $@
 
 # fixinc.sh depends on this, not on specs directly.
@@ -2215,6 +2207,9 @@ stmp-fixinc: fixinc.sh gsyslimits.h
 	touch stmp-fixinc
 
 # Files related to the fixproto script.
+# gen-protos and fix-header are compiled with HOST_CC, but they are only
+# used in native and host-x-target builds, so it's safe to link them with
+# libiberty.a.
 
 deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
 	if [ -d $(SYSTEM_HEADER_DIR) ]; \
@@ -2230,7 +2225,7 @@ deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
 GEN_PROTOS_OBJS = gen-protos.o scan.o
 gen-protos: $(GEN_PROTOS_OBJS)
 	${HOST_CC} $(HOST_CFLAGS) $(HOST_LDFLAGS) -o gen-protos \
-	  $(GEN_PROTOS_OBJS)
+	  $(GEN_PROTOS_OBJS) ../libiberty/libiberty.a
 
 gen-protos.o: gen-protos.c scan.h $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gen-protos.c
@@ -2250,7 +2245,7 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefil
 fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) \
 	    libcpp.a
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ fix-header.o \
-	   scan-decls.o scan.o libcpp.a $(HOST_LIBS)
+	   scan-decls.o scan.o libcpp.a $(HOST_LIBS) ../libiberty/libiberty.a
 
 fix-header.o: fix-header.c $(srcdir)/../include/obstack.h scan.h \
 	xsys-protos.h $(build_xm_file) system.h cpplib.h
@@ -2270,10 +2265,10 @@ fixhdr.ready: fix-header
 		touch fixhdr.ready; \
 	fi
 
-# stmp-headers is to make sure fixincludes has already finished.
+# stmp-int-headers is to make sure fixincludes has already finished.
 # The if statement is so that we don't run fixproto a second time
 # if it has already been run on the files in `include'.
-stmp-fixproto: fixhdr.ready fixproto stmp-headers
+stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 	@echo "Various warnings and error messages from fixproto are normal"
 	-if [ -d include ] ; then true; else mkdir include; chmod a+rx include; fi
 	-if [ -f include/fixed ] ; then true; \
@@ -2689,7 +2684,7 @@ install-include-dir: installdirs
 	-chmod a+rx $(libsubdir)/include
 
 # Install the include directory using tar.
-install-headers-tar: stmp-headers $(STMP_FIXPROTO) install-include-dir
+install-headers-tar: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 # We use `pwd`/include instead of just include to problems with CDPATH
 # Unless a full pathname is provided, some shells would print the new CWD,
 # found in CDPATH, corrupting the output.  We could just redirect the
@@ -2701,7 +2696,7 @@ install-headers-tar: stmp-headers $(STMP_FIXPROTO) install-include-dir
 # So use `exit 0' to ignore its exit status.
 
 # Install the include directory using cpio.
-install-headers-cpio: stmp-headers $(STMP_FIXPROTO) install-include-dir
+install-headers-cpio: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 # See discussion about the use of `pwd` above
 	cd `pwd`/include ; \
 	find . -print | cpio -pdum $(libsubdir)/include

@@ -187,7 +187,7 @@ cplib2.txt: $(CXX_LIB2SRCS) $(CXX_EXTRA_HEADERS) cplib2.ready
 # Don't try to do write if `.' is not writable;
 # in that case, we're installing from someone else's directory.
 # But go ahead and fail if that directory hasn't been properly built.
-cplib2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs
+cplib2.ready: $(GCC_PASSES) stmp-int-hdrs $(STMP_FIXPROTO)
 	@if [ -r cplib2.txt -a -w . ]; then \
 	  case " $(LANGUAGES) " in \
 	  *" "[cC]"++ "*) \
