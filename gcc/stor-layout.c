@@ -1,5 +1,5 @@
 /* C-compiler utilities for types and variables storage layout
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -438,14 +438,10 @@ layout_record (rec)
 	  register tree dsize = DECL_SIZE (field);
 	  int field_size = TREE_INT_CST_LOW (dsize);
 
-	  /* A bit field may not span the unit of alignment of its type.
-	     Advance to next boundary if necessary.  */
-	  /* ??? There is some uncertainty here as to what
-	     should be done if type_align is less than the width of the type.
-	     That can happen because the width exceeds BIGGEST_ALIGNMENT
-	     or because it exceeds maximum_field_alignment.  */
-	  if (const_size / type_align
-	      != (const_size + MIN (field_size, type_align) - 1) / type_align)
+	  /* A bit field may not span more units of alignment of its type
+	     than its type itself.  Advance to next boundary if necessary.  */
+	  if ((const_size / type_align - (const_size + field_size) / type_align)
+	      > TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (field))) / type_align)
 	    const_size = CEIL (const_size, type_align) * type_align;
 	}
 #endif
