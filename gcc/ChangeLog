@@ -1,3 +1,7 @@
+2000-09-19  Geoff Keating  <geoffk@cygnus.com>
+
+	* stmt.c (expand_asm_operands): Allow # in constraints.
+
 2000-09-22  Jason Merrill  <jason@redhat.com>
 
 	* c-lex.c (skip_white_space): Just treat CRs as horizontal whitespace.
