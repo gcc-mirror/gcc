@@ -2801,7 +2801,7 @@ expand_assignment (to, from, want_value, suggest_reg)
   /* Don't move directly into a return register.  */
   if (TREE_CODE (to) == RESULT_DECL && GET_CODE (to_rtx) == REG)
     {
-      rtx temp = expand_expr (from, 0, VOIDmode, 0);
+      rtx temp = expand_expr (from, 0, GET_MODE (to_rtx), 0);
       emit_move_insn (to_rtx, temp);
       preserve_temp_slots (to_rtx);
       free_temp_slots ();
@@ -5813,6 +5813,9 @@ expand_expr (exp, target, tmode, modifier)
       }
 
     case ERROR_MARK:
+      op0 = CONST0_RTX (tmode);
+      if (op0 != 0)
+	return op0;
       return const0_rtx;
 
     default:
