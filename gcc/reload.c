@@ -2533,9 +2533,10 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 				 ind_levels,
 				 set != 0
 				 && &SET_DEST (set) == recog_operand_loc[i]);
-      else if (code == PLUS)
-	/* We can get a PLUS as an "operand" as a result of
-	   register elimination.  See eliminate_regs and gen_reload.  */
+      else if (code == PLUS || GET_RTX_CLASS (code) == '1')
+	/* We can get a PLUS as an "operand" as a result of register
+	   elimination.  See eliminate_regs and gen_reload.  We handle
+	   a unary operator by reloading the operand.  */
 	substed_operand[i] = recog_operand[i] = *recog_operand_loc[i]
 	  = find_reloads_toplev (recog_operand[i], i, address_type[i],
 				 ind_levels, 0);
@@ -2673,6 +2674,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	     operand.  */
 	  int constmemok = 0;
 	  int earlyclobber = 0;
+
+	  /* If the predicate accepts a unary operator, it means that
+             we need to reload the operand.  */
+	  if (GET_RTX_CLASS (GET_CODE (operand)) == '1')
+	    operand = XEXP (operand, 0);
 
 	  /* If the operand is a SUBREG, extract
 	     the REG or MEM (or maybe even a constant) within.
