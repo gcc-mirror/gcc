@@ -1849,6 +1849,18 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	      return instantiate_template (tmpl, targs, tf_error);
 	    }
 
+	  /* If we thought that the DECL was a member function, but it
+	     turns out to be specializing a static member function,
+	     make DECL a static member function as well.  We also have
+	     to adjust last_function_parms to avoid confusing
+	     start_function later.  */
+	  if (DECL_STATIC_FUNCTION_P (tmpl)
+	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	    {
+	      revert_static_member_fn (decl);
+	      last_function_parms = TREE_CHAIN (last_function_parms);
+	    }
+
 	  /* If this is a specialization of a member template of a
 	     template class.  In we want to return the TEMPLATE_DECL,
 	     not the specialization of it.  */
@@ -1863,16 +1875,6 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 		    = DECL_SOURCE_LOCATION (decl);
 		}
 	      return tmpl;
-	    }
-
-	  /* If we thought that the DECL was a member function, but it
-	     turns out to be specializing a static member function,
-	     make DECL a static member function as well.  */
-	  if (DECL_STATIC_FUNCTION_P (tmpl)
-	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
-	    {
-	      revert_static_member_fn (decl);
-	      last_function_parms = TREE_CHAIN (last_function_parms);
 	    }
 
 	  /* Set up the DECL_TEMPLATE_INFO for DECL.  */
