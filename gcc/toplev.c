@@ -944,20 +944,17 @@ fatal_io_error (name)
   exit (35);
 }
 
-/* Called to give a better error message when we don't have an insn to match
-   what we are looking for or if the insn's constraints aren't satisfied,
-   rather than just calling abort().  */
+/* Called to give a better error message for a bad insn rather than
+   just calling abort().  */
 
 void
-fatal_insn_not_found (insn)
+fatal_insn (message, insn)
+     char *message;
      rtx insn;
 {
   if (!output_bytecode)
     {
-      if (INSN_CODE (insn) < 0)
-	error ("internal error--unrecognizable insn:");
-      else
-	error ("internal error--insn does not satisfy its constraints:");
+      error (message);
       debug_rtx (insn);
     }
   if (asm_out_file)
@@ -993,6 +990,20 @@ fatal_insn_not_found (insn)
   if (stack_reg_dump_file)
     fflush (stack_reg_dump_file);
   abort ();
+}
+
+/* Called to give a better error message when we don't have an insn to match
+   what we are looking for or if the insn's constraints aren't satisfied,
+   rather than just calling abort().  */
+
+void
+fatal_insn_not_found (insn)
+     rtx insn;
+{
+  if (INSN_CODE (insn) < 0)
+    fatal_insn ("internal error--unrecognizable insn:", insn);
+  else
+    fatal_insn ("internal error--insn does not satisfy its constraints:", insn);
 }
 
 /* This is the default decl_printable_name function.  */

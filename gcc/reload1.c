@@ -1153,7 +1153,8 @@ reload (first, global, dumpfile)
 		      if (other_mode != VOIDmode && other_mode != allocate_mode
 			  && ! modes_equiv_for_class_p (allocate_mode,
 							other_mode, class))
-			abort ();
+			fatal_insn ("Two dissimilar machine modes both need groups of consecutive regs of the same class",
+				    insn);
 		    }
 		  else if (size == 1)
 		    {
@@ -2163,7 +2164,7 @@ spill_failure (insn)
   if (asm_noperands (PATTERN (insn)) >= 0)
     error_for_asm (insn, "`asm' needs too many reloads");
   else
-    abort ();
+    fatal_insn ("Unable to find a register to spill.", insn);
 }
 
 /* Add a new register to the tables of available spill-registers
@@ -3848,7 +3849,7 @@ reload_as_needed (first, live_known)
 			&& ! reload_optional[i]
 			&& (reload_in[i] != 0 || reload_out[i] != 0
 			    || reload_secondary_p[i] != 0))
-		      abort ();
+		      fatal_insn ("Non-optional registers need a spill register", insn);
 
 	      /* Now compute which reload regs to reload them into.  Perhaps
 		 reusing reload regs from previous insns, or else output
@@ -4844,7 +4845,7 @@ allocate_reload_reg (r, insn, last_reload, noerror)
  failure:
   if (asm_noperands (PATTERN (insn)) < 0)
     /* It's the compiler's fault.  */
-    abort ();
+    fatal_insn ("Could not find a spill register", insn);
 
   /* It's the user's fault; the operand's mode and constraint
      don't match.  Disable this reload so we don't crash in final.  */
@@ -6298,7 +6299,7 @@ emit_reload_insns (insn)
 	      /* VOIDmode should never happen for an output.  */
 	      if (asm_noperands (PATTERN (insn)) < 0)
 		/* It's the compiler's fault.  */
-		abort ();
+		fatal_insn ("VOIDmode on an output", insn);
 	      error_for_asm (insn, "output operand is constant in `asm'");
 	      /* Prevent crash--use something we know is valid.  */
 	      mode = word_mode;
