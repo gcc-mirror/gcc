@@ -1,3 +1,12 @@
+2003-06-30  Bob Wilson  <bob.wilson@acm.org>
+	
+	* config/xtensa/lib1funcs.asm: Use "xtensa-config.h" from
+	top-level include directory.
+	* config/xtensa/lib2funcs.S: Likewise.
+	* config/xtensa/xtensa.h: Likewise.
+	* config/xtensa/xtensa-config.h: Remove.
+	* doc/install.texi: Update location of "xtensa-config.h" header.
+	
 2003-06-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_extra_constraint): New function.

@@ -44,6 +44,7 @@
 #define XCHAL_HAVE_FP_RECIP		0
 #define XCHAL_HAVE_FP_SQRT		0
 #define XCHAL_HAVE_FP_RSQRT		0
+#define XCHAL_HAVE_WINDOWED		1
 
 #define XCHAL_ICACHE_SIZE		8192
 #define XCHAL_DCACHE_SIZE		8192
@@ -55,5 +56,13 @@
 
 #define XCHAL_HAVE_MMU			1
 #define XCHAL_MMU_MIN_PTE_PAGE_SIZE	12
+
+#define XCHAL_HAVE_DEBUG		1
+#define XCHAL_NUM_IBREAK		2
+#define XCHAL_NUM_DBREAK		2
+#define XCHAL_DEBUGLEVEL		4
+
+#define XCHAL_EXTRA_SA_SIZE             0
+#define XCHAL_EXTRA_SA_ALIGN            1
 
 #endif /* !XTENSA_CONFIG_H */
