@@ -132,78 +132,70 @@ namespace std
 	break;
       case 3:
 	// 3 The sign immediately precedes the symbol.
-	if (__space)
+	if (__precedes)
 	  {
-	    // Have space.
-	    if (__precedes)
+	    __ret.field[0] = sign;
+	    __ret.field[1] = symbol;	    
+	    if (__space)
 	      {
-		__ret.field[0] = sign;
-		__ret.field[1] = symbol;
 		__ret.field[2] = space;
 		__ret.field[3] = value;
 	      }
 	    else
 	      {
-		__ret.field[0] = value;
+		__ret.field[2] = value;		
+		__ret.field[3] = none;
+	      }
+	  }
+	else
+	  {
+	    __ret.field[0] = value;
+	    if (__space)
+	      {
 		__ret.field[1] = space;
 		__ret.field[2] = sign;
 		__ret.field[3] = symbol;
 	      }
-	  }
-	else
-	  {
-	    // Have none.
-	    if (__precedes)
-	      {
-		__ret.field[0] = sign;
-		__ret.field[1] = symbol;
-		__ret.field[2] = value;
-	      }
 	    else
 	      {
-		__ret.field[0] = value;
 		__ret.field[1] = sign;
 		__ret.field[2] = symbol;
+		__ret.field[3] = none;
 	      }
-	    __ret.field[3] = none;
 	  }
 	break;
       case 4:
-	// 4 The sign immediately follows the symbol. 
-	if (__space)
+	// 4 The sign immediately follows the symbol.
+	if (__precedes)
 	  {
-	    // Have space.
-	    if (__precedes)
+	    __ret.field[0] = symbol;
+	    __ret.field[1] = sign;
+	    if (__space)
 	      {
-		__ret.field[0] = symbol;
-		__ret.field[1] = sign;
 		__ret.field[2] = space;
 		__ret.field[3] = value;
 	      }
 	    else
 	      {
-		__ret.field[0] = value;
-		__ret.field[1] = space;
-		__ret.field[2] = symbol;
-		__ret.field[3] = sign;
+		__ret.field[2] = value;
+		__ret.field[3] = none;
 	      }
 	  }
 	else
 	  {
-	    // Have none.
-	    if (__precedes)
+	    __ret.field[0] = value;
+	    if (__space)
 	      {
-		__ret.field[0] = symbol;
-		__ret.field[1] = sign;
-		__ret.field[2] = value;
+		__ret.field[1] = space;
+		__ret.field[2] = symbol;
+		__ret.field[3] = sign;
 	      }
 	    else
 	      {
-		__ret.field[0] = value;
 		__ret.field[1] = symbol;
 		__ret.field[2] = sign;
+		__ret.field[3] = none;
 	      }
-	    __ret.field[3] = none;
 	  }
 	break;
       default:
