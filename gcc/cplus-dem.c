@@ -3133,6 +3133,15 @@ static struct option long_options[] = {
   {0, no_argument, 0, 0}
 };
 
+/* More 'friendly' abort that prints the line and file.
+   config.h can #define abort fancy_abort if you like that sort of thing.  */
+
+void
+fancy_abort ()
+{
+  fatal ("Internal gcc abort.");
+}
+
 int
 main (argc, argv)
      int argc;
