@@ -1,5 +1,7 @@
-2001-02-19  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+2001-02-19  Benjamin Kosnik  <bkoz@redhat.com>
 
+        * Makefile.in (check-c++): New rule.
+	
 	* configure.in (target_libs): Remove libg++.
 	(noconfigdirs): Remove libg++.
 	(noconfigdirs): Same.
