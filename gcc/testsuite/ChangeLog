@@ -1,3 +1,8 @@
+2003-02-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/13997
+	* g++.dg/template/partial3.C: New test.
+
 2004-02-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13950
