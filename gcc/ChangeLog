@@ -1,3 +1,11 @@
+2001-09-05  Jeffrey A Law  (law@cygnus.com)
+	    Jason Merrill (jason@redhat.com)
+
+	* stor-layout.c (layout_type): Complain if an array's size can
+	not be represented in a size_t.
+
+	* config/h8300/elf.h (ENDFILE_SPEC, STARTFILE_SPEC): Define.
+
 2001-09-05  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gcc.c: (process_command) Add parentheses around assignment 

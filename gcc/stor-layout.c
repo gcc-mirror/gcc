@@ -1442,6 +1442,19 @@ layout_type (type)
 	    if (TYPE_SIZE_UNIT (element) != 0 && ! integer_onep (element_size))
 	      TYPE_SIZE_UNIT (type)
 		= size_binop (MULT_EXPR, TYPE_SIZE_UNIT (element), length);
+
+	    /* Complain if the user has requested an array too large to
+	       fit in size_t.  */
+	    if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+		&& TREE_OVERFLOW (TYPE_SIZE (type)))
+	      {
+		error ("requested array too large for target");
+
+		/* Avoid crashing later.  */
+		TYPE_SIZE (type) = element_size;
+		if (TYPE_SIZE_UNIT (type))
+		  TYPE_SIZE_UNIT (type) = TYPE_SIZE_UNIT (element);
+	      }
 	  }
 
 	/* Now round the alignment and size,
