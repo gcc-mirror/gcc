@@ -1669,53 +1669,42 @@ output_logical_op (mode, code, operands)
 
 /* Shifts.
 
-   We devote a fair bit of code to getting efficient shifts since we can only
-   shift one bit at a time on the H8/300 and H8/300H and only one or two
-   bits at a time on the H8/S.
+   We devote a fair bit of code to getting efficient shifts since we
+   can only shift one bit at a time on the H8/300 and H8/300H and only
+   one or two bits at a time on the H8/S.
 
-   The basic shift methods:
+   All shift code falls into one of the following ways of
+   implementation:
 
-     * loop shifts -- emit a loop using one (or two on H8/S) bit shifts;
-     this is the default.  SHIFT_LOOP
+   o SHIFT_INLINE: Emit straight line code for the shift; this is used
+     when a straight line shift is about the same size or smaller than
+     a loop.
 
-     * inlined shifts -- emit straight line code for the shift; this is
-     used when a straight line shift is about the same size or smaller
-     than a loop.  We allow the inline version to be slightly longer in
-     some cases as it saves a register.  SHIFT_INLINE
+   o SHIFT_ROT_AND: Rotate the value the opposite direction, then mask
+     off the bits we don't need.  This is used when only a few of the
+     bits in the original value will survive in the shifted value.
 
-     * rotate + and -- rotate the value the opposite direction, then
-     mask off the values we don't need.  This is used when only a few
-     of the bits in the original value will survive in the shifted value.
-     Again, this is used when it's about the same size or smaller than
-     a loop.  We allow this version to be slightly longer as it is usually
-     much faster than a loop.  SHIFT_ROT_AND
+   o SHIFT_SPECIAL: Often it's possible to move a byte or a word to
+     simulate a shift by 8, 16, or 24 bits.  Once moved, a few inline
+     shifts can be added if the shift count is slightly more than 8 or
+     16.  This case also includes other oddballs that are not worth
+     explaning here.
 
-     * swap (+ shifts) -- often it's possible to swap bytes/words to
-     simulate a shift by 8/16.  Once swapped a few inline shifts can be
-     added if the shift count is slightly more than 8 or 16.  This is used
-     when it's about the same size or smaller than a loop.  We allow this
-     version to be slightly longer as it is usually much faster than a loop.
-     SHIFT_SPECIAL
+   o SHIFT_LOOP: Emit a loop using one (or two on H8/S) bit shifts.
 
-     * There other oddballs.  Not worth explaining.  SHIFT_SPECIAL
+   Here are some thoughts on what the absolutely positively best code
+   is.  "Best" here means some rational trade-off between code size
+   and speed, where speed is more preferred but not at the expense of
+   generating 20 insns.
 
-   Here are some thoughts on what the absolutely positively best code is.
-   "Best" here means some rational trade-off between code size and speed,
-   where speed is more preferred but not at the expense of generating 20 insns.
-
-   A trailing '*' after the shift count indicates the "best" mode isn't
-   implemented.
+   Below, a trailing '*' after the shift count indicates the "best"
+   mode isn't implemented.  We only describe SHIFT_SPECIAL cases to
+   simplify the table.  For other cases, refer to shift_alg_[qhs]i.
    
    H8/300 QImode shifts
-   1-4    - do them inline
-   5-6    - ASHIFT | LSHIFTRT: rotate, mask off other bits
-            ASHIFTRT: loop
-   7      - ASHIFT | LSHIFTRT: rotate, mask off other bits
-            ASHIFTRT: shll, subx (propagate carry bit to all bits)
+   7      - ASHIFTRT: shll, subx (propagate carry bit to all bits)
 
    H8/300 HImode shifts
-   1-4    - do them inline
-   5-6    - loop
    7      - shift 2nd half other way into carry.
 	    copy 1st half into 2nd half
 	    rotate 2nd half other way with carry
@@ -1724,40 +1713,21 @@ output_logical_op (mode, code, operands)
 	    sign extend 1st half (ASHIFTRT)
    8      - move byte, zero (ASHIFT | LSHIFTRT) or sign extend other (ASHIFTRT)
    9-12   - do shift by 8, inline remaining shifts
-   13-14* - ASHIFT | LSHIFTRT: rotate 3/2, mask, move byte, set other byte to 0
-          - ASHIFTRT: loop
-   15     - ASHIFT | LSHIFTRT: rotate 1, mask, move byte, set other byte to 0
-          - ASHIFTRT: shll, subx, set other byte
+   15     - ASHIFTRT: shll, subx, set other byte
 
    H8/300 SImode shifts
-   1-2    - do them inline
-   3-6    - loop
    7*     - shift other way once, move bytes into place,
             move carry into place (possibly with sign extension)
    8      - move bytes into place, zero or sign extend other
-   9-14   - loop
    15*    - shift other way once, move word into place, move carry into place
    16     - move word, zero or sign extend other
-   17-23  - loop
    24*    - move bytes into place, zero or sign extend other
-   25-27  - loop
-   28-30* - ASHIFT | LSHIFTRT: rotate top byte, mask, move byte into place,
-                               zero others
-            ASHIFTRT: loop
-   31     - ASHIFT | LSHIFTRT: rotate top byte, mask, move byte into place,
-                               zero others
-            ASHIFTRT: shll top byte, subx, copy to other bytes
+   31     - ASHIFTRT: shll top byte, subx, copy to other bytes
 
    H8/300H QImode shifts (same as H8/300 QImode shifts)
-   1-4    - do them inline
-   5-6    - ASHIFT | LSHIFTRT: rotate, mask off other bits
-            ASHIFTRT: loop
-   7      - ASHIFT | LSHIFTRT: rotate, mask off other bits
-            ASHIFTRT: shll, subx (propagate carry bit to all bits)
+   7      - ASHIFTRT: shll, subx (propagate carry bit to all bits)
 
    H8/300H HImode shifts
-   1-4    - do them inline
-   5-6    - loop
    7      - shift 2nd half other way into carry.
 	    copy 1st half into 2nd half
 	    rotate entire word other way using carry
@@ -1765,22 +1735,16 @@ output_logical_op (mode, code, operands)
 	    sign extend remaining bits (ASHIFTRT)
    8      - move byte, zero (ASHIFT | LSHIFTRT) or sign extend other (ASHIFTRT)
    9-12   - do shift by 8, inline remaining shifts
-   13-14  - ASHIFT | LSHIFTRT: rotate 3/2, mask, move byte, set other byte to 0
-          - ASHIFTRT: loop
-   15     - ASHIFT | LSHIFTRT: rotate 1, mask, move byte, set other byte to 0
-          - ASHIFTRT: shll, subx, set other byte
+   15     - ASHIFTRT: shll, subx, set other byte
 
    H8/300H SImode shifts
    (These are complicated by the fact that we don't have byte level access to
    the top word.)
    A word is: bytes 3,2,1,0 (msb -> lsb), word 1,0 (msw -> lsw)
-   1-4    - do them inline
-   5-14   - loop
    15*    - shift other way once, move word into place, move carry into place
             (with sign extension for ASHIFTRT)
    16     - move word into place, zero or sign extend other
    17-20  - do 16bit shift, then inline remaining shifts
-   20-23  - loop
    24*    - ASHIFT: move byte 0(msb) to byte 1, zero byte 0,
                     move word 0 to word 1, zero word 0
             LSHIFTRT: move word 1 to word 0, move byte 1 to byte 0,
@@ -1789,36 +1753,24 @@ output_logical_op (mode, code, operands)
                       sign extend byte 0, sign extend word 0
    25-27* - either loop, or
             do 24 bit shift, inline rest
-   28-30  - ASHIFT: rotate 4/3/2, mask
-            LSHIFTRT: rotate 4/3/2, mask
-            ASHIFTRT: loop
    31     - shll, subx byte 0, sign extend byte 0, sign extend word 0
 
    H8/S QImode shifts
-   1-6    - do them inline
-   7      - ASHIFT | LSHIFTRT: rotate, mask off other bits
-            ASHIFTRT: shll, subx (propagate carry bit to all bits)
+   7      - ASHIFTRT: shll, subx (propagate carry bit to all bits)
 
    H8/S HImode shifts
-   1-7	  - do them inline
    8      - move byte, zero (ASHIFT | LSHIFTRT) or sign extend other (ASHIFTRT)
    9-12   - do shift by 8, inline remaining shifts
-   13-14  - ASHIFT | LSHIFTRT: rotate 3/2, mask, move byte, set other byte to 0
-          - ASHIFTRT: loop
-   15     - ASHIFT | LSHIFTRT: rotate 1, mask, move byte, set other byte to 0
-          - ASHIFTRT: shll, subx, set other byte
+   15     - ASHIFTRT: shll, subx, set other byte
 
    H8/S SImode shifts
    (These are complicated by the fact that we don't have byte level access to
    the top word.)
    A word is: bytes 3,2,1,0 (msb -> lsb), word 1,0 (msw -> lsw)
-   1-10   - do them inline
-   11-14  - loop
    15*    - shift other way once, move word into place, move carry into place
             (with sign extension for ASHIFTRT)
    16     - move word into place, zero or sign extend other
    17-20  - do 16bit shift, then inline remaining shifts
-   21-23  - loop
    24*    - ASHIFT: move byte 0(msb) to byte 1, zero byte 0,
                     move word 0 to word 1, zero word 0
             LSHIFTRT: move word 1 to word 0, move byte 1 to byte 0,
@@ -1827,9 +1779,6 @@ output_logical_op (mode, code, operands)
                       sign extend byte 0, sign extend word 0
    25-27* - either loop, or
             do 24 bit shift, inline rest
-   28-30  - ASHIFT: rotate 4/3/2, mask
-            LSHIFTRT: rotate 4/3/2, mask
-            ASHIFTRT: loop
    31     - shll, subx byte 0, sign extend byte 0, sign extend word 0
 
    Panic!!!  */
@@ -1878,15 +1827,7 @@ expand_a_shift (mode, code, operands)
   return 1;
 }
 
-/* Shift algorithm determination.
-
-   There are various ways of doing a shift:
-   SHIFT_INLINE: If the amount is small enough, just generate as many one-bit
-                 shifts as we need.
-   SHIFT_ROT_AND: If the amount is large but close to either end, rotate the
-                  necessary bits into position and then set the rest to zero.
-   SHIFT_SPECIAL: Hand crafted assembler.
-   SHIFT_LOOP:    If the above methods fail, just loop.  */
+/* See above for explanation of this enum.  */
 
 enum shift_alg
 {
