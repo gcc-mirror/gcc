@@ -192,7 +192,8 @@ static int mem_attrs_htab_eq            PARAMS ((const void *,
 						 const void *));
 static void mem_attrs_mark		PARAMS ((const void *));
 static mem_attrs *get_mem_attrs		PARAMS ((HOST_WIDE_INT, tree, rtx,
-						 rtx, unsigned int));
+						 rtx, unsigned int,
+						 enum machine_mode));
 
 /* Probability of the conditional branch currently proceeded by try_split.
    Set to -1 otherwise.  */
@@ -269,18 +270,28 @@ mem_attrs_mark (x)
 }
 
 /* Allocate a new mem_attrs structure and insert it into the hash table if
-   one identical to it is not already in the table.  */
+   one identical to it is not already in the table.  We are doing this for
+   MEM of mode MODE.  */
 
 static mem_attrs *
-get_mem_attrs (alias, decl, offset, size, align)
+get_mem_attrs (alias, decl, offset, size, align, mode)
      HOST_WIDE_INT alias;
      tree decl;
      rtx offset;
      rtx size;
      unsigned int align;
+     enum machine_mode mode;
 {
   mem_attrs attrs;
   void **slot;
+
+  /* If everything is the default, we can just return zero.  */
+  if (alias == 0 && decl == 0 && offset == 0
+      && (size == 0
+	  || (mode != BLKmode && GET_MODE_SIZE (mode) == INTVAL (size)))
+      && (align == 1
+	  || (mode != BLKmode && align == GET_MODE_ALIGNMENT (mode))))
+    return 0;
 
   attrs.alias = alias;
   attrs.decl = decl;
@@ -1706,6 +1717,11 @@ set_mem_attributes (ref, t, objectp)
 	     || TREE_CODE (t) == NON_LVALUE_EXPR || TREE_CODE (t) == SAVE_EXPR)
 	t = TREE_OPERAND (t, 0);
 
+      /* If this expression can't be addressed (e.g., it contains a reference
+	 to a non-addressable field), show we don't change its alias set.  */
+      if (! can_address_p (t))
+	MEM_KEEP_ALIAS_SET_P (ref) = 1;
+
       /* If this is a decl, set the attributes of the MEM from it.  */
       if (DECL_P (t))
 	{
@@ -1723,7 +1739,8 @@ set_mem_attributes (ref, t, objectp)
     }
 
   /* Now set the attributes we computed above.  */
-  MEM_ATTRS (ref) = get_mem_attrs (alias, decl, offset, size, align);
+  MEM_ATTRS (ref)
+    = get_mem_attrs (alias, decl, offset, size, align, GET_MODE (ref));
 
   /* If this is already known to be a scalar or aggregate, we are done.  */
   if (MEM_IN_STRUCT_P (ref) || MEM_SCALAR_P (ref))
@@ -1751,7 +1768,8 @@ set_mem_alias_set (mem, set)
 #endif
 
   MEM_ATTRS (mem) = get_mem_attrs (set, MEM_DECL (mem), MEM_OFFSET (mem),
-				   MEM_SIZE (mem), MEM_ALIGN (mem));
+				   MEM_SIZE (mem), MEM_ALIGN (mem),
+				   GET_MODE (mem));
 }
 
 /* Set the alignment of MEM to ALIGN bits.  */
@@ -1762,7 +1780,8 @@ set_mem_align (mem, align)
      unsigned int align;
 {
   MEM_ATTRS (mem) = get_mem_attrs (MEM_ALIAS_SET (mem), MEM_DECL (mem),
-				   MEM_OFFSET (mem), MEM_SIZE (mem), align);
+				   MEM_OFFSET (mem), MEM_SIZE (mem), align,
+				   GET_MODE (mem));
 }
 
 /* Return a memory reference like MEMREF, but with its mode changed to MODE
@@ -1822,7 +1841,8 @@ change_address (memref, mode, addr)
     = get_mem_attrs (MEM_ALIAS_SET (memref), 0, 0,
 		     mmode == BLKmode ? 0 : GEN_INT (GET_MODE_SIZE (mmode)),
 		     (mmode == BLKmode ? 1
-		      : GET_MODE_ALIGNMENT (mmode) / BITS_PER_UNIT));
+		      : GET_MODE_ALIGNMENT (mmode) / BITS_PER_UNIT),
+		     mmode);
 
   return new;
 }
@@ -1841,6 +1861,7 @@ adjust_address_1 (memref, mode, offset, validate)
   rtx addr = XEXP (memref, 0);
   rtx new;
   rtx memoffset = MEM_OFFSET (memref);
+  rtx size = 0;
   unsigned int memalign = MEM_ALIGN (memref);
 
   /* If MEMREF is a LO_SUM and the offset is within the alignment of the
@@ -1870,10 +1891,14 @@ adjust_address_1 (memref, mode, offset, validate)
   if (offset != 0)
     memalign = MIN (memalign, (offset & -offset) * BITS_PER_UNIT);
 
-  MEM_ATTRS (new)
-    = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_DECL (memref), memoffset,
-		     mode == BLKmode
-		     ? 0 : GEN_INT (GET_MODE_SIZE (mode)), memalign);
+  /* We can compute the size in a number of ways.  */
+  if (mode != BLKmode)
+    size = GEN_INT (GET_MODE_SIZE (mode));
+  else if (MEM_SIZE (memref))
+    size = plus_constant (MEM_SIZE (memref), -offset);
+
+  MEM_ATTRS (new) = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_DECL (memref),
+				   memoffset, size, memalign, GET_MODE (new));
 
   /* At some point, we should validate that this offset is within the object,
      if all the appropriate values are known.  */
@@ -1898,7 +1923,8 @@ offset_address (memref, offset, pow2)
      we don't know.  */
   MEM_ATTRS (new) = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_DECL (memref),
 				   0, 0, MIN (MEM_ALIGN (memref),
-					      pow2 * BITS_PER_UNIT));
+					      pow2 * BITS_PER_UNIT),
+				   GET_MODE (new));
   return new;
 }
   
