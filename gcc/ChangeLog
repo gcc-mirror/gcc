@@ -1,3 +1,8 @@
+2004-01-09  Jeff Bailey  <jbailey@nisa.net>
+
+	PR target/12561
+	* config/t-gnu: Rename SYSTEM_HEADER_DIR to NATIVE_SYSTEM_HEADER_DIR.
+
 2004-01-09  Richard Henderson  <rth@redhat.com>
 
 	* recog.c (constrain_operands): Validate mem operands.
