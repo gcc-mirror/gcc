@@ -1,5 +1,11 @@
 2004-06-22  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (TARGET_STRUCT_VALUE_RTX): New.
+	(ix86_return_in_memory): Move SSE vector return warning ...
+	(ix86_struct_value_rtx): ... here.  New.
+
+2004-06-22  Richard Henderson  <rth@redhat.com>
+
 	* tree.def (VTABLE_REF): Remove.
 	(OBJ_TYPE_REF): New.
 	(TRY_CATCH_EXPR, TRY_FINALLY_EXPR): Set type 's'.
