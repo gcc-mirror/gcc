@@ -41,13 +41,13 @@ struct MyNP : std::numpunct<char>
 
 std::string MyNP::do_truename()  const 
 { 
-  static std::string s("yea"); 
+  std::string s("yea"); 
   return s; 
 }
 
 std::string MyNP::do_falsename() const 
 { 
-  static std::string s("nay"); 
+  std::string s("nay"); 
   return s; 
 }
 

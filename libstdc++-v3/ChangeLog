@@ -1,3 +1,14 @@
+2002-02-28  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc (num_get::_M_extract_int):
+	Admit grouping for octals and hexadecimals too.
+	* testsuite/22_locale/num_get_members_char.cc: Add test04.
+	(test01): Tweak "." -> "," in void* test.
+	* testsuite/22_locale/num_get_members_wchar_t.cc: Ditto.
+
+	* testsuite/27_io/ios_manip_basefield.cc: Remove static keyword.
+	* testsuite/27_io/ios_manip_fmtflags.cc: Remove two of them.
+
 2002-02-27  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/ios_manip_basefield.cc (test01):

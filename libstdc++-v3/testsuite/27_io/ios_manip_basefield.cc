@@ -38,7 +38,7 @@ struct MyNP : std::numpunct<char>
   char   do_thousands_sep() const;
 };
 
-std::string MyNP::do_grouping() const { static std::string s("\3"); return s; }
+std::string MyNP::do_grouping() const { std::string s("\3"); return s; }
 char   MyNP::do_thousands_sep() const { return ' '; }
 
 int
