@@ -231,9 +231,11 @@ Thu Jun 17 15:07 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 	(dgux_int_varargs): new for DG/UX
 	* fixinc/{fixincl.x,inclhack.sh}: Regenerated.
 
-Thu Jun 17 21:34:24 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+Thu Jun 17 21:34:24 1999  Jeff Law <law@cygnus.com>
 
 	* invoke.texi (ia32 options): Fix typo.
+
+Thu Jun 17 21:34:24 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (strength_reduce): When doing biv->giv conversion, update
 	reg note of NEXT->insn.
