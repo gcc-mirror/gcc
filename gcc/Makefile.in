@@ -928,10 +928,12 @@ function.o : function.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    recog.h output.h bytecode.h
 stmt.o : stmt.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-config.h insn-codes.h hard-reg-set.h expr.h loop.h \
-   recog.h bytecode.h bc-typecd.h bc-opcode.h bc-optab.h bc-emit.h
+   recog.h bytecode.h bc-typecd.h bc-typecd.def bc-opcode.h bc-optab.h \
+   bc-emit.h
 expr.o : expr.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
-   insn-flags.h insn-codes.h expr.h insn-config.h recog.h output.h typeclass.h \
-   bytecode.h bc-opcode.h bc-typecd.h bc-optab.h bc-emit.h modemap.def
+   insn-flags.h insn-codes.h expr.h insn-config.h recog.h output.h \
+   typeclass.h bytecode.h bc-opcode.h bc-typecd.h bc-typecd.def bc-optab.h \
+   bc-emit.h modemap.def
 calls.o : calls.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h expr.h insn-codes.h \
    insn-flags.h gvarargs.h 
 expmed.o : expmed.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h  \
@@ -949,7 +951,7 @@ dwarfout.o : dwarfout.c $(CONFIG_H) $(TREE_H) $(RTL_H) dwarf.h flags.h \
 xcoffout.o : xcoffout.c $(CONFIG_H) $(TREE_H) $(RTL_H) xcoffout.h flags.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) $(RTL_H) flags.h gvarargs.h function.h  \
    regs.h insn-config.h insn-codes.h real.h expr.h bytecode.h bc-opcode.h \
-   bc-typecd.h bc-optab.h bc-emit.h bc-opname.h
+   bc-typecd.h bc-typecd.def bc-optab.h bc-emit.h bc-opname.h
 real.o : real.c $(CONFIG_H) $(TREE_H)
 getpwd.o : getpwd.c $(CONFIG_H)
 
@@ -1289,7 +1291,8 @@ bi-opname: bi-opname.o $(BI_OBJ) $(HOST_LIBDEPS)
 	 bi-opname.o $(BI_OBJ) $(HOST_LIBS)
 
 
-bi-run.o:	$(srcdir)/bi-run.c $(srcdir)/bi-run.h $(srcdir)/bc-typecd.h bc-opname.h bc-arity.h bc-opcode.h
+bi-run.o:	$(srcdir)/bi-run.c $(srcdir)/bi-run.h $(srcdir)/bc-typecd.h \
+  bc-opname.h bc-arity.h bc-opcode.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/bi-run.c
 
 $(srcdir)/bi-parser.c $(srcdir)/bi-parser.h: $(srcdir)/bi-parser.y
