@@ -1,3 +1,15 @@
+1998-11-19  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* semantics.c (begin_class_definition): Call
+	maybe_process_partial_specialization before push_template_decl.
+	Don't call push_template_decl for a specialization.
+	* search.c (lookup_field): Do return a member template class.
+	* decl2.c (handle_class_head): Handle member template classes.
+
+	* decl.c (grokdeclarator): A parm type need not be complete.
+
+	* pt.c (convert_nontype_argument): Fix thinko.
+
 1998-11-18  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (PTRMEM_CST_CLASS): Fix typo.

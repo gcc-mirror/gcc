@@ -1190,6 +1190,11 @@ lookup_field (xbasetype, name, protect, want_type)
       && ! currently_open_class (BINFO_TYPE (rval_binfo))
       && uses_template_parms (type))
     {
+      /* We need to return a member template class so we can define partial
+	 specializations.  Is there a better way?  */
+      if (DECL_CLASS_TEMPLATE_P (rval))
+	return rval;
+
       /* Don't return a non-type.  Actually, we ought to return something
 	 so lookup_name_real can give a warning.  */
       if (TREE_CODE (rval) != TYPE_DECL)

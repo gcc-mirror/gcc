@@ -10530,7 +10530,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
     if (decl_context == PARM)
       {
-	decl = build_decl (PARM_DECL, declarator, complete_type (type));
+	decl = build_decl (PARM_DECL, declarator, type);
 
 	bad_specifiers (decl, "parameter", virtualp, quals != NULL_TREE,
 			inlinep, friendp, raises != NULL_TREE);
