@@ -478,6 +478,12 @@ save_for_inline_copying (fndecl)
 
   regno_reg_rtx = reg_map;
 
+  /* Put copies of all the virtual register rtx into the new regno_reg_rtx.  */
+  regno_reg_rtx[VIRTUAL_INCOMING_ARGS_REGNUM] = virtual_incoming_args_rtx;
+  regno_reg_rtx[VIRTUAL_STACK_VARS_REGNUM] = virtual_stack_vars_rtx;
+  regno_reg_rtx[VIRTUAL_STACK_DYNAMIC_REGNUM] = virtual_stack_dynamic_rtx;
+  regno_reg_rtx[VIRTUAL_OUTGOING_ARGS_REGNUM] = virtual_outgoing_args_rtx;
+
   /* Likewise each label rtx must have a unique rtx as its copy.  */
 
   label_map = (rtx *)alloca ((max_labelno - min_labelno) * sizeof (rtx));
