@@ -12,7 +12,7 @@
 @cindex installing GNU CC
 
 @menu
-* Config Files::  Files created by running @code{configure}.
+* Configuration Files::  Files created by running @code{configure}.
 * Configurations::    Configurations Supported by GNU CC.
 * Other Dir::     Compiling in a separate directory (not where the source is).
 * Cross-Compiler::   Building and installing a cross-compiler.
