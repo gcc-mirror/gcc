@@ -3964,6 +3964,7 @@ tsubst (t, args, in_decl)
 	DECL_DEFER_OUTPUT (r) = 0;
 	TREE_CHAIN (r) = NULL_TREE;
 	DECL_CHAIN (r) = NULL_TREE;
+	DECL_PENDING_INLINE_INFO (r) = 0;
 
 	if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
 	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
