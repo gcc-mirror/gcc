@@ -1,5 +1,12 @@
 2000-08-17  Neil Booth  <NeilB@earthling.net>
 
+	* (cppinit.c) merge_include_chains: Use remove_dup_dir,
+	remove_dup_dirs.  If qtail == brack, remove brack not
+	qtail.
+	(remove_dup_dir, remove_dup_dirs): New functions.
+
+2000-08-17  Neil Booth  <NeilB@earthling.net>
+
 	* cppinit.c (cpp_cleanup): Free include dir chains.
 	* cpplib.c (do_undef): Let _cpp_free_definition make the node void.
 	(do_unassert): Free the assert with _cpp_free_definition.
