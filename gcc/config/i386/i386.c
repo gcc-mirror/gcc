@@ -294,6 +294,10 @@ override_options ()
 
   if (TARGET_OMIT_LEAF_FRAME_POINTER)	/* keep nonleaf frame pointers */
     flag_omit_frame_pointer = 1;
+
+  /* pic references don't explicitly mention pic_offset_table_rtx */
+  if (flag_pic)
+    target_flags &= ~MASK_SCHEDULE_PROLOGUE;
 }
 
 /* A C statement (sans semicolon) to choose the order in which to
@@ -1709,6 +1713,67 @@ function_prologue (file, size)
      FILE *file;
      int size;
 {
+  register int regno;
+  int limit;
+  rtx xops[4];
+  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
+				  || current_function_uses_const_pool);
+  long tsize = get_frame_size ();
+
+  /* pic references don't explicitly mention pic_offset_table_rtx */
+  if (TARGET_SCHEDULE_PROLOGUE)
+    return;
+  
+  xops[0] = stack_pointer_rtx;
+  xops[1] = frame_pointer_rtx;
+  xops[2] = GEN_INT (tsize);
+  if (frame_pointer_needed)
+    {
+      output_asm_insn ("push%L1 %1", xops); 
+      output_asm_insn (AS2 (mov%L0,%0,%1), xops); 
+    }
+
+  if (tsize)
+    output_asm_insn (AS2 (sub%L0,%2,%0), xops);
+
+  /* Note If use enter it is NOT reversed args.
+     This one is not reversed from intel!!
+     I think enter is slower.  Also sdb doesn't like it.
+     But if you want it the code is:
+     {
+     xops[3] = const0_rtx;
+     output_asm_insn ("enter %2,%3", xops);
+     }
+     */
+  limit = (frame_pointer_needed ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
+  for (regno = limit - 1; regno >= 0; regno--)
+    if ((regs_ever_live[regno] && ! call_used_regs[regno])
+	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
+      {
+	xops[0] = gen_rtx (REG, SImode, regno);
+	output_asm_insn ("push%L0 %0", xops);
+      }
+
+  if (pic_reg_used && TARGET_DEEP_BRANCH_PREDICTION)
+    {
+      xops[0] = pic_offset_table_rtx;
+      if (pic_label_rtx == 0)
+	pic_label_rtx = (rtx) gen_label_rtx ();
+      xops[1] = pic_label_rtx;
+
+      output_asm_insn (AS1 (call,%P1), xops);
+      output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_,%0", xops);
+    }
+  else if (pic_reg_used)
+    {
+    xops[0] = pic_offset_table_rtx;
+    xops[1] = (rtx) gen_label_rtx ();
+ 
+      output_asm_insn (AS1 (call,%P1), xops);
+      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (xops[1]));
+      output_asm_insn (AS1 (pop%L0,%0), xops);
+      output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);
+  } 
 }
 
 /* This function generates the assembly code for function entry.
@@ -1725,6 +1790,9 @@ ix86_expand_prologue ()
 				  || current_function_uses_const_pool);
   long tsize = get_frame_size ();
 
+  if (!TARGET_SCHEDULE_PROLOGUE)
+    return;
+  
   xops[0] = stack_pointer_rtx;
   xops[1] = frame_pointer_rtx;
   xops[2] = GEN_INT (tsize);
@@ -1735,8 +1803,6 @@ ix86_expand_prologue ()
 				   gen_rtx (PRE_DEC, SImode, stack_pointer_rtx)),
 			  frame_pointer_rtx));
       emit_move_insn (xops[1], xops[0]);
-/*      output_asm_insn ("push%L1 %1", xops); */
-/*      output_asm_insn (AS2 (mov%L0,%0,%1), xops); */
     }
 
   if (tsize)
@@ -1745,8 +1811,6 @@ ix86_expand_prologue ()
 			  gen_rtx (MINUS, SImode,
 				   xops[0],
 				   xops[2])));
-
-/*    output_asm_insn (AS2 (sub%L0,%2,%0), xops);*/
 
   /* Note If use enter it is NOT reversed args.
      This one is not reversed from intel!!
@@ -1767,7 +1831,6 @@ ix86_expand_prologue ()
 			    gen_rtx (MEM, SImode,
 				     gen_rtx (PRE_DEC, SImode, stack_pointer_rtx)),
 			  xops[0]));
-/*	output_asm_insn ("push%L0 %0", xops);*/
       }
 
   if (pic_reg_used && TARGET_DEEP_BRANCH_PREDICTION)
@@ -1778,12 +1841,9 @@ ix86_expand_prologue ()
       xops[1] = pic_label_rtx;
 
       emit_insn (gen_prologue_get_pc (xops[0], gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
-/*      output_asm_insn (AS1 (call,%P1), xops);*/
       emit_insn (gen_prologue_set_got (xops[0], 
 		 gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
 		 gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
-      SCHED_GROUP_P (get_last_insn()) = 1;
-/*      output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_,%0", xops);*/
     }
   else if (pic_reg_used)
     {
@@ -1791,16 +1851,10 @@ ix86_expand_prologue ()
     xops[1] = (rtx) gen_label_rtx ();
  
       emit_insn (gen_prologue_get_pc (xops[0], gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
-      SCHED_GROUP_P (get_last_insn()) = 1;
-/*      output_asm_insn (AS1 (call,%P1), xops);*/
-/*      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (xops[1]));*/
       emit_insn (gen_pop (xops[0]));
-/*      output_asm_insn (AS1 (pop%L0,%0), xops);*/
       emit_insn (gen_prologue_set_got (xops[0], 
 		 gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
 		 gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER (xops[1]))));
-    SCHED_GROUP_P (get_last_insn()) = 1;
-/*      output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);*/
   } 
 }
 
