@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1396,6 +1396,8 @@ check_format_info (info, params)
 	  sprintf (message, "`a' flag used with `%c' format",
 		   format_char);
 	  warning (message);
+	  /* To simplify the following code.  */
+	  aflag = 0;
 	}
       if (info->is_scan && format_char == '[')
 	{
@@ -1485,7 +1487,7 @@ check_format_info (info, params)
 
       /* Check the types of any additional pointer arguments
 	 that precede the "real" argument.  */
-      for (i = 0; i < fci->pointer_count; ++i)
+      for (i = 0; i < fci->pointer_count + aflag; ++i)
 	{
 	  if (TREE_CODE (cur_type) == POINTER_TYPE)
 	    {
@@ -1496,7 +1498,8 @@ check_format_info (info, params)
 	    {
 	      sprintf (message,
 		       "format argument is not a %s (arg %d)",
-		       ((fci->pointer_count == 1) ? "pointer" : "pointer to a pointer"),
+		       ((fci->pointer_count + aflag == 1)
+			? "pointer" : "pointer to a pointer"),
 		       arg_num);
 	      warning (message);
 	    }
@@ -1504,7 +1507,7 @@ check_format_info (info, params)
 	}
 
       /* Check the type of the "real" argument, if there's a type we want.  */
-      if (i == fci->pointer_count && wanted_type != 0
+      if (i == fci->pointer_count + aflag && wanted_type != 0
 	  && TREE_CODE (cur_type) != ERROR_MARK
 	  && wanted_type != TYPE_MAIN_VARIANT (cur_type)
 	  /* If we want `void *', allow any pointer type.
