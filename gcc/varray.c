@@ -30,8 +30,8 @@
 
 #define VARRAY_HDR_SIZE (sizeof (struct varray_head_tag) - sizeof (varray_data))
 
-/* Do not add any more non-GC items here.  Please either remove or GC those items that
-   are not GCed.  */
+/* Do not add any more non-GC items here.  Please either remove or GC
+   those items that are not GCed.  */
 
 static const struct {
   unsigned char size;
@@ -47,7 +47,7 @@ static const struct {
   { sizeof (unsigned long), 1 },
   { sizeof (HOST_WIDE_INT), 1 },
   { sizeof (unsigned HOST_WIDE_INT), 1 },
-  { sizeof (void *), 0 },
+  { sizeof (void *), 1 },
   { sizeof (char *), 1 },
   { sizeof (struct rtx_def *), 1 },
   { sizeof (struct rtvec_def *), 1 },

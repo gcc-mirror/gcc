@@ -74,7 +74,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    However, this is no actual entry for alias set zero.  It is an
    error to attempt to explicitly construct a subset of zero.  */
 
-typedef struct alias_set_entry
+struct alias_set_entry GTY(())
 {
   /* The alias set number, as stored in MEM_ALIAS_SET.  */
   HOST_WIDE_INT alias_set;
@@ -86,12 +86,13 @@ typedef struct alias_set_entry
 
      continuing our example above, the children here will be all of
      `int', `double', `float', and `struct S'.  */
-  splay_tree children;
+  splay_tree GTY((param1_is (int), param2_is (int))) children;
 
   /* Nonzero if would have a child of zero: this effectively makes this
      alias set the same as alias set zero.  */
   int has_zero_child;
-} *alias_set_entry;
+};
+typedef struct alias_set_entry *alias_set_entry;
 
 static int rtx_equal_for_memref_p (rtx, rtx);
 static rtx find_symbolic_term (rtx);
@@ -206,7 +207,7 @@ char *reg_known_equiv_p;
 static bool copying_arguments;
 
 /* The splay-tree used to store the various alias set entries.  */
-varray_type alias_sets;
+static GTY ((param_is (struct alias_set_entry))) varray_type alias_sets;
 
 /* Returns a pointer to the alias set entry for ALIAS_SET, if there is
    such an entry, or NULL otherwise.  */
@@ -640,10 +641,10 @@ record_alias_subset (HOST_WIDE_INT superset, HOST_WIDE_INT subset)
     {
       /* Create an entry for the SUPERSET, so that we have a place to
 	 attach the SUBSET.  */
-      superset_entry = xmalloc (sizeof (struct alias_set_entry));
+      superset_entry = ggc_alloc (sizeof (struct alias_set_entry));
       superset_entry->alias_set = superset;
       superset_entry->children
-	= splay_tree_new (splay_tree_compare_ints, 0, 0);
+	= splay_tree_new_ggc (splay_tree_compare_ints);
       superset_entry->has_zero_child = 0;
       VARRAY_GENERIC_PTR (alias_sets, superset) = superset_entry;
     }
