@@ -292,7 +292,7 @@ g++FAQ.html:	$(srcdir)/g++FAQ.texi
 	    -e 's?@file{\(gnu\.[-a-z+.]*\)}?<A HREF="news:\1">\1</A>?' \
 	    -e 's?\([.+a-zA-Z0-9-]*@@[.a-zA-Z0-9-]*[a-zA-Z0-9]\)?<A HREF="mailto:\1">\1</A>?' \
 	    $(srcdir)/g++FAQ.texi > work/g++FAQ.texi
-	cd work; texi2html -monolithic g++FAQ.texi
+	cd work; texi2html g++FAQ.texi
 	mv work/*.html .
 	rm -r work
 
