@@ -60,6 +60,9 @@ extern cpp_reader  parse_in;
 FILE *finput;
 #endif
 
+/* The original file name, before changing "-" to "stdin".  */
+static const char *orig_filename;
+
 /* Private idea of the line number.  See discussion in c_lex().  */
 static int lex_lineno;
 
@@ -170,6 +173,8 @@ init_c_lex (filename)
 {
   struct c_fileinfo *toplevel;
 
+  orig_filename = filename;
+
   /* Set up filename timing.  Must happen before cpp_start_read.  */
   file_info_tree = splay_tree_new ((splay_tree_compare_fn)strcmp,
 				   0,
@@ -214,9 +219,6 @@ init_c_lex (filename)
   /* Make sure parse_in.digraphs matches flag_digraphs.  */
   CPP_OPTION (&parse_in, digraphs) = flag_digraphs;
 
-  if (! cpp_start_read (&parse_in, filename))
-    exit (FATAL_EXIT_CODE);	/* cpplib has emitted an error.  */
-
   if (filename == 0 || !strcmp (filename, "-"))
     filename = "stdin";
 #endif
@@ -230,6 +232,18 @@ init_c_lex (filename)
   lineno = lex_lineno = 0;
 
   return filename;
+}
+
+/* A thin wrapper around the real parser that initializes the 
+   integrated preprocessor after debug output has been initialized.  */
+
+int
+yyparse()
+{
+  if (! cpp_start_read (&parse_in, orig_filename))
+    return 1;			/* cpplib has emitted an error.  */
+
+  return yyparse_1();
 }
 
 struct c_fileinfo *
