@@ -145,6 +145,9 @@
 /* Define if you have the inet_aton function.  */
 #undef HAVE_INET_ATON
 
+/* Define if you have the inet_ntoa function.  */
+#undef HAVE_INET_NTOA
+
 /* Define if you have the inet_pton function.  */
 #undef HAVE_INET_PTON
 
