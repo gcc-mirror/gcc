@@ -1356,6 +1356,7 @@ floating_exact_log2 (x)
   if (REAL_VALUES_LESS (r, dconst0))
     return 0;
 
+  r1 = dconst1;
   i = 0;
   while (REAL_VALUES_LESS (r1, r))
     {
