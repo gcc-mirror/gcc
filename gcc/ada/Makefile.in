@@ -1384,6 +1384,7 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
   MISCLIB=
   THREADSLIB=-lpthread
   GNATLIB_SHARED=gnatlib-shared-dual
+  GMEM_LIB = gmemlib
   PREFIX_OBJS=$(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
@@ -1427,7 +1428,10 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   s-taspri.ads<s-taspri-linux.ads \
   system.ads<system-linux-x86_64.ads
 
-  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-linux.adb
+  TOOLS_TARGET_PAIRS =  \
+    mlib-tgt.adb<mlib-tgt-linux.adb \
+    indepsw.adb<indepsw-linux.adb
+
   THREADSLIB=-lpthread
   GNATLIB_SHARED=gnatlib-shared-dual
   GMEM_LIB = gmemlib
@@ -1458,7 +1462,7 @@ ifeq ($(strip $(filter-out powerpc darwin%,$(arch) $(osys))),)
   SO_OPTS = -Wl,-flat_namespace
   RANLIB = ranlib -c
   GMEM_LIB = gmemlib
-
+  PREFIX_OBJS=$(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
   soext = .dylib
 endif
@@ -1501,9 +1505,8 @@ ADA_INCLUDE_SRCS =\
  ada.ads calendar.ads directio.ads gnat.ads interfac.ads ioexcept.ads \
  machcode.ads text_io.ads unchconv.ads unchdeal.ads \
  sequenio.ads system.ads memtrack.adb \
- a-*.adb a-*.ads g-*.ad? i-*.ad? \
- s-[a-o]*.adb s-[p-z]*.adb \
- s-[a-o]*.ads s-[p-z]*.ads
+ a-[a-o]*.adb a-[p-z]*.adb a-[a-o]*.ads a-[p-z]*.ads g-*.ad? i-*.ad? \
+ s-[a-o]*.adb s-[p-z]*.adb s-[a-o]*.ads s-[p-z]*.ads  
 
 LIBGNAT=../rts/libgnat.a 
 GCC_LINK="$(CC) -static-libgcc $(ADA_INCLUDES)"
@@ -1725,13 +1728,22 @@ install-gnatlib: ../stamp-gnatlib
 # Example: cd rts; ar rc libfoo.a $(LONG_LIST_OF_OBJS)
 # is guaranteed to overflow the buffer.
 
+# ??? GCC_FOR_TARGET is supposed to be passed from the top level
+# Makefile, but this is not the case from e.g. libada, so provide a suitable
+# default
+GCC_FOR_TARGET=./xgcc -B./ $(FLAGS_FOR_TARGET)
+
 gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
-	$(MAKE) -C rts CC="../../xgcc -B../../" \
+	$(MAKE) -C rts \
+		CC="`echo \"$(GCC_FOR_TARGET)\" \
+		| sed -e 's^./xgcc^../../xgcc^' -e 's^-B./^-B../../^'`" \
 	        INCLUDES="$(INCLUDES_FOR_SUBDIR) -I./../.." \
                 CFLAGS="$(GNATLIBCFLAGS_FOR_C)" \
 		srcdir=$(fsrcdir) \
 	        -f ../Makefile $(LIBGNAT_OBJS)
-	$(MAKE) -C rts CC="../../xgcc -B../../" \
+	$(MAKE) -C rts \
+		CC="`echo \"$(GCC_FOR_TARGET)\" \
+		| sed -e 's^\./xgcc^../../xgcc^' -e 's^-B./^-B../../^'`" \
 	        ADA_INCLUDES="" \
                 CFLAGS="$(GNATLIBCFLAGS)" \
 	        ADAFLAGS="$(GNATLIBFLAGS)" \
@@ -1743,6 +1755,7 @@ gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
 	   $(addprefix rts/,$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS))
         ifneq ($(PREFIX_OBJS),)
 		$(AR) $(AR_FLAGS) rts/libgccprefix$(arext) $(PREFIX_OBJS);
+		-$(RANLIB) rts/libgccprefix$(arext)
         endif
 	-$(RANLIB) $(RANLIB_FLAGS) rts/libgnat$(arext)
 	$(AR) $(AR_FLAGS) rts/libgnarl$(arext) \
@@ -1763,12 +1776,14 @@ gnatlib-shared-default:
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
 	$(RM) rts/libgna*$(soext)
-	cd rts; ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
+	cd rts; ../../xgcc -B../../ -shared $(GNATLIBCFLAGS) \
+		$(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
 		$(SO_OPTS)libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(MISCLIB) -lm
-	cd rts; ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
+	cd rts; ../../xgcc -B../../ -shared $(GNATLIBCFLAGS) \
+		$(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
 		$(SO_OPTS)libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
