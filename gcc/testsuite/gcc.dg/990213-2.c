@@ -12,4 +12,5 @@ XmlInitUnknownEncoding(void *mem)
   struct unknown_encoding *e = mem;
   for (i = 0; i < sizeof(struct normal_encoding); i++)
     ((char *)mem)[i] = ((char *)&latin1_encoding)[i];
+  return 0;
 }

@@ -12,4 +12,6 @@ bar (int64_t which)
 	case 5 :
 	case 2 : ;
 	}
+
+	return 0;
 }

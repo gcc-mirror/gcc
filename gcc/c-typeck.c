@@ -1547,6 +1547,9 @@ build_function_call (function, params)
       return error_mark_node;
     }
 
+  if (fundecl && TREE_THIS_VOLATILE (fundecl))
+    current_function_returns_abnormally = 1;
+
   /* fntype now gets the type of function pointed to.  */
   fntype = TREE_TYPE (fntype);
 
@@ -7084,6 +7087,7 @@ c_expand_return (retval)
       tree res = DECL_RESULT (current_function_decl);
       tree inner;
 
+      current_function_returns_value = 1;
       if (t == error_mark_node)
 	return NULL_TREE;
 
@@ -7141,7 +7145,6 @@ c_expand_return (retval)
 	}
 
       retval = build (MODIFY_EXPR, TREE_TYPE (res), res, t);
-      current_function_returns_value = 1;
     }
 
  return add_stmt (build_return_stmt (retval));

@@ -4,7 +4,7 @@
    Copyright (C) 1999 Free Software Foundation  */
 
 /* { dg-do compile } */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -w" } */
 
 struct {
   unsigned i[4];

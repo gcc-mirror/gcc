@@ -34,5 +34,5 @@ p_frames_to_multilayer(t_anim_info *ainfo_ptr,
        break;
     l_cur_frame_nr += l_step;
   }
+  return 0;
 }
-
