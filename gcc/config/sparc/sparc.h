@@ -81,7 +81,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dsparc -Dsun -Dunix"
+/* The GCC_NEW_VARARGS macro is so that old versions of gcc can compile
+   new versions, which have an incompatible va-sparc.h file.  This matters
+   because gcc does "gvarargs.h" instead of <varargs.h>, and thus gets the
+   wrong varargs file when it is compiled with a different version of gcc.  */
+
+#define CPP_PREDEFINES "-Dsparc -Dsun -Dunix -D__GCC_NEW_VARARGS__"
 
 /* Print subsidiary information on the compiler version in use.  */
 

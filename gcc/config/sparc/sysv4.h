@@ -52,7 +52,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    the Sparc running svr4.  __svr4__ is our extension.  */
 
 #define CPP_PREDEFINES \
-  "-Dsparc -Dunix -D__svr4__ -Asystem(unix) -Acpu(sparc) -Amachine(sparc)"
+  "-Dsparc -Dunix -D__svr4__ -Asystem(unix) -Acpu(sparc) -Amachine(sparc) \
+   -D__GCC_NEW_VARARGS__"
 
 /* The specialized code which needs to appear in the .init section prior
    to the prologue code for `__do_global_ctors' (see crtstuff.c).
