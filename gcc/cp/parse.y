@@ -3518,11 +3518,11 @@ handler_seq:
 
 handler:
 	  CATCH
-                { $<ttype>$ = begin_handler(); }
+                { $<ttype>$ = begin_handler (); }
           handler_args
-                { $<ttype>$ = finish_handler_parms ($3, $<ttype>2); }
+                { finish_handler_parms ($3, $<ttype>2); }
 	  compstmt
-                { finish_handler ($<ttype>4, $<ttype>2); }
+                { finish_handler ($<ttype>2); }
 	;
 
 type_specifier_seq:

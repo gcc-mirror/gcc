@@ -230,6 +230,7 @@ cp_dump_tree (di, t)
 
     case HANDLER:
       dump_stmt (di, t);
+      dump_child ("parm", HANDLER_PARMS (t));
       dump_child ("body", HANDLER_BODY (t));
       dump_next_stmt (di, t);
       break;
@@ -243,12 +244,6 @@ cp_dump_tree (di, t)
     case SUBOBJECT:
       dump_stmt (di, t);
       dump_child ("clnp", TREE_OPERAND (t, 0));
-      dump_next_stmt (di, t);
-      break;
-
-    case START_CATCH_STMT:
-      dump_stmt (di, t);
-      queue_and_dump_type (di, t);
       dump_next_stmt (di, t);
       break;
 

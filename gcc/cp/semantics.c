@@ -54,7 +54,6 @@ static void emit_associated_thunks PARAMS ((tree));
 static void genrtl_try_block PARAMS ((tree));
 static void genrtl_eh_spec_block PARAMS ((tree));
 static void genrtl_handler PARAMS ((tree));
-static void genrtl_catch_block PARAMS ((tree));
 static void genrtl_ctor_stmt PARAMS ((tree));
 static void genrtl_subobject PARAMS ((tree));
 static void genrtl_named_return_value PARAMS ((void));
@@ -721,6 +720,8 @@ genrtl_handler (t)
      tree t;
 {
   genrtl_do_pushlevel ();
+  if (!processing_template_decl)
+    expand_start_catch (HANDLER_TYPE (t));
   expand_stmt (HANDLER_BODY (t));
   if (!processing_template_decl)
     expand_end_catch ();
@@ -734,7 +735,10 @@ begin_handler ()
   tree r;
   r = build_stmt (HANDLER, NULL_TREE, NULL_TREE);
   add_stmt (r);
+  /* Create a binding level for the eh_info and the exception object
+     cleanup.  */
   do_pushlevel ();
+  note_level_for_catch ();
   return r;
 }
 
@@ -742,13 +746,12 @@ begin_handler ()
    HANDLER.  DECL is the declaration for the catch parameter, or NULL
    if this is a `catch (...)' clause.  */
 
-tree
+void
 finish_handler_parms (decl, handler)
      tree decl;
      tree handler;
 {
-  tree blocks = NULL_TREE;
-
+  tree type = NULL_TREE;
   if (processing_template_decl)
     {
       if (decl)
@@ -757,47 +760,24 @@ finish_handler_parms (decl, handler)
 	  decl = push_template_decl (decl);
 	  add_decl_stmt (decl);
 	  RECHAIN_STMTS (handler, HANDLER_PARMS (handler));
+	  type = TREE_TYPE (decl);
 	}
     }
   else
-    blocks = expand_start_catch_block (decl);
+    type = expand_start_catch_block (decl);
 
-  if (decl)
-    TREE_TYPE (handler) = TREE_TYPE (decl);
-
-  return blocks;
-}
-
-/* Generate the RTL for a START_CATCH_STMT. */
-
-static void
-genrtl_catch_block (type)
-     tree type;
-{
-  expand_start_catch (type);
-}
-
-/* Note the beginning of a handler for TYPE.  This function is called
-   at the point to which control should be transferred when an
-   appropriately-typed exception is thrown.  */
-
-void
-begin_catch_block (type)
-     tree type;
-{
-  add_stmt (build (START_CATCH_STMT, type));
+  HANDLER_TYPE (handler) = type;
 }
 
 /* Finish a handler, which may be given by HANDLER.  The BLOCKs are
    the return value from the matching call to finish_handler_parms.  */
 
 void
-finish_handler (blocks, handler)
-     tree blocks;
+finish_handler (handler)
      tree handler;
 {
   if (!processing_template_decl)
-      expand_end_catch_block (blocks);
+    expand_end_catch_block ();
   do_poplevel ();
   RECHAIN_STMTS (handler, HANDLER_BODY (handler));
 }
@@ -2165,10 +2145,6 @@ cp_expand_stmt (t)
     {
     case CLEANUP_STMT:
       genrtl_decl_cleanup (CLEANUP_DECL (t), CLEANUP_EXPR (t));
-      break;
-
-    case START_CATCH_STMT:
-      genrtl_catch_block (TREE_TYPE (t));
       break;
 
     case CTOR_STMT:
