@@ -1,3 +1,13 @@
+2003-10-15  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/linux.h (MD_FALLBACK_FRAME_STATE_FOR): New
+	* config/mips/mips.h (DWARF_FRAME_REGNUM): Fixed to allow unwind
+	from leaf functions.
+	(DWARF_FRAME_RETURN_COLUMN): Ditto.
+	(SIGNAL_UNWIND_RETURN_COLUMN): New, used
+	by MD_FALLBACK_FRAME_STATE_FOR.
+	* testsuite/gcc.dg/cleanup-9.c: Added mips*-*-linux* target.
+
 2003-10-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* genmodes.c: Include hashtab.h.
