@@ -22,7 +22,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef __XTENSA_PROTOS_H__
 #define __XTENSA_PROTOS_H__
 
-/* Functions to test whether an immediate fits in a given field. */
+/* Functions to test whether an immediate fits in a given field.  */
 extern int xtensa_simm7 (int);
 extern int xtensa_simm8 (int);
 extern int xtensa_simm8x256 (int);
