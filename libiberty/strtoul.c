@@ -91,7 +91,7 @@ strtoul(nptr, endptr, base)
 			break;
 		if (c >= base)
 			break;
-		if (any < 0 || acc > cutoff || acc == cutoff && c > cutlim)
+		if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim))
 			any = -1;
 		else {
 			any = 1;
