@@ -1,3 +1,7 @@
+2004-11-19  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.dg/pr16286.c: Test __pixel and __bool keywords.
+
 2004-11-18  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/ppc-bitfield1.c: Skip if not LP64, don't specify -m64.
