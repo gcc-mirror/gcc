@@ -1,3 +1,7 @@
+2004-07-12  Eric Christopher  <echristo@redhat.com>
+
+	* parser.c (cp_parser_class_head): Remove unused variable.
+
 2004-07-12  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* decl.c (grok_op_properties): Reject [de-]allocation functions
@@ -9,7 +13,7 @@
 	* decl.c (xref_basetypes): Use make_tree_binfo directly.
 	* tree.h (copy_base_binfos): Likewise.
 	(make_binfo): Remove.
-	
+
 	* call.c (build_user_type_conversion_1, build_new_op,
 	check_constructor_callable, build_temp,
 	perform_direct_initialization_of_possible): Pass type directly to
