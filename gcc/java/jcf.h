@@ -102,19 +102,19 @@ struct ZipDirectory;
 /* JCF encapsulates the state of reading a Java Class File. */
 
 typedef struct JCF GTY(()) {
-  unsigned char * GTY ((skip (""))) buffer;
-  unsigned char * GTY ((skip (""))) buffer_end;
-  unsigned char * GTY ((skip (""))) read_ptr;
-  unsigned char * GTY ((skip (""))) read_end;
+  unsigned char * GTY ((skip)) buffer;
+  unsigned char * GTY ((skip)) buffer_end;
+  unsigned char * GTY ((skip)) read_ptr;
+  unsigned char * GTY ((skip)) read_end;
   int java_source : 1;
   int right_zip : 1;
   int finished : 1;
   jcf_filbuf_t filbuf;
-  PTR GTY ((skip (""))) read_state;
+  PTR GTY ((skip)) read_state;
   const char *filename;
   const char *classname;
   /* Directory entry where it was found.  */
-  struct ZipDirectory * GTY ((skip (""))) zipd;
+  struct ZipDirectory * GTY ((skip)) zipd;
   JCF_u2 access_flags;
   JCF_u2 this_class;
   JCF_u2 super_class;

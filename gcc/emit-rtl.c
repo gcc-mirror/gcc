@@ -4751,7 +4751,7 @@ emit (rtx x)
 }
 
 /* Space for free sequence stack entries.  */
-static GTY ((deletable (""))) struct sequence_stack *free_sequence_stack;
+static GTY ((deletable)) struct sequence_stack *free_sequence_stack;
 
 /* Begin emitting insns to a sequence which can be packaged in an
    RTL_EXPR.  If this sequence will contain something that might cause
@@ -5483,7 +5483,7 @@ emit_copy_of_insn_after (rtx insn, rtx after)
   return new;
 }
 
-static GTY((deletable(""))) rtx hard_reg_clobbers [NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
+static GTY((deletable)) rtx hard_reg_clobbers [NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
 rtx
 gen_hard_reg_clobber (enum machine_mode mode, unsigned int regno)
 {

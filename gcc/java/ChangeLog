@@ -1,3 +1,8 @@
+2004-03-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* builtins.c, expr.c, jcf.h, parse.h: Use new shorter
+	form of GTY markers.
+
 2004-03-25  Marcus Meissner  <meissner@suse.de>
 
 	PR java/14689:
@@ -38,7 +43,7 @@
 	* lang.c (java_handle_option):  Handle new options.
 	* parse.y (build_incomplete_class_ref):  Handle class$ in an inner
 	class in an interface - create helper class nested in outer interface.
-        (build_assertion):  Short-circuit if enable_assertions is false.
+	(build_assertion):  Short-circuit if enable_assertions is false.
 
 2004-03-18  Richard Kenner <kenner@vlsi1.ultra.nyu.edu>
 
@@ -93,7 +98,7 @@
 	!METHOD_INVISIBLE (iface_method).
 	* class.c (layout_class_methods): Check for CLASS_INTERFACE as
 	well as CLASS_ABSTRACT.
-	
+
 2004-02-25  Per Bothner  <per@bothner.com>
 
 	* parse.y (build_assertion):  If we're in an inner class, create the
@@ -176,7 +181,7 @@
 
 2004-01-30  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* Make-lang.in (doc/gcj.dvi): Use $(abs_docdir). 
+	* Make-lang.in (doc/gcj.dvi): Use $(abs_docdir).
 
 2004-01-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -204,11 +209,11 @@
 	* Make-lang.in: Replace $(docdir) with doc.
 	(java.info, java.srcinfo, java.man, java.srcman): New rules.
 	(java.install-man): Revamp rule.
-	
+
 2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* Make-lang.in (JAVA_INSTALL_NAME, JAVA_TARGET_INSTALL_NAME, 
-	GCJH_TARGET_INSTALL_NAME): Define via a immediate $(shell) 
+	* Make-lang.in (JAVA_INSTALL_NAME, JAVA_TARGET_INSTALL_NAME,
+	GCJH_TARGET_INSTALL_NAME): Define via a immediate $(shell)
 	instead of deferred backquote.
 
 2004-01-16  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -264,7 +269,7 @@
 	using indirect dis[atch.
 	(java_decl_ok_for_sibcall): Use output_class, not current_class.
 	(java_get_callee_fndecl): Use class local atable.
-	* jcf-parse.c 
+	* jcf-parse.c
 	(always_initialize_class_p): Decl moved to java-tree.h.
 	(HANDLE_CLASS_INFO): Set output_class.
 	(read_class): Likewise.
@@ -312,13 +317,13 @@
 	Make otable, atable, and ctable class local rather than global.
 	(emit_catch_table): Make otable, atable, and ctable class local
 	rather than global.
-		
+
 2003-12-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* parse.y (catch_clause_parameter): Fix typo.
 
 	PR java/13404
-	* parse.y: (catch_clause_parameter): Return early if $3, aka 
+	* parse.y: (catch_clause_parameter): Return early if $3, aka
 	formal_parameter, is null.
 
 2003-12-20  Kazu Hirata  <kazu@cs.umass.edu>

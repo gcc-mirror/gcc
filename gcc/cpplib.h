@@ -508,9 +508,9 @@ struct cpp_hashnode GTY(())
   union _cpp_hashnode_value
   {
     /* If a macro.  */
-    cpp_macro * GTY((skip (""))) macro;
+    cpp_macro * GTY((skip)) macro;
     /* Answers to an assertion.  */
-    struct answer * GTY ((skip (""))) answers;
+    struct answer * GTY ((skip)) answers;
     /* Code for a builtin macro.  */
     enum builtin_type GTY ((tag ("1"))) builtin;
     /* Macro argument index.  */

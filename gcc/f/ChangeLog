@@ -1,3 +1,7 @@
+2004-03-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* com.c: Use new shorter form of GTY markers.
+
 2004-03-21  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* g77.texi: Update link to "G++ and GCC".
@@ -13,12 +17,12 @@
 	ftp://alpha.gnu.org/gnu/g77/projects/.
 	(Trouble): Remove obsolete paragraph including a broken link to
 	ftp://alpha.gnu.org/g77.plan.
-	
+
 	* invoke.texi (Overall Options): Remove broken reference to
 	rat7.uue (which was of dubious copyright status anyways).
 
 	* root.texi (www-burley): Fix URL.
-	
+
 2004-02-29  Roger Sayle  <roger@eyesopen.com>
 
 	* parse.c (ffe_parse_file): Handle the case that main_input_filename
@@ -61,7 +65,7 @@
 
 2004-01-30  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* Make-lang.in (doc/g77.dvi): Use $(abs_docdir). 
+	* Make-lang.in (doc/g77.dvi): Use $(abs_docdir).
 
 2004-01-28  Ian Lance Taylor  <ian@wasabisystems.com>
 

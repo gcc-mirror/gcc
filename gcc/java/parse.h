@@ -728,10 +728,10 @@ struct parser_ctxt GTY(()) {
   const char *filename;		    /* Current filename */
   struct parser_ctxt *next;
 
-  java_lexer * GTY((skip (""))) lexer; /* Current lexer state */
+  java_lexer * GTY((skip)) lexer; /* Current lexer state */
   char marker_begining;		     /* Marker. Should be a sub-struct */
-  struct java_line * GTY ((skip (""))) p_line; /* Previous line */
-  struct java_line * GTY ((skip (""))) c_line; /* Current line */
+  struct java_line * GTY ((skip)) p_line; /* Previous line */
+  struct java_line * GTY ((skip)) c_line; /* Current line */
   java_lc elc;			     /* Error's line column info */
   int ccb_indent;		     /* Keep track of {} indent, lexer */
   int first_ccb_indent1;	     /* First { at ident level 1 */
@@ -739,7 +739,7 @@ struct parser_ctxt GTY(()) {
   int parser_ccb_indent;	     /* Keep track of {} indent, parser */
   int osb_depth;		     /* Current depth of [ in an expression */
   int osb_limit;		     /* Limit of this depth */
-  int * GTY ((skip (""))) osb_number; /* Keep track of ['s */
+  int * GTY ((skip)) osb_number; /* Keep track of ['s */
   int lineno;			     /* Current lineno */
   char marker_end;		     /* End marker. Should be a sub-struct */
 
@@ -774,7 +774,7 @@ struct parser_ctxt GTY(()) {
 
   /* These two lists won't survive file traversal */
   tree  class_list;		    /* List of classes in a CU */
-  jdeplist * GTY((skip (""))) classd_list; /* Classe dependencies in a CU */
+  jdeplist * GTY((skip)) classd_list; /* Classe dependencies in a CU */
   
   tree  current_parsed_class;	    /* Class currently parsed */
   tree  current_parsed_class_un;    /* Curr. parsed class unqualified name */

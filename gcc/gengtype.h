@@ -130,6 +130,7 @@ extern type_p find_structure (const char *s, int isunion);
 extern type_p create_scalar_type (const char *name, size_t name_len);
 extern type_p create_pointer (type_p t);
 extern type_p create_array (type_p t, const char *len);
+extern options_p create_option (const char *name, void *info);
 extern type_p adjust_field_type (type_p, options_p);
 extern void note_variable (const char *s, type_p t, options_p o,
 			   struct fileloc *pos);

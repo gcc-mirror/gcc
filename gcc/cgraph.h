@@ -97,7 +97,7 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   struct cgraph_node *next_nested;
   /* Pointer to the next function in cgraph_nodes_queue.  */
   struct cgraph_node *next_needed;
-  PTR GTY ((skip (""))) aux;
+  PTR GTY ((skip)) aux;
 
   struct cgraph_local_info local;
   struct cgraph_global_info global;

@@ -163,7 +163,7 @@ static rtx *new_reg_base_value;
 /* We preserve the copy of old array around to avoid amount of garbage
    produced.  About 8% of garbage produced were attributed to this
    array.  */
-static GTY((deletable (""))) varray_type old_reg_base_value;
+static GTY((deletable)) varray_type old_reg_base_value;
 
 /* Static hunks of RTL used by the aliasing code; these are initialized
    once per function to avoid unnecessary RTL allocations.  */

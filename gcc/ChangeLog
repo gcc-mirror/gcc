@@ -1,3 +1,18 @@
+2004-03-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* gengtype.c (create_option): New function.
+	* gengtype.h: Prototype it.
+	* gengtype-yacc.y (stringseq): New rule.
+	(option): Use create_option.  Add new bare ID production.  Use
+	stringseq, not STRING directly.
+
+	* alias.c, bitmap.c, c-decl.c, cgraph.h, cpplib.h, cselib.h
+	* dwarf2out.c, emit-rtl.c, function.h, lists.c, tree.h
+	* varray.h, config/alpha/alpha.c:
+	Use new shorter form of GTY markers.
+
+	* doc/gty.texi: Rewrite.
+
 2004-03-30  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/darwin.c (machopic_function_base_name):
@@ -16,27 +31,27 @@
 
 2004-03-30  Hartmut Penner  <hpenner@de.ibm.com>
 
-        * config/rs6000/rs6000.c (output_vec_const_move):
-        Find all cases of EASY_VECTOR_15_ADD_SELF.
-        (easy_vector_constant_add_self): Accept
-        all vector constant loadable by vsplt* and vadd*.
+	* config/rs6000/rs6000.c (output_vec_const_move):
+	Find all cases of EASY_VECTOR_15_ADD_SELF.
+	(easy_vector_constant_add_self): Accept
+	all vector constant loadable by vsplt* and vadd*.
 	(easy_vector_same): Use easy_vector_splat_const.
 	(easy_vector_const): Use easy_vector_splat_const.
-        (easy_vector_splat_const): New function.
+	(easy_vector_splat_const): New function.
 	(gen_easy_vector_constant_add_self): New function.
-	
+
 	* config/rs6000/rs6000-protos.c (gen_easy_vector_constant_add_self):
 	New prototype.
 
-        * config/rs6000/altivec.md (movv4si splitter): Change to
+	* config/rs6000/altivec.md (movv4si splitter): Change to
 	emit move insn with halfed vector constant.
 	(*movv8hi splitter): Likewise.
 	(*movv16qi splitter): Likewise.
-    	
+
 2004-03-30  Hartmut Penner  <hpenner@de.ibm.com>
 
-	PR 11591	
-	* config/rs6000/rs6000.c (rs6000_legitimate_address): 
+	PR 11591
+	* config/rs6000/rs6000.c (rs6000_legitimate_address):
 	Allow any offset to argument pointer in no-strict case.
 
 2004-03-30  Jan Hubicka  <jh@suse.cz>
