@@ -1,3 +1,8 @@
+2004-09-20  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/compat/sdata-section.h (SDATA_SECTION): Don't use an attribute
+	if SKIP_ATTRIBUTE is defined.
+
 2004-09-20  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15957
