@@ -12154,8 +12154,10 @@ on an x86-based GNU system:
 static void __attribute__ ((constructor))
 trapfpe ()
 @{
-  __setfpucw (_FPU_DEFAULT &
-              ~(_FPU_MASK_IM | _FPU_MASK_ZM | _FPU_MASK_OM));
+  fpu_control_t cw =
+    _FPU_DEFAULT &
+    ~(_FPU_MASK_IM | _FPU_MASK_ZM | _FPU_MASK_OM);
+  _FPU_SETCW(cw);
 @}
 @end smallexample
 
