@@ -25,6 +25,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "obstack.h"
 #include "hashtab.h"
 
+#ifndef ISDIGIT
+#include <ctype.h>
+#define ISDIGIT isdigit
+#define ISSPACE isspace
+#endif
+
 #define	obstack_chunk_alloc	xmalloc
 #define	obstack_chunk_free	free
 
@@ -41,6 +47,7 @@ static void read_escape		PARAMS ((struct obstack *, FILE *));
 static unsigned def_hash PARAMS ((const void *));
 static int def_name_eq_p PARAMS ((const void *, const void *));
 static void read_constants PARAMS ((FILE *infile, char *tmp_char));
+static void validate_const_int PARAMS ((FILE *, const char *));
 
 /* Subroutines of read_rtx.  */
 
@@ -494,6 +501,28 @@ traverse_md_constants (callback, info)
     htab_traverse (md_constants, callback, info);
 }
 
+static void
+validate_const_int (infile, string)
+     FILE *infile;
+     const char *string;
+{
+  const char *cp;
+  int valid = 1;
+
+  cp = string;
+  while (*cp && ISSPACE(*cp))
+    cp++;
+  if (*cp == '-' || *cp == '+')
+    cp++;
+  if (*cp == 0)
+    valid = 0;
+  for (; *cp; cp++)
+    if (! ISDIGIT (*cp))
+      valid = 0;
+  if (!valid)
+    fatal_with_file_and_line (infile, "invalid decimal constant \"%s\"\n", string);
+}
+
 /* Read an rtx in printed representation from INFILE
    and return an actual rtx in core constructed accordingly.
    read_rtx is not used in the compiler proper, but rather in
@@ -699,6 +728,7 @@ again:
 
       case 'w':
 	read_name (tmp_char, infile);
+	validate_const_int(infile, tmp_char);
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
 	tmp_wide = atoi (tmp_char);
 #else
@@ -720,6 +750,7 @@ again:
       case 'i':
       case 'n':
 	read_name (tmp_char, infile);
+	validate_const_int(infile, tmp_char);
 	tmp_int = atoi (tmp_char);
 	XINT (return_rtx, i) = tmp_int;
 	break;
