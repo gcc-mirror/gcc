@@ -70,6 +70,13 @@ int expr_stmts_for_value;
 static tree last_expr_type;
 static rtx last_expr_value;
 
+/* Each time we expand the end of a binding contour (in `expand_end_bindings')
+   and we emit a new NOTE_INSN_BLOCK_END note, we save a pointer to it here.
+   This is used by the `remember_end_note' function to record the endpoint
+   of each generated block in its associated BLOCK node.  */
+
+static rtx last_block_end_note;
+
 /* Number of binding contours started so far in this function.  */
 
 int block_start_count;
@@ -178,7 +185,6 @@ static int expand_fixup ();
 void fixup_gotos ();
 void free_temp_slots ();
 static void expand_cleanups ();
-static void fixup_cleanups ();
 static void expand_null_return_1 ();
 static int tail_recursion_args ();
 static void do_jump_if_equal ();
@@ -384,6 +390,8 @@ struct goto_fixup
   /* The LABEL_DECL that this jump is jumping to, or 0
      for break, continue or return.  */
   tree target;
+  /* The BLOCK for the place where this goto was found.  */
+  tree context;
   /* The CODE_LABEL rtx that this is jumping to.  */
   rtx target_rtl;
   /* Number of binding contours started in current function
@@ -815,6 +823,7 @@ expand_fixup (tree_label, rtl_label, last_insn)
       fixup->before_jump = last_insn ? last_insn : get_last_insn ();
       fixup->target = tree_label;
       fixup->target_rtl = rtl_label;
+      fixup->context = current_block ();
       fixup->block_start_count = block_start_count;
       fixup->stack_level = 0;
       fixup->cleanup_list_list
@@ -875,6 +884,9 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	 If so, we can finalize it.  */
       else if (PREV_INSN (f->target_rtl) != 0)
 	{
+	  register rtx cleanup_insns;
+	  tree newblock;
+
 	  /* Get the first non-label after the label
 	     this goto jumps to.  If that's before this scope begins,
 	     we don't have a jump into the scope.  */
@@ -903,7 +915,15 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	      DECL_REGISTER (f->target) = 1;
 	    }
 
-	  /* Execute cleanups for blocks this jump exits.  */
+	  /* We will expand the cleanups into a sequence of their own and
+	     then later on we will attach this new sequence to the insn
+	     stream just ahead of the actual jump insn.  */
+
+	  start_sequence ();
+
+	  pushlevel (0);
+
+	  /* Expand the cleanups for blocks this jump exits.  */
 	  if (f->cleanup_list_list)
 	    {
 	      tree lists;
@@ -912,13 +932,39 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 		   Do their cleanups.  */
 		if (TREE_ADDRESSABLE (lists)
 		    && TREE_VALUE (lists) != 0)
-		  fixup_cleanups (TREE_VALUE (lists), &f->before_jump);
+		  {
+		    expand_cleanups (TREE_VALUE (lists), 0);
+		    /* Pop any pushes done in the cleanups,
+		       in case function is about to return.  */
+		    do_pending_stack_adjust ();
+		  }
 	    }
 
 	  /* Restore stack level for the biggest contour that this
 	     jump jumps out of.  */
 	  if (f->stack_level)
 	    emit_stack_restore (SAVE_BLOCK, f->stack_level, f->before_jump);
+
+	  /* Finish up the sequence containing the insns which implement the
+	     necessary cleanups, and then attach that whole sequence to the
+	     insn stream just ahead of the actual jump insn.  Attaching it
+	     at that point insures that any cleanups which are in fact
+	     implicit C++ object destructions (which must be executed upon
+	     leaving the block) appear (to the debugger) to be taking place
+	     in an area of the generated code where the object(s) being
+	     destructed are still "in scope".  */
+
+	  cleanup_insns = get_insns ();
+	  newblock = poplevel (1, 0, 0);
+
+	  end_sequence ();
+	  emit_insns_after (cleanup_insns, f->before_jump);
+
+	  /* Put the new block into its proper context.  */
+	  BLOCK_SUBBLOCKS (f->context) 
+	    = chainon (BLOCK_SUBBLOCKS (f->context), newblock);
+	  BLOCK_SUPERCONTEXT (newblock) = f->context;
+
 	  f->before_jump = 0;
 	}
     }
@@ -2457,6 +2503,18 @@ expand_start_bindings (exit_flag)
   push_temp_slots ();
 }
 
+/* Given a pointer to a BLOCK node, save a pointer to the most recently
+   generated NOTE_INSN_BLOCK_END in the BLOCK_END_NOTE field of the given
+   BLOCK node.  */
+
+void
+remember_end_note (block)
+     register tree block;
+{
+  BLOCK_END_NOTE (block) = last_block_end_note;
+  last_block_end_note = NULL_RTX;
+}
+
 /* Generate RTL code to terminate a binding contour.
    VARS is the chain of VAR_DECL nodes
    for the variables bound in this contour.
@@ -2667,7 +2725,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
      just going out of scope, so they are in scope for their cleanups.  */
 
   if (mark_ends)
-    emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
+    last_block_end_note = emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
   else
     /* Get rid of the beginning-mark if we don't make an end-mark.  */
     NOTE_LINE_NUMBER (thisblock->data.block.first_insn) = NOTE_INSN_DELETED;
@@ -3029,33 +3087,6 @@ expand_cleanups (list, dont_do)
 	    free_temp_slots ();
 	  }
       }
-}
-
-/* Expand a list of cleanups for a goto fixup.
-   The expansion is put into the insn chain after the insn *BEFORE_JUMP
-   and *BEFORE_JUMP is set to the insn that now comes before the jump.  */
-
-static void
-fixup_cleanups (list, before_jump)
-     tree list;
-     rtx *before_jump;
-{
-  rtx beyond_jump = get_last_insn ();
-  rtx new_before_jump;
-
-  expand_cleanups (list, NULL_TREE);
-  /* Pop any pushes done in the cleanups,
-     in case function is about to return.  */
-  do_pending_stack_adjust ();
-
-  new_before_jump = get_last_insn ();
-
-  if (beyond_jump != new_before_jump)
-    {
-      /* If cleanups expand to nothing, don't reorder.  */
-      reorder_insns (NEXT_INSN (beyond_jump), new_before_jump, *before_jump);
-      *before_jump = new_before_jump;
-    }
 }
 
 /* Move all cleanups from the current block_stack
