@@ -22,10 +22,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "rs6000/rs6000.h"
 
-#if 0
-/* Commented out because it breaks compiler bootstrapping because references
-   to environ get hosed */
-
 #undef ASM_SPEC
 #define ASM_SPEC "-u -mpwr"
 
@@ -34,8 +30,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef ASM_OUTPUT_EXTERNAL
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
-#endif
-#endif
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)	\
+{ rtx _symref = XEXP (DECL_RTL (DECL), 0);	\
+  if ((TREE_CODE (DECL) == VAR_DECL		\
+       || TREE_CODE (DECL) == FUNCTION_DECL)	\
+      && (NAME)[0] != '*'			\
+      && (NAME)[strlen (NAME) - 1] != ']')	\
+    {						\
+      char *_name = (char *) permalloc (strlen (XSTR (_symref, 0)) + 5); \
+      strcpy (_name, XSTR (_symref, 0));	\
+      strcat (_name, TREE_CODE (DECL) == FUNCTION_DECL ? "[DS]" : "[RW]"); \
+      XSTR (_symref, 0) = _name;		\
+    }						\
+}
 
 #undef LINK_SPEC
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
