@@ -1,5 +1,8 @@
 1998-10-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.ext/arrnew2.C: if new T[n](i) is accepted for
+	classes, it should be accepted for all types.
+
 	* g++.old-deja/g++.eh/sjlj1.C: test checked sjlj-exception
 
 	* g++.old-deja/g++.pt/spec24.C: ensure that template
