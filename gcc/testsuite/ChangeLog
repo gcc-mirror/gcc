@@ -1,3 +1,8 @@
+2002-07-26  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/trad/Wunused.c, gcc.dg/cpp/Wunused.c: Add test
+	for documented behaviour.
+
 2002-07-25  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/20020720-1.x: Skip this test on

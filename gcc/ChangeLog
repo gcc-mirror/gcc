@@ -1,5 +1,9 @@
 2002-07-26  Neil Booth  <neil@daikokuya.co.uk>
 
+	* doc/cppopts.texi: Update.
+
+2002-07-26  Neil Booth  <neil@daikokuya.co.uk>
+
 	* cppmacro.c (_cpp_create_definition): Don't attempt redefinition
 	warnings on assertions.
 

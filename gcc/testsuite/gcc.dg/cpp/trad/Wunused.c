@@ -26,6 +26,12 @@
 #endif
 used4
 
+unused7;			/* This does not count as a use.  */
+
+#if 0
+unused5				/* This does not count as a use.  */
+#endif
+
 #undef unused5
 #define unused6
 unused6
