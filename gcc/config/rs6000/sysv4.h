@@ -874,7 +874,7 @@ do {									\
 									\
   if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)			\
     type = SECT_EXEC, mode = "ax";					\
-  else if (DECL && TREE_READONLY (DECL))				\
+  else if (DECL && TREE_READONLY (DECL) && !TARGET_RELOCATABLE)		\
     type = SECT_RO, mode = "a";						\
   else									\
     type = SECT_RW, mode = "aw";					\
