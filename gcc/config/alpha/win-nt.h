@@ -136,36 +136,20 @@ Boston, MA 02111-1307, USA.  */
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
 
-#undef ASM_OUTPUT_MI_THUNK
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
 do {									\
-  char *fn_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0);		\
+  char *op, *fn_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0);		\
 									\
-  fprintf (FILE, "\t.ent ");						\
-  assemble_name (FILE, alpha_function_name);				\
-  fputc ('\n', FILE);							\
-  ASM_OUTPUT_LABEL (FILE, alpha_function_name);				\
-  fprintf (FILE, "\t.frame $30,0,$26,0\n");				\
-  fprintf (FILE, "\t.prologue 1\n");					\
+  /* Mark end of prologue.  */						\
+  output_end_prologue (FILE);						\
 									\
   /* Rely on the assembler to macro expand a large delta.  */		\
   fprintf (FILE, "\tlda $16,%ld($16)\n", (long)(DELTA));		\
 									\
+  op = "jsr";								\
   if (current_file_function_operand (XEXP (DECL_RTL (FUNCTION), 0)))	\
-    {									\
-      fprintf (FILE, "\tbr $31,");					\
-      assemble_name (FILE, fn_name);					\
-      fputc ('\n', FILE);						\
-    }									\
-  else									\
-    {									\
-      fprintf (FILE, "\tjmp $31,");					\
-      assemble_name (FILE, fn_name);					\
-      fputc ('\n', FILE);						\
-    }									\
-									\
-  fprintf (FILE, "\t.end ");						\
-  assemble_name (FILE, alpha_function_name);				\
+    op = "br";								\
+  fprintf (FILE, "\t%s $31,", op);					\
+  assemble_name (FILE, fn_name);					\
   fputc ('\n', FILE);							\
 } while (0)
-

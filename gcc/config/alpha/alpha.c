@@ -79,11 +79,6 @@ char *alpha_mlat_string;	/* -mmemory-latency= */
 rtx alpha_compare_op0, alpha_compare_op1;
 int alpha_compare_fp_p;
 
-/* Save the name of the current function as used by the assembler.  This
-   is used by the epilogue.  */
-
-char *alpha_function_name;
-
 /* Non-zero if inside of a function, because the Alpha asm can't
    handle .files inside of functions.  */
 
@@ -2459,6 +2454,10 @@ alpha_return_addr (count, frame)
 static int
 alpha_ra_ever_killed ()
 {
+#ifdef ASM_OUTPUT_MI_THUNK
+  if (current_function_is_thunk)
+    return 0;
+#endif
   if (!alpha_return_addr_rtx)
     return regs_ever_live[REG_RA];
 
@@ -2930,7 +2929,7 @@ static int vms_save_fp_regno;
 /* Register number used to reference objects off our PV.  */
 static int vms_base_regno;
 
-/*  Compute register masks for saved registers.  */
+/* Compute register masks for saved registers.  */
 
 static void
 alpha_sa_mask (imaskP, fmaskP)
@@ -2941,28 +2940,30 @@ alpha_sa_mask (imaskP, fmaskP)
   unsigned long fmask = 0;
   int i;
 
-  if (TARGET_OPEN_VMS && vms_is_stack_procedure)
-    imask |= (1L << HARD_FRAME_POINTER_REGNUM);
+#ifdef ASM_OUTPUT_MI_THUNK
+  if (!current_function_is_thunk)
+#endif
+    {
+      if (TARGET_OPEN_VMS && vms_is_stack_procedure)
+	imask |= (1L << HARD_FRAME_POINTER_REGNUM);
 
-  /* One for every register we have to save.  */
+      /* One for every register we have to save.  */
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (! fixed_regs[i] && ! call_used_regs[i]
+	    && regs_ever_live[i] && i != REG_RA)
+	  {
+	    if (i < 32)
+	      imask |= (1L << i);
+	    else
+	      fmask |= (1L << (i - 32));
+	  }
 
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (! fixed_regs[i] && ! call_used_regs[i]
-	&& regs_ever_live[i] && i != REG_RA)
-      {
-	if (i < 32)
-	  imask |= (1L << i);
-	else
-	  fmask |= (1L << (i - 32));
-      }
-
-  if (imask || fmask || alpha_ra_ever_killed ())
-    imask |= (1L << REG_RA);
+      if (imask || fmask || alpha_ra_ever_killed ())
+	imask |= (1L << REG_RA);
+    }
 
   *imaskP = imask;
   *fmaskP = fmask;
-
-  return;
 }
 
 int
@@ -2971,12 +2972,18 @@ alpha_sa_size ()
   int sa_size = 0;
   int i;
 
-  /* One for every register we have to save.  */
-
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (! fixed_regs[i] && ! call_used_regs[i]
-	&& regs_ever_live[i] && i != REG_RA)
-      sa_size++;
+#ifdef ASM_OUTPUT_MI_THUNK
+  if (current_function_is_thunk)
+    sa_size = 0;
+  else
+#endif
+    {
+      /* One for every register we have to save.  */
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (! fixed_regs[i] && ! call_used_regs[i]
+	    && regs_ever_live[i] && i != REG_RA)
+	  sa_size++;
+    }
 
   if (TARGET_OPEN_VMS)
     {
@@ -3067,6 +3074,11 @@ alpha_does_function_need_gp ()
 
 #ifdef TARGET_PROFILING_NEEDS_GP
   if (profile_flag)
+    return 1;
+#endif
+
+#ifdef ASM_OUTPUT_MI_THUNK
+  if (current_function_is_thunk)
     return 1;
 #endif
 
@@ -3328,12 +3340,13 @@ alpha_expand_prologue ()
     emit_insn (gen_blockage ());
 }
 
-/* Output the rest of the textual info surrounding the prologue.  */
+/* Output the textual info surrounding the prologue.  */
 
 void
-output_prologue (file, size)
+alpha_start_function (file, fnname, decl)
      FILE *file;
-     HOST_WIDE_INT size;
+     char *fnname;
+     tree decl;
 {
   unsigned long imask = 0;
   unsigned long fmask = 0;
@@ -3343,7 +3356,7 @@ output_prologue (file, size)
   HOST_WIDE_INT frame_size;
   /* Offset from base reg to register save area.  */
   HOST_WIDE_INT reg_offset;
-  char *entry_label = (char *) alloca (strlen (alpha_function_name) + 6);
+  char *entry_label = (char *) alloca (strlen (fnname) + 6);
   int i;
 
   sa_size = alpha_sa_size ();
@@ -3388,11 +3401,11 @@ output_prologue (file, size)
   if (TARGET_OPEN_VMS || !flag_inhibit_size_directive)
     {
       fputs ("\t.ent ", file);
-      assemble_name (file, alpha_function_name);
+      assemble_name (file, fnname);
       putc ('\n', file);
     }
 
-  strcpy (entry_label, alpha_function_name);
+  strcpy (entry_label, fnname);
   if (TARGET_OPEN_VMS)
     strcat (entry_label, "..en");
   ASM_OUTPUT_LABEL (file, entry_label);
@@ -3482,7 +3495,7 @@ output_prologue (file, size)
 	fputs ("\tldgp $29,0($27)\n", file);
 
       putc ('$', file);
-      assemble_name (file, alpha_function_name);
+      assemble_name (file, fnname);
       fputs ("..ng:\n", file);
     }
 
@@ -3491,21 +3504,21 @@ output_prologue (file, size)
      available then.  */
   readonly_section ();
   fprintf (file, "\t.align 3\n");
-  assemble_name (file, alpha_function_name); fputs ("..na:\n", file);
+  assemble_name (file, fnname); fputs ("..na:\n", file);
   fputs ("\t.ascii \"", file);
-  assemble_name (file, alpha_function_name);
+  assemble_name (file, fnname);
   fputs ("\\0\"\n", file);
       
   link_section ();
   fprintf (file, "\t.align 3\n");
   fputs ("\t.name ", file);
-  assemble_name (file, alpha_function_name);
+  assemble_name (file, fnname);
   fputs ("..na\n", file);
-  ASM_OUTPUT_LABEL (file, alpha_function_name);
+  ASM_OUTPUT_LABEL (file, fnname);
   fprintf (file, "\t.pdesc ");
-  assemble_name (file, alpha_function_name);
+  assemble_name (file, fnname);
   fprintf (file, "..en,%s\n", vms_is_stack_procedure ? "stack" : "reg");
-  alpha_need_linkage (alpha_function_name, 1);
+  alpha_need_linkage (fnname, 1);
   text_section ();
 #endif
 }
@@ -3709,15 +3722,16 @@ alpha_expand_epilogue ()
 /* Output the rest of the textual info surrounding the epilogue.  */
 
 void
-output_epilogue (file, size)
+alpha_end_function (file, fnname, decl)
      FILE *file;
-     int size;
+     char *fnname;
+     tree decl;
 {
   /* End the function.  */
   if (!flag_inhibit_size_directive)
     {
       fputs ("\t.end ", file);
-      assemble_name (file, alpha_function_name);
+      assemble_name (file, fnname);
       putc ('\n', file);
     }
   inside_function = FALSE;
