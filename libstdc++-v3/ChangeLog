@@ -1,3 +1,23 @@
+2004-05-15  Jonathan Wakely  <redi@gcc.gnu.org>
+	
+	* docs/html/abi.html: Document effect of -fabi-version on value
+	of __GXX_ABI_VERSION, and that it's defined in c-cppbuiltin.c.
+	Fix markup.
+
+2004-05-15  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* docs/html/abi.html: New.
+	* docs/html/abi.txt: Remove.
+	* docs/html/documentation.html: Add link.
+	* testsuite/Makefile.am: Add files.
+	* testsuite/Makefile.in: Regenerated.
+	* testsuite/abi_check.cc: Move and modify code into...
+	* testsuite/testsuite_abi.cc: Add.
+	* testsuite/testsuite_abi.h: Add.
+
+	* docs/html/17_intro/TODO: Update.
+	* include/bits/stl_pair.h: Format.
+
 2004-05-14  Paolo Carlini  <pcarlini@suse.de>
 	    Ivan Godard  <igodard@pacbell.net>
 
