@@ -16,10 +16,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.10 1991/12/10 12:05:28 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/hash/RCS/hash.c,v 0.11 1992/01/03 02:55:03 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/12/10 12:05:28 $
+  $Date: 1992/01/03 02:55:03 $
   $Log: hash.c,v $
+ * Revision 0.11  1992/01/03  02:55:03  dennisg
+ * modified to handle new initialization scheme.
+ * fixed code structure.
+ *
  * Revision 0.10  1991/12/10  12:05:28  dennisg
  * Cleaned up file format for a distribution.
  *
@@ -65,9 +69,9 @@
  
 
 #include  <hash.h>
-#include  <hash-inline.h>
-#include  <ObjC.h>
-#include  <ObjC-private.h>
+#include  <objc.h>
+#include  <objcP.h>
+#include  <objc-protoP.h>
 
 #include  <assert.h>
 #include  <math.h>
@@ -85,24 +89,19 @@
 #define FULLNESS(cache) \
    ((((cache)->sizeOfHash * 75  ) / 100) <= (cache)->entriesInHash)
 #define EXPANSION(cache) \
-  (((cache)->sizeOfHash * 175 ) / 100 )
+  ((cache)->sizeOfHash * 2 )
 
-#define MEMORY_ALLOCATION_ADJUST(i) \
-  ((i&0x01)?i:(i-1))
-
-Cache_t hash_new (u_int sizeOfHash) {
+Cache_t 
+hash_new (u_int sizeOfHash, HashFunc aHashFunc, CompareFunc aCompareFunc) {
 
   Cache_t retCache;
   
 
+																								/* Pass me a value greater
+																									than 0 and a power of 2. */
   assert(sizeOfHash);
+	assert( !(sizeOfHash & (sizeOfHash - 1)));
   
-                                                /* Memory is allocated on this
-                                                  machine in even address
-                                                  chunks.  Therefore the
-                                                  modulus must be odd. */
-  sizeOfHash = MEMORY_ALLOCATION_ADJUST(sizeOfHash);
-
                                                 /* Allocate the cache 
                                                   structure.  calloc () insures
                                                   its initialization for
@@ -112,23 +111,39 @@ Cache_t hash_new (u_int sizeOfHash) {
   
                                                 /* Allocate the array of 
                                                   buckets for the cache.  
-                                                  calloc () initializes all of 
+                                                  calloc() initializes all of 
                                                   the pointers to NULL. */
   retCache->theNodeTable = calloc (sizeOfHash, sizeof (CacheNode_t));
   assert(retCache->theNodeTable);
   
   retCache->sizeOfHash  = sizeOfHash;
 
+																								/* This should work for all
+																									processor architectures? */
+	retCache->mask = ( sizeOfHash - 1 );
+	
+																								/* Store the hashing function
+																									so that codes can be 
+																									computed. */
+	retCache->hashFunc = aHashFunc;
+
+																								/* Store the function that
+																									compares hash keys to 
+																									determine if they are 
+																									equal. */
+	retCache->compareFunc = aCompareFunc;
+
   return retCache;
 }
 
 
-void hash_delete (Cache_t theCache) {
+void 
+hash_delete (Cache_t theCache) {
 
   CacheNode_t aNode;
   
 
-                                                /* Purge all key/value pairs 
+                                               /* Purge all key/value pairs 
                                                   from the table. */
   while (aNode = hash_next (theCache, NULL))
     hash_remove (theCache, aNode->theKey);
@@ -140,9 +155,10 @@ void hash_delete (Cache_t theCache) {
 }
 
 
-void hash_add (Cache_t* theCache, void* aKey, void* aValue) {
+void 
+hash_add (Cache_t* theCache, void* aKey, void* aValue) {
 
-  u_int       indx = hashIndex(*theCache, aKey);
+  u_int       indx = (* (*theCache)->hashFunc)(*theCache, aKey);
   CacheNode_t aCacheNode = calloc (1, sizeof (CacheNode));
 
 
@@ -191,8 +207,9 @@ void hash_add (Cache_t* theCache, void* aKey, void* aValue) {
                                                   increasing its 
                                                   correctness. */
     CacheNode_t aNode = NULL;
-    Cache_t     newCache = 
-                  hash_new (MEMORY_ALLOCATION_ADJUST( EXPANSION (*theCache)));
+    Cache_t     newCache = hash_new (EXPANSION (*theCache), 
+																		 (*theCache)->hashFunc, 
+																		 (*theCache)->compareFunc);
 
     DEBUG_PRINTF (stderr, "Expanding cache %#x from %d to %d\n",
       *theCache, (*theCache)->sizeOfHash, newCache->sizeOfHash);
@@ -213,9 +230,10 @@ void hash_add (Cache_t* theCache, void* aKey, void* aValue) {
 }
 
 
-void hash_remove (Cache_t theCache, void* aKey) {
+void 
+hash_remove (Cache_t theCache, void* aKey) {
 
-  u_int       indx = hashIndex(theCache, aKey);
+  u_int       indx = (*theCache->hashFunc)(theCache, aKey);
   CacheNode_t aCacheNode = (*theCache->theNodeTable)[ indx ];
   
   
@@ -227,7 +245,7 @@ void hash_remove (Cache_t theCache, void* aKey) {
                                                 /* Special case.  First element 
                                                   is the key/value pair to be 
                                                   removed. */
-  if (aCacheNode->theKey == aKey) {
+  if ((*theCache->compareFunc)(aCacheNode->theKey, aKey)) {
     (*theCache->theNodeTable)[ indx ] = aCacheNode->nextNode;
     free (aCacheNode);
   } else {
@@ -238,7 +256,7 @@ void hash_remove (Cache_t theCache, void* aKey) {
     
     do {
     
-      if (aCacheNode->theKey == aKey) {
+      if ((*theCache->compareFunc)(aCacheNode->theKey, aKey)) {
         prevHashNode->nextNode = aCacheNode->nextNode, removed = YES;
         free (aCacheNode);
       } else
@@ -253,7 +271,8 @@ void hash_remove (Cache_t theCache, void* aKey) {
 }
 
 
-CacheNode_t hash_next (Cache_t theCache, CacheNode_t aCacheNode) {
+CacheNode_t 
+hash_next (Cache_t theCache, CacheNode_t aCacheNode) {
 
   CacheNode_t theCacheNode = aCacheNode;
   
@@ -303,3 +322,25 @@ CacheNode_t hash_next (Cache_t theCache, CacheNode_t aCacheNode) {
 }
 
 
+                                                /* Given key, return its 
+                                                  value.  Return NULL if the
+                                                  key/value pair isn't in
+                                                  the hash. */
+void* 
+hash_value_for_key (Cache_t theCache, void* aKey) {
+
+  CacheNode_t aCacheNode = 
+              (*theCache->theNodeTable)[(*theCache->hashFunc)(theCache, aKey)];
+  void*       retVal = NULL;
+  
+
+  if (aCacheNode)
+    do {
+      if ((*theCache->compareFunc)(aCacheNode->theKey, aKey))
+        retVal = aCacheNode->theValue;
+      else
+        aCacheNode = aCacheNode->nextNode;
+    } while (!retVal && aCacheNode);
+  
+  return retVal;
+}
