@@ -1,3 +1,9 @@
+Wed Jun  9 19:44:26 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (loop_insn_first_p): Don't compare LUIDs when P
+	is a note; use <= for the compare; advance P while it is
+	a NOTE.
+
 Wed Jun  9 13:12:24 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* varasm.c (remove_from_pending_weak_list): Verify t->name

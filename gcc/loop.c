@@ -8199,11 +8199,16 @@ loop_insn_first_p (insn, reference)
       if (p == reference || ! q)
         return 1;
 
+      /* Either of P or Q might be a NOTE.  Notes have the same LUID as the
+         previous insn, hence the <= comparison below does not work if
+	 P is a note.  */
       if (INSN_UID (p) < max_uid_for_loop
-	  && INSN_UID (q) < max_uid_for_loop)
-	return INSN_LUID (p) < INSN_LUID (q);
+	  && INSN_UID (q) < max_uid_for_loop
+	  && GET_CODE (p) != NOTE)
+	return INSN_LUID (p) <= INSN_LUID (q);
 
-      if (INSN_UID (p) >= max_uid_for_loop)
+      if (INSN_UID (p) >= max_uid_for_loop
+	  || GET_CODE (p) == NOTE)
 	p = NEXT_INSN (p);
       if (INSN_UID (q) >= max_uid_for_loop)
 	q = NEXT_INSN (q);
