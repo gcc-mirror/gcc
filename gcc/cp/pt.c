@@ -1,5 +1,5 @@
 /* Handle parameterized types (templates) for GNU C++.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
 
 This file is part of GNU CC.
@@ -51,6 +51,11 @@ struct pending_inline *pending_template_expansions;
 
 int processing_template_decl;
 int processing_template_defn;
+
+/* This is a kludge to handle instantiation of template methods that are
+   used before their definition.  It should not be necessary after the
+   template rewrite.  */
+static tree template_classes;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -324,48 +329,7 @@ end_template_decl (d1, d2, is_class, defn)
   (void) get_pending_sizes ();
 }
 
-/* If TYPE contains a template parm type, then substitute that type
-   with its actual type that is found in TVEC. */
-static void
-grok_template_type (tvec, type)
-     tree tvec;
-     tree* type;
-{
-  switch (TREE_CODE (*type))
-    {
-    case TEMPLATE_TYPE_PARM:
-      if (*type != TYPE_MAIN_VARIANT (*type))
-        {
-	  /* we are here for cases like const T* etc. */
-	  grok_template_type (tvec, &TYPE_MAIN_VARIANT (*type));
-	  *type = cp_build_type_variant (TYPE_MAIN_VARIANT (*type),
-					TYPE_READONLY (*type),
-					TYPE_VOLATILE (*type));
-	}
-      else
-	  *type = TREE_VEC_ELT (tvec, TEMPLATE_TYPE_IDX (*type));
-      return;
-    case POINTER_TYPE:
-    case REFERENCE_TYPE:
-      grok_template_type (tvec, &TREE_TYPE (*type));
-      return;
-    case FUNCTION_TYPE:
-      {
-	tree p;
-	
-	/* take care of function's return type first */
-	grok_template_type (tvec, &TREE_TYPE (*type));
-	
-	/* take care of function's arguments */
-	for (p = TYPE_ARG_TYPES (*type); p; p = TREE_CHAIN (p))
-	  grok_template_type (tvec, &TREE_VALUE (p));
-	return;
-      }
-    default:     
-      break;
-    }
-  return;
-}
+tree tsubst		PROTO ((tree, tree*, int, tree));
 
 /* Convert all template arguments to their appropriate types, and return
    a vector containing the resulting values.  If any error occurs, return
@@ -451,8 +415,9 @@ coerce_template_parms (parms, arglist, in_decl)
 	}
       else
 	{
-	  grok_template_type (vec, &TREE_TYPE (parm));
-	  val = digest_init (TREE_TYPE (parm), arg, (tree *) 0);
+	  tree t = tsubst (TREE_TYPE (parm), &TREE_VEC_ELT (vec, 0),
+			   TREE_VEC_LENGTH (vec), in_decl);
+	  val = digest_init (t, arg, (tree *) 0);
 
 	  if (val == error_mark_node)
 	    ;
@@ -680,16 +645,19 @@ push_template_decls (parmlist, arglist, class_level)
 	{
 	  /* add const decl to namespace */
 	  tree val;
+	  tree parmtype;
 	  if (requires_type)
 	    {
 	      error ("template use error: value provided where type needed");
 	      continue;
 	    }
-	  val = digest_init (TREE_TYPE (parm), arg, (tree *) 0);
+	  parmtype = tsubst (TREE_TYPE (parm), &TREE_VEC_ELT (arglist, 0),
+			     TREE_VEC_LENGTH (arglist), NULL_TREE);
+	  val = digest_init (parmtype, arg, (tree *) 0);
 	  if (val != error_mark_node)
 	    {
 	      decl = build_decl (CONST_DECL, DECL_NAME (parm),
-				 TREE_TYPE (parm));
+				 parmtype);
 	      DECL_INITIAL (decl) = val;
 	      TREE_READONLY (decl) = 1;
 	    }
@@ -779,7 +747,7 @@ uses_template_parms (t)
 	return 1;
       return uses_template_parms (TREE_TYPE (t));
     case METHOD_TYPE:
-      if (uses_template_parms (TYPE_OFFSET_BASETYPE (t)))
+      if (uses_template_parms (TYPE_METHOD_BASETYPE (t)))
 	return 1;
       if (uses_template_parms (TYPE_ARG_TYPES (t)))
 	return 1;
@@ -1074,6 +1042,8 @@ instantiate_class_template (classname, setup_parse)
       processing_template_defn++;
       if (!flag_external_templates)
 	interface_unknown++;
+      template_classes
+	= perm_tree_cons (classname, NULL_TREE, template_classes);
     }
   else
     {
@@ -1151,7 +1121,7 @@ search_nested_type_in_tmpl (tmpl, type)
   return t;
 }
 
-static tree
+tree
 tsubst (t, args, nargs, in_decl)
      tree t, *args;
      int nargs;
@@ -1570,7 +1540,7 @@ tsubst (t, args, nargs, in_decl)
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       {
-	tree values = TYPE_VALUES (t); /* same as TYPE_ARG_TYPES */
+	tree values = TYPE_ARG_TYPES (t);
 	tree context = TYPE_CONTEXT (t);
 	tree new_value;
 
@@ -2367,6 +2337,12 @@ do_pending_expansions ()
 {
   struct pending_inline *i, *new_list = 0;
 
+  {
+    tree t;
+    for (t = template_classes; t; t = TREE_CHAIN (t))
+      instantiate_member_templates (TREE_PURPOSE (t));
+  }
+  
   if (!pending_template_expansions)
     return 0;
 
