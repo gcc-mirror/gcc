@@ -200,6 +200,9 @@ static bool iq2000_return_in_memory   (tree, tree);
 #undef  TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING	hook_bool_CUMULATIVE_ARGS_true
 
+#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Return 1 if OP can be used as an operand where a register or 16 bit unsigned
