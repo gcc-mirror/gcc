@@ -789,12 +789,12 @@ expand_block_move (operands)
 					    GEN_INT (move_bytes),
 					    align_rtx));
 	    }
-	}
 
-      if (bytes > move_bytes)
-	{
-	  emit_insn (gen_addsi3 (src_reg, src_reg, GEN_INT (move_bytes)));
-	  emit_insn (gen_addsi3 (dest_reg, dest_reg, GEN_INT (move_bytes)));
+	  if (bytes > move_bytes)
+	    {
+	      emit_insn (gen_addsi3 (src_reg, src_reg, GEN_INT (move_bytes)));
+	      emit_insn (gen_addsi3 (dest_reg, dest_reg, GEN_INT (move_bytes)));
+	    }
 	}
     }
 
