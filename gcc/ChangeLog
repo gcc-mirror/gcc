@@ -1,3 +1,12 @@
+Thu May 20 10:00:42 1999   Stephen L Moshier  <moshier@world.std.com>
+
+         * Makefile.in (GCC_FOR_TARGET): Add -I$(build_tooldir)/include.
+			 
+Thu May 20 09:58:57 1999  Jan Hubicka <hubicka@freesoft.cz>
+
+	* function.c (assign_stack_local): Align stack slot propertly.
+	(assign_outer_stack_local): Likewise.
+ 
 Thu May 20 10:38:43 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.h (lang_expand_constant): Declare.
