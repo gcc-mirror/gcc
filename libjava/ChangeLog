@@ -1,3 +1,13 @@
+2004-09-26  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/System.java (properties): Make package private.
+	* java/lang/Throwable.java (StaticData.nl): Initialize through
+	directly accessing System.properties.getProperty().
+
+	* java/lang/Throwable.java (nl): Remove static field.
+	(StaticData): New private static inner class.
+	(stackTraceStringBuffer): Use StaticData.nl.
+
 2004-09-26  Casey Marshall <csm@gnu.org>
 
 	* java/security/ProtectionDomain.java
