@@ -303,3 +303,16 @@ lhd_tree_dump_type_quals (t)
   return TYPE_QUALS (t);
 }
 
+/* lang_hooks.expr_size: Determine the size of the value of an expression T
+   in a language-specific way.  Returns a tree for the size in bytes.  */
+
+tree
+lhd_expr_size (exp)
+     tree exp;
+{
+  if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd'
+      && DECL_SIZE_UNIT (exp) != 0)
+    return DECL_SIZE_UNIT (exp);
+  else
+    return size_in_bytes (TREE_TYPE (exp));
+}

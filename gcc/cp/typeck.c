@@ -5450,7 +5450,10 @@ build_modify_expr (lhs, modifycode, rhs)
 	   so the code to compute it is only emitted once.  */
 	tree cond;
 
-	rhs = save_expr (rhs);
+	if (lvalue_p (rhs))
+	  rhs = stabilize_reference (rhs);
+	else
+	  rhs = save_expr (rhs);
 	
 	/* Check this here to avoid odd errors when trying to convert
 	   a throw to the type of the COND_EXPR.  */

@@ -1,3 +1,14 @@
+2002-08-22  Jason Merrill  <jason@redhat.com>
+
+	* langhooks-def.h (LANG_HOOKS_EXPR_SIZE): New macro.
+	* langhooks.c (lhd_expr_size): Define default.
+	* langhooks.h (struct lang_hooks): Add expr_size.
+	* explow.c (expr_size): Call it.
+	(int_expr_size): New fn.
+	* expr.h: Declare it.
+	* expr.c (expand_expr) [CONSTRUCTOR]: Use it to calculate how 
+	much to store.
+
 2002-08-23  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (output_mi_thunk): Don't determine insns

@@ -100,7 +100,6 @@ static tree dfs_push_decls PARAMS ((tree, void *));
 static tree dfs_unuse_fields PARAMS ((tree, void *));
 static tree add_conversions PARAMS ((tree, void *));
 static int covariant_return_p PARAMS ((tree, tree));
-static int check_final_overrider PARAMS ((tree, tree));
 static int look_for_overrides_r PARAMS ((tree, tree));
 static struct search_level *push_search_level
 	PARAMS ((struct stack_level *, struct obstack *));
@@ -1800,7 +1799,7 @@ covariant_return_p (brettype, drettype)
 /* Check that virtual overrider OVERRIDER is acceptable for base function
    BASEFN. Issue diagnostic, and return zero, if unacceptable.  */
 
-static int
+int
 check_final_overrider (overrider, basefn)
      tree overrider, basefn;
 {

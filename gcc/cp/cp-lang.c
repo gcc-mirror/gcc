@@ -28,7 +28,8 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "langhooks-def.h"
 
-static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
+static HOST_WIDE_INT cxx_get_alias_set		PARAMS ((tree));
+static tree cp_expr_size			PARAMS ((tree));
 
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME "GNU C++"
@@ -91,6 +92,8 @@ static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN cp_dump_tree
 #undef LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN
 #define LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN cp_type_quals
+#undef LANG_HOOKS_EXPR_SIZE
+#define LANG_HOOKS_EXPR_SIZE cp_expr_size
 
 /* Each front end provides its own hooks, for toplev.c.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -107,4 +110,29 @@ cxx_get_alias_set (t)
     return 0;
 
   return c_common_get_alias_set (t);
+}
+
+/* Langhook for expr_size: Tell the backend that the value of an expression
+   of non-POD class type does not include any tail padding; a derived class
+   might have allocated something there.  */
+
+static tree
+cp_expr_size (exp)
+     tree exp;
+{
+  if (CLASS_TYPE_P (TREE_TYPE (exp)))
+    {
+      /* The backend should not be interested in the size of an expression
+	 of a type with both of these set; all copies of such types must go
+	 through a constructor or assignment op.  */
+      if (TYPE_HAS_COMPLEX_INIT_REF (TREE_TYPE (exp))
+	  && TYPE_HAS_COMPLEX_ASSIGN_REF (TREE_TYPE (exp)))
+	abort ();
+      /* This would be wrong for a type with virtual bases, but they are
+	 caught by the abort above.  */
+      return CLASSTYPE_SIZE_UNIT (TREE_TYPE (exp));
+    }
+  else
+    /* Use the default code.  */
+    return lhd_expr_size (exp);
 }

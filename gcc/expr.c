@@ -6661,8 +6661,7 @@ expand_expr (exp, target, tmode, modifier)
 						       * TYPE_QUAL_CONST))),
 			     0, TREE_ADDRESSABLE (exp), 1);
 
-	  store_constructor (exp, target, 0,
-			     int_size_in_bytes (TREE_TYPE (exp)));
+	  store_constructor (exp, target, 0, int_expr_size (exp));
 	  return target;
 	}
 

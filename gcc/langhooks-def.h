@@ -48,6 +48,7 @@ extern int lhd_staticp PARAMS ((tree));
 extern void lhd_clear_binding_stack PARAMS ((void));
 extern void lhd_print_tree_nothing PARAMS ((FILE *, tree, int));
 extern void lhd_set_yydebug PARAMS ((int));
+extern tree lhd_expr_size PARAMS ((tree));
 
 /* Declarations of default tree inlining hooks.  */
 tree lhd_tree_inlining_walk_subtrees		PARAMS ((tree *, int *,
@@ -85,6 +86,7 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 #define LANG_HOOKS_PRINT_TYPE		lhd_print_tree_nothing
 #define LANG_HOOKS_PRINT_IDENTIFIER	lhd_print_tree_nothing
 #define LANG_HOOKS_SET_YYDEBUG		lhd_set_yydebug
+#define LANG_HOOKS_EXPR_SIZE		lhd_expr_size
 
 /* Tree inlining hooks.  */
 #define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES lhd_tree_inlining_walk_subtrees
@@ -156,6 +158,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_PRINT_TYPE, \
   LANG_HOOKS_PRINT_IDENTIFIER, \
   LANG_HOOKS_SET_YYDEBUG, \
+  LANG_HOOKS_EXPR_SIZE, \
   LANG_HOOKS_TREE_INLINING_INITIALIZER, \
   LANG_HOOKS_TREE_DUMP_INITIALIZER \
 }

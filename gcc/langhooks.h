@@ -156,6 +156,12 @@ struct lang_hooks
      warning that the front end does not use such a parser.  */
   void (*set_yydebug) PARAMS ((int));
 
+  /* Called from expr_size to calculate the size of the value of an
+     expression in a language-dependent way.  Returns a tree for the size
+     in bytes.  A frontend can call lhd_expr_size to get the default
+     semantics in cases that it doesn't want to handle specially.  */
+  tree (*expr_size) PARAMS ((tree));
+
   struct lang_hooks_for_tree_inlining tree_inlining;
   
   struct lang_hooks_for_tree_dump tree_dump;

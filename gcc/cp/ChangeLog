@@ -1,3 +1,15 @@
+2002-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5607
+	* search.c (check_final_overrider): No longer static.
+	* class.c (update_vtable_entry_for_fn): Call it.
+	* cp-tree.h: Adjust.
+
+	* cp-lang.c (LANG_HOOKS_EXPR_SIZE): Define.
+	(cp_expr_size): New fn.
+	* call.c (convert_arg_to_ellipsis): Promote non-POD warning to error.
+	* typeck.c (build_modify_expr): Don't use save_expr on an lvalue.
+
 2002-08-14  Release Manager
 
 	* GCC 3.2 Released.

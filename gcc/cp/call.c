@@ -4022,9 +4022,12 @@ convert_arg_to_ellipsis (arg)
   
   if (arg != error_mark_node && ! pod_type_p (TREE_TYPE (arg)))
     {
-      /* Undefined behaviour [expr.call] 5.2.2/7.  */
-      warning ("cannot pass objects of non-POD type `%#T' through `...'",
-		  TREE_TYPE (arg));
+      /* Undefined behaviour [expr.call] 5.2.2/7.  We used to just warn
+	 here and do a bitwise copy, but now cp_expr_size will abort if we
+	 try to do that.  */
+      error ("cannot pass objects of non-POD type `%#T' through `...'",
+	     TREE_TYPE (arg));
+      arg = error_mark_node;
     }
 
   return arg;
