@@ -1,3 +1,15 @@
+Wed Nov  4 15:11:15 1998  Geoffrey Noer  <noer@cygnus.com>
+
+	* i386/cygwin32.h (MASK_WIN32, MASK_CYGWIN, MASK_WINDOWS, MASK_DLL,
+	TARGET_WIN32, TARGET_CYGWIN, TARGET_WINDOWS, TARGET_DLL): New.
+	(SUBTARGET_SWITCHES): Add -mno-cygwin, -mcygwin, and -mdll options.
+	(CPP_PREDEFINES): Don't define __CYGWIN32__ here.
+	(STARTFILE_SPEC): Handle -mdll, -mno-cygwin options.
+	(CPP_SPEC): Handle -mno-cygwin option.  Define __CYWIN__ in addition
+	to __CYGWIN32__.
+	(LIB_SPEC): Handle -mno-cyginw option.
+	(LINK_SPEC): Handle -mdll.
+
 Wed Nov  4 22:56:14 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload.c (find_reloads): Fix test for usage by other reload
