@@ -58,9 +58,6 @@ static void throw_incompatible_class_change_error (jstring msg)
 static void throw_class_circularity_error (jstring msg)
 	__attribute__ ((__noreturn__));
 
-static jdouble long_bits_to_double (jlong);
-static jfloat int_bits_to_float (jint);
-
 /**
  * We define class reading using a class.  It is practical, since then
  * the entire class-reader can be a friend of class Class (it needs to
@@ -826,7 +823,7 @@ _Jv_ClassReader::prepare_pool_entry (int index, unsigned char this_tag)
 	    
     case JV_CONSTANT_Float:
       {
-	jfloat f = int_bits_to_float ((jint) get4 (this_data));
+	jfloat f = java::lang::Float::intBitsToFloat ((jint) get4 (this_data));
 	_Jv_storeFloat (&pool_data[index], f);
 	pool_tags[index] = JV_CONSTANT_Float;
       }
@@ -842,7 +839,8 @@ _Jv_ClassReader::prepare_pool_entry (int index, unsigned char this_tag)
 	    
     case JV_CONSTANT_Double:
       {
-	jdouble d = long_bits_to_double ((jlong) get8 (this_data));
+	jdouble d
+	  = java::lang::Double::longBitsToDouble ((jlong) get8 (this_data));
 	_Jv_storeDouble (&pool_data[index], d);
 	pool_tags[index] = JV_CONSTANT_Double;
       }
@@ -1282,10 +1280,12 @@ void _Jv_ClassReader::handleCodeAttribute
   memcpy ((void*) method->bytecode (),
 	  (void*) (bytes+code_start),
 	  code_length);
-  
+
   def->interpreted_methods[method_index] = method;
 
-  /* that's all we do for now */
+  // FIXME: Shouldn't this be done after loading completes?
+//    if (verify)
+//      _Jv_VerifyMethod (method);
 }
 
 void _Jv_ClassReader::handleExceptionTableEntry 
@@ -1633,16 +1633,6 @@ static void
 throw_internal_error (char *msg)
 {
   throw new java::lang::InternalError (JvNewStringLatin1 (msg));
-}
-
-static jfloat int_bits_to_float (jint value)
-{
-  return java::lang::Float::intBitsToFloat (value);
-}
-
-static jdouble long_bits_to_double (jlong value)
-{
-  return java::lang::Double::longBitsToDouble (value);
 }
 
 static void throw_incompatible_class_change_error (jstring msg)
