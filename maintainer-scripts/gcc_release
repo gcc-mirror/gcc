@@ -335,20 +335,30 @@ upload_files() {
 
   # Make sure the directory exists on the server.
   if [ $LOCAL -eq 0 ]; then
-    ${SSH} -l ${GCC_USERNAME} ${GCC_HOSTNAME} mkdir ${FTP_PATH}
+    ${SSH} -l ${GCC_USERNAME} ${GCC_HOSTNAME} \
+      mkdir -p "${FTP_PATH}/diffs"
     UPLOAD_PATH="${GCC_USERNAME}@${GCC_HOSTNAME}:${FTP_PATH}"
   else
-    mkdir -p "${FTP_PATH}" \
+    mkdir -p "${FTP_PATH}/diffs" \
       || error "Could not create \`${FTP_PATH}'"
     UPLOAD_PATH=${FTP_PATH}
   fi
 
+  # Then copy files to their respective (sub)directories.
   for x in gcc*.gz gcc*.bz2; do
     if [ -e ${x} ]; then
       # Make sure the file will be readable on the server.
       chmod a+r ${x}
       # Copy it.
-      ${SCP} ${x} ${UPLOAD_PATH} || error "Could not upload ${x}"
+      case ${x} in
+        *.diff.*)
+          SUBDIR="diffs/";
+          ;;
+        *)
+          SUBDIR="";
+      esac
+      ${SCP} ${x} ${UPLOAD_PATH}/${SUBDIR} \
+        || error "Could not upload ${x}"
     fi
   done
 }
