@@ -91,12 +91,12 @@ namespace std {
   template<typename _CharT, typename _Traits>
     char
     basic_ios<_CharT, _Traits>::narrow(char_type __c, char __dfault) const
-    { return _M_fctype_ios->narrow(__c, __dfault); }
+    { return _M_ios_fctype->narrow(__c, __dfault); }
 
   template<typename _CharT, typename _Traits>
     _CharT
     basic_ios<_CharT, _Traits>::widen(char __c) const
-    { return _M_fctype_ios->widen(__c); }
+    { return _M_ios_fctype->widen(__c); }
 
   // Locales:
   template<typename _CharT, typename _Traits>
@@ -105,7 +105,7 @@ namespace std {
     {
       locale __old(this->getloc());
       ios_base::imbue(__loc);
-      _M_fctype_ios = &use_facet<__ctype_type>(__loc);
+      _M_ios_fctype = &use_facet<__ctype_type>(__loc);
       _M_fnumput = &use_facet<__numput_type>(__loc); 
       _M_fnumget = &use_facet<__numget_type>(__loc); 
       if (this->rdbuf() != 0)
@@ -120,7 +120,7 @@ namespace std {
       // NB: This may be called more than once on the same object.
       ios_base::_M_init();
       locale __loc = this->getloc();
-      _M_fctype_ios = &use_facet<__ctype_type>(__loc);
+      _M_ios_fctype = &use_facet<__ctype_type>(__loc);
       // Should be filled in by ostream and istream, respectively.
       _M_fnumput = &use_facet<__numput_type>(__loc); 
       _M_fnumget = &use_facet<__numget_type>(__loc); 

@@ -108,7 +108,7 @@ namespace std {
       if (_M_out_cur && _M_out_cur < _M_out_beg + _M_buf_size)
 	{
 	  *_M_out_cur = __c;
-	  _M_buf_bump(1);
+	  _M_out_cur_move(1);
 	  __retval = traits_type::to_int_type(__c);
 	}
       else
@@ -198,7 +198,7 @@ namespace std {
 		  traits_type::copy(_M_out_cur, __s, __len);
 		  __retval += __len;
 		  __s += __len;
-		  _M_buf_bump(__len);
+		  _M_out_cur_move(__len);
 		}
 	    }
 	}

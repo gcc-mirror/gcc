@@ -55,14 +55,14 @@ namespace std {
     public:
       // Types:
       typedef _CharT 					char_type;
-      typedef typename _Traits::int_type 		int_type;
-      typedef typename _Traits::pos_type 		pos_type;
-      typedef typename _Traits::off_type 		off_type;
       typedef _Traits 					traits_type;
+      typedef typename traits_type::int_type 		int_type;
+      typedef typename traits_type::pos_type 		pos_type;
+      typedef typename traits_type::off_type 		off_type;
 
       // Non-standard Types:
-      typedef ctype<_CharT>           			__ctype_type;
-      typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
+      typedef ctype<char_type>           		__ctype_type;
+      typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
       
       friend class basic_ios<char_type, traits_type>;
       friend class basic_istream<char_type, traits_type>;
@@ -71,9 +71,8 @@ namespace std {
       friend class ostreambuf_iterator<char_type, traits_type>;
 
       friend streamsize
-      _S_copy_streambufs<>(basic_ios<_CharT, _Traits>& __ios,
-			 basic_streambuf<_CharT, _Traits>* __sbin,
-			 basic_streambuf<_CharT, _Traits>* __sbout);
+      _S_copy_streambufs<>(basic_ios<char_type, traits_type>& __ios,
+			   __streambuf_type* __sbin,__streambuf_type* __sbout);
       
     protected:
 
@@ -110,13 +109,13 @@ namespace std {
       ios_base::openmode 	_M_mode;	
 
       // Current locale setting.
-      locale 			_M_locale_buf;	
+      locale 			_M_buf_locale;	
 
       // True iff locale is initialized.
-      bool 			_M_locale_set;
+      bool 			_M_buf_locale_init;
 
       // Cached use_facet<ctype>, which is based on the current locale info.
-      const __ctype_type*	_M_fctype_buf;      
+      const __ctype_type*	_M_buf_fctype;      
 
       // Correctly sets the _M_out_cur pointer, and bumps the
       // appropriate _M_*_end pointers as well. Necessary for the
@@ -127,23 +126,24 @@ namespace std {
       // the same range:
       // _M_buf <= _M_*_ <= _M_buf + _M_buf_size
       void 
-      _M_buf_bump(off_type __n) // argument needs to be +-
+      _M_out_cur_move(off_type __n) // argument needs to be +-
       {
 	bool __testin = _M_mode & ios_base::in;
-	bool __testout = _M_mode & ios_base::out;
+
 	_M_out_cur += __n;
-	if (_M_buf_unified && __testin)
-	  _M_in_cur = _M_out_cur;
+	if (__testin && _M_buf_unified)
+	  _M_in_cur += __n;
 	if (_M_out_cur > _M_out_end)
 	  {
 	    _M_out_end = _M_out_cur;
-	    if (__testin && __testout && _M_out_end > _M_in_end)
-	      _M_in_end = _M_out_cur;
+	    // NB: in | out buffers drag the _M_in_end pointer along...
+	    if (__testin)
+	      _M_in_end += __n;
 	  }
       }
 
       // These three functions are used to clarify internal buffer
-      // maintance. After an overflow, or after a seekoff call that
+      // maintenance. After an overflow, or after a seekoff call that
       // started at beg or end, or possibly when the stream becomes
       // unbuffered, and a myrid other obscure corner cases, the
       // internal buffer does not truly reflect the contents of the
@@ -193,8 +193,8 @@ namespace std {
 	_M_buf_size = 0;
 	_M_buf_size_opt = 0;
 	_M_mode = ios_base::openmode(0);
-	_M_fctype_buf = NULL;
-	_M_locale_set = false;
+	_M_buf_fctype = NULL;
+	_M_buf_locale_init = false;
       }
 
       // Locales:
@@ -209,8 +209,8 @@ namespace std {
       locale   
       getloc() const
       {
-	if (_M_locale_set)
-	  return _M_locale_buf; 
+	if (_M_buf_locale_init)
+	  return _M_buf_locale; 
 	else 
 	  return locale();
       } 
@@ -292,10 +292,10 @@ namespace std {
 	_M_buf_size_opt(static_cast<int_type>(BUFSIZ * sizeof(char_type))),
 	_M_buf_unified(false), _M_in_cur(0), _M_in_beg(0), _M_in_end(0), 
 	_M_out_cur(0), _M_out_beg(0), _M_out_end(0), 
-	_M_mode(ios_base::openmode(0)), _M_locale_buf(locale()), 
-	_M_locale_set(false) 
+	_M_mode(ios_base::openmode(0)), _M_buf_locale(locale()), 
+	_M_buf_locale_init(false) 
 
-      { _M_fctype_buf =  &use_facet<__ctype_type>(this->getloc()); }
+      { _M_buf_fctype =  &use_facet<__ctype_type>(this->getloc()); }
 
       // Get area:
       char_type* 
@@ -353,11 +353,11 @@ namespace std {
       virtual void 
       imbue(const locale& __loc) 
       { 
-	_M_locale_set = true;
-	if (_M_locale_buf != __loc)
+	_M_buf_locale_init = true;
+	if (_M_buf_locale != __loc)
 	 {
-	   _M_locale_buf = __loc;
-	   _M_fctype_buf = &use_facet<__ctype_type>(_M_locale_buf); 
+	   _M_buf_locale = __loc;
+	   _M_buf_fctype = &use_facet<__ctype_type>(_M_buf_locale); 
 	 }	
       }
 

@@ -66,7 +66,7 @@ namespace std {
       iostate 				_M_streambuf_state;
 
       // Cached use_facet<ctype>, which is based on the current locale info.
-      const __ctype_type*		_M_fctype_ios;      
+      const __ctype_type*		_M_ios_fctype;      
       // From ostream.
       const __numput_type* 		_M_fnumput;
       // From istream.
@@ -76,7 +76,7 @@ namespace std {
 
       inline const __ctype_type*	
       _M_get_fctype_ios(void)
-      { return _M_fctype_ios; }
+      { return _M_ios_fctype; }
 
       inline const __numget_type* 
       _M_get_fnumget(void)
