@@ -37,6 +37,10 @@ fi
 
 AC_CANONICAL_SYSTEM
 
+# This works around an automake problem.
+mkinstalldirs="`cd $ac_aux_dir && pwd`/mkinstalldirs"
+AC_SUBST(mkinstalldirs)
+
 AM_INIT_AUTOMAKE(boehm-gc, 5.1, no-define)
 
 # FIXME: We temporarily define our own version of AC_PROG_CC.  This is

@@ -1,3 +1,9 @@
+2001-07-03  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR bootstrap/3281:
+	* aclocal.m4, configure, Makefile.in: Rebuilt.
+	* acinclude.m4: Set mkinstalldirs for in-tree build.
+
 20010617 Release Manager
 
         * GCC 3.0 Released.
