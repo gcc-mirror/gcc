@@ -424,6 +424,7 @@ push_function_context ()
   p->temp_slots = temp_slots;
   p->temp_slot_level = temp_slot_level;
   p->fixup_var_refs_queue = 0;
+  p->epilogue_delay_list = current_function_epilogue_delay_list;
 
   save_tree_status (p);
   save_storage_status (p);
@@ -483,6 +484,7 @@ pop_function_context ()
   function_call_count = p->function_call_count;
   temp_slots = p->temp_slots;
   temp_slot_level = p->temp_slot_level;
+  current_function_epilogue_delay_list = p->epilogue_delay_list;
 
   restore_tree_status (p);
   restore_storage_status (p);
