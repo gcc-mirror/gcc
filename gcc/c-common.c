@@ -1999,19 +1999,8 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	  type = c_common_unsigned_type (type);
 	}
 
-      if (!max_gt && !unsignedp0 && TREE_CODE (primop0) != INTEGER_CST)
+      if (TREE_CODE (primop0) != INTEGER_CST)
 	{
-	  /* This is the case of (char)x >?< 0x80, which people used to use
-	     expecting old C compilers to change the 0x80 into -0x80.  */
-	  if (val == boolean_false_node)
-	    warning ("comparison is always false due to limited range of data type");
-	  if (val == boolean_true_node)
-	    warning ("comparison is always true due to limited range of data type");
-	}
-
-      if (!min_lt && unsignedp0 && TREE_CODE (primop0) != INTEGER_CST)
-	{
-	  /* This is the case of (unsigned char)x >?< -1 or < 0.  */
 	  if (val == boolean_false_node)
 	    warning ("comparison is always false due to limited range of data type");
 	  if (val == boolean_true_node)
