@@ -25,6 +25,7 @@ see @uref{http://egcs.cygnus.com/contribute.html} for steps you might
 need to take first.
 
 @menu
+* Overview of Sources::
 * Overview of Translation Process::
 * Philosophy of Code Generation::
 * Two-pass Design::
@@ -33,6 +34,222 @@ need to take first.
 * Transforming Expressions::
 * Internal Naming Conventions::
 @end menu
+
+@node Overview of Sources
+@section Overview of Sources
+
+The current directory layout includes the following:
+
+@table @file
+@item @value{srcdir}/gcc/
+Non-g77 files in gcc
+
+@item @value{srcdir}/gcc/f/
+GNU Fortran front end sources
+
+@item @value{srcdir}/libf2c/
+@code{libg2c} configuration and @code{g2c.h} file generation
+
+@item @value{srcdir}/libf2c/libF77/
+General support and math portion of @code{libg2c}
+
+@item @value{srcdir}/libf2c/libI77/
+I/O portion of @code{libg2c}
+
+@item @value{srcdir}/libf2c/libU77/
+Additional interfaces to Unix @code{libc} for @code{libg2c}
+@end table
+
+Components of note in @code{g77} are described below.
+
+@file{f/} as a whole contains the source for @code{g77},
+while @file{libf2c/} contains a portion of the separate program
+@code{f2c}.
+Note that the @code{libf2c} code is not part of the program @code{g77},
+just distributed with it.
+
+@file{f/} contains text files that document the Fortran compiler, source
+files for the GNU Fortran Front End (FFE), and some other stuff.
+The @code{g77} compiler code is placed in @file{f/} because it,
+along with its contents,
+is designed to be a subdirectory of a @code{gcc} source directory,
+@file{gcc/},
+which is structured so that language-specific front ends can be ``dropped
+in'' as subdirectories.
+The C++ front end (@code{g++}), is an example of this---it resides in
+the @file{cp/} subdirectory.
+Note that the C front end (also referred to as @code{gcc})
+is an exception to this, as its source files reside
+in the @file{gcc/} directory itself.
+
+@file{libf2c/} contains the run-time libraries for the @code{f2c} program,
+also used by @code{g77}.
+These libraries normally referred to collectively as @code{libf2c}.
+When built as part of @code{g77},
+@code{libf2c} is installed under the name @code{libg2c} to avoid
+conflict with any existing version of @code{libf2c},
+and thus is often referred to as @code{libg2c} when the
+@code{g77} version is specifically being referred to.
+
+The @code{netlib} version of @code{libf2c/}
+contains two distinct libraries,
+@code{libF77} and @code{libI77},
+each in their own subdirectories.
+In @code{g77}, this distinction is not made,
+beyond maintaining the subdirectory structure in the source-code tree.
+
+@file{libf2c/} is not part of the program @code{g77},
+just distributed with it.
+It contains files not present
+in the official (@code{netlib}) version of @code{libf2c},
+and also contains some minor changes made from @code{libf2c},
+to fix some bugs,
+and to facilitate automatic configuration, building, and installation of
+@code{libf2c} (as @code{libg2c}) for use by @code{g77} users.
+See @file{libf2c/README} for more information,
+including licensing conditions
+governing distribution of programs containing code from @code{libg2c}.
+
+@code{libg2c}, @code{g77}'s version of @code{libf2c},
+adds Dave Love's implementation of @code{libU77},
+in the @file{libf2c/libU77/} directory.
+This library is distributed under the
+GNU Library General Public License (LGPL)---see the
+file @file{libf2c/libU77/COPYING.LIB}
+for more information,
+as this license
+governs distribution conditions for programs containing code
+from this portion of the library.
+
+Files of note in @file{f/} and @file{libf2c/} are described below:
+
+@table @file
+@item f/BUGS
+Lists some important bugs known to be in g77.
+Or use Info (or GNU Emacs Info mode) to read
+the ``Actual Bugs'' node of the @code{g77} documentation:
+
+@smallexample
+info -f f/g77.info -n "Actual Bugs"
+@end smallexample
+
+@item f/ChangeLog
+Lists recent changes to @code{g77} internals.
+
+@item libf2c/ChangeLog
+Lists recent changes to @code{libg2c} internals.
+
+@item f/NEWS
+Contains the per-release changes.
+These include the user-visible
+changes described in the node ``Changes''
+in the @code{g77} documentation, plus internal
+changes of import.
+Or use:
+
+@smallexample
+info -f f/g77.info -n News
+@end smallexample
+
+@item f/g77.info*
+The @code{g77} documentation, in Info format,
+produced by building @code{g77}.
+
+All users of @code{g77} (not just installers) should read this,
+using the @code{more} command if neither the @code{info} command,
+nor GNU Emacs (with its Info mode), are available, or if users
+aren't yet accustomed to using these tools.
+All of these files are readable as ``plain text'' files,
+though they're easier to navigate using Info readers
+such as @code{info} and GNU Emacs Info mode.
+@end table
+
+If you want to explore the FFE code, which lives entirely in @file{f/},
+here are a few clues.
+The file @file{g77spec.c} contains the @code{g77}-specific source code
+for the @code{g77} command only---this just forms a variant of the
+@code{gcc} command, so,
+just as the @code{gcc} command itself does not contain the C front end,
+the @code{g77} command does not contain the Fortran front end (FFE).
+The FFE code ends up in an executable named @file{f771},
+which does the actual compiling,
+so it contains the FFE plus the @code{gcc} back end (GBE),
+the latter to do most of the optimization, and the code generation.
+
+The file @file{parse.c} is the source file for @code{yyparse()},
+which is invoked by the GBE to start the compilation process,
+for @file{f771}.
+
+The file @file{top.c} contains the top-level FFE function @code{ffe_file}
+and it (along with top.h) define all @samp{ffe_[a-z].*}, @samp{ffe[A-Z].*},
+and @samp{FFE_[A-Za-z].*} symbols.
+
+The file @file{fini.c} is a @code{main()} program that is used when building
+the FFE to generate C header and source files for recognizing keywords.
+The files @file{malloc.c} and @file{malloc.h} comprise a memory manager
+that defines all @samp{malloc_[a-z].*}, @samp{malloc[A-Z].*}, and
+@samp{MALLOC_[A-Za-z].*} symbols.
+
+All other modules named @var{xyz}
+are comprised of all files named @samp{@var{xyz}*.@var{ext}}
+and define all @samp{ffe@var{xyz}_[a-z].*}, @samp{ffe@var{xyz}[A-Z].*},
+and @samp{FFE@var{XYZ}_[A-Za-z].*} symbols.
+If you understand all this, congratulations---it's easier for me to remember
+how it works than to type in these regular expressions.
+But it does make it easy to find where a symbol is defined.
+For example, the symbol @samp{ffexyz_set_something} would be defined
+in @file{xyz.h} and implemented there (if it's a macro) or in @file{xyz.c}.
+
+The ``porting'' files of note currently are:
+
+@table @file
+@item proj.c
+@itemx proj.h
+This defines the ``language'' used by all the other source files,
+the language being Standard C plus some useful things
+like @code{ARRAY_SIZE} and such.
+
+@item target.c
+@itemx target.h
+These describe the target machine
+in terms of what data types are supported,
+how they are denoted
+(to what C type does an @code{INTEGER*8} map, for example),
+how to convert between them,
+and so on.
+Over time, versions of @code{g77} rely less on this file
+and more on run-time configuration based on GBE info
+in @file{com.c}.
+
+@item com.c
+@itemx com.h
+These are the primary interface to the GBE.
+
+@item ste.c
+@itemx ste.h
+This contains code for implementing recognized executable statements
+in the GBE.
+
+@item src.c
+@itemx src.h
+These contain information on the format(s) of source files
+(such as whether they are never to be processed as case-insensitive
+with regard to Fortran keywords).
+@end table
+
+If you want to debug the @file{f771} executable,
+for example if it crashes,
+note that the global variables @code{lineno} and @code{input_filename}
+are usually set to reflect the current line being read by the lexer
+during the first-pass analysis of a program unit and to reflect
+the current line being processed during the second-pass compilation
+of a program unit.
+
+If an invocation of the function @code{ffestd_exec_end} is on the stack,
+the compiler is in the second pass, otherwise it is in the first.
+
+(This information might help you reduce a test case and/or work around
+a bug in @code{g77} until a fix is available.)
 
 @node Overview of Translation Process
 @section Overview of Translation Process
@@ -217,6 +434,16 @@ to be too many conflicting conventions, we might have to invent
 one that looks nothing like the others, but which offers their
 host products a better infrastructure in which to fit and coexist
 peacefully.)
+
+@code{g77stripcard} probably shouldn't do any tab expansion or other
+fancy stuff.
+People can use @code{expand} or other pre-filtering if they like.
+The idea here is to keep each stage quite simple, while providing
+excellent performance for ``normal'' code.
+
+(Code with junk beyond column 73 is not really ``normal'',
+as it comes from a card-punch heritage,
+and will be increasingly hard for tomorrow's Fortran programmers to read.)
 
 @node lex.c
 @subsection lex.c
