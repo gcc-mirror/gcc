@@ -1,7 +1,12 @@
+2002-01-22  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/freebsd.h (FUNCTION_PROFILER): Remove.
+
 2002-01-22  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR other/5450
-	* config/i386/sysv4.h (CPP_SPEC): Define, and add CPU preprocessor flags.
+	* config/i386/sysv4.h (CPP_SPEC): Define, and add CPU
+	preprocessor flags.
 
 2002-01-22  Jason Thorpe  <thorpej@wasabisystems.com>
 
