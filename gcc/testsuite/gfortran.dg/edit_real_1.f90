@@ -70,5 +70,9 @@ program edit_real_1
   s = x
   write (s, '(-2PE10.4,A)') 1.25, "z"
   if (s .ne. '0.0013E+03z') call abort
+  ! E format, single digit precision
+  s = x
+  write (s, '(E10.1,A)') 1.1, "z"
+  if (s .ne. '   0.1E+01z') call abort
 end
 
