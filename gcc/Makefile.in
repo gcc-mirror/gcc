@@ -1,5 +1,5 @@
 # Makefile for GNU C compiler.
-#   Copyright (C) 1987, 88, 90, 91, 92, 1993 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 88, 90, 91, 92, 93, 1994 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -912,7 +912,6 @@ gcc.o: gcc.c $(CONFIG_H) gvarargs.h config.status
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target)\" \
   -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\" \
-  -DTOOLDIR=\"$(tooldir)/\" \
   $(MAYBE_TARGET_DEFAULT) \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
 
@@ -1401,7 +1400,6 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
-	  -DTOOLDIR=\"$(tooldir)/\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
 # Note for the stamp targets, we run the program `true' instead of
