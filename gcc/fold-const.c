@@ -1329,7 +1329,7 @@ const_binop (code, arg1, arg2, notrunc)
 
 tree
 size_int (number)
-     unsigned int number;
+     unsigned HOST_WIDE_INT number;
 {
   register tree t;
   /* Type-size nodes already made for small sizes.  */
