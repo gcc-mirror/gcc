@@ -409,8 +409,11 @@ validate_replace_rtx_1 (loc, from, to, object)
   register int i, j;
   register const char *fmt;
   register rtx x = *loc;
-  enum rtx_code code = GET_CODE (x);
+  enum rtx_code code;
 
+  if (!x)
+    return;
+  code = GET_CODE (x);
   /* X matches FROM if it is the same rtx or they are both referring to the
      same register in the same mode.  Avoid calling rtx_equal_p unless the
      operands look similar.  */

@@ -1,3 +1,7 @@
+Mon Jul 31 10:36:38 MET DST 2000 Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (validate_replace_rtx_1): Do not abort for (nil) expression.
+
 2000-07-31  Geoff Keating  <geoffk@cygnus.com>
 
 	* c-parse.in (extdefs): Call ggc_collect between external
