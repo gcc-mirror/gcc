@@ -2671,6 +2671,8 @@ touch Make-target
 touch Make-hooks
 host_overrides="Make-host"
 target_overrides="Make-target"
+cross_overrides="/dev/null"
+build_overrides="/dev/null"
 language_fragments="Make-lang"
 language_hooks="Make-hooks"
 
