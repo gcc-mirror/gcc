@@ -614,6 +614,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   dnl Check to see if basic C math functions have float versions.
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isnanf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isinff)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(copysignf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(acosf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(asinf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(atanf)
@@ -683,6 +684,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   dnl Check to see if basic C math functions have float versions.
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isnanf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isinff)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_copysignf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_acosf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_asinf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_atanf)
@@ -754,8 +756,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
   dnl Check for complex versions of math functions of platform.
   AC_CHECK_HEADERS([complex.h])
   AC_CHECK_LIB(m, main)
-  AC_REPLACE_MATHFUNCS(csqrt csqrtf nan hypot hypotf atan2f expf \
-  copysignf)
+  AC_REPLACE_MATHFUNCS(csqrt csqrtf nan hypot hypotf)
 
   dnl Compile the long double complex functions only if the function 
   dnl provides the non-complex long double functions that are needed.
@@ -963,13 +964,6 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
       ctype_include_dir="config/os/generic"
       AC_MSG_WARN("Using default ctype headers.")
     fi
-
-    AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, 
-    include/bits/ctype_base.h)
-    AC_LINK_FILES($ctype_include_dir/bits/ctype_inline.h, 
-    include/bits/ctype_inline.h)
-    AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
-    include/bits/ctype_noninline.h)
   ])
 ])
 

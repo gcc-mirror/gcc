@@ -42,18 +42,17 @@ GLIBCPP_ENABLE_THREADS
 GLIBCPP_ENABLE_ATOMICITY
 GLIBCPP_ENABLE_CXX_FLAGS([none])
 
-
 if test -n "$with_cross_host"; then
 
   # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
   # may not work correctly, because the compiler may not be able to
   # link executables.
-
   xcompiling=1
   NATIVE=no
+
   # If Canadian cross, then don't pick up tools from the build
   # directory.
-  if test "$build" != "$with_cross_host"; then
+  if test x"$build" != x"$with_cross_host" && x"$build" != x"$target"; then
     CANADIAN=yes
     NULL_TARGET=yes
   else
@@ -62,27 +61,96 @@ if test -n "$with_cross_host"; then
   fi
 
   case "$target_alias" in
-    *-wince-*)
-	# Configure for Microsoft Windows CE, or whatever they are
-	# currently calling it.
-	AC_DEFINE(HAVE_FLOAT_H)
+    *-linux-*)
+	# Construct linux crosses by hand, eliminating bits that need ld...
+        # Check for available headers.
+        AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
+	machine/endian.h machine/param.h sys/machine.h fp.h locale.h \
+	float.h inttypes.h])
 
-	AC_DEFINE(HAVE__FINITE)
-	AC_DEFINE(HAVE__ISNAN)
-	AC_DEFINE(HAVE__COPYSIGN)
-	AC_DEFINE(HAVE__FPCLASS)
-	AC_DEFINE(HAVE_MODF)
+	# GLIBCPP_CHECK_COMPILER_FEATURES
+	WFMT_FLAGS='-fdiagnostics-show-location=once'
+	SECTION_FLAGS='-ffunction-sections -fdata-sections'
+	AC_SUBST(WFMT_FLAGS)
+	AC_SUBST(SECTION_FLAGS)
+	GLIBCPP_CHECK_LINKER_FEATURES
+	# GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT
+	# GLIBCPP_CHECK_MATH_SUPPORT
+	AC_DEFINE(HAVE_ACOSF)
+	AC_DEFINE(HAVE_ASINF)
+	AC_DEFINE(HAVE_ATAN2F)
+	AC_DEFINE(HAVE_ATANF)
+	AC_DEFINE(HAVE_CEILF)
+	AC_DEFINE(HAVE_COPYSIGN)
+	AC_DEFINE(HAVE_COPYSIGNF)
+	AC_DEFINE(HAVE_COSF)
+	AC_DEFINE(HAVE_COSHF)
+	AC_DEFINE(HAVE_EXPF)
+	AC_DEFINE(HAVE_FABSF)
+	AC_DEFINE(HAVE_FINITE)
+	AC_DEFINE(HAVE_FINITEF)
+	AC_DEFINE(HAVE_FLOORF)
+	AC_DEFINE(HAVE_FMODF)
+	AC_DEFINE(HAVE_FREXPF)
+	AC_DEFINE(HAVE_ISINF)
+	AC_DEFINE(HAVE_ISINFF)
+	AC_DEFINE(HAVE_ISNAN)
+	AC_DEFINE(HAVE_ISNANF)
+	AC_DEFINE(HAVE_LDEXPF)
+	AC_DEFINE(HAVE_LOG10F)
+	AC_DEFINE(HAVE_LOGF)
+	AC_DEFINE(HAVE_MODFF)
+	AC_DEFINE(HAVE_POWF)
+	AC_DEFINE(HAVE_SINCOS)
+	AC_DEFINE(HAVE_SINCOSF)
+	AC_DEFINE(HAVE_SINF)
+	AC_DEFINE(HAVE_SINHF)
+	AC_DEFINE(HAVE_SQRTF)
+	AC_DEFINE(HAVE_TANF)
+	AC_DEFINE(HAVE_TANHF)
 
-	ctype_include_dir="config/os/wince"
-	AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, 
-	include/bits/ctype_base.h)
-	AC_LINK_FILES($ctype_include_dir/bits/ctype_inline.h, \
-	include/bits/ctype_inline.h)
-	AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
-	include/bits/ctype_noninline.h)
-
-	AC_DEFINE(_GLIBCPP_BUGGY_FLOAT_COMPLEX)
-	AC_DEFINE(_GLIBCPP_BUGGY_COMPLEX)
+	# At some point, we should differentiate between architectures
+	# like x86, which have long double versions, and alpha/powerpc/etc.,
+	# which don't. For the time being, punt.
+	if test x"long_double_math_on_this_cpu" = x"yes"; then
+	  AC_DEFINE(HAVE_ACOSL)
+	  AC_DEFINE(HAVE_ASINL)
+	  AC_DEFINE(HAVE_ATAN2L)
+	  AC_DEFINE(HAVE_ATANL)
+	  AC_DEFINE(HAVE_CEILL)
+	  AC_DEFINE(HAVE_COPYSIGNL)
+	  AC_DEFINE(HAVE_COSL)
+	  AC_DEFINE(HAVE_COSHL)
+	  AC_DEFINE(HAVE_EXPL)
+	  AC_DEFINE(HAVE_FABSL)
+	  AC_DEFINE(HAVE_FINITEL)
+	  AC_DEFINE(HAVE_FLOORL)
+	  AC_DEFINE(HAVE_FMODL)
+	  AC_DEFINE(HAVE_FREXPL)
+	  AC_DEFINE(HAVE_ISINFL)
+	  AC_DEFINE(HAVE_ISNANL)
+	  AC_DEFINE(HAVE_LDEXPL)
+	  AC_DEFINE(HAVE_LOG10L)
+	  AC_DEFINE(HAVE_LOGL)
+	  AC_DEFINE(HAVE_MODFL)
+	  AC_DEFINE(HAVE_POWL)
+	  AC_DEFINE(HAVE_SINCOSL)
+	  AC_DEFINE(HAVE_SINL)
+	  AC_DEFINE(HAVE_SINHL)
+	  AC_DEFINE(HAVE_SQRTL)
+	  AC_DEFINE(HAVE_TANL)
+	  AC_DEFINE(HAVE_TANHL)
+	fi
+	GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
+	GLIBCPP_CHECK_COMPLEX_MATH_COMPILER_SUPPORT
+	GLIBCPP_CHECK_WCHAR_T_SUPPORT
+	# GLIBCPP_CHECK_CTYPE_SUPPORT
+	ctype_include_dir="config/os/gnu-linux"
+	# GLIBCPP_CHECK_STDLIB_SUPPORT
+	AC_DEFINE(HAVE_STRTOF)        
+	AC_DEFINE(HAVE_STRTOLD)        
+	# AC_FUNC_MMAP
+	AC_DEFINE(HAVE_MMAP)
 	;;
     *)
 	# We assume newlib.  This lets us hard-code the functions we know
@@ -94,12 +162,6 @@ if test -n "$with_cross_host"; then
 	AC_DEFINE(HAVE_ISINFF)
 
 	ctype_include_dir="config/os/newlib"
-	AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, 
-	include/bits/ctype_base.h)
-	AC_LINK_FILES($ctype_include_dir/bits/ctype_inline.h, \
-	include/bits/ctype_inline.h)
-	AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
-	include/bits/ctype_noninline.h)
 
 	AC_DEFINE(_GLIBCPP_BUGGY_FLOAT_COMPLEX)
 	AC_DEFINE(_GLIBCPP_BUGGY_COMPLEX)
@@ -111,7 +173,6 @@ else
   # We are being configured natively. We can do more elaborate tests
   # that include AC_TRY_COMPILE now, as the linker is assumed to be
   # working.
-
   xcompiling=0
   NATIVE=yes
   CANADIAN=no
@@ -133,6 +194,14 @@ else
 
   AC_FUNC_MMAP
 fi
+
+# Now that ctype is determined for all possible targets, we can do this...
+AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, \
+include/bits/ctype_base.h)
+AC_LINK_FILES($ctype_include_dir/bits/ctype_inline.h, \
+include/bits/ctype_inline.h)
+AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
+include/bits/ctype_noninline.h)
 
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
 AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
