@@ -1,3 +1,25 @@
+2003-12-18  Matt Austern  <austern@apple.com>
+
+	* include/bits/demangle.h: Fix allocator type correctness,
+	i.e. make sure that when we instantiate a container with a value
+	type and an allocator, the allocator's value type matches the
+	container's.
+	* include/bits/stl_deque.h (_Deque_alloc_base): Eliminate.
+	(_Deque_base): inherit directly from the deque's allocator.  Use
+	rebinding instead of _Alloc_traits.  Pick up data members from 
+	_Deque_alloc_base.
+	* include/bits/stl_list.h (_List_alloc_base): Eliminate.
+	(_List_base): Inherit directly from the list's allocator.  Use
+	rebinding instead of _Alloc_traits.  Pick up data members from 
+	_List_alloc_base.
+	* include/bits/stl_vector.h (_Vector_alloc_base): Eliminate
+	(_Vector_base): Inherit directly from the vector's allocator.  Use
+	rebinding instead of _Alloc_traits.  Pick up data members from 
+	_Vector_alloc_base.
+	* include/ext/hashtable.h: Fix allocator type correctness (the
+	vector of buckets must be passed an allocator for objects of
+	type _Node*).  Use rebinding instead of _Alloc_traits.
+	
 2003-12-17  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (time_get::_M_extract_via_format):

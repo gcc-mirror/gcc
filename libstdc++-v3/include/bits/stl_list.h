@@ -202,36 +202,16 @@ namespace __gnu_norm
     }
   };
   
-  
-  /// @if maint Primary default version.  @endif
   /**
    *  @if maint
-   *  See bits/stl_deque.h's _Deque_alloc_base for an explanation.
+   *  See bits/stl_deque.h's _Deque_base for an explanation.
    *  @endif
   */
-  template<typename _Tp, typename _Allocator, bool _IsStatic>
-    class _List_alloc_base
+  template <typename _Tp, typename _Alloc>
+    class _List_base
+    : public _Alloc::template rebind<_List_node<_Tp> >::other
   {
-  public:
-    typedef typename _Alloc_traits<_Tp, _Allocator>::allocator_type
-            allocator_type;
-  
-    allocator_type
-    get_allocator() const { return _M_node_allocator; }
-  
-    _List_alloc_base(const allocator_type& __a)
-    : _M_node_allocator(__a)
-    { }
-  
   protected:
-    _List_node<_Tp>*
-    _M_get_node()
-    { return _M_node_allocator.allocate(1); }
-  
-    void
-    _M_put_node(_List_node<_Tp>* __p)
-    { _M_node_allocator.deallocate(__p, 1); }
-  
     // NOTA BENE
     // The stored instance is not actually of "allocator_type"'s type.
     // Instead we rebind the type to Allocator<List_node<Tp>>, which
@@ -240,69 +220,29 @@ namespace __gnu_norm
     // larger), and specializations on Tp may go unused because
     // List_node<Tp> is being bound instead.
     //
-    // We put this to the test in get_allocator above; if the two
-    // types are actually different, there had better be a conversion
-    // between them.
-    //
-    // None of the predefined allocators shipped with the library (as
-    // of 3.1) use this instantiation anyhow; they're all
-    // instanceless.
-    typename _Alloc_traits<_List_node<_Tp>, _Allocator>::allocator_type
-             _M_node_allocator;
-  
-    _List_node_base _M_node;
-  };
-  
-  /// @if maint Specialization for instanceless allocators.  @endif
-  template<typename _Tp, typename _Allocator>
-    class _List_alloc_base<_Tp, _Allocator, true>
-  {
-  public:
-    typedef typename _Alloc_traits<_Tp, _Allocator>::allocator_type
-            allocator_type;
-  
-    allocator_type
-    get_allocator() const { return allocator_type(); }
-  
-    _List_alloc_base(const allocator_type&)
-    { }
-  
-  protected:
-    // See comment in primary template class about why this is safe for the
-    // standard predefined classes.
-    typedef typename _Alloc_traits<_List_node<_Tp>, _Allocator>::_Alloc_type
-            _Alloc_type;
-  
+    // We put this to the test in the constructors and in get_allocator,
+    // where we use conversions between allocator_type and 
+    // _Node_Alloc_type. The conversion is required by table 32 in [20.1.5].
+    typedef typename _Alloc::template rebind<_List_node<_Tp> >::other
+      _Node_Alloc_type;
+
     _List_node<_Tp>*
     _M_get_node()
-    { return _Alloc_type::allocate(1); }
-  
+    { return _Node_Alloc_type::allocate(1); }
+
     void
     _M_put_node(_List_node<_Tp>* __p)
-    { _Alloc_type::deallocate(__p, 1); }
-  
+    { _Node_Alloc_type::deallocate(__p, 1); }
+
     _List_node_base _M_node;
-  };
-  
-  
-  /**
-   *  @if maint
-   *  See bits/stl_deque.h's _Deque_base for an explanation.
-   *  @endif
-  */
-  template <typename _Tp, typename _Alloc>
-    class _List_base
-    : public _List_alloc_base<_Tp, _Alloc,
-                              _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
-  {
   public:
-    typedef _List_alloc_base<_Tp, _Alloc,
-                             _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
-            _Base;
-    typedef typename _Base::allocator_type allocator_type;
-  
+    typedef _Alloc allocator_type;
+    allocator_type get_allocator() const
+
+    { return allocator_type(*static_cast<const _Node_Alloc_type*>(this)); }
+
     _List_base(const allocator_type& __a)
-    : _Base(__a)
+    : _Node_Alloc_type(__a)
     {
       this->_M_node._M_next = &this->_M_node;
       this->_M_node._M_prev = &this->_M_node;
