@@ -1,3 +1,8 @@
+Sat Nov 13 16:20:09 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* defaults.h (ASM_OUTPUT_ALTERNATE_LABEL_NAME): Wrap macro
+ 	definition in do while (0).
+
 Fri Nov 12 16:26:25 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* stmt.c (pushcase, pushcase_range): Partially revert Oct 28 change.
