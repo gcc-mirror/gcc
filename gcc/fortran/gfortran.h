@@ -720,6 +720,24 @@ gfc_namespace;
 
 extern gfc_namespace *gfc_current_ns;
 
+/* Global symbols are symbols of global scope. Currently we only use
+   this to detect collisions already when parsing.
+   TODO: Extend to verify procedure calls.  */
+
+typedef struct gfc_gsymbol
+{
+  BBT_HEADER(gfc_gsymbol);
+
+  char name[GFC_MAX_SYMBOL_LEN+1];
+  enum { GSYM_UNKNOWN=1, GSYM_PROGRAM, GSYM_FUNCTION, GSYM_SUBROUTINE,
+        GSYM_MODULE, GSYM_COMMON, GSYM_BLOCK_DATA } type;
+
+  int defined, used;
+  locus where;
+}
+gfc_gsymbol;
+
+extern gfc_gsymbol *gfc_gsym_root;
 
 /* Information on interfaces being built.  */
 typedef struct
@@ -1489,6 +1507,9 @@ void gfc_traverse_user_op (gfc_namespace *, void (*)(gfc_user_op *));
 void gfc_save_all (gfc_namespace *);
 
 void gfc_symbol_state (void);
+
+gfc_gsymbol *gfc_get_gsymbol (char *);
+gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, char *);
 
 /* intrinsic.c */
 extern int gfc_init_expr;

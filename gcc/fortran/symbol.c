@@ -88,6 +88,8 @@ static int next_dummy_order = 1;
 
 gfc_namespace *gfc_current_ns;
 
+gfc_gsymbol *gfc_gsym_root = NULL;
+
 static gfc_symbol *changed_syms = NULL;
 
 
@@ -2419,3 +2421,63 @@ gfc_symbol_state(void) {
 }
 #endif
 
+
+/************** Global symbol handling ************/
+
+
+/* Search a tree for the global symbol.  */
+
+gfc_gsymbol *
+gfc_find_gsymbol (gfc_gsymbol *symbol, char *name)
+{
+  gfc_gsymbol *s;
+
+  if (symbol == NULL)
+    return NULL;
+  if (strcmp (symbol->name, name) == 0)
+    return symbol;
+
+  s = gfc_find_gsymbol (symbol->left, name);
+  if (s != NULL)
+    return s;
+
+  s = gfc_find_gsymbol (symbol->right, name);
+  if (s != NULL)
+    return s;
+
+  return NULL;
+}
+
+
+/* Compare two global symbols. Used for managing the BB tree.  */
+
+static int
+gsym_compare (void * _s1, void * _s2)
+{
+  gfc_gsymbol *s1, *s2;
+
+  s1 = (gfc_gsymbol *)_s1;
+  s2 = (gfc_gsymbol *)_s2;
+  return strcmp(s1->name, s2->name);
+}
+
+
+/* Get a global symbol, creating it if it doesn't exist.  */
+
+gfc_gsymbol *
+gfc_get_gsymbol (char *name)
+{
+  gfc_gsymbol *s;
+
+  s = gfc_find_gsymbol (gfc_gsym_root, name);
+  if (s != NULL)
+    return s;
+
+  s = gfc_getmem (sizeof (gfc_gsymbol));
+  s->type = GSYM_UNKNOWN;
+  strcpy (s->name, name);
+
+  gfc_insert_bbt (&gfc_gsym_root, s, gsym_compare);
+
+  return s;
+}
