@@ -2901,6 +2901,43 @@ for file in curses.h dbm.h locale.h stdio.h stdlib.h string.h time.h unistd.h sy
   fi
 done
 
+# HPUX 10.x sys/param.h defines MAXINT which clashes with values.h
+file=sys/param.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  sed -e '/[  ]MAXINT[        ]/i\
+#ifndef MAXINT
+'\
+      -e '/[  ]MAXINT[        ]/a\
+#endif
+' $file_to_fix > /tmp/$base
+  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+    true
+  else
+    echo Fixed $file_to_fix
+    rm -f ${LIB}/$file
+    cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[ 	]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+  rm -f /tmp/$base
+fi
+
+
 # This loop does not appear to do anything, because it uses file
 # rather than $file when setting target.  It also appears to be
 # unnecessary, since the main loop processes symbolic links.
@@ -2959,5 +2996,6 @@ files=`find . -type d -print | sort -r`
 for file in $files; do
   rmdir $LIB/$file > /dev/null 2>&1
 done
+
 
 exit 0
