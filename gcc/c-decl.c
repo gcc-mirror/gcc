@@ -2567,28 +2567,28 @@ init_decl_processing ()
   pushdecl (build_decl (TYPE_DECL, get_identifier ("unsigned char"),
 			unsigned_char_type_node));
 
-  intQI_type_node = make_signed_type (8);
+  intQI_type_node = make_signed_type (GET_MODE_BITSIZE (QImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, intQI_type_node));
 
-  intHI_type_node = make_signed_type (16);
+  intHI_type_node = make_signed_type (GET_MODE_BITSIZE (HImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, intHI_type_node));
 
-  intSI_type_node = make_signed_type (32);
+  intSI_type_node = make_signed_type (GET_MODE_BITSIZE (SImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, intSI_type_node));
 
-  intDI_type_node = make_signed_type (64);
+  intDI_type_node = make_signed_type (GET_MODE_BITSIZE (DImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, intDI_type_node));
 
-  unsigned_intQI_type_node = make_unsigned_type (8);
+  unsigned_intQI_type_node = make_unsigned_type (GET_MODE_BITSIZE (QImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intQI_type_node));
 
-  unsigned_intHI_type_node = make_unsigned_type (16);
+  unsigned_intHI_type_node = make_unsigned_type (GET_MODE_BITSIZE (HImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intHI_type_node));
 
-  unsigned_intSI_type_node = make_unsigned_type (32);
+  unsigned_intSI_type_node = make_unsigned_type (GET_MODE_BITSIZE (SImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intSI_type_node));
 
-  unsigned_intDI_type_node = make_unsigned_type (64);
+  unsigned_intDI_type_node = make_unsigned_type (GET_MODE_BITSIZE (DImode));
   pushdecl (build_decl (TYPE_DECL, NULL_TREE, unsigned_intDI_type_node));
 
   float_type_node = make_node (REAL_TYPE);
@@ -5404,7 +5404,8 @@ start_function (declspecs, declarator, nested)
   old_decl = lookup_name_current_level (DECL_NAME (decl1));
   if (old_decl != 0 && TREE_CODE (TREE_TYPE (old_decl)) == FUNCTION_TYPE
       && !DECL_BUILT_IN (old_decl)
-      && TREE_TYPE (TREE_TYPE (decl1)) == TREE_TYPE (TREE_TYPE (old_decl))
+      && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl1)))
+	  == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (old_decl))))
       && TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0)
     TREE_TYPE (decl1) = TREE_TYPE (old_decl);
 
