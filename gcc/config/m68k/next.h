@@ -89,6 +89,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    !strcmp (STR, "sectalign") ? 3 :		\
    !strcmp (STR, "segcreate") ? 3 :		\
    !strcmp (STR, "sectorder") ? 3 :		\
+   !strcmp (STR, "aux-info") ? 1 :		\
    0)
 
 /* Names to predefine in the preprocessor for this target machine.  */
