@@ -1,5 +1,13 @@
 2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* c-ppoutput.c, cfganal.c, diagnostic.h, print-rtl.c,
+	config/darwin.c, config/darwin.h, config/ia64/ia64-c.c,
+	config/m32r/linux.h, config/rs6000/ppc64-fp.c,
+	config/sparc/openbsd.h, doc/makefile.texi, doc/passes.texi:
+	Update copyright.
+
+2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* c-ppoutput.c, var-tracking.c: Fix comment typos.
 
 2004-02-06  James E Wilson  <wilson@specifixinc.com>
