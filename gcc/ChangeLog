@@ -1,6 +1,8 @@
 1999-11-22  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* loop.c (load_mems): Reformat slightly.
+	* basic-block.h (regset_head): New typedef.
+	(INIT_REG_SET): New macro.
 
 1999-11-22  Bruce Korb  <autogen@linuxbox.com
 
