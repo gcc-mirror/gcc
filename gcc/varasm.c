@@ -96,13 +96,23 @@ int size_directive_output;
 
 tree last_assemble_variable_decl;
 
+
+#if defined (HANDLE_PRAGMA_WEAK) || (defined (WEAK_ASM_OP) && defined (ASM_OUTPUT_DEF))
+/* Any weak symbol declarations waiting to be emitted.  */
+
+struct weak_syms
+{
+  struct weak_syms *next;
+  char *name;
+  char *value;
+};
+
+static struct weak_syms *weak_decls;
+#endif
+
 /* Nonzero if at least one function definition has been seen.  */
 
 static int function_defined;
-
-/* Any weak symbol declarations waiting to be emitted.  */
-
-static tree weak_decls;
 
 struct addr_const;
 struct constant_descriptor;
@@ -3942,15 +3952,29 @@ enum pragma_state
 
 /* Output asm to handle ``#pragma weak'' */
 void
-handle_pragma_weak (what, asm_out_file, name, value)
+handle_pragma_weak (what, out_file, name, value)
      enum pragma_state what;
-     FILE *asm_out_file;
+     FILE *out_file;
      char *name, *value;
 {
   if (what == ps_name || what == ps_value)
     {
-      weak_decls = perm_tree_cons (what == ps_value ? value : NULL_TREE,
-				   name, weak_decls);
+      struct weak_syms *weak =
+	(struct weak_syms *)permalloc (sizeof (struct weak_syms));
+      weak->next = weak_decls;
+      weak->name = permalloc (strlen (name) + 1);
+      strcpy (weak->name, name);
+
+      if (what != ps_value)
+	weak->value = NULL_PTR;
+
+      else
+	{
+	  weak->value = permalloc (strlen (value) + 1);
+	  strcpy (weak->value, value);
+	}
+
+      weak_decls = weak;
     }
   else if (! (what == ps_done || what == ps_start))
     warning ("malformed `#pragma weak'");
@@ -3967,8 +3991,9 @@ declare_weak (decl)
   if (! TREE_PUBLIC (decl))
     error_with_decl (decl, "weak declaration of `%s' must be public");
   else
-    weak_decls = perm_tree_cons (NULL_TREE, DECL_ASSEMBLER_NAME (decl),
-				 weak_decls);
+    handle_pragma_weak (ps_name, asm_out_file,
+			IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+			NULL_PTR);
 }
 
 /* Emit any pending weak declarations.  */
@@ -3979,20 +4004,19 @@ weak_finish ()
 #ifdef HANDLE_PRAGMA_WEAK
   if (HANDLE_PRAGMA_WEAK)
     {
-      tree t;
-      for (t = weak_decls; t; t = TREE_CHAIN (t))
+      struct weak_syms *t;
+      for (t = weak_decls; t; t = t->next)
 	{
-	  tree decl = TREE_VALUE (t);
-	  char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-
 	  fprintf (asm_out_file, "\t%s\t", WEAK_ASM_OP);
 
 	  if (output_bytecode)
-	    BC_OUTPUT_LABELREF (asm_out_file, name);
+	    BC_OUTPUT_LABELREF (asm_out_file, t->name);
 	  else
-	    ASM_OUTPUT_LABELREF (asm_out_file, name);
+	    ASM_OUTPUT_LABELREF (asm_out_file, t->name);
 
 	  fputc ('\n', asm_out_file);
+	  if (t->value)
+	    ASM_OUTPUT_DEF (asm_out_file, t->name, t->value);
 	}
     }
 #endif
