@@ -58,10 +58,6 @@ Sat Feb  1 00:28:30 CET 2003  Jan Hubicka  <jh@suse.cz>
 	PR c/9506
 	* i386.c (override_options): Use DEFAULT_PCC_STRUCT_RETURN.
 
-2003-01-31  Loren J. Rittle <ljrittle@acm.org>
-
-	* gcc.dg/struct-ret-libc.c: New test.
-
 2003-01-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa32-regs.h (REGNO_REG_CLASS, REG_CLASS_FROM_LETTER): Delete
