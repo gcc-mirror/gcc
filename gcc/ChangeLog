@@ -1,3 +1,12 @@
+2000-04-06  Alex Samuel  <samuel@codesourcery.com>
+
+	* ssa.c (compute_conservative_reg_partition): Declare with
+	void arguments.
+	* toplev.c (clean_dump_file): Remove previously-deleted function
+	inadvertantly merged back in.
+	* conflict.c (conflict_graph_add): Use a single call to
+	htab_find_slot to look up and insert.
+
 2000-04-06  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (*): Rename _last_insn to last_insn.

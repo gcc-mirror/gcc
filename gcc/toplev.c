@@ -1892,26 +1892,6 @@ close_dump_file (index, func, insns)
      });
 }
 
-/* Routine to empty a dump file.  */
-static void
-clean_dump_file (suffix)
-  const char *suffix;
-{
-  char * const dumpname = concat (dump_base_name, suffix, NULL);
-
-  rtl_dump_file = fopen (dumpname, "w");
-
-  if (rtl_dump_file == NULL)
-    pfatal_with_name (dumpname);       
-
-  free (dumpname);
-
-  fclose (rtl_dump_file);
-  rtl_dump_file = NULL;
-  
-  return;
-}
-
 /* Do any final processing required for the declarations in VEC, of
    which there are LEN.  We write out inline functions and variables
    that have been deferred until this point, but which are required.
