@@ -428,7 +428,7 @@ div0:	rts
 !!
 !! 
 
-!! args in r4 and r5, result in r0, clobbers r4,r6, pr and t bit
+!! args in r4 and r5, result in r0, clobbers r4, pr, and t bit
 	.global	___udivsi3
 
 ___udivsi3:
