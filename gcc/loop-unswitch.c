@@ -335,7 +335,7 @@ unswitch_loop (loops, loop, unswitch_on)
      struct loop *loop;
      basic_block unswitch_on;
 {
-  edge entry, e, latch_edge;
+  edge entry, latch_edge;
   basic_block switch_bb, unswitch_on_alt, src;
   struct loop *nloop;
   sbitmap zero_bitmap;
@@ -366,15 +366,15 @@ unswitch_loop (loops, loop, unswitch_on)
   
   /* Make a copy.  */
   src = entry->src;
-  irred_flag = src->flags & BB_IRREDUCIBLE_LOOP;
-  src->flags &= ~BB_IRREDUCIBLE_LOOP;
+  irred_flag = entry->flags & EDGE_IRREDUCIBLE_LOOP;
+  entry->flags &= ~EDGE_IRREDUCIBLE_LOOP;
   zero_bitmap = sbitmap_alloc (2);
   sbitmap_zero (zero_bitmap);
   if (!duplicate_loop_to_header_edge (loop, entry, loops, 1,
 	zero_bitmap, NULL, NULL, NULL, 0))
     return NULL;
   free (zero_bitmap);
-  src->flags |= irred_flag;
+  entry->flags |= irred_flag;
 
   /* Record the block with condition we unswitch on.  */
   unswitch_on_alt = RBI (unswitch_on)->copy;
@@ -382,8 +382,18 @@ unswitch_loop (loops, loop, unswitch_on)
   /* Make a copy of the block containing the condition; we will use
      it as switch to decide which loop we want to use.  */
   switch_bb = cfg_layout_duplicate_bb (unswitch_on, NULL);
-  switch_bb->flags &= ~BB_IRREDUCIBLE_LOOP;
-  switch_bb->flags |= irred_flag;
+  if (irred_flag)
+    {
+      switch_bb->flags |= BB_IRREDUCIBLE_LOOP;
+      switch_bb->succ->flags |= EDGE_IRREDUCIBLE_LOOP;
+      switch_bb->succ->succ_next->flags |= EDGE_IRREDUCIBLE_LOOP;
+    }
+  else
+    {
+      switch_bb->flags &= ~BB_IRREDUCIBLE_LOOP;
+      switch_bb->succ->flags &= ~EDGE_IRREDUCIBLE_LOOP;
+      switch_bb->succ->succ_next->flags &= ~EDGE_IRREDUCIBLE_LOOP;
+    }
   add_to_dominance_info (loops->cfg.dom, switch_bb);
   RBI (unswitch_on)->copy = unswitch_on_alt;
 
@@ -396,10 +406,6 @@ unswitch_loop (loops, loop, unswitch_on)
 
   /* Remove branches that are now unreachable in new loops.  We rely on the
      fact that cfg_layout_duplicate_bb reverses list of edges.  */
-  for (e = unswitch_on->succ->succ_next->dest->pred; e; e = e->pred_next)
-    if (e->src != unswitch_on &&
-	!dominated_by_p (loops->cfg.dom, e->src, e->dest))
-      break;
   remove_path (loops, unswitch_on->succ);
   remove_path (loops, unswitch_on_alt->succ);
 

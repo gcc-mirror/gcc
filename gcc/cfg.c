@@ -639,7 +639,7 @@ dump_edge_info (file, e, do_succ)
   if (e->flags)
     {
       static const char * const bitnames[]
-	= {"fallthru", "ab", "abcall", "eh", "fake", "dfs_back", "can_fallthru"};
+	= {"fallthru", "ab", "abcall", "eh", "fake", "dfs_back", "can_fallthru","irreducible"};
       int comma = 0;
       int i, flags = e->flags;
 

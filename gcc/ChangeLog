@@ -1,3 +1,29 @@
+2003-03-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* basic-block.h (EDGE_IRREDUCIBLE_LOOP, EDGE_ALL_FLAGS): New.
+	* cfg.c (dump_edge_info): Add EDGE_IRREDUCIBLE_LOOP flag dump.
+	* cfgloop.c (flow_loop_free): Made global.
+	(establish_preds): New static function.
+	(flow_loop_tree_node_add): Handle subloops of added loop correctly.
+	(get_loop_exit_edges): New.
+	(verify_loop_structure): Verify EDGE_IRREDUCIBLE_LOOP flags.
+	* cfgloop.h (flow_loop_free, get_loop_exit_edges, unloop): Declare.
+	* cfgloopanal.c (mark_irreducible_loops): Mark edges in irreducible
+	loops.
+	* cfgloopmanip.c (loop_delete_branch_edge): Allow to test for
+	removability of an edge.
+	(fix_irreducible_loops): New static function.
+	(find_path, remove_path): Add ability to remove enclosing loops.
+	(unloop): New.
+	(copy_bbs, duplicate_loop_to_header_edge): Use EDGE_IRREDUCIBLE_LOOP
+	flags.
+	* cfgrtl.c (verify_flow_info): Handle EDGE_IRREDUCIBLE_LOOP flag.
+	* loop-unroll.c (peel_loops_completely): Do not duplicate loop if
+	not neccessary.
+	(decide_peel_completely, peel_loops_completely): Allow complete peeling
+	of non-duplicable once rolling loops.
+	* loop-unswitch.c (unswitch_loop): Update EDGE_IRREDUCIBLE_LOOP flags.
+
 Wed Mar  5 21:40:57 2003  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (OVERRIDE_OPTIONS): For TARGET_SHMEDIA, the minimum value
