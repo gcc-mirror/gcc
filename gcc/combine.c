@@ -1563,6 +1563,52 @@ try_combine (i3, i2, i1)
 	    }
     }
 
+  /* If I2 is setting a double-word pseudo to a constant and I3 is setting
+     one of those words to another constant, merge them by making a new
+     constant.  */
+  if (i1 == 0
+      && (temp = single_set (i2)) != 0
+      && (GET_CODE (SET_SRC (temp)) == CONST_INT
+	  || GET_CODE (SET_SRC (temp)) == CONST_DOUBLE)
+      && GET_CODE (SET_DEST (temp)) == REG
+      && GET_MODE_CLASS (GET_MODE (SET_DEST (temp))) == MODE_INT
+      && GET_MODE_SIZE (GET_MODE (SET_DEST (temp))) == 2 * UNITS_PER_WORD
+      && GET_CODE (PATTERN (i3)) == SET
+      && GET_CODE (SET_DEST (PATTERN (i3))) == SUBREG
+      && SUBREG_REG (SET_DEST (PATTERN (i3))) == SET_DEST (temp)
+      && GET_MODE_CLASS (GET_MODE (SET_DEST (PATTERN (i3)))) == MODE_INT
+      && GET_MODE_SIZE (GET_MODE (SET_DEST (PATTERN (i3)))) == UNITS_PER_WORD
+      && GET_CODE (SET_SRC (PATTERN (i3))) == CONST_INT)
+    {
+      HOST_WIDE_INT lo, hi;
+
+      if (GET_CODE (SET_SRC (temp)) == CONST_INT)
+	lo = INTVAL (SET_SRC (temp)), hi = lo < 0 ? -1 : 0;
+      else
+	{
+	  lo = CONST_DOUBLE_LOW (SET_SRC (temp));
+	  hi = CONST_DOUBLE_HIGH (SET_SRC (temp));
+	}
+
+      if (subreg_lowpart_p (SET_DEST (PATTERN (i3))))
+	lo = INTVAL (SET_SRC (PATTERN (i3)));
+      else
+	hi = INTVAL (SET_SRC (PATTERN (i3)));
+
+      combine_merges++;
+      subst_insn = i3;
+      subst_low_cuid = INSN_CUID (i2);
+      added_sets_2 = added_sets_1 = 0;
+      i2dest = SET_DEST (temp);
+
+      SUBST (SET_SRC (temp),
+	     immed_double_const (lo, hi, GET_MODE (SET_DEST (temp))));
+
+      newpat = PATTERN (i2);
+      i3_subst_into_i2 = 1;
+      goto validate_replacement;
+    }
+
 #ifndef HAVE_cc0
   /* If we have no I1 and I2 looks like:
 	(parallel [(set (reg:CC X) (compare:CC OP (const_int 0)))
