@@ -3646,9 +3646,13 @@ toe64 (a, b)
   else
     {
       q = b + 4;			/* point to output exponent */
-#if MAX_LONG_DOUBLE_TYPE_SIZE == 96
-      /* Clear the last two bytes of 12-byte Intel format */
-      *(q+1) = 0;
+      /* The purpose of this conditional is to avoid scribbling beyond
+         the end of a long double, in case the type is only 80 bits wide.  */
+      if (LONG_DOUBLE_TYPE_SIZE == 96)
+	{
+	  /* Clear the last two bytes of 12-byte Intel format */
+	  *(q+1) = 0;
+	}
 #endif
     }
 #endif

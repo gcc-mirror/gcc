@@ -68,6 +68,11 @@ Boston, MA 02111-1307, USA.  */
 #ifndef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 64
 #endif
+/* MAX_LONG_DOUBLE_TYPE_SIZE is a constant tested by #if.
+   LONG_DOUBLE_TYPE_SIZE can vary at compiler run time.
+   So long as macros like REAL_VALUE_TO_TARGET_LONG_DOUBLE cannot
+   vary too, however, then XFmode and TFmode long double
+   cannot both be supported at the same time.  */
 #ifndef MAX_LONG_DOUBLE_TYPE_SIZE
 #define MAX_LONG_DOUBLE_TYPE_SIZE LONG_DOUBLE_TYPE_SIZE
 #endif
