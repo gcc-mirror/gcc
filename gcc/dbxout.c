@@ -676,6 +676,7 @@ dbxout_type_methods (type)
   tree type_encoding;
   register tree fndecl;
   register tree last;
+  char formatted_type_identifier_length[16];
   register int type_identifier_length;
 
   if (methods == NULL_TREE)
@@ -703,6 +704,8 @@ dbxout_type_methods (type)
   }
 
   type_identifier_length = IDENTIFIER_LENGTH (type_encoding);
+
+  sprintf(formatted_type_identifier_length, "%d", type_identifier_length);
 
   if (TREE_CODE (methods) == FUNCTION_DECL)
     fndecl = methods;
@@ -748,9 +751,13 @@ dbxout_type_methods (type)
 		  if (debug_name[0] == '_' && debug_name[1] == '_')
 		    {
 		      char *method_name = debug_name + 2;
+		      char *length_ptr = formatted_type_identifier_length;
 		      /* Get past const and volatile qualifiers.  */
 		      while (*method_name == 'C' || *method_name == 'V')
 			method_name++;
+		      /* Skip digits for length of type_encoding. */
+		      while (*method_name == *length_ptr && *length_ptr)
+			  length_ptr++, method_name++;
 		      if (! strncmp (method_name,
 				     IDENTIFIER_POINTER (type_encoding),
 				     type_identifier_length))
@@ -762,8 +769,12 @@ dbxout_type_methods (type)
 	      else if (debug_name[0] == '_' && debug_name[1] == '_')
 		{
 		  char *ctor_name = debug_name + 2;
+		  char *length_ptr = formatted_type_identifier_length;
 		  while (*ctor_name == 'C' || *ctor_name == 'V')
 		    ctor_name++;
+		  /* Skip digits for length of type_encoding. */
+		  while (*ctor_name == *length_ptr && *length_ptr)
+		      length_ptr++, ctor_name++;
 		  if (!strncmp (IDENTIFIER_POINTER (type_encoding), ctor_name,
 				type_identifier_length))
 		    debug_name = ctor_name + type_identifier_length;
