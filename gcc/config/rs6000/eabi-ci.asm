@@ -93,7 +93,7 @@ __SBSS_START__:
 __SDATA2_START__:
 _SDA2_BASE_:
 
-	.section ".sbss2","a",@nobits
+	.section ".sbss2","a"
 	.globl	__SBSS2_START__
 	.type	__SBSS2_START__,@object
 __SBSS2_START__:
