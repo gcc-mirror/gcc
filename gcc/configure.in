@@ -65,13 +65,17 @@ if [[ x$local_prefix = x ]]; then
 	local_prefix=/usr/local
 fi
 
-#
-# Shell script to create proper links to machine-dependent files in
-# preparation for compiling gcc.
-#
-#	   --local-prefix=DIR	specifies directory to put local ./include in.
-#	   --gxx-include-dir=DIR specifies directory to put g++ header files in.
-#
+# Specify the g++ header file directory
+AC_ARG_WITH(gxx-include-dir,
+[  --with-gxx-include-dir=DIR
+                          specifies directory to put g++ header files.],
+gxx_include_dir=$with_gxx_include_dir,
+gxx_include_dir='${prefix}/include/g++')
+
+# Default g++ header file directory if it is empty
+if [[ x$gxx_include_dir = x ]]; then
+	gxx_include_dir='${prefix}/include/g++'
+fi
 
 # Determine the host, build, and target systems
 AC_CANONICAL_SYSTEM
@@ -2911,6 +2915,7 @@ AC_SUBST(lang_options_files)
 AC_SUBST(objc_thread_file)
 AC_SUBST(version)
 AC_SUBST(local_prefix)
+AC_SUBST(gxx_include_dir)
 AC_SUBST(fixincludes)
 AC_SUBST(build_install_headers_dir)
 AC_SUBST(exeext)
@@ -3003,6 +3008,7 @@ lang_options_files='${lang_options_files}'
 objc_thread_file='${objc_thread_file}'
 version='${version}'
 local_prefix='${local_prefix}'
+gxx_include_dir='${gxx_include_dir}'
 fixincludes='${fixincludes}'
 build_install_headers_dir='${build_install_headers_dir}'
 exeext='${exeext}'
