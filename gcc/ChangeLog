@@ -1,3 +1,7 @@
+Thu Oct  3 21:42:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (choose_function_section): Avoid choice for linkonce functions.
+
 Thu Oct  3 15:15:00 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (lea to mul peep2): Fix condition.
