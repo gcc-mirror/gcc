@@ -2236,7 +2236,9 @@ literal_section ()						\
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
-
+/* ??? This is only used with the v2 ABI, and alpha.c makes assumptions
+   about current_function_is_thunk that are not valid with the v3 ABI.  */
+#if 0
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
 do {									\
   const char *fn_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0);	\
@@ -2268,6 +2270,7 @@ do {									\
     }									\
   fprintf (FILE, "\t.set noat\n");					\
 } while (0)
+#endif
 
 
 /* Define results of standard character escape sequences.  */
