@@ -35,6 +35,13 @@ loop_optimizer_init (FILE *dumpfile)
 {
   struct loops *loops = xcalloc (1, sizeof (struct loops));
   edge e;
+  static bool first_time = true;
+
+  if (first_time)
+    {
+      first_time = false;
+      init_set_costs ();
+    }
 
   /* Avoid annoying special cases of edges going to exit
      block.  */

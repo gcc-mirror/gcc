@@ -1,5 +1,23 @@
 2004-06-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
+	* loop-invariant.c: New file.
+	* Makefile.in (loop-invariant.o): New.
+	* cfgloop.h (global_cost_for_size, init_set_costs,
+	move_loop_invariants): Declare.
+	* cfgloopanal.c (seq_cost, init_set_costs, global_cost_for_size): New
+	functions.
+	(avail_regs, res_regs, small_cost, pres_cost, spill_cost): New
+	variables.
+	* common.opt (floop-optimize2, fmove-loop-invariants): New options.
+	* loop-init.c (loop_optimizer_init): Call init_set_costs.
+	* passes.c (rest_of_handle_loop2): Call move_loop_invariants.
+	(rest_of_compilation): Check flag_loop_optimize2.
+	* toplev.c (process_options): Handle flag_loop_optimize2.
+	* doc/invoke.texi (-floop-optimize2, -fmove-loop-invariants): Document.
+	* doc/passes.texi (loop-invariant.c): Document.
+
+2004-06-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
 	* tree-ssa-pre.c (compute_antic): Keep BB_VISITED flag zeroed.
 
 2004-06-20  Richard Henderson  <rth@redhat.com>

@@ -1290,7 +1290,8 @@ rest_of_handle_loop2 (void)
   struct loops *loops;
   basic_block bb;
 
-  if (!flag_unswitch_loops
+  if (!flag_move_loop_invariants
+      && !flag_unswitch_loops
       && !flag_peel_loops
       && !flag_unroll_loops
       && !flag_branch_on_count_reg)
@@ -1309,6 +1310,9 @@ rest_of_handle_loop2 (void)
   if (loops)
     {
       /* The optimizations:  */
+      if (flag_move_loop_invariants)
+	move_loop_invariants (loops);
+
       if (flag_unswitch_loops)
 	unswitch_loops (loops);
 
@@ -1598,7 +1602,8 @@ rest_of_compilation (void)
   if (flag_tracer)
     rest_of_handle_tracer ();
 
-  if (optimize > 0)
+  if (optimize > 0
+      && flag_loop_optimize2)
     rest_of_handle_loop2 ();
 
   if (flag_web)

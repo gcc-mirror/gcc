@@ -290,7 +290,7 @@ in the following sections.
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
 -fmodulo-sched -fmove-all-movables  -fnew-ra  -fno-branch-count-reg @gol
--fno-default-inline  -fno-defer-pop @gol
+-fno-default-inline  -fno-defer-pop -floop-optimize2 -fmove-loop-invariants @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
 -funsafe-math-optimizations  -ffinite-math-only @gol
@@ -4191,6 +4191,12 @@ well.
 
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
+@item -floop-optimize2
+@opindex floop-optimize2
+Perform loop optimizations using the new loop optimizer.  The optimizations
+(loop unrolling, peeling and unswitching, loop invariant motion) are enabled
+by separate flags.
+
 @item -fcrossjumping
 @opindex crossjumping
 Perform cross-jumping transformation. This transformation unifies equivalent code and save code size. The
@@ -4921,6 +4927,11 @@ roll much (from profile feedback).  It also turns on complete loop peeling
 (i.e. complete removal of loops with small constant number of iterations).
 
 Enabled with @option{-fprofile-use}.
+
+@item -fmove-loop-invariants
+@opindex fmove-loop-invariants
+Enables the loop invariant motion pass in the new loop optimizer.  Enabled
+at level @option{-O1}
 
 @item -funswitch-loops
 @opindex funswitch-loops

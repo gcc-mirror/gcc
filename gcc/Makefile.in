@@ -897,7 +897,7 @@ OBJS-common = \
  cfg.o cfganal.o cfgbuild.o cfgcleanup.o cfglayout.o cfgloop.o		   \
  cfgloopanal.o cfgloopmanip.o loop-init.o loop-unswitch.o loop-unroll.o	   \
  cfgrtl.o combine.o conflict.o convert.o coverage.o cse.o cselib.o 	   \
- dbxout.o ddg.o								   \
+ dbxout.o ddg.o loop-invariant.o					   \
  debug.o df.o diagnostic.o dojump.o dominance.o loop-doloop.o		   \
  dwarf2asm.o dwarf2out.o emit-rtl.o except.o explow.o loop-iv.o		   \
  expmed.o expr.o final.o flow.o fold-const.o function.o gcse.o		   \
@@ -1952,6 +1952,9 @@ cfgloopanal.o : cfgloopanal.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h $(CFGLOOP_H) $(EXPR_H) coretypes.h $(TM_H)
 loop-iv.o : loop-iv.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(GGC_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h $(CFGLOOP_H) $(EXPR_H) coretypes.h $(TM_H)
+loop-invariant.o : loop-invariant.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(GGC_H) \
+   $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h $(EXPR_H) coretypes.h $(TM_H) \
+   function.h flags.h df.h
 cfgloopmanip.o : cfgloopmanip.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h $(CFGLOOP_H) $(CFGLAYOUT_H) output.h coretypes.h $(TM_H)
 loop-init.o : loop-init.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \

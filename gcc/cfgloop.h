@@ -411,6 +411,11 @@ simple_loop_desc (struct loop *loop)
   return loop->aux;
 }
 
+/* Register pressure estimation for induction variable optimizations & loop
+   invariant motion.  */
+extern unsigned global_cost_for_size (unsigned, unsigned, unsigned);
+extern void init_set_costs (void);
+
 /* Loop optimizer initialization.  */
 extern struct loops *loop_optimizer_init (FILE *);
 extern void loop_optimizer_finalize (struct loops *, FILE *);
@@ -427,5 +432,6 @@ enum
 
 extern void unroll_and_peel_loops (struct loops *, int);
 extern void doloop_optimize_loops (struct loops *);
+extern void move_loop_invariants (struct loops *);
 
 #endif /* GCC_CFGLOOP_H */
