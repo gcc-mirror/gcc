@@ -3823,7 +3823,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	   
 	case SMAX:
 	  if (width <= HOST_BITS_PER_WIDE_INT && GET_CODE (op1) == CONST_INT
-	      && INTVAL (op1) == GET_MODE_MASK (mode) >> 1
+	      && INTVAL (op1) == (unsigned) GET_MODE_MASK (mode) >> 1
 	      && ! side_effects_p (op0))
 	    return op1;
 	  else if (rtx_equal_p (op0, op1) && ! side_effects_p (op0))
