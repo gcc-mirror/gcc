@@ -1344,9 +1344,9 @@
    /* The lda instruction cannot use the same register as source
       and destination.  */
    if (! TARGET_C3X && which_alternative == 1
-       && (   IS_ADDR_REG (REGNO (operands[0]))
-           || IS_INDEX_REG (REGNO (operands[0]))
-           || IS_SP_REG (REGNO (operands[0])))
+       && (   IS_ADDR_REG (operands[0])
+           || IS_INDEX_REG (operands[0])
+           || IS_SP_REG (operands[0]))
        && (REGNO (operands[0]) != REGNO (operands[1])))
       return \"lda\\t%1,%0\";
    return \"ldiu\\t%1,%0\";
@@ -1762,8 +1762,8 @@
   ""
   "legitimize_operands (PLUS, operands, QImode);
    if (reload_in_progress
-       || (! IS_PSEUDO_REGNO (operands[0]) 
-           && ! IS_EXT_REG (REGNO (operands[0]))))
+       || (! IS_PSEUDO_REG (operands[0]) 
+           && ! IS_EXT_REG (operands[0])))
    {
       emit_insn (gen_addqi3_noclobber (operands[0], operands[1], operands[2]));
       DONE;
@@ -1890,7 +1890,7 @@
                  (match_operand:QI 2 "src_operand" "rIm,JR,rS<>,rIm,JR,rS<>")))]
   "reload_in_progress"
   "*
-   if (IS_STD_REG (REGNO (operands[0])))
+   if (IS_STD_REG (operands[0]))
      {
        if (which_alternative == 0)
 	 return \"addi\\t%2,%0\";

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  TMS320C[34]x
-   Copyright (C) 1994-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994-99, 2000 Free Software Foundation, Inc.
 
    Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
               and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl).
@@ -362,9 +362,9 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 
 #define REAL_ARITHMETIC
 
-/* Define register numbers */
+/* Define register numbers.  */
 
-/* Extended-precision registers */
+/* Extended-precision registers.  */
 
 #define R0_REGNO   0
 #define R1_REGNO   1
@@ -375,7 +375,7 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 #define R6_REGNO   6
 #define R7_REGNO   7
 
-/* Auxiliary (address) registers */
+/* Auxiliary (address) registers.  */
 
 #define AR0_REGNO  8
 #define AR1_REGNO  9
@@ -386,118 +386,123 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 #define AR6_REGNO 14
 #define AR7_REGNO 15
 
-/* Data page register */
+/* Data page register.  */
 
 #define DP_REGNO  16
 
-/* Index registers */
+/* Index registers.  */
 
 #define IR0_REGNO 17
 #define IR1_REGNO 18
 
-/* Block size register */
+/* Block size register.  */
 
 #define BK_REGNO  19
 
-/* Stack pointer */
+/* Stack pointer.  */
 
 #define SP_REGNO  20
 
-/* Status register */
+/* Status register.  */
 
 #define ST_REGNO  21
 
-/* Misc. interrupt registers */
+/* Misc. interrupt registers.  */
 
-#define DIE_REGNO 22		/* C4x only */
-#define IE_REGNO  22		/* C3x only */
-#define IIE_REGNO 23		/* C4x only */
-#define IF_REGNO  23		/* C3x only */
-#define IIF_REGNO 24		/* C4x only */
-#define IOF_REGNO 24		/* C3x only */
+#define DIE_REGNO 22		/* C4x only.  */
+#define IE_REGNO  22		/* C3x only.  */
+#define IIE_REGNO 23		/* C4x only.  */
+#define IF_REGNO  23		/* C3x only.  */
+#define IIF_REGNO 24		/* C4x only.  */
+#define IOF_REGNO 24		/* C3x only.  */
 
-/* Repeat block registers */
+/* Repeat block registers.  */
 
 #define RS_REGNO  25
 #define RE_REGNO  26
 #define RC_REGNO  27
 
-/* Additional extended-precision registers */
+/* Additional extended-precision registers.  */
 
-#define R8_REGNO  28		/* C4x only */
-#define R9_REGNO  29		/* C4x only */
-#define R10_REGNO 30		/* C4x only */
-#define R11_REGNO 31		/* C4x only */
+#define R8_REGNO  28		/* C4x only.  */
+#define R9_REGNO  29		/* C4x only.  */
+#define R10_REGNO 30		/* C4x only.  */
+#define R11_REGNO 31		/* C4x only.  */
 
 #define FIRST_PSEUDO_REGISTER	32
 
-/* Extended precision registers (low set) */
+/* Extended precision registers (low set).  */
 
-#define IS_R0R1_REG(r)             ((((r) >= R0_REGNO) && ((r) <= R1_REGNO)))
-#define IS_R2R3_REG(r)             ((((r) >= R2_REGNO) && ((r) <= R3_REGNO)))
-#define IS_EXT_LOW_REG(r)          ((((r) >= R0_REGNO) && ((r) <= R7_REGNO)))
+#define IS_R0R1_REGNO(r)           ((((r) >= R0_REGNO) && ((r) <= R1_REGNO)))
+#define IS_R2R3_REGNO(r)           ((((r) >= R2_REGNO) && ((r) <= R3_REGNO)))
+#define IS_EXT_LOW_REGNO(r)        ((((r) >= R0_REGNO) && ((r) <= R7_REGNO)))
 
-/* Extended precision registers (high set) */
+/* Extended precision registers (high set).  */
 
-#define IS_EXT_HIGH_REG(r)         (! TARGET_C3X \
+#define IS_EXT_HIGH_REGNO(r)       (! TARGET_C3X \
 			            && ((r) >= R8_REGNO) && ((r) <= R11_REGNO))
-/* Address registers */
+/* Address registers.  */
 
-#define IS_AUX_REG(r)    (((r) >= AR0_REGNO) && ((r) <= AR7_REGNO))
-#define IS_ADDR_REG(r)   IS_AUX_REG(r)
-#define IS_DP_REG(r)     ((r) == DP_REGNO)
-#define IS_INDEX_REG(r)  (((r) == IR0_REGNO) || ((r) == IR1_REGNO))
-#define IS_SP_REG(r)     ((r) == SP_REGNO)
-#define IS_BK_REG(r)     (TARGET_BK && (r) == BK_REGNO)
+#define IS_AUX_REGNO(r)    (((r) >= AR0_REGNO) && ((r) <= AR7_REGNO))
+#define IS_ADDR_REGNO(r)   IS_AUX_REGNO(r)
+#define IS_DP_REGNO(r)     ((r) == DP_REGNO)
+#define IS_INDEX_REGNO(r)  (((r) == IR0_REGNO) || ((r) == IR1_REGNO))
+#define IS_SP_REGNO(r)     ((r) == SP_REGNO)
+#define IS_BK_REGNO(r)     (TARGET_BK && (r) == BK_REGNO)
 
-/* Misc registers */
+/* Misc registers.  */
 
-#define IS_ST_REG(r)     ((r) == ST_REGNO)
-#define IS_RC_REG(r)     ((r) == RC_REGNO)
-#define IS_REPEAT_REG(r) (((r) >= RS_REGNO) && ((r) <= RC_REGNO))
+#define IS_ST_REGNO(r)     ((r) == ST_REGNO)
+#define IS_RC_REGNO(r)     ((r) == RC_REGNO)
+#define IS_REPEAT_REGNO(r) (((r) >= RS_REGNO) && ((r) <= RC_REGNO))
 
-/* Composite register sets */
+/* Composite register sets.  */
 
-#define IS_ADDR_OR_INDEX_REG(r) (IS_ADDR_REG(r) || IS_INDEX_REG(r))
-#define IS_EXT_REG(r)           (IS_EXT_LOW_REG(r) || IS_EXT_HIGH_REG(r))
-#define IS_STD_REG(r)           (IS_ADDR_OR_INDEX_REG(r) || IS_REPEAT_REG(r) \
-                                 || IS_SP_REG(r) || IS_BK_REG(r))
-#define IS_INT_REG(r)           (IS_EXT_REG(r) || IS_STD_REG(r))
-#define IS_GROUP1_REG(r)        (IS_ADDR_OR_INDEX_REG(r) || IS_BK_REG(r))
+#define IS_ADDR_OR_INDEX_REGNO(r) (IS_ADDR_REGNO(r) || IS_INDEX_REGNO(r))
+#define IS_EXT_REGNO(r)           (IS_EXT_LOW_REGNO(r) || IS_EXT_HIGH_REGNO(r))
+#define IS_STD_REGNO(r)           (IS_ADDR_OR_INDEX_REGNO(r) \
+				   || IS_REPEAT_REGNO(r) \
+                                   || IS_SP_REGNO(r) \
+		       		   || IS_BK_REGNO(r))
+#define IS_INT_REGNO(r)           (IS_EXT_REGNO(r) || IS_STD_REGNO(r))
+#define IS_GROUP1_REGNO(r)        (IS_ADDR_OR_INDEX_REGNO(r) || IS_BK_REGNO(r))
 
+#define IS_PSEUDO_REGNO(r)            ((r) >= FIRST_PSEUDO_REGISTER)
+#define IS_R0R1_OR_PSEUDO_REGNO(r)    (IS_R0R1_REGNO(r) || IS_PSEUDO_REGNO(r))
+#define IS_R2R3_OR_PSEUDO_REGNO(r)    (IS_R2R3_REGNO(r) || IS_PSEUDO_REGNO(r))
+#define IS_EXT_OR_PSEUDO_REGNO(r)     (IS_EXT_REGNO(r) || IS_PSEUDO_REGNO(r))
+#define IS_STD_OR_PSEUDO_REGNO(r)     (IS_STD_REGNO(r) || IS_PSEUDO_REGNO(r))
+#define IS_INT_OR_PSEUDO_REGNO(r)     (IS_INT_REGNO(r) || IS_PSEUDO_REGNO(r))
+#define IS_ADDR_OR_PSEUDO_REGNO(r)    (IS_ADDR_REGNO(r) || IS_PSEUDO_REGNO(r))
+#define IS_INDEX_OR_PSEUDO_REGNO(r)   (IS_INDEX_REGNO(r) || IS_PSEUDO_REGNO(r))
+#define IS_EXT_LOW_OR_PSEUDO_REGNO(r) (IS_EXT_LOW_REGNO(r) \
+				       || IS_PSEUDO_REGNO(r))
+#define IS_DP_OR_PSEUDO_REGNO(r)      (IS_DP_REGNO(r) || IS_PSEUDO_REGNO(r))
+#define IS_SP_OR_PSEUDO_REGNO(r)      (IS_SP_REGNO(r) || IS_PSEUDO_REGNO(r))
+#define IS_ST_OR_PSEUDO_REGNO(r)      (IS_ST_REGNO(r) || IS_PSEUDO_REGNO(r))
+#define IS_RC_OR_PSEUDO_REGNO(r)      (IS_RC_REGNO(r) || IS_PSEUDO_REGNO(r))
 
-#define IS_PSEUDO_REG(r)            ((r) >= FIRST_PSEUDO_REGISTER)
-#define IS_R0R1_OR_PSEUDO_REG(r)    (IS_R0R1_REG(r) || IS_PSEUDO_REG(r))
-#define IS_R2R3_OR_PSEUDO_REG(r)    (IS_R2R3_REG(r) || IS_PSEUDO_REG(r))
-#define IS_EXT_OR_PSEUDO_REG(r)     (IS_EXT_REG(r) || IS_PSEUDO_REG(r))
-#define IS_STD_OR_PSEUDO_REG(r)     (IS_STD_REG(r) || IS_PSEUDO_REG(r))
-#define IS_INT_OR_PSEUDO_REG(r)     (IS_INT_REG(r) || IS_PSEUDO_REG(r))
-#define IS_ADDR_OR_PSEUDO_REG(r)    (IS_ADDR_REG(r) || IS_PSEUDO_REG(r))
-#define IS_INDEX_OR_PSEUDO_REG(r)   (IS_INDEX_REG(r) || IS_PSEUDO_REG(r))
-#define IS_EXT_LOW_OR_PSEUDO_REG(r) (IS_EXT_LOW_REG(r) || IS_PSEUDO_REG(r))
-#define IS_DP_OR_PSEUDO_REG(r)      (IS_DP_REG(r) || IS_PSEUDO_REG(r))
-#define IS_SP_OR_PSEUDO_REG(r)      (IS_SP_REG(r) || IS_PSEUDO_REG(r))
-#define IS_ST_OR_PSEUDO_REG(r)      (IS_ST_REG(r) || IS_PSEUDO_REG(r))
-#define IS_RC_OR_PSEUDO_REG(r)      (IS_RC_REG(r) || IS_PSEUDO_REG(r))
+#define IS_PSEUDO_REG(op)          (IS_PSEUDO_REGNO(REGNO(op)))
+#define IS_ADDR_REG(op)            (IS_ADDR_REGNO(REGNO(op)))
+#define IS_INDEX_REG(op)           (IS_INDEX_REGNO(REGNO(op)))
+#define IS_GROUP1_REG(r)           (IS_GROUP1_REGNO(REGNO(op)))
+#define IS_SP_REG(op)              (IS_SP_REGNO(REGNO(op)))
+#define IS_STD_REG(op)             (IS_STD_REGNO(REGNO(op)))
+#define IS_EXT_REG(op)             (IS_EXT_REGNO(REGNO(op)))
 
-#define IS_PSEUDO_REGNO(op)          (IS_PSEUDO_REG(REGNO(op)))
-#define IS_ADDR_REGNO(op)            (IS_ADDR_REG(REGNO(op)))
-#define IS_INDEX_REGNO(op)           (IS_INDEX_REG(REGNO(op)))
-#define IS_GROUP1_REGNO(r)           (IS_GROUP1_REG(REGNO(op)))
+#define IS_R0R1_OR_PSEUDO_REG(op)  (IS_R0R1_OR_PSEUDO_REGNO(REGNO(op)))
+#define IS_R2R3_OR_PSEUDO_REG(op)  (IS_R2R3_OR_PSEUDO_REGNO(REGNO(op)))
+#define IS_EXT_OR_PSEUDO_REG(op)   (IS_EXT_OR_PSEUDO_REGNO(REGNO(op)))
+#define IS_STD_OR_PSEUDO_REG(op)   (IS_STD_OR_PSEUDO_REGNO(REGNO(op)))
+#define IS_EXT_LOW_OR_PSEUDO_REG(op) (IS_EXT_LOW_OR_PSEUDO_REGNO(REGNO(op)))
+#define IS_INT_OR_PSEUDO_REG(op)   (IS_INT_OR_PSEUDO_REGNO(REGNO(op)))
 
-#define IS_R0R1_OR_PSEUDO_REGNO(op)  (IS_R0R1_OR_PSEUDO_REG(REGNO(op)))
-#define IS_R2R3_OR_PSEUDO_REGNO(op)  (IS_R2R3_OR_PSEUDO_REG(REGNO(op)))
-#define IS_EXT_OR_PSEUDO_REGNO(op)   (IS_EXT_OR_PSEUDO_REG(REGNO(op)))
-#define IS_STD_OR_PSEUDO_REGNO(op)   (IS_STD_OR_PSEUDO_REG(REGNO(op)))
-#define IS_EXT_LOW_OR_PSEUDO_REGNO(op) (IS_EXT_LOW_OR_PSEUDO_REG(REGNO(op)))
-#define IS_INT_OR_PSEUDO_REGNO(op)   (IS_INT_OR_PSEUDO_REG(REGNO(op)))
-
-#define IS_ADDR_OR_PSEUDO_REGNO(op)  (IS_ADDR_OR_PSEUDO_REG(REGNO(op)))
-#define IS_INDEX_OR_PSEUDO_REGNO(op) (IS_INDEX_OR_PSEUDO_REG(REGNO(op)))
-#define IS_DP_OR_PSEUDO_REGNO(op)    (IS_DP_OR_PSEUDO_REG(REGNO(op)))
-#define IS_SP_OR_PSEUDO_REGNO(op)    (IS_SP_OR_PSEUDO_REG(REGNO(op)))
-#define IS_ST_OR_PSEUDO_REGNO(op)    (IS_ST_OR_PSEUDO_REG(REGNO(op)))
-#define IS_RC_OR_PSEUDO_REGNO(op)    (IS_RC_OR_PSEUDO_REG(REGNO(op)))
+#define IS_ADDR_OR_PSEUDO_REG(op)  (IS_ADDR_OR_PSEUDO_REGNO(REGNO(op)))
+#define IS_INDEX_OR_PSEUDO_REG(op) (IS_INDEX_OR_PSEUDO_REGNO(REGNO(op)))
+#define IS_DP_OR_PSEUDO_REG(op)    (IS_DP_OR_PSEUDO_REGNO(REGNO(op)))
+#define IS_SP_OR_PSEUDO_REG(op)    (IS_SP_OR_PSEUDO_REGNO(REGNO(op)))
+#define IS_ST_OR_PSEUDO_REG(op)    (IS_ST_OR_PSEUDO_REGNO(REGNO(op)))
+#define IS_RC_OR_PSEUDO_REG(op)    (IS_RC_OR_PSEUDO_REGNO(REGNO(op)))
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
@@ -801,10 +806,10 @@ enum reg_class
    has been allocated, which happens in local-alloc.c.  */
 
 #define REGNO_OK_FOR_BASE_P(REGNO)  \
-     (IS_ADDR_REG(REGNO) || IS_ADDR_REG((unsigned)reg_renumber[REGNO]))
+     (IS_ADDR_REGNO(REGNO) || IS_ADDR_REGNO((unsigned)reg_renumber[REGNO]))
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
-     (IS_INDEX_REG(REGNO) || IS_INDEX_REG((unsigned)reg_renumber[REGNO]))
+     (IS_INDEX_REGNO(REGNO) || IS_INDEX_REGNO((unsigned)reg_renumber[REGNO]))
 
 #define PREFERRED_RELOAD_CLASS(X, CLASS) (CLASS)
 
@@ -1575,11 +1580,11 @@ CUMULATIVE_ARGS;
 
 /* Nonzero if X is a hard or pseudo reg that can be used as an base.  */
 
-#define REG_OK_FOR_BASE_P(X) IS_ADDR_OR_PSEUDO_REG(REGNO(X))
+#define REG_OK_FOR_BASE_P(X) IS_ADDR_OR_PSEUDO_REG(X)
 
 /* Nonzero if X is a hard or pseudo reg that can be used as an index.  */
 
-#define REG_OK_FOR_INDEX_P(X) IS_INDEX_OR_PSEUDO_REG(REGNO(X))
+#define REG_OK_FOR_INDEX_P(X) IS_INDEX_OR_PSEUDO_REG(X)
 
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
 {									\

@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the TMS320C[34]x
-   Copyright (C) 1994-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994-99, 2000 Free Software Foundation, Inc.
 
    Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
               and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl).
@@ -332,22 +332,22 @@ c4x_hard_regno_mode_ok (regno, mode)
     case Pmode:			/* Pointer (24/32 bits) */
 #endif
     case QImode:		/* Integer (32 bits) */
-      return IS_INT_REG (regno);
+      return IS_INT_REGNO (regno);
 
     case QFmode:		/* Float, Double (32 bits) */
     case HFmode:		/* Long Double (40 bits) */
-      return IS_EXT_REG (regno);
+      return IS_EXT_REGNO (regno);
 
     case CCmode:		/* Condition Codes */
     case CC_NOOVmode:		/* Condition Codes */
-      return IS_ST_REG (regno);
+      return IS_ST_REGNO (regno);
 
     case HImode:		/* Long Long (64 bits) */
       /* We need two registers to store long longs.  Note that 
 	 it is much easier to constrain the first register
 	 to start on an even boundary.  */
-      return IS_INT_REG (regno)
-	&& IS_INT_REG (regno + 1)
+      return IS_INT_REGNO (regno)
+	&& IS_INT_REGNO (regno + 1)
 	&& (regno & 1) == 0;
 
     default:
@@ -636,13 +636,13 @@ c4x_isr_reg_used_p (regno)
 {
   /* Don't save/restore FP or ST, we handle them separately.  */
   if (regno == FRAME_POINTER_REGNUM
-      || IS_ST_REG (regno))
+      || IS_ST_REGNO (regno))
     return 0;
 
   /* We could be a little smarter abut saving/restoring DP.
      We'll only save if for the big memory model or if
      we're paranoid. ;-)  */
-  if (IS_DP_REG (regno))
+  if (IS_DP_REGNO (regno))
     return ! TARGET_SMALL || TARGET_PARANOID;
 
   /* Only save/restore regs in leaf function that are used.  */
@@ -652,7 +652,7 @@ c4x_isr_reg_used_p (regno)
   /* Only save/restore regs that are used by the ISR and regs
      that are likely to be used by functions the ISR calls
      if they are not fixed.  */
-  return IS_EXT_REG (regno)
+  return IS_EXT_REGNO (regno)
     || ((regs_ever_live[regno] || call_used_regs[regno]) 
 	&& fixed_regs[regno] == 0);
 }
@@ -757,7 +757,7 @@ c4x_function_prologue (file, size)
 	  if (c4x_isr_reg_used_p (regno))
 	    {
 	      fprintf (file, "\tpush\t%s\n", reg_names[regno]);
-	      if (IS_EXT_REG (regno))	/* save 32MSB of R0--R11 */
+	      if (IS_EXT_REGNO (regno))	/* save 32MSB of R0--R11 */
 		fprintf (file, "\tpushf\t%s\n", float_reg_names[regno]);
 	    }
 	}
@@ -890,7 +890,7 @@ c4x_function_epilogue (file, size)
 	{
 	  if (! c4x_isr_reg_used_p (regno))
 	    continue;
-	  if (IS_EXT_REG (regno))
+	  if (IS_EXT_REGNO (regno))
 	    fprintf (file, "\tpopf\t%s\n", float_reg_names[regno]);
 	  fprintf (file, "\tpop\t%s\n", reg_names[regno]);
 	}
@@ -1371,7 +1371,7 @@ c4x_check_legit_addr (mode, addr, strict)
 	      {
 		base = op0;	/* base + index */
 		indx = op1;
-		if (IS_INDEX_REGNO (base) || IS_ADDR_REGNO (indx))
+		if (IS_INDEX_REG (base) || IS_ADDR_REG (indx))
 		  {
 		    base = op1;
 		    indx = op0;
@@ -1466,7 +1466,7 @@ c4x_check_legit_addr (mode, addr, strict)
 	return 1;
       if (strict && ! REGNO_OK_FOR_BASE_P (REGNO (base)))
 	return 0;
-      else if (! strict && ! IS_ADDR_OR_PSEUDO_REGNO (base))
+      else if (! strict && ! IS_ADDR_OR_PSEUDO_REG (base))
 	return 0;
     }
 
@@ -1477,7 +1477,7 @@ c4x_check_legit_addr (mode, addr, strict)
 	return 0;
       if (strict && ! REGNO_OK_FOR_INDEX_P (REGNO (indx)))
 	return 0;
-      else if (! strict && ! IS_INDEX_OR_PSEUDO_REGNO (indx))
+      else if (! strict && ! IS_INDEX_OR_PSEUDO_REG (indx))
 	return 0;
     }
 
@@ -1984,7 +1984,7 @@ c4x_print_operand_address (file, addr)
 	  {
 	    if (REG_P (op1))
 	      {
-		if (IS_INDEX_REGNO (op0))
+		if (IS_INDEX_REG (op0))
 		  {
 		    fprintf (file, "*+%s(%s)",
 			     reg_names[REGNO (op1)],
@@ -2238,7 +2238,7 @@ static int
 c4x_a_register (op)
      rtx op;
 {
-  return REG_P (op) && IS_ADDR_OR_PSEUDO_REGNO (op);
+  return REG_P (op) && IS_ADDR_OR_PSEUDO_REG (op);
 }
 
 
@@ -2246,7 +2246,7 @@ static int
 c4x_x_register (op)
      rtx op;
 {
-  return REG_P (op) && IS_INDEX_OR_PSEUDO_REGNO (op);
+  return REG_P (op) && IS_INDEX_OR_PSEUDO_REG (op);
 }
 
 
@@ -2468,7 +2468,7 @@ c4x_R_indirect (op)
   switch (GET_CODE (op))
     {
     case REG:
-      return IS_ADDR_OR_PSEUDO_REGNO (op);
+      return IS_ADDR_OR_PSEUDO_REG (op);
 
     case PLUS:
       {
@@ -2477,12 +2477,12 @@ c4x_R_indirect (op)
 
 	/* HImode and HFmode must be offsettable.  */
 	if (mode == HImode || mode == HFmode)
-	  return IS_ADDR_OR_PSEUDO_REGNO (op0)
+	  return IS_ADDR_OR_PSEUDO_REG (op0)
 	    && GET_CODE (op1) == CONST_INT 
 	    && IS_UINT5_CONST (INTVAL (op1) + 1);
 
 	return REG_P (op0)
-	  && IS_ADDR_OR_PSEUDO_REGNO (op0)
+	  && IS_ADDR_OR_PSEUDO_REG (op0)
 	  && GET_CODE (op1) == CONST_INT
 	  && IS_UINT5_CONST (INTVAL (op1));
       }
@@ -2580,7 +2580,7 @@ c4x_S_indirect (op)
       op = XEXP (op, 0);
 
     case REG:
-      return IS_ADDR_OR_PSEUDO_REGNO (op);
+      return IS_ADDR_OR_PSEUDO_REG (op);
 
     case PRE_MODIFY:
     case POST_MODIFY:
@@ -2597,8 +2597,8 @@ c4x_S_indirect (op)
 	
 	op0 = XEXP (op1, 0);
 	op1 = XEXP (op1, 1);
-	return REG_P (op0) && IS_ADDR_OR_PSEUDO_REGNO (op0)
-	  && REG_P (op1) && IS_INDEX_OR_PSEUDO_REGNO (op1);
+	return REG_P (op0) && IS_ADDR_OR_PSEUDO_REG (op0)
+	  && REG_P (op1) && IS_INDEX_OR_PSEUDO_REG (op1);
 	/* pre or post_modify with a displacement of 0 or 1 
 	   should not be generated.  */
       }
@@ -2612,17 +2612,17 @@ c4x_S_indirect (op)
 	  {
 	    /* HImode and HFmode must be offsettable.  */
 	    if (mode == HImode || mode == HFmode)
-	      return IS_ADDR_OR_PSEUDO_REGNO (op0)
+	      return IS_ADDR_OR_PSEUDO_REG (op0)
 		&& GET_CODE (op1) == CONST_INT 
 		&& IS_DISP1_OFF_CONST (INTVAL (op1));
 
 	    if (REG_P (op1))
-	      return (IS_INDEX_OR_PSEUDO_REGNO (op1)
-		      && IS_ADDR_OR_PSEUDO_REGNO (op0))
-		|| (IS_ADDR_OR_PSEUDO_REGNO (op1)
-		    && IS_INDEX_OR_PSEUDO_REGNO (op0));
+	      return (IS_INDEX_OR_PSEUDO_REG (op1)
+		      && IS_ADDR_OR_PSEUDO_REG (op0))
+		|| (IS_ADDR_OR_PSEUDO_REG (op1)
+		    && IS_INDEX_OR_PSEUDO_REG (op0));
 	    
-	    return IS_ADDR_OR_PSEUDO_REGNO (op0)
+	    return IS_ADDR_OR_PSEUDO_REG (op0)
 	      && GET_CODE (op1) == CONST_INT 
 	      && IS_DISP1_CONST (INTVAL (op1));
 	  }
@@ -2897,7 +2897,7 @@ r0r1_reg_operand (op, mode)
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
-  return REG_P (op) && IS_R0R1_OR_PSEUDO_REGNO (op);
+  return REG_P (op) && IS_R0R1_OR_PSEUDO_REG (op);
 }
 
 
@@ -2912,7 +2912,7 @@ r2r3_reg_operand (op, mode)
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
-  return REG_P (op) && IS_R2R3_OR_PSEUDO_REGNO (op);
+  return REG_P (op) && IS_R2R3_OR_PSEUDO_REG (op);
 }
 
 
@@ -2927,7 +2927,7 @@ ext_low_reg_operand (op, mode)
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
-  return REG_P (op) && IS_EXT_LOW_OR_PSEUDO_REGNO (op);
+  return REG_P (op) && IS_EXT_LOW_OR_PSEUDO_REG (op);
 }
 
 
@@ -2944,7 +2944,7 @@ ext_reg_operand (op, mode)
     op = SUBREG_REG (op);
   if (! REG_P (op))
     return 0;
-  return IS_EXT_OR_PSEUDO_REGNO (op);
+  return IS_EXT_OR_PSEUDO_REG (op);
 }
 
 
@@ -2959,7 +2959,7 @@ std_reg_operand (op, mode)
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
-  return REG_P (op) && IS_STD_OR_PSEUDO_REGNO (op);
+  return REG_P (op) && IS_STD_OR_PSEUDO_REG (op);
 }
 
 
@@ -2998,7 +2998,7 @@ dp_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return REG_P (op) && IS_DP_OR_PSEUDO_REGNO (op);
+  return REG_P (op) && IS_DP_OR_PSEUDO_REG (op);
 }
 
 
@@ -3009,7 +3009,7 @@ sp_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return REG_P (op) && IS_SP_OR_PSEUDO_REGNO (op);
+  return REG_P (op) && IS_SP_OR_PSEUDO_REG (op);
 }
 
 
@@ -3020,7 +3020,7 @@ st_reg_operand (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return REG_P (op) && IS_ST_OR_PSEUDO_REGNO (op);
+  return REG_P (op) && IS_ST_OR_PSEUDO_REG (op);
 }
 
 
@@ -3031,7 +3031,7 @@ rc_reg_operand (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return REG_P (op) && IS_RC_OR_PSEUDO_REGNO (op);
+  return REG_P (op) && IS_RC_OR_PSEUDO_REG (op);
 }
 
 
@@ -3832,7 +3832,7 @@ group1_reg_operand (op, mode)
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
-  return REG_P (op) && IS_GROUP1_REG (REGNO (op));
+  return REG_P (op) && IS_GROUP1_REG (op);
 }
 
 
@@ -3852,11 +3852,11 @@ group1_mem_operand (op, mode)
 	  rtx op0 = XEXP (op, 0);
 	  rtx op1 = XEXP (op, 1);
 
-	  if (((GET_CODE (op0) == REG) && IS_GROUP1_REGNO (op0))
-	      || ((GET_CODE (op1) == REG) && IS_GROUP1_REGNO (op1)))
+	  if (((GET_CODE (op0) == REG) && IS_GROUP1_REG (op0))
+	      || ((GET_CODE (op1) == REG) && IS_GROUP1_REG (op1)))
 	    return 1;
 	}
-      else if ((REG_P (op)) && IS_GROUP1_REGNO (op))
+      else if ((REG_P (op)) && IS_GROUP1_REG (op))
 	return 1;
     }
 
@@ -3875,7 +3875,7 @@ arx_reg_operand (op, mode)
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
-  return REG_P (op) && IS_ADDR_REGNO (op);
+  return REG_P (op) && IS_ADDR_REG (op);
 }
 
 
