@@ -1,3 +1,7 @@
+2002-10-13  Mark Wielaard  <mark@klomp.org>
+
+	* mauve-libgcj: Enable Mauve tests that compile now.
+
 2002-10-11  Mark Wielaard  <mark@klomp.org>
 
 	Fix for PR libgcj/8142

@@ -7,28 +7,16 @@ JDK1.4
 JLS1.0
 JLS1.1
 JLS1.2
+JDBC1.0
 JDBC2.0
-
-# These 2 are tests that fail with JDBC2.0 but the tags don't seem to
-# have the right effect.
-!java.sql.Connection.TestJdbc10
-!java.sql.DatabaseMetaData.TestJdbc10
-
-# We now implement JDBC3.0 which means the following tests don't compile
-!java.sql.Blob.BlobTest
-!java.sql.Clob.ClobTest
-!java.sql.Connection.TestJdbc20
-!java.sql.DatabaseMetaData.TestJdbc20
 
 # Cannot be compiled
 !java.text.ACIAttribute
 
-# The following tests seem to (sometimes) hang or crash the testsuite
+# The following tests seem to hang or crash the testsuite.
+# This a problem when running Mauve "standalone".
 !java.io.ObjectInputOutput
 !java.lang.reflect.Array.newInstance
-!java.util.ResourceBundle.getBundle
-!java.util.zip.GZIPInputStream.basic
-!java.net.DatagramSocket.DatagramSocketTest2
 
 # Character.unicode seems to be very broken (the test)
 # Does not give meaningfull test results at the moment.
@@ -36,4 +24,5 @@ JDBC2.0
 
 # These are almost certainly buggy test cases.
 # The behaviour of the garbarge collector cannot be predicted.
-!java.lang.ref
+# Note the . at the end so we do test java.lang.reflect
+!java.lang.ref.
