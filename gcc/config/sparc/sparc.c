@@ -2246,6 +2246,10 @@ output_function_epilogue (file, size, leaf_function)
 	  final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
 			   file, 1, 0, 1);
 	}
+      /* Output 'nop' instead of 'sub %sp,-0,%sp' when no frame, so as to
+	 avoid generating confusing assembly language output.  */
+      else if (actual_fsize == 0)
+	fprintf (file, "\t%s\n\tnop\n", ret);
       else if (actual_fsize <= 4096)
 	fprintf (file, "\t%s\n\tsub %%sp,-%d,%%sp\n", ret, actual_fsize);
       else if (actual_fsize <= 8192)
