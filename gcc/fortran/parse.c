@@ -2201,7 +2201,7 @@ parse_contained (int module)
 		      gfc_new_block);
 
 	  /* For internal procedures, create/update the symbol in the
-	   * parent namespace */
+	     parent namespace.  */
 
 	  if (!module)
 	    {
