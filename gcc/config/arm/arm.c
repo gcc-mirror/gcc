@@ -6776,6 +6776,9 @@ output_arm_prologue (f, frame_size)
   if (volatile_func)
     asm_fprintf (f, "\t%@ Volatile function.\n");
 
+  if (current_function_needs_context)
+    asm_fprintf (f, "\t%@ Nested function.\n");
+
   if (current_function_anonymous_args && current_function_pretend_args_size)
     store_arg_regs = 1;
 
@@ -7318,6 +7321,9 @@ arm_expand_prologue ()
      the call-saved regs.  */
   int volatile_func = arm_volatile_func ();
   rtx insn;
+  rtx ip_rtx;
+  int fp_offset = 0;
+      
 
   /* Naked functions don't have prologues.  */
   if (arm_naked_function_p (current_function_decl))
@@ -7345,11 +7351,59 @@ arm_expand_prologue ()
 	live_regs_mask |= 1 << LR_REGNUM;
     }
 
+  ip_rtx = gen_rtx_REG (SImode, IP_REGNUM);
+  
   if (frame_pointer_needed)
     {
+      if (current_function_needs_context)
+	{
+	  /* The Static chain register is the same as the IP register
+	     used as a scratch register during stack frame creation.
+	     To get around this need to find somewhere to store IP
+	     whilst the frame is being created.  We try the following
+	     places in order:
+	     
+	       1. An unused argument register.
+	       2. A slot on the stack above the frame.  (This only
+	          works if the function is not a varargs function).
+		  
+	     If neither of these places is available, we abort (for now).  */
+	  if (regs_ever_live[3] == 0)
+	    {
+	      insn = gen_rtx_REG (SImode, 3);
+	      insn = gen_rtx_SET (SImode, insn, ip_rtx);
+	      insn = emit_insn (insn);
+	      RTX_FRAME_RELATED_P (insn) = 1;	  
+	    }
+	  else if (current_function_pretend_args_size == 0)
+	    {
+	      insn = gen_rtx_PRE_DEC (SImode, stack_pointer_rtx);
+	      insn = gen_rtx_MEM (SImode, insn);
+	      insn = gen_rtx_SET (VOIDmode, insn, ip_rtx);
+	      insn = emit_insn (insn);
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      fp_offset = 4;
+	    }
+	  else
+	    /* FIXME - the way to handle this situation is to allow
+	       the pretend args to be dumped onto the stack, then
+	       reuse r3 to save IP.  This would involve moving the
+	       copying os SP into IP until after the pretend args
+	       have been dumped, but this is not too hard.  */
+	    error ("Unable to find a temporary location for static chanin register");
+	}
+
       live_regs_mask |= 0xD800;
-      insn = emit_insn (gen_movsi (gen_rtx_REG (SImode, IP_REGNUM),
-				   stack_pointer_rtx));
+
+      if (fp_offset)
+	{
+	  insn = gen_rtx_PLUS (SImode, stack_pointer_rtx, GEN_INT (fp_offset));
+	  insn = gen_rtx_SET  (SImode, ip_rtx, insn);
+	}
+      else
+	insn = gen_movsi (ip_rtx, stack_pointer_rtx);
+      
+      insn = emit_insn (insn);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -7426,11 +7480,29 @@ arm_expand_prologue ()
 
   if (frame_pointer_needed)
     {
-      insn = GEN_INT (-(4 + current_function_pretend_args_size));
-      insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
-				    gen_rtx_REG (SImode, IP_REGNUM),
-				    insn));
+      insn = GEN_INT (-(4 + current_function_pretend_args_size + fp_offset));
+      insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx, ip_rtx, insn));
       RTX_FRAME_RELATED_P (insn) = 1;
+      
+      if (current_function_needs_context)
+	{
+	  /* Recover the static chain register.  */
+	  if (regs_ever_live [3] == 0)
+	    {
+	      insn = gen_rtx_REG (SImode, 3);
+	      insn = gen_rtx_SET (SImode, ip_rtx, insn);
+	      insn = emit_insn (insn);
+	      RTX_FRAME_RELATED_P (insn) = 1;	  
+	    }
+	  else /* if (current_function_pretend_args_size == 0) */
+	    {
+	      insn = gen_rtx_PLUS (SImode, hard_frame_pointer_rtx, GEN_INT (4));
+	      insn = gen_rtx_MEM (SImode, insn);
+	      insn = gen_rtx_SET (SImode, ip_rtx, insn);
+	      insn = emit_insn (insn);
+	      RTX_FRAME_RELATED_P (insn) = 1;	  
+	    }
+	}
     }
 
   if (amount != const0_rtx)

@@ -1,3 +1,15 @@
+2000-11-16  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c (output_arm_prologue): Note nested functions.
+	(arm_expand_prologue): For nested functions preserve the
+	static chain register during stack frame creation.
+
+	* config/arm/arm.h (STATIC_CHAIN_REGNUM): Change to 12.
+	(ARM_INITIAL_FRAME_ELIMINATION_OFFSET): For a nested function
+	with a stack frame there is a 4 byte gap between the arg
+	pointer and the hard frame pointer (used to preserve the
+	static chain register during stack frame creation).
+
 2000-11-16  DJ Delorie  <dj@redhat.com>
 
 	* rtl.c (read_rtx): Provide suitable names for unnamed

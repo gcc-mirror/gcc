@@ -891,7 +891,7 @@ extern const char * structure_size_string;
 /* The native (Norcroft) Pascal compiler for the ARM passes the static chain
    as an invisible last argument (possible since varargs don't exist in
    Pascal), so the following is not true.  */
-#define STATIC_CHAIN_REGNUM	(TARGET_ARM ? 8 : 9)
+#define STATIC_CHAIN_REGNUM	(TARGET_ARM ? 12 : 9)
 
 /* Define this to be where the real frame pointer is if it is not possible to
    work out the offset between the frame pointer and the automatic variables
@@ -1600,7 +1600,12 @@ typedef struct
 {									\
   int volatile_func = arm_volatile_func ();				\
   if ((FROM) == ARG_POINTER_REGNUM && (TO) == HARD_FRAME_POINTER_REGNUM)\
-    (OFFSET) = 0;							\
+    {									\
+      if (! current_function_needs_context || ! frame_pointer_needed)	\
+        (OFFSET) = 0;							\
+      else								\
+        (OFFSET) = 4;							\
+    }									\
   else if ((FROM) == FRAME_POINTER_REGNUM				\
 	   && (TO) == STACK_POINTER_REGNUM)				\
     (OFFSET) = current_function_outgoing_args_size			\
