@@ -1328,6 +1328,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   rtx *real_output_rtx = (rtx *) alloca (noutputs * sizeof (rtx));
   enum machine_mode *inout_mode
     = (enum machine_mode *) alloca (noutputs * sizeof (enum machine_mode));
+  const char **output_constraints
+    = alloca (noutputs * sizeof (const char *));
   /* The insn we have emitted.  */
   rtx insn;
   int old_generating_concat_p = generating_concat_p;
@@ -1426,6 +1428,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	 message.  */
 
       constraint = TREE_STRING_POINTER (TREE_PURPOSE (tail));
+      output_constraints[i] = constraint;
       c_len = strlen (constraint);
 
       /* Allow the `=' or `+' to not be at the beginning of the string,
@@ -1455,6 +1458,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    memcpy (buf + 1, constraint, j);
 	  memcpy (buf + 1 + j, p + 1, c_len - j);  /* not -j-1 - copy null */
 	  constraint = ggc_alloc_string (buf, c_len);
+	  output_constraints[i] = constraint;
 
 	  if (j)
 	    warning (
@@ -1824,7 +1828,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   if (noutputs == 1 && nclobbers == 0)
     {
       ASM_OPERANDS_OUTPUT_CONSTRAINT (body)
-	= TREE_STRING_POINTER (TREE_PURPOSE (outputs));
+	= output_constraints[0];
       insn = emit_insn (gen_rtx_SET (VOIDmode, output_rtx[0], body));
     }
 
@@ -1853,7 +1857,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 			   gen_rtx_ASM_OPERANDS
 			   (GET_MODE (output_rtx[i]),
 			    TREE_STRING_POINTER (string),
-			    TREE_STRING_POINTER (TREE_PURPOSE (tail)),
+			    output_constraints[i],
 			    i, argvec, constraints,
 			    filename, line));
 
