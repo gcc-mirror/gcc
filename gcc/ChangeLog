@@ -1,3 +1,7 @@
+Mon Mar  2 08:06:58 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Makefile.in (clean): Delete stamp-* and */stamp-*.
+
 Sun Mar  1 05:50:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.c (build_reference_type): Handle obstacks like
