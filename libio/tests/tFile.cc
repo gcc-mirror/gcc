@@ -225,7 +225,7 @@ void t4()
   tf.remove();
 #else
   tf.close();
-  unlink("tempfile");
+  unlink(tempfile);
 #endif
   assert(!tf.is_open());
 }

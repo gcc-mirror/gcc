@@ -17,12 +17,8 @@ frags=
 case "${target}" in
   *-hpux*)       frags=hpux.mt ;;
   *-linux-gnulibc1)
-	echo "WARNING:  The I/O implementation in FSF libg++ 2.8.x is not"
-	echo "  compatible with Linux libc through 5.2.x."
-	echo "  See libg++/README for more information."
-	echo "  YOU ARE ON YOUR OWN!"
 		 frags=linuxlibc1.mt ;;
-  *-linux-gnu)   frags=linux.mt ;;
+  *-linux-gnu)   frags="linux.mt mtsafe.mt" ;;
   *-sco3.2v[45]*)   frags=sco4.mt ;;
   *-isc*)        frags=isc.mt ;;
   *-netware*)    frags=netware.mt ;;
@@ -40,6 +36,8 @@ if [ "${shared}" = "yes" ]; then
   case "${target}" in
     hppa*-*)	 frags="${frags} ../../config/mh-papic" ;;
     i[3456]86-*) frags="${frags} ../../config/mh-x86pic" ;;
+    alpha-*-linux*)
+		 frags="${frags} ../../config/mh-elfalphapic" ;;
     *)	         frags="${frags} ../../config/mh-${target_cpu}pic" ;;
   esac
 fi

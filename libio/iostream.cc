@@ -44,7 +44,7 @@ extern "C" int __printf_fp (_IO_FILE *, const struct printf_info *,
 #include "floatio.h"
 # ifndef _IO_USE_DTOA
 int __cvt_double(double number, register int prec, int flags, int *signp,
-                 int fmtch, char *startp, char *endp)
+                 int fmtch, char *startp, char *endp);
 # endif
 #endif
 
@@ -623,14 +623,17 @@ ostream& ostream::operator<<(double n)
 				      is_long_double: 0,
 				      is_short: 0,
 				      is_long: 0,
-				      alt: flags() & ios::showpoint,
+				      alt: (flags() & ios::showpoint) != 0,
 				      space: 0,
-				      left: ios::left,
-				      showsign: flags() & ios::showpos,
+				      left: (flags() & ios::left) != 0,
+				      showsign: (flags() & ios::showpos) != 0,
 				      group: 0,
-				      pad: fill(),
-				      extra: 0};
-	  const void *ptr = &n;
+				      pad: fill()
+#if defined __GLIBC__ && __GLIBC__ >= 2
+				      , extra: 0
+#endif
+	  };
+	  const void *ptr = (const void *) &n;
 	  if (__printf_fp (rdbuf(), &info, &ptr) < 0)
 	    set(ios::badbit|ios::failbit);
 	}
@@ -723,15 +726,18 @@ ostream& ostream::operator<<(long double n)
 				  is_long_double: 1,
 				  is_short: 0,
 				  is_long: 0,
-				  alt: flags() & ios::showpoint,
+				  alt: (flags() & ios::showpoint) != 0,
 				  space: 0,
-				  left: ios::left,
-				  showsign: flags() & ios::showpos,
+				  left: (flags() & ios::left) != 0,
+				  showsign: (flags() & ios::showpos) != 0,
 				  group: 0,
-				  pad: fill(),
-				  extra: 0};
+				  pad: fill()
+#if defined __GLIBC__ && __GLIBC__ >= 2
+				  , extra: 0
+#endif
+      };
 
-      const void *ptr = &n;
+      const void *ptr = (const void *) &n;
 
       if (__printf_fp (rdbuf(), &info, &ptr) < 0)
 	set (ios::badbit|ios::failbit);

@@ -36,7 +36,7 @@ extern "C" {
 #include <libio.h>
 }
 //#include <_G_config.h>
-#ifdef _IO_NEED_STDARG_H
+#ifdef _G_NEED_STDARG_H
 #include <stdarg.h>
 #endif
 #ifndef _IO_va_list

@@ -1,3 +1,43 @@
+Fri Sep 26 20:56:41 1997  Ulrich Drepper  <drepper@rtl.cygnus.com>
+
+	Based on a patch by H.J. Lu  (hjl@gnu.ai.mit.edu).
+
+	* Makefile.in (STDIO_OBJECTS): New. Defined as stdfiles.o.
+	(LIBIO_OBJECTS): Add $(STDIO_OBJECTS).
+	(PICFLAG): New, empty.  moved to here from config.shared.
+
+	* config.shared (DISTCLEAN): Add target-mkfrag.
+	(PICFLAG): Removed.
+
+	* configure.in (*-linux-gnulibc1): Remove warning.
+	(*-linux-gnu): Use linux.mt mtsafe.mt.
+	(alpha-*-linux*): Use mh-elfalphapic.
+
+	* gen-params (_G_ullong): Also check unsigned long long int.
+	(_G_llong): Also check long long int.
+
+	* libio.h (_IO_lock_t): Add support for the Linux libc 5.
+	(_IO_peekc): Defined as _IO_peekc_unlocked if _IO_MTSAFE_IO
+	is not defined.
+
+	* iostream.cc (__cvt_double): Fix a typo in declaration.
+	(info): Use expr != 0 to initialize the bit fields. Don't
+	initialize "extra" for the Linux libc 5.
+
+	* streambuf.h (_G_NEED_STDARG_H): Changed from _IO_NEED_STDARG_H.
+
+	* config/linux.mt (STDIO_OBJECTS): New, empty.
+	(MT_CFLAGS): Removed.
+
+	* config/linuxlibc1.mt: Rewrite.  it's identical to linux.mt but
+	IO_OBJECTS mentions files not in early libc5 versions.
+
+	* config/mtsafe.mt: New.
+
+	* dbz/Makefile.in (check): Support make -j.
+
+	* tests/tFile.cc (tempfile): Fix a typo.
+
 Fri Sep 19 11:52:25 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (LIBIO_OBJECTS): Depend on _G_CONFIG_H.

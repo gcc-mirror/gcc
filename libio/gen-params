@@ -288,6 +288,8 @@ for TYPE in dev_t clock_t fpos_t gid_t ino_t mode_t nlink_t off_t pid_t ptrdiff_
 	for iteration in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
 	    # Search dummy.out for a typedef for X*$t.
 	    sed_script="
+		s/unsigned long long int/_G_ullong/g
+		s/long long int/_G_llong/g
 		s/unsigned long long/_G_ullong/g
 		s/long long/_G_llong/g
 		/.*typedef  *\\(.*[^ ]\\)  *X*$t *;.*/{s||\1|;p;q;}

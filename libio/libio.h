@@ -75,12 +75,6 @@
 # define _IO_USE_DTOA 1
 #endif
 
-#if 0
-# ifdef _IO_NEED_STDARG_H
-#  include <stdarg.h>
-# endif
-#endif
-
 #ifndef EOF
 # define EOF (-1)
 #endif
@@ -155,9 +149,24 @@ struct _IO_jump_t;  struct _IO_FILE;
 
 /* Handle lock.  */
 #ifdef _IO_MTSAFE_IO
-# include <bits/stdio-lock.h>
+# if defined __GLIBC__ && __GLIBC__ >= 2
+#  include <bits/stdio-lock.h>
+#  define _IO_LOCK_T _IO_lock_t *
+# else
+/*# include <comthread.h>*/
+# endif
 #else
+/* XXX This will go away as soon as comthread is finished.  */
+# ifdef __linux__
+struct _IO_lock_t {
+  void *ptr;
+  short int field1;
+  short int field2;
+};
+#  define _IO_LOCK_T struct _IO_lock_t
+# else
 typedef void _IO_lock_t;
+# endif
 #endif
 
 
@@ -217,7 +226,7 @@ struct _IO_FILE {
 
   /*  char* _save_gptr;  char* _save_egptr; */
 
-  _IO_lock_t *_lock;
+  _IO_LOCK_T _lock;
 };
 
 #ifndef __cplusplus
@@ -289,7 +298,10 @@ extern void _IO_flockfile __P ((_IO_FILE *));
 extern void _IO_funlockfile __P ((_IO_FILE *));
 extern int _IO_ftrylockfile __P ((_IO_FILE *));
 
-#ifndef _IO_MTSAFE_IO
+#ifdef _IO_MTSAFE_IO
+# define _IO_peekc(_fp) _IO_peekc_locked (_fp)
+#else
+# define _IO_peekc(_fp) _IO_peekc_unlocked (_fp)
 # define _IO_flockfile(_fp) /**/
 # define _IO_funlockfile(_fp) /**/
 # define _IO_ftrylockfile(_fp) /**/
@@ -297,7 +309,6 @@ extern int _IO_ftrylockfile __P ((_IO_FILE *));
 # define _IO_cleanup_region_end(_Doit) /**/
 #endif /* !_IO_MTSAFE_IO */
 
-#define _IO_peekc(_fp) _IO_peekc_locked (_fp)
 
 extern int _IO_vfscanf __P ((_IO_FILE *, const char *, _IO_va_list, int *));
 extern int _IO_vfprintf __P ((_IO_FILE *, const char *, _IO_va_list));
