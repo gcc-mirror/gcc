@@ -1,5 +1,7 @@
 Mon Jun  7 23:39:16 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* g++.old-deja/g++.mike/p6610a.C: Expect failure on freebsd-elf.
+
 	* gcc.c-torture/execute/ieee/rbug.x: Expect failure on freebsd.
 	* gcc.c-torture/execute/ieee/mzero.x: New file.  Likewise.
 
