@@ -1,3 +1,12 @@
+2002-07-08  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md: Add imadd type.  Update scheduler description
+	to use imadd as well as imul.
+	(*mul_acc_si, *madsi): Change imul alternatives to imadd.
+	(*mul_acc_di, *mul_acc_64bit_di): Likewise.
+	(*mul_sub_si): Likewise for first alternative.  Change second
+	alternative from imul to multi.
+
 2002-07-07  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-common.c (c_common_post_options): Update prototype;

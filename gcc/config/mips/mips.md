@@ -68,6 +68,7 @@
 ;; arith	integer arithmetic instruction
 ;; darith	double precision integer arithmetic instructions
 ;; imul		integer multiply
+;; imadd	integer multiply-add
 ;; idiv		integer divide
 ;; icmp		integer compare
 ;; fadd		floating point add/subtract
@@ -83,7 +84,7 @@
 ;; nop		no operation
 
 (define_attr "type"
-  "unknown,branch,jump,call,load,store,move,xfer,hilo,arith,darith,imul,idiv,icmp,fadd,fmul,fmadd,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,multi,nop"
+  "unknown,branch,jump,call,load,store,move,xfer,hilo,arith,darith,imul,imadd,idiv,icmp,fadd,fmul,fmadd,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,multi,nop"
   (const_string "unknown"))
 
 ;; Main data type used by the insn
@@ -222,7 +223,7 @@
   1 3)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul")
+  (and (eq_attr "type" "imul,imadd")
        (eq_attr "cpu" "!r3000,r3900,r4000,r4600,r4650,r4100,r4300,r5000"))
   17 17)
 
@@ -237,39 +238,39 @@
   1 5)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul") (eq_attr "cpu" "r3000,r3900"))
+  (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "r3000,r3900"))
   12 12)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul") (eq_attr "cpu" "r4000,r4600"))
+  (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "r4000,r4600"))
   10 10)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul") (eq_attr "cpu" "r4650"))
+  (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "r4650"))
   4 4)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul")
+  (and (eq_attr "type" "imul,imadd")
        (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4100")))
   1 1)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul")
+  (and (eq_attr "type" "imul,imadd")
        (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4100")))
   4 4)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul")
+  (and (eq_attr "type" "imul,imadd")
        (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4300,r5000")))
   5 5)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul")
+  (and (eq_attr "type" "imul,imadd")
        (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4300")))
   8 8)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul")
+  (and (eq_attr "type" "imul,imadd")
        (and (eq_attr "mode" "DI") (eq_attr "cpu" "r5000")))
   9 9)
 
@@ -1868,7 +1869,7 @@
     return \"#\";
   return madd[which_alternative];
 }"
-  [(set_attr "type"	"imul,imul,multi")
+  [(set_attr "type"	"imadd,imadd,multi")
    (set_attr "mode"	"SI")
    (set_attr "length"	"4,4,8")])
 
@@ -1932,7 +1933,7 @@
     return \"#\";
   return \"msub\\t%2,%3\";
 }"
-  [(set_attr "type"     "imul,imul,multi")
+  [(set_attr "type"     "imadd,multi,multi")
    (set_attr "mode"     "SI")
    (set_attr "length"   "4,8,8")])
 
@@ -2241,7 +2242,7 @@
    (clobber (match_scratch:SI 4 "=a"))]
   "TARGET_MAD"
   "mad\\t%1,%2"
-  [(set_attr "type"	"imul")
+  [(set_attr "type"	"imadd")
    (set_attr "mode"	"SI")])
 
 (define_insn "*mul_acc_di"
@@ -2262,7 +2263,7 @@
   else
     return \"madu\\t%1,%2\";
 }"
-  [(set_attr "type"	"imul")
+  [(set_attr "type"	"imadd")
    (set_attr "mode"	"SI")])
 
 (define_insn "*mul_acc_64bit_di"
@@ -2284,7 +2285,7 @@
   else
     return \"madu\\t%1,%2\";
 }"
-  [(set_attr "type"	"imul")
+  [(set_attr "type"	"imadd")
    (set_attr "mode"	"SI")])
 
 ;; Floating point multiply accumulate instructions.
