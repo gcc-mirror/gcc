@@ -10228,7 +10228,8 @@ elif test -f $gcc_cv_ld_gld_srcdir/configure.in \
 	in_tree_ld=yes
 	in_tree_ld_is_elf=no
 	if (grep 'EMUL = .*elf' ../ld/Makefile \
-	    || grep 'EMUL = .*linux' ../ld/Makefile) > /dev/null; then
+	    || grep 'EMUL = .*linux' ../ld/Makefile \
+	    || grep 'EMUL = .*lynx' ../ld/Makefile) > /dev/null; then
 	  in_tree_ld_is_elf=yes
 	fi
 	for f in $gcc_cv_ld_bfd_srcdir/configure $gcc_cv_ld_gld_srcdir/configure $gcc_cv_ld_gld_srcdir/configure.in $gcc_cv_ld_gld_srcdir/Makefile.in
