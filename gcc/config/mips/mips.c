@@ -62,37 +62,38 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define STAB_CODE_TYPE int
 #endif
 
-extern char *getenv ();
+extern void   abort ();
+extern int    atoi ();
+extern char  *getenv ();
+extern char  *mktemp ();
+ 
+extern rtx    adj_offsettable_operand ();
+extern rtx    copy_to_reg ();
+extern void   error ();
+extern void   fatal ();
+extern tree   lookup_name ();
+extern void   pfatal_with_name ();
+extern void   warning ();
 
-extern char *permalloc ();
-extern void  debug_rtx ();
-extern void  abort_with_insn ();
-extern rtx   copy_to_reg ();
-extern rtx   adj_offsettable_operand ();
-extern int   offsettable_address_p ();
-extern tree  lookup_name ();
+extern rtx    gen_addsi3 ();
+extern rtx    gen_andsi3 ();
+extern rtx    gen_beq ();
+extern rtx    gen_bne ();
+extern rtx    gen_cmpsi ();
+extern rtx    gen_indirect_jump ();
+extern rtx    gen_iorsi3 ();
+extern rtx    gen_jump ();
+extern rtx    gen_movhi ();
+extern rtx    gen_movqi ();
+extern rtx    gen_movsi ();
+extern rtx    gen_movsi_ulw ();
+extern rtx    gen_movsi_usw ();
+extern rtx    gen_movstrsi_internal ();
+extern rtx    gen_return_internal ();
+extern rtx    gen_subsi3 ();
 
-extern rtx gen_movqi ();
-extern rtx gen_movhi ();
-extern rtx gen_movsi ();
-extern rtx gen_movsi_ulw ();
-extern rtx gen_movsi_usw ();
-extern rtx gen_movstrsi_internal ();
-extern rtx gen_addsi3 ();
-extern rtx gen_iorsi3 ();
-extern rtx gen_andsi3 ();
-extern rtx gen_bne ();
-extern rtx gen_beq ();
-extern rtx gen_cmpsi ();
-extern rtx gen_jump ();
-
-extern char   call_used_regs[];
-extern char  *asm_file_name;
-extern FILE  *asm_out_file;
 extern tree   current_function_decl;
-extern char **save_argv;
-extern char  *version_string;
-extern char  *language_string;
+extern FILE  *asm_out_file;
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
@@ -447,6 +448,9 @@ reg_or_0_operand (op, mode)
 {
   switch (GET_CODE (op))
     {
+    default:
+      break;
+
     case CONST_INT:
       return (INTVAL (op) == 0);
 
@@ -558,6 +562,9 @@ simple_memory_operand (op, mode)
   addr = XEXP (op, 0);
   switch (GET_CODE (addr))
     {
+    default:
+      break;
+
     case REG:
       return TRUE;
 
@@ -819,6 +826,9 @@ mips_count_memory_refs (op, num)
       looping = FALSE;
       switch (GET_CODE (addr))
 	{
+	default:
+	  break;
+
 	case REG:
 	case CONST_INT:
 	  break;
@@ -1013,6 +1023,7 @@ mips_move_1word (operands, insn, unsignedp)
 		 target, so zero/sign extend can use this code as well.  */
 	      switch (GET_MODE (op1))
 		{
+		default:      break;
 		case SFmode: ret = "lw\t%0,%1"; break;
 		case SImode: ret = "lw\t%0,%1"; break;
 		case HImode: ret = (unsignedp) ? "lhu\t%0,%1" : "lh\t%0,%1"; break;
@@ -1049,7 +1060,7 @@ mips_move_1word (operands, insn, unsignedp)
 	    }
 
 	  else if (GP_REG_P (regno0))
-	    ret = (INTVAL (op1) < 0) ? "li\t%0,%1\t\t# %X1" : "li\t%0,%X1\t\t# %1";
+	    ret = (INTVAL (op1) < 0) ? "li\t%0,%1\t\t\t# %X1" : "li\t%0,%X1\t\t# %1";
 	}
 
       else if (code1 == CONST_DOUBLE && mode == SFmode)
@@ -1121,6 +1132,7 @@ mips_move_1word (operands, insn, unsignedp)
 	    {
 	      switch (mode)
 		{
+		default: break;
 		case SFmode: ret = "sw\t%1,%0"; break;
 		case SImode: ret = "sw\t%1,%0"; break;
 		case HImode: ret = "sh\t%1,%0"; break;
@@ -1136,6 +1148,7 @@ mips_move_1word (operands, insn, unsignedp)
 	{
 	  switch (mode)
 	    {
+	    default: break;
 	    case SFmode: ret = "sw\t%z1,%0"; break;
 	    case SImode: ret = "sw\t%z1,%0"; break;
 	    case HImode: ret = "sh\t%z1,%0"; break;
@@ -1147,6 +1160,7 @@ mips_move_1word (operands, insn, unsignedp)
 	{
 	  switch (mode)
 	    {
+	    default: break;
 	    case SFmode: ret = "sw\t%.,%0"; break;
 	    case SImode: ret = "sw\t%.,%0"; break;
 	    case HImode: ret = "sh\t%.,%0"; break;
@@ -1274,8 +1288,8 @@ mips_move_2words (operands, insn)
 
 	      else
 		{
-		  operands[2] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (op1));
-		  operands[3] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_HIGH (op1));
+		  operands[2] = GEN_INT (CONST_DOUBLE_LOW (op1));
+		  operands[3] = GEN_INT (CONST_DOUBLE_HIGH (op1));
 		  ret = "li\t%M0,%3\n\tli\t%L0,%2";
 		}
 	    }
@@ -1311,7 +1325,7 @@ mips_move_2words (operands, insn)
 	
       else if (code1 == CONST_INT && GET_MODE (op0) == DImode && GP_REG_P (regno0))
 	{
-	  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) >= 0 ? 0 : -1);
+	  operands[2] = GEN_INT (INTVAL (operands[1]) >= 0 ? 0 : -1);
 	  ret = "li\t%M0,%2\n\tli\t%L0,%1";
 	}
 
@@ -1412,6 +1426,9 @@ mips_address_cost (addr)
 {
   switch (GET_CODE (addr))
     {
+    default:
+      break;
+
     case LO_SUM:
     case HIGH:
       return 1;
@@ -1453,6 +1470,9 @@ mips_address_cost (addr)
 
 	switch (GET_CODE (plus1))
 	  {
+	  default:
+	    break;
+
 	  case CONST_INT:
 	    {
 	      int value = INTVAL (plus1);
@@ -1483,6 +1503,7 @@ map_test_to_internal_test (test_code)
 
   switch (test_code)
     {
+    default:			break;
     case EQ:  test = ITEST_EQ;  break;
     case NE:  test = ITEST_NE;  break;
     case GT:  test = ITEST_GT;  break;
@@ -1645,7 +1666,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
   if (GET_CODE (cmp1) == CONST_INT)
     {
       if (p_info->const_add != 0)
-	cmp1 = gen_rtx (CONST_INT, VOIDmode, INTVAL (cmp1) + p_info->const_add);
+	cmp1 = GEN_INT (INTVAL (cmp1) + p_info->const_add);
     }
   else if (p_info->reverse_regs)
     {
@@ -1809,6 +1830,7 @@ fail:
 /* Internal code to generate the load and store of one word/short/byte.
    The load is emitted directly, and the store insn is returned.  */
 
+#if 0
 static rtx
 block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align, orig_src)
      rtx src_reg;		/* register holding source memory address */
@@ -1881,8 +1903,8 @@ block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align, orig_src)
     }
   else
     {
-      src_addr  = gen_rtx (PLUS, Pmode, src_reg,  gen_rtx (CONST_INT, VOIDmode, offset));
-      dest_addr = gen_rtx (PLUS, Pmode, dest_reg, gen_rtx (CONST_INT, VOIDmode, offset));
+      src_addr  = gen_rtx (PLUS, Pmode, src_reg,  GEN_INT (offset));
+      dest_addr = gen_rtx (PLUS, Pmode, dest_reg, GEN_INT (offset));
     }
 
   reg = gen_reg_rtx (mode);
@@ -1895,6 +1917,7 @@ block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align, orig_src)
 
   return (*store_func) (gen_rtx (MEM, mode, dest_addr), reg);
 }
+#endif
 
 
 /* Write a series of loads/stores to move some bytes.  Generate load/stores as follows:
@@ -1913,6 +1936,7 @@ block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align, orig_src)
    two temp registers are needed.  Two delay slots are used
    in deference to the R4000.  */
 
+#if 0
 static void
 block_move_sequence (dest_reg, src_reg, bytes, align, orig_src)
      rtx dest_reg;		/* register holding destination address */
@@ -1949,6 +1973,7 @@ block_move_sequence (dest_reg, src_reg, bytes, align, orig_src)
   if (cur_store)
     emit_insn (cur_store);
 }
+#endif
 
 
 /* Write a loop to move a constant number of bytes.  Generate load/stores as follows:
@@ -1986,11 +2011,10 @@ block_move_loop (dest_reg, src_reg, bytes, align, orig_src)
 {
   rtx dest_mem		= gen_rtx (MEM, BLKmode, dest_reg);
   rtx src_mem		= gen_rtx (MEM, BLKmode, src_reg);
-  rtx align_rtx		= gen_rtx (CONST_INT, VOIDmode, align);
+  rtx align_rtx		= GEN_INT (align);
   rtx label;
   rtx final_src;
   rtx bytes_rtx;
-  int i;
   int leftover;
 
   if (bytes < 2*MAX_MOVE_BYTES)
@@ -2001,7 +2025,7 @@ block_move_loop (dest_reg, src_reg, bytes, align, orig_src)
 
   label = gen_label_rtx ();
   final_src = gen_reg_rtx (Pmode);
-  bytes_rtx = gen_rtx (CONST_INT, VOIDmode, bytes);
+  bytes_rtx = GEN_INT (bytes);
 
   if (bytes > 0x7fff)
     {
@@ -2013,7 +2037,7 @@ block_move_loop (dest_reg, src_reg, bytes, align, orig_src)
 
   emit_label (label);
 
-  bytes_rtx = gen_rtx (CONST_INT, VOIDmode, MAX_MOVE_BYTES);
+  bytes_rtx = GEN_INT (MAX_MOVE_BYTES);
   emit_insn (gen_movstrsi_internal (dest_mem, src_mem, bytes_rtx, align_rtx));
   emit_insn (gen_addsi3 (src_reg, src_reg, bytes_rtx));
   emit_insn (gen_addsi3 (dest_reg, dest_reg, bytes_rtx));
@@ -2022,7 +2046,7 @@ block_move_loop (dest_reg, src_reg, bytes, align, orig_src)
 
   if (leftover)
     emit_insn (gen_movstrsi_internal (dest_mem, src_mem,
-				      gen_rtx (CONST_INT, VOIDmode, leftover),
+				      GEN_INT (leftover),
 				      align_rtx));
 }
 
@@ -2111,7 +2135,7 @@ expand_block_move (operands)
       bytes -= leftover;
 
       emit_insn (gen_iorsi3 (temp, src_reg, dest_reg));
-      emit_insn (gen_andsi3 (temp, temp, gen_rtx (CONST_INT, VOIDmode, UNITS_PER_WORD-1)));
+      emit_insn (gen_andsi3 (temp, temp, GEN_INT (UNITS_PER_WORD-1)));
       emit_insn (gen_cmpsi (temp, const0_rtx));
       emit_jump_insn (gen_beq (aligned_label));
 
@@ -2136,8 +2160,8 @@ expand_block_move (operands)
 #endif
 	    emit_insn (gen_movstrsi_internal (gen_rtx (MEM, BLKmode, dest_reg),
 					      gen_rtx (MEM, BLKmode, src_reg),
-					      gen_rtx (CONST_INT, VOIDmode, leftover),
-					      gen_rtx (CONST_INT, VOIDmode, align)));
+					      GEN_INT (leftover),
+					      GEN_INT (align)));
 	}
     }
 
@@ -2458,6 +2482,7 @@ function_arg_advance (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;	/* current arg information */
      enum machine_mode mode;	/* current arg mode */
      tree type;			/* type of the argument or 0 if lib support */
+     int named;			/* whether or not the argument was named */
 {
   if (TARGET_DEBUG_E_MODE)
     fprintf (stderr,
@@ -3569,7 +3594,6 @@ final_prescan_insn (insn, opvec, noperands)
 {
   if (dslots_number_nops > 0)
     {
-      enum machine_mode mode = GET_MODE (mips_load_reg);
       rtx pattern = PATTERN (insn);
       int length = get_attr_length (insn);
 
@@ -3892,6 +3916,8 @@ compute_frame_size (size)
   current_frame_info.mask	 = mask;
   current_frame_info.fmask	 = fmask;
   current_frame_info.initialized = reload_completed;
+  current_frame_info.num_gp	 = gp_reg_size / UNITS_PER_WORD;
+  current_frame_info.num_fp	 = fp_reg_size / (2*UNITS_PER_WORD);
 
   if (mask)
     {
@@ -3912,7 +3938,7 @@ compute_frame_size (size)
 }
 
 
-/* Common code to save/restore registers.  */
+/* Save/restore registers printing out the instructions to a file.  */
 
 void
 save_restore (file, gp_op, gp_2word_op, fp_op)
@@ -3987,6 +4013,89 @@ save_restore (file, gp_op, gp_2word_op, fp_op)
 }
 
 
+/* Common code to emit the insns to save/restore registers.  */
+
+static void
+save_restore_insns (store_p)
+     int store_p;		/* true if this is prologue */
+{
+  int regno;
+  rtx base_reg_rtx	  = stack_pointer_rtx;
+  unsigned long mask	  = current_frame_info.mask;
+  unsigned long fmask	  = current_frame_info.fmask;
+  unsigned long gp_offset;
+  unsigned long fp_offset;
+  unsigned long max_offset;
+
+  if (mask == 0 && fmask == 0)
+    return;
+
+  gp_offset  = current_frame_info.gp_sp_offset;
+  fp_offset  = current_frame_info.fp_sp_offset;
+  max_offset = (gp_offset > fp_offset) ? gp_offset : fp_offset;
+
+  /* Deal with calling functions with a large structure.  */
+  if (max_offset >= 32768)
+    {
+      base_reg_rtx = gen_rtx (REG, Pmode, MIPS_TEMP2_REGNUM);
+      emit_move_insn (base_reg_rtx, GEN_INT (max_offset));
+      emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
+      gp_offset = max_offset - gp_offset;
+      fp_offset = max_offset - fp_offset;
+    }
+
+  /* Save registers starting from high to low.  The debuggers prefer
+     at least the return register be stored at func+4, and also it
+     allows us not to need a nop in the epilog if at least one
+     register is reloaded in addition to return address.  */
+
+  if (mask || frame_pointer_needed)
+    {
+      for  (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)
+	{
+	  if ((mask & (1L << (regno - GP_REG_FIRST))) != 0
+	      || (regno == FRAME_POINTER_REGNUM && frame_pointer_needed))
+	    {
+	      rtx reg_rtx = gen_rtx (REG, Pmode, regno);
+	      rtx mem_rtx = gen_rtx (MEM, Pmode,
+				     gen_rtx (PLUS, Pmode, base_reg_rtx,
+					      GEN_INT (gp_offset)));
+
+	      if (store_p)
+		emit_move_insn (mem_rtx, reg_rtx);
+	      else
+		emit_move_insn (reg_rtx, mem_rtx);
+
+	      gp_offset -= UNITS_PER_WORD;
+	    }
+	}
+    }
+
+  if (fmask)
+    {
+      int fp_inc = (TARGET_FLOAT64) ? 1 : 2;
+
+      for  (regno = FP_REG_LAST-1; regno >= FP_REG_FIRST; regno -= fp_inc)
+	{
+	  if ((fmask & (1L << (regno - FP_REG_FIRST))) != 0)
+	    {
+	      rtx reg_rtx = gen_rtx (REG, DFmode, regno);
+	      rtx mem_rtx = gen_rtx (MEM, DFmode,
+				     gen_rtx (PLUS, Pmode, base_reg_rtx,
+					      GEN_INT (fp_offset)));
+
+	      if (store_p)
+		emit_move_insn (mem_rtx, reg_rtx);
+	      else
+		emit_move_insn (reg_rtx, mem_rtx);
+
+	      fp_offset -= 2*UNITS_PER_WORD;
+	    }
+	}
+    }
+}
+
+
 /* Set up the stack and frame (if desired) for the function.  */
 
 void
@@ -3994,21 +4103,9 @@ function_prologue (file, size)
      FILE *file;
      int size;
 {
-  int regno;
-  int tsize;
-  char *sp_str = reg_names[STACK_POINTER_REGNUM];
-  char *fp_str = (!frame_pointer_needed)
-			? sp_str
-			: reg_names[FRAME_POINTER_REGNUM];
-  tree fndecl = current_function_decl; /* current... is tooo long */
-  tree fntype = TREE_TYPE (fndecl);
-  tree fnargs = (TREE_CODE (fntype) != METHOD_TYPE)
-			? DECL_ARGUMENTS (fndecl)
-			: 0;
-  tree next_arg;
-  tree cur_arg;
-  char *arg_name = (char *)0;
-  CUMULATIVE_ARGS args_so_far;
+  int tsize = current_frame_info.total_size;
+  int vframe;
+  int vreg;
 
   ASM_OUTPUT_SOURCE_FILENAME (file, DECL_SOURCE_FILE (current_function_decl));
   ASM_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl));
@@ -4024,6 +4121,57 @@ function_prologue (file, size)
     fprintf (file,
 	     "\t.set\tnoreorder\n\t.cpload\t%s\n\t.set\treorder\n",
 	     reg_names[ GP_REG_FIRST + 25 ]);
+
+  tsize = current_frame_info.total_size;
+  if (tsize > 0 && TARGET_ABICALLS)
+    fprintf (file, "\t.cprestore %d\n", tsize + STARTING_FRAME_OFFSET);
+
+  if (frame_pointer_needed)
+    {
+      vframe = 0;
+      vreg   = FRAME_POINTER_REGNUM;
+    }
+  else
+    {
+      vframe = tsize;
+      vreg   = STACK_POINTER_REGNUM;
+    }
+
+  fprintf (file, "\t.frame\t%s,%d,%s\t\t# vars= %d, regs= %d/%d, args = %d, extra= %d\n",
+	   reg_names[ vreg ],
+	   vframe,
+	   reg_names[31 + GP_REG_FIRST],
+	   current_frame_info.var_size,
+	   current_frame_info.num_gp,
+	   current_frame_info.num_fp,
+	   current_function_outgoing_args_size,
+	   current_frame_info.extra_size);
+
+  fprintf (file, "\t.mask\t0x%08lx,%d\n\t.fmask\t0x%08lx,%d\n",
+	   current_frame_info.mask,
+	   current_frame_info.gp_save_offset,
+	   current_frame_info.fmask,
+	   current_frame_info.fp_save_offset);
+}
+
+
+/* Expand the prologue into a bunch of separate insns.  */
+
+void
+mips_expand_prologue ()
+{
+  int regno;
+  int size;
+  int tsize;
+  tree fndecl = current_function_decl; /* current... is tooo long */
+  tree fntype = TREE_TYPE (fndecl);
+  tree fnargs = (TREE_CODE (fntype) != METHOD_TYPE)
+			? DECL_ARGUMENTS (fndecl)
+			: 0;
+  tree next_arg;
+  tree cur_arg;
+  char *arg_name = (char *)0;
+  CUMULATIVE_ARGS args_so_far;
 
   /* Determine the last argument, and get its name.  */
   for (cur_arg = fnargs; cur_arg != (tree)0; cur_arg = next_arg)
@@ -4084,68 +4232,37 @@ function_prologue (file, size)
 				DECL_ARG_TYPE (parm), 1);
 	}
 
-      if (regno <= GP_ARG_LAST && (regno & 1) != 0)
+      for (; regno <= GP_ARG_LAST; regno++)
 	{
-	  fprintf (file, "\tsw\t%s,%d(%s)\t\t# varargs home register\n",
-		   reg_names[regno], (regno - 4) * 4, sp_str);
-	  regno++;
-	}
+	  rtx ptr = stack_pointer_rtx;
+	  if (regno != GP_ARG_FIRST)
+	    ptr = gen_rtx (PLUS, Pmode, ptr,
+			   GEN_INT ((regno - GP_ARG_FIRST) * UNITS_PER_WORD));
 
-      for (; regno <= GP_ARG_LAST; regno += 2)
-	{
-	  fprintf (file, "\tsd\t%s,%d(%s)\t\t# varargs home register\n",
-		   reg_names[regno], (regno - 4) * 4, sp_str);
+	  emit_move_insn (gen_rtx (MEM, Pmode, ptr), gen_rtx (REG, Pmode, regno));
 	}
     }
 
-  size = MIPS_STACK_ALIGN (size);
-  tsize = (!current_frame_info.initialized)
-		? compute_frame_size (size)
-		: current_frame_info.total_size;
+  size  = MIPS_STACK_ALIGN (get_frame_size ());
+  tsize = compute_frame_size (size);
 
   if (tsize > 0)
     {
-      if (tsize <= 32767)
-	fprintf (file,
-		 "\tsubu\t%s,%s,%d\t\t# vars= %d, regs= %d/%d, args = %d, extra= %d\n",
-		 sp_str, sp_str, tsize, current_frame_info.var_size,
-		 current_frame_info.gp_reg_size / 4,
-		 current_frame_info.fp_reg_size / 8,
-		 current_function_outgoing_args_size,
-		 current_frame_info.extra_size);
-      else
-	fprintf (file,
-		 "\tli\t%s,%d\n\tsubu\t%s,%s,%s\t\t# vars= %d, regs= %d/%d, args = %d, sfo= %d\n",
-		 reg_names[MIPS_TEMP1_REGNUM], tsize, sp_str, sp_str,
-		 reg_names[MIPS_TEMP1_REGNUM], current_frame_info.var_size,
-		 current_frame_info.gp_reg_size / 4,
-		 current_frame_info.fp_reg_size / 8,
-		 current_function_outgoing_args_size,
-		 current_frame_info.extra_size);
-    }
+      rtx tsize_rtx = GEN_INT (tsize);
 
-  if (TARGET_ABICALLS)
-    fprintf (file, "\t.cprestore %d\n", tsize + STARTING_FRAME_OFFSET);
+      if (tsize > 32767)
+	{
+	  rtx tmp_rtx = gen_rtx (REG, SImode, MIPS_TEMP1_REGNUM);
+	  emit_move_insn (tmp_rtx, tsize_rtx);
+	  tsize_rtx = tmp_rtx;
+	}
 
-  fprintf (file, "\t.frame\t%s,%d,%s\n\t.mask\t0x%08lx,%d\n\t.fmask\t0x%08lx,%d\n",
-	   fp_str,
-	   (frame_pointer_needed) ? 0 : tsize,
-	   reg_names[31 + GP_REG_FIRST],
-	   current_frame_info.mask,
-	   current_frame_info.gp_save_offset,
-	   current_frame_info.fmask,
-	   current_frame_info.fp_save_offset);
+      emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx, tsize_rtx));
 
-  save_restore (file, "sw", "sd", "s.d");
+      save_restore_insns (TRUE);
 
-  if (frame_pointer_needed)
-    {
-      if (tsize <= 32767)
-	fprintf (file, "\taddu\t%s,%s,%d\t\t# set up frame pointer\n", fp_str, sp_str, tsize);
-
-      else
-	fprintf (file, "\taddu\t%s,%s,%s\t\t# set up frame pointer\n", fp_str, sp_str,
-		 reg_names[MIPS_TEMP1_REGNUM]);
+      if (frame_pointer_needed)
+	emit_insn (gen_addsi3 (frame_pointer_rtx, stack_pointer_rtx, tsize_rtx));
     }
 }
 
@@ -4391,6 +4508,35 @@ function_epilogue (file, size)
 }
 
 
+/* Expand the epilogue into a bunch of separate insns.  */
+
+void
+mips_expand_epilogue ()
+{
+  int tsize = current_frame_info.total_size;
+  rtx tsize_rtx = GEN_INT (tsize);
+
+  if (tsize > 32767)
+    {
+      rtx tmp_rtx = gen_rtx (REG, SImode, MIPS_TEMP1_REGNUM);
+      emit_move_insn (tmp_rtx, tsize_rtx);
+      tsize_rtx = tmp_rtx;
+    }
+
+  if (tsize > 0)
+    {
+      if (frame_pointer_needed)
+	emit_insn (gen_subsi3 (stack_pointer_rtx, frame_pointer_rtx, tsize_rtx));
+
+      save_restore_insns (FALSE);
+
+      emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, tsize_rtx));
+    }
+
+  emit_jump_insn (gen_return_internal (gen_rtx (REG, Pmode, GP_REG_FIRST+31)));
+}
+
+
 /* Define the number of delay slots needed for the function epilogue.
 
    On the mips, we need a slot if either no stack has been allocated,
@@ -4417,7 +4563,7 @@ mips_epilogue_delay_slots ()
    was created.  */
 
 int
-null_epilogue ()
+simple_epilogue_p ()
 {
   if (!reload_completed)
     return 0;

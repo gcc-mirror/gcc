@@ -28,12 +28,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Standard GCC variables that we reference.  */
 
-extern int target_flags;
-extern int optimize;
-extern int may_call_alloca;
-extern int current_function_calls_alloca;
-extern int frame_pointer_needed;
-extern int flag_omit_frame_pointer;
+extern char    *asm_file_name;
+extern char	call_used_regs[];
+extern int	current_function_calls_alloca;
+extern int	flag_omit_frame_pointer;
+extern int	frame_pointer_needed;
+extern char    *language_string;
+extern int	may_call_alloca;
+extern int	optimize;
+extern char   **save_argv;
+extern int	target_flags;
+extern char    *version_string;
 
 /* MIPS external variables defined in mips.c.  */
 
@@ -140,11 +145,13 @@ extern int		md_register_operand ();
 extern int		mips_address_cost ();
 extern void		mips_asm_file_end ();
 extern void		mips_asm_file_start ();
-extern void		mips_declare_object ();
 extern int		mips_const_double_ok ();
 extern void		mips_count_memory_refs ();
 extern int		mips_debugger_offset ();
+extern void		mips_declare_object ();
 extern int		mips_epilogue_delay_slots ();
+extern void		mips_expand_epilogue ();
+extern void		mips_expand_prologue ();
 extern char	       *mips_fill_delay_slot ();
 extern char	       *mips_move_1word ();
 extern char	       *mips_move_2words ();
@@ -160,18 +167,49 @@ extern void		print_operand_address ();
 extern void		print_operand ();
 extern void		print_options ();
 extern int		reg_or_0_operand ();
+extern int		simple_epilogue_p ();
 extern int		simple_memory_operand ();
 extern int		small_int ();
 extern void		trace();
 extern int		uns_arith_operand ();
 extern int		uns_cmp_op ();
 
-/* Functions in varasm.c that we reference.  */
+/* Recognition functions that return if a condition is true.  */
+extern int		address_operand ();
+extern int		const_double_operand ();
+extern int		const_int_operand ();
+extern int		general_operand ();
+extern int		immediate_operand ();
+extern int		memory_address_p ();
+extern int		memory_operand ();
+extern int		nonimmediate_operand ();
+extern int		nonmemory_operand ();
+extern int		register_operand ();
+extern int		scratch_operand ();
+
+/* Functions to change what output section we are using.  */
 extern void		data_section ();
 extern void		rdata_section ();
 extern void		readonly_data_section ();
 extern void		sdata_section ();
 extern void		text_section ();
+
+/* Functions in the rest of the compiler that we reference.  */
+extern void		abort_with_insn ();
+extern void		debug_rtx ();
+extern void		fatal_io_error ();
+extern int		get_frame_size ();
+extern int		offsettable_address_p ();
+extern void		output_address ();
+extern char	       *permalloc ();
+extern int		reg_mentioned_p ();
+
+/* Functions in the standard library that we reference.  */
+extern void		abort ();
+extern int		atoi ();
+extern char	       *getenv ();
+extern char	       *mktemp ();
+
 
 /* Stubs for half-pic support if not OSF/1 reference platform.  */
 
@@ -435,7 +473,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 21]"
+#define MIPS_VERSION "[AL 1.1, MM 22]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -1143,13 +1181,13 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 /* #define PC_REGNUM xx				*/
 
 /* Register to use for pushing function arguments.  */
-#define STACK_POINTER_REGNUM 29
+#define STACK_POINTER_REGNUM (GP_REG_FIRST + 29)
 
 /* Offset from the stack pointer to the first available location.  */
 #define STACK_POINTER_OFFSET 0
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM 30
+#define FRAME_POINTER_REGNUM (GP_REG_FIRST + 30)
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms
@@ -1161,19 +1199,19 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 #define ARG_POINTER_REGNUM FRAME_POINTER_REGNUM
 
 /* Register in which static-chain is passed to a function.  */
-#define STATIC_CHAIN_REGNUM 2
+#define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 2)
 
 /* Register in which address to store a structure value
    is passed to a function.  */
-#define STRUCT_VALUE_REGNUM 4
+#define STRUCT_VALUE_REGNUM (GP_REG_FIRST + 4)
 
 /* Mips registers used in prologue/epilogue code when the stack frame
    is larger than 32K bytes.  These registers must come from the
    scratch register set, and not used for passing and returning
    arguments and any other information used in the calling sequence
    (such as pic).  */
-#define MIPS_TEMP1_REGNUM 8
-#define MIPS_TEMP2_REGNUM 9
+#define MIPS_TEMP1_REGNUM (GP_REG_FIRST + 8)
+#define MIPS_TEMP2_REGNUM (GP_REG_FIRST + 9)
 
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.  */
@@ -1191,7 +1229,7 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
    once, as with the stack pointer and frame pointer registers.  If
    this macro is not defined, it is up to the machine-dependent
    files to allocate such a register (if necessary).  */
-#define PIC_OFFSET_TABLE_REGNUM 28
+#define PIC_OFFSET_TABLE_REGNUM (GP_REG_FIRST + 28)
 
 
 /* Define the classes of registers for register constraints in the
@@ -1400,6 +1438,21 @@ extern enum reg_class mips_char_to_class[];
 		? GR_REGS						\
 		: CLASS))
 
+/* Certain machines have the property that some registers cannot be
+   copied to some other registers without using memory.  Define this
+   macro on those machines to be a C expression that is non-zero if
+   objects of mode MODE in registers of CLASS1 can only be copied to
+   registers of class CLASS2 by storing a register of CLASS1 into
+   memory and loading that memory location into a register of CLASS2.
+
+   Do not define this macro if its value would always be zero.  */
+
+#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
+  (!TARGET_DEBUG_H_MODE							\
+   && GET_MODE_CLASS (MODE) == MODE_INT					\
+   && ((CLASS1 == FP_REGS && CLASS2 == GR_REGS)				\
+       || (CLASS1 == GR_REGS && CLASS2 == FP_REGS)))
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 
@@ -1458,6 +1511,8 @@ struct mips_frame_info
   unsigned long gp_sp_offset;	/* offset from new sp to store gp registers */
   unsigned long fp_sp_offset;	/* offset from new sp to store fp registers */
   int		initialized;	/* != 0 if frame size already calculated */
+  int		num_gp;		/* number of gp registers saved */
+  int		num_fp;		/* number of fp registers saved */
 };
 
 extern struct mips_frame_info current_frame_info;
