@@ -1,5 +1,5 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.

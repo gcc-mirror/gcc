@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
