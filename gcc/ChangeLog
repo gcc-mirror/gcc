@@ -1,3 +1,37 @@
+Fri Oct 17 23:48:52 1997  Jim Wilson  (wilson@cygnus.com)
+
+	* v850.c (ep_memory_offset): New function.
+	(ep_memory_operand, substitute_ep_register, v850_reorg): Call it.
+
+	* v850.h (CONST_OK_FOR_*): Add and correct comments.
+	(CONSTANT_ADDRESS_P): Add comment.
+	(EXTRA_CONSTRAINT): Define 'U'.
+	* v850.md: Add comments on bit field instructions.
+	(addsi3): Delete &r/r/r alternative.  Add r/r/U alternative.
+	(lshrsi3): Use N not J constraint. 
+
+	* v850.md (v850_tst1+1): New define_split for tst1 instruction.
+
+	* v850.c (reg_or_0_operand): Call register_operand.
+	(reg_or_int5_operand): Likewise.
+	* v850.h (MASK_BIG_SWITCH, TARGET_BIG_SWITCH): New macros.
+	(TARGET_SWITCHES): Add "big-switch".
+	(ASM_OUTPUT_ADDR_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT, CASE_VECTOR_MODE,
+	ASM_OUTPUT_BEFORE_BASE_LABEL): Add support for TARGET_BIG_SWITCH.
+	(CASE_DROPS_THROUGH): Comment out.
+	(CASE_VECTOR_PC_RELATIVE, JUMP_TABLES_IN_TEXT_SECTION): Define.
+	* v850.md (cmpsi): Delete compare mode.
+	(casesi): New pattern.
+
+	* v850.h (CONST_OK_FOR_N): Delete redundant compare against zero.
+	* v850.md (ashlsi3): Use SImode not QImode for shift count.
+	(lshrsi3): Likewise.
+
+	* v850.c (print_operand): Add 'c', 'C', and 'z' support.  Delete
+	unreachable switch statement after 'b' support.  Remove "b" from
+	strings for 'b' support.
+	* v850.md (branch_normal, branch_invert): Change %b to b%b.
+
 Fri Oct 17 23:33:20 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (LIBGCC2_CFLAGS): Avoid a backslash then an

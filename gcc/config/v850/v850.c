@@ -307,73 +307,46 @@ print_operand (file, x, code)
     {
     case 'b':
     case 'B':
-      switch (code == 'b' ? GET_CODE (x) : reverse_condition (GET_CODE (x)))
+    case 'c':
+    case 'C':
+      switch ((code == 'B' || code == 'C')
+	      ? reverse_condition (GET_CODE (x)) : GET_CODE (x))
 	{
 	  case NE:
-	    fprintf (file, "bne");
+	    if (code == 'c' || code == 'C')
+	      fprintf (file, "nz");
+	    else
+	      fprintf (file, "ne");
 	    break;
 	  case EQ:
-	    fprintf (file, "be");
+	    if (code == 'c' || code == 'C')
+	      fprintf (file, "z");
+	    else
+	      fprintf (file, "e");
 	    break;
 	  case GE:
-	    fprintf (file, "bge");
+	    fprintf (file, "ge");
 	    break;
 	  case GT:
-	    fprintf (file, "bgt");
+	    fprintf (file, "gt");
 	    break;
 	  case LE:
-	    fprintf (file, "ble");
+	    fprintf (file, "le");
 	    break;
 	  case LT:
-	    fprintf (file, "blt");
+	    fprintf (file, "lt");
 	    break;
 	  case GEU:
-	    fprintf (file, "bnl");
+	    fprintf (file, "nl");
 	    break;
 	  case GTU:
-	    fprintf (file, "bh");
+	    fprintf (file, "h");
 	    break;
 	  case LEU:
-	    fprintf (file, "bnh");
+	    fprintf (file, "nh");
 	    break;
 	  case LTU:
-	    fprintf (file, "bl");
-	    break;
-	  default:
-	    abort ();
-	}
-      break;
-      switch (GET_CODE (x))
-	{
-	  case NE:
-	    fprintf (file, "be");
-	    break;
-	  case EQ:
-	    fprintf (file, "bne");
-	    break;
-	  case GE:
-	    fprintf (file, "blt");
-	    break;
-	  case GT:
-	    fprintf (file, "bgt");
-	    break;
-	  case LE:
-	    fprintf (file, "ble");
-	    break;
-	  case LT:
-	    fprintf (file, "blt");
-	    break;
-	  case GEU:
-	    fprintf (file, "bnl");
-	    break;
-	  case GTU:
-	    fprintf (file, "bh");
-	    break;
-	  case LEU:
-	    fprintf (file, "bnh");
-	    break;
-	  case LTU:
-	    fprintf (file, "bl");
+	    fprintf (file, "l");
 	    break;
 	  default:
 	    abort ();
@@ -503,6 +476,14 @@ print_operand (file, x, code)
       break;
     case '.':			/* register r0 */
       fputs (reg_names[0], file);
+      break;
+    case 'z':			/* reg or zero */
+      if (x == const0_rtx)
+	fputs (reg_names[0], file);
+      else if (GET_CODE (x) == REG)
+	fputs (reg_names[REGNO (x)], file);
+      else
+	abort ();
       break;
     default:
       switch (GET_CODE (x))
@@ -821,6 +802,35 @@ output_move_double (operands)
 }
 
 
+/* Return maximum offset supported for a short EP memory reference of mode
+   MODE and signedness UNSIGNEDP.  */
+
+int
+ep_memory_offset (mode, unsignedp)
+     enum machine_mode mode;
+     int unsignedp;
+{
+  int max_offset = 0;
+
+  switch (mode)
+    {
+    case QImode:
+      max_offset = (1 << 7);
+      break;
+
+    case HImode:
+      max_offset = (1 << 8);
+      break;
+
+    case SImode:
+    case SFmode:
+      max_offset = (1 << 8);
+      break;
+    }
+
+  return max_offset;
+}
+
 /* Return true if OP is a valid short EP memory reference */
 
 int
@@ -836,27 +846,9 @@ ep_memory_operand (op, mode, unsigned_load)
   if (GET_CODE (op) != MEM)
     return FALSE;
 
-  switch (GET_MODE (op))
-    {
-    default:
-      return FALSE;
+  max_offset = ep_memory_offset (mode, unsigned_load);
 
-    case QImode:
-	  max_offset = (1 << 7);
-      mask = 0;
-      break;
-
-    case HImode:
-	  max_offset = (1 << 8);
-      mask = 1;
-      break;
-
-    case SImode:
-    case SFmode:
-      max_offset = (1 << 8);
-      mask = 3;
-      break;
-    }
+  mask = GET_MODE_SIZE (mode) - 1;
 
   addr = XEXP (op, 0);
   if (GET_CODE (addr) == CONST)
@@ -905,23 +897,8 @@ reg_or_0_operand (op, mode)
   else if (GET_CODE (op) == CONST_DOUBLE)
     return CONST_DOUBLE_OK_FOR_G (op);
 
-  else if (GET_CODE (op) == REG)
-    return TRUE;
-
-  else if (GET_CODE (op) == SUBREG)
-    {
-      do {
-	op = SUBREG_REG (op);
-      } while (GET_CODE (op) == SUBREG);
-
-      if (GET_CODE (op) == MEM && !reload_completed)
-	return TRUE;
-
-      else if (GET_CODE (op) == REG)
-	return TRUE;
-    }
-
-  return FALSE;
+  else
+    return register_operand (op, mode);
 }
 
 /* Return true if OP is either a register or a signed five bit integer */
@@ -934,23 +911,8 @@ reg_or_int5_operand (op, mode)
   if (GET_CODE (op) == CONST_INT)
     return CONST_OK_FOR_J (INTVAL (op));
 
-  else if (GET_CODE (op) == REG)
-    return TRUE;
-
-  else if (GET_CODE (op) == SUBREG)
-    {
-      do {
-	op = SUBREG_REG (op);
-      } while (GET_CODE (op) == SUBREG);
-
-      if (GET_CODE (op) == MEM && !reload_completed)
-	return TRUE;
-
-      else if (GET_CODE (op) == REG)
-	return TRUE;
-    }
-
-  return FALSE;
+  else
+    return register_operand (op, mode);
 }
 
 /* Return true if OP is a valid call operand.  */
@@ -1083,6 +1045,8 @@ substitute_ep_register (first_insn, last_insn, uses, regno, p_r1, p_ep)
 	  if (pattern)
 	    {
 	      rtx *p_mem;
+	      /* Memory operands are signed by default.  */
+	      int unsignedp = FALSE;
 
 	      if (GET_CODE (SET_DEST (pattern)) == MEM
 		  && GET_CODE (SET_SRC (pattern)) == MEM)
@@ -1108,9 +1072,9 @@ substitute_ep_register (first_insn, last_insn, uses, regno, p_r1, p_ep)
 			   && GET_CODE (XEXP (addr, 0)) == REG
 			   && REGNO (XEXP (addr, 0)) == regno
 			   && GET_CODE (XEXP (addr, 1)) == CONST_INT
-			   && ((unsigned)INTVAL (XEXP (addr, 1))) < 256
-			   && (GET_MODE (*p_mem) != QImode
-			       || ((unsigned)INTVAL (XEXP (addr, 1))) < 128))
+			   && (((unsigned)INTVAL (XEXP (addr, 1)))
+			       < ep_memory_offset (GET_MODE (*p_mem),
+						   unsignedp)))
 		    *p_mem = change_address (*p_mem, VOIDmode,
 					     gen_rtx (PLUS, Pmode,
 						      *p_ep, XEXP (addr, 1)));
@@ -1216,6 +1180,8 @@ void v850_reorg (start_insn)
 	      rtx src = SET_SRC (pattern);
 	      rtx dest = SET_DEST (pattern);
 	      rtx mem;
+	      /* Memory operands are signed by default.  */
+	      int unsignedp = FALSE;
 
 	      if (GET_CODE (dest) == MEM && GET_CODE (src) == MEM)
 		mem = NULL_RTX;
@@ -1229,7 +1195,7 @@ void v850_reorg (start_insn)
 	      else
 		mem = NULL_RTX;
 
-	      if (mem && ep_memory_operand (mem, GET_MODE (mem), FALSE))
+	      if (mem && ep_memory_operand (mem, GET_MODE (mem), unsignedp))
 		use_ep = TRUE;
 
 	      else if (!use_ep && mem
@@ -1248,9 +1214,8 @@ void v850_reorg (start_insn)
 		  else if (GET_CODE (addr) == PLUS
 			   && GET_CODE (XEXP (addr, 0)) == REG
 			   && GET_CODE (XEXP (addr, 1)) == CONST_INT
-			   && ((unsigned)INTVAL (XEXP (addr, 1))) < 256
-			   && (GET_MODE (mem) != QImode
-			       || ((unsigned)INTVAL (XEXP (addr, 1))) < 128))
+			   && (((unsigned)INTVAL (XEXP (addr, 1)))
+			       < ep_memory_offset (GET_MODE (mem), unsignedp)))
 		    {
 		      short_p = TRUE;
 		      regno = REGNO (XEXP (addr, 0));

@@ -58,6 +58,8 @@ extern int target_flags;
 #define MASK_CPU                0x00000030
 #define MASK_V850               0x00000010
 
+#define MASK_BIG_SWITCH		0x00000100
+
 #ifndef MASK_DEFAULT
 #define MASK_DEFAULT            MASK_V850
 #endif
@@ -97,6 +99,9 @@ extern int target_flags;
 /* Whether to call out-of-line functions to save registers or not.  */
 #define TARGET_PROLOG_FUNCTION (target_flags & MASK_PROLOG_FUNCTION)
 
+/* Whether to emit 2 byte per entry or 4 byte per entry switch tables.  */
+#define TARGET_BIG_SWITCH (target_flags & MASK_BIG_SWITCH)
+
 /* General debug flag */
 #define TARGET_DEBUG (target_flags & MASK_DEBUG)
 
@@ -119,6 +124,7 @@ extern int target_flags;
    { "debug",			 MASK_DEBUG },				\
    { "v850",		 	 MASK_V850 },				\
    { "v850",		 	 -(MASK_V850 ^ MASK_CPU) },		\
+   { "big-switch",		 MASK_BIG_SWITCH },			\
    EXTRA_SWITCHES							\
    { "",			 TARGET_DEFAULT}}
 
@@ -468,19 +474,21 @@ enum reg_class {
 
 #define INT_7_BITS(VALUE) ((unsigned) (VALUE) + 0x40 < 0x80)
 #define INT_8_BITS(VALUE) ((unsigned) (VALUE) + 0x80 < 0x100)
-/* 0 bits */
+/* zero */
 #define CONST_OK_FOR_I(VALUE) ((VALUE) == 0)
-/* 4 bits */
+/* 5 bit signed immediate */
 #define CONST_OK_FOR_J(VALUE) ((unsigned) (VALUE) + 0x10 < 0x20)
-/* 15 bits */
+/* 16 bit signed immediate */
 #define CONST_OK_FOR_K(VALUE) ((unsigned) (VALUE) + 0x8000 < 0x10000)
+/* valid constant for movhi instruction.  */
 #define CONST_OK_FOR_L(VALUE) \
   (((unsigned) ((int) (VALUE) >> 16) + 0x8000 < 0x10000) \
    && CONST_OK_FOR_I ((VALUE & 0xffff)))
-/* 16 bits */
-#define CONST_OK_FOR_M(VALUE) ((unsigned)(VALUE) < 0x10000
+/* 16 bit unsigned immediate */
+#define CONST_OK_FOR_M(VALUE) ((unsigned)(VALUE) < 0x10000)
+/* 5 bit unsigned immediate in shift instructions */
+#define CONST_OK_FOR_N(VALUE) ((unsigned) (VALUE) <= 31)
 
-#define CONST_OK_FOR_N(VALUE) ((unsigned) VALUE >= 0 && (unsigned) VALUE <= 31) /* 5 bit signed immediate in shift instructions */
 #define CONST_OK_FOR_O(VALUE) 0
 #define CONST_OK_FOR_P(VALUE) 0
 
@@ -799,6 +807,9 @@ extern int current_function_anonymous_args;
 
 /* 1 if X is an rtx for a constant that is a valid address.  */
 
+/* ??? This seems too exclusive.  May get better code by accepting more
+   possibilities here, in particular, should accept ZDA_NAME SYMBOL_REFs.  */
+
 #define CONSTANT_ADDRESS_P(X)   \
   (GET_CODE (X) == CONST_INT				\
    && CONST_OK_FOR_K (INTVAL (X)))
@@ -864,7 +875,11 @@ extern int current_function_anonymous_args;
   : (C) == 'R' ? special_symbolref_operand (OP, VOIDmode)		\
   : (C) == 'S' ? (GET_CODE (OP) == SYMBOL_REF && ! ZDA_NAME_P (XSTR (OP, 0))) \
   : (C) == 'T' ? 0							\
-  : (C) == 'U' ? 0                                                      \
+  : (C) == 'U' ? ((GET_CODE (OP) == SYMBOL_REF && ZDA_NAME_P (XSTR (OP, 0))) \
+		  || (GET_CODE (OP) == CONST				\
+		      && GET_CODE (XEXP (OP, 0)) == PLUS		\
+		      && GET_CODE (XEXP (XEXP (OP, 0), 0)) == SYMBOL_REF \
+		      && ZDA_NAME_P (XSTR (XEXP (XEXP (OP, 0), 0), 0)))) \
   : 0)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
@@ -1266,12 +1281,15 @@ do { char dstr[30];					\
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) \
-  asm_fprintf (FILE, "\t%s .L%d\n", ".long", VALUE)
+  asm_fprintf (FILE, "\t%s .L%d\n",					\
+	       (TARGET_BIG_SWITCH ? ".long" : ".short"), VALUE)
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
-  fprintf (FILE, "\t%s .L%d-.L%d\n", ".long", VALUE, REL)
+  fprintf (FILE, "\t%s .L%d-.L%d\n",					\
+	   (TARGET_BIG_SWITCH ? ".long" : ".short"),			\
+	   VALUE, REL)
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) != 0)			\
@@ -1292,12 +1310,26 @@ do { char dstr[30];					\
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE Pmode
+#define CASE_VECTOR_MODE (TARGET_BIG_SWITCH ? SImode : HImode)
 
 /* Define this if the case instruction drops through after the table
    when the index is out of range.  Don't define it if the case insn
    jumps to the default label instead.  */
-#define CASE_DROPS_THROUGH
+/* #define CASE_DROPS_THROUGH */
+
+/* We must use a PC relative entry for small tables.  It would be more
+   efficient to use an absolute entry for big tables, but this is not
+   a runtime choice yet.  */
+#define CASE_VECTOR_PC_RELATIVE
+
+/* The switch instruction requires that the jump table immediately follow
+   it. */
+#define JUMP_TABLES_IN_TEXT_SECTION
+
+/* svr4.h defines this assuming that 4 byte alignment is required.  */
+#undef ASM_OUTPUT_BEFORE_CASE_LABEL
+#define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE) \
+  ASM_OUTPUT_ALIGN ((FILE), (TARGET_BIG_SWITCH ? 2 : 1));
 
 #define WORD_REGISTER_OPERATIONS
 
