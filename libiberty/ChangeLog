@@ -1,3 +1,7 @@
+Thu Jun  8 18:52:24 2000  Philippe De Muyter  <phdm@macqel.be>
+
+	* cp-demangle.c (template_arg_list_new): Revert previous PARAMS patch.
+
 Thu Jun  8 09:25:54 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* cp-demangle.c (stdio.h): File included unconditionaly.
