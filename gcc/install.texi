@@ -792,12 +792,16 @@ from @file{sunsite.unc.edu:/pub/Linux/GCC} and other mirror sites for
 Linux-based GNU systems.
 
 @item arm-*-riscix
-The ARM2 or ARM3 processor running RISC iX, Acorn's port of BSD Unix.  If
-you are running a version of RISC iX prior to 1.2 then you must specify
-the version number during configuration.  Note that the assembler
-shipped with RISC iX does not support stabs debugging information; a
-new version of the assembler, with stabs support included, is now
-available from Acorn.
+The ARM2 or ARM3 processor running RISC iX, Acorn's port of BSD Unix.
+If you are running a version of RISC iX prior to 1.2 then you must
+specify the version number during configuration.  Note that the
+assembler shipped with RISC iX does not support stabs debugging
+information; a new version of the assembler, with stabs support
+included, is now available from Acorn and via ftp
+@file{ftp.acorn.com:/pub/riscix/as+xterm.tar.Z}.  To enable stabs
+debugging, pass @samp{--with-gnu-as} to configure.
+
+You will need to install GNU @file{sed} before you can run configure.
 
 @item a29k
 AMD Am29k-family processors.  These are normally used in embedded

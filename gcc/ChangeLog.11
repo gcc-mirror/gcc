@@ -1,6 +1,31 @@
-Fri Dec  5 07:29:26 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+Sun Dec  7 18:24:30 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Version 2.8.0 released.
+
+Sun Dec  7 09:42:05 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* make-gcc.com (@make-l2): Pass along any command line arguments.
+	* make-l2.com: Add latent support to compile cp/inc/* if `cc1plus'
+	is specified [currently disabled].
+	* make-cc1.com: When building with GNU C, use -O2.
+	* make-cccp.com: Likewise.
+
+Sun Dec  7 06:56:48 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* crtstuff.c (__do_global_ctors): Add missing arg to __register_frame.
+
+	* collect2.c (write_c_file_stat): Fix error in last change;
+	use __SIZE_TYPE__, not size_t.
+
+Sun Dec  7 05:50:43 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* cccp.c (strings.h): Fix misspelling of `include' introduced
+	in last change to this file.
+
+Sat Dec  6 18:54:11 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alpha/vms.h (CPP_PREDEFINES): Remove redundant setting
+	of GCC version and unneeded setting of __VMS_VER.
 
 Fri Dec  5 07:24:36 1997  Richard Stallman  <rms@gnu.org>
 
