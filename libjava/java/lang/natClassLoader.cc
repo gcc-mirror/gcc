@@ -234,7 +234,6 @@ java::lang::ClassLoader::findLoadedClass (jstring name)
   return _Jv_FindClassInCache (_Jv_makeUtf8Const (name), this);
 }
 
-
 /** This function does class-preparation for compiled classes.  
     NOTE: It contains replicated functionality from
     _Jv_ResolvePoolEntry, and this is intentional, since that function
@@ -308,6 +307,12 @@ _Jv_PrepareCompiledClass (jclass klass)
 #ifdef INTERPRETER
     }
 #endif /* INTERPRETER */
+
+  if (klass->vtable == NULL)
+    _Jv_MakeVTable(klass);
+
+  if (klass->otable != NULL && klass->otable->state == 0)
+    _Jv_LinkOffsetTable(klass);
 
   klass->notifyAll ();
 }

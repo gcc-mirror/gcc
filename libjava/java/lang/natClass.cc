@@ -692,7 +692,7 @@ java::lang::Class::initializeClass (void)
 	  _Jv_PrepareCompiledClass (this);
 	}
     }
-  
+
   if (state <= JV_STATE_LINKED)
     _Jv_PrepareConstantTimeTables (this);
 
@@ -1421,4 +1421,195 @@ java::security::ProtectionDomain *
 java::lang::Class::getProtectionDomain0 ()
 {
   return protectionDomain;
+}
+
+// Functions for indirect dispatch (symbolic virtual method binding) support.
+
+// Resolve entries in the virtual method offset symbol table 
+// (klass->otable_syms). The vtable offset (in bytes) for each resolved method 
+// is placed at the corresponding position in the virtual method offset table 
+// (klass->otable). A single otable and otable_syms pair may be shared by many 
+// classes.
+void
+_Jv_LinkOffsetTable(jclass klass)
+{
+  //// FIXME: Need to lock the otable ////
+  
+  if (klass->otable == NULL
+      || klass->otable->state != 0)
+    return;
+  
+  klass->otable->state = 1;
+
+  int index = 0;
+  _Jv_MethodSymbol sym = klass->otable_syms[0];
+
+  while (sym.name != NULL)
+    {
+      jclass target_class = _Jv_FindClass (sym.class_name, NULL);
+      _Jv_Method *meth = NULL;            
+      
+      if (target_class != NULL)
+	if (target_class->isInterface())
+	  {
+	    // FIXME: This does not yet fully conform to binary compatibility
+	    // rules. It will break if a declaration is moved into a 
+	    // superinterface.
+	    for (int i=0; i < target_class->method_count; i++)
+	      {
+		meth = &target_class->methods[i];
+		if (_Jv_equalUtf8Consts (sym.name, meth->name)
+		    && _Jv_equalUtf8Consts (sym.signature, meth->signature))
+		  {
+		    klass->otable->offsets[index] = i + 1;
+		    break;
+		  }
+	      }
+	  }
+	else
+	  {
+	    // If the target class does not have a vtable_method_count yet, 
+	    // then we can't tell the offsets for its methods, so we must lay 
+	    // it out now.
+	    if (target_class->vtable_method_count == -1)
+	      {
+		JvSynchronize sync (target_class);
+		_Jv_LayoutVTableMethods (target_class);
+	      }
+
+            meth = _Jv_LookupDeclaredMethod(target_class, sym.name, 
+					    sym.signature);
+
+	    if (meth != NULL)
+	      {
+		klass->otable->offsets[index] = 
+		  _Jv_VTable::idx_to_offset (meth->index);
+	      }
+	  }
+
+      if (meth == NULL)
+	// FIXME: This should be special index for ThrowNoSuchMethod().
+	klass->otable->offsets[index] = -1;
+
+      sym = klass->otable_syms[++index];
+    }
+}
+
+// Returns true if METH should get an entry in a VTable.
+static bool
+isVirtualMethod (_Jv_Method *meth)
+{
+  using namespace java::lang::reflect;
+  return (((meth->accflags & (Modifier::STATIC | Modifier::PRIVATE)) == 0)
+          && meth->name->data[0] != '<');
+}
+
+// Prepare virtual method declarations in KLASS, and any superclasses as 
+// required, by determining their vtable index, setting method->index, and
+// finally setting the class's vtable_method_count. Must be called with the
+// lock for KLASS held.
+void
+_Jv_LayoutVTableMethods (jclass klass)
+{
+  if (klass->vtable != NULL || klass->isInterface() 
+      || klass->vtable_method_count != -1)
+    return;
+    
+  jclass superclass = klass->superclass;
+
+  if (superclass != NULL && superclass->vtable_method_count == -1)
+    {
+      JvSynchronize sync (superclass);
+      _Jv_LayoutVTableMethods (superclass);
+    }
+    
+  int index = (superclass == NULL ? 0 : superclass->vtable_method_count);
+
+  for (int i = 0; i < klass->method_count; ++i)
+    {
+      _Jv_Method *meth = &klass->methods[i];
+      _Jv_Method *super_meth = NULL;
+    
+      if (!isVirtualMethod(meth))
+        continue;
+	      
+      if (superclass != NULL)
+        super_meth = _Jv_LookupDeclaredMethod (superclass, meth->name, 
+					       meth->signature);
+      
+      if (super_meth)
+        meth->index = super_meth->index;
+      else
+        meth->index = index++;
+    }
+  
+  klass->vtable_method_count = index;
+}
+
+// Set entries in VTABLE for virtual methods declared in KLASS. If KLASS has
+// an immediate abstract parent, recursivly do its methods first.
+void
+_Jv_SetVTableEntries (jclass klass, _Jv_VTable *vtable)
+{
+  using namespace java::lang::reflect;
+
+  jclass superclass = klass->getSuperclass();
+
+  if (superclass != NULL && (superclass->getModifiers() & Modifier::ABSTRACT))
+    _Jv_SetVTableEntries (superclass, vtable);
+    
+  for (int i = klass->method_count - 1; i >= 0; i--)
+    {
+      _Jv_Method *meth = &klass->methods[i];
+      if (!isVirtualMethod(meth))
+	continue;
+      vtable->set_method(meth->index, meth->ncode);
+    }
+}
+
+// Allocate and lay out the virtual method table for KLASS. This will also
+// cause vtables to be generated for any non-abstract superclasses, and
+// virtual method layout to occur for any abstract superclasses. Must be
+// called with monitor lock for KLASS held.
+void
+_Jv_MakeVTable (jclass klass)
+{
+  using namespace java::lang::reflect;  
+
+  if (klass->vtable != NULL || klass->isInterface() 
+      || (klass->accflags & Modifier::ABSTRACT))
+    return;
+  
+  //  out before we can create a vtable. 
+  if (klass->vtable_method_count == -1)
+    _Jv_LayoutVTableMethods (klass);
+
+  // Allocate the new vtable.
+  _Jv_VTable *vtable = _Jv_VTable::new_vtable (klass->vtable_method_count);
+  klass->vtable = vtable;
+  
+  // Copy the vtable of the closest non-abstract superclass.
+  jclass superclass = klass->superclass;
+  if (superclass != NULL)
+    {
+      while ((superclass->accflags & Modifier::ABSTRACT) != 0)
+	superclass = superclass->superclass;
+
+      if (superclass->vtable == NULL)
+	{
+	  JvSynchronize sync (superclass);
+	  _Jv_MakeVTable (superclass);
+	}
+
+      for (int i = 0; i < superclass->vtable_method_count; ++i)
+	vtable->set_method (i, superclass->vtable->get_method (i));
+    }
+
+  // Set the class pointer and GC descriptor.
+  vtable->clas = klass;
+  vtable->gc_descr = _Jv_BuildGCDescr (klass);
+
+  // For each virtual declared in klass and any immediate abstract 
+  // superclasses, set new vtable entry or override an old one.
+  _Jv_SetVTableEntries (klass, vtable);
 }

@@ -1188,7 +1188,11 @@ yyparse ()
 
   java_expand_classes ();
   if (!java_report_errors () && !flag_syntax_only)
-    emit_register_classes ();
+    {
+      emit_register_classes ();
+      if (flag_indirect_dispatch)
+	emit_offset_symbol_table ();
+    }
   return 0;
 }
 

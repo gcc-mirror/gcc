@@ -1,5 +1,21 @@
 2001-12-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
+	* include/jvm.h (_Jv_VTable::idx_to_offset): New method.
+	* java/lang/natClassLoader.cc (_Jv_PrepareCompiledClass): Call
+	_Jv_MakeVTable and _Jv_LinkOffsetTable if needed.
+	* java/lang/Class.h (_Jv_Method): Add "index" field.
+	(_Jv_MethodSymbol): New struct type.
+	(_Jv_LinkOffsetTable, _Jv_LayoutVTableMethods, _Jv_SetVTableEntries,
+	_Jv_MakeVTable): Friends.
+	(otable, otable_syms): New Class fields.
+	* java/lang/natClass.cc (_Jv_LinkOffsetTable): New function.
+	(isVirtualMethod): New static function.
+	(_Jv_LayoutVTableMethods): New function.
+	(_Jv_SetVTableEntries): New function.
+	(_Jv_MakeVTable): New function.
+
+2001-12-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
 	* java/util/BitSet.java (and): Fix off-by-one bug, don't skip part of
 	the bitset.
 	(andNot): Likewise.

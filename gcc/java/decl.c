@@ -614,6 +614,35 @@ java_init_decl_processing ()
   dtable_type = make_node (RECORD_TYPE);
   dtable_ptr_type = build_pointer_type (dtable_type);
 
+  otable_type = make_node (RECORD_TYPE);
+  otable_ptr_type = build_pointer_type (otable_type);
+
+  method_symbol_type = make_node (RECORD_TYPE);
+  PUSH_FIELD (method_symbol_type, field, "clname", utf8const_ptr_type);
+  PUSH_FIELD (method_symbol_type, field, "name", utf8const_ptr_type);
+  PUSH_FIELD (method_symbol_type, field, "signature", utf8const_ptr_type);
+  FINISH_RECORD (method_symbol_type);
+
+  one_elt_array_domain_type = build_index_type (integer_one_node);
+  method_symbols_array_type = build_array_type (method_symbol_type, 
+						one_elt_array_domain_type);
+  method_symbols_array_ptr_type = build_pointer_type 
+				  (method_symbols_array_type);
+
+  otable_decl = build_decl (VAR_DECL, get_identifier ("otable"), 
+			    build_array_type (integer_type_node, 
+			    one_elt_array_domain_type));
+  DECL_EXTERNAL (otable_decl) = 1;
+  TREE_STATIC (otable_decl) = 1;
+  TREE_READONLY (otable_decl) = 1;
+  pushdecl (otable_decl);
+  
+  otable_syms_decl = build_decl (VAR_DECL, get_identifier ("otable_syms"), 
+    method_symbols_array_type);
+  TREE_STATIC (otable_syms_decl) = 1;
+  TREE_CONSTANT (otable_syms_decl) = 1;
+  pushdecl (otable_syms_decl);
+  
   PUSH_FIELD (object_type_node, field, "vtable", dtable_ptr_type);
   /* This isn't exactly true, but it is what we have in the source.
      There is an unresolved issue here, which is whether the vtable
@@ -647,6 +676,9 @@ java_init_decl_processing ()
   PUSH_FIELD (class_type_node, field, "field_count", short_type_node);
   PUSH_FIELD (class_type_node, field, "static_field_count", short_type_node);
   PUSH_FIELD (class_type_node, field, "vtable", dtable_ptr_type);
+  PUSH_FIELD (class_type_node, field, "otable", otable_ptr_type);
+  PUSH_FIELD (class_type_node, field, "otable_syms", 
+  	      method_symbols_array_ptr_type);
   PUSH_FIELD (class_type_node, field, "interfaces",
 	      build_pointer_type (class_ptr_type));
   PUSH_FIELD (class_type_node, field, "loader", ptr_type_node);
@@ -661,6 +693,7 @@ java_init_decl_processing ()
   for (t = TYPE_FIELDS (class_type_node);  t != NULL_TREE;  t = TREE_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
   push_super_field (class_type_node, object_type_node);
+
   FINISH_RECORD (class_type_node);
   build_decl (TYPE_DECL, get_identifier ("Class"), class_type_node);
 
@@ -680,7 +713,6 @@ java_init_decl_processing ()
   FINISH_RECORD (field_type_node);
   build_decl (TYPE_DECL, get_identifier ("Field"), field_type_node);
 
-  one_elt_array_domain_type = build_index_type (integer_one_node);
   nativecode_ptr_array_type_node
     = build_array_type (nativecode_ptr_type_node, one_elt_array_domain_type);
 
@@ -717,6 +749,7 @@ java_init_decl_processing ()
   PUSH_FIELD (method_type_node, field, "name", utf8const_ptr_type);
   PUSH_FIELD (method_type_node, field, "signature", utf8const_ptr_type);
   PUSH_FIELD (method_type_node, field, "accflags", access_flags_type_node);
+  PUSH_FIELD (method_type_node, field, "index", unsigned_short_type_node);
   PUSH_FIELD (method_type_node, field, "ncode", nativecode_ptr_type_node);
   PUSH_FIELD (method_type_node, field, "throws", ptr_type_node);
   FINISH_RECORD (method_type_node);

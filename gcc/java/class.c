@@ -58,6 +58,8 @@ static int assume_compiled PARAMS ((const char *));
 static struct hash_entry *init_test_hash_newfunc PARAMS ((struct hash_entry *,
 							  struct hash_table *,
 							  hash_table_key));
+static tree build_method_symbols_entry PARAMS ((tree));
+
 static rtx registerClass_libfunc;
 static rtx registerResource_libfunc;
 
@@ -1276,9 +1278,16 @@ make_method_value (mdecl)
 {
   static int method_name_count = 0;
   tree minit;
+  tree index;
   tree code;
 #define ACC_TRANSLATED          0x4000
   int accflags = get_access_flags_from_decl (mdecl) | ACC_TRANSLATED;
+
+  if (!flag_indirect_dispatch && DECL_VINDEX (mdecl) != NULL_TREE)
+    index = DECL_VINDEX (mdecl);
+  else
+    index = integer_minus_one_node;
+
   code = null_pointer_node;
   if (DECL_RTL_SET_P (mdecl))
     code = build1 (ADDR_EXPR, nativecode_ptr_type_node, mdecl);
@@ -1296,6 +1305,7 @@ make_method_value (mdecl)
 			 IDENTIFIER_LENGTH(signature)))));
   }
   PUSH_FIELD_VALUE (minit, "accflags", build_int_2 (accflags, 0));
+  PUSH_FIELD_VALUE (minit, "index", index);
   PUSH_FIELD_VALUE (minit, "ncode", code);
 
   {
@@ -1541,7 +1551,7 @@ make_class_data (type)
   rest_of_decl_compilation (methods_decl, (char*) 0, 1, 0);
 
   if (assume_compiled (IDENTIFIER_POINTER (DECL_NAME (type_decl)))
-      && ! CLASS_INTERFACE (type_decl))
+      && ! CLASS_INTERFACE (type_decl) && !flag_indirect_dispatch)
     {
       tree dtable = get_dispatch_table (type, this_class_addr);
       dtable_decl = build_dtable_decl (type);
@@ -1635,7 +1645,12 @@ make_class_data (type)
   PUSH_FIELD_VALUE (cons, "methods",
 		    build1 (ADDR_EXPR, method_ptr_type_node, methods_decl));
   PUSH_FIELD_VALUE (cons, "method_count",  build_int_2 (method_count, 0));
-  PUSH_FIELD_VALUE (cons, "vtable_method_count", TYPE_NVIRTUALS (type));
+
+  if (flag_indirect_dispatch)
+    PUSH_FIELD_VALUE (cons, "vtable_method_count", integer_minus_one_node)
+  else
+    PUSH_FIELD_VALUE (cons, "vtable_method_count", TYPE_NVIRTUALS (type));
+    
   PUSH_FIELD_VALUE (cons, "fields",
 		    fields_decl == NULL_TREE ? null_pointer_node
 		    : build1 (ADDR_EXPR, field_ptr_type_node, fields_decl));
@@ -1643,9 +1658,27 @@ make_class_data (type)
   PUSH_FIELD_VALUE (cons, "field_count", build_int_2 (field_count, 0));
   PUSH_FIELD_VALUE (cons, "static_field_count",
 		    build_int_2 (static_field_count, 0));
-  PUSH_FIELD_VALUE (cons, "vtable",
-		    dtable_decl == NULL_TREE ? null_pointer_node
-		    : build1 (ADDR_EXPR, dtable_ptr_type, dtable_decl));
+
+  if (flag_indirect_dispatch)
+    PUSH_FIELD_VALUE (cons, "vtable", null_pointer_node)
+  else
+    PUSH_FIELD_VALUE (cons, "vtable",
+		      dtable_decl == NULL_TREE ? null_pointer_node
+		      : build1 (ADDR_EXPR, dtable_ptr_type, dtable_decl));
+  
+  if (otable_methods == NULL_TREE)
+    {
+      PUSH_FIELD_VALUE (cons, "otable", null_pointer_node);
+      PUSH_FIELD_VALUE (cons, "otable_syms", null_pointer_node);
+    }
+  else
+    {
+      PUSH_FIELD_VALUE (cons, "otable",
+			build1 (ADDR_EXPR, otable_ptr_type, otable_decl));
+      PUSH_FIELD_VALUE (cons, "otable_syms",
+			build1 (ADDR_EXPR, method_symbols_array_ptr_type,
+				otable_syms_decl));
+    }
   PUSH_FIELD_VALUE (cons, "interfaces", interfaces);
   PUSH_FIELD_VALUE (cons, "loader", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "interface_count", build_int_2 (interface_len, 0));
@@ -2158,6 +2191,87 @@ emit_register_classes ()
 	(* targetm.asm_out.constructor) (XEXP (DECL_RTL (init_decl), 0),
 					 DEFAULT_INIT_PRIORITY);
     }
+}
+
+/* Make a method_symbol_type (_Jv_MethodSymbol) node for METHOD. */
+
+tree
+build_method_symbols_entry (tree method)
+{
+  tree clname, name, signature, method_symbol;
+  
+  clname = build_utf8_ref (DECL_NAME (TYPE_NAME (DECL_CONTEXT (method))));
+  name = build_utf8_ref (DECL_NAME (method));
+  signature = build_java_signature (TREE_TYPE (method));
+  signature = build_utf8_ref (unmangle_classname 
+			      (IDENTIFIER_POINTER (signature),
+			       IDENTIFIER_LENGTH (signature)));
+
+  START_RECORD_CONSTRUCTOR (method_symbol, method_symbol_type);
+  PUSH_FIELD_VALUE (method_symbol, "clname", clname);
+  PUSH_FIELD_VALUE (method_symbol, "name", name);
+  PUSH_FIELD_VALUE (method_symbol, "signature", signature);
+  FINISH_RECORD_CONSTRUCTOR (method_symbol);
+  TREE_CONSTANT (method_symbol) = 1;
+
+  return method_symbol;
+} 
+
+/* Emit the offset symbols table for indirect virtual dispatch. */
+
+void
+emit_offset_symbol_table ()
+{
+  tree method_list, method, table, list, null_symbol;
+  tree otable_bound, otable_array_type;
+  int index;
+  
+  /* Only emit an offset table if this translation unit actually made virtual 
+     calls. */
+  if (otable_methods == NULL_TREE)
+    return;
+
+  /* Build a list of _Jv_MethodSymbols for each entry in otable_methods. */
+  index = 0;
+  method_list = otable_methods;
+  list = NULL_TREE;  
+  while (method_list != NULL_TREE)
+    {
+      method = TREE_VALUE (method_list);
+      list = tree_cons (NULL_TREE, build_method_symbols_entry (method), list);
+      method_list = TREE_CHAIN (method_list);
+      index++;
+    }
+
+  /* Terminate the list with a "null" entry. */
+  START_RECORD_CONSTRUCTOR (null_symbol, method_symbol_type);
+  PUSH_FIELD_VALUE (null_symbol, "clname", null_pointer_node);
+  PUSH_FIELD_VALUE (null_symbol, "name", null_pointer_node);
+  PUSH_FIELD_VALUE (null_symbol, "signature", null_pointer_node);
+  FINISH_RECORD_CONSTRUCTOR (null_symbol);
+  TREE_CONSTANT (null_symbol) = 1;  
+  list = tree_cons (NULL_TREE, null_symbol, list);
+
+  /* Put the list in the right order and make it a constructor. */
+  list = nreverse (list);
+  table = build (CONSTRUCTOR, method_symbols_array_type, NULL_TREE, list);  
+
+  /* Make it the initial value for otable_syms and emit the decl. */
+  DECL_INITIAL (otable_syms_decl) = table;
+  DECL_ARTIFICIAL (otable_syms_decl) = 1;
+  DECL_IGNORED_P (otable_syms_decl) = 1;
+  rest_of_decl_compilation (otable_syms_decl, NULL, 1, 0);
+  
+  /* Now that its size is known, redefine otable as an uninitialized static 
+     array of INDEX + 1 integers. The extra entry is used by the runtime 
+     to track whether the otable has been initialized. */
+  otable_bound = build_index_type (build_int_2 (index, 0));
+  otable_array_type = build_array_type (integer_type_node, otable_bound);
+  otable_decl = build_decl (VAR_DECL, get_identifier ("otable"), 
+			    otable_array_type);
+  TREE_STATIC (otable_decl) = 1;
+  TREE_READONLY (otable_decl) = 1;  
+  rest_of_decl_compilation (otable_decl, NULL, 1, 0);
 }
 
 void
