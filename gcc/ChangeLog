@@ -1,3 +1,8 @@
+2004-06-28  Paolo Bonzini  <bonzini@gnu.org>
+
+	* fold-const.c (fold_cond_expr_with_comparison): Add ARG1
+	parameter.  Use it instead of ARG00 to produce the result.
+
 2004-06-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mn10300/mn10300-protos.h (legitimate_address_p): Declare.

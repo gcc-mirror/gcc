@@ -116,7 +116,7 @@ static tree build_range_check (tree, tree, int, tree, tree);
 static int merge_ranges (int *, tree *, tree *, int, tree, tree, int, tree,
 			 tree);
 static tree fold_range_test (tree);
-static tree fold_cond_expr_with_comparison (tree, tree, tree);
+static tree fold_cond_expr_with_comparison (tree, tree, tree, tree);
 static tree unextend (tree, int, int, tree);
 static tree fold_truthop (enum tree_code, tree, tree, tree);
 static tree optimize_minmax_comparison (tree);
@@ -4115,20 +4115,23 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
 
 
 /* Subroutine of fold, looking inside expressions of the form
-   A op B ? A : C, where ARG0 is A op B and ARG2 is C.  This
-   function is being used also to optimize A op B ? C : A, by
-   reversing the comparison first.
+   A op B ? A : C, where ARG0, ARG1 and ARG2 are the three operands
+   of the COND_EXPR.  This function is being used also to optimize
+   A op B ? C : A, by reversing the comparison first.
 
    Return a folded expression whose code is not a COND_EXPR
    anymore, or NULL_TREE if no folding opportunity is found.  */
 
 static tree
-fold_cond_expr_with_comparison (tree type, tree arg0, tree arg2)
+fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 {
   enum tree_code comp_code = TREE_CODE (arg0);
   tree arg00 = TREE_OPERAND (arg0, 0);
   tree arg01 = TREE_OPERAND (arg0, 1);
+  tree arg1_type = TREE_TYPE (arg1);
   tree tem;
+
+  STRIP_NOPS (arg1);
   STRIP_NOPS (arg2);
 
   /* If we have A op 0 ? A : -A, consider applying the following
@@ -4154,26 +4157,27 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg2)
        ? real_zerop (arg01)
        : integer_zerop (arg01))
       && TREE_CODE (arg2) == NEGATE_EXPR
-      && operand_equal_p (TREE_OPERAND (arg2, 0), arg00, 0))
+      && operand_equal_p (TREE_OPERAND (arg2, 0), arg1, 0))
     switch (comp_code)
       {
       case EQ_EXPR:
-	return fold_convert (type, negate_expr (arg00));
+	tem = fold_convert (arg1_type, arg1);
+	return pedantic_non_lvalue (fold_convert (type, negate_expr (tem)));
       case NE_EXPR:
-	return pedantic_non_lvalue (fold_convert (type, arg00));
+	return pedantic_non_lvalue (fold_convert (type, arg1));
       case GE_EXPR:
       case GT_EXPR:
-	if (TYPE_UNSIGNED (TREE_TYPE (arg00)))
-	  arg00 = fold_convert (lang_hooks.types.signed_type
-			        (TREE_TYPE (arg00)), arg00);
-	tem = fold (build1 (ABS_EXPR, TREE_TYPE (arg00), arg00));
+	if (TYPE_UNSIGNED (TREE_TYPE (arg1)))
+	  arg1 = fold_convert (lang_hooks.types.signed_type
+			       (TREE_TYPE (arg1)), arg1);
+	tem = fold (build1 (ABS_EXPR, TREE_TYPE (arg1), arg1));
 	return pedantic_non_lvalue (fold_convert (type, tem));
       case LE_EXPR:
       case LT_EXPR:
-	if (TYPE_UNSIGNED (TREE_TYPE (arg00)))
-	  arg00 = fold_convert (lang_hooks.types.signed_type
-			        (TREE_TYPE (arg00)), arg00);
-	tem = fold (build1 (ABS_EXPR, TREE_TYPE (arg00), arg00));
+	if (TYPE_UNSIGNED (TREE_TYPE (arg1)))
+	  arg1 = fold_convert (lang_hooks.types.signed_type
+			       (TREE_TYPE (arg1)), arg1);
+	tem = fold (build1 (ABS_EXPR, TREE_TYPE (arg1), arg1));
 	return negate_expr (fold_convert (type, tem));
       default:
 	abort ();
@@ -4187,7 +4191,7 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg2)
   if (integer_zerop (arg01) && integer_zerop (arg2))
     {
       if (comp_code == NE_EXPR)
-	return pedantic_non_lvalue (fold_convert (type, arg00));
+	return pedantic_non_lvalue (fold_convert (type, arg1));
       else if (comp_code == EQ_EXPR)
 	return pedantic_non_lvalue (fold_convert (type, integer_zero_node));
     }
@@ -4228,7 +4232,7 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg2)
       if (TYPE_MAIN_VARIANT (comp_type) == TYPE_MAIN_VARIANT (type))
 	{
 	  comp_type = type;
-	  comp_op0 = arg00;
+	  comp_op0 = arg1;
 	  comp_op1 = arg2;
 	}
 
@@ -4237,14 +4241,14 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg2)
 	case EQ_EXPR:
 	  return pedantic_non_lvalue (fold_convert (type, arg2));
 	case NE_EXPR:
-	  return pedantic_non_lvalue (fold_convert (type, arg00));
+	  return pedantic_non_lvalue (fold_convert (type, arg1));
 	case LE_EXPR:
 	case LT_EXPR:
 	  /* In C++ a ?: expression can be an lvalue, so put the
 	     operand which will be used if they are equal first
 	     so that we can convert this back to the
 	     corresponding COND_EXPR.  */
-	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg00))))
+	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg1))))
 	    return pedantic_non_lvalue (
 		     fold_convert (type, fold (build2 (MIN_EXPR, comp_type,
 				         (comp_code == LE_EXPR
@@ -4254,7 +4258,7 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg2)
 	  break;
 	case GE_EXPR:
 	case GT_EXPR:
-	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg00))))
+	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg1))))
 	    return pedantic_non_lvalue (
 		     fold_convert (type, fold (build2 (MAX_EXPR, comp_type,
 				         (comp_code == GE_EXPR
@@ -4280,8 +4284,8 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg2)
       {
       case EQ_EXPR:
 	/* We can replace A with C1 in this case.  */
-	arg00 = fold_convert (type, arg01);
-	return fold (build3 (COND_EXPR, type, arg0, arg00, arg2));
+	arg1 = fold_convert (type, arg01);
+	return fold (build3 (COND_EXPR, type, arg0, arg1, arg2));
 
       case LT_EXPR:
 	/* If C1 is C2 + 1, this is min(A, C2).  */
@@ -4292,7 +4296,7 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg2)
 					     integer_one_node, 0),
 				OEP_ONLY_CONST))
 	  return pedantic_non_lvalue (fold (build2 (MIN_EXPR,
-						    type, arg00, arg2)));
+						    type, arg1, arg2)));
 	break;
 
       case LE_EXPR:
@@ -4304,7 +4308,7 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg2)
 					     integer_one_node, 0),
 				OEP_ONLY_CONST))
 	  return pedantic_non_lvalue (fold (build2 (MIN_EXPR,
-						    type, arg00, arg2)));
+						    type, arg1, arg2)));
 	break;
 
       case GT_EXPR:
@@ -4316,7 +4320,7 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg2)
 					     integer_one_node, 0),
 				OEP_ONLY_CONST))
 	  return pedantic_non_lvalue (fold (build2 (MAX_EXPR,
-						    type, arg00, arg2)));
+						    type, arg1, arg2)));
 	break;
 
       case GE_EXPR:
@@ -4328,7 +4332,7 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg2)
 					     integer_one_node, 0),
 				OEP_ONLY_CONST))
 	  return pedantic_non_lvalue (fold (build2 (MAX_EXPR,
-						    type, arg00, arg2)));
+						    type, arg1, arg2)));
 	break;
       case NE_EXPR:
 	break;
@@ -8666,6 +8670,7 @@ fold (tree expr)
 	  && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
 	{
 	  tem = fold_cond_expr_with_comparison (type, arg0,
+						TREE_OPERAND (t, 1),
 						TREE_OPERAND (t, 2));
 	  if (tem)
 	    return tem;
@@ -8680,7 +8685,9 @@ fold (tree expr)
 	  tem = invert_truthvalue (arg0);
 	  if (TREE_CODE_CLASS (TREE_CODE (tem)) == '<')
 	    {
-	      tem = fold_cond_expr_with_comparison (type, tem, arg1);
+	      tem = fold_cond_expr_with_comparison (type, tem,
+						    TREE_OPERAND (t, 2),
+						    TREE_OPERAND (t, 1));
 	      if (tem)
 		return tem;
 	    }
