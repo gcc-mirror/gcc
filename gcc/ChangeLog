@@ -1,3 +1,7 @@
+2004-04-29  Paul Brook  <paul@codesourcery.com>
+
+	* config.gcc: Pull list of cores from arm-cores.def.
+
 2004-04-29  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (combine_simplify_rtx): Adjust call to use
@@ -23,20 +27,20 @@
 
 2004-04-29  Uros Bizjak  <uros@kss-loka.si>
 
-        * reg-stack.c (swap_to_top): New function.
-        (subst_stack_regs_pat): UNSPEC_FPATAN, UNSPEC_FYL2X: Use
-        swap_to_top().
-        (subst_stack_regs_pat): UNSPEC_FSCALE: Remove.
-        (subst_stack_regs_pat): Handle UNSPEC_FSCALE_FRACT and 
-        UNSPEC_FSCALE_EXP.
+	* reg-stack.c (swap_to_top): New function.
+	(subst_stack_regs_pat): UNSPEC_FPATAN, UNSPEC_FYL2X: Use
+	swap_to_top().
+	(subst_stack_regs_pat): UNSPEC_FSCALE: Remove.
+	(subst_stack_regs_pat): Handle UNSPEC_FSCALE_FRACT and 
+	UNSPEC_FSCALE_EXP.
 
-        * config/i386/i386.md (UNSPEC_FSCALE): Remove.
-        (*fscale_sfxf3, *fscale_dfxf3, *fscale_xf3): Remove insn pattern.
-        (UNSPEC_FSCALE_FRACT, UNSPEC_FSCALE_EXP): New unspecs to represent
-        x87's fscale insn.
-        (*fscalexf4: Define new insn pattern to implement x87 fscale insn.
-        (exp?f2, exp10?f2, exp2?f2): Use *fscalexf4 and float_truncate
-        patterns.
+	* config/i386/i386.md (UNSPEC_FSCALE): Remove.
+	(*fscale_sfxf3, *fscale_dfxf3, *fscale_xf3): Remove insn pattern.
+	(UNSPEC_FSCALE_FRACT, UNSPEC_FSCALE_EXP): New unspecs to represent
+	x87's fscale insn.
+	(*fscalexf4: Define new insn pattern to implement x87 fscale insn.
+	(exp?f2, exp10?f2, exp2?f2): Use *fscalexf4 and float_truncate
+	patterns.
 
 2004-04-28  Serge Belyshev  <1319@bot.ru>
 

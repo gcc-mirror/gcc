@@ -2212,27 +2212,20 @@ fi
 	arm*-*-*)
 		supported_defaults="arch cpu float tune fpu abi"
 		for which in cpu tune; do
+			# See if it matches any of the entries in arm-cores.def
 			eval "val=\$with_$which"
-			case "$val" in
-			"" \
-			| arm[236789] | arm250 | arm[67][01]0 \
-			| arm60 | arm620 | arm7d | arm7di \
-			| arm7m | arm7dm | arm7dmi | arm[79]tdmi \
-			| arm70 | arm700i | arm710t | arm720 \
-			| arm720t | arm740t | arm710c | arm920 \
-			| arm920t | arm926ejs | arm940t | arm9e | arm10tdmi \
-			| arm7100 | arm7500 | arm7500fe | arm810 \
-			| arm1026ejs | arm1020t | arm1136js | arm1136jfs \
-			| xscale | iwmmxt \
-			| ep9312 \
-			| strongarm | strongarm110 | strongarm11[01]0)
-				# OK
-				;;
-			*)
+			[ x"$val" = x ] && val=unset
+			for opt in `sed -e '/ARM_CORE/!d' \
+			  -e 's/ARM_CORE(\([^,]*\),.*$/\1/' \
+			  ${srcdir}/config/arm/arm-cores.def` unset .
+			do
+				[ x$opt = x"$val" ] && break
+			done
+			if [ $opt = . ]; then
 				echo "Unknown CPU used in --with-$which=$val" 1>&2
 				exit 1
-				;;
-			esac
+			  
+			fi
 		done
 
 		case "$with_arch" in
