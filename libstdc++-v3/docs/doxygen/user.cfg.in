@@ -669,13 +669,13 @@ ENABLE_PREPROCESSING   = YES
 # compilation will be performed. Macro expansion can be done in a controlled 
 # way by setting EXPAND_ONLY_PREDEF to YES.
 
-MACRO_EXPANSION        = NO
+MACRO_EXPANSION        = YES
 
 # If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES 
 # then the macro expansion is limited to the macros specified with the 
 # PREDEFINED and EXPAND_AS_PREDEFINED tags.
 
-EXPAND_ONLY_PREDEF     = NO
+EXPAND_ONLY_PREDEF     = YES
 
 # If the SEARCH_INCLUDES tag is set to YES (the default) the includes files 
 # in the INCLUDE_PATH (see below) will be search if a #include is found.
@@ -701,10 +701,19 @@ INCLUDE_FILE_PATTERNS  =
 # or name=definition (no spaces). If the definition and the = are 
 # omitted =1 is assumed.
 
-PREDEFINED             = _GLIBCPP_DEPRECATED
+### The deprecated functions are clearly marked as such in the code, but
+### the DEPRECATED macro must be defined for that code to be seen by doxygen.
+### The class_requires macros are kludges because SKIP_FUNCTION_MACROS is
+### completely broken, and the presence of the macros confuses the parser.
+
+PREDEFINED             = _GLIBCPP_DEPRECATED              \
+                         __glibcpp_class_requires="//"    \
+                         __glibcpp_class_requires2="//"   \
+                         __glibcpp_class_requires3="//"   \
+                         __glibcpp_class_requires4="//"
 
 # If the MACRO_EXPANSION and EXPAND_PREDEF_ONLY tags are set to YES then 
-# this tag can be used to specify a list of macro names that should be expanded. 
+# this tag can be used to specify a list of macro names that should be expanded.
 # The macro definition that is found in the sources will be used. 
 # Use the PREDEFINED tag if you want to use a different macro definition.
 
