@@ -1,3 +1,8 @@
+2000-09-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (all-bootstrap): Added all-texinfo and all-zlib.
+	(bootstrap*): Depend on all-bootstrap.
+
 2000-09-05  Philipp Thomas  <pthomas@suse.de>
 
 	* config.guess: Import CVS version 1.156.
