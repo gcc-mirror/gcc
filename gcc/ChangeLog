@@ -1,5 +1,7 @@
 Sat Nov 28 19:20:06 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* Makefile.in (*.o): Depend on system.h.
+	* system.h (ANSI_PROTOTYPES): Add definition.
 	* *.c, c-parse.in, cexp.y: Include system.h and delete any
 	non-redundant includes, macro definitions, or declarations.
 	* gen*.c, bc-emit.c, calls.c, cccp.c, combine.c, emit-rtl.c:
