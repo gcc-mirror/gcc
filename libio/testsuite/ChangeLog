@@ -1,7 +1,18 @@
+Sat Sep  6 00:49:31 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* lib/libio.exp (test_libio): Lose -L.. before -lio, may as well
+	require things be fully usable.  Not ideal, but...also no longer
+	have the -liostream approach.
+
 Fri Sep  5 15:38:37 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/libio.exp  (test_libio): Use libstdc++_{include,link}_flags
 	instead of g++_{include,link}_flags.
+
+Thu Sep  4 15:22:46 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* lib/libio.exp (test_libio): Add `-L..' before -lio.
+	Use `-L.. -liostream' for now.
 
 Fri Jun 27 18:19:21 1997  Bob Manson  <manson@charmed.cygnus.com>
 
