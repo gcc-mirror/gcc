@@ -133,20 +133,23 @@ namespace std
       __string_type
       str() const
       {
+	__string_type __ret = _M_string;
 	if (this->_M_mode & ios_base::out)
 	  {
 	    // This is the deal: _M_string.size() is a value that
-	    // represents the size of the initial string that makes
-	    // _M_string, and may not be the correct size of the
-	    // current stringbuf internal buffer.
+	    // represents the size of the initial string used to
+	    // created the buffer, and may not be the correct size of
+	    // the current stringbuf internal buffer.
 	    __size_type __len = _M_string.size();
-	    if (this->_M_out_lim > this->_M_out_beg)
-	      __len = std::max(__size_type(this->_M_out_lim 
-					   - this->_M_out_beg), __len);
-	    return __string_type(this->_M_out_beg, this->_M_out_beg + __len);
+	    __size_type __nlen = this->_M_out_lim - this->_M_out_beg;
+	    if (__nlen)
+	      {
+		__len = std::max(__nlen, __len);
+		__ret = __string_type(this->_M_out_beg, 
+				      this->_M_out_beg + __len);
+	      }
 	  }
-	else
-	  return _M_string;
+	return __ret;
       }
 
       /**
@@ -180,10 +183,11 @@ namespace std
 	// suit particular needs.
 	this->_M_buf_size_opt = 512;
 	this->_M_mode = __mode;
+	
+	__size_type __len = 0;
 	if (this->_M_mode & (ios_base::ate | ios_base::app))
-	  _M_really_sync(0, _M_string.size());
-	else
-	  _M_really_sync(0, 0);
+	  __len = _M_string.size();
+	_M_really_sync(const_cast<char_type*>(_M_string.data()), 0, __len);
       }
 
       // Overridden virtual functions:
@@ -221,8 +225,18 @@ namespace std
       {
 	if (__s && __n)
 	  {
+	    // This is implementation-defined behavior, and assumes
+	    // that an external char_type array of length (__s + __n)
+	    // exists and has been pre-allocated. If this is not the
+	    // case, things will quickly blow up.
+	    
+	    // Step 1: Destroy the current internal array.
 	    _M_string = __string_type(__s, __n);
-	    _M_really_sync(0, 0);
+	    
+	    // Step 2: Use the external array.
+	    this->_M_buf = __s;
+	    this->_M_buf_size_opt = this->_M_buf_size = __n;
+	    _M_really_sync(__s, 0, 0);
 	  }
 	return this;
       }
@@ -248,10 +262,9 @@ namespace std
        *  @doctodo
        *  @endif
       */
-      virtual int
-      _M_really_sync(__size_type __i, __size_type __o)
+      virtual void
+      _M_really_sync(char_type* __base, __size_type __i, __size_type __o)
       {
-	char_type* __base = const_cast<char_type*>(_M_string.data());
 	bool __testin = this->_M_mode & ios_base::in;
 	bool __testout = this->_M_mode & ios_base::out;
 	__size_type __len = _M_string.size();
@@ -266,7 +279,6 @@ namespace std
 	    this->_M_out_lim = __base + __len;
 	    this->_M_out_cur += __o;
 	  }
-	return 0;
       }
     };
 

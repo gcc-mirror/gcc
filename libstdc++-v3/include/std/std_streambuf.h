@@ -210,7 +210,7 @@ namespace std
       char_type* 		_M_out_cur;    // Current put area. 
       char_type* 		_M_out_end;    // End of put area.
 
-      char_type*                _M_out_lim;    // Right limit of used put area.
+      char_type*                _M_out_lim;    // End limit of used put area.
 
       //@}
 
@@ -651,7 +651,7 @@ namespace std
       setp(char_type* __pbeg, char_type* __pend)
       { 
 	_M_out_beg = _M_out_cur = __pbeg; 
-	_M_out_end = __pend;
+	_M_out_end = _M_out_lim = __pend;
 	if (!(_M_mode & ios_base::out) && __pbeg && __pend)
 	  _M_mode = _M_mode | ios_base::out;
       }

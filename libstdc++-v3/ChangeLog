@@ -1,3 +1,392 @@
+2003-04-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Reshuffle 27_io testsuite.  * testsuite/27_io/filebuf.cc,
+	filebuf_members-1.tst, filebuf_members-1.txt, filebuf_members.cc,
+	filebuf_virtuals-1.tst, filebuf_virtuals-1.txt,
+	filebuf_virtuals-2.tst, filebuf_virtuals-3.tst,
+	filebuf_virtuals.cc, fpos.cc, fstream.cc, fstream_members.cc,
+	ifstream.cc, ifstream_members-1.tst, ifstream_members-1.txt,
+	ifstream_members.cc, instantiations.cc, ios.cc,
+	ios_base_callbacks.cc, ios_base_members_static-1.tst,
+	ios_base_members_static.cc, ios_base_storage.cc,
+	ios_base_types.cc, ios_ctor.cc, ios_init.cc,
+	ios_manip_basefield.cc, ios_manip_fmtflags.cc, ios_members.cc,
+	iostream.cc, iostream_members.cc, istream.cc,
+	istream_exception.cc, istream_extractor_char.cc,
+	istream_extractor_other-1.tst, istream_extractor_other-1.txt,
+	istream_extractor_other-2.tst, istream_extractor_other.cc,
+	istream_manip.cc, istream_seeks-1.tst, istream_seeks-1.txt,
+	istream_seeks-2.tst, istream_seeks-3.tst, istream_seeks.cc,
+	istream_sentry.cc, istream_unformatted-1.tst,
+	istream_unformatted-1.txt, istream_unformatted.cc,
+	istringstream.cc, istringstream_members.cc,
+	narrow_stream_objects.cc, ofstream.cc, ofstream_members-1.tst,
+	ofstream_members.cc, ostream.cc, ostream_exception.cc,
+	ostream_fail.cc, ostream_inserter_arith.cc,
+	ostream_inserter_char-1.tst, ostream_inserter_char-1.txt,
+	ostream_inserter_char.cc, ostream_inserter_other-1.tst,
+	ostream_inserter_other-2.tst, ostream_inserter_other.cc,
+	ostream_manip.cc, ostream_seeks-1.tst, ostream_seeks.cc,
+	ostream_sentry.cc, ostream_unformatted.cc, ostringstream.cc,
+	ostringstream_members.cc, standard_manipulators.cc, streambuf.cc,
+	streambuf_members.cc, stringbuf.cc, stringbuf_members.cc,
+	stringbuf_virtuals.cc, stringstream.cc, stringstream_members.cc,
+	wide_stream_objects.cc, istream_extractor_arith/01.cc,
+	istream_extractor_arith/02.cc, istream_extractor_arith/03.cc,
+	istream_extractor_arith/06.cc, istream_extractor_arith/07.cc,
+	istream_extractor_arith/08.cc, istream_extractor_arith/09.cc,
+	istream_extractor_arith/10.cc, istream_extractor_arith/11.cc,
+	istream_extractor_arith/12.cc, istream_extractor_arith/13.cc:
+	Split into...
+	* 27_io/basic_filebuf/1.cc: New.
+	* 27_io/basic_filebuf/2.cc: New.
+	* 27_io/basic_filebuf/3.cc: New.
+	* 27_io/basic_filebuf/4.cc: New.
+	* 27_io/basic_filebuf/close/char/1.cc: New.
+	* 27_io/basic_filebuf/close/char/2.cc: New.
+	* 27_io/basic_filebuf/close/char/3.cc: New.
+	* 27_io/basic_filebuf/close/char/4879.cc: New.
+	* 27_io/basic_filebuf/close/char/9964.cc: New.
+	* 27_io/basic_filebuf/imbue/char/1.cc: New.
+	* 27_io/basic_filebuf/imbue/char/9322.cc: New.
+	* 27_io/basic_filebuf/in_avail/char/1.cc: New.
+	* 27_io/basic_filebuf/is_open/char/1.cc: New.
+	* 27_io/basic_filebuf/open/char/1.cc: New.
+	* 27_io/basic_filebuf/open/char/2.cc: New.
+	* 27_io/basic_filebuf/open/char/3.cc: New.
+	* 27_io/basic_filebuf/open/char/9507.cc: New.
+	* 27_io/basic_filebuf/overflow/char/1.cc: New.
+	* 27_io/basic_filebuf/overflow/char/3599.cc: New.
+	* 27_io/basic_filebuf/overflow/char/9169.cc: New.
+	* 27_io/basic_filebuf/overflow/char/9182-2.cc: New.
+	* 27_io/basic_filebuf/overflow/char/9988.cc: New.
+	* 27_io/basic_filebuf/sbumpc/char/1.cc: New.
+	* 27_io/basic_filebuf/sbumpc/char/9825.cc: New.
+	* 27_io/basic_filebuf/seekoff/char/1.cc: New.
+	* 27_io/basic_filebuf/seekoff/char/2.cc: New.
+	* 27_io/basic_filebuf/seekpos/char/1.cc: New.
+	* 27_io/basic_filebuf/seekpos/char/2.cc: New.
+	* 27_io/basic_filebuf/setbuf/char/1.cc: New.
+	* 27_io/basic_filebuf/setbuf/char/2.cc: New.
+	* 27_io/basic_filebuf/setbuf/char/3.cc: New.
+	* 27_io/basic_filebuf/sgetc/char/1.cc: New.
+	* 27_io/basic_filebuf/sgetn/char/1.cc: New.
+	* 27_io/basic_filebuf/sgetn/char/2.cc: New.
+	* 27_io/basic_filebuf/snextc/char/1.cc: New.
+	* 27_io/basic_filebuf/sputbackc/char/1.cc: New.
+	* 27_io/basic_filebuf/sputbackc/char/9425.cc: New.
+	* 27_io/basic_filebuf/sputc/char/1.cc: New.
+	* 27_io/basic_filebuf/sputc/char/1057.cc: New.
+	* 27_io/basic_filebuf/sputc/char/9701-2.cc: New.
+	* 27_io/basic_filebuf/sputn/char/1.cc: New.
+	* 27_io/basic_filebuf/sputn/char/1057.cc: New.
+	* 27_io/basic_filebuf/sputn/char/9701-1.cc: New.
+	* 27_io/basic_filebuf/sungetc/char/1.cc: New.
+	* 27_io/basic_filebuf/sync/char/1057.cc: New.
+	* 27_io/basic_filebuf/sync/char/9182-1.cc: New.
+	* 27_io/basic_filebuf/underflow/char/10097.cc: New.
+	* 27_io/basic_fstream/1.cc: New.
+	* 27_io/basic_fstream/2.cc: New.
+	* 27_io/basic_fstream/3.cc: New.
+	* 27_io/basic_fstream/4.cc: New.
+	* 27_io/basic_fstream/rdbuf/char/2832.cc: New.
+	* 27_io/basic_ifstream/1.cc: New.
+	* 27_io/basic_ifstream/2.cc: New.
+	* 27_io/basic_ifstream/3.cc: New.
+	* 27_io/basic_ifstream/4.cc: New.
+	* 27_io/basic_ifstream/cons/char/1.cc: New.
+	* 27_io/basic_ifstream/open/char/1.cc: New.
+	* 27_io/basic_ifstream/rdbuf/char/2832.cc: New.
+	* 27_io/basic_ios/1.cc: New.
+	* 27_io/basic_ios/2.cc: New.
+	* 27_io/basic_ios/3.cc: New.
+	* 27_io/basic_ios/4.cc: New.
+	* 27_io/basic_ios/clear/char/1.cc: New.
+	* 27_io/basic_ios/cons/char/1.cc: New.
+	* 27_io/basic_ios/cons/char/2.cc: New.
+	* 27_io/basic_ios/cons/char/3.cc: New.
+	* 27_io/basic_ios/copyfmt/char/1.cc: New.
+	* 27_io/basic_ios/copyfmt/char/2.cc: New.
+	* 27_io/basic_ios/exceptions/char/1.cc: New.
+	* 27_io/basic_ios/locales/char/1.cc: New.
+	* 27_io/basic_iostream/1.cc: New.
+	* 27_io/basic_iostream/2.cc: New.
+	* 27_io/basic_iostream/3.cc: New.
+	* 27_io/basic_iostream/4.cc: New.
+	* 27_io/basic_istream/1.cc: New.
+	* 27_io/basic_istream/2.cc: New.
+	* 27_io/basic_istream/3.cc: New.
+	* 27_io/basic_istream/4.cc: New.
+	* 27_io/basic_istream/exceptions/char/9561.cc: New.
+	* 27_io/basic_istream/extractors_arithmetic/char/01.cc: New.
+	* 27_io/basic_istream/extractors_arithmetic/char/02.cc: New.
+	* 27_io/basic_istream/extractors_arithmetic/char/03.cc: New.
+	* 27_io/basic_istream/extractors_arithmetic/char/06.cc: New.
+	* 27_io/basic_istream/extractors_arithmetic/char/07.cc: New.
+	* 27_io/basic_istream/extractors_arithmetic/char/08.cc: New.
+	* 27_io/basic_istream/extractors_arithmetic/char/09.cc: New.
+	* 27_io/basic_istream/extractors_arithmetic/char/10.cc: New.
+	* 27_io/basic_istream/extractors_arithmetic/char/11.cc: New.
+	* 27_io/basic_istream/extractors_arithmetic/char/12.cc: New.
+	* 27_io/basic_istream/extractors_arithmetic/char/13.cc: New.
+	* 27_io/basic_istream/extractors_character/char/1.cc: New.
+	* 27_io/basic_istream/extractors_character/char/2.cc: New.
+	* 27_io/basic_istream/extractors_character/char/3.cc: New.
+	* 27_io/basic_istream/extractors_character/char/9826.cc: New.
+	* 27_io/basic_istream/extractors_other/char/1.cc: New.
+	* 27_io/basic_istream/extractors_other/char/2.cc: New.
+	* 27_io/basic_istream/extractors_other/char/3.cc: New.
+	* 27_io/basic_istream/extractors_other/char/9318-in.cc: New.
+	* 27_io/basic_istream/extractors_other/char/9424-in.cc: New.
+	* 27_io/basic_istream/get/char/1.cc: New.
+	* 27_io/basic_istream/get/char/2.cc: New.
+	* 27_io/basic_istream/getline/char/1.cc: New.
+	* 27_io/basic_istream/getline/char/2.cc: New.
+	* 27_io/basic_istream/getline/char/3.cc: New.
+	* 27_io/basic_istream/ignore/char/1.cc: New.
+	* 27_io/basic_istream/ignore/char/6360.cc: New.
+	* 27_io/basic_istream/ignore/char/7220.cc: New.
+	* 27_io/basic_istream/peek/char/1.cc: New.
+	* 27_io/basic_istream/peek/char/6414.cc: New.
+	* 27_io/basic_istream/putback/char/1.cc: New.
+	* 27_io/basic_istream/read/char/1.cc: New.
+	* 27_io/basic_istream/read/char/2.cc: New.
+	* 27_io/basic_istream/read/char/3.cc: New.
+	* 27_io/basic_istream/readsome/char/6746-1.cc: New.
+	* 27_io/basic_istream/readsome/char/6746-2.cc: New.
+	* 27_io/basic_istream/readsome/char/8258.cc: New.
+	* 27_io/basic_istream/seekg/char/2346-fstream.cc: New.
+	* 27_io/basic_istream/seekg/char/2346-sstream.cc: New.
+	* 27_io/basic_istream/seekg/char/8348-1.cc: New.
+	* 27_io/basic_istream/seekg/char/8348-2.cc: New.
+	* 27_io/basic_istream/seekg/char/fstream.cc: New.
+	* 27_io/basic_istream/seekg/char/sstream.cc: New.
+	* 27_io/basic_istream/sentry/char/1.cc: New.
+	* 27_io/basic_istream/sentry/char/2.cc: New.
+	* 27_io/basic_istream/sentry/char/3.cc: New.
+	* 27_io/basic_istream/sentry/char/3983-fstream.cc: New.
+	* 27_io/basic_istream/sentry/char/3983-sstream.cc: New.
+	* 27_io/basic_istream/tellg/char/1.cc: New.
+	* 27_io/basic_istream/tellg/char/8348.cc: New.
+	* 27_io/basic_istream/tellg/char/fstream.cc: New.
+	* 27_io/basic_istream/tellg/char/sstream.cc: New.
+	* 27_io/basic_istream/ws/char/1.cc: New.
+	* 27_io/basic_istringstream/1.cc: New.
+	* 27_io/basic_istringstream/2.cc: New.
+	* 27_io/basic_istringstream/3.cc: New.
+	* 27_io/basic_istringstream/4.cc: New.
+	* 27_io/basic_istringstream/rdbuf/char/2832.cc: New.
+	* 27_io/basic_istringstream/str/char/1.cc: New.
+	* 27_io/basic_ofstream/1.cc: New.
+	* 27_io/basic_ofstream/2.cc: New.
+	* 27_io/basic_ofstream/3.cc: New.
+	* 27_io/basic_ofstream/4.cc: New.
+	* 27_io/basic_ofstream/cons/char/2.cc: New.
+	* 27_io/basic_ofstream/open/char/1.cc: New.
+	* 27_io/basic_ofstream/rdbuf/char/2832.cc: New.
+	* 27_io/basic_ostream/1.cc: New.
+	* 27_io/basic_ostream/2.cc: New.
+	* 27_io/basic_ostream/3.cc: New.
+	* 27_io/basic_ostream/4.cc: New.
+	* 27_io/basic_ostream/cons/char/9827.cc: New.
+	* 27_io/basic_ostream/endl/char/1.cc: New.
+	* 27_io/basic_ostream/ends/char/1.cc: New.
+	* 27_io/basic_ostream/ends/char/2.cc: New.
+	* 27_io/basic_ostream/exceptions/char/9561.cc: New.
+	* 27_io/basic_ostream/flush/char/1.cc: New.
+	* 27_io/basic_ostream/inserters_arithmetic/char/1.cc: New.
+	* 27_io/basic_ostream/inserters_arithmetic/char/2.cc: New.
+	* 27_io/basic_ostream/inserters_arithmetic/char/3.cc: New.
+	* 27_io/basic_ostream/inserters_arithmetic/char/4.cc: New.
+	* 27_io/basic_ostream/inserters_arithmetic/char/4402.cc: New.
+	* 27_io/basic_ostream/inserters_arithmetic/char/5.cc: New.
+	* 27_io/basic_ostream/inserters_arithmetic/char/6.cc: New.
+	* 27_io/basic_ostream/inserters_arithmetic/wchar_t/1.cc: New.
+	* 27_io/basic_ostream/inserters_character/char/1.cc: New.
+	* 27_io/basic_ostream/inserters_character/char/2.cc: New.
+	* 27_io/basic_ostream/inserters_character/char/3.cc: New.
+	* 27_io/basic_ostream/inserters_character/char/4.cc: New.
+	* 27_io/basic_ostream/inserters_character/char/5.cc: New.
+	* 27_io/basic_ostream/inserters_character/char/6.cc: New.
+	* 27_io/basic_ostream/inserters_character/char/8.cc: New.
+	* 27_io/basic_ostream/inserters_character/wchar_t/7.cc: New.
+	* 27_io/basic_ostream/inserters_character/wchar_t/8.cc: New.
+	* 27_io/basic_ostream/inserters_other/char/1.cc: New.
+	* 27_io/basic_ostream/inserters_other/char/2.cc: New.
+	* 27_io/basic_ostream/inserters_other/char/3.cc: New.
+	* 27_io/basic_ostream/inserters_other/char/4.cc: New.
+	* 27_io/basic_ostream/inserters_other/char/9318-out.cc: New.
+	* 27_io/basic_ostream/inserters_other/char/9424-out.cc: New.
+	* 27_io/basic_ostream/sentry/char/1.cc: New.
+	* 27_io/basic_ostream/sentry/char/2.cc: New.
+	* 27_io/basic_ostream/sentry/char/3983-fstream.cc: New.
+	* 27_io/basic_ostream/sentry/char/3983-sstream.cc: New.
+	* 27_io/basic_ostream/tellp/char/1.cc: New.
+	* 27_io/basic_ostream/tellp/char/2.cc: New.
+	* 27_io/basic_ostringstream/1.cc: New.
+	* 27_io/basic_ostringstream/2.cc: New.
+	* 27_io/basic_ostringstream/3.cc: New.
+	* 27_io/basic_ostringstream/4.cc: New.
+	* 27_io/basic_ostringstream/cons/char/3.cc: New.
+	* 27_io/basic_ostringstream/rdbuf/char/2832.cc: New.
+	* 27_io/basic_ostringstream/str/char/1.cc: New.
+	* 27_io/basic_ostringstream/str/char/2.cc: New.
+	* 27_io/basic_streambuf/1.cc: New.
+	* 27_io/basic_streambuf/2.cc: New.
+	* 27_io/basic_streambuf/3.cc: New.
+	* 27_io/basic_streambuf/cons/char/1.cc: New.
+	* 27_io/basic_streambuf/imbue/char/1.cc: New.
+	* 27_io/basic_streambuf/imbue/char/9322.cc: New.
+	* 27_io/basic_streambuf/overflow/char/1.cc: New.
+	* 27_io/basic_streambuf/overflow/char/2.cc: New.
+	* 27_io/basic_streambuf/overflow/char/3599.cc: New.
+	* 27_io/basic_streambuf/sgetc/char/1.cc: New.
+	* 27_io/basic_streambuf/sgetn/char/1.cc: New.
+	* 27_io/basic_streambuf/sputbackc/char/9538.cc: New.
+	* 27_io/basic_streambuf/sputc/char/1057.cc: New.
+	* 27_io/basic_streambuf/sputn/char/1.cc: New.
+	* 27_io/basic_streambuf/sputn/char/1057.cc: New.
+	* 27_io/basic_streambuf/sync/char/1057.cc: New.
+	* 27_io/basic_stringbuf/1.cc: New.
+	* 27_io/basic_stringbuf/2.cc: New.
+	* 27_io/basic_stringbuf/3.cc: New.
+	* 27_io/basic_stringbuf/4.cc: New.
+	* 27_io/basic_stringbuf/5.cc: New.
+	* 27_io/basic_stringbuf/imbue/char/1.cc: New.
+	* 27_io/basic_stringbuf/imbue/char/9322.cc: New.
+	* 27_io/basic_stringbuf/in_avail/char/1.cc: New.
+	* 27_io/basic_stringbuf/overflow/char/2.cc: New.
+	* 27_io/basic_stringbuf/overflow/char/3599.cc: New.
+	* 27_io/basic_stringbuf/overflow/char/9988.cc: New.
+	* 27_io/basic_stringbuf/sbumpc/char/1.cc: New.
+	* 27_io/basic_stringbuf/sbumpc/char/9825.cc: New.
+	* 27_io/basic_stringbuf/seekoff/char/1.cc: New.
+	* 27_io/basic_stringbuf/seekoff/char/2.cc: New.
+	* 27_io/basic_stringbuf/seekpos/char/1.cc: New.
+	* 27_io/basic_stringbuf/seekpos/char/2.cc: New.
+	* 27_io/basic_stringbuf/setbuf/char/1.cc: New.
+	* 27_io/basic_stringbuf/setbuf/char/2.cc: New.
+	* 27_io/basic_stringbuf/setbuf/char/3.cc: New.
+	* 27_io/basic_stringbuf/sgetc/char/1.cc: New.
+	* 27_io/basic_stringbuf/sgetn/char/1.cc: New.
+	* 27_io/basic_stringbuf/snextc/char/1.cc: New.
+	* 27_io/basic_stringbuf/sputbackc/char/1.cc: New.
+	* 27_io/basic_stringbuf/sputbackc/char/9425.cc: New.
+	* 27_io/basic_stringbuf/sputc/char/1.cc: New.
+	* 27_io/basic_stringbuf/sputc/char/1057.cc: New.
+	* 27_io/basic_stringbuf/sputc/char/9404-1.cc: New.
+	* 27_io/basic_stringbuf/sputn/char/1.cc: New.
+	* 27_io/basic_stringbuf/sputn/char/1057.cc: New.
+	* 27_io/basic_stringbuf/sputn/char/9404-2.cc: New.
+	* 27_io/basic_stringbuf/str/char/1.cc: New.
+	* 27_io/basic_stringbuf/str/char/2.cc: New.
+	* 27_io/basic_stringbuf/str/char/3.cc: New.
+	* 27_io/basic_stringbuf/str/char/3955.cc: New.
+	* 27_io/basic_stringbuf/sungetc/char/1.cc: New.
+	* 27_io/basic_stringbuf/sync/char/1057.cc: New.
+	* 27_io/basic_stringstream/1.cc: New.
+	* 27_io/basic_stringstream/2.cc: New.
+	* 27_io/basic_stringstream/3.cc: New.
+	* 27_io/basic_stringstream/4.cc: New.
+	* 27_io/basic_stringstream/rdbuf/char/2832.cc: New.
+	* 27_io/basic_stringstream/str/char/1.cc: New.
+	* 27_io/basic_stringstream/str/char/2.cc: New.
+	* 27_io/basic_stringstream/str/char/3.cc: New.
+	* 27_io/basic_stringstream/str/char/4.cc: New.
+	* 27_io/fpos/1.cc: New.
+	* 27_io/fpos/2.cc: New.
+	* 27_io/fpos/3.cc: New.
+	* 27_io/ios_base/callbacks/1.cc: New.
+	* 27_io/ios_base/state/1.cc: New.
+	* 27_io/ios_base/storage/1.cc: New.
+	* 27_io/ios_base/storage/2.cc: New.
+	* 27_io/ios_base/storage/3.cc: New.
+	* 27_io/ios_base/sync_with_stdio/1.cc: New.
+	* 27_io/ios_base/sync_with_stdio/2.cc: New.
+	* 27_io/manipulators/adjustfield/char/1.cc: New.
+	* 27_io/manipulators/adjustfield/char/2.cc: New.
+	* 27_io/manipulators/basefield/char/1.cc: New.
+	* 27_io/manipulators/standard/char/1.cc: New.
+	* 27_io/manipulators/standard/char/2.cc: New.
+	* 27_io/objects/char/1.cc: New.
+	* 27_io/objects/char/2.cc: New.
+	* 27_io/objects/char/2523-1_xin.cc: New.
+	* 27_io/objects/char/2523-1_xin.in: New.
+	* 27_io/objects/char/2523-2_xin.cc: New.
+	* 27_io/objects/char/2523-2_xin.in: New.
+	* 27_io/objects/char/3045.cc: New.
+	* 27_io/objects/char/3647.cc: New.
+	* 27_io/objects/char/3_xin.cc: New.
+	* 27_io/objects/char/3_xin.in: New.
+	* 27_io/objects/char/4_xin.cc: New.
+	* 27_io/objects/char/4_xin.in: New.
+	* 27_io/objects/char/5268.cc: New.
+	* 27_io/objects/char/5280_xin.cc: New.
+	* 27_io/objects/char/5280_xin.in: New.
+	* 27_io/objects/char/6548_xin.cc: New.
+	* 27_io/objects/char/6548_xin.in: New.
+	* 27_io/objects/char/6648-1_xin.cc: New.
+	* 27_io/objects/char/6648-1_xin.in: New.
+	* 27_io/objects/char/6648-2_xin.cc: New.
+	* 27_io/objects/char/6648-2_xin.in: New.
+	* 27_io/objects/char/7744_xin.cc: New.
+	* 27_io/objects/char/7744_xin.in: New.
+	* 27_io/objects/wchar_t/1.cc: New.
+	* 27_io/types/1.cc: New.
+	* 27_io/types/2.cc: New.
+	* data/filebuf_members-1.tst: New.
+	* data/filebuf_members-1.txt: New.
+	* data/filebuf_virtuals-1.tst: New.
+	* data/filebuf_virtuals-1.txt: New.
+	* data/filebuf_virtuals-2.tst: New.
+	* data/filebuf_virtuals-3.tst: New.
+	* data/ifstream_members-1.tst: New.
+	* data/ifstream_members-1.txt: New.
+	* data/ios_base_members_static-1.tst: New.
+	* data/istream_extractor_other-1.tst: New.
+	* data/istream_extractor_other-1.txt: New.
+	* data/istream_extractor_other-2.tst: New.
+	* data/istream_seeks-1.tst: New.
+	* data/istream_seeks-1.txt: New.
+	* data/istream_seeks-2.tst: New.
+	* data/istream_seeks-3.tst: New.
+	* data/istream_unformatted-1.tst: New.
+	* data/istream_unformatted-1.txt: New.
+	* data/ofstream_members-1.tst: New.
+	* data/ostream_inserter_char-1.tst: New.
+	* data/ostream_inserter_char-1.txt: New.
+	* data/ostream_inserter_other-1.tst: New.
+	* data/ostream_inserter_other-2.tst: New.
+	* data/ostream_seeks-1.tst: New.
+
+2003-04-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/sstream.tcc (basic_stringbuf::seekpos): Remove
+	requirement that __mode must be strict input or output.
+
+	* include/std/std_streambuf.h (basic_streambuf::setp): Set
+	_M_out_lim.
+	
+	* include/std/std_sstream.h (basic_strinbuf::str): Zero length
+	output string shouldn't core.
+	(basic_stringbuf::_M_really_sync): Add base argument. Remove rturn
+	type.
+	* include/bits/sstream.tcc: Adjust _M_really_sync bits here.
+	
+	* include/bits/istream.tcc (basic_istream::putback): Set gcount to
+	zero.
+
+2003-04-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/data: New directory.
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Modify
+	to copy files from the testsuite data directory.	
+	(libstdc++-v3-list-sourcefiles): Add another test list filter, for
+	testfiles containing _xin, which now means this is an interactive
+	test and should be run with the interactive dejagnu hooks.
+	* testsuite/Makefile.am: Remove testsuite_* files.
+	* testsuite/Makefile.in: Regenerate.
+	
 2003-04-09  Zack Weinberg  <zack@codesourcery.com>
 
 	* docs/html/install.html: Document complete list of locales

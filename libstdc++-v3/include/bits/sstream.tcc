@@ -83,29 +83,30 @@ namespace std
       bool __testout = this->_M_mode & ios_base::out;
       if (__builtin_expect(!__testout, false))
 	return traits_type::eof();
+
       bool __testeof = traits_type::eq_int_type(__c, traits_type::eof());
       if (__builtin_expect(__testeof, false))
 	return traits_type::not_eof(__c);
 
       // In virtue of DR 169 (TC) we are allowed to grow more than
       // one char the first time and also...
-      __size_type __len =
-	std::max(__size_type(_M_string.capacity() + 1), this->_M_buf_size_opt);
-
-      bool __testwrite = this->_M_out_cur < this->_M_out_end;
-      if (__builtin_expect(!__testwrite && __len > _M_string.max_size(), false))
+      __size_type __len = std::max(__size_type(_M_string.capacity() + 1), 
+				   this->_M_buf_size_opt);
+      bool __testput = this->_M_out_cur < this->_M_out_end;
+      if (__builtin_expect(!__testput && __len > _M_string.max_size(), false))
 	return traits_type::eof();
 
       // Try to append __c into output sequence in one of two ways.
       // Order these tests done in is unspecified by the standard.
-      if (!__testwrite)
+      if (!__testput)
 	{
 	  // Force-allocate, re-sync.
 	  _M_string = this->str();
-	  // ... the next times. That's easy to implement thanks to the
+	  // ... the next time. That's easy to implement thanks to the
 	  // exponential growth policy builtin into basic_string.
 	  _M_string.reserve(__len);
-	  _M_really_sync(this->_M_in_cur - this->_M_in_beg, 
+	  _M_really_sync(const_cast<char_type*>(_M_string.data()),
+			 this->_M_in_cur - this->_M_in_beg, 
 			 this->_M_out_cur - this->_M_out_beg);
 	}
       return this->sputc(traits_type::to_char_type(__c));
@@ -187,21 +188,18 @@ namespace std
 	  char_type* __end = NULL;
 	  bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
 	  bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
-	  bool __testboth = __testin && __testout;
-	  __testin &= !(__mode & ios_base::out);
-	  __testout &= !(__mode & ios_base::in);
 	  
 	  // NB: Ordered.
 	  bool __testposi = false;
 	  bool __testposo = false;
-	  if (__testin || __testboth)
+	  if (__testin)
 	    {
 	      __beg = this->eback();
 	      __end = this->egptr();
 	      if (0 <= __pos && __pos <= __end - __beg)
 		__testposi = true;
 	    }
-	  if (__testout || __testboth)
+	  if (__testout)
 	    {
 	      __beg = this->pbase();
 	      __end = this->epptr();

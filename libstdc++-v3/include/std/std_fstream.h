@@ -394,9 +394,7 @@ namespace std
       */
       void
       _M_set_indeterminate(void)
-      {
-	_M_set_determinate(off_type(0));
-      }
+      { _M_set_determinate(off_type(0)); }
 
       /**
        *  @if maint

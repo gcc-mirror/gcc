@@ -1,0 +1,194 @@
+// 1999-11-15 Kevin Ediger  <kediger@licor.com>
+// test the floating point inserters (facet num_put)
+
+// Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+
+#include <cstdio> // for sprintf
+#include <cmath> // for abs
+#include <cfloat> // for DBL_EPSILON
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <limits>
+#include <testsuite_hooks.h>
+
+using namespace std;
+
+#ifndef DEBUG_ASSERT
+#  define TEST_NUMPUT_VERBOSE 1
+#endif
+
+struct _TestCase
+{
+  double val;
+    
+  int precision;
+  int width;
+  char decimal;
+  char fill;
+
+  bool fixed;
+  bool scientific;
+  bool showpos;
+  bool showpoint;
+  bool uppercase;
+  bool internal;
+  bool left;
+  bool right;
+
+  const char* result;
+};
+
+static bool T=true;
+static bool F=false;
+
+static _TestCase testcases[] =
+{
+  // standard output (no formatting applied)
+  { 1.2, 6,0,'.',' ', F,F,F,F,F,F,F,F, "1.2" },
+  { 54, 6,0,'.',' ', F,F,F,F,F,F,F,F, "54" },
+  { -.012, 6,0,'.',' ', F,F,F,F,F,F,F,F, "-0.012" },
+  { -.00000012, 6,0,'.',' ', F,F,F,F,F,F,F,F, "-1.2e-07" },
+    
+  // fixed formatting
+  { 10.2345, 0,0,'.',' ', T,F,F,F,F,F,F,F, "10" },
+  { 10.2345, 0,0,'.',' ', T,F,F,T,F,F,F,F, "10." },
+  { 10.2345, 1,0,'.',' ', T,F,F,F,F,F,F,F, "10.2" },
+  { 10.2345, 4,0,'.',' ', T,F,F,F,F,F,F,F, "10.2345" },
+  { 10.2345, 6,0,'.',' ', T,F,T,F,F,F,F,F, "+10.234500" },
+  { -10.2345, 6,0,'.',' ', T,F,F,F,F,F,F,F, "-10.234500" },
+  { -10.2345, 6,0,',',' ', T,F,F,F,F,F,F,F, "-10,234500" },
+
+  // fixed formatting with width
+  { 10.2345, 4,5,'.',' ', T,F,F,F,F,F,F,F, "10.2345" },
+  { 10.2345, 4,6,'.',' ', T,F,F,F,F,F,F,F, "10.2345" },
+  { 10.2345, 4,7,'.',' ', T,F,F,F,F,F,F,F, "10.2345" },
+  { 10.2345, 4,8,'.',' ', T,F,F,F,F,F,F,F, " 10.2345" },
+  { 10.2345, 4,10,'.',' ', T,F,F,F,F,F,F,F, "   10.2345" },
+  { 10.2345, 4,10,'.',' ', T,F,F,F,F,F,T,F, "10.2345   " },
+  { 10.2345, 4,10,'.',' ', T,F,F,F,F,F,F,T, "   10.2345" },
+  { 10.2345, 4,10,'.',' ', T,F,F,F,F,T,F,F, "   10.2345" },
+  { -10.2345, 4,10,'.',' ', T,F,F,F,F,T,F,F, "-  10.2345" },
+  { -10.2345, 4,10,'.','A', T,F,F,F,F,T,F,F, "-AA10.2345" },
+  { 10.2345, 4,10,'.','#', T,F,T,F,F,T,F,F, "+##10.2345" },
+
+  // scientific formatting
+  { 1.23e+12, 1,0,'.',' ', F,T,F,F,F,F,F,F, "1.2e+12" },
+  { 1.23e+12, 1,0,'.',' ', F,T,F,F,T,F,F,F, "1.2E+12" },
+  { 1.23e+12, 2,0,'.',' ', F,T,F,F,F,F,F,F, "1.23e+12" },
+  { 1.23e+12, 3,0,'.',' ', F,T,F,F,F,F,F,F, "1.230e+12" },
+  { 1.23e+12, 3,0,'.',' ', F,T,T,F,F,F,F,F, "+1.230e+12" },
+  { -1.23e-12, 3,0,'.',' ', F,T,F,F,F,F,F,F, "-1.230e-12" },
+  { 1.23e+12, 3,0,',',' ', F,T,F,F,F,F,F,F, "1,230e+12" },
+};
+
+template<typename _CharT>
+class testpunct : public numpunct<_CharT>
+{
+public:
+  typedef _CharT  char_type;
+  const char_type dchar;
+
+  explicit
+  testpunct(char_type decimal_char) : numpunct<_CharT>(), dchar(decimal_char)
+  { }
+
+protected:
+  char_type 
+  do_decimal_point() const
+  { return dchar; }
+    
+  char_type 
+  do_thousands_sep() const
+  { return ','; }
+
+  string 
+  do_grouping() const
+  { return string(); }
+};
+ 
+template<typename _CharT>  
+void apply_formatting(const _TestCase & tc, basic_ostream<_CharT> & os)
+{
+  os.precision(tc.precision);
+  os.width(tc.width);
+  os.fill(static_cast<_CharT>(tc.fill));
+  if (tc.fixed)
+    os.setf(ios::fixed);
+  if (tc.scientific)
+    os.setf(ios::scientific);
+  if (tc.showpos)
+    os.setf(ios::showpos);
+  if (tc.showpoint)
+    os.setf(ios::showpoint);
+  if (tc.uppercase)
+    os.setf(ios::uppercase);
+  if (tc.internal)
+    os.setf(ios::internal);
+  if (tc.left)
+    os.setf(ios::left);
+  if (tc.right)
+    os.setf(ios::right);
+}
+
+void
+test01()
+{
+  bool test = true;
+  for (int j=0; j<sizeof(testcases)/sizeof(testcases[0]); j++)
+    {
+      _TestCase & tc = testcases[j];
+#ifdef TEST_NUMPUT_VERBOSE
+      cout << "expect: " << tc.result << endl;
+#endif
+      // test double with char type
+      {
+        testpunct<char>* __tp = new testpunct<char>(tc.decimal);
+        ostringstream os;
+        locale __loc(os.getloc(), __tp);
+        os.imbue(__loc);
+        apply_formatting(tc, os);
+        os << tc.val;
+#ifdef TEST_NUMPUT_VERBOSE
+        cout << j << "result 1: " << os.str() << endl;
+#endif
+        VERIFY( os && os.str() == tc.result );
+      }
+      // test long double with char type
+      {
+        testpunct<char>* __tp = new testpunct<char>(tc.decimal);
+        ostringstream os;
+        locale __loc(os.getloc(), __tp);
+        os.imbue(__loc);
+        apply_formatting(tc, os);
+        os << (long double)tc.val;
+#ifdef TEST_NUMPUT_VERBOSE
+        cout << j << "result 2: " << os.str() << endl;
+#endif
+        VERIFY( os && os.str() == tc.result );
+      }
+    }
+}
+
+int 
+main()
+{
+  test01();
+  return 0;
+}
