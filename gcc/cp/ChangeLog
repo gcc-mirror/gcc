@@ -1,3 +1,8 @@
+1998-02-19  Brendan Kehoe  <brendan@cygnus.com>
+
+	* typeck.c (build_unary_op): Only warn about incr/decr a pointer
+	if pedantic || warn_pointer_arith.
+
 Thu Feb 19 09:37:21 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
 
 	* pt.c (unify): Handle TEMPLATE_DECL.
