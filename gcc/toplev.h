@@ -92,6 +92,7 @@ extern void set_float_handler PROTO((jmp_buf));
 extern int push_float_handler PROTO((jmp_buf, jmp_buf));
 extern void pop_float_handler PROTO((int, jmp_buf));
 #endif
+extern int do_float_handler PROTO((void (*) (PTR), PTR));
 
 #ifdef BUFSIZ
 extern void output_quoted_string	PROTO ((FILE *, const char *));

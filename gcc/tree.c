@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-#include <setjmp.h>
 #include "flags.h"
 #include "tree.h"
 #include "except.h"
@@ -266,6 +265,7 @@ int (*lang_get_alias_set) PROTO((tree));
 
 static void set_type_quals PROTO((tree, int));
 static void append_random_chars PROTO((char *));
+static void build_real_from_int_cst_1 PROTO((PTR));
 
 extern char *mode_name[];
 
@@ -1450,6 +1450,29 @@ real_value_from_int_cst (type, i)
   return d;
 }
 
+struct brfic_args
+{
+  /* Input */
+  tree type, i;
+  /* Output */
+  REAL_VALUE_TYPE d;
+};
+
+static void
+build_real_from_int_cst_1 (data)
+  PTR data;
+{
+  struct brfic_args * args = (struct brfic_args *) data;
+  
+#ifdef REAL_ARITHMETIC
+  args->d = real_value_from_int_cst (args->type, args->i);
+#else
+  args->d =
+    REAL_VALUE_TRUNCATE (TYPE_MODE (args->type),
+			 real_value_from_int_cst (args->type, args->i));
+#endif
+}
+
 /* This function can't be implemented if we can't do arithmetic
    on the float representation.  */
 
@@ -1461,31 +1484,28 @@ build_real_from_int_cst (type, i)
   tree v;
   int overflow = TREE_OVERFLOW (i);
   REAL_VALUE_TYPE d;
-  jmp_buf float_error;
+  struct brfic_args args;
 
   v = make_node (REAL_CST);
   TREE_TYPE (v) = type;
 
-  if (setjmp (float_error))
+  /* Setup input for build_real_from_int_cst_1() */
+  args.type = type;
+  args.i = i;
+
+  if (do_float_handler (build_real_from_int_cst_1, (PTR) &args))
     {
+      /* Receive output from build_real_from_int_cst_1() */
+      d = args.d;
+    }
+  else
+    {
+      /* We got an exception from build_real_from_int_cst_1() */
       d = dconst0;
       overflow = 1;
-      goto got_it;
     }
-
-  set_float_handler (float_error);
-
-#ifdef REAL_ARITHMETIC
-  d = real_value_from_int_cst (type, i);
-#else
-  d = REAL_VALUE_TRUNCATE (TYPE_MODE (type),
-			   real_value_from_int_cst (type, i));
-#endif
-
+  
   /* Check for valid float value for this type on this target machine.  */
-
- got_it:
-  set_float_handler (NULL_PTR);
 
 #ifdef CHECK_FLOAT_VALUE
   CHECK_FLOAT_VALUE (TYPE_MODE (type), d, overflow);

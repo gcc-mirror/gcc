@@ -664,6 +664,7 @@ static void cse_set_around_loop	PROTO((rtx, rtx, rtx));
 static rtx cse_basic_block	PROTO((rtx, rtx, struct branch_path *, int));
 static void count_reg_usage	PROTO((rtx, int *, rtx, int));
 extern void dump_class          PROTO((struct table_elt*));
+static void check_fold_consts	PROTO((PTR));
 
 extern int rtx_equal_function_value_matters;
 
@@ -4594,6 +4595,28 @@ cse_gen_binary (code, mode, op0, op1)
     return gen_rtx_fmt_ee (code, mode, op0, op1);
 }
 
+struct cfc_args
+{
+  /* Input */
+  rtx op0, op1;
+  /* Output */
+  int equal, op0lt, op1lt;
+};
+
+static void
+check_fold_consts (data)
+  PTR data;
+{
+  struct cfc_args * args = (struct cfc_args *) data;
+  REAL_VALUE_TYPE d0, d1;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (d0, args->op0);
+  REAL_VALUE_FROM_CONST_DOUBLE (d1, args->op1);
+  args->equal = REAL_VALUES_EQUAL (d0, d1);
+  args->op0lt = REAL_VALUES_LESS (d0, d1);
+  args->op1lt = REAL_VALUES_LESS (d1, d0);
+}
+
 /* Like simplify_binary_operation except used for relational operators.
    MODE is the mode of the operands, not that of the result.  If MODE
    is VOIDmode, both operands must also be VOIDmode and we compare the
@@ -4655,19 +4678,20 @@ simplify_relational_operation (code, mode, op0, op1)
   else if (GET_CODE (op0) == CONST_DOUBLE && GET_CODE (op1) == CONST_DOUBLE
 	   && GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
     {
-      REAL_VALUE_TYPE d0, d1;
-      jmp_buf handler;
+      struct cfc_args args;
+
+      /* Setup input for check_fold_consts() */
+      args.op0 = op0;
+      args.op1 = op1;
       
-      if (setjmp (handler))
+      if (do_float_handler(check_fold_consts, (PTR) &args) == 0)
+	/* We got an exception from check_fold_consts() */
 	return 0;
 
-      set_float_handler (handler);
-      REAL_VALUE_FROM_CONST_DOUBLE (d0, op0);
-      REAL_VALUE_FROM_CONST_DOUBLE (d1, op1);
-      equal = REAL_VALUES_EQUAL (d0, d1);
-      op0lt = op0ltu = REAL_VALUES_LESS (d0, d1);
-      op1lt = op1ltu = REAL_VALUES_LESS (d1, d0);
-      set_float_handler (NULL_PTR);
+      /* Receive output from check_fold_consts() */
+      equal = args.equal;
+      op0lt = op0ltu = args.op0lt;
+      op1lt = op1ltu = args.op1lt;
     }
 #endif  /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
 
