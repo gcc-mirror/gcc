@@ -32,8 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "convert.h"
 #include "toplev.h"
 #include "langhooks.h"
-static tree strip_float_extensions PARAMS ((tree));
-
+#include "real.h"
 /* Convert EXPR to some pointer or reference type TYPE.
 
    EXPR must be pointer, reference, integer, enumeral, or literal zero;
@@ -75,11 +74,32 @@ convert_to_pointer (type, expr)
 }
 
 /* Avoid any floating point extensions from EXP.  */
-static tree
+tree
 strip_float_extensions (exp)
      tree exp;
 {
   tree sub, expt, subt;
+
+  /*  For floating point constant look up the narrowest type that can hold
+      it properly and handle it like (type)(narrowest_type)constant.
+      This way we can optimize for instance a=a*2.0 where "a" is float
+      but 2.0 is double constant.  */
+  if (TREE_CODE (exp) == REAL_CST)
+    {
+      REAL_VALUE_TYPE orig;
+      tree type = NULL;
+
+      orig = TREE_REAL_CST (exp);
+      if (TYPE_PRECISION (TREE_TYPE (exp)) > TYPE_PRECISION (float_type_node)
+	  && exact_real_truncate (TYPE_MODE (float_type_node), &orig))
+	type = float_type_node;
+      else if (TYPE_PRECISION (TREE_TYPE (exp))
+	       > TYPE_PRECISION (double_type_node)
+	       && exact_real_truncate (TYPE_MODE (double_type_node), &orig))
+	type = double_type_node;
+      if (type)
+	return build_real (type, real_value_truncate (TYPE_MODE (type), orig));
+    }
 
   if (TREE_CODE (exp) != NOP_EXPR)
     return exp;
