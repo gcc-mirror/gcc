@@ -1039,6 +1039,7 @@ get_pseudo_ti_init (tree type, tree var_desc, bool *non_public_p)
 	  tree binfo = TYPE_BINFO (type);
           int nbases = BINFO_N_BASETYPES (binfo);
           tree base_binfos = BINFO_BASETYPES (binfo);
+	  tree base_accesses = BINFO_BASEACCESSES (binfo);
           tree base_inits = NULL_TREE;
           int ix;
           
@@ -1051,15 +1052,14 @@ get_pseudo_ti_init (tree type, tree var_desc, bool *non_public_p)
               tree tinfo;
               tree offset;
               
-              if (TREE_PUBLIC (base_binfo))
+              if (TREE_VEC_ELT (base_accesses, ix) == access_public_node)
                 flags |= 2;
               tinfo = get_tinfo_ptr (BINFO_TYPE (base_binfo));
 	      if (TREE_VIA_VIRTUAL (base_binfo))
 		{
 		   /* We store the vtable offset at which the virtual
        		      base offset can be found.  */
-		  offset = BINFO_VPTR_FIELD
-		    (binfo_for_vbase (BINFO_TYPE (base_binfo), type));
+		  offset = BINFO_VPTR_FIELD (base_binfo);
 		  offset = convert (sizetype, offset);
 		  flags |= 1;
 		}
@@ -1187,12 +1187,14 @@ get_pseudo_ti_desc (tree type)
 	return class_desc_type_node;
       else
 	{
-	  tree base_binfo =
-	    TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (type)), 0);
-	  int num_bases = BINFO_N_BASETYPES (TYPE_BINFO (type));
+	  tree binfo = TYPE_BINFO (type);
+	  tree base_binfos = BINFO_BASETYPES (binfo);
+	  tree base_accesses = BINFO_BASEACCESSES (binfo);
+	  tree base_binfo = TREE_VEC_ELT (base_binfos, 0);
+	  int num_bases = TREE_VEC_LENGTH (base_binfos);
 	  
 	  if (num_bases == 1
-	      && TREE_PUBLIC (base_binfo)
+	      && TREE_VEC_ELT (base_accesses, 0) == access_public_node
 	      && !TREE_VIA_VIRTUAL (base_binfo)
 	      && integer_zerop (BINFO_OFFSET (base_binfo)))
 	    /* single non-virtual public.  */

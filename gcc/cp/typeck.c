@@ -5720,9 +5720,8 @@ get_delta_difference (from, to, force)
       if (virt_binfo)
         {
           /* This is a reinterpret cast, we choose to do nothing.  */
-          warning ("pointer to member cast via virtual base `%T' of `%T'",
-	              BINFO_TYPE (virt_binfo),
-	              BINFO_TYPE (BINFO_INHERITANCE_CHAIN (virt_binfo)));
+          warning ("pointer to member cast via virtual base `%T'",
+		   BINFO_TYPE (virt_binfo));
           return delta;
         }
       delta = BINFO_OFFSET (binfo);
@@ -5739,13 +5738,11 @@ get_delta_difference (from, to, force)
     {
       /* This is a reinterpret cast, we choose to do nothing.  */
       if (force)
-        warning ("pointer to member cast via virtual base `%T' of `%T'",
-                    BINFO_TYPE (virt_binfo),
-                    BINFO_TYPE (BINFO_INHERITANCE_CHAIN (virt_binfo)));
+        warning ("pointer to member cast via virtual base `%T'",
+		 BINFO_TYPE (virt_binfo));
       else
-	error ("pointer to member conversion via virtual base `%T' of `%T'",
-		  BINFO_TYPE (virt_binfo),
-                  BINFO_TYPE (BINFO_INHERITANCE_CHAIN (virt_binfo)));
+	error ("pointer to member conversion via virtual base `%T'",
+	       BINFO_TYPE (virt_binfo));
       return delta;
     }
   delta = BINFO_OFFSET (binfo);

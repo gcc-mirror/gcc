@@ -3,7 +3,8 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions. 
 
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002,
+   2003 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.  
 
@@ -2038,27 +2039,26 @@ finish_template_type (name, args, entering_scope)
    access_{default,public,protected_private}[_virtual]_node.*/
 
 tree 
-finish_base_specifier (access_specifier, base_class)
-     tree access_specifier;
-     tree base_class;
+finish_base_specifier (tree base, tree access, bool virtual_p)
 {
   tree result;
 
-  if (base_class == error_mark_node)
+  if (base == error_mark_node)
     {
       error ("invalid base-class specification");
       result = NULL_TREE;
     }
-  else if (! is_aggr_type (base_class, 1))
+  else if (! is_aggr_type (base, 1))
     result = NULL_TREE;
   else
     {
-      if (cp_type_quals (base_class) != 0)
+      if (cp_type_quals (base) != 0)
         {
-          error ("base class `%T' has cv qualifiers", base_class);
-          base_class = TYPE_MAIN_VARIANT (base_class);
+          error ("base class `%T' has cv qualifiers", base);
+          base = TYPE_MAIN_VARIANT (base);
         }
-      result = build_tree_list (access_specifier, base_class);
+      result = build_tree_list (access, base);
+      TREE_VIA_VIRTUAL (result) = virtual_p;
     }
 
   return result;

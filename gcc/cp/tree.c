@@ -1,6 +1,6 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -714,37 +714,81 @@ canonical_type_variant (t)
   return cp_build_qualified_type (TYPE_MAIN_VARIANT (t), cp_type_quals (t));
 }
 
-/* Makes new binfos for the indirect bases under BINFO, and updates
-   BINFO_OFFSET for them and their bases.  */
+/* Makes new binfos for the indirect bases under BINFO. T is the most
+   derived TYPE. PREV is the previous binfo, whose TREE_CHAIN we make
+   point to this binfo. We return the last BINFO created.
 
-void
-unshare_base_binfos (binfo)
-     tree binfo;
+   The CLASSTYPE_VBASECLASSES list of T is constructed in reverse
+   order (pre-order, depth-first, right-to-left). You must nreverse it.
+
+   The BINFO_INHERITANCE of a virtual base class points to the binfo
+   og the most derived type.
+
+   The binfo's TREE_CHAIN is set to inheritance graph order, but bases
+   for non-class types are not included (i.e. those which are
+   dependent bases in non-instantiated templates).  */
+
+tree
+copy_base_binfos (binfo, t, prev)
+     tree binfo, t, prev;
 {
   tree binfos = BINFO_BASETYPES (binfo);
-  tree new_binfo;
-  int j;
+  int n, ix;
 
+  if (prev)
+    TREE_CHAIN (prev) = binfo;
+  prev = binfo;
+  
   if (binfos == NULL_TREE)
-    return;
+    return prev;
 
-  /* Now unshare the structure beneath BINFO.  */
-  for (j = TREE_VEC_LENGTH (binfos)-1;
-       j >= 0; j--)
+  n = TREE_VEC_LENGTH (binfos);
+  
+  /* Now copy the structure beneath BINFO.  */
+  for (ix = 0; ix != n; ix++)
     {
-      tree base_binfo = TREE_VEC_ELT (binfos, j);
-      new_binfo = TREE_VEC_ELT (binfos, j)
-	= make_binfo (BINFO_OFFSET (base_binfo),
-		      base_binfo,
-		      BINFO_VTABLE (base_binfo),
-		      BINFO_VIRTUALS (base_binfo));
-      TREE_VIA_PUBLIC (new_binfo) = TREE_VIA_PUBLIC (base_binfo);
-      TREE_VIA_PROTECTED (new_binfo) = TREE_VIA_PROTECTED (base_binfo);
-      TREE_VIA_VIRTUAL (new_binfo) = TREE_VIA_VIRTUAL (base_binfo);
-      BINFO_INHERITANCE_CHAIN (new_binfo) = binfo;
-      BINFO_PRIMARY_BASE_OF (new_binfo) = NULL_TREE;
-      unshare_base_binfos (new_binfo);
+      tree base_binfo = TREE_VEC_ELT (binfos, ix);
+      tree new_binfo = NULL_TREE;
+
+      if (!CLASS_TYPE_P (BINFO_TYPE (base_binfo)))
+	{
+	  my_friendly_assert (binfo == TYPE_BINFO (t), 20030204);
+	  
+	  new_binfo = base_binfo;
+	  TREE_CHAIN (prev) = new_binfo;
+	  prev = new_binfo;
+	  BINFO_INHERITANCE_CHAIN (new_binfo) = binfo;
+	  BINFO_DEPENDENT_BASE_P (new_binfo) = 1;
+	}
+      else if (TREE_VIA_VIRTUAL (base_binfo))
+	{
+	  new_binfo = purpose_member (BINFO_TYPE (base_binfo),
+				      CLASSTYPE_VBASECLASSES (t));
+	  if (new_binfo)
+	    new_binfo = TREE_VALUE (new_binfo);
+	}
+      
+      if (!new_binfo)
+	{
+	  new_binfo = make_binfo (BINFO_OFFSET (base_binfo),
+				  base_binfo, NULL_TREE,
+				  BINFO_VIRTUALS (base_binfo));
+	  prev = copy_base_binfos (new_binfo, t, prev);
+	  if (TREE_VIA_VIRTUAL (base_binfo))
+	    {
+	      CLASSTYPE_VBASECLASSES (t)
+		= tree_cons (BINFO_TYPE (new_binfo), new_binfo,
+			     CLASSTYPE_VBASECLASSES (t));
+	      TREE_VIA_VIRTUAL (new_binfo) = 1;
+	      BINFO_INHERITANCE_CHAIN (new_binfo) = TYPE_BINFO (t);
+	    }
+	  else
+	    BINFO_INHERITANCE_CHAIN (new_binfo) = binfo;
+	}
+      TREE_VEC_ELT (binfos, ix) = new_binfo;
     }
+
+  return prev;
 }
 
 
@@ -897,11 +941,15 @@ make_binfo (offset, binfo, vtable, virtuals)
   tree type;
 
   if (TREE_CODE (binfo) == TREE_VEC)
-    type = BINFO_TYPE (binfo);
+    {
+      type = BINFO_TYPE (binfo);
+      BINFO_DEPENDENT_BASE_P (new_binfo) = BINFO_DEPENDENT_BASE_P (binfo);
+    }
   else
     {
       type = binfo;
-      binfo = CLASS_TYPE_P (type) ? TYPE_BINFO (binfo) : NULL_TREE;
+      binfo = NULL_TREE;
+      BINFO_DEPENDENT_BASE_P (new_binfo) = 1;
     }
 
   TREE_TYPE (new_binfo) = TYPE_MAIN_VARIANT (type);
@@ -909,31 +957,14 @@ make_binfo (offset, binfo, vtable, virtuals)
   BINFO_VTABLE (new_binfo) = vtable;
   BINFO_VIRTUALS (new_binfo) = virtuals;
 
-  if (binfo && BINFO_BASETYPES (binfo) != NULL_TREE)
-    BINFO_BASETYPES (new_binfo) = copy_node (BINFO_BASETYPES (binfo));      
-  return new_binfo;
-}
-
-/* Return a TREE_LIST whose TREE_VALUE nodes along the
-   BINFO_INHERITANCE_CHAIN for BINFO, but in the opposite order.  In
-   other words, while the BINFO_INHERITANCE_CHAIN goes from base
-   classes to derived classes, the reversed path goes from derived
-   classes to base classes.  */
-
-tree
-reverse_path (binfo)
-     tree binfo;
-{
-  tree reversed_path;
-
-  reversed_path = NULL_TREE;
-  while (binfo) 
+  if (binfo && !BINFO_DEPENDENT_BASE_P (binfo)
+      && BINFO_BASETYPES (binfo) != NULL_TREE)
     {
-      reversed_path = tree_cons (NULL_TREE, binfo, reversed_path);
-      binfo = BINFO_INHERITANCE_CHAIN (binfo);
+      BINFO_BASETYPES (new_binfo) = copy_node (BINFO_BASETYPES (binfo));
+      /* We do not need to copy the accesses, as they are read only.  */
+      BINFO_BASEACCESSES (new_binfo) = BINFO_BASEACCESSES (binfo);
     }
-
-  return reversed_path;
+  return new_binfo;
 }
 
 void

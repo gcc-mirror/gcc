@@ -1,3 +1,134 @@
+2003-02-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Change base class access representation. Share virtual base
+	binfos.
+	* cp/call.c (build_special_member_call): Remove binfo_for_vbase
+	call.
+	* cp/class.c (build_base_path): Likewise.
+	(build_primary_vtable): Adjust BINFO_NEW_VTABLE_MARKED use.
+	(build_secondary_vtable): Remove FOR_TYPE arg. Adjust.
+	(make_new_vtable): Adjust.
+	(force_canonical_binfo_r): Delete.
+	(force_canonical_binfo): Delete.
+	(mark_primary_virtual_base): Delete.
+	(dfs_unshared_virtual_bases): Delete.
+	(mark_primary_bases): Adjust.
+	(maybe_warn_about_overly_private_class): Adjust.
+	(dfs_base_derived_from): Delete.
+	(base_derived_from): Follow the inheritance chain.
+	(struct find_final_overrider_data): Add vpath member.
+	(dfs_find_final_overrider): Adjust.
+	(dfs_find_final_overrider_q, dfs_find_final_overrider_post): New.
+	(find_final_overrider): Adjust.
+	(update_vtable_entry_for_fn): Adjust.
+	(modify_all_vtables): Adjust.
+	(walk_subobject_offsets): Adjust.
+	(layout_nonempty_base_or_field): Adjust.
+	(layout_empty_base): Remove last parameter. Adjust.
+	(build_base_field): Adjust.
+	(build_base_fields): Adjust.
+	(propagate_binfo_offsets): Remove last parameter. Adjust.
+	(dfs_set_offset_for_unshared_vbases): Delete.
+	(layout_virtual_bases): Adjust.
+	(finish_struct_1): Adjust.
+	(init_class_processing): Don't init access nodes.
+	(dfs_get_primary_binfo): Delete.
+	(get_primary_binfo): Adjust.
+	(dump_class_hierarchy_r): Remove most derived arg, add IGO
+	parameter. Adjust.
+	(dump_class_hierarchy): Adjust.
+	(finish_vtbls): Adjust.
+	(get_original_base): Delete.
+	(build_vtt_inits): Adjust.
+	(dfs_build_secondary_vptr_vtt_inits): Adjust.
+	(dfs_ctor_vtable_bases_queue_p): Adjust.
+	(build_ctor_vtbl_group): Adjust.
+	(dfs_accumulate_vtbl_inits): Adjust.
+	(build_vtbl_initializer): Adjust.
+	(build_vbase_offset_vtbl_entries): Adjust.
+	(add_vcall_offset_vtbl_entries_1): Adjust.
+	* cp/cp-tree.h (CPTI_ACCESS_*): Remove.
+	(access_*_node): Remove.
+	(CANONICAL_BINFO): Delete.
+	(BINFO_UNSHARED_MARKED): Remove.
+	(BINFO_MARKED): Set LANG_FLAG_0 directly.
+	(SET_BINFO_MARKED, CLEAR_BINFO_MARKED): Delete.
+	(BINFO_VTABLE_PATH_MARKED): Set LANG_FLAG_3 directly.
+	(SET_BINFO_VTABLE_PATH_MARKED, CLEAR_BINFO_VTABLE_PATH_MARKED):
+	Delete.
+	(BINFO_NEW_VTABLE_MARKED): Set LANG_FLAG_4 directly.
+	(SET_BINFO_NEW_VTABLE_MARKED): Adjust.
+	(SET_BINFO_PUSHDECLS_MARKED, CLEAR_BINFO_PUSHDECLS_MARKED):
+	Delete.
+	(BINFO_DEPENDENT_BASE_P): New.
+	(dfs_walk, dfs_walk_real): Queue function takes derived binfo and
+	index.
+	(markedp, unmarkedp): Adjust.
+	(dfs_unmarked_real_bases_queue_p, dfs_marked_real_bases_queue_p,
+	dfs_skip_vbases, marked_vtable_pathp, unmarked_vtable_pathp,
+	find_vbase_instance, binfo_for_vbase): Delete.
+	(copied_binfo, original_binfo): Declare.
+	(finish_base_specifier): Add virtual_p arg.
+	(unshare_base_binfos): Delete.
+	(copy_base_binfos): Declare.
+	(reverse_path): Delete.
+	* cp/decl.c (xref_basetypes): Access and virtuality passed
+	differently. Don't copy direct base binfos here. Call
+	copy_base_binfos.
+	* cp/init.c (dfs_initialize_vtbl_ptrs): Adjust.
+	(initialize_vtbl_ptrs): Adjust.
+	(expand_member_init): Adjust.
+	* cp/parser.c (cp_parser_base_specifier): Adjust.
+	* cp/pt.c (instantiate_class_template): Adjust.
+	(get_template_base_recursive): Adjust.
+	* cp/rtti.c (get_pseudo_ti_init): Adjust.
+	(get_pseudo_ti_desc): Adjust.
+	* cp/tree.c (unshare_base_binfos): Rename to ...
+	(copy_base_binfos): ... here, reimplement.
+	(make_binfo): Set BINFO_DEPENDENT_BASE_P.
+	(reverse_path): Remove.
+	* cp/typeck.c (get_delta_difference): Adjust error messages.
+	* cp/semantics.c (finish_base_specifier): Add virtual arg, adjust.
+	* cp/search.c (lookup_base_r): Adjust.
+	(dynamic_cast_base_recurse): Adjust.
+	(canonical_binfo): Remove.
+	(dfs_canonical_queue): Remove.
+	(dfs_assert_unmarked_p): Remove.
+	(assert_canonical_unmarked): Remove.
+	(shared_marked_p, shared_unmarked_p): Remove.
+	(BINFO_ACCESS, SET_BINFO_ACCESS): Use TREE_PUBLIC & TREE_PRIVATE.
+	(dfs_access_in_type): Adjust.
+	(access_in_type): Adjust.
+	(dfs_accessible_queue_p): Adjust.
+	(dfs_accessible_p): Adjust.
+	(is_subobject_of_p_1, is_subobject_of_p): Remove.
+	(struct lookup_field_info): Remove from_dep_base_p field.
+	(lookup_field_queue_p): Adjust, test BINFO_DEPENDENT_BASE_P.
+	(lookup_field_r): Remove dependent base code.
+	(lookup_member): Likewise.
+	(dfs_walk, dfs_walk_real): Add access arg to queue fn.
+	(dfs_unmarked_real_bases_queue_p): Remove.
+	(dfs_marked_real_bases_queue_p): Remove.
+	(dfs_skip_vbases): Remove.
+	(dfs_get_pure_virtuals): Adjust.
+	(markedp, unmarkedp): Adjust.
+	(marked_vtable_pathp, unmarked_vtable_pathp): Remove.
+	(marked_pushdecls_p, unmarked_pushdecls_p): Adjust.
+	(dfs_unmark): Adjust.
+	(dfs_get_vbase_types):Remove.
+	(dfs_build_inheritance_graph_order): Remove.
+	(get_vbase_types): Remove
+	(dfs_find_vbase_instance): Remove.
+	(find_vbase_instance): Remove.
+	(dfs_debug_unmarkedp): Adjust.
+	(dependent_base_p): Remove.
+	(dfs_push_type_decls): Adjust.
+	(dfs_push_decls): Adjust.
+	(dfs_no_overlap_yet): Adjust.
+	(copied_binfo): New function.
+	(original_binfo): New function.
+	(binfo_for_vbase): Remove.
+
 2003-02-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* cp/search.c (grow_bfs_bases): New subroutine of bfs_walk.
