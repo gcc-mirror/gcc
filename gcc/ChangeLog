@@ -1,3 +1,8 @@
+2001-02-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* print-tree.c (print_node): Do not use BLOCK_CHAIN when we're not
+	looking at a BLOCK.
+
 2001-02-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* aclocal.m4 (gcc_AC_CHECK_DECL): Before attempting the test,
