@@ -1,3 +1,7 @@
+2002-01-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.md (movdf_i4 split): Fix alter_subreg calls.
+
 2002-01-18  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* doc/install.texi (hppa*-hp-hpux11): Clarify that GCC 2.95.x cannot
