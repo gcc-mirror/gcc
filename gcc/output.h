@@ -142,6 +142,9 @@ extern void text_section		PROTO((void));
 /* Tell assembler to switch to data section.  */
 extern void data_section		PROTO((void));
 
+/* Tell assembler to make sure its in the data section.  */
+extern void force_data_section		PROTO((void));
+
 /* Tell assembler to switch to read-only data section.  This is normally
    the text section.  */
 extern void readonly_data_section	PROTO((void));
