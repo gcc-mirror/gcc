@@ -1,3 +1,10 @@
+2000-09-07  Jim Wilson  <wilson@cygnus.com>
+
+	* reload.c (push_reload): Use CLASS_CANNOT_CHANGE_MODE_P in addition
+	to CLASS_CANNOT_CHANGE_MODE.
+	* config/ia64/ia64.h (CLASS_CANNOT_CHANGE_MODE_P): True only if the
+	mode classes are different.
+
 2000-09-07  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.h (struct cpp_options): Add user_label_prefix member,
