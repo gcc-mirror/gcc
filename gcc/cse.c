@@ -7419,6 +7419,8 @@ cse_insn (insn, libcall_insn)
 	     not delete NOTEs except for NOTE_INSN_DELETED since later
 	     phases assume these notes are retained.  */
 
+	  never_reached_warning (insn);
+
 	  p = insn;
 
 	  while (NEXT_INSN (p) != 0

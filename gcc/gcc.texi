@@ -1920,13 +1920,6 @@ Such assignments must be very common; warning about them would cause
 more annoyance than good.
 
 @item
-Warning about unreachable code.
-
-It's very common to have unreachable code in machine-generated
-programs.  For example, this happens normally in some files of GNU C
-itself.
-
-@item
 Warning when a non-void function value is ignored.
 
 Coming as I do from a Lisp background, I balk at the idea that there is
