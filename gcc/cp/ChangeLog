@@ -1,3 +1,7 @@
+1998-11-02  Mark Mitchell  <mark@markmitchell.com>
+
+	* init.c (expand_vec_init): Fix off-by-one error.
+
 1998-11-02  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* parse.y (apparent_template_type): new type
