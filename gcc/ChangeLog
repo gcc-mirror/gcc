@@ -5,6 +5,12 @@ Sat Aug  7 00:21:20 1999  Richard Henderson  <rth@cygnus.com>
 	
 Sat Aug  7 00:06:54 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (TAROUTOPTS): Kill.
+	(install-headers-tar): Use "xpf" for tar headerfile extraction
+	* i370/x-oe (TAROUTOPTS): Delete.
+	* m68k/x-apollo68 (TAROUTOPTS): Delete.
+	* m68k/x-hp320 (TAROUTOPTS): Delete.
+	* m68k/x-hp320g (TAROUTOPTS): Delete.
 	* gcc.texi: Update bug reporting text.
 
 1999-08-6 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
