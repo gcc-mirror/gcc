@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_SHORT "\t.value\t"
 #define ASM_LONG "\t.long\t"
+#define ASM_QUAD "\t.quad\t"
 
 /* How to output an ASCII string constant.  */
 

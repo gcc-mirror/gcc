@@ -984,6 +984,16 @@ override_options ()
   if (flag_unsafe_math_optimizations)
     target_flags &= ~MASK_IEEE_FP;
 
+  if (TARGET_64BIT)
+    {
+      if (TARGET_ALIGN_DOUBLE)
+	error ("-malign-double makes no sense in the 64bit mode.");
+      if (TARGET_RTD)
+	error ("-mrtd calling convention not supported in the 64bit mode.");
+      /* Enable by default the SSE and MMX builtins.  */
+      target_flags |= MASK_SSE2 | MASK_SSE | MASK_MMX | MASK_128BIT_LONG_DOUBLE;
+     }
+
   /* It makes no sense to ask for just SSE builtins, so MMX is also turned
      on by -msse.  */
   if (TARGET_SSE)
@@ -2214,7 +2224,7 @@ ix86_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       emit_insn (gen_rtx_SET(VOIDmode, tmp_reg,
 			     plus_constant (save_area, 8 * REGPARM_MAX + 127)));
       mem = gen_rtx_MEM (BLKmode, plus_constant (tmp_reg, -127));
-      set_mem_alias_set(mem, set);
+      set_mem_alias_set (mem, set);
 
       /* And finally do the dirty job!  */
       emit_insn (gen_sse_prologue_save (mem, nsse_reg, GEN_INT (next_cum.sse_regno),
@@ -2260,7 +2270,7 @@ ix86_va_start (stdarg_p, valist, nextarg)
 
   if (TARGET_DEBUG_ARG)
     fprintf (stderr, "va_start: words = %d, n_gpr = %d, n_fpr = %d\n",
-	     words, n_gpr, n_fpr);
+	     (int)words, (int)n_gpr, (int)n_fpr);
 
   t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
 	     build_int_2 (n_gpr * 8, 0));
@@ -4735,37 +4745,63 @@ legitimize_pic_address (orig, reg)
 
   if (local_symbolic_operand (addr, Pmode))
     {
-      /* This symbol may be referenced via a displacement from the PIC
-	 base address (@GOTOFF).  */
-
-      current_function_uses_pic_offset_table = 1;
-      new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), 7);
-      new = gen_rtx_CONST (Pmode, new);
-      new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
-
-      if (reg != 0)
+      /* In 64bit mode we can address such objects directly.  */
+      if (TARGET_64BIT)
+	new = addr;
+      else
 	{
-	  emit_move_insn (reg, new);
-	  new = reg;
-	}
+	  /* This symbol may be referenced via a displacement from the PIC
+	     base address (@GOTOFF).  */
+
+	  current_function_uses_pic_offset_table = 1;
+	  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), 7);
+	  new = gen_rtx_CONST (Pmode, new);
+	  new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
+
+	  if (reg != 0)
+	    {
+	      emit_move_insn (reg, new);
+	      new = reg;
+	    }
+      	}
     }
   else if (GET_CODE (addr) == SYMBOL_REF)
     {
-      /* This symbol must be referenced via a load from the
-	 Global Offset Table (@GOT).  */
+      if (TARGET_64BIT)
+	{
+	  current_function_uses_pic_offset_table = 1;
+	  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), 15);
+	  new = gen_rtx_CONST (Pmode, new);
+	  new = gen_rtx_MEM (Pmode, new);
+	  RTX_UNCHANGING_P (new) = 1;
+	  set_mem_alias_set (new, ix86_GOT_alias_set ());
 
-      current_function_uses_pic_offset_table = 1;
-      new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), 6);
-      new = gen_rtx_CONST (Pmode, new);
-      new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
-      new = gen_rtx_MEM (Pmode, new);
-      RTX_UNCHANGING_P (new) = 1;
-      set_mem_alias_set (new, ix86_GOT_alias_set ());
+	  if (reg == 0)
+	    reg = gen_reg_rtx (Pmode);
+	  /* Use directly gen_movsi, otherwise the address is loaded
+	     into register for CSE.  We don't want to CSE this addresses,
+	     instead we CSE addresses from the GOT table, so skip this.  */
+	  emit_insn (gen_movsi (reg, new));
+	  new = reg;
+	}
+      else
+	{
+	  /* This symbol must be referenced via a load from the
+	     Global Offset Table (@GOT).  */
 
-      if (reg == 0)
-	reg = gen_reg_rtx (Pmode);
-      emit_move_insn (reg, new);
-      new = reg;
+	  current_function_uses_pic_offset_table = 1;
+	  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), 6);
+	  new = gen_rtx_CONST (Pmode, new);
+	  new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
+	  new = gen_rtx_MEM (Pmode, new);
+	  RTX_UNCHANGING_P (new) = 1;
+	  set_mem_alias_set (new, ix86_GOT_alias_set ());
+
+	  if (reg == 0)
+	    reg = gen_reg_rtx (Pmode);
+	  emit_move_insn (reg, new);
+	  new = reg;
+	}
     }
   else
     {
@@ -5141,7 +5177,13 @@ i386_dwarf_output_addr_const (file, x)
      FILE *file;
      rtx x;
 {
+#ifdef ASM_QUAD
+  fprintf (file, "%s", TARGET_64BIT ? ASM_QUAD : INT_ASM_OP);
+#else
+  if (TARGET_64BIT)
+    abort ();
   fprintf (file, "%s", INT_ASM_OP);
+#endif
   if (flag_pic)
     output_pic_addr_const (file, x, '\0');
   else
@@ -7823,7 +7865,7 @@ ix86_expand_int_movcc (operands)
      HImode insns, we'd be swallowed in word prefix ops.  */
 
   if (GET_MODE (operands[0]) != HImode
-      && GET_MODE (operands[0]) != DImode
+      && (GET_MODE (operands[0]) != DImode || TARGET_64BIT)
       && GET_CODE (operands[2]) == CONST_INT
       && GET_CODE (operands[3]) == CONST_INT)
     {
@@ -7852,10 +7894,13 @@ ix86_expand_int_movcc (operands)
 
 	  if (reg_overlap_mentioned_p (out, ix86_compare_op0)
 	      || reg_overlap_mentioned_p (out, ix86_compare_op1))
-	    tmp = gen_reg_rtx (SImode);
+	    tmp = gen_reg_rtx (GET_MODE (operands[0]));
 
 	  emit_insn (compare_seq);
-	  emit_insn (gen_x86_movsicc_0_m1 (tmp));
+	  if (GET_MODE (tmp) == DImode)
+	    emit_insn (gen_x86_movdicc_0_m1_rex64 (tmp));
+	  else
+	    emit_insn (gen_x86_movsicc_0_m1 (tmp));
 
 	  if (diff == 1)
 	    {
@@ -7867,7 +7912,12 @@ ix86_expand_int_movcc (operands)
 	       * Size 5 - 8.
 	       */
 	      if (ct)
-	        emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (ct)));
+		{
+		  if (GET_MODE (tmp) == DImode)
+	            emit_insn (gen_adddi3 (tmp, tmp, GEN_INT (ct)));
+		  else
+	            emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (ct)));
+		}
 	    }
 	  else if (cf == -1)
 	    {
@@ -7878,7 +7928,10 @@ ix86_expand_int_movcc (operands)
 	       *
 	       * Size 8.
 	       */
-	      emit_insn (gen_iorsi3 (tmp, tmp, GEN_INT (ct)));
+	      if (GET_MODE (tmp) == DImode)
+		emit_insn (gen_iordi3 (tmp, tmp, GEN_INT (ct)));
+	      else
+		emit_insn (gen_iorsi3 (tmp, tmp, GEN_INT (ct)));
 	    }
 	  else if (diff == -1 && ct)
 	    {
@@ -7890,9 +7943,18 @@ ix86_expand_int_movcc (operands)
 	       *
 	       * Size 8 - 11.
 	       */
-	      emit_insn (gen_one_cmplsi2 (tmp, tmp));
-	      if (cf)
-	        emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (cf)));
+	      if (GET_MODE (tmp) == DImode)
+	        {
+		  emit_insn (gen_one_cmpldi2 (tmp, tmp));
+		  if (cf)
+		    emit_insn (gen_adddi3 (tmp, tmp, GEN_INT (cf)));
+		}
+	      else
+	        {
+		  emit_insn (gen_one_cmplsi2 (tmp, tmp));
+		  if (cf)
+		    emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (cf)));
+		}
 	    }
 	  else
 	    {
@@ -7904,10 +7966,20 @@ ix86_expand_int_movcc (operands)
 	       *
 	       * Size 8 - 11.
 	       */
-	      emit_insn (gen_andsi3 (tmp, tmp, GEN_INT (trunc_int_for_mode
-							(cf - ct, SImode))));
-	      if (ct)
-	        emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (ct)));
+	      if (GET_MODE (tmp) == DImode)
+	        {
+		  emit_insn (gen_anddi3 (tmp, tmp, GEN_INT (trunc_int_for_mode
+							    (cf - ct, DImode))));
+		  if (ct)
+		    emit_insn (gen_adddi3 (tmp, tmp, GEN_INT (ct)));
+		}
+	      else
+	        {
+		  emit_insn (gen_andsi3 (tmp, tmp, GEN_INT (trunc_int_for_mode
+							    (cf - ct, SImode))));
+		  if (ct)
+		    emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (ct)));
+		}
 	    }
 
 	  if (tmp != out)
@@ -7961,43 +8033,28 @@ ix86_expand_int_movcc (operands)
 	  /* On x86_64 the lea instruction operates on Pmode, so we need to get arithmetics
 	     done in proper mode to match.  */
 	  if (diff == 1)
-	    {
-	      if (Pmode != SImode)
-		tmp = gen_lowpart (Pmode, out);
-	      else
-		tmp = out;
-	    }
+	    tmp = out;
 	  else
 	    {
 	      rtx out1;
-	      if (Pmode != SImode)
-	        out1 = gen_lowpart (Pmode, out);
-	      else
-		out1 = out;
-	      tmp = gen_rtx_MULT (Pmode, out1, GEN_INT (diff & ~1));
+	      out1 = out;
+	      tmp = gen_rtx_MULT (GET_MODE (out), out1, GEN_INT (diff & ~1));
 	      nops++;
 	      if (diff & 1)
 		{
-		  tmp = gen_rtx_PLUS (Pmode, tmp, out1);
+		  tmp = gen_rtx_PLUS (GET_MODE (out), tmp, out1);
 		  nops++;
 		}
 	    }
 	  if (cf != 0)
 	    {
-	      tmp = gen_rtx_PLUS (Pmode, tmp, GEN_INT (cf));
+	      tmp = gen_rtx_PLUS (GET_MODE (out), tmp, GEN_INT (cf));
 	      nops++;
 	    }
 	  if (tmp != out
 	      && (GET_CODE (tmp) != SUBREG || SUBREG_REG (tmp) != out))
 	    {
-	      if (Pmode != SImode)
-	        tmp = gen_rtx_SUBREG (SImode, tmp, 0);
-
-	      /* ??? We should to take care for outputing non-lea arithmetics
-	         for Pmode != SImode case too, but it is quite tricky and not
-	         too important, since all TARGET_64BIT machines support real
-	         conditional moves.  */
-	      if (nops == 1 && Pmode == SImode)
+	      if (nops == 1)
 		{
 		  rtx clob;
 
@@ -9692,6 +9749,10 @@ ix86_attr_length_immediate_default (insn, shortform)
 		  len+=2;
 		  break;
 		case MODE_SI:
+		  len+=4;
+		  break;
+		/* Immediates for DImode instructions are encoded as 32bit sign extended values.  */
+		case MODE_DI:
 		  len+=4;
 		  break;
 		default:

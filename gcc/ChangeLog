@@ -1,3 +1,37 @@
+Tue Oct  2 12:46:01 CEST 2001  Bo Thorsen     <bo@suse.co.uk>,
+			       Andreas Jaeger <aj@suse.de>,
+			       Jan Hubicka    <jh@suse.cz>
+
+	* doc/invoke.texi (i386 Options): Document x86-64 options.
+	(i386 and x86-64 Options): Rename i386 options section.
+
+	* config/i386/i386.h (TARGET_UNWIND_INFO): New.
+	(TARGET_SWITCHES): Add -munwind-info.
+	(MASK_NO_UNWIND_INFO): New.
+	(NO_BUILTIN_SIZE_TYPE, NO_BUILTIN_PTRDIFF_TYPE): Define for
+	biarch compilation.
+	(ASM_OUTPUT_DOUBLE_INT): New.
+
+	* config/i386/linux64.h: New spec file for Linux x86-64 support.
+	* config.gcc: Fix tm_file settings for x86-64.
+	* config/i386/x86-64.h: New file with OS independent x86-64
+	definitions.
+	* config/i386/biarch64.h: New file used to configure compiler
+	to biarch/64bit compilation.
+
+	* config/i386/i386.c: (override_options): Set flags default
+	for 64bit compilation.
+
+Tue Oct  2 12:46:01 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (legitimize_pic_address): Add missing bits of 64bit support.
+	(ix86_expand_int_movcc): Optimize DImode conditional moves with 
+	constants on x86_64.
+	(ix86_attr_length_immediate_default): Support MODE_DI.
+	* i386.md (fixdi splitter): Add missing "&& 1" in splitter
+	condition.
+	(indirect_jump, tablejump): Turn into expander.
+
 2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (c_format_attribute_table): Make format and
