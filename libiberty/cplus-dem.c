@@ -2097,7 +2097,6 @@ gnu_special (work, mangled, declp)
 	(*mangled) += 4; /* Old style, no thunks: "_vt<CPLUS_MARKER>" */
       while (**mangled != '\0')
 	{
-	  p = strpbrk (*mangled, cplus_markers);
 	  switch (**mangled)
 	    {
 	    case 'Q':
@@ -2130,6 +2129,7 @@ gnu_special (work, mangled, declp)
 	      (*mangled) += n;
 	    }
 
+	  p = strpbrk (*mangled, cplus_markers);
 	  if (success && ((p == NULL) || (p == *mangled)))
 	    {
 	      if (p != NULL)
