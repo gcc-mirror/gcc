@@ -37,7 +37,6 @@ Jim Wilson					wilson@tuliptree.org
 			CPU Port Maintainers	(CPU alphabetical order)
 
 alpha port		Richard Henderson	rth@redhat.com
-arc port		Richard Kenner		kenner@nyu.edu
 arm port		Nick Clifton		nickc@redhat.com
 arm port		Richard Earnshaw	rearnsha@arm.com
 avr port		Denis Chertykov		denisc@overta.ru
