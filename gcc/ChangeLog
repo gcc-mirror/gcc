@@ -17,6 +17,7 @@
 
 	* i860.md: Change triple backslashes to double backslashes at
 	ends of lines in output templates.
+	* ns32k.md: Remove stray backslash-newline in output template.
 
 2001-06-29  Nick Clifton  <nickc@cambridge.redhat.com>
 
