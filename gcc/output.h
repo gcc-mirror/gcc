@@ -491,9 +491,6 @@ extern const char *user_label_prefix;
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
   (VAR) = ((SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'))
 #endif
-/* Assign unique numbers to labels generated for profiling.  */
-
-extern int profile_label_no;
 
 /* Default target function prologue and epilogue assembler output.  */
 extern void default_function_pro_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
