@@ -1,3 +1,8 @@
+Wed Aug 26 16:35:37 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (check_dbra_loop): Add some code that would allow reversal
+	of some loops without a known constant loop end if it were enabled.
+
 Wed Aug 26 11:08:44 1998  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* mips.md (lshrsi3_internal2+2): Fix type-o.
