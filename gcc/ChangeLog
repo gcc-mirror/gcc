@@ -1,5 +1,11 @@
 Mon May 18 15:30:42 1998  Nick Clifton  <nickc@cygnus.com>
 
+	* config/v850/lib1funcs.asm: Add .text pseudo op to start of
+	___udivsi3. 
+
+	* config/v850/lib1funcs.asm: Fix .size pseudo ops to use three
+	underscores for the prefixes to the names of the maths functions. 
+
 	* dbxout.c (dbxout_parms): Revert to using DECL_ARG_TYPE.  Add
 	comment explaining why.
 
