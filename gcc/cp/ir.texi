@@ -1675,7 +1675,7 @@ that of the result, will be either integral, boolean, or floating-point.
 
 @item ADDR_EXPR
 These nodes are used to represent the address of an object.  (These
-expression will always have pointer or reference type.)  The operand may
+expressions will always have pointer or reference type.)  The operand may
 be another expression, or it may be a declaration.
 
 As an extension, G++ allows users to take the address of a label.  In

@@ -1,3 +1,13 @@
+2000-06-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* ir.texi: Correct typo.
+	* mangle.c (write_expression): Handle non-type template arguments
+	with reference type.
+	* method.c (build_overload_value): Likewise.
+	* pt.c (convert_nontype_argument): Explicitly represent conversion
+	to a reference with an ADDR_EXPR.
+	(unify): Always unify arguments in left-to-right order.
+
 2000-06-03  Alex Samuel    <samuel@codesourcery.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 

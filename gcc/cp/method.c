@@ -827,6 +827,9 @@ build_overload_value (type, value, flags)
       /* Fall through.  */
 
     case REFERENCE_TYPE:
+      if (TREE_CODE (value) == ADDR_EXPR)
+	value = TREE_OPERAND (value, 0);
+
       if (TREE_CODE (value) == VAR_DECL)
 	{
 	  my_friendly_assert (DECL_NAME (value) != 0, 245);
