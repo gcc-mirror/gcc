@@ -1,5 +1,10 @@
 2003-07-16  Roger Sayle  <roger@eyesopen.com>
 
+	* combine.c (subst): Also handle (subreg (const_double ...)) case
+	if created by a substitution, by using the original inner mode.
+
+2003-07-16  Roger Sayle  <roger@eyesopen.com>
+
 	* simplify-rtx.c (simplify_replace_rtx): Convert constant comparisons
 	to MODE_FLOAT constants if FLOAT_STORE_FLAG_VALUE is defined.
 	(simplify_rtx): Likewise.  Simplify (lo_sum (high X) X) as X.
