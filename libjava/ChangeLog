@@ -1,5 +1,9 @@
 1999-09-23  Tom Tromey  <tromey@cygnus.com>
 
+	* configure: Rebuilt.
+	* configure.in: Print message when checking to see if gcj can
+	handle -fuse-divide-subroutine.
+
 	* java/lang/natFirstThread.cc (run): Renamed from `run0'.  Removed
 	dead code.
 	* java/lang/FirstThread.java (run0): Renamed to `run'.
