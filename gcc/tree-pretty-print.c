@@ -378,27 +378,37 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       {
 	tree tmp;
 
-	/* Print the array type.  */
-	dump_generic_node (buffer, TREE_TYPE (node), spc, flags, false);
+	/* Print the innermost component type.  */
+	for (tmp = TREE_TYPE (node); TREE_CODE (tmp) == ARRAY_TYPE;
+	     tmp = TREE_TYPE (tmp))
+	  ;
+	dump_generic_node (buffer, tmp, spc, flags, false);
 
 	/* Print the dimensions.  */
-	tmp = node;
-	while (tmp && TREE_CODE (tmp) == ARRAY_TYPE)
+	for (tmp = node; TREE_CODE (tmp) == ARRAY_TYPE;
+	     tmp = TREE_TYPE (tmp))
 	  {
+	    tree domain = TYPE_DOMAIN (tmp);
+
 	    pp_character (buffer, '[');
-	    if (TYPE_SIZE (tmp))
+	    if (domain)
 	      {
-		tree size = TYPE_SIZE (tmp);
-		if (TREE_CODE (size) == INTEGER_CST)
-		  pp_wide_integer (buffer,
-				  TREE_INT_CST_LOW (TYPE_SIZE (tmp)) /
-				  TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (tmp))));
-		else if (TREE_CODE (size) == MULT_EXPR)
-		  dump_generic_node (buffer, TREE_OPERAND (size, 0), spc, flags, false);
-		/* else punt.  */
+		if (TYPE_MIN_VALUE (domain)
+		    && !integer_zerop (TYPE_MIN_VALUE (domain)))
+		  {
+		    dump_generic_node (buffer, TYPE_MIN_VALUE (domain),
+				       spc, flags, false);
+		    pp_string (buffer, " .. ");
+		  }
+
+		if (TYPE_MAX_VALUE (domain))
+		  dump_generic_node (buffer, TYPE_MAX_VALUE (domain),
+				     spc, flags, false);
 	      }
+	    else
+	      pp_string (buffer, "<unknown>");
+
 	    pp_character (buffer, ']');
-	    tmp = TREE_TYPE (tmp);
 	  }
 	break;
       }

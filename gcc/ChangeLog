@@ -5,6 +5,9 @@
 
 2004-07-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree-pretty-print.c (dump_generic_node, case ARRAY_TYPE): Properly
+	print bounds.
+
 	* expr.c (expand_expr_real_1, case SWITCH_EXPR): Don't check against
 	bounds if bounds aren't constant.
 
