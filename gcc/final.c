@@ -2560,12 +2560,7 @@ output_asm_insn (template, operands)
 	    else if (letter == 'n')
 	      {
 		if (GET_CODE (operands[c]) == CONST_INT)
-		  fprintf (asm_out_file,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-			   "%d",
-#else
-			   "%ld",
-#endif
+		  fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC,
 			   - INTVAL (operands[c]));
 		else
 		  {
@@ -2701,13 +2696,7 @@ output_addr_const (file, x)
       break;
 
     case CONST_INT:
-      fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-	       "%d",
-#else
-	       "%ld",
-#endif
-	       INTVAL (x));
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
       break;
 
     case CONST:
@@ -2721,37 +2710,12 @@ output_addr_const (file, x)
 	{
 	  /* We can use %d if the number is one word and positive.  */
 	  if (CONST_DOUBLE_HIGH (x))
-	    fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == 64
-#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
-		     "0x%lx%016lx",
-#else
-		     "0x%x%016x",
-#endif
-#else
-#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
-		     "0x%lx%08lx",
-#else
-		     "0x%x%08x",
-#endif
-#endif
+	    fprintf (file, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
 		     CONST_DOUBLE_HIGH (x), CONST_DOUBLE_LOW (x));
 	  else if  (CONST_DOUBLE_LOW (x) < 0)
-	    fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		     "0x%x",
-#else
-		     "0x%lx",
-#endif
-		     CONST_DOUBLE_LOW (x));
+	    fprintf (file, HOST_WIDE_INT_PRINT_HEX, CONST_DOUBLE_LOW (x));
 	  else
-	    fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		     "%d",
-#else
-		     "%ld",
-#endif
-		     CONST_DOUBLE_LOW (x));
+	    fprintf (file, HOST_WIDE_INT_PRINT_DEC, CONST_DOUBLE_LOW (x));
 	}
       else
 	/* We can't handle floating point constants;
@@ -2892,8 +2856,14 @@ asm_fprintf VPROTO((FILE *file, char *p, ...))
 	       but we do not check for those cases.  It means that the value
 	       is a HOST_WIDE_INT, which may be either `int' or `long'.  */
 
-#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+#else
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
 	    *q++ = 'l';
+#else
+	    *q++ = 'l';
+	    *q++ = 'l';
+#endif
 #endif
 
 	    *q++ = *p++;
