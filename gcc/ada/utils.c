@@ -133,6 +133,7 @@ struct language_function GTY(())
   int unused;
 };
 
+static tree mark_visited (tree *, int *, void *);
 static void gnat_define_builtin (const char *, tree, int, const char *, bool);
 static void gnat_install_builtins (void);
 static tree merge_sizes (tree, tree, tree, int, int);
@@ -338,6 +339,21 @@ block_has_vars ()
   return BLOCK_VARS (current_binding_level->block) != 0;
 }
 
+/* Utility function to mark nodes with TREE_VISITED.  Called from walk_tree.
+   We use this to indicate all variable sizes and positions in global types
+   may not be shared by any subprogram.  */
+
+static tree
+mark_visited (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
+{
+  if (TREE_VISITED (*tp))
+    *walk_subtrees = 0;
+  else
+    TREE_VISITED (*tp) = 1;
+
+  return NULL_TREE;
+}
+
 /* Records a ..._DECL node DECL as belonging to the current lexical scope.
    Returns the ..._DECL node. */
 
@@ -345,9 +361,13 @@ tree
 pushdecl (tree decl)
 {
   /* If at top level, there is no context. But PARM_DECLs always go in the
-     level of its function. */
+     level of its function.  Also, at toplevel we must protect all trees
+     that are part of sizes and positions.  */
   if (global_bindings_p () && TREE_CODE (decl) != PARM_DECL)
-    DECL_CONTEXT (decl) = 0;
+    {
+      DECL_CONTEXT (decl) = 0;
+      walk_tree (&decl, mark_visited, NULL, NULL);
+    }
   else
     DECL_CONTEXT (decl) = current_function_decl;
 
@@ -1261,11 +1281,8 @@ create_index_type (tree min, tree max, tree index)
    information about this type.  */
 
 tree
-create_type_decl (tree type_name,
-                  tree type,
-                  struct attrib *attr_list,
-                  int artificial_p,
-                  int debug_info_p)
+create_type_decl (tree type_name, tree type, struct attrib *attr_list,
+		  int artificial_p, int debug_info_p)
 {
   tree type_decl = build_decl (TYPE_DECL, type_name, type);
   enum tree_code code = TREE_CODE (type);
@@ -1929,7 +1946,7 @@ gnat_gimplify_function (tree fndecl)
      so that items like VLA sizes are expanded properly in the context of the
      correct function.  */
   cgn = cgraph_node (fndecl);
-  for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
+  for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
     gnat_gimplify_function (cgn->decl);
 }
 
@@ -2615,6 +2632,7 @@ update_pointer_to (tree old_type, tree new_type)
 {
   tree ptr = TYPE_POINTER_TO (old_type);
   tree ref = TYPE_REFERENCE_TO (old_type);
+  tree ptr1, ref1;
   tree type;
 
   /* If this is the main variant, process all the other variants first.  */
@@ -2662,26 +2680,30 @@ update_pointer_to (tree old_type, tree new_type)
       TYPE_REFERENCE_TO (new_type) = ref;
 
       for (; ptr; ptr = TYPE_NEXT_PTR_TO (ptr))
-	{
-	  TREE_TYPE (ptr) = new_type;
+	for (ptr1 = TYPE_MAIN_VARIANT (ptr); ptr1;
+	     ptr1 = TYPE_NEXT_VARIANT (ptr1))
+	  {
+	    TREE_TYPE (ptr1) = new_type;
 
-	  if (TYPE_NAME (ptr) != 0
-	      && TREE_CODE (TYPE_NAME (ptr)) == TYPE_DECL
-	      && TREE_CODE (new_type) != ENUMERAL_TYPE)
-	    rest_of_decl_compilation (TYPE_NAME (ptr), NULL,
-				      global_bindings_p (), 0);
-	}
+	    if (TYPE_NAME (ptr1) != 0
+		&& TREE_CODE (TYPE_NAME (ptr1)) == TYPE_DECL
+		&& TREE_CODE (new_type) != ENUMERAL_TYPE)
+	      rest_of_decl_compilation (TYPE_NAME (ptr1), NULL,
+					global_bindings_p (), 0);
+	  }
 
       for (; ref; ref = TYPE_NEXT_PTR_TO (ref))
-	{
-	  TREE_TYPE (ref) = new_type;
+	for (ref1 = TYPE_MAIN_VARIANT (ref); ref1;
+	     ref1 = TYPE_NEXT_VARIANT (ref1))
+	  {
+	    TREE_TYPE (ref1) = new_type;
 
-	  if (TYPE_NAME (ref) != 0
-	      && TREE_CODE (TYPE_NAME (ref)) == TYPE_DECL
-	      && TREE_CODE (new_type) != ENUMERAL_TYPE)
-	    rest_of_decl_compilation (TYPE_NAME (ref), NULL,
-				      global_bindings_p (), 0);
-	}
+	    if (TYPE_NAME (ref1) != 0
+		&& TREE_CODE (TYPE_NAME (ref1)) == TYPE_DECL
+		&& TREE_CODE (new_type) != ENUMERAL_TYPE)
+	      rest_of_decl_compilation (TYPE_NAME (ref1), NULL,
+					global_bindings_p (), 0);
+	  }
     }
 
   /* Now deal with the unconstrained array case. In this case the "pointer"
@@ -2711,7 +2733,7 @@ update_pointer_to (tree old_type, tree new_type)
       ptr_temp_type = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (ptr)));
       new_ref = build (COMPONENT_REF, ptr_temp_type,
 		       build (PLACEHOLDER_EXPR, ptr),
-		       TREE_CHAIN (TYPE_FIELDS (ptr)));
+		       TREE_CHAIN (TYPE_FIELDS (ptr)), NULL_TREE);
 
       update_pointer_to
 	(TREE_TYPE (TREE_TYPE (TYPE_FIELDS (ptr))),
@@ -2854,11 +2876,6 @@ convert (tree type, tree expr)
   /* If EXPR is already the right type, we are done.  */
   if (type == etype)
     return expr;
-  /* If we're converting between two aggregate types that have the same main
-     variant, just make a VIEW_CONVER_EXPR.  */
-  else if (AGGREGATE_TYPE_P (type)
-	   && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype))
-    return build1 (VIEW_CONVERT_EXPR, type, expr);
 
   /* If the input type has padding, remove it by doing a component reference
      to the field.  If the output type has padding, make a constructor
@@ -2995,7 +3012,7 @@ convert (tree type, tree expr)
 	  && operand_equal_p (TYPE_SIZE (type), TYPE_SIZE (etype), 0)
 	  && get_alias_set (type) == get_alias_set (etype))
 	return build (COMPONENT_REF, type, TREE_OPERAND (expr, 0),
-		      TREE_OPERAND (expr, 1));
+		      TREE_OPERAND (expr, 1), NULL_TREE);
 
       break;
 
@@ -3043,9 +3060,16 @@ convert (tree type, tree expr)
   if (TYPE_FAT_POINTER_P (type) && ! TYPE_FAT_POINTER_P (etype))
     return convert_to_fat_pointer (type, expr);
 
-  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype)
-      || (code == INTEGER_CST && ecode == INTEGER_CST
-	  && (type == TREE_TYPE (etype) || etype == TREE_TYPE (type))))
+  /* If we're converting between two aggregate types that have the same main
+     variant, just make a VIEW_CONVER_EXPR.  */
+  else if (AGGREGATE_TYPE_P (type)
+	   && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype))
+    return build1 (VIEW_CONVERT_EXPR, type, expr);
+
+  /* In all other cases of related types, make a NOP_EXPR.  */
+  else if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype)
+	   || (code == INTEGER_CST && ecode == INTEGER_CST
+	       && (type == TREE_TYPE (etype) || etype == TREE_TYPE (type))))
     return fold (build1 (NOP_EXPR, type, expr));
 
   switch (code)

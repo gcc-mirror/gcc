@@ -1,3 +1,31 @@
+2004-06-20  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (elaborate_expression, elaborate_expression_1): Arguments
+	now bool instead of int.
+	(gnat_to_gnu_entity, elaborate_expression_1): New arg to COMPONENT_REF.
+	* trans.c (gnu_switch_label_stack): New function.
+	(gnat_to_gnu, N_Object_Renaming_Declaration): Result is what the
+	elaboration of renamed entity returns.
+	(gnat_to_gnu, case N_Case_Statement): Add branches to end label.
+	(add_decl_stmt): Don't add TYPE_DECL for UNCONSTRAINED_ARRAY_TYPE.
+	(gnat_gimplify_stmt): Use alloc_stmt_list, not build_empty_stmt.
+	(gnat_gimplify_stmt, case DECL_STMT): gimplify DECL_SIZE and
+	DECL_SIZE_UNIT and simplify variable-sized case.
+	(gnat_gimplify_type_sizes, gnat_gimplify_one_sizepos): Deleted.
+	Callers changes to call gimplify_type_sizes and gimplify_one_sizepos.
+	(gnat_stabilize_reference): Add arg to COMPONENT_REF.
+	(build_unit_elab): Disable for now.
+	* utils.c (mark_visited): New function.
+	(pushdecl): Walk tree to call it for global decl.
+	(update_pointer_to): Update all variants of pointer and ref types.
+	Add arg to COMPONENT_REF.
+	(convert): Likewise.
+	Move check for converting between variants lower down.
+	* utils2.c (build_simple_component_ref): Add arg to COMPONENT_REF.
+	(build_allocator): Don't force type of MODIFY_EXPR.
+	(gnat_mark_addressable, case VAR_DECL): Unconditionally call
+	put_var_into_stack.
+
 2004-06-14  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* ada-tree.def (LOOP_STMT, EXIT_STMT): Update documentation.
