@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a AMD A29K using COFF.
-   Copyright (C) 1997, 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D_AM29K -D_AM29000 -D_EPI -Drtems -D__rtems__ \
+#define CPP_PREDEFINES "-D_AM29K -D_AM29000 -D_EPI -D__rtems__ \
   -Asystem(rtems) -Acpu(a29k) -Amachine(a29k)"
 
 /* Generate calls to memcpy, memcmp and memset.  */

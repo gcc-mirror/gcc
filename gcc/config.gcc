@@ -1,5 +1,5 @@
 # GCC build-, host- and target-specific configuration file.
-# Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -539,13 +539,6 @@ alpha*-dec-vms*)
 	xm_file="${xm_file} alpha/xm-vms.h"
 	tmake_file="alpha/t-alpha alpha/t-vms alpha/t-ieee"
 	;;
-arm*-*-rtems*)
-	tm_file=arm/rtems-elf.h
-	tmake_file="arm/t-arm-elf t-rtems"
-	if test x$enable_threads = xyes; then
-	  thread_file='rtems'
-	fi
-	;;
 arc-*-elf*)
 	extra_parts="crtinit.o crtfini.o"
 	;;
@@ -611,6 +604,13 @@ arm*-*-ecos-elf)
 	tm_file=arm/ecos-elf.h
 	tmake_file=arm/t-arm-elf
 	;; 
+arm*-*-rtems*)
+	tm_file="arm/rtems-elf.h rtems.h"
+	tmake_file="arm/t-arm-elf t-rtems"
+	if test x$enable_threads = xyes; then
+	  thread_file='rtems'
+	fi
+	;;
 arm*-*-elf)
 	tm_file=arm/unknown-elf.h
 	tmake_file=arm/t-arm-elf
@@ -1297,10 +1297,10 @@ i[34567]86-*-rtemscoff*)
 	fi
 	;;
 i[34567]86-*-rtems*|i[34567]86-*-rtemself*)
-	cpu_type=i386
-	tm_file=i386/rtemself.h
-	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
-	tmake_file="i386/t-rtems-i386 i386/t-crtstuff t-rtems"
+	xm_file="${xm_file} xm-svr4.h i386/xm-sysv4.h"
+	tm_file="i386/i386.h i386/att.h elfos.h i386/i386elf.h i386/rtemself.h"
+	xmake_file=x-svr4
+	tmake_file="i386/t-rtems-i386 t-rtems"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi

@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a PowerPC using elf.
-   Copyright (C) 1996, 1997, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -22,8 +22,8 @@ Boston, MA 02111-1307, USA.  */
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-DPPC -Drtems -D__rtems__ \
-   -Asystem=rtems -Acpu=powerpc -Amachine=powerpc"
+#define CPP_PREDEFINES "-DPPC -D__rtems__ \
+   -Asystem=rtems -Acpu=powerpc -Amachine=powerpc -D__USE_INIT_FINI__"
 
 /* Generate calls to memcpy, memcmp and memset.  */
 #ifndef TARGET_MEM_FUNCTIONS

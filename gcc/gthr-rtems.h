@@ -1,7 +1,7 @@
 /* RTEMS threads compatibily routines for libgcc2 and libobjc.
    by: Rosimildo da Silva( rdasilva@connecttel.com ) */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -30,6 +30,9 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __gthr_rtems_h
 #define __gthr_rtems_h
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define __GTHREADS 1
 
@@ -123,5 +126,10 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 {
     return rtems_gxx_mutex_unlock( mutex );
 }
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* __gthr_rtems_h */
