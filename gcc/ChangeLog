@@ -1,3 +1,8 @@
+2003-05-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR other/10658
+	* gcc.c (process_command): Update copyright date.
+
 2003-05-06  Phil Edwards  <pme@gcc.gnu.org>
 
 	* doc/install.texi (mips-*-*):  Add note about libstdc++.
