@@ -553,7 +553,6 @@ package body Exp_Ch6 is
             Indic := New_Occurrence_Of (Etype (Formal), Loc);
          end if;
 
-
          if Nkind (Actual) = N_Type_Conversion then
             V_Typ := Etype (Expression (Actual));
 
@@ -2683,8 +2682,9 @@ package body Exp_Ch6 is
          return;
       end if;
 
-      if Nkind (Orig_Bod) = N_Defining_Identifier then
-
+      if Nkind (Orig_Bod) = N_Defining_Identifier
+        or else Nkind (Orig_Bod) = N_Defining_Operator_Symbol
+      then
          --  Subprogram is a renaming_as_body. Calls appearing after the
          --  renaming can be replaced with calls to the renamed entity
          --  directly, because the subprograms are subtype conformant. If
