@@ -873,6 +873,9 @@ asm ("__builtin_saveregs:");
 	asm (".global ___builtin_saveregs");
 	asm ("___builtin_saveregs:");
 #endif
+#ifdef NEED_PROC_COMMAND
+	asm (".proc 020");
+#endif
 	asm ("st %i0,[%fp+68]");
 	asm ("st %i1,[%fp+72]");
 	asm ("st %i2,[%fp+76]");
@@ -880,6 +883,10 @@ asm ("__builtin_saveregs:");
 	asm ("st %i4,[%fp+84]");
 	asm ("retl");
 	asm ("st %i5,[%fp+88]");
+#ifdef NEED_TYPE_COMMAND
+	asm (".type __builtin_saveregs,#function");
+	asm (".size __builtin_saveregs,.-__builtin_saveregs");
+#endif
 #else /* not __sparc__ */
 #if defined(__MIPSEL__) | defined(__R3000__) | defined(__R2000__) | defined(__mips__)
 
@@ -909,10 +916,10 @@ __builtin_saveregs ()
 /* This is used by the `assert' macro.  */
 void
 __eprintf (string, expression, line, filename)
-     char *string;
-     char *expression;
+     const char *string;
+     const char *expression;
      int line;
-     char *filename;
+     const char *filename;
 {
   fprintf (stderr, string, expression, line, filename);
   fflush (stderr);
@@ -963,8 +970,9 @@ __builtin_new (sz)
      long sz;
 {
   void *p;
+  extern void *malloc ();
 
-  p = (void *) malloc (sz);
+  p = malloc (sz);
   if (p == 0)
     (*__new_handler) ();
   return p;
@@ -974,6 +982,7 @@ __builtin_new (sz)
 #ifdef L_builtin_New
 typedef void (*vfp)(void);
 
+extern void *__builtin_new ();
 static void default_new_handler ();
 
 vfp __new_handler = default_new_handler;
@@ -988,7 +997,7 @@ __builtin_vec_new (p, maxindex, size, ctor)
   void *rval;
 
   if (p == 0)
-    p = (void *)__builtin_new (nelts * size);
+    p = __builtin_new (nelts * size);
 
   rval = p;
 
@@ -1020,13 +1029,15 @@ set_new_handler (handler)
   return __set_new_handler (handler);
 }
 
+#define MESSAGE "Virtual memory exceeded in `new'\n"
+
 static void
 default_new_handler ()
 {
   /* don't use fprintf (stderr, ...) because it may need to call malloc.  */
   /* This should really print the name of the program, but that is hard to
      do.  We need a standard, clean way to get at the name.  */
-  write (2, "Virtual memory exceeded in `new'\n", 33);
+  write (2, MESSAGE, sizeof (MESSAGE));
   /* don't call exit () because that may call global destructors which
      may cause a loop.  */
   _exit (-1);
