@@ -4229,7 +4229,10 @@ output_constant (exp, size)
      directly.  Give the front-end a chance to convert EXP to a
      language-independent representation.  */
   if (lang_expand_constant)
-    exp = (*lang_expand_constant) (exp);
+    {
+      exp = (*lang_expand_constant) (exp);
+      code = TREE_CODE (TREE_TYPE (exp));
+    }
 
   if (size == 0 || flag_syntax_only)
     return;
