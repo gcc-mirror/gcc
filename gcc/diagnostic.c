@@ -44,8 +44,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define output_formatted_integer(BUFFER, FORMAT, INTEGER) \
   do {                                                    \
-    sprintf (digit_buffer, FORMAT, INTEGER);              \
-    output_add_string (BUFFER, digit_buffer);             \
+    sprintf ((BUFFER)->digit_buffer, FORMAT, INTEGER);    \
+    output_add_string (BUFFER, (BUFFER)->digit_buffer);   \
   } while (0)
 
 #define output_text_length(BUFFER) (BUFFER)->line_length
@@ -107,10 +107,6 @@ extern int warnings_are_errors;
 
 /* Front-end specific tree formatter, if non-NULL.  */
 printer_fn lang_printer = NULL;
-
-/* This must be large enough to hold any printed integer or
-   floating-point value.  */
-static char digit_buffer[128];
 
 /* An output_buffer surrogate for stderr.  */
 static output_buffer global_output_buffer;
