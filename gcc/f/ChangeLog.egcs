@@ -1,5 +1,15 @@
 Mon Feb  9 00:49:55 1998  Craig Burley  <burley@gnu.ai.mit.edu>
 
+	Fix -fpedantic combined with `F()' invocation,
+	also -fugly-comma combined with `IARGC()' invocation:
+	* bad.def (FFEBAD_NULL_ARGUMENT_W): New diagnostic.
+	* expr.c (ffeexpr_finished_): Don't reject null expressions
+	in the argument-expression context -- let outer context
+	handle that.
+	(ffeexpr_token_arguments_): Warn about null expressions
+	here if -fpedantic (as appropriate).
+	Obey -fugly-comma for only external-procedure invocations.
+
 	* lang-options.h: Add -fgnu-intrinsics-* and
 	-fbadu77-intrinsics-* options.
 
