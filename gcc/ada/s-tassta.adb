@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -910,6 +910,13 @@ package body System.Tasking.Stages is
 
       Secondary_Stack_Address : System.Address := Secondary_Stack'Address;
 
+      SEH_Table : aliased SSE.Storage_Array (1 .. 8);
+      --  Structured Exception Registration table (2 words)
+
+      procedure Install_SEH_Handler (Addr : System.Address);
+      pragma Import (C, Install_SEH_Handler, "__gnat_install_SEH_handler");
+      --  Install the SEH (Structured Exception Handling) handler
+
    begin
       pragma Assert (Self_ID.Deferral_Level = 1);
 
@@ -929,6 +936,11 @@ package body System.Tasking.Stages is
       --  also Self_ID.LL.Thread
 
       Enter_Task (Self_ID);
+
+      --  We setup the SEH (Structured Exception Handling) handler if supported
+      --  on the target.
+
+      Install_SEH_Handler (SEH_Table'Address);
 
       --  We lock RTS_Lock to wait for activator to finish activating
       --  the rest of the chain, so that everyone in the chain comes out
