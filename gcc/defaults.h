@@ -80,7 +80,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifndef ASM_OUTPUT_ADDR_VEC_ELT
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-do { fputs (integer_asm_op (POINTER_SIZE / UNITS_PER_WORD, TRUE), FILE); \
+do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
      (*targetm.asm_out.internal_label) (FILE, "L", (VALUE));			\
      fputc ('\n', FILE);						\
    } while (0)
