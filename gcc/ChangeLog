@@ -1,3 +1,8 @@
+2000-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (intl.*): Honor non-zero exit codes in the intl
+	subdir.
+
 S2000-06-03  Geoff Keating  <geoffk@cygnus.com>
 
         * alias.c (record_component_aliases): Don't inspect
