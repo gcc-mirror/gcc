@@ -1,3 +1,8 @@
+2003-02-14  Josef Zlomek  <zlomekj@suse.cz>
+
+	* gcc.dg/20030213-1.c: Expect warning for unsupported -fpic on
+	cris-*-elf* cris-*-aout* and mmix-*-*.
+
 2003-02-13  Josef Zlomek  <zlomekj@suse.cz>
 
 	* gcc.dg/20030213-1.c: New test.
