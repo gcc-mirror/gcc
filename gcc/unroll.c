@@ -379,7 +379,7 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 #ifdef HAVE_cc0
 	  /* The immediately preceding insn may be a compare which must be
 	     deleted.  */
-	  if (sets_cc0_p (prev))
+	  if (only_sets_cc0_p (prev))
 	    delete_insn (prev);
 #endif
 	}
@@ -2148,7 +2148,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 	    {
 #ifdef HAVE_cc0
 	      /* If the previous insn set cc0 for us, delete it.  */
-	      if (sets_cc0_p (PREV_INSN (copy)))
+	      if (only_sets_cc0_p (PREV_INSN (copy)))
 		delete_insn (PREV_INSN (copy));
 #endif
 
