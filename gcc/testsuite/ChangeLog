@@ -1,5 +1,9 @@
 2004-02-12  Hartmut Penner  <hpenner@de.ibm.com>
 
+        * gcc.dg/ppc64-abi-3.c: New.
+
+2004-02-12  Hartmut Penner  <hpenner@de.ibm.com>
+
         * g++.dg/simd-2.C: xfail on ppc64-linux.
 
 2004-02-11  Joseph S. Myers  <jsm@polyomino.org.uk>
