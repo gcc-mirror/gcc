@@ -1,5 +1,8 @@
 2003-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* cppcharset.c, cpphash.h: Rename 'struct strbuf' to
+	'struct _cpp_strbuf'.
+
 	* config/i386/netbsd-elf.h, config/i386/netbsd64.h,
 	config/i386/netware.h, config/i386/nto.h, config/i386/openbsd.h,
 	config/i386/pentium.md, config/i386/pmmintrin.h, config/i386/ppro.md,
