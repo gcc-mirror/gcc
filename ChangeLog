@@ -1,3 +1,10 @@
+2000-01-27  Christopher Faylor <cgf@redhat.com>
+
+	* Makefile.in (CC_FOR_TARGET): Add new winsup directory
+	structure stuff to -L library search.
+	(CXX_FOR_TARGET): Ditto.
+	(CROSS_CHECK_MODULES): Fix spelling mistake.
+
 2000-02-24  Nick Clifton  <nickc@cygnus.com>
 
 	* config.sub: Support an OS of "wince".
