@@ -5290,7 +5290,11 @@
 {
   operands[2] = gen_reg_rtx (SImode);
   if (GET_CODE (operands[1]) != REG)
-    force_reg (SImode, operands[1]);
+    {
+      rtx tmp = gen_reg_rtx (Pmode);
+      emit_move_insn (tmp, operands[1]);
+      operands[1] = tmp;
+    }
 }")
 
 (define_insn ""
