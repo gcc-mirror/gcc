@@ -1479,7 +1479,7 @@ pc_or_label_ref (op, mode)
 
 /* Output to FILE the start of the assembler file.  */
 
-struct option
+struct options
 {
   char *string;
   int *variable;
@@ -1510,8 +1510,8 @@ static void
 output_options (file, f_options, f_len, W_options, W_len,
 		pos, max, sep, indent, term)
      FILE *file;
-     struct option *f_options;
-     struct option *W_options;
+     struct options *f_options;
+     struct options *W_options;
      int f_len, W_len;
      int pos;
      int max;
@@ -1559,8 +1559,8 @@ output_options (file, f_options, f_len, W_options, W_len,
 void
 output_file_start (file, f_options, f_len, W_options, W_len)
      FILE *file;
-     struct option *f_options;
-     struct option *W_options;
+     struct options *f_options;
+     struct options *W_options;
      int f_len, W_len;
 {
   register int pos;
