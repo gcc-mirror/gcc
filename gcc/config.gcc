@@ -2694,7 +2694,7 @@ i586-*-*)
 		k6-*)
 			target_cpu_default2=TARGET_CPU_DEFAULT_k6
 			;;
-		pentium_mmx-*)
+		pentium_mmx-*|winchip_c6-*|winchip2-*|c3-*)
 			target_cpu_default2=TARGET_CPU_DEFAULT_pentium_mmx
 			;;
 		*)

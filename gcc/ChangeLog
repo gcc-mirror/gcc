@@ -1,3 +1,10 @@
+2002-09-16  Jeff Garzik  <jgarzik@mandrakesoft.com>
+
+        * config.gcc: Treat winchip_c6-*|winchip2-*|c3-* as pentium-mmx.
+        * config/i386/i386.c (processor_alias_table): Add winchip-c6,
+	winchip2 and c3.
+        * doc/invoke.texi: Mention new aliases.
+
 2002-09-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* calls.c (store_one_arg): Set default alignment for BLKmode arguments
