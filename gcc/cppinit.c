@@ -1145,14 +1145,14 @@ new_pending_directive (pend, text, handler)
 /* Irix6 "cc -n32" and OSF4 cc have problems with char foo[] = ("string");
    I.e. a const string initializer with parens around it.  That is
    what N_("string") resolves to, so we make no_* be macros instead.  */
-#define no_arg N_("Argument missing after %s")
-#define no_ass N_("Assertion missing after %s")
-#define no_dir N_("Directory name missing after %s")
-#define no_fil N_("File name missing after %s")
-#define no_mac N_("Macro name missing after %s")
-#define no_pth N_("Path name missing after %s")
-#define no_num N_("Number missing after %s")
-#define no_tgt N_("Target missing after %s")
+#define no_arg N_("argument missing after %s")
+#define no_ass N_("assertion missing after %s")
+#define no_dir N_("directory name missing after %s")
+#define no_fil N_("file name missing after %s")
+#define no_mac N_("macro name missing after %s")
+#define no_pth N_("path name missing after %s")
+#define no_num N_("number missing after %s")
+#define no_tgt N_("target missing after %s")
 
 /* This is the list of all command line options, with the leading
    "-" removed.  It must be sorted in ASCII collating order.  */
@@ -1337,7 +1337,7 @@ cpp_handle_option (pfile, argc, argv)
       else if (CPP_OPTION (pfile, out_fname) == NULL)
 	CPP_OPTION (pfile, out_fname) = argv[i];
       else
-	cpp_fatal (pfile, "Too many filenames. Type %s --help for usage info",
+	cpp_fatal (pfile, "too many filenames. Type %s --help for usage info",
 		   progname);
     }
   else

@@ -856,7 +856,7 @@ cris_target_asm_function_prologue (file, size)
 	     cfoa_size, current_function_args_size);
 
   if (cris_max_stackframe && framesize > cris_max_stackframe)
-    warning ("Stackframe too big: %d bytes", framesize);
+    warning ("stackframe too big: %d bytes", framesize);
 }
 
 /* Return nonzero if there are regs mentioned in the insn that are not all
@@ -1171,7 +1171,7 @@ cris_target_asm_function_epilogue (file, size)
 
 	  /* Do a sanity check to avoid generating invalid code.  */
 	  if (current_function_epilogue_delay_list)
-	    internal_error ("Allocated but unused delay list in epilogue");
+	    internal_error ("allocated but unused delay list in epilogue");
 	}
       return;
     }
@@ -1181,7 +1181,7 @@ cris_target_asm_function_epilogue (file, size)
      thoroughly), assert the assumption that all usage of
      __builtin_eh_return are handled above.  */
   if (current_function_calls_eh_return)
-    internal_error ("Unexpected function type needing stack adjustment for\
+    internal_error ("unexpected function type needing stack adjustment for\
  __builtin_eh_return");
 
   /* If we pushed some register parameters, then adjust the stack for
@@ -1475,7 +1475,7 @@ cris_print_operand (file, x, code)
     {
     case REG:
       if (REGNO (operand) > 15)
-	internal_error ("Internal: Bad register: %d", REGNO (operand));
+	internal_error ("internal error: bad register: %d", REGNO (operand));
       fprintf (file, "$%s", reg_names[REGNO (operand)]);
       return;
 
@@ -1944,7 +1944,7 @@ cris_notice_update_cc (exp, insn)
 		     register.  */
 		  if (cris_reg_overlap_mentioned_p (cc_status.value1,
 						    cc_status.value2))
-		    internal_error ("Internal: sideeffect-insn affecting main effect");
+		    internal_error ("internal error: sideeffect-insn affecting main effect");
 		  return;
 		}
 	      else if ((REG_P (XEXP (XVECEXP (exp, 0, 0), 1))
@@ -2231,7 +2231,7 @@ cris_side_effect_mode_ok (code, ops, lreg, rreg, rval, multop, other_op)
     }
 
   /* If we get here, the caller got its initial tests wrong.  */
-  internal_error ("Internal: cris_side_effect_mode_ok with bad operands");
+  internal_error ("internal error: cris_side_effect_mode_ok with bad operands");
 }
 
 /* The function reg_overlap_mentioned_p in CVS (still as of 2001-05-16)
@@ -2313,7 +2313,7 @@ cris_symbol (x)
       return 0;
 
     default:
-      fatal_insn ("Unrecognized supposed constant", x);
+      fatal_insn ("unrecognized supposed constant", x);
     }
 
   return 1;
@@ -2371,7 +2371,7 @@ cris_gotless_symbol (x)
       return 0;
 
     default:
-      fatal_insn ("Unrecognized supposed constant", x);
+      fatal_insn ("unrecognized supposed constant", x);
     }
 
   return 1;
@@ -2412,7 +2412,7 @@ cris_got_symbol (x)
       return 0;
 
     default:
-      fatal_insn ("Unrecognized supposed constant in cris_global_pic_symbol",
+      fatal_insn ("unrecognized supposed constant in cris_global_pic_symbol",
 		  x);
     }
 
@@ -2459,7 +2459,7 @@ cris_override_options ()
 	cris_cpu_version = 10;
 
       if (cris_cpu_version < 0 || cris_cpu_version > 10)
-	error ("Unknown CRIS version specification in -march= or -mcpu= : %s",
+	error ("unknown CRIS version specification in -march= or -mcpu= : %s",
 	       cris_cpu_str);
 
       /* Set the target flags.  */
@@ -2495,7 +2495,7 @@ cris_override_options ()
 	cris_tune = 10;
 
       if (cris_tune < 0 || cris_tune > 10)
-	error ("Unknown CRIS cpu version specification in -mtune= : %s",
+	error ("unknown CRIS cpu version specification in -mtune= : %s",
 	       cris_tune_str);
 
       if (cris_tune >= CRIS_CPU_SVINTO)
@@ -2529,7 +2529,7 @@ cris_override_options ()
   if ((write_symbols == DWARF_DEBUG
        || write_symbols == DWARF2_DEBUG) && ! TARGET_ELF)
     {
-      warning ("Specified -g option is invalid with -maout and -melinux");
+      warning ("that particular -g option is invalid with -maout and -melinux");
       write_symbols = DBX_DEBUG;
     }
 
@@ -2720,7 +2720,7 @@ cris_split_movdx (operands)
 		 GO_IF_LEGITIMATE_ADDRESS, but we're here for your
 		 safety.  */
 	      if (side_effects_p (addr))
-		fatal_insn ("Unexpected side-effects in address", addr);
+		fatal_insn ("unexpected side-effects in address", addr);
 
 	      emit_insn (gen_rtx_SET
 			 (VOIDmode,
@@ -2765,7 +2765,7 @@ cris_split_movdx (operands)
 	     postincrements.  They should be stopped in
 	     GO_IF_LEGITIMATE_ADDRESS, but we're here for your safety.  */
 	  if (side_effects_p (addr))
-	    fatal_insn ("Unexpected side-effects in address", addr);
+	    fatal_insn ("unexpected side-effects in address", addr);
 
 	  emit_insn (gen_rtx_SET
 		     (VOIDmode,
@@ -2879,7 +2879,7 @@ restart:
       if (GET_CODE (XEXP (x, 0)) != CODE_LABEL
 	  && (GET_CODE (XEXP (x, 0)) != NOTE
 	      || NOTE_LINE_NUMBER (XEXP (x, 0)) != NOTE_INSN_DELETED_LABEL))
-	fatal_insn ("Unexpected address expression", x);
+	fatal_insn ("unexpected address expression", x);
 
       if (flag_pic)
 	{
@@ -2893,11 +2893,11 @@ restart:
 	    }
 	  else
 	    /* Labels are never marked as global symbols.  */
-	    fatal_insn ("Unexpected PIC symbol", x);
+	    fatal_insn ("unexpected PIC symbol", x);
 
 	  /* Sanity check.  */
 	  if (! current_function_uses_pic_offset_table)
-	    internal_error ("Emitting PIC operand, but PIC register isn't set up");
+	    internal_error ("emitting PIC operand, but PIC register isn't set up");
 	  break;
 	}
 
@@ -2906,7 +2906,7 @@ restart:
 
     case NOTE:
       if (NOTE_LINE_NUMBER (x) != NOTE_INSN_DELETED_LABEL)
-	fatal_insn ("Unexpected NOTE as addr_const:", x);
+	fatal_insn ("unexpected NOTE as addr_const:", x);
     case CODE_LABEL:
     case CONST_INT:
     case CONST_DOUBLE:

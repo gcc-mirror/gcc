@@ -5781,13 +5781,13 @@ print_operand (file, x, code)
       if (GET_CODE (x) == CONST_INT)
 	break;
       else if (GET_CODE (x) != REG)
-	output_operand_lossage ("Invalid %%Y operand");
+	output_operand_lossage ("invalid %%Y operand");
       else if (REGNO (x) < 8)
 	fputs (reg_names[REGNO (x)], file);
       else if (REGNO (x) >= 24 && REGNO (x) < 32)
 	fputs (reg_names[REGNO (x)-16], file);
       else
-	output_operand_lossage ("Invalid %%Y operand");
+	output_operand_lossage ("invalid %%Y operand");
       return;
     case 'L':
       /* Print out the low order register name of a register pair.  */
@@ -5857,7 +5857,7 @@ print_operand (file, x, code)
 	case IOR: fputs ("or", file); break;
 	case AND: fputs ("and", file); break;
 	case XOR: fputs ("xor", file); break;
-	default: output_operand_lossage ("Invalid %%A operand");
+	default: output_operand_lossage ("invalid %%A operand");
 	}
       return;
 
@@ -5867,7 +5867,7 @@ print_operand (file, x, code)
 	case IOR: fputs ("orn", file); break;
 	case AND: fputs ("andn", file); break;
 	case XOR: fputs ("xnor", file); break;
-	default: output_operand_lossage ("Invalid %%B operand");
+	default: output_operand_lossage ("invalid %%B operand");
 	}
       return;
 
@@ -5906,8 +5906,8 @@ print_operand (file, x, code)
 	  case UNGE: fputs ("uge", file); break;
 	  case UNEQ: fputs ("ue", file); break;
 	  default: output_operand_lossage (code == 'c'
-					   ? "Invalid %%c operand"
-					   : "Invalid %%C operand");
+					   ? "invalid %%c operand"
+					   : "invalid %%C operand");
 	  }
 	return;
       }
@@ -5928,8 +5928,8 @@ print_operand (file, x, code)
 	  case LE: fputs ("lez", file); break;
 	  case GT: fputs ("gz", file); break;
 	  default: output_operand_lossage (code == 'd'
-					   ? "Invalid %%d operand"
-					   : "Invalid %%D operand");
+					   ? "invalid %%d operand"
+					   : "invalid %%D operand");
 	  }
 	return;
       }
@@ -5947,7 +5947,7 @@ print_operand (file, x, code)
     case 'f':
       /* Operand must be a MEM; write its address.  */
       if (GET_CODE (x) != MEM)
-	output_operand_lossage ("Invalid %%f operand");
+	output_operand_lossage ("invalid %%f operand");
       output_address (XEXP (x, 0));
       return;
 

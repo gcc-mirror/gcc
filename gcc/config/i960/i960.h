@@ -376,7 +376,7 @@ extern int target_flags;
     }								\
   /* ??? See the LONG_DOUBLE_TYPE_SIZE definition below.  */	\
   if (TARGET_LONG_DOUBLE_64)					\
-    warning ("The -mlong-double-64 option does not work yet.");\
+    warning ("the -mlong-double-64 option does not work yet");\
   i960_initialize ();						\
 }
 

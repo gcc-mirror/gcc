@@ -1436,7 +1436,7 @@ dsp16xx_output_function_prologue (file, size)
 	  if (SMALL_INTVAL(current_frame_info.var_size) && ((current_frame_info.var_size & 0x8000) == 0))
 	    fprintf (file, "\t%s=%ld\n\t*%s++%s\n", reg_names[REG_J], current_frame_info.var_size, sp, reg_names[REG_J]);
 	  else
-	    fatal_error ("Stack size > 32k");
+	    fatal_error ("stack size > 32k");
 	}
     }
   
@@ -1459,7 +1459,7 @@ dsp16xx_output_function_prologue (file, size)
       if (current_frame_info.args_size == 1)
 	fprintf (file, "\t*%s++\n", sp);
       else
-	error ("Stack size > 32k");
+	error ("stack size > 32k");
     }
    
   if (frame_pointer_needed)
@@ -1668,7 +1668,7 @@ double_reg_to_memory (operands)
       else if (GET_CODE (XEXP(addr,1)) == CONST_INT)
 	offset = INTVAL(XEXP(addr,1)) + 1;
       else
-	fatal_error ("Invalid addressing mode");
+	fatal_error ("invalid addressing mode");
 
       fprintf (asm_out_file, "\t*(%d)=%s\n", offset + 31, reg_names[REGNO(operands[1]) + 1]);
     }
@@ -1847,7 +1847,7 @@ print_operand(file, op, letter)
 	else if (letter == 'm')
 	  fprintf (file, "%s", himode_reg_name[REGNO (op)]);
         else
-	  output_operand_lossage ("Bad register extension code");
+	  output_operand_lossage ("bad register extension code");
     }
     else if (code == MEM)
       output_address (XEXP(op,0));
@@ -1946,10 +1946,10 @@ print_operand_address(file, addr)
 	  if (offset >= -31 && offset <= 0)
 	    offset = 31 + offset;
 	  else
-	    fatal_error ("Invalid offset in ybase addressing");
+	    fatal_error ("invalid offset in ybase addressing");
 	}
       else
-	fatal_error ("Invalid register in ybase addressing");
+	fatal_error ("invalid register in ybase addressing");
       
       fprintf (file, "*(%d)", offset);
       break;
@@ -2128,7 +2128,7 @@ emit_1600_core_shift (shift_op, operands, shift_amount)
       shift_asm_ptr_first = lshift_right_asm_first;
     }
   else
-    fatal_error ("Invalid shift operator in emit_1600_core_shift");
+    fatal_error ("invalid shift operator in emit_1600_core_shift");
 
   while (shift_amount != 0)
     {
@@ -2495,7 +2495,7 @@ gen_tst_reg (x)
   else if (mode == HImode)
     emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx, x));
   else
-    fatal_error ("Invalid mode for gen_tst_reg");
+    fatal_error ("invalid mode for gen_tst_reg");
 
   return cc0_rtx;
 }
@@ -2567,7 +2567,7 @@ gen_compare_reg (code, x, y)
 						 force_reg (HImode,y))));
     }
   else
-    fatal_error ("Invalid mode for integer comparison in gen_compare_reg");
+    fatal_error ("invalid mode for integer comparison in gen_compare_reg");
 
   return cc0_rtx;
 }

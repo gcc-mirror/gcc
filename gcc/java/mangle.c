@@ -82,7 +82,7 @@ java_mangle_decl (obstack, decl)
       mangle_method_decl (decl);
       break;
     default:
-      internal_error ("Can't mangle %s", tree_code_name [TREE_CODE (decl)]);
+      internal_error ("can't mangle %s", tree_code_name [TREE_CODE (decl)]);
     }
   return finish_mangling ();
 }

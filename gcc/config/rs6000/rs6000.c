@@ -479,7 +479,7 @@ rs6000_override_options (default_cpu)
       else if (! strcmp (rs6000_debug_name, "arg"))
 	rs6000_debug_arg = 1;
       else
-	error ("Unknown -mdebug-%s switch", rs6000_debug_name);
+	error ("unknown -mdebug-%s switch", rs6000_debug_name);
     }
 
   /* Set size of long double */
@@ -543,7 +543,7 @@ rs6000_parse_abi_options ()
   else if (! strcmp (rs6000_abi_string, "altivec"))
     rs6000_altivec_abi = 1;
   else
-    error ("Unknown ABI specified: '%s'", rs6000_abi_string);
+    error ("unknown ABI specified: '%s'", rs6000_abi_string);
 }
 
 void

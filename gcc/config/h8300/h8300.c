@@ -135,7 +135,7 @@ h8300_init_once ()
 
   if (!TARGET_H8300S && TARGET_MAC)
     {
-      error ("-ms2600 is used without -ms.");
+      error ("-ms2600 is used without -ms");
       target_flags |= 1;
     }
 }
@@ -3197,7 +3197,7 @@ h8300_handle_eightbit_data_attribute (node, name, args, flags, no_add_attrs)
     {
       if (DECL_INITIAL (decl) == NULL_TREE)
 	{
-	  warning ("Only initialized variables can be placed into the 8-bit area.");
+	  warning ("only initialized variables can be placed into the 8-bit area");
 	  *no_add_attrs = true;
 	}
       else
@@ -3228,7 +3228,7 @@ h8300_handle_tiny_data_attribute (node, name, args, flags, no_add_attrs)
     {
       if (DECL_INITIAL (decl) == NULL_TREE)
 	{
-	  warning ("Only initialized variables can be placed into the 8-bit area.");
+	  warning ("only initialized variables can be placed into the 8-bit area");
 	  *no_add_attrs = true;
 	}
       else

@@ -296,7 +296,7 @@ extern int flag_pic;				/* -fpic */
 	    p++;							     \
 	  else								     \
 	    {								     \
-	      error ("Invalid option `-mshort-data-%s'", m88k_short_data);   \
+	      error ("invalid option `-mshort-data-%s'", m88k_short_data);   \
 	      break;							     \
 	    }								     \
 	m88k_gp_threshold = atoi (m88k_short_data);			     \

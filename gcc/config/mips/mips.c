@@ -2240,7 +2240,7 @@ mips_move_1word (operands, insn, unsignedp)
 
   if (ret == 0)
     {
-      abort_with_insn (insn, "Bad move");
+      abort_with_insn (insn, "bad move");
       return 0;
     }
 
@@ -2328,7 +2328,7 @@ mips_move_2words (operands, insn)
 		  if (TARGET_FLOAT64)
 		    {
 		      if (!TARGET_64BIT)
-			abort_with_insn (insn, "Bad move");
+			abort_with_insn (insn, "bad move");
 
 #ifdef TARGET_FP_CALL_32
 		      if (FP_CALL_GP_REG_P (regno1))
@@ -2348,7 +2348,7 @@ mips_move_2words (operands, insn)
 	      if (TARGET_FLOAT64)
 		{
 		  if (!TARGET_64BIT)
-		    abort_with_insn (insn, "Bad move");
+		    abort_with_insn (insn, "bad move");
 
 #ifdef TARGET_FP_CALL_32
 		  if (FP_CALL_GP_REG_P (regno0))
@@ -2693,7 +2693,7 @@ mips_move_2words (operands, insn)
 
   if (ret == 0)
     {
-      abort_with_insn (insn, "Bad move");
+      abort_with_insn (insn, "bad move");
       return 0;
     }
 
@@ -3621,7 +3621,7 @@ output_block_move (insn, operands, num_regs, move_type)
 
   else if (num_regs < 1)
     abort_with_insn (insn,
-		     "Cannot do block move, not enough scratch registers");
+		     "cannot do block move, not enough scratch registers");
 
   while (bytes > 0)
     {
@@ -4889,7 +4889,7 @@ override_options ()
 
 #else
   if (mips_abi_string)
-    error ("This target does not support the -mabi switch.");
+    error ("this target does not support the -mabi switch");
 #endif
 
 #ifdef MIPS_CPU_STRING_DEFAULT
@@ -5119,7 +5119,7 @@ override_options ()
   if (mips_entry_string != NULL)
     {
       if (*mips_entry_string != '\0')
-	error ("Invalid option `entry%s'", mips_entry_string);
+	error ("invalid option `entry%s'", mips_entry_string);
 
       if (! TARGET_MIPS16)
 	warning ("-mentry is only meaningful with -mips-16");
@@ -5324,7 +5324,7 @@ mips_debugger_offset (addr, offset)
   /* sdbout_parms does not want this to crash for unrecognized cases.  */
 #if 0
   else if (reg != arg_pointer_rtx)
-    abort_with_insn (addr, "mips_debugger_offset called with non stack/frame/arg pointer.");
+    abort_with_insn (addr, "mips_debugger_offset called with non stack/frame/arg pointer");
 #endif
 
   return offset;
@@ -5516,7 +5516,7 @@ print_operand (file, op, letter)
 	break;
 
 	default:
-	  error ("PRINT_OPERAND: Unknown punctuation '%c'", letter);
+	  error ("PRINT_OPERAND: unknown punctuation '%c'", letter);
 	  break;
 	}
 
@@ -5708,7 +5708,7 @@ print_operand_address (file, addr)
       {
       case REG:
 	if (! TARGET_MIPS16 && REGNO (addr) == ARG_POINTER_REGNUM)
-	  abort_with_insn (addr, "Arg pointer not eliminated.");
+	  abort_with_insn (addr, "arg pointer not eliminated");
 
 	fprintf (file, "0(%s)", reg_names [REGNO (addr)]);
 	break;
@@ -5719,11 +5719,11 @@ print_operand_address (file, addr)
 	  register rtx arg1 = XEXP (addr, 1);
 
 	  if (! mips_split_addresses)
-	    abort_with_insn (addr, "PRINT_OPERAND_ADDRESS, Spurious LO_SUM.");
+	    abort_with_insn (addr, "PRINT_OPERAND_ADDRESS, Spurious LO_SUM");
 
 	  if (GET_CODE (arg0) != REG)
 	    abort_with_insn (addr,
-			     "PRINT_OPERAND_ADDRESS, LO_SUM with #1 not REG.");
+			     "PRINT_OPERAND_ADDRESS, LO_SUM with #1 not REG");
 
 	  fprintf (file, "%%lo(");
 	  print_operand_address (file, arg1);
@@ -5760,7 +5760,7 @@ print_operand_address (file, addr)
 	    abort_with_insn (addr, "PRINT_OPERAND_ADDRESS, invalid insn #2");
 
 	  if (REGNO (reg) == ARG_POINTER_REGNUM)
-	    abort_with_insn (addr, "Arg pointer not eliminated.");
+	    abort_with_insn (addr, "arg pointer not eliminated");
 
 	  if (TARGET_MIPS16
 	      && GET_CODE (offset) == CONST
@@ -6697,7 +6697,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
       if (gp_offset < 0 || end_offset < 0)
 	internal_error
-	  ("gp_offset (%ld) or end_offset (%ld) is less than zero.",
+	  ("gp_offset (%ld) or end_offset (%ld) is less than zero",
 	   (long) gp_offset, (long) end_offset);
 
       /* If we see a large frame in mips16 mode, we save the registers
@@ -6859,7 +6859,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
       if (fp_offset < 0 || end_offset < 0)
 	internal_error
-	  ("fp_offset (%ld) or end_offset (%ld) is less than zero.",
+	  ("fp_offset (%ld) or end_offset (%ld) is less than zero",
 	   (long) fp_offset, (long) end_offset);
 
       else if (fp_offset < 32768)
@@ -7265,7 +7265,7 @@ mips_expand_prologue ()
 	  pattern = RTVEC_ELT (adjust, i);
 	  if (GET_CODE (pattern) != SET
 	      || GET_CODE (SET_SRC (pattern)) != ASHIFT)
-	    abort_with_insn (pattern, "Insn is not a shift");
+	    abort_with_insn (pattern, "insn is not a shift");
 	  PUT_CODE (SET_SRC (pattern), ASHIFTRT);
 
 	  insn = emit_insn (pattern);

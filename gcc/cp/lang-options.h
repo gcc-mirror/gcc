@@ -103,7 +103,7 @@ DEFINE_LANG_NAME ("C++")
   { "-ftemplate-depth-", 
     N_("Specify maximum template instantiation depth") },
   { "-fuse-cxa-atexit", 
-    N_("Use __cxa_atexit to register destructors.") },
+    N_("Use __cxa_atexit to register destructors") },
   { "-fno-use-cxa-atexit", "" },
   { "-fvtable-gc", 
     N_("Discard unused virtual functions") },

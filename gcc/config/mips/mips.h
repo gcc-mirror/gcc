@@ -183,7 +183,7 @@ extern void		sbss_section PARAMS ((void));
 #define HALF_PIC_NUMBER_REFS 0
 #define HALF_PIC_ENCODE(DECL)
 #define HALF_PIC_DECLARE(NAME)
-#define HALF_PIC_INIT()	error ("half-pic init called on systems that don't support it.")
+#define HALF_PIC_INIT()	error ("half-pic init called on systems that don't support it")
 #define HALF_PIC_ADDRESS_P(X) 0
 #define HALF_PIC_PTR(X) X
 #define HALF_PIC_FINISH(STREAM)
@@ -851,7 +851,7 @@ while (0)
 
 #define MIPS_AS_ASM_SPEC "\
 %{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
-%{pipe: %e-pipe is not supported.} \
+%{pipe: %e-pipe is not supported} \
 %{K} %(subtarget_mips_as_asm_spec)"
 
 /* SUBTARGET_MIPS_AS_ASM_SPEC is passed when using the MIPS assembler

@@ -455,10 +455,10 @@ extern int target_flags;
       N_("Debug memory address support in compiler") },			\
 									\
   { "asm-optimize",	 0,						\
-      N_("Make adjacent short instructions parallel if possible.") },	\
+      N_("Make adjacent short instructions parallel if possible") },	\
 									\
   { "no-asm-optimize",	 0,						\
-      N_("Do not make adjacent short instructions parallel.") },	\
+      N_("Do not make adjacent short instructions parallel") },	\
 									\
   { "extmem",		 0,						\
       N_("Link programs/data to be in external memory by default") },	\

@@ -393,7 +393,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
       num_args += 3;
       if (class_files_count + zip_files_count > 0)
 	{
-	  error ("Warning: already-compiled .class files ignored with -C"); 
+	  error ("warning: already-compiled .class files ignored with -C"); 
 	  num_args -= class_files_count + zip_files_count;
 	  class_files_count = 0;
 	  zip_files_count = 0;

@@ -11819,9 +11819,9 @@ ffecom_init_0 ()
 	       (int) FLOAT_TYPE_SIZE);
       warning ("and pointers are %d bits wide, but g77 doesn't yet work",
 	  (int) TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (null_pointer_node))));
-      warning ("properly unless they all are 32 bits wide.");
+      warning ("properly unless they all are 32 bits wide");
       warning ("Please keep this in mind before you report bugs.  g77 should");
-      warning ("support non-32-bit machines better as of version 0.6.");
+      warning ("support non-32-bit machines better as of version 0.6");
     }
 #endif
 
@@ -15568,7 +15568,7 @@ ffecom_decode_include_option_ (char *spec)
       dirtmp->fname = spec;
       dirtmp->got_name_map = 0;
       if (spec[0] == 0)
-	error ("Directory name must immediately follow -I");
+	error ("directory name must immediately follow -I");
       else
 	append_include_chain (dirtmp, dirtmp);
     }

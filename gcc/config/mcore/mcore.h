@@ -125,7 +125,7 @@ extern int target_flags;
 { {"hardlit", 	            HARDLIT_BIT,				\
      N_("Inline constants if it can be done in 2 insns or less") },	\
   {"no-hardlit",          - HARDLIT_BIT,				\
-     N_("inline constants if it only takes 1 instruction") },		\
+     N_("Inline constants if it only takes 1 instruction") },		\
   {"4align",              - ALIGN8_BIT,					\
      N_("Set maximum alignment to 4") },				\
   {"8align",	            ALIGN8_BIT,					\

@@ -2278,7 +2278,7 @@ find_granted_decls ()
 	    }
 	  if (!found)
 	    {
-	      error_with_decl (alias, "Nothing named `%s' to grant.");
+	      error_with_decl (alias, "nothing named `%s' to grant");
 	      DECL_ABSTRACT_ORIGIN (alias) = error_mark_node;
 	    }
 	}
@@ -4615,7 +4615,7 @@ build_enumerator (name, value)
       if (!unnamed_value_warned)
 	{
 	  unnamed_value_warned = 1;
-	  warning ("undefined value in SET mode is obsolete and deprecated.");
+	  warning ("undefined value in SET mode is obsolete and deprecated");
 	}
       sprintf (buf, "__star_%d", next_dummy_enum_value++);
       name = get_identifier (buf);

@@ -297,9 +297,9 @@ extern int target_flags;
   {"no-powerpc64",	- MASK_POWERPC64,				\
 			N_("Don't use PowerPC-64 instruction set")},	\
   {"altivec",		MASK_ALTIVEC ,					\
-			N_("Use AltiVec instructions.")},		\
+			N_("Use AltiVec instructions")},		\
   {"no-altivec",	- MASK_ALTIVEC ,					\
-			N_("Don't use AltiVec instructions.")},	\
+			N_("Don't use AltiVec instructions")},	\
   {"new-mnemonics",	MASK_NEW_MNEMONICS,				\
 			N_("Use new mnemonics for PowerPC architecture")},\
   {"old-mnemonics",	-MASK_NEW_MNEMONICS,				\

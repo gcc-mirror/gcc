@@ -419,7 +419,7 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
 	      cp_warning ("friend declaration `%#D' declares a non-template function", decl);
 	      if (! explained)
 		{
-		  warning ("(if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) -Wno-non-template-friend disables this warning.");
+		  warning ("(if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) -Wno-non-template-friend disables this warning");
 		  explained = 1;
 		}
 	    }

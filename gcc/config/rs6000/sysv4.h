@@ -85,8 +85,8 @@ extern const char *rs6000_sdata_name;
 /* Override rs6000.h definition.  */
 #undef	SUBTARGET_OPTIONS
 #define	SUBTARGET_OPTIONS						\
-  { "call-",  &rs6000_abi_name, N_("Select ABI calling convention.") },	\
-  { "sdata=", &rs6000_sdata_name, N_("Select method for sdata handling.") }
+  { "call-",  &rs6000_abi_name, N_("Select ABI calling convention") },	\
+  { "sdata=", &rs6000_sdata_name, N_("Select method for sdata handling") }
 
 /* Max # of bytes for variables to automatically be put into the .sdata
    or .sdata2 sections.  */
@@ -101,54 +101,54 @@ extern int g_switch_set;		/* Whether -G xx was passed.  */
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						\
   { "bit-align",	-MASK_NO_BITFIELD_TYPE,				\
-    N_("Align to the base type of the bitfield.") },			\
+    N_("Align to the base type of the bitfield") },			\
   { "no-bit-align",	 MASK_NO_BITFIELD_TYPE,				\
-    N_("Don't align to the base type of the bitfield.") },		\
+    N_("Don't align to the base type of the bitfield") },		\
   { "strict-align",	 MASK_STRICT_ALIGN,				\
     N_("Don't assume that unaligned accesses are handled by the system") }, \
   { "no-strict-align",	-MASK_STRICT_ALIGN,				\
     N_("Assume that unaligned accesses are handled by the system") },	\
   { "relocatable",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC, \
-    N_("Produce code relocatable at runtime.") },			\
+    N_("Produce code relocatable at runtime") },			\
   { "no-relocatable",	-MASK_RELOCATABLE,				\
-    N_("Don't produce code relocatable at runtime.") },			\
+    N_("Don't produce code relocatable at runtime") },			\
   { "relocatable-lib",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC, \
-    N_("Produce code relocatable at runtime.") },			\
+    N_("Produce code relocatable at runtime") },			\
   { "no-relocatable-lib", -MASK_RELOCATABLE,				\
-    N_("Don't produce code relocatable at runtime.") },			\
+    N_("Don't produce code relocatable at runtime") },			\
   { "little-endian",	 MASK_LITTLE_ENDIAN,				\
-    N_("Produce little endian code.") },				\
+    N_("Produce little endian code") },					\
   { "little",		 MASK_LITTLE_ENDIAN,				\
-    N_("Produce little endian code.") },				\
+    N_("Produce little endian code") },					\
   { "big-endian",	-MASK_LITTLE_ENDIAN,				\
-    N_("Produce big endian code.") },					\
+    N_("Produce big endian code") },					\
   { "big",		-MASK_LITTLE_ENDIAN,				\
-    N_("Produce big endian code.") },					\
+    N_("Produce big endian code") },					\
   { "no-toc",		 0, N_("no description yet") },			\
   { "toc",		 MASK_MINIMAL_TOC, N_("no description yet") },	\
   { "full-toc",		 MASK_MINIMAL_TOC, N_("no description yet") },	\
   { "prototype",	 MASK_PROTOTYPE, N_("no description yet") },	\
   { "no-prototype",	-MASK_PROTOTYPE, N_("no description yet") },	\
   { "no-traceback",	 0, N_("no description yet") },			\
-  { "eabi",		 MASK_EABI, N_("Use EABI.") },			\
-  { "no-eabi",		-MASK_EABI, N_("Don't use EABI.") },		\
+  { "eabi",		 MASK_EABI, N_("Use EABI") },			\
+  { "no-eabi",		-MASK_EABI, N_("Don't use EABI") },		\
   { "bit-word",		-MASK_NO_BITFIELD_WORD, "" },			\
   { "no-bit-word",	 MASK_NO_BITFIELD_WORD,				\
     N_("Do not allow bitfields to cross word boundaries") },		\
   { "regnames",		  MASK_REGNAMES,				\
-    N_("Use alternate register names.") },				\
+    N_("Use alternate register names") },				\
   { "no-regnames",	 -MASK_REGNAMES,				\
-    N_("Don't use alternate register names.") },			\
+    N_("Don't use alternate register names") },				\
   { "sdata",		 0, N_("no description yet") },			\
   { "no-sdata",		 0, N_("no description yet") },			\
   { "sim",		 0,						\
-    N_("Link with libsim.a, libc.a and sim-crt0.o.") },			\
+    N_("Link with libsim.a, libc.a and sim-crt0.o") },			\
   { "ads",		 0,						\
-    N_("Link with libads.a, libc.a and crt0.o.") },			\
+    N_("Link with libads.a, libc.a and crt0.o") },			\
   { "yellowknife",	 0,						\
-    N_("Link with libyk.a, libc.a and crt0.o.") },			\
+    N_("Link with libyk.a, libc.a and crt0.o") },			\
   { "mvme",		 0,						\
-    N_("Link with libmvme.a, libc.a and crt0.o.") },			\
+    N_("Link with libmvme.a, libc.a and crt0.o") },			\
   { "emb",		 0,						\
     N_("Set the PPC_EMB bit in the ELF flags header") },		\
   { "vxworks",		 0, N_("no description yet") },			\
@@ -209,7 +209,7 @@ do {									\
   else									\
     {									\
       rs6000_current_abi = ABI_V4;					\
-      error ("Bad value for -mcall-%s", rs6000_abi_name);		\
+      error ("bad value for -mcall-%s", rs6000_abi_name);		\
     }									\
 									\
   if (rs6000_sdata_name)						\
@@ -225,7 +225,7 @@ do {									\
       else if (!strcmp (rs6000_sdata_name, "eabi"))			\
 	rs6000_sdata = SDATA_EABI;					\
       else								\
-	error ("Bad value for -msdata=%s", rs6000_sdata_name);		\
+	error ("bad value for -msdata=%s", rs6000_sdata_name);		\
     }									\
   else if (DEFAULT_ABI == ABI_V4)					\
     {									\
@@ -242,7 +242,7 @@ do {									\
       (rs6000_sdata == SDATA_EABI || rs6000_sdata == SDATA_SYSV))	\
     {									\
       rs6000_sdata = SDATA_DATA;					\
-      error ("-mrelocatable and -msdata=%s are incompatible.",		\
+      error ("-mrelocatable and -msdata=%s are incompatible",		\
 	     rs6000_sdata_name);					\
     }									\
 									\
@@ -250,7 +250,7 @@ do {									\
 	   (rs6000_sdata == SDATA_EABI || rs6000_sdata == SDATA_SYSV))	\
     {									\
       rs6000_sdata = SDATA_DATA;					\
-      error ("-f%s and -msdata=%s are incompatible.",			\
+      error ("-f%s and -msdata=%s are incompatible",			\
 	     (flag_pic > 1) ? "PIC" : "pic",				\
 	     rs6000_sdata_name);					\
     }									\
@@ -258,27 +258,27 @@ do {									\
   if (rs6000_sdata != SDATA_NONE && DEFAULT_ABI != ABI_V4)		\
     {									\
       rs6000_sdata = SDATA_NONE;					\
-      error ("-msdata=%s and -mcall-%s are incompatible.",		\
+      error ("-msdata=%s and -mcall-%s are incompatible",		\
 	     rs6000_sdata_name, rs6000_abi_name);			\
     }									\
 									\
   if (TARGET_RELOCATABLE && !TARGET_MINIMAL_TOC)			\
     {									\
       target_flags |= MASK_MINIMAL_TOC;					\
-      error ("-mrelocatable and -mno-minimal-toc are incompatible.");	\
+      error ("-mrelocatable and -mno-minimal-toc are incompatible");	\
     }									\
 									\
   if (TARGET_RELOCATABLE && rs6000_current_abi == ABI_AIX)		\
     {									\
       target_flags &= ~MASK_RELOCATABLE;				\
-      error ("-mrelocatable and -mcall-%s are incompatible.",		\
+      error ("-mrelocatable and -mcall-%s are incompatible",		\
 	     rs6000_abi_name);						\
     }									\
 									\
   if (flag_pic > 1 && rs6000_current_abi == ABI_AIX)			\
     {									\
       flag_pic = 0;							\
-      error ("-fPIC and -mcall-%s are incompatible.",			\
+      error ("-fPIC and -mcall-%s are incompatible",			\
 	     rs6000_abi_name);						\
     }									\
 									\

@@ -3073,7 +3073,7 @@ mcore_override_options ()
 	  || (mcore_stack_increment == 0
 	      && (mcore_stack_increment_string[0] != '0'
 		  || mcore_stack_increment_string[1] != 0)))
-	error ("Invalid option `-mstack-increment=%s'",
+	error ("invalid option `-mstack-increment=%s'",
 	       mcore_stack_increment_string);	
     }
   

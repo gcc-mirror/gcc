@@ -1757,7 +1757,7 @@ verify_flow_info ()
 	  basic_block bb = NOTE_BASIC_BLOCK (x);
 	  num_bb_notes++;
 	  if (bb->index != last_bb_num_seen + 1)
-	    internal_error ("basic blocks not numbered consecutively.");
+	    internal_error ("basic blocks not numbered consecutively");
 
 	  last_bb_num_seen = bb->index;
 	}
@@ -1803,7 +1803,7 @@ verify_flow_info ()
        num_bb_notes, n_basic_blocks);
 
   if (err)
-    internal_error ("verify_flow_info failed.");
+    internal_error ("verify_flow_info failed");
 
   /* Clean up.  */
   free (bb_info);

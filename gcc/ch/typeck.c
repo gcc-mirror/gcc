@@ -2811,29 +2811,29 @@ apply_chill_array_layout (array_type)
   if (TREE_VALUE (temp) != NULL_TREE)
     {
       if (! host_integerp (TREE_VALUE (temp), 0))
-	error ("Stepsize in STEP must be an integer constant");
+	error ("stepsize in STEP must be an integer constant");
       else
 	{
 	  if (tree_int_cst_sgn (TREE_VALUE (temp)) <= 0)
-	    error ("Stepsize in STEP must be > 0");
+	    error ("stepsize in STEP must be > 0");
 	  else
 	    stepsize_specified = 1;
 
 	  stepsize = tree_low_cst (TREE_VALUE (temp), 1);
 	  if (stepsize != natural_length)
-	    sorry ("Stepsize in STEP must be the natural width of the array element mode");
+	    sorry ("stepsize in STEP must be the natural width of the array element mode");
 	}
     }
 
   temp = TREE_PURPOSE (temp);
   if (! host_integerp (TREE_PURPOSE (temp), 0))
-    error ("Starting word in POS must be an integer constant");
+    error ("starting word in POS must be an integer constant");
   else
     {
       if (tree_int_cst_sgn (TREE_PURPOSE (temp)) < 0)
-	error ("Starting word in POS must be >= 0");
+	error ("starting word in POS must be >= 0");
       if (! integer_zerop (TREE_PURPOSE (temp)))
-	sorry ("Starting word in POS within STEP must be 0");
+	sorry ("starting word in POS within STEP must be 0");
 
       word = tree_low_cst (TREE_PURPOSE (temp), 0);
     }
@@ -2845,17 +2845,17 @@ apply_chill_array_layout (array_type)
       int wordsize = TYPE_PRECISION (chill_integer_type_node);
       if (! host_integerp (TREE_PURPOSE (temp), 0))
 	{
-	  error ("Starting bit in POS must be an integer constant");
+	  error ("starting bit in POS must be an integer constant");
 	  start_bit_error = 1;
 	}
       else
 	{
 	  if (! integer_zerop (TREE_PURPOSE (temp)))
-	    sorry ("Starting bit in POS within STEP must be 0");
+	    sorry ("starting bit in POS within STEP must be 0");
 
 	  if (tree_int_cst_sgn (TREE_PURPOSE (temp)) < 0)
 	    {
-	      error ("Starting bit in POS must be >= 0");
+	      error ("starting bit in POS must be >= 0");
 	      start_bit = 0;
 	      start_bit_error = 1;
 	    }
@@ -2863,7 +2863,7 @@ apply_chill_array_layout (array_type)
 	  start_bit = tree_low_cst (TREE_PURPOSE (temp), 0);
 	  if (start_bit >= wordsize)
 	    {
-	      error ("Starting bit in POS must be < the width of a word");
+	      error ("starting bit in POS must be < the width of a word");
 	      start_bit = 0;
 	      start_bit_error = 1;
 	    }
@@ -2877,21 +2877,21 @@ apply_chill_array_layout (array_type)
 	    {
 	      if (! host_integerp (TREE_VALUE (temp), 0))
 		{
-		  error ("Length in POS must be an integer constant");
+		  error ("length in POS must be an integer constant");
 		  length_error = 1;
 		}
 	      else
 		{
 		  length = tree_low_cst (TREE_VALUE (temp), 0);
 		  if (length <= 0)
-		    error ("Length in POS must be > 0");
+		    error ("length in POS must be > 0");
 		}
 	    }
 	  else
 	    {
 	      if (! host_integerp (TREE_VALUE (temp), 0))
 		{
-		  error ("End bit in POS must be an integer constant");
+		  error ("end bit in POS must be an integer constant");
 		  length_error = 1;
 		}
 	      else
@@ -2900,13 +2900,13 @@ apply_chill_array_layout (array_type)
 
 		  if (end_bit < start_bit)
 		    {
-		      error ("End bit in POS must be >= the start bit");
+		      error ("end bit in POS must be >= the start bit");
 		      end_bit = wordsize - 1;
 		      length_error = 1;
 		    }
 		  else if (end_bit >= wordsize)
 		    {
-		      error ("End bit in POS must be < the width of a word");
+		      error ("end bit in POS must be < the width of a word");
 		      end_bit = wordsize - 1;
 		      length_error = 1;
 		    }
@@ -2918,12 +2918,12 @@ apply_chill_array_layout (array_type)
 	    }
 
 	  if (! length_error && length != natural_length)
-	    sorry ("The length specified on POS within STEP must be the natural length of the array element type");
+	    sorry ("the length specified on POS within STEP must be the natural length of the array element type");
 	}
     }
 
   if (! length_error && stepsize_specified && stepsize < length)
-    error ("Step size in STEP must be >= the length in POS");
+    error ("step size in STEP must be >= the length in POS");
 
   if (length == 1)
     TYPE_PACKED (array_type) = 1;
@@ -3128,14 +3128,14 @@ apply_chill_field_layout (decl, next_struct_offset)
 
   if (! host_integerp (TREE_PURPOSE (temp), 0))
     {
-      error ("Starting word in POS must be an integer constant");
+      error ("starting word in POS must be an integer constant");
       pos_error = 1;
     }
   else
     {
       if (tree_int_cst_sgn (TREE_PURPOSE (temp)) < 0)
 	{
-	  error ("Starting word in POS must be >= 0");
+	  error ("starting word in POS must be >= 0");
 	  word = 0;
 	  pos_error = 1;
 	}
@@ -3152,7 +3152,7 @@ apply_chill_field_layout (decl, next_struct_offset)
     {
       if (! host_integerp (TREE_PURPOSE (temp), 0))
 	{
-	  error ("Starting bit in POS must be an integer constant");
+	  error ("starting bit in POS must be an integer constant");
 	  start_bit = *next_struct_offset - offset;
 	  pos_error = 1;
 	}
@@ -3160,7 +3160,7 @@ apply_chill_field_layout (decl, next_struct_offset)
 	{
 	  if (tree_int_cst_sgn (TREE_PURPOSE (temp)) < 0)
 	    {
-	      error ("Starting bit in POS must be >= 0");
+	      error ("starting bit in POS must be >= 0");
 	      start_bit = *next_struct_offset - offset;
 	      pos_error = 1;
 	    }
@@ -3168,7 +3168,7 @@ apply_chill_field_layout (decl, next_struct_offset)
 	  start_bit = tree_low_cst (TREE_PURPOSE (temp), 0);
 	  if (start_bit >= wordsize)
 	    {
-	      error ("Starting bit in POS must be < the width of a word");
+	      error ("starting bit in POS must be < the width of a word");
 	      start_bit = *next_struct_offset - offset;
 	      pos_error = 1;
 	    }
@@ -3182,14 +3182,14 @@ apply_chill_field_layout (decl, next_struct_offset)
 	    {
 	      if (! host_integerp (TREE_VALUE (temp), 0))
 		{
-		  error ("Length in POS must be an integer constant");
+		  error ("length in POS must be an integer constant");
 		  pos_error = 1;
 		}
 	      else
 		{
 		  if (tree_int_cst_sgn (TREE_VALUE (temp)) < 0)
 		    {
-		      error ("Length in POS must be > 0");
+		      error ("length in POS must be > 0");
 		      length = natural_length;
 		      pos_error = 1;
 		    }
@@ -3202,7 +3202,7 @@ apply_chill_field_layout (decl, next_struct_offset)
 	    {
 	      if (! host_integerp (TREE_VALUE (temp), 0))
 		{
-		  error ("End bit in POS must be an integer constant");
+		  error ("end bit in POS must be an integer constant");
 		  pos_error = 1;
 		}
 	      else
@@ -3211,12 +3211,12 @@ apply_chill_field_layout (decl, next_struct_offset)
 
 		  if (end_bit < start_bit)
 		    {
-		      error ("End bit in POS must be >= the start bit");
+		      error ("end bit in POS must be >= the start bit");
 		      pos_error = 1;
 		    }
 		  else if (end_bit >= wordsize)
 		    {
-		      error ("End bit in POS must be < the width of a word");
+		      error ("end bit in POS must be < the width of a word");
 		      pos_error = 1;
 		    }
 		  else
@@ -3226,7 +3226,7 @@ apply_chill_field_layout (decl, next_struct_offset)
 
 	  if (length != natural_length && ! pos_error)
 	    {
-	      sorry ("The length specified on POS must be the natural length of the field type");
+	      sorry ("the length specified on POS must be the natural length of the field type");
 	      length = natural_length;
 	    }
 	}
@@ -3298,7 +3298,7 @@ layout_chill_struct_type (t)
     }
 
   if (pos_error)
-    error ("If one field has a POS layout, then all fields must have a POS layout");
+    error ("if one field has a POS layout, then all fields must have a POS layout");
 
   /* Now DECL_INITIAL is null on all fields.  */
 

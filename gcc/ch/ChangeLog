@@ -1,3 +1,19 @@
+2001-12-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* actions.c: Remove leading capital from diagnostic messages, as
+	per GNU coding standards.
+	* decl.c: Similarly.
+	* expr.c: Similarly.
+	* inout.c: Similarly.
+	* lang.c: Similarly.
+	* loop.c: Similarly.
+	* nloop.c: Similarly.
+	* parse.c: Similarly.
+	* satisfy.c: Similarly.
+	* tasking.c: Similarly.
+	* tree.c: Similarly.
+	* typeck.c: Similarly.
+
 2001-11-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Make-lang.in (CHILL.generated-manpages): New dummy target.

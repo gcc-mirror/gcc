@@ -1279,12 +1279,12 @@ chill_handle_multi_case_label (selector, label)
 	  tree high = TREE_OPERAND (label, 1);
 	  if (TREE_CODE (low) != INTEGER_CST)
 	    {
-	      error ("Lower bound of range must be a discrete literal expression");
+	      error ("lower bound of range must be a discrete literal expression");
 	      expr = error_mark_node;
 	    }
 	  if (TREE_CODE (high) != INTEGER_CST)
 	    {
-	      error ("Upper bound of range must be a discrete literal expression");
+	      error ("upper bound of range must be a discrete literal expression");
 	      expr = error_mark_node;
 	    }
 	  if (expr != error_mark_node)
@@ -1308,7 +1308,7 @@ chill_handle_multi_case_label (selector, label)
     }
   else
     {
-      error ("The CASE label is not valid");
+      error ("CASE label is not valid");
       expr = error_mark_node;
     }
 
@@ -1354,7 +1354,7 @@ build_multi_case_selector_expression (selector_list, label_spec)
     }
 
   if (labels != NULL_TREE || selector != NULL_TREE)
-    error ("The number of CASE selectors does not match the number of CASE label lists");
+    error ("number of CASE selectors does not match the number of CASE label lists");
 
   return larg;
 }
@@ -1603,7 +1603,7 @@ chill_expand_assignment (lhs, modifycode, rhs)
 	  tree type = TREE_TYPE (decl);
 	  if (CH_IS_BUFFER_MODE (type) || CH_IS_EVENT_MODE (type))
 	    {
-	      error ("You may not assign a value to a BUFFER or EVENT location");
+	      error ("you may not assign a value to a BUFFER or EVENT location");
 	      return;
 	    }
 	}
@@ -1811,7 +1811,7 @@ expand_varying_length_assignment (lhs, rhs)
       
   if (! CH_LOCATION_P (lhs))
     {
-      error ("Can only set LENGTH of array location");
+      error ("can only set LENGTH of array location");
       return;
     }
 

@@ -159,7 +159,7 @@ override_options ()
     }
   else
     {
-      warning ("Unknown -mschedule= option (%s).\nValid options are 700, 7100, 7100LC, 7200, and 8000\n", pa_cpu_string);
+      warning ("unknown -mschedule= option (%s).\nValid options are 700, 7100, 7100LC, 7200, and 8000\n", pa_cpu_string);
     }
 
   /* Set the instruction set architecture.  */
@@ -184,7 +184,7 @@ override_options ()
     }
   else if (pa_arch_string)
     {
-      warning ("Unknown -march= option (%s).\nValid options are 1.0, 1.1, and 2.0\n", pa_arch_string);
+      warning ("unknown -march= option (%s).\nValid options are 1.0, 1.1, and 2.0\n", pa_arch_string);
     }
 
   if (flag_pic && TARGET_PORTABLE_RUNTIME)
@@ -200,7 +200,7 @@ override_options ()
   if (! TARGET_GAS && write_symbols != NO_DEBUG)
     {
       warning ("-g is only supported when using GAS on this processor,");
-      warning ("-g option disabled.");
+      warning ("-g option disabled");
       write_symbols = NO_DEBUG;
     }
 

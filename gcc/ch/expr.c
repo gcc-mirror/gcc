@@ -684,9 +684,9 @@ check_arglist_length (args, min_length, max_length, name)
 {
   int length = list_length (args);
   if (length < min_length)
-    error ("Too few arguments in call to `%s'", IDENTIFIER_POINTER (name));
+    error ("too few arguments in call to `%s'", IDENTIFIER_POINTER (name));
   else if (max_length != -1 && length > max_length)
-    error ("Too many arguments in call to `%s'", IDENTIFIER_POINTER (name));
+    error ("too many arguments in call to `%s'", IDENTIFIER_POINTER (name));
   else
     return length;
   return -1;
@@ -755,7 +755,7 @@ build_chill_indirect_ref (ptr, mode, do_empty_check)
   /* check for ptr is really a POINTER */
   if (TREE_CODE (type) != POINTER_TYPE)
     {
-      error ("cannot dereference, not a pointer.");
+      error ("cannot dereference, not a pointer");
       return error_mark_node;
     }
   
@@ -765,10 +765,10 @@ build_chill_indirect_ref (ptr, mode, do_empty_check)
       if (decl == NULL_TREE || TREE_CODE (decl) != TYPE_DECL)
 	{
 	  if (pass == 2)
-	    error ("missing '.' operator or undefined mode name `%s'.",
+	    error ("missing '.' operator or undefined mode name `%s'",
 		   IDENTIFIER_POINTER (mode));
 #if 0
-	  error ("You have forgotten the '.' operator which must");
+	  error ("you have forgotten the '.' operator which must");
 	  error (" precede a STRUCT field reference, or `%s' is an undefined mode", 
 		 IDENTIFIER_POINTER (mode));
 #endif
@@ -783,7 +783,7 @@ build_chill_indirect_ref (ptr, mode, do_empty_check)
     }
   else if (type == ptr_type_node)
     {
-      error ("Can't dereference PTR value using unary `->'.");
+      error ("can't dereference PTR value using unary `->'");
       return error_mark_node;
     }
 
@@ -906,7 +906,7 @@ resolve_component_ref (node)
 	}
     }
 
-  error ("No field named `%s'", IDENTIFIER_POINTER (field_name));
+  error ("no field named `%s'", IDENTIFIER_POINTER (field_name));
   return error_mark_node;
 }
 
@@ -1247,7 +1247,7 @@ build_chill_abstime (exprlist)
 	had_errors = 1;
       else if (TREE_CODE (TREE_TYPE (exp)) != INTEGER_TYPE)
 	{
-	  error ("argument %d to ABSTIME must be of integer type.", i);
+	  error ("argument %d to ABSTIME must be of integer type", i);
 	  had_errors = 1;
 	}
       tmp = TREE_CHAIN (tmp);
@@ -1285,20 +1285,20 @@ build_allocate_memory_call (ptr, size)
   /* check for ptr is referable */
   if (! CH_REFERABLE (ptr))
     {
-      error ("parameter 1 must be referable.");
+      error ("parameter 1 must be referable");
       err++;
     }
    /* check for pointer */
   else if (TREE_CODE (TREE_TYPE (ptr)) != POINTER_TYPE)
     {
-      error ("mode mismatch in parameter 1.");
+      error ("mode mismatch in parameter 1");
       err++;
     }
 
   /* check for size > 0 if it is a constant */
   if (TREE_CODE (size) == INTEGER_CST && TREE_INT_CST_LOW (size) <= 0)
     {
-      error ("parameter 2 must be a positive integer.");
+      error ("parameter 2 must be a positive integer");
       err++;
     }
   if (err)
@@ -1326,20 +1326,20 @@ build_allocate_global_memory_call (ptr, size)
   /* check for ptr is referable */
   if (! CH_REFERABLE (ptr))
     {
-      error ("parameter 1 must be referable.");
+      error ("parameter 1 must be referable");
       err++;
     }
   /* check for pointer */
   else if (TREE_CODE (TREE_TYPE (ptr)) != POINTER_TYPE)
     {
-      error ("mode mismatch in parameter 1.");
+      error ("mode mismatch in parameter 1");
       err++;
     }
 
   /* check for size > 0 if it is a constant */
   if (TREE_CODE (size) == INTEGER_CST && TREE_INT_CST_LOW (size) <= 0)
     {
-      error ("parameter 2 must be a positive integer.");
+      error ("parameter 2 must be a positive integer");
       err++;
     }
   if (err)
@@ -1369,7 +1369,7 @@ build_return_memory (ptr)
   /* check for pointer */
   if (TREE_CODE (TREE_TYPE (ptr)) != POINTER_TYPE)
     {
-      error ("mode mismatch in parameter 1.");
+      error ("mode mismatch in parameter 1");
       return error_mark_node;
     }
 
@@ -1484,7 +1484,7 @@ build_chill_descr (expr)
       /* check for expression is referable */
       if (! CH_REFERABLE (expr))
 	{
-	  error ("expression for DESCR-builtin must be referable.");
+	  error ("expression for DESCR-builtin must be referable");
 	  return error_mark_node;
 	}
       
@@ -1532,7 +1532,7 @@ build_chill_duration (expr, multiplier, fnname, maxvalue)
 
   if (TREE_CODE (TREE_TYPE (expr)) != INTEGER_TYPE)
     {
-      error ("argument to `%s' must be of integer type.", IDENTIFIER_POINTER (fnname));
+      error ("argument to `%s' must be of integer type", IDENTIFIER_POINTER (fnname));
       return error_mark_node;
     }
 
@@ -1599,7 +1599,7 @@ build_allocate_getstack (mode, value, chill_name, fnname, filename, linenumber)
   /* check if we have a mode */
   if (TREE_CODE_CLASS (TREE_CODE (type)) != 't')
     {
-      error ("First argument to `%s' must be a mode", chill_name);
+      error ("first argument to `%s' must be a mode", chill_name);
       return error_mark_node;
     }
 
@@ -1738,7 +1738,7 @@ build_chill_inttime (t, loclist)
   /* check first argument to be NEWMODE TIME */
   if (TREE_TYPE (t) != abs_timing_type_node)
     {
-      error ("argument 1 to INTTIME must be of mode TIME.");
+      error ("argument 1 to INTTIME must be of mode TIME");
       had_errors = 1;
     }
 
@@ -1779,7 +1779,7 @@ build_chill_inttime (t, loclist)
 	    }
 	  /* FIXME: what's about ranges can't hold the result ?? */
 	  if (write_error)
-	    error ("%s.", errmsg);
+	    error ("%s", errmsg);
 	}
       /* next location */
       tmp = TREE_CHAIN (tmp);
@@ -2107,7 +2107,7 @@ build_chill_num (expr)
 			    need_unsigned);
       if (temp == NULL_TREE)
 	{
-	  error ("No integer mode which matches expression's mode");
+	  error ("no integer mode which matches expression's mode");
 	  return integer_zero_node;
 	}
       temp = convert (temp, expr);
@@ -2158,7 +2158,7 @@ build_chill_pred_or_succ (expr, op)
   if (TREE_CODE (TREE_TYPE (expr)) == ENUMERAL_TYPE
       && CH_ENUM_IS_NUMBERED (TREE_TYPE (expr)))
     {
-      error ("Cannot take SUCC or PRED of a numbered SET");
+      error ("cannot take SUCC or PRED of a numbered SET");
       return error_mark_node;
     }
   
@@ -2166,10 +2166,10 @@ build_chill_pred_or_succ (expr, op)
     {
       if (TREE_TYPE (TREE_TYPE (expr)) == void_type_node)
 	{
-	  error ("SUCC or PRED must not be done on a PTR.");
+	  error ("SUCC or PRED must not be done on a PTR");
 	  return error_mark_node;
 	}
-      pedwarn ("SUCC or PRED for a reference type is not standard.");
+      pedwarn ("SUCC or PRED for a reference type is not standard");
       return fold (build (op, TREE_TYPE (expr),
 			  expr,
 			  size_in_bytes (TREE_TYPE (TREE_TYPE (expr)))));
@@ -2200,7 +2200,7 @@ build_chill_pred_or_succ (expr, op)
   if (TREE_CODE (cond) == INTEGER_CST
       && tree_int_cst_equal (cond, integer_one_node))
     {
-      error ("Taking the %s of a value already at its %s value",
+      error ("taking the %s of a value already at its %s value",
 	     op == PLUS_EXPR ? "SUCC" : "PRED",
 	     op == PLUS_EXPR ? "maximum" : "minimum");
       return error_mark_node;
@@ -3456,7 +3456,7 @@ build_compare_string_expr (code, op0, op1)
     case NE_EXPR:
       return invert_truthvalue (build_compare_string_expr (EQ_EXPR, op0, op1));
     default:
-      error ("Invalid operation on array of chars");
+      error ("invalid operation on array of chars");
       return error_mark_node;
     }
 
@@ -3791,7 +3791,7 @@ finish_chill_binary_op (node)
       op1 = convert (build_pointer_type (TREE_TYPE (op1)), op1);
     if ((op0f || op1f)
 	&& code != EQ_EXPR && code != NE_EXPR)
-      error ("Cannot use %s operator on PROC mode variable",
+      error ("cannot use %s operator on PROC mode variable",
 	     tree_code_name[(int)code]);
   }
 

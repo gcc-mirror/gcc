@@ -188,8 +188,8 @@ lang_decode_option (argc, argv)
       explicit_ignore_case = 1;
       if (special_UC)
 	{
-	  error ("Ignoring case upon input and");
-	  error ("making special words uppercase wouldn't work.");
+	  error ("ignoring case upon input and");
+	  error ("making special words uppercase wouldn't work");
 	}
       else
 	ignore_case = 1;
@@ -200,8 +200,8 @@ lang_decode_option (argc, argv)
     {
       if (explicit_ignore_case)
 	{
-	  error ("Making special words uppercase and");
-	  error (" ignoring case upon input wouldn't work.");
+	  error ("making special words uppercase and");
+	  error (" ignoring case upon input wouldn't work");
 	}
       else
 	special_UC = 1, ignore_case = 0;

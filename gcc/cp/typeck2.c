@@ -267,7 +267,7 @@ friendly_abort (where, file, line, func)
     /* Say nothing.  */;
   else if (where > 0)
     {
-      error ("Internal error #%d", where);
+      error ("internal error #%d", where);
 
       /* Uncount this error, so internal_error will do the right thing.  */
       --errorcount;
@@ -433,7 +433,7 @@ store_init_value (decl, init)
       if (pedantic && TREE_CODE (value) == CONSTRUCTOR)
 	{
 	  if (! TREE_CONSTANT (value) || ! TREE_STATIC (value))
-	    pedwarn ("ANSI C++ forbids non-constant aggregate initializer expressions");
+	    pedwarn ("ISO C++ forbids non-constant aggregate initializer expressions");
 	}
     }
 #endif

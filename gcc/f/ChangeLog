@@ -1,3 +1,10 @@
+Mon Dec  3 18:56:04 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c: Remove leading capital from diagnostic messages, as
+	per GNU coding standards.
+	* g77spec.c: Similarly.
+	* lex.c: Similarly.
+
 2001-12-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* f/fini.c: Use xmalloc.

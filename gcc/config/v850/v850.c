@@ -116,14 +116,14 @@ override_options ()
       if (small_memory[i].value)
 	{
 	  if (!ISDIGIT (*small_memory[i].value))
-	    error ("%s=%s is not numeric.",
+	    error ("%s=%s is not numeric",
 		   small_memory[i].name,
 		   small_memory[i].value);
 	  else
 	    {
 	      small_memory[i].max = atoi (small_memory[i].value);
 	      if (small_memory[i].max > small_memory[i].physical_max)
-		error ("%s=%s is too large.",
+		error ("%s=%s is too large",
 		   small_memory[i].name,
 		   small_memory[i].value);
 	    }
@@ -2289,7 +2289,7 @@ construct_restore_jr (op)
   
   if (count <= 2)
     {
-      error ("Bogus JR construction: %d\n", count);
+      error ("bogus JR construction: %d\n", count);
       return NULL;
     }
 
@@ -2310,7 +2310,7 @@ construct_restore_jr (op)
   /* Make sure that the amount we are popping either 0 or 16 bytes.  */
   if (stack_bytes != 0 && stack_bytes != 16)
     {
-      error ("Bad amount of stack space removal: %d", stack_bytes);
+      error ("bad amount of stack space removal: %d", stack_bytes);
       return NULL;
     }
 
@@ -2488,7 +2488,7 @@ construct_save_jarl (op)
   
   if (count <= 2)
     {
-      error ("Bogus JARL construction: %d\n", count);
+      error ("bogus JARL construction: %d\n", count);
       return NULL;
     }
 
@@ -2512,7 +2512,7 @@ construct_save_jarl (op)
   /* Make sure that the amount we are popping either 0 or 16 bytes.  */
   if (stack_bytes != 0 && stack_bytes != -16)
     {
-      error ("Bad amount of stack space removal: %d", stack_bytes);
+      error ("bad amount of stack space removal: %d", stack_bytes);
       return NULL;
     }
 

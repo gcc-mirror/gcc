@@ -289,7 +289,7 @@ c4x_override_options ()
     case 40: target_flags |= C40_FLAG; break;
     case 44: target_flags |= C44_FLAG; break;
     default:
-      warning ("Unknown CPU version %d, using 40.\n", c4x_cpu_version);
+      warning ("unknown CPU version %d, using 40.\n", c4x_cpu_version);
       c4x_cpu_version = 40;
       target_flags |= C40_FLAG;
     }
@@ -880,7 +880,7 @@ c4x_expand_prologue ()
 	     requires more than 32767 words of local temporary
 	     storage!  */
 	  if (size > 32767)
-	    error ("ISR %s requires %d words of local vars, max is 32767.",
+	    error ("ISR %s requires %d words of local vars, max is 32767",
 		   current_function_name, size);
 
 	  insn = emit_insn (gen_addqi3 (gen_rtx_REG (QImode, SP_REGNO),
@@ -1633,7 +1633,7 @@ c4x_check_legit_addr (mode, addr, strict)
       return 0;
 
     case CONST_DOUBLE:
-      fatal_insn ("Using CONST_DOUBLE for address", addr);
+      fatal_insn ("using CONST_DOUBLE for address", addr);
 
     default:
       return 0;
@@ -3441,7 +3441,7 @@ lsrc_operand (op, mode)
     mode = GET_MODE (op);
 
   if (mode != QImode && mode != Pmode)
-    fatal_insn ("Mode not QImode", op);
+    fatal_insn ("mode not QImode", op);
 
   if (GET_CODE (op) == CONST_INT)
     return c4x_L_constant (op) || c4x_J_constant (op);
@@ -3461,7 +3461,7 @@ tsrc_operand (op, mode)
     mode = GET_MODE (op);
 
   if (mode != QImode && mode != Pmode)
-    fatal_insn ("Mode not QImode", op);
+    fatal_insn ("mode not QImode", op);
 
   if (GET_CODE (op) == CONST_INT)
     return c4x_L_constant (op) || c4x_N_constant (op) || c4x_J_constant (op);
@@ -3518,7 +3518,7 @@ c4x_S_address_parse (op, base, incdec, index, disp)
   *disp = 0;
        
   if (GET_CODE (op) != MEM)
-    fatal_insn ("Invalid indirect memory address", op);
+    fatal_insn ("invalid indirect memory address", op);
   
   op = XEXP (op, 0);
   switch (GET_CODE (op))
@@ -3607,7 +3607,7 @@ c4x_S_address_parse (op, base, incdec, index, disp)
       /* Fallthrough.  */
 
     default:
-      fatal_insn ("Invalid indirect (S) memory address", op);
+      fatal_insn ("invalid indirect (S) memory address", op);
     }
 }
 

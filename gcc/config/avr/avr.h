@@ -2707,7 +2707,7 @@ extern int avr_case_values_threshold;
    the most combinations to be found.  */
 
 #define TRAMPOLINE_TEMPLATE(FILE) \
-  internal_error ("Trampolines not supported\n")
+  internal_error ("trampolines not supported")
 
 /* Length in units of the trampoline for entering a nested function.  */
 
