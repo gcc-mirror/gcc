@@ -3217,7 +3217,7 @@ Dump after null pointer elimination pass to @file{@var{file}.018.null}.
 @item U
 @opindex dU
 Dump callgraph and unit-at-a-time optimization @file{@var{file}.00.unit}.
-@litem w
+@item w
 @opindex dw
 Dump after the second flow pass, to @file{@var{file}.29.flow2}.
 @item W
