@@ -1,20 +1,20 @@
 .\" Copyright (c) 1995-1997 Free Software Foundation              -*-Text-*-
 .\" See section COPYING for conditions for redistribution
 .\" FIXME: no info here on predefines.  Should there be?  extra for F77...
-.TH G77 1 "1998-03-08" "GNU Tools" "GNU Tools"
+.TH G77 1 "1998-04-17" "GNU Tools" "GNU Tools"
 .de BP
 .sp
 .ti \-.2i
 \(**
 ..
 .SH NAME
-g77 \- GNU project Fortran Compiler (v0.5.22)
+g77 \- GNU project Fortran Compiler (v0.5.23)
 .SH SYNOPSIS
 .RB g77 " [" \c
 .IR option " | " "filename " ].\|.\|.
 .SH WARNING
 The information in this man page is an extract from the full
-documentation of the GNU Fortran compiler (version 0.5.22),
+documentation of the GNU Fortran compiler (version 0.5.23),
 and is limited to the meaning of some of the options.
 .PP
 This man page is not up to date, since no volunteers want to
@@ -22,8 +22,8 @@ maintain it.  If you find a discrepancy between the man page and the
 software, please check the Info file, which is the authoritative
 documentation.
 .\" .PP
-.\" The version of GNU Fortran documented by the Info file is 0.5.22,
-.\" which includes substantial improvements and changes since 0.5.22,
+.\" The version of GNU Fortran documented by the Info file is 0.5.23,
+.\" which includes substantial improvements and changes since 0.5.23,
 .\" the version documented in this man page.
 .PP
 If we find that the things in this man page that are out of date cause
@@ -37,7 +37,7 @@ For complete and current documentation, refer to the Info file `\|\c
 .B g77\c
 \&\|' or the manual
 .I
-Using and Porting GNU Fortran (for version 0.5.22)\c
+Using and Porting GNU Fortran (for version 0.5.23)\c
 \&.  Both are made from the Texinfo source file
 .BR g77.texi .
 .PP
@@ -152,19 +152,6 @@ Define macro \c
 .I defn\c
 \&.
 .TP
-.BI \-\-driver= command
-Specifies that 
-.IR command ,
-rather than 
-.RB ` gcc ',
-is to be invoked by 
-.RB ` g77 '
-to do its job.  Example: Within the gcc build directory after building
-GNU Fortran (but without having to install it),
-.nf
-  ./g77 \-\-driver=./xgcc -B./ foo.f
-.fi
-.TP
 .B \-E
 Stop after the preprocessing stage; do not run the compiler proper.  The
 output is preprocessed source code, which is sent to the
@@ -247,16 +234,7 @@ Print (on standard error output) the commands executed to run the
 stages of compilation.  Also print the version number of the compiler
 driver program and of the preprocessor and the compiler proper.  The
 version numbers of g77 itself and the GCC distribution on which it is
-based are distinct.  Use 
-.RB ` \-\-driver=true '
-to disable actual invocation of 
-.RB ` gcc '
-(since
-.RB ` true '
-is the name of a UNIX command that simply returns success status).
-The command
-.RB ` "g77 -v" '
-is the appropriate one to determine the g77 and GCC version numbers.
+based are distinct.
 .TP
 .B \-Wall
 Issue warnings for conditions which pertain to usage that we recommend
@@ -333,7 +311,7 @@ entries in
 \&.
 .br
 .I
-Using and Porting GNU Fortran (for version 0.5.22)\c
+Using and Porting GNU Fortran (for version 0.5.23)\c
 , James Craig Burley;
 .I
 Using and Porting GNU CC (for version 2.0)\c
@@ -357,7 +335,7 @@ For instructions on how to report bugs, type `\|\c
 \&\|'.
 
 .SH COPYING
-Copyright (c) 1991-1997 Free Software Foundation, Inc.
+Copyright (c) 1991-1998 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice

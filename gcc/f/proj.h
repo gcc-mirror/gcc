@@ -75,8 +75,4 @@ typedef enum
 #define dmpout stderr
 #endif
 
-#ifndef isascii
-#define isascii(c) ((unsigned char)(c) <= 0x7f)
-#endif
-
 #endif

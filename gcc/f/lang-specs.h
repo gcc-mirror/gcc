@@ -24,15 +24,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* This is the contribution to the `default_compilers' array in gcc.c for
    g77.  */
 
-#ifdef __STDC__	/* Else stringizing of OO below won't work, but in
-		   K&R case we're not building the f77 language. */
-
-#ifdef OBJECT_SUFFIX	/* Not defined compiling gcc.c prior to 2.7.0. */
-#define OO "%O"
-#else
-#define OO ".o"
-#endif
-
   {".F", {"@f77-cpp-input"}},
   {".fpp", {"@f77-cpp-input"}},
   {"@f77-cpp-input",
@@ -60,7 +51,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
 	      %{!S:as %a %Y\
-		      %{c:%W{o*}%{!o*:-o %w%b" OO "}}%{!c:-o %d%w%u" OO "}\
+		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
 		      %{!pipe:%g.s} %A\n }}}}"}},
   {".r", {"@ratfor"}},
   {"@ratfor",
@@ -75,7 +66,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 	   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
 	   %{!S:as %a %Y\
-	   %{c:%W{o*}%{!o*:-o %w%b" OO "}}%{!c:-o %d%w%u" OO "}\
+	   %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
            %{!pipe:%g.s} %A\n }}"}},
   {".f", {"@f77"}},
   {".for", {"@f77"}},
@@ -88,9 +79,28 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
 	      %{!S:as %a %Y\
-		      %{c:%W{o*}%{!o*:-o %w%b" OO "}}%{!c:-o %d%w%u" OO "}\
+		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
 		      %{!pipe:%g.s} %A\n }}}}"}},
-
-#undef OO
-
-#endif
+  {"@f77-version",
+   {"cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I \
+      %{C:%{!E:%eGNU C does not support -C without using -E}} \
+      %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG} \
+      -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 \
+      %{ansi:-trigraphs -$ -D__STRICT_ANSI__} \
+      %{!undef:%P} -D_LANGUAGE_FORTRAN %{trigraphs} \
+      %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} -traditional \
+      %{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z \
+      /dev/null /dev/null \n\
+     f771 -fnull-version %(f771) \
+      %{!Q:-quiet} -dumpbase g77-version.f %{d*} %{m*} %{a} \
+      %{g*} %{O*} %{W*} %{w} %{pedantic*} \
+      -version -fversion %{f*} %{I*} -o %g.s /dev/null \n\
+     as %a %Y -o %g%O %g.s %A \n\
+     ld %l %X -o %g %g%O %{A} %{d} %{e*} %{m} %{N} %{n} \
+      %{r} %{s} %{t} %{u*} %{x} %{z} %{Z} \
+      %{!A:%{!nostdlib:%{!nostartfiles:%S}}} \
+      %{static:} %{L*} %D -lg2c -lm \
+      %{!nostdlib:%{!nodefaultlibs:%G %L %G}} \
+      %{!A:%{!nostdlib:%{!nostartfiles:%E}}} \
+      %{T*} \n\
+     %g \n"}},

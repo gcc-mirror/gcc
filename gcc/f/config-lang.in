@@ -26,42 +26,12 @@
 # stagestuff	- files to add to $(STAGESTUFF)
 # diff_excludes	- files to ignore when building diffs between two versions.
 
-#if grep DECL_STATIC_CONSTRUCTOR $srcdir/tree.h >/dev/null; then
-#   if grep flag_move_all_movables $srcdir/toplev.c >/dev/null; then true
-#   else
-#      echo "You haven't applied the patches to the GCC 2.7.x distribution in"
-#      echo "$srcdir as described in g77/README.g77 and gcc/f/gbe/README."
-#      echo ""
-#      exit 1
-#   fi
-#else
-#   if grep put_pending_sizes $srcdir/stor-layout.c >/dev/null; then true
-#   else
-#      echo "You haven't applied the patches to the GCC 2.6.x distribution in"
-#      echo "$srcdir as described in g77/README.g77 and gcc/f/gbe/README."
-#      echo ""
-#      exit 1
-#   fi
-#fi
-
 language="f77"
 
 compilers="f771\$(exeext)"
 
 stagestuff="g77\$(exeext) g77-cross\$(exeext) f771\$(exeext)"
 
-diff_excludes="-x \"f/g77.info*\""
+diff_excludes="-x f/BUGS -x f/NEWS -x f/INSTALL -x f/intdoc.texi"
 
-test -d f || mkdir f
-for stageN in stage1 stage2 stage3 stage4
-do
-	test -d $stageN || mkdir $stageN
-	test -d $stageN/f || mkdir $stageN/f
-done
-
-# Make links into top-level stageN from target trees.
-for stageN in stage1 stage2 stage3 stage4 include
-do
-	$remove -f f/$stageN 
-	(cd f; $symbolic_link ../$stageN . 2>/dev/null)
-done
+outputs=f/Makefile

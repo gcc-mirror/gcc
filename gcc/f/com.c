@@ -85,11 +85,13 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Include files. */
 
+#include "proj.h"
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 #include "config.j"
 #include "flags.j"
 #include "rtl.j"
 #include "tree.j"
+#include "output.j"  /* Must follow tree.j so TREE_CODE is defined! */
 #include "convert.j"
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
@@ -154,9 +156,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 char *getenv ();
 #endif
 
-char *index ();
-char *rindex ();
-
 #if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
@@ -195,7 +194,6 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 
 /* END stuff from gcc/cccp.c.  */
 
-#include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1 /* for com.h */
 #include "com.h"
 #include "bad.h"
