@@ -1,5 +1,8 @@
 2000-11-24  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* config/i386/i386.md (call_pop_0, call_pop_1, call_value_pop_0,
+	call_value_pop_1): Make sure operand numbers are contiguous.
+
 	* fold-const.c (fold_range_test): Avoid crash if LHS or RHS is null.
 
 	* reload1.c (conflicts_with_override): New function.
