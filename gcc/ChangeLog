@@ -1,3 +1,8 @@
+2003-03-31  Michael Matz  <matz@suse.de>
+
+	* cppexp.c (cpp_classify_number): Accept '.' after "0x".
+	* testsuite/gcc.dg/cpp/c99-hexfloat-3.c: New file.
+
 2003-03-31  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov.c: Add -a & -u options.
