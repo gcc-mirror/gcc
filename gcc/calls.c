@@ -444,7 +444,7 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
       if (!already_popped)
 	CALL_INSN_FUNCTION_USAGE (call_insn) =
 	   gen_rtx (EXPR_LIST, VOIDmode,
-		    gen_rtx (CLOBBER, stack_pointer_rtx),
+		    gen_rtx (CLOBBER, VOIDmode, stack_pointer_rtx),
 		    CALL_INSN_FUNCTION_USAGE (call_insn));
       stack_size -= RETURN_POPS_ARGS (funtype, stack_size);
       stack_size_rtx = GEN_INT (stack_size);
