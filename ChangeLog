@@ -1,3 +1,8 @@
+2000-12-10  Anthony Green  <green@redhat.com>
+
+	* configure.in: Define libgcj.  Disable libgcj target libraries for
+	most targets.
+
 2000-12-10  Neil Booth  <neilb@earthling.net>
 
 	* MAINTAINERS: Update mail address, remove from WAA list.
