@@ -8547,11 +8547,28 @@ nonzero_bits (x, mode)
       break;
 
     case FFS:
-    case CLZ:
-    case CTZ:
     case POPCOUNT:
       /* This is at most the number of bits in the mode.  */
-      nonzero = ((HOST_WIDE_INT) 1 << (floor_log2 (mode_width) + 1)) - 1;
+      nonzero = ((HOST_WIDE_INT) 2 << (floor_log2 (mode_width))) - 1;
+      break;
+
+    case CLZ:
+      /* If CLZ has a known value at zero, then the nonzero bits are
+	 that value, plus the number of bits in the mode minus one.  */
+      if (CLZ_DEFINED_VALUE_AT_ZERO (mode, nonzero))
+	nonzero |= ((HOST_WIDE_INT) 1 << (floor_log2 (mode_width))) - 1;
+      else
+	nonzero = -1;
+      break;
+
+    case CTZ:
+      /* If CTZ has a known value at zero, then the nonzero bits are
+	 that value, plus the number of bits in the mode minus one.  */
+      if (CTZ_DEFINED_VALUE_AT_ZERO (mode, nonzero))
+	nonzero |= ((HOST_WIDE_INT) 1 << (floor_log2 (mode_width))) - 1;
+      else
+	nonzero = -1;
+      break;
       break;
 
     case PARITY:

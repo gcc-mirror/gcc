@@ -1493,6 +1493,10 @@ do {									     \
 
 #define STORE_FLAG_VALUE 1
 
+/* The CIX ctlz and cttz instructions return 64 for zero.  */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 64, TARGET_CIX)
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 64, TARGET_CIX)
+
 /* Define the value returned by a floating-point comparison instruction.  */
 
 #define FLOAT_STORE_FLAG_VALUE(MODE) \

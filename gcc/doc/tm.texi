@@ -8800,6 +8800,25 @@ Define this macro on machine that have comparison operations that return
 floating-point values.  If there are no such operations, do not define
 this macro.
 
+@findex CLZ_DEFINED_VALUE_AT_ZERO
+@findex CTZ_DEFINED_VALUE_AT_ZERO
+@item CLZ_DEFINED_VALUE_AT_ZERO (@var{mode}, @var{value})
+@itemx CTZ_DEFINED_VALUE_AT_ZERO (@var{mode}, @var{value})
+A C expression that evaluates to true if the architecture defines a value
+for @code{clz} or @code{ctz} with a zero operand.  If so, @var{value}
+should be set to this value.  If this macro is not defined, the value of
+@code{clz} or @code{ctz} is assumed to be undefined.
+
+This macro must be defined if the target's expansion for @code{ffs}
+relies on a particular value to get correct results.  Otherwise it
+is not necessary, though it may be used to optimize some corner cases.
+
+Note that regardless of this macro the ``definedness'' of @code{clz}
+and @code{ctz} at zero do @emph{not} extend to the builtin functions
+visible to the user.  Thus one may be free to adjust the value at will
+to match the target expansion of these operations without fear of
+breaking the API.
+
 @findex Pmode
 @item Pmode
 An alias for the machine mode for pointers.  On most machines, define

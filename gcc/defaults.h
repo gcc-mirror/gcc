@@ -644,4 +644,12 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define TARGET_C99_FUNCTIONS 0
 #endif
 
+/* Indicate that CLZ and CTZ are undefined at zero.  */
+#ifndef CLZ_DEFINED_VALUE_AT_ZERO 
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  0
+#endif
+#ifndef CTZ_DEFINED_VALUE_AT_ZERO 
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  0
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

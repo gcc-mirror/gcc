@@ -449,14 +449,23 @@ simplify_unary_operation (code, mode, op, op_mode)
 
 	case CLZ:
 	  arg0 &= GET_MODE_MASK (mode);
-	  val = GET_MODE_BITSIZE (mode) - floor_log2 (arg0) - 1;
+	  if (arg0 == 0 && CLZ_DEFINED_VALUE_AT_ZERO (mode, val))
+	    ;
+	  else
+	    val = GET_MODE_BITSIZE (mode) - floor_log2 (arg0) - 1;
 	  break;
 
 	case CTZ:
 	  arg0 &= GET_MODE_MASK (mode);
-	  val = arg0 == 0
-	      ? GET_MODE_BITSIZE (mode)
-	      : exact_log2 (arg0 & -arg0);
+	  if (arg0 == 0)
+	    {
+	      /* Even if the value at zero is undefined, we have to come
+		 up with some replacement.  Seems good enough.  */
+	      if (! CTZ_DEFINED_VALUE_AT_ZERO (mode, val))
+		val = GET_MODE_BITSIZE (mode);
+	    }
+	  else
+	    val = exact_log2 (arg0 & -arg0);
 	  break;
 
 	case POPCOUNT:
