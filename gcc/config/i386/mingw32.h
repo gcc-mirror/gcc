@@ -42,7 +42,8 @@ Boston, MA 02111-1307, USA. */
 /* For Windows applications, include more libraries, but always include
    kernel32.  */
 #undef LIB_SPEC
-#define LIB_SPEC "%{mwindows:-luser32 -lgdi32 -lcomdlg32} -lkernel32"
+#define LIB_SPEC \
+"%{mwindows:-luser32 -lgdi32 -lcomdlg32} -lkernel32 -ladvapi32 -lshell32"
 
 /* Include in the mingw32 libraries with libgcc */
 #undef LIBGCC_SPEC
@@ -50,10 +51,11 @@ Boston, MA 02111-1307, USA. */
 
 /* Specify a different entry point when linking a DLL */
 #undef LINK_SPEC
-#define LINK_SPEC "%{mwindows:--subsystem windows} %{dll:--dll -e _DllMainCRTStartup@12}"
+#define LINK_SPEC \
+"%{mwindows:--subsystem windows} %{dll:--dll -e _DllMainCRTStartup@12}"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "crt1%O%s"
+#define STARTFILE_SPEC "%{dll:dllcrt1%O%s} %{!dll:crt1%O%s}"
 
 #undef PATH_SEPARATOR
 #define PATH_SEPARATOR ';'
@@ -86,3 +88,7 @@ do {						\
 						\
   putc ('\"', asm_file);			\
 } while (0)
+
+/* Dwarf2 exception information does not work on this system for some
+   unknown reason, so turn it off.  */
+#undef INCOMING_RETURN_ADDR_RTX
