@@ -2111,16 +2111,6 @@ extern char m32r_punct_chars[];
 
 /* A function address in a call instruction.  */
 #define FUNCTION_MODE SImode
-
-/* A C expression that returns zero if the attributes on TYPE1 and TYPE2 are
-   incompatible, one if they are compatible, and two if they are
-   nearly compatible (which causes a warning to be generated).  */
-#define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
-  m32r_comp_type_attributes (TYPE1, TYPE2)
-
-/* Give newly defined TYPE some default attributes.  */
-#define SET_DEFAULT_TYPE_ATTRIBUTES(TYPE) \
-  m32r_set_default_type_attributes (TYPE)
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  Note that we can't use "rtx" here

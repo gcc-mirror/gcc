@@ -5889,15 +5889,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    must also be defined).  */
 /* #define HANDLE_WEAK_PRAGMA */
 
-/* If defined, a C expression whose value is zero if the attributes on TYPE1
-   and TYPE2 are incompatible, one if they are compatible, and two if they are
-   nearly compatible (which causes a warning to be generated).  */
-/* #define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) */
-
-/* If defined, a C statement that assigns default attributes to newly defined
-   TYPE.  */
-/* #define SET_DEFAULT_TYPE_ATTRIBUTES(TYPE) */
-
 /* Define this macro to control use of the character `$' in identifier names.
    The value should be 0, 1, or 2.  0 means `$' is not allowed by default; 1
    means it is allowed by default if `-traditional' is used; 2 means it is

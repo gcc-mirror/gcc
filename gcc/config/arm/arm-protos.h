@@ -38,8 +38,6 @@ extern unsigned long arm_current_func_type	PARAMS ((void));
 
 #ifdef TREE_CODE
 extern int    arm_return_in_memory	PARAMS ((tree));
-extern int    arm_comp_type_attributes	PARAMS ((tree, tree));
-extern void   arm_set_default_type_attributes	PARAMS ((tree));
 extern void   arm_encode_call_attribute	PARAMS ((tree, int));
 extern int    arm_function_ok_for_sibcall PARAMS ((tree));
 #endif

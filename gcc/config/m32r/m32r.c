@@ -279,26 +279,6 @@ m32r_valid_decl_attribute (type, attributes, identifier, args)
 
   return 0;
 }
-
-/* Return zero if TYPE1 and TYPE are incompatible, one if they are compatible,
-   and two if they are nearly compatible (which causes a warning to be
-   generated).  */
-
-int
-m32r_comp_type_attributes (type1, type2)
-     tree type1 ATTRIBUTE_UNUSED;
-     tree type2 ATTRIBUTE_UNUSED;
-{
-  return 1;
-}
-
-/* Set the default attributes for TYPE.  */
-
-void
-m32r_set_default_type_attributes (type)
-     tree type ATTRIBUTE_UNUSED;
-{
-}
 
 /* A C statement or statements to switch to the appropriate
    section for output of DECL.  DECL is either a `VAR_DECL' node

@@ -1575,16 +1575,6 @@ do { if ((LOG) != 0) fprintf (FILE, "\t.align %d\n", 1 << (LOG)); } while (0)
 /* A function address in a call instruction.  */
 #define FUNCTION_MODE SImode
 
-/* A C expression that returns zero if the attributes on TYPE1 and TYPE2 are
-   incompatible, one if they are compatible, and two if they are
-   nearly compatible (which causes a warning to be generated).  */
-#define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
-arc_comp_type_attributes (TYPE1, TYPE2)
-
-/* Give newly defined TYPE some default attributes.  */
-#define SET_DEFAULT_TYPE_ATTRIBUTES(TYPE) \
-arc_set_default_type_attributes (TYPE)
-
 /* alloca should avoid clobbering the old register save area.  */
 /* ??? Not defined in tm.texi.  */
 #define SETJMP_VIA_SAVE_AREA

@@ -2240,19 +2240,6 @@ do									\
 while (0)
 
 
-/* If defined, a C expression whose value is zero if the attributes on
-   TYPE1 and TYPE2 are incompatible, one if they are compatible, and
-   two if they are nearly compatible (which causes a warning to be
-   generated).  */
-
-#define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
-  (ix86_comp_type_attributes (TYPE1, TYPE2))
-
-/* If defined, a C statement that assigns default attributes to newly
-   defined TYPE.  */
-
-/* #define SET_DEFAULT_TYPE_ATTRIBUTES (TYPE) */
-
 /* Max number of args passed in registers.  If this is more than 3, we will
    have problems with ebx (register #4), since it is a caller save register and
    is also used as the pic register in ELF.  So for now, don't allow more than

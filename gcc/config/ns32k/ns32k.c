@@ -670,18 +670,6 @@ ns32k_valid_type_attribute_p (type, attributes, identifier, args)
   return 0;
 }
 
-/* Return 0 if the attributes for two types are incompatible, 1 if they
-   are compatible, and 2 if they are nearly compatible (which causes a
-   warning to be generated).  */
-
-int
-ns32k_comp_type_attributes (type1, type2)
-     tree type1 ATTRIBUTE_UNUSED;
-     tree type2 ATTRIBUTE_UNUSED;
-{
-  return 1;
-}
-
 
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.

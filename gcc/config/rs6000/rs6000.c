@@ -7853,29 +7853,6 @@ rs6000_valid_type_attribute_p (type, attributes, identifier, args)
   return 0;
 }
 
-/* If defined, a C expression whose value is zero if the attributes on
-   TYPE1 and TYPE2 are incompatible, one if they are compatible, and
-   two if they are nearly compatible (which causes a warning to be
-   generated).  */
-
-int
-rs6000_comp_type_attributes (type1, type2)
-     tree type1 ATTRIBUTE_UNUSED;
-     tree type2 ATTRIBUTE_UNUSED;
-{
-  return 1;
-}
-
-/* If defined, a C statement that assigns default attributes to newly
-   defined TYPE.  */
-
-void
-rs6000_set_default_type_attributes (type)
-     tree type ATTRIBUTE_UNUSED;
-{
-  return;
-}
-
 /* Return a reference suitable for calling a function with the
    longcall attribute.  */
 struct rtx_def *

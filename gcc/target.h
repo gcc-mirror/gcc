@@ -63,6 +63,14 @@ struct gcc_target
      previously been assigned to TYPE.  */
   int (* valid_type_attribute) PARAMS ((tree type, tree attributes,
 					tree identifier, tree args));
+
+  /* Return zero if the attributes on TYPE1 and TYPE2 are incompatible,
+     one if they are compatible and two if they are nearly compatible
+     (which causes a warning to be generated).  */
+  int (* comp_type_attributes) PARAMS ((tree type1, tree type2));
+
+  /* Assign default attributes to the newly defined TYPE.  */
+  void (* set_default_type_attributes) PARAMS ((tree type));
 };
 
 extern struct gcc_target target;

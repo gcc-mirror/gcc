@@ -1611,21 +1611,6 @@ typedef struct rs6000_args
 #define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, CXT)		\
   rs6000_initialize_trampoline (ADDR, FNADDR, CXT)
 
-/* If defined, a C expression whose value is zero if the attributes on
-   TYPE1 and TYPE2 are incompatible, one if they are compatible, and
-   two if they are nearly compatible (which causes a warning to be
-   generated).  */
-
-#define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
-  (rs6000_comp_type_attributes (TYPE1, TYPE2))
-
-/* If defined, a C statement that assigns default attributes to newly
-   defined TYPE.  */
-
-#define SET_DEFAULT_TYPE_ATTRIBUTES(TYPE) \
-  (rs6000_set_default_type_attributes (TYPE))
-
-
 /* Definitions for __builtin_return_address and __builtin_frame_address.
    __builtin_return_address (0) should give link register (65), enable
    this. */

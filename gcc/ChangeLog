@@ -1,3 +1,59 @@
+2001-06-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* target.h (struct gcc_target): Add comp_type_attributes and
+	set_default_type_attributes.
+	* target-def.h (TARGET_COMP_TYPE_ATTRIBUTES,
+	TARGET_SET_DEFAULT_TYPE_ATTRIBUTES): Define.
+	(TARGET_INITIALIZER): Update.
+	* doc/tm.texi (COMP_TYPE_ATTRIBUTES, TARGET_COMP_TYPE_ATTRIBUTES,
+	SET_DEFAULT_TYPE_ATTRIBUTES, TARGET_SET_DEFAULT_TYPE_ATTRIBUTES):
+	Update documentation of old target macros to describe new target
+	hooks.
+	* tree.c (make_node): Use target.set_default_type_attributes.
+	(default_comp_type_attributes,
+	default_set_default_type_attributes): New functions.
+	* tree.h (default_comp_type_attributes,
+	default_set_default_type_attributes): Declare.
+	* c-typeck.c (COMP_TYPE_ATTRIBUTES): Don't define.
+	(comptypes): Use target.comp_type_attributes.
+	* config/arc/arc-protos.h, config/arc/arc.c, config/arc/arc.h
+	(arc_comp_type_attributes, arc_set_default_type_attributes,
+	COMP_TYPE_ATTRIBUTES, SET_DEFAULT_TYPE_ATTRIBUTES): Remove
+	functions and macros with default behaviour.
+	* config/m32r/m32r-protos.h, config/m32r/m32r.c,
+	config/m32r/m32r.h (m32r_comp_type_attributes,
+	m32r_set_default_type_attributes, COMP_TYPE_ATTRIBUTES,
+	SET_DEFAULT_TYPE_ATTRIBUTES): Likewise.
+	* config/m68hc11/m68hc11-protos.h, config/m68hc11/m68hc11.c,
+	config/m68hc11/m68hc11.h (m68hc11_comp_type_attributes,
+	m68hc11_set_default_type_attributes, COMP_TYPE_ATTRIBUTES,
+	SET_DEFAULT_TYPE_ATTRIBUTES): Likewise.
+	* config/ns32k/ns32k-protos.h, config/ns32k/ns32k.c,
+	config/ns32k/ns32k.h (ns32k_comp_type_attributes,
+	COMP_TYPE_ATTRIBUTES): Likewise.
+	* config/rs6000/rs6000-protos.h, config/rs6000/rs6000.c,
+	config/rs6000/rs6000.h (rs6000_comp_type_attributes,
+	rs6000_set_default_type_attributes, COMP_TYPE_ATTRIBUTES,
+	SET_DEFAULT_TYPE_ATTRIBUTES): Likewise.
+	* config/d30v/d30v.h (COMP_TYPE_ATTRIBUTES,
+	SET_DEFAULT_TYPE_ATTRIBUTES): Remove commented out macro
+	definitions.
+	* config/i386/i386.h (SET_DEFAULT_TYPE_ATTRIBUTES): Likewise.
+	* config/ns32k/ns32k.h (SET_DEFAULT_TYPE_ATTRIBUTES): Likewise.
+	* config/arm/arm.c (arm_comp_type_attributes,
+	arm_set_default_type_attributes): Make static.
+	(TARGET_COMP_TYPE_ATTRIBUTES, TARGET_SET_DEFAULT_TYPE_ATTRIBUTES):
+	Define.
+	* config/arm/arm.h (COMP_TYPE_ATTRIBUTES,
+	SET_DEFAULT_TYPE_ATTRIBUTES): Don't define.
+	* config/arm/arm-protos.h (arm_comp_type_attributes,
+	arm_set_default_type_attributes): Don't declare.
+	* config/i386/i386.c (ix86_comp_type_attributes): Make static.
+	(TARGET_COMP_TYPE_ATTRIBUTES): Define.
+	* config/i386/i386.h (COMP_TYPE_ATTRIBUTES): Don't define.
+	* config/i386/i386-protos.h (ix86_comp_type_attributes): Don't
+	declare.
+
 2001-06-28  Jan van Male  <jan.vanmale@fenk.wau.nl>
 
 	* predict.c (dump_prediction): Eliminate fprintf warning.

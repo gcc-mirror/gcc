@@ -36,12 +36,10 @@ extern void   m32r_asm_file_start		PARAMS ((FILE *));
 extern void   m32r_sched_init 			PARAMS ((FILE *, int));
 extern int    direct_return 			PARAMS ((void));
 #ifdef TREE_CODE
-extern int    m32r_comp_type_attributes		PARAMS ((tree, tree));
 extern void   m32r_select_section		PARAMS ((tree, int));
 extern void   m32r_encode_section_info		PARAMS ((tree));
 extern enum m32r_function_type m32r_compute_function_type PARAMS ((tree));
 extern void   m32r_select_section 		PARAMS ((tree, int));
-extern void   m32r_set_default_type_attributes  PARAMS ((tree));
 
 #ifdef HAVE_MACHINE_MODES
 extern void   m32r_setup_incoming_varargs	PARAMS ((CUMULATIVE_ARGS *, Mmode, tree, int *, int));

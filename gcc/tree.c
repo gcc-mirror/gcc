@@ -433,9 +433,7 @@ make_node (code)
       TYPE_USER_ALIGN (t) = 0;
       TYPE_MAIN_VARIANT (t) = t;
       TYPE_ATTRIBUTES (t) = NULL_TREE;
-#ifdef SET_DEFAULT_TYPE_ATTRIBUTES
-      SET_DEFAULT_TYPE_ATTRIBUTES (t);
-#endif
+      (* target.set_default_type_attributes) (t);
       /* Note that we have not yet computed the alias set for this
 	 type.  */
       TYPE_ALIAS_SET (t) = -1;
@@ -2718,6 +2716,25 @@ default_valid_attribute_p PARAMS ((attr_name, attr_args, decl, type))
      tree type ATTRIBUTE_UNUSED;
 {
   return 0;
+}
+
+/* Default value of target.comp_type_attributes that always returns 1.  */
+
+int
+default_comp_type_attributes (type1, type2)
+     tree type1 ATTRIBUTE_UNUSED;
+     tree type2 ATTRIBUTE_UNUSED;
+{
+  return 1;
+}
+
+/* Default version of target.set_default_type_attributes that always does
+   nothing.  */
+
+void
+default_set_default_type_attributes (type)
+     tree type ATTRIBUTE_UNUSED;
+{
 }
 
 /* Return 1 if ATTR_NAME and ATTR_ARGS is valid for either declaration

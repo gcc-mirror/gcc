@@ -1,3 +1,8 @@
+2001-06-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* typeck.c (COMP_TYPE_ATTRIBUTES): Don't define.
+	(comptypes): Use target.comp_type_attributes.
+
 2001-06-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (flag_dump_class_layout): Remove unneeded declaration.
