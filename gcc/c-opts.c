@@ -1206,7 +1206,7 @@ c_common_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 
 	  /* Reset cpplib's macros and start a new file.  */
 	  cpp_undef_all (parse_in);
-	  cpp_read_next_file (parse_in, in_fnames[file_index]);
+	  cpp_stack_file (parse_in, in_fnames[file_index]);
 	}
 
       finish_options(in_fnames[file_index]);
