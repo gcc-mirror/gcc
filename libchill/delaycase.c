@@ -95,7 +95,7 @@ __delay_event (ev_got, nevents, evptrs, priority, to, insloc, filename, lineno)
 	continue;
 
       /* check if we already have processed this one, that means, this
-         event is mentioned more then once */
+         event is mentioned more than once */
       for (j = 0; j < i; j++)
         {
           if (evptrs[i].ev == evptrs[j].ev)
