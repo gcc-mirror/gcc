@@ -1,3 +1,17 @@
+2004-04-20  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_legitimize_move): Generate special patterns
+	for mflo and mfhi instructions.
+	(mips_output_move): Remove mflo and mfhi handling.
+	* config/mips/mips.md (UNSPEC_MFHILO): New unspec.
+	(*mulsidi3_64bit): Update for new mfhi/mflo representation.
+	Likewise various define_peephole2s.
+	(*movdi_32bit, *movdi_64bit, *movsi_internal): Merge x<-J and x<-d
+	alternatives.
+	(*movdi_64bit, *movdi_64bit_mips16, *mov[shq]i_internal)
+	(*mov[shq]i_mips16): Remove mflo and mfhi alternatives.
+	(mfhilo_di, mfhilo_si): New patterns.
+
 2004-04-20  Josef Zlomek  <zlomekj@suse.cz>
 
 	* function.c (assign_parms): Force

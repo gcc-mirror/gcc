@@ -1990,6 +1990,23 @@ mips_legitimize_move (enum machine_mode mode, rtx dest, rtx src)
       return true;
     }
 
+  /* Check for individual, fully-reloaded mflo and mfhi instructions.  */
+  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
+      && REG_P (src) && MD_REG_P (REGNO (src))
+      && REG_P (dest) && GP_REG_P (REGNO (dest)))
+    {
+      int other_regno = REGNO (src) == HI_REGNUM ? LO_REGNUM : HI_REGNUM;
+      if (GET_MODE_SIZE (mode) <= 4)
+	emit_insn (gen_mfhilo_si (gen_rtx_REG (SImode, REGNO (dest)),
+				  gen_rtx_REG (SImode, REGNO (src)),
+				  gen_rtx_REG (SImode, other_regno)));
+      else
+	emit_insn (gen_mfhilo_di (gen_rtx_REG (DImode, REGNO (dest)),
+				  gen_rtx_REG (DImode, REGNO (src)),
+				  gen_rtx_REG (DImode, other_regno)));
+      return true;
+    }
+
   /* We need to deal with constants that would be legitimate
      immediate_operands but not legitimate move_operands.  */
   if (CONSTANT_P (src) && !move_operand (src, mode))
@@ -2600,9 +2617,6 @@ mips_output_move (rtx dest, rtx src)
     {
       if (src_code == REG)
 	{
-	  if (MD_REG_P (REGNO (src)))
-	    return "mf%1\t%0";
-
 	  if (ST_REG_P (REGNO (src)) && ISA_HAS_8CC)
 	    return "lui\t%0,0x3f80\n\tmovf\t%0,%.,%1";
 
