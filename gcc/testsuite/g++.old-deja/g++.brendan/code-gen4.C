@@ -9,7 +9,8 @@
 //
 // Workaround - declare "f1_arg" as type "short int".
 
-extern "C" int printf (const char *, ...); 
+#include <stdio.h>
+#include <stdlib.h>
 
 short int v2;
 
@@ -25,7 +26,7 @@ int main ()
 	f1 (v1);
 
 	if (v2 != 0x00007777)
-	  printf ("FAIL\n");
+	  abort ();
 	else
 	  printf ("PASS\n");
 }

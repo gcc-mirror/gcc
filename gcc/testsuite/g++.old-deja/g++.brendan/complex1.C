@@ -12,14 +12,16 @@ void exit (int);
 
 __complex__ double cd;
 
+int one = 1;
+
 int
-main(int argc, char *argv[])
+main()
 {
   cd = 1.0+90i;
-  cd *= argc;
+  cd *= one;
 
   if (__real__ cd != 1 || __imag__ cd != 90)
-    exit (1);
+    abort ();
 
   exit (0);
 }
