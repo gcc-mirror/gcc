@@ -1,3 +1,7 @@
+Wed Sep 10 17:05:46 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* config/alpha/elf.h (CPP_PREDEFINES): Remove -D__PIC__ -D__pic__.
+
 Wed Sep 10 16:01:15 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* m88k/m88k.c (struct option): Rename to struct options.
