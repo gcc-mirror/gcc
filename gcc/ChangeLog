@@ -1,3 +1,7 @@
+2000-03-03  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* config/mips/elf.h (CTOR_LISTS_DEFINED_EXTERNALLY): Added.
+
 2000-03-03  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_emit_set_const_1): Re-order cases to prefer
