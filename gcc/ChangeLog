@@ -1,5 +1,8 @@
 2003-01-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* expr.c (emit_group_store): Initialize dst with CONST0_RTX
+	for the appropriate mode.
+
 	* calls.c (emit_library_call_value_1): Handle return values
 	in a PARALLEL.
 

@@ -2436,7 +2436,7 @@ emit_group_store (orig_dst, src, ssize)
     {
       dst = gen_reg_rtx (GET_MODE (orig_dst));
       /* Make life a bit easier for combine.  */
-      emit_move_insn (dst, const0_rtx);
+      emit_move_insn (dst, CONST0_RTX (GET_MODE (orig_dst)));
     }
 
   /* Process the pieces.  */
