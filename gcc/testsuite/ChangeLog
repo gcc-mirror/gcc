@@ -1,3 +1,7 @@
+Sat Oct 16 00:05:48 1999  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c-torture/execute/991016-1.c: New test.
+
 Thu Oct 14 04:22:47 1999  Stephane Carrez  <stcarrez@worldnet.fr>
 
 	* gcc.c-torture/execute/991014-1.c: New test.
