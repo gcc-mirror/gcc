@@ -1,3 +1,8 @@
+Fri Mar  8 06:48:45 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* rtl.c (copy_most_rtx): Move from here ...
+	* emit-rtl.c (copy_most_rtx): ... to here.
+
 2002-03-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	* combine.c (simplify_comparison): If simplifying a logical shift
