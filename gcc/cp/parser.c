@@ -10766,6 +10766,16 @@ cp_parser_direct_declarator (cp_parser* parser,
 		      && same_type_p (TREE_TYPE (unqualified_name),
 				      class_type)))
 		*ctor_dtor_or_conv_p = -1;
+		if (TREE_CODE (declarator) == SCOPE_REF
+		    && TREE_CODE (unqualified_name) == TYPE_DECL 
+		    && CLASSTYPE_USE_TEMPLATE (TREE_TYPE (unqualified_name)))
+		  {
+		    error ("invalid use of constructor as a template");
+		    inform ("use `%T::%D' instead of `%T::%T' to name the "
+			    "constructor in a qualified name", class_type, 
+			    DECL_NAME (TYPE_TI_TEMPLATE (class_type)),
+			    class_type, class_type);
+		  }
 	    }
 
 	handle_declarator:;

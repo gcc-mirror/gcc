@@ -1,3 +1,8 @@
+2004-06-08  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/7841
+	* g++.old-deja/g++.pt/ctor2.C: Add error mark.
+
 2004-06-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/union-1.c: New test.
