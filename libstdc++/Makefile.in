@@ -87,7 +87,7 @@ $(ARLIB): stdlist
 	$(RANLIB) $(ARLIB)
 
 $(SHLIB): piclist
-	$(CXX) $(LIBCXXFLAGS) $(SHFLAGS) -shared -o $(SHLIB) `cat piclist` $(SHDEPS)
+	$(CC) $(LIBCXXFLAGS) $(SHFLAGS) -shared -o $(SHLIB) `cat piclist` $(SHDEPS)
 
 $(SHARLIB): $(SHLIB)
 	-rm -f t$(SHARLIB)
