@@ -248,6 +248,7 @@ The Implementation of Standard I/O
 * Sequential_IO::
 * Text_IO::
 * Wide_Text_IO::
+* Wide_Wide_Text_IO::
 * Stream_IO::
 * Shared Files::
 * Open Modes::
@@ -259,6 +260,8 @@ The GNAT Library
 * Ada.Characters.Latin_9 (a-chlat9.ads)::
 * Ada.Characters.Wide_Latin_1 (a-cwila1.ads)::
 * Ada.Characters.Wide_Latin_9 (a-cwila9.ads)::
+* Ada.Characters.Wide_Wide_Latin_1 (a-czila1.ads)::
+* Ada.Characters.Wide_Wide_Latin_9 (a-czila9.ads)::
 * Ada.Command_Line.Remove (a-colire.ads)::
 * Ada.Command_Line.Environment (a-colien.ads)::
 * Ada.Direct_IO.C_Streams (a-diocst.ads)::
@@ -268,8 +271,10 @@ The GNAT Library
 * Ada.Streams.Stream_IO.C_Streams (a-ssicst.ads)::
 * Ada.Strings.Unbounded.Text_IO (a-suteio.ads)::
 * Ada.Strings.Wide_Unbounded.Wide_Text_IO (a-swuwti.ads)::
+* Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO (a-szuzti.ads)::
 * Ada.Text_IO.C_Streams (a-tiocst.ads)::
 * Ada.Wide_Text_IO.C_Streams (a-wtcstr.ads)::
+* Ada.Wide_Wide_Text_IO.C_Streams (a-ztcstr.ads)::
 * GNAT.Array_Split (g-arrspl.ads)::
 * GNAT.AWK (g-awk.ads)::
 * GNAT.Bounded_Buffers (g-boubuf.ads)::
@@ -332,6 +337,7 @@ The GNAT Library
 * GNAT.Traceback (g-traceb.ads)::
 * GNAT.Traceback.Symbolic (g-trasym.ads)::
 * GNAT.Wide_String_Split (g-wistsp.ads)::
+* GNAT.Wide_Wide_String_Split (g-zistsp.ads)::
 * Interfaces.C.Extensions (i-cexten.ads)::
 * Interfaces.C.Streams (i-cstrea.ads)::
 * Interfaces.CPP (i-cpp.ads)::
@@ -365,6 +371,11 @@ Wide_Text_IO
 
 * Wide_Text_IO Stream Pointer Positioning::
 * Wide_Text_IO Reading and Writing Non-Regular Files::
+
+Wide_Wide_Text_IO
+
+* Wide_Wide_Text_IO Stream Pointer Positioning::
+* Wide_Wide_Text_IO Reading and Writing Non-Regular Files::
 
 Interfacing to Other Languages
 
@@ -2250,9 +2261,13 @@ as will any declaration of a scalar variable.  For composite variables,
 whether the variable is initialized may also depend on whether the package
 in which the type of the variable is declared is compiled with the pragma.
 
-The other important difference is that there is control over the value used
-for initializing scalar objects.  At bind time, you can select whether to
-initialize with invalid values (like Normalize_Scalars), or with high or
+The other important difference is that you can control the value used
+for initializing scalar objects.  At bind time, you can select several
+options for initialization. You can
+initialize with invalid values (similar to Normalize_Scalars, though for
+Initialize_Scalars it is not always possible to determine the invalid
+values in complex cases like signed component fields with non-standard
+sizes). You can also initialize with high or
 low values, or with a specified bit pattern.  See the users guide for binder
 options for specifying these cases.
 
@@ -2262,6 +2277,10 @@ for initializing otherwise uninitialized values, to test if your program
 behavior depends on the choice.  Of course the behavior should not change,
 and if it does, then most likely you have an erroneous reference to an
 uninitialized value.
+
+It is even possible to change the value at execution time eliminating even
+the need to rebind with a different switch using an environment variable.
+See the GNAT users guide for details.
 
 Note that pragma @code{Initialize_Scalars} is particularly useful in
 conjunction with the enhanced validity checking that is now provided
@@ -2730,45 +2749,60 @@ are as follows:
 @item Standard.Character
 @noindent
 Objects whose root type is Standard.Character are initialized to
-Character'Last.  This will be out of range of the subtype only if
-the subtype range excludes this value.
+Character'Last unless the subtype range excludes NUL (in which case
+NUL is used). This choice will always generate an invalid value if
+one exists.
 
 @item Standard.Wide_Character
 @noindent
 Objects whose root type is Standard.Wide_Character are initialized to
-Wide_Character'Last.  This will be out of range of the subtype only if
-the subtype range excludes this value.
+Wide_Character'Last unless the subtype range excludes NUL (in which case
+NUL is used). This choice will always generate an invalid value if
+one exists.
+
+@item Standard.Wide_Wide_Character
+@noindent
+Objects whose root type is Standard.Wide_Wide_Character are initialized to
+the invalid value 16#FFFF_FFFF# unless the subtype range excludes NUL (in
+which case NUL is used). This choice will always generate an invalid value if
+one exists.
 
 @item Integer types
 @noindent
-Objects of an integer type are initialized to base_type'First, where
-base_type is the base type of the object type.  This will be out of range
-of the subtype only if the subtype range excludes this value.  For example,
-if you declare the subtype:
+Objects of an integer type are treated differently depending on whether
+negative values are present in the subtype. If no negative values are
+present, then all one bits is used as the initial value except in the
+special case where zero is excluded from the subtype, in which case
+all zero bits are used. This choice will always generate an invalid
+value if one exists.
 
-@smallexample @c ada
-subtype Ityp is integer range 1 .. 10;
-@end smallexample
+For subtypes with negative values present, the largest negative number
+is used, except in the unusual case where this largest negative number
+is in the subtype, and the largest positive number is not, in which case
+the largest positive value is used. This choice will always generate
+an invalid value if one exists.
 
-@noindent
-then objects of type x will be initialized to Integer'First, a negative
-number that is certainly outside the range of subtype @code{Ityp}.
+@item Floating-Point Types
+Objects of all floating-point types are initialized to all 1-bits. For
+standard IEEE format, this corresponds to a NaN (not a number) which is
+indeed an invalid value.
 
-@item Real types
-Objects of all real types (fixed and floating) are initialized to
-base_type'First, where base_Type is the base type of the object type.
-This will be out of range of the subtype only if the subtype range
-excludes this value.
+@item Fixed-Point Types
+Objects of all fixed-point types are treated as described above for integers,
+with the rules applying to the underlying integer value used to represent
+the fixed-point value.
 
 @item Modular types
-Objects of a modular type are initialized to typ'Last.  This will be out
-of range of the subtype only if the subtype excludes this value.
+Objects of a modular type are initialized to all one bits, except in
+the special case where zero is excluded from the subtype, in which
+case all zero bits are used. This choice will always generate an
+invalid value if one exists.
 
 @item Enumeration types
 Objects of an enumeration type are initialized to all one-bits, i.e.@: to
-the value @code{2 ** typ'Size - 1}.  This will be out of range of the
-enumeration subtype in all cases except where the subtype contains
-exactly 2**8, 2**16, or 2**32 elements.
+the value @code{2 ** typ'Size - 1} unless the subtype excludes the literal
+whose Pos value is zero, in which case a code of zero is used. This choice
+will always generate an invalid value if one exists.
 
 @end table
 
@@ -7112,8 +7146,9 @@ to be output either by the compiler or binder.
 @item No_Wide_Characters
 @findex No_Wide_Characters
 This restriction ensures at compile time that no uses of the types
-@code{Wide_Character} or @code{Wide_String}
-appear, and that no wide character literals
+@code{Wide_Character} or @code{Wide_String} or corresponding wide
+wide types
+appear, and that no wide or wide wide string or character literals
 appear in the program (that is literals representing characters not in
 type @code{Character}.
 
@@ -10286,6 +10321,16 @@ packages without @samp{Wide_} in the name, but operate with the types
 @code{Wide_String} and @code{Wide_Character} instead of @code{String}
 and @code{Character}.
 
+@item Ada.Strings.Wide_Wide_Bounded (A.4.7)
+@itemx Ada.Strings.Wide_Wide_Fixed (A.4.7)
+@itemx Ada.Strings.Wide_Wide_Maps (A.4.7)
+@itemx Ada.Strings.Wide_Wide_Maps.Constants (A.4.7)
+@itemx Ada.Strings.Wide_Wide_Unbounded (A.4.7)
+These packages provide analogous capabilities to the corresponding
+packages without @samp{Wide_} in the name, but operate with the types
+@code{Wide_Wide_String} and @code{Wide_Wide_Character} instead
+of @code{String} and @code{Character}.
+
 @item Ada.Synchronous_Task_Control (D.10)
 This package provides some standard facilities for controlling task
 communication in a synchronous manner.
@@ -10474,7 +10519,71 @@ types are @code{Wide_Character} and @code{Wide_String} instead of
 This package is similar to @code{Ada.Text_IO.Streams}, except that the
 types are @code{Wide_Character} and @code{Wide_String} instead of
 @code{Character} and @code{String}.
+
+@item Ada.Wide_Wide_Text_IO (A.11)
+This package is similar to @code{Ada.Text_IO}, except that the external
+file supports wide character representations, and the internal types are
+@code{Wide_Character} and @code{Wide_String} instead of @code{Character}
+and @code{String}.  It contains generic subpackages listed next.
+
+@item Ada.Wide_Wide_Text_IO.Decimal_IO
+Provides input-output facilities for decimal fixed-point types
+
+@item Ada.Wide_Wide_Text_IO.Enumeration_IO
+Provides input-output facilities for enumeration types.
+
+@item Ada.Wide_Wide_Text_IO.Fixed_IO
+Provides input-output facilities for ordinary fixed-point types.
+
+@item Ada.Wide_Wide_Text_IO.Float_IO
+Provides input-output facilities for float types.  The following
+predefined instantiations of this generic package are available:
+
+@table @code
+@item Short_Float
+@code{Short_Float_Wide_Wide_Text_IO}
+@item Float
+@code{Float_Wide_Wide_Text_IO}
+@item Long_Float
+@code{Long_Float_Wide_Wide_Text_IO}
 @end table
+
+@item Ada.Wide_Wide_Text_IO.Integer_IO
+Provides input-output facilities for integer types.  The following
+predefined instantiations of this generic package are available:
+
+@table @code
+@item Short_Short_Integer
+@code{Ada.Short_Short_Integer_Wide_Wide_Text_IO}
+@item Short_Integer
+@code{Ada.Short_Integer_Wide_Wide_Text_IO}
+@item Integer
+@code{Ada.Integer_Wide_Wide_Text_IO}
+@item Long_Integer
+@code{Ada.Long_Integer_Wide_Wide_Text_IO}
+@item Long_Long_Integer
+@code{Ada.Long_Long_Integer_Wide_Wide_Text_IO}
+@end table
+
+@item Ada.Wide_Wide_Text_IO.Modular_IO
+Provides input-output facilities for modular (unsigned) types
+
+@item Ada.Wide_Wide_Text_IO.Complex_IO (G.1.3)
+This package is similar to @code{Ada.Text_IO.Complex_IO}, except that the
+external file supports wide character representations.
+
+@item Ada.Wide_Wide_Text_IO.Editing (F.3.4)
+This package is similar to @code{Ada.Text_IO.Editing}, except that the
+types are @code{Wide_Character} and @code{Wide_String} instead of
+@code{Character} and @code{String}.
+
+@item Ada.Wide_Wide_Text_IO.Streams (A.12.3)
+This package is similar to @code{Ada.Text_IO.Streams}, except that the
+types are @code{Wide_Character} and @code{Wide_String} instead of
+@code{Character} and @code{String}.
+@end table
+
+
 
 @node The Implementation of Standard I/O
 @chapter The Implementation of Standard I/O
@@ -10515,6 +10624,7 @@ these additional facilities are also described in this chapter.
 * Sequential_IO::
 * Text_IO::
 * Wide_Text_IO::
+* Wide_Wide_Text_IO::
 * Stream_IO::
 * Shared Files::
 * Open Modes::
@@ -10534,13 +10644,19 @@ Ada.Text_IO
 @item
 Ada.Text_IO.Complex_IO
 @item
-Ada.Text_IO.Text_Streams,
+Ada.Text_IO.Text_Streams
 @item
 Ada.Wide_Text_IO
 @item
-Ada.Wide_Text_IO.Complex_IO,
+Ada.Wide_Text_IO.Complex_IO
 @item
 Ada.Wide_Text_IO.Text_Streams
+@item
+Ada.Wide_Wide_Text_IO
+@item
+Ada.Wide_Wide_Text_IO.Complex_IO
+@item
+Ada.Wide_Wide_Text_IO.Text_Streams
 @item
 Ada.Stream_IO
 @item
@@ -10908,6 +11024,10 @@ The package @code{Ada.Strings.Wide_Unbounded.Wide_Text_IO} in library
 files @file{a-swuwti.ads} and @file{a-swuwti.adb} provides similar extended
 @code{Wide_Text_IO} functionality for unbounded wide strings.
 
+The package @code{Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO} in library
+files @file{a-szuzti.ads} and @file{a-szuzti.adb} provides similar extended
+@code{Wide_Wide_Text_IO} functionality for unbounded wide wide strings.
+
 @node Wide_Text_IO
 @section Wide_Text_IO
 
@@ -11070,6 +11190,148 @@ to a normal program using @code{Wide_Text_IO}.  However, this discrepancy
 can be observed if the wide text file shares a stream with another file.
 
 @node Wide_Text_IO Reading and Writing Non-Regular Files
+@subsection Reading and Writing Non-Regular Files
+
+@noindent
+As in the case of Text_IO, when a non-regular file is read, it is
+assumed that the file contains no page marks (any form characters are
+treated as data characters), and @code{End_Of_Page} always returns
+@code{False}.  Similarly, the end of file indication is not sticky, so
+it is possible to read beyond an end of file.
+
+@node Wide_Wide_Text_IO
+@section Wide_Wide_Text_IO
+
+@noindent
+@code{Wide_Wide_Text_IO} is similar in most respects to Text_IO, except that
+both input and output files may contain special sequences that represent
+wide wide character values.  The encoding scheme for a given file may be
+specified using a FORM parameter:
+
+@smallexample
+WCEM=@var{x}
+@end smallexample
+
+@noindent
+as part of the FORM string (WCEM = wide character encoding method),
+where @var{x} is one of the following characters
+
+@table @samp
+@item h
+Hex ESC encoding
+@item u
+Upper half encoding
+@item s
+Shift-JIS encoding
+@item e
+EUC Encoding
+@item 8
+UTF-8 encoding
+@item b
+Brackets encoding
+@end table
+
+@noindent
+The encoding methods match those that
+can be used in a source
+program, but there is no requirement that the encoding method used for
+the source program be the same as the encoding method used for files,
+and different files may use different encoding methods.
+
+The default encoding method for the standard files, and for opened files
+for which no WCEM parameter is given in the FORM string matches the
+wide character encoding specified for the main program (the default
+being brackets encoding if no coding method was specified with -gnatW).
+
+@table @asis
+
+@item UTF-8 Coding
+A wide character is represented using
+UCS Transformation Format 8 (UTF-8) as defined in Annex R of ISO
+10646-1/Am.2.  Depending on the character value, the representation
+is a one, two, three, or four byte sequence:
+
+@smallexample
+16#000000#-16#00007f#: 2#0xxxxxxx#
+16#000080#-16#0007ff#: 2#110xxxxx# 2#10xxxxxx#
+16#000800#-16#00ffff#: 2#1110xxxx# 2#10xxxxxx# 2#10xxxxxx#
+16#010000#-16#10ffff#: 2#11110xxx# 2#10xxxxxx# 2#10xxxxxx# 2#10xxxxxx#
+@end smallexample
+
+@noindent
+where the xxx bits correspond to the left-padded bits of the
+21-bit character value.  Note that all lower half ASCII characters
+are represented as ASCII bytes and all upper half characters and
+other wide characters are represented as sequences of upper-half
+characters.
+
+@item Brackets Coding
+In this encoding, a wide wide character is represented by the following eight
+character sequence if is in wide character range
+
+@smallexample
+[ " a b c d " ]
+@end smallexample
+
+and by the following ten character sequence if not
+
+@smallexample
+[ " a b c d e f " ]
+@end smallexample
+
+@noindent
+where @code{a}, @code{b}, @code{c}, @code{d}, @code{e}, and @code{f}
+are the four or six hexadecimal
+characters (using uppercase letters) of the wide wide character code.  For
+example, @code{["01A345"]} is used to represent the wide wide character
+with code @code{16#01A345#}.
+
+This scheme is compatible with use of the full Wide_Wide_Character set.
+On input, brackets coding can also be used for upper half characters,
+e.g.@: @code{["C1"]} for lower case a.  However, on output, brackets notation
+is only used for wide characters with a code greater than @code{16#FF#}.
+
+@end table
+
+@noindent
+If is also possible to use the other Wide_Character encoding methods,
+such as Shift-JIS, but the other schemes cannot support the full range
+of wide wide characters.
+An attempt to output a character that cannot
+be represented using the encoding scheme for the file causes
+Constraint_Error to be raised.  An invalid wide character sequence on
+input also causes Constraint_Error to be raised.
+
+@menu
+* Wide_Wide_Text_IO Stream Pointer Positioning::
+* Wide_Wide_Text_IO Reading and Writing Non-Regular Files::
+@end menu
+
+@node Wide_Wide_Text_IO Stream Pointer Positioning
+@subsection Stream Pointer Positioning
+
+@noindent
+@code{Ada.Wide_Wide_Text_IO} is similar to @code{Ada.Text_IO} in its handling
+of stream pointer positioning (@pxref{Text_IO}).  There is one additional
+case:
+
+If @code{Ada.Wide_Wide_Text_IO.Look_Ahead} reads a character outside the
+normal lower ASCII set (i.e.@: a character in the range:
+
+@smallexample @c ada
+Wide_Wide_Character'Val (16#0080#) .. Wide_Wide_Character'Val (16#10FFFF#)
+@end smallexample
+
+@noindent
+then although the logical position of the file pointer is unchanged by
+the @code{Look_Ahead} call, the stream is physically positioned past the
+wide character sequence.  Again this is to avoid the need for buffering
+or backup, and all @code{Wide_Wide_Text_IO} routines check the internal
+indication that this situation has occurred so that this is not visible
+to a normal program using @code{Wide_Wide_Text_IO}.  However, this discrepancy
+can be observed if the wide text file shares a stream with another file.
+
+@node Wide_Wide_Text_IO Reading and Writing Non-Regular Files
 @subsection Reading and Writing Non-Regular Files
 
 @noindent
@@ -11399,6 +11661,17 @@ operations.
         Form : in String := "");
  end Ada.Wide_Text_IO.C_Streams;
 
+  with Interfaces.C_Streams;
+  package Ada.Wide_Wide_Text_IO.C_Streams is
+     function C_Stream (F : File_Type)
+        return Interfaces.C_Streams.FILEs;
+     procedure Open
+       (File : in out File_Type;
+        Mode : in File_Mode;
+        C_Stream : in Interfaces.C_Streams.FILEs;
+        Form : in String := "");
+ end Ada.Wide_Wide_Text_IO.C_Streams;
+
  with Interfaces.C_Streams;
  package Ada.Stream_IO.C_Streams is
     function C_Stream (F : File_Type)
@@ -11412,7 +11685,7 @@ operations.
 @end smallexample
 
 @noindent
-In each of these five packages, the @code{C_Stream} function obtains the
+In each of these six packages, the @code{C_Stream} function obtains the
 @code{FILE} pointer from a currently opened Ada file.  It is then
 possible to use the @code{Interfaces.C_Streams} package to operate on
 this stream, or the stream can be passed to a C program which can
@@ -11466,6 +11739,8 @@ of GNAT, and will generate a warning message.
 * Ada.Characters.Latin_9 (a-chlat9.ads)::
 * Ada.Characters.Wide_Latin_1 (a-cwila1.ads)::
 * Ada.Characters.Wide_Latin_9 (a-cwila9.ads)::
+* Ada.Characters.Wide_Wide_Latin_1 (a-czila1.ads)::
+* Ada.Characters.Wide_Wide_Latin_9 (a-czila9.ads)::
 * Ada.Command_Line.Remove (a-colire.ads)::
 * Ada.Command_Line.Environment (a-colien.ads)::
 * Ada.Direct_IO.C_Streams (a-diocst.ads)::
@@ -11475,8 +11750,10 @@ of GNAT, and will generate a warning message.
 * Ada.Streams.Stream_IO.C_Streams (a-ssicst.ads)::
 * Ada.Strings.Unbounded.Text_IO (a-suteio.ads)::
 * Ada.Strings.Wide_Unbounded.Wide_Text_IO (a-swuwti.ads)::
+* Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO (a-szuzti.ads)::
 * Ada.Text_IO.C_Streams (a-tiocst.ads)::
 * Ada.Wide_Text_IO.C_Streams (a-wtcstr.ads)::
+* Ada.Wide_Wide_Text_IO.C_Streams (a-ztcstr.ads)::
 * GNAT.Array_Split (g-arrspl.ads)::
 * GNAT.AWK (g-awk.ads)::
 * GNAT.Bounded_Buffers (g-boubuf.ads)::
@@ -11539,6 +11816,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Traceback (g-traceb.ads)::
 * GNAT.Traceback.Symbolic (g-trasym.ads)::
 * GNAT.Wide_String_Split (g-wistsp.ads)::
+* GNAT.Wide_Wide_String_Split (g-zistsp.ads)::
 * Interfaces.C.Extensions (i-cexten.ads)::
 * Interfaces.C.Streams (i-cstrea.ads)::
 * Interfaces.CPP (i-cpp.ads)::
@@ -11598,6 +11876,34 @@ This child of @code{Ada.Characters}
 provides a set of definitions corresponding to those in the
 GNAT defined package @code{Ada.Characters.Latin_9} but with the
 types of the constants being @code{Wide_Character}
+instead of @code{Character}.  The provision of such a package
+is specifically authorized by the Ada Reference Manual
+(RM A.3(27)).
+
+@node Ada.Characters.Wide_Wide_Latin_1 (a-czila1.ads)
+@section @code{Ada.Characters.Wide_Wide_Latin_1} (@file{a-czila1.ads})
+@cindex @code{Ada.Characters.Wide_Wide_Latin_1} (@file{a-czila1.ads})
+@cindex Latin_1 constants for Wide_Wide_Character
+
+@noindent
+This child of @code{Ada.Characters}
+provides a set of definitions corresponding to those in the
+RM-defined package @code{Ada.Characters.Latin_1} but with the
+types of the constants being @code{Wide_Wide_Character}
+instead of @code{Character}.  The provision of such a package
+is specifically authorized by the Ada Reference Manual
+(RM A.3(27)).
+
+@node Ada.Characters.Wide_Wide_Latin_9 (a-czila9.ads)
+@section @code{Ada.Characters.Wide_Wide_Latin_9} (@file{a-czila9.ads})
+@cindex @code{Ada.Characters.Wide_Wide_Latin_9} (@file{a-czila9.ads})
+@cindex Latin_9 constants for Wide_Wide_Character
+
+@noindent
+This child of @code{Ada.Characters}
+provides a set of definitions corresponding to those in the
+GNAT defined package @code{Ada.Characters.Latin_9} but with the
+types of the constants being @code{Wide_Wide_Character}
 instead of @code{Character}.  The provision of such a package
 is specifically authorized by the Ada Reference Manual
 (RM A.3(27)).
@@ -11700,6 +12006,17 @@ This package provides subprograms for Text_IO for unbounded
 wide strings, avoiding the necessity for an intermediate operation
 with ordinary wide strings.
 
+@node Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO (a-szuzti.ads)
+@section @code{Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO} (@file{a-szuzti.ads})
+@cindex @code{Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO} (@file{a-szuzti.ads})
+@cindex @code{Unbounded_Wide_Wide_String}, IO support
+@cindex @code{Text_IO}, extensions for unbounded wide wide strings
+
+@noindent
+This package provides subprograms for Text_IO for unbounded
+wide wide strings, avoiding the necessity for an intermediate operation
+with ordinary wide wide strings.
+
 @node Ada.Text_IO.C_Streams (a-tiocst.ads)
 @section @code{Ada.Text_IO.C_Streams} (@file{a-tiocst.ads})
 @cindex @code{Ada.Text_IO.C_Streams} (@file{a-tiocst.ads})
@@ -11721,6 +12038,18 @@ This package provides subprograms that allow interfacing between
 C streams and @code{Wide_Text_IO}.  The stream identifier can be
 extracted from a file opened on the Ada side, and an Ada file
 can be constructed from a stream opened on the C side.
+
+@node Ada.Wide_Wide_Text_IO.C_Streams (a-ztcstr.ads)
+@section @code{Ada.Wide_Wide_Text_IO.C_Streams} (@file{a-ztcstr.ads})
+@cindex @code{Ada.Wide_Wide_Text_IO.C_Streams} (@file{a-ztcstr.ads})
+@cindex C Streams, Interfacing with @code{Wide_Wide_Text_IO}
+
+@noindent
+This package provides subprograms that allow interfacing between
+C streams and @code{Wide_Wide_Text_IO}.  The stream identifier can be
+extracted from a file opened on the Ada side, and an Ada file
+can be constructed from a stream opened on the C side.
+
 
 @node GNAT.Array_Split (g-arrspl.ads)
 @section @code{GNAT.Array_Split} (@file{g-arrspl.ads})
@@ -12336,7 +12665,7 @@ defines a string access and an array of string access types.
 @cindex String splitter
 
 @noindent
-Useful string-manipulation routines: given a set of separators, split
+Useful string manipulation routines: given a set of separators, split
 a string wherever the separators appear, and provide direct access
 to the resulting slices. This package is instantiated from
 @code{GNAT.Array_Split}.
@@ -12406,8 +12735,19 @@ name and line number information.
 @cindex Wide_String splitter
 
 @noindent
-Useful wide_string-manipulation routines: given a set of separators, split
-a wide_string wherever the separators appear, and provide direct access
+Useful wide string manipulation routines: given a set of separators, split
+a wide string wherever the separators appear, and provide direct access
+to the resulting slices. This package is instantiated from
+@code{GNAT.Array_Split}.
+
+@node GNAT.Wide_Wide_String_Split (g-zistsp.ads)
+@section @code{GNAT.Wide_Wide_String_Split} (@file{g-zistsp.ads})
+@cindex @code{GNAT.Wide_Wide_String_Split} (@file{g-zistsp.ads})
+@cindex Wide_Wide_String splitter
+
+@noindent
+Useful wide wide string manipulation routines: given a set of separators, split
+a wide wide string wherever the separators appear, and provide direct access
 to the resulting slices. This package is instantiated from
 @code{GNAT.Array_Split}.
 
@@ -12610,7 +12950,7 @@ to support the @code{Task_Info} pragma
 
 @noindent
 This package provides routines for converting between
-wide characters and a representation as a value of type
+wide and wide wide characters and a representation as a value of type
 @code{Standard.String}, using a specified wide character
 encoding method.  It uses definitions in
 package @code{System.Wch_Con}.

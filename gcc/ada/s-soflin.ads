@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,8 +121,7 @@ package System.Soft_Links is
    --  Handle task abortion (non-tasking case, does nothing). Currently,
    --  only VMS uses this.
 
-   procedure Update_Exception_NT
-     (X : EO := Current_Target_Exception);
+   procedure Update_Exception_NT (X : EO := Current_Target_Exception);
    --  Handle exception setting. This routine is provided for targets
    --  which have built-in exception handling such as the Java Virtual
    --  Machine. Currently, only JGNAT uses this. See 4jexcept.ads for

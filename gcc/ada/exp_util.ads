@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -262,9 +262,9 @@ package Exp_Util is
    --  copy of the subexpression, and returns it. This is intended for use
    --  when the expansion of an expression needs to repeat part of it. For
    --  example, replacing a**2 by a*a requires two references to a which
-   --  may be a complex subexpression. Duplicate_Subexpression guarantees
-   --  not to duplicate side effects. If necessary, it generates actions
-   --  to save the expression value in a temporary, inserting these actions
+   --  may be a complex subexpression. Duplicate_Subexpr guarantees not
+   --  to duplicate side effects. If necessary, it generates actions to
+   --  save the expression value in a temporary, inserting these actions
    --  into the tree using Insert_Actions with Exp as the insertion location.
    --  The original expression and the returned result then become references
    --  to this saved value. Exp must be analyzed on entry. On return, Exp
@@ -349,7 +349,7 @@ package Exp_Util is
    --  Force the evaluation of the expression right away. Similar behavior
    --  to Remove_Side_Effects when Variable_Ref is set to TRUE. That is to
    --  say, it removes the side-effects and capture the values of the
-   --  variables. Remove_Side_effects guarantees that multiple evaluations
+   --  variables. Remove_Side_Effects guarantees that multiple evaluations
    --  of the same expression won't generate multiple side effects, whereas
    --  Force_Evaluation further guarantees that all evaluations will yield
    --  the same result.
