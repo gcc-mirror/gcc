@@ -110,10 +110,10 @@ choose_temp_base ()
   char *base = 0;
   char *temp_filename;
   int len;
+  int fd;
   static char tmp[] = { DIR_SEPARATOR, 't', 'm', 'p', 0 };
   static char usrtmp[] = { DIR_SEPARATOR, 'u', 's', 'r', DIR_SEPARATOR, 't', 'm', 'p', 0 };
 
-#ifndef MPW
   base = try (getenv ("TMPDIR"), base);
   base = try (getenv ("TMP"), base);
   base = try (getenv ("TEMP"), base);
@@ -130,28 +130,24 @@ choose_temp_base ()
   if (base == 0)
     base = ".";
 
-#else /* MPW */
-  base = ":";
-#endif
-
   len = strlen (base);
   temp_filename = xmalloc (len + 1 /*DIR_SEPARATOR*/
 			   + strlen (TEMP_FILE) + 1);
   strcpy (temp_filename, base);
 
-#ifndef MPW
   if (len != 0
       && temp_filename[len-1] != '/'
       && temp_filename[len-1] != DIR_SEPARATOR)
     temp_filename[len++] = DIR_SEPARATOR;
-#else /* MPW */
-  if (temp_filename[len-1] != ':')
-    temp_filename[len++] = ':';
-#endif /* MPW */
   strcpy (temp_filename + len, TEMP_FILE);
 
-  mktemp (temp_filename);
-  if (strlen (temp_filename) == 0)
+  fd = mkstemp (temp_filename);
+  /* If mkstemp failed, then something bad is happening.  Maybe we should
+     issue a message about a possible security attack in progress?  */
+  if (fd == -1)
+    abort ();
+  /* Similarly if we can not close the file.  */
+  if (close (fd))
     abort ();
   return temp_filename;
 }

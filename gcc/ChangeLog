@@ -1,3 +1,18 @@
+Sat Jun 27 01:35:14 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* choose-temp.c (choose_temp_base): Remove MPW bits.  Use mkstemp
+	instead of mktemp.
+	* gcc.c (MKTEMP_EACH_FILE): Define.
+	(main): No need to call choose_temp_base if we are going to
+	use choose_temp_base to create each file later.
+	* mkstemp.c: New file.  Adapted from glibc.
+	* Makefile.in (xgcc, colect2, protoize, unprotoize): Link in mkstemp.o
+	(mkstemp.o): Add dependencies.
+
+        * configure.in (gettimeofday): Check for its existance.
+        * config.in (HAVE_GETTIMEOFDAY): Define.
+        * configure: Rebuilt.
+
 1998-06-26  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.md (ne 0, non power case): Add missing & constraint.
