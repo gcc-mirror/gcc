@@ -1,3 +1,16 @@
+2004-02-01  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.def (BUILT_IN_SIGNBIT, BUILT_IN_SIGNBITF,
+	BUILT_IN_SIGNBITL): New GCC builtins.
+	* builtins.c (expand_builtin_signbit): New function to RTL expand
+	calls to signbit, signbitf and signbitl as inline intrinsics.
+	(expand_builtin): Call expand_builtin_signbit for BUILT_IN_SIGNBIT*.
+	(fold_builtin_signbit): New function to perform constant folding
+	of signbit, signbitf and signbitl.
+	(fold_builtin): Call fold_builtin_signbit for BUILT_IN_SIGNBIT*.
+
+	* doc/extend.texi: Document new signbit{,f,l} builtins.
+
 2004-02-01  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (adddi3_internal_2): Remove superfluous %s.
