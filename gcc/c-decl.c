@@ -553,9 +553,10 @@ int warn_missing_braces;
 
 int warn_main;
 
-/* Warn about comparison of signed and unsigned values.  */
+/* Warn about comparison of signed and unsigned values.
+   If -1, neither -Wsign-compare nor -Wno-sign-compare has been specified.  */
 
-int warn_sign_compare;
+int warn_sign_compare = -1;
 
 /* Nonzero means `$' can be in an identifier.  */
 
@@ -758,7 +759,6 @@ c_decode_option (p)
       warn_char_subscripts = 1;
       warn_parentheses = 1;
       warn_missing_braces = 1;
-      warn_sign_compare = 1;
       /* We set this to 2 here, but 1 in -Wmain, so -ffreestanding can turn
 	 it off only if it's not explicit.  */
       warn_main = 2;
