@@ -513,6 +513,83 @@ bool test11()
   return test;
 }
 
+// libstdc++/3720
+// excess input should not cause a core dump
+template<typename T>
+bool test12_aux(bool integer_type)
+{
+  bool test = true;
+  
+  int digits_overflow;
+  if (integer_type)
+    // This many digits will overflow integer types in base 10.
+    digits_overflow = std::numeric_limits<T>::digits10 + 1;
+  else
+    // This might do it, unsure.
+    digits_overflow = std::numeric_limits<T>::max_exponent10 + 1;
+  
+  std::string st;
+  std::string part = "1234567890123456789012345678901234567890";
+  for (int i = 0; i < digits_overflow / part.size() + 1; ++i)
+    st += part;
+  std::stringbuf sb(st);
+  std::istream is(&sb);
+  T t;
+  is >> t;
+  VERIFY(is.fail());
+  return test;
+}
+
+bool test12()
+{
+  bool test = true;
+  VERIFY(test12_aux<short>(true));
+  VERIFY(test12_aux<int>(true));
+  VERIFY(test12_aux<long>(true));
+  VERIFY(test12_aux<float>(false));
+  VERIFY(test12_aux<double>(false));
+  VERIFY(test12_aux<long double>(false));
+  return test;
+}
+
+// libstdc++/3720 part two
+void test13()
+{
+  using namespace std;
+  bool test = true;
+  const char* l1 = "12345678901234567890123456789012345678901234567890123456";
+  const char* l2 = "1.2345678901234567890123456789012345678901234567890123456"
+                   "  "
+                   "1246.9";
+
+  // 1 
+  // used to core.
+  double d;
+  istringstream iss1(l2);
+  iss1 >> d;
+  iss1 >> d;
+  VERIFY (d > 1246 && d < 1247);
+
+  // 2
+  // quick test for failbit on maximum length extraction.
+  int i;
+  int max_digits = numeric_limits<int>::digits10;
+  string digits;
+  for (int j = 0; j < max_digits; ++j)
+    digits += '1';
+  istringstream iss2(digits);
+  iss2 >> i;
+  VERIFY( iss2.good() );
+
+  digits += '1';
+  i = 0;
+  iss2.str(digits);
+  iss2.clear();
+  iss2 >> i; 
+  VERIFY( i == 0 );
+  VERIFY( iss2.fail() );
+}
+
 int main()
 {
   test01();
@@ -526,6 +603,7 @@ int main()
   test10();
   
   test11();
+  test12();
   return 0;
 }
 

@@ -74,7 +74,7 @@ namespace std
   // Definitions for static const data members of locale::id
   size_t locale::id::_S_highwater;  // init'd to 0 by linker
 
-  const char __num_base::_S_atoms[] = "0123456789eEabcdfxABCDFX";
+  const char __num_base::_S_atoms[] = "0123456789eEabcdfABCDF";
 
   // Definitions for static const data members of locale::_Impl
   const locale::id* const

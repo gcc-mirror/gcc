@@ -1,3 +1,23 @@
+2001-12-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/3720
+	* include/bits/locale_facets.tcc (num_put): Clean.
+	(num_get::_M_extract_float): Change argument to string. 
+	(num_get::do_get(float)): Fixup.
+	(num_get::do_get(double)): Same.
+	(num_get::do_get(long double)): Same.
+	(num_get::_M_extract_int): Add maximum length parameter, __max.
+	(num_get::_M_extract_float): Correct zeros, use string.
+	* include/bits/locale_facets.h (num_get::_M_extract_float): Change
+	declaration here.
+	* src/locale.cc (__num_base::_S_atoms): Remove x, X.
+	* testsuite/27_io/istream_extractor_arith.cc (test13): Add.
+	
+2001-12-06  Philip Martin  <pmartin@uklinux.net>
+
+	* testsuite/27_io/istream_extractor_arith.cc (test12): Add
+	tests for excess input digits.
+
 2001-12-06  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/std_bitset.h:  Use GLIBCPP in multiple-inclusion guard.
@@ -42,7 +62,7 @@
 2001-12-04  Paolo Carlini <pcarlini@unitus.it>
 
         libstdc++/4402
-        * testsuite/27_io/ostream_inserter_arith.cc (test02): add testcase
+        * testsuite/27_io/ostream_inserter_arith.cc (test02): Add testcase
 	from the PR.
         * include/bits/locale_facets.tcc (num_put::_M_convert_float):
         Deal properly with long ios_base::fixed floats.
