@@ -6795,7 +6795,8 @@ print_operand_address (file, addr)
 	      || GET_CODE (addr) == LABEL_REF
 	      || (GET_CODE (addr) == CONST
 		  && GET_CODE (XEXP (addr, 0)) == PLUS
-		  && GET_CODE (XEXP (XEXP (addr, 0), 0)) == SYMBOL_REF
+		  && (GET_CODE (XEXP (XEXP (addr, 0), 0)) == SYMBOL_REF
+		      || GET_CODE (XEXP (XEXP (addr, 0), 0)) == LABEL_REF)
 		  && GET_CODE (XEXP (XEXP (addr, 0), 1)) == CONST_INT)))
 	fputs ("(%rip)", file);
     }
