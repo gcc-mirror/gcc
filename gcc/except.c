@@ -844,6 +844,12 @@ find_all_handler_type_matches (array)
             }
         }
     }
+
+  if (n_ptr == 0)
+    {
+      free (ptr);
+      ptr = NULL;
+    }
   *array = ptr;
   return n_ptr;
 }
