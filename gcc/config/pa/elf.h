@@ -42,6 +42,11 @@ Boston, MA 02111-1307, USA.  */
   output_addr_const (FILE, (VALUE));		\
   fputs ("\n", FILE);}
 
+#define ASM_OUTPUT_DOUBLE_INT(FILE,VALUE)  \
+{ fputs ("\t.dword ", FILE);			\
+  output_addr_const (FILE, (VALUE));		\
+  fputs ("\n", FILE);}
+
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) \
 do {  \
@@ -56,4 +61,3 @@ do {  \
      if (write_symbols != NO_DEBUG) \
        output_file_directive ((FILE), main_input_filename); \
    } while (0)
-
