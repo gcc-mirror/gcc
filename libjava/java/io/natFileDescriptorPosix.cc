@@ -96,8 +96,7 @@ java::io::FileDescriptor::open (jstring path, jint jflags)
 	flags |= O_TRUNC;
     }
 
-  // FIXME: mode?
-  int fd = ::open (buf, flags, 0755);
+  int fd = ::open (buf, flags, 0644);
   if (fd == -1)
     {
       char msg[MAXPATHLEN + 200];

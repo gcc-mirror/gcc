@@ -10,6 +10,8 @@
 	null.
 	* java/net/natPlainDatagramSocketImpl (bind): Expect `0.0.0.0'
 	instead of null.
+	* java/io/natFile.cc (performMkdir): Remove FIXME.
+	* java/io/natFileDescriptorPosix.cc (open): Use 0644 file mode.
 
 1999-08-01  Alexandre Oliva  <oliva@dcc.unicamp.br>
 

@@ -227,7 +227,6 @@ java::io::File::performMkdir (void)
   buf[total] = '\0';
 
 #ifdef HAVE_MKDIR
-  // FIXME: mode.
   return ::mkdir (buf, 0755) == 0;
 #else
   return false;
