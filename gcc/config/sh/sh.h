@@ -1516,11 +1516,11 @@ extern char *output_far_jump();
 
 /* Define this macro if you want to implement any pragmas.  If defined, it
    is a C expression to be executed when #pragma is seen.  The
-   argument STREAM is the stdio input stream from which the source
+   argument FILE is the stdio input stream from which the source
    text can be read.  CH is the first character after the #pragma.  The
    result of the expression is the terminating character found
    (newline or EOF).  */
-#define HANDLE_PRAGMA(FILE, CH) return handle_pragma (FILE, CH)
+#define HANDLE_PRAGMA(FILE, CH) handle_pragma (FILE, CH)
 
 /* Set when processing a function with pragma interrupt turned on.  */
 
