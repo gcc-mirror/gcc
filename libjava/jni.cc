@@ -1,6 +1,6 @@
 // jni.cc - JNI implementation, including the jump table.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -8,12 +8,78 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
+// Note: currently we take the approach of not checking most
+// arguments.  Instead we could do more checking conditionally (e.g.,
+// if DEBUG is defined).  That might be beneficial in some cases,
+// though to me it seems that one could just as easily use the
+// debugger.
+
 #include <config.h>
 
 #include <stddef.h>
 
+// Must define this before jni.h.
+#define GCJ_JV_JNIENV_FRIEND \
+    friend jthrowable &get_throwable (JNIEnv *)
+
+#include <gcj/cni.h>
+#include <jvm.h>
+#include <java-assert.h>
 #include <jni.h>
 #include <gcj/field.h>
+#include <java/lang/Throwable.h>
+#include <java/lang/ArrayIndexOutOfBoundsException.h>
+#include <java/lang/InstantiationException.h>
+#include <java/lang/NoSuchFieldError.h>
+#include <java/lang/NoSuchMethodError.h>
+#include <java/lang/reflect/Constructor.h>
+#include <java/lang/reflect/Modifier.h>
+
+#define ClassClass _CL_Q34java4lang5Class
+extern java::lang::Class ClassClass;
+#define ObjectClass _CL_Q34java4lang6Object
+extern java::lang::Class ObjectClass;
+
+// This enum is used to select different template instantiations in
+// the invocation code.
+enum invocation_type
+{
+  normal,
+  nonvirtual,
+  static_type,
+  constructor
+};
+
+
+
+// Tell the GC that a certain pointer is live.
+static void
+mark_for_gc (void *)
+{
+  // FIXME.
+}
+
+// Unmark a pointer.
+static void
+unmark_for_gc (void *)
+{
+  // FIXME.
+}
+
+// Return throwable in env.
+jthrowable &
+get_throwable (JNIEnv *env)
+{
+  return env->ex;
+}
+
+
+
+static jint
+_Jv_JNI_GetVersion (JNIEnv *)
+{
+  return JNI_VERSION_1_2;
+}
 
 static jclass
 _Jv_JNI_GetSuperclass (JNIEnv *, jclass clazz)
@@ -27,40 +93,729 @@ IsAssignableFrom(JNIEnv *, jclass clazz1, jclass clazz2)
   return clazz1->isAssignableFrom (clazz2);
 }
 
-static jobject
-_Jv_JNI_GetObjectField (JNIEnv *, jobject obj, jfieldID field) 
+static jint
+_Jv_JNI_Throw (JNIEnv *env, jthrowable obj)
 {
-  return _Jv_GetObjectField (obj, field);
-}
-
-static jbyte
-_Jv_JNI_GetByteField (JNIEnv *, jobject obj, jfieldID field) 
-{
-  return _Jv_GetByteField (obj, field);
-}
-
-static jshort
-_Jv_JNI_GetShortField (JNIEnv *, jobject obj, jfieldID field) 
-{
-  return _Jv_GetShortField (obj, field);
+  get_throwable (env) = obj;
+  return 0;
 }
 
 static jint
-_Jv_JNI_GetIntField (JNIEnv *, jobject obj, jfieldID field) 
+_Jv_JNI_ThrowNew (JNIEnv *env, jclass clazz, const char *message)
 {
-  return _Jv_GetIntField (obj, field);
+  using namespace java::lang::reflect;
+
+  JArray<jclass> *argtypes
+    = (JArray<jclass> *) JvNewObjectArray (1, &ClassClass, NULL);
+
+  jclass *elts = elements (argtypes);
+  elts[0] = &StringClass;
+
+  // FIXME: exception processing.
+  Constructor *cons = clazz->getConstructor (argtypes);
+
+  jobjectArray values = JvNewObjectArray (1, &StringClass, NULL);
+  jobject *velts = elements (values);
+  velts[0] = JvNewStringUTF (message);
+
+  // FIXME: exception processing.
+  jobject obj = cons->newInstance (values);
+
+  get_throwable (env) = reinterpret_cast<jthrowable> (obj);
+  return 0;
 }
 
-static jlong
-_Jv_JNI_GetLongField (JNIEnv *, jobject obj, jfieldID field) 
+static jthrowable
+_Jv_JNI_ExceptionOccurred (JNIEnv *env)
 {
-  return _Jv_GetLongField (obj, field);
+  return get_throwable (env);
+}
+
+static void
+_Jv_JNI_ExceptionDescribe (JNIEnv *env)
+{
+  if (get_throwable (env) != NULL)
+    get_throwable (env)->printStackTrace();
+}
+
+static void
+_Jv_JNI_ExceptionClear (JNIEnv *env)
+{
+  get_throwable (env) = NULL;
+}
+
+static void
+_Jv_JNI_FatalError (JNIEnv *, const char *message)
+{
+  JvFail (message);
+}
+
+static jboolean
+_Jv_JNI_IsSameObject (JNIEnv *, jobject obj1, jobject obj2)
+{
+  return obj1 == obj2;
+}
+
+static jobject
+_Jv_JNI_AllocObject (JNIEnv *env, jclass clazz)
+{
+  jobject obj = NULL;
+  using namespace java::lang::reflect;
+  if (clazz->isInterface() || Modifier::isAbstract(clazz->getModifiers()))
+    get_throwable (env) = new java::lang::InstantiationException ();
+  else
+    {
+      // FIXME: exception processing.
+      // FIXME: will this work for String?
+      obj = JvAllocObject (clazz);
+    }
+
+  return obj;
+}
+
+static jclass
+_Jv_JNI_GetObjectClass (JNIEnv *, jobject obj)
+{
+  return obj->getClass();
+}
+
+static jboolean
+_Jv_JNI_IsInstanceOf (JNIEnv *, jobject obj, jclass clazz)
+{
+  return clazz->isInstance(obj);
+}
+
+
+
+//
+// This section concerns method invocation.
+//
+
+template<jboolean is_static>
+static jmethodID
+_Jv_JNI_GetAnyMethodID (JNIEnv *env, jclass clazz,
+			const char *name, const char *sig)
+{
+  // FIXME: exception processing.
+  _Jv_InitClass (clazz);
+
+  _Jv_Utf8Const *name_u = _Jv_makeUtf8Const ((char *) name, -1);
+  _Jv_Utf8Const *sig_u = _Jv_makeUtf8Const ((char *) sig, -1);
+
+  JvAssert (! clazz->isPrimitive());
+
+  using namespace java::lang::reflect;
+
+  while (clazz != NULL)
+    {
+      jint count = JvNumMethods (clazz);
+      jmethodID meth = JvGetFirstMethod (clazz);
+
+      for (jint i = 0; i < count; ++i)
+	{
+	  if (((is_static && Modifier::isStatic (meth->accflags))
+	       || (! is_static && ! Modifier::isStatic (meth->accflags)))
+	      && _Jv_equalUtf8Consts (meth->name, name_u)
+	      && _Jv_equalUtf8Consts (meth->signature, sig_u))
+	    return meth;
+
+	  meth = meth->getNextMethod();
+	}
+
+      clazz = clazz->getSuperclass ();
+    }
+
+  get_throwable (env) = new java::lang::NoSuchMethodError ();
+  return NULL;
+}
+
+// This is a helper function which turns a va_list into an array of
+// `jvalue's.  It needs signature information in order to do its work.
+// The array of values must already be allocated.
+static void
+array_from_valist (jvalue *values, JArray<jclass> *arg_types, va_list vargs)
+{
+  jclass *arg_elts = elements (arg_types);
+  for (int i = 0; i < arg_types->length; ++i)
+    {
+      if (arg_elts[i] == JvPrimClass (byte))
+	values[i].b = va_arg (vargs, jbyte);
+      else if (arg_elts[i] == JvPrimClass (short))
+	values[i].s = va_arg (vargs, jshort);
+      else if (arg_elts[i] == JvPrimClass (int))
+	values[i].i = va_arg (vargs, jint);
+      else if (arg_elts[i] == JvPrimClass (long))
+	values[i].j = va_arg (vargs, jlong);
+      else if (arg_elts[i] == JvPrimClass (float))
+	values[i].f = va_arg (vargs, jfloat);
+      else if (arg_elts[i] == JvPrimClass (double))
+	values[i].d = va_arg (vargs, jdouble);
+      else if (arg_elts[i] == JvPrimClass (boolean))
+	values[i].z = va_arg (vargs, jboolean);
+      else if (arg_elts[i] == JvPrimClass (char))
+	values[i].c = va_arg (vargs, jchar);
+      else
+	{
+	  // An object.
+	  values[i].l = va_arg (vargs, jobject);
+	}
+    }
+}
+
+// This can call any sort of method: virtual, "nonvirtual", static, or
+// constructor.
+template<typename T, invocation_type style>
+static T
+_Jv_JNI_CallAnyMethodV (JNIEnv *env, jobject obj, jclass klass,
+			jmethodID id, va_list vargs)
+{
+  if (style == normal)
+    id = _Jv_LookupDeclaredMethod (obj->getClass (), id->name, id->signature);
+
+  jclass decl_class = klass ? klass : obj->getClass ();
+  JvAssert (decl_class != NULL);
+
+  jclass return_type;
+  JArray<jclass> *arg_types;
+  // FIXME: exception processing.
+  _Jv_GetTypesFromSignature (id, decl_class,
+			     &arg_types, &return_type);
+
+  jvalue args[arg_types->length];
+  array_from_valist (args, arg_types, vargs);
+
+  jvalue result;
+  jthrowable ex = _Jv_CallAnyMethodA (obj, return_type, id,
+				      style == constructor,
+				      arg_types, args, &result);
+
+  if (ex != NULL)
+    get_throwable (env) = ex;
+
+  // We cheat a little here.  FIXME.
+  return * (T *) &result;
+}
+
+template<typename T, invocation_type style>
+static T
+_Jv_JNI_CallAnyMethod (JNIEnv *env, jobject obj, jclass klass,
+		       jmethodID method, ...)
+{
+  va_list args;
+  T result;
+
+  va_start (args, method);
+  result = _Jv_JNI_CallAnyMethodV<T, style> (env, obj, klass, method, args);
+  va_end (args);
+
+  return result;
+}
+
+template<typename T, invocation_type style>
+static T
+_Jv_JNI_CallAnyMethodA (JNIEnv *env, jobject obj, jclass klass,
+			jmethodID id, jvalue *args)
+{
+  if (style == normal)
+    id = _Jv_LookupDeclaredMethod (obj->getClass (), id->name, id->signature);
+
+  jclass decl_class = klass ? klass : obj->getClass ();
+  JvAssert (decl_class != NULL);
+
+  jclass return_type;
+  JArray<jclass> *arg_types;
+  // FIXME: exception processing.
+  _Jv_GetTypesFromSignature (id, decl_class,
+			     &arg_types, &return_type);
+
+  jvalue result;
+  jthrowable ex = _Jv_CallAnyMethodA (obj, return_type, id,
+				      style == constructor,
+				      arg_types, args, &result);
+
+  if (ex != NULL)
+    get_throwable (env) = ex;
+
+  // We cheat a little here.  FIXME.
+  return * (T *) &result;
+}
+
+template<invocation_type style>
+static void
+_Jv_JNI_CallAnyVoidMethodV (JNIEnv *env, jobject obj, jclass klass,
+			    jmethodID id, va_list vargs)
+{
+  if (style == normal)
+    id = _Jv_LookupDeclaredMethod (obj->getClass (), id->name, id->signature);
+
+  jclass decl_class = klass ? klass : obj->getClass ();
+  JvAssert (decl_class != NULL);
+
+  jclass return_type;
+  JArray<jclass> *arg_types;
+  // FIXME: exception processing.
+  _Jv_GetTypesFromSignature (id, decl_class,
+			     &arg_types, &return_type);
+
+  jvalue args[arg_types->length];
+  array_from_valist (args, arg_types, vargs);
+
+  jthrowable ex = _Jv_CallAnyMethodA (obj, return_type, id,
+				      style == constructor,
+				      arg_types, args, NULL);
+
+  if (ex != NULL)
+    get_throwable (env) = ex;
+}
+
+template<invocation_type style>
+static void
+_Jv_JNI_CallAnyVoidMethod (JNIEnv *env, jobject obj, jclass klass,
+			   jmethodID method, ...)
+{
+  va_list args;
+
+  va_start (args, method);
+  _Jv_JNI_CallAnyVoidMethodV<style> (env, obj, klass, method, args);
+  va_end (args);
+}
+
+template<invocation_type style>
+static void
+_Jv_JNI_CallAnyVoidMethodA (JNIEnv *env, jobject obj, jclass klass,
+			    jmethodID id, jvalue *args)
+{
+  if (style == normal)
+    id = _Jv_LookupDeclaredMethod (obj->getClass (), id->name, id->signature);
+
+  jclass decl_class = klass ? klass : obj->getClass ();
+  JvAssert (decl_class != NULL);
+
+  jclass return_type;
+  JArray<jclass> *arg_types;
+  // FIXME: exception processing.
+  _Jv_GetTypesFromSignature (id, decl_class,
+			     &arg_types, &return_type);
+
+  jthrowable ex = _Jv_CallAnyMethodA (obj, return_type, id,
+				      style == constructor,
+				      arg_types, args, NULL);
+
+  if (ex != NULL)
+    get_throwable (env) = ex;
+}
+
+// Functions with this signature are used to implement functions in
+// the CallMethod family.
+template<typename T>
+static T
+_Jv_JNI_CallMethodV (JNIEnv *env, jobject obj, jmethodID id, va_list args)
+{
+  return _Jv_JNI_CallAnyMethodV<T, normal> (env, obj, NULL, id, args);
+}
+
+// Functions with this signature are used to implement functions in
+// the CallMethod family.
+template<typename T>
+static T
+_Jv_JNI_CallMethod (JNIEnv *env, jobject obj, jmethodID id, ...)
+{
+  va_list args;
+  T result;
+
+  va_start (args, id);
+  result = _Jv_JNI_CallAnyMethodV<T, normal> (env, obj, NULL, id, args);
+  va_end (args);
+
+  return result;
+}
+
+// Functions with this signature are used to implement functions in
+// the CallMethod family.
+template<typename T>
+static T
+_Jv_JNI_CallMethodA (JNIEnv *env, jobject obj, jmethodID id, jvalue *args)
+{
+  return _Jv_JNI_CallAnyMethodA<T, normal> (env, obj, NULL, id, args);
+}
+
+static void
+_Jv_JNI_CallVoidMethodV (JNIEnv *env, jobject obj, jmethodID id, va_list args)
+{
+  _Jv_JNI_CallAnyVoidMethodV<normal> (env, obj, NULL, id, args);
+}
+
+static void
+_Jv_JNI_CallVoidMethod (JNIEnv *env, jobject obj, jmethodID id, ...)
+{
+  va_list args;
+
+  va_start (args, id);
+  _Jv_JNI_CallAnyVoidMethodV<normal> (env, obj, NULL, id, args);
+  va_end (args);
+}
+
+static void
+_Jv_JNI_CallVoidMethodA (JNIEnv *env, jobject obj, jmethodID id, jvalue *args)
+{
+  _Jv_JNI_CallAnyVoidMethodA<normal> (env, obj, NULL, id, args);
+}
+
+// Functions with this signature are used to implement functions in
+// the CallStaticMethod family.
+template<typename T>
+static T
+_Jv_JNI_CallStaticMethodV (JNIEnv *env, jclass klass,
+			   jmethodID id, va_list args)
+{
+  return _Jv_JNI_CallAnyMethodV<T, static_type> (env, NULL, klass, id, args);
+}
+
+// Functions with this signature are used to implement functions in
+// the CallStaticMethod family.
+template<typename T>
+static T
+_Jv_JNI_CallStaticMethod (JNIEnv *env, jclass klass, jmethodID id, ...)
+{
+  va_list args;
+  T result;
+
+  va_start (args, id);
+  result = _Jv_JNI_CallAnyMethodV<T, static_type> (env, NULL, klass,
+						   id, args);
+  va_end (args);
+
+  return result;
+}
+
+// Functions with this signature are used to implement functions in
+// the CallStaticMethod family.
+template<typename T>
+static T
+_Jv_JNI_CallStaticMethodA (JNIEnv *env, jclass klass, jmethodID id,
+			   jvalue *args)
+{
+  return _Jv_JNI_CallAnyMethodA<T, static_type> (env, NULL, klass, id, args);
+}
+
+static void
+_Jv_JNI_CallStaticVoidMethodV (JNIEnv *env, jclass klass, jmethodID id,
+			       va_list args)
+{
+  _Jv_JNI_CallAnyVoidMethodV<static_type> (env, NULL, klass, id, args);
+}
+
+static void
+_Jv_JNI_CallStaticVoidMethod (JNIEnv *env, jclass klass, jmethodID id, ...)
+{
+  va_list args;
+
+  va_start (args, id);
+  _Jv_JNI_CallAnyVoidMethodV<static_type> (env, NULL, klass, id, args);
+  va_end (args);
+}
+
+static void
+_Jv_JNI_CallStaticVoidMethodA (JNIEnv *env, jclass klass, jmethodID id,
+			       jvalue *args)
+{
+  _Jv_JNI_CallAnyVoidMethodA<static_type> (env, NULL, klass, id, args);
+}
+
+static jobject
+_Jv_JNI_NewObjectV (JNIEnv *env, jclass klass,
+		    jmethodID id, va_list args)
+{
+  return _Jv_JNI_CallAnyMethodV<jobject, constructor> (env, NULL, klass,
+						       id, args);
+}
+
+static jobject
+_Jv_JNI_NewObject (JNIEnv *env, jclass klass, jmethodID id, ...)
+{
+  va_list args;
+  jobject result;
+
+  va_start (args, id);
+  result = _Jv_JNI_CallAnyMethodV<jobject, constructor> (env, NULL, klass,
+							 id, args);
+  va_end (args);
+
+  return result;
+}
+
+static jobject
+_Jv_JNI_NewObjectA (JNIEnv *env, jclass klass, jmethodID id,
+		    jvalue *args)
+{
+  return _Jv_JNI_CallAnyMethodA<jobject, constructor> (env, NULL, klass,
+						       id, args);
+}
+
+
+
+template<typename T>
+static T
+_Jv_JNI_GetField (JNIEnv *, jobject obj, jfieldID field) 
+{
+  T *ptr = (T *) ((char *) obj + field->getOffset ());
+  return *ptr;
+}
+
+template<typename T>
+static void
+_Jv_JNI_SetField (JNIEnv *, jobject obj, jfieldID field, T value)
+{
+  T *ptr = (T *) ((char *) obj + field->getOffset ());
+  *ptr = value;
+}
+
+template<jboolean is_static>
+static jfieldID
+_Jv_JNI_GetAnyFieldID (JNIEnv *env, jclass clazz,
+		       const char *name, const char *sig)
+{
+  // FIXME: exception processing.
+  _Jv_InitClass (clazz);
+
+  _Jv_Utf8Const *a_name = _Jv_makeUtf8Const ((char *) name, -1);
+
+  jclass field_class = NULL;
+  if (sig[0] == '[')
+    field_class = _Jv_FindClassFromSignature ((char *) sig, NULL);
+  else
+    {
+      _Jv_Utf8Const *sig_u = _Jv_makeUtf8Const ((char *) sig, -1);
+      field_class = _Jv_FindClass (sig_u, NULL);
+    }
+
+  // FIXME: what if field_class == NULL?
+
+  while (clazz != NULL)
+    {
+      jint count = (is_static
+		    ? JvNumStaticFields (clazz)
+		    : JvNumInstanceFields (clazz));
+      jfieldID field = (is_static
+			? JvGetFirstStaticField (clazz)
+			: JvGetFirstInstanceField (clazz));
+      for (jint i = 0; i < count; ++i)
+	{
+	  // The field is resolved as a side effect of class
+	  // initialization.
+	  JvAssert (field->isResolved ());
+
+	  _Jv_Utf8Const *f_name = field->getNameUtf8Const(clazz);
+
+	  if (_Jv_equalUtf8Consts (f_name, a_name)
+	      && field->getClass() == field_class)
+	    return field;
+
+	  field = field->getNextField ();
+	}
+
+      clazz = clazz->getSuperclass ();
+    }
+
+  get_throwable (env) = new java::lang::NoSuchFieldError ();
+  return NULL;
+}
+
+template<typename T>
+static T
+_Jv_JNI_GetStaticField (JNIEnv *, jclass, jfieldID field)
+{
+  T *ptr = (T *) field->u.addr;
+  return *ptr;
+}
+
+template<typename T>
+static void
+_Jv_JNI_SetStaticField (JNIEnv *, jclass, jfieldID field, T value)
+{
+  T *ptr = (T *) field->u.addr;
+  *ptr = value;
+}
+
+static jstring
+_Jv_JNI_NewString (JNIEnv *, const jchar *unichars, jsize len)
+{
+  // FIXME: exception processing.
+  jstring r = _Jv_NewString (unichars, len);
+  return r;
 }
 
 static jsize
 _Jv_JNI_GetStringLength (JNIEnv *, jstring string)
 {
   return string->length();
+}
+
+static const jchar *
+_Jv_JNI_GetStringChars (JNIEnv *, jstring string, jboolean *isCopy)
+{
+  jchar *result = _Jv_GetStringChars (string);
+  mark_for_gc (result);
+  if (isCopy)
+    *isCopy = false;
+  return (const jchar *) result;
+}
+
+static void
+_Jv_JNI_ReleaseStringChars (JNIEnv *, jstring, const jchar *chars)
+{
+  unmark_for_gc ((void *) chars);
+}
+
+static jstring
+_Jv_JNI_NewStringUTF (JNIEnv *, const char *bytes)
+{
+  // FIXME: exception processing.
+  jstring r = JvNewStringUTF (bytes);
+  return r;
+}
+
+static jsize
+_Jv_JNI_GetStringUTFLength (JNIEnv *, jstring string)
+{
+  return JvGetStringUTFLength (string);
+}
+
+static const char *
+_Jv_JNI_GetStringUTFChars (JNIEnv *, jstring string, jboolean *isCopy)
+{
+  jsize len = JvGetStringUTFLength (string);
+  // FIXME: exception processing.
+  char *r = (char *) _Jv_Malloc (len + 1);
+  JvGetStringUTFRegion (string, 0, len, r);
+  r[len] = '\0';
+
+  if (isCopy)
+    *isCopy = true;
+
+  return (const char *) r;
+}
+
+static void
+_Jv_JNI_ReleaseStringUTFChars (JNIEnv *, jstring, const char *utf)
+{
+  _Jv_Free ((void *) utf);
+}
+
+static jsize
+_Jv_JNI_GetArrayLength (JNIEnv *, jarray array)
+{
+  return array->length;
+}
+
+static jarray
+_Jv_JNI_NewObjectArray (JNIEnv *, jsize length, jclass elementClass,
+			jobject init)
+{
+  // FIXME: exception processing.
+  jarray result = JvNewObjectArray (length, elementClass, init);
+  return result;
+}
+
+static jobject
+_Jv_JNI_GetObjectArrayElement (JNIEnv *, jobjectArray array, jsize index)
+{
+  jobject *elts = elements (array);
+  return elts[index];
+}
+
+static void
+_Jv_JNI_SetObjectArrayElement (JNIEnv *, jobjectArray array, jsize index,
+			       jobject value)
+{
+  // FIXME: exception processing.
+  _Jv_CheckArrayStore (array, value);
+  jobject *elts = elements (array);
+  elts[index] = value;
+}
+
+template<typename T, jclass K>
+static JArray<T> *
+_Jv_JNI_NewPrimitiveArray (JNIEnv *, jsize length)
+{
+  return (JArray<T> *) _Jv_NewPrimArray (K, length);
+}
+
+template<typename T>
+static T *
+_Jv_JNI_GetPrimitiveArrayElements (JNIEnv *, JArray<T> *array,
+				   jboolean *isCopy)
+{
+  T *elts = elements (array);
+  if (isCopy)
+    {
+      // We elect never to copy.
+      *isCopy = false;
+    }
+  mark_for_gc (elts);
+  return elts;
+}
+
+template<typename T>
+static void
+_Jv_JNI_ReleasePrimitiveArrayElements (JNIEnv *, JArray<T> *,
+				       T *elems, jint /* mode */)
+{
+  // Note that we ignore MODE.  We can do this because we never copy
+  // the array elements.  My reading of the JNI documentation is that
+  // this is an option for the implementor.
+  unmark_for_gc (elems);
+}
+
+template<typename T>
+static void
+_Jv_JNI_GetPrimitiveArrayRegion (JNIEnv *env, JArray<T> *array,
+				 jsize start, jsize len,
+				 T *buf)
+{
+  if (start < 0 || len >= array->length || start + len >= array->length)
+    {
+      // FIXME: index.
+      get_throwable (env) = new java::lang::ArrayIndexOutOfBoundsException ();
+    }
+  else
+    {
+      T *elts = elements (array) + start;
+      memcpy (buf, elts, len * sizeof (T));
+    }
+}
+
+template<typename T>
+static void
+_Jv_JNI_SetPrimitiveArrayRegion (JNIEnv *env, JArray<T> *array, 
+				 jsize start, jsize len, T *buf)
+{
+  if (start < 0 || len >= array->length || start + len >= array->length)
+    {
+      // FIXME: index.
+      get_throwable (env) = new java::lang::ArrayIndexOutOfBoundsException ();
+    }
+  else
+    {
+      T *elts = elements (array) + start;
+      memcpy (elts, buf, len * sizeof (T));
+    }
+}
+
+static jint
+_Jv_JNI_MonitorEnter (JNIEnv *, jobject obj)
+{
+  // FIXME: exception processing.
+  jint r = _Jv_MonitorEnter (obj);
+  return r;
+}
+
+static jint
+_Jv_JNI_MonitorExit (JNIEnv *, jobject obj)
+{
+  // FIXME: exception processing.
+  jint r = _Jv_MonitorExit (obj);
+  return r;
 }
 
 // JDK 1.2
@@ -82,227 +837,234 @@ _Jv_JNI_FromReflectedField (JNIEnv *, java::lang::reflect::Field *field)
 }
 
 #define NOT_IMPL NULL
+#define RESERVED NULL
 
 struct JNINativeInterface _Jv_JNIFunctions =
 {
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NOT_IMPL /* GetVersion */,
+  RESERVED,
+  RESERVED,
+  RESERVED,
+  RESERVED,
+  _Jv_JNI_GetVersion,
   NOT_IMPL /* DefineClass */,
   NOT_IMPL /* FindClass */,
-  NULL,
-  NULL,
-  NULL,
+  RESERVED,
+  RESERVED,
+  RESERVED,
   _Jv_JNI_GetSuperclass,
   IsAssignableFrom,
-  NULL,
-  NOT_IMPL /* Throw */,
-  NOT_IMPL /* ThrowNew */,
-  NOT_IMPL /* ExceptionOccurred */,
-  NOT_IMPL /* ExceptionDescribe */,
-  NOT_IMPL /* ExceptionClear */,
-  NOT_IMPL /* FatalError */,
-  NOT_IMPL /* NULL */,
-  NOT_IMPL /* NULL */,
+  RESERVED,
+  _Jv_JNI_Throw,
+  _Jv_JNI_ThrowNew,
+  _Jv_JNI_ExceptionOccurred,
+  _Jv_JNI_ExceptionDescribe,
+  _Jv_JNI_ExceptionClear,
+  _Jv_JNI_FatalError,
+  RESERVED,
+  RESERVED,
   NOT_IMPL /* NewGlobalRef */,
   NOT_IMPL /* DeleteGlobalRef */,
   NOT_IMPL /* DeleteLocalRef */,
-  NOT_IMPL /* IsSameObject */,
-  NOT_IMPL /* NULL */,
-  NOT_IMPL /* NULL */,
-  NOT_IMPL /* AllocObject */,
-  NOT_IMPL /* NewObject */,
-  NOT_IMPL /* NewObjectV */,
-  NOT_IMPL /* NewObjectA */,
-  NOT_IMPL /* GetObjectClass */,
-  NOT_IMPL /* IsInstanceOf */,
-  NOT_IMPL /* GetMethodID */,
-  NOT_IMPL /* CallObjectMethod */,
-  NOT_IMPL /* CallObjectMethodV */,
-  NOT_IMPL /* CallObjectMethodA */,
-  NOT_IMPL /* CallBooleanMethod */,
-  NOT_IMPL /* CallBooleanMethodV */,
-  NOT_IMPL /* CallBooleanMethodA */,
-  NOT_IMPL /* CallByteMethod */,
-  NOT_IMPL /* CallByteMethodV */,
-  NOT_IMPL /* CallByteMethodA */,
-  NOT_IMPL /* CallCharMethod */,
-  NOT_IMPL /* CallCharMethodV */,
-  NOT_IMPL /* CallCharMethodA */,
-  NOT_IMPL /* CallShortMethod */,
-  NOT_IMPL /* CallShortMethodV */,
-  NOT_IMPL /* CallShortMethodA */,
-  NOT_IMPL /* CallIntMethod */,
-  NOT_IMPL /* CallIntMethodV */,
-  NOT_IMPL /* CallIntMethodA */,
-  NOT_IMPL /* CallLongMethod */,
-  NOT_IMPL /* CallLongMethodV */,
-  NOT_IMPL /* CallLongMethodA */,
-  NOT_IMPL /* CallFloatMethod */,
-  NOT_IMPL /* CallFloatMethodV */,
-  NOT_IMPL /* CallFloatMethodA */,
-  NOT_IMPL /* CallDoubleMethod */,
-  NOT_IMPL /* CallDoubleMethodV */,
-  NOT_IMPL /* CallDoubleMethodA */,
-  NOT_IMPL /* CallVoidMethod */,
-  NOT_IMPL /* CallVoidMethodV */,
-  NOT_IMPL /* CallVoidMethodA */,
-  NOT_IMPL /* CallNonvirtualObjectMethod */,
-  NOT_IMPL /* CallNonvirtualObjectMethodV */,
-  NOT_IMPL /* CallNonvirtualObjectMethodA */,
-  NOT_IMPL /* CallNonvirtualBooleanMethod */,
-  NOT_IMPL /* CallNonvirtualBooleanMethodV */,
-  NOT_IMPL /* CallNonvirtualBooleanMethodA */,
-  NOT_IMPL /* CallNonvirtualByteMethod */,
-  NOT_IMPL /* CallNonvirtualByteMethodV */,
-  NOT_IMPL /* CallNonvirtualByteMethodA */,
-  NOT_IMPL /* CallNonvirtualCharMethod */,
-  NOT_IMPL /* CallNonvirtualCharMethodV */,
-  NOT_IMPL /* CallNonvirtualCharMethodA */,
-  NOT_IMPL /* CallNonvirtualShortMethod */,
-  NOT_IMPL /* CallNonvirtualShortMethodV */,
-  NOT_IMPL /* CallNonvirtualShortMethodA */,
-  NOT_IMPL /* CallNonvirtualIntMethod */,
-  NOT_IMPL /* CallNonvirtualIntMethodV */,
-  NOT_IMPL /* CallNonvirtualIntMethodA */,
-  NOT_IMPL /* CallNonvirtualLongMethod */,
-  NOT_IMPL /* CallNonvirtualLongMethodV */,
-  NOT_IMPL /* CallNonvirtualLongMethodA */,
-  NOT_IMPL /* CallNonvirtualFloatMethod */,
-  NOT_IMPL /* CallNonvirtualFloatMethodV */,
-  NOT_IMPL /* CallNonvirtualFloatMethodA */,
-  NOT_IMPL /* CallNonvirtualDoubleMethod */,
-  NOT_IMPL /* CallNonvirtualDoubleMethodV */,
-  NOT_IMPL /* CallNonvirtualDoubleMethodA */,
-  NOT_IMPL /* CallNonvirtualVoidMethod */,
-  NOT_IMPL /* CallNonvirtualVoidMethodV */,
-  NOT_IMPL /* CallNonvirtualVoidMethodA */,
-  NOT_IMPL /* GetFieldID */,
-  _Jv_JNI_GetObjectField,
-  NOT_IMPL /* GetBooleanField */,
-  _Jv_JNI_GetByteField,
-  NOT_IMPL /* GetCharField */,
-  _Jv_JNI_GetShortField,
-  _Jv_JNI_GetIntField,
-  _Jv_JNI_GetLongField,
-  NOT_IMPL /* GetFloatField */,
-  NOT_IMPL /* GetDoubleField */,
-  NOT_IMPL /* SetObjectField */,
-  NOT_IMPL /* SetBooleanField */,
-  NOT_IMPL /* SetByteField */,
-  NOT_IMPL /* SetCharField */,
-  NOT_IMPL /* SetShortField */,
-  NOT_IMPL /* SetIntField */,
-  NOT_IMPL /* SetLongField */,
-  NOT_IMPL /* SetFloatField */,
-  NOT_IMPL /* SetDoubleField */,
-  NOT_IMPL /* GetStaticMethodID */,
-  NOT_IMPL /* CallStaticObjectMethod */,
-  NOT_IMPL /* CallStaticObjectMethodV */,
-  NOT_IMPL /* CallStaticObjectMethodA */,
-  NOT_IMPL /* CallStaticBooleanMethod */,
-  NOT_IMPL /* CallStaticBooleanMethodV */,
-  NOT_IMPL /* CallStaticBooleanMethodA */,
-  NOT_IMPL /* CallStaticByteMethod */,
-  NOT_IMPL /* CallStaticByteMethodV */,
-  NOT_IMPL /* CallStaticByteMethodA */,
-  NOT_IMPL /* CallStaticCharMethod */,
-  NOT_IMPL /* CallStaticCharMethodV */,
-  NOT_IMPL /* CallStaticCharMethodA */,
-  NOT_IMPL /* CallStaticShortMethod */,
-  NOT_IMPL /* CallStaticShortMethodV */,
-  NOT_IMPL /* CallStaticShortMethodA */,
-  NOT_IMPL /* CallStaticIntMethod */,
-  NOT_IMPL /* CallStaticIntMethodV */,
-  NOT_IMPL /* CallStaticIntMethodA */,
-  NOT_IMPL /* CallStaticLongMethod */,
-  NOT_IMPL /* CallStaticLongMethodV */,
-  NOT_IMPL /* CallStaticLongMethodA */,
-  NOT_IMPL /* CallStaticFloatMethod */,
-  NOT_IMPL /* CallStaticFloatMethodV */,
-  NOT_IMPL /* CallStaticFloatMethodA */,
-  NOT_IMPL /* CallStaticDoubleMethod */,
-  NOT_IMPL /* CallStaticDoubleMethodV */,
-  NOT_IMPL /* CallStaticDoubleMethodA */,
-  NOT_IMPL /* CallStaticVoidMethod */,
-  NOT_IMPL /* CallStaticVoidMethodV */,
-  NOT_IMPL /* CallStaticVoidMethodA */,
-  NOT_IMPL /* GetStaticFieldID */,
-  NOT_IMPL /* GetStaticObjectField */,
-  NOT_IMPL /* GetStaticBooleanField */,
-  NOT_IMPL /* GetStaticByteField */,
-  NOT_IMPL /* GetStaticCharField */,
-  NOT_IMPL /* GetStaticShortField */,
-  NOT_IMPL /* GetStaticIntField */,
-  NOT_IMPL /* GetStaticLongField */,
-  NOT_IMPL /* GetStaticFloatField */,
-  NOT_IMPL /* GetStaticDoubleField */,
-  NOT_IMPL /* SetStaticObjectField */,
-  NOT_IMPL /* SetStaticBooleanField */,
-  NOT_IMPL /* SetStaticByteField */,
-  NOT_IMPL /* SetStaticCharField */,
-  NOT_IMPL /* SetStaticShortField */,
-  NOT_IMPL /* SetStaticIntField */,
-  NOT_IMPL /* SetStaticLongField */,
-  NOT_IMPL /* SetStaticFloatField */,
-  NOT_IMPL /* SetStaticDoubleField */,
-  NOT_IMPL /* NewString */,
+  _Jv_JNI_IsSameObject,
+  RESERVED,
+  RESERVED,
+  _Jv_JNI_AllocObject,
+  _Jv_JNI_NewObject,
+  _Jv_JNI_NewObjectV,
+  _Jv_JNI_NewObjectA,
+  _Jv_JNI_GetObjectClass,
+  _Jv_JNI_IsInstanceOf,
+  _Jv_JNI_GetAnyMethodID<false>,
+
+  _Jv_JNI_CallMethod<jobject>,
+  _Jv_JNI_CallMethodV<jobject>,
+  _Jv_JNI_CallMethodA<jobject>,
+  _Jv_JNI_CallMethod<jboolean>,
+  _Jv_JNI_CallMethodV<jboolean>,
+  _Jv_JNI_CallMethodA<jboolean>,
+  _Jv_JNI_CallMethod<jbyte>,
+  _Jv_JNI_CallMethodV<jbyte>,
+  _Jv_JNI_CallMethodA<jbyte>,
+  _Jv_JNI_CallMethod<jchar>,
+  _Jv_JNI_CallMethodV<jchar>,
+  _Jv_JNI_CallMethodA<jchar>,
+  _Jv_JNI_CallMethod<jshort>,
+  _Jv_JNI_CallMethodV<jshort>,
+  _Jv_JNI_CallMethodA<jshort>,
+  _Jv_JNI_CallMethod<jint>,
+  _Jv_JNI_CallMethodV<jint>,
+  _Jv_JNI_CallMethodA<jint>,
+  _Jv_JNI_CallMethod<jlong>,
+  _Jv_JNI_CallMethodV<jlong>,
+  _Jv_JNI_CallMethodA<jlong>,
+  _Jv_JNI_CallMethod<jfloat>,
+  _Jv_JNI_CallMethodV<jfloat>,
+  _Jv_JNI_CallMethodA<jfloat>,
+  _Jv_JNI_CallMethod<jdouble>,
+  _Jv_JNI_CallMethodV<jdouble>,
+  _Jv_JNI_CallMethodA<jdouble>,
+  _Jv_JNI_CallVoidMethod,
+  _Jv_JNI_CallVoidMethodV,
+  _Jv_JNI_CallVoidMethodA,
+
+  // Nonvirtual method invocation functions follow.
+  _Jv_JNI_CallAnyMethod<jobject, nonvirtual>,
+  _Jv_JNI_CallAnyMethodV<jobject, nonvirtual>,
+  _Jv_JNI_CallAnyMethodA<jobject, nonvirtual>,
+  _Jv_JNI_CallAnyMethod<jboolean, nonvirtual>,
+  _Jv_JNI_CallAnyMethodV<jboolean, nonvirtual>,
+  _Jv_JNI_CallAnyMethodA<jboolean, nonvirtual>,
+  _Jv_JNI_CallAnyMethod<jbyte, nonvirtual>,
+  _Jv_JNI_CallAnyMethodV<jbyte, nonvirtual>,
+  _Jv_JNI_CallAnyMethodA<jbyte, nonvirtual>,
+  _Jv_JNI_CallAnyMethod<jchar, nonvirtual>,
+  _Jv_JNI_CallAnyMethodV<jchar, nonvirtual>,
+  _Jv_JNI_CallAnyMethodA<jchar, nonvirtual>,
+  _Jv_JNI_CallAnyMethod<jshort, nonvirtual>,
+  _Jv_JNI_CallAnyMethodV<jshort, nonvirtual>,
+  _Jv_JNI_CallAnyMethodA<jshort, nonvirtual>,
+  _Jv_JNI_CallAnyMethod<jint, nonvirtual>,
+  _Jv_JNI_CallAnyMethodV<jint, nonvirtual>,
+  _Jv_JNI_CallAnyMethodA<jint, nonvirtual>,
+  _Jv_JNI_CallAnyMethod<jlong, nonvirtual>,
+  _Jv_JNI_CallAnyMethodV<jlong, nonvirtual>,
+  _Jv_JNI_CallAnyMethodA<jlong, nonvirtual>,
+  _Jv_JNI_CallAnyMethod<jfloat, nonvirtual>,
+  _Jv_JNI_CallAnyMethodV<jfloat, nonvirtual>,
+  _Jv_JNI_CallAnyMethodA<jfloat, nonvirtual>,
+  _Jv_JNI_CallAnyMethod<jdouble, nonvirtual>,
+  _Jv_JNI_CallAnyMethodV<jdouble, nonvirtual>,
+  _Jv_JNI_CallAnyMethodA<jdouble, nonvirtual>,
+  _Jv_JNI_CallAnyVoidMethod<nonvirtual>,
+  _Jv_JNI_CallAnyVoidMethodV<nonvirtual>,
+  _Jv_JNI_CallAnyVoidMethodA<nonvirtual>,
+
+  _Jv_JNI_GetAnyFieldID<false>,
+  _Jv_JNI_GetField<jobject>,
+  _Jv_JNI_GetField<jboolean>,
+  _Jv_JNI_GetField<jbyte>,
+  _Jv_JNI_GetField<jchar>,
+  _Jv_JNI_GetField<jshort>,
+  _Jv_JNI_GetField<jint>,
+  _Jv_JNI_GetField<jlong>,
+  _Jv_JNI_GetField<jfloat>,
+  _Jv_JNI_GetField<jdouble>,
+  _Jv_JNI_SetField,
+  _Jv_JNI_SetField,
+  _Jv_JNI_SetField,
+  _Jv_JNI_SetField,
+  _Jv_JNI_SetField,
+  _Jv_JNI_SetField,
+  _Jv_JNI_SetField,
+  _Jv_JNI_SetField,
+  _Jv_JNI_SetField,
+  _Jv_JNI_GetAnyMethodID<true>,
+
+  _Jv_JNI_CallStaticMethod<jobject>,
+  _Jv_JNI_CallStaticMethodV<jobject>,
+  _Jv_JNI_CallStaticMethodA<jobject>,
+  _Jv_JNI_CallStaticMethod<jboolean>,
+  _Jv_JNI_CallStaticMethodV<jboolean>,
+  _Jv_JNI_CallStaticMethodA<jboolean>,
+  _Jv_JNI_CallStaticMethod<jbyte>,
+  _Jv_JNI_CallStaticMethodV<jbyte>,
+  _Jv_JNI_CallStaticMethodA<jbyte>,
+  _Jv_JNI_CallStaticMethod<jchar>,
+  _Jv_JNI_CallStaticMethodV<jchar>,
+  _Jv_JNI_CallStaticMethodA<jchar>,
+  _Jv_JNI_CallStaticMethod<jshort>,
+  _Jv_JNI_CallStaticMethodV<jshort>,
+  _Jv_JNI_CallStaticMethodA<jshort>,
+  _Jv_JNI_CallStaticMethod<jint>,
+  _Jv_JNI_CallStaticMethodV<jint>,
+  _Jv_JNI_CallStaticMethodA<jint>,
+  _Jv_JNI_CallStaticMethod<jlong>,
+  _Jv_JNI_CallStaticMethodV<jlong>,
+  _Jv_JNI_CallStaticMethodA<jlong>,
+  _Jv_JNI_CallStaticMethod<jfloat>,
+  _Jv_JNI_CallStaticMethodV<jfloat>,
+  _Jv_JNI_CallStaticMethodA<jfloat>,
+  _Jv_JNI_CallStaticMethod<jdouble>,
+  _Jv_JNI_CallStaticMethodV<jdouble>,
+  _Jv_JNI_CallStaticMethodA<jdouble>,
+  _Jv_JNI_CallStaticVoidMethod,
+  _Jv_JNI_CallStaticVoidMethodV,
+  _Jv_JNI_CallStaticVoidMethodA,
+
+  _Jv_JNI_GetAnyFieldID<true>,
+  _Jv_JNI_GetStaticField<jobject>,
+  _Jv_JNI_GetStaticField<jboolean>,
+  _Jv_JNI_GetStaticField<jbyte>,
+  _Jv_JNI_GetStaticField<jchar>,
+  _Jv_JNI_GetStaticField<jshort>,
+  _Jv_JNI_GetStaticField<jint>,
+  _Jv_JNI_GetStaticField<jlong>,
+  _Jv_JNI_GetStaticField<jfloat>,
+  _Jv_JNI_GetStaticField<jdouble>,
+  _Jv_JNI_SetStaticField,
+  _Jv_JNI_SetStaticField,
+  _Jv_JNI_SetStaticField,
+  _Jv_JNI_SetStaticField,
+  _Jv_JNI_SetStaticField,
+  _Jv_JNI_SetStaticField,
+  _Jv_JNI_SetStaticField,
+  _Jv_JNI_SetStaticField,
+  _Jv_JNI_SetStaticField,
+  _Jv_JNI_NewString,
   _Jv_JNI_GetStringLength,
-  NOT_IMPL /* GetStringChars */,
-  NOT_IMPL /* ReleaseStringChars */,
-  NOT_IMPL /* NewStringUTF */,
-  NOT_IMPL /* GetStringUTFLength */,
-  NOT_IMPL /* GetStringUTFChars */,
-  NOT_IMPL /* ReleaseStringUTFChars */,
-  NOT_IMPL /* GetArrayLength */,
-  NOT_IMPL /* NewObjectArray */,
-  NOT_IMPL /* GetObjectArrayElement */,
-  NOT_IMPL /* SetObjectArrayElement */,
-  NOT_IMPL /* NewBooleanArray */,
-  NOT_IMPL /* NewByteArray */,
-  NOT_IMPL /* NewCharArray */,
-  NOT_IMPL /* NewShortArray */,
-  NOT_IMPL /* NewIntArray */,
-  NOT_IMPL /* NewLongArray */,
-  NOT_IMPL /* NewFloatArray */,
-  NOT_IMPL /* NewDoubleArray */,
-  NOT_IMPL /* GetBooleanArrayElements */,
-  NOT_IMPL /* GetByteArrayElements */,
-  NOT_IMPL /* GetCharArrayElements */,
-  NOT_IMPL /* GetShortArrayElements */,
-  NOT_IMPL /* GetIntArrayElements */,
-  NOT_IMPL /* GetLongArrayElements */,
-  NOT_IMPL /* GetFloatArrayElements */,
-  NOT_IMPL /* GetDoubleArrayElements */,
-  NOT_IMPL /* ReleaseBooleanArrayElements */,
-  NOT_IMPL /* ReleaseByteArrayElements */,
-  NOT_IMPL /* ReleaseCharArrayElements */,
-  NOT_IMPL /* ReleaseShortArrayElements */,
-  NOT_IMPL /* ReleaseIntArrayElements */,
-  NOT_IMPL /* ReleaseLongArrayElements */,
-  NOT_IMPL /* ReleaseFloatArrayElements */,
-  NOT_IMPL /* ReleaseDoubleArrayElements */,
-  NOT_IMPL /* GetBooleanArrayRegion */,
-  NOT_IMPL /* GetByteArrayRegion */,
-  NOT_IMPL /* GetCharArrayRegion */,
-  NOT_IMPL /* GetShortArrayRegion */,
-  NOT_IMPL /* GetIntArrayRegion */,
-  NOT_IMPL /* GetLongArrayRegion */,
-  NOT_IMPL /* GetFloatArrayRegion */,
-  NOT_IMPL /* GetDoubleArrayRegion */,
-  NOT_IMPL /* SetBooleanArrayRegion */,
-  NOT_IMPL /* SetByteArrayRegion */,
-  NOT_IMPL /* SetCharArrayRegion */,
-  NOT_IMPL /* SetShortArrayRegion */,
-  NOT_IMPL /* SetIntArrayRegion */,
-  NOT_IMPL /* SetLongArrayRegion */,
-  NOT_IMPL /* SetFloatArrayRegion */,
-  NOT_IMPL /* SetDoubleArrayRegion */,
+  _Jv_JNI_GetStringChars,
+  _Jv_JNI_ReleaseStringChars,
+  _Jv_JNI_NewStringUTF,
+  _Jv_JNI_GetStringUTFLength,
+  _Jv_JNI_GetStringUTFChars,
+  _Jv_JNI_ReleaseStringUTFChars,
+  _Jv_JNI_GetArrayLength,
+  _Jv_JNI_NewObjectArray,
+  _Jv_JNI_GetObjectArrayElement,
+  _Jv_JNI_SetObjectArrayElement,
+  _Jv_JNI_NewPrimitiveArray<jboolean, JvPrimClass (boolean)>,
+  _Jv_JNI_NewPrimitiveArray<jbyte, JvPrimClass (byte)>,
+  _Jv_JNI_NewPrimitiveArray<jchar, JvPrimClass (char)>,
+  _Jv_JNI_NewPrimitiveArray<jshort, JvPrimClass (short)>,
+  _Jv_JNI_NewPrimitiveArray<jint, JvPrimClass (int)>,
+  _Jv_JNI_NewPrimitiveArray<jlong, JvPrimClass (long)>,
+  _Jv_JNI_NewPrimitiveArray<jfloat, JvPrimClass (float)>,
+  _Jv_JNI_NewPrimitiveArray<jdouble, JvPrimClass (double)>,
+  _Jv_JNI_GetPrimitiveArrayElements,
+  _Jv_JNI_GetPrimitiveArrayElements,
+  _Jv_JNI_GetPrimitiveArrayElements,
+  _Jv_JNI_GetPrimitiveArrayElements,
+  _Jv_JNI_GetPrimitiveArrayElements,
+  _Jv_JNI_GetPrimitiveArrayElements,
+  _Jv_JNI_GetPrimitiveArrayElements,
+  _Jv_JNI_GetPrimitiveArrayElements,
+  _Jv_JNI_ReleasePrimitiveArrayElements,
+  _Jv_JNI_ReleasePrimitiveArrayElements,
+  _Jv_JNI_ReleasePrimitiveArrayElements,
+  _Jv_JNI_ReleasePrimitiveArrayElements,
+  _Jv_JNI_ReleasePrimitiveArrayElements,
+  _Jv_JNI_ReleasePrimitiveArrayElements,
+  _Jv_JNI_ReleasePrimitiveArrayElements,
+  _Jv_JNI_ReleasePrimitiveArrayElements,
+  _Jv_JNI_GetPrimitiveArrayRegion,
+  _Jv_JNI_GetPrimitiveArrayRegion,
+  _Jv_JNI_GetPrimitiveArrayRegion,
+  _Jv_JNI_GetPrimitiveArrayRegion,
+  _Jv_JNI_GetPrimitiveArrayRegion,
+  _Jv_JNI_GetPrimitiveArrayRegion,
+  _Jv_JNI_GetPrimitiveArrayRegion,
+  _Jv_JNI_GetPrimitiveArrayRegion,
+  _Jv_JNI_SetPrimitiveArrayRegion,
+  _Jv_JNI_SetPrimitiveArrayRegion,
+  _Jv_JNI_SetPrimitiveArrayRegion,
+  _Jv_JNI_SetPrimitiveArrayRegion,
+  _Jv_JNI_SetPrimitiveArrayRegion,
+  _Jv_JNI_SetPrimitiveArrayRegion,
+  _Jv_JNI_SetPrimitiveArrayRegion,
+  _Jv_JNI_SetPrimitiveArrayRegion,
   NOT_IMPL /* RegisterNatives */,
   NOT_IMPL /* UnregisterNatives */,
-  NOT_IMPL /* MonitorEnter */,
-  NOT_IMPL /* MonitorExit */,
+  _Jv_JNI_MonitorEnter,
+  _Jv_JNI_MonitorExit,
   NOT_IMPL /* GetJavaVM */,
 };

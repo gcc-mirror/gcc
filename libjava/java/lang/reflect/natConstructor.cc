@@ -48,6 +48,6 @@ java::lang::reflect::Constructor::newInstance (jobjectArray args)
   jmethodID meth = _Jv_FromReflectedConstructor (this);
   // In the constructor case the return type is the type of the
   // constructor.
-  return _Jv_CallNonvirtualMethodA (NULL, declaringClass, meth, true,
-				    parameter_types, args);
+  return _Jv_CallAnyMethodA (NULL, declaringClass, meth, true,
+			     parameter_types, args);
 }

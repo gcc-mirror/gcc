@@ -1,6 +1,6 @@
-// java-method.h - Header file for methodID instances.  -*- c++ -*-
+// method.h - Header file for methodID instances.  -*- c++ -*-
 
-/* Copyright (C) 1999  Red Hat, Inc.
+/* Copyright (C) 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -11,8 +11,10 @@ details.  */
 #ifndef __GCJ_METHOD_H__
 #define __GCJ_METHOD_H__
 
+#include <java/lang/Class.h>
+
 extern inline jmethodID
-_Jv_FromReflectedMethod(java::lang::reflect::Method *method)
+_Jv_FromReflectedMethod (java::lang::reflect::Method *method)
 {
   return (jmethodID)
     ((char *) method->declaringClass->methods + method->offset);
