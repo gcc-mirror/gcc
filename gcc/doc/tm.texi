@@ -687,7 +687,11 @@ string is present but empty, then no help information will be displayed
 for that option, but it will not count as an undocumented option.  The
 actual option name is made by appending @samp{-m} to the specified name.
 Non-empty description strings should be marked with @code{N_(@dots{})} for
-@command{xgettext}.  In addition to the description for @option{--help},
+@command{xgettext}.  Please do not mark empty strings because the empty
+string is reserved by GNU gettext. @code{gettext("")} returns the header entry
+of the message catalog with meta information, not the empty string.
+
+In addition to the description for @option{--help},
 more detailed documentation for each option should be added to
 @file{invoke.texi}.
 
@@ -713,8 +717,12 @@ options that have values.  Its definition is an initializer with a
 subgrouping for each command option.
 
 Each subgrouping contains a string constant, that defines the fixed part
-of the option name, the address of a variable, and a description string
-(which should again be marked with @code{N_(@dots{})}).
+of the option name, the address of a variable, and a description string.
+Non-empty description strings should be marked with @code{N_(@dots{})} for
+@command{xgettext}.  Please do not mark empty strings because the empty
+string is reserved by GNU gettext. @code{gettext("")} returns the header entry
+of the message catalog with meta information, not the empty string.
+
 The variable, type @code{char *}, is set to the variable part of the
 given option if the fixed part matches.  The actual option name is made
 by appending @samp{-m} to the specified name.  Again, each option should

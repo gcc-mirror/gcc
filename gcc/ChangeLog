@@ -1,5 +1,10 @@
 2002-02-17  Philipp Thomas  <pthomas@suse.de>
 
+	* doc/tm.texi: Explain why empty strings should not be
+	marked for translation.
+
+2002-02-17  Philipp Thomas  <pthomas@suse.de>
+
 	* final.c (output_operand_lossage): Changed to accept
 	printf style arguments. Change calls where necessary.
 	* output.h (output_operand_lossage): Change declaration
