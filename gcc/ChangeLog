@@ -1,3 +1,24 @@
+2001-05-09  Zack Weinberg  <zackw@stanford.edu>
+
+	* cppinit.c (cpp_post_options): Shut off macro expansion if
+	-fpreprocessed.
+	* cpplib.c (_cpp_handle_directive): If -fpreprocessed, accept
+	IN_I directives only if the # is in column 1 and the directive
+	name begins in column 2.
+	* cppmain.c (scan_buffer): Insert a space between # and an
+	identifier, when that identifier is a directive name.
+
+	* tradcpp.c (struct file_buf): Add a pointer to the next entry
+	in the header search path.
+	(enum node_type): Add T_INCLUDE_NEXT.
+	(directive_table): Add entry for include_next.
+	(do_include_next): New function.
+	(process_include): New routine, broken out of do_include.
+	(finclude): Insert 'nhd' argument, to be copied into
+	next_header_dir of the new buffer.
+	(main): Adjust to match.
+	* gsyslimits.h, limity.h: Un-indent #include_next.
+
 2001-05-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* objc.texi: Move from ../libobjc/objc-features.texi.  Adjust for

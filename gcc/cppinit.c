@@ -1716,6 +1716,11 @@ cpp_post_options (pfile)
   if (CPP_OPTION (pfile, user_label_prefix) == NULL)
     CPP_OPTION (pfile, user_label_prefix) = USER_LABEL_PREFIX;
 
+  /* Permanently disable macro expansion if we are rescanning
+     preprocessed text.  */
+  if (CPP_OPTION (pfile, preprocessed))
+    pfile->state.prevent_expansion = 1;
+
   /* We need to do this after option processing and before
      cpp_start_read, as cppmain.c relies on the options->no_output to
      set its callbacks correctly before calling cpp_start_read.  */

@@ -238,6 +238,13 @@ scan_buffer (pfile)
 		       == AVOID_LPASTE
 		   && cpp_avoid_paste (pfile, &tokens[1 - index], token))
 	    token->flags |= PREV_WHITE;
+	  /* Special case '# <directive name>': insert a space between
+	     the # and the token.  This will prevent it from being
+	     treated as a directive when this code is re-preprocessed.
+	     XXX Should do this only at the beginning of a line, but how?  */
+	  else if (token->type == CPP_NAME && token->val.node->directive_index
+		   && tokens[1 - index].type == CPP_HASH)
+	    token->flags |= PREV_WHITE;
 
 	  cpp_output_token (token, print.outf);
 	  print.printed = 1;

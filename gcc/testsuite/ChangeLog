@@ -1,3 +1,10 @@
+2001-05-09  Zack Weinberg  <zackw@stanford.edu>
+
+	* gcc.dg/cpp/direct2.c: New test.
+	* gcc.dg/cpp/direct2s.c: New test.
+
+	* gcc.c-torture/execute/920730-1t.c: #undef __GNUC__ at head.
+
 2001-05-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.other/op2.C: Don't use `glob' as a variable.
