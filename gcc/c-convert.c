@@ -371,9 +371,11 @@ convert (type, expr)
   register tree e = expr;
   register enum tree_code code = TREE_CODE (type);
 
-  if (type == TYPE_MAIN_VARIANT (TREE_TYPE (expr))
+  if (type == TREE_TYPE (expr)
       || TREE_CODE (expr) == ERROR_MARK)
     return expr;
+  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr)))
+    return build1 (NOP_EXPR, type, expr);
   if (TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
     return error_mark_node;
   if (TREE_CODE (TREE_TYPE (expr)) == VOID_TYPE)
