@@ -31,6 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "basic-block.h"
 #include "output.h"
 #include "except.h"
+#include "tree.h"
 
 /* In case alternate_exit_block contains copy from pseudo, to return value,
    record the pseudo here.  In such case the pseudo must be set to function
@@ -730,6 +731,7 @@ optimize_sibling_and_tail_recursive_calls ()
   if (successful_sibling_call)
     {
       rtx insn;
+      tree arg;
 
       /* A sibling call sequence invalidates any REG_EQUIV notes made for
 	 this function's incoming arguments. 
@@ -753,6 +755,16 @@ optimize_sibling_and_tail_recursive_calls ()
 	{
 	  if (INSN_P (insn))
 	    purge_mem_unchanging_flag (PATTERN (insn));
+	}
+
+      /* Similarly, invalidate RTX_UNCHANGING_P for any incoming
+	 arguments passed in registers. */
+      for (arg = DECL_ARGUMENTS (current_function_decl); 
+	   arg; 
+	   arg = TREE_CHAIN (arg))
+	{
+	  if (REG_P (DECL_RTL (arg)))
+	    RTX_UNCHANGING_P (DECL_RTL (arg)) = false;
 	}
     }
 
