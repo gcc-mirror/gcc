@@ -1,3 +1,8 @@
+Tue Mar 20 20:15:06 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* rtl.texi (COMPARE): Clarify documentation and reference section
+	on comparisons.
+
 2001-03-20  Stan Shebs  <shebs@apple.com>
 
 	* objc/objc-act.c (get_static_reference): Use NULL_TREE.
