@@ -30,20 +30,20 @@ dnl See if symbolic links work and if not, try to substitute either hard links o
 AC_DEFUN(GCC_PROG_LN_S,
 [AC_MSG_CHECKING(whether ln -s works)
 AC_CACHE_VAL(gcc_cv_prog_LN_S,
-[rm -f conftestdata_to
-echo >conftestdata_from
-if ln -s conftestdata_from conftestdata_to 2>/dev/null
+[rm -f conftestdata_t
+echo >conftestdata_f
+if ln -s conftestdata_f conftestdata_t 2>/dev/null
 then
   gcc_cv_prog_LN_S="ln -s"
 else
-  if ln conftestdata_from conftestdata_to 2>/dev/null
+  if ln conftestdata_f conftestdata_t 2>/dev/null
   then
     gcc_cv_prog_LN_S=ln
   else
     gcc_cv_prog_LN_S=cp
   fi
 fi
-rm -f conftestdata_from conftestdata_to
+rm -f conftestdata_f conftestdata_t
 ])dnl
 LN_S="$gcc_cv_prog_LN_S"
 if test "$gcc_cv_prog_LN_S" = "ln -s"; then
@@ -62,20 +62,20 @@ dnl See if hard links work and if not, try to substitute either symbolic links o
 AC_DEFUN(GCC_PROG_LN,
 [AC_MSG_CHECKING(whether ln works)
 AC_CACHE_VAL(gcc_cv_prog_LN,
-[rm -f conftestdata_to
-echo >conftestdata_from
-if ln conftestdata_from conftestdata_to 2>/dev/null
+[rm -f conftestdata_t
+echo >conftestdata_f
+if ln conftestdata_f conftestdata_t 2>/dev/null
 then
   gcc_cv_prog_LN="ln"
 else
-  if ln -s conftestdata_from conftestdata_to 2>/dev/null
+  if ln -s conftestdata_f conftestdata_t 2>/dev/null
   then
     gcc_cv_prog_LN="ln -s"
   else
     gcc_cv_prog_LN=cp
   fi
 fi
-rm -f conftestdata_from conftestdata_to
+rm -f conftestdata_f conftestdata_t
 ])dnl
 LN="$gcc_cv_prog_LN"
 if test "$gcc_cv_prog_LN" = "ln"; then
