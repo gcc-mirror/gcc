@@ -1,3 +1,10 @@
+2000-11-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/elfos.h (ASM_OUTPUT_SECTION_NAME): Use a hash table, not
+	a list, to keep track of the sections.
+	* tm.texi (ASM_OUTPUT_SECTION_NAME): Document the fact that the
+	parameter provided will always be a canonical string.
+
 2000-11-26  Neil Booth  <neilb@earthling.net>
 
         * cppmacro.c (cpp_scan_buffer_nooutput): Only scan the

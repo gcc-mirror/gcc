@@ -421,20 +421,27 @@ dtors_section ()						\
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC)		\
   do									\
     {									\
-      static struct section_info					\
+      static htab_t htab;                                               \
+                                                                        \
+      struct section_info                                               \
       {									\
-	struct section_info *next;				        \
-	char *name;						        \
 	enum sect_enum {SECT_RW, SECT_RO, SECT_EXEC} type;		\
-      } *sections;							\
+      };                                                                \
+                                                                        \
       struct section_info *s;						\
       const char *mode;							\
-      enum sect_enum type;						\
-      									\
-      for (s = sections; s; s = s->next)				\
-	if (!strcmp (NAME, s->name))					\
-	  break;							\
-      									\
+      enum sect_enum type;                                              \
+      PTR* slot;                                                        \
+                                                                        \
+      /* The names we put in the hashtable will always be the unique    \
+	 versions gived to us by the stringtable, so we can just use    \
+	 their addresses as the keys.  */                               \
+      if (!htab)                                                        \
+	htab = htab_create (31,                                         \
+			    htab_hash_pointer,                          \
+			    htab_eq_pointer,                            \
+			    NULL);                                      \
+                                                                        \
       if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)			\
 	type = SECT_EXEC, mode = "ax";					\
       else if (DECL && DECL_READONLY_SECTION (DECL, RELOC))		\
@@ -442,21 +449,23 @@ dtors_section ()						\
       else								\
 	type = SECT_RW, mode = "aw";					\
       									\
-      if (s == 0)							\
-	{								\
+                                                                        \
+      /* See if we already have an entry for this section.  */          \
+      slot = htab_find_slot (htab, NAME, INSERT);                       \
+      if (!*slot)                                                       \
+	{                                                               \
 	  s = (struct section_info *) xmalloc (sizeof (* s));		\
-	  s->name = xmalloc ((strlen (NAME) + 1) * sizeof (* NAME));	\
-	  strcpy (s->name, NAME);					\
 	  s->type = type;						\
-	  s->next = sections;						\
-	  sections = s;							\
+	  *slot = s;							\
 	  fprintf (FILE, "\t.section\t%s,\"%s\",@progbits\n",		\
 		   NAME, mode);						\
 	}								\
       else								\
 	{								\
+	  s = (struct section_info *) *slot;                            \
 	  if (DECL && s->type != type)					\
-	    error_with_decl (DECL, "%s causes a section type conflict");\
+	    error_with_decl (DECL,                                      \
+			     "%s causes a section type conflict");      \
 	  								\
 	  fprintf (FILE, "\t.section\t%s\n", NAME);			\
 	}								\
