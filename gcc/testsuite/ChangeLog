@@ -1,3 +1,8 @@
+2003-03-17  Zack Weinberg  <zack@codesourcery.com>
+
+        * objc.dg/naming-1.m: Use "(parse|syntax) error".
+        * objc.dg/naming-2.m: Likewise.
+
 2003-03-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9639
