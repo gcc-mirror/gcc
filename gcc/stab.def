@@ -39,6 +39,12 @@ __define_stab (N_STSYM, 0x26, "STSYM")
 /* BSS-segment variable with internal linkage.  Value is its address.  */
 __define_stab (N_LCSYM, 0x28, "LCSYM")
 
+/* Begin function marker.  */
+__define_stab (N_BNSYM, 0x2e, "BNSYM")
+
+/* End function marker.  */
+__define_stab (N_ENSYM, 0x4e, "ENSYM")
+
 /* Name of main routine.  Only the name is significant.
    This is not used in C.  */
 __define_stab (N_MAIN, 0x2a, "MAIN")
@@ -201,11 +207,11 @@ __define_stab (N_LENG, 0xfe, "LENG")
 	|_______________________________________________|
 	| Debug entries with bit 01 set are unused.	|
 	| 20 GSYM   | 22 FNAME	| 24 FUN    | 26 STSYM	|
-	| 28 LCSYM  | 2A MAIN	| 2C	    | 2E	|
+	| 28 LCSYM  | 2A MAIN	| 2C	    | 2E BNSYM	|
 	| 30 PC	    | 32 NSYMS	| 34 NOMAP  | 36	|
 	| 38 OBJ    | 3A	| 3C OPT    | 3E	|
 	| 40 RSYM   | 42 M2C	| 44 SLINE  | 46 DSLINE |
-	| 48 BSLINE*| 4A DEFD	| 4C        | 4E	|
+	| 48 BSLINE*| 4A DEFD	| 4C        | 4E ENSYM	|
 	| 50 EHDECL*| 52	| 54 CATCH  | 56        |
 	| 58        | 5A        | 5C        | 5E	|
 	| 60 SSYM   | 62	| 64 SO	    | 66 	|

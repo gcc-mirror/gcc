@@ -1,3 +1,10 @@
+2004-08-12  Devang patel  <dpatel@apple.com>
+
+	* dbxout.c (dbxout_begin_prologue): New function.
+	(dbx_debug_hooks): Use new begin prologue hook.
+	(dbxout_function_end): Emit N_ENSYM.
+	* stab.def (N_BNSYM, N_ENSYM): Define and document these two new stabs.
+	
 2004-08-12  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/rs6000/altivec.h (vec_dst): Fix C++ functions whose first
