@@ -3673,7 +3673,7 @@ finish_decl (decl, init, asmspec_tree)
 	     references to it.  */
 	  /* This test used to include TREE_STATIC, but this won't be set
 	     for function level initializers.  */
-	  if (TREE_READONLY (decl))
+	  if (TREE_READONLY (decl) || ITERATOR_P (decl))
 	    {
 	      preserve_initializer ();
 	      /* Hack?  Set the permanent bit for something that is permanent,
