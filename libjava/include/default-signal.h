@@ -19,7 +19,7 @@ details.  */
 #include <signal.h>
 
 #define SIGNAL_HANDLER(_name)			\
-static void _name (int _dummy)
+static void _name (int _dummy __attribute__ ((__unused__)))
 
 #define INIT_SEGV						\
 do								\

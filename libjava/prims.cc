@@ -125,10 +125,11 @@ void (*_Jv_JVMPI_Notify_THREAD_END) (JVMPI_Event *event);
 #endif
 
 
+#if defined (HANDLE_SEGV) || defined(HANDLE_FPE)
 /* Unblock a signal.  Unless we do this, the signal may only be sent
    once.  */
 static void 
-unblock_signal (int signum)
+unblock_signal (int signum __attribute__ ((__unused__)))
 {
 #ifdef _POSIX_VERSION
   sigset_t sigs;
@@ -138,6 +139,7 @@ unblock_signal (int signum)
   sigprocmask (SIG_UNBLOCK, &sigs, NULL);
 #endif
 }
+#endif
 
 #ifdef HANDLE_SEGV
 SIGNAL_HANDLER (catch_segv)
