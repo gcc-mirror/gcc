@@ -1477,47 +1477,86 @@ yylex ()
 	      }
 	    else
 	      {
+		int fflag = 0, lflag = 0;
+		/* Copy token_buffer now, while it has just the number
+		   and not the suffixes; once we add `f' or `i',
+		   REAL_VALUE_ATOF may not work any more.  */
+		char *copy = (char *) alloca (p - token_buffer + 1);
+		bcopy (token_buffer, copy, p - token_buffer + 1);
+
 		set_float_handler (handler);
 
-/* The second argument, machine_mode, of REAL_VALUE_ATOF tells the
-   desired precision of the binary result of decimal-to-binary conversion.  */
+		while (1)
+		  {
+		    int lose = 0;
 
-	    /* Read the suffixes to choose a data type.  */
-	    switch (c)
-	      {
-	      case 'f': case 'F':
-		type = float_type_node;
-		value = REAL_VALUE_ATOF (token_buffer, TYPE_MODE (type));
-		if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-		    && REAL_VALUE_ISINF (value) && pedantic)
-		  pedwarn ("floating point number exceeds range of `float'");
-		garbage_chars = -1;
-		break;
+		    /* Read the suffixes to choose a data type.  */
+		    switch (c)
+		      {
+		      case 'f': case 'F':
+			if (fflag)
+			  error ("more than one `f' in numeric constant");
+			fflag = 1;
+			break;
 
-	      case 'l': case 'L':
-		type = long_double_type_node;
-		value = REAL_VALUE_ATOF (token_buffer, TYPE_MODE (type));
-		if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-		    && REAL_VALUE_ISINF (value) && pedantic)
-		  pedwarn (
-		      "floating point number exceeds range of `long double'");
-		garbage_chars = -1;
-		break;
+		      case 'l': case 'L':
+			if (lflag)
+			  error ("more than one `l' in numeric constant");
+			lflag = 1;
+			break;
 
-	      case 'i': case 'I':
-		if (imag)
-		  error ("more than one `i' or `j' in numeric constant");
-		imag = 1;
-		garbage_chars = -1;
-		break;
+		      case 'i': case 'I':
+			if (imag)
+			  error ("more than one `i' or `j' in numeric constant");
+			imag = 1;
+			break;
 
-              default:
-		value = REAL_VALUE_ATOF (token_buffer, TYPE_MODE (type));
-		if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-		    && REAL_VALUE_ISINF (value) && pedantic)
-		  pedwarn ("floating point number exceeds range of `double'");
-	      }
-	    set_float_handler (NULL_PTR);
+		      default:
+			lose = 1;
+		      }
+
+		    if (lose)
+		      break;
+
+		    if (p >= token_buffer + maxtoken - 3)
+		      p = extend_token_buffer (p);
+		    *p++ = c;
+		    *p = 0;
+		    c = getc (finput);
+		  }
+
+		/* The second argument, machine_mode, of REAL_VALUE_ATOF
+		   tells the desired precision of the binary result
+		   of decimal-to-binary conversion.  */
+
+		if (fflag)
+		  {
+		    if (lflag)
+		      error ("both `f' and `l' in floating constant");
+
+		    type = float_type_node;
+		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
+		    if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+			&& REAL_VALUE_ISINF (value) && pedantic)
+		      pedwarn ("floating point number exceeds range of `float'");
+		  }
+		else if (lflag)
+		  {
+		    type = long_double_type_node;
+		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
+		    if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+			&& REAL_VALUE_ISINF (value) && pedantic)
+		      pedwarn ("floating point number exceeds range of `long double'");
+		  }
+		else
+		  {
+		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
+		    if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+			&& REAL_VALUE_ISINF (value) && pedantic)
+		      pedwarn ("floating point number exceeds range of `double'");
+		  }
+
+		set_float_handler (NULL_PTR);
 	    }
 #ifdef ERANGE
 	    if (errno == ERANGE && !flag_traditional && pedantic)
@@ -1533,7 +1572,7 @@ yylex ()
 		  }
 	      }
 #endif
-	    /* Note: garbage_chars is -1 if first char is *not* garbage.  */
+	    garbage_chars = 0;
 	    while (isalnum (c) || c == '.' || c == '_'
 		   || (!flag_traditional && (c == '+' || c == '-')
 		       && (p[-1] == 'e' || p[-1] == 'E')))
