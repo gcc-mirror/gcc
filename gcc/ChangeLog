@@ -9,6 +9,10 @@ Thu Nov 20 14:42:15 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 Thu Nov 20 16:11:50 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.md (pre_stwm, post_stwm, pre_ldwm, post_ldwm): Base register
+	is an in/out operand.
+	(zero extended variants of stwm/stwm patterns): Similarly.
+
 	* mips/x-iris (FIXPROTO_DEFINES): Add -D_SGI_SOURCE.
 
 Thu Nov 20 13:19:32 1997  Jason Merrill  <jason@yorick.cygnus.com>
