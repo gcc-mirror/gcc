@@ -7297,6 +7297,7 @@ _ACEOF
 
 fi
 
+
 case $target in
 	alpha*-*-* | \
 	x86_64-*-* | \
@@ -7309,8 +7310,8 @@ case $target in
 	s390*-*-* | \
 	sparc64*-*-* | ultrasparc-*-freebsd* | \
 	sparcv9-*-solaris2* | \
-	sparc-*-solaris2.789 | sparc-*-solaris2.10-9 | \
-	sh123456789l*-*-*)
+	sparc-*-solaris2.[789] | sparc-*-solaris2.1[0-9] | \
+	sh[123456789l]*-*-*)
 		need_64bit_hwint=yes ;;
 	*)
 		need_64bit_hwint=no ;;
@@ -7320,6 +7321,7 @@ case $need_64bit_hwint:$ac_cv_sizeof_long in
 	*:8 | no:*) host_wide_int=long ;;
 	*) host_wide_int='long long' ;;
 esac
+
 
 
 cat >>confdefs.h <<_ACEOF

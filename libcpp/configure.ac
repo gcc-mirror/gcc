@@ -63,6 +63,7 @@ if test $enable_checking != no ; then
 [Define if you want more run-time sanity checks.])
 fi
 
+m4_changequote(,)
 case $target in
 	alpha*-*-* | \
 	x86_64-*-* | \
@@ -86,6 +87,7 @@ case $need_64bit_hwint:$ac_cv_sizeof_long in
 	*:8 | no:*) host_wide_int=long ;;
 	*) host_wide_int='long long' ;;
 esac
+m4_changequote([,])
 
 AC_DEFINE_UNQUOTED(HOST_WIDE_INT, $host_wide_int,
 [Define to the widest efficient host integer type at least
