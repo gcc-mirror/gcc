@@ -133,7 +133,7 @@ ggc_alloc_rtvec (nelt)
      int nelt;
 {
   struct ggc_rtvec *v;
-  int size = sizeof (*v) + (nelt - 1) * sizeof (rtunion);
+  int size = sizeof (*v) + (nelt - 1) * sizeof (rtx);
 
   v = (struct ggc_rtvec *) xmalloc (size);
   bzero ((char *) v, size);
@@ -195,7 +195,7 @@ ggc_alloc_string (contents, length)
   strings = s;
 
 #ifdef GGC_DUMP
-  fprintf(dump, "alloc string %p\n", &n->tree);
+  fprintf(dump, "alloc string %p\n", &s->string);
 #endif
 
   bytes_alloced_since_gc += size;

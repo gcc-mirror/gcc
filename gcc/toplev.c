@@ -1493,6 +1493,25 @@ decl_name (decl, verbosity)
   return IDENTIFIER_POINTER (DECL_NAME (decl));
 }
 
+/* Mark P for GC.  Also mark main_input_filename and input_filename.  */
+static void
+mark_file_stack (p)
+     void *p;
+{
+  struct file_stack *stack = *(struct file_stack **)p;
+
+  /* We're only called for input_file_stack, so we can mark the current
+     input_filename here as well.  */
+  ggc_mark_string (main_input_filename);
+  ggc_mark_string (input_filename);
+
+  while (stack)
+    {
+      ggc_mark_string (stack->name);
+      stack = stack->next;
+    }
+}
+
 static int need_error_newline;
 
 /* Function of last error message;
@@ -3055,6 +3074,8 @@ compile_file (name)
 #endif
     }
 
+  if (ggc_p)
+    name = ggc_alloc_string (name, strlen (name));
   input_filename = name;
 
   /* Put an entry on the input file stack for the main input file.  */
@@ -4771,6 +4792,9 @@ main (argc, argv)
   /* Initialize how much space enums occupy, by default.  */
   flag_short_enums = DEFAULT_SHORT_ENUMS;
 #endif
+
+  ggc_add_root (&input_file_stack, 1, sizeof input_file_stack,
+		&mark_file_stack);
 
   /* Perform language-specific options intialization.  */
   lang_init_options ();

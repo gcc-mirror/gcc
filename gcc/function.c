@@ -6714,6 +6714,7 @@ mark_function_state (p)
   }
 
   ggc_mark_rtx (p->x_nonlocal_goto_handler_slots);
+  ggc_mark_rtx (p->x_nonlocal_goto_handler_labels);
   ggc_mark_rtx (p->x_nonlocal_goto_stack_level);
   ggc_mark_tree (p->x_nonlocal_labels);
 }
