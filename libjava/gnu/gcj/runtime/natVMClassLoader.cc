@@ -1,6 +1,6 @@
 // Native code for VMClassLoader
 
-/* Copyright (C) 2002  Free Software Foundation
+/* Copyright (C) 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -18,6 +18,7 @@ details.  */
 #include <java/lang/StringBuffer.h>
 #include <java/net/URLClassLoader.h>
 #include <java/lang/Runtime.h>
+#include <java/util/HashSet.h>
 
 jclass
 gnu::gcj::runtime::VMClassLoader::findClass (jstring name)
@@ -25,7 +26,7 @@ gnu::gcj::runtime::VMClassLoader::findClass (jstring name)
   _Jv_Utf8Const *name_u = _Jv_makeUtf8Const (name);
   jclass klass = _Jv_FindClassInCache (name_u, 0);
 
-  if (! klass)
+  if (! klass && lib_control != LIB_NEVER)
     {
       // Turn `gnu.pkg.quux' into `lib-gnu-pkg-quux'.  Then search for
       // a module named (eg, on Linux) `lib-gnu-pkg-quux.so', followed
@@ -41,11 +42,20 @@ gnu::gcj::runtime::VMClassLoader::findClass (jstring name)
 	cn = name->substring (0, ci);
       jstring so_base_name = (sb->append (cn)->toString ())->replace ('.', '-');
 
+      using namespace ::java::lang;
+      Runtime *rt = Runtime::getRuntime();
+
       // Compare against `3' because that is the length of "lib".
       while (! klass && so_base_name && so_base_name->length() > 3)
 	{
-	  using namespace ::java::lang;
-	  Runtime *rt = Runtime::getRuntime();
+	  if (lib_control == LIB_CACHE)
+	    {
+	      // If we've already tried this name, we're done.
+	      if (tried_libraries->contains(so_base_name))
+		break;
+	      tried_libraries->add(so_base_name);
+	    }
+
 	  jboolean loaded = rt->loadLibraryInternal (so_base_name);
 
 	  jint nd = so_base_name->lastIndexOf ('-');

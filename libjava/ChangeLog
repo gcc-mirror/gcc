@@ -1,5 +1,14 @@
 2003-08-20  Tom Tromey  <tromey@redhat.com>
 
+	Fix for PR libgcj/9125:
+	* gnu/gcj/runtime/natVMClassLoader.cc (findClass): Find Runtime
+	object outside of loop.  Respect lib_control setting.
+	* gnu/gcj/runtime/VMClassLoader.java (tried_libraries): New
+	field.
+	(lib_control): New field.
+	(LIB_FULL, LIB_CACHE, LIB_NEVER): New constants.
+	(VMClassLoader): Initialize new field.
+
 	* java/lang/ref/natReference.cc (finalize_referred_to_object):
 	Set `list->reference' to DELETED_REFERENCE when removing dead
 	object.
