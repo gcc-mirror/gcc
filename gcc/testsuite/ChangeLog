@@ -1,3 +1,7 @@
+2003-02-13  Josef Zlomek  <zlomekj@suse.cz>
+
+	* gcc.dg/20030213-1.c: New test.
+
 2003-02-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/parse/octal1.C: New file.
