@@ -1,3 +1,8 @@
+Fri Mar  3 12:49:28 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_combine_note_use): Handle return register USEs.
+	REG case: Handle multi-hard-register hard regs.
+
 Fri Mar  3 07:38:34 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* md.texi: Document use of '*' in insn pattern name.
