@@ -54,7 +54,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \
-  { "netbsd_cpp_spec", NETBSD_CPP_SPEC },
+  { "netbsd_cpp_spec",  NETBSD_CPP_SPEC }, \
+  { "netbsd_link_spec", NETBSD_LINK_SPEC_AOUT },
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
@@ -71,10 +72,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Pass -X to the linker so that it will strip symbols starting with 'L' */
 #undef LINK_SPEC
-#define LINK_SPEC "\
--X %{!shared:%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{R*} \
-%{static:-Bstatic}} %{shared} %{assert*} \
-"
+#define LINK_SPEC "-X %(netbsd_link_spec)"
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"

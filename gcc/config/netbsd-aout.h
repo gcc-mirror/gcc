@@ -58,8 +58,8 @@ Boston, MA 02111-1307, USA.  */
 /* Provide a LINK_SPEC appropriate for NetBSD a.out.  Here we provide
    support for the special GCC options -static, -assert, and -nostdlib.  */
 
-#undef LINK_SPEC
-#define LINK_SPEC			\
+#undef NETBSD_LINK_SPEC_AOUT
+#define NETBSD_LINK_SPEC_AOUT		\
   "%{nostdlib:-nostdlib}		\
    %{!shared:				\
      %{!nostdlib:			\
@@ -71,6 +71,9 @@ Boston, MA 02111-1307, USA.  */
    %{R*}				\
    %{assert*}"
 
+/* Default LINK_SPEC.  */
+#undef LINK_SPEC
+#define LINK_SPEC NETBSD_LINK_SPEC_AOUT
 
 /* Some imports from svr4.h in support of shared libraries.  */
 
