@@ -1,3 +1,7 @@
+2003-04-30  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* function.c (purge_addressof_1): Postpone insn in fewer cases.
+
 2003-04-29  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/host-darwin.c (segv_handler): When -dH is used,
