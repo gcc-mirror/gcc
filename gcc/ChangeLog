@@ -1,3 +1,12 @@
+2002-06-08  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (LIBCPP_OBJS): Take out version.o.
+	* cpphash.h (cpp_reader): Take out print_version member.
+	* cppinit.c: (cpp_handle_option): Don't do anything with
+	-version.  Just set help_only for --version, --target-help.
+	Just set verbose option for -v.
+	(cpp_post_options): Don't print a version string.
+
 2002-06-08  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.c (TARGET_SECTION_TYPE_FLAGS): New.
@@ -13,7 +22,7 @@
 2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/sh/sh.h (SUBTARGET_EXTRA_SPECS): Define empty
-	if not already defined. 
+	if not already defined.
 	(EXTRA_SPECS): Add SUBTARGET_EXTRA_SPECS.
 
 2002-06-08  Marek Michalkiewicz  <marekm@amelek.gda.pl>
@@ -39,8 +48,9 @@
 	(LINK_SPEC, NETBSD_ENTRY_POINT): Define.
 	(SUBTARGET_EXTRA_SPECS): Add netbsd_link_spec and netbsd_entry_point.
 
-2002-06-08  Marc Espie  <espie@openbsd.org>                                   
-	* lists.c (free_list):  Fix typo in comment.                            
+2002-06-08  Marc Espie  <espie@openbsd.org>
+
+	* lists.c (free_list):  Fix typo in comment.
 
 2002-06-08  Andreas Jaeger  <aj@suse.de>
 
@@ -278,9 +288,9 @@ Thu Jun  6 07:17:43 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2002-06-05  Jeffrey Law  <law@redhat.com>
 
-        * pa.h (EXTRA_CONSTRAINT, T case): Further refine so that it
-        rejects (mem (lo_sum (reg) (unspec))), but will allow
-        (mem (lo_sum (reg) (symbol_ref)) for PA2.0.
+	* pa.h (EXTRA_CONSTRAINT, T case): Further refine so that it
+	rejects (mem (lo_sum (reg) (unspec))), but will allow
+	(mem (lo_sum (reg) (symbol_ref)) for PA2.0.
 
 2002-06-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
@@ -428,8 +438,8 @@ config/i386:
 	* config/ia64/ia64.c (gen_thread_pointer): Fix variable name.
 
 2002-06-04  Jeff Law <law@redhat.com.
-            David Edelsohn <edelsohn@gnu.org>
-            Michael Matz <matz@kde.org>
+	    David Edelsohn <edelsohn@gnu.org>
+	    Michael Matz <matz@kde.org>
 
 	* sched-int.h (struct deps): New field libcall_block_tail_insn.
 	* sched_deps.c (init_deps): Initialize libcall_block_tail_insn.

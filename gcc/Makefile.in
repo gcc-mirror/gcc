@@ -2072,7 +2072,7 @@ PREPROCESSOR_DEFINES = \
 
 LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o cpptrad.o \
 		cpphash.o cpperror.o cppinit.o cppdefault.o cppmain.o \
-		hashtable.o line-map.o mkdeps.o prefix.o version.o mbchar.o
+		hashtable.o line-map.o mkdeps.o prefix.o mbchar.o
 
 LIBCPP_DEPS =	$(CPPLIB_H) cpphash.h line-map.h hashtable.h intl.h \
 		$(OBSTACK_H) $(SYSTEM_H)
