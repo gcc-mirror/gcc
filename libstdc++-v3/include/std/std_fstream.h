@@ -177,9 +177,13 @@ namespace std
       // Cached codecvt facet.
       const __codecvt_type* 	_M_codecvt;
 
-      // Initializes pback buffers, and moves normal buffers to safety.
-      // Assumptions:
-      // _M_in_cur has already been moved back
+      /**
+       *  @if maint
+       *  Initializes pback buffers, and moves normal buffers to safety.
+       *  Assumptions:
+       *  _M_in_cur has already been moved back
+       *  @endif
+      */
       void
       _M_create_pback()
       {
@@ -192,9 +196,13 @@ namespace std
 	  }
       }
 
-      // Deactivates pback buffer contents, and restores normal buffer.
-      // Assumptions:
-      // The pback buffer has only moved forward.
+      /**
+       *  @if maint
+       *  Deactivates pback buffer contents, and restores normal buffer.
+       *  Assumptions:
+       *  The pback buffer has only moved forward.
+       *  @endif
+      */ 
       void
       _M_destroy_pback() throw()
       {
@@ -400,10 +408,7 @@ namespace std
       // [documentation is inherited]
       virtual streamsize
       xsputn(const char_type* __s, streamsize __n)
-      {
-	_M_destroy_pback();
-	return __streambuf_type::xsputn(__s, __n);
-      }
+      { return __streambuf_type::xsputn(__s, __n); }
 
       /**
        *  @if maint
@@ -413,16 +418,20 @@ namespace std
       void
       _M_output_unshift();
 
-      // This function sets the pointers of the internal buffer, both get
-      // and put areas. Typically:
-      //
-      //  __off == egptr() - eback() upon underflow/uflow ('read' mode);
-      //  __off == 0 upon overflow ('write' mode);
-      //  __off == -1 upon open, setbuf, seekoff/pos ('uncommitted' mode).
-      // 
-      // NB: epptr() - pbase() == _M_buf_size - 1, since _M_buf_size
-      // reflects the actual allocated memory and the last cell is reserved
-      // for the overflow char of a full put area.
+      /**
+       *  @if maint 
+       *  This function sets the pointers of the internal buffer, both get
+       *  and put areas. Typically:
+       *
+       *   __off == egptr() - eback() upon underflow/uflow ('read' mode);
+       *   __off == 0 upon overflow ('write' mode);
+       *   __off == -1 upon open, setbuf, seekoff/pos ('uncommitted' mode).
+       * 
+       *  NB: epptr() - pbase() == _M_buf_size - 1, since _M_buf_size
+       *  reflects the actual allocated memory and the last cell is reserved
+       *  for the overflow char of a full put area.
+       *  @endif
+      */
       void
       _M_set_buffer(streamsize __off)
       {
