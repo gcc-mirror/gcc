@@ -1,3 +1,8 @@
+2002-03-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/invoke.texi (Warning Options): Refer to C++ Dialect Options
+	and Objective-C Dialect Options.
+
 2002-03-28  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_emit_conditional_branch): TFmode NE

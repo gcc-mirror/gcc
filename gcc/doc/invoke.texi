@@ -1837,7 +1837,9 @@ negative form beginning @samp{-Wno-} to turn off warnings;
 for example, @option{-Wno-implicit}.  This manual lists only one of the
 two forms, whichever is not the default.
 
-These options control the amount and kinds of warnings produced by GCC:
+The following options control the amount and kinds of warnings produced
+by GCC; for further, language-specific options also refer to
+@ref{C++ Dialect Options} and @ref{Objective-C Dialect Options}.
 
 @table @gcctabopt
 @cindex syntax checking
