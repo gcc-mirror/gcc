@@ -1002,7 +1002,7 @@ reregister_specialization (tree spec, tree tmpl, tree new_spec)
 	if (!new_spec)
 	  *s = TREE_CHAIN (*s);
 	else
-	  TREE_VALUE (*s) == new_spec;
+	  TREE_VALUE (*s) = new_spec;
 	return 1;
       }
 
@@ -6200,6 +6200,8 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	r = copy_decl (t);
 	if (TREE_CODE (r) == VAR_DECL)
 	  type = complete_type (type);
+	else if (DECL_SELF_REFERENCE_P (t))
+	  SET_DECL_SELF_REFERENCE_P (r);
 	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (cp_type_quals (type), r);
 	DECL_CONTEXT (r) = ctx;

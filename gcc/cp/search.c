@@ -305,9 +305,7 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
 	    /* Rather than inventing a public member, we use the implicit
 	       public typedef created in the scope of every class.  */
 	    decl = TYPE_FIELDS (base);
-	    while (TREE_CODE (decl) != TYPE_DECL
-		   || !DECL_ARTIFICIAL (decl)
-		   || DECL_NAME (decl) != constructor_name (base))
+	    while (!DECL_SELF_REFERENCE_P (decl))
 	      decl = TREE_CHAIN (decl);
 	    while (ANON_AGGR_TYPE_P (t))
 	      t = TYPE_CONTEXT (t);

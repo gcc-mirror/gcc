@@ -1,5 +1,8 @@
 2003-07-13  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11503
+	* g++.dg/template/anon1.C: New test.
+
 	PR c++/11493
 	PR c++/11495
 	* g++.dg/parse/template9.C: Likewise.
