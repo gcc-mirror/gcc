@@ -40,10 +40,11 @@
 ;; Attribute for the instruction set.
 ;; At present we only need to distinguish v9/!v9, but for clarity we
 ;; test TARGET_V8 too.
-(define_attr "isa" "v6,v8,v9"
+(define_attr "isa" "v6,v8,v9,sparclet"
  (const
   (cond [(symbol_ref "TARGET_V9") (const_string "v9")
-	 (symbol_ref "TARGET_V8") (const_string "v8")]
+	 (symbol_ref "TARGET_V8") (const_string "v8")
+	 (symbol_ref "TARGET_SPARCLET") (const_string "sparclet")]
 	(const_string "v6"))))
 
 ;; Architecture size.
@@ -3773,8 +3774,13 @@
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (sign_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
   "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
-  "smul %1,%2,%R0\;rd %%y,%0"
-  [(set_attr "length" "2")])
+  "*
+{
+  return TARGET_SPARCLET ? \"smuld %1,%2,%R0\" : \"smul %1,%2,%R0\;rd %%y,%0\";
+}"
+  [(set (attr "length")
+	(if_then_else (eq_attr "isa" "sparclet")
+		      (const_int 1) (const_int 2)))])
 
 ;; Extra pattern, because sign_extend of a constant isn't valid.
 
@@ -3783,8 +3789,13 @@
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (match_operand:SI 2 "small_int" "I")))]
   "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
-  "smul %1,%2,%R0\;rd %%y,%0"
-  [(set_attr "length" "2")])
+  "*
+{
+  return TARGET_SPARCLET ? \"smuld %1,%2,%R0\" : \"smul %1,%2,%R0\;rd %%y,%0\";
+}"
+  [(set (attr "length")
+	(if_then_else (eq_attr "isa" "sparclet")
+		      (const_int 1) (const_int 2)))])
 
 (define_expand "smulsi3_highpart"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -3841,8 +3852,13 @@
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (zero_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
   "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
-  "umul %1,%2,%R0\;rd %%y,%0"
-  [(set_attr "length" "2")])
+  "*
+{
+  return TARGET_SPARCLET ? \"umuld %1,%2,%R0\" : \"umul %1,%2,%R0\;rd %%y,%0\";
+}"
+  [(set (attr "length")
+	(if_then_else (eq_attr "isa" "sparclet")
+		      (const_int 1) (const_int 2)))])
 
 ;; Extra pattern, because sign_extend of a constant isn't valid.
 
@@ -3851,8 +3867,13 @@
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (match_operand:SI 2 "uns_small_int" "")))]
   "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
-  "umul %1,%2,%R0\;rd %%y,%0"
-  [(set_attr "length" "2")])
+  "*
+{
+  return TARGET_SPARCLET ? \"umuld %1,%2,%R0\" : \"umul %1,%2,%R0\;rd %%y,%0\";
+}"
+  [(set (attr "length")
+	(if_then_else (eq_attr "isa" "sparclet")
+		      (const_int 1) (const_int 2)))])
 
 (define_expand "umulsi3_highpart"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -3989,7 +4010,7 @@
   [(set (match_operand:SI 0 "register_operand" "+r")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "%r")
 			  (match_operand:SI 2 "arith_operand" "rI"))
-		 (match_dup 0)))]
+		 (match_operand:SI 3 "register_operand" "0")))]
   "TARGET_SPARCLET"
   "smac %1,%2,%0"
   [(set_attr "type" "imul")])
@@ -4000,7 +4021,7 @@
 			   (match_operand:SI 1 "register_operand" "%r"))
 			  (sign_extend:DI
 			   (match_operand:SI 2 "register_operand" "r")))
-		 (match_dup 0)))]
+		 (match_operand:DI 3 "register_operand" "0")))]
   "TARGET_SPARCLET"
   "smacd %1,%2,%R0"
   [(set_attr "type" "imul")])
@@ -4011,7 +4032,7 @@
 			   (match_operand:SI 1 "register_operand" "%r"))
 			  (zero_extend:DI
 			   (match_operand:SI 2 "register_operand" "r")))
-		 (match_dup 0)))]
+		 (match_operand:DI 3 "register_operand" "0")))]
   "TARGET_SPARCLET"
   "umacd %1,%2,%R0"
   [(set_attr "type" "imul")])
