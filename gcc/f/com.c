@@ -14842,6 +14842,16 @@ lang_decode_option (p)
   return ffe_decode_option (p);
 }
 
+/* used by print-tree.c */
+
+void
+lang_print_xnode (file, node, indent)
+     FILE *file UNUSED;
+     tree node UNUSED;
+     int indent UNUSED;
+{
+}
+
 void
 lang_finish ()
 {

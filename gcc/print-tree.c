@@ -672,6 +672,8 @@ print_node (file, prefix, node, indent)
 	  break;
 
 	default:
+	  if (TREE_CODE_CLASS (TREE_CODE (node)) == 'x')
+	    lang_print_xnode (file, node, indent);
 	  break;
 	}
 

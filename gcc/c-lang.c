@@ -61,6 +61,16 @@ print_lang_statistics ()
 {
 }
 
+/* used by print-tree.c */
+
+void
+lang_print_xnode (file, node, indent)
+     FILE *file;
+     tree node;
+     int indent;
+{
+}
+
 /* Used by c-lex.c, but only for objc.  */
 
 tree

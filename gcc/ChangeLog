@@ -1,3 +1,9 @@
+1998-03-24  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* c-lang.c (lang_print_xnode): New function.
+	* objc/objc-act.c (lang_print_xnode): Likewise.
+	* print-tree.c (print_node): Call it
+
 Mon Mar 23 23:59:11 1998  H.J. Lu  (hjl@gnu.org)
 
 	* c-parse.in: Recognize protocol qualifiers in class
