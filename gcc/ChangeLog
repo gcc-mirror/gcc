@@ -1,3 +1,7 @@
+Mon Apr 5 09:54:42 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Mon Apr 5 05:55:15 PDT 1999 Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* fixincl.tpl: Separate "-e" from its argument, a la
