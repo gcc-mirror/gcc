@@ -260,7 +260,7 @@ cp/repo.o: cp/repo.c $(CXX_TREE_H) $(TM_H) toplev.h diagnostic.h \
   gt-cp-repo.h
 cp/semantics.o: cp/semantics.c $(CXX_TREE_H) $(TM_H) except.h toplev.h \
   flags.h debug.h output.h $(RTL_H) $(TIMEVAR_H) $(EXPR_H) \
-  tree-inline.h cgraph.h $(TAREGT_H)
+  tree-inline.h cgraph.h $(TARGET_H)
 cp/dump.o: cp/dump.c $(CXX_TREE_H) $(TM_H) tree-dump.h
 cp/optimize.o: cp/optimize.c $(CXX_TREE_H) $(TM_H) rtl.h integrate.h insn-config.h \
   input.h $(PARAMS_H) debug.h tree-inline.h tree-gimple.h $(TARGET_H)
