@@ -1,3 +1,14 @@
+1999-06-07  Dave Brolley  <brolley@cygnus.com>
+
+	* lex.c (real_yylex): Replace unused bytes from bad multibyte char.
+	* input.c (putback_buffer): New structure type.
+	(putback): Replaces putback_char member.
+	(putback): Replaces putback_char static variable.
+	(feed_input): Use putback.
+	(end_input): Use putback.
+	(sub_getch): Use putback.
+	(put_back): Use putback.
+
 1999-06-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (grokdeclarator): Fix typo in last change.
