@@ -345,10 +345,7 @@ You must use GNU Make to build libffi on SGI platforms.
 	------------------
 
 The ARM port was performed on a NetWinder running ARM Linux ELF
-(2.0.31) and gcc 2.8.1.  config.sub still does not recognize the
-machine name sa110-unknown-linux-gnu (currently returned by
-NetWinder).  In the mean time the package can be configured by running
-'configure arm-linux'.
+(2.0.31) and gcc 2.8.1.
 
 
 
