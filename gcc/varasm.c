@@ -4897,6 +4897,7 @@ void
 default_elf_select_section_1 (tree decl, int reloc,
 			      unsigned HOST_WIDE_INT align, int shlib)
 {
+  const char *sname;
   switch (categorize_decl_for_section (decl, reloc, shlib))
     {
     case SECCAT_TEXT:
@@ -4904,56 +4905,61 @@ default_elf_select_section_1 (tree decl, int reloc,
       abort ();
     case SECCAT_RODATA:
       readonly_data_section ();
-      break;
+      return;
     case SECCAT_RODATA_MERGE_STR:
       mergeable_string_section (decl, align, 0);
-      break;
+      return;
     case SECCAT_RODATA_MERGE_STR_INIT:
       mergeable_string_section (DECL_INITIAL (decl), align, 0);
-      break;
+      return;
     case SECCAT_RODATA_MERGE_CONST:
       mergeable_constant_section (DECL_MODE (decl), align, 0);
-      break;
+      return;
     case SECCAT_SRODATA:
-      named_section (decl, ".sdata2", reloc);
+      sname = ".sdata2";
       break;
     case SECCAT_DATA:
       data_section ();
-      break;
+      return;
     case SECCAT_DATA_REL:
-      named_section (decl, ".data.rel", reloc);
+      sname = ".data.rel";
       break;
     case SECCAT_DATA_REL_LOCAL:
-      named_section (decl, ".data.rel.local", reloc);
+      sname = ".data.rel.local";
       break;
     case SECCAT_DATA_REL_RO:
-      named_section (decl, ".data.rel.ro", reloc);
+      sname = ".data.rel.ro";
       break;
     case SECCAT_DATA_REL_RO_LOCAL:
-      named_section (decl, ".data.rel.ro.local", reloc);
+      sname = ".data.rel.ro.local";
       break;
     case SECCAT_SDATA:
-      named_section (decl, ".sdata", reloc);
+      sname = ".sdata";
       break;
     case SECCAT_TDATA:
-      named_section (decl, ".tdata", reloc);
+      sname = ".tdata";
       break;
     case SECCAT_BSS:
 #ifdef BSS_SECTION_ASM_OP
       bss_section ();
+      return;
 #else
-      named_section (decl, ".bss", reloc);
-#endif
+      sname = ".bss";
       break;
+#endif
     case SECCAT_SBSS:
-      named_section (decl, ".sbss", reloc);
+      sname = ".sbss";
       break;
     case SECCAT_TBSS:
-      named_section (decl, ".tbss", reloc);
+      sname = ".tbss";
       break;
     default:
       abort ();
     }
+
+  if (!DECL_P (decl))
+    decl = NULL_TREE;
+  named_section (decl, sname, reloc);
 }
 
 /* Construct a unique section name based on the decl name and the
