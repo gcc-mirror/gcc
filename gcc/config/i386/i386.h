@@ -1411,7 +1411,7 @@ enum reg_class
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  \
   ((C) == 'G' ? standard_80387_constant_p (VALUE) \
-   : ((C) == 'H' ? standard_sse_constant_p (VALUE) : 0))
+   : 0)
 
 /* A C expression that defines the optional machine-dependent
    constraint letters that can be used to segregate specific types of

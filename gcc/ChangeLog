@@ -1,3 +1,20 @@
+Tue Oct 29 19:32:16 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (CONST_DOUBLE_OK_FOR_LETTER_P): Remove 'H'
+	* i386.md (movsf*, movdf*): Use 'C' instead of 'H'
+	* md.texi (machine dependent constraints): Document 'C'
+
+	* simplify-rtx.c (simplify_subreg): Fix const_int->vector subregging.
+
+	* i386.c (ix86_expand_vector_move): Fix.
+
+	* i386.c (ix86_expand_builtin): Use sse2_maskmovdqu_rex64.
+	* i386.md (sse2_maskmovdqu_rex64): New pattern
+
+	PR target/8322
+	* xmmintrin.h (_mm_stream_pi, _mm_stream_pd): Fix cast.
+	(ix86_init_mmx_sse_builtins): Fix type.
+
 2002-10-29  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* gthr-posix.h: Include <unistd.h> for feature tests.

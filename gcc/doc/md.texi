@@ -1606,6 +1606,10 @@ Second floating point register
 @item c
 @samp{c} register
 
+@item C
+Specifies constant that can be easilly constructed in SSE register without
+loading it from memory.
+
 @item d
 @samp{d} register
 
