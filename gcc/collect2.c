@@ -242,8 +242,13 @@ char * temporary_firstobj;
 /* Defined in the automatically-generated underscore.c.  */
 extern int prepends_underscore;
 
+extern char *getenv ();
 extern char *mktemp ();
 extern FILE *fdopen ();
+
+#ifndef GET_ENVIRONMENT
+#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ENV_VALUE = getenv (ENV_NAME)
+#endif
 
 /* Structure to hold all the directories in which to search for files to
    execute.  */
@@ -906,7 +911,8 @@ prefix_from_env (env, pprefix)
      char *env;
      struct path_prefix *pprefix;
 {
-  char *p = getenv (env);
+  char *p;
+  GET_ENVIRONMENT (p, env);
 
   if (p)
     prefix_from_string (p, pprefix);
@@ -1032,7 +1038,7 @@ main (argc, argv)
      In practice, collect will rarely invoke itself.  This can happen now
      that we are no longer called gld.  A perfect example is when running
      gcc in a build directory that has been installed.  When looking for
-     ld, we will find our installed version and believe that's the real ld.  */
+     ld's, we will find our installed version and believe that's the real ld.  */
 
   /* We must also append COLLECT_NAME to COLLECT_NAMES to watch for the
      previous version of collect (the one that used COLLECT_NAME and only
