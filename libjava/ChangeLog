@@ -1,3 +1,17 @@
+i2003-12-16  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/io/ObjectInputStream.java
+	(lookupClass): New method.
+	(currentLoader): New method.
+	(inputGetObjectStreamClasses): New method.
+	(assignNewHandle): Documented.
+	(currentClassLoader): Documented.
+	* java/io/ObjectStreamClass.java
+	(setClass): Changed API. Better handling of the imported/exported
+	fields.
+	(getSerialPersistentFields): Make it throw previously caught exceptions
+	so they can handled in setClass.
+
 2003-12-16 Guilhem Lavaux <guilhem@kaffe.org>
  
 	* java/io/ObjectStreamField.java: A few methods were added in prevision

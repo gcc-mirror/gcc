@@ -291,7 +291,18 @@ public class ObjectStreamClass implements Serializable
     this.fields = fields;
   }
 
-  void setClass (Class cl) throws InvalidClassException
+  /**
+   * This method builds the internal description corresponding to a Java Class.
+   * As the constructor only assign a name to the current ObjectStreamClass instance,
+   * that method sets the serial UID, chose the fields which will be serialized,
+   * and compute the position of the fields in the serialized stream.
+   *
+   * @param cl The Java class which is used as a reference for building the descriptor.
+   * @param superClass The descriptor of the super class for this class descriptor.
+   * @throws InvalidClassException if an incompatibility between computed UID and
+   * already set UID is found.
+   */
+  void setClass (Class cl, ObjectStreamClass superClass) throws InvalidClassException
   {
     this.clazz = cl;
 
@@ -312,11 +323,87 @@ public class ObjectStreamClass implements Serializable
       }
 
     isProxyClass = clazz != null && Proxy.isProxyClass (clazz);
-    ObjectStreamClass osc = (ObjectStreamClass)classLookupTable.get (clazz);
-    if (osc == null)
-      classLookupTable.put (clazz, this);
-    superClass = lookupForClassObject (clazz.getSuperclass ());
+    this.superClass = superClass;
     calculateOffsets ();
+
+    try
+      {
+        ObjectStreamField[] exportedFields = getSerialPersistentFields (clazz);
+
+        if (exportedFields == null)
+          return;
+
+        ObjectStreamField[] newFieldList = new ObjectStreamField[exportedFields.length + fields.length];
+        int i, j, k;
+
+        /* We now check the import fields against the exported fields.
+         * There should not be contradiction (e.g. int x and String x)
+         * but extra virtual fields can be added to the class.
+         */
+
+        Arrays.sort(exportedFields);
+
+        i = 0; j = 0; k = 0;
+        while (i < fields.length && j < exportedFields.length)
+          {
+            int comp = fields[i].getName().compareTo (exportedFields[j].getName());
+            if (comp < 0)
+              {
+                newFieldList[k] = fields[i];
+                fields[i].setPersistent(false);
+                fields[i].setToSet(false);
+                i++;
+              }
+            else if (comp > 0)
+              {
+                /* field not found in imported fields. We add it
+                 * in the list of supported fields.
+                 */
+                newFieldList[k] = exportedFields[j];
+                newFieldList[k].setPersistent(true);
+                newFieldList[k].setToSet(false);
+                j++;
+              }
+            else
+              {
+                if (!fields[i].getType().equals (exportedFields[j].getType()))
+                  throw new InvalidClassException ("serialPersistentFields must be compatible with" +
+                                                   " imported fields (about " + fields[i].getName() + ")");
+                newFieldList[k] = fields[i];
+                fields[i].setPersistent(true);
+                i++;
+                j++;
+              }
+            k++;
+          }
+
+        if (i < fields.length)
+          for (; i < fields.length; i++, k++)
+            {
+              fields[i].setPersistent(false);
+              fields[i].setToSet(false);
+              newFieldList[k] = fields[i];
+            }
+          else
+            if (j < exportedFields.length)
+              for (; j < exportedFields.length; j++, k++)
+                {
+                  exportedFields[j].setPersistent(true);
+                  exportedFields[j].setToSet(false);
+                  newFieldList[k] = exportedFields[j];
+               }
+
+        fields = new ObjectStreamField[k];
+        System.arraycopy (newFieldList, 0, fields, 0, k);
+      }
+    catch (NoSuchFieldException ignore)
+      {
+        return;
+      }
+    catch (IllegalAccessException ignore)
+      {
+        return;
+      }
   }
 
   void setSuperclass (ObjectStreamClass osc)
@@ -436,6 +523,9 @@ public class ObjectStreamClass implements Serializable
     }
     catch (NoSuchFieldException ignore)
     {}
+    catch (IllegalAccessException ignore)
+      {
+      }
 
     int num_good_fields = 0;
     Field[] all_fields = cl.getDeclaredFields ();
@@ -613,24 +703,13 @@ public class ObjectStreamClass implements Serializable
   // Returns the value of CLAZZ's private static final field named
   // `serialPersistentFields'.
   private ObjectStreamField[] getSerialPersistentFields (Class clazz)
+    throws NoSuchFieldException, IllegalAccessException
   {
-    ObjectStreamField[] o = null;
-    try
-      {
-	// Use getDeclaredField rather than getField for the same reason
-	// as above in getDefinedSUID.
-	Field f = clazz.getDeclaredField ("serialPersistentFields");
-	f.setAccessible(true);
-	o = (ObjectStreamField[])f.get (null);
-      }
-    catch (java.lang.NoSuchFieldException e)
-      {
-      }
-    catch (java.lang.IllegalAccessException e)
-      {
-      }
-
-    return o;
+    // Use getDeclaredField rather than getField for the same reason
+    // as above in getDefinedSUID.
+    Field f = clazz.getDeclaredField("serialPersistentFields");
+    f.setAccessible(true);
+    return (ObjectStreamField[]) f.get(null);
   }
 
   public static final ObjectStreamField[] NO_FIELDS = {};

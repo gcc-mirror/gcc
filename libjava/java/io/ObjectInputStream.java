@@ -203,7 +203,7 @@ public class ObjectInputStream extends InputStream
 	      Class cl = resolveProxyClass(intfs);
 	      setBlockDataMode(oldmode);
 	      
-	      ObjectStreamClass osc = ObjectStreamClass.lookup(cl);
+	      ObjectStreamClass osc = lookupClass(cl);
 	      assignNewHandle (osc);
 	      
 	      if (!is_consumed)
@@ -332,7 +332,7 @@ public class ObjectInputStream extends InputStream
 	      int handle = assignNewHandle (obj);
 	      this.currentObject = obj;
 	      ObjectStreamClass[] hierarchy =
-		ObjectStreamClass.getObjectStreamClasses (clazz);
+		inputGetObjectStreamClasses(clazz);
 	      
 	      for (int i=0; i < hierarchy.length; i++)
 		{
@@ -455,8 +455,10 @@ public class ObjectInputStream extends InputStream
 	  new ObjectStreamField (field_name, class_name);
       }
 	      
+    Class clazz = resolveClass(osc);
     boolean oldmode = setBlockDataMode (true);
-    osc.setClass (resolveClass (osc));
+    osc.setClass (clazz, lookupClass(clazz.getSuperclass()));
+    classLookupTable.put(clazz, osc);
     setBlockDataMode (oldmode);
 	      
     return osc;
@@ -550,19 +552,78 @@ public class ObjectInputStream extends InputStream
   protected Class resolveClass (ObjectStreamClass osc)
     throws ClassNotFoundException, IOException
   {
+    return Class.forName(osc.getName(), true, currentLoader());
+  }
+
+  private ClassLoader currentLoader()
+  {
     SecurityManager sm = System.getSecurityManager ();
     if (sm == null)
       sm = new SecurityManager () {};
+    
+    return currentClassLoader(sm);
+  }
 
-    // FIXME: currentClassLoader doesn't yet do anything useful. We need
-    // to call forName() with the classloader of the class which called 
-    // readObject(). See SecurityManager.getClassContext().
-    ClassLoader cl = currentClassLoader (sm);
+  /**
+   * Lookup a class stored in the local hashtable. If it is not
+   * use the global lookup function in ObjectStreamClass to build
+   * the ObjectStreamClass. This method is requested according to
+   * the behaviour detected in the JDK by Kaffe's team.
+   *
+   * @param clazz Class to lookup in the hash table or for which
+   * we must build a descriptor.
+   * @return A valid instance of ObjectStreamClass corresponding
+   * to the specified class.
+   */
+  private ObjectStreamClass lookupClass (Class clazz)
+  {
+    ObjectStreamClass oclazz;
 
-    if (cl == null)
-      return Class.forName (osc.getName ());
+    oclazz = (ObjectStreamClass) classLookupTable.get(clazz);
+    if (oclazz == null)
+      return ObjectStreamClass.lookup (clazz);
     else
-      return cl.loadClass (osc.getName ());
+      return oclazz;
+  }
+
+  /**
+   * Reconstruct class hierarchy the same way
+   * {@link java.io.ObjectStreamClass.getObjectStreamClasses(java.lang.Class)} does
+   * but using lookupClass instead of ObjectStreamClass.lookup. This
+   * dup is necessary localize the lookup table. Hopefully some future rewritings will
+   * be able to prevent this.
+   *
+   * @param clazz This is the class for which we want the hierarchy.
+   *
+   * @return An array of valid {@link java.io.ObjectStreamClass} instances which
+   * represent the class hierarchy for clazz.
+   */
+  private ObjectStreamClass[] inputGetObjectStreamClasses (Class clazz)
+  {
+    ObjectStreamClass osc = lookupClass (clazz);
+
+    ObjectStreamClass[] ret_val;
+
+    if (osc == null)
+      return new ObjectStreamClass[0];
+    else
+      {
+        Vector oscs = new Vector();
+
+        while (osc != null)
+          {
+            oscs.addElement(osc);
+            osc = osc.getSuper();
+	  }
+
+        int count = oscs.size();
+	ObjectStreamClass[] sorted_oscs = new ObjectStreamClass[count];
+
+        for (int i = count - 1; i >= 0; i--)
+          sorted_oscs[count - i - 1] = (ObjectStreamClass) oscs.elementAt(i);
+
+        return sorted_oscs;
+      }
   }
 
   /**
@@ -1061,7 +1122,12 @@ public class ObjectInputStream extends InputStream
     throw new IOException ("Subclass of ObjectInputStream must implement readObjectOverride");
   }
 
-  // assigns the next availible handle to OBJ
+  /**
+   * Assigns the next available handle to <code>obj</code>.
+   *
+   * @param obj The object for which we want a new handle.
+   * @return A valid handle for the specified object.
+   */
   private int assignNewHandle (Object obj)
   {
     this.objectLookupTable.put (new Integer (this.nextOID),
@@ -1213,7 +1279,7 @@ public class ObjectInputStream extends InputStream
   {
     ObjectStreamField[] stream_fields = stream_osc.fields;
     ObjectStreamField[] real_fields =
-      ObjectStreamClass.lookup (stream_osc.forClass ()).fields;
+      lookupClass(stream_osc.forClass()).fields;
 
     boolean default_initialize, set_value;
     String field_name = null;
@@ -1406,8 +1472,13 @@ public class ObjectInputStream extends InputStream
       }
   }
 
-  // this native method is used to get access to the protected method
-  // of the same name in SecurityManger
+  /**
+   * This native method is used to get access to the protected method
+   * of the same name in SecurityManger.
+   *
+   * @param sm SecurityManager instance which should be called.
+   * @return The current class loader in the calling stack.
+   */
   private static ClassLoader currentClassLoader (SecurityManager sm)
   {
     // FIXME: This is too simple.
@@ -1757,6 +1828,7 @@ public class ObjectInputStream extends InputStream
   private boolean isDeserializing;
   private boolean fieldsAlreadyRead;
   private Vector validators;
+  private Hashtable classLookupTable;
 
   private static boolean dump;
 
