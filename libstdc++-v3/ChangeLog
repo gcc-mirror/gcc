@@ -1,3 +1,17 @@
+2003-11-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/gnu/codecvt_members.cc (codecvt::do_in):
+	Rewrite, using both mbsnrtowcs and mbrtowc in a loop: the
+	former is very fast, but stops if encounters a NUL.
+	(codecvt::do_out): Tweak.
+	* testsuite/performance/wchar_t_in.cc: New.
+
+2003-11-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.h
+	(__numpunct_cache<>::_M_cache): Set _M_allocated at the beginning
+	in order to avoid memory leaks; simplify a bit.
+
 2003-11-24  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* include/bits/streambuf_iterator.h (ostreambuf_iterator): Remove

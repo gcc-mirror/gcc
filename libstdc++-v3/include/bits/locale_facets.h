@@ -647,32 +647,35 @@ namespace std
     void
     __numpunct_cache<_CharT>::_M_cache(const locale& __loc)
     {
+      _M_allocated = true;
+      _M_grouping = NULL;
+      _M_truename = _M_falsename = NULL;
+
       const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
-      string __grouping = __np.grouping();
-      char* __group = new char[__grouping.length() + 1];
-      __grouping.copy(__group, __grouping.length());
-      __group[__grouping.length()] = char();
-      _M_grouping = __group;
-      
-      _M_use_grouping = __grouping.length() != 0 && __grouping.data()[0] != 0;
+
+      const string::size_type __len = __np.grouping().size();
+      char* __grouping = new char[__len + 1];
+      __np.grouping().copy(__grouping, __len);
+      __grouping[__len] = char();
+      _M_grouping = __grouping;
+      _M_use_grouping = __len && __np.grouping()[0] != 0;
 
       typedef basic_string<_CharT> __string_type;
-
-      __string_type __true = __np.truename();
-      _CharT* __truename = new _CharT[__true.length() + 1];
-      __true.copy(__truename, __true.length());
-      __truename[__true.length()] = _CharT(); 
+      typename __string_type::size_type __lentf = __np.truename().size();
+      _CharT* __truename = new _CharT[__lentf + 1];
+      __np.truename().copy(__truename, __lentf);
+      __truename[__lentf] = _CharT();
       _M_truename = __truename;
-
-      __string_type __false = __np.falsename();
-      _CharT* __falsename = new _CharT[__false.length() + 1];
-      __false.copy(__falsename, __false.length());
-      __falsename[__false.length()] = _CharT(); 
+      
+      __lentf = __np.falsename().size();
+      _CharT* __falsename = new _CharT[__lentf + 1];
+      __np.falsename().copy(__falsename, __lentf);
+      __falsename[__lentf] = _CharT();
       _M_falsename = __falsename;
-            
+          
       _M_decimal_point = __np.decimal_point();
       _M_thousands_sep = __np.thousands_sep();
-
+      
       const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
       __ct.widen(__num_base::_S_atoms_out, 
 		 __num_base::_S_atoms_out + __num_base::_S_oend, _M_atoms_out);
@@ -680,8 +683,6 @@ namespace std
       __ct.widen(__num_base::_S_atoms_in, 
 		 __num_base::_S_atoms_in + __num_base::_S_iend, _M_atoms_in);
       _M_atoms_in[__num_base::_S_iend] = _CharT();
-
-      _M_allocated = true;
     }
 
   template<typename _CharT>
