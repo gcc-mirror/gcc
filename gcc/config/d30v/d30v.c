@@ -2949,6 +2949,13 @@ d30v_print_operand (stream, x, letter)
       d30v_print_operand (stream, split_values[ letter == 'L' ], '\0');
       break;
 
+    case ':':   /* Output the condition for the current insn.  */
+      x = current_insn_predicate;
+      if (x == NULL_RTX)
+	break;
+      letter = 'T';
+      /* FALLTHRU */
+
     case 'F':	/* Print an appropriate suffix for a false comparision.  */
     case 'T':	/* Print an appropriate suffix for a true  comparision.  */
       /* Note that the sense of appropriate suffix is for conditional execution
