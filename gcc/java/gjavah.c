@@ -84,11 +84,21 @@ static JCF_u2 last_access;
 
 #define ACC_VISIBILITY (ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED)
 
-int seen_fields = 0;
+/* We keep a linked list of all method names we have seen.  This lets
+   us determine if a method name and a field name are in conflict.  */
+struct method_name
+{
+  unsigned char *name;
+  int length;
+  struct method_name *next;
+};
+
+/* List of method names we've seen.  */
+static struct method_name *method_name_list;
 
 static void print_field_info PROTO ((FILE *, JCF*, int, int, JCF_u2));
 static void print_method_info PROTO ((FILE *, JCF*, int, int, JCF_u2));
-static void print_c_decl PROTO ((FILE*, JCF*, int, int, JCF_u2, int));
+static void print_c_decl PROTO ((FILE*, JCF*, int, int, JCF_u2, int, char *));
 
 JCF_u2 current_field_name;
 JCF_u2 current_field_value;
@@ -99,9 +109,15 @@ JCF_u2 current_field_flags;
 ( current_field_name = (NAME), current_field_signature = (SIGNATURE), \
   current_field_flags = (ACCESS_FLAGS), current_field_value = 0)
 
+/* We pass over fields twice.  The first time we just note the start
+   of the methods.  Then we go back and parse the fields for real.
+   This is ugly.  */
+static int field_pass;
+
 #define HANDLE_END_FIELD() \
-  print_field_info (out, jcf, current_field_name, current_field_signature, \
-		    current_field_flags);
+  if (field_pass) print_field_info (out, jcf, current_field_name, \
+				    current_field_signature, \
+				    current_field_flags);
 
 #define HANDLE_CONSTANTVALUE(VALUEINDEX) current_field_value = (VALUEINDEX)
 
@@ -242,11 +258,29 @@ generate_access (stream, flags)
     }
 }
 
+/* See if NAME is already the name of a method.  */
+static int
+name_is_method_p (name, length)
+     unsigned char *name;
+     int length;
+{
+  struct method_name *p;
+
+  for (p = method_name_list; p != NULL; p = p->next)
+    {
+      if (p->length == length && ! memcmp (p->name, name, length))
+	return 1;
+    }
+  return 0;
+}
+
 static void
 DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
       FILE *stream AND JCF* jcf
       AND int name_index AND int sig_index AND JCF_u2 flags)
 {
+  char *override = NULL;
+
   if (flags & ACC_FINAL)
     {
       if (current_field_value > 0)
@@ -305,12 +339,42 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 
   generate_access (stream, flags);
   fputs ("  ", out);
-  if (flags & ACC_STATIC)
+  if ((flags & ACC_STATIC))
     fputs ("static ", out);
-  print_c_decl (out, jcf, name_index, sig_index, flags, 0);
+
+  if (JPOOL_TAG (jcf, name_index) != CONSTANT_Utf8)
+    {
+      fprintf (stream, "<not a UTF8 constant>");
+      found_error = 1;
+    }
+  else
+    {
+      unsigned char *name = JPOOL_UTF_DATA (jcf, name_index);
+      int length = JPOOL_UTF_LENGTH (jcf, name_index);
+
+      if (name_is_method_p (name, length))
+	{
+	  /* This field name matches a method.  So override the name
+	     with a dummy name.  This is yucky, but it isn't clear
+	     what else to do.  FIXME: if the field is static, then
+	     we'll be in real trouble.  */
+	  if ((flags & ACC_STATIC))
+	    {
+	      fprintf (stderr, "static field has same name as method\n");
+	      found_error = 1;
+	    }
+
+	  override = (char *) malloc (length + 3);
+	  memcpy (override, name, length);
+	  strcpy (override + length, "__");
+	}
+    }
+
+  print_c_decl (out, jcf, name_index, sig_index, flags, 0, override);
   fputs (";\n", out);
-  if (! (flags & ACC_STATIC))
-    seen_fields++;
+
+  if (override)
+    free (override);
 }
 
 static void
@@ -320,6 +384,7 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
 {
   unsigned char *str;
   int length, is_init = 0;
+  char *override = NULL;
 
   if (JPOOL_TAG (jcf, name_index) != CONSTANT_Utf8)
     fprintf (stream, "<not a UTF8 constant>");
@@ -334,13 +399,33 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
       else  
 	return;
     }
+  else
+    {
+      struct method_name *nn;
+
+      nn = (struct method_name *) malloc (sizeof (struct method_name));
+      nn->name = (char *) malloc (length);
+      memcpy (nn->name, str, length);
+      nn->length = length;
+      nn->next = method_name_list;
+      method_name_list = nn;
+    }
 
   /* We can't generate a method whose name is a C++ reserved word.
      For now the only problem has been `delete'; add more here as
-     required.  FIXME: we need a better solution than just ignoring
-     the method.  */
+     required.  We can't just ignore the function, because that will
+     cause incorrect code to be generated if the function is virtual
+     (not only for calls to this function for for other functions
+     after it in the vtbl).  So we give it a dummy name instead.  */
   if (! utf8_cmp (str, length, "delete"))
-    return;
+    {
+      /* If the method is static, we can safely skip it.  If we don't
+	 skip it then we'll have problems since the mangling will be
+	 wrong.  FIXME.  */
+      if ((flags & ACC_STATIC))
+	return;
+      override = "__dummy_delete";
+    }
 
   generate_access (stream, flags);
 
@@ -353,7 +438,7 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
       if (! is_init)
 	fputs ("virtual ", out);
     }
-  print_c_decl (out, jcf, name_index, sig_index, flags, is_init);
+  print_c_decl (out, jcf, name_index, sig_index, flags, is_init, override);
 
   /* FIXME: it would be nice to decompile small methods here.  That
      would allow for inlining.  */
@@ -361,154 +446,185 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
   fprintf(out, ";\n");
 }
 
+/* Print one piece of a signature.  Returns pointer to next parseable
+   character on success, NULL on error.  */
+static unsigned char *
+decode_signature_piece (stream, signature, limit, need_space)
+     FILE *stream;
+     unsigned char *signature, *limit;
+     int *need_space;
+{
+  char *ctype;
+
+  switch (signature[0])
+    {
+    case '[':
+      for (signature++; (signature < limit
+			 && *signature >= '0'
+			 && *signature <= '9'); signature++)
+	;
+      switch (*signature)
+	{
+	case 'B': ctype = "jbyteArray";  goto printit;
+	case 'C': ctype = "jcharArray";  goto printit;
+	case 'D': ctype = "jdoubleArray";  goto printit;
+	case 'F': ctype = "jfloatArray";  goto printit;
+	case 'I': ctype = "jintArray";  goto printit;
+	case 'S': ctype = "jshortArray";  goto printit;
+	case 'J': ctype = "jlongArray";  goto printit;
+	case 'Z': ctype = "jbooleanArray";  goto printit;
+	case '[': ctype = "jobjectArray"; goto printit;
+	case 'L':
+	  /* We have to generate a reference to JArray here,
+	     so that our output matches what the compiler
+	     does.  */
+	  ++signature;
+	  fputs ("JArray<", stream);
+	  while (signature < limit && *signature != ';')
+	    {
+	      int ch = UTF8_GET (signature, limit);
+	      if (ch == '/')
+		fputs ("::", stream);
+	      else
+		jcf_print_char (stream, ch);
+	    }
+	  fputs (" *> *", stream);
+	  *need_space = 0;
+	  ++signature;
+	  break;
+	default:
+	  /* Unparseable signature.  */
+	  return NULL;
+	}
+      break;
+
+    case '(':
+    case ')':
+      /* This shouldn't happen.  */
+      return NULL;
+
+    case 'B': ctype = "jbyte";  goto printit;
+    case 'C': ctype = "jchar";  goto printit;
+    case 'D': ctype = "jdouble";  goto printit;
+    case 'F': ctype = "jfloat";  goto printit;
+    case 'I': ctype = "jint";  goto printit;
+    case 'J': ctype = "jlong";  goto printit;
+    case 'S': ctype = "jshort";  goto printit;
+    case 'Z': ctype = "jboolean";  goto printit;
+    case 'V': ctype = "void";  goto printit;
+    case 'L':
+      ++signature;
+      while (*signature && *signature != ';')
+	{
+	  int ch = UTF8_GET (signature, limit);
+	  if (ch == '/')
+	    fputs ("::", stream);
+	  else
+	    jcf_print_char (stream, ch);
+	}
+      fputs (" *", stream);
+      if (*signature == ';')
+	signature++;
+      *need_space = 0;
+      break;
+    default:
+      *need_space = 1;
+      jcf_print_char (stream, *signature++);
+      break;
+    printit:
+      signature++;
+      *need_space = 1;
+      fputs (ctype, stream);
+      break;
+    }
+
+  return signature;
+}
+
 static void
-DEFUN(print_c_decl, (stream, jcf, name_index, signature_index, flags, is_init),
+DEFUN(print_c_decl, (stream, jcf, name_index, signature_index, flags, is_init,
+		     name_override),
       FILE* stream AND JCF* jcf
       AND int name_index AND int signature_index AND JCF_u2 flags
-      AND int is_init)
+      AND int is_init AND char *name_override)
 {
   if (JPOOL_TAG (jcf, signature_index) != CONSTANT_Utf8)
-    fprintf (stream, "<not a UTF8 constant>");
+    {
+      fprintf (stream, "<not a UTF8 constant>");
+      found_error = 1;
+    }
   else
     {
       int length = JPOOL_UTF_LENGTH (jcf, signature_index);
       unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
       register  unsigned char *str = str0;
       unsigned char *limit = str + length;
-      int j;
-      char *ctype;
       int need_space = 0;
       int is_method = str[0] == '(';
+      unsigned char *next;
 
-      if (is_method)
+      /* If printing a method, skip to the return signature and print
+	 that first.  However, there is no return value if this is a
+	 constructor.  */
+      if (is_method && ! is_init)
 	{
-	  /* Skip to the return signature, and print that first.
-	     However, don't do this is we are printing a construtcor.
-	     */
-	  if (is_init)
+	  while (str < limit)
 	    {
-	      str = str0 + 1;
-	      /* FIXME: Most programmers love Celtic knots because
-		 they see their own code in the interconnected loops.
-		 That is, this is spaghetti.  */
-	      goto have_constructor;
-	    }
-	  else
-	    {
-	      while (str < limit)
-		{
-		  int ch = *str++;
-		  if (ch == ')')
-		    break;
-		}
+	      int ch = *str++;
+	      if (ch == ')')
+		break;
 	    }
 	}
 
-    again:
-      while (str < limit)
+      /* If printing a field or an ordinary method, then print the
+	 "return value" now.  */
+      if (! is_method || ! is_init)
 	{
-	  switch (str[0])
+	  next = decode_signature_piece (stream, str, limit, &need_space);
+	  if (! next)
 	    {
-	    case '[':
-	      for (str++; str < limit && *str >= '0' && *str <= '9'; str++)
-		;
-	      switch (*str)
-		{
-		case 'B': ctype = "jbyteArray";  goto printit;
-		case 'C': ctype = "jcharArray";  goto printit;
-		case 'D': ctype = "jdoubleArray";  goto printit;
-		case 'F': ctype = "jfloatArray";  goto printit;
-		case 'I': ctype = "jintArray";  goto printit;
-		case 'S': ctype = "jshortArray";  goto printit;
-		case 'J': ctype = "jlongArray";  goto printit;
-		case 'Z': ctype = "jbooleanArray";  goto printit;
-		case '[': ctype = "jobjectArray"; goto printit;
-		case 'L':
-		  /* We have to generate a reference to JArray here,
-		     so that our output matches what the compiler
-		     does.  */
-		  ++str;
-		  fputs ("JArray<", out);
-		  while (str < limit && *str != ';')
-		    {
-		      int ch = UTF8_GET (str, limit);
-		      if (ch == '/')
-			fputs ("::", stream);
-		      else
-			jcf_print_char (stream, ch);
-		    }
-		  fputs (" *> *", out);
-		  need_space = 0;
-		  ++str;
-		  break;
-		default:
-		  fprintf (stderr, "unparseable signature `%s'\n", str0);
-		  found_error = 1;
-		  ctype = "???"; goto printit;
-		}
-	      break;
-	    case '(':
-	      fputc (*str++, stream);
-	      continue;
-	    case ')':
-	      fputc (*str++, stream);
-	      /* the return signature was printed in the first pass. */
+	      fprintf (stderr, "unparseable signature: `%s'\n", str0);
+	      found_error = 1;
 	      return;
-	    case 'B': ctype = "jbyte";  goto printit;
-	    case 'C': ctype = "jchar";  goto printit;
-	    case 'D': ctype = "jdouble";  goto printit;
-	    case 'F': ctype = "jfloat";  goto printit;
-	    case 'I': ctype = "jint";  goto printit;
-	    case 'J': ctype = "jlong";  goto printit;
-	    case 'S': ctype = "jshort";  goto printit;
-	    case 'Z': ctype = "jboolean";  goto printit;
-	    case 'V': ctype = "void";  goto printit;
-	    case 'L':
-	      ++str;
-	      while (*str && *str != ';')
-		{
-		  int ch = UTF8_GET (str, limit);
-		  if (ch == '/')
-		    fputs ("::", stream);
-		  else
-		    jcf_print_char (stream, ch);
-		}
-	      fputs (" *", stream);
-	      if (*str == ';')
-		str++;
-	      need_space = 0;
-	      break;
-	    default:
-	      need_space = 1;
-	      jcf_print_char (stream, *str++);
-	      break;
-	    printit:
-	      str++;
-	      need_space = 1;
-	      fputs (ctype, stream);
-	      break;
 	    }
-
-	  if (is_method && str < limit && *str != ')')
-	    fputs (", ", stream);
 	}
-    have_constructor:
-      if (name_index)
+
+      /* Now print the name of the thing.  */
+      if (need_space)
+	fputs (" ", stream);
+      if (name_override)
+	fputs (name_override, stream);
+      else if (name_index)
 	{
-	  if (need_space)
-	    fprintf (stream, " ");
 	  /* Declare constructors specially.  */
 	  if (is_init)
 	    print_base_classname (stream, jcf, jcf->this_class);
 	  else
 	    print_name (stream, jcf, name_index);
 	}
+
       if (is_method)
 	{
+	  /* Have a method or a constructor.  Print signature pieces
+	     until done.  */
 	  fputs (" (", stream);
-	  /* Go to beginning, skipping '('. */
 	  str = str0 + 1;
-	  goto again; /* To handle argument signatures. */
+	  while (str < limit && *str != ')')
+	    {
+	      next = decode_signature_piece (stream, str, limit, &need_space);
+	      if (! next)
+		{
+		  fprintf (stderr, "unparseable signature: `%s'\n", str0);
+		  found_error = 1;
+		  return;
+		}
+
+	      if (next < limit && *next != ')')
+		fputs (", ", stream);
+	      str = next;
+	    }
+
+	  fputs (")", stream);
 	}
     }
 }
@@ -613,6 +729,7 @@ DEFUN(process_file, (jcf, out),
       JCF *jcf AND FILE *out)
 {
   int code, i;
+  uint32 field_start, method_end;
 
   current_jcf = main_jcf = jcf;
 
@@ -700,8 +817,22 @@ DEFUN(process_file, (jcf, out),
      as we see them.  We have to list the methods in the same order
      that they appear in the class file, so that the Java and C++
      vtables have the same layout.  */
+  /* We want to parse the methods first.  But we need to find where
+     they start.  So first we skip the fields, then parse the
+     methods.  Then we parse the fields and skip the methods.  FIXME:
+     this is ugly.  */
+  field_pass = 0;
+  field_start = JCF_TELL (jcf);
   jcf_parse_fields (jcf);
+
   jcf_parse_methods (jcf);
+  method_end = JCF_TELL (jcf);
+
+  field_pass = 1;
+  JCF_SEEK (jcf, field_start);
+  jcf_parse_fields (jcf);
+  JCF_SEEK (jcf, method_end);
+
   jcf_parse_final_attributes (jcf);
 
   /* Generate friend decl if we still must.  */

@@ -32,6 +32,40 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "toplev.h"
 
+/* Table indexed by tree code giving a string containing a character
+   classifying the tree code.  Possibilities are
+   t, d, s, c, r, <, 1 and 2.  See java/java-tree.def for details.  */
+
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
+
+char java_tree_code_type[] = {
+  'x',
+#include "java-tree.def"
+};
+#undef DEFTREECODE
+
+/* Table indexed by tree code giving number of expression
+   operands beyond the fixed part of the node structure.
+   Not used for types or decls.  */
+
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
+
+int java_tree_code_length[] = {
+  0,
+#include "java-tree.def"
+};
+#undef DEFTREECODE
+
+/* Names of tree components.
+   Used for printing out the tree and error messages.  */
+#define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
+
+char *java_tree_code_name[] = {
+  "@@dummy",
+#include "java-tree.def"
+};
+#undef DEFTREECODE
+
 int compiling_from_source;
 
 char *language_string = "GNU Java";
@@ -320,6 +354,20 @@ lang_init ()
   current_jcf = main_jcf;
 
   flag_exceptions = 1;
+
+  /* Append to Gcc tree node definition arrays */
+
+  bcopy (java_tree_code_type,
+	 tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
+	 (int)LAST_JAVA_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE);
+  bcopy ((char *)java_tree_code_length,
+	 (char *)(tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE),
+	 (LAST_JAVA_TREE_CODE - 
+	  (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (int));
+  bcopy ((char *)java_tree_code_name,
+	 (char *)(tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE),
+	 (LAST_JAVA_TREE_CODE - 
+	  (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
 }
 
 /* This doesn't do anything on purpose. It's used to satisfy the

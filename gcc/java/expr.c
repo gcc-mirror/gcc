@@ -460,7 +460,7 @@ java_stack_dup (size, offset)
     }
 }
 
-/* Calls soft_athrow.  Discard the contents of the value stack. */
+/* Calls _Jv_Throw.  Discard the contents of the value stack. */
 
 tree
 build_java_athrow (node)
@@ -526,15 +526,16 @@ decode_newarray_type  (int atype)
     }
 }
 
-/* Build a call to soft_badarrayindex(), the ArrayIndexOfBoundsException
-   exception handler.  */
+/* Build a call to _Jv_ThrowBadArrayIndex(), the
+   ArrayIndexOfBoundsException exception handler.  */
 
 static tree
-build_java_throw_out_of_bounds_exception ()
+build_java_throw_out_of_bounds_exception (index)
+    tree index;
 {
   tree node = build (CALL_EXPR, int_type_node,
 		     build_address_of (soft_badarrayindex_node), 
-		     NULL_TREE, NULL_TREE );
+		     build_tree_list (NULL_TREE, index), NULL_TREE);
   TREE_SIDE_EFFECTS (node) = 1;	/* Allows expansion within ANDIF */
   return (node);
 }
@@ -629,7 +630,7 @@ build_java_arrayaccess (array, type, index)
       if (! integer_zerop (test))
 	{
 	  throw = build (TRUTH_ANDIF_EXPR, int_type_node, test,
-			 build_java_throw_out_of_bounds_exception ());
+			 build_java_throw_out_of_bounds_exception (index));
 	  /* allows expansion within COMPOUND */
 	  TREE_SIDE_EFFECTS( throw ) = 1;
 	}
@@ -677,7 +678,7 @@ build_java_check_indexed_type (array_node, indexed_type)
     return indexed_type;
 }
 
-/* newarray triggers a call to soft_newarray. This function should be called
+/* newarray triggers a call to _Jv_NewArray. This function should be called
    with an integer code (the type of array to create) and get from the stack
    the size of the dimmension.  */
 
@@ -706,7 +707,7 @@ build_anewarray (class_type, length)
     tree class_type;
     tree length;
 {
-  tree type = build_java_array_type (promote_type (class_type),
+  tree type = build_java_array_type (class_type,
 				     TREE_CODE (length) == INTEGER_CST
 				     ? TREE_INT_CST_LOW (length)
 				     : -1);
@@ -719,9 +720,9 @@ build_anewarray (class_type, length)
 		NULL_TREE);
 }
 
-/* Generates a call to multianewarray. multianewarray expects a class pointer,
-   a number of dimensions and the matching number of dimensions. The argument
-   list is NULL terminated.  */
+/* Generates a call to _Jv_NewMultiArray. multianewarray expects a
+   class pointer, a number of dimensions and the matching number of
+   dimensions. The argument list is NULL terminated.  */
 
 void
 expand_java_multianewarray (class_type, ndim)
@@ -829,8 +830,8 @@ expand_java_array_length ()
   push_value (build_java_arraynull_check (array, length, int_type_node));
 }
 
-/* Emit code for the call to soft_monitor{enter,exit}. CALL can be either
-   soft_monitorenter_node or soft_monitorexit_node.  */
+/* Emit code for the call to _Jv_Monitor{Enter,Exit}. CALL can be
+   either soft_monitorenter_node or soft_monitorexit_node.  */
 
 tree
 build_java_monitor (call, object)
@@ -1147,6 +1148,18 @@ lookup_label (pc)
     }
 }
 
+/* Generate a unique name for the purpose of loops and switches
+   labels, and try-catch-finally blocks label or temporary variables.  */
+
+tree
+generate_name ()
+{
+  static int l_number = 0;
+  char buff [20];
+  sprintf (buff, "$L%d", l_number++);
+  return get_identifier (buff);
+}
+
 tree
 create_label_decl (name)
      tree name;
@@ -1174,7 +1187,6 @@ note_label (current_pc, target_pc)
 
 /* Emit code to jump to TARGET_PC if VALUE1 CONDITION VALUE2,
    where CONDITION is one of one the compare operators. */
-
 
 void
 expand_compare (condition, value1, value2, target_pc)
@@ -1279,7 +1291,14 @@ pop_arguments (arg_types)
   if (TREE_CODE (arg_types) == TREE_LIST)
     {
       tree tail = pop_arguments (TREE_CHAIN (arg_types));
-      return tree_cons (NULL_TREE, pop_value (TREE_VALUE (arg_types)), tail);
+      tree type = TREE_VALUE (arg_types);
+      tree arg = pop_value (type);
+#ifdef PROMOTE_PROTOTYPES
+      if (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
+	  && INTEGRAL_TYPE_P (type))
+	arg = convert (integer_type_node, arg);
+#endif
+      return tree_cons (NULL_TREE, arg, tail);
     }
   abort ();
 }
@@ -1490,17 +1509,6 @@ expand_invoke (opcode, method_ref_index, nargs)
   arg_list = pop_arguments (TYPE_ARG_TYPES (method_type));
   flush_quick_stack ();
 
-  if (opcode == OPCODE_invokestatic || opcode == OPCODE_invokespecial
-      && ! inherits_from_p (current_class, self_type))
-    { /* FIXME probably not needed for invokespecial if done by NEW. */
-      /* Ensure self_type is initialized. */ 
-      func = build (CALL_EXPR, void_type_node, soft_initclass_node,
-		    build_tree_list (NULL_TREE,
-				     build_class_ref (self_type)),
-		    NULL_TREE);
-      expand_expr_stmt (func);
-    }
-
   func = NULL_TREE;
   if (opcode == OPCODE_invokestatic || opcode == OPCODE_invokespecial
       || (opcode == OPCODE_invokevirtual
@@ -1515,9 +1523,9 @@ expand_invoke (opcode, method_ref_index, nargs)
 	func = build_invokevirtual (dtable, method);
       else
 	{
-	  /* We expand invokeinterface here. soft_lookupinterfacemethod () will
-	     ensure that the selected method exists, is public and not abstract
-	     nor static.  */
+	  /* We expand invokeinterface here.
+	     _Jv_LookupInterfaceMethod() will ensure that the selected
+	     method exists, is public and not abstract nor static.  */
 	    
 	  tree lookup_arg;
 
@@ -1542,12 +1550,6 @@ expand_invoke (opcode, method_ref_index, nargs)
   func = build1 (NOP_EXPR, build_pointer_type (method_type), func);
   call = build (CALL_EXPR, TREE_TYPE (method_type), func, arg_list, NULL_TREE);
   TREE_SIDE_EFFECTS (call) = 1;
-
-  if (opcode == OPCODE_invokestatic || opcode == OPCODE_invokespecial)
-    { /* FIXME probably not needed for invokespecial if done by NEW. */
-      /* Ensure self_type is initialized. */ 
-      call = build_class_init (self_type, call);
-    }
 
   if (TREE_CODE (TREE_TYPE (method_type)) == VOID_TYPE)
     expand_expr_stmt (call);
@@ -1600,7 +1602,7 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
   if (is_error)
     {
       if (! is_putting)
-	push_value (convert (promote_type (field_type), integer_zero_node));
+	push_value (convert (field_type, integer_zero_node));
       flush_quick_stack ();
       return;
     }
@@ -1610,7 +1612,7 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
      this is also needed to avoid circularities in the implementation
      of these fields in libjava. */
   if (field_name == TYPE_identifier_node && ! is_putting
-      && field_type == class_type_node
+      && field_type == class_ptr_type
       && strncmp (self_name, "java.lang.", 10) == 0)
     {
       char *class_name = self_name+10;
@@ -1693,6 +1695,8 @@ java_lang_expand_expr (exp, target, tmode, modifier)
   tree type = TREE_TYPE (exp);
   register enum machine_mode mode = TYPE_MODE (type);
   int unsignedp = TREE_UNSIGNED (type);
+  tree node, current;
+  int has_finally_p;
 
   switch (TREE_CODE (exp))
     {
@@ -1717,6 +1721,61 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	  expand_end_bindings (getdecls (), 1, 0);
 	  return to_return;
 	}
+      break;
+
+    case SWITCH_EXPR:
+      java_expand_switch (exp);
+      return const0_rtx;
+
+    case TRY_EXPR:
+      /* We expand a try[-catch][-finally] block */
+
+      /* Expand the try block */
+      expand_eh_region_start ();
+      expand_expr_stmt (TREE_OPERAND (exp, 0));
+      expand_start_all_catch ();
+      has_finally_p = (TREE_OPERAND (exp, 2) ? 1 : 0);
+
+      /* Expand all catch clauses (EH handlers) */
+      for (current = TREE_OPERAND (exp, 1); current; 
+	   current = TREE_CHAIN (current))
+	{
+	  extern rtx return_label;
+	  tree type;
+	  /* If we have a finally, the last exception handler is the
+	     one that is supposed to catch everything. */
+	  if (has_finally_p && !TREE_CHAIN (current))
+	    type = NULL_TREE;
+	  else
+	    {
+	      tree catch = java_get_catch_block (current, has_finally_p);
+	      tree decl = BLOCK_EXPR_DECLS (catch);
+	      type = TREE_TYPE (TREE_TYPE (decl));
+	    }
+	  start_catch_handler (prepare_eh_table_type (type));
+	  expand_expr_stmt (TREE_OPERAND (current, 0));
+
+	  /* Need to expand a goto to the end of the function here,
+	     but not for the catch everything handler. */
+	  if (type)
+	    {
+	      if (return_label)
+		emit_jump (return_label);
+	      else
+		fatal ("No return_label for this function - "
+		       "java_lang_expand_expr");
+	    }
+	  end_catch_handler ();
+	}
+
+      /* Expand the finally block, if any */
+      if (has_finally_p)
+	{
+	  tree finally = TREE_OPERAND (exp, 2);
+	  emit_label (label_rtx (FINALLY_EXPR_LABEL (finally)));
+	  expand_expr_stmt (FINALLY_EXPR_BLOCK (finally));
+	}
+      expand_end_all_catch ();
       break;
 
     default:
@@ -1984,6 +2043,15 @@ process_jvm_instruction (PC, byte_ops, length)
 { 
   char *opname; /* Temporary ??? */
   int oldpc = PC; /* PC at instruction start. */
+
+  /* If the instruction is at the beginning of a exception handler,
+     replace the top of the stack with the thrown object reference */
+  if (instruction_bits [PC] & BCODE_EXCEPTION_TARGET)
+    {
+      pop_value (ptr_type_node);
+      push_value (soft_exceptioninfo_call_node);
+    }
+
   switch (byte_ops[PC++])
     {
 #define JAVAOP(OPNAME, OPCODE, OPKIND, OPERAND_TYPE, OPERAND_VALUE) \

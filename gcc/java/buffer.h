@@ -36,6 +36,9 @@ struct buffer
 
 #define NULL_BUFFER { (void*) 0, (void*) 0, (void*) 0 }
 
+#define BUFFER_INIT(BUFP) \
+  ((BUFP)->data = NULL, (BUFP)->ptr = NULL, (BUFP)->limit = NULL)
+
 #define BUFFER_LENGTH(BUFP) ((BUFP)->ptr - (BUFP)->data)
 
 #define BUFFER_RESET(BUFP) ((BUFP)->ptr = (BUFP)->data)

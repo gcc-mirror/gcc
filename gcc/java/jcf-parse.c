@@ -408,7 +408,7 @@ get_class_constant (JCF *jcf , int i)
       char *name = JPOOL_UTF_DATA (jcf, name_index);
       int nlength = JPOOL_UTF_LENGTH (jcf, name_index);
       if (name[0] == '[')  /* Handle array "classes". */
-	  type = parse_signature_string (name, nlength);
+	  type = TREE_TYPE (parse_signature_string (name, nlength));
       else
         { 
           tree cname = unmangle_classname (name, nlength);

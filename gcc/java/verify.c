@@ -930,14 +930,14 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	case OPCODE_instanceof:
 	  pop_type (ptr_type_node);
 	  get_class_constant (current_jcf, IMMEDIATE_u2);
-	  push_type (integer_type_node);
+	  push_type (int_type_node);
 	  break;
 
 	case OPCODE_tableswitch:
 	  {
 	    jint default_val, low, high;
 
-	    pop_type (integer_type_node);
+	    pop_type (int_type_node);
 	    while (PC%4)
 	      {
 	        if (byte_ops[PC++])
@@ -959,7 +959,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  {
 	    jint npairs, last, not_registered = 1;
 
-	    pop_type (integer_type_node);
+	    pop_type (int_type_node);
 	    while (PC%4)
 	      {
 	        if (byte_ops[PC++])

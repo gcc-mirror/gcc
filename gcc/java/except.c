@@ -161,6 +161,12 @@ method_init_exceptions ()
   whole_range.first_child = NULL;
   whole_range.next_sibling = NULL;
   cache_range_start = 0xFFFFFF;
+  java_set_exception_lang_code ();
+}
+
+void
+java_set_exception_lang_code ()
+{
   set_exception_lang_code (EH_LANG_Java);
   set_exception_version_code (1);
 }
@@ -183,6 +189,32 @@ expand_start_java_handler (range)
   expand_eh_region_start ();
 }
 
+tree
+prepare_eh_table_type (type)
+    tree type;
+{
+  tree exp;
+
+  /* The "type" (metch_info) in a (Java) exception table is one:
+   * a) NULL - meaning match any type in a try-finally.
+   * b) a pointer to a (ccmpiled) class (low-order bit 0).
+   * c) a pointer to the Utf8Const name of the class, plus one
+   * (which yields a value with low-order bit 1). */
+
+  push_obstacks (&permanent_obstack, &permanent_obstack);
+  if (type == NULL_TREE)
+    exp = null_pointer_node;
+  else if (is_compiled_class (type))
+    exp = build_class_ref (type);
+  else
+    exp = fold (build 
+		(PLUS_EXPR, ptr_type_node,
+		 build_utf8_ref (build_internal_class_name (type)),
+		 size_one_node));
+  pop_obstacks ();
+  return exp;
+}
+
 /* if there are any handlers for this range, isssue end of range,
    and then all handler blocks */
 void
@@ -193,24 +225,8 @@ expand_end_java_handler (range)
   expand_start_all_catch ();
   for ( ; handler != NULL_TREE; handler = TREE_CHAIN (handler))
     {
-      tree type = TREE_PURPOSE (handler);
-      tree exp;
-      /* The "type" (metch_info) in a (Java) exception table is one:
-       * a) NULL - meaning match any type in a try-finally.
-       * b) a pointer to a (ccmpiled) class (low-order bit 0).
-       * c) a pointer to the Utf8Const name of the class, plus one
-       * (which yields a value with low-order bit 1). */
-      push_obstacks (&permanent_obstack, &permanent_obstack);
-      if (type == NULL_TREE)
-	exp = null_pointer_node;
-      else if (is_compiled_class (type))
-	exp = build_class_ref (type);
-      else
-	exp = fold (build (PLUS_EXPR, ptr_type_node,
-			   build_utf8_ref (build_internal_class_name (type)),
-			   size_one_node));
-      pop_obstacks ();
-      start_catch_handler (exp);
+      start_catch_handler (prepare_eh_table_type (TREE_PURPOSE (handler)));
+      /* Push the thrown object on the top of the stack */
       expand_goto (TREE_VALUE (handler));
     }
   expand_end_all_catch ();
