@@ -2955,7 +2955,7 @@ expand_value_return (rtx val)
 	val = convert_modes (mode, old_mode, val, unsignedp);
 #endif
       if (GET_CODE (return_reg) == PARALLEL)
-	emit_group_load (return_reg, val, int_size_in_bytes (type));
+	emit_group_load (return_reg, val, type, int_size_in_bytes (type));
       else
 	emit_move_insn (return_reg, val);
     }

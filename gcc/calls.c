@@ -27,6 +27,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree.h"
 #include "flags.h"
 #include "expr.h"
+#include "optabs.h"
 #include "libfuncs.h"
 #include "function.h"
 #include "regs.h"
@@ -934,22 +935,27 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
 	    < (unsigned int) MIN (BIGGEST_ALIGNMENT, BITS_PER_WORD)))
       {
 	int bytes = int_size_in_bytes (TREE_TYPE (args[i].tree_value));
-	int big_endian_correction = 0;
+	int nregs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+	int endian_correction = 0;
 
-	args[i].n_aligned_regs
-	  = args[i].partial ? args[i].partial
-	    : (bytes + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
-
+	args[i].n_aligned_regs = args[i].partial ? args[i].partial : nregs;
 	args[i].aligned_regs = (rtx *) xmalloc (sizeof (rtx)
 						* args[i].n_aligned_regs);
 
-	/* Structures smaller than a word are aligned to the least
-	   significant byte (to the right).  On a BYTES_BIG_ENDIAN machine,
+	/* Structures smaller than a word are normally aligned to the
+	   least significant byte.  On a BYTES_BIG_ENDIAN machine,
 	   this means we must skip the empty high order bytes when
 	   calculating the bit offset.  */
-	if (BYTES_BIG_ENDIAN
-	    && bytes < UNITS_PER_WORD)
-	  big_endian_correction = (BITS_PER_WORD  - (bytes * BITS_PER_UNIT));
+	if (bytes < UNITS_PER_WORD
+#ifdef BLOCK_REG_PADDING
+	    && (BLOCK_REG_PADDING (args[i].mode,
+				   TREE_TYPE (args[i].tree_value), 1)
+		== downward)
+#else
+	    && BYTES_BIG_ENDIAN
+#endif
+	    )
+	  endian_correction = BITS_PER_WORD - bytes * BITS_PER_UNIT;
 
 	for (j = 0; j < args[i].n_aligned_regs; j++)
 	  {
@@ -958,6 +964,8 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
 	    int bitsize = MIN (bytes * BITS_PER_UNIT, BITS_PER_WORD);
 
 	    args[i].aligned_regs[j] = reg;
+	    word = extract_bit_field (word, bitsize, 0, 1, NULL_RTX,
+				      word_mode, word_mode, BITS_PER_WORD);
 
 	    /* There is no need to restrict this code to loading items
 	       in TYPE_ALIGN sized hunks.  The bitfield instructions can
@@ -973,11 +981,8 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
 	    emit_move_insn (reg, const0_rtx);
 
 	    bytes -= bitsize / BITS_PER_UNIT;
-	    store_bit_field (reg, bitsize, big_endian_correction, word_mode,
-			     extract_bit_field (word, bitsize, 0, 1, NULL_RTX,
-						word_mode, word_mode,
-						BITS_PER_WORD),
-			     BITS_PER_WORD);
+	    store_bit_field (reg, bitsize, endian_correction, word_mode,
+			     word, BITS_PER_WORD);
 	  }
       }
 }
@@ -1580,34 +1585,48 @@ load_register_parameters (struct arg_data *args, int num_actuals,
     {
       rtx reg = ((flags & ECF_SIBCALL)
 		 ? args[i].tail_call_reg : args[i].reg);
-      int partial = args[i].partial;
-      int nregs;
-
       if (reg)
 	{
+	  int partial = args[i].partial;
+	  int nregs;
+	  int size = 0;
 	  rtx before_arg = get_last_insn ();
 	  /* Set to non-negative if must move a word at a time, even if just
 	     one word (e.g, partial == 1 && mode == DFmode).  Set to -1 if
 	     we just use a normal move insn.  This value can be zero if the
 	     argument is a zero size structure with no fields.  */
-	  nregs = (partial ? partial
-		   : (TYPE_MODE (TREE_TYPE (args[i].tree_value)) == BLKmode
-		      ? ((int_size_in_bytes (TREE_TYPE (args[i].tree_value))
-			  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
-		      : -1));
+	  nregs = -1;
+	  if (partial)
+	    nregs = partial;
+	  else if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) == BLKmode)
+	    {
+	      size = int_size_in_bytes (TREE_TYPE (args[i].tree_value));
+	      nregs = (size + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
+	    }
+	  else
+	    size = GET_MODE_SIZE (args[i].mode);
 
 	  /* Handle calls that pass values in multiple non-contiguous
 	     locations.  The Irix 6 ABI has examples of this.  */
 
 	  if (GET_CODE (reg) == PARALLEL)
-	    emit_group_load (reg, args[i].value,
-			     int_size_in_bytes (TREE_TYPE (args[i].tree_value)));
+	    {
+	      tree type = TREE_TYPE (args[i].tree_value);
+	      emit_group_load (reg, args[i].value, type,
+			       int_size_in_bytes (type));
+	    }
 
 	  /* If simple case, just do move.  If normal partial, store_one_arg
 	     has already loaded the register for us.  In all other cases,
 	     load the register(s) from memory.  */
 
-	  else if (nregs == -1)
+	  else if (nregs == -1
+#ifdef BLOCK_REG_PADDING
+		   && !(size < UNITS_PER_WORD
+			&& (args[i].locate.where_pad
+			    == (BYTES_BIG_ENDIAN ? upward : downward)))
+#endif
+		   )
 	    emit_move_insn (reg, args[i].value);
 
 	  /* If we have pre-computed the values to put in the registers in
@@ -1619,9 +1638,44 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 			      args[i].aligned_regs[j]);
 
 	  else if (partial == 0 || args[i].pass_on_stack)
-	    move_block_to_reg (REGNO (reg),
-			       validize_mem (args[i].value), nregs,
-			       args[i].mode);
+	    {
+	      rtx mem = validize_mem (args[i].value);
+
+#ifdef BLOCK_REG_PADDING
+	      /* Handle case where we have a value that needs shifting
+		 up to the msb.  eg. a QImode value and we're padding
+		 upward on a BYTES_BIG_ENDIAN machine.  */
+	      if (nregs == -1)
+		{
+		  rtx ri = gen_rtx_REG (word_mode, REGNO (reg));
+		  rtx x;
+		  int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
+		  x = expand_binop (word_mode, ashl_optab, mem,
+				    GEN_INT (shift), ri, 1, OPTAB_WIDEN);
+		  if (x != ri)
+		    emit_move_insn (ri, x);
+		}
+
+	      /* Handle a BLKmode that needs shifting.  */
+	      else if (nregs == 1 && size < UNITS_PER_WORD
+		       && args[i].locate.where_pad == downward)
+		{
+		  rtx tem = operand_subword_force (mem, 0, args[i].mode);
+		  rtx ri = gen_rtx_REG (word_mode, REGNO (reg));
+		  rtx x = gen_reg_rtx (word_mode);
+		  int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
+		  optab dir = BYTES_BIG_ENDIAN ? lshr_optab : ashl_optab;
+
+		  emit_move_insn (x, tem);
+		  x = expand_binop (word_mode, dir, x, GEN_INT (shift),
+				    ri, 1, OPTAB_WIDEN);
+		  if (x != ri)
+		    emit_move_insn (ri, x);
+		}
+	      else
+#endif
+		move_block_to_reg (REGNO (reg), mem, nregs, args[i].mode);
+	    }
 
 	  /* When a parameter is a block, and perhaps in other cases, it is
 	     possible that it did a load from an argument slot that was
@@ -3144,7 +3198,7 @@ expand_call (tree exp, rtx target, int ignore)
 	    }
 
 	  if (! rtx_equal_p (target, valreg))
-	    emit_group_store (target, valreg,
+	    emit_group_store (target, valreg, TREE_TYPE (exp),
 			      int_size_in_bytes (TREE_TYPE (exp)));
 
 	  /* We can not support sibling calls for this case.  */
@@ -3989,7 +4043,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       /* Handle calls that pass values in multiple non-contiguous
 	 locations.  The PA64 has examples of this for library calls.  */
       if (reg != 0 && GET_CODE (reg) == PARALLEL)
-	emit_group_load (reg, val, GET_MODE_SIZE (GET_MODE (val)));
+	emit_group_load (reg, val, NULL_TREE, GET_MODE_SIZE (GET_MODE (val)));
       else if (reg != 0 && partial == 0)
 	emit_move_insn (reg, val);
 
@@ -4093,7 +4147,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  if (GET_CODE (valreg) == PARALLEL)
 	    {
 	      temp = gen_reg_rtx (outmode);
-	      emit_group_store (temp, valreg, outmode);
+	      emit_group_store (temp, valreg, NULL_TREE, outmode);
 	      valreg = temp;
 	    }
 
@@ -4136,7 +4190,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	{
 	  if (value == 0)
 	    value = gen_reg_rtx (outmode);
-	  emit_group_store (value, valreg, outmode);
+	  emit_group_store (value, valreg, NULL_TREE, outmode);
 	}
       else if (value != 0)
 	emit_move_insn (value, valreg);
