@@ -1,3 +1,7 @@
+Fri Jun  5 09:03:22 1998  John Carr  <jfc@mit.edu>
+
+	* alias.c (find_base_value): Avoid reading past	end of reg_base_value.
+
 Fri Jun  5 03:05:34 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (insxh-1): New insxl pattern for combine.
