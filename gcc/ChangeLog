@@ -1,3 +1,22 @@
+2003-03-11  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/cris/aout.h (ENDFILE_SPEC): Undef.
+	(CRIS_CPP_SUBTARGET_SPEC): Move -D__AOUT__ to...
+	(TARGET_OS_CPP_BUILTINS): New macro.
+	(HAVE_GAS_HIDDEN): Undef.
+	* config/cris/cris.h: Remove EGCS references.
+	(CPP_SPEC): Remove "-$".
+	(INIT_CUMULATIVE_ARGS): Correct comment.
+	* config/cris/cris.h (CRIS_CPP_SUBTARGET_SPEC): Move -D__ELF__ to...
+	(TARGET_OS_CPP_BUILTINS): New macro.
+	(CPP_PREDEFINES): Don't define.  Move old definitions and...
+	(CPP_SPEC): ...move -D__CRIS_ABI_version=2 to...
+	(TARGET_CPU_CPP_BUILTINS): New macro.
+	* config/cris/linux.h (CRIS_CPP_SUBTARGET_SPEC): Move constant
+	definitions and the optional __PIC__, __pic__ and
+	__NO_UNDERSCORES__ definitions to...
+	(TARGET_OS_CPP_BUILTINS): New macro.
+
 2003-03-10  Devang Patel  <dpatel@apple.com>
 
 	PR c++/9394

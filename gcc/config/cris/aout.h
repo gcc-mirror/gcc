@@ -48,6 +48,9 @@ Boston, MA 02111-1307, USA.  */
     %{!sim:%{pg:gcrt0.o%s}\
      %{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}}"
 
+/* Override cris.h define.  */
+#undef ENDFILE_SPEC
+
 /* Which library to get.  The only difference from the default is to get
    libsc.a if -sim is given to the driver.  Repeat -lc -lsysX
    {X=sim,linux}, because libsysX needs (at least) errno from libc, and
@@ -64,8 +67,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CRIS_CPP_SUBTARGET_SPEC
 #define CRIS_CPP_SUBTARGET_SPEC \
- "-D__AOUT__\
-  %{melinux:-D__gnu_linux__ -D__linux__ -D__unix__ -D__elinux__ -D__uclinux__\
+ "%{melinux:-D__gnu_linux__ -D__linux__ -D__unix__ -D__elinux__ -D__uclinux__\
     %{!nostdinc:\
       %{!mbest-lib-options:%{isystem*}}\
       -isystem elinux/include%s\
@@ -117,6 +119,19 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CRIS_SUBTARGET_DEFAULT
 #define CRIS_SUBTARGET_DEFAULT 0
+
+
+/* Node: Run-time Target */
+
+/* For the cris-*-aout subtarget.  */
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("__AOUT__");		\
+    }						\
+  while (0)
+
 
 /* Node: Storage Layout */
 
@@ -342,6 +357,13 @@ Boston, MA 02111-1307, USA.  */
 	ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);			\
     }								\
   while (0)
+
+/* The configure machinery invokes the assembler without options, which is
+   not how gcc invokes it.  Without options, the multi-target assembler
+   will probably be found, which is ELF by default.  To counter that, we
+   need to override ELF auto-host.h config stuff which we know collides
+   with a.out.  */
+#undef HAVE_GAS_HIDDEN
 
 
 /* Node: Alignment Output */

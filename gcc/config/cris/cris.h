@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -115,18 +115,8 @@ extern const char *cris_elinux_stacksize_str;
 /* Also provide canonical vN definitions when user specifies an alias.
    Note that -melf overrides -maout.  */
 
-/* The `-$' is here mostly due to the integrated preprocessor not
-   handling the builtin expansion of "#define __REGISTER_PREFIX__ $"
-   gracefully.  This is slightly redundant although not incorrect.
-   We're quite alone defining REGISTER_PREFIX as "$" so it's unlikely
-   someone will fight for us.  This year in the mountains.
-   Note that for -melinux and -mlinux, command-line -isystem options are
-   emitted both before and after the synthesized one.  We can't remove all
-   of them: a %{<isystem} will only remove the first one and %{<isystem*}
-   will not do TRT.  Those extra occurrences are harmless anyway.  */
 #define CPP_SPEC \
- "-$ -D__CRIS_ABI_version=2\
-  %{mtune=*:-D__tune_%* %{mtune=v*:-D__CRIS_arch_tune=%*}}\
+ "%{mtune=*:-D__tune_%* %{mtune=v*:-D__CRIS_arch_tune=%*}}\
    %{mtune=etrax4:-D__tune_v3 -D__CRIS_arch_tune=3}\
    %{mtune=etrax100:-D__tune_v8 -D__CRIS_arch_tune=8}\
    %{mtune=svinto:-D__tune_v8 -D__CRIS_arch_tune=8}\
@@ -150,8 +140,7 @@ extern const char *cris_elinux_stacksize_str;
 
 /* For the cris-*-elf subtarget.  */
 #define CRIS_CPP_SUBTARGET_SPEC \
- "-D__ELF__\
-  %{mbest-lib-options:\
+ "%{mbest-lib-options:\
    %{!moverride-best-lib-options:\
     %{!march=*:%{!metrax*:%{!mcpu=*:-D__tune_v10 -D__CRIS_arch_tune=10}}}}}"
 
@@ -255,8 +244,23 @@ extern const char *cris_elinux_stacksize_str;
 
 /* Node: Run-time Target */
 
-/* Only keep the non-varying ones here.  */
-#define CPP_PREDEFINES	"-Dcris -DCRIS -DGNU_CRIS"
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define_std ("cris");		\
+      builtin_define_std ("CRIS");		\
+      builtin_define_std ("GNU_CRIS");		\
+      builtin_define ("__CRIS_ABI_version=2");	\
+    }						\
+  while (0)
+
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("__ELF__");		\
+    }						\
+  while (0)
+
 
 /* This needs to be at least 32 bits.  */
 extern int target_flags;
@@ -956,9 +960,8 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
 struct cum_args {int regs;};
 
 /* The regs member is an integer, the number of arguments got into
-   registers so far, and lib is nonzero if init_cumulative_args was
-   found to generate a call to a library function.  */
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT)	  \
+   registers so far.  */
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT)	\
  ((CUM).regs = 0)
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)		\
@@ -1246,8 +1249,7 @@ struct cum_args {int regs;};
    FIXME: Check and adjust for gcc-2.9x.  */
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN) {}
 
-/* Functionality import from EGCS.
-   Kludge to solve Axis-990219: Work around imperfection in
+/* Kludge to solve Axis-990219: Work around imperfection in
    reload_load_address1:
     (plus (sign_extend (mem:qi (reg))) (reg))
    should be reloaded as (plus (reg) (reg)), not
@@ -1255,9 +1257,8 @@ struct cum_args {int regs;};
    There are no checks that reload_load_address_1 "reloads"
    addresses correctly, so invalidness is not caught or
    corrected.
-    When the right thing happens, the "something_reloaded" kludge can
-   be removed.  The right thing does not appear to happen for
-   EGCS CVS as of this date (above).  */
+    When the right thing happens in reload, the kludge can
+   be removed; still not as of 2003-02-27.  */
 
 #define LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, IND_LEVELS, WIN) \
   do									\
