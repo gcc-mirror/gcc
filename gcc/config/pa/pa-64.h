@@ -353,7 +353,7 @@ do {								\
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
   do {									\
     ctors_section ();							\
-    fprintf (FILE, "\t%s\t P%%", INT_ASM_OP);				\
+    fprintf (FILE, "%sP%%", INT_ASM_OP);				\
     assemble_name (FILE, NAME);						\
     fprintf (FILE, "\n");						\
   } while (0)
@@ -363,7 +363,7 @@ do {								\
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
   do {									\
     dtors_section ();                   				\
-    fprintf (FILE, "\t%s\t P%%", INT_ASM_OP);				\
+    fprintf (FILE, "%sP%%", INT_ASM_OP);				\
     assemble_name (FILE, NAME);              				\
     fprintf (FILE, "\n");						\
   } while (0)

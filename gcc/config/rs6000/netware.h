@@ -61,7 +61,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
-    fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
+    fprintf (FILE, "%s", TYPE_ASM_OP);					\
     assemble_name (FILE, NAME);						\
     putc (',', FILE);							\
     fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
@@ -97,7 +97,7 @@ Boston, MA 02111-1307, USA.  */
 	labelno++;							\
 	ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);		\
 	ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);		\
-	fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);				\
+	fprintf (FILE, "%s", SIZE_ASM_OP);				\
 	assemble_name (FILE, (FNAME));					\
         fprintf (FILE, ",");						\
 	assemble_name (FILE, label);					\
@@ -215,7 +215,7 @@ toc_section ()								\
 #define DBX_OUTPUT_LBRAC(FILE, BUF)					   \
 do									   \
   {									   \
-    fprintf (FILE, "%s %d,0,0,", ASM_STABN_OP, N_LBRAC);		   \
+    fprintf (FILE, "%s%d,0,0,", ASM_STABN_OP, N_LBRAC);			   \
     assemble_name (FILE, BUF);						   \
     fprintf (FILE, "-.");						   \
     assemble_name (asmfile,						   \
@@ -227,7 +227,7 @@ while (0)
 #define DBX_OUTPUT_RBRAC(FILE, BUF)					   \
 do									   \
   {									   \
-    fprintf (FILE, "%s %d,0,0,", ASM_STABN_OP, N_RBRAC);		   \
+    fprintf (FILE, "%s%d,0,0,", ASM_STABN_OP, N_RBRAC);			   \
     assemble_name (FILE, BUF);						   \
     fprintf (FILE, "-.");						   \
     assemble_name (asmfile,						   \

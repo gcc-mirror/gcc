@@ -113,7 +113,7 @@ Boston, MA 02111-1307, USA.  */
 /* This is the format used to print a .pushsection pseudo-op (and its operand)
    for the Sparc/svr4 assembler.  */
 
-#define PUSHSECTION_FORMAT	"\t%s\t\"%s\"\n"
+#define PUSHSECTION_FORMAT	"%s\"%s\"\n"
 
 #undef ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)		\
