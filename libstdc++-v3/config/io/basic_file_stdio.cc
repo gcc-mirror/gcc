@@ -105,6 +105,60 @@ namespace __gnu_internal
       default: return 0; // invalid
       }
   }
+
+  // Wrapper handling partial write.
+  static std::streamsize
+  xwrite(int __fd, const char* __s, std::streamsize __n)
+  {
+    std::streamsize __nleft = __n;
+    while (__nleft > 0)
+      {
+	const std::streamsize __ret = write(__fd, __s, __nleft);
+	if (__ret == -1L && errno == EINTR)
+	  continue;
+	else if (__ret == -1L)
+	  break;
+	__nleft -= __ret;
+	__s += __ret;
+      }
+    return __n - __nleft;
+  }
+
+#ifdef _GLIBCXX_HAVE_WRITEV
+  // Wrapper handling partial writev.
+  static std::streamsize
+  xwritev(int __fd, const char* __s1, std::streamsize __n1,
+	  const char* __s2, std::streamsize __n2)
+  {
+    std::streamsize __ret;
+
+    struct iovec __iov[2];
+    __iov[0].iov_base = const_cast<char*>(__s1);
+    __iov[0].iov_len = __n1;
+    __iov[1].iov_base = const_cast<char*>(__s2);
+    __iov[1].iov_len = __n2;
+
+    do
+      __ret = writev(__fd, __iov, 2);
+    while (__ret == -1L && errno == EINTR);
+
+    if (__ret == -1L)
+      __ret = 0;
+    else if (__ret < __n1 + __n2)
+      {
+	if (__ret >= __n1)
+	  {
+	    const std::streamsize __off = __ret - __n1;
+	    __ret += xwrite(__fd, __s2 + __off, __n2 - __off);
+	  }
+	else
+	  __ret += xwritev(__fd, __s1 + __ret, __n1 - __ret,
+			   __s2, __n2);
+      }
+
+    return __ret;
+  }
+#endif
 } // namespace __gnu_internal
 
 namespace std 
@@ -201,27 +255,9 @@ namespace std
     return __ret;
   }
 
-  // Wrapper handling partial write.
-  streamsize
-  __basic_file<char>::xwrite(const char* __s, streamsize __n)
-  {
-    streamsize __nleft = __n;
-    while (__nleft > 0)
-      {
-	const streamsize __ret = write(this->fd(), __s, __nleft);
-	if (__ret == -1L && errno == EINTR)
-	  continue;
-	else if (__ret == -1L)
-	  break;
-	__nleft -= __ret;
-	__s += __ret;
-      }
-    return __n - __nleft;
-  }
- 
   streamsize 
   __basic_file<char>::xsputn(const char* __s, streamsize __n)
-  { return __basic_file<char>::xwrite(__s, __n); }
+  { return __gnu_internal::xwrite(this->fd(), __s, __n); }
 
   streamsize 
   __basic_file<char>::xsputn_2(const char* __s1, streamsize __n1,
@@ -229,21 +265,13 @@ namespace std
   {
     streamsize __ret = 0;
 #ifdef _GLIBCXX_HAVE_WRITEV
-    struct iovec __iov[2];
-    __iov[0].iov_base = const_cast<char*>(__s1);
-    __iov[0].iov_len = __n1;
-    __iov[1].iov_base = const_cast<char*>(__s2);
-    __iov[1].iov_len = __n2;
-
-    do
-      __ret = writev(this->fd(), __iov, 2);
-    while (__ret == -1L && errno == EINTR);
+    __ret = __gnu_internal::xwritev(this->fd(), __s1, __n1, __s2, __n2);
 #else
     if (__n1)
-      __ret = __basic_file<char>::xwrite(__s1, __n1);
+      __ret = __gnu_internal::xwrite(this->fd(), __s1, __n1);
 
     if (__ret == __n1)
-      __ret += __basic_file<char>::xwrite(__s2, __n2);
+      __ret += __gnu_internal::xwrite(this->fd(), __s2, __n2);
 #endif
     return __ret;
   }
