@@ -1,3 +1,11 @@
+2003-01-27  Jerry Quinn  <jlquinn@optonline.net>
+
+	* include/bits/codecvt.h, include/bits/locale_facets.h,
+	include/bits/postypes.h, include/bits/stl_bvector.h,
+	include/bits/stl_multiset.h, include/bits/stl_set.h,
+	include/bits/stream_iterator.h, include/bits/streambuf_iterator.h,
+	include/std/std_complex.h:  Document.
+
 2004-01-27  Jerry Quinn  <jlquinn@optonline.net>
 
 	PR libstdc++/11584
