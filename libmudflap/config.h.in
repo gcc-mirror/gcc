@@ -6,6 +6,9 @@
 /* Define to 1 if you have the `backtrace_symbols' function. */
 #undef HAVE_BACKTRACE_SYMBOLS
 
+/* Define to 1 if you have the <ctype.h> header file. */
+#undef HAVE_CTYPE_H
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -107,6 +110,15 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `__ctype_b_loc' function. */
+#undef HAVE___CTYPE_B_LOC
+
+/* Define to 1 if you have the `__ctype_tolower_loc' function. */
+#undef HAVE___CTYPE_TOLOWER_LOC
+
+/* Define to 1 if you have the `__ctype_toupper_loc' function. */
+#undef HAVE___CTYPE_TOUPPER_LOC
 
 /* Name of package */
 #undef PACKAGE

@@ -63,6 +63,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <errno.h>
 #include <limits.h>
 #include <time.h>
+#include <ctype.h>
 #include <dirent.h>
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
@@ -1643,3 +1644,78 @@ WRAPPER2(int, shmdt, const void *shmaddr)
 
 
 #endif /* HAVE_SYS_IPC/SEM/SHM_H */
+
+
+
+/* ctype stuff.  This is host-specific by necessity, as the arrays
+   that is used by most is*()/to*() macros are implementation-defined.  */
+
+/* GLIBC 2.3 */
+#ifdef HAVE___CTYPE_B_LOC
+WRAPPER2(unsigned short **, __ctype_b_loc, void)
+{
+  static unsigned short * last_buf = (void *) 0;
+  static unsigned short ** last_ptr = (void *) 0;
+  unsigned short ** ptr = (unsigned short **) __ctype_b_loc ();
+  unsigned short * buf = * ptr;
+  if (ptr != last_ptr)
+    {
+      /* XXX: unregister last_ptr? */
+      last_ptr = ptr;
+      __mf_register (last_ptr, sizeof(last_ptr), __MF_TYPE_STATIC, "ctype_b_loc **");
+    }
+  if (buf != last_buf)
+    {
+      last_buf = buf;
+      __mf_register ((void *) (last_buf - 128), 384 * sizeof(unsigned short), __MF_TYPE_STATIC,
+                     "ctype_b_loc []");
+    }
+  return ptr;
+}
+#endif
+
+#ifdef HAVE___CTYPE_TOUPPER_LOC
+WRAPPER2(int **, __ctype_toupper_loc, void)
+{
+  static int * last_buf = (void *) 0;
+  static int ** last_ptr = (void *) 0;
+  int ** ptr = (int **) __ctype_toupper_loc ();
+  int * buf = * ptr;
+  if (ptr != last_ptr)
+    {
+      /* XXX: unregister last_ptr? */
+      last_ptr = ptr;
+      __mf_register (last_ptr, sizeof(last_ptr), __MF_TYPE_STATIC, "ctype_toupper_loc **");
+    }
+  if (buf != last_buf)
+    {
+      last_buf = buf;
+      __mf_register ((void *) (last_buf - 128), 384 * sizeof(int), __MF_TYPE_STATIC,
+                     "ctype_toupper_loc []");
+    }
+  return ptr;
+}
+#endif
+
+#ifdef HAVE___CTYPE_TOLOWER_LOC
+WRAPPER2(int **, __ctype_tolower_loc, void)
+{
+  static int * last_buf = (void *) 0;
+  static int ** last_ptr = (void *) 0;
+  int ** ptr = (int **) __ctype_tolower_loc ();
+  int * buf = * ptr;
+  if (ptr != last_ptr)
+    {
+      /* XXX: unregister last_ptr? */
+      last_ptr = ptr;
+      __mf_register (last_ptr, sizeof(last_ptr), __MF_TYPE_STATIC, "ctype_tolower_loc **");
+    }
+  if (buf != last_buf)
+    {
+      last_buf = buf;
+      __mf_register ((void *) (last_buf - 128), 384 * sizeof(int), __MF_TYPE_STATIC,
+                     "ctype_tolower_loc []");
+    }
+  return ptr;
+}
+#endif
