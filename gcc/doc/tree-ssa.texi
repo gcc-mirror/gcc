@@ -817,7 +817,10 @@ print_ops (tree stmt)
   
   v_may_defs = V_MAY_DEF_OPS (ann);
   for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
-    print_generic_expr (stderr, V_MAY_DEF_OP (v_may_defs, i), 0);
+    @{
+      print_generic_expr (stderr, V_MAY_DEF_OP (v_may_defs, i), 0);
+      print_generic_expr (stderr, V_MAY_DEF_RESULT (v_may_defs, i), 0);
+    @}
 
   v_must_defs = V_MUST_DEF_OPS (ann);
   for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
@@ -834,6 +837,116 @@ To collect the operands, you first need to call
 operation, statements are only scanned if they have been marked
 modified by a call to @code{modify_stmt}.  So, if your pass replaces
 operands in a statement, make sure to call @code{modify_stmt}.
+
+@subsection Operand Iterators
+@cindex Operand Iterators
+
+There is an alternative to iterating over the operands in a statement.
+It is especially useful when you wish to perform the same operation on
+more than one type of operand.  The previous example could be
+rewritten as follows:
+
+@smallexample
+void
+print_ops (tree stmt)
+@{
+  ssa_op_iter;
+  tree var;
+
+  get_stmt_operands (stmt);
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_OPERANDS)
+    print_generic_expr (stderr, var, 0);
+@}
+@end smallexample
+
+
+@enumerate
+@item Determine whether you are need to see the operand pointers, or just the
+    trees, and choose the appropriate macro: 
+
+@smallexample
+Need            Macro: 
+----            ------- 
+use_operand_p   FOR_EACH_SSA_USE_OPERAND 
+def_operand_p   FOR_EACH_SSA_DEF_OPERAND 
+tree            FOR_EACH_SSA_TREE_OPERAND 
+@end smallexample
+
+@item You need to declare a variable of the type you are interested
+    in, and an ssa_op_iter structure which serves as the loop
+    controlling variable. 
+
+@item Determine which operands you wish to use, and specify the flags of
+    those you are interested in.  They are documented in
+    @file{tree-ssa-operands.h}: 
+
+@smallexample
+#define SSA_OP_USE              0x01    /* Real USE operands.  */
+#define SSA_OP_DEF              0x02    /* Real DEF operands.  */
+#define SSA_OP_VUSE             0x04    /* VUSE operands.  */
+#define SSA_OP_VMAYUSE          0x08    /* USE portion of V_MAY_DEFS.  */
+#define SSA_OP_VMAYDEF          0x10    /* DEF portion of V_MAY_DEFS.  */
+#define SSA_OP_VMUSTDEF         0x20    /* V_MUST_DEF definitions.  */
+
+/* These are commonly grouped operand flags.  */
+#define SSA_OP_VIRTUAL_USES     (SSA_OP_VUSE | SSA_OP_VMAYUSE)
+#define SSA_OP_VIRTUAL_DEFS     (SSA_OP_VMAYDEF | SSA_OP_VMUSTDEF)
+#define SSA_OP_ALL_USES         (SSA_OP_VIRTUAL_USES | SSA_OP_USE)
+#define SSA_OP_ALL_DEFS         (SSA_OP_VIRTUAL_DEFS | SSA_OP_DEF)
+#define SSA_OP_ALL_OPERANDS     (SSA_OP_ALL_USES | SSA_OP_ALL_DEFS)
+@end smallexample
+@end enumerate
+
+So if you want to look at the use pointers for all the @code{USE} and
+@code{VUSE} operands, you would do something like: 
+
+@smallexample
+  use_operand_p use_p; 
+  ssa_op_iter iter; 
+
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, (SSA_OP_USE | SSA_OP_VUSE))
+    @{ 
+      process_use_ptr (use_p); 
+    @} 
+@end smallexample
+
+The @code{_TREE_} macro is basically the same as the @code{USE} and
+@code{DEF} macros, only with the use or def dereferenced via
+@code{USE_FROM_PTR (use_p)} and @code{DEF_FROM_PTR (def_p)}. Since we
+aren't using operand pointers, use and defs flags can be mixed. 
+
+@smallexample
+  tree var;
+  ssa_op_iter iter;
+
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_VUSE | SSA_OP_VMUSTDEF)
+    @{
+       print_generic_expr (stderr, var, TDF_SLIM);
+    @}
+@end smallexample
+
+Note that @code{V_MAY_DEFS} are broken into 2 flags, one for the
+@code{DEF} portion (@code{SSA_OP_VMAYDEF}) and one for the USE portion
+(@code{SSA_OP_VMAYUSE}). If all you want to look at are the
+@code{V_MAY_DEFS} together, there is a fourth iterator macro for this,
+which returns both a def_operand_p and a use_operand_p for each
+@code{V_MAY_DEF} in the statement. Note that you don't need any flags for
+this one. 
+
+@smallexample
+  use_operand_p use_p; 
+  def_operand_p def_p; 
+  ssa_op_iter iter; 
+
+  FOR_EACH_SSA_MAYDEF_OPERAND (def_p, use_p, stmt, iter) 
+    @{ 
+      my_code; 
+    @} 
+@end smallexample
+
+
+There are many examples in the code as well, as well as the
+documentation in @file{tree-ssa-operands.h}. 
 
 
 @node SSA
