@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Acorn RISC Machine.
-   Copyright (C) 1991, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
    should default to that used by the OS.
 */
 
-extern void output_func_prologue ();
+
 extern void output_func_epilogue ();
 extern char *output_add_immediate ();
 extern char *output_call ();
@@ -51,6 +51,33 @@ extern struct rtx_def *gen_compare_reg ();
 extern struct rtx_def *arm_gen_store_multiple ();
 extern struct rtx_def *arm_gen_load_multiple ();
 extern struct rtx_def *gen_rotated_half_load ();
+extern int is_pic ();
+#ifdef AOF_ASSEMBLER
+extern struct rtx_def *aof_pic_entry ();
+#endif
+
+#define TARGET_CPU_arm2		0x0000
+#define TARGET_CPU_arm250	0x0000
+#define TARGET_CPU_arm3		0x0000
+#define TARGET_CPU_arm6		0x0001
+#define TARGET_CPU_arm600	0x0001
+#define TARGET_CPU_arm610	0x0002
+#define TARGET_CPU_arm7		0x0001
+#define TARGET_CPU_arm7m	0x0004
+#define TARGET_CPU_arm7dm	0x0004
+#define TARGET_CPU_arm7dmi	0x0004
+#define TARGET_CPU_arm700	0x0001
+#define TARGET_CPU_arm710	0x0002
+#define TARGET_CPU_arm7100	0x0002
+#define TARGET_CPU_arm7500	0x0002
+#define TARGET_CPU_arm7500fe	0x1001
+#define TARGET_CPU_arm7tdmi	0x0008
+#define TARGET_CPU_arm8		0x0010
+#define TARGET_CPU_arm810	0x0020
+#define TARGET_CPU_strongarm	0x0040
+#define TARGET_CPU_strongarm110 0x0040
+/* Configure didn't specify */
+#define TARGET_CPU_generic	0x8000
 
 enum arm_cond_code
 {
@@ -66,25 +93,156 @@ extern char *arm_condition_codes[];
 extern int frame_pointer_needed;
 
 
+/* Just in case configure has failed to define anything. */
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT TARGET_CPU_generic
+#endif
+
+/* If the configuration file doesn't specify the cpu, the subtarget may
+   override it.  If it doesn't, then default to an ARM6. */
+#if TARGET_CPU_DEFAULT == TARGET_CPU_generic
+#undef TARGET_CPU_DEFAULT
+#ifdef SUBTARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT SUBTARGET_CPU_DEFAULT
+#else
+#define TARGET_CPU_DEFAULT TARGET_CPU_arm6
+#endif
+#endif
+
+#if TARGET_CPU_DEFAULT == TARGET_CPU_arm2
+#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_2__"
+#else
+#if TARGET_CPU_DEFAULT == TARGET_CPU_arm6 || TARGET_CPU_DEFUALT == TARGET_CPU_arm610 || TARGET_CPU_DEFAULT == TARGET_CPU_arm7500fe
+#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_3__"
+#else
+#if TARGET_CPU_DEFAULT == TARGET_CPU_arm7m
+#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_3M__"
+#else
+#if TARGET_CPU_DEFAULT == TARGET_CPU_arm7tdmi
+#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_4T__"
+#else
+#if TARGET_CPU_DEFAULT == TARGET_CPU_arm8 || TARGET_CPU_DEFAULT == TARGET_CPU_arm810 || TARGET_CPU_DEFAULT == TARGET_CPU_strongarm
+#define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_4__"
+#else
+Unrecognized value in TARGET_CPU_DEFAULT.
+#endif
+#endif
+#endif
+#endif
+#endif
+
 #ifndef CPP_PREDEFINES
 #define CPP_PREDEFINES  "-Darm -Acpu(arm) -Amachine(arm)"
 #endif
 
-#ifndef CPP_SPEC
-#define CPP_SPEC "%{m6:-D__arm6__} \
-%{mcpu-*:-D__%*} \
-%{mcpu=*:-D__%*} \
-%{mapcs-32:-D__APCS_32__ -U__APCS_26__} \
-%{mapcs-26:-D__APCS_26__ -U__APCS_32__} \
-%{!mapcs-32: %{!mapcs-26:-D__APCS_26__}} \
-%{msoft-float:-D__SOFTFP__} \
-%{mhard-float:-U__SOFTFP__} \
-%{!mhard-float: %{!msoft-float:-U__SOFTFP__}} \
-%{mbig-endian:-D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__}} \
-%{mbe:-D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__}} \
-%{!mbe: %{!mbig-endian:-D__ARMEL__}} \
+#define CPP_SPEC "%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) %(cpp_enidan)"
+
+#define CPP_CPU_ARCH_SPEC "\
+%{m2:-D__arm2__ -D__ARM_ARCH_2__} \
+%{m3:-D__arm2__ -D__ARM_ARCH_2__} \
+%{m6:-D__arm6__ -D__ARM_ARCH_3__} \
+%{mcpu=arm2:-D__ARM_ARCH_2__} \
+%{mcpu=arm250:-D__ARM_ARCH_2__} \
+%{mcpu=arm3:-D__ARM_ARCH_2__} \
+%{mcpu=arm6:-D__ARM_ARCH_3__} \
+%{mcpu=arm600:-D__ARM_ARCH_3__} \
+%{mcpu=arm610:-D__ARM_ARCH_3__} \
+%{mcpu=arm7:-D__ARM_ARCH_3__} \
+%{mcpu=arm700:-D__ARM_ARCH_3__} \
+%{mcpu=arm710:-D__ARM_ARCH_3__} \
+%{mcpu=arm7100:-D__ARM_ARCH_3__} \
+%{mcpu=arm7500:-D__ARM_ARCH_3__} \
+%{mcpu=arm7500fe:-D__ARM_ARCH_3__} \
+%{mcpu=arm7m:-D__ARM_ARCH_3M__} \
+%{mcpu=arm7dm:-D__ARM_ARCH_3M__} \
+%{mcpu=arm7dmi:-D__ARM_ARCH_3M__} \
+%{mcpu=arm7tdmi:-D__ARM_ARCH_4T__} \
+%{mcpu=arm8:-D__ARM_ARCH_4__} \
+%{mcpu=arm810:-D__ARM_ARCH_4__} \
+%{mcpu=strongarm:-D__ARM_ARCH_4__} \
+%{mcpu=strongarm110:-D__ARM_ARCH_4__} \
+%{!mcpu*:%{!m6:%{!m2:%{!m3:%(cpp_cpu_arch_default)}}}} \
 "
-#endif
+
+/* Define __APCS_26__ if the PC also contains the PSR */
+/* This also examines deprecated -m[236] if neither of -mapcs-{26,32} is set,
+   ??? Delete this for 2.9.  */
+#define CPP_APCS_PC_SPEC "\
+%{mapcs-32:%{mapcs-26:%e-mapcs-26 and -mapcs-32 may not be used together} \
+ -D__APCS_32__} \
+%{mapcs-26:-D__APCS_26__} \
+%{!mapcs-32: %{!mapcs-26:%{m6:-D__APCS_32__} %{m2:-D__APCS_26__} \
+ %{m3:-D__APCS_26__} %{!m6:%{!m3:%{!m2:%(cpp_apcs_pc_default)}}}}} \
+"
+
+#define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_26__"
+
+#define CPP_FLOAT_SPEC "\
+%{msoft-float:\
+  %{mhard-float:%e-msoft-float and -mhard_float may not be used together} \
+  -D__SOFTFP__} \
+%{!mhard-float:%{!msoft-float:%(cpp_float_default)}} \
+"
+
+/* Default is hard float, which doesn't define anything */
+#define CPP_FLOAT_DEFAULT_SPEC ""
+
+#define CPP_ENDIAN_SPEC "\
+%{mbig-endian: \
+  %{mlittle-endian: \
+    %e-mbig-endian and -mlittle-endian may not be used together} \
+  -D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__} \
+  %{mle: \
+    %e-mbig-endian and -mle may not be used together} \
+  -D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__}} \
+%{mbe: \
+  %{mlittle-endian: \
+    %e-mbe and -mlittle-endian may not be used together} \
+  -D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__} \
+  %{mle: \
+    %e-mbe and -mle may not be used together} \
+  -D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__}} \
+%{!mlittle-endian:%{!mbig-endian:%{!mbe:%{!mle:%(cpp_endian_default)}}}} \
+"
+
+/* Default is little endian, which doesn't define anything. */
+#define CPP_ENDIAN_DEFAULT_SPEC ""
+
+/* Translate (for now) the old -m[236] option into the appropriate -mcpu=...
+   and -mapcs-xx equivalents. 
+   ??? Remove support for this style in 2.9.
+   Also handle -mbe and -mle by expanding them into big-endian and
+   little-endian.  */
+#define CC1_SPEC "\
+%{m2:-mcpu=arm2 -mapcs-26} \
+%{m3:-mcpu=arm3 -mapcs-26} \
+%{m6:-mcpu=arm6 -mapcs-32} \
+%{mbe:-mbig-endian} \
+%{mle:-mlittle-endian} \
+"
+
+/* This macro defines names of additional specifications to put in the specs
+   that can be used in various specifications like CC1_SPEC.  Its definition
+   is an initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   specification name, and a string constant that used by the GNU CC driver
+   program.
+
+   Do not define this macro if it does not need to do anything.  */
+#define EXTRA_SPECS						\
+  { "cpp_cpu_arch",		CPP_CPU_ARCH_SPEC },		\
+  { "cpp_cpu_arch_default",	CPP_ARCH_DEFAULT_SPEC },	\
+  { "cpp_apcs_pc",		CPP_APCS_PC_SPEC },		\
+  { "cpp_apcs_pc_default",	CPP_APCS_PC_DEFAULT_SPEC },	\
+  { "cpp_float",		CPP_FLOAT_SPEC },		\
+  { "cpp_float_default",	CPP_FLOAT_DEFAULT_SPEC },	\
+  { "cpp_endian",		CPP_ENDIAN_SPEC },		\
+  { "cpp_endian_default",	CPP_ENDIAN_DEFAULT_SPEC },	\
+  SUBTARGET_EXTRA_SPECS
+
+#define SUBTARGET_EXTRA_SPECS
+
 
 /* Run-time Target Specification.  */
 #ifndef TARGET_VERSION
@@ -243,7 +401,9 @@ enum processor_type
   PROCESSOR_ARM2,
   PROCESSOR_ARM3,
   PROCESSOR_ARM6,
-  PROCESSOR_ARM7
+  PROCESSOR_ARM7,
+  PROCESSOR_ARM8,
+  PROCESSOR_STARM
 };
 
 /* Recast the cpu class to be the cpu attribute. */
@@ -513,6 +673,11 @@ extern int arm_arch4;
       for (regno = 16; regno < 24; ++regno)		\
 	fixed_regs[regno] = call_used_regs[regno] = 1;	\
     }							\
+  if (flag_pic)						\
+    {							\
+      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
+      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 0;	\
+    }							\
 }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -678,12 +843,13 @@ enum reg_class
    address.  This means that the symbol is in the text segment and can be
    accessed without using a load. */
 
-#define EXTRA_CONSTRAINT(OP, C)                                         \
-  ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG  \
-   : (C) == 'R' ? (GET_CODE (OP) == MEM					\
-		   && GET_CODE (XEXP (OP, 0)) == SYMBOL_REF		\
-		   && CONSTANT_POOL_ADDRESS_P (XEXP (OP, 0)))		\
-   : (C) == 'S' ? (optimize > 0 && CONSTANT_ADDRESS_P (OP)) : 0)
+#define EXTRA_CONSTRAINT(OP, C)						    \
+  ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG	    \
+   : (C) == 'R' ? (GET_CODE (OP) == MEM					    \
+		   && GET_CODE (XEXP (OP, 0)) == SYMBOL_REF		    \
+		   && CONSTANT_POOL_ADDRESS_P (XEXP (OP, 0)))		    \
+   : (C) == 'S' ? (optimize > 0 && CONSTANT_ADDRESS_P (OP))		    \
+   : 0)
 
 /* Constant letter 'G' for the FPU immediate constants. 
    'H' means the same constant negated.  */
@@ -876,7 +1042,7 @@ enum reg_class
   output_func_prologue ((STREAM), (SIZE))
 
 /* Call the function profiler with a given profile label.  The Acorn compiler
-   puts this BEFORE the prolog but gcc pust it afterwards.  The ``mov ip,lr''
+   puts this BEFORE the prolog but gcc puts it afterwards.  The ``mov ip,lr''
    seems like a good idea to stick with cc convention.  ``prof'' doesn't seem
    to mind about this!  */
 #define FUNCTION_PROFILER(STREAM,LABELNO)  				    \
@@ -1082,6 +1248,7 @@ enum reg_class
     }									\
 }
 #endif
+
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
    We have two alternate definitions for each of them.
@@ -1261,6 +1428,7 @@ do									\
    On the ARM, try to convert [REG, #BIGCONST]
    into ADD BASE, REG, #UPPERCONST and [BASE, #VALIDCONST],
    where VALIDCONST == 0 in case of TImode.  */
+extern struct rtx_def *legitimize_pic_address ();
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)				 \
 {									 \
   if (GET_CODE (X) == PLUS)						 \
@@ -1316,6 +1484,8 @@ do									\
       if (xop0 != XEXP (X, 0) || xop1 != XEXP (X, 1))			 \
 	(X) = gen_rtx (MINUS, SImode, xop0, xop1);			 \
     }									 \
+  if (flag_pic)								 \
+    (X) = legitimize_pic_address (OLDX, MODE, NULL_RTX);		 \
   if (memory_address_p (MODE, X))					 \
     goto WIN;								 \
 }
@@ -1468,6 +1638,27 @@ do									\
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions */
 #define BRANCH_COST 4
+
+/* A C statement to update the variable COST based on the relationship
+   between INSN that is dependent on DEP through dependence LINK.  */
+#define ADJUST_COST(INSN,LINK,DEP,COST) \
+  (COST) = arm_adjust_cost ((INSN), (LINK), (DEP), (COST))
+
+/* Position Independent Code.  */
+/* We decide which register to use based on the compilation options and
+   the assembler in use; this is more general than the APCS restriction of
+   using sb (r9) all the time.  */
+extern int arm_pic_register;
+
+/* The register number of the register used to address a table of static
+   data addresses in memory.  */
+#define PIC_OFFSET_TABLE_REGNUM arm_pic_register
+
+#define FINALIZE_PIC arm_finalize_pic ()
+
+#define LEGITIMATE_PIC_OPERAND_P(X) (! symbol_mentioned_p (X))
+ 
+
 
 /* Condition code information. */
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
@@ -1690,6 +1881,19 @@ extern int arm_compare_fp;
   else output_addr_const(STREAM, X);					\
 }
 
+/* Handles PIC addr specially */
+#define OUTPUT_INT_ADDR_CONST(STREAM,X) \
+  {									\
+    if (flag_pic && GET_CODE(X) == CONST && is_pic(X))			\
+      {									\
+	output_addr_const(STREAM, XEXP (XEXP (XEXP (X, 0), 0), 0));	\
+	fputs(" - (", STREAM);						\
+	output_addr_const(STREAM, XEXP (XEXP (XEXP (X, 0), 1), 0));	\
+	fputs(")", STREAM);						\
+      }									\
+    else output_addr_const(STREAM, X);					\
+  }
+
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
@@ -1710,14 +1914,12 @@ do {									\
 		   mi_op, REGISTER_PREFIX, reg_names[this_regno],	\
 		   REGISTER_PREFIX, reg_names[this_regno],		\
 		   mi_delta & (0xff << shift));				\
-	  arm_increase_location (4);					\
 	  mi_delta &= ~(0xff << shift);					\
 	  shift += 8;							\
 	}								\
     }									\
   fprintf (FILE, "\tldr\t%spc, [%spc, #-4]\n", REGISTER_PREFIX,		\
 	   REGISTER_PREFIX);						\
-  arm_increase_location (4);						\
   ASM_OUTPUT_INT (FILE, XEXP (DECL_RTL (FUNCTION), 0));			\
 } while (0)
 
@@ -1736,4 +1938,4 @@ do {									\
      in 26 bit mode, the condition codes must be masked out of the	\
      return address.  This does not apply to ARM6 and later processors	\
      when running in 32 bit mode.  */					\
-  ((!TARGET_6) ? (GEN_INT (0x03fffffc)) : (GEN_INT (0xffffffff)))
+  ((!TARGET_APCS_32) ? (GEN_INT (0x03fffffc)) : (GEN_INT (0xffffffff)))
