@@ -5627,7 +5627,7 @@ instantiate_class_template (tree type)
 				  && TYPE_LANG_SPECIFIC (tag)
 				  && CLASSTYPE_IS_TEMPLATE (tag));
 	      /* If the member is a class template, then -- even after
-		 substituition -- there may be dependent types in the
+		 substitution -- there may be dependent types in the
 		 template argument list for the class.  We increment
 		 PROCESSING_TEMPLATE_DECL so that dependent_type_p, as
 		 that function will assume that no types are dependent
