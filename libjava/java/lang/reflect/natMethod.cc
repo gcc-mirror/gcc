@@ -31,6 +31,7 @@ details.  */
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/NullPointerException.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
+#include <java/lang/VirtualMachineError.h>
 #include <java/lang/Class.h>
 #include <gcj/method.h>
 #include <gnu/gcj/RawData.h>
@@ -309,9 +310,8 @@ _Jv_GetTypesFromSignature (jmethodID method,
 	  break;
 	}
 
-      // FIXME: 2'nd argument should be "current loader"
       while (--num_arrays >= 0)
-	type = _Jv_GetArrayClass (type, 0);
+	type = _Jv_GetArrayClass (type, loader);
       // ARGPTR can be NULL if we are processing the return value of a
       // call from Constructor.
       if (argPtr)
@@ -328,14 +328,15 @@ _Jv_GetTypesFromSignature (jmethodID method,
 // to a `jvalue' (see jni.h); for a void method this should be NULL.
 // This function returns an exception (if one was thrown), or NULL if
 // the call went ok.
-jthrowable
+void
 _Jv_CallAnyMethodA (jobject obj,
 		    jclass return_type,
 		    jmethodID meth,
 		    jboolean is_constructor,
 		    JArray<jclass> *parameter_types,
 		    jvalue *args,
-		    jvalue *result)
+		    jvalue *result,
+		    jboolean is_jni_call)
 {
 #ifdef USE_LIBFFI
   JvAssert (! is_constructor || ! obj);
@@ -409,14 +410,10 @@ _Jv_CallAnyMethodA (jobject obj,
 
   if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, param_count,
 		    rtype, argtypes) != FFI_OK)
-    {
-      // FIXME: throw some kind of VirtualMachineError here.
-    }
+    throw new java::lang::VirtualMachineError(JvNewStringLatin1("internal error: ffi_prep_cif failed"));
 
   using namespace java::lang;
   using namespace java::lang::reflect;
-
-  Throwable *ex = NULL;
 
   union
   {
@@ -427,17 +424,51 @@ _Jv_CallAnyMethodA (jobject obj,
     jdouble d;
   } ffi_result;
 
+  switch (rtype->type)
+    {
+    case FFI_TYPE_VOID:
+      break;
+    case FFI_TYPE_SINT8:
+      result->b = 0;
+      break;
+    case FFI_TYPE_SINT16:
+      result->s = 0;
+      break;
+    case FFI_TYPE_UINT16:
+      result->c = 0;
+      break;
+    case FFI_TYPE_SINT32:
+      result->i = 0;
+      break;
+    case FFI_TYPE_SINT64:
+      result->j = 0;
+      break;
+    case FFI_TYPE_FLOAT:
+      result->f = 0;
+      break;
+    case FFI_TYPE_DOUBLE:
+      result->d = 0;
+      break;
+    case FFI_TYPE_POINTER:
+      result->l = 0;
+      break;
+    default:
+      JvFail ("Unknown ffi_call return type");
+      break;
+    }
+
   try
     {
       ffi_call (&cif, (void (*)()) meth->ncode, &ffi_result, values);
     }
-  catch (Throwable *ex2)
+  catch (Throwable *ex)
     {
-      // FIXME: this is wrong for JNI.  But if we just return the
-      // exception, then the non-JNI cases won't be able to
-      // distinguish it from exceptions we might generate ourselves.
-      // Sigh.
-      ex = new InvocationTargetException (ex2);
+      // For JNI we just throw the real error.  For reflection, we
+      // wrap the underlying method's exception in an
+      // InvocationTargetException.
+      if (! is_jni_call)
+	ex = new InvocationTargetException (ex);
+      throw ex;
     }
 
   // Since ffi_call returns integer values promoted to a word, use
@@ -481,11 +512,8 @@ _Jv_CallAnyMethodA (jobject obj,
 	  break;
 	}
     }
-
-  return ex;
 #else
-  throw new java::lang::UnsupportedOperationException;
-  return 0;
+  throw new java::lang::UnsupportedOperationException(JvNewStringLatin1("reflection not available in this build"));
 #endif // USE_LIBFFI
 }
 
@@ -562,16 +590,9 @@ _Jv_CallAnyMethodA (jobject obj,
     }
 
   jvalue ret_value;
-  java::lang::Throwable *ex = _Jv_CallAnyMethodA (obj,
-						  return_type,
-						  meth,
-						  is_constructor,
-						  parameter_types,
-						  argvals,
-						  &ret_value);
-
-  if (ex)
-    throw ex;
+  _Jv_CallAnyMethodA (obj, return_type, meth, is_constructor,
+		      parameter_types, argvals, &ret_value,
+		      false);
 
   jobject r;
 #define VAL(Wrapper, Field)  (new Wrapper (ret_value.Field))

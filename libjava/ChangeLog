@@ -1,3 +1,19 @@
+2003-08-18  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/11951:
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Returns
+	void.  Throw VirtualMachineError if ffi fails.  Initialize return
+	value.  Added is_jni_call argument; only wrap exception if not a
+	JNI call.  Use descriptive message if operation not supported.
+	(_Jv_GetTypesFromSignature): Use declaring class' loader to find
+	array class.
+	* include/jvm.h (_Jv_CallAnyMethodA): Updated declaration.
+	* jni.cc (_Jv_JNI_CallAnyMethodV): Updated for new form of
+	_Jv_CallAnyMethodA.
+	(_Jv_JNI_CallAnyMethodA): Likewise.
+	(_Jv_JNI_CallAnyVoidMethodV): Likewise.
+	(_Jv_JNI_CallAnyVoidMethodA): Likewise.
+
 2003-08-13  Tom Tromey  <tromey@redhat.com>
 
 	* gij.cc (help): Document -? and -X.
