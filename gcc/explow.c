@@ -764,8 +764,10 @@ allocate_dynamic_stack_space (size, target, known_align)
      way of knowing which systems have this problem.  So we avoid even
      momentarily mis-aligning the stack.  */
 
+#ifdef STACK_BOUNDARY
   if (known_align % STACK_BOUNDARY != 0)
     size = round_push (size);
+#endif
 
   do_pending_stack_adjust ();
 
