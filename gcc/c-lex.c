@@ -90,9 +90,6 @@ static int end_of_file;
 static int nextchar = -1;
 
 int check_newline ();
-
-/* Nonzero tells yylex to ignore \ in string constants.  */
-static int ignore_escape_flag = 0;
 
 /* C code produced by gperf version 2.5 (GNU C++ version) */
 /* Command-line: gperf -p -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,$ c-parse.gperf  */
@@ -716,10 +713,8 @@ linenum:
 
       /* More follows: it must be a string constant (filename).  */
 
-      /* Read the string constant, but don't treat \ as special.  */
-      ignore_escape_flag = 1;
+      /* Read the string constant.  */
       token = yylex ();
-      ignore_escape_flag = 0;
 
       if (token != STRING || TREE_CODE (yylval.ttype) != STRING_CST)
 	{
@@ -1938,8 +1933,7 @@ yylex ()
 
 	while (c != '"' && c >= 0)
 	  {
-	    /* ignore_escape_flag is set for reading the filename in #line.  */
-	    if (!ignore_escape_flag && c == '\\')
+	    if (c == '\\')
 	      {
 		int ignore = 0;
 		c = readescape (&ignore);
