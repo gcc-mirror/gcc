@@ -114,7 +114,7 @@ touch_files () {
     files_and_dependencies | sed 's, ,: ,' >> Makefile.$$
     files_and_dependencies | sed 's, .*, \\,' >> Makefile.$$
     echo ':' >> Makefile.$$
-    echo '	@for f in $?; do test -f $$f || exit 0; done; \' >> Makefile.$$
+    echo '	@for f in $? $@; do test -f $$f || exit 0; done; \' >> Makefile.$$
     echo '	echo Touching $@...; \' >> Makefile.$$
     echo '	echo Touching $@... 1>&2; \' >> Makefile.$$
     echo '	touch $@' >> Makefile.$$

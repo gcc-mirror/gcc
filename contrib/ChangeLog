@@ -1,3 +1,7 @@
+2002-04-18  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc_update (touch_files): Don't have empty for loop.
+
 2002-04-16  Richard Henderson  <rth@redhat.com>
 
 	* gcc_update: Remove libchill.
