@@ -1,3 +1,7 @@
+2003-12-17  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in: Replace cp/g++.1 with $(docobjdir)/g++.1.
+
 2003-12-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10603
