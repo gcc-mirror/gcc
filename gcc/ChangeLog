@@ -1,3 +1,8 @@
+Sat Apr 17 11:25:44 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (mulqf3_clrqf_clobber, mulqi3_clrqi_clobber): 
+	New patterns to support parallel multiply and load of zero.
+
 Fri Apr 16 01:23:47 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (valid_machine_attribute): If we're modifying the
