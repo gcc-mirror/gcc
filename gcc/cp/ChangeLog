@@ -1,3 +1,8 @@
+1999-08-18  Andrew Haley  <aph@cygnus.com>
+
+	* method.c (process_overload_item): Call build_mangled_C9x_name ()
+	for all integer parameter types larger than long long.
+
 1999-08-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (redeclare_class_template): Merge default template

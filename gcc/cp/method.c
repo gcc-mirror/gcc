@@ -1445,17 +1445,15 @@ process_overload_item (parmtype, extra_Gcode)
       else if (parmtype == java_boolean_type_node)
 	OB_PUTC ('b');
 #if HOST_BITS_PER_WIDE_INT >= 64
-      else if (parmtype == intTI_type_node 
-	       || parmtype == unsigned_intTI_type_node)
+      else
 	{
-	  /* Should just check a flag here instead of specific
-	   *_type_nodes, because all C9x types could use this. */
 	  int bits = TREE_INT_CST_LOW (TYPE_SIZE (parmtype));
 	  build_mangled_C9x_name (bits);
 	}
-#endif
+#else
       else
-        my_friendly_abort (73);
+	my_friendly_abort (73);
+#endif
       break;
 
     case BOOLEAN_TYPE:
