@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "i386/perform.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Di386 -D__FreeBSD__ -D__386BSD__ -Asystem(unix) -Asystem(FreeBSD) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-Dunix -Di386 -D__FreeBSD__ -Asystem(unix) -Asystem(FreeBSD) -Acpu(i386) -Amachine(i386)"
 
 /* Like the default, except no -lg.  */
 #define LIB_SPEC "%{!shared:%{!pg:-lc}%{pg:-lc_p}}"
@@ -66,6 +66,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
+
+/* FreeBSD using a.out does not support DWARF2 unwinding mechanisms.  */
+#define DWARF2_UNWIND_INFO 0
 
 /* The following macros are stolen from i386v4.h */
 /* These have to be defined to get PIC code correct */
