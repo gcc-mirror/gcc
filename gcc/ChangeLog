@@ -1,3 +1,14 @@
+Thu Feb 21 15:35:46 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (current_function_anonymous_args): Remove.
+	(SETUP_INCOMING_VARARGS): Don't set it - just check that one
+	of current_function_varargs and current_function_stdarg is set.
+	* sh.c (sh_expand_prologue): Check current_function_varargs /
+	current_function_stdarg / TARGET_SH5 instead of
+	current_function_anonymous_args.
+
+	* sh64.h (TARGET_VERSION): Define.
+
 2002-02-20  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (EPILOGUE_USES): Conditionalize

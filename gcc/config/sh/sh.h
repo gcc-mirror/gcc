@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler for Hitachi Super-H.
+/* Definitions of target machine for GNU compiler for Hitachi / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
@@ -1938,13 +1938,18 @@ struct sh_args {
    && ((CUM).arg_count[(int) SH_ARG_INT]			\
        + (int_size_in_bytes (TYPE) + 7) / 8) > NPARM_REGS (SImode))
 
-extern int current_function_anonymous_args;
-
 /* Perform any needed actions needed for a function that is receiving a
    variable number of arguments.  */
 
-#define SETUP_INCOMING_VARARGS(ASF, MODE, TYPE, PAS, ST) \
-  current_function_anonymous_args = ! TARGET_SH5
+/* We actually emit the code in sh_expand_prologue.  We used to use
+   a static variable to flag that we need to emit this code, but that
+   doesn't when inlining, when functions are deferred and then emitted
+   later.  Fortunately, we already have two flags that are part of struct
+   function that tell if a function uses varargs or stdarg.  */
+#define SETUP_INCOMING_VARARGS(ASF, MODE, TYPE, PAS, ST)  do \
+  if (! current_function_varargs && ! current_function_stdarg) \
+    abort (); \
+while (0)
 
 /* Define the `__builtin_va_list' type for the ABI.  */
 #define BUILD_VA_LIST_TYPE(VALIST) \

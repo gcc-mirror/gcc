@@ -1,4 +1,4 @@
-/* Output routines for GCC for Hitachi Super-H.
+/* Output routines for GCC for Hitachi / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1997, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
@@ -4503,14 +4503,11 @@ sh_expand_prologue ()
 	}
     }
 
-  /* This is set by SETUP_VARARGS to indicate that this is a varargs
-     routine.  Clear it here so that the next function isn't affected.  */
-  if (current_function_anonymous_args)
+  /* Emit the code for SETUP_VARARGS.  */
+  if (current_function_varargs || current_function_stdarg)
     {
-      current_function_anonymous_args = 0;
-
       /* This is not used by the SH3E calling convention  */
-      if (TARGET_SH1 && ! TARGET_SH3E && ! TARGET_HITACHI)
+      if (TARGET_SH1 && ! TARGET_SH3E && ! TARGET_SH5 && ! TARGET_HITACHI)
 	{
 	  /* Push arg regs as if they'd been provided by caller in stack.  */
 	  for (i = 0; i < NPARM_REGS(SImode); i++)

@@ -1,4 +1,4 @@
-;;- Machine description for the Hitachi SH.
+;;- Machine description for Hitachi / SuperH SH.
 ;;  Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
