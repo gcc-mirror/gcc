@@ -1463,7 +1463,7 @@ move_by_pieces (to, from, len, align)
     }
 
   /* The code above should have handled everything.  */
-  if (data.len != 0)
+  if (data.len > 0)
     abort ();
 }
 
