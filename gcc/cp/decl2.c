@@ -45,11 +45,8 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarfout.h"
 #include "ggc.h"
 #include "timevar.h"
-
-#if USE_CPPLIB
 #include "cpplib.h"
 extern cpp_reader  parse_in;
-#endif
 
 /* This structure contains information about the initializations
    and/or destructions required for a particular priority level.  */
@@ -566,20 +563,13 @@ compare_options (p1, p2)
 
 int   
 lang_decode_option (argc, argv)
-     int argc
-#if !USE_CPPLIB
-  ATTRIBUTE_UNUSED
-#endif
-  ;
+     int argc;
      char **argv;
 {
   int strings_processed;
   const char *p = argv[0];
-#if USE_CPPLIB
+
   strings_processed = cpp_handle_option (&parse_in, argc, argv);
-#else
-  strings_processed = 0;
-#endif /* ! USE_CPPLIB */
 
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
     /* ignore */;

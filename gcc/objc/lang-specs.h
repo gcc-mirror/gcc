@@ -23,7 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
   {".m", "@objective-c"},
   {"@objective-c",
-#if USE_CPPLIB
    /* cc1obj has an integrated ISO C preprocessor.  We should invoke the
       external preprocessor if -save-temps or -traditional is given.  */
      "%{E|M|MM:%(trad_capable_cpp) -lang-objc %{ansi:-std=c89} %(cpp_options)}\
@@ -37,14 +36,7 @@ Boston, MA 02111-1307, USA.  */
 	    cc1obj -fpreprocessed %{!pipe:%g.mi} -lang-objc %(cc1_options) %{gen-decls}}\
 	  %{!traditional:%{!ftraditional:%{!traditional-cpp:\
 	    cc1obj -lang-objc %{ansi:-std=c89} %(cpp_options) %(cc1_options) %{gen-decls}}}}}\
-        %{!fsyntax-only:%(invoke_as)}}}}"
-#else /* ! USE_CPPLIB */
-     "%(trad_capable_cpp) -lang-objc %{ansi:-std=c89} %(cpp_options)\
-			  %{!M:%{!MM:%{!E:%{!pipe:%g.mi} |\n\
-      cc1obj -lang-objc %{!pipe:%g.mi} %(cc1_options) %{gen-decls}\
-	     %{!fsyntax-only:%(invoke_as)}}}}\n"
-#endif /* ! USE_CPPLIB */
-    },
+        %{!fsyntax-only:%(invoke_as)}}}}"},
   {".mi", "@objc-cpp-output"},
   {"@objc-cpp-output",
      "%{!M:%{!MM:%{!E:cc1obj -lang-objc %i %(cc1_options) %{gen-decls}\

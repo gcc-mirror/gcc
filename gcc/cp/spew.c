@@ -45,9 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #define SPEW_INLINE inline
 #endif
 
-#if USE_CPPLIB
 extern cpp_reader parse_in;
-#endif
 
 /* This takes a token stream that hasn't decided much about types and
    tries to figure out as much as it can, with excessive lookahead and
@@ -327,11 +325,9 @@ read_token (t)
 #undef YYCODE
 
     case CPP_EOF:
-#if USE_CPPLIB
       cpp_pop_buffer (&parse_in);
       if (CPP_BUFFER (&parse_in))
 	goto retry;
-#endif
       t->yychar = 0;
       break;
       
@@ -1377,17 +1373,7 @@ debug_yychar (yy)
 
 #endif
 
-#if USE_CPPLIB
 #define NAME(type) cpp_type2name (type)
-#else
-/* Bleah */
-#include "symcat.h"
-#define OP(e, s) s,
-#define TK(e, s) STRINGX(e),
-
-static const char *type2name[N_TTYPES] = { TTYPE_TABLE };
-#define NAME(type) type2name[type]
-#endif
 
 void
 yyerror (msgid)

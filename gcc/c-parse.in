@@ -2830,9 +2830,7 @@ end ifobjc
    cpplib.h's token codes into yacc's token codes.  */
 
 static enum cpp_ttype last_token;
-#if USE_CPPLIB
 extern cpp_reader parse_in;
-#endif
 
 /* The reserved keyword table.  */
 struct resword
@@ -3137,25 +3135,11 @@ init_parse (filename)
 void
 finish_parse ()
 {
-#if USE_CPPLIB
   cpp_finish (&parse_in);
   errorcount += parse_in.errors;
-#else
-  fclose (finput);
-#endif
 }
 
-#if USE_CPPLIB
 #define NAME(type) cpp_type2name (type)
-#else
-/* Bleah */
-#include "symcat.h"
-#define OP(e, s) s,
-#define TK(e, s) STRINGX(e),
-
-static const char *type2name[N_TTYPES] = { TTYPE_TABLE };
-#define NAME(type) type2name[type]
-#endif
 
 static void
 yyerror (msgid)
@@ -3248,10 +3232,8 @@ _yylex ()
     case CPP_DOT:					return '.';
 
     case CPP_EOF:
-#if USE_CPPLIB
       cpp_pop_buffer (&parse_in);
       if (! CPP_BUFFER (&parse_in))
-#endif
 	return 0;
       goto retry;
 

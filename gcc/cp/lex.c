@@ -79,13 +79,7 @@ static void init_operators PARAMS ((void));
 #endif
 
 #include "cpplib.h"
-#if USE_CPPLIB
 extern cpp_reader  parse_in;
-#else
-FILE *finput;
-
-int linemode;
-#endif
 
 /* Pending language change.
    Positive is push count, negative is pop count.  */
@@ -252,10 +246,8 @@ static const char *cplus_tree_code_name[] = {
 void
 lang_init_options ()
 {
-#if USE_CPPLIB
   cpp_init ();
   cpp_reader_init (&parse_in, CLK_GNUC89);
-#endif
 
   /* Default exceptions on.  */
   flag_exceptions = 1;
@@ -275,13 +267,6 @@ lang_init ()
   /* If still "unspecified", make it match -fbounded-pointers.  */
   if (flag_bounds_check < 0)
     flag_bounds_check = flag_bounded_pointers;
-
-#if !USE_CPPLIB
-  /* the beginning of the file is a new line; check for # */
-  /* With luck, we discover the real source file's name from that
-     and put it in input_filename.  */
-  ungetc (check_newline (), finput);
-#endif
 
   if (flag_gnu_xref) GNU_xref_begin (input_filename);
   init_repo (input_filename);
@@ -676,21 +661,16 @@ init_reswords ()
 static void
 init_cp_pragma ()
 {
-#if USE_CPPLIB
-#define pfile &parse_in
-#else
-#define pfile 0
-#endif
-  cpp_register_pragma (pfile, 0, "vtable", handle_pragma_vtable);
-  cpp_register_pragma (pfile, 0, "unit", handle_pragma_unit);
+  cpp_register_pragma (&parse_in, 0, "vtable", handle_pragma_vtable);
+  cpp_register_pragma (&parse_in, 0, "unit", handle_pragma_unit);
 
-  cpp_register_pragma (pfile, 0, "interface", handle_pragma_interface);
-  cpp_register_pragma (pfile, 0, "implementation",
+  cpp_register_pragma (&parse_in, 0, "interface", handle_pragma_interface);
+  cpp_register_pragma (&parse_in, 0, "implementation",
 		       handle_pragma_implementation);
 
-  cpp_register_pragma_space (pfile, "GCC");
-  cpp_register_pragma (pfile, "GCC", "interface", handle_pragma_interface);
-  cpp_register_pragma (pfile, "GCC", "implementation",
+  cpp_register_pragma_space (&parse_in, "GCC");
+  cpp_register_pragma (&parse_in, "GCC", "interface", handle_pragma_interface);
+  cpp_register_pragma (&parse_in, "GCC", "implementation",
 		       handle_pragma_implementation);
 }
 
@@ -762,12 +742,8 @@ init_parse (filename)
 void
 finish_parse ()
 {
-#if USE_CPPLIB
   cpp_finish (&parse_in);
   errorcount += parse_in.errors;
-#else
-  fclose (finput);
-#endif
 }
 
 inline void
@@ -1174,12 +1150,9 @@ handle_pragma_implementation (dfile)
   else
     {
       main_filename = TREE_STRING_POINTER (fname);
-#if USE_CPPLIB
-
       if (cpp_included (&parse_in, main_filename))
 	warning ("#pragma implementation for %s appears after file is included",
 		 main_filename);
-#endif
     }
 
   for (; ifiles; ifiles = ifiles->next)

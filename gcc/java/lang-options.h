@@ -36,15 +36,6 @@ DEFINE_LANG_NAME ("Java")
   { "-fuse-boehm-gc", "Generate code for Boehm GC" },
   { "-fhash-synchronization", "Don't put synchronization structure in each object" },
   { "-fjni", "Assume native functions are implemented using JNI" },
-#if ! USE_CPPLIB
-  { "-MD", "Print dependencies to FILE.d" },
-  { "-MMD", "Print dependencies to FILE.d" },
-  { "-M", "Print dependencies to stdout" },
-  { "-MM", "Print dependencies to stdout" },
-  { "-MA", "Print dummy rules for included files" },
-  { "-MF", "Print dependencies to FILE" },
-  { "-MT", "Use TARGET as name of target in dependency file" },
-#endif /* ! USE_CPPLIB */
   { "--classpath", "Set class path and suppress system path" },
   { "--CLASSPATH", "Set class path" },
   { "--main", "Choose class whose main method should be used" },

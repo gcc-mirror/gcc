@@ -722,7 +722,6 @@ static struct compiler default_compilers[] =
   /* Next come the entries for C.  */
   {".c", "@c"},
   {"@c",
-#if USE_CPPLIB
    /* cc1 has an integrated ISO C preprocessor.  We should invoke the
       external preprocessor if -save-temps or -traditional is given.  */
      "%{E|M|MM:%(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)}\
@@ -736,13 +735,7 @@ static struct compiler default_compilers[] =
 		    cc1 -fpreprocessed %{!pipe:%g.i} %(cc1_options)}\
 	    %{!traditional:%{!ftraditional:%{!traditional-cpp:\
 		cc1 -lang-c %{ansi:-std=c89} %(cpp_options) %(cc1_options)}}}}\
-        %{!fsyntax-only:%(invoke_as)}}}}"
-#else /* ! USE_CPPLIB */
-     "%(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options) \
-			  %{!M:%{!MM:%{!E:%{!pipe:%g.i} |\n\
-      cc1 %{!pipe:%g.i} %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}"
-#endif /* ! USE_CPPLIB */
-  },
+        %{!fsyntax-only:%(invoke_as)}}}}"},
   {"-",
    "%{!E:%e-E required when input is from standard input}\
     %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)"},

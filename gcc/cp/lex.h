@@ -70,10 +70,6 @@ typedef unsigned long RID_BIT_TYPE;	/* assumed at least 32 bits */
    used in a context which makes it a reference to a variable.  */
 extern tree lastiddecl;
 
-#if !USE_CPPLIB
-extern char *token_buffer;	/* Pointer to token buffer.  */
-#endif
-
 /* Back-door communication channel to the lexer.  */
 extern int looking_for_typename;
 extern int looking_for_template;

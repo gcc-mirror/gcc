@@ -55,11 +55,8 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "toplev.h"
 #include "ggc.h"
-
-#if USE_CPPLIB
 #include "cpplib.h"
 extern cpp_reader  parse_in;
-#endif
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -698,21 +695,13 @@ generate_struct_by_value_array ()
 void
 lang_init_options ()
 {
-#if USE_CPPLIB
   cpp_init ();
   cpp_reader_init (&parse_in, CLK_GNUC89);
-#endif
 }
 
 void
 lang_init ()
 {
-#if !USE_CPPLIB
-  /* The beginning of the file is a new line; check for #.
-     With luck, we discover the real source file's name from that
-     and put it in input_filename.  */
-  ungetc (check_newline (), finput);
-#endif
   /* Force the line number back to 0; check_newline will have
      raised it to 1, which will make the builtin functions appear
      not to be built in.  */

@@ -53,12 +53,7 @@ Boston, MA 02111-1307, USA.  */
 #define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ((ENV_VALUE) = getenv (ENV_NAME))
 #endif
 
-#if USE_CPPLIB
 extern cpp_reader  parse_in;
-#else
-/* Stream for reading from the input file.  */
-FILE *finput;
-#endif
 
 /* The original file name, before changing "-" to "stdin".  */
 static const char *orig_filename;
@@ -73,52 +68,6 @@ static splay_tree file_info_tree;
 /* Cause the `yydebug' variable to be defined.  */
 #define YYDEBUG 1
 
-#if !USE_CPPLIB
-
-struct putback_buffer
-{
-  unsigned char *buffer;
-  int   buffer_size;
-  int   index;
-};
-
-static struct putback_buffer putback = {NULL, 0, -1};
-
-static inline int getch PARAMS ((void));
-
-static inline int
-getch ()
-{
-  if (putback.index != -1)
-    {
-      int ch = putback.buffer[putback.index];
-      --putback.index;
-      return ch;
-    }
-  return getc (finput);
-}
-
-static inline void put_back PARAMS ((int));
-
-static inline void
-put_back (ch)
-     int ch;
-{
-  if (ch != EOF)
-    {
-      if (putback.index == putback.buffer_size - 1)
-	{
-	  putback.buffer_size += 16;
-	  putback.buffer = xrealloc (putback.buffer, putback.buffer_size);
-	}
-      putback.buffer[++putback.index] = ch;
-    }
-}
-
-int linemode;
-
-#endif
-
 /* File used for outputting assembler code.  */
 extern FILE *asm_out_file;
 
@@ -127,12 +76,6 @@ extern FILE *asm_out_file;
 
 /* Number of bytes in a wide character.  */
 #define WCHAR_BYTES (WCHAR_TYPE_SIZE / BITS_PER_UNIT)
-
-#if !USE_CPPLIB
-static int maxtoken;		/* Current nominal length of token buffer.  */
-static char *token_buffer;	/* Pointer to token buffer.
-				   Actual allocated length is maxtoken + 2. */
-#endif
 
 int indent_level;        /* Number of { minus number of }. */
 int pending_lang_change; /* If we need to switch languages - C++ only */
@@ -151,21 +94,11 @@ static tree lex_string		PARAMS ((const char *, unsigned int, int));
 static tree lex_charconst	PARAMS ((const char *, unsigned int, int));
 static void update_header_times	PARAMS ((const char *));
 static int dump_one_header	PARAMS ((splay_tree_node, void *));
-
-#if !USE_CPPLIB
-static int skip_white_space		PARAMS ((int));
-static char *extend_token_buffer	PARAMS ((const char *));
-static void extend_token_buffer_to	PARAMS ((int));
-static int read_line_number		PARAMS ((int *));
-static void process_directive		PARAMS ((void));
-#else
 static void cb_ident		PARAMS ((cpp_reader *, const cpp_string *));
 static void cb_enter_file	PARAMS ((cpp_reader *));
 static void cb_leave_file	PARAMS ((cpp_reader *));
 static void cb_rename_file	PARAMS ((cpp_reader *));
 static void cb_def_pragma	PARAMS ((cpp_reader *));
-#endif
-
 
 const char *
 init_c_lex (filename)
@@ -193,23 +126,6 @@ init_c_lex (filename)
   GET_ENVIRONMENT (literal_codeset, "LANG");
 #endif
 
-#if !USE_CPPLIB
-  /* Open input file.  */
-  if (filename == 0 || !strcmp (filename, "-"))
-    {
-      finput = stdin;
-      filename = "stdin";
-    }
-  else
-    finput = fopen (filename, "r");
-  if (finput == 0)
-    pfatal_with_name (filename);
-
-#ifdef IO_BUFFER_SIZE
-  setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
-#endif
-#else /* !USE_CPPLIB */
-
   parse_in.cb.ident = cb_ident;
   parse_in.cb.enter_file = cb_enter_file;
   parse_in.cb.leave_file = cb_leave_file;
@@ -221,12 +137,7 @@ init_c_lex (filename)
 
   if (filename == 0 || !strcmp (filename, "-"))
     filename = "stdin";
-#endif
 
-#if !USE_CPPLIB
-  maxtoken = 40;
-  token_buffer = (char *) xmalloc (maxtoken + 2);
-#endif
   /* Start it at 0, because check_newline is called at the very beginning
      and will increment it to 1.  */
   lineno = lex_lineno = 0;
@@ -309,140 +220,7 @@ dump_time_statistics ()
   splay_tree_foreach (file_info_tree, dump_one_header, 0);
 }
 
-#if !USE_CPPLIB
-
-/* If C is not whitespace, return C.
-   Otherwise skip whitespace and return first nonwhite char read.  */
-
-static int
-skip_white_space (c)
-     register int c;
-{
-  for (;;)
-    {
-      switch (c)
-	{
-	  /* There is no need to process comments or backslash-newline
-             here.  None can occur in the output of cpp.  Do handle \r
-	     in case someone sent us a .i file.  */
-
-	case '\n':
-	  if (linemode)
-	    {
-	      put_back (c);
-	      return EOF;
-	    }
-	  c = check_newline ();
-	  break;
-
-	case '\r':
-	  /* Per C99, horizontal whitespace is just these four characters.  */
-	case ' ':
-	case '\t':
-	case '\f':
-	case '\v':
-	  c = getch ();
-	  break;
-
-	case '\\':
-	  error ("stray '\\' in program");
-	  c = getch ();
-	  break;
-
-	default:
-	  return (c);
-	}
-    }
-}
-
-/* Skips all of the white space at the current location in the input file.  */
-
-void
-position_after_white_space ()
-{
-  register int c;
-
-  c = getch ();
-
-  put_back (skip_white_space (c));
-}
-
-/* Make the token buffer longer, preserving the data in it.
-   P should point to just beyond the last valid character in the old buffer.
-   The value we return is a pointer to the new buffer
-   at a place corresponding to P.  */
-
-static void
-extend_token_buffer_to (size)
-     int size;
-{
-  do
-    maxtoken = maxtoken * 2 + 10;
-  while (maxtoken < size);
-  token_buffer = (char *) xrealloc (token_buffer, maxtoken + 2);
-}
-
-static char *
-extend_token_buffer (p)
-     const char *p;
-{
-  int offset = p - token_buffer;
-  extend_token_buffer_to (offset);
-  return token_buffer + offset;
-}
-
-
-static int
-read_line_number (num)
-     int *num;
-{
-  tree value;
-  enum cpp_ttype token = c_lex (&value);
-
-  if (token == CPP_NUMBER && TREE_CODE (value) == INTEGER_CST)
-    {
-      *num = TREE_INT_CST_LOW (value);
-      return 1;
-    }
-  else
-    {
-      if (token != CPP_EOF)
-	error ("invalid #-line");
-      return 0;
-    }
-}
-
-/* At the beginning of a line, increment the line number
-   and process any #-directive on this line.
-   If the line is a #-directive, read the entire line and return a newline.
-   Otherwise, return the line's first non-whitespace character.  */
-
-int
-check_newline ()
-{
-  register int c;
-
-  /* Loop till we get a nonblank, non-directive line.  */
-  for (;;)
-    {
-      /* Read first nonwhite char on the line.  */
-      do
-	c = getch ();
-      while (c == ' ' || c == '\t');
-
-      lex_lineno++;
-      if (c == '#')
-	{
-	  process_directive ();
-	  return '\n';
-	}
-
-      else if (c != '\n')
-	break;
-    }
-  return c;
-}
-
+#if 0 /* Keep this code for a while for reference.  */
 static void
 process_directive ()
 {
@@ -674,7 +452,7 @@ linenum:
 
   while (getch () != '\n');
 }
-#else /* USE_CPPLIB */
+#endif
 
 /* Not yet handled: #pragma, #define, #undef.
    No need to deal with linemarkers under normal conditions.  */
@@ -810,7 +588,6 @@ cb_def_pragma (pfile)
 	warning ("ignoring #pragma %s", space);
     }
 }
-#endif /* USE_CPPLIB */
 
 /* Parse a '\uNNNN' or '\UNNNNNNNN' sequence.
 
@@ -1430,7 +1207,6 @@ int
 c_lex (value)
      tree *value;
 {
-#if USE_CPPLIB
   cpp_token tok;
   enum cpp_ttype type;
 
@@ -1493,386 +1269,7 @@ c_lex (value)
     }
 
   return type;
-  
-#else
-  int c;
-  char *p;
-  int wide_flag = 0;
-  int objc_flag = 0;
-  int charconst = 0;
-
-  *value = NULL_TREE;
-
- retry:
-  c = getch ();
-
-  /* Effectively do c = skip_white_space (c)
-     but do it faster in the usual cases.  */
-  while (1)
-    switch (c)
-      {
-      case ' ':
-      case '\t':
-      case '\f':
-      case '\v':
-	c = getch ();
-	break;
-
-      case '\r':
-      case '\n':
-	c = skip_white_space (c);
-      default:
-	goto found_nonwhite;
-      }
- found_nonwhite:
-
-  lineno = lex_lineno;
-
-  switch (c)
-    {
-    case EOF:
-      return CPP_EOF;
-
-    case 'L':
-      /* Capital L may start a wide-string or wide-character constant.  */
-      {
-	register int c1 = getch();
-	if (c1 == '\'')
-	  {
-	    wide_flag = 1;
-	    goto char_constant;
-	  }
-	if (c1 == '"')
-	  {
-	    wide_flag = 1;
-	    goto string_constant;
-	  }
-	put_back (c1);
-      }
-      goto letter;
-
-    case '@':
-      if (!doing_objc_thang)
-	goto straychar;
-      else
-	{
-	  /* '@' may start a constant string object.  */
-	  register int c1 = getch ();
-	  if (c1 == '"')
-	    {
-	      objc_flag = 1;
-	      goto string_constant;
-	    }
-	  put_back (c1);
-	  /* Fall through to treat '@' as the start of an identifier.  */
-	}
-
-    case 'A':  case 'B':  case 'C':  case 'D':  case 'E':
-    case 'F':  case 'G':  case 'H':  case 'I':  case 'J':
-    case 'K':		  case 'M':  case 'N':  case 'O':
-    case 'P':  case 'Q':  case 'R':  case 'S':  case 'T':
-    case 'U':  case 'V':  case 'W':  case 'X':  case 'Y':
-    case 'Z':
-    case 'a':  case 'b':  case 'c':  case 'd':  case 'e':
-    case 'f':  case 'g':  case 'h':  case 'i':  case 'j':
-    case 'k':  case 'l':  case 'm':  case 'n':  case 'o':
-    case 'p':  case 'q':  case 'r':  case 's':  case 't':
-    case 'u':  case 'v':  case 'w':  case 'x':  case 'y':
-    case 'z':
-    case '_':
-    case '$':
-    letter:
-      p = token_buffer;
-      while (ISALNUM (c) || c == '_' || c == '$' || c == '@')
-	{
-	  /* Make sure this char really belongs in an identifier.  */
-	  if (c == '$')
-	    {
-	      if (! dollars_in_ident)
-		error ("'$' in identifier");
-	      else if (pedantic)
-		pedwarn ("'$' in identifier");
-	    }
-
-	  if (p >= token_buffer + maxtoken)
-	    p = extend_token_buffer (p);
-
-	  *p++ = c;
-	  c = getch();
-	}
-
-      put_back (c);
-
-      if (p >= token_buffer + maxtoken)
-	p = extend_token_buffer (p);
-      *p = 0;
-
-      *value = get_identifier (token_buffer);
-      return CPP_NAME;
-
-    case '.':
-	{
-	  /* It's hard to preserve tokenization on '.' because
-	     it could be a symbol by itself, or it could be the
-	     start of a floating point number and cpp won't tell us.  */
-	  int c1 = getch ();
-	  if (c1 == '.')
-	    {
-	      int c2 = getch ();
-	      if (c2 == '.')
-		return CPP_ELLIPSIS;
-
-	      put_back (c2);
-	      error ("parse error at '..'");
-	    }
-	  else if (c1 == '*' && c_language == clk_cplusplus)
-	    return CPP_DOT_STAR;
-
-	  put_back (c1);
-	  if (ISDIGIT (c1))
-	    goto number;
-	}
-	return CPP_DOT;
-
-    case '0':  case '1':  case '2':  case '3':  case '4':
-    case '5':  case '6':  case '7':  case '8':  case '9':
-    number:
-      p = token_buffer;
-      /* Scan the next preprocessing number.  All C numeric constants
-	 are preprocessing numbers, but not all preprocessing numbers
-	 are valid numeric constants.  Preprocessing numbers fit the
-	 regular expression \.?[0-9]([0-9a-zA-Z_.]|[eEpP][+-])*
-	 See C99 section 6.4.8. */
-      for (;;)
-	{
-	  if (p >= token_buffer + maxtoken)
-	    p = extend_token_buffer (p);
-
-	  *p++ = c;
-	  c = getch();
-
-	  if (c == '+' || c == '-')
-	    {
-	      int d = p[-1];
-	      if (d == 'e' || d == 'E' || d == 'p' || d == 'P')
-		continue;
-	    }
-	  if (ISALNUM (c) || c == '_' || c == '.')
-	    continue;
-	  break;
-	}
-      put_back (c);
-
-      *value = lex_number (token_buffer, p - token_buffer);
-      return CPP_NUMBER;
-
-    case '\'':
-    char_constant:
-    charconst = 1;
-
-    case '"':
-    string_constant:
-      {
-	int delimiter = charconst ? '\'' : '"';
-#ifdef MULTIBYTE_CHARS
-	int longest_char = local_mb_cur_max ();
-	(void) local_mbtowc (NULL_PTR, NULL_PTR, 0);
-#endif
-	c = getch ();
-	p = token_buffer + 1;
-
-	while (c != delimiter && c != EOF)
-	  {
-	    if (p + 2 > token_buffer + maxtoken)
-	      p = extend_token_buffer (p);
-
-	    /* ignore_escape_flag is set for reading the filename in #line.  */
-	    if (!ignore_escape_flag && c == '\\')
-	      {
-		*p++ = c;
-		*p++ = getch ();  /* escaped character */
-		c = getch ();
-		continue;
-	      }
-	    else
-	      {
-#ifdef MULTIBYTE_CHARS
-		int i;
-		int char_len = -1;
-		for (i = 0; i < longest_char; ++i)
-		  {
-		    if (p + i >= token_buffer + maxtoken)
-		      p = extend_token_buffer (p);
-		    p[i] = c;
-
-		    char_len = local_mblen (p, i + 1);
-		    if (char_len != -1)
-		      break;
-		    c = getch ();
-		  }
-		if (char_len == -1)
-		  {
-		    /* Replace all except the first byte.  */
-		    put_back (c);
-		    for (--i; i > 0; --i)
-		      put_back (p[i]);
-		    char_len = 1;
-		  }
-		/* mbtowc sometimes needs an extra char before accepting */
-		else if (char_len <= i)
-		  put_back (c);
-
-		p += char_len;
-#else
-		*p++ = c;
-#endif
-		c = getch ();
-	      }
-	  }
-      }
-
-      if (charconst)
-	{
-	  *value =  lex_charconst (token_buffer + 1, p - (token_buffer + 1),
-				   wide_flag);
-	  return wide_flag ? CPP_WCHAR : CPP_CHAR;
-	}
-      else
-	{
-	  *value = lex_string (token_buffer + 1, p - (token_buffer + 1),
-			       wide_flag);
-	  return wide_flag ? CPP_WSTRING : objc_flag ? CPP_OSTRING : CPP_STRING;
-	}
-
-    case '+':
-    case '-':
-    case '&':
-    case '|':
-    case ':':
-    case '<':
-    case '>':
-    case '*':
-    case '/':
-    case '%':
-    case '^':
-    case '!':
-    case '=':
-      {
-	int c1;
-	enum cpp_ttype type = CPP_EOF;
-
-	switch (c)
-	  {
-	  case '+': type = CPP_PLUS;	break;
-	  case '-': type = CPP_MINUS;	break;
-	  case '&': type = CPP_AND;	break;
-	  case '|': type = CPP_OR;	break;
-	  case ':': type = CPP_COLON;	break;
-	  case '<': type = CPP_LESS;	break;
-	  case '>': type = CPP_GREATER;	break;
-	  case '*': type = CPP_MULT;	break;
-	  case '/': type = CPP_DIV;	break;
-	  case '%': type = CPP_MOD;	break;
-	  case '^': type = CPP_XOR;	break;
-	  case '!': type = CPP_NOT;	break;
-	  case '=': type = CPP_EQ;	break;
-	  }
-
-	c1 = getch ();
-
-	if (c1 == '=' && type < CPP_LAST_EQ)
-	  return type + (CPP_EQ_EQ - CPP_EQ);
-	else if (c == c1)
-	  switch (c)
-	    {
-	    case '+':	return CPP_PLUS_PLUS;
-	    case '-':	return CPP_MINUS_MINUS;
-	    case '&':	return CPP_AND_AND;
-	    case '|':	return CPP_OR_OR;
-	    case ':':
-	      if (c_language == clk_cplusplus)
-		return CPP_SCOPE;
-	      break;
-
-	    case '<':	type = CPP_LSHIFT;	goto do_triad;
-	    case '>':	type = CPP_RSHIFT;	goto do_triad;
-	    }
-	else
-	  switch (c)
-	    {
-	    case '-':
-	      if (c1 == '>')
-		{
-		  if (c_language == clk_cplusplus)
-		    {
-		      c1 = getch ();
-		      if (c1 == '*')
-			return CPP_DEREF_STAR;
-		      put_back (c1);
-		    }
-		  return CPP_DEREF;
-		}
-	      break;
-
-	    case '>':
-	      if (c1 == '?' && c_language == clk_cplusplus)
-		{ type = CPP_MAX; goto do_triad; }
-	      break;
-
-	    case '<':
-	      if (c1 == ':' && flag_digraphs)
-		return CPP_OPEN_SQUARE;
-	      if (c1 == '%' && flag_digraphs)
-		{ indent_level++; return CPP_OPEN_BRACE; }
-	      if (c1 == '?' && c_language == clk_cplusplus)
-		{ type = CPP_MIN; goto do_triad; }
-	      break;
-
-	    case ':':
-	      if (c1 == '>' && flag_digraphs)
-		return CPP_CLOSE_SQUARE;
-	      break;
-	    case '%':
-	      if (c1 == '>' && flag_digraphs)
-		{ indent_level--; return CPP_CLOSE_BRACE; }
-	      break;
-	    }
-
-	put_back (c1);
-	return type;
-
-      do_triad:
-	c1 = getch ();
-	if (c1 == '=')
-	  type += (CPP_EQ_EQ - CPP_EQ);
-	else
-	  put_back (c1);
-	return type;
-      }
-
-    case '~':			return CPP_COMPL;
-    case '?':			return CPP_QUERY;
-    case ',':			return CPP_COMMA;
-    case '(':			return CPP_OPEN_PAREN;
-    case ')':			return CPP_CLOSE_PAREN;
-    case '[':			return CPP_OPEN_SQUARE;
-    case ']':			return CPP_CLOSE_SQUARE;
-    case '{': indent_level++;	return CPP_OPEN_BRACE;
-    case '}': indent_level--;	return CPP_CLOSE_BRACE;
-    case ';':			return CPP_SEMICOLON;
-
-    straychar:
-    default:
-      if (ISGRAPH (c))
-	error ("stray '%c' in program", c);
-      else
-	error ("stray '\\%#o' in program", c);
-      goto retry;
-    }
-  /* NOTREACHED */
-#endif
 }
-
 
 #define ERROR(msgid) do { error(msgid); goto syntax_error; } while(0)
 
