@@ -1,3 +1,10 @@
+2003-01-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.h (CASE_VECTOR_MODE): Use SImode for a
+	non-optimizing compile.
+	(ASM_OUTPUT_ADDR_VEC_ELT): Use .long for a non-optimizing
+	compile.
+
 2003-01-09  Andreas Jaeger  <aj@suse.de>
 
 	* unwind-dw2-fde.h (last_fde): Revert last patch.
