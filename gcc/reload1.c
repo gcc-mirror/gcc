@@ -1291,6 +1291,14 @@ reload (first, global)
      by this, so unshare everything here.  */
   unshare_all_rtl_again (first);
 
+#ifdef STACK_BOUNDARY
+  /* init_emit has set the alignment of the hard frame pointer
+     to STACK_BOUNDARY.  It is very likely no longer valid if
+     the hard frame pointer was used for register allocation.  */
+  if (!frame_pointer_needed)
+    REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = BITS_PER_UNIT;
+#endif
+
   return failure;
 }
 

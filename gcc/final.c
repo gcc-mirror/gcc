@@ -170,8 +170,8 @@ CC_STATUS cc_prev_status;
 char regs_ever_live[FIRST_PSEUDO_REGISTER];
 
 /* Nonzero means current function must be given a frame pointer.
-   Set in stmt.c if anything is allocated on the stack there.
-   Set in reload1.c if anything is allocated on the stack there.  */
+   Initialized in function.c to 0.  Set only in reload1.c as per
+   the needs of the function.  */
 
 int frame_pointer_needed;
 
