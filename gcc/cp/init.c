@@ -1623,6 +1623,7 @@ decl_constant_value (tree decl)
 	  /* And so are variables with a 'const' type -- unless they
 	     are also 'volatile'.  */
 	  || CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl)))
+      && TREE_CODE (decl) != PARM_DECL
       && DECL_INITIAL (decl)
       && DECL_INITIAL (decl) != error_mark_node
       /* This is invalid if initial value is not constant.

@@ -1504,7 +1504,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
   MEM_IN_STRUCT_P (ref) = AGGREGATE_TYPE_P (type);
   RTX_UNCHANGING_P (ref)
     |= ((lang_hooks.honor_readonly
-	 && (TYPE_READONLY (type) || TREE_READONLY (t)))
+	 && (TYPE_READONLY (type) || (t != type && TREE_READONLY (t))))
 	|| (! TYPE_P (t) && TREE_CONSTANT (t)));
   MEM_POINTER (ref) = POINTER_TYPE_P (type);
 

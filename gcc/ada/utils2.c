@@ -1234,7 +1234,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
       else
 	{
 	  result = fold (build1 (op_code, TREE_TYPE (type), operand));
-	  TREE_READONLY (result) = TREE_READONLY (TREE_TYPE (type));
+	  TREE_READONLY (result) = TYPE_READONLY (TREE_TYPE (type));
 	}
 
       side_effects
@@ -1521,7 +1521,7 @@ gnat_build_constructor (tree type, tree list)
   TREE_CONSTANT (result) = allconstant;
   TREE_STATIC (result) = allconstant;
   TREE_SIDE_EFFECTS (result) = side_effects;
-  TREE_READONLY (result) = TREE_READONLY (type);
+  TREE_READONLY (result) = TYPE_READONLY (type);
 
   return result;
 }

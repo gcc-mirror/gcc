@@ -1,3 +1,21 @@
+2004-04-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-decl.c (build_compound_literal): Use TYPE_READONLY.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Likewise.
+	* objc/objc-act.c (adorn_decl, gen_declspecs): Likewise.
+	* c-typeck.c (decl_constant_value): Don't access DECL_INITIAL of a
+	PARM_DECL.
+	* calls.c (flags_from_decl_or_type): Use TYPE_READONLY and do so only
+	for a type.
+	* print-tree.c (print_node): Properly handle side-effects, readonly,
+	and constant flags.
+	* tree.c (build1_stat, build_expr_wfl): Only look at TREE_SIDE_EFFECTS
+	and TREE_CONSTANT if not a type.
+	* tree.h (IS_NON_TYPE_CODE_CLASS): New macro.
+	(IS_EXPR_CODE_CLASS): Write 'E', not 'e'.
+	(NON_TYPE_CHECK): New macro.
+	(TREE_SIDE_EFFECT, TREE_READONLY, TREE_CONSTANT: Add check.
+
 2004-04-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sol2-bi.h (PREFERRED_DEBUGGING_TYPE): Set

@@ -1186,7 +1186,7 @@ bot_manip (tree* tp, int* walk_subtrees, void* data)
   splay_tree target_remap = ((splay_tree) data);
   tree t = *tp;
 
-  if (TREE_CONSTANT (t))
+  if (!TYPE_P (t) && TREE_CONSTANT (t))
     {
       /* There can't be any TARGET_EXPRs or their slot variables below
          this point.  We used to check !TREE_SIDE_EFFECTS, but then we
@@ -1327,7 +1327,7 @@ build_min (enum tree_code code, tree tt, ...)
     {
       tree x = va_arg (p, tree);
       TREE_OPERAND (t, i) = x;
-      if (x && TREE_SIDE_EFFECTS (x))
+      if (x && !TYPE_P (x) && TREE_SIDE_EFFECTS (x))
 	TREE_SIDE_EFFECTS (t) = 1;
     }
 

@@ -1403,7 +1403,7 @@ create_field_decl (tree field_name,
   tree field_decl = build_decl (FIELD_DECL, field_name, field_type);
 
   DECL_CONTEXT (field_decl) = record_type;
-  TREE_READONLY (field_decl) = TREE_READONLY (field_type);
+  TREE_READONLY (field_decl) = TYPE_READONLY (field_type);
 
   /* If FIELD_TYPE is BLKmode, we must ensure this is aligned to at least a
      byte boundary since GCC cannot handle less-aligned BLKmode bitfields.  */

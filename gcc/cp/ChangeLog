@@ -1,3 +1,10 @@
+2004-04-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* init.c (decl_constant_value): Don't look at DECL_INITIAL
+	of PARM_DECL.
+	* tree.c (bot_manip, build_min): Don't look at TREE_CONSTANT
+	or TREE_SIDE_EFFECTS of a type.
+
 2004-04-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/14007

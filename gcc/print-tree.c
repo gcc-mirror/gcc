@@ -245,11 +245,12 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	indent_to (file, indent + 3);
     }
 
-  if (TREE_SIDE_EFFECTS (node))
+  if (!TYPE_P (node) && TREE_SIDE_EFFECTS (node))
     fputs (" side-effects", file);
-  if (TREE_READONLY (node))
+
+  if (TYPE_P (node) ? TYPE_READONLY (node) : TREE_READONLY (node))
     fputs (" readonly", file);
-  if (TREE_CONSTANT (node))
+  if (!TYPE_P (node) && TREE_CONSTANT (node))
     fputs (" constant", file);
   if (TREE_ADDRESSABLE (node))
     fputs (" addressable", file);
