@@ -1,3 +1,10 @@
+2002-09-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/7015
+	* semantic.c (finish_asm_stmt): Fix operand/output_operands
+	thinko.
+	* typeck.c (c_expand_asm_operands): Protect from error_mark_node.
+
 2002-09-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/7919
