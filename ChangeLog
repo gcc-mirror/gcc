@@ -1,3 +1,9 @@
+2004-06-03  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.in: Fix --enable-bootstrap breakage introduced in trees
+	without gcc.
+	* configure: Regenerate.
+
 2004-06-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl: Fix typo.
