@@ -2958,7 +2958,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  d += (double) (unsigned HOST_WIDE_INT) lv;
 	}
 #endif  /* REAL_ARITHMETIC */
-
+      d = real_value_truncate (mode, d);
       return CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
     }
   else if (code == UNSIGNED_FLOAT && GET_MODE (op) == VOIDmode
@@ -2993,7 +2993,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	    * (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
       d += (double) (unsigned HOST_WIDE_INT) lv;
 #endif  /* REAL_ARITHMETIC */
-
+      d = real_value_truncate (mode, d);
       return CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
     }
 #endif
