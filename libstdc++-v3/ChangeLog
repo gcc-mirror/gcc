@@ -1,3 +1,13 @@
+2004-12-23  Paolo Carlini  <pcarlini@suse.de>
+
+	Minimal fixes for -fno-exceptions.
+	* testsuite/testsuite_abi.cc (get_symbol, examine_symbol,
+	create_symbols): Use __throw_exception_again, instead of
+	plain throw.
+	* testsuite/testsuite_hooks.cc (verify_demangle,
+	run_tests_wrapped_locale, run_tests_wrapped_env): Likewise.
+	(try_named_locale): Wrap the whole catch in __EXCEPTIONS.
+
 2004-12-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/18837

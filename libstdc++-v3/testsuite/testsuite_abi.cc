@@ -262,7 +262,7 @@ get_symbol(const string& mangled, const symbols& s)
     {
       ostringstream os;
       os << "get_symbol failed for symbol " << mangled;
-      throw symbol_error(os.str());
+      __throw_exception_again symbol_error(os.str());
     }
 }
 
@@ -276,7 +276,7 @@ examine_symbol(const char* name, const char* file)
       sym.print();
     }
   catch(...)
-    { throw; }
+    { __throw_exception_again; }
 }
 
 void 
@@ -419,7 +419,7 @@ create_symbols(const char* file)
     {
       ostringstream os;
       os << "create_symbols failed for file " << file;
-      throw runtime_error(os.str());
+      __throw_exception_again runtime_error(os.str());
     }
   return s;
 }
