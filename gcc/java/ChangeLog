@@ -3,6 +3,12 @@
 	* expr.c (expand_load_internal): New function.
 	(LOAD_INTERNAL): Use it.
 
+2001-07-11  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (verify_constructor_super): Compare anonymous class ctor
+	args with `valid_method_invocation_conversion_p.'
+	Fixes PR java/3285
+
 2001-07-10  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* lang-specs.h: Forbit the use if `-femit-class-file{s}' without
