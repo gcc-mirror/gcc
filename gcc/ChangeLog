@@ -1,3 +1,9 @@
+2004-01-12  Jonathan Merriman <jonm@dualitymedia.com>
+
+	PR target/10847
+	* config.gcc: No longer includes conflicting header sparc/sol2.h when
+	building on sparc64-*-openbsd*.
+
 2004-01-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR debug/13539
