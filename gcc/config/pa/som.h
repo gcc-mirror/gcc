@@ -384,6 +384,14 @@ do {						\
 /* This is how we tell the assembler that a symbol is weak.  */
 
 #define ASM_WEAKEN_LABEL(FILE,NAME) \
-  do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
-       fputc ('\n', FILE); } while (0)
+  do { fputs ("\t.weak\t", FILE); \
+       assemble_name (FILE, NAME); \
+       fputc ('\n', FILE); \
+       if (! FUNCTION_NAME_P (NAME)) \
+         { \
+           fputs ("\t.EXPORT ", FILE); \
+           assemble_name (FILE, NAME); \
+           fputs (",DATA\n", FILE); \
+         } \
+  } while (0)
 #endif
