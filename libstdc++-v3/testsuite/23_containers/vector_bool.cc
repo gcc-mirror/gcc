@@ -29,8 +29,32 @@ void test01()
   ++i;
 }
 
+// libstdc++/6886
+void test02()
+{
+  typedef std::vector<bool>  bvec;
+  int  i, num = 0;
+  bvec v;
+
+  v.resize(66);
+
+  for (i = 0 ; i < 66 ; ++i)
+    v[i] = 0;
+
+  v[1]    = 1;
+  v[33]   = 1;
+  v[49]   = 1;
+  v[65]   = 1;
+
+  for (bvec::iterator j = v.begin() ; j != v.end() ; j++)
+    if (bool(*j)) ++num;
+
+  VERIFY( num == 4 );
+}
+
 int main()
 {
   test01();
+  test02();
   return 0;
 }
