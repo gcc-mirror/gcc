@@ -3613,8 +3613,9 @@ cleanstrap:
 	$(MAKE) LANGUAGES="$(LANGUAGES)" bootstrap
 
 unstrap:
-	-rm -rf stage[234]* stage_last
+	-rm -rf stage[234]*
 	$(MAKE) unstage1
+	-rm -f stage_last
 
 # Differs from cleanstrap in that it starts from the earlier stage1 build,
 # not from scratch.

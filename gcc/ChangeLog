@@ -1,3 +1,7 @@
+2003-05-29  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (unstrap): Remove stage_last after make unstage1.
+
 2003-05-29  Roger Sayle  <roger@eyesopen.com>
 
 	* mips-tfile.c (PAGE_SIZE): Increase page size to 32K.
