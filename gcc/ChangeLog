@@ -1,3 +1,15 @@
+Wed Feb 24 19:47:56 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.h (loop_insn_first_p): Declare.
+	* loop.c (loop_insn_first_p): No longer static.
+	* unroll.c (iteration_info) Fix comparison to
+	reg_iv_type->num_elements.
+	Before accessing reg_biv_class, check index against
+	max_reg_before_loop.
+	Fix and enable code for giv iterators.
+	(loop_iterations): Compare with reg_iv_type->num_elements instead
+	of with max_reg_before_loop.
+
 Wed Feb 24 19:17:11 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* unroll.c (unroll_loop): Avoid out-of-bounds index for local_regno.

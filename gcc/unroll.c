@@ -1404,10 +1404,9 @@ precondition_loop_p (loop_start, loop_info,
       return 0;
     }
 
-  /* ??? Note that if iteration_info is modifed to allow GIV iterators
-     such as "while (i-- > 0)", the initial value will be one too small.
-     In this case, loop_iteration_var could be used to determine
-     the correct initial value, provided the loop has not been reversed.
+  /* Note that iteration_info biases the initial value for GIV iterators
+     such as "while (i-- > 0)" so that we can calculate the number of
+     iterations just like for BIV iterators.
 
      Also note that the absolute values of initial_value and
      final_value are unimportant as only their difference is used for
@@ -2364,7 +2363,7 @@ iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
 
   /* If this is a new register, can't handle it since we don't have any
      reg_iv_type entry for it.  */
-  if ((unsigned) REGNO (iteration_var) > reg_iv_type->num_elements)
+  if ((unsigned) REGNO (iteration_var) >= reg_iv_type->num_elements)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
@@ -2392,6 +2391,12 @@ iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
     }
   else if (REG_IV_TYPE (REGNO (iteration_var)) == BASIC_INDUCT)
     {
+      /* When reg_iv_type / reg_iv_info is resized for biv increments
+	 that are turned into givs, reg_biv_class is not resized.
+	 So check here that we don't make an out-of-bounds access.  */
+      if (REGNO (iteration_var) >= max_reg_before_loop)
+	abort ();
+
       /* Grab initial value, only useful if it is a constant.  */
       bl = reg_biv_class[REGNO (iteration_var)];
       *initial_value = bl->initial_value;
@@ -2400,34 +2405,46 @@ iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
     }
   else if (REG_IV_TYPE (REGNO (iteration_var)) == GENERAL_INDUCT)
     {
-#if 1
-      /* ??? The code below does not work because the incorrect number of
-	 iterations is calculated when the biv is incremented after the giv
-	 is set (which is the usual case).  This can probably be accounted
-	 for by biasing the initial_value by subtracting the amount of the
-	 increment that occurs between the giv set and the giv test.  However,
-	 a giv as an iterator is very rare, so it does not seem worthwhile
-	 to handle this.  */
-      /* ??? An example failure is: i = 6; do {;} while (i++ < 9).  */
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop unrolling: Giv iterators are not handled.\n");
-      return;
-#else
-      /* Initial value is mult_val times the biv's initial value plus
-	 add_val.  Only useful if it is a constant.  */
-      v = REG_IV_INFO (REGNO (iteration_var));
+      HOST_WIDE_INT offset = 0;
+      struct induction *v = REG_IV_INFO (REGNO (iteration_var));
+
+      if (REGNO (v->src_reg) >= max_reg_before_loop)
+	abort ();
+
       bl = reg_biv_class[REGNO (v->src_reg)];
-      *initial_value = fold_rtx_mult_add (v->mult_val, bl->initial_value,
-					  v->add_val, v->mode);
 
       /* Increment value is mult_val times the increment value of the biv.  */
 
       *increment = biv_total_increment (bl, loop_start, loop_end);
       if (*increment)
-	*increment = fold_rtx_mult_add (v->mult_val, *increment, const0_rtx,
-					v->mode);
-#endif
+	{
+	  struct induction *biv_inc;
+
+	  *increment
+	    = fold_rtx_mult_add (v->mult_val, *increment, const0_rtx, v->mode);
+	  /* The caller assumes that one full increment has occured at the
+	     first loop test.  But that's not true when the biv is incremented
+	     after the giv is set (which is the usual case), e.g.:
+	     i = 6; do {;} while (i++ < 9) .
+	     Therefore, we bias the initial value by subtracting the amount of
+	     the increment that occurs between the giv set and the giv test.  */
+	  for (biv_inc = bl->biv; biv_inc; biv_inc = biv_inc->next_iv)
+	    {
+	      if (loop_insn_first_p (v->insn, biv_inc->insn))
+		offset -= INTVAL (biv_inc->add_val);
+	    }
+	  offset *= INTVAL (v->mult_val);
+	}
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Loop unrolling: Giv iterator, initial value bias %ld.\n",
+		 (long) offset);
+      /* Initial value is mult_val times the biv's initial value plus
+	 add_val.  Only useful if it is a constant.  */
+      *initial_value
+	= fold_rtx_mult_add (v->mult_val,
+			     plus_constant (bl->initial_value, offset),
+			     v->add_val, v->mode);
     }
   else
     {
@@ -3626,10 +3643,10 @@ loop_iterations (loop_start, loop_end, loop_info)
       return 0;
     }
 
-  /* Loop iterations is always called before any new registers are created
-     now, so this should never occur.  */
+  /* The only new registers that care created before loop iterations are
+     givs made from biv increments, so this should never occur.  */
 
-  if (REGNO (iteration_var) >= max_reg_before_loop)
+  if ((unsigned) REGNO (iteration_var) >= reg_iv_type->num_elements)
     abort ();
 
   iteration_info (iteration_var, &initial_value, &increment,

@@ -228,10 +228,6 @@ rtx get_condition_for_loop PROTO((rtx));
 void emit_iv_add_mult PROTO((rtx, rtx, rtx, rtx, rtx));
 rtx express_from PROTO((struct induction *, struct induction *));
 
-/* Forward declarations for non-static functions declared in stmt.c.  */
-void find_loop_tree_blocks PROTO((void));
-void unroll_block_trees PROTO((void));
-
 void unroll_loop PROTO((rtx, int, rtx, rtx, struct loop_info *, int));
 rtx biv_total_increment PROTO((struct iv_class *, rtx, rtx));
 unsigned HOST_WIDE_INT loop_iterations PROTO((rtx, rtx, struct loop_info *));
@@ -244,7 +240,10 @@ rtx final_giv_value PROTO((struct induction *, rtx, rtx,
 			   unsigned HOST_WIDE_INT));
 void emit_unrolled_add PROTO((rtx, rtx, rtx));
 int back_branch_in_range_p PROTO((rtx, rtx, rtx));
+int loop_insn_first_p PROTO((rtx, rtx));
 
 extern int *loop_unroll_number;
 
-
+/* Forward declarations for non-static functions declared in stmt.c.  */
+void find_loop_tree_blocks PROTO((void));
+void unroll_block_trees PROTO((void));
