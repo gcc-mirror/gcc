@@ -1885,6 +1885,8 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#ia64-*-linux,,ia64-*-linux}
 @item
+@uref{#ia64-*-hpux*,,ia64-*-hpux*}
+@item
 @uref{#*-ibm-aix*,,*-ibm-aix*}
 @item
 @uref{#ip2k-*-elf,,ip2k-*-elf}
@@ -2607,6 +2609,18 @@ This primarily affects C++ programs and programs that create shared libraries.
 GCC 3.1 or later is recommended for compiling linux, the kernel.
 As of version 3.1 GCC is believed to be fully ABI compliant, and hence no
 more major ABI changes are expected.
+
+@html
+<hr />
+@end html
+@heading @anchor{ia64-*-hpux*}ia64-*-hpux*
+Building GCC on this target requires the GNU Assembler. The bundled HP
+assembler will not work. To prevent GCC from using the wrong assembler,
+the option @option{--with-gnu-as} may be necessary.
+
+The GCC libunwind library has not been ported to HPUX. This means that for
+GCC versions 3.2.3 and earlier, @option{--enable-libunwind-exceptions}
+is required to build GCC. For GCC 3.3 and later, this is the default.
 
 @html
 <hr />
