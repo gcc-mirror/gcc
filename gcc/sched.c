@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992, 93-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-97, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    Enhanced by, and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -2892,12 +2892,7 @@ attach_deaths (x, insn, set_p)
 #endif
 		&& regno != STACK_POINTER_REGNUM)
 	      {
-		/* ??? It is perhaps a dead_or_set_p bug that it does
-		   not check for REG_UNUSED notes itself.  This is necessary
-		   for the case where the SET_DEST is a subreg of regno, as
-		   dead_or_set_p handles subregs specially.  */
-		if (! all_needed && ! dead_or_set_p (insn, x)
-		    && ! find_reg_note (insn, REG_UNUSED, x))
+		if (! all_needed && ! dead_or_set_p (insn, x))
 		  {
 		    /* Check for the case where the register dying partially
 		       overlaps the register set by this insn.  */
@@ -2956,17 +2951,18 @@ attach_deaths (x, insn, set_p)
       return;
 
     case SUBREG:
+      attach_deaths (SUBREG_REG (x), insn,
+		     set_p && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+			       <= UNITS_PER_WORD));
+      return;
+
     case STRICT_LOW_PART:
-      /* These two cases preserve the value of SET_P, so handle them
-	 separately.  */
-      attach_deaths (XEXP (x, 0), insn, set_p);
+      attach_deaths (XEXP (x, 0), insn, 0);
       return;
 
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
-      /* This case preserves the value of SET_P for the first operand, but
-	 clears it for the other two.  */
-      attach_deaths (XEXP (x, 0), insn, set_p);
+      attach_deaths (XEXP (x, 0), insn, 0);
       attach_deaths (XEXP (x, 1), insn, 0);
       attach_deaths (XEXP (x, 2), insn, 0);
       return;
