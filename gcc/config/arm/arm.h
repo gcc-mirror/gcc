@@ -1032,6 +1032,8 @@ extern const char * structure_size_string;
 /* ARM floating pointer registers.  */
 #define FIRST_FPA_REGNUM 	16
 #define LAST_FPA_REGNUM  	23
+#define IS_FPA_REGNUM(REGNUM) \
+  (((REGNUM) >= FIRST_FPA_REGNUM) && ((REGNUM) <= LAST_FPA_REGNUM))
 
 #define FIRST_IWMMXT_GR_REGNUM	43
 #define LAST_IWMMXT_GR_REGNUM	46
@@ -1063,6 +1065,8 @@ extern const char * structure_size_string;
 /* Intel Wireless MMX Technology registers add 16 + 4 more.  */
 /* VFP adds 32 + 1 more.  */
 #define FIRST_PSEUDO_REGISTER   96
+
+#define DBX_REGISTER_NUMBER(REGNO) arm_dbx_register_number (REGNO)
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms may be accessed
