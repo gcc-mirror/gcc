@@ -6315,29 +6315,6 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"none")
    (set_attr "length"	"1")])
 
-;; Function return, only allow after optimization, so that we can
-;; eliminate jumps to jumps if no stack space is used.
-
-;; (define_expand "return"
-;;   [(set (pc) (reg:SI 31))]
-;;   "simple_epilogue_p ()"
-;;   "")
-
-(define_expand "return"
-  [(parallel [(return)
-	      (use (reg:SI 31))])]
-  "simple_epilogue_p ()"
-  "")
-
-(define_insn "return_internal"
-  [(parallel [(return)
-              (use (match_operand:SI 0 "register_operand" "d"))])]
-  ""
-  "%*j\\t%0"
-  [(set_attr "type"	"jump")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"1")])
-
 ;; Implement a switch statement when generating embedded PIC code.
 ;; Switches are implemented by `tablejump' when not using -membedded-pic.
 
@@ -6448,21 +6425,38 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"none")
    (set_attr "length"	"0")])
 
-;; At present, don't expand the epilogue, reorg.c will clobber the
-;; return register in compiling gen_lowpart (emit-rtl.c).
-;; 
-;; (define_expand "epilogue"
-;;   [(const_int 2)]
-;;   ""
-;;   "
-;; {
-;;   if (mips_isa >= 0)            /* avoid unused code warnings */
-;;     {
-;;       mips_expand_epilogue ();
-;;       DONE;
-;;     }
-;; }")
+(define_expand "epilogue"
+  [(const_int 2)]
+  ""
+  "
+{
+  if (mips_isa >= 0)            /* avoid unused code warnings */
+    {
+      mips_expand_epilogue ();
+      DONE;
+    }
+}")
 
+;; Trivial return.  Make it look like a normal return insn as that
+;; allows jump optimizations to work better .
+(define_insn "return"
+  [(return)]
+  "mips_can_use_return_insn ()"
+  "%*j\\t$31"
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"1")])
+
+;; Normal return.
+(define_insn "return_internal"
+  [(use (reg:SI 31))
+   (return)]
+  ""
+  "%*j\\t$31"
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"1")])
+  
 ;; When generating embedded PIC code we need to get the address of the
 ;; current function.  This specialized instruction does just that.
 
