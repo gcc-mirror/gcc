@@ -1,3 +1,10 @@
+2003-07-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/extend.texi (Function Attributes): GNU C++ does now allow
+	unused parameter decls.
+	(Attribute Syntax): GNU C++ does not allow label attributes to be
+	after the ':'.
+
 2003-07-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* objc/objc-act.c (objc_check_decl): Don't use xxx_with_decl.
