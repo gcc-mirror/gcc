@@ -1,5 +1,5 @@
 /* fix-header.c - Make C header file suitable for C++.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -341,7 +341,6 @@ void
 read_scan_file (scan_file)
      FILE *scan_file;
 {
-  char **rptr;
   obstack_init (&scan_file_obstack); 
 
   scan_decls (scan_file);
@@ -379,7 +378,6 @@ write_rbrac ()
 {
   struct fn_decl *fn;
   char **rptr;
-  register struct partial_proto *partial;
 
   if (required_unseen_count)
     fprintf (outf, "#ifdef __cplusplus\n");
@@ -815,7 +813,6 @@ main (argc, argv)
 	    break;
 	  if (isalpha (c) || c == '_')
 	    {
-	      struct partial_proto *partial;
 	      c = inf_scan_ident (&buf, c);
 	      INF_UNGET (c);
 	      fputs (buf.base, outf);
