@@ -2225,7 +2225,7 @@ print_operand (file, op, letter)
     }
   else if (letter == '#')
     {
-      asm_fprintf (file, "%0I");
+      asm_fprintf (file, "%I");
     }
 
   if (GET_CODE (op) == REG)
@@ -2249,9 +2249,9 @@ print_operand (file, op, letter)
   if (GET_CODE (op) == SYMBOL_REF && (letter == 'b' || letter == 'h'))
     {
       if (letter == 'b')
-	asm_fprintf (file, "%0I%%lo(");
+	asm_fprintf (file, "%I%%lo(");
       else
-	asm_fprintf (file, "%0I%%hi(");
+	asm_fprintf (file, "%I%%hi(");
 
       output_addr_const (file, op);
       fprintf (file, ")");
@@ -2347,7 +2347,7 @@ print_operand (file, op, letter)
       int need_parenthesize = 0;
 
       if (letter != 'i')
-	asm_fprintf (file, "%0I");
+	asm_fprintf (file, "%I");
       else
         need_parenthesize = must_parenthesize (op);
 

@@ -333,10 +333,10 @@ m68k_output_function_prologue (stream, size)
       && GET_CODE (stack_limit_rtx) == SYMBOL_REF)
     {
 #if defined (MOTOROLA)
-      asm_fprintf (stream, "\tcmp.l %0I%s+%wd,%Rsp\n\ttrapcs\n",
+      asm_fprintf (stream, "\tcmp.l %I%s+%wd,%Rsp\n\ttrapcs\n",
 		   XSTR (stack_limit_rtx, 0), fsize + 4);
 #else
-      asm_fprintf (stream, "\tcmpl %0I%s+%wd,%Rsp\n\ttrapcs\n",
+      asm_fprintf (stream, "\tcmpl %I%s+%wd,%Rsp\n\ttrapcs\n",
 		   XSTR (stack_limit_rtx, 0), fsize + 4);
 #endif
     }
@@ -361,20 +361,20 @@ m68k_output_function_prologue (stream, size)
       else if (fsize < 0x8000)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tlink.w %s,%0I%wd\n",
+	  asm_fprintf (stream, "\tlink.w %s,%I%wd\n",
 		       reg_names[FRAME_POINTER_REGNUM], -fsize);
 #else
-	  asm_fprintf (stream, "\tlink %s,%0I%wd\n",
+	  asm_fprintf (stream, "\tlink %s,%I%wd\n",
 		       reg_names[FRAME_POINTER_REGNUM], -fsize);
 #endif
 	}
       else if (TARGET_68020)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tlink.l %s,%0I%wd\n",
+	  asm_fprintf (stream, "\tlink.l %s,%I%wd\n",
 		       reg_names[FRAME_POINTER_REGNUM], -fsize);
 #else
-	  asm_fprintf (stream, "\tlink %s,%0I%wd\n",
+	  asm_fprintf (stream, "\tlink %s,%I%wd\n",
 		       reg_names[FRAME_POINTER_REGNUM], -fsize);
 #endif
 	}
@@ -382,10 +382,10 @@ m68k_output_function_prologue (stream, size)
 	{
       /* Adding negative number is faster on the 68040.  */
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tlink.w %s,%0I0\n\tadd.l %0I%wd,%Rsp\n",
+	  asm_fprintf (stream, "\tlink.w %s,%I0\n\tadd.l %I%wd,%Rsp\n",
 		       reg_names[FRAME_POINTER_REGNUM], -fsize);
 #else
-	  asm_fprintf (stream, "\tlink %s,%0I0\n\taddl %0I%wd,%Rsp\n",
+	  asm_fprintf (stream, "\tlink %s,%I0\n\taddl %I%wd,%Rsp\n",
 		       reg_names[FRAME_POINTER_REGNUM], -fsize);
 #endif
 	}
@@ -411,18 +411,18 @@ m68k_output_function_prologue (stream, size)
 		{
 		  /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
-		  asm_fprintf (stream, "\tsubq.w %0I%wd,%Rsp\n", fsize + 4);
+		  asm_fprintf (stream, "\tsubq.w %I%wd,%Rsp\n", fsize + 4);
 #else
-		  asm_fprintf (stream, "\tsubqw %0I%wd,%Rsp\n", fsize + 4);
+		  asm_fprintf (stream, "\tsubqw %I%wd,%Rsp\n", fsize + 4);
 #endif
 		}
 	      else
 		{
 		  /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
-		  asm_fprintf (stream, "\tsubq.l %0I%wd,%Rsp\n", fsize + 4);
+		  asm_fprintf (stream, "\tsubq.l %I%wd,%Rsp\n", fsize + 4);
 #else
-		  asm_fprintf (stream, "\tsubql %0I%wd,%Rsp\n", fsize + 4);
+		  asm_fprintf (stream, "\tsubql %I%wd,%Rsp\n", fsize + 4);
 #endif
 		}
 	    }
@@ -433,10 +433,10 @@ m68k_output_function_prologue (stream, size)
 	      /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 	      asm_fprintf (stream,
-			   "\tsubq.w %0I8,%Rsp\n\tsubq.w %0I%wd,%Rsp\n",
+			   "\tsubq.w %I8,%Rsp\n\tsubq.w %I%wd,%Rsp\n",
 			   fsize + 4 - 8);
 #else
-	      asm_fprintf (stream, "\tsubqw %0I8,%Rsp\n\tsubqw %0I%wd,%Rsp\n",
+	      asm_fprintf (stream, "\tsubqw %I8,%Rsp\n\tsubqw %I%wd,%Rsp\n",
 			   fsize + 4 - 8);
 #endif
 	    }
@@ -447,9 +447,9 @@ m68k_output_function_prologue (stream, size)
 	      /* Adding negative number is faster on the 68040.  */
 	      /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tadd.w %0I%wd,%Rsp\n", - (fsize + 4));
+	      asm_fprintf (stream, "\tadd.w %I%wd,%Rsp\n", - (fsize + 4));
 #else
-	      asm_fprintf (stream, "\taddw %0I%wd,%Rsp\n", - (fsize + 4));
+	      asm_fprintf (stream, "\taddw %I%wd,%Rsp\n", - (fsize + 4));
 #endif
 	    }
 	  else
@@ -465,9 +465,9 @@ m68k_output_function_prologue (stream, size)
 	{
 	/* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tadd.l %0I%wd,%Rsp\n", - (fsize + 4));
+	  asm_fprintf (stream, "\tadd.l %I%wd,%Rsp\n", - (fsize + 4));
 #else
-	  asm_fprintf (stream, "\taddl %0I%wd,%Rsp\n", - (fsize + 4));
+	  asm_fprintf (stream, "\taddl %I%wd,%Rsp\n", - (fsize + 4));
 #endif
 	}
       if (dwarf2out_do_frame ())
@@ -488,9 +488,9 @@ m68k_output_function_prologue (stream, size)
       if ((mask & 0xff) != 0)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tfmovm %0I0x%x,-(%Rsp)\n", mask & 0xff);
+	  asm_fprintf (stream, "\tfmovm %I0x%x,-(%Rsp)\n", mask & 0xff);
 #else
-	  asm_fprintf (stream, "\tfmovem %0I0x%x,%Rsp@-\n", mask & 0xff);
+	  asm_fprintf (stream, "\tfmovem %I0x%x,%Rsp@-\n", mask & 0xff);
 #endif
 	  if (dwarf2out_do_frame ())
 	    {
@@ -602,18 +602,18 @@ m68k_output_function_prologue (stream, size)
 
 #ifdef MOTOROLA
 	  asm_fprintf (stream, "\tlea (%d,%Rsp),%Rsp\n", -num_saved_regs*4);
-	  asm_fprintf (stream, "\tmovm.l %0I0x%x,(%Rsp)\n", newmask);
+	  asm_fprintf (stream, "\tmovm.l %I0x%x,(%Rsp)\n", newmask);
 #else
 	  asm_fprintf (stream, "\tlea %Rsp@(%d),%Rsp\n", -num_saved_regs*4);
-	  asm_fprintf (stream, "\tmoveml %0I0x%x,%Rsp@\n", newmask);
+	  asm_fprintf (stream, "\tmoveml %I0x%x,%Rsp@\n", newmask);
 #endif
 	}
       else
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tmovm.l %0I0x%x,-(%Rsp)\n", mask);
+	  asm_fprintf (stream, "\tmovm.l %I0x%x,-(%Rsp)\n", mask);
 #else
-	  asm_fprintf (stream, "\tmoveml %0I0x%x,%Rsp@-\n", mask);
+	  asm_fprintf (stream, "\tmoveml %I0x%x,%Rsp@-\n", mask);
 #endif
 	}
       if (dwarf2out_do_frame ())
@@ -639,7 +639,7 @@ m68k_output_function_prologue (stream, size)
       asm_fprintf (stream, "\t%Olea (%Rpc, %U_GLOBAL_OFFSET_TABLE_@GOTPC), %s\n",
 		   reg_names[PIC_OFFSET_TABLE_REGNUM]);
 #else
-      asm_fprintf (stream, "\tmovel %0I__GLOBAL_OFFSET_TABLE_, %s\n",
+      asm_fprintf (stream, "\tmovel %I__GLOBAL_OFFSET_TABLE_, %s\n",
 		   reg_names[PIC_OFFSET_TABLE_REGNUM]);
       asm_fprintf (stream, "\tlea %Rpc@(0,%s:l),%s\n",
 		   reg_names[PIC_OFFSET_TABLE_REGNUM],
@@ -833,9 +833,9 @@ m68k_output_function_epilogue (stream, size)
       && (mask || fmask))
     {
 #ifdef MOTOROLA
-      asm_fprintf (stream, "\t%Omove.l %0I%wd,%Ra1\n", -fsize);
+      asm_fprintf (stream, "\t%Omove.l %I%wd,%Ra1\n", -fsize);
 #else
-      asm_fprintf (stream, "\tmovel %0I%wd,%Ra1\n", -fsize);
+      asm_fprintf (stream, "\tmovel %I%wd,%Ra1\n", -fsize);
 #endif
       fsize = 0, big = 1;
     }
@@ -897,12 +897,12 @@ m68k_output_function_epilogue (stream, size)
       if (big)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tmovm.l -%wd(%s,%Ra1.l),%0I0x%x\n",
+	  asm_fprintf (stream, "\tmovm.l -%wd(%s,%Ra1.l),%I0x%x\n",
 		       offset + fsize,
 		       reg_names[FRAME_POINTER_REGNUM],
 		       mask);
 #else
-	  asm_fprintf (stream, "\tmoveml %s@(-%wd,%Ra1:l),%0I0x%x\n",
+	  asm_fprintf (stream, "\tmoveml %s@(-%wd,%Ra1:l),%I0x%x\n",
 		       reg_names[FRAME_POINTER_REGNUM],
 		       offset + fsize, mask);
 #endif
@@ -910,20 +910,20 @@ m68k_output_function_epilogue (stream, size)
       else if (restore_from_sp)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tmovm.l (%Rsp)+,%0I0x%x\n", mask);
+	  asm_fprintf (stream, "\tmovm.l (%Rsp)+,%I0x%x\n", mask);
 #else
-	  asm_fprintf (stream, "\tmoveml %Rsp@+,%0I0x%x\n", mask);
+	  asm_fprintf (stream, "\tmoveml %Rsp@+,%I0x%x\n", mask);
 #endif
 	}
       else
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tmovm.l -%wd(%s),%0I0x%x\n",
+	  asm_fprintf (stream, "\tmovm.l -%wd(%s),%I0x%x\n",
 		       offset + fsize,
 		       reg_names[FRAME_POINTER_REGNUM],
 		       mask);
 #else
-	  asm_fprintf (stream, "\tmoveml %s@(-%wd),%0I0x%x\n",
+	  asm_fprintf (stream, "\tmoveml %s@(-%wd),%I0x%x\n",
 		       reg_names[FRAME_POINTER_REGNUM],
 		       offset + fsize, mask);
 #endif
@@ -934,12 +934,12 @@ m68k_output_function_epilogue (stream, size)
       if (big)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tfmovm -%wd(%s,%Ra1.l),%0I0x%x\n",
+	  asm_fprintf (stream, "\tfmovm -%wd(%s,%Ra1.l),%I0x%x\n",
 		       foffset + fsize,
 		       reg_names[FRAME_POINTER_REGNUM],
 		       fmask);
 #else
-	  asm_fprintf (stream, "\tfmovem %s@(-%wd,%Ra1:l),%0I0x%x\n",
+	  asm_fprintf (stream, "\tfmovem %s@(-%wd,%Ra1:l),%I0x%x\n",
 		       reg_names[FRAME_POINTER_REGNUM],
 		       foffset + fsize, fmask);
 #endif
@@ -947,20 +947,20 @@ m68k_output_function_epilogue (stream, size)
       else if (restore_from_sp)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tfmovm (%Rsp)+,%0I0x%x\n", fmask);
+	  asm_fprintf (stream, "\tfmovm (%Rsp)+,%I0x%x\n", fmask);
 #else
-	  asm_fprintf (stream, "\tfmovem %Rsp@+,%0I0x%x\n", fmask);
+	  asm_fprintf (stream, "\tfmovem %Rsp@+,%I0x%x\n", fmask);
 #endif
 	}
       else
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tfmovm -%wd(%s),%0I0x%x\n",
+	  asm_fprintf (stream, "\tfmovm -%wd(%s),%I0x%x\n",
 		       foffset + fsize,
 		       reg_names[FRAME_POINTER_REGNUM],
 		       fmask);
 #else
-	  asm_fprintf (stream, "\tfmovem %s@(-%wd),%0I0x%x\n",
+	  asm_fprintf (stream, "\tfmovem %s@(-%wd),%I0x%x\n",
 		       reg_names[FRAME_POINTER_REGNUM],
 		       foffset + fsize, fmask);
 #endif
@@ -977,17 +977,17 @@ m68k_output_function_epilogue (stream, size)
 	  if (!TARGET_5200)
 	    {
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\taddq.w %0I%wd,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddq.w %I%wd,%Rsp\n", fsize + 4);
 #else
-	      asm_fprintf (stream, "\taddqw %0I%wd,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddqw %I%wd,%Rsp\n", fsize + 4);
 #endif
 	    }
 	  else
 	    {
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\taddq.l %0I%wd,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddq.l %I%wd,%Rsp\n", fsize + 4);
 #else
-	      asm_fprintf (stream, "\taddql %0I%wd,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddql %I%wd,%Rsp\n", fsize + 4);
 #endif
 	    }
 	}
@@ -997,10 +997,10 @@ m68k_output_function_epilogue (stream, size)
 	     add a small integer (8 < N <= 16) to a register.  */
 	  /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\taddq.w %0I8,%Rsp\n\taddq.w %0I%wd,%Rsp\n",
+	  asm_fprintf (stream, "\taddq.w %I8,%Rsp\n\taddq.w %I%wd,%Rsp\n",
 		       fsize + 4 - 8);
 #else
-	  asm_fprintf (stream, "\taddqw %0I8,%Rsp\n\taddqw %0I%wd,%Rsp\n",
+	  asm_fprintf (stream, "\taddqw %I8,%Rsp\n\taddqw %I%wd,%Rsp\n",
 		       fsize + 4 - 8);
 #endif
 	}
@@ -1012,9 +1012,9 @@ m68k_output_function_epilogue (stream, size)
 	    { 
 	      /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tadd.w %0I%wd,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\tadd.w %I%wd,%Rsp\n", fsize + 4);
 #else
-	      asm_fprintf (stream, "\taddw %0I%wd,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddw %I%wd,%Rsp\n", fsize + 4);
 #endif
 	    }
 	  else
@@ -1030,9 +1030,9 @@ m68k_output_function_epilogue (stream, size)
 	{
 	/* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tadd.l %0I%wd,%Rsp\n", fsize + 4);
+	  asm_fprintf (stream, "\tadd.l %I%wd,%Rsp\n", fsize + 4);
 #else
-	  asm_fprintf (stream, "\taddl %0I%wd,%Rsp\n", fsize + 4);
+	  asm_fprintf (stream, "\taddl %I%wd,%Rsp\n", fsize + 4);
 #endif
 	}
     }
@@ -1045,7 +1045,7 @@ m68k_output_function_epilogue (stream, size)
 #endif
     }
   if (current_function_pops_args)
-    asm_fprintf (stream, "\trtd %0I%d\n", current_function_pops_args);
+    asm_fprintf (stream, "\trtd %I%d\n", current_function_pops_args);
   else
     fprintf (stream, "\trts\n");
 }
@@ -2829,7 +2829,7 @@ print_operand (file, op, letter)
     }
   else if (letter == '#')
     {
-      asm_fprintf (file, "%0I");
+      asm_fprintf (file, "%I");
     }
   else if (letter == '-')
     {
@@ -2932,7 +2932,7 @@ print_operand (file, op, letter)
     {
       /* Use `print_operand_address' instead of `output_addr_const'
 	 to ensure that we print relevant PIC stuff.  */
-      asm_fprintf (file, "%0I");
+      asm_fprintf (file, "%I");
       if (TARGET_PCREL
 	  && (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == CONST))
 	print_operand_address (file, op);
