@@ -1,3 +1,8 @@
+2000-04-25  Neil Booth  <NeilB@earthling.net>
+
+	* Revert my patch below until cause of build failures
+	determined.
+
 2000-04-25  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (combine_instructions): Add missing argument
