@@ -213,18 +213,11 @@ extern struct rtx_def *alpha_arg_info_reg_val ();
    + ALPHA_ARG_SIZE (MODE, TYPE, NAMED)					\
  ? 6 - (CUM).num_args : 0)
 
-extern char *vmskrunch ();
 #undef ENCODE_SECTION_INFO
 #define ENCODE_SECTION_INFO(DECL)				\
 do {								\
   if (TREE_CODE (DECL) == FUNCTION_DECL && ! TREE_PUBLIC (DECL)) \
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
-								\
-  if (TREE_CODE_CLASS (TREE_CODE (DECL)) == 'd'			\
-      && GET_CODE (DECL_RTL (DECL)) == MEM			\
-      && GET_CODE (XEXP (DECL_RTL (DECL), 0)) == SYMBOL_REF)	\
-	XSTR (XEXP (DECL_RTL (DECL), 0), 0)			\
-	  = vmskrunch (XSTR (XEXP (DECL_RTL (DECL), 0), 0));	\
 } while (0)
 
 /* Perform any needed actions needed for a function that is receiving a
@@ -263,12 +256,6 @@ do {								\
     }							\
 }
 
-#undef ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)	\
-{							\
-   alpha_function_name = vmskrunch (NAME);		\
-}
-
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)					\
 {								\
@@ -298,9 +285,7 @@ do {								\
   }
 
 #define LINK_SECTION_ASM_OP ".link"
-
 #define READONLY_SECTION_ASM_OP ".rdata"
-
 #define LITERALS_SECTION_ASM_OP ".literals"
 
 #undef EXTRA_SECTIONS
