@@ -2266,6 +2266,7 @@ check_newline ()
 {
   register int c;
   register int token;
+  int saw_line = 0;
 
   /* Read first nonwhite char on the line.  Do this before incrementing the
      line number, in case we're at the end of saved text.  */
@@ -2374,7 +2375,10 @@ check_newline ()
 	      && getch () == 'n'
 	      && getch () == 'e'
 	      && ((c = getch ()) == ' ' || c == '\t'))
-	    goto linenum;
+	    {
+	      saw_line = 1;
+	      goto linenum;
+	    }
 	}
       else if (c == 'i')
 	{
@@ -2471,9 +2475,16 @@ linenum:
 
       /* More follows: it must be a string constant (filename).  */
 
-      /* Read the string constant, but don't treat \ as special.  */
-      ignore_escape_flag = 1;
+      if (saw_line)
+	{
+	  /* Don't treat \ as special if we are processing #line 1 "...".
+	     If you want it to be treated specially, use # 1 "...".  */
+	  ignore_escape_flag = 1;
+	}
+
+      /* Read the string constant.  */
       token = real_yylex ();
+
       ignore_escape_flag = 0;
 
       if (token != STRING || TREE_CODE (yylval.ttype) != STRING_CST)
