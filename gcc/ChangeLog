@@ -1,5 +1,8 @@
 Fri Jul 17 07:31:04 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
+	* m68k.c (output_move_simode_const): Use subl to move 0 into addr reg.
+	(output_move_[hq]imode): Likewise.
+
 	* m68k.md (extend[sd]fxf2): Accept constants and general reg as
 	source operand if the destination is a floating point register.
 
