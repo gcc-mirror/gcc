@@ -1,5 +1,10 @@
 Thu Nov 19 22:20:51 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* reorg.c (relax_delay_slots): When optimizing for code size, if a
+	return with a filled delay slot is followed by a return with an
+	unfilled delay slot, delete the first return and reemit the insn
+	that was previously in its delay slot.
+
 	* i860.c (single_insn_src_p): Add missing parens.
 	* ginclude/math-3300.h: Likewise.
 
