@@ -1,6 +1,6 @@
 /* Xtensa Linux configuration.
    Derived from the configuration for GCC for Intel i386 running Linux.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,10 +26,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
     builtin_define ("__ELF__");					\
     builtin_define ("__gnu_linux__");				\
     builtin_assert ("system=posix");				\
-    /* The GNU C++ standard library requires this.  */		\
-    if (c_language == clk_cplusplus)				\
-      builtin_define ("_GNU_SOURCE");				\
+    builtin_define ("__PIC__");					\
+    builtin_define ("__pic__");					\
   } while (0)
+
+#undef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fputs (" (Xtensa GNU/Linux with ELF)", stderr);
@@ -44,12 +46,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 		  %{mno-longcalls:--no-longcalls}"
 
 #undef ASM_FINAL_SPEC
-
-#undef LIB_SPEC
-#define LIB_SPEC \
-  "%{shared: -lc} \
-   %{!shared: %{pthread:-lpthread} \
-   %{profile:-lc_p} %{!profile: -lc}}"
 
 #undef LINK_SPEC
 #define LINK_SPEC \
