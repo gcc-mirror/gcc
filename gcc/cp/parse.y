@@ -3123,7 +3123,7 @@ new_declarator:
 
 /* ANSI direct-new-declarator (5.3.4) */
 direct_new_declarator:
-	  '[' nonmomentary_expr ']'
+	  '[' expr ']'
 		{ $$ = build_parse_node (ARRAY_REF, NULL_TREE, $2); }
 	| direct_new_declarator '[' nonmomentary_expr ']'
 		{ $$ = build_parse_node (ARRAY_REF, $$, $3); }
