@@ -5499,16 +5499,8 @@ build_c_cast (type, expr)
       && TREE_CODE (otype) == POINTER_TYPE
       && !at_least_as_qualified_p (TREE_TYPE (type),
 				   TREE_TYPE (otype)))
-    cp_warning ("cast discards qualifiers from pointer target type");
-
-  /* Warn about possible alignment problems.  */
-  if (STRICT_ALIGNMENT && warn_cast_align
-      && TREE_CODE (type) == POINTER_TYPE
-      && TREE_CODE (otype) == POINTER_TYPE
-      && TREE_CODE (TREE_TYPE (otype)) != VOID_TYPE
-      && TREE_CODE (TREE_TYPE (otype)) != FUNCTION_TYPE
-      && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (otype)))
-    warning ("cast increases required alignment of target type");
+    cp_warning ("cast from `%T' to `%T' discards qualifiers from pointer target type",
+                otype, type);
 
 #if 0
   /* We should see about re-enabling these, they seem useful to
@@ -5548,6 +5540,19 @@ build_c_cast (type, expr)
 	  TREE_CONSTANT_OVERFLOW (value) = TREE_CONSTANT_OVERFLOW (ovalue);
 	}
     }
+
+  /* Warn about possible alignment problems.  Do this here when we will have
+     instantiated any necessary template types.  */
+  if (STRICT_ALIGNMENT && warn_cast_align
+      && TREE_CODE (type) == POINTER_TYPE
+      && TREE_CODE (otype) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (otype)) != VOID_TYPE
+      && TREE_CODE (TREE_TYPE (otype)) != FUNCTION_TYPE
+      && TYPE_SIZE (TREE_TYPE (otype))
+      && TYPE_SIZE (TREE_TYPE (type))
+      && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (otype)))
+    cp_warning ("cast from `%T' to `%T' increases required alignment of target type",
+                otype, type);
 
     /* Always produce some operator for an explicit cast,
        so we can tell (for -pedantic) that the cast is no lvalue.  */
