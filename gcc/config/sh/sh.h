@@ -1293,7 +1293,7 @@ extern int current_function_anonymous_args;
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)	\
   (((COUNT) == 0)				\
-   ? gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode, RETURN_ADDRESS_POINTER_REGNUM)) \
+   ? get_hard_reg_initial_val (Pmode, PR_REG) \
    : (rtx) 0)
 
 /* Generate necessary RTL for __builtin_saveregs().  */
@@ -2368,5 +2368,12 @@ extern struct rtx_def *fpscr_rtx;
 0:	.p2align 2\n\
 1:	.long	" USER_LABEL_PREFIX #func " - 0b\n\
 2:")
+
+#define ALLOCATE_INITIAL_VALUE(hard_reg) \
+  (REGNO (hard_reg) == PR_REG \
+   ? (current_function_is_leaf && ! sh_pr_n_sets () \
+      ? (hard_reg) \
+      : gen_rtx_MEM (Pmode, arg_pointer_rtx)) \
+   : NULL_RTX)
 
 #endif /* ! GCC_SH_H */

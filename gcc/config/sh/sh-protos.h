@@ -119,6 +119,7 @@ extern void sh_expand_epilogue PARAMS ((void));
 extern int sh_need_epilogue PARAMS ((void));
 extern int initial_elimination_offset PARAMS ((int, int));
 extern int fldi_ok PARAMS ((void));
+extern int sh_pr_n_sets PARAMS ((void));
 
 #ifdef HARD_CONST
 extern void fpscr_set_from_mem PARAMS ((int, HARD_REG_SET));
