@@ -49,6 +49,7 @@ echo "# Warning: this fragment is automatically generated" > temp.mt
 frags=
 
 case "${target}" in
+  *-mpeix*)      frags="mpeix.mt" ;;
   *-hpux*)       frags=hpux.mt ;;
   alpha*-*-linux-gnulibc1)
 		 frags="linux.mt linuxaxp1.mt mtsafe.mt" ;;
