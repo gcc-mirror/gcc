@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.44 2000/10/24 17:00:59 bkoz Exp $
+## $Id: Makefile.am,v 1.45 2000/10/29 22:30:27 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -136,10 +136,10 @@ c_shadow_headers = \
 	assert.h ctype.h errno.h float.h limits.h locale.h math.h setjmp.h \
 	signal.h stdarg.h stddef.h stdio.h stdlib.h string.h time.h wchar.h \
 	wctype.h fcntl.h libio.h iolibio.h libioP.h pthread.h iconv.h \
-	features.h \
+	features.h langinfo.h \
 	bits/wrap_libio.h bits/wrap_iolibio.h bits/wrap_libioP.h \
 	bits/wrap_iconv.h bits/wrap_fcntl.h bits/wrap_pthread.h \
-	bits/wrap_features.h \
+	bits/wrap_features.h bits/wrap_langinfo.h \
 	sys/cdefs.h 
 
 if GLIBCPP_USE_CSHADOW
