@@ -1418,7 +1418,7 @@ expand_eh_region_start_for_decl (decl)
   /* We need a new block to record the start and end of the
      dynamic handler chain.  We also want to prevent jumping into
      a try block.  */
-  expand_start_bindings (0);
+  expand_start_bindings (2);
 
   /* But we don't need or want a new temporary level.  */
   pop_temp_slots ();

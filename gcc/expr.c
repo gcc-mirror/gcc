@@ -6104,7 +6104,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	/* Need to open a binding contour here because
 	   if there are any cleanups they must be contained here.  */
-	expand_start_bindings (0);
+	expand_start_bindings (2);
 
 	/* Mark the corresponding BLOCK for output in its proper place.  */
 	if (TREE_OPERAND (exp, 2) != 0
@@ -6793,7 +6793,7 @@ expand_expr (exp, target, tmode, modifier)
       {
 	/* Start a new binding layer that will keep track of all cleanup
 	   actions to be performed.  */
-	expand_start_bindings (0);
+	expand_start_bindings (2);
 
 	target_temp_slot_level = temp_slot_level;
 
@@ -8185,7 +8185,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	/* Start a new binding layer that will keep track of all cleanup
 	   actions to be performed.  */
-	expand_start_bindings (0);
+	expand_start_bindings (2);
 
 	target_temp_slot_level = temp_slot_level;
 
