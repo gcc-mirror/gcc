@@ -1,3 +1,119 @@
+2003-07-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mn10300/mn10300.h (PREDICATE_CODES): Define.
+	2001-05-01  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/mn10300.md (sqrtsf2): flag_fast_math was renamed
+	to flag_unsafe_math_optimizations.
+	2001-04-14  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/mn10300.c (expand_prologue): Mark
+	FP-register-saving insns as frame-related.
+	2001-02-13  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/mn10300.c
+	(mn10300_get_live_callee_saved_regs): Don't search past
+	LAST_EXTENDED_REGNUM.
+	(mn10300_gen_multiple_store, store_multiple_operation): Likewise.
+	* config/mn10300/mn10300.md: Remove excessive line breaks from
+	`@' output patterns that were accounted as additional
+	alternatives.
+	* config/mn10300/mn10300.md, config/mn10300/mn10300.c:
+	Re-introduce changes accidentally removed in Richard Sandiford's
+	2000-12-05's patch.
+	* config/mn10300/t-mn10300 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES):
+	Re-instate am33-2 lost in merge from net GCC.
+	2000-08-26  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/mn10300.h (DBX_REGISTER_NUMBER): Added
+	floating-point registers.
+	2000-08-07  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/mn10300.md (movdf): Revert some am33-specific
+	pessimizations that had gone in on 2000-05-08.
+	2000-06-28  Graham Stott  <grahams@cygnus.co.uk>
+	* config/mn10300/mn10300.h (REG_CLASS_CONTENTS): Fix typo.
+	2000-06-22  Graham Stott  <grahams@cygnus.co.uk>
+	* config/mn10300/mn10300.md (movqi): Use nonimmediate_operand for
+	operand 0.
+	* (movhi): Likewise.
+	* (movsi): Likewise.
+	* (movsf): Likewise.
+	* (movdi): Likewise.
+	* (movdf): Likewise.
+	Wed May 24 13:16:09 2000  Alexandre Oliva  <aoliva@cygnus.com>
+	* config/mn10300/mn10300.c (fp_regs_to_save): New function.
+	(can_use_return_insn, initial_offset): Add fp_regs_to_save.
+	(expand_prologue, expand_epilogue): Save and restore FP regs.
+	2000-05-20  Alexandre Oliva  <aoliva@cygnus.com>
+	* config/mn10300/mn10300.md (movdi, movdf): 64-bit clean-up.
+	2000-05-13  Alexandre Oliva  <aoliva@cygnus.com>
+	* config/mn10300/mn10300.md (abssf2, negsf2, rsqrtsf2, addsf3,
+	subsf3, mulsf3, divsf3, fmaddsf4, fmsubsf4, fnmaddsf4, fnmsubsf4):
+	Do not clobber cc0.
+	2000-05-12  Alexandre Oliva  <aoliva@cygnus.com>
+	* config/mn10300/mn10300.md (abssf2, negsf2, rsqrtsf2):
+	Discourage the two-argument, longer opcodes.
+	(addsf3, subsf3, mulsf3, divsf3): Likewise for three-argument
+	ones.
+	* config/mn10300/mn10300.h (struct mn10300_cc_status_mdep): New.
+	(CC_STATUS_MDEP, CC_STATUS_MDEP_INIT): Define.
+	* config/mn10300/mn10300.md (cmpsf): New pattern.
+	(branch): Test mdep.fpCC and output fbCC.
+	* config/mn10300/mn10300.c (print_operand): Output conditions.
+	(notice_cc_update): Recognize fcmp and set mdep.fpCC.
+	2000-05-10  Alexandre Oliva  <aoliva@cygnus.com>
+	* config/mn10300/mn10300.md (movsf, movdf, addsf3, subsf3,
+	mulsf3, divsf3): Use the `F' constraint for FP values.
+	* config/mn10300/mn10300.c (const_1f_operand): New function.
+	* config/mn10300/mn10300-protos.h (const_1f_operand): Declare.
+	* config/mn10300/mn10300.md (sqrtsf2): New expand.
+	(rsqrtsf2): New insn.
+	2000-05-09  Alexandre Oliva  <aoliva@cygnus.com>
+	* config/mn10300/mn10300.md (movdf): Oops, I missed it in my
+	previous check-in.
+	2000-05-08  Alexandre Oliva  <aoliva@cygnus.com>
+	* config/mn10300/mn10300.md (abssf2, negdf2): On
+	TARGET_AM33_2, expand to...
+	(abssf2_am33_2, negdf2_am33_2): New insns.
+	(addsf3, subsf3, mulsf3, divsf3): Likewise.
+	(fmaddsf4, fmsubsf4, fnmaddsf4, fnmsubsf4): Likewise.
+	* config/mn10300/mn10300.md (movqi, movhi, movsi, movsf,
+	movdi, movdf): Added FP regs.
+	* invoke.texi (-mam33-2, -mno-am33-2): Document.
+	2000-04-29  Alexandre Oliva  <aoliva@cygnus.com>
+	* config/mn10300/mn10300.h (FIRST_FP_REGNUM, LAST_FP_REGNUM):
+	New macros.
+	(REGNO_AM33_2_FP_P): Renamed to...
+	(REGNO_FP_P): Redefine in terms of FIRST_* and LAST_*.
+	(CONDITIONAL_REGISTER_USAGE, REGNO_REG_CLASS): Likewise.
+	2000-04-27  Alexandre Oliva  <aoliva@cygnus.com>
+	* config/mn10300/mn10300.h (REG_CLASS_CONTENTS): Remove FP
+	regs from GENERAL_REGS.
+	2000-04-27  Alexandre Oliva  <aoliva@cygnus.com>
+	* config/mn10300/mn10300.h (REGNO_AM33_2_FP_P): New macro.
+	* config/mn10300/mn10300.c (mn10300_address_cost): Added FP_REGS.
+	* config/mn10300/mn10300.h (REGISTER_MOVE_COST): Added FP_REGS.
+	2000-04-23  Alexandre Oliva  <aoliva@cygnus.com>
+	* config/mn10300/mn10300.h (CLASS_CANNOT_CHANGE_SIZE): Defined
+	as FP_REGS.
+	2000-04-21  Alexandre Oliva  <aoliva@cygnus.com>
+	* config/mn10300/mn10300.h (OK_FOR_Q): New macro.
+	(EXTRA_CONSTRAINT): Added OK_FOR_Q.
+	* config/mn10300/mn10300.c (secondary_reload_class): Adjust.
+	* config/mn10300/mn10300.c (print_operand): Support `D' for doubles.
+	* config/mn10300/mn10300.h (FIRST_PSEUDO_REGISTER): Adjust.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, REG_ALLOC_ORDER): Added
+	AM33/2.0 floating-point registers.
+	(CONDITIONAL_REGISTER_USAGE): Adjust.
+	(enum reg_class, REG_CLASS_NAMES): Added FP_REGS and FP_ACC_REGS.
+	(REG_CLASS_CONTENTS, REGNO_REG_CLASS): Adjust.
+	(REG_CLASS_FROM_LETTER): Added `f' and `A'.
+	(REGISTER_NAMES, ADDITIONAL_REGISTER_NAMES): Adjust.
+	* config/mn10300/t-mn10300 (MULTILIB_OPTIONS): Added am33-2.
+	(MULTILIB_DIRNAMES): Likewise.
+	* config/mn10300/mn10300.h (CPP_SPEC): Define `__AM33__=2' and
+	`__AM33_2__' when `-mam33-2' is given.
+	(TARGET_AM33_2): Define.
+	(TARGET_SWITCHES): Adjust.
+	* config/mn10300/mn10300.c (asm_file_start): Print `.am33_2'
+	when appropriate.
+
 2003-07-09  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* doc/install.texi: Add missing @.
