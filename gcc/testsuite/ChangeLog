@@ -1,3 +1,7 @@
+2005-02-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c-torture/execute/20050203-1.c: New.
+
 2005-02-03  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-85.c: Remove xfail.
