@@ -1,3 +1,9 @@
+2004-01-30  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (doc/gnat_ug_unx.dvi): Use $(abs_docdir). 
+	(doc/gnat_ug_vms.dvi, doc/gnat_ug_unx.dvi): Likewise.
+	(doc/gnat_ug_unx.dvi, doc/gnat-style.dvi): Likewise.
+
 2004-01-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in (mips-sgi-irix5): Remove -lathread from THREADSLIB.

@@ -161,7 +161,7 @@ doc/treelang.info: treelang/treelang.texi $(docdir)/include/gcc-common.texi \
 doc/treelang.dvi: treelang/treelang.texi $(docdir)/include/gcc-common.texi \
 	 $(docdir)/include/gpl.texi $(docdir)/include/fdl.texi \
 	 $(docdir)/include/funding.texi
-	$(TEXI2DVI) -I $(docdir)/include -o $@ $<
+	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
 
 #
 # Install hooks:
