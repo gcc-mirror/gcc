@@ -1,6 +1,6 @@
 ## Process this with automake to create Makefile.in
 
-AUTOMAKE_OPTIONS = cygnus
+AUTOMAKE_OPTIONS = foreign no-dependencies subdir-objects
 
 SUBDIRS = include testsuite
 
@@ -23,9 +23,6 @@ EXTRA_DIST = LICENSE ChangeLog.v1 \
 	src/sparc/ffi.c \
 	src/x86/ffi.c src/x86/sysv.S src/x86/win32.S \
 	src/x86/ffi64.c src/x86/unix64.S src/x86/ffitarget.h
-
-
-VPATH = @srcdir@:@srcdir@/src:@srcdir@/src/@TARGETDIR@
 
 ## ################################################################
 
@@ -74,7 +71,7 @@ AM_MAKEFLAGS = \
 
 MAKEOVERRIDES=
 
-# Multilib support variables.
+# Multilib support variables working around Automake bug.
 MULTISRCTOP =
 MULTIBUILDTOP =
 MULTIDIRS =
@@ -85,156 +82,67 @@ MULTICLEAN = true
 toolexeclib_LTLIBRARIES = libffi.la
 noinst_LTLIBRARIES = libffi_convenience.la
 
-
-
-TARGET_SRC_MIPS_IRIX = src/mips/ffi.c src/mips/o32.S src/mips/n32.S
-TARGET_SRC_MIPS_LINUX = src/mips/ffi.c src/mips/o32.S
-TARGET_SRC_X86 = src/x86/ffi.c src/x86/sysv.S
-TARGET_SRC_X86_WIN32 = src/x86/ffi.c src/x86/win32.S
-TARGET_SRC_SPARC = src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S
-TARGET_SRC_ALPHA = src/alpha/ffi.c src/alpha/osf.S
-TARGET_SRC_IA64 = src/ia64/ffi.c src/ia64/unix.S
-TARGET_SRC_M68K = src/m68k/ffi.c src/m68k/sysv.S
-TARGET_SRC_POWERPC = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S src/powerpc/linux64.S src/powerpc/linux64_closure.S
-TARGET_SRC_POWERPC_AIX = src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closure.S
-TARGET_SRC_POWERPC_DARWIN = src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
-TARGET_SRC_ARM =  src/arm/sysv.S src/arm/ffi.c
-TARGET_SRC_S390 =  src/s390/sysv.S src/s390/ffi.c
-TARGET_SRC_X86_64 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
-TARGET_SRC_SH =  src/sh/sysv.S src/sh/ffi.c
-TARGET_SRC_SH64 =  src/sh64/sysv.S src/sh64/ffi.c
-
-##libffi_la_SOURCES = src/debug.c src/prep_cif.c src/types.c $(TARGET_SRC_@TARGET@)
-## Work around automake deficiency
-libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
+libffi_la_SOURCES = src/debug.c src/prep_cif.c src/types.c \
 		src/raw_api.c src/java_raw_api.c
+
+nodist_libffi_la_SOURCES =
+
 if MIPS_IRIX
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_IRIX)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_IRIX)
+nodist_libffi_la_SOURCES += src/mips/ffi.c src/mips/o32.S src/mips/n32.S
 endif
 if MIPS_LINUX
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_LINUX)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_LINUX)
+nodist_libffi_la_SOURCES += src/mips/ffi.c src/mips/o32.S
 endif
 if X86
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86)
+nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/sysv.S
 endif
 if X86_WIN32
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86_WIN32)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86_WIN32)
+nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/win32.S
 endif
 if SPARC
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SPARC)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SPARC)
+nodist_libffi_la_SOURCES += src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S
 endif
 if ALPHA
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_ALPHA)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_ALPHA)
+nodist_libffi_la_SOURCES += src/alpha/ffi.c src/alpha/osf.S
 endif
 if IA64
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_IA64)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_IA64)
+nodist_libffi_la_SOURCES += src/ia64/ffi.c src/ia64/unix.S
 endif
 if M68K
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_M68K)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_M68K)
+nodist_libffi_la_SOURCES += src/m68k/ffi.c src/m68k/sysv.S
 endif
 if POWERPC
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC)
+nodist_libffi_la_SOURCES += src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S src/powerpc/linux64.S src/powerpc/linux64_closure.S
 endif
 if POWERPC_AIX
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC_AIX)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC_AIX)
+nodist_libffi_la_SOURCES += src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closure.S
 endif
 if POWERPC_DARWIN
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC_DARWIN)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC_DARWIN)
+nodist_libffi_la_SOURCES += src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
 endif
 if ARM
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
+nodist_libffi_la_SOURCES += src/arm/sysv.S src/arm/ffi.c
 endif
 if S390
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_S390)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_S390)
+nodist_libffi_la_SOURCES += src/s390/sysv.S src/s390/ffi.c
 endif
 if X86_64
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86_64)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_X86_64)
+nodist_libffi_la_SOURCES += src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
 endif
 if SH
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SH)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SH)
+nodist_libffi_la_SOURCES += src/sh/sysv.S src/sh/ffi.c
 endif
 if SH64
-libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SH64)
-libffi_convenience_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SH64)
+nodist_libffi_la_SOURCES += src/sh64/sysv.S src/sh64/ffi.c
 endif
+
+libffi_convenience_la_SOURCES = $(libffi_la_SOURCES)
+nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
 
 AM_CFLAGS = -Wall -g -fexceptions
 
-libffi_la_LDFLAGS = -release $(VERSION) 
+libffi_la_LDFLAGS = -release $(VERSION)
 
 INCLUDES = -I. -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src
 
-# Override these rules so that object files get put in the correct 
-# subdirectories. 
-.c.o:
-	$(LTCOMPILE) -c -o $@ $<
-
-.s.o:
-	$(LTCOMPILE) -c -o $@ $<
-
-.S.o:
-	$(LTCOMPILE) -c -o $@ $<
-
-.c.lo:
-	$(LTCOMPILE) -c -o $@ $<
-
-.s.lo:
-	$(LTCOMPILE) -c -o $@ $<
-
-.S.lo:
-	$(LTCOMPILE) -c -o $@ $<
-
-# Multilib support.
-.PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \
-	maintainer-clean-multi
-
-all-recursive: all-multi
-install-recursive: install-multi
-mostlyclean-recursive: mostlyclean-multi
-clean-recursive: clean-multi
-distclean-recursive: distclean-multi
-maintainer-clean-recursive: maintainer-clean-multi
-
-all-multi:
-	: $(MAKE) ; exec $(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do
-install-multi:
-	$(MULTIDO) $(AM_MAKEFLAGS) DO=install multi-do
-mostlyclean-multi:
-	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=mostlyclean multi-clean
-clean-multi:
-	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=clean multi-clean
-distclean-multi:
-	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean
-maintainer-clean-multi:
-	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean
-
-
-## ################################################################
-
-# Our hacked automake doesn't clean subdirectories properly.
-mostlyclean-am: mostlyclean-sub
-mostlyclean-sub:
-	-rm -f src/*.o src/*.lo
-	-rm -f src/@TARGETDIR@/*.o src/@TARGETDIR@/*.lo
-
-clean-am: clean-sub
-clean-sub:
-	-rm -rf src/.libs src/_libs
-	-rm -rf src/@TARGETDIR@/.libs src/@TARGETDIR@/_libs
-
-
+AM_CCASFLAGS = $(INCLUDES)
