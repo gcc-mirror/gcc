@@ -1,3 +1,10 @@
+2004-10-22  Peter Barada <peter@the-baradas.com>
+
+	* config/m68k/m68k.h (HARD_REGNO_RENAME_OK): New macro.
+	* config/m68k/m68k.c (m68k_hard regno_rename_ok): Disallow
+	renaming of non-live registers in interrupt functions.
+	* config/m68k/m68k-protos.h (m68k_hard_regno_rename_ok): Add prototype.
+
 2004-10-22  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-ssa-loop-niter.c (inverse): Count in HOST_WIDE_INT if possible.

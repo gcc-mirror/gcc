@@ -50,9 +50,11 @@ extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void notice_update_cc (rtx, rtx);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
+
 #endif /* RTX_CODE */
 
 extern int flags_in_68881 (void);
 extern bool use_return_insn (void);
 extern void override_options (void);
 extern void init_68881_table (void);
+extern int m68k_hard_regno_rename_ok(unsigned int, unsigned int);
