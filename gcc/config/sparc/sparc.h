@@ -173,8 +173,8 @@ extern enum cmodel sparc_cmodel;
 #endif
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_sparclite86x
-#define CPP_CPU32_DEFAULT_SPEC "-D__sparclite86x__ -D__sparc_v8__"
-#define ASM_CPU32_DEFAULT_SPEC "-Av8"
+#define CPP_CPU32_DEFAULT_SPEC "-D__sparclite86x__"
+#define ASM_CPU32_DEFAULT_SPEC "-Asparclite"
 #endif
 
 #endif
@@ -233,7 +233,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{mcpu=v8:-D__sparc_v8__} \
 %{mcpu=supersparc:-D__supersparc__ -D__sparc_v8__} \
 %{mcpu=hypersparc:-D__hypersparc__ -D__sparc_v8__} \
-%{mcpu=sparclite86x:-D__sparclite86x__ -D__sparc_v8__} \
+%{mcpu=sparclite86x:-D__sparclite86x__} \
 %{mcpu=v9:-D__sparc_v9__} \
 %{mcpu=ultrasparc:-D__sparc_v9__} \
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(cpp_cpu_default)}}}}}}} \
@@ -297,6 +297,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{msparclite:-Asparclite} \
 %{mf930:-Asparclite} %{mf934:-Asparclite} \
 %{mcpu=sparclite:-Asparclite} \
+%{mcpu=sparclite86x:-Asparclite} \
 %{mcpu=f930:-Asparclite} %{mcpu=f934:-Asparclite} \
 %{mv8plus:-Av8plus} \
 %{mcpu=v9:-Av9} \
