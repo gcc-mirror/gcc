@@ -3,11 +3,11 @@
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                             M L I B . T G T                              --
---                              (AIX Version)                               --
+--                             (Darwin Version)                             --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2003-2004, Ada Core Technologies, Inc.           --
+--              Copyright (C) 2001-2004, Free Software Foundation, Inc.     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,53 +26,37 @@
 ------------------------------------------------------------------------------
 
 --  This package provides a set of target dependent routines to build
---  static, dynamic or relocatable libraries.
+--  static, dynamic and shared libraries.
 
---  This is the AIX version of the body.
-
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with GNAT.OS_Lib;       use GNAT.OS_Lib;
+--  This is the Darwin version of the body.
 
 with MLib.Fil;
 with MLib.Utl;
-with Namet;    use Namet;
-with Osint;    use Osint;
+with Namet;  use Namet;
 with Opt;
-with Output;   use Output;
+with Output; use Output;
 with Prj.Com;
-with Prj.Util; use Prj.Util;
+with System;
 
 package body MLib.Tgt is
+
+   use GNAT;
+   use MLib;
 
    No_Arguments        : aliased Argument_List         := (1 .. 0 => null);
    Empty_Argument_List : constant Argument_List_Access := No_Arguments'Access;
 
-   Wl_Initfini_String  : constant String := "-Wl,-binitfini:";
+   Wl_Init_String : aliased String         := "-Wl,-init";
+   Wl_Init        : constant String_Access := Wl_Init_String'Access;
+   Wl_Fini_String : aliased String         := "-Wl,-fini";
+   Wl_Fini        : constant String_Access := Wl_Fini_String'Access;
 
-   Init_Fini_List      :  constant Argument_List_Access :=
-                            new Argument_List'(1 => null);
-   --  Used to put switch for automatic elaboration/finalization
-
-   Bexpall : aliased String := "-Wl,-bexpall";
-   Bexpall_Option : constant String_Access := Bexpall'Access;
-   --  The switch to export all symbols
-
-   Lpthreads : aliased String := "-lpthreads";
-   Native_Thread_Options : aliased Argument_List := (1 => Lpthreads'Access);
-   --  The switch to use when linking a library against libgnarl when using
-   --  Native threads.
-
-   Lgthreads : aliased String := "-lgthreads";
-   Lmalloc   : aliased String := "-lmalloc";
-   FSU_Thread_Options : aliased Argument_List :=
-                          (1 => Lgthreads'Access, 2 => Lmalloc'Access);
-   --  The switches to use when linking a library against libgnarl when using
-   --  FSU threads.
-
-   Thread_Options : Argument_List_Access := Empty_Argument_List;
-   --  Designate the thread switches to used when linking a library against
-   --  libgnarl. Depends on the thread library (Native or FSU). Resolved for
-   --  the first library linked against libgnarl.
+   Init_Fini_List :  constant Argument_List_Access :=
+                       new Argument_List'(1 => Wl_Init,
+                                          2 => null,
+                                          3 => Wl_Fini,
+                                          4 => null);
+   --  Used to put switches for automatic elaboration/finalization
 
    ---------------------
    -- Archive_Builder --
@@ -96,7 +80,7 @@ package body MLib.Tgt is
    -- Archive_Ext --
    -----------------
 
-   function Archive_Ext return String is
+   function Archive_Ext return  String is
    begin
       return "a";
    end Archive_Ext;
@@ -116,7 +100,7 @@ package body MLib.Tgt is
 
    function Archive_Indexer_Options return String_List_Access is
    begin
-      return new String_List (1 .. 0);
+      return new String_List'(1 => new String'("-c"));
    end Archive_Indexer_Options;
 
    ---------------------------
@@ -141,19 +125,15 @@ package body MLib.Tgt is
       pragma Unreferenced (Afiles);
       pragma Unreferenced (Interfaces);
       pragma Unreferenced (Symbol_Data);
-      pragma Unreferenced (Lib_Version);
 
       Lib_File : constant String :=
                    Lib_Dir & Directory_Separator & "lib" &
-                   MLib.Fil.Ext_To (Lib_Filename, DLL_Ext);
-      --  The file name of the library
+                   Fil.Ext_To (Lib_Filename, DLL_Ext);
+
+      Version_Arg          : String_Access;
+      Symbolic_Link_Needed : Boolean := False;
 
       Init_Fini : Argument_List_Access := Empty_Argument_List;
-      --  The switch for automatic initialization of Stand-Alone Libraries.
-      --  Changed to a real switch when Auto_Init is True.
-
-      Thread_Opts : Argument_List_Access := Empty_Argument_List;
-      --  Set to Thread_Options if -lgnarl is found in the Options
 
    begin
       if Opt.Verbose_Mode then
@@ -165,67 +145,67 @@ package body MLib.Tgt is
 
       if Auto_Init then
          Init_Fini := Init_Fini_List;
-         Init_Fini (1) :=
-           new String'(Wl_Initfini_String & Lib_Filename & "init:" &
-                       Lib_Filename & "final");
+         Init_Fini (2) := new String'("-Wl," & Lib_Filename & "init");
+         Init_Fini (4) := new String'("-Wl," & Lib_Filename & "final");
       end if;
 
-      --  Look for -lgnarl in Options. If found, set the thread options.
+      if Lib_Version = "" then
+         Utl.Gcc
+           (Output_File => Lib_File,
+            Objects     => Ofiles,
+            Options     => Options & Init_Fini.all,
+            Driver_Name => Driver_Name,
+            Options_2   => Options_2);
 
-      for J in Options'Range loop
-         if Options (J).all = "-lgnarl" then
+      else
+         Version_Arg := new String'("-Wl,-flat_namespace"); -- ???
 
-            --  If Thread_Options is null, read s-osinte.ads to discover the
-            --  thread library and set Thread_Options accordingly.
+         if Is_Absolute_Path (Lib_Version) then
+            Utl.Gcc
+              (Output_File => Lib_Version,
+               Objects     => Ofiles,
+               Options     => Options & Version_Arg & Init_Fini.all,
+               Driver_Name => Driver_Name,
+               Options_2   => Options_2);
+            Symbolic_Link_Needed := Lib_Version /= Lib_File;
 
-            if Thread_Options = null then
-               declare
-                  File : Text_File;
-                  Line : String (1 .. 100);
-                  Last : Natural;
-
-               begin
-                  Open
-                    (File, Include_Dir_Default_Prefix & "/s-osinte.ads");
-
-                  while not End_Of_File (File) loop
-                     Get_Line (File, Line, Last);
-
-                     if Index (Line (1 .. Last), "-lpthreads") /= 0 then
-                        Thread_Options := Native_Thread_Options'Access;
-                        exit;
-
-                     elsif Index (Line (1 .. Last), "-lgthreads") /= 0 then
-                        Thread_Options := FSU_Thread_Options'Access;
-                        exit;
-                     end if;
-                  end loop;
-
-                  Close (File);
-
-                  if Thread_Options = null then
-                     Prj.Com.Fail ("cannot find the thread library in use");
-                  end if;
-
-               exception
-                  when others =>
-                     Prj.Com.Fail ("cannot open s-osinte.ads");
-               end;
-            end if;
-
-            Thread_Opts := Thread_Options;
-            exit;
+         else
+            Utl.Gcc
+              (Output_File => Lib_Dir & Directory_Separator & Lib_Version,
+               Objects     => Ofiles,
+               Options     => Options & Version_Arg & Init_Fini.all,
+               Driver_Name => Driver_Name,
+               Options_2   => Options_2);
+            Symbolic_Link_Needed :=
+              Lib_Dir & Directory_Separator & Lib_Version /= Lib_File;
          end if;
-      end loop;
 
-      --  Finally, call GCC (or the driver specified) to build the library
+         if Symbolic_Link_Needed then
+            declare
+               Success : Boolean;
+               Oldpath : String (1 .. Lib_Version'Length + 1);
+               Newpath : String (1 .. Lib_File'Length + 1);
 
-      MLib.Utl.Gcc
-        (Output_File => Lib_File,
-         Objects     => Ofiles,
-         Options     => Options & Bexpall_Option & Init_Fini.all,
-         Driver_Name => Driver_Name,
-         Options_2   => Options_2 & Thread_Opts.all);
+               Result : Integer;
+               pragma Unreferenced (Result);
+
+               function Symlink
+                 (Oldpath : System.Address;
+                  Newpath : System.Address) return Integer;
+               pragma Import (C, Symlink, "__gnat_symlink");
+
+            begin
+               Oldpath (1 .. Lib_Version'Length) := Lib_Version;
+               Oldpath (Oldpath'Last)            := ASCII.NUL;
+               Newpath (1 .. Lib_File'Length)    := Lib_File;
+               Newpath (Newpath'Last)            := ASCII.NUL;
+
+               Delete_File (Lib_File, Success);
+
+               Result := Symlink (Oldpath'Address, Newpath'Address);
+            end;
+         end if;
+      end if;
    end Build_Dynamic_Library;
 
    -------------
@@ -234,7 +214,7 @@ package body MLib.Tgt is
 
    function DLL_Ext return String is
    begin
-      return "a";
+      return "dylib";
    end DLL_Ext;
 
    --------------------
@@ -243,7 +223,7 @@ package body MLib.Tgt is
 
    function Dynamic_Option return String is
    begin
-      return "-shared";
+      return "-dynamiclib";
    end Dynamic_Option;
 
    -------------------
@@ -270,7 +250,7 @@ package body MLib.Tgt is
 
    function Is_Archive_Ext (Ext : String) return Boolean is
    begin
-      return Ext = ".a";
+      return Ext = ".a" or else Ext = ".dyld";
    end Is_Archive_Ext;
 
    -------------
@@ -295,12 +275,10 @@ package body MLib.Tgt is
 
       else
          declare
-            Lib_Dir  : constant String :=
-                         Get_Name_String
-                           (Projects.Table (Project).Library_Dir);
+            Lib_Dir : constant String :=
+              Get_Name_String (Projects.Table (Project).Library_Dir);
             Lib_Name : constant String :=
-                         Get_Name_String
-                           (Projects.Table (Project).Library_Name);
+              Get_Name_String (Projects.Table (Project).Library_Name);
 
          begin
             if Projects.Table (Project).Library_Kind = Static then

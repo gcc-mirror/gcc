@@ -64,6 +64,9 @@ package MLib.Tgt is
    --  Returns the name of the program, if any, that generates an index
    --  to the contents of an archive, usually "ranlib".
 
+   function Archive_Indexer_Options return String_List_Access;
+   --  A list of options to invoke the Archive_Indexer, usually empty.
+
    function Dynamic_Option return String;
    --  gcc option to create a dynamic library.
    --  For Unix, returns "-shared", for Windows returns "-mdll".
