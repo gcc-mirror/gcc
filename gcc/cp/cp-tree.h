@@ -3833,7 +3833,6 @@ extern void init_exception_processing		(void);
 extern tree expand_start_catch_block		(tree);
 extern void expand_end_catch_block		(void);
 extern void expand_builtin_throw		(void);
-extern void expand_eh_spec_block	        (tree);
 extern void expand_exception_blocks		(void);
 extern tree build_exc_ptr			(void);
 extern tree build_throw				(tree);

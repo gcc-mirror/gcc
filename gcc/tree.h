@@ -1025,10 +1025,6 @@ struct tree_vec GTY(())
 				 && VOID_TYPE_P (TREE_TYPE (NODE)) \
 				 && integer_zerop (TREE_OPERAND (NODE, 0)))
 
-/* In a WITH_CLEANUP_EXPR node.  */
-#define WITH_CLEANUP_EXPR_RTL(NODE) \
-  TREE_RTL_OPERAND_CHECK (NODE, WITH_CLEANUP_EXPR, 2)
-
 /* In a CONSTRUCTOR node.  */
 #define CONSTRUCTOR_ELTS(NODE) TREE_OPERAND_CHECK_CODE (NODE, CONSTRUCTOR, 0)
 
@@ -2012,10 +2008,6 @@ extern GTY (()) unsigned binfo_lang_slots;
 /* Nonzero in a FIELD_DECL means it is a bit field, and must be accessed
    specially.  */
 #define DECL_BIT_FIELD(NODE) (FIELD_DECL_CHECK (NODE)->decl.bit_field_flag)
-
-/* In a LABEL_DECL, nonzero means label was defined inside a binding
-   contour that restored a stack level and which is now exited.  */
-#define DECL_TOO_LATE(NODE) (LABEL_DECL_CHECK (NODE)->decl.bit_field_flag)
 
 /* Unused in FUNCTION_DECL.  */
 
@@ -3333,7 +3325,6 @@ extern bool commutative_tree_code (enum tree_code);
 
 /* In stmt.c */
 
-extern void expand_fixups (rtx);
 extern void expand_expr_stmt (tree);
 extern void expand_expr_stmt_value (tree, int, int);
 extern int warn_if_unused_value (tree, location_t);
@@ -3355,13 +3346,10 @@ extern void expand_start_bindings_and_block (int, tree);
   expand_start_bindings_and_block(flags, NULL_TREE)
 extern void expand_end_bindings (tree, int, int);
 extern void warn_about_unused_variables (tree);
-extern void start_cleanup_deferral (void);
-extern void end_cleanup_deferral (void);
 extern int is_body_block (tree);
 
 extern int conditional_context (void);
 extern struct nesting * current_nesting_level (void);
-extern tree last_cleanup_this_contour (void);
 extern void expand_start_case (int, tree, tree, const char *);
 extern void expand_end_case_type (tree, tree);
 #define expand_end_case(cond) expand_end_case_type (cond, NULL)
@@ -3613,17 +3601,12 @@ extern void expand_asm_operands (tree, tree, tree, tree, int, location_t);
 extern void expand_asm_expr (tree);
 extern bool asm_op_is_mem_input (tree, tree);
 extern tree resolve_asm_operand_names (tree, tree, tree);
-extern int any_pending_cleanups (void);
 extern void init_stmt_for_function (void);
 extern void expand_start_target_temps (void);
 extern void expand_end_target_temps (void);
 extern void expand_elseif (tree);
-extern void save_stack_pointer (void);
 extern void expand_decl (tree);
-extern int expand_decl_cleanup (tree, tree);
-extern int expand_decl_cleanup_eh (tree, tree, int);
 extern void expand_anon_union_decl (tree, tree, tree);
-extern int containing_blocks_have_cleanups_or_stack_level (void);
 
 /* In gimplify.c.  */
 extern tree create_artificial_label (void);

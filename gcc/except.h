@@ -35,52 +35,6 @@ struct eh_region;
 /* Test: is exception handling turned on?  */
 extern int doing_eh (int);
 
-/* Start an exception handling region.  All instructions emitted after
-   this point are considered to be part of the region until an
-   expand_eh_region_end variant is invoked.  */
-extern void expand_eh_region_start (void);
-
-/* End an exception handling region for a cleanup.  HANDLER is an
-   expression to expand for the cleanup.  */
-extern void expand_eh_region_end_cleanup (tree);
-
-/* End an exception handling region for a try block, and prepares
-   for subsequent calls to expand_start_catch.  */
-extern void expand_start_all_catch (void);
-
-/* Begin a catch clause.  TYPE is an object to be matched by the
-   runtime, or a list of such objects, or null if this is a catch-all
-   clause.  */
-extern void expand_start_catch (tree);
-
-/* End a catch clause.  Control will resume after the try/catch block.  */
-extern void expand_end_catch (void);
-
-/* End a sequence of catch handlers for a try block.  */
-extern void expand_end_all_catch (void);
-
-/* End an exception region for an exception type filter.  ALLOWED is a
-   TREE_LIST of TREE_VALUE objects to be matched by the runtime.
-   FAILURE is a function to invoke if a mismatch occurs.  */
-extern void expand_eh_region_end_allowed (tree, tree);
-
-/* End an exception region for a must-not-throw filter.  FAILURE is a
-   function to invoke if an uncaught exception propagates this far.  */
-extern void expand_eh_region_end_must_not_throw (tree);
-
-/* End an exception region for a throw.  No handling goes on here,
-   but it's the easiest way for the front-end to indicate what type
-   is being thrown.  */
-extern void expand_eh_region_end_throw (tree);
-
-/* End a fixup region.  Within this region the cleanups for the immediately
-   enclosing region are _not_ run.  This is used for goto cleanup to avoid
-   destroying an object twice.  */
-extern void expand_eh_region_end_fixup (tree);
-
-/* End some sort of EH region, depending on the argument.  */
-extern void expand_eh_handler (tree);
-
 /* Note that the current EH region (if any) may contain a throw, or a
    call to a function which itself may contain a throw.  */
 extern void note_eh_region_may_contain_throw (struct eh_region *);

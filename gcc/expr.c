@@ -4071,16 +4071,12 @@ store_expr (tree exp, rtx target, int want_value)
       do_pending_stack_adjust ();
       NO_DEFER_POP;
       jumpifnot (TREE_OPERAND (exp, 0), lab1);
-      start_cleanup_deferral ();
       store_expr (TREE_OPERAND (exp, 1), target, want_value & 2);
-      end_cleanup_deferral ();
       emit_queue ();
       emit_jump_insn (gen_jump (lab2));
       emit_barrier ();
       emit_label (lab1);
-      start_cleanup_deferral ();
       store_expr (TREE_OPERAND (exp, 2), target, want_value & 2);
-      end_cleanup_deferral ();
       emit_queue ();
       emit_label (lab2);
       OK_DEFER_POP;
@@ -6042,10 +6038,10 @@ safe_from_p (rtx x, tree exp, int top_p)
 	  break;
 
 	case WITH_CLEANUP_EXPR:
-	  exp_rtl = WITH_CLEANUP_EXPR_RTL (exp);
-	  break;
-
 	case CLEANUP_POINT_EXPR:
+	  /* Lowered by gimplify.c.  */
+	  abort ();
+
 	case SAVE_EXPR:
 	  return safe_from_p (x, TREE_OPERAND (exp, 0), 0);
 
@@ -7345,36 +7341,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case OBJ_TYPE_REF:
       return expand_expr (OBJ_TYPE_REF_EXPR (exp), target, tmode, modifier);
 
-    case WITH_CLEANUP_EXPR:
-      if (WITH_CLEANUP_EXPR_RTL (exp) == 0)
-	{
-	  WITH_CLEANUP_EXPR_RTL (exp)
-	    = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
-	  expand_decl_cleanup_eh (NULL_TREE, TREE_OPERAND (exp, 1),
-				  CLEANUP_EH_ONLY (exp));
-
-	  /* That's it for this cleanup.  */
-	  TREE_OPERAND (exp, 1) = 0;
-	}
-      return WITH_CLEANUP_EXPR_RTL (exp);
-
-    case CLEANUP_POINT_EXPR:
-      {
-	/* Start a new binding layer that will keep track of all cleanup
-	   actions to be performed.  */
-	expand_start_bindings (2);
-
-	target_temp_slot_level = temp_slot_level;
-
-	op0 = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
-	/* If we're going to use this value, load it up now.  */
-	if (! ignore)
-	  op0 = force_not_mem (op0);
-	preserve_temp_slots (op0);
-	expand_end_bindings (NULL_TREE, 0, 0);
-      }
-      return op0;
-
     case CALL_EXPR:
       /* Check for a built-in function.  */
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
@@ -8180,15 +8146,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  tree then_ = TREE_OPERAND (exp, 1);
 	  tree else_ = TREE_OPERAND (exp, 2);
 
-	  /* If we do not have any pending cleanups or stack_levels
-	     to restore, and at least one arm of the COND_EXPR is a
-	     GOTO_EXPR to a local label, then we can emit more efficient
-	     code by using jumpif/jumpifnot instead of the 'if' machinery.  */
-	  if (! optimize
-	      || containing_blocks_have_cleanups_or_stack_level ())
-	    ;
-	  else if (TREE_CODE (then_) == GOTO_EXPR
-		   && TREE_CODE (GOTO_DESTINATION (then_)) == LABEL_DECL)
+	  if (TREE_CODE (then_) == GOTO_EXPR
+	      && TREE_CODE (GOTO_DESTINATION (then_)) == LABEL_DECL)
 	    {
 	      jumpif (pred, label_rtx (GOTO_DESTINATION (then_)));
 	      return expand_expr (else_, const0_rtx, VOIDmode, 0);
@@ -8202,7 +8161,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	  /* Just use the 'if' machinery.  */
 	  expand_start_cond (pred, 0);
-	  start_cleanup_deferral ();
 	  expand_expr (then_, const0_rtx, VOIDmode, 0);
 
 	  exp = else_;
@@ -8225,7 +8183,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      expand_start_else ();
 	      expand_expr (exp, const0_rtx, VOIDmode, 0);
 	    }
-	  end_cleanup_deferral ();
 	  expand_end_cond ();
 	  return const0_rtx;
 	}
@@ -8422,7 +8379,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    else
 	      jumpifnot (TREE_OPERAND (exp, 0), op0);
 
-	    start_cleanup_deferral ();
 	    if (binary_op && temp == 0)
 	      /* Just touch the other operand.  */
 	      expand_expr (TREE_OPERAND (binary_op, 1),
@@ -8458,7 +8414,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			modifier == EXPAND_STACK_PARM ? 2 : 0);
 	    jumpif (TREE_OPERAND (exp, 0), op0);
 
-	    start_cleanup_deferral ();
 	    if (TREE_TYPE (TREE_OPERAND (exp, 2)) != void_type_node)
 	      store_expr (TREE_OPERAND (exp, 2), temp,
 			  modifier == EXPAND_STACK_PARM ? 2 : 0);
@@ -8483,7 +8438,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			modifier == EXPAND_STACK_PARM ? 2 : 0);
 	    jumpifnot (TREE_OPERAND (exp, 0), op0);
 
-	    start_cleanup_deferral ();
 	    if (TREE_TYPE (TREE_OPERAND (exp, 1)) != void_type_node)
 	      store_expr (TREE_OPERAND (exp, 1), temp,
 			  modifier == EXPAND_STACK_PARM ? 2 : 0);
@@ -8497,8 +8451,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    op1 = gen_label_rtx ();
 	    jumpifnot (TREE_OPERAND (exp, 0), op0);
 
-	    start_cleanup_deferral ();
-
 	    /* One branch of the cond can be void, if it never returns. For
 	       example A ? throw : E  */
 	    if (temp != 0
@@ -8508,12 +8460,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    else
 	      expand_expr (TREE_OPERAND (exp, 1),
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    end_cleanup_deferral ();
 	    emit_queue ();
 	    emit_jump_insn (gen_jump (op1));
 	    emit_barrier ();
 	    emit_label (op0);
-	    start_cleanup_deferral ();
 	    if (temp != 0
 		&& TREE_TYPE (TREE_OPERAND (exp, 2)) != void_type_node)
 	      store_expr (TREE_OPERAND (exp, 2), temp,
@@ -8523,105 +8473,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
 	  }
 
-	end_cleanup_deferral ();
-
 	emit_queue ();
 	emit_label (op1);
 	OK_DEFER_POP;
 
 	return temp;
-      }
-
-    case TARGET_EXPR:
-      {
-	/* Something needs to be initialized, but we didn't know
-	   where that thing was when building the tree.  For example,
-	   it could be the return value of a function, or a parameter
-	   to a function which lays down in the stack, or a temporary
-	   variable which must be passed by reference.
-
-	   We guarantee that the expression will either be constructed
-	   or copied into our original target.  */
-
-	tree slot = TREE_OPERAND (exp, 0);
-	tree cleanups = NULL_TREE;
-	tree exp1;
-
-	if (TREE_CODE (slot) != VAR_DECL)
-	  abort ();
-
-	if (! ignore)
-	  target = original_target;
-
-	/* Set this here so that if we get a target that refers to a
-	   register variable that's already been used, put_reg_into_stack
-	   knows that it should fix up those uses.  */
-	TREE_USED (slot) = 1;
-
-	if (target == 0)
-	  {
-	    if (DECL_RTL_SET_P (slot))
-	      {
-		target = DECL_RTL (slot);
-		/* If we have already expanded the slot, so don't do
-		   it again.  (mrs)  */
-		if (TREE_OPERAND (exp, 1) == NULL_TREE)
-		  return target;
-	      }
-	    else
-	      {
-		target = assign_temp (type, 2, 0, 1);
-		SET_DECL_RTL (slot, target);
-
-		/* Since SLOT is not known to the called function
-		   to belong to its stack frame, we must build an explicit
-		   cleanup.  This case occurs when we must build up a reference
-		   to pass the reference as an argument.  In this case,
-		   it is very likely that such a reference need not be
-		   built here.  */
-
-		if (TREE_OPERAND (exp, 2) == 0)
-		  TREE_OPERAND (exp, 2)
-		    = lang_hooks.maybe_build_cleanup (slot);
-		cleanups = TREE_OPERAND (exp, 2);
-	      }
-	  }
-	else
-	  {
-	    /* This case does occur, when expanding a parameter which
-	       needs to be constructed on the stack.  The target
-	       is the actual stack address that we want to initialize.
-	       The function we call will perform the cleanup in this case.  */
-
-	    /* If we have already assigned it space, use that space,
-	       not target that we were passed in, as our target
-	       parameter is only a hint.  */
-	    if (DECL_RTL_SET_P (slot))
-	      {
-		target = DECL_RTL (slot);
-		/* If we have already expanded the slot, so don't do
-                   it again.  (mrs)  */
-		if (TREE_OPERAND (exp, 1) == NULL_TREE)
-		  return target;
-	      }
-	    else
-	      SET_DECL_RTL (slot, target);
-	  }
-
-	exp1 = TREE_OPERAND (exp, 3) = TREE_OPERAND (exp, 1);
-	/* Mark it as expanded.  */
-	TREE_OPERAND (exp, 1) = NULL_TREE;
-
-	if (VOID_TYPE_P (TREE_TYPE (exp1)))
-	  /* If the initializer is void, just expand it; it will initialize
-	     the object directly.  */
-	  expand_expr (exp1, const0_rtx, VOIDmode, 0);
-	else
-	  store_expr (exp1, target, modifier == EXPAND_STACK_PARM ? 2 : 0);
-
-	expand_decl_cleanup_eh (NULL_TREE, cleanups, CLEANUP_EH_ONLY (exp));
-
-	return target;
       }
 
     case INIT_EXPR:
@@ -8927,94 +8783,17 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return const0_rtx;
 
     case TRY_CATCH_EXPR:
-      {
-	tree handler = TREE_OPERAND (exp, 1);
-
-	expand_eh_region_start ();
-	op0 = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
-	expand_eh_handler (handler);
-
-	return op0;
-      }
-
     case CATCH_EXPR:
-      expand_start_catch (CATCH_TYPES (exp));
-      expand_expr (CATCH_BODY (exp), const0_rtx, VOIDmode, 0);
-      expand_end_catch ();
-      return const0_rtx;
-
     case EH_FILTER_EXPR:
-      /* Should have been handled in expand_eh_handler.  */
+    case TRY_FINALLY_EXPR:
+      /* Lowered by tree-eh.c.  */
       abort ();
 
-    case TRY_FINALLY_EXPR:
-      {
-	tree try_block = TREE_OPERAND (exp, 0);
-	tree finally_block = TREE_OPERAND (exp, 1);
-
-        if ((!optimize && lang_protect_cleanup_actions == NULL)
-	    || unsafe_for_reeval (finally_block) > 1)
-	  {
-	    /* In this case, wrapping FINALLY_BLOCK in an UNSAVE_EXPR
-	       is not sufficient, so we cannot expand the block twice.
-	       So we play games with GOTO_SUBROUTINE_EXPR to let us
-	       expand the thing only once.  */
-	    /* When not optimizing, we go ahead with this form since
-	       (1) user breakpoints operate more predictably without
-		   code duplication, and
-	       (2) we're not running any of the global optimizers
-	           that would explode in time/space with the highly
-		   connected CFG created by the indirect branching.  */
-
-	    rtx finally_label = gen_label_rtx ();
-	    rtx done_label = gen_label_rtx ();
-	    rtx return_link = gen_reg_rtx (Pmode);
-	    tree cleanup = build (GOTO_SUBROUTINE_EXPR, void_type_node,
-			          (tree) finally_label, (tree) return_link);
-	    TREE_SIDE_EFFECTS (cleanup) = 1;
-
-	    /* Start a new binding layer that will keep track of all cleanup
-	       actions to be performed.  */
-	    expand_start_bindings (2);
-	    target_temp_slot_level = temp_slot_level;
-
-	    expand_decl_cleanup (NULL_TREE, cleanup);
-	    op0 = expand_expr (try_block, target, tmode, modifier);
-
-	    preserve_temp_slots (op0);
-	    expand_end_bindings (NULL_TREE, 0, 0);
-	    emit_jump (done_label);
-	    emit_label (finally_label);
-	    expand_expr (finally_block, const0_rtx, VOIDmode, 0);
-	    emit_indirect_jump (return_link);
-	    emit_label (done_label);
-	  }
-	else
-	  {
-	    expand_start_bindings (2);
-	    target_temp_slot_level = temp_slot_level;
-
-	    expand_decl_cleanup (NULL_TREE, finally_block);
-	    op0 = expand_expr (try_block, target, tmode, modifier);
-
-	    preserve_temp_slots (op0);
-	    expand_end_bindings (NULL_TREE, 0, 0);
-	  }
-
-	return op0;
-      }
-
-    case GOTO_SUBROUTINE_EXPR:
-      {
-	rtx subr = (rtx) TREE_OPERAND (exp, 0);
-	rtx return_link = *(rtx *) &TREE_OPERAND (exp, 1);
-	rtx return_address = gen_label_rtx ();
-	emit_move_insn (return_link,
-			gen_rtx_LABEL_REF (Pmode, return_address));
-	emit_jump (subr);
-	emit_label (return_address);
-	return const0_rtx;
-      }
+    case WITH_CLEANUP_EXPR:
+    case CLEANUP_POINT_EXPR:
+    case TARGET_EXPR:
+      /* Lowered by gimplify.c.  */
+      abort ();
 
     case VA_ARG_EXPR:
       return expand_builtin_va_arg (TREE_OPERAND (exp, 0), type);

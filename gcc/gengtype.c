@@ -644,15 +644,6 @@ adjust_field_tree_exp (type_p t, options_p opt ATTRIBUTE_UNUSED)
 {
   pair_p flds;
   options_p nodot;
-  size_t i;
-  static const struct {
-    const char *name;
-    int first_rtl;
-    int num_rtl;
-  } data[] = {
-    { "GOTO_SUBROUTINE_EXPR", 0, 2 },
-    { "WITH_CLEANUP_EXPR", 2, 1 },
-  };
 
   if (t->kind != TYPE_ARRAY)
     {
@@ -683,44 +674,6 @@ adjust_field_tree_exp (type_p t, options_p opt ATTRIBUTE_UNUSED)
     flds->opt->name = "default";
     flds->opt->info = "";
   }
-
-  for (i = 0; i < ARRAY_SIZE (data); i++)
-    {
-      pair_p old_flds = flds;
-      pair_p subfields = NULL;
-      int r_index;
-      const char *sname;
-
-      for (r_index = 0;
-	   r_index < data[i].first_rtl + data[i].num_rtl;
-	   r_index++)
-	{
-	  pair_p old_subf = subfields;
-	  subfields = xmalloc (sizeof (*subfields));
-	  subfields->next = old_subf;
-	  subfields->name = xasprintf ("[%d]", r_index);
-	  if (r_index < data[i].first_rtl)
-	    subfields->type = t->u.a.p;
-	  else
-	    subfields->type = create_pointer (find_structure ("rtx_def", 0));
-	  subfields->line.file = __FILE__;
-	  subfields->line.line = __LINE__;
-	  subfields->opt = nodot;
-	}
-
-      flds = xmalloc (sizeof (*flds));
-      flds->next = old_flds;
-      flds->name = "";
-      sname = xasprintf ("tree_exp_%s", data[i].name);
-      new_structure (sname, 0, &lexer_line, subfields, NULL);
-      flds->type = find_structure (sname, 0);
-      flds->line.file = __FILE__;
-      flds->line.line = __LINE__;
-      flds->opt = xmalloc (sizeof (*flds->opt));
-      flds->opt->next = nodot;
-      flds->opt->name = "tag";
-      flds->opt->info = data[i].name;
-    }
 
   new_structure ("tree_exp_subunion", 1, &lexer_line, flds, nodot);
   return find_structure ("tree_exp_subunion", 1);

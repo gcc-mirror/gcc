@@ -1493,10 +1493,6 @@ first_rtl_op (enum tree_code code)
 {
   switch (code)
     {
-    case GOTO_SUBROUTINE_EXPR:
-      return 0;
-    case WITH_CLEANUP_EXPR:
-      return 2;
     default:
       return TREE_CODE_LENGTH (code);
     }
@@ -1850,7 +1846,6 @@ has_cleanups (tree exp)
   switch (TREE_CODE (exp))
     {
     case TARGET_EXPR:
-    case GOTO_SUBROUTINE_EXPR:
     case WITH_CLEANUP_EXPR:
       return 1;
 

@@ -1,3 +1,10 @@
+2004-07-08  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (case_identity, get_primitive_array_vtable,
+	java_expand_expr, emit_init_test_initialization): Remove.
+	* java-tree.h (java_expand_expr): Remove.
+	* lang.c (LANG_HOOKS_EXPAND_EXPR): Remove.
+
 2004-07-07  Per Bothner  <per@bothner.com>
 
 	* class.c (build_static_field_ref):  Add a NOP_EXPR; otherwise we

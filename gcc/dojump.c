@@ -290,18 +290,14 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       if (if_false_label == 0)
         if_false_label = drop_through_label = gen_label_rtx ();
       do_jump (TREE_OPERAND (exp, 0), if_false_label, NULL_RTX);
-      start_cleanup_deferral ();
       do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
-      end_cleanup_deferral ();
       break;
 
     case TRUTH_ORIF_EXPR:
       if (if_true_label == 0)
         if_true_label = drop_through_label = gen_label_rtx ();
       do_jump (TREE_OPERAND (exp, 0), NULL_RTX, if_true_label);
-      start_cleanup_deferral ();
       do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
-      end_cleanup_deferral ();
       break;
 
     case COMPOUND_EXPR:
@@ -362,7 +358,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 
         do_jump (TREE_OPERAND (exp, 0), label1, NULL_RTX);
 
-        start_cleanup_deferral ();
         /* Now the THEN-expression.  */
         do_jump (TREE_OPERAND (exp, 1),
                  if_false_label ? if_false_label : drop_through_label,
@@ -375,7 +370,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
         do_jump (TREE_OPERAND (exp, 2),
            if_false_label ? if_false_label : drop_through_label,
            if_true_label ? if_true_label : drop_through_label);
-        end_cleanup_deferral ();
       }
       break;
 

@@ -164,33 +164,10 @@ struct nesting GTY(())
 	  /* Sequence number of this binding contour within the function,
 	     in order of entry.  */
 	  int block_start_count;
-	  /* Nonzero => value to restore stack to on exit.  */
-	  rtx stack_level;
 	  /* The NOTE that starts this contour.
 	     Used by expand_goto to check whether the destination
 	     is within each contour or not.  */
 	  rtx first_insn;
-	  /* Innermost containing binding contour that has a stack level.  */
-	  struct nesting *innermost_stack_block;
-	  /* List of cleanups to be run on exit from this contour.
-	     This is a list of expressions to be evaluated.
-	     The TREE_PURPOSE of each link is the ..._DECL node
-	     which the cleanup pertains to.  */
-	  tree cleanups;
-	  /* List of cleanup-lists of blocks containing this block,
-	     as they were at the locus where this block appears.
-	     There is an element for each containing block,
-	     ordered innermost containing block first.
-	     The tail of this list can be 0,
-	     if all remaining elements would be empty lists.
-	     The element's TREE_VALUE is the cleanup-list of that block,
-	     which may be null.  */
-	  tree outer_cleanups;
-	  /* Chain of labels defined inside this binding contour.
-	     For contours that have stack levels or cleanups.  */
-	  struct label_chain *label_chain;
-	  /* Nonzero if this is associated with an EH region.  */
-	  int exception_region;
 	  /* The saved target_temp_slot_level from our outer block.
 	     We may reset target_temp_slot_level to be the level of
 	     this block, if that is done, target_temp_slot_level
@@ -251,8 +228,6 @@ do { struct nesting *target = STACK;			\
 	    cond_stack = cond_stack->next;		\
 	  if (block_stack == this)			\
 	    block_stack = block_stack->next;		\
-	  if (stack_block_stack == this)		\
-	    stack_block_stack = stack_block_stack->next; \
 	  if (case_stack == this)			\
 	    case_stack = case_stack->next;		\
 	  nesting_depth = nesting_stack->depth - 1;	\
@@ -284,28 +259,6 @@ struct goto_fixup GTY(())
   /* Number of binding contours started in current function
      before the label reference.  */
   int block_start_count;
-  /* The outermost stack level that should be restored for this jump.
-     Each time a binding contour that resets the stack is exited,
-     if the target label is *not* yet defined, this slot is updated.  */
-  rtx stack_level;
-  /* List of lists of cleanup expressions to be run by this goto.
-     There is one element for each block that this goto is within.
-     The tail of this list can be 0,
-     if all remaining elements would be empty.
-     The TREE_VALUE contains the cleanup list of that block as of the
-     time this goto was seen.
-     The TREE_ADDRESSABLE flag is 1 for a block that has been exited.  */
-  tree cleanup_list_list;
-};
-
-/* Within any binding contour that must restore a stack level,
-   all labels are recorded with a chain of these structures.  */
-
-struct label_chain GTY(())
-{
-  /* Points to following fixup.  */
-  struct label_chain *next;
-  tree label;
 };
 
 struct stmt_status GTY(())
@@ -314,10 +267,6 @@ struct stmt_status GTY(())
   struct nesting * x_block_stack;
 
   /* If any new stacks are added here, add them to POPSTACKS too.  */
-
-  /* Chain of all pending binding contours that restore stack levels
-     or have cleanups.  */
-  struct nesting * x_stack_block_stack;
 
   /* Chain of all pending conditional statements.  */
   struct nesting * x_cond_stack;
@@ -343,7 +292,6 @@ struct stmt_status GTY(())
 };
 
 #define block_stack (cfun->stmt->x_block_stack)
-#define stack_block_stack (cfun->stmt->x_stack_block_stack)
 #define cond_stack (cfun->stmt->x_cond_stack)
 #define case_stack (cfun->stmt->x_case_stack)
 #define nesting_stack (cfun->stmt->x_nesting_stack)
@@ -357,18 +305,14 @@ int using_eh_for_cleanups_p = 0;
 
 static int n_occurrences (int, const char *);
 static bool decl_conflicts_with_clobbers_p (tree, const HARD_REG_SET);
-static void expand_goto_internal (tree, rtx, rtx);
-static int expand_fixup (tree, rtx, rtx);
 static void expand_nl_goto_receiver (void);
-static void fixup_gotos (struct nesting *, rtx, tree, rtx, int);
 static bool check_operand_nalternatives (tree, tree);
 static bool check_unique_operand_names (tree, tree);
 static char *resolve_operand_name_1 (char *, tree, tree);
-static void expand_null_return_1 (rtx);
+static void expand_null_return_1 (void);
 static enum br_predictor return_prediction (rtx);
 static rtx shift_return_value (rtx);
 static void expand_value_return (rtx);
-static void expand_cleanups (tree, int, int);
 static void do_jump_if_equal (rtx, rtx, rtx, int);
 static int estimate_case_costs (case_node_ptr);
 static bool same_case_target_p (rtx, rtx);
@@ -507,7 +451,6 @@ expand_computed_goto (tree exp)
 void
 expand_label (tree label)
 {
-  struct label_chain *p;
   rtx label_r = label_rtx (label);
 
   do_pending_stack_adjust ();
@@ -528,14 +471,6 @@ expand_label (tree label)
       
   if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
     maybe_set_first_label_num (label_r);
-
-  if (stack_block_stack != 0)
-    {
-      p = ggc_alloc (sizeof (struct label_chain));
-      p->next = stack_block_stack->data.block.label_chain;
-      stack_block_stack->data.block.label_chain = p;
-      p->label = label;
-    }
 }
 
 /* Generate RTL code for a `goto' statement with target label LABEL.
@@ -553,385 +488,7 @@ expand_goto (tree label)
     abort ();
 #endif
 
-  expand_goto_internal (label, label_rtx (label), NULL_RTX);
-}
-
-/* Generate RTL code for a `goto' statement with target label BODY.
-   LABEL should be a LABEL_REF.
-   LAST_INSN, if non-0, is the rtx we should consider as the last
-   insn emitted (for the purposes of cleaning up a return).  */
-
-static void
-expand_goto_internal (tree body, rtx label, rtx last_insn)
-{
-  struct nesting *block;
-  rtx stack_level = 0;
-
-  if (GET_CODE (label) != CODE_LABEL)
-    abort ();
-
-  /* If label has already been defined, we can tell now
-     whether and how we must alter the stack level.  */
-
-  if (PREV_INSN (label) != 0)
-    {
-      /* Find the innermost pending block that contains the label.
-	 (Check containment by comparing insn-uids.)
-	 Then restore the outermost stack level within that block,
-	 and do cleanups of all blocks contained in it.  */
-      for (block = block_stack; block; block = block->next)
-	{
-	  if (INSN_UID (block->data.block.first_insn) < INSN_UID (label))
-	    break;
-	  if (block->data.block.stack_level != 0)
-	    stack_level = block->data.block.stack_level;
-	  /* Execute the cleanups for blocks we are exiting.  */
-	  if (block->data.block.cleanups != 0)
-	    {
-	      expand_cleanups (block->data.block.cleanups, 1, 1);
-	      do_pending_stack_adjust ();
-	    }
-	}
-
-      if (stack_level)
-	{
-	  /* Ensure stack adjust isn't done by emit_jump, as this
-	     would clobber the stack pointer.  This one should be
-	     deleted as dead by flow.  */
-	  clear_pending_stack_adjust ();
-	  do_pending_stack_adjust ();
-
-	  /* Don't do this adjust if it's to the end label and this function
-	     is to return with a depressed stack pointer.  */
-	  if (label == return_label
-	      && (((TREE_CODE (TREE_TYPE (current_function_decl))
-		   == FUNCTION_TYPE)
-		   && (TYPE_RETURNS_STACK_DEPRESSED
-		       (TREE_TYPE (current_function_decl))))))
-	    ;
-	  else
-	    emit_stack_restore (SAVE_BLOCK, stack_level, NULL_RTX);
-	}
-
-      if (body != 0 && DECL_TOO_LATE (body))
-	error ("jump to `%s' invalidly jumps into binding contour",
-	       IDENTIFIER_POINTER (DECL_NAME (body)));
-    }
-  /* Label not yet defined: may need to put this goto
-     on the fixup list.  */
-  else if (! expand_fixup (body, label, last_insn))
-    {
-      /* No fixup needed.  Record that the label is the target
-	 of at least one goto that has no fixup.  */
-      if (body != 0)
-	TREE_ADDRESSABLE (body) = 1;
-    }
-
-  emit_jump (label);
-}
-
-/* Generate if necessary a fixup for a goto
-   whose target label in tree structure (if any) is TREE_LABEL
-   and whose target in rtl is RTL_LABEL.
-
-   If LAST_INSN is nonzero, we pretend that the jump appears
-   after insn LAST_INSN instead of at the current point in the insn stream.
-
-   The fixup will be used later to insert insns just before the goto.
-   Those insns will restore the stack level as appropriate for the
-   target label, and will (in the case of C++) also invoke any object
-   destructors which have to be invoked when we exit the scopes which
-   are exited by the goto.
-
-   Value is nonzero if a fixup is made.  */
-
-static int
-expand_fixup (tree tree_label, rtx rtl_label, rtx last_insn)
-{
-  struct nesting *block, *end_block;
-
-  /* See if we can recognize which block the label will be output in.
-     This is possible in some very common cases.
-     If we succeed, set END_BLOCK to that block.
-     Otherwise, set it to 0.  */
-
-  if (cond_stack
-      && (rtl_label == cond_stack->data.cond.endif_label
-	  || rtl_label == cond_stack->data.cond.next_label))
-    end_block = cond_stack;
-  else
-    end_block = 0;
-
-  /* Now set END_BLOCK to the binding level to which we will return.  */
-
-  if (end_block)
-    {
-      struct nesting *next_block = end_block->all;
-      block = block_stack;
-
-      /* First see if the END_BLOCK is inside the innermost binding level.
-	 If so, then no cleanups or stack levels are relevant.  */
-      while (next_block && next_block != block)
-	next_block = next_block->all;
-
-      if (next_block)
-	return 0;
-
-      /* Otherwise, set END_BLOCK to the innermost binding level
-	 which is outside the relevant control-structure nesting.  */
-      next_block = block_stack->next;
-      for (block = block_stack; block != end_block; block = block->all)
-	if (block == next_block)
-	  next_block = next_block->next;
-      end_block = next_block;
-    }
-
-  /* Does any containing block have a stack level or cleanups?
-     If not, no fixup is needed, and that is the normal case
-     (the only case, for standard C).  */
-  for (block = block_stack; block != end_block; block = block->next)
-    if (block->data.block.stack_level != 0
-	|| block->data.block.cleanups != 0)
-      break;
-
-  if (block != end_block)
-    {
-      /* Ok, a fixup is needed.  Add a fixup to the list of such.  */
-      struct goto_fixup *fixup = ggc_alloc (sizeof (struct goto_fixup));
-      /* In case an old stack level is restored, make sure that comes
-	 after any pending stack adjust.  */
-      /* ?? If the fixup isn't to come at the present position,
-	 doing the stack adjust here isn't useful.  Doing it with our
-	 settings at that location isn't useful either.  Let's hope
-	 someone does it!  */
-      if (last_insn == 0)
-	do_pending_stack_adjust ();
-      fixup->target = tree_label;
-      fixup->target_rtl = rtl_label;
-
-      /* Create a BLOCK node and a corresponding matched set of
-	 NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes at
-	 this point.  The notes will encapsulate any and all fixup
-	 code which we might later insert at this point in the insn
-	 stream.  Also, the BLOCK node will be the parent (i.e. the
-	 `SUPERBLOCK') of any other BLOCK nodes which we might create
-	 later on when we are expanding the fixup code.
-
-	 Note that optimization passes might move the *_BLOCK notes away,
-	 so we use a NOTE_INSN_DELETED as a placeholder.  */
-
-      {
-	rtx original_before_jump
-	  = last_insn ? last_insn : get_last_insn ();
-	rtx start;
-	rtx end;
-	tree block;
-
-	block = make_node (BLOCK);
-	TREE_USED (block) = 1;
-
-	BLOCK_CHAIN (block)
-	  = BLOCK_CHAIN (DECL_INITIAL (current_function_decl));
-	BLOCK_CHAIN (DECL_INITIAL (current_function_decl))
-	  = block;
-
-	start_sequence ();
-	start = emit_note (NOTE_INSN_BLOCK_BEG);
-	NOTE_BLOCK (start) = block;
-	fixup->before_jump = emit_note (NOTE_INSN_DELETED);
-	end = emit_note (NOTE_INSN_BLOCK_END);
-	NOTE_BLOCK (end) = block;
-	fixup->context = block;
-	end_sequence ();
-	emit_insn_after (start, original_before_jump);
-      }
-
-      fixup->block_start_count = current_block_start_count;
-      fixup->stack_level = 0;
-      fixup->cleanup_list_list
-	= ((block->data.block.outer_cleanups
-	    || block->data.block.cleanups)
-	   ? tree_cons (NULL_TREE, block->data.block.cleanups,
-			block->data.block.outer_cleanups)
-	   : 0);
-      fixup->next = goto_fixup_chain;
-      goto_fixup_chain = fixup;
-    }
-
-  return block != 0;
-}
-
-/* Expand any needed fixups in the outputmost binding level of the
-   function.  FIRST_INSN is the first insn in the function.  */
-
-void
-expand_fixups (rtx first_insn)
-{
-  fixup_gotos (NULL, NULL_RTX, NULL_TREE, first_insn, 0);
-}
-
-/* When exiting a binding contour, process all pending gotos requiring fixups.
-   THISBLOCK is the structure that describes the block being exited.
-   STACK_LEVEL is the rtx for the stack level to restore exiting this contour.
-   CLEANUP_LIST is a list of expressions to evaluate on exiting this contour.
-   FIRST_INSN is the insn that began this contour.
-
-   Gotos that jump out of this contour must restore the
-   stack level and do the cleanups before actually jumping.
-
-   DONT_JUMP_IN positive means report error if there is a jump into this
-   contour from before the beginning of the contour.  This is also done if
-   STACK_LEVEL is nonzero unless DONT_JUMP_IN is negative.  */
-
-static void
-fixup_gotos (struct nesting *thisblock, rtx stack_level,
-	     tree cleanup_list, rtx first_insn, int dont_jump_in)
-{
-  struct goto_fixup *f, *prev;
-
-  /* F is the fixup we are considering; PREV is the previous one.  */
-  /* We run this loop in two passes so that cleanups of exited blocks
-     are run first, and blocks that are exited are marked so
-     afterwards.  */
-
-  for (prev = 0, f = goto_fixup_chain; f; prev = f, f = f->next)
-    {
-      /* Test for a fixup that is inactive because it is already handled.  */
-      if (f->before_jump == 0)
-	{
-	  /* Delete inactive fixup from the chain, if that is easy to do.  */
-	  if (prev != 0)
-	    prev->next = f->next;
-	}
-      /* Has this fixup's target label been defined?
-	 If so, we can finalize it.  */
-      else if (PREV_INSN (f->target_rtl) != 0)
-	{
-	  rtx cleanup_insns;
-
-	  /* If this fixup jumped into this contour from before the beginning
-	     of this contour, report an error.   This code used to use
-	     the first non-label insn after f->target_rtl, but that's
-	     wrong since such can be added, by things like put_var_into_stack
-	     and have INSN_UIDs that are out of the range of the block.  */
-	  /* ??? Bug: this does not detect jumping in through intermediate
-	     blocks that have stack levels or cleanups.
-	     It detects only a problem with the innermost block
-	     around the label.  */
-	  if (f->target != 0
-	      && (dont_jump_in > 0 || (dont_jump_in == 0 && stack_level)
-		  || cleanup_list)
-	      && INSN_UID (first_insn) < INSN_UID (f->target_rtl)
-	      && INSN_UID (first_insn) > INSN_UID (f->before_jump)
-	      && ! DECL_ERROR_ISSUED (f->target))
-	    {
-	      error ("%Jlabel '%D' used before containing binding contour",
-		     f->target, f->target);
-	      /* Prevent multiple errors for one label.  */
-	      DECL_ERROR_ISSUED (f->target) = 1;
-	    }
-
-	  /* We will expand the cleanups into a sequence of their own and
-	     then later on we will attach this new sequence to the insn
-	     stream just ahead of the actual jump insn.  */
-
-	  start_sequence ();
-
-	  /* Temporarily restore the lexical context where we will
-	     logically be inserting the fixup code.  We do this for the
-	     sake of getting the debugging information right.  */
-
-	  lang_hooks.decls.pushlevel (0);
-	  lang_hooks.decls.set_block (f->context);
-
-	  /* Expand the cleanups for blocks this jump exits.  */
-	  if (f->cleanup_list_list)
-	    {
-	      tree lists;
-	      for (lists = f->cleanup_list_list; lists; lists = TREE_CHAIN (lists))
-		/* Marked elements correspond to blocks that have been closed.
-		   Do their cleanups.  */
-		if (TREE_ADDRESSABLE (lists)
-		    && TREE_VALUE (lists) != 0)
-		  {
-		    expand_cleanups (TREE_VALUE (lists), 1, 1);
-		    /* Pop any pushes done in the cleanups,
-		       in case function is about to return.  */
-		    do_pending_stack_adjust ();
-		  }
-	    }
-
-	  /* Restore stack level for the biggest contour that this
-	     jump jumps out of.  */
-	  if (f->stack_level
-	      && ! (f->target_rtl == return_label
-		    && ((TREE_CODE (TREE_TYPE (current_function_decl))
-			 == FUNCTION_TYPE)
-			&& (TYPE_RETURNS_STACK_DEPRESSED
-			    (TREE_TYPE (current_function_decl))))))
-	    emit_stack_restore (SAVE_BLOCK, f->stack_level, f->before_jump);
-
-	  /* Finish up the sequence containing the insns which implement the
-	     necessary cleanups, and then attach that whole sequence to the
-	     insn stream just ahead of the actual jump insn.  Attaching it
-	     at that point insures that any cleanups which are in fact
-	     implicit C++ object destructions (which must be executed upon
-	     leaving the block) appear (to the debugger) to be taking place
-	     in an area of the generated code where the object(s) being
-	     destructed are still "in scope".  */
-
-	  cleanup_insns = get_insns ();
-	  lang_hooks.decls.poplevel (1, 0, 0);
-
-	  end_sequence ();
-	  emit_insn_after (cleanup_insns, f->before_jump);
-
-	  f->before_jump = 0;
-	}
-    }
-
-  /* For any still-undefined labels, do the cleanups for this block now.
-     We must do this now since items in the cleanup list may go out
-     of scope when the block ends.  */
-  for (prev = 0, f = goto_fixup_chain; f; prev = f, f = f->next)
-    if (f->before_jump != 0
-	&& PREV_INSN (f->target_rtl) == 0
-	/* Label has still not appeared.  If we are exiting a block with
-	   a stack level to restore, that started before the fixup,
-	   mark this stack level as needing restoration
-	   when the fixup is later finalized.  */
-	&& thisblock != 0
-	/* Note: if THISBLOCK == 0 and we have a label that hasn't appeared, it
-	   means the label is undefined.  That's erroneous, but possible.  */
-	&& (thisblock->data.block.block_start_count
-	    <= f->block_start_count))
-      {
-	tree lists = f->cleanup_list_list;
-	rtx cleanup_insns;
-
-	for (; lists; lists = TREE_CHAIN (lists))
-	  /* If the following elt. corresponds to our containing block
-	     then the elt. must be for this block.  */
-	  if (TREE_CHAIN (lists) == thisblock->data.block.outer_cleanups)
-	    {
-	      start_sequence ();
-	      lang_hooks.decls.pushlevel (0);
-	      lang_hooks.decls.set_block (f->context);
-	      expand_cleanups (TREE_VALUE (lists), 1, 1);
-	      do_pending_stack_adjust ();
-	      cleanup_insns = get_insns ();
-	      lang_hooks.decls.poplevel (1, 0, 0);
-	      end_sequence ();
-	      if (cleanup_insns != 0)
-		f->before_jump
-		  = emit_insn_after (cleanup_insns, f->before_jump);
-
-	      f->cleanup_list_list = TREE_CHAIN (lists);
-	    }
-
-	if (stack_level)
-	  f->stack_level = stack_level;
-      }
+  emit_jump (label_rtx (label));
 }
 
 /* Return the number of times character C occurs in string S.  */
@@ -2297,16 +1854,12 @@ preserve_subexpressions_p (void)
 void
 expand_null_return (void)
 {
-  rtx last_insn;
-
-  last_insn = get_last_insn ();
-
   /* If this function was declared to return a value, but we
      didn't, clobber the return registers so that they are not
      propagated live to the rest of the function.  */
   clobber_return_register ();
 
-  expand_null_return_1 (last_insn);
+  expand_null_return_1 ();
 }
 
 /* Generate RTL to return directly from the current function.
@@ -2315,17 +1868,16 @@ expand_null_return (void)
 void
 expand_naked_return (void)
 {
-  rtx last_insn, end_label;
-
-  last_insn = get_last_insn ();
-  end_label = naked_return_label;
+  rtx end_label;
 
   clear_pending_stack_adjust ();
   do_pending_stack_adjust ();
 
+  end_label = naked_return_label;
   if (end_label == 0)
     end_label = naked_return_label = gen_label_rtx ();
-  expand_goto_internal (NULL_TREE, end_label, last_insn);
+
+  emit_jump (end_label);
 }
 
 /* Try to guess whether the value of return means error code.  */
@@ -2389,7 +1941,6 @@ shift_return_value (rtx val)
 static void
 expand_value_return (rtx val)
 {
-  rtx last_insn;
   rtx return_reg;
   enum br_predictor pred;
 
@@ -2405,7 +1956,6 @@ expand_value_return (rtx val)
 
     }
 
-  last_insn = get_last_insn ();
   return_reg = DECL_RTL (DECL_RESULT (current_function_decl));
 
   /* Copy the value to the return location
@@ -2431,23 +1981,23 @@ expand_value_return (rtx val)
 	emit_move_insn (return_reg, val);
     }
 
-  expand_null_return_1 (last_insn);
+  expand_null_return_1 ();
 }
 
-/* Output a return with no value.  If LAST_INSN is nonzero,
-   pretend that the return takes place after LAST_INSN.  */
+/* Output a return with no value.  */
 
 static void
-expand_null_return_1 (rtx last_insn)
+expand_null_return_1 (void)
 {
-  rtx end_label = return_label;
+  rtx end_label;
 
   clear_pending_stack_adjust ();
   do_pending_stack_adjust ();
 
+  end_label = return_label;
   if (end_label == 0)
      end_label = return_label = gen_label_rtx ();
-  expand_goto_internal (NULL_TREE, end_label, last_insn);
+  emit_jump (end_label);
 }
 
 /* Generate RTL to evaluate the expression RETVAL and return it
@@ -2456,15 +2006,6 @@ expand_null_return_1 (rtx last_insn)
 void
 expand_return (tree retval)
 {
-  /* If there are any cleanups to be performed, then they will
-     be inserted following LAST_INSN.  It is desirable
-     that the last_insn, for such purposes, should be the
-     last insn before computing the return value.  Otherwise, cleanups
-     which call functions can clobber the return value.  */
-  /* ??? rms: I think that is erroneous, because in C++ it would
-     run destructors on variables that might be used in the subsequent
-     computation of the return value.  */
-  rtx last_insn = 0;
   rtx result_rtl;
   rtx val = 0;
   tree retval_rhs;
@@ -2487,13 +2028,12 @@ expand_return (tree retval)
     }
   else if (TREE_CODE (retval) == RESULT_DECL)
     retval_rhs = retval;
-  else if ((TREE_CODE (retval) == MODIFY_EXPR || TREE_CODE (retval) == INIT_EXPR)
+  else if ((TREE_CODE (retval) == MODIFY_EXPR
+	    || TREE_CODE (retval) == INIT_EXPR)
 	   && TREE_CODE (TREE_OPERAND (retval, 0)) == RESULT_DECL)
     retval_rhs = TREE_OPERAND (retval, 1);
   else
     retval_rhs = retval;
-
-  last_insn = get_last_insn ();
 
   result_rtl = DECL_RTL (DECL_RESULT (current_function_decl));
 
@@ -2502,8 +2042,7 @@ expand_return (tree retval)
      copying a BLKmode value into registers.  We could put this code in a
      more general area (for use by everyone instead of just function
      call/return), but until this feature is generally usable it is kept here
-     (and in expand_call).  The value must go into a pseudo in case there
-     are cleanups that will clobber the real return register.  */
+     (and in expand_call).  */
 
   if (retval_rhs != 0
       && TYPE_MODE (TREE_TYPE (retval_rhs)) == BLKmode
@@ -2631,13 +2170,12 @@ expand_return (tree retval)
       val = expand_expr (retval_rhs, val, GET_MODE (val), 0);
       val = force_not_mem (val);
       emit_queue ();
-      /* Return the calculated value, doing cleanups first.  */
+      /* Return the calculated value.  */
       expand_value_return (shift_return_value (val));
     }
   else
     {
-      /* No cleanups or no hard reg used;
-	 calculate value into hard return reg.  */
+      /* No hard reg used; calculate value into hard return reg.  */
       expand_expr (retval, const0_rtx, VOIDmode, 0);
       emit_queue ();
       expand_value_return (result_rtl);
@@ -2686,9 +2224,6 @@ expand_start_bindings_and_block (int flags, tree block)
   thisblock->next = block_stack;
   thisblock->all = nesting_stack;
   thisblock->depth = ++nesting_depth;
-  thisblock->data.block.stack_level = 0;
-  thisblock->data.block.cleanups = 0;
-  thisblock->data.block.exception_region = 0;
   thisblock->data.block.block_target_temp_slot_level = target_temp_slot_level;
 
   thisblock->data.block.conditional_code = 0;
@@ -2701,16 +2236,6 @@ expand_start_bindings_and_block (int flags, tree block)
      never the last instruction.  */
   emit_note (NOTE_INSN_DELETED);
 
-  if (block_stack
-      && !(block_stack->data.block.cleanups == NULL_TREE
-	   && block_stack->data.block.outer_cleanups == NULL_TREE))
-    thisblock->data.block.outer_cleanups
-      = tree_cons (NULL_TREE, block_stack->data.block.cleanups,
-		   block_stack->data.block.outer_cleanups);
-  else
-    thisblock->data.block.outer_cleanups = 0;
-  thisblock->data.block.label_chain = 0;
-  thisblock->data.block.innermost_stack_block = stack_block_stack;
   thisblock->data.block.first_insn = note;
   thisblock->data.block.block_start_count = ++current_block_start_count;
   thisblock->exit_label = exit_flag ? gen_label_rtx () : 0;
@@ -2906,7 +2431,7 @@ warn_about_unused_variables (tree vars)
 
 void
 expand_end_bindings (tree vars, int mark_ends ATTRIBUTE_UNUSED,
-		     int dont_jump_in)
+		     int dont_jump_in ATTRIBUTE_UNUSED)
 {
   struct nesting *thisblock = block_stack;
 
@@ -2920,71 +2445,7 @@ expand_end_bindings (tree vars, int mark_ends ATTRIBUTE_UNUSED,
       emit_label (thisblock->exit_label);
     }
 
-  /* Don't allow jumping into a block that has a stack level.
-     Cleanups are allowed, though.  */
-  if (dont_jump_in > 0
-      || (dont_jump_in == 0 && thisblock->data.block.stack_level != 0))
-    {
-      struct label_chain *chain;
-
-      /* Any labels in this block are no longer valid to go to.
-	 Mark them to cause an error message.  */
-      for (chain = thisblock->data.block.label_chain; chain; chain = chain->next)
-	{
-	  DECL_TOO_LATE (chain->label) = 1;
-	  /* If any goto without a fixup came to this label,
-	     that must be an error, because gotos without fixups
-	     come from outside all saved stack-levels.  */
-	  if (TREE_ADDRESSABLE (chain->label))
-	    error ("%Jlabel '%D' used before containing binding contour",
-		   chain->label, chain->label);
-	}
-    }
-
-  /* Restore stack level in effect before the block
-     (only if variable-size objects allocated).  */
-  /* Perform any cleanups associated with the block.  */
-
-  if (thisblock->data.block.stack_level != 0
-      || thisblock->data.block.cleanups != 0)
-    {
-      int reachable;
-      rtx insn;
-
-      /* Only clean up here if this point can actually be reached.  */
-      insn = get_last_insn ();
-      if (GET_CODE (insn) == NOTE)
-	insn = prev_nonnote_insn (insn);
-      reachable = (! insn || GET_CODE (insn) != BARRIER);
-
-      /* Do the cleanups.  */
-      expand_cleanups (thisblock->data.block.cleanups, 0, reachable);
-      if (reachable)
-	do_pending_stack_adjust ();
-
-      /* Restore the stack level.  */
-
-      if (reachable && thisblock->data.block.stack_level != 0)
-	{
-	  emit_stack_restore (thisblock->next ? SAVE_BLOCK : SAVE_FUNCTION,
-			      thisblock->data.block.stack_level, NULL_RTX);
-	  if (cfun->nonlocal_goto_save_area)
-	    update_nonlocal_goto_save_area ();
-	}
-
-      /* Any gotos out of this block must also do these things.
-	 Also report any gotos with fixups that came to labels in this
-	 level.  */
-      fixup_gotos (thisblock,
-		   thisblock->data.block.stack_level,
-		   thisblock->data.block.cleanups,
-		   thisblock->data.block.first_insn,
-		   dont_jump_in);
-    }
-
-  /* Mark the beginning and end of the scope if requested.
-     We do this now, after running cleanups on the variables
-     just going out of scope, so they are in scope for their cleanups.  */
+  /* Mark the beginning and end of the scope if requested.  */
 
   /* Get rid of the beginning-mark if we don't make an end-mark.  */
   NOTE_LINE_NUMBER (thisblock->data.block.first_insn) = NOTE_INSN_DELETED;
@@ -2994,28 +2455,10 @@ expand_end_bindings (tree vars, int mark_ends ATTRIBUTE_UNUSED,
 
   /* Restore block_stack level for containing block.  */
 
-  stack_block_stack = thisblock->data.block.innermost_stack_block;
   POPSTACK (block_stack);
 
   /* Pop the stack slot nesting and free any slots at this level.  */
   pop_temp_slots ();
-}
-
-/* Generate code to save the stack pointer at the start of the current block
-   and set up to restore it on exit.  */
-
-void
-save_stack_pointer (void)
-{
-  struct nesting *thisblock = block_stack;
-
-  if (thisblock->data.block.stack_level == 0)
-    {
-      emit_stack_save (thisblock->next ? SAVE_BLOCK : SAVE_FUNCTION,
-		       &thisblock->data.block.stack_level,
-		       thisblock->data.block.first_insn);
-      stack_block_stack = thisblock;
-    }
 }
 
 /* Generate RTL for the automatic variable declaration DECL.
@@ -3143,7 +2586,6 @@ expand_decl (tree decl)
       /* Record the stack pointer on entry to block, if have
 	 not already done so.  */
       do_pending_stack_adjust ();
-      save_stack_pointer ();
 
       /* Compute the variable's size, in bytes.  This will expand any
 	 needed SAVE_EXPRs for the first time.  */
@@ -3270,133 +2712,15 @@ expand_decl_init (tree decl)
   pop_temp_slots ();
 }
 
-/* CLEANUP is an expression to be executed at exit from this binding contour;
-   for example, in C++, it might call the destructor for this variable.
-
-   We wrap CLEANUP in an UNSAVE_EXPR node, so that we can expand the
-   CLEANUP multiple times, and have the correct semantics.  This
-   happens in exception handling, for gotos, returns, breaks that
-   leave the current scope.
-
-   If CLEANUP is nonzero and DECL is zero, we record a cleanup
-   that is not associated with any particular variable.  */
-
-int
-expand_decl_cleanup (tree decl, tree cleanup)
-{
-  struct nesting *thisblock;
-
-  /* Error if we are not in any block.  */
-  if (cfun == 0 || block_stack == 0)
-    return 0;
-
-  thisblock = block_stack;
-
-  /* Record the cleanup if there is one.  */
-
-  if (cleanup != 0)
-    {
-      tree t;
-      rtx seq;
-      tree *cleanups = &thisblock->data.block.cleanups;
-      int cond_context = conditional_context ();
-
-      if (cond_context)
-	{
-	  rtx flag = gen_reg_rtx (word_mode);
-	  rtx set_flag_0;
-	  tree cond;
-
-	  start_sequence ();
-	  emit_move_insn (flag, const0_rtx);
-	  set_flag_0 = get_insns ();
-	  end_sequence ();
-
-	  thisblock->data.block.last_unconditional_cleanup
-	    = emit_insn_after (set_flag_0,
-				thisblock->data.block.last_unconditional_cleanup);
-
-	  emit_move_insn (flag, const1_rtx);
-
-	  cond = build_decl (VAR_DECL, NULL_TREE,
-			     lang_hooks.types.type_for_mode (word_mode, 1));
-	  SET_DECL_RTL (cond, flag);
-
-	  /* Conditionalize the cleanup.  */
-	  cleanup = build (COND_EXPR, void_type_node,
-			   lang_hooks.truthvalue_conversion (cond),
-			   cleanup, integer_zero_node);
-	  cleanup = fold (cleanup);
-
-	  cleanups = &thisblock->data.block.cleanups;
-	}
-
-      cleanup = unsave_expr (cleanup);
-
-      t = *cleanups = tree_cons (decl, cleanup, *cleanups);
-
-      if (! cond_context)
-	/* If this block has a cleanup, it belongs in stack_block_stack.  */
-	stack_block_stack = thisblock;
-
-      if (cond_context)
-	{
-	  start_sequence ();
-	}
-
-      if (! using_eh_for_cleanups_p)
-	TREE_ADDRESSABLE (t) = 1;
-      else
-	expand_eh_region_start ();
-
-      if (cond_context)
-	{
-	  seq = get_insns ();
-	  end_sequence ();
-	  if (seq)
-	    thisblock->data.block.last_unconditional_cleanup
-	      = emit_insn_after (seq,
-				 thisblock->data.block.last_unconditional_cleanup);
-	}
-      else
-	{
-	  thisblock->data.block.last_unconditional_cleanup
-	    = get_last_insn ();
-	  /* When we insert instructions after the last unconditional cleanup,
-	     we don't adjust last_insn.  That means that a later add_insn will
-	     clobber the instructions we've just added.  The easiest way to
-	     fix this is to just insert another instruction here, so that the
-	     instructions inserted after the last unconditional cleanup are
-	     never the last instruction.  */
-	  emit_note (NOTE_INSN_DELETED);
-	}
-    }
-  return 1;
-}
-
-/* Like expand_decl_cleanup, but maybe only run the cleanup if an exception
-   is thrown.  */
-
-int
-expand_decl_cleanup_eh (tree decl, tree cleanup, int eh_only)
-{
-  int ret = expand_decl_cleanup (decl, cleanup);
-  if (cleanup && ret)
-    {
-      tree node = block_stack->data.block.cleanups;
-      CLEANUP_EH_ONLY (node) = eh_only;
-    }
-  return ret;
-}
 
 /* DECL is an anonymous union.  CLEANUP is a cleanup for DECL.
    DECL_ELTS is the list of elements that belong to DECL's type.
    In each, the TREE_VALUE is a VAR_DECL, and the TREE_PURPOSE a cleanup.  */
 
 void
-expand_anon_union_decl (tree decl, tree cleanup, tree decl_elts)
+expand_anon_union_decl (tree decl, tree cleanup ATTRIBUTE_UNUSED,
+			tree decl_elts)
 {
-  struct nesting *thisblock = cfun == 0 ? 0 : block_stack;
   rtx x;
   tree t;
 
@@ -3409,14 +2733,12 @@ expand_anon_union_decl (tree decl, tree cleanup, tree decl_elts)
       }
 
   expand_decl (decl);
-  expand_decl_cleanup (decl, cleanup);
   x = DECL_RTL (decl);
 
   /* Go through the elements, assigning RTL to each.  */
   for (t = decl_elts; t; t = TREE_CHAIN (t))
     {
       tree decl_elt = TREE_VALUE (t);
-      tree cleanup_elt = TREE_PURPOSE (t);
       enum machine_mode mode = TYPE_MODE (TREE_TYPE (decl_elt));
 
       /* If any of the elements are addressable, so is the entire
@@ -3453,143 +2775,7 @@ expand_anon_union_decl (tree decl, tree cleanup, tree decl_elts)
 	}
       else
 	abort ();
-
-      /* Record the cleanup if there is one.  */
-
-      if (cleanup != 0)
-	thisblock->data.block.cleanups
-	  = tree_cons (decl_elt, cleanup_elt,
-		       thisblock->data.block.cleanups);
     }
-}
-
-/* Expand a list of cleanups LIST.
-   Elements may be expressions or may be nested lists.
-
-   If IN_FIXUP is nonzero, we are generating this cleanup for a fixup
-   goto and handle protection regions specially in that case.
-
-   If REACHABLE, we emit code, otherwise just inform the exception handling
-   code about this finalization.  */
-
-static void
-expand_cleanups (tree list, int in_fixup, int reachable)
-{
-  tree tail;
-  for (tail = list; tail; tail = TREE_CHAIN (tail))
-    if (TREE_CODE (TREE_VALUE (tail)) == TREE_LIST)
-      expand_cleanups (TREE_VALUE (tail), in_fixup, reachable);
-    else
-      {
-	if (! in_fixup && using_eh_for_cleanups_p)
-	  expand_eh_region_end_cleanup (TREE_VALUE (tail));
-
-	if (reachable && !CLEANUP_EH_ONLY (tail))
-	  {
-	    /* Cleanups may be run multiple times.  For example,
-	       when exiting a binding contour, we expand the
-	       cleanups associated with that contour.  When a goto
-	       within that binding contour has a target outside that
-	       contour, it will expand all cleanups from its scope to
-	       the target.  Though the cleanups are expanded multiple
-	       times, the control paths are non-overlapping so the
-	       cleanups will not be executed twice.  */
-
-	    /* We may need to protect from outer cleanups.  */
-	    if (in_fixup && using_eh_for_cleanups_p)
-	      {
-		expand_eh_region_start ();
-
-		expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
-
-		expand_eh_region_end_fixup (TREE_VALUE (tail));
-	      }
-	    else
-	      expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
-
-	    free_temp_slots ();
-	  }
-      }
-}
-
-/* Mark when the context we are emitting RTL for as a conditional
-   context, so that any cleanup actions we register with
-   expand_decl_init will be properly conditionalized when those
-   cleanup actions are later performed.  Must be called before any
-   expression (tree) is expanded that is within a conditional context.  */
-
-void
-start_cleanup_deferral (void)
-{
-  /* block_stack can be NULL if we are inside the parameter list.  It is
-     OK to do nothing, because cleanups aren't possible here.  */
-  if (block_stack)
-    ++block_stack->data.block.conditional_code;
-}
-
-/* Mark the end of a conditional region of code.  Because cleanup
-   deferrals may be nested, we may still be in a conditional region
-   after we end the currently deferred cleanups, only after we end all
-   deferred cleanups, are we back in unconditional code.  */
-
-void
-end_cleanup_deferral (void)
-{
-  /* block_stack can be NULL if we are inside the parameter list.  It is
-     OK to do nothing, because cleanups aren't possible here.  */
-  if (block_stack)
-    --block_stack->data.block.conditional_code;
-}
-
-tree
-last_cleanup_this_contour (void)
-{
-  if (block_stack == 0)
-    return 0;
-
-  return block_stack->data.block.cleanups;
-}
-
-
-/* Return nonzero if any containing block has a stack level or
-   cleanups.  */
-
-int
-containing_blocks_have_cleanups_or_stack_level (void)
-{
-  struct nesting *block;
-
-  for (block = block_stack; block; block = block->next)
-    if (block->data.block.stack_level != 0
-        || block->data.block.cleanups != 0)
-      return 1;
-
-  return 0;
-}
-
-/* Return 1 if there are any pending cleanups at this point.
-   Check the current contour as well as contours that enclose
-   the current contour.  */
-
-int
-any_pending_cleanups (void)
-{
-  struct nesting *block;
-
-  if (cfun == NULL || cfun->stmt == NULL || block_stack == 0)
-    return 0;
-
-  if (block_stack->data.block.cleanups != NULL)
-    return 1;
-
-  if (block_stack->data.block.outer_cleanups == 0)
-    return 0;
-
-  for (block = block_stack->next; block; block = block->next)
-    if (block->data.block.cleanups != 0)
-      return 1;
-
-  return 0;
 }
 
 /* Enter a case (Pascal) or switch (C) statement.
@@ -3635,8 +2821,6 @@ expand_start_case (int exit_flag, tree expr, tree type,
     emit_note (NOTE_INSN_DELETED);
 
   thiscase->data.case_stmt.start = get_last_insn ();
-
-  start_cleanup_deferral ();
 }
 
 /* Accumulate one case or default label inside a case or switch statement.
@@ -3649,7 +2833,6 @@ expand_start_case (int exit_flag, tree expr, tree type,
    If VALUE is a duplicate or overlaps, return 2 and do nothing
    except store the (first) duplicate node in *DUPLICATE.
    If VALUE is out of range, return 3 and do nothing.
-   If we are jumping into the scope of a cleanup or var-sized array, return 5.
    Return 0 on success.
 
    Extended to handle range statements.  */
@@ -3664,10 +2847,6 @@ pushcase (tree value, tree (*converter) (tree, tree), tree label,
   /* Fail if not inside a real case statement.  */
   if (! (case_stack && case_stack->data.case_stmt.start))
     return 1;
-
-  if (stack_block_stack
-      && stack_block_stack->depth > case_stack->depth)
-    return 5;
 
   index_type = TREE_TYPE (case_stack->data.case_stmt.index_expr);
   nominal_type = case_stack->data.case_stmt.nominal_type;
@@ -3709,10 +2888,6 @@ pushcase_range (tree value1, tree value2, tree (*converter) (tree, tree),
   /* Fail if not inside a real case statement.  */
   if (! (case_stack && case_stack->data.case_stmt.start))
     return 1;
-
-  if (stack_block_stack
-      && stack_block_stack->depth > case_stack->depth)
-    return 5;
 
   index_type = TREE_TYPE (case_stack->data.case_stmt.index_expr);
   nominal_type = case_stack->data.case_stmt.nominal_type;
@@ -4268,8 +3443,6 @@ expand_end_case_type (tree orig_index, tree orig_type)
       if (count != 0)
 	range = fold (build (MINUS_EXPR, index_type, maxval, minval));
 
-      end_cleanup_deferral ();
-
       if (count == 0)
 	{
 	  expand_expr (index_expr, const0_rtx, VOIDmode, 0);
@@ -4482,8 +3655,6 @@ expand_end_case_type (tree orig_index, tree orig_type)
       reorder_insns (before_case, end,
 		     thiscase->data.case_stmt.start);
     }
-  else
-    end_cleanup_deferral ();
 
   if (thiscase->exit_label && !exit_done)
     emit_label (thiscase->exit_label);

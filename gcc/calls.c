@@ -2263,7 +2263,6 @@ expand_call (tree exp, rtx target, int ignore)
       || !flag_optimize_sibling_calls
       || !rtx_equal_function_value_matters
       || current_nesting_level () == 0
-      || any_pending_cleanups ()
       || args_size.var
       || lookup_stmt_eh_region (exp) >= 0)
     try_tail_call = 0;
@@ -2343,10 +2342,6 @@ expand_call (tree exp, rtx target, int ignore)
       /* Do the same for the function address if it is an expression.  */
       if (!fndecl)
         addr = fix_unsafe_tree (addr);
-      /* Expanding one of those dangerous arguments could have added
-	 cleanups, but otherwise give it a whirl.  */
-      if (any_pending_cleanups ())
-	try_tail_call = 0;
     }
 
 
@@ -2959,16 +2954,6 @@ expand_call (tree exp, rtx target, int ignore)
 
       /* If value type not void, return an rtx for the value.  */
 
-      /* If there are cleanups to be called, don't use a hard reg as target.
-	 We need to double check this and see if it matters anymore.  */
-      if (any_pending_cleanups ())
-	{
-	  if (target && REG_P (target)
-	      && REGNO (target) < FIRST_PSEUDO_REGISTER)
-	    target = 0;
-	  sibcall_failure = 1;
-	}
-
       if (TYPE_MODE (TREE_TYPE (exp)) == VOIDmode
 	  || ignore)
 	target = const0_rtx;
@@ -3222,7 +3207,6 @@ expand_call (tree exp, rtx target, int ignore)
       clear_pending_stack_adjust ();
       emit_insn (gen_rtx_CLOBBER (VOIDmode, stack_pointer_rtx));
       emit_move_insn (virtual_stack_dynamic_rtx, stack_pointer_rtx);
-      save_stack_pointer ();
     }
 
   return target;

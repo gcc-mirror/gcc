@@ -224,8 +224,6 @@ struct language_function GTY(())
 #define LANG_HOOKS_UNSAFE_FOR_REEVAL java_unsafe_for_reeval
 #undef LANG_HOOKS_MARK_ADDRESSABLE
 #define LANG_HOOKS_MARK_ADDRESSABLE java_mark_addressable
-#undef LANG_HOOKS_EXPAND_EXPR
-#define LANG_HOOKS_EXPAND_EXPR java_expand_expr
 #undef LANG_HOOKS_TRUTHVALUE_CONVERSION
 #define LANG_HOOKS_TRUTHVALUE_CONVERSION java_truthvalue_conversion
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL

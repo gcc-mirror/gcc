@@ -1,3 +1,51 @@
+2004-07-08  Richard Henderson  <rth@redhat.com>
+
+	* except.c (expand_eh_region_start, expand_eh_region_end, 
+	expand_eh_handler, expand_eh_region_end_cleanup,
+	expand_start_all_catch, expand_start_catch, expand_end_catch,
+	expand_end_all_catch, expand_eh_region_end_allowed,
+	expand_eh_region_end_must_not_throw, expand_eh_region_end_throw,
+	expand_eh_region_end_fixup): Remove.
+	* stmt.c (struct nesting): Remove stack_level, innermost_stack_block,
+	cleanups, outer_cleanups, label_chain, exception_region.
+	(struct goto_fixup): Remove stack_level, cleanup_list_list.
+	(struct label_chain): Remove.
+	(struct stmt_status): Remove x_stack_block_stack.
+	(stack_block_stack, expand_goto_internal, expand_fixup, expand_fixups,
+	fixup_gotos, save_stack_pointer, expand_decl_cleanup,
+	expand_decl_cleanup_eh, expand_cleanups, start_cleanup_deferral,
+	end_cleanup_deferral, last_cleanup_this_contour, 
+	containing_blocks_have_cleanups_or_stack_level,
+	any_pending_cleanups): Remove.
+	(expand_null_return_1): Take no arguments.
+	(expand_label, expand_naked_return, expand_return,
+	expand_start_bindings_and_block, expand_end_bindings, expand_decl,
+	expand_anon_union_decl, expand_start_case, pushcase, pushcase_range,
+	expand_end_case_type): Don't use any of them.
+	* calls.c (expand_call): Likewise.
+	* dojump.c (do_jump): Likewise.
+	* function.c (expand_function_end): Likewise.
+	* expr.c (store_expr, expand_expr_real_1): Likewise.
+	(safe_from_p): Don't handle WITH_CLEANUP_EXPR, CLEANUP_POINT_EXPR.
+	(expand_expr_real_1): Don't handle WITH_CLEANUP_EXPR, 
+	CLEANUP_POINT_EXPR, TARGET_EXPR, TRY_CATCH_EXPR, CATCH_EXPR, 
+	EH_FILTER_EXPR, TRY_FINALLY_EXPR, GOTO_SUBROUTINE_EXPR.
+	* fold-const.c (fold_checksum_tree): Use first_rtl_op.
+	* gengtype.c (adjust_field_tree_exp): Remove rtl op handling.
+	* gimplify.c (gimplify_cleanup_point_expr): Renumber operands
+	for WITH_CLEANUP_EXPR.
+	(gimple_push_cleanup): Likewise.
+	* integrate.c (copy_decl_for_inlining): Don't DECL_TOO_LATE.
+	* print-tree.c (print_node): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Remove GOTO_SUBROUTINE_EXPR.
+	* tree.c (first_rtl_op): Always just TREE_CODE_LENGTH.
+	(has_cleanups): Remove GOTO_SUBROUTINE_EXPR.
+	* tree.def (WITH_CLEANUP_EXPR): Remove op1 and op2.
+	(GOTO_SUBROUTINE_EXPR): Remove.
+	* tree.h (WITH_CLEANUP_EXPR_RTL): Remove.
+	(DECL_TOO_LATE): Remove.
+	* except.h, tree.h: Update decls.
+
 2004-07-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	* explow.c (optimize_save_area_alloca): Do not accept parameters.

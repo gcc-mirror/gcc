@@ -1185,10 +1185,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       is_expr = false;
       break;
 
-    case GOTO_SUBROUTINE_EXPR:
-      NIY;
-      break;
-
     case LABEL_EXPR:
       op0 = TREE_OPERAND (node, 0);
       /* If this is for break or continue, don't bother printing it.  */
