@@ -180,6 +180,9 @@ public class RuleBasedCollator extends Collator
    */
   public RuleBasedCollator (String rules) throws ParseException
   {
+    if (rules.equals (""))
+      throw new ParseException ("empty rule set", 0);
+    
     this.rules = rules;
     this.frenchAccents = false;
 
@@ -225,7 +228,19 @@ public class RuleBasedCollator extends Collator
 	if (argument.length() == 0)
 	  throw new ParseException ("invalid character", save);
 	String arg = argument.toString();
-	int item_index = vec.indexOf(arg);
+	int item_index = -1;
+        
+        for (int j = 0; j < vec.size(); ++j)
+          {
+            CollationElement e = (CollationElement) vec.elementAt (j);
+
+            if (arg.equals (e.key))
+              {
+                item_index = j;
+                break;
+              }
+          }
+	
 	if (c != '&')
 	  {
 	    // If the argument already appears in the vector, then we
@@ -535,8 +550,7 @@ public class RuleBasedCollator extends Collator
   private final boolean is_special (char c)
   {
     // Rules from JCL book.
-    return ((c >= 0x0009 && c <= 0x000d)
-	    || (c >= 0x0020 && c <= 0x002f)
+    return ((c >= 0x0021 && c <= 0x002f)
 	    || (c >= 0x003a && c <= 0x0040)
 	    || (c >= 0x005b && c <= 0x0060)
 	    || (c >= 0x007b && c <= 0x007e));
@@ -549,15 +563,20 @@ public class RuleBasedCollator extends Collator
     int len = rules.length();
     while (index < len)
       {
-	char c = rules.charAt(index);
-	if (c == '\'' && index + 2 < len
-	    && rules.charAt(index + 2) == '\''
-	    && is_special (rules.charAt(index + 1)))
-	  index += 2;
-	else if (is_special (c) || Character.isWhitespace(c))
+	char c = rules.charAt (index);
+	if (c == '\''
+            && index + 2 < len
+	    && rules.charAt (index + 2) == '\'')
+          {
+            result.append (rules.charAt (index + 1));
+            index += 2;
+          }
+	else if (is_special (c))
 	  return index;
-	result.append(c);
-	++index;
+        else if (!Character.isWhitespace (c))
+          result.append (c);
+        
+        ++index;
       }
     return index;
   }
