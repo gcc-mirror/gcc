@@ -36,7 +36,6 @@
 #    saved into *.life dumps.  You need to pass the -df switch to the compiler as well
 #    as -fbranch-probabilities to get the results of profiling noted in the dumps.
 #    Ensure that there are no "Arc profiling: some edge counts were bad." warnings.
-#    Keep the -fprofile-arcs switch to ensure that CFGs match.
 #  Step 3: Run this script to concatenate all *.life files:
 #    analyze_brprob `find . -name *.life`
 #    the information is collected and print once all files are parsed.  This
@@ -124,26 +123,26 @@ BEGIN {nnames = 0}
     #BC crashes on long strings.  Irritating.
     if (length(counts[name]) > 4000)
       {
-	counts[name] = longeval (counts[name])
-	hits[name] = longeval (hits[name])
-	phits[name] = longeval (phits[name])
+	counts[name] = longeval(counts[name])
+	hits[name] = longeval(hits[name])
+	phits[name] = longeval(phits[name])
       }
   }
 END {
   # Heuristics called combined predicts just everything.
-  maxcounts = longeval (counts["first match"])
+  maxcounts = longeval(counts["first match"])
   maxbranches = branches["first match"]
   max = names["first match"]
   printf("HEURISTICS                  BRANCHES  (REL)  HITRATE             COVERAGE  (REL)\n")
   for (i = 0; i < nnames ; i++)
    {
      name = names[i]
-     counts[name] = longeval (counts[name])
+     counts[name] = longeval(counts[name])
      printf ("%-27s %8i %5.1f%% %6s%%/%6s%% %12s %5.1f%%\n",
 	     name,
 	     branches[name], branches[name] * 100 / maxbranches,
-	     longeval ("("hits[name]") * 100 /(" counts[name]"-0.00001)"),
-	     longeval ("("phits[name]") * 100 /(" counts[name]"-0.00001)"),
-	     counts[name], longeval (counts[name]" * 100 / ("maxcounts"-0.00001)"))
+	     longeval("("hits[name]") * 100 /(" counts[name]"-0.00001)"),
+	     longeval("("phits[name]") * 100 /(" counts[name]"-0.00001)"),
+	     counts[name], longeval(counts[name]" * 100 / ("maxcounts"-0.00001)"))
    }
 }
