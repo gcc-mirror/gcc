@@ -1,3 +1,8 @@
+2004-01-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* cfgrtl.c (try_redirect_by_replacing_jump): Optimize tablejumps
+	even after reload, just don't remove the actual jump tables.
+
 2004-01-17  J. Brobecker  <brobecker@gnat.com>
 
 	* dwarf2out.c (is_subrange_type): Renamed from is_ada_subrange_type().
