@@ -1,0 +1,43 @@
+ALL		= Makefile start.encap libgcc.a
+EXTRA_PASSES	= ld
+LIMITS_H	=
+CONFIG2_H	= $(srcdir)/config/mips.h $(srcdir)/config/decrose.h
+
+# Add additional dependencies to recompile selected modules whenever the
+# tm.h file changes.  The files compiled are:
+#
+#	gcc.c		(*_SPEC changes)
+#	toplev.c	(new switches + assembly output changes)
+#	sdbout.c	(debug format changes)
+#	dbxout.c	(debug format changes)
+#	dwarfout.c	(debug format changes)
+#	final.c		(assembly output changes)
+#	varasm.c	(assembly output changes)
+#	cse.c		(cost functions)
+#	insn-output.c	(possible ifdef changes in tm.h)
+#	regclass.c	(fixed/call used register changes)
+#	cccp.c		(new preprocessor macros, -v version #)
+#	explow.c	(GO_IF_LEGITIMATE_ADDRESS)
+#	recog.c		(GO_IF_LEGITIMATE_ADDRESS)
+#	reload.c	(GO_IF_LEGITIMATE_ADDRESS)
+
+gcc.o: $(CONFIG2_H)
+toplev.o: $(CONFIG2_H)
+sdbout.o: $(CONFIG2_H)
+dbxout.o: $(CONFIG2_H)
+dwarfout.o: $(CONFIG2_H)
+final.o: $(CONFIG2_H)
+varasm.o: $(CONFIG2_H)
+cse.o: $(CONFIG2_H)
+insn-output.o: $(CONFIG2_H)
+regclass.o: $(CONFIG2_H)
+cccp.o: $(CONFIG2_H)
+explow.o: $(CONFIG2_H)
+recog.o: $(CONFIG2_H)
+reload.o: $(CONFIG2_H)
+
+# Build collect
+
+ld: collect2
+	rm -f ld
+	ln collect2 ld
