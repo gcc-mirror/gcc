@@ -37,6 +37,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 static tree convert_ieee_real_to_integer PARAMS ((tree, tree));
 static tree parse_signature_type PARAMS ((const unsigned char **,
 					 const unsigned char *));
+static tree lookup_do PARAMS ((tree, tree, tree, tree, tree (*)(tree)));
 
 tree * type_map;
 extern struct obstack permanent_obstack;
@@ -713,106 +714,129 @@ set_java_signature (type, sig)
 #endif
 }
 
-/* Search in class CLAS (and its superclasses) for a method
-   matching METHOD_NAME and argument signature METHOD_SIGNATURE.
-   Return a FUNCTION_DECL on success, or NULL_TREE if none found.
-   (Contrast lookup_java_method, which takes into account return type.) */
+/* Search in class SEARCHED_CLASS (and its superclasses) for a method
+   matching METHOD_NAME and signature SIGNATURE.  If SEARCHED_INTERFACE is
+   not NULL_TREE then first search its superinterfaces for a similar match.
+   Return the matched method DECL or NULL_TREE.  SIGNATURE_BUILDER is
+   used on method candidates to build their (sometimes partial)
+   signature.  */
 
 tree
-lookup_argument_method (clas, method_name, method_signature)
-     tree clas, method_name, method_signature;
+lookup_argument_method (searched_class, method_name, method_signature)
+     tree searched_class, method_name, method_signature;
 {
-  tree method;
-  while (clas != NULL_TREE)
-    {
-      for (method = TYPE_METHODS (clas);
-	   method != NULL_TREE;  method = TREE_CHAIN (method))
-	{
-	  tree method_sig = build_java_argument_signature (TREE_TYPE (method));
-	  tree name = DECL_NAME (method);
-	  if ((TREE_CODE (name) == EXPR_WITH_FILE_LOCATION ?
-	       EXPR_WFL_NODE (name) : name) == method_name 
-	      && method_sig == method_signature)
-	    return method;
-	}
-      clas = CLASSTYPE_SUPER (clas);
-    }
-  return NULL_TREE;
+  return lookup_do (searched_class, NULL_TREE, method_name, method_signature, 
+		    build_java_argument_signature);
 }
 
-/* Search in class CLAS (and its superclasses) for a method
-   matching METHOD_NAME and signature METHOD_SIGNATURE.
-   Return a FUNCTION_DECL on success, or NULL_TREE if none found.
-   (Contrast lookup_argument_method, which ignores return type.) */
+/* Search in class SEARCHED_CLASS (and its superclasses and
+   implemented interfaces) for a method matching METHOD_NAME and
+   argument signature METHOD_SIGNATURE.  Return a FUNCTION_DECL on
+   success, or NULL_TREE if none found.  (Contrast lookup_java_method,
+   which takes into account return type.) */
+
+tree
+lookup_argument_method2 (searched_class, method_name, method_signature)
+     tree searched_class, method_name, method_signature;
+{
+  return lookup_do (CLASSTYPE_SUPER (searched_class), searched_class,
+		    method_name, method_signature, 
+		    build_java_argument_signature);
+}
+
+/* Search in class SEARCHED_CLASS (and its superclasses) for a method
+   matching METHOD_NAME and signature METHOD_SIGNATURE.  Return a
+   FUNCTION_DECL on success, or NULL_TREE if none found.  (Contrast
+   lookup_argument_method, which ignores return type.) If
+   SEARCHED_CLASS is an interface, search it too. */
 
 tree
 lookup_java_method (searched_class, method_name, method_signature)
      tree searched_class, method_name, method_signature;
 {
+  tree searched_interface;
+  
+  /* If this class is an interface class, search its superinterfaces
+   * first. A superinterface is not an interface's superclass: a super
+   * interface is implemented by the interface.  */
+
+  searched_interface = (CLASS_INTERFACE (TYPE_NAME (searched_class)) ?
+			searched_class : NULL_TREE);
+  return lookup_do (searched_class, searched_interface, method_name, 
+		    method_signature, build_java_signature);
+}
+
+/* Search in class SEARCHED_CLASS (an its superclasses) for a method
+   matching METHOD_NAME and signature SIGNATURE.  Also search in
+   SEARCHED_INTERFACE (an its superinterfaces) for a similar match.
+   Return the matched method DECL or NULL_TREE.  SIGNATURE_BUILDER is
+   used on method candidates to build their (sometimes partial)
+   signature.  */
+
+static tree
+lookup_do (searched_class, searched_interface, method_name, signature, signature_builder)
+     tree searched_class, searched_interface, method_name, signature;
+     tree (*signature_builder) PARAMS ((tree));
+{
   tree method;
-  tree currently_searched = searched_class;
-
-  while (currently_searched != NULL_TREE)
-    {
-      for (method = TYPE_METHODS (currently_searched);
-	   method != NULL_TREE;  method = TREE_CHAIN (method))
-	{
-	  tree method_sig = build_java_signature (TREE_TYPE (method));
-	  tree name = DECL_NAME (method);
-
-	  if ((TREE_CODE (name) == EXPR_WITH_FILE_LOCATION ?
-	       EXPR_WFL_NODE (name) : name) == method_name
-	      && method_sig == method_signature)
-	    return method;
-	}
-      currently_searched = CLASSTYPE_SUPER (currently_searched);
-    }
-
-  /* If this class is an interface class, search its superinterfaces as
-   * well.  A superinterface is not an interface's superclass: a
-   * super interface is implemented by the interface.
-   */
-
-  currently_searched = searched_class;
-  if (CLASS_INTERFACE (TYPE_NAME (currently_searched)))
+  
+  if (searched_interface)
     {
       int i;
       int interface_len = 
-	TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (currently_searched)) - 1;
+	TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (searched_interface)) - 1;
 
       for (i = interface_len; i > 0; i--)
        {
          tree child = 
-	   TREE_VEC_ELT (TYPE_BINFO_BASETYPES (currently_searched), i);
+	   TREE_VEC_ELT (TYPE_BINFO_BASETYPES (searched_interface), i);
          tree iclass = BINFO_TYPE (child);
 
          /* If the superinterface hasn't been loaded yet, do so now.  */
-         if (! CLASS_LOADED_P (iclass))
-           load_class (iclass, 1);
+	 if (CLASS_FROM_SOURCE_P (iclass))
+	   safe_layout_class (iclass);
+	 else if (!CLASS_LOADED_P (iclass))
+	   load_class (iclass, 1);
 
          for (method = TYPE_METHODS (iclass);
               method != NULL_TREE;  method = TREE_CHAIN (method))
            {
-             tree method_sig = build_java_signature (TREE_TYPE (method));
+             tree method_sig = (*signature_builder) (TREE_TYPE (method));
 	     tree name = DECL_NAME (method);
 
 	     if ((TREE_CODE (name) == EXPR_WITH_FILE_LOCATION ?
 		  EXPR_WFL_NODE (name) : name) == method_name
-		 && method_sig == method_signature)
+		 && method_sig == signature)
                return method;
            }
 
          /* it could be defined in a supersuperinterface */
          if (CLASS_INTERFACE (TYPE_NAME (iclass)))
            {
-             method = lookup_java_method (iclass, 
-					  method_name, 
-					  method_signature);
+             method = lookup_do (iclass, iclass, method_name, 
+				 signature, signature_builder);
              if (method != NULL_TREE) 
 	       return method;
            }
        }
     }
+
+  while (searched_class != NULL_TREE)
+    {
+      for (method = TYPE_METHODS (searched_class);
+	   method != NULL_TREE;  method = TREE_CHAIN (method))
+	{
+	  tree method_sig = (*signature_builder) (TREE_TYPE (method));
+	  tree name = DECL_NAME (method);
+
+	  if ((TREE_CODE (name) == EXPR_WITH_FILE_LOCATION ?
+	       EXPR_WFL_NODE (name) : name) == method_name
+	      && method_sig == signature)
+	    return method;
+	}
+      searched_class = CLASSTYPE_SUPER (searched_class);
+    }
+
   return NULL_TREE;
 }
 

@@ -678,7 +678,6 @@ struct parser_ctxt {
 };
 
 #ifndef JC1_LITE
-void safe_layout_class PARAMS ((tree));
 void java_complete_class PARAMS ((void));
 void java_check_circular_reference PARAMS ((void));
 void java_fix_constructors PARAMS ((void));

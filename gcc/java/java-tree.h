@@ -510,6 +510,7 @@ extern tree lookup_class PARAMS ((tree));
 extern tree lookup_java_constructor PARAMS ((tree, tree));
 extern tree lookup_java_method PARAMS ((tree, tree, tree));
 extern tree lookup_argument_method PARAMS ((tree, tree, tree));
+extern tree lookup_argument_method2 PARAMS ((tree, tree, tree));
 extern tree promote_type PARAMS ((tree));
 extern tree get_constant PARAMS ((struct JCF*, int));
 extern tree get_name_constant PARAMS ((struct JCF*, int));
@@ -665,6 +666,7 @@ extern char* open_class PARAMS ((char *, struct JCF *, int, const char *));
 # endif /* JCF_USE_STDIO */
 #endif
 void java_debug_context PARAMS ((void));
+void safe_layout_class PARAMS ((tree));
 
 extern tree get_boehm_type_descriptor PARAMS ((tree));
 

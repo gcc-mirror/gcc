@@ -4762,7 +4762,7 @@ check_abstract_method_definitions (do_interface, class_decl, type)
     }
 }
 
-/* Check that CLASS_DECL somehoow implements all inherited abstract
+/* Check that CLASS_DECL somehow implements all inherited abstract
    methods.  */
 
 static void
@@ -4807,7 +4807,6 @@ java_check_regular_methods (class_decl)
   int saw_constructor = 0;
   tree method;
   tree class = CLASS_TO_HANDLE_TYPE (TREE_TYPE (class_decl));
-  tree super_class = CLASSTYPE_SUPER (class);
   tree saved_found_wfl = NULL_TREE, found = NULL_TREE;
   tree mthrows;
 
@@ -4859,7 +4858,7 @@ java_check_regular_methods (class_decl)
 	}
 
       sig = build_java_argument_signature (TREE_TYPE (method));
-      found = lookup_argument_method (super_class, DECL_NAME (method), sig);
+      found = lookup_argument_method2 (class, DECL_NAME (method), sig);
 
       /* Nothing overrides or it's a private method. */
       if (!found)
@@ -4875,12 +4874,25 @@ java_check_regular_methods (class_decl)
       saved_found_wfl = DECL_NAME (found);
       reset_method_name (found);
 
+      /* If `found' is declared in an interface, make sure the
+	 modifier matches. */
+      if (CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (found))) 
+	  && clinit_identifier_node != DECL_NAME (found)
+	  && !METHOD_PUBLIC (method))
+	{
+	  tree found_decl = TYPE_NAME (DECL_CONTEXT (found));
+	  parse_error_context (method_wfl, "Class `%s' must override `%s' with a public method in order to implement interface `%s'",
+			       IDENTIFIER_POINTER (DECL_NAME (class_decl)),
+			       lang_printable_name (method, 0),
+			       IDENTIFIER_POINTER (DECL_NAME (found_decl)));
+	}
+
       /* Can't override a method with the same name and different return
 	 types. */
       if (TREE_TYPE (TREE_TYPE (found)) != TREE_TYPE (TREE_TYPE (method)))
 	{
-	  char *t = xstrdup (lang_printable_name (TREE_TYPE (TREE_TYPE (found)),
-						 0));
+	  char *t = xstrdup 
+	    (lang_printable_name (TREE_TYPE (TREE_TYPE (found)), 0));
 	  parse_error_context 
 	    (method_wfl,
 	     "Method `%s' was defined with return type `%s' in class `%s'", 
@@ -4943,12 +4955,15 @@ java_check_regular_methods (class_decl)
 	 - Overriding/hiding protected must be protected or public
          - If the overriden or hidden method has default (package)
            access, then the overriding or hiding method must not be
-           private; otherwise, a compile-time error occurs */
-      if ((METHOD_PUBLIC (found) && !METHOD_PUBLIC (method)) 
-	  || (METHOD_PROTECTED (found) 
-	      && !(METHOD_PUBLIC (method) || METHOD_PROTECTED (method)))
-	  || (!(aflags & (ACC_PUBLIC | ACC_PRIVATE | ACC_STATIC))
-	      && METHOD_PRIVATE (method)))
+           private; otherwise, a compile-time error occurs.  If
+           `found' belongs to an interface, things have been already
+           taken care of.  */
+      if (!CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (found)))
+	  && ((METHOD_PUBLIC (found) && !METHOD_PUBLIC (method))
+	      || (METHOD_PROTECTED (found) 
+		  && !(METHOD_PUBLIC (method) || METHOD_PROTECTED (method)))
+	      || (!(aflags & (ACC_PUBLIC | ACC_PRIVATE | ACC_STATIC))
+		  && METHOD_PRIVATE (method))))
 	{
 	  parse_error_context 
 	    (method_wfl,

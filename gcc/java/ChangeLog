@@ -1,3 +1,25 @@
+2000-03-06  Bryce McKinlay <bryce@albatross.co.nz>
+
+	* typeck.c (lookup_do): Search superinterfaces first
+	when looking up an interface method. From Godmar Back
+	<gback@cs.utah.edu>
+
+2000-03-02  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h (lookup_argument_method2): Declared.
+	(safe_layout_class): Prototype moved from parse.h.
+	* parse.h (safe_layout_class): Prototype moved to java-tree.h.
+	* parse.y (java_check_regular_methods): Local `super_class' gone.
+	Call lookup_argument_method2 instead of lookup_argument_method.
+	Perform modifier match for methods found declared in implemented
+	interfaces. Fixed indentation problem. Overriding/hiding error
+	report to take place only for methods found in classes.
+	* typeck.c (lookup_argument_method): Changed leading
+	comment. Re-written by calling lookup_do.
+	(lookup_argument_method2): New function.
+	(lookup_java_method): Re-written by calling lookup_do.
+	(lookup_do): New function.
+
 2000-03-06  Tom Tromey  <tromey@cygnus.com>
 
 	* Make-lang.in (JAVA_SRCS): Added boehm.c, lex.c.
