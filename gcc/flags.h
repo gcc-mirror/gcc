@@ -569,18 +569,9 @@ extern int flag_renumber_insns;
 
 extern int frame_pointer_needed;
 
-/* Nonzero if GCC must add code to check memory access (used by Checker).  */
-
-extern int flag_check_memory_usage;
-
 /* Nonzero if the generated code should trap on signed overflow
    for PLUS / SUB / MULT.  */
 extern int flag_trapv;
-
-/* Nonzero if GCC must prefix function names (used with
-   flag_check_memory_usage).  */
-
-extern int flag_prefix_function_name;
 
 /* Value of the -G xx switch, and whether it was passed or not.  */
 extern int g_switch_value;

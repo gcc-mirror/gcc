@@ -1675,17 +1675,6 @@ rtx_for_function_call (fndecl, exp)
       funaddr = funexp
 	= expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
       pop_temp_slots ();	/* FUNEXP can't be BLKmode.  */
-
-      /* Check the function is executable.  */
-      if (current_function_check_memory_usage)
-	{
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  if (GET_MODE (funexp) != ptr_mode)
-	    funaddr = convert_memory_address (ptr_mode, funexp);
-#endif
-	  emit_library_call (chkr_check_exec_libfunc, LCT_CONST_MAKE_BLOCK,
-			     VOIDmode, 1, funaddr, ptr_mode);
-	}
       emit_queue ();
     }
   return funexp;
@@ -2161,13 +2150,6 @@ expand_call (exp, target, ignore)
   HOST_WIDE_INT preferred_stack_boundary;
   /* The alignment of the stack, in bytes.  */
   HOST_WIDE_INT preferred_unit_stack_boundary;
-
-  /* The value of the function call can be put in a hard register.  But
-     if -fcheck-memory-usage, code which invokes functions (and thus
-     damages some hard registers) can be inserted before using the value.
-     So, target is always a pseudo-register in that case.  */
-  if (current_function_check_memory_usage)
-    target = 0;
 
   /* See if this is "nothrow" function call.  */
   if (TREE_NOTHROW (exp))
@@ -3013,16 +2995,6 @@ expand_call (exp, target, ignore)
 			  force_reg (Pmode,
 				     force_operand (structure_value_addr,
 						    NULL_RTX)));
-
-	  /* Mark the memory for the aggregate as write-only.  */
-	  if (current_function_check_memory_usage)
-	    emit_library_call (chkr_set_right_libfunc, LCT_CONST_MAKE_BLOCK,
-			       VOIDmode, 3,
-			       structure_value_addr, ptr_mode,
-			       GEN_INT (struct_value_size),
-			       TYPE_MODE (sizetype),
-			       GEN_INT (MEMORY_USE_WO),
-			       TYPE_MODE (integer_type_node));
 
 	  if (GET_CODE (struct_value_rtx) == REG)
 	    use_reg (&call_fusage, struct_value_rtx);
@@ -4422,18 +4394,8 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
     do_pending_stack_adjust ();
 
   if (arg->value == arg->stack)
-    {
-      /* If the value is already in the stack slot, we are done.  */
-      if (current_function_check_memory_usage && GET_CODE (arg->stack) == MEM)
-	{
-	  emit_library_call (chkr_set_right_libfunc, LCT_CONST_MAKE_BLOCK,
-			     VOIDmode, 3, XEXP (arg->stack, 0), Pmode,
-			     ARGS_SIZE_RTX (arg->size),
-			     TYPE_MODE (sizetype),
-			     GEN_INT (MEMORY_USE_RW),
-			     TYPE_MODE (integer_type_node));
-	}
-    }
+    /* If the value is already in the stack slot, we are done.  */
+    ;
   else if (arg->mode != BLKmode)
     {
       int size;

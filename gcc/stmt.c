@@ -712,11 +712,6 @@ expand_computed_goto (exp)
 #endif
 
   emit_queue ();
-  /* Be sure the function is executable.  */
-  if (current_function_check_memory_usage)
-    emit_library_call (chkr_check_exec_libfunc, LCT_CONST_MAKE_BLOCK,
-		       VOIDmode, 1, x, ptr_mode);
-
   do_pending_stack_adjust ();
   emit_indirect_jump (x);
 
@@ -1290,12 +1285,6 @@ void
 expand_asm (body)
      tree body;
 {
-  if (current_function_check_memory_usage)
-    {
-      error ("`asm' cannot be used in function where memory usage is checked");
-      return;
-    }
-
   if (TREE_CODE (body) == ADDR_EXPR)
     body = TREE_OPERAND (body, 0);
 
@@ -1503,12 +1492,6 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   if (noutputs == 0)
     vol = 1;
 
-  if (current_function_check_memory_usage)
-    {
-      error ("`asm' cannot be used in function where memory usage is checked");
-      return;
-    }
-
   if (! check_operand_nalternatives (outputs, inputs))
     return;
 
@@ -1591,7 +1574,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
 	  output_rtx[i]
 	    = expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode,
-			   EXPAND_MEMORY_USE_WO);
+			   EXPAND_WRITE);
 
 	  if (! allows_reg && GET_CODE (output_rtx[i]) != MEM)
 	    error ("output number %d not directly addressable", i);
@@ -3987,9 +3970,7 @@ expand_decl (decl)
 	   && !(flag_float_store
 		&& TREE_CODE (type) == REAL_TYPE)
 	   && ! TREE_THIS_VOLATILE (decl)
-	   && (DECL_REGISTER (decl) || optimize)
-	   /* if -fcheck-memory-usage, check all variables.  */
-	   && ! current_function_check_memory_usage)
+	   && (DECL_REGISTER (decl) || optimize))
     {
       /* Automatic variable that can go in a register.  */
       int unsignedp = TREE_UNSIGNED (type);

@@ -61,10 +61,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ASM_STABS_OP "\t.stabs\t"
 #endif
 
-/* Define the prefix to use when check_memory_usage_flag is enable.  */
-#define CHKR_PREFIX "_CHKR_"
-#define CHKR_PREFIX_SIZE (sizeof (CHKR_PREFIX) - 1)
-
 /* The (assembler) name of the first globally-visible object output.  */
 const char *first_global_object_name;
 const char *weak_global_object_name;
@@ -957,23 +953,10 @@ make_decl_rtl (decl, asmspec)
       && name == IDENTIFIER_POINTER (DECL_NAME (decl)))
     {
       char *label;
+
       ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
       var_labelno++;
       new_name = label;
-    }
-
-  /* When -fprefix-function-name is used, the functions
-     names are prefixed.  Only nested function names are not
-     prefixed.  */
-  else if (flag_prefix_function_name && TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      size_t name_len = IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (decl));
-      char *pname;
-
-      pname = alloca (name_len + CHKR_PREFIX_SIZE + 1);
-      memcpy (pname, CHKR_PREFIX, CHKR_PREFIX_SIZE);
-      memcpy (pname + CHKR_PREFIX_SIZE, name, name_len + 1);
-      new_name = pname;
     }
 
   if (name != new_name)
@@ -1837,9 +1820,6 @@ assemble_name (file, name)
   tree id;
 
   STRIP_NAME_ENCODING (real_name, name);
-  if (flag_prefix_function_name
-      && ! memcmp (real_name, CHKR_PREFIX, CHKR_PREFIX_SIZE))
-    real_name = real_name + CHKR_PREFIX_SIZE;
 
   id = maybe_get_identifier (real_name);
   if (id)

@@ -1917,11 +1917,11 @@ attributes are currently defined for functions on all targets:
 @code{noreturn}, @code{noinline}, @code{pure}, @code{const},
 @code{format}, @code{format_arg}, @code{no_instrument_function},
 @code{section}, @code{constructor}, @code{destructor}, @code{used},
-@code{unused}, @code{weak}, @code{malloc}, @code{alias} and
-@code{no_check_memory_usage}.  Several other attributes are defined for
-functions on particular target systems.  Other attributes, including
-@code{section} are supported for variables declarations (@pxref{Variable
-Attributes}) and for types (@pxref{Type Attributes}).
+@code{unused}, @code{weak}, @code{malloc}, and @code{alias}.  Several
+other attributes are defined for functions on particular target systems.
+Other attributes, including @code{section} are supported for variables
+declarations (@pxref{Variable Attributes}) and for types (@pxref{Type
+Attributes}).
 
 You may also specify attributes with @samp{__} preceding and following
 each keyword.  This allows you to use them in header files without
@@ -2211,23 +2211,6 @@ declares @samp{f} to be a weak alias for @samp{__f}.  In C++, the
 mangled name for the target must be used.
 
 Not all target machines support this attribute.
-
-@item no_check_memory_usage
-@cindex @code{no_check_memory_usage} function attribute
-@opindex fcheck-memory-usage
-The @code{no_check_memory_usage} attribute causes GCC to omit checks
-of memory references when it generates code for that function.  Normally
-if you specify @option{-fcheck-memory-usage} (see @pxref{Code Gen
-Options}), GCC generates calls to support routines before most memory
-accesses to permit support code to record usage and detect uses of
-uninitialized or unallocated storage.  Since GCC cannot handle
-@code{asm} statements properly they are not allowed in such functions.
-If you declare a function with this attribute, GCC will not generate
-memory checking code for that function, permitting the use of @code{asm}
-statements without having to compile that function with different
-options.  This also allows you to write support routines of your own if
-you wish, without getting infinite recursion if they get compiled with
-@option{-fcheck-memory-usage}.
 
 @item regparm (@var{number})
 @cindex functions that are passed arguments in registers on the 386

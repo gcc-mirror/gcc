@@ -48,26 +48,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    EXPAND_INITIALIZER is similar but also record any labels on forced_labels.
    EXPAND_CONST_ADDRESS means it is ok to return a MEM whose address
     is a constant that is not a legitimate address.
-   EXPAND_MEMORY_USE_* are explained below.  */
-enum expand_modifier {EXPAND_NORMAL, EXPAND_SUM,
-		      EXPAND_CONST_ADDRESS, EXPAND_INITIALIZER,
-		      EXPAND_MEMORY_USE_WO, EXPAND_MEMORY_USE_RW,
-		      EXPAND_MEMORY_USE_BAD, EXPAND_MEMORY_USE_DONT};
-
-/* Argument for chkr_* functions.
-   MEMORY_USE_RO: the pointer reads memory.
-   MEMORY_USE_WO: the pointer writes to memory.
-   MEMORY_USE_RW: the pointer modifies memory (ie it reads and writes). An
-                  example is (*ptr)++
-   MEMORY_USE_BAD: use this if you don't know the behavior of the pointer, or
-                   if you know there are no pointers.  Using an INDIRECT_REF
-                   with MEMORY_USE_BAD will abort.
-   MEMORY_USE_TW: just test for writing, without update.  Special.
-   MEMORY_USE_DONT: the memory is neither read nor written.  This is used by
-   		   '->' and '.'.  */
-enum memory_use_mode {MEMORY_USE_BAD = 0, MEMORY_USE_RO = 1,
-		      MEMORY_USE_WO = 2, MEMORY_USE_RW = 3,
-		      MEMORY_USE_TW = 6, MEMORY_USE_DONT = 99};
+   EXPAND_WRITE means we are only going to write to the resulting rtx.  */
+enum expand_modifier {EXPAND_NORMAL, EXPAND_SUM, EXPAND_CONST_ADDRESS,
+			EXPAND_INITIALIZER, EXPAND_WRITE};
 
 /* Prevent the compiler from deferring stack pops.  See
    inhibit_defer_pop for more information.  */
@@ -119,8 +102,7 @@ struct args_size
 /* Convert the implicit sum in a `struct args_size' into an rtx.  */
 #define ARGS_SIZE_RTX(SIZE)					\
 ((SIZE).var == 0 ? GEN_INT ((SIZE).constant)			\
- : expand_expr (ARGS_SIZE_TREE (SIZE), NULL_RTX, VOIDmode,	\
-		EXPAND_MEMORY_USE_BAD))
+ : expand_expr (ARGS_SIZE_TREE (SIZE), NULL_RTX, VOIDmode, 0))
 
 /* Supply a default definition for FUNCTION_ARG_PADDING:
    usually pad upward, but pad short args downward on

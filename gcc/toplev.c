@@ -828,16 +828,6 @@ int flag_stack_check;
    the support provided depends on the backend.  */
 rtx stack_limit_rtx;
 
-/* -fcheck-memory-usage causes extra code to be generated in order to check
-   memory accesses.  This is used by a detector of bad memory accesses such
-   as Checker.  */
-int flag_check_memory_usage = 0;
-
-/* -fprefix-function-name causes function name to be prefixed.  This
-   can be used with -fcheck-memory-usage to isolate code compiled with
-   -fcheck-memory-usage.  */
-int flag_prefix_function_name = 0;
-
 /* 0 if pointer arguments may alias each other.  True in C.
    1 if pointer arguments may not alias each other but may alias
    global variables.
@@ -1137,10 +1127,6 @@ lang_independent_options f_options[] =
    N_("Attempt to merge identical constants accross compilation units") },
   {"merge-all-constants", &flag_merge_constants, 2,
    N_("Attempt to merge identical constants and constant variables") },
-  {"check-memory-usage", &flag_check_memory_usage, 1,
-   N_("Generate code to check every memory access") },
-  {"prefix-function-name", &flag_prefix_function_name, 1,
-   N_("Add a prefix to all function names") },
   {"dump-unnumbered", &flag_dump_unnumbered, 1,
    N_("Suppress output of instruction numbers and line number notes in debugging dumps") },
   {"instrument-functions", &flag_instrument_function_entry_exit, 1,
@@ -4815,10 +4801,6 @@ parse_options_and_default_flags (argc, argv)
 static void
 process_options ()
 {
-  /* Checker uses the frame pointer.  */
-  if (flag_check_memory_usage)
-    flag_omit_frame_pointer = 0;
-
   if (optimize == 0)
     {
       /* Inlining does not work if not optimizing,

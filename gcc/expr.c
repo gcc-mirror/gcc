@@ -81,11 +81,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    the same indirect address eventually.  */
 int cse_not_expected;
 
-/* Don't check memory usage, since code is being emitted to check a memory
-   usage.  Used when current_function_check_memory_usage is true, to avoid
-   infinite recursion.  */
-static int in_check_memory_usage;
-
 /* Chain of pending expressions for PLACEHOLDER_EXPR to replace.  */
 static tree placeholder_list = 0;
 
@@ -124,8 +119,6 @@ struct store_by_pieces
 
 extern struct obstack permanent_obstack;
 
-static rtx get_push_address	PARAMS ((int));
-
 static rtx enqueue_insn		PARAMS ((rtx, rtx));
 static unsigned HOST_WIDE_INT move_by_pieces_ninsns
 				PARAMS ((unsigned HOST_WIDE_INT,
@@ -152,8 +145,6 @@ static rtx store_field		PARAMS ((rtx, HOST_WIDE_INT,
 					 HOST_WIDE_INT, enum machine_mode,
 					 tree, enum machine_mode, int, tree,
 					 int));
-static enum memory_use_mode
-  get_memory_usage_from_modifier PARAMS ((enum expand_modifier));
 static rtx var_rtx		PARAMS ((tree));
 static HOST_WIDE_INT highest_pow2_factor PARAMS ((tree));
 static rtx expand_increment	PARAMS ((tree, int, int));
@@ -3124,26 +3115,6 @@ push_block (size, extra, below)
   return memory_address (GET_CLASS_NARROWEST_MODE (MODE_INT), temp);
 }
 
-
-/* Return an rtx for the address of the beginning of an as-if-it-was-pushed
-   block of SIZE bytes.  */
-
-static rtx
-get_push_address (size)
-     int size;
-{
-  rtx temp;
-
-  if (STACK_PUSH_CODE == POST_DEC)
-    temp = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (size));
-  else if (STACK_PUSH_CODE == POST_INC)
-    temp = gen_rtx_MINUS (Pmode, stack_pointer_rtx, GEN_INT (size));
-  else
-    temp = stack_pointer_rtx;
-
-  return copy_to_reg (temp);
-}
-
 #ifdef PUSH_ROUNDING
 
 /* Emit single push insn.  */
@@ -3325,28 +3296,6 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	    anti_adjust_stack (GEN_INT (extra));
 
 	  move_by_pieces (NULL, xinner, INTVAL (size) - used, align);
-
-	  if (current_function_check_memory_usage && ! in_check_memory_usage)
-	    {
-	      rtx temp;
-
-	      in_check_memory_usage = 1;
-	      temp = get_push_address (INTVAL (size) - used);
-	      if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
-		emit_library_call (chkr_copy_bitmap_libfunc,
-				   LCT_CONST_MAKE_BLOCK, VOIDmode, 3, temp,
-				   Pmode, XEXP (xinner, 0), Pmode,
-				   GEN_INT (INTVAL (size) - used),
-				   TYPE_MODE (sizetype));
-	      else
-		emit_library_call (chkr_set_right_libfunc,
-				   LCT_CONST_MAKE_BLOCK, VOIDmode, 3, temp,
-				   Pmode, GEN_INT (INTVAL (size) - used),
-				   TYPE_MODE (sizetype),
-				   GEN_INT (MEMORY_USE_RW),
-				   TYPE_MODE (integer_type_node));
-	      in_check_memory_usage = 0;
-	    }
 	}
       else
 #endif /* PUSH_ROUNDING  */
@@ -3385,26 +3334,6 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 								args_addr,
 								args_so_far),
 						  skip));
-	  if (current_function_check_memory_usage && ! in_check_memory_usage)
-	    {
-	      in_check_memory_usage = 1;
-	      target = copy_to_reg (temp);
-	      if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
-		emit_library_call (chkr_copy_bitmap_libfunc,
-				   LCT_CONST_MAKE_BLOCK, VOIDmode, 3,
-				   target, Pmode,
-				   XEXP (xinner, 0), Pmode,
-				   size, TYPE_MODE (sizetype));
-	      else
-	        emit_library_call (chkr_set_right_libfunc,
-				   LCT_CONST_MAKE_BLOCK, VOIDmode, 3,
-				   target, Pmode,
-			 	   size, TYPE_MODE (sizetype),
-				   GEN_INT (MEMORY_USE_RW),
-				   TYPE_MODE (integer_type_node));
-	      in_check_memory_usage = 0;
-	    }
-
 	  target = gen_rtx_MEM (BLKmode, temp);
 
 	  if (type != 0)
@@ -3605,27 +3534,6 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	  emit_move_insn (dest, x);
 	}
 
-      if (current_function_check_memory_usage && ! in_check_memory_usage)
-	{
-	  in_check_memory_usage = 1;
-	  if (target == 0)
-	    target = get_push_address (GET_MODE_SIZE (mode));
-
-	  if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
-	    emit_library_call (chkr_copy_bitmap_libfunc,
-			       LCT_CONST_MAKE_BLOCK, VOIDmode, 3, target,
-			       Pmode, XEXP (x, 0), Pmode,
-			       GEN_INT (GET_MODE_SIZE (mode)),
-			       TYPE_MODE (sizetype));
-	  else
-	    emit_library_call (chkr_set_right_libfunc,
-			       LCT_CONST_MAKE_BLOCK, VOIDmode, 3, target,
-			       Pmode, GEN_INT (GET_MODE_SIZE (mode)),
-			       TYPE_MODE (sizetype),
-			       GEN_INT (MEMORY_USE_RW),
-			       TYPE_MODE (integer_type_node));
-	  in_check_memory_usage = 0;
-	}
     }
 
  ret:
@@ -3724,8 +3632,8 @@ expand_assignment (to, from, want_value, suggest_reg)
       if (mode1 == VOIDmode && want_value)
 	tem = stabilize_reference (tem);
 
-      orig_to_rtx = to_rtx
-	= expand_expr (tem, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_DONT);
+      orig_to_rtx = to_rtx = expand_expr (tem, NULL_RTX, VOIDmode,
+					  EXPAND_WRITE);
       if (offset != 0)
 	{
 	  rtx offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
@@ -3812,36 +3720,6 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
 	}
 
-      /* Check the access.  */
-      if (current_function_check_memory_usage && GET_CODE (to_rtx) == MEM)
-	{
-	  rtx to_addr;
-	  int size;
-	  int best_mode_size;
-	  enum machine_mode best_mode;
-
-	  best_mode = get_best_mode (bitsize, bitpos,
-	  			     TYPE_ALIGN (TREE_TYPE (tem)),
-	  			     mode1, volatilep);
-	  if (best_mode == VOIDmode)
-	    best_mode = QImode;
-
-	  best_mode_size = GET_MODE_BITSIZE (best_mode);
-	  to_addr = plus_constant (XEXP (to_rtx, 0), bitpos / BITS_PER_UNIT);
-	  size = CEIL ((bitpos % best_mode_size) + bitsize, best_mode_size);
-	  size *= GET_MODE_SIZE (best_mode);
-
-	  /* Check the access right of the pointer.  */
-	  in_check_memory_usage = 1;
-	  if (size)
-	    emit_library_call (chkr_check_addr_libfunc, LCT_CONST_MAKE_BLOCK,
-			       VOIDmode, 3, to_addr, Pmode,
-			       GEN_INT (size), TYPE_MODE (sizetype),
-			       GEN_INT (MEMORY_USE_WO),
-			       TYPE_MODE (integer_type_node));
-	  in_check_memory_usage = 0;
-	}
-
       result = store_field (to_rtx, bitsize, bitpos, mode1, from,
 			    (want_value
 			     /* Spurious cast for HPUX compiler.  */
@@ -3883,7 +3761,7 @@ expand_assignment (to, from, want_value, suggest_reg)
       push_temp_slots ();
       value = expand_expr (from, NULL_RTX, VOIDmode, 0);
       if (to_rtx == 0)
-	to_rtx = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_WO);
+	to_rtx = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
       /* Handle calls that return values in multiple non-contiguous locations.
 	 The Irix 6 ABI has examples of this.  */
@@ -3910,7 +3788,7 @@ expand_assignment (to, from, want_value, suggest_reg)
      Don't re-expand if it was expanded already (in COMPONENT_REF case).  */
 
   if (to_rtx == 0)
-    to_rtx = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_WO);
+    to_rtx = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
   /* Don't move directly into a return register.  */
   if (TREE_CODE (to) == RESULT_DECL
@@ -3943,17 +3821,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 
       push_temp_slots ();
       size = expr_size (from);
-      from_rtx = expand_expr (from, NULL_RTX, VOIDmode,
-			      EXPAND_MEMORY_USE_DONT);
-
-      /* Copy the rights of the bitmap.  */
-      if (current_function_check_memory_usage)
-	emit_library_call (chkr_copy_bitmap_libfunc, LCT_CONST_MAKE_BLOCK,
-			   VOIDmode, 3, XEXP (to_rtx, 0), Pmode,
-			   XEXP (from_rtx, 0), Pmode,
-			   convert_to_mode (TYPE_MODE (sizetype),
-					    size, TREE_UNSIGNED (sizetype)),
-			   TYPE_MODE (sizetype));
+      from_rtx = expand_expr (from, NULL_RTX, VOIDmode, 0);
 
 #ifdef TARGET_MEM_FUNCTIONS
       emit_library_call (memmove_libfunc, LCT_NORMAL,
@@ -4195,28 +4063,9 @@ store_expr (exp, target, want_value)
     temp = convert_modes (GET_MODE (target), TYPE_MODE (TREE_TYPE (exp)),
 			  temp, TREE_UNSIGNED (TREE_TYPE (exp)));
 
-  if (current_function_check_memory_usage
-      && GET_CODE (target) == MEM
-      && AGGREGATE_TYPE_P (TREE_TYPE (exp)))
-    {
-      in_check_memory_usage = 1;
-      if (GET_CODE (temp) == MEM)
-	emit_library_call (chkr_copy_bitmap_libfunc, LCT_CONST_MAKE_BLOCK,
-			   VOIDmode, 3, XEXP (target, 0), Pmode,
-			   XEXP (temp, 0), Pmode,
-			   expr_size (exp), TYPE_MODE (sizetype));
-      else
-	emit_library_call (chkr_check_addr_libfunc, LCT_CONST_MAKE_BLOCK,
-			   VOIDmode, 3, XEXP (target, 0), Pmode,
-			   expr_size (exp), TYPE_MODE (sizetype),
-			   GEN_INT (MEMORY_USE_WO),
-			   TYPE_MODE (integer_type_node));
-      in_check_memory_usage = 0;
-    }
-
   /* If value was not generated in the target, store it there.
-     Convert the value to TARGET's type first if nec.  */
-  /* If TEMP and TARGET compare equal according to rtx_equal_p, but
+     Convert the value to TARGET's type first if necessary.
+     If TEMP and TARGET compare equal according to rtx_equal_p, but
      one or both of them are volatile memory refs, we have to distinguish
      two cases:
      - expand_expr has used TARGET.  In this case, we must not generate
@@ -4305,19 +4154,7 @@ store_expr (exp, target, want_value)
 		}
 
 	      if (size != const0_rtx)
-		{
-		  /* Be sure we can write on ADDR.  */
-		  in_check_memory_usage = 1;
-		  if (current_function_check_memory_usage)
-		    emit_library_call (chkr_check_addr_libfunc,
-				       LCT_CONST_MAKE_BLOCK, VOIDmode, 3,
-				       XEXP (target, 0), Pmode,
-				       size, TYPE_MODE (sizetype),
- 				       GEN_INT (MEMORY_USE_WO),
-				       TYPE_MODE (integer_type_node));
-		  in_check_memory_usage = 0;
-		  clear_storage (target, size);
-		}
+		clear_storage (target, size);
 
 	      if (label)
 		emit_label (label);
@@ -5508,37 +5345,6 @@ handled_component_p (t)
       return 0;
     }
 }
-
-/* Subroutine of expand_exp: compute memory_usage from modifier.  */
-
-static enum memory_use_mode
-get_memory_usage_from_modifier (modifier)
-     enum expand_modifier modifier;
-{
-  switch (modifier)
-    {
-    case EXPAND_NORMAL:
-    case EXPAND_SUM:
-      return MEMORY_USE_RO;
-      break;
-    case EXPAND_MEMORY_USE_WO:
-      return MEMORY_USE_WO;
-      break;
-    case EXPAND_MEMORY_USE_RW:
-      return MEMORY_USE_RW;
-      break;
-    case EXPAND_MEMORY_USE_DONT:
-      /* EXPAND_CONST_ADDRESS and EXPAND_INITIALIZER are converted into
-	 MEMORY_USE_DONT, because they are modifiers to a call of
-	 expand_expr in the ADDR_EXPR case of expand_expr.  */
-    case EXPAND_CONST_ADDRESS:
-    case EXPAND_INITIALIZER:
-      return MEMORY_USE_DONT;
-    case EXPAND_MEMORY_USE_BAD:
-    default:
-      abort ();
-    }
-}
 
 /* Given an rtx VALUE that may contain additions and multiplications, return
    an equivalent value that just refers to a register, memory, or constant.
@@ -6133,8 +5939,6 @@ expand_expr (exp, target, tmode, modifier)
   rtx subtarget, original_target;
   int ignore;
   tree context;
-  /* Used by check-memory-usage to make modifier read only.  */
-  enum expand_modifier ro_modifier;
 
   /* Handle ERROR_MARK before anybody tries to access its type.  */
   if (TREE_CODE (exp) == ERROR_MARK || TREE_CODE (type) == ERROR_MARK)
@@ -6155,13 +5959,6 @@ expand_expr (exp, target, tmode, modifier)
 		 || code == COND_EXPR || code == VIEW_CONVERT_EXPR)
 		&& TREE_CODE (type) == VOID_TYPE));
 
-  /* Make a read-only version of the modifier.  */
-  if (modifier == EXPAND_NORMAL || modifier == EXPAND_SUM
-      || modifier == EXPAND_CONST_ADDRESS || modifier == EXPAND_INITIALIZER)
-    ro_modifier = modifier;
-  else
-    ro_modifier = EXPAND_NORMAL;
-
   /* If we are going to ignore this result, we need only do something
      if there is a side-effect somewhere in the expression.  If there
      is, short-circuit the most common cases here.  Note that we must
@@ -6180,7 +5977,7 @@ expand_expr (exp, target, tmode, modifier)
 	  && mode != VOIDmode && mode != BLKmode
 	  && modifier != EXPAND_CONST_ADDRESS)
 	{
-	  temp = expand_expr (exp, NULL_RTX, VOIDmode, ro_modifier);
+	  temp = expand_expr (exp, NULL_RTX, VOIDmode, modifier);
 	  if (GET_CODE (temp) == MEM)
 	    temp = copy_to_reg (temp);
 	  return const0_rtx;
@@ -6188,34 +5985,30 @@ expand_expr (exp, target, tmode, modifier)
 
       if (TREE_CODE_CLASS (code) == '1' || code == COMPONENT_REF
 	  || code == INDIRECT_REF || code == BUFFER_REF)
-	return expand_expr (TREE_OPERAND (exp, 0), const0_rtx,
-			    VOIDmode, ro_modifier);
+	return expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
+			    modifier);
+
       else if (TREE_CODE_CLASS (code) == '2' || TREE_CODE_CLASS (code) == '<'
 	       || code == ARRAY_REF || code == ARRAY_RANGE_REF)
 	{
-	  expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
-		       ro_modifier);
-	  expand_expr (TREE_OPERAND (exp, 1), const0_rtx, VOIDmode,
-		       ro_modifier);
+	  expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, modifier);
+	  expand_expr (TREE_OPERAND (exp, 1), const0_rtx, VOIDmode, modifier);
 	  return const0_rtx;
 	}
       else if ((code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
 	       && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 1)))
 	/* If the second operand has no side effects, just evaluate
 	   the first.  */
-	return expand_expr (TREE_OPERAND (exp, 0), const0_rtx,
-			    VOIDmode, ro_modifier);
+	return expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
+			    modifier);
       else if (code == BIT_FIELD_REF)
 	{
-	  expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
-		       ro_modifier);
-	  expand_expr (TREE_OPERAND (exp, 1), const0_rtx, VOIDmode,
-		       ro_modifier);
-	  expand_expr (TREE_OPERAND (exp, 2), const0_rtx, VOIDmode,
-		       ro_modifier);
+	  expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, modifier);
+	  expand_expr (TREE_OPERAND (exp, 1), const0_rtx, VOIDmode, modifier);
+	  expand_expr (TREE_OPERAND (exp, 2), const0_rtx, VOIDmode, modifier);
 	  return const0_rtx;
 	}
-      ;
+
       target = 0;
     }
 
@@ -6331,35 +6124,7 @@ expand_expr (exp, target, tmode, modifier)
 	      set_mem_attributes (value, exp, 1);
 	      SET_DECL_RTL (exp, value);
 	    }
-	}
-
-      /* Although static-storage variables start off initialized, according to
-	 ANSI C, a memcpy could overwrite them with uninitialized values.  So
-	 we check them too.  This also lets us check for read-only variables
-	 accessed via a non-const declaration, in case it won't be detected
-	 any other way (e.g., in an embedded system or OS kernel without
-	 memory protection).
-
-	 Aggregates are not checked here; they're handled elsewhere.  */
-      if (cfun && current_function_check_memory_usage
-	  && code == VAR_DECL
-	  && GET_CODE (DECL_RTL (exp)) == MEM
-	  && ! AGGREGATE_TYPE_P (TREE_TYPE (exp)))
-	{
-	  enum memory_use_mode memory_usage;
-	  memory_usage = get_memory_usage_from_modifier (modifier);
-
-	  in_check_memory_usage = 1;
-	  if (memory_usage != MEMORY_USE_DONT)
-	    emit_library_call (chkr_check_addr_libfunc,
-			       LCT_CONST_MAKE_BLOCK, VOIDmode, 3,
-			       XEXP (DECL_RTL (exp), 0), Pmode,
-			       GEN_INT (int_size_in_bytes (type)),
-			       TYPE_MODE (sizetype),
-			       GEN_INT (memory_usage),
-			       TYPE_MODE (integer_type_node));
-	  in_check_memory_usage = 0;
-	}
+	  }
 
       /* ... fall through ...  */
 
@@ -6473,8 +6238,7 @@ expand_expr (exp, target, tmode, modifier)
 				 TREE_INT_CST_HIGH (exp), mode);
 
     case CONST_DECL:
-      return expand_expr (DECL_INITIAL (exp), target, VOIDmode,
-			  EXPAND_MEMORY_USE_BAD);
+      return expand_expr (DECL_INITIAL (exp), target, VOIDmode, 0);
 
     case REAL_CST:
       /* If optimized, generate immediate CONST_DOUBLE
@@ -6587,8 +6351,7 @@ expand_expr (exp, target, tmode, modifier)
 	    }
 
 	  if (temp == const0_rtx)
-	    expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
-			 EXPAND_MEMORY_USE_BAD);
+	    expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
 	  else
 	    store_expr (TREE_OPERAND (exp, 0), temp, 0);
 
@@ -6630,7 +6393,7 @@ expand_expr (exp, target, tmode, modifier)
 	  abort ();
 
 	placeholder_list = TREE_CHAIN (placeholder_expr);
-	temp = expand_expr (exp, original_target, tmode, ro_modifier);
+	temp = expand_expr (exp, original_target, tmode, modifier);
 	placeholder_list = old_list;
 	return temp;
       }
@@ -6643,8 +6406,8 @@ expand_expr (exp, target, tmode, modifier)
 	 and pop the list.  */
       placeholder_list = tree_cons (TREE_OPERAND (exp, 1), NULL_TREE,
 				    placeholder_list);
-      target = expand_expr (TREE_OPERAND (exp, 0), original_target,
-			    tmode, ro_modifier);
+      target = expand_expr (TREE_OPERAND (exp, 0), original_target, tmode,
+			    modifier);
       placeholder_list = TREE_CHAIN (placeholder_list);
       return target;
 
@@ -6709,7 +6472,7 @@ expand_expr (exp, target, tmode, modifier)
 	    vars = TREE_CHAIN (vars);
 	  }
 
-	temp = expand_expr (TREE_OPERAND (exp, 1), target, tmode, ro_modifier);
+	temp = expand_expr (TREE_OPERAND (exp, 1), target, tmode, modifier);
 
 	expand_end_bindings (TREE_OPERAND (exp, 0), 0, 0);
 
@@ -6734,9 +6497,10 @@ expand_expr (exp, target, tmode, modifier)
       if (ignore)
 	{
 	  tree elt;
+
 	  for (elt = CONSTRUCTOR_ELTS (exp); elt; elt = TREE_CHAIN (elt))
-	    expand_expr (TREE_VALUE (elt), const0_rtx, VOIDmode,
-	    		 EXPAND_MEMORY_USE_BAD);
+	    expand_expr (TREE_VALUE (elt), const0_rtx, VOIDmode, 0);
+
 	  return const0_rtx;
 	}
 
@@ -6798,39 +6562,19 @@ expand_expr (exp, target, tmode, modifier)
 	    && compare_tree_int (index, TREE_STRING_LENGTH (string)) < 0
  	    && GET_MODE_CLASS (mode) == MODE_INT
  	    && GET_MODE_SIZE (mode) == 1
-	    && modifier != EXPAND_MEMORY_USE_WO)
+	    && modifier != EXPAND_WRITE)
  	  return
 	    GEN_INT (TREE_STRING_POINTER (string)[TREE_INT_CST_LOW (index)]);
 
 	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
 	op0 = memory_address (mode, op0);
-
-	if (cfun && current_function_check_memory_usage
-	    && ! AGGREGATE_TYPE_P (TREE_TYPE (exp)))
-	  {
-	    enum memory_use_mode memory_usage;
-	    memory_usage = get_memory_usage_from_modifier (modifier);
-
-            if (memory_usage != MEMORY_USE_DONT)
-	      {
-		in_check_memory_usage = 1;
-		emit_library_call (chkr_check_addr_libfunc,
-				   LCT_CONST_MAKE_BLOCK, VOIDmode, 3, op0,
-				   Pmode, GEN_INT (int_size_in_bytes (type)),
-				   TYPE_MODE (sizetype),
-				   GEN_INT (memory_usage),
-				   TYPE_MODE (integer_type_node));
-		in_check_memory_usage = 0;
-	      }
-	  }
-
 	temp = gen_rtx_MEM (mode, op0);
 	set_mem_attributes (temp, exp, 0);
 
 	/* If we are writing to this object and its type is a record with
 	   readonly fields, we must mark it as readonly so it will
 	   conflict with readonly references to those fields.  */
-	if (modifier == EXPAND_MEMORY_USE_WO && readonly_fields_p (type))
+	if (modifier == EXPAND_WRITE && readonly_fields_p (type))
 	  RTX_UNCHANGING_P (temp) = 1;
 
 	return temp;
@@ -6892,8 +6636,8 @@ expand_expr (exp, target, tmode, modifier)
 	      ;
 
 	    if (elem)
-	      return expand_expr (fold (TREE_VALUE (elem)), target,
-				  tmode, ro_modifier);
+	      return expand_expr (fold (TREE_VALUE (elem)), target, tmode,
+				  modifier);
 	  }
 
 	else if (optimize >= 1
@@ -6919,7 +6663,7 @@ expand_expr (exp, target, tmode, modifier)
 
 		    if (elem && !TREE_SIDE_EFFECTS (TREE_VALUE (elem)))
 		      return expand_expr (fold (TREE_VALUE (elem)), target,
-					  tmode, ro_modifier);
+					  tmode, modifier);
 		  }
 		else if (TREE_CODE (init) == STRING_CST
 			 && 0 > compare_tree_int (index,
@@ -7115,34 +6859,6 @@ expand_expr (exp, target, tmode, modifier)
 	      op0 = copy_rtx (op0);
 
 	    MEM_VOLATILE_P (op0) = 1;
-	  }
-
-	/* Check the access.  */
-	if (cfun != 0 && current_function_check_memory_usage
-	    && GET_CODE (op0) == MEM)
-	  {
-	    enum memory_use_mode memory_usage;
-	    memory_usage = get_memory_usage_from_modifier (modifier);
-
-	    if (memory_usage != MEMORY_USE_DONT)
-	      {
-		rtx to;
-		int size;
-
-		to = plus_constant (XEXP (op0, 0), (bitpos / BITS_PER_UNIT));
-		size = (bitpos % BITS_PER_UNIT) + bitsize + BITS_PER_UNIT - 1;
-
-        	/* Check the access right of the pointer.  */
-		in_check_memory_usage = 1;
-		if (size > BITS_PER_UNIT)
-		  emit_library_call (chkr_check_addr_libfunc,
-				     LCT_CONST_MAKE_BLOCK, VOIDmode, 3, to,
-				     Pmode, GEN_INT (size / BITS_PER_UNIT),
-				     TYPE_MODE (sizetype),
-				     GEN_INT (memory_usage),
-				     TYPE_MODE (integer_type_node));
-		in_check_memory_usage = 0;
-	      }
 	  }
 
 	/* In cases where an aligned union has an unaligned object
@@ -7416,7 +7132,7 @@ expand_expr (exp, target, tmode, modifier)
       if (WITH_CLEANUP_EXPR_RTL (exp) == 0)
 	{
 	  WITH_CLEANUP_EXPR_RTL (exp)
-	    = expand_expr (TREE_OPERAND (exp, 0), target, tmode, ro_modifier);
+	    = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
 	  expand_decl_cleanup (NULL_TREE, TREE_OPERAND (exp, 1));
 
 	  /* That's it for this cleanup.  */
@@ -7432,7 +7148,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	target_temp_slot_level = temp_slot_level;
 
-	op0 = expand_expr (TREE_OPERAND (exp, 0), target, tmode, ro_modifier);
+	op0 = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
 	/* If we're going to use this value, load it up now.  */
 	if (! ignore)
 	  op0 = force_not_mem (op0);
@@ -7507,7 +7223,7 @@ expand_expr (exp, target, tmode, modifier)
       if (mode == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
 	{
 	  op0 = expand_expr (TREE_OPERAND (exp, 0), target, VOIDmode,
-			     ro_modifier);
+			     modifier);
 
 	  /* If the signedness of the conversion differs and OP0 is
 	     a promoted SUBREG, clear that indication since we now
@@ -7542,7 +7258,7 @@ expand_expr (exp, target, tmode, modifier)
       return target;
 
     case VIEW_CONVERT_EXPR:
-      op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, ro_modifier);
+      op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, modifier);
 
       /* If the input and output modes are both the same, we are done.
 	 Otherwise, if neither mode is BLKmode and both are within a word, we
@@ -7722,8 +7438,8 @@ expand_expr (exp, target, tmode, modifier)
       if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
 	subtarget = 0;
 
-      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, ro_modifier);
-      op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, ro_modifier);
+      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, modifier);
+      op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, modifier);
 
     both_summands:
       /* Make sure any term that's a sum with a constant comes last.  */
@@ -7782,10 +7498,10 @@ expand_expr (exp, target, tmode, modifier)
 	  && really_constant_p (TREE_OPERAND (exp, 0))
 	  && really_constant_p (TREE_OPERAND (exp, 1)))
 	{
-	  rtx op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX,
-				 VOIDmode, ro_modifier);
-	  rtx op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX,
-				 VOIDmode, ro_modifier);
+	  rtx op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode,
+				 modifier);
+	  rtx op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode,
+				 modifier);
 
 	  /* If the last operand is a CONST_INT, use plus_constant of
 	     the negated constant.  Else make the MINUS.  */
@@ -8267,11 +7983,11 @@ expand_expr (exp, target, tmode, modifier)
 	    if (ignore)
 	      {
 		expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
-			     ro_modifier);
+			     modifier);
 		return const0_rtx;
 	      }
 
-	    op0 = expand_expr (TREE_OPERAND (exp, 0), target, mode, ro_modifier);
+	    op0 = expand_expr (TREE_OPERAND (exp, 0), target, mode, modifier);
 	    if (GET_MODE (op0) == mode)
 	      return op0;
 
@@ -9076,7 +8792,7 @@ expand_increment (exp, post, ignore)
      and insns were generated in computing it.  */
 
   temp = get_last_insn ();
-  op0 = expand_expr (incremented, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_RW);
+  op0 = expand_expr (incremented, NULL_RTX, VOIDmode, 0);
 
   /* If OP0 is a SUBREG made for a promoted variable, we cannot increment
      in place but instead must do sign- or zero-extension during assignment,
@@ -9107,8 +8823,7 @@ expand_increment (exp, post, ignore)
 
   op0_is_copy = ((GET_CODE (op0) == SUBREG || GET_CODE (op0) == REG)
 		 && temp != get_last_insn ());
-  op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode,
-		     EXPAND_MEMORY_USE_BAD);
+  op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
 
   /* Decide whether incrementing or decrementing.  */
   if (TREE_CODE (exp) == POSTDECREMENT_EXPR
@@ -9229,9 +8944,9 @@ expand_increment (exp, post, ignore)
     temp = copy_rtx (value = op0);
 
   /* Increment however we can.  */
-  op1 = expand_binop (mode, this_optab, value, op1,
-		      current_function_check_memory_usage ? NULL_RTX : op0,
+  op1 = expand_binop (mode, this_optab, value, op1, op0,
 		      TREE_UNSIGNED (TREE_TYPE (exp)), OPTAB_LIB_WIDEN);
+
   /* Make sure the value is stored into OP0.  */
   if (op1 != op0)
     emit_move_insn (op0, op1);
