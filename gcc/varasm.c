@@ -3895,7 +3895,26 @@ output_constructor (exp, size)
       if (val != 0)
 	STRIP_NOPS (val);
 
-      if (field == 0 || !DECL_BIT_FIELD (field))
+      if (index && TREE_CODE (index) == RANGE_EXPR)
+	{
+	  register int fieldsize
+	    = int_size_in_bytes (TREE_TYPE (TREE_TYPE (exp)));
+	  HOST_WIDE_INT lo_index = TREE_INT_CST_LOW (TREE_OPERAND (index, 0));
+	  HOST_WIDE_INT hi_index = TREE_INT_CST_LOW (TREE_OPERAND (index, 1));
+	  HOST_WIDE_INT index;
+	  for (index = lo_index; index <= hi_index; index++)
+	    {
+	      /* Output the element's initial value.  */
+	      if (val == 0)
+		assemble_zeros (fieldsize);
+	      else
+		output_constant (val, fieldsize);
+
+	      /* Count its size.  */
+	      total_bytes += fieldsize;
+	    }
+	}
+      else if (field == 0 || !DECL_BIT_FIELD (field))
 	{
 	  /* An element that is not a bit-field.  */
 
