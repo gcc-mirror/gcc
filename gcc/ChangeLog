@@ -1,3 +1,11 @@
+2003-04-24  Alexander Kabaev <kan@FreeBSD.ORG>
+
+	bootstrap/10453
+	* config/sparc/sparc.md (umulsidi3, mulsidi3): Avoid using
+	const_umulsidi3_sp32 and const_mulsidi3_sp32 on 64bit targets 
+	where they might be not present. Use their _sp64 equivalent
+	instead.
+
 2003-04-23  Richard Henderson  <rth@redhat.com>
 
 	PR opt/8300
