@@ -1,3 +1,19 @@
+2004-08-26  Mark Wielaard  <mark@klomp.org>
+
+	Fixes PR libgcj/17002:
+	* java/util/TimeZone.java (defaultZone): Try a couple of ways to get
+	a TimeZoneId string and then try to convert that to a TimeZone with
+	getDefaultSystemTimeZone(String).
+	(timezones0): Changed type from Hashtable to HashMap.
+	(timezones): Create HashMap, not Hashtable.
+	(getDefaultTimeZone): New method, rewritten from CNI version.
+	(readTimeZoneFile): New method.
+	(readtzFile): Likewise.
+	(skipFully): Likewise.
+	* java/util/natTimeZone.cc (getSystemTimeZone): Renamed to
+	getDefaultTimeZoneId and rewritten.
+	(getDefaultTimeZoneId): Rewritten in java.
+	
 2004-08-25  David Daney  <daney@avtrex.com>
 
 	* Makefile.am (AM_GCJFLAGS):  Add LIBGCJ_JAVAFLAGS.
