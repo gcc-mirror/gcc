@@ -5613,6 +5613,32 @@ tree_class_check_failed (node, cl, file, line, function)
 #endif /* ENABLE_TREE_CHECKING */
 
 
+/* For a new vector type node T, build the information necessary for
+   debuggint output.  */
+static void
+finish_vector_type (t)
+     tree t;
+{
+  layout_type (t);
+
+  {
+    tree index = build_int_2 (TYPE_VECTOR_SUBPARTS (t) - 1, 0);
+    tree array = build_array_type (TREE_TYPE (t),
+				   build_index_type (index));
+    tree rt = make_node (RECORD_TYPE);
+
+    TYPE_FIELDS (rt) = build_decl (FIELD_DECL, get_identifier ("f"), array);
+    DECL_CONTEXT (TYPE_FIELDS (rt)) = rt;
+    layout_type (rt);
+    TYPE_DEBUG_REPRESENTATION_TYPE (t) = rt;
+    /* In dwarfout.c, type lookup uses TYPE_UID numbers.  We want to output
+       the representation type, and we want to find that die when looking up
+       the vector type.  This is most easily achieved by making the TYPE_UID
+       numbers equal.  */
+    TYPE_UID (rt) = TYPE_UID (t);
+  }
+}
+
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif
@@ -5764,4 +5790,29 @@ build_common_tree_nodes_2 (short_double)
 #else
   va_list_type_node = ptr_type_node;
 #endif
+
+  V4SF_type_node = make_node (VECTOR_TYPE);
+  TREE_TYPE (V4SF_type_node) = float_type_node;
+  TYPE_MODE (V4SF_type_node) = V4SFmode;
+  finish_vector_type (V4SF_type_node);
+
+  V4SI_type_node = make_node (VECTOR_TYPE);
+  TREE_TYPE (V4SI_type_node) = intSI_type_node;
+  TYPE_MODE (V4SI_type_node) = V4SImode;
+  finish_vector_type (V4SI_type_node);
+
+  V2SI_type_node = make_node (VECTOR_TYPE);
+  TREE_TYPE (V2SI_type_node) = intSI_type_node;
+  TYPE_MODE (V2SI_type_node) = V2SImode;
+  finish_vector_type (V2SI_type_node);
+
+  V4HI_type_node = make_node (VECTOR_TYPE);
+  TREE_TYPE (V4HI_type_node) = intHI_type_node;
+  TYPE_MODE (V4HI_type_node) = V4HImode;
+  finish_vector_type (V4HI_type_node);
+
+  V8QI_type_node = make_node (VECTOR_TYPE);
+  TREE_TYPE (V8QI_type_node) = intQI_type_node;
+  TYPE_MODE (V8QI_type_node) = V8QImode;
+  finish_vector_type (V8QI_type_node);
 }

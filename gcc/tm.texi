@@ -1043,6 +1043,12 @@ this size or smaller can be used for structures and unions with the
 appropriate sizes.  If this macro is undefined, @code{GET_MODE_BITSIZE
 (DImode)} is assumed.
 
+@findex VECTOR_MODE_SUPPORTED_P
+@item VECTOR_MODE_SUPPORTED_P(@var{mode})
+Define this macro to be nonzero if the port is prepared to handle insns
+involving vector mode @var{mode}.  At the very least, it must have move
+patterns for this mode.
+
 @findex STACK_SAVEAREA_MODE
 @item STACK_SAVEAREA_MODE (@var{save_level})
 If defined, an expression of type @code{enum machine_mode} that

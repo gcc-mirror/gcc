@@ -237,6 +237,9 @@ enum dwarf_fundamental_type {
     FT_int64		= 0x9908,
     FT_signed_int64	= 0x9a08,
     FT_unsigned_int64	= 0x9b08,
+    FT_int128		= 0x9c10,
+    FT_signed_int128	= 0x9d10,
+    FT_unsigned_int128	= 0x9e10,
 
     FT_real32		= 0xa004,
     FT_real64		= 0xa108,
