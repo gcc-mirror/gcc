@@ -1,3 +1,8 @@
+2002-03-25  Danny Smith  <dannysmith@sourceforge.users.net>
+
+	* config/i386/mingw32.h (WINT_TYPE): Define as "short unsigned
+	int".
+
 2002-03-25  Zack Weinberg  <zack@codesourcery.com>
 
 	* toplev.c: Don't include setjmp.h.  Kill float_handler_set,
