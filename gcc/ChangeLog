@@ -1,3 +1,7 @@
+2002-04-25  Steve Christiansen  <smc@us.ibm.com>
+
+	* doc/md.texi (Machine Constraints): Add IA-64 constraints.
+
 2002-04-25  Eric Botcazou  <ebotcazou@multimania.com>
 
 	* c-decl.c (grokdeclarator): Remove outdated ??? note

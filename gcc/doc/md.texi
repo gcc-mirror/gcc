@@ -1679,6 +1679,69 @@ Floating point 0
 Floating point 1
 @end table
 
+@item Intel IA-64---@file{ia64.h}
+@table @code
+@item a
+General register @code{r0} to @code{r3} for @code{addl} instruction
+
+@item b
+Branch register
+
+@item c
+Predicate register (@samp{c} as in ``conditional'')
+
+@item d
+Application register residing in M-unit
+
+@item e
+Application register residing in I-unit
+
+@item f
+Floating-point register
+
+@item m
+Memory operand.
+Remember that @samp{m} allows postincrement and postdecrement which
+require printing with @samp{%Pn} on IA-64.
+Use @samp{S} to disallow postincrement and postdecrement.
+
+@item G
+Floating-point constant 0.0 or 1.0
+
+@item I
+14-bit signed integer constant
+
+@item J
+22-bit signed integer constant
+
+@item K
+8-bit signed integer constant for logical instructions
+
+@item L
+8-bit adjusted signed integer constant for compare pseudo-ops
+
+@item M
+6-bit unsigned integer constant for shift counts
+
+@item N
+9-bit signed integer constant for load and store postincrements
+
+@item O
+The constant zero
+
+@item P
+0 or -1 for @code{dep} instruction
+
+@item Q
+Non-volatile memory for floating-point loads and stores
+
+@item R
+Integer constant in the range 1 to 4 for @code{shladd} instruction
+
+@item S
+Memory operand except postincrement and postdecrement
+@end table
+
 @item MIPS---@file{mips.h}
 @table @code
 @item d
