@@ -1719,7 +1719,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define FILE_ASM_OP		"\tfile\t"
 #define SECTION_ASM_OP		"\tsection\t"
 #define SET_ASM_OP		"\tdef\t"
-#define GLOBAL_ASM_OP		"\tglobal\"
+#define GLOBAL_ASM_OP		"\tglobal\t"
 #define ALIGN_ASM_OP		"\talign\t"
 #define SKIP_ASM_OP		"\tzero\t"
 #define COMMON_ASM_OP		"\tcomm\t"
@@ -1753,7 +1753,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
        fputc ('\n', FILE); } while (0)
 
 /* These are specific to version 03.00 assembler syntax.  */
-#define INTERNAL_ASM_OP		"\tlocal\"
+#define INTERNAL_ASM_OP		"\tlocal\t"
 #define VERSION_ASM_OP		"\tversion\t"
 #define UNALIGNED_SHORT_ASM_OP	"\tuahalf\t"
 #define UNALIGNED_INT_ASM_OP	"\tuaword\t"

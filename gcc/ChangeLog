@@ -1,3 +1,8 @@
+2000-11-07  Nick Clifton  <nickc@redhat.com>
+
+	* config/m88k/m88k.h (GLOBAL_ASM_OP): Add missing tab.
+	(INTERNAL_ASM_OP): Add missing tab.
+
 2000-11-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* alias.c (init_alias_analysis), calls.c (expand_call,
