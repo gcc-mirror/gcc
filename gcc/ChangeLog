@@ -1,3 +1,8 @@
+2004-12-22  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* tree.h (DECL_PTA_ALIASVAR): Dead.
+	(struct tree_decl): Remove alias_var field.
+
 2004-12-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* system.h (IN_RANGE): Restore HOST_WIDE_INT cast.

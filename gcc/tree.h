@@ -2256,9 +2256,6 @@ struct tree_binfo GTY (())
 #define DECL_POINTER_ALIAS_SET(NODE) \
   (DECL_CHECK (NODE)->decl.pointer_alias_set)
 
-/* Used to store the alias_var for a DECL node.  */
-#define DECL_PTA_ALIASVAR(NODE) \
-  (DECL_CHECK (NODE)->decl.alias_var)
 
 /* A numeric unique identifier for a LABEL_DECL.  The UID allocation is
    dense, unique within any one function, and may be used to index arrays.
@@ -2304,7 +2301,6 @@ enum symbol_visibility
 #endif
 
 struct function;
-union alias_var_def;
 struct tree_decl GTY(())
 {
   struct tree_common common;
@@ -2411,7 +2407,6 @@ struct tree_decl GTY(())
 
   tree vindex;
   HOST_WIDE_INT pointer_alias_set;
-  union alias_var_def *GTY ((skip(""))) alias_var;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_decl *lang_specific;
 };
