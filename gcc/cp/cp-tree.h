@@ -2546,9 +2546,12 @@ struct lang_decl GTY(())
 
    An aggregate is an array or a class with no user-declared
    constructors, no private or protected non-static data members, no
-   base classes, and no virtual functions.  */
+   base classes, and no virtual functions.
+
+   As an extension, we also treat vectors as aggregates.  */
 #define CP_AGGREGATE_TYPE_P(TYPE)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
+   || TREE_CODE (TYPE) == VECTOR_TYPE		\
    || (CLASS_TYPE_P (TYPE)			\
        && !CLASSTYPE_NON_AGGREGATE (TYPE)))
 

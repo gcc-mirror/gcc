@@ -1,3 +1,14 @@
+2004-01-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	Backport:
+	2003-06-03  Jason Merrill  <jason@redhat.com>
+                                                                                
+        * cp/cp-tree.h (CP_AGGREGATE_TYPE_P): Accept vectors.
+                                                                                
+        * cp/decl.c (reshape_init): Handle vectors.
+                                                                                
+        * testsuite/g++.dg/init/array10.C: New.
+
 2004-01-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13797
