@@ -148,11 +148,7 @@ We recommend you browse the entire generic installation instructions before
 you proceed.
 
 Lists of successful builds for released versions of GCC are
-available at our web pages for
-@uref{http://gcc.gnu.org/gcc-3.1/buildstat.html,,3.1}, 
-@uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,3.0}
-and
-@uref{http://gcc.gnu.org/gcc-2.95/buildstat.html,,2.95}.
+available at @uref{http://gcc.gnu.org/buildstat.html}. 
 These lists are updated as new information becomes available.
 
 The installation procedure itself is broken into five steps.
