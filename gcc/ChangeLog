@@ -1,5 +1,8 @@
 2002-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/mips/mips.md (addsi3, adddi3): Use scratch register to
+	add register to non-constant into sp.
+
 	* config/mips/mips-protos.h (embedded_pic_fnaddr_reg): New.
 	* config/mips/mips.h (embedded_pic_fnaddr_rtx): Lose.
 	(mips16_gp_pseudo_rtx): Lose.

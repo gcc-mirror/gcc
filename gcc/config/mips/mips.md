@@ -614,6 +614,27 @@
       && GET_CODE (operands[2]) == CONST_INT
       && INTVAL (operands[2]) == -32768)
     operands[2] = force_reg (SImode, operands[2]);
+
+  /* If a large stack adjustment was forced into a register, we may be
+     asked to generate rtx such as:
+
+	(set (reg:SI sp) (plus:SI (reg:SI sp) (reg:SI pseudo)))
+
+     but no such instruction is available in mips16.  Handle it by
+     using a temporary.  */
+  if (TARGET_MIPS16
+      && REGNO (operands[0]) == STACK_POINTER_REGNUM
+      && ((GET_CODE (operands[1]) == REG
+	   && REGNO (operands[1]) != STACK_POINTER_REGNUM)
+	  || GET_CODE (operands[2]) != CONST_INT))
+    {
+      rtx tmp = gen_reg_rtx (SImode);
+
+      emit_move_insn (tmp, operands[1]);
+      emit_insn (gen_addsi3 (tmp, tmp, operands[2]));
+      emit_move_insn (operands[0], tmp);
+      DONE;
+    }
 }")
 
 (define_insn "addsi3_internal"
@@ -776,6 +797,27 @@
       && GET_CODE (operands[2]) == CONST_INT
       && INTVAL (operands[2]) == -32768)
     operands[2] = force_reg (DImode, operands[2]);
+
+  /* If a large stack adjustment was forced into a register, we may be
+     asked to generate rtx such as:
+
+	(set (reg:DI sp) (plus:DI (reg:DI sp) (reg:DI pseudo)))
+
+     but no such instruction is available in mips16.  Handle it by
+     using a temporary.  */
+  if (TARGET_MIPS16
+      && REGNO (operands[0]) == STACK_POINTER_REGNUM
+      && ((GET_CODE (operands[1]) == REG
+	   && REGNO (operands[1]) != STACK_POINTER_REGNUM)
+	  || GET_CODE (operands[2]) != CONST_INT))
+    {
+      rtx tmp = gen_reg_rtx (DImode);
+
+      emit_move_insn (tmp, operands[1]);
+      emit_insn (gen_addsi3 (tmp, tmp, operands[2]));
+      emit_move_insn (operands[0], tmp);
+      DONE;
+    }
 
   if (TARGET_64BIT)
     {
