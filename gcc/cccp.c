@@ -258,12 +258,10 @@ static void hack_vms_include_specification ();
 #  include <inttypes.h>
 #  define HOST_WIDE_INT intmax_t
 # else
-#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT \
-       && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
+#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
 #   define HOST_WIDE_INT int
 #  else
-#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG \
-       || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
+#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
 #   define HOST_WIDE_INT long
 #  else
 #   define HOST_WIDE_INT long long
@@ -10255,10 +10253,11 @@ VMS_freopen (fname, type, oldfile)
      char *type;
      FILE *oldfile;
 {
+#undef freopen	/* Get back the real freopen routine.  */
   if (strcmp (type, "w") == 0)
-    return decc$freopen (fname, type, oldfile,
+    return freopen (fname, type, oldfile,
 			 "mbc=16", "deq=64", "fop=tef", "shr=nil");
-  return decc$freopen (fname, type, oldfile, "mbc=16");
+  return freopen (fname, type, oldfile, "mbc=16");
 }
 
 static FILE *
@@ -10266,10 +10265,11 @@ VMS_fopen (fname, type)
      char *fname;
      char *type;
 {
+#undef fopen	/* Get back the real fopen routine.  */
   /* The gcc-vms-1.42 distribution's header files prototype fopen with two
      fixed arguments, which matches ANSI's specification but not VAXCRTL's
      pre-ANSI implementation.  This hack circumvents the mismatch problem.  */
-  FILE *(*vmslib_fopen)() = (FILE *(*)()) decc$fopen;
+  FILE *(*vmslib_fopen)() = (FILE *(*)()) fopen;
 
   if (*type == 'w')
     return (*vmslib_fopen) (fname, type, "mbc=32",
@@ -10284,7 +10284,8 @@ VMS_open (fname, flags, prot)
      int flags;
      int prot;
 {
-  return decc$open (fname, flags, prot, "mbc=16", "deq=64", "fop=tef");
+#undef open	/* Get back the real open routine.  */
+  return open (fname, flags, prot, "mbc=16", "deq=64", "fop=tef");
 }
 
 /* more VMS hackery */
@@ -10305,13 +10306,14 @@ extern unsigned long sys$parse(), sys$search();
    bad enough, but then compounding the problem by reporting the reason for
    failure as "normal successful completion."  */
 
+#undef fstat	/* Get back to the library version.  */
 
 static int
 VMS_fstat (fd, statbuf)
      int fd;
      struct stat *statbuf;
 {
-  int result = decc$fstat (fd, statbuf);
+  int result = fstat (fd, statbuf);
 
   if (result < 0)
     {
