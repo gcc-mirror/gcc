@@ -1,5 +1,7 @@
 2003-11-09  Jan Hubicka  <jh@suse.cz>
 
+	* tree-optimize.c (tree_rest_of_compilation): Fix warning.
+
 	* cgraphunit.c (cgraph_expand_function): Use
 	cgraph_possibly_inlined_p.
 	* tree-optimize.c (tree_rest_of_compilation): Do not kill saved tree.
