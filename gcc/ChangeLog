@@ -2,6 +2,9 @@ Wed Nov  5 01:42:12 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
+	* alias.c (find_base_value): Only return the known base value for
+	pseudo registers.
+
 Tue Nov  4 16:07:15 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* fixincludes: Fix "hypot" prototype in NeXT math.h.
