@@ -1,3 +1,9 @@
+2005-01-10  Mark Dettinger  <dettinge@de.ibm.com>
+
+	* config/s390/s390.c (struct processor_costs): 4 new fields:
+	ddbr, ddr, debr, der.
+	(s390_rtx_costs): More precise handling of divide instructions.
+
 2005-01-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/t-aix43 (BOOT_LDFLAGS): Define.
