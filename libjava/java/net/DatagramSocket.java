@@ -174,11 +174,28 @@ public class DatagramSocket
 	}
     impl.create();
 
-
-    impl.bind(port, laddr == null ? InetAddress.ANY_IF : laddr);
+    if (laddr == null)
+      laddr = InetAddress.ANY_IF;
     
-    remoteAddress = null;
-    remotePort = -1;
+    try
+      {
+        impl.bind (port, laddr);
+      }
+    catch (SocketException exception)
+      {
+        impl.close ();
+        throw exception;
+      }
+    catch (RuntimeException exception)
+      {
+        impl.close ();
+        throw exception;
+      }
+    catch (Error error)
+      {
+        impl.close ();
+        throw error;
+      }
   }
 
   /**

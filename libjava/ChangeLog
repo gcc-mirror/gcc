@@ -1,5 +1,10 @@
 2003-06-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/DatagramSocket.java:
+	Partly merged with classpath.
+
+2003-06-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/Frame.java,
 	java/awt/Graphics.java,
 	java/awt/Menu.java,
