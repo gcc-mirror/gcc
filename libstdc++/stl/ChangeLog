@@ -1,3 +1,9 @@
+1999-07-11  Martin v. Löwis (loewis@informatik.hu-berlin.de)
+
+	* stl_function.h (bind1st, bind2nd): Rename __opr to __oper,
+	as __opr is used internally by egcs.
+	* stl_numeric.h (__power, power): Likewise.
+
 1999-06-18  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* stl_queue.h: Rename _M_c to c, and _M_comp to comp.

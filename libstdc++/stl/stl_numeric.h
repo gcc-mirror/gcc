@@ -177,22 +177,22 @@ adjacent_difference(_InputIterator __first, _InputIterator __last,
 
  
 template <class _Tp, class _Integer, class _MonoidOperation>
-_Tp __power(_Tp __x, _Integer __n, _MonoidOperation __opr)
+_Tp __power(_Tp __x, _Integer __n, _MonoidOperation __oper)
 {
   if (__n == 0)
-    return identity_element(__opr);
+    return identity_element(__oper);
   else {
     while ((__n & 1) == 0) {
       __n >>= 1;
-      __x = __opr(__x, __x);
+      __x = __oper(__x, __x);
     }
 
     _Tp __result = __x;
     __n >>= 1;
     while (__n != 0) {
-      __x = __opr(__x, __x);
+      __x = __oper(__x, __x);
       if ((__n & 1) != 0)
-        __result = __opr(__result, __x);
+        __result = __oper(__result, __x);
       __n >>= 1;
     }
     return __result;
@@ -209,9 +209,9 @@ inline _Tp __power(_Tp __x, _Integer __n)
 // not part of the C++ standard.
 
 template <class _Tp, class _Integer, class _MonoidOperation>
-inline _Tp power(_Tp __x, _Integer __n, _MonoidOperation __opr)
+inline _Tp power(_Tp __x, _Integer __n, _MonoidOperation __oper)
 {
-  return __power(__x, __n, __opr);
+  return __power(__x, __n, __oper);
 }
 
 template <class _Tp, class _Integer>
