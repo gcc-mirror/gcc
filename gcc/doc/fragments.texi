@@ -13,7 +13,8 @@ construct the file @file{Makefile} from the template file
 fragments from the @file{config} directory.  These are used to set
 Makefile parameters that are not amenable to being calculated by
 autoconf.  The list of fragments to incorporate is set by
-@file{config.gcc} (and occasionally @file{config.build}); @xref{System Config}.
+@file{config.gcc} (and occasionally @file{config.build}
+and @file{config.host}); @xref{System Config}.
 
 Fragments are named either @file{t-@var{target}} or @file{x-@var{host}},
 depending on whether they are relevant to configuring GCC to produce
