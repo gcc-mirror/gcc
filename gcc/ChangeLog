@@ -1,3 +1,8 @@
+2002-12-07  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Configuration): Improve description of cases
+	where `make distclean` may fail; clarify --with-gnu-as; fix grammar.
+
 2002-12-06 Dhananjay Deshpande <dhananjayd@kpit.com>
 
 	* gcc/config/sh/sh.c (calc_live_regs): Save fpscr only if target has
