@@ -1,3 +1,8 @@
+Wed Oct 22 00:34:12 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* rs6000.md (*movsi_got_internal_mem): New pattern.
+	(*movsi_got_internal_mem splitter): New define_split.
+
 Tue Oct 21 18:14:03 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* obstack.h (obstack_empty_p): Fix spurious space after backslash.
