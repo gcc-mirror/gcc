@@ -1,3 +1,9 @@
+2003-05-12  Michael Eager <eager@mvista.com>
+
+	* configure.in: Correct sed script so that options in quotes are not
+	deleted.
+	* configure: Rebuild.
+
 2003-05-12  Michael Meissner  <gnu@the-meissners.org>
 
 	* MAINTAINERS: Update my email addresses.

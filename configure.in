@@ -1757,7 +1757,7 @@ baseargs=`echo " ${ac_configure_args} " | \
 	    -e 's/ -host[[= ]][[^ ]]* / /' \
 	    -e 's/ -build[[= ]][[^ ]]* / /' \
 	    -e 's/ -target[[= ]][[^ ]]* / /' \
-	    -e 's/ [[^ -][^ ]*] / /' \
+	    -e "s/ [[^' -][^ ]*] / /" \
 	    -e 's/^ *//;s/ *$//'`
 
 # For the build-side libraries, we just need to pretend we're native,
