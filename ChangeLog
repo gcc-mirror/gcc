@@ -1,3 +1,10 @@
+2005-01-17  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR bootstrap/18222
+	* Makefile.def: Pass CPPFLAGS_FOR_TARGET.
+	* Makefile.tpl: Define target CPPFLAGS on CPPFLAGS_FOR_TARGET.
+	* Makefile.in: Regenerate.
+
 2005-01-16  Jason Thorpe  <thorpej@netbsd.org>
 
 	* MAINTAINERS: Update my email address.
