@@ -644,10 +644,6 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
 	  error ("invalid token");
 	  break;
 
-	case CPP_OTHER:
-	  /* These tokens are already warned about by c_lex.  */
-	  break;
-
 	default:
 	  /* This is a good token, so we exit the loop.  */
 	  done = true;

@@ -340,10 +340,15 @@ stringify_arg (pfile, arg)
      cpp_reader *pfile;
      macro_arg *arg;
 {
-  unsigned char *dest = BUFF_FRONT (pfile->u_buff);
+  unsigned char *dest;
   unsigned int i, escape_it, backslash_count = 0;
   const cpp_token *source = NULL;
   size_t len;
+
+  if (BUFF_ROOM (pfile->u_buff) < 3)
+    _cpp_extend_buff (pfile, &pfile->u_buff, 3);
+  dest = BUFF_FRONT (pfile->u_buff);
+  *dest++ = '"';
 
   /* Loop, reading in the argument's tokens.  */
   for (i = 0; i < arg->count; i++)
@@ -361,11 +366,11 @@ stringify_arg (pfile, arg)
 		   || token->type == CPP_CHAR || token->type == CPP_WCHAR);
 
       /* Room for each char being written in octal, initial space and
-	 final NUL.  */
+	 final quote and NUL.  */
       len = cpp_token_len (token);
       if (escape_it)
 	len *= 4;
-      len += 2;
+      len += 3;
 
       if ((size_t) (BUFF_LIMIT (pfile->u_buff) - dest) < len)
 	{
@@ -375,7 +380,7 @@ stringify_arg (pfile, arg)
 	}
 
       /* Leading white space?  */
-      if (dest != BUFF_FRONT (pfile->u_buff))
+      if (dest - 1 != BUFF_FRONT (pfile->u_buff))
 	{
 	  if (source == NULL)
 	    source = token;
@@ -410,12 +415,7 @@ stringify_arg (pfile, arg)
     }
 
   /* Commit the memory, including NUL, and return the token.  */
-  if ((size_t) (BUFF_LIMIT (pfile->u_buff) - dest) < 1)
-    {
-      size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
-      _cpp_extend_buff (pfile, &pfile->u_buff, 1);
-      dest = BUFF_FRONT (pfile->u_buff) + len_so_far;
-    }
+  *dest++ = '"';
   len = dest - BUFF_FRONT (pfile->u_buff);
   BUFF_FRONT (pfile->u_buff) = dest + 1;
   return new_string_token (pfile, dest - len, len);
@@ -1638,10 +1638,11 @@ check_trad_stringification (pfile, macro, string)
      const cpp_string *string;
 {
   unsigned int i, len;
-  const uchar *p, *q, *limit = string->text + string->len;
+  const uchar *p, *q, *limit;
 
   /* Loop over the string.  */
-  for (p = string->text; p < limit; p = q)
+  limit = string->text + string->len - 1;
+  for (p = string->text + 1; p < limit; p = q)
     {
       /* Find the start of an identifier.  */
       while (p < limit && !is_idstart (*p))

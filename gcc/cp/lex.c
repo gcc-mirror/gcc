@@ -40,11 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #include "timevar.h"
 #include "diagnostic.h"
 
-#ifdef MULTIBYTE_CHARS
-#include "mbchar.h"
-#include <locale.h>
-#endif
-
 static int interface_strcmp PARAMS ((const char *));
 static void init_cp_pragma PARAMS ((void));
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 Free Software Foundation, Inc.  */
+/* Copyright (C) 2000, 2003 Free Software Foundation, Inc.  */
 /* { dg-do preprocess } */
 /* { dg-options "-C" } */
 /* Test that multi-line tokens are recognized by cpp0 as being
@@ -22,11 +22,5 @@ L"line 1
    { dg-final { if \{ [grep multiline.i "^$"] == "" \} \{               } }
    { dg-final { return \}                                               } }
    { dg-final { fail "multiline.c: multi-line tokens"                   } } */
-/* { dg-error "missing term" "multiline strings" { target *-*-* } 11 } */
-/* { dg-error "missing term" "multiline strings" { target *-*-* } 14 } */
-/* { dg-error "missing term" "multiline strings" { target *-*-* } 15 } */
-/* { dg-error "missing term" "multiline strings" { target *-*-* } 18 } */
-/* { dg-bogus "warning" "warning in place of error" { target *-*-* } 11 } */
-/* { dg-bogus "warning" "warning in place of error" { target *-*-* } 14 } */
+/* { dg-bogus "missing term" "multiline strings" { target *-*-* } 11 } */
 /* { dg-bogus "warning" "warning in place of error" { target *-*-* } 15 } */
-/* { dg-bogus "warning" "warning in place of error" { target *-*-* } 18 } */

@@ -42,11 +42,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "splay-tree.h"
 #include "debug.h"
 
-#ifdef MULTIBYTE_CHARS
-#include "mbchar.h"
-#include <locale.h>
-#endif /* MULTIBYTE_CHARS */
-
 /* The current line map.  */
 static const struct line_map *map;
 
@@ -78,8 +73,7 @@ static enum integer_type_kind
   narrowest_unsigned_type	PARAMS ((tree, unsigned int));
 static enum integer_type_kind
   narrowest_signed_type		PARAMS ((tree, unsigned int));
-static tree lex_string		PARAMS ((const unsigned char *, unsigned int,
-					 int));
+static tree lex_string		PARAMS ((const cpp_string *));
 static tree lex_charconst	PARAMS ((const cpp_token *));
 static void update_header_times	PARAMS ((const char *));
 static int dump_one_header	PARAMS ((splay_tree_node, void *));
@@ -201,7 +195,7 @@ cb_ident (pfile, line, str)
   if (! flag_no_ident)
     {
       /* Convert escapes in the string.  */
-      tree value ATTRIBUTE_UNUSED = lex_string (str->text, str->len, 0);
+      tree value ATTRIBUTE_UNUSED = lex_string (str);
       ASM_OUTPUT_IDENT (asm_out_file, TREE_STRING_POINTER (value));
     }
 #endif
@@ -329,7 +323,7 @@ c_lex (value)
 {
   const cpp_token *tok;
 
-  retry:
+ retry:
   timevar_push (TV_CPP);
   do
     tok = cpp_get_token (parse_in);
@@ -344,11 +338,6 @@ c_lex (value)
   *value = NULL_TREE;
   switch (tok->type)
     {
-    case CPP_OTHER:
-      error ("stray token \"%s\" in program",
-	     cpp_token_as_text (parse_in, tok));
-      goto retry;
-      
     case CPP_NAME:
       *value = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node));
       break;
@@ -378,6 +367,19 @@ c_lex (value)
       }
       break;
 
+    case CPP_OTHER:
+      {
+	cppchar_t c = tok->val.str.text[0];
+
+	if (c == '"' || c == '\'')
+	  error ("missing terminating %c character", (int) c);
+	else if (ISGRAPH (c))
+	  error ("stray '%c' in program", (int) c);
+	else
+	  error ("stray '\\%o' in program", (int) c);
+      }
+      goto retry;
+
     case CPP_CHAR:
     case CPP_WCHAR:
       *value = lex_charconst (tok);
@@ -385,8 +387,7 @@ c_lex (value)
 
     case CPP_STRING:
     case CPP_WSTRING:
-      *value = lex_string (tok->val.str.text, tok->val.str.len,
-			   tok->type == CPP_WSTRING);
+      *value = lex_string (&tok->val.str);
       break;
 
       /* These tokens should not be visible outside cpplib.  */
@@ -601,43 +602,23 @@ interpret_float (token, flags)
 }
 
 static tree
-lex_string (str, len, wide)
-     const unsigned char *str;
-     unsigned int len;
-     int wide;
+lex_string (str)
+     const cpp_string *str;
 {
+  bool wide;
   tree value;
-  char *buf = alloca ((len + 1) * (wide ? WCHAR_BYTES : 1));
-  char *q = buf;
-  const unsigned char *p = str, *limit = str + len;
+  char *buf, *q;
   cppchar_t c;
-
-#ifdef MULTIBYTE_CHARS
-  /* Reset multibyte conversion state.  */
-  (void) local_mbtowc (NULL, NULL, 0);
-#endif
+  const unsigned char *p, *limit;
+  
+  wide = str->text[0] == 'L';
+  p = str->text + 1 + wide;
+  limit = str->text + str->len - 1;
+  q = buf = alloca ((str->len + 1) * (wide ? WCHAR_BYTES : 1));
 
   while (p < limit)
     {
-#ifdef MULTIBYTE_CHARS
-      wchar_t wc;
-      int char_len;
-
-      char_len = local_mbtowc (&wc, (const char *) p, limit - p);
-      if (char_len == -1)
-	{
-	  warning ("ignoring invalid multibyte character");
-	  char_len = 1;
-	  c = *p++;
-	}
-      else
-	{
-	  p += char_len;
-	  c = wc;
-	}
-#else
       c = *p++;
-#endif
 
       if (c == '\\' && !ignore_escape_flag)
 	c = cpp_parse_escape (parse_in, &p, limit, wide);
@@ -664,16 +645,6 @@ lex_string (str, len, wide)
 	    }
 	  q += WCHAR_BYTES;
 	}
-#ifdef MULTIBYTE_CHARS
-      else if (char_len > 1)
-	{
-	  /* We're dealing with a multibyte character.  */
-	  for ( ; char_len >0; --char_len)
-	    {
-	      *q++ = *(p - char_len);
-	    }
-	}
-#endif
       else
 	{
 	  *q++ = c;

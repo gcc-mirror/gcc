@@ -26,14 +26,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 
-/* Tokens with SPELL_STRING store their spelling in the token list,
-   and it's length in the token->val.name.len.  */
 enum spell_type
 {
   SPELL_OPERATOR = 0,
   SPELL_IDENT,
-  SPELL_NUMBER,
-  SPELL_STRING,
+  SPELL_LITERAL,
   SPELL_NONE
 };
 
@@ -61,9 +58,11 @@ static void skip_whitespace PARAMS ((cpp_reader *, cppchar_t));
 static cpp_hashnode *lex_identifier PARAMS ((cpp_reader *, const uchar *));
 static void lex_number PARAMS ((cpp_reader *, cpp_string *));
 static bool forms_identifier_p PARAMS ((cpp_reader *, int));
-static void lex_string PARAMS ((cpp_reader *, cpp_token *));
+static void lex_string PARAMS ((cpp_reader *, cpp_token *, const uchar *));
 static void save_comment PARAMS ((cpp_reader *, cpp_token *, const uchar *,
 				  cppchar_t));
+static void create_literal PARAMS ((cpp_reader *, cpp_token *, const uchar *,
+				    unsigned int, enum cpp_ttype));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
 static cppchar_t maybe_read_ucn PARAMS ((cpp_reader *, const uchar **));
 static tokenrun *next_tokenrun PARAMS ((tokenrun *));
@@ -468,63 +467,77 @@ lex_number (pfile, number)
   number->text = dest;
 }
 
-/* Lexes a string, character constant, or angle-bracketed header file
-   name.  The stored string is guaranteed NUL-terminated, but it is
-   not guaranteed that this is the first NUL since embedded NULs are
-   preserved.  */
+/* Create a token of type TYPE with a literal spelling.  */
 static void
-lex_string (pfile, token)
+create_literal (pfile, token, base, len, type)
      cpp_reader *pfile;
      cpp_token *token;
+     const uchar *base;
+     unsigned int len;
+     enum cpp_ttype type;
 {
-  cpp_buffer *buffer = pfile->buffer;
-  bool warned_nulls = false;
-  const uchar *base;
-  uchar *dest;
-  cppchar_t terminator;
+  uchar *dest = _cpp_unaligned_alloc (pfile, len + 1);
 
-  base = buffer->cur;
-  terminator = base[-1];
-  if (terminator == '<')
-    terminator = '>';
+  memcpy (dest, base, len);
+  dest[len] = '\0';
+  token->type = type;
+  token->val.str.len = len;
+  token->val.str.text = dest;
+}
+
+/* Lexes a string, character constant, or angle-bracketed header file
+   name.  The stored string contains the spelling, including opening
+   quote and leading any leading 'L'.  It returns the type of the
+   literal, or CPP_OTHER if it was not properly terminated.
+
+   The spelling is NUL-terminated, but it is not guaranteed that this
+   is the first NUL since embedded NULs are preserved.  */
+static void
+lex_string (pfile, token, base)
+     cpp_reader *pfile;
+     cpp_token *token;
+     const uchar *base;
+{
+  bool saw_NUL = false;
+  const uchar *cur;
+  cppchar_t terminator;
+  enum cpp_ttype type;
+
+  cur = base;
+  terminator = *cur++;
+  if (terminator == 'L')
+    terminator = *cur++;
+  if (terminator == '\"')
+    type = *base == 'L' ? CPP_WSTRING: CPP_STRING;
+  else if (terminator == '\'')
+    type = *base == 'L' ? CPP_WCHAR: CPP_CHAR;
+  else
+    terminator = '>', type = CPP_HEADER_NAME;
 
   for (;;)
     {
-      cppchar_t c = *buffer->cur++;
+      cppchar_t c = *cur++;
 
       /* In #include-style directives, terminators are not escapable.  */
-      if (c == '\\' && !pfile->state.angled_headers && *buffer->cur != '\n')
-	buffer->cur++;
-      else if (c == terminator || c == '\n')
+      if (c == '\\' && !pfile->state.angled_headers && *cur != '\n')
+	cur++;
+      else if (c == terminator)
 	break;
-      else if (c == '\0')
+      else if (c == '\n')
 	{
-	  if (!warned_nulls)
-	    {
-	      warned_nulls = true;
-	      cpp_error (pfile, DL_WARNING,
-			 "null character(s) preserved in literal");
-	    }
+	  cur--;
+	  type = CPP_OTHER;
+	  break;
 	}
+      else if (c == '\0')
+	saw_NUL = true;
     }
 
-  token->val.str.len = buffer->cur - base - 1;
-  dest = _cpp_unaligned_alloc (pfile, token->val.str.len + 1);
-  memcpy (dest, base, token->val.str.len);
-  dest[token->val.str.len] = '\0';
-  token->val.str.text = dest;
+  if (saw_NUL && !pfile->state.skipping)
+    cpp_error (pfile, DL_WARNING, "null character(s) preserved in literal");
 
-  if (buffer->cur[-1] == '\n')
-    {
-      /* No string literal may extend over multiple lines.  In
-	 assembly language, suppress the error except for <>
-	 includes.  This is a kludge around not knowing where
-	 comments are.  */
-      if (CPP_OPTION (pfile, lang) != CLK_ASM || terminator == '>')
-	cpp_error (pfile, DL_ERROR, "missing terminating %c character",
-		   (int) terminator);
-      buffer->cur--;
-    }
+  pfile->buffer->cur = cur;
+  create_literal (pfile, token, base, cur - base, type);
 }
 
 /* The stored comment includes the comment start and any terminator.  */
@@ -817,9 +830,7 @@ _cpp_lex_direct (pfile)
       /* 'L' may introduce wide characters or strings.  */
       if (*buffer->cur == '\'' || *buffer->cur == '"')
 	{
-	  result->type = (*buffer->cur == '"' ? CPP_WSTRING: CPP_WCHAR);
-	  buffer->cur++;
-	  lex_string (pfile, result);
+	  lex_string (pfile, result, buffer->cur - 1);
 	  break;
 	}
       /* Fall through.  */
@@ -848,8 +859,7 @@ _cpp_lex_direct (pfile)
 
     case '\'':
     case '"':
-      result->type = c == '"' ? CPP_STRING: CPP_CHAR;
-      lex_string (pfile, result);
+      lex_string (pfile, result, buffer->cur - 1);
       break;
 
     case '/':
@@ -905,8 +915,7 @@ _cpp_lex_direct (pfile)
     case '<':
       if (pfile->state.angled_headers)
 	{
-	  result->type = CPP_HEADER_NAME;
-	  lex_string (pfile, result);
+	  lex_string (pfile, result, buffer->cur - 1);
 	  break;
 	}
 
@@ -1078,15 +1087,8 @@ _cpp_lex_direct (pfile)
       }
 
     default:
-      {
-	uchar *dest = _cpp_unaligned_alloc (pfile, 1 + 1);
-	dest[0] = c;
-	dest[1] = '\0';
-	result->type = CPP_OTHER;
-	result->val.str.len = 1;
-	result->val.str.text = dest;
-	break;
-      }
+      create_literal (pfile, result, buffer->cur - 1, 1, CPP_OTHER);
+      break;
     }
 
   return result;
@@ -1103,8 +1105,7 @@ cpp_token_len (token)
   switch (TOKEN_SPELL (token))
     {
     default:		len = 0;				break;
-    case SPELL_NUMBER:
-    case SPELL_STRING:	len = token->val.str.len;		break;
+    case SPELL_LITERAL:	len = token->val.str.len;		break;
     case SPELL_IDENT:	len = NODE_LEN (token->val.node);	break;
     }
   /* 1 for whitespace, 4 for comment delimiters.  */
@@ -1147,32 +1148,9 @@ cpp_spell_token (pfile, token, buffer)
       buffer += NODE_LEN (token->val.node);
       break;
 
-    case SPELL_NUMBER:
+    case SPELL_LITERAL:
       memcpy (buffer, token->val.str.text, token->val.str.len);
       buffer += token->val.str.len;
-      break;
-
-    case SPELL_STRING:
-      {
-	int left, right, tag;
-	switch (token->type)
-	  {
-	  case CPP_STRING:	left = '"';  right = '"';  tag = '\0'; break;
-	  case CPP_WSTRING:	left = '"';  right = '"';  tag = 'L';  break;
-	  case CPP_CHAR:	left = '\''; right = '\''; tag = '\0'; break;
-    	  case CPP_WCHAR:	left = '\''; right = '\''; tag = 'L';  break;
-	  case CPP_HEADER_NAME:	left = '<';  right = '>';  tag = '\0'; break;
-	  default:
-	    cpp_error (pfile, DL_ICE, "unknown string token %s\n",
-		       TOKEN_NAME (token));
-	    return buffer;
-	  }
-	if (tag) *buffer++ = tag;
-	*buffer++ = left;
-	memcpy (buffer, token->val.str.text, token->val.str.len);
-	buffer += token->val.str.len;
-	*buffer++ = right;
-      }
       break;
 
     case SPELL_NONE:
@@ -1243,29 +1221,8 @@ cpp_output_token (token, fp)
       fwrite (NODE_NAME (token->val.node), 1, NODE_LEN (token->val.node), fp);
     break;
 
-    case SPELL_NUMBER:
+    case SPELL_LITERAL:
       fwrite (token->val.str.text, 1, token->val.str.len, fp);
-      break;
-
-    case SPELL_STRING:
-      {
-	int left, right, tag;
-	switch (token->type)
-	  {
-	  case CPP_STRING:	left = '"';  right = '"';  tag = '\0'; break;
-	  case CPP_WSTRING:	left = '"';  right = '"';  tag = 'L';  break;
-	  case CPP_CHAR:	left = '\''; right = '\''; tag = '\0'; break;
-    	  case CPP_WCHAR:	left = '\''; right = '\''; tag = 'L';  break;
-	  case CPP_HEADER_NAME:	left = '<';  right = '>';  tag = '\0'; break;
-	  default:
-	    fprintf (stderr, "impossible STRING token %s\n", TOKEN_NAME (token));
-	    return;
-	  }
-	if (tag) putc (tag, fp);
-	putc (left, fp);
-	fwrite (token->val.str.text, 1, token->val.str.len, fp);
-	putc (right, fp);
-      }
       break;
 
     case SPELL_NONE:
@@ -1289,8 +1246,7 @@ _cpp_equiv_tokens (a, b)
 	return (a->type != CPP_MACRO_ARG || a->val.arg_no == b->val.arg_no);
       case SPELL_IDENT:
 	return a->val.node == b->val.node;
-      case SPELL_NUMBER:
-      case SPELL_STRING:
+      case SPELL_LITERAL:
 	return (a->val.str.len == b->val.str.len
 		&& !memcmp (a->val.str.text, b->val.str.text,
 			    a->val.str.len));
@@ -1588,14 +1544,15 @@ cpp_interpret_charconst (pfile, token, pchars_seen, unsignedp)
      unsigned int *pchars_seen;
      int *unsignedp;
 {
-  const unsigned char *str = token->val.str.text;
-  const unsigned char *limit = str + token->val.str.len;
+  const unsigned char *str, *limit;
   unsigned int chars_seen = 0;
   size_t width, max_chars;
   cppchar_t c, mask, result = 0;
   bool unsigned_p;
 
-  /* Width in bits.  */
+  str = token->val.str.text + 1 + (token->type == CPP_WCHAR);
+  limit = token->val.str.text + token->val.str.len - 1;
+
   if (token->type == CPP_CHAR)
     {
       width = CPP_OPTION (pfile, char_precision);

@@ -124,18 +124,18 @@ struct file_name_map_list;
   OP(CPP_ATSIGN,	"@")  /* used in Objective-C */ \
 \
   TK(CPP_NAME,		SPELL_IDENT)	/* word */			\
-  TK(CPP_NUMBER,	SPELL_NUMBER)	/* 34_be+ta  */			\
+  TK(CPP_NUMBER,	SPELL_LITERAL)	/* 34_be+ta  */			\
 \
-  TK(CPP_CHAR,		SPELL_STRING)	/* 'char' */			\
-  TK(CPP_WCHAR,		SPELL_STRING)	/* L'char' */			\
-  TK(CPP_OTHER,		SPELL_NUMBER)	/* stray punctuation */		\
+  TK(CPP_CHAR,		SPELL_LITERAL)	/* 'char' */			\
+  TK(CPP_WCHAR,		SPELL_LITERAL)	/* L'char' */			\
+  TK(CPP_OTHER,		SPELL_LITERAL)	/* stray punctuation */		\
 \
-  TK(CPP_STRING,	SPELL_STRING)	/* "string" */			\
-  TK(CPP_WSTRING,	SPELL_STRING)	/* L"string" */			\
-  TK(CPP_HEADER_NAME,	SPELL_STRING)	/* <stdio.h> in #include */	\
+  TK(CPP_STRING,	SPELL_LITERAL)	/* "string" */			\
+  TK(CPP_WSTRING,	SPELL_LITERAL)	/* L"string" */			\
+  TK(CPP_HEADER_NAME,	SPELL_LITERAL)	/* <stdio.h> in #include */	\
 \
-  TK(CPP_COMMENT,	SPELL_NUMBER)	/* Only if output comments.  */ \
-                                        /* SPELL_NUMBER happens to DTRT.  */ \
+  TK(CPP_COMMENT,	SPELL_LITERAL)	/* Only if output comments.  */ \
+                                        /* SPELL_LITERAL happens to DTRT.  */ \
   TK(CPP_MACRO_ARG,	SPELL_NONE)	/* Macro argument.  */		\
   TK(CPP_PADDING,	SPELL_NONE)	/* Whitespace for cpp0.  */
 

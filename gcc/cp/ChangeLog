@@ -1,3 +1,10 @@
+2003-04-23  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in (lex.o): Remove mbchar.h.
+	* lex.c (MULTIBYTE_CHARS): Lose.
+	* parser.c (cp_lexer_get_preprocessor_token): CPP_OTHER handled
+	in c-lex.c.
+
 2003-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9847
