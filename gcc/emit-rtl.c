@@ -1653,6 +1653,10 @@ copy_rtx_if_shared (orig)
 	  x->used = 1;
 	  return x;
 	}
+      break;
+
+    default:
+      break;
     }
 
   /* This rtx may not be shared.  If it has already been seen,
@@ -1742,6 +1746,9 @@ reset_used_flags (x)
     case BARRIER:
       /* The chain of insns is not being copied.  */
       return;
+      
+    default:
+      break;
     }
 
   x->used = 0;
