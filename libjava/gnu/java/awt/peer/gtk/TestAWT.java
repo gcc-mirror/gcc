@@ -184,8 +184,16 @@ class MainWindow extends PrettyFrame implements ActionListener
       w.dispose ();
     else 
       {
-	w.setVisible (true);
-	w.show();
+        if (w instanceof Dialog)
+          {
+            System.out.println ("Will 'show'");
+	    w.show();
+            System.out.println ("Has shown");
+          }
+        else
+          {
+	    w.setVisible (true);
+          }
       }
   }
 }
@@ -250,11 +258,14 @@ class ButtonsWindow extends SubFrame implements ActionListener
 class DialogWindow extends Dialog implements SubWindow
 {
   Label text;
+  Frame parent;
   boolean initted = false;
 
   public DialogWindow (Frame f)
   {
     super (f, true);
+
+    this.parent = f;
   }
 
   public void setVisible (boolean visible)
@@ -262,6 +273,13 @@ class DialogWindow extends Dialog implements SubWindow
     if (!initted && visible)
       init();
     super.setVisible (visible);
+  }
+
+  public void show ()
+  {
+    if (!initted)
+      init();
+    super.show ();
   }
 
   public void init ()
@@ -282,7 +300,7 @@ class DialogWindow extends Dialog implements SubWindow
 	}
     });
     
-    p.setLayout (new GridLayout (1, 2));
+    p.setLayout (new GridLayout (1, 3));
     ((GridLayout) p.getLayout ()).setHgap (5);
     ((GridLayout) p.getLayout ()).setVgap (5);
     p.add (cb);
@@ -300,10 +318,23 @@ class DialogWindow extends Dialog implements SubWindow
 	  doLayout();
 	}
     });
+
+    Button subdlg = new Button ("SubDialog");
+    p.add (subdlg);
+
+    subdlg.addActionListener(new ActionListener () {
+      public void actionPerformed (ActionEvent e) 
+	{
+            DialogWindow sw = new DialogWindow (parent);
+            System.out.println ("Will show modal sub dialog");
+            sw.show ();
+            System.out.println ("Has shown modal sub dialog");
+	}
+    });
     
     add (p, "South");
     setTitle ("Dialog");
-    setSize (130, 70);
+    setSize (240, 120);
   }
 }
 

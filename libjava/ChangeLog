@@ -1,5 +1,11 @@
 2004-01-12  Fernando Nasser  <fnasser@redhat.com>
 
+	* gnu/java/awt/peer/gtk/TestAWT.java: Fix test program so that it does
+	not show modal dialogs twice and so that it allows showing a modal
+	dialog from another modal dialog.
+
+2004-01-12  Fernando Nasser  <fnasser@redhat.com>
+
 	* java/awt/Dialog.java (show): Enable blocking for all modal dialogs
 	and run secondary dispatch thread to process event queue while this
 	thread is blocked.
