@@ -1,3 +1,11 @@
+Mon Feb 19 16:47:39 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* regclass.c (contains_reg_of_mode): Make global.
+	(init_reg_sets): Remove contains_reg_of_mode; take into account
+	CLASS_MAX_NREGS when looking for the proper mode.
+	(dump_regclass): Dump only classes considered for the pseudo.
+	(regclass): Use contains_reg_of_mode.
+
 Mon Feb 19 16:45:42 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c (do_spec_1): 'n' for printing notices.
