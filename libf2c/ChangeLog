@@ -1,5 +1,9 @@
 1998-10-12  Dave Love  <fx@gnu.org>
 
+	* libI77/open.c (_XOPEN_SOURCE): Define.
+
+1998-10-12  Dave Love  <fx@gnu.org>
+
 	* Makefile.in (.SUFFIXES): Don't use any.
 	(all-unilib): New target, like old all.
 	(all): Use it.
