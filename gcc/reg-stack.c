@@ -296,14 +296,9 @@ check_stack_regs_mentioned (insn)
 {
   unsigned int uid = INSN_UID (insn);
   if (uid >= VARRAY_SIZE (stack_regs_mentioned_data))
-    {
-      unsigned int size = VARRAY_SIZE (stack_regs_mentioned_data);
-
-      /* Allocate some extra size to avoid too many reallocs, but
-	 do not grow exponentially.  */
-      size = uid + uid / 20;
-      VARRAY_GROW (stack_regs_mentioned_data, size);
-    }
+    /* Allocate some extra size to avoid too many reallocs, but
+       do not grow exponentially.  */
+    VARRAY_GROW (stack_regs_mentioned_data, uid + uid / 20);
   if (stack_regs_mentioned_p (PATTERN (insn)))
     {
       VARRAY_CHAR (stack_regs_mentioned_data, uid) = 1;
