@@ -1,3 +1,13 @@
+2000-12-29  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_expand_block_move): Initialize
+	src_align and dst_align in bits.  Do unaligned quadword loads
+	if possible for BWX too.
+	(alpha_expand_block_clear): Initialize align in bits.  Track
+	small leading offsets into a larger alignment.  Play games with
+	stq_u for large 4-byte aligned blocks.  Use load/mask/store
+	for appropreately aligned heads and tails.
+
 2000-12-29  Alexandre Oliva  <aoliva@redhat.com>
 
 	* function.c (assign_parms): Convert arguments passed by

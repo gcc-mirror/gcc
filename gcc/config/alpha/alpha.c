@@ -2833,18 +2833,18 @@ alpha_expand_block_move (operands)
   rtx bytes_rtx	= operands[2];
   rtx align_rtx = operands[3];
   HOST_WIDE_INT orig_bytes = INTVAL (bytes_rtx);
-  unsigned HOST_WIDE_INT bytes = orig_bytes;
-  unsigned HOST_WIDE_INT src_align = INTVAL (align_rtx) * BITS_PER_UNIT;
-  unsigned HOST_WIDE_INT dst_align = src_align;
+  HOST_WIDE_INT bytes = orig_bytes;
+  HOST_WIDE_INT src_align = INTVAL (align_rtx) * BITS_PER_UNIT;
+  HOST_WIDE_INT dst_align = src_align;
   rtx orig_src = operands[1];
   rtx orig_dst = operands[0];
   rtx data_regs[2 * MAX_MOVE_WORDS + 16];
   rtx tmp;
-  unsigned int i, words, ofs, nregs = 0;
+  int i, words, ofs, nregs = 0;
   
   if (orig_bytes <= 0)
     return 1;
-  else if (bytes > MAX_MOVE_WORDS * BITS_PER_UNIT)
+  else if (orig_bytes > MAX_MOVE_WORDS * UNITS_PER_WORD)
     return 0;
 
   /* Look for additional alignment information from recorded register info.  */
@@ -2920,6 +2920,7 @@ alpha_expand_block_move (operands)
       /* No appropriate mode; fall back on memory.  */
       orig_src = change_address (orig_src, GET_MODE (orig_src),
 				 copy_addr_to_reg (XEXP (orig_src, 0)));
+      src_align = GET_MODE_BITSIZE (GET_MODE (XEXP (tmp, 0)));
     }
 
   ofs = 0;
@@ -2959,7 +2960,7 @@ alpha_expand_block_move (operands)
       ofs += words * 4;
     }
 
-  if (bytes >= 16)
+  if (bytes >= 8)
     {
       words = bytes / 8;
 
@@ -2972,14 +2973,6 @@ alpha_expand_block_move (operands)
       nregs += words;
       bytes -= words * 8;
       ofs += words * 8;
-    }
-
-  if (! TARGET_BWX && bytes >= 8)
-    {
-      data_regs[nregs++] = tmp = gen_reg_rtx (DImode);
-      alpha_expand_unaligned_load (tmp, orig_src, 8, ofs, 0);
-      bytes -= 8;
-      ofs += 8;
     }
 
   if (! TARGET_BWX && bytes >= 4)
@@ -3004,7 +2997,6 @@ alpha_expand_block_move (operands)
 	    ofs += 2;
 	  } while (bytes >= 2);
 	}
-
       else if (! TARGET_BWX)
 	{
 	  data_regs[nregs++] = tmp = gen_reg_rtx (HImode);
@@ -3082,7 +3074,7 @@ alpha_expand_block_move (operands)
 	 up by recognizing extra alignment information.  */
       orig_dst = change_address (orig_dst, GET_MODE (orig_dst),
 				 copy_addr_to_reg (XEXP (orig_dst, 0)));
-      dst_align = GET_MODE_SIZE (GET_MODE (tmp));
+      dst_align = GET_MODE_BITSIZE (GET_MODE (XEXP (tmp, 0)));
     }
 
   /* Write out the data in whatever chunks reading the source allowed.  */
@@ -3202,15 +3194,16 @@ alpha_expand_block_clear (operands)
   rtx bytes_rtx	= operands[1];
   rtx align_rtx = operands[2];
   HOST_WIDE_INT orig_bytes = INTVAL (bytes_rtx);
-  unsigned HOST_WIDE_INT bytes = orig_bytes;
-  unsigned HOST_WIDE_INT align = INTVAL (align_rtx);
+  HOST_WIDE_INT bytes = orig_bytes;
+  HOST_WIDE_INT align = INTVAL (align_rtx) * BITS_PER_UNIT;
+  HOST_WIDE_INT alignofs = 0;
   rtx orig_dst = operands[0];
   rtx tmp;
-  unsigned HOST_WIDE_INT i, words, ofs = 0;
+  int i, words, ofs = 0;
   
   if (orig_bytes <= 0)
     return 1;
-  if (bytes > MAX_MOVE_WORDS*8)
+  if (orig_bytes > MAX_MOVE_WORDS * UNITS_PER_WORD)
     return 0;
 
   /* Look for stricter alignment.  */
@@ -3221,20 +3214,19 @@ alpha_expand_block_clear (operands)
 	   && GET_CODE (XEXP (tmp, 0)) == REG
 	   && GET_CODE (XEXP (tmp, 1)) == CONST_INT)
     {
-      unsigned HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
-      unsigned int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
+      HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
+      int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
 
       if (a > align)
 	{
-          if (a >= 64 && c % 8 == 0)
-	    align = 64;
-          else if (a >= 32 && c % 4 == 0)
-	    align = 32;
-          else if (a >= 16 && c % 2 == 0)
-	    align = 16;
+          if (a >= 64)
+	    align = a, alignofs = 8 - c % 8;
+          else if (a >= 32)
+	    align = a, alignofs = 4 - c % 4;
+          else if (a >= 16)
+	    align = a, alignofs = 2 - c % 2;
 	}
     }
-
   else if (GET_CODE (tmp) == ADDRESSOF)
     {
       enum machine_mode mode;
@@ -3249,10 +3241,93 @@ alpha_expand_block_clear (operands)
       /* No appropriate mode; fall back on memory.  */
       orig_dst = change_address (orig_dst, GET_MODE (orig_dst),
 				 copy_addr_to_reg (tmp));
-      align = GET_MODE_SIZE (GET_MODE (XEXP (tmp, 0)));
+      align = GET_MODE_BITSIZE (GET_MODE (XEXP (tmp, 0)));
     }
 
-  /* Handle a block of contiguous words first.  */
+  /* Handle an unaligned prefix first.  */
+
+  if (alignofs > 0)
+    {
+#if HOST_BITS_PER_WIDE_INT >= 64
+      /* Given that alignofs is bounded by align, the only time BWX could
+	 generate three stores is for a 7 byte fill.  Prefer two individual
+	 stores over a load/mask/store sequence.  */
+      if ((!TARGET_BWX || alignofs == 7)
+	       && align >= 32
+	       && !(alignofs == 4 && bytes >= 4))
+	{
+	  enum machine_mode mode = (align >= 64 ? DImode : SImode);
+	  int inv_alignofs = (align >= 64 ? 8 : 4) - alignofs;
+	  rtx mem, tmp;
+	  HOST_WIDE_INT mask;
+
+	  mem = change_address (orig_dst, mode,
+				plus_constant (XEXP (orig_dst, 0),
+					       ofs - inv_alignofs));
+	  MEM_ALIAS_SET (mem) = 0;
+
+	  mask = ~(~(HOST_WIDE_INT)0 << (inv_alignofs * 8));
+	  if (bytes < alignofs)
+	    {
+	      mask |= ~(HOST_WIDE_INT)0 << ((inv_alignofs + bytes) * 8);
+	      ofs += bytes;
+	      bytes = 0;
+	    }
+	  else
+	    {
+	      bytes -= alignofs;
+	      ofs += alignofs;
+	    }
+	  alignofs = 0;
+
+	  tmp = expand_binop (mode, and_optab, mem, GEN_INT (mask),
+			      NULL_RTX, 1, OPTAB_WIDEN);
+
+	  emit_move_insn (mem, tmp);
+	}
+#endif
+
+      if (TARGET_BWX && (alignofs & 1) && bytes >= 1)
+	{
+	  emit_move_insn (change_address (orig_dst, QImode,
+					  plus_constant (XEXP (orig_dst, 0),
+						         ofs)),
+			  const0_rtx);
+	  bytes -= 1;
+	  ofs += 1;
+	  alignofs -= 1;
+	}
+      if (TARGET_BWX && align >= 16 && (alignofs & 3) == 2 && bytes >= 2)
+	{
+	  emit_move_insn (change_address (orig_dst, HImode,
+					  plus_constant (XEXP (orig_dst, 0),
+						         ofs)),
+			  const0_rtx);
+	  bytes -= 2;
+	  ofs += 2;
+	  alignofs -= 2;
+	}
+      if (alignofs == 4 && bytes >= 4)
+	{
+	  emit_move_insn (change_address (orig_dst, SImode,
+					  plus_constant (XEXP (orig_dst, 0),
+						         ofs)),
+			  const0_rtx);
+	  bytes -= 4;
+	  ofs += 4;
+	  alignofs = 0;
+	}
+
+      /* If we've not used the extra lead alignment information by now,
+	 we won't be able to.  Downgrade align to match what's left over.  */
+      if (alignofs > 0)
+	{
+	  alignofs = alignofs & -alignofs;
+	  align = MIN (align, alignofs * BITS_PER_UNIT);
+	}
+    }
+
+  /* Handle a block of contiguous long-words.  */
 
   if (align >= 64 && bytes >= 8)
     {
@@ -3268,7 +3343,42 @@ alpha_expand_block_clear (operands)
       ofs += words * 8;
     }
 
-  if (align >= 16 && bytes >= 4)
+  /* If the block is large and appropriately aligned, emit a single
+     store followed by a sequence of stq_u insns.  */
+
+  if (align >= 32 && bytes > 16)
+    {
+      emit_move_insn (change_address (orig_dst, SImode,
+				      plus_constant (XEXP (orig_dst, 0), ofs)),
+		      const0_rtx);
+      bytes -= 4;
+      ofs += 4;
+
+      words = bytes / 8;
+      for (i = 0; i < words; ++i)
+	{
+	  rtx mem;
+	  mem = change_address (orig_dst, DImode,
+				gen_rtx_AND (DImode,
+					     plus_constant (XEXP (orig_dst, 0),
+							    ofs + i*8),
+					     GEN_INT (-8)));
+	  MEM_ALIAS_SET (mem) = 0;
+	  emit_move_insn (mem, const0_rtx);
+	}
+
+      /* Depending on the alignment, the first stq_u may have overlapped
+	 with the initial stl, which means that the last stq_u didn't
+	 write as much as it would appear.  Leave those questionable bytes
+	 unaccounted for.  */
+      bytes -= words * 8 - 4;
+      ofs += words * 8 - 4;
+    }
+
+  /* Handle a smaller block of aligned words.  */
+
+  if ((align >= 64 && bytes == 4)
+      || (align == 32 && bytes >= 4))
     {
       words = bytes / 4;
 
@@ -3282,7 +3392,9 @@ alpha_expand_block_clear (operands)
       ofs += words * 4;
     }
 
-  if (bytes >= 16)
+  /* An unaligned block uses stq_u stores for as many as possible.  */
+
+  if (bytes >= 8)
     {
       words = bytes / 8;
 
@@ -3292,15 +3404,56 @@ alpha_expand_block_clear (operands)
       ofs += words * 8;
     }
 
-  /* Next clean up any trailing pieces.  We know from the contiguous
-     block move that there are no aligned SImode or DImode hunks left.  */
+  /* Next clean up any trailing pieces.  */
 
-  if (! TARGET_BWX && bytes >= 8)
+#if HOST_BITS_PER_WIDE_INT >= 64
+  /* Count the number of bits in BYTES for which aligned stores could
+     be emitted.  */
+  words = 0;
+  for (i = (TARGET_BWX ? 1 : 4); i * BITS_PER_UNIT <= align ; i <<= 1)
+    if (bytes & i)
+      words += 1;
+
+  /* If we have appropriate alignment (and it wouldn't take too many
+     instructions otherwise), mask out the bytes we need.  */
+  if (TARGET_BWX ? words > 2 : bytes > 0)
     {
-      alpha_expand_unaligned_store (orig_dst, const0_rtx, 8, ofs);
-      bytes -= 8;
-      ofs += 8;
+      if (align >= 64)
+	{
+	  rtx mem, tmp;
+	  HOST_WIDE_INT mask;
+
+	  mem = change_address (orig_dst, DImode,
+				plus_constant (XEXP (orig_dst, 0), ofs));
+	  MEM_ALIAS_SET (mem) = 0;
+
+	  mask = ~(HOST_WIDE_INT)0 << (bytes * 8);
+
+	  tmp = expand_binop (DImode, and_optab, mem, GEN_INT (mask),
+			      NULL_RTX, 1, OPTAB_WIDEN);
+
+	  emit_move_insn (mem, tmp);
+	  return 1;
+	}
+      else if (align >= 32 && bytes < 4)
+	{
+	  rtx mem, tmp;
+	  HOST_WIDE_INT mask;
+
+	  mem = change_address (orig_dst, SImode,
+				plus_constant (XEXP (orig_dst, 0), ofs));
+	  MEM_ALIAS_SET (mem) = 0;
+
+	  mask = ~(HOST_WIDE_INT)0 << (bytes * 8);
+
+	  tmp = expand_binop (SImode, and_optab, mem, GEN_INT (mask),
+			      NULL_RTX, 1, OPTAB_WIDEN);
+
+	  emit_move_insn (mem, tmp);
+	  return 1;
+	}
     }
+#endif
 
   if (!TARGET_BWX && bytes >= 4)
     {
