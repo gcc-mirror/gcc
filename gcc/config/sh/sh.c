@@ -785,7 +785,13 @@ shiftcosts (x)
 
   /* Otherwise, return the true cost in instructions.  */
   if (GET_CODE (x) == ASHIFTRT)
-    return ashiftrt_insns[value];
+    {
+      int cost = ashiftrt_insns[value];
+      /* If SH3, then we put the constant in a reg and use shad.  */
+      if (TARGET_SH3 && cost > 3)
+	cost = 3;
+      return cost;
+    }
   else
     return shift_insns[value];
 }
@@ -881,9 +887,6 @@ gen_ashift (type, n, reg)
 /* Output RTL to split a constant shift into its component SH constant
    shift instructions.  */
    
-/* ??? For SH3, should reject constant shifts when slower than loading the
-   shift count into a register?  */
-
 int
 gen_shifty_op (code, operands)
      int code;
@@ -931,12 +934,21 @@ expand_ashiftrt (operands)
   tree func_name;
   int value;
 
-  if (TARGET_SH3 && GET_CODE (operands[2]) != CONST_INT)
+  if (TARGET_SH3)
     {
-      rtx count = copy_to_mode_reg (SImode, operands[2]);
-      emit_insn (gen_negsi2 (count, count));
-      emit_insn (gen_ashrsi3_d (operands[0], operands[1], count));
-      return 1;
+      if (GET_CODE (operands[2]) != CONST_INT)
+	{
+	  rtx count = copy_to_mode_reg (SImode, operands[2]);
+	  emit_insn (gen_negsi2 (count, count));
+	  emit_insn (gen_ashrsi3_d (operands[0], operands[1], count));
+	  return 1;
+	}
+      else if (ashiftrt_insns[INTVAL (operands[2])] > 3)
+	{
+	  rtx count = force_reg (SImode, GEN_INT (- INTVAL (operands[2])));
+	  emit_insn (gen_ashrsi3_d (operands[0], operands[1], count));
+	  return 1;
+	}
     }
   if (GET_CODE (operands[2]) != CONST_INT)
     return 0;
