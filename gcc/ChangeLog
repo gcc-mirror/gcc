@@ -1,3 +1,8 @@
+Mon May 18 22:37:33 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* function.c (identify_blocks): Fix thinko when setting the
+	block number for NOTE_INSN_BLOCK_END.
+
 Mon May 18 15:30:42 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/v850/lib1funcs.asm: Add .text pseudo op to start of

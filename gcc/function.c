@@ -5133,8 +5133,8 @@ identify_blocks (block, insns)
 	  }
 	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
 	  {
-	    current_block_number = block_stack[--depth];
 	    NOTE_BLOCK_NUMBER (insn) = current_block_number;
+	    current_block_number = block_stack[--depth];
 	  }
       }
 
