@@ -1,3 +1,41 @@
+2001-07-05  Eric Christopher  <echristo@redhat.com>
+
+        * config/mips/mips.h (MASK_MIPS3900): Remove.
+        (MASK_MIPS16,MASK_NO_CHECK_ZERO_DIV,MASK_CHECK_RANGE_DIV,
+        MASK_UNINIT_CONST_IN_RODATA): Change for 3900 mask removal.
+        (TARGET_MIPS3900): Change to use mips_arch.
+        (TARGET_MIPS4000): New.
+        (TARGET_MIPS4100): New.
+        (TARGET_MIPS4300): New.
+        (TARGET_SWITCHES): Change 3900 and 4650 options to NULL.
+        (SUBTARGET_TARGET_OPTIONS): Add -march. Change help text
+        for -mipsX.
+        (GENERATE_BRANCHLIKELY): Move TARGET_MIPS3900.
+        (ISA_HAS_BRANCHLIKELY): To here.
+        (CC1_CPU_SPEC):  New.
+        (CC1_SPEC): Use here.  Remove 4650 and 3900 options.
+        (mips_arch_string): Declare.
+        (mips_arch): Declare.
+        (TARGET_OPTIONS): Add -march and -mtune.
+
+        * config/mips/mips.c (mips_arch_string): New.
+        (mips_arch): New.
+        (override_options): Handle -march for codegen and -mtune
+        for scheduling. Use mips_arch. Move tx39 target default here.
+        (mips_parse_cpu): Move error message to override_options.
+
+        * config/mips/r3900.h (TARGET_DEFAULT): Remove.
+
+        * config/mips/mips.md: Use TARGET_MIPS4000 and TARGET_MIPS4300.
+
+        * doc/invoke.texi (Option Summary): Add -march and -mtune entries.
+        (MIPS Options): Ditto.  Change mcpu entry to historical text.
+
+2001-07-05  H.J. Lu  (hjl@gnu.org)
+
+        * config/mips/mips.c (mips_parse_cpu): New function to parse
+        -march=*/-mcpu=*.
+
 2001-07-05  Jim Wilson  <wilson@redhat.com>
 
 	* config/ia64/lib1funcs.asm: Revert 2001-07-02 change.
@@ -10,8 +48,8 @@
 
 2001-07-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
-	* config/m68hc11/m68hc11.md ("*ashlsi3"): Operand 1 can be a memory 
-	reference using the stack pointer, adjust it since we push Y 
+	* config/m68hc11/m68hc11.md ("*ashlsi3"): Operand 1 can be a memory
+	reference using the stack pointer, adjust it since we push Y
 	temporarily.
 	("*ashrsi3"): Likewise.
 	("*lshrsi3"): Likewise.

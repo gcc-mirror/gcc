@@ -43,7 +43,6 @@ Boston, MA 02111-1307, USA.  */
 %{msingle-float:%{msoft-float: \
   %e-msingle-float and -msoft-float can not both be specified.}}"
 
-#define TARGET_DEFAULT (MASK_SOFT_FLOAT | MASK_MIPS3900)
 #define MIPS_CPU_STRING_DEFAULT "R3900"
 #define MIPS_ISA_DEFAULT 1
 
