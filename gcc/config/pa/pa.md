@@ -2408,7 +2408,7 @@
 (define_expand "reload_indi"
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(match_operand:DI 1 "non_hard_reg_operand" ""))
-   (clobber (match_operand:SI 2 "register_operand" "=&r"))]
+   (clobber (match_operand:DI 2 "register_operand" "=&r"))]
   ""
   "
 {
@@ -2423,7 +2423,7 @@
 (define_expand "reload_outdi"
   [(set (match_operand:DI 0 "general_operand" "")
 	(match_operand:DI 1 "register_operand" "f"))
-   (clobber (match_operand:SI 2 "register_operand" "=&r"))]
+   (clobber (match_operand:DI 2 "register_operand" "=&r"))]
   ""
   "
 {
@@ -2472,8 +2472,6 @@
 }"
   [(set_attr "type" "move")
    (set_attr "length" "8")])
-
-;;; Experimental
 
 (define_insn ""
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
@@ -4309,8 +4307,8 @@
     call_insn = emit_call_insn (gen_call_internal_symref (op, operands[1]));
   else
     {
-      rtx tmpreg = gen_rtx_REG (SImode, 22);
-      emit_move_insn (tmpreg, force_reg (SImode, op));
+      rtx tmpreg = gen_rtx_REG (word_mode, 22);
+      emit_move_insn (tmpreg, force_reg (word_mode, op));
       call_insn = emit_call_insn (gen_call_internal_reg (operands[1]));
     }
 
@@ -4324,7 +4322,7 @@
          This will set regs_ever_live for the callee saved register we
 	 stored the PIC register in.  */
       emit_move_insn (pic_offset_table_rtx,
-		      gen_rtx_REG (SImode, PIC_OFFSET_TABLE_REGNUM_SAVED));
+		      gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
       emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
 
       /* Gross.  We have to keep the scheduler from moving the restore
@@ -4451,7 +4449,7 @@
   rtx call_insn;
 
   if (TARGET_PORTABLE_RUNTIME)
-    op = force_reg (SImode, XEXP (operands[1], 0));
+    op = force_reg (word_mode, XEXP (operands[1], 0));
   else
     op = XEXP (operands[1], 0);
 
@@ -4466,8 +4464,8 @@
 								operands[2]));
   else
     {
-      rtx tmpreg = gen_rtx_REG (SImode, 22);
-      emit_move_insn (tmpreg, force_reg (SImode, op));
+      rtx tmpreg = gen_rtx_REG (word_mode, 22);
+      emit_move_insn (tmpreg, force_reg (word_mode, op));
       call_insn = emit_call_insn (gen_call_value_internal_reg (operands[0],
 							       operands[2]));
     }
@@ -4481,7 +4479,7 @@
          This will set regs_ever_live for the callee saved register we
 	 stored the PIC register in.  */
       emit_move_insn (pic_offset_table_rtx,
-		      gen_rtx_REG (SImode, PIC_OFFSET_TABLE_REGNUM_SAVED));
+		      gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
       emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
 
       /* Gross.  We have to keep the scheduler from moving the restore
