@@ -25,7 +25,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm.h"
 #include "rtl.h"
 #include "regs.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "real.h"
@@ -1668,7 +1667,7 @@ xtensa_emit_call (callop, operands)
   rtx tgt = operands[callop];
 
   if (GET_CODE (tgt) == CONST_INT)
-    sprintf (result, "call8\t0x%x", INTVAL (tgt));
+    sprintf (result, "call8\t0x%lx", INTVAL (tgt));
   else if (register_operand (tgt, VOIDmode))
     sprintf (result, "callx8\t%%%d", callop);
   else
@@ -1997,11 +1996,11 @@ print_operand (file, op, letter)
 	  }
 
 	case 'L':
-	  fprintf (file, "%d", (32 - INTVAL (op)) & 0x1f);
+	  fprintf (file, "%ld", (32 - INTVAL (op)) & 0x1f);
 	  break;
 
 	case 'R':
-	  fprintf (file, "%d", INTVAL (op) & 0x1f);
+	  fprintf (file, "%ld", INTVAL (op) & 0x1f);
 	  break;
 
 	case 'x':
@@ -2010,7 +2009,7 @@ print_operand (file, op, letter)
 
 	case 'd':
 	default:
-	  fprintf (file, "%d", INTVAL (op));
+	  fprintf (file, "%ld", INTVAL (op));
 	  break;
 
 	}
@@ -2271,7 +2270,7 @@ xtensa_reorg (first)
 void
 xtensa_function_prologue (file, size)
      FILE *file;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   unsigned long tsize = compute_frame_size (get_frame_size ());
 
@@ -2304,7 +2303,7 @@ xtensa_function_prologue (file, size)
 void
 xtensa_function_epilogue (file, size)
      FILE *file;
-     int size ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   rtx insn = get_last_insn ();
   /* If the last insn was a BARRIER, we don't have to write anything. */

@@ -113,8 +113,8 @@ extern void xtensa_declare_object
   PARAMS ((FILE *, char *, char *, char *, int));
 extern long compute_frame_size PARAMS ((int));
 extern int xtensa_frame_pointer_required PARAMS ((void));
-extern void xtensa_function_prologue PARAMS ((FILE *, int));
-extern void xtensa_function_epilogue PARAMS ((FILE *, int));
+extern void xtensa_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+extern void xtensa_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 extern void order_regs_for_local_alloc PARAMS ((void));
 
 #endif /* !__XTENSA_PROTOS_H__ */
