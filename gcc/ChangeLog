@@ -1,3 +1,8 @@
+2003-12-22  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+        PR target/11271
+	* reload.c: Revert last backport from mainline.  It breaks s390. 
+
 2003-12-21  Roger Sayle  <roger@eyesopen.com>
 
 	* config/ia64/hpux.h (TARGET_OS_CPP_BUILTINS): Define _ILP32
