@@ -1699,7 +1699,7 @@
 (define_insn "*subqi3_carry_clobber"
   [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,d,c,?c,c,c")
         (minus:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0,g,rR,rS<>,0,g")
-                  (match_operand:QI 2 "src_operand" "JR,rS<>,0,g,JR,rS<>,g,0")))
+                  (match_operand:QI 2 "src_operand" "JR,rS<>,g,0,JR,rS<>,g,0")))
    (use (reg:CC_NOOV 21))
    (clobber (reg:CC_NOOV 21))]
   "valid_operands (MINUS, operands, QImode)"
@@ -2353,21 +2353,18 @@
 (define_insn "*ashlqi3_set"
   [(set (reg:CC 21)
         (compare:CC
-          (ashift:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0,rR,rS<>,0")
-                     (match_operand:QI 2 "src_operand" "JR,rS<>,g,JR,rS<>,g"))
+          (ashift:QI (match_operand:QI 1 "src_operand" "rR,rS<>,0")
+                     (match_operand:QI 2 "src_operand" "JR,rS<>,g"))
           (const_int 0)))
-   (set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
+   (set (match_operand:QI 0 "reg_operand" "=d,?d,d")
         (ashift:QI (match_dup 1)
                    (match_dup 2)))]
   "valid_operands (ASHIFT, operands, QImode)"
   "@
    ash3\\t%2,%1,%0
    ash3\\t%2,%1,%0
-   ash\\t%2,%0
-   ash3\\t%2,%1,%0
-   ash3\\t%2,%1,%0
    ash\\t%2,%0"
-  [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")])
+  [(set_attr "type" "binarycc,binarycc,binarycc")])
 ; Default to int16 data attr.
 
 ; This is only used by lshrhi3_reg where we need a LSH insn that will
@@ -2488,19 +2485,17 @@
 (define_insn "*ashrqi3_const_set"
   [(set (reg:CC 21)
         (compare:CC
-          (ashiftrt:QI (match_operand:QI 1 "src_operand" "0,0,r,r")
-                       (match_operand:QI 2 "const_int_operand" "n,n,J,J"))
+          (ashiftrt:QI (match_operand:QI 1 "src_operand" "0,r")
+                       (match_operand:QI 2 "const_int_operand" "n,J"))
           (const_int 0)))
-   (set (match_operand:QI 0 "reg_operand" "=?d,?c,d,c")
+   (set (match_operand:QI 0 "reg_operand" "=?d,d")
         (ashiftrt:QI (match_dup 1)
                      (match_dup 2)))]
   "valid_operands (ASHIFTRT, operands, QImode)"
   "@
    ash\\t%n2,%0
-   ash\\t%n2,%0
-   ash3\\t%n2,%1,%0
    ash3\\t%n2,%1,%0"
-  [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")])
+  [(set_attr "type" "binarycc,binarycc")])
 
 (define_insn "*ashrqi3_nonconst_clobber"
   [(set (match_operand:QI 0 "reg_operand" "=d,?d,d,c,?c,c")
@@ -4520,46 +4515,6 @@
   "
   [(set_attr "type" "repeat_top")])
 
-; operand 0 is the loop depth
-; operand 1 is the loop count
-; operand 2 is the start label
-; operand 3 is the end label
-(define_expand "repeat_block_top"
-  [(set (reg:QI 27) (match_operand:QI 1 "src_operand" ""))
-   (use (match_operand:QI 0 "immediate_operand" ""))
-   (parallel[(set (reg:QI 25) (label_ref (match_operand 2 "" "")))
-             (set (reg:QI 26) (label_ref (match_operand 3 "" "")))])]
-  ""
-  "if (CONSTANT_P (operands[1])
-       && !const_operand (operands[1], QImode))
-     operands[1] = force_const_mem (QImode, operands[1]);"
- )
-
-; operand 0 is the loop depth
-(define_insn "repeat_block_end"
-  [(set (pc)
-        (if_then_else (ne (reg:QI 27) (const_int 0))
-                      (label_ref (match_operand 1 "" ""))
-                      (pc)))
-   (use (match_operand:QI 0 "immediate_operand" ""))
-   (use (reg:QI 25))
-   (use (reg:QI 26))
-   (set (reg:QI 27)
-        (plus:QI (reg:QI 27)
-                 (const_int -1)))]
-  ""
-  "*
-   return c4x_rptb_nop_p(insn) ? \"nop\" : \"\";"
-  [(set_attr "type" "repeat")])
-
-; to prevent labels being coalesced and to leave a space to sink insns
-; out of a repeat block loop.
-(define_insn "repeat_block_filler"
-  [(unspec [(const_int 0)] 7)]
-  ""
-  ""
-  [(set_attr "type" "repeat")])
-
 
 (define_insn "rptb_end"
   [(set (pc)
@@ -4580,7 +4535,7 @@
 
 (define_expand "decrement_and_branch_on_count"
   [(parallel [(set (pc)
-                   (if_then_else (ge (match_operand:QI 0 "rc_reg_operand" "v")
+                   (if_then_else (ge (match_operand:QI 0 "rc_reg_operand" "")
                                      (const_int 0))
                                  (label_ref (match_operand 1 "" ""))
                                  (pc)))

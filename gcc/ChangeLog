@@ -1,3 +1,11 @@
+Tue Oct 20 21:56:05 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (repeat_block_top, repeat_block_end,
+ 	repeat_block_filler): Deleted.
+	(*ashlqi3_set, *ashrqi3_const_set, *ashrqi3_nonconst_clobber):
+ 	Condition code not set if destination register from 'c' class.
+	(*subbqi3_carry_clobber): Fix typo.
+
 1998-10-18 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* reorg.c (steal_delay_list_from_target) Check for insns that
