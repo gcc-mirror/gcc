@@ -1,3 +1,8 @@
+2001-12-15  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md: Adjust whitespacing.  Remove
+	constraints from expanders.  Replace \@ with @.
+
 2001-12-15  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/unknown-elf.h (CPP_PREDEFINES): Add a suitable default.
