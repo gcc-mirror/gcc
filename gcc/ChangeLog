@@ -1,3 +1,9 @@
+Fri Apr 21 18:17:12 2000  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300-protos.h (mn10300_address_cost): Declare.
+	* config/mn10300/mn10300.h (ADDRESS_COST): New macro.
+	* config/mn10300/mn10300.c (mn10300_address_cost): New function.
+
 Fri Apr 21 18:11:56 2000  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.md (movdi, movdf): Do not use `movu' when
