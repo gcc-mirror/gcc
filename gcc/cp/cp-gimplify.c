@@ -85,9 +85,10 @@ genericize_eh_spec_block (tree *stmt_p)
 static void
 gimplify_if_stmt (tree *stmt_p)
 {
-  tree stmt, then_, else_;
+  tree stmt, cond, then_, else_;
 
   stmt = *stmt_p;
+  cond = IF_COND (stmt);
   then_ = THEN_CLAUSE (stmt);
   else_ = ELSE_CLAUSE (stmt);
 
@@ -96,7 +97,12 @@ gimplify_if_stmt (tree *stmt_p)
   if (!else_)
     else_ = build_empty_stmt ();
 
-  stmt = build3 (COND_EXPR, void_type_node, IF_COND (stmt), then_, else_);
+  if (integer_nonzerop (cond) && !TREE_SIDE_EFFECTS (else_))
+    stmt = then_;
+  else if (integer_zerop (cond) && !TREE_SIDE_EFFECTS (then_))
+    stmt = else_;
+  else
+    stmt = build3 (COND_EXPR, void_type_node, cond, then_, else_);
   *stmt_p = stmt;
 }
 
