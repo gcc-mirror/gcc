@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "recog.h"
 #include "toplev.h"
+#include "ggc.h"
 #include "m32r-protos.h"
 
 /* Save the operands last given to a compare for use when we
@@ -55,7 +56,9 @@ enum m32r_sdata m32r_sdata;
 int m32r_sched_odd_word_p;
 
 /* Forward declaration.  */
-static void init_reg_tables			PARAMS ((void));
+static void  init_reg_tables			PARAMS ((void));
+static void  block_move_call			PARAMS ((rtx, rtx, rtx));
+static int   m32r_is_insn			PARAMS ((rtx));
 
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */
 
@@ -372,7 +375,7 @@ m32r_encode_section_info (decl)
       if (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd'
 	  && DECL_SECTION_NAME (decl) != NULL_TREE)
 	{
-	  char *name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+	  char *name = (char *) TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
 	  if (! strcmp (name, ".sdata") || ! strcmp (name, ".sbss"))
 	    {
 #if 0 /* ??? There's no reason to disallow this, is there?  */
@@ -436,6 +439,7 @@ m32r_encode_section_info (decl)
       const char *str = XSTR (XEXP (rtl, 0), 0);
       int len = strlen (str);
       char *newstr = ggc_alloc (len + 2);
+
       strcpy (newstr + 1, str);
       *newstr = prefix;
       XSTR (XEXP (rtl, 0), 0) = newstr;
@@ -744,7 +748,7 @@ move_src_operand (op, mode)
 	 loadable with one insn, and split the rest into two.  The instances
 	 where this would help should be rare and the current way is
 	 simpler.  */
-      return INT32_P (INTVAL (op));
+      return UINT32_P (INTVAL (op));
     case LABEL_REF :
       return TARGET_ADDR24;
     case CONST_DOUBLE :
@@ -1345,9 +1349,11 @@ function_arg_partial_nregs (cum, mode, type, named)
      int named ATTRIBUTE_UNUSED;
 {
   int ret;
-  int size = (((mode == BLKmode && type)
-	       ? int_size_in_bytes (type)
-	       : GET_MODE_SIZE (mode)) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  unsigned int size =
+    (((mode == BLKmode && type)
+      ? (unsigned int) int_size_in_bytes (type)
+      : GET_MODE_SIZE (mode)) + UNITS_PER_WORD - 1)
+    / UNITS_PER_WORD;
 
   if (*cum >= M32R_MAX_PARM_REGS)
     ret = 0;
@@ -1559,7 +1565,6 @@ m32r_sched_reorder (stream, verbose, ready, n_ready)
       for (i = n_ready-1; i >= 0; i--)
 	{
 	  rtx insn = ready[i];
-	  enum rtx_code code;
 
 	  if (! m32r_is_insn (insn))
 	    {
@@ -1615,7 +1620,6 @@ m32r_sched_reorder (stream, verbose, ready, n_ready)
 	  for (i = 0; i < n_ready; i++)
 	    {
 	      rtx insn = ready[i];
-	      enum rtx_code code;
 
 	      fprintf (stream, " %d", INSN_UID (ready[i]));
 
@@ -2608,12 +2612,12 @@ emit_cond_move (operands, insn)
     }
 
   sprintf (buffer, "mvfc %s, cbr", dest);
-  
+
   /* If the true value was '0' then we need to invert the results of the move.  */
   if (INTVAL (operands [2]) == 0)
     sprintf (buffer + strlen (buffer), "\n\txor3 %s, %s, #1",
 	     dest, dest);
-  
+
   return buffer;
 }
 
@@ -2777,7 +2781,7 @@ m32r_expand_block_move (operands)
    operands[3] is a temp register.
    operands[4] is a temp register.  */
 
-char *
+void
 m32r_output_block_move (insn, operands)
      rtx insn ATTRIBUTE_UNUSED;
      rtx operands[];
@@ -2891,8 +2895,6 @@ m32r_output_block_move (insn, operands)
 
       first_time = 0;
     }
-
-  return "";
 }
 
 /* Return true if op is an integer constant, less than or equal to

@@ -753,15 +753,13 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define INT8_P(X) ((X) >= -0x80 && (X) <= 0x7f)
 #define INT16_P(X) ((X) >= -0x8000 && (X) <= 0x7fff)
 #define CMP_INT16_P(X) ((X) >= -0x7fff && (X) <= 0x8000)
-#define UINT16_P(X) (((unsigned HOST_WIDE_INT)(X)) <= 0xffff)
 #define UPPER16_P(X) (((X) & 0xffff) == 0				\
 		      && ((X) >> 16) >= -0x8000				\
 		      && ((X) >> 16) <= 0x7fff)
-#define UINT24_P(X) (((unsigned HOST_WIDE_INT) (X)) < 0x1000000)
-#define INT32_P(X) (((X) >= -(HOST_WIDE_INT) 0x80000000			\
-		     && (X) <= (HOST_WIDE_INT) 0x7fffffff)		\
-		    || (unsigned HOST_WIDE_INT) (X) <= 0xffffffff)
-#define UINT5_P(X) ((X) >= 0 && (X) < 32)
+#define UINT16_P(X) (((unsigned HOST_WIDE_INT) (X)) <= 0x0000ffff)
+#define UINT24_P(X) (((unsigned HOST_WIDE_INT) (X)) <= 0x00ffffff)
+#define UINT32_P(X) (((unsigned HOST_WIDE_INT) (X)) <= 0xffffffff)
+#define UINT5_P(X)  ((X) >= 0 && (X) < 32)
 #define INVERTED_SIGNED_8BIT(VAL) ((VAL) >= -127 && (VAL) <= 128)
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)					\
@@ -1046,19 +1044,11 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
 /* Round arg MODE/TYPE up to the next word boundary.  */
 #define ROUND_ADVANCE_ARG(MODE, TYPE) \
   ((MODE) == BLKmode				\
-   ? ROUND_ADVANCE (int_size_in_bytes (TYPE))	\
+   ? ROUND_ADVANCE ((unsigned int) int_size_in_bytes (TYPE))	\
    : ROUND_ADVANCE (GET_MODE_SIZE (MODE)))
 
 /* Round CUM up to the necessary point for argument MODE/TYPE.  */
-#if 0
-#define ROUND_ADVANCE_CUM(CUM, MODE, TYPE) \
-((((MODE) == BLKmode ? TYPE_ALIGN (TYPE) : GET_MODE_BITSIZE (MODE)) \
-  > BITS_PER_WORD)	\
- ? ((CUM) + 1 & ~1)	\
- : (CUM))
-#else
 #define ROUND_ADVANCE_CUM(CUM, MODE, TYPE) (CUM)
-#endif
 
 /* Return boolean indicating arg of type TYPE and mode MODE will be passed in
    a reg.  This includes arguments that have to be passed by reference as the

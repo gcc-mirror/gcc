@@ -1,3 +1,21 @@
+2001-06-11  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/m32r/m32r.md (movstrsi_internal): Do not expect a
+	return string from m32r_output_block_move.
+        * config/m32r/m32r-protos.h: Make m32r_output_block_move a
+	void function.
+        * config/m32r/m32r.h (INT32_P): Rename to UNIT32_P and remove
+	integer overflow.
+        (ROUND_ADVANCE): Remove signed/unsigned conflict.
+        * config/m32r/m32r.c: Declare prototypes for static functions.
+        (move_src_operand): Replace INT32_P with UINT32_P.
+        (function_arg_partial_nregs): Fixed signed/unsigned conflict
+	in initialisation of 'size'.
+        (m32r_sched_reord): Remove redundant declarations of 'code'.
+        (m32r_output_block_move): Change to a void function.
+        (m32r_encode_section_info): Cast return of
+	TREE_STRING_POINTER to avoid compile time warning.
+
 2001-06-11  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/osf5.h (TARGET_LD_BUGGY_LDGP): New.
