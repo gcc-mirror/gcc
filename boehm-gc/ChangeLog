@@ -1,3 +1,7 @@
+2003-04-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* include/private/gcconfig.h: Add support for arm-netbsdelf.
+
 2003-04-09  Tom Tromey  <tromey@redhat.com>
 
 	* include/private/gcconfig.h (LINUX_STACKBOTTOM): Define for
