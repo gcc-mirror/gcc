@@ -1980,6 +1980,23 @@ build_default_constructor (fndecl)
   finish_function (lineno, 0);
 }
 
+/* For the anonymous union in TYPE, return the member that is at least as
+   large as the rest of the members, so we can copy it.  */
+static tree
+largest_union_member (type)
+     tree type;
+{
+  tree f, type_size = TYPE_SIZE (type);
+
+  for (f = TYPE_FIELDS (type); f; f = TREE_CHAIN (f))
+    if (simple_cst_equal (DECL_SIZE (f), type_size))
+      return f;
+
+  /* We should always find one.  */
+  my_friendly_abort (323);
+  return NULL_TREE;
+}
+
 /* Generate code for default X(X&) constructor.  */
 void
 build_copy_constructor (fndecl)
@@ -2034,7 +2051,7 @@ build_copy_constructor (fndecl)
 	}
       for (; fields; fields = TREE_CHAIN (fields))
 	{
-	  tree name, init;
+	  tree name, init, t;
 	  if (TREE_CODE (fields) != FIELD_DECL)
 	    continue;
 	  if (DECL_NAME (fields))
@@ -2048,6 +2065,13 @@ build_copy_constructor (fndecl)
 	      if (IDENTIFIER_CLASS_VALUE (DECL_NAME (fields)) != fields)
 		continue;
 	    }
+	  else if ((t = TREE_TYPE (fields)) != NULL_TREE
+		   && TREE_CODE (t) == UNION_TYPE
+		   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))
+		   && TYPE_FIELDS (t) != NULL_TREE)
+	    fields = largest_union_member (t);
+	  else
+	    continue;
 
 	  init = build (COMPONENT_REF, TREE_TYPE (fields), parm, fields);
 	  init = build_tree_list (NULL_TREE, init);
@@ -2103,7 +2127,7 @@ build_assign_ref (fndecl)
 	}
       for (; fields; fields = TREE_CHAIN (fields))
 	{
-	  tree comp, init;
+	  tree comp, init, t;
 	  if (TREE_CODE (fields) != FIELD_DECL)
 	    continue;
 	  if (DECL_NAME (fields))
@@ -2117,6 +2141,13 @@ build_assign_ref (fndecl)
 	      if (IDENTIFIER_CLASS_VALUE (DECL_NAME (fields)) != fields)
 		continue;
 	    }
+	  else if ((t = TREE_TYPE (fields)) != NULL_TREE
+		   && TREE_CODE (t) == UNION_TYPE
+		   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))
+		   && TYPE_FIELDS (t) != NULL_TREE)
+	    fields = largest_union_member (t);
+	  else
+	    continue;
 
 	  comp = build (COMPONENT_REF, TREE_TYPE (fields), C_C_D, fields);
 	  init = build (COMPONENT_REF, TREE_TYPE (fields), parm, fields);
