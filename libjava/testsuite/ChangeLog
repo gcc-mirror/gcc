@@ -1,3 +1,8 @@
+2003-08-04  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.jacks/jacks.exp (gcj_jacks_run): Just ignore errors
+	from jacks.
+
 2003-07-24  Tom Tromey  <tromey@redhat.com>
 
 	For PR libgcj/7482:

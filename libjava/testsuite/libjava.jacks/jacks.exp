@@ -89,14 +89,11 @@ proc gcj_jacks_run {} {
   gcj_jacks_write gcj_setup
 
   verbose "Running Jacks..."
-  if {[catch {exec ./jacks gcj} msg]} {
-    verbose "jacks invocation failure: $msg"
-    fail "running jacks"
-  } else {
-    pass "running jacks"
+  # Just ignore error exits from the jacks program.
+  # It will always error exit for us, since don't completely pass.
+  catch {exec ./jacks gcj} msg
 
-    gcj_jacks_parse logging/gcj.log
-  }
+  gcj_jacks_parse logging/gcj.log
 
   cd $here
 }
