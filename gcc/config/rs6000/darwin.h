@@ -233,3 +233,7 @@ Boston, MA 02111-1307, USA.  */
    space/speed.  */
 #undef MAX_LONG_TYPE_SIZE
 #define MAX_LONG_TYPE_SIZE 32
+
+/* For binary compatibility with 2.95; Darwin C APIs use bool from
+   stdbool.h, which was an int-sized enum in 2.95.  */
+#define BOOL_TYPE_SIZE INT_TYPE_SIZE
