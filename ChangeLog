@@ -1,3 +1,11 @@
+2004-05-25  Daniel Jacobowitz  <drow@false.org>
+
+	* Makefile.tpl (BUILD_EXPORTS, HOST_EXPORTS, GCC_HOST_EXPORTS)
+	(STAGE_HOST_EXPORTS, BASE_TARGET_EXPORTS, RAW_CXX_TARGET_EXPORTS)
+	(NORMAL_TARGET_EXPORTS): New macros.  Use them in all the recursive
+	targets.
+	* Makefile.in: Regenerate.
+
 2005-05-24  Paolo Bonzini <bonzini@gnu.org>
 
 	* configure.in: Test the ability to symlink directories.

@@ -6,7 +6,7 @@ in
 #
 # Makefile for directory with subdirs to build.
 #   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000, 2001, 2002, 2003 Free Software Foundation
+#   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -111,12 +111,66 @@ BUILD_SUBDIR = @build_subdir@
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the build system.
 BUILD_CONFIGARGS = @build_configargs@
+# This is the list of variables to export in the environment when
+# configuring subdirectories for the build system.  It must also be
+# exported whenever recursing into a build directory in case that
+# directory's Makefile re-runs configure.
+BUILD_EXPORTS = \
+	AR="$(AR_FOR_BUILD)"; export AR; \
+	AS="$(AS_FOR_BUILD)"; export AS; \
+	CC="$(CC_FOR_BUILD)"; export CC; \
+	CFLAGS="$(CFLAGS_FOR_BUILD)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
+	CXX="$(CXX_FOR_BUILD)"; export CXX; \
+	CXXFLAGS="$(CXXFLAGS_FOR_BUILD)"; export CXXFLAGS; \
+	GCJ="$(GCJ_FOR_BUILD)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_BUILD)"; export GFORTRAN; \
+	DLLTOOL="$(DLLTOOL_FOR_BUILD)"; export DLLTOOL; \
+	LD="$(LD_FOR_BUILD)"; export LD; \
+	LDFLAGS="$(LDFLAGS_FOR_BUILD)"; export LDFLAGS; \
+	NM="$(NM_FOR_BUILD)"; export NM; \
+	RANLIB="$(RANLIB_FOR_BUILD)"; export RANLIB; \
+	WINDRES="$(WINDRES_FOR_BUILD)"; export WINDRES;
 
 # This is the list of directories to built for the host system.
 SUBDIRS = @configdirs@
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the host system.
 HOST_CONFIGARGS = @host_configargs@
+# This is the list of variables to export in the environment when
+# configuring subdirectories for the host system.  It must also be
+# exported whenever recursing into a host directory in case that
+# directory's Makefile re-runs configure.
+HOST_EXPORTS = \
+	CC="$(CC)"; export CC; \
+	CFLAGS="$(CFLAGS)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
+	CXX="$(CXX)"; export CXX; \
+	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
+	AR="$(AR)"; export AR; \
+	AS="$(AS)"; export AS; \
+	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
+	LD="$(LD)"; export LD; \
+	LDFLAGS="$(LDFLAGS)"; export LDFLAGS; \
+	NM="$(NM)"; export NM; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
+	WINDRES="$(WINDRES)"; export WINDRES; \
+	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
+	OBJDUMP="$(OBJDUMP)"; export OBJDUMP;
+
+# Similar, for the gcc directory.
+GCC_HOST_EXPORTS = \
+	$(HOST_EXPORTS) \
+	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
+	GMPLIBS="$(HOST_GMPLIBS)"; export GMPLIBS; \
+	GMPINC="$(HOST_GMPINC)"; export GMPINC;
+
+# Similar, for later GCC stages.
+STAGE_HOST_EXPORTS = \
+	$(GCC_HOST_EXPORTS) \
+	CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC; \
+	CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC_FOR_BUILD;
 
 # This is set by the configure script to the list of directories which
 # should be built using the target tools.
@@ -126,6 +180,35 @@ TARGET_SUBDIR = @target_subdir@
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the target.
 TARGET_CONFIGARGS = @target_configargs@
+# This is the list of variables to export in the environment when
+# configuring subdirectories for the host system.  It must also be
+# exported whenever recursing into a host directory in case that
+# directory's Makefile re-runs configure.
+BASE_TARGET_EXPORTS = \
+	AR="$(AR_FOR_TARGET)"; export AR; \
+	AS="$(AS_FOR_TARGET)"; export AS; \
+	CC="$(CC_FOR_TARGET)"; export CC; \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
+	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
+	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
+	LD="$(LD_FOR_TARGET)"; export LD; \
+	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
+	NM="$(NM_FOR_TARGET)"; export NM; \
+	RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
+	WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES;
+
+RAW_CXX_TARGET_EXPORTS = \
+	$(BASE_TARGET_EXPORTS) \
+	CXX_FOR_TARGET="$(RAW_CXX_FOR_TARGET)"; export CXX_FOR_TARGET; \
+	CXX="$(RAW_CXX_FOR_TARGET)"; export CXX;
+
+NORMAL_TARGET_EXPORTS = \
+	$(BASE_TARGET_EXPORTS) \
+	CXX="$(CXX_FOR_TARGET)"; export CXX;
 
 # Where to find GMP
 HOST_GMPLIBS = @gmplibs@
@@ -649,6 +732,7 @@ install.all: install-no-fixedincludes
 	@if [ -f ./gcc/Makefile ] ; then \
 		r=`${PWD_COMMAND}` ; export r ; \
 		$(SET_LIB_PATH) \
+		$(GCC_HOST_EXPORTS) \
 		(cd ./gcc && \
 		$(MAKE) $(FLAGS_TO_PASS) install-headers) ; \
 	else \
@@ -704,21 +788,7 @@ configure-build-[+module+]:
 	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/[+module+] ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	AR="$(AR_FOR_BUILD)"; export AR; \
-	AS="$(AS_FOR_BUILD)"; export AS; \
-	CC="$(CC_FOR_BUILD)"; export CC; \
-	CFLAGS="$(CFLAGS_FOR_BUILD)"; export CFLAGS; \
-	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
-	CXX="$(CXX_FOR_BUILD)"; export CXX; \
-	CXXFLAGS="$(CXXFLAGS_FOR_BUILD)"; export CXXFLAGS; \
-	GCJ="$(GCJ_FOR_BUILD)"; export GCJ; \
-	GFORTRAN="$(GFORTRAN_FOR_BUILD)"; export GFORTRAN; \
-	DLLTOOL="$(DLLTOOL_FOR_BUILD)"; export DLLTOOL; \
-	LD="$(LD_FOR_BUILD)"; export LD; \
-	LDFLAGS="$(LDFLAGS_FOR_BUILD)"; export LDFLAGS; \
-	NM="$(NM_FOR_BUILD)"; export NM; \
-	RANLIB="$(RANLIB_FOR_BUILD)"; export RANLIB; \
-	WINDRES="$(WINDRES_FOR_BUILD)"; export WINDRES; \
+	$(BUILD_EXPORTS) \
 	echo Configuring in $(BUILD_SUBDIR)/[+module+]; \
 	cd "$(BUILD_SUBDIR)/[+module+]" || exit 1; \
 	case $(srcdir) in \
@@ -768,6 +838,7 @@ maybe-all-build-[+module+]: all-build-[+module+]
 all-build-[+module+]: configure-build-[+module+]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS) \
 	(cd $(BUILD_SUBDIR)/[+module+] && $(MAKE) all)
 @endif build-[+module+]
 [+ ENDFOR build_modules +]
@@ -785,22 +856,7 @@ configure-[+module+]:
 	[ -d [+module+] ] || mkdir [+module+]; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	CC="$(CC)"; export CC; \
-	CFLAGS="$(CFLAGS)"; export CFLAGS; \
-	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
-	CXX="$(CXX)"; export CXX; \
-	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	AR="$(AR)"; export AR; \
-	AS="$(AS)"; export AS; \
-	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	LD="$(LD)"; export LD; \
-	LDFLAGS="$(LDFLAGS)"; export LDFLAGS; \
-	NM="$(NM)"; export NM; \
-	RANLIB="$(RANLIB)"; export RANLIB; \
-	WINDRES="$(WINDRES)"; export WINDRES; \
-	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
+	$(HOST_EXPORTS) \
 	echo Configuring in [+module+]; \
 	cd [+module+] || exit 1; \
 	case $(srcdir) in \
@@ -827,6 +883,7 @@ all-[+module+]: configure-[+module+]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
 	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	  IF with_x 
 	    +] $(X11_FLAGS_TO_PASS)[+ 
@@ -846,6 +903,7 @@ check-[+module+]:
 	  r=`${PWD_COMMAND}`; export r; \
 	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
+	  $(HOST_EXPORTS) \
 	  (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	    IF with_x 
 	      +] $(X11_FLAGS_TO_PASS)[+ 
@@ -856,6 +914,7 @@ check-[+module+]:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
 	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	  IF with_x 
 	    +] $(X11_FLAGS_TO_PASS)[+ 
@@ -874,6 +933,7 @@ install-[+module+]: installdirs
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
 	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	  IF with_x 
 	    +] $(X11_FLAGS_TO_PASS)[+ 
@@ -899,6 +959,7 @@ maybe-[+make_target+]-[+module+]: [+make_target+]-[+module+]
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
+	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
@@ -935,28 +996,12 @@ configure-target-[+module+]: $(TARGET_SUBDIR)/[+module+]/multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/[+module+] ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	AR="$(AR_FOR_TARGET)"; export AR; \
-	AS="$(AS_FOR_TARGET)"; export AS; \
-	CC="$(CC_FOR_TARGET)"; export CC; \
-	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
-	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
-	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \[+ 
+	$(SET_LIB_PATH) \[+
 IF raw_cxx +]
-	CXX_FOR_TARGET="$(RAW_CXX_FOR_TARGET)"; export CXX_FOR_TARGET; \
-	CXX="$(RAW_CXX_FOR_TARGET)"; export CXX; \[+ 
+	$(RAW_CXX_TARGET_EXPORTS) \[+
 ELSE normal_cxx +]
-	CXX="$(CXX_FOR_TARGET)"; export CXX; \[+ 
+	$(NORMAL_TARGET_EXPORTS) \[+
 ENDIF raw_cxx +]
-	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
-	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
-	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
-	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
-	LD="$(LD_FOR_TARGET)"; export LD; \
-	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
-	NM="$(NM_FOR_TARGET)"; export NM; \
-	RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
-	WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES; \
 	echo Configuring in $(TARGET_SUBDIR)/[+module+]; \
 	cd "$(TARGET_SUBDIR)/[+module+]" || exit 1; \
 	case $(srcdir) in \
@@ -1006,7 +1051,12 @@ maybe-all-target-[+module+]: all-target-[+module+]
 all-target-[+module+]: configure-target-[+module+]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
+	$(SET_LIB_PATH) \[+
+IF raw_cxx +]
+	$(RAW_CXX_TARGET_EXPORTS) \[+
+ELSE normal_cxx +]
+	$(NORMAL_TARGET_EXPORTS) \[+
+ENDIF raw_cxx +]
 	(cd $(TARGET_SUBDIR)/[+module+] && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS) [+
 	    IF raw_cxx 
@@ -1026,7 +1076,12 @@ check-target-[+module+]:
 check-target-[+module+]:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
+	$(SET_LIB_PATH) \[+
+IF raw_cxx +]
+	$(RAW_CXX_TARGET_EXPORTS) \[+
+ELSE normal_cxx +]
+	$(NORMAL_TARGET_EXPORTS) \[+
+ENDIF raw_cxx +]
 	(cd $(TARGET_SUBDIR)/[+module+] && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS) [+
 	    IF raw_cxx 
@@ -1047,7 +1102,12 @@ install-target-[+module+]:
 install-target-[+module+]: installdirs
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
+	$(SET_LIB_PATH) \[+
+IF raw_cxx +]
+	$(RAW_CXX_TARGET_EXPORTS) \[+
+ELSE normal_cxx +]
+	$(NORMAL_TARGET_EXPORTS) \[+
+ENDIF raw_cxx +]
 	(cd $(TARGET_SUBDIR)/[+module+] && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS) install)
 [+ ENDIF no_install +]
@@ -1070,7 +1130,12 @@ maybe-[+make_target+]-target-[+module+]: [+make_target+]-target-[+module+]
 	@[ -f $(TARGET_SUBDIR)/[+module+]/Makefile ] || exit 0 ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
+	$(SET_LIB_PATH) \[+
+IF raw_cxx +]
+	$(RAW_CXX_TARGET_EXPORTS) \[+
+ELSE normal_cxx +]
+	$(NORMAL_TARGET_EXPORTS) \[+
+ENDIF raw_cxx +]
 	echo "Doing [+make_target+] in $(TARGET_SUBDIR)/[+module+]" ; \
 	for flag in $(EXTRA_TARGET_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
@@ -1111,25 +1176,7 @@ configure-gcc:
 	[ -d gcc ] || mkdir gcc; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	CC="$(CC)"; export CC; \
-	CFLAGS="$(CFLAGS)"; export CFLAGS; \
-	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
-	CXX="$(CXX)"; export CXX; \
-	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
-	AR="$(AR)"; export AR; \
-	AS="$(AS)"; export AS; \
-	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	LD="$(LD)"; export LD; \
-	LDFLAGS="$(LDFLAGS)"; export LDFLAGS; \
-	NM="$(NM)"; export NM; \
-	RANLIB="$(RANLIB)"; export RANLIB; \
-	WINDRES="$(WINDRES)"; export WINDRES; \
-	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	GMPLIBS="$(HOST_GMPLIBS)"; export GMPLIBS; \
-	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
+	$(GCC_HOST_EXPORTS) \
 	echo Configuring in gcc; \
 	cd gcc || exit 1; \
 	case $(srcdir) in \
@@ -1158,6 +1205,7 @@ maybe-all-gcc: all-gcc
 all-gcc: configure-gcc
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(GCC_HOST_EXPORTS) \
 	if [ -f stage_last ] ; then \
 	  true ; \
 	elif [ -f gcc/stage_last ] ; then \
@@ -1185,6 +1233,7 @@ $(GCC_STRAP_TARGETS): all-bootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
+	$(GCC_HOST_EXPORTS) \
 	echo "Bootstrapping the compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $@
 	@r=`${PWD_COMMAND}`; export r; \
@@ -1204,6 +1253,7 @@ $(GCC_STRAP_TARGETS): all-bootstrap configure-gcc
 	    compare=compare ;; \
 	esac; \
 	$(SET_LIB_PATH) \
+	$(GCC_HOST_EXPORTS) \
 	echo "$$msg"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $$compare
 	@r=`${PWD_COMMAND}`; export r; \
@@ -1216,6 +1266,7 @@ profiledbootstrap: all-bootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
+	$(GCC_HOST_EXPORTS) \
 	echo "Bootstrapping the compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) stageprofile_build
 	@r=`${PWD_COMMAND}`; export r; \
@@ -1226,6 +1277,7 @@ profiledbootstrap: all-bootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
+	$(GCC_HOST_EXPORTS) \
 	echo "Building feedback based compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) stagefeedback_build
 
@@ -1234,6 +1286,7 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
+	$(GCC_HOST_EXPORTS) \
 	echo "Building the C and C++ compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) LANGUAGES="c c++"
 	@r=`${PWD_COMMAND}`; export r; \
@@ -1252,6 +1305,7 @@ check-gcc:
 	  r=`${PWD_COMMAND}`; export r; \
 	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
+	  $(GCC_HOST_EXPORTS) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check); \
 	else \
 	  true; \
@@ -1263,6 +1317,7 @@ check-gcc-c++:
 	  r=`${PWD_COMMAND}`; export r; \
 	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
+	  $(GCC_HOST_EXPORTS) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++); \
 	else \
 	  true; \
@@ -1281,6 +1336,7 @@ install-gcc:
 	  r=`${PWD_COMMAND}`; export r; \
 	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
+	  $(GCC_HOST_EXPORTS) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
 	else \
 	  true; \
@@ -1302,6 +1358,7 @@ gcc-no-fixedincludes:
 	  r=`${PWD_COMMAND}`; export r; \
 	  s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	  $(SET_LIB_PATH) \
+	  $(GCC_HOST_EXPORTS) \
 	  (cd ./gcc && \
 	   $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
 	  rm -rf gcc/include; \
@@ -1325,6 +1382,7 @@ maybe-[+make_target+]-gcc: [+make_target+]-gcc
 	for flag in $(EXTRA_GCC_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
+	$(GCC_HOST_EXPORTS) \
 	echo "Doing [+make_target+] in gcc" ; \
 	(cd gcc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
@@ -1441,28 +1499,9 @@ configure-stage[+id+]-gcc: [+ IF prev +] all-stage[+prev+]-gcc [+
 	  true ; \
 	fi ; \
 	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
-	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
-	CFLAGS="$(CFLAGS)"; export CFLAGS; \
-	CXX="$(CXX)"; export CXX; \
-	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	AR="$(AR)"; export AR; \
-	AS="$(AS)"; export AS; \
-	DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	LD="$(LD)"; export LD; \
-	LDFLAGS="$(LDFLAGS)"; export LDFLAGS; \
-	NM="$(NM)"; export NM; \
-	RANLIB="$(RANLIB)"; export RANLIB; \
-	WINDRES="$(WINDRES)"; export WINDRES; \
-	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	GMPLIBS="$(HOST_GMPLIBS)"; export GMPLIBS; \
-	GMPINC="$(HOST_GMPINC)"; export GMPINC [+ IF prev +] ; \
-	CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC; \
-	CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC_FOR_BUILD [+ ELSE +] ; \
-	CC="$(CC)"; export CC; \
-	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD [+ ENDIF prev +] ; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; [+ IF prev +] \
+	$(STAGE_HOST_EXPORTS) [+ ELSE prev +] \
+	$(GCC_HOST_EXPORTS) [+ ENDIF prev +] \
 	echo Configuring stage [+id+] in gcc ; \
 	cd gcc || exit 1; \
 	case $(srcdir) in \
@@ -1484,11 +1523,12 @@ configure-stage[+id+]-gcc: [+ IF prev +] all-stage[+prev+]-gcc [+
 all-stage[+id+]-gcc: configure-stage[+id+]-gcc
 	$(MAKE) new-stage[+id+]-start
 	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; [+ IF prev +] \
+	$(STAGE_HOST_EXPORTS) [+ ELSE prev +] \
+	$(GCC_HOST_EXPORTS) [+ ENDIF prev +] \
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS) [+ IF prev +] \
-		CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
-		CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
+		CC="$${CC}" CC_FOR_BUILD="${CC_FOR_BUILD}" \
 		STAGE_PREFIX=$$r/stage[+prev+]-gcc/ [+ ENDIF prev +] \
 		[+extra_make_flags+] && $(STAMP) ../all-stage[+id+]-gcc
 
