@@ -1,5 +1,9 @@
 2003-04-11  Richard Henderson  <rth@redhat.com>
 
+	* emit-rtl.c (gen_rtx): Zero '0' fields.
+
+2003-04-11  Richard Henderson  <rth@redhat.com>
+
 	PR c++/10202
 	* expr.c (expand_expr): Use COMPLETE_OR_UNBOUND_ARRAY_TYPE_P
 	not COMPLETE_TYPE_P for re-invoking layout_decl.
