@@ -154,13 +154,20 @@ install_to_tooldir: all
 	mv -f $(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB).n $(tooldir)/lib$(MULTISUBDIR)/$(TARGETLIB)
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
-# needed-list is used by libstdc++.
+# needed-list is used by libstdc++.  NEEDED is the list of functions
+# to include there.  Do not add anything LGPL to this list; libstdc++
+# can't use anything encumbering.
+NEEDED = atexit calloc memchr memcmp memcpy memmove memset rename strchr \
+	 strerror strrchr strstr strtol strtoul tmpnam vfprintf vprintf \
+	 vfork waitpid
 needed-list: Makefile
-	f="$(LIBOBJS) $(ALLOCA) $(EXTRA_OFILES)"; \
-	case $$f in \
-	  *alloca.o*) f="$$f xmalloc.o xexit.o" ;; \
-	esac; \
-	echo $$f > needed-list
+	rm -f needed-list; touch needed-list; \
+	files="$(LIBOBJS) $(EXTRA_OFILES)"; \
+	for f in $(NEEDED); do \
+	  case "$$files" in \
+	    *$$f*) echo $$f >> needed-list ;; \
+	  esac; \
+	done
 
 # required-list was used when building a shared bfd/opcodes/libiberty
 # library.  I don't know if it used by anything currently.
