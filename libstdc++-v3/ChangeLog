@@ -1,3 +1,41 @@
+2004-04-16  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* include/bits/c++config (_GLIBCXX_STD): New.
+	* src/list.cc: Use it.
+	* include/std/std_bitset.h: Same.
+	* include/bits/vector.tcc: Same.
+	* include/bits/stl_set.h: Same.
+	* include/bits/stl_multiset.h: Same.
+	* include/bits/stl_multimap.h: Same.
+	* include/bits/stl_map.h: Same.
+	* include/bits/stl_list.h: Same.
+	* include/bits/stl_vector.h: Same.
+	* include/bits/stl_bvector.h: Same.
+	* include/bits/stl_deque.h: Same.
+	* include/bits/deque.tcc: Same.
+	* include/bits/list.tcc: Same.
+	* include/debug/vector: Same.
+	* include/debug/set.h: Same.
+	* include/debug/multiset.h: Same.
+	* include/debug/multimap.h: Same.
+	* include/debug/map.h: Same.
+	* include/debug/list: Same.
+	* include/debug/deque: Same.
+	* include/debug/bitset: Same.	
+	* include/debug/formatter.h (__gnu_debug): Remove using directive.
+	Add using declaration for std::type_info.
+	* include/debug/safe_iterator.h: Add using declaration for
+	std::iterator_traits and std::pair.
+	* src/debug_list.cc: New.
+	* src/Makefile.am: Add debug_list.cc.
+	* src/Makefile.in: Regenerate.
+	* config/linker-map.gnu: Add _List_node_base exports for std and
+	__gnu_norm.
+
+	* include/bits/stl_bvector.h (_Bvector_base): Use _Bvector_impl
+	idiom that other containers use.
+	* testsuite/23_containers/vector/bool/clear_allocator.cc: New.
+			
 2004-04-16  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/14975

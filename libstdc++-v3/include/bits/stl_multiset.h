@@ -63,7 +63,7 @@
 
 #include <bits/concept_check.h>
 
-namespace __gnu_norm
+namespace _GLIBCXX_STD
 {
 
   // Forward declaration of operators < and ==, needed for friend declaration.
@@ -580,6 +580,6 @@ namespace __gnu_norm
 	 multiset<_Key,_Compare,_Alloc>& __y)
     { __x.swap(__y); }
 
-} // namespace __gnu_norm
+} // namespace std
 
 #endif /* _MULTISET_H */

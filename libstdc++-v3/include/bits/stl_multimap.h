@@ -63,7 +63,7 @@
 
 #include <bits/concept_check.h>
 
-namespace __gnu_norm
+namespace _GLIBCXX_STD
 {
   // Forward declaration of operators < and ==, needed for friend declaration.
 
@@ -673,6 +673,6 @@ namespace __gnu_norm
     swap(multimap<_Key,_Tp,_Compare,_Alloc>& __x,
          multimap<_Key,_Tp,_Compare,_Alloc>& __y)
     { __x.swap(__y); }
-} // namespace __gnu_norm
+} // namespace std
 
 #endif /* _MULTIMAP_H */

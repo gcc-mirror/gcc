@@ -59,12 +59,12 @@ am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 	numeric_members.lo time_members.lo
 am__objects_2 = basic_file.lo c++locale.lo
 am__objects_3 = allocator.lo codecvt.lo complex_io.lo ctype.lo \
-	debug.lo functexcept.lo globals_locale.lo globals_io.lo ios.lo \
-	ios_failure.lo ios_init.lo ios_locale.lo limits.lo list.lo \
-	locale.lo locale_init.lo locale_facets.lo localename.lo \
-	stdexcept.lo strstream.lo tree.lo allocator-inst.lo \
-	concept-inst.lo fstream-inst.lo ext-inst.lo io-inst.lo \
-	istream-inst.lo locale-inst.lo locale-misc-inst.lo \
+	debug.lo debug_list.lo functexcept.lo globals_locale.lo \
+	globals_io.lo ios.lo ios_failure.lo ios_init.lo ios_locale.lo \
+	limits.lo list.lo locale.lo locale_init.lo locale_facets.lo \
+	localename.lo stdexcept.lo strstream.lo tree.lo \
+	allocator-inst.lo concept-inst.lo fstream-inst.lo ext-inst.lo \
+	io-inst.lo istream-inst.lo locale-inst.lo locale-misc-inst.lo \
 	misc-inst.lo ostream-inst.lo sstream-inst.lo streambuf-inst.lo \
 	string-inst.lo valarray-inst.lo wlocale-inst.lo \
 	wstring-inst.lo $(am__objects_1) $(am__objects_2)
@@ -299,6 +299,7 @@ sources = \
 	complex_io.cc \
 	ctype.cc \
 	debug.cc \
+	debug_list.cc \
 	functexcept.cc \
 	globals_locale.cc \
 	globals_io.cc \
