@@ -22,7 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define YES_UNDERSCORES
 
 #include "halfpic.h"
-#include "i386gstabs.h"
+#include "i386/gstabs.h"
 
 #define OSF_OS
 
