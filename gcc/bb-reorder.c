@@ -688,7 +688,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 			&& !(e->flags & EDGE_COMPLEX)
 			&& !e->dest->rbi->visited
 			&& !e->dest->pred->pred_next
-			&& !e->crossing_edge
+			&& !(e->flags & EDGE_CROSSING)
 			&& e->dest->succ
 			&& (e->dest->succ->flags & EDGE_CAN_FALLTHRU)
 			&& !(e->dest->succ->flags & EDGE_COMPLEX)
@@ -880,8 +880,8 @@ better_edge_p (basic_block bb, edge e, int prob, int freq, int best_prob,
   if (!is_better_edge
       && flag_reorder_blocks_and_partition 
       && cur_best_edge 
-      && cur_best_edge->crossing_edge
-      && !e->crossing_edge)
+      && (cur_best_edge->flags & EDGE_CROSSING)
+      && !(e->flags & EDGE_CROSSING))
     is_better_edge = true;
 
   return is_better_edge;
@@ -1304,7 +1304,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge *crossing_edges,
 		&& e->dest != EXIT_BLOCK_PTR
 		&& e->src->partition != e->dest->partition)
 	      {
-		e->crossing_edge = true;
+		e->flags |= EDGE_CROSSING;
 		if (i == *max_idx)
 		  {
 		    *max_idx *= 2;
@@ -1314,7 +1314,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge *crossing_edges,
 		crossing_edges[i++] = e;
 	      }
 	    else
-	      e->crossing_edge = false;
+	      e->flags &= ~EDGE_CROSSING;
 	  }
     }
   *n_crossing_edges = i;
@@ -1472,7 +1472,7 @@ fix_up_fall_thru_edges (void)
   	{
   	  /* Check to see if the fall-thru edge is a crossing edge.  */
 	
-	  if (fall_thru->crossing_edge)
+	  if (fall_thru->flags & EDGE_CROSSING)
   	    {
 	      /* The fall_thru edge crosses; now check the cond jump edge, if
 	         it exists.  */
@@ -1485,7 +1485,7 @@ fix_up_fall_thru_edges (void)
 	      
  	      if (cond_jump)
  		{
-		  if (!cond_jump->crossing_edge)
+		  if (!(cond_jump->flags & EDGE_CROSSING))
  		    cond_jump_crosses = false;
 		  
  		  /* We know the fall-thru edge crosses; if the cond
@@ -1513,8 +1513,8 @@ fix_up_fall_thru_edges (void)
  			  e = fall_thru;
  			  fall_thru = cond_jump;
  			  cond_jump = e;
-			  cond_jump->crossing_edge = true;
-			  fall_thru->crossing_edge = false;
+			  cond_jump->flags |= EDGE_CROSSING;
+			  fall_thru->flags &= ~EDGE_CROSSING;
  			}
  		    }
  		}
@@ -1537,7 +1537,7 @@ fix_up_fall_thru_edges (void)
 			 partition as bb it's falling through from.  */
  		      
 		      new_bb->partition = cur_bb->partition;
-		      new_bb->succ->crossing_edge = true;
+		      new_bb->succ->flags |= EDGE_CROSSING;
  		    }
 		  
  		  /* Add barrier after new jump */
@@ -1574,7 +1574,7 @@ find_jump_block (basic_block jump_dest)
   rtx insn;
 
   for (e = jump_dest->pred; e; e = e->pred_next)
-    if (e->crossing_edge)
+    if (e->flags & EDGE_CROSSING)
       {
 	basic_block src = e->src;
 	
@@ -1643,9 +1643,9 @@ fix_crossing_conditional_branches (void)
       /* We already took care of fall-through edges, so only one successor
 	 can be a crossing edge.  */
       
-      if (succ1 && succ1->crossing_edge)
+      if (succ1 && (succ1->flags & EDGE_CROSSING))
 	crossing_edge = succ1;
-      else if (succ2 && succ2->crossing_edge)
+      else if (succ2 && (succ2->flags & EDGE_CROSSING))
  	crossing_edge = succ2;
       
       if (crossing_edge) 
@@ -1758,8 +1758,8 @@ fix_crossing_conditional_branches (void)
 	      else
 		new_edge = new_bb->succ;
 	      
-	      crossing_edge->crossing_edge = false;
-	      new_edge->crossing_edge = true;
+	      crossing_edge->flags &= ~EDGE_CROSSING;
+	      new_edge->flags |= EDGE_CROSSING;
 	    }
  	}
     }
@@ -1790,7 +1790,7 @@ fix_crossing_unconditional_branches (void)
          this point, no crossing jumps should be conditional.  */
 
       if (JUMP_P (last_insn)
-	  && succ->crossing_edge)
+	  && (succ->flags & EDGE_CROSSING))
 	{
 	  rtx label2, table;
 
@@ -1858,7 +1858,7 @@ add_reg_crossing_jump_notes (void)
 
   FOR_EACH_BB (bb)
     for (e = bb->succ; e; e = e->succ_next)
-      if (e->crossing_edge
+      if ((e->flags & EDGE_CROSSING)
 	  && JUMP_P (BB_END (e->src)))
 	REG_NOTES (BB_END (e->src)) = gen_rtx_EXPR_LIST (REG_CROSSING_JUMP, 
 							 NULL_RTX, 
