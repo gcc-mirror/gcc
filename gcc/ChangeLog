@@ -1,3 +1,9 @@
+2004-08-05  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* config/linux.h, config/i386/linux.h, config/sparc/linux.h:
+	Remove definitions conditioned on USE_GNULIBC_1 or conditioned
+	out, and associated obsolete comments.
+
 2004-08-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.h (force_fit_type): Return a tree, take three flags.

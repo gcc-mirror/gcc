@@ -44,12 +44,7 @@ Boston, MA 02111-1307, USA.  */
    object constructed before entering `main'.  */
    
 #undef  STARTFILE_SPEC
-#ifdef USE_GNULIBC_1
-#define STARTFILE_SPEC \
-  "%{!shared: \
-     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
-   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
-#elif defined HAVE_LD_PIE
+#if defined HAVE_LD_PIE
 #define STARTFILE_SPEC \
   "%{!shared: %{pg|p:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}}\
    crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
@@ -104,37 +99,15 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE_SIZE 32
 
 #undef CPP_SUBTARGET_SPEC
-#ifdef USE_GNULIBC_1
-#define CPP_SUBTARGET_SPEC \
-"%{fPIC|fPIE|fpic|fpie:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE} \
-%{mlong-double-128:-D__LONG_DOUBLE_128__}"
-#else
 #define CPP_SUBTARGET_SPEC \
 "%{fPIC|fPIE|fpic|fpie:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE} \
 %{pthread:-D_REENTRANT} %{mlong-double-128:-D__LONG_DOUBLE_128__}"
-#endif
 
 #undef LIB_SPEC
-/* We no longer link with libc_p.a or libg.a by default. If you
-   want to profile or debug the GNU/Linux C library, please add
-   -lc_p or -ggdb to LDFLAGS at the link time, respectively.  */
-#if 1
-#ifdef USE_GNULIBC_1
-#define LIB_SPEC \
-  "%{!shared: %{p:-lgmon} %{pg:-lgmon} %{profile:-lgmon -lc_p} \
-     %{!profile:%{!ggdb:-lc} %{ggdb:-lg}}}"
-#else
 #define LIB_SPEC \
   "%{pthread:-lpthread} \
    %{shared:-lc} \
    %{!shared:%{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc}}"
-#endif
-#else
-#define LIB_SPEC \
-  "%{!shared: \
-     %{mieee-fp:-lieee} %{p:-lgmon -lc_p} %{pg:-lgmon -lc_p} \
-       %{!p:%{!pg:%{!g*:-lc} %{g*:-lg}}}}"
-#endif
 
 /* Provide a LINK_SPEC appropriate for GNU/Linux.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
@@ -153,15 +126,6 @@ Boston, MA 02111-1307, USA.  */
 /* If ELF is the default format, we should not use /lib/elf.  */
 
 #undef  LINK_SPEC
-#ifdef USE_GNULIBC_1
-#define LINK_SPEC "-m elf32_sparc -Y P,/usr/lib %{shared:-shared} \
-  %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-        %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.1}} \
-        %{static:-static}}}"
-#else
 #define LINK_SPEC "-m elf32_sparc -Y P,/usr/lib %{shared:-shared} \
   %{!mno-relax:%{!r:-relax}} \
   %{!shared: \
@@ -170,7 +134,6 @@ Boston, MA 02111-1307, USA.  */
         %{rdynamic:-export-dynamic} \
         %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}} \
         %{static:-static}}}"
-#endif
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
    It's safe to pass -s always, even if -g is not used.  */
@@ -230,7 +193,7 @@ do {									\
 #undef DITF_CONVERSION_LIBFUNCS
 #define DITF_CONVERSION_LIBFUNCS 1
 
-#if !defined(USE_GNULIBC_1) && defined(HAVE_LD_EH_FRAME_HDR)
+#if defined(HAVE_LD_EH_FRAME_HDR)
 #define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
 #endif
 
