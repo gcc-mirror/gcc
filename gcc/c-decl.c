@@ -1872,7 +1872,13 @@ implicitly_declare (functionid)
 	    warning_with_decl (decl, "previous declaration of `%s'");
 	  C_DECL_IMPLICIT (decl) = 1;
 	}
-      return pushdecl (decl);
+      /* If this function is global, then it must already be in the
+	 global binding level, so there's no need to push it again.  */
+      if (current_binding_level == global_binding_level)
+	return decl;
+      /* If this is a local declaration, make a copy; we can't have
+	 the same DECL listed in two different binding levels.  */
+      return pushdecl (copy_node (decl));
     }
 
   /* Not seen before.  */
