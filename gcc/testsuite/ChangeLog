@@ -1,5 +1,13 @@
 2004-07-10  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.mist-tests/i386-prefetch.exp (PREFETCH_SSE): Change all
+	-march=i386 into -march=i686.  Add -march=i686 -mtune=x and
+	-march=x for pentium3, pentium3m, pentium-m, pentium4m,
+	prescott and c3-2.
+	(PREFETCH_3DNOW): Add -march=c3.
+
+2004-07-10  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/16372
 	* gcc.dg/range-test-1.c: New test.
 	* g++.dg/opt/range-test-1.C: New test.

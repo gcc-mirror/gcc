@@ -1,5 +1,21 @@
 2004-07-10  Jakub Jelinek  <jakub@redhat.com>
 
+	* Backport from mainline:
+	2004-07-08  Paolo Bonzini  <bonzini@gnu.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (override_options): Enable
+	SSE prefetches with -mtune, as long as we are
+	compiling for i686 or higher.  All i686 processors
+	accept SSE prefetches as NOPS, some i586's don't.
+
+	2004-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (override_options): Don't set x86_prefetch_sse
+	from -mtune= option.
+
+2004-07-10  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/16372
 	* fold-const.c (build_range_check): Use TYPE_MODE's precision for
 	enumerals.
