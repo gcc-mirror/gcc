@@ -1,5 +1,9 @@
 2005-02-22  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/Object.h (_JvObjectPrefix): Declare as extern "Java".
+
+2005-02-22  Tom Tromey  <tromey@redhat.com>
+
 	PR java/20056:
 	* verify.cc (type::EITHER): New constant.
 	(check_field_constant): Use it.
