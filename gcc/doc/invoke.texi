@@ -214,7 +214,7 @@ in the following sections.
 -w  -W  -Wall  -Waggregate-return @gol
 -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment @gol
 -Wconversion  -Wno-deprecated-declarations @gol
--Wdisabled-optimization  -Wdiv-by-zero  -Werror @gol
+-Wdisabled-optimization  -Wno-div-by-zero  -Werror @gol
 -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wformat-nonliteral  -Wformat-security @gol
 -Wimplicit  -Wimplicit-int  @gol
@@ -224,7 +224,7 @@ in the following sections.
 -Wlarger-than-@var{len}  -Wlong-long @gol
 -Wmain  -Wmissing-braces  -Wmissing-declarations @gol
 -Wmissing-format-attribute  -Wmissing-noreturn @gol
--Wmultichar  -Wno-format-extra-args  -Wno-format-y2k @gol
+-Wno-multichar  -Wno-format-extra-args  -Wno-format-y2k @gol
 -Wno-import  -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
@@ -2172,35 +2172,6 @@ All of the above @samp{-W} options combined.  This enables all the
 warnings about constructions that some users consider questionable, and
 that are easy to avoid (or modify to prevent the warning), even in
 conjunction with macros.
-
-@item -Wdiv-by-zero
-@opindex Wno-div-by-zero
-@opindex Wdiv-by-zero
-Warn about compile-time integer division by zero.  This is default.  To
-inhibit the warning messages, use @option{-Wno-div-by-zero}.  Floating
-point division by zero is not warned about, as it can be a legitimate
-way of obtaining infinities and NaNs.
-
-@item -Wmultichar
-@opindex Wno-multichar
-@opindex Wmultichar
-Warn if a multicharacter constant (@samp{'FOOF'}) is used.  This is
-default.  To inhibit the warning messages, use @option{-Wno-multichar}.
-Usually they indicate a typo in the user's code, as they have
-implementation-defined values, and should not be used in portable code.
-
-@item -Wsystem-headers
-@opindex Wsystem-headers
-@cindex warnings from system headers
-@cindex system headers, warnings from
-Print warning messages for constructs found in system header files.
-Warnings from system headers are normally suppressed, on the assumption
-that they usually do not indicate real problems and would only make the
-compiler output harder to read.  Using this command line option tells
-GCC to emit warnings from system headers as if they occurred in user
-code.  However, note that using @option{-Wall} in conjunction with this
-option will @emph{not} warn about unknown pragmas in system
-headers---for that, @option{-Wunknown-pragmas} must also be used.
 @end table
 
 The following @option{-W@dots{}} options are not implied by @option{-Wall}.
@@ -2288,6 +2259,26 @@ struct s @{ int f, g, h; @};
 struct s x = @{ 3, 4 @};
 @end smallexample
 @end itemize
+
+@item -Wno-div-by-zero
+@opindex Wno-div-by-zero
+@opindex Wdiv-by-zero
+Do not warn about compile-time integer division by zero.  Floating point
+division by zero is not warned about, as it can be a legitimate way of
+obtaining infinities and NaNs.
+
+@item -Wsystem-headers
+@opindex Wsystem-headers
+@cindex warnings from system headers
+@cindex system headers, warnings from
+Print warning messages for constructs found in system header files.
+Warnings from system headers are normally suppressed, on the assumption
+that they usually do not indicate real problems and would only make the
+compiler output harder to read.  Using this command line option tells
+GCC to emit warnings from system headers as if they occurred in user
+code.  However, note that using @option{-Wall} in conjunction with this
+option will @emph{not} warn about unknown pragmas in system
+headers---for that, @option{-Wunknown-pragmas} must also be used.
 
 @item -Wfloat-equal
 @opindex Wfloat-equal
@@ -2504,6 +2495,13 @@ like @code{vprintf} or @code{vscanf}, but this might not always be the
 case, and some functions for which @code{format} attributes are
 appropriate may not be detected.  This option has no effect unless
 @option{-Wformat} is enabled (possibly by @option{-Wall}).
+
+@item -Wno-multichar
+@opindex Wno-multichar
+@opindex Wmultichar
+Do not warn if a multicharacter constant (@samp{'FOOF'}) is used.
+Usually they indicate a typo in the user's code, as they have
+implementation-defined values, and should not be used in portable code.
 
 @item -Wno-deprecated-declarations
 @opindex Wno-deprecated-declarations
