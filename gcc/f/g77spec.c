@@ -286,6 +286,9 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
      2 => last two args were -l<library> -lm.  */
   int saw_library = 0;
 
+  /* By default, we throw on the math library if we have one.  */
+  int need_math = (MATH_LIBRARY[0] != '\0');
+
   /* The number of input and output files in the incoming arg list.  */
   int n_infiles = 0;
   int n_outfiles = 0;
@@ -466,7 +469,7 @@ Report bugs to <egcs-bugs@cygnus.org>.\n");
 	{
 	  /* Not a filename or library. */
 
-	  if (saw_library == 1)	/* -l<library>. */
+	 if (saw_library == 1 && need_math)    /* -l<library>. */
 	    append_arg (MATH_LIBRARY);
 
 	  saw_library = 0;
@@ -521,7 +524,7 @@ Report bugs to <egcs-bugs@cygnus.org>.\n");
 	    saw_library = 1;	/* -l<library>. */
 	  else
 	    {		/* Other library, or filename. */
-	      if (saw_library == 1)
+	     if (saw_library == 1 && need_math)
 		append_arg (MATH_LIBRARY);
 	      saw_library = 0;
 	    }
@@ -541,7 +544,8 @@ Report bugs to <egcs-bugs@cygnus.org>.\n");
 	case 0:
 	  append_arg (library);
 	case 1:
-	  append_arg (MATH_LIBRARY);
+	 if (need_math)
+	   append_arg (MATH_LIBRARY);
 	default:
 	  break;
 	}
