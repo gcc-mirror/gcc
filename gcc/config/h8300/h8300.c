@@ -2517,7 +2517,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      info->special = "shlr.w\t%e0\n\tmov.w\t%f0,%e0\n\txor.w\t%f0,%f0\n\trotxr.l\t%S0";
 	      goto end;
 	    case SHIFT_LSHIFTRT:
-	      info->special = "shll.w\t%e0\n\tmov.w\t%e0,%f0\n\txor.w\t%e0,%e0\n\trotxl.l\t%S0";
+	      info->special = "shll.w\t%f0\n\tmov.w\t%e0,%f0\n\txor.w\t%e0,%e0\n\trotxl.l\t%S0";
 	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      abort ();
