@@ -7055,9 +7055,9 @@ grokdeclarator (tree declarator,
   
   staticp = 0;
   inlinep = !! RIDBIT_SETP (RID_INLINE, specbits);
-  virtualp = RIDBIT_SETP (RID_VIRTUAL, specbits);
+  virtualp = !! RIDBIT_SETP (RID_VIRTUAL, specbits);
   RIDBIT_RESET (RID_VIRTUAL, specbits);
-  explicitp = RIDBIT_SETP (RID_EXPLICIT, specbits) != 0;
+  explicitp = !! RIDBIT_SETP (RID_EXPLICIT, specbits);
   RIDBIT_RESET (RID_EXPLICIT, specbits);
 
   if (RIDBIT_SETP (RID_STATIC, specbits))
@@ -7069,7 +7069,7 @@ grokdeclarator (tree declarator,
 		dname);
       staticp = 0;
     }
-  friendp = RIDBIT_SETP (RID_FRIEND, specbits);
+  friendp = !! RIDBIT_SETP (RID_FRIEND, specbits);
   RIDBIT_RESET (RID_FRIEND, specbits);
 
   if (dependant_name && !friendp)
