@@ -189,32 +189,41 @@ static GTY(()) struct dbx_file *current_file;
 
 static GTY(()) int next_file_number;
 
-/* Typical USG systems don't have stab.h, and they also have
-   no use for DBX-format debugging info.  */
+/* A counter for dbxout_function_end.  */
 
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-
-/* Last source file name mentioned in a NOTE insn.  */
-
-static const char *lastfile;
-
-/* Current working directory.  */
-
-static const char *cwd;
+static GTY(()) int scope_labelno;
 
 /* Nonzero if we have actually used any of the GDB extensions
    to the debugging format.  The idea is that we use them for the
    first time only if there's a strong reason, but once we have done that,
    we use them whenever convenient.  */
 
-static int have_used_extensions = 0;
+static GTY(()) int have_used_extensions = 0;
 
 /* Number for the next N_SOL filename stabs label.  The number 0 is reserved
    for the N_SO filename stabs label.  */
 
-#if defined (DBX_DEBUGGING_INFO) && !defined (DBX_OUTPUT_SOURCE_FILENAME)
-static int source_label_number = 1;
-#endif
+static GTY(()) int source_label_number = 1;
+
+/* Last source file name mentioned in a NOTE insn.  */
+
+static GTY(()) const char *lastfile;
+
+/* Used by PCH machinery to detect if 'lastfile' should be reset to
+   base_input_file.  */
+static GTY(()) int lastfile_is_base;
+
+/* Typical USG systems don't have stab.h, and they also have
+   no use for DBX-format debugging info.  */
+
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+
+/* The original input file name.  */
+static const char *base_input_file;
+
+/* Current working directory.  */
+
+static const char *cwd;
 
 #ifdef DEBUG_SYMS_TEXT
 #define FORCE_TEXT function_section (current_function_decl);
@@ -323,6 +332,7 @@ static void dbxout_begin_function	PARAMS ((tree));
 static void dbxout_begin_block		PARAMS ((unsigned, unsigned));
 static void dbxout_end_block		PARAMS ((unsigned, unsigned));
 static void dbxout_function_decl	PARAMS ((tree));
+static void dbxout_handle_pch		PARAMS ((unsigned));
 
 const struct gcc_debug_hooks dbx_debug_hooks =
 {
@@ -349,7 +359,8 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   dbxout_global_decl,		/* global_decl */
   debug_nothing_tree,		/* deferred_inline_function */
   debug_nothing_tree,		/* outlining_inline_function */
-  debug_nothing_rtx		/* label */
+  debug_nothing_rtx,		/* label */
+  dbxout_handle_pch		/* handle_pch */
 };
 #endif /* DBX_DEBUGGING_INFO  */
 
@@ -375,7 +386,8 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   dbxout_global_decl,		/* global_decl */
   debug_nothing_tree,		/* deferred_inline_function */
   debug_nothing_tree,		/* outlining_inline_function */
-  debug_nothing_rtx		/* label */
+  debug_nothing_rtx,		/* label */
+  dbxout_handle_pch		/* handle_pch */
 };
 #endif /* XCOFF_DEBUGGING_INFO  */
 
@@ -383,7 +395,6 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
 static void
 dbxout_function_end ()
 {
-  static int scope_labelno = 0;
   char lscope_label_name[100];
   /* Convert Ltext into the appropriate format for local labels in case
      the system doesn't insert underscores in front of user generated
@@ -473,7 +484,7 @@ dbxout_init (input_file_name)
 	   ASM_STABS_OP, STABS_GCC_MARKER, N_OPT);
 #endif
 
-  lastfile = input_file_name;
+  base_input_file = lastfile = input_file_name;
 
   next_type_number = 1;
 
@@ -559,6 +570,31 @@ dbxout_end_source_file (line)
 #endif
 }
 
+/* Handle a few odd cases that occur when trying to make PCH files work.  */
+
+static void
+dbxout_handle_pch (unsigned at_end)
+{
+  if (! at_end)
+    {
+      /* When using the PCH, this file will be included, so we need to output
+	 a BINCL.  */
+      dbxout_start_source_file (0, lastfile);
+
+      /* The base file when using the PCH won't be the same as
+	 the base file when it's being generated.  */
+      lastfile = NULL;
+    }
+  else
+    {
+      /* ... and an EINCL. */
+      dbxout_end_source_file (0);
+
+      /* Deal with cases where 'lastfile' was never actually changed.  */
+      lastfile_is_base = lastfile == NULL;
+    }
+}
+
 #if defined (DBX_DEBUGGING_INFO)
 /* Output debugging info to FILE to switch to sourcefile FILENAME.  */
 
@@ -567,6 +603,12 @@ dbxout_source_file (file, filename)
      FILE *file;
      const char *filename;
 {
+  if (lastfile == 0 && lastfile_is_base)
+    {
+      lastfile = base_input_file;
+      lastfile_is_base = 0;
+    }
+
   if (filename && (lastfile == 0 || strcmp (filename, lastfile)))
     {
 #ifdef DBX_OUTPUT_SOURCE_FILENAME

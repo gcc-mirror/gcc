@@ -333,7 +333,8 @@ const struct gcc_debug_hooks sdb_debug_hooks =
   sdbout_global_decl,		/* global_decl */
   debug_nothing_tree,		/* deferred_inline_function */
   debug_nothing_tree,		/* outlining_inline_function */
-  sdbout_label
+  sdbout_label,			/* label */
+  debug_nothing_int		/* handle_pch */
 };
 
 #if 0

@@ -189,7 +189,8 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
    vmsdbgout_global_decl,
    debug_nothing_tree,		/* deferred_inline_function */
    vmsdbgout_abstract_function,
-   debug_nothing_rtx		/* label */
+   debug_nothing_rtx,		/* label */
+   debug_nothing_int		/* handle_pch */
 };
 
 /* Definitions of defaults for assembler-dependent names of various
