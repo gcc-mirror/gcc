@@ -126,7 +126,7 @@ all: all.indirect
 
 # Now figure out from those variables how to compile and link.
 
-all.indirect: Makefile compiler
+all.indirect: Makefile ../chill ../cc1chill
 
 # IN_GCC tells obstack.h that we are using gcc's <stddef.h> file.
 INTERNAL_CFLAGS = $(CROSS) -DIN_GCC
@@ -202,9 +202,6 @@ CHILL_OBJS = parse.o actions.o except.o grant.o lang.o \
 OBJS = `cat ../stamp-objlist`
 OBJDEPS = ../stamp-objlist
 
-compiler: ../chill ../cc1chill
-	cd runtime; $(MAKE) $(FLAGS_TO_PASS) CC="$(CC)" all
-
 ../cc1chill: $(P) $(CHILL_OBJS) $(OBJDEPS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(CHILL_OBJS) \
 	      $(OBJS) $(C_OBJS) $(LIBS)
@@ -220,7 +217,6 @@ utils/printf : $(srcdir)/utils/printf.c
 #
 check: ../cc1chill utils/printf
 	cd ..; $(MAKE) $(FLAGS_TO_PASS) xgcc gcov cpp cc1 ld
-	cd runtime; make libchill.a
 	$(srcdir)/regression.sh -d -p
 
 clean-tests:
@@ -237,13 +233,12 @@ mostlyclean:
 	rm -f *.o
 
 clean:  mostlyclean
-	cd runtime;  $(MAKE) clean
 
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
 
-native: config.status ../cc1chill ../chill # runtime/libchill.a
+native: config.status ../cc1chill ../chill
 
 # Compiling object files from source files.
 
