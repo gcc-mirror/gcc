@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Alpha Linux,
    using ECOFF.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Bob Manson.
 
 This file is part of GNU CC.
@@ -64,6 +64,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Show that we need a GP when profiling.  */
 #define TARGET_PROFILING_NEEDS_GP
+
+/* We support #pragma.  */
+#define HANDLE_SYSV_PRAGMA
 
 #undef ASM_FINAL_SPEC
 
