@@ -6,7 +6,7 @@ typedef struct rtx_def *rtx;
 enum rtx_code
 {
   REG,
-  LAST_AND_UNUSED_RTX_CODE
+  LAST_AND_UNUSED_RTX_CODE = 256
 };
 typedef union rtunion_def rtunion;
 struct rtx_def

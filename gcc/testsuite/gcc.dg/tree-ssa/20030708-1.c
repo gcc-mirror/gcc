@@ -6,7 +6,8 @@ enum rtx_code
 {
   CALL_INSN,
   EXPR_LIST,
-  NOTE
+  NOTE,
+  LAST = 256
 };
 
 struct rtx_def

@@ -1,3 +1,9 @@
+2004-05-13  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.dg/tree-ssa/20030808-1.c: Force enum size.
+	* gcc.dg/tree-ssa/20030714-1.c: Ditto.
+	* gcc.dg/tree-ssa/20030708-1.c: Ditto.
+
 2004-05-13  Andreas Schwab  <schwab@suse.de>
 
 	PR other/10819
