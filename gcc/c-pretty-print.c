@@ -712,50 +712,37 @@ pp_c_function_definition (c_pretty_printer *pp, tree t)
 
 /* Expressions.  */
 
-/* Print out a c-char.  */
+/* Print out a c-char.  This is called solely for characters which are
+   in the *target* execution character set.  We ought to convert them
+   back to the *host* execution character set before printing, but we
+   have no way to do this at present.  A decent compromise is to print
+   all characters as if they were in the host execution character set,
+   and not attempt to recover any named escape characters, but render
+   all unprintables as octal escapes.  If the host and target character
+   sets are the same, this produces relatively readable output.  If they
+   are not the same, strings may appear as gibberish, but that's okay
+   (in fact, it may well be what the reader wants, e.g. if they are looking
+   to see if conversion to the target character set happened correctly).
+
+   A special case: we need to prefix \, ", and ' with backslashes.  It is
+   correct to do so for the *host*'s \, ", and ', because the rest of the
+   file appears in the host character set.  */
 
 static void
 pp_c_char (c_pretty_printer *pp, int c)
 {
-  switch (c)
+  if (ISPRINT (c))
     {
-    case TARGET_NEWLINE:
-      pp_string (pp, "\\n");
-      break;
-    case TARGET_TAB:
-      pp_string (pp, "\\t");
-      break;
-    case TARGET_VT:
-      pp_string (pp, "\\v");
-      break;
-    case TARGET_BS:
-      pp_string (pp, "\\b");
-      break;
-    case TARGET_CR:
-      pp_string (pp, "\\r");
-      break;
-    case TARGET_FF:
-      pp_string (pp, "\\f");
-      break;
-    case TARGET_BELL:
-      pp_string (pp, "\\a");
-      break;
-    case '\\':
-      pp_string (pp, "\\\\");
-      break;
-    case '\'':
-      pp_string (pp, "\\'");
-      break;
-    case '\"':
-      pp_string (pp, "\\\"");
-      break;
-    default:
-      if (ISPRINT (c))
-	pp_character (pp, c);
-      else
-	pp_scalar (pp, "\\%03o", (unsigned) c);
-      break;
+      switch (c)
+	{
+	case '\\': pp_string (pp, "\\\\"); break;
+	case '\'': pp_string (pp, "\\\'"); break;
+	case '\"': pp_string (pp, "\\\""); break;
+	default:   pp_character (pp, c);
+	}
     }
+  else
+    pp_scalar (pp, "\\%03o", (unsigned) c);
 }
 
 /* Print out a STRING literal.  */
@@ -785,7 +772,7 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
     {
       if (tree_int_cst_sgn (i) < 0)
         {
-          pp_c_char (pp, '-');
+          pp_character (pp, '-');
           i = build_int_cst_wide (NULL_TREE,
 				  -TREE_INT_CST_LOW (i),
 				  ~TREE_INT_CST_HIGH (i)

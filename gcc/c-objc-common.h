@@ -117,6 +117,8 @@ extern void c_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_TYPE_PROMOTES_TO c_type_promotes_to
 #undef LANG_HOOKS_REGISTER_BUILTIN_TYPE
 #define LANG_HOOKS_REGISTER_BUILTIN_TYPE c_register_builtin_type
+#undef LANG_HOOKS_TO_TARGET_CHARSET
+#define LANG_HOOKS_TO_TARGET_CHARSET c_common_to_target_charset
 
 /* The C front end's scoping structure is very different from
    that expected by the language-independent code; it is best

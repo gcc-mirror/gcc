@@ -546,3 +546,9 @@ lhd_make_node (enum tree_code code)
 {
   return make_node (code);
 }
+
+HOST_WIDE_INT
+lhd_to_target_charset (HOST_WIDE_INT c)
+{
+  return c;
+}

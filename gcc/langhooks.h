@@ -374,6 +374,15 @@ struct lang_hooks
      semantics in cases that it doesn't want to handle specially.  */
   tree (*expr_size) (tree);
 
+  /* Convert a character from the host's to the target's character
+     set.  The character should be in what C calls the "basic source
+     character set" (roughly, the set of characters defined by plain
+     old ASCII).  The default is to return the character unchanged,
+     which is correct in most circumstances.  Note that both argument
+     and result should be sign-extended under -fsigned-char,
+     zero-extended under -fno-signed-char.  */
+  HOST_WIDE_INT (*to_target_charset) (HOST_WIDE_INT);
+
   /* Pointers to machine-independent attribute tables, for front ends
      using attribs.c.  If one is NULL, it is ignored.  Respectively, a
      table of attributes specific to the language, a table of

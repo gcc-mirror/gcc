@@ -688,11 +688,13 @@ extern bool c_promoting_integer_type_p (tree);
 extern int self_promoting_args_p (tree);
 extern tree strip_array_types (tree);
 extern tree strip_pointer_operator (tree);
+extern HOST_WIDE_INT c_common_to_target_charset (HOST_WIDE_INT);
 
 /* This is the basic parsing function.  */
 extern void c_parse_file (void);
 /* This is misnamed, it actually performs end-of-compilation processing.  */
 extern void finish_file	(void);
+
 
 /* These macros provide convenient access to the various _STMT nodes.  */
 

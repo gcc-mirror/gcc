@@ -31,7 +31,6 @@ through the macros defined in the @file{.h} file.
 * Per-Function Data::   Defining data structures for per-function information.
 * Storage Layout::      Defining sizes and alignments of data.
 * Type Layout::         Defining sizes and properties of basic user data types.
-* Escape Sequences::    Defining the value of target character escape sequences
 * Registers::           Naming and describing the hardware registers.
 * Register Classes::    Defining the classes of hardware registers.
 * Stack and Calling::   Defining which way the stack grows and by how much.
@@ -1815,42 +1814,6 @@ zero.  If these entries must be padded (say, to preserve the alignment
 specified by @code{TARGET_VTABLE_ENTRY_ALIGN}), set this to the number
 of words in each data entry.
 @end defmac
-
-@node Escape Sequences
-@section Target Character Escape Sequences
-@cindex escape sequences
-
-By default, GCC assumes that the C character escape sequences and other
-characters take on their ASCII values for the target.  If this is not
-correct, you must explicitly define all of the macros below.  All of
-them must evaluate to constants; they are used in @code{case}
-statements.
-
-@findex TARGET_BELL
-@findex TARGET_BS
-@findex TARGET_CR
-@findex TARGET_DIGIT0
-@findex TARGET_ESC
-@findex TARGET_FF
-@findex TARGET_NEWLINE
-@findex TARGET_TAB
-@findex TARGET_VT
-@multitable {@code{TARGET_NEWLINE}} {Escape} {ASCII character}
-@item Macro                 @tab Escape             @tab ASCII character
-@item @code{TARGET_BELL}    @tab @kbd{\a}           @tab @code{07}, @code{BEL}
-@item @code{TARGET_BS}      @tab @kbd{\b}           @tab @code{08}, @code{BS}
-@item @code{TARGET_CR}      @tab @kbd{\r}           @tab @code{0D}, @code{CR}
-@item @code{TARGET_DIGIT0}  @tab @kbd{0}            @tab @code{30}, @code{ZERO}
-@item @code{TARGET_ESC}     @tab @kbd{\e}, @kbd{\E} @tab @code{1B}, @code{ESC}
-@item @code{TARGET_FF}      @tab @kbd{\f}           @tab @code{0C}, @code{FF}
-@item @code{TARGET_NEWLINE} @tab @kbd{\n}           @tab @code{0A}, @code{LF}
-@item @code{TARGET_TAB}     @tab @kbd{\t}           @tab @code{09}, @code{HT}
-@item @code{TARGET_VT}      @tab @kbd{\v}           @tab @code{0B}, @code{VT}
-@end multitable
-
-@noindent
-Note that the @kbd{\e} and @kbd{\E} escapes are GNU extensions, not
-part of the C standard.
 
 @node Registers
 @section Register Usage
