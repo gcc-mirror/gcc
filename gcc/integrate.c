@@ -2342,6 +2342,30 @@ copy_rtx_and_substitute (orig, map)
 	return gen_rtx (SUBREG, GET_MODE (orig), copy,
 			SUBREG_WORD (orig));
 
+    case ADDRESSOF:
+      copy = gen_rtx (ADDRESSOF, mode,
+		      copy_rtx_and_substitute (XEXP (orig, 0), map));
+      SET_ADDRESSOF_DECL (copy, ADDRESSOF_DECL (orig));
+      regno = ADDRESSOF_REGNO (orig);
+      if (map->reg_map[regno])
+	regno = REGNO (map->reg_map[regno]);
+      else if (regno > LAST_VIRTUAL_REGISTER)
+	{
+	  temp = XEXP (orig, 0);
+	  map->reg_map[regno] = gen_reg_rtx (GET_MODE (temp));
+	  REG_USERVAR_P (map->reg_map[regno]) = REG_USERVAR_P (temp);
+	  REG_LOOP_TEST_P (map->reg_map[regno]) = REG_LOOP_TEST_P (temp);
+	  RTX_UNCHANGING_P (map->reg_map[regno]) = RTX_UNCHANGING_P (temp);
+	  /* A reg with REG_FUNCTION_VALUE_P true will never reach here.  */
+
+	  if (map->regno_pointer_flag[regno])
+	    mark_reg_pointer (map->reg_map[regno],
+			      map->regno_pointer_align[regno]);
+	  regno = REGNO (map->reg_map[regno]);
+	}
+      ADDRESSOF_REGNO (copy) = regno;
+      return copy;
+
     case USE:
     case CLOBBER:
       /* USE and CLOBBER are ordinary, but we convert (use (subreg foo))
