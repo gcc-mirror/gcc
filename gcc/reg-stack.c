@@ -1106,8 +1106,7 @@ record_reg_life (insn, block, regstack)
 	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
 					  FP_mode_reg[regno][(int) DFmode],
 					  REG_NOTES (insn));
-	    else if (TEST_HARD_REG_BIT (dest, regno)
-		     && ! TEST_HARD_REG_BIT (src, regno))
+	    else if (TEST_HARD_REG_BIT (dest, regno))
 	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_UNUSED,
 					  FP_mode_reg[regno][(int) DFmode],
 					  REG_NOTES (insn));
