@@ -53,7 +53,7 @@ esac
 saved_ifs=$IFS
 IFS=':'
 set `./tests_flags ${query} $*` || exit 1
-BUILD_DIR=$1; SRC_DIR=$2; PREFIX_DIR=$3; LTCXX=$4; LIBS=$5; LTEXE=$6;
+BUILD_DIR=$1; SRC_DIR=$2; PREFIX_DIR=$3; LTCXX=$4; LIBS=$5; LTEXE=$6; CXX=$7; CXXFLAGS=$8;
 IFS=$saved_ifs
 
 # Set up the testing directory, which should be in a directory called
@@ -82,6 +82,13 @@ MAX_MEM_USAGE=3072
 #
 # 2: clean, make files, append general test info
 #
+
+# Remove old executables.
+rm -rf "$TEST_DIR"/*exe
+
+# Remove old core files (which now get left in cwd, not $TEST_DIR).
+rm -rf ./*core*
+
 if [ -f $RESULTS_FILE ]; then
     rm $RESULTS_FILE
 fi
@@ -101,17 +108,12 @@ if [ ! -f "$TESTS_FILE" ]; then
 fi
 
 # Nasty solution to replace GNU date(1)'s %s time_t output function.
-if [ ! -x "$TEST_DIR/printnow" ]; then
-    echo "making utility $TEST_DIR/printnow"
-    gcc -o "$TEST_DIR/printnow" "$SRC_DIR/testsuite/printnow.c"
-    strip "$TEST_DIR/printnow"
+TIMER_COMMAND=$TEST_DIR/printnow.exe
+if [ ! -x "$TIMER_COMMAND" ]; then
+    echo "making utility $TIMER_COMMAND"
+    gcc -o "$TIMER_COMMAND" "$SRC_DIR/testsuite/printnow.c"
+    strip "$TIMER_COMMAND"
 fi
-
-# Remove old executables.
-rm -rf "$TEST_DIR"/*exe
-
-# Remove old core files (which now get left in cwd, not $TEST_DIR).
-rm -rf ./*core*
 
 # Copy over the data files for filebufs
 cp $SRC_DIR/testsuite/27_io/*.txt $TEST_DIR
@@ -122,7 +124,7 @@ chmod u+w $TEST_DIR/*.tst
 # Emit useful info about compiler and platform
 echo "host: $(uname -mrsv)" >> $RESULTS_FILE
 echo "compiler: $($CXX -v 2>&1)" >> $RESULTS_FILE
-echo "compiler flags: $CXX_FLAG" >> $RESULTS_FILE
+echo "compiler flags: $CXXFLAGS" >> $RESULTS_FILE
 echo "date: $(date +%Y%m%d)" >> $RESULTS_FILE
 echo "" >> $RESULTS_FILE
 
@@ -297,9 +299,9 @@ test_file()
     # eventually have to calculate time_t anyhow.  Or 3) just grab two
     # time_t's (no more overhead than grabbing two date(1)'s).
     compiler_invocation="$LTCXX $S_FLAG $SRC_NAME -o $EXENAME $LIBS"
-    COMP_TIME_START=$($TEST_DIR/printnow)
+    COMP_TIME_START=$($TIMER_COMMAND)
     $compiler_invocation >> compile.out 2>&1
-    COMP_TIME_END=$($TEST_DIR/printnow)
+    COMP_TIME_END=$($TIMER_COMMAND)
 
     if [ $COMP_TIME_START -lt $COMP_TIME_END ]; then
         C_TIME=$[ $COMP_TIME_END - $COMP_TIME_START ]
@@ -366,7 +368,7 @@ echo "------------------------------------------------------------------------"
 printf "static\tshared\ttest\n"
 echo "------------------------------------------------------------------------"
 
-TEST_TIME_START=$($TEST_DIR/printnow)
+TEST_TIME_START=$($TIMER_COMMAND)
 for NAME in `cat $TESTS_FILE`
 do
     PRE_NAME="$TEST_DIR/`basename $NAME`"
@@ -389,7 +391,7 @@ do
 
     echo "" >> $RESULTS_FILE
 done
-TEST_TIME_END=$($TEST_DIR/printnow)
+TEST_TIME_END=$($TIMER_COMMAND)
 
 
 #
