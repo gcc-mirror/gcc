@@ -6786,7 +6786,7 @@ c_start_case (exp)
     }
 
   /* Add this new SWITCH_STMT to the stack.  */
-  cs = (struct c_switch *) xmalloc (sizeof (cs));
+  cs = (struct c_switch *) xmalloc (sizeof (*cs));
   cs->switch_stmt = build_stmt (SWITCH_STMT, exp, NULL_TREE, NULL_TREE);
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
   cs->next = switch_stack;
