@@ -1863,6 +1863,13 @@ simplify_binary_operation (code, mode, op0, op1)
 	     > (unsigned HOST_WIDE_INT) arg1 ? arg0 : arg1);
       break;
 
+    case SS_PLUS:
+    case US_PLUS:
+    case SS_MINUS:
+    case US_MINUS:
+      /* ??? There are simplifications that can be done.  */
+      return 0;
+
     default:
       abort ();
     }
