@@ -112,8 +112,8 @@ may_propagate_copy (tree dest, tree orig)
 	return false;
       else if (!lang_hooks.types_compatible_p (type_d, type_o))
 	return false;
-      else if (!alias_sets_conflict_p (get_alias_set (TREE_TYPE (type_d)),
-				       get_alias_set (TREE_TYPE (type_o))))
+      else if (get_alias_set (TREE_TYPE (type_d)) != 
+	       get_alias_set (TREE_TYPE (type_o)))
 	return false;
     }
 
