@@ -1,3 +1,8 @@
+2001-06-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.misc-tests/linkage.exp: Use wildcards when matching N32.
+	Ensure logfile entry matches exec command line.
+
 2001-05-31  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/loop-2b.x: Tighten XFAIL to match
