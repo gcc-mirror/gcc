@@ -1,3 +1,12 @@
+2005-04-05  Olivier Hainque  <hainque@adacore.com>
+	
+	* config/mips/iris6.h (DWARF_FRAME_RETURN_COLUMN): Redefine to
+	match what the system unwinder expects.
+	* config/mips/mips.c (mips_frame_set): If we're saving the return
+	address register and the dwarf return address column number differs
+	from the hard register number, adjust the note reg to refer to the
+	former.
+
 2004-04-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mn10300/mn10300-protos.h (mn10300_override_options): Declare.
