@@ -1,3 +1,10 @@
+2001-08-21  Will Cohen  <wcohen@redhat.com>
+
+        * configure/alpha/alpha.h (CONDITIONAL_REGISTER_USAGE): Added local
+        declaration of variable i.
+        * configure/rs6000/rs6000.h (CONDITIONAL_REGISTER_USAGE): Added local
+        declaration of variable i.
+
 2001-08-21  Richard Henderson  <rth@redhat.com>
 
 	* crtstuff.c: Fix thinko last change.  Move list tails to start

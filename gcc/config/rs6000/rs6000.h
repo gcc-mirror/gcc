@@ -820,6 +820,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 
 #define CONDITIONAL_REGISTER_USAGE					\
 {									\
+  int i;								\
   if (! TARGET_POWER)							\
     fixed_regs[64] = 1;							\
   if (TARGET_64BIT)							\
