@@ -1,3 +1,7 @@
+2003-12-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/m32r/m32r.md: Remove a constraint from a splitter.
+
 2003-12-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/13429, C/11944
