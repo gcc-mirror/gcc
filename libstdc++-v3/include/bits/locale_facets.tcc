@@ -2264,8 +2264,8 @@ namespace std
       // numpunct::grouping string exactly, starting at the
       // right-most point of the parsed sequence of elements ...
       while (__test && __i < __n - 1)
-	for (__j = 0; __test && __j < __len && __i < __n - 1; ++__j,++__i)
-	  __test &= __grouping[__j] == __grouping_tmp[__n - __i - 1];
+	for (__j = 0; __test && __j < __len && __i < __n - 1; ++__j, ++__i)
+	  __test = __grouping[__j] == __grouping_tmp[__n - __i - 1];
       // ... but the last parsed grouping can be <= numpunct
       // grouping.
       __j == __len ? __j = 0 : __j;
