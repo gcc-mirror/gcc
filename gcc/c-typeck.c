@@ -3469,7 +3469,7 @@ build_c_cast (type, expr)
       if (field)
 	{
 	  char *name;
-	  tree nvalue;
+	  tree t;
 
 	  if (pedantic)
 	    pedwarn ("ANSI C forbids casts to union type");
@@ -3482,9 +3482,11 @@ build_c_cast (type, expr)
 	    }
 	  else
 	    name = "";
-	  return digest_init (type, build (CONSTRUCTOR, type, NULL_TREE,
-					   build_tree_list (field, value)),
-			      0, 0);
+	  t = digest_init (type, build (CONSTRUCTOR, type, NULL_TREE,
+					build_tree_list (field, value)),
+			   0, 0);
+	  TREE_CONSTANT (t) = TREE_CONSTANT (value);
+	  return t;
 	}
       error ("cast to union type from type not present in union");
       return error_mark_node;
@@ -4033,6 +4035,10 @@ initializer_constant_valid_p (value, endtype)
   switch (TREE_CODE (value))
     {
     case CONSTRUCTOR:
+      if (TREE_CODE (TREE_TYPE (value)) == UNION_TYPE
+	  && TREE_CONSTANT (value))
+	return initializer_constant_valid_p (TREE_VALUE (CONSTRUCTOR_ELTS (value)));
+	
       return TREE_STATIC (value) ? null_pointer_node : 0;
 
     case INTEGER_CST:
@@ -5688,8 +5694,9 @@ output_pending_init_elements (all)
 				   0);
 	      goto retry;
 	    }
-	  else if (tree_int_cst_lt (DECL_FIELD_BITPOS (TREE_PURPOSE (tail)),
-				    DECL_FIELD_BITPOS (constructor_unfilled_fields)))
+	  else if (constructor_unfilled_fields == 0
+		   || tree_int_cst_lt (DECL_FIELD_BITPOS (TREE_PURPOSE (tail)),
+				       DECL_FIELD_BITPOS (constructor_unfilled_fields)))
 	    ;
 	  else if (next == 0
 		   || tree_int_cst_lt (DECL_FIELD_BITPOS (TREE_PURPOSE (tail)),
