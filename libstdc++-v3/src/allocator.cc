@@ -36,16 +36,138 @@
 #include <ext/mt_allocator.h>
 #include <ext/pool_allocator.h>
 
-// Explicitly instantiate the static data members of the underlying
-// allocator.
 namespace __gnu_cxx
 {
+  // Instantiations for __mt_alloc.
   template class __mt_alloc<char>;
   template class __mt_alloc<wchar_t>;
 
-  // Static members of __pool_alloc.
+  // Definitions and instantiations for __pool_alloc and base class.
+  __pool_base::_Obj* volatile*
+  __pool_base::_M_get_free_list(size_t __bytes)
+  { 
+    size_t __i = ((__bytes + (size_t)_S_align - 1) / (size_t)_S_align - 1);
+    return _S_free_list + __i - 1;
+  }
+
+  // Allocate memory in large chunks in order to avoid fragmenting the
+  // heap too much.  Assume that __n is properly aligned.  We hold the
+  // allocation lock.
+  char*
+  __pool_base::_M_allocate_chunk(size_t __n, int& __nobjs)
+  {
+    char* __result;
+    size_t __total_bytes = __n * __nobjs;
+    size_t __bytes_left = _S_end_free - _S_start_free;
+    
+    if (__bytes_left >= __total_bytes)
+      {
+	__result = _S_start_free;
+	_S_start_free += __total_bytes;
+	return __result ;
+      }
+    else if (__bytes_left >= __n)
+      {
+	__nobjs = (int)(__bytes_left / __n);
+	__total_bytes = __n * __nobjs;
+	__result = _S_start_free;
+	_S_start_free += __total_bytes;
+	return __result;
+      }
+    else
+      {
+	// Try to make use of the left-over piece.
+	if (__bytes_left > 0)
+	  {
+	    _Obj* volatile* __free_list = _M_get_free_list(__bytes_left);
+	    ((_Obj*)(void*)_S_start_free)->_M_free_list_link = *__free_list;
+	    *__free_list = (_Obj*)(void*)_S_start_free;
+	  }
+	
+	size_t __bytes_to_get = (2 * __total_bytes
+				 + _M_round_up(_S_heap_size >> 4));
+	_S_start_free = static_cast<char*>(::operator new(__bytes_to_get));
+	if (_S_start_free == 0)
+	  {
+	    size_t __i;
+	    _Obj* volatile* __free_list;
+	    _Obj* __p;
+
+	    // Try to make do with what we have.  That can't hurt.  We
+	    // do not try smaller requests, since that tends to result
+	    // in disaster on multi-process machines.
+	    __i = __n;
+	    for (; __i <= (size_t) _S_max_bytes; __i += (size_t) _S_align)
+	      {
+		__free_list = _M_get_free_list(__i);
+		__p = *__free_list;
+		if (__p != 0)
+		  {
+		    *__free_list = __p -> _M_free_list_link;
+		    _S_start_free = (char*)__p;
+		    _S_end_free = _S_start_free + __i;
+		    return _M_allocate_chunk(__n, __nobjs);
+		    // Any leftover piece will eventually make it to the
+		    // right free list.
+		  }
+	      }
+	    _S_end_free = 0;        // In case of exception.
+	    _S_start_free = static_cast<char*>(::operator new(__bytes_to_get));
+	    // This should either throw an exception or remedy the situation.
+	    // Thus we assume it succeeded.
+	  }
+	_S_heap_size += __bytes_to_get;
+	_S_end_free = _S_start_free + __bytes_to_get;
+	return _M_allocate_chunk(__n, __nobjs);
+      }
+  }
+  
+  // Returns an object of size __n, and optionally adds to "size
+  // __n"'s free list.  We assume that __n is properly aligned.  We
+  // hold the allocation lock.
+  void*
+  __pool_base::_M_refill(size_t __n)
+  {
+    int __nobjs = 20;
+    char* __chunk = _M_allocate_chunk(__n, __nobjs);
+    _Obj* volatile* __free_list;
+    _Obj* __result;
+    _Obj* __current_obj;
+    _Obj* __next_obj;
+    int __i;
+    
+    if (1 == __nobjs)
+      return __chunk;
+    __free_list = _M_get_free_list(__n);
+    
+    // Build free list in chunk.
+    __result = (_Obj*)(void*)__chunk;
+    *__free_list = __next_obj = (_Obj*)(void*)(__chunk + __n);
+    for (__i = 1; ; __i++)
+      {
+	__current_obj = __next_obj;
+	__next_obj = (_Obj*)(void*)((char*)__next_obj + __n);
+	if (__nobjs - 1 == __i)
+	  {
+	    __current_obj -> _M_free_list_link = 0;
+	    break;
+	  }
+	else
+	  __current_obj -> _M_free_list_link = __next_obj;
+      }
+    return __result;
+  }
+
+  __pool_base::_Obj* volatile __pool_base::_S_free_list[_S_free_list_size];
+  
+  char* __pool_base::_S_start_free = 0;
+  
+  char* __pool_base::_S_end_free = 0;
+  
+  size_t __pool_base::_S_heap_size = 0;
+  
+  _STL_mutex_lock __pool_base::_Lock::_S_lock __STL_MUTEX_INITIALIZER;
+  
   template class __pool_alloc<char>;
   template class __pool_alloc<wchar_t>;
-
-  template class __pool_base<true>;
 } // namespace __gnu_cxx
