@@ -6,16 +6,16 @@
 
 using namespace std;
 
-template <class _T> struct traits
+template <class T> struct traits
 {
   typedef long next;
 };
 
 
-template <class _T>
+template <class T>
 struct c1
 {
-  template <class _U>
+  template <class U>
   struct c2
   {
     c2()
@@ -26,11 +26,11 @@ struct c1
 };
 
 
-template <class _T>
+template <class T>
 void foo()
 {
   cout << __PRETTY_FUNCTION__ << endl;
-  c1<typename traits<_T>::next>::c2<void>();
+  typename c1<typename traits<T>::next>::template c2<void>();
 }
 
 

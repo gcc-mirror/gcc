@@ -1,3 +1,8 @@
+2001-11-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.pt/memtemp100.C: Remove non-standard
+	constructs.
+
 Wed Nov 28 15:05:54 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20011128-1.c: New test.
