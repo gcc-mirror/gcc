@@ -381,7 +381,7 @@ do {									\
 #define SELECT_RTX_SECTION(MODE,RTX)					\
 {									\
   if (TARGET_ELF) {							\
-    if (flag_pic && symbolic_operand (RTX))				\
+    if (flag_pic && symbolic_operand (RTX, VOIDmode))			\
       data_section ();							\
     else								\
       const_section ();							\
