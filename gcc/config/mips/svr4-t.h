@@ -1,5 +1,4 @@
 /* Definitions of target machine for GNU compiler.  Tandem S2 w/ NonStop UX. */
-#include "mips/svr4-5.h"
 
 /* Use the default value for this.  */
 #undef STANDARD_INCLUDE_DIR
