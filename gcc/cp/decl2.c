@@ -1642,18 +1642,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       && (TREE_CODE (value) == VAR_DECL || TREE_CODE (value) == FUNCTION_DECL))
     value = push_template_decl (value);
 
-  /* Check to see if a field redeclares a template parameter. */
-  if (current_template_parms 
-      && TREE_CODE (declarator) == IDENTIFIER_NODE
-      && IDENTIFIER_LOCAL_VALUE (declarator))
-      {
-	tree olddecl = IDENTIFIER_LOCAL_VALUE (declarator);
-	if (decl_template_parm_p (olddecl))
-	  {
-	    cp_error ("redeclaration of template parameter `%T'", declarator);
-	    cp_error_at (" previously declared here `%#D'", olddecl);
-	  }
-      }
+  check_template_shadow (value);
 
   if (attrlist)
     cplus_decl_attributes (value, TREE_PURPOSE (attrlist),

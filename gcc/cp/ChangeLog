@@ -1,3 +1,24 @@
+1998-12-04  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (check_template_shadow): New fn.
+	* decl2.c (grokfield): Use it.
+	* decl.c (pushdecl): Likewise.
+	(pushdecl_class_level): Likewise.
+	(start_method): Likewise.
+	(xref_tag): Don't try to use 't' if we're defining.
+
+	* call.c (check_dtor_name): Just return an error_mark_node.
+	* pt.c (lookup_template_class): Complain about using non-template here.
+	* parse.y (apparent_template_type): Not here.
+
+	* pt.c (check_explicit_specialization): Complain about specialization
+	with C linkage.
+
+	* lang-options.h: Add -f{no-,}implicit-inline-templates.
+
+	* pt.c (convert_nontype_argument): Don't assume that any integer
+	argument is intended to be a constant-expression.
+
 1998-12-03  Mark Mitchell  <mark@markmitchell.com>
 
 	* class.c (handle_using_decl): Fix comment.  Don't lookup
@@ -1416,7 +1437,6 @@ Tue Oct  6 07:57:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* decl2.c (merge_functions): Remove duplicates.
 
 	* decl2.c: Add -f{no-,}implicit-inline-templates.
-	(lang_decode_option): Unset it if -frepo.
 	(import_export_decl): Check it.
 
 	* decl.c (lookup_name_real): Template parms also take precedence
