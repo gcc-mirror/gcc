@@ -47,6 +47,20 @@ Boston, MA 02111-1307, USA.  */
 #define IS_SAME_PATH(a,b) (strcmp (a, b) == 0)
 #endif
 
+/* Suffix for aux-info files.  */
+#ifdef __MSDOS__
+#define AUX_INFO_SUFFIX "X"
+#else
+#define AUX_INFO_SUFFIX ".X"
+#endif
+
+/* Suffix for saved files.  */
+#ifdef __MSDOS__
+#define SAVE_SUFFIX "sav"
+#else
+#define SAVE_SUFFIX ".save"
+#endif
+
 /* Suffix for renamed C++ files.  */
 #ifdef HAVE_DOS_BASED_FILE_SYSTEM
 #define CPLUS_FILE_SUFFIX "cc"
@@ -117,11 +131,11 @@ static const char * const target_version = DEFAULT_TARGET_VERSION;
 
 /* Suffix of aux_info files.  */
 
-static const char * const aux_info_suffix = ".X";
+static const char * const aux_info_suffix = AUX_INFO_SUFFIX;
 
 /* String to attach to filenames for saved versions of original files.  */
 
-static const char * const save_suffix = ".save";
+static const char * const save_suffix = SAVE_SUFFIX;
 
 /* String to attach to C filenames renamed to C++.  */
 
@@ -1983,8 +1997,8 @@ munge_compile_params (params_list)
 
   temp_params[param_count++] = "-S";
   temp_params[param_count++] = "-o";
-#if defined (__MSDOS__) || (defined (_WIN32) && ! defined (__CYGWIN__) && ! defined (_UWIN))
-  temp_params[param_count++] = "NUL:";
+#if defined (_WIN32) && ! defined (__CYGWIN__) && ! defined (_UWIN)
+  temp_params[param_count++] = "NUL";
 #else
   temp_params[param_count++] = "/dev/null";
 #endif
@@ -2018,7 +2032,7 @@ gen_aux_info_file (base_filename)
   compile_params[input_file_name_index] = shortpath (NULL, base_filename);
   /* Add .X to source file name to get aux-info file name.  */
   compile_params[aux_info_file_name_index] =
-    concat (compile_params[input_file_name_index], ".X", NULL);
+    concat (compile_params[input_file_name_index], aux_info_suffix, NULL);
   
   if (!quiet_flag)
     notice ("%s: compiling `%s'\n",
@@ -4316,6 +4330,11 @@ edit_file (hp)
 	= (char *) xmalloc (strlen (convert_filename) + strlen (save_suffix) + 2);
   
       strcpy (new_filename, convert_filename);
+#ifdef __MSDOS__
+      /* MSDOS filenames are restricted to 8.3 format, so we save `foo.c'
+         as `foo.<save_suffix>'.  */
+      new_filename[(strlen (convert_filename) - 1] = '\0';
+#endif
       strcat (new_filename, save_suffix);
 
       /* Don't overwrite existing file.  */

@@ -1,3 +1,15 @@
+2000-02-25  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* protoize.c: (AUX_INFO_SUFFIX): New macro.
+	(aux_info_suffix): Use.
+	(SAVE_SUFFIX): New macro.
+	(save_suffix): Use.
+	(munge_compile_parms): Fix typo in NUL. DJGPP supports /dev/null.
+	(gen_aux_info_file): Use aux_info_suffix instead of ".X".
+	(edit_file): Handle 8.3 restriction for DOS/DJGPP filenames.
+
+	* invoke.texi (Running Protoize): Update documentation.
+
 2000-02-25 Mark Elbrecht <snowball3@bigfoot.com>
 
 	* i386/djgpp.h (CPP_PREDEFINES): Remove Unix defines.
