@@ -1,3 +1,7 @@
+2003-01-08  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* decl.c: ANSIfy function declarations.
+
 2003-01-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* parser.c (cp_parser_asm_definition): Correct handling of omitted
