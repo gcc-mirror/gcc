@@ -1,3 +1,11 @@
+2000-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/string-opt-1.c: Add test for strstr
+	with both arguments constant strings.
+	* gcc.c-torture/execute/string-opt-3.c: New test.
+	* gcc.c-torture/execute/string-opt-4.c: New test.
+	* gcc.c-torture/execute/string-opt-5.c: New test.
+
 2000-11-08  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.c-torture/execute/20001108-1.c: New test case.  Checks

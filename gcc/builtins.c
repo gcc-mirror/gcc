@@ -80,6 +80,7 @@ tree (*lang_type_promotes_to) PARAMS ((tree));
 
 static int get_pointer_alignment	PARAMS ((tree, unsigned));
 static tree c_strlen			PARAMS ((tree));
+static const char *c_getstr		PARAMS ((tree));
 static rtx get_memory_rtx		PARAMS ((tree));
 static int apply_args_size		PARAMS ((void));
 static int apply_result_size		PARAMS ((void));
@@ -100,8 +101,9 @@ static rtx expand_builtin_va_end	PARAMS ((tree));
 static rtx expand_builtin_va_copy	PARAMS ((tree));
 #ifdef HAVE_cmpstrsi
 static rtx expand_builtin_memcmp	PARAMS ((tree, tree, rtx));
-static rtx expand_builtin_strcmp	PARAMS ((tree, rtx));
 #endif
+static rtx expand_builtin_strcmp	PARAMS ((tree, rtx,
+						 enum machine_mode));
 static rtx expand_builtin_memcpy	PARAMS ((tree));
 static rtx expand_builtin_strcpy	PARAMS ((tree));
 static rtx expand_builtin_memset	PARAMS ((tree));
@@ -110,6 +112,10 @@ static rtx expand_builtin_strlen	PARAMS ((tree, rtx));
 static rtx expand_builtin_strstr	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_strpbrk	PARAMS ((tree, rtx,
+						 enum machine_mode));
+static rtx expand_builtin_strchr	PARAMS ((tree, rtx,
+						 enum machine_mode));
+static rtx expand_builtin_strrchr	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_alloca	PARAMS ((tree, rtx));
 static rtx expand_builtin_ffs		PARAMS ((tree, rtx, rtx));
@@ -210,7 +216,7 @@ c_strlen (src)
   if (src == 0)
     return 0;
 
-  max = TREE_STRING_LENGTH (src);
+  max = TREE_STRING_LENGTH (src) - 1;
   ptr = TREE_STRING_POINTER (src);
 
   if (offset_node && TREE_CODE (offset_node) != INTEGER_CST)
@@ -261,6 +267,41 @@ c_strlen (src)
      Since OFFSET is our starting index into the string, no further
      calculation is needed.  */
   return ssize_int (strlen (ptr + offset));
+}
+
+/* Return a char pointer for a C string if it is a string constant
+   or sum of string constant and integer constant.  */
+
+static const char *
+c_getstr (src)
+     tree src;
+{
+  tree offset_node;
+  int offset, max;
+  char *ptr;
+
+  src = string_constant (src, &offset_node);
+  if (src == 0)
+    return 0;
+
+  max = TREE_STRING_LENGTH (src) - 1;
+  ptr = TREE_STRING_POINTER (src);
+
+  if (!offset_node)
+    offset = 0;
+  else if (TREE_CODE (offset_node) != INTEGER_CST)
+    return 0;
+  else
+    {
+      /* Did we get a long long offset?  If so, punt.  */
+      if (TREE_INT_CST_HIGH (offset_node) != 0)
+	return 0;
+      offset = TREE_INT_CST_LOW (offset_node);
+      if (offset < 0 || offset > max)
+	return 0;
+    }
+
+  return (const char *) ptr + offset;
 }
 
 /* Given TEM, a pointer to a stack frame, follow the dynamic chain COUNT
@@ -1416,48 +1457,154 @@ expand_builtin_strstr (arglist, target, mode)
   if (arglist == 0
       || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
       || TREE_CHAIN (arglist) == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE)
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE
+      || current_function_check_memory_usage)
     return 0;
   else
     {
       tree s1 = TREE_VALUE (arglist), s2 = TREE_VALUE (TREE_CHAIN (arglist));
-      tree len = c_strlen (s2);
+      tree call_expr, fn;
+      const char *p1, *p2;
 
-      if (!len)
+      p2 = c_getstr (s2);
+      if (p2 == NULL)
 	return 0;
 
-      switch (compare_tree_int (len, 1))
-        {
-	case -1: /* length is 0, return s1.  */
-	  return expand_expr (s1, target, mode, EXPAND_NORMAL);
-	case 0: /* length is 1, return strchr(s1, s2[0]).  */
-	  {
-	    tree call_expr, fn = built_in_decls[BUILT_IN_STRCHR];
+      p1 = c_getstr (s1);
+      if (p1 != NULL)
+	{
+	  const char *r = strstr (p1, p2);
 
-	    if (!fn)
-	      return 0;
-	    STRIP_NOPS (s2);
-	    if (s2 && TREE_CODE (s2) == ADDR_EXPR)
-	      s2 = TREE_OPERAND (s2, 0);
+	  if (r == NULL)
+	    return const0_rtx;
 
-	    /* New argument list transforming strstr(s1, s2) to
-	       strchr(s1, s2[0]).  */
-	    arglist =
-	      build_tree_list (NULL_TREE,
-			       build_int_2 (TREE_STRING_POINTER (s2)[0], 0));
-	    arglist = tree_cons (NULL_TREE, s1, arglist);
-	    call_expr = build1 (ADDR_EXPR,
-				build_pointer_type (TREE_TYPE (fn)), fn);
-	    call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-			       call_expr, arglist, NULL_TREE);
-	    TREE_SIDE_EFFECTS (call_expr) = 1;
-	    return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
-	  }
-	case 1: /* length is greater than 1, really call strstr.  */
-	  return 0;
-	default:
-	  abort();
+	  /* Return an offset into the constant string argument.  */
+	  return expand_expr (fold (build (PLUS_EXPR, TREE_TYPE (s1),
+					   s1, ssize_int (r - p1))),
+			      target, mode, EXPAND_NORMAL);
 	}
+
+      if (p2[0] == '\0')
+	return expand_expr (s1, target, mode, EXPAND_NORMAL);
+
+      if (p2[1] != '\0')
+	return 0;
+
+      fn = built_in_decls[BUILT_IN_STRCHR];
+      if (!fn)
+	return 0;
+
+      /* New argument list transforming strstr(s1, s2) to
+	 strchr(s1, s2[0]).  */
+      arglist =
+	build_tree_list (NULL_TREE, build_int_2 (p2[0], 0));
+      arglist = tree_cons (NULL_TREE, s1, arglist);
+      call_expr = build1 (ADDR_EXPR,
+			  build_pointer_type (TREE_TYPE (fn)), fn);
+      call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+			 call_expr, arglist, NULL_TREE);
+      TREE_SIDE_EFFECTS (call_expr) = 1;
+      return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
+    }
+}
+
+/* Expand a call to the strchr builtin.  Return 0 if we failed the
+   caller should emit a normal call, otherwise try to get the result
+   in TARGET, if convenient (and in mode MODE if that's convenient).  */
+
+static rtx
+expand_builtin_strchr (arglist, target, mode)
+     tree arglist;
+     rtx target;
+     enum machine_mode mode;
+{
+  if (arglist == 0
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+      || TREE_CHAIN (arglist) == 0
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != INTEGER_TYPE
+      || current_function_check_memory_usage)
+    return 0;
+  else
+    {
+      tree s1 = TREE_VALUE (arglist), s2 = TREE_VALUE (TREE_CHAIN (arglist));
+      const char *p1;
+
+      if (TREE_CODE (s2) != INTEGER_CST)
+	return 0;
+
+      p1 = c_getstr (s1);
+      if (p1 != NULL)
+	{
+	  const char *r = strchr (p1, (char) TREE_INT_CST_LOW (s2));
+
+	  if (r == NULL)
+	    return const0_rtx;
+
+	  /* Return an offset into the constant string argument.  */
+	  return expand_expr (fold (build (PLUS_EXPR, TREE_TYPE (s1),
+					   s1, ssize_int (r - p1))),
+			      target, mode, EXPAND_NORMAL);
+	}
+
+      /* FIXME: Should use here strchrM optab so that ports can optimize
+	 this.  */
+      return 0;
+    }
+}
+
+/* Expand a call to the strrchr builtin.  Return 0 if we failed the
+   caller should emit a normal call, otherwise try to get the result
+   in TARGET, if convenient (and in mode MODE if that's convenient).  */
+
+static rtx
+expand_builtin_strrchr (arglist, target, mode)
+     tree arglist;
+     rtx target;
+     enum machine_mode mode;
+{
+  if (arglist == 0
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+      || TREE_CHAIN (arglist) == 0
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != INTEGER_TYPE
+      || current_function_check_memory_usage)
+    return 0;
+  else
+    {
+      tree s1 = TREE_VALUE (arglist), s2 = TREE_VALUE (TREE_CHAIN (arglist));
+      tree call_expr, fn;
+      const char *p1;
+
+      if (TREE_CODE (s2) != INTEGER_CST)
+	return 0;
+
+      p1 = c_getstr (s1);
+      if (p1 != NULL)
+	{
+	  const char *r = strrchr (p1, (char) TREE_INT_CST_LOW (s2));
+
+	  if (r == NULL)
+	    return const0_rtx;
+
+	  /* Return an offset into the constant string argument.  */
+	  return expand_expr (fold (build (PLUS_EXPR, TREE_TYPE (s1),
+					   s1, ssize_int (r - p1))),
+			      target, mode, EXPAND_NORMAL);
+	}
+
+      if (! integer_zerop (s2))
+	return 0;
+
+      fn = built_in_decls[BUILT_IN_STRCHR];
+      if (!fn)
+	return 0;
+
+      /* Transform strrchr(s1, '\0') to strchr(s1, '\0').  */
+      call_expr = build1 (ADDR_EXPR,
+			  build_pointer_type (TREE_TYPE (fn)), fn);
+      call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+			 call_expr, arglist, NULL_TREE);
+      TREE_SIDE_EFFECTS (call_expr) = 1;
+      return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
     }
 }
 
@@ -1474,84 +1621,60 @@ expand_builtin_strpbrk (arglist, target, mode)
   if (arglist == 0
       || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
       || TREE_CHAIN (arglist) == 0
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE)
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE
+      || current_function_check_memory_usage)
     return 0;
   else
     {
       tree s1 = TREE_VALUE (arglist), s2 = TREE_VALUE (TREE_CHAIN (arglist));
-      tree len1 = c_strlen (s1), len2 = c_strlen (s2);
-      tree stripped_s1 = s1, stripped_s2 = s2;
+      tree call_expr, fn;
+      const char *p1, *p2;
 
-      STRIP_NOPS (stripped_s1);
-      if (stripped_s1 && TREE_CODE (stripped_s1) == ADDR_EXPR)
-	stripped_s1 = TREE_OPERAND (stripped_s1, 0);
-      STRIP_NOPS (stripped_s2);
-      if (stripped_s2 && TREE_CODE (stripped_s2) == ADDR_EXPR)
-	stripped_s2 = TREE_OPERAND (stripped_s2, 0);
-
-      /* If both arguments are constants, calculate the result now.  */
-      if (len1 && len2
-	  && TREE_CODE (stripped_s1) == STRING_CST
-	  && TREE_CODE (stripped_s2) == STRING_CST)
-        {
-	  const char *const result =
-	    strpbrk (TREE_STRING_POINTER (stripped_s1),
-		     TREE_STRING_POINTER (stripped_s2));
-
-	  if (result)
-	    {
-	      long offset = result - TREE_STRING_POINTER (stripped_s1);
-
-	      /* Return an offset into the constant string argument.  */
-	      return expand_expr (fold (build (PLUS_EXPR, TREE_TYPE (s1),
-					       s1, ssize_int (offset))),
-				  target, mode, EXPAND_NORMAL);
-	    }
-	  else
-	    return const0_rtx;
-	}
-
-      /* We must have been able to figure out the second argument's
-         length to do anything else.  */
-      if (!len2)
+      p2 = c_getstr (s2);
+      if (p2 == NULL)
 	return 0;
 
-      /* OK, handle some cases.  */
-      switch (compare_tree_int (len2, 1))
-        {
-	case -1: /* length is 0, return NULL.  */
-	  {
-	    /* Evaluate and ignore the arguments in case they had
-	       side-effects.  */
-	    expand_expr (s1, const0_rtx, VOIDmode, EXPAND_NORMAL);
-	    expand_expr (s2, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      p1 = c_getstr (s1);
+      if (p1 != NULL)
+	{
+	  const char *r = strpbrk (p1, p2);
+
+	  if (r == NULL)
 	    return const0_rtx;
-	  }
-	case 0: /* length is 1, return strchr(s1, s2[0]).  */
-	  {
-	    tree call_expr, fn = built_in_decls[BUILT_IN_STRCHR];
 
-	    if (!fn)
-	      return 0;
-
-	    /* New argument list transforming strpbrk(s1, s2) to
-	       strchr(s1, s2[0]).  */
-	    arglist =
-	      build_tree_list (NULL_TREE, build_int_2
-			       (TREE_STRING_POINTER (stripped_s2)[0], 0));
-	    arglist = tree_cons (NULL_TREE, s1, arglist);
-	    call_expr = build1 (ADDR_EXPR,
-				build_pointer_type (TREE_TYPE (fn)), fn);
-	    call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-			       call_expr, arglist, NULL_TREE);
-	    TREE_SIDE_EFFECTS (call_expr) = 1;
-	    return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
-	  }
-	case 1: /* length is greater than 1, really call strpbrk.  */
-	  return 0;
-	default:
-	  abort();
+	  /* Return an offset into the constant string argument.  */
+	  return expand_expr (fold (build (PLUS_EXPR, TREE_TYPE (s1),
+					   s1, ssize_int (r - p1))),
+			      target, mode, EXPAND_NORMAL);
 	}
+
+      if (p2[0] == '\0')
+	{
+	  /* strpbrk(x, "") == NULL.
+	     Evaluate and ignore the arguments in case they had
+	     side-effects.  */
+	  expand_expr (s1, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  return const0_rtx;
+	}
+
+      if (p2[1] != '\0')
+	return 0;  /* Really call strpbrk.  */
+
+      fn = built_in_decls[BUILT_IN_STRCHR];
+      if (!fn)
+	return 0;
+
+      /* New argument list transforming strpbrk(s1, s2) to
+	 strchr(s1, s2[0]).  */
+      arglist =
+	build_tree_list (NULL_TREE, build_int_2 (p2[0], 0));
+      arglist = tree_cons (NULL_TREE, s1, arglist);
+      call_expr = build1 (ADDR_EXPR,
+			  build_pointer_type (TREE_TYPE (fn)), fn);
+      call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+			 call_expr, arglist, NULL_TREE);
+      TREE_SIDE_EFFECTS (call_expr) = 1;
+      return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
     }
 }
 
@@ -1832,17 +1955,21 @@ expand_builtin_memcmp (exp, arglist, target)
       return convert_to_mode (mode, result, 0);
   }
 }
+#endif
 
 /* Expand expression EXP, which is a call to the strcmp builtin.  Return 0
    if we failed the caller should emit a normal call, otherwise try to get
    the result in TARGET, if convenient.  */
 
 static rtx
-expand_builtin_strcmp (exp, target)
+expand_builtin_strcmp (exp, target, mode)
      tree exp;
      rtx target;
+     enum machine_mode mode;
 {
   tree arglist = TREE_OPERAND (exp, 1);
+  tree arg1, arg2;
+  const char *p1, *p2;
 
   /* If we need to check memory accesses, call the library function.  */
   if (current_function_check_memory_usage)
@@ -1856,11 +1983,27 @@ expand_builtin_strcmp (exp, target)
 	  != POINTER_TYPE))
     return 0;
 
-  else if (! HAVE_cmpstrsi)
+  arg1 = TREE_VALUE (arglist);
+  arg2 = TREE_VALUE (TREE_CHAIN (arglist));
+
+  p1 = c_getstr (arg1);
+  p2 = c_getstr (arg2);
+
+  if (p1 && p2)
+    {
+      int i = strcmp (p1, p2);
+
+      return expand_expr (i < 0 ? build_int_2 (-1, -1)
+				: i == 0 ? integer_zero_node
+					 : integer_one_node,
+			  target, mode, EXPAND_NORMAL);
+    }
+
+#ifdef HAVE_cmpstrsi
+  if (! HAVE_cmpstrsi)
     return 0;
+
   {
-    tree arg1 = TREE_VALUE (arglist);
-    tree arg2 = TREE_VALUE (TREE_CHAIN (arglist));
     tree len = c_strlen (arg1);
     tree len2 = c_strlen (arg2);
     rtx result;
@@ -1900,8 +2043,10 @@ expand_builtin_strcmp (exp, target)
 
     return result;
   }
-}
+#else
+  return 0;
 #endif
+}
 
 /* Expand a call to __builtin_saveregs, generating the result in TARGET,
    if that's convenient.  */
@@ -2464,7 +2609,8 @@ expand_builtin_fputs (arglist, ignore)
       || (TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
       || TREE_CHAIN (arglist) == 0
       || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
-	  != POINTER_TYPE))
+	  != POINTER_TYPE)
+      || current_function_check_memory_usage)
     return 0;
 
   /* Get the length of the string passed to fputs.  If the length
@@ -2484,23 +2630,21 @@ expand_builtin_fputs (arglist, ignore)
       }
     case 0: /* length is 1, call fputc.  */
       {
-	tree stripped_string = TREE_VALUE (arglist);
+	const char *p = c_getstr (TREE_VALUE (arglist));
 
-	STRIP_NOPS (stripped_string);
-	if (stripped_string && TREE_CODE (stripped_string) == ADDR_EXPR)
-	  stripped_string = TREE_OPERAND (stripped_string, 0);
-      
-	/* New argument list transforming fputs(string, stream) to
-	   fputc(string[0], stream).  */
-	arglist =
-	  build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)));
-	arglist =
-	  tree_cons (NULL_TREE, 
-		     build_int_2 (TREE_STRING_POINTER (stripped_string)[0], 0),
-		     arglist);
-	fn = fn_fputc;
-	break;
+	if (p != NULL)
+	  {      
+	    /* New argument list transforming fputs(string, stream) to
+	       fputc(string[0], stream).  */
+	    arglist =
+	      build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)));
+	    arglist =
+	      tree_cons (NULL_TREE, build_int_2 (p[0], 0), arglist);
+	    fn = fn_fputc;
+	    break;
+	  }
       }
+      /* FALLTHROUGH */
     case 1: /* length is greater than 1, call fwrite.  */
       {
 	tree string_arg = TREE_VALUE (arglist);
@@ -2740,6 +2884,18 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	return target;
       break;
       
+    case BUILT_IN_STRCHR:
+      target = expand_builtin_strchr (arglist, target, mode);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_STRRCHR:
+      target = expand_builtin_strrchr (arglist, target, mode);
+      if (target)
+	return target;
+      break;
+
     case BUILT_IN_MEMCPY:
       target = expand_builtin_memcpy (arglist);
       if (target)
@@ -2758,16 +2914,16 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	return target;
       break;
 
-/* These comparison functions need an instruction that returns an actual
-   index.  An ordinary compare that just sets the condition codes
-   is not enough.  */
-#ifdef HAVE_cmpstrsi
     case BUILT_IN_STRCMP:
-      target = expand_builtin_strcmp (exp, target);
+      target = expand_builtin_strcmp (exp, target, mode);
       if (target)
 	return target;
       break;
 
+/* These comparison functions need an instruction that returns an actual
+   index.  An ordinary compare that just sets the condition codes
+   is not enough.  */
+#ifdef HAVE_cmpstrsi
     case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
       target = expand_builtin_memcmp (exp, arglist, target);
@@ -2775,7 +2931,6 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	return target;
       break;
 #else
-    case BUILT_IN_STRCMP:
     case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
       break;
@@ -2833,9 +2988,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_PUTS:
     case BUILT_IN_FPUTC:
     case BUILT_IN_FWRITE:
-    case BUILT_IN_STRCHR:
       break;
-      
     case BUILT_IN_FPUTS:
       target = expand_builtin_fputs (arglist, ignore);
       if (target)

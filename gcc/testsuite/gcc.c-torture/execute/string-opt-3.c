@@ -1,0 +1,83 @@
+/* Copyright (C) 2000  Free Software Foundation.
+
+   Ensure all expected transformations of builtin strlen, strcmp and strrchr
+   occur and perform correctly.
+
+   Written by Jakub Jelinek, 11/7/2000.  */
+
+extern void abort (void);
+extern __SIZE_TYPE__ strlen (const char *);
+extern int strcmp (const char *, const char *);
+extern char *strrchr (const char *, int);
+
+int x = 6;
+char *bar = "hi world";
+
+int main()
+{
+  const char *const foo = "hello world";
+
+  if (strlen (foo) != 11)
+    abort ();
+  if (strlen (foo + 4) != 7)
+    abort ();
+  if (strlen (foo + (x++ & 7)) != 5)
+    abort ();
+  if (x != 7)
+    abort ();
+  if (strcmp (foo, "hello") <= 0)
+    abort ();
+  if (strcmp (foo + 2, "llo") <= 0)
+    abort ();
+  if (strcmp (foo, foo) != 0)
+    abort ();
+  if (strcmp (foo, "hello world ") >= 0)
+    abort ();
+  if (strcmp (foo + 10, "dx") >= 0)
+    abort ();
+  if (strcmp (10 + foo, "dx") >= 0)
+    abort ();
+  if (strrchr (foo, 'x'))
+    abort ();
+  if (strrchr (foo, 'o') != foo + 7)
+    abort ();
+  if (strrchr (foo, 'e') != foo + 1)
+    abort ();
+  if (strrchr (foo + 3, 'e'))
+    abort ();
+  if (strrchr (foo, '\0') != foo + 11)
+    abort ();
+  if (strrchr (bar, '\0') != bar + 8)
+    abort ();
+  if (strrchr (bar + 4, '\0') != bar + 8)
+    abort ();
+  if (strrchr (bar + (x++ & 3), '\0') != bar + 8)
+    abort ();
+  if (x != 8)
+    abort ();
+
+  return 0;
+}
+
+#ifdef __OPTIMIZE__
+/* When optimizing, all the above cases should be transformed into
+   something else.  So any remaining calls to the original function
+   should abort.  */
+__SIZE_TYPE__
+strlen (const char *s)
+{
+  abort ();
+}
+
+int
+strcmp (const char *s1, const char *s2)
+{
+  abort ();
+}
+
+char *
+strrchr (const char *s, int c)
+{
+  abort ();
+}
+#endif

@@ -22,7 +22,9 @@ int main()
     abort();
   if (strstr (foo + 6, "o") != foo + 7)
     abort();
-  
+  if (strstr (foo + 1, "world") != foo + 6)
+    abort();
+
   return 0;
 }
 
