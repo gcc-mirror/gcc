@@ -1,3 +1,8 @@
+Thu Nov  3 18:48:19 1994  Paul Eggert  <eggert@twinsun.com>
+
+	* Makefile.in (spew.o, lex.o, pt.o):
+	Depend on $(srcdir)/parse.h, not parse.h.
+
 Sat Oct 29 07:18:52 1994  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
 	* g++.c (main): Cast arg to bzero to avoid warning.
