@@ -1747,10 +1747,6 @@ struct lang_decl_flags GTY(())
     /* For VAR_DECL in function, this is DECL_DISCRIMINATOR.  */
     int discriminator;
 
-    /* In a namespace-scope FUNCTION_DECL, this is
-       GLOBAL_INIT_PRIORITY.  */
-    int init_priority;
-
     /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
        THUNK_VCALL_OFFSET.  */
     tree GTY((tag ("2"))) vcall_offset;
@@ -1775,6 +1771,10 @@ struct lang_decl GTY(())
 	/* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
 	tree cloned_function;
 	
+	/* In a FUNCTION_DECL for which THUNK_P holds, this is
+	   THUNK_DELTA.  */
+	HOST_WIDE_INT delta;
+
 	/* In an overloaded operator, this is the value of
 	   DECL_OVERLOADED_OPERATOR_P.  */
 	enum tree_code operator_code;
@@ -2689,13 +2689,6 @@ struct lang_decl GTY(())
 #define DECL_GLOBAL_DTOR_P(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.global_dtor_p)
 
-/* If DECL_GLOBAL_CTOR_P or DECL_GLOBAL_DTOR_P holds, this macro
-   returns the initialization priority for the function.  Constructors
-   with lower numbers should be run first.  Destructors should be run
-   in the reverse order of constructors.  */
-#define GLOBAL_INIT_PRIORITY(NODE) \
-  (LANG_DECL_U2_CHECK (NODE, 1)->init_priority)
-
 /* Accessor macros for C++ template decl nodes.  */
 
 /* The DECL_TEMPLATE_PARMS are a list.  The TREE_PURPOSE of each node
@@ -2935,7 +2928,8 @@ struct lang_decl GTY(())
 
 /* An integer indicating how many bytes should be subtracted from the
    `this' pointer when this function is called.  */
-#define THUNK_DELTA(DECL) (DECL_CHECK (DECL)->decl.u1.i)
+#define THUNK_DELTA(DECL) \
+  (DECL_LANG_SPECIFIC (DECL)->u.f.delta)
 
 /* A tree indicating how many bytes should be subtracted from the
    vtable for the `this' pointer to find the vcall offset.  (The vptr

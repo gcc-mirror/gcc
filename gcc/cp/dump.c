@@ -323,7 +323,6 @@ cp_dump_tree (dump_info, t)
 		dump_string (di, "global init");
 	      if (DECL_GLOBAL_DTOR_P (t))
 		dump_string (di, "global fini");
-	      dump_int (di, "prio", GLOBAL_INIT_PRIORITY (t));
 	    }
 	  if (DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (t))
 	    dump_string (di, "pseudo tmpl");
