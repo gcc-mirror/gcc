@@ -1,3 +1,8 @@
+Wed May 26 15:33:06 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (qualify_ambiguous_name): Take into account that a
+ 	CONVERT_EXPR might specify a type as a WFL.
+
 Tue May 25 15:06:13 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
  
         * parse.y (patch_assignment): Save the rhs before using it as an

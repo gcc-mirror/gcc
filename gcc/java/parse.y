@@ -7605,9 +7605,15 @@ qualify_ambiguous_name (id)
 	|| TREE_CODE (qual_wfl) == STRING_CST
 	|| TREE_CODE (qual_wfl) == CONVERT_EXPR)
       {
-	qual = TREE_CHAIN (qual);
-	qual_wfl = QUAL_WFL (qual);
-	again = 1;
+	if (TREE_CODE (qual_wfl) == CONVERT_EXPR
+	    && TREE_CODE (TREE_TYPE (qual_wfl)) == EXPR_WITH_FILE_LOCATION)
+	    name = EXPR_WFL_NODE (TREE_TYPE (qual_wfl));
+	else
+	  {
+	    qual = TREE_CHAIN (qual);
+	    qual_wfl = QUAL_WFL (qual);
+	    again = 1;
+	  }
       }
   } while (again);
   
