@@ -465,6 +465,8 @@ void empty_internal_buffer(stream *);
 #define flush prefix(flush)
 try flush (stream *);
 
+#define unit_to_fd prefix(unit_to_fd)
+int unit_to_fd (int);
 
 /* unit.c */
 

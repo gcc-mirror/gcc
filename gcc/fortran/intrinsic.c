@@ -857,7 +857,7 @@ add_functions (void)
     *s = "s", *dm = "dim", *kind = "kind", *msk = "mask",
     *x = "x", *sh = "shift", *stg = "string", *ssg = "substring",
     *y = "y", *sz = "size", *sta = "string_a", *stb = "string_b",
-    *z = "z", *ln = "len";
+    *z = "z", *ln = "len", *ut = "unit";
 
   int di, dr, dd, dl, dc, dz, ii;
 
@@ -1280,11 +1280,24 @@ add_functions (void)
 
   make_generic ("floor", GFC_ISYM_FLOOR, GFC_STD_F95);
 
+  /* G77 compatible fnum */
+  add_sym_1 ("fnum", 0, 1, BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_fnum, NULL, gfc_resolve_fnum,
+	     ut, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("fnum", GFC_ISYM_FNUM, GFC_STD_GNU);
+
   add_sym_1 ("fraction", 1, 1, BT_REAL, dr, GFC_STD_F95,
 	     gfc_check_x, gfc_simplify_fraction, gfc_resolve_fraction,
 	     x, BT_REAL, dr, REQUIRED);
 
   make_generic ("fraction", GFC_ISYM_FRACTION, GFC_STD_F95);
+
+  add_sym_2 ("fstat", 0, 1, BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_fstat, NULL, gfc_resolve_fstat,
+	     a, BT_INTEGER, di, REQUIRED, b, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("fstat", GFC_ISYM_FSTAT, GFC_STD_GNU);
 
   /* Unix IDs (g77 compatibility)  */
   add_sym_1 ("getcwd", 0, 1, BT_INTEGER, di,  GFC_STD_GNU,
@@ -1876,6 +1889,12 @@ add_functions (void)
 
   make_generic ("sqrt", GFC_ISYM_SQRT, GFC_STD_F77);
 
+  add_sym_2 ("stat", 0, 1, BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_stat, NULL, gfc_resolve_stat,
+	     a, BT_CHARACTER, dc, REQUIRED, b, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("stat", GFC_ISYM_STAT, GFC_STD_GNU);
+
   add_sym_3red ("sum", 0, 1, BT_UNKNOWN, 0, GFC_STD_F95,
                 gfc_check_product_sum, NULL, gfc_resolve_sum,
 		ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
@@ -1983,7 +2002,7 @@ add_subroutines (void)
     *f = "from", *sz = "size", *ln = "len", *cr = "count_rate",
     *com = "command", *length = "length", *st = "status",
     *val = "value", *num = "number", *name = "name",
-    *trim_name = "trim_name";
+    *trim_name = "trim_name", *ut = "unit";
 
   int di, dr, dc, dl;
 
@@ -2072,6 +2091,20 @@ add_subroutines (void)
   add_sym_1s ("exit", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
              gfc_check_exit, NULL, gfc_resolve_exit,
 	      c, BT_INTEGER, di, OPTIONAL);
+
+  add_sym_1s ("flush", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+	      gfc_check_flush, NULL, gfc_resolve_flush,
+	      c, BT_INTEGER, di, OPTIONAL);
+
+  add_sym_3s ("fstat", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+	      gfc_check_fstat_sub, NULL, gfc_resolve_fstat_sub,
+	      ut, BT_INTEGER, di, REQUIRED, vl, BT_INTEGER, di, REQUIRED,
+	      st, BT_INTEGER, di, OPTIONAL);
+
+  add_sym_3s ("stat", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+	      gfc_check_stat_sub, NULL, gfc_resolve_stat_sub,
+	      name, BT_CHARACTER, dc, REQUIRED, vl, BT_INTEGER, di, REQUIRED,
+	      st, BT_INTEGER, di, OPTIONAL);
 
   add_sym_2s ("system", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      NULL, NULL, gfc_resolve_system_sub,

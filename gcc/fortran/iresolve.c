@@ -553,6 +553,18 @@ gfc_resolve_floor (gfc_expr * f, gfc_expr * a, gfc_expr * kind)
 
 
 void
+gfc_resolve_fnum (gfc_expr * f, gfc_expr * n)
+{
+
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_default_integer_kind;
+  if (n->ts.kind != f->ts.kind)
+    gfc_convert_type (n, &f->ts, 2);
+  f->value.function.name = gfc_get_string (PREFIX("fnum_i%d"), f->ts.kind);
+}
+
+
+void
 gfc_resolve_fraction (gfc_expr * f, gfc_expr * x)
 {
 
@@ -1283,6 +1295,32 @@ gfc_resolve_sqrt (gfc_expr * f, gfc_expr * x)
 }
 
 
+/* Resolve the g77 compatibility function STAT AND FSTAT.  */
+
+void
+gfc_resolve_stat (gfc_expr * f, gfc_expr * n ATTRIBUTE_UNUSED,
+		  gfc_expr * a ATTRIBUTE_UNUSED)
+{
+
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_default_integer_kind;
+  f->value.function.name = gfc_get_string (PREFIX("stat_i%d"), f->ts.kind);
+}
+
+
+void
+gfc_resolve_fstat (gfc_expr * f, gfc_expr * n, gfc_expr * a ATTRIBUTE_UNUSED)
+{
+
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_default_integer_kind;
+  if (n->ts.kind != f->ts.kind)
+    gfc_convert_type (n, &f->ts, 2);
+
+  f->value.function.name = gfc_get_string (PREFIX("fstat_i%d"), f->ts.kind);
+}
+
+
 void
 gfc_resolve_sum (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
 		 gfc_expr * mask)
@@ -1676,6 +1714,53 @@ gfc_resolve_exit (gfc_code * c)
     kind = gfc_default_integer_kind;
 
   name = gfc_get_string (PREFIX("exit_i%d"), kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+/* Resolve the FLUSH intrinsic subroutine.  */
+
+void
+gfc_resolve_flush (gfc_code * c)
+{
+  const char *name;
+  gfc_typespec ts;
+  gfc_expr *n;
+
+  ts.type = BT_INTEGER;
+  ts.kind = gfc_default_integer_kind;
+  n = c->ext.actual->expr;
+  if (n != NULL
+      && n->ts.kind != ts.kind)
+    gfc_convert_type (n, &ts, 2);
+
+  name = gfc_get_string (PREFIX("flush_i%d"), ts.kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+/* Resolve the STAT and FSTAT intrinsic subroutines.  */
+
+void
+gfc_resolve_stat_sub (gfc_code * c)
+{
+  const char *name;
+
+  name = gfc_get_string (PREFIX("stat_i%d_sub"), gfc_default_integer_kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+void
+gfc_resolve_fstat_sub (gfc_code * c)
+{
+  const char *name;
+  gfc_expr *u;
+  gfc_typespec *ts;
+
+  u = c->ext.actual->expr;
+  ts = &c->ext.actual->next->expr->ts;
+  if (u->ts.kind != ts->kind)
+    gfc_convert_type (u, ts, 2);
+  name = gfc_get_string (PREFIX("fstat_i%d_sub"), ts->kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 

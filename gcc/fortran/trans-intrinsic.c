@@ -2964,15 +2964,18 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_DOT_PRODUCT:
-    case GFC_ISYM_MATMUL:
-    case GFC_ISYM_IRAND:
-    case GFC_ISYM_RAND:
     case GFC_ISYM_ETIME:
-    case GFC_ISYM_SECOND:
+    case GFC_ISYM_FNUM:
+    case GFC_ISYM_FSTAT:
     case GFC_ISYM_GETCWD:
     case GFC_ISYM_GETGID:
     case GFC_ISYM_GETPID:
     case GFC_ISYM_GETUID:
+    case GFC_ISYM_IRAND:
+    case GFC_ISYM_MATMUL:
+    case GFC_ISYM_RAND:
+    case GFC_ISYM_SECOND:
+    case GFC_ISYM_STAT:
     case GFC_ISYM_SYSTEM:
     case GFC_ISYM_UMASK:
     case GFC_ISYM_UNLINK:

@@ -1,3 +1,18 @@
+2004-12-02  Steven G. Kargl  <kargls@comcast.net>
+	Paul Brook  <paul@codesourcery.com>
+
+	* intrinsics/flush.c: New file.
+	* intrinsics/fnum.c: ditto
+	* intrinsics/stat.c: ditto
+	* io/io.h (unit_to_fd): Add prototype.
+	* io/unix.c (unit_to_fd): New function.
+	* configure.ac: Add test for members of struct stat.  Check for
+	sys/types.h and sys/stat.h
+	* Makefile.am: Add intrinsics/{flush.c,fnum.c,stat.c}
+	* configure.in: Regenerate.
+	* config.h.in: Regenerate.
+	* Makefile.in: Regenerate.
+
 2004-12-01  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* Makefile.am (AM_CPPFLAGS): Use -iquote instead of -I.
