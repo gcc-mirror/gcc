@@ -2488,3 +2488,15 @@ special_function_p (decl)
 
   return sfk_none;
 }
+
+/* Returns non-zero if TYPE is a character type, including wchar_t.  */
+
+int
+char_type_p (type)
+     tree type;
+{
+  return (same_type_p (type, char_type_node)
+	  || same_type_p (type, unsigned_char_type_node)
+	  || same_type_p (type, signed_char_type_node)
+	  || same_type_p (type, wchar_type_node));
+}

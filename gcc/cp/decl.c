@@ -6549,12 +6549,10 @@ init_decl_processing ()
 				    : WCHAR_TYPE);
   wchar_type_node = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (wchar_type_node));
   wchar_type_size = TYPE_PRECISION (wchar_type_node);
-  signed_wchar_type_node = make_signed_type (wchar_type_size);
-  unsigned_wchar_type_node = make_unsigned_type (wchar_type_size);
-  wchar_type_node
-    = TREE_UNSIGNED (wchar_type_node)
-      ? unsigned_wchar_type_node
-      : signed_wchar_type_node;
+  if (TREE_UNSIGNED (wchar_type_node))
+    wchar_type_node = make_signed_type (wchar_type_size);
+  else
+    wchar_type_node = make_unsigned_type (wchar_type_size);
   record_builtin_type (RID_WCHAR, "__wchar_t", wchar_type_node);
 
   /* Artificial declaration of wchar_t -- can be bashed */
@@ -8637,8 +8635,18 @@ complete_array_type (type, initial_value, do_default)
 
   if (initial_value)
     {
-      /* Note MAXINDEX  is really the maximum index,
-	 one less than the size.  */
+      /* An array of character type can be initialized from a
+	 brace-enclosed string constant.  */
+      if (char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type)))
+	  && TREE_CODE (initial_value) == CONSTRUCTOR
+	  && CONSTRUCTOR_ELTS (initial_value)
+	  && (TREE_CODE (TREE_VALUE (CONSTRUCTOR_ELTS (initial_value)))
+	      == STRING_CST)
+	  && TREE_CHAIN (CONSTRUCTOR_ELTS (initial_value)) == NULL_TREE)
+	initial_value = TREE_VALUE (CONSTRUCTOR_ELTS (initial_value));
+
+      /* Note MAXINDEX is really the maximum index, one less than the
+	 size.  */
       if (TREE_CODE (initial_value) == STRING_CST)
 	{
 	  int eltsize

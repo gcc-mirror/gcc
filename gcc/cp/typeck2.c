@@ -573,11 +573,7 @@ digest_init (type, init, tail)
 	}
 
       typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
-      if ((typ1 == char_type_node
-	   || typ1 == signed_char_type_node
-	   || typ1 == unsigned_char_type_node
-	   || typ1 == unsigned_wchar_type_node
-	   || typ1 == signed_wchar_type_node)
+      if (char_type_p (typ1)
 	  && ((init && TREE_CODE (init) == STRING_CST)
 	      || (element && TREE_CODE (element) == STRING_CST)))
 	{

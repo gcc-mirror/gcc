@@ -1,3 +1,13 @@
+2000-07-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (char_type_p): New function.
+	* decl.c (init_decl_processing): Don't initialize
+	signed_wchar_type_node or unsigned_wchar_type_node.
+	(complete_array_type): Handle brace-enclosed string-constants.
+	* rtti.c (emit_support_tinfos): Remove #if 0'd code.
+	* tree.c (char_type_p): New function.
+	* typeck2.c (digest_init): Use char_type_p.
+
 2000-07-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (tsubst): Don't layout type, if it's error_mark.

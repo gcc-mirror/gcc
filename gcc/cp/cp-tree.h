@@ -4547,7 +4547,8 @@ extern void remap_save_expr                     PARAMS ((tree *, splay_tree, tre
 extern tree build_shared_int_cst                PARAMS ((int));
 extern special_function_kind special_function_p PARAMS ((tree));
 extern int count_trees                          PARAMS ((tree));
-
+extern int char_type_p                          PARAMS ((tree));
+  
 /* in typeck.c */
 extern int string_conv_p			PARAMS ((tree, tree, int));
 extern tree condition_conversion		PARAMS ((tree));

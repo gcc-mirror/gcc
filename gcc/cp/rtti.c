@@ -1970,23 +1970,12 @@ emit_support_tinfos ()
     &void_type_node,
     &boolean_type_node,
     &wchar_type_node,
-#if 0
-    &signed_wchar_type_node, &unsigned_wchar_type_node,
-#endif
     &char_type_node, &signed_char_type_node, &unsigned_char_type_node,
     &short_integer_type_node, &short_unsigned_type_node,
     &integer_type_node, &unsigned_type_node,
     &long_integer_type_node, &long_unsigned_type_node,
     &long_long_integer_type_node, &long_long_unsigned_type_node,
     &float_type_node, &double_type_node, &long_double_type_node,
-
-    /* GCC extension types */
-#if 0
-    &complex_integer_type_node,
-    &complex_float_type_node, &complex_double_type_node,
-    &complex_long_double_type_node,
-#endif
-    
     0
   };
   int ix;
