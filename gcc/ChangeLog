@@ -1,3 +1,10 @@
+Sun Jun 16 22:16:10 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386-protos.h (x86_field_alignment): Declare.
+	* i386.c (x86_field_alignment): Define.
+	* i386.h (ADJUST_FIELD_ALIGNMENT): New.
+	(BIGGEST_FIELD_ALIGNMENT): Kill.
+
 2002-06-16  Richard Henderson  <rth@redhat.com>
 
         * vax.md (casesi): Use emit_jump_insn.  Tidy expander pattern.
