@@ -46,7 +46,7 @@ Supported Platforms and Prerequisites
 
 Libffi has been ported to:
 
-	SunOS 4.1.3 & Solaris 2.x (Sparc v8)
+	SunOS 4.1.3 & Solaris 2.x (SPARC-V8, SPARC-V9)
 
 	Irix 5.3 & 6.2 (System V/o32 & n32)
 
@@ -306,14 +306,8 @@ Platform Specific Notes
 
 There are no known problems with the x86 port.
 
-	Sun Sparc - SunOS 4.1.3 & Solaris 2.x
+	Sun SPARC - SunOS 4.1.3 & Solaris 2.x
 	-------------------------------------
-
-There's a bug in the structure passing code for sparc processors.
-Struct arguments that are passed in value actually end up being passed
-by reference. This will be fixed Real Soon Now.
-
-"long long" values are not supported yet.
 
 You must use GNU Make to build libffi on Sun platforms.
 
