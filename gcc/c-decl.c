@@ -6256,7 +6256,7 @@ start_function (declspecs, declarator, prefix_attributes, attributes, nested)
 
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl1)))
 	   != integer_type_node)
-	pedwarn_with_decl (fndecl, "return type of `%s' is not `int'");
+	pedwarn_with_decl (decl1, "return type of `%s' is not `int'");
 
       for (args = TYPE_ARG_TYPES (TREE_TYPE (decl1)); args;
 	   args = TREE_CHAIN (args))
