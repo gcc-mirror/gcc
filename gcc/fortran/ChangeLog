@@ -1,3 +1,7 @@
+2004-10-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* trans-stmt.c: Fix a comment typo.
+
 2004-10-07  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/17678
