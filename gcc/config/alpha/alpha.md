@@ -4873,7 +4873,7 @@
 
 (define_expand "extzv"
   [(set (match_operand:DI 0 "register_operand" "")
-	(zero_extract:DI (match_operand:DI 1 "memory_operand" "")
+	(zero_extract:DI (match_operand:DI 1 "general_operand" "")
 			 (match_operand:DI 2 "immediate_operand" "")
 			 (match_operand:DI 3 "immediate_operand" "")))]
   ""
