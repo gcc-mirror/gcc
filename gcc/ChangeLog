@@ -1,5 +1,14 @@
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.h (ISA_HAS_DCLZ_DCLO): Delete.
+	* config/mips/mips.md (abs[sd]i2): Redefine using :GPR.  Only use
+	branch-likely insns for absdi2 if GENERATE_BRANCHLIKELY.  Use "%."
+	rather than "%z2" (with a fake const0_rtx for operand 2).
+	(ffs[sd]i2): Redefine using :GPR.
+	(clz[sd]i2): Likewise.  Use ISA_HAS_CLO_CLZ for the 64-bit case.
+
+2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md ({,u}divmod[sd]i4): Redefine using :GPR.
 
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>

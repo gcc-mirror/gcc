@@ -1986,48 +1986,19 @@
 ;; Do not use the integer abs macro instruction, since that signals an
 ;; exception on -2147483648 (sigh).
 
-(define_insn "abssi2"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(abs:SI (match_operand:SI 1 "register_operand" "d")))]
+(define_insn "abs<mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(abs:GPR (match_operand:GPR 1 "register_operand" "d")))]
   "!TARGET_MIPS16"
 {
-  operands[2] = const0_rtx;
-
-  if (REGNO (operands[0]) == REGNO (operands[1]))
-    {
-      if (GENERATE_BRANCHLIKELY)
-	return "%(bltzl\t%1,1f\;subu\t%0,%z2,%0\n%~1:%)";
-      else
-	return "bgez\t%1,1f%#\;subu\t%0,%z2,%0\n%~1:";
-    }
+  if (REGNO (operands[0]) == REGNO (operands[1]) && GENERATE_BRANCHLIKELY)
+    return "%(bltzl\t%1,1f\;<d>subu\t%0,%.,%0\n%~1:%)";
   else
-    return "%(bgez\t%1,1f\;move\t%0,%1\;subu\t%0,%z2,%0\n%~1:%)";
+    return "%(bgez\t%1,1f\;move\t%0,%1\;<d>subu\t%0,%.,%0\n%~1:%)";
 }
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"12")])
-
-(define_insn "absdi2"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(abs:DI (match_operand:DI 1 "register_operand" "d")))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-{
-  unsigned int regno1;
-  operands[2] = const0_rtx;
-
-  if (GET_CODE (operands[1]) == REG)
-    regno1 = REGNO (operands[1]);
-  else
-    regno1 = REGNO (XEXP (operands[1], 0));
-
-  if (REGNO (operands[0]) == regno1)
-    return "%(bltzl\t%1,1f\;dsubu\t%0,%z2,%0\n%~1:%)";
-  else
-    return "%(bgez\t%1,1f\;move\t%0,%1\;dsubu\t%0,%z2,%0\n%~1:%)";
-}
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"12")])
+  [(set_attr "type" "multi")
+   (set_attr "mode" "<MODE>")
+   (set_attr "length" "12")])
 
 (define_insn "absdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -2053,11 +2024,11 @@
 ;;  ....................
 ;;
 
-(define_insn "ffssi2"
-  [(set (match_operand:SI 0 "register_operand" "=&d")
-	(ffs:SI (match_operand:SI 1 "register_operand" "d")))
-   (clobber (match_scratch:SI 2 "=&d"))
-   (clobber (match_scratch:SI 3 "=&d"))]
+(define_insn "ffs<mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=&d")
+	(ffs:GPR (match_operand:GPR 1 "register_operand" "d")))
+   (clobber (match_scratch:GPR 2 "=&d"))
+   (clobber (match_scratch:GPR 3 "=&d"))]
   "!TARGET_MIPS16"
 {
   if (optimize && find_reg_note (insn, REG_DEAD, operands[1]))
@@ -2065,9 +2036,9 @@
 move\t%0,%.\;\
 beq\t%1,%.,2f\n\
 %~1:\tand\t%2,%1,0x0001\;\
-addu\t%0,%0,1\;\
+<d>addu\t%0,%0,1\;\
 beq\t%2,%.,1b\;\
-srl\t%1,%1,1\n\
+<d>srl\t%1,%1,1\n\
 %~2:%)";
 
   return "%(\
@@ -2075,45 +2046,14 @@ move\t%0,%.\;\
 move\t%3,%1\;\
 beq\t%3,%.,2f\n\
 %~1:\tand\t%2,%3,0x0001\;\
-addu\t%0,%0,1\;\
+<d>addu\t%0,%0,1\;\
 beq\t%2,%.,1b\;\
-srl\t%3,%3,1\n\
+<d>srl\t%3,%3,1\n\
 %~2:%)";
 }
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"28")])
-
-(define_insn "ffsdi2"
-  [(set (match_operand:DI 0 "register_operand" "=&d")
-	(ffs:DI (match_operand:DI 1 "register_operand" "d")))
-   (clobber (match_scratch:DI 2 "=&d"))
-   (clobber (match_scratch:DI 3 "=&d"))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-{
-  if (optimize && find_reg_note (insn, REG_DEAD, operands[1]))
-    return "%(\
-move\t%0,%.\;\
-beq\t%1,%.,2f\n\
-%~1:\tand\t%2,%1,0x0001\;\
-daddu\t%0,%0,1\;\
-beq\t%2,%.,1b\;\
-dsrl\t%1,%1,1\n\
-%~2:%)";
-
-  return "%(\
-move\t%0,%.\;\
-move\t%3,%1\;\
-beq\t%3,%.,2f\n\
-%~1:\tand\t%2,%3,0x0001\;\
-daddu\t%0,%0,1\;\
-beq\t%2,%.,1b\;\
-dsrl\t%3,%3,1\n\
-%~2:%)";
-}
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"28")])
+  [(set_attr "type" "multi")
+   (set_attr "mode" "<MODE>")
+   (set_attr "length" "28")])
 
 ;;
 ;;  ...................
@@ -2123,21 +2063,13 @@ dsrl\t%3,%3,1\n\
 ;;  ...................
 ;;
 
-(define_insn "clzsi2"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(clz:SI (match_operand:SI 1 "register_operand" "d")))]
+(define_insn "clz<mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(clz:GPR (match_operand:GPR 1 "register_operand" "d")))]
   "ISA_HAS_CLZ_CLO"
-  "clz\t%0,%1"
+  "<d>clz\t%0,%1"
   [(set_attr "type" "clz")
-   (set_attr "mode" "SI")])
-
-(define_insn "clzdi2"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(clz:DI (match_operand:DI 1 "register_operand" "d")))]
-  "ISA_HAS_DCLZ_DCLO"
-  "dclz\t%0,%1"
-  [(set_attr "type" "clz")
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "<MODE>")])
 
 ;;
 ;;  ....................
