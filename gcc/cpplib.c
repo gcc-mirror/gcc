@@ -1784,10 +1784,6 @@ cpp_push_buffer (pfile, buffer, len, from_stage3, return_at_eof)
 
   new->line_base = new->buf = new->cur = buffer;
   new->rlimit = buffer + len;
-
-  /* No read ahead or extra char initially.  */
-  new->read_ahead = EOF;
-  new->extra_char = EOF;
   new->from_stage3 = from_stage3;
   new->prev = pfile->buffer;
   new->return_at_eof = return_at_eof;

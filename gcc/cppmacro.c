@@ -392,8 +392,7 @@ paste_tokens (pfile, plhs, rhs)
   /* Set pfile->cur_token as required by _cpp_lex_direct.  */
   pfile->cur_token = _cpp_temp_token (pfile);
   *plhs = _cpp_lex_direct (pfile);
-  valid = (pfile->buffer->cur == pfile->buffer->rlimit
-	   && pfile->buffer->read_ahead == EOF);
+  valid = pfile->buffer->cur == pfile->buffer->rlimit;
   _cpp_pop_buffer (pfile);
 
   return valid;

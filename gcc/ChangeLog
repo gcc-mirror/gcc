@@ -1,3 +1,14 @@
+2001-10-21  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (struct cpp_buffer): Delete read_ahead and extra_char.
+	* cpplex.c (lex_percent, lex_dot): Remove.
+	(get_effective_char, skip_block_comment, skip_line_comment,
+	parse_identifier_slow, parse_number, parse_string, save_comment,
+	_cpp_lex_direct): Update to do lookback freely.
+	(IF_NEXT_IS, BACKUP): New macros.
+	* cpplib.c (cpp_push_buffer): Don't set read_ahead and extra_char.
+	* cppmacro.c (paste_tokens): Update.
+
 2001-10-20  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* doc/invoke.texi (i386 and x86-64 Options): Fix typo.
