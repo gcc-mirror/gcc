@@ -1,3 +1,18 @@
+2001-05-12  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-lex.c (lex_charconst): Convert into a simple wrapper
+	around cpp_interpret_charconst, to which most of the code
+	body is moved.
+	* cppexp.c (MAX_CHAR_TYPE_SIZE, MAX_WCHAR_TYPE_SIZE,
+	MAX_LONG_TYPE_SIZE, MAX_INT_TYPE_SIZE, MAX_CHAR_TYPE_MASK,
+	MAX_WCHAR_TYPE_MASK, parse_escape, parse_charconst): Remove.
+	(lex): Use cpp_interpret_charconst.
+	* cpplex.c (parse_escape, read_ucs, cpp_interpret_charconst,
+	hex_digit_value): New functions.
+	(MAX_CHAR_TYPE_SIZE, MAX_WCHAR_TYPE_SIZE): New macros.
+	* cpplib.h (cpp_interpret_charconst): New prototype.
+	* Makefile.in: Update.
+
 2001-05-12  Dean Wakerley  <dean@wakerley.com>
 
 	* doc/install.texi: New file. Converted to texinfo from the HTML

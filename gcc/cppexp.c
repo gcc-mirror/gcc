@@ -18,36 +18,10 @@ along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Parse a C expression from text in a string  */
-   
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
 #include "cpphash.h"
-
-#ifndef MAX_CHAR_TYPE_SIZE
-#define MAX_CHAR_TYPE_SIZE CHAR_TYPE_SIZE
-#endif
-
-#ifndef MAX_INT_TYPE_SIZE
-#define MAX_INT_TYPE_SIZE INT_TYPE_SIZE
-#endif
-
-#ifndef MAX_LONG_TYPE_SIZE
-#define MAX_LONG_TYPE_SIZE LONG_TYPE_SIZE
-#endif
-
-#ifndef MAX_WCHAR_TYPE_SIZE
-#define MAX_WCHAR_TYPE_SIZE WCHAR_TYPE_SIZE
-#endif
-
-#define MAX_CHAR_TYPE_MASK (MAX_CHAR_TYPE_SIZE < HOST_BITS_PER_WIDEST_INT \
-		    ? (~(~(HOST_WIDEST_INT) 0 << MAX_CHAR_TYPE_SIZE)) \
-		    : ~ (HOST_WIDEST_INT) 0)
-
-#define MAX_WCHAR_TYPE_MASK (MAX_WCHAR_TYPE_SIZE < HOST_BITS_PER_WIDEST_INT \
-			     ? ~(~(HOST_WIDEST_INT) 0 << MAX_WCHAR_TYPE_SIZE) \
-			     : ~ (HOST_WIDEST_INT) 0)
 
 /* Yield nonzero if adding two numbers with A's and B's signs can yield a
    number with SUM's sign, where A, B, and SUM are all C integers.  */
@@ -61,10 +35,7 @@ static HOST_WIDEST_INT right_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT,
 					    unsigned int,
 					    unsigned HOST_WIDEST_INT));
 static struct op parse_number PARAMS ((cpp_reader *, const cpp_token *));
-static struct op parse_charconst PARAMS ((cpp_reader *, const cpp_token *));
 static struct op parse_defined PARAMS ((cpp_reader *));
-static HOST_WIDEST_INT parse_escape PARAMS ((cpp_reader *, const U_CHAR **,
-					     const U_CHAR *, HOST_WIDEST_INT));
 static struct op lex PARAMS ((cpp_reader *, int, cpp_token *));
 static const unsigned char *op_as_text PARAMS ((cpp_reader *, enum cpp_ttype));
 
@@ -238,81 +209,6 @@ parse_number (pfile, tok)
   return op;
 }
 
-/* Parse and convert a character constant for #if.  Understands backslash
-   escapes (\n, \031) and multibyte characters (if so configured).  */
-static struct op
-parse_charconst (pfile, tok)
-     cpp_reader *pfile;
-     const cpp_token *tok;
-{
-  struct op op;
-  HOST_WIDEST_INT result = 0;
-  int num_chars = 0;
-  int num_bits;
-  unsigned int width = MAX_CHAR_TYPE_SIZE;
-  HOST_WIDEST_INT mask = MAX_CHAR_TYPE_MASK;
-  int max_chars;
-  const U_CHAR *ptr = tok->val.str.text;
-  const U_CHAR *end = ptr + tok->val.str.len;
-
-  int c = -1;
-
-  if (tok->type == CPP_WCHAR)
-    width = MAX_WCHAR_TYPE_SIZE, mask = MAX_WCHAR_TYPE_MASK;
-  max_chars = MAX_LONG_TYPE_SIZE / width;
-
-  while (ptr < end)
-    {
-      c = *ptr++;
-      if (c == '\'')
-	CPP_ICE ("unescaped ' in character constant");
-      else if (c == '\\')
-	{
-	  c = parse_escape (pfile, &ptr, end, mask);
-	  if (width < HOST_BITS_PER_INT
-	      && (unsigned int) c >= (unsigned int)(1 << width))
-	    cpp_pedwarn (pfile,
-			 "escape sequence out of range for character");
-	}
-	  
-      /* Merge character into result; ignore excess chars.  */
-      if (++num_chars <= max_chars)
-	{
-	  if (width < HOST_BITS_PER_INT)
-	    result = (result << width) | (c & ((1 << width) - 1));
-	  else
-	    result = c;
-	}
-    }
-
-  if (num_chars == 0)
-    SYNTAX_ERROR ("empty character constant");
-  else if (num_chars > max_chars)
-    SYNTAX_ERROR ("character constant too long");
-  else if (num_chars != 1)
-    cpp_warning (pfile, "multi-character character constant");
-
-  /* If char type is signed, sign-extend the constant.  */
-  num_bits = num_chars * width;
-      
-  if (pfile->spec_nodes.n__CHAR_UNSIGNED__->type == NT_MACRO
-      || ((result >> (num_bits - 1)) & 1) == 0)
-    op.value = result & ((unsigned HOST_WIDEST_INT) ~0
-			 >> (HOST_BITS_PER_WIDEST_INT - num_bits));
-  else
-    op.value = result | ~((unsigned HOST_WIDEST_INT) ~0
-			  >> (HOST_BITS_PER_WIDEST_INT - num_bits));
-
-  /* This is always a signed type.  */
-  op.unsignedp = 0;
-  op.op = CPP_INT;
-  return op;
-
- syntax_error:
-  op.op = CPP_ERROR;
-  return op;
-}
-
 static struct op
 parse_defined (pfile)
      cpp_reader *pfile;
@@ -405,7 +301,15 @@ lex (pfile, skip_evaluation, token)
 
     case CPP_CHAR:
     case CPP_WCHAR:
-      return parse_charconst (pfile, token);
+      {
+	unsigned int chars_seen;
+
+	/* This is always a signed type.  */
+	op.unsignedp = 0;
+	op.op = CPP_INT;
+	op.value = cpp_interpret_charconst (pfile, token, 1, 0, &chars_seen);
+	return op;
+      }
 
     case CPP_STRING:
     case CPP_WSTRING:
@@ -492,102 +396,6 @@ lex (pfile, skip_evaluation, token)
  syntax_error:
   op.op = CPP_ERROR;
   return op;
-}
-
-/* Parse a C escape sequence.  STRING_PTR points to a variable
-   containing a pointer to the string to parse.  That pointer
-   is updated past the characters we use.  The value of the
-   escape sequence is returned.
-
-   If \ is followed by 000, we return 0 and leave the string pointer
-   after the zeros.  A value of 0 does not mean end of string.  */
-
-static HOST_WIDEST_INT
-parse_escape (pfile, string_ptr, limit, result_mask)
-     cpp_reader *pfile;
-     const U_CHAR **string_ptr;
-     const U_CHAR *limit;
-     HOST_WIDEST_INT result_mask;
-{
-  const U_CHAR *ptr = *string_ptr;
-  /* We know we have at least one following character.  */
-  int c = *ptr++;
-  switch (c)
-    {
-    case 'a': c = TARGET_BELL;	  break;
-    case 'b': c = TARGET_BS;	  break;
-    case 'f': c = TARGET_FF;	  break;
-    case 'n': c = TARGET_NEWLINE; break;
-    case 'r': c = TARGET_CR;	  break;
-    case 't': c = TARGET_TAB;	  break;
-    case 'v': c = TARGET_VT;	  break;
-
-    case 'e': case 'E':
-      if (CPP_PEDANTIC (pfile))
-	cpp_pedwarn (pfile, "non-ISO-standard escape sequence, '\\%c'", c);
-      c = TARGET_ESC;
-      break;
-      
-    case '0': case '1': case '2': case '3':
-    case '4': case '5': case '6': case '7':
-      {
-	unsigned int i = c - '0';
-	int count = 0;
-	while (++count < 3)
-	  {
-	    if (ptr >= limit)
-	      break;
-	    
-	    c = *ptr;
-	    if (c < '0' || c > '7')
-	      break;
-	    ptr++;
-	    i = (i << 3) + c - '0';
-	  }
-	if (i != (i & result_mask))
-	  {
-	    i &= result_mask;
-	    cpp_pedwarn (pfile, "octal escape sequence out of range");
-	  }
-	c = i;
-	break;
-      }
-
-    case 'x':
-      {
-	unsigned int i = 0, overflow = 0;
-	int digits_found = 0, digit;
-	for (;;)
-	  {
-	    if (ptr >= limit)
-	      break;
-	    c = *ptr;
-	    if (c >= '0' && c <= '9')
-	      digit = c - '0';
-	    else if (c >= 'a' && c <= 'f')
-	      digit = c - 'a' + 10;
-	    else if (c >= 'A' && c <= 'F')
-	      digit = c - 'A' + 10;
-	    else
-	      break;
-	    ptr++;
-	    overflow |= i ^ (i << 4 >> 4);
-	    i = (i << 4) + digit;
-	    digits_found = 1;
-	  }
-	if (!digits_found)
-	  cpp_error (pfile, "\\x used with no following hex digits");
-	if (overflow | (i != (i & result_mask)))
-	  {
-	    i &= result_mask;
-	    cpp_pedwarn (pfile, "hex escape sequence out of range");
-	  }
-	c = i;
-	break;
-      }
-    }
-  *string_ptr = ptr;
-  return c;
 }
 
 static void
