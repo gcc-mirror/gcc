@@ -250,6 +250,37 @@ extern PTR xmemdup PARAMS ((const PTR, size_t, size_t)) ATTRIBUTE_MALLOC;
 extern double physmem_total PARAMS ((void));
 extern double physmem_available PARAMS ((void));
 
+
+/* These macros provide a K&R/C89/C++-friendly way of allocating structures
+   with nice encapsulation.  The XDELETE*() macros are technically
+   superfluous, but provided here for symmetry.  Using them consistently
+   makes it easier to update client code to use different allocators such
+   as new/delete and new[]/delete[].  */
+
+/* Scalar allocators.  */
+
+#define XNEW(T)			((T *) xmalloc (sizeof (T)))
+#define XCNEW(T)		((T *) xcalloc (1, sizeof (T)))
+#define XDELETE(P)		free ((P))
+
+/* Array allocators.  */
+
+#define XNEWVEC(T, N)		((T *) xmalloc (sizeof (T) * (N)))
+#define XCNEWVEC(T, N)		((T *) xcalloc ((N), sizeof (T)))
+#define XRESIZEVEC(T, P, N)	((T *) xrealloc ((P), sizeof (T) * (N)))
+#define XDELETEVEC(P)		free ((P))
+
+/* Allocators for variable-sized structures and raw buffers.  */
+
+#define XNEWVAR(T, S)		((T *) xmalloc ((S)))
+#define XCNEWVAR(T, S)		((T *) xcalloc (1, (S)))
+#define XRESIZEVAR(T, P, S)	((T *) xrealloc ((P), (S)))
+
+/* Type-safe obstack allocator.  */
+
+#define XOBNEW(O, T)		((T *) obstack_alloc ((O), sizeof (T)))
+
+
 /* hex character manipulation routines */
 
 #define _hex_array_size 256
