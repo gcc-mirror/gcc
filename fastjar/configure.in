@@ -11,6 +11,12 @@ AC_PATH_PROG(CP, cp, /bin/cp, $PATH:/bin:/usr/bin:/usr/local/bin)
 AC_PATH_PROG(STRIP, strip, /usr/bin/strip, $PATH:/bin:/usr/bin:/usr/local/bin)
 AC_PATH_PROG(CHMOD, chmod, /bin/chmod, $PATH:/bin:/usr/bin:/usr/local/bin)
 
+dnl Add warning flags if we are using gcc.
+if test "$GCC" = yes; then
+  fastjar_warn_cflags='-W -Wall -pedantic -Wstrict-prototypes -Wmissing-prototypes -Wwrite-strings'
+fi
+AC_SUBST(fastjar_warn_cflags)
+
 dnl Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
