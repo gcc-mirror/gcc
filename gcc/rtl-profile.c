@@ -83,14 +83,13 @@ rtl_gen_edge_profiler (int edgeno, edge e)
 static void
 rtl_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
 {
-  unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
-  enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
+  enum machine_mode mode = mode_for_size (GCOV_TYPE_SIZE, MODE_INT, 0);
   rtx mem_ref, tmp, tmp1, mr, val;
   rtx sequence;
   rtx more_label = gen_label_rtx ();
   rtx less_label = gen_label_rtx ();
   rtx end_of_code_label = gen_label_rtx ();
-  int per_counter = gcov_size / BITS_PER_UNIT;
+  int per_counter = GCOV_TYPE_SIZE / BITS_PER_UNIT;
   edge e = split_block (BLOCK_FOR_INSN (value->hvalue.rtl.insn),
 		   PREV_INSN (value->hvalue.rtl.insn));
 
@@ -169,13 +168,12 @@ rtl_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
 static void
 rtl_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
 {
-  unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
-  enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
+  enum machine_mode mode = mode_for_size (GCOV_TYPE_SIZE, MODE_INT, 0);
   rtx mem_ref, tmp, mr, uval;
   rtx sequence;
   rtx end_of_code_label = gen_label_rtx ();
   rtx loop_label = gen_label_rtx ();
-  int per_counter = gcov_size / BITS_PER_UNIT;
+  int per_counter = GCOV_TYPE_SIZE / BITS_PER_UNIT;
   edge e = split_block (BLOCK_FOR_INSN (value->hvalue.rtl.insn),
 		   PREV_INSN (value->hvalue.rtl.insn));
 
@@ -245,8 +243,7 @@ static rtx
 rtl_gen_one_value_profiler_no_edge_manipulation (histogram_value value,
 						 unsigned tag, unsigned base)
 {
-  unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
-  enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
+  enum machine_mode mode = mode_for_size (GCOV_TYPE_SIZE, MODE_INT, 0);
   rtx stored_value_ref, counter_ref, all_ref, stored_value, counter, all;
   rtx tmp, uval;
   rtx sequence;
@@ -340,8 +337,7 @@ static void
 rtl_gen_const_delta_profiler (histogram_value value, unsigned tag, unsigned base)
 {
   histogram_value one_value_delta;
-  unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
-  enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
+  enum machine_mode mode = mode_for_size (GCOV_TYPE_SIZE, MODE_INT, 0);
   rtx stored_value_ref, stored_value, tmp, uval;
   rtx sequence;
   edge e = split_block (BLOCK_FOR_INSN (value->hvalue.rtl.insn),
