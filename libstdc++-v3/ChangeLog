@@ -1,4 +1,16 @@
-2000-08-14  Levente Farkas  <lfarkas@mindmaker.hu>
+2000-08-22  Richard B. Kreckel  <Richard.Kreckel@Uni-Mainz.DE>
+
+	* config/cpu/alpha/bits/atomicity.h: Change __attribute__
+	((unused)) to __attribute__ ((__unused__)).
+	* config/cpu/arm/bits/atomicity.h: Same.
+	* config/cpu/generic/bits/atomicity.h: Same.
+	* config/cpu/i386/bits/atomicity.h: Same.
+	* config/cpu/i486/bits/atomicity.h: Same.
+	* config/cpu/powerpc/bits/atomicity.h: Same.
+	* config/cpu/sparc/sparc32/bits/atomicity.h: Same.
+	* config/cpu/sparc/sparc64/bits/atomicity.h: Same.
+
+2000-08-22  Levente Farkas  <lfarkas@mindmaker.hu>
 
 	* bits/basic_string.h: Fix up parameter names.
 

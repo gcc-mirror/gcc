@@ -29,7 +29,7 @@ typedef int _Atomic_word;
 #endif
 
 static __ATOMICITY_INLINE _Atomic_word
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __exchange_and_add (volatile _Atomic_word* __mem, int __val)
 {
   _Atomic_word __tmp, __res;
@@ -43,7 +43,7 @@ __exchange_and_add (volatile _Atomic_word* __mem, int __val)
 }
 
 static __ATOMICITY_INLINE void
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __atomic_add (volatile _Atomic_word *__mem, int __val)
 {
   _Atomic_word __tmp;
@@ -56,7 +56,7 @@ __atomic_add (volatile _Atomic_word *__mem, int __val)
 }
 
 static __ATOMICITY_INLINE int
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __compare_and_swap (volatile long *__p, long int __oldval, long int __newval)
 {
   int __res;
@@ -73,7 +73,7 @@ __compare_and_swap (volatile long *__p, long int __oldval, long int __newval)
 }
 
 static __ATOMICITY_INLINE long
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __always_swap (volatile long *__p, long int __newval)
 {
   long __res;
@@ -86,7 +86,7 @@ __always_swap (volatile long *__p, long int __newval)
 }
 
 static __ATOMICITY_INLINE int
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __test_and_set (volatile long *__p, long int __newval)
 {
   int __res;
