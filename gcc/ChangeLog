@@ -1,3 +1,10 @@
+2003-01-10  Josef Zlomek  <zlomekj@suse.cz>
+
+	* jump.c (next_nonnote_insn_in_loop): New function.
+	(copy_loop_headers): Use next_nonnote_insn_in_loop instead of
+	next_nonnote_insn.
+	(duplicate_loop_exit_test). Likewise.
+
 Wed Jan  8 14:09:30 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR target/8213
