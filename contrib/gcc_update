@@ -58,8 +58,8 @@ files_and_dependencies () {
     sed -e 's/ *#.*//' -e '/^$/d' -e 's/://' <<\EOF
 # intl library
 intl/plural.c: intl/plural.y
-intl/configure: intl/configure.in intl/aclocal.m4
-intl/config.h.in: intl/configure.in intl/aclocal.m4
+intl/configure: intl/configure.ac intl/aclocal.m4
+intl/config.h.in: intl/configure.ac intl/aclocal.m4
 # Now, proceed to gcc automatically generated files
 gcc/configure: gcc/configure.ac
 gcc/cstamp-h.in: gcc/configure.ac
