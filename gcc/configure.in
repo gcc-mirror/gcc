@@ -1,7 +1,7 @@
 # configure.in for GNU CC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+# Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -1598,6 +1598,8 @@ for machine in $build $host $target; do
 		if [[ x$enable_threads = xyes ]]; then
 			thread_file='posix'
 		fi
+		;;
+	m68k-*-gnu*)
 		;;
 	m68k-*-psos*)
 		tmake_file=m68k/t-m68kbare
