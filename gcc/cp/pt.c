@@ -3156,7 +3156,8 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
       cp_pedwarn ("  use `typename %E'", arg);
       
       arg = make_typename_type (TREE_OPERAND (arg, 0),
-				TREE_OPERAND (arg, 1));
+				TREE_OPERAND (arg, 1),
+				complain);
       is_type = 1;
     }
   if (is_type != requires_type)
@@ -6685,7 +6686,7 @@ tsubst (t, args, complain, in_decl)
 	      }
 	  }
 
-	f = make_typename_type (ctx, f);
+	f = make_typename_type (ctx, f, complain);
 	if (f == error_mark_node)
 	  return f;
 	return cp_build_qualified_type_real (f, 

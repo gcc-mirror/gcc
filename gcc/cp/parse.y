@@ -2887,7 +2887,8 @@ nested_name_specifier:
 	| nested_name_specifier nested_name_specifier_1
 		{ $$ = $2; }
 	| nested_name_specifier TEMPLATE explicit_template_type SCOPE
-		{ got_scope = $$ = make_typename_type ($1, $3); }
+                { got_scope = $$ 
+		    = make_typename_type ($1, $3, /*complain=*/1); }
 	;
 
 /* Why the @#$%^& do type_name and notype_identifier need to be expanded
@@ -2939,7 +2940,7 @@ typename_sub0:
 	  typename_sub1 identifier %prec EMPTY
 		{
 		  if (TREE_CODE_CLASS (TREE_CODE ($1)) == 't')
-		    $$ = make_typename_type ($1, $2);
+		    $$ = make_typename_type ($1, $2, /*complain=*/1);
 		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
 		    cp_error ("`%T' is not a class or namespace", $2);
 		  else
@@ -2952,9 +2953,9 @@ typename_sub0:
 	| typename_sub1 template_type %prec EMPTY
 		{ $$ = TREE_TYPE ($2); }
 	| typename_sub1 explicit_template_type %prec EMPTY
-		{ $$ = make_typename_type ($1, $2); }
+                { $$ = make_typename_type ($1, $2, /*complain=*/1); }
 	| typename_sub1 TEMPLATE explicit_template_type %prec EMPTY
-		{ $$ = make_typename_type ($1, $3); }
+                { $$ = make_typename_type ($1, $3, /*complain=*/1); }
 	;
 
 typename_sub1:
@@ -2966,7 +2967,7 @@ typename_sub1:
 	| typename_sub1 typename_sub2
 		{
 		  if (TREE_CODE_CLASS (TREE_CODE ($1)) == 't')
-		    $$ = make_typename_type ($1, $2);
+		    $$ = make_typename_type ($1, $2, /*complain=*/1);
 		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
 		    cp_error ("`%T' is not a class or namespace", $2);
 		  else
@@ -2977,9 +2978,11 @@ typename_sub1:
 		    }
 		}
 	| typename_sub1 explicit_template_type SCOPE
-		{ got_scope = $$ = make_typename_type ($1, $2); }
+                { got_scope = $$ 
+		    = make_typename_type ($1, $2, /*complain=*/1); }
 	| typename_sub1 TEMPLATE explicit_template_type SCOPE
-		{ got_scope = $$ = make_typename_type ($1, $3); }
+                { got_scope = $$ 
+		    = make_typename_type ($1, $3, /*complain=*/1); }
 	;
 
 typename_sub2:

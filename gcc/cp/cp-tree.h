@@ -3403,7 +3403,7 @@ extern tree namespace_binding                   PROTO((tree, tree));
 extern void set_namespace_binding               PROTO((tree, tree, tree));
 extern tree lookup_namespace_name		PROTO((tree, tree));
 extern tree build_typename_type                 PROTO((tree, tree, tree, tree));
-extern tree make_typename_type			PROTO((tree, tree));
+extern tree make_typename_type			PROTO((tree, tree, int));
 extern tree lookup_name_nonclass		PROTO((tree));
 extern tree lookup_function_nonclass            PROTO((tree, tree));
 extern tree lookup_name				PROTO((tree, int));
