@@ -812,6 +812,12 @@ struct cum_arg { int nbytes; int anonymous_args; };
 
 #define EXIT_IGNORE_STACK 1
 
+/* Define this macro as a C expression that is nonzero for registers
+   used by the epilogue or the `return' pattern.  */
+
+#define EPILOGUE_USES(REGNO) \
+  (reload_completed && (REGNO) == LINK_POINTER_REGNUM)
+
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
