@@ -42,10 +42,8 @@ Boston, MA 02111-1307, USA.  */
 #undef SUCCESS_EXIT_CODE
 #define SUCCESS_EXIT_CODE 0
 #undef FATAL_EXIT_CODE
-#define FATAL_EXIT_CODE (1)
-#ifdef exit
+#define FATAL_EXIT_CODE 1
 #undef exit
-#endif
 #define exit __posix_exit
 void __posix_exit (int);
 
@@ -71,3 +69,5 @@ void __posix_exit (int);
 
 #define HOST_EXECUTABLE_SUFFIX ".exe"
 #define HOST_OBJECT_SUFFIX ".obj"
+
+#define DUMPFILE_FORMAT "_%02d_"

@@ -232,6 +232,11 @@ int input_file_stack_tick;
 
 const char *dump_base_name;
 
+/* Format to use to print dumpfile index value */
+#ifndef DUMPFILE_FORMAT
+#define DUMPFILE_FORMAT ".%02d."
+#endif
+
 /* Bit flags that specify the machine subtype we are compiling for.
    Bits are tested using macros TARGET_... defined in the tm.h file
    and set by `-m...' switches.  Must be defined in rtlanal.c.  */
@@ -1857,7 +1862,7 @@ open_dump_file (index, decl)
   if (rtl_dump_file != NULL)
     fclose (rtl_dump_file);
 
-  sprintf (seq, ".%02d.", index);
+  sprintf (seq, DUMPFILE_FORMAT, index);
 
   if (! dump_file[index].initialized)
     {
@@ -1911,7 +1916,7 @@ close_dump_file (index, func, insns)
       char seq[16];
       char *suffix;
 
-      sprintf (seq, ".%02d.", index);
+      sprintf (seq, DUMPFILE_FORMAT, index);
       suffix = concat (seq, dump_file[index].extension, NULL);
       print_rtl_graph_with_bb (dump_base_name, suffix, insns);
       free (suffix);
@@ -5144,7 +5149,7 @@ finalize ()
 	    char seq[16];
 	    char *suffix;
 
-	    sprintf (seq, ".%02d.", i);
+	    sprintf (seq, DUMPFILE_FORMAT, i);
 	    suffix = concat (seq, dump_file[i].extension, NULL);
 	    finish_graph_dump_file (dump_base_name, suffix);
 	    free (suffix);
