@@ -1,5 +1,5 @@
 /* Definitions for SPARC running LynxOS, using Lynx's old as and ld.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -17,8 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "sparc/sparc.h"
-#include "lynx-ng.h"
+#include <sparc/sparc.h>
+#include <lynx-ng.h>
 
 /* ??? Must redefine to get sparclite and v8 defines.  Can this be done
    differently?  */
