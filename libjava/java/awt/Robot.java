@@ -40,6 +40,7 @@ package java.awt;
 
 import gnu.java.awt.ClasspathToolkit;
 
+import java.lang.reflect.InvocationTargetException;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
 import java.awt.peer.RobotPeer;
@@ -53,8 +54,8 @@ import java.awt.peer.RobotPeer;
  *
  * Since Robot generates native windowing system events, rather than
  * simply inserting {@link AWTEvents} on the AWT event queue, its use
- * is not restricted to Java programs.  It can be to programatically
- * drive any graphical application.
+ * is not restricted to Java programs.  It can be used to
+ * programatically drive any graphical application.
  *
  * This implementation requires an X server that supports the XTest
  * extension.
@@ -384,7 +385,8 @@ public class Robot
   }
 
   /**
-   * Wait until the event dispatch thread is idle.
+   * Wait until all events currently on the event queue have been
+   * dispatched.
    */
   public void waitForIdle ()
   {
@@ -393,17 +395,17 @@ public class Robot
 					     + "the event dispatch thread");
 
     EventQueue q = Toolkit.getDefaultToolkit ().getSystemEventQueue ();
-
-    while (q.peekEvent () != null)
+    try
       {
-	try
-	  {
-	    wait ();
-	  }
-	catch (InterruptedException e)
-	  {
-	    System.err.println ("Robot: waitForIdle interrupted");
-	  }
+	q.invokeAndWait (new Runnable () { public void run () { } });
+      }
+    catch (InterruptedException e)
+      {
+	System.err.println ("Robot: waitForIdle interrupted");
+      }
+    catch (InvocationTargetException e)
+      {
+	System.err.println ("Robot: waitForIdle cannot invoke target");
       }
   }
 
