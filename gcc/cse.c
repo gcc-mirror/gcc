@@ -5648,18 +5648,12 @@ cse_insn (insn, libcall_insn)
 		&& GET_CODE (XEXP (XEXP (src_const, 0), 0)) == LABEL_REF
 		&& GET_CODE (XEXP (XEXP (src_const, 0), 1)) == LABEL_REF))
 	{
-	  tem = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-
 	  /* Make sure that the rtx is not shared with any other insn.  */
 	  src_const = copy_rtx (src_const);
 
 	  /* Record the actual constant value in a REG_EQUAL note, making
 	     a new one if one does not already exist.  */
-	  if (tem)
-	    XEXP (tem, 0) = src_const;
-	  else
-	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL,
-						  src_const, REG_NOTES (insn));
+	  set_unique_reg_note (insn, REG_EQUAL, src_const);
 
           /* If storing a constant value in a register that
 	     previously held the constant value 0,

@@ -3960,7 +3960,7 @@ force_next_line_note ()
 /* Place a note of KIND on insn INSN with DATUM as the datum. If a
    note of this type already exists, remove it first.  */
 
-void
+rtx
 set_unique_reg_note (insn, kind, datum)
      rtx insn;
      enum reg_note kind;
@@ -3968,11 +3968,20 @@ set_unique_reg_note (insn, kind, datum)
 {
   rtx note = find_reg_note (insn, kind, NULL_RTX);
 
-  /* First remove the note if there already is one.  */
+  /* Don't add ASM_OPERAND REG_EQUAL/REG_EQUIV notes.
+     It serves no useful purpose and breaks eliminate_regs.  */
+  if ((kind == REG_EQUAL || kind == REG_EQUIV)
+      && GET_CODE (datum) == ASM_OPERANDS)
+    return NULL_RTX;
+
   if (note)
-    remove_note (insn, note);
+    {
+      XEXP (note, 0) = datum;
+      return note;
+    }
 
   REG_NOTES (insn) = gen_rtx_EXPR_LIST (kind, datum, REG_NOTES (insn));
+  return REG_NOTES (insn);
 }
 
 /* Return an indication of which type of insn should have X as a body.

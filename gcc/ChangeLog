@@ -1,3 +1,16 @@
+2001-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* emit-rtl.c (set_unique_reg_note): Don't create REG_EQUAL or
+	REG_EQUIV notes for ASM_OPERANDS.  Return the new note (if any).
+	* rtl.h (set_unique_reg_note): Change return value.
+	* gcse.c (try_replace_reg): Use set_unique_reg_note.
+	* cse.c (cse_insn): Likewise.
+	* expr.c (emit_move_insn): Likewise.
+	* explow.c (force_reg): Likewise.
+	* local-alloc (update_equiv_regs): Likewise.
+	* loop.c (move_moveables, load_mems): Likewise.
+	* reload (find_reloads): Likewise.
+
 2001-10-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	Localization fixes.

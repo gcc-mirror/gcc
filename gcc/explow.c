@@ -743,14 +743,7 @@ force_reg (mode, x)
   if (CONSTANT_P (x)
       && (set = single_set (insn)) != 0
       && SET_DEST (set) == temp)
-    {
-      rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-
-      if (note)
-	XEXP (note, 0) = x;
-      else
-	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, x, REG_NOTES (insn));
-    }
+    set_unique_reg_note (insn, REG_EQUAL, x);
   return temp;
 }
 

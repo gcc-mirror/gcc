@@ -1,3 +1,7 @@
+2001-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20011029-2.c: New test.
+
 Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/execute/class_self-1.m: New test.
