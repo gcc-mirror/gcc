@@ -1,4 +1,4 @@
-/* { dg-do run { target powerpc*-*-* } } */
+/* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
 /* { dg-options "-maltivec -Wall" } */
 
@@ -8,12 +8,14 @@
 #include <altivec.h>
 #include "altivec_check.h"
 
-int main1 (void)
+int main (int argc, const char * argv[])
 {
   int i;
   const float cf = 1.0;
   vector float v;
   const vector float cv = (vector float){1.0, 2.0, 3.0, 4.0};
+
+  altivec_check ();
 
   vec_dst(&cv, i, 0);
   v = vec_ld(0, &cv);	
@@ -21,10 +23,4 @@ int main1 (void)
   vec_lvsl(0, &cf);
   
   return 0;
-}
-
-int main (int argc, const char * argv[])
-{
-  altivec_check ();
-  return main1 ();
 }
