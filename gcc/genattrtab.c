@@ -3393,10 +3393,8 @@ optimize_attrs (void)
     return;
 
   /* Make 2 extra elements, for "code" values -2 and -1.  */
-  insn_code_values = xmalloc ((insn_code_number + 2)
-			      * sizeof (struct attr_value_list *));
-  memset (insn_code_values, 0,
-	  (insn_code_number + 2) * sizeof (struct attr_value_list *));
+  insn_code_values = xcalloc ((insn_code_number + 2),
+			      sizeof (struct attr_value_list *));
 
   /* Offset the table address so we can index by -2 or -1.  */
   insn_code_values += 2;

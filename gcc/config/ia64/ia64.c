@@ -7419,14 +7419,11 @@ ia64_reorg ()
       PREV_INSN (ia64_nop) = NEXT_INSN (ia64_nop) = NULL_RTX;
       recog_memoized (ia64_nop);
       clocks_length = get_max_uid () + 1;
-      stops_p = (char *) xmalloc (clocks_length);
-      memset (stops_p, 0, clocks_length);
+      stops_p = xcalloc (1, clocks_length);
       if (ia64_tune == PROCESSOR_ITANIUM)
 	{
-	  clocks = (int *) xmalloc (clocks_length * sizeof (int));
-	  memset (clocks, 0, clocks_length * sizeof (int));
-	  add_cycles = (int *) xmalloc (clocks_length * sizeof (int));
-	  memset (add_cycles, 0, clocks_length * sizeof (int));
+	  clocks = xcalloc (clocks_length, sizeof (int));
+	  add_cycles = xcalloc (clocks_length, sizeof (int));
 	}
       if (ia64_tune == PROCESSOR_ITANIUM2)
 	{
