@@ -103,16 +103,41 @@ bool
 can_fallthru (basic_block src, basic_block target)
 {
   rtx insn = BB_END (src);
-  rtx insn2 = target == EXIT_BLOCK_PTR ? NULL : BB_HEAD (target);
+  rtx insn2;
+  edge e;
 
+  if (target == EXIT_BLOCK_PTR)
+    return true;
   if (src->next_bb != target)
     return 0;
+  for (e = src->succ; e; e = e->succ_next)
+    if (e->dest == EXIT_BLOCK_PTR
+	&& e->flags & EDGE_FALLTHRU)
+    return 0;
 
+  insn2 = BB_HEAD (target);
   if (insn2 && !active_insn_p (insn2))
     insn2 = next_active_insn (insn2);
 
   /* ??? Later we may add code to move jump tables offline.  */
   return next_active_insn (insn) == insn2;
+}
+
+/* Return nonzero if we could reach target from src by falling through,
+   if the target was made adjacent.  If we already have a fall-through
+   edge to the exit block, we can't do that.  */
+bool
+could_fall_through (basic_block src, basic_block target)
+{
+  edge e;
+
+  if (target == EXIT_BLOCK_PTR)
+    return true;
+  for (e = src->succ; e; e = e->succ_next)
+    if (e->dest == EXIT_BLOCK_PTR
+	&& e->flags & EDGE_FALLTHRU)
+    return 0;
+  return true;
 }
 
 /* Mark the back edges in DFS traversal.

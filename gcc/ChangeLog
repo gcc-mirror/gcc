@@ -1,3 +1,27 @@
+2004-06-14  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* basic-block.h (could_fall_through): Declare.
+	* cfganal.c (can_fallthru): Succeed if the target is EXIT_BLOCK_PTR.
+	Fail if the source already has a fallthrough edge to the exit
+	block pointer.
+	(could_fall_through): New function.
+	* cfgbuild.c (make_edges): Check if we already have a fallthrough
+	edge to the exit block pointer.
+	* cfglayout.c (fixup_fallthru_exit_predecessor): Check that it is
+	not called before reload has completed.
+	Handle special case of first block having a fall-through exit edge.
+	(cfg_layout_finalize): Don't call it before reload or if we have
+	rtl epilogues.
+	(fixup_reorder_chain): A fall through to the exit block does not
+	require the block to come last.  Add sanity checks.
+	* cfgrtl.c (rtl_split_edge): Add special handling of fall through
+	edges to the exit block.
+	* function.c (cfglayout.h): #include.
+	(thread_prologue_and_epilogue_insns): If we have neither return nor
+	epilogue, but a fall through to the exit block from mid-function,
+	force a non-fall-through exit.
+	* Makefile.in (function.o): Depend on CFGLAYOUT_H.
+
 2004-06-14  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Handle -mpowerpc64 and -mcpu

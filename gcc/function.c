@@ -63,6 +63,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "integrate.h"
 #include "langhooks.h"
 #include "target.h"
+#include "cfglayout.h"
 
 #ifndef LOCAL_ALIGNMENT
 #define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
@@ -7558,20 +7559,20 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
 	}
     }
 #endif
+  /* Find the edge that falls through to EXIT.  Other edges may exist
+     due to RETURN instructions, but those don't need epilogues.
+     There really shouldn't be a mixture -- either all should have
+     been converted or none, however...  */
+
+  for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
+    if (e->flags & EDGE_FALLTHRU)
+      break;
+  if (e == NULL)
+    goto epilogue_done;
+
 #ifdef HAVE_epilogue
   if (HAVE_epilogue)
     {
-      /* Find the edge that falls through to EXIT.  Other edges may exist
-	 due to RETURN instructions, but those don't need epilogues.
-	 There really shouldn't be a mixture -- either all should have
-	 been converted or none, however...  */
-
-      for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
-	if (e->flags & EDGE_FALLTHRU)
-	  break;
-      if (e == NULL)
-	goto epilogue_done;
-
       start_sequence ();
       epilogue_end = emit_note (NOTE_INSN_EPILOGUE_BEG);
 
@@ -7597,7 +7598,26 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
       insert_insn_on_edge (seq, e);
       inserted = 1;
     }
+  else
 #endif
+    {
+      basic_block cur_bb;
+
+      if (! next_active_insn (BB_END (e->src)))
+	goto epilogue_done;
+      /* We have a fall-through edge to the exit block, the source is not
+         at the end of the function, and there will be an assembler epilogue
+         at the end of the function.
+         We can't use force_nonfallthru here, because that would try to
+         use return.  Inserting a jump 'by hand' is extremely messy, so
+	 we take advantage of cfg_layout_finalize using
+	fixup_fallthru_exit_predecessor.  */
+      cfg_layout_initialize ();
+      FOR_EACH_BB (cur_bb)
+	if (cur_bb->index >= 0 && cur_bb->next_bb->index >= 0)
+	  cur_bb->rbi->next = cur_bb->next_bb;
+      cfg_layout_finalize ();
+    }
 epilogue_done:
 
   if (inserted)

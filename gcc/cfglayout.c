@@ -714,6 +714,10 @@ fixup_reorder_chain (void)
 		      && invert_jump (bb_end_insn,
 				      label_for_bb (e_fall->dest), 0))
 		    {
+#ifdef ENABLE_CHECKING
+		      if (!could_fall_through (e_taken->src, e_taken->dest))
+			abort ();
+#endif
 		      e_fall->flags &= ~EDGE_FALLTHRU;
 		      e_taken->flags |= EDGE_FALLTHRU;
 		      update_br_prob_note (bb);
@@ -731,6 +735,10 @@ fixup_reorder_chain (void)
 	      else if (invert_jump (bb_end_insn,
 				    label_for_bb (e_fall->dest), 0))
 		{
+#ifdef ENABLE_CHECKING
+		  if (!could_fall_through (e_taken->src, e_taken->dest))
+		    abort ();
+#endif
 		  e_fall->flags &= ~EDGE_FALLTHRU;
 		  e_taken->flags |= EDGE_FALLTHRU;
 		  update_br_prob_note (bb);
@@ -770,7 +778,7 @@ fixup_reorder_chain (void)
 	    continue;
 
 	  /* A fallthru to exit block.  */
-	  if (!bb->rbi->next && e_fall->dest == EXIT_BLOCK_PTR)
+	  if (e_fall->dest == EXIT_BLOCK_PTR)
 	    continue;
 	}
 
@@ -910,13 +918,19 @@ verify_insn_chain (void)
     abort ();
 }
 
-/* The block falling through to exit must be the last one in the
-   reordered chain.  Ensure that this condition is met.  */
+/* If we have assembler epilogues, the block falling through to exit must
+   be the last one in the reordered chain when we reach final.  Ensure
+   that this condition is met.  */
 static void
 fixup_fallthru_exit_predecessor (void)
 {
   edge e;
   basic_block bb = NULL;
+
+  /* This transformation is not valid before reload, because we might separate
+     a call from the instruction that copies the return value.  */
+  if (! reload_completed)
+    abort ();
 
   for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
     if (e->flags & EDGE_FALLTHRU)
@@ -925,6 +939,18 @@ fixup_fallthru_exit_predecessor (void)
   if (bb && bb->rbi->next)
     {
       basic_block c = ENTRY_BLOCK_PTR->next_bb;
+
+      /* If the very first block is the one with the fall-through exit
+	 edge, we have to split that block.  */
+      if (c == bb)
+	{
+	  bb = split_block (bb, NULL)->dest;
+	  initialize_bb_rbi (bb);
+	  bb->rbi->next = c->rbi->next;
+	  c->rbi->next = bb;
+	  bb->rbi->footer = c->rbi->footer;
+	  c->rbi->footer = NULL;
+	}
 
       while (c->rbi->next != bb)
 	c = c->rbi->next;
@@ -1176,7 +1202,12 @@ cfg_layout_finalize (void)
   verify_flow_info ();
 #endif
   rtl_register_cfg_hooks ();
-  fixup_fallthru_exit_predecessor ();
+  if (reload_completed
+#ifdef HAVE_epilogue
+      && !HAVE_epilogue
+#endif
+      )
+    fixup_fallthru_exit_predecessor ();
   fixup_reorder_chain ();
 
 #ifdef ENABLE_CHECKING
