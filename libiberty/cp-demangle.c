@@ -3577,7 +3577,7 @@ cp_demangle_type (type_name, result)
   return status;
 }
 
-#ifdef IN_LIBGCC2
+#if defined(IN_LIBGCC2) || defined(IN_GLIBCPP_V3)
 extern char *__cxa_demangle PARAMS ((const char *, char *, size_t *, int *));
 
 /* ia64 ABI-mandated entry point in the C++ runtime library for performing
@@ -3685,7 +3685,7 @@ __cxa_demangle (mangled_name, output_buffer, length, status)
     }
 }
 
-#else /* !IN_LIBGCC2 */
+#else /* ! (IN_LIBGCC2 || IN_GLIBCPP_V3) */
 
 /* Variant entry point for integration with the existing cplus-dem
    demangler.  Attempts to demangle MANGLED.  If the demangling
@@ -3854,7 +3854,7 @@ java_demangle_v3 (mangled)
   return return_value;
 }
 
-#endif /* IN_LIBGCC2 */
+#endif /* IN_LIBGCC2 || IN_GLIBCPP_V3 */
 
 
 /* Demangle NAME in the G++ V3 ABI demangling style, and return either
@@ -3894,6 +3894,7 @@ demangle_v3_with_details (name)
 }
 
 
+#ifndef IN_GLIBCPP_V3
 /* Return non-zero iff NAME is the mangled form of a constructor name
    in the G++ V3 ABI demangling style.  Specifically, return:
    - '1' if NAME is a complete object constructor,
@@ -3936,6 +3937,7 @@ is_gnu_v3_mangled_dtor (name)
   else
     return 0;
 }
+#endif /* IN_GLIBCPP_V3 */
 
 
 #ifdef STANDALONE_DEMANGLER
