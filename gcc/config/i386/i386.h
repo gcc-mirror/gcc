@@ -3354,6 +3354,7 @@ enum fp_cw_mode {FP_CW_STORED, FP_CW_UNINITIALIZED, FP_CW_ANY};
    ((SRC) < FIRST_STACK_REG || (SRC) > LAST_STACK_REG)
 
 
+#define MACHINE_DEPENDENT_REORG(X) x86_machine_dependent_reorg(X)
 /*
 Local variables:
 version-control: t
