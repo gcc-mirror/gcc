@@ -219,7 +219,7 @@ objc_mutex_trylock(_objc_mutex_t mutex)
 int
 objc_mutex_unlock(_objc_mutex_t mutex)
 {
-    int         thread_id;                      /* Cache our thread id.     */
+    _objc_thread_t  thread_id;			/* Cache our thread id.     */
     
     if (!mutex)                                 /* Is argument bad?         */
         return -1;                              /* Yes, abort.              */
