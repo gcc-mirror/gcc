@@ -1,3 +1,8 @@
+Sun Oct 24 13:29:28 1999  Richard Henderson  <rth@cygnus.com>
+
+	* unroll.c (copy_loop_body): Examine SET_DEST of single_set
+	not of pattern.
+
 Sun Oct 24 13:14:20 1999  Graham  <grahams@rcp.co.uk>
 			  Richard Henderson  <rth@cygnus.com>
 
