@@ -1,3 +1,12 @@
+2002-11-10  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/Externalizable.java, java/io/FilePermission.java,
+	java/io/ObjectStreamConstants.java, java/io/Serializable.java,
+	java/io/SerializablePermission.java, java/text/Format.java,
+	java/util/AbstractMap.java, java/util/HashMap.java,
+	java/util/LinkedHashMap.java, javax/naming/BinaryRefAddr.java: New
+	versions from Classpath.
+
 2002-11-10  Anthony Green  <green@redhat.com>
 
 	* java/util/jar/Attributes.java (Name): Fix name check.

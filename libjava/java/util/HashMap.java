@@ -180,6 +180,15 @@ public class HashMap extends AbstractMap
     }
 
     /**
+     * Called when this entry is accessed via {@link #put(Object, Object)}.
+     * This version does nothing, but in LinkedHashMap, it must do some
+     * bookkeeping for access-traversal mode.
+     */
+    void access()
+    {
+    }
+
+    /**
      * Called when this entry is removed from the map. This version simply
      * returns the value, but in LinkedHashMap, it must also do bookkeeping.
      *
@@ -338,8 +347,12 @@ public class HashMap extends AbstractMap
     while (e != null)
       {
         if (equals(key, e.key))
-          // Must use this method for necessary bookkeeping in LinkedHashMap.
-          return e.setValue(value);
+          {
+            e.access(); // Must call this for bookkeeping in LinkedHashMap.
+            Object r = e.value;
+            e.value = value;
+            return r;
+          }
         else
           e = e.next;
       }
@@ -368,8 +381,8 @@ public class HashMap extends AbstractMap
   public void putAll(Map m)
   {
     Iterator itr = m.entrySet().iterator();
-
-    for (int msize = m.size(); msize > 0; msize--)
+    int msize = m.size();
+    while (msize-- > 0)
       {
         Map.Entry e = (Map.Entry) itr.next();
         // Optimize in case the Entry is one of our own.
@@ -379,9 +392,7 @@ public class HashMap extends AbstractMap
             put(entry.key, entry.value);
           }
         else
-          {
-            put(e.getKey(), e.getValue());
-          }
+          put(e.getKey(), e.getValue());
       }
   }
   
@@ -520,7 +531,7 @@ public class HashMap extends AbstractMap
         public boolean remove(Object o)
         {
           // Test against the size of the HashMap to determine if anything
-          // really got removed. This is neccessary because the return value
+          // really got removed. This is necessary because the return value
           // of HashMap.remove() is ambiguous in the null case.
           int oldsize = size;
           HashMap.this.remove(o);
@@ -634,7 +645,6 @@ public class HashMap extends AbstractMap
   void addEntry(Object key, Object value, int idx, boolean callRemove)
   {
     HashEntry e = new HashEntry(key, value);
-
     e.next = buckets[idx];
     buckets[idx] = e;
   }
@@ -648,17 +658,18 @@ public class HashMap extends AbstractMap
    * @see #entrySet()
    */
   // Package visible, for use in nested classes.
-  HashEntry getEntry(Object o)
+  final HashEntry getEntry(Object o)
   {
-    if (!(o instanceof Map.Entry))
+    if (! (o instanceof Map.Entry))
       return null;
     Map.Entry me = (Map.Entry) o;
-    int idx = hash(me.getKey());
+    Object key = me.getKey();
+    int idx = hash(key);
     HashEntry e = buckets[idx];
     while (e != null)
       {
-        if (e.equals(me))
-          return e;
+        if (equals(e.key, key))
+          return equals(e.value, me.getValue()) ? e : null;
         e = e.next;
       }
     return null;
@@ -699,9 +710,8 @@ public class HashMap extends AbstractMap
   {
     Iterator itr = m.entrySet().iterator();
     int msize = m.size();
-    this.size = msize;
-
-    for (; msize > 0; msize--)
+    size = msize;
+    while (msize-- > 0)
       {
 	Map.Entry e = (Map.Entry) itr.next();
 	Object key = e.getKey();
@@ -742,9 +752,7 @@ public class HashMap extends AbstractMap
                 dest.next = e;
               }
             else
-              {
-                buckets[idx] = e;
-              }
+              buckets[idx] = e;
 
             HashEntry next = e.next;
             e.next = null;
@@ -797,13 +805,14 @@ public class HashMap extends AbstractMap
     // Read the threshold and loadFactor fields.
     s.defaultReadObject();
 
-    // Read and use capacity.
+    // Read and use capacity, followed by key/value pairs.
     buckets = new HashEntry[s.readInt()];
     int len = s.readInt();
-
-    // Read and use key/value pairs.
-    for ( ; len > 0; len--)
-      put(s.readObject(), s.readObject());
+    while (len-- > 0)
+      {
+        Object key = s.readObject();
+        addEntry(key, s.readObject(), hash(key), false);
+      }
   }
 
   /**

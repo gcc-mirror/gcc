@@ -41,7 +41,10 @@ package java.io;
 import java.security.*;
 
 
-public final class FilePermission extends Permission implements Serializable {
+public final class FilePermission extends Permission implements Serializable
+{
+  static final long serialVersionUID = 7930732926638008763L;
+
   private static final String CURRENT_DIRECTORY = System.getProperty("user.dir");
   private boolean usingPerms = false;
   private boolean readPerm = false;

@@ -62,6 +62,7 @@ package java.io;
   */
 public interface Externalizable extends Serializable
 {
+  static final long serialVersionUID = -282491828744381764L;
 
 /**
   * This method restores an object's state by reading in the instance data
