@@ -1,4 +1,8 @@
 Fri Jul 16 13:48:09 1999  Jeffrey A Law  (law@cygnus.com)
+	
+	* configure.in (hppa*-*-hpux11*): Use symbolic MASK_PA_11 instead
+	of "1".
+	* configure: Rebuilt.
 
 	* configure.in (hppa*-*-linux*): New configuration.
 	* configure: Rebuilt.
