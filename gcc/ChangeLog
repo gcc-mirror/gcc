@@ -1,3 +1,9 @@
+
+Mon Nov  8 13:16:46 1999  Jason Eckhardt  <jle@cygnus.com>
+
+	* config/pa/pa.md (fmpynfadd,{sgl,dbl} insns): Use %fr0 rather than 0
+	to avoid assembler errors.
+
 Mon Nov  8 15:38:41 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/v850/v850-protos.h: New file: Prototypes for functions
