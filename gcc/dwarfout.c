@@ -2653,6 +2653,17 @@ byte_size_attribute (tree_node)
 	       / BITS_PER_UNIT;
 	break;
 
+      /* This goes with the hack for case ARRAY_TYPE in output_type() since
+	 the Chill front end represents strings using ARRAY_TYPE.  */
+      case ARRAY_TYPE:
+	{
+	  /* The lower bound is zero, so the length is the upper bound + 1.  */
+	  register tree upper_bound;
+	  upper_bound = TYPE_MAX_VALUE (TYPE_DOMAIN (tree_node));
+	  size = (unsigned) TREE_INT_CST_LOW (upper_bound) + 1;
+	  break;
+	}
+
       default:
 	abort ();
     }
@@ -3705,11 +3716,10 @@ output_string_type_die (arg)
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_string_type);
   sibling_attribute ();
+  equate_type_number_to_die_number (type);
   member_attribute (TYPE_CONTEXT (type));
-
-  /* Fudge the string length attribute for now.  */
-
-  string_length_attribute (TYPE_MAX_VALUE (TYPE_DOMAIN (type)));
+  /* this is a fixed length string */
+  byte_size_attribute (type);
 }
 
 static void
