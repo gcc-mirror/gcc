@@ -1993,14 +1993,48 @@ fold_convert (tree type, tree arg)
 tree
 non_lvalue (tree x)
 {
-  /* These things are certainly not lvalues.  */
-  if (TREE_CODE (x) == NON_LVALUE_EXPR
-      || TREE_CODE (x) == INTEGER_CST
-      || TREE_CODE (x) == REAL_CST
-      || TREE_CODE (x) == STRING_CST
-      || TREE_CODE (x) == ADDR_EXPR)
-    return x;
+  /* We only need to wrap lvalue tree codes.  */
+  switch (TREE_CODE (x))
+  {
+  case VAR_DECL:
+  case PARM_DECL:
+  case RESULT_DECL:
+  case LABEL_DECL:
+  case FUNCTION_DECL:
+  case SSA_NAME:
 
+  case COMPONENT_REF:
+  case INDIRECT_REF:
+  case ARRAY_REF:
+  case BIT_FIELD_REF:
+  case BUFFER_REF:
+  case ARRAY_RANGE_REF:
+  case VTABLE_REF:
+
+  case REALPART_EXPR:
+  case IMAGPART_EXPR:
+  case PREINCREMENT_EXPR:
+  case PREDECREMENT_EXPR:
+  case SAVE_EXPR:
+  case UNSAVE_EXPR:
+  case TRY_CATCH_EXPR:
+  case WITH_CLEANUP_EXPR:
+  case COMPOUND_EXPR:
+  case MODIFY_EXPR:
+  case TARGET_EXPR:
+  case COND_EXPR:
+  case BIND_EXPR:
+  case MIN_EXPR:
+  case MAX_EXPR:
+  case RTL_EXPR:
+    break;
+
+  default:
+    /* Assume the worst for front-end tree codes.  */
+    if ((int)TREE_CODE (x) >= NUM_TREE_CODES)
+      break;
+    return x;
+  }
   return build1 (NON_LVALUE_EXPR, TREE_TYPE (x), x);
 }
 

@@ -1,3 +1,8 @@
+2002-05-23  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (non_lvalue): Explicitly list the tree codes that
+	need to be wrapped by NON_LVALUE_EXPR, instead of those that don't.
+
 2004-05-23  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/gcc.texi, doc/gccint.texi, doc/include/gcc-common.texi:
