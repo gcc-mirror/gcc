@@ -328,17 +328,14 @@
    character sets for source code. */
 #undef MULTIBYTE_CHARS
 
+/* Always define this */
+#undef _GNU_SOURCE
+
 /* Define if your compiler understands volatile. */
 #undef HAVE_VOLATILE
 
 /* Define if you can safely include both <string.h> and <strings.h>. */
 #undef STRING_WITH_STRINGS
-
-/* Always define this */
-#undef _XOPEN_SOURCE
-
-/* Always define this */
-#undef _GNU_SOURCE
 
 /* Define if you have a working <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
