@@ -1,3 +1,14 @@
+Wed Jun  5 20:42:31 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config.gcc (sh-*-elf*,  sh64*-*-elf*): Unify.
+	(shl*-*-elf*): Add.
+	* config/sh/t-be (MULTILIB_ENDIAN): Set.
+	* config/sh/t-le (MULTILIB_ENDIAN): Likewise.
+	* t-sh (MULTILIB_ENDIAN): Set.
+	(MULTILIB_OPTIONS): Use it.
+	* t-sh64 (MULTILIB_OPTIONS): Likewise.
+	(MULTILIB_DIRNAMES): Likewise.
+
 2002-06-05  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* toplev.h (report_error_function): Remove.

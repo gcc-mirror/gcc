@@ -2207,20 +2207,27 @@ s390x-*-linux*)
 		thread_file='posix'
 	fi
 	;;
-sh-*-elf*)
+sh-*-elf* | shl*-*-elf* | sh64*-*-elf*)
 	tmake_file="sh/t-sh sh/t-elf"
+	case $machine in
+	shl* | sh64l*)
+		tm_file="sh/little.h ${tm_file}"
+		tmake_file="${tmake_file} sh/t-le"
+		;;
+	esac
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/embed-elf.h"
 	float_format=sh
-	;;
-sh64-*-elf*)
-	tmake_file="sh/t-sh sh/t-elf sh/t-sh64"
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/embed-elf.h sh/sh64.h"
-	float_format=sh
-	extra_headers="shmedia.h ushmedia.h sshmedia.h"
-	# Not strictly necessary to check this, but a good idea anyway.
-	if test $machine = $target; then
-		target_requires_64bit_host_wide_int=yes
-	fi
+	case $machine in
+	sh64*)
+		tmake_file="${tmake_file} sh/t-sh64"
+		tm_file="${tm_file} sh/sh64.h"
+		extra_headers="shmedia.h ushmedia.h sshmedia.h"
+		# Not strictly necessary to check this, but a good idea anyway.
+		if test $machine = $target; then
+			target_requires_64bit_host_wide_int=yes
+		fi
+		;;
+	esac
 	;;
 sh-*-rtemself*)
 	xm_defines=POSIX
