@@ -116,6 +116,10 @@ extern int errno;
 #define DBX_MEMPARM_STABS_LETTER 'p'
 #endif
 
+#ifndef FILE_NAME_JOINER
+#define FILE_NAME_JOINER "/"
+#endif
+
 /* Nonzero means if the type has methods, only output debugging
    information if methods are actually written to the asm file.  */
 
@@ -403,13 +407,20 @@ dbxout_init (asm_file, input_file_name, syms)
   if (use_gnu_debug_info_extensions)
 #endif
     {
-      if (cwd || (cwd = getpwd ()))
+      if (!cwd && (cwd = getpwd ()) && (!*cwd || cwd[strlen (cwd) - 1] != '/'))
+	{
+	  char *wdslash = xmalloc (strlen (cwd) + sizeof (FILE_NAME_JOINER));
+	  sprintf (wdslash, "%s%s", cwd, FILE_NAME_JOINER);
+	  cwd = wdslash;
+	}
+      if (cwd)
 	{
 #ifdef DBX_OUTPUT_MAIN_SOURCE_DIRECTORY
 	  DBX_OUTPUT_MAIN_SOURCE_DIRECTORY (asmfile, cwd);
 #else /* no DBX_OUTPUT_MAIN_SOURCE_DIRECTORY */
-	  fprintf (asmfile, "%s \"%s/\",%d,0,0,%s\n", ASM_STABS_OP,
-		   cwd, N_SO, &ltext_label_name[1]);
+	  fprintf (asmfile, "%s ", ASM_STABS_OP);
+	  output_quoted_string (asmfile, cwd);
+	  fprintf (asmfile, ",%d,0,0,%s\n", N_SO, &ltext_label_name[1]);
 #endif /* no DBX_OUTPUT_MAIN_SOURCE_DIRECTORY */
 	}
     }
@@ -422,7 +433,9 @@ dbxout_init (asm_file, input_file_name, syms)
   /* We include outputting `Ltext:' here,
      because that gives you a way to override it.  */
   /* Used to put `Ltext:' before the reference, but that loses on sun 4.  */
-  fprintf (asmfile, "%s \"%s\",%d,0,0,%s\n", ASM_STABS_OP, input_file_name,
+  fprintf (asmfile, "%s ", ASM_STABS_OP);
+  output_quoted_string (asmfile, input_file_name);
+  fprintf (asmfile, ",%d,0,0,%s\n", 
 	   N_SO, &ltext_label_name[1]);
   text_section ();
   ASM_OUTPUT_INTERNAL_LABEL (asmfile, "Ltext", 0);
@@ -496,8 +509,9 @@ dbxout_source_file (file, filename)
       DBX_OUTPUT_SOURCE_FILENAME (file, filename);
 #else
       ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext", 0);
-      fprintf (file, "%s \"%s\",%d,0,0,%s\n", ASM_STABS_OP,
-	       filename, N_SOL, &ltext_label_name[1]);
+      fprintf (file, "%s ", ASM_STABS_OP);
+      output_quoted_string (file, filename);
+      fprintf (file, ",%d,0,0,%s\n", N_SOL, &ltext_label_name[1]);
 #endif
       lastfile = filename;
     }
