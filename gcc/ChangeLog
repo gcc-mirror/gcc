@@ -1,3 +1,17 @@
+2003-01-21  Roger Sayle  <roger@eyesopen.com>
+
+	* stmt.c (same_case_target_p): New function to determine whether
+	two case labels branch to the same target.  Split out from...
+	(group_case_nodes): ... here.  Use same_case_target_p instead.
+	(strip_default_case_nodes): Remove explicit case nodes
+	that branch to the default destination.
+	(expand_end_case_type): Call strip_default_case_nodes after
+	group_case_nodes, to simplify the case-list before we count it.
+	Only generate table_label RTX when actually needed.  Try to share
+	thiscase->exit_label and thiscase->data.case_stmt.default_label
+	when a switch has no explicit default case.  Simplify test for
+	constant index.
+
 2003-01-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*negsf2_h8300): Use \\t instead of
