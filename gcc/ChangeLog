@@ -1,3 +1,10 @@
+2005-01-22  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	PR target/19548
+	* config/rs6000/rtems.h: Resurrect cpp_os_rtems_spec from gcc < 3.4.
+	(CPP_OS_RTEMS_SPEC): New (From gcc-3.3's config/rs6000/sys4.h).
+	(SUBSUBTARGET_EXTRA_SPECS): Use CPP_OS_RTEMS_SPEC.
+
 2005-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/15139
