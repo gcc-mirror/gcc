@@ -418,8 +418,6 @@ struct table_elt
   char flag;
 };
 
-#define HASHBITS 16
-
 /* We don't want a lot of buckets, because we rarely have very many
    things stored in the hash table, and a lot of buckets slows
    down a lot of loops that happen frequently.  */
@@ -430,7 +428,7 @@ struct table_elt
 
 #define HASH(X, M)	\
  (GET_CODE (X) == REG && REGNO (X) >= FIRST_PSEUDO_REGISTER	\
-  ? ((((int) REG << 7) + reg_qty[REGNO (X)]) % NBUCKETS)	\
+  ? (((unsigned) REG << 7) + (unsigned) reg_qty[REGNO (X)]) % NBUCKETS	\
   : canon_hash (X, M) % NBUCKETS)
 
 /* Determine whether register number N is considered a fixed register for CSE.
@@ -598,12 +596,12 @@ static void delete_reg_equiv	PROTO((int));
 static int mention_regs		PROTO((rtx));
 static int insert_regs		PROTO((rtx, struct table_elt *, int));
 static void free_element	PROTO((struct table_elt *));
-static void remove_from_table	PROTO((struct table_elt *, int));
+static void remove_from_table	PROTO((struct table_elt *, unsigned));
 static struct table_elt *get_element PROTO((void));
-static struct table_elt *lookup	PROTO((rtx, int, enum machine_mode)),
-       *lookup_for_remove PROTO((rtx, int, enum machine_mode));
+static struct table_elt *lookup	PROTO((rtx, unsigned, enum machine_mode)),
+       *lookup_for_remove PROTO((rtx, unsigned, enum machine_mode));
 static rtx lookup_as_function	PROTO((rtx, enum rtx_code));
-static struct table_elt *insert PROTO((rtx, struct table_elt *, int,
+static struct table_elt *insert PROTO((rtx, struct table_elt *, unsigned,
 				       enum machine_mode));
 static void merge_equiv_classes PROTO((struct table_elt *,
 				       struct table_elt *));
@@ -613,8 +611,8 @@ static void rehash_using_reg	PROTO((rtx));
 static void invalidate_memory	PROTO((struct write_data *));
 static void invalidate_for_call	PROTO((void));
 static rtx use_related_value	PROTO((rtx, struct table_elt *));
-static int canon_hash		PROTO((rtx, enum machine_mode));
-static int safe_hash		PROTO((rtx, enum machine_mode));
+static unsigned canon_hash	PROTO((rtx, enum machine_mode));
+static unsigned safe_hash	PROTO((rtx, enum machine_mode));
 static int exp_equiv_p		PROTO((rtx, rtx, int, int));
 static void set_nonvarying_address_components PROTO((rtx, int, rtx *,
 						     HOST_WIDE_INT *,
@@ -1075,7 +1073,7 @@ get_element ()
 static void
 remove_from_table (elt, hash)
      register struct table_elt *elt;
-     int hash;
+     unsigned hash;
 {
   if (elt == 0)
     return;
@@ -1155,7 +1153,7 @@ remove_from_table (elt, hash)
 static struct table_elt *
 lookup (x, hash, mode)
      rtx x;
-     int hash;
+     unsigned hash;
      enum machine_mode mode;
 {
   register struct table_elt *p;
@@ -1174,7 +1172,7 @@ lookup (x, hash, mode)
 static struct table_elt *
 lookup_for_remove (x, hash, mode)
      rtx x;
-     int hash;
+     unsigned hash;
      enum machine_mode mode;
 {
   register struct table_elt *p;
@@ -1253,7 +1251,7 @@ static struct table_elt *
 insert (x, classp, hash, mode)
      register rtx x;
      register struct table_elt *classp;
-     int hash;
+     unsigned hash;
      enum machine_mode mode;
 {
   register struct table_elt *elt;
@@ -1381,7 +1379,7 @@ insert (x, classp, hash, mode)
   if (GET_CODE (x) == CONST)
     {
       rtx subexp = get_related_value (x);
-      int subhash;
+      unsigned subhash;
       struct table_elt *subelt, *subelt_prev;
 
       if (subexp != 0)
@@ -1433,7 +1431,7 @@ merge_equiv_classes (class1, class2)
 
   for (elt = class2; elt; elt = next)
     {
-      int hash;
+      unsigned hash;
       rtx exp = elt->exp;
       enum machine_mode mode = elt->mode;
 
@@ -1491,7 +1489,7 @@ invalidate (x)
   if (GET_CODE (x) == REG)
     {
       register int regno = REGNO (x);
-      register int hash = HASH (x, GET_MODE (x));
+      register unsigned hash = HASH (x, GET_MODE (x));
 
       /* Remove REGNO from any quantity list it might be on and indicate
 	 that it's value might have changed.  If it is a pseudo, remove its
@@ -1609,7 +1607,7 @@ rehash_using_reg (x)
 {
   int i;
   struct table_elt *p, *next;
-  int hash;
+  unsigned hash;
 
   if (GET_CODE (x) == SUBREG)
     x = SUBREG_REG (x);
@@ -1683,7 +1681,7 @@ invalidate_for_call ()
 {
   int regno, endregno;
   int i;
-  int hash;
+  unsigned hash;
   struct table_elt *p, *next;
   int in_table = 0;
 
@@ -1818,13 +1816,13 @@ use_related_value (x, elt)
    Note that cse_insn knows that the hash code of a MEM expression
    is just (int) MEM plus the hash code of the address.  */
 
-static int
+static unsigned
 canon_hash (x, mode)
      rtx x;
      enum machine_mode mode;
 {
   register int i, j;
-  register int hash = 0;
+  register unsigned hash = 0;
   register enum rtx_code code;
   register char *fmt;
 
@@ -1859,37 +1857,37 @@ canon_hash (x, mode)
 	    do_not_record = 1;
 	    return 0;
 	  }
-	return hash + ((int) REG << 7) + reg_qty[regno];
+	hash += ((unsigned) REG << 7) + (unsigned) reg_qty[regno];
+	return hash;
       }
 
     case CONST_INT:
-      hash += ((int) mode + ((int) CONST_INT << 7)
-	       + INTVAL (x) + (INTVAL (x) >> HASHBITS));
-      return ((1 << HASHBITS) - 1) & hash;
+      {
+	unsigned HOST_WIDE_INT tem = INTVAL (x);
+	hash += ((unsigned) CONST_INT << 7) + (unsigned) mode + tem;
+	return hash;
+      }
 
     case CONST_DOUBLE:
       /* This is like the general case, except that it only counts
 	 the integers representing the constant.  */
-      hash += (int) code + (int) GET_MODE (x);
-      {
-	int i;
-	for (i = 2; i < GET_RTX_LENGTH (CONST_DOUBLE); i++)
-	  {
-	    int tem = XINT (x, i);
-	    hash += ((1 << HASHBITS) - 1) & (tem + (tem >> HASHBITS));
-	  }
-      }
+      hash += (unsigned) code + (unsigned) GET_MODE (x);
+      for (i = 2; i < GET_RTX_LENGTH (CONST_DOUBLE); i++)
+	{
+	  unsigned tem = XINT (x, i);
+	  hash += tem;
+	}
       return hash;
 
       /* Assume there is only one rtx object for any given label.  */
     case LABEL_REF:
       /* Use `and' to ensure a positive number.  */
-      return (hash + ((HOST_WIDE_INT) LABEL_REF << 7)
-	      + ((HOST_WIDE_INT) XEXP (x, 0) & ((1 << HASHBITS) - 1)));
+      hash += ((unsigned) LABEL_REF << 7) + (unsigned) XEXP (x, 0);
+      return hash;
 
     case SYMBOL_REF:
-      return (hash + ((HOST_WIDE_INT) SYMBOL_REF << 7)
-	      + ((HOST_WIDE_INT) XEXP (x, 0) & ((1 << HASHBITS) - 1)));
+      hash += ((unsigned) SYMBOL_REF << 7) + (unsigned) XEXP (x, 0);
+      return hash;
 
     case MEM:
       if (MEM_VOLATILE_P (x))
@@ -1904,7 +1902,7 @@ canon_hash (x, mode)
 	}
       /* Now that we have already found this special case,
 	 might as well speed it up as much as possible.  */
-      hash += (int) MEM;
+      hash += (unsigned) MEM;
       x = XEXP (x, 0);
       goto repeat;
 
@@ -1928,7 +1926,7 @@ canon_hash (x, mode)
     }
 
   i = GET_RTX_LENGTH (code) - 1;
-  hash += (int) code + (int) GET_MODE (x);
+  hash += (unsigned) code + (unsigned) GET_MODE (x);
   fmt = GET_RTX_FORMAT (code);
   for (; i >= 0; i--)
     {
@@ -1962,18 +1960,15 @@ canon_hash (x, mode)
 	  hash += canon_hash (XVECEXP (x, i, j), 0);
       else if (fmt[i] == 's')
 	{
-	  register char *p = XSTR (x, i);
+	  register unsigned char *p = (unsigned char *) XSTR (x, i);
 	  if (p)
 	    while (*p)
-	      {
-		register int tem = *p++;
-		hash += ((1 << HASHBITS) - 1) & (tem + (tem >> HASHBITS));
-	      }
+	      hash += *p++;
 	}
       else if (fmt[i] == 'i')
 	{
-	  register int tem = XINT (x, i);
-	  hash += ((1 << HASHBITS) - 1) & (tem + (tem >> HASHBITS));
+	  register unsigned tem = XINT (x, i);
+	  hash += tem;
 	}
       else
 	abort ();
@@ -1983,7 +1978,7 @@ canon_hash (x, mode)
 
 /* Like canon_hash but with no side effects.  */
 
-static int
+static unsigned
 safe_hash (x, mode)
      rtx x;
      enum machine_mode mode;
@@ -1991,7 +1986,7 @@ safe_hash (x, mode)
   int save_do_not_record = do_not_record;
   int save_hash_arg_in_memory = hash_arg_in_memory;
   int save_hash_arg_in_struct = hash_arg_in_struct;
-  int hash = canon_hash (x, mode);
+  unsigned hash = canon_hash (x, mode);
   hash_arg_in_memory = save_hash_arg_in_memory;
   hash_arg_in_struct = save_hash_arg_in_struct;
   do_not_record = save_do_not_record;
@@ -2505,9 +2500,9 @@ find_best_addr (insn, loc)
   int save_do_not_record = do_not_record;
   int save_hash_arg_in_memory = hash_arg_in_memory;
   int save_hash_arg_in_struct = hash_arg_in_struct;
-  int hash_code;
   int addr_volatile;
   int regno;
+  unsigned hash;
 
   /* Do not try to replace constant addresses or addresses of local and
      argument slots.  These MEM expressions are made only once and inserted
@@ -2543,7 +2538,7 @@ find_best_addr (insn, loc)
      of the whole address.  Also, ignore if volatile.  */
 
   do_not_record = 0;
-  hash_code = HASH (addr, Pmode);
+  hash = HASH (addr, Pmode);
   addr_volatile = do_not_record;
   do_not_record = save_do_not_record;
   hash_arg_in_memory = save_hash_arg_in_memory;
@@ -2552,7 +2547,7 @@ find_best_addr (insn, loc)
   if (addr_volatile)
     return;
 
-  elt = lookup (addr, hash_code, Pmode);
+  elt = lookup (addr, hash, Pmode);
 
 #ifndef ADDRESS_COST
   if (elt)
@@ -2631,12 +2626,12 @@ find_best_addr (insn, loc)
       rtx c = XEXP (*loc, 1);
 
       do_not_record = 0;
-      hash_code = HASH (XEXP (*loc, 0), Pmode);
+      hash = HASH (XEXP (*loc, 0), Pmode);
       do_not_record = save_do_not_record;
       hash_arg_in_memory = save_hash_arg_in_memory;
       hash_arg_in_struct = save_hash_arg_in_struct;
 
-      elt = lookup (XEXP (*loc, 0), hash_code, Pmode);
+      elt = lookup (XEXP (*loc, 0), hash, Pmode);
       if (elt == 0)
 	return;
 
@@ -5613,7 +5608,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
      rtx op0, op1;
      int reversed_nonequality;
 {
-  int op0_hash_code, op1_hash_code;
+  unsigned op0_hash, op1_hash;
   int op0_in_memory, op0_in_struct, op1_in_memory, op1_in_struct;
   struct table_elt *op0_elt, *op1_elt;
 
@@ -5685,7 +5680,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
   do_not_record = 0;
   hash_arg_in_memory = 0;
   hash_arg_in_struct = 0;
-  op0_hash_code = HASH (op0, mode);
+  op0_hash = HASH (op0, mode);
   op0_in_memory = hash_arg_in_memory;
   op0_in_struct = hash_arg_in_struct;
 
@@ -5695,7 +5690,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
   do_not_record = 0;
   hash_arg_in_memory = 0;
   hash_arg_in_struct = 0;
-  op1_hash_code = HASH (op1, mode);
+  op1_hash = HASH (op1, mode);
   op1_in_memory = hash_arg_in_memory;
   op1_in_struct = hash_arg_in_struct;
   
@@ -5703,8 +5698,8 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
     return;
 
   /* Look up both operands.  */
-  op0_elt = lookup (op0, op0_hash_code, mode);
-  op1_elt = lookup (op1, op1_hash_code, mode);
+  op0_elt = lookup (op0, op0_hash, mode);
+  op1_elt = lookup (op1, op1_hash, mode);
 
   /* If we aren't setting two things equal all we can do is save this
      comparison.   Similarly if this is floating-point.  In the latter
@@ -5732,16 +5727,16 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 	  if (insert_regs (op0, NULL_PTR, 0))
 	    {
 	      rehash_using_reg (op0);
-	      op0_hash_code = HASH (op0, mode);
+	      op0_hash = HASH (op0, mode);
 
 	      /* If OP0 is contained in OP1, this changes its hash code
 		 as well.  Faster to rehash than to check, except
 		 for the simple case of a constant.  */
 	      if (! CONSTANT_P (op1))
-		op1_hash_code = HASH (op1,mode);
+		op1_hash = HASH (op1,mode);
 	    }
 
-	  op0_elt = insert (op0, NULL_PTR, op0_hash_code, mode);
+	  op0_elt = insert (op0, NULL_PTR, op0_hash, mode);
 	  op0_elt->in_memory = op0_in_memory;
 	  op0_elt->in_struct = op0_in_struct;
 	}
@@ -5750,7 +5745,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
       if (GET_CODE (op1) == REG)
 	{
 	  /* Look it up again--in case op0 and op1 are the same.  */
-	  op1_elt = lookup (op1, op1_hash_code, mode);
+	  op1_elt = lookup (op1, op1_hash, mode);
 
 	  /* Put OP1 in the hash table so it gets a new quantity number.  */
 	  if (op1_elt == 0)
@@ -5758,10 +5753,10 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 	      if (insert_regs (op1, NULL_PTR, 0))
 		{
 		  rehash_using_reg (op1);
-		  op1_hash_code = HASH (op1, mode);
+		  op1_hash = HASH (op1, mode);
 		}
 
-	      op1_elt = insert (op1, NULL_PTR, op1_hash_code, mode);
+	      op1_elt = insert (op1, NULL_PTR, op1_hash, mode);
 	      op1_elt->in_memory = op1_in_memory;
 	      op1_elt->in_struct = op1_in_struct;
 	    }
@@ -5786,10 +5781,10 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
       if (insert_regs (op0, NULL_PTR, 0))
 	{
 	  rehash_using_reg (op0);
-	  op0_hash_code = HASH (op0, mode);
+	  op0_hash = HASH (op0, mode);
 	}
 
-      op0_elt = insert (op0, NULL_PTR, op0_hash_code, mode);
+      op0_elt = insert (op0, NULL_PTR, op0_hash, mode);
       op0_elt->in_memory = op0_in_memory;
       op0_elt->in_struct = op0_in_struct;
     }
@@ -5799,10 +5794,10 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
       if (insert_regs (op1, NULL_PTR, 0))
 	{
 	  rehash_using_reg (op1);
-	  op1_hash_code = HASH (op1, mode);
+	  op1_hash = HASH (op1, mode);
 	}
 
-      op1_elt = insert (op1, NULL_PTR, op1_hash_code, mode);
+      op1_elt = insert (op1, NULL_PTR, op1_hash, mode);
       op1_elt->in_memory = op1_in_memory;
       op1_elt->in_struct = op1_in_struct;
     }
@@ -5830,10 +5825,10 @@ struct set
   rtx src;
   /* The hash-table element for the SET_SRC of the SET.  */
   struct table_elt *src_elt;
-  /* Hash code for the SET_SRC.  */
-  int src_hash_code;
-  /* Hash code for the SET_DEST.  */
-  int dest_hash_code;
+  /* Hash value for the SET_SRC.  */
+  unsigned src_hash;
+  /* Hash value for the SET_DEST.  */
+  unsigned dest_hash;
   /* The SET_DEST, with SUBREG, etc., stripped.  */
   rtx inner_dest;
   /* Place where the pointer to the INNER_DEST was found.  */
@@ -5849,8 +5844,8 @@ struct set
   enum machine_mode mode;
   /* A constant equivalent for SET_SRC, if any.  */
   rtx src_const;
-  /* Hash code of constant equivalent for SET_SRC.  */
-  int src_const_hash_code;
+  /* Hash value of constant equivalent for SET_SRC.  */
+  unsigned src_const_hash;
   /* Table entry for constant equivalent for SET_SRC, if any.  */
   struct table_elt *src_const_elt;
 };
@@ -5876,7 +5871,7 @@ cse_insn (insn, in_libcall_block)
   int src_eqv_volatile;
   int src_eqv_in_memory;
   int src_eqv_in_struct;
-  int src_eqv_hash_code;
+  unsigned src_eqv_hash;
 
   struct set *sets;
 
@@ -6124,12 +6119,12 @@ cse_insn (insn, in_libcall_block)
 	  hash_arg_in_memory = 0;
 	  hash_arg_in_struct = 0;
 	  src_eqv = fold_rtx (src_eqv, insn);
-	  src_eqv_hash_code = HASH (src_eqv, eqvmode);
+	  src_eqv_hash = HASH (src_eqv, eqvmode);
 
 	  /* Find the equivalence class for the equivalent expression.  */
 
 	  if (!do_not_record)
-	    src_eqv_elt = lookup (src_eqv, src_eqv_hash_code, eqvmode);
+	    src_eqv_elt = lookup (src_eqv, src_eqv_hash, eqvmode);
 
 	  src_eqv_volatile = do_not_record;
 	  src_eqv_in_memory = hash_arg_in_memory;
@@ -6172,7 +6167,7 @@ cse_insn (insn, in_libcall_block)
       hash_arg_in_struct = 0;
 
       sets[i].src = src;
-      sets[i].src_hash_code = HASH (src, mode);
+      sets[i].src_hash = HASH (src, mode);
       sets[i].src_volatile = do_not_record;
       sets[i].src_in_memory = hash_arg_in_memory;
       sets[i].src_in_struct = hash_arg_in_struct;
@@ -6208,7 +6203,7 @@ cse_insn (insn, in_libcall_block)
          REG_NOTE.  */
 
       if (!sets[i].src_volatile)
-	elt = lookup (src, sets[i].src_hash_code, mode);
+	elt = lookup (src, sets[i].src_hash, mode);
 
       sets[i].src_elt = elt;
 
@@ -6219,8 +6214,8 @@ cse_insn (insn, in_libcall_block)
 	      /* The REG_EQUAL is indicating that two formerly distinct
 		 classes are now equivalent.  So merge them.  */
 	      merge_equiv_classes (elt, src_eqv_elt);
-	      src_eqv_hash_code = HASH (src_eqv, elt->mode);
-	      src_eqv_elt = lookup (src_eqv, src_eqv_hash_code, elt->mode);
+	      src_eqv_hash = HASH (src_eqv, elt->mode);
+	      src_eqv_elt = lookup (src_eqv, src_eqv_hash, elt->mode);
 	    }
 
           src_eqv_here = 0;
@@ -6232,7 +6227,7 @@ cse_insn (insn, in_libcall_block)
       /* Try to find a constant somewhere and record it in `src_const'.
 	 Record its table element, if any, in `src_const_elt'.  Look in
 	 any known equivalences first.  (If the constant is not in the
-	 table, also set `sets[i].src_const_hash_code').  */
+	 table, also set `sets[i].src_const_hash').  */
       if (elt)
         for (p = elt->first_same_value; p; p = p->next_same_value)
 	  if (p->is_const)
@@ -6258,9 +6253,8 @@ cse_insn (insn, in_libcall_block)
 	 hash code and look it up.  */
       if (src_const && src_const_elt == 0)
 	{
-	  sets[i].src_const_hash_code = HASH (src_const, mode);
-	  src_const_elt = lookup (src_const, sets[i].src_const_hash_code,
-				  mode);
+	  sets[i].src_const_hash = HASH (src_const, mode);
+	  src_const_elt = lookup (src_const, sets[i].src_const_hash, mode);
 	}
 
       sets[i].src_const = src_const;
@@ -6607,11 +6601,11 @@ cse_insn (insn, in_libcall_block)
           hash_arg_in_memory = 0;
           hash_arg_in_struct = 0;
 	  sets[i].src = src;
-          sets[i].src_hash_code = HASH (src, mode);
+          sets[i].src_hash = HASH (src, mode);
           sets[i].src_volatile = do_not_record;
           sets[i].src_in_memory = hash_arg_in_memory;
           sets[i].src_in_struct = hash_arg_in_struct;
-          sets[i].src_elt = lookup (src, sets[i].src_hash_code, mode);
+          sets[i].src_elt = lookup (src, sets[i].src_hash, mode);
         }
 
       /* If this is a single SET, we are setting a register, and we have an
@@ -6694,7 +6688,7 @@ cse_insn (insn, in_libcall_block)
 	 before the effects of this instruction are recorded,
 	 since the register values used in the address computation
 	 are those before this instruction.  */
-      sets[i].dest_hash_code = HASH (dest, mode);
+      sets[i].dest_hash = HASH (dest, mode);
 
       /* Don't enter a bit-field in the hash table
 	 because the value in it after the store
@@ -6818,7 +6812,7 @@ cse_insn (insn, in_libcall_block)
 	}
 
       if (sets[i].rtl != 0 && dest != SET_DEST (sets[i].rtl))
-	sets[i].dest_hash_code = HASH (SET_DEST (sets[i].rtl), mode);
+	sets[i].dest_hash = HASH (SET_DEST (sets[i].rtl), mode);
 
 #ifdef HAVE_cc0
       /* If setting CC0, record what it was set to, or a constant, if it
@@ -6859,8 +6853,8 @@ cse_insn (insn, in_libcall_block)
 	  classp = 0;
 	}
       if (insert_regs (src_eqv, classp, 0))
-	src_eqv_hash_code = HASH (src_eqv, eqvmode);
-      elt = insert (src_eqv, classp, src_eqv_hash_code, eqvmode);
+	src_eqv_hash = HASH (src_eqv, eqvmode);
+      elt = insert (src_eqv, classp, src_eqv_hash, eqvmode);
       elt->in_memory = src_eqv_in_memory;
       elt->in_struct = src_eqv_in_struct;
       src_eqv_elt = elt;
@@ -6886,7 +6880,7 @@ cse_insn (insn, in_libcall_block)
 	       This is a more interesting equivalence, so we arrange later
 	       to treat the entire reg as the destination.  */
 	    sets[i].src_elt = src_eqv_elt;
-	    sets[i].src_hash_code = src_eqv_hash_code;
+	    sets[i].src_hash = src_eqv_hash;
 	  }
 	else
 	  {
@@ -6906,8 +6900,8 @@ cse_insn (insn, in_libcall_block)
 		   any of the src_elt's, because they would have failed to
 		   match if not still valid.  */
 		if (insert_regs (src, classp, 0))
-		  sets[i].src_hash_code = HASH (src, mode);
-		elt = insert (src, classp, sets[i].src_hash_code, mode);
+		  sets[i].src_hash = HASH (src, mode);
+		elt = insert (src, classp, sets[i].src_hash, mode);
 		elt->in_memory = sets[i].src_in_memory;
 		elt->in_struct = sets[i].src_in_struct;
 		sets[i].src_elt = classp = elt;
@@ -6917,7 +6911,7 @@ cse_insn (insn, in_libcall_block)
 		&& src != sets[i].src_const
 		&& ! rtx_equal_p (sets[i].src_const, src))
 	      sets[i].src_elt = insert (sets[i].src_const, classp,
-					sets[i].src_const_hash_code, mode);
+					sets[i].src_const_hash, mode);
 	  }
       }
     else if (sets[i].src_elt == 0)
@@ -7030,10 +7024,10 @@ cse_insn (insn, in_libcall_block)
 	  if (insert_regs (dest, sets[i].src_elt, 1))
 	    /* If `insert_regs' changes something, the hash code must be
 	       recalculated.  */
-	    sets[i].dest_hash_code = HASH (dest, GET_MODE (dest));
+	    sets[i].dest_hash = HASH (dest, GET_MODE (dest));
 
 	elt = insert (dest, sets[i].src_elt,
-		      sets[i].dest_hash_code, GET_MODE (dest));
+		      sets[i].dest_hash, GET_MODE (dest));
 	elt->in_memory = GET_CODE (sets[i].inner_dest) == MEM;
 	if (elt->in_memory)
 	  {
@@ -7073,7 +7067,7 @@ cse_insn (insn, in_libcall_block)
 		 elt = elt->next_same_value)
 	      {
 		rtx new_src = 0;
-		int src_hash;
+		unsigned src_hash;
 		struct table_elt *src_elt;
 
 		/* Ignore invalid entries.  */
