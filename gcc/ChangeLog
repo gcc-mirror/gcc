@@ -1,3 +1,12 @@
+2003-03-04  Tom Tromey  <tromey@redhat.com>
+
+	* doc/sourcebuild.texi (Front End Directory): Document tags.
+	* configure: Rebuilt.
+	* configure.in (target_list): Added tags.
+	* Makefile.in (TAGS): Depend on lang.clean.  Include subdirectory
+	TAGS files by reference.
+	* objc/Make-lang.in (objc.tags): New target.
+
 2003-03-04  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcov-io.h (gcov_save_position, gcov_reserve_length, gcov_resync,

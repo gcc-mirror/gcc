@@ -101,6 +101,9 @@ objc.all.cross:
 objc.start.encap:
 objc.rest.encap:
 
+objc.tags: force
+	cd $(srcdir)/objc; etags *.y *.c *.h
+
 objc.info:
 objc.dvi:
 objc.generated-manpages:
