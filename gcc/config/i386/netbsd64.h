@@ -24,8 +24,6 @@ Boston, MA 02111-1307, USA.  */
   do						\
     {						\
       NETBSD_OS_CPP_BUILTINS_ELF();		\
-      if (TARGET_64BIT)				\
-	NETBSD_OS_CPP_BUILTINS_LP64();		\
     }						\
   while (0)
 
