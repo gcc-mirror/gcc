@@ -2196,167 +2196,6 @@ gen_conditional_move (operands)
 			       operands[3])));
 }
 
-#if 0
-/* Internal code to generate the load and store of one word/short/byte.
-   The load is emitted directly, and the store insn is returned.  */
-
-#define UNITS_PER_MIPS_DWORD	8
-#define UNITS_PER_MIPS_WORD	4
-#define UNITS_PER_MIPS_HWORD	2
-
-static rtx
-block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align, orig_src)
-     rtx src_reg;		/* register holding source memory address */
-     rtx dest_reg;		/* register holding dest. memory address */
-     int *p_bytes;		/* pointer to # bytes remaining */
-     int *p_offset;		/* pointer to current offset */
-     int align;			/* alignment */
-     rtx orig_src;		/* original source for making a reg note */
-{
-  int bytes;			/* # bytes remaining */
-  int offset;			/* offset to use */
-  int size;			/* size in bytes of load/store */
-  enum machine_mode mode;	/* mode to use for load/store */
-  rtx reg;			/* temporary register */
-  rtx src_addr;			/* source address */
-  rtx dest_addr;		/* destination address */
-  rtx insn;			/* insn of the load */
-  rtx orig_src_addr;		/* original source address */
-  rtx (*load_func)();		/* function to generate load insn */
-  rtx (*store_func)();		/* function to generate destination insn */
-
-  bytes = *p_bytes;
-  if (bytes <= 0 || align <= 0)
-    abort ();
-
-  if (bytes >= UNITS_PER_MIPS_DWORD && align >= UNIS_PER_MIPS_DWORD)
-    {
-      mode = DImode;
-      size = UNITS_PER_MIPS_DWORD;
-      load_func = gen_movdi;
-      store_func = gen_movdi;
-    }
-  else if (bytes >= UNITS_PER_MIPS_WORD && align >= UNITS_PER_MIPS_WORD)
-    {
-      mode = SImode;
-      size = UNITS_PER_MIPS_WORD;
-      load_func = gen_movsi;
-      store_func = gen_movsi;
-    }
-
-#if 0
-  /* Don't generate unaligned moves here, rather defer those to the
-     general movestrsi_internal pattern.
-     If this gets commented back in, then should add the dword equivalent.  */
-  else if (bytes >= UNITS_PER_MIPS_WORD)
-    {
-      mode = SImode;
-      size = UNITS_PER_MIPS_WORD;
-      load_func = gen_movsi_ulw;
-      store_func = gen_movsi_usw;
-    }
-#endif
-
-  else if (bytes >= UNITS_PER_MIPS_SHORT && align >= UNITS_PER_MIPS_SHORT)
-    {
-      mode = HImode;
-      size = UNITS_PER_MIPS_SHORT;
-      load_func = gen_movhi;
-      store_func = gen_movhi;
-    }
-
-  else
-    {
-      mode = QImode;
-      size = 1;
-      load_func = gen_movqi;
-      store_func = gen_movqi;
-    }
-
-  offset = *p_offset;
-  *p_offset = offset + size;
-  *p_bytes = bytes - size;
-
-  if (offset == 0)
-    {
-      src_addr  = src_reg;
-      dest_addr = dest_reg;
-    }
-  else
-    {
-      src_addr  = gen_rtx (PLUS, Pmode, src_reg,  GEN_INT (offset));
-      dest_addr = gen_rtx (PLUS, Pmode, dest_reg, GEN_INT (offset));
-    }
-
-  reg = gen_reg_rtx (mode);
-  insn = emit_insn ((*load_func) (reg, gen_rtx (MEM, mode, src_addr)));
-  orig_src_addr = XEXP (orig_src, 0);
-  if (CONSTANT_P (orig_src_addr))
-    REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUIV,
-				plus_constant (orig_src_addr, offset),
-				REG_NOTES (insn));
-
-  return (*store_func) (gen_rtx (MEM, mode, dest_addr), reg);
-}
-#endif
-
-
-/* Write a series of loads/stores to move some bytes.  Generate load/stores as follows:
-
-   load  1
-   load  2
-   load  3
-   store 1
-   load  4
-   store 2
-   load  5
-   store 3
-   ...
-
-   This way, no NOP's are needed, except at the end, and only
-   two temp registers are needed.  Two delay slots are used
-   in deference to the R4000.  */
-
-#if 0
-static void
-block_move_sequence (dest_reg, src_reg, bytes, align, orig_src)
-     rtx dest_reg;		/* register holding destination address */
-     rtx src_reg;		/* register holding source address */
-     int bytes;			/* # bytes to move */
-     int align;			/* max alignment to assume */
-     rtx orig_src;		/* original source for making a reg note */
-{
-  int offset		= 0;
-  rtx prev2_store	= (rtx)0;
-  rtx prev_store	= (rtx)0;
-  rtx cur_store		= (rtx)0;
-
-  while (bytes > 0)
-    {
-      /* Is there a store to do? */
-      if (prev2_store)
-	emit_insn (prev2_store);
-
-      prev2_store = prev_store;
-      prev_store = cur_store;
-      cur_store = block_move_load_store (dest_reg, src_reg,
-					 &bytes, &offset,
-					 align, orig_src);
-    }
-
-  /* Finish up last three stores.  */
-  if (prev2_store)
-    emit_insn (prev2_store);
-
-  if (prev_store)
-    emit_insn (prev_store);
-
-  if (cur_store)
-    emit_insn (cur_store);
-}
-#endif
-
-
 /* Write a loop to move a constant number of bytes.  Generate load/stores as follows:
 
    do {
@@ -2382,18 +2221,17 @@ block_move_sequence (dest_reg, src_reg, bytes, align, orig_src)
 #define MAX_MOVE_REGS 4
 #define MAX_MOVE_BYTES (MAX_MOVE_REGS * UNITS_PER_WORD)
 
-/* ??? Should add code to use DWORD load/stores.  */
-
 static void
-block_move_loop (dest_reg, src_reg, bytes, align, orig_src)
+block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src)
      rtx dest_reg;		/* register holding destination address */
      rtx src_reg;		/* register holding source address */
      int bytes;			/* # bytes to move */
      int align;			/* alignment */
+     rtx orig_dest;		/* original dest for change_address */
      rtx orig_src;		/* original source for making a reg note */
 {
-  rtx dest_mem		= gen_rtx (MEM, BLKmode, dest_reg);
-  rtx src_mem		= gen_rtx (MEM, BLKmode, src_reg);
+  rtx dest_mem		= change_address (orig_dest, BLKmode, dest_reg);
+  rtx src_mem		= change_address (orig_src, BLKmode, src_reg);
   rtx align_rtx		= GEN_INT (align);
   rtx label;
   rtx final_src;
@@ -2454,7 +2292,6 @@ block_move_loop (dest_reg, src_reg, bytes, align, orig_src)
 				      GEN_INT (leftover),
 				      align_rtx));
 }
-
 
 /* Use a library function to move some bytes.  */
 
@@ -2508,6 +2345,7 @@ expand_block_move (operands)
   int bytes	= (constp ? INTVAL (bytes_rtx) : 0);
   int align	= INTVAL (align_rtx);
   rtx orig_src	= operands[1];
+  rtx orig_dest	= operands[0];
   rtx src_reg;
   rtx dest_reg;
 
@@ -2518,26 +2356,21 @@ expand_block_move (operands)
     align = UNITS_PER_WORD;
 
   /* Move the address into scratch registers.  */
-  dest_reg = copy_addr_to_reg (XEXP (operands[0], 0));
+  dest_reg = copy_addr_to_reg (XEXP (orig_dest, 0));
   src_reg  = copy_addr_to_reg (XEXP (orig_src, 0));
 
   if (TARGET_MEMCPY)
     block_move_call (dest_reg, src_reg, bytes_rtx);
 
-#if 0
-  else if (constp && bytes <= 3*align)
-    block_move_sequence (dest_reg, src_reg, bytes, align, orig_src);
-#endif
-
   else if (constp && bytes <= 2*MAX_MOVE_BYTES)
-    emit_insn (gen_movstrsi_internal (change_address (operands[0],
-						      BLKmode, dest_reg),
+    emit_insn (gen_movstrsi_internal (change_address (orig_dest, BLKmode,
+						      dest_reg),
 				      change_address (orig_src, BLKmode,
 						      src_reg),
 				      bytes_rtx, align_rtx));
 
   else if (constp && align >= UNITS_PER_WORD && optimize)
-    block_move_loop (dest_reg, src_reg, bytes, align, orig_src);
+    block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src);
 
   else if (constp && optimize)
     {
@@ -2567,29 +2400,24 @@ expand_block_move (operands)
       emit_jump_insn (gen_beq (aligned_label));
 
       /* Unaligned loop.  */
-      block_move_loop (dest_reg, src_reg, bytes, 1, orig_src);
+      block_move_loop (dest_reg, src_reg, bytes, 1, orig_dest, orig_src);
       emit_jump_insn (gen_jump (join_label));
       emit_barrier ();
 
       /* Aligned loop.  */
       emit_label (aligned_label);
-      block_move_loop (dest_reg, src_reg, bytes, UNITS_PER_WORD, orig_src);
+      block_move_loop (dest_reg, src_reg, bytes, UNITS_PER_WORD, orig_dest,
+		       orig_src);
       emit_label (join_label);
 
       /* Bytes at the end of the loop.  */
       if (leftover)
-	{
-#if 0
-	  if (leftover <= 3*align)
-	    block_move_sequence (dest_reg, src_reg, leftover, align, orig_src);
-
-	  else
-#endif
-	    emit_insn (gen_movstrsi_internal (gen_rtx (MEM, BLKmode, dest_reg),
-					      gen_rtx (MEM, BLKmode, src_reg),
-					      GEN_INT (leftover),
-					      GEN_INT (align)));
-	}
+	emit_insn (gen_movstrsi_internal (change_address (orig_dest, BLKmode,
+							  dest_reg),
+					  change_address (orig_src, BLKmode,
+							  src_reg),
+					  GEN_INT (leftover),
+					  GEN_INT (align)));
     }
 
   else
