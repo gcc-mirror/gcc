@@ -1,3 +1,8 @@
+2004-10-08  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/sysv4.h (STARTFILE_LINUX_SPEC): Choose gcrt1.o
+	for -profile as well as -p and -pg.
+
 2004-10-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* libgcc2.c (__moddi3): Cast &w to UDWtype*.
