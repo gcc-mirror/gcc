@@ -2765,6 +2765,16 @@ expand_assignment (to, from, want_value, suggest_reg)
   if (to_rtx == 0)
     to_rtx = expand_expr (to, NULL_RTX, VOIDmode, 0);
 
+  /* Don't move directly into a return register.  */
+  if (TREE_CODE (to) == RESULT_DECL && GET_CODE (to_rtx) == REG)
+    {
+      rtx temp = expand_expr (from, 0, VOIDmode, 0);
+      emit_move_insn (to_rtx, temp);
+      preserve_temp_slots (to_rtx);
+      free_temp_slots ();
+      return to_rtx;
+    }
+
   /* In case we are returning the contents of an object which overlaps
      the place the value is being stored, use a safe function when copying
      a value through a pointer into a structure value return block.  */
