@@ -1410,6 +1410,77 @@ if test x"$gcc_cv_as_leb128" = xyes; then
 fi
 AC_MSG_RESULT($gcc_cv_as_leb128)
 
+AC_MSG_CHECKING(assembler eh_frame optimization)
+gcc_cv_as_eh_frame=no
+if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
+  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 12 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
+    gcc_cv_as_eh_frame="yes"
+  fi
+elif test x$gcc_cv_as != x; then
+	# Check if this is GAS.
+	as_ver=`$gcc_cv_as --version 2>/dev/null | head -1`
+	if echo "$as_ver" | grep GNU > /dev/null; then
+		# Versions up to and including 2.11.0 may mis-optimize
+		# .eh_frame data.  Try something.
+		cat > conftest.s <<EOF
+	.text
+.LFB1:
+	.4byte	0
+.L1:
+	.4byte	0
+.LFE1:
+	.section	.eh_frame,"aw",@progbits
+__FRAME_BEGIN__:
+	.4byte	.LECIE1-.LSCIE1
+.LSCIE1:
+	.4byte	0x0
+	.byte	0x1
+	.ascii "z\0"
+	.byte	0x1
+	.byte	0x78
+	.byte	0x1a
+	.byte	0x0
+	.byte	0x4
+	.4byte	1
+	.p2align 1
+.LECIE1:
+.LSFDE1:
+	.4byte	.LEFDE1-.LASFDE1
+.LASFDE1:
+	.4byte	.LASFDE1-__FRAME_BEGIN__
+	.4byte	.LFB1
+	.4byte	.LFE1-.LFB1
+	.byte	0x4
+	.4byte	.LFE1-.LFB1
+	.byte	0x4
+	.4byte	.L1-.LFB1
+.LEFDE1:
+EOF
+		cat > conftest.exp <<EOF
+ 0000 10000000 00000000 017a0001 781a0004  .........z..x...
+ 0010 01000000 12000000 18000000 00000000  ................
+ 0020 08000000 04080000 0044               .........D      
+EOF
+		# If the assembler didn't choke, and we can objdump,
+		# and we got the correct data, then succeed.
+		if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
+		   && objdump -s -j .eh_frame conftest.o 2>/dev/null \
+		      | tail -3 > conftest.got \
+		   && cmp conftest.exp conftest.got > /dev/null 2>&1
+		then
+			gcc_cv_as_eh_frame="yes"
+		else
+			gcc_cv_as_eh_frame="bad"
+			if $gcc_cv_as -o conftest.o --traditional-format /dev/null; then
+				AC_DEFINE(USE_AS_TRADITIONAL_FORMAT, 1,
+	[Define if your assembler mis-optimizes .eh_frame data.])
+			fi
+		fi
+	fi
+	rm -f conftest.*
+fi
+AC_MSG_RESULT($gcc_cv_as_eh_frame)
+
 case "$target" in 
   sparc*-*-*)
     AC_CACHE_CHECK([assembler .register pseudo-op support],

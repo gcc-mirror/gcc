@@ -1454,6 +1454,15 @@ init_spec ()
     libgcc_spec = obstack_finish (&obstack);
   }
 #endif
+#ifdef USE_AS_TRADITIONAL_FORMAT
+  /* Prepend "--traditional-format" to whatever asm_spec we had before.  */
+  {
+    static char tf[] = "--traditional-format ";
+    obstack_grow (&obstack, tf, sizeof(tf) - 1);
+    obstack_grow0 (&obstack, asm_spec, strlen (asm_spec));
+    asm_spec = obstack_finish (&obstack);
+  }
+#endif
 
   specs = sl;
 }
