@@ -589,6 +589,7 @@ chill_convert_for_assignment (type, expr, place)
 		}
 	    }
 	}
+      result = copy_node (result);
       TREE_OPERAND (result, 1) = nreverse (new_list);
       TREE_TYPE (result) = build_bitstring_type (TYPE_SIZE (type));
     }
