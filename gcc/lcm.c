@@ -255,7 +255,7 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
 
   /* Initialize a mapping from each edge to its index.  */
   for (i = 0; i < num_edges; i++)
-    INDEX_EDGE (edge_list, i)->aux = (void *)i;
+    INDEX_EDGE (edge_list, i)->aux = (void *) (size_t) i;
 
   /* We want a maximal solution, so initially consider LATER true for
      all edges.  This allows propagation through a loop since the incoming
@@ -296,13 +296,13 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
       bb = b->index;
       sbitmap_ones (laterin[bb]);
       for (e = b->pred; e != NULL; e = e->pred_next)
-	sbitmap_a_and_b (laterin[bb], laterin[bb], later[(int)e->aux]);
+	sbitmap_a_and_b (laterin[bb], laterin[bb], later[(size_t)e->aux]);
 
       /* Calculate LATER for all outgoing edges.  */
       for (e = b->succ; e != NULL; e = e->succ_next)
 	{
-	  if (sbitmap_union_of_diff (later[(int)e->aux],
-				     earliest[(int)e->aux],
+	  if (sbitmap_union_of_diff (later[(size_t) e->aux],
+				     earliest[(size_t) e->aux],
 				     laterin[e->src->index],
 				     antloc[e->src->index]))
 	    {
@@ -324,7 +324,7 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
   for (e = EXIT_BLOCK_PTR->pred; e != NULL; e = e->pred_next)
     sbitmap_a_and_b (laterin[n_basic_blocks],
 		     laterin[n_basic_blocks],
-		     later[(int)e->aux]);
+		     later[(size_t) e->aux]);
 
   free (tos);
 }
@@ -600,7 +600,7 @@ compute_nearerout (edge_list, farthest, st_avloc, nearer, nearerout)
   /* Initialize NEARER for each edge and build a mapping from an edge to
      its index.  */
   for (i = 0; i < num_edges; i++)
-    INDEX_EDGE (edge_list, i)->aux = (void *)i;
+    INDEX_EDGE (edge_list, i)->aux = (void *) (size_t) i;
 
   /* We want a maximal solution.  */
   sbitmap_vector_ones (nearer, num_edges);
@@ -632,13 +632,14 @@ compute_nearerout (edge_list, farthest, st_avloc, nearer, nearerout)
       bb = b->index;
       sbitmap_ones (nearerout[bb]);
       for (e = b->succ; e != NULL; e = e->succ_next)
-	sbitmap_a_and_b (nearerout[bb], nearerout[bb], nearer[(int)e->aux]);
+	sbitmap_a_and_b (nearerout[bb], nearerout[bb],
+			 nearer[(size_t) e->aux]);
 
       /* Calculate NEARER for all incoming edges.  */
       for (e = b->pred; e != NULL; e = e->pred_next)
 	{
-	  if (sbitmap_union_of_diff (nearer[(int)e->aux],
-				     farthest[(int)e->aux],
+	  if (sbitmap_union_of_diff (nearer[(size_t) e->aux],
+				     farthest[(size_t) e->aux],
 				     nearerout[e->dest->index],
 				     st_avloc[e->dest->index]))
 	    {
@@ -660,7 +661,7 @@ compute_nearerout (edge_list, farthest, st_avloc, nearer, nearerout)
   for (e = ENTRY_BLOCK_PTR->succ; e != NULL; e = e->succ_next)
     sbitmap_a_and_b (nearerout[n_basic_blocks],
 		     nearerout[n_basic_blocks],
-		     nearer[(int)e->aux]);
+		     nearer[(size_t) e->aux]);
 
   free (tos);
 }

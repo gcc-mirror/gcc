@@ -182,14 +182,14 @@ typedef struct ggc_statistics
   /* The Ith element is the number of bytes allocated by nodes with 
      code I.  */
   size_t size_rtxs[256];
-  /* The total number of tree nodes allocated.  */
-  unsigned total_num_trees;
   /* The total size of the tree nodes allocated.  */
   size_t total_size_trees;
-  /* The total number of RTL nodes allocated.  */
-  unsigned total_num_rtxs;
   /* The total size of the RTL nodes allocated.  */
   size_t total_size_rtxs;
+  /* The total number of tree nodes allocated.  */
+  unsigned total_num_trees;
+  /* The total number of RTL nodes allocated.  */
+  unsigned total_num_rtxs;
 } ggc_statistics;
 
 /* Return the number of bytes allocated at the indicated address.  */
