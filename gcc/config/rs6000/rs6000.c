@@ -1303,7 +1303,9 @@ rs6000_override_options (const char *default_cpu)
     {
       rs6000_darwin64_abi = 1;
       /* Setting to empty string is same as "-mone-byte-bool".  */
+#if TARGET_MACHO
       darwin_one_byte_bool = "";
+#endif
     }
 
   /* Handle -mabi= options.  */
