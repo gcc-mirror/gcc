@@ -1,3 +1,7 @@
+2003-03-03  James E Wilson  <wilson@tuliptree.org>
+
+	* gcc.dg/m68k-slp-ice.c: New test for PR c/7872.
+
 2003-03-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9878
