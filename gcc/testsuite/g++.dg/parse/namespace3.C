@@ -1,6 +1,6 @@
 /* PR c+/3816 */
 /* { dg-do compile } */
-namespace A {};
+namespace A {}
  
 namespace OtherNamespace {
  
@@ -8,5 +8,5 @@ namespace OtherNamespace {
      int member;
    } A; // used to conflict with A namespace
  
-}; // end of namespace
+} // end of namespace
  
