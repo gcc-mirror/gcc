@@ -1,3 +1,8 @@
+2000-01-07  Matt Austern <austern@sgi.com>
+
+	* fold-const.c (real_hex_to_f): Remove duplicate declaration of
+	expon.
+
 Fri Jan  7 01:55:34 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (crtend.o): Pass @inhibit_libc@ to compilation of
