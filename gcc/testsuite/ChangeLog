@@ -1,3 +1,7 @@
+1999-08-26  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/noncompile/970626-2.f: New test.
+
 1999-08-25  Paul Burchard  <burchard@pobox.com>
 
 	* g++.old-deja/g++.pt/lss-001.C, lss-002.C, lss-003.C, lss-004.C,
