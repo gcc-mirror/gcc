@@ -96,7 +96,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef  SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL	CM_MEDLOW
 
-#define TRANSFER_FROM_TRAMPOLINE					\
+#define ENABLE_EXECUTE_STACK						\
   static int need_enable_exec_stack;					\
   static void check_enabling(void) __attribute__ ((constructor));	\
   static void check_enabling(void)					\

@@ -120,6 +120,6 @@ Boston, MA 02111-1307, USA.  */
 #define DEFAULT_PCC_STRUCT_RETURN 1
 
 /* Attempt to enable execute permissions on the stack.  */
-#define TRANSFER_FROM_TRAMPOLINE NETBSD_ENABLE_EXECUTE_STACK
+#define ENABLE_EXECUTE_STACK NETBSD_ENABLE_EXECUTE_STACK
 
 #define TARGET_VERSION fprintf (stderr, " (NetBSD/i386 ELF)");
