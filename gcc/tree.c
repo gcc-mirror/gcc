@@ -319,12 +319,13 @@ save_tree_status (p)
   p->saveable_obstack = saveable_obstack;
   p->rtl_obstack = rtl_obstack;
 
+  /* Objects that need to be saved in this function can be in the nonsaved
+     obstack of the enclosing function since they can't possibly be needed
+     once it has returned.  */
+  function_maybepermanent_obstack = function_obstack;
+
   function_obstack = (struct obstack *) xmalloc (sizeof (struct obstack));
   gcc_obstack_init (function_obstack);
-
-  function_maybepermanent_obstack
-    = (struct obstack *) xmalloc (sizeof (struct obstack));
-  gcc_obstack_init (function_maybepermanent_obstack);
 
   current_obstack = &permanent_obstack;
   expression_obstack = &permanent_obstack;
@@ -346,8 +347,17 @@ restore_tree_status (p)
   momentary_stack = p->momentary_stack;
 
   obstack_free (&momentary_obstack, momentary_firstobj);
+
+  /* Free saveable storage used by the function just compiled and not
+     saved.
+
+     CAUTION: This is in function_obstack of the containing function.  So
+     we must be sure that we never allocate from that obstack during
+     the compilation of a nested function if we expect it to survive past the
+     nested function's end.  */
+  obstack_free (function_maybepermanent_obstack, maybepermanent_firstobj);
+
   obstack_free (function_obstack, 0);
-  obstack_free (function_maybepermanent_obstack, 0);
   free (function_obstack);
 
   momentary_firstobj = p->momentary_firstobj;
@@ -813,8 +823,11 @@ make_node (code)
 	 PARM_DECLs of top-level functions do not have this problem.  However,
 	 we allocate them where we put the FUNCTION_DECL for languauges such as
 	 Ada that need to consult some flags in the PARM_DECLs of the function
-	 when calling it.  */
-      else if (code == PARM_DECL && obstack != &permanent_obstack)
+	 when calling it. 
+
+	 See comment in restore_tree_status for why we can't put this
+	 in function_obstack.  */
+      if (code == PARM_DECL && obstack != &permanent_obstack)
 	{
 	  tree context = 0;
 	  if (current_function_decl)
@@ -822,7 +835,7 @@ make_node (code)
 
 	  if (context)
 	    obstack
-	      = find_function_data (context)->function_obstack;
+	      = find_function_data (context)->function_maybepermanent_obstack;
 	}
       break;
 
