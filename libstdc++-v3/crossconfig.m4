@@ -4,6 +4,44 @@ dnl
 
 # Base decisions on target environment.
 case "${host}" in
+  *-darwin*)
+    # Darwin versions vary, but the linker should work in a cross environment,
+    # so we just check for all the features here.
+    # Check for available headers.
+    AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h machine/endian.h \
+    machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h gconv.h \
+    sys/types.h])
+
+    GLIBCXX_CHECK_COMPILER_FEATURES
+    # Don't call GLIBCXX_CHECK_LINKER_FEATURES, Darwin doesn't have a GNU ld
+    GLIBCXX_CHECK_MATH_SUPPORT
+    GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
+    GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
+    GLIBCXX_CHECK_WCHAR_T_SUPPORT
+    GLIBCXX_CHECK_STDLIB_SUPPORT
+
+    # For showmanyc_helper().
+    AC_CHECK_HEADERS(sys/ioctl.h sys/filio.h)
+    GLIBCXX_CHECK_POLL
+    GLIBCXX_CHECK_S_ISREG_OR_S_IFREG
+
+    # For xsputn_2().
+    AC_CHECK_HEADERS(sys/uio.h)
+    GLIBCXX_CHECK_WRITEV
+
+    AC_DEFINE(HAVE_LC_MESSAGES)
+
+    AC_TRY_COMPILE(
+      [#include <setjmp.h>],
+      [sigjmp_buf env;
+       while (! sigsetjmp (env, 1))
+         siglongjmp (env, 1);
+    ],
+    [AC_DEFINE(HAVE_SIGSETJMP, 1, [Define if sigsetjmp is available.])])
+
+    AC_DEFINE(HAVE_MMAP)
+    ;;
+
   *-freebsd*)
     #os_include_dir="os/bsd/freebsd"
     AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
