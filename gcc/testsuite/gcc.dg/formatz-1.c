@@ -12,7 +12,7 @@ size_t
 foo (void)
 {
   size_t t;
-  scanf ("%zu", &t); /* { dg-bogus "length character|format" "bogus scanf warning" } */
+  scanf ("%zu", &t); /* { dg-bogus "length|format" "bogus scanf warning" } */
   return t;
 }
 

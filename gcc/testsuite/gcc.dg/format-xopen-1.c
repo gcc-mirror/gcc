@@ -25,14 +25,14 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   printf ("%C", lc);
   printf ("%3C", lc);
   printf ("%.3C", lc); /* { dg-warning "precision" "precision with %C" } */
-  printf ("%hC", lc); /* { dg-warning "length character" "bad %hC" } */
-  printf ("%hhC", lc); /* { dg-warning "length character" "bad %hhC" } */
-  printf ("%lC", lc); /* { dg-warning "length character" "bad %lC" } */
-  printf ("%llC", lc); /* { dg-warning "length character" "bad %llC" } */
-  printf ("%jC", lc); /* { dg-warning "length character" "bad %jC" } */
-  printf ("%zC", lc); /* { dg-warning "length character" "bad %zC" } */
-  printf ("%tC", lc); /* { dg-warning "length character" "bad %tC" } */
-  printf ("%LC", lc); /* { dg-warning "length character" "bad %LC" } */
+  printf ("%hC", lc); /* { dg-warning "length" "bad %hC" } */
+  printf ("%hhC", lc); /* { dg-warning "length" "bad %hhC" } */
+  printf ("%lC", lc); /* { dg-warning "length" "bad %lC" } */
+  printf ("%llC", lc); /* { dg-warning "length" "bad %llC" } */
+  printf ("%jC", lc); /* { dg-warning "length" "bad %jC" } */
+  printf ("%zC", lc); /* { dg-warning "length" "bad %zC" } */
+  printf ("%tC", lc); /* { dg-warning "length" "bad %tC" } */
+  printf ("%LC", lc); /* { dg-warning "length" "bad %LC" } */
   printf ("%-C", lc);
   printf ("%+C", lc); /* { dg-warning "flag" "bad %+C" } */
   printf ("% C", lc); /* { dg-warning "flag" "bad % C" } */
@@ -42,14 +42,14 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   printf ("%S", ls);
   printf ("%3S", ls);
   printf ("%.3S", ls);
-  printf ("%hS", ls); /* { dg-warning "length character" "bad %hS" } */
-  printf ("%hhS", ls); /* { dg-warning "length character" "bad %hhS" } */
-  printf ("%lS", ls); /* { dg-warning "length character" "bad %lS" } */
-  printf ("%llS", ls); /* { dg-warning "length character" "bad %llS" } */
-  printf ("%jS", ls); /* { dg-warning "length character" "bad %jS" } */
-  printf ("%zS", ls); /* { dg-warning "length character" "bad %zS" } */
-  printf ("%tS", ls); /* { dg-warning "length character" "bad %tS" } */
-  printf ("%LS", ls); /* { dg-warning "length character" "bad %LS" } */
+  printf ("%hS", ls); /* { dg-warning "length" "bad %hS" } */
+  printf ("%hhS", ls); /* { dg-warning "length" "bad %hhS" } */
+  printf ("%lS", ls); /* { dg-warning "length" "bad %lS" } */
+  printf ("%llS", ls); /* { dg-warning "length" "bad %llS" } */
+  printf ("%jS", ls); /* { dg-warning "length" "bad %jS" } */
+  printf ("%zS", ls); /* { dg-warning "length" "bad %zS" } */
+  printf ("%tS", ls); /* { dg-warning "length" "bad %tS" } */
+  printf ("%LS", ls); /* { dg-warning "length" "bad %LS" } */
   printf ("%-S", ls);
   printf ("%+S", ls); /* { dg-warning "flag" "bad %+S" } */
   printf ("% S", ls); /* { dg-warning "flag" "bad % S" } */
@@ -60,22 +60,22 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   scanf ("%S", ls);
   scanf ("%*C%*S");
   scanf ("%2C%3S", ls, ls);
-  scanf ("%hC", ls); /* { dg-warning "length character" "bad %hC" } */
-  scanf ("%hhC", ls); /* { dg-warning "length character" "bad %hhC" } */
-  scanf ("%lC", ls); /* { dg-warning "length character" "bad %lC" } */
-  scanf ("%llC", ls); /* { dg-warning "length character" "bad %llC" } */
-  scanf ("%jC", ls); /* { dg-warning "length character" "bad %jC" } */
-  scanf ("%zC", ls); /* { dg-warning "length character" "bad %zC" } */
-  scanf ("%tC", ls); /* { dg-warning "length character" "bad %tC" } */
-  scanf ("%LC", ls); /* { dg-warning "length character" "bad %LC" } */
-  scanf ("%hS", ls); /* { dg-warning "length character" "bad %hS" } */
-  scanf ("%hhS", ls); /* { dg-warning "length character" "bad %hhS" } */
-  scanf ("%lS", ls); /* { dg-warning "length character" "bad %lS" } */
-  scanf ("%llS", ls); /* { dg-warning "length character" "bad %llS" } */
-  scanf ("%jS", ls); /* { dg-warning "length character" "bad %jS" } */
-  scanf ("%zS", ls); /* { dg-warning "length character" "bad %zS" } */
-  scanf ("%tS", ls); /* { dg-warning "length character" "bad %tS" } */
-  scanf ("%LS", ls); /* { dg-warning "length character" "bad %LS" } */
+  scanf ("%hC", ls); /* { dg-warning "length" "bad %hC" } */
+  scanf ("%hhC", ls); /* { dg-warning "length" "bad %hhC" } */
+  scanf ("%lC", ls); /* { dg-warning "length" "bad %lC" } */
+  scanf ("%llC", ls); /* { dg-warning "length" "bad %llC" } */
+  scanf ("%jC", ls); /* { dg-warning "length" "bad %jC" } */
+  scanf ("%zC", ls); /* { dg-warning "length" "bad %zC" } */
+  scanf ("%tC", ls); /* { dg-warning "length" "bad %tC" } */
+  scanf ("%LC", ls); /* { dg-warning "length" "bad %LC" } */
+  scanf ("%hS", ls); /* { dg-warning "length" "bad %hS" } */
+  scanf ("%hhS", ls); /* { dg-warning "length" "bad %hhS" } */
+  scanf ("%lS", ls); /* { dg-warning "length" "bad %lS" } */
+  scanf ("%llS", ls); /* { dg-warning "length" "bad %llS" } */
+  scanf ("%jS", ls); /* { dg-warning "length" "bad %jS" } */
+  scanf ("%zS", ls); /* { dg-warning "length" "bad %zS" } */
+  scanf ("%tS", ls); /* { dg-warning "length" "bad %tS" } */
+  scanf ("%LS", ls); /* { dg-warning "length" "bad %LS" } */
   /* In C99 mode (even with extensions), %aS is a floating point
      format followed by an S.
   */

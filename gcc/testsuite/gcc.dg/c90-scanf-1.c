@@ -53,24 +53,24 @@ foo (int *ip, unsigned int *uip, short int *hp, unsigned short int *uhp,
   scanf ("%3n", n); /* { dg-warning "width" "width with %n" } */
   /* Valid and invalid %h, %l, %L constructions.  */
   scanf ("%hd%hi%ho%hu%hx%hX%hn", hp, hp, uhp, uhp, uhp, uhp, hn);
-  scanf ("%he", fp); /* { dg-warning "length character" "bad use of %h" } */
-  scanf ("%hE", fp); /* { dg-warning "length character" "bad use of %h" } */
-  scanf ("%hf", fp); /* { dg-warning "length character" "bad use of %h" } */
-  scanf ("%hg", fp); /* { dg-warning "length character" "bad use of %h" } */
-  scanf ("%hG", fp); /* { dg-warning "length character" "bad use of %h" } */
-  scanf ("%hs", s); /* { dg-warning "length character" "bad use of %h" } */
-  scanf ("%h[ac]", s); /* { dg-warning "length character" "bad use of %h" } */
-  scanf ("%hc", s); /* { dg-warning "length character" "bad use of %h" } */
-  scanf ("%hp", pp); /* { dg-warning "length character" "bad use of %h" } */
+  scanf ("%he", fp); /* { dg-warning "length" "bad use of %h" } */
+  scanf ("%hE", fp); /* { dg-warning "length" "bad use of %h" } */
+  scanf ("%hf", fp); /* { dg-warning "length" "bad use of %h" } */
+  scanf ("%hg", fp); /* { dg-warning "length" "bad use of %h" } */
+  scanf ("%hG", fp); /* { dg-warning "length" "bad use of %h" } */
+  scanf ("%hs", s); /* { dg-warning "length" "bad use of %h" } */
+  scanf ("%h[ac]", s); /* { dg-warning "length" "bad use of %h" } */
+  scanf ("%hc", s); /* { dg-warning "length" "bad use of %h" } */
+  scanf ("%hp", pp); /* { dg-warning "length" "bad use of %h" } */
   scanf ("%h"); /* { dg-warning "conversion lacks type" "bare %h" } */
   scanf ("%h."); /* { dg-warning "conversion" "bogus %h" } */
   scanf ("%ld%li%lo%lu%lx%lX%ln", lp, lp, ulp, ulp, ulp, ulp, ln);
   scanf ("%le%lE%lf%lg%lG", dp, dp, dp, dp, dp);
-  scanf ("%lp", pp); /* { dg-warning "length character" "bad use of %l" } */
+  scanf ("%lp", pp); /* { dg-warning "length" "bad use of %l" } */
   /* These next three formats were added in C94.  */
-  scanf ("%ls", ls); /* { dg-warning "length character|C" "bad use of %l" } */
-  scanf ("%l[ac]", ls); /* { dg-warning "length character|C" "bad use of %l" } */
-  scanf ("%lc", ls); /* { dg-warning "length character|C" "bad use of %l" } */
+  scanf ("%ls", ls); /* { dg-warning "length|C" "bad use of %l" } */
+  scanf ("%l[ac]", ls); /* { dg-warning "length|C" "bad use of %l" } */
+  scanf ("%lc", ls); /* { dg-warning "length|C" "bad use of %l" } */
   scanf ("%Le%LE%Lf%Lg%LG", ldp, ldp, ldp, ldp, ldp);
   scanf ("%Ld", llp); /* { dg-warning "does not support" "bad use of %L" } */
   scanf ("%Li", llp); /* { dg-warning "does not support" "bad use of %L" } */
@@ -78,11 +78,11 @@ foo (int *ip, unsigned int *uip, short int *hp, unsigned short int *uhp,
   scanf ("%Lu", ullp); /* { dg-warning "does not support" "bad use of %L" } */
   scanf ("%Lx", ullp); /* { dg-warning "does not support" "bad use of %L" } */
   scanf ("%LX", ullp); /* { dg-warning "does not support" "bad use of %L" } */
-  scanf ("%Ls", s); /* { dg-warning "length character" "bad use of %L" } */
-  scanf ("%L[ac]", s); /* { dg-warning "length character" "bad use of %L" } */
-  scanf ("%Lc", s); /* { dg-warning "length character" "bad use of %L" } */
-  scanf ("%Lp", pp); /* { dg-warning "length character" "bad use of %L" } */
-  scanf ("%Ln", n); /* { dg-warning "length character" "bad use of %L" } */
+  scanf ("%Ls", s); /* { dg-warning "length" "bad use of %L" } */
+  scanf ("%L[ac]", s); /* { dg-warning "length" "bad use of %L" } */
+  scanf ("%Lc", s); /* { dg-warning "length" "bad use of %L" } */
+  scanf ("%Lp", pp); /* { dg-warning "length" "bad use of %L" } */
+  scanf ("%Ln", n); /* { dg-warning "length" "bad use of %L" } */
   /* Valid uses of each bare conversion.  */
   scanf ("%d%i%o%u%x%X%e%E%f%g%G%s%[abc]%c%p%n%%", ip, ip, uip, uip, uip,
 	 uip, fp, fp, fp, fp, fp, s, s, s, pp, n);

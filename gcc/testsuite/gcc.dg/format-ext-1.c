@@ -24,44 +24,44 @@ foo (quad_t q, u_quad_t uq, quad_t *qn, size_t z, size_t *zn, long long int ll,
      This is largely obsoleted in C99 by %j, %ll and PRId64.
   */
   printf ("%qd%qi%qo%qu%qx%qX%qn", q, q, uq, uq, uq, uq, qn);
-  printf ("%qf", d); /* { dg-warning "length character" "bad use of %q" } */
-  printf ("%qF", d); /* { dg-warning "length character" "bad use of %q" } */
-  printf ("%qe", d); /* { dg-warning "length character" "bad use of %q" } */
-  printf ("%qE", d); /* { dg-warning "length character" "bad use of %q" } */
-  printf ("%qg", d); /* { dg-warning "length character" "bad use of %q" } */
-  printf ("%qG", d); /* { dg-warning "length character" "bad use of %q" } */
-  printf ("%qa", d); /* { dg-warning "length character" "bad use of %q" } */
-  printf ("%qA", d); /* { dg-warning "length character" "bad use of %q" } */
-  printf ("%qc", i); /* { dg-warning "length character" "bad use of %q" } */
-  printf ("%qs", s); /* { dg-warning "length character" "bad use of %q" } */
-  printf ("%qp", p); /* { dg-warning "length character" "bad use of %q" } */
-  printf ("%qC", lc); /* { dg-warning "length character" "bad use of %q" } */
-  printf ("%qS", ls); /* { dg-warning "length character" "bad use of %q" } */
-  /* With a bad length character GCC wants some argument, any argument,
+  printf ("%qf", d); /* { dg-warning "length" "bad use of %q" } */
+  printf ("%qF", d); /* { dg-warning "length" "bad use of %q" } */
+  printf ("%qe", d); /* { dg-warning "length" "bad use of %q" } */
+  printf ("%qE", d); /* { dg-warning "length" "bad use of %q" } */
+  printf ("%qg", d); /* { dg-warning "length" "bad use of %q" } */
+  printf ("%qG", d); /* { dg-warning "length" "bad use of %q" } */
+  printf ("%qa", d); /* { dg-warning "length" "bad use of %q" } */
+  printf ("%qA", d); /* { dg-warning "length" "bad use of %q" } */
+  printf ("%qc", i); /* { dg-warning "length" "bad use of %q" } */
+  printf ("%qs", s); /* { dg-warning "length" "bad use of %q" } */
+  printf ("%qp", p); /* { dg-warning "length" "bad use of %q" } */
+  printf ("%qC", lc); /* { dg-warning "length" "bad use of %q" } */
+  printf ("%qS", ls); /* { dg-warning "length" "bad use of %q" } */
+  /* With a bad length GCC wants some argument, any argument,
      to devour with the format conversion, as a synchronisation heuristic.
      This may get improved later.
   */
-  printf ("%qm", i); /* { dg-warning "length character" "bad use of %q" } */
+  printf ("%qm", i); /* { dg-warning "length" "bad use of %q" } */
   /* As an extension, GCC allows the length "Z" as a synonym for "z".
      This was an extension predating C99 which should now be considered
      deprecated; use the standard "z" instead.
   */
   printf ("%Zd%Zi%Zo%Zu%Zx%ZX", z, z, z, z, z, z);
   printf ("%Zn", zn);
-  printf ("%Zf", d); /* { dg-warning "length character" "bad use of %Z" } */
-  printf ("%ZF", d); /* { dg-warning "length character" "bad use of %Z" } */
-  printf ("%Ze", d); /* { dg-warning "length character" "bad use of %Z" } */
-  printf ("%ZE", d); /* { dg-warning "length character" "bad use of %Z" } */
-  printf ("%Zg", d); /* { dg-warning "length character" "bad use of %Z" } */
-  printf ("%ZG", d); /* { dg-warning "length character" "bad use of %Z" } */
-  printf ("%Za", d); /* { dg-warning "length character" "bad use of %Z" } */
-  printf ("%ZA", d); /* { dg-warning "length character" "bad use of %Z" } */
-  printf ("%Zc", i); /* { dg-warning "length character" "bad use of %Z" } */
-  printf ("%Zs", s); /* { dg-warning "length character" "bad use of %Z" } */
-  printf ("%Zp", p); /* { dg-warning "length character" "bad use of %Z" } */
-  printf ("%ZC", lc); /* { dg-warning "length character" "bad use of %Z" } */
-  printf ("%ZS", ls); /* { dg-warning "length character" "bad use of %Z" } */
-  printf ("%Zm", i); /* { dg-warning "length character" "bad use of %Z" } */
+  printf ("%Zf", d); /* { dg-warning "length" "bad use of %Z" } */
+  printf ("%ZF", d); /* { dg-warning "length" "bad use of %Z" } */
+  printf ("%Ze", d); /* { dg-warning "length" "bad use of %Z" } */
+  printf ("%ZE", d); /* { dg-warning "length" "bad use of %Z" } */
+  printf ("%Zg", d); /* { dg-warning "length" "bad use of %Z" } */
+  printf ("%ZG", d); /* { dg-warning "length" "bad use of %Z" } */
+  printf ("%Za", d); /* { dg-warning "length" "bad use of %Z" } */
+  printf ("%ZA", d); /* { dg-warning "length" "bad use of %Z" } */
+  printf ("%Zc", i); /* { dg-warning "length" "bad use of %Z" } */
+  printf ("%Zs", s); /* { dg-warning "length" "bad use of %Z" } */
+  printf ("%Zp", p); /* { dg-warning "length" "bad use of %Z" } */
+  printf ("%ZC", lc); /* { dg-warning "length" "bad use of %Z" } */
+  printf ("%ZS", ls); /* { dg-warning "length" "bad use of %Z" } */
+  printf ("%Zm", i); /* { dg-warning "length" "bad use of %Z" } */
   /* As an extension, GCC allows the length "L" on integer formats
      (but not %n) as a synonym for "ll".
      This should be considered deprecated.
@@ -83,16 +83,16 @@ foo (quad_t q, u_quad_t uq, quad_t *qn, size_t z, size_t *zn, long long int ll,
   printf ("%#m"); /* { dg-warning "flag" "bad %#m" } */
   printf ("%0m"); /* { dg-warning "flag" "bad %0m" } */
   printf ("%'m"); /* { dg-warning "flag" "bad %'m" } */
-  printf ("%hm", i); /* { dg-warning "length character" "bad %hm" } */
-  printf ("%hhm", i); /* { dg-warning "length character" "bad %hhm" } */
-  printf ("%lm", i); /* { dg-warning "length character" "bad %lm" } */
-  printf ("%llm", i); /* { dg-warning "length character" "bad %llm" } */
-  printf ("%jm", i); /* { dg-warning "length character" "bad %jm" } */
-  printf ("%zm", i); /* { dg-warning "length character" "bad %zm" } */
-  printf ("%tm", i); /* { dg-warning "length character" "bad %tm" } */
-  printf ("%Lm", i); /* { dg-warning "length character" "bad %Lm" } */
-  printf ("%qm", i); /* { dg-warning "length character" "bad %qm" } */
-  printf ("%Zm", i); /* { dg-warning "length character" "bad %Zm" } */
+  printf ("%hm", i); /* { dg-warning "length" "bad %hm" } */
+  printf ("%hhm", i); /* { dg-warning "length" "bad %hhm" } */
+  printf ("%lm", i); /* { dg-warning "length" "bad %lm" } */
+  printf ("%llm", i); /* { dg-warning "length" "bad %llm" } */
+  printf ("%jm", i); /* { dg-warning "length" "bad %jm" } */
+  printf ("%zm", i); /* { dg-warning "length" "bad %zm" } */
+  printf ("%tm", i); /* { dg-warning "length" "bad %tm" } */
+  printf ("%Lm", i); /* { dg-warning "length" "bad %Lm" } */
+  printf ("%qm", i); /* { dg-warning "length" "bad %qm" } */
+  printf ("%Zm", i); /* { dg-warning "length" "bad %Zm" } */
   /* As an extension, glibc includes the "I" flag for decimal integer
      formats, to output using the locale's digits (e.g. in Arabic).
      In GCC, we require this to be in the standard place for flags, though

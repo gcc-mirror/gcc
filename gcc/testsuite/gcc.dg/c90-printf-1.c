@@ -79,30 +79,30 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   */
   printf ("%ho%hu%hx%hX", u, u, u, u);
   printf ("%hn", hn);
-  printf ("%hf", d); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%he", d); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hE", d); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hg", d); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hG", d); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hc", i); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hs", s); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hp", p); /* { dg-warning "length character" "bad use of %h" } */
+  printf ("%hf", d); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%he", d); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hE", d); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hg", d); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hG", d); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hc", i); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hs", s); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hp", p); /* { dg-warning "length" "bad use of %h" } */
   printf ("%h"); /* { dg-warning "conversion lacks type" "bare %h" } */
   printf ("%h."); /* { dg-warning "conversion" "bogus %h." } */
   printf ("%ld%li%lo%lu%lx%lX", l, l, ul, ul, ul, ul);
   printf ("%ln", ln);
-  printf ("%lf", d); /* { dg-warning "length character|C" "bad use of %l" } */
-  printf ("%le", d); /* { dg-warning "length character|C" "bad use of %l" } */
-  printf ("%lE", d); /* { dg-warning "length character|C" "bad use of %l" } */
-  printf ("%lg", d); /* { dg-warning "length character|C" "bad use of %l" } */
-  printf ("%lG", d); /* { dg-warning "length character|C" "bad use of %l" } */
-  printf ("%lp", p); /* { dg-warning "length character|C" "bad use of %l" } */
+  printf ("%lf", d); /* { dg-warning "length|C" "bad use of %l" } */
+  printf ("%le", d); /* { dg-warning "length|C" "bad use of %l" } */
+  printf ("%lE", d); /* { dg-warning "length|C" "bad use of %l" } */
+  printf ("%lg", d); /* { dg-warning "length|C" "bad use of %l" } */
+  printf ("%lG", d); /* { dg-warning "length|C" "bad use of %l" } */
+  printf ("%lp", p); /* { dg-warning "length|C" "bad use of %l" } */
   /* These next two were added in C94, but should be objected to in C90.
      For the first one, GCC has wanted wchar_t instead of the correct C94
      and C99 wint_t.
   */
-  printf ("%lc", lc); /* { dg-warning "length character|C" "C90 bad use of %l" } */
-  printf ("%ls", ls); /* { dg-warning "length character|C" "C90 bad use of %l" } */
+  printf ("%lc", lc); /* { dg-warning "length|C" "C90 bad use of %l" } */
+  printf ("%ls", ls); /* { dg-warning "length|C" "C90 bad use of %l" } */
   /* These uses of %L are legitimate, though GCC has wrongly warned for
      them in the past.
   */
@@ -116,10 +116,10 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   printf ("%Lu", ull); /* { dg-warning "does not support" "bad use of %L" } */
   printf ("%Lx", ull); /* { dg-warning "does not support" "bad use of %L" } */
   printf ("%LX", ull); /* { dg-warning "does not support" "bad use of %L" } */
-  printf ("%Lc", i); /* { dg-warning "length character" "bad use of %L" } */
-  printf ("%Ls", s); /* { dg-warning "length character" "bad use of %L" } */
-  printf ("%Lp", p); /* { dg-warning "length character" "bad use of %L" } */
-  printf ("%Ln", n); /* { dg-warning "length character" "bad use of %L" } */
+  printf ("%Lc", i); /* { dg-warning "length" "bad use of %L" } */
+  printf ("%Ls", s); /* { dg-warning "length" "bad use of %L" } */
+  printf ("%Lp", p); /* { dg-warning "length" "bad use of %L" } */
+  printf ("%Ln", n); /* { dg-warning "length" "bad use of %L" } */
   /* Valid uses of each bare conversion.  */
   printf ("%d%i%o%u%x%X%f%e%E%g%G%c%s%p%n%%", i, i, u, u, u, u, d, d, d, d, d,
 	  i, s, p, n);

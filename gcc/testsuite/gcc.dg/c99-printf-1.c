@@ -41,86 +41,86 @@ foo (int i, unsigned int u, double d, char *s, void *p, int *n,
      or completely broken formats.
   */
   /* Valid and invalid %h, %hh, %l, %ll, %j, %z, %t, %L constructions.  */
-  printf ("%hf", d); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hF", d); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%he", d); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hE", d); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hg", d); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hG", d); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%ha", d); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hA", d); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hc", i); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hs", s); /* { dg-warning "length character" "bad use of %h" } */
-  printf ("%hp", p); /* { dg-warning "length character" "bad use of %h" } */
+  printf ("%hf", d); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hF", d); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%he", d); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hE", d); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hg", d); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hG", d); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%ha", d); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hA", d); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hc", i); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hs", s); /* { dg-warning "length" "bad use of %h" } */
+  printf ("%hp", p); /* { dg-warning "length" "bad use of %h" } */
   printf ("%hhd%hhi%hho%hhu%hhx%hhX", i, i, u, u, u, u);
   printf ("%hhn", ss);
-  printf ("%hhf", d); /* { dg-warning "length character" "bad use of %hh" } */
-  printf ("%hhF", d); /* { dg-warning "length character" "bad use of %hh" } */
-  printf ("%hhe", d); /* { dg-warning "length character" "bad use of %hh" } */
-  printf ("%hhE", d); /* { dg-warning "length character" "bad use of %hh" } */
-  printf ("%hhg", d); /* { dg-warning "length character" "bad use of %hh" } */
-  printf ("%hhG", d); /* { dg-warning "length character" "bad use of %hh" } */
-  printf ("%hha", d); /* { dg-warning "length character" "bad use of %hh" } */
-  printf ("%hhA", d); /* { dg-warning "length character" "bad use of %hh" } */
-  printf ("%hhc", i); /* { dg-warning "length character" "bad use of %hh" } */
-  printf ("%hhs", s); /* { dg-warning "length character" "bad use of %hh" } */
-  printf ("%hhp", p); /* { dg-warning "length character" "bad use of %hh" } */
+  printf ("%hhf", d); /* { dg-warning "length" "bad use of %hh" } */
+  printf ("%hhF", d); /* { dg-warning "length" "bad use of %hh" } */
+  printf ("%hhe", d); /* { dg-warning "length" "bad use of %hh" } */
+  printf ("%hhE", d); /* { dg-warning "length" "bad use of %hh" } */
+  printf ("%hhg", d); /* { dg-warning "length" "bad use of %hh" } */
+  printf ("%hhG", d); /* { dg-warning "length" "bad use of %hh" } */
+  printf ("%hha", d); /* { dg-warning "length" "bad use of %hh" } */
+  printf ("%hhA", d); /* { dg-warning "length" "bad use of %hh" } */
+  printf ("%hhc", i); /* { dg-warning "length" "bad use of %hh" } */
+  printf ("%hhs", s); /* { dg-warning "length" "bad use of %hh" } */
+  printf ("%hhp", p); /* { dg-warning "length" "bad use of %hh" } */
   printf ("%lc", lc);
   printf ("%ls", ls);
   printf ("%lf%lF%le%lE%lg%lG%la%lA", d, d, d, d, d, d, d, d);
-  printf ("%lp", p); /* { dg-warning "length character|C" "bad use of %l" } */
+  printf ("%lp", p); /* { dg-warning "length|C" "bad use of %l" } */
   printf ("%lld%lli%llo%llu%llx%llX", ll, ll, ull, ull, ull, ull);
   printf ("%lln", lln);
-  printf ("%llf", d); /* { dg-warning "length character" "bad use of %ll" } */
-  printf ("%llF", d); /* { dg-warning "length character" "bad use of %ll" } */
-  printf ("%lle", d); /* { dg-warning "length character" "bad use of %ll" } */
-  printf ("%llE", d); /* { dg-warning "length character" "bad use of %ll" } */
-  printf ("%llg", d); /* { dg-warning "length character" "bad use of %ll" } */
-  printf ("%llG", d); /* { dg-warning "length character" "bad use of %ll" } */
-  printf ("%lla", d); /* { dg-warning "length character" "bad use of %ll" } */
-  printf ("%llA", d); /* { dg-warning "length character" "bad use of %ll" } */
-  printf ("%llc", i); /* { dg-warning "length character" "bad use of %ll" } */
-  printf ("%lls", s); /* { dg-warning "length character" "bad use of %ll" } */
-  printf ("%llp", p); /* { dg-warning "length character" "bad use of %ll" } */
-  printf ("%jd%ji%jo%ju%jx%jX", j, j, uj, uj, uj, uj); /* { dg-bogus "length character" "bogus %j warning" { xfail *-*-* } } */
-  printf ("%jn", jn); /* { dg-bogus "length character" "bogus %j warning" { xfail *-*-* } } */
-  printf ("%jf", d); /* { dg-warning "length character" "bad use of %j" } */
-  printf ("%jF", d); /* { dg-warning "length character" "bad use of %j" } */
-  printf ("%je", d); /* { dg-warning "length character" "bad use of %j" } */
-  printf ("%jE", d); /* { dg-warning "length character" "bad use of %j" } */
-  printf ("%jg", d); /* { dg-warning "length character" "bad use of %j" } */
-  printf ("%jG", d); /* { dg-warning "length character" "bad use of %j" } */
-  printf ("%ja", d); /* { dg-warning "length character" "bad use of %j" } */
-  printf ("%jA", d); /* { dg-warning "length character" "bad use of %j" } */
-  printf ("%jc", i); /* { dg-warning "length character" "bad use of %j" } */
-  printf ("%js", s); /* { dg-warning "length character" "bad use of %j" } */
-  printf ("%jp", p); /* { dg-warning "length character" "bad use of %j" } */
+  printf ("%llf", d); /* { dg-warning "length" "bad use of %ll" } */
+  printf ("%llF", d); /* { dg-warning "length" "bad use of %ll" } */
+  printf ("%lle", d); /* { dg-warning "length" "bad use of %ll" } */
+  printf ("%llE", d); /* { dg-warning "length" "bad use of %ll" } */
+  printf ("%llg", d); /* { dg-warning "length" "bad use of %ll" } */
+  printf ("%llG", d); /* { dg-warning "length" "bad use of %ll" } */
+  printf ("%lla", d); /* { dg-warning "length" "bad use of %ll" } */
+  printf ("%llA", d); /* { dg-warning "length" "bad use of %ll" } */
+  printf ("%llc", i); /* { dg-warning "length" "bad use of %ll" } */
+  printf ("%lls", s); /* { dg-warning "length" "bad use of %ll" } */
+  printf ("%llp", p); /* { dg-warning "length" "bad use of %ll" } */
+  printf ("%jd%ji%jo%ju%jx%jX", j, j, uj, uj, uj, uj); /* { dg-bogus "length" "bogus %j warning" { xfail *-*-* } } */
+  printf ("%jn", jn); /* { dg-bogus "length" "bogus %j warning" { xfail *-*-* } } */
+  printf ("%jf", d); /* { dg-warning "length" "bad use of %j" } */
+  printf ("%jF", d); /* { dg-warning "length" "bad use of %j" } */
+  printf ("%je", d); /* { dg-warning "length" "bad use of %j" } */
+  printf ("%jE", d); /* { dg-warning "length" "bad use of %j" } */
+  printf ("%jg", d); /* { dg-warning "length" "bad use of %j" } */
+  printf ("%jG", d); /* { dg-warning "length" "bad use of %j" } */
+  printf ("%ja", d); /* { dg-warning "length" "bad use of %j" } */
+  printf ("%jA", d); /* { dg-warning "length" "bad use of %j" } */
+  printf ("%jc", i); /* { dg-warning "length" "bad use of %j" } */
+  printf ("%js", s); /* { dg-warning "length" "bad use of %j" } */
+  printf ("%jp", p); /* { dg-warning "length" "bad use of %j" } */
   printf ("%zd%zi%zo%zu%zx%zX", sz, sz, z, z, z, z);
   printf ("%zn", zn);
-  printf ("%zf", d); /* { dg-warning "length character" "bad use of %z" } */
-  printf ("%zF", d); /* { dg-warning "length character" "bad use of %z" } */
-  printf ("%ze", d); /* { dg-warning "length character" "bad use of %z" } */
-  printf ("%zE", d); /* { dg-warning "length character" "bad use of %z" } */
-  printf ("%zg", d); /* { dg-warning "length character" "bad use of %z" } */
-  printf ("%zG", d); /* { dg-warning "length character" "bad use of %z" } */
-  printf ("%za", d); /* { dg-warning "length character" "bad use of %z" } */
-  printf ("%zA", d); /* { dg-warning "length character" "bad use of %z" } */
-  printf ("%zc", i); /* { dg-warning "length character" "bad use of %z" } */
-  printf ("%zs", s); /* { dg-warning "length character" "bad use of %z" } */
-  printf ("%zp", p); /* { dg-warning "length character" "bad use of %z" } */
+  printf ("%zf", d); /* { dg-warning "length" "bad use of %z" } */
+  printf ("%zF", d); /* { dg-warning "length" "bad use of %z" } */
+  printf ("%ze", d); /* { dg-warning "length" "bad use of %z" } */
+  printf ("%zE", d); /* { dg-warning "length" "bad use of %z" } */
+  printf ("%zg", d); /* { dg-warning "length" "bad use of %z" } */
+  printf ("%zG", d); /* { dg-warning "length" "bad use of %z" } */
+  printf ("%za", d); /* { dg-warning "length" "bad use of %z" } */
+  printf ("%zA", d); /* { dg-warning "length" "bad use of %z" } */
+  printf ("%zc", i); /* { dg-warning "length" "bad use of %z" } */
+  printf ("%zs", s); /* { dg-warning "length" "bad use of %z" } */
+  printf ("%zp", p); /* { dg-warning "length" "bad use of %z" } */
   printf ("%td%ti%to%tu%tx%tX", t, t, t, t, t, t);
   printf ("%tn", tn);
-  printf ("%tf", d); /* { dg-warning "length character" "bad use of %t" } */
-  printf ("%tF", d); /* { dg-warning "length character" "bad use of %t" } */
-  printf ("%te", d); /* { dg-warning "length character" "bad use of %t" } */
-  printf ("%tE", d); /* { dg-warning "length character" "bad use of %t" } */
-  printf ("%tg", d); /* { dg-warning "length character" "bad use of %t" } */
-  printf ("%tG", d); /* { dg-warning "length character" "bad use of %t" } */
-  printf ("%ta", d); /* { dg-warning "length character" "bad use of %t" } */
-  printf ("%tA", d); /* { dg-warning "length character" "bad use of %t" } */
-  printf ("%tc", i); /* { dg-warning "length character" "bad use of %t" } */
-  printf ("%ts", s); /* { dg-warning "length character" "bad use of %t" } */
-  printf ("%tp", p); /* { dg-warning "length character" "bad use of %t" } */
+  printf ("%tf", d); /* { dg-warning "length" "bad use of %t" } */
+  printf ("%tF", d); /* { dg-warning "length" "bad use of %t" } */
+  printf ("%te", d); /* { dg-warning "length" "bad use of %t" } */
+  printf ("%tE", d); /* { dg-warning "length" "bad use of %t" } */
+  printf ("%tg", d); /* { dg-warning "length" "bad use of %t" } */
+  printf ("%tG", d); /* { dg-warning "length" "bad use of %t" } */
+  printf ("%ta", d); /* { dg-warning "length" "bad use of %t" } */
+  printf ("%tA", d); /* { dg-warning "length" "bad use of %t" } */
+  printf ("%tc", i); /* { dg-warning "length" "bad use of %t" } */
+  printf ("%ts", s); /* { dg-warning "length" "bad use of %t" } */
+  printf ("%tp", p); /* { dg-warning "length" "bad use of %t" } */
   printf ("%Le%LE%Lf%LF%Lg%LG%La%LA", ld, ld, ld, ld, ld, ld, ld, ld);
   /* These next six are accepted by GCC as referring to long long,
      but -pedantic correctly warns.
@@ -131,10 +131,10 @@ foo (int i, unsigned int u, double d, char *s, void *p, int *n,
   printf ("%Lu", ull); /* { dg-warning "does not support" "bad use of %L" } */
   printf ("%Lx", ull); /* { dg-warning "does not support" "bad use of %L" } */
   printf ("%LX", ull); /* { dg-warning "does not support" "bad use of %L" } */
-  printf ("%Lc", i); /* { dg-warning "length character" "bad use of %L" } */
-  printf ("%Ls", s); /* { dg-warning "length character" "bad use of %L" } */
-  printf ("%Lp", p); /* { dg-warning "length character" "bad use of %L" } */
-  printf ("%Ln", n); /* { dg-warning "length character" "bad use of %L" } */
+  printf ("%Lc", i); /* { dg-warning "length" "bad use of %L" } */
+  printf ("%Ls", s); /* { dg-warning "length" "bad use of %L" } */
+  printf ("%Lp", p); /* { dg-warning "length" "bad use of %L" } */
+  printf ("%Ln", n); /* { dg-warning "length" "bad use of %L" } */
   /* Valid uses of each bare conversion.  */
   printf ("%d%i%o%u%x%X%f%F%e%E%g%G%a%A%c%s%p%n%%", i, i, u, u, u, u,
 	  d, d, d, d, d, d, d, d, i, s, p, n);

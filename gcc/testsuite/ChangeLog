@@ -1,3 +1,11 @@
+2000-09-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-printf-1.c, gcc.dg/c90-printf-2.c,
+	gcc.dg/c90-scanf-1.c, gcc.dg/c90-scanf-2.c, gcc.dg/c99-printf-1.c,
+	gcc.dg/c99-scanf-1.c, gcc.dg/format-ext-1.c,
+	gcc.dg/format-ext-2.c, gcc.dg/format-xopen-1.c,
+	gcc.dg/formatz-1.c: Adjust warning regular expressions.
+
 2000-09-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/nested4.C: New test.	
