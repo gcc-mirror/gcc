@@ -13629,7 +13629,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	}
 
       /* Keep the old rtl since we can safely use it.  */
-      COPY_DECL_RTL (newdecl, olddecl);
+      COPY_DECL_RTL (olddecl, newdecl);
 
       /* Merge the type qualifiers.  */
       if (DECL_BUILT_IN_NONANSI (olddecl) && TREE_THIS_VOLATILE (olddecl)
