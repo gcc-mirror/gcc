@@ -1,3 +1,34 @@
+2004-05-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in (OBJS): Add rtlhooks.o.
+	(rtlanal.o): Depend on function.h.
+	(cse.o): Depend on rtlhooks-def.h.
+	(combine.o): Depend on rtlhooks-def.h.
+	(rtlhooks.o): New rule.
+	* combine.c: Include rtlhooks-def.h.
+	(nonzero_bits, cached_nonzero_bits, nonzero_bits1,
+	num_sign_bit_copies, cached_num_sign_bit_copies,
+	num_sign_bit_copies1): Move most of the code to rtlanal.c.
+	(reg_nonzero_bits_for_combine,
+	reg_num_sign_bit_copies_for_combine): New functions holding
+	the remnants of the above.
+	(combine_rtl_hooks): New.
+	(combine_instructions): Set rtl_hooks instead of gen_lowpart.
+	* cse.c: Include rtlhooks-def.h.
+	(cse_rtl_hooks): New.
+	(cse_main): Set rtl_hooks instead of gen_lowpart.
+	* emit-rtl.c (gen_lowpart): Remove.
+	(gen_lowpart_general): Move to rtlhooks.c.
+	* rtl.h (nonzero_bits, num_sign_bit_copies,
+	struct rtl_hooks, rtl_hooks, general_rtl_hooks): New.
+	(gen_lowpart_general): Remove.
+	(gen_lowpart): Temporarily redefine as a macro.
+	* rtlanal.c: Include function.h.
+	(nonzero_bits, cached_nonzero_bits, nonzero_bits1,
+	num_sign_bit_copies, cached_num_sign_bit_copies,
+	num_sign_bit_copies1): New, from combine.c.
+	* rtlhooks.c: New file. 
+
 2004-05-25  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
 	* config/avr/avr.h (LONG_LONG_TYPE_SIZE): Changed long long type
