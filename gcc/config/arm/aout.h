@@ -245,8 +245,8 @@ do { char dstr[30];							\
   output_lcomm_directive (STREAM, NAME, SIZE, ALIGN)
 
 /* Output a zero-initialized block.  */
-#define ASM_OUTPUT_ALIGNED_BSS(STREAM,NAME,SIZE,ALIGN) \
-  asm_output_aligned_bss(STREAM, NAME, SIZE, ALIGN)
+#define ASM_OUTPUT_ALIGNED_BSS(STREAM,DECL,NAME,SIZE,ALIGN) \
+  asm_output_aligned_bss(STREAM, DECL, NAME, SIZE, ALIGN)
 
 /* Output a source line for the debugger.  */
 /* #define ASM_OUTPUT_SOURCE_LINE(STREAM,LINE) */
