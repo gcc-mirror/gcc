@@ -678,6 +678,8 @@ java/awt/Window.java \
 java/awt/color/ColorSpace.java \
 java/awt/color/ICC_ColorSpace.java \
 java/awt/color/ICC_Profile.java \
+java/awt/color/ICC_ProfileGray.java \
+java/awt/color/ICC_ProfileRGB.java \
 java/awt/color/CMMException.java \
 java/awt/color/ProfileDataException.java \
 java/awt/datatransfer/Clipboard.java \

@@ -60,6 +60,12 @@ public class Frame extends Window implements MenuContainer, Serializable
  */
 
 /**
+  * Constant for the default cursor.
+  * Deprecated. replaced by <code>Cursor.DEFAULT_CURSOR</code> instead.
+  */
+public static final int DEFAULT_CURSOR = Cursor.DEFAULT_CURSOR;
+
+/**
   * Constant for a cross-hair cursor.
   * @deprecated Use <code>Cursor.CROSSHAIR_CURSOR</code> instead.
   */
@@ -136,6 +142,12 @@ public static final int HAND_CURSOR = Cursor.HAND_CURSOR;
   * @deprecated Use <code>Cursor.MOVE_CURSOR</code> instead.
   */
 public static final int MOVE_CURSOR = Cursor.MOVE_CURSOR;
+
+public static final int ICONIFIED = 1;
+public static final int MAXIMIZED_BOTH = 6;
+public static final int MAXIMIZED_HORIZ = 2;
+public static final int MAXIMIZED_VERT = 4;
+public static final int NORMAL = 0;
 
 // Serialization version constant
 private static final long serialVersionUID = 2673458971256075116L;

@@ -58,6 +58,8 @@ import java.io.Serializable;
  */
 public class GridLayout implements LayoutManager, Serializable
 {
+  static final long serialVersionUID = -7411804673224730901L;
+  
   /** Add a new component to the layout.  This particular implementation
    * does nothing.
    * @param name The name of the component to add.

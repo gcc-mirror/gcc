@@ -56,6 +56,7 @@ import java.io.UnsupportedEncodingException;
   */
 public class DataFlavor implements java.io.Externalizable, Cloneable
 {
+  static final long serialVersionUID = 8367026044764648243L;
 
 // FIXME: Serialization: Need to write methods for.
 

@@ -46,6 +46,8 @@ import java.io.Serializable;
 public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
   implements Serializable
 {
+  static final long serialVersionUID = 486933713763926351L;
+
   private boolean downCycle = true;
 
   public ContainerOrderFocusTraversalPolicy()

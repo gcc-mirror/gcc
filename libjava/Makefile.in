@@ -435,6 +435,8 @@ java/awt/Window.java \
 java/awt/color/ColorSpace.java \
 java/awt/color/ICC_ColorSpace.java \
 java/awt/color/ICC_Profile.java \
+java/awt/color/ICC_ProfileGray.java \
+java/awt/color/ICC_ProfileRGB.java \
 java/awt/color/CMMException.java \
 java/awt/color/ProfileDataException.java \
 java/awt/datatransfer/Clipboard.java \
@@ -2614,6 +2616,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/Window.P .deps/java/awt/color/CMMException.P \
 .deps/java/awt/color/ColorSpace.P .deps/java/awt/color/ICC_ColorSpace.P \
 .deps/java/awt/color/ICC_Profile.P \
+.deps/java/awt/color/ICC_ProfileGray.P \
+.deps/java/awt/color/ICC_ProfileRGB.P \
 .deps/java/awt/color/ProfileDataException.P \
 .deps/java/awt/datatransfer/Clipboard.P \
 .deps/java/awt/datatransfer/ClipboardOwner.P \

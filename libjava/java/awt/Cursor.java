@@ -44,6 +44,8 @@ package java.awt;
   */
 public class Cursor implements java.io.Serializable
 {
+  static final long serialVersionUID = 8028237497568985504L;
+
   /**
   * Constant for the system default cursor type
   */
