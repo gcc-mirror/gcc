@@ -1,3 +1,9 @@
+2004-07-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/12170
+	* pt.c (unify) <BOUND_TEMPLATE_TEMPLATE_PARM case>: Use only
+	innermost set of template arguments during deduction.  Simplify.
+
 2004-07-19  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* typeck.c (build_modify_expr, build_x_modify_expr): Set

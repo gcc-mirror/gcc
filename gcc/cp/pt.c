@@ -9650,7 +9650,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	  {
 	    tree parmtmpl = TYPE_TI_TEMPLATE (parm);
 	    tree parmvec = TYPE_TI_ARGS (parm);
-	    tree argvec = TYPE_TI_ARGS (arg);
+	    tree argvec = INNERMOST_TEMPLATE_ARGS (TYPE_TI_ARGS (arg));
 	    tree argtmplvec
 	      = DECL_INNERMOST_TEMPLATE_PARMS (TYPE_TI_TEMPLATE (arg));
 	    int i;
@@ -9673,9 +9673,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 
 	    for (i = 0; i < TREE_VEC_LENGTH (parmvec); ++i)
 	      {
-	        tree t = TREE_VEC_ELT (parmvec, i);
-
-	        if (unify (tparms, targs, t, 
+	        if (unify (tparms, targs, 
+			   TREE_VEC_ELT (parmvec, i), 
 			   TREE_VEC_ELT (argvec, i), 
 			   UNIFY_ALLOW_NONE))
 		  return 1;
