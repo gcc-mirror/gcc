@@ -432,6 +432,7 @@ java_read_unicode (lex, term_context, unicode_escape_p)
 	      else
 		java_lex_error ("Non hex digit in Unicode escape sequence", 0);
 	    }
+	  lex->bs_count = 0;
 	  *unicode_escape_p = 1;
 	  return (term_context
 		  ? unicode : (java_lineterminator (c) ? '\n' : unicode));
