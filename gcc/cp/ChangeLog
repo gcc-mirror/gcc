@@ -25,7 +25,7 @@
 
 2003-03-11  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/9336
+	PR c++/9474
 	* decl2.c (do_nonmember_using_decl): Do not call duplicate decls
 	to merge old and new declarations.
 
