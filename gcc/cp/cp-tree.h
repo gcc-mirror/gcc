@@ -696,7 +696,7 @@ struct lang_type
       unsigned const_needs_init : 1;
       unsigned ref_needs_init : 1;
       unsigned has_const_assign_ref : 1;
-      unsigned anon_union : 1;
+      unsigned anon_aggr : 1;
 
       unsigned has_nonpublic_ctor : 2;
       unsigned has_nonpublic_assign_ref : 2;
@@ -1764,16 +1764,14 @@ extern int flag_new_for_scope;
    Just used to communicate formatting information to dbxout.c.  */
 #define DECL_OPERATOR(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.operator_attr)
 
-#define ANON_UNION_P(NODE) (DECL_NAME (NODE) == 0)
-
-/* Nonzero if TYPE is an anonymous union type.  We have to use a flag for
-   this because "A union for which objects or pointers are declared is not
-   an anonymous union" [class.union].  */
-#define ANON_UNION_TYPE_P(NODE)				\
+/* Nonzero if TYPE is an anonymous union or struct type.  We have to use a
+   flag for this because "A union for which objects or pointers are
+   declared is not an anonymous union" [class.union].  */
+#define ANON_AGGR_TYPE_P(NODE)				\
   (TYPE_LANG_SPECIFIC (NODE)				\
-   && TYPE_LANG_SPECIFIC (NODE)->type_flags.anon_union)
-#define SET_ANON_UNION_TYPE_P(NODE)				\
-  (TYPE_LANG_SPECIFIC (NODE)->type_flags.anon_union = 1)
+   && TYPE_LANG_SPECIFIC (NODE)->type_flags.anon_aggr)
+#define SET_ANON_AGGR_TYPE_P(NODE)			\
+  (TYPE_LANG_SPECIFIC (NODE)->type_flags.anon_aggr = 1)
 
 #define UNKNOWN_TYPE LANG_TYPE
 
@@ -2879,7 +2877,7 @@ extern int in_function_p			PROTO((void));
 extern void replace_defarg			PROTO((tree, tree));
 extern void print_other_binding_stack		PROTO((struct binding_level *));
 extern void revert_static_member_fn             PROTO((tree*, tree*, tree*));
-extern void fixup_anonymous_union               PROTO((tree));
+extern void fixup_anonymous_aggr               PROTO((tree));
 extern int check_static_variable_definition     PROTO((tree, tree));
 extern void push_local_binding                  PROTO((tree, tree, int));
 extern int push_class_binding                   PROTO((tree, tree));

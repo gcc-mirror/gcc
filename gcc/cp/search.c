@@ -534,7 +534,7 @@ lookup_field_1 (type, name)
 #endif /* GATHER_STATISTICS */
       my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (field)) == 'd', 0);
       if (DECL_NAME (field) == NULL_TREE
-	  && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
+	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
 	{
 	  tree temp = lookup_field_1 (TREE_TYPE (field), name);
 	  if (temp)
@@ -610,7 +610,7 @@ context_for_name_lookup (decl)
      declared.  */ 
   tree context = DECL_REAL_CONTEXT (decl);
 
-  while (TYPE_P (context) && ANON_UNION_TYPE_P (context))
+  while (TYPE_P (context) && ANON_AGGR_TYPE_P (context))
     context = TYPE_CONTEXT (context);
   if (!context)
     context = global_namespace;
@@ -2927,7 +2927,7 @@ dfs_push_decls (binfo, data)
 	    && TREE_CODE (fields) != USING_DECL)
 	  setup_class_bindings (DECL_NAME (fields), /*type_binding_p=*/0);
 	else if (TREE_CODE (fields) == FIELD_DECL
-		 && ANON_UNION_TYPE_P (TREE_TYPE (fields)))
+		 && ANON_AGGR_TYPE_P (TREE_TYPE (fields)))
 	  dfs_push_decls (TYPE_BINFO (TREE_TYPE (fields)), data);
 	  
       method_vec = (CLASS_TYPE_P (type) 
@@ -3001,7 +3001,7 @@ dfs_unuse_fields (binfo, data)
 
       TREE_USED (fields) = 0;
       if (DECL_NAME (fields) == NULL_TREE
-	  && TREE_CODE (TREE_TYPE (fields)) == UNION_TYPE)
+	  && ANON_AGGR_TYPE_P (TREE_TYPE (fields)))
 	unuse_fields (TREE_TYPE (fields));
     }
 

@@ -4884,8 +4884,8 @@ instantiate_class_template (type)
   TYPE_PACKED (type) = TYPE_PACKED (pattern);
   TYPE_ALIGN (type) = TYPE_ALIGN (pattern);
   TYPE_FOR_JAVA (type) = TYPE_FOR_JAVA (pattern); /* For libjava's JArray<T> */
-  if (ANON_UNION_TYPE_P (pattern))
-    SET_ANON_UNION_TYPE_P (type);
+  if (ANON_AGGR_TYPE_P (pattern))
+    SET_ANON_AGGR_TYPE_P (type);
 
   /* We must copy the arguments to the permanent obstack since
      during the tsubst'ing below they may wind up in the

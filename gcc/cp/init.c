@@ -154,15 +154,24 @@ perform_member_init (member, name, init, explicit)
 
   expand_start_target_temps ();
 
-  if (TYPE_NEEDS_CONSTRUCTING (type)
-      || (init && TYPE_HAS_CONSTRUCTOR (type)))
+  decl = build_component_ref (current_class_ref, name, NULL_TREE, explicit);
+
+  /* Deal with this here, as we will get confused if we try to call the
+     assignment op for an anonymous union.  This can happen in a
+     synthesized copy constructor.  */
+  if (ANON_AGGR_TYPE_P (type))
+    {
+      init = build (INIT_EXPR, type, decl, TREE_VALUE (init));
+      TREE_SIDE_EFFECTS (init) = 1;
+      expand_expr_stmt (init);
+    }
+  else if (TYPE_NEEDS_CONSTRUCTING (type)
+	   || (init && TYPE_HAS_CONSTRUCTOR (type)))
     {
       /* Since `init' is already a TREE_LIST on the current_member_init_list,
 	 only build it into one if we aren't already a list.  */
       if (init != NULL_TREE && TREE_CODE (init) != TREE_LIST)
 	init = build_expr_list (NULL_TREE, init);
-
-      decl = build_component_ref (current_class_ref, name, NULL_TREE, explicit);
 
       if (explicit
 	  && TREE_CODE (type) == ARRAY_TYPE
@@ -186,7 +195,7 @@ perform_member_init (member, name, init, explicit)
 	      /* default-initialization.  */
 	      if (AGGREGATE_TYPE_P (type))
 		init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
-	      else if (TREE_CODE (type) == REFERENCE_TYPE)
+ 	      else if (TREE_CODE (type) == REFERENCE_TYPE)
 		{
 		  cp_error ("default-initialization of `%#D', which has reference type",
 			    member);
@@ -216,8 +225,6 @@ perform_member_init (member, name, init, explicit)
 	 current_member_init_list.  */
       if (init || explicit)
 	{
-	  decl = build_component_ref (current_class_ref, name, NULL_TREE,
-				      explicit);
 	  expand_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 	}
     }
@@ -275,16 +282,13 @@ sort_member_init (t)
 	    continue;
 	  name = TREE_PURPOSE (x);
 
-#if 0
-	  /* This happens in templates, since the IDENTIFIER is replaced
-             with the COMPONENT_REF in tsubst_expr.  */
-	  field = (TREE_CODE (name) == COMPONENT_REF
-		   ? TREE_OPERAND (name, 1) : IDENTIFIER_CLASS_VALUE (name));
-#else
-	  /* Let's find out when this happens.  */
-	  my_friendly_assert (TREE_CODE (name) != COMPONENT_REF, 348);
-	  field = IDENTIFIER_CLASS_VALUE (name);
-#endif
+	  if (TREE_CODE (name) == IDENTIFIER_NODE)
+	    field = IDENTIFIER_CLASS_VALUE (name);
+	  else
+	    {
+	      my_friendly_assert (TREE_CODE (name) == FIELD_DECL, 348); 
+	      field = name;
+	    }
 
 	  /* If one member shadows another, get the outermost one.  */
 	  if (TREE_CODE (field) == TREE_LIST)
@@ -635,15 +639,8 @@ emit_base_init (t, immediately)
 	  init = TREE_VALUE (mem_init_list);
 	  from_init_list = 1;
 
-#if 0
-	  if (TREE_CODE (name) == COMPONENT_REF)
-	    name = DECL_NAME (TREE_OPERAND (name, 1));
-#else
-	  /* Also see if it's ever a COMPONENT_REF here.  If it is, we
-	     need to do `expand_assignment (name, init, 0, 0);' and
-	     a continue.  */
-	  my_friendly_assert (TREE_CODE (name) != COMPONENT_REF, 349);
-#endif
+	  my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE
+			      || TREE_CODE (name) == FIELD_DECL, 349);
 	}
       else
 	{
@@ -672,9 +669,11 @@ emit_base_init (t, immediately)
 	{
 	  name = TREE_PURPOSE (mem_init_list);
 	  init = TREE_VALUE (mem_init_list);
-	  /* XXX: this may need the COMPONENT_REF operand 0 check if
-	     it turns out we actually get them.  */
-	  field = IDENTIFIER_CLASS_VALUE (name);
+
+	  if (TREE_CODE (name) == IDENTIFIER_NODE)
+	    field = IDENTIFIER_CLASS_VALUE (name);
+	  else
+	    field = name;
 
 	  /* If one member shadows another, get the outermost one.  */
 	  if (TREE_CODE (field) == TREE_LIST)
@@ -831,7 +830,7 @@ initializing_context (field)
 
   /* Anonymous union members can be initialized in the first enclosing
      non-anonymous union context.  */
-  while (t && ANON_UNION_TYPE_P (t))
+  while (t && ANON_AGGR_TYPE_P (t))
     t = TYPE_CONTEXT (t);
   return t;
 }

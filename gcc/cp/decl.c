@@ -4338,7 +4338,7 @@ pushdecl_class_level (x)
       if (TREE_CODE (x) == TYPE_DECL)
 	set_identifier_type_value (name, TREE_TYPE (x));
     }
-  else if (ANON_UNION_TYPE_P (TREE_TYPE (x)))
+  else if (ANON_AGGR_TYPE_P (TREE_TYPE (x)))
     {
       tree f;
 
@@ -7011,7 +7011,7 @@ define_function (name, type, function_code, pfn, library_name)
    union type.)  */
 
 void
-fixup_anonymous_union (t)
+fixup_anonymous_aggr (t)
      tree t;
 {
   tree *q;
@@ -7098,12 +7098,15 @@ check_tag_decl (declspecs)
   /* Check for an anonymous union.  We're careful
      accessing TYPE_IDENTIFIER because some built-in types, like
      pointer-to-member types, do not have TYPE_NAME.  */
-  else if (t && TREE_CODE (t) == UNION_TYPE
+  else if (t && IS_AGGR_TYPE_CODE (TREE_CODE (t))
 	   && TYPE_NAME (t)
 	   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
     {
       /* Anonymous unions are objects, so they can have specifiers.  */;
-      SET_ANON_UNION_TYPE_P (t);
+      SET_ANON_AGGR_TYPE_P (t);
+
+      if (TREE_CODE (t) != UNION_TYPE && pedantic && ! in_system_header)
+	pedwarn ("ISO C++ prohibits anonymous structs");
     }
 
   else if (ob_modifier)
@@ -7149,9 +7152,9 @@ shadow_tag (declspecs)
      union { ... } ;
      because there is no declarator after the union, the parser
      sends that declaration here.  */
-  if (t && ANON_UNION_TYPE_P (t))
+  if (t && ANON_AGGR_TYPE_P (t))
     {
-      fixup_anonymous_union (t);
+      fixup_anonymous_aggr (t);
 
       if (TYPE_FIELDS (t))
 	{
@@ -10053,7 +10056,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   /* Static anonymous unions are dealt with here.  */
   if (staticp && decl_context == TYPENAME
       && TREE_CODE (declspecs) == TREE_LIST
-      && ANON_UNION_TYPE_P (TREE_VALUE (declspecs)))
+      && ANON_AGGR_TYPE_P (TREE_VALUE (declspecs)))
     decl_context = FIELD;
 
   /* Give error if `const,' `volatile,' `inline,' `friend,' or `virtual'
