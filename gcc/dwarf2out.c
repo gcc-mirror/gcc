@@ -109,7 +109,6 @@ typedef struct dw_loc_descr_struct *dw_loc_descr_ref;
 typedef struct dw_cfi_struct *dw_cfi_ref;
 typedef struct dw_fde_struct *dw_fde_ref;
 typedef union  dw_cfi_oprnd_struct *dw_cfi_oprnd_ref;
-typedef struct backchain *backchain_ref;
 
 /* Describe a double word constant value.  */
 typedef struct dw_double_const_struct
@@ -197,7 +196,7 @@ typedef struct dw_cfi_struct
 dw_cfi_node;
 
 /* All call frame descriptions (FDE's) in the GCC generated DWARF
-   refer to a signle Common Information Entry (CIE), defined at
+   refer to a single Common Information Entry (CIE), defined at
    the beginning of the .debug_frame section.  This used of a single
    CIE obviates the need to keep track of multiple CIE's
    in the DWARF generation routines below.  */
@@ -226,17 +225,6 @@ typedef struct die_struct
     unsigned long die_abbrev;
   }
 die_node;
-
-/* The structure for backchaining support, when structure tags are declared
-   before they are defined.  */
-
-typedef struct backchain
-  {
-    tree type;
-    dw_die_ref placeholder;
-    backchain_ref next;
-  }
-backchain_t;
 
 /* How to start an assembler comment.  */
 #ifndef ASM_COMMENT_START
@@ -566,10 +554,6 @@ static dw_die_ref int_base_type_die;
    we want to tell the user what the source coordinates for the actual
    declaration are.  */
 static tree dwarf_last_decl;
-
-/* A list of DIE reference attributes values that need backchaining
-   support.  */
-static backchain_ref backchain;
 
 /* Forward declarations for functions defined in this file.  */
 static void gen_type_die ();
@@ -2088,23 +2072,6 @@ add_AT_section_offset (die, attr_kind, section)
     }
 }
 
-/* Save a DIE reference attribute value to a DIE for later backchaining.  */
-inline void
-backchain_AT_die_ref (type, placeholder)
-     register tree type;
-     register dw_die_ref placeholder;
-{
-  register backchain_ref back = (backchain_ref) xmalloc (sizeof (backchain_t));
-  if (back != NULL)
-    {
-      back->type = type;
-      back->placeholder = placeholder;
-
-      back->next = backchain;
-      backchain = back;
-    }
-}
-
 /* Test if die refers to an external subroutine.  */
 inline int
 is_extern_subr_die (die)
@@ -2218,6 +2185,62 @@ get_AT_hi_pc (die)
 	}
     }
   return hi_pc;
+}
+
+/* Remove the specified attribute if present.  */
+inline void
+remove_AT (die, attr_kind)
+     register dw_die_ref die;
+     register enum dwarf_attribute attr_kind;
+{
+  register dw_attr_ref a;
+  register dw_attr_ref removed = NULL;;
+  if (die != NULL)
+    {
+      if (die->die_attr->dw_attr == attr_kind)
+	{
+	  removed = die->die_attr;
+	  if (die->die_attr_last == die->die_attr)
+	    die->die_attr_last = NULL;
+	  die->die_attr = die->die_attr->dw_attr_next;
+	}
+      else for (a = die->die_attr; a->dw_attr_next != NULL;
+		a = a->dw_attr_next)
+	if (a->dw_attr_next->dw_attr == attr_kind)
+	  {
+	    removed = a->dw_attr_next;
+	    if (die->die_attr_last == a->dw_attr_next)
+	      die->die_attr_last = a;
+	    a->dw_attr_next = a->dw_attr_next->dw_attr_next;
+	    return;
+	  }
+      if (removed)
+	free (removed);
+    }
+}
+
+/* Discard the children of this DIE.  */
+inline void
+remove_children (die)
+     register dw_die_ref die;
+{
+  register dw_die_ref child_die = die->die_child;
+  die->die_child = NULL;
+  die->die_child_last = NULL;
+  while (child_die != NULL)
+    {
+      register dw_die_ref tmp_die = child_die;
+      register dw_attr_ref a;
+      child_die = child_die->die_sib;
+      
+      for (a = tmp_die->die_attr; a != NULL; )
+	{
+	  register dw_attr_ref tmp_a = a;
+	  a = a->dw_attr_next;
+	  free (tmp_a);
+	}
+      free (tmp_die);
+    }
 }
 
 /* Add a child DIE below its parent.  */
@@ -4557,6 +4580,8 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 	}
       else
 	{
+	  gen_type_die (type, context_die);
+
 	  /* We have to get the type_main_variant here (and pass that to the
 	     `lookup_type_die' routine) because the ..._TYPE node we have
 	     might simply be a *copy* of some original type node (where the
@@ -4567,17 +4592,8 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 	     handles DIEs representing *main variants*, and it never even
 	     knows about non-main-variants.).  */
 	  mod_type_die = lookup_type_die (type_main_variant (type));
-
-	  /* Normally, we assume that all types are defined before they are
-	     referenced.  If this is not the case, then mod_type_die will
-	     be NULL here, and we must backchain.  This can happen as the
-	     result of a forward declaration of a structure tag.  */
 	  if (mod_type_die == NULL)
-	    {
-	      dw_die_ref placeholder_die = new_die (DW_TAG_padding,
-						    context_die);
-	      backchain_AT_die_ref (type, placeholder_die);
-	    }
+	    abort ();
 	}
     }
   if (sub_die != NULL)
@@ -4586,32 +4602,6 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
     }
   equate_type_number_to_die (type, mod_type_die);
   return mod_type_die;
-}
-
-/* Fix all unresolved die references that resulted from forward
-   declarations.  */
-static void
-resolve_backchains ()
-{
-  register backchain_ref back;
-
-  back = backchain;
-  while (back)
-    {
-      register dw_die_ref type_die;
-
-      type_die = lookup_type_die (type_main_variant (back->type));
-
-      assert (type_die != NULL);
-				    
-      /* ??? It would be cleaner to find the die attribute, and change
-	 the val_dir_ref field to point to this new die.  Just overwriting
-	 the temporary die with the correct one is easier though, and seems
-	 to work just as well.  */
-      memcpy (back->placeholder, type_die, sizeof (die_node));
-
-      back = back->next;
-    }
 }
 
 /* Given a pointer to an arbitrary ..._TYPE tree node, return true if it is
@@ -6118,7 +6108,7 @@ gen_subprogram_die (decl, context_die)
 {
   char label_id[MAX_ARTIFICIAL_LABEL_BYTES];
   register tree origin = decl_ultimate_origin (decl);
-  register dw_die_ref subr_die = new_die (DW_TAG_subprogram, context_die);
+  register dw_die_ref subr_die;
   register dw_loc_descr_ref fp_loc = NULL;
   register unsigned fp_reg;
   register tree type;
@@ -6129,17 +6119,32 @@ gen_subprogram_die (decl, context_die)
 
   if (origin != NULL)
     {
+      subr_die = new_die (DW_TAG_subprogram, context_die);
       add_abstract_origin_attribute (subr_die, origin);
     }
   else if (old_die)
     {
+      register unsigned file_index
+	= lookup_filename (DECL_SOURCE_FILE (decl));
       if (get_AT_flag (old_die, DW_AT_declaration) != 1)
 	abort ();
-      add_AT_die_ref (subr_die, DW_AT_specification, old_die);
-      if (DECL_NAME (decl))
+
+      /* If the definition comes from the same place as the declaration,
+	 use the old DIE.  */
+      if (get_AT_unsigned (old_die, DW_AT_decl_file) == file_index
+	  && (get_AT_unsigned (old_die, DW_AT_decl_line)
+	      == DECL_SOURCE_LINE (decl)))
 	{
-	  register unsigned file_index
-	    = lookup_filename (DECL_SOURCE_FILE (decl));
+	  subr_die = old_die;
+
+	  /* Clear out the declaration attribute and the parm types.  */
+	  remove_AT (subr_die, DW_AT_declaration);
+	  remove_children (subr_die);
+	}
+      else
+	{
+	  subr_die = new_die (DW_TAG_subprogram, context_die);
+	  add_AT_die_ref (subr_die, DW_AT_specification, old_die);
 	  if (get_AT_unsigned (old_die, DW_AT_decl_file) != file_index)
 	    add_AT_unsigned (subr_die, DW_AT_decl_file, file_index);
 	  if (get_AT_unsigned (old_die, DW_AT_decl_line)
@@ -6150,6 +6155,7 @@ gen_subprogram_die (decl, context_die)
     }
   else
     {
+      subr_die = new_die (DW_TAG_subprogram, context_die);
       if (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
 	{
 	  add_AT_flag (subr_die, DW_AT_external, 1);
@@ -6657,6 +6663,10 @@ gen_struct_or_union_type_die (type, is_complete, context_die)
       equate_type_number_to_die (type, type_die);
       add_name_attribute (type_die, type_tag (type));
     }
+  else if (is_complete)
+    remove_AT (type_die, DW_AT_declaration);
+  else
+    return;
 
   /* If this type has been completed, then give it a byte_size attribute and
      then give a list of members.  */
@@ -6671,6 +6681,8 @@ gen_struct_or_union_type_die (type, is_complete, context_die)
 	  gen_member_die (type, type_die);
 	}
     }
+  else
+    add_AT_flag (type_die, DW_AT_declaration, 1);
 }
 
 /* Generate a DIE for a subroutine _type_.  */
@@ -6838,6 +6850,11 @@ gen_type_die (type, context_die)
 	{
 	  gen_struct_or_union_type_die (type, is_complete, context_die);
 	}
+
+      /* Don't set TREE_ASM_WRITTEN on an incomplete struct; we want to fix
+	 it up if it is ever completed.  */
+      if (! is_complete)
+	return;
       break;
 
     case VOID_TYPE:
@@ -7076,18 +7093,6 @@ gen_decl_die (decl, context_die)
 	{
 	  break;
 	}
-      /* Before we describe the FUNCTION_DECL itself, make sure that we have
-         described its context.  */
-      origin = decl_class_context (decl);
-      if (origin && ! decl_ultimate_origin (decl))
-	{
-	  dw_die_ref old_die;
-	  gen_type_die (origin, context_die);
-	  /* We may have just generated the DIE we need; let's check.  */
-	  old_die = lookup_decl_die (decl);
-	  if (old_die && get_AT_flag (old_die, DW_AT_declaration) != 1)
-	    break;
-	}
 
       /* Before we describe the FUNCTION_DECL itself, make sure that we have
          described its return type.  */
@@ -7152,19 +7157,6 @@ gen_decl_die (decl, context_die)
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	{
 	  break;
-	}
-
-      /* Before we describe the VAR_DECL itself, make sure that we have
-         described its context.  */
-      origin = decl_class_context (decl);
-      if (origin && ! decl_ultimate_origin (decl))
-	{
-	  dw_die_ref old_die;
-	  gen_type_die (origin, context_die);
-	  /* We may have just generated the DIE we need; let's check.  */
-	  old_die = lookup_decl_die (decl);
-	  if (old_die && get_AT_flag (old_die, DW_AT_declaration) != 1)
-	    break;
 	}
 
       /* Output any DIEs that are needed to specify the type of this data
@@ -7748,9 +7740,6 @@ dwarfout_init (asm_out_file, main_input_filename)
 
   /* clear the association between base types and their DIE's */
   init_base_type_table ();
-
-  /* clear the backchain list.  */
-  backchain = NULL;
 }
 
 /* Output stuff that dwarf requires at the end of every file,
@@ -7758,9 +7747,6 @@ dwarfout_init (asm_out_file, main_input_filename)
 void
 dwarfout_finish ()
 {
-
-  resolve_backchains ();
-
   /* Traverse the DIE tree and add sibling attributes to those DIE's
      that have children.  */
   add_sibling_attributes (comp_unit_die);
