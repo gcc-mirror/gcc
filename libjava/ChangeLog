@@ -1,5 +1,9 @@
 2005-02-14  Tom Tromey  <tromey@redhat.com>
 
+	* testsuite/libjava.lang/PR19921.java: Use correct class name.
+
+2005-02-14  Tom Tromey  <tromey@redhat.com>
+
 	* testsuite/libjava.lang/PR19921.out: Renamed from PR19929.out.
 	* testsuite/libjava.lang/PR19921.java: Renamed from PR19929.java.
 
