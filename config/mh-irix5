@@ -1,3 +1,2 @@
 # Makefile changes for SGI's running IRIX-5.x.
-SYSV = -DSYSV
 RANLIB = true

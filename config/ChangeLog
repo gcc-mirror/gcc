@@ -1,5 +1,22 @@
 2002-04-29  Nathanael Nerode  <neroden@twcny.rr.com>
 
+	* config/mh-cxux: remove dead code
+	* config/mh-dgux386: remove dead code
+	* config/mh-hp300: remove dead code
+	* config/mh-hpux: remove dead code
+	* config/mh-hpux8: remove dead code
+	* config/mh-irix5: remove dead code
+	* config/mh-irix6: remove dead code
+	* config/mh-ncr3000: remove dead code
+	* config/mh-ncrsvr43: remove dead code
+	* config/mh-necv4: remove dead code
+	* config/mh-sco: remove dead code
+	* config/mh-solaris: remove dead code
+	* config/mh-sysv: remove dead code
+	* config/mh-sysv4: remove dead code
+	* config/mh-sysv5: remove dead code
+	* config/mh-irix4: remove, contains only dead code
+
 	* config/mt-armpic: Delete.
 	* config/mt-elfalphapic: Delete.
 	* config/mt-i370pic: Delete.

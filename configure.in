@@ -173,7 +173,6 @@ case "${host}" in
     # environment.  Also bump switch table size so that cp-parse will
     # compile.  Bump string length limit so linker builds.
     tentative_cc="cc -cckr -Wf,-XNg1500 -Wf,-XNk1000 -Wf,-XNh2000 -Wf,-XNl8192"
-    host_makefile_frag="${host_makefile_frag} config/mh-irix4"
     ;;
   mips*-sgi-irix3*)
     host_makefile_frag="${host_makefile_frag} config/mh-sysv"
