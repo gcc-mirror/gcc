@@ -293,14 +293,14 @@ instrument_arcs (f, num_blocks, dump_file)
 		  if (this_is_simplejump)
 		    {
 		      after = NEXT_INSN (arcptr->branch_insn);
-		      if (! redirect_jump (arcptr->branch_insn, new_label))
+		      if (! redirect_jump (arcptr->branch_insn, new_label, 1))
 			/* Don't know what to do if this branch won't
 			   redirect.  */
 			abort ();
 		    }
 		  else
 		    {
-		      if (! invert_jump (arcptr->branch_insn, new_label))
+		      if (! invert_jump (arcptr->branch_insn, new_label, 1))
 			/* Don't know what to do if this branch won't invert.  */
 			abort ();
 

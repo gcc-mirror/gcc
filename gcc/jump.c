@@ -342,7 +342,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 	  /* See if this jump goes to another jump and redirect if so.  */
 	  nlabel = follow_jumps (JUMP_LABEL (insn));
 	  if (nlabel != JUMP_LABEL (insn))
-	    changed |= redirect_jump (insn, nlabel);
+	    changed |= redirect_jump (insn, nlabel, 1);
 
 	  if (! optimize || minimal)
 	    continue;
@@ -444,7 +444,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 	      if (prev_label)
 		++LABEL_NUSES (prev_label);
 
-	      if (invert_jump (insn, JUMP_LABEL (reallabelprev)))
+	      if (invert_jump (insn, JUMP_LABEL (reallabelprev), 1))
 		{
 		  /* It is very likely that if there are USE insns before
 		     this jump, they hold REG_DEAD notes.  These REG_DEAD
@@ -507,7 +507,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 		}
 
 	      delete_insn (temp);
-	      redirect_jump (insn, get_label_before (temp1));
+	      redirect_jump (insn, get_label_before (temp1), 1);
 	      reallabelprev = prev_real_insn (temp1);
 	      changed = 1;
 	      next = NEXT_INSN (insn);
@@ -579,7 +579,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 		       && swap_condition (GET_CODE (temp2)) == GET_CODE (tc)
 		       && rtx_equal_p (XEXP (tc, 0), XEXP (temp2, 0))
 		       && rtx_equal_p (XEXP (tc, 1), XEXP (temp2, 1))
-		       && redirect_jump (insn, get_label_after (temp)))
+		       && redirect_jump (insn, get_label_after (temp), 1))
 		{
 		  changed = 1;
 		  continue;
@@ -1629,7 +1629,7 @@ do_cross_jump (insn, newjpos, newlpos)
 	}
     }
   else
-    redirect_jump (insn, label);
+    redirect_jump (insn, label, 1);
 
   /* Delete the matching insns before the jump.  Also, remove any REG_EQUAL
      or REG_EQUIV note in the NEWLPOS stream that isn't also present in
@@ -3182,8 +3182,9 @@ redirect_jump_1 (jump, nlabel)
    (this can only occur for NLABEL == 0).  */
 
 int
-redirect_jump (jump, nlabel)
+redirect_jump (jump, nlabel, delete_unused)
      rtx jump, nlabel;
+     int delete_unused;
 {
   register rtx olabel = JUMP_LABEL (jump);
 
@@ -3221,7 +3222,7 @@ redirect_jump (jump, nlabel)
       && NOTE_LINE_NUMBER (NEXT_INSN (olabel)) == NOTE_INSN_FUNCTION_END)
     emit_note_after (NOTE_INSN_FUNCTION_END, nlabel);
 
-  if (olabel && --LABEL_NUSES (olabel) == 0)
+  if (olabel && --LABEL_NUSES (olabel) == 0 && delete_unused)
     delete_insn (olabel);
 
   return 1;
@@ -3321,8 +3322,9 @@ invert_jump_1 (jump, nlabel)
    NLABEL instead of where it jumps now.  Return true if successful.  */
 
 int
-invert_jump (jump, nlabel)
+invert_jump (jump, nlabel, delete_unused)
      rtx jump, nlabel;
+     int delete_unused;
 {
   /* We have to either invert the condition and change the label or
      do neither.  Either operation could fail.  We first try to invert
@@ -3332,7 +3334,7 @@ invert_jump (jump, nlabel)
   if (! invert_exp (PATTERN (jump), jump))
     return 0;
 
-  if (redirect_jump (jump, nlabel))
+  if (redirect_jump (jump, nlabel, delete_unused))
     {
       /* An inverted jump means that a probability taken becomes a
 	 probability not taken.  Subtract the branch probability from the
@@ -3911,7 +3913,7 @@ thread_jumps (f, max_reg, flag_before_loop)
 			      new_label = gen_label_rtx ();
 			      emit_label_after (new_label, PREV_INSN (prev));
 			    }
-			  changed |= redirect_jump (b1, new_label);
+			  changed |= redirect_jump (b1, new_label, 1);
 			}
 		      break;
 		    }

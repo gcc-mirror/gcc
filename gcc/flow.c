@@ -1556,7 +1556,7 @@ split_edge (edge_in)
 	  if (JUMP_LABEL (insn) != old_label)
 	    abort ();
 
-	  redirect_jump (insn, new_label);
+	  redirect_jump (insn, new_label, 0);
 	}
 
       emit_label_before (new_label, bb_note);

@@ -1,3 +1,17 @@
+2000-05-19  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (redirect_jump): Add delete_unused argument.  Don't
+	remove labels and code following when LABEL_NUSES goes to zero.
+	(invert_jump): Likewise.
+	(jump_optimize_1): Fix redirect/invert arguments.
+	(do_cross_jump, thread_jumps): Likewise.
+	* flow.c (split_edge): Likewise.
+	* reorg.c (optimize_skip): Likewise.
+	(reorg_redirect_jump, relax_delay_slots, dbr_schedule): Likewise.
+	* profile.c (instrument_arcs): Likewise.
+	* loop.c (find_and_verify_loops): Likewise.  Fix indentation.
+	* rtl.h: Update prototypes.
+
 Fri May 19 12:05:13 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* ssa.c (convert_from_ssa): Tell life_analysis we need death 
@@ -52,7 +66,7 @@ Fri May 19 06:49:35 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-05-18 Mark Elbrecht <snowball3@bigfoot.com>
 
-        * configure.in (*-pc-msdosdjgpp): Set float_format to none.
+	* configure.in (*-pc-msdosdjgpp): Set float_format to none.
 	* configure: Rebuilt.
 
 2000-05-18  Zack Weinberg  <zack@wolery.cumb.org>
