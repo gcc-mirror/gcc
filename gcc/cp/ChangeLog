@@ -1,5 +1,15 @@
 2001-05-21  Jason Merrill  <jason_merrill@redhat.com>
 
+	* class.c (build_vtable_entry_ref): Lose vtbl parm.  Fix for new abi.
+	(build_vtbl_ref): Adjust.
+	(dfs_accumulate_vtbl_inits): Set TREE_CONSTANT on the vtable address.
+	* decl2.c (lang_f_options): Remove huge-objects, vtable-thunks.
+	Re-add vtable-gc.
+	(unsupported_options): Correspondingly.
+
+	* decl2.c (maybe_make_one_only): Check flag_weak, not
+	supports_one_only().
+
 	* cp-tree.def (START_CATCH_STMT): Lose.
 	* dump.c (cp_dump_tree): Don't dump it.  Do dump HANDLER_PARMS.
 	* tree.c (cp_statement_code_p): Don't case it.

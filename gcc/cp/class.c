@@ -136,7 +136,7 @@ static tree add_implicitly_declared_members PARAMS ((tree, int, int, int));
 static tree fixed_type_or_null PARAMS ((tree, int *, int *));
 static tree resolve_address_of_overloaded_function PARAMS ((tree, tree, int,
 							  int, int, tree));
-static void build_vtable_entry_ref PARAMS ((tree, tree, tree));
+static void build_vtable_entry_ref PARAMS ((tree, tree));
 static tree build_vtbl_initializer PARAMS ((tree, tree, tree, tree, int *));
 static int count_fields PARAMS ((tree));
 static int add_fields_to_vec PARAMS ((tree, tree, int));
@@ -518,22 +518,20 @@ build_vbase_path (code, type, expr, path, nonnull)
           "i"((long)&vtbl[idx].pfn - (long)&vtbl[0])); */
 
 static void
-build_vtable_entry_ref (basetype, vtbl, idx)
-     tree basetype, vtbl, idx;
+build_vtable_entry_ref (basetype, idx)
+     tree basetype, idx;
 {
   static char asm_stmt[] = ".vtable_entry %c0, %c1";
   tree s, i, i2;
+  tree vtable = get_vtbl_decl_for_binfo (TYPE_BINFO (basetype));
+  tree first_fn = TYPE_BINFO_VTABLE (basetype);
 
-  s = build_unary_op (ADDR_EXPR, 
-		      get_vtbl_decl_for_binfo (TYPE_BINFO (basetype)), 
-		      0);
+  s = build_unary_op (ADDR_EXPR, vtable, 0);
   s = build_tree_list (build_string (1, "s"), s);
 
-  i = build_array_ref (vtbl, idx);
-  if (!flag_vtable_thunks)
-    i = build_component_ref (i, pfn_identifier, vtable_entry_type, 0);
+  i = build_array_ref (first_fn, idx);
   i = build_c_cast (ptrdiff_type_node, build_unary_op (ADDR_EXPR, i, 0));
-  i2 = build_array_ref (vtbl, build_int_2(0,0));
+  i2 = build_array_ref (vtable, build_int_2 (0,0));
   i2 = build_c_cast (ptrdiff_type_node, build_unary_op (ADDR_EXPR, i2, 0));
   i = cp_build_binary_op (MINUS_EXPR, i, i2);
   i = build_tree_list (build_string (1, "i"), i);
@@ -621,7 +619,7 @@ build_vtbl_ref (instance, idx)
   assemble_external (vtbl);
 
   if (flag_vtable_gc)
-    build_vtable_entry_ref (basetype, vtbl, idx);
+    build_vtable_entry_ref (basetype, idx);
 
   aref = build_array_ref (vtbl, idx);
 
@@ -726,13 +724,13 @@ build_vtable (class_type, name, vtable_type)
   tree decl;
 
   decl = build_lang_decl (VAR_DECL, name, vtable_type);
+  /* vtable names are already mangled; give them their DECL_ASSEMBLER_NAME
+     now to avoid confusion in mangle_decl.  */
+  SET_DECL_ASSEMBLER_NAME (decl, name);
   DECL_CONTEXT (decl) = class_type;
   DECL_ARTIFICIAL (decl) = 1;
   TREE_STATIC (decl) = 1;
-#ifndef WRITABLE_VTABLES
-  /* Make them READONLY by default. (mrs) */
   TREE_READONLY (decl) = 1;
-#endif
   DECL_VIRTUAL_P (decl) = 1;
   import_export_vtable (decl, class_type, 0);
 
@@ -761,7 +759,6 @@ get_vtable_decl (type, complete)
     }
   
   decl = build_vtable (type, name, void_type_node);
-  SET_DECL_ASSEMBLER_NAME (decl, name);
   decl = pushdecl_top_level (decl);
   my_friendly_assert (IDENTIFIER_GLOBAL_VALUE (name) == decl,
 		      20000517);
@@ -2448,7 +2445,7 @@ duplicate_tag_error (t)
   SET_IS_AGGR_TYPE (t, 1);
 }
 
-/* Make the BINFO's vtablehave N entries, including RTTI entries,
+/* Make BINFO's vtable have N entries, including RTTI entries,
    vbase and vcall offsets, etc.  Set its type and call the backend
    to lay it out.  */
 
@@ -6996,7 +6993,8 @@ initialize_array (decl, inits)
    
    This holds
    1 - primary virtual pointer for complete object T
-   2 - secondary VTTs for each direct non-virtual base of T which requires a VTT
+   2 - secondary VTTs for each direct non-virtual base of T which requires a
+       VTT
    3 - secondary virtual pointers for each direct or indirect base of T which
        has virtual bases or is reachable via a virtual path from T.
    4 - secondary VTTs for each direct or indirect virtual base of T.
@@ -7027,7 +7025,6 @@ build_vtt (t)
 				 
   /* Now, build the VTT object itself.  */
   vtt = build_vtable (t, get_vtt_name (t), type);
-  SET_DECL_ASSEMBLER_NAME (vtt, DECL_NAME (vtt));
   pushdecl_top_level (vtt);
   initialize_array (vtt, inits);
 }
@@ -7482,6 +7479,7 @@ dfs_accumulate_vtbl_inits (binfo, orig_binfo, rtti_binfo, t, l)
       vtbl = build1 (ADDR_EXPR, 
 		     vtbl_ptr_type_node,
 		     vtbl);
+      TREE_CONSTANT (vtbl) = 1;
       index = size_binop (PLUS_EXPR,
 			  size_int (non_fn_entries),
 			  size_int (list_length (TREE_VALUE (l))));
@@ -7508,7 +7506,7 @@ dfs_accumulate_vtbl_inits (binfo, orig_binfo, rtti_binfo, t, l)
   return inits;
 }
 
-/* Construct the initializer for BINFOs virtual function table.  BINFO
+/* Construct the initializer for BINFO's virtual function table.  BINFO
    is part of the hierarchy dominated by T.  If we're building a
    construction vtable, the ORIG_BINFO is the binfo we should use to
    find the actual function pointers to put in the vtable - but they

@@ -1,5 +1,3 @@
-// Special g++ Options: -fvtable-thunks
-
 #include <typeinfo>
 
 int state;
@@ -26,7 +24,7 @@ A* bar() {
   return new A;
 }
 
-main() {
+int main() {
   A *aptr = bar();
   aptr->foo();
   if (dynamic_cast <void*> (aptr) != aptr)

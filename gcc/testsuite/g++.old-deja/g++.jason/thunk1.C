@@ -1,5 +1,4 @@
 // Test that non-variadic function calls using thunks work right.
-// Special g++ Options: -fvtable-thunks
 
 struct A {
   void* p;
@@ -38,7 +37,7 @@ void* test(MMixin& anExample)
   return anExample.MixinFunc(1,A(0)).p;
 }
 
-main ()
+int main ()
 {
   CExample c;
 

@@ -1,5 +1,3 @@
-// Special g++ Options: -fvtable-thunks
-
 int state;
 int fail;
 
@@ -24,7 +22,7 @@ A* bar() {
   return new A;
 }
 
-main() {
+int main() {
   A *aptr = bar();
   aptr->foo();
   if (dynamic_cast <void*> (aptr) != aptr)

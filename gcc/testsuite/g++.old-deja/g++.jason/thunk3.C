@@ -2,7 +2,6 @@
 // Note that this will break on any target that uses the generic thunk
 //  support, because it doesn't support variadic functions.
 
-// Special g++ Options: -fvtable-thunks
 // excess errors test - XFAIL mips*-*-* rs6000-*-* powerpc-*-eabi m68k-*-coff m68k-motorola-sysv m88k-motorola-sysv3  mn10300-*-* mn10200-*-* v850-*-* sh-*-* h8*-*-*
 
 #include <stdarg.h>
@@ -50,7 +49,7 @@ void* test(MMixin& anExample)
   return anExample.MixinFunc(1,2,3,4,5,6,7,8,9).p;
 }
 
-main ()
+int main ()
 {
   CExample c;
 
