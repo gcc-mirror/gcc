@@ -71,6 +71,7 @@
 #define SUBTARGET_OVERRIDE_OPTIONS				  	\
 do {									\
   rs6000_altivec_abi = 1;						\
+  rs6000_altivec_vrsave = 1;						\
   if (DEFAULT_ABI == ABI_DARWIN)					\
   {									\
     if (MACHO_DYNAMIC_NO_PIC_P)						\
