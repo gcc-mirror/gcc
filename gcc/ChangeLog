@@ -1,3 +1,8 @@
+2001-08-28  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/crtn.asm: Add comment explaining 16 byte alignment.
+	config/mips/crti.asm: Ditto.
+
 2001-08-28  Eric Christopher <echristo@redhat.com>
 	    Richard Henderson <rth@redhat.com>
 
