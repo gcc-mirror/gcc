@@ -361,7 +361,7 @@ case "${target}" in
   avr-*-*)
     noconfigdirs="$noconfigdirs target-libiberty ${libstdcxx_version} ${libgcj}"
     ;;
-  c4x-*-*)
+  c4x-*-* | tic4x-*-*)
     noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj}"
     ;;
   c54x*-*-* | tic54x-*-*)

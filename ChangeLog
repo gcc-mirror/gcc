@@ -1,3 +1,7 @@
+2002-10-07  Svein E. Seldal  <Svein.Seldal@solidas.com>
+
+	* configure.in: Add tic4x target.
+
 2002-10-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Make SET_LIB_PATH substitution more autoconfy.
