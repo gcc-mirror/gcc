@@ -1,3 +1,8 @@
+2003-01-27  Alexandre Oliva  <aoliva@redhat.com>
+
+	* real.c (ibm_extended_format): Add 53 to minimum exponent.
+	(encode_ibm_extended): Adjust.
+
 2003-01-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/gccint.texi: Update the copyright.
