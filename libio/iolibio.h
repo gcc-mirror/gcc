@@ -45,8 +45,13 @@ extern int _IO_obstack_printf __P ((struct obstack *, const char *, ...));
   (_IO_seekoff(__fp, __offset, __whence, _IOS_INPUT|_IOS_OUTPUT) == _IO_pos_BAD ? EOF : 0)
 #define _IO_rewind(FILE) (void)_IO_seekoff(FILE, 0, 0, _IOS_INPUT|_IOS_OUTPUT)
 #define _IO_vprintf(FORMAT, ARGS) _IO_vfprintf(_IO_stdout, FORMAT, ARGS)
+#if _G_IO_IO_FILE_VERSION == 0x20001
+#define _IO_freopen(FILENAME, MODE, FP) \
+  (_IO_file_close_it(FP), _IO_file_fopen(FP, FILENAME, MODE, 0))
+#else
 #define _IO_freopen(FILENAME, MODE, FP) \
   (_IO_file_close_it(FP), _IO_file_fopen(FP, FILENAME, MODE))
+#endif
 #define _IO_fileno(FP) ((FP)->_fileno)
 extern _IO_FILE* _IO_popen __P((const char*, const char*));
 #define _IO_pclose _IO_fclose

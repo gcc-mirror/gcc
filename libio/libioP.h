@@ -226,6 +226,19 @@ typedef int (*_IO_close_t) __P ((_IO_FILE *)); /* finalize */
 typedef int (*_IO_stat_t) __P ((_IO_FILE *, void *));
 #define _IO_SYSSTAT(FP, BUF) JUMP1 (__stat, FP, BUF)
 
+#if _G_IO_IO_FILE_VERSION == 0x20001
+/* The 'showmany' hook can be used to get an image how much input is
+   available.  In many cases the answer will be 0 which means unknown
+   but some cases one can provide real information.  */
+typedef int (*_IO_showmanyc_t) __P ((_IO_FILE *));
+#define _IO_SHOWMANYC(FP) JUMP0 (__showmanyc, FP)
+
+/* The 'imbue' hook is used to get information about the currently
+   installed locales.  */
+typedef void (*_IO_imbue_t) __P ((_IO_FILE *, void *));
+#define _IO_IMBUE(FP, LOCALE) JUMP1 (__imbue, FP, LOCALE)
+#endif
+
 
 #define _IO_CHAR_TYPE char /* unsigned char ? */
 #define _IO_INT_TYPE int
@@ -254,6 +267,10 @@ struct _IO_jump_t
     JUMP_FIELD(_IO_seek_t, __seek);
     JUMP_FIELD(_IO_close_t, __close);
     JUMP_FIELD(_IO_stat_t, __stat);
+#if _G_IO_IO_FILE_VERSION == 0x20001
+    JUMP_FIELD(_IO_showmanyc_t, __showmanyc);
+    JUMP_FIELD(_IO_imbue_t, __imbue);
+#endif
 #if 0
     get_column;
     set_column;
@@ -381,7 +398,12 @@ extern void _IO_file_init __P ((_IO_FILE *));
 extern _IO_FILE* _IO_file_attach __P ((_IO_FILE *, int));
 extern _IO_FILE* _IO_file_open __P ((_IO_FILE *, const char *, int, int,
 				     int, int));
+#if _G_IO_IO_FILE_VERSION == 0x20001
+extern _IO_FILE* _IO_file_fopen __P ((_IO_FILE *, const char *, const char *,
+				      int));
+#else
 extern _IO_FILE* _IO_file_fopen __P ((_IO_FILE *, const char *, const char *));
+#endif
 extern _IO_ssize_t _IO_file_write __P ((_IO_FILE *, const void *,
 					_IO_ssize_t));
 extern _IO_ssize_t _IO_file_read __P ((_IO_FILE *, void *, _IO_ssize_t));
