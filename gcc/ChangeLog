@@ -1,3 +1,8 @@
+Sat Nov 28 19:32:33 1998  Jeffrey A Law  (law@cygnus.com)
+
+        * configure.in: If host != build, run autoconf to generate auto
+	build.h for the build machine and include it in build_xm_files.
+	
 Sat Nov 28 19:20:06 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (*.o): Depend on system.h.
