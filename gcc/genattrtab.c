@@ -393,7 +393,9 @@ static rtx zero_fn		PROTO((rtx));
 static rtx one_fn		PROTO((rtx));
 static rtx max_fn		PROTO((rtx));
 static rtx simplify_cond	PROTO((rtx, int, int));
+#if 0
 static rtx simplify_by_alternatives PROTO((rtx, int, int));
+#endif
 static rtx simplify_by_exploding PROTO((rtx));
 static int find_and_mark_used_attributes PROTO((rtx, rtx *, int *));
 static void unmark_used_attributes PROTO((rtx, struct dimension *, int));
