@@ -8,8 +8,8 @@
 class cvec {
 public:
         ~cvec(){ delete s; }
-        cvec(const char*x) { s = new char[strlen(x)+1]; strcpy(s, x); }
-	cvec(const cvec& c) { s = new char[strlen(c.s)+1]; strcpy(s, c.s); }
+        cvec(const char*x) { s = new char[std::strlen(x)+1]; std::strcpy(s, x); }
+	cvec(const cvec& c) { s = new char[std::strlen(c.s)+1]; std::strcpy(s, c.s); }
         operator const char*() { return s; }
 private:
         char *s;

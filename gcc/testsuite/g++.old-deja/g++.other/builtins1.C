@@ -7,27 +7,14 @@
 namespace std 
 {
   extern "C" void abort (void);
-  extern "C" __SIZE_TYPE__ strlen (const char *);
 }
 
 int main ()
 {
   using namespace std;
   
-  if (strlen ("hello") != 5)
-    abort ();
-  if (std::strlen ("hello") != 5)
-    abort ();
   if (::__builtin_strlen ("hello") != 5)
     abort ();
   
   return 0;
-}
-
-extern "C"
-{
-  static __SIZE_TYPE__ ::strlen (const char *)
-  {
-    std::abort ();
-  }
 }
