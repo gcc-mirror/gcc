@@ -7,7 +7,7 @@
 
 This function searches for the substring @var{sub} in the string
 @var{string}, not including the terminating null characters.  A pointer
-to the first occurrence of @var{sub} is returned, or NULL if the
+to the first occurrence of @var{sub} is returned, or @code{NULL} if the
 substring is absent.  If @var{sub} points to a string with zero
 length, the function returns @var{string}.
 

@@ -7,7 +7,7 @@
 @deftypefn Replacement char* xstrerror (int @var{errnum})
 
 Behaves exactly like the standard @code{strerror} function, but
-will never return a NULL pointer.
+will never return a @code{NULL} pointer.
 
 @end deftypefn
 

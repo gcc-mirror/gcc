@@ -6,7 +6,7 @@
 @deftypefn Supplemental char* strchr (const char *@var{s}, int @var{c})
 
 Returns a pointer to the first occurrence of the character @var{c} in
-the string @var{s}, or NULL if not found.  If @var{c} is itself the
+the string @var{s}, or @code{NULL} if not found.  If @var{c} is itself the
 null character, the results are undefined.
 
 @end deftypefn

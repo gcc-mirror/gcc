@@ -3,7 +3,7 @@
 
 /*
 
-@deftypefn Supplemental int vfork ()
+@deftypefn Supplemental int vfork (void)
 
 Emulates @code{vfork} by calling @code{fork} and returning its value.
 

@@ -2,12 +2,12 @@
 
 @deftypefn Supplemental void* memchr (const void *@var{s}, int @var{c}, size_t @var{n})
 
-This function searches memory starting at @code{*}@var{src} for the
+This function searches memory starting at @code{*@var{s}} for the
 character @var{c}.  The search only ends with the first occurrence of
 @var{c}, or after @var{length} characters; in particular, a null
 character does not terminate the search.  If the character @var{c} is
-found within @var{length} characters of @code{*}@var{src}, a pointer
-to the character is returned. If @var{c} is not found, then NULL is
+found within @var{length} characters of @code{*@var{s}}, a pointer
+to the character is returned.  If @var{c} is not found, then @code{NULL} is
 returned.
 
 @end deftypefn

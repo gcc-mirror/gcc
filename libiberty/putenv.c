@@ -22,7 +22,7 @@
 
 Uses @code{setenv} or @code{unsetenv} to put @var{string} into
 the environment or remove it.  If @var{string} is of the form
-@samp{name=value} the string is added; if no `=' is present the
+@samp{name=value} the string is added; if no @samp{=} is present the
 name is unset/removed.
 
 @end deftypefn

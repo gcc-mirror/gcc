@@ -23,7 +23,7 @@
 
 /*
 
-@deftypefn Replacement void* alloca (size_t)
+@deftypefn Replacement void* alloca (size_t @var{size})
 
 This function allocates memory which will be automatically reclaimed
 after the procedure exits.  The @libib{} implementation does not free
@@ -36,7 +36,7 @@ GNU Autoconf test @code{AC_FUNC_ALLOCA} to test for and properly make
 available this function.  The @code{AC_FUNC_ALLOCA} test requires that
 client code use a block of preprocessor code to be safe (see the Autoconf
 manual for more); this header incorporates that logic and more, including
-the possibility of a GCC builtin function.
+the possibility of a GCC built-in function.
 
 @end deftypefn
 

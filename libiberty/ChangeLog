@@ -1,3 +1,13 @@
+2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* alloca.c, clock.c, getcwd.c, getpagesize.c, getpwd.c, index.c,
+	libiberty.texi, memchr.c, putenv.c, rindex.c, strchr.c, strdup.c,
+	strerror.c, strrchr.c, strstr.c, strtod.c, tmpnam.c, vfork.c,
+	xatexit.c, xmalloc.c, xstrerror.c: Improve manual formatting.  Fix
+	spelling.  Give names to function arguments in documentation.  Use
+	(void) prototypes in documentation.
+	* functions.texi: Regenerate.
+
 2001-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* argv.c (buildargv, tests, main): Const-ify.

@@ -29,13 +29,13 @@ a program to contain @code{#define malloc xmalloc} in its source.
 
 @end deftypefn
 
-@deftypefn Replacement void* xrealloc (void*, size_t)
+@deftypefn Replacement void* xrealloc (void *@var{ptr}, size_t @var{size})
 Reallocate memory without fail.  This routine functions like @code{realloc},
 but will behave the same as @code{xmalloc} if memory cannot be found.
 
 @end deftypefn
 
-@deftypefn Replacement void* xcalloc (size_t, size_t)
+@deftypefn Replacement void* xcalloc (size_t @var{nelem}, size_t @var{elsize})
 
 Allocate memory without fail, and set it to zero.  This routine functions
 like @code{calloc}, but will behave the same as @code{xmalloc} if memory

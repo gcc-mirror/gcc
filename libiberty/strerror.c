@@ -573,7 +573,7 @@ fact, the manual page for @code{perror(3C)} explicitly warns that one
 should check the size of the table (@code{sys_nerr}) before indexing
 it, since new error codes may be added to the system before they are
 added to the table.  Thus @code{sys_nerr} might be smaller than value
-implied by the largest @code{errno} value defined in @file{errno.h}.
+implied by the largest @code{errno} value defined in @code{<errno.h>}.
 
 We return the maximum value that can be used to obtain a meaningful
 symbolic name or message.
@@ -612,7 +612,7 @@ error number, then returns the string @samp{"Error @var{num}"}, where
 @var{num} is the error number.
 
 If the supplied error number is not a valid index into
-@code{sys_errlist}, returns NULL.
+@code{sys_errlist}, returns @code{NULL}.
 
 The returned string is only guaranteed to be valid only until the
 next call to @code{strerror}.
@@ -671,7 +671,7 @@ strerror (errnoval)
 
 Given an error number returned from a system call (typically returned
 in @code{errno}), returns a pointer to a string containing the
-symbolic name of that error number, as found in @file{errno.h}.
+symbolic name of that error number, as found in @code{<errno.h>}.
 
 If the supplied error number is within the valid range of indices for
 symbolic names, but no name is available for the particular error
@@ -679,7 +679,7 @@ number, then returns the string @samp{"Error @var{num}"}, where @var{num}
 is the error number.
 
 If the supplied error number is not within the range of valid
-indices, then returns NULL.
+indices, then returns @code{NULL}.
 
 The contents of the location pointed to are only guaranteed to be
 valid until the next call to @code{strerrno}.
@@ -729,7 +729,7 @@ strerrno (errnoval)
 
 @deftypefn Replacement int strtoerrno (const char *@var{name})
 
-Given the symbolic name of a error number (e.g., @code{EACCESS}), map it
+Given the symbolic name of a error number (e.g., @code{EACCES}), map it
 to an errno value.  If no translation is found, returns 0.
 
 @end deftypefn
