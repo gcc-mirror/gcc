@@ -1690,8 +1690,9 @@ __do_global_ctors (void)
    For systems which support a .init section we use the .init section
    to run __do_global_ctors, so we need not do anything here.  */
 
+extern void SYMBOL__MAIN (void);
 void
-SYMBOL__MAIN ()
+SYMBOL__MAIN (void)
 {
   /* Support recursive calls to `main': run initializers just once.  */
   static int initialized;
