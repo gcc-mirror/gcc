@@ -1,3 +1,8 @@
+Sat Mar 10 17:52:54 2001  Christopher Faylor <cgf@cygnus.com>
+
+	* config/i386/cygwin.h: Make ../w32api a system directory.  Reorganize
+	mingw includes slightly.
+
 2001-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (malloc, realloc, calloc, strdup, bzero, bcmp, rindex):
