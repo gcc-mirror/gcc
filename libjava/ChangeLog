@@ -1,5 +1,9 @@
 2003-03-01  Tom Tromey  <tromey@redhat.com>
 
+	* javax/accessibility/AccessibleEditableText.java,
+	javax/accessibility/AccessibleHyperlink.java: New versions from
+	Classpath.
+
 	* gnu/java/locale/LocaleInformation_af_ZA.java,
 	gnu/java/locale/LocaleInformation_ar_AE.java,
 	gnu/java/locale/LocaleInformation_ar_BH.java,

@@ -106,7 +106,7 @@ public abstract class AccessibleHyperlink implements AccessibleAction
    * @return the link location
    * @see #getAccessibleActionCount()
    */
-  public abstract String getAccessibleActionObject(int i);
+  public abstract Object getAccessibleActionObject(int i);
 
   /**
    * Get the anchor appropriate for the link, or null if the index is out of
@@ -119,7 +119,7 @@ public abstract class AccessibleHyperlink implements AccessibleAction
    * @return the link anchor object
    * @see #getAccessibleActionCount()
    */
-  public abstract String getAccessibleActionAnchor(int i);
+  public abstract Object getAccessibleActionAnchor(int i);
 
   /**
    * Gets the character index where this link starts in the parent hypertext
