@@ -696,7 +696,15 @@ operand_subword (op, i, validate_address, mode)
       && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
       && GET_CODE (op) == CONST_DOUBLE)
     return gen_rtx (CONST_INT, VOIDmode,
-		    i ? CONST_DOUBLE_HIGH (op) : CONST_DOUBLE_LOW (op));
+		    i ^ (WORDS_BIG_ENDIAN !=
+/* The constant is stored in the host's word-ordering,
+   but we want to access it in the target's word-ordering.  */
+#ifdef HOST_WORDS_BIG_ENDIAN
+			 1
+#else
+			 0
+#endif
+			 ) ? CONST_DOUBLE_HIGH (op) : CONST_DOUBLE_LOW (op));
 
   /* Single word float is a little harder, since single- and double-word
      values often do not have the same high-order bits.  We have already
