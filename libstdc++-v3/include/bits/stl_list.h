@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_LIST_H
-#define __SGI_STL_INTERNAL_LIST_H
+#ifndef __GLIBCPP_INTERNAL_LIST_H
+#define __GLIBCPP_INTERNAL_LIST_H
 
 #include <bits/concept_check.h>
 
@@ -969,7 +969,7 @@ namespace std
 
 } // namespace std 
 
-#endif /* __SGI_STL_INTERNAL_LIST_H */
+#endif /* __GLIBCPP_INTERNAL_LIST_H */
 
 // vi:set ts=2 sw=2:
 // Local Variables:

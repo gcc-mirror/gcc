@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_ALGOBASE_H
-#define __SGI_STL_INTERNAL_ALGOBASE_H
+#ifndef __GLIBCPP_INTERNAL_ALGOBASE_H
+#define __GLIBCPP_INTERNAL_ALGOBASE_H
 
 #include <bits/c++config.h>
 #include <bits/stl_pair.h>
@@ -950,7 +950,7 @@ namespace std
 
 } // namespace std
 
-#endif /* __SGI_STL_INTERNAL_ALGOBASE_H */
+#endif /* __GLIBCPP_INTERNAL_ALGOBASE_H */
 
 // Local Variables:
 // mode:C++

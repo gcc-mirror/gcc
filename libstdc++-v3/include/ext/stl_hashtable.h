@@ -85,7 +85,7 @@ struct _Hashtable_node
 };  
 
 template <class _Val, class _Key, class _HashFcn,
-          class _ExtractKey, class _EqualKey, class _Alloc = alloc>
+          class _ExtractKey, class _EqualKey, class _Alloc = __alloc>
 class hashtable;
 
 template <class _Val, class _Key, class _HashFcn,

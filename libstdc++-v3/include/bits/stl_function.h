@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_FUNCTION_H
-#define __SGI_STL_INTERNAL_FUNCTION_H
+#ifndef __GLIBCPP_INTERNAL_FUNCTION_H
+#define __GLIBCPP_INTERNAL_FUNCTION_H
 
 namespace std
 {
@@ -1046,7 +1046,7 @@ mem_fun1_ref(_Ret (_Tp::*__f)(_Arg) const)
 
 } // namespace std
 
-#endif /* __SGI_STL_INTERNAL_FUNCTION_H */
+#endif /* __GLIBCPP_INTERNAL_FUNCTION_H */
 
 // Local Variables:
 // mode:C++

@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_BVECTOR_H
-#define __SGI_STL_INTERNAL_BVECTOR_H
+#ifndef __GLIBCPP_INTERNAL_BVECTOR_H
+#define __GLIBCPP_INTERNAL_BVECTOR_H
 
 namespace std
 { 
@@ -717,11 +717,11 @@ template <typename _Alloc>
   };
 
 // This typedef is non-standard.  It is provided for backward compatibility.
-typedef vector<bool, alloc> bit_vector;
+typedef vector<bool, __alloc> bit_vector;
 
 } // namespace std 
 
-#endif /* __SGI_STL_INTERNAL_BVECTOR_H */
+#endif /* __GLIBCPP_INTERNAL_BVECTOR_H */
 
 // Local Variables:
 // mode:C++

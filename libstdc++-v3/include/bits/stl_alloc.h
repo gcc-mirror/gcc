@@ -45,27 +45,36 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_ALLOC_H
-#define __SGI_STL_INTERNAL_ALLOC_H
+#ifndef __GLIBCPP_INTERNAL_ALLOC_H
+#define __GLIBCPP_INTERNAL_ALLOC_H
 
-// This header implements some node allocators.  These are NOT the same as
-// allocators in the C++ standard, nor in the original HP STL.  They do not
-// encapsulate different pointer types; we assume that there is only one
-// pointer type.  The C++ standard allocators are intended to allocate
-// individual objects, not pools or arenas.
-//
-// In this file allocators are of two different styles:  "standard" and
-// "SGI" (quotes included).  "Standard" allocators conform to 20.4.  "SGI"
-// allocators differ in AT LEAST the following ways (add to this list as you
-// discover them):
-//
-//  - "Standard" allocate() takes two parameters (n_count,hint=0) but "SGI"
-//    allocate() takes one paramter (n_size).
-//  - Likewise, "standard" deallocate()'s n is a count, but in "SGI" is a
-//    byte size.
-//  - max_size(), construct(), and destroy() are missing in "SGI" allocators.
-//  - reallocate(p,oldsz,newsz) is added in "SGI", and behaves as
-//    if p=realloc(p,newsz).
+/**
+ *  @maint
+ *  @addtogroup Allocators
+ *  stl_alloc.h implements some node allocators.  These are NOT the same as
+ *  allocators in the C++ standard, nor in the original H-P STL.  They do not
+ *  encapsulate different pointer types; we assume that there is only one
+ *  pointer type.  The C++ standard allocators are intended to allocate
+ *  individual objects, not pools or arenas.
+ *
+ *  In this file allocators are of two different styles:  "standard" and
+ *  "SGI" (quotes included).  "Standard" allocators conform to 20.4.  "SGI"
+ *  allocators differ in AT LEAST the following ways (add to this list as you
+ *  discover them):
+ *
+ *   - "Standard" allocate() takes two parameters (n_count,hint=0) but "SGI"
+ *     allocate() takes one paramter (n_size).
+ *   - Likewise, "standard" deallocate()'s argument is a count, but in "SGI"
+ *     is a byte size.
+ *   - max_size(), construct(), and destroy() are missing in "SGI" allocators.
+ *   - reallocate(p,oldsz,newsz) is added in "SGI", and behaves as
+ *     if p=realloc(p,newsz).
+ *
+ *  "SGI" allocators may be wrapped in __allocator to convert the interface
+ *  into a "standard" one.
+ *
+ *  @endmaint
+*/
 
 
 #include <bits/functexcept.h>   // for __throw_bad_alloc
@@ -82,6 +91,7 @@ namespace std
    *  A new-based allocator, as required by the standard.  Allocation and
    *  deallocation forward to global new and delete.  "SGI" style, minus
    *  reallocate().
+   *  (See @link Allocators allocators info @endlink for more.)
    *  @endmaint
   */
   class __new_alloc 
@@ -104,6 +114,7 @@ namespace std
    *  storage efficient.  The template argument is unused and is only present
    *  to permit multiple instantiations (but see __default_alloc_template
    *  for caveats).  "SGI" style, plus __set_malloc_handler for OOM conditions.
+   *  (See @link Allocators allocators info @endlink for more.)
    *  @endmaint
   */
   template <int __inst>
@@ -195,11 +206,14 @@ namespace std
 
 
   /**
+   *  @maint
    *  This is used primarily (only?) in _Alloc_traits and other places to
    *  help provide the _Alloc_type typedef.
    *
    *  This is neither "standard"-conforming nor "SGI".  The _Alloc parameter
    *  must be "SGI" style.
+   *  (See @link Allocators allocators info @endlink for more.)
+   *  @endmaint
   */
   template<class _Tp, class _Alloc>
   class __simple_alloc
@@ -220,6 +234,7 @@ namespace std
 
 
   /**
+   *  @maint
    *  An adaptor for an underlying allocator (_Alloc) to check the size
    *  arguments for debugging.  Errors are reported using assert; these
    *  checks can be disabled via NDEBUG, but the space penalty is still
@@ -229,6 +244,8 @@ namespace std
    *  "There is some evidence that this can confuse Purify." - SGI comment
    *
    *  This adaptor is "SGI" style.  The _Alloc parameter must also be "SGI".
+   *  (See @link Allocators allocators info @endlink for more.)
+   *  @endmaint
   */
   template <class _Alloc>
   class __debug_alloc
@@ -268,19 +285,21 @@ namespace std
 
 #ifdef __USE_MALLOC
 
-typedef __mem_interface alloc;
-typedef __mem_interface single_client_alloc;
+typedef __mem_interface __alloc;
+typedef __mem_interface __single_client_alloc;
 
 #else
 
 
 /**
  *  @maint
- *  Default node allocator.
+ *  Default node allocator.  "SGI" style.  Uses __mem_interface for its
+ *  underlying requests (and makes as few requests as possible).
+ *  **** Currently __mem_interface is always __new_alloc, never __malloc*.
  * 
  *  Important implementation properties:
  *  1. If the clients request an object of size > _MAX_BYTES, the resulting
- *     object will be obtained directly from malloc.
+ *     object will be obtained directly from the underlying __mem_interface.
  *  2. In all other cases, we allocate an object of size exactly
  *     _S_round_up(requested_size).  Thus the client has enough size
  *     information that we can return the object to the proper free list
@@ -297,6 +316,8 @@ typedef __mem_interface single_client_alloc;
  *  allocator instances have different types, limiting the utility of this
  *  approach.  If you do not wish to share the free lists with the main
  *  default_alloc instance, instantiate this with a non-zero __inst.
+ *
+ *  (See @link Allocators allocators info @endlink for more.)
  *  @endmaint
 */
 template <bool __threads, int __inst>
@@ -306,7 +327,7 @@ class __default_alloc_template
 private:
   enum {_ALIGN = 8};
   enum {_MAX_BYTES = 128};
-  enum {_NFREELISTS = 16}; // _MAX_BYTES/_ALIGN
+  enum {_NFREELISTS = _MAX_BYTES / _ALIGN};
 
   static size_t
   _S_round_up(size_t __bytes) 
@@ -334,16 +355,14 @@ private:
 
   static _STL_mutex_lock _S_node_allocator_lock;
 
-  // It would be nice to use _STL_auto_lock here.  But we
-  // don't need the NULL check.  And we do need a test whether
-  // threads have actually been started.
-  class _Lock;
-  friend class _Lock;
+  // It would be nice to use _STL_auto_lock here.  But we need a test whether
+  // threads are in use.
   class _Lock {
     public:
       _Lock() { if (__threads) _S_node_allocator_lock._M_acquire_lock(); }
       ~_Lock() { if (__threads) _S_node_allocator_lock._M_release_lock(); }
-  };
+  } __attribute__ ((__unused__));
+  friend class _Lock;
 
 public:
 
@@ -357,9 +376,8 @@ public:
     else 
       {
 	_Obj* volatile* __my_free_list = _S_free_list + _S_freelist_index(__n);
-	// Acquire the lock here with a constructor call.
-	// This ensures that it is released in exit or during stack
-	// unwinding.
+	// Acquire the lock here with a constructor call.  This ensures that
+	// it is released in exit or during stack unwinding.
 	_Lock __lock_instance;
 	_Obj* __restrict__ __result = *__my_free_list;
 	if (__result == 0)
@@ -385,11 +403,11 @@ public:
           = _S_free_list + _S_freelist_index(__n);
 	_Obj* __q = (_Obj*)__p;
 	
-	// acquire lock
+	// Acquire the lock here with a constructor call.  This ensures that
+	// it is released in exit or during stack unwinding.
 	_Lock __lock_instance;
 	__q -> _M_free_list_link = *__my_free_list;
 	*__my_free_list = __q;
-	// lock is released here
       }
   }
   
@@ -477,9 +495,8 @@ __default_alloc_template<__threads, __inst>::_S_chunk_alloc(size_t __size,
 	      }
 	    _S_end_free = 0;	// In case of exception.
             _S_start_free = (char*)__mem_interface::allocate(__bytes_to_get);
-            // This should either throw an
-            // exception or remedy the situation.  Thus we assume it
-            // succeeded.
+            // This should either throw an exception or remedy the situation.
+            // Thus we assume it succeeded.
 	  }
         _S_heap_size += __bytes_to_get;
         _S_end_free = _S_start_free + __bytes_to_get;
@@ -543,9 +560,9 @@ __default_alloc_template<threads, inst>::reallocate(void* __p,
 }
 
 template <bool __threads, int __inst>
-_STL_mutex_lock
-__default_alloc_template<__threads, __inst>::_S_node_allocator_lock
-  __STL_MUTEX_INITIALIZER;
+  _STL_mutex_lock
+  __default_alloc_template<__threads, __inst>::_S_node_allocator_lock
+    __STL_MUTEX_INITIALIZER;
 
 template <bool __threads, int __inst>
 char* __default_alloc_template<__threads, __inst>::_S_start_free = 0;
@@ -559,12 +576,11 @@ size_t __default_alloc_template<__threads, __inst>::_S_heap_size = 0;
 template <bool __threads, int __inst>
 typename __default_alloc_template<__threads, __inst>::_Obj* volatile
 __default_alloc_template<__threads, __inst> ::_S_free_list[
-    __default_alloc_template<__threads, __inst>::_NFREELISTS
-] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    __default_alloc_template<__threads, __inst>::_NFREELISTS ];
 
 
-typedef __default_alloc_template<true, 0> alloc;
-typedef __default_alloc_template<false, 0> single_client_alloc;
+typedef __default_alloc_template<true, 0>    __alloc;
+typedef __default_alloc_template<false, 0>   __single_client_alloc;
 
 
 #endif /* ! __USE_MALLOC */
@@ -580,15 +596,16 @@ typedef __default_alloc_template<false, 0> single_client_alloc;
  *    - __malloc_alloc_template is used for memory requests
  *  - else (the default)
  *    - __default_alloc_template is used via two typedefs
- *    - "single_client_alloc" typedef does no locking for threads
- *    - "alloc" typedef is threadsafe via the locks
+ *    - "__single_client_alloc" typedef does no locking for threads
+ *    - "__alloc" typedef is threadsafe via the locks
  *    - __new_alloc is used for memory requests
  *
+ *  (See @link Allocators allocators info @endlink for more.)
 */
 template <class _Tp>
 class allocator
 {
-  typedef alloc _Alloc;          // The underlying allocator.
+  typedef __alloc _Alloc;          // The underlying allocator.
 public:
   typedef size_t     size_type;
   typedef ptrdiff_t  difference_type;
@@ -657,12 +674,13 @@ inline bool operator!=(const allocator<_T1>&, const allocator<_T2>&)
 
 
 /**
- *  Allocator adaptor to turn an "SGI" style allocator (e.g. alloc,
- *  __malloc_alloc_template) into a "standard" conformaing allocator.  Note
+ *  Allocator adaptor to turn an "SGI" style allocator (e.g., __alloc,
+ *  __malloc_alloc_template) into a "standard" conforming allocator.  Note
  *  that this adaptor does *not* assume that all objects of the underlying
  *  alloc class are identical, nor does it assume that all of the underlying
  *  alloc's member functions are static member functions.  Note, also, that
- *  __allocator<_Tp, alloc> is essentially the same thing as allocator<_Tp>.
+ *  __allocator<_Tp, __alloc> is essentially the same thing as allocator<_Tp>.
+ *  (See @link Allocators allocators info @endlink for more.)
 */
 template <class _Tp, class _Alloc>
 struct __allocator
@@ -738,10 +756,11 @@ inline bool operator!=(const __allocator<_Tp, _Alloc>& __a1,
 }
 
 
-// Comparison operators for all of the predifined SGI-style allocators.
-// This ensures that __allocator<malloc_alloc> (for example) will
-// work correctly.
-
+//@{
+/** Comparison operators for all of the predifined SGI-style allocators.
+ *  This ensures that __allocator<malloc_alloc> (for example) will work
+ *  correctly.  As required, all allocators compare equal.
+*/
 template <int inst>
 inline bool operator==(const __malloc_alloc_template<inst>&,
                        const __malloc_alloc_template<inst>&)
@@ -767,36 +786,46 @@ inline bool operator!=(const __debug_alloc<_Alloc>&,
                        const __debug_alloc<_Alloc>&) {
   return false;
 }
+//@}
 
 
-// Another allocator adaptor: _Alloc_traits.  This serves two
-// purposes.  First, make it possible to write containers that can use
-// either SGI-style allocators or standard-conforming allocator.
-// Second, provide a mechanism so that containers can query whether or
-// not the allocator has distinct instances.  If not, the container
-// can avoid wasting a word of memory to store an empty object.
-
-// This adaptor uses partial specialization.  The general case of
-// _Alloc_traits<_Tp, _Alloc> assumes that _Alloc is a
-// standard-conforming allocator, possibly with non-equal instances
-// and non-static members.  (It still behaves correctly even if _Alloc
-// has static member and if all instances are equal.  Refinements
-// affect performance, not correctness.)
-
-// There are always two members: allocator_type, which is a standard-
-// conforming allocator type for allocating objects of type _Tp, and
-// _S_instanceless, a static const member of type bool.  If
-// _S_instanceless is true, this means that there is no difference
-// between any two instances of type allocator_type.  Furthermore, if
-// _S_instanceless is true, then _Alloc_traits has one additional
-// member: _Alloc_type.  This type encapsulates allocation and
-// deallocation of objects of type _Tp through a static interface; it
-// has two member functions, whose signatures are
-//    static _Tp* allocate(size_t)
-//    static void deallocate(_Tp*, size_t)
-
+/**
+ *  @maint
+ *  Another allocator adaptor:  _Alloc_traits.  This serves two purposes.
+ *  First, make it possible to write containers that can use either "SGI"
+ *  style allocators or "standard" allocators.  Second, provide a mechanism
+ *  so that containers can query whether or not the allocator has distinct
+ *  instances.  If not, the container can avoid wasting a word of memory to
+ *  store an empty object.  For examples of use, see stl_vector.h, etc, or
+ *  any of the other classes derived from this one.
+ *
+ *  This adaptor uses partial specialization.  The general case of
+ *  _Alloc_traits<_Tp, _Alloc> assumes that _Alloc is a
+ *  standard-conforming allocator, possibly with non-equal instances and
+ *  non-static members.  (It still behaves correctly even if _Alloc has
+ *  static member and if all instances are equal.  Refinements affect
+ *  performance, not correctness.)
+ *
+ *  There are always two members:  allocator_type, which is a standard-
+ *  conforming allocator type for allocating objects of type _Tp, and
+ *  _S_instanceless, a static const member of type bool.  If
+ *  _S_instanceless is true, this means that there is no difference
+ *  between any two instances of type allocator_type.  Furthermore, if
+ *  _S_instanceless is true, then _Alloc_traits has one additional
+ *  member:  _Alloc_type.  This type encapsulates allocation and
+ *  deallocation of objects of type _Tp through a static interface; it
+ *  has two member functions, whose signatures are
+ *
+ *  -  static _Tp* allocate(size_t)
+ *  -  static void deallocate(_Tp*, size_t)
+ *
+ *  The size_t parameters are "standard" style (see top of stl_alloc.h) in
+ *  that they take counts, not sizes.
+ *
+ *  (See @link Allocators allocators info @endlink for more.)
+ *  @endmaint
+*/
 // The fully general version.
-
 template <class _Tp, class _Allocator>
 struct _Alloc_traits
 {
@@ -807,18 +836,17 @@ struct _Alloc_traits
 template <class _Tp, class _Allocator>
 const bool _Alloc_traits<_Tp, _Allocator>::_S_instanceless;
 
-// The version for the default allocator.
-
+/// The version for the default allocator.
 template <class _Tp, class _Tp1>
 struct _Alloc_traits<_Tp, allocator<_Tp1> >
 {
   static const bool _S_instanceless = true;
-  typedef __simple_alloc<_Tp, alloc> _Alloc_type;
+  typedef __simple_alloc<_Tp, __alloc> _Alloc_type;
   typedef allocator<_Tp> allocator_type;
 };
 
-// Versions for the predefined SGI-style allocators.
-
+//@{
+/// Versions for the predefined "SGI" style allocators.
 template <class _Tp, int __inst>
 struct _Alloc_traits<_Tp, __malloc_alloc_template<__inst> >
 {
@@ -846,10 +874,10 @@ struct _Alloc_traits<_Tp, __debug_alloc<_Alloc> >
   typedef __simple_alloc<_Tp, __debug_alloc<_Alloc> > _Alloc_type;
   typedef __allocator<_Tp, __debug_alloc<_Alloc> > allocator_type;
 };
+//@}
 
-// Versions for the __allocator adaptor used with the predefined
-// SGI-style allocators.
-
+//@{
+/// Versions for the __allocator adaptor used with the predefined "SGI" style allocators.
 template <class _Tp, class _Tp1, int __inst>
 struct _Alloc_traits<_Tp, 
                      __allocator<_Tp1, __malloc_alloc_template<__inst> > >
@@ -880,10 +908,11 @@ struct _Alloc_traits<_Tp, __allocator<_Tp1, __debug_alloc<_Alloc> > >
   typedef __simple_alloc<_Tp, __debug_alloc<_Alloc> > _Alloc_type;
   typedef __allocator<_Tp, __debug_alloc<_Alloc> > allocator_type;
 };
+//@}
 
 } // namespace std
 
-#endif /* __SGI_STL_INTERNAL_ALLOC_H */
+#endif /* __GLIBCPP_INTERNAL_ALLOC_H */
 
 // Local Variables:
 // mode:C++

@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_ITERATOR_BASE_FUNCS_H
-#define __SGI_STL_INTERNAL_ITERATOR_BASE_FUNCS_H
+#ifndef __GLIBCPP_INTERNAL_ITERATOR_BASE_FUNCS_H
+#define __GLIBCPP_INTERNAL_ITERATOR_BASE_FUNCS_H
 
 // This file contains all of the general iterator-related utility
 // functions, such as distance() and advance().
@@ -176,7 +176,7 @@ namespace std
 
 } // namespace std
 
-#endif /* __SGI_STL_INTERNAL_ITERATOR_BASE_FUNCS_H */
+#endif /* __GLIBCPP_INTERNAL_ITERATOR_BASE_FUNCS_H */
 
 
 // Local Variables:

@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_VECTOR_H
-#define __SGI_STL_INTERNAL_VECTOR_H
+#ifndef __GLIBCPP_INTERNAL_VECTOR_H
+#define __GLIBCPP_INTERNAL_VECTOR_H
 
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/functexcept.h>
@@ -802,7 +802,7 @@ vector<_Tp, _Alloc>::_M_range_insert(iterator __position,
 
 } // namespace std 
 
-#endif /* __SGI_STL_INTERNAL_VECTOR_H */
+#endif /* __GLIBCPP_INTERNAL_VECTOR_H */
 
 // Local Variables:
 // mode:C++

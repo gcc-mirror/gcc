@@ -1,3 +1,37 @@
+2001-12-06  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/std_bitset.h:  Use GLIBCPP in multiple-inclusion guard.
+	* include/bits/stl_algo.h:  Likewise.
+	* include/bits/stl_algobase.h:  Likewise.
+	* include/bits/stl_bvector.h:  Likewise.
+	* include/bits/stl_deque.h:  Likewise.
+	* include/bits/stl_function.h:  Likewise.
+	* include/bits/stl_iterator.h:  Likewise.
+	* include/bits/stl_iterator_base_funcs.h:  Likewise.
+	* include/bits/stl_iterator_base_types.h:  Likewise.
+	* include/bits/stl_list.h:  Likewise.
+	* include/bits/stl_multimap.h:  Likewise.
+	* include/bits/stl_multiset.h:  Likewise.
+	* include/bits/stl_pair.h:  Likewise.
+	* include/bits/stl_queue.h:  Likewise.
+	* include/bits/stl_set.h:  Likewise.
+	* include/bits/stl_stack.h:  Likewise.
+	* include/bits/stl_tempbuf.h:  Likewise.
+	* include/bits/stl_tree.h:  Likewise.
+	* include/bits/stl_vector.h:  Likewise.
+
+	* include/bits/stl_alloc.h:  Use our own multiple inclusion guards.
+	Doxygenate more comments.  Correct historical artifacts in comments.
+	(alloc, single_alloc):  Uglify non-standard names.
+	(__default_alloc_template::_NFREELISTS):  Calculate from other
+	parameters.
+	(__default_alloc_template::_S_free_list):  Remove SunPro workaround.
+	(__default_alloc_template::_Lock):  Mark as "unused".
+	* include/backward/alloc.h:  Update.
+	* include/bits/stl_bvector.h:  Likewise.
+	* include/ext/ropeimpl.h:  Likewise.
+	* include/ext/stl_hashtable.h:  Likewise.
+
 2001-12-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	DR/282

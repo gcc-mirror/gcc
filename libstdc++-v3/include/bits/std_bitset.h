@@ -45,8 +45,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_BITSET
-#define __SGI_STL_BITSET
+#ifndef __GLIBCPP_BITSET
+#define __GLIBCPP_BITSET
 
 #pragma GCC system_header
 
@@ -805,7 +805,7 @@ operator<<(basic_ostream<_CharT, _Traits>& __os, const bitset<_Nb>& __x)
 
 #undef __BITSET_WORDS
 
-#endif /* __SGI_STL_BITSET */
+#endif /* __GLIBCPP_BITSET */
 
 
 // Local Variables:
