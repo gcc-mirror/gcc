@@ -1,3 +1,14 @@
+2003-09-07  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
+
+	PR optimization/11662
+	Backport from mainline:
+
+	2003-07-10  Denis Chertykov  <denisc@overta.ru>
+	            Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* combine.c (gen_binary): Handle the CLOBBER rtx and
+	don't build a binary operation with it.
+
 Sat Sep  6 23:16:35 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_simplify_condjump): Fix my previous patch.
