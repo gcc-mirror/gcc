@@ -2705,7 +2705,8 @@ decode_ieee_single (fmt, r, buf)
 	{
 	  r->class = rvc_nan;
 	  r->sign = sign;
-	  r->signalling = ((image >> 22) & 1) ^ fmt->qnan_msb_set;
+	  r->signalling = (((image >> (HOST_BITS_PER_LONG - 2)) & 1)
+			   ^ fmt->qnan_msb_set);
 	  r->sig[SIGSZ-1] = image;
 	}
       else
