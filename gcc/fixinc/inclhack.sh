@@ -2022,7 +2022,7 @@ typedef __regmatch_t	regmatch_t;
     # Fix  67:  Sun_Catmacro
     #
     case "${file}" in ./pixrect/memvar.h )
-    if ( test -n "`egrep '^#define[ 	]+CAT(a,b)' ${file}`"
+    if ( test -n "`egrep '^#define[ 	]+CAT\\(a,b\\)' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       sun_catmacro"
