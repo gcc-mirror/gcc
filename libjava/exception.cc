@@ -104,14 +104,13 @@ _Jv_Throw (jthrowable value)
   code = _Unwind_RaiseException (&xh->unwindHeader);
 #endif
 
-  /* FIXME: If code == _URC_END_OF_STACK, then we reached top of
-     stack without finding a handler for the exception.  I seem to
-     recall that Java has specific rules to handle this. 
-
-     If code is something else, we encountered some sort of heinous
-     lossage, from which we could not recover.  As is the way of such
-     things we'll almost certainly have crashed before now, rather
-     than actually being able to diagnose the problem.  */
+  /* If code == _URC_END_OF_STACK, then we reached top of stack without
+     finding a handler for the exception.  Since each thread is run in
+     a try/catch, this oughtn't happen.  If code is something else, we
+     encountered some sort of heinous lossage from which we could not
+     recover.  As is the way of such things, almost certainly we will have
+     crashed before now, rather than actually being able to diagnose the
+     problem.  */
   abort ();
 }
 
