@@ -46,19 +46,13 @@ details.  */
 
 #include <java-interp.h>
 
-#define ClassClass _CL_Q34java4lang5Class
-extern java::lang::Class ClassClass;
-#define ObjectClass _CL_Q34java4lang6Object
-extern java::lang::Class ObjectClass;
-
-#define ThrowableClass _CL_Q34java4lang9Throwable
-extern java::lang::Class ThrowableClass;
-#define MethodClass _CL_Q44java4lang7reflect6Method
-extern java::lang::Class MethodClass;
-#define ThreadGroupClass _CL_Q34java4lang11ThreadGroup
-extern java::lang::Class ThreadGroupClass;
-#define NativeThreadClass _CL_Q43gnu3gcj3jni12NativeThread
-extern java::lang::Class ThreadGroupClass;
+// FIXME: remove these defines.
+#define ClassClass java::lang::Class::class$
+#define ObjectClass java::lang::Object::class$
+#define ThrowableClass java::lang::Throwable::class$
+#define MethodClass java::lang::reflect::Method::class$
+#define ThreadGroupClass java::lang::ThreadGroup::class$
+#define NativeThreadClass gnu::gcj::jni::NativeThread::class$
 
 // This enum is used to select different template instantiations in
 // the invocation code.

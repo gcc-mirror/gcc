@@ -39,9 +39,6 @@ details.  */
 #include <alloca.h>
 #endif
 
-#define ClassError _CL_Q34java4lang5Error
-extern java::lang::Class ClassError;
-
 static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
 
 static void throw_internal_error (char *msg)

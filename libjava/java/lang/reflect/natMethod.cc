@@ -38,31 +38,23 @@ details.  */
 #include <gcj/method.h>
 #include <gnu/gcj/RawData.h>
 
-#define ObjectClass _CL_Q34java4lang6Object
-extern java::lang::Class ObjectClass;
-#define ClassClass _CL_Q34java4lang5Class
-extern java::lang::Class ClassClass;
+// FIXME: remove these
+#define ObjectClass java::lang::Object::class$
+#define ClassClass java::lang::Class::class$
 
 #include <stdlib.h>
 
 #include <ffi.h>
 
-#define VoidClass _CL_Q34java4lang4Void
-extern java::lang::Class VoidClass;
-#define ByteClass _CL_Q34java4lang4Byte
-extern java::lang::Class ByteClass;
-#define ShortClass _CL_Q34java4lang5Short
-extern java::lang::Class ShortClass;
-#define CharacterClass _CL_Q34java4lang9Character
-extern java::lang::Class CharacterClass;
-#define IntegerClass _CL_Q34java4lang7Integer
-extern java::lang::Class IntegerClass;
-#define LongClass _CL_Q34java4lang4Long
-extern java::lang::Class LongClass;
-#define FloatClass _CL_Q34java4lang5Float
-extern java::lang::Class FloatClass;
-#define DoubleClass _CL_Q34java4lang6Double
-extern java::lang::Class DoubleClass;
+// FIXME: remove these.
+#define VoidClass java::lang::Void::class$
+#define ByteClass java::lang::Byte::class$
+#define ShortClass java::lang::Short::class$
+#define CharacterClass java::lang::Character::class$
+#define IntegerClass java::lang::Integer::class$
+#define LongClass java::lang::Long::class$
+#define FloatClass java::lang::Float::class$
+#define DoubleClass java::lang::Double::class$
 
 struct cpair
 {

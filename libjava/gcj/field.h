@@ -14,6 +14,7 @@ details.  */
 #include <java/lang/Class.h>
 #include <java/lang/reflect/Field.h>
 #include <java/lang/reflect/Modifier.h>
+#include <gnu/gcj/RawData.h>
 
 #define _Jv_FIELD_UNRESOLVED_FLAG	0x8000
 #define	_Jv_FIELD_CONSTANT_VALUE	0x4000
@@ -179,9 +180,7 @@ JvNumStaticFields (jclass klass)
 extern inline jboolean
 JvFieldIsRef (jfieldID field)
 {
-  // gnu.gcj.RawData.class is  _CL_Q33gnu3gcj7RawData
-  extern java::lang::Class _CL_Q33gnu3gcj7RawData;
-  return field->isRef () && field->type != &_CL_Q33gnu3gcj7RawData;
+  return field->isRef () && field->type != &gnu::gcj::RawData::class$;
 }
 
 extern inline jobject

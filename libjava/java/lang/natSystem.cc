@@ -41,9 +41,6 @@ details.  */
 #include <java/io/PrintStream.h>
 #include <java/io/InputStream.h>
 
-#define SystemClass _CL_Q34java4lang6System
-extern java::lang::Class SystemClass;
-
 
 
 void
@@ -222,7 +219,7 @@ java::lang::System::init_properties (void)
 {
   {
     // We only need to synchronize around this gatekeeper.
-    JvSynchronize sync (&SystemClass);
+    JvSynchronize sync (&java::lang::System::class$);
     if (prop_init)
       return;
     prop_init = true;

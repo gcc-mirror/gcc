@@ -51,20 +51,14 @@ details.  */
 
 
 
-#define CloneableClass _CL_Q34java4lang9Cloneable
-extern java::lang::Class CloneableClass;
-#define ObjectClass _CL_Q34java4lang6Object
-extern java::lang::Class ObjectClass;
-#define ErrorClass _CL_Q34java4lang5Error
-extern java::lang::Class ErrorClass;
-#define ClassClass _CL_Q34java4lang5Class
-extern java::lang::Class ClassClass;
-#define MethodClass _CL_Q44java4lang7reflect6Method
-extern java::lang::Class MethodClass;
-#define FieldClass _CL_Q44java4lang7reflect5Field
-extern java::lang::Class FieldClass;
-#define ConstructorClass _CL_Q44java4lang7reflect11Constructor
-extern java::lang::Class ConstructorClass;
+// FIXME: remove these.
+#define CloneableClass java::lang::Cloneable::class$
+#define ObjectClass java::lang::Object::class$
+#define ErrorClass java::lang::Error::class$
+#define ClassClass java::lang::Class::class$
+#define MethodClass java::lang::reflect::Method::class$
+#define FieldClass java::lang::reflect::Field::class$
+#define ConstructorClass java::lang::reflect::Constructor::class$
 
 // Some constants we use to look up the class initializer.
 static _Jv_Utf8Const *void_signature = _Jv_makeUtf8Const ("()V", 3);

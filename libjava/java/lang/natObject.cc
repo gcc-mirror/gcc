@@ -28,9 +28,6 @@ details.  */
 #include <java/lang/Cloneable.h>
 #include <java/lang/Thread.h>
 
-#define CloneableClass _CL_Q34java4lang9Cloneable
-extern java::lang::Class CloneableClass;
-
 
 
 // This is used to represent synchronization information.
@@ -92,7 +89,7 @@ java::lang::Object::clone (void)
     }
   else
     {
-      if (! CloneableClass.isAssignableFrom(klass))
+      if (! java::lang::Cloneable::class$.isAssignableFrom(klass))
 	JvThrow (new CloneNotSupportedException);
 
       size = klass->size();

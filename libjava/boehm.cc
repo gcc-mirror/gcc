@@ -49,11 +49,6 @@ extern "C"
 	  && (ptr_t) (Obj) <= GC_greatest_plausible_heap_addr) \
         PUSH_CONTENTS (Obj, Top, Limit, Source, Exit)
 
-#define ObjectClass _CL_Q34java4lang6Object
-extern java::lang::Class ObjectClass;
-#define ClassClass _CL_Q34java4lang5Class
-extern java::lang::Class ClassClass;
-
 
 
 // Nonzero if this module has been initialized.
@@ -110,7 +105,7 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /* env */)
   p = (ptr_t) klass;
   MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, obj, o2label);
 
-  if (__builtin_expect (klass == &ClassClass, false))
+  if (__builtin_expect (klass == &java::lang::Class::class$, false))
     {
       // Currently we allocate some of the memory referenced from class objects
       // as pointerfree memory, and then mark it more intelligently here.
@@ -263,7 +258,7 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /* env */)
       // Note: occasionally `klass' can be null.  For instance, this
       // can happen if a GC occurs between the point where an object
       // is allocated and where the vtbl slot is set.
-      while (klass && klass != &ObjectClass)
+      while (klass && klass != &java::lang::Object::class$)
 	{
 	  jfieldID field = JvGetFirstInstanceField (klass);
 	  jint max = JvNumInstanceFields (klass);

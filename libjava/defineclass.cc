@@ -43,11 +43,6 @@ details.  */
 #include <java/lang/IncompatibleClassChangeError.h>
 #include <java/lang/reflect/Modifier.h>
 
-#define ClassClass _CL_Q34java4lang5Class
-extern java::lang::Class ClassClass;
-#define ClassObject _CL_Q34java4lang6Object
-extern java::lang::Class ClassObject;
-
 // we don't verify method names that match these.
 static _Jv_Utf8Const *clinit_name = _Jv_makeUtf8Const ("<clinit>", 8);
 static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
@@ -864,11 +859,12 @@ _Jv_ClassReader::handleClassBegin
       // interfaces have java.lang.Object as super.
       if (access_flags & Modifier::INTERFACE)
 	{
-	  def->superclass = (jclass)&ClassObject;
+	  def->superclass = (jclass)&java::lang::Class::class$;
 	}
 
       // FIXME: Consider this carefully!  
-      else if (!_Jv_equalUtf8Consts (def->name, ClassObject.name))
+      else if (!_Jv_equalUtf8Consts (def->name,
+				     java::lang::Class::class$.name))
 	{
 	  throw_no_class_def_found_error ("loading java.lang.Object");
 	}

@@ -1,6 +1,6 @@
 // natObjectInputStream.cc - Native part of ObjectInputStream class.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This ObjectInputStream is part of libgcj.
 
@@ -46,10 +46,8 @@ java::io::ObjectInputStream::allocateObject (jclass klass)
 }
 
 
-#define ObjectClass _CL_Q34java4lang6Object
-extern java::lang::Class ObjectClass;
-#define ClassClass _CL_Q34java4lang5Class
-extern java::lang::Class ClassClass;
+#define ObjectClass java::lang::Object::class$
+#define ClassClass java::lang::Class::class$
 
 void 
 java::io::ObjectInputStream::callConstructor (jclass klass, jobject obj)

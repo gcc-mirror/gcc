@@ -102,8 +102,8 @@ extern jboolean _Jv_equalUtf8Consts (_Jv_Utf8Const *, _Jv_Utf8Const *);
 extern jboolean _Jv_equal (_Jv_Utf8Const *, jstring, jint);
 extern jboolean _Jv_equaln (_Jv_Utf8Const *, jstring, jint);
 
-#define StringClass _CL_Q34java4lang6String
-extern java::lang::Class StringClass;
+// FIXME: remove this define.
+#define StringClass java::lang::String::class$
 
 /* Type of pointer used as finalizer.  */
 typedef void _Jv_FinalizerFunc (jobject);
