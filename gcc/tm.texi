@@ -415,25 +415,16 @@ and specify private search areas for GCC.  The directory
 
 The definition should be an initializer for an array of structures.
 Each array element should have four elements: the directory name (a
-string constant), the component name, and flag for C++-only directories,
+string constant), the component name (also a string constant), a flag
+for C++-only directories,
 and a flag showing that the includes in the directory don't need to be
 wrapped in @code{extern @samp{C}} when compiling C++.  Mark the end of
 the array with a null element.
 
 The component name denotes what GNU package the include file is part of,
 if any, in all upper-case letters.  For example, it might be @samp{GCC}
-or @samp{BINUTILS}.  If the package is part of the a vendor-supplied
+or @samp{BINUTILS}.  If the package is part of a vendor-supplied
 operating system, code the component name as @samp{0}.
-
-@findex STRUCT_FORCE_BLK
-@item STRUCT_FORCE_BLK (@var{field})
-Return 1 if a structure containing @var{field} should be accessed using
-@code{BLKMODE}.
-
-Normally, this is not needed.  See the file @file{c4x.h} for an example
-of how to use this macro to prevent a structure having a floating point
-field from being accessed in an integer mode.
-
 
 For example, here is the definition used for VAX/VMS:
 
@@ -554,10 +545,15 @@ by means of a macro @code{TARGET_68020} that tests a bit in
 @code{target_flags}.
 
 Define a macro @code{TARGET_@var{featurename}} for each such option.
-Its definition should test a bit in @code{target_flags}; for example:
+Its definition should test a bit in @code{target_flags}.  It is
+recommended that a helper macro @code{TARGET_MASK_@var{featurename}}
+is defined for each bit-value to test, and used in
+@code{TARGET_@var{featurename}} and @code{TARGET_SWITCHES}.  For
+example:
 
 @smallexample
-#define TARGET_68020 (target_flags & 1)
+#define TARGET_MASK_68020 1
+#define TARGET_68020 (target_flags & TARGET_MASK_68020)
 @end smallexample
 
 One place where these macros are used is in the condition-expressions
@@ -590,9 +586,9 @@ with opposite meanings, and picks the latter as the default:
 
 @smallexample
 #define TARGET_SWITCHES \
-  @{ @{ "68020", 1, "" @},      \
-    @{ "68000", -1, "Compile for the 68000" @}, \
-    @{ "", 1, "" @}@}
+  @{ @{ "68020", TARGET_MASK_68020, "" @},      \
+    @{ "68000", -TARGET_MASK_68020, "Compile for the 68000" @}, \
+    @{ "", TARGET_MASK_68020, "" @}@}
 @end smallexample
 
 @findex TARGET_OPTIONS
@@ -1003,6 +999,15 @@ get from @code{PCC_BITFIELD_TYPE_MATTERS}.
 @item BITFIELD_NBYTES_LIMITED
 Like PCC_BITFIELD_TYPE_MATTERS except that its effect is limited to
 aligning a bitfield within the structure.
+
+@findex STRUCT_FORCE_BLK
+@item STRUCT_FORCE_BLK (@var{field})
+Return 1 if a structure containing @var{field} should be accessed using
+@code{BLKMODE}.
+
+Normally, this is not needed.  See the file @file{c4x.h} for an example
+of how to use this macro to prevent a structure having a floating point
+field from being accessed in an integer mode.
 
 @findex ROUND_TYPE_SIZE
 @item ROUND_TYPE_SIZE (@var{type}, @var{computed}, @var{specified})
