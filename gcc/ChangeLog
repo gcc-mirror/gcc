@@ -1,3 +1,7 @@
+Wed Jul 15 10:49:55 1998  Richard Henderson  <rth@cygnus.com>
+
+	* i386.h (CPP_CPU_SPEC): Remove -Asystem(unix).
+
 Tue Jul 14 14:15:30 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c: Remove ANSI-C ism from --help code.
