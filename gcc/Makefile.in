@@ -1182,7 +1182,8 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	  "$(MULTILIB_DIRNAMES)" \
 	  "$(MULTILIB_MATCHES)" \
 	  "$(MULTILIB_EXCEPTIONS)" \
-	  "$(MULTILIB_EXTRA_OPTS)" > tmp-mlib.h
+	  "$(MULTILIB_EXTRA_OPTS)" \
+	  "$(MULTILIB_EXCLUSIONS)" > tmp-mlib.h
 	$(SHELL) $(srcdir)/move-if-change tmp-mlib.h multilib.h
 	touch s-mlib
 

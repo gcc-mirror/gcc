@@ -53,6 +53,16 @@
 # The optional fifth argument is a list of options that should be
 # used whenever building multilib libraries.
 
+# The optional sixth argument is a list of exclusions used internally by
+# the compiler similar to exceptions. The difference being that exclusions
+# allow matching default options that genmultilib does not know about and
+# is done at runtime as opposed to being sorted out at compile time.
+# Each element in the list is a seperate exclusion rule. Each rule is
+# a list of options (sans preceding '-') seperated by a '/'. The options
+# on the rule are grouped as an AND operation, and all options much match
+# for the rule to exclude a set. Options can be preceded with a '!' to
+# match a logical NOT.
+
 # The output looks like
 #   #define MULTILIB_MATCHES "\
 #   SUBDIRECTORY OPTIONS;\
@@ -66,23 +76,28 @@
 # The order of the subdirectories is such that they can be created in
 # order; that is, a subdirectory is preceded by all its parents.
 
-# Here is a example (this is simplified from the actual 680x0 case):
-#   genmultilib "m68000/m68020 msoft-float" "m68000 m68020 msoft-float"
-#		"m68000=mc68000"
+# Here is an example (this is from the actual sparc64 case):
+#   genmultilib 'm64/m32 mno-app-regs|mcmodel=medany' '64 32 alt'
+#		'mcmodel?medany=mcmodel?medmid' 'm32/mno-app-regs* m32/mcmodel=*'
+#		'm32/!m64/mno-app-regs m32/!m64/mcmodel=medany'
 # This produces:
-#   ". !m68000 !mc68000 !m68020 !msoft-float;",
-#   "m68000 m68000 !m68020 !msoft-float;",
-#   "m68000 mc60000 !m68020 !msoft-float;",
-#   "m68020 !m68000 !mc68000 m68020 !msoft-float;",
-#   "msoft-float !m68000 !mc68000 !m68020 msoft-float;",
-#   "m68000/msoft-float m68000 !m68020 msoft-float;",
-#   "m68000/msoft-float mc68000 !m68020 msoft-float;",
-#   "m68020/msoft-float !m68000 !mc68000 m68020 msoft-float;",
+#   ". !m64 !m32 !mno-app-regs !mcmodel=medany;",
+#   "64 m64 !m32 !mno-app-regs !mcmodel=medany;",
+#   "32 !m64 m32 !mno-app-regs !mcmodel=medany;",
+#   "alt !m64 !m32 mno-app-regs mcmodel=medany;",
+#   "alt !m64 !m32 mno-app-regs !mcmodel=medany;",
+#   "alt !m64 !m32 !mno-app-regs mcmodel=medany;",
+#   "64/alt m64 !m32 mno-app-regs mcmodel=medany;",
+#   "64/alt m64 !m32 mno-app-regs !mcmodel=medany;",
+#   "64/alt m64 !m32 !mno-app-regs mcmodel=medany;",
 #
-# The effect is that `gcc -msoft-float' (for example) will append
-# msoft-float to the directory name when searching for libraries or
-# startup files, and `gcc -m68000 -msoft-float' (for example) will
-# append m68000/msoft-float.
+# The effect is that `gcc -mno-app-regs' (for example) will append "alt"
+# to the directory name when searching for libraries or startup files and
+# `gcc -m32 -mcmodel=medany' (for example) will append "32/alt". Also note
+# that exclusion above is moot, unless the compiler had a default of -m32,
+# which would mean that all of the "alt" directories (not the 64/alt ones)
+# would be ignored (not generated, nor used) since the exclusion also
+# matches the multilib_default args.
 
 # Copy the positional parameters into variables.
 options=$1
@@ -90,6 +105,7 @@ dirnames=$2
 matches=$3
 exceptions=$4
 extra=$5
+exclusions=$6
 
 echo "static char *multilib_raw[] = {"
 
@@ -286,6 +302,17 @@ echo "};"
 # Output the default options now
 echo ""
 echo "static char *multilib_extra = \"${extra}\";"
+
+# Output the exclusion rules now
+echo ""
+echo "static char *multilib_exclusions_raw[] = {"
+for rule in ${exclusions}; do
+  s=`echo ${rule} | sed -e 's,/, ,g'`
+  echo "\"${s};\","
+done
+echo "NULL"
+echo "};"
+
 rm -f tmpmultilib2
 
 exit 0
