@@ -1561,15 +1561,16 @@ add_standard_iv_candidates (struct ivopts_data *data)
 {
   /* Add 0 + 1 * iteration candidate.  */
   add_candidate (data,
-		 fold_convert (unsigned_type_node, integer_zero_node),
-      		 fold_convert (unsigned_type_node, integer_one_node),
+		 build_int_cst (unsigned_intSI_type_node, 0),
+      		 build_int_cst (unsigned_intSI_type_node, 1),
 		 true, NULL);
 
-  /* The same for a long type.  */
-  add_candidate (data,
-		 fold_convert (long_unsigned_type_node, integer_zero_node),
-		 fold_convert (long_unsigned_type_node, integer_one_node),
-		 true, NULL);
+  /* The same for a long type if it is still fast enought.  */
+  if (BITS_PER_WORD > 32)
+    add_candidate (data,
+		   build_int_cst (unsigned_intDI_type_node, 0),
+		   build_int_cst (unsigned_intDI_type_node, 1),
+		   true, NULL);
 }
 
 
@@ -1883,6 +1884,24 @@ seq_cost (rtx seq)
   return cost;
 }
 
+/* Produce DECL_RTL for object obj so it looks like it is stored in memory.  */
+static rtx
+produce_memory_decl_rtl (tree obj, int *regno)
+{
+  rtx x;
+  if (!obj)
+    abort ();
+  if (TREE_STATIC (obj) || DECL_EXTERNAL (obj))
+    {
+      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (obj));
+      x = gen_rtx_SYMBOL_REF (Pmode, name);
+    }
+  else
+    x = gen_raw_REG (Pmode, (*regno)++);
+
+  return gen_rtx_MEM (DECL_MODE (obj), x);
+}
+
 /* Prepares decl_rtl for variables referred in *EXPR_P.  Callback for
    walk_tree.  DATA contains the actual fake register number.  */
 
@@ -1895,6 +1914,17 @@ prepare_decl_rtl (tree *expr_p, int *ws, void *data)
 
   switch (TREE_CODE (*expr_p))
     {
+    case ADDR_EXPR:
+      for (expr_p = &TREE_OPERAND (*expr_p, 0);
+	   (handled_component_p (*expr_p)
+	    || TREE_CODE (*expr_p) == REALPART_EXPR
+	    || TREE_CODE (*expr_p) == IMAGPART_EXPR);
+	   expr_p = &TREE_OPERAND (*expr_p, 0));
+      obj = *expr_p;
+      if (DECL_P (obj))
+        x = produce_memory_decl_rtl (obj, regno);
+      break;
+
     case SSA_NAME:
       *ws = 0;
       obj = SSA_NAME_VAR (*expr_p);
@@ -1912,18 +1942,7 @@ prepare_decl_rtl (tree *expr_p, int *ws, void *data)
 	break;
 
       if (DECL_MODE (obj) == BLKmode)
-	{
-	  if (TREE_STATIC (obj)
-	      || DECL_EXTERNAL (obj))
-	    {
-	      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (obj));
-	      x = gen_rtx_SYMBOL_REF (Pmode, name);
-	    }
-	  else
-	    x = gen_raw_REG (Pmode, (*regno)++);
-
-	  x = gen_rtx_MEM (DECL_MODE (obj), x);
-	}
+	x = produce_memory_decl_rtl (obj, regno);
       else
 	x = gen_raw_REG (DECL_MODE (obj), (*regno)++);
 
@@ -1983,8 +2002,10 @@ static tree
 get_computation_at (struct loop *loop,
 		    struct iv_use *use, struct iv_cand *cand, tree at)
 {
-  tree ubase = use->iv->base, ustep = use->iv->step;
-  tree cbase = cand->iv->base, cstep = cand->iv->step;
+  tree ubase = unsave_expr_now (use->iv->base);
+  tree ustep = unsave_expr_now (use->iv->step);
+  tree cbase = unsave_expr_now (cand->iv->base);
+  tree cstep = unsave_expr_now (cand->iv->step);
   tree utype = TREE_TYPE (ubase), ctype = TREE_TYPE (cbase);
   tree uutype;
   tree expr, delta;
@@ -4387,15 +4408,19 @@ tree_ssa_iv_optimize (struct loops *loops)
 
 #ifdef ENABLE_CHECKING
   verify_loop_closed_ssa ();
+  verify_stmts ();
 #endif
 
   /* Scan the loops, inner ones first.  */
   while (loop != loops->tree_root)
     {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	flow_loop_dump (loop, dump_file, NULL, 1);
       if (tree_ssa_iv_optimize_loop (&data, loop))
 	{
 #ifdef ENABLE_CHECKING
 	  verify_loop_closed_ssa ();
+          verify_stmts ();
 #endif
 	}
 
