@@ -1,3 +1,8 @@
+1999-05-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* lex.c (make_lang_type): Create TYPE_BINFO for
+	TEMPLATE_TYPE_PARMs just like for non-template types.
+
 1999-05-28  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (complete_array_type): Allocate off same obstack. Fix

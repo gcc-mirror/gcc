@@ -4674,7 +4674,6 @@ make_lang_type (code)
       TYPE_LANG_SPECIFIC (t) = pi;
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
       CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
-      TYPE_BINFO (t) = make_binfo (integer_zero_node, t, NULL_TREE, NULL_TREE);
 
       /* Make sure this is laid out, for ease of use later.  In the
 	 presence of parse errors, the normal was of assuring this
@@ -4691,6 +4690,13 @@ make_lang_type (code)
        TYPE_ALIAS_SET is initialized to -1 by default, so we must
        clear it here.  */
     TYPE_ALIAS_SET (t) = 0;
+
+  /* We need to allocate a TYPE_BINFO even for TEMPALTE_TYPE_PARMs
+     since they can be virtual base types, and we then need a
+     canonical binfo for them.  Ideally, this would be done lazily for
+     all types.  */
+  if (IS_AGGR_TYPE_CODE (code) || code == TEMPLATE_TYPE_PARM)
+    TYPE_BINFO (t) = make_binfo (integer_zero_node, t, NULL_TREE, NULL_TREE);
 
   return t;
 }
