@@ -755,7 +755,10 @@ fname_as_string (int pretty_p)
       strname.len = len - 1;
 
       if (cpp_interpret_string (parse_in, &strname, 1, &cstr, false))
-	return (char *) cstr.text;
+	{
+	  XDELETEVEC (namep);
+	  return (char *) cstr.text;
+	}
     }
   else
     namep = xstrdup (name);

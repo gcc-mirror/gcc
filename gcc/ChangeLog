@@ -1,3 +1,8 @@
+2004-12-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.c (fname_as_string): Free namep if we are returning
+	cstr.text.
+
 2004-12-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree-cfg.c (remove_useless_stmts_cond): Call fold on COND_EXPR_COND.
