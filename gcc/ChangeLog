@@ -1,3 +1,8 @@
+2000-12-31  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/linux-gas.h (CLEAR_INSN_CACHE): Add missing asm
+	operands.
+
 2000-12-30  Richard Henderson  <rth@redhat.com>
 
 	* dbxout.c (dbxout_block): Invert logic on eliding LBRAC/RBRAC.
