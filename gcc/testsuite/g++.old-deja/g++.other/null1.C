@@ -17,6 +17,9 @@ void l(T);
 template <>
 void l(int) {}
 
+template <>
+void l(long) {}
+
 int main()
 {
   int i = NULL; // WARNING - converting NULL to non-pointer type
