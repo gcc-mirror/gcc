@@ -2430,7 +2430,9 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
       tree unsigned_type = type_for_size (*pbitsize, 1);
       int precision = TYPE_PRECISION (unsigned_type);
 
-      mask = convert (unsigned_type, build_int_2 (~0, ~0));
+      mask = build_int_2 (~0, ~0);
+      TREE_TYPE (mask) = unsigned_type;
+      force_fit_type (mask);
       mask = const_binop (LSHIFT_EXPR, mask, size_int (precision - *pbitsize), 0);
       mask = const_binop (RSHIFT_EXPR, mask, size_int (precision - *pbitsize), 0);
     }
