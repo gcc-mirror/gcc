@@ -267,10 +267,9 @@ jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
 	-o jv-convert
 ## We explicitly link in the libraries we need.  This way we don't
 ## need -nodefaultlibs, so we can still rely on gcj picking up the
-## system libraries we need (via the specs file).  The -L. finds the
-## specs file for us.
+## system libraries we need (via the specs file).
 jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
-	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L.
+	$(GCLIBS) $(THREADLIBS) $(ZLIBS)
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
 	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la
 
