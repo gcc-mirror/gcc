@@ -1,5 +1,11 @@
 2005-03-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR libfortran/20257
+	* open.c (new_unit): set record length to max_offset rather than
+	  using a hard-coded limit (which was too low).
+
+2005-03-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR libfortran/20480
 	* write.c (output_float): special check when writing 0.0 with
 	  EN and ES formats.
