@@ -1,3 +1,8 @@
+2002-02-28  Richard Henderson  <rth@redhat.com>
+
+	* config/linker-map.gnu: Export operator new with unsigned long,
+	and with std::nothrow_t.  Likewise operator delete.
+
 2002-02-28  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/locale_facets.tcc (num_get::_M_extract_int):
@@ -65,8 +70,8 @@
 
 2002-02-22  Philipp Thomas  <pthomas@suse.de>
 
-        * include/backward/tempbuf.h: get_temporary_buffer and
-        return_temporary_buffer are in namespace std, not in __gnu_cxx.
+	* include/backward/tempbuf.h: get_temporary_buffer and
+	return_temporary_buffer are in namespace std, not in __gnu_cxx.
 
 2002-02-21  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -122,7 +127,7 @@
 2002-02-18  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
 	* testsuite/22_locale/collate_byname.cc (test01): Replace size4
-          with size3 for the string collations of str5.
+	  with size3 for the string collations of str5.
 
 2002-02-18  Paolo Carlini  <pcarlini@unitus.it>
 
@@ -260,7 +265,7 @@
 	* include/bits/basic_file.h: Remove.
 	* config/io/c_io_stdio.h: Remove _GLIBCPP_BASIC_FILE_ENCAPSULATION
 	Declare generic types, specialization.
-        * config/io/basic_file_stdio.cc: Definitions.   
+	* config/io/basic_file_stdio.cc: Definitions.   
 	* config/io/c_io_libio.h: Remove _GLIBCPP_BASIC_FILE_INHERITANCE.
 	Declare generic types.
 	* include/Makefile.am (bits_headers): Remove basic_file.h.
@@ -342,7 +347,7 @@
 	(test02): Same.
 
 2002-02-07  Benjamin Kosnik  <bkoz@redhat.com>
-            Wolfgang Bangerth  <wolfgang.bangerth@iwr.uni-heidelberg.de>
+	    Wolfgang Bangerth  <wolfgang.bangerth@iwr.uni-heidelberg.de>
 	
 	* include/bits/basic_ios.tcc (basic_ios::narrow): Add default value.
 	(basic_ios::widen): Same.
@@ -564,7 +569,7 @@
 	* docs/html/27_io/howto.html:  Also link to Langer and Kreft text.
 
 2002-01-28  Paolo Carlini  <pcarlini@unitus.it>
-            Charles Leggett <CGLeggett@lbl.gov>
+	    Charles Leggett <CGLeggett@lbl.gov>
 
 	* testsuite/27_io/filebuf_members.cc (test_05): Add test.
 
@@ -710,7 +715,7 @@
 
 2002-01-23  Loren Rittle <ljrittle@acm.org>
 
-        * config/locale/c_locale_generic.cc: Fix typename usage.
+	* config/locale/c_locale_generic.cc: Fix typename usage.
 
 2002-01-22  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -899,7 +904,7 @@
 	* include/Makefile.in: Regenerate.
 	
 2002-01-16  Benjamin Kosnik  <bkoz@redhat.com>
-            Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+	    Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 	
 	* include/bits/stl_iterator.h (reverse_iterator::_M_current):
 	Deuglify, should be current.
@@ -1125,9 +1130,9 @@
 
 2002-01-09  Paolo Carlini <pcarlini@unitus.it>
 
-        * libsupc++/exception (bad_exception): Add comment.
-        * libsupc++/new (bad_alloc): Same.
-        * libsupc++/typeinfo (bad_cast, bad_typeid): Same.
+	* libsupc++/exception (bad_exception): Add comment.
+	* libsupc++/new (bad_alloc): Same.
+	* libsupc++/typeinfo (bad_cast, bad_typeid): Same.
 
 2002-01-09  Paolo Carlini <pcarlini@unitus.it>
 
@@ -1161,8 +1166,8 @@
 
 2002-01-08  Benjamin Kosnik  <bkoz@redhat.com>
 
-        libstdc++/2913
-        libstdc++/4879
+	libstdc++/2913
+	libstdc++/4879
 	* include/bits/fstream.tcc (filebuf::_M_really_overflow): Test
 	return value of _M_file->sync().
 	(filebuf::showmanyc): Check for is_open.
@@ -1343,25 +1348,25 @@
 
 	* include/bits/stl_numeric.h (power + helpers, iota):  Move to...
 	* include/ext/numeric:  ...here, new file.
-        * include/bits/stl_function.h (identity_element, unary_compose,
+	* include/bits/stl_function.h (identity_element, unary_compose,
 	binary_compose, compose1, compose2, identity, select1st,
 	select2nd, project1st + helper, project2nd + helper,
 	constant_void_fun + helper, constant_unary_fun + helper,
 	costant_binary_fun + helper, constant0, constant1, constant2,
 	subtractive_rng, mem_fun1, mem_fun1_ref):  Move to...
-        * include/ext/functional:  ...here, new file.
-        * include/Makefile.am (ext_headers):  Add new files.
-        * include/Makefile.in:  Regenerate.
-        * testsuite/ext/headers.cc:  Include <ext/numeric> and
+	* include/ext/functional:  ...here, new file.
+	* include/Makefile.am (ext_headers):  Add new files.
+	* include/Makefile.in:  Regenerate.
+	* testsuite/ext/headers.cc:  Include <ext/numeric> and
 	<ext/functional>.
 	* include/backward/algo.h:  Include <ext/numeric>, tweak.
 	* include/backward/function.h:  Include <ext/functional>, tweak.
-        * include/ext/ropeimpl.h:  Include <ext/numeric>.
+	* include/ext/ropeimpl.h:  Include <ext/numeric>.
 
 2002-01-03  Jeffrey A Law  <law@redhat.com>
 
-        * config/os/hpux/bits/os_defines.h: Prefix __strtoll and
-        __strtoull declarations with __extension__.
+	* config/os/hpux/bits/os_defines.h: Prefix __strtoll and
+	__strtoull declarations with __extension__.
 
 2002-01-03  David Billinghurst <David.Billinghurst@riotinto.com>
 
@@ -1384,15 +1389,15 @@
 	* include/bits/stl_algobase.h (copy_n + helpers,
 	lexicographical_compare_3way + helpers):  Move to...
 	* include/ext/algorithm:  ...here.
-        * include/bits/stl_uninitialized.h (uninitialized_copy_n +
-        helpers):  Move to...
-        * include/ext/memory:  ...here, new file.
-        * include/Makefile.am (ext_headers):  Add new file.
-        * include/Makefile.in:  Regenerate.
-        * testsuite/ext/headers.cc:  Include <ext/memory>.
+	* include/bits/stl_uninitialized.h (uninitialized_copy_n +
+	helpers):  Move to...
+	* include/ext/memory:  ...here, new file.
+	* include/Makefile.am (ext_headers):  Add new file.
+	* include/Makefile.in:  Regenerate.
+	* testsuite/ext/headers.cc:  Include <ext/memory>.
 	* include/backward/algobase.h:  Include <ext/memory> and
 	<ext/algorithm>, tweak.
-        * include/ext/ropeimpl.h:  Include <ext/memory>, tweak.
+	* include/ext/ropeimpl.h:  Include <ext/memory>, tweak.
 	* include/ext/stl_rope.h:  Include <ext/memory>, tweak.
 
 2002-01-01  Roger Sayle <roger@eyesopen.com>
