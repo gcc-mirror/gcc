@@ -306,11 +306,7 @@ layout_record (rec)
      tree rec;
 {
   register tree field;
-#ifdef STRUCTURE_SIZE_BOUNDARY
-  unsigned record_align = MAX (STRUCTURE_SIZE_BOUNDARY, TYPE_ALIGN (rec));
-#else
   unsigned record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (rec));
-#endif
   /* These must be laid out *after* the record is.  */
   tree pending_statics = NULL_TREE;
   /* Record size so far is CONST_SIZE + VAR_SIZE bits,
@@ -324,6 +320,11 @@ layout_record (rec)
      that we know VAR_SIZE has.  */
   register int var_align = BITS_PER_UNIT;
 
+#ifdef STRUCTURE_SIZE_BOUNDARY
+  /* Packed structures don't need to have minimum size.  */
+  if (! TYPE_PACKED (rec))
+    record_align = MAX (record_align, STRUCTURE_SIZE_BOUNDARY);
+#endif
 
   for (field = TYPE_FIELDS (rec); field; field = TREE_CHAIN (field))
     {
@@ -563,17 +564,19 @@ layout_union (rec)
      tree rec;
 {
   register tree field;
-#ifdef STRUCTURE_SIZE_BOUNDARY
-  unsigned union_align = STRUCTURE_SIZE_BOUNDARY;
-#else
   unsigned union_align = BITS_PER_UNIT;
-#endif
 
   /* The size of the union, based on the fields scanned so far,
      is max (CONST_SIZE, VAR_SIZE).
      VAR_SIZE may be null; then CONST_SIZE by itself is the size.  */
   register int const_size = 0;
   register tree var_size = 0;
+
+#ifdef STRUCTURE_SIZE_BOUNDARY
+  /* Packed structures don't need to have minimum size.  */
+  if (! TYPE_PACKED (rec))
+    union_align = STRUCTURE_SIZE_BOUNDARY;
+#endif
 
   /* If this is a QUAL_UNION_TYPE, we want to process the fields in
      the reverse order in building the COND_EXPR that denotes its
