@@ -463,7 +463,7 @@ doc/gnat_ugn_unw.info: doc/gnat_ugn_unw.texi \
 	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(docdir)/include \
             -I$(srcdir)/ada -o $@ $<; \
 	else true; fi
-
+	
 doc/gnat_rm.info: ada/gnat_rm.texi $(docdir)/include/fdl.texi \
    $(docdir)/include/gcc-common.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
@@ -988,32 +988,27 @@ ada/b_gnatb.o : ada/b_gnatb.c
 ada/treeprs.ads : ada/treeprs.adt ada/sinfo.ads ada/xtreeprs.adb
 	-$(MKDIR) ada/bldtools
 	$(CP) $^ ada/bldtools
-	(cd ada/bldtools; gnatmake -q -a -f xtreeprs ; \
-	 ./xtreeprs ../treeprs.ads )
+	(cd ada/bldtools; gnatmake -q xtreeprs ; ./xtreeprs ../treeprs.ads )
 
 ada/einfo.h : ada/einfo.ads ada/einfo.adb ada/xeinfo.adb
 	-$(MKDIR) ada/bldtools
 	$(CP) $^ ada/bldtools
-	(cd ada/bldtools; gnatmake -q -a -f xeinfo ; \
-	 ./xeinfo ../einfo.h )
+	(cd ada/bldtools; gnatmake -q xeinfo ; ./xeinfo ../einfo.h )
 
 ada/sinfo.h : ada/sinfo.ads ada/xsinfo.adb
 	-$(MKDIR) ada/bldtools
 	$(CP) $^ ada/bldtools
-	(cd ada/bldtools; gnatmake -q -a -f xsinfo ; \
-	 ./xsinfo ../sinfo.h )
+	(cd ada/bldtools; gnatmake -q xsinfo ; ./xsinfo ../sinfo.h )
 
 ada/nmake.adb : ada/sinfo.ads ada/nmake.adt ada/xnmake.adb
 	-$(MKDIR) ada/bldtools
 	$(CP) $^ ada/bldtools
-	(cd ada/bldtools; gnatmake -q -a -f xnmake ; \
-	 ./xnmake -b ../nmake.adb )
+	(cd ada/bldtools; gnatmake -q xnmake ; ./xnmake -b ../nmake.adb )
 
 ada/nmake.ads :  ada/sinfo.ads ada/nmake.adt ada/xnmake.adb ada/nmake.adb
 	-$(MKDIR) ada/bldtools
 	$(CP) $^ ada/bldtools
-	(cd ada/bldtools; gnatmake -q -a -f xnmake ; \
-	 ./xnmake -s ../nmake.ads )
+	(cd ada/bldtools; gnatmake -q xnmake ; ./xnmake -s ../nmake.ads )
 
 update-sources : ada/treeprs.ads ada/einfo.h ada/sinfo.h ada/nmake.adb \
 	ada/nmake.ads

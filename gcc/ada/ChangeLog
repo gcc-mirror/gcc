@@ -1,4 +1,9 @@
 2004-09-01  Laurent GUERBY <laurent@guerby.net>
+
+	* Make-lang.in (bldtools): revert previous commit since
+	it breaks parallel builds.
+	
+2004-09-01  Laurent GUERBY <laurent@guerby.net>
         
         * Make-lang.in (bldtools): force rebuild of
         runtime with no optimization for bltools to workaround
