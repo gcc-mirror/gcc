@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for IA-32.
-   Copyright (C) 1988, 92, 94-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 94-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1004,11 +1004,11 @@ enum reg_class
 #define PREFERRED_RELOAD_CLASS(X,CLASS)					\
   (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode		\
    ? (standard_80387_constant_p (X)					\
-      ? reg_class_subset_p (CLASS, FLOAT_REGS) ? CLASS : FLOAT_REGS	\
-      : NO_REGS)							\
+      ? CLASS								\
+      : (reg_class_subset_p (CLASS, FLOAT_REGS) 			\
+	 ? NO_REGS							\
+	 : reg_class_subset_p (CLASS, GENERAL_REGS) ? CLASS : GENERAL_REGS)) \
    : GET_MODE (X) == QImode && ! reg_class_subset_p (CLASS, Q_REGS) ? Q_REGS \
-   : ((CLASS) == ALL_REGS						\
-      && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT) ? GENERAL_REGS	\
    : (CLASS))
 
 /* If we are copying between general and FP registers, we need a memory
@@ -1525,8 +1525,7 @@ do {								\
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
-#define LEGITIMATE_CONSTANT_P(X) \
-  (GET_CODE (X) == CONST_DOUBLE ? standard_80387_constant_p (X) : 1)
+#define LEGITIMATE_CONSTANT_P(X) 1
 
 #ifdef REG_OK_STRICT
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
