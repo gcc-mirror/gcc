@@ -1,3 +1,7 @@
+1999-12-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* stmt.c (expand_fixup): Fix typo in comment.
+
 Sat Dec  4 14:13:38 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* regmove.c (copy_src_to_dest): Remove loop_depth parameter.
