@@ -1048,6 +1048,8 @@ add_functions (void)
 	     gfc_check_dble, gfc_simplify_dble, gfc_resolve_dble,
 	     a, BT_REAL, dr, 0);
 
+  make_alias ("dfloat");
+
   make_generic ("dble", GFC_ISYM_DBLE);
 
   add_sym_1 ("digits", 0, 1, BT_INTEGER, di,
