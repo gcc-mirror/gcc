@@ -1,3 +1,7 @@
+2004-07-07  Andrew Pinski  <apinski@apple.com>
+
+	* configure: Regenerate with the right autoconf.
+
 2004-07-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* ifcvt.c (total_bb_rtx_cost): New function.
