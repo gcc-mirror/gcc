@@ -110,6 +110,12 @@ Tue Aug 24 09:32:07 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 Tue Aug 24 12:35:20 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
+	* gcse.c (cprop_jump): New function, broken out of cprop_insn.
+	(cprop_cc0_jump): New function.
+	(cprop_insn): Break out new function cprop_jump and use it.
+	Also use cprop_cc0_jump for machines with CC0.
+	(cprop): Don't crash if cprop_insn turned the insn into a NOTE.
+
 	* tree.h (current_function_calls_setjmp,
  	current_function_calls_longjmp): Delete declarations.
 	* dsp16xx.c: Include "function.h".

@@ -310,6 +310,10 @@ static char can_copy_p[(int) NUM_MACHINE_MODES];
 /* Non-zero if can_copy_p has been initialized.  */
 static int can_copy_init_p;
 
+struct reg_use {
+  rtx reg_rtx;
+};
+
 /* Hash table of expressions.  */
 
 struct expr
@@ -572,6 +576,8 @@ static void compute_cprop_data	PROTO ((void));
 static void find_used_regs	    PROTO ((rtx));
 static int try_replace_reg	    PROTO ((rtx, rtx, rtx));
 static struct expr *find_avail_set    PROTO ((int, rtx));
+static int cprop_jump			PROTO((rtx, rtx, struct reg_use *, rtx));
+static int cprop_cc0_jump		PROTO((rtx, struct reg_use *, rtx));
 static int cprop_insn		 PROTO ((rtx, int));
 static int cprop		      PROTO ((int));
 static int one_cprop_pass	     PROTO ((int, int));
@@ -3532,10 +3538,6 @@ compute_cprop_data ()
 
 /* Copy/constant propagation.  */
 
-struct reg_use {
-  rtx reg_rtx;
-};
-
 /* Maximum number of register uses in an insn that we handle.  */
 #define MAX_USES 8
 
@@ -3666,6 +3668,114 @@ find_avail_set (regno, insn)
   return set;
 }
 
+/* Subroutine of cprop_insn that tries to propagate constants into
+   JUMP_INSNS.  INSN must be a conditional jump; COPY is a copy of it
+   that we can use for substitutions.
+   REG_USED is the use we will try to replace, SRC is the constant we
+   will try to substitute for it.
+   Returns nonzero if a change was made.  */
+static int
+cprop_jump (insn, copy, reg_used, src)
+     rtx insn, copy;
+     struct reg_use *reg_used;
+     rtx src;
+{
+  rtx set = PATTERN (copy);
+  rtx temp;
+
+  /* Replace the register with the appropriate constant.  */
+  replace_rtx (SET_SRC (set), reg_used->reg_rtx, src);
+
+  temp = simplify_ternary_operation (GET_CODE (SET_SRC (set)),
+				     GET_MODE (SET_SRC (set)),
+				     GET_MODE (XEXP (SET_SRC (set), 0)),
+				     XEXP (SET_SRC (set), 0),
+				     XEXP (SET_SRC (set), 1),
+				     XEXP (SET_SRC (set), 2));
+
+  /* If no simplification can be made, then try the next
+     register.  */
+  if (temp == 0)
+    return 0;
+ 
+  SET_SRC (set) = temp;
+
+  /* That may have changed the structure of TEMP, so
+     force it to be rerecognized if it has not turned
+     into a nop or unconditional jump.  */
+		
+  INSN_CODE (copy) = -1;
+  if ((SET_DEST (set) == pc_rtx
+       && (SET_SRC (set) == pc_rtx
+	   || GET_CODE (SET_SRC (set)) == LABEL_REF))
+      || recog (PATTERN (copy), copy, NULL) >= 0)
+    {
+      /* This has either become an unconditional jump
+	 or a nop-jump.  We'd like to delete nop jumps
+	 here, but doing so confuses gcse.  So we just
+	 make the replacement and let later passes
+	 sort things out.  */
+      PATTERN (insn) = set;
+      INSN_CODE (insn) = -1;
+
+      /* One less use of the label this insn used to jump to
+	 if we turned this into a NOP jump.  */
+      if (SET_SRC (set) == pc_rtx && JUMP_LABEL (insn) != 0)
+	--LABEL_NUSES (JUMP_LABEL (insn));
+
+      /* If this has turned into an unconditional jump,
+	 then put a barrier after it so that the unreachable
+	 code will be deleted.  */
+      if (GET_CODE (SET_SRC (set)) == LABEL_REF)
+	emit_barrier_after (insn);
+
+      run_jump_opt_after_gcse = 1;
+
+      const_prop_count++;
+      if (gcse_file != NULL)
+	{
+	  int regno = REGNO (reg_used->reg_rtx);
+	  fprintf (gcse_file, "CONST-PROP: Replacing reg %d in insn %d with constant ",
+		   regno, INSN_UID (insn));
+	  print_rtl (gcse_file, src);
+	  fprintf (gcse_file, "\n");
+	}
+      return 1;
+    }
+  return 0;
+}
+
+#ifdef HAVE_cc0
+/* Subroutine of cprop_insn that tries to propagate constants into
+   JUMP_INSNS for machines that have CC0.  INSN is a single set that
+   stores into CC0; the insn following it is a conditional jump.
+   REG_USED is the use we will try to replace, SRC is the constant we
+   will try to substitute for it.
+   Returns nonzero if a change was made.  */
+static int
+cprop_cc0_jump (insn, reg_used, src)
+     rtx insn;
+     struct reg_use *reg_used;
+     rtx src;
+{
+  rtx jump = NEXT_INSN (insn);
+  rtx copy = copy_rtx (jump);
+  rtx set = PATTERN (copy);
+
+  /* We need to copy the source of the cc0 setter, as cprop_jump is going to
+     substitute into it.  */
+  replace_rtx (SET_SRC (set), cc0_rtx, copy_rtx (SET_SRC (PATTERN (insn))));
+  if (! cprop_jump (jump, copy, reg_used, src))
+    return 0;
+
+  /* If we succeeded, delete the cc0 setter.  */
+  PUT_CODE (insn, NOTE);
+  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+  NOTE_SOURCE_FILE (insn) = 0;
+  return 1;
+ }
+#endif
+ 
 /* Perform constant and copy propagation on INSN.
    The result is non-zero if a change was made.  */
 
@@ -3743,80 +3853,23 @@ cprop_insn (insn, alter_jumps)
 	     code, we can extend this as necessary over time.
 
 	     Right now the insn in question must look like
-
-	     (set (pc) (if_then_else ...))
-
-	     Note this does not currently handle machines which use cc0.  */
+	     (set (pc) (if_then_else ...))  */
 	  else if (alter_jumps
 		   && GET_CODE (insn) == JUMP_INSN
 		   && condjump_p (insn)
 		   && ! simplejump_p (insn))
-	    {
-	      /* We want a copy of the JUMP_INSN so we can modify it
-		 in-place as needed without effecting the original.  */
-	      rtx copy = copy_rtx (insn);
-	      rtx set = PATTERN (copy);
-	      rtx temp;
-
-	      /* Replace the register with the appropriate constant.  */
-	      replace_rtx (SET_SRC (set), reg_used->reg_rtx, src);
-
-	      temp = simplify_ternary_operation (GET_CODE (SET_SRC (set)),
-						 GET_MODE (SET_SRC (set)),
-						 GET_MODE (XEXP (SET_SRC (set), 0)),
-						 XEXP (SET_SRC (set), 0),
-						 XEXP (SET_SRC (set), 1),
-						 XEXP (SET_SRC (set), 2));
-
-	      /* If no simplification can be made, then try the next
-		 register.  */
-	      if (temp)
-		SET_SRC (set) = temp;
-	      else
-		continue;
-
-	      /* That may have changed the structure of TEMP, so
-		 force it to be rerecognized if it has not turned
-		 into a nop or unconditional jump.  */
-		
-	      INSN_CODE (copy) = -1;
-	      if ((SET_DEST (set) == pc_rtx
-		   && (SET_SRC (set) == pc_rtx
-		       || GET_CODE (SET_SRC (set)) == LABEL_REF))
-		  || recog (PATTERN (copy), copy, NULL) >= 0)
-		{
-		  /* This has either become an unconditional jump
-		     or a nop-jump.  We'd like to delete nop jumps
-		     here, but doing so confuses gcse.  So we just
-		     make the replacement and let later passes
-		     sort things out.  */
-		  PATTERN (insn) = set;
-		  INSN_CODE (insn) = -1;
-
-		  /* One less use of the label this insn used to jump to
-		     if we turned this into a NOP jump.  */
-		  if (SET_SRC (set) == pc_rtx && JUMP_LABEL (insn) != 0)
-		    --LABEL_NUSES (JUMP_LABEL (insn));
-
-		  /* If this has turned into an unconditional jump,
-		     then put a barrier after it so that the unreachable
-		     code will be deleted.  */
-		  if (GET_CODE (SET_SRC (set)) == LABEL_REF)
-		    emit_barrier_after (insn);
-
-		  run_jump_opt_after_gcse = 1;
-
-		  changed = 1;
-		  const_prop_count++;
-		  if (gcse_file != NULL)
-		    {
-		      fprintf (gcse_file, "CONST-PROP: Replacing reg %d in insn %d with constant ",
-			       regno, INSN_UID (insn));
-		      print_rtl (gcse_file, src);
-		      fprintf (gcse_file, "\n");
-		    }
-		}
-	    }
+	    changed |= cprop_jump (insn, copy_rtx (insn), reg_used, src);
+#ifdef HAVE_cc0
+	  /* Similar code for machines that use a pair of CC0 setter and
+	     conditional jump insn.  */
+	  else if (alter_jumps
+		   && GET_CODE (PATTERN (insn)) == SET
+		   && SET_DEST (PATTERN (insn)) == cc0_rtx
+		   && GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
+		   && condjump_p (NEXT_INSN (insn))
+		   && ! simplejump_p (NEXT_INSN (insn)))
+	    changed |= cprop_cc0_jump (insn, reg_used, src);
+#endif
 	}
       else if (GET_CODE (src) == REG
 	       && REGNO (src) >= FIRST_PSEUDO_REGISTER
@@ -3879,8 +3932,10 @@ cprop (alter_jumps)
 	      changed |= cprop_insn (insn, alter_jumps);
 
 	      /* Keep track of everything modified by this insn.  */
-	      /* ??? Need to be careful w.r.t. mods done to INSN.  */
-	      mark_oprs_set (insn);
+	      /* ??? Need to be careful w.r.t. mods done to INSN.  Don't
+	         call mark_oprs_set if we turned the insn into a NOTE.  */
+	      if (GET_CODE (insn) != NOTE)
+		mark_oprs_set (insn);
 	    }
 	}
     }
