@@ -1,3 +1,10 @@
+2000-04-29  Richard Henderson  <rth@cygnus.com>
+
+	* config/alpha/crtend.asm: Use C comments instead of #.
+	* config/alpha/crtbegin.asm: Likewise.  Mark __dso_handle hidden.
+
+	* config/alpha/elf.h (SELECT_SECTION): Treat CONSTRUCTOR like VAR_DECL.
+
 2000-04-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.h (enum node_type: Take out T_MCONST.
