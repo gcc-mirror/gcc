@@ -412,20 +412,10 @@ while the @file{config/rs6000/eabiaix.h} target file defines
 @end smallexample
 @end defmac
 
-@defmac LINK_LIBGCC_SPECIAL
-Define this macro if the driver program should find the library
-@file{libgcc.a} itself and should not pass @option{-L} options to the
-linker.  If you do not define this macro, the driver program will pass
-the argument @option{-lgcc} to tell the linker to do the search and will
-pass @option{-L} options to it.
-@end defmac
-
 @defmac LINK_LIBGCC_SPECIAL_1
 Define this macro if the driver program should find the library
 @file{libgcc.a}.  If you do not define this macro, the driver program will pass
 the argument @option{-lgcc} to tell the linker to do the search.
-This macro is similar to @code{LINK_LIBGCC_SPECIAL}, except that it does
-not affect @option{-L} options.
 @end defmac
 
 @defmac LINK_GCC_C_SEQUENCE_SPEC

@@ -1,3 +1,10 @@
+2005-02-23  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* doc/tm.texi (LINK_LIBGCC_SPECIAL): Remove.
+	(LINK_LIBGCC_SPECIAL_1): Don't mention it.
+	* gcc.c: Don't check for LINK_LIBGCC_SPECIAL.
+	* system.h: Poison LINK_LIBGCC_SPECIAL.
+
 2005-02-23  James E Wilson  <wilson@specifixinc.com>
 
 	* gengtype.c (note_insn_name): Make 1 element larger.
