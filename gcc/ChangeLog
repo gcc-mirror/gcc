@@ -1,3 +1,14 @@
+2004-08-24  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+	PR target/17093
+	* config/m32r.md (movsi_sda): Add SI mode specification to
+	UNSPEC.
+
+2004-08-24  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/m32r.h (PREDICATE_CODES): Remove duplicate definition
+	of seth_add3_operand.
+
 2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* Makefile.in (PROTO_OBJS): Add errors.o.
@@ -7,11 +18,6 @@
 2004-08-24  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* doc/trouble.texi (C++ misunderstandings): Fix example code.
-
-2004-08-24  Nick Clifton  <nickc@redhat.com>
-
-	* config/m32r/m32r.h (PREDICATE_CODES): Remove duplicate defintion
-	of seth_add3_operand.
 
 2004-08-24  Andreas Tobler  <a.tobler@schweiz.ch>
 
