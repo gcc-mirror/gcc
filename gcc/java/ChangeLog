@@ -1,3 +1,7 @@
+2002-09-30  Anthony Green  <green@redhat.com>
+
+	* gcj.texi (Invoking jv-scan): Fix texinfo.
+
 2002-09-28  Anthony Green  <green@redhat.com>
 
 	* gcj.texi (Invoking jv-scan): Add --no-assert documentation.

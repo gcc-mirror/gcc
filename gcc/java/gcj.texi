@@ -645,7 +645,6 @@ and the Info entries for @file{gcj} and @file{gcc}.
 Don't recognize the @code{assert} keyword, for backwards compatibility
 with older versions of the language specification.
 
-@table @gcctabopt
 @item --complexity
 This prints a complexity measure, related to cyclomatic complexity, for
 each input file.
