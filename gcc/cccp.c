@@ -467,6 +467,11 @@ int traditional;
 
 static int no_output;
 
+/* Nonzero means this file was included with a -imacros or -include
+   command line and should not be recorded as an include file.  */
+
+static int no_record_file;
+
 /* Nonzero means that we have finished processing the command line options.
    This flag is used to decide whether or not to issue certain errors
    and/or warnings.  */
@@ -1802,7 +1807,7 @@ main (argc, argv)
      Much like #including them, but with no_output set
      so that only their macro definitions matter.  */
 
-  no_output++;
+  no_output++; no_record_file++;
   for (i = 1; i < argc; i++)
     if (pend_files[i]) {
       int fd = open (pend_files[i], O_RDONLY, 0666);
@@ -1812,7 +1817,7 @@ main (argc, argv)
       }
       finclude (fd, pend_files[i], &outbuf, 0, NULL_PTR);
     }
-  no_output--;
+  no_output--; no_record_file--;
 
   /* Copy the entire contents of the main input file into
      the stacked input buffer previously allocated for it.  */
@@ -2002,6 +2007,7 @@ main (argc, argv)
 
   /* Scan the -include files before the main input.  */
 
+  no_record_file++;
   for (i = 1; i < argc; i++)
     if (pend_includes[i]) {
       int fd = open (pend_includes[i], O_RDONLY, 0666);
@@ -2011,6 +2017,7 @@ main (argc, argv)
       }
       finclude (fd, pend_includes[i], &outbuf, 0, NULL_PTR);
     }
+  no_record_file--;
 
   /* Scan the input, processing macros and directives.  */
 
@@ -7055,8 +7062,13 @@ do_endif (buf, limit, op, keyword)
       /* If we get here, this #endif ends a #ifndef
 	 that contains all of the file (aside from whitespace).
 	 Arrange not to include the file again
-	 if the macro that was tested is defined.  */
-      if (indepth != 0)
+	 if the macro that was tested is defined.
+
+	 Do not do this for the top-level file in a -include or any
+	 file in a -imacros.  */
+      if (indepth != 0
+	  && ! (indepth == 1 && no_record_file)
+	  && ! (no_record_file && no_output))
 	record_control_macro (ip->fname, temp->control_macro);
     fail: ;
     }
