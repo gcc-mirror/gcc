@@ -3076,7 +3076,7 @@ for machine in $build $host $target; do
 		case $machine in
 			*mingw32msv*)
 				;;
-			*minwg32crt* | *mingw32*)
+			*mingw32crt* | *mingw32*)
 				tm_file="${tm_file} i386/crtdll.h"
 				;;
 		esac
