@@ -1,3 +1,14 @@
+2004-12-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/t-linux64: Remove code that messed with $(SPECS).
+	(MULTILIB_OPTIONS, MULTILIB_DIRNAMES, MULTILIB_OSDIRNAMES): Move
+	n32 to the front.
+	(MULTILIB_EXTRA_OPTS, CRTSTUFF_T_CFLAGS, CRTSTUFF_T_CFLAGS_S):
+	Removed.
+	* config/mips/linux64.h (DRIVER_SELF_SPECS): Don't handle
+	-mabi-fake-default.
+	(SUBTARGET_TARGET_SWITCHES): Likewise.
+
 2004-12-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/18984
