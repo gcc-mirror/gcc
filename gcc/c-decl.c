@@ -4431,21 +4431,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   }
 }
 
-/* Make a variant type in the proper way for C, propagating qualifiers
-   down to the element type of an array.  */
-
-tree
-c_build_type_variant (type, constp, volatilep)
-     tree type;
-     int constp, volatilep;
-{
-  if (TREE_CODE (type) == ARRAY_TYPE)
-    type = build_array_type (c_build_type_variant (TREE_TYPE (type),
-						   constp, volatilep),
-			     TYPE_DOMAIN (type));
-  return build_type_variant (type, constp, volatilep);
-}
-
 /* Decode the parameter-list info for a function type or function definition.
    The argument is the value returned by `get_parm_info' (or made in parse.y
    if there is an identifier list instead of a parameter decl list).
