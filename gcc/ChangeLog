@@ -1,5 +1,8 @@
 Mon Aug 30 01:02:09 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* dwarf2out.c (mem_loc_descriptor): New argument MODE.  All callers
+	changed.  Handle autoincrement addressing modes.
+
 	* integrate.c (copy_rtx_and_substitute): Handle internal_arg_pointer
 	just like we would the virtual incoming args register when
 	integrating.

@@ -2573,7 +2573,7 @@ static int type_is_enum			PROTO((tree));
 static dw_loc_descr_ref reg_loc_descriptor PROTO((rtx));
 static dw_loc_descr_ref based_loc_descr	PROTO((unsigned, long));
 static int is_based_loc			PROTO((rtx));
-static dw_loc_descr_ref mem_loc_descriptor PROTO((rtx));
+static dw_loc_descr_ref mem_loc_descriptor PROTO((rtx, enum machine_mode mode));
 static dw_loc_descr_ref concat_loc_descriptor PROTO((rtx, rtx));
 static dw_loc_descr_ref loc_descriptor	PROTO((rtx));
 static unsigned ceiling			PROTO((unsigned, unsigned));
@@ -6581,11 +6581,15 @@ is_based_loc (rtl)
    When creating memory location descriptors, we are effectively transforming
    the RTL for a memory-resident object into its Dwarf postfix expression
    equivalent.  This routine recursively descends an RTL tree, turning
-   it into Dwarf postfix code as it goes.  */
+   it into Dwarf postfix code as it goes.
+
+   MODE is the mode of the memory reference, needed to handle some
+   autoincrement addressing modes.  */
 
 static dw_loc_descr_ref
-mem_loc_descriptor (rtl)
+mem_loc_descriptor (rtl, mode)
      register rtx rtl;
+     enum machine_mode mode;
 {
   dw_loc_descr_ref mem_loc_result = NULL;
   /* Note that for a dynamically sized array, the location we will generate a 
@@ -6595,6 +6599,13 @@ mem_loc_descriptor (rtl)
 
   switch (GET_CODE (rtl))
     {
+    case POST_INC:
+    case POST_DEC:
+      /* POST_INC and POST_DEC can be handled just like a SUBREG.  So we
+	 just fall into the SUBREG code.  */
+
+      /* ... fall through ... */
+
     case SUBREG:
       /* The case of a subreg may arise when we have a local (register)
          variable or a formal (register) parameter which doesn't quite fill
@@ -6623,7 +6634,7 @@ mem_loc_descriptor (rtl)
       break;
 
     case MEM:
-      mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0));
+      mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), mode);
       add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_deref, 0, 0));
       break;
 
@@ -6638,14 +6649,27 @@ mem_loc_descriptor (rtl)
       mem_loc_result->dw_loc_oprnd1.v.val_addr = addr_to_string (rtl);
       break;
 
+    case PRE_INC:
+    case PRE_DEC:
+      /* Turn these into a PLUS expression and fall into the PLUS code
+	 below.  */
+      rtl = gen_rtx_PLUS (word_mode, XEXP (rtl, 0),
+			  GEN_INT (GET_CODE (rtl) == PRE_INC
+				   ? GET_MODE_UNIT_SIZE (mode) 
+				   : - GET_MODE_UNIT_SIZE (mode)));
+			  
+      /* ... fall through ... */
+
     case PLUS:
       if (is_based_loc (rtl))
 	mem_loc_result = based_loc_descr (reg_number (XEXP (rtl, 0)),
 					  INTVAL (XEXP (rtl, 1)));
       else
 	{
-	  add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 0)));
-	  add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 1)));
+	  add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 0),
+							      mode));
+	  add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 1),
+							      mode));
 	  add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_plus, 0, 0));
 	}
       break;
@@ -6653,8 +6677,8 @@ mem_loc_descriptor (rtl)
     case MULT:
       /* If a pseudo-reg is optimized away, it is possible for it to
 	 be replaced with a MEM containing a multiply.  */
-      add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 0)));
-      add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 1)));
+      add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 0), mode));
+      add_loc_descr (&mem_loc_result, mem_loc_descriptor (XEXP (rtl, 1), mode));
       add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_mul, 0, 0));
       break;
 
@@ -6721,7 +6745,7 @@ loc_descriptor (rtl)
       break;
 
     case MEM:
-      loc_result = mem_loc_descriptor (XEXP (rtl, 0));
+      loc_result = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl));
       break;
 
     case CONCAT:
