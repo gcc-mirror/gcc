@@ -1,3 +1,10 @@
+2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* timevar.c (timevar_add): Delete.
+	(timevar_get): Also count time since the selected timer was
+	last updated.  Do not examine the timevar stack if the
+	selected timer is standalone.
+
 2000-09-05  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* gthr-dce.h (__gthread_objc_mutex_deallocate): Free mutex->backend.
