@@ -1,3 +1,9 @@
+2003-04-08  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (rs6000_init_builtins): Set opaque types
+        regardless of architecture.
+        (spe_init_builtins): Change V2SI and V2SF types to opaque types.
+
 2003-04-08  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (push_regs, calc_live_regs): Return int.  Take single
