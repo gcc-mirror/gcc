@@ -1183,6 +1183,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case SAVE_EXPR:
     case ADDR_EXPR:
     case COMPLEX_EXPR:
+    case RANGE_EXPR:
     case CASE_LABEL_EXPR:
     case SSA_NAME:
     case CATCH_EXPR:
