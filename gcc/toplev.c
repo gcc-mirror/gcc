@@ -900,11 +900,14 @@ warn_deprecated_use (tree node)
       const char *what = NULL;
       tree decl = TYPE_STUB_DECL (node);
 
-      if (TREE_CODE (TYPE_NAME (node)) == IDENTIFIER_NODE)
-	what = IDENTIFIER_POINTER (TYPE_NAME (node));
-      else if (TREE_CODE (TYPE_NAME (node)) == TYPE_DECL
-	       && DECL_NAME (TYPE_NAME (node)))
-	what = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (node)));
+      if (TYPE_NAME (node))
+	{
+	  if (TREE_CODE (TYPE_NAME (node)) == IDENTIFIER_NODE)
+	    what = IDENTIFIER_POINTER (TYPE_NAME (node));
+	  else if (TREE_CODE (TYPE_NAME (node)) == TYPE_DECL
+		   && DECL_NAME (TYPE_NAME (node)))
+	    what = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (node)));
+	}
 
       if (decl)
 	{
@@ -920,9 +923,9 @@ warn_deprecated_use (tree node)
       else
 	{
 	  if (what)
-	    warning ("type is deprecated");
-	  else
 	    warning ("`%s' is deprecated", what);
+	  else
+	    warning ("type is deprecated");
 	}
     }
 }

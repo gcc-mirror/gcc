@@ -1,3 +1,8 @@
+2004-09-10  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* toplev.c (warn_deprecated_use): Correct logic for saying "type"
+	in diagnostic.  Don't dereference NULL TYPE_NAME.
+
 2004-09-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-common.c, c-pch.c, defaults.h, lambda-code.c, passes.c,
