@@ -1,3 +1,10 @@
+2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* libstdc++-v3/config/os/mingw32/os_defines.h (__GTHREAD_HIDE_WIN32API):
+	Define to 1 by defualt.
+	(NOMINMAX): Define.
+	Update copyright year.
+
 2003-05-21  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_fstream.h (_M_set_buffer): Fix indentation.
