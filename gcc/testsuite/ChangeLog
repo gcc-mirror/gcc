@@ -1,3 +1,8 @@
+2005-03-09  Ben Elliston  <bje@au.ibm.com>
+
+	PR debug/16792
+	* g++.dg/debug/pr16792.C: New test.
+
 2005-03-13  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/anon-struct-6.c, gcc.dg/array-8.c,
