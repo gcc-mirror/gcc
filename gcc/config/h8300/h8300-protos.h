@@ -32,6 +32,7 @@ extern const char *emit_a_rotate PARAMS ((enum rtx_code, rtx *));
 extern const char *output_simode_bld PARAMS ((int, rtx[]));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern int const_costs PARAMS ((rtx, enum rtx_code, enum rtx_code));
+extern int h8300_and_costs PARAMS ((rtx));
 extern int h8300_shift_costs PARAMS ((rtx));
 extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void final_prescan_insn PARAMS ((rtx, rtx *, int));
