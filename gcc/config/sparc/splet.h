@@ -29,15 +29,31 @@ Boston, MA 02111-1307, USA.  */
 /* -mlive-g0 is only supported on the sparclet.  */
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
+{"big-endian", -MASK_LITTLE_ENDIAN},		\
+{"little-endian", MASK_LITTLE_ENDIAN},		\
 {"live-g0", MASK_LIVE_G0},			\
 {"no-live-g0", -MASK_LIVE_G0},			\
 {"broken-saverestore", MASK_BROKEN_SAVERESTORE},	\
 {"no-broken-saverestore", -MASK_BROKEN_SAVERESTORE},
 
+#undef CPP_SPEC
+#define CPP_SPEC "\
+%(cpp_cpu) \
+%{mlittle-endian:-D__LITTLE_ENDIAN__} \
+"
+
+#undef ASM_SPEC
+#define ASM_SPEC "%{mlittle-endian:-EL} %(asm_cpu)"
+
 /* Require the user to supply crt0.o.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC ""
 
-/* Don't need any special link spec.  */
 #undef LINK_SPEC
-#define LINK_SPEC ""
+#define LINK_SPEC "%{mlittle-endian:-EL}"
+
+/* sparclet chips are bi-endian.  */
+#undef BYTES_BIG_ENDIAN
+#define BYTES_BIG_ENDIAN (! TARGET_LITTLE_ENDIAN)
+#undef WORDS_BIG_ENDIAN
+#define WORDS_BIG_ENDIAN (! TARGET_LITTLE_ENDIAN)
