@@ -2413,6 +2413,23 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
     case JAVA_EXC_OBJ_EXPR:
       NOTE_PUSH (1);  /* Pushed by exception system. */
       break;
+    case MIN_EXPR:
+    case MAX_EXPR:
+      {
+	/* This copes with cases where fold() has created MIN or MAX
+	   from a conditional expression.  */
+	enum tree_code code = TREE_CODE (exp) == MIN_EXPR ? LT_EXPR : GT_EXPR;
+	tree op0 = TREE_OPERAND (exp, 0);
+	tree op1 = TREE_OPERAND (exp, 1);
+	tree x;
+	if (TREE_SIDE_EFFECTS (op0) || TREE_SIDE_EFFECTS (op1))
+	  abort ();
+	x = build (COND_EXPR, TREE_TYPE (exp), 
+		   build (code, boolean_type_node, op0, op1), 
+		   op0, op1);	  
+	generate_bytecode_insns (x, target, state);
+	break;
+      }					     
     case NEW_CLASS_EXPR:
       {
 	tree class = TREE_TYPE (TREE_TYPE (exp));
