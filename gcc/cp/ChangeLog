@@ -1,5 +1,8 @@
 2004-12-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/17413
+	* pt.c (check_instantiated_args): Remove bogus SFINAE code.
+
 	* cvt.c (convert_to_void): Fix typo in comment.
 
 2004-12-23  Alexandre Oliva  <aoliva@redhat.com>

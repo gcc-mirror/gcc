@@ -8926,9 +8926,7 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
 
 	  if (nt)
 	    {
-	      if (!(complain & tf_error))
-		/*OK*/;
-	      else if (TYPE_ANONYMOUS_P (nt))
+	      if (TYPE_ANONYMOUS_P (nt))
 		error ("%qT uses anonymous type", t);
 	      else
 		error ("%qT uses local type %qT", t, nt);
