@@ -1283,7 +1283,7 @@ enum reg_class
 /* Get reg_class from a letter such as appears in the machine description.  */
 
 #define REG_CLASS_FROM_LETTER(C) \
-  ((C) == 'f' ? FLOAT_REGS	\
+  ((C) == 'f' ? ((TARGET_HARD_FLOAT && TARGET_FPRS) ? FLOAT_REGS : NO_REGS) \
    : (C) == 'b' ? BASE_REGS	\
    : (C) == 'h' ? SPECIAL_REGS	\
    : (C) == 'q' ? MQ_REGS	\
