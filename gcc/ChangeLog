@@ -1,3 +1,7 @@
+Mon Nov 23 17:05:40 1998  Geoffrey Noer  <noer@cygnus.com>
+
+	* i386/xm-cygwin.h: Rename cygwin_ path funcs back to cygwin32_.
+
 Mon Nov 23 16:40:00 1998  Ulrich Drepper  <drepper@cygnus.com>
 
         * Makefile.in (OBJS): Add graph.o
