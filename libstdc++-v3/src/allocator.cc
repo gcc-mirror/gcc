@@ -91,8 +91,11 @@ namespace __gnu_cxx
 	
 	size_t __bytes_to_get = (2 * __total_bytes
 				 + _M_round_up(_S_heap_size >> 4));
-	_S_start_free = static_cast<char*>(::operator new(__bytes_to_get));
-	if (_S_start_free == 0)
+	try
+	  {
+	    _S_start_free = static_cast<char*>(::operator new(__bytes_to_get));
+	  }
+	catch (...)
 	  {
 	    // Try to make do with what we have.  That can't hurt.  We
 	    // do not try smaller requests, since that tends to result
@@ -112,11 +115,9 @@ namespace __gnu_cxx
 		    // right free list.
 		  }
 	      }
-	    _S_end_free = 0;        // In case of exception.
-
-	    // This should either throw an exception or remedy the situation.
-	    // Thus we assume it succeeded.
-	    _S_start_free = static_cast<char*>(::operator new(__bytes_to_get));
+	    // What we have wasn't enough.  Rethrow.
+	    _S_start_free = _S_end_free = 0;   // We have no chunk.
+	    __throw_exception_again;
 	  }
 	_S_heap_size += __bytes_to_get;
 	_S_end_free = _S_start_free + __bytes_to_get;
