@@ -1,5 +1,15 @@
 1998-09-15  Andrew MacLeod  <amacleod@cygnus.com>
 
+	* except.c (expand_start_catch_block): No need to check for new
+	exception model.
+	(process_start_catch_block_old): Deleted.
+	(process_start_catch_block): Add call to start_decl_1().
+	(expand_end_catch_block): Add call to end_catch_handler().
+	* exception.cc (__cplus_type_matcher): Only check the exception 
+	language if there is an exception table.
+
+1998-09-15  Andrew MacLeod  <amacleod@cygnus.com>
+
 	* search.c (expand_indirect_vtbls_init): Mark temporary stack slots
 	as used to prevent conflicts with virtual function tables.
 

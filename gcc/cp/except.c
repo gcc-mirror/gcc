@@ -597,135 +597,14 @@ expand_start_catch_block (declspecs, declarator)
   if (! doing_eh (1))
     return;
 
-  if (flag_new_exceptions)
-    process_start_catch_block (declspecs, declarator);
-  else
-    process_start_catch_block_old (declspecs, declarator);
+  process_start_catch_block (declspecs, declarator);
 }
 
-
-/* This function performs the expand_start_catch_block functionality for 
-   exceptions implemented in the old style, where catch blocks were all
-   called, and had to check the runtime information themselves. */
-
-static void 
-process_start_catch_block_old (declspecs, declarator)
-     tree declspecs, declarator;
-{
-  rtx false_label_rtx;
-  tree decl = NULL_TREE;
-  tree init;
-
-  /* Create a binding level for the eh_info and the exception object
-     cleanup.  */
-  pushlevel (0);
-  expand_start_bindings (0);
-
-  false_label_rtx = gen_label_rtx ();
-  push_label_entry (&false_label_stack, false_label_rtx, NULL_TREE);
-
-  emit_line_note (input_filename, lineno);
-
-  push_eh_info ();
-
-  if (declspecs)
-    {
-      decl = grokdeclarator (declarator, declspecs, CATCHPARM, 1, NULL_TREE);
-
-      if (decl == NULL_TREE)
-	error ("invalid catch parameter");
-    }
-
-  if (decl)
-    {
-      tree exp;
-      rtx call_rtx, return_value_rtx;
-      tree init_type;
-
-      /* Make sure we mark the catch param as used, otherwise we'll get
-	 a warning about an unused ((anonymous)).  */
-      TREE_USED (decl) = 1;
-
-      /* Figure out the type that the initializer is.  */
-      init_type = TREE_TYPE (decl);
-      if (TREE_CODE (init_type) != REFERENCE_TYPE
-	  && TREE_CODE (init_type) != POINTER_TYPE)
-	init_type = build_reference_type (init_type);
-
-      exp = get_eh_value ();
-
-      /* Since pointers are passed by value, initialize a reference to
-	 pointer catch parm with the address of the value slot.  */
-      if (TREE_CODE (init_type) == REFERENCE_TYPE
-	  && TREE_CODE (TREE_TYPE (init_type)) == POINTER_TYPE)
-	exp = build_unary_op (ADDR_EXPR, exp, 1);
-
-      exp = expr_tree_cons (NULL_TREE,
-		       build_eh_type_type (TREE_TYPE (decl)),
-		       expr_tree_cons (NULL_TREE,
-				  get_eh_type (),
-				  expr_tree_cons (NULL_TREE, exp, NULL_TREE)));
-      exp = build_function_call (CatchMatch, exp);
-      call_rtx = expand_call (exp, NULL_RTX, 0);
-
-      return_value_rtx = hard_function_value (ptr_type_node, exp);
-
-      /* did the throw type match function return TRUE? */
-      emit_cmp_insn (return_value_rtx, const0_rtx, EQ, NULL_RTX,
-		    GET_MODE (return_value_rtx), 0, 0);
-
-      /* if it returned FALSE, jump over the catch block, else fall into it */
-      emit_jump_insn (gen_beq (false_label_rtx));
-
-      push_eh_cleanup ();
-
-      /* Create a binding level for the parm.  */
-      pushlevel (0);
-      expand_start_bindings (0);
-
-      init = convert_from_reference (make_tree (init_type, call_rtx));
-
-      /* If the constructor for the catch parm exits via an exception, we
-         must call terminate.  See eh23.C.  */
-      if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
-	{
-	  /* Generate the copy constructor call directly so we can wrap it.
-	     See also expand_default_init.  */
-	  init = ocp_convert (TREE_TYPE (decl), init,
-			      CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
-	  init = build (TRY_CATCH_EXPR, TREE_TYPE (init), init,
-			build_terminate_handler ());
-	}
-
-      /* Let `cp_finish_decl' know that this initializer is ok.  */
-      DECL_INITIAL (decl) = init;
-      decl = pushdecl (decl);
-
-      start_decl_1 (decl);
-      cp_finish_decl (decl, DECL_INITIAL (decl),
-		      NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
-    }
-  else
-    {
-      push_eh_cleanup ();
-
-      /* Create a binding level for the parm.  */
-      pushlevel (0);
-      expand_start_bindings (0);
-
-      /* Fall into the catch all section.  */
-    }
-
-  init = build_modify_expr (get_eh_caught (), NOP_EXPR, integer_one_node);
-  expand_expr (init, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-  emit_line_note (input_filename, lineno);
-}
 
 /* This function performs the expand_start_catch_block functionality for 
    exceptions implemented in the new style. __throw determines whether
    a handler needs to be called or not, so the handler itself has to do
-   nothing additionaal. */
+   nothing additional. */
 
 static void 
 process_start_catch_block (declspecs, declarator)
@@ -806,6 +685,7 @@ process_start_catch_block (declspecs, declarator)
       DECL_INITIAL (decl) = init;
       decl = pushdecl (decl);
 
+      start_decl_1 (decl);
       cp_finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
   else
@@ -849,10 +729,7 @@ expand_end_catch_block ()
      documentation.  */
   expand_goto (top_label_entry (&caught_return_label_stack));
 
-  /* label we emit to jump to if this catch block didn't match.  */
-  /* This the closing } in the `if (eq) {' of the documentation.  */
-  if (! flag_new_exceptions)
-    emit_label (pop_label_entry (&false_label_stack));
+  end_catch_handler ();
 }
 
 /* An exception spec is implemented more or less like:

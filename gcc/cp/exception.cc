@@ -157,7 +157,9 @@ __cplus_type_matcher (cp_eh_info *info, rtimetype match_info,
 {
   void *ret;
 
-  if (exception_table->lang.language != EH_LANG_C_plus_plus)
+  /* No exception table implies the old style mechanism, so don't check. */
+  if (exception_table != NULL && 
+                        exception_table->lang.language != EH_LANG_C_plus_plus)
     return NULL;
 
   if (match_info == CATCH_ALL_TYPE)

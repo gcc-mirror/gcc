@@ -1,3 +1,18 @@
+Tue Sep 15 14:10:54 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* except.h (struct eh_entry): Add false_label field.
+	(end_catch_handler): Add prototype.
+	* except.c (push_eh_entry): Set false_label field to NULL_RTX.
+	(start_catch_handler): When using old style exceptions, issue
+	runtime typematch code before continuing with the handler.
+	(end_catch_handler): New function, generates label after handler
+	if needed by older style exceptions.
+	(expand_start_all_catch): No need to check for new style exceptions.
+	(output_exception_table_entry): Only output the first handler label
+	for old style exceptions.
+	* libgcc2.c (__eh_rtime_match): New routine to lump runtime matching
+	mechanism into one function, if a runtime matcher is provided.
+
 Tue Sep 15 13:53:59 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* config/i960/i960.h (SLOW_BYTE_ACCESS): Change definition to 1.
