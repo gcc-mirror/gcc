@@ -1,3 +1,7 @@
+2003-09-26  Richard Sandiford  <rsandifo@redhat.com>
+
+	* combine.c (if_then_else_cond): Tighten mode check.
+
 2003-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* cppcharset.c, cpphash.h: Rename 'struct strbuf' to
