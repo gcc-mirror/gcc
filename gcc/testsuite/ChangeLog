@@ -1,5 +1,8 @@
 2003-10-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR optimization/12180
+	* gcc.dg/20031002-1.c: New test.
+
 	PR c++/12486
 	* g++.dg/inherit/error1.C: New test.
 
