@@ -90,12 +90,6 @@ private:
   // be many `ret' instructions, so a linked list is ok.
   subr_entry_info *entry_points;
 
-  // The current top of the stack, in terms of slots.
-  int stacktop;
-  // The current depth of the stack.  This will be larger than
-  // STACKTOP when wide types are on the stack.
-  int stackdepth;
-
   // The bytecode itself.
   unsigned char *bytecode;
   // The exceptions.
@@ -773,10 +767,10 @@ private:
   // location.
   struct state
   {
-    // Current top of stack.
+    // The current top of the stack, in terms of slots.
     int stacktop;
-    // Current stack depth.  This is like the top of stack but it
-    // includes wide variable information.
+    // The current depth of the stack.  This will be larger than
+    // STACKTOP when wide types are on the stack.
     int stackdepth;
     // The stack.
     type *stack;
@@ -805,6 +799,11 @@ private:
     static const int INVALID = -1;
     // NO_NEXT marks the state at the end of the reverification list.
     static const int NO_NEXT = -2;
+
+    // This is used to mark the stack depth at the instruction just
+    // after a `jsr' when we haven't yet processed the corresponding
+    // `ret'.  See handle_jsr_insn for more information.
+    static const int NO_STACK = -1;
 
     state ()
       : this_type ()
@@ -951,13 +950,29 @@ private:
 	  changed = true;
 	}
 
-      // Merge stacks.
-      if (state_old->stacktop != stacktop)
-	verifier->verify_fail ("stack sizes differ");
-      for (int i = 0; i < state_old->stacktop; ++i)
+      // Merge stacks.  Special handling for NO_STACK case.
+      if (state_old->stacktop == NO_STACK)
 	{
-	  if (stack[i].merge (state_old->stack[i], false, verifier))
-	    changed = true;
+	  // Nothing to do in this case; we don't care about modifying
+	  // the old state.
+	}
+      else if (stacktop == NO_STACK)
+	{
+	  stacktop = state_old->stacktop;
+	  stackdepth = state_old->stackdepth;
+	  for (int i = 0; i < stacktop; ++i)
+	    stack[i] = state_old->stack[i];
+	  changed = true;
+	}
+      else if (state_old->stacktop != stacktop)
+	verifier->verify_fail ("stack sizes differ");
+      else
+	{
+	  for (int i = 0; i < state_old->stacktop; ++i)
+	    {
+	      if (stack[i].merge (state_old->stack[i], false, verifier))
+		changed = true;
+	    }
 	}
 
       // Merge local variables.
@@ -1048,6 +1063,8 @@ private:
     // Return true if this state is the unmerged result of a `ret'.
     bool is_unmerged_ret_state (int max_locals) const
     {
+      if (stacktop == NO_STACK)
+	return true;
       for (int i = 0; i < max_locals; ++i)
 	{
 	  if (locals[i].key == unused_by_subroutine_type)
@@ -1343,10 +1360,9 @@ private:
 	npc = states[npc]->next;
       }
 
-    // If we've skipped states and there is nothing else, that's a
-    // bug.
-    if (skipped)
-      verify_fail ("pop_jump: can't happen");
+    // Note that we might have gotten here even when there are
+    // remaining states to process.  That can happen if we find a
+    // `jsr' without a `ret'.
     return state::NO_NEXT;
   }
 
@@ -1450,12 +1466,10 @@ private:
       current_state->check_no_uninitialized_objects (current_method->max_locals, this);
     check_nonrecursive_call (current_state->subroutine, npc);
 
-    // Create a new state and modify it as appropriate for entry into
-    // a subroutine.  We're writing this in a weird way because,
-    // unfortunately, push_type only works on the current state.
+    // Modify our state as appropriate for entry into a subroutine.
     push_type (return_address_type);
     push_jump_merge (npc, current_state);
-    // Clean up the weirdness.
+    // Clean up.
     pop_type (return_address_type);
 
     // On entry to the subroutine, the subroutine number must be set
@@ -1463,6 +1477,23 @@ private:
     // merging state so that we don't erroneously "notice" a variable
     // change merely on entry.
     states[npc]->enter_subroutine (npc, current_method->max_locals);
+
+    // Indicate that we don't know the stack depth of the instruction
+    // following the `jsr'.  The idea here is that we need to merge
+    // the local variable state across the jsr, but the subroutine
+    // might change the stack depth, so we can't make any assumptions
+    // about it.  So we have yet another special case.  We know that
+    // at this point PC points to the instruction after the jsr.
+
+    // FIXME: what if we have a jsr at the end of the code, but that
+    // jsr has no corresponding ret?  Is this verifiable, or is it
+    // not?  If it is then we need a special case here.
+    if (PC >= current_method->code_length)
+      verify_fail ("fell off end");
+
+    current_state->stacktop = state::NO_STACK;
+    push_jump_merge (PC, current_state);
+    invalidate_pc ();
   }
 
   jclass construct_primitive_array_type (type_val prim)
