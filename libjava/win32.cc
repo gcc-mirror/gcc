@@ -45,6 +45,6 @@ _Jv_platform_gettimeofday ()
 {
   struct timeb t;
   ftime (&t);
-  return t.time * 1000 + t.millitm;
+  return t.time * 1000LL + t.millitm;
 }
 

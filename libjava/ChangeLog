@@ -1,3 +1,8 @@
+2002-03-09  Adam Megacz  <adam@xwt.org>
+
+        * win32.cc (_Jv_platform_gettimeofday) Cast 1000 to long long to
+        avoid precision loss.
+
 2002-03-09  Per Bothner  <per@bothner.com>
 
 	* gnu/gcj/xlib/WindowAttributes.java  Assign null to RawData, not 0.
