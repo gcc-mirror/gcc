@@ -1,3 +1,8 @@
+2004-12-02  Eric Christopher  <echristo@redhat.com>
+
+	* Makefile.tpl (clean-target-libgcc): Make change in correct place.
+	* Makefile.in: Regenerate.
+
 2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* configure.in: Clear gcc_version_trigger if the file doesn't exist.
