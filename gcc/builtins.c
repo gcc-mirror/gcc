@@ -3281,6 +3281,7 @@ expand_builtin_strcmp (tree exp, rtx target, enum machine_mode mode)
     tree len, len1, len2;
     rtx arg1_rtx, arg2_rtx, arg3_rtx;
     rtx result, insn;
+    tree fndecl;
 
     int arg1_align
       = get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
@@ -3336,24 +3337,36 @@ expand_builtin_strcmp (tree exp, rtx target, enum machine_mode mode)
 	   && REGNO (result) >= FIRST_PSEUDO_REGISTER))
       result = gen_reg_rtx (insn_mode);
 
+    /* Stabilize the arguments in case gen_cmpstrsi fails.  */
+    arg1 = save_expr (arg1);
+    arg2 = save_expr (arg2);
+
     arg1_rtx = get_memory_rtx (arg1);
     arg2_rtx = get_memory_rtx (arg2);
     arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
     insn = gen_cmpstrsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
 			 GEN_INT (MIN (arg1_align, arg2_align)));
-    if (!insn)
-      return 0;
+    if (insn)
+      {
+	emit_insn (insn);
 
-    emit_insn (insn);
+	/* Return the value in the proper mode for this function.  */
+	mode = TYPE_MODE (TREE_TYPE (exp));
+	if (GET_MODE (result) == mode)
+	  return result;
+	if (target == 0)
+	  return convert_to_mode (mode, result, 0);
+	convert_move (target, result, 0);
+	return target;
+      }
 
-    /* Return the value in the proper mode for this function.  */
-    mode = TYPE_MODE (TREE_TYPE (exp));
-    if (GET_MODE (result) == mode)
-      return result;
-    if (target == 0)
-      return convert_to_mode (mode, result, 0);
-    convert_move (target, result, 0);
-    return target;
+    /* Expand the library call ourselves using a stabilized argument
+       list to avoid re-evaluating the function's arguments twice.  */
+    arglist = build_tree_list (NULL_TREE, arg2);
+    arglist = tree_cons (NULL_TREE, arg1, arglist);
+    fndecl = get_callee_fndecl (exp);
+    exp = build_function_call_expr (fndecl, arglist);
+    return expand_call (exp, target, target == const0_rtx);
   }
 #endif
   return 0;
@@ -3436,6 +3449,7 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
     tree len, len1, len2;
     rtx arg1_rtx, arg2_rtx, arg3_rtx;
     rtx result, insn;
+    tree fndecl;
 
     int arg1_align
       = get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
@@ -3494,24 +3508,38 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
 	   && REGNO (result) >= FIRST_PSEUDO_REGISTER))
       result = gen_reg_rtx (insn_mode);
 
+    /* Stabilize the arguments in case gen_cmpstrsi fails.  */
+    arg1 = save_expr (arg1);
+    arg2 = save_expr (arg2);
+    len = save_expr (len);
+
     arg1_rtx = get_memory_rtx (arg1);
     arg2_rtx = get_memory_rtx (arg2);
     arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
     insn = gen_cmpstrsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
 			 GEN_INT (MIN (arg1_align, arg2_align)));
-    if (!insn)
-      return 0;
+    if (insn)
+      {
+	emit_insn (insn);
 
-    emit_insn (insn);
+	/* Return the value in the proper mode for this function.  */
+	mode = TYPE_MODE (TREE_TYPE (exp));
+	if (GET_MODE (result) == mode)
+	  return result;
+	if (target == 0)
+	  return convert_to_mode (mode, result, 0);
+	convert_move (target, result, 0);
+	return target;
+      }
 
-    /* Return the value in the proper mode for this function.  */
-    mode = TYPE_MODE (TREE_TYPE (exp));
-    if (GET_MODE (result) == mode)
-      return result;
-    if (target == 0)
-      return convert_to_mode (mode, result, 0);
-    convert_move (target, result, 0);
-    return target;
+    /* Expand the library call ourselves using a stabilized argument
+       list to avoid re-evaluating the function's arguments twice.  */
+    arglist = build_tree_list (NULL_TREE, len);
+    arglist = tree_cons (NULL_TREE, arg2, arglist);
+    arglist = tree_cons (NULL_TREE, arg1, arglist);
+    fndecl = get_callee_fndecl (exp);
+    exp = build_function_call_expr (fndecl, arglist);
+    return expand_call (exp, target, target == const0_rtx);
   }
 #endif
   return 0;
