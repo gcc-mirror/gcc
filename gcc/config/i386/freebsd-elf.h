@@ -239,7 +239,7 @@ Boston, MA 02111-1307, USA.  */
       %{!static: \
         %{rdynamic:-export-dynamic} \
 	%{!dynamic-linker:-dynamic-linker /usr/libexec/ld-elf.so.1}} \
-    %{static:-Bstatic}}} \
+    %{static:-Bstatic}} \
   %{symbolic:-Bsymbolic}"
 
 /* A C statement to output to the stdio stream FILE an assembler
