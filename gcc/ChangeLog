@@ -1,3 +1,8 @@
+Wed Mar 18 16:20:30 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (extzv): Don't reject register operands.  Fix
+	mode of operand 1.
+
 Wed Mar 18 16:14:23 1998  Richard Henderson  <rth@cygnus.com>
 
 	* dbxout.c (dbxout_function_end): Fix last change.  The correct
