@@ -3363,7 +3363,9 @@ changequote([,])dnl
                 xmake_file=sparc/x-sysv4
                 extra_parts="crt1.o crti.o crtn.o gmon.o crtbegin.o crtend.o"
                 case $machine in
+changequote(,)dnl
                 *-*-solaris2.[0-4])
+changequote([,])dnl
                         float_format=i128
                 ;;
                 *)
@@ -3700,16 +3702,16 @@ changequote([,])dnl
 		then
 			if test x$gnu_ld = xyes
 			then
-				target_cpu_default2=20
+				target_cpu_default2="MASK_GAS|MASK_SPLIT_ADDR"
 			else
-				target_cpu_default2=16
+				target_cpu_default2="MASK_GAS"
 			fi
 		fi
 		;;
 	mips*-*-*)
 		if test x$gas = xyes
 		then
-			target_cpu_default2=16
+			target_cpu_default2="MASK_GAS"
 		fi
 		;;
 	powerpc*-*-* | rs6000-*-*)
