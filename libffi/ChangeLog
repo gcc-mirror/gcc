@@ -1,3 +1,7 @@
+2004-06-26  Matthias Klose  <doko@debian.org>
+
+	* libtool-version: Fix typo in revision/age.
+
 2004-06-17  Matthias Klose  <doko@debian.org>
 
 	* libtool-version: New.
