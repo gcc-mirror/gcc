@@ -1,55 +1,43 @@
-2001-12-18
+2002-02-01
 
 Release Notes   
 -------------
-The Standard C++ Library v3, or libstdc++-2.9x, is an ongoing project
+The Standard C++ Library, or libstdc++-v3, is an ongoing project
 to fully implement the ISO 14882 Standard C++ library as described in
 chapters 17 through 27 and annex D.
 
-This is the twelfth snapshot of the libstdc++ rewrite.  It is still
+This is the thirteenth snapshot of the libstdc++ rewrite.  It is still
 has some incomplet and incorrekt parts, but it's a lot less incomplete
 and incorrect than some of the earlier snapshots, and quite usable.
 
-The Standard C++ Library v3, or libstdc++-2.9x, follows an open
-development model, attempting to be fully buzzword, bazaar, and GNU
-compliant. Full details on participating, including contributor
-guidelines, mailing list subscription, mailing list archives,
-up-to-date documentation, and various and sundry other details can be
-found at the following URL:
+The Standard C++ Library, follows an open development model,
+attempting to be fully buzzword, bazaar, and GNU compliant. Full
+details on participating, including contributor guidelines, mailing
+list subscription, mailing list archives, up-to-date documentation,
+and various and sundry other details can be found at the following
+URL:
 
   http://gcc.gnu.org/libstdc++/
 
 
 New: 
 --- 
-- add S390, m68k, x86-64 support.
-- doxygen documentation has been extended, including man pages.
-- verbose terminate handling has been added.
-- some libsupc++ tweaks
-- warnings for deprecated headers now active.
-- dejagnu testsuite preliminary documentation.
-- dejagnu testsuite default.
-- dejagnu testsuite cross compiler, multilib safe.
-- long long iostreams on by default, rework of ISO C99 support.
-- iterator re-write and testsuites.
-- container testsuites.
-- allocator revamp and testsuites.
-- more concept-checking work.
-- basic_string optimization and MT fixes.
-- new limits implementation.
-- update -fno-exceptions code, verify it works.
-- full named locale support fpr all facets, choice of gnu,
-  ieee_1003.1-200x (POSIX 2), or generic models. Full support depends
-  on target OS and underlying "C" library support.
+- more doxygen documentation.
+- extensions moved out of namespace std
+- HPUX long long support
+- more string optimizations
+- support for NetBSD cross compiles
+- concept_check merge from boost
+- header simplification
+- named locale bug shakeout
+- thread testsuite
+
 
 Bugs fixed:
 -----------
-2964, 2627, 2523, 2832, 2830, 2931, 2985, 2970, 2997, 2976, 3016,
-3018, 3034, 3035, 3036, 3017, 3045, 3082, 2767, 2989, 2992, 3113,
-3114, 2346, 3126, 3139, 3140, 3141, 3142, 2071, 3377, 3272, 2211,
-3284, 3599, 3988, 3349, 3740, 4143, 4536, 4545, 4542, 4503, 3647,
-4354, 4622, 4749, 3666, 4219, 4548, 3655, 3150, 4402, 282, 3720,
-5037, 5054, 3679, 5136, others.
+5148, 3829, 2054, 5174, 2913, 4879, 3150, 5331, 5280, 5198, 5432
+- fix Darwin build issue with '~' in prefix
++ others.
 
 
 What doesn't:
@@ -91,3 +79,4 @@ recommended, which may introduce additional dependencies for
 up-to-date binutils. In addition, you may need up-to-date tools for
 modifying Makefiles and regenerating configure scripts: automake
 (version 1.4), autoconf (version 2.13 and higher), and libtool.
+
