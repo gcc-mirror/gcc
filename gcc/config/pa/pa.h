@@ -270,16 +270,43 @@ extern int target_flags;
    linked executables and shared libraries.  */
 #define LDD_SUFFIX "chatr"
 /* Look for lines like "dynamic   /usr/lib/X11R5/libX11.sl"
-   or "static    /usr/lib/X11R5/libX11.sl".  */
+   or "static    /usr/lib/X11R5/libX11.sl". 
+
+   HPUX 10.20 also has lines like "static branch prediction ..."
+   so we filter that out explcitly.
+
+   We also try to bound our search for libraries with marker
+   lines.  What a pain.  */
 #define PARSE_LDD_OUTPUT(PTR)					\
 do {								\
+  static int in_shlib_list = 0;					\
   while (*PTR == ' ') PTR++;					\
-  if (strncmp (PTR, "dynamic", sizeof ("dynamic") - 1) == 0)	\
+  if (strncmp (PTR, "shared library list:",			\
+	       sizeof ("shared library list:") - 1) == 0)	\
+    {								\
+      PTR = 0;							\
+      in_shlib_list = 1;					\
+    }								\
+  else if (strncmp (PTR, "shared library binding:",		\
+		    sizeof ("shared library binding:") - 1) == 0)\
+    {								\
+      PTR = 0;							\
+      in_shlib_list = 0;					\
+    }								\
+  else if (strncmp (PTR, "static branch prediction disabled",	\
+		    sizeof ("static branch prediction disabled") - 1) == 0)\
+    {								\
+      PTR = 0;							\
+      in_shlib_list = 0;					\
+    }								\
+  else if (in_shlib_list					\
+	   &&  strncmp (PTR, "dynamic", sizeof ("dynamic") - 1) == 0) \
     {								\
       PTR += sizeof ("dynamic") - 1;				\
       while (*p == ' ') PTR++;					\
     }								\
-  else if (strncmp (PTR, "static", sizeof ("static") - 1) == 0)	\
+  else if (in_shlib_list					\
+	   && strncmp (PTR, "static", sizeof ("static") - 1) == 0) \
     {								\
       PTR += sizeof ("static") - 1;				\
       while (*p == ' ') PTR++;					\
