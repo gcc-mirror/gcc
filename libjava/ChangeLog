@@ -1,5 +1,7 @@
 2001-10-24  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/reflect/Field.java: Made many methods private.
+
 	* java/sql/Types.java (Types): New constructor.
 
 Tue Oct 23 23:52:18 2001  Anthony Green  <green@redhat.com>
