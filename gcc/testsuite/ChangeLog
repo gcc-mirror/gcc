@@ -1,5 +1,16 @@
 2003-11-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* lib/compat.exp (compat-obj): New xfaildata parameter.
+	Use it to set compiler_conditional_xfail_data before compiling.
+	(compat-get-options): Handle dg-xfail-if.
+	(compat-execute): Retrieve XFAIL data and pass them to compat-obj.
+	* gcc.dg/compat/vector-1_x.c: XFAIL on SPARC.
+	* gcc.dg/compat/vector-1_y.c: Likewise.
+	* gcc.dg/compat/vector-2_x.c: Likewise.
+	* gcc.dg/compat/vector-2_y.c: Likewise.
+
+2003-11-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* g++.dg/opt/reg-stack4.C: New test.
 
 2003-11-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
