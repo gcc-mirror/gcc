@@ -965,6 +965,44 @@ changequote([,])dnl
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
+	hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
+		target_cpu_default=1
+		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux11.h"
+		xm_file=pa/xm-pahpux.h
+		xmake_file=pa/x-pa-hpux
+		tmake_file=pa/t-pa
+		if [[ x$gas = xyes ]]
+		then
+			tm_file="${tm_file} pa/pa-gas.h"
+		fi
+#		if [[ x$enable_threads = x ]]; then
+#		    enable_threads=$have_pthread_h
+#		fi
+# 		if [[ x$enable_threads = xyes ]]; then
+#			thread_file='dce'
+#			tmake_file="${tmake_file} pa/t-dce-thr"
+#		fi
+		install_headers_dir=install-headers-cpio
+		use_collect2=yes
+		;;
+	hppa1.0-*-hpux11*)
+		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux11.h"
+		xm_file=pa/xm-pahpux.h
+		xmake_file=pa/x-pa-hpux
+		if [[ x$gas = xyes ]]
+		then
+			tm_file="${tm_file} pa/pa-gas.h"
+		fi
+#		if [[ x$enable_threads = x ]]; then
+#		    enable_threads=$have_pthread_h
+#		fi
+# 		if [[ x$enable_threads = xyes ]]; then
+#			thread_file='dce'
+#			tmake_file="${tmake_file} pa/t-dce-thr"
+#		fi
+		install_headers_dir=install-headers-cpio
+		use_collect2=yes
+		;;
 	hppa1.1-*-hpux* | hppa2*-*-hpux*)
 		target_cpu_default="MASK_PA_11"
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux9.h"
