@@ -8298,7 +8298,7 @@ simplify_builtin_strpbrk (tree arglist)
 tree
 simplify_builtin_strcpy (tree arglist, tree len)
 {
-  tree fn;
+  tree fn, src, dst;
 
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -8307,17 +8307,20 @@ simplify_builtin_strcpy (tree arglist, tree len)
   if (!fn)
     return 0;
 
+  src = TREE_VALUE (TREE_CHAIN (arglist));
+  dst = TREE_VALUE (arglist);
+
   if (!len)
     {
-      len = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)), 1);
-      if (!len)
-	return 0;
-      if (TREE_SIDE_EFFECTS (len))
+      len = c_strlen (src, 1);
+      if (!len || TREE_SIDE_EFFECTS (len))
 	return 0;
     }
 
   len = size_binop (PLUS_EXPR, len, ssize_int (1));
-  chainon (arglist, build_tree_list (NULL_TREE, len));
+  arglist = build_tree_list (NULL_TREE, len);
+  arglist = tree_cons (NULL_TREE, src, arglist);
+  arglist = tree_cons (NULL_TREE, dst, arglist);
   return build_function_call_expr (fn, arglist);
 }
 
