@@ -1,3 +1,7 @@
+2001-11-07  Laurent Guerby  <guerby@acm.org>
+
+	* MAINTAINERS (Write After Approval): Add self.
+
 2001-11-06  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* Makefile.in (MAKEINFO): Use "missing" for makeinfo older than 4.0.
