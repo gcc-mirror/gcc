@@ -524,11 +524,11 @@ extern int ix86_arch;
 #define CPP_CPU_DEFAULT_SPEC "-D__tune_i686__ -D__tune_pentiumpro__"
 #endif
 #if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentium2
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_i686__ -D__tune_pentiumpro__\
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_i686__ -D__tune_pentiumpro__ \
 -D__tune_pentium2__"
 #endif
 #if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentium3
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_i686__ -D__tune_pentiumpro__\
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_i686__ -D__tune_pentiumpro__ \
 -D__tune_pentium2__ -D__tune_pentium3__"
 #endif
 #if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentium4
