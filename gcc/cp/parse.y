@@ -2349,7 +2349,7 @@ base_class_list:
 base_class:
 	  base_class.1
 		{
-		  tree type = $1;
+		  tree type = TREE_TYPE ($1);
 		  if (! is_aggr_type (type, 1))
 		    $$ = NULL_TREE;
 		  else if (current_aggr == signature_type_node
@@ -2362,7 +2362,7 @@ base_class:
 		    {
 		      sorry ("signature inheritance, base type `%s' ignored",
 			     IDENTIFIER_POINTER ($$));
-		      $$ = build_tree_list (access_public_node, $$);
+		      $$ = build_tree_list (access_public_node, type);
 		    }
 		  else if (type && IS_SIGNATURE (type))
 		    {
@@ -2370,11 +2370,11 @@ base_class:
 		      $$ = NULL_TREE;
 		    }
 		  else
-		    $$ = build_tree_list (access_default_node, $$);
+		    $$ = build_tree_list (access_default_node, type);
 		}
 	| base_class_access_list see_typename base_class.1
 		{
-		  tree type = $3;
+		  tree type = TREE_TYPE ($3);
 		  if (current_aggr == signature_type_node)
 		    error ("access and source specifiers not allowed in signature");
 		  if (! IS_AGGR_TYPE (type))
@@ -2389,7 +2389,7 @@ base_class:
 		    {
 		      sorry ("signature inheritance, base type `%s' ignored",
 			     IDENTIFIER_POINTER ($$));
-		      $$ = build_tree_list (access_public_node, $3);
+		      $$ = build_tree_list (access_public_node, type);
 		    }
 		  else if (type && IS_SIGNATURE (type))
 		    {
@@ -2397,7 +2397,7 @@ base_class:
 		      $$ = NULL_TREE;
 		    }
 		  else
-		    $$ = build_tree_list ($$, $3);
+		    $$ = build_tree_list ($$, type);
 		}
 	;
 
@@ -2857,20 +2857,25 @@ after_type_declarator:
 qualified_type_name:
 	  type_name %prec EMPTY
 		{
-		  $$ = TREE_TYPE ($1);
+		  $$ = identifier_typedecl_value ($1);
 		  /* Remember that this name has been used in the class
 		     definition, as per [class.scope0] */
 		  if (current_class_type
 		      && TYPE_BEING_DEFINED (current_class_type)
+		      && ! IDENTIFIER_TEMPLATE ($1)
 		      && ! IDENTIFIER_CLASS_VALUE ($1))
-		    pushdecl_class_level (lookup_name ($1, -2));
+		    {
+		      /* Be sure to get an inherited typedef.  */
+		      $$ = lookup_name ($1, 1);
+		      pushdecl_class_level ($$);
+		    }
 		}
 	| nested_type
 	;
 
 nested_type:
 	nested_name_specifier type_name %prec EMPTY
-		{ $$ = TREE_TYPE ($2); }
+		{ $$ = identifier_typedecl_value ($2); }
 	;
 
 direct_after_type_declarator:
@@ -2984,7 +2989,17 @@ nested_name_specifier:
    inline here?!?  (jason) */
 nested_name_specifier_1:
 	  TYPENAME SCOPE
-		{ got_scope = $$ = TREE_TYPE ($1); }
+		{
+		  $$ = lastiddecl;
+		  /* Remember that this name has been used in the class
+		     definition, as per [class.scope0] */
+		  if (current_class_type
+		      && TYPE_BEING_DEFINED (current_class_type)
+		      && ! TREE_MANGLED ($1)
+		      && ! IDENTIFIER_CLASS_VALUE ($1))
+		    pushdecl_class_level ($$);
+		  got_scope = $$ = TREE_TYPE ($$);
+		}
 	| NSNAME SCOPE
 		{ got_scope = $$ = $1; }
 	| template_type SCOPE

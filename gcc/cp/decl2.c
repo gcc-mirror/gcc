@@ -1362,7 +1362,7 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree, attrlist)
 	init = NULL_TREE;
 
   value = grokdeclarator (declarator, declspecs, FIELD, init != 0,
-			  raises, attrlist);
+			  raises, NULL_TREE);
   if (! value)
     return value; /* friend or constructor went bad.  */
 
@@ -1475,6 +1475,10 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree, attrlist)
 
   /* The corresponding pop_obstacks is in cp_finish_decl.  */
   push_obstacks_nochange ();
+
+  if (attrlist)
+    cplus_decl_attributes (value, TREE_PURPOSE (attrlist),
+			   TREE_VALUE (attrlist));
 
   if (TREE_CODE (value) == VAR_DECL)
     {
@@ -1616,6 +1620,9 @@ grokbitfield (declarator, declspecs, width)
 
   if (width != error_mark_node)
     {
+      /* Avoid the non_lvalue wrapper added by fold for PLUS_EXPRs.  */
+      STRIP_NOPS (width);
+
       /* detect invalid field size.  */
       if (TREE_CODE (width) == CONST_DECL)
 	width = DECL_INITIAL (width);

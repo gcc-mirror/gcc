@@ -1579,7 +1579,7 @@ build_exception_variant (type, raises)
   int constp = TYPE_READONLY (type);
   int volatilep = TYPE_VOLATILE (type);
 
-  for (v = TYPE_NEXT_VARIANT (v); v; v = TYPE_NEXT_VARIANT (v))
+  for (; v; v = TYPE_NEXT_VARIANT (v))
     {
       if (TYPE_READONLY (v) != constp
 	  || TYPE_VOLATILE (v) != volatilep)
@@ -1595,9 +1595,8 @@ build_exception_variant (type, raises)
     }
 
   /* Need to build a new variant.  */
-  v = copy_node (type);
-  TYPE_NEXT_VARIANT (v) = TYPE_NEXT_VARIANT (type);
-  TYPE_NEXT_VARIANT (type) = v;
+  v = build_type_copy (type);
+
   if (raises && ! TREE_PERMANENT (raises))
     {
       push_obstacks_nochange ();

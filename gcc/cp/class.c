@@ -4416,7 +4416,7 @@ pushclass (type, modify)
       else if (type != previous_class_type || current_class_depth > 1)
 	{
 	  build_mi_matrix (type);
-	  push_class_decls (type, !modify);
+	  push_class_decls (type);
 	  free_mi_matrix ();
 	  if (current_class_depth == 1)
 	    previous_class_type = type;
@@ -4452,12 +4452,6 @@ pushclass (type, modify)
 	}
 
       current_function_decl = this_fndecl;
-    }
-  else if (CLASSTYPE_LOCAL_TYPEDECLS (type))
-    {
-      build_mi_matrix (type);
-      push_class_decls (type, !modify);
-      free_mi_matrix ();
     }
 
   if (flag_cadillac)

@@ -1832,6 +1832,48 @@ struct saved_scope {
 static struct saved_scope *current_saved_scope;
 extern tree prev_class_type;
 
+tree
+store_bindings (names, old_bindings)
+     tree names, old_bindings;
+{
+  tree t;
+  for (t = names; t; t = TREE_CHAIN (t))
+    {
+      tree binding, t1, id;
+
+      if (TREE_CODE (t) == TREE_LIST)
+	id = TREE_PURPOSE (t);
+      else
+	id = DECL_NAME (t);
+
+      if (!id
+	  || (!IDENTIFIER_LOCAL_VALUE (id)
+	      && !IDENTIFIER_CLASS_VALUE (id)))
+	continue;
+
+      for (t1 = old_bindings; t1; t1 = TREE_CHAIN (t1))
+	if (TREE_VEC_ELT (t1, 0) == id)
+	  goto skip_it;
+	    
+      binding = make_tree_vec (4);
+      if (id)
+	{
+	  my_friendly_assert (TREE_CODE (id) == IDENTIFIER_NODE, 135);
+	  TREE_VEC_ELT (binding, 0) = id;
+	  TREE_VEC_ELT (binding, 1) = IDENTIFIER_TYPE_VALUE (id);
+	  TREE_VEC_ELT (binding, 2) = IDENTIFIER_LOCAL_VALUE (id);
+	  TREE_VEC_ELT (binding, 3) = IDENTIFIER_CLASS_VALUE (id);
+	  IDENTIFIER_LOCAL_VALUE (id) = NULL_TREE;
+	  IDENTIFIER_CLASS_VALUE (id) = NULL_TREE;
+	}
+      TREE_CHAIN (binding) = old_bindings;
+      old_bindings = binding;
+    skip_it:
+      ;
+    }
+  return old_bindings;
+}
+
 void
 push_to_top_level ()
 {
@@ -1849,37 +1891,13 @@ push_to_top_level ()
 
       if (b == global_binding_level)
 	continue;
-      
-      for (t = b->names; t; t = TREE_CHAIN (t))
-	{
-	  tree binding, t1, t2 = t;
-	  tree id = DECL_ASSEMBLER_NAME (t2);
 
-	  if (!id
-	      || (!IDENTIFIER_LOCAL_VALUE (id)
-		  && !IDENTIFIER_CLASS_VALUE (id)))
-	    continue;
+      old_bindings = store_bindings (b->names, old_bindings);
+      /* We also need to check type_shadowed to save class-level type
+	 bindings, since pushclass doesn't fill in b->names.  */
+      if (b->parm_flag == 2)
+	old_bindings = store_bindings (b->type_shadowed, old_bindings);
 
-	  for (t1 = old_bindings; t1; t1 = TREE_CHAIN (t1))
-	    if (TREE_VEC_ELT (t1, 0) == id)
-	      goto skip_it;
-	    
-	  binding = make_tree_vec (4);
-	  if (id)
-	    {
-	      my_friendly_assert (TREE_CODE (id) == IDENTIFIER_NODE, 135);
-	      TREE_VEC_ELT (binding, 0) = id;
-	      TREE_VEC_ELT (binding, 1) = IDENTIFIER_TYPE_VALUE (id);
-	      TREE_VEC_ELT (binding, 2) = IDENTIFIER_LOCAL_VALUE (id);
-	      TREE_VEC_ELT (binding, 3) = IDENTIFIER_CLASS_VALUE (id);
-	      IDENTIFIER_LOCAL_VALUE (id) = NULL_TREE;
-	      IDENTIFIER_CLASS_VALUE (id) = NULL_TREE;
-	    }
-	  TREE_CHAIN (binding) = old_bindings;
-	  old_bindings = binding;
-	skip_it:
-	  ;
-	}
       /* Unwind type-value slots back to top level.  */
       for (t = b->type_shadowed; t; t = TREE_CHAIN (t))
 	SET_IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (t), TREE_VALUE (t));
@@ -7783,7 +7801,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	    innermost_code = TREE_CODE (decl);
 	    if (decl_context == FIELD && ctype == NULL_TREE)
 	      ctype = current_class_type;
-	    if (ctype && TREE_OPERAND (decl, 0) == ctype)
+	    if (ctype
+		&& (TREE_CODE (TREE_OPERAND (decl, 0)) == TYPE_DECL
+		    && ((DECL_NAME (TREE_OPERAND (decl, 0))
+			 == constructor_name_full (ctype))
+			|| (DECL_NAME (TREE_OPERAND (decl, 0))
+			    == constructor_name (ctype)))))
 	      TREE_OPERAND (decl, 0) = constructor_name (ctype);
 	    next = &TREE_OPERAND (decl, 0);
 	    decl = *next;
@@ -7886,23 +7909,26 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	    next = 0;
 	    break;
 
+	  case TYPE_DECL:
+	    /* Parse error puts this typespec where
+	       a declarator should go.  */
+	    cp_error ("`%T' specified as declarator-id", DECL_NAME (decl));
+	    if (TREE_TYPE (decl) == current_class_type)
+	      cp_error ("  perhaps you want `%T' for a constructor",
+			current_class_name);
+	    dname = DECL_NAME (decl);
+	    name = IDENTIFIER_POINTER (dname);
+
+	    /* Avoid giving two errors for this. */
+	    IDENTIFIER_CLASS_VALUE (dname) = NULL_TREE;
+
+	    declspecs = temp_tree_cons (NULL_TREE, integer_type_node,
+					declspecs);
+	    *next = dname;
+	    next = 0;
+	    break;
+
 	  default:
-	    if (TREE_CODE_CLASS (TREE_CODE (decl)) == 't')
-	      {
-		/* Parse error puts this typespec where
-		   a declarator should go.  */
-		error ("typename specified as declarator-id");
-		if (current_class_type)
-		  cp_error ("  perhaps you want `%T' for a constructor",
-			    current_class_name);
-		dname = TYPE_IDENTIFIER (decl);
-		name = dname ? IDENTIFIER_POINTER (dname) : "<nameless>";
-		declspecs = temp_tree_cons (NULL_TREE, integer_type_node,
-					    declspecs);
-		*next = dname;
-		next = 0;
-		break;
-	      }
 	    cp_compiler_error ("`%D' as declarator", decl);
 	    return 0; /* We used to do a 155 abort here.  */
 	  }
@@ -8030,6 +8056,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 		  goto found;
 		}
 	    }
+	}
+      /* C++ aggregate types. */
+      else if (TREE_CODE (id) == TYPE_DECL)
+	{
+	  if (type)
+	    cp_error ("multiple declarations `%T' and `%T'", type,
+		      TREE_TYPE (id));
+	  else
+	    type = TREE_TYPE (id);
+	  goto found;
 	}
       if (type)
 	error ("two or more data types in declaration of `%s'", name);

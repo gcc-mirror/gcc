@@ -2332,7 +2332,7 @@ extern void build_mi_virtuals			PROTO((int, int));
 extern void add_mi_virtuals			PROTO((int, tree));
 extern void report_ambiguous_mi_virtuals	PROTO((int, tree));
 extern void note_debug_info_needed		PROTO((tree));
-extern void push_class_decls			PROTO((tree, int));
+extern void push_class_decls			PROTO((tree));
 extern void pop_class_decls			PROTO((tree));
 extern void unuse_fields			PROTO((tree));
 extern void unmark_finished_struct		PROTO((tree));

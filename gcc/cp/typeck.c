@@ -1539,7 +1539,7 @@ build_object_ref (datum, basetype, field)
     }
   else if (is_aggr_type (basetype, 1))
     {
-      tree binfo = binfo_or_else (basetype, TREE_TYPE (datum));
+      tree binfo = binfo_or_else (basetype, dtype);
       if (binfo)
 	return build_component_ref (build_scoped_ref (datum, basetype),
 				    field, binfo, 1);
@@ -1825,7 +1825,16 @@ build_component_ref (datum, component, basetype_path, protect)
 	  error ("invalid reference to NULL ptr, use ptr-to-member instead");
 	  return error_mark_node;
 	}
-      addr = convert_pointer_to (DECL_FIELD_CONTEXT (field), addr);
+      if (VBASE_NAME_P (DECL_NAME (field)))
+	  {
+	    /* It doesn't matter which vbase pointer we grab, just
+	       find one of them.  */
+	    tree binfo = get_binfo (DECL_FIELD_CONTEXT (field),
+				    TREE_TYPE (TREE_TYPE (addr)), 0);
+	    addr = convert_pointer_to_real (binfo, addr);
+	  }
+	else
+	  addr = convert_pointer_to (DECL_FIELD_CONTEXT (field), addr);
       datum = build_indirect_ref (addr, NULL_PTR);
       my_friendly_assert (datum != error_mark_node, 311);
     }
@@ -5831,7 +5840,7 @@ build_modify_expr (lhs, modifycode, rhs)
       if (build_default_binary_type_conversion (modifycode, &lhs_tmp, &rhs_tmp))
 	{
 	  lhs = stabilize_reference (lhs_tmp);
-	  /* Forget is was ever anything else.  */
+	  /* Forget it was ever anything else.  */
 	  olhstype = lhstype = TREE_TYPE (lhs);
 	  newrhs = build_binary_op (modifycode, lhs, rhs_tmp, 1);
 	}
