@@ -1,5 +1,9 @@
 2001-08-31  Tom Tromey  <tromey@redhat.com>
 
+	* java/io/BufferedReader.java, java/io/ObjectInput.java,
+	java/io/ObjectInputValidation.java, java/io/ObjectOutput.java:
+	Re-merged with Classpath.
+
 	Re-merge with Classpath:
 	* java/util/Comparator (equals): Added.
 	* java/io/PipedWriter.java (write): Changed argument to `int'.

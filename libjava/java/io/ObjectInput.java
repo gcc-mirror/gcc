@@ -37,7 +37,7 @@ package java.io;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public abstract interface ObjectInput extends DataInput
+public interface ObjectInput extends DataInput
 {
 
 /**

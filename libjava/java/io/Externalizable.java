@@ -49,7 +49,7 @@ package java.io;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public abstract interface Externalizable extends Serializable
+public interface Externalizable extends Serializable
 {
 
 /**
