@@ -1,3 +1,14 @@
+Wed Oct 27 02:05:58 1999  Mark P. Mitchell  <mark@codesourcery.com>
+
+	* alias.c (init_alias_analysis): Allocate reg_known_value and
+ 	reg_known_equiv_p on the heap.  Likewise for new_reg_base_value
+	and reg_seen.
+	(end_alias_analysis): Free reg_known_value and reg_known_equiv_p.
+	* cse.c (cse_main): Call end_alias_analysis.
+	* haifa-sched.c (schedule_insns): Likewise.
+	* local-alloc. (update_equiv_regs): Likewise.
+	* reload1.c (reload_cse_regs): Likewise.
+	
 Wed Oct 27 01:49:17 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* sparc/sparc.c (sparc_override_options): Clear MASK_FPU_SET.

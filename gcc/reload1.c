@@ -8926,6 +8926,9 @@ reload_cse_regs_1 (first)
 	}
     }
 
+  /* Clean up.  */
+  end_alias_analysis ();
+
   /* Free all the temporary structures we created, and go back to the
      regular obstacks.  */
   obstack_free (&reload_obstack, firstobj);
