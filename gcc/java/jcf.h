@@ -63,10 +63,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define JCF_word JCF_u4
 #endif
 
-#define JCF_ZIP    1
-#define JCF_CLASS  2
-#define JCF_SOURCE 3
-
 struct JCF;
 typedef int (*jcf_filbuf_t) PARAMS ((struct JCF*, int needed));
 
@@ -157,7 +153,7 @@ typedef struct JCF {
 #define JCF_ZERO(JCF)  \
   ((JCF)->buffer = (JCF)->buffer_end = (JCF)->read_ptr = (JCF)->read_end = 0,\
    (JCF)->read_state = 0, (JCF)->filename = (JCF)->classname = 0, \
-   CPOOL_INIT(&(JCF)->cpool), (JCF)->java_source = 0)
+   CPOOL_INIT(&(JCF)->cpool), (JCF)->java_source = 0, (JCF)->zipd = 0)
 
 /* Given that PTR points to a 2-byte unsigned integer in network
    (big-endian) byte-order, return that integer. */

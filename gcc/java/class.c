@@ -1527,7 +1527,7 @@ is_compiled_class (class)
     return 2;
 
   seen_in_zip = (TYPE_JCF (class) && JCF_SEEN_IN_ZIP (TYPE_JCF (class)));
-  if (CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P (class) || seen_in_zip)
+  if (CLASS_FROM_CURRENTLY_COMPILED_P (class) || seen_in_zip)
     {
       /* The class was seen in the current ZIP file and will be
 	 available as a compiled class in the future but may not have
