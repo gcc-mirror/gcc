@@ -1,3 +1,9 @@
+2002-09-09  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_binds_local_p): Return bool.
+	(function_ok_for_sibcall): Use binds_local_p.  Respect longcall
+	attributes.
+
 2002-09-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fr30.c (fr30_print_operand): Fix bug in output of CONST_DOUBLE.
