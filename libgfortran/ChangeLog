@@ -1,3 +1,12 @@
+2004-08-28  Paul Brook  <paul@codesourcery.com>
+
+	PR libfortran/17195
+	* libgfortran.h (rtoa): Remove prototype.
+	* runtime/error.c (rtoa): Remove.
+	* io/write.c (calculate_G_format): Don't add blanks if E format is
+	used.  Add correct number of blanks when exponent width is specified.
+	(output_float): Rewrite.
+
 2004-08-27  Paul Brook  <paul@codesourcery.com>
 
 	* io/rewind.c (st_rewind): Reset unit to read mode.

@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 #include "io.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 
 #define star_fill(p, n) memset(p, '*', n)
@@ -150,7 +151,7 @@ calculate_exp (int d)
 
 
 /* Generate corresponding I/O format for FMT_G output.
-   The rules to translate FMT_G to FMT_E or FNT_F from DEC fortran
+   The rules to translate FMT_G to FMT_E or FMT_F from DEC fortran
    LRM (table 11-2, Chapter 11, "I/O Formatting", P11-25) is:
 
    Data Magnitude                              Equivalent Conversion
@@ -192,7 +193,7 @@ calculate_G_format (fnode *f, double value, int len, int *num_blank)
       newf->u.real.w = w;
       newf->u.real.d = d;
       newf->u.real.e = e;
-      *num_blank = e + 2;
+      *num_blank = 0;
       return newf;
     }
 
@@ -232,17 +233,21 @@ calculate_G_format (fnode *f, double value, int len, int *num_blank)
         break;
     }
 
-  /* Generate the F editing. F(w-4).(-(mid-d-1)), 4' '.  */
+  /* Pad with blanks where the exponent would be.  */
+  if (e < 0)
+    *num_blank = 4;
+  else
+    *num_blank = e + 2;
+
+  /* Generate the F editing. F(w-n).(-(mid-d-1)), n' '.  */
   newf->format = FMT_F;
-  newf->u.real.w = f->u.real.w - 4;
+  newf->u.real.w = f->u.real.w - *num_blank;
 
   /* Special case.  */
   if (m == 0.0)
     newf->u.real.d = d - 1;
   else
     newf->u.real.d = - (mid - d - 1);
-
-  *num_blank = 4;
 
   /* For F editing, the scale factor is ignored.  */
   g.scale_factor = 0;
@@ -255,228 +260,347 @@ calculate_G_format (fnode *f, double value, int len, int *num_blank)
 static void
 output_float (fnode *f, double value, int len)
 {
-  int w, d, e, e_new;
-  int digits;
-  int nsign, nblank, nesign;
-  int sca, neval, itmp;
-  char *p;
-  const char *q, *intstr, *base;
-  double n;
+  /* This must be large enough to accurately hold any value.  */ 
+  char buffer[32];
+  char *out;
+  char *digits;
+  int e;
+  char expchar;
   format_token ft;
-  char exp_char = 'E';
-  int with_exp = 1;
-  int scale_flag = 1 ;
-  double minv = 0.0, maxv = 0.0;
-  sign_t sign = SIGN_NONE, esign = SIGN_NONE;
-
-  int intval = 0, intlen = 0;
-  int j;
-  
-  /* EXP value for this number.  */
-  neval = 0;
-
-  /* Width of EXP and it's sign.  */
-  nesign = 0;
+  int w;
+  int d;
+  int edigits;
+  int ndigits;
+  /* Number of digits before the decimal point.  */
+  int nbefore;
+  /* Number of zeros after the decimal point.  */
+  int nzero;
+  /* Number of digits after the decimal point.  */
+  int nafter;
+  int leadzero;
+  int nblanks;
+  int i;
+  sign_t sign;
 
   ft = f->format;
   w = f->u.real.w;
-  d = f->u.real.d + 1;
+  d = f->u.real.d;
 
-  /* Width of the EXP.  */
-  e = 0;
+  /* We should always know the field width and precision.  */
+  if (d < 0)
+    internal_error ("Uspecified precision");
 
-  sca = g.scale_factor;
-  n = value;
+  /* Use sprintf to print the number in the format +D.DDDDe+ddd
+     For an N digit exponent, this gives us (32-6)-N digits after the
+     decimal point, plus annother one before the decimal point.  */
+  sign = calculate_sign (value < 0.0);
+  if (value < 0)
+    value = -value;
 
-  sign = calculate_sign (n < 0.0);
-  if (n < 0)
-    n = -n;
-
-  /* Width of the sign for the whole number.  */
-  nsign = (sign == SIGN_NONE ? 0 : 1);
-
-  digits = 0;
-  if (ft != FMT_F)
+  /* Printf always prints at least two exponent digits.  */
+  if (value == 0)
+    edigits = 2;
+  else
     {
-      e = f->u.real.e;
+      edigits = 1 + (int) log10 (fabs(log10 (value)));
+      if (edigits < 2)
+	edigits = 2;
     }
-  if (ft == FMT_F || ft == FMT_E || ft == FMT_D)
+  
+  if (FMT_F || FMT_ES)
     {
-      if (ft == FMT_F)
-        scale_flag = 0;
-      if (ft == FMT_D)
-        exp_char = 'D' ;
-      minv = 0.1;
-      maxv = 1.0;
-
-      /* Calculate the new val of the number with consideration
-         of global scale value.  */
-      while (sca >  0)
-        {
-          minv *= 10.0;
-          maxv *= 10.0;
-          n *= 10.0;
-          sca -- ;
-          neval --;
-        }
-
-      /* Now calculate the new Exp value for this number.  */
-      sca = g.scale_factor;
-      while(sca >= 1)
-        {
-          sca /= 10;
-          digits ++ ;
-        }
+      /* Always convert at full precision to avoid double rounding.  */
+      ndigits = 27 - edigits;
+    }
+  else
+    {
+      /* We know the number of digits, so can let printf do the rounding
+	 for us.  */
+      if (ft == FMT_ES)
+	ndigits = d + 1;
+      else
+	ndigits = d;
+      if (ndigits > 27 - edigits)
+	ndigits = 27 - edigits;
     }
 
-   if (ft == FMT_EN )
-     {
-       minv = 1.0;
-       maxv = 1000.0;
-     }
-   if (ft == FMT_ES)
-     {
-       minv = 1.0;
-       maxv = 10.0;
-     }
-
-   /* OK, let's scale the number to appropriate range.  */
-   while (scale_flag && n > 0.0 && n < minv)
-     {
-       if (n < minv)
-         {
-           n = n * 10.0 ;
-           neval --;
-         }
-     }
-   while (scale_flag && n > 0.0 && n > maxv)
-     {
-       if (n > maxv)
-         {
-           n = n / 10.0 ;
-           neval ++;
-         }
-     }
-
-  /* It is time to process the EXP part of the number.
-     Value of 'nesign' is 0 unless following codes is executed.  */
-  if (ft != FMT_F)
+  sprintf (buffer, "%+-31.*e", ndigits - 1, value);
+  
+  /* Check the resulting string has punctuation in the correct places.  */
+  if (buffer[2] != '.' || buffer[ndigits + 2] != 'e')
     {
-     /* Sign of the EXP value.  */
-     if (neval >= 0)
-       esign = SIGN_PLUS;
-     else
-       {
-         esign = SIGN_MINUS;
-         neval = - neval ;
-       }
+      printf ("'%s', %d\n", buffer, ndigits);
+      internal_error ("printf is broken");
+    }
 
-      /* Width of the EXP.  */
-      e_new = 0;
-      j = neval;
-      while (j > 0)
-        {
-           j = j / 10;
-           e_new ++ ;
-        }
-      if (e <= e_new)
-         e = e_new;
+  /* Read the exponent back in.  */
+  e = atoi (&buffer[ndigits + 3]) + 1;
 
-     /* Got the width of EXP.  */
-     if (e < digits)
-       e = digits ;
+  /* Make sure zero comes out as 0.0e0.  */
+  if (value == 0.0)
+    e = 0;
 
-     /* Minimum value of the width would be 2.  */
-     if (e < 2)
-       e = 2;
+  /* Normalize the fractional component.  */
+  buffer[2] = buffer[1];
+  digits = &buffer[2];
 
-     nesign =  1 ;  /* We must give a position for the 'exp_char'  */
-     if (e > 0)
-       nesign = e + nesign + (esign != SIGN_NONE ? 1 : 0);
-   }
+  /* Figure out where to place the decimal point.  */
+  switch (ft)
+    {
+    case FMT_F:
+      nbefore = e + g.scale_factor;
+      if (nbefore < 0)
+	{
+	  nzero = -nbefore;
+	  if (nzero > d)
+	    nzero = d;
+	  nafter = d - nzero;
+	  nbefore = 0;
+	}
+      else
+	{
+	  nzero = 0;
+	  nafter = d;
+	}
+      expchar = 0;
+      break;
 
+    case FMT_E:
+    case FMT_D:
+      i = g.scale_factor;
+      if (i < 0)
+	{
+	  nbefore = 0;
+	  nzero = -i;
+	  nafter = d + i;
+	}
+      else
+	{
+	  nbefore = i;
+	  nzero = 0;
+	  nafter = d - i;
+	}
+      if (ft = FMT_E)
+	expchar = 'E';
+      else
+	expchar = 'D';
+      break;
 
-  intval = n;
-  intstr = itoa (intval);
-  intlen = strlen (intstr);
+    case FMT_EN:
+      /* The exponent must be a multiple of three, with 1-3 digits before
+	 the decimal point.  */
+      e--;
+      if (e >= 0)
+	nbefore = e % 3;
+      else
+	{
+	  nbefore = (-e) % 3;
+	  if (nbefore != 0)
+	    nbefore = 3 - nbefore;
+	}
+      e -= nbefore;
+      nbefore++;
+      nzero = 0;
+      nafter = d;
+      expchar = 'E';
+      break;
 
-  q = rtoa (n, len, d);
-  digits = strlen (q);
+    case FMT_ES:
+      e--;
+      nbefore = 1;
+      nzero = 0;
+      nafter = d;
+      expchar = 'E';
+      break;
 
-  /* Select a width if none was specified.  */
+    default:
+      /* Should never happen.  */
+      internal_error ("Unexpected format token");
+    }
+
+  /* Round the value.  */
+  if (nbefore + nafter < ndigits && nbefore + nafter > 0)
+    {
+      i = nbefore + nafter;
+      if (digits[i] >= '5')
+	{
+	  /* Propagate the carry.  */
+	  for (i--; i >= 0; i--)
+	    {
+	      if (digits[i] != '9')
+		{
+		  digits[i]++;
+		  break;
+		}
+	      digits[i] = '0';
+	    }
+
+	  if (i < 0)
+	    {
+	      /* The carry overflowed.  Fortunately we have some spare space
+		 at the start of the buffer.  We may discard some digits, but
+		 this is ok because we already know they are zero.  */
+	      digits--;
+	      digits[0] = '1';
+	      if (ft == FMT_F)
+		{
+		  if (nzero > 0)
+		    {
+		      nzero--;
+		      nafter++;
+		    }
+		  else
+		    nbefore++;
+		}
+	      else if (ft == FMT_EN)
+		{
+		  nbefore++;
+		  if (nbefore == 4)
+		    {
+		      nbefore = 1;
+		      e += 3;
+		    }
+		}
+	      else
+		e++;
+	    }
+	}
+    }
+
+  /* Calculate the format of the exponent field.  */
+  if (expchar)
+    {
+      edigits = 1;
+      for (i = abs (e); i >= 10; i /= 10)
+	edigits++;
+      
+      if (f->u.real.e < 0)
+	{
+	  /* Width not specified.  Must be no more than 3 digits.  */
+	  if (e > 999 || e < -999)
+	    edigits = -1;
+	  else
+	    {
+	      edigits = 4;
+	      if (e > 99 || e < -99)
+		expchar = ' ';
+	    }
+	}
+      else
+	{
+	  /* Exponent width specified, check it is wide enough.  */
+	  if (edigits > f->u.real.e)
+	    edigits = -1;
+	  else
+	    edigits = f->u.real.e + 2;
+	}
+    }
+  else
+    edigits = 0;
+
+  /* Pick a field size if none was specified.  */
   if (w <= 0)
-    w = digits + nsign;
+    w = nbefore + nzero + nafter + 2;
 
-  p = write_block (w);
-  if (p == NULL)
+  /* Create the ouput buffer.  */
+  out = write_block (w);
+  if (out == NULL)
     return;
 
-  base = p;
-
-  nblank = w - (nsign + intlen + d + nesign);
-  if (nblank == -1 && ft != FMT_F)
-     {
-       with_exp = 0;
-       nesign -= 1;
-       nblank = w - (nsign + intlen + d + nesign);
-     }
-  /* Don't let a leading '0' cause field overflow.  */
-  if (nblank == -1 && ft == FMT_F && q[0] == '0')
-     {
-        q++;
-        nblank = 0;
-     }
-
-  if (nblank < 0)
+  /* Work out how much padding is needed.  */
+  nblanks = w - (nbefore + nzero + nafter + edigits + 1);
+  if (sign != SIGN_NONE)
+    nblanks--;
+  
+  /* Check the value fits in the specified field width.  */
+  if (nblanks < 0 || edigits == -1)
     {
-      star_fill (p, w);
-      goto done;
-    }
-  memset (p, ' ', nblank);
-  p += nblank;
-
-  switch (sign)
-    {
-    case SIGN_PLUS:
-      *p++ = '+';
-      break;
-    case SIGN_MINUS:
-      *p++ = '-';
-      break;
-    case SIGN_NONE:
-      break;
+      star_fill (out, w);
+      return;
     }
 
-  memcpy (p, q, intlen + d + 1);
-  p += intlen + d;
-
-  if (nesign > 0)
+  /* See if we have space for a zero before the decimal point.  */
+  if (nbefore == 0 && nblanks > 0)
     {
-      if (with_exp)
-         *p++ = exp_char;
-      switch (esign)
-        {
-        case SIGN_PLUS:
-          *p++ = '+';
-          break;
-        case SIGN_MINUS:
-          *p++ = '-';
-          break;
-        case SIGN_NONE:
-          break;
-        }
-      q = itoa (neval);
-      digits = strlen (q);
+      leadzero = 1;
+      nblanks--;
+    }
+  else
+    leadzero = 0;
 
-      for (itmp = 0; itmp < e - digits; itmp++)
-        *p++ = '0';
-      memcpy (p, q, digits);
-      p[digits]  = 0;
+  /* Padd to full field width.  */
+  if (nblanks > 0)
+    {
+      memset (out, ' ', nblanks);
+      out += nblanks;
     }
 
-done:
-  return ;
+  /* Output the initial sign (if any).  */
+  if (sign == SIGN_PLUS)
+    *(out++) = '+';
+  else if (sign == SIGN_MINUS)
+    *(out++) = '-';
+
+  /* Output an optional leading zero.  */
+  if (leadzero)
+    *(out++) = '0';
+
+  /* Output the part before the decimal point, padding with zeros.  */
+  if (nbefore > 0)
+    {
+      if (nbefore > ndigits)
+	i = ndigits;
+      else
+	i = nbefore;
+
+      memcpy (out, digits, i);
+      while (i < nbefore)
+	out[i++] = '0';
+
+      digits += i;
+      ndigits -= i;
+      out += nbefore;
+    }
+  /* Output the decimal point.  */
+  *(out++) = '.';
+
+  /* Output leading zeros after the decimal point.  */
+  if (nzero > 0)
+    {
+      for (i = 0; i < nzero; i++)
+	*(out++) = '0';
+    }
+
+  /* Output digits after the decimal point, padding with zeros.  */
+  if (nafter > 0)
+    {
+      if (nafter > ndigits)
+	i = ndigits;
+      else
+	i = nafter;
+
+      memcpy (out, digits, i);
+      while (i < nafter)
+	out[i++] = '0';
+
+      digits += i;
+      ndigits -= i;
+      out += nafter;
+    }
+  
+  /* Output the exponent.  */
+  if (expchar)
+    {
+      if (expchar != ' ')
+	{
+	  *(out++) = expchar;
+	  edigits--;
+	}
+      snprintf (buffer, 32, "%+0*d", edigits, e);
+      memcpy (out, buffer, edigits);
+    }
 }
+
 
 void
 write_l (fnode * f, char *source, int len)
