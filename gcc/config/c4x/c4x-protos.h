@@ -97,8 +97,6 @@ extern int c4x_label_conflict PARAMS ((rtx, rtx, rtx));
 
 extern int c4x_address_conflict PARAMS ((rtx, rtx, int, int));
 
-extern void c4x_process_after_reload PARAMS ((rtx));
-
 extern void c4x_rptb_insert PARAMS ((rtx insn));
 
 extern int c4x_rptb_nop_p PARAMS ((rtx));

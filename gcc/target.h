@@ -341,6 +341,10 @@ struct gcc_target
      hook should return NULL_RTX.  */
   rtx (* dwarf_register_span) PARAMS ((rtx));
 
+  /* Do machine-dependent code transformations.  Called just before
+     delayed-branch scheduling.  */
+  void (* machine_dependent_reorg) PARAMS ((void));
+
   /* Leave the boolean fields at the end.  */
 
   /* True if arbitrary sections are supported.  */

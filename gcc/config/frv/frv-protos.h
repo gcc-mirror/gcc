@@ -242,6 +242,5 @@ extern int even_acc_operand		PARAMS ((rtx, enum machine_mode));
 extern int quad_acc_operand		PARAMS ((rtx, enum machine_mode));
 extern int accg_operand			PARAMS ((rtx, enum machine_mode));
 extern rtx frv_matching_accg_for_acc	PARAMS ((rtx));
-extern void frv_machine_dependent_reorg	PARAMS ((rtx));
 #endif
 

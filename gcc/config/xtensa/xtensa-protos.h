@@ -86,7 +86,6 @@ extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern void xtensa_output_literal
   PARAMS ((FILE *, rtx, enum machine_mode, int labelno));
-extern void xtensa_reorg PARAMS ((rtx));
 extern rtx xtensa_return_addr PARAMS ((int, rtx));
 extern rtx xtensa_builtin_saveregs PARAMS ((void));
 extern enum reg_class xtensa_preferred_reload_class

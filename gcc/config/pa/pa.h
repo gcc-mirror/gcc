@@ -418,10 +418,6 @@ do {								\
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
-
-/* Machine dependent reorg pass.  */
-#define MACHINE_DEPENDENT_REORG(X) pa_reorg(X)
-
 
 /* target machine storage layout */
 

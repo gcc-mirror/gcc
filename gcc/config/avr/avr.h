@@ -2289,12 +2289,6 @@ extern int avr_case_values_threshold;
    G++ have `$' in the identifiers.  If this macro is defined, `.' is
    used instead.  */
 
-#define MACHINE_DEPENDENT_REORG(INSN) machine_dependent_reorg (INSN)
-/* In rare cases, correct code generation requires extra machine
-   dependent processing between the second jump optimization pass and
-   delayed branch scheduling.  On those machines, define this macro
-   as a C statement to act on the code starting at INSN.  */
-
 #define GIV_SORT_CRITERION(X, Y)	\
   if (GET_CODE ((X)->add_val) == CONST_INT		\
       && GET_CODE ((Y)->add_val) == CONST_INT)		\

@@ -48,7 +48,6 @@ extern void   print_operand                 PARAMS ((FILE *, rtx, int ));
 extern void   print_operand_address         PARAMS ((FILE *, rtx));
 extern const char *output_move_double       PARAMS ((rtx *));
 extern const char *output_move_single       PARAMS ((rtx *));
-extern void   v850_reorg                    PARAMS ((rtx));
 extern void   notice_update_cc              PARAMS ((rtx, rtx));
 extern char * construct_save_jarl           PARAMS ((rtx));
 extern char * construct_restore_jr          PARAMS ((rtx));

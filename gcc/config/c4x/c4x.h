@@ -1954,15 +1954,6 @@ do { fprintf (asm_out_file, "\t.sdef\t");		\
 
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
-/* We need to use direct addressing for large constants and addresses
-   that cannot fit within an instruction.  We must check for these
-   after after the final jump optimisation pass, since this may
-   introduce a local_move insn for a SYMBOL_REF.  This pass
-   must come before delayed branch slot filling since it can generate
-   additional instructions.  */
-
-#define MACHINE_DEPENDENT_REORG(INSNS) c4x_process_after_reload(INSNS)
-
 #define DBR_OUTPUT_SEQEND(FILE)				\
 if (final_sequence != NULL_RTX)				\
 {							\

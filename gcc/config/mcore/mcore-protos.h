@@ -60,7 +60,6 @@ extern int          mcore_is_dead                	PARAMS ((rtx, rtx));
 extern int          mcore_expand_insv            	PARAMS ((rtx *));
 extern int          mcore_modify_comparison      	PARAMS ((RTX_CODE));
 extern void         mcore_expand_block_move      	PARAMS ((rtx, rtx, rtx *));
-extern void         mcore_dependent_reorg        	PARAMS ((rtx));
 extern const char * mcore_output_andn          		PARAMS ((rtx, rtx *));
 extern void         mcore_print_operand_address  	PARAMS ((FILE *, rtx));
 extern void         mcore_print_operand          	PARAMS ((FILE *, rtx, int));

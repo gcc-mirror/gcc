@@ -240,6 +240,8 @@ static int alpha_use_dfa_pipeline_interface
   PARAMS ((void));
 static int alpha_multipass_dfa_lookahead
   PARAMS ((void));
+static void alpha_reorg
+  PARAMS ((void));
 
 #ifdef OBJECT_FORMAT_ELF
 static void alpha_elf_select_rtx_section
@@ -369,6 +371,9 @@ static void unicosmk_unique_section PARAMS ((tree, int));
 #define TARGET_RTX_COSTS alpha_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_0
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG alpha_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8272,7 +8277,7 @@ struct shadow_summary
 };
 
 static void summarize_insn PARAMS ((rtx, struct shadow_summary *, int));
-static void alpha_handle_trap_shadows PARAMS ((rtx));
+static void alpha_handle_trap_shadows PARAMS ((void));
 
 /* Summary the effects of expression X on the machine.  Update SUM, a pointer
    to the summary structure.  SET is nonzero if the insn is setting the
@@ -8436,8 +8441,7 @@ summarize_insn (x, sum, set)
    (d) The trap shadow may not include any branch instructions.  */
 
 static void
-alpha_handle_trap_shadows (insns)
-     rtx insns;
+alpha_handle_trap_shadows ()
 {
   struct shadow_summary shadow;
   int trap_pending, exception_nesting;
@@ -8450,7 +8454,7 @@ alpha_handle_trap_shadows (insns)
   shadow.used.mem = 0;
   shadow.defd = shadow.used;
   
-  for (i = insns; i ; i = NEXT_INSN (i))
+  for (i = get_insns (); i ; i = NEXT_INSN (i))
     {
       if (GET_CODE (i) == NOTE)
 	{
@@ -8598,7 +8602,7 @@ static rtx alphaev4_next_nop PARAMS ((int *));
 static rtx alphaev5_next_nop PARAMS ((int *));
 
 static void alpha_align_insns
-  PARAMS ((rtx, unsigned int, rtx (*)(rtx, int *, int *), rtx (*)(int *)));
+  PARAMS ((unsigned int, rtx (*)(rtx, int *, int *), rtx (*)(int *)));
 
 static enum alphaev4_pipe
 alphaev4_insn_pipe (insn)
@@ -8987,8 +8991,7 @@ alphaev5_next_nop (pin_use)
 /* The instruction group alignment main loop.  */
 
 static void
-alpha_align_insns (insns, max_align, next_group, next_nop)
-     rtx insns;
+alpha_align_insns (max_align, next_group, next_nop)
      unsigned int max_align;
      rtx (*next_group) PARAMS ((rtx, int *, int *));
      rtx (*next_nop) PARAMS ((int *));
@@ -9001,7 +9004,7 @@ alpha_align_insns (insns, max_align, next_group, next_nop)
   rtx i, next;
 
   /* Let shorten branches care for assigning alignments to code labels.  */
-  shorten_branches (insns);
+  shorten_branches (get_insns ());
 
   if (align_functions < 4)
     align = 4;
@@ -9011,7 +9014,7 @@ alpha_align_insns (insns, max_align, next_group, next_nop)
     align = max_align;
 
   ofs = prev_in_use = 0;
-  i = insns;
+  i = get_insns ();
   if (GET_CODE (i) == NOTE)
     i = next_nonnote_insn (i);
 
@@ -9113,12 +9116,11 @@ alpha_align_insns (insns, max_align, next_group, next_nop)
 
 /* Machine dependent reorg pass.  */
 
-void
-alpha_reorg (insns)
-     rtx insns;
+static void
+alpha_reorg ()
 {
   if (alpha_tp != ALPHA_TP_PROG || flag_exceptions)
-    alpha_handle_trap_shadows (insns);
+    alpha_handle_trap_shadows ();
 
   /* Due to the number of extra trapb insns, don't bother fixing up
      alignment when trap precision is instruction.  Moreover, we can
@@ -9128,9 +9130,9 @@ alpha_reorg (insns)
       && flag_schedule_insns_after_reload)
     {
       if (alpha_cpu == PROCESSOR_EV4)
-	alpha_align_insns (insns, 8, alphaev4_next_group, alphaev4_next_nop);
+	alpha_align_insns (8, alphaev4_next_group, alphaev4_next_nop);
       else if (alpha_cpu == PROCESSOR_EV5)
-	alpha_align_insns (insns, 16, alphaev5_next_group, alphaev5_next_nop);
+	alpha_align_insns (16, alphaev5_next_group, alphaev5_next_nop);
     }
 }
 

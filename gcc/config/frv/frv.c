@@ -8609,11 +8609,6 @@ frv_registers_set_p (x, reg_state, modify_p)
 }
 
 
-/* In rare cases, correct code generation requires extra machine dependent
-   processing between the second jump optimization pass and delayed branch
-   scheduling.  On those machines, define this macro as a C statement to act on
-   the code starting at INSN.  */
-
 /* On the FR-V, this pass is used to rescan the insn chain, and pack
    conditional branches/calls/jumps, etc. with previous insns where it can.  It
    does not reorder the instructions.  We assume the scheduler left the flow

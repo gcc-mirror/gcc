@@ -132,6 +132,7 @@ static void mmix_target_asm_function_prologue
 static void mmix_target_asm_function_end_prologue PARAMS ((FILE *));
 static void mmix_target_asm_function_epilogue
   PARAMS ((FILE *, HOST_WIDE_INT));
+static void mmix_reorg PARAMS ((void));
 static void mmix_asm_output_mi_thunk
   PARAMS ((FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
 static bool mmix_rtx_costs
@@ -177,6 +178,9 @@ static bool mmix_rtx_costs
 #define TARGET_RTX_COSTS mmix_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_0
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG mmix_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -720,7 +724,7 @@ mmix_asm_preferred_eh_data_format (code, global)
 
 /* Make a note that we've seen the beginning of the prologue.  This
    matters to whether we'll translate register numbers as calculated by
-   mmix_machine_dependent_reorg.  */
+   mmix_reorg.  */
 
 static void
 mmix_target_asm_function_prologue (stream, framesize)
@@ -739,14 +743,12 @@ mmix_target_asm_function_end_prologue (stream)
   cfun->machine->in_prologue = 0;
 }
 
-/* MACHINE_DEPENDENT_REORG.
-   No actual rearrangements done here; just virtually by calculating the
-   highest saved stack register number used to modify the register numbers
-   at output time.  */
+/* Implement TARGET_MACHINE_DEPENDENT_REORG.  No actual rearrangements
+   done here; just virtually by calculating the highest saved stack
+   register number used to modify the register numbers at output time.  */
 
-void
-mmix_machine_dependent_reorg (first)
-     rtx first ATTRIBUTE_UNUSED;
+static void
+mmix_reorg ()
 {
   int regno;
 

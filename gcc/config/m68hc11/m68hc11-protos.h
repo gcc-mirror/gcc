@@ -58,8 +58,6 @@ extern int m68hc11_legitimize_address PARAMS((rtx*, rtx, enum machine_mode));
 extern void m68hc11_notice_update_cc PARAMS((rtx, rtx));
 extern void m68hc11_notice_keep_cc PARAMS((rtx));
 
-extern void m68hc11_reorg PARAMS((rtx));
-
 extern void m68hc11_gen_movqi PARAMS((rtx, rtx*));
 extern void m68hc11_gen_movhi PARAMS((rtx, rtx*));
 extern void m68hc11_gen_rotate PARAMS((enum rtx_code, rtx, rtx*));

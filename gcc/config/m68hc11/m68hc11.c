@@ -62,6 +62,7 @@ static void print_options PARAMS ((FILE *));
 static void emit_move_after_reload PARAMS ((rtx, rtx, rtx));
 static rtx simplify_logical PARAMS ((enum machine_mode, int, rtx, rtx *));
 static void m68hc11_emit_logical PARAMS ((enum machine_mode, int, rtx *));
+static void m68hc11_reorg PARAMS ((void));
 static int go_if_legitimate_address_internal PARAMS((rtx, enum machine_mode,
                                                      int));
 static int register_indirect_p PARAMS((rtx, enum machine_mode, int));
@@ -236,6 +237,9 @@ static int nb_soft_regs;
 #define TARGET_RTX_COSTS m68hc11_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST m68hc11_address_cost
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG m68hc11_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5184,15 +5188,23 @@ m68hc11_reassign_regs (first)
 }
 
 
-void
-m68hc11_reorg (first)
-     rtx first;
+/* Machine-dependent reorg pass.
+   Specific optimizations are defined here:
+    - this pass changes the Z register into either X or Y
+      (it preserves X/Y previous values in a memory slot in page0).
+
+   When this pass is finished, the global variable
+   'z_replacement_completed' is set to 2.  */
+
+static void
+m68hc11_reorg ()
 {
   int split_done = 0;
-  rtx insn;
+  rtx insn, first;
 
   z_replacement_completed = 0;
   z_reg = gen_rtx (REG, HImode, HARD_Z_REGNUM);
+  first = get_insns ();
 
   /* Some RTX are shared at this point.  This breaks the Z register
      replacement, unshare everything.  */

@@ -3122,8 +3122,6 @@ enum mdep_reorg_phase_e
 
 extern enum mdep_reorg_phase_e mdep_reorg_phase;
 
-#define MACHINE_DEPENDENT_REORG(X) machine_dependent_reorg(X)
-
 /* Generate calls to memcpy, memcmp and memset.  */
 
 #define TARGET_MEM_FUNCTIONS

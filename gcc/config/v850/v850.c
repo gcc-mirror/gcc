@@ -54,6 +54,7 @@ static int  const_costs_int          PARAMS ((HOST_WIDE_INT, int));
 static int  const_costs		     PARAMS ((rtx, enum rtx_code));
 static bool v850_rtx_costs	     PARAMS ((rtx, int, int, int *));
 static void substitute_ep_register   PARAMS ((rtx, rtx, int, int, rtx *, rtx *));
+static void v850_reorg		     PARAMS ((void));
 static int  ep_memory_offset         PARAMS ((enum machine_mode, int));
 static void v850_set_data_area       PARAMS ((tree, v850_data_area));
 const struct attribute_spec v850_attribute_table[];
@@ -108,6 +109,9 @@ static int v850_interrupt_p = FALSE;
 #define TARGET_RTX_COSTS v850_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_0
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG v850_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1318,16 +1322,12 @@ Saved %d bytes (%d uses of register %s) in function %s, starting as insn %d, end
 }
 
 
-/* In rare cases, correct code generation requires extra machine
-   dependent processing between the second jump optimization pass and
-   delayed branch scheduling.  On those machines, define this macro
-   as a C statement to act on the code starting at INSN.
+/* TARGET_MACHINE_DEPENDENT_REORG.  On the 850, we use it to implement
+   the -mep mode to copy heavily used pointers to ep to use the implicit
+   addressing.  */
 
-   On the 850, we use it to implement the -mep mode to copy heavily used
-   pointers to ep to use the implicit addressing.  */
-
-void v850_reorg (start_insn)
-     rtx start_insn;
+static void
+v850_reorg ()
 {
   struct
   {
@@ -1355,7 +1355,7 @@ void v850_reorg (start_insn)
       regs[i].last_insn = NULL_RTX;
     }
 
-  for (insn = start_insn; insn != NULL_RTX; insn = NEXT_INSN (insn))
+  for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
     {
       switch (GET_CODE (insn))
 	{

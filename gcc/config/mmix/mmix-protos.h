@@ -97,7 +97,6 @@ extern int mmix_legitimate_address PARAMS ((enum machine_mode, rtx, int));
 extern int mmix_legitimate_constant_p PARAMS ((rtx));
 extern void mmix_print_operand PARAMS ((FILE *, rtx, int));
 extern void mmix_print_operand_address PARAMS ((FILE *, rtx));
-extern void mmix_machine_dependent_reorg PARAMS ((rtx));
 extern void mmix_expand_prologue PARAMS ((void));
 extern void mmix_expand_epilogue PARAMS ((void));
 extern rtx mmix_get_hard_reg_initial_val PARAMS ((enum machine_mode, int));

@@ -1166,10 +1166,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 #define NO_DOLLAR_IN_LABEL
 #define NO_DOT_IN_LABEL
 
-/* Calculate the highest used supposed saved stack register.  */
-#define MACHINE_DEPENDENT_REORG(INSN) \
- mmix_machine_dependent_reorg (INSN)
-
 #endif /* GCC_MMIX_H */
 /*
  * Local variables:

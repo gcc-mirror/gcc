@@ -71,7 +71,6 @@ extern void   function_arg_advance PARAMS ((CUMULATIVE_ARGS *cum,
 extern void   asm_output_external_libcall PARAMS ((FILE *file, rtx symref));
 extern int    legitimate_address_p    PARAMS ((enum machine_mode mode, rtx x,
 					int strict));
-extern void   machine_dependent_reorg PARAMS ((rtx first_insn));
 extern int    compare_diff_p  PARAMS ((rtx insn));
 extern const char * output_movqi    PARAMS ((rtx insn, rtx operands[], int *l));
 extern const char * output_movhi    PARAMS ((rtx insn, rtx operands[], int *l));

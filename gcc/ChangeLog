@@ -1,3 +1,126 @@
+2003-05-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* target-def.h (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(TARGET_INITIALIZER): Include it.
+	* target.h (struct gcc_target): Add machine_dependent_reorg field.
+	* toplev.c (rest_of_compilation): Use targetm.machine_dependent_reorg.
+
+	* config/alpha/alpha-protos.h (alpha_reorg): Remove declaration.
+	* config/alpha/alpha.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/alpha/alpha.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(alpha_handle_trap_shadows): Remove "first insn" parameter.
+	(alpha_align_insns): Likewise.
+	(alpha_reorg): Likewise.  Make static.  Update calls to above
+	functions.
+
+	* config/arm/arm-protos.h (arm_reorg): Remove declaration.
+	* config/arm/arm.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/arm/arm.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(arm_reorg): Remove parameter.  Make static.
+
+	* config/avr/avr-protos.h (machine_dependent_reorg): Remove.
+	* config/avr/avr.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/avr/avr.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(avr_reorg): Renamed from machine_dependent_reorg.  Make static.
+	Remove parameter.
+
+	* config/c4x/c4x-protos.h (c4x_process_after_reload): Remove.
+	* config/c4x/c4x.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/c4x/c4x.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(c4x_reorg): Renamed from c4x_process_after_reload.  Make static.
+	Remove parameter.
+
+	* config/d30v/d30v-protos.h (d30v_machine_dependent_reorg): Remove.
+	* config/d30v/d30v.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/d30v/d30v.c (d30v_machine_dependent_reorg): Remove.
+
+	* config/frv/frv-protos.h (frv_machine_dependent_reorg): Remove.
+	* config/frv/frv.c: Remove orphaned comment.
+
+	* config/i386/i386-protos.h (x86_machine_dependent_reorg): Remove.
+	* config/i386/i386.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/i386/i386.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(ix86_reorg): Renamed from x86_machine_dependent_reorg.  Make static.
+	Remove parameter.
+
+	* config/ia64/ia64-protos.h (ia64_reorg): Remove declaration.
+	* config/ia64/ia64.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/ia64/ia64.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(emit_insn_group_barriers): Remove "first insn" parameter.
+	(emit_all_insn_group_barriers): Likewise.
+	(ia64_reorg): Likewise.  Make static.  Update calls to above functions.
+	(ia64_output_mi_thunk): Update call to emit_all_insn_group_barriers.
+
+	* config/ip2k/ip2k-protos.h (machine_dependent_reorg): Remove.
+	* config/ip2k/ip2k.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/ip2k/ip2k.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(ip2k_reorg): Renamed from machine_dependent_reorg.  Make static.
+	Remove parameter.
+
+	* config/m68hc11/m68hc11-protos.h (m68hc11_reorg): Remove declaration.
+	* config/m68hc11/m68hc11.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/m68hc11/m68hc11.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(m68hc11_reorg): Make static.  Remove parameter.
+
+	* config/mcore/mcore-protos.h (mcore_dependent_reorg): Remove.
+	* config/mcore/mcore.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/mcore/mcore.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(conditionalize_optimization): Remove parameter.
+	(mcore_reorg): Renamed from mcore_dependent_reorg.  Remove parameter.
+	Make static.  Update call to conditionalize_optimization.
+
+	* config/mips/mips-protos.h (machine_dependent_reorg): Remove.
+	* config/mips/mips.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/mips/mips.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(mips_reorg): Renamed from machine_dependent_reorg.  Remove parameter.
+	Make static.
+
+	* config/mmix/mmix-protos.h (mmix_machine_dependent_reorg): Remove.
+	* config/mmix/mmix.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/mmix/mmix.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(mmix_reorg): Renamed from mmix_machine_dependent_reorg.  Make static.
+	Remove parameter.
+
+	* config/pa/pa-protos.h (pa_reorg): Remove declaration.
+	* config/pa/pa.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/pa/pa.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(pa_combine_instructions): Remove "first insn" parameter.
+	(remove_useless_addtr_insns): Likewise.
+	(pa_reorg): Likewise.  Make static.  Update calls to above functions.
+
+	* config/rs6000/rs6000.h (MACHINE_DEPENDENT_REORG): Remove
+	commented-out definition.
+
+	* config/s390/s390-protos.h (s390_machine_dependent_reorg): Remove.
+	* config/s390/s390.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/s390/s390.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(s390_reorg): Renamed from s390_machine_dependent_reorg.  Make static.
+	Remove parameter.
+
+	* config/sh/sh-protos.h (machine_dependent_reorg): Remove.
+	* config/sh/sh.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/sh/sh.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(sh_reorg): Renamed from machine_dependent_reorg.  Make static.
+	Remove parameter.
+	(sh_output_mi_thunk): Call sh_reorg directly.
+	* config/sh/sh.md: Update comment.
+
+	* config/stormy16/stormy16.h (MACHINE_DEPENDENT_REORG): Remove
+	commented-out definition.
+
+	* config/v850/v850-protos.h (v850_reorg): Remove declaration.
+	* config/v850/v850.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/v850/v850.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(v850_reorg): Make static.  Remove parameter.
+
+	* config/xtensa/xtensa-protos.h (xtensa_reorg): Remove declaration.
+	* config/xtensa/xtensa.h (MACHINE_DEPENDENT_REORG): Remove.
+	* config/xtensa/xtensa.c (TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(xtensa_reorg): Make static.  Remove parameter.
+
+	* doc/tm.texi (MACHINE_DEPENDENT_REORG): Remove.
+	(TARGET_MACHINE_DEPENDENT_REORG): Document.
+
 2003-05-13  Richard Henderson  <rth@redhat.com>
 
 	* c-decl.c (duplicate_decls): Re-invoke make_decl_rtl if

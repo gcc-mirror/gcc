@@ -134,7 +134,6 @@ extern rtx alpha_gp_save_rtx PARAMS ((void));
 extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern void alpha_initialize_trampoline PARAMS ((rtx, rtx, rtx, int, int, int));
-extern void alpha_reorg PARAMS ((rtx));
 
 extern tree alpha_build_va_list PARAMS ((void));
 extern void alpha_setup_incoming_varargs

@@ -3652,17 +3652,18 @@ rest_of_compilation (decl)
   free_bb_for_insn ();
 
   /* If a machine dependent reorganization is needed, call it.  */
-#ifdef MACHINE_DEPENDENT_REORG
-  timevar_push (TV_MACH_DEP);
-  open_dump_file (DFI_mach, decl);
+  if (targetm.machine_dependent_reorg != 0)
+    {
+      timevar_push (TV_MACH_DEP);
+      open_dump_file (DFI_mach, decl);
 
-  MACHINE_DEPENDENT_REORG (insns);
+      (*targetm.machine_dependent_reorg) ();
 
-  close_dump_file (DFI_mach, print_rtl, insns);
-  timevar_pop (TV_MACH_DEP);
+      close_dump_file (DFI_mach, print_rtl, insns);
+      timevar_pop (TV_MACH_DEP);
 
-  ggc_collect ();
-#endif
+      ggc_collect ();
+    }
 
   purge_line_number_notes (insns);
   cleanup_barriers ();

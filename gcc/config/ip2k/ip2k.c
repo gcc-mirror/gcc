@@ -71,6 +71,7 @@ static void mdr_try_remove_redundant_insns PARAMS ((rtx));
 static int track_w_reload PARAMS ((rtx, rtx *, int , int));
 static void mdr_try_wreg_elim PARAMS ((rtx));
 #endif /* IP2K_MD_REORG_PASS */
+static void ip2k_reorg PARAMS ((void));
 static int ip2k_check_can_adjust_stack_ref PARAMS ((rtx, int));
 static void ip2k_adjust_stack_ref PARAMS ((rtx *, int));
 static int ip2k_xexp_not_uses_reg_for_mem PARAMS ((rtx, unsigned int));
@@ -104,6 +105,9 @@ const struct attribute_spec ip2k_attribute_table[];
 #define TARGET_RTX_COSTS ip2k_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST ip2k_address_cost
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG ip2k_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5340,12 +5344,11 @@ mdr_try_wreg_elim (first_insn)
    earlier passes to be re-run as it progressively transforms things,
    making the subsequent runs continue to win.  */
 
-void
-machine_dependent_reorg (first_insn)
-     rtx first_insn ATTRIBUTE_UNUSED;
+static void
+ip2k_reorg ()
 {
 #ifdef IP2K_MD_REORG_PASS
-  rtx insn, set;
+  rtx first_insn, insn, set;
 #endif
 
   CC_STATUS_INIT;
@@ -5373,6 +5376,8 @@ machine_dependent_reorg (first_insn)
   
   ip2k_reorg_in_progress = 1;
   
+  first_insn = get_insns ();
+
   /* Look for size effects of earlier optimizations - in particular look for
      situations where we're saying "use" a register on one hand but immediately
      tagging it as "REG_DEAD" at the same time!  Seems like a bug in core-gcc
