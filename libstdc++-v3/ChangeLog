@@ -1,3 +1,11 @@
+2002-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/4381
+	* libsupc++/eh_personality.cc (get_adjusted_ptr): New static fn.
+	(check_exception_spec): Call it.  Take the thrown pointer.
+	(__cxa_call_unexpected): Pass it.
+	(PERSONALITY_FUNCTION): Likewise.  Use get_adjusted_ptr.
+
 Fri Mar 15 09:55:49 2002  Anthony Green  <green@redhat.com>
 
 	* configure.in: Remove useless is_mingw32.
