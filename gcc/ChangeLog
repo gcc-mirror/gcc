@@ -1,3 +1,8 @@
+2002-05-29  Chris Lattner  <sabre@nondot.org>
+
+        * ssa.c (rename_insn_1): Rename uses of undefined registers to
+        prevent confusion if/when the register is defined.
+
 2002-05-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/6838
