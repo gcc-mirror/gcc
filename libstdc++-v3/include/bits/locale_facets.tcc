@@ -1008,16 +1008,15 @@ namespace std
 	  const locale& __loc = __io._M_getloc();
 	  const __cache_type* __lc = __uc(__loc);
 
-	  const _CharT* __name;
-	  __name = __v ? __lc->_M_truename : __lc->_M_falsename;
+	  const _CharT* __name = __v ? __lc->_M_truename 
+	                             : __lc->_M_falsename;
 	  int __len = char_traits<_CharT>::length(__name);
 
-	  _CharT* __cs;
 	  const streamsize __w = __io.width();
 	  if (__w > static_cast<streamsize>(__len))
 	    {
-	      __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
-							    * __w));
+	      _CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
+								   * __w));
 	      _M_pad(__fill, __w, __io, __cs, __name, __len);
 	      __name = __cs;
 	    }
