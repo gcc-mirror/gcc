@@ -3569,11 +3569,19 @@ forget_old_reloads_1 (x)
 {
   register int regno;
   int nr;
+  int offset = 0;
+
+  /* note_stores does give us subregs of hard regs.  */
+  while (GET_CODE (x) == SUBREG)
+    {
+      offset += SUBREG_WORD (x);
+      x = SUBREG_REG (x);
+    }
 
   if (GET_CODE (x) != REG)
     return;
 
-  regno = REGNO (x);
+  regno = REGNO (x) + offset;
 
   if (regno >= FIRST_PSEUDO_REGISTER)
     nr = 1;
