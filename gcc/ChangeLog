@@ -3,6 +3,9 @@
 	* tree-outof-ssa.c (coalesce_abnormal_edges): Use e->dest_idx
 	instead of calling phi_arg_from_edge.
 
+	* tree-phinodes.c (remove_phi_args): Replace phi_arg_from_edge
+	with e->dest_idx.
+
 2004-11-24  Ben Elliston  <bje@au.ibm.com>
 
 	* config/i386/i386.h (ASM_OUTPUT_DWARF_ADDR_CONST): Remove.
