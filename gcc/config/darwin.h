@@ -215,6 +215,22 @@ do { text_section ();							\
     ASM_OUTPUT_LABEL (FILE, xname);                                     \
   } while (0)
 
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)                     \
+  do {									\
+    char *xname = NAME;                                                 \
+    if (GET_CODE (XEXP (DECL_RTL (DECL), 0)) != SYMBOL_REF)             \
+      xname = IDENTIFIER_POINTER (DECL_NAME (DECL));                    \
+    if ((TREE_STATIC (DECL)                                             \
+	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))               \
+        || DECL_INITIAL (DECL))                                         \
+      machopic_define_name (xname);                                     \
+    if ((TREE_STATIC (DECL)                                             \
+	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))               \
+        || DECL_INITIAL (DECL))                                         \
+      ENCODE_SECTION_INFO (DECL);					\
+    ASM_OUTPUT_LABEL (FILE, xname);                                     \
+  } while (0)
+
 /* Wrap new method names in quotes so the assembler doesn't gag.
    Make Objective-C internal symbols local.  */
 
