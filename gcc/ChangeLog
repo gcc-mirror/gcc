@@ -1,3 +1,8 @@
+Thu Oct  1 19:58:30 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
+
+	* regmove.c (regmove_optimize): Add variable old_max_uid.
+	At the end of the function, update basic_block_end.
+
 Thu Oct  1 17:58:25 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* dwarf2out.c (expand_builtin_dwarf_reg_size): Use
