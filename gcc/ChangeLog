@@ -1,3 +1,30 @@
+2003-08-06  David Mosberger  <davidm@hpl.hp.com>
+
+        * doc/extend.texi (Function Attributes): Document the IA-64 version
+        of the "model" attribute.
+
+        * config/ia64/ia64.h (SYMBOL_FLAG_SMALL_ADDR): New macro.
+        (SYMBOL_REF_SMALL_ADDR_P): Ditto.
+        (PREDICATE_CODES): Mention "small_addr_symbolic_operand".
+
+        * config/ia64/ia64.c (ia64_handle_model_attribute): New function.
+        (ia64_encode_section_info): Likewise.
+        (ia64_attribute_table): Add "model" attribute.
+        (TARGET_ENCODE_SECTION_INFO): Define.
+        (small_addr_symbolic_operand): New function.
+        (got_symbolic_operand): Return 0 for a symbolref to an object
+        in the small address area.
+        (enum ia64_addr_area): New type.
+        (small_ident1): New variable.
+        (small_ident2): Likewise.
+        (init_idents): New function.
+        (ia64_get_addr_area): Likewise.
+        (ia64_encode_addr_area): Likewise.
+        (ia64_encode_section_info): Likewise.
+        (ia64_expand_load_address): For symbolic references to objects in
+        the small-address-area, load the address via gen_rtx_SET() (which,
+        eventually, will expand into "addl").
+
 2003-08-06  Per Bothner  <pbothner@apple.com>
 
 	* line-map.h (fileline):  New typedef.
