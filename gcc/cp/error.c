@@ -1471,16 +1471,9 @@ dump_expr (tree t, int flags)
 				       ~TREE_INT_CST_HIGH (val)
 	                               + !TREE_INT_CST_LOW (val));
 	          }
-	        /* Would "%x%0*x" or "%x%*0x" get zero-padding on all
-	           systems?  */
-	        {
-	          static char format[12]; /* "0x%x%09999x\0" */
-	          if (!format[0])
-		    sprintf (format, "0x%%x%%0%dx", HOST_BITS_PER_INT / 4);
-	          sprintf (digit_buffer, format, TREE_INT_CST_HIGH (val),
-		           TREE_INT_CST_LOW (val));
-	          output_add_string (scratch_buffer, digit_buffer);
-	        }
+		sprintf (digit_buffer, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
+			 TREE_INT_CST_HIGH (val), TREE_INT_CST_LOW (val));
+		output_add_string (scratch_buffer, digit_buffer);
 	      }
 	    else
 	      print_integer (scratch_buffer, TREE_INT_CST_LOW (t));

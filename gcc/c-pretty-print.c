@@ -449,14 +449,11 @@ pp_c_integer_literal (ppi, i)
 	{
 	  if (tree_int_cst_sgn (i) < 0)
 	    {
-	      static char format[10]; /* "%x%09999x\0" */
-	      if (!format[0])
-		sprintf (format, "%%x%%0%dx", HOST_BITS_PER_INT / 4);
-
 	      pp_c_char (ppi, '-');
 	      i = build_int_2 (-TREE_INT_CST_LOW (i),
 			       ~TREE_INT_CST_HIGH (i) + !TREE_INT_CST_LOW (i));
-	      sprintf (pp_buffer (ppi)->digit_buffer, format, 
+	      sprintf (pp_buffer (ppi)->digit_buffer,
+		       HOST_WIDE_INT_PRINT_DOUBLE_HEX, 
 		       TREE_INT_CST_HIGH (i), TREE_INT_CST_LOW (i));
 	      pp_identifier (ppi, pp_buffer (ppi)->digit_buffer);
 

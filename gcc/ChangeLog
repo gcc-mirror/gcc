@@ -1,3 +1,8 @@
+2003-05-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-pretty-print.c (pp_c_integer_literal): Use
+	HOST_WIDE_INT_PRINT_DOUBLE_HEX.
+
 2003-05-20  Roger Sayle  <roger@eyesopen.com>
 	    Kazu Hirata  <kazu@cs.umass.edu>
 	    Joern Rennecke  <joern.rennecke@superh.com>
