@@ -2216,6 +2216,32 @@ get_last_nonwhite_on_line ()
   return c;
 }
 
+#if defined HANDLE_PRAGMA
+/* Local versions of these macros, that can be passed as function pointers.  */
+static int
+pragma_getc ()
+{
+  int c;
+      
+  if (nextchar != EOF)
+    {
+      c = nextchar;
+      nextchar = EOF;
+    }
+  else
+    c = getch ();
+
+  return c;
+}
+
+static void
+pragma_ungetc (arg)
+     int arg;
+{
+  yyungetc (arg, 0);
+}
+#endif /* HANDLE_PRAGMA */
+
 /* At the beginning of a line, increment the line number
    and process any #-directive on this line.
    If the line is a #-directive, read the entire line and return a newline.
@@ -2282,21 +2308,29 @@ check_newline ()
 	      else if (token == END_OF_LINE)
 		goto skipline;
 
+#ifdef HANDLE_PRAGMA
+	      /* We invoke HANDLE_PRAGMA before HANDLE_SYSV_PRAGMA
+		 (if both are defined), in order to give the back
+		 end a chance to override the interpretation of
+		 SYSV style pragmas.  */
+	      if (HANDLE_PRAGMA (pragma_getc, pragma_ungetc,
+				 IDENTIFIER_POINTER (yylval.ttype)))
+		goto skipline;
+#endif /* HANDLE_PRAGMA */
+	      
 #ifdef HANDLE_SYSV_PRAGMA
 	      if (handle_sysv_pragma (token))
 		goto skipline;
-#else
-#ifdef HANDLE_PRAGMA
-#if USE_CPPLIB
-              /* TODO: ??? */
-              goto skipline;
-#else
-  	      if (HANDLE_PRAGMA (finput, yylval.ttype))
-  		goto skipline;
-#endif /* !USE_CPPLIB */
-#endif
-#endif
+#endif /* !HANDLE_SYSV_PRAGMA */
+
+	      /* Issue a warning message if we have been asked to do so.
+		 Ignoring unknown pragmas in system header file unless
+		 an explcit -Wunknown-pragmas has been given. */
+	      if (warn_unknown_pragmas > 1
+		  || (warn_unknown_pragmas && ! in_system_header))
+		warning ("ignoring pragma: %s", token_buffer);
 	    }
+	  
 	  goto skipline;
 	}
       else if (c == 'd')
@@ -4730,7 +4764,33 @@ handle_cp_pragma (pname)
 {
   register int token;
 
-  if (! strcmp (pname, "unit"))
+  if (! strcmp (pname, "vtable"))
+    {
+      extern tree pending_vtables;
+
+      /* More follows: it must be a string constant (class name).  */
+      token = real_yylex ();
+      if (token != STRING || TREE_CODE (yylval.ttype) != STRING_CST)
+	{
+	  error ("invalid #pragma vtable");
+	  return -1;
+	}
+
+      if (write_virtuals != 2)
+	{
+	  warning ("use `+e2' option to enable #pragma vtable");
+	  return -1;
+	}
+      pending_vtables
+	= perm_tree_cons (NULL_TREE,
+			  get_identifier (TREE_STRING_POINTER (yylval.ttype)),
+			  pending_vtables);
+      token = real_yylex ();
+      if (token != END_OF_LINE)
+	warning ("trailing characters ignored");
+      return 1;
+    }
+  else if (! strcmp (pname, "unit"))
     {
       /* More follows: it must be a string constant (unit name).  */
       token = real_yylex ();
@@ -4895,7 +4955,7 @@ handle_sysv_pragma (token)
 	case TYPENAME:
 	case STRING:
 	case CONSTANT:
-	  handle_pragma_token ("ignored", yylval.ttype);
+	  handle_pragma_token (IDENTIFIER_POINTER(yylval.ttype), yylval.ttype);
 	  break;
 	case '(':
 	  handle_pragma_token ("(", NULL_TREE);
@@ -4915,8 +4975,7 @@ handle_sysv_pragma (token)
 	  break;
 	case END_OF_LINE:
 	default:
-	  handle_pragma_token (NULL_PTR, NULL_TREE);
-	  return 1;
+	  return handle_pragma_token (NULL_PTR, NULL_TREE);
 	}
       token = real_yylex ();
     }
