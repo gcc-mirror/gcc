@@ -58,7 +58,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    A store insn is a SET whose SET_DEST is FIRST_STACK_REG, and whose
    SET_SRC is REG or MEM.
 
-   The case where both the SET_SRC and SET_DEST FIRST_STACK_REG
+   The case where the SET_SRC and SET_DEST are both FIRST_STACK_REG
    appears ambiguous.  As a special case, the presence of a REG_DEAD note
    for FIRST_STACK_REG differentiates between a load insn and a pop.
 
@@ -809,24 +809,27 @@ record_asm_reg_life (insn, regstack, operands, constraints,
   /* Set up CLOBBER_REG.  */
 
   n_clobbers = 0;
-  clobber_reg = (rtx *) alloca (XVECLEN (body, 0) * sizeof (rtx *));
 
   if (GET_CODE (body) == PARALLEL)
-    for (i = 0; i < XVECLEN (body, 0); i++)
-      if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
-	{
-	  rtx clobber = XVECEXP (body, 0, i);
-	  rtx reg = XEXP (clobber, 0);
+    {
+      clobber_reg = (rtx *) alloca (XVECLEN (body, 0) * sizeof (rtx *));
 
-	  if (GET_CODE (reg) == SUBREG && GET_CODE (SUBREG_REG (reg)) == REG)
-	    reg = SUBREG_REG (reg);
+      for (i = 0; i < XVECLEN (body, 0); i++)
+	if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
+	  {
+	    rtx clobber = XVECEXP (body, 0, i);
+	    rtx reg = XEXP (clobber, 0);
 
-	  if (STACK_REG_P (reg))
-	    {
-	      clobber_reg[n_clobbers] = reg;
-	      n_clobbers++;
-	    }
-	}
+	    if (GET_CODE (reg) == SUBREG && GET_CODE (SUBREG_REG (reg)) == REG)
+	      reg = SUBREG_REG (reg);
+
+	    if (STACK_REG_P (reg))
+	      {
+		clobber_reg[n_clobbers] = reg;
+		n_clobbers++;
+	      }
+	  }
+    }
 
   /* Enforce rule #4: Output operands must specifically indicate which
      reg an output appears in after an asm.  "=f" is not allowed: the
@@ -2130,30 +2133,33 @@ subst_asm_stack_regs (insn, regstack, operands, operands_loc, constraints,
   /* Set up CLOBBER_REG and CLOBBER_LOC.  */
 
   n_clobbers = 0;
-  clobber_reg = (rtx *) alloca (XVECLEN (body, 0) * sizeof (rtx *));
-  clobber_loc = (rtx **) alloca (XVECLEN (body, 0) * sizeof (rtx **));
 
   if (GET_CODE (body) == PARALLEL)
-    for (i = 0; i < XVECLEN (body, 0); i++)
-      if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
-	{
-	  rtx clobber = XVECEXP (body, 0, i);
-	  rtx reg = XEXP (clobber, 0);
-	  rtx *loc = & XEXP (clobber, 0);
+    {
+      clobber_reg = (rtx *) alloca (XVECLEN (body, 0) * sizeof (rtx *));
+      clobber_loc = (rtx **) alloca (XVECLEN (body, 0) * sizeof (rtx **));
 
-	  if (GET_CODE (reg) == SUBREG && GET_CODE (SUBREG_REG (reg)) == REG)
-	    {
-	      loc = & SUBREG_REG (reg);
-	      reg = SUBREG_REG (reg);
-	    }
+      for (i = 0; i < XVECLEN (body, 0); i++)
+	if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
+	  {
+	    rtx clobber = XVECEXP (body, 0, i);
+	    rtx reg = XEXP (clobber, 0);
+	    rtx *loc = & XEXP (clobber, 0);
 
-	  if (STACK_REG_P (reg))
-	    {
-	      clobber_reg[n_clobbers] = reg;
-	      clobber_loc[n_clobbers] = loc;
-	      n_clobbers++;
-	    }
-	}
+	    if (GET_CODE (reg) == SUBREG && GET_CODE (SUBREG_REG (reg)) == REG)
+	      {
+		loc = & SUBREG_REG (reg);
+		reg = SUBREG_REG (reg);
+	      }
+
+	    if (STACK_REG_P (reg))
+	      {
+		clobber_reg[n_clobbers] = reg;
+		clobber_loc[n_clobbers] = loc;
+		n_clobbers++;
+	      }
+	  }
+    }
 
   bcopy (regstack, &temp_stack, sizeof (temp_stack));
 
@@ -2287,22 +2293,35 @@ subst_asm_stack_regs (insn, regstack, operands, operands_loc, constraints,
 
   /* Now emit a pop insn for any REG_UNUSED output, or any REG_DEAD
      input that the asm didn't implicitly pop.  If the asm didn't
-     implicitly pop a reg, that reg will still be live.
+     implicitly pop an input reg, that reg will still be live.
 
      Note that we can't use find_regno_note here: the register numbers
      in the death notes have already been substituted.  */
 
-  for (i = 0; i < n_outputs + n_inputs; i++)
+  for (i = 0; i < n_outputs; i++)
     if (STACK_REG_P (operands[i]))
       {
 	int j;
 
 	for (j = 0; j < n_notes; j++)
 	  if (REGNO (operands[i]) == REGNO (note_reg[j])
-	      && (note_kind[j] == REG_UNUSED
-		  || (note_kind[j] == REG_DEAD
-		      && TEST_HARD_REG_BIT (regstack->reg_set,
-					    REGNO (operands[i])))))
+	      && note_kind[j] == REG_UNUSED)
+	    {
+	      insn = emit_pop_insn (insn, regstack, operands[i],
+				    emit_insn_after);
+	      break;
+	    }
+      }
+
+  for (i = first_input; i < first_input + n_inputs; i++)
+    if (STACK_REG_P (operands[i]))
+      {
+	int j;
+
+	for (j = 0; j < n_notes; j++)
+	  if (REGNO (operands[i]) == REGNO (note_reg[j])
+	      && note_kind[j] == REG_DEAD
+	      && TEST_HARD_REG_BIT (regstack->reg_set, REGNO (operands[i])))
 	    {
 	      insn = emit_pop_insn (insn, regstack, operands[i],
 				    emit_insn_after);
