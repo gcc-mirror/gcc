@@ -2201,51 +2201,64 @@ Here are the possible letters for use in @var{letters}, and their meanings:
 @item A
 Annotate the assembler output with miscellaneous debugging information.
 @item b
-Dump after computing branch probabilities, to @file{@var{file}.07.bp}.
+Dump after computing branch probabilities, to @file{@var{file}.10.bp}.
+@item B
+Dump after block reordering, to @file{@var{file}.20.bbro}.
 @item c
-Dump after instruction combination, to the file @file{@var{file}.09.combine}.
+Dump after instruction combination, to the file @file{@var{file}.12.combine}.
 @item d
-Dump after delayed branch scheduling, to @file{@var{file}.19.dbr}.
+Dump after delayed branch scheduling, to @file{@var{file}.24.dbr}.
 @item D
 Dump all macro definitions, at the end of preprocessing, in addition to
 normal output.
-@item F
-Dump after purging ADDRESSOF, to @file{@var{file}.03.addressof}.
+@item e
+Dump after SSA optimizations, to @file{@var{file}.05.ssa} and
+@file{@var{file}.06.ussa}.
 @item f
-Dump after flow analysis, to @file{@var{file}.08.flow}.
+Dump after flow analysis, to @file{@var{file}.11.flow}.
+@item F
+Dump after purging @code{ADDRESSOF} codes, to @file{@var{file}.04.addressof}.
 @item g
-Dump after global register allocation, to @file{@var{file}.13.greg}.
+Dump after global register allocation, to @file{@var{file}.16.greg}.
 @item G      
-Dump after GCSE, to @file{@var{file}.04.gcse}.
+Dump after GCSE, to @file{@var{file}.07.gcse}.
+@item i
+Dump after sibling call optimizations, to @file{@var{file}.01.sibling}.
 @item j
-Dump after first jump optimization, to @file{@var{file}.01.jump}.
+Dump after first jump optimization, to @file{@var{file}.02.jump}.
 @item J
-Dump after last jump optimization, to @file{@var{file}.17.jump2}.
+Dump after last jump optimization, to @file{@var{file}.22.jump2}.
 @item k
-Dump after conversion from registers to stack, to @file{@var{file}.20.stack}.
+Dump after conversion from registers to stack, to @file{@var{file}.25.stack}.
 @item l
-Dump after local register allocation, to @file{@var{file}.12.lreg}.
+Dump after local register allocation, to @file{@var{file}.15.lreg}.
 @item L
-Dump after loop optimization, to @file{@var{file}.05.loop}.
+Dump after loop optimization, to @file{@var{file}.08.loop}.
 @item M
 Dump after performing the machine dependent reorganisation pass, to
-@file{@var{file}.18.mach}. 
+@file{@var{file}.23.mach}. 
+@item n
+Dump after register renumbering, to @file{@var{file}.21.rnreg}.
 @item N
-Dump after the register move pass, to @file{@var{file}.10.regmove}.
+Dump after the register move pass, to @file{@var{file}.13.regmove}.
 @item r
 Dump after RTL generation, to @file{@var{file}.00.rtl}.
 @item R
 Dump after the second instruction scheduling pass, to
-@file{@var{file}.16.sched2}.
+@file{@var{file}.19.sched2}.
 @item s
 Dump after CSE (including the jump optimization that sometimes follows
-CSE), to @file{@var{file}.02.cse}. 
+CSE), to @file{@var{file}.03.cse}. 
 @item S
 Dump after the first instruction scheduling pass, to
-@file{@var{file}.11.sched}.
+@file{@var{file}.14.sched}.
 @item t
 Dump after the second CSE pass (including the jump optimization that
-sometimes follows CSE), to @file{@var{file}.06.cse2}. 
+sometimes follows CSE), to @file{@var{file}.09.cse2}.
+@item w
+Dump after the second flow pass, to @file{@var{file}.17.flow2}.
+@item z
+Dump after the peephold pass, to @file{@var{file}.18.peephole2}.
 @item a
 Produce all the dumps listed above.
 @item m

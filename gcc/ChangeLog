@@ -1,3 +1,10 @@
+Thu Apr 20 08:01:07 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* toplev.c (enum dump_file_index, dump_file): Add DFI_sibling.
+	(rest_of_compilation): Write sibling dump file and account
+	for time as jump time.
+	* invoke.texi: Update documentation on dump flags.
+
 2000-04-19  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* avr.c: #include "system.h" instead of <stdio.h> and <stdlib.h>.
