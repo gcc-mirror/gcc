@@ -139,7 +139,7 @@ do {									\
    in the Sun C 2.0 directory.  */
 
 #undef MD_STARTFILE_PREFIX
-#define MD_STARTFILE_PREFIX "/opt/SUNWste/SC2.0/"
+#define MD_STARTFILE_PREFIX "/opt/SUNWspro/SC2.0/"
 
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared: \
