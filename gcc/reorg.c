@@ -738,8 +738,26 @@ find_end_label ()
 		 || GET_CODE (PATTERN (insn)) == CLOBBER)))
     insn = PREV_INSN (insn);
 
-  if (GET_CODE (insn) == CODE_LABEL)
-   end_of_function_label = insn;
+  /* When a target threads its epilogue we might already have a 
+     suitable return insn.  If so put a label before it for the
+     end_of_function_label.  */
+  if (GET_CODE (insn) == BARRIER
+      && GET_CODE (PREV_INSN (insn)) == JUMP_INSN
+      && GET_CODE (PATTERN (PREV_INSN (insn))) == RETURN)
+    {
+      rtx temp = PREV_INSN (PREV_INSN (insn));
+      end_of_function_label = gen_label_rtx ();
+      LABEL_NUSES (end_of_function_label) = 0;
+
+      /* Put the label before an USE insns that may proceed the RETURN insn. */
+      while (GET_CODE (temp) == USE)
+	temp = PREV_INSN (temp);
+
+      emit_label_after (end_of_function_label, temp);
+    }
+
+  else if (GET_CODE (insn) == CODE_LABEL)
+    end_of_function_label = insn;
   else
     {
       /* Otherwise, make a new label and emit a RETURN and BARRIER,
