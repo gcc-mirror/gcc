@@ -1,3 +1,28 @@
+2004-09-20 Jeff Law  <law@redhat.com>
+           Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssanames.c (make_ssa_name): No longer need to clear, then
+	initialize key elements here.
+	(release_ssa_name): Zero the released SSA_NAME here.
+	* tree.h (SSA_NAME_EQUIV, SET_SSA_NAME_EQUIV): New macros.
+	(struct tree_ssa_name): Add new "equiv" field.
+	* tree-ssa-dom.c (const_and_copies): Kill the global varray.
+	(tree_ssa_dominator_optimize): No longer allocate, resize or
+	clear CONST_AND_COPIES.
+	(get_value_for, set_value_for): Kill.
+	(thread_across_edge): Get/set the equivalency using
+	SSA_NAME_EQUIV and SET_SSA_NAME_EQUIV.
+	(restore_vars_to_original_value): Likewise.
+	(record_equivalences_from_phis): Likewise.
+	(record_dominating_conditions): Likewise.
+	(record_const_or_copy, record_equality): Likewise.
+	(lookup_avail_expr): Likewise.
+	(record_equivalences_from_stmt, cprop_operand): Likewise.
+	(cprop_into_successor_phis): No longer need to pass around
+	CONST_AND_COPIES.  Callers updated. Get equivalences via
+	SSA_NAME_EQUIV.
+	(cprop_into_phis): Likewise.
+
 2004-09-20  Matt Austern <austern@apple.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 
