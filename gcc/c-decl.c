@@ -1698,11 +1698,16 @@ duplicate_decls (newdecl, olddecl)
 	    make_var_volatile (newdecl);
 	}
 
-      /* Keep source location of definition rather than declaration.  */
-      if (DECL_INITIAL (newdecl) == 0 && DECL_INITIAL (olddecl) != 0)
+      /* Keep source location of definition rather than declaration.
+	 Likewise, keep decl at outer scope.  */
+      if ((DECL_INITIAL (newdecl) == 0 && DECL_INITIAL (olddecl) != 0)
+	  || (DECL_CONTEXT (newdecl) != 0 && DECL_CONTEXT (olddecl) == 0))
 	{
 	  DECL_SOURCE_LINE (newdecl) = DECL_SOURCE_LINE (olddecl);
 	  DECL_SOURCE_FILE (newdecl) = DECL_SOURCE_FILE (olddecl);
+
+	  if (DECL_CONTEXT (olddecl) == 0)
+	    DECL_CONTEXT (newdecl) = 0;
 	}
 
       /* Merge the unused-warning information.  */
