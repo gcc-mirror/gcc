@@ -1,3 +1,22 @@
+Tue Oct 23 15:30:23 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_expand_int_movcc): Cleanup; use expand_simple_*op.
+
+	* toplev.c (rest_of_compilation): Use CLEANUP_UPDATE_LIFE
+	to avoid update_life_info call.
+	* basic-block.h (CLEANUP_UPATE_LIFE): Define.
+	* cfgcleanup.c (bb_flags): New enum.
+	(BB_FLAGS, BB_SET_FLAG, BB_CLEAR_FLAG, FORWARDER_BLOCK_P): New macros.
+	(notice_new_block, update_forwarder_flag): New functions.
+	(try_simplify_condjump): Use FORWARDER_BLOCK_P.
+	(try_forward_edges): Likewise; update flags.
+	(merge_blocks): Likewise.
+	(outgoing_edges_match): Likewise.
+	(try_crossjump_to_edge): Likewise.
+	(try_optimize_cfg): Likewise; initialize and clear the flags;
+	recompute life info if needed.
+	(cleanup_cfg): No need to clear aux pointers.
+
 2001-10-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/i386.c (override_options): Default to minimum

@@ -574,6 +574,7 @@ enum update_life_extent
 					   inside call_placeholders..  */
 #define CLEANUP_PRE_LOOP	16	/* Take care to preserve syntactic loop
 					   notes.  */
+#define CLEANUP_UPDATE_LIFE	32	/* Keep life information up to date.  */
 /* Flags for loop discovery.  */
 
 #define LOOP_TREE		1	/* Build loop hierarchy tree.  */

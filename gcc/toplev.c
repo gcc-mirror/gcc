@@ -3309,20 +3309,7 @@ rest_of_compilation (decl)
 	  rebuild_jump_labels (insns);
 	  timevar_pop (TV_JUMP);
 
-	  timevar_push (TV_FLOW);
-	  cleanup_cfg (CLEANUP_EXPENSIVE);
-
-	  /* Blimey.  We've got to have the CFG up to date for the call to
-	     if_convert below.  However, the random deletion of blocks
-	     without updating life info can wind up with Wierd Stuff in
-	     global_live_at_end.  We then run sched1, which updates things
-	     properly, discovers the wierdness and aborts.  */
-	  allocate_bb_life_data ();
-	  update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
-			    PROP_DEATH_NOTES | PROP_KILL_DEAD_CODE
-			    | PROP_SCAN_DEAD_CODE);
-
-	  timevar_pop (TV_FLOW);
+	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE);
 	}
 
       close_dump_file (DFI_combine, print_rtl_with_bb, insns);
