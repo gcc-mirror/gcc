@@ -2409,19 +2409,25 @@ extern int making_const_table;
 
 /* Output a push or a pop instruction (only used when profiling).  */
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)		\
-  if (TARGET_ARM)					\
-    asm_fprintf (STREAM,"\tstmfd\t%r!,{%r}\n", 		\
-		 STACK_POINTER_REGNUM, REGNO);		\
-  else							\
-    asm_fprintf (STREAM, "\tpush {%r}\n", REGNO)
+  do							\
+    {							\
+      if (TARGET_ARM)					\
+	asm_fprintf (STREAM,"\tstmfd\t%r!,{%r}\n",	\
+		     STACK_POINTER_REGNUM, REGNO);	\
+      else						\
+	asm_fprintf (STREAM, "\tpush {%r}\n", REGNO);	\
+    } while (0)
 
 
 #define ASM_OUTPUT_REG_POP(STREAM, REGNO)		\
-  if (TARGET_ARM)					\
-    asm_fprintf (STREAM, "\tldmfd\t%r!,{%r}\n",		\
-                 STACK_POINTER_REGNUM, REGNO);		\
-  else							\
-    asm_fprintf (STREAM, "\tpop {%r}\n", REGNO)
+  do							\
+    {							\
+      if (TARGET_ARM)					\
+	asm_fprintf (STREAM, "\tldmfd\t%r!,{%r}\n",	\
+		     STACK_POINTER_REGNUM, REGNO);	\
+      else						\
+	asm_fprintf (STREAM, "\tpop {%r}\n", REGNO);	\
+    } while (0)
 
 /* This is how to output a label which precedes a jumptable.  Since
    Thumb instructions are 2 bytes, we may need explicit alignment here.  */
@@ -2431,7 +2437,7 @@ extern int making_const_table;
     {								\
       if (TARGET_THUMB)						\
         ASM_OUTPUT_ALIGN (FILE, 2);				\
-      (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);		\
+      (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);	\
     }								\
   while (0)
 
