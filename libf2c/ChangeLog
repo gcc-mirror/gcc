@@ -1,3 +1,8 @@
+2000-06-21  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* libU77/dtime_.c, libU77/etime_.c: Include stdlib.h if
+	HAVE_STDLIB_H is defined.
+
 2000-06-11  Herman A.J. ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
 
 	* rdfmt.c (rd_L): Use if-then-else instead of case statement to
