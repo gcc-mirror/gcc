@@ -900,7 +900,8 @@ deps_output (pfile, string, spacer)
    of the string.
  */
 static void
-simplify_pathname (char *path)
+simplify_pathname (path)
+    char *path;
 {
     char *from, *to;
     char *base;
