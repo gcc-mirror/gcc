@@ -21,7 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_DEFAULT 0
 #endif
 
-#include "pa.h"
+#include "pa/pa.h"
 
 /* Make GCC agree with types.h.  */
 #undef SIZE_TYPE
