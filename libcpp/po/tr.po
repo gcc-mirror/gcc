@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.0-b20041128\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2004-11-27 19:38+0000\n"
+"POT-Creation-Date: 2005-02-25 23:37+0000\n"
 "PO-Revision-Date: 2004-12-03 11:03+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -15,113 +15,123 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.0\n"
 
-#: charset.c:653
+#: charset.c:655
 #, c-format
 msgid "conversion from %s to %s not supported by iconv"
 msgstr "%s ile %s arasında dönüşüm iconv tarafından desteklenmiyor"
 
-#: charset.c:656
+#: charset.c:658
 msgid "iconv_open"
 msgstr "iconv_open"
 
-#: charset.c:664
+#: charset.c:666
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr "iconv bulunamadığından %s ile %s karakter kümeleri arasında dönüşüm yapılamıyor"
 
-#: charset.c:808
+#: charset.c:743
+#, fuzzy, c-format
+msgid "character 0x%lx is not in the basic source character set\n"
+msgstr "UCN'den kaynak karakter kümesine dönüşüm"
+
+#: charset.c:760 charset.c:1243
+msgid "converting to execution character set"
+msgstr "çalışma karakter kümesine dönüştürülüyor"
+
+#: charset.c:766
+#, fuzzy, c-format
+msgid "character 0x%lx is not unibyte in execution character set"
+msgstr "çalışma karakter kümesine dönüştürülüyor"
+
+#: charset.c:865
 msgid "universal character names are only valid in C++ and C99"
 msgstr "evrensel karakter isimleri sadece C++ ve C99 için geçerlidir"
 
-#: charset.c:811
+#: charset.c:868
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr "`\\%c'nin anlamı geleneksel C'de farklıdır"
 
-#: charset.c:837
+#: charset.c:894
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr "evrensel karakter ismi %.*s tamamlanmamış"
 
-#: charset.c:849
+#: charset.c:906
 #, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s geçerli bir evrensel karakter değil"
 
-#: charset.c:859
+#: charset.c:916
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr "evrensel karakter %.*s bir belirteç içinde geçerli değil"
 
-#: charset.c:863
+#: charset.c:920
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "evrensel karakter %.*s bir belirtecin başında geçerli değil"
 
-#: charset.c:896
+#: charset.c:953
 msgid "converting UCN to source character set"
 msgstr "UCN'den kaynak karakter kümesine dönüşüm"
 
-#: charset.c:900
+#: charset.c:957
 msgid "converting UCN to execution character set"
 msgstr "UCN'den icra karakter kümesine dönüşüm"
 
-#: charset.c:972
+#: charset.c:1029
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr "'\\x'in anlamı geleneksel C'de farklıdır"
 
-#: charset.c:989
+#: charset.c:1046
 msgid "\\x used with no following hex digits"
 msgstr "\\x izleyen onaltılık rakamlar olmaksızın kullanılmış"
 
-#: charset.c:996
+#: charset.c:1053
 msgid "hex escape sequence out of range"
 msgstr "onaltılık önceleme dizgesi kapsamdışı"
 
-#: charset.c:1035
+#: charset.c:1092
 msgid "octal escape sequence out of range"
 msgstr "sekizlik önceleme dizgesi kapsamdışı"
 
-#: charset.c:1103
+#: charset.c:1160
 msgid "the meaning of '\\a' is different in traditional C"
 msgstr "`\\a'nın anlamı geleneksel C'de farklıdır"
 
-#: charset.c:1110
+#: charset.c:1167
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "ISO standardı olmayan önceleme dizgesi, '\\%c'"
 
-#: charset.c:1118
+#: charset.c:1175
 #, c-format
 msgid "unknown escape sequence '\\%c'"
 msgstr "bilinmeyen önceleme dizgesi '\\%c'"
 
-#: charset.c:1121
+#: charset.c:1178
 #, c-format
 msgid "unknown escape sequence: '\\%03o'"
 msgstr "bilinmeyen önceleme dizgesi: '\\%03o'"
 
-#: charset.c:1127
+#: charset.c:1184
 msgid "converting escape sequence to execution character set"
 msgstr "önceleme diziliminden icra karakter kümesine dönüşüm"
 
-#: charset.c:1186
-msgid "converting to execution character set"
-msgstr "çalışma karakter kümesine dönüştürülüyor"
-
-#: charset.c:1249 charset.c:1312
+#: charset.c:1306 charset.c:1369
 msgid "character constant too long for its type"
 msgstr "karakter sabiti, türü için çok uzun"
 
-#: charset.c:1252
+#: charset.c:1309
 msgid "multi-character character constant"
 msgstr "çoklu-karakter karakter sabiti"
 
-#: charset.c:1344
+#: charset.c:1401
 msgid "empty character constant"
 msgstr "karakter sabit boş"
 
-#: charset.c:1393
+#: charset.c:1450
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "`%s' ile `%s' arasında dönüşüm başarısız"
@@ -196,137 +206,142 @@ msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%s \"DOSYA\" ya da <DOSYA> gerektirir"
 
 #: directives.c:673
+#, c-format
+msgid "empty filename in #%s"
+msgstr ""
+
+#: directives.c:681
 msgid "#include nested too deeply"
 msgstr "#include iç içeliği çok derin"
 
-#: directives.c:711
+#: directives.c:719
 msgid "#include_next in primary source file"
 msgstr "birncil kaynak dosyasında #include_next"
 
-#: directives.c:737
+#: directives.c:745
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "satır yönergesinde geçersiz \"%s\" seçeneği"
 
-#: directives.c:784
+#: directives.c:792
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "#line'dan sonraki \"%s\" bir pozitif tamsayı değil"
 
-#: directives.c:790
+#: directives.c:798
 msgid "line number out of range"
 msgstr "satır numarası kapsam dışı"
 
-#: directives.c:803 directives.c:880
+#: directives.c:811 directives.c:888
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "\"%s\" geçerli bir dosya ismi değil"
 
-#: directives.c:840
+#: directives.c:848
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "#'dan sonraki \"%s\" bir pozitif tamsayı değil"
 
-#: directives.c:942
+#: directives.c:950
 msgid "invalid #ident directive"
 msgstr "geçersiz #ident yönergesi"
 
-#: directives.c:1030
+#: directives.c:1038
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "\"%s\" hem pragma hem de pragma isim alanı olarak kaydediliyor"
 
-#: directives.c:1033
+#: directives.c:1041
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#pragma %s %s  zaten kayıtlı"
 
-#: directives.c:1036
+#: directives.c:1044
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "#pragma %s  zaten kayıtlı"
 
-#: directives.c:1236
+#: directives.c:1244
 msgid "#pragma once in main file"
 msgstr "main dosyasında '#pragma once'"
 
-#: directives.c:1259
+#: directives.c:1267
 msgid "invalid #pragma GCC poison directive"
 msgstr "geçersiz #pragma GCC poison yönergesi"
 
-#: directives.c:1268
+#: directives.c:1276
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "zehirlenen mevcut makro \"%s\""
 
-#: directives.c:1289
+#: directives.c:1297
 msgid "#pragma system_header ignored outside include file"
 msgstr "başlık dosyasının dışındaki  '#pragma system_header'  yoksayıldı"
 
-#: directives.c:1313
+#: directives.c:1321
 #, c-format
 msgid "cannot find source file %s"
 msgstr "%s kaynak dosyası bulunamıyor"
 
-#: directives.c:1317
+#: directives.c:1325
 #, c-format
 msgid "current file is older than %s"
 msgstr "mevcut dosya %s den daha eski"
 
-#: directives.c:1431
+#: directives.c:1439
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma bir parantezli dizge sabiti alır"
 
-#: directives.c:1538
+#: directives.c:1546
 msgid "#else without #if"
 msgstr "#if siz #else"
 
-#: directives.c:1543
+#: directives.c:1551
 msgid "#else after #else"
 msgstr "#else den sonra #else"
 
-#: directives.c:1545 directives.c:1578
+#: directives.c:1553 directives.c:1586
 msgid "the conditional began here"
 msgstr "koşul başlangıcı burası"
 
-#: directives.c:1571
+#: directives.c:1579
 msgid "#elif without #if"
 msgstr "#if siz #elif "
 
-#: directives.c:1576
+#: directives.c:1584
 msgid "#elif after #else"
 msgstr "#else den sonra #elif"
 
-#: directives.c:1606
+#: directives.c:1614
 msgid "#endif without #if"
 msgstr "#if siz #endif"
 
-#: directives.c:1683
+#: directives.c:1691
 msgid "missing '(' after predicate"
 msgstr "dayanaktan sonra '(' eksik"
 
-#: directives.c:1698
+#: directives.c:1706
 msgid "missing ')' to complete answer"
 msgstr "yanıtı tamamlayacak ')' eksik"
 
-#: directives.c:1718
+#: directives.c:1726
 msgid "predicate's answer is empty"
 msgstr "dayanakların cevabı boş"
 
-#: directives.c:1745
+#: directives.c:1753
 msgid "assertion without predicate"
 msgstr "dayanaksız olumlama"
 
-#: directives.c:1747
+#: directives.c:1755
 msgid "predicate must be an identifier"
 msgstr "dayanak bir tanımlayıcı olmalı"
 
-#: directives.c:1833
+#: directives.c:1841
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "\"%s\" tekrar olumlanmış"
 
-#: directives.c:2056
+#: directives.c:2064
 #, c-format
 msgid "unterminated #%s"
 msgstr "sonlandırılmamış #%s"
@@ -517,35 +532,35 @@ msgstr "#if içinde sıfırla bölme"
 msgid "NULL directory in find_file"
 msgstr "find_file içinde boş dizin"
 
-#: files.c:446
+#: files.c:454
 msgid "one or more PCH files were found, but they were invalid"
 msgstr "bir veya daha fazla PCH dosyası bulundu ama bunlar geçersiz"
 
-#: files.c:449
+#: files.c:457
 msgid "use -Winvalid-pch for more information"
 msgstr "daha fazla bilgi almak için -Winvalid-pch kullanın"
 
-#: files.c:514
+#: files.c:522
 #, c-format
 msgid "%s is a block device"
 msgstr "%s bir blok aygıtıdır"
 
-#: files.c:531
+#: files.c:539
 #, c-format
 msgid "%s is too large"
 msgstr "%s çok büyük"
 
-#: files.c:566
+#: files.c:574
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s beklenenden daha kısa"
 
-#: files.c:769
+#: files.c:803
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr "%s için aranacaklar içinde başlık dosyaları yolu yok"
 
-#: files.c:1052
+#: files.c:1096
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Çoklu include önlemleri aşağıdakiler için kullanışlı olabilir:\n"
 
@@ -719,87 +734,87 @@ msgstr "sonlandırılmamış argüman listesi çağıran makro \"%s\""
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "işlev benzeri makro \"%s\" geleneksel C'de argümanlarla kullanılmalıdır"
 
-#: macro.c:1258
+#: macro.c:1261
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "yinelenmiş makro parametresi \"%s\""
 
-#: macro.c:1303
+#: macro.c:1306
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr "\"%s\" makro parametre listesinde görünmeyebilir"
 
-#: macro.c:1311
+#: macro.c:1314
 msgid "macro parameters must be comma-separated"
 msgstr "makro parametreleri virgüllerle ayrılmış olmalı"
 
-#: macro.c:1328
+#: macro.c:1331
 msgid "parameter name missing"
 msgstr "parametre ismi eksik"
 
-#: macro.c:1345
+#: macro.c:1348
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "argümanlarının sayısı değişebilen anonim makrolar C99 da tanıtıldı"
 
-#: macro.c:1350
+#: macro.c:1353
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C argümanlarının sayısı değişebilen isimli makrolara izin vermez"
 
-#: macro.c:1359
+#: macro.c:1362
 msgid "missing ')' in macro parameter list"
 msgstr "makro parametre listesinde ')' eksik"
 
-#: macro.c:1430
+#: macro.c:1434
 msgid "ISO C requires whitespace after the macro name"
 msgstr "ISO C makro isminden sonra boşluk gerektirir"
 
-#: macro.c:1458
+#: macro.c:1462
 msgid "'#' is not followed by a macro parameter"
 msgstr "'#' işaretinden sonra bir makro parametresi yok"
 
-#: macro.c:1477
+#: macro.c:1481
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "'##' bir makronun her iki ucunda da görünemez"
 
-#: macro.c:1573
+#: macro.c:1577
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "\"%s\" yeniden tanımlanmış"
 
-#: macro.c:1578
+#: macro.c:1582
 msgid "this is the location of the previous definition"
 msgstr "burası evvelki tanımın yapıldığı yer"
 
-#: macro.c:1628
+#: macro.c:1632
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "makro argümanı \"%s\" geleneksel C'de dizgelenmiş olmalıydı"
 
-#: macro.c:1651
+#: macro.c:1655
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "cpp_macro_definition içindeki isimli yapı türü %d geçersiz"
 
-#: pch.c:83 pch.c:331 pch.c:353 pch.c:359
+#: pch.c:84 pch.c:332 pch.c:354 pch.c:360
 msgid "while writing precompiled header"
 msgstr "önderlemeli başlık yazılırken"
 
-#: pch.c:466
+#: pch.c:467
 #, c-format
 msgid "%s: not used because `%.*s' not defined"
 msgstr "%s: `%.*s' tanımlı olmadığından kullanılmadı"
 
-#: pch.c:478
+#: pch.c:479
 #, c-format
 msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
 msgstr "%s: `%.*s' kullanılmadı çünkü `%s' olarak tanımlı, `%.*s' değil"
 
-#: pch.c:519
+#: pch.c:520
 #, c-format
 msgid "%s: not used because `%s' is defined"
 msgstr "%s: `%s' tanımlı olduğundan kullanılmadı"
 
-#: pch.c:532 pch.c:695
+#: pch.c:533 pch.c:696
 msgid "while reading precompiled header"
 msgstr "önderlemeli başlık okunurken"
 

@@ -27,7 +27,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2004-11-27 19:38+0000\n"
+"POT-Creation-Date: 2005-02-25 23:37+0000\n"
 "PO-Revision-Date: 2002-08-26 12:58+0200\n"
 "Last-Translator: Dennis Björklund <db@zigo.dhs.org>\n"
 "Language-Team: Swedish <sv@li.org>\n"
@@ -35,119 +35,129 @@ msgstr ""
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8-bit\n"
 
-#: charset.c:653
+#: charset.c:655
 #, fuzzy, c-format
 msgid "conversion from %s to %s not supported by iconv"
 msgstr "konveretering från NaN till unsigned int"
 
-#: charset.c:656
+#: charset.c:658
 msgid "iconv_open"
 msgstr ""
 
-#: charset.c:664
+#: charset.c:666
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr ""
 
-#: charset.c:808
+#: charset.c:743
+#, c-format
+msgid "character 0x%lx is not in the basic source character set\n"
+msgstr ""
+
+#: charset.c:760 charset.c:1243
+msgid "converting to execution character set"
+msgstr ""
+
+#: charset.c:766
+#, c-format
+msgid "character 0x%lx is not unibyte in execution character set"
+msgstr ""
+
+#: charset.c:865
 msgid "universal character names are only valid in C++ and C99"
 msgstr ""
 
-#: charset.c:811
+#: charset.c:868
 #, fuzzy, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr "semantiken för \"\\%c\" varierar med -traditional"
 
-#: charset.c:837
+#: charset.c:894
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr ""
 
-#: charset.c:849
+#: charset.c:906
 #, fuzzy, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "\"%s\" är inte i början av deklarationen"
 
-#: charset.c:859
+#: charset.c:916
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr ""
 
-#: charset.c:863
+#: charset.c:920
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr ""
 
-#: charset.c:896
+#: charset.c:953
 #, fuzzy
 msgid "converting UCN to source character set"
 msgstr "kan inte konvertera till en pekartyp"
 
-#: charset.c:900
+#: charset.c:957
 #, fuzzy
 msgid "converting UCN to execution character set"
 msgstr "kan inte konvertera till en pekartyp"
 
-#: charset.c:972
+#: charset.c:1029
 #, fuzzy
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr "semantiken för \"\\x\" varierar med -traditional"
 
-#: charset.c:989
+#: charset.c:1046
 msgid "\\x used with no following hex digits"
 msgstr ""
 
-#: charset.c:996
+#: charset.c:1053
 msgid "hex escape sequence out of range"
 msgstr ""
 
-#: charset.c:1035
+#: charset.c:1092
 msgid "octal escape sequence out of range"
 msgstr ""
 
-#: charset.c:1103
+#: charset.c:1160
 #, fuzzy
 msgid "the meaning of '\\a' is different in traditional C"
 msgstr "semantiken för \"\\a\" varierar med  -traditional"
 
-#: charset.c:1110
+#: charset.c:1167
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr ""
 
-#: charset.c:1118
+#: charset.c:1175
 #, c-format
 msgid "unknown escape sequence '\\%c'"
 msgstr "okänd escape-sekvens \"\\%c\""
 
-#: charset.c:1121
+#: charset.c:1178
 #, fuzzy, c-format
 msgid "unknown escape sequence: '\\%03o'"
 msgstr "okänd escape-sekvens \"\\%c\""
 
-#: charset.c:1127
+#: charset.c:1184
 #, fuzzy
 msgid "converting escape sequence to execution character set"
 msgstr "escape-sekvens ryms ej i ett tecken"
 
-#: charset.c:1186
-msgid "converting to execution character set"
-msgstr ""
-
-#: charset.c:1249 charset.c:1312
+#: charset.c:1306 charset.c:1369
 #, fuzzy
 msgid "character constant too long for its type"
 msgstr "teckenkonstant för lång"
 
-#: charset.c:1252
+#: charset.c:1309
 msgid "multi-character character constant"
 msgstr "flerteckens teckenkonstant"
 
-#: charset.c:1344
+#: charset.c:1401
 msgid "empty character constant"
 msgstr "tom teckenkonstant"
 
-#: charset.c:1393
+#: charset.c:1450
 #, fuzzy, c-format
 msgid "failure to convert %s to %s"
 msgstr "kunde inte öppna dump-fil \"%s\""
@@ -223,138 +233,143 @@ msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr ""
 
 #: directives.c:673
+#, fuzzy, c-format
+msgid "empty filename in #%s"
+msgstr "tomt filnamn i #%s"
+
+#: directives.c:681
 msgid "#include nested too deeply"
 msgstr "#include nästlad för djupt"
 
-#: directives.c:711
+#: directives.c:719
 msgid "#include_next in primary source file"
 msgstr ""
 
-#: directives.c:737
+#: directives.c:745
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "ogiltigt flagga \"%s\" i line-direktiv"
 
-#: directives.c:784
+#: directives.c:792
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "\"%s\" efter #line är inte ett positivt heltal"
 
-#: directives.c:790
+#: directives.c:798
 msgid "line number out of range"
 msgstr "radnummer utanför möjligt intervall"
 
-#: directives.c:803 directives.c:880
+#: directives.c:811 directives.c:888
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "\"%s\" är inte ett giltigt filnamn"
 
-#: directives.c:840
+#: directives.c:848
 #, fuzzy, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "\"%s\" efter #line är inte ett positivt heltal"
 
-#: directives.c:942
+#: directives.c:950
 #, fuzzy
 msgid "invalid #ident directive"
 msgstr "ogiltig #indent"
 
-#: directives.c:1030
+#: directives.c:1038
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr ""
 
-#: directives.c:1033
+#: directives.c:1041
 #, fuzzy, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "Klass \"%s\" finns redan"
 
-#: directives.c:1036
+#: directives.c:1044
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr ""
 
-#: directives.c:1236
+#: directives.c:1244
 msgid "#pragma once in main file"
 msgstr "#pragma once i huvudfil"
 
-#: directives.c:1259
+#: directives.c:1267
 msgid "invalid #pragma GCC poison directive"
 msgstr "ogiltigt GCC-direktiv #pragma poison"
 
-#: directives.c:1268
+#: directives.c:1276
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "förgiftar existerande makro \"%s\""
 
-#: directives.c:1289
+#: directives.c:1297
 msgid "#pragma system_header ignored outside include file"
 msgstr ""
 
-#: directives.c:1313
+#: directives.c:1321
 #, fuzzy, c-format
 msgid "cannot find source file %s"
 msgstr "kan inte hitta källfil %s"
 
-#: directives.c:1317
+#: directives.c:1325
 #, c-format
 msgid "current file is older than %s"
 msgstr "aktuell fil är äldre än %s"
 
-#: directives.c:1431
+#: directives.c:1439
 msgid "_Pragma takes a parenthesized string literal"
 msgstr ""
 
-#: directives.c:1538
+#: directives.c:1546
 msgid "#else without #if"
 msgstr "#else utan #if"
 
-#: directives.c:1543
+#: directives.c:1551
 msgid "#else after #else"
 msgstr "#else efter #else"
 
-#: directives.c:1545 directives.c:1578
+#: directives.c:1553 directives.c:1586
 msgid "the conditional began here"
 msgstr "villkorssatsen började här"
 
-#: directives.c:1571
+#: directives.c:1579
 msgid "#elif without #if"
 msgstr "#elif utan #if"
 
-#: directives.c:1576
+#: directives.c:1584
 msgid "#elif after #else"
 msgstr "#elif efter #else"
 
-#: directives.c:1606
+#: directives.c:1614
 msgid "#endif without #if"
 msgstr "#endif utan #if"
 
-#: directives.c:1683
+#: directives.c:1691
 msgid "missing '(' after predicate"
 msgstr "saknas '(' efter predikat"
 
-#: directives.c:1698
+#: directives.c:1706
 msgid "missing ')' to complete answer"
 msgstr "saknas ')' för att avsluta svaret"
 
-#: directives.c:1718
+#: directives.c:1726
 msgid "predicate's answer is empty"
 msgstr "predikatets svar är tomt"
 
-#: directives.c:1745
+#: directives.c:1753
 msgid "assertion without predicate"
 msgstr ""
 
-#: directives.c:1747
+#: directives.c:1755
 msgid "predicate must be an identifier"
 msgstr "predikat måste vara en identifierare"
 
-#: directives.c:1833
+#: directives.c:1841
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr ""
 
-#: directives.c:2056
+#: directives.c:2064
 #, c-format
 msgid "unterminated #%s"
 msgstr ""
@@ -560,35 +575,35 @@ msgstr ""
 msgid "NULL directory in find_file"
 msgstr ""
 
-#: files.c:446
+#: files.c:454
 msgid "one or more PCH files were found, but they were invalid"
 msgstr ""
 
-#: files.c:449
+#: files.c:457
 msgid "use -Winvalid-pch for more information"
 msgstr ""
 
-#: files.c:514
+#: files.c:522
 #, c-format
 msgid "%s is a block device"
 msgstr "%s är en blockenhet"
 
-#: files.c:531
+#: files.c:539
 #, c-format
 msgid "%s is too large"
 msgstr "%s är för stor"
 
-#: files.c:566
+#: files.c:574
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s är kortare än förväntat"
 
-#: files.c:769
+#: files.c:803
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr ""
 
-#: files.c:1052
+#: files.c:1096
 msgid "Multiple include guards may be useful for:\n"
 msgstr ""
 
@@ -763,87 +778,87 @@ msgstr ""
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr ""
 
-#: macro.c:1258
+#: macro.c:1261
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr ""
 
-#: macro.c:1303
+#: macro.c:1306
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr ""
 
-#: macro.c:1311
+#: macro.c:1314
 msgid "macro parameters must be comma-separated"
 msgstr ""
 
-#: macro.c:1328
+#: macro.c:1331
 msgid "parameter name missing"
 msgstr "parameternamn saknas"
 
-#: macro.c:1345
+#: macro.c:1348
 msgid "anonymous variadic macros were introduced in C99"
 msgstr ""
 
-#: macro.c:1350
+#: macro.c:1353
 msgid "ISO C does not permit named variadic macros"
 msgstr ""
 
-#: macro.c:1359
+#: macro.c:1362
 msgid "missing ')' in macro parameter list"
 msgstr ""
 
-#: macro.c:1430
+#: macro.c:1434
 msgid "ISO C requires whitespace after the macro name"
 msgstr ""
 
-#: macro.c:1458
+#: macro.c:1462
 msgid "'#' is not followed by a macro parameter"
 msgstr ""
 
-#: macro.c:1477
+#: macro.c:1481
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr ""
 
-#: macro.c:1573
+#: macro.c:1577
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "\"%s\" omdefinierad"
 
-#: macro.c:1578
+#: macro.c:1582
 msgid "this is the location of the previous definition"
 msgstr "detta är platsen för den tidigare definitionen"
 
-#: macro.c:1628
+#: macro.c:1632
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr ""
 
-#: macro.c:1651
+#: macro.c:1655
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr ""
 
-#: pch.c:83 pch.c:331 pch.c:353 pch.c:359
+#: pch.c:84 pch.c:332 pch.c:354 pch.c:360
 msgid "while writing precompiled header"
 msgstr ""
 
-#: pch.c:466
+#: pch.c:467
 #, fuzzy, c-format
 msgid "%s: not used because `%.*s' not defined"
 msgstr "etikett \"%s\" använd men inte definierad"
 
-#: pch.c:478
+#: pch.c:479
 #, c-format
 msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
 msgstr ""
 
-#: pch.c:519
+#: pch.c:520
 #, fuzzy, c-format
 msgid "%s: not used because `%s' is defined"
 msgstr "\"%s\" är använd men inte definierad"
 
-#: pch.c:532 pch.c:695
+#: pch.c:533 pch.c:696
 msgid "while reading precompiled header"
 msgstr ""
 
@@ -2703,9 +2718,6 @@ msgstr "parameternamn saknas i parameterlista"
 #, fuzzy
 #~ msgid "unknown string token %s\n"
 #~ msgstr "okänt registernamn: %s"
-
-#~ msgid "empty file name in #%s"
-#~ msgstr "tomt filnamn i #%s"
 
 #~ msgid "#import is obsolete, use an #ifndef wrapper in the header file"
 #~ msgstr "#import är obsolet, använd #ifndef-omslutning i includefilen"
