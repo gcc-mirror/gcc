@@ -8836,3 +8836,45 @@ ix86_free_from_memory (mode)
 						 ? 2
 						 : 4))));
 }
+
+/* Most of current runtimes (Jul 2001) do not align stack properly when
+   entering main, so emit an wrapper to align stack before the real main
+   code is called.
+  
+   This can eventually go if we manage to fix the runtimes or teach gcc
+   to dynamically align stack in main automatically.
+
+   Adding check to configure is probably not good idea, as binarry can move
+   from one shared library to older.  */
+
+void
+ix86_output_main_function_alignment_hack (file, size)
+     FILE *file;
+     int size ATTRIBUTE_UNUSED;
+{
+  rtx label;
+  char buf[256];
+  /* Check that we see main function with maximally 12 bytes of arguments.
+     if so, emit the hack to align stack for runtimes, where this constraint
+     is broken.  */
+  if (strcmp (cfun->name, "main"))
+    return;
+  if (cfun->pops_args || cfun->args_size > 12)
+    return;
+  if (PREFERRED_STACK_BOUNDARY <= 2)
+    return;
+  label = gen_label_rtx ();
+  fprintf (file, "\tpushl\t%%ebp\n");
+  fprintf (file, "\tmovl\t%%esp, %%ebp\n");
+  fprintf (file, "\tandl\t$0xfffffff0, %%esp\n");
+  fprintf (file, "\tpushl\t%%ebp\n");
+  fprintf (file, "\tpushl\t16(%%ebp)\n");
+  fprintf (file, "\tpushl\t12(%%ebp)\n");
+  fprintf (file, "\tpushl\t8(%%ebp)\n");
+  fprintf (file, "\tcall\t");
+  ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (label));
+  assemble_name (file, buf);
+  fprintf (file, "\n\tleave\n");
+  fprintf (file, "\tret\n");
+  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (label));
+}

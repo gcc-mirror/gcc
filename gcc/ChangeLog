@@ -1,3 +1,12 @@
+Wed Aug  1 20:15:33 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386-protos.h (ix86_output_main_function_alignment_hack): Declare.
+	* i386.c (ix86_output_main_function_alignment_hack): New global
+	function.
+	* i386.h (FUNCTION_PROLOGUE): New macro.
+	* osf1elf.h (FUNCTION_PROLOGUE): Call new function.
+	* osfrose.h (FUNCTION_PROLOGUE): Likewise.
+
 2001-08-01  H.J. Lu <hjl@gnu.org>
 
 	* config/mips/linux.h (ASM_OUTPUT_IDENT): Defined.

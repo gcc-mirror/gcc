@@ -141,6 +141,8 @@ do									\
     char *lprefix = LPREFIX;						\
     int labelno = profile_label_no;					\
 									\
+    ix86_output_main_function_alignment_hack(FILE,SIZE);		\
+									\
     if (profile_flag && OSF_PROFILE_BEFORE_PROLOGUE)			\
       {									\
 	if (!flag_pic)				\

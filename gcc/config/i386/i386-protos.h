@@ -141,6 +141,7 @@ extern void ix86_init_builtins PARAMS ((void));
 extern rtx ix86_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 #endif
 extern void ix86_set_move_mem_attrs PARAMS ((rtx, rtx, rtx, rtx, rtx));
+extern void ix86_output_main_function_alignment_hack PARAMS ((FILE *f, int));
 
 
 #endif

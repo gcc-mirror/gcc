@@ -2932,6 +2932,10 @@ extern enum reg_class const regclass_map[];	/* smalled class containing REGNO */
 extern struct rtx_def *ix86_compare_op0;	/* operand 0 for comparisons */
 extern struct rtx_def *ix86_compare_op1;	/* operand 1 for comparisons */
 
+#ifndef FUNCTION_PROLOGUE
+#define FUNCTION_PROLOGUE(f,s) ix86_output_main_function_alignment_hack(f,s)
+#endif
+
 /*
 Local variables:
 version-control: t
