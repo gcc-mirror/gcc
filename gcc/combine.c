@@ -2900,10 +2900,16 @@ subst (x, from, to, in_dest, unique_copy)
 
       /* SUBREG of a hard register => just change the register number
 	 and/or mode.  If the hard register is not valid in that mode,
-	 suppress this combination.  */
+	 suppress this combination.  If the hard register is the stack,
+	 frame, or argument pointer, leave this as a SUBREG.  */
 
       if (GET_CODE (SUBREG_REG (x)) == REG
-	  && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER)
+	  && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
+	  && REGNO (SUBREG_REG (x)) != FRAME_POINTER_REGNUM
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	  && REGNO (SUBREG_REG (x)) != ARG_POINTER_REGNUM
+#endif
+	  && REGNO (SUBREG_REG (x)) != STACK_POINTER_REGNUM)
 	{
 	  if (HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (x)) + SUBREG_WORD (x),
 				  mode))
