@@ -519,7 +519,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 
 /* For atomic access to objects, must have at least 32-bit alignment
    unless the machine has byte operations.  */
-#define MINIMUM_ATOMIC_ALIGNMENT (TARGET_BWX ? 8 : 32)
+#define MINIMUM_ATOMIC_ALIGNMENT ((unsigned int) (TARGET_BWX ? 8 : 32))
 
 /* Align all constants and variables to at least a word boundary so
    we can pick up pieces of them faster.  */
