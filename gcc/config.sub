@@ -889,8 +889,6 @@ case $basic_machine in
 			-aux*)
 				vendor=apple
 				;;
-			-aux*)
-				vendor=apple
 		esac
 		basic_machine=`echo $basic_machine | sed "s/unknown/$vendor/"`
 		;;
