@@ -1,3 +1,10 @@
+1999-12-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (special_function_p): Declare.
+	* calls.c (special_function_p): Make it global.  Don't take `name'
+	as a parameter.  Fix typo in 1999-11-28 change.
+	(expand_cal): Adjust.
+
 1999-12-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.def (EXPR_WITH_FILE_LOCATION): Fix comment formatting.

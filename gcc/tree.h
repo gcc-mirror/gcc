@@ -2405,6 +2405,10 @@ extern struct rtx_def *emit_line_note_after	PROTO ((char *, int,
 extern struct rtx_def *emit_line_note		PROTO ((char *, int));
 extern struct rtx_def *emit_line_note_force	PROTO ((char *, int));
 
+/* In calls.c */
+extern void special_function_p	        PROTO ((tree, int *, int *,
+						int *, int *));
+
 /* In c-typeck.c */
 extern int mark_addressable		PROTO ((tree));
 extern void incomplete_type_error	PROTO ((tree, tree));
