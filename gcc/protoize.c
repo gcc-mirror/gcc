@@ -611,7 +611,7 @@ xmalloc (byte_count)
 {
   pointer_type rv;
 
-  rv = malloc (byte_count);
+  rv = (pointer_type) malloc (byte_count);
   if (rv == NULL)
     {
       fprintf (stderr, "\n%s: virtual memory exceeded\n", pname);
@@ -631,7 +631,7 @@ xrealloc (old_space, byte_count)
 {
   pointer_type rv;
 
-  rv = realloc (old_space, byte_count);
+  rv = (pointer_type) realloc (old_space, byte_count);
   if (rv == NULL)
     {
       fprintf (stderr, "\n%s: virtual memory exceeded\n", pname);
@@ -1710,11 +1710,18 @@ save_def_or_dec (l, is_syscalls)
 
     def_dec_p->ansi_decl
       = dupnstr (ansi_start, (size_t) ((semicolon_p+1) - ansi_start));
+
+    /* Backup and point at the final right paren of the final argument list.  */
+
+    p--;
+
+    while (p != ansi_start && (p[-1] == ' ' || p[-1] == '\t')) p--;
+    if (p[-1] != ')')
+      {
+	free_def_dec (def_dec_p);
+	return;
+      }
   }
-
-  /* Backup and point at the final right paren of the final argument list.  */
-
-  p--;
 
   /* Now isolate a whole set of formal argument lists, one-by-one.  Normally,
      there will only be one list to isolate, but there could be more.  */
