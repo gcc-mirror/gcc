@@ -1,4 +1,12 @@
-2000-12-07 Dec  8 11:23:29 2000  Richard Henderson  <rth@redhat.com>
+2000-12-09  Richard Henderson  <rth@redhat.com>
+
+	* src/alpha/ffi.c (ffi_call): Simplify struct return test.
+	(ffi_closure_osf_inner): Index rather than increment avalue
+	and arg_types.  Give ffi_closure_osf the raw return value type.
+	* src/alpha/osf.S (ffi_closure_osf): Handle return value type
+	promotion.
+
+2000-12-07  Richard Henderson  <rth@redhat.com>
 
 	* src/raw_api.c (ffi_translate_args): Fix typo.
 	(ffi_prep_closure): Likewise.
