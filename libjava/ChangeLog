@@ -1,3 +1,8 @@
+2001-04-18  Warren Levy  <warrenl@redhat.com>
+
+	* java/util/TimeZone.java: Sync up with Classpath.  Includes new
+	and corrected SimpleTimeZone's for the timezones hash table.
+
 2001-04-12  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/io/File.java (normalizePath): New private method. 
