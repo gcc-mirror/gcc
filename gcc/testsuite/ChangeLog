@@ -1,3 +1,7 @@
+2003-03-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20030305-1.c
+
 2003-03-04  Roger Sayle  <roger@eyesopen.com>
 
 	* g++.old-deja/g++.other/builtins10.C: New test for PR 9367.
