@@ -37,7 +37,7 @@ public class Thread implements Runnable
     return currentThread().getThreadGroup().activeCount();
   }
 
-  public void checkAccess ()
+  public final void checkAccess ()
   {
     SecurityManager s = System.getSecurityManager();
     if (s != null)
