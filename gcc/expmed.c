@@ -2610,6 +2610,10 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
       accum = force_operand (gen_rtx_PLUS (mode, accum, op0), target);
     }
 
+  /* Compare only the bits of val and val_so_far that are significant
+     in the result mode, to avoid sign-/zero-extension confusion.  */
+  val &= GET_MODE_MASK (mode);
+  val_so_far &= GET_MODE_MASK (mode);
   if (val != val_so_far)
     abort ();
 
