@@ -2391,6 +2391,18 @@ try_combine (i3, i2, i1)
       distribute_notes (new_other_notes, undobuf.other_insn,
 			undobuf.other_insn, NULL_RTX, NULL_RTX, NULL_RTX);
     }
+#ifdef HAVE_cc0
+  /* If I2 is the setter CC0 and I3 is the user CC0 then check whether 
+     they are adjacent to each other or not. */
+  {
+    rtx p = prev_nonnote_insn (i3);
+    if (p && p != i2 && GET_CODE (p) == INSN && newi2pat && sets_cc0_p (newi2pat))
+      {
+        undo_all ();
+        return 0;
+      }
+    }
+#endif 
 
   /* We now know that we can do this combination.  Merge the insns and 
      update the status of registers and LOG_LINKS.  */
