@@ -1,3 +1,7 @@
+2002-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* v850-protos.h (v850_output_addr_const_extra): Prototype.
+
 2002-09-15  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/mips/netbsd.h (TARGET_OS_CPP_BUILTINS): Add

@@ -42,6 +42,7 @@ extern int    compute_frame_size            PARAMS ((int, long *));
 extern void   v850_init_expanders           PARAMS ((void));
 
 #ifdef RTX_CODE
+extern int    v850_output_addr_const_extra  PARAMS ((FILE *, rtx));
 extern rtx    v850_return_addr              PARAMS ((int));
 extern void   print_operand                 PARAMS ((FILE *, rtx, int ));
 extern void   print_operand_address         PARAMS ((FILE *, rtx));
