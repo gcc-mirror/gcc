@@ -1,3 +1,7 @@
+2002-12-12  Devang Patel  <dpatel@apple.com>
+	* doc/invoke.texi: Document Darwin linker options, -bundle
+	-bind_at_load, -all_load and -arch_errors_fatal
+
 2002-12-12  Jim Wilson  <wilson@redhat.com>
 
 	* dbxout.c (dbxout_fptype_value): New.

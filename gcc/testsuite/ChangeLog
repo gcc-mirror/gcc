@@ -1,3 +1,10 @@
+2002-12-12  Devang Patel <dpatel@apple.com>
+	* gcc.dg/darwin-ld-1.c: New test.
+	* gcc.dg/darwin-ld-2.c: New test.
+	* gcc.dg/darwin-ld-3.c: New test.
+	* gcc.dg/darwin-ld-4.c: New test.
+	* gcc.dg/darwin-ld-5.c: New test.
+	
 2002-12-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20021212-1.c: New test.
