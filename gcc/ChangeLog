@@ -1,3 +1,7 @@
+Tue Apr 13 17:47:14 1999  John Wehle  (john@feith.com)
+
+	* i386.md (movdi): Add splitter.
+
 Wed Apr 14 10:04:27 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (storeqf_int, storeqf_int_clobber, loadqf_int,
