@@ -1,3 +1,12 @@
+2002-10-17  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.h (HARD_REGNO_MODE_OK): Allow arbitrary modes
+	in CTR/LR/MQ.
+	* config/rs6000/rs6000.md (movcc_internal1): Support CCmode moves
+	to/from CTR/LR/MQ.
+	(movsf_hardfloat): Support SFmode moves to/from CTR/LR/MQ.
+	(movsf_softfloat): Likewise.
+
 2002-10-17  Janis Johnson  <janis187@us.ibm.com>
 
 	* Makefile.in (site.exp): Add ALT_CXX_UNDER_TEST and COMPAT_OPTIONS.
