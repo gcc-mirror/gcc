@@ -1,3 +1,7 @@
+2001-01-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* varasm.c (make_decl_rtl): Fix typo in last change.
+
 2001-01-14  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* defaults.h (SUPPORTS_INIT_PRIORITY): New macro to indicate the
