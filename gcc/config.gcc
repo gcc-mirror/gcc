@@ -227,6 +227,7 @@ xscale-*-*)
 	;;
 c*-convex-*)
 	cpu_type=convex
+	extra_headers=proto.h
 	;;
 i[34567]86-*-*)
 	cpu_type=i386

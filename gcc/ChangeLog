@@ -1,3 +1,8 @@
+2001-12-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Makefile.in (USER_H): Remove proto.h.
+	* config.gcc (c*-convex-*): Set extra_headers=proto.h.
+
 2001-12-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* arc.c (arc_hard_regno_mode_ok): Const-ify.
