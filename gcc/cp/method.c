@@ -2179,7 +2179,7 @@ do_build_copy_constructor (fndecl)
   tree parm = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
   tree t;
 
-  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
+  if (DECL_HAS_IN_CHARGE_PARM_P (fndecl))
     parm = TREE_CHAIN (parm);
   parm = convert_from_reference (parm);
 
@@ -2388,7 +2388,7 @@ synthesize_method (fndecl)
   else
     {
       tree arg_chain = FUNCTION_ARG_CHAIN (fndecl);
-      if (DECL_CONSTRUCTOR_FOR_VBASE_P (fndecl))
+      if (DECL_HAS_IN_CHARGE_PARM_P (fndecl))
 	arg_chain = TREE_CHAIN (arg_chain);
       if (arg_chain != void_list_node)
 	do_build_copy_constructor (fndecl);

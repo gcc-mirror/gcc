@@ -11250,7 +11250,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (decl)));
 
 		/* Skip the `in_chrg' argument too, if present.  */
-		if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (decl)))
+		if (DECL_HAS_IN_CHARGE_PARM_P (decl))
 		  arg_types = TREE_CHAIN (arg_types);
 
 		if (arg_types == void_list_node
@@ -11968,8 +11968,7 @@ copy_args_p (d)
     return 0;
 
   t = FUNCTION_ARG_CHAIN (d);
-  if (DECL_CONSTRUCTOR_P (d)
-      && TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (d)))
+  if (DECL_CONSTRUCTOR_P (d) && DECL_HAS_IN_CHARGE_PARM_P (d))
     t = TREE_CHAIN (t);
   if (t && TREE_CODE (TREE_VALUE (t)) == REFERENCE_TYPE
       && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (t)))
@@ -12000,7 +11999,7 @@ grok_ctor_properties (ctype, decl)
      added to any ctor so we can tell if the class has been initialized
      yet.  This could screw things up in this function, so we deliberately
      ignore the leading int if we're in that situation.  */
-  if (TYPE_USES_VIRTUAL_BASECLASSES (ctype))
+  if (DECL_HAS_IN_CHARGE_PARM_P (decl))
     {
       my_friendly_assert (parmtypes
 			  && TREE_VALUE (parmtypes) == integer_type_node,
@@ -13444,8 +13443,7 @@ start_function (declspecs, declarator, attrs, flags)
 
       /* Constructors and destructors need to know whether they're "in
 	 charge" of initializing virtual base classes.  */
-      if (DECL_CONSTRUCTOR_FOR_VBASE_P (decl1)
-	  || DECL_DESTRUCTOR_P (decl1))
+      if (DECL_HAS_IN_CHARGE_PARM_P (decl1))
 	current_in_charge_parm = TREE_CHAIN (t);
     }
 
@@ -13924,9 +13922,6 @@ finish_destructor_body ()
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage
    for the function definition.
-
-   This is called after parsing the body of the function definition.
-   LINENO is the current line number.
 
    FLAGS is a bitwise or of the following values:
      1 - CALL_POPLEVEL

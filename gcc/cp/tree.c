@@ -460,9 +460,7 @@ build_cplus_method_type (basetype, rettype, argtypes)
   ptype = build_pointer_type (basetype);
 
   /* The actual arglist for this function includes a "hidden" argument
-     which is "this".  Put it into the list of argument types.  Make
-     sure that the new argument list is allocated on the same obstack
-     as the type.  */
+     which is "this".  Put it into the list of argument types.  */
   argtypes = tree_cons (NULL_TREE, ptype, argtypes);
   TYPE_ARG_TYPES (t) = argtypes;
   TREE_SIDE_EFFECTS (argtypes) = 1;  /* Mark first argtype as "artificial".  */

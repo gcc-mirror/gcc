@@ -1169,8 +1169,8 @@ dump_function_decl (t, flags)
     /* Skip "this" parameter.  */
     parmtypes = TREE_CHAIN (parmtypes);
     
-  if (DECL_DESTRUCTOR_P (t) || DECL_CONSTRUCTOR_FOR_VBASE_P (t))
-    /* Skip past "in_charge" identifier.  */
+  /* Skip past the "in_charge" parameter.  */
+  if (DECL_HAS_IN_CHARGE_PARM_P (t))
     parmtypes = TREE_CHAIN (parmtypes);
   
   dump_parameters (parmtypes, flags);

@@ -564,7 +564,8 @@ emit_base_init (t)
       else if (TYPE_NEEDS_CONSTRUCTING (BINFO_TYPE (base_binfo)))
 	{
 	  init = NULL_TREE;
-	  if (extra_warnings && copy_args_p (current_function_decl))
+	  if (extra_warnings 
+	      && DECL_COPY_CONSTRUCTOR_P (current_function_decl))
 	    cp_warning ("base class `%#T' should be explicitly initialized in the copy constructor",
 			BINFO_TYPE (base_binfo));
 	}

@@ -7420,8 +7420,7 @@ instantiate_template (tmpl, targ_ptr)
 	    {
 	      cp_error ("type `%T' composed from a local class is not a valid template-argument", t);
 	      cp_error ("  trying to instantiate `%D'", gen_tmpl);
-	      fndecl = error_mark_node;
-	      goto out;
+	      return error_mark_node;
 	    }
 	}
     }
@@ -7436,7 +7435,6 @@ instantiate_template (tmpl, targ_ptr)
   if (flag_external_templates)
     add_pending_template (fndecl);
 
- out:
   return fndecl;
 }
 

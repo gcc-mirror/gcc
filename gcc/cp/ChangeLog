@@ -1,5 +1,28 @@
 2000-04-11  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (lang_decl_flags): Rename constructor_for_vbase_attr
+	to has_in_charge_parm_p.
+	(DECL_CONSTRUCTOR_FOR_VBASE_P): Rename to ...
+	(DECL_HAS_IN_CHARGE_PARM_P): ... this.
+	(DECL_COPY_CONSTRUCTOR_P): New macro.
+	* call.c (add_function_candidate): Use DECL_HAS_IN_CHARGE_PARM_P.
+	(build_user_type_conversion_1): Likewise.
+	(convert_like_real): Likewise.
+	(build_over_call): Likeiwse.  Use DECL_COPY_CONSTRUCTOR_P.
+	* decl.c (grokdeclarator): Use DECL_HAS_IN_CHARGE_PARM_P.
+	(copy_args_p): Likewise.
+	(grok_ctor_properties): Likewise.
+	(start_function): Likewise.
+	* decl2.c (maybe_retrofit_in_charge): Likewise.  Set it.
+	* error.c (dump_function_decl): Use DECL_HAS_IN_CHARGE_PARM_P.
+	* init.c (emit_base_init): Use DECL_COPY_CONSTRUCTOR_P.
+	* method.c (do_build_copy_constructor): Use
+	DECL_HAS_IN_CHARGE_PARM_P.
+	(synthesize_method): Likewise.
+	* pt.c (instantiate_template): Remove goto.
+	* tree.c (build_cplus_method_type): Remove mention of obstacks in
+	comment.
+	
 	* cp-tre.h (finish_function): Change prototype.
 	* decl.c (end_cleanup_fn): Adjust caller.
 	(finish_function): Take only one parameter.
