@@ -437,7 +437,7 @@ __objc_write_class (struct objc_typed_stream* stream, struct objc_class* class)
   __objc_write_extension (stream, _BX_CLASS);
   objc_write_string_atomic(stream, (char*)class->name,
 			   strlen((char*)class->name));
-  return objc_write_unsigned_long (stream, CLS_GETNUMBER(class));
+  return objc_write_unsigned_long (stream, class->version);
 }
 
 
@@ -462,16 +462,26 @@ objc_write_class (struct objc_typed_stream* stream,
 __inline__ int 
 __objc_write_selector (struct objc_typed_stream* stream, SEL selector)
 {
-  const char* sel_name = sel_get_name (selector);
+  const char* sel_name;
   __objc_write_extension (stream, _BX_SEL);
+  /* to handle NULL selectors */
+  if ((SEL)0 == selector)
+    return objc_write_string (stream, "", 0);
+  sel_name = sel_get_name (selector);
   return objc_write_string (stream, sel_name, strlen ((char*)sel_name));
 }
 
 int 
 objc_write_selector (struct objc_typed_stream* stream, SEL selector)
 {
-  const char* sel_name = sel_get_name (selector);
+  const char* sel_name;
   unsigned long key;
+
+  /* to handle NULL selectors */
+  if ((SEL)0 == selector)
+    return __objc_write_selector (stream, selector);
+
+  sel_name = sel_get_name (selector);
   if ((key = PTR2LONG(hash_value_for_key (stream->stream_table, sel_name))))
     return objc_write_use_common (stream, key);
   else
@@ -917,7 +927,14 @@ objc_read_selector (struct objc_typed_stream* stream, SEL* selector)
 
 	  /* get selector */
 	  len = objc_read_string (stream, &selector_name);
-	  (*selector) = sel_get_any_uid(selector_name);
+	  /* To handle NULL selectors */
+	  if (0 == strlen(selector_name))
+	    {
+	      (*selector) = (SEL)0;
+	      return 0;
+	    }
+	  else 
+	    (*selector) = sel_get_any_uid(selector_name);
 	  free (selector_name);
 
 	  /* register */
