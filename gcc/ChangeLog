@@ -1,3 +1,7 @@
+2003-07-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/md.texi: Fix the description of addmodecc.
+
 2003-07-07  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (top_builddir): Set to "..", not ".".
