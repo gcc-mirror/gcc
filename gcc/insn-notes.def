@@ -47,11 +47,6 @@ INSN_NOTE (BLOCK_END)
 INSN_NOTE (LOOP_BEG)
 INSN_NOTE (LOOP_END)
 
-/* Generated at the place in a loop that `continue' jumps to.  */
-INSN_NOTE (LOOP_CONT)
-/* Generated at the start of a duplicated exit test.  */
-INSN_NOTE (LOOP_VTOP)
-
 /* This note indicates the start of the real body of the function,
    i.e. the point just after all of the parms have been moved into
    their homes, etc.  */

@@ -135,16 +135,6 @@ struct loop
   /* The following are currently used by loop.c but they are likely to
      disappear as loop.c is converted to use the CFG.  */
 
-  /* Nonzero if the loop has a NOTE_INSN_LOOP_VTOP.  */
-  rtx vtop;
-
-  /* Nonzero if the loop has a NOTE_INSN_LOOP_CONT.
-     A continue statement will generate a branch to NEXT_INSN (cont).  */
-  rtx cont;
-
-  /* The dominator of cont.  */
-  rtx cont_dominator;
-
   /* The NOTE_INSN_LOOP_BEG.  */
   rtx start;
 

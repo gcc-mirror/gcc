@@ -1,6 +1,25 @@
+2004-04-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* cfglayout.c (duplicate_insn_chain): Remove references to
+	NOTE_INSN_LOOP_VTOP and NOTE_INSN_LOOP_CONT.
+	* cfgloop.h (struct loop): Remove fields vtop, cont and cont_dominator.
+	* cfgrtl.c (rtl_delete_block): Remove handling of NOTE_INSN_LOOP_CONT.
+	* final.c (final_scan_insn): Remove references to NOTE_INSN_LOOP_VTOP
+	and NOTE_INSN_LOOP_CONT.
+	* insn-notes.def (NOTE_INSN_LOOP_VTOP, NOTE_INSN_LOOP_CONT): Remove.
+	* jump.c (squeeze_notes): Remove references to NOTE_INSN_LOOP_VTOP
+	and NOTE_INSN_LOOP_CONT.
+	* loop.c (scan_loops, find_and_verify_loops, for_each_insn_in_loop,
+	check_dbra_loop, loop_dump_aux): Remove references to removed notes
+	and fields.
+	* reorg.c (mostly_true_jump): Do not rely on NOTE_INSN_LOOP_VTOPs.
+	* unroll.c (unroll_loop, copy_loop_body, loop_iterations): Remove
+	references to removed notes and fields.
+	(subtract_reg_term, ujump_to_loop_cont): Remove.
+
 2004-08-25  Paolo Bonzini  <bonzini@gnu.org>
 
-	* doc/invoke.texi: Document that libcpp does not require
+	* doc/install.texi: Document that libcpp does not require
 	Automake any longer.  Document that Automake 1.9.1 should
 	work everywhere.
 

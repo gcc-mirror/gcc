@@ -214,9 +214,7 @@ static int reg_dead_after_loop (const struct loop *, rtx);
 static rtx fold_rtx_mult_add (rtx, rtx, rtx, enum machine_mode);
 static rtx remap_split_bivs (struct loop *, rtx);
 static rtx find_common_reg_term (rtx, rtx);
-static rtx subtract_reg_term (rtx, rtx);
 static rtx loop_find_equiv_value (const struct loop *, rtx);
-static rtx ujump_to_loop_cont (rtx, rtx);
 
 /* Try to unroll one loop and split induction variables in the loop.
 
@@ -297,16 +295,6 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 	 jump to the loop condition.  Make sure to delete the jump
 	 insn, otherwise the loop body will never execute.  */
 
-      /* FIXME this actually checks for a jump to the continue point, which
-	 is not the same as the condition in a for loop.  As a result, this
-	 optimization fails for most for loops.  We should really use flow
-	 information rather than instruction pattern matching.  */
-      rtx ujump = ujump_to_loop_cont (loop->start, loop->cont);
-
-      /* If number of iterations is exactly 1, then eliminate the compare and
-	 branch at the end of the loop since they will never be taken.
-	 Then return, since no other action is needed here.  */
-
       /* If the last instruction is not a BARRIER or a JUMP_INSN, then
 	 don't do anything.  */
 
@@ -314,34 +302,6 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
 	{
 	  /* Delete the jump insn.  This will delete the barrier also.  */
 	  last_loop_insn = PREV_INSN (last_loop_insn);
-	}
-
-      if (ujump && JUMP_P (last_loop_insn))
-	{
-#ifdef HAVE_cc0
-	  rtx prev = PREV_INSN (last_loop_insn);
-#endif
-	  delete_related_insns (last_loop_insn);
-#ifdef HAVE_cc0
-	  /* The immediately preceding insn may be a compare which must be
-	     deleted.  */
-	  if (only_sets_cc0_p (prev))
-	    delete_related_insns (prev);
-#endif
-
-	  delete_related_insns (ujump);
-
-	  /* Remove the loop notes since this is no longer a loop.  */
-	  if (loop->vtop)
-	    delete_related_insns (loop->vtop);
-	  if (loop->cont)
-	    delete_related_insns (loop->cont);
-	  if (loop_start)
-	    delete_related_insns (loop_start);
-	  if (loop_end)
-	    delete_related_insns (loop_end);
-
-	  return;
 	}
     }
 
@@ -1296,10 +1256,6 @@ unroll_loop (struct loop *loop, int insn_count, int strength_reduce_p)
   if (unroll_type == UNROLL_COMPLETELY)
     {
       /* Remove the loop notes since this is no longer a loop.  */
-      if (loop->vtop)
-	delete_related_insns (loop->vtop);
-      if (loop->cont)
-	delete_related_insns (loop->cont);
       if (loop_start)
 	delete_related_insns (loop_start);
       if (loop_end)
@@ -2221,19 +2177,13 @@ copy_loop_body (struct loop *loop, rtx copy_start, rtx copy_end,
 	  break;
 
 	case NOTE:
-	  /* VTOP and CONT notes are valid only before the loop exit test.
-	     If placed anywhere else, loop may generate bad code.  */
 	  /* BASIC_BLOCK notes exist to stabilize basic block structures with
 	     the associated rtl.  We do not want to share the structure in
 	     this new block.  */
 
 	  if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED
-		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED_LABEL
-		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK
-		   && ((NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_VTOP
-			&& NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_CONT)
-		       || (last_iteration
-			   && unroll_type != UNROLL_COMPLETELY)))
+	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED_LABEL
+	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK)
 	    copy = emit_note_copy (insn);
 	  else
 	    copy = 0;
@@ -2272,17 +2222,9 @@ copy_loop_body (struct loop *loop, rtx copy_start, rtx copy_end,
     {
       for (insn = copy_notes_from; insn != loop_end; insn = NEXT_INSN (insn))
 	{
-	  /* VTOP notes are valid only before the loop exit test.
-	     If placed anywhere else, loop may generate bad code.
-	     Although COPY_NOTES_FROM will be at most one or two (for cc0)
-	     instructions before the last insn in the loop, COPY_NOTES_FROM
-	     can be a NOTE_INSN_LOOP_CONT note if there is no VTOP note,
-	     as in a do .. while loop.  */
 	  if (NOTE_P (insn)
-	      && ((NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED
-		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK
-		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_VTOP
-		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_CONT)))
+	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED
+	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK)
 	    emit_note_copy (insn);
 	}
     }
@@ -3177,32 +3119,6 @@ loop_find_equiv_value (const struct loop *loop, rtx reg)
   return ret;
 }
 
-/* Return a simplified rtx for the expression OP - REG.
-
-   REG must appear in OP, and OP must be a register or the sum of a register
-   and a second term.
-
-   Thus, the return value must be const0_rtx or the second term.
-
-   The caller is responsible for verifying that REG appears in OP and OP has
-   the proper form.  */
-
-static rtx
-subtract_reg_term (rtx op, rtx reg)
-{
-  if (op == reg)
-    return const0_rtx;
-  if (GET_CODE (op) == PLUS)
-    {
-      if (XEXP (op, 0) == reg)
-	return XEXP (op, 1);
-      else if (XEXP (op, 1) == reg)
-	return XEXP (op, 0);
-    }
-  /* OP does not contain REG as a term.  */
-  abort ();
-}
-
 /* Find and return register term common to both expressions OP0 and
    OP1 or NULL_RTX if no such term exists.  Each expression must be a
    REG or a PLUS of a REG.  */
@@ -3258,7 +3174,6 @@ loop_iterations (struct loop *loop)
   int increment_dir;
   int unsigned_p, compare_dir, final_larger;
   rtx last_loop_insn;
-  rtx reg_term;
   struct iv_class *bl;
 
   loop_info->n_iterations = 0;
@@ -3297,44 +3212,6 @@ loop_iterations (struct loop *loop)
 	fprintf (loop_dump_stream,
 		 "Loop iterations: Loop has multiple back edges.\n");
       return 0;
-    }
-
-  /* If there are multiple conditionalized loop exit tests, they may jump
-     back to differing CODE_LABELs.  */
-  if (loop->top && loop->cont)
-    {
-      rtx temp = PREV_INSN (last_loop_insn);
-
-      do
-	{
-	  if (JUMP_P (temp))
-	    {
-	      /* There are some kinds of jumps we can't deal with easily.  */
-	      if (JUMP_LABEL (temp) == 0)
-		{
-		  if (loop_dump_stream)
-		    fprintf
-		      (loop_dump_stream,
-		       "Loop iterations: Jump insn has null JUMP_LABEL.\n");
-		  return 0;
-		}
-
-	      if (/* Previous unrolling may have generated new insns not
-		     covered by the uid_luid array.  */
-		  INSN_UID (JUMP_LABEL (temp)) < max_uid_for_loop
-		  /* Check if we jump back into the loop body.  */
-		  && INSN_LUID (JUMP_LABEL (temp)) > INSN_LUID (loop->top)
-		  && INSN_LUID (JUMP_LABEL (temp)) < INSN_LUID (loop->cont))
-		{
-		  if (loop_dump_stream)
-		    fprintf
-		      (loop_dump_stream,
-		       "Loop iterations: Loop has multiple back edges.\n");
-		  return 0;
-		}
-	    }
-	}
-      while ((temp = PREV_INSN (temp)) != loop->cont);
     }
 
   /* Find the iteration variable.  If the last insn is a conditional
@@ -3650,44 +3527,6 @@ loop_iterations (struct loop *loop)
 		  ? reg1 : gen_rtx_PLUS (GET_MODE (reg1), reg1, const2);
 	    }
 	}
-      else if (loop->vtop && GET_CODE (reg2) == CONST_INT)
-	{
-	  rtx temp;
-
-	  /* When running the loop optimizer twice, check_dbra_loop
-	     further obfuscates reversible loops of the form:
-	     for (i = init; i < init + const; i++).  We often end up with
-	     final_value = 0, initial_value = temp, temp = temp2 - init,
-	     where temp2 = init + const.  If the loop has a vtop we
-	     can replace initial_value with const.  */
-
-	  temp = loop_find_equiv_value (loop, reg1);
-
-	  if (GET_CODE (temp) == MINUS && REG_P (XEXP (temp, 0)))
-	    {
-	      rtx temp2 = loop_find_equiv_value (loop, XEXP (temp, 0));
-
-	      if (GET_CODE (temp2) == PLUS
-		  && XEXP (temp2, 0) == XEXP (temp, 1))
-		initial_value = XEXP (temp2, 1);
-	    }
-	}
-    }
-
-  /* If have initial_value = reg + const1 and final_value = reg +
-     const2, then replace initial_value with const1 and final_value
-     with const2.  This should be safe since we are protected by the
-     initial comparison before entering the loop if we have a vtop.
-     For example, a + b < a + c is not equivalent to b < c for all a
-     when using modulo arithmetic.
-
-     ??? Without a vtop we could still perform the optimization if we check
-     the initial and final values carefully.  */
-  if (loop->vtop
-      && (reg_term = find_common_reg_term (initial_value, final_value)))
-    {
-      initial_value = subtract_reg_term (initial_value, reg_term);
-      final_value = subtract_reg_term (final_value, reg_term);
     }
 
   loop_info->initial_equiv_value = initial_value;
@@ -3999,36 +3838,3 @@ set_dominates_use (int regno, int first_uid, int last_uid, rtx copy_start,
   return 1;
 }
 
-/* This routine is called when the number of iterations for the unrolled
-   loop is one.   The goal is to identify a loop that begins with an
-   unconditional branch to the loop continuation note (or a label just after).
-   In this case, the unconditional branch that starts the loop needs to be
-   deleted so that we execute the single iteration.  */
-
-static rtx
-ujump_to_loop_cont (rtx loop_start, rtx loop_cont)
-{
-  rtx x, label, label_ref;
-
-  /* See if loop start, or the next insn is an unconditional jump.  */
-  loop_start = next_nonnote_insn (loop_start);
-
-  x = pc_set (loop_start);
-  if (!x)
-    return NULL_RTX;
-
-  label_ref = SET_SRC (x);
-  if (!label_ref)
-    return NULL_RTX;
-
-  /* Examine insn after loop continuation note.  Return if not a label.  */
-  label = next_nonnote_insn (loop_cont);
-  if (label == 0 || !LABEL_P (label))
-    return NULL_RTX;
-
-  /* Return the loop start if the branch label matches the code label.  */
-  if (CODE_LABEL_NUMBER (label) == CODE_LABEL_NUMBER (XEXP (label_ref, 0)))
-    return loop_start;
-  else
-    return NULL_RTX;
-}

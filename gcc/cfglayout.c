@@ -1039,8 +1039,6 @@ duplicate_insn_chain (rtx from, rtx to)
 	         in first BB, we may want to copy the block.  */
 	    case NOTE_INSN_PROLOGUE_END:
 
-	    case NOTE_INSN_LOOP_VTOP:
-	    case NOTE_INSN_LOOP_CONT:
 	    case NOTE_INSN_LOOP_BEG:
 	    case NOTE_INSN_LOOP_END:
 	      /* Strip down the loop notes - we don't really want to keep
