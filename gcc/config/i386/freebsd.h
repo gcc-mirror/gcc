@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-Dunix -Di386 -D__FreeBSD__ -D__386BSD__ -Asystem(unix) -Asystem(FreeBSD) -Acpu(i386) -Amachine(i386)"
 
 /* Like the default, except no -lg.  */
-#define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
+#define LIB_SPEC "%{!shared:%{!pg:-lc}%{pg:-lc_p}}"
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
@@ -220,7 +220,15 @@ do {                                                                    \
 
 #define ASM_SPEC   " %| %{fpic:-k} %{fPIC:-k}"
 #define LINK_SPEC \
-  "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{static:-Bstatic} %{assert*}"
+  "%{p:%e`-p' not supported; use `-pg' and gprof(1)} \
+   %{shared:-Bshareable} \
+   %{!shared:%{!nostdlib:%{!r:%{!e*:-e start}}} -dc -dp %{static:-Bstatic} \
+   %{pg:-Bstatic} %{Z}} \
+   %{assert*} %{R*}"
+
+#define STARTFILE_SPEC  \
+  "%{shared:c++rt0.o%s} \
+   %{!shared:%{pg:gcrt0.o%s}%{!pg:%{static:scrt0.o%s}%{!static:crt0.o%s}}}"
 
 /* This is defined when gcc is compiled in the BSD-directory-tree, and must
  * make up for the gap to all the stuff done in the GNU-makefiles.
