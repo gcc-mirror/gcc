@@ -1,3 +1,12 @@
+Sat Feb 28 12:06:44 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (TYPENAME_TYPE_FULLNAME): New macro.
+	* parse.y (nested_name_specifier): Add 'template' case.
+	(explicit_template_type): New rule.
+	(typename_sub): Use it.
+	* decl.c (make_typename_type): Handle getting a template-id for NAME.
+	* pt.c (tsubst): Likewise.
+
 Fri Feb 27 11:17:50 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (add_to_template_args): Fix thinko.

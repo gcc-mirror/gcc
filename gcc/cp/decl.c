@@ -4474,33 +4474,61 @@ make_typename_type (context, name)
      tree context, name;
 {
   tree t, d;
+  tree fullname;
 
   if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
     name = TYPE_IDENTIFIER (name);
   else if (TREE_CODE (name) == TYPE_DECL)
     name = DECL_NAME (name);
-  else if (TREE_CODE (name) != IDENTIFIER_NODE)
+
+  fullname = name;
+
+  if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+    name = TREE_OPERAND (name, 0);
+  if (TREE_CODE (name) != IDENTIFIER_NODE)
     my_friendly_abort (2000);
 
   if (! uses_template_parms (context)
       || context == current_class_type)
     {
-      if (IS_AGGR_TYPE (context))
-	t = lookup_field (context, name, 0, 1);
-      else
-	t = NULL_TREE;
-
-      if (t == NULL_TREE)
+      if (TREE_CODE (fullname) == TEMPLATE_ID_EXPR)
 	{
-	  cp_error ("no type named `%#T' in `%#T'", name, context);
-	  return error_mark_node;
+	  if (IS_AGGR_TYPE (context))
+	    t = lookup_field (context, name, 0, 0);
+	  else
+	    t = NULL_TREE;
+
+	  if (t == NULL_TREE || TREE_CODE (t) != TEMPLATE_DECL
+	      || TREE_CODE (DECL_RESULT (t)) != TYPE_DECL)
+	    {
+	      cp_error ("no class template named `%#T' in `%#T'",
+			name, context);
+	      return error_mark_node;
+	    }
+
+	  return lookup_template_class (t, TREE_OPERAND (fullname, 1),
+					NULL_TREE, context);
 	}
-      return TREE_TYPE (t);
+      else
+	{
+	  if (IS_AGGR_TYPE (context))
+	    t = lookup_field (context, name, 0, 1);
+	  else
+	    t = NULL_TREE;
+
+	  if (t == NULL_TREE)
+	    {
+	      cp_error ("no type named `%#T' in `%#T'", name, context);
+	      return error_mark_node;
+	    }
+	  return TREE_TYPE (t);
+	}
     }
 
   if (processing_template_decl)
     push_obstacks (&permanent_obstack, &permanent_obstack);
   t = make_lang_type (TYPENAME_TYPE);
+  TYPENAME_TYPE_FULLNAME (t) = fullname;
   d = build_decl (TYPE_DECL, name, t);
   if (processing_template_decl)
     pop_obstacks ();
