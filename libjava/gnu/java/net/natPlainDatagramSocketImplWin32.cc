@@ -17,7 +17,6 @@ details.  */
 
 #include <gnu/java/net/PlainDatagramSocketImpl.h>
 #include <java/io/IOException.h>
-#include <java/io/InterruptedIOException.h>
 #include <java/net/BindException.h>
 #include <java/net/SocketException.h>
 #include <java/net/InetAddress.h>

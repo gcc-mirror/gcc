@@ -1,5 +1,18 @@
 2003-12-16  Mohan Embar  <gnustuff@thisiscool.com>
 
+	* gnu/java/net/natPlainDatagramSocketImplWin32.cc:
+	Removed unused InterruptedIOException.h include.
+	* gnu/java/net/natPlainSocketImplWin32.cc
+	(connect): Reset and ignore our thread's interrupted
+	flag instead of testing and throwing an InterruptedIOException
+	if set.
+	(accept): Likewise + changed case of SocketTimeoutException
+	text.
+	(write): Likewise (for both overloads).
+	(doRead): Likewise.
+
+2003-12-16  Mohan Embar  <gnustuff@thisiscool.com>
+
 	* win32.cc (WSAEventWrapper): Implemented default
 	constructor and init() methods.
 	(_Jv_select): Removed.
