@@ -145,6 +145,15 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
   do { assemble_name ((FILE), (NAME)); fputs (":\n", (FILE)); } while (0)
 #endif
 
+/* Output the definition of a compiler-generated label named NAME.  */
+#ifndef ASM_OUTPUT_INTERNAL_LABEL
+#define ASM_OUTPUT_INTERNAL_LABEL(FILE,NAME)	\
+  do {						\
+    assemble_name_raw ((FILE), (NAME));		\
+    fputs (":\n", (FILE));			\
+  } while (0)
+#endif
+
 /* This is how to output a reference to a user-level label named NAME.  */
 
 #ifndef ASM_OUTPUT_LABELREF

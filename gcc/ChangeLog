@@ -1,3 +1,14 @@
+2004-12-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* defaults.h (ASM_OUTPUT_INTERNAL_LABEL): New macro.
+	* output.h (assemble_name_raw): Declare it.
+	* system.h (ASM_OUTPUT_INTERNAL_LABEL): Do not poison it.
+	* varasm.c (assemble_name_raw): New function.
+	(assemble_name): Use it.
+	(default_internal_label): Likewise.
+	* config/darwin.c (darwin_asm_output_dwarf_delta): Likewise.
+	* doc/tm.texi (ASM_OUTPUT_INTERNAL_LABEL): Document.
+
 2004-12-19  Richard Henderson  <rth@redhat.com>
 
 	PR 18067
