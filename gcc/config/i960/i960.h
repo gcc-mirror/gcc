@@ -1463,7 +1463,3 @@ extern enum insn_types i960_last_insn_type;
 /* Defined in reload.c, and used in insn-recog.c.  */
 
 extern int rtx_equal_function_value_matters;
-
-/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
-   Used for C++ multiple inheritance.  */
-#define TARGET_ASM_OUTPUT_MI_THUNK i960_output_mi_thunk

@@ -126,9 +126,6 @@ extern int eq_neq_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int insn_refs_are_delayed PARAMS ((rtx));
 #endif /* RTX_CODE */
 
-/* Prototype function used in macro TARGET_ASM_OUTPUT_MI_THUNK.  */
-extern void pa_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-
 /* Prototype function used in macro CONST_OK_FOR_LETTER_P.  */
 extern int zdepi_cint_p PARAMS ((unsigned HOST_WIDE_INT));
 
@@ -163,6 +160,4 @@ extern rtx function_arg PARAMS ((CUMULATIVE_ARGS *, enum machine_mode,
 extern int function_arg_partial_nregs PARAMS ((CUMULATIVE_ARGS *,
 					       enum machine_mode,
 					       tree, int));
-
-extern void pa_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 #endif /* TREE_CODE */

@@ -50,6 +50,8 @@ static rtx emit_addhi3_postreload PARAMS ((rtx, rtx, rtx));
 static void xstormy16_asm_out_constructor PARAMS ((rtx, int));
 static void xstormy16_asm_out_destructor PARAMS ((rtx, int));
 static void xstormy16_encode_section_info PARAMS ((tree, int));
+static void xstormy16_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
+						   tree));
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
@@ -1380,7 +1382,7 @@ xstormy16_function_value (valtype, func)
    extracted from it.)  It might possibly be useful on some targets, but
    probably not.  */
 
-void
+static void
 xstormy16_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
      FILE *file;
      tree thunk_fndecl ATTRIBUTE_UNUSED;
@@ -2030,5 +2032,8 @@ xstormy16_handle_interrupt_attribute (node, name, args, flags, no_add_attrs)
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO xstormy16_encode_section_info
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK xstormy16_asm_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;

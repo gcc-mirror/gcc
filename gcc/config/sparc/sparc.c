@@ -176,6 +176,7 @@ static void emit_soft_tfmode_cvt PARAMS ((enum rtx_code, rtx *));
 static void emit_hard_tfmode_operation PARAMS ((enum rtx_code, rtx *));
 
 static void sparc_encode_section_info PARAMS ((tree, int));
+static void sparc_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 
 /* Option handling.  */
 
@@ -238,6 +239,9 @@ enum processor_type sparc_cpu;
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO sparc_encode_section_info
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK sparc_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8448,7 +8452,7 @@ sparc_encode_section_info (decl, first)
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
 
-void
+static void
 sparc_output_mi_thunk (file, thunk_fndecl, delta, function)
      FILE *file;
      tree thunk_fndecl ATTRIBUTE_UNUSED;

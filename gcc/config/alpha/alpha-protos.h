@@ -141,7 +141,6 @@ extern rtx function_arg PARAMS ((CUMULATIVE_ARGS, enum machine_mode,
 				 tree, int));
 extern void alpha_start_function PARAMS ((FILE *, const char *, tree));
 extern void alpha_end_function PARAMS ((FILE *, const char *, tree));
-extern void alpha_output_mi_thunk_osf PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 
 #ifdef REAL_VALUE_TYPE
 extern int check_float_value PARAMS ((enum machine_mode,

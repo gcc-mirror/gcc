@@ -751,6 +751,9 @@ static int ia32_use_dfa_pipeline_interface PARAMS ((void));
 static int ia32_multipass_dfa_lookahead PARAMS ((void));
 static void ix86_init_mmx_sse_builtins PARAMS ((void));
 static rtx ia32_this_parameter PARAMS ((tree));
+static void x86_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
+static void x86_output_mi_vcall_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
+					       HOST_WIDE_INT, tree));
 
 struct ix86_address
 {
@@ -896,6 +899,11 @@ static enum x86_64_reg_class merge_classes PARAMS ((enum x86_64_reg_class,
 #undef TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS true
 #endif
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK x86_output_mi_thunk
+#undef TARGET_ASM_OUTPUT_MI_VCALL_THUNK
+#define TARGET_ASM_OUTPUT_MI_VCALL_THUNK x86_output_mi_vcall_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -13933,7 +13941,7 @@ ia32_this_parameter (function)
 }
 
 
-void
+static void
 x86_output_mi_vcall_thunk (file, thunk, delta, vcall_index, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
@@ -14037,7 +14045,7 @@ x86_output_mi_vcall_thunk (file, thunk, delta, vcall_index, function)
     }
 }
 
-void
+static void
 x86_output_mi_thunk (file, thunk, delta, function)
      FILE *file;
      tree thunk;

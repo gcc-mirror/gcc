@@ -2138,7 +2138,3 @@ do {							\
 
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS 1
-
-/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
-   Used for C++ multiple inheritance.  */
-#define TARGET_ASM_OUTPUT_MI_THUNK alpha_output_mi_thunk_osf

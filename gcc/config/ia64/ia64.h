@@ -1428,11 +1428,6 @@ do {									\
 #define ASM_FILE_START(FILE) \
   emit_safe_across_calls (FILE)
 
-/* A C compound statement that outputs the assembler code for a thunk function,
-   used to implement C++ virtual function calls with multiple inheritance.  */
-
-#define TARGET_ASM_OUTPUT_MI_THUNK ia64_output_mi_thunk
-
 /* Output part N of a function descriptor for DECL.  For ia64, both
    words are emitted with a single relocation, so ignore N > 0.  */
 #define ASM_OUTPUT_FDESC(FILE, DECL, PART)				\

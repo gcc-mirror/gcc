@@ -54,6 +54,7 @@ static int s390_adjust_priority PARAMS ((rtx, int));
 static void s390_select_rtx_section PARAMS ((enum machine_mode, rtx, 
 					     unsigned HOST_WIDE_INT));
 static void s390_encode_section_info PARAMS ((tree, int));
+static void s390_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -79,6 +80,9 @@ static void s390_encode_section_info PARAMS ((tree, int));
 
 #undef	TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO s390_encode_section_info
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK s390_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5583,7 +5587,7 @@ s390_encode_section_info (decl, first)
     }
 }
 
-void
+static void
 s390_output_mi_thunk (file, thunk, delta, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;

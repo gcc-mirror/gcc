@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
 
 static void i960_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void i960_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void i960_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -97,6 +98,9 @@ static int ret_label = 0;
 #define TARGET_ASM_FUNCTION_PROLOGUE i960_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE i960_output_function_epilogue
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK i960_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2825,7 +2829,7 @@ i960_scan_opcode (p)
     }
 }
 
-void
+static void
 i960_output_mi_thunk (file, thunk, delta, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;

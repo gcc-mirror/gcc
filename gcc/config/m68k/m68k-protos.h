@@ -64,10 +64,6 @@ extern int pcrel_address PARAMS ((rtx, enum machine_mode));
 extern rtx legitimize_pic_address PARAMS ((rtx, enum machine_mode, rtx));
 #endif /* RTX_CODE */
 
-#ifdef TREE_CODE
-extern void m68k_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
-#endif /* TREE_CODE */
-
 extern int flags_in_68881 PARAMS ((void));
 extern int use_return_insn PARAMS ((void));
 extern void override_options PARAMS ((void));

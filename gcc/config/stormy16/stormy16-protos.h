@@ -45,7 +45,6 @@ extern void    xstormy16_expand_builtin_va_start PARAMS ((tree, rtx));
 extern rtx     xstormy16_expand_builtin_va_arg PARAMS ((tree, tree));
 extern void    xstormy16_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern rtx     xstormy16_function_value PARAMS ((tree, tree));
-extern void    xstormy16_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 #endif
 
 #ifdef RTX_CODE

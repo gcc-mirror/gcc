@@ -113,11 +113,6 @@ extern rtx frv_return_addr_rtx			PARAMS ((int, rtx));
 extern rtx frv_index_memory			PARAMS ((rtx,
 							 enum machine_mode,
 							 int));
-
-#ifdef TREE_CODE
-extern void frv_asm_output_mi_thunk		PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
-#endif	/* TREE_CODE */
-
 extern const char *frv_asm_output_opcode
 				 	PARAMS ((FILE *, const char *));
 extern void frv_final_prescan_insn	PARAMS ((rtx, rtx *, int));

@@ -854,10 +854,6 @@ CUMULATIVE_ARGS;
 
 #define EXIT_IGNORE_STACK       1
 
-/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
-   Used for C++ multiple inheritance.  */
-#define TARGET_ASM_OUTPUT_MI_THUNK s390_output_mi_thunk
-
 /* Addressing modes, and classification of registers for them.  */
 
 /* #define HAVE_POST_INCREMENT */

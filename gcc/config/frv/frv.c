@@ -279,6 +279,7 @@ static void frv_encode_section_info		PARAMS ((tree, int));
 static void frv_init_builtins			PARAMS ((void));
 static rtx frv_expand_builtin			PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 static bool frv_in_small_data_p			PARAMS ((tree));
+static void frv_asm_output_mi_thunk		PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
@@ -297,6 +298,9 @@ static bool frv_in_small_data_p			PARAMS ((tree));
 #define TARGET_EXPAND_BUILTIN frv_expand_builtin
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P frv_in_small_data_p
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK frv_asm_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1866,7 +1870,7 @@ frv_expand_epilogue (sibcall_p)
    FUNCTION instead of jumping to it.  The generic approach does not support
    varargs.  */
 
-void
+static void
 frv_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
      FILE *file;
      tree thunk_fndecl ATTRIBUTE_UNUSED;

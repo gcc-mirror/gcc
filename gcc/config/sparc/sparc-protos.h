@@ -123,6 +123,4 @@ extern int sparc_extra_constraint_check PARAMS ((rtx, int, int));
 extern int sparc_rtx_costs PARAMS ((rtx, enum rtx_code, enum rtx_code));
 #endif /* RTX_CODE */
 
-extern void sparc_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
-
 #endif /* __SPARC_PROTOS_H__ */

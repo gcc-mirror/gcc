@@ -161,6 +161,8 @@ static int ia64_sched_reorder PARAMS ((FILE *, int, rtx *, int *, int));
 static int ia64_sched_reorder2 PARAMS ((FILE *, int, rtx *, int *, int));
 static int ia64_variable_issue PARAMS ((FILE *, int, rtx, int));
 
+static void ia64_output_mi_thunk PARAMS((FILE *, tree, HOST_WIDE_INT, tree));
+
 static void ia64_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
 static void ia64_aix_select_section PARAMS ((tree, int,
@@ -243,6 +245,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS true
 #endif
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK ia64_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8159,7 +8164,7 @@ ia64_aix_select_rtx_section (mode, x, align)
   flag_pic = save_pic;
 }
 
-void
+static void
 ia64_output_mi_thunk (file, thunk, delta, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;

@@ -101,6 +101,10 @@ static void cris_target_asm_function_epilogue
 static void cris_encode_section_info PARAMS ((tree, int));
 static void cris_operand_lossage PARAMS ((const char *, rtx));
 
+static void cris_asm_output_mi_thunk
+  PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
+
+
 /* The function cris_target_asm_function_epilogue puts the last insn to
    output here.  It always fits; there won't be a symbol operand.  Used in
    delay_slots_for_epilogue and function_epilogue.  */
@@ -152,6 +156,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO cris_encode_section_info
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK cris_asm_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2572,7 +2579,7 @@ cris_override_options ()
 
 /* The TARGET_ASM_OUTPUT_MI_THUNK worker.  */
 
-void
+static void
 cris_asm_output_mi_thunk (stream, thunkdecl, delta, funcdecl)
      FILE *stream;
      tree thunkdecl ATTRIBUTE_UNUSED;

@@ -195,6 +195,11 @@ static void alpha_write_linkage
   PARAMS ((FILE *, const char *, tree));
 #endif
 
+#if TARGET_ABI_OSF
+static void alpha_output_mi_thunk_osf
+  PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
+#endif
+
 static struct machine_function * alpha_init_machine_status
   PARAMS ((void));
 
@@ -291,6 +296,11 @@ static void unicosmk_unique_section PARAMS ((tree, int));
 #define TARGET_INIT_BUILTINS alpha_init_builtins
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN alpha_expand_builtin
+
+#if TARGET_ABI_OSF
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK alpha_output_mi_thunk_osf
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -7839,7 +7849,8 @@ alpha_end_function (file, fnname, decl)
     }
 }
 
-/* Emit a tail call to FUNCTION after adjusting THIS by DELTA. 
+#if TARGET_ABI_OSF
+/* Emit a tail call to FUNCTION after adjusting THIS by DELTA.
 
    In order to avoid the hordes of differences between generated code
    with and without TARGET_EXPLICIT_RELOCS, and to avoid duplicating
@@ -7848,7 +7859,7 @@ alpha_end_function (file, fnname, decl)
 
    Not sure why this idea hasn't been explored before...  */
 
-void
+static void
 alpha_output_mi_thunk_osf (file, thunk_fndecl, delta, function)
      FILE *file;
      tree thunk_fndecl ATTRIBUTE_UNUSED;
@@ -7908,6 +7919,7 @@ alpha_output_mi_thunk_osf (file, thunk_fndecl, delta, function)
   final (insn, file, 1, 0);
   final_end_function ();
 }
+#endif /* TARGET_ABI_OSF */
 
 /* Debugging support.  */
 
