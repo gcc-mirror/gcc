@@ -331,8 +331,7 @@ done
 cd ${INPUT}
 
 # Install the proper definition of size_t in header files that it comes from.
-for file in sys/types.h stdlib.h sys/stdtypes.h;
-do
+for file in sys/types.h stdlib.h sys/stdtypes.h; do
   if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
     cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
     chmod +w ${LIB}/$file 2>/dev/null
@@ -549,7 +548,7 @@ if [ -r ${LIB}/$file ]; then
     rm ${LIB}/$file
   else
 # This file has an alternative name, mips/cpu.h.  Fix that name, too.
-    if cmp machine/cpu.h mips/cpu.h > /dev/null 2>& 1; then
+    if cmp machine/cpu.h mips/cpu.h > /dev/null 2>&1; then
       mkdir ${LIB}/mips 2>&-
       ln ${LIB}/$file ${LIB}/mips/cpu.h 
     fi
