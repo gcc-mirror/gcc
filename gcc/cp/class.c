@@ -1041,7 +1041,10 @@ get_vtable_decl (type, complete)
 			   DECL_ALIGN (decl));
 
   if (complete)
-    cp_finish_decl (decl, NULL_TREE, NULL_TREE, 0);
+    {
+      DECL_EXTERNAL (decl) = 1;
+      cp_finish_decl (decl, NULL_TREE, NULL_TREE, 0);
+    }
 
   return decl;
 }
@@ -4298,7 +4301,8 @@ build_base_field (rli, binfo, empty_p, base_align, v)
 	{
 	  /* That didn't work.  Now, we move forward from the next
 	     available spot in the class.  */
-	  propagate_binfo_offsets (binfo, size_int (rli->const_size));
+	  propagate_binfo_offsets (binfo, 
+				   size_int (rli->const_size / BITS_PER_UNIT));
 	  while (1) 
 	    {
 	      if (!dfs_walk (binfo, dfs_search_base_offsets, 

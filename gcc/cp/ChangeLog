@@ -1,5 +1,8 @@
 2000-03-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (build_base_field): Fix thinko in computation of binfo
+	offsets.
+
 	* tree.c (mark_local_for_remap_p): Mark variables declared in
 	TARGET_EXPRs as well.
 
