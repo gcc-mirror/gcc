@@ -519,7 +519,7 @@ public final class StringBuffer implements Serializable
     ensureCapacity_unsynchronized (count + delta);
         
     if (delta != 0 && end < count)
-      System.arraycopy(value, end, value, end + delta, count - start);
+      System.arraycopy(value, end, value, end + delta, count - end);
     
     str.getChars (0, len, value, start);    
     count += delta;    
