@@ -65,6 +65,21 @@ public final class URI
     "^(([^:/?#]+):)?((//([^/?#]*))?([^?#]*)(\\?([^#]*))?)?(#(.*))?";
 
   /**
+   * Valid characters (taken from rfc2396)
+   */
+  private static final String RFC2396_DIGIT = "0123456789";
+  private static final String RFC2396_LOWALPHA = "abcdefghijklmnopqrstuvwxyz";
+  private static final String RFC2396_UPALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  private static final String RFC2396_ALPHA = RFC2396_LOWALPHA + RFC2396_UPALPHA;
+  private static final String RFC2396_ALPHANUM = RFC2396_DIGIT + RFC2396_ALPHA;
+  private static final String RFC2396_MARK = "-_.!~*'()";
+  private static final String RFC2396_UNRESERVED = RFC2396_ALPHANUM + RFC2396_MARK;
+  private static final String RFC2396_REG_NAME = RFC2396_UNRESERVED + "$,;:@&=+";
+  private static final String RFC2396_PCHAR = RFC2396_UNRESERVED + ":@&=+$,";
+  private static final String RFC2396_SEGMENT = RFC2396_PCHAR + ";";
+  private static final String RFC2396_PATH_SEGMENTS = RFC2396_SEGMENT + "/";
+
+  /**
    * Index of scheme component in parsed URI.
    */
   private static final int SCHEME_GROUP = 2;
@@ -95,13 +110,20 @@ public final class URI
   private static final int FRAGMENT_GROUP = 10;
 
   private String scheme;
+  private String rawSchemeSpecificPart;
   private String schemeSpecificPart;
+  private String rawAuthority;
   private String authority;
+  private String rawUserInfo;
   private String userInfo;
+  private String rawHost;
   private String host;
   private int port;
+  private String rawPath;
   private String path;
+  private String rawQuery;
   private String query;
+  private String rawFragment;
   private String fragment;
 
   private void readObject (ObjectInputStream is)
@@ -134,15 +156,63 @@ public final class URI
     if (matcher.matches())
       {
 	scheme = getURIGroup(matcher, SCHEME_GROUP);
-	schemeSpecificPart = getURIGroup(matcher, SCHEME_SPEC_PART_GROUP); 
-	authority = getURIGroup(matcher, AUTHORITY_GROUP);
-	path = getURIGroup(matcher, PATH_GROUP);
-	query = getURIGroup(matcher, QUERY_GROUP);
-	fragment = getURIGroup(matcher, FRAGMENT_GROUP);
+	rawSchemeSpecificPart = getURIGroup(matcher, SCHEME_SPEC_PART_GROUP); 
+	rawAuthority = getURIGroup(matcher, AUTHORITY_GROUP);
+	rawPath = getURIGroup(matcher, PATH_GROUP);
+	rawQuery = getURIGroup(matcher, QUERY_GROUP);
+	rawFragment = getURIGroup(matcher, FRAGMENT_GROUP);
       }
     else
       throw new URISyntaxException(str,
 				   "doesn't match URI regular expression");
+    // We must eagerly unquote the parts, because this is the only time
+    // we may throw an exception.
+    schemeSpecificPart = unquote(rawSchemeSpecificPart);
+    authority = unquote(rawAuthority);
+    path = unquote(rawPath);
+    query = unquote(rawQuery);
+    fragment = unquote(rawFragment);
+  }
+
+  /**
+   * Unquote "%" + hex quotes characters
+   *
+   * @param str The string to unquote or null.
+   *
+   * @return The unquoted string or null if str was null.
+   *
+   * @exception URISyntaxException If the given string contains invalid
+   * escape sequences.
+   */
+  private static String unquote (String str)
+    throws URISyntaxException
+  {
+    if (str == null)
+      return null;
+    byte[] buf = new byte[str.length()];
+    int pos = 0;
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+      if (c > 127)
+	  throw new URISyntaxException(str, "Invalid character");
+      if (c == '%') {
+        if (i + 2 >= str.length())
+	  throw new URISyntaxException(str, "Invalid quoted character");
+	String hex = "0123456789ABCDEF";
+        int hi = hex.indexOf(str.charAt(++i));
+        int lo = hex.indexOf(str.charAt(++i));
+        if (lo < 0 || hi < 0)
+	  throw new URISyntaxException(str, "Invalid quoted character");
+	buf[pos++] = (byte)(hi * 16 + lo);
+      } else {
+	buf[pos++] = (byte)c;
+      }
+    }
+    try {
+      return new String(buf, 0, pos, "utf-8");
+    } catch (java.io.UnsupportedEncodingException x2) {
+      throw (Error)new InternalError().initCause(x2);
+    }
   }
 
   /**
@@ -173,8 +243,52 @@ public final class URI
    * @return The quoted string.
    */
   private static String quoteAuthority (String str) {
-    // FIXME: unimplemented.
-    return str;
+    // Technically, we should be using RFC2396_AUTHORITY, but
+    // it contains no additional characters.
+    return quote(str, RFC2396_REG_NAME);
+  }
+
+  /**
+   * Quote characters in str that are not part of legalCharacters.
+   *
+   * Replace illegal characters by encoding their UTF-8
+   * representation as "%" + hex code for each resulting
+   * UTF-8 character.
+   *
+   * @param str The string to quote
+   * @param legalCharacters The set of legal characters
+   * 
+   * @return The quoted string.
+   */
+  private static String quote (String str, String legalCharacters)
+  {
+    StringBuffer sb = new StringBuffer(str.length());
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+      if (legalCharacters.indexOf(c) == -1) {
+	String hex = "0123456789ABCDEF";
+	if (c <= 127) {
+	  sb.append('%')
+	    .append(hex.charAt(c / 16))
+	    .append(hex.charAt(c % 16));
+	} else {
+	  try {
+	    // this is far from optimal, but it works
+	    byte[] utf8 = str.substring(i, i + 1).getBytes("utf-8");
+	    for (int j = 0; j < utf8.length; j++) {
+		sb.append('%')
+		.append(hex.charAt((utf8[j] & 0xff) / 16))
+		.append(hex.charAt((utf8[j] & 0xff) % 16));
+	    }
+	  } catch (java.io.UnsupportedEncodingException x) {
+	    throw (Error)new InternalError().initCause(x);
+	  }
+	}
+      } else {
+	sb.append(c);
+      }
+    }
+    return sb.toString();
   }
 
   /**
@@ -205,8 +319,9 @@ public final class URI
    * @return The quoted string.
    */
   private static String quotePath (String str) {
-    // FIXME: unimplemented.
-    return str;
+    // Technically, we should be using RFC2396_PATH, but
+    // it contains no additional characters.
+    return quote(str, RFC2396_PATH_SEGMENTS);
   }
 
   /**
@@ -499,7 +614,7 @@ public final class URI
    */
   public String getRawSchemeSpecificPart ()
   {
-    return schemeSpecificPart;
+    return rawSchemeSpecificPart;
   }
 
   /**
@@ -507,7 +622,6 @@ public final class URI
    */
   public String getSchemeSpecificPart ()
   {
-    // FIXME: unimplemented.
     return schemeSpecificPart;
   }
 
@@ -516,7 +630,7 @@ public final class URI
    */
   public String getRawAuthority ()
   {
-    return authority;
+    return rawAuthority;
   }
 
   /**
@@ -524,7 +638,6 @@ public final class URI
    */
   public String getAuthority ()
   {
-    // FIXME: unimplemented.
     return authority;
   }
 
@@ -533,7 +646,7 @@ public final class URI
    */
   public String getRawUserInfo ()
   {
-    return userInfo;
+    return rawUserInfo;
   }
 
   /**
@@ -541,7 +654,6 @@ public final class URI
    */
   public String getUserInfo ()
   {
-    // FIXME: unimplemented.
     return userInfo;
   }
 
@@ -566,7 +678,7 @@ public final class URI
    */
   public String getRawPath ()
   {
-    return path;
+    return rawPath;
   }
 
   /**
@@ -574,7 +686,6 @@ public final class URI
    */
   public String getPath ()
   {
-    // FIXME: unimplemented.
     return path;
   }
 
@@ -583,7 +694,7 @@ public final class URI
    */
   public String getRawQuery ()
   {
-    return query;
+    return rawQuery;
   }
 
   /**
@@ -591,7 +702,6 @@ public final class URI
    */
   public String getQuery ()
   {
-    // FIXME: unimplemented.
     return query;
   }
 
@@ -600,7 +710,7 @@ public final class URI
    */
   public String getRawFragment ()
   {
-    return fragment;
+    return rawFragment;
   }
 
   /**
@@ -608,7 +718,6 @@ public final class URI
    */
   public String getFragment ()
   {
-    // FIXME: unimplemented.
     return fragment;
   }
 
