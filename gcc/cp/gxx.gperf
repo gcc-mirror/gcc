@@ -19,8 +19,10 @@ __headof__, HEADOF, NORID
 __inline, SCSPEC, RID_INLINE
 __inline__, SCSPEC, RID_INLINE
 __label__, LABEL, NORID
+__signature__, AGGR, RID_SIGNATURE	/* Extension */,
 __signed, TYPESPEC, RID_SIGNED
 __signed__, TYPESPEC, RID_SIGNED
+__sigof__, SIGOF, NORID		/* Extension */,
 __typeof, TYPEOF, NORID
 __typeof__, TYPEOF, NORID
 __volatile, TYPE_QUAL, RID_VOLATILE

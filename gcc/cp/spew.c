@@ -242,6 +242,7 @@ int looking_for_template;
 
 extern struct obstack *current_obstack, *saveable_obstack;
 tree got_scope;
+tree got_object;
 
 int
 yylex()
@@ -316,7 +317,7 @@ yylex()
 	      if (lastiddecl != trrr)
 		{
 		  lastiddecl = trrr;
-		  if (got_scope)
+		  if (got_scope || got_object)
 		    tmp_token.yylval.ttype = DECL_NESTED_TYPENAME (trrr);
 		}
 	      break;
@@ -334,8 +335,11 @@ yylex()
 	lastiddecl = trrr;
       got_scope = NULL_TREE;
       /* and fall through to... */
+    case IDENTIFIER_DEFN:
     case TYPENAME:
+    case TYPENAME_DEFN:
     case PTYPENAME:
+    case PTYPENAME_DEFN:
       consume_token ();
       if (looking_for_typename > 0)
 	looking_for_typename--;

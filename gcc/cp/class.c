@@ -1687,63 +1687,6 @@ finish_struct_bits (t, max_has_virtual)
 	}
     }
 
-  /* Need to test METHOD_VEC here in case all methods
-     (conversions and otherwise) are inherited.  */
-  if (TYPE_HAS_CONVERSION (t) && method_vec != NULL_TREE)
-    {
-      tree first_conversions[last_conversion_type];
-      tree last_conversions[last_conversion_type];
-      enum conversion_type conv_index;
-      tree *tmp;
-      int i;
-
-      bzero ((char *) first_conversions, sizeof (first_conversions));
-      bzero ((char *) last_conversions, sizeof (last_conversions));
-      for (tmp = &TREE_VEC_ELT (method_vec, 1);
-	   tmp != TREE_VEC_END (method_vec); tmp += 1)
-	{
-	  /* ??? This should compare DECL_NAME (*tmp) == ansi_opname[TYPE_EXPR].  */
-	  if (IDENTIFIER_TYPENAME_P (DECL_ASSEMBLER_NAME (*tmp)))
-	    {
-	      tree fntype = TREE_TYPE (*tmp);
-	      tree return_type = TREE_TYPE (fntype);
-	      my_friendly_assert (TREE_CODE (fntype) == METHOD_TYPE, 171);
-
-	      if (typecode_p (return_type, POINTER_TYPE))
-		{
-		  if (TYPE_READONLY (TREE_TYPE (return_type)))
-		    conv_index = constptr_conv;
-		  else
-		    conv_index = ptr_conv;
-		}
-	      else if (typecode_p (return_type, INTEGER_TYPE)
-		       || typecode_p (return_type, BOOLEAN_TYPE)
-		       || typecode_p (return_type, ENUMERAL_TYPE))
-		{
-		  TYPE_HAS_INT_CONVERSION (t) = 1;
-		  conv_index = int_conv;
-		}
-	      else if (typecode_p (return_type, REAL_TYPE))
-		{
-		  TYPE_HAS_REAL_CONVERSION (t) = 1;
-		  conv_index = real_conv;
-		}
-	      else
-		continue;
-
-	      if (first_conversions[(int) conv_index] == NULL_TREE)
-		first_conversions[(int) conv_index] = *tmp;
-	      last_conversions[(int) conv_index] = *tmp;
-	    }
-	}
-
-      for (i = 0; i < (int) last_conversion_type; i++)
-	if (first_conversions[i] != last_conversions[i])
-	  CLASSTYPE_CONVERSION (t, i) = error_mark_node;
-	else
-	  CLASSTYPE_CONVERSION (t, i) = first_conversions[i];
-    }
-
   /* If this type has constructors, force its mode to be BLKmode,
      and force its TREE_ADDRESSABLE bit to be nonzero.  */
   if (TYPE_NEEDS_CONSTRUCTING (t) || TYPE_NEEDS_DESTRUCTOR (t))
@@ -1761,6 +1704,57 @@ finish_struct_bits (t, max_has_virtual)
     }
 }
 
+/* Add FN to the method_vec growing on the class_obstack.  Used by
+   finish_struct_methods.  */
+static void
+grow_method (fn)
+     tree fn;
+{
+  tree method_vec = (tree)obstack_base (&class_obstack);
+  tree *testp = &TREE_VEC_ELT (method_vec, 0);
+  if (*testp == NULL_TREE)
+    testp++;
+  while (((HOST_WIDE_INT) testp
+	  < (HOST_WIDE_INT) obstack_next_free (&class_obstack))
+	 && DECL_NAME (*testp) != DECL_NAME (fn))
+    testp++;
+  if ((HOST_WIDE_INT) testp
+      < (HOST_WIDE_INT) obstack_next_free (&class_obstack))
+    {
+      tree x, prev_x;
+
+      for (x = *testp; x; x = DECL_CHAIN (x))
+	{
+	  if (DECL_NAME (fn) == ansi_opname[(int) DELETE_EXPR]
+	      || DECL_NAME (fn) == ansi_opname[(int) VEC_DELETE_EXPR])
+	    {
+	      /* ANSI C++ June 5 1992 WP 12.5.5.1 */
+	      cp_error_at ("`%D' overloaded", fn);
+	      cp_error_at ("previous declaration as `%D' here", x);
+	    }
+	  if (DECL_ASSEMBLER_NAME (fn)==DECL_ASSEMBLER_NAME (x))
+	    {
+	      /* We complain about multiple destructors on sight,
+		 so we do not repeat the warning here.  Friend-friend
+		 ambiguities are warned about outside this loop.  */
+	      if (!DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fn)))
+		cp_error_at ("ambiguous method `%#D' in structure", fn);
+	      break;
+	    }
+	  prev_x = x;
+	}
+      if (x == 0)
+	{
+	  if (*testp)
+	    DECL_CHAIN (prev_x) = fn;
+	  else
+	    *testp = fn;
+	}
+    }
+  else
+    obstack_ptr_grow (&class_obstack, fn);
+}
+
 /* Warn about duplicate methods in fn_fields.  Also compact method
    lists so that lookup can be made faster.
 
@@ -1769,10 +1763,12 @@ finish_struct_bits (t, max_has_virtual)
 
    Data Structure: List of method lists.  The outer list is a
    TREE_LIST, whose TREE_PURPOSE field is the field name and the
-   TREE_VALUE is the TREE_CHAIN of the FUNCTION_DECLs.  Friends are
-   chained in the same way as member functions, but they live in the
-   TREE_TYPE field of the outer list.  That allows them to be quickly
-   deleted, and requires no extra storage.
+   TREE_VALUE is the DECL_CHAIN of the FUNCTION_DECLs.  TREE_CHAIN
+   links the entire list of methods for TYPE_METHODS.  Friends are
+   chained in the same way as member functions (? TREE_CHAIN or
+   DECL_CHAIN), but they live in the TREE_TYPE field of the outer
+   list.  That allows them to be quickly deleted, and requires no
+   extra storage.
 
    If there are any constructors/destructors, they are moved to the
    front of the list.  This makes pushclass more efficient.
@@ -1789,6 +1785,8 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
      int nonprivate_method;
 {
   tree method_vec;
+  tree save_fn_fields = tree_cons (NULL_TREE, NULL_TREE, fn_fields);
+  tree lastp;
   tree name = constructor_name (t);
   int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
 
@@ -1802,16 +1800,14 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
   obstack_free (&class_obstack, method_vec);
   obstack_blank (&class_obstack, sizeof (struct tree_vec));
 
-  while (fn_fields)
+  /* First fill in entry 0 with the constructors, and the next few with
+     type conversion operators (if any).  */
+
+  for (lastp = save_fn_fields; fn_fields; fn_fields = TREE_CHAIN (lastp))
     {
-      /* NEXT Pointer, TEST Pointer, and BASE Pointer.  */
-      tree nextp, *testp;
       tree fn_name = DECL_NAME (fn_fields);
       if (fn_name == NULL_TREE)
 	fn_name = name;
-
-      nextp = TREE_CHAIN (fn_fields);
-      TREE_CHAIN (fn_fields) = NULL_TREE;
 
       /* Clear out this flag.
 
@@ -1840,8 +1836,45 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
  		    TYPE_HAS_NONPUBLIC_CTOR (t) = 2;
  		}
  	    }
+	  /* Constructors are handled easily in search routines.  */
+	  DECL_CHAIN (fn_fields) = TREE_VEC_ELT (method_vec, 0);
+	  TREE_VEC_ELT (method_vec, 0) = fn_fields;
  	}
-      else if (fn_name == ansi_opname[(int) MODIFY_EXPR])
+      else if (IDENTIFIER_TYPENAME_P (fn_name))
+	{
+	  tree return_type = TREE_TYPE (TREE_TYPE (fn_fields));
+
+	  if (typecode_p (return_type, INTEGER_TYPE)
+	      || typecode_p (return_type, BOOLEAN_TYPE)
+	      || typecode_p (return_type, ENUMERAL_TYPE))
+	    TYPE_HAS_INT_CONVERSION (t) = 1;
+	  else if (typecode_p (return_type, REAL_TYPE))
+	    TYPE_HAS_REAL_CONVERSION (t) = 1;
+
+	  grow_method (fn_fields);
+	}
+      else
+	{
+	  lastp = fn_fields;
+	  continue;
+	}
+
+      TREE_CHAIN (lastp) = TREE_CHAIN (fn_fields);
+      TREE_CHAIN (fn_fields) = NULL_TREE;
+    }
+
+  fn_fields = TREE_CHAIN (save_fn_fields);
+  while (fn_fields)
+    {
+      tree nextp;
+      tree fn_name = DECL_NAME (fn_fields);
+      if (fn_name == NULL_TREE)
+	fn_name = name;
+
+      nextp = TREE_CHAIN (fn_fields);
+      TREE_CHAIN (fn_fields) = NULL_TREE;
+
+      if (fn_name == ansi_opname[(int) MODIFY_EXPR])
 	{
 	  tree parmtype = TREE_VALUE (FUNCTION_ARG_CHAIN (fn_fields));
 
@@ -1854,65 +1887,12 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	    }
 	}
 
-      /* Constructors are handled easily in search routines.  */
-      if (fn_name == name)
-	{
-	  DECL_CHAIN (fn_fields) = TREE_VEC_ELT (method_vec, 0);
-	  TREE_VEC_ELT (method_vec, 0) = fn_fields;
-	}
-      else
-	{
-	  testp = &TREE_VEC_ELT (method_vec, 0);
-	  if (*testp == NULL_TREE)
-	    testp++;
-	  while (((HOST_WIDE_INT) testp
-		  < (HOST_WIDE_INT) obstack_next_free (&class_obstack))
-		 && DECL_NAME (*testp) != fn_name)
-	    testp++;
-	  if ((HOST_WIDE_INT) testp
-	      < (HOST_WIDE_INT) obstack_next_free (&class_obstack))
-	    {
-	      tree x, prev_x;
-
-	      for (x = *testp; x; x = DECL_CHAIN (x))
-		{
-		  if (DECL_NAME (fn_fields) == ansi_opname[(int) DELETE_EXPR]
-		      || DECL_NAME (fn_fields)
-		         == ansi_opname[(int) VEC_DELETE_EXPR])
-		    {
-		      /* ANSI C++ June 5 1992 WP 12.5.5.1 */
-		      cp_error_at ("`%D' overloaded", fn_fields);
-		      cp_error_at ("previous declaration as `%D' here", x);
-		    }
-		  if (DECL_ASSEMBLER_NAME (fn_fields)==DECL_ASSEMBLER_NAME (x))
-		    {
-		      /* We complain about multiple destructors on sight,
-			 so we do not repeat the warning here.  Friend-friend
-			 ambiguities are warned about outside this loop.  */
-		      if (!DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fn_fields)))
-			cp_error_at ("ambiguous method `%#D' in structure",
-				     fn_fields);
-		      break;
-		    }
-		  prev_x = x;
-		}
-	      if (x == 0)
-		{
-		  if (*testp)
-		    DECL_CHAIN (prev_x) = fn_fields;
-		  else
-		    *testp = fn_fields;
-		}
-	    }
-	  else
-	    {
-	      obstack_ptr_grow (&class_obstack, fn_fields);
-	      method_vec = (tree)obstack_base (&class_obstack);
-	    }
-	}
+      grow_method (fn_fields);
       fn_fields = nextp;
     }
 
+  /* Update in case method_vec has moved.  */
+  method_vec = (tree)obstack_base (&class_obstack);
   TREE_VEC_LENGTH (method_vec) = (tree *)obstack_next_free (&class_obstack)
     - (&TREE_VEC_ELT (method_vec, 0));
   obstack_finish (&class_obstack);
@@ -4737,7 +4717,7 @@ instantiate_type (lhstype, rhs, complain)
 	/* First look for an exact match  */
 
 	while (field && TREE_TYPE (field) != lhstype)
-	  field = TREE_CHAIN (field);
+	  field = DECL_CHAIN (field);
 	if (field)
 	  {
 	    TREE_OPERAND (rhs, 1) = field;
@@ -4747,13 +4727,13 @@ instantiate_type (lhstype, rhs, complain)
 	/* No exact match found, look for a compatible function.  */
 	field = TREE_OPERAND (rhs, 1);
 	while (field && ! comptypes (lhstype, TREE_TYPE (field), 0))
-	  field = TREE_CHAIN (field);
+	  field = DECL_CHAIN (field);
 	if (field)
 	  {
 	    TREE_OPERAND (rhs, 1) = field;
-	    field = TREE_CHAIN (field);
+	    field = DECL_CHAIN (field);
 	    while (field && ! comptypes (lhstype, TREE_TYPE (field), 0))
-	      field = TREE_CHAIN (field);
+	      field = DECL_CHAIN (field);
 	    if (field)
 	      {
 		if (complain)
@@ -4821,7 +4801,7 @@ instantiate_type (lhstype, rhs, complain)
 		  {
 		    int n = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (elem));
 		    tree *t = (tree *) alloca (sizeof (tree) * n);
-		    int i, d;
+		    int i, d = 0;
 		    i = type_unification (DECL_TEMPLATE_PARMS (elem), t,
 					  TYPE_ARG_TYPES (TREE_TYPE (elem)),
 					  TYPE_ARG_TYPES (lhstype), &d, 0);
@@ -4845,14 +4825,15 @@ instantiate_type (lhstype, rhs, complain)
 
 	    /* No match found, look for a compatible function.  */
 	    elem = get_first_fn (rhs);
-	    while (elem && ! comp_target_types (lhstype, TREE_TYPE (elem), 1))
+	    while (elem && comp_target_types (lhstype,
+					      TREE_TYPE (elem), 1) <= 0)
 	      elem = DECL_CHAIN (elem);
 	    if (elem)
 	      {
 		tree save_elem = elem;
 		elem = DECL_CHAIN (elem);
-		while (elem && ! comp_target_types (lhstype, TREE_TYPE (elem),
-						    0))
+		while (elem && comp_target_types (lhstype,
+						  TREE_TYPE (elem), 0) <= 0)
 		  elem = DECL_CHAIN (elem);
 		if (elem)
 		  {
@@ -4900,7 +4881,7 @@ instantiate_type (lhstype, rhs, complain)
 	      if (comptypes (lhstype, TREE_TYPE (elem), 1))
 		return elem;
 	      else
-		elem = TREE_CHAIN (elem);
+		elem = DECL_CHAIN (elem);
 	  }
 
 	/* No exact match found, look for a compatible method.  */
@@ -4908,14 +4889,16 @@ instantiate_type (lhstype, rhs, complain)
 	     baselink = next_baselink (baselink))
 	  {
 	    elem = TREE_VALUE (baselink);
-	    while (elem && ! comp_target_types (lhstype, TREE_TYPE (elem), 1))
-	      elem = TREE_CHAIN (elem);
+	    while (elem && comp_target_types (lhstype,
+					      TREE_TYPE (elem), 1) <= 0)
+	      elem = DECL_CHAIN (elem);
 	    if (elem)
 	      {
 		tree save_elem = elem;
-		elem = TREE_CHAIN (elem);
-		while (elem && ! comp_target_types (lhstype, TREE_TYPE (elem), 0))
-		  elem = TREE_CHAIN (elem);
+		elem = DECL_CHAIN (elem);
+		while (elem && comp_target_types (lhstype,
+						  TREE_TYPE (elem), 0) <= 0)
+		  elem = DECL_CHAIN (elem);
 		if (elem)
 		  {
 		    if (complain)
@@ -4940,7 +4923,7 @@ instantiate_type (lhstype, rhs, complain)
 #endif
 	  }
 	if (complain)
-	  error ("no static member functions named `%s'",
+	  error ("no compatible member functions named `%s'",
 		 IDENTIFIER_POINTER (name));
 	return error_mark_node;
       }

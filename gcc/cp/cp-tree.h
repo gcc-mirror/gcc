@@ -114,6 +114,14 @@ extern int pedantic;
 
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is read-only.  */
 #define C_TYPE_FIELDS_READONLY(type) TYPE_LANG_FLAG_0 (type)
+
+/* Record in each node resulting from a binary operator
+   what operator was specified for it.  */
+#define C_EXP_ORIGINAL_CODE(exp) ((enum tree_code) TREE_COMPLEXITY (exp))
+
+/* Store a value in that field.  */
+#define C_SET_EXP_ORIGINAL_CODE(exp, code) \
+  (TREE_COMPLEXITY (exp) = (int)(code))
 
 /* If non-zero, a VAR_DECL whose cleanup will cause a throw to the
    next exception handler.  */
@@ -271,7 +279,8 @@ extern int interface_only, interface_unknown;
 
 extern int flag_elide_constructors;
 
-/* Nonzero means handle things in ANSI, instead of GNU fashion.  */
+/* Nonzero means enable obscure ANSI features and disable GNU extensions
+   that might cause ANSI-compliant code to be miscompiled.  */
 
 extern int flag_ansi;
 
@@ -369,9 +378,6 @@ enum languages { lang_c, lang_cplusplus };
 #define ACCESSIBLY_UNIQUELY_DERIVED_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 1, (tree *)0) >= 0)
 #define DERIVED_FROM_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 0, (tree *)0) != -1)
 
-enum conversion_type { ptr_conv, constptr_conv, int_conv,
-		       real_conv, last_conversion_type };
-
 /* Statistics show that while the GNU C++ compiler may generate
    thousands of different types during a compilation run, it
    generates relatively few (tens) of classtypes.  Because of this,
@@ -492,7 +498,6 @@ struct lang_type
   union tree_node *friend_classes;
 
   char *mi_matrix;
-  union tree_node *conversions[last_conversion_type];
 
   union tree_node *rtti;
 
@@ -657,6 +662,12 @@ struct lang_type
 /* List of lists of member functions defined in this class.  */
 #define CLASSTYPE_METHOD_VEC(NODE) TYPE_METHODS(NODE)
 
+/* The first type conversion operator in the class (the others can be
+   searched with TREE_CHAIN), or the first non-constructor function if
+   there are no type conversion operators.  */
+#define CLASSTYPE_FIRST_CONVERSION(NODE) \
+  TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (NODE), 1)
+
 /* Pointer from any member function to the head of the list of
    member functions of the type that member function belongs to.  */
 #define CLASSTYPE_BASELINK_VEC(NODE) (TYPE_LANG_SPECIFIC(NODE)->baselink_vec)
@@ -806,12 +817,6 @@ struct lang_type
 /* Keep an inheritance lattice around so we can quickly tell whether
    a type is derived from another or not.  */
 #define CLASSTYPE_MI_MATRIX(NODE) (TYPE_LANG_SPECIFIC(NODE)->mi_matrix)
-
-/* If there is exactly one conversion to a non-void, non-const pointer type,
-   remember that here.  If there are more than one, put
-   `error_mark_node' here.  If there are none, this holds NULL_TREE.  */
-#define CLASSTYPE_CONVERSION(NODE,KIND) \
-  (TYPE_LANG_SPECIFIC(NODE)->conversions[(int) KIND])
 
 /* Say whether this node was declared as a "class" or a "struct".  */
 #define CLASSTYPE_DECLARED_CLASS(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.declared_class)
@@ -2243,6 +2248,7 @@ extern void print_search_statistics		PROTO((void));
 extern void init_search_processing		PROTO((void));
 extern void reinit_search_statistics		PROTO((void));
 extern tree current_scope			PROTO((void));
+extern tree lookup_conversions			PROTO((tree));
 
 /* in sig.c */
 extern tree build_signature_pointer_type	PROTO((tree, int, int));

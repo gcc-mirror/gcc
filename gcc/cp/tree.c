@@ -102,6 +102,11 @@ lvalue_p (ref)
 
     case COMPOUND_EXPR:
       return lvalue_p (TREE_OPERAND (ref, 1));
+
+    case MAX_EXPR:
+    case MIN_EXPR:
+      return (lvalue_p (TREE_OPERAND (ref, 0))
+	      && lvalue_p (TREE_OPERAND (ref, 1)));
     }
 
   return 0;
@@ -570,15 +575,28 @@ layout_vbasetypes (rec, max)
       BINFO_OFFSET (vbase_types) = offset;
 
       if (TREE_CODE (TYPE_SIZE (basetype)) == INTEGER_CST)
-	const_size += MAX (BITS_PER_UNIT,
-			   TREE_INT_CST_LOW (TYPE_SIZE (basetype))
-			   - TREE_INT_CST_LOW (CLASSTYPE_VBASE_SIZE (basetype)));
+	{
+	  /* Every virtual baseclass takes a least a UNIT, so that we can
+	     take it's address and get something different for each base.  */
+	  const_size += MAX (BITS_PER_UNIT,
+			     TREE_INT_CST_LOW (TYPE_SIZE (basetype))
+			     - TREE_INT_CST_LOW (CLASSTYPE_VBASE_SIZE (basetype)));
+	}
       else if (var_size == 0)
 	var_size = TYPE_SIZE (basetype);
       else
 	var_size = size_binop (PLUS_EXPR, var_size, TYPE_SIZE (basetype));
 
       vbase_types = TREE_CHAIN (vbase_types);
+    }
+
+  if (const_size)
+    {
+      /* Because a virtual base might take a single byte above,
+	 we have to re-adjust the total size to make sure it it
+	 a multiple of the alignment.  */
+      /* Give the whole object the alignment it wants.  */
+      const_size = CEIL (const_size, record_align) * record_align;
     }
 
   /* Set the alignment in the complete type.  We don't set CLASSTYPE_ALIGN
