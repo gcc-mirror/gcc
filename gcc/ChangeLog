@@ -1,5 +1,12 @@
 2001-06-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.md ("extendhisi2"): Fix constraints to
+	prefer a memory for operand 1.
+	("*addsi3"): Fix constraints, the '!' was too strong.
+	("*addsi3_split"): Accept soft register and split accordingly.
+
+2001-06-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11-protos.h (m68hc11_initialize_trampoline): 
 	Move definition in the RTX_CODE section.
 
