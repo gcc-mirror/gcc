@@ -3615,8 +3615,7 @@ output_constant_pool (fnname, fndecl)
   /* It is possible for gcc to call force_const_mem and then to later
      discard the instructions which refer to the constant.  In such a
      case we do not need to output the constant.  */
-  if (optimize >= 0 && flag_expensive_optimizations)
-    mark_constant_pool ();
+  mark_constant_pool ();
 
 #ifdef ASM_OUTPUT_POOL_PROLOGUE
   ASM_OUTPUT_POOL_PROLOGUE (asm_out_file, fnname, fndecl, pool_offset);

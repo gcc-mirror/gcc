@@ -1,3 +1,7 @@
+Sun Mar 28 15:34:28 1999  Richard Henderson  <rth@cygnus.com>
+
+	* varasm.c (output_constant_pool): Always mark the constant pool.
+
 Sun Mar 28 16:09:01 1999  "Jerry Quinn" <jquinn@nortelnetworks.com>
 
 	* pa.c (pa_adjust_cost): Don't do cost adjustments on pa8000.
