@@ -273,6 +273,7 @@ extern int  kept_level_p                        PROTO((void));
 extern tree lookup_label                        PROTO((tree));
 extern tree lookup_name                         PROTO((tree));
 extern tree lookup_name_current_level		PROTO((tree));
+extern tree lookup_name_current_level_global	PROTO((tree));
 extern tree maybe_build_cleanup                 PROTO((tree));
 extern void parmlist_tags_warning               PROTO((void));
 extern void pending_xref_error                  PROTO((void));
