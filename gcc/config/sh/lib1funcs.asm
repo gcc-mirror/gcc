@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #if 1 /* ??? The export list mechanism is broken, everything that is not
 	 hidden is exported.  */
 #undef FUNC
-#define FUNC(X)		.type X,@function  .hidden X
+#define FUNC(X)		.type X,@function; .hidden X
 #undef ALIAS
 #define ALIAS(X,Y)	.global GLOBAL(X); .set GLOBAL(X),GLOBAL(Y); .hidden GLOBAL(X)
 #endif
