@@ -21,7 +21,7 @@
 
 AC_PREREQ(2.13)
 AC_INIT(objc/objc.h)
-#AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADER(config.h)
 
 if test "${srcdir}" = "." ; then
   if test "${with_target_subdir}" != "." ; then
@@ -90,6 +90,8 @@ the Objective C runtime system.  If necessary, install gcc now with
 \`LANGUAGES=c', then the target library, then build with \`LANGUAGES=objc'.])])
 
 AC_HEADER_STDC
+
+AC_CHECK_HEADERS(sched.h)
 
 # Determine CFLAGS for gthread.
 
