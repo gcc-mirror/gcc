@@ -1776,11 +1776,45 @@ extern tree build_qualified_type        PARAMS ((tree, int));
 extern tree build_type_copy		PARAMS ((tree));
 
 /* Given a ..._TYPE node, calculate the TYPE_SIZE, TYPE_SIZE_UNIT,
-   TYPE_ALIGN and TYPE_MODE fields.
-   If called more than once on one node, does nothing except
-   for the first time.  */
+   TYPE_ALIGN and TYPE_MODE fields.  If called more than once on one
+   node, does nothing except for the first time.  */
 
 extern void layout_type			PARAMS ((tree));
+
+/* These functions allow a front-end to perform a manual layout of a
+   RECORD_TYPE.  (For instance, if the placement of subsequent fields
+   depends on the placement of fields so far.)  Begin by calling
+   new_record_layout_info.  Then, call layout_field for each of the
+   fields.  Then, call finish_record_layout.  See layout_type for the
+   default way in which these functions are used.  */
+
+struct record_layout_info_s
+{
+  /* The RECORD_TYPE that we are laying out.  */
+  tree t;
+  /* The size of the record so far, in bits.  */
+  unsigned HOST_WIDE_INT const_size;
+  /* The alignment of the record so far, in bits.  */
+  unsigned int record_align;
+  /* If the record can have a variable size, then this will be
+     non-NULL, and the total size will be CONST_SIZE + VAR_SIZE.  */
+  tree var_size;
+  /* If the record can have a variable size, then this will be the
+     maximum alignment that we know VAR_SIZE has.  */
+  unsigned int var_align;
+  /* The static variables (i.e., class variables, as opposed to
+     instance variables) encountered in T.  */
+  tree pending_statics;
+  unsigned int unpacked_align;
+  int packed_maybe_necessary;
+};
+
+typedef struct record_layout_info_s *record_layout_info;
+
+extern record_layout_info new_record_layout_info 
+                                        PARAMS ((tree));
+extern void layout_field                PARAMS ((record_layout_info, tree));
+extern void finish_record_layout        PARAMS ((record_layout_info));
 
 /* Given a hashcode and a ..._TYPE node (for which the hashcode was made),
    return a canonicalized ..._TYPE node, so that duplicates are not made.

@@ -1,3 +1,19 @@
+2000-03-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (record_layout_info_s): New structure.
+	(record_layout_info): New type.
+	(new_record_layout_info): New function.
+	(layout_field): Likewise.
+	(finish_record_layout): Likewise.
+	* stor-layout.c (layout_record): Remove.
+	(new_record_layout_info): New function.
+	(layout_field): New function, broken out from layout_record.
+	(finalize_record_size): Likewise.
+	(compute_record_mode): Likewise.
+	(finalize_type_size): New function, broken out from layout_type.
+	(finish_record_layout): Likewise.
+	(layout_type): Use them.
+	
 2000-03-12  Zack Weinberg  <zack@wolery.cumb.org>
 
  	* cpphash.c: Don't include version.h.
