@@ -39,18 +39,100 @@ char *xmalloc ();
 static void fatal ();
 void fancy_abort ();
 
+/* Names for patterns.  Need to allow linking with print-rtl.  */
+char **insn_name_ptr;
+
+/* Obstacks to remember normal, and call insns.  */
+static struct obstack call_obstack, normal_obstack;
+
+/* Max size of names encountered.  */
+static int max_id_len;
+
+/* Count the number of match_operand's found.  */
+static int
+num_operands (x)
+     rtx x;
+{
+  int count = 0;
+  int i, j;
+  enum rtx_code code = GET_CODE (x);
+  char *format_ptr = GET_RTX_FORMAT (code);
+
+  if (code == MATCH_OPERAND)
+    return 1;
+
+  if (code == MATCH_OPERATOR)
+    count++;
+
+  for (i = 0; i < GET_RTX_LENGTH (code); i++)
+    {
+      switch (*format_ptr++)
+	{
+	case 'u':
+	case 'e':
+	  count += num_operands (XEXP (x, i));
+	  break;
+
+	case 'E':
+	  if (XVEC (x, i) != NULL)
+	    for (j = 0; j < XVECLEN (x, i); j++)
+	      count += num_operands (XVECEXP (x, i, j));
+
+	  break;
+	}
+    }
+
+  return count;
+}
+
+/* Print out prototype information for a function.  */
+static void
+gen_proto (insn)
+     rtx insn;
+{
+  int num = num_operands (insn);
+  printf ("extern rtx gen_%-*s PROTO((", max_id_len, XSTR (insn, 0));
+
+  if (num == 0)
+    printf ("void");
+  else
+    {
+      while (num-- > 1)
+	printf ("rtx, ");
+
+      printf ("rtx");
+    }
+
+  printf ("));\n");
+}
+
+/* Print out a function declaration without a prototype.  */
+static void
+gen_nonproto (insn)
+     rtx insn;
+{
+  printf ("extern rtx gen_%s ();\n", XSTR (insn, 0));
+}
+
 static void
 gen_insn (insn)
      rtx insn;
 {
+  char *name = XSTR (insn, 0);
   char *p;
+  struct obstack *obstack_ptr;
+  int len;
 
   /* Don't mention instructions whose names are the null string.
      They are in the machine description just to be recognized.  */
-  if (strlen (XSTR (insn, 0)) == 0)
+  len = strlen (name);
+  if (len == 0)
     return;
 
-  printf ("#define HAVE_%s ", XSTR (insn, 0));
+  if (len > max_id_len)
+    max_id_len = len;
+
+  printf ("#define HAVE_%s ", name);
   if (strlen (XSTR (insn, 2)) == 0)
     printf ("1\n");
   else
@@ -68,7 +150,16 @@ gen_insn (insn)
       printf (")\n");
     }
       
-  printf ("extern rtx gen_%s ();\n", XSTR (insn, 0));
+  /* Save the current insn, so that we can later put out appropriate
+     prototypes.  At present, most md files have the wrong number of
+     arguments for call and call_value, ignoring the extra arguments
+     that are passed for some machines, so by default, turn off the
+     prototype.  */
+
+  obstack_ptr = (!strcmp (name, "call") || !strcmp (name, "call_value"))
+    ? &call_obstack : &normal_obstack;
+
+  obstack_grow (obstack_ptr, &insn, sizeof (rtx));
 }
 
 char *
@@ -119,10 +210,16 @@ main (argc, argv)
      char **argv;
 {
   rtx desc;
+  rtx dummy;
+  rtx *call_insns;
+  rtx *normal_insns;
+  rtx *insn_ptr;
   FILE *infile;
   register int c;
 
   obstack_init (rtl_obstack);
+  obstack_init (&call_obstack);
+  obstack_init (&normal_obstack);
 
   if (argc <= 1)
     fatal ("No input file name.");
@@ -152,6 +249,36 @@ from the machine description file `md'.  */\n\n");
       if (GET_CODE (desc) == DEFINE_INSN || GET_CODE (desc) == DEFINE_EXPAND)
 	gen_insn (desc);
     }
+
+  /* Print out the prototypes now.  */
+  dummy = (rtx)0;
+  obstack_grow (&call_obstack, &dummy, sizeof (rtx));
+  call_insns = (rtx *) obstack_finish (&call_obstack);
+
+  obstack_grow (&normal_obstack, &dummy, sizeof (rtx));
+  normal_insns = (rtx *) obstack_finish (&normal_obstack);
+
+  printf ("\n#ifndef NO_MD_PROTOTYPES\n");
+  for (insn_ptr = normal_insns; *insn_ptr; insn_ptr++)
+    gen_proto (*insn_ptr);
+
+  printf ("\n#ifdef MD_CALL_PROTOTYPES\n");
+  for (insn_ptr = call_insns; *insn_ptr; insn_ptr++)
+    gen_proto (*insn_ptr);
+
+  printf ("\n#else /* !MD_CALL_PROTOTYPES */\n");
+  for (insn_ptr = call_insns; *insn_ptr; insn_ptr++)
+    gen_nonproto (*insn_ptr);
+
+  printf ("#endif /* !MD_CALL_PROTOTYPES */\n");
+  printf ("\n#else  /* NO_MD_PROTOTYPES */\n");
+  for (insn_ptr = normal_insns; *insn_ptr; insn_ptr++)
+    gen_nonproto (*insn_ptr);
+
+  for (insn_ptr = call_insns; *insn_ptr; insn_ptr++)
+    gen_nonproto (*insn_ptr);
+
+  printf ("#endif  /* NO_MD_PROTOTYPES */\n");
 
   fflush (stdout);
   exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
