@@ -4704,13 +4704,19 @@ assign_parms (tree fndecl)
 
 	 Set DECL_RTL to that place.  */
 
-      if (GET_CODE (entry_parm) == PARALLEL && nominal_mode != BLKmode)
+      if (GET_CODE (entry_parm) == PARALLEL && nominal_mode != BLKmode
+	  && XVECLEN (entry_parm, 0) > 1)
 	{
-	  /* Objects the size of a register can be combined in registers */
+	  /* Reconstitute objects the size of a register or larger using
+	     register operations instead of the stack.  */
 	  rtx parmreg = gen_reg_rtx (nominal_mode);
-	  emit_group_store (parmreg, entry_parm, TREE_TYPE (parm),
-			    int_size_in_bytes (TREE_TYPE (parm)));
-	  SET_DECL_RTL (parm, parmreg);
+
+	  if (REG_P (parmreg))
+	    {
+	      emit_group_store (parmreg, entry_parm, TREE_TYPE (parm),
+				int_size_in_bytes (TREE_TYPE (parm)));
+	      SET_DECL_RTL (parm, parmreg);
+	    }
 	}
 
       if (nominal_mode == BLKmode

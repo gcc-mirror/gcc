@@ -1,3 +1,9 @@
+2003-12-03  David Edelsohn  <edelsohn@gnu.org>
+
+	* function.c (assign_parms): Make sure parm PARALLEL combined
+	in reg is composed of more than one object and the mode really
+	produces a reg.
+
 2003-12-03  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (classify_argument): Make it 64bit clean.
