@@ -426,18 +426,36 @@ lex (pfile, skip_evaluation, token)
 
 	  return parse_defined (pfile);
 	}
-      /* Controlling #if expressions cannot contain identifiers (they
-	 could become macros in the future).  */
-      pfile->mi_state = MI_FAILED;
+      else if (CPP_OPTION (pfile, cplusplus)
+	       && (token->val.node == pfile->spec_nodes.n_true
+		   || token->val.node == pfile->spec_nodes.n_false))
+	{
+	  op.op = CPP_INT;
+	  op.unsignedp = 0;
+	  op.value = (token->val.node == pfile->spec_nodes.n_true);
 
-      op.op = CPP_INT;
-      op.unsignedp = 0;
-      op.value = 0;
+	  /* Warn about use of true or false in #if when pedantic
+	     and stdbool.h has not been included.  */
+	  if (CPP_PEDANTIC (pfile)
+	      && ! cpp_defined (pfile, DSC("__bool_true_false_are_defined")))
+	    cpp_pedwarn (pfile, "ISO C++ does not permit \"%s\" in #if",
+			 token->val.node->name);
+	  return op;
+	}
+      else
+	{
+	  /* Controlling #if expressions cannot contain identifiers (they
+	     could become macros in the future).  */
+	  pfile->mi_state = MI_FAILED;
 
-      if (CPP_OPTION (pfile, warn_undef) && !skip_evaluation)
-	cpp_warning (pfile, "\"%s\" is not defined", token->val.node->name);
+	  op.op = CPP_INT;
+	  op.unsignedp = 0;
+	  op.value = 0;
 
-      return op;
+	  if (CPP_OPTION (pfile, warn_undef) && !skip_evaluation)
+	    cpp_warning (pfile, "\"%s\" is not defined", token->val.node->name);
+	  return op;
+	}
 
     case CPP_HASH:
       {

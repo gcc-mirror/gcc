@@ -1,3 +1,12 @@
+2001-02-07  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* cpphash.h (struct spec_nodes): Add n_true and n_false.
+	* cppinit.c (cpp_create_reader): Initialize them.
+	(append_include_chain): cxx_aware arg might be unused.
+	* cppexp.c (lex): In C++ mode, recognize 'true' and 'false'
+	keywords and give them their phase 7 meaning.  Pedwarn about
+	this unless '__bool_true_false_are_defined' is defined.
+
 2001-02-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* lcm.c (optimize_mode_switching): Emit mode_set before the
