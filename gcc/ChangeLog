@@ -1,4 +1,15 @@
-2002-07-02  Will Cohen <wcohen@redhat.com>
+2002-07-03  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (fix_truncdfsi2_internal): Ignore DImode
+	in FPR as preference.
+	(fctiwz): Same.
+	(floatdidf2, fix_truncdfdi2): Same.
+	(floatdisf2, floatditf2, fix_trunctfdi2): Same.
+	(floatditf2): Same.
+	(floatsitf2, fix_trunctfsi2): SImode in GPR.
+	(ctrdi): Remove FPR alternative and splitter.
+
+2002-07-03  Will Cohen  <wcohen@redhat.com>
 
 	* config/i386/i386.c (x86_integer_DFmode_moves): Disable for PPro.
 
