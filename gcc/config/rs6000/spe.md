@@ -2165,7 +2165,9 @@
 (define_insn "*movv2si_internal"
   [(set (match_operand:V2SI 0 "nonimmediate_operand" "=m,r,r,r")
 	(match_operand:V2SI 1 "input_operand" "r,m,r,W"))]
-  "TARGET_SPE"
+  "TARGET_SPE
+   && (gpc_reg_operand (operands[0], V2SImode)
+       || gpc_reg_operand (operands[1], V2SImode))"
   "*
 {
   switch (which_alternative)
@@ -2197,7 +2199,9 @@
 (define_insn "*movv1di_internal"
   [(set (match_operand:V1DI 0 "nonimmediate_operand" "=m,r,r,r")
 	(match_operand:V1DI 1 "input_operand" "r,m,r,W"))]
-  "TARGET_SPE"
+  "TARGET_SPE
+   && (gpc_reg_operand (operands[0], V1DImode)
+       || gpc_reg_operand (operands[1], V1DImode))"
   "@
    evstdd%X0 %1,%y0
    evldd%X1 %0,%y1
@@ -2215,7 +2219,9 @@
 (define_insn "*movv4hi_internal"
   [(set (match_operand:V4HI 0 "nonimmediate_operand" "=m,r,r")
 	(match_operand:V4HI 1 "input_operand" "r,m,r"))]
-  "TARGET_SPE"
+  "TARGET_SPE
+   && (gpc_reg_operand (operands[0], V4HImode)
+       || gpc_reg_operand (operands[1], V4HImode))"
   "@
    evstdd%X0 %1,%y0
    evldd%X1 %0,%y1
@@ -2231,7 +2237,9 @@
 (define_insn "*movv2sf_internal"
   [(set (match_operand:V2SF 0 "nonimmediate_operand" "=m,r,r,r")
 	(match_operand:V2SF 1 "input_operand" "r,m,r,W"))]
-  "TARGET_SPE"
+  "TARGET_SPE
+   && (gpc_reg_operand (operands[0], V2SFmode)
+       || gpc_reg_operand (operands[1], V2SFmode))"
   "@
    evstdd%X0 %1,%y0
    evldd%X1 %0,%y1
@@ -2239,6 +2247,8 @@
    evxor %0,%0,%0"
   [(set_attr "type" "vecload,vecstore,*,*")
    (set_attr "length" "*,*,*,*")])
+
+;; End of vector move instructions.
 
 (define_insn "spe_evmwhssfaa"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")

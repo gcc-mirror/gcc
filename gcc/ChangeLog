@@ -1,3 +1,8 @@
+2004-02-10  Aldy Hernandez  <aldyh@redhat.com>
+ 
+        * config/rs6000/spe.md ("*movv2si_internal"): Check for register
+        operand.
+
 2004-02-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* emit-rtl.c (mark_label_nuses): Check that a LABEL_REF refers to
