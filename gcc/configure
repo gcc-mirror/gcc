@@ -5254,6 +5254,10 @@ if [ x$enable_haifa != x ]; then
     done
 fi
 
+# Nothing to do for FLOAT_H, float_format already handled.
+objdir=`pwd`
+
+
 # Process the language and host/target makefile fragments.
 ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xmake_file" "$dep_tmake_file"
 
@@ -5515,6 +5519,7 @@ s%@target_subdir@%$target_subdir%g
 s%@inhibit_libc@%$inhibit_libc%g
 s%@sched_prefix@%$sched_prefix%g
 s%@sched_cflags@%$sched_cflags%g
+s%@objdir@%$objdir%g
 s%@subdirs@%$subdirs%g
 s%@all_languages@%$all_languages%g
 s%@all_boot_languages@%$all_boot_languages%g

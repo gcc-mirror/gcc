@@ -1,5 +1,7 @@
 Mon May 18 01:24:08 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (program_transform_name, objdir): Define.
+
 	* Makefile.in (BISON): Use bison from the build tree if it exists.
 	(FLEX): Similarly.
 

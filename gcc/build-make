@@ -28,8 +28,8 @@ FIXINCLUDES=Makefile.in
 STMP_FIXPROTO =
 
 # Cause installation using install-build. We do nothing here.
-INSTALL_TARGET = install-build
+#INSTALL_TARGET = install-build
 
 # Don't try to compile the things we can't compile or we have made
 # while making gcc with the cross-compiler.
-ALL = all.build
+#ALL = all.build

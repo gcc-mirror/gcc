@@ -1,5 +1,16 @@
 Mon May 18 01:23:33 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (TARGET_TOOLPREFIX): No longer define.
+	(AR_FOR_TARGET, RANLIB_FOR_TARGET): Define to use versions in
+	the build tree if they exist.
+	(AR, AR_FLAGS, OLDAR, OLDAR_FLAGS, RANLIB, RANLIB_TEST): Update
+	appropriately.
+	(objdir): Let configure substitute value.
+	(FLOAT_H): Let configure select a pre-built version from the
+	config subdir.
+	* build-make (INSTALL_TARGET, ALL): Disable, no longer needed.
+	* configure.in: Substitute for objdir.
+
 	* Makefile.in (build_canonical, host_canonical): Let configure
 	substitute values for these variables.
 	* configure.in: Substitute for build_canonical, host_canonical
