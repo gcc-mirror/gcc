@@ -754,7 +754,7 @@
    fstws %1,-16(30)\;ldw -16(30),%0
    stw %1,-16(30)\;fldws -16(30),%0
    fcpy,sgl %1,%0"
-  [(set_attr "type" "move,load,store,move,move,fpalu")
+  [(set_attr "type" "move,load,store,load,fpload,fpalu")
    (set_attr "length" "1,1,1,2,2,1")])
 
 ;; For pic
@@ -906,7 +906,7 @@
    fstws %1,-16(30)\;ldw -16(30),%0
    stw %1,-16(30)\;fldws -16(30),%0
    fcpy,sgl %1,%0"
-  [(set_attr "type" "move,load,store,move,move,fpalu")
+  [(set_attr "type" "move,load,store,load,fpload,fpalu")
    (set_attr "length" "1,1,1,2,2,1")])
 
 (define_insn ""
@@ -967,7 +967,7 @@
    fstws %1,-16(30)\;ldw -16(30),%0
    stw %1,-16(30)\;fldws -16(30),%0
    fcpy,sgl %1,%0"
-  [(set_attr "type" "move,load,store,move,move,fpalu")
+  [(set_attr "type" "move,load,store,load,fpload,fpalu")
    (set_attr "length" "1,1,1,2,2,1")])
 
 (define_insn ""
@@ -998,7 +998,7 @@
 			 (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "ldwx,s %1(0,%2),%0"
-  [(set_attr "type" "move")
+  [(set_attr "type" "load")
    (set_attr "length" "1")])
 
 ; this will never match
@@ -1011,7 +1011,7 @@
 ;		 (match_dup 1)))]
 ;  ""
 ;  "ldwx,sm %2(0,%1),%0"
-;  [(set_attr "type" "move")
+;  [(set_attr "type" "load")
 ;   (set_attr "length" "1")])
 
 (define_insn ""
@@ -1021,7 +1021,7 @@
 			 (match_operand:SI 1 "register_operand" "r"))))]
   ""
   "ldhx,s %2(0,%1),%0"
-  [(set_attr "type" "move")
+  [(set_attr "type" "load")
    (set_attr "length" "1")])
 
 ; this will never match
@@ -1034,7 +1034,7 @@
 ;		 (match_dup 1)))]
 ;  ""
 ;  "ldhx,sm %2(0,%1),%0"
-;  [(set_attr "type" "move")
+;  [(set_attr "type" "load")
 ;   (set_attr "length" "1")])
 
 ;; The definition of this insn does not really explain what it does,
@@ -1135,7 +1135,7 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "fpalu,move,fpstore,store,fpload,load,multi,multi")
+  [(set_attr "type" "fpalu,move,fpstore,store,fpload,load,fpload,load")
    (set_attr "length" "1,2,1,2,1,2,3,3")])
 
 (define_expand "movdi"
@@ -1246,8 +1246,12 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "move,store,load,misc,multi,fpalu,multi")
-   (set_attr "length" "2,3,3,3,3,2,3")])
+;; Use move in the last type..  This case happens often with xmpyu
+;; and in nearly all cases we only access the data from the first 
+;; of the two loads generated, and that can't stall on a data conflict
+;; be cause of the second load.
+  [(set_attr "type" "move,store,load,misc,fpload,fpalu,move")
+   (set_attr "length" "2,3,3,3,3,1,3")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -1293,7 +1297,7 @@
    ldw%M1 %1,%0
    fstws%F0 %r1,%0
    stw%M0 %r1,%0"
-  [(set_attr "type" "fpalu,move,multi,multi,fpload,load,fpstore,store")
+  [(set_attr "type" "fpalu,move,load,fpload,fpload,load,fpstore,store")
    (set_attr "length" "1,1,2,2,1,1,1,1")])
 
 
