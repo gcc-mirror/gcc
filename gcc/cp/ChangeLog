@@ -1,3 +1,13 @@
+2002-04-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_FUNCTION_INIT,
+	LANG_HOOKS_FUNCTION_FREE, LANG_HOOKS_FUNCTION_MARK): Redefine.
+	* cp-tree.h (cxx_push_function_context, cxx_pop_function_context,
+	cxx_mark_function_context): New.
+	* decl.c (push_cp_function_context, pop_cp_function_context,
+	mark_cp_function_context): Rename for consistency.
+	(cxx_init_decl_processing): Don't set old hooks.
+
 2002-04-19  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* call.c (convert_type_from_ellipsis): Rename, update.

@@ -128,11 +128,8 @@ static void layout_var_decl PARAMS ((tree));
 static void maybe_commonize_var PARAMS ((tree));
 static tree check_initializer PARAMS ((tree, tree));
 static void make_rtl_for_nonlocal_decl PARAMS ((tree, tree, const char *));
-static void push_cp_function_context PARAMS ((struct function *));
-static void pop_cp_function_context PARAMS ((struct function *));
 static void mark_binding_level PARAMS ((void *));
 static void mark_named_label_lists PARAMS ((void *, void *));
-static void mark_cp_function_context PARAMS ((struct function *));
 static void mark_saved_scope PARAMS ((void *));
 static void mark_lang_function PARAMS ((struct cp_language_function *));
 static void save_function_data PARAMS ((tree));
@@ -6481,9 +6478,6 @@ cxx_init_decl_processing ()
   initialize_predefined_identifiers ();
 
   /* Fill in back-end hooks.  */
-  init_lang_status = &push_cp_function_context;
-  free_lang_status = &pop_cp_function_context;
-  mark_lang_status = &mark_cp_function_context;
   lang_missing_noreturn_ok_p = &cp_missing_noreturn_ok_p;
 
   cp_parse_init ();
@@ -14340,7 +14334,7 @@ finish_function (flags)
   if (! nested)
     /* Let the error reporting routines know that we're outside a
        function.  For a nested function, this value is used in
-       pop_cp_function_context and then reset via pop_function_context.  */
+       cxx_pop_function_context and then reset via pop_function_context.  */
     current_function_decl = NULL_TREE;
 
   return fndecl;
@@ -14629,8 +14623,8 @@ revert_static_member_fn (decl)
 /* Initialize the variables used during compilation of a C++
    function.  */
 
-static void
-push_cp_function_context (f)
+void
+cxx_push_function_context (f)
      struct function *f;
 {
   struct cp_language_function *p
@@ -14650,8 +14644,8 @@ push_cp_function_context (f)
 /* Free the language-specific parts of F, now that we've finished
    compiling the function.  */
 
-static void
-pop_cp_function_context (f)
+void
+cxx_pop_function_context (f)
      struct function *f;
 {
   if (f->language)
@@ -14689,8 +14683,8 @@ mark_lang_function (p)
 
 /* Mark the language-specific data in F for GC.  */
 
-static void
-mark_cp_function_context (f)
+void
+cxx_mark_function_context (f)
      struct function *f;
 {
   mark_lang_function ((struct cp_language_function *) f->language);

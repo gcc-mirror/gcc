@@ -574,13 +574,6 @@ extern void (*free_machine_status)	PARAMS ((struct function *));
    that will need garbage collection.  */
 extern void (*mark_machine_status)	PARAMS ((struct function *));
 
-/* Likewise, but for language-specific data.  */
-extern void (*init_lang_status)         PARAMS ((struct function *));
-extern void (*mark_lang_status)		PARAMS ((struct function *));
-extern void (*save_lang_status)		PARAMS ((struct function *));
-extern void (*restore_lang_status)	PARAMS ((struct function *));
-extern void (*free_lang_status)         PARAMS ((struct function *));
-
 /* Save and restore status information for a nested function.  */
 extern void restore_emit_status		PARAMS ((struct function *));
 extern void free_after_parsing		PARAMS ((struct function *));

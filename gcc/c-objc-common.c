@@ -234,9 +234,6 @@ c_objc_common_init (filename)
   if (filename == NULL)
     return NULL;
 
-  save_lang_status = &push_c_function_context;
-  restore_lang_status = &pop_c_function_context;
-  mark_lang_status = &mark_c_function_context;
   lang_expand_decl_stmt = c_expand_decl_stmt;
 
   /* These were not defined in the Objective-C front end, but I'm

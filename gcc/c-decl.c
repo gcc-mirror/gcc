@@ -6712,7 +6712,7 @@ finish_function (nested, can_defer_p)
 
       /* Let the error reporting routines know that we're outside a
 	 function.  For a nested function, this value is used in
-	 pop_c_function_context and then reset via pop_function_context.  */
+	 c_pop_function_context and then reset via pop_function_context.  */
       current_function_decl = NULL;
     }
 }
@@ -6887,7 +6887,7 @@ c_expand_body (fndecl, nested_p, can_defer_p)
       /* Stop pointing to the local nodes about to be freed.
 	 But DECL_INITIAL must remain nonzero so we know this
 	 was an actual function definition.
-	 For a nested function, this is done in pop_c_function_context.
+	 For a nested function, this is done in c_pop_function_context.
 	 If rest_of_compilation set this to 0, leave it 0.  */
       if (DECL_INITIAL (fndecl) != 0)
 	DECL_INITIAL (fndecl) = error_mark_node;
@@ -6998,7 +6998,7 @@ struct c_language_function
    used during compilation of a C function.  */
 
 void
-push_c_function_context (f)
+c_push_function_context (f)
      struct function *f;
 {
   struct c_language_function *p;
@@ -7021,7 +7021,7 @@ push_c_function_context (f)
 /* Restore the variables used during compilation of a C function.  */
 
 void
-pop_c_function_context (f)
+c_pop_function_context (f)
      struct function *f;
 {
   struct c_language_function *p
@@ -7062,7 +7062,7 @@ pop_c_function_context (f)
 /* Mark the language specific parts of F for GC.  */
 
 void
-mark_c_function_context (f)
+c_mark_function_context (f)
      struct function *f;
 {
   struct c_language_function *p

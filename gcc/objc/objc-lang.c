@@ -73,6 +73,13 @@ static void objc_post_options                   PARAMS ((void));
 #undef LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL c_warn_unused_global_decl
 
+#undef LANG_HOOKS_FUNCTION_ENTER_NESTED
+#define LANG_HOOKS_FUNCTION_ENTER_NESTED c_push_function_context
+#undef LANG_HOOKS_FUNCTION_LEAVE_NESTED
+#define LANG_HOOKS_FUNCTION_LEAVE_NESTED c_pop_function_context
+#undef LANG_HOOKS_FUNCTION_MARK
+#define LANG_HOOKS_FUNCTION_MARK c_mark_function_context
+
 /* Inlining hooks same as the C front end.  */
 #undef LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN
 #define LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN \
