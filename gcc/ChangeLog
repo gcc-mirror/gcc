@@ -4,6 +4,10 @@
 	* config/avr/avr.md (length): Fix length computation for
 	conditional branches.
 
+	2002-02-28  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+	* config/avr/avr.c (avr_hard_regno_mode_ok): Do not allow r29
+	which may overwrite the high byte of the frame pointer.
+
 2002-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* cppinit.c (cpp_handle_option) [-dM]: Don't set no_output here...
