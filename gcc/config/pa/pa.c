@@ -1398,31 +1398,10 @@ output_function_prologue (file, size, leaf_function)
       fprintf (file, ",NO_CALLS\n");
   fprintf (file, "\t.ENTRY\n");
 
-  /* Instead of taking one argument, the counter label, as most normal
-     mcounts do, _mcount appears to behave differently on the HPPA. It
-     takes the return address of the caller, the address of this
-     routine, and the address of the label. Also, it isn't magic, so
-     caller saves have to be preserved. We get around this by calling
-     our own gcc_mcount, which takes arguments on the stack and saves
-     argument registers. */
-  
-  if (profile_flag)
-    {
-      fprintf (file,"\tstw 2,-20(30)\n\tldo 48(30),30\n\
-\taddil L'LP$%04d-$global$,27\n\tldo R'LP$%04d-$global$(1),1\n\
-\tbl __gcc_mcount,2\n\tstw 1,-16(30)\n\tldo -48(30),30\n\tldw -20(30),2\n",
-	       hp_profile_labelno, hp_profile_labelno);
-    }
   /* Some registers have places to go in the current stack
      structure.  */
 
-#if 0
-  /* However, according to the hp docs, there's no need to save the
-     sp.  */
-  fprintf (file, "\tstw 30,-4(30)\n");
-#endif
-
-  if (regs_ever_live[2])
+  if (regs_ever_live[2] || profile_flag)
     fprintf (file, "\tstw 2,-20(0,30)\n");
 
   /* Reserve space for local variables.  */
@@ -1447,7 +1426,36 @@ output_function_prologue (file, size, leaf_function)
 	fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),30\n",
 		 actual_fsize, actual_fsize);
     }
-  
+  /* Instead of taking one argument, the counter label, as most normal
+     mcounts do, _mcount appears to behave differently on the HPPA. It
+     takes the return address of the caller, the address of this
+     routine, and the address of the label. Also, it isn't magic, so
+     argument registers have to be preserved. */
+
+  if (profile_flag)
+    {
+      unsigned int pc_offset =
+	(4 + (frame_pointer_needed
+	      ? (VAL_14_BITS_P (actual_fsize) ? 12 : 20)
+	      : (VAL_14_BITS_P (actual_fsize) ? 4 : 8)));
+      int i, arg_offset;
+
+      for (i = 26, arg_offset = -36; i >= 23; i--, arg_offset -= 4)
+	if (regs_ever_live[i])
+	  {
+	    print_stw (file, i, arg_offset, 4);
+	    pc_offset += 4;
+	  }
+      fprintf (file,
+	       "\tcopy %%r2,%%r26\n\taddil L'LP$%04d-$global$,%%r27\n\
+\tldo R'LP$%04d-$global$(%%r1),%%r24\n\tbl _mcount,%%r2\n\
+\tldo %d(%%r2),%%r25\n",
+	       hp_profile_labelno, hp_profile_labelno, -pc_offset - 12 - 8);
+      for (i = 26, arg_offset = -36; i >= 23; i--, arg_offset -= 4)
+	if (regs_ever_live[i])
+	  print_ldw (file, i, arg_offset, 4);
+    }
+
   /* Normal register save. */
   if (frame_pointer_needed)
     {
@@ -2192,7 +2200,11 @@ output_arg_descriptor (insn)
       arg_mode = GET_MODE (XEXP (PATTERN (prev_insn), 0));
       regno = REGNO (XEXP (PATTERN (prev_insn), 0));
       if (regno >= 23 && regno <= 26)
-	arg_regs[26 - regno] = "GR";
+	{
+	  arg_regs[26 - regno] = "GR";
+	  if (arg_mode == DImode)
+	    arg_regs[25 - regno] = "GR";
+	}
       else if (!TARGET_SNAKE)	/* fp args */
 	{
 	  if (arg_mode == SFmode)
