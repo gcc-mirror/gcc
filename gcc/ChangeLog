@@ -1,3 +1,7 @@
+Thu Feb 19 08:26:30 1998  Manfred Hollstein <manfred@s-direktnet.de>
+
+	* m88k.h: Change file pattern to match reality.
+
 Wed Feb 18 23:19:52 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* varasm.c (output_constant_pool): Fix dumb thinko in last
