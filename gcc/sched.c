@@ -653,7 +653,14 @@ true_dependence (mem, x)
      rtx mem;
      rtx x;
 {
-  if (RTX_UNCHANGING_P (x))
+  /* If X is an unchanging read, then it can't possibly conflict with any
+     non-unchanging store.  It may conflict with an unchanging write though,
+     because there may be a single store to this address to initialize it.
+     Just fall through to the code below to resolve the case where we have
+     both an unchanging read and an unchanging write.  This won't handle all
+     cases optimally, but the possible performance loss should be
+     negligible.  */
+  if (RTX_UNCHANGING_P (x) && ! RTX_UNCHANGING_P (mem))
     return 0;
 
   return ((MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
@@ -672,6 +679,9 @@ anti_dependence (mem, x)
      rtx mem;
      rtx x;
 {
+  /* If MEM is an unchanging read, then it can't possibly conflict with
+     the store to X, because there is at most one store to MEM, and it must
+     have occured somewhere before MEM.  */
   if (RTX_UNCHANGING_P (mem))
     return 0;
 
@@ -1389,46 +1399,41 @@ sched_analyze_2 (x, insn)
       {
 	/* Reading memory.  */
 
-	/* Don't create a dependence for memory references which are known to
-	   be unchanging, such as constant pool accesses.  These will never
-	   conflict with any other memory access.  */
-	if (RTX_UNCHANGING_P (x) == 0)
+	rtx pending, pending_mem;
+
+	pending = pending_read_insns;
+	pending_mem = pending_read_mems;
+	while (pending)
 	  {
-	    rtx pending, pending_mem;
+	    /* If a dependency already exists, don't create a new one.  */
+	    if (! find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
+	      if (read_dependence (XEXP (pending_mem, 0), x))
+		add_dependence (insn, XEXP (pending, 0), REG_DEP_ANTI);
 
-	    pending = pending_read_insns;
-	    pending_mem = pending_read_mems;
-	    while (pending)
-	      {
-		/* If a dependency already exists, don't create a new one.  */
-		if (! find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
-		  if (read_dependence (XEXP (pending_mem, 0), x))
-		    add_dependence (insn, XEXP (pending, 0), REG_DEP_ANTI);
-
-		pending = XEXP (pending, 1);
-		pending_mem = XEXP (pending_mem, 1);
-	      }
-
-	    pending = pending_write_insns;
-	    pending_mem = pending_write_mems;
-	    while (pending)
-	      {
-		/* If a dependency already exists, don't create a new one.  */
-		if (! find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
-		  if (true_dependence (XEXP (pending_mem, 0), x))
-		    add_dependence (insn, XEXP (pending, 0), 0);
-
-		pending = XEXP (pending, 1);
-		pending_mem = XEXP (pending_mem, 1);
-	      }
-	    if (last_pending_memory_flush)
-	      add_dependence (insn, last_pending_memory_flush, REG_DEP_ANTI);
-
-	    /* Always add these dependencies to pending_reads, since
-	       this insn may be followed by a write.  */
-	    add_insn_mem_dependence (&pending_read_insns, &pending_read_mems,
-				     insn, x);
+	    pending = XEXP (pending, 1);
+	    pending_mem = XEXP (pending_mem, 1);
 	  }
+
+	pending = pending_write_insns;
+	pending_mem = pending_write_mems;
+	while (pending)
+	  {
+	    /* If a dependency already exists, don't create a new one.  */
+	    if (! find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
+	      if (true_dependence (XEXP (pending_mem, 0), x))
+		add_dependence (insn, XEXP (pending, 0), 0);
+
+	    pending = XEXP (pending, 1);
+	    pending_mem = XEXP (pending_mem, 1);
+	  }
+	if (last_pending_memory_flush)
+	  add_dependence (insn, last_pending_memory_flush, REG_DEP_ANTI);
+
+	/* Always add these dependencies to pending_reads, since
+	   this insn may be followed by a write.  */
+	add_insn_mem_dependence (&pending_read_insns, &pending_read_mems,
+				 insn, x);
+
 	/* Take advantage of tail recursion here.  */
 	sched_analyze_2 (XEXP (x, 0), insn);
 	return;
