@@ -523,7 +523,8 @@ java_stack_dup (size, offset)
     }
 }
 
-/* Calls _Jv_Throw.  Discard the contents of the value stack. */
+/* Calls _Jv_Throw or _Jv_Sjlj_Throw.  Discard the contents of the
+   value stack. */
 
 static void
 build_java_athrow (node)
@@ -533,7 +534,7 @@ build_java_athrow (node)
 
   call = build (CALL_EXPR,
 		void_type_node,
-		build_address_of (throw_node),
+		build_address_of (throw_node[exceptions_via_longjmp ? 1 : 0]),
 		build_tree_list (NULL_TREE, node),
 		NULL_TREE);
   TREE_SIDE_EFFECTS (call) = 1;

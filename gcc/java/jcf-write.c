@@ -2451,7 +2451,8 @@ generate_bytecode_insns (exp, target, state)
 	  }
 	else if (f == soft_monitorenter_node
 		 || f == soft_monitorexit_node
-		 || f == throw_node)
+		 || f == throw_node[0]
+		 || f == throw_node[1])
 	  {
 	    if (f == soft_monitorenter_node)
 	      op = OPCODE_monitorenter;
