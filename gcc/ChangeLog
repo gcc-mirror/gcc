@@ -1,3 +1,25 @@
+Wed Mar 10 23:11:19 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c (print_file_name, print_prog_name, spec_machine,
+ 	read_specs, set_spec, lookup_compiler, build_search_list,
+ 	putenv_from_prefixes, find_a_file, record_temp_file,
+ 	delete_if_ordinary, handle_braces, do_spec, do_spec_1, find_file,
+ 	is_directory, validate_switches, used_arg, default_arg,
+ 	pfatal_with_name, perror_with_name, pfatal_pexecute, fatal, error,
+ 	notice, add_preprocessor_option, add_assembler_option,
+ 	add_linker_option, process_command, execute,
+ 	unused_prefix_warnings, clear_args, fatal_error,
+ 	lang_specific_driver, user_specs, compiler, link_command_spec,
+ 	option_map, translate_options, make_temp_file, temp_name,
+ 	programname, path_prefix, machine_suffix, just_machine_suffix,
+ 	gcc_exec_prefix, standard_exec_prefix, standard_exec_prefix_1,
+ 	md_exec_prefix, md_startfile_prefix, md_startfile_prefix_1,
+ 	standard_startfile_prefix, standard_startfile_prefix_1,
+ 	standard_startfile_prefix_2, tooldir_base_prefix, tooldir_prefix,
+ 	multilib_dir, temp_filename, temp_file, command, switchstr,
+ 	infile, outfiles, input_filename, input_basename, input_suffix,
+ 	check_live_switch, main): Qualify a char* with the `const' keyword.
+
 Wed Mar 10 20:28:29 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcse.c: Update various comments.
