@@ -1,3 +1,17 @@
+2001-06-26  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.h (struct diagnostic_context): Add new field.
+	(lang_diagnostic_starter, lang_diagnostic_finalizer): Remove
+	declaratons.
+	(global_dc): Declare.
+	* diagnostic.c (global_diagnostic_context): New variable.
+	(global_output_buffer): Remove.
+	(global_dc): Define.
+	(lang_diagnostic_starter, lang_diagnostic_finalizer): Remove
+	definitions.
+	(initialize_diagnostics): Adjust initialization.
+	(set_diagnostic_context): Adjust setting.
+
 2001-06-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/iris5.h (UNALIGNED_INT_ASM_OP,

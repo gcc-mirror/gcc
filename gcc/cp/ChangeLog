@@ -1,3 +1,7 @@
+2001-06-26  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* error.c (init_error): Adjust settings.
+
 2001-06-19  Richard Sandiford  <rsandifo@redhat.com>
 
 	* except.c (initialize_handler_parm): Expect __cxa_begin_catch to

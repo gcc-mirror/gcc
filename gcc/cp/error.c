@@ -191,13 +191,12 @@ cp_printer * cp_printers[256] =
 void
 init_error ()
 {
-  init_output_buffer (scratch_buffer, /* prefix */NULL, /* line-width */0);
-  
   print_error_function = lang_print_error_function;
-  lang_diagnostic_starter = cp_diagnostic_starter;
-  lang_diagnostic_finalizer = cp_diagnostic_finalizer;
-
+  diagnostic_starter (global_dc) = cp_diagnostic_starter;
+  diagnostic_finalizer (global_dc) = cp_diagnostic_finalizer;
   lang_printer = cp_tree_printer;
+  
+  init_output_buffer (scratch_buffer, /* prefix */NULL, /* line-width */0);
 }
 
 /* Dump a scope, if deemed necessary.  */
