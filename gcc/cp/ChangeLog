@@ -1,3 +1,9 @@
+1998-07-16  Mark Mitchell  <mark@markmitchell.com>
+
+	* semantics.c (finish_object_call_expr): Revert previous change.
+	* call.c (build_new_method_call): Likewise.  Instead, convert
+	TYPE_DECLs to IDENTIFIERs here, in the presence of templates.
+
 1998-07-16  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (qualify_lookup): Handle templates.
