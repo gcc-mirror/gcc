@@ -123,6 +123,7 @@ extern void arm_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 extern bool arm_needs_doubleword_align (enum machine_mode, tree);
 extern rtx arm_function_value(tree, tree);
 #endif
+extern int arm_apply_result_size (void);
 
 #if defined AOF_ASSEMBLER
 extern rtx aof_pic_entry (rtx);
