@@ -26,6 +26,11 @@ AutoGen definitions Makefile.tpl;
 
 build_modules= { module= libiberty; };
 build_modules= { module= libbanshee; };
+build_modules= { module= bison; };
+build_modules= { module= byacc; };
+build_modules= { module= flex; };
+build_modules= { module= m4; };
+build_modules= { module= texinfo; };
 
 host_modules= { module= ash; };
 host_modules= { module= autoconf; };
@@ -177,6 +182,7 @@ flags_to_pass = { flag= BISON ; };
 flags_to_pass = { flag= CC_FOR_BUILD ; };
 flags_to_pass = { flag= CXX_FOR_BUILD ; };
 flags_to_pass = { flag= EXPECT ; };
+flags_to_pass = { flag= FLEX ; };
 flags_to_pass = { flag= INSTALL ; };
 flags_to_pass = { flag= INSTALL_DATA ; };
 flags_to_pass = { flag= INSTALL_PROGRAM ; };
