@@ -281,6 +281,17 @@ handle_intr (int)
   // Do nothing.
 }
 
+static void
+block_sigchld()
+{
+  sigset_t mask;
+  sigemptyset (&mask);
+  sigaddset (&mask, SIGCHLD);
+  int c = pthread_sigmask (SIG_BLOCK, &mask, NULL);
+  if (c != 0)
+    JvFail (strerror (c));
+}
+
 void
 _Jv_InitThreads (void)
 {
@@ -296,6 +307,10 @@ _Jv_InitThreads (void)
   sigemptyset (&act.sa_mask);
   act.sa_flags = 0;
   sigaction (INTR, &act, NULL);
+
+  // Block SIGCHLD here to ensure that any non-Java threads inherit the new 
+  // signal mask.
+  block_sigchld();
 }
 
 _Jv_Thread_t *
@@ -331,17 +346,6 @@ _Jv_ThreadSetPriority (_Jv_Thread_t *data, jint prio)
       pthread_setschedparam (data->thread, SCHED_RR, &param);
     }
 #endif
-}
-
-static void
-block_sigchld()
-{
-  sigset_t mask;
-  sigemptyset (&mask);
-  sigaddset (&mask, SIGCHLD);
-  int c = pthread_sigmask (SIG_BLOCK, &mask, NULL);
-  if (c != 0)
-    throw new java::lang::InternalError (JvNewStringUTF (strerror (c)));
 }
 
 void
