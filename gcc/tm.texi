@@ -1403,6 +1403,17 @@ definition of this macro is
     / UNITS_PER_WORD))
 @end smallexample
 
+@findex ALTER_HARD_SUBREG
+@item ALTER_HARD_SUBREG (@var{tgt_mode}, @var{word}, @var{src_mode}, @var{regno})
+A C expression that returns an adjusted hard register number for 
+
+@smallexample
+(subreg:@var{tgt_mode} (reg:@var{src_mode} @var{regno}) @var{word})
+@end smallexample
+
+This may be needed if the target machine has mixed sized big-endian
+registers, like Sparc v9.
+
 @findex HARD_REGNO_MODE_OK
 @item HARD_REGNO_MODE_OK (@var{regno}, @var{mode})
 A C expression that is nonzero if it is permissible to store a value

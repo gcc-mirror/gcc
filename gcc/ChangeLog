@@ -5,6 +5,8 @@ Thu Apr  2 01:01:34 1998  Richard Henderson  <rth@cygnus.com>
 
 	* emit-rtl.c (gen_lowpart_common): Skip count by HARD_REGNO_NREGS.
 	(gen_highpart): Likewise.
+	* final.c (alter_subreg): Allow the target to hook by-mode subreg
+	hard register number changes.
 	
 Wed Apr  1 22:26:22 1998  Jeffrey A Law  (law@cygnus.com)
 
