@@ -1,3 +1,20 @@
+2003-03-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Add a prototype for
+	iorxor_operator.
+	* config/h8300/h8300.c (print_operand): Handle 'c'.
+	(iorxor_operator): New.
+	* config/h8300/h8300.h (PREDICATE_CODES): Add iorxor_operator.
+	* config/h8300/h8300.md (*iorhi3_zext): Remove.
+	(*iorsi3_zexthi): Likewise.
+	(*iorsi3_zextsi): Likewise.
+	(*xorhi3_zextqi): Likewise.
+	(*xorsi3_zexthi): Likewise.
+	(*xorsi3_zextsi): Likewise.
+	(*ixorhi3_zext): New.
+	(*ixorsi3_zext_qi): Likewise.
+	(*ixorsi3_zext_hi): Likewise.
+
 2003-03-02  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-incpath.c (remove_component_p, simplify_path): Move back to
