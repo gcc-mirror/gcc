@@ -404,16 +404,7 @@ CPTEST1 (csqrt)
 CPTEST1 (ctan)
 CPTEST1 (ctanh)
 
-/* These next definitions are kludges.  When GCC has a <stdint.h> it
-   should be used.
-*/
-#if __INT_MAX__ == __LONG_LONG_MAX__
-typedef int intmax_t;
-#elif __LONG_MAX__ == __LONG_LONG_MAX__
-typedef long intmax_t;
-#else
-typedef long long intmax_t;
-#endif
+typedef __INTMAX_TYPE__ intmax_t;
 
 /* Various other const builtins.  */
 TEST1         (abs, int, int)

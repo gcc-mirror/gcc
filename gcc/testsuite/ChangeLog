@@ -1,3 +1,12 @@
+2004-08-05  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.c-torture/execute/builtins/abs-2.c,
+	gcc.c-torture/execute/builtins/abs-3.c,
+	gcc.c-torture/execute/builtins/lib/abs.c, gcc.dg/format/format.h,
+	gcc.dg/torture/builtin-attr-1.c: Use predefined macros for
+	intmax_t, uintmax_t and their limits.
+	* gcc.dg/intmax_t-1.c: New test.
+
 2004-08-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* g++.dg/tc1/dr147.C: Add reference to PR.

@@ -1,3 +1,12 @@
+2004-08-05  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-common.c (c_stddef_cpp_builtins): Define __INTMAX_TYPE__ and
+	__UINTMAX_TYPE__.
+	* c-cppbuiltin.c (builtin_define_stdint_macros): New.  Define
+	__INTMAX_MAX__.
+	(c_cpp_builtins): Call it.
+	* doc/cpp.texi: Update.
+
 2004-08-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_rtx_costs): LABEL_REFs are zero

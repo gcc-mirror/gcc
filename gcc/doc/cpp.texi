@@ -2053,8 +2053,11 @@ OSF/rose @option{-mno-underscores} option).
 @itemx __PTRDIFF_TYPE__
 @itemx __WCHAR_TYPE__
 @itemx __WINT_TYPE__
+@itemx __INTMAX_TYPE__
+@itemx __UINTMAX_TYPE__
 These macros are defined to the correct underlying types for the
-@code{size_t}, @code{ptrdiff_t}, @code{wchar_t}, and @code{wint_t}
+@code{size_t}, @code{ptrdiff_t}, @code{wchar_t}, @code{wint_t},
+@code{intmax_t}, and @code{uintmax_t}
 typedefs, respectively.  They exist to make the standard header files
 @file{stddef.h} and @file{wchar.h} work correctly.  You should not use
 these macros directly; instead, include the appropriate headers and use
@@ -2072,9 +2075,11 @@ this macro directly; instead, include the appropriate headers.
 @itemx __INT_MAX__
 @itemx __LONG_MAX__
 @itemx __LONG_LONG_MAX__
+@itemx __INTMAX_MAX__
 Defined to the maximum value of the @code{signed char}, @code{wchar_t},
 @code{signed short},
-@code{signed int}, @code{signed long}, and @code{signed long long} types
+@code{signed int}, @code{signed long}, @code{signed long long}, and
+@code{intmax_t} types
 respectively.  They exist to make the standard header given numerical limits
 work correctly.  You should not use these macros directly; instead, include
 the appropriate headers.

@@ -28,31 +28,8 @@ __extension__ typedef unsigned long long int ullong;
 typedef llong quad_t;
 typedef ullong u_quad_t;
 
-/* This next definition is a kludge.  When GCC has a <stdint.h> it
-   should be used.
-*/
-/* (T *) if E is zero, (void *) otherwise.  */
-#define type_if_not(T, E) __typeof__(0 ? (T *)0 : (void *)(E))
-
-/* (T *) if E is nonzero, (void *) otherwise.  */
-#define type_if(T, E) type_if_not(T, !(E))
-
-/* Combine pointer types, all but one (void *).  */
-#define type_comb2(T1, T2) __typeof__(0 ? (T1)0 : (T2)0)
-#define type_comb3(T1, T2, T3) type_comb2(T1, type_comb2(T2, T3))
-
-#define maybe_int_ptr type_if(int, sizeof(int) == sizeof(llong))
-#define maybe_uint_ptr type_if(unsigned int, sizeof(unsigned int) == sizeof(ullong))
-#define maybe_long_ptr type_if(long, sizeof(long) == sizeof(llong) && sizeof(long) > sizeof(int))
-#define maybe_ulong_ptr type_if(unsigned long, sizeof(unsigned long) == sizeof(ullong) && sizeof(unsigned long) > sizeof(unsigned int))
-#define maybe_long_long_ptr type_if(llong, sizeof(llong) > sizeof(long))
-#define maybe_ulong_long_ptr type_if(ullong, sizeof(ullong) > sizeof(unsigned long))
-
-#define intmax_type_ptr type_comb3(maybe_int_ptr, maybe_long_ptr, maybe_long_long_ptr)
-#define uintmax_type_ptr type_comb3(maybe_uint_ptr, maybe_ulong_ptr, maybe_ulong_long_ptr)
-
-typedef __typeof__(*((intmax_type_ptr)0)) intmax_t;
-typedef __typeof__(*((uintmax_type_ptr)0)) uintmax_t;
+__extension__ typedef __INTMAX_TYPE__ intmax_t;
+__extension__ typedef __UINTMAX_TYPE__ uintmax_t;
 
 #if __STDC_VERSION__ < 199901L
 #define restrict /* "restrict" not in old C standard.  */

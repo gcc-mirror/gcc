@@ -6,20 +6,7 @@ extern void abort (void);
 #define ABORT_INSIDE_MAIN do { } while (0)
 #endif
 
-/* These next definitions are kludges.  When GCC has a <stdint.h> it
-   should be used.
-*/
-#include <limits.h>
-#if INT_MAX == __LONG_LONG_MAX__
-typedef int intmax_t;
-#define INTMAX_MAX INT_MAX
-#elif LONG_MAX == __LONG_LONG_MAX__
-typedef long intmax_t;
-#define INTMAX_MAX LONG_MAX
-#else
-typedef long long intmax_t;
-#define INTMAX_MAX __LONG_LONG_MAX__
-#endif
+typedef __INTMAX_TYPE__ intmax_t;
 
 int
 abs (int x)
