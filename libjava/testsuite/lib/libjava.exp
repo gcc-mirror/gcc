@@ -226,7 +226,7 @@ proc libjava_init { args } {
 		if { "$mldir" == "." } {
 		    continue
 		}
-		if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.${so_extension}.*]] == 1 } {
+		if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.${so_extension}.*]] >= 1 } {
 		    lappend libjava_libgcc_s_path "${gccdir}/${mldir}"
 		}
 	    }

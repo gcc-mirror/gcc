@@ -1,3 +1,8 @@
+2004-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR other/18138
+	* testsuite/lib/libffi-dg.exp: Accept more than one multilib libgcc.
+
 2004-10-25  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* src/m32r/libffitarget.h (FFI_CLOSURES): Set to 0.

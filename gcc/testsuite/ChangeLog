@@ -1,3 +1,12 @@
+2004-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR other/18138
+	* lib/g++.exp: Accept more than one multilib libgcc.
+	* lib/gcc-dg.exp: Likewise.
+	* lib/objc.exp: Likewise.
+	* lib/treelang.exp: Likewise.
+	* lib/gfortran.exp: Likewise.
+
 2004-10-24  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.dg/c90-const-expr-3.c: Reference the ISO C standard.
