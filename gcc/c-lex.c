@@ -1602,7 +1602,7 @@ yylex ()
     char_constant:
       {
 	register int result = 0;
-	register num_chars = 0;
+	register int num_chars = 0;
 	unsigned width = TYPE_PRECISION (char_type_node);
 	int max_chars;
 
