@@ -1634,20 +1634,12 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
   var_map map = tab->map;
   value_expr_p p;
   ssa_op_iter iter;
-  bitmap_iterator bi;
 
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
     {
       stmt = bsi_stmt (bsi);
       ann = stmt_ann (stmt);
 
-      if (TREE_CODE (stmt) == ASM_EXPR && ASM_VOLATILE_P (stmt))
-	{
-	  /* Volatile ASM_EXPRs kill all current expressions.  */
-	  EXECUTE_IF_SET_IN_BITMAP ((tab->partition_in_use), 0, partition, bi)
-	    kill_expr (tab, partition, false);
-	  continue;
-	}
       /* Determine if this stmt finishes an existing expression.  */
       FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_USE)
 	{
