@@ -1,3 +1,9 @@
+2004-10-18  Andrew Haley  <aph@redhat.com>
+
+	PR java/18036:
+	* gnu/gcj/runtime/natStackTrace.cc (fillInStackTrace): Reorganize
+	and correct logic used to find interpreter.
+	
 2004-10-18  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/util/logging/LogManager.java
