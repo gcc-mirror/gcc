@@ -287,13 +287,9 @@ reg_or_cint_operand (op, mode)
      return GET_CODE (op) == CONST_INT || gpc_reg_operand (op, mode);
 }
 
-/* Return 1 if the operand is a CONST_DOUBLE and it can be put into a
-   register with one instruction per word.  For SFmode, this means  that
-   the low 16-bits are zero.  For DFmode, it means the low 16-bits of
-   the first word are zero and the high 16 bits of the second word
-   are zero (usually all bits in the low-order word will be zero).
-
-   We only do this if we can safely read CONST_DOUBLE_{LOW,HIGH}.  */
+/* Return 1 if the operand is a CONST_DOUBLE and it can be put into a register
+   with one instruction per word.  We only do this if we can safely read
+   CONST_DOUBLE_{LOW,HIGH}.  */
 
 int
 easy_fp_constant (op, mode)
@@ -310,12 +306,11 @@ easy_fp_constant (op, mode)
   high = operand_subword (op, 0, 0, mode);
   low = operand_subword (op, 1, 0, mode);
 
-  if (high == 0 || GET_CODE (high) != CONST_INT || (INTVAL (high) & 0xffff))
+  if (high == 0 || ! input_operand (high, word_mode))
     return 0;
 
   return (mode == SFmode
-	  || (low != 0 && GET_CODE (low) == CONST_INT
-	      && (INTVAL (low) & 0xffff0000) == 0));
+	  || (low != 0 && input_operand (low, word_mode)));
 }
       
 /* Return 1 if the operand is either a floating-point register, a pseudo
