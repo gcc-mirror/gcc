@@ -1537,8 +1537,9 @@ call_ ## FUNC (void)						\
 		   CODE_LABEL_NUMBER					\
 		    (XEXP (XEXP (XEXP					\
 				  (XVECEXP				\
-				    (PATTERN (PREV_INSN (PREV_INSN	\
-							  (TABLE))),	\
+				    (PATTERN				\
+				     (prev_nonnote_insn			\
+				      (PREV_INSN (TABLE))),		\
 				     0, 0), 1), 2), 0)),		\
 		   NUM,							\
 		   (TARGET_PDEBUG ? "; default" : ""));			\
