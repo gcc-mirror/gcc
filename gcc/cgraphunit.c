@@ -1208,7 +1208,7 @@ cgraph_decide_inlining (void)
 
 	      /* Verify that we won't duplicate the caller.  */
 	      for (node1 = node->callers->caller;
-		   node1->callers && node1->callers->inline_failed
+		   node1->callers && !node1->callers->inline_failed
 		   && ok; node1 = node1->callers->caller)
 		if (node1->callers->next_caller || node1->needed)
 		  ok = false;
