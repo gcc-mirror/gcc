@@ -1,7 +1,3 @@
-Mon Nov 15 01:58:34 1999  Jeffrey A Law  (law@cygnus.com)
-
-	* Makefile.in (LIBOBJS): Depend on stamp-picdir.
-
 Wed Nov 10 09:42:39 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* hashtab.c: Include stdio.h.

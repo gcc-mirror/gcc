@@ -191,10 +191,6 @@ stamp-picdir:
 
 .PHONY: all etags tags ls clean stage1 stage2
 
-# The "pic" subdir must be created before we can put any object
-# files into it.
-$(LIBOBJS): stamp-picdir
-
 etags tags: TAGS etags-subdir
 
 TAGS: $(CFILES) $(HFILES)
