@@ -3672,9 +3672,16 @@ complete_array_type (type, initial_value, do_default)
 	}
       else if (TREE_CODE (initial_value) == CONSTRUCTOR)
 	{
-	  register int nelts
-	    = list_length (CONSTRUCTOR_ELTS (initial_value));
-	  maxindex = build_int_2 (nelts - 1, - (nelts == 0));
+	  tree elts = CONSTRUCTOR_ELTS (initial_value);
+	  maxindex = integer_zero_node;
+	  for (; elts; elts = TREE_CHAIN (elts))
+	    {
+	      if (TREE_PURPOSE (elts))
+		maxindex = TREE_PURPOSE (elts);
+	      else
+		maxindex = size_binop (PLUS_EXPR, maxindex, size_one_node);
+	    }
+	  maxindex = copy_node (maxindex);
 	}
       else
 	{
