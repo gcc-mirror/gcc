@@ -60,48 +60,28 @@ details.  */
    AC_LTDL_PREOPEN to see if we do.  */
 extern const lt_dlsymlist lt_preloaded_symbols[1] = { { 0, 0 } };
 
-// We keep track of all the libraries loaded by this application.  For
-// now we use them to look up symbols for JNI.  `libraries_size' holds
-// the total size of the buffer.  `libraries_count' is the number of
-// items which are in use.
-static int libraries_size;
-static int libraries_count;
-static lt_dlhandle *libraries;
-
-static void
-add_library (lt_dlhandle lib)
+struct lookup_data
 {
-  if (libraries_count == libraries_size)
-    {
-      int ns = libraries_size * 2;
-      if (ns == 0)
-	ns = 10;
-      lt_dlhandle *n = (lt_dlhandle *) _Jv_Malloc (ns * sizeof (lt_dlhandle));
-      if (libraries)
-	{
-	  memcpy (n, libraries, libraries_size * sizeof (lt_dlhandle));
-	  _Jv_Free (libraries);
-	}
-      libraries = n;
-      libraries_size = ns;
-      for (int i = libraries_count; i < libraries_size; ++i)
-	libraries[i] = NULL;
-    }
+  const char *symname;
+  void *result;
+};
 
-  libraries[libraries_count++] = lib;
+static int
+find_symbol (lt_dlhandle handle, lt_ptr_t data)
+{
+  lookup_data *ld = (lookup_data *) data;
+  ld->result = lt_dlsym (handle, ld->symname);
+  return ld->result != NULL;
 }
 
 void *
 _Jv_FindSymbolInExecutable (const char *symname)
 {
-  for (int i = 0; i < libraries_count; ++i)
-    {
-      void *r = lt_dlsym (libraries[i], symname);
-      if (r)
-	return r;
-    }
-
-  return NULL;
+  lookup_data data;
+  data.symname = symname;
+  data.result = NULL;
+  lt_dlforeach (find_symbol, (lt_ptr_t) &data);
+  return data.result;
 }
 
 void
@@ -237,8 +217,6 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
       throw new UnsatisfiedLinkError (str);
     }
 
-  add_library (h);
-
   void *onload = lt_dlsym (h, "JNI_OnLoad");
 
 #ifdef WIN32
@@ -289,8 +267,6 @@ java::lang::Runtime::loadLibraryInternal (jstring lib)
   buf[total] = '\0';
   // FIXME: make sure path is absolute.
   lt_dlhandle h = lt_dlopenext (buf);
-  if (h != NULL)
-    add_library (h);
   return h != NULL;
 #else
   return false;
@@ -302,9 +278,8 @@ java::lang::Runtime::init (void)
 {
 #ifdef USE_LTDL
   lt_dlinit ();
-  lt_dlhandle self = lt_dlopen (NULL);
-  if (self != NULL)
-    add_library (self);
+  // Make sure self is opened.
+  lt_dlopen (NULL);
 #endif
 }
 

@@ -1,3 +1,15 @@
+2003-02-23  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natRuntime.cc (libraries_size, libraries_count,
+	libraries): Removed.
+	(add_library): Removed.
+	(_load): Don't call add_library.
+	(loadLibraryInternal): Likewise.
+	(init): Likewise.
+	(lookup_data): New struct.
+	(find_symbol): New function.
+	(_Jv_FindSymbolInExecutable): Use it.
+
 2002-02-21  Anthony Green  <green@redhat.com>
 
 	* java/lang/Thread.java (Thread): New constructor taking stack
