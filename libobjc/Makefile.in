@@ -36,7 +36,7 @@ target_noncanonical = @target_noncanonical@
 gcc_version = @gcc_version@
 top_srcdir = @top_srcdir@
 toplevel_srcdir = @toplevel_srcdir@
-toolexecdir = @toolexecdir@ 
+toolexecdir = @toolexecdir@
 # Toolexecdir is used only by toolexeclibdir
 toolexeclibdir = @toolexeclibdir@
 
