@@ -1,3 +1,7 @@
+2003-11-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* dbxout.c (current_file): Wrap declaration in DBX_USE_BINCL.
+
 2003-11-07  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_legitimize_address): Remove
