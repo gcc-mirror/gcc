@@ -3686,8 +3686,9 @@ loop_iterations (loop)
 	{
 	  struct induction *biv_inc;
 
-	  increment
-	    = fold_rtx_mult_add (v->mult_val, increment, const0_rtx, v->mode);
+	  increment = fold_rtx_mult_add (v->mult_val,
+					 extend_value_for_giv (v, increment),
+					 const0_rtx, v->mode);
 	  /* The caller assumes that one full increment has occured at the
 	     first loop test.  But that's not true when the biv is incremented
 	     after the giv is set (which is the usual case), e.g.:
