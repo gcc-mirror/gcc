@@ -1,3 +1,22 @@
+Tue Feb 13 14:16:34 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (dummy_extendsfdf2): Support SSE2
+	(extendsfdf2): Enable if 80387 or SSE2.
+	(extendsfdf2_1): Support SSE2. Disable if SSE2 is avialble
+	and no MIX_I387_SSE2
+	(extendsfdf2_1_sse_only): New pattern.
+	(truncdfsf2): Enable if SSE2 or 80387; Always use SSE only version
+	of SSE.
+	(truncdfsf2_1): Support SSE.
+	(truncdfsf2_2): Support SSE.
+	(truncdfsf2_2_1_sse): New pattern.
+	(fixtruncsfsi2): Always use SSE if available.
+	(fix_truncsfsi_sse): New pattern.
+	(fix_truncdfsi_sse): New pattern.
+	(floatsis?f2): Support SSE.
+	(floatsidf2_i387): New pattern.
+	(floatsidf2_sse): Likewise.
+
 Tue Feb 13 07:52:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* configure.in: Use "have_gnat" variable, not "gnat".
