@@ -148,6 +148,10 @@ int warn_ctor_dtor_privacy = 1;
 
 int flag_vtable_thunks;
 
+/* True if we want to deal with repository information.  */
+
+int flag_use_repository;
+
 /* Nonzero means give string constants the type `const char *'
    to get extra warnings from them.  These warnings will be too numerous
    to be useful, except in thoroughly ANSIfied programs.  */
@@ -399,7 +403,8 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"nonansi-builtins", &flag_no_nonansi_builtin, 0},
   {"gnu-keywords", &flag_no_gnu_keywords, 0},
   {"operator-names", &flag_operator_names, 1},
-  {"check-new", &flag_check_new, 1}
+  {"check-new", &flag_check_new, 1},
+  {"repo", &flag_use_repository, 1}
 };
 
 /* Decode the string P as a language-specific option.
@@ -2466,13 +2471,7 @@ mark_vtable_entries (decl)
 	    fnaddr = TREE_VALUE (entries);
 	  TREE_OPERAND (fnaddr, 0) = fn = abort_fndecl;
 	}
-      if (TREE_PUBLIC (fn) && ! TREE_ASM_WRITTEN (fn))
-	{
-	  int save_extern = DECL_EXTERNAL (fn);
-	  DECL_EXTERNAL (fn) = 1;
-	  assemble_external (fn);
-	  DECL_EXTERNAL (fn) = save_extern;
-	}
+      assemble_external (fn);
     }
 }
 
@@ -2513,12 +2512,11 @@ import_export_vtable (decl, type, final)
 
       if (! found && ! final)
 	{
-	  /* This check only works before the method definitions are seen,
-	     since DECL_INLINE may get bashed.  */
 	  tree method;
 	  for (method = CLASSTYPE_METHODS (type); method != NULL_TREE;
 	       method = DECL_NEXT_METHOD (method))
-	    if (DECL_VINDEX (method) != NULL_TREE && ! DECL_INLINE (method)
+	    if (DECL_VINDEX (method) != NULL_TREE
+		&& ! DECL_THIS_INLINE (method)
 		&& ! DECL_ABSTRACT_VIRTUAL_P (method))
 	      {
 		found = 1;
@@ -2528,15 +2526,17 @@ import_export_vtable (decl, type, final)
 
       if (final || ! found)
 	{
+#ifdef ASSEMBLE_EXTERNAL
+	  if (TREE_PUBLIC (decl))
+	    cp_error ("all virtual functions redeclared inline");
+#endif
 	  TREE_PUBLIC (decl) = 0;
 	  DECL_EXTERNAL (decl) = 0;
-	  DECL_INTERFACE_KNOWN (decl) = 1;
 	}
       else
 	{
 	  TREE_PUBLIC (decl) = 1;
 	  DECL_EXTERNAL (decl) = 1;
-	  DECL_INTERFACE_KNOWN (decl) = 0;
 	}
     }
 }
@@ -2570,7 +2570,7 @@ finish_prevtable_vardecl (prev, vars)
 	   method = DECL_NEXT_METHOD (method))
 	{
 	  if (DECL_VINDEX (method) != NULL_TREE
-	      && !DECL_DECLARED_STATIC (method)
+	      && !DECL_THIS_INLINE (method)
 	      && !DECL_ABSTRACT_VIRTUAL_P (method))
 	    {
 	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
@@ -2747,23 +2747,21 @@ import_export_inline (decl)
   if (DECL_INTERFACE_KNOWN (decl))
     return;
 
-  DECL_EXTERNAL (decl) = 0;
-
   if (DECL_TEMPLATE_INSTANTIATION (decl))
     {
       if (DECL_IMPLICIT_INSTANTIATION (decl) && flag_implicit_templates)
 	TREE_PUBLIC (decl) = 0;
       else
-	DECL_EXTERNAL (decl) = 1;
+	DECL_NOT_REALLY_EXTERN (decl) = 0;
     }
   else if (DECL_FUNCTION_MEMBER_P (decl))
     {
       tree ctype = DECL_CLASS_CONTEXT (decl);
       if (CLASSTYPE_INTERFACE_KNOWN (ctype))
 	{
-	  DECL_EXTERNAL (decl)
-	    = (CLASSTYPE_INTERFACE_ONLY (ctype)
-	       || (DECL_INLINE (decl) && ! flag_implement_inlines));
+	  DECL_NOT_REALLY_EXTERN (decl)
+	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
+		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
 	}
       else
 	TREE_PUBLIC (decl) = 0;
@@ -3045,6 +3043,8 @@ finish_file ()
       assemble_constructor (IDENTIFIER_POINTER (fnname));
     }
 
+  permanent_allocation (1);
+
   /* Done with C language context needs.  */
   pop_lang_context ();
 
@@ -3115,8 +3115,9 @@ finish_file ()
 	      {
 		TREE_CHAIN (last) = TREE_CHAIN (place);
 
-		if (! DECL_EXTERNAL (decl))
+		if (DECL_NOT_REALLY_EXTERN (decl))
 		  {
+		    DECL_EXTERNAL (decl) = 0;
 		    reconsider = 1;
 		    temporary_allocation ();
 		    output_inline_function (decl);
@@ -3142,7 +3143,7 @@ finish_file ()
 	emit_thunk (vars);
       else if (TREE_CODE (vars) == FUNCTION_DECL
 	       && ! DECL_INTERFACE_KNOWN (vars)
-	       && DECL_DECLARED_STATIC (vars))
+	       && DECL_C_STATIC (vars))
 	TREE_PUBLIC (vars) = 0;
     }
 
@@ -3162,7 +3163,8 @@ finish_file ()
 	}
     }
 
-  permanent_allocation (1);
+  finish_repo ();
+
   this_time = get_run_time ();
   parse_time -= this_time - start_time;
   varconst_time += this_time - start_time;

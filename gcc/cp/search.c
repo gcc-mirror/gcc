@@ -793,6 +793,10 @@ compute_access (basetype_path, field)
     }
 #endif
 
+  /* We don't currently support access control on nested types.  */
+  if (TREE_CODE (field) == TYPE_DECL)
+    return access_public;
+
   previous_scope = current_scope ();
   
   context = DECL_CLASS_CONTEXT (field);

@@ -406,10 +406,6 @@ tree current_function_return_value;
 
 static int warn_about_return_type;
 
-/* Nonzero when starting a function declared `extern inline'.  */
-
-static int current_extern_inline;
-
 /* Nonzero means give `double' the same size as `float'.  */
 
 extern int flag_short_double;
@@ -2082,13 +2078,11 @@ warn_extern_redeclared_static (newdecl, olddecl)
     = "`%D' was declared implicitly `extern' and later `static'";
 
   if (flag_traditional
-      || TREE_CODE (newdecl) == TYPE_DECL
-      || (! warn_extern_inline
-	  && DECL_INLINE (newdecl)))
+      || TREE_CODE (newdecl) == TYPE_DECL)
     return;
 
   name = DECL_ASSEMBLER_NAME (newdecl);
-  if (TREE_PUBLIC (name) && ! DECL_PUBLIC (newdecl))
+  if (TREE_PUBLIC (name) && DECL_THIS_STATIC (newdecl))
     {
       /* It's okay to redeclare an ANSI built-in function as static,
 	 or to declare a non-ANSI built-in function as anything.  */
@@ -2516,8 +2510,9 @@ duplicate_decls (newdecl, olddecl)
 
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
 	{
-	  DECL_DECLARED_STATIC (newdecl) = DECL_DECLARED_STATIC (olddecl);
+	  DECL_C_STATIC (newdecl) = DECL_C_STATIC (olddecl);
 	  DECL_INTERFACE_KNOWN (newdecl) = DECL_INTERFACE_KNOWN (olddecl);
+	  DECL_NOT_REALLY_EXTERN (newdecl) = DECL_NOT_REALLY_EXTERN (olddecl);
 	}
     }
   else
@@ -2537,14 +2532,16 @@ duplicate_decls (newdecl, olddecl)
 	}
     }
 
-  /* If either decl says `inline', this fn is inline,
-     unless its definition was passed already.  */
-  if (DECL_INLINE (newdecl) && DECL_INITIAL (olddecl) == NULL_TREE)
-    DECL_INLINE (olddecl) = 1;
-  DECL_INLINE (newdecl) = DECL_INLINE (olddecl);
-
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
+      DECL_THIS_INLINE (newdecl) |= DECL_THIS_INLINE (olddecl);
+
+      /* If either decl says `inline', this fn is inline, unless its
+         definition was passed already.  */
+      if (DECL_INLINE (newdecl) && DECL_INITIAL (olddecl) == NULL_TREE)
+	DECL_INLINE (olddecl) = 1;
+      DECL_INLINE (newdecl) = DECL_INLINE (olddecl);
+
       if (! types_match)
 	{
 	  DECL_LANGUAGE (olddecl) = DECL_LANGUAGE (newdecl);
@@ -2968,7 +2965,7 @@ pushdecl (x)
 	  /* If this is an extern function declaration, see if we
 	     have a global definition or declaration for the function.  */
 	  if (oldlocal == NULL_TREE
-	      && DECL_EXTERNAL (x) && !DECL_INLINE (x)
+	      && DECL_EXTERNAL (x)
 	      && oldglobal != NULL_TREE
 	      && TREE_CODE (x) == FUNCTION_DECL
 	      && TREE_CODE (oldglobal) == FUNCTION_DECL)
@@ -3454,11 +3451,7 @@ redeclaration_error_message (newdecl, olddecl)
 
       /* defining the same name twice is no good.  */
       if (DECL_INITIAL (olddecl) != NULL_TREE
-	  && DECL_INITIAL (newdecl) != NULL_TREE
-	  /* However, defining once as extern inline and a second
-	     time in another way is ok.  */
-	  && !(DECL_INLINE (olddecl) && DECL_EXTERNAL (olddecl)
-	       && !(DECL_INLINE (newdecl) && DECL_EXTERNAL (newdecl))))
+	  && DECL_INITIAL (newdecl) != NULL_TREE)
 	{
 	  if (DECL_NAME (olddecl) == NULL_TREE)
 	    return "`%#D' not declared in class";
@@ -6393,55 +6386,7 @@ finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	signature_error (decl, TREE_TYPE (type));
 
       if (TREE_CODE (decl) == FUNCTION_DECL)
-	{
-#if 0
-	  /* C++: Handle overloaded functions with default parameters.  */
-	  if (DECL_OVERLOADED (decl))
-	    {
-	      tree parmtypes = TYPE_ARG_TYPES (type);
-	      tree prev = NULL_TREE;
-	      tree original_name = DECL_NAME (decl);
-	      struct lang_decl *tmp_lang_decl = DECL_LANG_SPECIFIC (decl);
-	      /* All variants will share an uncollectible lang_decl.  */
-	      copy_decl_lang_specific (decl);
-
-	      while (parmtypes && parmtypes != void_list_node)
-		{
-		  /* The default value for the parameter in parmtypes is
-		     stored in the TREE_PURPOSE of the TREE_LIST.  */ 
-		  if (TREE_PURPOSE (parmtypes))
-		    {
-		      tree fnname, fndecl;
-		      tree *argp;
-
-		      argp = prev ? & TREE_CHAIN (prev)
-			: & TYPE_ARG_TYPES (type);
-
-		      *argp = NULL_TREE;
-		      fnname = build_decl_overload (original_name,
-						    TYPE_ARG_TYPES (type), 0);
-		      *argp = parmtypes;
-		      fndecl = build_decl (FUNCTION_DECL, fnname, type);
-		      DECL_EXTERNAL (fndecl) = DECL_EXTERNAL (decl);
-		      TREE_PUBLIC (fndecl) = TREE_PUBLIC (decl);
-		      DECL_INLINE (fndecl) = DECL_INLINE (decl);
-		      /* Keep G++ from thinking this function is unused.
-			 It is only used to speed up search in name space.  */
-		      TREE_USED (fndecl) = 1;
-		      TREE_ASM_WRITTEN (fndecl) = 1;
-		      DECL_INITIAL (fndecl) = NULL_TREE;
-		      DECL_LANG_SPECIFIC (fndecl) = DECL_LANG_SPECIFIC (decl);
-		      fndecl = pushdecl (fndecl);
-		      DECL_INITIAL (fndecl) = error_mark_node;
-		      DECL_RTL (fndecl) = DECL_RTL (decl);
-		    }
-		  prev = parmtypes;
-		  parmtypes = TREE_CHAIN (parmtypes);
-		}
-	      DECL_LANG_SPECIFIC (decl) = tmp_lang_decl;
-	    }
-#endif
-	}
+	;
       else if (DECL_EXTERNAL (decl))
 	;
       else if (TREE_STATIC (decl) && type != error_mark_node)
@@ -6775,13 +6720,13 @@ bad_specifiers (object, type, virtualp, quals, inlinep, friendp, raises)
    not look, and -1 if we should not call `grokclassfn' at all.  */
 static tree
 grokfndecl (ctype, type, declarator, virtualp, flags, quals,
-	    raises, check, publicp)
+	    raises, check, publicp, inlinep)
      tree ctype, type;
      tree declarator;
      int virtualp;
      enum overload_flags flags;
      tree quals, raises;
-     int check, publicp;
+     int check, publicp, inlinep;
 {
   tree cname, decl;
   int staticp = ctype && TREE_CODE (type) == FUNCTION_TYPE;
@@ -6814,10 +6759,21 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
      definition or EOF) if appropriate.  */
   TREE_PUBLIC (decl) = 1;
 
-  if (publicp)
-    ;
-  else
-    DECL_DECLARED_STATIC (decl) = 1;
+  if (ctype == NULL_TREE && ! strcmp (IDENTIFIER_POINTER (declarator), "main"))
+    {
+      if (inlinep)
+	error ("cannot declare `main' to be inline");
+      else if (! publicp)
+	error ("cannot declare `main' to be static");
+      inlinep = 0;
+      publicp = 1;
+    }
+	  
+  if (! publicp)
+    DECL_C_STATIC (decl) = 1;
+
+  if (inlinep)
+    DECL_THIS_INLINE (decl) = DECL_INLINE (decl) = 1;
 
   DECL_EXTERNAL (decl) = 1;
   if (quals != NULL_TREE && TREE_CODE (type) == FUNCTION_TYPE)
@@ -9060,37 +9016,30 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	      }
 
 	    /* Tell grokfndecl if it needs to set TREE_PUBLIC on the node.  */
-	    publicp = (RIDBIT_SETP (RID_EXTERN, specbits)
-		       || (ctype != NULL_TREE
-			   && funcdef_flag >= 0
-			   && RIDBIT_NOTSETP (RID_INLINE, specbits))
-		       || (friendp
-			   && ! funcdef_flag
-			   && RIDBIT_NOTSETP (RID_STATIC, specbits)
-			   && RIDBIT_NOTSETP (RID_INLINE, specbits)));
+	    publicp = (! friendp
+		       || RIDBIT_SETP (RID_EXTERN, specbits)
+		       || ! (funcdef_flag < 0 || inlinep));
 	    decl = grokfndecl (ctype, type, declarator,
 			       virtualp, flags, quals,
-			       raises, friendp ? -1 : 0, publicp);
+			       raises, friendp ? -1 : 0, publicp, inlinep);
 	    if (decl == NULL_TREE)
 	      return NULL_TREE;
 	    decl = build_decl_attribute_variant (decl, decl_machine_attr);
 
 	    if (explicitp == 2)
 	      DECL_NONCONVERTING_P (decl) = 1;
-
-	    DECL_INLINE (decl) = inlinep;
 	  }
 	else if (TREE_CODE (type) == METHOD_TYPE)
 	  {
+	    /* We only get here for friend declarations of
+	       members of other classes.  */
 	    /* All method decls are public, so tell grokfndecl to set
 	       TREE_PUBLIC, also.  */
 	    decl = grokfndecl (ctype, type, declarator,
 			       virtualp, flags, quals,
-			       raises, friendp ? -1 : 0, 1);
+			       raises, friendp ? -1 : 0, 1, 0);
 	    if (decl == NULL_TREE)
 	      return NULL_TREE;
-
-	    DECL_INLINE (decl) = inlinep;
 	  }
 	else if (TYPE_SIZE (type) == NULL_TREE && !staticp
 		 && (TREE_CODE (type) != ARRAY_TYPE || initialized == 0))
@@ -9255,16 +9204,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  type = build_cplus_method_type (build_type_variant (ctype, constp, volatilep),
 					  TREE_TYPE (type), TYPE_ARG_TYPES (type));
 
-	/* Record presence of `static'.  In C++, `inline' is like `static'.  */
-	publicp
-	  = !(RIDBIT_SETP (RID_STATIC, specbits)
-	      || RIDBIT_SETP (RID_INLINE, specbits));
+	/* Record presence of `static'.  In C++, `inline' implies `static'.  */
+	publicp = (ctype != NULL_TREE
+		   || (!RIDBIT_SETP (RID_STATIC, specbits)
+		       && !RIDBIT_SETP (RID_INLINE, specbits)));
 
 	decl = grokfndecl (ctype, type, original_name,
 			   virtualp, flags, quals,
 			   raises,
 			   processing_template_decl ? 0 : friendp ? 2 : 1,
-			   publicp);
+			   publicp, inlinep);
 	if (decl == NULL_TREE)
 	  return NULL_TREE;
 
@@ -9282,14 +9231,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		cp_pedwarn ("cannot declare member function `%D' to have static linkage", decl);
 		illegal_static = 1;
 	      }
-	    else if (! ctype
-		     && IDENTIFIER_LENGTH (original_name) == 4
-		     && IDENTIFIER_POINTER (original_name)[0] == 'm'
-		     && ! strcmp (IDENTIFIER_POINTER (original_name), "main"))
-	      {
-		error ("cannot declare function `main' to have static linkage");
-		illegal_static = 1;
-	      }
 	    else if (current_function_decl)
 	      {
 		/* FIXME need arm citation */
@@ -9301,28 +9242,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	      {
 		staticp = 0;
 		RIDBIT_RESET (RID_STATIC, specbits);
-	      }
-	  }
-
-	/* Record presence of `inline', if it is reasonable.  */
-	if (inlinep)
-	  {
-	    tree last = tree_last (TYPE_ARG_TYPES (type));
-
-	    if (! ctype
-		&& ! strcmp (IDENTIFIER_POINTER (original_name), "main"))
-	      error ("cannot inline function `main'");
-	    else if (last && last != void_list_node)
-	      cp_warning ("cannot inline function `%D' which takes `...'", original_name);
-	    else
-	      /* Assume that otherwise the function can be inlined.  */
-	      DECL_INLINE (decl) = 1;
-
-	    if (RIDBIT_SETP (RID_EXTERN, specbits))
-	      {
-		current_extern_inline = 1;
-		if (pedantic)
-		  pedwarn ("ANSI C++ does not permit `extern inline'");
 	      }
 	  }
       }
@@ -9397,6 +9316,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 
     if (RIDBIT_SETP (RID_EXTERN, specbits))
       DECL_THIS_EXTERN (decl) = 1;
+
+    if (RIDBIT_SETP (RID_STATIC, specbits))
+      DECL_THIS_STATIC (decl) = 1;
 
     /* Record constancy and volatility.  */
 
@@ -10723,7 +10645,6 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
   current_function_returns_value = 0;
   current_function_returns_null = 0;
   warn_about_return_type = 0;
-  current_extern_inline = 0;
   current_function_assigns_this = 0;
   current_function_just_assigned_this = 0;
   current_function_parms_stored = 0;
@@ -10780,11 +10701,6 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	  else
 	    doing_friend = 1;
 	}
-
-      if ( !(DECL_VINDEX (decl1)
-	     && write_virtuals >= 2
-	     && CLASSTYPE_VTABLE_NEEDS_WRITING (ctype)))
-	current_extern_inline = DECL_THIS_EXTERN (decl1) && DECL_INLINE (decl1);
 
       raises = TYPE_RAISES_EXCEPTIONS (fntype);
 
@@ -10890,18 +10806,21 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
   TREE_STATIC (decl1) = 1;
 
   if (DECL_INTERFACE_KNOWN (decl1))
-    /* We know.  */;
+    {
+      if (DECL_NOT_REALLY_EXTERN (decl1))
+	DECL_EXTERNAL (decl1) = 0;
+    }
   /* If this function belongs to an interface, it is public.
      If it belongs to someone else's interface, it is also external.
      It doesn't matter whether it's inline or not.  */
   else if (interface_unknown == 0)
     {
-      if (DECL_DECLARED_STATIC (decl1) || DECL_TEMPLATE_INSTANTIATION (decl1))
+      if (DECL_THIS_INLINE (decl1) || DECL_TEMPLATE_INSTANTIATION (decl1))
 	DECL_EXTERNAL (decl1)
 	  = (interface_only
-	     || (DECL_INLINE (decl1) && ! flag_implement_inlines));
+	     || (DECL_THIS_INLINE (decl1) && ! flag_implement_inlines));
       else
-	DECL_EXTERNAL (decl1) = current_extern_inline;
+	DECL_EXTERNAL (decl1) = 0;
       DECL_INTERFACE_KNOWN (decl1) = 1;
     }
   else
@@ -10909,19 +10828,15 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
       /* This is a definition, not a reference.
 	 So clear DECL_EXTERNAL.  */
       DECL_EXTERNAL (decl1) = 0;
-      
-      if (DECL_INLINE (decl1) && (DECL_FUNCTION_MEMBER_P (decl1)
-				  || DECL_TEMPLATE_INSTANTIATION (decl1)
-				  || current_extern_inline))
-	/* We know nothing yet */;
+
+      if (DECL_THIS_INLINE (decl1) && ! DECL_C_STATIC (decl1))
+	DECL_DEFER_OUTPUT (decl1) = 1;
       else
 	{
 	  DECL_INTERFACE_KNOWN (decl1) = 1;
-	  if (DECL_DECLARED_STATIC (decl1))
+	  if (DECL_C_STATIC (decl1))
 	    TREE_PUBLIC (decl1) = 0;
 	}
-
-      DECL_DEFER_OUTPUT (decl1) = ! DECL_INTERFACE_KNOWN (decl1);
     }
 
   /* Record the decl so that the function name is defined.
@@ -11728,9 +11643,10 @@ finish_function (lineno, call_poplevel, nested)
   if (DECL_SAVED_INSNS (fndecl) && ! TREE_ASM_WRITTEN (fndecl))
     {
       /* Set DECL_EXTERNAL so that assemble_external will be called as
-         necessary.  We'll clear it again in import_export_inline.  */
-      if (TREE_PUBLIC (fndecl))
-	DECL_EXTERNAL (fndecl) = 1;
+         necessary.  We'll clear it again in finish_file.  */
+      if (! DECL_EXTERNAL (fndecl))
+	DECL_NOT_REALLY_EXTERN (fndecl) = 1;
+      DECL_EXTERNAL (fndecl) = 1;
       mark_inline_for_output (fndecl);
     }
 
@@ -11857,11 +11773,16 @@ start_method (declspecs, declarator, raises)
       return void_type_node;
     }
 
+  DECL_THIS_INLINE (fndecl) = 1;
+
   if (flag_default_inline)
     DECL_INLINE (fndecl) = 1;
 
   if (processing_template_defn)
-    SET_DECL_IMPLICIT_INSTANTIATION (fndecl);
+    {
+      SET_DECL_IMPLICIT_INSTANTIATION (fndecl);
+      repo_template_used (fndecl);
+    }
 
   /* We read in the parameters on the maybepermanent_obstack,
      but we won't be getting back to them until after we
@@ -12207,7 +12128,6 @@ struct cp_function
   int returns_value;
   int returns_null;
   int warn_about_return_type;
-  int extern_inline;
   int assigns_this;
   int just_assigned_this;
   int parms_stored;
@@ -12247,7 +12167,6 @@ push_cp_function_context (context)
   p->returns_value = current_function_returns_value;
   p->returns_null = current_function_returns_null;
   p->warn_about_return_type = warn_about_return_type;
-  p->extern_inline = current_extern_inline;
   p->binding_level = current_binding_level;
   p->ctor_label = ctor_label;
   p->dtor_label = dtor_label;
@@ -12295,7 +12214,6 @@ pop_cp_function_context (context)
   current_function_returns_value = p->returns_value;
   current_function_returns_null = p->returns_null;
   warn_about_return_type = p->warn_about_return_type;
-  current_extern_inline = p->extern_inline;
   current_binding_level = p->binding_level;
   ctor_label = p->ctor_label;
   dtor_label = p->dtor_label;

@@ -362,6 +362,7 @@ lang_init ()
   if (flag_cadillac)
     cadillac_start ();
   if (flag_gnu_xref) GNU_xref_begin (input_filename);
+  init_repo (input_filename);
 }
 
 void
@@ -1448,7 +1449,7 @@ store_pending_inline (decl, t)
 	     punt them now, or output them now if we're doing implementations
 	     and we know no overrides will exist.  Otherwise, we delay until
 	     end-of-file, to see if the definition is really required.  */
-	  if (DECL_INLINE (decl))
+	  if (DECL_THIS_INLINE (decl))
 	    /* delay_to_eof == 0 */;
 	  else if (current_class_type && !interface_unknown)
 	    {

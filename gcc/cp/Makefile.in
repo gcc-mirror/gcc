@@ -159,7 +159,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config
 
 CXX_OBJS = call.o decl.o errfn.o expr.o pt.o sig.o typeck2.o \
  class.o decl2.o error.o gc.o lex.o parse.o ptree.o spew.o typeck.o cvt.o \
- edsel.o except.o init.o method.o search.o tree.o xref.o
+ edsel.o except.o init.o method.o search.o tree.o xref.o repo.o
 
 # Language-independent object files.
 OBJS = `cat ../stamp-objlist` ../c-common.o ../c-pragma.o
@@ -247,6 +247,7 @@ pt.o : pt.c $(CONFIG_H) $(CXX_TREE_H) decl.h $(PARSE_H)
 error.o : error.c $(CONFIG_H) $(CXX_TREE_H)
 errfn.o : errfn.c $(CONFIG_H) $(CXX_TREE_H)
 sig.o : sig.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
+repo.o : repo.c $(CONFIG.H) $(CXX_TREE_H)
 
 # These exist for maintenance purposes.
 

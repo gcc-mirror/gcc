@@ -1,3 +1,116 @@
+Sun Apr  2 23:43:51 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* search.c (compute_access): Don't try to do access control on
+	nested types.
+
+Fri Mar 31 10:14:23 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* repo.c: New file to handle things repo.
+
+	* pt.c (instantiate_template): Call repo_template_used if the
+	definition is accessible.
+	(mark_function_instantiated): Split out from
+	do_function_instantiation.
+	(mark_class_instantiated): Split out from do_type_instantiation.
+
+	* parse.y (template_instantiate_once): Call repo_template_used.
+
+	* lex.c (lang_init): Call init_repo.
+
+	* decl2.c: Handle flag_use_repository.
+	(finish_file): Call finish_repo.
+
+	* decl.c (start_method): Call repo_template_used if this is a
+	template method.
+
+	* Makefile.in (CXX_OBJS): Add repo.o.
+	(repo.o): Add dependencies.
+
+	* Make-lang.in (CXX_SRCS): Add repo.c.
+
+	* decl.c (start_function): If DECL_INTERFACE_KNOWN and
+	DECL_NOT_REALLY_EXTERN are both set, unset DECL_EXTERNAL.
+
+	* typeck.c (build_binary_op_nodefault): Identify the invalid operand
+	types used.
+
+	* decl.c (duplicate_decls): Propagate DECL_NOT_REALLY_EXTERN.
+
+Thu Mar 30 17:54:42 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (build_binary_op_nodefault): Tidy up use of build_type
+	and result_type.  When checking for comparison between signed
+	and unsigned, use result_type rather than the (possibly shortened)
+	type of op0.  Also, don't warn about equality comparison of a
+	signed operand to an unsigned constant that fits in the signed
+	type.
+
+	* method.c (do_build_copy_constructor): Reverse
+	current_base_init_list after we've built it up.
+
+Thu Mar 30 14:35:18 1995  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (build_throw): Never warn about the value of throw not
+	being used.
+
+Thu Mar 30 13:16:54 1995  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_start_catch_block): Check for bad catch parameter
+	declarations.
+
+Thu Mar 30 13:06:11 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (finish_function): Only set DECL_NOT_REALLY_EXTERN if
+	DECL_EXTERNAL is not already set.
+
+Thu Mar 30 11:26:24 1995  Mike Stump  <mrs@cygnus.com>
+
+	* method.c (emit_thunk): Let poplevel know that the last level is
+	for a function so it can create a BLOCK_NODE and set DECL_INITIAL.
+
+Thu Mar 30 11:15:06 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl2.c (import_export_inline): Don't set DECL_NOT_REALLY_EXTERN
+	here.
+
+	* decl.c (grokdeclarator): OK, don't abort if we see a decl with
+	METHOD_TYPE.
+	(finish_function): Set DECL_EXTERNAL and DECL_NOT_REALLY_EXTERN on
+	all deferred inlines.
+
+Wed Mar 29 19:35:02 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* cp-tree.h (DECL_THIS_INLINE): New macro.
+	(DECL_NOT_REALLY_EXTERN): New macro.
+	(DECL_THIS_STATIC): New macro.
+
+	* decl.c: Lose all references to current_extern_inline.  Break
+	inline semantics into DECL_INLINE for actual inlining and
+	DECL_THIS_INLINE for the linkage wierdness.  Use DECL_THIS_STATIC.
+	* decl2.c: Use DECL_NOT_REALLY_EXTERN to indicate that we want to
+	emit an inline here.  Associated changes.
+	* lex.c: Ditto.
+	* pt.c: Ditto.
+	* typeck.c: Ditto.
+
+	* call.c (build_method_call): Don't bother trying to handle inlines
+	specially.
+	* cvt.c (convert_to_aggr): Ditto.
+
+	* pt.c (do_function_instantiation): Handle instantiation of
+	public inlines, too.
+
+Wed Mar 29 16:04:25 1995  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (init_exception_processing): Change the interface for
+	__throw_type_match and add decl for new rtti matching routine
+	__throw_type_match_rtti.
+	(build_eh_type): New routine to build a run time descriptor for the
+	expression given. 
+	(expand_start_catch_block): Update to use new calling convention for
+	the matcher.
+	(expand_throw): Update to use build_eh_type.
+
 Mon Mar 27 07:14:33 1995  Warner Losh	<imp@village.org>
 
 	* g++.c: Removed __NetBSD__ from conditional.

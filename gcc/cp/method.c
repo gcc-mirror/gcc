@@ -1936,7 +1936,7 @@ emit_thunk (thunk_fndecl)
     emit_insn (gen_rtx (USE, VOIDmode, need_use[--need_use_count]));
 
   expand_end_bindings (NULL, 1, 0);
-  poplevel (0, 0, 0);
+  poplevel (0, 0, 1);
 
   /* From now on, allocate rtl in current_obstack, not in saveable_obstack.
      Note that that may have been done above, in save_for_inline_copying.
@@ -2122,6 +2122,7 @@ do_build_copy_constructor (fndecl)
 	    = tree_cons (DECL_NAME (fields), init, current_member_init_list);
 	}
       current_member_init_list = nreverse (current_member_init_list);
+      current_base_init_list = nreverse (current_base_init_list);
       setup_vtbl_ptr ();
     }
 
