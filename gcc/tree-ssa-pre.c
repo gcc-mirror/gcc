@@ -1279,6 +1279,8 @@ insert_aux (basic_block block)
 		      edge pred;
 		      basic_block bprime;
 		      tree eprime;
+		      bool cant_insert = false;
+
 		      val = get_value_handle (node->expr);
 		      if (set_contains_value (PHI_GEN (block), val))
 			continue; 
@@ -1288,9 +1290,8 @@ insert_aux (basic_block block)
 			    fprintf (dump_file, "Found fully redundant value\n");
 			  continue;
 			}
-		    
-		    
-		       avail = xcalloc (last_basic_block, sizeof (tree));
+		    		    
+		      avail = xcalloc (last_basic_block, sizeof (tree));
 		      for (pred = block->pred;
 			   pred;
 			   pred = pred->pred_next)
@@ -1301,8 +1302,21 @@ insert_aux (basic_block block)
 			  eprime = phi_translate (node->expr,
 						  ANTIC_IN (block),
 						  bprime, block);
+
+			  /* eprime will generally only be NULL if the
+			     value of the expression, translated
+			     through the PHI for this predecessor, is
+			     undefined.  If that is the case, we can't
+			     make the expression fully redundant,
+			     because its value is undefined along a
+			     predecessor path.  We can thus break out
+			     early because it doesn't matter what the
+			     rest of the results are.  */
 			  if (eprime == NULL)
-			    continue;
+			    {
+			      cant_insert = true;
+			      break;
+			    }
 
 			  vprime = get_value_handle (eprime);
 			  if (!vprime)
@@ -1328,7 +1342,7 @@ insert_aux (basic_block block)
 			    }
 			}
 
-		      if (!all_same && by_some)
+		      if (!cant_insert && !all_same && by_some)
 			{
 			  tree temp;
 			  tree type = TREE_TYPE (avail[block->pred->src->index]);
