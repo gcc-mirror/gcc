@@ -1,3 +1,9 @@
+2001-04-25  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* invoke.texi: Document -Wmissing-braces, -dumpspecs,
+	-dumpmachine, -dumpversion, -fmem-report and -ftime-report.
+	* gcc.1: Regenerate.
+
 2001-04-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* dwarfout.c (is_pseudo_reg, type_main_variant, is_tagged_type,
