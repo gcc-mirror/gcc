@@ -39,28 +39,37 @@ package java.nio.channels.spi;
 
 import java.nio.channels.SelectionKey;
 
+/**
+ * @since 1.4
+ */
 public abstract class AbstractSelectionKey
   extends SelectionKey
 {
   boolean ok = true;
 
+  /**
+   * Initializes the key.
+   */
   protected AbstractSelectionKey ()
   {
   }
- 
+
+  /**
+   * Cancels this key.
+   */
   public final void cancel ()
   {
     if (ok)
-      {
-        selector ().selectedKeys ().add (this);
-      }
+      selector ().selectedKeys ().add (this);
     
     ok = false;
   }
 
+  /**
+   * Tells whether this key is valid or not.
+   */
   public final boolean isValid ()
   {
     return ok;
   }
 }
-

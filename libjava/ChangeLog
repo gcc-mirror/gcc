@@ -1,3 +1,81 @@
+2002-11-13  Michael Koch <konqueror@gmx.de>
+
+	* java/nio/channels/AlreadyConnectedException.java:
+	Removed unneeded import.
+	(AlreadyConnectedException): Documentation added.
+	* java/nio/channels/Pipe.java
+	(SinkChannel.SinkChannel): Documentation added.
+	(SinkChannel.validOps): New method.
+	(SourceChannel.SourceChannel): Documentation added.
+	(SourceChannel.validOps): New method.
+	(Pipe): Documentation added.
+	(open): Documentation added.
+	(SinkChannel.channel): Documentation added.
+	(SourceChannel.channel): Documentation added.
+	* java/nio/channel/SelectableChannel.java
+	(SelectableChannel): Documentation added.
+	(blockingLock): Documentation added.
+	(configureBlocking):Documentation added.
+	(isBlocking):Documentation added.
+	(isRegistered):Documentation added.
+	(keyFor):Documentation added.
+	(provider):Documentation added.
+	(register): Documentation added.
+	(validOps): Documentation added.
+	* jaba/nio/channels/SelectionKey.java
+	(SelectionKey): Documentation added.
+	(attach): Documentation added.
+	(attachment): Documentation added.
+	(isAcceptable): Documentation added.
+	(isConnetable): Documentation added.
+	(isReadable): Documentation added.
+	(isWritable): Documentation added.
+	(cancel): Documentation added.
+	(channel): Documentation added.
+	(interestOps): Documentation added.
+	(isValid): Documentation added.
+	(readyOps): Documentation added.
+	(selector): Documentation added.
+	* jaba/nio/channels/Selector.java
+	(Selector): Documentation added.
+	(open): Documentation added.
+	(close): Documentation added.
+	(isOpen): Documentation added.
+	(keys): Documentation added.
+	(provider): Documentation added.
+	(select): Documentation added.
+	(selectedKeys): Documentation added.
+	(selectNow): Documentation added.
+	(wakeup): Documentation added.
+	* java/nio/channels/spi/AbstractInterruptibleChannel.java
+	(AbstractInterruptibleChannel): Documentation added.
+	(opened): Default to true;
+	(begin): Documentation added.
+	(close): Set opened to false, documentation added.
+	(isOpen): Documentation added.
+	* java/nio/channels/spi/AbstractSelectionKey.java
+	(AbstractSelectionKey): Documentation added.
+	(cancel): Documentation added.
+	(isValid): Documentation added.
+	* java/nio/channels/spi/AbstractSelector.java
+	(AbstractSelector): Documentation added.
+	(begin): Documentation added.
+	(close): Documentation added.
+	(isOpen): Documentation added.
+	(deregister): Documentation added.
+	(end): Documentation added.
+	(provider): Documentation added.
+	(implCloseSelector): Documentation added.
+	(register): Documentation added.
+	* java/nio/channels/spi/SelectorProvider.java
+	(SelectorProvider): Documentation added.
+	(openDatagramChannel): Documentation added.
+	(openPipe): Documentation added.
+	(openSelector): Documentation added.
+	(openServerSocketChannel): Documentation added.
+	(openSocketChannel): Documentation added.
+	(provider): Documentation added.
+
 2002-11-12  Michael Koch <konqueror@gmx.de>
 
 	* java/nio/Buffer.java: Implemented.

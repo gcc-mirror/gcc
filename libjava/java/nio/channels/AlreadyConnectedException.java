@@ -37,11 +37,11 @@ exception statement from your version. */
 
 package java.nio.channels;
 
-import java.io.*;
-
-
 public class AlreadyConnectedException extends IllegalStateException
 {
+  /**
+   * Creates the exception
+   */
   public AlreadyConnectedException()
   {
   }

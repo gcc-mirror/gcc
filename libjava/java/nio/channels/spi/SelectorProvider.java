@@ -1,4 +1,4 @@
-/* SelectorProvider.java -- 
+/* SelectorProvider.java
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,12 +37,14 @@ exception statement from your version. */
 
 package java.nio.channels.spi;
 
+/* import gnu.java.nio.channels.SelectorProviderImpl; */
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.Pipe;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 /**
+ * @author Michael Koch
  * @since 1.4
  */
 public abstract class SelectorProvider
@@ -50,33 +52,52 @@ public abstract class SelectorProvider
   static SelectorProvider pr;
     
   /**
-   * Creates the <code>SelectorProvider<code> object
+   * Initializes the selector provider.
    *
    * @exception SecurityException If a security manager has been installed and
-   * it denies RuntimePermission("selectorProvider")
+   * it denies @see RuntimePermission ("selectorProvider").
    */
-  protected SelectorProvider()
+  protected SelectorProvider ()
   {
     SecurityManager sm = System.getSecurityManager ();
     if (sm != null)
       sm.checkPermission (new RuntimePermission ("selectorProvider"));
   }
-    
-  public abstract  DatagramChannel openDatagramChannel();
-
-  public abstract  Pipe openPipe();
   
-  public abstract  AbstractSelector openSelector();
-  
-  public abstract  ServerSocketChannel openServerSocketChannel();
-  
-  public abstract  SocketChannel openSocketChannel();
-   
   /**
-   * Returns the global <code>SelectorProvider</code> object
+   * Opens a datagram channel.
    */
-  public static SelectorProvider provider()
+  public abstract DatagramChannel openDatagramChannel ();
+  
+  /**
+   * Opens a pipe.
+   */
+  public abstract Pipe openPipe ();
+  
+  /**
+   * Opens a selector.
+   */
+  public abstract AbstractSelector openSelector ();
+  
+  /**
+   * Opens a server socket channel.
+   */
+  public abstract ServerSocketChannel openServerSocketChannel ();
+  
+  /**
+   * Opens a socket channel.
+   */
+  public abstract SocketChannel openSocketChannel ();
+    
+  /**
+   * Returns the system-wide default selector provider for this invocation
+   * of the Java virtual machine.
+   */
+  public static SelectorProvider provider ()
   {
+/*    if (pr == null) */
+/*      pr = new SelectorProviderImpl (); */
+    
     return pr;
   }
 }
