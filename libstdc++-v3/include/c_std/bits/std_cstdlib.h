@@ -130,6 +130,12 @@ namespace std
   extern "C" size_t mbstowcs(wchar_t*, const char*, size_t); 
   extern "C" size_t wcstombs(char*, const wchar_t*, size_t);
 
+  inline long 
+  abs(long __i) { return ::labs(__i); }
+
+  inline ldiv_t
+  div(long __i, long __j) { return ::ldiv(__i, __j); }
+
 #ifdef _GLIBCPP_USE_LONG_LONG
   inline long long 
   abs(long long __x) { return __x >= 0 ? __x : -__x; }
