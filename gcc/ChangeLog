@@ -1,3 +1,9 @@
+2000-06-06  Philipp Thomas  <pthomas@suse.de>
+
+        * configure.in (AC_C_INLINE): Added.
+	* aclocal.m4 (AM_WITH_NLS): Enable --with-included-gettext by default.
+	* configure: Regenerate.
+
 2000-06-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.h (c_language_kind): New type.
