@@ -12063,8 +12063,8 @@ position-independent.
 @opindex fPIC
 If supported for the target machine, emit position-independent code,
 suitable for dynamic linking and avoiding any limit on the size of the
-global offset table.  This option makes a difference on the m68k
-and the SPARC@.
+global offset table.  This option makes a difference on the m68k,
+PowerPC and SPARC@.
 
 Position-independent code requires special support, and therefore works
 only on certain machines.

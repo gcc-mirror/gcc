@@ -1,3 +1,8 @@
+2005-01-10  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/invoke.texi (Code Gen Options): Add PowerPC to the list of
+	targets for which -fPIC reduces limitations on the GOT size.
+
 2005-01-09  Falk Hueffner  <falk@debian.org>
 
 	* fold-const.c (fold): Also handle EXACT_DIV_EXPR when folding
