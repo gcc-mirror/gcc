@@ -9,6 +9,21 @@
 	* fix-header.c (cb_file_change):  Likewise.
 	* c-ppoutput.c (pp_file_change):  Likewise.
 
+	* cppinit.c (cpp_read_main_file):  Split into two functions:
+	Distribute _cpp_stack_file call over the two functions.
+	(cpp_find_main_file):  New function.
+	Don't call _cpp_do_file_change even if working_directory flag set.
+	(cpp_push_main_file):  New function.
+	* cppfiles.c (_cpp_find_failed):  New helper function.
+	(find_file):  Made non-static and renamed to _cpp_find_file.
+	(_cpp_stack_file):  No longer needed.  But note the following.
+	(stack_file):  Made non-static and renamed to _cpp_stack_file.
+	* fix-header.c (cpp_read_main_file):  Replace cpp_read_main_file
+	call with calls to cpp_find_main_file and cpp_push_main_file.
+	(search_path_head):  If there is no current buffer, use main_file.
+	* cpphash.h:  Update function declarations.
+	* cpplib.h:  Update function declarations.
+
 	* cpplex.c (_cpp_get_fresh_line):  Revert my no-longer-needed
 	08-28 change, since we're never called with a NULL buffer.
 	(_cpp_lex_direct):  Likewise.

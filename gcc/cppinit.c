@@ -448,11 +448,10 @@ cpp_post_options (cpp_reader *pfile)
     mark_named_operators (pfile);
 }
 
-/* Setup for processing input from the file named FNAME,
-   or stdin if it is the empty string.  Return the original filename
-   on success (e.g. foo.i->foo.c), or NULL on failure.  */
-const char *
-cpp_read_main_file (cpp_reader *pfile, const char *fname)
+/* Setup for processing input from the file named FNAME, or stdin if
+   it is the empty string.  Returns true if the file was found.  */
+bool
+cpp_find_main_file (cpp_reader *pfile, const char *fname)
 {
   if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
     {
@@ -463,22 +462,13 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
       deps_add_default_target (pfile->deps, fname);
     }
 
-  if (!_cpp_stack_file (pfile, fname))
-    return NULL;
-
-  /* Set this here so the client can change the option if it wishes,
-     and after stacking the main file so we don't trace the main
-     file.  */
-  pfile->line_maps.trace_includes = CPP_OPTION (pfile, print_include_names);
-
-  /* For foo.i, read the original filename foo.c now, for the benefit
-     of the front ends.  */
-  if (CPP_OPTION (pfile, preprocessed))
-    read_original_filename (pfile);
+  pfile->main_file
+    = _cpp_find_file (pfile, fname, &pfile->no_search_path, false);
+  if (_cpp_find_failed (pfile->main_file))
+    return false;
 
   if (CPP_OPTION (pfile, working_directory))
     {
-      const char *name = pfile->map->to_file;
       const char *dir = getpwd ();
       char *dir_with_slashes = alloca (strlen (dir) + 3);
 
@@ -487,14 +477,27 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
 
       if (pfile->cb.dir_change)
 	pfile->cb.dir_change (pfile, dir);
-      /* Emit file renames that will be recognized by
-	 read_directory_filename, since dir_change doesn't output
-	 anything.  */
-      _cpp_do_file_change (pfile, LC_RENAME, dir_with_slashes, 1, 0);
-      _cpp_do_file_change (pfile, LC_RENAME, name, 1, 0);
     }
+  return true;
+}
 
-  return pfile->map->to_file;
+/* This function reads the file, but does not start preprocessing.
+   This will generate at least one file change callback, and possibly
+   a line change callback.  */
+void
+cpp_push_main_file (cpp_reader *pfile)
+{
+  _cpp_stack_file (pfile, pfile->main_file, false);
+
+  /* For foo.i, read the original filename foo.c now, for the benefit
+     of the front ends.  */
+  if (CPP_OPTION (pfile, preprocessed))
+    read_original_filename (pfile);
+
+  /* Set this here so the client can change the option if it wishes,
+     and after stacking the main file so we don't trace the main
+     file.  */
+  pfile->line_maps.trace_includes = CPP_OPTION (pfile, print_include_names);
 }
 
 /* For preprocessed files, if the first tokens are of the form # NUM.
