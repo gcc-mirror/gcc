@@ -213,7 +213,7 @@ public class UnicastRemoteCall
 
   Object returnValue()
   {
-    return vec.elementAt(0);
+    return (vec.size() > 0 ? vec.elementAt(0) : null);
   }
 
   Object[] getArguments()

@@ -1,3 +1,9 @@
+2003-06-07	Jeff Sturm	<jsturm@one-point.com>
+
+	PR libgcj/10886:
+	* gnu/java/rmi/server/UnicastRemoteCall.java (returnValue):
+	Test for empty vector.
+
 2003-06-06  Mark Wielaard  <mark@klomp.org>
 
 	* java/security/Security.java (secprops): Initialize.
