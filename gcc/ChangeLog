@@ -1,3 +1,7 @@
+Fri May 18 10:14:42 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* config/pa/som.h (EXCEPTION_SECTION): Define.
+
 2001-05-18  Daniel Berlin  <dan@cgsoftware.com>
 
 	* dwarf2out.c: Add dw_loc_list_ref, a reference to a location
