@@ -144,8 +144,15 @@ void GC_push_all_stacks()
     	  GC_push_one ((word) thread_table[i].context.Edx);
     	  GC_push_one ((word) thread_table[i].context.Ecx);
     	  GC_push_one ((word) thread_table[i].context.Eax);
-	  GC_push_all_stack((char *) thread_table[i].context.Esp,
-			    thread_table[i].stack);
+	  if (thread_table[i].context.Esp >= (DWORD)thread_table[i].stack
+	      || thread_table[i].context.Esp < (DWORD)bottom) {
+	      WARN("Thread stack pointer 0x%lx out of range, pushing everything",
+		   thread_table[i].context.Esp);
+	      GC_push_all_stack((char *) bottom, thread_table[i].stack);
+	  } else {
+	      GC_push_all_stack((char *) thread_table[i].context.Esp,
+			        thread_table[i].stack);
+	  }
 #       else
 #       ifdef ARM32
 	  if (thread_table[i].context.Sp >= (DWORD)thread_table[i].stack
