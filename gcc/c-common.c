@@ -955,6 +955,29 @@ truthvalue_conversion (expr)
 {
   register enum tree_code code;
 
+  if (TREE_CODE (expr) == ERROR_MARK)
+    return expr;
+
+  /* These really should return error_mark_node after 2.4 is stable.
+     But not all callers handle ERROR_MARK properly.  */
+  switch (TREE_CODE (TREE_TYPE (expr)))
+    {
+    case RECORD_TYPE:
+      error ("struct type value used where scalar is required");
+      return integer_zero_node;
+
+    case UNION_TYPE:
+      error ("union type value used where scalar is required");
+      return integer_zero_node;
+
+    case ARRAY_TYPE:
+      error ("array type value used where scalar is required");
+      return integer_zero_node;
+
+    default:
+      break;
+    }
+
   switch (TREE_CODE (expr))
     {
       /* It is simpler and generates better code to have only TRUTH_*_EXPR
