@@ -1,3 +1,10 @@
+2001-12-28  Stan Shebs  <shebs@apple.com>
+
+	* objc/objc-act.c (build_module_descriptor): Make sure the init
+	function is not deferred.
+	(build_dispatch_table_initializer): Compute the method encoding if
+	not already done.
+
 2001-12-28  Kazu Hirata  <kazu@hxi.com>
 
 	* doc/md.texi: Add @findex define_insn_and_split.
