@@ -6,6 +6,8 @@
 /* { dg-do run { target *-*-darwin* } } */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <memory.h>
 #include <objc/objc.h>
 #include <objc/Object.h>
 
