@@ -256,13 +256,35 @@ namespace tr1
 
   /// @brief  const-volatile modifications [4.7.1].
   template<typename _Tp>
-    struct remove_const;
+    struct remove_const
+    {
+      typedef _Tp     type;
+    };
+
+  template<typename _Tp>
+    struct remove_const<_Tp const>
+    {
+      typedef _Tp     type;
+    };
   
   template<typename _Tp>
-    struct remove_volatile;
+    struct remove_volatile
+    {
+      typedef _Tp     type;
+    };
+
+  template<typename _Tp>
+    struct remove_volatile<_Tp volatile>
+    {
+      typedef _Tp     type;
+    };
   
   template<typename _Tp>
-    struct remove_cv;
+    struct remove_cv
+    {
+      typedef typename
+      remove_const<typename remove_volatile<_Tp>::type>::type     type;
+    };
   
   template<typename _Tp>
     struct add_const;

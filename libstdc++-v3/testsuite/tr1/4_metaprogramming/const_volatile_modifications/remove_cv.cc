@@ -1,4 +1,4 @@
-// 2004-12-03  Paolo Carlini  <pcarlini@suse.de>
+// 2004-12-10  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2004 Free Software Foundation, Inc.
 //
@@ -18,7 +18,7 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 4.5.1 Primary type categories
+// 4.7.1 Const-volatile modifications
 
 #include <tr1/type_traits>
 #include <testsuite_hooks.h>
@@ -27,24 +27,17 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  using std::tr1::is_array;
+  using std::tr1::remove_cv;
+  using std::tr1::is_same;
   using namespace __gnu_test;
 
-  VERIFY( (test_category<is_array, int[2], true>()) );
-  VERIFY( (test_category<is_array, int[], true>()) );
-  VERIFY( (test_category<is_array, int[2][3], true>()) );
-  VERIFY( (test_category<is_array, int[][3], true>()) );
-  VERIFY( (test_category<is_array, float*[2], true>()) );
-  VERIFY( (test_category<is_array, float*[], true>()) );
-  VERIFY( (test_category<is_array, float*[2][3], true>()) );
-  VERIFY( (test_category<is_array, float*[][3], true>()) );
-  VERIFY( (test_category<is_array, ClassType[2], true>()) );
-  VERIFY( (test_category<is_array, ClassType[], true>()) );
-  VERIFY( (test_category<is_array, ClassType[2][3], true>()) );
-  VERIFY( (test_category<is_array, ClassType[][3], true>()) );
-
-  // Sanity check.
-  VERIFY( (test_category<is_array, ClassType, false>()) );
+  VERIFY( (is_same<remove_cv<const volatile int>::type, int>::value) );
+  VERIFY( (is_same<remove_cv<const volatile int*>::type,
+	   const volatile int*>::value) );
+  VERIFY( (is_same<remove_cv<const volatile ClassType>::type,
+	   ClassType>::value) );
+  VERIFY( (is_same<remove_cv<const volatile ClassType*>::type,
+	   const volatile ClassType*>::value) );
 }
 
 int main()
