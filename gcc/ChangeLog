@@ -1,3 +1,8 @@
+Mon Aug 10 22:57:24 1998  John Carr  <jfc@mit.edu>
+
+	* config/sparc/sparc.md (define_insn jump): Output ba,pt not b,pt
+	in v9 case as the latter makes the Solaris assembler crash.
+
 Mon Aug 10 22:39:09 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (input_operand): Do not accept a LO_SUM MEM
