@@ -48,9 +48,6 @@ Boston, MA 02111-1307, USA.  */
 #include "demangle.h"
 #include "obstack.h"
 #include "intl.h"
-#ifdef __CYGWIN__
-#include <process.h>
-#endif
 
 /* Obstack allocation and deallocation routines.  */
 #define obstack_chunk_alloc xmalloc
@@ -1733,7 +1730,6 @@ collect_execute (prog, argv, redir)
   if (argv[0] == 0)
     fatal ("cannot find `%s'", prog);
 
-#ifndef __CYGWIN__
   pid = vfork ();
   if (pid == -1)
     fatal_perror (VFORK_STRING);
@@ -1752,11 +1748,6 @@ collect_execute (prog, argv, redir)
       execvp (argv[0], argv);
       fatal_perror ("execvp %s", prog);
     }
-#else
-  pid = _spawnvp (_P_NOWAIT, argv[0], argv);
-  if (pid == -1)
-    fatal ("spawnvp failed");
-#endif
 }
 
 static void

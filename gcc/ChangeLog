@@ -1,3 +1,7 @@
+Wed Feb 10 10:05:23 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+        * collect2.c (collect_execute): Remove cygwin-specific code.
+
 Tue Feb  9 17:27:29 GMT 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* system.h (_, N_): Remove dummy i18n macros.
