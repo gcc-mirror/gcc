@@ -422,6 +422,7 @@ gnu/gcj/protocol/file/Handler.java \
 gnu/gcj/protocol/http/Connection.java \
 gnu/gcj/protocol/http/Handler.java \
 gnu/gcj/RawData.java \
+gnu/gcj/util/EnumerationChain.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
 java/io/BufferedReader.java \
@@ -617,6 +618,7 @@ java/util/NoSuchElementException.java \
 java/util/Observable.java \
 java/util/Observer.java	\
 java/util/Properties.java \
+java/util/PropertyResourceBundle.java \
 java/util/Random.java \
 java/util/ResourceBundle.java \
 java/util/SimpleTimeZone.java \

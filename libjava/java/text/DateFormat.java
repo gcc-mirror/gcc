@@ -94,6 +94,15 @@ public abstract class DateFormat extends Format implements Cloneable
 						   boolean use_date,
 						   boolean use_time)
   {
+    return computeInstance (style, style, loc, use_date, use_time);
+  }
+
+  private static final DateFormat computeInstance (int dateStyle, 
+						   int timeStyle,
+						   Locale loc,
+						   boolean use_date,
+						   boolean use_time)
+  {
     ResourceBundle res;
     try
       {
@@ -108,7 +117,7 @@ public abstract class DateFormat extends Format implements Cloneable
     if (use_date)
       {
 	String name, def;
-	switch (style)
+	switch (dateStyle)
 	  {
 	  case FULL:
 	    name = "fullDateFormat";
@@ -147,7 +156,7 @@ public abstract class DateFormat extends Format implements Cloneable
 	  pattern += " ";
 
 	String name, def;
-	switch (style)
+	switch (timeStyle)
 	  {
 	  case FULL:
 	    name = "fullTimeFormat";
@@ -201,23 +210,31 @@ public abstract class DateFormat extends Format implements Cloneable
 
   public static final DateFormat getDateTimeInstance ()
   {
-    return getDateTimeInstance (DEFAULT, Locale.getDefault());
+    return getDateTimeInstance (DEFAULT, DEFAULT, Locale.getDefault());
   }
 
   public static final DateFormat getDateTimeInstance (int style)
   {
-    return getDateTimeInstance (style, Locale.getDefault());
+    return getDateTimeInstance (style, style, Locale.getDefault());
   }
 
-  public static final DateFormat getDateTimeInstance (int style, Locale loc)
+  public static final DateFormat getDateTimeInstance (int dateStyle, 
+						      int timeStyle)
   {
-    return computeInstance (style, loc, true, true);
+    return getDateTimeInstance (dateStyle, timeStyle, Locale.getDefault());
+  }
+
+  public static final DateFormat getDateTimeInstance (int dateStyle, 
+						      int timeStyle, 
+						      Locale loc)
+  {
+    return computeInstance (dateStyle, timeStyle, loc, true, true);
   }
 
   public static final DateFormat getInstance ()
   {
     // JCL book says SHORT.
-    return getDateTimeInstance (SHORT, Locale.getDefault());
+    return getDateTimeInstance (SHORT, SHORT, Locale.getDefault());
   }
 
   public NumberFormat getNumberFormat ()
