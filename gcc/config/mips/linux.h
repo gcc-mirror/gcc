@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
    `varasm.c' when defining this macro.  */
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)	\
 do {								\
-  ASM_GLOBALIZE_LABEL (FILE, NAME);				\
+  (*targetm.asm_out.globalize_label) (FILE, NAME);		\
   if (SIZE > 0 && SIZE <= mips_section_threshold)		\
     sbss_section ();						\
   else								\

@@ -1704,13 +1704,8 @@ fini_section ()							\
 
 #define NO_DOT_IN_LABEL		/* Only required for TI format.  */
 
-#define ASM_GLOBALIZE_LABEL(FILE, NAME) \
-  do {                                  \
-    fprintf (FILE, "\t.global\t");	\
-    assemble_name (FILE, NAME);		\
-    fputs ("\n", FILE); 	        \
-    c4x_global_label (NAME);		\
-  } while (0);
+/* Globalizing directive for a label.  */
+#define GLOBAL_ASM_OP "\t.global\t"
 
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) \
 c4x_external_ref (NAME)

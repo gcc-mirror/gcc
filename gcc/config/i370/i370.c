@@ -101,6 +101,7 @@ static label_node_t * mvs_get_label PARAMS ((int));
 static void i370_label_scan PARAMS ((void));
 #ifdef TARGET_HLASM
 static bool i370_hlasm_assemble_integer PARAMS ((rtx, unsigned int, int));
+static void i370_globalize_label PARAMS ((FILE *, const char *));
 #endif
 static void i370_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void i370_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
@@ -301,6 +302,8 @@ static const unsigned char ebcasc[256] =
 #define TARGET_ASM_ALIGNED_SI_OP NULL
 #undef TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER i370_hlasm_assemble_integer
+#undef TARGET_ASM_GLOBALIZE_LABEL
+#define TARGET_ASM_GLOBALIZE_LABEL i370_globalize_label
 #endif
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
@@ -1415,6 +1418,19 @@ i370_output_function_prologue (f, l)
 
   /* find all labels in this routine */
   i370_label_scan ();
+}
+
+static void
+i370_globalize_label (stream, name)
+     FILE *stream;
+     const char *name;
+{
+  char temp[MAX_MVS_LABEL_SIZE + 1];
+  if (mvs_check_alias (name, temp) == 2)
+    fprintf (stream, "%s\tALIAS\tC'%s'\n", temp, name);
+  fputs ("\tENTRY\t", stream);
+  assemble_name (stream, name);
+  putc ('\n', stream);
 }
 #endif /* TARGET_HLASM */
 

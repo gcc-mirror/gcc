@@ -2198,7 +2198,7 @@ asm_output_common(file, name, size, rounded)
      int rounded;
 {
     bss_section ();
-    ASM_GLOBALIZE_LABEL (file, name);
+    (*targetm.asm_out.globalize_label) (file, name);
     assemble_name (file, name);
     fputs (":", file);
     if (rounded > 1)

@@ -1,5 +1,85 @@
 2002-08-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* alpha.c (TARGET_ASM_GLOBALIZE_LABEL): Define for unicosmk.
+	* alpha/elf.h (ASM_OUTPUT_EXTERNAL_LIBCALL,
+	ASM_OUTPUT_ALIGNED_BSS): Use target hook.
+	* alpha/osf.h (ASM_OUTPUT_WEAK_ALIAS): Likewise.
+	* alpha/unicosmk.h (ASM_GLOBALIZE_LABEL): Delete.
+	* arm/aof.h (ASM_GLOBALIZE_LABEL): Likewise.
+	(GLOBAL_ASM_OP): Define.
+	* arm.c (aof_globalize_label): New function.
+	(TARGET_ASM_GLOBALIZE_LABEL): Define for AOF.
+	* arm/unknown-elf.h (ASM_OUTPUT_ALIGNED_BSS): Use target hook.
+	* c4x.c (c4x_globalize_label): New function.
+	(TARGET_ASM_GLOBALIZE_LABEL): Define for c4x.
+	* c4x.h (ASM_GLOBALIZE_LABEL): Delete.
+	(GLOBAL_ASM_OP): Define.
+	* cris/aout.h (ASM_OUTPUT_EXTERNAL_LIBCALL): Use target hook.
+	* darwin-protos.h (darwin_globalize_label): Declare.
+	* darwin.c (darwin_globalize_label): New function.
+	* darwin.h (ASM_DECLARE_CLASS_REFERENCE): Use target hook.
+	(ASM_GLOBALIZE_LABEL): Delete.
+	(GLOBAL_ASM_OP, TARGET_ASM_GLOBALIZE_LABEL): Define.
+	* dsp16xx.c (asm_output_common): Use target hook.
+	* elfos.h (ASM_OUTPUT_EXTERNAL_LIBCALL): Likewise.
+	* frv.h (ASM_GLOBALIZE_LABEL): Delete.
+	(GLOBAL_ASM_OP): Define.
+	* i370.c (i370_globalize_label): New function.
+	(TARGET_ASM_GLOBALIZE_LABEL): Define for i370.
+	* i370.h (ASM_GLOBALIZE_LABEL): Delete.
+	* i386.c (ix86_asm_file_end): Use target hook.
+	* i386/sco5.h (ASM_GLOBALIZE_LABEL): Don't undef.
+	(ASM_OUTPUT_EXTERNAL_LIBCALL): Use target hook.
+	* ia64.c (ia64_asm_output_external): Likewise.
+	* ia64/sysv4.h: Update comment.
+	* m32r.h (ASM_OUTPUT_ALIGNED_BSS): Use target hook.
+	* mips/elf.h (ASM_OUTPUT_ALIGNED_BSS): Likewise.
+	* mips/iris5.h (ASM_OUTPUT_WEAK_ALIAS): Use target hook.
+	* mips/linux.h (ASM_OUTPUT_ALIGNED_BSS): Likewise.
+	* mips.h (ASM_OUTPUT_ALIGNED_DECL_COMMON): Use target hook.
+	* mmix-protos.h (mmix_asm_globalize_label): Delete.
+	* mmix.c (mmix_asm_globalize_label): Likewise.
+	* mmix.h (ASM_GLOBALIZE_LABEL): Likewise.
+	(GLOBAL_ASM_OP): Define.
+	* ns32k.c (ns32k_globalize_label): New function.
+	* ns32k.h (TARGET_ASM_GLOBALIZE_LABEL): Define for ns32k.
+	(ASM_GLOBALIZE_LABEL): Delete.
+	* pa/pa-linux.h (ASM_GLOBALIZE_LABEL): Don't undef.
+	(TARGET_ASM_GLOBALIZE_LABEL): Undefine.
+	* pa.c (pa_globalize_label): New function.
+	* pa.h (ASM_GLOBALIZE_LABEL): Delete.
+	(TARGET_ASM_GLOBALIZE_LABEL): Define for pa.
+	* rs6000/darwin.h (ASM_GLOBALIZE_LABEL): Delete.
+	(GLOBAL_ASM_OP): Define.
+	(TARGET_ASM_GLOBALIZE_LABEL): Undef.
+	* rs6000/sysv4.h (ASM_OUTPUT_ALIGNED_BSS): Use target hook.
+	* rs6000/xcoff.h (ASM_GLOBALIZE_LABEL): Delete.
+	(GLOBAL_ASM_OP): Define.
+	* v850.c (v850_output_aligned_bss): Use target hook.
+	* vax.c (vms_globalize_label): New function.
+	(TARGET_ASM_GLOBALIZE_LABEL): Define for vms.
+	* vax/vms.h (ASM_GLOBALIZE_LABEL): Delete.
+	(GLOBAL_ASM_OP): Define.
+	* defaults.h (ASM_GLOBALIZE_LABEL): Delete.
+	* doc/tm.texi: Update docs.
+	* dwarf2out.c (default_eh_frame_section, output_die_symbol): Use
+	target hook.
+	* final.c (output_alternate_entry_point): Likewise.
+	* hooks.c (hook_FILEptr_constcharptr_void): New function.
+	* hooks.h (hook_FILEptr_constcharptr_void): Declare.
+	* output.h (assemble_global): Delete.
+	(default_globalize_label): Declare.
+	* system.h (ASM_GLOBALIZE_LABEL): Poison.
+	* target-def.h (TARGET_ASM_GLOBALIZE_LABEL): Define.
+	(TARGET_ASM_OUT): Add TARGET_ASM_GLOBALIZE_LABEL.
+	* target.h (gcc_target): Add globalize_label member.
+	* varasm.c (asm_output_bss, asm_output_aligned_bss,
+	globalize_decl): Use target hook.
+	(assemble_global): Delete.
+	(default_globalize_label): New function.
+
+2002-08-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* dsp16xx.h (dsp16xx_umulhi3_libcall): Delete.
 
 2002-08-20  Devang Patel  <dpatel@apple.com>

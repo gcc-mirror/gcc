@@ -220,14 +220,8 @@ do					\
 
 extern int arm_main_function;
 
-#define ASM_GLOBALIZE_LABEL(STREAM,NAME)		\
-do {							\
-  fprintf ((STREAM), "\tEXPORT\t");			\
-  assemble_name ((STREAM), (NAME));			\
-  fputc ('\n', (STREAM));				\
-  if ((NAME)[0] == 'm' && ! strcmp ((NAME), "main"))	\
-    arm_main_function = 1;				\
-} while (0)
+/* Globalizing directive for a label.  */
+#define GLOBAL_ASM_OP "\tEXPORT\t"
 
 #define ASM_OUTPUT_LABEL(STREAM,NAME)	\
 do {					\

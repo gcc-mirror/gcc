@@ -198,7 +198,7 @@ __enable_execute_stack (addr)						\
 #define ASM_OUTPUT_WEAK_ALIAS(FILE, NAME, VALUE)	\
   do							\
     {							\
-      ASM_GLOBALIZE_LABEL (FILE, NAME);			\
+      (*targetm.asm_out.globalize_label) (FILE, NAME);  \
       fputs ("\t.weakext\t", FILE);			\
       assemble_name (FILE, NAME);			\
       if (VALUE)					\

@@ -33,8 +33,8 @@
    the Intel simulator.  So we must explicitly put variables in .bss
    instead.  This matters only if we care about the Intel assembler.  */
 
-/* This is asm_output_aligned_bss from varasm.c without the ASM_GLOBALIZE_LABEL
-   call at the beginning.  */
+/* This is asm_output_aligned_bss from varasm.c without the
+   (*targetm.asm_out.globalize_label) call at the beginning.  */
 
 /* This is for final.c, because it is used by ASM_DECLARE_OBJECT_NAME.  */
 extern int size_directive_output;

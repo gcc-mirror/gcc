@@ -45,6 +45,7 @@ static void vms_asm_out_constructor PARAMS ((rtx, int));
 static void vms_asm_out_destructor PARAMS ((rtx, int));
 static void vms_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
 static void vms_encode_section_info PARAMS ((tree, int));
+static void vms_globalize_label PARAMS ((FILE *, const char *));
 #endif
 
 /* Initialize the GCC target structure.  */
@@ -59,6 +60,8 @@ static void vms_encode_section_info PARAMS ((tree, int));
 #define TARGET_ASM_SELECT_SECTION vms_select_section
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO vms_encode_section_info
+#undef TARGET_ASM_GLOBALIZE_LABEL
+#define TARGET_ASM_GLOBALIZE_LABEL vms_globalize_label
 #endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
@@ -924,6 +927,17 @@ vms_encode_section_info (decl, first)
 {
   if (DECL_EXTERNAL (decl) && TREE_PUBLIC (decl))
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+}
+
+/* This is how to output a command to make the user-level label named NAME
+   defined for reference from other files.  */
+static void
+vms_globalize_label (stream, name)
+     FILE *stream;
+     const char *name;
+{
+  default_globalize_label (stream, name);
+  vms_check_external (NULL_TREE, name, 0);
 }
 #endif /* VMS_TARGET */
 

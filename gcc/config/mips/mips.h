@@ -4335,7 +4335,7 @@ while (0)
 	    || DECL_INITIAL (DECL) == error_mark_node))			\
       {									\
 	if (TREE_PUBLIC (DECL) && DECL_NAME (DECL))			\
-	  ASM_GLOBALIZE_LABEL (STREAM, NAME);				\
+	  (*targetm.asm_out.globalize_label) (STREAM, NAME);		\
 	    								\
 	readonly_data_section ();					\
 	ASM_OUTPUT_ALIGN (STREAM, floor_log2 (ALIGN / BITS_PER_UNIT));	\

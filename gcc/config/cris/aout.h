@@ -277,7 +277,7 @@ Boston, MA 02111-1307, USA.  */
 #define SET_ASM_OP	"\t.set\t"
 
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)	\
-  ASM_GLOBALIZE_LABEL (FILE, XSTR (FUN, 0))
+  (*targetm.asm_out.globalize_label) (FILE, XSTR (FUN, 0))
 
 #define ASM_WEAKEN_LABEL(FILE, NAME) 	\
   do					\

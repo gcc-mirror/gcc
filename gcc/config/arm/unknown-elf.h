@@ -61,7 +61,7 @@ Boston, MA 02111-1307, USA.  */
       else								\
 	bss_section ();							\
       									\
-      ASM_GLOBALIZE_LABEL (FILE, NAME);					\
+      (*targetm.asm_out.globalize_label) (FILE, NAME);			\
       									\
       ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));	\
 									\

@@ -1073,18 +1073,6 @@ enum reg_class
     }									\
 }
 
-#define ASM_GLOBALIZE_LABEL(FILE, NAME)					\
-{ 									\
-  char temp[MAX_MVS_LABEL_SIZE + 1];					\
-  if (mvs_check_alias (NAME, temp) == 2)				\
-    {									\
-      fprintf (FILE, "%s\tALIAS\tC'%s'\n", temp, NAME);			\
-    }									\
-  fputs ("\tENTRY\t", FILE);						\
-  assemble_name (FILE, NAME);						\
-  fputs ("\n", FILE);							\
-}
-
 /* MVS externals are limited to 8 characters, upper case only.
    The '_' is mapped to '@', except for MVS functions, then '#'.  */
 

@@ -2632,7 +2632,7 @@ v850_output_aligned_bss (file, decl, name, size, align)
      int size;
      int align;
 {
-  ASM_GLOBALIZE_LABEL (file, name);
+  (*targetm.asm_out.globalize_label) (file, name);
   
   switch (v850_get_data_area (decl))
     {

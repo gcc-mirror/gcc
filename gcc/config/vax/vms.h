@@ -90,16 +90,8 @@ Boston, MA 02111-1307, USA.  */
 /* This macro definition sets up a default value for `main' to return.  */
 #define DEFAULT_MAIN_RETURN  c_expand_return (integer_one_node)
 
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-
-#undef ASM_GLOBALIZE_LABEL
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)		\
-  do { fputs (".globl ", FILE);			\
-       assemble_name (FILE, NAME);		\
-       fputs ("\n", FILE);			\
-       vms_check_external (NULL_TREE, NAME, 0); \
-     } while (0)
+/* Globalizing directive for a label.  */
+#define GLOBAL_ASM_OP ".globl "
 
 /* Under VMS we write the actual size of the storage to be allocated even
    though the symbol is external.  Although it is possible to give external

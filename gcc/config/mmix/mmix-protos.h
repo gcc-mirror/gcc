@@ -40,7 +40,6 @@ extern void mmix_output_quoted_string PARAMS ((FILE *, const char *, int));
 extern void mmix_asm_output_source_line  PARAMS ((FILE *, int));
 extern void mmix_asm_output_ascii PARAMS ((FILE *, const char *, int));
 extern void mmix_asm_output_label PARAMS ((FILE *, const char *));
-extern void mmix_asm_globalize_label PARAMS ((FILE *, const char *));
 extern void mmix_asm_weaken_label PARAMS ((FILE *, const char *));
 extern void mmix_asm_output_labelref PARAMS ((FILE *, const char *));
 extern void mmix_asm_output_internal_label

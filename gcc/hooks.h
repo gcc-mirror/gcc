@@ -26,5 +26,6 @@ bool hook_void_bool_false PARAMS ((void));
 bool hook_tree_bool_false PARAMS ((tree));
 void hook_tree_int_void PARAMS ((tree, int));
 void hook_void_void PARAMS ((void));
+void hook_FILEptr_constcharptr_void PARAMS ((FILE *, const char *));
 
 #endif

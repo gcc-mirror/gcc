@@ -116,6 +116,7 @@ static void pa_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT))
      ATTRIBUTE_UNUSED;
 static void pa_encode_section_info PARAMS ((tree, int));
 static const char *pa_strip_name_encoding PARAMS ((const char *));
+static void pa_globalize_label PARAMS ((FILE *, const char *));
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -7701,4 +7702,18 @@ pa_select_section (exp, reloc, align)
     data_section ();
 }
 
+static void
+pa_globalize_label (stream, name)
+     FILE *stream;
+     const char *name;
+{
+  /* We only handle DATA objects here, functions are globalized in
+     ASM_DECLARE_FUNCTION_NAME.  */
+  if (! FUNCTION_NAME_P (name))
+  {
+    fputs ("\t.EXPORT ", stream);
+    assemble_name (stream, name);
+    fputs (",DATA\n", stream);
+  }
+}
 #include "gt-pa.h"
