@@ -699,8 +699,11 @@ case "${target}" in
     ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
-    noconfigdirs="$noconfigdirs gprof cvssrc target-libgloss"
-    # This is needed until gcc and ld are fixed to work together.
+    # The configure and build of ld are currently disabled because
+    # GNU ld is known to be broken for AIX 4.2 and 4.3 (at least)
+    # The symptom is that GDBtk 4.18 fails at startup with a segfault
+    # if linked by GNU ld, but not if linked by the native ld.
+    noconfigdirs="$noconfigdirs gprof cvssrc target-libgloss ld"
     use_gnu_ld=no
     ;;
   powerpc*-*-winnt* | powerpc*-*-pe* | ppc*-*-pe)
@@ -719,8 +722,11 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-newlib gprof cvssrc"
     ;;
   rs6000-*-aix*)
-    noconfigdirs="$noconfigdirs gprof"
-    # This is needed until gcc and ld are fixed to work together.
+    # The configure and build of ld are currently disabled because
+    # GNU ld is known to be broken for AIX 4.2 and 4.3 (at least)
+    # The symptom is that GDBtk 4.18 fails at startup with a segfault
+    # if linked by GNU ld, but not if linked by the native ld.
+    noconfigdirs="$noconfigdirs gprof ld"
     use_gnu_ld=no
     ;;
   rs6000-*-*)

@@ -1,3 +1,8 @@
+1999-08-25  Nick Clifton  <nickc@cygnus.com>
+
+	* configure.in: Do not configure or build ld for AIX
+	platforms.  ld is known to be broken on these platforms.
+
 Wed Aug 25 01:12:25 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config-ml.in: Pass compiler flag corresponding to multidirs to
