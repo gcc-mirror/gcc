@@ -1,3 +1,9 @@
+Thu Feb 19 00:54:20 1998  Mumit Khan <khan@xraylith.wisc.edu>
+
+	* Make-lang.in (f77.all.build): Add exeext.
+	(f77.all.cross): Likewise.
+	(f77.start.encap): Likewise.
+
 Tue Feb 10 03:13:48 1998  Richard Henderson  <rth@cygnus.com>
 
 	* com.c (ffecom_ptr_to_expr) [FFEBLD_opARRAYREF]: Do upper - lower

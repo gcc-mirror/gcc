@@ -1,5 +1,5 @@
 # Top level makefile fragment for GNU Fortran.           -*-makefile-*-
-#   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+#   Copyright (C) 1995-1998 Free Software Foundation, Inc.
 
 #This file is part of GNU Fortran.
 
@@ -334,9 +334,9 @@ f/runtime/libU77/Makefile: stmp-f2c.h
 # We need to build the runtime after libgcc.a, so as to avoid a circular
 # dependence on cplib2.ready.  So instead of putting it in LANGUAGES (via
 # the f77 rule), it goes at the end of each all.* build rule.
-f77.all.build: g77 maybe-f2c f77-runtime
-f77.all.cross: g77-cross maybe-f2c f77-runtime
-f77.start.encap: g77 maybe-f2c
+f77.all.build: g77$(exeext) maybe-f2c f77-runtime
+f77.all.cross: g77-cross$(exeext) maybe-f2c f77-runtime
+f77.start.encap: g77$(exeext) maybe-f2c
 f77.rest.encap: f77-runtime
 
 f77.info: f/g77.info
