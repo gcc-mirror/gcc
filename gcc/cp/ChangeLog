@@ -1,3 +1,10 @@
+Wed May  6 16:49:48 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (call.o, class.o, decl.o, decl2.o, errfn.o, error.o,
+	except.o, expr.o, friend.o, init.o, lex.o, method.o, pt.o, repo.o,
+	rtti.o, search.o, semantics.o, sig.o, tree.o, typeck.o, typeck2.o, 
+	xref.o): Add toplev.h dependencies.
+
 Wed May  6 16:44:58 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* errfn.c (cp_error, cp_warning): Remove declarations for
