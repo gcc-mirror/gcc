@@ -8940,15 +8940,6 @@ A C statement that adds to @var{clobbers} @code{STRING_CST} trees for
 any hard regs the port wishes to automatically clobber for all asms.
 @end defmac
 
-@defmac MAX_INTEGER_COMPUTATION_MODE
-Define this to the largest integer machine mode which can be used for
-operations other than load, store and copy operations.
-
-You need only define this macro if the target holds values larger than
-@code{word_mode} in general purpose registers.  Most targets should not define
-this macro.
-@end defmac
-
 @defmac MATH_LIBRARY
 Define this macro as a C string constant for the linker argument to link
 in the system math library, or @samp{""} if the target does not have a
