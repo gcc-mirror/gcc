@@ -93,7 +93,6 @@ extern int    __gnat_is_symbolic_link		   (char *name);
 extern int    __gnat_portable_spawn                (char *[]);
 extern int    __gnat_portable_no_block_spawn       (char *[]);
 extern int    __gnat_portable_wait                 (int *);
-extern int    __gnat_waitpid			   (int);
 extern char  *__gnat_locate_exec                   (char *, char *);
 extern char  *__gnat_locate_exec_on_path	   (char *);
 extern char  *__gnat_locate_regular_file           (char *, char *);

@@ -1927,23 +1927,6 @@ __gnat_portable_wait (int *process_status)
   return pid;
 }
 
-int
-__gnat_waitpid (int pid)
-{
-  int status = 0;
-
-#if defined (_WIN32)
-  cwait (&status, pid, _WAIT_CHILD);
-#elif defined (__EMX__) || defined (MSDOS) || defined (__vxworks)
-  /* Status is already zero, so nothing to do.  */
-#else
-  waitpid (pid, &status, 0);
-  status =  WEXITSTATUS (status);
-#endif
-
-  return status;
-}
-
 void
 __gnat_os_exit (int status)
 {
