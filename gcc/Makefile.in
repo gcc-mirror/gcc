@@ -506,7 +506,7 @@ STAGESTUFF = *.o insn-flags.h insn-config.h insn-codes.h \
 
 # Members of libgcc1.a.
 LIB1FUNCS = _mulsi3 _udivsi3 _divsi3 _umodsi3 _modsi3 \
-   _lshrsi3 _lshlsi3 _ashrsi3 _ashlsi3 \
+   _lshrsi3 _ashrsi3 _ashlsi3 \
    _divdf3 _muldf3 _negdf2 _adddf3 _subdf3 \
    _fixdfsi _fixsfsi _floatsidf _floatsisf _truncdfsf2 _extendsfdf2 \
    _addsf3 _negsf2 _subsf3 _mulsf3 _divsf3 \
@@ -515,7 +515,7 @@ LIB1FUNCS = _mulsi3 _udivsi3 _divsi3 _umodsi3 _modsi3 \
 
 # Library members defined in libgcc2.c.
 LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
-     _lshrdi3 _lshldi3 _ashldi3 _ashrdi3 _ffsdi2 \
+     _lshrdi3 _ashldi3 _ashrdi3 _ffsdi2 \
     _udiv_w_sdiv _udivmoddi4 _cmpdi2 _ucmpdi2 _floatdidf _floatdisf \
     _fixunsdfsi _fixunssfsi _fixunsdfdi _fixdfdi _fixunssfdi _fixsfdi \
     _fixxfdi _fixunsxfdi _floatdixf _fixunsxfsi \
