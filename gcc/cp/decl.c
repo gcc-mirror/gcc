@@ -14074,10 +14074,6 @@ begin_destructor_body ()
   finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
   finish_then_clause (if_stmt);
   finish_if_stmt ();
-
-  /* And insert cleanups for our bases and members so that they
-     will be properly destroyed if we throw.  */
-  push_base_cleanups ();
 }
 
 /* At the end of every destructor we generate code to delete the object if
@@ -14087,6 +14083,9 @@ static void
 finish_destructor_body ()
 {
   tree exprstmt;
+
+  /* And perform cleanups for our bases and members.  */
+  perform_base_cleanups ();
 
   /* In a virtual destructor, we must call delete.  */
   if (DECL_VIRTUAL_P (current_function_decl))

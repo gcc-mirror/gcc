@@ -1,3 +1,12 @@
+2002-04-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5504 - but re-breaks c++/411
+	* init.c (push_base_cleanups): Rename to perform_base_cleanups.
+	Expand base cleanups now rather than pushing them.
+	* decl.c (begin_destructor_body): Don't call push_base_cleanups.
+	(finish_destructor_body): Call perform_base_cleanups.
+	* cp-tree.h: Adjust prototype.
+
 2002-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* parse.y (check_class_key): Allow KEY to be union/enum/struct/class

@@ -3907,7 +3907,7 @@ extern tree build_new				PARAMS ((tree, tree, tree, int));
 extern tree build_vec_init			PARAMS ((tree, tree, int));
 extern tree build_x_delete			PARAMS ((tree, int, tree));
 extern tree build_delete			PARAMS ((tree, tree, special_function_kind, int, int));
-extern void push_base_cleanups			PARAMS ((void));
+extern void perform_base_cleanups		PARAMS ((void));
 extern tree build_vbase_delete			PARAMS ((tree, tree));
 extern tree build_vec_delete			PARAMS ((tree, tree, special_function_kind, int));
 extern tree create_temporary_var                PARAMS ((tree));

@@ -3217,13 +3217,13 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
     }
 }
 
-/* At the beginning of a destructor, push cleanups that will call the
-   destructors for our base classes and members.
+/* At the end of a destructor, call the destructors for our base classes
+   and members.
 
-   Called from setup_vtbl_ptr.  */
+   Called from finish_destructor_body.  */
 
 void
-push_base_cleanups ()
+perform_base_cleanups ()
 {
   tree binfos;
   int i, n_baseclasses;
@@ -3267,7 +3267,7 @@ push_base_cleanups ()
 					LOOKUP_NORMAL);
 	      expr = build (COND_EXPR, void_type_node, cond,
 			    expr, void_zero_node);
-	      finish_decl_cleanup (NULL_TREE, expr);
+	      finish_expr_stmt (expr);
 	    }
 	}
     }
@@ -3287,7 +3287,7 @@ push_base_cleanups ()
 				       base_dtor_identifier,
 				       NULL_TREE);
 
-      finish_decl_cleanup (NULL_TREE, expr);
+      finish_expr_stmt (expr);
     }
 
   for (member = TYPE_FIELDS (current_class_type); member;
@@ -3305,7 +3305,7 @@ push_base_cleanups ()
 			       sfk_complete_destructor,
 			       LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL,
 			       0);
-	  finish_decl_cleanup (NULL_TREE, expr);
+	  finish_expr_stmt (expr);
 	}
     }
 }
