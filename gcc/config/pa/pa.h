@@ -2388,3 +2388,6 @@ do {						\
   /* The privilege level is in the two low order bits, mask em out	\
      of the return address.  */						\
   (GEN_INT (0xfffffffc))
+
+/* The number of Pmode words for the setjmp buffer.  */
+#define JMP_BUF_SIZE 50
