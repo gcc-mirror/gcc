@@ -5,7 +5,8 @@
 	description.  Correct order of mode/cmp_mode arguments in call to
 	simplify_relational_operation.  Check "tem" for COMPARISON_P.
 
-2004-11-21  David Edelsohn  <edelsohn@gnu.org>
+2004-11-21  Paolo Bonzini  <bonzini@gnu.org>
+	    David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/17836
 	* config/rs6000/rs6000.c (rs6000_return_in_memory): Return
