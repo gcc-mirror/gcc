@@ -10,12 +10,14 @@
 
 typedef float afloat __attribute__ ((__aligned__(16)));
 
-afloat a[N];
-afloat b[N+4] = {0.2, 1.3, 2.3, 3.4, 4.5, 5.6, 7.8, 9.0, 10.11, 11.12, 12.13, 13.14, 14.15, 15.16, 16.17, 17.18, 18.19, 19.20}; 
-afloat c[N] = {0.2, 1.3, 2.3, 3.4, 4.5, 5.6, 7.8, 9.0, 10.11, 11.12, 12.13, 13.14, 14.15, 15.16};
+float fa[N];
+float fb[N+4] = {0.2, 1.3, 2.3, 3.4, 4.5, 5.6, 7.8, 9.0, 10.11, 11.12, 12.13, 13.14, 14.15, 15.16, 
+16.17, 17.18, 18.19, 19.20}; 
+float fc[N] = {0.2, 1.3, 2.3, 3.4, 4.5, 5.6, 7.8, 9.0, 10.11, 11.12, 12.13, 13.14, 14.15, 15.16};
 
+/* Not vectorizable: not aligned pointers. */
 int
-main1 (afloat *__restrict__  pa, afloat * __restrict__ pb, afloat * __restrict__ pc)
+main3 (float * __restrict__ pa, float * __restrict__ pb, float *__restrict__ pc)
 {
   int i;
   afloat *q = pb + 4;
@@ -34,13 +36,14 @@ main1 (afloat *__restrict__  pa, afloat * __restrict__ pb, afloat * __restrict__
   return 0;
 }
 
+
 int main (void)
 { 
   check_vect ();
 
-  main1 (a, b, c);
+  main3 (fa, fb, fc);
 
   return 0;	
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
