@@ -1,3 +1,8 @@
+2002-05-04  David S. Miller  <davem@redhat.com>
+
+	* recog.c (store_data_bypass_p): Handle out_insn being a PARALLEL
+	of SETs.
+
 2002-05-05  Tim Josling  <tej@melbpc.org.au>
 
 	* treelang; New directory for new sample language treelang. 
