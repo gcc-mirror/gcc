@@ -4462,6 +4462,8 @@ namespace std
   // NB: These are inline because, when used in a loop, some compilers
   // can hoist the body out of the loop; then it's just as fast as the
   // C is*() function.
+  //@{
+  /// Convenience interface to ctype.is().
   template<typename _CharT>
     inline bool 
     isspace(_CharT __c, const locale& __loc)
@@ -4525,6 +4527,7 @@ namespace std
     inline _CharT 
     tolower(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).tolower(__c); }
+  //@}
 } // namespace std
 
 #endif

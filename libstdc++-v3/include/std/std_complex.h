@@ -58,67 +58,113 @@ namespace std
   template<> class complex<double>;
   template<> class complex<long double>;
 
+  ///  Return magnitude of @a z.
   template<typename _Tp> _Tp abs(const complex<_Tp>&);
+  ///  Return phase angle of @a z.
   template<typename _Tp> _Tp arg(const complex<_Tp>&);
+  ///  Return @a z magnitude squared.
   template<typename _Tp> _Tp norm(const complex<_Tp>&);
 
+  ///  Return complex conjugate of @a z.
   template<typename _Tp> complex<_Tp> conj(const complex<_Tp>&);
+  ///  Return complex with magnitude @a rho and angle @a theta.
   template<typename _Tp> complex<_Tp> polar(const _Tp&, const _Tp& = 0);
 
   // Transcendentals:
+  /// Return complex cosine of @a z.
   template<typename _Tp> complex<_Tp> cos(const complex<_Tp>&);
+  /// Return complex hyperbolic cosine of @a z.
   template<typename _Tp> complex<_Tp> cosh(const complex<_Tp>&);
+  /// Return complex base e exponential of @a z.
   template<typename _Tp> complex<_Tp> exp(const complex<_Tp>&);
+  /// Return complex natural logarithm of @a z.
   template<typename _Tp> complex<_Tp> log(const complex<_Tp>&);
+  /// Return complex base 10 logarithm of @a z.
   template<typename _Tp> complex<_Tp> log10(const complex<_Tp>&);
+  /// Return complex cosine of @a z.
   template<typename _Tp> complex<_Tp> pow(const complex<_Tp>&, int);
+  /// Return @a x to the @a y'th power.
   template<typename _Tp> complex<_Tp> pow(const complex<_Tp>&, const _Tp&);
+  /// Return @a x to the @a y'th power.
   template<typename _Tp> complex<_Tp> pow(const complex<_Tp>&, 
 					   const complex<_Tp>&);
+  /// Return @a x to the @a y'th power.
   template<typename _Tp> complex<_Tp> pow(const _Tp&, const complex<_Tp>&);
+  /// Return complex sine of @a z.
   template<typename _Tp> complex<_Tp> sin(const complex<_Tp>&);
+  /// Return complex hyperbolic sine of @a z.
   template<typename _Tp> complex<_Tp> sinh(const complex<_Tp>&);
+  /// Return complex square root of @a z.
   template<typename _Tp> complex<_Tp> sqrt(const complex<_Tp>&);
+  /// Return complex tangent of @a z.
   template<typename _Tp> complex<_Tp> tan(const complex<_Tp>&);
+  /// Return complex hyperbolic tangent of @a z.
   template<typename _Tp> complex<_Tp> tanh(const complex<_Tp>&);
+  //@}
     
     
   // 26.2.2  Primary template class complex
+  /**
+   *  Template to represent complex numbers.
+   *
+   *  Specializations for float, double, and long double are part of the
+   *  library.  Results with any other type are not guaranteed.
+   *
+   *  @param  Tp  Type of real and imaginary values.
+  */
   template<typename _Tp>
     class complex
     {
     public:
+      /// Value typedef.
       typedef _Tp value_type;
       
+      ///  Default constructor.  First parameter is x, second parameter is y.
+      ///  Unspecified parameters default to 0.
       complex(const _Tp& = _Tp(), const _Tp & = _Tp());
 
-      // Let's the compiler synthetize the copy constructor   
+      // Lets the compiler synthesize the copy constructor   
       // complex (const complex<_Tp>&);
+      ///  Copy constructor.
       template<typename _Up>
         complex(const complex<_Up>&);
 
+      ///  Return real part of complex number.
       _Tp& real(); 
+      ///  Return real part of complex number.
       const _Tp& real() const;
+      ///  Return imaginary part of complex number.
       _Tp& imag();
+      ///  Return imaginary part of complex number.
       const _Tp& imag() const;
 
+      /// Assign this complex number to scalar @a t.
       complex<_Tp>& operator=(const _Tp&);
+      /// Add @a t to this complex number.
       complex<_Tp>& operator+=(const _Tp&);
+      /// Subtract @a t from this complex number.
       complex<_Tp>& operator-=(const _Tp&);
+      /// Multiply this complex number by @a t.
       complex<_Tp>& operator*=(const _Tp&);
+      /// Divide this complex number by @a t.
       complex<_Tp>& operator/=(const _Tp&);
 
-      // Let's the compiler synthetize the
+      // Lets the compiler synthesize the
       // copy and assignment operator
       // complex<_Tp>& operator= (const complex<_Tp>&);
+      /// Assign this complex number to complex @a z.
       template<typename _Up>
         complex<_Tp>& operator=(const complex<_Up>&);
+      /// Add @a z to this complex number.
       template<typename _Up>
         complex<_Tp>& operator+=(const complex<_Up>&);
+      /// Subtract @a z from this complex number.
       template<typename _Up>
         complex<_Tp>& operator-=(const complex<_Up>&);
+      /// Multiply this complex number by @a z.
       template<typename _Up>
         complex<_Tp>& operator*=(const complex<_Up>&);
+      /// Divide this complex number by @a z.
       template<typename _Up>
         complex<_Tp>& operator/=(const complex<_Up>&);
 
@@ -261,6 +307,8 @@ namespace std
     }
     
   // Operators:
+  //@{
+  ///  Return new complex value @a x plus @a y.
   template<typename _Tp>
     inline complex<_Tp>
     operator+(const complex<_Tp>& __x, const complex<_Tp>& __y)
@@ -287,7 +335,10 @@ namespace std
       __r.real() += __x;
       return __r;
     }
+  //@}
 
+  //@{
+  ///  Return new complex value @a x minus @a y.
   template<typename _Tp>
     inline complex<_Tp>
     operator-(const complex<_Tp>& __x, const complex<_Tp>& __y)
@@ -314,7 +365,10 @@ namespace std
       __r.real() -= __y.real();
       return __r;
     }
+  //@}
 
+  //@{
+  ///  Return new complex value @a x times @a y.
   template<typename _Tp>
     inline complex<_Tp>
     operator*(const complex<_Tp>& __x, const complex<_Tp>& __y)
@@ -341,7 +395,10 @@ namespace std
       __r *= __x;
       return __r;
     }
+  //@}
 
+  //@{
+  ///  Return new complex value @a x divided by @a y.
   template<typename _Tp>
     inline complex<_Tp>
     operator/(const complex<_Tp>& __x, const complex<_Tp>& __y)
@@ -368,17 +425,22 @@ namespace std
       __r /= __y;
       return __r;
     }
+  //@}
 
+  ///  Return @a x.
   template<typename _Tp>
     inline complex<_Tp>
     operator+(const complex<_Tp>& __x)
     { return __x; }
 
+  ///  Return complex negation of @a x.
   template<typename _Tp>
     inline complex<_Tp>
     operator-(const complex<_Tp>& __x)
     {  return complex<_Tp>(-__x.real(), -__x.imag()); }
 
+  //@{
+  ///  Return true if @a x is equal to @a y.
   template<typename _Tp>
     inline bool
     operator==(const complex<_Tp>& __x, const complex<_Tp>& __y)
@@ -393,7 +455,10 @@ namespace std
     inline bool
     operator==(const _Tp& __x, const complex<_Tp>& __y)
     { return __x == __y.real() && _Tp() == __y.imag(); }
+  //@}
 
+  //@{
+  ///  Return false if @a x is equal to @a y.
   template<typename _Tp>
     inline bool
     operator!=(const complex<_Tp>& __x, const complex<_Tp>& __y)
@@ -408,7 +473,9 @@ namespace std
     inline bool
     operator!=(const _Tp& __x, const complex<_Tp>& __y)
     { return __x != __y.real() || _Tp() != __y.imag(); }
+  //@}
 
+  ///  Extraction operator for complex values.
   template<typename _Tp, typename _CharT, class _Traits>
     basic_istream<_CharT, _Traits>&
     operator>>(basic_istream<_CharT, _Traits>& __is, complex<_Tp>& __x)
@@ -441,6 +508,7 @@ namespace std
       return __is;
     }
 
+  ///  Insertion operator for complex values.
   template<typename _Tp, typename _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os, const complex<_Tp>& __x)
