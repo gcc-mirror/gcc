@@ -1,3 +1,8 @@
+2001-07-30  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.h (DEBUG_RANGES_SECTION): New.
+	* config/mips/iris6.h (DEBUG_RANGES_SECTION): New.
+
 2001-07-30  Roman Zippel  <zippel@linux-m68k.org>
 
 	* config/m68k/m68k.h (TARGET_SWITCHES/TARGET_OPTIONS):
