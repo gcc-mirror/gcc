@@ -482,7 +482,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 29]"
+#define MIPS_VERSION "[AL 1.1, MM 30]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -2241,9 +2241,67 @@ __enable_execute_stack (addr)						\
    It is not necessary for this macro to come up with a legitimate
    address.  The compiler has standard ways of doing so in all
    cases.  In fact, it is safe for this macro to do nothing.  But
-   often a machine-dependent strategy can generate better code.  */
+   often a machine-dependent strategy can generate better code.
 
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN) {}
+   For the MIPS, transform:
+
+	memory(X + <large int>)
+
+   into:
+
+	Y = <large int> & ~0x7fff;
+	Z = X + Y
+	memory (Z + (<large int> & 0x7fff));
+
+   This is for CSE to find several similar references, and only use one Z.  */
+
+#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)				\
+{									\
+  register rtx xinsn = (X);						\
+									\
+  if (TARGET_DEBUG_B_MODE)						\
+    {									\
+      GO_PRINTF ("\n========== LEGITIMIZE_ADDRESS\n");			\
+      GO_DEBUG_RTX (xinsn);						\
+    }									\
+									\
+  if (GET_CODE (xinsn) == PLUS && optimize)				\
+    {									\
+      register rtx xplus0 = XEXP (xinsn, 0);				\
+      register rtx xplus1 = XEXP (xinsn, 1);				\
+      register enum rtx_code code0 = GET_CODE (xplus0);			\
+      register enum rtx_code code1 = GET_CODE (xplus1);			\
+									\
+      if (code0 != REG && code1 == REG)					\
+	{								\
+	  xplus0 = XEXP (xinsn, 1);					\
+	  xplus1 = XEXP (xinsn, 0);					\
+	  code0 = GET_CODE (xplus0);					\
+	  code1 = GET_CODE (xplus1);					\
+	}								\
+									\
+      if (code0 == REG && REG_OK_FOR_BASE_P (xplus0)			\
+	  && code1 == CONST_INT && !SMALL_INT (xplus1))			\
+	{								\
+	  rtx int_reg = gen_reg_rtx (Pmode);				\
+	  rtx ptr_reg = gen_reg_rtx (Pmode);				\
+									\
+	  emit_move_insn (int_reg,					\
+			  GEN_INT (INTVAL (xplus1) & ~ 0x7fff));	\
+									\
+	  emit_insn (gen_rtx (SET, VOIDmode,				\
+			      ptr_reg,					\
+			      gen_rtx (PLUS, Pmode, xplus0, int_reg)));	\
+									\
+	  X = gen_rtx (PLUS, Pmode, ptr_reg,				\
+		       GEN_INT (INTVAL (xplus1) & 0x7fff));		\
+	  goto WIN;							\
+	}								\
+    }									\
+									\
+  if (TARGET_DEBUG_B_MODE)						\
+    GO_PRINTF ("LEGITIMIZE_ADDRESS could not fix.\n");			\
+}
 
 
 /* A C statement or compound statement with a conditional `goto
