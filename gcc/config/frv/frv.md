@@ -5502,7 +5502,7 @@
 
   /* Scale index-low by wordsize.  */
   scale = gen_reg_rtx (SImode);
-  emit_insn (gen_ashlsi3 (scale, indx, GEN_INT (2)));
+  emit_insn (gen_ashlsi3 (scale, indx, const2_rtx));
 
   /* Load the address, add the start of the table back in,
      and jump to it.  */

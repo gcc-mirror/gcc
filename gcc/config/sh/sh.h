@@ -2097,7 +2097,7 @@ struct sh_args {
 #define TRAMPOLINE_ADJUST_ADDRESS(TRAMP) do				\
 {									\
   if (TARGET_SHMEDIA)							\
-    (TRAMP) = expand_simple_binop (Pmode, PLUS, (TRAMP), GEN_INT (1),	\
+    (TRAMP) = expand_simple_binop (Pmode, PLUS, (TRAMP), const1_rtx,	\
 				   gen_reg_rtx (Pmode), 0,		\
 				   OPTAB_LIB_WIDEN);			\
 } while (0)

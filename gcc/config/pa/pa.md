@@ -4877,7 +4877,7 @@
   if (intval % 2 == 0 && cint_ok_for_move (intval / 2))
     {
       operands[2] = GEN_INT (intval / 2);
-      operands[3] = GEN_INT (2);
+      operands[3] = const2_rtx;
     }
   else if (intval % 4 == 0 && cint_ok_for_move (intval / 4))
     {

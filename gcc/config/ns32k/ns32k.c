@@ -922,7 +922,7 @@ expand_block_move (rtx operands[])
   else if (align == UNITS_PER_WORD)
     {
       /* insns to copy by words */
-      emit_insn (gen_lshrsi3 (count_reg, bytes_rtx, GEN_INT (2)));
+      emit_insn (gen_lshrsi3 (count_reg, bytes_rtx, const2_rtx));
       emit_insn (gen_movstrsi1 (GEN_INT (4)));
       if (constp)
 	{
@@ -963,7 +963,7 @@ expand_block_move (rtx operands[])
 	emit_label (aligned_label);
 
       /* insns to copy by words */
-      emit_insn (gen_lshrsi3 (count_reg, bytes_reg, GEN_INT (2)));
+      emit_insn (gen_lshrsi3 (count_reg, bytes_reg, const2_rtx));
       emit_insn (gen_movstrsi1 (GEN_INT (4)));
 
       /* insns to copy rest */

@@ -2519,7 +2519,7 @@ legitimize_pic_address (rtx orig, rtx reg)
                           int even = INTVAL (op1) - 1;
                           op0 = gen_rtx_PLUS (Pmode, op0, GEN_INT (even));
 			  op0 = gen_rtx_CONST (Pmode, op0);
-                          op1 = GEN_INT (1);
+                          op1 = const1_rtx;
                         }
 
                       emit_move_insn (temp, op0);
