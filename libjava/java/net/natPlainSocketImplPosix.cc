@@ -174,19 +174,21 @@ java::net::PlainSocketImpl::connect (java::net::SocketAddress *addr,
       if ((_Jv_connect (fnum, ptr, len) != 0) && (errno != EINPROGRESS))
         goto error;
 
-      fd_set rset;
+      fd_set fset;
       struct timeval tv;
-      FD_ZERO(&rset);
-      FD_SET(fnum, &rset);
+      FD_ZERO(&fset);
+      FD_SET(fnum, &fset);
       tv.tv_sec = timeout / 1000;
       tv.tv_usec = (timeout % 1000) * 1000;
       int retval;
       
-      if ((retval = _Jv_select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
+      if ((retval = _Jv_select (fnum + 1, &fset, &fset, NULL, &tv)) < 0)
         goto error;
       else if (retval == 0)
         throw new java::net::SocketTimeoutException
           (JvNewStringUTF ("Connect timed out"));
+       // Set the socket back into a blocking state.
+       ::fcntl (fnum, F_SETFL, flags);
     }
   else
     {
@@ -233,17 +235,17 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
   // Do timeouts via select since SO_RCVTIMEO is not always available.
   if (timeout > 0 && fnum >= 0 && fnum < FD_SETSIZE)
     {
-      fd_set rset;
+      fd_set fset;
       struct timeval tv;
-      FD_ZERO(&rset);
-      FD_SET(fnum, &rset);
+      FD_ZERO(&fset);
+      FD_SET(fnum, &fset);
       tv.tv_sec = timeout / 1000;
       tv.tv_usec = (timeout % 1000) * 1000;
       int retval;
-      if ((retval = _Jv_select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
+      if ((retval = _Jv_select (fnum + 1, &fset, &fset, NULL, &tv)) < 0)
         goto error;
       else if (retval == 0)
-        throw new java::io::InterruptedIOException (
+        throw new java::net::SocketTimeoutException (
 	                                  JvNewStringUTF("Accept timed out"));
     }
 
@@ -402,7 +404,7 @@ java::net::PlainSocketImpl::read(void)
       // If select returns 0 we've waited without getting data...
       // that means we've timed out.
       if (sel_retval == 0)
-        throw new java::io::InterruptedIOException
+        throw new java::net::SocketTimeoutException
           (JvNewStringUTF ("read timed out") );
       // If select returns ok we know we either got signalled or read some data...
       // either way we need to try to read.
@@ -467,11 +469,10 @@ java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count)
       // the socket to see what happened.
       if (sel_retval == 0)
         {
-          java::io::InterruptedIOException *iioe =
-            new java::io::InterruptedIOException
-            (JvNewStringUTF ("read interrupted"));
-          iioe->bytesTransferred = 0;
-          throw iioe;
+          java::net::SocketTimeoutException *timeoutException =
+            new java::net::SocketTimeoutException
+            (JvNewStringUTF ("read timed out"));
+          throw timeoutException;
         }
     }
 

@@ -1,3 +1,13 @@
+2003-08-07  Jacob Gladish <gladish@spinnakernet.com>
+            Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* java/net/natPlainSocketImplPosix.cc (connect): Pass the FD as a
+	ready-to-write argument to _Jv_Select. Reset the socket back to 
+	non-blocking state after connecting.
+	(accept): Pass the FD as a ready-to-write argument to _Jv_Select.
+	Throw SocketTimeoutException not InterruptedIOException.
+	(read): Throw SocketTimeoutException not InterruptedIOException.
+
 2003-08-07  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* java/lang/Thread.java (Thread): Check for null "name" from
