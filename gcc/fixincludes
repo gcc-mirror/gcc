@@ -678,6 +678,18 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# These two files on SunOS 4 are included by other files
+# in the same directory, using "...".  So we must make sure they exist
+# in the same directory as the fixed other files.
+if [ -r ${LIB}/multimedia/audio_errno.h ]
+then
+  ln -s ${LIB}/multimedia/audio_errno.h multimedia 2>/dev/null
+fi
+if [ -r ${LIB}/multimedia/audio_hdr.h ]
+then
+  ln -s ${LIB}/multimedia/audio_hdr.h multimedia 2>/dev/null
+fi
+
 echo 'Removing unneeded directories:'
 cd $LIB
 files=`find . -type d -print | sort -r`
