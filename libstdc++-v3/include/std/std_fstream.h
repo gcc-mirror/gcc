@@ -84,12 +84,9 @@ namespace std
       __state_type		_M_state_cur;
       __state_type 		_M_state_beg;
 
-      // Set iff _M_buf is allocated memory from _M_allocate_internal_buffer..
+      // Set iff _M_buf is allocated memory from _M_allocate_internal_buffer.
       bool			_M_buf_allocated;
       
-      // Stack-based buffer for unbuffered input.
-      char_type			_M_unbuf[4];
-
       // XXX Needed?
       bool			_M_last_overflowed;
 
@@ -100,14 +97,6 @@ namespace std
     public:
       // Constructors/destructor:
       basic_filebuf();
-
-      // Non-standard ctor:
-      basic_filebuf(__c_file* __f, ios_base::openmode __mode,
-		    int_type __s = static_cast<int_type>(BUFSIZ));
-
-      // Non-standard member:
-      int
-      fd();
 
       virtual
       ~basic_filebuf()

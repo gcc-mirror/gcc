@@ -44,6 +44,7 @@
 #include <istream>
 #include <ostream>
 #include <iomanip>
+#include <ext/stdio_filebuf.h>
 
 // NB: Unnecessary if the .h headers already include these.
 #ifndef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
@@ -263,5 +264,11 @@ namespace std
     streamsize
     __copy_streambufs(basic_ios<wchar_t>&, basic_streambuf<wchar_t>*,
 		      basic_streambuf<wchar_t>*); 
+#endif
+  
+  using __gnu_cxx::stdio_filebuf;
+  template class stdio_filebuf<char>;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template class stdio_filebuf<wchar_t>;
 #endif
 } //std

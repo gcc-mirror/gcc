@@ -31,6 +31,7 @@
 #include <istream>
 #include <ostream>
 #include <locale>
+#include <ext/stdio_filebuf.h>
 
 // On AIX, and perhaps other systems, library initialization order is
 // not guaranteed.  For example, the static initializers for the main
@@ -176,8 +177,8 @@ namespace std
   fake_ostream cerr;
   fake_ostream clog;
 
-  typedef char fake_filebuf[sizeof(filebuf)]
-  __attribute__ ((aligned(__alignof__(filebuf))));
+  typedef char fake_filebuf[sizeof(__gnu_cxx::stdio_filebuf<char>)]
+  __attribute__ ((aligned(__alignof__(__gnu_cxx::stdio_filebuf<char>))));
   fake_filebuf buf_cout;
   fake_filebuf buf_cin;
   fake_filebuf buf_cerr;
@@ -192,8 +193,8 @@ namespace std
   fake_wostream wcerr;
   fake_wostream wclog;
 
-  typedef char fake_wfilebuf[sizeof(wfilebuf)]
-  __attribute__ ((aligned(__alignof__(wfilebuf))));
+  typedef char fake_wfilebuf[sizeof(__gnu_cxx::stdio_filebuf<wchar_t>)]
+  __attribute__ ((aligned(__alignof__(__gnu_cxx::stdio_filebuf<wchar_t>))));
   fake_wfilebuf buf_wcout;
   fake_wfilebuf buf_wcin;
   fake_wfilebuf buf_wcerr;
