@@ -135,6 +135,15 @@
 // Define if the compiler/host combination has __builtin_sqrtl
 #undef HAVE___BUILTIN_SQRTL
 
+// Define if poll is available in <poll.h>.
+#undef HAVE_POLL
+
+// Define if S_ISREG (Posix) is available in <sys/stat.h>.
+#undef HAVE_S_ISREG
+
+// Define if S_IFREG is available in <sys/stat.h>.
+#undef HAVE_S_IFREG
+
 // Define if LC_MESSAGES is available in <locale.h>.
 #undef HAVE_LC_MESSAGES
 

@@ -108,6 +108,9 @@ namespace std
 
       int 
       sync();
+
+      streamsize
+      showmanyc_helper();
     };
 }  // namespace std
 
