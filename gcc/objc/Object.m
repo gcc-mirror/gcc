@@ -317,9 +317,11 @@ extern int errno;
 
 + (int)streamVersion: (TypedStream*)aStream
 {
+#ifndef __alpha__
   if (aStream->mode == OBJC_READONLY)
     return objc_get_stream_class_version (aStream, self);
   else
+#endif
     return class_get_version (self);
 }
 
