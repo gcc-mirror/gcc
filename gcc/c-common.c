@@ -2114,7 +2114,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	{
 	  /* Don't forget to evaluate PRIMOP0 if it has side effects.  */
 	  if (TREE_SIDE_EFFECTS (primop0))
-	    return build (COMPOUND_EXPR, TREE_TYPE (val), primop0, val);
+	    return build2 (COMPOUND_EXPR, TREE_TYPE (val), primop0, val);
 	  return val;
 	}
 
@@ -2198,8 +2198,8 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	    {
 	      /* Don't forget to evaluate PRIMOP0 if it has side effects.  */
 	      if (TREE_SIDE_EFFECTS (primop0))
-		return build (COMPOUND_EXPR, TREE_TYPE (value),
-			      primop0, value);
+		return build2 (COMPOUND_EXPR, TREE_TYPE (value),
+			       primop0, value);
 	      return value;
 	    }
 	}
@@ -2294,7 +2294,7 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
 				    convert (TREE_TYPE (intop), size_exp), 1));
 
   /* Create the sum or difference.  */
-  return fold (build (resultcode, result_type, ptrop, intop));
+  return fold (build2 (resultcode, result_type, ptrop, intop));
 }
 
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
@@ -2360,8 +2360,8 @@ c_common_truthvalue_conversion (tree expr)
 	  break;
 
 	if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 0)))
-	  return build (COMPOUND_EXPR, truthvalue_type_node,
-			TREE_OPERAND (expr, 0), truthvalue_true_node);
+	  return build2 (COMPOUND_EXPR, truthvalue_type_node,
+			 TREE_OPERAND (expr, 0), truthvalue_true_node);
 	else
 	  return truthvalue_true_node;
       }
@@ -2384,14 +2384,16 @@ c_common_truthvalue_conversion (tree expr)
       /* These don't change whether an object is zero or nonzero, but
 	 we can't ignore them if their second arg has side-effects.  */
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1)))
-	return build (COMPOUND_EXPR, truthvalue_type_node, TREE_OPERAND (expr, 1),
-		      lang_hooks.truthvalue_conversion (TREE_OPERAND (expr, 0)));
+	return build2 (COMPOUND_EXPR, truthvalue_type_node,
+		       TREE_OPERAND (expr, 1),
+		       lang_hooks.truthvalue_conversion (TREE_OPERAND (expr, 0)));
       else
 	return lang_hooks.truthvalue_conversion (TREE_OPERAND (expr, 0));
 
     case COND_EXPR:
       /* Distribute the conversion into the arms of a COND_EXPR.  */
-      return fold (build (COND_EXPR, truthvalue_type_node, TREE_OPERAND (expr, 0),
+      return fold (build3 (COND_EXPR, truthvalue_type_node,
+		TREE_OPERAND (expr, 0),
 		lang_hooks.truthvalue_conversion (TREE_OPERAND (expr, 1)),
 		lang_hooks.truthvalue_conversion (TREE_OPERAND (expr, 2))));
 
@@ -3855,22 +3857,24 @@ boolean_increment (enum tree_code code, tree arg)
   switch (code)
     {
     case PREINCREMENT_EXPR:
-      val = build (MODIFY_EXPR, TREE_TYPE (arg), arg, true_res);
+      val = build2 (MODIFY_EXPR, TREE_TYPE (arg), arg, true_res);
       break;
     case POSTINCREMENT_EXPR:
-      val = build (MODIFY_EXPR, TREE_TYPE (arg), arg, true_res);
+      val = build2 (MODIFY_EXPR, TREE_TYPE (arg), arg, true_res);
       arg = save_expr (arg);
-      val = build (COMPOUND_EXPR, TREE_TYPE (arg), val, arg);
-      val = build (COMPOUND_EXPR, TREE_TYPE (arg), arg, val);
+      val = build2 (COMPOUND_EXPR, TREE_TYPE (arg), val, arg);
+      val = build2 (COMPOUND_EXPR, TREE_TYPE (arg), arg, val);
       break;
     case PREDECREMENT_EXPR:
-      val = build (MODIFY_EXPR, TREE_TYPE (arg), arg, invert_truthvalue (arg));
+      val = build2 (MODIFY_EXPR, TREE_TYPE (arg), arg,
+		    invert_truthvalue (arg));
       break;
     case POSTDECREMENT_EXPR:
-      val = build (MODIFY_EXPR, TREE_TYPE (arg), arg, invert_truthvalue (arg));
+      val = build2 (MODIFY_EXPR, TREE_TYPE (arg), arg,
+		    invert_truthvalue (arg));
       arg = save_expr (arg);
-      val = build (COMPOUND_EXPR, TREE_TYPE (arg), val, arg);
-      val = build (COMPOUND_EXPR, TREE_TYPE (arg), arg, val);
+      val = build2 (COMPOUND_EXPR, TREE_TYPE (arg), val, arg);
+      val = build2 (COMPOUND_EXPR, TREE_TYPE (arg), arg, val);
       break;
     default:
       abort ();

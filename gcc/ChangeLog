@@ -1,3 +1,19 @@
+2004-08-14  Roger Sayle  <roger@eyesopen.com>
+
+	* c-common.c (shorten_compare, pointer_int_sum,
+	c_common_truthvalue_conversion, boolean_increment): Replace calls
+	to build with calls to buildN.
+	* c-decl.c (complete_array_type, grokdeclarator): Likewise.
+	* c-gimplify.c (c_build_bind_expr, gimplify_c_loop,
+	gimplify_switch_stmt): Likewise.
+	* c-typeck.c (default_function_array_conversion,
+	build_component_ref, build_array_ref, build_function_call,
+	pointer_diff, build_unary_op, build_conditional_expr,
+	build_compound_expr, build_modify_expr, c_finish_goto_label,
+	c_finish_goto_ptr, c_finish_return, c_finish_loop,
+	c_finish_bc_stmt, c_finish_stmt_expr, c_end_compound_stmt,
+	build_binary_op): Likewise.
+
 2004-08-15  Steven Bosscher  <stevenb@suse.de>
 
 	* rtl.c (note_insn_name): Add NOTE_DISABLE_SCHED_OF_BLOCK.

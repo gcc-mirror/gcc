@@ -3072,7 +3072,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 		  && STATEMENT_LIST_HAS_LABEL (cur_stmt_list))
 		{
 		  tree bind;
-		  bind = build (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+		  bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
 		  TREE_SIDE_EFFECTS (bind) = 1;
 		  add_stmt (bind);
 		  BIND_EXPR_BODY (bind) = push_stmt_list ();
@@ -3281,8 +3281,8 @@ complete_array_type (tree type, tree initial_value, int do_default)
 	      if (TREE_PURPOSE (elts))
 		maxindex = TREE_PURPOSE (elts);
 	      else
-		maxindex = fold (build (PLUS_EXPR, integer_type_node,
-					maxindex, integer_one_node));
+		maxindex = fold (build2 (PLUS_EXPR, integer_type_node,
+					 maxindex, integer_one_node));
 	    }
 	}
       else
@@ -4103,9 +4103,9 @@ grokdeclarator (tree declarator, tree declspecs,
 		     Do the calculation in index_type, so that if it is
 		     a variable the computations will be done in the
 		     proper mode.  */
-	          itype = fold (build (MINUS_EXPR, index_type,
-				       convert (index_type, size),
-				       convert (index_type, size_one_node)));
+	          itype = fold (build2 (MINUS_EXPR, index_type,
+					convert (index_type, size),
+					convert (index_type, size_one_node)));
 
 	          /* If that overflowed, the array is too big.
 		     ??? While a size of INT_MAX+1 technically shouldn't
