@@ -166,7 +166,7 @@ RCS file: /cvs/gcc/gcc/gcc/cp/call.c,v
 retrieving revision 1.255.2.20
 diff -u -p -r1.255.2.20 call.c
 --- gcc/cp/call.c	2001/11/29 20:16:18	1.255.2.20
-+++ gcc/cp/call.c	2001/12/10 22:04:47
++++ gcc/cp/call.c	2002/02/01 22:44:17
 @@ -288,7 +288,7 @@ build_scoped_method_call (exp, basetype,
  
    if (! binfo)
@@ -230,10 +230,10 @@ diff -u -p -r1.255.2.20 call.c
 Index: gcc/cp/class.c
 ===================================================================
 RCS file: /cvs/gcc/gcc/gcc/cp/class.c,v
-retrieving revision 1.358.2.38
-diff -u -p -r1.358.2.38 class.c
---- gcc/cp/class.c	2001/12/03 02:38:50	1.358.2.38
-+++ gcc/cp/class.c	2001/12/10 22:04:52
+retrieving revision 1.358.2.40
+diff -u -p -r1.358.2.40 class.c
+--- gcc/cp/class.c	2002/01/03 11:39:44	1.358.2.40
++++ gcc/cp/class.c	2002/02/01 22:44:24
 @@ -106,13 +106,11 @@ varray_type local_classes;
  
  static tree get_vfield_name PARAMS ((tree));
@@ -874,7 +874,7 @@ diff -u -p -r1.358.2.38 class.c
  
  static int
  make_new_vtable (t, binfo)
-@@ -1949,9 +1651,8 @@ determine_primary_base (t, vfuns_p)
+@@ -1965,9 +1667,8 @@ determine_primary_base (t, vfuns_p)
  	  if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
  	    CLASSTYPE_RTTI (t) = CLASSTYPE_RTTI (basetype);
  
@@ -886,7 +886,7 @@ diff -u -p -r1.358.2.38 class.c
  	  if (TREE_VIA_VIRTUAL (base_binfo))
  	    continue;
  
-@@ -2020,9 +1721,8 @@ determine_primary_base (t, vfuns_p)
+@@ -2036,9 +1737,8 @@ determine_primary_base (t, vfuns_p)
  	}
      }
  
@@ -898,19 +898,7 @@ diff -u -p -r1.358.2.38 class.c
    if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
      {
        /* If not NULL, this is the best primary base candidate we have
-@@ -2805,9 +2505,8 @@ update_vtable_entry_for_fn (t, binfo, fn
-      the final overrider, and not to an intermediate virtual base.  */
-   virtual_base = NULL_TREE;
- 
--  /* Under the new ABI, we will convert to an intermediate virtual
--     base first, and then use the vcall offset located there to finish
--     the conversion.  */
-+  /* We will convert to an intermediate virtual base first, and then
-+     use the vcall offset located there to finish the conversion.  */
-   while (b)
-     {
-       /* If we find the final overrider, then we can stop
-@@ -2897,9 +2596,6 @@ dfs_modify_vtables (binfo, data)
+@@ -2921,9 +2621,6 @@ dfs_modify_vtables (binfo, data)
  
        t = (tree) data;
  
@@ -920,7 +908,7 @@ diff -u -p -r1.358.2.38 class.c
        make_new_vtable (t, binfo);
        
        /* Now, go through each of the virtual functions in the virtual
-@@ -2936,10 +2632,9 @@ modify_all_vtables (t, vfuns_p, overridd
+@@ -2960,10 +2657,9 @@ modify_all_vtables (t, vfuns_p, overridd
       int *vfuns_p;
       tree overridden_virtuals;
  {
@@ -933,7 +921,7 @@ diff -u -p -r1.358.2.38 class.c
    /* Update all of the vtables.  */
    dfs_walk (binfo, 
  	    dfs_modify_vtables, 
-@@ -2947,43 +2642,35 @@ modify_all_vtables (t, vfuns_p, overridd
+@@ -2971,43 +2667,35 @@ modify_all_vtables (t, vfuns_p, overridd
  	    t);
    dfs_walk (binfo, dfs_unmark, dfs_marked_real_bases_queue_p, t);
  
@@ -1001,7 +989,7 @@ diff -u -p -r1.358.2.38 class.c
    return overridden_virtuals;
  }
  
-@@ -4198,8 +3885,7 @@ build_base_fields (rli, empty_p, offsets
+@@ -4222,8 +3910,7 @@ build_base_fields (rli, empty_p, offsets
    int i;
    bool atend = 0;
  
@@ -1011,7 +999,7 @@ diff -u -p -r1.358.2.38 class.c
    if (CLASSTYPE_HAS_PRIMARY_BASE_P (rec))
      build_base_field (rli, CLASSTYPE_PRIMARY_BINFO (rec), 
  		      empty_p, offsets, t);
-@@ -4211,8 +3897,8 @@ build_base_fields (rli, empty_p, offsets
+@@ -4235,8 +3922,8 @@ build_base_fields (rli, empty_p, offsets
  
        base_binfo = BINFO_BASETYPE (TYPE_BINFO (rec), i);
  
@@ -1022,7 +1010,7 @@ diff -u -p -r1.358.2.38 class.c
        if (base_binfo == CLASSTYPE_PRIMARY_BINFO (rec))
  	continue;
  
-@@ -4698,9 +4384,7 @@ create_vtable_ptr (t, empty_p, vfuns_p,
+@@ -4722,9 +4409,7 @@ create_vtable_ptr (t, empty_p, vfuns_p,
       here.  Even if there weren't any new virtual functions, we might need a
       new virtual function table if we're supposed to include vptrs in
       all classes that need them.  */
@@ -1033,7 +1021,7 @@ diff -u -p -r1.358.2.38 class.c
      {
        /* We build this decl with vtbl_ptr_type_node, which is a
  	 `vtable_entry_type*'.  It might seem more precise to use
-@@ -4905,10 +4589,8 @@ layout_virtual_bases (t, offsets)
+@@ -4929,10 +4614,8 @@ layout_virtual_bases (t, offsets)
    TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), BITS_PER_UNIT);
  
    /* Go through the virtual bases, allocating space for each virtual
@@ -1046,7 +1034,7 @@ diff -u -p -r1.358.2.38 class.c
    for (vbases = TYPE_BINFO (t);
         vbases; 
         vbases = TREE_CHAIN (vbases))
-@@ -4935,8 +4617,8 @@ layout_virtual_bases (t, offsets)
+@@ -4959,8 +4642,8 @@ layout_virtual_bases (t, offsets)
  	     appropriately aligned offset.  */
  	  dsize = CEIL (dsize, desired_align) * desired_align;
  
@@ -1057,7 +1045,7 @@ diff -u -p -r1.358.2.38 class.c
  	  if (is_empty_class (basetype))
  	    layout_empty_base (vbase,
  			       size_int (CEIL (dsize, BITS_PER_UNIT)),
-@@ -5118,8 +4800,7 @@ layout_class_type (t, empty_p, vfuns_p, 
+@@ -5142,8 +4825,7 @@ layout_class_type (t, empty_p, vfuns_p, 
    vptr = create_vtable_ptr (t, empty_p, vfuns_p,
  			    new_virtuals_p, overridden_virtuals_p);
  
@@ -1067,7 +1055,7 @@ diff -u -p -r1.358.2.38 class.c
    if (vptr)
      {
        TYPE_FIELDS (t) = chainon (vptr, TYPE_FIELDS (t));
-@@ -5132,10 +4813,6 @@ layout_class_type (t, empty_p, vfuns_p, 
+@@ -5156,10 +4838,6 @@ layout_class_type (t, empty_p, vfuns_p, 
    if (build_base_fields (rli, empty_p, empty_base_offsets, t))
      CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
    
@@ -1078,7 +1066,7 @@ diff -u -p -r1.358.2.38 class.c
    /* CLASSTYPE_INLINE_FRIENDS is really TYPE_NONCOPIED_PARTS.  Thus,
       we have to save this before we zap TYPE_NONCOPIED_PARTS.  */
    fixup_inline_methods (t);
-@@ -5157,10 +4834,8 @@ layout_class_type (t, empty_p, vfuns_p, 
+@@ -5181,10 +4859,8 @@ layout_class_type (t, empty_p, vfuns_p, 
        type = TREE_TYPE (field);
  
        /* If this field is a bit-field whose width is greater than its
@@ -1091,7 +1079,7 @@ diff -u -p -r1.358.2.38 class.c
        if (DECL_C_BIT_FIELD (field)
  	  && INT_CST_LT (TYPE_SIZE (type), DECL_SIZE (field)))
  	{
-@@ -5225,10 +4900,10 @@ layout_class_type (t, empty_p, vfuns_p, 
+@@ -5249,10 +4925,10 @@ layout_class_type (t, empty_p, vfuns_p, 
      }
  
    /* We make all structures have at least one element, so that they
@@ -1106,7 +1094,7 @@ diff -u -p -r1.358.2.38 class.c
    if (!eoc && *empty_p)
      {
        tree padding;
-@@ -5389,9 +5064,7 @@ finish_struct_1 (t)
+@@ -5413,9 +5089,7 @@ finish_struct_1 (t)
        = chainon (CLASSTYPE_VFIELDS (t), build_tree_list (NULL_TREE, t));
  
    /* If necessary, create the primary vtable for this class.  */
@@ -1117,7 +1105,7 @@ diff -u -p -r1.358.2.38 class.c
      {
        new_virtuals = nreverse (new_virtuals);
        /* We must enter these virtuals into the table.  */
-@@ -5703,11 +5376,12 @@ fixed_type_or_null (instance, nonnull, c
+@@ -5727,11 +5401,12 @@ fixed_type_or_null (instance, nonnull, c
      }
  }
  
@@ -1135,7 +1123,7 @@ diff -u -p -r1.358.2.38 class.c
  
     Used to determine whether the virtual function table is needed
     or not.
-@@ -6759,10 +6433,9 @@ note_name_declared_in_class (name, decl)
+@@ -6783,10 +6458,9 @@ note_name_declared_in_class (name, decl)
      }
  }
  
@@ -1149,7 +1137,7 @@ diff -u -p -r1.358.2.38 class.c
  
  tree
  get_vtbl_decl_for_binfo (binfo)
-@@ -7110,77 +6783,47 @@ static void
+@@ -7134,77 +6808,47 @@ static void
  finish_vtbls (t)
       tree t;
  {
@@ -1260,7 +1248,7 @@ diff -u -p -r1.358.2.38 class.c
  }
  
  /* Initialize the vtable for BINFO with the INITS.  */
-@@ -7653,9 +7296,8 @@ accumulate_vtbl_inits (binfo, orig_binfo
+@@ -7677,9 +7321,8 @@ accumulate_vtbl_inits (binfo, orig_binfo
      }
  }
  
@@ -1272,7 +1260,7 @@ diff -u -p -r1.358.2.38 class.c
  
  static tree
  dfs_accumulate_vtbl_inits (binfo, orig_binfo, rtti_binfo, t, l)
-@@ -7963,11 +7605,6 @@ build_vbase_offset_vtbl_entries (binfo, 
+@@ -7987,11 +7630,6 @@ build_vbase_offset_vtbl_entries (binfo, 
    tree t;
    tree non_primary_binfo;
  
@@ -1284,7 +1272,7 @@ diff -u -p -r1.358.2.38 class.c
    /* If there are no virtual baseclasses, then there is nothing to
       do.  */
    if (!TYPE_USES_VIRTUAL_BASECLASSES (BINFO_TYPE (binfo)))
-@@ -8069,11 +7706,6 @@ build_vcall_offset_vtbl_entries (binfo, 
+@@ -8093,11 +7731,6 @@ build_vcall_offset_vtbl_entries (binfo, 
       tree binfo;
       vtbl_init_data *vid;
  {
@@ -1296,7 +1284,7 @@ diff -u -p -r1.358.2.38 class.c
    /* We only need these entries if this base is a virtual base.  */
    if (!TREE_VIA_VIRTUAL (binfo))
      return;
-@@ -8328,16 +7960,12 @@ build_rtti_vtbl_entries (binfo, vid)
+@@ -8352,16 +7985,12 @@ build_rtti_vtbl_entries (binfo, vid)
    vid->last_init = &TREE_CHAIN (*vid->last_init);
  
    /* Add the offset-to-top entry.  It comes earlier in the vtable that
@@ -1319,7 +1307,7 @@ diff -u -p -r1.358.2.38 class.c
  }
  
  /* Build an entry in the virtual function table.  DELTA is the offset
-@@ -8354,55 +7982,20 @@ build_vtable_entry (delta, vcall_index, 
+@@ -8378,55 +8007,20 @@ build_vtable_entry (delta, vcall_index, 
       tree vcall_index;
       tree entry;
  {
@@ -1392,7 +1380,7 @@ RCS file: /cvs/gcc/gcc/gcc/cp/cp-tree.h,v
 retrieving revision 1.572.2.36
 diff -u -p -r1.572.2.36 cp-tree.h
 --- gcc/cp/cp-tree.h	2001/12/08 16:12:51	1.572.2.36
-+++ gcc/cp/cp-tree.h	2001/12/10 22:04:55
++++ gcc/cp/cp-tree.h	2002/02/01 22:44:27
 @@ -135,11 +135,9 @@ Boston, MA 02111-1307, USA.  */
       does not have a BV_FN; it is just an offset.
  
@@ -1796,7 +1784,7 @@ RCS file: /cvs/gcc/gcc/gcc/cp/cvt.c,v
 retrieving revision 1.97.2.3
 diff -u -p -r1.97.2.3 cvt.c
 --- gcc/cp/cvt.c	2001/08/17 04:31:27	1.97.2.3
-+++ gcc/cp/cvt.c	2001/12/10 22:04:56
++++ gcc/cp/cvt.c	2002/02/01 22:44:28
 @@ -141,44 +141,35 @@ cp_convert_to_pointer (type, expr, force
  	  && TREE_CODE (TREE_TYPE (type)) == RECORD_TYPE
  	  && IS_AGGR_TYPE (TREE_TYPE (type))
@@ -2083,10 +2071,10 @@ diff -u -p -r1.97.2.3 cvt.c
 Index: gcc/cp/decl.c
 ===================================================================
 RCS file: /cvs/gcc/gcc/gcc/cp/decl.c,v
-retrieving revision 1.747.2.35
-diff -u -p -r1.747.2.35 decl.c
---- gcc/cp/decl.c	2001/12/06 12:54:12	1.747.2.35
-+++ gcc/cp/decl.c	2001/12/10 22:05:05
+retrieving revision 1.747.2.36
+diff -u -p -r1.747.2.36 decl.c
+--- gcc/cp/decl.c	2002/01/18 03:36:08	1.747.2.36
++++ gcc/cp/decl.c	2002/02/01 22:44:37
 @@ -51,8 +51,7 @@ extern tree global_namespace;
  extern int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree));
  
@@ -2220,7 +2208,7 @@ RCS file: /cvs/gcc/gcc/gcc/cp/decl2.c,v
 retrieving revision 1.437.2.29
 diff -u -p -r1.437.2.29 decl2.c
 --- gcc/cp/decl2.c	2001/11/30 03:12:42	1.437.2.29
-+++ gcc/cp/decl2.c	2001/12/10 22:05:09
++++ gcc/cp/decl2.c	2002/02/01 22:44:40
 @@ -200,11 +200,6 @@ int warn_long_long = 1;
  
  int warn_ctor_dtor_privacy = 1;
@@ -2294,7 +2282,7 @@ RCS file: /cvs/gcc/gcc/gcc/cp/error.c,v
 retrieving revision 1.149.2.5
 diff -u -p -r1.149.2.5 error.c
 --- gcc/cp/error.c	2001/09/15 19:43:41	1.149.2.5
-+++ gcc/cp/error.c	2001/12/10 22:05:10
++++ gcc/cp/error.c	2002/02/01 22:44:43
 @@ -950,13 +950,8 @@ dump_decl (t, flags)
        if (DECL_NAME (t) && VTABLE_NAME_P (DECL_NAME (t)))
  	{
@@ -2333,10 +2321,10 @@ diff -u -p -r1.149.2.5 error.c
 Index: gcc/cp/init.c
 ===================================================================
 RCS file: /cvs/gcc/gcc/gcc/cp/init.c,v
-retrieving revision 1.232.2.9
-diff -u -p -r1.232.2.9 init.c
---- gcc/cp/init.c	2001/05/22 00:29:08	1.232.2.9
-+++ gcc/cp/init.c	2001/12/10 22:05:12
+retrieving revision 1.232.2.10
+diff -u -p -r1.232.2.10 init.c
+--- gcc/cp/init.c	2002/01/23 12:47:11	1.232.2.10
++++ gcc/cp/init.c	2002/02/01 22:44:44
 @@ -130,7 +130,9 @@ finish_init_stmts (stmt_expr, compound_s
  
  /* Constructors */
@@ -2494,8 +2482,8 @@ diff -u -p -r1.232.2.9 init.c
 +      
        member = cp_convert (ptrdiff_type_node, member);
  
-       return build1 (INDIRECT_REF, type,
-@@ -2213,7 +2182,7 @@ build_java_class_ref (type)
+       addr = build (PLUS_EXPR, build_pointer_type (type), addr, member);
+@@ -2212,7 +2181,7 @@ build_java_class_ref (type)
        jclass_node = TREE_TYPE (jclass_node);
      }
  
@@ -2504,7 +2492,7 @@ diff -u -p -r1.232.2.9 init.c
    {
      tree field;
      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-@@ -2252,8 +2221,8 @@ get_cookie_size (type)
+@@ -2251,8 +2220,8 @@ get_cookie_size (type)
  {
    tree cookie_size;
  
@@ -2515,7 +2503,7 @@ diff -u -p -r1.232.2.9 init.c
    tree sizetype_size;
    tree type_align;
    
-@@ -2360,9 +2329,7 @@ build_new_1 (exp)
+@@ -2359,9 +2328,7 @@ build_new_1 (exp)
    if (!has_array || !TYPE_VEC_NEW_USES_COOKIE (true_type))
      use_cookie = 0;
    /* When using placement new, users may not realize that they need
@@ -2526,7 +2514,7 @@ diff -u -p -r1.232.2.9 init.c
       the global placement operator delete[].  */
    else if (placement && !TREE_CHAIN (placement) 
  	   && same_type_p (TREE_TYPE (TREE_VALUE (placement)),
-@@ -2479,9 +2446,8 @@ build_new_1 (exp)
+@@ -2478,9 +2445,8 @@ build_new_1 (exp)
        tree cookie;
  
        /* Store the number of bytes allocated so that we can know how
@@ -2544,7 +2532,7 @@ RCS file: /cvs/gcc/gcc/gcc/cp/lang-specs.h,v
 retrieving revision 1.39.2.4
 diff -u -p -r1.39.2.4 lang-specs.h
 --- gcc/cp/lang-specs.h	2001/06/08 00:00:32	1.39.2.4
-+++ gcc/cp/lang-specs.h	2001/12/10 22:05:12
++++ gcc/cp/lang-specs.h	2002/02/01 22:44:45
 @@ -38,14 +38,14 @@ Boston, MA 02111-1307, USA.  */
      "%{E|M|MM:cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
         %{!Wno-deprecated:-D__GXX_DEPRECATED}\
@@ -2577,7 +2565,7 @@ RCS file: /cvs/gcc/gcc/gcc/cp/mangle.c,v
 retrieving revision 1.26.4.9
 diff -u -p -r1.26.4.9 mangle.c
 --- gcc/cp/mangle.c	2001/12/03 17:38:50	1.26.4.9
-+++ gcc/cp/mangle.c	2001/12/10 22:05:13
++++ gcc/cp/mangle.c	2002/02/01 22:44:46
 @@ -1,4 +1,4 @@
 -/* Name mangling for the new standard C++ ABI.
 +/* Name mangling for the 3.0 C++ ABI.
@@ -2599,11 +2587,11 @@ diff -u -p -r1.26.4.9 mangle.c
 Index: gcc/cp/method.c
 ===================================================================
 RCS file: /cvs/gcc/gcc/gcc/cp/method.c,v
-retrieving revision 1.190.2.14
-diff -u -p -r1.190.2.14 method.c
---- gcc/cp/method.c	2001/07/25 09:32:46	1.190.2.14
-+++ gcc/cp/method.c	2001/12/10 22:05:14
-@@ -595,8 +595,6 @@ do_build_copy_constructor (fndecl)
+retrieving revision 1.190.2.15
+diff -u -p -r1.190.2.15 method.c
+--- gcc/cp/method.c	2002/01/07 20:51:38	1.190.2.15
++++ gcc/cp/method.c	2002/02/01 22:44:46
+@@ -600,8 +600,6 @@ do_build_copy_constructor (fndecl)
  	    {
  	      if (VFIELD_NAME_P (DECL_NAME (field)))
  		continue;
@@ -2612,7 +2600,7 @@ diff -u -p -r1.190.2.14 method.c
  
  	      /* True for duplicate members.  */
  	      if (IDENTIFIER_CLASS_VALUE (DECL_NAME (field)) != field)
-@@ -684,8 +682,6 @@ do_build_assign_ref (fndecl)
+@@ -689,8 +687,6 @@ do_build_assign_ref (fndecl)
  	  if (DECL_NAME (field))
  	    {
  	      if (VFIELD_NAME_P (DECL_NAME (field)))
@@ -2627,7 +2615,7 @@ RCS file: /cvs/gcc/gcc/gcc/cp/rtti.c,v
 retrieving revision 1.109.2.7
 diff -u -p -r1.109.2.7 rtti.c
 --- gcc/cp/rtti.c	2001/12/06 12:54:19	1.109.2.7
-+++ gcc/cp/rtti.c	2001/12/10 22:05:15
++++ gcc/cp/rtti.c	2002/02/01 22:44:47
 @@ -41,7 +41,6 @@ Boston, MA 02111-1307, USA.  */
  
  extern struct obstack permanent_obstack;
@@ -2832,7 +2820,7 @@ RCS file: /cvs/gcc/gcc/gcc/cp/search.c,v
 retrieving revision 1.202.2.6
 diff -u -p -r1.202.2.6 search.c
 --- gcc/cp/search.c	2001/06/08 17:12:41	1.202.2.6
-+++ gcc/cp/search.c	2001/12/10 22:05:17
++++ gcc/cp/search.c	2002/02/01 22:44:49
 @@ -83,26 +83,21 @@ struct vbase_info 
    tree inits;
  };
@@ -3578,11 +3566,11 @@ diff -u -p -r1.202.2.6 search.c
 Index: gcc/cp/semantics.c
 ===================================================================
 RCS file: /cvs/gcc/gcc/gcc/cp/semantics.c,v
-retrieving revision 1.189.2.17
-diff -u -p -r1.189.2.17 semantics.c
---- gcc/cp/semantics.c	2001/12/08 16:12:52	1.189.2.17
-+++ gcc/cp/semantics.c	2001/12/10 22:05:19
-@@ -2346,7 +2346,7 @@ emit_associated_thunks (fn)
+retrieving revision 1.189.2.19
+diff -u -p -r1.189.2.19 semantics.c
+--- gcc/cp/semantics.c	2002/01/31 22:46:46	1.189.2.19
++++ gcc/cp/semantics.c	2002/02/01 22:44:51
+@@ -2349,7 +2349,7 @@ emit_associated_thunks (fn)
       is so that you can know statically the entire set of thunks that
       will ever be needed for a given virtual function, thereby
       enabling you to output all the thunks with the function itself.  */
@@ -3591,7 +3579,7 @@ diff -u -p -r1.189.2.17 semantics.c
      {
        tree binfo;
        tree v;
-@@ -2412,8 +2412,8 @@ expand_body (fn)
+@@ -2415,8 +2415,8 @@ expand_body (fn)
  				simplify_aggr_init_exprs_r,
  				NULL);
  
@@ -3608,7 +3596,7 @@ RCS file: /cvs/gcc/gcc/gcc/cp/tree.c,v
 retrieving revision 1.232.2.10
 diff -u -p -r1.232.2.10 tree.c
 --- gcc/cp/tree.c	2001/11/30 03:12:44	1.232.2.10
-+++ gcc/cp/tree.c	2001/12/10 22:05:20
++++ gcc/cp/tree.c	2002/02/01 22:44:52
 @@ -2220,12 +2220,6 @@ cp_valid_lang_attribute (attr_name, attr
      }
    if (is_attribute_p ("com_interface", attr_name))
@@ -3628,7 +3616,7 @@ RCS file: /cvs/gcc/gcc/gcc/cp/typeck.c,v
 retrieving revision 1.337.2.11
 diff -u -p -r1.337.2.11 typeck.c
 --- gcc/cp/typeck.c	2001/11/20 04:39:23	1.337.2.11
-+++ gcc/cp/typeck.c	2001/12/10 22:05:24
++++ gcc/cp/typeck.c	2002/02/01 22:44:58
 @@ -114,8 +114,11 @@ require_complete_type (value)
      {
        tree base, member = TREE_OPERAND (value, 1);
@@ -3796,7 +3784,7 @@ RCS file: /cvs/gcc/gcc/gcc/cp/typeck2.c,v
 retrieving revision 1.97.2.2
 diff -u -p -r1.97.2.2 typeck2.c
 --- gcc/cp/typeck2.c	2001/04/12 05:26:11	1.97.2.2
-+++ gcc/cp/typeck2.c	2001/12/10 22:05:25
++++ gcc/cp/typeck2.c	2002/02/01 22:44:58
 @@ -980,12 +980,17 @@ build_scoped_ref (datum, basetype)
       tree basetype;
  {

@@ -1,3 +1,7 @@
+2002-02-03  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* PR3145.patch: Update.
+
 2002-01-26  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gennews (files): Replace gcc-2.95/gcc-2.95.html,
