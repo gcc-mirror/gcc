@@ -1,3 +1,8 @@
+2003-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (legitimate_pic_address_disp_p): Disallow TLS
+	SYMBOL_REFs not inside UNSPEC even in PLUS rtx.
+
 2003-07-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2out.c (loc_descriptor_from_tree, case CONSTRUCTOR): New case.
