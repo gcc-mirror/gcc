@@ -1,3 +1,7 @@
+2001-09-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* listing: Remove obsolete file.
+
 2001-09-15  Richard Henderson  <rth@redhat.com>
 
 	* c-typeck.c (comptypes): Handle zero-length arrays properly.
