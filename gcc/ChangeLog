@@ -1,5 +1,10 @@
 2001-08-08  Graham Stott  <grahams@redhat.com>
 
+	* c-typeck.c (RESTORE_SPELLING_DEPTH): Uppercase and parenthesize macro
+	 parameter.
+
+2001-08-08  Graham Stott  <grahams@redhat.com>
+
 	* combine.c (combine_simplify_rtx): Update comment and
 	remove erroneous test.
 
