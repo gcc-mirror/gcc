@@ -1,3 +1,10 @@
+1999-11-24  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* config/mips/mips.md (div_trap_normal): Don't ask for the REGNO
+	of (const_int 0), when what we really care about is
+	whether it's a zero constant anyway.
+	(div_trap_mips16): Likewise.
+
 1999-11-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* loop.c (loop_optimize): Always find_loop_tree_blocks and

@@ -2395,8 +2395,8 @@
 }")
 
 (define_insn "div_trap_normal"
-  [(trap_if (eq (match_operand 0 "register_operand" "d")
-		(match_operand 1 "true_reg_or_0_operand" "dJ"))
+  [(trap_if (eq (match_operand 0 "register_operand" "d,d")
+		(match_operand 1 "true_reg_or_0_operand" "d,J"))
             (match_operand 2 "immediate_operand" ""))]
   "!TARGET_MIPS16"
   "*
@@ -2411,20 +2411,20 @@
     if ((int) REG_DEP_ANTI == (int) REG_NOTE_KIND (link)
         && GET_CODE (XEXP (link, 0)) == INSN
         && GET_CODE (PATTERN (XEXP (link, 0))) == TRAP_IF
-	&& REGNO (operands[1]) == 0)
+	&& which_alternative == 1)
       have_dep_anti = 1;
   if (! have_dep_anti)
     {
       if (GENERATE_BRANCHLIKELY)
 	{
-          if (GET_CODE (operands[1]) == CONST_INT)
+          if (which_alternative == 1)
 	    return \"%(beql\\t%0,$0,1f\\n\\tbreak\\t%2\\n%~1:%)\";
 	  else
 	    return \"%(beql\\t%0,%1,1f\\n\\tbreak\\t%2\\n%~1:%)\";
 	}
       else
 	{
-          if (GET_CODE (operands[1]) == CONST_INT)
+          if (which_alternative == 1)
 	    return \"%(bne\\t%0,$0,1f\\n\\tnop\\n\\tbreak\\t%2\\n%~1:%)\";
 	  else
 	    return \"%(bne\\t%0,%1,1f\\n\\tnop\\n\\tbreak\\t%2\\n%~1:%)\";
@@ -2439,8 +2439,8 @@
 ;; The mips16 bne insns is a macro which uses reg 24 as an intermediate.
 
 (define_insn "div_trap_mips16"
-  [(trap_if (eq (match_operand 0 "register_operand" "d")
-		(match_operand 1 "true_reg_or_0_operand" "dJ"))
+  [(trap_if (eq (match_operand 0 "register_operand" "d,d")
+		(match_operand 1 "true_reg_or_0_operand" "d,J"))
             (match_operand 2 "immediate_operand" ""))
    (clobber (reg:SI 24))]
   "TARGET_MIPS16"
@@ -2456,12 +2456,12 @@
     if ((int) REG_DEP_ANTI == (int) REG_NOTE_KIND (link)
         && GET_CODE (XEXP (link, 0)) == INSN
         && GET_CODE (PATTERN (XEXP (link, 0))) == TRAP_IF
-	&& REGNO (operands[1]) == 0)
+	&& which_alternative == 1)
       have_dep_anti = 1;
   if (! have_dep_anti)
     {
       /* No branch delay slots on mips16. */ 
-      if (GET_CODE (operands[1]) == CONST_INT)
+      if (which_alternative == 1)
         return \"%(bnez\\t%0,1f\\n\\tbreak\\t%2\\n%~1:%)\";
       else
         return \"%(bne\\t%0,%1,1f\\n\\tbreak\\t%2\\n%~1:%)\";
