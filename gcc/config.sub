@@ -66,6 +66,11 @@ case $os in
 		os=
 		basic_machine=$1
 		;;
+	-sco3.2v[4-9]*)
+		# Don't forget version if it is 3.2v4 or newer.
+		os=-sco3.2v4
+		basic_machine=i386-unknown
+		;;
 	-sco*)
 		os=-sco3.2v2
 		basic_machine=i386-unknown
