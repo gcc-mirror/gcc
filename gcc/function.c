@@ -4290,17 +4290,6 @@ assign_parms (fndecl)
   rtx conversion_insns = 0;
   struct args_size alignment_pad;
 
-  /* Nonzero if the last arg is named `__builtin_va_alist',
-     which is used on some machines for old-fashioned non-ANSI varargs.h;
-     this should be stuck onto the stack as if it had arrived there.  */
-  int hide_last_arg
-    = (current_function_varargs
-       && fnargs
-       && (parm = tree_last (fnargs)) != 0
-       && DECL_NAME (parm)
-       && (! strcmp (IDENTIFIER_POINTER (DECL_NAME (parm)),
-		     "__builtin_va_alist")));
-
   /* Nonzero if function takes extra anonymous args.
      This means the last named arg must be on the stack
      right before the anonymous ones.  */
@@ -4369,7 +4358,7 @@ assign_parms (fndecl)
 
       /* Set LAST_NAMED if this is last named arg before last
 	 anonymous args.  */
-      if (stdarg || current_function_varargs)
+      if (stdarg)
 	{
 	  tree tem;
 
@@ -4396,11 +4385,6 @@ assign_parms (fndecl)
 	  TREE_USED (parm) = 1;
 	  continue;
 	}
-
-      /* For varargs.h function, save info about regs and stack space
-	 used by the individual args, not including the va_alist arg.  */
-      if (hide_last_arg && last_named)
-	current_function_args_info = args_so_far;
 
       /* Find mode of arg as it is passed, and mode of arg
 	 as it should be during execution of this function.  */
@@ -5125,8 +5109,7 @@ assign_parms (fndecl)
   /* For stdarg.h function, save info about
      regs and stack space used by the named args.  */
 
-  if (!hide_last_arg)
-    current_function_args_info = args_so_far;
+  current_function_args_info = args_so_far;
 
   /* Set the rtx used for the function return value.  Put this in its
      own variable so any optimizers that need this information don't have
@@ -6278,8 +6261,7 @@ prepare_function_start ()
   /* Indicate we have no need of a frame pointer yet.  */
   frame_pointer_needed = 0;
 
-  /* By default assume not varargs or stdarg.  */
-  current_function_varargs = 0;
+  /* By default assume not stdarg.  */
   current_function_stdarg = 0;
 
   /* We haven't made any trampolines for this function yet.  */
@@ -6377,15 +6359,6 @@ init_function_for_compilation ()
   VARRAY_GROW (prologue, 0);
   VARRAY_GROW (epilogue, 0);
   VARRAY_GROW (sibcall_epilogue, 0);
-}
-
-/* Indicate that the current function uses extra args
-   not explicitly mentioned in the argument list in any fashion.  */
-
-void
-mark_varargs ()
-{
-  current_function_varargs = 1;
 }
 
 /* Expand a call to __main at the beginning of a possible main function.  */

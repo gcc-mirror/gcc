@@ -1084,7 +1084,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
    pointer to them is passed in a reg if one is available (and that is what
    we're given).
    This macro is only used in this file.  */
-#define PASS_IN_REG_P(CUM, MODE, TYPE, NAMED) \
+#define PASS_IN_REG_P(CUM, MODE, TYPE) \
   (ROUND_ADVANCE_CUM ((CUM), (MODE), (TYPE)) < M32R_MAX_PARM_REGS)
 
 /* Determine where to put an argument to a function.
@@ -1102,14 +1102,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
 /* On the M32R the first M32R_MAX_PARM_REGS args are normally in registers
    and the rest are pushed.  */
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  (PASS_IN_REG_P ((CUM), (MODE), (TYPE), (NAMED))			\
-   ? gen_rtx_REG ((MODE), ROUND_ADVANCE_CUM ((CUM), (MODE), (TYPE)))	\
-   : 0)
-
-/* ??? Quick hack to try to get varargs working the normal way.  */
-#define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED) \
-  (((! current_function_varargs || (NAMED))				\
-    && PASS_IN_REG_P ((CUM), (MODE), (TYPE), (NAMED)))			\
+  (PASS_IN_REG_P ((CUM), (MODE), (TYPE))			\
    ? gen_rtx_REG ((MODE), ROUND_ADVANCE_CUM ((CUM), (MODE), (TYPE)))	\
    : 0)
 

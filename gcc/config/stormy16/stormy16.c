@@ -874,7 +874,7 @@ xstormy16_compute_stack_layout ()
     if (REG_NEEDS_SAVE (regno, ifun))
       layout.register_save_size += UNITS_PER_WORD;
   
-  if (current_function_varargs || current_function_stdarg)
+  if (current_function_stdarg)
     layout.stdarg_save_size = NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD;
   else
     layout.stdarg_save_size = 0;

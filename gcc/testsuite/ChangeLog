@@ -1,9 +1,21 @@
+2002-07-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-torture/execute/991216-3.c, c-torture/execute/strct-varg-1.c,
+	c-torture/execute/va-arg-7.c, c-torture/execute/va-arg-8.c,
+	c-torture/execute/va-arg-15.c, c-torture/execute/va-arg-16.c,
+	c-torture/execute/va-arg-17.c, c-torture/execute/va-arg-19.c:
+	Convert to use <stdarg.h>.
+	* c-torture/execute/va-arg-3.c, c-torture/execute/va-arg-3.x:
+	Delete.
+	* gcc.dg/va-arg-2.c: New.
+	* lib/gcc.exp, lib/objc.exp: Remove code to set -DNO_VARARGS.
+
 2002-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20020710-1.c: New test.
 
 Thu Jul 11 15:39:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
-                          Andrew Pinski  <pinskia@physics.uc.edu>
+			  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	gcc.c-torture/compile/simd-2.c: New testcase.
 	gcc.c-torture/compile/simd-3.c: Likewise.
@@ -12,7 +24,7 @@ Thu Jul 11 15:39:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	PR c++/7224
 	* g++.dg/overload/error1.C: New test.
-	
+
 2002-07-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gcc.misc-tests/linkage.exp: Handle mips-sgi-irix6*o32
@@ -28,13 +40,13 @@ Thu Jul 11 15:39:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-07-10  Jeffrey A Law  <law@redhat.com>
 
-        * gcc.c-torture/compile/981006-1.x: Do not use -fpic for mn102.
+	* gcc.c-torture/compile/981006-1.x: Do not use -fpic for mn102.
 
-        * gcc.c-torture/compile/930326-1.x: Remove.  No longer needed.
+	* gcc.c-torture/compile/930326-1.x: Remove.  No longer needed.
 
 2002-07-09  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/20020312-2.c: Check for __PPC__.
+	* gcc.dg/20020312-2.c: Check for __PPC__.
 
 2002-07-09  Diego Novillo  <dnovillo@redhat.com>
 
@@ -57,7 +69,7 @@ Thu Jul 11 15:39:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
 2002-07-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR c++/7099
-        * g++.dg/warn/noreturn1.C: New test.
+	* g++.dg/warn/noreturn1.C: New test.
 
 2002-07-03  Mark Mitchell  <mark@codesourcery.com>
 
@@ -168,8 +180,8 @@ Mon Jul  1 12:51:05 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-06-27  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.c-torture/execute/string-opt-8.c (strncmp): Fix typo in
-        return type.
+	* gcc.c-torture/execute/string-opt-8.c (strncmp): Fix typo in
+	return type.
 
 Thu Jun 27 15:23:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -269,9 +281,9 @@ Tue Jun 25 21:50:38 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-06-18  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.c-torture/execute/simd-1.c: New.
+	* gcc.c-torture/execute/simd-1.c: New.
 
-        * gcc.dg/simd-1.c: New.
+	* gcc.dg/simd-1.c: New.
 
 2002-06-18  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -355,7 +367,7 @@ Tue Jun 25 21:50:38 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-06-04  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/altivec-2.c: Remove test for invalid vector type V2DF.
+	* gcc.dg/altivec-2.c: Remove test for invalid vector type V2DF.
 
 2002-06-03  Richard Henderson  <rth@redhat.com>
 

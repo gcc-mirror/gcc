@@ -1,8 +1,6 @@
-#include <varargs.h>
+#include <stdarg.h>
 
-void vafunction (dummy, va_alist)
-  char *dummy;
-  va_dcl
+void vafunction (char *dummy, ...)
 {
   double darg;
   int iarg;
@@ -10,7 +8,7 @@ void vafunction (dummy, va_alist)
   int i;
   va_list ap;
 
-  va_start(ap);
+  va_start(ap, dummy);
   for (i = 1; i <= 18; i++, flag++) 
     {
       if (flag & 1)

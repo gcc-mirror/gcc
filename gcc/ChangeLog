@@ -1,3 +1,67 @@
+2002-07-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* ginclude/varargs.h: Replace with stub which issues #error.
+	* ginclude/stdarg.h: __builtin_stdarg_start is renamed
+	__builtin_va_start.
+
+	* builtins.def (BUILT_IN_VARARGS_START): Delete.
+	(BUILT_IN_VA_START): New.
+	* builtins.c (expand_builtin_va_start): Eliminate first
+	argument and code to implement pre-ISO varargs.
+	(std_expand_builtin_va_start): Ignore first argument; it is
+	always 1.
+	(expand_builtin): Handle BUILT_IN_VA_START and
+	BUILT_IN_STDARG_START identically.  Delete
+	BUILT_IN_VARARGS_START case.
+
+	* function.c (assign_parms): Delete hide_last_arg and all
+	its uses.
+	(mark_varargs): Delete function.
+	* function.h (struct function): Delete 'varargs' bit.
+	(current_function_varargs): Delete macro.
+	* tree.h: Don't declare mark_varargs.
+
+	* c-decl.c (c_function_varargs, c_mark_varargs): Delete.
+	(c_expand_body): Don't call mark_varargs.
+	* c-objc-common.c: Handle BUILT_IN_VA_START and
+	BUILT_IN_STDARG_START identically.  Delete
+	BUILT_IN_VARARGS_START case.
+	* c-tree.h: Don't declare c_mark_varargs.
+	* c-parse.in: Remove grammar rules for '&...' (which has been
+	commented out since before 2.7.2) and for '...' in K+R
+	argument declarations.
+
+	* builtins.c, function.c, integrate.c, sibcall.c,
+	config/alpha/unicosmk.h, config/arc/arc.c, config/arc/arc.h,
+	config/avr/avr.c, config/cris/cris.c, config/fr30/fr30.c,
+	config/i960/i960.c, config/i960/i960.md, config/m32r/m32r.c,
+	config/m32r/m32r.h, config/m88k/m88k.c, config/m88k/m88k.h,
+	config/mips/mips.c, config/mmix/mmix.c, config/mmix/mmix.h,
+	config/mn10300/mn10300.c, config/pa/som.h, config/s390/s390.c,
+	config/sh/sh.c, config/sh/sh.h, config/sparc/sparc.h,
+	config/stormy16/stormy16.c: Delete all references to
+	current_function_varargs, and code predicated on that flag.
+
+	* config/alpha/alpha.c (alpha_va_start),
+	config/arc/arc.c (arc_va_start),
+	config/i386/i386.c (ix86_va_start),
+	config/mips/mips.c (mips_va_start),
+	config/mn10300/mn10300.c (mn10300_va_start),
+	config/rs6000/rs6000.c (rs6000_va_start),
+	config/s390/s390.c (s390_va_start),
+	config/sh/sh.c (sh_va_start),
+	Ignore first argument; it is always 1.
+
+	* config/c4x/c4x-protos.h, config/c4x/c4x.c: Delete c4x_va_start.
+	* config/ia64/ia64-protos.h, config/ia64/ia64.c: Delete ia64_va_start.
+	* config/m68hc11/m68hc11-protos.h, config/m68hc11/m68hc11.c:
+	Delete m68hc11_va_start.
+	* config/c4x/c4x.h, config/ia64/ia64.h, config/m68hc11/m68hc11.h:
+	No need to define EXPAND_BUILTIN_VA_START.
+
+	* doc/invoke.texi, doc/sourcebuild.texi, doc/tm.texi,
+	doc/trouble.texi: Remove references to GCC-provided <varargs.h>.
+
 2002-07-15  Eric Botcazou  <ebotcazou@multimania.com>
 
 	PR optimization/7153
@@ -9,7 +73,7 @@
 	* config/sparc/netbsd-elf.h (TRANSFER_FROM_TRAMPOLINE): Remove.
 
 2002-07-15  Michael Matz  <matz@suse.de>,
-            Daniel Berlin  <dberlin@dberlin.org>,
+	    Daniel Berlin  <dberlin@dberlin.org>,
 	    Denis Chertykov  <denisc@overta.ru>
 
 	Add a new register allocator.
@@ -298,10 +362,10 @@ Thu Jul 11 11:31:12 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-07-10  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (emit_frame_save): New.
-        (rs6000_frame_related): Replace reg2 before reg.
-        (rs6000_emit_prologue): Use emit_frame_save for saving gprs, fprs,
-        and eh_return registers.
+	* config/rs6000/rs6000.c (emit_frame_save): New.
+	(rs6000_frame_related): Replace reg2 before reg.
+	(rs6000_emit_prologue): Use emit_frame_save for saving gprs, fprs,
+	and eh_return registers.
 
 2002-07-10  Toon Moene  <toon@moene.indiv.nluug.nl>
 
@@ -351,8 +415,8 @@ Wed Jul 10 18:48:55 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* mn10200.c (expand_prologue): Create REG_MAYBE_DEAD notes
 	as appropriate.
 
-        * mn10200.c (expand_epilogue): Fix test to determine which scratch
-        register to use.
+	* mn10200.c (expand_epilogue): Fix test to determine which scratch
+	register to use.
 
 Wed Jul 10 16:06:00 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -412,7 +476,7 @@ Wed Jul 10 16:06:00 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* doc/cpp.texi: Update.
 
 Tue Jul  9 22:37:44 2002  Stephen Clarke <stephen.clarke@superh.com>
-                          J"orn Rennecke <joern.rennecke@superh.com>
+			  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (sh_adjust_cost): Special handling of SHMEDIA code.
 	* sh.md (attribute issues): Replace with:
@@ -971,8 +1035,8 @@ Mon Jul  1 19:55:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-07-01  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tree.c (build_function_type_list): Update function comment.
-        Rename first argument to return_type.
+	* tree.c (build_function_type_list): Update function comment.
+	Rename first argument to return_type.
 
 2002-07-01  Neil Booth  <neil@daikokuya.co.uk>
 
@@ -994,7 +1058,7 @@ Mon Jul  1 19:55:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
 			  Frank Ch. Eigler  <fche@redhat.com>
-	                  Matthew Green  <mrg@redhat.com>
+			  Matthew Green  <mrg@redhat.com>
 			  Richard Henderson <rtl@redhat.com>
 			  Dave Hudson  <dave.hudson@ubicom.com>
 			  Jeff Johnston  <jjohnstn@redhat.com>
@@ -1037,7 +1101,7 @@ Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
 
 2002-06-30  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/i386/i386.c (ix86_init_mmx_sse_builtins): Fix typos.
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Fix typos.
 
 2002-06-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -1055,20 +1119,20 @@ Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
 
 2002-06-29  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/i386/i386.c (ix86_init_mmx_sse_builtins): Use
-        build_function_type_list instead of build_function_type.
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Use
+	build_function_type_list instead of build_function_type.
 
-        * config/ia64/ia64.c (ia64_init_builtins): Same.
+	* config/ia64/ia64.c (ia64_init_builtins): Same.
 
-        * config/alpha/alpha.c (alpha_init_builtins): Same.
+	* config/alpha/alpha.c (alpha_init_builtins): Same.
 
-        * config/rs6000/rs6000.c (altivec_init_builtins): Same.
+	* config/rs6000/rs6000.c (altivec_init_builtins): Same.
 
-        * config/arm/arm.c (arm_init_builtins): Same.
+	* config/arm/arm.c (arm_init_builtins): Same.
 
-        * tree.h: Add build_function_type_list prototype.
+	* tree.h: Add build_function_type_list prototype.
 
-        * tree.c (build_function_type_list): New.
+	* tree.c (build_function_type_list): New.
 
 2002-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -1076,7 +1140,7 @@ Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
 
 2002-06-28  Aaron Lehmann  <aaronl@vitelus.com>
 
-        * fold-cont.c: Remove unused CHARMASK.
+	* fold-cont.c: Remove unused CHARMASK.
 
 2002-06-29  Neil Booth  <neil@daikokuya.co.uk>
 
@@ -1098,7 +1162,7 @@ Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
 
 2002-06-29  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
-        * c4x.h: (TARGET_CPU_CPP_BUILTINS): Check flag_inline_functions and
+	* c4x.h: (TARGET_CPU_CPP_BUILTINS): Check flag_inline_functions and
 	flag_inline_trees to enable inlining.
 
 2002-06-28  Phil Edwards  <pme@gcc.gnu.org>
@@ -1155,22 +1219,22 @@ Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
 
 2002-06-28  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c: Remove unusued variables from last
-        patch.
+	* config/rs6000/rs6000.c: Remove unusued variables from last
+	patch.
 
 2002-06-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	Revert:
-        * config/rs6000/rs6000.c (rs6000_override_options): Move
-        *SUBTARGET_OVERRIDE_OPTIONS before the -m options.
+	* config/rs6000/rs6000.c (rs6000_override_options): Move
+	*SUBTARGET_OVERRIDE_OPTIONS before the -m options.
 
 2002-06-27  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (altivec_expand_builtin): Move
-        lvx/stv/dst builtins...
-        (altivec_expand_ld_builtin): ...to here.
-        (altivec_expand_st_builtin): ...here.
-        (altivec_expand_dst_builtin): ...and here (respectively).
+	* config/rs6000/rs6000.c (altivec_expand_builtin): Move
+	lvx/stv/dst builtins...
+	(altivec_expand_ld_builtin): ...to here.
+	(altivec_expand_st_builtin): ...here.
+	(altivec_expand_dst_builtin): ...and here (respectively).
 
 2002-06-28  Bob Wilson  <bob.wilson@acm.org>
 
@@ -1192,8 +1256,8 @@ Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
 
 2002-06-27  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_override_options): Move
-        *SUBTARGET_OVERRIDE_OPTIONS before the -m options.
+	* config/rs6000/rs6000.c (rs6000_override_options): Move
+	*SUBTARGET_OVERRIDE_OPTIONS before the -m options.
 
 2002-06-27  Bob Wilson  <bob.wilson@acm.org>
 
@@ -1268,8 +1332,8 @@ Wed Jun 26 16:32:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-06-26  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.h (ALTIVEC_VECTOR_MODE): Revert change to
-        check for TARGET_ALTIVEC.
+	* config/rs6000/rs6000.h (ALTIVEC_VECTOR_MODE): Revert change to
+	check for TARGET_ALTIVEC.
 
 2002-06-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
@@ -1290,8 +1354,8 @@ Wed Jun 26 16:32:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-06-25  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/extend.texi (PowerPC AltiVec Built-in Functions): Document
-        discrepancies from motorola's documentation.
+	* doc/extend.texi (PowerPC AltiVec Built-in Functions): Document
+	discrepancies from motorola's documentation.
 
 Tue Jun 25 21:51:13 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -1768,7 +1832,7 @@ Thu Jun 20 12:14:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-06-19  Chris Demetriou  <cgd@broadcom.com>
 
-        * config/mips/mips.c (mips_emit_prefetch): Use hints which
+	* config/mips/mips.c (mips_emit_prefetch): Use hints which
 	match desired locality.
 
 2002-06-19  Dhananjay R. Deshpande  <dhananjayd@kpit.com>

@@ -525,18 +525,6 @@ expand_prologue ()
   size = get_frame_size () + current_function_outgoing_args_size;
   size += (current_function_outgoing_args_size ? 4 : 0);
 
-  /* If this is an old-style varargs function, then its arguments
-     need to be flushed back to the stack.  */
-  if (current_function_varargs)
-    {
-      emit_move_insn (gen_rtx_MEM (SImode,
-				   plus_constant (stack_pointer_rtx, 4)),
-		      gen_rtx_REG (SImode, 0));
-      emit_move_insn (gen_rtx_MEM (SImode,
-				   plus_constant (stack_pointer_rtx, 8)),
-		      gen_rtx_REG (SImode, 1));
-    }
-
   /* If we use any of the callee-saved registers, save them now. */
   mn10300_gen_multiple_store (mn10300_get_live_callee_saved_regs ());
 
@@ -887,13 +875,11 @@ mn10300_builtin_saveregs ()
 
 void
 mn10300_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p;
+     int stdarg_p ATTRIBUTE_UNUSED;
      tree valist;
      rtx nextarg;
 {
-  if (stdarg_p)
-    nextarg = expand_builtin_saveregs ();
-
+  nextarg = expand_builtin_saveregs ();
   std_expand_builtin_va_start (stdarg_p, valist, nextarg);
 }
 

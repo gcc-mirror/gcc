@@ -59,8 +59,6 @@ extern struct rtx_def *c4x_function_arg PARAMS ((CUMULATIVE_ARGS *,
 #if defined(RTX_CODE) && defined(TREE_CODE)
 extern void c4x_init_cumulative_args PARAMS ((CUMULATIVE_ARGS *c, tree, rtx));
 
-extern void c4x_va_start PARAMS ((int, tree, rtx));
-
 extern struct rtx_def *c4x_va_arg PARAMS ((tree, tree));
 
 extern rtx c4x_expand_builtin PARAMS ((tree, rtx, rtx,

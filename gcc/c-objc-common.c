@@ -91,7 +91,7 @@ inline_forbidden_p (nodep, walk_subtrees, fn)
 	{
 	  /* We cannot inline functions that take a variable number of
 	     arguments.  */
-	case BUILT_IN_VARARGS_START:
+	case BUILT_IN_VA_START:
 	case BUILT_IN_STDARG_START:
 #if 0
 	  /* Functions that need information about the address of the

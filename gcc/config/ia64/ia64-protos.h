@@ -104,7 +104,6 @@ extern rtx ia64_function_arg PARAMS((CUMULATIVE_ARGS *, enum machine_mode,
 				     tree, int, int));
 extern rtx ia64_expand_builtin PARAMS((tree, rtx, rtx,
 				       enum machine_mode, int));
-extern void ia64_va_start PARAMS((int, tree, rtx));
 extern rtx ia64_va_arg PARAMS((tree, tree));
 extern rtx ia64_function_value PARAMS((tree, tree));
 #endif /* RTX_CODE */

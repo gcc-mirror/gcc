@@ -2787,7 +2787,6 @@ frame_pointer_required_p ()
 {
   return (current_function_calls_alloca
 	  || current_function_args_info.nregs == 0
-	  || current_function_varargs
   	  || get_frame_size () > 0);
 }
 

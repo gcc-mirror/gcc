@@ -152,10 +152,7 @@ extern int m68hc11_function_arg_pass_by_reference PARAMS((const CUMULATIVE_ARGS*
                                                           int));
 extern int m68hc11_function_arg_padding PARAMS((enum machine_mode, tree));
 
-extern void m68hc11_expand_builtin_va_start PARAMS((int, tree, rtx));
-
 extern rtx m68hc11_va_arg PARAMS((tree,tree));
-extern void m68hc11_expand_builtin_va_start PARAMS((int,tree,rtx));
 
 extern void m68hc11_function_epilogue PARAMS((FILE*,int));
 

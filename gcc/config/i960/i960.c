@@ -85,9 +85,9 @@ static int ret_label = 0;
    This is used to help identify functions that use an argument block.  */
 
 #define VARARGS_STDARG_FUNCTION(FNDECL)	\
-((TYPE_ARG_TYPES (TREE_TYPE (FNDECL)) != 0						      \
-  && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (FNDECL)))) != void_type_node))    \
- || current_function_varargs)
+(TYPE_ARG_TYPES (TREE_TYPE (FNDECL)) != 0				\
+  && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (FNDECL)))))	\
+      != void_type_node)
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_SI_OP
@@ -518,7 +518,7 @@ emit_move_sequence (operands, mode)
   
   if (GET_CODE (operands[0]) == MEM && GET_CODE (operands[1]) != REG
       && (operands[1] != const0_rtx || current_function_args_size
-	  || current_function_varargs || current_function_stdarg
+	  || current_function_stdarg
 	  || rtx_equal_function_value_matters))
     /* Here we use the same test as movsi+1 pattern -- see i960.md.  */
     operands[1] = force_reg (mode, operands[1]);

@@ -196,7 +196,6 @@ extern void c_print_identifier			PARAMS ((FILE *, tree, int));
 extern tree build_array_declarator              PARAMS ((tree, tree, int, int));
 extern tree build_enumerator                    PARAMS ((tree, tree));
 extern int  c_decode_option                     PARAMS ((int, char **));
-extern void c_mark_varargs                      PARAMS ((void));
 extern void check_for_loop_decls                PARAMS ((void));
 extern void clear_parm_order                    PARAMS ((void));
 extern int  complete_array_type                 PARAMS ((tree, tree, int));

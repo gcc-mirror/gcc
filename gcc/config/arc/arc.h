@@ -665,15 +665,9 @@ extern enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
    a reg.  This includes arguments that have to be passed by reference as the
    pointer to them is passed in a reg if one is available (and that is what
    we're given).
-   When passing arguments NAMED is always 1.  When receiving arguments NAMED
-   is 1 for each argument except the last in a stdarg/varargs function.  In
-   a stdarg function we want to treat the last named arg as named.  In a
-   varargs function we want to treat the last named arg (which is
-   `__builtin_va_alist') as unnamed.
    This macro is only used in this file.  */
-#define PASS_IN_REG_P(CUM, MODE, TYPE, NAMED) \
-((!current_function_varargs || (NAMED))					\
- && (CUM) < MAX_ARC_PARM_REGS						\
+#define PASS_IN_REG_P(CUM, MODE, TYPE) \
+((CUM) < MAX_ARC_PARM_REGS						\
  && ((ROUND_ADVANCE_CUM ((CUM), (MODE), (TYPE))				\
       + ROUND_ADVANCE_ARG ((MODE), (TYPE))				\
       <= MAX_ARC_PARM_REGS)))
@@ -693,7 +687,7 @@ extern enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* On the ARC the first MAX_ARC_PARM_REGS args are normally in registers
    and the rest are pushed.  */
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-(PASS_IN_REG_P ((CUM), (MODE), (TYPE), (NAMED))				\
+(PASS_IN_REG_P ((CUM), (MODE), (TYPE))					\
  ? gen_rtx_REG ((MODE), ROUND_ADVANCE_CUM ((CUM), (MODE), (TYPE)))	\
  : 0)
 

@@ -2447,7 +2447,7 @@ ix86_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 
 void
 ix86_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p;
+     int stdarg_p ATTRIBUTE_UNUSED;
      tree valist;
      rtx nextarg;
 {
@@ -2458,7 +2458,7 @@ ix86_va_start (stdarg_p, valist, nextarg)
   /* Only 64bit target needs something special.  */
   if (!TARGET_64BIT)
     {
-      std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+      std_expand_builtin_va_start (1, valist, nextarg);
       return;
     }
 

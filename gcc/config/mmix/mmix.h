@@ -738,10 +738,10 @@ enum reg_class
    replace with a big comment.  */
 #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) 1
 
-typedef struct { int regs; int lib; int now_varargs; } CUMULATIVE_ARGS;
+typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT)	\
- ((CUM).regs = 0, (CUM).lib = ((LIBNAME) != 0), (CUM).now_varargs = 0)
+ ((CUM).regs = 0, (CUM).lib = ((LIBNAME) != 0))
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)		\
  ((CUM).regs							\

@@ -1455,29 +1455,6 @@ m68hc11_function_arg (cum, mode, type, named)
   return NULL_RTX;
 }
 
-/* The "standard" implementation of va_start: just assign `nextarg' to
-   the variable.  */
-void
-m68hc11_expand_builtin_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p ATTRIBUTE_UNUSED;
-     tree valist;
-     rtx nextarg;
-{
-  tree t;
-
-  /* SCz: the default implementation in builtins.c adjust the
-     nextarg using UNITS_PER_WORD.  This works only with -mshort
-     and fails when integers are 32-bit.  Here is the correct way.  */
-  if (!stdarg_p)
-    nextarg = plus_constant (nextarg, -INT_TYPE_SIZE / 8);
-
-  t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
-	     make_tree (ptr_type_node, nextarg));
-  TREE_SIDE_EFFECTS (t) = 1;
-
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-}
-
 rtx
 m68hc11_va_arg (valist, type)
      tree valist;

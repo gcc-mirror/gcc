@@ -419,11 +419,9 @@ fr30_setup_incoming_varargs (arg_regs_used_so_far, int_mode, type, pretend_size)
     abort ();
 
 #if STRICT_ARGUMENT_NAMING
-  /* We must treat `__builtin_va_alist' as an anonymous arg.
-     But otherwise if STRICT_ARGUMENT_NAMING is true then the
-     last named arg must not be treated as an anonymous arg. */
-  if (! current_function_varargs)
-    arg_regs_used_so_far += fr30_num_arg_regs (int_mode, type);
+  /* If STRICT_ARGUMENT_NAMING is true then the last named
+     arg must not be treated as an anonymous arg. */
+  arg_regs_used_so_far += fr30_num_arg_regs (int_mode, type);
 #endif
   
   size = FR30_NUM_ARG_REGS - arg_regs_used_so_far;

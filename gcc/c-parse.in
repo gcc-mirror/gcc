@@ -533,21 +533,6 @@ unary_expr:
 	/* Refer to the address of a label as a pointer.  */
 	| ANDAND identifier
 		{ $$ = finish_label_address_expr ($2); }
-/* This seems to be impossible on some machines, so let's turn it off.
-   You can use __builtin_next_arg to find the anonymous stack args.
-	| '&' ELLIPSIS
-		{ tree types = TYPE_ARG_TYPES (TREE_TYPE (current_function_decl));
-		  $$ = error_mark_node;
-		  if (TREE_VALUE (tree_last (types)) == void_type_node)
-		    error ("`&...' used in function with fixed number of arguments");
-		  else
-		    {
-		      if (pedantic)
-			pedwarn ("ISO C forbids `&...'");
-		      $$ = tree_last (DECL_ARGUMENTS (current_function_decl));
-		      $$ = build_unary_op (ADDR_EXPR, $$, 0);
-		    } }
-*/
 	| sizeof unary_expr  %prec UNARY
 		{ skip_evaluation--;
 		  if (TREE_CODE ($2) == COMPONENT_REF
@@ -809,11 +794,6 @@ old_style_parm_decls_1:
 	  parsing_iso_function_signature = false; /* Reset after warning.  */
 	}
 	| datadecls
-	| datadecls ELLIPSIS
-		/* ... is used here to indicate a varargs function.  */
-		{ c_mark_varargs ();
-		  if (pedantic)
-		    pedwarn ("ISO C does not permit use of `varargs.h'"); }
 	;
 
 /* The following are analogous to lineno_decl, decls and decl

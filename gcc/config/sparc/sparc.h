@@ -1097,7 +1097,6 @@ extern int sparc_mode_class[];
 #define FRAME_POINTER_REQUIRED				\
   (TARGET_FLAT						\
    ? (current_function_calls_alloca			\
-      || current_function_varargs			\
       || !leaf_function_p ())				\
    : ! (leaf_function_p () && only_leaf_regs_used ()))
 

@@ -237,10 +237,7 @@ do {								\
    On Unicos/Mk, the standard subroutine __T3E_MISMATCH stores all register
    arguments on the stack. Unfortunately, it doesn't always store the first
    one (i.e. the one that arrives in $16 or $f16). This is not a problem
-   with stdargs as we always have at least one named argument there. This is
-   not always the case when varargs.h is used, however. In such cases, we
-   have to store the first argument ourselves. We use the information from
-   the CIW to determine whether the first argument arrives in $16 or $f16.  */
+   with stdargs as we always have at least one named argument there.  */
 
 #undef SETUP_INCOMING_VARARGS
 #define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
@@ -248,36 +245,9 @@ do {								\
     {									\
       if (! (NO_RTL))							\
         {								\
-	  int start;							\
-									\
-	  start = (CUM).num_reg_words;					\
-	  if (!current_function_varargs || start == 0)			\
-	    ++start;							\
+	  int start = (CUM).num_reg_words + 1;				\
 									\
           emit_insn (gen_umk_mismatch_args (GEN_INT (start)));		\
-	  if (current_function_varargs && (CUM).num_reg_words == 0)	\
-	    {								\
-	      rtx tmp;							\
-	      rtx int_label, end_label;					\
-									\
-	      tmp = gen_reg_rtx (DImode);				\
-	      emit_move_insn (tmp,					\
-			      gen_rtx_ZERO_EXTRACT (DImode,		\
-						    gen_rtx_REG (DImode, 2),\
-						    (GEN_INT (1)),	\
-						    (GEN_INT (7))));	\
-	      int_label = gen_label_rtx ();				\
-	      end_label = gen_label_rtx ();				\
-	      emit_insn (gen_cmpdi (tmp, GEN_INT (0)));			\
-	      emit_jump_insn (gen_beq (int_label));			\
-	      emit_move_insn (gen_rtx_MEM (DFmode, virtual_incoming_args_rtx),\
-			      gen_rtx_REG (DFmode, 48));		\
-	      emit_jump (end_label);					\
-	      emit_label (int_label);					\
-	      emit_move_insn (gen_rtx_MEM (DImode, virtual_incoming_args_rtx),\
-			      gen_rtx_REG (DImode, 16));		\
-	      emit_label (end_label);					\
-	    }								\
 	  emit_insn (gen_arg_home_umk ());				\
         }								\
 									\

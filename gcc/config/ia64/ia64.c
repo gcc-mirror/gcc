@@ -3050,9 +3050,8 @@ ia64_setup_incoming_varargs (cum, int_mode, type, pretend_size, second_time)
      int *           pretend_size;
      int	     second_time ATTRIBUTE_UNUSED;
 {
-  /* If this is a stdarg function, then skip the current argument.  */
-  if (! current_function_varargs)
-    ia64_function_arg_advance (&cum, int_mode, type, 1);
+  /* Skip the current argument.  */
+  ia64_function_arg_advance (&cum, int_mode, type, 1);
 
   if (cum.words < MAX_ARGUMENT_SLOTS)
     {
@@ -3453,27 +3452,6 @@ ia64_function_arg_pass_by_reference (cum, mode, type, named)
   return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
 }
 
-/* Implement va_start.  */
-
-void
-ia64_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p;
-     tree valist;
-     rtx nextarg;
-{
-  int arg_words;
-  int ofs;
-
-  arg_words = current_function_args_info.words;
-
-  if (stdarg_p)
-    ofs = 0;
-  else
-    ofs = (arg_words >= MAX_ARGUMENT_SLOTS ? -UNITS_PER_WORD : 0);
-
-  nextarg = plus_constant (nextarg, ofs);
-  std_expand_builtin_va_start (1, valist, nextarg);
-}
 
 /* Implement va_arg.  */
 

@@ -165,9 +165,6 @@ proc objc_target_compile { source dest type options } {
     if [info exists TOOL_OPTIONS] {
 	lappend options "additional_flags=$TOOL_OPTIONS"
     }
-    if [target_info exists objc,no_varargs] {
-	lappend options "additional_flags=-DNO_VARARGS"
-    }
 
     # Point to the ObjC headers in libobjc.
     set objc_include_dir "${srcdir}/../../libobjc"

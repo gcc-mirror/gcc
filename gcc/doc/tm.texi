@@ -4006,7 +4006,7 @@ arguments.  But usually, on such machines, nothing else has been pushed
 yet, because the function prologue itself does all the pushing.)  This
 region is used on machines where an argument may be passed partly in
 registers and partly in memory, and, in some cases to support the
-features in @code{<varargs.h>} and @code{<stdarg.h>}.
+features in @code{<stdarg.h>}.
 
 @item
 An area of memory used to save certain registers used by the function.

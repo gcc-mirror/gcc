@@ -198,10 +198,9 @@ do {								\
 		   }							\
 	       }							\
 	     /* anonymous args */					\
-	     if ((TYPE_ARG_TYPES (tree_type) != 0			\
-		  && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (tree_type)))\
-		      != void_type_node))				\
-		 || current_function_varargs)				\
+	     if (TYPE_ARG_TYPES (tree_type) != 0			\
+		 && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (tree_type)))\
+		     != void_type_node))				\
 	       {							\
 		 for (; i < 4; i++)					\
 		   fprintf (FILE, ",ARGW%d=GR", i);			\

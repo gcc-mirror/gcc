@@ -1,17 +1,16 @@
-#include <varargs.h>
+#include <stdarg.h>
 
 #define VALUE 0x123456789abcdefLL
 #define AFTER 0x55
 
 void
-test (va_alist)
-     va_dcl
+test (int n, ...)
 {
   va_list ap;
-  int i, n;
+  int i;
 
-  va_start (ap);
-  n = va_arg (ap, int);
+  va_start (ap, n);
+
   for (i = 2; i <= n; i++)
     {
       if (va_arg (ap, int) != i)

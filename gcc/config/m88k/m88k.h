@@ -1052,8 +1052,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    may be accessed via the stack pointer) in functions that seem suitable.
    This is computed in `reload', in reload1.c.  */
 #define FRAME_POINTER_REQUIRED \
-(current_function_varargs 					\
- || (TARGET_OMIT_LEAF_FRAME_POINTER && !leaf_function_p ()) 	\
+((TARGET_OMIT_LEAF_FRAME_POINTER && !leaf_function_p ()) 	\
  || (write_symbols != NO_DEBUG && !TARGET_OCS_FRAME_POSITION))
 
 /* Definitions for register eliminations.
