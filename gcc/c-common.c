@@ -423,7 +423,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	      if (len > 4 && p[0] == '_' && p[1] == '_'
 		  && p[len - 1] == '_' && p[len - 2] == '_')
 		{
-		  char *newp = (char *) alloca (len - 2);
+		  char *newp = (char *) alloca (len - 1);
 
 		  strcpy (newp, &p[2]);
 		  newp[len - 4] = '\0';
