@@ -1,3 +1,8 @@
+2002-03-17  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md ("fixuns_truncdfdi2"): Use (unsigned_fix:DI
+	(unsigned_fix:DF op1)), not (unsigned_fix:DI (fix:DF op1)).
+
 2002-03-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ifcvt.c (dead_or_predicable): Fix uninitialized variable.
