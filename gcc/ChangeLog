@@ -1,3 +1,9 @@
+2003-02-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+        * config/sh/sh.c (unspec_caller_rtx_p): New.
+	(sh_cannot_copy_insn_p): New.
+        (TARGET_CANNOT_COPY_INSN_P): New.
+
 2003-02-18  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (handle_used_attribute): Accept static data too.
