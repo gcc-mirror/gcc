@@ -256,7 +256,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TARGET_FIX_R4000	(target_flags & MASK_FIX_R4000)
 
 					/* Work around R4400 errata.  */
-#define TARGET_FIX_R4400		(target_flags & MASK_FIX_R4400)
+#define TARGET_FIX_R4400	(target_flags & MASK_FIX_R4400)
 #define TARGET_FIX_VR4122	(target_flags & MASK_FIX_VR4122)
 
 /* True if we should use NewABI-style relocation operators for
