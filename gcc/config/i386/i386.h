@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Intel X86
    (386, 486, Pentium).
-   Copyright (C) 1988, 92, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -435,12 +435,6 @@ extern int ix86_arch;
    and give entire struct the alignment of an int.  */
 /* Required on the 386 since it doesn't have bitfield insns.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
-
-/* An integer expression for the size in bits of the largest integer
-   machine mode that should actually be used.  All integer machine modes of
-   this size or smaller can be used for structures and unions with the
-   appropriate sizes.  */
-#define MAX_FIXED_MODE_SIZE 32
 
 /* Maximum power of 2 that code can be aligned to.  */
 #define MAX_CODE_ALIGN	6			/* 64 byte alignment */
