@@ -1,3 +1,9 @@
+Fri Sep 18 22:52:05 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* reload.c (find_reloads): Do not replace a pseudo with 
+	(MEM (reg_equiv_addr)) in the initializing insn for the
+	pseudo.
+
 Fri Sep 18 23:50:56 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* toplev.c (rest_of_compilation): Set bct_p on second call to
