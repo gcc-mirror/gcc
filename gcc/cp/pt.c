@@ -1300,8 +1300,12 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	  /* This case handles bogus declarations like template <>
 	     template <class T> void f<int>(); */
 
-	  cp_error ("template-id `%D' in declaration of primary template",
-		    declarator);
+	  if (uses_template_parms (declarator))
+	    cp_error ("partial specialization `%D' of function template",
+		      declarator);
+	  else
+	    cp_error ("template-id `%D' in declaration of primary template",
+		      declarator);
 	  return decl;
 	}
 
@@ -4507,7 +4511,11 @@ tsubst_friend_function (decl, args)
      instantiation of anything.  */
   DECL_USE_TEMPLATE (new_friend) = 0;
   if (TREE_CODE (decl) == TEMPLATE_DECL)
-    DECL_USE_TEMPLATE (DECL_TEMPLATE_RESULT (new_friend)) = 0;
+    {
+      DECL_USE_TEMPLATE (DECL_TEMPLATE_RESULT (new_friend)) = 0;
+      DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (new_friend))
+	= DECL_SAVED_TREE (DECL_TEMPLATE_RESULT (decl));
+    }
 
   /* The mangled name for the NEW_FRIEND is incorrect.  The call to
      tsubst will have resulted in a call to
@@ -5727,6 +5735,7 @@ tsubst_decl (t, args, type, in_decl)
 	TREE_CHAIN (r) = NULL_TREE;
 	DECL_PENDING_INLINE_INFO (r) = 0;
 	DECL_PENDING_INLINE_P (r) = 0;
+	DECL_SAVED_TREE (r) = NULL_TREE;
 	TREE_USED (r) = 0;
 	if (DECL_CLONED_FUNCTION (r))
 	  {
