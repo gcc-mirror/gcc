@@ -1,5 +1,28 @@
 2004-03-11  Josef Zlomek  <zlomekj@suse.cz>
 
+	PR/14362
+	* var-tracking.c (struct variable_def): Added field refcount.
+	(variable_htab_free): Decrease the refcount and delete variable
+	only if there are no more references.
+	(unshare_variable): New function.
+	(vars_copy_1): Increase refcount instead of copying the variable.
+	(variable_union): Share the variables where possible, unshare
+	the variables if needed.
+	(variable_different_p): Return false if var1 and var2 are
+	the same structure.
+	(variable_was_changed): Init the refcount of new variable.
+	(set_frame_base_location): Unshare variable if needed.
+	(set_variable_part): Init the refcount of new variable.
+	Unshare the variables if needed.
+	(delete_variable_part): Unshare the variables if needed. 
+	(emit_notes_for_differences_1): Init the refcount of new variable.
+	(vt_add_function_parameters): Do not add function parameters to
+	IN set of ENTRY_BLOCK_PTR because it is unused anyway.
+	(vt_initialize): Do not add frame_base_decl to IN set of
+	ENTRY_BLOCK_PTR because it is unused anyway.
+
+2004-03-11  Josef Zlomek  <zlomekj@suse.cz>
+
 	* var-tracking.c (vars_copy_1): Cleanup and speedup chain operations.
 	(vars_copy): Likewise.
 	(variable_union): Likewise.
