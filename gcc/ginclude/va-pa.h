@@ -4,7 +4,7 @@
 #ifndef __GNUC_VA_LIST
 #define __GNUC_VA_LIST
 
-typedef double *__gnuc_va_list;
+typedef void *__gnuc_va_list;
 #endif /* not __GNUC_VA_LIST */
 
 /* If this is for internal libc use, don't define anything but
