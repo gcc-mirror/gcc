@@ -458,6 +458,12 @@ namespace std
       static void
       _S_ios_destroy();
 
+      // NB: Allows debugger applications use of the standard streams
+      // from operator new. _S_ios_base_init must be incremented in
+      // _S_ios_create _after_ initialization is completed.
+      static bool
+      _S_initialized() { return _S_ios_base_init; }
+
     private:
       static int 	_S_ios_base_init;
       static bool	_S_synced_with_stdio;

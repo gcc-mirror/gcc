@@ -1,3 +1,10 @@
+2003-03-05  Carlo Wood  <carlo@alinoe.com>
+
+        * include/bits/ios_base.h(ios_base::Init::_S_initialized()): Added
+	_S_initialized() in order to allow debugging libraries to detect
+	when the std streams are initialized from an overloaded operator
+	new.
+
 2003-03-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* libsupc++/demangle.h: Move to..
