@@ -49,6 +49,9 @@
 #                       be linked into the gcc driver.
 #
 #  out_host_hook_obj    An object file that provides the host hooks.
+#
+#  host_can_use_collect2 Set to yes normally; to no if the host cannot
+#			link or otherwise use collect2
 
 # When setting any of these variables, check to see if a corresponding
 # variable is present in config.build; if so, you will likely want to 
@@ -62,6 +65,7 @@ host_exeext=
 host_extra_objs=
 host_extra_gcc_objs=
 out_host_hook_obj=host-default.o
+host_can_use_collect2=yes
 
 # Unsupported hosts list.  Generally, only include hosts known to fail here,
 # since we allow hosts not listed to be supported generically.
@@ -82,6 +86,7 @@ case ${host} in
     host_xm_file=alpha/xm-vms.h
     host_xmake_file=alpha/x-vms
     host_exeext=.exe
+    host_can_use_collect2=no
     # This removes the cpu type and manufacturer components and
     #  replaces "." with "_" in the operating system version.
     target_noncanonical=`echo $host | sed 's/.*-.*-\(.*\)$/\1/' | sed 's/\./_/g'`
@@ -137,6 +142,7 @@ case ${host} in
     host_xm_file=i386/xm-mingw32.h
     host_xmake_file=i386/x-mingw32
     host_exeext=.exe
+    host_can_use_collect2=no
     ;;
   i[34567]86-*-uwin*)
     echo "*** UWIN may not be used as a host platform because"
@@ -148,6 +154,9 @@ case ${host} in
     ;;
   i860-*-sysv4*)
     host_xmake_file=i860/x-sysv4
+    ;;
+  powerpc-*-beos*)
+    host_can_use_collect2=no
     ;;
   powerpc-*-darwin*)
     # powerpc-darwin host support.

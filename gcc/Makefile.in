@@ -539,9 +539,10 @@ EXTRA_GCC_OBJS =@extra_gcc_objs@
 # List of additional header files to install.
 EXTRA_HEADERS =@extra_headers_list@
 
-# It is convenient for configure to add the assignment at the beginning,
-# so don't override it here.
-USE_COLLECT2 = collect2$(exeext)
+# The configure script will set this to collect2$(exeext), except on a
+# (non-Unix) host which can not build collect2, for which it will be
+# set to empty.
+COLLECT2 = @collect2@
 
 # List of extra C and assembler files to add to static and shared libgcc2.
 # Assembler files should have names ending in `.asm'.
@@ -580,7 +581,7 @@ GCC_PASSES=xgcc$(exeext) cc1$(exeext) specs $(EXTRA_PASSES)
 
 # List of things which should already be built whenever we try to use xgcc
 # to link anything.
-GCC_PARTS=$(GCC_PASSES) $(LIBGCC) $(EXTRA_PROGRAMS) $(USE_COLLECT2) $(EXTRA_PARTS)
+GCC_PARTS=$(GCC_PASSES) $(LIBGCC) $(EXTRA_PROGRAMS) $(COLLECT2) $(EXTRA_PARTS)
 
 # Directory to link to, when using the target `maketest'.
 DIR = ../gcc
@@ -895,7 +896,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  xgcc$(exeext) cpp$(exeext) cc1$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  protoize$(exeext) unprotoize$(exeext) \
- $(SPECS) collect2$(exeext) $(USE_COLLECT2) \
+ $(SPECS) collect2$(exeext) \
  gcov-iov$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
  *.[0-9][0-9].* *.[si] libcpp.a libbackend.a libgcc.mk \
  $(LANG_STAGESTUFF)
@@ -1072,7 +1073,7 @@ rest.encap: $(STMP_FIXPROTO) $(LIBGCC) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
 native: config.status auto-host.h build-@POSUB@ $(LANGUAGES) \
-	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
+	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
 C c: cc1$(exeext)
@@ -2904,7 +2905,7 @@ install-common: native $(EXTRA_PARTS) lang.install-common installdirs
 	  else true; \
 	  fi; \
 	done
-	for file in $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2) ..; do \
+	for file in $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(COLLECT2) ..; do \
 	  if [ x"$$file" != x.. ]; then \
 	    rm -f $(DESTDIR)$(libexecsubdir)/$$file; \
 	    $(INSTALL_PROGRAM) $$file $(DESTDIR)$(libexecsubdir)/$$file; \

@@ -1,3 +1,22 @@
+2004-04-04  Ian Lance Taylor  <ian@wasabisystems.com>
+	    Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR target/14548
+	* config.host: Set the shell variable host_can_use_collect2.
+	Set it to yes by default, and to no for alpha*-dec-*vms*,
+	i[34567]86-*-mingw32*, and powerpc-*-beos*.
+	* configure.ac: Set and substitute the shell variable collect2.
+	Give an error if use_collect2 is yes and host_can_use_collect2 is
+	no.
+	* Makefile.in (COLLECT2): Rename from USE_COLLECT2.  Change all
+	uses.  Initialize to @collect2@.
+	(STAGESTUFF): Remove $(USE_COLLECT2).
+	* config/alpha/x-vms (USE_COLLECT2): Don't set.
+	* config/i386/t-mingw32 (USE_COLLECT2): Likewise.
+	* config/rs6000/t-beos (USE_COLLECT2): Likewise.
+	* config/pa/t-pa64: Remove commented out USE_COLLECT2.
+	* configure: Regenerate.
+
 2004-04-04  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_binary_operation): Constant fold

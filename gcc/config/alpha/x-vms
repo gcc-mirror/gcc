@@ -19,6 +19,3 @@ decc.exe : vms-cc.o
 # These extra parts can only be compiled on a VMS host and are only needed
 # on a VMS target.  The rules are in t-vms.
 VMS_EXTRA_PARTS=vcrt0.o pcrt0.o
-
-# Doesn't work on VMS
-USE_COLLECT2=
