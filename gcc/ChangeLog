@@ -1,3 +1,7 @@
+2002-03-22  Richard Sandiford  <rsandifo@redhat.com>
+
+	* real.c (eiisneg): Move outside #ifdef NANS.
+
 Fri Mar 22 12:08:36 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (outgoing_edges_math): Fix condition; relax
