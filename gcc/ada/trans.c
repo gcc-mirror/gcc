@@ -2956,7 +2956,7 @@ gnat_to_gnu (Node_Id gnat_node)
 				       NULL_TREE, gnu_prefix);
 	else
 	  {
-	    gnu_field = gnat_to_gnu_entity (gnat_field, NULL_TREE, 0);
+	    gnu_field = gnat_to_gnu_field_decl (gnat_field);
 
 	    /* If there are discriminants, the prefix might be
                evaluated more than once, which is a problem if it has
@@ -3012,6 +3012,8 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	/* ??? It is wrong to evaluate the type now, but there doesn't
 	   seem to be any other practical way of doing it.  */
+
+	gcc_assert (!Expansion_Delayed (gnat_node));
 
 	gnu_aggr_type = gnu_result_type
 	  = get_unpadded_type (Etype (gnat_node));
@@ -3497,11 +3499,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	/* The return value from the subprogram.  */
 	tree gnu_ret_val = NULL_TREE;
 	/* The place to put the return value.  */
-	tree gnu_lhs
-	  = (TYPE_RETURNS_BY_TARGET_PTR_P (gnu_subprog_type)
-	     ? build_unary_op (INDIRECT_REF, NULL_TREE,
-			       DECL_ARGUMENTS (current_function_decl))
-	     : DECL_RESULT (current_function_decl));
+	tree gnu_lhs;
 
 	/* If we are dealing with a "return;" from an Ada procedure with
 	   parameters passed by copy in copy out, we need to return a record
@@ -3524,6 +3522,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	else if (TYPE_CI_CO_LIST (gnu_subprog_type))
 	  {
+	    gnu_lhs = DECL_RESULT (current_function_decl);
 	    if (list_length (TYPE_CI_CO_LIST (gnu_subprog_type)) == 1)
 	      gnu_ret_val = TREE_VALUE (TYPE_CI_CO_LIST (gnu_subprog_type));
 	    else
@@ -3543,11 +3542,25 @@ gnat_to_gnu (Node_Id gnat_node)
 	       are doing a call, pass that target to the call.  */
 	    if (TYPE_RETURNS_BY_TARGET_PTR_P (gnu_subprog_type)
 		&& Nkind (Expression (gnat_node)) == N_Function_Call)
-	      gnu_ret_val = call_to_gnu (Expression (gnat_node),
-					 &gnu_result_type, gnu_lhs);
+	      {
+	        gnu_lhs
+		  = build_unary_op (INDIRECT_REF, NULL_TREE,
+				    DECL_ARGUMENTS (current_function_decl));
+		gnu_result = call_to_gnu (Expression (gnat_node),
+					  &gnu_result_type, gnu_lhs);
+	      }
 	    else
 	      {
 		gnu_ret_val = gnat_to_gnu (Expression (gnat_node));
+
+		if (TYPE_RETURNS_BY_TARGET_PTR_P (gnu_subprog_type))
+		  /* The original return type was unconstrained so dereference
+		     the TARGET pointer in the actual return value's type. */
+		  gnu_lhs
+		    = build_unary_op (INDIRECT_REF, TREE_TYPE (gnu_ret_val),
+				      DECL_ARGUMENTS (current_function_decl));
+		else
+		  gnu_lhs = DECL_RESULT (current_function_decl);
 
 		/* Do not remove the padding from GNU_RET_VAL if the inner
 		   type is self-referential since we want to allocate the fixed
@@ -3591,18 +3604,19 @@ gnat_to_gnu (Node_Id gnat_node)
 					   gnat_node);
 		  }
 	      }
-
-	    gnu_result = build2 (MODIFY_EXPR, TREE_TYPE (gnu_ret_val),
-				 gnu_lhs, gnu_ret_val);
-	    if (TYPE_RETURNS_BY_TARGET_PTR_P (gnu_subprog_type))
-	      {
-		add_stmt_with_node (gnu_result, gnat_node);
-		gnu_ret_val = NULL_TREE;
-	      }
 	  }
 
-	gnu_result =  build1 (RETURN_EXPR, void_type_node,
-			      gnu_ret_val ? gnu_result : gnu_ret_val);
+	if (gnu_ret_val)
+	  gnu_result = build2 (MODIFY_EXPR, TREE_TYPE (gnu_ret_val),
+			       gnu_lhs, gnu_ret_val);
+
+	if (TYPE_RETURNS_BY_TARGET_PTR_P (gnu_subprog_type))
+	  {
+	    add_stmt_with_node (gnu_result, gnat_node);
+	    gnu_result = NULL_TREE;
+	  }
+
+	gnu_result = build1 (RETURN_EXPR, void_type_node, gnu_result);
       }
       break;
 
@@ -4021,12 +4035,14 @@ gnat_to_gnu (Node_Id gnat_node)
       current_function_decl = NULL_TREE;
     }
 
-  /* Set the location information into the result.  If we're supposed to
-     return something of void_type, it means we have something we're
-     elaborating for effect, so just return.  */
-  if (EXPR_P (gnu_result))
+  /* Set the location information into the result.  Note that we may have
+     no result if we tried to build a CALL_EXPR node to a procedure with
+     no side-effects and optimization is enabled.  */
+  if (gnu_result && EXPR_P (gnu_result))
     annotate_with_node (gnu_result, gnat_node);
 
+  /* If we're supposed to return something of void_type, it means we have
+     something we're elaborating for effect, so just return.  */
   if (TREE_CODE (gnu_result_type) == VOID_TYPE)
     return gnu_result;
 
@@ -4807,7 +4823,7 @@ process_inlined_subprograms (Node_Id gnat_node)
 
   /* If we can inline, generate RTL for all the inlined subprograms.
      Define the entity first so we set DECL_EXTERNAL.  */
-  if (optimize > 0 && !flag_no_inline)
+  if (optimize > 0 && !flag_really_no_inline)
     for (gnat_entity = First_Inlined_Subprogram (gnat_node);
 	 Present (gnat_entity);
 	 gnat_entity = Next_Inlined_Subprogram (gnat_entity))
@@ -5439,12 +5455,18 @@ assoc_to_constructor (Node_Id gnat_assoc, tree gnu_type)
        gnat_assoc = Next (gnat_assoc))
     {
       Node_Id gnat_field = First (Choices (gnat_assoc));
-      tree gnu_field = gnat_to_gnu_entity (Entity (gnat_field), NULL_TREE, 0);
+      tree gnu_field = gnat_to_gnu_field_decl (Entity (gnat_field));
       tree gnu_expr = gnat_to_gnu (Expression (gnat_assoc));
 
       /* The expander is supposed to put a single component selector name
 	 in every record component association */
       gcc_assert (No (Next (gnat_field)));
+
+      /* Ignore fields that have Corresponding_Discriminants since we'll
+	 be setting that field in the parent.  */
+      if (Present (Corresponding_Discriminant (Entity (gnat_field)))
+	  && Is_Tagged_Type (Scope (Entity (gnat_field))))
+	continue;
 
       /* Before assigning a value in an aggregate make sure range checks
 	 are done if required.  Then convert to the type of the field.  */
@@ -5955,14 +5977,6 @@ post_error_ne_tree_2 (const char *msg,
 {
   Error_Msg_Uint_2 = UI_From_Int (num);
   post_error_ne_tree (msg, node, ent, t);
-}
-
-/* Set the node for a second '&' in the error message.  */
-
-void
-set_second_error_entity (Entity_Id e)
-{
-  Error_Msg_Node_2 = e;
 }
 
 /* Initialize the table that maps GNAT codes to GCC codes for simple

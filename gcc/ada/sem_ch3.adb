@@ -350,13 +350,13 @@ package body Sem_Ch3 is
    --  discriminant constraints for Typ.
 
    function Constrain_Component_Type
-     (Compon_Type     : Entity_Id;
+     (Comp            : Entity_Id;
       Constrained_Typ : Entity_Id;
       Related_Node    : Node_Id;
       Typ             : Entity_Id;
       Constraints     : Elist_Id) return Entity_Id;
    --  Given a discriminated base type Typ, a list of discriminant constraint
-   --  Constraints for Typ and the type of a component of Typ, Compon_Type,
+   --  Constraints for Typ and a component of Typ, with type Compon_Type,
    --  create and return the type corresponding to Compon_type where all
    --  discriminant references are replaced with the corresponding
    --  constraint. If no discriminant references occur in Compon_Typ then
@@ -2378,6 +2378,7 @@ package body Sem_Ch3 is
       Set_Is_Volatile       (Id, Is_Volatile       (T));
       Set_Treat_As_Volatile (Id, Treat_As_Volatile (T));
       Set_Is_Atomic         (Id, Is_Atomic         (T));
+      Set_Is_Ada_2005       (Id, Is_Ada_2005       (T));
 
       --  In the case where there is no constraint given in the subtype
       --  indication, Process_Subtype just returns the Subtype_Mark,
@@ -7374,12 +7375,7 @@ package body Sem_Ch3 is
       Set_Depends_On_Private       (Def_Id, Has_Private_Component (Def_Id));
       Set_Is_Access_Constant       (Def_Id, Is_Access_Constant (T));
 
-      --  Itypes created for constrained record components do not receive
-      --  a freeze node, they are elaborated when first seen.
-
-      if not Is_Record_Type (Current_Scope) then
-         Conditional_Delay (Def_Id, T);
-      end if;
+      Conditional_Delay (Def_Id, T);
    end Constrain_Access;
 
    ---------------------
@@ -7474,17 +7470,12 @@ package body Sem_Ch3 is
       Set_Is_Private_Composite (Def_Id, Is_Private_Composite (T));
       Set_Is_Limited_Composite (Def_Id, Is_Limited_Composite (T));
 
-      --  If the subtype is not that of a record component, build a freeze
-      --  node if parent still needs one.
-
-      --  If the subtype is not that of a record component, make sure
+      --  Build a freeze node if parent still needs one.  Also, make sure
       --  that the Depends_On_Private status is set (explanation ???)
       --  and also that a conditional delay is set.
 
-      if not Is_Type (Scope (Def_Id)) then
-         Set_Depends_On_Private (Def_Id, Depends_On_Private (T));
-         Conditional_Delay (Def_Id, T);
-      end if;
+      Set_Depends_On_Private (Def_Id, Depends_On_Private (T));
+      Conditional_Delay (Def_Id, T);
 
    end Constrain_Array;
 
@@ -7493,13 +7484,14 @@ package body Sem_Ch3 is
    ------------------------------
 
    function Constrain_Component_Type
-     (Compon_Type     : Entity_Id;
+     (Comp            : Entity_Id;
       Constrained_Typ : Entity_Id;
       Related_Node    : Node_Id;
       Typ             : Entity_Id;
       Constraints     : Elist_Id) return Entity_Id
    is
-      Loc : constant Source_Ptr := Sloc (Constrained_Typ);
+      Loc         : constant Source_Ptr := Sloc (Constrained_Typ);
+      Compon_Type : constant Entity_Id := Etype (Comp);
 
       function Build_Constrained_Array_Type
         (Old_Type : Entity_Id) return Entity_Id;
@@ -7876,7 +7868,17 @@ package body Sem_Ch3 is
    --  Start of processing for Constrain_Component_Type
 
    begin
-      if Is_Array_Type (Compon_Type) then
+      if Nkind (Parent (Comp)) = N_Component_Declaration
+        and then Comes_From_Source (Parent (Comp))
+        and then Comes_From_Source
+          (Subtype_Indication (Component_Definition (Parent (Comp))))
+        and then
+          Is_Entity_Name
+            (Subtype_Indication (Component_Definition (Parent (Comp))))
+      then
+         return Compon_Type;
+
+      elsif Is_Array_Type (Compon_Type) then
          return Build_Constrained_Array_Type (Compon_Type);
 
       elsif Has_Discriminants (Compon_Type) then
@@ -7884,9 +7886,10 @@ package body Sem_Ch3 is
 
       elsif Is_Access_Type (Compon_Type) then
          return Build_Constrained_Access_Type (Compon_Type);
-      end if;
 
-      return Compon_Type;
+      else
+         return Compon_Type;
+      end if;
    end Constrain_Component_Type;
 
    --------------------------
@@ -8723,7 +8726,7 @@ package body Sem_Ch3 is
             Set_Etype
               (New_C,
                Constrain_Component_Type
-                 (Etype (Old_C), Subt, Decl_Node, Typ, Constraints));
+                 (Old_C, Subt, Decl_Node, Typ, Constraints));
             Set_Is_Public (New_C, Is_Public (Subt));
 
             Next_Elmt (Comp);
@@ -8875,7 +8878,7 @@ package body Sem_Ch3 is
             Set_Etype
               (New_C,
                Constrain_Component_Type
-                 (Etype (Old_C), Subt, Decl_Node, Typ, Constraints));
+                 (Old_C, Subt, Decl_Node, Typ, Constraints));
             Set_Is_Public (New_C, Is_Public (Subt));
 
             Next_Component (Old_C);
@@ -9570,6 +9573,36 @@ package body Sem_Ch3 is
       Parent_Scope : Entity_Id;
       Taggd        : Boolean;
 
+      function Comes_From_Generic (Typ : Entity_Id) return Boolean;
+      --  Check whether the parent type is a generic formal, or derives
+      --  directly or indirectly from one.
+
+      ------------------------
+      -- Comes_From_Generic --
+      ------------------------
+
+      function Comes_From_Generic (Typ : Entity_Id) return Boolean is
+      begin
+         if Is_Generic_Type (Typ) then
+            return True;
+
+         elsif Is_Generic_Type (Root_Type (Parent_Type)) then
+            return True;
+
+         elsif Is_Private_Type (Typ)
+           and then Present (Full_View (Typ))
+           and then Is_Generic_Type (Root_Type (Full_View (Typ)))
+         then
+            return True;
+
+         elsif Is_Generic_Actual_Type (Typ) then
+            return True;
+
+         else
+            return False;
+         end if;
+      end Comes_From_Generic;
+
    begin
       Parent_Type := Find_Type_Of_Subtype_Indic (Indic);
 
@@ -9645,9 +9678,7 @@ package body Sem_Ch3 is
          return;
 
       elsif (Is_Incomplete_Or_Private_Type (Parent_Type)
-              and then not Is_Generic_Type (Parent_Type)
-              and then not Is_Generic_Type (Root_Type (Parent_Type))
-              and then not Is_Generic_Actual_Type (Parent_Type))
+              and then not Comes_From_Generic (Parent_Type))
         or else Has_Private_Component (Parent_Type)
       then
          --  The ancestor type of a formal type can be incomplete, in which
@@ -9666,7 +9697,7 @@ package body Sem_Ch3 is
               ("premature derivation of derived or private type", Indic);
 
             --  Flag the type itself as being in error, this prevents some
-            --  nasty problems with people looking at the malformed type.
+            --  nasty problems with subsequent uses of the malformed type.
 
             Set_Error_Posted (T);
 
@@ -10685,8 +10716,10 @@ package body Sem_Ch3 is
             then
                Set_Etype (New_C, Etype (Old_C));
             else
-               Set_Etype (New_C, Constrain_Component_Type (Etype (Old_C),
-                 Derived_Base, N, Parent_Base, Discs));
+               Set_Etype
+                 (New_C,
+                  Constrain_Component_Type
+                    (Old_C, Derived_Base, N, Parent_Base, Discs));
             end if;
          end if;
 
