@@ -1115,7 +1115,7 @@ extern int read_skip_spaces		PROTO ((FILE *));
 /* In cse.c */
 struct cse_basic_block_data;
 extern int rtx_cost			PROTO ((rtx, enum rtx_code));
-extern void delete_dead_from_cse	PROTO ((rtx, int));
+extern void delete_trivially_dead_insns	PROTO ((rtx, int));
 #ifdef BUFSIZ
 extern int cse_main			PROTO ((rtx, int, int, FILE *));
 #endif

@@ -8731,7 +8731,7 @@ count_reg_usage (x, counts, dest, incr)
     case EXPR_LIST:
     case INSN_LIST:
       if (REG_NOTE_KIND (x) == REG_EQUAL
-	  || GET_CODE (XEXP (x,0)) == USE)
+	  || (REG_NOTE_KIND (x) != REG_NONNEG && GET_CODE (XEXP (x,0)) == USE))
 	count_reg_usage (XEXP (x, 0), counts, NULL_RTX, incr);
       count_reg_usage (XEXP (x, 1), counts, NULL_RTX, incr);
       return;
@@ -8754,13 +8754,13 @@ count_reg_usage (x, counts, dest, incr)
 /* Scan all the insns and delete any that are dead; i.e., they store a register
    that is never used or they copy a register to itself.
 
-   This is used to remove insns made obviously dead by cse.  It improves the
-   heuristics in loop since it won't try to move dead invariants out of loops
-   or make givs for dead quantities.  The remaining passes of the compilation
-   are also sped up.  */
+   This is used to remove insns made obviously dead by cse, loop or other
+   optimizations.  It improves the heuristics in loop since it won't try to
+   move dead invariants out of loops or make givs for dead quantities.  The
+   remaining passes of the compilation are also sped up.  */
 
 void
-delete_dead_from_cse (insns, nreg)
+delete_trivially_dead_insns (insns, nreg)
      rtx insns;
      int nreg;
 {

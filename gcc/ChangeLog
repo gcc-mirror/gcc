@@ -1,3 +1,11 @@
+Sat Apr 11 01:24:28 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* cse.c (count_reg_usage): Correctly handle REG_NONNEG notes.
+	(delete_trivially_dead_insns): Renamed from delete_dead_from_cse.
+	* toplev.c (rest_of_compilation): Call delete_trivially_dead_insns		instead of delete_dead_from_cse.  Also call delete_trivially_dead_insns
+	between loop optimization passes.
+	* rtl.h: Updated appropriately.
+
 Fri Apr 10 22:28:32 1998  Jeffrey A Law  (law@cygnus.com)
 
 	Reinstall this patch from Jason.
