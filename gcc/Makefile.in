@@ -1244,7 +1244,7 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 
 # Remake the info files.
 
-doc: $(srcdir)/cpp.info $(srcdir)/gcc.info $(srcdir)/INSTALL
+doc: $(srcdir)/cpp.info $(srcdir)/gcc.info
 
 $(srcdir)/cpp.info: cpp.texi
 	makeinfo `echo $(srcdir)/cpp.texi | sed 's,^\./,,'`
@@ -1690,7 +1690,11 @@ gcc.xtar.Z: gcc.xtar
 #	compress < gcc-$(version).tar > gcc-$(version).tar.Z
 
 #gcc-$(version).tar:
-gcc.xtar: doc c-parse.y objc-parse.y
+gcc.xtar: distdir
+# Make the distribution.
+	tar chf gcc.xtar gcc-$(version)
+
+distdir: doc $(srcdir)/INSTALL c-parse.y objc-parse.y
 	if grep -s "for version ${version}" gcc.texi; \
 	then true; \
 	else echo "You must update the version number in \`gcc.texi'"; sleep 10;\
@@ -1722,10 +1726,6 @@ gcc.xtar: doc c-parse.y objc-parse.y
 	mv tmp gcc-$(version)
 # Get rid of everything we don't want in the distribution.
 	cd gcc-$(version); make -f Makefile.in extraclean
-# Make the distribution.
-	tar chf gcc.xtar gcc-$(version)
-# Get rid of the temporary directory.
-	rm -rf gcc-$(version)
 
 # do make -f ../gcc/Makefile maketest DIR=../gcc
 # in the intended test directory to make it a suitable test directory.
