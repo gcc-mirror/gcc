@@ -1,3 +1,11 @@
+2001-09-04  Scott Johnston  <scott@accom.com>
+	    Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+	* include/backward/iterator.h: Include <bits/std_iterator.h>,
+	remove reverse_bidirectional_iterator. 
+	* testsuite/backward: New directory.
+	* testsuite/backward/header_iterator_h.cc: New file.
+	
 2001-09-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_std/bits/std_c*.h: Don't use include_next.

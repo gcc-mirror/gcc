@@ -31,7 +31,7 @@
 #include "function.h"
 #include <stddef.h>
 #include "iostream.h"
-#include "iterator.h"
+#include <bits/std_iterator.h>
 
 #include <bits/stl_construct.h>
 #include <bits/stl_raw_storage_iter.h>
@@ -80,7 +80,6 @@ using std::front_inserter;
 using std::back_inserter;
 
 using std::reverse_iterator;
-using std::reverse_bidirectional_iterator;
 
 using std::istream_iterator;
 using std::ostream_iterator;
@@ -105,7 +104,7 @@ template <class _ForwardIterator>
   inline void
   destroy(_ForwardIterator __first, _ForwardIterator __last)
   { std::_Destroy(__first, __last); }
-}
+
 
 // Names from stl_raw_storage_iter.h
 using std::raw_storage_iterator;
