@@ -2997,6 +2997,10 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 			error ("`%T::%D' is not a class-name or "
 			       "namespace-name",
 			       parser->scope, token->value);
+		      else if (parser->scope == global_namespace)
+			error ("`::%D' is not a class-name or "
+			       "namespace-name",
+			       token->value);
 		      else
 			error ("`%D::%D' is not a class-name or "
 			       "namespace-name",
