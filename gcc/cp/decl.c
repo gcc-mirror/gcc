@@ -5167,25 +5167,43 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
   else
     val = unqualified_namespace_lookup (name, flags);
 
+  /* Any other name takes precedence over an implicit typename.  Warn the
+     user about this potentially confusing lookup.  */
   if (classval && TREE_CODE (val) == TYPE_DECL
       && TREE_CODE (TREE_TYPE (val)) == TYPENAME_TYPE
       && TREE_TYPE (TREE_TYPE (val)))
     {
-      tree nsval = unqualified_namespace_lookup (name, flags);
+      if (locval == NULL_TREE)
+	locval = unqualified_namespace_lookup (name, flags);
 
-      if (val && nsval && TREE_CODE (nsval) == TYPE_DECL)
+      if (locval && val != locval)
 	{
-	  static int explained;
-	  cp_warning ("namespace-scope type `%#D'", nsval);
-	  cp_warning
-	    ("  is used instead of `%D' from dependent base class", val);
-	  if (! explained)
+	  tree subtype;
+
+	  val = locval;
+
+	  /* To avoid redundant warnings, only warn when lexing, and the
+	     decls are significantly different.  */
+	  subtype = TREE_TYPE (TREE_TYPE (classval));
+	  if (yylex
+	      && ! (TREE_CODE (locval) == TEMPLATE_DECL
+		    && CLASSTYPE_TEMPLATE_INFO (subtype)
+		    && CLASSTYPE_TI_TEMPLATE (subtype) == locval)
+	      && ! (TREE_CODE (locval) == TYPE_DECL
+		    && comptypes (TREE_TYPE (locval), subtype, 1)))
 	    {
-	      explained = 1;
-	      cp_warning ("  (use `typename %D' if that's what you meant)",
-			  val);
+	      static int explained;
+
+	      cp_warning ("lookup of `%D' finds `%#D'", name, locval);
+	      cp_warning
+		("  instead of `%D' from dependent base class", classval);
+	      if (! explained)
+		{
+		  explained = 1;
+		  cp_warning ("  (use `typename %D' if that's what you meant)",
+			      classval);
+		}
 	    }
-	  val = nsval;
 	}
     }
 
@@ -5507,7 +5525,7 @@ init_decl_processing ()
   tree string_ftype_ptr_ptr, int_ftype_string_string;
   tree sizetype_endlink;
   tree ptr_ftype, ptr_ftype_unsigned, ptr_ftype_sizetype;
-  tree void_ftype, void_ftype_int, void_ftype_ptr, ptr_ftype_void;
+  tree void_ftype, void_ftype_int, void_ftype_ptr;
 
   /* Have to make these distinct before we try using them.  */
   lang_name_cplusplus = get_identifier ("C++");
