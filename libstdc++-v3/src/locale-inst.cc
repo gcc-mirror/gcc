@@ -545,4 +545,13 @@ namespace std
 		  ios_base::fmtflags, bool);
 #endif
 #endif
+
+  template<typename _CharT>
+    void
+    __locale_cache<_CharT>::_S_callback(ios_base::event __ev, ios_base& __io, int);
+
+  template class __locale_cache<char>;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template class __locale_cache<wchar_t>;
+#endif
 } // namespace std

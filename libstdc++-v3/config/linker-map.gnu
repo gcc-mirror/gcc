@@ -30,7 +30,12 @@ GLIBCPP_3.2 {
     {
       std::[A-Za]*;
       std::ba[a-r]*;
-      std::basic_[a-r]*;
+      std::basic_[a-h]*;
+      std::basic_ifstream*;
+      std::basic_istringstream*;
+      std::basic_istream*;
+      std::basic_iostream*;
+      std::basic_[j-r]*; 
       std::basic_streambuf*;
       std::basic_stringbuf*;
       std::basic_stringstream*;
@@ -84,9 +89,16 @@ GLIBCPP_3.2 {
       std::_S_first_one
     };
 
-     _ZNSo*;
-   
     # Names not in an 'extern' block are mangled names.
+    _ZSt7getline*;
+    _ZStrs*;
+    _ZNSo*;
+    _ZNKSt9basic_ios*;
+    _ZNSt9basic_iosI[cw]St11char_traitsI[cw]EE15_M_cache_facetsERKSt6locale;
+    _ZNSt9basic_iosI[cw]St11char_traitsI[cw]EE[A-Z]*;
+    _ZNSt9basic_iosI[cw]St11char_traitsI[cw]EE[0-9][A-Za-z]*;
+    _ZNSt9basic_iosI[cw]St11char_traitsI[cw]EE[0-9][0-9][A-Za-z]*;
+
     _ZNSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEEC*;
     _ZNSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEED*;
     _ZNSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEEC*;
@@ -223,12 +235,53 @@ GLIBCPP_3.2 {
     _ZdaPvRKSt9nothrow_t;
 
     # vtable
-    _ZTV*;
-    _ZTT*;
+    _ZTVS[a-z];
+    _ZTVSt[0-9][A-Za-z]*;
+    _ZTVSt[0-9][0-9][A-Za-z]*;
+    _ZTTS[a-z];
+    _ZTTSt[0-9][A-Za-z]*;
+    _ZTTSt[0-9][0-9][A-Za-z]*;
+    _ZTVN9__gnu_cxx*;
+    _ZTVNSt6locale5facetE;
+    _ZTVSt11__timepunctI[cw]E;
+    _ZTVNSt8ios_base7failureE;
+    _ZTVSt23__codecvt_abstract_baseI[cw]c11__mbstate_tE;
+    _ZTVSt21__ctype_abstract_baseI[cw]E;
+
+    # XXX
+    _ZTVN10__cxxabi*;
 
     # typeinfo
-    _ZTI*;
-    _ZTS*;
+    _ZTI[a-z];
+    _ZTIP[a-z];
+    _ZTIPK[a-z];
+    _ZTIS[a-z];
+    _ZTISt[0-9][A-Za-z]*;
+    _ZTISt[0-9][0-9][A-Za-z]*;
+    _ZTS[a-z];
+    _ZTSS[a-z];
+    _ZTSP[a-z];
+    _ZTSPK[a-z];
+    _ZTSSt[0-9][A-Za-z]*;
+    _ZTSSt[0-9][0-9][A-Za-z]*;
+    _ZTSN9__gnu_cxx*;
+    _ZTIN9__gnu_cxx*;
+    _ZTINSt8ios_base7failureE;
+    _ZTSNSt8ios_base7failureE;
+    _ZTINSt6locale5facetE;
+    _ZTSNSt6locale5facetE;
+    _ZTISt11__timepunctI[cw]E;
+    _ZTSSt11__timepunctI[cw]E;
+    _ZTSSt10__num_base;
+    _ZTISt10__num_base;
+    _ZTSSt21__ctype_abstract_baseI[cw]E;
+    _ZTISt21__ctype_abstract_baseI[cw]E;
+    _ZTISt23__codecvt_abstract_baseI[cw]c11__mbstate_tE;
+    _ZTSSt23__codecvt_abstract_baseI[cw]c11__mbstate_tE;
+
+    # XXX
+    _ZTIN10__cxxabi*;
+    _ZTSN10__cxxabi*;
 
     # function-scope static objects requires a guard variable.
     _ZGV*;
@@ -320,6 +373,14 @@ GLIBCPP_3.2.3 {
     _ZNKSt7num_putI[wc]St19ostreambuf_iteratorI[wc]St11char_traitsI[wc]EEE14_M_group_float*;
 
   _ZNKSt7num_putI[wc]St19ostreambuf_iteratorI[wc]St11char_traitsI[wc]EEE12_M_group_int*;
+
+    # vtable
+    _ZTVSt19__locale_cache_base;
+    _ZTVSt14__locale_cacheI[cw]E;
+
+    # typeinfo    
+    _ZTSSt19__locale_cache_base;
+    _ZTISt14__locale_cacheI[cw]E;
 
 } GLIBCPP_3.2.2;
 

@@ -527,7 +527,7 @@ namespace std
   // 22.2.1.5  Template class codecvt
   #include <bits/codecvt.h>
 
- // 22.2.2  The numeric category.
+  // 22.2.2  The numeric category.
   class __num_base 
   {
   public:
@@ -1953,6 +1953,80 @@ namespace std
     inline _CharT 
     tolower(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).tolower(__c); }
+
+  // __locale_cache holds the information extracted from the
+  // numpunct<> and moneypunct<> facets in a form optimized for
+  // parsing and formatting.  To avoid breaking the 3.2 library
+  // API, it is stored in ios_base::_M_local_word[0]. as a member of basic_ios and accessed via a void* pointer in
+  // the ios_base object passed to the _get and _put facets.
+
+  // Its intent is to avoid the cost of creating a locale object and
+  // calling the virtual functions in locale facets.
+  class __locale_cache_base
+  {
+  public:
+    virtual
+    ~__locale_cache_base() {}
+  };
+
+  template<typename _CharT>
+    class __locale_cache : public __locale_cache_base
+    {
+      // Types:
+      typedef _CharT               	char_type;
+      typedef char_traits<_CharT>       traits_type;
+      typedef basic_string<_CharT>	string_type;
+
+
+    public: 
+      // Data Members:
+
+      // A list of valid numeric literals: for the standard "C" locale, this
+      // is "-+xX0123456789abcdef0123456789ABCDEF".  This array contains the
+      // chars after having been passed through the current locale's
+      // ctype<_CharT>.widen().
+      _CharT                    _M_literals[__num_base::_S_end];
+
+     
+      // The sign used to separate decimal values: for standard US
+      // locales, this would usually be: "."
+      // Abstracted from numpunct::decimal_point().
+      _CharT                    _M_decimal_point;
+
+      // The sign used to separate groups of digits into smaller
+      // strings that the eye can parse with less difficulty: for
+      // standard US locales, this would usually be: ","
+      // Abstracted from numpunct::thousands_sep().
+      _CharT                    _M_thousands_sep;
+      
+      // However the US's "false" and "true" are translated.
+      // From numpunct::truename() and numpunct::falsename(), respectively.
+      string_type 		_M_truename;
+      string_type 		_M_falsename;
+
+      // If we are checking groupings. This should be equivalent to 
+      // numpunct::groupings().size() != 0
+      bool                      _M_use_grouping;
+
+      // If we are using numpunct's groupings, this is the current grouping
+      // string in effect (from numpunct::grouping()).
+      string                    _M_grouping;
+
+      __locale_cache() : _M_use_grouping(false)
+      { };
+
+      __locale_cache&
+      operator=(const __locale_cache& __lc);
+
+
+      // Make sure the cache is built before the first use.
+      void
+      _M_init(const locale&);
+
+      // ios_base::pword callbacks come here
+      static void
+      _S_callback(ios_base::event __ev, ios_base& __io, int);
+    };
 } // namespace std
 
 #endif

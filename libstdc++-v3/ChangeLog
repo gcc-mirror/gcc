@@ -1,3 +1,38 @@
+2003-03-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/linker-map.gnu: Version.
+
+2003-03-04  Jerry Quinn  <jlquinn@optonline.net>
+
+	* include/bits/basic_ios.h:  Update copyright.
+	(_M_cache_locale): New.
+	(_M_cache_facets): Deprecate.
+	* include/bits/basic_ios.tcc (basic_ios::copyfmt): Set up locale
+        caching.
+	(basic_ios::imbue,basic_ios::init): Use _M_cache_locale.
+	(basic_ios::_M_cache_locale): New.
+	(basic_ios::_M_cache_facets): Deprecate.
+	* include/bits/ios_base.h (__locale_cache_base): Declare.
+	(ios_base::_M_cache): Define.
+	* include/bits/locale_facets.h
+	(__locale_cache_base,__locale_cache<_CharT>): New classes.
+	* include/bits/locale_facets.tcc
+	(num_put::_M_convert_int): Use locale cache literal string,
+	grouping flag, thousands separator.
+	(num_out::_M_convert_float): Use locale cache grouping flag, decimal
+        point, thousands separator.
+	(__locale_cache<_CharT>::_M_init,__locale_cache<_CharT>::_S_callback):
+        New.
+	* src/locale-inst.cc
+	(__locale_cache<_CharT>::_S_callback, __locale_cache<char>,
+	__locale_cache<wchar_t>): New.
+	
+2003-03-04  Jerry Quinn  <jlquinn@optonline.net>
+
+	* src/ios.cc (ios_base::_M_grow_words): Don't delete _M_word on
+	new failure.  Throw exception if badbit and exception mask when ix
+	>= numeric_limits<int>::max().
+
 2003-03-03  Benjamin Kosnik  <benjamin@redhat.com>
 
 	* config/linker-map.gnu (GLIBCPP_3.2.3): New.

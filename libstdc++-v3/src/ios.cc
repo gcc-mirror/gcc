@@ -253,8 +253,6 @@ namespace std
 	      { words = new _Words[newsize]; }
 	    catch (...)
 	      {
-		delete [] _M_word;
-		_M_word = 0;
 		_M_streambuf_state |= badbit;
 		if (_M_streambuf_state & _M_exception)
 		  __throw_ios_failure("ios_base::_M_grow_words failure");
@@ -271,6 +269,8 @@ namespace std
 	else
 	  {
 	    _M_streambuf_state |= badbit;
+	    if (_M_streambuf_state & _M_exception)
+	      __throw_ios_failure("ios_base::_M_grow_words failure");
 	    return _M_word_zero;
 	  }
       }
