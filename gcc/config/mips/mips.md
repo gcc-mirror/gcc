@@ -2435,6 +2435,7 @@
       return \"%(beql\\t%0,%1,.+8\\n\\tbreak\\t%2%)\";
     else
       return \"%(bne\\t%0,%1,.+12\\n\\tnop\\n\\tbreak\\t%2%)\";
+  return \"\";
 }"
   [(set_attr "type" "unknown")
    (set_attr "length" "2")])
