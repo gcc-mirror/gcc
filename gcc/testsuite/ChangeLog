@@ -1,5 +1,8 @@
 2004-06-28  Andrew Pinski  <apinski@apple.com>
 
+	* gcc.dg/pr14963.c: Remove the dg-warning as it is dected
+	by the error already.
+
 	* g++.dg/opt/ptrmem4.C: Change to compile only test.
 
 2004-06-28  Dhananjay Deshpande  <dhananjayd@kpitcummins.com>
