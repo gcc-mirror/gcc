@@ -1,3 +1,24 @@
+Fri Jan  7 19:48:04 CET 2000  Jan Hubicka  <jh@suse.cz>
+	* sbitmap.c (sbitmap_first_set_bit, sbitmap_last_set_bit): New
+	function.
+	* sbitmap.h (sbitmap_first_set_bit, sbitmap_last_set_bit): Declare.
+	* basic_block.h (FLOW_LOOP_FIRST_BLOCK): New macro.
+	(FLOW_LOOP_LAST_BLOCK): Likewise.
+
+2000-01-21  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* basic-block.h (struct loop): New fields 'first' and 'last'.
+	* flow.c (flow_loops_find): Compute loop->first and loop->last.
+	(flow_loops_dump): Use loop->first to check for NOTE_INSN_LOOP_BEG
+	and loop->last to check for NOTE_INSN_LOOP_END.
+
+Fri Jan 28 10:57:58 2000  Jason Eckhardt  <jle@cygnus.com>
+
+	* predict.c (estimate_probability): Use the new FIRST and LAST fields
+	of the loop descriptor rather than HEADER and LATCH. Also added
+	missing break statements as well making some coding style modifications
+	as suggested by Michael Hayes.
+
 2000-01-28  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (find_basic_blocks): Remove do_cleanup argument.

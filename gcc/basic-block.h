@@ -239,6 +239,14 @@ struct loop
   /* Basic block of loop pre-header or NULL if it does not exist.  */
   basic_block pre_header;
 
+  /* The first block in the loop.  This is not necessarily the same as
+     the loop header.  */
+  basic_block first;
+
+  /* The last block in the loop.  This is not necessarily the same as
+     the loop latch.  */
+  basic_block last;
+
   /* Bitmap of blocks contained within the loop.  */
   sbitmap nodes;
 
@@ -318,6 +326,8 @@ struct loop
   int exit_count;
 };
 
+#define FLOW_LOOP_FIRST_BLOCK(loop) sbitmap_first_set_bit ((loop).nodes)
+#define FLOW_LOOP_LAST_BLOCK(loop) sbitmap_last_set_bit ((loop).nodes)
 
 /* Structure to hold CFG information about natural loops within a function.  */
 struct loops
