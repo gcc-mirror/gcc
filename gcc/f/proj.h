@@ -1,5 +1,5 @@
 /* proj.h file for Gnu Fortran
-   Copyright (C) 1995, 1996, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.

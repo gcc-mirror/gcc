@@ -1,5 +1,5 @@
 /* com.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
