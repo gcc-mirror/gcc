@@ -1121,8 +1121,9 @@ build_indirect_ref (ptr, errorstring)
 	/* A de-reference of a pointer to const is not a const.  It is valid
 	   to change it via some other pointer.  */
 	TREE_READONLY (ref) = TYPE_READONLY (t);
-	TREE_SIDE_EFFECTS (ref) = TYPE_VOLATILE (t) || TREE_SIDE_EFFECTS (pointer);
-	TREE_THIS_VOLATILE (ref) = TYPE_VOLATILE (t);
+	TREE_SIDE_EFFECTS (ref)
+	  = TYPE_VOLATILE (t) || TREE_SIDE_EFFECTS (pointer) || flag_volatile;
+	TREE_THIS_VOLATILE (ref) = TYPE_VOLATILE (t) || flag_volatile;
 	return ref;
       }
   else if (TREE_CODE (pointer) != ERROR_MARK)
