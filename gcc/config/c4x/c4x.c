@@ -1037,7 +1037,7 @@ c4x_emit_move_sequence (operands, mode)
 	 address.  */
       op1 = XEXP (op1, 1);
     }
-  else if (symbolic_operand (op1, mode))
+  else if (symbolic_address_operand (op1, mode))
     {
       if (TARGET_LOAD_ADDRESS)
 	{
@@ -1072,7 +1072,7 @@ c4x_emit_move_sequence (operands, mode)
      perhaps by calling validize_address.  */
   if (! (reload_in_progress || reload_completed)
       && GET_CODE (op1) == MEM
-      && symbolic_operand (XEXP (op1, 0), Pmode))
+      && symbolic_address_operand (XEXP (op1, 0), Pmode))
     {
       rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);
       if (! TARGET_SMALL)
@@ -1083,7 +1083,7 @@ c4x_emit_move_sequence (operands, mode)
 
   if (! (reload_in_progress || reload_completed)
       && GET_CODE (op0) == MEM 
-      && symbolic_operand (XEXP (op0, 0), Pmode))
+      && symbolic_address_operand (XEXP (op0, 0), Pmode))
     {
       rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);
       if (! TARGET_SMALL)
@@ -2880,26 +2880,18 @@ rc_reg_operand (op, mode)
 
 
 int
-call_operand (op, mode)
+call_address_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  op = XEXP (op, 0);
-  switch (GET_CODE (op))
-    {
-    case SYMBOL_REF:
-    case REG:
-      return 1;
-    default:
-    }
-  return 0;
+  return (REG_P (op) || symbolic_address_operand (op, mode));
 }
 
 
 /* Symbolic operand.  */
 
 int
-symbolic_operand (op, mode)
+symbolic_address_operand (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {

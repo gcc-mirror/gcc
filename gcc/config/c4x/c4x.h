@@ -340,6 +340,11 @@ extern void c4x_optimization_options ();
 #define TARGET_FLOAT_FORMAT	C4X_FLOAT_FORMAT
 #define MAX_FIXED_MODE_SIZE	64 /* HImode */
 
+/* Number of bits in the high and low parts of a two stage
+   load of an immediate constant.  */
+#define BITS_PER_HIGH 16
+#define BITS_PER_LO_SUM 16
+
 /* Use the internal floating point stuff in the compiler and not the
    host floating point stuff. */
 
@@ -2529,7 +2534,7 @@ if (final_sequence != NULL_RTX)		\
   {"sp_reg_operand", {REG}},					\
   {"st_reg_operand", {REG}},					\
   {"rc_reg_operand", {REG}},					\
-  {"call_operand", {REG, SYMBOL_REF}},				\
+  {"call_address_operand", {REG, SYMBOL_REF, LABEL_REF, CONST}}, \
   {"src_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE}}, \
   {"src_hi_operand", {SUBREG, REG, MEM, CONST_DOUBLE}}, 	\
   {"lsrc_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE}}, \
@@ -2537,7 +2542,7 @@ if (final_sequence != NULL_RTX)		\
   {"any_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE}}, \
   {"par_ind_operand", {MEM}},					\
   {"parallel_operand", {SUBREG, REG, MEM}},			\
-  {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},		\
+  {"symbolic_address_operand", {SYMBOL_REF, LABEL_REF, CONST}},	\
   {"mem_operand", {MEM}},					
 
 
@@ -2628,7 +2633,7 @@ extern int rc_reg_operand ();
 
 extern int st_reg_operand ();
 
-extern int symbolic_operand ();
+extern int symbolic_address_operand ();
 
 extern int ar0_reg_operand ();
 
@@ -2676,7 +2681,7 @@ extern int group1_mem_operand ();
 
 extern int arx_reg_operand ();
 
-extern int call_operand ();
+extern int call_address_operand ();
 
 extern int par_ind_operand ();
 

@@ -1,3 +1,14 @@
+Tue Feb  9 11:08:41 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (call_address_operand, symbolic_address_operand):
+ 	Rename from call_operand and symbolic_operand respectively.  All
+	callers changed.
+	* config/c4x/c4x.md (call_address_operand, symbolic_address_operand): 
+	Likewise.
+	* config/c4x/c4x.h (call_address_operand, symbolic_address_operand): 
+	Likewise.
+	(PREDICATE_CODES): Allow CONST, LABEL_REF for call_address_operand.
+
 Tue Feb  9 10:52:27 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_legitimize_address): Don't generate a
