@@ -1,3 +1,8 @@
+2002-02-28  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (finish_function): Only warn about missing return
+	statement with -Wreturn-type.
+
 2002-02-24 Craig Rodrigues  <rodrigc@gcc.gnu.org> 
 
 	PR c++/4093

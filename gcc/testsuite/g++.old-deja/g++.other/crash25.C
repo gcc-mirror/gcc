@@ -9,7 +9,7 @@ public:
 
 X::x()
 {				// ERROR - 
-} // WARNING - no return
+}
 
 X::~x()
 {				// ERROR - 
