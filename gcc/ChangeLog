@@ -1,3 +1,14 @@
+2003-03-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/ia64/fde-glibc.c, config/ia64/freebsd.h, 
+	config/ia64/hpux.h, config/ia64/hpux_longdouble.h,
+	config/ia64/ia64-c.c, config/ia64/ia64-modes.def,
+	config/ia64/ia64-protos.h, config/ia64/ia64.c,
+	config/ia64/ia64.h, config/ia64/ia64.md,
+	config/ia64/itanium1.md, config/ia64/itanium2.md,
+	config/ia64/quadlib.c, config/ia64/unwind-ia64.c,
+	config/ia64/unwind-ia64.h: It's GCC, not GNU CC.
+
 2003-03-13  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (rs6000_dwarf_register_span):
