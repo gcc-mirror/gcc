@@ -1048,7 +1048,7 @@ gfc_build_function_decl (gfc_symbol * sym)
   DECL_EXTERNAL (fndecl) = 0;
 
   /* This specifies if a function is globaly addressable, ie. it is
-     the opposite of decalring static  in C.  */
+     the opposite of declaring static in C.  */
   if (DECL_CONTEXT (fndecl) == NULL_TREE || attr.external)
     TREE_PUBLIC (fndecl) = 1;
 
@@ -1094,7 +1094,7 @@ gfc_build_function_decl (gfc_symbol * sym)
 	    {
 	      gfc_allocate_lang_decl (parm);
 
-	      /* Length of character result */
+	      /* Length of character result.  */
 	      type = TREE_VALUE (typelist);
 	      assert (type == gfc_strlen_type_node);
 
@@ -1795,10 +1795,10 @@ gfc_generate_module_vars (gfc_namespace * ns)
 {
   module_namespace = ns;
 
-  /* Check the frontend left the namespace in a reasonable state.  */
+  /* Check if the frontend left the namespace in a reasonable state.  */
   assert (ns->proc_name && !ns->proc_name->tlink);
 
-  /* Create decls for all the module varuiables.  */
+  /* Create decls for all the module variables.  */
   gfc_traverse_ns (ns, gfc_create_module_variable);
 }
 
@@ -1856,7 +1856,7 @@ generate_local_decl (gfc_symbol * sym)
             warning ("unused parameter `%s'", sym->name);
         }
       /* warn for unused variables, but not if they're inside a common
-     block.  */
+	 block.  */
       else if (warn_unused_variable && !sym->attr.in_common)
         warning ("unused variable `%s'", sym->name);
     }

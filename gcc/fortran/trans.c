@@ -366,7 +366,7 @@ gfc_trans_runtime_check (tree cond, tree msg, stmtblock_t * pblock)
     }
   else
     {
-      /* Tell the compiler that this isn't likley.  */
+      /* Tell the compiler that this isn't likely.  */
       tmp = gfc_chainon_list (NULL_TREE, cond);
       tmp = gfc_chainon_list (tmp, integer_zero_node);
       cond = gfc_build_function_call (built_in_decls[BUILT_IN_EXPECT], tmp);
@@ -377,7 +377,7 @@ gfc_trans_runtime_check (tree cond, tree msg, stmtblock_t * pblock)
 }
 
 
-/* Add a statement to a bock.  */
+/* Add a statement to a block.  */
 
 void
 gfc_add_expr_to_block (stmtblock_t * block, tree expr)
@@ -409,7 +409,7 @@ gfc_add_block_to_block (stmtblock_t * block, stmtblock_t * append)
 
 
 /* Get the current locus.  The structure may not be complete, and should
-   only be used with gfc_set_current_locus.  */
+   only be used with gfc_set_backend_locus.  */
 
 void
 gfc_get_backend_locus (locus * loc)
