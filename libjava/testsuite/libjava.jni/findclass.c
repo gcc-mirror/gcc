@@ -2,7 +2,7 @@
 
 #include <findclass.h>
 
-jclass
+JNIEXPORT jclass JNICALL
 Java_findclass_doit (JNIEnv *env, jclass klass, jstring name)
 {
   const char *buf = (*env)->GetStringUTFChars (env, name, NULL);
