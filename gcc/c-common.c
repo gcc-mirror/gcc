@@ -64,15 +64,29 @@ static void add_attribute		PROTO((enum attrs, char *,
 static void init_attributes		PROTO((void));
 static void record_international_format	PROTO((tree, tree, int));
 
-/* Keep a stack of if statements.  The value recorded is the number of
-   compound statements seen up to the if keyword.  */
-static int *if_stack;
+/* Keep a stack of if statements.  We record the number of compound
+   statements seen up to the if keyword, as well as the line number
+   and file of the if.  If a potentially ambiguous else is seen, that
+   fact is recorded; the warning is issued when we can be sure that
+   the enclosing if statement does not have an else branch.  */
+typedef struct
+{
+  int compstmt_count;
+  int line;
+  char *file;
+  int needs_warning;
+} if_elt;
+
+static if_elt *if_stack;
 
 /* Amount of space in the if statement stack.  */
 static int if_stack_space = 0;
 
 /* Stack pointer.  */
 static int if_stack_pointer = 0;
+
+/* Generate RTL for the start of an if-then, and record the start of it
+   for ambiguous else detection.  */
 
 void
 c_expand_start_cond (cond, exitflag, compstmt_count)
@@ -84,37 +98,57 @@ c_expand_start_cond (cond, exitflag, compstmt_count)
   if (if_stack_space == 0)
     {
       if_stack_space = 10;
-      if_stack = (int *)xmalloc (10 * sizeof (int));
+      if_stack = (if_elt *)xmalloc (10 * sizeof (if_elt));
     }
   else if (if_stack_space == if_stack_pointer)
     {
       if_stack_space += 10;
-      if_stack = (int *)xrealloc (if_stack, if_stack_space * sizeof (int));
+      if_stack = (if_elt *)xrealloc (if_stack, if_stack_space * sizeof (if_elt));
     }
-  
+
   /* Record this if statement.  */
-  if_stack[if_stack_pointer++] = compstmt_count;
+  if_stack[if_stack_pointer].compstmt_count = compstmt_count;
+  if_stack[if_stack_pointer].file = input_filename;
+  if_stack[if_stack_pointer].line = lineno;
+  if_stack[if_stack_pointer].needs_warning = 0;
+  if_stack_pointer++;
 
   expand_start_cond (cond, exitflag);
 }
+
+/* Generate RTL for the end of an if-then.  Optionally warn if a nested
+   if statement had an ambiguous else clause.  */
 
 void
 c_expand_end_cond ()
 {
   if_stack_pointer--;
+  if (if_stack[if_stack_pointer].needs_warning)
+    warning_with_file_and_line (if_stack[if_stack_pointer].file,
+				if_stack[if_stack_pointer].line,
+				"suggest explicit braces to avoid ambiguous `else'");
   expand_end_cond ();
 }
+
+/* Generate RTL between the then-clause and the else-clause
+   of an if-then-else.  */
 
 void
 c_expand_start_else ()
 {
+  /* An ambiguous else warning must be generated for the enclosing if
+     statement, unless we see an else branch for that one, too.  */
   if (warn_parentheses
       && if_stack_pointer > 1
-      && if_stack[if_stack_pointer - 1] == if_stack[if_stack_pointer - 2])
-    warning ("suggest explicit braces to avoid ambiguous `else'");
-  
-  /* This if statement can no longer cause a dangling else.  */
-  if_stack[if_stack_pointer - 1]--;
+      && (if_stack[if_stack_pointer - 1].compstmt_count
+	  == if_stack[if_stack_pointer - 2].compstmt_count))
+    if_stack[if_stack_pointer - 2].needs_warning = 1;
+
+  /* Even if a nested if statement had an else branch, it can't be
+     ambiguous if this one also has an else.  So don't warn in that
+     case.  Also don't warn for any if statements nested in this else.  */
+  if_stack[if_stack_pointer - 1].needs_warning = 0;
+  if_stack[if_stack_pointer - 1].compstmt_count--;
 
   expand_start_else ();
 }

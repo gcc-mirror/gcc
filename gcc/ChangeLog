@@ -1,4 +1,11 @@
+Tue Feb 17 23:30:20 1998 Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
+
+	* c-common.c (c_expand_start_cond, c_expand_end_cond,
+	c_expand_start_else): Don't warn about non-ambiguous else even if
+	braces are missing.
+
 Tue Feb 17 23:56:50 1998   Robert Lipe  <robertl@dgii.com>
+
         * sco5.h (ASM_OUTPUT_DOUBLE, ASM_OUTPUT_FLOAT,
         ASM_OUTPUT_LONG_DOUBLE): Delete.   Use the ones from i386.h
         instead.
