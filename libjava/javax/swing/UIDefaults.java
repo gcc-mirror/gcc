@@ -56,7 +56,7 @@ import javax.swing.plaf.ComponentUI;
  */
 public class UIDefaults extends Hashtable
 {
-  public interface ActiveValue
+  interface ActiveValue
   {
     Object createValue(UIDefaults table);
   } // interface ActiveValue
@@ -72,7 +72,7 @@ public class UIDefaults extends Hashtable
     }
   } // class LazyInputMap
 
-  public interface LazyValue
+  interface LazyValue
   {
     Object createValue(UIDefaults table);
   } // interface LazyValue
@@ -128,7 +128,7 @@ public class UIDefaults extends Hashtable
     throw new Error("not implemented");
   }
 
-  public void putDefaults(Object[] list)
+  void putDefaults(Object[] list)
   {
     throw new Error("not implemented");
   }
@@ -193,13 +193,13 @@ public class UIDefaults extends Hashtable
     return o instanceof String ? (String) o : null;
   }
 
-  public int getInt(Object key)
+  int getInt(Object key)
   {
     Object o = get(key);
     return o instanceof Integer ? ((Integer) o).intValue() : 0;
   }
 
-  public int getInt(Object key, Locale l)
+  int getInt(Object key, Locale l)
   {
     Object o = get(key, l);
     return o instanceof Integer ? ((Integer) o).intValue() : 0;
@@ -263,12 +263,12 @@ public class UIDefaults extends Hashtable
     return p;
   }
 
-  public void addPropertyChangeListener(PropertyChangeListener l)
+  void addPropertyChangeListener(PropertyChangeListener l)
   {
     throw new Error("not implemented");
   }
 
-  public void removePropertyChangeListener(PropertyChangeListener l)
+  void removePropertyChangeListener(PropertyChangeListener l)
   {
     throw new Error("not implemented");
   }
@@ -283,17 +283,17 @@ public class UIDefaults extends Hashtable
     throw new Error("not implemented");
   }
 
-  public void addResourceBundle(String name)
+  void addResourceBundle(String name)
   {
     throw new Error("not implemented");
   }
 
-  public void removeResourceBundle(String name)
+  void removeResourceBundle(String name)
   {
     throw new Error("not implemented");
   }
 
-  public void setDefaultLocale(Locale l)
+  void setDefaultLocale(Locale l)
   {
     throw new Error("not implemented");
   }

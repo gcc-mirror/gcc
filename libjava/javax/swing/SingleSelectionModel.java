@@ -55,36 +55,36 @@ public interface SingleSelectionModel {
 	 * getSelectedIndex
 	 * @returns int
 	 */
-	public int getSelectedIndex();
+	int getSelectedIndex();
 
 	/**
 	 * setSelectedIndex
 	 * @param index TODO
 	 */
-	public void setSelectedIndex(int index);
+	void setSelectedIndex(int index);
 
 	/**
 	 * clearSelection
 	 */
-	public void clearSelection();
+	void clearSelection();
 
 	/**
 	 * isSelected
 	 * @returns boolean
 	 */
-	public boolean isSelected();
+	boolean isSelected();
 
 	/**
 	 * addChangeListener
 	 * @param listener TODO
 	 */
-	public  void addChangeListener(ChangeListener listener);
+	void addChangeListener(ChangeListener listener);
 
 	/**
 	 * removeChangeListener
 	 * @param listener TODO
 	 */
-	public void removeChangeListener(ChangeListener listener);
+	void removeChangeListener(ChangeListener listener);
 
 
 } // SingleSelectionModel

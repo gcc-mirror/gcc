@@ -56,36 +56,36 @@ public interface ComboBoxEditor {
 	 * getEditorComponent
 	 * @returns Component
 	 */
-	public Component getEditorComponent();
+	Component getEditorComponent();
 
 	/**
 	 * setItem
 	 * @param item TODO
 	 */
-	public void setItem(Object item);
+	void setItem(Object item);
 
 	/**
 	 * getItem
 	 * @returns Object
 	 */
-	public Object getItem();
+	Object getItem();
 
 	/**
 	 * selectAll
 	 */
-	public void selectAll();
+	void selectAll();
 
 	/**
 	 * addActionListener
 	 * @param listener TODO
 	 */
-	public void addActionListener(ActionListener listener);
+	void addActionListener(ActionListener listener);
 
 	/**
 	 * removeActionListener
 	 * @param listener TODO
 	 */
-	public void removeActionListener(ActionListener listener);
+	void removeActionListener(ActionListener listener);
 
 
 } // ComboBoxEditor

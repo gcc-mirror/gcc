@@ -52,55 +52,55 @@ public interface DesktopManager {
 	 * openFrame
 	 * @param frame TODO
 	 */
-	public void openFrame(JInternalFrame frame);
+	void openFrame(JInternalFrame frame);
 
 	/**
 	 * closeFrame
 	 * @param frame TODO
 	 */
-	public void closeFrame(JInternalFrame frame);
+	void closeFrame(JInternalFrame frame);
 
 	/**
 	 * maximizeFrame
 	 * @param frame TODO
 	 */
-	public void maximizeFrame(JInternalFrame frame);
+	void maximizeFrame(JInternalFrame frame);
 
 	/**
 	 * minimizeFrame
 	 * @param frame TODO
 	 */
-	public void minimizeFrame(JInternalFrame frame);
+	void minimizeFrame(JInternalFrame frame);
 
 	/**
 	 * iconifyFrame
 	 * @param frame TODO
 	 */
-	public void iconifyFrame(JInternalFrame frame);
+	void iconifyFrame(JInternalFrame frame);
 
 	/**
 	 * deiconifyFrame
 	 * @param frame TODO
 	 */
-	public void deiconifyFrame(JInternalFrame frame);
+	void deiconifyFrame(JInternalFrame frame);
 
 	/**
 	 * activateFrame
 	 * @param frame TODO
 	 */
-	public void activateFrame(JInternalFrame vframe);
+	void activateFrame(JInternalFrame vframe);
 
 	/**
 	 * deactivateFrame
 	 * @param frame TODO
 	 */
-	public void deactivateFrame(JInternalFrame frame);
+	void deactivateFrame(JInternalFrame frame);
 
 	/**
 	 * beginDraggingFrame
 	 * @param frame TODO
 	 */
-	public void beginDraggingFrame(JComponent frame);
+	void beginDraggingFrame(JComponent frame);
 
 	/**
 	 * dragFrame
@@ -108,20 +108,20 @@ public interface DesktopManager {
 	 * @param x TODO
 	 * @param y TODO
 	 */
-	public void dragFrame(JComponent frame, int x, int y);
+	void dragFrame(JComponent frame, int x, int y);
 
 	/**
 	 * endDraggingFrame
 	 * @param frame TODO
 	 */
-	public void endDraggingFrame(JComponent frame);
+	void endDraggingFrame(JComponent frame);
 
 	/**
 	 * beginResizingFrame
 	 * @param frame TODO
 	 * @param direction TODO
 	 */
-	public void beginResizingFrame(JComponent frame, int direction);
+	void beginResizingFrame(JComponent frame, int direction);
 
 	/**
 	 * resizeFrame
@@ -131,14 +131,14 @@ public interface DesktopManager {
 	 * @param width TODO
 	 * @param height TODO
 	 */
-	public void resizeFrame(JComponent frame, int x, int y, 
+	void resizeFrame(JComponent frame, int x, int y, 
 					int width, int height);
 
 	/**
 	 * endResizingFrame
 	 * @param frame TODO
 	 */
-	public void endResizingFrame(JComponent frame);
+	void endResizingFrame(JComponent frame);
 
 	/**
 	 * setBoundsForFrame
@@ -148,7 +148,7 @@ public interface DesktopManager {
 	 * @param width TODO
 	 * @param height TODO
 	 */
-	public void setBoundsForFrame(JComponent frame, int x, int y, 
+	void setBoundsForFrame(JComponent frame, int x, int y, 
 					int width, int height);
 
 

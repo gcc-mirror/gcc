@@ -55,43 +55,43 @@ public interface RootPaneContainer {
 	 * getRootPane
 	 * @returns JRootPane
 	 */
-	public JRootPane getRootPane();
+	JRootPane getRootPane();
 
 	/**
 	 * setContentPane
 	 * @param contentPane TODO
 	 */
-	public void setContentPane(Container contentPane);
+	void setContentPane(Container contentPane);
 
 	/**
 	 * getContentPane
 	 * @returns Container
 	 */
-	public Container getContentPane();
+	Container getContentPane();
 
 	/**
 	 * setLayeredPane
 	 * @param layeredPane TODO
 	 */
-	public void setLayeredPane(JLayeredPane layeredPane);
+	void setLayeredPane(JLayeredPane layeredPane);
 
 	/**
 	 * getLayeredPane
 	 * @returns JLayeredPane
 	 */
-	public JLayeredPane getLayeredPane();
+	JLayeredPane getLayeredPane();
 
 	/**
 	 * setGlassPane
 	 * @param glassPane TODO
 	 */
-	public void setGlassPane(Component glassPane);
+	void setGlassPane(Component glassPane);
 
 	/**
 	 * getGlassPane
 	 * @returns Component
 	 */
-	public Component getGlassPane();
+	Component getGlassPane();
 
 
 } // RootPaneContainer

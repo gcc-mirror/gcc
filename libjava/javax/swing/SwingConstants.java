@@ -40,25 +40,25 @@ package javax.swing;
 
 public interface SwingConstants
 {
-    public static final int CENTER       = 0;
-    public static final int TOP          = 1;
-    public static final int LEFT         = 2;
-    public static final int BOTTOM       = 3;
-    public static final int RIGHT        = 4;
+  int CENTER       = 0;
+  int TOP          = 1;
+  int LEFT         = 2;
+  int BOTTOM       = 3;
+  int RIGHT        = 4;
     
-    public static final int NORTH        = 1;
-    public static final int NORTH_EAST   = 2;
-    public static final int EAST         = 3;
-    public static final int SOUTH_EAST   = 4;
-    public static final int SOUTH        = 5;
-    public static final int SOUTH_WEST   = 6;
-    public static final int WEST         = 7;
-    public static final int NORTH_WEST   = 8;
+  int NORTH        = 1;
+  int NORTH_EAST   = 2;
+  int EAST         = 3;
+  int SOUTH_EAST   = 4;
+  int SOUTH        = 5;
+  int SOUTH_WEST   = 6;
+  int WEST         = 7;
+  int NORTH_WEST   = 8;
     
-    public static final int HORIZONTAL   = 0;
-    public static final int VERTICAL     = 1; 
+  int HORIZONTAL   = 0;
+  int VERTICAL     = 1; 
     
-    public static final int LEADING      = 10;
-    public static final int TRAILING     = 11;
+  int LEADING      = 10;
+  int TRAILING     = 11;
 }
 

@@ -44,7 +44,7 @@ import java.awt.Insets;
 
 
 /**
- * An interface for decorative or spacing borders around a Component.
+ * An public interface for decorative or spacing borders around a Component.
  *
  * <p>To reduce memory consumption, several Components may share a
  * single Border instance. {@link javax.swing.BorderFactory} is a
@@ -77,7 +77,7 @@ public interface Border
    * @param width the width of the available area for painting the border.
    * @param height the height of the available area for painting the border.
    */
-  public void paintBorder(Component c, Graphics g,
+  void paintBorder(Component c, Graphics g,
                           int x, int y, int width, int height);
   
   
@@ -90,7 +90,7 @@ public interface Border
    *         <code>top</code> and <code>bottom</code> fields indicate the
    *         width of the border at the respective edge.
    */
-  public Insets getBorderInsets(Component c);
+  Insets getBorderInsets(Component c);
   
   
   /**
@@ -101,5 +101,5 @@ public interface Border
    *         <code>false</code> if some pixels of the background
    *         can shine through the border.
    */
-  public boolean isBorderOpaque();
+  boolean isBorderOpaque();
 }

@@ -42,9 +42,9 @@ import javax.swing.event.ListSelectionListener;
 
 public interface ListSelectionModel
 {
-    final static int SINGLE_SELECTION = 0;
-    final static int SINGLE_INTERVAL_SELECTION = 1;
-    final static int MULTIPLE_INTERVAL_SELECTION = 1;
+    int SINGLE_SELECTION = 0;
+    int SINGLE_INTERVAL_SELECTION = 1;
+    int MULTIPLE_INTERVAL_SELECTION = 1;
 
     void setSelectionMode(int a);
     int getSelectionMode();

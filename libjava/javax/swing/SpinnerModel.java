@@ -45,10 +45,10 @@ import javax.swing.event.ChangeListener;
  */
 public interface SpinnerModel
 {
-  public void setValue (Object value);
+  void setValue (Object value);
   public Object getValue ();
   public Object getNextValue ();
   public Object getPreviousValue ();
-  public void addChangeListener (ChangeListener listener);
-  public void removeChangeListener (ChangeListener listener);
+  void addChangeListener (ChangeListener listener);
+  void removeChangeListener (ChangeListener listener);
 }

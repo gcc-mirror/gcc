@@ -52,26 +52,26 @@ public interface MutableComboBoxModel extends ComboBoxModel {
 	 * addElement
 	 * @param object TODO
 	 */
-	public void addElement(Object object);
+	void addElement(Object object);
 
 	/**
 	 * removeElementAt
 	 * @param index TODO
 	 */
-	public void removeElementAt(int index);
+	void removeElementAt(int index);
 
 	/**
 	 * insertElementAt
 	 * @param object TODO
 	 * @param index TODO
 	 */
-	public void insertElementAt(Object object, int index);
+	void insertElementAt(Object object, int index);
 
 	/**
 	 * removeElement
 	 * @param object TODO
 	 */
-	public void removeElement(Object object);
+	void removeElement(Object object);
 
 
 } // MutableComboBoxModel

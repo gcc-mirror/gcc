@@ -41,7 +41,7 @@ import java.awt.*;
 
 public interface ListCellRenderer
 {
-    public Component getListCellRendererComponent(JList list,
+    Component getListCellRendererComponent(JList list,
 						  Object value,
 						  int index,
 						  boolean isSelected,

@@ -52,13 +52,13 @@ public interface ComboBoxModel extends ListModel {
 	 * setSelectedItem
 	 * @param item TODO
 	 */
-	public void setSelectedItem(Object item);
+	void setSelectedItem(Object item);
 
 	/**
 	 * getSelectedItem
 	 * @returns Object
 	 */
-	public Object getSelectedItem();
+	Object getSelectedItem();
 
 
 } // ComboBoxModel
