@@ -1055,8 +1055,11 @@ struct cumulative_args { int ints, floats; };
 /* This is how to output an internal numbered label which
    labels a jump table.  */
 
-#define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,JUMPTABLE)	\
-  fprintf (FILE, "\t.align\t4\n.%s%d:\n", PREFIX, NUM)
+#undef ASM_OUTPUT_CASE_LABEL
+#define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)		\
+do { ASM_OUTPUT_ALIGN ((FILE), 2);					\
+     ASM_OUTPUT_INTERNAL_LABEL ((FILE), PREFIX, NUM);			\
+   } while (0)
 
 /* Output at the end of a jump table.  */
 
