@@ -1,3 +1,9 @@
+2002-02-28  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c (ia64_adjust_cost): All non-MM consumers have
+	4 cycle latency from MM producers.
+	(ia64_internal_sched_reorder): Likewise with pipeline flush.
+
 2002-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* mklibgcc.in: Don't use GNU make extension.

@@ -5348,6 +5348,7 @@ ia64_adjust_cost (insn, link, dep_insn, cost)
       if (reg_overlap_mentioned_p (SET_DEST (set), addr))
 	return cost + 1;
     }
+
   if ((dep_class == ITANIUM_CLASS_IALU
        || dep_class == ITANIUM_CLASS_ILOG
        || dep_class == ITANIUM_CLASS_LD)
@@ -5355,25 +5356,28 @@ ia64_adjust_cost (insn, link, dep_insn, cost)
 	  || insn_class == ITANIUM_CLASS_MMSHF
 	  || insn_class == ITANIUM_CLASS_MMSHFI))
     return 3;
+
   if (dep_class == ITANIUM_CLASS_FMAC
       && (insn_class == ITANIUM_CLASS_FMISC
 	  || insn_class == ITANIUM_CLASS_FCVTFX
 	  || insn_class == ITANIUM_CLASS_XMPY))
     return 7;
+
   if ((dep_class == ITANIUM_CLASS_FMAC
        || dep_class == ITANIUM_CLASS_FMISC
        || dep_class == ITANIUM_CLASS_FCVTFX
        || dep_class == ITANIUM_CLASS_XMPY)
       && insn_class == ITANIUM_CLASS_STF)
     return 8;
+
+  /* Intel docs say only LD, ST, IALU, ILOG, ISHF consumers have latency 4,
+     but HP engineers say any non-MM operation.  */
   if ((dep_class == ITANIUM_CLASS_MMMUL
        || dep_class == ITANIUM_CLASS_MMSHF
        || dep_class == ITANIUM_CLASS_MMSHFI)
-      && (insn_class == ITANIUM_CLASS_LD
-	  || insn_class == ITANIUM_CLASS_ST
-	  || insn_class == ITANIUM_CLASS_IALU
-	  || insn_class == ITANIUM_CLASS_ILOG
-	  || insn_class == ITANIUM_CLASS_ISHF))
+      && insn_class != ITANIUM_CLASS_MMMUL
+      && insn_class != ITANIUM_CLASS_MMSHF
+      && insn_class != ITANIUM_CLASS_MMSHFI)
     return 4;
 
   return cost;
@@ -6185,31 +6189,34 @@ ia64_internal_sched_reorder (dump, sched_verbose, ready, pn_ready,
       dump_current_packet (dump);
     }
 
+  /* Work around the pipeline flush that will occurr if the results of
+     an MM instruction are accessed before the result is ready.  Intel
+     documentation says this only happens with IALU, ISHF, ILOG, LD,
+     and ST consumers, but experimental evidence shows that *any* non-MM
+     type instruction will incurr the flush.  */
   if (reorder_type == 0 && clock_var > 0 && ia64_final_schedule)
     {
       for (insnp = ready; insnp < e_ready; insnp++)
 	{
-	  rtx insn = *insnp;
+	  rtx insn = *insnp, link;
 	  enum attr_itanium_class t = ia64_safe_itanium_class (insn);
-	  if (t == ITANIUM_CLASS_IALU || t == ITANIUM_CLASS_ISHF
-	      || t == ITANIUM_CLASS_ILOG
-	      || t == ITANIUM_CLASS_LD || t == ITANIUM_CLASS_ST)
-	    {
-	      rtx link;
-	      for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
-		if (REG_NOTE_KIND (link) != REG_DEP_OUTPUT
-		    && REG_NOTE_KIND (link) != REG_DEP_ANTI)
+
+	  if (t == ITANIUM_CLASS_MMMUL
+	      || t == ITANIUM_CLASS_MMSHF
+	      || t == ITANIUM_CLASS_MMSHFI)
+	    continue;
+
+	  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
+	    if (REG_NOTE_KIND (link) == 0)
+	      {
+		rtx other = XEXP (link, 0);
+		enum attr_itanium_class t0 = ia64_safe_itanium_class (other);
+		if (t0 == ITANIUM_CLASS_MMSHF || t0 == ITANIUM_CLASS_MMMUL)
 		  {
-		    rtx other = XEXP (link, 0);
-		    enum attr_itanium_class t0 = ia64_safe_itanium_class (other);
-		    if (t0 == ITANIUM_CLASS_MMSHF
-			|| t0 == ITANIUM_CLASS_MMMUL)
-		      {
-			nop_cycles_until (clock_var, sched_verbose ? dump : NULL);
-			goto out;
-		      }
+		    nop_cycles_until (clock_var, sched_verbose ? dump : NULL);
+		    goto out;
 		  }
-	    }
+	      }
 	}
     }
  out:
