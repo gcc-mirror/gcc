@@ -4998,11 +4998,6 @@ init_decl_processing ()
   TREE_TYPE (null_pointer_node) = build_pointer_type (void_type_node);
   layout_type (TREE_TYPE (null_pointer_node));
      
-  if (flag_ansi)
-    TREE_TYPE (null_node) = type_for_size (POINTER_SIZE, 0);
-  else
-    TREE_TYPE (null_node) = build_pointer_type (void_type_node);
-
   /* Used for expressions that do nothing, but are not errors.  */
   void_zero_node = build_int_2 (0, 0);
   TREE_TYPE (void_zero_node) = void_type_node;
@@ -5315,7 +5310,14 @@ init_decl_processing ()
   TYPE_MODE (unknown_type_node) = TYPE_MODE (void_type_node);
   /* Indirecting an UNKNOWN_TYPE node yields an UNKNOWN_TYPE node.  */
   TREE_TYPE (unknown_type_node) = unknown_type_node;
-  /* Looking up TYPE_POINTER_TO and TYPE_REFERENCE_TO yield the same result.  */
+
+  if (flag_ansi)
+    TREE_TYPE (null_node) = type_for_size (POINTER_SIZE, 0);
+  else
+    TREE_TYPE (null_node) = build_pointer_type (unknown_type_node);
+
+  /* Looking up TYPE_POINTER_TO and TYPE_REFERENCE_TO yield the same
+     result.  */
   TYPE_POINTER_TO (unknown_type_node) = unknown_type_node;
   TYPE_REFERENCE_TO (unknown_type_node) = unknown_type_node;
 

@@ -451,6 +451,10 @@ common_type (t1, t2)
 	  target = tt1;
 	else if (tt1 == void_type_node || tt2 == void_type_node)
 	  target = void_type_node;
+	else if (tt1 == unknown_type_node)
+	  target = tt2;
+	else if (tt2 == unknown_type_node)
+	  target = tt1;
 	else
 	  target = common_type (tt1, tt2);
 
@@ -871,7 +875,10 @@ comp_target_types (ttl, ttr, nptrs)
 
       if (nptrs > 0)
 	{
-	  if (TREE_CODE (ttl) == VOID_TYPE
+	  if (TREE_CODE (ttl) == UNKNOWN_TYPE
+	      || TREE_CODE (ttr) == UNKNOWN_TYPE)
+	    return 1;
+	  else if (TREE_CODE (ttl) == VOID_TYPE
 		   && TREE_CODE (ttr) != FUNCTION_TYPE
 		   && TREE_CODE (ttr) != METHOD_TYPE
 		   && TREE_CODE (ttr) != OFFSET_TYPE)
