@@ -140,12 +140,10 @@ namespace std
       //@{
       /**
        *  @if maint
-       *  These are non-standard types.
+       *  This is a non-standard type.
        *  @endif
       */
-      typedef ctype<char_type>           		__ctype_type;
       typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
-      typedef typename traits_type::state_type 		__state_type;
       //@}
       
       friend class basic_ios<char_type, traits_type>;
