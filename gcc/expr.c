@@ -4992,8 +4992,9 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	    align >>= 1;
 
 	  emit_block_move (target, temp,
-			   GEN_INT ((bitsize + BITS_PER_UNIT - 1)
-				    / BITS_PER_UNIT),
+			   bitsize == -1 ? expr_size (exp)
+			   : GEN_INT ((bitsize + BITS_PER_UNIT - 1)
+				      / BITS_PER_UNIT),
 			   align);
 
 	  return value_mode == VOIDmode ? const0_rtx : target;
@@ -6927,8 +6928,9 @@ expand_expr (exp, target, tmode, modifier)
 		  target = assign_temp (type, 0, 1, 1);
 
 		emit_block_move (target, op0,
-				 GEN_INT ((bitsize + BITS_PER_UNIT - 1)
-					  / BITS_PER_UNIT),
+				 bitsize == -1 ? expr_size  (exp)
+				 : GEN_INT ((bitsize + BITS_PER_UNIT - 1)
+					    / BITS_PER_UNIT),
 				 BITS_PER_UNIT);
 
 		return target;

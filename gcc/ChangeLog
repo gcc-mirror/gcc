@@ -1,3 +1,8 @@
+Sun Sep 24 09:15:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_field): If BITSIZE is negative, use size of type.
+	(expand_expr, case COMPONENT_EXPR): Likewise.
+
 Sun 24-Sep-2000 11:40:23 BST  Neil Booth  <NeilB@earthling.net>
 
 	* cpplex.c: Update TODO comment.
