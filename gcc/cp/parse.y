@@ -1217,7 +1217,10 @@ new_initializer:
 		{
 		  if (pedantic)
 		    pedwarn ("ANSI C++ forbids initialization of new expression with `='");
-		  $$ = $2;
+		  if (TREE_CODE ($2) != TREE_LIST)
+		    $$ = build_expr_list (NULL_TREE, $2);
+		  else
+		    $$ = $2;
 		}
 	;
 
