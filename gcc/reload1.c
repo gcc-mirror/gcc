@@ -4156,10 +4156,22 @@ reload_reg_free_p (regno, opnum, type)
   switch (type)
     {
     case RELOAD_OTHER:
-      /* In use for anything means not available for a RELOAD_OTHER.  */
-      return ! TEST_HARD_REG_BIT (reload_reg_used_at_all, regno);
+      /* In use for anything except RELOAD_FOR_OTHER_ADDRESS means
+	 we can't use it for RELOAD_OTHER.  */
+      if (TEST_HARD_REG_BIT (reload_reg_used, regno)
+	  || TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno)
+	  || TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno))
+	return 0;
 
-      /* The other kinds of use can sometimes share a register.  */
+      for (i = 0; i < reload_n_operands; i++)
+	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
+	  return 0;
+
+      return 1;
+
     case RELOAD_FOR_INPUT:
       if (TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno)
 	  || TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno))
