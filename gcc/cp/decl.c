@@ -11393,11 +11393,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    /* 9.2p13 [class.mem] */
 	    if (declarator == constructor_name (current_class_type)
-		/* Divergence from the standard:  In extern "C", we
-		   allow non-static data members here, because C does
-		   and /usr/include/netinet/in.h uses that.  */
-		&& (staticp || ! in_system_header))
-	      cp_pedwarn ("ISO C++ forbids data member `%D' with same name as enclosing class",
+		/* The standard does not allow non-static data members
+		   here either, but we agreed at the 10/99 meeting
+		   to change that in TC 1 so that they are allowed in
+		   classes with no user-defined constructors.  */
+		&& staticp)
+	      cp_pedwarn ("ISO C++ forbids static data member `%D' with same name as enclosing class",
 			  declarator);
 
 	    if (staticp)

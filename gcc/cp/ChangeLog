@@ -1,3 +1,8 @@
+2000-05-10  Jason Merrill  <jason@casey.cygnus.com>
+
+	* decl.c (grokdeclarator): Allow non-static data members with
+	same name as class.
+
 2000-05-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cp-tree.h: Constify tree_srcloc.filename, tinst_level.file,
