@@ -1,3 +1,65 @@
+2000-04-05  Alex Samuel  <samuel@codesourcery.com>
+
+	* rtl.h (INSN_P): New macro.
+	(successor_phi_fn): New typedef.
+	(for_each_successor_phi): New prototype.
+	(in_ssa_form): New variable.
+	(PHI_NODE_P): Likewise.
+	* flow.c (calculate_global_regs_live): Add to new_live_at_end from
+	phi nodes in successors.
+	(mark_used_regs): Add PHI case.
+	(set_phi_alternative_reg): New function.
+	(life_analysis): Assert that dead code elimination is not selected
+	when in SSA form.
+	* toplev.c (to_ssa_time): New variable.
+	(from_ssa_time): Likewise.
+	(compile_file): Zero to_ssa_time and from_ssa_time.
+	Print time to convert to and from SSA.
+	(rest_of_compilation): Time convert_to_ssa and convert_from_ssa.
+	(print_time): Compute percent fraction as integer.
+	* ssa.c (PHI_NODE_P): Moved to rtl.h.
+	(convert_to_ssa): Check if we're already in SSA.  
+	Don't eliminate dead code in life_analysis.
+	Rerun flow and life analysis at bottom.
+	(eliminate_phi): Use canonical regnos when adding nodes.
+	(mark_reg_in_phi): New function.
+	(mark_phi_and_copy_regs): Likewise.
+	(convert_from_ssa): Rerun life analysis at top.  
+	Use coalesced partition.
+	Check for removing a phi node at the end of the block.
+	(compute_coalesced_reg_partition): New function.
+	(coalesce_regs_in_copies): Likewise.
+	(coalesce_reg_in_phi): Likewise.
+	(coalesce_regs_in_sucessor_phi_nodes): Likewise.
+	(for_each_successor_phi): Likewise.
+	(rename_context): New struct.
+	(rename_block): Use a rename_context with rename_insn_1.  When
+	renaming sets of a subreg, emit a copy of the entire reg first.
+	(rename_insn_1): Treat data as a rename_context *.  Save current
+	insn in set_data.
+	(rename_set_data): Add field set_insn.
+	* Makefile.in (HASHTAB_H): Move up in file.
+	(OBSTACK_H): New macro.
+	(collect2.o): Use OBSTACK_H in dependencies.
+	(sdbout.o): Likewise.
+	(emit-rtl.o): Likewise.
+	(simplify-rtx.o): Likewise.
+	(fix-header.o): Likewise.
+	(OBJS):	Add conflict.o.
+	(conflict.o): New rule.
+	* basic-block.h: Include partition.h.
+	(conflict_graph): New typedef.
+	(conflict_graph_enum_fn): Likewise.
+	(conflict_graph_new): New prototype.
+	(conflict_graph_delete): Likewise.
+	(conflict_graph_add): Likewise.
+	(conflict_graph_conflict_p): Likewise.
+	(conflict_graph_enum): Likewise.
+	(conflict_graph_merge_regs): Likewise.
+	(conflict_graph_print): Likewise.
+	(conflict_graph_compute): Likewise.
+	* conflict.c: New file.
+
 2000-04-06  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tlink.c (read_repo_files): Don't look for .rpo info for
