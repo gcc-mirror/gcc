@@ -11582,21 +11582,6 @@ java_complete_lhs (node)
       TREE_TYPE (node) = TREE_TYPE (TREE_OPERAND (node, 0));
       return node;
 
-    case CLEANUP_POINT_EXPR:
-      COMPLETE_CHECK_OP_0 (node);
-      TREE_TYPE (node) = void_type_node;
-      CAN_COMPLETE_NORMALLY (node) = 
-	CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0));
-      return node;
-
-    case WITH_CLEANUP_EXPR:
-      COMPLETE_CHECK_OP_0 (node);
-      COMPLETE_CHECK_OP_1 (node);
-      CAN_COMPLETE_NORMALLY (node) = 
-	CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0));
-      TREE_TYPE (node) = void_type_node;
-      return node;
-
     case LABELED_BLOCK_EXPR:
       PUSH_LABELED_BLOCK (node);
       if (LABELED_BLOCK_BODY (node))
@@ -15690,13 +15675,9 @@ patch_synchronized_statement (node, wfl_op1)
   CAN_COMPLETE_NORMALLY (exit) = 1;
   assignment = build (MODIFY_EXPR, NULL_TREE, expr_decl, expr);
   TREE_SIDE_EFFECTS (assignment) = 1;
-  node = build1 (CLEANUP_POINT_EXPR, NULL_TREE,
-		 build (COMPOUND_EXPR, NULL_TREE,
-			build (WITH_CLEANUP_EXPR, NULL_TREE,
-			       build (COMPOUND_EXPR, NULL_TREE,
-				      assignment, enter),
-			       exit, NULL_TREE),
-			block));
+  node = build (COMPOUND_EXPR, NULL_TREE,
+		build (COMPOUND_EXPR, NULL_TREE, assignment, enter),
+		build (TRY_FINALLY_EXPR, NULL_TREE, block, exit));
   node = build_expr_block (node, expr_decl);
 
   return java_complete_tree (node);

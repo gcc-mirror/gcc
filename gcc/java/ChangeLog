@@ -1,5 +1,13 @@
 2001-10-11  Per Bothner  <per@bothner.com>
 
+	* parse.y (patch_synchronized_statement):  Use a TRY_FINALLY_EXPR
+	rather than a CLEANUP_POINT_EXPR/WITH_CLEANUP_EXPR pair.
+	The former is simpler, and jcf-write.c handles it better.
+	(java_complete_lhs):  No longer need to handle CLEANUP_POINT_EXPR
+	or WITH_CLEANUP_EXPR.
+	* jcf-write.c:  Revert Alex's change from 2000-10-18.  It is no
+	longer needed, as we already handle empty TRY_FINALLY_EXPR bodies fine.
+
 	* parse.y (patch_if_else_statement):  If the condition is constant,
 	optimize away the test.
 
