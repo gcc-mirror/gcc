@@ -170,6 +170,7 @@ int have_constraints;
 
 static int have_error;
 
+static char * name_for_index PROTO((int));
 static void output_prologue PROTO((void));
 static void output_epilogue PROTO((void));
 static void scan_operands PROTO((rtx, int, int));
@@ -181,6 +182,29 @@ static void gen_expand PROTO((rtx));
 static void gen_split PROTO((rtx));
 static int n_occurrences PROTO((int, char *));
 
+static char *
+name_for_index (index)
+     int index;
+{
+  static char buf[100];
+
+  struct data *i, *last_named = NULL;
+  for (i = insn_data; i ; i = i->next)
+    {
+      if (i->index_number == index)
+	return i->name;
+      if (i->name)
+	last_named = i;
+    }
+
+  if (last_named)
+    sprintf(buf, "%s+%d", last_named->name, index - last_named->index_number);
+  else
+    sprintf(buf, "insn %d", index);
+
+  return buf;
+}
+
 static void
 output_prologue ()
 {
@@ -440,13 +464,13 @@ scan_operands (part, this_address_p, this_strict_low)
 	max_opno = opno;
       if (max_opno >= MAX_MAX_OPERANDS)
 	{
-	  error ("Too many operands (%d) in definition %d.\n",
-		 max_opno + 1, next_index_number);
+	  error ("Too many operands (%d) in definition %s.\n",
+		 max_opno + 1, name_for_index (next_index_number));
 	  return;
 	}
       if (seen[opno])
-	error ("Definition %d specified operand number %d more than once.\n",
-	       next_index_number, opno);
+	error ("Definition %s specified operand number %d more than once.\n",
+	       name_for_index (next_index_number), opno);
       seen[opno] = 1;
       modes[opno] = GET_MODE (part);
       strict_low[opno] = this_strict_low;
@@ -466,13 +490,13 @@ scan_operands (part, this_address_p, this_strict_low)
 	max_opno = opno;
       if (max_opno >= MAX_MAX_OPERANDS)
 	{
-	  error ("Too many operands (%d) in definition %d.\n",
-		 max_opno + 1, next_index_number);
+	  error ("Too many operands (%d) in definition %s.\n",
+		 max_opno + 1, name_for_index (next_index_number));
 	  return;
 	}
       if (seen[opno])
-	error ("Definition %d specified operand number %d more than once.\n",
-	       next_index_number, opno);
+	error ("Definition %s specified operand number %d more than once.\n",
+	       name_for_index (next_index_number), opno);
       seen[opno] = 1;
       modes[opno] = GET_MODE (part);
       strict_low[opno] = 0;
@@ -493,13 +517,13 @@ scan_operands (part, this_address_p, this_strict_low)
 	max_opno = opno;
       if (max_opno >= MAX_MAX_OPERANDS)
 	{
-	  error ("Too many operands (%d) in definition %d.\n",
-		 max_opno + 1, next_index_number);
+	  error ("Too many operands (%d) in definition %s.\n",
+		 max_opno + 1, name_for_index (next_index_number));
 	  return;
 	}
       if (seen[opno])
-	error ("Definition %d specified operand number %d more than once.\n",
-	       next_index_number, opno);
+	error ("Definition %s specified operand number %d more than once.\n",
+	       name_for_index (next_index_number), opno);
       seen[opno] = 1;
       modes[opno] = GET_MODE (part);
       strict_low[opno] = 0;
@@ -644,8 +668,8 @@ validate_insn_alternatives (d)
 	if (n == 0)
 	  n = d->op_n_alternatives[start];
 	else if (n != d->op_n_alternatives[start])
-	  error ("wrong number of alternatives in operand %d of insn number %d",
-		 start, d->index_number);
+	  error ("wrong number of alternatives in operand %d of insn %s",
+		 start, name_for_index (d->index_number));
       }
   /* Record the insn's overall number of alternatives.  */
   d->n_alternatives = n;

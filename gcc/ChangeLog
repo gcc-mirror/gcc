@@ -1,3 +1,11 @@
+Tue Jan 19 16:56:03 1999  Richard Henderson  <rth@cygnus.com>
+
+	* genoutput.c (name_for_index): New function.
+	(scan_operands, validate_insn_alternatives): Use it.
+	* genrecog.c (insn_name_ptr_size): New variable.
+	(make_insn_sequence): Fill in insn_name_ptr.
+	(merge_trees): Use it.
+
 Tue Jan 19 16:37:36 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386/isc.h (TARGET_DEFAULT): Define symbolicly.

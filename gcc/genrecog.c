@@ -60,8 +60,9 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
+/* Holds an array of names indexed by insn_code_number.  */
 char **insn_name_ptr = 0;
+int insn_name_ptr_size = 0;
 
 /* Data structure for a listhead of decision trees.  The alternatives
    to a node are kept in a doublely-linked list so we can easily add nodes
@@ -209,6 +210,37 @@ make_insn_sequence (insn, type)
   char *c_test = XSTR (insn, type == RECOG ? 2 : 1);
   struct decision *last;
   struct decision_head head;
+
+  {
+    static char *last_real_name = "insn";
+    static int last_real_code = 0;
+    char *name;
+
+    if (insn_name_ptr_size <= next_insn_code)
+      {
+	int new_size;
+	new_size = (insn_name_ptr_size ? insn_name_ptr_size * 2 : 512);
+	insn_name_ptr = xrealloc (insn_name_ptr, sizeof(char *) * new_size);
+	bzero (insn_name_ptr + insn_name_ptr_size,
+	       sizeof(char *) * (new_size - insn_name_ptr_size));
+	insn_name_ptr_size = new_size;
+      }
+
+    name = XSTR (insn, 0);
+    if (!name || name[0] == '\0')
+      {
+	name = xmalloc (strlen (last_real_name) + 10);
+	sprintf (name, "%s+%d", last_real_name,
+		 next_insn_code - last_real_code);
+      }
+    else
+      {
+	last_real_name = name;
+	last_real_code = next_insn_code;
+      }
+  
+    insn_name_ptr[next_insn_code] = name;
+  }  
 
   if (XVECLEN (insn, type == RECOG) == 1)
     x = XVECEXP (insn, type == RECOG, 0);
@@ -896,7 +928,11 @@ merge_trees (oldh, addh)
 		      old->num_clobbers_to_add = 0;
 		    }
 		  else
-		    fatal ("Two actions at one point in tree");
+		    fatal ("Two actions at one point in tree for insns \"%s\" (%d) and \"%s\" (%d)",
+			   insn_name_ptr[old->insn_code_number],
+			   old->insn_code_number,
+			   insn_name_ptr[add->insn_code_number],
+			   add->insn_code_number);
 		}
 
 	      if (old->insn_code_number == -1)
