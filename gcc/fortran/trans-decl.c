@@ -1728,7 +1728,6 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	      assert (sym->attr.dummy);
 
 	      /* We should always pass assumed size arrays the g77 way.  */
-	      assert (TREE_CODE (sym->backend_decl) == PARM_DECL);
 	      fnbody = gfc_trans_g77_array (sym, fnbody);
               break;
 
