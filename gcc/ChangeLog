@@ -1,5 +1,10 @@
 2004-01-27  Zack Weinberg  <zack@codesourcery.com>
 
+	* doc/rtl.texi (Arithmetic): Rewrite entries for PLUS,
+	SS_PLUS, US_PLUS, LO_SUM, MINUS, SS_MINUS, US_MINUS.
+
+2004-01-27  Zack Weinberg  <zack@codesourcery.com>
+
 	PR 7198
 	* config/ia64/ia64.md (*nmaddsf4, *nmadddf4, *nmadddf4_alts)
 	(*nmadddf4_trunc, *nmaddxf4, *nmaddxf4_truncsf, *nmaddxf4_truncdf)

@@ -1749,51 +1749,53 @@ second operand.
 
 @table @code
 @findex plus
-@cindex RTL addition
+@findex ss_plus
+@findex us_plus
 @cindex RTL sum
+@cindex RTL addition
+@cindex RTL addition with signed saturation
+@cindex RTL addition with unsigned saturation
 @item (plus:@var{m} @var{x} @var{y})
-Represents the sum of the values represented by @var{x} and @var{y}
-carried out in machine mode @var{m}.
+@itemx (ss_plus:@var{m} @var{x} @var{y})
+@itemx (us_plus:@var{m} @var{x} @var{y})
+
+These three expressions all represent the sum of the values
+represented by @var{x} and @var{y} carried out in machine mode
+@var{m}.  They differ in their behavior on overflow of integer modes.
+@code{plus} wraps round modulo the width of @var{m}; @code{ss_plus}
+saturates at the maximum signed value representable in @var{m};
+@code{us_plus} saturates at the maximum unsigned value.
+
+@c ??? What happens on overflow of floating point modes?
 
 @findex lo_sum
 @item (lo_sum:@var{m} @var{x} @var{y})
-Like @code{plus}, except that it represents that sum of @var{x} and the
-low-order bits of @var{y}.  The number of low order bits is
-machine-dependent but is normally the number of bits in a @code{Pmode}
-item minus the number of bits set by the @code{high} code
-(@pxref{Constants}).
+
+This expression represents the sum of @var{x} and the low-order bits
+of @var{y}.  It is used with @code{high} (@pxref{Constants}) to
+represent the typical two-instruction sequence used in RISC machines
+to reference a global memory location.  
+
+The number of low order bits is machine-dependent but is
+normally the number of bits in a @code{Pmode} item minus the number of
+bits set by @code{high}.
 
 @var{m} should be @code{Pmode}.
 
 @findex minus
-@cindex RTL subtraction
-@cindex RTL difference
-@item (minus:@var{m} @var{x} @var{y})
-Like @code{plus} but represents subtraction.
-
-@findex ss_plus
-@cindex RTL addition with signed saturation
-@item (ss_plus:@var{m} @var{x} @var{y})
-
-Like @code{plus}, but using signed saturation in case of an overflow.
-
-@findex us_plus
-@cindex RTL addition with unsigned saturation
-@item (us_plus:@var{m} @var{x} @var{y})
-
-Like @code{plus}, but using unsigned saturation in case of an overflow.
-
 @findex ss_minus
-@cindex RTL addition with signed saturation
-@item (ss_minus:@var{m} @var{x} @var{y})
-
-Like @code{minus}, but using signed saturation in case of an overflow.
-
 @findex us_minus
-@cindex RTL addition with unsigned saturation
-@item (us_minus:@var{m} @var{x} @var{y})
+@cindex RTL difference
+@cindex RTL subtraction
+@cindex RTL subtraction with signed saturation
+@cindex RTL subtraction with unsigned saturation
+@item (minus:@var{m} @var{x} @var{y})
+@itemx (ss_minus:@var{m} @var{x} @var{y})
+@itemx (us_minus:@var{m} @var{x} @var{y})
 
-Like @code{minus}, but using unsigned saturation in case of an overflow.
+These three expressions represent the result of subtracting @var{y}
+from @var{x}, carried out in mode @var{M}.  Behavior on overflow is
+the same as for the three variants of @code{plus} (see above).
 
 @findex compare
 @cindex RTL comparison
