@@ -1,3 +1,9 @@
+Wed Aug 26 15:55:41 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* configure.in (powerpc-ibm-aix4.[12]*): Change from 4.[12].*.
+	(rs6000-ibm-aix4.[12]*): Likewise.
+	* configure: Regnerate.
+
 Wed Aug 26 09:30:59 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/thumb.c (thumb_exit): Do not move a4 into lr if it
