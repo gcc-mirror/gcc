@@ -1585,17 +1585,12 @@ try_combine (i3, i2, i1)
 	    newpat = newi3pat;
 
 	  /* It is possible that both insns now set the destination of I3.
-	     If so, we must show an extra use of it and update
-	     reg_significant.  */
+	     If so, we must show an extra use of it.  */
 
 	  if (insn_code_number >= 0 && GET_CODE (SET_DEST (i3set)) == REG
 	      && GET_CODE (SET_DEST (i2set)) == REG
 	      && REGNO (SET_DEST (i3set)) == REGNO (SET_DEST (i2set)))
-	    {
-	      reg_n_sets[REGNO (SET_DEST (i2set))]++;
-	      set_significant (SET_DEST (i2set), i2set);
-	      set_significant (SET_DEST (i3set), i3set);
-	    }
+	    reg_n_sets[REGNO (SET_DEST (i2set))]++;
 	}
 
       /* If we can split it and use I2DEST, go ahead and see if that
@@ -2072,6 +2067,13 @@ try_combine (i3, i2, i1)
 	      reg_n_refs[regno] = 0;
 	  }
       }
+
+    /* Update reg_significant et al for any changes that may have been made
+       to this insn.  */
+
+    note_stores (newpat, set_significant);
+    if (newi2pat)
+      note_stores (newi2pat, set_significant);
 
     /* If I3 is now an unconditional jump, ensure that it has a 
        BARRIER following it since it may have initially been a
@@ -2668,6 +2670,47 @@ subst (x, from, to, in_dest, unique_copy)
       temp = XEXP (x, 0);
       SUBST (XEXP (x, 0), XEXP (x, 1));
       SUBST (XEXP (x, 1), temp);
+    }
+
+  /* If this is a PLUS, MINUS, or MULT, and the first operand is the
+     sign extension of a PLUS with a constant, reverse the order of the sign
+     extension and the addition. Note that this not the same as the original
+     code, but overflow is undefined for signed values.  Also note that the
+     PLUS will have been partially moved "inside" the sign-extension, so that
+     the first operand of X will really look like:
+         (ashiftrt (plus (ashift A C4) C5) C4).
+     We convert this to
+         (plus (ashiftrt (ashift A C4) C2) C4)
+     and replace the first operand of X with that expression.  Later parts
+     of this function may simplify the expression further.
+
+     For example, if we start with (mult (sign_extend (plus A C1)) C2),
+     we swap the SIGN_EXTEND and PLUS.  Later code will apply the
+     distributive law to produce (plus (mult (sign_extend X) C1) C3).
+
+     We do this to simplify address expressions.  */
+
+  if ((code == PLUS || code == MINUS || code == MULT)
+      && GET_CODE (XEXP (x, 0)) == ASHIFTRT
+      && GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == ASHIFT
+      && GET_CODE (XEXP (XEXP (XEXP (XEXP (x, 0), 0), 0), 1)) == CONST_INT
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+      && XEXP (XEXP (XEXP (XEXP (x, 0), 0), 0), 1) == XEXP (XEXP (x, 0), 1)
+      && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == CONST_INT
+      && (temp = simplify_binary_operation (ASHIFTRT, mode,
+					    XEXP (XEXP (XEXP (x, 0), 0), 1),
+					    XEXP (XEXP (x, 0), 1))) != 0)
+    {
+      rtx new
+	= simplify_shift_const (NULL_RTX, ASHIFT, mode,
+				XEXP (XEXP (XEXP (XEXP (x, 0), 0), 0), 0),
+				INTVAL (XEXP (XEXP (x, 0), 1)));
+
+      new = simplify_shift_const (NULL_RTX, ASHIFTRT, mode, new,
+				  INTVAL (XEXP (XEXP (x, 0), 1)));
+
+      SUBST (XEXP (x, 0), gen_binary (PLUS, mode, new, temp));
     }
 
   /* If this is a simple operation applied to an IF_THEN_ELSE, try 
