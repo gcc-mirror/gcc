@@ -1,3 +1,10 @@
+2002-02-08  Martin Kahlert  <martin.kahlert@infineon.com>
+
+	* jni.cc (_Jv_JNI_NewLocalRef): Make sure, that NULL frame is not
+	dereferenced.
+	(_Jv_JNI_AttachCurrentThread): Produce full featured env->locals
+	frame.
+
 2002-02-07  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/natFile.cc (_access): Use __builtin_alloca.
