@@ -2056,6 +2056,48 @@ package body GNAT.OS_Lib is
       Rename_File (C_Old_Name'Address, C_New_Name'Address, Success);
    end Rename_File;
 
+   --------------------
+   -- Set_Executable --
+   --------------------
+
+   procedure Set_Executable (Name : String) is
+      procedure C_Set_Executable (Name : C_File_Name);
+      pragma Import (C, C_Set_Executable, "__gnat_set_executable");
+      C_Name : aliased String (Name'First .. Name'Last + 1);
+   begin
+      C_Name (Name'Range)  := Name;
+      C_Name (C_Name'Last) := ASCII.NUL;
+      C_Set_Executable (C_Name (C_Name'First)'Address);
+   end Set_Executable;
+
+   --------------------
+   -- Set_Read_Only --
+   --------------------
+
+   procedure Set_Read_Only (Name : String) is
+      procedure C_Set_Read_Only (Name : C_File_Name);
+      pragma Import (C, C_Set_Read_Only, "__gnat_set_readonly");
+      C_Name : aliased String (Name'First .. Name'Last + 1);
+   begin
+      C_Name (Name'Range)  := Name;
+      C_Name (C_Name'Last) := ASCII.NUL;
+      C_Set_Read_Only (C_Name (C_Name'First)'Address);
+   end Set_Read_Only;
+
+   --------------------
+   -- Set_Writable --
+   --------------------
+
+   procedure Set_Writable (Name : String) is
+      procedure C_Set_Writable (Name : C_File_Name);
+      pragma Import (C, C_Set_Writable, "__gnat_set_writable");
+      C_Name : aliased String (Name'First .. Name'Last + 1);
+   begin
+      C_Name (Name'Range)  := Name;
+      C_Name (C_Name'Last) := ASCII.NUL;
+      C_Set_Writable (C_Name (C_Name'First)'Address);
+   end Set_Writable;
+
    ------------
    -- Setenv --
    ------------

@@ -37,8 +37,6 @@ with MLib.Utl; use MLib.Utl;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
-with System;
-
 package body MLib is
 
    -------------------
@@ -106,9 +104,6 @@ package body MLib is
       Success   : Boolean := False;
       To_Dir    : constant String := Get_Name_String (To);
       Interface : Boolean := False;
-
-      procedure Set_Readonly (Name : System.Address);
-      pragma Import (C, Set_Readonly, "__gnat_set_readonly");
 
       procedure Verbose_Copy (Index : Positive);
       --  In verbose mode, output a message that the indexed file is copied
@@ -264,7 +259,8 @@ package body MLib is
                               Success := Status and Actual_Len = Len + 3;
 
                               if Success then
-                                 Set_Readonly (Name_Buffer'Address);
+                                 Set_Read_Only (
+                                   Name_Buffer (1 .. Name_Len - 1));
                               end if;
                            end if;
                         end if;

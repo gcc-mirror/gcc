@@ -1638,9 +1638,6 @@ package body MLib.Prj is
 
       Disregard : Boolean;
 
-      procedure Set_Writable (Name : System.Address);
-      pragma Import (C, Set_Writable, "__gnat_set_writable");
-
    begin
       Get_Name_String (Directory);
 
@@ -1667,8 +1664,7 @@ package body MLib.Prj is
          exit when Last = 0;
 
          if Is_Regular_File (Name (1 .. Last)) then
-            Name (Last + 1) := ASCII.NUL;
-            Set_Writable (Name (1)'Address);
+            Set_Writable (Name (1 .. Last));
             Delete_File (Name (1 .. Last), Disregard);
          end if;
       end loop;
