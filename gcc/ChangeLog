@@ -1,3 +1,10 @@
+2002-09-24  Adam Nemet  <anemet@lnxw.com>
+            Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.h (THUMB_FUNCTION_PROFILER): Remove.
+	(FUNCTION_PROFILER): Only invoke THUMB_FUNCTION_PROFILER if it
+	is defined.
+
 2002-09-24  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (preferred_la_operand_p): New function.
