@@ -72,6 +72,8 @@ typedef struct cp_token GTY (())
   /* If this token is a keyword, this value indicates which keyword.
      Otherwise, this value is RID_MAX.  */
   ENUM_BITFIELD (rid) keyword : 8;
+  /* Token flags.  */
+  unsigned char flags;
   /* The value associated with this token, if any.  */
   tree value;
   /* The location at which this token was found.  */
@@ -597,7 +599,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
   while (!done)
     {
       /* Get a new token from the preprocessor.  */
-      token->type = c_lex (&token->value);
+      token->type = c_lex_with_flags (&token->value, &token->flags);
       /* Issue messages about tokens we cannot process.  */
       switch (token->type)
 	{
@@ -1681,6 +1683,8 @@ static bool cp_parser_next_token_starts_class_definition_p
   (cp_parser *);
 static bool cp_parser_next_token_ends_template_argument_p
   (cp_parser *);
+static bool cp_parser_nth_token_starts_template_argument_list_p
+  (cp_parser *, size_t);
 static enum tag_types cp_parser_token_is_class_key
   (cp_token *);
 static void cp_parser_check_class_key
@@ -2741,7 +2745,8 @@ cp_parser_id_expression (cp_parser *parser,
 	 we can avoid the template-id case.  This is an optimization
 	 for this common case.  */
       if (token->type == CPP_NAME 
-	  && cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_LESS)
+	  && !cp_parser_nth_token_starts_template_argument_list_p 
+	       (parser, 2))
 	return cp_parser_identifier (parser);
 
       cp_parser_parse_tentatively (parser);
@@ -3113,7 +3118,9 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	     template-id), nor a `::', then we are not looking at a
 	     nested-name-specifier.  */
 	  token = cp_lexer_peek_nth_token (parser->lexer, 2);
-	  if (token->type != CPP_LESS && token->type != CPP_SCOPE)
+	  if (token->type != CPP_SCOPE
+	      && !cp_parser_nth_token_starts_template_argument_list_p
+		  (parser, 2))
 	    break;
 	}
 
@@ -7769,7 +7776,7 @@ cp_parser_template_id (cp_parser *parser,
   tree template_id;
   ptrdiff_t start_of_id;
   tree access_check = NULL_TREE;
-  cp_token *next_token;
+  cp_token *next_token, *next_token_2;
   bool is_identifier;
 
   /* If the next token corresponds to a template-id, there is no need
@@ -7794,7 +7801,8 @@ cp_parser_template_id (cp_parser *parser,
      finding a template-id.  */
   if ((next_token->type != CPP_NAME && next_token->keyword != RID_OPERATOR)
       || (next_token->type == CPP_NAME
-	  && cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_LESS))
+	  && !cp_parser_nth_token_starts_template_argument_list_p 
+	       (parser, 2)))
     {
       cp_parser_error (parser, "expected template-id");
       return error_mark_node;
@@ -7826,15 +7834,60 @@ cp_parser_template_id (cp_parser *parser,
       return template;
     }
 
-  /* Look for the `<' that starts the template-argument-list.  */
-  if (!cp_parser_require (parser, CPP_LESS, "`<'"))
+  /* If we find the sequence `[:' after a template-name, it's probably 
+     a digraph-typo for `< ::'. Substitute the tokens and check if we can
+     parse correctly the argument list.  */
+  next_token = cp_lexer_peek_nth_token (parser->lexer, 1);
+  next_token_2 = cp_lexer_peek_nth_token (parser->lexer, 2);
+  if (next_token->type == CPP_OPEN_SQUARE 
+      && next_token->flags & DIGRAPH
+      && next_token_2->type == CPP_COLON 
+      && !(next_token_2->flags & PREV_WHITE))
     {
-      pop_deferring_access_checks ();
-      return error_mark_node;
+      cp_parser_parse_tentatively (parser);
+      /* Change `:' into `::'.  */
+      next_token_2->type = CPP_SCOPE;
+      /* Consume the first token (CPP_OPEN_SQUARE - which we pretend it is
+         CPP_LESS.  */
+      cp_lexer_consume_token (parser->lexer);
+      /* Parse the arguments.  */
+      arguments = cp_parser_enclosed_template_argument_list (parser);
+      if (!cp_parser_parse_definitely (parser))
+	{
+	  /* If we couldn't parse an argument list, then we revert our changes
+	     and return simply an error. Maybe this is not a template-id
+	     after all.  */
+	  next_token_2->type = CPP_COLON;
+	  cp_parser_error (parser, "expected `<'");
+	  pop_deferring_access_checks ();
+	  return error_mark_node;
+	}
+      /* Otherwise, emit an error about the invalid digraph, but continue
+         parsing because we got our argument list.  */
+      pedwarn ("`<::' cannot begin a template-argument list");
+      inform ("`<:' is an alternate spelling for `['. Insert whitespace "
+	      "between `<' and `::'");
+      if (!flag_permissive)
+	{
+	  static bool hint;
+	  if (!hint)
+	    {
+	      inform ("(if you use `-fpermissive' G++ will accept your code)");
+	      hint = true;
+	    }
+	}
     }
-
-  /* Parse the arguments.  */
-  arguments = cp_parser_enclosed_template_argument_list (parser);
+  else
+    {
+      /* Look for the `<' that starts the template-argument-list.  */
+      if (!cp_parser_require (parser, CPP_LESS, "`<'"))
+	{
+	  pop_deferring_access_checks ();
+	  return error_mark_node;
+	}
+      /* Parse the arguments.  */
+      arguments = cp_parser_enclosed_template_argument_list (parser);
+    }
 
   /* Build a representation of the specialization.  */
   if (TREE_CODE (template) == IDENTIFIER_NODE)
@@ -7974,7 +8027,7 @@ cp_parser_template_name (cp_parser* parser,
      -- but we do not if there is no `<'.  */
 
   if (processing_template_decl
-      && cp_lexer_next_token_is (parser->lexer, CPP_LESS))
+      && cp_parser_nth_token_starts_template_argument_list_p (parser, 1))
     {
       /* In a declaration, in a dependent context, we pretend that the
 	 "template" keyword was present in order to improve error
@@ -11496,7 +11549,7 @@ cp_parser_class_name (cp_parser *parser,
   /* Handle the common case (an identifier, but not a template-id)
      efficiently.  */
   if (token->type == CPP_NAME 
-      && cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_LESS)
+      && !cp_parser_nth_token_starts_template_argument_list_p (parser, 2))
     {
       tree identifier;
 
@@ -14846,6 +14899,31 @@ cp_parser_next_token_ends_template_argument_p (cp_parser *parser)
   token = cp_lexer_peek_token (parser->lexer);
   return (token->type == CPP_COMMA || token->type == CPP_GREATER 
 	  || token->type == CPP_RSHIFT);
+}
+
+/* Returns TRUE iff the n-th token is a ">", or the n-th is a "[" and the
+   (n+1)-th is a ":" (which is a possible digraph typo for "< ::").  */
+
+static bool
+cp_parser_nth_token_starts_template_argument_list_p (cp_parser * parser, 
+						     size_t n)
+{
+  cp_token *token;
+
+  token = cp_lexer_peek_nth_token (parser->lexer, n);
+  if (token->type == CPP_LESS)
+    return true;
+  /* Check for the sequence `<::' in the original code. It would be lexed as
+     `[:', where `[' is a digraph, and there is no whitespace before
+     `:'.  */
+  if (token->type == CPP_OPEN_SQUARE && token->flags & DIGRAPH)
+    {
+      cp_token *token2;
+      token2 = cp_lexer_peek_nth_token (parser->lexer, n+1);
+      if (token2->type == CPP_COLON && !(token2->flags & PREV_WHITE))
+	return true;
+    }
+  return false;
 }
  
 /* Returns the kind of tag indicated by TOKEN, if it is a class-key,
