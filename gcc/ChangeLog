@@ -1,3 +1,13 @@
+2003-04-10  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (larl_operand): Do not allow symbols
+	marked with '@'.
+	(s390_encode_section_info): Mark symbols with forced 1-byte
+	alignment with '@'.
+	(s390_strip_name_encoding): Strip '@'.
+	(legitimize_pic_address): Handle symbols that are not valid
+	LARL operands in 64-bit mode.
+
 2003-04-10  Andrew Haley  <aph@redhat.com>
 
 	* tree-inline.c (inlinable_function_p): Disable inlining for
