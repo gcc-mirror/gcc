@@ -1,3 +1,11 @@
+2001-08-31  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/stormy16/stormy16.c (stormy16_asm_out_destructor): New
+	function.
+	(stormy16_asm_out_constructor): New function.
+	(TARGET_ASM_CONSTRUCTOR): Define.
+	(TARGET_ASM_DESTRUCTOR): Define.
+
 2001-08-31  Andreas Jaeger  <aj@suse.de>
 
 	* gcse.c (add_label_notes): REG_LABEL is an INSN_LIST.

@@ -45,6 +45,8 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 
 static rtx emit_addhi3_postreload PARAMS ((rtx, rtx, rtx));
+static void stormy16_asm_out_constructor PARAMS ((rtx, int));
+static void stormy16_asm_out_destructor PARAMS ((rtx, int));
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
@@ -1323,6 +1325,61 @@ stormy16_encode_section_info (decl)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL)
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+}
+
+/* Output constructors and destructors.  Just like 
+   default_named_section_asm_out_* but don't set the sections writable.  */
+#undef TARGET_ASM_CONSTRUCTOR
+#define TARGET_ASM_CONSTRUCTOR stormy16_asm_out_constructor
+#undef TARGET_ASM_DESTRUCTOR
+#define TARGET_ASM_DESTRUCTOR stormy16_asm_out_destructor
+
+static void
+stormy16_asm_out_destructor (symbol, priority)
+     rtx symbol;
+     int priority;
+{
+  const char *section = ".dtors";
+  char buf[16];
+
+  /* ??? This only works reliably with the GNU linker.   */
+  if (priority != DEFAULT_INIT_PRIORITY)
+    {
+      sprintf (buf, ".dtors.%.5u",
+	       /* Invert the numbering so the linker puts us in the proper
+		  order; constructors are run from right to left, and the
+		  linker sorts in increasing order.  */
+	       MAX_INIT_PRIORITY - priority);
+      section = buf;
+    }
+
+  named_section_flags (section, 0);
+  assemble_align (POINTER_SIZE);
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+}
+
+static void
+stormy16_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority;
+{
+  const char *section = ".ctors";
+  char buf[16];
+
+  /* ??? This only works reliably with the GNU linker.   */
+  if (priority != DEFAULT_INIT_PRIORITY)
+    {
+      sprintf (buf, ".ctors.%.5u",
+	       /* Invert the numbering so the linker puts us in the proper
+		  order; constructors are run from right to left, and the
+		  linker sorts in increasing order.  */
+	       MAX_INIT_PRIORITY - priority);
+      section = buf;
+    }
+
+  named_section_flags (section, 0);
+  assemble_align (POINTER_SIZE);
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
 
 /* Print a memory address as an operand to reference that memory location.  */
