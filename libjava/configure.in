@@ -522,6 +522,13 @@ else
          AC_DEFINE(HAVE_BACKTRACE)
 	 ;;
      esac
+   ], [
+     case "$host" in
+       *mingw*)
+         # Has backtrace() defined in libgcj itself
+         AC_DEFINE(HAVE_BACKTRACE)
+         ;;
+     esac
    ])
 
    AC_CHECK_LIB(dl, dladdr, [
