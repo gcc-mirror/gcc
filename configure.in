@@ -73,7 +73,6 @@ target_libs="target-libiberty \
 		target-librx \
 		${libstdcxx_version} \
 		target-libf2c \
-		target-libchill \
 		${libgcj}
 		target-libobjc"
 

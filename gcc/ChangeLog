@@ -1,3 +1,9 @@
+2001-05-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.texi: Remove references to CHILL.
+	* invoke.texi: Likewise.
+	* install.texi: Likewise.
+	
 2001-05-06  Zack Weinberg  <zackw@stanford.edu>
 
 	* Makefile.in (tradcpp0): Correct typo in dependency list.

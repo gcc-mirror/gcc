@@ -697,10 +697,6 @@ Fortran input files.
 @c @var{file}.p
 @c @var{file}.pas
 
-@item @var{file}.ch
-@itemx @var{file}.chi
-CHILL source code (preprocessed with the traditional preprocessor).
-
 @item @var{file}.s
 Assembler code.
 
@@ -726,7 +722,7 @@ c++  c++-cpp-output
 objective-c  objc-cpp-output
 assembler  assembler-with-cpp
 f77  f77-cpp-input  ratfor
-java  chill
+java
 @end example
 @c Also f77-version, for internal use only.
 

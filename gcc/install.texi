@@ -340,7 +340,7 @@ directory.
 
 @samp{LANGUAGES=c} specifies that only the C compiler should be
 compiled.  The makefile normally builds compilers for all the supported
-languages; currently, C, C++, Objective C, Java, FORTRAN, and CHILL.
+languages; currently, C, C++, Objective C, Java, and FORTRAN.
 However, C is the only language that is sure to work when you build with
 other non-GNU C compilers.  In addition, building anything but C at this
 stage is a waste of time.
@@ -348,7 +348,7 @@ stage is a waste of time.
 In general, you can specify the languages to build by typing the
 argument @samp{LANGUAGES="@var{list}"}, where @var{list} is one or more
 words from the list @samp{c}, @samp{c++}, @samp{objective-c},
-@samp{java}, @samp{f77}, and @samp{CHILL}.  If you have any additional
+@samp{java}, and @samp{f77}.  If you have any additional
 GNU compilers as subdirectories of the GNU CC source directory, you may
 also specify their names in this list.
 
