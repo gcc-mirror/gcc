@@ -1,5 +1,10 @@
 2001-01-11  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* decl.c (grokparms): Unobfuscate and get correct diagnostic for
+	parameters with pointers to arrays of unknown bound.
+
+2001-01-11  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* parse.y (template_parm_header, template_spec_header): New
 	reductions. Split out from ...
 	(template_header): ... here. Use them.
