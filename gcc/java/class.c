@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

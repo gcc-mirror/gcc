@@ -1,5 +1,5 @@
 /* Handle exceptions for GNU compiler for the Java(TM) language.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
