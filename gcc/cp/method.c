@@ -57,7 +57,7 @@ static char *scratch_firstobj;
 
 static void icat PROTO((HOST_WIDE_INT));
 static void dicat PROTO((HOST_WIDE_INT, HOST_WIDE_INT));
-static void flush_repeats PROTO((int, tree));
+static int try_old_backref PROTO((tree));
 static void build_overload_identifier PROTO((tree));
 static void build_overload_nested_name PROTO((tree));
 static void build_overload_int PROTO((tree, int));
@@ -299,28 +299,33 @@ dicat (lo, hi)
   OB_PUTC ('0' + ulo);
 }
 
-static __inline void
-flush_repeats (nrepeats, type)
-     int nrepeats;
+/* Old mangling style:  If TYPE has already been used in the parameter list,
+   emit a backward reference and return non-zero; otherwise, return 0.  */
+
+static __inline int
+try_old_backref (type)
      tree type;
 {
   int tindex = 0;
 
-  while (typevec[tindex] != type)
-    tindex++;
+  if (! is_back_referenceable_type (type))
+    return 0;
 
-  if (nrepeats > 1)
-    {
-      OB_PUTC ('N');
-      icat (nrepeats);
-      if (nrepeats > 9)
-	OB_PUTC ('_');
-    }
-  else
-    OB_PUTC ('T');
+  /* The entry for this parm is at maxtype-1, so don't look there for
+     something to repeat.  */
+  for (tindex = 0; tindex < maxtype - 1; ++tindex)
+    if (same_type_p (typevec[tindex], type))
+      break;
+
+  if (tindex == maxtype - 1)
+    return 0;
+
+  OB_PUTC ('T');
   icat (tindex);
   if (tindex > 9)
     OB_PUTC ('_');
+
+  return 1;
 }
 
 /* Returns nonzero iff this is a type to which we will want to make
@@ -330,8 +335,8 @@ static int
 is_back_referenceable_type (type)
      tree type;
 {
-  if (btypelist == NULL)
-    /* We're not generating any back-references.  */
+  /* For some reason, the Java folks don't want back refs on these.  */
+  if (TYPE_FOR_JAVA (type))
     return 0;
 
   switch (TREE_CODE (type)) 
@@ -377,8 +382,10 @@ issue_nrepeats (nrepeats, type)
     }
 }
 
-/* Check to see if a tree node has been entered into the Kcode typelist    */
-/* if not, add it. Return -1 if it isn't found, otherwise return the index */
+/* Check to see if a tree node has been entered into the Kcode typelist.
+   If not, add it.  Returns -1 if it isn't found, otherwise returns the
+   index.  */
+
 static int
 check_ktype (node, add)
      tree node;
@@ -395,10 +402,10 @@ check_ktype (node, add)
 
   for (x=0; x < maxktype; x++)
     {
-      if (localnode == ktypelist[x])
-        return x ;
+      if (same_type_p (localnode, ktypelist[x]))
+        return x;
     }
-  /* Didn't find it, so add it here */
+  /* Didn't find it, so add it here.  */
   if (add)
     {
       if (maxksize <= maxktype)
@@ -864,7 +871,7 @@ build_overload_value (type, value, in_template)
 
 
 /* Add encodings for the declaration of template template parameters.
-   PARMLIST must be a TREE_VEC */
+   PARMLIST must be a TREE_VEC.  */
 
 static void
 build_template_template_parm_names (parmlist)
@@ -921,9 +928,9 @@ build_template_parm_names (parmlist, arglist)
 	}
       else if (TREE_CODE (parm) == TEMPLATE_DECL)
 	{
-	  /* This parameter is a template. */
+	  /* This parameter is a template.  */
 	  if (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
-	    /* Output parameter declaration, argument index and level */
+	    /* Output parameter declaration, argument index and level.  */
 	    build_mangled_name_for_type (arg);
 	  else
 	    {
@@ -931,7 +938,8 @@ build_template_parm_names (parmlist, arglist)
 		 and template name */
 
 	      OB_PUTC ('z');
-	      build_template_template_parm_names (DECL_INNERMOST_TEMPLATE_PARMS (parm));
+	      build_template_template_parm_names
+		(DECL_INNERMOST_TEMPLATE_PARMS (parm));
 	      icat (IDENTIFIER_LENGTH (DECL_NAME (arg)));
 	      OB_PUTID (DECL_NAME (arg));
 	    }
@@ -1012,15 +1020,18 @@ build_qualified_name (decl)
     }
 
   context = decl;
-  /* if we can't find a Ktype, do it the hard way */
+  /* If we can't find a Ktype, do it the hard way.  */
   if (check_ktype (context, FALSE) == -1)
     {
-      /* count type and namespace scopes */
-      while (DECL_CONTEXT (context) && DECL_CONTEXT (context) != global_namespace)
+      /* Count type and namespace scopes.  */
+      while (1)
 	{
+	  context = CP_DECL_CONTEXT (context);
+	  if (context == global_namespace)
+	    break;
 	  i += 1;
-	  context = DECL_CONTEXT (context);
-	  if (check_ktype (context, FALSE) != -1)  /* found it! */
+	  if (check_ktype (context, FALSE) != -1)
+	    /* Found one!  */
 	    break;
 	  if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
 	    context = TYPE_NAME (context);
@@ -1047,7 +1058,6 @@ build_mangled_name_for_type_with_Gcode (type, extra_Gcode)
 {
   if (TYPE_PTRMEMFUNC_P (type))
     type = TYPE_PTRMEMFUNC_FN_TYPE (type);
-  type = canonical_type_variant (type);
   process_modifiers (type);
   process_overload_item (type, extra_Gcode);
 }
@@ -1111,20 +1121,25 @@ build_mangled_name (parmtypes, begin, end)
       for (; parmtypes && parmtypes != void_list_node;
 	   parmtypes = TREE_CHAIN (parmtypes))
 	{
-	  tree parmtype = canonical_type_variant (TREE_VALUE (parmtypes));
+	  /* We used to call canonical_type_variant here, but that isn't
+	     good enough; it doesn't handle pointers to typedef types.  So
+	     we can't just set TREE_USED to say we've seen a type already;
+	     we have to check each of the earlier types with same_type_p.  */
+	  tree parmtype = TREE_VALUE (parmtypes);
 
 	  if (old_style_repeats)
 	    {
+	      /* Note that for bug-compatibility with 2.7.2, we can't build
+		 up repeats.  So we call try_old_backref (formerly
+		 flush_repeats) every round, and only emit Tn codes.  */
+
 	      /* Every argument gets counted.  */
 	      my_friendly_assert (maxtype < typevec_size, 387);
 	      typevec[maxtype++] = parmtype;
 	    }
-
-	  if (parmtype == last_type)
+	  else if (flag_do_squangling)
 	    {
-	      if (flag_do_squangling 
-		  || (old_style_repeats && TREE_USED (parmtype)
-		      && !TYPE_FOR_JAVA (parmtype)))
+	      if (last_type && same_type_p (parmtype, last_type))
 		{
 		  /* The next type is the same as this one.  Keep
 		     track of the repetition, and output the repeat
@@ -1132,49 +1147,19 @@ build_mangled_name (parmtypes, begin, end)
 		  nrepeats++;
 		  continue;
 		}
-	    }
-	  else if (nrepeats != 0)
-	    {
-	      /* Indicate how many times the previous parameter was
-		 repeated.  */
-	      if (old_style_repeats)
-		flush_repeats (nrepeats, last_type);
-	      else
-		issue_nrepeats (nrepeats, last_type);
-	      nrepeats = 0;
+	      else if (nrepeats != 0)
+		{
+		  /* Indicate how many times the previous parameter was
+		     repeated.  */
+		  issue_nrepeats (nrepeats, last_type);
+		  nrepeats = 0;
+		}
 	    }
 	  
 	  last_type = parmtype;
 
-	  if (old_style_repeats)
-	    {
-	      if (nrepeats)
-		{
-		  flush_repeats (nrepeats, last_type);
-		  nrepeats = 0;
-		}
-
-	      if (TREE_USED (parmtype))
-		{
-#if 0
-		  /* We can turn this on at some point when we want
-		     improved symbol mangling.  */
-		  nrepeats++;
-#else
-		  /* This is bug compatible with 2.7.x  */
-		  flush_repeats (nrepeats, parmtype);
-#endif
-		  nrepeats = 0;
-		  continue;
-		}
-	      
-	      /* Only cache types which take more than one character.  */
-	      if ((parmtype != TYPE_MAIN_VARIANT (parmtype)
-		   || (TREE_CODE (parmtype) != INTEGER_TYPE
-		       && TREE_CODE (parmtype) != REAL_TYPE))
-		  && ! TYPE_FOR_JAVA (parmtype))
-		TREE_USED (parmtype) = 1;
-	    }
+	  if (old_style_repeats && try_old_backref (parmtype))
+	    continue;
 
 	  /* Output the PARMTYPE.  */
 	  build_mangled_name_for_type_with_Gcode (parmtype, 1);
@@ -1184,10 +1169,7 @@ build_mangled_name (parmtypes, begin, end)
 	 necessary.  */
       if (nrepeats != 0)
 	{
-	  if (old_style_repeats)
-	    flush_repeats (nrepeats, last_type);
-	  else
-	    issue_nrepeats (nrepeats, last_type);
+	  issue_nrepeats (nrepeats, last_type);
 	  nrepeats = 0;
 	}
 
@@ -1243,12 +1225,8 @@ check_btype (type)
   if (!is_back_referenceable_type (type))
     return 0;
 
-  /* We assume that our caller has put out any necessary
-     qualifiers.  */
-  type = TYPE_MAIN_VARIANT (type);
-
   for (x = 0; x < maxbtype; x++) 
-    if (type == btypelist[x]) 
+    if (same_type_p (type, btypelist[x]))
       {
 	OB_PUTC ('B');
 	icat (x);
@@ -1278,6 +1256,14 @@ process_overload_item (parmtype, extra_Gcode)
   int extra_Gcode;
 {
   numeric_output_need_bar = 0;
+
+  /* Our caller should have already handed any qualifiers, so pull out the
+     TYPE_MAIN_VARIANT to avoid typedef confusion.  Except we can't do that
+     for arrays, because they are transparent to qualifiers.  Sigh.  */
+  if (TREE_CODE (parmtype) == ARRAY_TYPE)
+    parmtype = canonical_type_variant (parmtype);
+  else
+    parmtype = TYPE_MAIN_VARIANT (parmtype);
 
   /* These tree types are considered modifiers for B code squangling,
      and therefore should not get entries in the Btypelist.  They are,
@@ -1382,7 +1368,6 @@ process_overload_item (parmtype, extra_Gcode)
       }
 
     case INTEGER_TYPE:
-      parmtype = TYPE_MAIN_VARIANT (parmtype);
       if (parmtype == integer_type_node
           || parmtype == unsigned_type_node
 	  || parmtype == java_int_type_node)
@@ -1431,7 +1416,6 @@ process_overload_item (parmtype, extra_Gcode)
       break;
 
     case REAL_TYPE:
-      parmtype = TYPE_MAIN_VARIANT (parmtype);
       if (parmtype == long_double_type_node)
         OB_PUTC ('r');
       else if (parmtype == double_type_node
@@ -1609,12 +1593,13 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
     OB_PUTC ('v');
   else
     {
-      if (!flag_do_squangling)    /* Allocate typevec array. */
+      if (!flag_do_squangling)
         {
+	  /* Allocate typevec array.  */
           maxtype = 0;
 	  typevec_size = list_length (parms);
 	  if (!for_method && current_namespace != global_namespace)
-	    /* the namespace of a global function needs one slot */
+	    /* The namespace of a global function needs one slot.  */
 	    typevec_size++;
           typevec = (tree *)alloca (typevec_size * sizeof (tree));
         }
@@ -1635,12 +1620,6 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
 	    {
 	      my_friendly_assert (maxtype < typevec_size, 387);
 	      typevec[maxtype++] = this_type;
-	      TREE_USED (this_type) = 1;
-
-	      /* By setting up PARMS in this way, the loop below will
-		 automatically clear TREE_USED on THIS_TYPE.  */
-	      parms = temp_tree_cons (NULL_TREE, this_type,
-				      TREE_CHAIN (parms));
 	    }
 
 	  if (TREE_CHAIN (parms))
@@ -1661,20 +1640,9 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
 	  build_mangled_name (parms, 0, 0);
 	}
 
-      if (!flag_do_squangling)     /* Deallocate typevec array */
-        {
-          tree t = parms;
-          typevec = NULL;
-          while (t)
-            {
-              tree temp = TREE_VALUE (t);
-              TREE_USED (temp) = 0;
-              /* clear out the type variant in case we used it */
-              temp = canonical_type_variant (temp);
-              TREE_USED (temp) = 0;
-              t = TREE_CHAIN (t);
-            }
-        }
+      if (!flag_do_squangling)
+	/* Deallocate typevec array.  */
+	typevec = NULL;
     }
 
   if (ret_type != NULL_TREE && for_method != 2)
