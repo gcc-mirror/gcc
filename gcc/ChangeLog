@@ -1,3 +1,7 @@
+Fri Dec 15 14:44:51 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* integrate.c (copy_rtx_and_substitute): Copy mode too.
+
 Fri Dec 15 14:11:57 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (notice_stack_pointer_modification_1): Cleanup.
