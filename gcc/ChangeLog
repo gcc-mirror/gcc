@@ -1,3 +1,8 @@
+Tue Feb  1 19:53:27 CET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.c (expand_builtin_memset): Expand for variable sized
+	lengths too.
+
 2000-02-01  David Billinghurst <David.Billinghurst@riotinto.com.au> 
 
 	* config/mips/iris6.h (SUBTARGET_ASM_SPEC) : Default ISA based

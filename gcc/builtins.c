@@ -1514,11 +1514,7 @@ expand_builtin_memset (exp)
       if (expand_expr (val, NULL_RTX, VOIDmode, 0) != const0_rtx)
 	return 0;
 
-      /* If LEN does not expand to a constant, don't do this
-	 operation in-line.  */
       len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
-      if (GET_CODE (len_rtx) != CONST_INT)
-	return 0;
 
       dest_mem = get_memory_rtx (dest);
 	   
