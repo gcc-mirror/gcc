@@ -720,7 +720,7 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
       ;;
     *)
       case "${srcdir}" in
-      /*) # absolute path
+      /* | [A-Za-z]:[\\/]* ) # absolute path
         ml_newsrcdir=${srcdir}
         ;;
       *) # otherwise relative
@@ -733,7 +733,7 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
     esac
 
     case "${progname}" in
-    /*)     ml_recprog=${progname} ;;
+    /* | [A-Za-z]:[\\/]* )     ml_recprog=${progname} ;;
     *)      ml_recprog=${dotdot}${progname} ;;
     esac
 

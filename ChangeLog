@@ -1,3 +1,9 @@
+2000-12-09  Laurynas Biveinis  <lauras@softhome.net>
+
+	* Makefile.in: handle DOS-style absolute paths.
+	* config-ml.in: likewise.
+	* symlink-tree: likewise.
+
 2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* fastjar: Imported.

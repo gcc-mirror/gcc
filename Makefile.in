@@ -1288,7 +1288,7 @@ $(CONFIGURE_TARGET_MODULES):
 	    echo Configuring in $(TARGET_SUBDIR)/$${dir}; \
 	    cd $(TARGET_SUBDIR)/$${dir}; \
 	    case $(srcdir) in \
-	    /*) \
+	    /* | [A-Za-z]:[\\/]*) \
 	      topdir=$(srcdir) ;; \
 	    *) \
 	      case "$(TARGET_SUBDIR)" in \
