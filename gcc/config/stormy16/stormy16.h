@@ -2292,7 +2292,7 @@ typedef int CUMULATIVE_ARGS;
    return values are decided by the `RETURN_IN_MEMORY' macro.
 
    If not defined, this defaults to the value 1.  */
-/* #define DEFAULT_PCC_STRUCT_RETURN */
+#define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* If the structure value address is passed in a register, then
    `STRUCT_VALUE_REGNUM' should be the number of that register.  */
@@ -5352,4 +5352,4 @@ do {									\
 
 extern struct rtx_def *stormy16_compare_op0, *stormy16_compare_op1;
 
-/* End of generic.h */
+/* End of stormy16.h */

@@ -1,3 +1,8 @@
+2001-09-18  Catherine Moore  <clm@redhat.com>
+
+	* config/stormy16/stormy16.h (DEFAULT_PCC_STRUCT_RETURN): 
+	Define as 0.
+
 2001-09-18  Ulrich Weigand  <uweigand@de.ibm.com>:
  
         * config.gcc (s390-*-linux-*, s390x-*-linux*): Switch to 
