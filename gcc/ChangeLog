@@ -1,3 +1,23 @@
+2005-02-13  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/19019
+	* config/rs6000/aix.h ({TARGET,MASK}_XL_CALL): Rename to
+	{TARGET,MASK}_XL_COMPAT.
+	(SUBTARGET_SWITCHES): Rename xl-call to xl-compat.  Use
+	MASK_XL_COMPAT.
+	* config/rs6000/beos.h ({TARGET,MASK}_XL_CALL): Remove.
+	* config/rs6000/rs6000.c (function_arg): Change TARGET_XL_CALL to
+	TARGET_XL_COMPAT.
+	(rs6000_arg_partial_bytes): Same.
+	(rs6000_generate_compare): Generate PARALLEL for compare if TFmode
+	and XL compatibility enabled.
+	* config/rs6000/rs6000.h (TARGET_XL_CALL): Rename to TARGET_XL_COMPAT.
+	* config/rs6000/rs6000.md (cmptf_internal1): Add !TARGET_XL_COMPAT
+	test to final condition.
+	(cmptf_internal2): New.
+	* doc/invoke.texi (RS/6000 Subtarget Options): Change xl-call to
+	xl-compat.  Add TFmode information to description.
+
 2005-02-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* flags.h, read-rtl.c, tree-ssa-live.h: Update copyright.

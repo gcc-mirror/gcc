@@ -5604,7 +5604,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  needs_psave = (type
 			 && (cum->nargs_prototype <= 0
 			     || (DEFAULT_ABI == ABI_AIX
-				 && TARGET_XL_CALL
+				 && TARGET_XL_COMPAT
 				 && align_words >= GP_ARG_NUM_REG)));
 
 	  if (!needs_psave && mode == fmode)
@@ -5712,7 +5712,7 @@ rs6000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       && !(type
 	   && (cum->nargs_prototype <= 0
 	       || (DEFAULT_ABI == ABI_AIX
-		   && TARGET_XL_CALL
+		   && TARGET_XL_COMPAT
 		   && align_words >= GP_ARG_NUM_REG))))
     {
       if (cum->fregno + ((GET_MODE_SIZE (mode) + 7) >> 3) > FP_ARG_MAX_REG + 1)
@@ -11458,10 +11458,34 @@ rs6000_generate_compare (enum rtx_code code)
       emit_insn (cmp);
     }
   else
-    emit_insn (gen_rtx_SET (VOIDmode, compare_result,
-			    gen_rtx_COMPARE (comp_mode,
-					     rs6000_compare_op0,
-					     rs6000_compare_op1)));
+    {
+      /* Generate XLC-compatible TFmode compare as PARALLEL with extra
+	 CLOBBERs to match cmptf_internal2 pattern.  */
+      if (comp_mode == CCFPmode && TARGET_XL_COMPAT
+	  && GET_MODE (rs6000_compare_op0) == TFmode
+	  && (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_DARWIN)
+	  && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_LONG_DOUBLE_128)
+	emit_insn (gen_rtx_PARALLEL (VOIDmode,
+	  gen_rtvec (9,
+		     gen_rtx_SET (VOIDmode,
+				  compare_result,
+				  gen_rtx_COMPARE (comp_mode,
+						   rs6000_compare_op0,
+						   rs6000_compare_op1)),
+		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (DFmode)),
+		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (DFmode)),
+		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (DFmode)),
+		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (DFmode)),
+		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (DFmode)),
+		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (DFmode)),
+		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (DFmode)),
+		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (DFmode)))));
+      else
+	emit_insn (gen_rtx_SET (VOIDmode, compare_result,
+				gen_rtx_COMPARE (comp_mode,
+						 rs6000_compare_op0,
+						 rs6000_compare_op1)));
+    }
 
   /* Some kinds of FP comparisons need an OR operation;
      under flag_unsafe_math_optimizations we don't bother.  */
