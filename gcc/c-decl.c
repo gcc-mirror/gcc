@@ -310,6 +310,10 @@ struct binding_level
        that were entered and exited one level down.  */
     tree blocks;
 
+    /* The BLOCK node for this level, if one has been preallocated.
+       If 0, the BLOCK is allocated (if needed) when the level is popped.  */
+    tree this_block;
+
     /* The binding level which this one is contained in (inherits from).  */
     struct binding_level *level_chain;
 
@@ -361,7 +365,7 @@ static struct binding_level *global_binding_level;
 /* Binding level structures are initialized by copying this one.  */
 
 static struct binding_level clear_binding_level
-  = {NULL, NULL, NULL, NULL, NULL, 0, 0, 0};
+  = {NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0};
 
 /* Nonzero means unconditionally make a BLOCK for the next level pushed.  */
 
@@ -868,10 +872,18 @@ poplevel (keep, reverse, functionbody)
      or if this level is a function body,
      create a BLOCK to record them for the life of this function.  */
 
-  if (keep || functionbody
-      || (current_binding_level->keep_if_subblocks && subblocks != 0))
-    block = build_block (keep ? decls : NULL_TREE, keep ? tags : NULL_TREE,
-			 subblocks, NULL_TREE, NULL_TREE);
+  block = 0;
+  if (current_binding_level->this_block != 0)
+    block = current_binding_level->this_block;
+  else if (keep || functionbody
+	   || (current_binding_level->keep_if_subblocks && subblocks != 0))
+    block = make_node (BLOCK);
+  if (block != 0)
+    {
+      BLOCK_VARS (block) = decls;
+      BLOCK_TYPE_TAGS (block) = tags;
+      BLOCK_SUBBLOCKS (block) = subblocks;
+    }
 
   /* In each subblock, record that this is its superior.  */
 
@@ -992,6 +1004,54 @@ poplevel (keep, reverse, functionbody)
   if (block)
     TREE_USED (block) = 1;
   return block;
+}
+
+/* Delete the node BLOCK from the current binding level.
+   This is used for the block inside a stmt expr ({...})
+   so that the block can be reinserted where appropriate.  */
+
+void
+delete_block (block)
+     tree block;
+{
+  tree t;
+  if (current_binding_level->blocks == block)
+    current_binding_level->blocks = TREE_CHAIN (block);
+  for (t = current_binding_level->blocks; t;)
+    {
+      if (TREE_CHAIN (t) == block)
+	TREE_CHAIN (t) = TREE_CHAIN (block);
+      else
+	t = TREE_CHAIN (t);
+    }
+  TREE_CHAIN (block) = NULL;
+  /* Clear TREE_USED which is always set by poplevel.
+     The flag is set again if insert_block is called.  */
+  TREE_USED (block) = 0;
+}
+
+/* Insert BLOCK at the end of the list of subblocks of the
+   current binding level.  This is used when a BIND_EXPR is expanded,
+   to handle the BLOCK node inside teh BIND_EXPR.  */
+
+void
+insert_block (block)
+     tree block;
+{
+  TREE_USED (block) = 1;
+  current_binding_level->blocks
+    = chainon (current_binding_level->blocks, block);
+}
+
+/* Return the BLOCK node for the innermost scope
+   (the one we are currently in).  */
+
+tree
+current_block ()
+{
+  if (current_binding_level->this_block == 0)
+    current_binding_level->this_block = make_node (BLOCK);
+  return current_binding_level->this_block;
 }
 
 void
