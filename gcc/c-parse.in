@@ -1019,16 +1019,12 @@ maybeasm:
 initdcl:
 	  declarator maybeasm maybe_attribute '='
 		{ $<ttype>$ = start_decl ($1, current_declspecs, 1);
-		  start_init ($<ttype>$, $2, global_bindings_p ());
-		  /* Note that the call to clear_momentary
-		     is in process_init_element.  */
-		  push_momentary (); }
+		  start_init ($<ttype>$, $2, global_bindings_p ()); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_init ();
 		  decl_attributes ($<ttype>5, $3);
-		  finish_decl ($<ttype>5, $6, $2);
-		  pop_momentary (); }
+		  finish_decl ($<ttype>5, $6, $2); }
 	| declarator maybeasm maybe_attribute
 		{ tree d = start_decl ($1, current_declspecs, 0);
 		  decl_attributes (d, $3);
@@ -1038,17 +1034,12 @@ initdcl:
 notype_initdcl:
 	  notype_declarator maybeasm maybe_attribute '='
 		{ $<ttype>$ = start_decl ($1, current_declspecs, 1);
-		  start_init ($<ttype>$, $2, global_bindings_p ());
-		  /* Note that the call to clear_momentary
-		     is in process_init_element.  */
-		  push_momentary (); }
+		  start_init ($<ttype>$, $2, global_bindings_p ()); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_init ();
 		  decl_attributes ($<ttype>5, $3);
-		  finish_decl ($<ttype>5, $6, $2);
-		  pop_momentary (); }
-
+		  finish_decl ($<ttype>5, $6, $2); }
 	| notype_declarator maybeasm maybe_attribute
 		{ tree d = start_decl ($1, current_declspecs, 0);
 		  decl_attributes (d, $3);
@@ -1122,11 +1113,20 @@ attrib
 init:
 	expr_no_commas
 	| '{'
-		{ really_start_incremental_init (NULL_TREE); }
+		{ really_start_incremental_init (NULL_TREE);
+		  /* Note that the call to clear_momentary
+		     is in process_init_element.  */
+		  push_momentary (); }
 	  initlist_maybe_comma '}'
-		{ $$ = pop_init_level (0); }
+		{ $$ = pop_init_level (0);
+		  if ($$ == error_mark_node)
+		    pop_momentary ();
+		  else
+		    pop_momentary_nofree (); }
+
 	| error
-		{ $$ = error_mark_node; }
+		{ $$ = error_mark_node;
+		  pop_momentary (); }
 	;
 
 /* `initlist_maybe_comma' is the guts of an initializer in braces.  */
