@@ -1,3 +1,8 @@
+2001-07-06  Ira Ruben   <ira@apple.com>
+
+        * cp-tree.def (TEMPLATE_DECL): Update comment. DECL_RESULT should
+	be DECL_TEMPLATE_RESULT.
+
 2001-07-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* cp-tree.h (copy_template_template_parm): Rename to ...
