@@ -1,3 +1,13 @@
+2002-02-19  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/arm.c (use_return_insn): Don't reject interrupt
+	functions.
+	(arm_compute_save_reg_mask): Save LR for interrupt functions too.
+	(output_return_instruction): Allow interrupt functions to return with
+	ldmfd sp!, {... pc}^.  Use LDR to restore any single register.
+	(arm_expand_prologue): Subtract 4 before stacking LR in an
+	interrupt function.
+
 2002-02-19  Philip Blundell  <pb@nexus.co.uk>
 
 	* config/arm/arm.c (arm_encode_call_attribute): Operate on any

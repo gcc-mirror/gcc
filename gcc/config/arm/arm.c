@@ -899,9 +899,9 @@ use_return_insn (iscond)
       
   func_type = arm_current_func_type ();
 
-  /* Naked functions, volatile functiond and interrupt
-     functions all need special consideration.  */
-  if (func_type & (ARM_FT_INTERRUPT | ARM_FT_VOLATILE | ARM_FT_NAKED))
+  /* Naked functions and volatile functions need special
+     consideration.  */
+  if (func_type & (ARM_FT_VOLATILE | ARM_FT_NAKED))
     return 0;
   
   /* As do variadic functions.  */
@@ -7142,11 +7142,10 @@ arm_compute_save_reg_mask ()
      now and then popping it back into the PC.  This incurs extra memory
      accesses though, so we only do it when optimising for size, and only
      if we know that we will not need a fancy return sequence.  */
-  if (! IS_INTERRUPT (func_type)
-      && (regs_ever_live [LR_REGNUM]
+  if (regs_ever_live [LR_REGNUM]
 	  || (save_reg_mask
 	      && optimize_size
-	      && ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL)))
+	      && ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL))
     save_reg_mask |= 1 << LR_REGNUM;
 
   if (cfun->machine->lr_save_eliminated)
@@ -7212,7 +7211,6 @@ output_return_instruction (operand, really_return, reverse)
 	 (eg interworking, or ISR) then we can load the return address 
 	 directly into the PC.  Otherwise we must load it into LR.  */
       if (really_return
-	  && ! IS_INTERRUPT (func_type)
 	  && ! TARGET_INTERWORK)
 	return_reg = reg_names[PC_REGNUM];
       else
@@ -7229,14 +7227,23 @@ output_return_instruction (operand, really_return, reverse)
 	    live_regs_mask |=   (1 << SP_REGNUM);
 	  }
 
-      /* On some ARM architectures it is faster to use LDR rather than LDM to
-	 load a single register.  On other architectures, the cost is the same.
-	 In 26 bit mode we have to use LDM in order to be able to restore the 
-	 CPSR.  */
-      if ((live_regs_mask  == (1 << LR_REGNUM))
-	  && (! really_return || TARGET_APCS_32))
+      /* On some ARM architectures it is faster to use LDR rather than
+	 LDM to load a single register.  On other architectures, the
+	 cost is the same.  In 26 bit mode, or for exception handlers,
+	 we have to use LDM to load the PC so that the CPSR is also
+	 restored.  */
+      for (reg = 0; reg <= LAST_ARM_REGNUM; reg++)
 	{
-	  sprintf (instr, "ldr%s\t%%|%s, [%%|sp], #4", conditional, return_reg);
+	  if (live_regs_mask == (unsigned int)(1 << reg))
+	    break;
+	}
+      if (reg <= LAST_ARM_REGNUM
+	  && (reg != LR_REGNUM
+	      || ! really_return 
+	      || (TARGET_APCS_32 && ! IS_INTERRUPT (func_type))))
+	{
+	  sprintf (instr, "ldr%s\t%%|%s, [%%|sp], #4", conditional, 
+		   (reg == LR_REGNUM) ? return_reg : reg_names[reg]);
 	}
       else
 	{
@@ -7281,7 +7288,10 @@ output_return_instruction (operand, really_return, reverse)
 
 	      memcpy (p, "%|", 2);
 	      memcpy (p + 2, return_reg, l);
-	      strcpy (p + 2 + l, (TARGET_APCS_32 || !really_return) ? "}" : "}^");
+	      strcpy (p + 2 + l, ((TARGET_APCS_32 
+				   && !IS_INTERRUPT (func_type)) 
+				  || !really_return) 
+		      ? "}" : "}^");
 	    }
 	  else
 	    strcpy (p, "}");
@@ -7289,26 +7299,15 @@ output_return_instruction (operand, really_return, reverse)
 
       output_asm_insn (instr, & operand);
 
-      if (really_return)
+      /* See if we need to generate an extra instruction to
+	 perform the actual function return.  */
+      if (really_return
+	  && func_type != ARM_FT_INTERWORKED
+	  && (live_regs_mask & (1 << LR_REGNUM)) != 0)
 	{
-	  /* See if we need to generate an extra instruction to
-	     perform the actual function return.  */
-	  switch ((int) ARM_FUNC_TYPE (func_type))
-	    {
-	    case ARM_FT_ISR:
-	    case ARM_FT_FIQ:
-	    case ARM_FT_EXCEPTION:
-	    case ARM_FT_INTERWORKED:
-	      /* A separate return instruction is always needed.  */
-	      break;
-
-	    default:
-	      /* The return may have already been handled
-		 by loading the LR into the PC.  */
-	      if ((live_regs_mask & (1 << LR_REGNUM)) != 0)
-		really_return = 0;
-	      break;
-	    }
+	  /* The return has already been handled
+	     by loading the LR into the PC.  */
+	  really_return = 0;
 	}
     }
   
@@ -8243,6 +8242,19 @@ arm_expand_prologue ()
 	  (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, 
 		       GEN_INT (- args_to_push)));
       RTX_FRAME_RELATED_P (insn) = 1;
+    }
+
+  /* If this is an interrupt service routine, and the link register is
+     going to be pushed, subtracting four now will mean that the
+     function return can be done with a single instruction.  */
+  if ((func_type == ARM_FT_ISR || func_type == ARM_FT_FIQ)
+      && (live_regs_mask & (1 << LR_REGNUM)) != 0)
+    {
+      emit_insn (gen_rtx_SET (SImode, 
+			      gen_rtx_REG (SImode, LR_REGNUM),
+			      gen_rtx_PLUS (SImode,
+				    gen_rtx_REG (SImode, LR_REGNUM),
+				    GEN_INT (-4))));
     }
 
   if (live_regs_mask)
