@@ -1,3 +1,8 @@
+2002-03-19  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.md (adddi3, adddi_carry, subdi3,
+	subdi_carry): Define.
+
 2002-03-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Only warn
