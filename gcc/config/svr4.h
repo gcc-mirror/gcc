@@ -913,8 +913,3 @@ do {									 \
 
 /* All SVR4 targets use the ELF object file format.  */
 #define OBJECT_FORMAT_ELF
-
-/* The maximum alignment which the object file format can support.
-   ELF doesn't have a limit, but we've got to override the default
-   (which is BIGGEST_ALIGNMENT).  */
-#define MAX_OFILE_ALIGNMENT 0x10000
