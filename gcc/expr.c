@@ -8156,14 +8156,8 @@ expand_builtin_apply_args ()
   if (struct_value_rtx)
     size += GET_MODE_SIZE (Pmode);
 
-  /* Save each register used in calling a function to the block.
-     Doing this in reverse order makes for much more compact code
-     for i386 and family.  If we do this in reverse order, a simple
-     series of pops and stores will be generated.  If we do this
-     in ascending order, the pops and stores will be littered with
-     stack swaps as well.  Since the order is largely irrelevant for
-     all other architectures, we use the optimal order for the i386.  */
-  for (regno = FIRST_PSEUDO_REGISTER; regno--;)
+  /* Save each register used in calling a function to the block.  */
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if ((mode = apply_args_mode[regno]) != VOIDmode)
       {
 	rtx tem;
@@ -8263,10 +8257,8 @@ expand_builtin_apply (function, arguments, argsize)
     size += GET_MODE_SIZE (Pmode);
 
   /* Restore each of the registers previously saved.  Make USE insns
-     for each of these registers for use in making the call.
-     Doing this in reverse order makes for much more compact code
-     for i386 and family.  */
-  for (regno = FIRST_PSEUDO_REGISTER; regno--; )
+     for each of these registers for use in making the call.  */
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if ((mode = apply_args_mode[regno]) != VOIDmode)
       {
 	align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
