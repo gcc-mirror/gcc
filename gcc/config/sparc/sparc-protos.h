@@ -38,7 +38,6 @@ extern int function_arg_pass_by_reference (const CUMULATIVE_ARGS *,
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 extern void sparc_va_start (tree, rtx);
 #endif
-extern struct rtx_def *sparc_va_arg (tree, tree);
 extern unsigned long sparc_type_code (tree);
 #ifdef ARGS_SIZE_RTX
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */
