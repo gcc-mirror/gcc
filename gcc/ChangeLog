@@ -1,3 +1,9 @@
+2003-12-09  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	2003-06-04  Kelley Cook  <kelleycook@wideopenwest.com>
+	PR optimization/4490
+	* config/i386/i386.md: Don't use XFMode if TARGET_128BIT_LONG_DOUBLE.
+
 2003-12-08  David Edelsohn  <edelsohn@gnu.org>
 	    Graham Reed <greed@pobox.com>
 
