@@ -1210,6 +1210,8 @@ c4x_emit_libcall (name, code, dmode, smode, noperands, operands)
   rtx equiv;
 
   start_sequence ();
+  if (ggc_p)
+    name = ggc_alloc_string (name, -1);
   libcall = gen_rtx_SYMBOL_REF (Pmode, name);
   switch (noperands)
     {
