@@ -778,13 +778,13 @@ cris_target_asm_function_prologue (file, size)
 		      && (last_movem_reg + 1) * 4 + size <= 128
 		      && cris_cpu_version >= CRIS_CPU_SVINTO
 		      && TARGET_SIDE_EFFECT_PREFIXES)
-		    fprintf (file, "\tmovem $%s,[$sp=$sp-%d]\n",
+		    fprintf (file, "\tmovem $%s,[$sp=$sp-"HOST_WIDE_INT_PRINT_DEC"]\n",
 			     reg_names[last_movem_reg],
 			     (last_movem_reg + 1) * 4 + size);
 		  else
 		    {
 		      /* Avoid printing multiple subsequent sub:s for sp.  */
-		      fprintf (file, "\tsub%s %d,$sp\n",
+		      fprintf (file, "\tsub%s "HOST_WIDE_INT_PRINT_DEC",$sp\n",
 			       ADDITIVE_SIZE_MODIFIER ((last_movem_reg + 1)
 						       * 4 + size),
 			       (last_movem_reg + 1) * 4 + size);
@@ -796,7 +796,8 @@ cris_target_asm_function_prologue (file, size)
 		  framesize += (last_movem_reg + 1) * 4 + size;
 
 		  if (TARGET_PDEBUG)
-		    fprintf (file, "; frame %d, #regs %d, bytes %d args %d\n",
+		    fprintf (file, "; frame "HOST_WIDE_INT_PRINT_DEC
+			     ", #regs %d, bytes %d args %d\n",
 			     size,
 			     last_movem_reg + 1,
 			     (last_movem_reg + 1) * 4,
@@ -809,7 +810,7 @@ cris_target_asm_function_prologue (file, size)
 		{
 		  /* Local vars on stack, but there are no movem:s.
 		     Just allocate space.  */
-		  fprintf (file, "\tSub%s %d,$sp\n",
+		  fprintf (file, "\tSub%s "HOST_WIDE_INT_PRINT_DEC",$sp\n",
 			   ADDITIVE_SIZE_MODIFIER (size),
 			   size);
 		  framesize += size;
@@ -844,14 +845,14 @@ cris_target_asm_function_prologue (file, size)
 	  && (last_movem_reg + 1) * 4 + size <= 128
 	  && cris_cpu_version >= CRIS_CPU_SVINTO
 	  && TARGET_SIDE_EFFECT_PREFIXES)
-	fprintf (file, "\tmovem $%s,[$sp=$sp-%d]\n",
+	fprintf (file, "\tmovem $%s,[$sp=$sp-"HOST_WIDE_INT_PRINT_DEC"]\n",
 		 reg_names[last_movem_reg],
 		 (last_movem_reg+1) * 4 + size);
       else
 	{
 	  /* Avoid printing multiple subsequent sub:s for sp.  FIXME:
 	     Clean up the conditional expression.  */
-	  fprintf (file, "\tsub%s %d,$sp\n",
+	  fprintf (file, "\tsub%s "HOST_WIDE_INT_PRINT_DEC",$sp\n",
 		   ADDITIVE_SIZE_MODIFIER ((last_movem_reg + 1) * 4 + size),
 		   (last_movem_reg + 1) * 4 + size);
 	  /* To be compatible with v0..v3 means we do not use an assignment
@@ -864,7 +865,8 @@ cris_target_asm_function_prologue (file, size)
       framesize += (last_movem_reg + 1) * 4 + size;
 
       if (TARGET_PDEBUG)
-	fprintf (file, "; frame %d, #regs %d, bytes %d args %d\n",
+	fprintf (file, "; frame "HOST_WIDE_INT_PRINT_DEC
+		 ", #regs %d, bytes %d args %d\n",
 		 size,
 		 last_movem_reg + 1,
 		 (last_movem_reg + 1) * 4,
@@ -886,7 +888,7 @@ cris_target_asm_function_prologue (file, size)
       /* This does not need to be accounted for, for unwind.  */
 
       /* Local vars on stack, and we could not use movem.  Add a sub here.  */
-      fprintf (file, "\tSub%s %d,$sp\n",
+      fprintf (file, "\tSub%s "HOST_WIDE_INT_PRINT_DEC",$sp\n",
 	       ADDITIVE_SIZE_MODIFIER (size + cfoa_size),
 	       cfoa_size + size);
       framesize += size + cfoa_size;
@@ -900,7 +902,8 @@ cris_target_asm_function_prologue (file, size)
 
   if (TARGET_PDEBUG)
     fprintf (file,
-	     "; parm #%d @ %d; frame %d, FP-SP is %d; leaf: %s%s; fp %s, outg: %d arg %d\n",
+	     "; parm #%d @ %d; frame " HOST_WIDE_INT_PRINT_DEC
+	     ", FP-SP is %d; leaf: %s%s; fp %s, outg: %d arg %d\n",
 	     CRIS_MAX_ARGS_IN_REGS + 1, FIRST_PARM_OFFSET (0),
 	     get_frame_size (),
 	     cris_initial_frame_pointer_offset (),
@@ -1187,7 +1190,7 @@ cris_target_asm_function_epilogue (file, size)
 	  if (*save_last && file)
 	    fprintf (file, save_last);
 
-	  sprintf (save_last, "\tadd%s %d,$sp\n",
+	  sprintf (save_last, "\tadd%s "HOST_WIDE_INT_PRINT_DEC",$sp\n",
 		   ADDITIVE_SIZE_MODIFIER (size), size);
 	}
 
@@ -1315,7 +1318,8 @@ cris_print_operand (file, x, code)
       if (GET_CODE (x) != CONST_INT
 	  || ! CONST_OK_FOR_LETTER_P (INTVAL (x), 'O'))
 	LOSE_AND_RETURN ("invalid operand for 'b' modifier", x);
-      fprintf (file, "%d", INTVAL (x)| (INTVAL (x) <= 255 ? ~255 : ~65535));
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+	       INTVAL (x)| (INTVAL (x) <= 255 ? ~255 : ~65535));
       return;
 
     case 'x':
@@ -1409,7 +1413,7 @@ cris_print_operand (file, x, code)
 	  /* High part of a long long constant.  */
 	  if (GET_MODE (operand) == VOIDmode)
 	    {
-	      fprintf (file, "0x%x", CONST_DOUBLE_HIGH (x));
+	      fprintf (file, HOST_WIDE_INT_PRINT_HEX, CONST_DOUBLE_HIGH (x));
 	      return;
 	    }
 	  else
@@ -1482,12 +1486,12 @@ cris_print_operand (file, x, code)
       /* Print the least significant part of operand.  */
       if (GET_CODE (operand) == CONST_DOUBLE)
 	{
-	  fprintf (file, "0x%x", CONST_DOUBLE_LOW (x));
+	  fprintf (file, HOST_WIDE_INT_PRINT_HEX, CONST_DOUBLE_LOW (x));
 	  return;
 	}
       else if (HOST_BITS_PER_WIDE_INT > 32 && GET_CODE (operand) == CONST_INT)
 	{
-	  fprintf (file, "0x%x",
+	  fprintf (file, HOST_WIDE_INT_PRINT_HEX,
 		   INTVAL (x) & ((unsigned int) 0x7fffffff * 2 + 1));
 	  return;
 	}
