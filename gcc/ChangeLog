@@ -1,3 +1,9 @@
+2004-02-19  David Daney <ddaney@avtrex.com>
+
+	PR preprocessor/14198
+	* config/mips/linux.h (TARGET_OS_CPP_BUILTINS): Add
+	builtin_assert ("machine=mips")
+
 2004-02-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("*subdf3_cc", "*subdf3_cconly", "*subsf3_cc",
