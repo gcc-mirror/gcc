@@ -31,16 +31,31 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
-   %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude}\
-   %{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__}\
-   %{msupersparc:-D__supersparc__ -D__sparc_v8__}"
+%{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude} \
+%(cpp_cpu) \
+"
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
    It's safe to pass -s always, even if -g is not used. */
 #undef ASM_SPEC
-#define ASM_SPEC \
-  "%{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s \
-   %{fpic:-K PIC} %{fPIC:-K PIC}"
+#define ASM_SPEC "\
+%{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s \
+%{fpic:-K PIC} %{fPIC:-K PIC} \
+%(asm_cpu) \
+"
+
+/* This is here rather than in sparc.h because it's not known what
+   other assemblers will accept.  */
+#if TARGET_CPU_DEFAULT == TARGET_CPU_sparc64
+#undef ASM_DEFAULT_SPEC
+#define ASM_DEFAULT_SPEC "-xarch=v8plus"
+#endif
+#undef ASM_CPU_SPEC
+#define ASM_CPU_SPEC "\
+%{-mcpu=v9:-xarch=v8plus} \
+%{-mcpu=ultrasparc:-xarch=v8plus} \
+%{!mcpu*:%(asm_default)} \
+"
 
 /* However it appears that Solaris 2.0 uses the same reg numbering as
    the old BSD-style system did. */
