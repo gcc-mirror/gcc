@@ -3065,7 +3065,7 @@ fix = {
     hackname = uw7_byteorder_fix;
     files    = arpa/inet.h;
     select   = "in_port_t";
-    test     = "-f $DESTDIR/sys/byteorder.h";
+    test     = "-f sys/byteorder.h";
 #ifndef SVR5
 	mach = "*-*-sysv4*";
 	mach = "i?86-*-sysv5*";
@@ -3077,12 +3077,12 @@ fix = {
 
     c_fix     = format;
     c_fix_arg = "";
-    c_fix_arg = "^extern.*(htons|ntohs).*\\(in_port_t\\).*\n";
+    c_fix_arg = "^extern.*[ \t](htons|ntohs).*\\(in_port_t\\).*;";
 
-    test_text = "extern htons(in_port_t);"
+    test_text = "extern in_port_t\thtons __P((in_port_t));\n"
+                "extern in_port_t\tntohs __P((in_port_t));"
                 "`[ ! -d $DESTDIR/sys ] && mkdir $DESTDIR/sys\n"
-                "echo '/* DUMMY */' >> sys/byteorder.h\n"
-                "touch $DESTDIR/sys/byteorder.h`";
+                "echo '/* DUMMY */' >> sys/byteorder.h`";
 };
 
 
