@@ -1452,12 +1452,7 @@ public abstract class Component
    */
   public Dimension getPreferredSize()
   {
-    if (prefSize == null)
-      if (peer == null)
-	return new Dimension(width, height);
-      else 
-        prefSize = peer.getPreferredSize();
-    return prefSize;
+    return preferredSize();
   }
 
   /**
@@ -1468,7 +1463,12 @@ public abstract class Component
    */
   public Dimension preferredSize()
   {
-    return getPreferredSize();
+    if (prefSize == null)
+      if (peer == null)
+	return new Dimension(width, height);
+      else 
+        prefSize = peer.getPreferredSize();
+    return prefSize;
   }
 
   /**
@@ -1480,10 +1480,7 @@ public abstract class Component
    */
   public Dimension getMinimumSize()
   {
-    if (minSize == null)
-      minSize = (peer != null ? peer.getMinimumSize()
-                 : new Dimension(width, height));
-    return minSize;
+    return minimumSize();
   }
 
   /**
@@ -1494,7 +1491,10 @@ public abstract class Component
    */
   public Dimension minimumSize()
   {
-    return getMinimumSize();
+    if (minSize == null)
+      minSize = (peer != null ? peer.getMinimumSize()
+                 : new Dimension(width, height));
+    return minSize;
   }
 
   /**
@@ -1941,7 +1941,10 @@ public abstract class Component
   public boolean prepareImage(Image image, int width, int height,
                               ImageObserver observer)
   {
-    return peer.prepareImage(image, width, height, observer);
+    if (peer != null)
+	return peer.prepareImage(image, width, height, observer);
+    else
+	return getToolkit().prepareImage(image, width, height, observer);
   }
 
   /**
@@ -1957,8 +1960,7 @@ public abstract class Component
    */
   public int checkImage(Image image, ImageObserver observer)
   {
-    return checkImage(image, image.getWidth(observer),
-                      image.getHeight(observer), observer);
+    return checkImage(image, -1, -1, observer);
   }
 
   /**

@@ -84,7 +84,6 @@ public class Window extends Container implements Accessible
    */
   Window()
   {
-    setVisible(false);
     setLayout(new BorderLayout());
   }
 
@@ -106,7 +105,7 @@ public class Window extends Container implements Accessible
     peer = ((EmbeddedWindowSupport) getToolkit())
 	    .createEmbeddedWindow (window_id, width, height);
   }
-    
+  
   /**
    * Initializes a new instance of <code>Window</code> with the specified
    * parent.  The window will initially be invisible.

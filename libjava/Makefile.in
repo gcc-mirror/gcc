@@ -589,6 +589,7 @@ java/awt/Graphics2D.java \
 java/awt/GraphicsConfiguration.java \
 java/awt/GridBagConstraints.java \
 java/awt/GridBagLayout.java \
+java/awt/GridBagLayoutInfo.java \
 java/awt/GridLayout.java \
 java/awt/IllegalComponentStateException.java \
 java/awt/Image.java \
@@ -3094,6 +3095,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/GraphicsConfiguration.P .deps/java/awt/GraphicsDevice.P \
 .deps/java/awt/GraphicsEnvironment.P \
 .deps/java/awt/GridBagConstraints.P .deps/java/awt/GridBagLayout.P \
+.deps/java/awt/GridBagLayoutInfo.P \
 .deps/java/awt/GridLayout.P .deps/java/awt/HeadlessException.P \
 .deps/java/awt/IllegalComponentStateException.P .deps/java/awt/Image.P \
 .deps/java/awt/ImageCapabilities.P .deps/java/awt/Insets.P \
