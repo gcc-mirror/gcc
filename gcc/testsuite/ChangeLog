@@ -4,6 +4,8 @@
 
 2000-07-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.dg/formatz-1.c: New test.
+
 	* gcc.dg/c90-digraph-1.c, gcc.dg/c94-digraph.c,
 	* gcc.dg/c99-digraph.c: New tests.
 
