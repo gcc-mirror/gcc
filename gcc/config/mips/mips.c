@@ -188,6 +188,37 @@ enum mips_builtin_type
   MIPS_BUILTIN_CMP_SINGLE
 };
 
+/* Invokes MACRO (COND) for each c.cond.fmt condition.  */
+#define MIPS_FP_CONDITIONS(MACRO) \
+  MACRO (f),	\
+  MACRO (un),	\
+  MACRO (eq),	\
+  MACRO (ueq),	\
+  MACRO (olt),	\
+  MACRO (ult),	\
+  MACRO (ole),	\
+  MACRO (ule),	\
+  MACRO (sf),	\
+  MACRO (ngle),	\
+  MACRO (seq),	\
+  MACRO (ngl),	\
+  MACRO (lt),	\
+  MACRO (nge),	\
+  MACRO (le),	\
+  MACRO (ngt)
+
+/* Enumerates the codes above as MIPS_FP_COND_<X>.  */
+#define DECLARE_MIPS_COND(X) MIPS_FP_COND_ ## X
+enum mips_fp_condition {
+  MIPS_FP_CONDITIONS (DECLARE_MIPS_COND)
+};
+
+/* Index X provides the string representation of MIPS_FP_COND_<X>.  */
+#define STRINGIFY(X) #X
+static const char *const mips_fp_conditions[] = {
+  MIPS_FP_CONDITIONS (STRINGIFY)
+};
+
 /* A function to save or store a register.  The first argument is the
    register and the second is the stack slot.  */
 typedef void (*mips_save_restore_fn) (rtx, rtx);
@@ -325,9 +356,11 @@ static rtx mips_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void mips_init_builtins (void);
 static rtx mips_expand_builtin_direct (enum insn_code, rtx, tree);
 static rtx mips_expand_builtin_movtf (enum mips_builtin_type,
-				      enum insn_code, rtx, tree);
+				      enum insn_code, enum mips_fp_condition,
+				      rtx, tree);
 static rtx mips_expand_builtin_compare (enum mips_builtin_type,
-					enum insn_code, rtx, tree);
+					enum insn_code, enum mips_fp_condition,
+					rtx, tree);
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -4586,31 +4619,6 @@ mips_debugger_offset (rtx addr, HOST_WIDE_INT offset)
   return offset;
 }
 
-/* A helper function for print_operand.  This prints out a floating point
-   condition code register.  OP is the operand we are printing.  CODE is the
-   rtx code of OP.  ALIGN is the required register alignment for OP.  OFFSET
-   is the index into operand for multiple register operands.  If IGNORE is
-   true, then we only print the register name if it isn't fcc0, and we
-   follow it with a comma.  */
-
-static void
-print_fcc_operand (FILE *file, rtx op, enum rtx_code code,
-		   int align, int offset, int ignore)
-{
-  int regnum;
-
-  if (code != REG)
-    abort ();
-
-  regnum = REGNO (op);
-  if (!ST_REG_P (regnum)
-      || (regnum - ST_REG_FIRST) % align != 0)
-    abort ();
-
-  if (!ignore || regnum != ST_REG_FIRST)
-    fprintf (file, "%s%s", reg_names[regnum+offset], (ignore ? "," : ""));
-}
-
 /* Implement the PRINT_OPERAND macro.  The MIPS-specific operand codes are:
 
    'X'  OP is CONST_INT, prints 32 bits in hexadecimal format = "0x%08x",
@@ -4628,13 +4636,9 @@ print_fcc_operand (FILE *file, rtx op, enum rtx_code code,
    'T'  print 'f' for (eq:CC ...), 't' for (ne:CC ...),
 	      'z' for (eq:?I ...), 'n' for (ne:?I ...).
    't'  like 'T', but with the EQ/NE cases reversed
-   'Z'  print register and a comma, but print nothing for $fcc0
+   'Y'  for a CONST_INT X, print mips_fp_conditions[X]
+   'Z'  print the operand and a comma for ISA_HAS_8CC, otherwise print nothing
    'R'  print the reloc associated with LO_SUM
-   'V'  Check if the fcc register number divided by 4 is zero.  Then print 
-        the fcc register plus 2.
-   'v'  Check if the fcc register number divided by 4 is zero.  Then print 
-        the fcc register.
-   'Q'  print the fcc register.
 
    The punctuation characters are:
 
@@ -4866,17 +4870,24 @@ print_operand (FILE *file, rtx op, int letter)
   else if (letter == 'R')
     print_operand_reloc (file, op, mips_lo_relocs);
 
+  else if (letter == 'Y')
+    {
+      if (GET_CODE (op) == CONST_INT
+	  && ((unsigned HOST_WIDE_INT) INTVAL (op)
+	      < ARRAY_SIZE (mips_fp_conditions)))
+	fputs (mips_fp_conditions[INTVAL (op)], file);
+      else
+	output_operand_lossage ("invalid %%Y value");
+    }
+
   else if (letter == 'Z')
-    print_fcc_operand (file, op, code, 1, 0, 1);
-
-  else if (letter == 'V')
-    print_fcc_operand (file, op, code, 4, 2, 0);
-
-  else if (letter == 'v')
-    print_fcc_operand (file, op, code, 4, 0, 0);
-
-  else if (letter == 'Q')
-    print_fcc_operand (file, op, code, 1, 0, 0);
+    {
+      if (ISA_HAS_8CC)
+	{
+	  print_operand (file, op, 0);
+	  fputc (',', file);
+	}
+    }
 
   else if (code == REG || code == SUBREG)
     {
@@ -9274,6 +9285,9 @@ struct builtin_description
      for more information.  */
   enum insn_code icode;
 
+  /* The floating-point comparison code to use with ICODE, if any.  */
+  enum mips_fp_condition cond;
+
   /* The name of the builtin function.  */
   const char *name;              
 
@@ -9290,60 +9304,69 @@ struct builtin_description
 /* Define a MIPS_BUILTIN_DIRECT function for instruction CODE_FOR_mips_<INSN>.
    FUNCTION_TYPE and TARGET_FLAGS are builtin_description fields.  */
 #define DIRECT_BUILTIN(INSN, FUNCTION_TYPE, TARGET_FLAGS)		\
-  { CODE_FOR_mips_ ## INSN, "__builtin_mips_" #INSN,			\
+  { CODE_FOR_mips_ ## INSN, 0, "__builtin_mips_" #INSN,			\
     MIPS_BUILTIN_DIRECT, FUNCTION_TYPE, TARGET_FLAGS }
 
-/* Define builtins for scalar comparison instructions CODE_FOR_mips_<INSN>_s
-   and CODE_FOR_mips_<INSN>_d, both of which require TARGET_FLAGS.  */
-#define CMP_SCALAR_BUILTINS(INSN, TARGET_FLAGS)				\
-  { CODE_FOR_mips_ ## INSN ## _s, "__builtin_mips_" #INSN "_s",		\
+/* Define __builtin_mips_<INSN>_<COND>_{s,d}, both of which require
+   TARGET_FLAGS.  */
+#define CMP_SCALAR_BUILTINS(INSN, COND, TARGET_FLAGS)			\
+  { CODE_FOR_mips_ ## INSN ## _cond_s, MIPS_FP_COND_ ## COND,		\
+    "__builtin_mips_" #INSN "_" #COND "_s",				\
     MIPS_BUILTIN_CMP_SINGLE, MIPS_INT_FTYPE_SF_SF, TARGET_FLAGS },	\
-  { CODE_FOR_mips_ ## INSN ## _d, "__builtin_mips_" #INSN "_d",		\
+  { CODE_FOR_mips_ ## INSN ## _cond_d, MIPS_FP_COND_ ## COND,		\
+    "__builtin_mips_" #INSN "_" #COND "_d",				\
     MIPS_BUILTIN_CMP_SINGLE, MIPS_INT_FTYPE_DF_DF, TARGET_FLAGS }
 
-/* Define builtins for PS comparison instruction CODE_FOR_mips_<INSN>_ps.
+/* Define __builtin_mips_{any,all,upper,lower}_<INSN>_<COND>_ps.
    The lower and upper forms require TARGET_FLAGS while the any and all
    forms require MASK_MIPS3D.  */
-#define CMP_PS_BUILTINS(INSN, TARGET_FLAGS)				\
-  { CODE_FOR_mips_ ## INSN ## _ps, "__builtin_mips_any_" #INSN "_ps",	\
+#define CMP_PS_BUILTINS(INSN, COND, TARGET_FLAGS)			\
+  { CODE_FOR_mips_ ## INSN ## _cond_ps, MIPS_FP_COND_ ## COND,		\
+    "__builtin_mips_any_" #INSN "_" #COND "_ps",			\
     MIPS_BUILTIN_CMP_ANY, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },	\
-  { CODE_FOR_mips_ ## INSN ## _ps, "__builtin_mips_all_" #INSN "_ps",	\
+  { CODE_FOR_mips_ ## INSN ## _cond_ps, MIPS_FP_COND_ ## COND,		\
+    "__builtin_mips_all_" #INSN "_" #COND "_ps",			\
     MIPS_BUILTIN_CMP_ALL, MIPS_INT_FTYPE_V2SF_V2SF, MASK_MIPS3D },	\
-  { CODE_FOR_mips_ ## INSN ## _ps, "__builtin_mips_lower_" #INSN "_ps",	\
+  { CODE_FOR_mips_ ## INSN ## _cond_ps, MIPS_FP_COND_ ## COND,		\
+    "__builtin_mips_lower_" #INSN "_" #COND "_ps",			\
     MIPS_BUILTIN_CMP_LOWER, MIPS_INT_FTYPE_V2SF_V2SF, TARGET_FLAGS },	\
-  { CODE_FOR_mips_ ## INSN ## _ps, "__builtin_mips_upper_" #INSN "_ps",	\
+  { CODE_FOR_mips_ ## INSN ## _cond_ps, MIPS_FP_COND_ ## COND,		\
+    "__builtin_mips_upper_" #INSN "_" #COND "_ps",			\
     MIPS_BUILTIN_CMP_UPPER, MIPS_INT_FTYPE_V2SF_V2SF, TARGET_FLAGS }
 
-/* Define builtins for instruction CODE_FOR_mips_<INSN>_4s, which compares
-   two pairs of V2SF vectors.  The functions require MASK_MIPS3D.  */
-#define CMP_4S_BUILTINS(INSN)						\
-  { CODE_FOR_mips_ ## INSN ## _4s, "__builtin_mips_any_" #INSN "_4s",	\
+/* Define __builtin_mips_{any,all}_<INSN>_<COND>_4s.  The functions
+   require MASK_MIPS3D.  */
+#define CMP_4S_BUILTINS(INSN, COND)					\
+  { CODE_FOR_mips_ ## INSN ## _cond_4s, MIPS_FP_COND_ ## COND,		\
+    "__builtin_mips_any_" #INSN "_" #COND "_4s",			\
     MIPS_BUILTIN_CMP_ANY, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,		\
     MASK_MIPS3D },							\
-  { CODE_FOR_mips_ ## INSN ## _4s, "__builtin_mips_all_" #INSN "_4s",	\
+  { CODE_FOR_mips_ ## INSN ## _cond_4s, MIPS_FP_COND_ ## COND,		\
+    "__builtin_mips_all_" #INSN "_" #COND "_4s",			\
     MIPS_BUILTIN_CMP_ALL, MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,		\
     MASK_MIPS3D }
 
-/* Define movt and movf builtins that use CODE_FOR_mips_<INSN>_ps as
-   the comparison instruction.  The comparison instruction requires
-   TARGET_FLAGS.  */
-#define MOVTF_BUILTINS(INSN, TARGET_FLAGS)				\
-  { CODE_FOR_mips_ ## INSN ## _ps, "__builtin_mips_movt_" #INSN "_ps",	\
+/* Define __builtin_mips_mov{t,f}_<INSN>_<COND>_ps.  The comparison
+   instruction requires TARGET_FLAGS.  */
+#define MOVTF_BUILTINS(INSN, COND, TARGET_FLAGS)			\
+  { CODE_FOR_mips_ ## INSN ## _cond_ps, MIPS_FP_COND_ ## COND,		\
+    "__builtin_mips_movt_" #INSN "_" #COND "_ps",			\
     MIPS_BUILTIN_MOVT, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,		\
     TARGET_FLAGS },							\
-  { CODE_FOR_mips_ ## INSN ## _ps, "__builtin_mips_movf_" #INSN "_ps",	\
+  { CODE_FOR_mips_ ## INSN ## _cond_ps, MIPS_FP_COND_ ## COND,		\
+    "__builtin_mips_movf_" #INSN "_" #COND "_ps",			\
     MIPS_BUILTIN_MOVF, MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,		\
     TARGET_FLAGS }
 
 /* Define all the builtins related to c.cond.fmt condition COND.  */
 #define CMP_BUILTINS(COND)						\
-  MOVTF_BUILTINS (c_ ## COND, MASK_PAIRED_SINGLE),			\
-  MOVTF_BUILTINS (cabs_ ## COND, MASK_MIPS3D),				\
-  CMP_SCALAR_BUILTINS (cabs_ ## COND, MASK_MIPS3D),			\
-  CMP_PS_BUILTINS (c_ ## COND, MASK_PAIRED_SINGLE),			\
-  CMP_PS_BUILTINS (cabs_ ## COND, MASK_MIPS3D),				\
-  CMP_4S_BUILTINS (c_ ## COND),						\
-  CMP_4S_BUILTINS (cabs_ ## COND)
+  MOVTF_BUILTINS (c, COND, MASK_PAIRED_SINGLE),				\
+  MOVTF_BUILTINS (cabs, COND, MASK_MIPS3D),				\
+  CMP_SCALAR_BUILTINS (cabs, COND, MASK_MIPS3D),			\
+  CMP_PS_BUILTINS (c, COND, MASK_PAIRED_SINGLE),			\
+  CMP_PS_BUILTINS (cabs, COND, MASK_MIPS3D),				\
+  CMP_4S_BUILTINS (c, COND),						\
+  CMP_4S_BUILTINS (cabs, COND)
 
 /* __builtin_mips_abs_ps() maps to the standard absM2 pattern.  */
 #define CODE_FOR_mips_abs_ps CODE_FOR_absv2sf2
@@ -9379,22 +9402,7 @@ static const struct builtin_description mips_bdesc[] =
   DIRECT_BUILTIN (rsqrt2_d, MIPS_DF_FTYPE_DF_DF, MASK_MIPS3D),
   DIRECT_BUILTIN (rsqrt2_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_MIPS3D),
 
-  CMP_BUILTINS (f),
-  CMP_BUILTINS (un),
-  CMP_BUILTINS (eq),
-  CMP_BUILTINS (ueq),
-  CMP_BUILTINS (olt),
-  CMP_BUILTINS (ult),
-  CMP_BUILTINS (ole),
-  CMP_BUILTINS (ule),
-  CMP_BUILTINS (sf),
-  CMP_BUILTINS (ngle),
-  CMP_BUILTINS (seq),
-  CMP_BUILTINS (ngl),
-  CMP_BUILTINS (lt),
-  CMP_BUILTINS (nge),
-  CMP_BUILTINS (le),
-  CMP_BUILTINS (ngt)
+  MIPS_FP_CONDITIONS (CMP_BUILTINS)
 };
 
 
@@ -9460,14 +9468,16 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case MIPS_BUILTIN_MOVT:
     case MIPS_BUILTIN_MOVF:
-      return mips_expand_builtin_movtf (type, icode, target, arglist);
+      return mips_expand_builtin_movtf (type, icode, mips_bdesc[fcode].cond,
+					target, arglist);
 
     case MIPS_BUILTIN_CMP_ANY:
     case MIPS_BUILTIN_CMP_ALL:
     case MIPS_BUILTIN_CMP_UPPER:
     case MIPS_BUILTIN_CMP_LOWER:
     case MIPS_BUILTIN_CMP_SINGLE:
-      return mips_expand_builtin_compare (type, icode, target, arglist);
+      return mips_expand_builtin_compare (type, icode, mips_bdesc[fcode].cond,
+					  target, arglist);
 
     default:
       return 0;
@@ -9587,13 +9597,14 @@ mips_expand_builtin_direct (enum insn_code icode, rtx target, tree arglist)
 }
 
 /* Expand a __builtin_mips_movt_*_ps() or __builtin_mips_movf_*_ps()
-   function (TYPE says which).  ARGLIST is the list of arguments to
-   the function and ICODE says which instruction should be used to
-   compare the first two arguments.  TARGET, if nonnull, suggests a
-   good place to put the result.  */
+   function (TYPE says which).  ARGLIST is the list of arguments to the
+   function, ICODE is the instruction that should be used to compare
+   the first two arguments, and COND is the conditon it should test.
+   TARGET, if nonnull, suggests a good place to put the result.  */
 
 static rtx
-mips_expand_builtin_movtf (enum mips_builtin_type type, enum insn_code icode,
+mips_expand_builtin_movtf (enum mips_builtin_type type,
+			   enum insn_code icode, enum mips_fp_condition cond,
 			   rtx target, tree arglist)
 {
   rtx cmp_result, op0, op1;
@@ -9601,7 +9612,7 @@ mips_expand_builtin_movtf (enum mips_builtin_type type, enum insn_code icode,
   cmp_result = mips_prepare_builtin_target (icode, 0, 0);
   op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
   op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
-  emit_insn (GEN_FCN (icode) (cmp_result, op0, op1));
+  emit_insn (GEN_FCN (icode) (cmp_result, op0, op1, GEN_INT (cond)));
 
   icode = CODE_FOR_mips_cond_move_tf_ps;
   target = mips_prepare_builtin_target (icode, 0, target);
@@ -9619,13 +9630,15 @@ mips_expand_builtin_movtf (enum mips_builtin_type type, enum insn_code icode,
   return target;
 }
 
-/* Expand a comparison builtin of type BUILTIN_TYPE.  ICODE is the code of
-   the comparison instruction and ARGLIST is the list of function arguments.
-   TARGET, if nonnull, suggests a good place to put the boolean result.  */
+/* Expand a comparison builtin of type BUILTIN_TYPE.  ICODE is the code
+   of the comparison instruction and COND is the condition it should test.
+   ARGLIST is the list of function arguments and TARGET, if nonnull,
+   suggests a good place to put the boolean result.  */
 
 static rtx
 mips_expand_builtin_compare (enum mips_builtin_type builtin_type,
-			     enum insn_code icode, rtx target, tree arglist)
+			     enum insn_code icode, enum mips_fp_condition cond,
+			     rtx target, tree arglist)
 {
   rtx label1, label2, if_then_else;
   rtx pat, cmp_result, ops[MAX_RECOG_OPERANDS];
@@ -9637,17 +9650,18 @@ mips_expand_builtin_compare (enum mips_builtin_type builtin_type,
 
   /* Prepare the operands to the comparison.  */
   cmp_result = mips_prepare_builtin_target (icode, 0, 0);
-  for (i = 1; i < insn_data[icode].n_operands; i++)
+  for (i = 1; i < insn_data[icode].n_operands - 1; i++)
     ops[i] = mips_prepare_builtin_arg (icode, i, &arglist);
 
   switch (insn_data[icode].n_operands)
     {
-    case 3:
-      pat = GEN_FCN (icode) (cmp_result, ops[1], ops[2]);
+    case 4:
+      pat = GEN_FCN (icode) (cmp_result, ops[1], ops[2], GEN_INT (cond));
       break;
 
-    case 5:
-      pat = GEN_FCN (icode) (cmp_result, ops[1], ops[2], ops[3], ops[4]);
+    case 6:
+      pat = GEN_FCN (icode) (cmp_result, ops[1], ops[2],
+			     ops[3], ops[4], GEN_INT (cond));
       break;
 
     default:
