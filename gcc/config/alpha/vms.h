@@ -471,3 +471,5 @@ do {									\
 #define MODDI3_LIBCALL "OTS$REM_L"
 #define UMODSI3_LIBCALL "OTS$REM_UI"
 #define UMODDI3_LIBCALL "OTS$REM_UL"
+
+#define DIR_SEPARATOR ']'
