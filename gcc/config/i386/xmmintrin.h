@@ -1037,7 +1037,7 @@ _mm_prefetch (void *__P, enum _mm_hint __I)
 static __inline void
 _mm_stream_pi (__m64 *__P, __m64 __A)
 {
-  __builtin_ia32_movntq (__P, __A);
+  __builtin_ia32_movntq (__P, (long long)__A);
 }
 
 /* Likewise.  The address must be 16-byte aligned.  */
