@@ -1,3 +1,8 @@
+Thu May 30 20:28:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* gengenrtl.c (type_from_format, accessor_from_format): Support 'B'.
+	* rtl.texi: Document 'B'
+
 2002-05-30  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/m68k/netbsd-elf.h (LONG_DOUBLE_TYPE_SIZE): Compute

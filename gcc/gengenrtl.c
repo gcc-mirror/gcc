@@ -81,6 +81,8 @@ type_from_format (c)
       return "struct bitmap_head_def *";  /* bitmap - typedef not available */
     case 't':
       return "union tree_node *";  /* tree - typedef not available */
+    case 'B':
+      return "struct basic_block_def *";  /* basic block - typedef not available */
     default:
       abort ();
     }
@@ -115,8 +117,8 @@ accessor_from_format (c)
     case 't':
       return "XTREE";
 
-    default:
-      abort ();
+    case 'B':
+      return "XBBDEF";
     }
 }
 
