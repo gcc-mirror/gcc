@@ -1,3 +1,7 @@
+Wed Aug  4 01:17:17 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/990804-1.c: New test.
+
 1999-08-03  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.brendan/crash63.C: Expect a POD warning
