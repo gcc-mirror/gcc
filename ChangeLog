@@ -1,3 +1,8 @@
+Sun Oct 18 18:34:50 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* config.if (cxx_interface, libstdcxx_interface): Do not try to set
+	these if the appropriate directories and files to not exist.
+
 Wed Oct 14 10:29:06 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (DEVO_SUPPORT): Add config.if.
