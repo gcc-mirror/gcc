@@ -87,7 +87,7 @@ in the following sections.
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
 @smallexample
--c  -S  -E  -o @var{file}  -pipe  -v  -x @var{language}
+-c  -S  -E  -o @var{file}  -pipe  -pass-exit-codes  -v  -x @var{language}
 @end smallexample
 
 @item C Language Options
@@ -528,6 +528,13 @@ Use pipes rather than temporary files for communication between the
 various stages of compilation.  This fails to work on some systems where
 the assembler is unable to read from a pipe; but the GNU assembler has
 no trouble.
+
+@item -pass-exit-codes
+Normally the @code{gcc} program will exit with the code of 1 if any
+phase of the compiler returns a non-success return code.  If you specify
+@samp{-pass-exit-codes}, the @code{gcc} program will instead return with
+numerically highest error produced by any phase that returned an error
+indication.
 @end table
 
 @node Invoking G++
