@@ -1,3 +1,7 @@
+Tue Jun 29 03:20:33 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* config.h.in: Rebuilt.
+
 Thu Jun 24 22:05:20 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.am (SUBDIRS): Remove util again.

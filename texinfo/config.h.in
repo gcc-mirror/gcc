@@ -236,6 +236,9 @@
 /* Define if you have the <values.h> header file.  */
 #undef HAVE_VALUES_H
 
+/* Define if you have the <zlib.h> header file.  */
+#undef HAVE_ZLIB_H
+
 /* Define if you have the bsd library (-lbsd).  */
 #undef HAVE_LIBBSD
 
@@ -246,7 +249,6 @@
 #undef HAVE_LIBZ
 
 /* For gettext (NLS) */
-#include <libintl.h>
 #define _(String) gettext (String)
 #define N_(String) (String)
 
