@@ -1,3 +1,9 @@
+2004-08-17  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* config/rs6000/darwin.md (*call_nonlocal_darwin64): Add #else clause
+	for non Darwin targets.
+	(*call_value_nonlocal_darwin64): Likewise.
+
 2004-08-17  Fariborz Jahanian <fjahanian@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_function_value): Check for
