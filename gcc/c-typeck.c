@@ -974,6 +974,21 @@ default_conversion (exp)
       register tree adr;
       tree restype = TREE_TYPE (type);
       tree ptrtype;
+      int constp = 0;
+      int volatilep = 0;
+
+      if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'r'
+	  || TREE_CODE_CLASS (TREE_CODE (exp)) == 'd')
+	{
+	  constp = TREE_READONLY (exp);
+	  volatilep = TREE_THIS_VOLATILE (exp);
+	}
+
+      if (TYPE_READONLY (type) || TYPE_VOLATILE (type)
+	  || constp || volatilep)
+	restype = c_build_type_variant (restype,
+					TYPE_READONLY (type) || constp,
+					TYPE_VOLATILE (type) || volatilep);
 
       if (TREE_CODE (exp) == INDIRECT_REF)
 	return convert (TYPE_POINTER_TO (restype),
@@ -992,10 +1007,6 @@ default_conversion (exp)
 	  error ("invalid use of non-lvalue array");
 	  return error_mark_node;
 	}
-
-      if (TYPE_READONLY (type) || TYPE_VOLATILE (type))
-	restype = c_build_type_variant (restype, TYPE_READONLY (type),
-					TYPE_VOLATILE (type));
 
       ptrtype = build_pointer_type (restype);
 
@@ -2230,10 +2241,11 @@ parser_build_binary_op (code, arg1, arg2)
   else
     {
       int flag = TREE_CONSTANT (result);
-      /* We use NOP_EXPR rather than NON_LVALUE_EXPR
-	 so that convert_for_assignment won't strip it.
-	 That way, we get warnings for things like p = (1 - 1).  */
-      result = build1 (NOP_EXPR, TREE_TYPE (result), result);
+      /* We used to use NOP_EXPR rather than NON_LVALUE_EXPR
+	 so that convert_for_assignment wouldn't strip it.
+	 That way, we got warnings for things like p = (1 - 1).
+	 But it turns out we should not get those warnings.  */
+      result = build1 (NON_LVALUE_EXPR, TREE_TYPE (result), result);
       C_SET_EXP_ORIGINAL_CODE (result, code);
       TREE_CONSTANT (result) = flag;
     }
@@ -2546,7 +2558,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  register tree tt0 = TREE_TYPE (type0);
 	  register tree tt1 = TREE_TYPE (type1);
 	  /* Anything compares with void *.  void * compares with anything.
-	     Otherwise, the targets must be the same.  */
+	     Otherwise, the targets must be compatible
+	     and both must be object or both incomplete.  */
 	  if (comp_target_types (type0, type1))
 	    ;
 	  else if (TYPE_MAIN_VARIANT (tt0) == void_type_node)
@@ -2619,6 +2632,9 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	{
 	  if (! comp_target_types (type0, type1))
 	    pedwarn ("comparison of distinct pointer types lacks a cast");
+	  else if ((TYPE_SIZE (TREE_TYPE (type0)) != 0)
+		   != (TYPE_SIZE (TREE_TYPE (type1)) != 0))
+	    pedwarn ("comparison of complete and incomplete pointers");
 	  else if (pedantic 
 		   && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
 	    pedwarn ("ANSI C forbids ordered comparisons of pointers to functions");
@@ -4855,6 +4871,9 @@ digest_init (type, init, require_constant, constructor_constant)
 	{
 	  tree string = element ? element : inside_init;
 
+	  if (TREE_TYPE (string) == type)
+	    return string;
+
 	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (string)))
 	       != char_type_node)
 	      && TYPE_PRECISION (typ1) == TYPE_PRECISION (char_type_node))
@@ -5496,7 +5515,7 @@ pop_init_level (implicit)
 	 just pass out the element between them.  */
       constructor = p->replacement_value;
       /* If this is the top level thing within the initializer,
-	 and it's for a variable, then since we already calle
+	 and it's for a variable, then since we already called
 	 assemble_variable, we must output the value now.  */
       if (p->next == 0 && constructor_decl != 0
 	  && constructor_incremental)
@@ -5770,9 +5789,7 @@ output_init_element (value, type, field, pending)
       if (! duplicate)
 	constructor_pending_elts
 	  = tree_cons (field,
-		       digest_init (type, value,
-				    require_constant_value,
-				    require_constant_elements),
+		       digest_init (type, value, 0, 0),
 		       constructor_pending_elts);
     }
   else if ((TREE_CODE (constructor_type) == RECORD_TYPE
@@ -5782,9 +5799,7 @@ output_init_element (value, type, field, pending)
       if (!duplicate)
 	constructor_pending_elts
 	  = tree_cons (field,
-		       digest_init (type, value,
-				    require_constant_value,
-				    require_constant_elements),
+		       digest_init (type, value, 0, 0),
 		       constructor_pending_elts);
     }
   else
@@ -5798,9 +5813,7 @@ output_init_element (value, type, field, pending)
 	    constructor_elements
 	      = tree_cons ((TREE_CODE (constructor_type) != ARRAY_TYPE
 			    ? field : NULL),
-			   digest_init (type, value,
-					require_constant_value,
-					require_constant_elements),
+			   digest_init (type, value, 0, 0),
 			   constructor_elements);
 	  else
 	    {
@@ -5820,7 +5833,8 @@ output_init_element (value, type, field, pending)
 		      assemble_zeros (next - here);
 		    }
 		}
-	      output_constant (value, int_size_in_bytes (type));
+	      output_constant (digest_init (type, value, 0, 0),
+			       int_size_in_bytes (type));
 
 	      /* For a record, keep track of end position of last field.  */
 	      if (TREE_CODE (constructor_type) == RECORD_TYPE)
