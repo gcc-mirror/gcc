@@ -79,6 +79,7 @@ web pages		Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
 C front end/isoc9x	Gavin Romig-Koch	gavin@cygnus.com
 config.sub/config.guess	Ben Elliston		bje@cygnus.com
 avr port		Denis Chertykov		denisc@overta.ru
+basic block reordering	Jason Eckhardt		jle@cygnus.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
@@ -87,7 +88,6 @@ in changes outside of the parts of the compiler they maintain.
 			Write After Approval
 Scott Bambrough					scottb@netwinder.org
 Neil Booth					NeilB@earthling.net
-Jason Eckhardt					jle@cygnus.com
 *Paul Eggert					eggert@twinsun.com
 Kaveh Ghazi					ghazi@caip.rutgers.edu
 Anthony Green					green@cygnus.com
