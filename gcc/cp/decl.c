@@ -2077,15 +2077,10 @@ pushtag (name, type, globalize)
 	      if (! globalize && processing_template_decl && IS_AGGR_TYPE (type))
 		push_template_decl (d);
 
-	      /* If it is anonymous, then we are called from pushdecl,
-		 and we don't want to infinitely recurse.  */
-	      if (! ANON_AGGRNAME_P (name))
-		{
-		  if (b->parm_flag == 2)
-		    d = pushdecl_class_level (d);
-		  else
-		    d = pushdecl_with_scope (d, b);
-		}
+	      if (b->parm_flag == 2)
+		d = pushdecl_class_level (d);
+	      else
+		d = pushdecl_with_scope (d, b);
 	    }
 	  else
 	    {
@@ -2102,7 +2097,7 @@ pushtag (name, type, globalize)
 	    }
 	  if (newdecl)
 	    {
-	      if (write_symbols != DWARF_DEBUG)
+	      if (write_symbols != DWARF_DEBUG && write_symbols != DWARF2_DEBUG)
 		{
 		  if (ANON_AGGRNAME_P (name))
 		    DECL_IGNORED_P (d) = 1;
@@ -3589,6 +3584,7 @@ implicitly_declare (functionid)
 
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
 
   /* ANSI standard says implicit declarations are in the innermost block.
      So we record the decl in the standard fashion.  */
@@ -6211,8 +6207,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
     {
       if (init && DECL_INITIAL (decl))
 	DECL_INITIAL (decl) = init;
-      if (minimal_parse_mode && ! DECL_ARTIFICIAL (decl)
-	  && DECL_VINDEX (decl))
+      if (minimal_parse_mode && ! DECL_ARTIFICIAL (decl))
 	{
 	  tree stmt = DECL_VINDEX (decl);
 	  DECL_VINDEX (decl) = NULL_TREE;
@@ -7129,7 +7124,15 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
     return decl;
 
   if (check && funcdef_flag)
-    DECL_INITIAL (decl) = error_mark_node;
+    {
+      /* Do this before the decl is actually defined so that the DWARF debug
+	 info for the class reflects the declaration, rather than the
+	 definition, of this decl.  */
+      if (ctype)
+	note_debug_info_needed (ctype);
+
+      DECL_INITIAL (decl) = error_mark_node;
+    }
 
   if (flags == NO_SPECIAL && ctype && constructor_name (cname) == declarator)
     {
@@ -10716,7 +10719,7 @@ finish_enum (enumtype, values)
   }
 
   /* Finish debugging output for this type.  */
-  if (write_symbols != DWARF_DEBUG)
+  if (write_symbols != DWARF_DEBUG && write_symbols != DWARF2_DEBUG)
     rest_of_type_compilation (enumtype, global_bindings_p ());
 
   return enumtype;

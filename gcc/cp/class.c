@@ -3593,10 +3593,10 @@ finish_struct_1 (t, warn_anon)
 
   TYPE_HAS_COMPLEX_INIT_REF (t)
     |= (TYPE_HAS_INIT_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
-	|| any_default_members);
+	|| has_virtual || any_default_members);
   TYPE_NEEDS_CONSTRUCTING (t)
     |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
-	|| has_virtual || any_default_members || first_vfn_base_index >= 0);
+	|| has_virtual || any_default_members);
   if (! IS_SIGNATURE (t))
     CLASSTYPE_NON_AGGREGATE (t)
       = ! aggregate || has_virtual || TYPE_HAS_CONSTRUCTOR (t);
@@ -4180,7 +4180,7 @@ finish_struct_1 (t, warn_anon)
     }
 #endif
 
-  if (write_symbols != DWARF_DEBUG)
+  if (write_symbols != DWARF_DEBUG && write_symbols != DWARF2_DEBUG)
     {
       /* If the type has methods, we want to think about cutting down
 	 the amount of symbol table stuff we output.  The value stored in

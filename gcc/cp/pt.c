@@ -2427,7 +2427,38 @@ tsubst_expr (t, args, nargs, in_decl)
 	expand_computed_goto
 	  (tsubst_expr (TREE_OPERAND (t, 0), args, nargs, in_decl));
       break;
-	  
+
+    case TRY_BLOCK:
+      lineno = TREE_COMPLEXITY (t);
+      emit_line_note (input_filename, lineno);
+      expand_start_try_stmts ();
+      tsubst_expr (TREE_OPERAND (t, 0), args, nargs, in_decl);
+      expand_start_all_catch ();
+      {
+	tree handler = TREE_OPERAND (t, 1);
+	for (; handler; handler = TREE_CHAIN (handler))
+	  tsubst_expr (handler, args, nargs, in_decl);
+      }
+      expand_end_all_catch ();
+      break;
+
+    case HANDLER:
+      lineno = TREE_COMPLEXITY (t);
+      do_pushlevel ();
+      if (TREE_OPERAND (t, 0))
+	{
+	  tree d = TREE_OPERAND (t, 0);
+	  expand_start_catch_block
+	    (tsubst (TREE_OPERAND (d, 1), args, nargs, in_decl),
+	     tsubst (TREE_OPERAND (d, 0), args, nargs, in_decl));
+	}
+      else
+	expand_start_catch_block (NULL_TREE, NULL_TREE);
+      tsubst_expr (TREE_OPERAND (t, 1), args, nargs, in_decl);
+      expand_end_catch_block ();
+      do_poplevel ();
+      break;
+
     default:
       return build_expr_from_tree (tsubst_copy (t, args, nargs, in_decl));
     }

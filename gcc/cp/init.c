@@ -29,9 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "output.h"
 
-#undef NULL
-#define NULL 0
-
 /* In C++, structures with well-defined constructors are initialized by
    those constructors, unasked.  CURRENT_BASE_INIT_LIST
    holds a list of stmts for a BASE_INIT term in the grammar.
@@ -1269,6 +1266,27 @@ expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
   tree rval;
   tree parms;
 
+  if (flag_ansi_overloading && init && TREE_CODE (init) != TREE_LIST
+      && (flags & LOOKUP_ONLYCONVERTING))
+    {
+      /* Base subobjects should only get direct-initialization.  */
+      if (true_exp != exp)
+	abort ();
+
+      /* We special-case TARGET_EXPRs here to avoid an error about
+	 private copy constructors for temporaries bound to reference vars.
+	 If the TARGET_EXPR represents a call to a function that has
+	 permission to create such objects, a reference can bind directly
+	 to the return value.  An object variable must be initialized
+	 via the copy constructor, even if the call is elided.  */
+      if (! (TREE_CODE (exp) == VAR_DECL && DECL_ARTIFICIAL (exp)
+	     && TREE_CODE (init) == TARGET_EXPR && TREE_TYPE (init) == type))
+	init = cp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
+
+      expand_assignment (exp, init, 0, 0);
+      return;
+    }
+
   if (init == NULL_TREE
       || (TREE_CODE (init) == TREE_LIST && ! TREE_TYPE (init)))
     {
@@ -1276,7 +1294,8 @@ expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
       if (parms)
 	init = TREE_VALUE (parms);
     }
-  else if (TREE_CODE (init) == INDIRECT_REF && TREE_HAS_CONSTRUCTOR (init)
+  else if (! flag_ansi_overloading
+	   && TREE_CODE (init) == INDIRECT_REF && TREE_HAS_CONSTRUCTOR (init)
 	   && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (init)))
     {
       rval = convert_for_initialization (exp, type, init, 0, 0, 0, 0);
@@ -1294,6 +1313,14 @@ expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
       else
 	parms = tree_cons (NULL_TREE, integer_zero_node, parms);
       flags |= LOOKUP_HAS_IN_CHARGE;
+    }
+
+  if (flag_ansi_overloading)
+    {
+      rval = build_method_call (exp, ctor_identifier,
+				parms, binfo, flags);
+      expand_expr_stmt (rval);
+      return;
     }
 
   if (init && TREE_CHAIN (parms) == NULL_TREE
@@ -1376,7 +1403,24 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
      NULL_TREE, know that it was meant for us--just slide exp on
      in and expand the constructor.  Constructors now come
      as TARGET_EXPRs.  */
-  if (init)
+
+  if (init && TREE_CODE (exp) == VAR_DECL
+      && TREE_CODE (init) == CONSTRUCTOR
+      && TREE_HAS_CONSTRUCTOR (init))
+    {
+      tree t = store_init_value (exp, init);
+      if (!t)
+	{
+	  expand_decl_init (exp);
+	  return;
+	}
+      t = build (INIT_EXPR, type, exp, init);
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr_stmt (t);
+      return;
+    }
+
+  if (init && ! flag_ansi_overloading)
     {
       tree init_list = NULL_TREE;
 
@@ -1457,7 +1501,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 	{
 	  tree tmp = TREE_OPERAND (TREE_OPERAND (init, 1), 1);
 
-	  if (TREE_CODE (TREE_VALUE (tmp)) == NOP_EXPR
+	  if (tmp && TREE_CODE (TREE_VALUE (tmp)) == NOP_EXPR
 	      && TREE_OPERAND (TREE_VALUE (tmp), 0) == integer_zero_node)
 	    {
 	      /* In order for this to work for RESULT_DECLs, if their
@@ -1485,22 +1529,6 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 	      expand_expr_stmt (init);
 	      return;
 	    }
-	}
-
-      if (TREE_CODE (exp) == VAR_DECL
-	  && TREE_CODE (init) == CONSTRUCTOR
-	  && TREE_HAS_CONSTRUCTOR (init))
-	{
-	  tree t = store_init_value (exp, init);
-	  if (!t)
-	    {
-	      expand_decl_init (exp);
-	      return;
-	    }
-	  t = build (INIT_EXPR, type, exp, init);
-	  TREE_SIDE_EFFECTS (t) = 1;
-	  expand_expr_stmt (t);
-	  return;
 	}
 
       /* Handle this case: when calling a constructor: xyzzy foo(bar);
@@ -1534,13 +1562,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 	    {
 	      tree rval = build_type_conversion (CONVERT_EXPR, type, init, 1);
 
-	      if (flag_ansi_overloading && rval)
-		{
-		  if (rval != error_mark_node)
-		    expand_aggr_init_1 (binfo, true_exp, exp, rval, alias_this, flags);
-		  return;
-		}
-	      else if (rval)
+	      if (rval)
 		{
 		  /* See if there is a constructor for``type'' that takes a
 		     ``ttype''-typed object.  */
@@ -2027,6 +2049,10 @@ resolve_offset_ref (exp)
 	return error_mark_node;
       return member;
     }
+
+  if (TREE_CODE (TREE_TYPE (member)) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (member))) == METHOD_TYPE)
+    return member;
 
   /* Syntax error can cause a member which should
      have been seen as static to be grok'd as non-static.  */
@@ -3078,7 +3104,7 @@ build_new (placement, decl, init, use_global_new)
   if (rval && TREE_TYPE (rval) != build_pointer_type (type))
     {
       /* The type of new int [3][3] is not int *, but int [3] * */
-      rval = build_c_cast (build_pointer_type (type), rval, 0);
+      rval = build_c_cast (build_pointer_type (type), rval);
     }
 
   if (pending_sizes)

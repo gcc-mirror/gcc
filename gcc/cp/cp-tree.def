@@ -138,6 +138,8 @@ DEFTREECODE (GOTO_STMT, "goto_stmt", "e", 1)
 DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", "e", 2)
 DEFTREECODE (CASE_LABEL, "case_label", "e", 2)
 DEFTREECODE (RETURN_INIT, "return_init", "e", 2)
+DEFTREECODE (TRY_BLOCK, "try_stmt", "e", 2)
+DEFTREECODE (HANDLER, "catch_stmt", "e", 2)
 
 DEFTREECODE (IDENTITY_CONV, "identity_conv", "e", 1)
 DEFTREECODE (LVALUE_CONV, "lvalue_conv", "e", 1)

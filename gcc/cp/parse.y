@@ -1224,7 +1224,7 @@ expr_no_commas:
 		{ $$ = build_m_component_ref ($$, build_x_unary_op ($2, $3)); }
 	| object '(' type_id ')' expr_no_commas  %prec UNARY
 		{ tree type = groktypename ($3.t);
-		  $$ = build_m_component_ref ($$, build_c_cast (type, $5, 0)); }
+		  $$ = build_m_component_ref ($$, build_c_cast (type, $5)); }
 	| object primary_no_id  %prec UNARY
 		{ $$ = build_m_component_ref ($$, $2); }
 */
@@ -1421,7 +1421,7 @@ primary:
 		        }
 #endif
 		      else my_friendly_abort (79);
-		      $$ = build_c_cast (type, build_compound_expr ($3), 1);
+		      $$ = build_c_cast (type, build_compound_expr ($3));
 		    }
 		}
 	| functional_cast
@@ -3678,18 +3678,75 @@ function_try_block:
 
 try_block:
 	  TRY
-		{ expand_start_try_stmts (); }
+		{
+		  if (processing_template_decl)
+		    {
+		      $<ttype>$ = build_min_nt (TRY_BLOCK, NULL_TREE,
+						NULL_TREE);
+		      add_tree ($<ttype>$);
+		    }
+		  else
+		    {
+		      emit_line_note (input_filename, lineno);
+		      expand_start_try_stmts ();
+		    }
+		}
 	  compstmt
-		{ expand_start_all_catch (); }
+		{
+		  if (processing_template_decl)
+		    {
+		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
+		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
+		      last_tree = $<ttype>2;
+		    }
+		  else
+		    expand_start_all_catch ();
+		}
 	  handler_seq
-		{ expand_end_all_catch (); }
+		{
+		  if (processing_template_decl)
+		    {
+		      TREE_OPERAND ($<ttype>2, 1) = TREE_CHAIN ($<ttype>2);
+		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
+		      last_tree = $<ttype>2;
+		    }
+		  else
+		    expand_end_all_catch ();
+		}
 	;
 
 handler_seq:
 	  /* empty */
-	| handler_seq CATCH .pushlevel handler_args compstmt
-		{ expand_end_catch_block (); }
-	  .poplevel
+	| handler_seq CATCH
+		{
+		  if (processing_template_decl)
+		    {
+		      $<ttype>$ = build_min_nt (HANDLER, NULL_TREE,
+						NULL_TREE);
+		      add_tree ($<ttype>$);
+		    }
+		}
+	.pushlevel handler_args
+		{
+		  if (processing_template_decl)
+		    {
+		      TREE_OPERAND ($<ttype>3, 0) = TREE_CHAIN ($<ttype>3);
+		      TREE_CHAIN ($<ttype>3) = NULL_TREE;
+		      last_tree = $<ttype>3;
+		    }
+		}	  
+	compstmt
+		{
+		  if (processing_template_decl)
+		    {
+		      TREE_OPERAND ($<ttype>3, 1) = TREE_CHAIN ($<ttype>3);
+		      TREE_CHAIN ($<ttype>3) = NULL_TREE;
+		      last_tree = $<ttype>3;
+		    }
+		  else
+		    expand_end_catch_block ();
+		}	  
+	.poplevel
 	;
 
 type_specifier_seq:

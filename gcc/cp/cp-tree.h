@@ -22,17 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #ifndef _CP_TREE_H
 #define _CP_TREE_H
 
-/* Borrow everything that is C from c-tree.h,
-   but do so by copy, not by inclusion, since c-tree.h defines
-   lang_identifier.  */
-
-#ifndef STDIO_PROTO
-#ifdef BUFSIZ
-#define STDIO_PROTO(ARGS) PROTO(ARGS)
-#else
-#define STDIO_PROTO(ARGS) ()
-#endif
-#endif
+#include "gansidecl.h"
 
 /* Language-dependent contents of an identifier.  */
 
@@ -1881,7 +1871,6 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
    CONV_CONST      :  Perform the explicit conversions for const_cast.
    CONV_REINTERPRET:  Perform the explicit conversions for reinterpret_cast.
    CONV_PRIVATE    :  Perform upcasts to private bases.
-   CONV_NONCONVERTING : Allow non-converting constructors to be used.
    CONV_FORCE_TEMP :  Require a new temporary when converting to the same
    		      aggregate type.  */
 
@@ -1890,7 +1879,7 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 #define CONV_CONST       4
 #define CONV_REINTERPRET 8
 #define CONV_PRIVATE	 16
-#define CONV_NONCONVERTING 32
+/* #define CONV_NONCONVERTING 32 */
 #define CONV_FORCE_TEMP  64
 #define CONV_STATIC_CAST (CONV_IMPLICIT | CONV_STATIC | CONV_FORCE_TEMP)
 #define CONV_OLD_CONVERT (CONV_IMPLICIT | CONV_STATIC | CONV_CONST \
@@ -1938,7 +1927,7 @@ extern void overflow_warning			PROTO((tree));
 extern void unsigned_conversion_warning		PROTO((tree, tree));
 
 /* in call.c */
-extern struct candidate *ansi_c_bullshit;
+extern struct candidate *ansi_c_filler;
 
 extern int rank_for_overload			PROTO((struct candidate *, struct candidate *));
 extern int can_convert				PROTO((tree, tree));
@@ -1955,6 +1944,7 @@ extern tree build_method_call			PROTO((tree, tree, tree, tree, int));
 extern tree build_overload_call_real		PROTO((tree, tree, int, struct candidate *, int));
 extern tree build_overload_call			PROTO((tree, tree, int));
 extern tree build_new_method_call		PROTO((tree, tree, tree, tree, int));
+extern tree build_user_type_conversion		PROTO((tree, tree, int));
 extern tree build_new_function_call		PROTO((tree, tree, tree));
 extern tree build_new_op			PROTO((enum tree_code, int, tree, tree, tree));
 
@@ -2471,7 +2461,7 @@ extern tree build_compound_expr			PROTO((tree));
 extern tree build_static_cast			PROTO((tree, tree));
 extern tree build_reinterpret_cast		PROTO((tree, tree));
 extern tree build_const_cast			PROTO((tree, tree));
-extern tree build_c_cast			PROTO((tree, tree, int));
+extern tree build_c_cast			PROTO((tree, tree));
 extern tree build_x_modify_expr			PROTO((tree, enum tree_code, tree));
 extern tree build_modify_expr			PROTO((tree, enum tree_code, tree));
 extern int language_lvalue_valid		PROTO((tree));

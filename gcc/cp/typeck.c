@@ -1837,10 +1837,13 @@ build_component_ref (datum, component, basetype_path, protect)
 			  && ! resolves_to_fixed_type_p (datum, 0))
 			{
 			  tree addr = build_unary_op (ADDR_EXPR, datum, 0);
+			  tree fntype = TREE_TYPE (fndecl);
+
 			  addr = convert_pointer_to (DECL_CONTEXT (fndecl), addr);
 			  datum = build_indirect_ref (addr, NULL_PTR);
 			  my_friendly_assert (datum != error_mark_node, 310);
 			  fndecl = build_vfn_ref (&addr, datum, DECL_VINDEX (fndecl));
+			  TREE_TYPE (fndecl) = build_pointer_type (fntype);
 			}
 		      mark_used (fndecl);
 		      return build (OFFSET_REF, TREE_TYPE (fndecl), datum, fndecl);
@@ -2436,7 +2439,7 @@ build_x_function_call (function, params, decl)
 	  decl = convert_pointer_to (TREE_TYPE (ctypeptr), decl);
 	}
       else
-	decl = build_c_cast (ctypeptr, decl, 0);
+	decl = build_c_cast (ctypeptr, decl);
       params = tree_cons (NULL_TREE, decl, params);
     }
 
@@ -2715,6 +2718,9 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 
   if (! flag_elide_constructors)
     return_loc = 0;
+
+  /* Argument passing is always copy-initialization.  */
+  flags |= LOOKUP_ONLYCONVERTING;
 
   if (fndecl)
     {
@@ -4490,7 +4496,9 @@ unary_complex_lvalue (code, arg)
       || TREE_CODE (arg) == INIT_EXPR)
     {
       tree real_result = build_unary_op (code, TREE_OPERAND (arg, 0), 0);
-      return build (COMPOUND_EXPR, TREE_TYPE (real_result), arg, real_result);
+      arg = build (COMPOUND_EXPR, TREE_TYPE (real_result), arg, real_result);
+      TREE_NO_UNUSED_WARNING (arg) = 1;
+      return arg;
     }
 
   if (TREE_CODE (TREE_TYPE (arg)) == FUNCTION_TYPE
@@ -5188,7 +5196,7 @@ build_static_cast (type, expr)
     ok = 1;
 
   if (ok)
-    return build_c_cast (type, expr, 0);
+    return build_c_cast (type, expr);
 
   cp_error ("static_cast from `%T' to `%T'", intype, type);
   return error_mark_node;
@@ -5354,10 +5362,9 @@ build_const_cast (type, expr)
    when doing the cast.  */
 
 tree
-build_c_cast (type, expr, allow_nonconverting)
+build_c_cast (type, expr)
      register tree type;
      tree expr;
-     int allow_nonconverting;
 {
   register tree value = expr;
 
@@ -5485,11 +5492,9 @@ build_c_cast (type, expr, allow_nonconverting)
 	warning ("cast to pointer from integer of different size");
 #endif
 
-      flag = allow_nonconverting ? CONV_NONCONVERTING : 0;
-
       if (TREE_CODE (type) == REFERENCE_TYPE)
 	value = (convert_from_reference
-		 (convert_to_reference (type, value, CONV_OLD_CONVERT|flag,
+		 (convert_to_reference (type, value, CONV_C_CAST,
 					LOOKUP_COMPLAIN, NULL_TREE)));
       else
 	{
@@ -6267,7 +6272,7 @@ build_ptrmemfunc (type, pfn, force)
   /* Handle null pointer to member function conversions.  */
   if (integer_zerop (pfn))
     {
-      pfn = build_c_cast (type, integer_zero_node, 0);
+      pfn = build_c_cast (type, integer_zero_node);
       return build_ptrmemfunc1 (TYPE_GET_PTRMEMFUNC_TYPE (type),
 				integer_zero_node, integer_zero_node,
 				pfn, NULL_TREE);
@@ -6761,10 +6766,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
     }
   else if (TYPE_HAS_CONSTRUCTOR (type) || IS_AGGR_TYPE (TREE_TYPE (rhs)))
     return convert (type, rhs);
-  /* Handle anachronistic conversions from (::*)() to void* or (*)().  */
+  /* Handle anachronistic conversions from (::*)() to cv void* or (*)().  */
   else if (TREE_CODE (type) == POINTER_TYPE
 	   && (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
-	       || TREE_TYPE (type) == void_type_node)
+	       || TYPE_MAIN_VARIANT (TREE_TYPE (type)) == void_type_node)
 	   && TREE_TYPE (rhs)
 	   && TYPE_PTRMEMFUNC_P (TREE_TYPE (rhs)))
     return convert (type, rhs);
@@ -6886,6 +6891,9 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
   if (IS_AGGR_TYPE (type)
       && (TYPE_NEEDS_CONSTRUCTING (type) || TREE_HAS_CONSTRUCTOR (rhs)))
     {
+      if (flag_ansi_overloading)
+	return cp_convert (type, rhs, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
+
       if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype))
 	{
 	  /* This is sufficient to perform initialization.  No need,
@@ -7130,9 +7138,9 @@ c_expand_return (retval)
 
       /* convert to reference now, so we can give error if we
 	 return an reference to a non-lvalue.  */
-      retval = convert_for_initialization (tmp_result, valtype, retval,
-					   LOOKUP_NORMAL, "return",
-					   NULL_TREE, 0);
+      retval = convert_for_initialization
+	(tmp_result, valtype, retval, LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING,
+	 "return", NULL_TREE, 0);
 
       /* Sort through common things to see what it is
 	 we are returning.  */
@@ -7207,14 +7215,14 @@ c_expand_return (retval)
     {
       /* We already did this above for refs, don't do it again.  */
       if (TREE_CODE (valtype) != REFERENCE_TYPE)
-	retval = convert_for_initialization (NULL_TREE, valtype, retval,
-					     LOOKUP_NORMAL,
-					     "return", NULL_TREE, 0);
+	retval = convert_for_initialization
+	  (NULL_TREE, valtype, retval, LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING,
+	   "return", NULL_TREE, 0);
 
       /* We can't initialize a register from a NEW_EXPR.  */
       if (! current_function_returns_struct
 	  && TREE_CODE (retval) == TARGET_EXPR
-	  && TREE_CODE (TREE_OPERAND (retval, 0)) == NEW_EXPR)
+	  && TREE_CODE (TREE_OPERAND (retval, 1)) == NEW_EXPR)
 	retval = build (COMPOUND_EXPR, TREE_TYPE (retval), retval,
 			TREE_OPERAND (retval, 0));
 

@@ -32,10 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "class.h"
 #include "convert.h"
 
-#undef NULL
-#define NULL (char *)0
-
-tree build_user_type_conversion ();
+extern tree static_aggregates;
 
 /* Change of width--truncation and extension of integers or reals--
    is represented with NOP_EXPR.  Proper functioning of many things
@@ -151,21 +148,18 @@ cp_convert_to_pointer (type, expr)
 
   if (TYPE_PTRMEMFUNC_P (type))
     type = TYPE_PTRMEMFUNC_FN_TYPE (type);
-  if (TYPE_PTRMEMFUNC_P (intype))
-    intype = TYPE_PTRMEMFUNC_FN_TYPE (intype);
 
-  /* Handle anachronistic conversions from (::*)() to void* or (*)().  */
+  /* Handle anachronistic conversions from (::*)() to cv void* or (*)().  */
   if (TREE_CODE (type) == POINTER_TYPE
       && (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
-	  || TREE_TYPE (type) == void_type_node))
+	  || TYPE_MAIN_VARIANT (TREE_TYPE (type)) == void_type_node))
     {
       /* Allow an implicit this pointer for pointer to member
 	 functions.  */
-      if (TREE_CODE (intype) == POINTER_TYPE
-	  && TREE_CODE (TREE_TYPE (intype)) == METHOD_TYPE)
+      if (TYPE_PTRMEMFUNC_P (intype))
 	{
 	  tree decl, basebinfo;
-	  tree fntype = TREE_TYPE (intype);
+	  tree fntype = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (intype));
 	  tree t = TYPE_METHOD_BASETYPE (fntype);
 
 	  if (current_class_type == 0
@@ -197,6 +191,9 @@ cp_convert_to_pointer (type, expr)
 	}
       intype = TREE_TYPE (expr);
     }
+
+  if (TYPE_PTRMEMFUNC_P (intype))
+    intype = TYPE_PTRMEMFUNC_FN_TYPE (intype);
 
   form = TREE_CODE (intype);
 
@@ -589,7 +586,7 @@ build_up_reference (type, arg, flags, checkconst)
       break;
     }
 
-  if ((flags&DIRECT_BIND)
+  if ((flags & DIRECT_BIND)
       && ! real_lvalue_p (targ))
     {
       if (toplevel_bindings_p ())
@@ -605,7 +602,7 @@ build_up_reference (type, arg, flags, checkconst)
       DECL_INITIAL (arg) = targ;
       cp_finish_decl (arg, targ, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
-  else if (TREE_ADDRESSABLE (targ) == 0 && !(flags&DIRECT_BIND))
+  else if (TREE_ADDRESSABLE (targ) == 0 && !(flags & DIRECT_BIND))
     {
       tree slot = build_decl (VAR_DECL, NULL_TREE, argtype);
       arg = build (TARGET_EXPR, argtype, slot, arg, NULL_TREE, NULL_TREE);
@@ -737,7 +734,19 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
       if (rval != error_mark_node)
 	rval = build1 (NOP_EXPR, reftype, rval);
     }
-  else if (decl)
+  else if (flag_ansi_overloading)
+    {
+      rval = convert_for_initialization (NULL_TREE, type, expr, flags,
+					 "converting", 0, 0);
+      if (rval == error_mark_node)
+	return error_mark_node;
+      rval = build_up_reference (reftype, rval, flags, 1);
+
+      if (rval && ! TYPE_READONLY (TREE_TYPE (reftype)))
+	cp_pedwarn ("initializing non-const `%T' with `%T' will use a temporary",
+		    reftype, intype);
+    }
+  else
     {
       tree rval_as_ctor = NULL_TREE;
       
@@ -766,7 +775,6 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 
 	  if (toplevel_bindings_p ())
 	    {
-	      extern tree static_aggregates;
 	      tree t = get_temp_name (type, toplevel_bindings_p ());
 	      init = build_method_call (t, ctor_identifier,
 					build_tree_list (NULL_TREE, expr),
@@ -1274,50 +1282,67 @@ cp_convert (type, expr, convtype, flags)
 	 There may be some ambiguity between using a constructor
 	 vs. using a type conversion operator when both apply.  */
 
-      if (IS_AGGR_TYPE (dtype) && ! DERIVED_FROM_P (type, dtype)
-	  && TYPE_HAS_CONVERSION (dtype))
-	conversion = build_type_conversion (CONVERT_EXPR, type, e, 1);
-
-      if (conversion == error_mark_node)
+      if (flag_ansi_overloading)
 	{
-	  if (flags & LOOKUP_COMPLAIN)
-	    error ("ambiguous pointer conversion");
-	  return conversion;
+	  ctor = e;
+	  
+	  if ((flags & LOOKUP_ONLYCONVERTING)
+	      && ! (IS_AGGR_TYPE (dtype) && DERIVED_FROM_P (type, dtype)))
+	    ctor = build_user_type_conversion (type, ctor, flags);
+	  if (ctor)
+	    ctor = build_method_call (NULL_TREE, ctor_identifier,
+				      build_tree_list (NULL_TREE, ctor),
+				      TYPE_BINFO (type), flags);
+	  if (ctor)
+	    return build_cplus_new (type, ctor);
 	}
-
-      if (TYPE_HAS_CONSTRUCTOR (complete_type (type))
-	  && (! flag_ansi_overloading || ! conversion))
-	ctor = build_method_call (NULL_TREE, ctor_identifier,
-				  build_tree_list (NULL_TREE, e),
-				  TYPE_BINFO (type),
-				  (flags & LOOKUP_NORMAL) | LOOKUP_SPECULATIVELY
-				  | (convtype & CONV_NONCONVERTING ? 0 : LOOKUP_ONLYCONVERTING)
-				  | (flags & LOOKUP_NO_CONVERSION)
-				  | (conversion ? LOOKUP_NO_CONVERSION : 0));
-
-      if (ctor == error_mark_node)
+      else
 	{
-	  if (flags & LOOKUP_COMPLAIN)
-	    cp_error ("in conversion to type `%T'", type);
-	  if (flags & LOOKUP_SPECULATIVELY)
-	    return NULL_TREE;
-	  return error_mark_node;
-	}
+	  if (IS_AGGR_TYPE (dtype) && ! DERIVED_FROM_P (type, dtype)
+	      && TYPE_HAS_CONVERSION (dtype))
+	    conversion = build_type_conversion (CONVERT_EXPR, type, e, 1);
+
+	  if (conversion == error_mark_node)
+	    {
+	      if (flags & LOOKUP_COMPLAIN)
+		error ("ambiguous pointer conversion");
+	      return conversion;
+	    }
+
+	  if (TYPE_HAS_CONSTRUCTOR (complete_type (type)))
+	    ctor = build_method_call (NULL_TREE, ctor_identifier,
+				      build_tree_list (NULL_TREE, e),
+				      TYPE_BINFO (type),
+				      (flags & LOOKUP_NORMAL)
+				      | LOOKUP_SPECULATIVELY
+				      | (flags & LOOKUP_ONLYCONVERTING)
+				      | (flags & LOOKUP_NO_CONVERSION)
+				      | (conversion ? LOOKUP_NO_CONVERSION : 0));
+
+	  if (ctor == error_mark_node)
+	    {
+	      if (flags & LOOKUP_COMPLAIN)
+		cp_error ("in conversion to type `%T'", type);
+	      if (flags & LOOKUP_SPECULATIVELY)
+		return NULL_TREE;
+	      return error_mark_node;
+	    }
       
-      if (conversion && ctor)
-	{
-	  if (flags & LOOKUP_COMPLAIN)
-	    error ("both constructor and type conversion operator apply");
-	  if (flags & LOOKUP_SPECULATIVELY)
-	    return NULL_TREE;
-	  return error_mark_node;
-	}
-      else if (conversion)
-	return conversion;
-      else if (ctor)
-	{
-	  ctor = build_cplus_new (type, ctor);
-	  return ctor;
+	  if (conversion && ctor)
+	    {
+	      if (flags & LOOKUP_COMPLAIN)
+		error ("both constructor and type conversion operator apply");
+	      if (flags & LOOKUP_SPECULATIVELY)
+		return NULL_TREE;
+	      return error_mark_node;
+	    }
+	  else if (conversion)
+	    return conversion;
+	  else if (ctor)
+	    {
+	      ctor = build_cplus_new (type, ctor);
+	      return ctor;
+	    }
 	}
     }
 

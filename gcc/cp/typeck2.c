@@ -865,16 +865,12 @@ digest_init (type, init, tail)
 	return process_init_constructor (type, init, (tree *)0);
       else if (TYPE_NON_AGGREGATE_CLASS (type))
 	{
-#if 0
-	  /* This isn't true.  */
-	  /* This can only be reached when caller is initializing
-	     ARRAY_TYPE.  In that case, we don't want to convert
-	     INIT to TYPE.  We will let `expand_vec_init' do it.  */
-	  return init;
-#else
-	  return convert_for_initialization (0, type, init, LOOKUP_NORMAL,
+	  int flags = LOOKUP_NORMAL;
+	  /* Initialization from { } is copy-initialization.  */
+	  if (tail)
+	    flags |= LOOKUP_ONLYCONVERTING;
+	  return convert_for_initialization (0, type, init, flags,
 					     "initialization", NULL_TREE, 0);
-#endif
 	}
       else if (tail != 0)
 	{
@@ -1442,7 +1438,7 @@ build_functional_cast (exp, parms)
 	  parms = build_compound_expr (parms);
 	}
 
-      return build_c_cast (type, parms, 1);
+      return build_c_cast (type, parms);
     }
 
   /* Prepare to evaluate as a call to a constructor.  If this expression
@@ -1459,7 +1455,7 @@ build_functional_cast (exp, parms)
     }
 
   if (parms && TREE_CHAIN (parms) == NULL_TREE)
-    return build_c_cast (type, TREE_VALUE (parms), 1);
+    return build_c_cast (type, TREE_VALUE (parms));
 
   exp = build_method_call (NULL_TREE, ctor_identifier, parms,
 			   TYPE_BINFO (type), LOOKUP_NORMAL);
