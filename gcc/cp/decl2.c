@@ -1142,21 +1142,8 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
     return build_vec_delete (t, maxindex, sfk_deleting_destructor,
 			     use_global_delete);
   else
-    {
-      if (IS_AGGR_TYPE (TREE_TYPE (type))
-	  && TYPE_GETS_REG_DELETE (TREE_TYPE (type)))
-	{
-	  /* Only do access checking here; we'll be calling op delete
-	     from the destructor.  */
-	  tree tmp = build_op_delete_call (DELETE_EXPR, t, size_zero_node,
-					   LOOKUP_NORMAL, NULL_TREE);
-	  if (tmp == error_mark_node)
-	    return error_mark_node;
-	}
-
-      return build_delete (type, t, sfk_deleting_destructor,
-			   LOOKUP_NORMAL, use_global_delete);
-    }
+    return build_delete (type, t, sfk_deleting_destructor,
+			 LOOKUP_NORMAL, use_global_delete);
 }
 
 /* Report an error if the indicated template declaration is not the
