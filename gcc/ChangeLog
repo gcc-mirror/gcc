@@ -5,6 +5,11 @@
 	peepholes so that they do not generate UNPREDICATBLE opcodes.
 	(ie ones where the increment clobbers the source/destination).
 
+	Mon Oct 25 00:42:35 1999  Jeffrey A Law  (law@cygnus.com)
+	* arm.c (arm_override_options): Correct initialization of
+	arm_fast_multiply, arm_arch4, arm_arch5, arm_ld_sched,
+	arm_is_strong, and arm_is_6_or_7.
+
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* version.c: Bump.

@@ -490,14 +490,14 @@ arm_override_options ()
     warning ("Passing floating point arguments in fp regs not yet supported");
   
   /* Initialise boolean versions of the flags, for use in the arm.md file.  */
-  arm_fast_multiply = insn_flags & FL_FAST_MULT;
-  arm_arch4         = insn_flags & FL_ARCH4;
+  arm_fast_multiply = (insn_flags & FL_FAST_MULT) != 0;
+  arm_arch4         = (insn_flags & FL_ARCH4) != 0;
   
-  arm_ld_sched      = tune_flags & FL_LDSCHED;
-  arm_is_strong     = tune_flags & FL_STRONG;
+  arm_ld_sched      = (tune_flags & FL_LDSCHED) != 0;
+  arm_is_strong     = (tune_flags & FL_STRONG) != 0;
   arm_is_6_or_7     = ((tune_flags & (FL_MODE26 | FL_MODE32))
 		       && !(tune_flags & FL_ARCH4));
-  
+
   /* Default value for floating point code... if no co-processor
      bus, then schedule for emulated floating point.  Otherwise,
      assume the user has an FPA.
