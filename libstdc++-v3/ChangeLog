@@ -1,3 +1,12 @@
+2003-12-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/performance/container_benchmark.cc: New, a
+	benchmark developed by Bjarne Stroustrup and Alexander
+	Stepanov and made available with no restrictions.
+
+	* testsuite/testsuite_performance.h (report_header): New,
+	useful to produce header lines in the reports.
+
 2003-12-16  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/21_strings/howto.html: Document shrink-to-fit reserve().
