@@ -1,5 +1,10 @@
 2002-03-24  Richard Henderson  <rth@redhat.com>
 
+	* varasm.c (asm_emit_uninitialised): Revert 2002-03-14 change.
+	Do resolve_unique_section before shared data clause.
+
+2002-03-24  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/elf.h (STARTFILE_SPEC): Use crtbeginT with -static.
 
 2002-03-24  Richard Henderson  <rth@redhat.com>
