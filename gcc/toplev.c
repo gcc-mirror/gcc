@@ -261,8 +261,9 @@ enum dump_file_index
   DFI_gcse,
   DFI_loop,
   DFI_cse2,
+  DFI_cfg,
   DFI_bp,
-  DFI_flow,
+  DFI_life,
   DFI_combine,
   DFI_ce,
   DFI_regmove,
@@ -303,8 +304,9 @@ struct dump_file_info dump_file[DFI_MAX] =
   { "gcse",	'G', 1, 0, 0 },
   { "loop",	'L', 1, 0, 0 },
   { "cse2",	't', 1, 0, 0 },
+  { "cfg",	'f', 1, 0, 0 },
   { "bp",	'b', 1, 0, 0 },
-  { "flow",	'f', 1, 0, 0 },
+  { "life",	'f', 1, 0, 0 },	/* Yes, duplicate enable switch.  */
   { "combine",	'c', 1, 0, 0 },
   { "ce",	'C', 1, 0, 0 },
   { "regmove",	'N', 1, 0, 0 },
@@ -2372,11 +2374,13 @@ compile_file (name)
 
   end_final (dump_base_name);
    
-  if (flag_test_coverage || flag_branch_probabilities)
+  if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
     {
       timevar_push (TV_DUMP);
       open_dump_file (DFI_bp, NULL);
-      end_branch_prob (rtl_dump_file);
+
+      end_branch_prob ();
+
       close_dump_file (DFI_bp, NULL, NULL_RTX);
       timevar_pop (TV_DUMP);
     }
@@ -3101,33 +3105,32 @@ rest_of_compilation (decl)
 
   cse_not_expected = 1;
 
-  if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
-    {
-      timevar_push (TV_BRANCH_PROB);
-      open_dump_file (DFI_bp, decl);
-
-      branch_prob (insns, rtl_dump_file);
-
-      close_dump_file (DFI_bp, print_rtl, insns);
-      timevar_pop (TV_BRANCH_PROB);
-
-      if (ggc_p)
-	ggc_collect ();
-    }
-
   regclass_init ();
 
-  /* Print function header into flow dump now
-     because doing the flow analysis makes some of the dump.  */
-
-  open_dump_file (DFI_flow, decl);
   
   /* Do control and data flow analysis; wrote some of the results to
      the dump file.  */
 
   timevar_push (TV_FLOW);
+  open_dump_file (DFI_cfg, decl);
+
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
   cleanup_cfg (insns);
+
+  close_dump_file (DFI_cfg, print_rtl_with_bb, insns);
+ 
+  if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
+    {
+      timevar_push (TV_BRANCH_PROB);
+      open_dump_file (DFI_bp, decl);
+
+      branch_prob ();
+
+      close_dump_file (DFI_bp, print_rtl_with_bb, insns);
+      timevar_pop (TV_BRANCH_PROB);
+    }
+
+  open_dump_file (DFI_life, decl);
   if (optimize)
     {
       struct loops loops;
@@ -3137,8 +3140,7 @@ rest_of_compilation (decl)
       flow_loops_find (&loops);
 
       /* Estimate using heuristics if no profiling info is available.  */
-      if (! flag_branch_probabilities)
-	estimate_probability (&loops);
+      estimate_probability (&loops);
 
       if (rtl_dump_file)
 	flow_loops_dump (&loops, rtl_dump_file, 0);
@@ -3156,7 +3158,7 @@ rest_of_compilation (decl)
 	setjmp_args_warning ();
     }
 
-  close_dump_file (DFI_flow, print_rtl_with_bb, insns);
+  close_dump_file (DFI_life, print_rtl_with_bb, insns);
 
   if (ggc_p)
     ggc_collect ();

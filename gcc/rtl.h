@@ -1730,10 +1730,8 @@ extern void init_caller_save		PARAMS ((void));
 
 /* In profile.c */
 extern void init_branch_prob		PARAMS ((const char *));
-#ifdef BUFSIZ
-extern void branch_prob			PARAMS ((rtx, FILE *));
-extern void end_branch_prob		PARAMS ((FILE *));
-#endif
+extern void branch_prob			PARAMS ((void));
+extern void end_branch_prob		PARAMS ((void));
 extern void output_func_start_profiler	PARAMS ((void));
 
 /* In reg-stack.c */
