@@ -1,3 +1,27 @@
+Wed Dec  9 15:37:05 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.def (NEW_ARRAY_INIT): New Java tree code.
+	* lex.c (java_lex): Remember column position before advancing one
+ 	token. Retain location information on OCB_TK.
+	* lex.h (typedef struct java_lc): Added new field.
+	* parse.h (GET_SKIP_TYPE): New macro.
+	(QUAL_DECL_TYPE): Redefined using GET_SKIP_TYPE.
+	* parse.y (build_new_array_init, patch_new_array_init,
+ 	patch_array_constructor, maybe_build_array_element_wfl,
+ 	array_constructor_check_entry): New function prototypes.
+	(switch_block:): Tagged <node>.
+	(OCB_TK): Tagged <operator>.
+	(array_initializer:): Installed actions.
+	(variable_initializer): Build location information on element if
+ 	necessary.
+	(switch_statement:): Fixed indentation typo.
+	(switch_block:): Redefined default action.
+	(java_complete_tree): Handle NEW_ARRAY_INIT in MODIFY_EXPR:.
+	(patch_assignment): Removed duplicate code.
+	(maybe_build_array_element_wfl, build_new_array_init,
+ 	patch_new_array_init, patch_array_constructor,
+ 	array_constructor_check_entry): New functions.
+
 Mon Dec  7 15:13:52 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (array_initializer): Tagged <node>.

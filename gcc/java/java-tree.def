@@ -76,4 +76,8 @@ DEFTREECODE (CONDITIONAL_EXPR, "?:", 'e', 3)
    Operand 1 is the class used for the test.  */
 DEFTREECODE (INSTANCEOF_EXPR, "instanceof", 'e', 2)
 
-
+/* Array initializers.
+   Operand 0 is the (sub) array target to initialize, left to NULL_TREE
+   when the node is created.
+   Operand 1 is a CONSTRUCTOR node.  */
+DEFTREECODE (NEW_ARRAY_INIT, "new_array_init", '1', 1)

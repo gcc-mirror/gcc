@@ -232,6 +232,11 @@ static tree maybe_build_primttype_type_ref PROTO ((tree, tree));
 static void unreachable_stmt_error PROTO ((tree));
 static tree find_expr_with_wfl PROTO ((tree));
 static void missing_return_error PROTO ((tree));
+static tree build_new_array_init PROTO ((int, tree));
+static tree patch_new_array_init PROTO ((tree, tree));
+static tree patch_array_constructor PROTO ((tree, tree));
+static tree maybe_build_array_element_wfl PROTO ((tree));
+static int array_constructor_check_entry PROTO ((tree, tree));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -396,7 +401,7 @@ static tree wfl_to_string = NULL_TREE;
 			left_hand_side assignment for_header for_begin
 			constant_expression do_statement_begin empty_statement
 			switch_statement synchronized_statement throw_statement
-			try_statement switch_expression
+			try_statement switch_expression switch_block
 			catches catch_clause catch_clause_parameter finally
 %type    <node>         return_statement break_statement continue_statement
 
@@ -408,7 +413,7 @@ static tree wfl_to_string = NULL_TREE;
 %token   <operator>     EQ_TK GTE_TK ZRS_TK SRS_TK GT_TK LTE_TK LS_TK 
 %token   <operator>     BOOL_AND_TK AND_TK BOOL_OR_TK OR_TK INCR_TK PLUS_TK
 %token   <operator>     DECR_TK MINUS_TK MULT_TK DIV_TK XOR_TK REM_TK NEQ_TK
-%token   <operator>     NEG_TK REL_QM_TK REL_CL_TK NOT_TK LT_TK
+%token   <operator>     NEG_TK REL_QM_TK REL_CL_TK NOT_TK LT_TK OCB_TK
 %token   <operator>     OP_TK OSB_TK DOT_TK THROW_TK INSTANCEOF_TK
 %type    <operator>	THIS_TK SUPER_TK RETURN_TK BREAK_TK CONTINUE_TK 
 %type	 <operator>     CASE_TK DEFAULT_TK TRY_TK CATCH_TK SYNCHRONIZED_TK
@@ -1092,20 +1097,31 @@ abstract_method_declaration:
 /* 19.10 Productions from 10: Arrays  */
 array_initializer:
 	OCB_TK CCB_TK
-		{ $$ = NULL_TREE; }
+		{ 
+		  $$ = build_new_array_init 
+		    ($1.location, 
+		     tree_cons (NULL_TREE, NULL_TREE, NULL_TREE));
+		}
 |	OCB_TK variable_initializers CCB_TK
-		{ $$ = $2; }
+		{ $$ = build_new_array_init ($1.location, $2); }
 |	OCB_TK C_TK CCB_TK
-		{ $$ = NULL_TREE; }
+		{
+		  $$ = build_new_array_init 
+		    ($1.location,
+		     tree_cons (NULL_TREE, NULL_TREE, NULL_TREE));
+		}
 |	OCB_TK variable_initializers C_TK CCB_TK
-		{ $$ = $2; }
+		{ $$ = build_new_array_init ($1.location, $2); }
 ;
 
 variable_initializers:
 	variable_initializer
-		{ $$ = tree_cons (NULL_TREE, $1, NULL_TREE); }
+		{ 
+		  $$ = tree_cons (maybe_build_array_element_wfl ($1), 
+				  $1, NULL_TREE);
+		}
 |	variable_initializers C_TK variable_initializer
-		{ $$ = tree_cons (NULL_TREE, $3, $1); }
+		{ $$ = tree_cons (maybe_build_array_element_wfl ($3), $3, $1); }
 |	variable_initializers C_TK error
 		{yyerror ("Missing term"); RECOVER;}
 ;
@@ -1326,7 +1342,8 @@ switch_statement:
 	switch_block
 		{ 
 		  /* Make into "proper list" of COMPOUND_EXPRs.
-		     I.e. make the last statment also have its own COMPOUND_EXPR. */
+		     I.e. make the last statment also have its own
+		     COMPOUND_EXPR. */
 		  maybe_absorb_scoping_blocks ();
 		  TREE_OPERAND ($1, 1) = exit_block ();
 		  $$ = build_debugable_stmt (EXPR_WFL_LINECOL ($1), $1);
@@ -1347,11 +1364,18 @@ switch_expression:
 		{yyerror ("'{' expected"); RECOVER;}
 ;
 
+/* Default assignment is there to avoid type node on switch_block
+   node. */
+
 switch_block:
 	OCB_TK CCB_TK
+		{ $$ = NULL_TREE; }
 |	OCB_TK switch_labels CCB_TK
+		{ $$ = NULL_TREE; }
 |	OCB_TK switch_block_statement_groups CCB_TK
+		{ $$ = NULL_TREE; }
 |	OCB_TK switch_block_statement_groups switch_labels CCB_TK
+		{ $$ = NULL_TREE; }
 ;
 
 switch_block_statement_groups: 
@@ -7708,16 +7732,24 @@ java_complete_tree (node)
 	  TREE_OPERAND (TREE_OPERAND (node, 1), 0) = lvalue;
 	}
 
+      /* If we're about to patch a NEW_ARRAY_INIT, we call a special
+	 function to complete this RHS */
+      if (TREE_CODE (wfl_op2) == NEW_ARRAY_INIT)
+	nn = patch_new_array_init (GET_SKIP_TYPE (TREE_OPERAND (node, 0)),
+				   TREE_OPERAND (node, 1));
+      else
+	nn = java_complete_tree (TREE_OPERAND (node, 1));
+
       /* There are cases where the type of RHS is fixed. In those
 	 cases, if the evaluation of the RHS fails, we further the
 	 evaluation of the assignment to detect more errors. */
-      nn = java_complete_tree (TREE_OPERAND (node, 1));
       if (nn == error_mark_node)
 	{
 	  /* It's hopeless, but we can further things on to discover
 	     an error during the assignment. In any cases, the
 	     assignment operation fails. */
 	  if (TREE_CODE (TREE_OPERAND (node, 1)) != EXPR_WITH_FILE_LOCATION
+	      && TREE_CODE (TREE_OPERAND (node, 1)) != NEW_ARRAY_INIT
 	      && TREE_TYPE (TREE_OPERAND (node, 1)) != error_mark_node)
 	    patch_assignment (node, wfl_op1, wfl_op2);
 
@@ -8273,9 +8305,6 @@ patch_assignment (node, wfl_op1, wfl_op2)
       free (t1); free (t2);
       error_found = 1;
     }
-
-  /* Inline read access to java.lang.PRIMTYPE.TYPE */
-  rhs = maybe_build_primttype_type_ref (rhs, wfl_op2);
 
   /* Inline read access to java.lang.PRIMTYPE.TYPE */
   if (new_rhs)
@@ -9681,6 +9710,180 @@ patch_newarray (node)
 			   tree_cons (NULL_TREE, 
 				      build_int_2 (ndims, 0), dims )),
 		NULL_TREE);
+}
+
+/* 10.6 Array initializer.  */
+
+/* Build a wfl for array element that don't have one, so we can
+   pin-point errors.  */
+
+static tree
+maybe_build_array_element_wfl (node)
+     tree node;
+{
+  if (TREE_CODE (node) != EXPR_WITH_FILE_LOCATION)
+    return build_expr_wfl (NULL_TREE, ctxp->filename,
+			   ctxp->elc.line, ctxp->elc.prev_col);
+  else
+    return NULL_TREE;
+}
+
+/* Build a NEW_ARRAY_INIT that features a CONSTRUCTOR node. This makes
+   identification of initialized arrays easier to detect during walk
+   and expansion.  */
+
+static tree
+build_new_array_init (location, values)
+     int location;
+     tree values;
+{
+  tree constructor = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, values);
+  tree to_return = build1 (NEW_ARRAY_INIT, NULL_TREE, constructor);
+  EXPR_WFL_LINECOL (to_return) = EXPR_WFL_LINECOL (constructor) = location;
+  return to_return;
+}
+
+/* Expand a NEW_ARRAY_INIT node. Return error_mark_node if an error
+   occurred.  Otherwise return NODE after having set its type
+   appropriately.  */
+
+static tree
+patch_new_array_init (type, node)
+     tree type, node;
+{
+  TREE_OPERAND (node, 0) =
+      patch_array_constructor (type, TREE_OPERAND (node, 0));
+
+  if (TREE_OPERAND (node, 0) == error_mark_node)
+      return error_mark_node;
+
+  TREE_TYPE (node) = TREE_TYPE (TREE_OPERAND (node, 0));
+  return node;
+}
+
+/* Choose to walk further NEW_ARRAY_INIT or check array assignment
+   when reaching the leaves of the initializing expression. Report
+   error_mark_node if errors were encountered, otherwise return NODE
+   after having set it type.  */
+
+static tree
+patch_array_constructor (type, node)
+     tree type, node;
+{
+  int error_seen = 0;
+  tree current, lhs_type;
+  HOST_WIDE_INT length;
+
+  CONSTRUCTOR_ELTS (node) = nreverse (CONSTRUCTOR_ELTS (node));
+  lhs_type = GET_SKIP_TYPE (type);
+
+  if (TYPE_ARRAY_P (lhs_type))
+    {
+      /* Verify that we have what we expect here. This points a
+	 discrepancy between the annouced type and the specified
+	 one. */
+      for (length = 0, current = CONSTRUCTOR_ELTS (node);
+	   current; length++, current = TREE_CHAIN (current))
+	{
+	  tree elt = TREE_VALUE (current);
+	  if (elt && TREE_CODE (elt) == NEW_ARRAY_INIT)
+	    TREE_VALUE (current) = patch_new_array_init (lhs_type, elt);
+	  /* We're under dimensioned: we want to have elements
+             examined. */
+	  else
+	    error_seen |= array_constructor_check_entry (lhs_type, current);
+	  if ((elt && TREE_VALUE (elt) == error_mark_node) || error_seen)
+	    error_seen = 1;
+	}
+    }
+  else
+    {
+      /* This is the list of the values that need to be affected. We
+	 browse the list and check for a valid assignment */
+      for (length = 0, current = CONSTRUCTOR_ELTS (node);
+	   current; length++, current = TREE_CHAIN (current))
+	error_seen |= array_constructor_check_entry (lhs_type, current);
+    }
+
+  if (error_seen)
+    return error_mark_node;
+
+  /* Create a new type. We can't reuse the one we have here by
+     patching its dimension because it originally is of dimension -1
+     hence reused by gcc. This would prevent triangular arrays. */
+  TREE_TYPE (node) = promote_type (build_java_array_type (lhs_type, length));
+  return node;
+}
+
+/* Verify that one entry of the initializer element list can be
+   assigned to the array base type. Report 1 if an error occurred, 0
+   otherwise.  */
+
+static int
+array_constructor_check_entry (type, entry)
+     tree type, entry;
+{
+  char *array_type_string = NULL;	/* For error reports */
+  tree value, type_value, new_value, wfl_value, patched;
+  int error_seen = 0;
+
+  new_value = NULL_TREE;
+  wfl_value = TREE_VALUE (entry);
+
+  /* NULL_TREE here means that we're creating an array of dimensions 0
+     here. Probably needs a FIXME. */
+  if (!wfl_value)
+    return 0;
+
+  /* If we have a TREE_LIST here, it means that we're specifying more
+     dimensions that we should. Report errors within the list. */
+  if (TREE_CODE (wfl_value) == NEW_ARRAY_INIT)
+    {
+      if (TREE_CODE (wfl_value) == NEW_ARRAY_INIT)
+	EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (wfl_value);
+      parse_error_context (wfl_operator, "Invalid initializer for type `%s'",
+			   lang_printable_name (type, 1));
+      return 1;
+    }
+  
+  value = java_complete_tree (TREE_VALUE (entry));
+  if ((patched = patch_string (value)))
+    value = patched;
+  
+  /* Check for errors here. FIXME */
+  type_value = TREE_TYPE (value);
+  
+  /* At anytime, try_builtin_assignconv can report an warning on
+     constant overflow during narrowing. */
+  SET_WFL_OPERATOR (wfl_operator, TREE_PURPOSE (entry), wfl_value);
+  new_value = try_builtin_assignconv (wfl_operator, type, value);
+  if (!new_value && (new_value = try_reference_assignconv (type, value)))
+    type_value = promote_type (type);
+  
+  /* Check and report errors */
+  if (!new_value)
+    {
+      char *msg = (!valid_cast_to_p (type_value, type) ?
+		   "Can't" : "Explicit cast needed to");
+      if (!array_type_string)
+	array_type_string = strdup (lang_printable_name (type, 1));
+      parse_error_context 
+	(wfl_operator, "Incompatible type for array. %s convert `%s' to `%s'",
+	 msg, lang_printable_name (type_value, 1), array_type_string);
+      error_seen = 1;
+    }
+  
+  if (new_value)
+    {
+      new_value = maybe_build_primttype_type_ref (new_value, wfl_operator);
+      TREE_VALUE (entry) = new_value;
+    }
+
+  if (array_type_string)
+    free (array_type_string);
+
+  TREE_PURPOSE (entry) = NULL_TREE;
+  return error_seen;
 }
 
 static tree

@@ -482,9 +482,11 @@ static jdeplist *reverse_jdep_list ();
 #define EXPR_WFL_QUALIFICATION(WFL) TREE_OPERAND ((WFL), 1)
 #define QUAL_WFL(NODE) TREE_PURPOSE (NODE)
 #define QUAL_RESOLUTION(NODE) TREE_VALUE (NODE)
-#define QUAL_DECL_TYPE(NODE) 				\
+#define QUAL_DECL_TYPE(NODE) GET_SKIP_TYPE (NODE)
+
+#define GET_SKIP_TYPE(NODE)				\
   (TREE_CODE (TREE_TYPE (NODE)) == POINTER_TYPE ?	\
-   TREE_TYPE (TREE_TYPE (NODE)) : TREE_TYPE (NODE))
+   TREE_TYPE (TREE_TYPE (NODE)): TREE_TYPE (NODE))
 
 /* Handy macros for the walk operation */
 #define COMPLETE_CHECK_OP(NODE, N)			\

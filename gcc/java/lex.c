@@ -567,6 +567,7 @@ java_lex (java_lval)
     }
 
   ctxp->elc.line = ctxp->c_line->lineno;
+  ctxp->elc.prev_col = ctxp->elc.col;
   ctxp->elc.col = ctxp->c_line->char_col - JAVA_COLUMN_DELTA (-1);
   if (ctxp->elc.col < 0)
     fatal ("ctxp->elc.col < 0 - java_lex");
@@ -924,7 +925,7 @@ java_lex (java_lval)
       if (ctxp->ccb_indent == 1)
 	ctxp->first_ccb_indent1 = lineno;
       ctxp->ccb_indent++;
-      return OCB_TK;
+      BUILD_OPERATOR (OCB_TK);
     case '}':
       JAVA_LEX_SEP (c);
       ctxp->ccb_indent--;
