@@ -651,10 +651,10 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 /* Define this macro to be the value 1 if unaligned accesses have a cost
    many times greater than aligned accesses, for example if they are
    emulated in a trap handler.  */
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)			\
-   ((STRICT_ALIGNMENT						\
-     || (((MODE) == SFmode || (MODE) == DFmode || (MODE) == DImode) \
-         && (ALIGN) < 32)) ? 1 : 0)
+#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)				\
+  (STRICT_ALIGNMENT							\
+   || (((MODE) == SFmode || (MODE) == DFmode || (MODE) == DImode)	\
+       && (ALIGN) < 32))
 
 /* Standard register usage.  */
 

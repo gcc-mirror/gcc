@@ -1878,23 +1878,20 @@ rs6000_emit_move (dest, source, mode)
   if (GET_CODE (operands[0]) == MEM
       && GET_CODE (operands[1]) == MEM
       && mode == DImode
-      && (SLOW_UNALIGNED_ACCESS(DImode, MEM_ALIGN(operands[0]))
-	  || SLOW_UNALIGNED_ACCESS(DImode, MEM_ALIGN(operands[1]))))
+      && (SLOW_UNALIGNED_ACCESS (DImode, MEM_ALIGN (operands[0]))
+	  || SLOW_UNALIGNED_ACCESS (DImode, MEM_ALIGN (operands[1])))
+      && ! (SLOW_UNALIGNED_ACCESS (SImode, (MEM_ALIGN (operands[0]) > 32
+					    ? 32 : MEM_ALIGN (operands[0])))
+	    || SLOW_UNALIGNED_ACCESS (SImode, (MEM_ALIGN (operands[1]) > 32
+					       ? 32 
+					       : MEM_ALIGN (operands[1]))))
+      && ! MEM_VOLATILE_P (operands [0])
+      && ! MEM_VOLATILE_P (operands [1]))
     {
-      if (!TARGET_POWERPC64)
-	{
-	  emit_move_insn (simplify_subreg (SImode, operands[0], DImode, 0),
-			  simplify_subreg (SImode, operands[1], DImode, 0));
-	  emit_move_insn (simplify_subreg (SImode, operands[0], DImode, 4),
-			  simplify_subreg (SImode, operands[1], DImode, 4));
-	}
-      else
-	{
-	  emit_move_insn (gen_lowpart (SImode, operands[0]),
-			  gen_lowpart (SImode, operands[1]));
-	  emit_move_insn (gen_highpart (SImode, operands[0]),
-			  gen_highpart (SImode, operands[1]));
-	}
+      emit_move_insn (adjust_address (operands[0], SImode, 0),
+		      adjust_address (operands[1], SImode, 0));
+      emit_move_insn (adjust_address (operands[0], SImode, 4),
+		      adjust_address (operands[1], SImode, 4));
       return;
     }
   

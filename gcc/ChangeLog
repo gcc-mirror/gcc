@@ -1,3 +1,10 @@
+2001-12-02  Geoff Keating  <geoffk@redhat.com>
+
+	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Simplify.
+	* config/rs6000/rs6000.c (rs6000_emit_move): Use adjust_address
+	rather than simplify_subreg.  Check for volatile-ness.  Check that
+	we're not splitting one slow operation into two slow operations.
+
 2001-12-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* emit-rtl.c (gen_lowpart_common): Cast array element to HOST_WIDE_INT

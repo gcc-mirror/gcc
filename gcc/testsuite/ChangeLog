@@ -1,3 +1,7 @@
+2001-12-01  Geoff Keating  <geoffk@redhat.com>
+
+	* gcc.c-torture/compile/structs.c: New testcase from GDB.
+
 2001-12-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* objc.dg/alias.m: Update.
