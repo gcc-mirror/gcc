@@ -1,5 +1,5 @@
 # Top level configure fragment for GNU FORTRAN.
-#   Copyright (C) 1995, 1996, 1997, 2000, 2001 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1996, 1997, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 #This file is part of GNU Fortran.
 
@@ -33,4 +33,4 @@ stagestuff="g77\$(exeext) g77-cross\$(exeext) f771\$(exeext)"
 
 target_libs=target-libf2c
 
-gtfiles="\$(srcdir)/f/com.c \$(srcdir)/f/com.h \$(srcdir)/f/ste.c"
+gtfiles="\$(srcdir)/f/com.c \$(srcdir)/f/com.h \$(srcdir)/f/ste.c \$(srcdir)/f/where.h \$(srcdir)/f/where.c \$(srcdir)/f/lex.c"

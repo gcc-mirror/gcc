@@ -137,7 +137,7 @@ f/fini.o:
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	      -c $(srcdir)/f/fini.c $(OUTPUT_OPTION)
 
-gt-f-com.h gt-f-ste.h gtype-f.h : s-gtype; @true
+gt-f-lex.h gt-f-where.h gt-f-com.h gt-f-ste.h gtype-f.h : s-gtype; @true
 
 #
 # Build hooks:
@@ -414,7 +414,7 @@ f/lex.o: f/lex.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/top.h f/malloc.h f/where.h \
  f/bld-op.def f/bit.h f/info.h f/info-b.def f/info-k.def f/info-w.def \
  f/target.h f/lex.h f/type.h f/intrin.h f/intrin.def f/lab.h f/symbol.h \
  f/symbol.def f/equiv.h f/storag.h f/global.h f/name.h f/src.h flags.h \
- debug.h input.h toplev.h output.h $(GGC_H)
+ debug.h input.h toplev.h output.h $(GGC_H) gt-f-lex.h
 f/malloc.o: f/malloc.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/malloc.h
 f/name.o: f/name.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/bad.h f/bad.def f/where.h \
  glimits.h f/top.h f/malloc.h f/name.h f/global.h f/info.h f/info-b.def \
@@ -529,4 +529,4 @@ f/top.o: f/top.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/top.h f/malloc.h f/where.h \
 f/type.o: f/type.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/type.h f/malloc.h
 f/version.o: f/version.c f/version.h
 f/where.o: f/where.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/where.h glimits.h f/top.h \
- f/malloc.h f/lex.h $(GGC_H)
+ f/malloc.h f/lex.h $(GGC_H) gt-f-where.h
