@@ -1,3 +1,8 @@
+2003-10-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get::_M_extract_int):
+	__pos in only incremented, never used its value, remove it.
+
 2003-10-24  Robert Millan  <robertmh@gnu.org>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Add kfreebsd*-gnu

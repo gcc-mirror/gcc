@@ -288,14 +288,12 @@ namespace std
 	__base = 10;
 
       // First check for sign.
-      int __pos = 0;
       char_type  __c = *__beg;
       const bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
       if ((__plus || __traits_type::eq(__c, __lit[_S_iminus])) 
 	  && __beg != __end)
 	{
 	  __xtrc += __plus ? _S_atoms_in[_S_iplus] : _S_atoms_in[_S_iminus];
-	  ++__pos;
 	  __c = *(++__beg);
 	}
 
@@ -311,7 +309,6 @@ namespace std
 	  if (__found_zero)
 	    {
 	      __xtrc += _S_atoms_in[_S_izero];
-	      ++__pos;
 	      if (__basefield == 0)
 		{	      
 		  const bool __x = __traits_type::eq(__c, __lit[_S_ix]);
@@ -319,7 +316,6 @@ namespace std
 		      && __beg != __end)
 		    {
 		      __xtrc += __x ? _S_atoms_in[_S_ix] : _S_atoms_in[_S_iX];
-		      ++__pos;
 		      __c = *(++__beg);
 		      __base = 16;
 		    }
@@ -333,7 +329,6 @@ namespace std
 	  if (__traits_type::eq(__c, __lit[_S_izero]) && __beg != __end)
 	    {
 	      __xtrc += _S_atoms_in[_S_izero];
-	      ++__pos;
 	      __c = *(++__beg); 
 
 	      const bool __x = __traits_type::eq(__c, __lit[_S_ix]);
@@ -341,7 +336,6 @@ namespace std
 		  && __beg != __end)
 		{
 		  __xtrc += __x ? _S_atoms_in[_S_ix] : _S_atoms_in[_S_iX];
-		  ++__pos;
 		  __c = *(++__beg);
 		}
 	    }
@@ -365,7 +359,6 @@ namespace std
 	    {
 	      // Try first for acceptable digit; record it if found.
 	      __xtrc += _S_atoms_in[__p - __lit];
-	      ++__pos;
 	      ++__sep_pos;
 	      __c = *(++__beg);
 	    }
