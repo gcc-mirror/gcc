@@ -1,3 +1,8 @@
+2001-06-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* configure.in (sparc*-*-*): Check assembler R_SPARC_UA32 support.
+	* configure: Rebuilt.
+
 2001-06-07  Andreas Jaeger  <aj@suse.de>
 
 	* emit-rtl.c (operand_subword): Remove unused variable.
