@@ -3343,7 +3343,7 @@ x86_64_zext_immediate_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 int
 const_int_1_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
-  return (GET_CODE (op) == CONST_INT && INTVAL (op) == 1);
+  return op == const1_rtx;
 }
 
 /* Return nonzero if OP is CONST_INT >= 1 and <= 31 (a valid operand

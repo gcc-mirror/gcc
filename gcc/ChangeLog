@@ -1,3 +1,8 @@
+2003-08-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/i386/i386.c (const_int_1_operand): Simplify an
+	integer comparison.
+
 2003-08-22  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/fp-bit.c: Specify config/ dir for include of fp-bit.h.
