@@ -89,9 +89,8 @@ namespace __gnu_internal
   extern std::__timepunct_cache<wchar_t>	 timepunct_cache_w;
 #endif
 
-  // Mutex objects for locale initialization.
-  __glibcxx_mutex_define_initialized(locale_cons_mutex);
-  __glibcxx_mutex_define_initialized(locale_global_mutex);
+  // Mutex object for locale initialization.
+  __glibcxx_mutex_define_initialized(locale_mutex);
 } // namespace __gnu_internal
 
 namespace std 
@@ -101,7 +100,7 @@ namespace std
   locale::locale() throw() : _M_impl(0)
   { 
     _S_initialize();
-    __gnu_cxx::lock sentry(__gnu_internal::locale_cons_mutex);
+    __gnu_cxx::lock sentry(__gnu_internal::locale_mutex);
     _S_global->_M_add_reference();
     _M_impl = _S_global;
   }
@@ -112,7 +111,7 @@ namespace std
     _S_initialize();
     _Impl* __old;
     {
-      __gnu_cxx::lock sentry(__gnu_internal::locale_global_mutex);
+      __gnu_cxx::lock sentry(__gnu_internal::locale_mutex);
       __old = _S_global;
       __other._M_impl->_M_add_reference();
       _S_global = __other._M_impl;

@@ -1,4 +1,11 @@
 2004-07-29  Paolo Carlini  <pcarlini@suse.de>
+            Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/12658 (continued)
+	* src/locale_init.cc (locale::locale, locale::global): Use
+	a single locale_mutex instead of two separate mutexes.
+
+2004-07-29  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/16813
 	* include/debug/map.h (insert(_InputIterator, _InputIterator)):
