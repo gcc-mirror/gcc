@@ -28,10 +28,6 @@
 #include "ggc.h"
 #include "timevar.h"
 
-#ifndef offsetof
-#define offsetof(TYPE, MEMBER)	((size_t) &((TYPE *)0)->MEMBER)
-#endif
-
 /* Debugging flags.  */
 
 /* Zap memory before freeing to catch dangling pointers.  */
