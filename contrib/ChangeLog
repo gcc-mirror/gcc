@@ -1,3 +1,9 @@
+Thu Sep  9 16:48 Bruce Korb <korb@datadesign.com>
+	* fixinc/inclhack.def:  Added two files required by
+	SCO's Open Server 5's avoid_bool fix.
+	Regenerated fixinc.x and inclhack.sh to incorporate
+	the update.
+
 Thu Sep  3 10:11:32 1998  Robert Lipe   <robertl@dgii.com>
 
 	* egcs_update: Do the pass 1 CVS update only for files that
