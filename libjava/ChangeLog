@@ -1,5 +1,13 @@
 2000-04-21  Tom Tromey  <tromey@cygnus.com>
 
+	Fix for PR libgcj/213:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (gij_SOURCES): Added gij.cc.
+	(EXTRA_gij_SOURCES): Removed.
+	(gij_LDADD): Removed gij.lo.
+	(gij_DEPENDENCIES): Likewise.
+	($(gij_OBJECTS)): Depend on nat_headers.
+
 	* gnu/gcj/protocol/file/Handler.java (openConnection): Use
 	`setURL', not `url.set'.
 

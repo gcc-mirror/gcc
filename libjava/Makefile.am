@@ -196,7 +196,7 @@ SUFFIXES = .class .java .h
 $(nat_files): %.lo: %.cc
 	$(LTCXXCOMPILE) -c -o $@ $<
 
-$(nat_files) $(GCOBJS) $(THREADOBJS) $(libgcj_la_OBJECTS): \
+$(nat_files) $(GCOBJS) $(THREADOBJS) $(libgcj_la_OBJECTS) $(gij_OBJECTS): \
 		include/config.h include/java-signal.h $(nat_headers)
 
 ## FIXME: GNU make.
@@ -373,8 +373,7 @@ jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
 	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
 
-gij_SOURCES =
-EXTRA_gij_SOURCES = gij.cc
+gij_SOURCES = gij.cc
 ## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
 ## need this because we are explicitly using libtool to link using the
 ## `.la' file.
@@ -386,12 +385,10 @@ gij_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
 ## system libraries we need (via the specs file).
 ## We need the -L so that gcj can find libgcj with `-lgcj'.
 ## FIXME: should be _libs on some systems.
-gij_LDADD = gij.lo libgcj.la \
-	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
+gij_LDADD = libgcj.la $(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
-gij_DEPENDENCIES = gij.lo \
-	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
+gij_DEPENDENCIES = $(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
 
 # The Unicode consortium does not permit re-distributing the file JIS0201.TXT.
 # You can get it from ftp://ftp.unicode.org/Public/MAPPINGS/EASTASIA/JIS/.
