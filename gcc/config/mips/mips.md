@@ -2490,15 +2490,16 @@
       have_dep_anti = 1;
   if (! have_dep_anti)
     {
+      /* No branch delay slots on mips16. */ 
       if (GET_CODE (operands[1]) == CONST_INT)
-        return \"%(bnez\\t%0,1f\\n\\tnop\\n\\tbreak\\t%2\\n1:%)\";
+        return \"%(bnez\\t%0,1f\\n\\tbreak\\t%2\\n1:%)\";
       else
-        return \"%(bne\\t%0,%1,1f\\n\\tnop\\n\\tbreak\\t%2\\n1:%)\";
+        return \"%(bne\\t%0,%1,1f\\n\\tbreak\\t%2\\n1:%)\";
     }
   return \"\";
 }"
   [(set_attr "type" "unknown")
-   (set_attr "length" "4")])
+   (set_attr "length" "3")])
 
 (define_expand "divsi3"
   [(set (match_operand:SI 0 "register_operand" "=l")
