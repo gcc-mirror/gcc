@@ -36,7 +36,7 @@ extern char **h8_reg_names;
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #define CPP_PREDEFINES \
-"-D__LONG_MAX__=2147483647L -D__LONG_LONG_MAX__=2147483647L -D_DOUBLE_IS_32BITS"
+"-D__LONG_MAX__=2147483647L -D__LONG_LONG_MAX__=2147483647L"
 
 #define CPP_SPEC \
   "%{!mh:-D__H8300__} %{mh:-D__H8300H__} \
