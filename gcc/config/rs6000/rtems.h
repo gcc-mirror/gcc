@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a PowerPC using elf.
-   Copyright (C) 1996, 1997, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1996, 1997, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 

@@ -1,5 +1,9 @@
 2005-01-22  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
+	* config/rs6000/rtems.h: Update copyright.
+
+2005-01-22  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
 	PR target/19548
 	* config/rs6000/rtems.h: Resurrect cpp_os_rtems_spec from gcc < 3.4.
 	(CPP_OS_RTEMS_SPEC): New (From gcc-3.3's config/rs6000/sys4.h).
