@@ -1,3 +1,10 @@
+2004-02-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14083
+	* call.c (build_conditional_expr): Call force_rvalue on the
+	non-void operand in the case that one result is a throw-expression
+	and the other is not.
+
 2004-02-12  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.dg/debug/20020327-1.c: Disable for powerpc64.
