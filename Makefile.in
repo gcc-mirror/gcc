@@ -715,7 +715,6 @@ configure-host:  \
     maybe-configure-expect \
     maybe-configure-guile \
     maybe-configure-tk \
-    maybe-configure-tix \
     maybe-configure-libtermcap \
     maybe-configure-utils
 .PHONY: configure-target
@@ -818,7 +817,6 @@ all-host:  \
     maybe-all-expect \
     maybe-all-guile \
     maybe-all-tk \
-    maybe-all-tix \
     maybe-all-libtermcap \
     maybe-all-utils
 .PHONY: all-target
@@ -916,7 +914,6 @@ info-host:  \
     maybe-info-expect \
     maybe-info-guile \
     maybe-info-tk \
-    maybe-info-tix \
     maybe-info-libtermcap \
     maybe-info-utils
 
@@ -1010,7 +1007,6 @@ dvi-host:  \
     maybe-dvi-expect \
     maybe-dvi-guile \
     maybe-dvi-tk \
-    maybe-dvi-tix \
     maybe-dvi-libtermcap \
     maybe-dvi-utils
 
@@ -1104,7 +1100,6 @@ TAGS-host:  \
     maybe-TAGS-expect \
     maybe-TAGS-guile \
     maybe-TAGS-tk \
-    maybe-TAGS-tix \
     maybe-TAGS-libtermcap \
     maybe-TAGS-utils
 
@@ -1198,7 +1193,6 @@ install-info-host:  \
     maybe-install-info-expect \
     maybe-install-info-guile \
     maybe-install-info-tk \
-    maybe-install-info-tix \
     maybe-install-info-libtermcap \
     maybe-install-info-utils
 
@@ -1292,7 +1286,6 @@ installcheck-host:  \
     maybe-installcheck-expect \
     maybe-installcheck-guile \
     maybe-installcheck-tk \
-    maybe-installcheck-tix \
     maybe-installcheck-libtermcap \
     maybe-installcheck-utils
 
@@ -1386,7 +1379,6 @@ mostlyclean-host:  \
     maybe-mostlyclean-expect \
     maybe-mostlyclean-guile \
     maybe-mostlyclean-tk \
-    maybe-mostlyclean-tix \
     maybe-mostlyclean-libtermcap \
     maybe-mostlyclean-utils
 
@@ -1480,7 +1472,6 @@ clean-host:  \
     maybe-clean-expect \
     maybe-clean-guile \
     maybe-clean-tk \
-    maybe-clean-tix \
     maybe-clean-libtermcap \
     maybe-clean-utils
 
@@ -1574,7 +1565,6 @@ distclean-host:  \
     maybe-distclean-expect \
     maybe-distclean-guile \
     maybe-distclean-tk \
-    maybe-distclean-tix \
     maybe-distclean-libtermcap \
     maybe-distclean-utils
 
@@ -1668,7 +1658,6 @@ maintainer-clean-host:  \
     maybe-maintainer-clean-expect \
     maybe-maintainer-clean-guile \
     maybe-maintainer-clean-tk \
-    maybe-maintainer-clean-tix \
     maybe-maintainer-clean-libtermcap \
     maybe-maintainer-clean-utils
 
@@ -1819,7 +1808,6 @@ do-check: unstage  \
     maybe-check-expect \
     maybe-check-guile \
     maybe-check-tk \
-    maybe-check-tix \
     maybe-check-libtermcap \
     maybe-check-utils \
     maybe-check-target-libstdc++-v3 \
@@ -1932,7 +1920,6 @@ install-host-nogcc:  \
     maybe-install-expect \
     maybe-install-guile \
     maybe-install-tk \
-    maybe-install-tix \
     maybe-install-libtermcap \
     maybe-install-utils
 
@@ -2002,7 +1989,6 @@ install-host:  \
     maybe-install-expect \
     maybe-install-guile \
     maybe-install-tk \
-    maybe-install-tix \
     maybe-install-libtermcap \
     maybe-install-utils
 
@@ -21817,308 +21803,6 @@ maintainer-clean-tk:
 @endif tk
 
 
-.PHONY: configure-tix maybe-configure-tix
-maybe-configure-tix:
-@if tix
-maybe-configure-tix: configure-tix
-configure-tix:
-	@test ! -f tix/Makefile || exit 0; \
-	[ -d tix ] || mkdir tix; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	echo Configuring in tix; \
-	cd tix || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/tix"; \
-	    libsrcdir="$$s/tix";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/tix"; \
-	    libsrcdir="$$s/tix";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
-	  || exit 1
-@endif tix
-
-.PHONY: all-tix maybe-all-tix
-maybe-all-tix:
-@if tix
-maybe-all-tix: all-tix
-all-tix: configure-tix
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	(cd tix && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS)  all)
-@endif tix
-
-.PHONY: check-tix maybe-check-tix
-maybe-check-tix:
-@if tix
-maybe-check-tix: check-tix
-
-check-tix:
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	(cd tix && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS)  check)
-
-@endif tix
-
-.PHONY: install-tix maybe-install-tix
-maybe-install-tix:
-@if tix
-maybe-install-tix: install-tix
-
-install-tix: installdirs
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	(cd tix && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS)  install)
-
-@endif tix
-
-# Other targets (info, dvi, etc.)
-
-.PHONY: maybe-info-tix info-tix
-maybe-info-tix:
-@if tix
-maybe-info-tix: info-tix
-
-info-tix: \
-    configure-tix 
-	@[ -f ./tix/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing info in tix" ; \
-	(cd tix && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          info) \
-	  || exit 1
-
-@endif tix
-
-.PHONY: maybe-dvi-tix dvi-tix
-maybe-dvi-tix:
-@if tix
-maybe-dvi-tix: dvi-tix
-
-dvi-tix: \
-    configure-tix 
-	@[ -f ./tix/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing dvi in tix" ; \
-	(cd tix && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          dvi) \
-	  || exit 1
-
-@endif tix
-
-.PHONY: maybe-TAGS-tix TAGS-tix
-maybe-TAGS-tix:
-@if tix
-maybe-TAGS-tix: TAGS-tix
-
-TAGS-tix: \
-    configure-tix 
-	@[ -f ./tix/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing TAGS in tix" ; \
-	(cd tix && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          TAGS) \
-	  || exit 1
-
-@endif tix
-
-.PHONY: maybe-install-info-tix install-info-tix
-maybe-install-info-tix:
-@if tix
-maybe-install-info-tix: install-info-tix
-
-install-info-tix: \
-    configure-tix \
-    info-tix 
-	@[ -f ./tix/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-info in tix" ; \
-	(cd tix && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          install-info) \
-	  || exit 1
-
-@endif tix
-
-.PHONY: maybe-installcheck-tix installcheck-tix
-maybe-installcheck-tix:
-@if tix
-maybe-installcheck-tix: installcheck-tix
-
-installcheck-tix: \
-    configure-tix 
-	@[ -f ./tix/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing installcheck in tix" ; \
-	(cd tix && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          installcheck) \
-	  || exit 1
-
-@endif tix
-
-.PHONY: maybe-mostlyclean-tix mostlyclean-tix
-maybe-mostlyclean-tix:
-@if tix
-maybe-mostlyclean-tix: mostlyclean-tix
-
-mostlyclean-tix: 
-	@[ -f ./tix/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing mostlyclean in tix" ; \
-	(cd tix && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          mostlyclean) \
-	  || exit 1
-
-@endif tix
-
-.PHONY: maybe-clean-tix clean-tix
-maybe-clean-tix:
-@if tix
-maybe-clean-tix: clean-tix
-
-clean-tix: 
-	@[ -f ./tix/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing clean in tix" ; \
-	(cd tix && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          clean) \
-	  || exit 1
-
-@endif tix
-
-.PHONY: maybe-distclean-tix distclean-tix
-maybe-distclean-tix:
-@if tix
-maybe-distclean-tix: distclean-tix
-
-distclean-tix: 
-	@[ -f ./tix/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing distclean in tix" ; \
-	(cd tix && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          distclean) \
-	  || exit 1
-
-@endif tix
-
-.PHONY: maybe-maintainer-clean-tix maintainer-clean-tix
-maybe-maintainer-clean-tix:
-@if tix
-maybe-maintainer-clean-tix: maintainer-clean-tix
-
-maintainer-clean-tix: 
-	@[ -f ./tix/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(SET_LIB_PATH) \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing maintainer-clean in tix" ; \
-	(cd tix && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          maintainer-clean) \
-	  || exit 1
-
-@endif tix
-
-
 .PHONY: configure-libtermcap maybe-configure-libtermcap
 maybe-configure-libtermcap:
 @if libtermcap
@@ -29444,7 +29128,6 @@ all-gdb: maybe-all-sim
 install-gdb: maybe-install-tcl
 install-gdb: maybe-install-tk
 install-gdb: maybe-install-itcl
-install-gdb: maybe-install-tix
 install-gdb: maybe-install-libgui
 configure-libgui: maybe-configure-tcl
 configure-libgui: maybe-configure-tk
@@ -29613,10 +29296,6 @@ all-itcl: maybe-all-tk
 install-itcl: maybe-install-tcl
 configure-tk: maybe-configure-tcl
 all-tk: maybe-all-tcl
-configure-tix: maybe-configure-tcl
-configure-tix: maybe-configure-tk
-all-tix: maybe-all-tcl
-all-tix: maybe-all-tk
 all-sid: maybe-all-libiberty
 all-sid: maybe-all-bfd
 all-sid: maybe-all-opcodes

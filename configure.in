@@ -136,7 +136,7 @@ build_tools="build-texinfo build-byacc build-flex build-bison build-m4"
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl tix libgui zlib libbanshee libcpp"
+host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib libbanshee libcpp"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -232,7 +232,7 @@ fi
 case ${with_x} in
   yes | "") ;; # the default value for this tree is that X11 is available
   no)
-    skipdirs="${skipdirs} tk tix itcl libgui"
+    skipdirs="${skipdirs} tk itcl libgui"
     # We won't be able to build gdbtk without X.
     enable_gdbtk=no 
     ;;
@@ -283,17 +283,17 @@ case "${host}" in
     noconfigdirs="$noconfigdirs byacc"
     ;;
   i[[3456789]]86-*-vsta)
-    noconfigdirs="$noconfigdirs tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl itcl tix gnuserv gettext"
+    noconfigdirs="$noconfigdirs tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl itcl gnuserv gettext"
     ;;
   i[[3456789]]86-*-go32* | i[[3456789]]86-*-msdosdjgpp*)
-    noconfigdirs="$noconfigdirs tcl tk expect dejagnu send-pr uudecode guile itcl tix gnuserv libffi"
+    noconfigdirs="$noconfigdirs tcl tk expect dejagnu send-pr uudecode guile itcl gnuserv libffi"
     ;;
   i[[3456789]]86-*-mingw32*)
-    # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl itcl tix gnuserv"
+    # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl itcl gnuserv"
     noconfigdirs="$noconfigdirs expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool"
     ;;
   i[[3456789]]86-*-beos*)
-    noconfigdirs="$noconfigdirs tk itcl tix libgui gdb"
+    noconfigdirs="$noconfigdirs tk itcl libgui gdb"
     ;;
   *-*-cygwin*)
     noconfigdirs="$noconfigdirs autoconf automake send-pr rcs guile perl"
@@ -302,13 +302,13 @@ case "${host}" in
     noconfigdirs="$noconfigdirs rcs"
     ;;
   ppc*-*-pe)
-    noconfigdirs="$noconfigdirs patch diff make tk tcl expect dejagnu autoconf automake texinfo bison send-pr gprof rcs guile perl itcl tix gnuserv"
+    noconfigdirs="$noconfigdirs patch diff make tk tcl expect dejagnu autoconf automake texinfo bison send-pr gprof rcs guile perl itcl gnuserv"
     ;;
   powerpc-*-beos*)
-    noconfigdirs="$noconfigdirs tk itcl tix libgui gdb dejagnu readline"
+    noconfigdirs="$noconfigdirs tk itcl libgui gdb dejagnu readline"
     ;;
   *-*-darwin*)
-    noconfigdirs="$noconfigdirs tk itcl tix libgui"
+    noconfigdirs="$noconfigdirs tk itcl libgui"
     ;;
 esac
 
@@ -462,7 +462,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ${libgcj}"
     noconfigdirs="$noconfigdirs target-examples"
     noconfigdirs="$noconfigdirs target-libiberty texinfo send-pr"
-    noconfigdirs="$noconfigdirs tcl tix tk itcl libgui sim"
+    noconfigdirs="$noconfigdirs tcl tk itcl libgui sim"
     noconfigdirs="$noconfigdirs expect dejagnu"
     # the C++ libraries don't build on top of CE's C libraries
     noconfigdirs="$noconfigdirs target-libstdc++-v3"
@@ -563,11 +563,11 @@ case "${target}" in
     ;;
   ia64*-*-elf*)
     # No gdb support yet.
-    noconfigdirs="$noconfigdirs tix readline mmalloc libgui itcl gdb"
+    noconfigdirs="$noconfigdirs readline mmalloc libgui itcl gdb"
     ;;
   ia64*-**-hpux*)
     # No gdb or ld support yet.
-    noconfigdirs="$noconfigdirs ${libgcj} tix readline mmalloc libgui itcl gdb ld"
+    noconfigdirs="$noconfigdirs ${libgcj} readline mmalloc libgui itcl gdb ld"
     ;;
   i[[3456789]]86-*-coff | i[[3456789]]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -598,7 +598,7 @@ case "${target}" in
     # Can't build gdb for mingw32 if not native.
     case "${host}" in
       i[[3456789]]86-*-mingw32) ;; # keep gdb tcl tk expect etc.
-      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl tix gnuserv"
+      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl gnuserv"
          ;;
     esac
     ;;    
@@ -616,7 +616,7 @@ case "${target}" in
     # Can't build gdb for Cygwin if not native.
     case "${host}" in
       *-*-cygwin*) ;; # keep gdb tcl tk expect etc.
-      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl tix libgui gnuserv"
+      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl libgui gnuserv"
          ;;
     esac
     ;;    
@@ -672,13 +672,13 @@ case "${target}" in
     ;;
   powerpc*-*-winnt* | powerpc*-*-pe* | ppc*-*-pe)
     target_configdirs="$target_configdirs target-winsup"
-    noconfigdirs="$noconfigdirs gdb tcl tk make expect target-libgloss itcl tix gnuserv ${libgcj}"
+    noconfigdirs="$noconfigdirs gdb tcl tk make expect target-libgloss itcl gnuserv ${libgcj}"
     # always build newlib.
     skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
     ;;
     # This is temporary until we can link against shared libraries
   powerpcle-*-solaris*)
-    noconfigdirs="$noconfigdirs gdb sim make tcl tk expect itcl tix gnuserv ${libgcj}"
+    noconfigdirs="$noconfigdirs gdb sim make tcl tk expect itcl gnuserv ${libgcj}"
     ;;
   powerpc-*-beos*)
     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
@@ -1653,7 +1653,7 @@ build_configdirs=`echo "${build_configdirs}" | sed -e 's/build-//g'`
 # leave out the maybe dependencies when enable_gdbtk is false.  I'm not
 # 100% sure that that's safe though.
 
-gdb_tk="maybe-all-tcl maybe-all-tk maybe-all-itcl maybe-all-tix maybe-all-libgui"
+gdb_tk="maybe-all-tcl maybe-all-tk maybe-all-itcl maybe-all-libgui"
 case "$enable_gdbtk" in
   no)
     GDB_TK="" ;;
