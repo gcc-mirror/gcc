@@ -118,6 +118,8 @@ _cpp_begin_message (cpp_reader *pfile, int code,
     fputs (_("warning: "), stderr);
   else if (level == CPP_DL_ICE)
     fputs (_("internal error: "), stderr);
+  else
+    fputs (_("error: "), stderr);
 
   return 1;
 }
