@@ -2481,6 +2481,9 @@ output_constant_def (exp)
 	  push_obstacks_nochange ();
 	  suspend_momentary ();
 	  p->exp = copy_node (exp);
+	  TREE_STRING_POINTER (p->exp)
+	    = obstack_copy0 (current_obstack, TREE_STRING_POINTER (p->exp),
+			     TREE_STRING_LENGTH (p->exp));
 	  pop_obstacks ();
 	  p->reloc = reloc;
 	  p->labelno = const_labelno++;
