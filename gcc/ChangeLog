@@ -1,4 +1,14 @@
-2004-07-26  Falk Hueffner  <falk@debian.org>>
+2004-07-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (BINFO_BASE_ACCESSES): Accesses are a VEC(tree).
+	(BINFO_BASE_ACCESS): Adjust.
+	(BINFO_BASE_ACCESS_APPEND): New.
+	(struct tree_binfo): Make base_accesses a VEC(tree) pointer.
+	* dbxout.c (dbxout_type): Adjust binfo access accessing.
+	* dwarf2out.c (gen_member_die): Likewise.
+	* tree-dump.c (deque_and_dump): Likewise.
+
+2004-07-26  Falk Hueffner  <falk@debian.org>
 
 	* config/alpha/alpha.c (alpha_rtx_cost_data): Tweak int_div
 	costs.
@@ -340,8 +350,8 @@
 
 2004-07-23  Mike Stump  <mrs@apple.com>
 
-	* c-typeck.c (convert_for_assignment): Tightened up pointer converstions
-	that differ in signedness.
+	* c-typeck.c (convert_for_assignment): Tightened up pointer
+	converstions that differ in signedness.
 
 2004-07-23  Zack Weinberg  <zack@codesourcery.com>
 

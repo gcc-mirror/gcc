@@ -1684,6 +1684,7 @@ dbxout_type (tree type, int full)
 	  {
 	    int i;
 	    tree child;
+	    VEC (tree) *accesses = BINFO_BASE_ACCESSES (binfo);
 	    
 	    if (use_gnu_debug_info_extensions)
 	      {
@@ -1696,8 +1697,7 @@ dbxout_type (tree type, int full)
 	      }
 	    for (i = 0; BINFO_BASE_ITERATE (binfo, i, child); i++)
 	      {
-		tree access = (BINFO_BASE_ACCESSES (binfo)
-			       ? BINFO_BASE_ACCESS (binfo, i)
+		tree access = (accesses ? VEC_index (tree, accesses, i)
 			       : access_public_node);
 
 		if (use_gnu_debug_info_extensions)

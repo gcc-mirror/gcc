@@ -1052,7 +1052,7 @@ get_pseudo_ti_init (tree type, tree var_desc, bool *non_public_p)
 	  int hint = class_hint_flags (type);
 	  tree binfo = TYPE_BINFO (type);
           int nbases = BINFO_N_BASE_BINFOS (binfo);
-	  tree base_accesses = BINFO_BASE_ACCESSES (binfo);
+	  VEC (tree) *base_accesses = BINFO_BASE_ACCESSES (binfo);
           tree base_inits = NULL_TREE;
           int ix;
           
@@ -1065,7 +1065,7 @@ get_pseudo_ti_init (tree type, tree var_desc, bool *non_public_p)
               tree tinfo;
               tree offset;
               
-              if (TREE_VEC_ELT (base_accesses, ix) == access_public_node)
+              if (VEC_index (tree, base_accesses, ix) == access_public_node)
                 flags |= 2;
               tinfo = get_tinfo_ptr (BINFO_TYPE (base_binfo));
 	      if (BINFO_VIRTUAL_P (base_binfo))
@@ -1199,12 +1199,12 @@ get_pseudo_ti_desc (tree type)
       else
 	{
 	  tree binfo = TYPE_BINFO (type);
-	  tree base_accesses = BINFO_BASE_ACCESSES (binfo);
+	  VEC (tree) *base_accesses = BINFO_BASE_ACCESSES (binfo);
 	  tree base_binfo = BINFO_BASE_BINFO (binfo, 0);
 	  int num_bases = BINFO_N_BASE_BINFOS (binfo);
 	  
 	  if (num_bases == 1
-	      && TREE_VEC_ELT (base_accesses, 0) == access_public_node
+	      && VEC_index (tree, base_accesses, 0) == access_public_node
 	      && !BINFO_VIRTUAL_P (base_binfo)
 	      && integer_zerop (BINFO_OFFSET (base_binfo)))
 	    /* single non-virtual public.  */

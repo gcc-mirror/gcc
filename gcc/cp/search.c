@@ -287,7 +287,7 @@ static int
 dynamic_cast_base_recurse (tree subtype, tree binfo, bool is_via_virtual,
 			   tree *offset_ptr)
 {
-  tree accesses;
+  VEC (tree) *accesses;
   tree base_binfo;
   int i;
   int worst = -2;
@@ -306,7 +306,7 @@ dynamic_cast_base_recurse (tree subtype, tree binfo, bool is_via_virtual,
   accesses = BINFO_BASE_ACCESSES (binfo);
   for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
-      tree base_access = TREE_VEC_ELT (accesses, i);
+      tree base_access = VEC_index (tree, accesses, i);
       int rval;
       
       if (base_access != access_public_node)
@@ -625,14 +625,15 @@ dfs_access_in_type (tree binfo, void *data)
       if (!access)
 	{
 	  int i;
-	  tree base_binfo, accesses;
+	  tree base_binfo;
+	  VEC (tree) *accesses;
 	  
 	  /* Otherwise, scan our baseclasses, and pick the most favorable
 	     access.  */
 	  accesses = BINFO_BASE_ACCESSES (binfo);
 	  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
 	    {
-	      tree base_access = TREE_VEC_ELT (accesses, i);
+	      tree base_access = VEC_index (tree, accesses, i);
 	      access_kind base_access_now = BINFO_ACCESS (base_binfo);
 
 	      if (base_access_now == ak_none || base_access_now == ak_private)
