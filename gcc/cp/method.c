@@ -1194,7 +1194,7 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
       DEALLOCATE_TYPEVEC (parms);
     }
 
-  if (ret_type != NULL_TREE)
+  if (ret_type != NULL_TREE && for_method != 2)
     {
       /* Add the return type. */
       OB_PUTC ('_');
