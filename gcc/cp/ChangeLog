@@ -1,3 +1,8 @@
+1999-07-07  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): Update the names of all variants when
+	de-anonymizing.
+
 Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* decl2.c (mark_vtable_entries): Fix check for rtti offset.

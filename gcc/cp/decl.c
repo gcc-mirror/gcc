@@ -11048,18 +11048,17 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && ANON_AGGRNAME_P (TYPE_IDENTIFIER (type)))
 	{
+	  tree oldname = TYPE_NAME (type);
+	  tree t;
+
 	  /* FIXME: This is bogus; we should not be doing this for
 	            cv-qualified types.  */
 
-	  /* For anonymous structs that are cv-qualified, need to use
-             TYPE_MAIN_VARIANT so that name will mangle correctly. As
-             type not referenced after this block, don't bother
-             resetting type to original type, ie. TREE_TYPE (decl). */
-	  type = TYPE_MAIN_VARIANT (type);
-
 	  /* Replace the anonymous name with the real name everywhere.  */
 	  lookup_tag_reverse (type, declarator);
-	  TYPE_NAME (type) = decl;
+	  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+	    if (TYPE_NAME (t) == oldname)
+	      TYPE_NAME (t) = decl;
 
 	  if (TYPE_LANG_SPECIFIC (type))
 	    TYPE_WAS_ANONYMOUS (type) = 1;
