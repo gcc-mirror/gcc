@@ -6621,8 +6621,13 @@
     emit_insn (gen_extzv_64 (operands[0], operands[1],
 			     operands[2], operands[3]));
   else
-    emit_insn (gen_extzv_32 (operands[0], operands[1],
-			     operands[2], operands[3]));
+    {
+      if (! uint5_operand (operands[2], SImode)
+	  || ! uint5_operand (operands[3], SImode))
+	FAIL;
+      emit_insn (gen_extzv_32 (operands[0], operands[1],
+			       operands[2], operands[3]));
+    }
   DONE;
 }")
 
@@ -6741,8 +6746,13 @@
     emit_insn (gen_insv_64 (operands[0], operands[1],
 			    operands[2], operands[3]));
   else
-    emit_insn (gen_insv_32 (operands[0], operands[1],
-			    operands[2], operands[3]));
+    {
+      if (! uint5_operand (operands[2], SImode)
+	  || ! uint5_operand (operands[3], SImode))
+	FAIL;
+      emit_insn (gen_insv_32 (operands[0], operands[1],
+			      operands[2], operands[3]));
+    }
   DONE;
 }")
 
