@@ -4701,13 +4701,13 @@ build_unary_op (code, xarg, noconvert)
 	      if (current_class_type
 		  && TREE_OPERAND (arg, 0) == current_class_ref)
 		/* An expression like &memfn.  */
-		pedwarn ("ISO C++ forbids taking the address of a"
-                         " non-static member function to form a pointer"
-                         " to member function.  Say `&%T::%D'", base, name);
+		cp_pedwarn ("ISO C++ forbids taking the address of a"
+                            " non-static member function to form a pointer"
+                            " to member function.  Say `&%T::%D'", base, name);
 	      else
-		pedwarn ("ISO C++ forbids taking the address of a bound"
-                         " member function to form a pointer to member"
-                         " function", base, name);
+		cp_pedwarn ("ISO C++ forbids taking the address of a bound"
+                            " member function to form a pointer to member"
+                            " function", base, name);
 	    }
 
 	  arg = build_offset_ref (base, name);

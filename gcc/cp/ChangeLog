@@ -1,3 +1,10 @@
+2000-01-19  Gabriel Dos Reis  <gdr@codesourcery.coom>
+
+        * typeck.c (build_unary_op): Use cp_pedwarn, not pedwarn.
+
+        * typeck2.c (incomplete_type_error): Restore previous
+        cp_error and cp_error_at call sequence.
+	
 2000-01-20  Brad Lucier  <lucier@math.purdue.edu>
 
 	* class.c (dump_class_hierarchy): Make format agree with argument;
