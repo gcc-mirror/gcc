@@ -482,11 +482,12 @@ SOFT_REG_FIRST+28, SOFT_REG_FIRST+29,SOFT_REG_FIRST+30,SOFT_REG_FIRST+31
 /* Value is 1 if it is a good idea to tie two pseudo registers when one has
    mode MODE1 and one has mode MODE2.  If HARD_REGNO_MODE_OK could produce
    different values for MODE1 and MODE2, for any hard reg, then this must be
-   0 for correct output.  */
+   0 for correct output.
+
+   All modes are tieable except QImode.  */
 #define MODES_TIEABLE_P(MODE1, MODE2)                   \
      (((MODE1) == (MODE2))                              \
-      || ((MODE1) == SImode && (MODE2) == HImode)	\
-      || ((MODE1) == HImode && (MODE2) == SImode))
+      || ((MODE1) != QImode && (MODE2) != QImode))
 
 
 /* Define the classes of registers for register constraints in the
@@ -637,8 +638,8 @@ enum reg_class
 /* SP_REGS */		 { 0x00000008, 0x00000000 }, /* SP */           \
 /* DA_REGS */		 { 0x00000020, 0x00000000 }, /* A */            \
 /* DB_REGS */		 { 0x00000040, 0x00000000 }, /* B */            \
-/* D8_REGS */		 { 0x00000060, 0x00000000 }, /* A B */          \
 /* Z_REGS  */		 { 0x00000100, 0x00000000 }, /* Z */            \
+/* D8_REGS */		 { 0x00000060, 0x00000000 }, /* A B */          \
 /* Q_REGS  */		 { 0x00000062, 0x00000000 }, /* A B D */        \
 /* D_OR_X_REGS */        { 0x00000003, 0x00000000 }, /* D X */          \
 /* D_OR_Y_REGS */        { 0x00000006, 0x00000000 }, /* D Y */          \
