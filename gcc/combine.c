@@ -2764,6 +2764,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
     if (returnjump_p (i3) || any_uncondjump_p (i3))
       {
 	*new_direct_jump_p = 1;
+	mark_jump_label (PATTERN (i3), i3, 0);
 
 	if ((temp = next_nonnote_insn (i3)) == NULL_RTX
 	    || GET_CODE (temp) != BARRIER)
