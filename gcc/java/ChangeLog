@@ -1,3 +1,20 @@
+Tue Dec  1 13:53:24 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (layout_class_method): Don't report error on non-static
+ 	overriding static if the method is private.
+	* java-tree.h (finish_class): Prototype added.
+	* lex.c (java_get_line_col): Handle col argument -2 value.
+	* parse.h: All static method declarations moved to parse.y.
+	* parse.y: Now contains all static method declarations previously
+ 	found in parse.h.
+	(find_expr_with_wfl, missing_return_error,
+ 	unreachable_stmt_error): New functions.
+	(java_get_real_method_name): Identify constructors bearing class
+ 	names in source code compiled classes only.
+	(java_complete_expand_methods): Call missing_return_error.
+	(invocation_mode): Private methods invoked as static methods.
+	(java_complete_tree): Call unreachable_stmt_error.
+
 1998-12-01  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in (+target): Removed.
