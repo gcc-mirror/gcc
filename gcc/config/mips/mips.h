@@ -473,7 +473,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 25]"
+#define MIPS_VERSION "[AL 1.1, MM 26]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -1623,16 +1623,19 @@ extern struct mips_frame_info current_frame_info;
    `ACCUMULATE_OUTGOING_ARGS'.  */
 #define ACCUMULATE_OUTGOING_ARGS
 
-/* Offset of first parameter from the argument pointer register value.  */
-#define FIRST_PARM_OFFSET(FNDECL) 0
+/* Offset from the argument pointer register to the first argument's
+   address.  On some machines it may depend on the data type of the
+   function.
 
-/* Offset from top-of-stack address to location to store the
-   function parameter if it can't go in a register.
-   Addresses for following parameters are computed relative to this one.
+   If `ARGS_GROW_DOWNWARD', this is the offset to the location above
+   the first argument's address.  */
 
-   It also has the effect of counting register arguments in the total
-   argument size. */
-#define FIRST_PARM_CALLER_OFFSET(FNDECL) 0
+#define FIRST_PARM_OFFSET(FNDECL)					\
+  (FNDECL != 0								\
+   && TREE_TYPE (FNDECL) != 0						\
+   && TREE_TYPE (TREE_TYPE (FNDECL)) != 0				\
+   && (TREE_CODE (TREE_TYPE (TREE_TYPE (FNDECL))) == RECORD_TYPE	\
+       || TREE_CODE (TREE_TYPE (TREE_TYPE (FNDECL))) == UNION_TYPE) ? 4 : 0)
 
 /* When a parameter is passed in a register, stack space is still
    allocated for it.  For the MIPS, stack space must be allocated, cf
