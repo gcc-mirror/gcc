@@ -1,3 +1,10 @@
+2004-03-15  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Introduce experimental top level bootstrap support.
+	* Makefile.in: Regenerate.
+	* configure.in: Introduce support for top level bootstrap.
+	* configure: Regenerate.
+
 2004-03-12  Eric Botcazou  <ebotcazou@gcc.gnu.org>
             Paolo Bonzini  <bonzini@gnu.org>
 
