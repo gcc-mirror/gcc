@@ -3063,12 +3063,6 @@ convert_arguments (typelist, values, fndecl, flags)
 	    error ("insufficient type information in parameter list");
 	  val = integer_zero_node;
 	}
-      else if (TREE_CODE (val) == OFFSET_REF
-	    && TREE_CODE (TREE_TYPE (val)) == METHOD_TYPE)
-	{
-	  /* This is unclean.  Should be handled elsewhere.  */
-	  val = build_unary_op (ADDR_EXPR, val, 0);
-	}
       else if (TREE_CODE (val) == OFFSET_REF)
 	val = resolve_offset_ref (val);
 

@@ -1417,8 +1417,11 @@ build_member_call (type, name, parmlist)
   decl = maybe_dummy_object (type, &basetype_path);
 
   /* Convert 'this' to the specified type to disambiguate conversion
-     to the function's context.  */
-  if (decl == current_class_ref)
+     to the function's context.  Apparently Standard C++ says that we
+     shouldn't do this.  */
+  if (decl == current_class_ref
+      && ! pedantic
+      && ACCESSIBLY_UNIQUELY_DERIVED_P (type, current_class_type))
     {
       tree olddecl = current_class_ptr;
       tree oldtype = TREE_TYPE (TREE_TYPE (olddecl));
