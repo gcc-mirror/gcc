@@ -1,5 +1,8 @@
 2002-10-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (include_empty_classes): Use normalize_rli.
+	(layout_class_type): Likewise.
+
 	* decl.c (reshape_init): Tweak handling of character arrays.
 
 	PR c++/8218
