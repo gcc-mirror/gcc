@@ -121,7 +121,7 @@ bare minimum necessary, and then to keep it there.  This makes clear
 exactly what external clients are entitled to assume, and allows us to
 change internals in the future without worrying whether library clients
 are perhaps relying on some kind of undocumented implementation-specific
-behaviour.
+behavior.
 
 @node Lexer
 @unnumbered The Lexer
@@ -158,7 +158,7 @@ will be removed, so I'll not discuss it further here.
 
 The job of @code{_cpp_lex_direct} is simply to lex a token.  It is not
 responsible for issues like directive handling, returning lookahead
-tokens directly, multiple-include optimisation, or conditional block
+tokens directly, multiple-include optimization, or conditional block
 skipping.  It necessarily has a minor r@^ole to play in memory
 management of lexed lines.  I discuss these issues in a separate section
 (@pxref{Lexing a line}).
@@ -295,7 +295,7 @@ whether a diagnostic is appropriate.  Since we change state on a
 per-token basis, and don't lex whole lines at a time, this is not a
 problem.
 
-Another place where state flags are used to change behaviour is whilst
+Another place where state flags are used to change behavior is whilst
 lexing header names.  Normally, a @samp{<} would be lexed as a single
 token.  After a @code{#include} directive, though, it should be lexed as
 a single token as far as the nearest @samp{>} character.  Note that we
@@ -331,7 +331,7 @@ Occasionally the preprocessor wants to be able to peek ahead in the
 token stream.  For example, after the name of a function-like macro, it
 wants to check the next token to see if it is an opening parenthesis.
 Another example is that, after reading the first few tokens of a
-@code{#pragma} directive and not recognising it as a registered pragma,
+@code{#pragma} directive and not recognizing it as a registered pragma,
 it wants to backtrack and allow the user-defined handler for unknown
 pragmas to access the full @code{#pragma} token stream.  The stand-alone
 preprocessor wants to be able to test the current token with the
@@ -426,7 +426,7 @@ time, each identifier falls into exactly one of three categories:
 
 These have been declared to be macros, either on the command line or
 with @code{#define}.  A few, such as @code{__TIME__} are built-ins
-entered in the hash table during initialisation.  The hash node for a
+entered in the hash table during initialization.  The hash node for a
 normal macro points to a structure with more information about the
 macro, such as whether it is function-like, how many arguments it takes,
 and its expansion.  Built-in macros are flagged as special, and instead
@@ -882,7 +882,7 @@ the basename @samp{foo.h} as the current directory.
 
 Enough information is stored in the splay tree that CPP can immediately
 tell whether it can skip the header file because of the multiple include
-optimisation, whether the file didn't exist or couldn't be opened for
+optimization, whether the file didn't exist or couldn't be opened for
 some reason, or whether the header was flagged not to be re-used, as it
 is with the obsolete @code{#import} directive.
 

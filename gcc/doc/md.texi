@@ -2748,8 +2748,8 @@ too large for this instruction, make it fail.
 @cindex @code{doloop_begin} instruction pattern
 @item @samp{doloop_begin}
 Companion instruction to @code{doloop_end} required for machines that
-need to perform some initialisation, such as loading special registers
-used by a low-overhead looping instruction.  If initialisation insns do
+need to perform some initialization, such as loading special registers
+used by a low-overhead looping instruction.  If initialization insns do
 not always need to be emitted, use a @code{define_expand}
 (@pxref{Expander Definitions}) and make it fail.
 
@@ -3331,13 +3331,13 @@ pattern will not be matched by the combiner.
 @end smallexample
 
 The other two special looping patterns, @samp{doloop_begin} and
-@samp{doloop_end}, are emitted by the loop optimiser for certain
+@samp{doloop_end}, are emitted by the loop optimizer for certain
 well-behaved loops with a finite number of loop iterations using
 information collected during strength reduction.
 
 The @samp{doloop_end} pattern describes the actual looping instruction
 (or the implicit looping operation) and the @samp{doloop_begin} pattern
-is an optional companion pattern that can be used for initialisation
+is an optional companion pattern that can be used for initialization
 needed for some low-overhead looping instructions.
 
 Note that some machines require the actual looping instruction to be
@@ -3866,7 +3866,7 @@ the central flowgraph and branch prediction information needs to be updated,
 several restriction apply. 
 
 Splitting of jump instruction into sequence that over by another jump
-instruction is always valid, as compiler expect identical behaviour of new
+instruction is always valid, as compiler expect identical behavior of new
 jump.  When new sequence contains multiple jump instructions or new labels,
 more assistance is needed.  Splitter is required to create only unconditional
 jumps, or simple conditional jump instructions.  Additionally it must attach a

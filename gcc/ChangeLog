@@ -1,5 +1,8 @@
 2001-12-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/cpp.texi, doc/cppinternals.texi, doc/invoke.texi,
+	doc/md.texi, doc/rtl.texi, doc/tm.texi: Use American spelling.
+
 	* ChangeLog.2, ChangeLog.3, ChangeLog.5, ChangeLog, alias.c,
 	cfgbuild.c, expmed.c, expr.c, final.c, flow.c, fold-const.c,
 	function.c, config/alpha/alpha.md, config/alpha/vms-ld.c,

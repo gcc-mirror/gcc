@@ -816,7 +816,7 @@ to their own specific data.
 
 If a target needs per-function specific data it should define the type
 @code{struct machine_function} and also the macro
-@code{INIT_EXPANDERS}.  This macro should be used to initialise some or
+@code{INIT_EXPANDERS}.  This macro should be used to initialize some or
 all of the function pointers @code{init_machine_status},
 @code{free_machine_status} and @code{mark_machine_status}.  These
 pointers are explained below.
@@ -841,9 +841,9 @@ The macro and function pointers are described below.
 @table @code
 @findex INIT_EXPANDERS
 @item   INIT_EXPANDERS
-Macro called to initialise any target specific information.  This macro
+Macro called to initialize any target specific information.  This macro
 is called once per function, before generation of any RTL has begun.
-The intention of this macro is to allow the initialisation of the
+The intention of this macro is to allow the initialization of the
 function pointers below.
 
 @findex init_machine_status
@@ -851,8 +851,8 @@ function pointers below.
 This is a @code{void (*)(struct function *)} function pointer.  If this
 pointer is non-@code{NULL} it will be called once per function, before function
 compilation starts, in order to allow the target to perform any target
-specific initialisation of the @code{struct function} structure.  It is
-intended that this would be used to initialise the @code{machine} of
+specific initialization of the @code{struct function} structure.  It is
+intended that this would be used to initialize the @code{machine} of
 that structure.
 
 @findex free_machine_status
@@ -5591,8 +5591,8 @@ A C statement to build up a unique section name, expressed as a
 @var{reloc} indicates whether the initial value of @var{exp} requires
 link-time relocations.  If you do not define this macro, GCC will use
 the symbol name prefixed by @samp{.} as the section name.  Note - this
-macro can now be called for uninitialised data items as well as
-initialised data and functions.
+macro can now be called for uninitialized data items as well as
+initialized data and functions.
 @end table
 
 @node PIC
@@ -7137,7 +7137,7 @@ define the macro.
 
 Unless it's necessary to inspect the @var{label} parameter, it is better
 to set the variable @var{align_jumps} in the target's
-@code{OVERRIDE_OPTIONS}.  Otherwise, you should try to honour the user's
+@code{OVERRIDE_OPTIONS}.  Otherwise, you should try to honor the user's
 selection in @var{align_jumps} in a @code{JUMP_ALIGN} implementation.
 
 @findex LABEL_ALIGN_AFTER_BARRIER
@@ -7166,7 +7166,7 @@ define the macro.
 
 Unless it's necessary to inspect the @var{label} parameter, it is better
 to set the variable @code{align_loops} in the target's
-@code{OVERRIDE_OPTIONS}.  Otherwise, you should try to honour the user's
+@code{OVERRIDE_OPTIONS}.  Otherwise, you should try to honor the user's
 selection in @code{align_loops} in a @code{LOOP_ALIGN} implementation.
 
 @findex LOOP_ALIGN_MAX_SKIP
@@ -7182,7 +7182,7 @@ the maximum of the specified values is used.
 
 Unless it's necessary to inspect the @var{label} parameter, it is better
 to set the variable @code{align_labels} in the target's
-@code{OVERRIDE_OPTIONS}.  Otherwise, you should try to honour the user's
+@code{OVERRIDE_OPTIONS}.  Otherwise, you should try to honor the user's
 selection in @code{align_labels} in a @code{LABEL_ALIGN} implementation.
 
 @findex LABEL_ALIGN_MAX_SKIP
@@ -8453,7 +8453,7 @@ pragmas @samp{#pragma pack(<n>)} and @samp{#pragma weak <name>
 The pack pragma specifies the maximum alignment (in bytes) of fields
 within a structure, in much the same way as the @samp{__aligned__} and
 @samp{__packed__} @code{__attribute__}s do.  A pack value of zero resets
-the behaviour to the default.
+the behavior to the default.
 
 The weak pragma only works if @code{SUPPORTS_WEAK} and
 @code{ASM_WEAKEN_LABEL} are defined.  If enabled it allows the creation
@@ -8468,7 +8468,7 @@ style pragmas @samp{#pragma pack(push,@var{n})} and @samp{#pragma
 pack(pop)}.  The @samp{pack(push,@var{n})} pragma specifies the maximum alignment
 (in bytes) of fields within a structure, in much the same way as the
 @samp{__aligned__} and @samp{__packed__} @code{__attribute__}s do.  A
-pack value of zero resets the behaviour to the default.  Successive
+pack value of zero resets the behavior to the default.  Successive
 invocations of this pragma cause the previous values to be stacked, so
 that invocations of @samp{#pragma pack(pop)} will return to the previous
 value.
