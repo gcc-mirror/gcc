@@ -1,5 +1,19 @@
 Sun Sep 21 17:45:45 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* jump.c (jmp_uses_reg_or_mem): Deleted unused function.
+	(find_basic_blocks): Use computed_jump_p to determine if a
+	particular JUMP_INSN is a computed jump.
+	* reg-stack.c (find_blocks): Use computed_jump_p to determine
+	if a particular JUMP_INSN is a computed jump.
+	* rtlanal.c (jmp_uses_reg_or_mem): New function.
+	(computed_jump_p): Likewise.
+	* rtl.h (computed_jump_p): Declare.
+	* genattrtab.c (pc_rtx): Define and initialize.
+	* loop.c (loop_optimize): Always determine if the current
+	function has a computed jump.
+	(indirect_jump_in_function_p): Use computed_jump_p to determine
+	if a particular JUMP_INSN is a computed jump.
+
 	* loop.c (fix_bct_param): Delete unused function.
 	(check_bct_param): Likewise.
 
