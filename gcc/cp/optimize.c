@@ -1114,6 +1114,10 @@ maybe_clone_body (fn)
       /* Actually copy the body.  */
       TREE_CHAIN (DECL_SAVED_TREE (clone)) = copy_body (&id);
 
+      /* There are as many statements in the clone as in the
+	 original.  */
+      DECL_NUM_STMTS (clone) = DECL_NUM_STMTS (fn);
+
       /* Clean up.  */
       splay_tree_delete (id.decl_map);
       VARRAY_FREE (id.fns);
