@@ -5922,6 +5922,11 @@ start_function (declspecs, declarator, nested)
       current_function_prototype_line = DECL_SOURCE_LINE (old_decl);
     }
 
+  /* If there is no explicit declaration, look for any out-of-scope implicit
+     declarations.  */
+  if (old_decl == 0)
+    old_decl = IDENTIFIER_IMPLICIT_DECL (DECL_NAME (decl1));
+
   /* Optionally warn of old-fashioned def with no previous prototype.  */
   if (warn_strict_prototypes
       && TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0
@@ -5937,7 +5942,7 @@ start_function (declspecs, declarator, nested)
      if the function has already been used.  */
   else if (warn_missing_prototypes
 	   && old_decl != 0 && TREE_USED (old_decl)
-	   && !(old_decl != 0 && TYPE_ARG_TYPES (TREE_TYPE (old_decl)) != 0))
+	   && TYPE_ARG_TYPES (TREE_TYPE (old_decl)) == 0)
     warning_with_decl (decl1,
 		      "`%s' was used with no prototype before its definition");
   /* Optionally warn of any global def with no previous declaration.  */
@@ -5949,7 +5954,8 @@ start_function (declspecs, declarator, nested)
   /* Optionally warn of any def with no previous declaration
      if the function has already been used.  */
   else if (warn_missing_declarations
-	   && old_decl != 0 && TREE_USED (old_decl))
+	   && old_decl != 0 && TREE_USED (old_decl)
+	   && old_decl == IDENTIFIER_IMPLICIT_DECL (DECL_NAME (decl1)))
     warning_with_decl (decl1,
 		    "`%s' was used with no declaration before its definition");
 
