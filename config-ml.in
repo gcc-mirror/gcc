@@ -99,6 +99,7 @@ fi
 
 # Scan all the arguments and set all the ones we need.
 
+ml_verbose=--verbose
 for option in ${ml_arguments}
 do
   case $option in
@@ -127,6 +128,9 @@ do
 	;;
   --norecursion | --no*)
 	ml_norecursion=yes
+	;;
+  --silent | --sil* | --quiet | --q*)
+	ml_verbose=--silent
 	;;
   --verbose | --v | --verb*)
 	ml_verbose=--verbose
