@@ -182,7 +182,7 @@ extern rtx *reg_known_value;
    solution.  (For understanding the mapping of bits to units, see
    definition of function_units[] in "insn-attrtab.c") */
 
-int target_units = 0;
+static int target_units = 0;
 
 /* issue_rate is the number of insns that can be scheduled in the same
    machine cycle.  It can be defined in the config/mach/mach.h file,
@@ -586,8 +586,8 @@ typedef struct
   }
 bitlst;
 
-int bitlst_table_last;
-int bitlst_table_size;
+static int bitlst_table_last;
+static int bitlst_table_size;
 static int *bitlst_table;
 
 static char bitset_member PROTO ((bitset, int, int));
@@ -619,14 +619,14 @@ static candidate *candidate_table;
 
    Lists of split and update blocks for  each candidate of the current
    target  are  in  array bblst_table */
-int *bblst_table, bblst_size, bblst_last;
+static int *bblst_table, bblst_size, bblst_last;
 
 #define IS_VALID(src) ( candidate_table[src].is_valid )
 #define IS_SPECULATIVE(src) ( candidate_table[src].is_speculative )
 #define SRC_PROB(src) ( candidate_table[src].src_prob )
 
 /* The bb being currently scheduled.  */
-int target_bb;
+static int target_bb;
 
 /* List of edges.  */
 typedef bitlst edgelst;
@@ -642,11 +642,11 @@ void debug_candidates PROTO ((int));
 typedef bitset bbset;
 
 /* Number of words of the bbset.  */
-int bbset_size;
+static int bbset_size;
 
 /* Dominators array: dom[i] contains the bbset of dominators of
    bb i in the region.  */
-bbset *dom;
+static bbset *dom;
 
 /* bb 0 is the only region entry */
 #define IS_RGN_ENTRY(bb) (!bb)
@@ -657,7 +657,7 @@ bbset *dom;
 
 /* Probability: Prob[i] is a float in [0, 1] which is the probability
    of bb i relative to the region entry.  */
-float *prob;
+static float *prob;
 
 /*  The probability of bb_src, relative to bb_trg.  Note, that while the
    'prob[bb]' is a float in [0, 1], this macro returns an integer
@@ -669,16 +669,16 @@ float *prob;
 typedef bitset edgeset;
 
 /* Number of edges in the region.  */
-int rgn_nr_edges;
+static int rgn_nr_edges;
 
 /* Array of size rgn_nr_edges.    */
-int *rgn_edges;
+static int *rgn_edges;
 
 /* Number of words in an edgeset.    */
-int edgeset_size;
+static int edgeset_size;
 
 /* Mapping from each edge in the graph to its number in the rgn.  */
-int *edge_to_bit;
+static int *edge_to_bit;
 #define EDGE_TO_BIT(edge) (edge_to_bit[edge])
 
 /* The split edges of a source bb is different for each target
@@ -687,10 +687,10 @@ int *edge_to_bit;
    the split edges of each bb relative to the region entry.
 
    pot_split[bb] is the set of potential split edges of bb.  */
-edgeset *pot_split;
+static edgeset *pot_split;
 
 /* For every bb, a set of its ancestor edges.  */
-edgeset *ancestor_edges;
+static edgeset *ancestor_edges;
 
 static void compute_dom_prob_ps PROTO ((int));
 
