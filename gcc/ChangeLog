@@ -1,3 +1,8 @@
+2002-01-14  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* reload1.c (reload_combine): Pass reg_sum replacement through
+	copy_rtx in loop performing multiple changes.
+
 2002-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* except.c (remove_unreachable_regions): New.
