@@ -1,3 +1,16 @@
+2004-07-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/ext/mt_allocator.html: Add docs for _Tune.
+	* include/ext/mt_allocator.h (__mt_alloc::_S_get_options): Make public.
+	(__mt_alloc::_S_set_options): Same.
+	Add to comments.
+
+2004-07-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_ALLOCATOR): Add allocator defaults
+	for linux.
+	* configure: Regenerated.
+
 2004-07-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/22_locale/locale/cons/12658_thread.cc: Move/rename

@@ -139,8 +139,12 @@ namespace __gnu_cxx
 	// See http://gcc.gnu.org/ml/libstdc++/2001-07/msg00077.html
 	size_t 	_M_chunk_size;
 
-	// The maximum number of supported threads. Our Linux 2.4.18
-	// reports 4070 in /proc/sys/kernel/threads-max
+	// The maximum number of supported threads. For
+	// single-threaded operation, use one. Maximum values will
+	// vary depending on details of the underlying system. (For
+	// instance, Linux 2.4.18 reports 4070 in
+	// /proc/sys/kernel/threads-max, while Linux 2.6.6 reports
+	// 65534)
 	size_t 	_M_max_threads;
 
 	// Each time a deallocation occurs in a threaded application
@@ -172,6 +176,17 @@ namespace __gnu_cxx
 	{ }
       };
 
+      static const _Tune
+      _S_get_options()
+      { return _S_options; }
+
+      static void
+      _S_set_options(_Tune __t)
+      { 
+	if (!_S_init)
+	  _S_options = __t;
+      }
+
     private:
       // We need to create the initial lists and set up some variables
       // before we can answer to the first request for memory.
@@ -185,17 +200,6 @@ namespace __gnu_cxx
 
       // Configuration options.
       static _Tune 	       		_S_options;
-
-      static const _Tune
-      _S_get_options()
-      { return _S_options; }
-
-      static void
-      _S_set_options(_Tune __t)
-      { 
-	if (!_S_init)
-	  _S_options = __t;
-      }
 
       // Using short int as type for the binmap implies we are never
       // caching blocks larger than 65535 with this allocator

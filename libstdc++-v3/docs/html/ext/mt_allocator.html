@@ -53,6 +53,61 @@ The aim of this document is to describe - from a application point of
 view - the "inner workings" of the allocator.
 </p>
 
+<h3 class="left">
+  <a name="init">Tunable parameters</a>
+</h3>
+
+<p>Certain allocation parameters can be modified on a per-type
+basis. There exists a nested <pre>struct _Tune</pre> that contains all
+these parameters, which include settings for
+</p>
+   <ul>
+     <li>Alignment </li>
+     <li>Maximum bytes before calling <code>::operator new</code> directly</li>
+     <li>Minimum bytes</li>
+     <li>Size of underlying global allocations</li>
+     <li>Maximum number of supported threads</li>
+     <li>Migration of deallocations to the global free list</li>
+     <li>Shunt for global <code>new</code> and <code>delete</code></li>
+   </ul>
+<p>Adjusting parameters for a given instance of an allocator can only
+happen before any allocations take place, when the allocator itself is
+initialized. For instance:
+</p>
+<pre>
+#include &lt;ext/mt_allocator.h&gt;
+
+struct pod
+{
+  int i;
+  int j;
+};
+
+int main()
+{
+  typedef pod value_type;
+  typedef __gnu_cxx::__mt_alloc&lt;value_type&gt; allocator_type;
+  typedef allocator_type::_Tune tune_type;
+
+  tune_type t_default;
+  tune_type t_opt(16, 5120, 32, 5120, 20, 10, false);
+  tune_type t_single(16, 5120, 32, 5120, 1, 10, false);
+
+  tune_type t;
+  t = allocator_type::_S_get_options();  
+  allocator_type::_S_set_options(t_opt);
+  t = allocator_type::_S_get_options();  
+
+  allocator_type a;
+  allocator_type::pointer p1 = a.allocate(128);
+  allocator_type::pointer p2 = a.allocate(5128);
+
+  a.deallocate(p1, 128);
+  a.deallocate(p2, 5128);
+
+  return 0;
+}
+</pre>
 
 <h3 class="left">
   <a name="init">Initialization</a>
@@ -60,13 +115,8 @@ view - the "inner workings" of the allocator.
 
 <p>
 The static variables (pointers to freelists, tuning parameters etc)
-are initialized to their default values at file scope, i.e.:
+are initialized as above, or are set to the global defaults.
 </p>
-
-<pre>
-  template&lt;typename _Tp&gt; size_t
-  __mt_alloc&lt;_Tp&gt;::_S_freelist_headroom = 10;
-</pre>
 
 <p>
 The very first allocate() call will always call the _S_init() function. 
