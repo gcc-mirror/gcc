@@ -4132,27 +4132,6 @@
   }"
 )
 
-(define_expand "movaddr"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(match_operand:DI 1 "address_operand" ""))]
-  "TARGET_ARM"
-  ""
-)
-
-(define_insn "*movaddr_insn"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(match_operand:DI 1 "address_operand" "p"))]
-  "TARGET_ARM
-   && reload_completed
-   && (GET_CODE (operands[1]) == LABEL_REF
-       || (GET_CODE (operands[1]) == CONST
-	   && GET_CODE (XEXP (operands[1], 0)) == PLUS
-	   && GET_CODE (XEXP (XEXP (operands[1], 0), 0)) == LABEL_REF
-	   && GET_CODE (XEXP (XEXP (operands[1], 0), 1)) == CONST_INT))"
-  "adr%?\\t%0, %a1"
-  [(set_attr "predicable" "yes")]
-)
-
 ;; When generating pic, we need to load the symbol offset into a register.
 ;; So that the optimizer does not confuse this with a normal symbol load
 ;; we use an unspec.  The offset will be loaded from a constant pool entry,

@@ -1,3 +1,8 @@
+2002-03-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/5712
+	* arm.md (movaddr, movaddr_insn): Delete.
+
 2002-03-15  Jason Merrill  <jason@redhat.com>
 
 	* toplev.c (wrapup_global_declarations): Clarify variable handling.
