@@ -160,6 +160,10 @@ extern enum processor_type rs6000_cpu;
 /* Recast the processor type to the cpu attribute.  */
 #define rs6000_cpu_attr ((enum attr_cpu)rs6000_cpu)
 
+/* Define generic processor types based upon current deployment.  */
+#define PROCESSOR_COMMON  PROCESSOR_PPC601
+#define PROCESSOR_POWER   PROCESSOR_RIOS1
+#define PROCESSOR_POWERPC PROCESSOR_PPC601
 /* Define the default processor.  This is overridden by other tm.h files.  */
 #define PROCESSOR_DEFAULT PROCESSOR_RIOS1
 
