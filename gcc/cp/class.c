@@ -1923,11 +1923,8 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
 	{
 	  *cant_have_default_ctor_p = 1;
 	  if (! TYPE_HAS_CONSTRUCTOR (t))
-	    {
-	      cp_pedwarn ("base `%T' with only non-default constructor",
-			  basetype);
-	      cp_pedwarn ("in class without a constructor");
-	    }
+            cp_pedwarn ("base `%T' with only non-default constructor in class without a constructor",
+                        basetype);
 	}
 
       /* If the base class is not empty or nearly empty, then this
@@ -3471,7 +3468,7 @@ finish_struct_anon (t)
 		continue;
 
 	      if (DECL_NAME (elt) == constructor_name (t))
-		cp_pedwarn_at ("ANSI C++ forbids member `%D' with same name as enclosing class",
+		cp_pedwarn_at ("ISO C++ forbids member `%D' with same name as enclosing class",
 			       elt);
 
 	      if (TREE_CODE (elt) != FIELD_DECL)

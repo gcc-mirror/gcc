@@ -290,7 +290,7 @@ do_case (start, end)
     error ("pointers are not permitted as case values");
 
   if (end && pedantic)
-    pedwarn ("ANSI C++ forbids range expressions in switch statement");
+    pedwarn ("ISO C++ forbids range expressions in switch statement");
 
   if (start)
     value1 = check_cp_case_value (start);

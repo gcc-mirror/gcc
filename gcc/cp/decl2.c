@@ -1187,7 +1187,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
   /* You can't delete functions.  */
   if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
     {
-      error ("cannot delete a function");
+      error ("cannot delete a function.  Only pointer-to-objects are valid arguments to `delete'");
       return error_mark_node;
     }
 
@@ -1245,7 +1245,7 @@ check_member_template (tmpl)
 	/* 14.5.2.2 [temp.mem]
 	   
 	   A local class shall not have member templates. */
-	cp_error ("declaration of member template `%#D' in local class",
+	cp_error ("invalid declaration of member template `%#D' in local class",
 		  decl);
       
       if (TREE_CODE (decl) == FUNCTION_DECL && DECL_VIRTUAL_P (decl))
@@ -1862,7 +1862,7 @@ grok_function_init (decl, init)
 #if 0
   /* We'll check for this in finish_struct_1.  */
   else if (DECL_VINDEX (decl) == NULL_TREE)
-    cp_error ("initializer specified for non-virtual method `%D'", decl);
+    cp_error ("initializer specified for non-virtual member function `%D'", decl);
 #endif
   else if (integer_zerop (init))
     {
