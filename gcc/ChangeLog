@@ -1,5 +1,26 @@
 2000-05-06  Richard Henderson  <rth@cygnus.com>
 
+	* config/ia64/ia64.c (predicate_operator): New.
+	(ia64_print_operand): Handle 'J'.
+	(rtx_needs_barrier): Handle COND_EXEC.
+	* config/ia64/ia64.h (BRANCH_COST): Define.
+	(PREDICATE_CODES): Update.
+	* config/ia64/ia64.md: Docuement used unspec values.
+	(attr predicable): New.
+	(movxf, movxf_internal): New.
+	(extendsfdf2): Don't comment out nop.
+	(floatdidf2): Remove.
+	(truncxfsf2, truncxfdf2, floatdixf2): New.
+	(abssi2, absdi2): Put the neg in the "true" slot.
+	(conditional branch instructions): Mark not predicable.
+	(cmov*_internal): Use predicate_operator.  Split to cond_exec.
+	(abs*_internal): Likewise.
+	(alloc, set_bsp): Mark not predicable.
+	(barrier, insn_group_barrier, flush_cache): Likewise.
+	(define_cond_exec): New.
+
+2000-05-06  Richard Henderson  <rth@cygnus.com>
+
 	* c-decl.c: Include "tm_p.h".
 
 	* config/ia64/ia64-protos.h: Rearrange decls to reduce ifdef madness.

@@ -1922,9 +1922,13 @@ do {									\
 /* #define MEMORY_MOVE_COST(M,C,I) */
 
 /* A C expression for the cost of a branch instruction.  A value of 1 is the
-   default; other values are interpreted relative to that.  */
-/* ??? Investigate.  Might get better code by defining this.  */
-/* #define BRANCH_COST */
+   default; other values are interpreted relative to that.  Used by the 
+   if-conversion code as max instruction count.  */
+/* ??? This requires investigation.  The primary effect might be how
+   many additional insn groups we run into, vs how good the dynamic
+   branch predictor is.  */
+
+#define BRANCH_COST 6
 
 /* Define this macro as a C expression which is nonzero if accessing less than
    a word of memory (i.e. a `char' or a `short') is no faster than accessing a
@@ -2726,7 +2730,8 @@ do {									\
 { "reg_or_fp01_operand", {SUBREG, REG, CONST_DOUBLE, CONSTANT_P_RTX}},	\
 { "normal_comparison_operator", {EQ, NE, GT, LE, GTU, LEU}},		\
 { "adjusted_comparison_operator", {LT, GE, LTU, GEU}},			\
-{ "call_multiple_values_operation", {PARALLEL}},
+{ "call_multiple_values_operation", {PARALLEL}},			\
+{ "predicate_operator", {NE, EQ}},
 
 /* An alias for a machine mode name.  This is the machine mode that elements of
    a jump-table should have.  */
