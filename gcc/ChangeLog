@@ -1,3 +1,8 @@
+Wed Nov 17 16:51:23 1999  Richard Henderson  <rth@cygnus.com>
+
+	* cse.c (delete_trivially_dead_insns): Identify no-op insns
+	containing subregs too.
+
 Wed Nov 17 17:39:48 MST 1999	Diego Novillo <dnovillo@cygnus.com>
 
 	* invoke.texi: Add documentation for -muninit-const-in-rodata.
