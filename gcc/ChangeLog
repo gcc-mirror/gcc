@@ -1,3 +1,9 @@
+2004-06-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree-nested.c (create_tmp_var_for): Allow ARRAY_TYPE.
+	(convert_nonlocal_reference, convert_local_reference): Properly
+	convert nest of handled component references.
+
 2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* vec.h, vec.c: New, type safe vector API.
