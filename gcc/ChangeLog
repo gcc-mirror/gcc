@@ -1,5 +1,15 @@
 2003-04-17  Richard Henderson  <rth@redhat.com>
 
+	* config/ns32k/ns32k.c (ns32k_encode_section_info): Remove.
+	(global_symbolic_reference_mentioned_p): Use SYMBOL_REF_LOCAL_P.
+	(print_operand_address): Likewise.
+
+	* config/ns32k/ns32k.h (CANNOT_CHANGE_MODE_CLASS): Add CLASS argument.
+	* config/ns32k/ns32k.c (expand_block_move): Don't check
+	flag_unroll_loops.
+
+2003-04-17  Richard Henderson  <rth@redhat.com>
+
 	* config/mcore/mcore.c (mcore_encode_section_info): Don't set
 	SYMBOL_REF_FLAG.
 
