@@ -684,7 +684,8 @@ for machine in $build $host $target; do
 		broken_install=yes
 		;;
 	i486-ncr-sysv4*)		# NCR 3000 - i486 running system V.4
-		xm_file=i386/xm-sysv4.h
+		xm_file="xm-siglist.h xm-alloca.h ${xm_file}"
+		xm_defines="USG POSIX SMALL_ARG_MAX"
 		xmake_file=i386/x-ncr3000
 		if [[ x$stabs = xyes -a x$gas = xyes ]]
 		then
@@ -735,7 +736,8 @@ for machine in $build $host $target; do
 		broken_install=yes
 		;;
 	i[[34567]]86-sequent-ptx4* | i[[34567]]86-sequent-sysv4*)
-		xm_file=i386/xm-sysv4.h
+		xm_file="xm-siglist.h xm-alloca.h ${xm_file}"
+		xm_defines="USG POSIX SMALL_ARG_MAX"
 		xmake_file=x-svr4
 		tm_file=i386/ptx4-i.h
 		tmake_file=t-svr4
@@ -919,8 +921,8 @@ for machine in $build $host $target; do
 		tm_file=i386/rtems.h
 		tmake_file="i386/t-i386bare t-rtems"
 		;;
-	i[[34567]]86-*-sco3.2v5*)		# 80386 running SCO Open Server 5
-		xm_file=i386/xm-sco5.h
+	i[[34567]]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
+		xm_file="xm-siglist.h xm-alloca.h i386/xm-sysv3.h i386/xm-sco5.h"
 		xmake_file=i386/x-sco5
 		fixincludes=fixinc.sco
 		broken_install=yes
@@ -965,7 +967,8 @@ for machine in $build $host $target; do
 		truncate_target=yes
 		;;
 	i[[34567]]86-*-solaris2*)
-		xm_file=i386/xm-sysv4.h
+		xm_file="xm-siglist.h xm-alloca.h ${xm_file}"
+		xm_defines="USG POSIX SMALL_ARG_MAX"
 		if [[ x$stabs = xyes ]]
 		then
 			tm_file=i386/sol2dbg.h
@@ -982,7 +985,8 @@ for machine in $build $host $target; do
 		fi
 		;;
 	i[[34567]]86-*-sysv4*)		# Intel 80386's running system V.4
-		xm_file=i386/xm-sysv4.h
+		xm_file="xm-siglist.h xm-alloca.h ${xm_file}"
+		xm_defines="USG POSIX SMALL_ARG_MAX"
 		tm_file=i386/sysv4.h
 		if [[ x$stabs = xyes ]]
 		then
@@ -1068,7 +1072,8 @@ for machine in $build $host $target; do
 		fi
 		;;
 	i[[34567]]86-dg-dgux*)
-		xm_file=i386/xm-dgux.h
+		xm_file="xm-alloca.h xm-siglist.h ${xm_file}"
+		xm_defines="USG POSIX"
 		out_file=i386/dgux.c
 		tm_file=i386/dgux.h
 		tmake_file=i386/t-dgux
@@ -1808,7 +1813,7 @@ for machine in $build $host $target; do
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file="${xm_file} mips/xm-news.h"
+		xm_file="xm-siglist.h ${xm_file}"
 		xm_defines=USG
 		if [[ x$gas = xyes ]]
 		then
@@ -1826,7 +1831,7 @@ for machine in $build $host $target; do
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file="${xm_file} mips/xm-sysv4.h"
+		xm_file="xm-siglist.h ${xm_file}"
 		xm_defines=USG
 		xmake_file=mips/x-sysv
 		if [[ x$gas = xyes ]]
@@ -1902,7 +1907,7 @@ for machine in $build $host $target; do
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file=mips/xm-sysv4.h
+		xm_file="xm-siglist.h ${xm_file}"
 		xmake_file=mips/x-sysv
 		if [[ x$gas = xyes ]]
 		then
@@ -2144,7 +2149,8 @@ for machine in $build $host $target; do
 		;;
 	powerpc-*-sysv* | powerpc-*-elf*)
 		tm_file=rs6000/sysv4.h
-		xm_file=rs6000/xm-sysv4.h
+		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
+		xm_defines="USG POSIX"
 		extra_headers=ppc-asm.h
 		if [[ x$gas = xyes ]]
 		then
@@ -2190,7 +2196,8 @@ for machine in $build $host $target; do
 		;;
 	powerpc-*-linux-gnu*)
 		tm_file=rs6000/linux.h
-		xm_file=rs6000/xm-sysv4.h
+		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
+		xm_defines="USG POSIX"
 		out_file=rs6000/rs6000.c
 		if [[ x$gas = xyes ]]
 		then
@@ -2208,14 +2215,16 @@ for machine in $build $host $target; do
 		;;
         powerpc-*-vxworks*)
                 cpu_type=rs6000
-                xm_file=rs6000/xm-sysv4.h
+		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
+		xm_defines="USG POSIX"
                 tm_file=rs6000/vxppc.h
                 tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		extra_headers=ppc-asm.h
                 ;;
 	powerpcle-*-sysv* | powerpcle-*-elf*)
 		tm_file=rs6000/sysv4le.h
-		xm_file=rs6000/xm-sysv4.h
+		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
+		xm_defines="USG POSIX"
 		if [[ x$gas = xyes ]]
 		then
 			tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
@@ -2267,7 +2276,8 @@ for machine in $build $host $target; do
 		;;
 	powerpcle-*-solaris2*)
 		tm_file=rs6000/sol2.h
-		xm_file=rs6000/xm-sysv4.h
+		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
+		xm_defines="USG POSIX"
 		if [[ x$gas = xyes ]]
 		then
 			tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
@@ -2447,7 +2457,8 @@ for machine in $build $host $target; do
 		;;
 	sparc-*-sysv4*)
 		tm_file=sparc/sysv4.h
-		xm_file=sparc/xm-sysv4.h
+		xm_file="xm-siglist.h sparc/xm-sysv4.h"
+		xm_defines="USG POSIX"
 		tmake_file=t-svr4
 		xmake_file=sparc/x-sysv4
 		extra_parts="crtbegin.o crtend.o"
