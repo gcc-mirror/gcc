@@ -114,12 +114,10 @@ P =
 # How to invoke ranlib.
 RANLIB = ranlib
 # Test to use to see whether ranlib exists on the system.
-RANLIB_TEST = [ -f /usr/bin/ranlib -o -f /bin/ranlib ]
-
-HOST_AR = ar
-HOST_AR_FLAGS = rc
-HOST_RANLIB = ranlib
-HOST_RANLIB_TEST = [ -f /usr/bin/ranlib -o -f /bin/ranlib ]
+RANLIB_TEST = \
+  [ -f $(RANLIB) ] \
+  || ( [ "$(host_canonical)" = "$(target)" ] \
+       && [ -f /usr/bin/ranlib -o -f /bin/ranlib ] )
 
 # Compiler to use for compiling libgcc1.a.
 # OLDCC should not be the GNU C compiler,
@@ -195,7 +193,7 @@ AR_FOR_TARGET = ` \
        t='$(program_transform_name)'; echo ar | sed -e $$t ; \
     fi; \
   fi`
-AR_FOR_TARGET_FLAGS = rc
+AR_FLAGS_FOR_TARGET = rc
 RANLIB_FOR_TARGET = ` \
   if [ -f $(objdir)/../binutils/ranlib ] ; then \
     echo $(objdir)/../binutils/ranlib ; \
@@ -211,18 +209,6 @@ RANLIB_TEST_FOR_TARGET = \
   || ( [ "$(host_canonical)" = "$(target)" ] \
        && [ -f /usr/bin/ranlib -o -f /bin/ranlib ] )
 
-# We always act like a cross-compiler, even when we're
-# compiling native.  This is because we want to use our own tools if
-# we can.  We don't just set RANLIB to a complicated expression,
-# because the top level Makefile.in might override RANLIB_FOR_TARGET.
-# These are from the FSF file "cross-make".
-AR = $(AR_FOR_TARGET)
-AR_FLAGS = $(AR_FOR_TARGET_FLAGS)
-OLDAR = $(AR_FOR_TARGET)
-OLDAR_FLAGS = $(AR_FOR_TARGET_FLAGS)
-RANLIB = $(RANLIB_FOR_TARGET)
-RANLIB_TEST = $(RANLIB_TEST_FOR_TARGET)
-  
 # Dir to search for system headers.  Overridden by cross-make.
 SYSTEM_HEADER_DIR = /usr/include
 
@@ -622,7 +608,7 @@ LANG_EXTRA_HEADERS = @all_headers@
 # subdirectories.
 # ??? The choices here will need some experimenting with.
 FLAGS_TO_PASS = \
-	"AR_FLAGS=$(AR_FOR_TARGET_FLAGS)" \
+	"AR_FLAGS_FOR_TARGET=$(AR_FLAGS_FOR_TARGET)" \
 	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
 	"BISON=$(BISON)" \
 	"BISONFLAGS=$(BISONFLAGS)" \
@@ -936,7 +922,7 @@ libgcc1.conv: libgcc1.a
 libgcc1.null: $(GCC_PASSES)
 	echo "void __foo () {}" > dummy.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) -c dummy.c
-	$(OLDAR) $(OLDAR_FLAGS) libgcc1.null dummy$(objext)
+	$(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) libgcc1.null dummy$(objext)
 	rm -f dummy$(objext) dummy.c
 
 # This is $(LIBGCC1) for a cross-compiler.
@@ -996,7 +982,9 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 	  else true; \
 	  fi; \
 	done
-	-if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc1.a; else true; fi
+	-if $(RANLIB_TEST_FOR_TARGET) ; then \
+	  $(RANLIB_FOR_TARGET) tmplibgcc1.a; \
+	else true; fi
 	mv tmplibgcc1.a libgcc1.a
 
 # Build libgcc1.a from assembler source.  LIB1ASMFUNCS is the list of
@@ -1019,7 +1007,7 @@ libgcc1-asm.a: libgcc2.ready config.status $(srcdir)/config/$(LIB1ASMSRC)
 	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} libgcc1.S; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	  mv libgcc1$(objext) $${name}$(objext); \
-	  $(AR) $(AR_FLAGS) tmplibgcc1.a $${name}$(objext); \
+	  $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc1.a $${name}$(objext); \
 	  rm -f $${name}$(objext); \
 	done
 	-rm -f libgcc1.S
@@ -1070,7 +1058,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
 	      $(srcdir)/libgcc2.c -o $${name}$(objext); \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	  $(AR) $(AR_FLAGS) tmplibgcc2.a $${name}$(objext); \
+	  $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
 	  rm -f $${name}$(objext); \
 	done
 	for name in $(LIB2FUNCS_EH); \
@@ -1079,7 +1067,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -fexceptions $(INCLUDES) -c \
 	      -DL$${name} $(srcdir)/libgcc2.c -o $${name}$(objext); \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	  $(AR) $(AR_FLAGS) tmplibgcc2.a $${name}$(objext); \
+	  $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
 	  rm -f $${name}$(objext); \
 	done
 	if [ x$(FPBIT) != x ]; then \
@@ -1089,7 +1077,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
 	        -DFINE_GRAINED_LIBRARIES $(FPBIT) -o $${name}$(objext); \
 	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(AR) $(AR_FLAGS) tmplibgcc2.a $${name}$(objext); \
+	    $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
 	    rm -f $${name}$(objext); \
 	  done; \
 	else true; fi;
@@ -1100,7 +1088,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
 	        -DFINE_GRAINED_LIBRARIES $(DPBIT) -o $${name}$(objext); \
 	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(AR) $(AR_FLAGS) tmplibgcc2.a $${name}$(objext); \
+	    $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
 	    rm -f $${name}$(objext); \
 	  done; \
 	else true; fi;
@@ -1116,13 +1104,14 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	  if [ $${name}.txt = $${file} ]; then \
 	    for f in .. `cat $${file}`; do if [ x$${f} != x.. ]; then \
 	      $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-		AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" \
+		AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+		AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" CC="$(CC)" \
 		CFLAGS="$(CFLAGS)" HOST_PREFIX="$(HOST_PREFIX)" \
 		HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 		LANGUAGES="$(LANGUAGES)" \
 		LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $${f}; \
 	      if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	      $(AR) $(AR_FLAGS) tmplibgcc2.a $${f}; \
+	      $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a $${f}; \
 	      rm -f $${f}; \
 	    else true; \
 	    fi; done; \
@@ -1133,7 +1122,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	    else true; fi; \
 	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c $${file}; \
 	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(AR) $(AR_FLAGS) tmplibgcc2.a $${oname}$(objext); \
+	    $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a $${oname}$(objext); \
 	    rm -f $${name}.s $${oname}$(objext); \
 	  fi; \
 	done
@@ -1141,7 +1130,9 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 # These lines were deleted from above the mv command
 # because ranlibing libgcc.a itself should suffice.
 #	-if [ x${HPUX_GAS} = x ] ; then \
-#	  if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc2.a; else true; fi; \
+#	  if $(RANLIB_TEST_FOR_TARGET) ; then \
+#	    $(RANLIB_FOR_TARGET) tmplibgcc2.a;
+#	  else true; fi; \
 #	else true; fi
 
 # Combine the various libraries into a single library, libgcc.a.
@@ -1149,7 +1140,7 @@ libgcc.a: $(LIBGCC1) $(LIBGCC2)
 	-rm -rf tmplibgcc.a libgcc.a tmpcopy
 	mkdir tmpcopy
 	-if [ x$(LIBGCC1) != x ];			\
-	then (cd tmpcopy; $(AR) x ../$(LIBGCC1));	\
+	then (cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC1));	\
 	else true;					\
 	fi
 # Some versions of ar (specifically the one in RISC/os 5.x), create an
@@ -1157,10 +1148,12 @@ libgcc.a: $(LIBGCC1) $(LIBGCC2)
 # the second ar command tries to overwrite this file.  To avoid the error
 # message from ar, we make sure all files are writable.
 	-(cd tmpcopy; chmod +w * > /dev/null 2>&1)
-	(cd tmpcopy; $(AR) x ../$(LIBGCC2))
-	(cd tmpcopy; $(AR) $(AR_FLAGS) ../tmplibgcc.a *$(objext))
+	(cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC2))
+	(cd tmpcopy; $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) ../tmplibgcc.a *$(objext))
 	rm -rf tmpcopy
-	-if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc.a; else true; fi
+	-if $(RANLIB_TEST_FOR_TARGET) ; then \
+	  $(RANLIB_FOR_TARGET) tmplibgcc.a; \
+	else true; fi
 # Actually build it in tmplibgcc.a, then rename at end,
 # so that libgcc.a itself remains nonexistent if compilation is aborted.
 	mv tmplibgcc.a libgcc.a
@@ -1187,8 +1180,11 @@ stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
 	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
 	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	    AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" CFLAGS="$(CFLAGS)" \
-	    RANLIB="$(RANLIB)" RANLIB_TEST="$(RANLIB_TEST)" \
+	    AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+	    AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
+	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
+	    RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
+	    RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
 	    LANGUAGES="$(LANGUAGES)" \
 	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS) $${flags}" \
@@ -1208,7 +1204,9 @@ stmp-multilib-sub:
 	else true; \
 	fi
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	  AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" CFLAGS="$(CFLAGS)" \
+	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
+	  CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	  LANGUAGES="$(LANGUAGES)" \
 	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $(LIBGCC2)
@@ -1220,7 +1218,9 @@ stmp-multilib-sub:
 	then true; \
 	else \
 	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	    AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" CFLAGS="$(CFLAGS)" \
+	    AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+	    AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
+	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	    LANGUAGES="$(LANGUAGES)" \
 	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $(LIBGCC1); \
@@ -1228,18 +1228,22 @@ stmp-multilib-sub:
 	rm -rf tmplibgcc.a tmpcopy
 	mkdir tmpcopy
 	if [ x$(LIBGCC1) != x ]; \
-	then (cd tmpcopy; $(AR) x ../$(LIBGCC1)); \
+	then (cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC1)); \
 	else true; \
 	fi
-	(cd tmpcopy; $(AR) x ../$(LIBGCC2))
-	(cd tmpcopy; $(AR) $(AR_FLAGS) ../tmplibgcc.a *$(objext))
+	(cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC2))
+	(cd tmpcopy; $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) ../tmplibgcc.a *$(objext))
 	rm -rf libgcc2.a tmpcopy
-	if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc.a; else true; fi
+	if $(RANLIB_TEST_FOR_TARGET) ; then \
+	  $(RANLIB_FOR_TARGET) tmplibgcc.a; \
+	else true; fi
 	if [ -d $(dir) ]; then true; else mkdir $(dir); fi
 	mv tmplibgcc.a $(dir)/libgcc.a
 	for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	    AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" CFLAGS="$(CFLAGS)" \
+	    AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+	    AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
+	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	    LANGUAGES="$(LANGUAGES)" \
 	    MULTILIB_CFLAGS="$(MULTILIB_CFLAGS)" T="t" t$${f}; \
@@ -1978,12 +1982,9 @@ LIBCPP_OBJS =	cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o cppfiles.o \
 # All the other archives built/used by this makefile are for targets.  This
 # one is strictly for the host.
 #
-# For various reasons AR, RANLIB, etc are all set to the target tools and
-# must not be used here.  Instead explicitly use the host versions.
-#
 libcpp.a: $(LIBCPP_OBJS)
-	$(HOST_AR) $(HOST_AR_FLAGS) libcpp.a $(LIBCPP_OBJS)
-	if $(HOST_RANLIB_TEST) ; then $(HOST_RANLIB) libcpp.a ; else true ; fi
+	$(AR) $(AR_FLAGS) libcpp.a $(LIBCPP_OBJS)
+	if $(RANLIB_TEST) ; then $(RANLIB) libcpp.a ; else true ; fi
 
 cppmain$(exeext): cppmain.o libcpp.a $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cppmain$(exeext) cppmain.o \
@@ -2592,8 +2593,8 @@ install-libgcc: libgcc.a installdirs
 	-if [ -f libgcc.a ] ; then \
 	  rm -f $(libsubdir)/libgcc.a; \
 	  $(INSTALL_DATA) libgcc.a $(libsubdir)/libgcc.a; \
-	  if $(RANLIB_TEST) ; then \
-	    (cd $(libsubdir); $(RANLIB) libgcc.a); else true; fi; \
+	  if $(RANLIB_TEST_FOR_TARGET) ; then \
+	    (cd $(libsubdir); $(RANLIB_FOR_TARGET) libgcc.a); else true; fi; \
 	  chmod a-x $(libsubdir)/libgcc.a; \
 	else true; fi
 
@@ -2606,8 +2607,9 @@ install-multilib: stmp-multilib installdirs
 	    rm -f $(libsubdir)/$${dir}/$${f}; \
 	    $(INSTALL_DATA) $${dir}/$${f} $(libsubdir)/$${dir}/$${f}; \
 	  done; \
-	  if $(RANLIB_TEST); then \
-	    (cd $(libsubdir)/$${dir}; $(RANLIB) libgcc.a); else true; fi; \
+	  if $(RANLIB_TEST_FOR_TARGET); then \
+	    (cd $(libsubdir)/$${dir}; $(RANLIB_FOR_TARGET) libgcc.a); \
+	  else true; fi; \
 	  chmod a-x $(libsubdir)/$${dir}/libgcc.a; \
 	done
 
@@ -3018,7 +3020,9 @@ stage1-start:
 	-if [ -f collect-ld$(exeext) ] ; then $(LN_S) ../collect-ld$(exeext) stage1 ; else true ; fi
 	-rm -f stage1/libgcc.a
 	-cp libgcc.a stage1
-	-if $(RANLIB_TEST) ; then $(RANLIB) stage1/libgcc.a; else true; fi
+	-if $(RANLIB_TEST_FOR_TARGET) ; then \
+	  $(RANLIB_FOR_TARGET) stage1/libgcc.a; \
+	else true; fi
 	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  cp stage1/$${f} . ; \
 	else true; \
@@ -3040,7 +3044,9 @@ stage2-start:
 	-if [ -f collect-ld ] ; then $(LN_S) ../collect-ld$(exeext) stage2 ; else true ; fi
 	-rm -f stage2/libgcc.a
 	-cp libgcc.a stage2
-	-if $(RANLIB_TEST) ; then $(RANLIB) stage2/libgcc.a; else true; fi
+	-if $(RANLIB_TEST_FOR_TARGET) ; then \
+	  $(RANLIB_FOR_TARGET) stage2/libgcc.a; \
+	else true; fi
 	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  cp stage2/$${f} . ; \
 	else true; \
@@ -3062,7 +3068,9 @@ stage3-start:
 	-if [ -f collect-ld$(exeext) ] ; then $(LN_S) ../collect-ld$(exeext) stage3 ; else true ; fi
 	-rm -f stage3/libgcc.a
 	-cp libgcc.a stage3
-	-if $(RANLIB_TEST) ; then $(RANLIB) stage3/libgcc.a; else true; fi
+	-if $(RANLIB_TEST_FOR_TARGET) ; then \
+	  $(RANLIB_FOR_TARGET) stage3/libgcc.a; \
+	else true; fi
 	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  cp stage3/$${f} . ; \
 	else true; \
@@ -3084,7 +3092,9 @@ stage4-start:
 	-if [ -f collect-ld$(exeext) ] ; then $(LN_S) ../collect-ld$(exeext) stage4 ; else true ; fi
 	-rm -f stage4/libgcc.a
 	-cp libgcc.a stage4
-	-if $(RANLIB_TEST) ; then $(RANLIB) stage4/libgcc.a; else true; fi
+	-if $(RANLIB_TEST_FOR_TARGET) ; then \
+	  $(RANLIB_FOR_TARGET) stage4/libgcc.a; \
+	else true; fi
 	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  cp stage4/$${f} . ; \
 	else true; \

@@ -3,14 +3,6 @@
 # and gives up immediately if the user has not done so.
 LIBGCC1 = $(CROSS_LIBGCC1)
 
-# Specify tools and options for manipulating libraries for the target machine.
-AR = $(AR_FOR_TARGET)
-AR_FLAGS = $(AR_FOR_TARGET_FLAGS)
-OLDAR = $(AR_FOR_TARGET)
-OLDAR_FLAGS = $(AR_FOR_TARGET_FLAGS)
-RANLIB = $(RANLIB_FOR_TARGET)
-RANLIB_TEST = $(RANLIB_TEST_FOR_TARGET)
-
 # Dir to search for system headers.  Normally /usr/include.
 # Use CROSS_INCLUDE_DIR not TOOL_INCLUDE_DIR for other vendor's headers.
 SYSTEM_HEADER_DIR = $(tooldir)/sys-include
