@@ -1,3 +1,8 @@
+2001-08-17  Mark J Roberts  <mjr@anarcast.net>
+
+	* java/math/BigInteger.java (randBytes): New method.
+	(BigInteger(int,Random)): Use randBytes.
+
 2001-08-17  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/convert/IOConverter.java: Add `646' alias.
