@@ -1473,7 +1473,7 @@ gfc_simplify_int (gfc_expr * e, gfc_expr * k)
   gfc_expr *rpart, *rtrunc, *result;
   int kind;
 
-  kind = get_kind (BT_REAL, k, "INT", gfc_default_real_kind);
+  kind = get_kind (BT_INTEGER, k, "INT", gfc_default_integer_kind);
   if (kind == -1)
     return &gfc_bad_expr;
 
