@@ -600,7 +600,7 @@ extern int current_function_outgoing_args_size;
 #define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + 6 : INVALID_REGNUM)
 #define EH_RETURN_HANDLER_RTX \
   gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, \
-                                     TARGET_64BIT? -48 : -40))
+               -STACK_POINTER_OFFSET + UNITS_PER_WORD*RETURN_REGNUM))
 
 /* Select a format to encode pointers in exception handling data.  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)			    \

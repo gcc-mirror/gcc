@@ -1,3 +1,8 @@
+2003-07-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (EH_RETURN_HANDLER_RTX): Compute offset
+	symbolically.
+
 Wed Jul 30 19:12:10 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (insert_store): Ignore fake edges.
