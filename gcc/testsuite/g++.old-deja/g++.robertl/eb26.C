@@ -3,7 +3,6 @@
 // cannot declare friend of enclosing class using its scope, works fine
 // without scope or for definition of foo::bar::f
 //
-// excess errors test - XFAIL *-*-*
 
 class foo
 {
@@ -17,6 +16,8 @@ public:
     static int f() {return foo::f();};
    };
 };
+
+int foo::bar::x;
 
 int foo::f() {
   return bar::x;
