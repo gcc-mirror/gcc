@@ -1,3 +1,7 @@
+2005-04-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/t-darwin8: Comment out ppc64 multilib.
+
 2005-04-01  Richard Guenther <rguenth@tat.physik.uni-tuebingen.de>
 	    Jan Hubicka  <jh@suse.cz>
 	    Steven Bosscher <stevenb@suse.de>
