@@ -1304,36 +1304,26 @@ sparc_emit_set_const32 (op0, op1)
       if (TARGET_ARCH64
 	  && HOST_BITS_PER_WIDE_INT != 64
 	  && (INTVAL (op1) & 0x80000000) != 0)
-	{
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  temp,
-				  gen_rtx_CONST_DOUBLE (VOIDmode, const0_rtx,
-							INTVAL (op1) & 0xfffffc00, 0)));
-	}
+	emit_insn (gen_rtx_SET
+		   (VOIDmode, temp,
+		    gen_rtx_CONST_DOUBLE (VOIDmode, INTVAL (op1) & 0xfffffc00,
+					  0)));
       else
-	{
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  temp,
-				  GEN_INT (INTVAL (op1) & 0xfffffc00)));
-	}
+	emit_insn (gen_rtx_SET (VOIDmode, temp,
+				GEN_INT (INTVAL (op1) & 0xfffffc00)));
+
       emit_insn (gen_rtx_SET (VOIDmode,
 			      op0,
-			      gen_rtx_IOR (mode,
-					   temp,
+			      gen_rtx_IOR (mode, temp,
 					   GEN_INT (INTVAL (op1) & 0x3ff))));
     }
   else
     {
       /* A symbol, emit in the traditional way.  */
+      emit_insn (gen_rtx_SET (VOIDmode, temp,
+			      gen_rtx_HIGH (mode, op1)));
       emit_insn (gen_rtx_SET (VOIDmode,
-			      temp,
-			      gen_rtx_HIGH (mode,
-					    op1)));
-      emit_insn (gen_rtx_SET (VOIDmode,
-			      op0,
-			      gen_rtx_LO_SUM (mode,
-					      temp,
-					      op1)));
+			      op0, gen_rtx_LO_SUM (mode, temp, op1)));
 
     }
 }
@@ -1478,11 +1468,9 @@ static rtx gen_safe_XOR64 PARAMS ((rtx, HOST_WIDE_INT));
 #define GEN_INT64(__x)			GEN_INT (__x)
 #else
 #define GEN_HIGHINT64(__x) \
-	gen_rtx_CONST_DOUBLE (VOIDmode, const0_rtx, \
-			      (__x) & 0xfffffc00, 0)
+	gen_rtx_CONST_DOUBLE (VOIDmode, (__x) & 0xfffffc00, 0)
 #define GEN_INT64(__x) \
-	gen_rtx_CONST_DOUBLE (VOIDmode, const0_rtx, \
-			      (__x) & 0xffffffff, \
+	gen_rtx_CONST_DOUBLE (VOIDmode, (__x) & 0xffffffff, \
 			      ((__x) & 0x80000000 \
 			       ? 0xffffffff : 0))
 #endif
@@ -2053,7 +2041,7 @@ sparc_emit_set_const64 (op0, op1)
 	  negated_const = GEN_INT (((~low_bits) & 0xfffffc00) |
 				   (((HOST_WIDE_INT)((~high_bits) & 0xffffffff))<<32));
 #else
-	  negated_const = gen_rtx_CONST_DOUBLE (DImode, const0_rtx,
+	  negated_const = gen_rtx_CONST_DOUBLE (DImode,
 						(~low_bits) & 0xfffffc00,
 						(~high_bits) & 0xffffffff);
 #endif

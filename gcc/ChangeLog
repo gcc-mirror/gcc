@@ -1,3 +1,10 @@
+Sun Nov  4 11:53:31 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/sparc/sparc.c (sparc_emit_set_const32, GEN_HIGHINT64):
+	Change parameters to gen_rtx_CONST_DOUBLE.
+	(GEN_INT64, sparc_emit_set_const64): Likewise.
+	* config/sparc/sparc.md (movdf split): Likewise.
+
 2001-11-03  Geoffrey Keating  <geoffk@redhat.com>
 
 	* unroll.c (calculate_giv_inc): Use find_last_value rather
