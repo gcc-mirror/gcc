@@ -2234,29 +2234,6 @@ move\\t%0,%z4\\n\\
   [(set (subreg:SI (match_dup 0) 0) (and:SI (not:SI (subreg:SI (match_dup 1) 0)) (not:SI (subreg:SI (match_dup 2) 0))))
    (set (subreg:SI (match_dup 0) 1) (and:SI (not:SI (subreg:SI (match_dup 1) 1)) (not:SI (subreg:SI (match_dup 2) 1))))]
   "")
-
-(define_insn "*norsi3_const"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(and:SI (not:SI (match_operand:SI 1 "register_operand" "d"))
-		(match_operand:SI 2 "complemented_arith_operand" "")))]
-  ""
-  "nor\\t%0,%z1,%e2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"1")])
-
-(define_insn "*nordi3_const"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(and:DI (not:DI (match_operand:DI 1 "se_register_operand" "d"))
-		(match_operand:DI 2 "complemented_arith_operand" "")))]
-  "TARGET_64BIT"
-  "nor\\t%0,%z1,%e2"
-  [(set_attr "type"	"darith")
-   (set_attr "mode"	"DI")
-   (set (attr "length")
-	(if_then_else (ne (symbol_ref "TARGET_64BIT") (const_int 0))
-		       (const_int 1)
-		       (const_int 2)))])
 
 ;;
 ;;  ....................
