@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1421,6 +1421,10 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   /* The insn we have emitted.  */
   rtx insn;
 
+  /* An ASM with no outputs needs to be treated as volatile, for now.  */
+  if (noutputs == 0)
+    vol = 1;
+
   if (output_bytecode)
     {
       error ("`asm' is invalid when generating bytecode");
@@ -1566,9 +1570,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 		  TREE_STRING_POINTER (string), "", 0, argvec, constraints,
 		  filename, line);
 
-  /* The only use of BODY is if no outputs are specified, so set
-     it volatile, at least for now.  */
-  MEM_VOLATILE_P (body) = 1;
+  MEM_VOLATILE_P (body) = vol;
 
   /* Eval the inputs and put them into ARGVEC.
      Put their constraints into ASM_INPUTs and store in CONSTRAINTS.  */
