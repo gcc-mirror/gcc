@@ -419,8 +419,30 @@ extern int ix86_arch;
    aligned on 64 bit boundaries. */
 #define BIGGEST_ALIGNMENT (TARGET_ALIGN_DOUBLE ? 64 : 32)
 
-/* align DFmode constants and nonaggregates */
-#define ALIGN_DFmode (!TARGET_386)
+/* If defined, a C expression to compute the alignment given to a
+   constant that is being placed in memory.  CONSTANT is the constant
+   and ALIGN is the alignment that the object would ordinarily have.
+   The value of this macro is used instead of that alignment to align
+   the object.
+
+   If this macro is not defined, then ALIGN is used.
+
+   The typical use of this macro is to increase alignment for string
+   constants to be word aligned so that `strcpy' calls that copy
+   constants can be done inline.  */
+
+#define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
+  (TREE_CODE (EXP) == REAL_CST						\
+    ? ((TYPE_MODE (TREE_TYPE (EXP)) == DFmode && (ALIGN) < 64)		\
+	? 64								\
+   	: (TYPE_MODE (TREE_TYPE (EXP)) == XFmode && (ALIGN) < 128)	\
+	? 128								\
+	: (ALIGN))							\
+    : TREE_CODE (EXP) == STRING_CST					\
+    ? ((TREE_STRING_LENGTH (EXP) >= 31 && (ALIGN) < 256)		\
+	? 256								\
+	: (ALIGN))							\
+    : (ALIGN))
 
 /* If defined, a C expression to compute the alignment for a static
    variable.  TYPE is the data type, and ALIGN is the alignment that

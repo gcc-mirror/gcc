@@ -1,3 +1,9 @@
+Sun May 17 23:59:45 1998  John Wehle  (john@feith.com)
+
+	* i386.h (ALIGN_DFmode): Delete.
+	(CONSTANT_ALIGNMENT): Define.
+	* varasm.c (force_const_mem): Use it.
+
 Sun May 17 19:31:05 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_emit_conditional_branch): Clear cmp_code after
