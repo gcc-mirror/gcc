@@ -1104,8 +1104,9 @@ tidy_fallthru_edge (e, b, c)
      So search through a sequence of barriers, labels, and notes for
      the head of block C and assert that we really do fall through.  */
 
-  if (next_real_insn (b->end) != next_real_insn (PREV_INSN (c->head)))
-    return;
+  for (q = NEXT_INSN (b->end); q != c->head; q = NEXT_INSN (q))
+    if (INSN_P (q))
+      return;
 
   /* Remove what will soon cease being the jump insn from the source block.
      If block B consisted only of this single jump, turn it into a deleted
