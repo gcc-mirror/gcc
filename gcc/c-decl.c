@@ -290,7 +290,6 @@ static tree lookup_tag_reverse		PROTO((tree));
 static tree grokdeclarator		PROTO((tree, tree, enum decl_context,
 					       int));
 static tree grokparms			PROTO((tree, int));
-static int field_decl_cmp		PROTO((const PTR, const PTR));
 static void layout_array_type		PROTO((tree));
 
 /* C-specific option variables.  */
@@ -5287,26 +5286,6 @@ grokfield (filename, line, declarator, declspecs, width)
   return value;
 }
 
-/* Function to help qsort sort FIELD_DECLs by name order.  */
-
-static int
-field_decl_cmp (xp, yp)
-     const PTR xp;
-     const PTR yp;
-{
-  tree *x = (tree *)xp, *y = (tree *)yp;
-
-  if (DECL_NAME (*x) == DECL_NAME (*y))
-    return 0;
-  if (DECL_NAME (*x) == NULL)
-    return -1;
-  if (DECL_NAME (*y) == NULL)
-    return 1;
-  if (DECL_NAME (*x) < DECL_NAME (*y))
-    return -1;
-  return 1;
-}
-
 /* Fill in the fields of a RECORD_TYPE or UNION_TYPE node, T.
    FIELDLIST is a chain of FIELD_DECL nodes for the fields.
    ATTRIBUTES are attributes to be applied to the structure.
@@ -5540,45 +5519,6 @@ finish_struct (t, fieldlist, attributes)
       Store it in this type and in the variants.  */
 
   TYPE_FIELDS (t) = fieldlist;
-
-  /* If there are lots of fields, sort so we can look through them fast.
-     We arbitrarily consider 16 or more elts to be "a lot".  */
-  {
-    int len = 0;
-
-    for (x = fieldlist; x; x = TREE_CHAIN (x))
-      {
-	if (len > 15)
-	  break;
-	len += 1;
-      }
-    if (len > 15)
-      {
-	tree *field_array;
-	char *space;
-
-	len += list_length (x);
-	/* Use the same allocation policy here that make_node uses, to
-	   ensure that this lives as long as the rest of the struct decl.
-	   All decls in an inline function need to be saved.  */
-	if (ggc_p)
-	  space = ggc_alloc (sizeof (struct lang_type) + len * sizeof (tree));
-	else if (allocation_temporary_p ())
-	  space = savealloc (sizeof (struct lang_type) + len * sizeof (tree));
-	else
-	  space = oballoc (sizeof (struct lang_type) + len * sizeof (tree));
-
-	TYPE_LANG_SPECIFIC (t) = (struct lang_type *) space;
-	TYPE_LANG_SPECIFIC (t)->len = len;
-
-	field_array = &TYPE_LANG_SPECIFIC (t)->elts[0];
-	len = 0;
-	for (x = fieldlist; x; x = TREE_CHAIN (x))
-	  field_array[len++] = x;
-
-	qsort (field_array, len, sizeof (tree), field_decl_cmp);
-      }
-  }
 
   for (x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
     {

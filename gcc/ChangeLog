@@ -1,3 +1,15 @@
+Fri Oct 15 02:37:28 1999  Alastair J. Houghton <ajh8@doc.ic.ac.uk>
+			  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* c-parse.in (component_decl): Support anonymous struct/union.
+	(%expect): Update.
+	* c-parse.y: Regenerate.
+	* c-parse.c: Likewise.
+	* objc/objc-parse.y: Likewise.
+	* objc/objc-parse.c: Likewise.
+	* c-decl.c (finish_struct): Don't sort the fields.
+	(field_decl_cmp): Delete unused function.
+
 Fri Oct 15 01:20:52 1999  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.md (movsf_const_intreg): Revert last constraint change.
