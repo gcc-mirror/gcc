@@ -1412,10 +1412,11 @@ fold_convert (t, arg1)
 	  REAL_VALUE_TYPE x;
 	  REAL_VALUE_TYPE l;
 	  REAL_VALUE_TYPE u;
+	  tree type1 = TREE_TYPE (arg1);
 
 	  x = TREE_REAL_CST (arg1);
-	  l = real_value_from_int_cst (TYPE_MIN_VALUE (type));
-	  u = real_value_from_int_cst (TYPE_MAX_VALUE (type));
+	  l = real_value_from_int_cst (type1, TYPE_MIN_VALUE (type));
+	  u = real_value_from_int_cst (type1, TYPE_MAX_VALUE (type));
 	  /* See if X will be in range after truncation towards 0.
 	     To compensate for truncation, move the bounds away from 0,
 	     but reject if X exactly equals the adjusted bounds.  */
