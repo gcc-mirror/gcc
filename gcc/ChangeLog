@@ -1,3 +1,8 @@
+2002-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* ssa-ccp.c (ssa_ccp_substitute_constants): Don't crash if def
+	is NULL.
+
 2002-03-05  Richard Henderson  <rth@redhat.com>
 
         * config/rs6000/rs6000.h (TOTAL_ALTIVEC_REGS): Fix off-by-one error.
