@@ -52,12 +52,12 @@ static int flow_find_cross_jump		PARAMS ((int, basic_block, basic_block,
 						 rtx *, rtx *));
 
 static bool delete_unreachable_blocks	PARAMS ((void));
-static int tail_recursion_label_p	PARAMS ((rtx));
-static int merge_blocks_move_predecessor_nojumps PARAMS ((basic_block,
+static bool tail_recursion_label_p	PARAMS ((rtx));
+static void merge_blocks_move_predecessor_nojumps PARAMS ((basic_block,
 							  basic_block));
-static int merge_blocks_move_successor_nojumps PARAMS ((basic_block,
+static void merge_blocks_move_successor_nojumps PARAMS ((basic_block,
 							basic_block));
-static int merge_blocks			PARAMS ((edge,basic_block,basic_block,
+static bool merge_blocks		PARAMS ((edge,basic_block,basic_block,
 						 int));
 static bool try_optimize_cfg		PARAMS ((int));
 static bool try_simplify_condjump	PARAMS ((basic_block));
@@ -248,7 +248,9 @@ try_forward_edges (mode, b)
   return changed;
 }
 
-static int
+/* Return true if LABEL is used for tail recursion.  */
+
+static bool
 tail_recursion_label_p (label)
      rtx label;
 {
@@ -256,16 +258,16 @@ tail_recursion_label_p (label)
 
   for (x = tail_recursion_label_list; x; x = XEXP (x, 1))
     if (label == XEXP (x, 0))
-      return 1;
+      return true;
 
-  return 0;
+  return false;
 }
 
 /* Blocks A and B are to be merged into a single block.  A has no incoming
    fallthru edge, so it can be moved before B without adding or modifying
    any jumps (aside from the jump from A to B).  */
 
-static int
+static void
 merge_blocks_move_predecessor_nojumps (a, b)
      basic_block a, b;
 {
@@ -307,15 +309,13 @@ merge_blocks_move_predecessor_nojumps (a, b)
 
   /* Now blocks A and B are contiguous.  Merge them.  */
   merge_blocks_nomove (a, b);
-
-  return 1;
 }
 
 /* Blocks A and B are to be merged into a single block.  B has no outgoing
    fallthru edge, so it can be moved after A without adding or modifying
    any jumps (aside from the jump from A to B).  */
 
-static int
+static void
 merge_blocks_move_successor_nojumps (a, b)
      basic_block a, b;
 {
@@ -359,14 +359,12 @@ merge_blocks_move_successor_nojumps (a, b)
       fprintf (rtl_dump_file, "Moved block %d after %d and merged.\n",
 	       b->index, a->index);
     }
-
-  return 1;
 }
 
 /* Attempt to merge basic blocks that are potentially non-adjacent.
    Return true iff the attempt succeeded.  */
 
-static int
+static bool
 merge_blocks (e, b, c, mode)
      edge e;
      basic_block b, c;
@@ -376,9 +374,10 @@ merge_blocks (e, b, c, mode)
      edge recorded from the call_placeholder back to this label, as
      that would make optimize_sibling_and_tail_recursive_calls more
      complex for no gain.  */
-  if (GET_CODE (c->head) == CODE_LABEL
+  if ((mode & CLEANUP_PRE_SIBCALL)
+      && GET_CODE (c->head) == CODE_LABEL
       && tail_recursion_label_p (c->head))
-    return 0;
+    return false;
 
   /* If B has a fallthru edge to C, no need to move anything.  */
   if (e->flags & EDGE_FALLTHRU)
@@ -391,22 +390,22 @@ merge_blocks (e, b, c, mode)
 		   b->index, c->index);
 	}
 
-      return 1;
+      return true;
     }
   /* Otherwise we will need to move code around.  Do that only if expensive
      transformations are allowed.  */
   else if (mode & CLEANUP_EXPENSIVE)
     {
-      edge tmp_edge, c_fallthru_edge;
-      int c_has_outgoing_fallthru;
-      int b_has_incoming_fallthru;
+      edge tmp_edge, b_fallthru_edge;
+      bool c_has_outgoing_fallthru;
+      bool b_has_incoming_fallthru;
 
       /* Avoid overactive code motion, as the forwarder blocks should be
          eliminated by edge redirection instead.  One exception might have
 	 been if B is a forwarder block and C has no fallthru edge, but
 	 that should be cleaned up by bb-reorder instead.  */
       if (forwarder_block_p (b) || forwarder_block_p (c))
-	return 0;
+	return false;
 
       /* We must make sure to not munge nesting of lexical blocks,
 	 and loop notes.  This is done by squeezing out all the notes
@@ -416,59 +415,37 @@ merge_blocks (e, b, c, mode)
 	if (tmp_edge->flags & EDGE_FALLTHRU)
 	  break;
       c_has_outgoing_fallthru = (tmp_edge != NULL);
-      c_fallthru_edge = tmp_edge;
 
       for (tmp_edge = b->pred; tmp_edge; tmp_edge = tmp_edge->pred_next)
 	if (tmp_edge->flags & EDGE_FALLTHRU)
 	  break;
       b_has_incoming_fallthru = (tmp_edge != NULL);
-
-      /* If B does not have an incoming fallthru, then it can be moved
-	 immediately before C without introducing or modifying jumps.
-	 C cannot be the first block, so we do not have to worry about
-	 accessing a non-existent block.  */
-      if (! b_has_incoming_fallthru)
-	return merge_blocks_move_predecessor_nojumps (b, c);
+      b_fallthru_edge = tmp_edge;
 
       /* Otherwise, we're going to try to move C after B.  If C does
 	 not have an outgoing fallthru, then it can be moved
 	 immediately after B without introducing or modifying jumps.  */
       if (! c_has_outgoing_fallthru)
-	return merge_blocks_move_successor_nojumps (b, c);
+	{
+	  merge_blocks_move_successor_nojumps (b, c);
+	  return true;
+	}
 
-      /* Otherwise, we'll need to insert an extra jump, and possibly
-	 a new block to contain it.  We can't redirect to EXIT_BLOCK_PTR,
-	 as we don't have explicit return instructions before epilogues
-	 are generated, so give up on that case.  */
+      /* If B does not have an incoming fallthru, then it can be moved
+	 immediately before C without introducing or modifying jumps.
+	 C cannot be the first block, so we do not have to worry about
+	 accessing a non-existent block.  */
 
-      if (c_fallthru_edge->dest != EXIT_BLOCK_PTR
-	  && merge_blocks_move_successor_nojumps (b, c))
-        {
-	  basic_block target = c_fallthru_edge->dest;
-	  rtx barrier;
-	  basic_block new;
-
-	  /* This is a dirty hack to avoid code duplication.
-
-	     Set edge to point to wrong basic block, so
-	     redirect_edge_and_branch_force will do the trick
-	     and rewire edge back to the original location.  */
-	  redirect_edge_succ (c_fallthru_edge, ENTRY_BLOCK_PTR);
-	  new = redirect_edge_and_branch_force (c_fallthru_edge, target);
-
-	  /* We've just created barrier, but another barrier is
-	     already present in the stream.  Avoid the duplicate.  */
-	  barrier = next_nonnote_insn (new ? new->end : b->end);
-	  if (GET_CODE (barrier) != BARRIER)
-	    abort ();
-	  flow_delete_insn (barrier);
-
-	  return 1;
-        }
-
-      return 0;
+      if (b_has_incoming_fallthru)
+	{
+	  if (b_fallthru_edge->src == ENTRY_BLOCK_PTR)
+	    return false;
+	  force_nonfallthru (b_fallthru_edge);
+	}
+      merge_blocks_move_predecessor_nojumps (b, c);
+      return true;
     }
-  return 0;
+  return false;
 }
 
 /* Look through the insns at the end of BB1 and BB2 and find the longest
@@ -1191,6 +1168,7 @@ try_optimize_cfg (mode)
 }
 
 /* Delete all unreachable basic blocks.   */
+
 static bool
 delete_unreachable_blocks ()
 {
@@ -1215,7 +1193,6 @@ delete_unreachable_blocks ()
     tidy_fallthru_edges ();
   return changed;
 }
-
 
 /* Tidy the CFG by deleting unreachable code and whatnot.  */
 
@@ -1230,9 +1207,6 @@ cleanup_cfg (mode)
   changed = delete_unreachable_blocks ();
   if (try_optimize_cfg (mode))
     delete_unreachable_blocks (), changed = true;
-
-  if (changed)
-    mark_critical_edges ();
 
   /* Kill the data we won't maintain.  */
   free_EXPR_LIST_list (&label_value_list);

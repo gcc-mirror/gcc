@@ -452,7 +452,7 @@ find_basic_blocks_1 (f)
 	     to a barrier or some such, no need to do it again.  */
 	  if (head != NULL_RTX)
 	    {
-	      create_basic_block (i++, head, end, bb_note);
+	      create_basic_block_structure (i++, head, end, bb_note);
 	      bb_note = NULL_RTX;
 	    }
 
@@ -523,7 +523,7 @@ find_basic_blocks_1 (f)
 		end = insn;
 
 	      new_bb_exclusive:
-		create_basic_block (i++, head, end, bb_note);
+		create_basic_block_structure (i++, head, end, bb_note);
 		head = end = NULL_RTX;
 		bb_note = NULL_RTX;
 		break;
@@ -579,7 +579,7 @@ find_basic_blocks_1 (f)
     }
 
   if (head != NULL_RTX)
-    create_basic_block (i++, head, end, bb_note);
+    create_basic_block_structure (i++, head, end, bb_note);
   else if (bb_note)
     flow_delete_insn (bb_note);
 
@@ -603,6 +603,10 @@ find_basic_blocks (f, nregs, file)
 {
   int max_uid;
   timevar_push (TV_CFG);
+
+  if (basic_block_for_insn)
+    VARRAY_FREE (basic_block_for_insn);
+  basic_block_for_insn = 0;
 
   /* Flush out existing data.  */
   if (basic_block_info != NULL)
@@ -654,8 +658,6 @@ find_basic_blocks (f, nregs, file)
   /* Do very simple cleanup now, for the benefit of code that runs between
      here and cleanup_cfg, e.g. thread_prologue_and_epilogue_insns.  */
   tidy_fallthru_edges ();
-
-  mark_critical_edges ();
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();

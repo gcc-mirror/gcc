@@ -2660,9 +2660,10 @@ convert_regs_1 (file, block)
 	beste = e;
       else if (beste->count > e->count)
 	;
-      else if ((e->flags & EDGE_CRITICAL) != (beste->flags & EDGE_CRITICAL))
+      else if ((EDGE_CRITICAL_P (e) != 0)
+	       != (EDGE_CRITICAL_P (beste) != 0))
 	{
-	  if (e->flags & EDGE_CRITICAL)
+	  if (EDGE_CRITICAL_P (e))
 	    beste = e;
 	}
       else if (e->src->index < beste->src->index)

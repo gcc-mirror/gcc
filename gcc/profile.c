@@ -152,7 +152,7 @@ instrument_edges (el)
 	      if (rtl_dump_file)
 		fprintf (rtl_dump_file, "Edge %d to %d instrumented%s\n",
 			 e->src->index, e->dest->index,
-			 e->flags & EDGE_CRITICAL ? " (and split)" : "");
+			 EDGE_CRITICAL_P (e) ? " (and split)" : "");
 	      need_func_profiler = 1;
 	      insert_insn_on_edge (
 			 gen_edge_profiler (total_num_edges_instrumented
@@ -884,7 +884,7 @@ find_spanning_tree (el)
   for (i = 0; i < num_edges; i++)
     {
       edge e = INDEX_EDGE (el, i);
-      if ((e->flags & EDGE_CRITICAL)
+      if ((EDGE_CRITICAL_P (e))
 	  && !EDGE_INFO (e)->ignore
 	  && (find_group (e->src) != find_group (e->dest)))
 	{

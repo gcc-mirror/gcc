@@ -40,7 +40,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	 - High level edge redirection (with updating and optimizing instruction
 	   chain)
 	     block_label, redirect_edge_and_branch,
-	     redirect_edge_and_branch_force, tidy_fallthru_edge
+	     redirect_edge_and_branch_force, tidy_fallthru_edge, force_nonfallthru
       - Edge splitting and commiting to edges
 	  split_edge, insert_insn_on_edge, commit_edge_insertions
       - Dumpipng and debugging
@@ -147,6 +147,7 @@ static bool try_redirect_by_replacing_jump PARAMS ((edge, basic_block));
 static void expunge_block		PARAMS ((basic_block));
 static rtx last_loop_beg_note		PARAMS ((rtx));
 static bool back_edge_of_syntactic_loop_p PARAMS ((basic_block, basic_block));
+static basic_block force_nonfallthru_and_redirect PARAMS ((edge, basic_block));
 
 /* Called once at intialization time.  */
 
@@ -320,11 +321,16 @@ flow_delete_insn_chain (start, finish)
 }
 
 /* Create a new basic block consisting of the instructions between
-   HEAD and END inclusive.  Reuses the note and basic block struct
-   in BB_NOTE, if any.  */
+   HEAD and END inclusive.  This function is designed to allow fast
+   BB construction - reuses the note and basic block struct
+   in BB_NOTE, if any and do not grow BASIC_BLOCK chain and should
+   be used directly only by CFG construction code.
+   END can be NULL in to create new empty basic block before HEAD.
+   Both END and HEAD can be NULL to create basic block at the end of
+   INSN chain.  */
 
-void
-create_basic_block (index, head, end, bb_note)
+basic_block
+create_basic_block_structure (index, head, end, bb_note)
      int index;
      rtx head, end, bb_note;
 {
@@ -360,12 +366,23 @@ create_basic_block (index, head, end, bb_note)
       bb = (basic_block) obstack_alloc (&flow_obstack, sizeof (*bb));
       memset (bb, 0, sizeof (*bb));
 
-      if (GET_CODE (head) == CODE_LABEL)
-	bb_note = emit_note_after (NOTE_INSN_BASIC_BLOCK, head);
+      if (!head && !end)
+	{
+	  head = end = bb_note = emit_note_after (NOTE_INSN_BASIC_BLOCK,
+						  get_last_insn ());
+	}
+      else if (GET_CODE (head) == CODE_LABEL && end)
+	{
+	  bb_note = emit_note_after (NOTE_INSN_BASIC_BLOCK, head);
+	  if (head == end)
+	    end = bb_note;
+	}
       else
 	{
 	  bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK, head);
 	  head = bb_note;
+	  if (!end)
+	    end = head;
 	}
       NOTE_BASIC_BLOCK (bb_note) = bb;
     }
@@ -378,10 +395,46 @@ create_basic_block (index, head, end, bb_note)
   bb->end = end;
   bb->index = index;
   BASIC_BLOCK (index) = bb;
+  if (basic_block_for_insn)
+    update_bb_for_insn (bb);
 
   /* Tag the block so that we know it has been used when considering
      other basic block notes.  */
   bb->aux = bb;
+
+  return bb;
+}
+
+/* Create new basic block consisting of instructions in between HEAD and
+   END and place it to the BB chain at possition INDEX.
+   END can be NULL in to create new empty basic block before HEAD.
+   Both END and HEAD can be NULL to create basic block at the end of
+   INSN chain.  */
+
+basic_block
+create_basic_block (index, head, end)
+     int index;
+     rtx head, end;
+{
+  basic_block bb;
+  int i;
+
+  /* Place the new block just after the block being split.  */
+  VARRAY_GROW (basic_block_info, ++n_basic_blocks);
+
+  /* Some parts of the compiler expect blocks to be number in
+     sequential order so insert the new block immediately after the
+     block being split..  */
+  for (i = n_basic_blocks - 1; i > index; --i)
+    {
+      basic_block tmp = BASIC_BLOCK (i - 1);
+      BASIC_BLOCK (i) = tmp;
+      tmp->index = i;
+    }
+
+  bb = create_basic_block_structure (index, head, end, NULL);
+  bb->aux = NULL;
+  return bb;
 }
 
 /* Remove block B from the basic block array and compact behind it.  */
@@ -570,6 +623,7 @@ set_block_for_new_insns (insn, bb)
 
 /* Create an edge connecting SRC and DST with FLAGS optionally using
    edge cache CACHE.  Return the new edge, NULL if already exist. */
+
 edge
 cached_make_edge (edge_cache, src, dst, flags)
      sbitmap *edge_cache;
@@ -777,74 +831,25 @@ split_block (bb, insn)
   basic_block new_bb;
   edge new_edge;
   edge e;
-  rtx bb_note;
-  int i, j;
 
   /* There is no point splitting the block after its end.  */
   if (bb->end == insn)
     return 0;
 
-  /* Create the new structures.  */
-  new_bb = (basic_block) obstack_alloc (&flow_obstack, sizeof (*new_bb));
-
-  memset (new_bb, 0, sizeof (*new_bb));
-
-  new_bb->head = NEXT_INSN (insn);
-  new_bb->end = bb->end;
-  bb->end = insn;
-
-  new_bb->succ = bb->succ;
-  bb->succ = NULL;
-  new_bb->pred = NULL;
+  /* Create the new basic block.  */
+  new_bb = create_basic_block (bb->index + 1, NEXT_INSN (insn), bb->end);
   new_bb->count = bb->count;
   new_bb->frequency = bb->frequency;
   new_bb->loop_depth = bb->loop_depth;
+  bb->end = insn;
 
-  /* Redirect the src of the successor edges of bb to point to new_bb.  */
+  /* Redirect the outgoing edges.  */
+  new_bb->succ = bb->succ;
+  bb->succ = NULL;
   for (e = new_bb->succ; e; e = e->succ_next)
     e->src = new_bb;
 
   new_edge = make_single_succ_edge (bb, new_bb, EDGE_FALLTHRU);
-
-  /* Place the new block just after the block being split.  */
-  VARRAY_GROW (basic_block_info, ++n_basic_blocks);
-
-  /* Some parts of the compiler expect blocks to be number in
-     sequential order so insert the new block immediately after the
-     block being split..  */
-  j = bb->index;
-  for (i = n_basic_blocks - 1; i > j + 1; --i)
-    {
-      basic_block tmp = BASIC_BLOCK (i - 1);
-      BASIC_BLOCK (i) = tmp;
-      tmp->index = i;
-    }
-
-  BASIC_BLOCK (i) = new_bb;
-  new_bb->index = i;
-
-  if (GET_CODE (new_bb->head) == CODE_LABEL)
-    {
-      /* Create the basic block note.  */
-      bb_note = emit_note_after (NOTE_INSN_BASIC_BLOCK,
-				 new_bb->head);
-      NOTE_BASIC_BLOCK (bb_note) = new_bb;
-
-      /* If the only thing in this new block was the label, make sure
-	 the block note gets included.  */
-      if (new_bb->head == new_bb->end)
-	new_bb->end = bb_note;
-    }
-  else
-    {
-      /* Create the basic block note.  */
-      bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK,
-				  new_bb->head);
-      NOTE_BASIC_BLOCK (bb_note) = new_bb;
-      new_bb->head = bb_note;
-    }
-
-  update_bb_for_insn (new_bb);
 
   if (bb->global_live_at_start)
     {
@@ -1110,7 +1115,7 @@ last_loop_beg_note (insn)
 {
   rtx last = insn;
   insn = NEXT_INSN (insn);
-  while (GET_CODE (insn) == NOTE
+  while (insn && GET_CODE (insn) == NOTE
 	 && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK)
     {
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
@@ -1222,6 +1227,80 @@ redirect_edge_and_branch (e, target)
   return true;
 }
 
+/* Like force_nonfallthru bellow, but additionally performs redirection
+   Used by redirect_edge_and_branch_force.  */
+
+static basic_block
+force_nonfallthru_and_redirect (e, target)
+     edge e;
+     basic_block target;
+{
+  basic_block jump_block, new_bb = NULL;
+  rtx note;
+  edge new_edge;
+  rtx label;
+
+  if (e->flags & EDGE_ABNORMAL)
+    abort ();
+  if (!(e->flags & EDGE_FALLTHRU))
+    abort ();
+  if (e->src->succ->succ_next)
+    {
+      /* Create the new structures.  */
+      note = last_loop_beg_note (e->src->end);
+      jump_block = create_basic_block (e->src->index + 1, NEXT_INSN (note), NULL);
+      jump_block->count = e->count;
+      jump_block->frequency = EDGE_FREQUENCY (e);
+      jump_block->loop_depth = target->loop_depth;
+
+      if (target->global_live_at_start)
+	{
+	  jump_block->global_live_at_start =
+	    OBSTACK_ALLOC_REG_SET (&flow_obstack);
+	  jump_block->global_live_at_end =
+	    OBSTACK_ALLOC_REG_SET (&flow_obstack);
+	  COPY_REG_SET (jump_block->global_live_at_start,
+			target->global_live_at_start);
+	  COPY_REG_SET (jump_block->global_live_at_end,
+			target->global_live_at_start);
+	}
+
+      /* Wire edge in.  */
+      new_edge = make_edge (e->src, jump_block, EDGE_FALLTHRU);
+      new_edge->probability = e->probability;
+      new_edge->count = e->count;
+
+      /* Redirect old edge.  */
+      redirect_edge_pred (e, jump_block);
+      e->probability = REG_BR_PROB_BASE;
+
+      new_bb = jump_block;
+    }
+  else
+    jump_block = e->src;
+  e->flags &= ~EDGE_FALLTHRU;
+  label = block_label (target);
+  jump_block->end = emit_jump_insn_after (gen_jump (label), jump_block->end);
+  JUMP_LABEL (jump_block->end) = label;
+  LABEL_NUSES (label)++;
+  if (basic_block_for_insn)
+    set_block_for_new_insns (jump_block->end, jump_block);
+  emit_barrier_after (jump_block->end);
+  redirect_edge_succ_nodup (e, target);
+
+  return new_bb;
+}
+
+/* Edge E is assumed to be fallthru edge.  Emit needed jump instruction
+   (and possibly create new basic block) to make edge non-fallthru.
+   Return newly created BB or NULL if none.  */
+basic_block
+force_nonfallthru (e)
+     edge e;
+{
+  return force_nonfallthru_and_redirect (e, e->dest);
+}
+
 /* Redirect edge even at the expense of creating new jump insn or
    basic block.  Return new basic block if created, NULL otherwise.
    Abort if converison is impossible.  */
@@ -1232,107 +1311,15 @@ redirect_edge_and_branch_force (e, target)
      basic_block target;
 {
   basic_block new_bb;
-  edge new_edge;
-  rtx label;
-  rtx bb_note;
-  int i, j;
 
   if (redirect_edge_and_branch (e, target))
     return NULL;
   if (e->dest == target)
     return NULL;
-  if (e->flags & EDGE_ABNORMAL)
-    abort ();
-  if (!(e->flags & EDGE_FALLTHRU))
-    abort ();
 
-  e->flags &= ~EDGE_FALLTHRU;
-  label = block_label (target);
-  /* Case of the fallthru block.  */
-  if (!e->src->succ->succ_next)
-    {
-      e->src->end = emit_jump_insn_after (gen_jump (label),
-					  last_loop_beg_note (e->src->end));
-      JUMP_LABEL (e->src->end) = label;
-      LABEL_NUSES (label)++;
-      if (basic_block_for_insn)
-	set_block_for_new_insns (e->src->end, e->src);
-      emit_barrier_after (e->src->end);
-      if (rtl_dump_file)
-	fprintf (rtl_dump_file,
-		 "Emitting jump insn %i to redirect edge %i->%i to %i\n",
-		 INSN_UID (e->src->end), e->src->index, e->dest->index,
-		 target->index);
-      redirect_edge_succ (e, target);
-      return NULL;
-    }
-  /* Redirecting fallthru edge of the conditional needs extra work.  */
-
-  if (rtl_dump_file)
-    fprintf (rtl_dump_file,
-	     "Emitting jump insn %i in new BB to redirect edge %i->%i to %i\n",
-	     INSN_UID (e->src->end), e->src->index, e->dest->index,
-	     target->index);
-
-  /* Create the new structures.  */
-  new_bb = (basic_block) obstack_alloc (&flow_obstack, sizeof (*new_bb));
-
-  memset (new_bb, 0, sizeof (*new_bb));
-
-  new_bb->end = new_bb->head = last_loop_beg_note (e->src->end);
-  new_bb->succ = NULL;
-  new_bb->pred = NULL;
-  new_bb->count = e->count;
-  new_bb->frequency = EDGE_FREQUENCY (e);
-  new_bb->loop_depth = e->dest->loop_depth;
-
-  if (target->global_live_at_start)
-    {
-      new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
-      new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
-      COPY_REG_SET (new_bb->global_live_at_start,
-		    target->global_live_at_start);
-      COPY_REG_SET (new_bb->global_live_at_end, new_bb->global_live_at_start);
-    }
-
-  /* Wire edge in.  */
-  new_edge = make_edge (e->src, new_bb, EDGE_FALLTHRU);
-  new_edge->probability = e->probability;
-  new_edge->count = e->count;
-
-  /* Redirect old edge.  */
-  redirect_edge_succ (e, target);
-  redirect_edge_pred (e, new_bb);
-  e->probability = REG_BR_PROB_BASE;
-
-  /* Place the new block just after the block being split.  */
-  VARRAY_GROW (basic_block_info, ++n_basic_blocks);
-
-  /* Some parts of the compiler expect blocks to be number in
-     sequential order so insert the new block immediately after the
-     block being split..  */
-  j = new_edge->src->index;
-  for (i = n_basic_blocks - 1; i > j + 1; --i)
-    {
-      basic_block tmp = BASIC_BLOCK (i - 1);
-      BASIC_BLOCK (i) = tmp;
-      tmp->index = i;
-    }
-
-  BASIC_BLOCK (i) = new_bb;
-  new_bb->index = i;
-
-  /* Create the basic block note.  */
-  bb_note = emit_note_after (NOTE_INSN_BASIC_BLOCK, new_bb->head);
-  NOTE_BASIC_BLOCK (bb_note) = new_bb;
-  new_bb->head = bb_note;
-
-  new_bb->end = emit_jump_insn_after (gen_jump (label), new_bb->head);
-  JUMP_LABEL (new_bb->end) = label;
-  LABEL_NUSES (label)++;
-  if (basic_block_for_insn)
-    set_block_for_new_insns (new_bb->end, new_bb);
-  emit_barrier_after (new_bb->end);
+  /* In case the edge redirection failed, try to force it to be non-fallthru
+     and redirect newly created simplejump.  */
+  new_bb = force_nonfallthru_and_redirect (e, target);
   return new_bb;
 }
 
@@ -1479,110 +1466,26 @@ basic_block
 split_edge (edge_in)
      edge edge_in;
 {
-  basic_block old_pred, bb, old_succ;
+  basic_block bb;
   edge edge_out;
-  rtx bb_note;
-  int i, j;
+  rtx before;
 
   /* Abnormal edges cannot be split.  */
   if ((edge_in->flags & EDGE_ABNORMAL) != 0)
     abort ();
 
-  old_pred = edge_in->src;
-  old_succ = edge_in->dest;
-
-  /* Create the new structures.  */
-  bb = (basic_block) obstack_alloc (&flow_obstack, sizeof (*bb));
-
-  memset (bb, 0, sizeof (*bb));
-
-  /* ??? This info is likely going to be out of date very soon.  */
-  if (old_succ->global_live_at_start)
-    {
-      bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
-      bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
-      COPY_REG_SET (bb->global_live_at_start, old_succ->global_live_at_start);
-      COPY_REG_SET (bb->global_live_at_end, old_succ->global_live_at_start);
-    }
-
-  /* Wire them up.  */
-  bb->succ = NULL;
-  bb->count = edge_in->count;
-  bb->frequency = EDGE_FREQUENCY (edge_in);
-
-  edge_in->flags &= ~EDGE_CRITICAL;
-
-  edge_out = make_single_succ_edge (bb, old_succ, EDGE_FALLTHRU);
-
-  /* Tricky case -- if there existed a fallthru into the successor
-     (and we're not it) we must add a new unconditional jump around
-     the new block we're actually interested in.
-
-     Further, if that edge is critical, this means a second new basic
-     block must be created to hold it.  In order to simplify correct
-     insn placement, do this before we touch the existing basic block
-     ordering for the block we were really wanting.  */
+  /* We are going to place the new block in front of edge destination.
+     Avoid existence of fallthru predecesors.  */
   if ((edge_in->flags & EDGE_FALLTHRU) == 0)
     {
       edge e;
-      for (e = edge_out->pred_next; e; e = e->pred_next)
+      for (e = edge_in->dest->pred; e; e = e->pred_next)
 	if (e->flags & EDGE_FALLTHRU)
 	  break;
 
       if (e)
-	{
-	  basic_block jump_block;
-	  rtx pos;
-
-	  if ((e->flags & EDGE_CRITICAL) == 0
-	      && e->src != ENTRY_BLOCK_PTR)
-	    {
-	      /* Non critical -- we can simply add a jump to the end
-		 of the existing predecessor.  */
-	      jump_block = e->src;
-	    }
-	  else
-	    {
-	      /* We need a new block to hold the jump.  The simplest
-	         way to do the bulk of the work here is to recursively
-	         call ourselves.  */
-	      jump_block = split_edge (e);
-	      e = jump_block->succ;
-	    }
-
-	  /* Now add the jump insn ...  */
-	  pos = emit_jump_insn_after (gen_jump (old_succ->head),
-				      last_loop_beg_note (jump_block->end));
-	  jump_block->end = pos;
-	  if (basic_block_for_insn)
-	    set_block_for_new_insns (pos, jump_block);
-	  emit_barrier_after (pos);
-
-	  /* ... let jump know that label is in use, ...  */
-	  JUMP_LABEL (pos) = old_succ->head;
-	  ++LABEL_NUSES (old_succ->head);
-
-	  /* ... and clear fallthru on the outgoing edge.  */
-	  e->flags &= ~EDGE_FALLTHRU;
-
-	  /* Continue splitting the interesting edge.  */
-	}
+	force_nonfallthru (e);
     }
-
-  /* Place the new block just in front of the successor.  */
-  VARRAY_GROW (basic_block_info, ++n_basic_blocks);
-  if (old_succ == EXIT_BLOCK_PTR)
-    j = n_basic_blocks - 1;
-  else
-    j = old_succ->index;
-  for (i = n_basic_blocks - 1; i > j; --i)
-    {
-      basic_block tmp = BASIC_BLOCK (i - 1);
-      BASIC_BLOCK (i) = tmp;
-      tmp->index = i;
-    }
-  BASIC_BLOCK (i) = bb;
-  bb->index = i;
 
   /* Create the basic block note.
 
@@ -1601,19 +1504,33 @@ split_edge (edge_in)
       we want to ensure the instructions we insert are outside of any
       loop notes that physically sit between block 0 and block 1.  Otherwise
       we confuse the loop optimizer into thinking the loop is a phony.  */
-  if (old_succ != EXIT_BLOCK_PTR
-      && PREV_INSN (old_succ->head)
-      && GET_CODE (PREV_INSN (old_succ->head)) == NOTE
-      && NOTE_LINE_NUMBER (PREV_INSN (old_succ->head)) == NOTE_INSN_LOOP_BEG
-      && !back_edge_of_syntactic_loop_p (old_succ, old_pred))
-    bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK,
-				PREV_INSN (old_succ->head));
-  else if (old_succ != EXIT_BLOCK_PTR)
-    bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK, old_succ->head);
+
+  if (edge_in->dest != EXIT_BLOCK_PTR
+      && PREV_INSN (edge_in->dest->head)
+      && GET_CODE (PREV_INSN (edge_in->dest->head)) == NOTE
+      && NOTE_LINE_NUMBER (PREV_INSN (edge_in->dest->head)) == NOTE_INSN_LOOP_BEG
+      && !back_edge_of_syntactic_loop_p (edge_in->dest, edge_in->src))
+    before = PREV_INSN (edge_in->dest->head);
+  else if (edge_in->dest != EXIT_BLOCK_PTR)
+    before = edge_in->dest->head;
   else
-    bb_note = emit_note_after (NOTE_INSN_BASIC_BLOCK, get_last_insn ());
-  NOTE_BASIC_BLOCK (bb_note) = bb;
-  bb->head = bb->end = bb_note;
+    before = NULL_RTX;
+
+  bb = create_basic_block (edge_in->dest == EXIT_BLOCK_PTR ? n_basic_blocks
+			   : edge_in->dest->index, before, NULL);
+  bb->count = edge_in->count;
+  bb->frequency = EDGE_FREQUENCY (edge_in);
+
+  /* ??? This info is likely going to be out of date very soon.  */
+  if (edge_in->dest->global_live_at_start)
+    {
+      bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      COPY_REG_SET (bb->global_live_at_start, edge_in->dest->global_live_at_start);
+      COPY_REG_SET (bb->global_live_at_end, edge_in->dest->global_live_at_start);
+    }
+
+  edge_out = make_single_succ_edge (bb, edge_in->dest, EDGE_FALLTHRU);
 
   /* For non-fallthry edges, we must adjust the predecessor's
      jump instruction to target our new block.  */
@@ -1639,8 +1556,7 @@ insert_insn_on_edge (pattern, e)
 {
   /* We cannot insert instructions on an abnormal critical edge.
      It will be easier to find the culprit if we die now.  */
-  if ((e->flags & (EDGE_ABNORMAL|EDGE_CRITICAL))
-      == (EDGE_ABNORMAL|EDGE_CRITICAL))
+  if ((e->flags & EDGE_ABNORMAL) && EDGE_CRITICAL_P (e))
     abort ();
 
   if (e->insns == NULL_RTX)
@@ -1917,7 +1833,7 @@ dump_edge_info (file, e, do_succ)
   if (e->flags)
     {
       static const char * const bitnames[] = {
-	"fallthru", "crit", "ab", "abcall", "eh", "fake", "dfs_back"
+	"fallthru", "ab", "abcall", "eh", "fake", "dfs_back"
       };
       int comma = 0;
       int i, flags = e->flags;
@@ -2389,7 +2305,6 @@ verify_flow_info ()
   free (last_visited);
   free (edge_checksum);
 }
-
 
 /* Assume that the preceeding pass has possibly eliminated jump instructions
    or converted the unconditional jumps.  Eliminate the edges from CFG.

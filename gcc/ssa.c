@@ -1498,8 +1498,7 @@ make_regs_equivalent_over_bad_edges (bb, reg_partition)
 
       /* Scan incoming abnormal critical edges.  */
       for (e = b->pred; e; e = e->pred_next)
-	if ((e->flags & (EDGE_ABNORMAL | EDGE_CRITICAL)) 
-		== (EDGE_ABNORMAL | EDGE_CRITICAL))
+	if ((e->flags & EDGE_ABNORMAL) && EDGE_CRITICAL_P (e))
 	  {
 	    rtx *alt = phi_alternative (set, e->src->index);
 	    int alt_regno;
