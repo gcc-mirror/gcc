@@ -1,3 +1,9 @@
+2002-06-05  Jeff Law  <law@redhat.com>
+
+	* pa.h (EXTRA_CONSTRAINT, T case): Further refine so that it
+	rejects (mem (lo_sum (reg) (unspec))), but will allow
+	(mem (lo_sum (reg) (symbol_ref)) for PA2.0.
+
 2002-06-05  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (ASM_OUTPUT_SOURCE_LINE): Define.
