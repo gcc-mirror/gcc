@@ -900,3 +900,7 @@ extern int cse_not_expected;
 /* Indexed by pseudo register number, gives the rtx for that pseudo.
    Allocated in parallel with regno_pointer_flag.  */
 extern rtx *regno_reg_rtx;
+
+/* Translates rtx code to tree code, for those codes needed by
+   REAL_ARITHMETIC.  */
+extern int rtx_to_tree_code ();
