@@ -824,9 +824,13 @@ asm_insn_count (body)
   char *template;
   int count = 1;
 
-  for (template = decode_asm_operands (body, NULL_PTR, NULL_PTR,
-				       NULL_PTR, NULL_PTR);
-       *template; template++)
+  if (GET_CODE (body) == ASM_INPUT)
+    template = XSTR (body, 0);
+  else
+    template = decode_asm_operands (body, NULL_PTR, NULL_PTR,
+				    NULL_PTR, NULL_PTR);
+
+  for ( ; *template; template++)
     if (IS_ASM_LOGICAL_LINE_SEPARATOR(*template) || *template == '\n')
       count++;
 
