@@ -1,5 +1,5 @@
 /* Types.java -- SQL type constants
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -66,6 +66,11 @@ public static final int ARRAY = 2003;
 public static final int BLOB = 2004;
 public static final int CLOB = 2005;
 public static final int REF = 2006;
+
+  // This class can't be instantiated.
+  private Types ()
+  {
+  }
 
 } // class Types 
 
