@@ -24,7 +24,12 @@ Boston, MA 02111-1307, USA.  */
    the definition of __cplusplus.  We define _INCLUDE_LONGLONG
    to prevent nlist.h from defining __STDC_32_MODE__ (no longlong
    support).  We define __STDCPP__ to get certain system headers
-   (notably assert.h) to assume standard preprocessor behavior in C++.  */
+   (notably assert.h) to assume standard preprocessor behavior in C++.
+
+   The C99 support is incomplete.  We define _INCLUDE__STDC_A1_SOURCE
+   to provide the extended multibyte and wide-character utilities available
+   under HP-UX 11i.  Defining _HPUX_SOURCE would give us some more
+   features but it also adds stuff that isn't in C99.  */
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()				\
   do								\
@@ -41,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
 	  {							\
 	    builtin_define ("_HPUX_SOURCE");			\
 	    builtin_define ("_INCLUDE_LONGLONG");		\
+	    builtin_define ("_INCLUDE__STDC_A1_SOURCE");	\
 	    builtin_define ("__STDC_EXT__");			\
 	    builtin_define ("__STDCPP__");			\
 	  }							\
@@ -49,6 +55,7 @@ Boston, MA 02111-1307, USA.  */
 	    if (!flag_iso)					\
 	      {							\
 		builtin_define ("_HPUX_SOURCE");		\
+		builtin_define ("_INCLUDE__STDC_A1_SOURCE");	\
 		if (preprocessing_trad_p ())			\
 		  {						\
 		    builtin_define ("hp9000s800");		\
@@ -61,6 +68,10 @@ Boston, MA 02111-1307, USA.  */
 		  }						\
 		else						\
 		  builtin_define ("__STDC_EXT__");		\
+	      }							\
+	    else if (flag_isoc99)				\
+	      {							\
+		builtin_define ("_INCLUDE__STDC_A1_SOURCE");	\
 	      }							\
 	    if (!TARGET_64BIT)					\
 	      builtin_define ("_ILP32");			\
