@@ -1,3 +1,7 @@
+Tue Feb 24 00:36:43 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck2.c (process_init_constructor): Fix labeled init check.
+
 Mon Feb 23 05:08:55 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c, call.c, decl.c, method.c, cp-tree.h: Remove unused NARGS

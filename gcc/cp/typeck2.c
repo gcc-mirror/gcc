@@ -1044,6 +1044,7 @@ process_init_constructor (type, init, elts)
 	    continue;
 
 	  if (TREE_PURPOSE (tail)
+	      && TREE_PURPOSE (tail) != field
 	      && TREE_PURPOSE (tail) != DECL_NAME (field))
 	    sorry ("non-trivial labeled initializers");
 
