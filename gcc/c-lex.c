@@ -54,9 +54,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ((ENV_VALUE) = getenv (ENV_NAME))
 #endif
 
-/* The input filename as understood by CPP, where "" represents stdin.  */
-static const char *cpp_filename;
-
 /* The current line map.  */
 static const struct line_map *map;
 
@@ -109,7 +106,7 @@ init_c_lex (filename)
   struct cpp_callbacks *cb;
   struct c_fileinfo *toplevel;
 
-  /* Set up filename timing.  Must happen before cpp_start_read.  */
+  /* Set up filename timing.  Must happen before cpp_read_main_file.  */
   file_info_tree = splay_tree_new ((splay_tree_compare_fn)strcmp,
 				   0,
 				   (splay_tree_delete_value_fn)free);
@@ -142,16 +139,13 @@ init_c_lex (filename)
       cb->undef = cb_undef;
     }
 
-
-  if (filename == 0 || !strcmp (filename, "-"))
-    filename = "stdin", cpp_filename = "";
-  else
-    cpp_filename = filename;
-
   /* Start it at 0.  */
   lineno = 0;
 
-  return filename;
+  if (filename == NULL)
+    filename = "";
+
+  return cpp_read_main_file (parse_in, filename, ident_hash);
 }
 
 /* A thin wrapper around the real parser that initializes the 
@@ -160,8 +154,7 @@ init_c_lex (filename)
 int
 yyparse()
 {
-  if (! cpp_start_read (parse_in, cpp_filename))
-    return 1;			/* cpplib has emitted an error.  */
+  cpp_finish_options (parse_in);
 
   return yyparse_1();
 }

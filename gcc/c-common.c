@@ -32,6 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-common.h"
 #include "tm_p.h"
 #include "obstack.h"
+#include "c-lex.h"
 #include "cpplib.h"
 #include "target.h"
 cpp_reader *parse_in;		/* Declared in c-lex.h.  */
@@ -3809,9 +3810,14 @@ static bool c_attrs_initialized = false;
 static void c_init_attributes PARAMS ((void));
 
 /* Do the parts of lang_init common to C and C++.  */
-void
-c_common_lang_init ()
+const char *
+c_common_lang_init (filename)
+     const char *filename;
 {
+  filename = init_c_lex (filename);
+
+  init_pragma ();
+
   /* If still "unspecified", make it match -fbounded-pointers.  */
   if (flag_bounds_check < 0)
     flag_bounds_check = flag_bounded_pointers;
@@ -3831,6 +3837,8 @@ c_common_lang_init ()
 
   if (!c_attrs_initialized)
     c_init_attributes ();
+
+  return filename;
 }
 
 static void

@@ -53,7 +53,6 @@ extern void yyprint PARAMS ((FILE *, int, YYSTYPE));
 
 static int interface_strcmp PARAMS ((const char *));
 static int *init_cpp_parse PARAMS ((void));
-static void init_reswords PARAMS ((void));
 static void init_cp_pragma PARAMS ((void));
 
 static tree parse_strconst_pragma PARAMS ((const char *, int));
@@ -248,7 +247,7 @@ cxx_post_options ()
 void
 cxx_init_options ()
 {
-  parse_in = cpp_create_reader (ident_hash, CLK_GNUCXX);
+  parse_in = cpp_create_reader (CLK_GNUCXX);
 
   /* Default exceptions on.  */
   flag_exceptions = 1;
@@ -260,15 +259,6 @@ cxx_init_options ()
   /* By default, emit location information once for every
      diagnostic message.  */
   diagnostic_prefixing_rule (global_dc) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
-}
-
-void
-cxx_init ()
-{
-  c_common_lang_init ();
-
-  if (flag_gnu_xref) GNU_xref_begin (input_filename);
-  init_repo (input_filename);
 }
 
 void
@@ -636,7 +626,7 @@ const short rid_to_yy[RID_MAX] =
   /* RID_AT_IMPLEMENTATION */	0
 };
 
-static void
+void
 init_reswords ()
 {
   unsigned int i;
@@ -676,17 +666,18 @@ init_cp_pragma ()
 		       handle_pragma_java_exceptions);
 }
 
+/* Initialize the C++ front end.  This function is very sensitive to
+   the exact order that things are done here.  It would be nice if the
+   initialization done by this routine were moved to its subroutines,
+   and the ordering dependencies clarified and reduced.  */
 const char *
-init_parse (filename)
+cxx_init (filename)
      const char *filename;
 {
   decl_printable_name = lang_printable_name;
-
   input_filename = "<internal>";
 
   init_reswords ();
-  init_pragma ();
-  init_cp_pragma ();
   init_spew ();
   init_tree ();
   init_cplus_expand ();
@@ -726,17 +717,28 @@ init_parse (filename)
   TREE_TYPE (enum_type_node) = enum_type_node;
   ridpointers[(int) RID_ENUM] = enum_type_node;
 
+  cxx_init_decl_processing ();
+
   /* Create the built-in __null node.  Note that we can't yet call for
      type_for_size here because integer_type_node and so forth are not
      set up.  Therefore, we don't set the type of these nodes until
-     init_decl_processing.  */
+     cxx_init_decl_processing.  */
   null_node = build_int_2 (0, 0);
+  TREE_TYPE (null_node) = type_for_size (POINTER_SIZE, 0);
   ridpointers[RID_NULL] = null_node;
 
   token_count = init_cpp_parse ();
   interface_unknown = 1;
 
-  return init_c_lex (filename);
+  filename = c_common_lang_init (filename);
+
+  init_cp_pragma ();
+
+  if (flag_gnu_xref)
+    GNU_xref_begin (filename);
+  init_repo (filename);
+
+  return filename;
 }
 
 void

@@ -44,7 +44,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static int c_tree_printer PARAMS ((output_buffer *));
 static int c_missing_noreturn_ok_p PARAMS ((tree));
-static void c_init PARAMS ((void));
+static const char *c_init PARAMS ((const char *));
 static void c_init_options PARAMS ((void));
 static void c_post_options PARAMS ((void));
 static int c_disregard_inline_limits PARAMS ((tree));
@@ -108,16 +108,21 @@ c_post_options ()
 static void
 c_init_options ()
 {
-  parse_in = cpp_create_reader (ident_hash, CLK_GNUC89);
+  parse_in = cpp_create_reader (CLK_GNUC89);
 
   /* Mark as "unspecified".  */
   flag_bounds_check = -1;
 }
 
-static void
-c_init ()
+static const char *
+c_init (filename)
+     const char *filename;
 {
-  c_common_lang_init ();
+  c_init_decl_processing ();
+
+  filename = c_common_lang_init (filename);
+
+  add_c_tree_codes ();
 
   /* If still unspecified, make it match -std=c99
      (allowing for -pedantic-errors).  */
@@ -138,10 +143,10 @@ c_init ()
   lang_expand_decl_stmt = &c_expand_decl_stmt;
   lang_missing_noreturn_ok_p = &c_missing_noreturn_ok_p;
 
-  c_parse_init ();
-
   VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
   ggc_add_tree_varray_root (&deferred_fns, 1);
+
+  return filename;
 }
 
 /* Used by c-lex.c, but only for objc.  */

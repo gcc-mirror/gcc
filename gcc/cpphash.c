@@ -53,6 +53,8 @@ _cpp_init_hashtable (pfile, table)
      cpp_reader *pfile;
      hash_table *table;
 {
+  struct spec_nodes *s;
+
   if (table == NULL)
     {
       pfile->our_hashtable = 1;
@@ -63,6 +65,20 @@ _cpp_init_hashtable (pfile, table)
 
   table->pfile = pfile;
   pfile->hash_table = table;
+
+  /* Now we can initialize things that use the hash table.  */
+  _cpp_init_directives (pfile);
+  _cpp_init_internal_pragmas (pfile);
+
+  s = &pfile->spec_nodes;
+  s->n_L                = cpp_lookup (pfile, DSC("L"));
+  s->n_defined		= cpp_lookup (pfile, DSC("defined"));
+  s->n_true		= cpp_lookup (pfile, DSC("true"));
+  s->n_false		= cpp_lookup (pfile, DSC("false"));
+  s->n__STRICT_ANSI__   = cpp_lookup (pfile, DSC("__STRICT_ANSI__"));
+  s->n__CHAR_UNSIGNED__ = cpp_lookup (pfile, DSC("__CHAR_UNSIGNED__"));
+  s->n__VA_ARGS__       = cpp_lookup (pfile, DSC("__VA_ARGS__"));
+  s->n__VA_ARGS__->flags |= NODE_DIAGNOSTIC;
 }
 
 /* Tear down the identifier hash table.  */

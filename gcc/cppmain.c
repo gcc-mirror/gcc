@@ -77,7 +77,7 @@ main (argc, argv)
   general_init (argv[0]);
 
   /* Contruct a reader with default language GNU C89.  */
-  pfile = cpp_create_reader (NULL, CLK_GNUC89);
+  pfile = cpp_create_reader (CLK_GNUC89);
   options = cpp_get_options (pfile);
   
   do_preprocessing (argc, argv);
@@ -117,10 +117,12 @@ do_preprocessing (argc, argv)
     return;
 
   if (argi < argc)
-    cpp_fatal (pfile, "Invalid option %s", argv[argi]);
-  else
-    cpp_post_options (pfile);
+    {
+      cpp_fatal (pfile, "Invalid option %s", argv[argi]);
+      return;
+    }
 
+  cpp_post_options (pfile);
   if (CPP_FATAL_ERRORS (pfile))
     return;
 
@@ -156,8 +158,10 @@ do_preprocessing (argc, argv)
 
   setup_callbacks ();
 
-  if (cpp_start_read (pfile, options->in_fname))
+  if (cpp_read_main_file (pfile, options->in_fname, NULL))
     {
+      cpp_finish_options (pfile);
+
       /* A successful cpp_start_read guarantees that we can call
 	 cpp_scan_nooutput or cpp_get_token next.  */
       if (options->no_output)

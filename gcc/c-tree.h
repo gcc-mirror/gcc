@@ -164,6 +164,7 @@ extern int yyparse_1				PARAMS ((void));
 extern void gen_aux_info_record                 PARAMS ((tree, int, int, int));
 
 /* in c-decl.c */
+extern void c_init_decl_processing		PARAMS ((void));
 extern void c_print_identifier			PARAMS ((FILE *, tree, int));
 extern tree build_array_declarator              PARAMS ((tree, tree, int, int));
 extern tree build_enumerator                    PARAMS ((tree, tree));
