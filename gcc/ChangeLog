@@ -1,3 +1,10 @@
+2004-02-21  Christopher Faylor  <cgf@redhat.com>
+
+	* config.gcc (i[34567]86-*-pe|i[34567]86-*-cygwin*): Specify extra host
+	object file when targetting cygwin.
+	* config/i386/t-cygwin (EXTRA_GCC_OBJS): Remove definition since it is
+	overridden by top-level Makefile.
+
 2004-02-21  Alan Modra  <amodra@bigpond.net.au>
 
 	* combine.c (can_combine_p): Don't ignore SETs marked with
