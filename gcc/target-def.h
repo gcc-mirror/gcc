@@ -26,12 +26,16 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    even if they do nothing.  */
 
 /* Assembler output.  */
+#define TARGET_ASM_OPEN_PAREN "("
+#define TARGET_ASM_CLOSE_PAREN ")"
 #define TARGET_ASM_FUNCTION_PROLOGUE default_function_pro_epilogue
 #define TARGET_ASM_FUNCTION_EPILOGUE default_function_pro_epilogue
 #define TARGET_ASM_FUNCTION_END_PROLOGUE no_asm_to_stream
 #define TARGET_ASM_FUNCTION_BEGIN_EPILOGUE no_asm_to_stream
 
-#define TARGET_ASM_OUT {TARGET_ASM_FUNCTION_PROLOGUE,		\
+#define TARGET_ASM_OUT {TARGET_ASM_OPEN_PAREN,			\
+			TARGET_ASM_CLOSE_PAREN,			\
+			TARGET_ASM_FUNCTION_PROLOGUE,		\
 			TARGET_ASM_FUNCTION_END_PROLOGUE,	\
 			TARGET_ASM_FUNCTION_BEGIN_EPILOGUE,	\
 			TARGET_ASM_FUNCTION_EPILOGUE}

@@ -631,6 +631,11 @@ static int ix86_comp_type_attributes PARAMS ((tree, tree));
 #  define TARGET_ASM_FUNCTION_PROLOGUE ix86_osf_output_function_prologue
 #endif
 
+#undef TARGET_ASM_OPEN_PAREN
+#define TARGET_ASM_OPEN_PAREN ""
+#undef TARGET_ASM_CLOSE_PAREN
+#define TARGET_ASM_CLOSE_PAREN ""
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Sometimes certain combinations of command options do not make

@@ -2111,16 +2111,7 @@ progmem_section (void)							      \
    If you do not define this macro, the default is that only the
    character `;' is treated as a logical line separator.  */
 
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
-/* These macros are defined as C string constant, describing the
-   syntax in the assembler for grouping arithmetic expressions.  The
-   following definitions are correct for most assemblers:
-
-   #define ASM_OPEN_PAREN "("
-   #define ASM_CLOSE_PAREN ")"
-
-   These macros are provided by `real.h' for writing the definitions of
+/* These macros are provided by `real.h' for writing the definitions of
    `ASM_OUTPUT_DOUBLE' and the like:  */
 
 #define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)			   \

@@ -1504,15 +1504,6 @@ do										\
 #define ASM_OUTPUT_BYTE(STREAM, VALUE) \
   fprintf (STREAM, "%s0x%x\n", ASM_BYTE_OP, (VALUE))
 
-/* These macros are defined as C string constant, describing the syntax in the
-   assembler for grouping arithmetic expressions.  The following definitions
-   are correct for most assemblers:
-
-        #define ASM_OPEN_PAREN "("
-        #define ASM_CLOSE_PAREN ")"  */
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
-
 /*}}}*/ 
 /*{{{  Output and Generation of Labels.  */ 
 

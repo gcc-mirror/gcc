@@ -1239,10 +1239,6 @@ do { char dstr[30];                                     \
   assemble_name ((FILE), (NAME)),                       \
   fprintf ((FILE), ",%d\n", (SIZE)))
 
-/* The assembler's parentheses characters.  */
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
-
 /* We don't want the default switch handling.  */
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #undef ASM_OUTPUT_CASE_LABEL
