@@ -1,3 +1,7 @@
+2004-08-25  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/ext/enc_filebuf.h: Move concept-check macro to class scope.
+
 2004-07-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/linker-map.gnu: Export typeinfo information.
