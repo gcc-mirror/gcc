@@ -1158,7 +1158,8 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
      FFEBAD; })
 #define ffetarget_divide_integer1(res,l,r) \
   (((r) == 0) ? (*(res) = 0, FFEBAD_DIV_BY_ZERO)  \
-   : (*(res) = (l) / (r), FFEBAD))
+   : (((r) == -1) ? (*(res) = -(l), FFEBAD)       \
+      : (*(res) = (l) / (r), FFEBAD)))
 #define ffetarget_divide_integer2(res,l,r) \
         ffetarget_divide_integer1(res,l,r)
 #define ffetarget_divide_integer3(res,l,r) \

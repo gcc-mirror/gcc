@@ -1,3 +1,7 @@
+2003-03-26  Roger Sayle  <roger@eyesopen.com>
+
+	* g77.f-torture/compile/20030326-1.f: New test case.
+
 2003-03-26  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.c-torture/execute/20020227-1.x: Don't XFAIL for powerpc64.
