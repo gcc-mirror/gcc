@@ -64,6 +64,9 @@ static int num_updated_if_blocks;
 /* # of basic blocks that were removed.  */
 static int num_removed_blocks;
 
+/* True if life data ok at present.  */
+static bool life_data_ok;
+
 /* The post-dominator relation on the original block numbers.  */
 static sbitmap *post_dominators;
 
@@ -1396,7 +1399,7 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
   /* First merge TEST block into THEN block.  This is a no-brainer since
      the THEN block did not have a code label to begin with.  */
 
-  if (combo_bb->global_live_at_end)
+  if (life_data_ok)
     COPY_REG_SET (combo_bb->global_live_at_end, then_bb->global_live_at_end);
   merge_blocks_nomove (combo_bb, then_bb);
   num_removed_blocks++;
@@ -1436,7 +1439,7 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
   else if (join_bb->pred == NULL || join_bb->pred->pred_next == NULL)
     {
       /* We can merge the JOIN.  */
-      if (combo_bb->global_live_at_end)
+      if (life_data_ok)
 	COPY_REG_SET (combo_bb->global_live_at_end,
 		      join_bb->global_live_at_end);
       merge_blocks_nomove (combo_bb, join_bb);
@@ -2125,14 +2128,15 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
 /* Main entry point for all if-conversion.  */
 
 void
-if_convert (life_data_ok)
-     int life_data_ok;
+if_convert (x_life_data_ok)
+     int x_life_data_ok;
 {
   int block_num;
 
   num_possible_if_blocks = 0;
   num_updated_if_blocks = 0;
   num_removed_blocks = 0;
+  life_data_ok = (x_life_data_ok != 0);
 
   /* Free up basic_block_for_insn so that we don't have to keep it 
      up to date, either here or in merge_blocks_nomove.  */
