@@ -3901,6 +3901,9 @@ fold (expr)
 
     case BIT_IOR_EXPR:
     bit_ior:
+      {
+      register enum tree_code code0, code1;
+
       if (integer_all_onesp (arg1))
 	return omit_one_operand (type, arg1, arg0);
       if (integer_zerop (arg1))
@@ -3909,28 +3912,53 @@ fold (expr)
       if (t1 != NULL_TREE)
 	return t1;
 
-      /* (a << C1) | (a >> C2) if A is unsigned and C1+C2 is the size of A
+      /* (A << C1) | (A >> C2) if A is unsigned and C1+C2 is the size of A
 	 is a rotate of A by C1 bits.  */
+      /* (A << B) | (A >> (Z - B)) if A is unsigned and Z is the size of A
+	 is a rotate of A by B bits.  */
 
-      if ((TREE_CODE (arg0) == RSHIFT_EXPR
-	   || TREE_CODE (arg0) == LSHIFT_EXPR)
-	  && (TREE_CODE (arg1) == RSHIFT_EXPR
-	      || TREE_CODE (arg1) == LSHIFT_EXPR)
-	  && TREE_CODE (arg0) != TREE_CODE (arg1)
+      code0 = TREE_CODE (arg0);
+      code1 = TREE_CODE (arg1);
+      if (((code0 == RSHIFT_EXPR && code1 == LSHIFT_EXPR)
+	  || (code1 == RSHIFT_EXPR && code0 == LSHIFT_EXPR))
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1,0), 0)
-	  && TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg0, 0)))
-	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
-	  && TREE_CODE (TREE_OPERAND (arg1, 1)) == INTEGER_CST
-	  && TREE_INT_CST_HIGH (TREE_OPERAND (arg0, 1)) == 0
-	  && TREE_INT_CST_HIGH (TREE_OPERAND (arg1, 1)) == 0
-	  && ((TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1))
-	       + TREE_INT_CST_LOW (TREE_OPERAND (arg1, 1)))
+	  && TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg0, 0))))
+	{
+	  register tree tree01, tree11;
+	  register enum tree_code code01, code11;
+
+	  tree01 = TREE_OPERAND (arg0, 1);
+	  tree11 = TREE_OPERAND (arg1, 1);
+	  code01 = TREE_CODE (tree01);
+	  code11 = TREE_CODE (tree11);
+	  if (code01 == INTEGER_CST
+	    && code11 == INTEGER_CST
+	    && TREE_INT_CST_HIGH (tree01) == 0
+	    && TREE_INT_CST_HIGH (tree11) == 0
+	    && ((TREE_INT_CST_LOW (tree01) + TREE_INT_CST_LOW (tree11))
 	      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0)))))
-	return build (LROTATE_EXPR, type, TREE_OPERAND (arg0, 0),
-		      TREE_CODE (arg0) == LSHIFT_EXPR
-		      ? TREE_OPERAND (arg0, 1) : TREE_OPERAND (arg1, 1));
+	    return build (LROTATE_EXPR, type, TREE_OPERAND (arg0, 0),
+		      code0 == LSHIFT_EXPR ? tree01 : tree11);
+	  else if (code11 == MINUS_EXPR
+		&& TREE_CODE (TREE_OPERAND (tree11, 0)) == INTEGER_CST
+		&& TREE_INT_CST_HIGH (TREE_OPERAND (tree11, 0)) == 0
+		&& TREE_INT_CST_LOW (TREE_OPERAND (tree11, 0))
+		  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0)))
+		&& operand_equal_p (tree01, TREE_OPERAND (tree11, 1), 0))
+	    return build (code0 == LSHIFT_EXPR ? LROTATE_EXPR : RROTATE_EXPR,
+			type, TREE_OPERAND (arg0, 0), tree01);
+	  else if (code01 == MINUS_EXPR
+		&& TREE_CODE (TREE_OPERAND (tree01, 0)) == INTEGER_CST
+		&& TREE_INT_CST_HIGH (TREE_OPERAND (tree01, 0)) == 0
+		&& TREE_INT_CST_LOW (TREE_OPERAND (tree01, 0))
+		  == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0)))
+		&& operand_equal_p (tree11, TREE_OPERAND (tree01, 1), 0))
+	    return build (code0 != LSHIFT_EXPR ? LROTATE_EXPR : RROTATE_EXPR,
+			type, TREE_OPERAND (arg0, 0), tree11);
+	}
 
       goto associate;
+      }
 
     case BIT_XOR_EXPR:
       if (integer_zerop (arg1))
