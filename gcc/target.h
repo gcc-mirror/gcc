@@ -414,6 +414,10 @@ struct gcc_target
   /* Create the __builtin_va_list type.  */
   tree (* build_builtin_va_list) (void);
 
+  /* Gimplifies a VA_ARG_EXPR.  */
+  tree (* gimplify_va_arg_expr) (tree valist, tree type, tree *pre_p,
+				 tree *post_p);
+
   /* Validity-checking routines for PCH files, target-specific.
      get_pch_validity returns a pointer to the data to be stored,
      and stores the size in its argument.  pch_valid_p gets the same
@@ -458,10 +462,6 @@ struct gcc_target
     /* Given a complex type T, return true if a parameter of type T
        should be passed as two scalars.  */
     bool (* split_complex_arg) (tree type);
-
-    /* Gimplifies a VA_ARG_EXPR.  */
-    tree (* gimplify_va_arg_expr) (tree valist, tree type, tree *pre_p,
-				   tree *post_p);
   } calls;
 
   /* Functions specific to the C++ frontend.  */
