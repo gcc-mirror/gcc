@@ -1,4 +1,11 @@
 2003-12-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/6243
+	* testsuite/lib/libstdc++.exp (v3-init): Add
+	original_ld_library_path, calculate ld_library path, set
+	LD_LIBRARY_PATH to both. Based on libjava.exp.
+	
+2003-12-10  Benjamin Kosnik  <bkoz@redhat.com>
             Alexandre Oliva  <aoliva@redhat.com>
 	
 	PR libstdc++/11612
