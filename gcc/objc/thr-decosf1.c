@@ -164,12 +164,12 @@ objc_thread_exit(void)
  *  Returns an integer value which uniquely describes a thread.  Must not be
  *  -1 which is reserved as a marker for "no thread".
  */
-int
+_objc_thread_t
 objc_thread_id(void)
 {
   pthread_t self = pthread_self();
 
-  return *(int *)&self;                        /* Return thread handle.    */
+  return (_objc_thread_t) self;	/* Return thread handle.    */
 }
 
 /********
