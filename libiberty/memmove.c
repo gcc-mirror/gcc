@@ -13,11 +13,13 @@ Copies @var{count} bytes from memory area @var{from} to memory area
 */
 
 #include <ansidecl.h>
-#ifdef __STDC__
+#ifdef ANSI_PROTOTYPES
 #include <stddef.h>
 #else
 #define size_t unsigned long
 #endif
+
+void bcopy PARAMS ((const void*, void*, size_t));
 
 PTR
 memmove (s1, s2, n)

@@ -13,14 +13,19 @@ Copies @var{length} bytes from memory region @var{in} to region
 */
 
 #include <ansidecl.h>
-#ifdef __STDC__
+#ifdef ANSI_PROTOTYPES
 #include <stddef.h>
 #else
 #define size_t unsigned long
 #endif
 
+void bcopy PARAMS((const void*, void*, size_t));
+
 PTR
-DEFUN(memcpy, (out, in, length), PTR out AND const PTR in AND size_t length)
+memcpy (out, in, length)
+     PTR out;
+     const PTR in;
+     size_t length;
 {
     bcopy(in, out, length);
     return out;

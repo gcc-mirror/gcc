@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 
 /*  Routines imported from standard C runtime libraries. */
 
-#ifdef __STDC__
+#ifdef ANSI_PROTOTYPES
 
 #include <stddef.h>
 #include <string.h>

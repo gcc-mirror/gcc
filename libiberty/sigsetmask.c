@@ -25,8 +25,8 @@ extern void abort PARAMS ((void)) ATTRIBUTE_NORETURN;
 
 #ifdef SIG_SETMASK
 int
-DEFUN(sigsetmask,(set),
-      int set)
+sigsetmask (set)
+      int set;
 {
     sigset_t new;
     sigset_t old;
