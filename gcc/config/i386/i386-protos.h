@@ -30,7 +30,7 @@ extern void asm_output_function_prefix PARAMS ((FILE *, const char *));
 extern void load_pic_register PARAMS ((void));
 extern HOST_WIDE_INT ix86_initial_elimination_offset PARAMS((int, int));
 extern void ix86_expand_prologue PARAMS ((void));
-extern void ix86_expand_epilogue PARAMS ((void));
+extern void ix86_expand_epilogue PARAMS ((int));
 
 extern void ix86_output_function_block_profiler PARAMS ((FILE *, int));
 extern void ix86_output_block_profiler PARAMS ((FILE *, int));
@@ -44,7 +44,6 @@ extern int symbolic_reference_mentioned_p PARAMS ((rtx));
 extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int pic_symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int call_insn_operand PARAMS ((rtx, enum machine_mode));
-extern int expander_call_insn_operand PARAMS ((rtx, enum machine_mode));
 extern int constant_call_address_operand PARAMS ((rtx, enum machine_mode));
 extern int const0_operand PARAMS ((rtx, enum machine_mode));
 extern int const1_operand PARAMS ((rtx, enum machine_mode));

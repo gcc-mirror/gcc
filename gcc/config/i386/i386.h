@@ -1230,6 +1230,11 @@ typedef struct ix86_args {
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 0
 
+/* If PIC, we cannot optimize sibling calls to global functions
+   because the PLT requires %ebx live.  */
+#define FUNCTION_OK_FOR_SIBCALL(DECL) \
+  (DECL && (! flag_pic || ! TREE_PUBLIC (DECL)))
+
 /* This macro is invoked just before the start of a function.
    It is used here to output code for -fpic that will load the
    return address into %ebx.  */
@@ -2457,7 +2462,6 @@ do { long l;						\
 		       LABEL_REF, SUBREG, REG, MEM}},			\
   {"pic_symbolic_operand", {CONST}},					\
   {"call_insn_operand", {MEM}},						\
-  {"expander_call_insn_operand", {MEM}},				\
   {"constant_call_address_operand", {MEM}},				\
   {"const0_operand", {CONST_INT, CONST_DOUBLE}},			\
   {"const1_operand", {CONST_INT}},					\

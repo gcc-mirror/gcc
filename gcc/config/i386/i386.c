@@ -1067,22 +1067,17 @@ call_insn_operand (op, mode)
   if (GET_CODE (op) == CONST_INT)
     return 0;
 
-  /* Otherwise we can allow any general_operand in the address.  */
-  return general_operand (op, Pmode);
-}
-
-/* Like call_insn_operand but allow (mem (symbol_ref ...)) even if pic.  */
-
-int
-expander_call_insn_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) == MEM
-      && GET_CODE (XEXP (op, 0)) == SYMBOL_REF)
+  /* Explicitly allow SYMBOL_REF even if pic.  */
+  if (GET_CODE (op) == SYMBOL_REF)
     return 1;
 
-  return call_insn_operand (op, mode);
+  /* Half-pic doesn't allow anything but registers and constants.
+     We've just taken care of the later.  */
+  if (HALF_PIC_P ())
+    return register_operand (op, Pmode);
+
+  /* Otherwise we can allow any general_operand in the address.  */
+  return general_operand (op, Pmode);
 }
 
 int
@@ -1090,9 +1085,9 @@ constant_call_address_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return GET_CODE (op) == MEM && 
-	 CONSTANT_ADDRESS_P (XEXP (op, 0)) && 
-	 GET_CODE (XEXP (op, 0)) !=  CONST_INT;
+  return (GET_CODE (op) == MEM
+	  && CONSTANT_ADDRESS_P (XEXP (op, 0))
+	  && GET_CODE (XEXP (op, 0)) !=  CONST_INT);
 }
 
 /* Match exactly zero and one.  */
@@ -1997,7 +1992,8 @@ ix86_emit_restore_regs_using_mov (pointer, offset)
 /* Restore function stack, frame, and registers. */
 
 void
-ix86_expand_epilogue ()
+ix86_expand_epilogue (emit_return)
+     int emit_return;
 {
   int nregs;
   int regno;
@@ -2081,6 +2077,10 @@ ix86_expand_epilogue ()
 	    || (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
 	  emit_insn (gen_popsi1 (gen_rtx_REG (SImode, regno)));
     }
+
+  /* Sibcall epilogues don't want a return instruction.  */
+  if (! emit_return)
+    return;
 
   if (current_function_pops_args && current_function_args_size)
     {

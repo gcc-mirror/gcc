@@ -1,3 +1,16 @@
+2000-03-18  Richard Henderson  <rth@cygnus.com>
+
+	* i386.c (call_insn_operand): Always allow SYMBOL_REF,
+	care for HALF_PIC_P.
+	(expander_call_insn_operand): Remove.
+	(ix86_expand_epilogue): New arg `emit_return' to control return insn.
+	* i386.h (PREDICATE_CODES): Update.
+	* i386.md (all call expanders): Remove predicates, remove special       
+	handling for half-pic.
+	(*call_1, *call_value_1): Handle SIBLING_CALL_P insns.
+	(*call_pop_pic2, *call_pic2, *call_value_pop_2, *call_value_2): Remove.
+	(sibcall_epilogue): New.
+
 2000-03-17  Richard Henderson  <rth@cygnus.com>
 
 	* rtlanal.c (single_set): Reject if the parallel has anything
