@@ -1,7 +1,5 @@
 // Based on a testcase by Eric Dumazet <Eric.Dumazet@COSMOSBAY.COM>
 
-// execution test - XFAIL *-*-*
-
 #include <cstdlib>
 
 const char * const foo = ""; // foo is not NULL
