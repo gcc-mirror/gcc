@@ -8117,17 +8117,35 @@ expand_builtin_apply_args ()
   if (struct_value_rtx)
     size += GET_MODE_SIZE (Pmode);
 
-  /* Save each register used in calling a function to the block.  */
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+  /* Save each register used in calling a function to the block.
+     Doing this in reverse order makes for much more compact code
+     for i386 and family.  If we do this in reverse order, a simple
+     series of pops and stores will be generated.  If we do this
+     in ascending order, the pops and stores will be littered with
+     stack swaps as well.  Since the order is largely irrelevant for
+     all other architectures, we use the optimal order for the i386.  */
+  for (regno = FIRST_PSEUDO_REGISTER; regno--;)
     if ((mode = apply_args_mode[regno]) != VOIDmode)
       {
+	rtx tem;
+
 	align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
 	if (size % align != 0)
 	  size = CEIL (size, align) * align;
+
+	tem = gen_rtx (REG, mode, INCOMING_REGNO (regno));
+
+#ifdef STACK_REGS
+        /* For reg-stack.c's stack register household.
+	   Compare with a similar piece of code in function.c.  */
+
+        emit_insn (gen_rtx (USE, mode, tem));
+#endif
+
 	emit_move_insn (change_address (registers, mode,
 					plus_constant (XEXP (registers, 0),
 						       size)),
-			gen_rtx (REG, mode, INCOMING_REGNO (regno)));
+			tem);
 	size += GET_MODE_SIZE (mode);
       }
 
@@ -8206,8 +8224,10 @@ expand_builtin_apply (function, arguments, argsize)
     size += GET_MODE_SIZE (Pmode);
 
   /* Restore each of the registers previously saved.  Make USE insns
-     for each of these registers for use in making the call.  */
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+     for each of these registers for use in making the call.
+     Doing this in reverse order makes for much more compact code
+     for i386 and family.  */
+  for (regno = FIRST_PSEUDO_REGISTER; regno--; )
     if ((mode = apply_args_mode[regno]) != VOIDmode)
       {
 	align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
