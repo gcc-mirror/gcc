@@ -1,5 +1,14 @@
 2004-01-09  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/m32r/m32r.c (m32r_expand_block_move): Call
+	gen_movestrsi_internal with two more arguments.
+	(m32r_output_block_move): Adjust operand numbers.
+	Properly update the source and destination pointers.
+	* config/m32r/m32r.md (movstrsi_internal): Use 'r' instead of
+	'r+'.  Change the set detinations to match_operand.
+
+2004-01-09  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* final.c (FIRST_INSN_ADDRESS): Remove.
 	(shorten_branches): Don't use FIRST_INSN_ADDRESS.
 	* system.h (FIRST_INSN_ADDRESS): Poison.
