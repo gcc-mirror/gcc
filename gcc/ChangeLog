@@ -1,3 +1,19 @@
+2004-06-16  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (struct machine_function):  New member
+	last_restore_gpr.
+	(s390_frame_info): Add BASE_USED and RETURN_ADDR_USED parameters.
+	Do not modify machine->save_return_addr_p or regs_ever_live.
+	Fill in machine->last_restore_gpr.
+	(s390_optimize_prolog): Use s390_frame_info to compute registers
+	to save/restore, remove duplicated code.
+	(s390_arg_frame_offset): Use s390_frame_info to compute frame
+	size, remove duplicated code.
+	(s390_emit_prologue): Adapt s390_frame_info call.  Update
+	machine->save_return_addr_p and regs_ever_live.
+	(s390_emit_epilogue): Use machine->last_restore_gpr instead of
+	machine->last_save_gpr.
+
 2004-06-16  Richard Henderson  <rth@redhat.com>
 
 	* c-parse.in (if_stmt_locus): Remove.
