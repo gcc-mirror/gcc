@@ -2550,6 +2550,12 @@ The compiler will generate more efficient code for loads and stores
 on data in the tiny data section.  Note the tiny data area is limited to
 slightly under 32kbytes of data.
 
+@item saveall
+@cindex save all registers on the H8/300, H8/300H, and H8S
+Use this attribute on the H8/300, H8/300H, and H8S to indicate that
+all registers except the stack pointer should be saved in the prologue
+regardless of whether they are used or not.
+
 @item signal
 @cindex signal handler functions on the AVR processors
 Use this attribute on the AVR to indicate that the specified

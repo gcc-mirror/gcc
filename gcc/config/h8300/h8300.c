@@ -49,6 +49,7 @@ Boston, MA 02111-1307, USA.  */
 /* Forward declarations.  */
 static const char *byte_reg (rtx, int);
 static int h8300_interrupt_function_p (tree);
+static int h8300_saveall_function_p (tree);
 static int h8300_monitor_function_p (tree);
 static int h8300_os_task_function_p (tree);
 static void dosize (int, unsigned int);
@@ -346,7 +347,7 @@ byte_reg (rtx x, int b)
   (regno < SP_REG							\
    /* No need to save registers if this function will not return.  */	\
    && ! TREE_THIS_VOLATILE (current_function_decl)			\
-   && (pragma_saveall							\
+   && (h8300_saveall_function_p (current_function_decl)			\
        /* Save any call saved register that was used.  */		\
        || (regs_ever_live[regno] && !call_used_regs[regno])		\
        /* Save the frame pointer if it was used.  */			\
@@ -633,15 +634,6 @@ h8300_expand_epilogue (void)
   /* Pop frame pointer if we had one.  */
   if (frame_pointer_needed)
     pop (FRAME_POINTER_REGNUM);
-}
-
-/* Output assembly language code for the function epilogue.  */
-
-static void
-h8300_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
-				HOST_WIDE_INT size ATTRIBUTE_UNUSED)
-{
-  pragma_saveall = 0;
 }
 
 /* Return nonzero if the current function is an interrupt
@@ -4101,6 +4093,21 @@ h8300_interrupt_function_p (tree func)
   return a != NULL_TREE;
 }
 
+/* Return nonzero if FUNC is a saveall function as specified by the
+   "saveall" attribute.  */
+
+static int
+h8300_saveall_function_p (tree func)
+{
+  tree a;
+
+  if (TREE_CODE (func) != FUNCTION_DECL)
+    return 0;
+
+  a = lookup_attribute ("saveall", DECL_ATTRIBUTES (func));
+  return a != NULL_TREE;
+}
+
 /* Return nonzero if FUNC is an OS_Task function as specified
    by the "OS_Task" attribute.  */
 
@@ -4176,26 +4183,41 @@ h8300_tiny_data_p (tree decl)
   return a != NULL_TREE;
 }
 
-/* Generate an 'interrupt_handler' attribute for decls.  */
+/* Generate an 'interrupt_handler' attribute for decls.  We convert
+   all the pragmas to corresponding attributes.  */
 
 static void
 h8300_insert_attributes (tree node, tree *attributes)
 {
-  if (!pragma_interrupt
-      || TREE_CODE (node) != FUNCTION_DECL)
-    return;
+  if (TREE_CODE (node) == FUNCTION_DECL)
+    {
+      if (pragma_interrupt)
+	{
+	  pragma_interrupt = 0;
 
-  pragma_interrupt = 0;
+	  /* Add an 'interrupt_handler' attribute.  */
+	  *attributes = tree_cons (get_identifier ("interrupt_handler"),
+				   NULL, *attributes);
+	}
 
-  /* Add an 'interrupt_handler' attribute.  */
-  *attributes = tree_cons (get_identifier ("interrupt_handler"),
-			   NULL, *attributes);
+      if (pragma_saveall)
+	{
+	  pragma_saveall = 0;
+
+	  /* Add an 'saveall' attribute.  */
+	  *attributes = tree_cons (get_identifier ("saveall"),
+				   NULL, *attributes);
+	}
+    }
 }
 
 /* Supported attributes:
 
    interrupt_handler: output a prologue and epilogue suitable for an
    interrupt handler.
+
+   saveall: output a prologue and epilogue that saves and restores
+   all registers except the stack pointer.
 
    function_vector: This function should be called through the
    function vector.
@@ -4210,6 +4232,7 @@ const struct attribute_spec h8300_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   { "interrupt_handler", 0, 0, true,  false, false, h8300_handle_fndecl_attribute },
+  { "saveall",           0, 0, true,  false, false, h8300_handle_fndecl_attribute },
   { "OS_Task",           0, 0, true,  false, false, h8300_handle_fndecl_attribute },
   { "monitor",           0, 0, true,  false, false, h8300_handle_fndecl_attribute },
   { "function_vector",   0, 0, true,  false, false, h8300_handle_fndecl_attribute },
@@ -4525,9 +4548,6 @@ h8300_init_libfuncs (void)
 
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
-
-#undef TARGET_ASM_FUNCTION_EPILOGUE
-#define TARGET_ASM_FUNCTION_EPILOGUE h8300_output_function_epilogue
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START h8300_file_start

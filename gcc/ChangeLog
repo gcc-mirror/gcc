@@ -1,3 +1,13 @@
+2003-10-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (h8300_output_function_epilogue): Remove.
+	(h8300_saveall_function_p): New.
+	(h8300_insert_attributes): Insert the saveall attribute if
+	#pragma saveall is specified.
+	(h8300_attribute_table): Add saveall.
+	(TARGET_ASM_FUNCTION_EPILOGUE): Remove.
+	* doc/extend.texi: Mention the saveall attribute.
+
 2003-10-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-typeck.c (pedantic_lvalue_warning): Unconditionally warn of
