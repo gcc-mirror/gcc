@@ -1,3 +1,7 @@
+Sun Apr 18 02:15:09 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Apr 18 00:08:45 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (GO_IF_LEGITIMATE_SIMPLE_ADDRESS): Correct last change --
