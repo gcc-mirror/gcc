@@ -4679,7 +4679,8 @@ while (0)
 	.set reorder\n\
 	jal " USER_LABEL_PREFIX #FUNC "\n\
 	" TEXT_SECTION_ASM_OP);
-#elif (defined _ABIN32 && _MIPS_SIM == _ABIN32) \
+#endif /* Switch to #elif when we're no longer limited by K&R C.  */
+#if (defined _ABIN32 && _MIPS_SIM == _ABIN32) \
    || (defined _ABI64 && _MIPS_SIM == _ABI64)
 #define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)	\
    asm (SECTION_OP "\n\
