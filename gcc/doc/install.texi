@@ -668,7 +668,7 @@ canadian cross build.  The @option{--disable-nls} option disables NLS@.
 
 @item --with-included-gettext
 If NLS is enabled, the @option{--with-included-gettext} option causes the build
-procedure to prefer its copy of GNU @code{gettext}.
+procedure to prefer its copy of GNU @command{gettext}.
 
 @item --with-catgets
 If NLS is enabled, and if the host lacks @code{gettext} but has the
@@ -1236,13 +1236,13 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#c4x,,c4x}
 @item
-@uref{#decstation-*,,decstation-*}
-@item
 @uref{#dos,,DOS}
 @item
 @uref{#dsp16xx,,dsp16xx}
 @item
 @uref{#elxsi-elxsi-bsd,,elxsi-elxsi-bsd}
+@item
+@uref{#*-*-freebsd*,,*-*-freebsd*}
 @item
 @uref{#h8300-hms,,h8300-hms}
 @item
@@ -1253,8 +1253,6 @@ GNU Compiler Collection on your machine.
 @uref{#hppa*-hp-hpux10,,hppa*-hp-hpux10}
 @item
 @uref{#hppa*-hp-hpux11,,hppa*-hp-hpux11}
-@item
-@uref{#*-*-freebsd*,,*-*-freebsd*}
 @item
 @uref{#i370-*-*,,i370-*-*}
 @item
@@ -1328,6 +1326,8 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#mips-*-*,,mips-*-*}
 @item
+@uref{#mips-dec-*,,mips-dec-*}
+@item
 @uref{#mips-mips-bsd,,mips-mips-bsd}
 @item
 @uref{#mips-mips-riscos*,,mips-mips-riscos*}
@@ -1347,6 +1347,8 @@ GNU Compiler Collection on your machine.
 @uref{#ns32k-sequent,,ns32k-sequent}
 @item
 @uref{#ns32k-utek,,ns32k-utek}
+@item
+@uref{#powerpc*-*-*,,powerpc*-*-*, powerpc-*-sysv4}
 @item
 @uref{#powerpc-*-elf,,powerpc-*-elf, powerpc-*-sysv4}
 @item
@@ -1377,8 +1379,6 @@ GNU Compiler Collection on your machine.
 @uref{#sparc-sun-solaris2.7,,sparc-sun-solaris2.7}
 @item
 @uref{#*-sun-solaris2.8,,*-sun-solaris2.8}
-@item
-@uref{#sunv5,,Sun V5.0 Compiler Bugs}
 @item
 @uref{#sparc-sun-sunos*,,sparc-sun-sunos*}
 @item
@@ -1414,17 +1414,17 @@ GNU Compiler Collection on your machine.
 MIL-STD-1750A processors.
 
 The MIL-STD-1750A cross configuration produces output for
-@code{as1750}, an assembler/linker available under the GNU Public
+@code{as1750}, an assembler/linker available under the GNU General Public
 License for the 1750A@.  @code{as1750} can be obtained at
 @uref{ftp://ftp.fta-berlin.de/pub/crossgcc/1750gals/}.
 A similarly licensed simulator for
 the 1750A is available from same address.
 
-You should ignore a fatal error during the building of libgcc (libgcc is
-not yet implemented for the 1750A@.)
+You should ignore a fatal error during the building of @samp{libgcc}
+(@samp{libgcc} is not yet implemented for the 1750A@.)
 
 The @code{as1750} assembler requires the file @file{ms1750.inc}, which is
-found in the directory @file{config/1750a}.
+found in the directory @file{gcc/config/1750a}.
 
 GCC produced the same sections as the Fairchild F9450 C Compiler,
 namely:
@@ -1443,7 +1443,7 @@ The read-only (ROM) constants section.
 Initialization section (code to copy KREL to SREL)@.
 @end table
 
-The smallest addressable unit is 16 bits (BITS_PER_UNIT is 16).  This
+The smallest addressable unit is 16 bits (@code{BITS_PER_UNIT} is 16).  This
 means that type @code{char} is represented with a 16-bit word per character.
 The 1750A's ``Load/Store Upper/Lower Byte'' instructions are not used by
 GCC@.
@@ -1480,27 +1480,10 @@ alpha-based platforms using ELF (in particular, ignore this section for
 DEC OSF/1, Digital UNIX and Tru64 UNIX)@.  In addition to reading this
 section, please read all other sections that match your target.
 
-We require binutils 2.11.1 (as of yet unreleased), binutils with
-@samp{binutils-2_11-branch} tag after May 31, 2001 (as taken below), or newer.
-Previous binutils releases had a number of problems with DWARF2
+We require binutils 2.11.2 or newer.
+Previous binutils releases had a number of problems with DWARF 2
 debugging information, not the least of which is incorrect linking of
 shared libraries.
-
-Until binutils 2.11.1 is released, these sample commands may be useful:
-
-@smallexample
-mkdir binutils-2.11.X; cd binutils-2.11.X
-cvs -d :pserver:anoncvs@@anoncvs.cygnus.com:/cvs/src \
-  co -rbinutils-2_11-branch -P binutils
-mkdir obj; cd obj
-../src/configure --prefix=@emph{an-absolute-path}
-make all check install
-@end smallexample
-
-When configuring gcc, provide explicit @option{--with-gnu-as}
-@option{--with-as=@emph{an-absolute-path/bin/as}} and
-@option{--with-gnu-ld} @option{--with-ld=@emph{an-absolute-path/bin/ld}}
-options to point into the prefix used above.
 
 @html
 </p>
@@ -1682,38 +1665,6 @@ can also be obtained from:
 </p>
 <hr>
 @end html
-@heading @anchor{decstation-*}decstation-*
-MIPS-based DECstations can support three different personalities:
-Ultrix, DEC OSF/1, and OSF/rose.  (Alpha-based DECstation products have
-a configuration name beginning with @samp{alpha-dec}.)  To configure GCC
-for these platforms use the following configurations:
-
-@table @samp
-@item decstation-ultrix
-Ultrix configuration.
-
-@item decstation-osf1
-Dec's version of OSF/1.
-
-@item decstation-osfrose
-Open Software Foundation reference port of OSF/1 which uses the
-OSF/rose object file format instead of ECOFF@.  Normally, you
-would not select this configuration.
-@end table
-
-The MIPS C compiler needs to be told to increase its table size
-for switch statements with the @option{-Wf,-XNg1500} option in
-order to compile @file{cp/parse.c}.  If you use the @option{-O2}
-optimization option, you also need to use @option{-Olimit 3000}.
-Both of these options are automatically generated in the
-@file{Makefile} that the shell script @file{configure} builds.
-If you override the @code{CC} make variable and use the MIPS
-compilers, you may need to add @option{-Wf,-XNg1500 -Olimit 3000}.
-
-@html
-</p>
-<hr>
-@end html
 @heading @anchor{dos}DOS
 
 Please have a look at our @uref{binaries.html,,binaries page}.
@@ -1729,6 +1680,37 @@ and includes all the necessary compilation tools and libraries.
 @end html
 @heading @anchor{dsp16xx}dsp16xx
 A port to the AT&T DSP1610 family of processors.
+
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{*-*-freebsd*}*-*-freebsd*
+
+The version of binutils installed in @file{/usr/bin} is known to work unless
+otherwise specified in any per-architecture notes.  However, binutils
+2.11 is known to improve overall testsuite results.
+
+For FreeBSD 1, FreeBSD 2 or any mutant a.out versions of FreeBSD 3: All
+configuration support and files as shipped with GCC 2.95 are still in
+place.  FreeBSD 2.2.7 has been known to bootstrap completely; however,
+it is unknown which version of binutils was used (it is assumed that it
+was the system copy in @file{/usr/bin}) and C++ EH failures were noted.
+
+For FreeBSD using the ELF file format: DWARF 2 debugging is now the
+default for all CPU architectures.  It had been the default on
+FreeBSD/alpha since its inception.  You may use @option{-gstabs} instead
+of @option{-g}, if you really want the old debugging format.  There are
+no known issues with mixing object files and libraries with different
+debugging formats.  Otherwise, this release of GCC should now match more
+of the configuration used in the stock FreeBSD configuration of GCC.  In
+particular, @option{--enable-threads} is now configured by default.
+However, as a general user, do not attempt to replace the system
+compiler with this release.  Known to bootstrap and check with good
+results on FreeBSD 3.0, 3.4, 4.0, 4.2, 4.3 and 5-CURRENT@.
+
+At this time, @option{--enable-threads} is not compatible with
+@option{--enable-libgcj} on FreeBSD@.
 
 @html
 </p>
@@ -1758,7 +1740,7 @@ longer a multiple of 2 bytes.
 @end html
 @heading @anchor{hppa*-hp-hpux*}hppa*-hp-hpux*
 
-We @emph{highly} recommend using gas/binutils-2.8 or newer on all hppa
+We @emph{highly} recommend using gas/binutils 2.8 or newer on all hppa
 platforms; you may encounter a variety of problems when using the HP
 assembler.
 
@@ -1769,10 +1751,10 @@ use GAS and GDB and configure GCC with the
 @option{--with-as=@dots{}} options.
 
 If you wish to use pa-risc 2.0 architecture support, you must use either
-the HP assembler, gas/binutils-2.11 or a recent
+the HP assembler, gas/binutils 2.11 or a recent
 @uref{ftp://sources.redhat.com/pub/binutils/snapshots,,snapshot of gas}.
 
-More specific information to hppa*-hp-hpux* targets follows.
+More specific information to @samp{hppa*-hp-hpux*} targets follows.
 
 @html
 </p>
@@ -1836,37 +1818,6 @@ this platform.
 </p>
 <hr>
 @end html
-@heading @anchor{*-*-freebsd*}*-*-freebsd*
-
-The version of binutils installed in @file{/usr/bin} is known to work unless
-otherwise specified in any per-architecture notes.  However, binutils
-2.11 is known to improve overall testsuite results.
-
-For FreeBSD 1, FreeBSD 2 or any mutant a.out versions of FreeBSD 3: All
-configuration support and files as shipped with gcc 2.95 are still in
-place.  FreeBSD 2.2.7 has been known to bootstrap completely; however,
-it is unknown which version of binutils was used (it is assumed that it
-was the system copy in @file{/usr/bin}) and C++ EH failures were noted.
-
-For FreeBSD using the ELF file format: DWARF2 debugging is now the
-default for all CPU architectures.  It had been the default on
-FreeBSD/alpha since its inception.  You may use @option{-gstabs} instead
-of @option{-g}, if you really want the old debugging format.  There are
-no known issues with mixing object files and libraries with different
-debugging formats.  Otherwise, this release of gcc should now match more
-of the configuration used in the stock FreeBSD configuration of gcc.  In
-particular, @option{--enable-threads} is now configured by default.
-However, as a general user, do not attempt to replace the system
-compiler with this release.  Known to bootstrap and check with good
-results on FreeBSD 3.0, 3.4, 4.0, 4.2, 4.3 and 5-CURRENT@.
-
-At this time, @option{--enable-threads} is not compatible with
-@option{--enable-libgcj} on FreeBSD@.
-
-@html
-</p>
-<hr>
-@end html
 @heading @anchor{i370-*-*}i370-*-*
 This port is very preliminary and has many known bugs.  We hope to
 have a higher-quality port for this machine soon.
@@ -1878,7 +1829,7 @@ have a higher-quality port for this machine soon.
 @heading @anchor{*-*-linux-gnu}*-*-linux-gnu
 
 If you use glibc 2.2 (or 2.1.9x), GCC 2.95.2 won't install
-out-of-the-box.  You'll get compile errors while building libstdc++.
+out-of-the-box.  You'll get compile errors while building @samp{libstdc++}.
 The patch @uref{glibc-2.2.patch,,glibc-2.2.patch}, that is to be
 applied in the GCC source tree, fixes the compatibility problems.
 
@@ -1923,7 +1874,7 @@ gas/binutils version 2.5.2 or later.
 @end html
 @heading @anchor{ix86-*-linux*}i?86-*-linux*
 
-You will need binutils-2.9.1.0.15 or newer for exception handling to work.
+You will need binutils 2.9.1.0.15 or newer for exception handling to work.
 
 If you receive Signal 11 errors when building on GNU/Linux, then it is
 possible you have a hardware problem.  Further information on this can be
@@ -1954,20 +1905,13 @@ Use this for the SCO OpenServer Release 5 family of operating systems.
 Unlike earlier versions of GCC, the ability to generate COFF with this
 target is no longer provided.
 
-Earlier versions of GCC emitted Dwarf-1 when generating ELF to allow
+Earlier versions of GCC emitted DWARF 1 when generating ELF to allow
 the system debugger to be used.  That support was too burdensome to
-maintain.  GCC now emits only dwarf-2 for this target.  This means you
+maintain.  GCC now emits only DWARF 2 for this target.  This means you
 may use either the UDK debugger or GDB to debug programs built by this
 version of GCC@.
 
-If you are building languages other than C, you must follow the instructions
-about invoking @samp{make bootstrap} because the native OpenServer
-compiler will build a @command{cc1plus} that will not correctly parse many
-valid C++ programs including those in @file{libgcc.a}.
-@strong{You must do a @samp{make bootstrap} if you are building with the
-native compiler.}
-
-Use of the @option{-march-pentiumpro} flag can result in
+Use of the @option{-march=pentiumpro} flag can result in
 unrecognized opcodes when using the native assembler on OS versions before
 5.0.6.  (Support for P6 opcodes was added to the native ELF assembler in
 that version.)  While it's rather rare to see these emitted by GCC yet,
@@ -1999,7 +1943,8 @@ Look in @file{gcc/config/i386/sco5.h} (search for ``messy'') for
 additional OpenServer-specific flags.
 
 Systems based on OpenServer before 5.0.4 (@samp{uname -X}
-will tell you what you're running) require TLS597 from ftp.sco.com/TLS
+will tell you what you're running) require TLS597 from
+@uref{ftp://ftp.sco.com/TLS/,,ftp://ftp.sco.com/TLS/}
 for C++ constructors and destructors to work right.
 
 The system linker in (at least) 5.0.4 and 5.0.5 will sometimes
@@ -2012,13 +1957,13 @@ available.  You must install both
 and @uref{ftp://ftp.sco.com/SLS/,,OSS499A}.
 
 The dynamic linker in OpenServer 5.0.5 (earlier versions may show
-the same problem) aborts on certain g77-compiled programs.  It's particularly
+the same problem) aborts on certain G77-compiled programs.  It's particularly
 likely to be triggered by building Fortran code with the @option{-fPIC} flag.
 Although it's conceivable that the error could be triggered by other
 code, only G77-compiled code has been observed to cause this abort.
 If you are getting core dumps immediately upon execution of your
-g77 program---and especially if it's compiled with @option{-fPIC}---try applying
-@uref{sco_osr5_g77.patch,,@file{sco_osr5_g77.patch}} to your libf2c and
+G77 program---and especially if it's compiled with @option{-fPIC}---try applying
+@uref{sco_osr5_g77.patch,,@file{sco_osr5_g77.patch}} to your @samp{libf2c} and
 rebuilding GCC@.
 Affected faults, when analyzed in a debugger, will show a stack
 backtrace with a fault occurring in @code{rtld()} and the program
@@ -2041,10 +1986,6 @@ default compiler such as OpenServer 5 or Unixware 2.  This target will
 generate binaries that will run on OpenServer, Unixware 2, or Unixware 7,
 with the same warnings and caveats as the SCO UDK@.
 
-You can stage1 with either your native compiler or with UDK@.   If you
-don't do a full bootstrap when initially building with your native compiler
-you will have an utterly unusable pile of bits as your reward.
-
 This target is a little tricky to build because we have to distinguish
 it from the native tools (so it gets headers, startups, and libraries
 from the right place) while making the tools not think we're actually
@@ -2057,8 +1998,8 @@ command like this:
 @emph{You should substitute @samp{i686} in the above command with the appropriate
 processor for your host.}
 
-You should follow this with a @samp{make bootstrap}  then
-@samp{make install}.  You can then access the UDK-targeted GCC
+After the usual @samp{make bootstrap} and
+@samp{make install}, you can then access the UDK-targeted GCC
 tools by adding @command{udk-} before the commonly known name.  For
 example, to invoke the C compiler, you would use @command{udk-gcc}.
 They will coexist peacefully with any native-target GCC tools you may
@@ -2104,7 +2045,7 @@ Go to the Berkeley universe before compiling.
 <hr>
 @end html
 @heading @anchor{ix86-sequent-ptx1*}i?86-sequent-ptx1*, i?86-sequent-ptx2*
-You must install GNU @file{sed} before running @file{configure}.
+You must install GNU @command{sed} before running @command{configure}.
 
 @html
 </p>
@@ -2113,7 +2054,7 @@ You must install GNU @file{sed} before running @file{configure}.
 @heading @anchor{#ix86-*-sysv3*}i?86-*-sysv3*
 The @code{fixproto} shell script may trigger a bug in the system shell.
 If you encounter this problem, upgrade your operating system or
-use BASH (the GNU shell) to run @code{fixproto}.
+use @command{bash} (the GNU shell) to run @code{fixproto}.
 
 
 @html
@@ -2182,7 +2123,7 @@ AIX Make frequently has problems with GCC makefiles.  GNU Make 3.76 or
 newer is recommended to build on this platform.
 
 Errors involving @code{alloca} when building GCC generally are due
-to an incorrect definition of @var{CC} in the Makefile or mixing files
+to an incorrect definition of @code{CC} in the Makefile or mixing files
 compiled with the native C compiler and GCC@.  During the stage1 phase of
 the build, the native AIX compiler @strong{must} be invoked as @command{cc}
 (not @command{xlc}).  Once @command{configure} has been informed of
@@ -2196,8 +2137,8 @@ Binutils 2.10 does not support AIX 4.3.  Binutils available from the
 @uref{http://www-1.ibm.com/servers/aix/products/aixos/linux/,,AIX
 Toolbox for Linux: GNU and Open Source tools for AIX};
 website does work.  Binutils 2.11 is expected to include AIX 4.3
-support.  The GNU Assembler is necessary for libstdc++ to build.  The
-AIX native ld still is recommended.  The native AIX tools do
+support.  The GNU Assembler is necessary for @samp{libstdc++} to build.  The
+AIX native @command{ld} still is recommended.  The native AIX tools do
 interoperate with GCC@.
 
 Linking executables and shared libraries may produce warnings of
@@ -2290,7 +2231,7 @@ applications.  There are no standard Unix configurations.
 @end html
 @heading @anchor{m68k-altos}m68k-altos
 Altos 3068.  You must use the GNU assembler, linker and debugger.
-Also, you must fix a kernel bug.  Details in the file @file{README.ALTOS}.
+Also, you must fix a kernel bug.
 
 @html
 </p>
@@ -2300,8 +2241,8 @@ Also, you must fix a kernel bug.  Details in the file @file{README.ALTOS}.
 Apple Macintosh running A/UX@.
 You may configure GCC  to use either the system assembler and
 linker or the GNU assembler and linker.  You should use the GNU configuration
-if you can, especially if you also want to use G++.  You enabled
-that configuration with + the @option{--with-gnu-as} and @option{--with-gnu-ld}
+if you can, especially if you also want to use G++.  You enable
+that configuration with the @option{--with-gnu-as} and @option{--with-gnu-ld}
 options to @code{configure}.
 
 Note the C compiler that comes
@@ -2328,9 +2269,9 @@ bootstrap.  Binaries are available from the OSU-CIS archive, at
 @heading @anchor{m68k-bull-sysv}m68k-bull-sysv
 Bull DPX/2 series 200 and 300 with BOS-2.00.45 up to BOS-2.01.  GCC works
 either with native assembler or GNU assembler.  You can use
-GNU assembler with native coff generation by providing @option{--with-gnu-as} to
-the configure script or use GNU assembler with dbx-in-coff encapsulation
-by providing @samp{--with-gnu-as --stabs}.  For any problem with native
+GNU assembler with native COFF generation by providing @option{--with-gnu-as} to
+the configure script or use GNU assembler with stabs-in-COFF encapsulation
+by providing @samp{--with-gnu-as --stabs}.  For any problem with the native
 assembler or for availability of the DPX/2 port of GAS, contact
 @email{F.Pierresteguy@@frcl.bull.fr}.
 
@@ -2408,7 +2349,7 @@ library version of ``cvtnum(3c)'' and thus does not exhibit the bug.
 
 This patch is also known as PHCO_4484.
 
-In addition, if you wish to use gas @option{--with-gnu-as} you must use
+In addition, if you wish to use gas, you must use
 gas version 2.1 or later, and you must use the GNU linker version 2.1 or
 later.  Earlier versions of gas relied upon a program which converted the
 gas output into the native HP-UX format, but that program has not been
@@ -2559,7 +2500,7 @@ configuration based on the current software development environment.
 @heading @anchor{m88k-tektronix-sysv3}m88k-tektronix-sysv3
 Tektronix XD88 running UTekV 3.2e.  Do not turn on
 optimization while building stage1 if you bootstrap with
-the buggy Green Hills compiler.  Also, The bundled LAI
+the buggy Green Hills compiler.  Also, the bundled LAI
 System V NFS is buggy so if you build in an NFS mounted
 directory, start from a fresh reboot, or avoid NFS all together.
 Otherwise you may have trouble getting clean comparisons
@@ -2608,9 +2549,41 @@ possible that some old versions of the system lack the functions
 system lacks these, you must remove or undo the definition of
 @code{TARGET_MEM_FUNCTIONS} in @file{mips-bsd.h}.
 
-The MIPS C compiler needs to be told to increase its table size
-for switch statements with the @option{-Wf,-XNg1500} option in
-order to compile @file{cp/parse.c}.  If you use the @option{-O2}
+If you use the MIPS C compiler to bootstrap, it may be necessary
+to increase its table size for switch statements with the
+@option{-Wf,-XNg1500} option.  If you use the @option{-O2}
+optimization option, you also need to use @option{-Olimit 3000}.
+Both of these options are automatically generated in the
+@file{Makefile} that the shell script @file{configure} builds.
+If you override the @code{CC} make variable and use the MIPS
+compilers, you may need to add @option{-Wf,-XNg1500 -Olimit 3000}.
+
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{mips-dec-*}mips-dec-*
+MIPS-based DECstations can support three different personalities:
+Ultrix, DEC OSF/1, and OSF/rose.  (Alpha-based DECstation products have
+a configuration name beginning with @samp{alpha*-dec}.)  To configure GCC
+for these platforms use the following configurations:
+
+@table @samp
+@item mips-dec-ultrix
+Ultrix configuration.
+
+@item mips-dec-osf1
+DEC's version of OSF/1.
+
+@item mips-dec-osfrose
+Open Software Foundation reference port of OSF/1 which uses the
+OSF/rose object file format instead of ECOFF@.  Normally, you
+would not select this configuration.
+@end table
+
+If you use the MIPS C compiler to bootstrap, it may be necessary
+to increase its table size for switch statements with the
+@option{-Wf,-XNg1500} option.  If you use the @option{-O2}
 optimization option, you also need to use @option{-Olimit 3000}.
 Both of these options are automatically generated in the
 @file{Makefile} that the shell script @file{configure} builds.
@@ -2622,9 +2595,9 @@ compilers, you may need to add @option{-Wf,-XNg1500 -Olimit 3000}.
 <hr>
 @end html
 @heading @anchor{mips-mips-riscos*}mips-mips-riscos*
-The MIPS C compiler needs to be told to increase its table size
-for switch statements with the @option{-Wf,-XNg1500} option in
-order to compile @file{cp/parse.c}.  If you use the @option{-O2}
+If you use the MIPS C compiler to bootstrap, it may be necessary
+to increase its table size for switch statements with the
+@option{-Wf,-XNg1500} option.  If you use the @option{-O2}
 optimization option, you also need to use @option{-Olimit 3000}.
 Both of these options are automatically generated in the
 @file{Makefile} that the shell script @file{configure} builds.
@@ -2637,21 +2610,21 @@ personalities: default, BSD 4.3, System V.3, and System V.4
 for these platforms use the following configurations:
 
 @table @samp
-@item mips-mips-riscos@code{rev}
-Default configuration for RISC-OS, revision @code{rev}.
+@item mips-mips-riscos@var{rev}
+Default configuration for RISC-OS, revision @var{rev}.
 
-@item mips-mips-riscos@code{rev}bsd
-BSD 4.3 configuration for RISC-OS, revision @code{rev}.
+@item mips-mips-riscos@var{rev}bsd
+BSD 4.3 configuration for RISC-OS, revision @var{rev}.
 
-@item mips-mips-riscos@code{rev}sysv4
-System V.4 configuration for RISC-OS, revision @code{rev}.
+@item mips-mips-riscos@var{rev}sysv4
+System V.4 configuration for RISC-OS, revision @var{rev}.
 
 @html
 </p>
 <hr>
 @end html
-@item mips-mips-riscos@code{rev}sysv
-System V.3 configuration for RISC-OS, revision @code{rev}.
+@item mips-mips-riscos@var{rev}sysv
+System V.3 configuration for RISC-OS, revision @var{rev}.
 @end table
 
 The revision @code{rev} mentioned above is the revision of
@@ -2861,8 +2834,7 @@ binaries of GCC for bootstrapping.
 </p>
 <hr>
 @end html
-@heading @anchor{powerpc-*-elf}powerpc-*-elf, powerpc-*-sysv4
-PowerPC system in big endian mode, running System V.4.
+@heading @anchor{powerpc*-*-*}powerpc-*-*
 
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
 switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
@@ -2871,15 +2843,19 @@ switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 </p>
 <hr>
 @end html
+@heading @anchor{powerpc-*-elf}powerpc-*-elf, powerpc-*-sysv4
+PowerPC system in big endian mode, running System V.4.
+
+@html
+</p>
+<hr>
+@end html
 @heading @anchor{powerpc-*-linux-gnu*}powerpc-*-linux-gnu*
 
 You will need
-@uref{ftp://ftp.varesearch.com/pub/support/hjl/binutils,,binutils-2.9.4.0.8}
+@uref{ftp://ftp.varesearch.com/pub/support/hjl/binutils,,binutils 2.9.4.0.8}
 or newer for a working GCC@.  It is strongly recommended to recompile binutils
 if you initially built it with gcc-2.7.2.x.
-
-You can specify a default version for the @option{-mcpu=@var{cpu_type}}
-switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 
 @html
 </p>
@@ -2889,9 +2865,6 @@ switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 Embedded PowerPC system in big endian mode with @option{-mcall-aix} selected as
 the default.
 
-You can specify a default version for the @option{-mcpu=@var{cpu_type}}
-switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
-
 @html
 </p>
 <hr>
@@ -2900,9 +2873,6 @@ switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 Embedded PowerPC system in big endian mode for use in running under the
 PSIM simulator.
 
-You can specify a default version for the @option{-mcpu=@var{cpu_type}}
-switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
-
 @html
 </p>
 <hr>
@@ -2910,18 +2880,12 @@ switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 @heading @anchor{powerpc-*-eabi}powerpc-*-eabi
 Embedded PowerPC system in big endian mode.
 
-You can specify a default version for the @option{-mcpu=@var{cpu_type}}
-switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
-
 @html
 </p>
 <hr>
 @end html
 @heading @anchor{powerpcle-*-elf}powerpcle-*-elf, powerpcle-*-sysv4
 PowerPC system in little endian mode, running System V.4.
-
-You can specify a default version for the @option{-mcpu=@var{cpu_type}}
-switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 
 @html
 </p>
@@ -2938,18 +2902,12 @@ the PSIM simulator.
 @heading @anchor{powerpcle-*-eabi}powerpcle-*-eabi
 Embedded PowerPC system in little endian mode.
 
-You can specify a default version for the @option{-mcpu=@var{cpu_type}}
-switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
-
 @html
 </p>
 <hr>
 @end html
 @heading @anchor{powerpcle-*-winnt}powerpcle-*-winnt, powerpcle-*-pe
 PowerPC system in little endian mode running Windows NT@.
-
-You can specify a default version for the @option{-mcpu=@var{cpu_type}}
-switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 
 @html
 </p>
@@ -2959,7 +2917,7 @@ switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
 The only operating systems supported for the IBM RT PC are AOS and
 MACH@.  GCC does not support AIX running on the RT@.  We recommend you
 compile GCC with an earlier version of itself; if you compile GCC
-with @code{hc}, the Metaware compiler, it will work, but you will get
+with @command{hc}, the Metaware compiler, it will work, but you will get
 mismatches between the stage 2 and stage 3 compilers in various files.
 These errors are minor differences in some floating-point constants and
 can be safely ignored; the stage 3 compiler is correct.
@@ -2970,18 +2928,18 @@ can be safely ignored; the stage 3 compiler is correct.
 @end html
 @heading @anchor{*-*-solaris*}*-*-solaris*
 
-Starting with Solaris, Sun does not ship a C compiler any more.  To
+Starting with Solaris 2, Sun does not ship a C compiler any more.  To
 bootstrap and install GCC you first have to install a pre-built
 compiler, see our @uref{binaries.html,,binaries page} for
 details.
 
-Solaris' @file{/bin/sh} will often fail to configure libstdc++-v3, boehm-gc or
-libjava.  If you encounter this problem, set @var{CONFIG_SHELL} to
+Solaris' @file{/bin/sh} will often fail to configure @file{libstdc++-v3}, @file{boehm-gc} or
+@file{libjava}.  If you encounter this problem, set @env{CONFIG_SHELL} to
 @file{/bin/ksh} in your environment and run @samp{make bootstrap} again.
 Another possibility that sometimes helps is to remove
 @file{*-*-solaris*/config.cache}.
 
-Sun as 4.X is broken in that it cannot cope with long symbol names.
+Sun @command{as} 4.X is broken in that it cannot cope with long symbol names.
 A typical error message might look similar to the following:
 
 @samp{/usr/ccs/bin/as: "/var/tmp/ccMsw135.s", line 11041:
@@ -2996,10 +2954,10 @@ been fixed in later (5.x) versions of the assembler.
 @end html
 @heading @anchor{sparc-sun-*}sparc-sun-*
 Sometimes on a Sun 4 you may observe a crash in the program
-@code{genflags} or @code{genoutput} while building GCC@.  This is said to
-be due to a bug in @code{sh}.  You can probably get around it by running
-@code{genflags} or @code{genoutput} manually and then retrying the
-@code{make}.
+@command{genflags} or @command{genoutput} while building GCC@.  This is said to
+be due to a bug in @command{sh}.  You can probably get around it by running
+@command{genflags} or @command{genoutput} manually and then retrying the
+@command{make}.
 
 @html
 <p>
@@ -3036,14 +2994,14 @@ On Solaris 2, trying to use the linker and other tools in
 For example, the linker may hang indefinitely.  The fix is to remove
 @file{/usr/ucb} from your @code{PATH}.
 
-All releases of GNU binutils prior to 2.11.1 have known bugs on this
-platform.  We recommend the use of GNU binutils 2.11.1 or the vendor
-tools (Sun as, Sun ld).
+All releases of GNU binutils prior to 2.11.2 have known bugs on this
+platform.  We recommend the use of GNU binutils 2.11.2 or the vendor
+tools (Sun @command{as}, Sun @command{ld}).
 
-Unfortunately, C++ shared libraries, including libstdc++, won't work
-properly if assembled with Sun as: the linker will complain about
+Unfortunately, C++ shared libraries, including @samp{libstdc++}, won't work
+properly if assembled with Sun @command{as}: the linker will complain about
 relocations in read-only sections, in the definition of virtual
-tables.  Also, Sun as fails to process long symbols resulting from
+tables.  Also, Sun @command{as} fails to process long symbols resulting from
 mangling template-heavy C++ function names.
 
 @html
@@ -3070,7 +3028,7 @@ back it out.
 @item
 Copy the original, unpatched Solaris 7
 @command{/usr/ccs/bin/as} into
-@command{/usr/local/lib/gcc-lib/sparc-sun-solaris2.7/2.95.1/as},
+@command{/usr/local/lib/gcc-lib/sparc-sun-solaris2.7/3.0/as},
 adjusting the latter name to fit your local conventions and software
 version numbers.
 
@@ -3105,10 +3063,10 @@ will assume that any missing type is @code{int} (as defined by C89).
 For Solaris 8, this is fixed by revision 24 or later of patch 108652
 (for SPARCs) or 108653 (for Intels).
 
-Solaris 8's linker fails to link some libjava programs if
+Solaris 8's linker fails to link some @samp{libjava} programs if
 previously-installed GCC java libraries already exist in the configured
-prefix.  For this reason, libgcj is disabled by default on Solaris 8.
-If you use GNU ld, or if you don't have a previously-installed libgcj in
+prefix.  For this reason, @samp{libgcj} is disabled by default on Solaris 8.
+If you use GNU ld, or if you don't have a previously-installed @samp{libgcj} in
 the same prefix, use @option{--enable-libgcj} to build and install the
 Java libraries.
 
@@ -3116,25 +3074,14 @@ Java libraries.
 <p>
 <hr>
 @end html
-@heading @anchor{sunv5}Sun V5.0 Compiler Bugs
-
-The Sun V5.0 compilers are known to mis-compile GCC 2.95 and GCC 2.95.1,
-which in turn causes GCC to fail its bootstrap comparison test.
-GCC 2.95.2 has a workaround.
-
-
-@html
-</p>
-<hr>
-@end html
 @heading @anchor{sparc-sun-sunos*}sparc-sun-sunos*
 
-A bug in the SunOS4 linker will cause it to crash when linking
+A bug in the SunOS 4 linker will cause it to crash when linking
 @option{-fPIC} compiled objects (and will therefore not allow you to build
 shared libraries).
 
 To fix this problem you can either use the most recent version of
-binutils or get the latest SunOS4 linker patch (patch ID 100170-10)
+binutils or get the latest SunOS 4 linker patch (patch ID 100170-10)
 from Sun's patch site.
 
 
@@ -3145,7 +3092,7 @@ from Sun's patch site.
 @heading @anchor{sparc-unknown-linux-gnulibc1}sparc-unknown-linux-gnulibc1
 
 It has been reported that you might need
-@uref{ftp://ftp.yggdrasil.com/private/hjl,,binutils-2.8.1.0.23}
+@uref{ftp://ftp.yggdrasil.com/private/hjl,,binutils 2.8.1.0.23}
 for this platform, too.
 
 
@@ -3159,7 +3106,7 @@ GCC version 2.95 is not able to compile code correctly for
 @code{sparc64} targets.  Users of the Linux kernel, at least,
 can use the @code{sparc32} program to start up a new shell
 invocation with an environment that causes @command{configure} to
-recognize (via @samp{uname -a}) the system as @var{sparc-*-*} instead.
+recognize (via @samp{uname -a}) the system as @samp{sparc-*-*} instead.
 
 
 @html
@@ -3175,7 +3122,7 @@ ld fatal: failed to write symbol name @var{something}
  in strings table for file @var{whatever}
 @end smallexample
 
-This probably indicates that the disk is full or your ULIMIT won't allow
+This probably indicates that the disk is full or your ulimit won't allow
 the file to be as large as it needs to be.
 
 This problem can also result because the kernel parameter @code{MAXUMEM}
@@ -3191,7 +3138,7 @@ On System V, if you get an error like this,
 @end example
 
 @noindent
-that too indicates a problem with disk space, ULIMIT, or @code{MAXUMEM}.
+that too indicates a problem with disk space, ulimit, or @code{MAXUMEM}.
 
 On a System V release 4 system, make sure @file{/usr/bin} precedes
 @file{/usr/ucb} in @code{PATH}.  The @code{cc} command in
@@ -3204,11 +3151,6 @@ On a System V release 4 system, make sure @file{/usr/bin} precedes
 @heading @anchor{vax-dec-ultrix}vax-dec-ultrix
 Don't try compiling with Vax C (@code{vcc}).  It produces incorrect code
 in some cases (for example, when @code{alloca} is used).
-
-Meanwhile, compiling @file{cp/parse.c} with pcc does not work because of
-an internal table size limitation in that compiler.  To avoid this
-problem, compile just the GNU C compiler first, and use it to recompile
-building all the languages that you want to run.
 
 @html
 </p>
@@ -3304,13 +3246,13 @@ bring GCC up on such a system, if still possible with current GCC, may
 require first installing an old version of GCC which did work on that
 system, and using it to compile a more recent GCC, to avoid bugs in
 the vendor compiler.  Old releases of GCC 1 and GCC 2 are available in
-the old-releases directory on the
+the @file{old-releases} directory on the
 @uref{../mirrors.html,,GCC mirror sites}.  Header bugs may generally
 be avoided using @command{fixincludes}, but bugs or deficiencies in
 libraries and the operating system may still cause problems.
 
 For some systems, old versions of GNU binutils may also be useful,
-and are available from pub/binutils/old-releases on
+and are available from @file{pub/binutils/old-releases} on
 @uref{http://sources.redhat.com/mirrors.html,,sources.redhat.com mirror sites}.
 
 Some of the information on specific systems above relates to
