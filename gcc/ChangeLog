@@ -1,3 +1,9 @@
+2003-12-22  Fariborz Jahanian <fjahanian@apple.com>
+        * config/rs6000/rs6000.c (legitimate_offset_address_p): Correct
+        check for the legitimate offset when memory of 
+	DImode/DFmode/TFmode/TImode mode is being referenced and target 
+	is TARGET_POWERPC64.
+
 2003-12-22  Dale Johannesen  <dalej@apple.com>
 
         * reload1.c:  Add reg_reloaded_call_part_clobbered.
