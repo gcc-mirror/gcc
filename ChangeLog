@@ -1,3 +1,9 @@
+1998-09-22  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (bootstrap): Set r and s before make all.  Use
+	BASE_FLAGS_TO_PASS in make all.
+	(cross): Likewise.
+
 1998-09-20  Mark Mitchell  <mark@markmitchell.com>
 
 	* Makefile.in (bootstrap): Pass TARGET_FLAGS_TO_PASS to `make all'.
