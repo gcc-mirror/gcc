@@ -1,3 +1,9 @@
+2003-01-26  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* Makefile.in (FLAGS_TO_PASS): Also pass DESTDIR.
+	(install, uninstall): Prepend $(DESTDIR) to destination
+	paths in all (un)installation commands.
+
 2002-11-19  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/8587
