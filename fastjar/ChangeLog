@@ -1,3 +1,7 @@
+2000-12-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* install-defs.sh: Removed.
+
 2000-12-10  Robert Lipe <robertlipe@usa.net>
 
 	* jargrep.c (jargrep): Added null statement after case.
