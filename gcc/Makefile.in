@@ -79,7 +79,7 @@ CC = @CC@
 BISON = `if [ -f $(objdir)/../bison/bison ] ; then case $(srcdir) in \
 	/*) echo $(objdir)/../bison/bison -L $(srcdir)/../bison/ ;; \
 	*) echo $(objdir)/../bison/bison -L $(objdir)/$(srcdir)/../bison/ ;; \
-	esac else echo bison ; fi`
+	esac; else echo bison ; fi`
 BISONFLAGS =
 LEX = `if [ -f $(objdir)/../flex/flex ] ; then echo $(objdir)/../flex/flex ; else echo flex ; fi`
 LEXFLAGS =
