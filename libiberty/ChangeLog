@@ -1,3 +1,7 @@
+2002-09-10  Mike Stump  <mrs@apple.com>
+
+	* splay-tree.c (splay_tree_successor): Fix comments.
+
 2002-09-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* cplus-dem.c: Code under #ifdef MAIN moved to gcc/cp/cxxfilt.c.
