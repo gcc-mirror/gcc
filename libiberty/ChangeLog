@@ -1,3 +1,11 @@
+2000-09-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/demangle-expected: Add four tests for type_info
+	mangling.
+
+	* cplus-dem.c (gnu_special): Use do_type, not demangle_fund_type,
+	for a non-template non-qualified type_info function or node.
+
 2000-09-08  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c: Fix copyright banner.

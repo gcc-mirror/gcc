@@ -2542,3 +2542,19 @@ TA<int, N___A___<-99> >::foo__bar___foobar___(void)
 --format=gnu
 foo__bar___foobar_____t2TA2ZiZt4N__A1i9
 TA<int, N__A<9> >::foo__bar___foobar___(void)
+#
+--format=gnu
+__tfP8sockaddr
+sockaddr * type_info function
+#
+--format=gnu
+__tfPQ25libcwt16option_event_tct1Z12burst_app_ct
+libcw::option_event_tct<burst_app_ct> * type_info function
+#
+--format=gnu
+__tiP8sockaddr
+sockaddr * type_info node
+#
+--format=gnu
+__tiPQ25libcwt16option_event_tct1Z12burst_app_ct
+libcw::option_event_tct<burst_app_ct> * type_info node
