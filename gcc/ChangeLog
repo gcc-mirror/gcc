@@ -1,3 +1,12 @@
+2004-06-13  Alan Modra  <amodra@bigpond.net.au>
+
+	Apply mainline 2004-01-27  Alan Modra  <amodra@bigpond.net.au>
+	* config/rs6000/rs6000.h: Correct target_flags free bits comment.
+	(PREDICATE_CODES): Remove duplicate.
+	* config/rs6000/linux64.h (CPP_SYSV_SPEC): Don't define.
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Disallow 32 bit TARGET_PROFILE_KERNEL.
+	(MASK_PROFILE_KERNEL): Adjust define.
+
 2004-06-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/15296

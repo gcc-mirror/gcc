@@ -100,6 +100,11 @@
 	{							\
 	  if (!RS6000_BI_ARCH_P)				\
 	    error (INVALID_32BIT, "32");			\
+	  if (TARGET_PROFILE_KERNEL)				\
+	    {							\
+	      target_flags &= ~MASK_PROFILE_KERNEL;		\
+	      error (INVALID_32BIT, "profile-kernel");		\
+	    }							\
 	}							\
     }								\
   while (0)
@@ -186,7 +191,7 @@
 
 #endif
 
-#define	MASK_PROFILE_KERNEL	0x00080000
+#define	MASK_PROFILE_KERNEL	0x00100000
 
 /* Non-standard profiling for kernels, which just saves LR then calls
    _mcount without worrying about arg saves.  The idea is to change
@@ -281,10 +286,6 @@
 /* Override svr4.h  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
-
-/* Override sysv4.h  */
-#undef	CPP_SYSV_SPEC
-#define	CPP_SYSV_SPEC ""
 
 #undef  TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()            		\
