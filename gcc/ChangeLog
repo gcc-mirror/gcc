@@ -1,5 +1,8 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* dsp16xx.c (print_operand_address): Fix format specifier warning.
+	* dsp16xx.h (INCLUDE_DEFAULTS): Add missing initializers.
+
 	* c4x.c (c4x_print_operand, c4x_print_operand_address): Fix format
 	specifier warnings.
 
