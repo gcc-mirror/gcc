@@ -7074,10 +7074,6 @@ void analyze_loop_iterations (loop_start, loop_end)
   /* we change our mind only when we are sure that loop will be instrumented */
   loop_can_insert_bct[loop_num] = 0;
 
-  /* debugging: do we wish to instrument this loop? */
-  if ( !check_bct_param () )
-    return;
-
   /* is the optimization suppressed.  */
   if ( !flag_branch_on_count_reg )
     return;
