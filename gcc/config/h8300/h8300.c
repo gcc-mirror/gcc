@@ -413,7 +413,7 @@ dosize (file, sign, size)
 	  && sign < 0))
     {
       const char *op = (sign > 0) ? "add" : "sub";
-      unsigned HOST_WIDE_INT amount;
+      unsigned int amount;
 
       /* Try different amounts in descending order.  */
       for (amount = (TARGET_H8300H || TARGET_H8300S) ? 4 : 2;
@@ -1303,7 +1303,7 @@ print_operand (file, x, code)
 	  fprintf (file, "%sl", names_big[REGNO (x)]);
 	  break;
 	case CONST_INT:
-	  fprintf (file, "#%d", (-INTVAL (x)) & 0xff);
+	  fprintf (file, "#%ld", (-INTVAL (x)) & 0xff);
 	  break;
 	default:
 	  abort ();
@@ -1316,7 +1316,7 @@ print_operand (file, x, code)
 	  fprintf (file, "%sh", names_big[REGNO (x)]);
 	  break;
 	case CONST_INT:
-	  fprintf (file, "#%d", ((-INTVAL (x)) & 0xff00) >> 8);
+	  fprintf (file, "#%ld", ((-INTVAL (x)) & 0xff00) >> 8);
 	  break;
 	default:
 	  abort ();
@@ -1325,7 +1325,7 @@ print_operand (file, x, code)
     case 'G':
       if (GET_CODE (x) != CONST_INT)
 	abort ();
-      fprintf (file, "#%d", 0xff & (-INTVAL (x)));
+      fprintf (file, "#%ld", 0xff & (-INTVAL (x)));
       break;
     case 'S':
       if (GET_CODE (x) == REG)
@@ -1400,7 +1400,7 @@ print_operand (file, x, code)
 	  print_operand (file, x, 0);
 	  break;
 	case CONST_INT:
-	  fprintf (file, "#%d", ((INTVAL (x) >> 16) & 0xffff));
+	  fprintf (file, "#%ld", ((INTVAL (x) >> 16) & 0xffff));
 	  break;
 	case CONST_DOUBLE:
 	  {
@@ -1430,7 +1430,7 @@ print_operand (file, x, code)
 	  print_operand (file, x, 0);
 	  break;
 	case CONST_INT:
-	  fprintf (file, "#%d", INTVAL (x) & 0xffff);
+	  fprintf (file, "#%ld", INTVAL (x) & 0xffff);
 	  break;
 	case CONST_DOUBLE:
 	  {
@@ -1453,44 +1453,44 @@ print_operand (file, x, code)
       break;
     case 's':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "#%d", (INTVAL (x)) & 0xff);
+	fprintf (file, "#%ld", (INTVAL (x)) & 0xff);
       else
 	fprintf (file, "%s", byte_reg (x, 0));
       break;
     case 't':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "#%d", (INTVAL (x) >> 8) & 0xff);
+	fprintf (file, "#%ld", (INTVAL (x) >> 8) & 0xff);
       else
 	fprintf (file, "%s", byte_reg (x, 1));
       break;
     case 'u':
       if (GET_CODE (x) != CONST_INT)
 	abort ();
-      fprintf (file, "%d", INTVAL (x));
+      fprintf (file, "%ld", INTVAL (x));
       break;
     case 'w':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "#%d", INTVAL (x) & 0xff);
+	fprintf (file, "#%ld", INTVAL (x) & 0xff);
       else
 	fprintf (file, "%s",
 		 byte_reg (x, TARGET_H8300 ? 2 : 0));
       break;
     case 'x':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "#%d", (INTVAL (x) >> 8) & 0xff);
+	fprintf (file, "#%ld", (INTVAL (x) >> 8) & 0xff);
       else
 	fprintf (file, "%s",
 		 byte_reg (x, TARGET_H8300 ? 3 : 1));
       break;
     case 'y':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "#%d", (INTVAL (x) >> 16) & 0xff);
+	fprintf (file, "#%ld", (INTVAL (x) >> 16) & 0xff);
       else
 	fprintf (file, "%s", byte_reg (x, 0));
       break;
     case 'z':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "#%d", (INTVAL (x) >> 24) & 0xff);
+	fprintf (file, "#%ld", (INTVAL (x) >> 24) & 0xff);
       else
 	fprintf (file, "%s", byte_reg (x, 1));
       break;
