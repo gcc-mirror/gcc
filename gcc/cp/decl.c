@@ -11293,7 +11293,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
     }
 
   if (warn_about_return_type)
-    warning ("return-type defaults to `int'");
+    pedwarn ("return-type defaults to `int'");
 
   /* Effective C++ rule 15.  See also c_expand_return.  */
   if (warn_ecpp
