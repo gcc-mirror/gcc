@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
-   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -642,10 +642,7 @@ DEF_RTL_EXPR(NOT, "not", "e", '1')
 
 /* Operand:
      0:  value to be shifted.
-     1:  number of bits.
-   ASHIFT and LSHIFT are distinguished because on some machines
-   these allow a negative operand and shift right in that case.  */
-DEF_RTL_EXPR(LSHIFT, "lshift", "ee", '2')
+     1:  number of bits.  */
 DEF_RTL_EXPR(ASHIFT, "ashift", "ee", '2')
 DEF_RTL_EXPR(ROTATE, "rotate", "ee", '2')
 
