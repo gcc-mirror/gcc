@@ -37,7 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "decl.h"
 #include "lex.h"
-#include <signal.h>
 #include "defaults.h"
 #include "output.h"
 #include "except.h"
@@ -105,7 +104,6 @@ static void suspend_binding_level PARAMS ((void));
 static void resume_binding_level PARAMS ((struct binding_level *));
 static struct binding_level *make_binding_level PARAMS ((void));
 static void declare_namespace_level PARAMS ((void));
-static void signal_catch PARAMS ((int)) ATTRIBUTE_NORETURN;
 static int decl_jump_unsafe PARAMS ((tree));
 static void storedecls PARAMS ((tree));
 static void require_complete_types_for_parms PARAMS ((tree));
@@ -6096,36 +6094,6 @@ end_only_namespace_names ()
   only_namespace_names = 0;
 }
 
-/* Arrange for the user to get a source line number, even when the
-   compiler is going down in flames, so that she at least has a
-   chance of working around problems in the compiler.  We used to
-   call error(), but that let the segmentation fault continue
-   through; now, it's much more passive by asking them to send the
-   maintainers mail about the problem.  */
-
-static void
-signal_catch (sig)
-     int sig;
-{
-  signal (SIGSEGV, SIG_DFL);
-#ifdef SIGIOT
-  signal (SIGIOT, SIG_DFL);
-#endif
-#ifdef SIGILL
-  signal (SIGILL, SIG_DFL);
-#endif
-#ifdef SIGABRT
-  signal (SIGABRT, SIG_DFL);
-#endif
-#ifdef SIGBUS
-  signal (SIGBUS, SIG_DFL);
-#endif
-
-  fatal ("Internal error: %s\n\
-Please submit a full bug report.\n\
-See %s for instructions.", strsignal (sig), GCCBUGURL);
-}
-
 /* Push the declarations of builtin types into the namespace.
    RID_INDEX, if < CP_RID_MAX is the index of the builtin type
    in the array RID_POINTERS.  NAME is the name used when looking
@@ -6333,28 +6301,6 @@ init_decl_processing ()
   current_function_decl = NULL_TREE;
   current_binding_level = NULL_BINDING_LEVEL;
   free_binding_level = NULL_BINDING_LEVEL;
-
-  /* Because most segmentation signals can be traced back into user
-     code, catch them and at least give the user a chance of working
-     around compiler bugs.  */
-  signal (SIGSEGV, signal_catch);
-
-  /* We will also catch aborts in the back-end through signal_catch and
-     give the user a chance to see where the error might be, and to defeat
-     aborts in the back-end when there have been errors previously in their
-     code.  */
-#ifdef SIGIOT
-  signal (SIGIOT, signal_catch);
-#endif
-#ifdef SIGILL
-  signal (SIGILL, signal_catch);
-#endif
-#ifdef SIGABRT
-  signal (SIGABRT, signal_catch);
-#endif
-#ifdef SIGBUS
-  signal (SIGBUS, signal_catch);
-#endif
 
   build_common_tree_nodes (flag_signed_char);
 

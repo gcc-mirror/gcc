@@ -160,7 +160,7 @@ static void set_target_switch PARAMS ((const char *));
 static const char *decl_name PARAMS ((tree, int));
 
 static void float_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
-static void pipe_closed PARAMS ((int)) ATTRIBUTE_NORETURN;
+static void crash_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
 #ifdef ASM_IDENTIFY_LANGUAGE
 /* This might or might not be used in ASM_IDENTIFY_LANGUAGE. */
 static void output_lang_identify PARAMS ((FILE *)) ATTRIBUTE_UNUSED;
@@ -1543,7 +1543,7 @@ float_signal (signo)
      int signo ATTRIBUTE_UNUSED;
 {
   if (float_handled == 0)
-    abort ();
+    crash_signal (signo);
 #if defined (USG) || defined (hpux)
   signal (SIGFPE, float_signal);  /* re-enable the signal catcher */
 #endif
@@ -1629,14 +1629,17 @@ pop_float_handler (handled, handler)
     bcopy ((char *) handler, (char *) float_handler, sizeof (float_handler));
 }
 
-/* Handler for SIGPIPE.  */
+/* Handler for fatal signals, such as SIGSEGV.  These are transformed
+   into ICE messages, which is much more user friendly.  */
 
 static void
-pipe_closed (signo)
+crash_signal (signo)
      /* If this is missing, some compilers complain.  */
-     int signo ATTRIBUTE_UNUSED;
+     int signo;
 {
-  fatal ("output pipe has been closed");
+  fatal ("Internal error: %s.\n\
+Please submit a full bug report.\n\
+See %s for instructions.", strsignal (signo), GCCBUGURL);
 }
 
 /* Strip off a legitimate source ending from the input string NAME of
@@ -4431,12 +4434,27 @@ main (argc, argv)
   (void) bindtextdomain (PACKAGE, localedir);
   (void) textdomain (PACKAGE);
 
+  /* Install handler for SIGFPE, which may be received while we do
+     compile-time floating point arithmetic.  */
   signal (SIGFPE, float_signal);
 
-#ifdef SIGPIPE
-  signal (SIGPIPE, pipe_closed);
+  /* Trap fatal signals, e.g. SIGSEGV, and convert them to ICE messages.  */
+#ifdef SIGSEGV
+  signal (SIGSEGV, crash_signal);
 #endif
-
+#ifdef SIGILL
+  signal (SIGILL, crash_signal);
+#endif
+#ifdef SIGBUS
+  signal (SIGBUS, crash_signal);
+#endif
+#ifdef SIGABRT
+  signal (SIGABRT, crash_signal);
+#endif
+#if defined SIGIOT && (!defined SIGABRT || SIGABRT != SIGIOT)
+  signal (SIGIOT, crash_signal);
+#endif
+  
   decl_printable_name = decl_name;
   lang_expand_expr = (lang_expand_expr_t) do_abort;
 
