@@ -510,7 +510,7 @@ validate_replace_rtx_1 (loc, from, to, object)
          plus_constant to try to simplify it.
          ??? We may want later to remove this, once simplification is
          separated from this function.  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT && XEXP (x, 1) == to)
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	validate_change (object, loc,
 			 plus_constant (XEXP (x, 0), INTVAL (to)), 1);
       break;
