@@ -639,8 +639,7 @@ enum reg_class {
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO) \
-  ((REGNO) >= FIRST_PSEUDO_REGISTER ? abort() : regno_reg_class[REGNO])
+#define REGNO_REG_CLASS(REGNO) (regno_reg_class[REGNO])
 
 #define S_REGNO_P(REGNO) (((REGNO) - S0_REGNUM) < (unsigned) 8)
 #define A_REGNO_P(REGNO) (((REGNO) - A0_REGNUM) < (unsigned) 8)
