@@ -1,3 +1,8 @@
+2000-12-11  Tom Tromey  <tromey@redhat.com>
+
+	* scripts/classes.pl (scan): Skip lines with leading `*'.
+	Fix for PR libgcj/378.
+
 2000-12-11  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* configure.in: Remove check for -fuse-divide-subroutine.

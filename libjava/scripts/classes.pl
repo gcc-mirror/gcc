@@ -68,8 +68,12 @@ sub scan
 	    local ($outer, $classname);
 	    while (<FILE>)
 	    {
-		# NOTE: we don't skip `/*' comments.
 		s,//.*$,,;
+		# NOTE: we don't skip `/*' comments.  However, we do
+		# skip lines with a `*' with leading whitespace.  This
+		# catches the most important cases.
+		s,^\s*\*.*$,,;
+
 		# For now assume that class names start with upper
 		# case letter.
 		next unless /\b(class|interface) ([A-Z][A-Za-z0-9]+)/;
