@@ -107,6 +107,7 @@ struct dump_file_info
 #define TODO_verify_flow	(1 << 4)
 #define TODO_verify_stmts	(1 << 5)
 #define TODO_fix_def_def_chains (1 << 6)        /* rewrite def-def chains  */
+#define TODO_cleanup_cfg        (1 << 7)        /* cleanup the cfg.  */
 
 #define TODO_verify_all \
   (TODO_verify_ssa | TODO_verify_flow | TODO_verify_stmts)

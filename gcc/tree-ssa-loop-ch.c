@@ -214,11 +214,6 @@ copy_loop_headers (void)
 #endif
 
   loop_optimizer_finalize (loops, NULL);
-
-  /* Run cleanup_tree_cfg here regardless of whether we have done anything, so
-     that we cleanup the blocks created in order to get the loops into a
-     canonical shape.  */
-  cleanup_tree_cfg ();
 }
 
 static bool
@@ -240,7 +235,7 @@ struct tree_opt_pass pass_ch =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  (TODO_dump_func
-   | TODO_verify_ssa),			/* todo_flags_finish */
+  TODO_cleanup_cfg | TODO_dump_func 
+  | TODO_verify_ssa,			/* todo_flags_finish */
   0					/* letter */
 };

@@ -426,6 +426,9 @@ execute_todo (int properties, unsigned int flags)
       bitmap_clear (vars_to_rename);
     }
 
+  if (flags & TODO_cleanup_cfg)
+    cleanup_tree_cfg ();
+
   if ((flags & TODO_dump_func) && dump_file)
     {
       if (properties & PROP_trees)
