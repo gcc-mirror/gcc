@@ -873,8 +873,7 @@ package body GNAT.AWK is
       Callbacks  : Callback_Mode := None;
       Session    : Session_Type  := Current_Session)
    is
-      Filter_Active : Boolean;
-      Quit          : Boolean;
+      Quit : Boolean;
 
    begin
       Open (Separators, Filename, Session);
@@ -884,7 +883,12 @@ package body GNAT.AWK is
          Split_Line (Session);
 
          if Callbacks in Only .. Pass_Through then
-            Filter_Active := Apply_Filters (Session);
+            declare
+               Discard : Boolean;
+               pragma Unreferenced (Discard);
+            begin
+               Discard := Apply_Filters (Session);
+            end;
          end if;
 
          if Callbacks /= Only then

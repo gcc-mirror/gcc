@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1998-2002, Ada Core Technologies, Inc.           --
+--           Copyright (C) 1998-2003, Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -343,30 +343,28 @@ package body GNAT.Spitbol.Patterns is
    --  structure (i.e. it is a pattern that is guaranteed to match at least
    --  one character on success, and not to make any entries on the stack.
 
-   OK_For_Simple_Arbno :
-     array (Pattern_Code) of Boolean := (
-       PC_Any_CS     |
-       PC_Any_CH     |
-       PC_Any_VF     |
-       PC_Any_VP     |
-       PC_Char       |
-       PC_Len_Nat    |
-       PC_NotAny_CS  |
-       PC_NotAny_CH  |
-       PC_NotAny_VF  |
-       PC_NotAny_VP  |
-       PC_Span_CS    |
-       PC_Span_CH    |
-       PC_Span_VF    |
-       PC_Span_VP    |
-       PC_String     |
-       PC_String_2   |
-       PC_String_3   |
-       PC_String_4   |
-       PC_String_5   |
-       PC_String_6   => True,
-
-       others => False);
+   OK_For_Simple_Arbno : constant array (Pattern_Code) of Boolean :=
+     (PC_Any_CS    |
+      PC_Any_CH    |
+      PC_Any_VF    |
+      PC_Any_VP    |
+      PC_Char      |
+      PC_Len_Nat   |
+      PC_NotAny_CS |
+      PC_NotAny_CH |
+      PC_NotAny_VF |
+      PC_NotAny_VP |
+      PC_Span_CS   |
+      PC_Span_CH   |
+      PC_Span_VF   |
+      PC_Span_VP   |
+      PC_String    |
+      PC_String_2  |
+      PC_String_3  |
+      PC_String_4  |
+      PC_String_5  |
+      PC_String_6   => True,
+      others        => False);
 
    -------------------------------
    -- The Pattern History Stack --

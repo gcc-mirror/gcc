@@ -66,7 +66,7 @@ package body GNAT.Memory_Dump is
 
       Line_Buf : String (1 .. Line_Len);
 
-      Hex : array (0 .. 15) of Character := "0123456789ABCDEF";
+      Hex : constant array (0 .. 15) of Character := "0123456789ABCDEF";
 
       type Char_Ptr is access all Character;
 

@@ -598,7 +598,7 @@ package body System.Interrupts is
 
       Ptr := Registered_Handler_Head;
 
-      while (Ptr /= null) loop
+      while Ptr /= null loop
          if Ptr.H = Fat.Handler_Addr then
             return True;
          end if;
@@ -946,7 +946,7 @@ package body System.Interrupts is
             Server_ID (Interrupt) := To_System (Access_Hold.all'Identity);
          end if;
 
-         if (New_Handler = null) then
+         if New_Handler = null then
             if Old_Handler /= null then
                Unbind_Handler (Interrupt);
             end if;

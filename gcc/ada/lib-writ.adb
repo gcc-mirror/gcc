@@ -729,7 +729,7 @@ package body Lib.Writ is
 
       Write_Info_Initiate ('V');
       Write_Info_Str (" """);
-      Write_Info_Str (Library_Version);
+      Write_Info_Str (Verbose_Library_Version);
       Write_Info_Char ('"');
 
       Write_Info_EOL;

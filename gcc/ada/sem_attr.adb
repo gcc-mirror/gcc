@@ -1364,7 +1364,8 @@ package body Sem_Attr is
             Error_Attr ("prefix of % attribute must be generic type", N);
 
          elsif Is_Generic_Actual_Type (Entity (P))
-           or In_Instance
+           or else In_Instance
+           or else In_Inlined_Body
          then
             null;
 

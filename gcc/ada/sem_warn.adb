@@ -1440,14 +1440,16 @@ package body Sem_Warn is
                when E_Variable =>
 
                   --  Case of variable that is assigned but not read. We
-                  --  suppress the message if the variable is volatile or
-                  --  has an address clause.
+                  --  suppress the message if the variable is volatile,
+                  --  has an address clause, or is imported.
 
                   if Referenced_As_LHS (E)
                     and then No (Address_Clause (E))
                     and then not Is_Volatile (E)
                   then
-                     if Warn_On_Modified_Unread then
+                     if Warn_On_Modified_Unread
+                       and then not Is_Imported (E)
+                     then
                         Error_Msg_N
                           ("variable & is assigned but never read?", E);
                      end if;

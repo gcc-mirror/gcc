@@ -35,6 +35,7 @@
  %{!gnatc*:%{!gnatz*:%{!gnats*:%{!S:%{!c:\
     %eone of -c, -S, -gnatc, -gnatz, or -gnats is required for Ada}}}}}\
  gnat1 %{I*} %{k8:-gnatk8} %{w:-gnatws} %1 %{!Q:-quiet} %{nostdinc*}\
+    %{nostdlib*}\
     -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
     %{g*} %{O*} %{W*} %{w} %{p} %{pg:-p} %{m*} %{a} %{f*} %{d*}\
     %{!S:%{o*:%w%*-gnatO}} \

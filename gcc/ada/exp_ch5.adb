@@ -95,24 +95,6 @@ package body Exp_Ch5 is
    --  either because the target is not byte aligned, or there is a change
    --  of representation.
 
-   function Maybe_Bit_Aligned_Large_Component (N : Node_Id) return Boolean;
-   --  This function is used in processing the assignment of a record or
-   --  indexed component. The back end can handle such assignments fine
-   --  if the objects involved are small (64-bits) or are both aligned on
-   --  a byte boundary (starts on a byte, and ends on a byte). However,
-   --  problems arise for large components that are not byte aligned,
-   --  since the assignment may clobber other components that share bit
-   --  positions in the starting or ending bytes, and in the case of
-   --  components not starting on a byte boundary, the back end cannot
-   --  even manage to extract the value. This function is used to detect
-   --  such situations, so that the assignment can be handled component-wise.
-   --  A value of False means that either the object is known to be greater
-   --  than 64 bits, or that it is known to be byte aligned (and occupy an
-   --  integral number of bytes. True is returned if the object is known to
-   --  be greater than 64 bits, and is known to be unaligned. As implied
-   --  by the name, the result is conservative, in that if the compiler
-   --  cannot determine these conditions at compile time, True is returned.
-
    function Make_Tag_Ctrl_Assignment (N : Node_Id) return List_Id;
    --  Generate the necessary code for controlled and Tagged assignment,
    --  that is to say, finalization of the target before, adjustement of
@@ -120,13 +102,41 @@ package body Exp_Ch5 is
    --  pointers which are not 'part of the value' and must not be changed
    --  upon assignment. N is the original Assignment node.
 
+   function Possible_Bit_Aligned_Component (N : Node_Id) return Boolean;
+   --  This function is used in processing the assignment of a record or
+   --  indexed component. The back end can handle such assignments fine
+   --  if the objects involved are small (64-bits or less) records or
+   --  scalar items (including bit-packed arrays represented with modular
+   --  types) or are both aligned on a byte boundary (starting on a byte
+   --  boundary, and occupying an integral number of bytes).
+   --
+   --  However, problems arise for records larger than 64 bits, or for
+   --  arrays (other than bit-packed arrays represented with a modular
+   --  type) if the component starts on a non-byte boundary, or does
+   --  not occupy an integral number of bytes (i.e. there are some bits
+   --  possibly shared with fields at the start or beginning of the
+   --  component). The back end cannot handle loading and storing such
+   --  components in a single operation.
+   --
+   --  This function is used to detect the troublesome situation. it is
+   --  conservative in the sense that it produces True unless it knows
+   --  for sure that the component is safe (as outlined in the first
+   --  paragraph above). The code generation for record and array
+   --  assignment checks for trouble using this function, and if so
+   --  the assignment is generated component-wise, which the back end
+   --  is required to handle correctly.
+   --
+   --  Note that in GNAT 3, the back end will reject such components
+   --  anyway, so the hard work in checking for this case is wasted
+   --  in GNAT 3, but it's harmless, so it is easier to do it in
+   --  all cases, rather than conditionalize it in GNAT 5 or beyond.
+
    ------------------------------
    -- Change_Of_Representation --
    ------------------------------
 
    function Change_Of_Representation (N : Node_Id) return Boolean is
       Rhs : constant Node_Id := Expression (N);
-
    begin
       return
         Nkind (Rhs) = N_Type_Conversion
@@ -372,9 +382,9 @@ package body Exp_Ch5 is
 
       --  We require a loop if the left side is possibly bit unaligned
 
-      elsif Maybe_Bit_Aligned_Large_Component (Lhs)
+      elsif Possible_Bit_Aligned_Component (Lhs)
               or else
-            Maybe_Bit_Aligned_Large_Component (Rhs)
+            Possible_Bit_Aligned_Component (Rhs)
       then
          Loop_Required := True;
 
@@ -1026,9 +1036,9 @@ package body Exp_Ch5 is
       --  clobbering of other components sharing bits in the first or
       --  last byte of the component to be assigned.
 
-      elsif Maybe_Bit_Aligned_Large_Component (Lhs)
+      elsif Possible_Bit_Aligned_Component (Lhs)
               or
-            Maybe_Bit_Aligned_Large_Component (Rhs)
+            Possible_Bit_Aligned_Component (Rhs)
       then
          null;
 
@@ -3221,11 +3231,11 @@ package body Exp_Ch5 is
          return Empty_List;
    end Make_Tag_Ctrl_Assignment;
 
-   ---------------------------------------
-   -- Maybe_Bit_Aligned_Large_Component --
-   ---------------------------------------
+   ------------------------------------
+   -- Possible_Bit_Aligned_Component --
+   ------------------------------------
 
-   function Maybe_Bit_Aligned_Large_Component (N : Node_Id) return Boolean is
+   function Possible_Bit_Aligned_Component (N : Node_Id) return Boolean is
    begin
       case Nkind (N) is
 
@@ -3250,7 +3260,7 @@ package body Exp_Ch5 is
                --  indexing from a possibly unaligned component.
 
                else
-                  return Maybe_Bit_Aligned_Large_Component (P);
+                  return Possible_Bit_Aligned_Component (P);
                end if;
             end;
 
@@ -3268,17 +3278,22 @@ package body Exp_Ch5 is
                --  only the recursive test on the prefix.
 
                if No (Component_Clause (Comp)) then
-                  return Maybe_Bit_Aligned_Large_Component (P);
+                  return Possible_Bit_Aligned_Component (P);
 
                --  Otherwise we have a component clause, which means that
                --  the Esize and Normalized_First_Bit fields are set and
                --  contain static values known at compile time.
 
                else
-                  --  If we know the size is 64 bits or less we are fine
-                  --  since the back end always handles small fields right.
+                  --  If we know that we have a small (64 bits or less) record
+                  --  or bit-packed array, then everything is fine, since the
+                  --  back end can handle these cases correctly.
 
-                  if Esize (Comp) <= 64 then
+                  if Esize (Comp) <= 64
+                    and then (Is_Record_Type (Etype (Comp))
+                               or else
+                              Is_Bit_Packed_Array (Etype (Comp)))
+                  then
                      return False;
 
                   --  Otherwise if the component is not byte aligned, we
@@ -3293,7 +3308,7 @@ package body Exp_Ch5 is
                   --  but we still need to test our prefix recursively.
 
                   else
-                     return Maybe_Bit_Aligned_Large_Component (P);
+                     return Possible_Bit_Aligned_Component (P);
                   end if;
                end if;
             end;
@@ -3306,6 +3321,6 @@ package body Exp_Ch5 is
             return False;
 
       end case;
-   end Maybe_Bit_Aligned_Large_Component;
+   end Possible_Bit_Aligned_Component;
 
 end Exp_Ch5;

@@ -2481,3 +2481,9 @@ __gnatlib_install_locks (void (*lock) (void) ATTRIBUTE_UNUSED,
      a no-op in this case. */
 #endif
 }
+
+int
+__gnat_lseek (int fd, long offset, int whence)
+{
+  return (int) lseek (fd, offset, whence);
+}
