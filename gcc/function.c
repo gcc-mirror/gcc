@@ -1902,12 +1902,16 @@ instantiate_decls (fndecl, valid_only)
   /* Process all parameters of the function.  */
   for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
     {
-      if (DECL_RTL (decl) && GET_CODE (DECL_RTL (decl)) == MEM)
+      if (DECL_RTL (decl) && GET_CODE (DECL_RTL (decl)) == MEM
+	  && (! valid_only
+	      || ! mode_dependent_address_p (XEXP (DECL_RTL (decl), 0))))
 	instantiate_virtual_regs_1 (&XEXP (DECL_RTL (decl), 0),
 				    (valid_only ? DECL_RTL (decl) : NULL_RTX),
 				    0);
       if (DECL_INCOMING_RTL (decl)
-	  && GET_CODE (DECL_INCOMING_RTL (decl)) == MEM)
+	  && GET_CODE (DECL_INCOMING_RTL (decl)) == MEM
+	  && (! valid_only
+	      || ! mode_dependent_address_p (XEXP (DECL_INCOMING_RTL (decl), 0))))
 	instantiate_virtual_regs_1 (&XEXP (DECL_INCOMING_RTL (decl), 0),
 				    (valid_only ? DECL_INCOMING_RTL (decl)
 				     : NULL_RTX),
@@ -1938,7 +1942,9 @@ instantiate_decls_1 (let, valid_only)
   tree t;
 
   for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
-    if (DECL_RTL (t) && GET_CODE (DECL_RTL (t)) == MEM)
+    if (DECL_RTL (t) && GET_CODE (DECL_RTL (t)) == MEM
+	&& (! valid_only
+	    || ! mode_dependent_address_p (XEXP (DECL_RTL (t), 0))))
       instantiate_virtual_regs_1 (& XEXP (DECL_RTL (t), 0),
 				  valid_only ? DECL_RTL (t) : NULL_RTX, 0);
 
