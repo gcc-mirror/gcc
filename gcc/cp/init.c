@@ -66,7 +66,6 @@ void init_init_processing ()
   /* Define the structure that holds header information for
      arrays allocated via operator new.  */
   BI_header_type = make_aggr_type (RECORD_TYPE);
-  nelts_identifier = get_identifier ("nelts");
   fields[0] = build_lang_decl (FIELD_DECL, nelts_identifier, sizetype);
 
   /* Use the biggest alignment supported by the target to prevent operator
@@ -1595,12 +1594,6 @@ build_offset_ref (type, name)
 		  type, TREE_OPERAND (name, 0));
       name = dtor_identifier;
     }
-#if 0
-  /* I think this is wrong, but the draft is unclear.  --jason 6/15/98 */
-  else if (name == constructor_name_full (type)
-	   || name == constructor_name (type))
-    name = ctor_identifier;
-#endif
 
   if (!COMPLETE_TYPE_P (complete_type (type))
       && !TYPE_BEING_DEFINED (type))
@@ -3184,7 +3177,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
     {
       /* We only get here from finish_function for a destructor.  */
       tree binfos = BINFO_BASETYPES (TYPE_BINFO (type));
-      int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+      int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (type);
       tree base_binfo = n_baseclasses > 0 ? TREE_VEC_ELT (binfos, 0) : NULL_TREE;
       tree exprstmt = NULL_TREE;
       tree parent_auto_delete = auto_delete;

@@ -37,7 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "decl.h"
 #include "lex.h"
 #include <signal.h>
-#include "obstack.h"
 #include "defaults.h"
 #include "output.h"
 #include "except.h"
@@ -45,11 +44,6 @@ Boston, MA 02111-1307, USA.  */
 #include "../hash.h"
 #include "defaults.h"
 #include "ggc.h"
-
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-
-extern struct obstack permanent_obstack;
 
 extern int current_class_depth;
 
@@ -183,6 +177,7 @@ static tree get_dso_handle_node PARAMS ((void));
 static tree start_cleanup_fn PARAMS ((void));
 static void end_cleanup_fn PARAMS ((void));
 static tree cp_make_fname_decl PARAMS ((tree, const char *, int));
+static void initialize_predefined_identifiers PARAMS ((void));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PARAMS ((void));
@@ -6041,6 +6036,50 @@ record_unknown_type (type, name)
   TYPE_MODE (type) = TYPE_MODE (void_type_node);
 }
 
+/* An string for which we should create an IDENTIFIER_NODE at
+   startup.  */
+
+typedef struct predefined_identifier
+{
+  /* The name of the identifier.  */
+  const char *name;
+  /* The place where the IDENTIFIER_NODE should be stored.  */
+  tree *node;
+} predefined_identifier;
+
+/* Create all the predefined identifiers.  */
+
+static void
+initialize_predefined_identifiers () 
+{
+  struct predefined_identifier *pid;
+
+  /* A table of identifiers to create at startup.  */
+  static predefined_identifier predefined_identifiers[] = {
+    { "C++", &lang_name_cplusplus },
+    { "C", &lang_name_c },
+    { "Java", &lang_name_java },
+    { CTOR_NAME, &ctor_identifier },
+    { "__base_ctor", &base_ctor_identifier },
+    { DTOR_NAME, &dtor_identifier },
+    { "__base_dtor", &base_dtor_identifier },
+    { "__deleting_dtor", &deleting_dtor_identifier },
+    { VTABLE_DELTA2_NAME, &delta2_identifier },
+    { VTABLE_DELTA_NAME, &delta_identifier },
+    { IN_CHARGE_NAME, &in_charge_identifier },
+    { VTABLE_INDEX_NAME, &index_identifier },
+    { "nelts", &nelts_identifier },
+    { THIS_NAME, &this_identifier },
+    { VTABLE_PFN_NAME, &pfn_identifier },
+    { "__pfn_or_delta2", &pfn_or_delta2_identifier },
+    { "_vptr", &vptr_identifier },
+    { NULL, NULL }
+  };
+
+  for (pid = predefined_identifiers; pid->name; ++pid)
+    *pid->node = get_identifier (pid->name);
+}
+
 /* Create the predefined scalar types of C,
    and some nodes representing standard constants (0, 1, (void *)0).
    Initialize the global binding level.
@@ -6058,10 +6097,8 @@ init_decl_processing ()
   if (flag_new_abi && !flag_vtable_thunks)
     fatal ("the new ABI requires vtable thunks");
 
-  /* Have to make these distinct before we try using them.  */
-  lang_name_cplusplus = get_identifier ("C++");
-  lang_name_c = get_identifier ("C");
-  lang_name_java = get_identifier ("Java");
+  /* Create all the identifiers we need.  */
+  initialize_predefined_identifiers ();
 
   /* Let the back-end now how to save and restore language-specific
      per-function globals.  */
@@ -6132,16 +6169,6 @@ init_decl_processing ()
   /* The global level is the namespace level of ::.  */
   NAMESPACE_LEVEL (global_namespace) = global_binding_level;
   declare_namespace_level ();
-
-  this_identifier = get_identifier (THIS_NAME);
-  in_charge_identifier = get_identifier (IN_CHARGE_NAME);
-  ctor_identifier = get_identifier (CTOR_NAME);
-  dtor_identifier = get_identifier (DTOR_NAME);
-  pfn_identifier = get_identifier (VTABLE_PFN_NAME);
-  index_identifier = get_identifier (VTABLE_INDEX_NAME);
-  delta_identifier = get_identifier (VTABLE_DELTA_NAME);
-  delta2_identifier = get_identifier (VTABLE_DELTA2_NAME);
-  pfn_or_delta2_identifier = get_identifier ("__pfn_or_delta2");
 
   /* Define `int' and `char' first so that dbx will output them first.  */
   record_builtin_type (RID_INT, NULL_PTR, integer_type_node);
@@ -6894,10 +6921,6 @@ groktypename (typename)
    instead.  However, external and forward declarations of functions
    do go through here.  Structure field declarations are done by
    grokfield and not through here.  */
-
-/* Set this to zero to debug not using the temporary obstack
-   to parse initializers.  */
-int debug_temp_inits = 1;
 
 tree
 start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
@@ -14308,12 +14331,6 @@ start_method (declspecs, declarator, attrlist)
   if (processing_template_decl && !DECL_TEMPLATE_SPECIALIZATION (fndecl))
     fndecl = push_template_decl (fndecl);
 
-  /* We read in the parameters on the maybepermanent_obstack,
-     but we won't be getting back to them until after we
-     may have clobbered them.  So the call to preserve_data
-     will keep them safe.  */
-  preserve_data ();
-
   if (! DECL_FRIEND_P (fndecl))
     {
       if (TREE_CHAIN (fndecl))
@@ -14477,10 +14494,7 @@ hack_incomplete_structures (type)
 }
 
 /* If DECL is of a type which needs a cleanup, build that cleanup here.
-   See build_delete for information about AUTO_DELETE.
-
-   Don't build these on the momentary obstack; they must live
-   the life of the binding contour.  */
+   See build_delete for information about AUTO_DELETE.  */
 
 static tree
 maybe_build_cleanup_1 (decl, auto_delete)

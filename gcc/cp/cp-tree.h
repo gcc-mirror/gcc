@@ -560,9 +560,12 @@ enum cp_tree_index
     CPTI_ACCESS_PRIVATE_VIRTUAL,
 
     CPTI_CTOR_IDENTIFIER,
+    CPTI_BASE_CTOR_IDENTIFIER,
+    CPTI_DTOR_IDENTIFIER,
+    CPTI_BASE_DTOR_IDENTIFIER,
+    CPTI_DELETING_DTOR_IDENTIFIER,
     CPTI_DELTA2_IDENTIFIER,
     CPTI_DELTA_IDENTIFIER,
-    CPTI_DTOR_IDENTIFIER,
     CPTI_IN_CHARGE_IDENTIFIER,
     CPTI_INDEX_IDENTIFIER,
     CPTI_NELTS_IDENTIFIER,
@@ -652,10 +655,21 @@ extern tree cp_global_trees[CPTI_MAX];
 /* We cache these tree nodes so as to call get_identifier less
    frequently.  */
 
+/* The name of a constructor that constructors virtual base classes.  */
 #define ctor_identifier                 cp_global_trees[CPTI_CTOR_IDENTIFIER]
+/* The name of a constructor that does not construct virtual base classes.  */
+#define base_ctor_identifier            cp_global_trees[CPTI_BASE_CTOR_IDENTIFIER]
+/* The name of a destructor that destroys virtual base classes.  */
+#define dtor_identifier                 cp_global_trees[CPTI_DTOR_IDENTIFIER]
+/* The name of a destructor that does not destroy virtual base
+   classes.  */
+#define base_dtor_identifier            cp_global_trees[CPTI_BASE_DTOR_IDENTIFIER]
+/* The name of a destructor that destroys virtual base classes, and
+   then deletes the entire object.  */
+#define deleting_dtor_identifier        cp_global_trees[CPTI_DELETING_DTOR_IDENTIFIER]
+
 #define delta2_identifier               cp_global_trees[CPTI_DELTA2_IDENTIFIER]
 #define delta_identifier                cp_global_trees[CPTI_DELTA_IDENTIFIER]
-#define dtor_identifier                 cp_global_trees[CPTI_DTOR_IDENTIFIER]
 #define in_charge_identifier            cp_global_trees[CPTI_IN_CHARGE_IDENTIFIER]
 #define index_identifier                cp_global_trees[CPTI_INDEX_IDENTIFIER]
 #define nelts_identifier                cp_global_trees[CPTI_NELTS_IDENTIFIER]
