@@ -138,6 +138,11 @@ static void layout_class_type PROTO((tree, int *, int *, int *, tree *, tree *))
 static void fixup_pending_inline PROTO((struct pending_inline *));
 static void fixup_inline_methods PROTO((tree));
 static void set_primary_base PROTO((tree, int, int *));
+static void propagate_binfo_offsets PROTO((tree, tree));
+static int layout_basetypes PROTO((tree, int));
+static tree dfs_mark_primary_bases_and_set_vbase_offsets PROTO((tree, void *));
+static int layout_virtual_bases PROTO((tree, int));
+static void remove_base_fields PROTO((tree));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -4141,6 +4146,320 @@ fixup_inline_methods (type)
        method = TREE_CHAIN (method))
     fixup_pending_inline (DECL_PENDING_INLINE_INFO (TREE_VALUE (method)));
   CLASSTYPE_INLINE_FRIENDS (type) = NULL_TREE;
+}
+
+/* Add OFFSET to all base types of T.
+
+   OFFSET, which is a type offset, is number of bytes.
+
+   Note that we don't have to worry about having two paths to the
+   same base type, since this type owns its association list.  */
+
+static void
+propagate_binfo_offsets (binfo, offset)
+     tree binfo;
+     tree offset;
+{
+  tree binfos = BINFO_BASETYPES (binfo);
+  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+
+  if (flag_new_abi)
+    {
+      for (i = 0; i < n_baselinks; ++i)
+	{
+	  tree base_binfo;
+
+	  /* Figure out which base we're looking at.  */
+	  base_binfo = TREE_VEC_ELT (binfos, i);
+
+	  /* Skip non-primary virtual bases.  Their BINFO_OFFSET
+	     doesn't matter since they are always reached by using
+	     offsets looked up at run-time.  */
+	  if (TREE_VIA_VIRTUAL (base_binfo) 
+	      && i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo)))
+	    continue;
+
+	  /* Whatever offset this class used to have in its immediate
+	     derived class, it is now at OFFSET more bytes in its
+	     final derived class, since the immediate derived class is
+	     already at the indicated OFFSET.  */
+	  BINFO_OFFSET (base_binfo)
+	    = size_binop (PLUS_EXPR, BINFO_OFFSET (base_binfo), offset);
+
+	  propagate_binfo_offsets (base_binfo, offset);
+	}
+    }
+  else
+    {
+      /* This algorithm, used for the old ABI, is neither simple, nor
+	 general.  For example, it mishandles the case of:
+       
+           struct A;
+	   struct B : public A;
+	   struct C : public B;
+	   
+	 if B is at offset zero in C, but A is not in offset zero in
+	 B.  In that case, it sets the BINFO_OFFSET for A to zero.
+	 (This sitution arises in the new ABI if B has virtual
+	 functions, but A does not.)  Rather than change this
+	 algorithm, and risking breaking the old ABI, it is preserved
+	 here.  */
+      for (i = 0; i < n_baselinks; /* note increment is done in the
+				      loop.  */)
+	{
+	  tree base_binfo = TREE_VEC_ELT (binfos, i);
+
+	  if (TREE_VIA_VIRTUAL (base_binfo))
+	    i += 1;
+	  else
+	    {
+	      int j;
+	      tree delta = NULL_TREE;
+
+	      for (j = i+1; j < n_baselinks; j++)
+		if (! TREE_VIA_VIRTUAL (TREE_VEC_ELT (binfos, j)))
+		  {
+		    /* The next basetype offset must take into account
+		       the space between the classes, not just the
+		       size of each class.  */
+		    delta = size_binop (MINUS_EXPR,
+					BINFO_OFFSET (TREE_VEC_ELT (binfos, 
+								    j)),
+					BINFO_OFFSET (base_binfo));
+		    break;
+		  }
+
+	      BINFO_OFFSET (base_binfo) = offset;
+
+	      propagate_binfo_offsets (base_binfo, offset);
+
+	      /* Go to our next class that counts for offset
+                 propagation.  */
+	      i = j;
+	      if (i < n_baselinks)
+		offset = size_binop (PLUS_EXPR, offset, delta);
+	    }
+	}
+    }
+}
+
+/* Remove the FIELD_DECLs created for T's base classes in
+   build_base_fields.  Simultaneously, update BINFO_OFFSET for all the
+   bases, except for non-primary virtual baseclasses.  */
+
+static void
+remove_base_fields (t)
+     tree t;
+{
+  int i;
+  tree *field;
+
+  /* Now propagate offset information throughout the lattice.
+     Simultaneously, remove the temporary FIELD_DECLS we created in
+     build_base_fields to refer to base types.  */
+  field = &TYPE_FIELDS (t);
+  if (TYPE_VFIELD (t) == *field)
+    {
+      /* If this class did not have a primary base, we create a
+	 virtual function table pointer.  It will be the first thing
+	 in the class, under the new ABI.  Skip it; the base fields
+	 will follow it.  */
+      my_friendly_assert (flag_new_abi 
+			  && !CLASSTYPE_HAS_PRIMARY_BASE_P (t),
+			  19991218);
+      field = &TREE_CHAIN (*field);
+    }
+    
+  for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); i++)
+    {
+      register tree base_binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
+      register tree basetype = BINFO_TYPE (base_binfo);
+
+      /* We treat a primary virtual base class just like an ordinary
+	 base class.  But, non-primary virtual bases are laid out
+	 later.  */
+      if (TREE_VIA_VIRTUAL (base_binfo) && i != CLASSTYPE_VFIELD_PARENT (t))
+	continue;
+
+      my_friendly_assert (TREE_TYPE (*field) == basetype, 23897);
+
+      if (get_base_distance (basetype, t, 0, (tree*)0) == -2)
+	cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
+		    basetype, t);
+
+      BINFO_OFFSET (base_binfo)
+	= size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (*field)),
+			  BITS_PER_UNIT));
+      propagate_binfo_offsets (base_binfo, BINFO_OFFSET (base_binfo));
+
+      /* Remove this field.  */
+      *field = TREE_CHAIN (*field);
+    }
+}
+
+/* Called via dfs_walk from layout_virtual_bases.  */
+
+static tree
+dfs_mark_primary_bases_and_set_vbase_offsets (binfo, data)
+     tree binfo;
+     void *data;
+{
+  if (CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (binfo)))
+    {
+      int i;
+      tree base_binfo;
+
+      i = CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      base_binfo = BINFO_BASETYPE (binfo, i);
+      
+      /* If this is a virtual base class, and we've just now
+	 discovered it to be a primary base, then reuse this copy as
+	 the virtual base class for the complete object. */
+      if (TREE_VIA_VIRTUAL (base_binfo)
+	  && !BINFO_PRIMARY_MARKED_P (base_binfo))
+	{
+	  tree vbase;
+
+	  vbase = BINFO_FOR_VBASE (BINFO_TYPE (base_binfo), (tree) data);
+	  BINFO_OFFSET (vbase) = BINFO_OFFSET (base_binfo);
+	}
+
+      SET_BINFO_PRIMARY_MARKED_P (BINFO_BASETYPE (binfo, i));
+    }
+
+  SET_BINFO_MARKED (binfo);
+
+  return NULL_TREE;
+}
+
+/* Set BINFO_OFFSET for all of the virtual bases for T.  Update
+   TYPE_ALIGN and TYPE_SIZE for T.  Return the maximum of MAX and the
+   largest CLASSTYPE_VSIZE for any of the virtual bases.  */
+
+static int
+layout_virtual_bases (t, max)
+     tree t;
+     int max;
+{
+  tree vbase;
+  int dsize;
+
+  /* Mark the primary base classes.  Only virtual bases that are not
+     also primary base classes need to be laid out (since otherwise we
+     can just reuse one of the places in the hierarchy where the
+     virtual base already occurs.)  */
+  dfs_walk (TYPE_BINFO (t), 
+	    dfs_mark_primary_bases_and_set_vbase_offsets,
+	    dfs_mark_primary_bases_queue_p, 
+	    t);
+
+  /* DSIZE is the size of the class without the virtual bases.  */
+  dsize = TREE_INT_CST_LOW (TYPE_SIZE (t));
+  /* Make every class have alignment of at least one.  */
+  TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), BITS_PER_UNIT);
+
+  for (vbase = CLASSTYPE_VBASECLASSES (t); 
+       vbase; 
+       vbase = TREE_CHAIN (vbase))
+    if (!BINFO_PRIMARY_MARKED_P (vbase))
+      {
+	/* This virtual base is not a primary base of any class in the
+	   hierarchy, so we have to add space for it.  */
+	tree basetype;
+	unsigned int desired_align;
+
+	basetype = BINFO_TYPE (vbase);
+	desired_align = TYPE_ALIGN (basetype);
+	TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), desired_align);
+
+	/* Add padding so that we can put the virtual base class at an
+	   appropriately aligned offset.  */
+	dsize = CEIL (dsize, desired_align) * desired_align;
+	/* And compute the offset of the virtual base.  */
+	BINFO_OFFSET (vbase) = size_int (CEIL (dsize, BITS_PER_UNIT));
+	/* Every virtual baseclass takes a least a UNIT, so that we can
+	   take it's address and get something different for each base.  */
+	dsize += MAX (BITS_PER_UNIT,
+		      TREE_INT_CST_LOW (CLASSTYPE_SIZE (basetype)));
+
+	/* Now that we've laid out this virtual base class, some of
+	   the remaining virtual bases might have been implicitly laid
+	   out as well -- they could be primary base classes of
+	   classes in BASETYPE.  */
+	dfs_walk (vbase,
+		  dfs_mark_primary_bases_and_set_vbase_offsets,
+		  dfs_mark_primary_bases_queue_p, 
+		  t);
+
+	/* While we're here, see if this new virtual base class has
+	   more virtual functions than we expected.  */
+	max = MAX (CLASSTYPE_VSIZE (basetype), max);
+      }
+
+  /* We're done with the various marks, now, so clear them.  */
+  unmark_primary_bases (t);
+  dfs_walk (TYPE_BINFO (t), dfs_unmark, markedp, 0);
+
+  /* Now, make sure that the total size of the type is a multiple of
+     its alignment.  */
+  dsize = CEIL (dsize, TYPE_ALIGN (t)) * TYPE_ALIGN (t);
+  TYPE_SIZE (t) = size_int (dsize);
+  TYPE_SIZE_UNIT (t) = size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (t),
+				   size_int (BITS_PER_UNIT));
+
+  return max;
+}
+
+/* Finish the work of layout_record, now taking virtual bases into account.
+   Also compute the actual offsets that our base classes will have.
+   This must be performed after the fields are laid out, since virtual
+   baseclasses must lay down at the end of the record.
+
+   Returns the maximum number of virtual functions any of the
+   baseclasses provide.  */
+
+static int
+layout_basetypes (rec, max)
+     tree rec;
+     int max;
+{
+  tree vbase_types;
+
+#ifdef STRUCTURE_SIZE_BOUNDARY
+  /* Packed structures don't need to have minimum size.  */
+  if (! TYPE_PACKED (rec))
+    TYPE_ALIGN (rec) = MAX (TYPE_ALIGN (rec), STRUCTURE_SIZE_BOUNDARY);
+#endif
+
+  /* Remove the FIELD_DECLs we created for baseclasses in
+     build_base_fields.  Simultaneously, update the BINFO_OFFSETs for
+     everything in the hierarcy except non-primary virtual bases.  */
+  remove_base_fields (rec);
+
+  /* Allocate the virtual base classes.  */
+  max = layout_virtual_bases (rec, max);
+
+  /* Get all the virtual base types that this type uses.  The
+     TREE_VALUE slot holds the virtual baseclass type.  Note that
+     get_vbase_types makes copies of the virtual base BINFOs, so that
+     the vbase_types are unshared.  */
+  for (vbase_types = CLASSTYPE_VBASECLASSES (rec); vbase_types;
+       vbase_types = TREE_CHAIN (vbase_types))
+    {
+      BINFO_INHERITANCE_CHAIN (vbase_types) = TYPE_BINFO (rec);
+      unshare_base_binfos (vbase_types);
+      propagate_binfo_offsets (vbase_types, BINFO_OFFSET (vbase_types));
+
+      if (extra_warnings)
+	{
+	  tree basetype = BINFO_TYPE (vbase_types);
+	  if (get_base_distance (basetype, rec, 0, (tree*)0) == -2)
+	    cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
+			basetype, rec);
+	}
+    }
+
+  return max;
 }
 
 /* Calculate the TYPE_SIZE, TYPE_ALIGN, etc for T.  Calculate
