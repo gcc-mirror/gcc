@@ -4032,6 +4032,157 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
     }
 }
 
+struct pair_fn_data 
+{
+  tree_fn_t fn;
+  void *data;
+};
+
+/* Called from for_each_template_parm via walk_tree.  */
+
+static tree
+for_each_template_parm_r (tp, walk_subtrees, d)
+     tree *tp;
+     int *walk_subtrees;
+     void *d;
+{
+  tree t = *tp;
+  struct pair_fn_data *pfd = (struct pair_fn_data *) d;
+  tree_fn_t fn = pfd->fn;
+  void *data = pfd->data;
+  
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't'
+      && for_each_template_parm (TYPE_CONTEXT (t), fn, data))
+    return error_mark_node;
+
+  switch (TREE_CODE (t))
+    {
+    case RECORD_TYPE:
+      if (TYPE_PTRMEMFUNC_FLAG (t))
+	break;
+      /* Fall through.  */
+
+    case UNION_TYPE:
+    case ENUMERAL_TYPE:
+      if (!TYPE_TEMPLATE_INFO (t))
+	*walk_subtrees = 0;
+      else if (for_each_template_parm (TREE_VALUE (TYPE_TEMPLATE_INFO (t)),
+				       fn, data))
+	return error_mark_node;
+      break;
+
+    case METHOD_TYPE:
+      /* Since we're not going to walk subtrees, we have to do this
+	 explicitly here.  */
+      if (for_each_template_parm (TYPE_METHOD_BASETYPE (t), fn, data))
+	return error_mark_node;
+
+    case FUNCTION_TYPE:
+      /* Check the return type.  */
+      if (for_each_template_parm (TREE_TYPE (t), fn, data))
+	return error_mark_node;
+
+      /* Check the parameter types.  Since default arguments are not
+	 instantiated until they are needed, the TYPE_ARG_TYPES may
+	 contain expressions that involve template parameters.  But,
+	 no-one should be looking at them yet.  And, once they're
+	 instantiated, they don't contain template parameters, so
+	 there's no point in looking at them then, either.  */
+      {
+	tree parm;
+
+	for (parm = TYPE_ARG_TYPES (t); parm; parm = TREE_CHAIN (parm))
+	  if (for_each_template_parm (TREE_VALUE (parm), fn, data))
+	    return error_mark_node;
+
+	/* Since we've already handled the TYPE_ARG_TYPES, we don't
+	   want walk_tree walking into them itself.  */
+	*walk_subtrees = 0;
+      }
+      break;
+
+    case FUNCTION_DECL:
+    case VAR_DECL:
+      if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t)
+	  && for_each_template_parm (DECL_TI_ARGS (t), fn, data))
+	return error_mark_node;
+      /* Fall through.  */
+
+    case CONST_DECL:
+    case PARM_DECL:
+      if (DECL_CONTEXT (t) 
+	  && for_each_template_parm (DECL_CONTEXT (t), fn, data))
+	return error_mark_node;
+      break;
+
+    case TEMPLATE_TEMPLATE_PARM:
+      /* Record template parameters such as `T' inside `TT<T>'.  */
+      if (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t)
+	  && for_each_template_parm (TYPE_TI_ARGS (t), fn, data))
+	return error_mark_node;
+      /* Fall through.  */
+
+    case TEMPLATE_TYPE_PARM:
+    case TEMPLATE_PARM_INDEX:
+      if (fn && (*fn)(t, data))
+	return error_mark_node;
+      else if (!fn)
+	return error_mark_node;
+      break;
+
+    case TEMPLATE_DECL:
+      /* A template template parameter is encountered */
+      if (DECL_TEMPLATE_TEMPLATE_PARM_P (t)
+	  && for_each_template_parm (TREE_TYPE (t), fn, data))
+	return error_mark_node;
+
+      /* Already substituted template template parameter */
+      *walk_subtrees = 0;
+      break;
+
+    case TYPENAME_TYPE:
+      if (!fn || for_each_template_parm (TYPENAME_TYPE_FULLNAME (t), fn, data))
+	return error_mark_node;
+      break;
+
+    case CONSTRUCTOR:
+      if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t))
+	  && for_each_template_parm (TYPE_PTRMEMFUNC_FN_TYPE
+				     (TREE_TYPE (t)), fn, data))
+	return error_mark_node;
+      break;
+      
+    case INDIRECT_REF:
+    case COMPONENT_REF:
+      /* If there's no type, then this thing must be some expression
+	 involving template parameters.  */
+      if (!fn && !TREE_TYPE (t))
+	return error_mark_node;
+      break;
+
+    case MODOP_EXPR:
+    case CAST_EXPR:
+    case REINTERPRET_CAST_EXPR:
+    case CONST_CAST_EXPR:
+    case STATIC_CAST_EXPR:
+    case DYNAMIC_CAST_EXPR:
+    case ARROW_EXPR:
+    case DOTSTAR_EXPR:
+    case TYPEID_EXPR:
+    case LOOKUP_EXPR:
+    case PSEUDO_DTOR_EXPR:
+      if (!fn)
+	return error_mark_node;
+      break;
+
+    default:
+      break;
+    }
+
+  /* We didn't find any template parameters we liked.  */
+  return NULL_TREE;
+}
+
 /* For each TEMPLATE_TYPE_PARM, TEMPLATE_TEMPLATE_PARM, or
    TEMPLATE_PARM_INDEX in T, call FN with the parameter and the DATA.
    If FN returns non-zero, the iteration is terminated, and
@@ -4046,245 +4197,14 @@ for_each_template_parm (t, fn, data)
      tree_fn_t fn;
      void* data;
 {
-  if (!t)
-    return 0;
+  struct pair_fn_data pfd;
 
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't'
-      && for_each_template_parm (TYPE_CONTEXT (t), fn, data))
-    return 1;
+  /* Set up.  */
+  pfd.fn = fn;
+  pfd.data = data;
 
-  switch (TREE_CODE (t))
-    {
-    case ARRAY_REF:
-    case OFFSET_REF:
-      return (for_each_template_parm (TREE_OPERAND (t, 0), fn, data)
-	      || for_each_template_parm (TREE_OPERAND (t, 1), fn, data));
-
-    case IDENTIFIER_NODE:
-      if (!IDENTIFIER_TEMPLATE (t))
-	return 0;
-      my_friendly_abort (42);
-
-      /* aggregates of tree nodes */
-    case TREE_VEC:
-      {
-	int i = TREE_VEC_LENGTH (t);
-	while (i--)
-	  if (for_each_template_parm (TREE_VEC_ELT (t, i), fn, data))
-	    return 1;
-	return 0;
-      }
-    case TREE_LIST:
-      if (for_each_template_parm (TREE_PURPOSE (t), fn, data)
-	  || for_each_template_parm (TREE_VALUE (t), fn, data))
-	return 1;
-      return for_each_template_parm (TREE_CHAIN (t), fn, data);
-
-    case OVERLOAD:
-      if (for_each_template_parm (OVL_FUNCTION (t), fn, data))
-	return 1;
-      return for_each_template_parm (OVL_CHAIN (t), fn, data);
-
-      /* constructed type nodes */
-    case POINTER_TYPE:
-    case REFERENCE_TYPE:
-      return for_each_template_parm (TREE_TYPE (t), fn, data);
-
-    case RECORD_TYPE:
-      if (TYPE_PTRMEMFUNC_FLAG (t))
-	return for_each_template_parm (TYPE_PTRMEMFUNC_FN_TYPE (t),
-				       fn, data);
-      /* Fall through.  */
-
-    case UNION_TYPE:
-    case ENUMERAL_TYPE:
-      if (! TYPE_TEMPLATE_INFO (t))
-	return 0;
-      return for_each_template_parm (TREE_VALUE
-				     (TYPE_TEMPLATE_INFO (t)),
-				     fn, data);
-    case METHOD_TYPE:
-      if (for_each_template_parm (TYPE_METHOD_BASETYPE (t), fn, data))
-	return 1;
-      /* Fall through.  */
-
-    case FUNCTION_TYPE:
-      /* Check the parameter types.  Since default arguments are not
-	 instantiated until they are needed, the TYPE_ARG_TYPES may
-	 contain expressions that involve template parameters.  But,
-	 no-one should be looking at them yet.  And, once they're
-	 instantiated, they don't contain template parameters, so
-	 there's no point in looking at them then, either.  */
-      {
-	tree parm;
-
-	for (parm = TYPE_ARG_TYPES (t); parm; parm = TREE_CHAIN (parm))
-	  if (for_each_template_parm (TREE_VALUE (parm), fn, data))
-	    return 1;
-      }
-
-      /* Check the return type, too.  */
-      return for_each_template_parm (TREE_TYPE (t), fn, data);
-
-    case ARRAY_TYPE:
-      if (for_each_template_parm (TYPE_DOMAIN (t), fn, data))
-	return 1;
-      return for_each_template_parm (TREE_TYPE (t), fn, data);
-    case OFFSET_TYPE:
-      if (for_each_template_parm (TYPE_OFFSET_BASETYPE (t), fn, data))
-	return 1;
-      return for_each_template_parm (TREE_TYPE (t), fn, data);
-
-      /* decl nodes */
-    case TYPE_DECL:
-      return for_each_template_parm (TREE_TYPE (t), fn, data);
-
-    case TEMPLATE_DECL:
-      /* A template template parameter is encountered */
-      if (DECL_TEMPLATE_TEMPLATE_PARM_P (t))
-	return for_each_template_parm (TREE_TYPE (t), fn, data);
-      /* Already substituted template template parameter */
-      return 0;
-      
-    case CONST_DECL:
-      if (for_each_template_parm (DECL_INITIAL (t), fn, data))
-	return 1;
-      goto check_type_and_context;
-
-    case FUNCTION_DECL:
-    case VAR_DECL:
-      if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t)
-	  && for_each_template_parm (DECL_TI_ARGS (t), fn, data))
-	return 1;
-      /* fall through */
-    case PARM_DECL:
-    check_type_and_context:
-      if (for_each_template_parm (TREE_TYPE (t), fn, data))
-	return 1;
-      if (DECL_CONTEXT (t) 
-	  && for_each_template_parm (DECL_CONTEXT (t), fn, data))
-	return 1;
-      return 0;
-
-    case CALL_EXPR:
-      return (for_each_template_parm (TREE_OPERAND (t, 0), fn, data)
-	      || for_each_template_parm (TREE_OPERAND (t, 1), fn, data));
-	
-    case ADDR_EXPR:
-      return for_each_template_parm (TREE_OPERAND (t, 0), fn, data);
-
-      /* template parm nodes */
-    case TEMPLATE_TEMPLATE_PARM:
-      /* Record template parameters such as `T' inside `TT<T>'.  */
-      if (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t)
-	  && for_each_template_parm (TYPE_TI_ARGS (t), fn, data))
-	return 1;
-    case TEMPLATE_TYPE_PARM:
-    case TEMPLATE_PARM_INDEX:
-      if (fn)
-	return (*fn)(t, data);
-      else
-	return 1;
-
-      /* simple type nodes */
-    case INTEGER_TYPE:
-      if (for_each_template_parm (TYPE_MIN_VALUE (t), fn, data))
-	return 1;
-      return for_each_template_parm (TYPE_MAX_VALUE (t), fn, data);
-
-    case REAL_TYPE:
-    case COMPLEX_TYPE:
-    case VOID_TYPE:
-    case BOOLEAN_TYPE:
-    case NAMESPACE_DECL:
-    case FIELD_DECL:
-      return 0;
-
-      /* constants */
-    case INTEGER_CST:
-    case REAL_CST:
-    case STRING_CST:
-      return 0;
-
-    case ERROR_MARK:
-      /* Non-error_mark_node ERROR_MARKs are bad things.  */
-      my_friendly_assert (t == error_mark_node, 274);
-      /* NOTREACHED */
-      return 0;
-
-    case PTRMEM_CST:
-      return for_each_template_parm (TREE_TYPE (t), fn, data);
-
-    case SCOPE_REF:
-      return for_each_template_parm (TREE_OPERAND (t, 0), fn, data);
-
-    case CONSTRUCTOR:
-      if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
-	return for_each_template_parm (TYPE_PTRMEMFUNC_FN_TYPE
-				       (TREE_TYPE (t)), fn, data);
-      return for_each_template_parm (TREE_OPERAND (t, 1), fn, data);
-
-    case SIZEOF_EXPR:
-    case ALIGNOF_EXPR:
-      return for_each_template_parm (TREE_OPERAND (t, 0), fn, data);
-
-    case TYPENAME_TYPE:
-      if (!fn)
-	return 1;
-      return (for_each_template_parm (TYPE_CONTEXT (t), fn, data)
-	      || for_each_template_parm (TYPENAME_TYPE_FULLNAME (t),
-					 fn, data));
-
-    case INDIRECT_REF:
-    case COMPONENT_REF:
-      /* If there's no type, then this thing must be some expression
-	 involving template parameters.  */
-      if (!fn && !TREE_TYPE (t))
-	return 1;
-      if (TREE_CODE (t) == COMPONENT_REF)
-	return (for_each_template_parm (TREE_OPERAND (t, 0), fn, data)
-		|| for_each_template_parm (TREE_OPERAND (t, 1), fn, data));
-      else
-	return for_each_template_parm (TREE_OPERAND (t, 0), fn, data);
-
-    case MODOP_EXPR:
-    case CAST_EXPR:
-    case REINTERPRET_CAST_EXPR:
-    case CONST_CAST_EXPR:
-    case STATIC_CAST_EXPR:
-    case DYNAMIC_CAST_EXPR:
-    case ARROW_EXPR:
-    case DOTSTAR_EXPR:
-    case TYPEID_EXPR:
-    case LOOKUP_EXPR:
-    case PSEUDO_DTOR_EXPR:
-      if (!fn)
-	return 1;
-      /* Fall through.  */
-
-    default:
-      switch (TREE_CODE_CLASS (TREE_CODE (t)))
-	{
-	case '1':
-	case '2':
-	case 'e':
-	case '<':
-	  {
-	    int i;
-	    for (i = first_rtl_op (TREE_CODE (t)); --i >= 0;)
-	      if (for_each_template_parm (TREE_OPERAND (t, i), fn, data))
-		return 1;
-	    return 0;
-	  }
-	default:
-	  break;
-	}
-      sorry ("testing %s for template parms",
-	     tree_code_name [(int) TREE_CODE (t)]);
-      my_friendly_abort (82);
-      /* NOTREACHED */
-      return 0;
-    }
+  /* Walk the tree.  */
+  return walk_tree (&t, for_each_template_parm_r, &pfd) != NULL_TREE;
 }
 
 int
@@ -4301,8 +4221,8 @@ extern int max_tinst_depth;
 #ifdef GATHER_STATISTICS
 int depth_reached;
 #endif
-int tinst_level_tick;
-int last_template_error_tick;
+static int tinst_level_tick;
+static int last_template_error_tick;
 
 /* Print out all the template instantiations that we are currently
    working on.  If ERR, we are being called from cp_thing, so do

@@ -30,8 +30,8 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "splay-tree.h"
 
-static tree bot_manip PROTO((tree));
-static tree bot_replace PROTO((tree *));
+static tree bot_manip PROTO((tree *, int *, void *));
+static tree bot_replace PROTO((tree *, int *, void *));
 static tree build_cplus_array_type_1 PROTO((tree, tree));
 static void list_hash_add PROTO((int, tree));
 static int list_hash PROTO((tree, tree, tree));
@@ -39,9 +39,10 @@ static tree list_hash_lookup PROTO((int, tree, tree, tree));
 static void propagate_binfo_offsets PROTO((tree, tree));
 static int avoid_overlap PROTO((tree, tree));
 static cp_lvalue_kind lvalue_p_1 PROTO((tree, int));
-static tree no_linkage_helper PROTO((tree *));
+static tree no_linkage_helper PROTO((tree *, int *, void *));
 static tree build_srcloc PROTO((char *, int));
 static void mark_list_hash PROTO ((void *));
+static tree copy_tree_r PROTO ((tree *, int *, void *));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
@@ -1524,167 +1525,85 @@ copy_template_template_parm (t)
   return t2;
 }
 
-/* Walk through the tree structure T, applying func.  If func ever returns
-   non-null, return that value.  */
+/* Apply FUNC to all the sub-trees of TP in a pre-order traversal.
+   FUNC is called with the DATA and the address of each sub-tree.  If
+   FUNC returns a non-NULL value, the traversal is aborted, and the
+   value returned by FUNC is returned.  */
 
-tree
-search_tree (tp, func)
+tree 
+walk_tree (tp, func, data)
      tree *tp;
-     tree (*func) PROTO((tree *));
+     walk_tree_fn func;
+     void *data;
 {
-#define TRY(ARG) if (tmp=search_tree (&ARG, func), tmp != NULL_TREE) return tmp
-
-  tree t = *tp;
-  tree tmp;
-  enum tree_code code; 
+  enum tree_code code;
+  int walk_subtrees;
+  tree result;
   
-  if (t == NULL_TREE)
+#define WALK_SUBTREE(NODE)			\
+  do						\
+    {						\
+      result = walk_tree (&(NODE), func, data);	\
+      if (result)				\
+	return result;				\
+    }						\
+  while (0)
+
+  /* Skip empty subtrees.  */
+  if (!*tp)
     return NULL_TREE;
-  
-  tmp = func (tp);
-  if (tmp)
-    return tmp;
 
-  /* Handle some common cases up front.  */
-  code = TREE_CODE (t);
-  if (TREE_CODE_CLASS (code) == '1')
+  /* Call the function.  */
+  walk_subtrees = 1;
+  result = (*func) (tp, &walk_subtrees, data);
+
+  /* If we found something, return it.  */
+  if (result)
+    return result;
+
+  /* Even if we didn't, FUNC may have decided that there was nothing
+     interesting below this point in the tree.  */
+  if (!walk_subtrees)
+    return NULL_TREE;
+
+  code = TREE_CODE (*tp);
+
+  /* Handle commmon cases up front.  */
+  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
+      || TREE_CODE_CLASS (code) == 'r')
     {
-      TRY (TREE_OPERAND (t, 0));
+      int i;
+
+      /* Walk over all the sub-trees of this operand.  */
+      for (i = first_rtl_op (code) - 1; i >= 0; --i)
+	WALK_SUBTREE (TREE_OPERAND (*tp, i));
+
+      /* We didn't find what we were looking for.  */
       return NULL_TREE;
     }
-  else if (TREE_CODE_CLASS (code) == '2' || TREE_CODE_CLASS (code) == '<')
+  else if (TREE_CODE_CLASS (code) == 'd')
     {
-      TRY (TREE_OPERAND (t, 0));
-      TRY (TREE_OPERAND (t, 1));
+      WALK_SUBTREE (TREE_TYPE (*tp));
+      WALK_SUBTREE (DECL_INITIAL (*tp));
+      WALK_SUBTREE (DECL_SIZE (*tp));
+
+      /* We didn't find what we were looking for.  */
       return NULL_TREE;
     }
 
+  /* Not one of the easy cases.  We must explicitly go through the
+     children.  */
   switch (code)
     {
     case ERROR_MARK:
-      break;
-
     case IDENTIFIER_NODE:
-      break;
-
-    case VAR_DECL:
-    case FUNCTION_DECL:
-    case CONST_DECL:
-    case TEMPLATE_DECL:
-    case NAMESPACE_DECL:
-      break;
-
-    case TYPE_DECL:
-      TRY (TREE_TYPE (t));
-      break;
-
-    case PARM_DECL:
-      TRY (TREE_TYPE (t));
-      TRY (TREE_CHAIN (t));
-      break;
-
-    case TREE_LIST:
-      TRY (TREE_PURPOSE (t));
-      TRY (TREE_VALUE (t));
-      TRY (TREE_CHAIN (t));
-      break;
-
-    case OVERLOAD:
-      TRY (OVL_FUNCTION (t));
-      TRY (OVL_CHAIN (t));
-      break;
-
-    case TREE_VEC:
-      {
-	int len = TREE_VEC_LENGTH (t);
-
-	t = copy_node (t);
-	while (len--)
-	  TRY (TREE_VEC_ELT (t, len));
-      }
-      break;
-
     case INTEGER_CST:
     case REAL_CST:
     case STRING_CST:
     case DEFAULT_ARG:
-      break;
-
-    case PTRMEM_CST:
-      TRY (TREE_TYPE (t));
-      break;
-
-    case COND_EXPR:
-    case TARGET_EXPR:
-    case AGGR_INIT_EXPR:
-    case NEW_EXPR:
-      TRY (TREE_OPERAND (t, 0));
-      TRY (TREE_OPERAND (t, 1));
-      TRY (TREE_OPERAND (t, 2));
-      break;
-
-    case TRUTH_AND_EXPR:
-    case TRUTH_OR_EXPR:
-    case TRUTH_XOR_EXPR:
-    case TRUTH_ANDIF_EXPR:
-    case TRUTH_ORIF_EXPR:
-    case PREDECREMENT_EXPR:
-    case PREINCREMENT_EXPR:
-    case POSTDECREMENT_EXPR:
-    case POSTINCREMENT_EXPR:
-    case ARRAY_REF:
-    case SCOPE_REF:
-    case TRY_CATCH_EXPR:
-    case WITH_CLEANUP_EXPR:
-    case CALL_EXPR:
-    case COMPOUND_EXPR:
-    case MODIFY_EXPR:
-    case INIT_EXPR:
-    case OFFSET_REF:
-      TRY (TREE_OPERAND (t, 0));
-      TRY (TREE_OPERAND (t, 1));
-      break;
-
-    case SAVE_EXPR:
-    case ADDR_EXPR:
-    case INDIRECT_REF:
-    case TRUTH_NOT_EXPR:
-    case COMPONENT_REF:
-    case CLEANUP_POINT_EXPR:
-    case LOOKUP_EXPR:
-    case THROW_EXPR:
-    case EXIT_EXPR:
-    case LOOP_EXPR:
-    case BIT_FIELD_REF:
-    case VA_ARG_EXPR:
-      TRY (TREE_OPERAND (t, 0));
-      break;
-
-    case MODOP_EXPR:
-    case ARROW_EXPR:
-    case DOTSTAR_EXPR:
-    case TYPEID_EXPR:
-    case PSEUDO_DTOR_EXPR:
-      break;
-
-    case COMPLEX_CST:
-      TRY (TREE_REALPART (t));
-      TRY (TREE_IMAGPART (t));
-      break;
-
-    case CONSTRUCTOR:
-      TRY (CONSTRUCTOR_ELTS (t));
-      break;
-
     case TEMPLATE_TEMPLATE_PARM:
     case TEMPLATE_PARM_INDEX:
     case TEMPLATE_TYPE_PARM:
-      break;
-
-    case BIND_EXPR:
-    case STMT_EXPR:
-      break;
-
     case REAL_TYPE:
     case COMPLEX_TYPE:
     case VOID_TYPE:
@@ -1693,52 +1612,94 @@ search_tree (tp, func)
     case UNION_TYPE:
     case ENUMERAL_TYPE:
     case TYPEOF_TYPE:
+    case BLOCK:
+      /* None of thse have subtrees other than those already walked
+         above.  */
+      break;
+
+    case PTRMEM_CST:
+      WALK_SUBTREE (TREE_TYPE (*tp));
       break;
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      TRY (TREE_TYPE (t));
+      WALK_SUBTREE (TREE_TYPE (*tp));
       break;
 
-    case FUNCTION_TYPE:
+    case TREE_LIST:
+      WALK_SUBTREE (TREE_PURPOSE (*tp));
+      WALK_SUBTREE (TREE_VALUE (*tp));
+      WALK_SUBTREE (TREE_CHAIN (*tp));
+      break;
+
+    case OVERLOAD:
+      WALK_SUBTREE (OVL_FUNCTION (*tp));
+      WALK_SUBTREE (OVL_CHAIN (*tp));
+      break;
+
+    case TREE_VEC:
+      {
+	int len = TREE_VEC_LENGTH (*tp);
+	while (len--)
+	  WALK_SUBTREE (TREE_VEC_ELT (*tp, len));
+      }
+      break;
+
+    case COMPLEX_CST:
+      WALK_SUBTREE (TREE_REALPART (*tp));
+      WALK_SUBTREE (TREE_IMAGPART (*tp));
+      break;
+
+    case CONSTRUCTOR:
+      WALK_SUBTREE (CONSTRUCTOR_ELTS (*tp));
+      break;
+
     case METHOD_TYPE:
-      TRY (TREE_TYPE (t));
-      TRY (TYPE_ARG_TYPES (t));
+      WALK_SUBTREE (TYPE_METHOD_BASETYPE (*tp));
+      /* Fall through.  */
+
+    case FUNCTION_TYPE:
+      WALK_SUBTREE (TREE_TYPE (*tp));
+      WALK_SUBTREE (TYPE_ARG_TYPES (*tp));
       break;
 
     case ARRAY_TYPE:
-      TRY (TREE_TYPE (t));
-      TRY (TYPE_DOMAIN (t));
+      WALK_SUBTREE (TREE_TYPE (*tp));
+      WALK_SUBTREE (TYPE_DOMAIN (*tp));
       break;
 
     case INTEGER_TYPE:
-      TRY (TYPE_MAX_VALUE (t));
+      WALK_SUBTREE (TYPE_MIN_VALUE (*tp));
+      WALK_SUBTREE (TYPE_MAX_VALUE (*tp));
       break;
 
     case OFFSET_TYPE:
-      TRY (TREE_TYPE (t));
-      TRY (TYPE_OFFSET_BASETYPE (t));
+      WALK_SUBTREE (TREE_TYPE (*tp));
+      WALK_SUBTREE (TYPE_OFFSET_BASETYPE (*tp));
       break;
 
     case RECORD_TYPE:
-      if (TYPE_PTRMEMFUNC_P (t))
-	TRY (TYPE_PTRMEMFUNC_FN_TYPE (t));
+      if (TYPE_PTRMEMFUNC_P (*tp))
+	WALK_SUBTREE (TYPE_PTRMEMFUNC_FN_TYPE (*tp));
       break;
       
     default:
       my_friendly_abort (19990803);
     }
 
+  /* We didn't find what we were looking for.  */
   return NULL_TREE;
 
-#undef TRY
+#undef WALK_SUBTREE
 }
 
-/* Passed to search_tree.  Checks for the use of types with no linkage.  */
+/* Passed to walk_tree.  Checks for the use of types with no linkage.  */
 
 static tree
-no_linkage_helper (tp)
+no_linkage_helper (tp, walk_subtrees, data)
      tree *tp;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   tree t = *tp;
 
@@ -1762,269 +1723,47 @@ no_linkage_check (t)
   if (processing_template_decl)
     return NULL_TREE;
 
-  t = search_tree (&t, no_linkage_helper);
+  t = walk_tree (&t, no_linkage_helper, NULL);
   if (t != error_mark_node)
     return t;
   return NULL_TREE;
 }
 
+/* Passed to walk_tree.  Copies the node pointed to, if appropriate.  */
 
-/* Make copies of all the nodes below T.  If FUNC is non-NULL, call it
-   for each node.  */
-
-tree
-mapcar (t, func)
-     tree t;
-     tree (*func) PROTO((tree));
+static tree
+copy_tree_r (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
-  tree tmp;
-  enum tree_code code; 
+  enum tree_code code = TREE_CODE (*tp);
 
-  if (t == NULL_TREE)
-    return t;
-
-  if (func) 
+  /* We make copies of most nodes.  */
+  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
+      || TREE_CODE_CLASS (code) == 'r'
+      || TREE_CODE_CLASS (code) == 'c'
+      || code == PARM_DECL
+      || code == TREE_LIST
+      || code == TREE_VEC
+      || code == OVERLOAD)
     {
-      tmp = func (t);
-      if (tmp)
-	return tmp;
+      /* Because the chain gets clobbered when we make a copy, we save it
+	 here.  */
+      tree chain = TREE_CHAIN (*tp);
+
+      /* Copy the node.  */
+      *tp = copy_node (*tp);
+
+      /* Now, restore the chain, if appropriate.  That will cause
+	 walk_tree to walk into the chain as well.  */
+      if (code == PARM_DECL || code == TREE_LIST || code == OVERLOAD)
+	TREE_CHAIN (*tp) = chain;
     }
+  else if (code == TEMPLATE_TEMPLATE_PARM)
+    /* These must be copied specially.  */
+    *tp = copy_template_template_parm (*tp);
 
-  /* Handle some common cases up front.  */
-  code = TREE_CODE (t);
-  if (TREE_CODE_CLASS (code) == '1')
-    {
-      t = copy_node (t);
-      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
-      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
-      return t;
-    }
-  else if (TREE_CODE_CLASS (code) == '2' || TREE_CODE_CLASS (code) == '<')
-    {
-      t = copy_node (t);
-      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
-      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
-      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
-      return t;
-    }
-
-  switch (TREE_CODE (t))
-    {
-    case ERROR_MARK:
-      return error_mark_node;
-
-    case VAR_DECL:
-    case FUNCTION_DECL:
-    case CONST_DECL:
-      /* Rather than aborting, return error_mark_node.  This allows us
-	 to report a sensible error message on code like this:
-
-	 void g() { int i; f<i>(7); } 
-
-         In a case like:
-
-           void g() { const int i = 7; f<i>(7); }
-
-	 however, we must actually return the constant initializer.  */
-      if (TREE_READONLY_DECL_P (t))
-	{
-	  tmp = decl_constant_value (t);
-	  if (tmp != t)
-	    return mapcar (tmp, func);
-	}
-      return error_mark_node;
-
-    case PARM_DECL:
-      {
-	tree chain = TREE_CHAIN (t);
-	t = copy_node (t);
-	TREE_CHAIN (t) = mapcar (chain, func);
-	TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
-	DECL_INITIAL (t) = mapcar (DECL_INITIAL (t), func);
-	DECL_SIZE (t) = mapcar (DECL_SIZE (t), func);
-	return t;
-      }
-
-    case TREE_LIST:
-      {
-	tree chain = TREE_CHAIN (t);
-	t = copy_node (t);
-	TREE_PURPOSE (t) = mapcar (TREE_PURPOSE (t), func);
-	TREE_VALUE (t) = mapcar (TREE_VALUE (t), func);
-	TREE_CHAIN (t) = mapcar (chain, func);
-	return t;
-      }
-
-    case OVERLOAD:
-      {
-	tree chain = OVL_CHAIN (t);
-	t = copy_node (t);
-	OVL_FUNCTION (t) = mapcar (OVL_FUNCTION (t), func);
-	OVL_CHAIN (t) = mapcar (chain, func);
-	return t;
-      }
-
-    case TREE_VEC:
-      {
-	int len = TREE_VEC_LENGTH (t);
-
-	t = copy_node (t);
-	while (len--)
-	  TREE_VEC_ELT (t, len) = mapcar (TREE_VEC_ELT (t, len), func);
-	return t;
-      }
-
-    case INTEGER_CST:
-    case REAL_CST:
-    case STRING_CST:
-      return copy_node (t);
-
-    case PTRMEM_CST:
-      t = copy_node (t);
-      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
-      PTRMEM_CST_MEMBER (t) = mapcar (PTRMEM_CST_MEMBER (t), func);
-      return t;
-
-    case COND_EXPR:
-    case TARGET_EXPR:
-    case AGGR_INIT_EXPR:
-      t = copy_node (t);
-      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
-      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
-      TREE_OPERAND (t, 2) = mapcar (TREE_OPERAND (t, 2), func);
-      return t;
-
-    case TRUTH_AND_EXPR:
-    case TRUTH_OR_EXPR:
-    case TRUTH_XOR_EXPR:
-    case TRUTH_ANDIF_EXPR:
-    case TRUTH_ORIF_EXPR:
-    case PREDECREMENT_EXPR:
-    case PREINCREMENT_EXPR:
-    case POSTDECREMENT_EXPR:
-    case POSTINCREMENT_EXPR:
-    case ARRAY_REF:
-    case SCOPE_REF:
-    case TRY_CATCH_EXPR:
-    case WITH_CLEANUP_EXPR:
-    case COMPOUND_EXPR:
-    case MODIFY_EXPR:
-    case INIT_EXPR:
-    case OFFSET_REF:
-      t = copy_node (t);
-      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
-      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
-      return t;
-
-    case CALL_EXPR:
-      t = copy_node (t);
-      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
-      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
-      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
-      TREE_OPERAND (t, 2) = NULL_TREE;
-      return t;
-
-    case SAVE_EXPR:
-    case ADDR_EXPR:
-    case INDIRECT_REF:
-    case TRUTH_NOT_EXPR:
-    case COMPONENT_REF:
-    case CLEANUP_POINT_EXPR:
-    case THROW_EXPR:
-    case STMT_EXPR:
-    case VA_ARG_EXPR:
-      t = copy_node (t);
-      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
-      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
-      return t;
-
-    case POINTER_TYPE:
-      tmp = build_pointer_type (mapcar (TREE_TYPE (t), func));
-      return cp_build_qualified_type (tmp, TYPE_QUALS (t));
-    case REFERENCE_TYPE:
-      tmp = build_reference_type (mapcar (TREE_TYPE (t), func));
-      return cp_build_qualified_type (tmp, TYPE_QUALS (t));
-    case FUNCTION_TYPE:
-      tmp = build_function_type (mapcar (TREE_TYPE (t), func),
-				 mapcar (TYPE_ARG_TYPES (t), func));
-      return cp_build_qualified_type (tmp, TYPE_QUALS (t));
-    case ARRAY_TYPE:
-      tmp = build_cplus_array_type (mapcar (TREE_TYPE (t), func),
-				    mapcar (TYPE_DOMAIN (t), func));
-      return cp_build_qualified_type (tmp, CP_TYPE_QUALS (t));
-    case INTEGER_TYPE:
-      tmp = build_index_type (mapcar (TYPE_MAX_VALUE (t), func));
-      return cp_build_qualified_type (tmp, TYPE_QUALS (t));
-    case OFFSET_TYPE:
-      tmp = build_offset_type (mapcar (TYPE_OFFSET_BASETYPE (t), func),
-			       mapcar (TREE_TYPE (t), func));
-      return cp_build_qualified_type (tmp, TYPE_QUALS (t));
-    case METHOD_TYPE:
-      tmp = build_cplus_method_type
-	(mapcar (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t))), func),
-	 mapcar (TREE_TYPE (t), func),
-	 mapcar (TREE_CHAIN (TYPE_ARG_TYPES (t)), func));
-      return cp_build_qualified_type (tmp, TYPE_QUALS (t));
-
-    case COMPLEX_CST:
-      t = copy_node (t);
-      TREE_REALPART (t) = mapcar (TREE_REALPART (t), func);
-      TREE_IMAGPART (t) = mapcar (TREE_REALPART (t), func);
-      return t;
-
-    case CONSTRUCTOR:
-      t = copy_node (t);
-      CONSTRUCTOR_ELTS (t) = mapcar (CONSTRUCTOR_ELTS (t), func);
-      return t;
-
-    case TEMPLATE_TEMPLATE_PARM:
-      return copy_template_template_parm (t);
-
-    case BIND_EXPR:
-      t = copy_node (t);
-      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
-      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
-      TREE_OPERAND (t, 2) = NULL_TREE;
-      return t;
-
-    case NEW_EXPR:
-      t = copy_node (t);
-      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
-      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
-      TREE_OPERAND (t, 2) = mapcar (TREE_OPERAND (t, 2), func);
-      return t;
-
-    case BIT_FIELD_REF:
-      t = copy_node (t);
-      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
-      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
-      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
-      TREE_OPERAND (t, 2) = mapcar (TREE_OPERAND (t, 2), func);
-      return t;
-      
-    case LOOKUP_EXPR:
-    case EXIT_EXPR:
-    case LOOP_EXPR:
-      t = copy_node (t);
-      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
-      return t;
-
-    case RTL_EXPR:
-      t = copy_node (t);
-      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
-      return t;
-
-    case RECORD_TYPE:
-      if (TYPE_PTRMEMFUNC_P (t))
-	return build_ptrmemfunc_type
-	  (mapcar (TYPE_PTRMEMFUNC_FN_TYPE (t), func));
-      /* else fall through */
-
-    default:
-      my_friendly_abort (19990815);
-    }
-  my_friendly_abort (107);
-  /* NOTREACHED */
   return NULL_TREE;
 }
 
@@ -2092,24 +1831,23 @@ array_type_nelts_total (type)
   return sz;
 }
 
-/* When we parse a default argument expression, we may create
-   temporary variables via TARGET_EXPRs.  When we actually use the
-   default-argument expression, we make a copy of the expression, but
-   we must relpace the temporaries with appropriate local versions.  */
-
-/* A map from VAR_DECLs declared in TARGET_EXPRs in a default argument
-   to corresponding "instantiations" of those variables.  */
-static splay_tree target_remap;
-static int target_remap_count;
-
 /* Called from break_out_target_exprs via mapcar.  */
 
 static tree
-bot_manip (t)
-     tree t;
+bot_manip (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees;
+     void *data;
 {
+  splay_tree target_remap = ((splay_tree) data);
+  tree t = *tp;
+
   if (TREE_CODE (t) != TREE_LIST && ! TREE_SIDE_EFFECTS (t))
-    return t;
+    {
+      /* There can't be any TARGET_EXPRs below this point.  */
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
   else if (TREE_CODE (t) == TARGET_EXPR)
     {
       tree u;
@@ -2131,20 +1869,34 @@ bot_manip (t)
       splay_tree_insert (target_remap, 
 			 (splay_tree_key) TREE_OPERAND (t, 0), 
 			 (splay_tree_value) TREE_OPERAND (u, 0));
-      return u;
+
+      /* Replace the old expression with the new version.  */
+      *tp = u;
+      /* We don't have to go below this point; the recursive call to
+	 break_out_target_exprs will have handled anything below this
+	 point.  */
+      *walk_subtrees = 0;
+      return NULL_TREE;
     }
   else if (TREE_CODE (t) == CALL_EXPR)
     mark_used (TREE_OPERAND (TREE_OPERAND (t, 0), 0));
 
-  return NULL_TREE;
+  /* Make a copy of this node.  */
+  return copy_tree_r (tp, walk_subtrees, NULL);
 }
   
-/* Replace all remapped VAR_DECLs in T with their new equivalents.  */
+/* Replace all remapped VAR_DECLs in T with their new equivalents.
+   DATA is really a splay-tree mapping old variables to new
+   variables.  */
 
 static tree
-bot_replace (t)
+bot_replace (t, walk_subtrees, data)
      tree *t;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data;
 {
+  splay_tree target_remap = ((splay_tree) data);
+
   if (TREE_CODE (*t) == VAR_DECL)
     {
       splay_tree_node n = splay_tree_lookup (target_remap,
@@ -2156,18 +1908,24 @@ bot_replace (t)
   return NULL_TREE;
 }
 	
-/* Actually, we'll just clean out the target exprs for the moment.  */
+/* When we parse a default argument expression, we may create
+   temporary variables via TARGET_EXPRs.  When we actually use the
+   default-argument expression, we make a copy of the expression, but
+   we must replace the temporaries with appropriate local versions.  */
 
 tree
 break_out_target_exprs (t)
      tree t;
 {
+  static int target_remap_count;
+  static splay_tree target_remap;
+
   if (!target_remap_count++)
     target_remap = splay_tree_new (splay_tree_compare_pointers, 
 				   /*splay_tree_delete_key_fn=*/NULL, 
 				   /*splay_tree_delete_value_fn=*/NULL);
-  t = mapcar (t, bot_manip);
-  search_tree (&t, bot_replace);
+  walk_tree (&t, bot_manip, target_remap);
+  walk_tree (&t, bot_replace, target_remap);
 
   if (!--target_remap_count)
     {
