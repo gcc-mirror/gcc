@@ -38,6 +38,9 @@
 // For std::size_t, and ptrdiff_t.
 #include <cstddef>
 
+// For __throw_bad_alloc().
+#include <bits/functexcept.h>
+
 // For std::pair.
 #include <utility>
 
@@ -1084,6 +1087,9 @@ namespace __gnu_cxx
       pointer 
       allocate(size_type __n)
       {
+	if (__builtin_expect(__n > this->max_size(), false))
+	  std::__throw_bad_alloc();
+
 	if (__builtin_expect(__n == 1, true))
 	  return this->_M_allocate_single_object();
 	else
@@ -1119,7 +1125,7 @@ namespace __gnu_cxx
 
       size_type 
       max_size() const throw()
-      { return (size_type()-1)/sizeof(value_type); }
+      { return size_type(-1) / sizeof(value_type); }
 
       void 
       construct(pointer __p, const_reference __data)

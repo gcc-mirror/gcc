@@ -685,6 +685,9 @@ namespace __gnu_cxx
     {
       this->_S_initialize_once();
 
+      if (__builtin_expect(__n > this->max_size(), false))
+	std::__throw_bad_alloc();
+
       // Requests larger than _M_max_bytes are handled by operator
       // new/delete directly.
       __pool_type& __pool = this->_S_get_pool();
@@ -694,7 +697,7 @@ namespace __gnu_cxx
 	  void* __ret = ::operator new(__bytes);
 	  return static_cast<_Tp*>(__ret);
 	}
-
+      
       // Round up to power of 2 and figure out which bin to use.
       const size_t __which = __pool._M_get_binmap(__bytes);
       const size_t __thread_id = __pool._M_get_thread_id();

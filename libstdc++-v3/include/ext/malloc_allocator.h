@@ -31,6 +31,7 @@
 #define _MALLOC_ALLOCATOR_H 1
 
 #include <new>
+#include <bits/functexcept.h>
 
 namespace __gnu_cxx
 {
@@ -79,9 +80,12 @@ namespace __gnu_cxx
       pointer
       allocate(size_type __n, const void* = 0)
       {
+	if (__builtin_expect(__n > this->max_size(), false))
+	  std::__throw_bad_alloc();
+
 	pointer __ret = static_cast<_Tp*>(malloc(__n * sizeof(_Tp)));
 	if (!__ret)
-	  throw std::bad_alloc();
+	  std::__throw_bad_alloc();
 	return __ret;
       }
 

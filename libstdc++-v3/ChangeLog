@@ -1,3 +1,20 @@
+2004-10-20  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/bitmap_allocator.h (allocate): Throw std::bad_alloc
+	when n > max_size().
+	* include/ext/malloc_allocator.h (allocate): Likewise.
+	* include/ext/mt_allocator.h (allocate): Likewise.
+	* include/ext/new_allocator.h (allocate): Likewise.
+	* include/ext/array_allocator.h: Use __throw_bad_alloc().
+	* include/ext/pool_allocator.h: Use __builtin_expect.
+	* testsuite/ext/array_allocator/check_allocate_max_size.cc: New.
+	* testsuite/ext/bitmap_allocator/check_allocate_max_size.cc: Likewise.
+	* testsuite/ext/malloc_allocator/check_allocate_max_size.cc: Likewise.
+	* testsuite/ext/mt_allocator/check_allocate_max_size.cc: Likewise.
+	* testsuite/ext/new_allocator/check_allocate_max_size.cc: Likewise.
+	* testsuite/ext/pool_allocator/check_allocate_max_size.cc: Likewise.
+	* testsuite/testsuite_allocator.h (check_allocate_max_size): New test.
+
 2004-10-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/performance/20_util/allocator/list_sort_search.cc:

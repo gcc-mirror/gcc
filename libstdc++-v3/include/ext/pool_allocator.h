@@ -189,43 +189,41 @@ namespace __gnu_cxx
     __pool_alloc<_Tp>::allocate(size_type __n, const void*)
     {
       pointer __ret = 0;
-      if (__n)
+      if (__builtin_expect(__n != 0, true))
 	{
-	  if (__n <= max_size())
-	    {
-	      // If there is a race through here, assume answer from getenv
-	      // will resolve in same direction.  Inspired by techniques
-	      // to efficiently support threading found in basic_string.h.
-	      if (_S_force_new == 0)
-		{
-		  if (getenv("GLIBCXX_FORCE_NEW"))
-		    __atomic_add(&_S_force_new, 1);
-		  else
-		    __atomic_add(&_S_force_new, -1);
-		}
+	  if (__builtin_expect(__n > this->max_size(), false))
+	    std::__throw_bad_alloc();
 
-	      const size_t __bytes = __n * sizeof(_Tp);	      
-	      if (__bytes > size_t(_S_max_bytes) || _S_force_new == 1)
-		__ret = static_cast<_Tp*>(::operator new(__bytes));
+	  // If there is a race through here, assume answer from getenv
+	  // will resolve in same direction.  Inspired by techniques
+	  // to efficiently support threading found in basic_string.h.
+	  if (_S_force_new == 0)
+	    {
+	      if (getenv("GLIBCXX_FORCE_NEW"))
+		__atomic_add(&_S_force_new, 1);
+	      else
+		__atomic_add(&_S_force_new, -1);
+	    }
+
+	  const size_t __bytes = __n * sizeof(_Tp);	      
+	  if (__bytes > size_t(_S_max_bytes) || _S_force_new == 1)
+	    __ret = static_cast<_Tp*>(::operator new(__bytes));
+	  else
+	    {
+	      _Obj* volatile* __free_list = _M_get_free_list(__bytes);
+	      
+	      lock sentry(_M_get_mutex());
+	      _Obj* __restrict__ __result = *__free_list;
+	      if (__builtin_expect(__result == 0, 0))
+		__ret = static_cast<_Tp*>(_M_refill(_M_round_up(__bytes)));
 	      else
 		{
-		  _Obj* volatile* __free_list = _M_get_free_list(__bytes);
-
-		  lock sentry(_M_get_mutex());
-		  _Obj* __restrict__ __result = *__free_list;
-		  if (__builtin_expect(__result == 0, 0))
-		    __ret = static_cast<_Tp*>(_M_refill(_M_round_up(__bytes)));
-		  else
-		    {
-		      *__free_list = __result->_M_free_list_link;
-		      __ret = reinterpret_cast<_Tp*>(__result);
-		    }
-		  if (__builtin_expect(__ret == 0, 0))
-		    std::__throw_bad_alloc();
+		  *__free_list = __result->_M_free_list_link;
+		  __ret = reinterpret_cast<_Tp*>(__result);
 		}
+	      if (__builtin_expect(__ret == 0, 0))
+		std::__throw_bad_alloc();
 	    }
-	  else
-	    std::__throw_bad_alloc();
 	}
       return __ret;
     }
@@ -234,7 +232,7 @@ namespace __gnu_cxx
     void
     __pool_alloc<_Tp>::deallocate(pointer __p, size_type __n)
     {
-      if (__n && (__p != 0))
+      if (__builtin_expect(__n != 0 && __p != 0, true))
 	{
 	  const size_t __bytes = __n * sizeof(_Tp);
 	  if (__bytes > static_cast<size_t>(_S_max_bytes) || _S_force_new == 1)
