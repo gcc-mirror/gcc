@@ -1,3 +1,7 @@
+2000-11-12  Bruce Korb  <bkorb@gnu.org>
+
+	* release: generalize the release script a bit.
+
 Sat Nov 11 17:29:03 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* gcc_build: Add -o option for setting the objdir to use.
