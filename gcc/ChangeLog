@@ -1,5 +1,17 @@
 2001-01-16  Richard Henderson  <rth@redhat.com>
 
+	* flow.c (struct propagate_block_info): Add mem_set_list_len.
+	(MAX_MEM_SET_LIST_LEN): New.
+	(propagate_one_insn): Update mem_set_list_len.
+	(invalidate_mems_from_autoinc): Likewise.
+	(invalidate_mems_from_set): Likewise.
+	(mark_used_regs): Likewise.
+	(init_propagate_block_info): Likewise.  Stop collecting memories
+	when we reach MAX_MEM_SET_LIST_LEN.
+	(mark_set_1): Likewise.
+
+2001-01-16  Richard Henderson  <rth@redhat.com>
+
 	* unroll.c (precondition_loop_p): Fail if no iteration
 	variable found.
 

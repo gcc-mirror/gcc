@@ -316,12 +316,19 @@ struct propagate_block_info
   regset reg_cond_reg;
 #endif
 
+  /* The length of mem_set_list.  */
+  int mem_set_list_len;
+
   /* Non-zero if the value of CC0 is live.  */
   int cc0_live;
 
   /* Flags controling the set of information propagate_block collects.  */
   int flags;
 };
+
+/* Maximum length of pbi->mem_set_list before we start dropping
+   new elements on the floor.  */
+#define MAX_MEM_SET_LIST_LEN	100
 
 /* Store the data structures necessary for depth-first search.  */
 struct depth_first_search_dsS {
@@ -3877,7 +3884,10 @@ propagate_one_insn (pbi, insn)
 
 	  /* Non-constant calls clobber memory.  */
 	  if (! CONST_CALL_P (insn))
-	    free_EXPR_LIST_list (&pbi->mem_set_list);
+	    {
+	      free_EXPR_LIST_list (&pbi->mem_set_list);
+	      pbi->mem_set_list_len = 0;
+	    }
 
 	  /* There may be extra registers to be clobbered.  */
 	  for (note = CALL_INSN_FUNCTION_USAGE (insn);
@@ -3967,6 +3977,7 @@ init_propagate_block_info (bb, live, local_set, cond_local_set, flags)
   pbi->bb = bb;
   pbi->reg_live = live;
   pbi->mem_set_list = NULL_RTX;
+  pbi->mem_set_list_len = 0;
   pbi->local_set = local_set;
   pbi->cond_local_set = cond_local_set;
   pbi->cc0_live = 0;
@@ -4111,6 +4122,8 @@ init_propagate_block_info (bb, live, local_set, cond_local_set, flags)
 		  mem = shallow_copy_rtx (mem);
 #endif
 		pbi->mem_set_list = alloc_EXPR_LIST (0, mem, pbi->mem_set_list);
+		if (++pbi->mem_set_list_len >= MAX_MEM_SET_LIST_LEN)
+		  break;
 	      }
 	  }
     }
@@ -4512,6 +4525,7 @@ invalidate_mems_from_autoinc (pbi, insn)
 		  else
 		    pbi->mem_set_list = next;
 		  free_EXPR_LIST_node (temp);
+		  pbi->mem_set_list_len--;
 		}
 	      else
 		prev = temp;
@@ -4547,6 +4561,7 @@ invalidate_mems_from_set (pbi, exp)
 	  else
 	    pbi->mem_set_list = next;
 	  free_EXPR_LIST_node (temp);
+	  pbi->mem_set_list_len--;
 	}
       else
 	prev = temp;
@@ -4743,7 +4758,8 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
       if (insn && GET_CODE (reg) == MEM)
 	invalidate_mems_from_autoinc (pbi, insn);
 
-      if (GET_CODE (reg) == MEM && ! side_effects_p (reg)
+      if (pbi->mem_set_list_len < MAX_MEM_SET_LIST_LEN
+	  && GET_CODE (reg) == MEM && ! side_effects_p (reg)
 	  /* ??? With more effort we could track conditional memory life.  */
 	  && ! cond
 	  /* We do not know the size of a BLKmode store, so we do not track
@@ -4761,6 +4777,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	    reg = shallow_copy_rtx (reg);
 #endif
 	  pbi->mem_set_list = alloc_EXPR_LIST (0, reg, pbi->mem_set_list);
+	  pbi->mem_set_list_len++;
 	}
     }
 
@@ -5859,6 +5876,7 @@ mark_used_regs (pbi, x, cond, insn)
 		      else
 			pbi->mem_set_list = next;
 		      free_EXPR_LIST_node (temp);
+		      pbi->mem_set_list_len--;
 		    }
 		  else
 		    prev = temp;
@@ -5996,7 +6014,10 @@ mark_used_regs (pbi, x, cond, insn)
 	   So for now, just clear the memory set list and mark any regs
 	   we can find in ASM_OPERANDS as used.  */
 	if (code != ASM_OPERANDS || MEM_VOLATILE_P (x))
-	  free_EXPR_LIST_list (&pbi->mem_set_list);
+	  {
+	    free_EXPR_LIST_list (&pbi->mem_set_list);
+	    pbi->mem_set_list_len = 0;
+	  }
 
 	/* For all ASM_OPERANDS, we must traverse the vector of input operands.
 	   We can not just fall through here since then we would be confused
