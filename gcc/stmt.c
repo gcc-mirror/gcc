@@ -1983,6 +1983,10 @@ warn_if_unused_value (exp)
   if (VOID_TYPE_P (TREE_TYPE (exp)))
     return 0;
 
+  /* If this is an expression with side effects, don't warn.  */
+  if (TREE_SIDE_EFFECTS (exp))
+    return 0;
+
   switch (TREE_CODE (exp))
     {
     case PREINCREMENT_EXPR:
@@ -2056,10 +2060,6 @@ warn_if_unused_value (exp)
       if ((DECL_P (exp)
 	   || TREE_CODE_CLASS (TREE_CODE (exp)) == 'r')
 	  && TREE_THIS_VOLATILE (exp))
-	return 0;
-
-      /* If this is an expression with side effects, don't warn.  */
-      if (TREE_SIDE_EFFECTS (exp))
 	return 0;
 
       /* If this is an expression which has no operands, there is no value
