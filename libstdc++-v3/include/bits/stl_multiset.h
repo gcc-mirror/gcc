@@ -128,6 +128,9 @@ namespace __gnu_norm
       typedef typename _Alloc::const_pointer const_pointer;
       typedef typename _Alloc::reference reference;
       typedef typename _Alloc::const_reference const_reference;
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 103. set::iterator is required to be modifiable,
+      // but this allows modification of keys.
       typedef typename _Rep_type::const_iterator iterator;
       typedef typename _Rep_type::const_iterator const_iterator;
       typedef typename _Rep_type::const_reverse_iterator reverse_iterator;
