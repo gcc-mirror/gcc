@@ -1,3 +1,9 @@
+2004-04-14  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* libada-mk.in: New file.
+	* configure.ac: Create libada-mk from libada-mk.in.
+	* configure: Regenerate.
+
 2004-04-14  Uros Bizjak  <uros@kss-loka.si>
 
 	* optabs.h (enum optab_index): Add new OTI_logb and OTI_ilogb.
