@@ -642,12 +642,11 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On Alpha, the integer registers can hold any mode.  The floating-point
-   registers can hold 32-bit and 64-bit integers as well, but not 16-bit
-   or 8-bit values.  */
+   registers can hold 64-bit integers as well, but not smaller values.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) 				\
   ((REGNO) >= 32 && (REGNO) <= 62 					\
-   ? GET_MODE_UNIT_SIZE (MODE) == 8 || GET_MODE_UNIT_SIZE (MODE) == 4	\
+   ? (MODE) == SFmode || (MODE) == DFmode || (MODE) == DImode		\
    : 1)
 
 /* Value is 1 if MODE is a supported vector mode.  */

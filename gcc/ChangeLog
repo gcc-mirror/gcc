@@ -1,3 +1,20 @@
+2004-05-27  Richard Henderson  <rth@redhat.com>
+
+	Backport from mainline:
+	2004-01-19  Richard Henderson  <rth@redhat.com>
+        * alpha.md (UNSPEC_NT_LDA): Renumber.
+        (UNSPEC_CVTLQ, cvtlq): New.
+        (extendsidi2_1): Rename from extendsidi2_nofix; remove f/f.
+        (extendsidi2_fix): Remove.
+        (extendsidi2 splitter): Use cvtlq.
+        (extendsidi2 fp peepholes): Remove.
+        (cvtql): Use SFmode instead of SImode.
+        (fix_trunc?fsi): Update to match.
+        (floatsisf2_ieee, floatsisf2, floatsidf2_ieee, floatsidf2): New.
+        (movsi): Rename from movsi_nofix, remove f alternatives.
+        (movsi_nt_vms): Similarly.
+        (movsi_fix, movsi_nt_vms_fix): Remove.
+
 2004-05-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR optimization/15296
