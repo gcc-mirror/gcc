@@ -930,22 +930,6 @@
   DONE;
 }")
 
-(define_insn ""
-  [(set (match_operand:SI 0 "fp_reg_operand" "=fx")
-	(match_operand:SI 1 "short_memory_operand" "T"))]
-  ""
-  "fldws%F1 %1,%0"
-  [(set_attr "type" "fpload")
-   (set_attr "length" "1")])
-
-(define_insn ""
-  [(set (match_operand:SI 0 "short_memory_operand" "=T")
-	(match_operand:SI 1 "fp_reg_operand" "fx"))]
-  ""
-  "fstws%F0 %1,%0"
-  [(set_attr "type" "fpstore")
-   (set_attr "length" "1")])
-
 ;;; pic symbol references
 
 (define_insn ""
@@ -958,8 +942,10 @@
    (set_attr "length" "1")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!fx")
-	(match_operand:SI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fxM"))]
+  [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand" 
+				"=r,r,r,r,r,Q,*q,!fx,fx,*T")
+	(match_operand:SI 1 "move_operand" 
+				"rM,J,N,K,Q,rM,rM,!fxM,*T,fx"))]
   "register_operand (operands[0], SImode)
    || reg_or_0_operand (operands[1], SImode)"
   "@
@@ -970,9 +956,11 @@
    ldw%M1 %1,%0
    stw%M0 %r1,%0
    mtsar %r1
-   fcpy,sgl %r1,%0"
-  [(set_attr "type" "move,move,move,move,load,store,move,fpalu")
-   (set_attr "length" "1,1,1,1,1,1,1,1")])
+   fcpy,sgl %r1,%0
+   fldws%F1 %1,%0
+   fstws%F0 %1,%0"
+  [(set_attr "type" "move,move,move,move,load,store,move,fpalu,fpload,fpstore")
+   (set_attr "length" "1,1,1,1,1,1,1,1,1,1")])
 
 ;; Load indexed.  We don't use unscaled modes since they can't be used
 ;; unless we can tell which of the registers is the base and which is
@@ -1499,26 +1487,10 @@
 ;;; Experimental
 
 (define_insn ""
-  [(set (match_operand:DI 0 "fp_reg_operand" "=fx")
-	(match_operand:DI 1 "short_memory_operand" "T"))]
-  ""
-  "fldds%F1 %1,%0"
-  [(set_attr "type" "fpload")
-   (set_attr "length" "1")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "short_memory_operand" "=T")
-	(match_operand:DI 1 "fp_reg_operand" "fx"))]
-  ""
-  "fstds%F0 %1,%0"
-  [(set_attr "type" "fpstore")
-   (set_attr "length" "1")])
-
-(define_insn ""
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
-			  "=r,Q,&r,&r,fx")
+			  "=r,Q,&r,&r,fx,fx,*T")
 	(match_operand:DI 1 "general_operand"
-			  "rM,r,Q,i,fxM"))]
+			  "rM,r,Q,i,fxM,*T,fx"))]
   "register_operand (operands[0], DImode)
    || reg_or_0_operand (operands[1], DImode)"
   "*
@@ -1528,8 +1500,8 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "move,store,load,misc,fpalu")
-   (set_attr "length" "2,3,3,3,1")])
+  [(set_attr "type" "move,store,load,misc,fpalu,fpload,fpstore")
+   (set_attr "length" "2,3,3,3,1,1,1")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
