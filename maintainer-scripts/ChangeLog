@@ -1,5 +1,7 @@
 2002-05-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc_release: Do upload files when local.
+
 	* snapshot-README, snapshot-index.html: Remove chill.
 
 2002-05-08  Mark Mitchell  <mark@codesourcery.com>
