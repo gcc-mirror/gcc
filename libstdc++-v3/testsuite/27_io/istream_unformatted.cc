@@ -163,11 +163,13 @@ bool test02(void)
   // istream& getline(char* s, streamsize n)
   state1 = is_00.rdstate();
   is_00.getline(carray1, 20, '*');
-  state2 = is_00.rdstate();  
-  test &= is_04.gcount() == 0;
+  state2 = is_00.rdstate();
+  // make sure failbit was set, since we couldn't extract
+  // from the NULL streambuf...
   test &= state1 != state2;
-  test &= bool(state2 & statefail);
-
+  test &= static_cast<bool>(state2 & statefail);
+  
+  test &= is_04.gcount() == 0;
   state1 = is_04.rdstate();
   is_04.getline(carray1, 1, '\t'); // extracts, throws away
   state2 = is_04.rdstate();  
@@ -351,7 +353,6 @@ void test04()
 // http://sourceware.cygnus.com/ml/libstdc++/2000-07/msg00003.html
 bool test05()
 {
-
   const char* charray = "
 a
 aa
@@ -383,7 +384,7 @@ aaaaaaaaaaaaaa
       if(ifs.eof())
         {
           // Just sanity checks to make sure we've extracted the same
-          // number of chars that were in the file.
+          // number of chars that were in the streambuf
           VERIFY(br == blen);
           // Also, we should only set the failbit if we could
           // _extract_ no chars from the stream, i.e. the first read
@@ -392,27 +393,63 @@ aaaaaaaaaaaaaa
         }
       else if(ifs.fail())
         {
+	  // delimiter not read
+	  //
 	  // either
 	  // -> extracted no characters
 	  // or
 	  // -> n - 1 characters are stored
-          VERIFY(strlen(tmp) == it - 1);
           ifs.clear(ifs.rdstate() & ~std::ios::failbit);
+          VERIFY((ifs.gcount() == 0) || (strlen(tmp) == it - 1));
           VERIFY(ifs);
           continue;
         }
       else 
         {
+	  // delimiter was read.
+	  //
 	  // -> strlen(__s) < n - 1 
 	  // -> delimiter was seen -> gcount() > strlen(__s)
-          VERIFY(ifs.gcount() > strlen(tmp));
-          VERIFY(it - 1 > strlen(tmp));
+          VERIFY(ifs.gcount() == strlen(tmp) + 1);
           continue;
         }
     }
 
   return 0;
 }
+
+
+// http://sources.redhat.com/ml/libstdc++/2000-07/msg00126.html
+bool
+test06()
+{
+  using namespace std;
+
+  bool test = true;
+  const streamsize it = 5;
+  char tmp[it];
+  const char* str_lit = "abcd\n";
+
+  stringbuf strbuf(str_lit, std::ios_base::in);
+  istream istr(&strbuf);
+  
+  istr.getline(tmp,it); 
+  test &= istr.gcount() == it;  // extracted whole string
+  test &= strlen(tmp) == 4;     // stored all but '\n'
+  test &= !istr.eof();          // extracted up to but not eof
+  test &= !istr.fail();         // failbit not set
+  
+  char c = 'z';
+  istr.get(c);
+  test &= c == 'z';
+  test &= istr.eof();
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+  return test;
+}
+
 
 int main()
 {
@@ -421,8 +458,10 @@ int main()
   test03();
   test04();
   test05();
+  test06();
   return 0;
 }
+
 
 
 

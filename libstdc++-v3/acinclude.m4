@@ -1196,12 +1196,10 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
         esac
 
   	if test x$glibc_satisfactory = x"yes"; then
-   	  BUILD_LIBIO_INCLUDE=
 	  need_libio=no
 	  need_xtra_libio=no
       	  need_wlibio=no	
       	else
-	  BUILD_LIBIO_INCLUDE='-I../libio'	  
 	  need_libio=yes
 	  need_xtra_libio=yes
           # bkoz XXX need to add checks to enable this
@@ -1210,7 +1208,6 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 
       # Using libio, but <libio.h> doesn't exist on the target system. . .
       else
-	BUILD_LIBIO_INCLUDE='-I../libio'	  
 	need_libio=yes
         need_xtra_libio=no
         # bkoz XXX need to add checks to enable this
@@ -1224,8 +1221,6 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
       AC_MSG_RESULT(wince)
 
       need_libio=no
-      BUILD_LIBIO_INCLUDE=
-      AC_SUBST(BUILD_LIBIO_INCLUDE)
       ;;
     *)
       echo "$enable_cstdio is an unknown io package" 1>&2
@@ -1406,19 +1401,17 @@ changequote([, ])dnl
 enable_cshadow_headers=GLIBCPP_ENABLE_SHADOW_DEFAULT)dnl
 AC_MSG_RESULT($enable_cshadow_headers)
 dnl Option parsed, now set things appropriately
+dnl CSHADOWFLAGS is currently unused, but may be useful in the future.
 case "$enable_cshadow_headers" in
     yes) 
-	CSHADOWFLAGS="-D_GNU_SOURCE"
-	CSHADOW_INCLUDES=" -I$srcdir/shadow -I$blddir/cshadow"
+	CSHADOWFLAGS=""
 	;;
     no)   
 	CSHADOWFLAGS=""
-	CSHADOW_INCLUDES=""
         ;;
 esac
 
 AC_SUBST(CSHADOWFLAGS)
-AC_SUBST(CSHADOW_INCLUDES)
 AM_CONDITIONAL(GLIBCPP_USE_CSHADOW, test "$enable_cshadow_headers" = yes)
 ])
 
@@ -1480,7 +1473,7 @@ AC_SUBST(LIBSTRINGOBJS)dnl
 
 dnl This macro searches for a GNU version of make.  If a match is found, the
 dnl makefile variable `ifGNUmake' is set to the empty string, otherwise it is
-dnl set to "#".  This is useful for  including a special features in a Makefile,
+dnl set to "#". This is useful for  including a special features in a Makefile,
 dnl which cannot be handled by other versions of make.  The variable
 dnl _cv_gnu_make_command is set to the command to invoke GNU make if it exists,
 dnl the empty string otherwise.
@@ -1515,7 +1508,7 @@ dnl Then, if any (well almost any) other make is called, and GNU make also
 dnl exists, then the other make wraps the GNU make.
 dnl
 dnl @author John Darrington <j.darrington@elvis.murdoch.edu.au>
-dnl @version $Id: acinclude.m4,v 1.44 2000/07/21 01:02:31 bkoz Exp $
+dnl @version $Id: acinclude.m4,v 1.45 2000/07/21 20:59:23 gdr Exp $
 dnl
 dnl #### Changes for libstdc++-v3:  reformatting and linewrapping; prepending
 dnl #### GLIBCPP_ to the macro name; adding the :-make fallback in the

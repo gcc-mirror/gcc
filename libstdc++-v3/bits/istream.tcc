@@ -590,9 +590,7 @@ namespace std {
 	    bool __testput = true;
 	    streamsize __n = __this_sb->in_avail();
 
-	    while (_M_gcount <= __n 
-		   && !__testeof 
-		   && !__testdelim 
+	    while (_M_gcount <= __n && !__testeof && !__testdelim 
 		   && (__testput = __sb.sputc(traits_type::to_char_type(__c)) 
 		                   != __eof))
 	      {
@@ -625,50 +623,30 @@ namespace std {
       sentry __cerb(*this, true);
       if (__cerb) 
 	{
-	  try {
-	    const int_type __idelim = traits_type::to_int_type(__delim);
-	    const int_type __eof = traits_type::eof();
+          try {
 	    __streambuf_type* __sb = this->rdbuf();
-	    bool __testdelim = false;
-	    bool __testeof = false;
-
-	    // This is completely idiotic, but attempts to recreate
-	    // the smoke-filled air of the committee meeting where
-	    // getline was defined. It's unspecified for __n == 1,
-	    // what happens to the extracted char if it is not a
-	    // delimiter or EOF. Assume it's not extracted, for the
-	    // time being. . . 
-	    if (__n == 1)
+	    int_type __c = __sb->sbumpc();
+            const int_type __idelim = traits_type::to_int_type(__delim);
+            const int_type __eof = traits_type::eof();
+	    bool __testdelim = __c == __idelim;
+	    bool __testeof =  __c == __eof;
+	    
+	    while (++_M_gcount < __n && !__testeof && !__testdelim)
 	      {
-		int_type __c = __sb->sgetc();
-		__testdelim = __c == __idelim;
+		*__s++ = traits_type::to_char_type(__c);
+		__c = __sb->sbumpc();
 		__testeof = __c == __eof;
-		if (__testdelim)
-		  {
-		    ++_M_gcount;
-		    __sb->sbumpc();
-		  }
+		__testdelim = __c == __idelim;
 	      }
-	    else
-	      {
-		while (_M_gcount < __n - 1 && !__testdelim && !__testeof)
-		  {
-		    int_type __c = __sb->sbumpc();
-		    __testdelim = __c == __idelim;
-		    __testeof = __c == __eof;
-		    if (__testdelim)
-		      ++_M_gcount;
-		    else if (!__testeof)
-		      {
-			*__s++ = traits_type::to_char_type(__c);
-			++_M_gcount;
-		      }
-		  }
-	      }
+	    
 	    if (__testeof)
 	      this->setstate(ios_base::eofbit);
-	    else if (!__testdelim && _M_gcount == __n - 1)
-	      this->setstate(ios_base::failbit);
+	    else if (!__testdelim)
+	      {
+		--_M_gcount;
+		__sb->sputbackc(traits_type::to_char_type(__c));
+		this->setstate(ios_base::failbit);
+	      }
 	  }
 	  catch(exception& __fail){
 	    // 27.6.1.3 paragraph 1
