@@ -1,3 +1,7 @@
+Wed Feb 14 21:41:17 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* g++.old-deja/g++.brendan/new2.C (main): Use sizeof.
+
 Wed Feb 14 21:31:25 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* gcc.c-torture/execute/920302-1.c (execute):
