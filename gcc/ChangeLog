@@ -1,3 +1,12 @@
+2000-11-05  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/mn10200/udivmod.c, config/mn10200/divmod.c,
+	config/mn10200/udivmodsi4.c: Moved from here.
+	* config/udivmod.c, config/divmod.c, config/udivmodsi4.c: To here.
+	* config/mn10200/t-mn10200 (LIB2FUNCS_EXTRA): Use the generic
+	C division functions.
+	* config/m68hc11/t-m68hc11-gas (LIB2FUNCS_EXTRA): Likewise.
+
 Thu Nov 30 01:12:52 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (conditional moves): Avoid holes in operand list.
