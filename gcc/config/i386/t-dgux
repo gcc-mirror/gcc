@@ -6,3 +6,6 @@ EXTRA_PARTS=crti.o crtbegin.o crtend.o
 crti.o: $(srcdir)/config/i386/sol2-ci.asm $(GCC_PASSES)
 	sed -e '/^!/d' <$(srcdir)/config/i386/sol2-ci.asm >crti.s
 	$(GCC_FOR_TARGET) -c -o crti.o crti.s
+
+# Don't run fixproto
+STMP_FIXPROTO = 

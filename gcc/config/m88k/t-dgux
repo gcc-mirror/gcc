@@ -22,3 +22,6 @@ bcscrtbegin.o:     crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 
 # Build libgcc.a, crtbegin.o, and crtend.o as bcs objects
 GCC_FOR_TARGET = PATH=/usr/sde/m88kbcs/usr/bin/:/usr/bin TARGET_BINARY_INTERFACE=m88kbcs ./xgcc -B./ -msvr3 -D_M88KBCS_TARGET -mno-ocs-debug-info
+
+# Don't run fixproto
+STMP_FIXPROTO = 
