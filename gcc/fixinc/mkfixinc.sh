@@ -121,7 +121,4 @@ echo $MAKE SHELL=\"$SHELL\" install-bin
 
 #  make and install either the binary or the default script
 #
-$MAKE SHELL="$SHELL" install-bin && exit 0
-
-echo $MAKE SHELL=\"$SHELL\" install-sh
-$MAKE SHELL="$SHELL" install-sh
+$MAKE SHELL="$SHELL" install-bin

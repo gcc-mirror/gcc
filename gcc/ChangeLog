@@ -4,6 +4,8 @@
 	Remove `extern double cabs' declarations from math.h
 	* fixincl/inclhack.sh: regen
 	* fixincl/fixincl.x: regen
+	* fixincl/fixincl.c: Remove BOGOSITY code
+	* fixincl/mkfixinc.sh: Remove code for installing "shell" version
 
 Thu May  4 09:45:12 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
