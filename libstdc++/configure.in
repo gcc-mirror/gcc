@@ -44,6 +44,7 @@ fi
 # Make sure the right flags are defined for multi-threading.
 case "${target}" in
   *-*-linux-gnu)	frags="${frags} linux.mt" ;;
+  m68k-motorola-sysv)	frags="${frags} delta.mt" ;;
 esac
 
 for frag in ${frags}; do
