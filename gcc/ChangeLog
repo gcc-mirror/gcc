@@ -1,3 +1,21 @@
+2004-05-17  Jeff Law  <law@redhat.com>
+
+	* toplev.h (flag_delete_null_pointer_checks): Move from here to...
+	* flags.h (flag_delete_null_pointer_checks): Here.
+	* tree-flow.h (cprop_into_successor_phis): Add argument to prototype.
+	* tree-phinodes.c (resize_phi_node): Initialize PHI_ARG_NONZERO.
+	(add_phi_arg, remove_phi_arg_num): Similarly.
+	* tree-ssa-copy.c (cprop_into_successor_phis): Propagate nonzero
+	property into PHI nodes.
+	* tree-ssa-dom.c: Remove redundant inclusion of flags.h.
+	(record_equivalences_from_phis): If all PHI arguments are known to be
+	nonzero, then the result must be nonzero as well.
+	(cprop_into_phis): Pass nonzero_vars bitmap to cprop_into_successor_phis        (record_equivalences_from_stmt): Check flag_delete_null_pointer_checks
+	appropriately.  Walk the USE-DEF chains and propagate nonzero property
+	as appropriate.
+	* tree.h (PHI_ARG_NONZERO): Define.
+	(phi_arg_d): Add nonzero flag.
+
 2004-05-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* f: Entire directory removed

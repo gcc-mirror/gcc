@@ -40,7 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #include "domwalk.h"
 #include "real.h"
 #include "tree-pass.h"
-#include "flags.h"
 #include "langhooks.h"
 
 /* This file implements optimizations on the dominator tree.  */
@@ -1314,7 +1313,12 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 
    Ignoring any alternatives which are the same as the result, if
    all the alternatives are equal, then the PHI node creates an
-   equivalence.  */
+   equivalence.
+
+   Additionally, if all the PHI alternatives are known to have a nonzero
+   value, then the result of this PHI is known to have a nonzero value,
+   even if we do not know its exact value.  */
+
 static void
 record_equivalences_from_phis (struct dom_walk_data *walk_data, basic_block bb)
 {
@@ -1366,6 +1370,17 @@ record_equivalences_from_phis (struct dom_walk_data *walk_data, basic_block bb)
       if (i == PHI_NUM_ARGS (phi)
 	  && may_propagate_copy (lhs, rhs))
 	set_value_for (lhs, rhs, const_and_copies);
+
+      /* Now see if we know anything about the nonzero property for the
+	 result of this PHI.  */
+      for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+	{
+	  if (!PHI_ARG_NONZERO (phi, i))
+	    break;
+	}
+
+      if (i == PHI_NUM_ARGS (phi))
+	bitmap_set_bit (nonzero_vars, SSA_NAME_VERSION (PHI_RESULT (phi)));
 
       register_new_def (lhs, &bd->block_defs);
     }
@@ -2257,7 +2272,7 @@ static void
 cprop_into_phis (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 		 basic_block bb)
 {
-  cprop_into_successor_phis (bb, const_and_copies);
+  cprop_into_successor_phis (bb, const_and_copies, nonzero_vars);
 }
 
 /* Search for redundant computations in STMT.  If any are found, then
@@ -2422,25 +2437,39 @@ record_equivalences_from_stmt (tree stmt,
   /* Look at both sides for pointer dereferences.  If we find one, then
      the pointer must be nonnull and we can enter that equivalence into
      the hash tables.  */
-  for (i = 0; i < 2; i++)
-    {
-      tree t = TREE_OPERAND (stmt, i);
+  if (flag_delete_null_pointer_checks)
+    for (i = 0; i < 2; i++)
+      {
+	tree t = TREE_OPERAND (stmt, i);
 
-      /* Strip away any COMPONENT_REFs.  */
-      while (TREE_CODE (t) == COMPONENT_REF)
-        t = TREE_OPERAND (t, 0);
+	/* Strip away any COMPONENT_REFs.  */
+	while (TREE_CODE (t) == COMPONENT_REF)
+	  t = TREE_OPERAND (t, 0);
 
-      /* Now see if this is a pointer dereference.  */
-      if (TREE_CODE (t) == INDIRECT_REF)
-        {
-	  tree op = TREE_OPERAND (t, 0);
+	/* Now see if this is a pointer dereference.  */
+	if (TREE_CODE (t) == INDIRECT_REF)
+          {
+	    tree op = TREE_OPERAND (t, 0);
 
-	  /* If the pointer is a SSA variable, then enter new
-	     equivalences into the hash table.  */
-	  if (TREE_CODE (op) == SSA_NAME)
-	    record_var_is_nonzero (op, block_nonzero_vars_p);
-	}
-    }
+	    /* If the pointer is a SSA variable, then enter new
+	       equivalences into the hash table.  */
+	    while (TREE_CODE (op) == SSA_NAME)
+	      {
+		tree def = SSA_NAME_DEF_STMT (op);
+
+		record_var_is_nonzero (op, block_nonzero_vars_p);
+
+		/* And walk up the USE-DEF chains noting other SSA_NAMEs
+		   which are known to have a nonzero value.  */
+		if (def
+		    && TREE_CODE (def) == MODIFY_EXPR
+		    && TREE_CODE (TREE_OPERAND (def, 1)) == NOP_EXPR)
+		  op = TREE_OPERAND (TREE_OPERAND (def, 1), 0);
+		else
+		  break;
+	      }
+	  }
+      }
 
   /* A memory store, even an aliased store, creates a useful
      equivalence.  By exchanging the LHS and RHS, creating suitable
