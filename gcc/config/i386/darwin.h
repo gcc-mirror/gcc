@@ -43,6 +43,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_SPEC "-arch i686 \
   -force_cpusubtype_ALL \
+  %{gused: -g -feliminate-unused-debug-symbols %<gused }\
+  %{gfull: -g -fno-eliminate-unused-debug-symbols %<gfull }\
+  %{g: %{!gfull: -feliminate-unused-debug-symbols %<gfull }}\
   %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
   %{!Zforce_cpusubtype_ALL:%{mmmx:-force_cpusubtype_ALL}\
 			   %{msse:-force_cpusubtype_ALL}\
