@@ -27,10 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "halfpic.h"
 
 #define WORD_SWITCH_TAKES_ARG(STR)					\
- (!strcmp (STR, "Tdata") || !strcmp (STR, "Ttext")			\
-  || !strcmp (STR, "Tbss") || !strcmp (STR, "include")			\
-  || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info")		\
-  || !strcmp (STR, "pic-names"))
+ (DEFAULT_WORD_SWITCH_TAKES_ARG (STR) || !strcmp (STR, "pic-names"))
 
 #define CPP_PREDEFINES "-DOSF -DOSF1 -Dbsd4_2 -DMIPSEL -Dhost_mips -Dmips -Dunix -DR3000 -DSYSTYPE_BSD"
 

@@ -31,10 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef  WORD_SWITCH_TAKES_ARG
 #define WORD_SWITCH_TAKES_ARG(STR)					\
- (!strcmp (STR, "Tdata") || !strcmp (STR, "Ttext")			\
-  || !strcmp (STR, "Tbss") || !strcmp (STR, "include")			\
-  || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info")		\
-  || !strcmp (STR, "pic-names"))
+ (DEFAULT_WORD_SWITCH_TAKES_ARG (STR) || !strcmp (STR, "pic-names"))
 
 #define MASK_HALF_PIC     	0x40000000	/* Mask for half-pic code */
 #define MASK_HALF_PIC_DEBUG	0x20000000	/* Debug flag */

@@ -89,11 +89,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef	WORD_SWITCH_TAKES_ARG
 #define WORD_SWITCH_TAKES_ARG(STR)	 	\
-  (!strcmp (STR, "Ttext") ? 1 :			\
-   !strcmp (STR, "Tdata") ? 1 :			\
-   !strcmp (STR, "Tbss") ? 1 :			\
-   !strcmp (STR, "include") ? 1 :		\
-   !strcmp (STR, "imacros") ? 1 :		\
+  (DEFAULT_WORD_SWITCH_TAKES_ARG (str) ? 1 :	\
    !strcmp (STR, "segalign") ? 1 :		\
    !strcmp (STR, "seg1addr") ? 1 :		\
    !strcmp (STR, "segaddr") ? 2 :		\
@@ -103,7 +99,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    !strcmp (STR, "sectalign") ? 3 :		\
    !strcmp (STR, "segcreate") ? 3 :		\
    !strcmp (STR, "sectorder") ? 3 :		\
-   !strcmp (STR, "aux-info") ? 1 :		\
    !strcmp (STR, "siff-mask") ? 1 :		\
    !strcmp (STR, "siff-filter") ? 1 :		\
    !strcmp (STR, "siff-warning") ? 1 :		\

@@ -72,10 +72,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* These compiler options take an argument.  We ignore -target for now.  */
 
 #define WORD_SWITCH_TAKES_ARG(STR)				\
- (!strcmp (STR, "Tdata") || !strcmp (STR, "Ttext")		\
-  || !strcmp (STR, "Tbss") || !strcmp (STR, "include")		\
-  || !strcmp (STR, "imacros") || !strcmp (STR, "target")	\
-  || !strcmp (STR, "assert") || !strcmp (STR, "aux-info"))
+ (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)				\
+  || !strcmp (STR, "target") || !strcmp (STR, "assert"))
 
 /* -m68000 requires special flags to the assembler.  */
 
