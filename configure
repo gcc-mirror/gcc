@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.34 $"
+version="$Revision: 1.35 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -949,7 +949,7 @@ t loop
   CC_FOR_BUILD=${CC_FOR_BUILD-gcc}
   CC_FOR_TARGET=${CC_FOR_TARGET-${target_alias}-gcc}
   CXX_FOR_TARGET=${CXX_FOR_TARGET-${target_alias}-c++}
-  GCJ_FOR_TARGET=${CXX_FOR_TARGET-${target_alias}-gcj}
+  GCJ_FOR_TARGET=${GCJ_FOR_TARGET-${target_alias}-gcj}
   DLLTOOL=${DLLTOOL-${host_alias}-dlltool}
   DLLTOOL_FOR_TARGET=${DLLTOOL_FOR_TARGET-${target_alias}-dlltool}
   GCC_FOR_TARGET=${GCC_FOR_TARGET-${CC_FOR_TARGET-${target_alias}-gcc}}
