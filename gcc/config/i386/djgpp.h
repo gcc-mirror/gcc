@@ -266,7 +266,8 @@ dtor_section ()							\
 #define UNIQUE_SECTION(DECL,RELOC)				\
 do {								\
   int len;							\
-  char *name, *string, *prefix;					\
+  const char *name, *prefix;					\
+  char *string;							\
 								\
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
 								\

@@ -1,3 +1,8 @@
+2000-09-27  Mark Elbrecht  <snowball3@bigfoot.com>
+
+	* config/i386/djgpp.h (UNIQUE_SECTION): Constify the variables
+	name and prefix.
+
 Tue 26-Sep-2000 18:25:38 BST  Neil Booth  <neilb@earthling.net>
 
 	* gcc.c (cpp_options): Add spec for -ftabstop=.
