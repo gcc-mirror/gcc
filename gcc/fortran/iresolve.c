@@ -545,6 +545,32 @@ gfc_resolve_fraction (gfc_expr * f, gfc_expr * x)
 
 
 void
+gfc_resolve_getgid (gfc_expr * f)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = 4;
+  f->value.function.name = gfc_get_string (PREFIX("getgid"));
+}
+
+
+void
+gfc_resolve_getpid (gfc_expr * f)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = 4;
+  f->value.function.name = gfc_get_string (PREFIX("getpid"));
+}
+
+
+void
+gfc_resolve_getuid (gfc_expr * f)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = 4;
+  f->value.function.name = gfc_get_string (PREFIX("getuid"));
+}
+
+void
 gfc_resolve_iand (gfc_expr * f, gfc_expr * i, gfc_expr * j ATTRIBUTE_UNUSED)
 {
 

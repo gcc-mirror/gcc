@@ -153,51 +153,36 @@ static try
 do_check (gfc_intrinsic_sym * specific, gfc_actual_arglist * arg)
 {
   gfc_expr *a1, *a2, *a3, *a4, *a5;
-  try t;
+
+  if (arg == NULL)
+    return (*specific->check.f0) ();
 
   a1 = arg->expr;
   arg = arg->next;
-
   if (arg == NULL)
-    t = (*specific->check.f1) (a1);
-  else
-    {
-      a2 = arg->expr;
-      arg = arg->next;
+    return (*specific->check.f1) (a1);
 
-      if (arg == NULL)
-	t = (*specific->check.f2) (a1, a2);
-      else
-	{
-	  a3 = arg->expr;
-	  arg = arg->next;
+  a2 = arg->expr;
+  arg = arg->next;
+  if (arg == NULL)
+    return (*specific->check.f2) (a1, a2);
 
-	  if (arg == NULL)
-	    t = (*specific->check.f3) (a1, a2, a3);
-	  else
-	    {
-	      a4 = arg->expr;
-	      arg = arg->next;
+  a3 = arg->expr;
+  arg = arg->next;
+  if (arg == NULL)
+    return (*specific->check.f3) (a1, a2, a3);
 
-	      if (arg == NULL)
-		t = (*specific->check.f4) (a1, a2, a3, a4);
-	      else
-		{
-		  a5 = arg->expr;
-		  arg = arg->next;
+  a4 = arg->expr;
+  arg = arg->next;
+  if (arg == NULL)
+    return (*specific->check.f4) (a1, a2, a3, a4);
 
-		  if (arg == NULL)
-		    t = (*specific->check.f5) (a1, a2, a3, a4, a5);
-		  else
-		    {
-		      gfc_internal_error ("do_check(): too many args");
-		    }
-		}
-	    }
-	}
-    }
+  a5 = arg->expr;
+  arg = arg->next;
+  if (arg == NULL)
+    return (*specific->check.f5) (a1, a2, a3, a4, a5);
 
-  return t;
+  gfc_internal_error ("do_check(): too many args");
 }
 
 
@@ -307,17 +292,17 @@ add_sym (const char *name, int elemental, int actual_ok ATTRIBUTE_UNUSED,
 
 static void add_sym_0 (const char *name, int elemental, int actual_ok, bt type,
 		       int kind,
-		       try (*check)(gfc_expr *),
-		       gfc_expr *(*simplify)(gfc_expr *),
-		       void (*resolve)(gfc_expr *,gfc_expr *)
+		       try (*check)(void),
+		       gfc_expr *(*simplify)(void),
+		       void (*resolve)(gfc_expr *)
 		       ) {
   gfc_simplify_f sf;
   gfc_check_f cf;
   gfc_resolve_f rf;
 
-  cf.f1 = check;
-  sf.f1 = simplify;
-  rf.f1 = resolve;
+  cf.f0 = check;
+  sf.f0 = simplify;
+  rf.f0 = resolve;
 
   add_sym (name, elemental, actual_ok, type, kind, cf, sf, rf,
 	   (void*)0);
@@ -1171,6 +1156,16 @@ add_functions (void)
 	     x, BT_REAL, dr, 0);
 
   make_generic ("fraction", GFC_ISYM_FRACTION);
+
+  /* Unix IDs (g77 compatibility)  */
+  add_sym_0 ("getgid", 1, 0, BT_INTEGER, di, NULL, NULL, gfc_resolve_getgid);
+  make_generic ("getgid", GFC_ISYM_GETGID);
+
+  add_sym_0 ("getpid", 1, 0, BT_INTEGER, di, NULL, NULL, gfc_resolve_getpid);
+  make_generic ("getpid", GFC_ISYM_GETPID);
+
+  add_sym_0 ("getuid", 1, 0, BT_INTEGER, di, NULL, NULL, gfc_resolve_getuid);
+  make_generic ("getuid", GFC_ISYM_GETUID);
 
   add_sym_1 ("huge", 0, 1, BT_REAL, dr,
 	     gfc_check_huge, gfc_simplify_huge, NULL,
@@ -2273,20 +2268,17 @@ resolve_intrinsic (gfc_intrinsic_sym * specific, gfc_expr * e)
 
   arg = e->value.function.actual;
 
-  /* At present only the iargc extension intrinsic takes no arguments,
-     and it doesn't need a resolution function, but this is here for
-     generality.  */
-  if (arg == NULL)
-    {
-      (*specific->resolve.f0) (e);
-      return;
-    }
-
   /* Special case hacks for MIN and MAX.  */
   if (specific->resolve.f1m == gfc_resolve_max
       || specific->resolve.f1m == gfc_resolve_min)
     {
       (*specific->resolve.f1m) (e, arg);
+      return;
+    }
+
+  if (arg == NULL)
+    {
+      (*specific->resolve.f0) (e);
       return;
     }
 
@@ -2372,6 +2364,12 @@ do_simplify (gfc_intrinsic_sym * specific, gfc_expr * e)
     }
 
   arg = e->value.function.actual;
+
+  if (arg == NULL)
+    {
+      result = (*specific->simplify.f0) ();
+      goto finish;
+    }
 
   a1 = arg->expr;
   arg = arg->next;

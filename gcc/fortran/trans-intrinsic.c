@@ -2925,6 +2925,9 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_RAND:
     case GFC_ISYM_ETIME:
     case GFC_ISYM_SECOND:
+    case GFC_ISYM_GETGID:
+    case GFC_ISYM_GETPID:
+    case GFC_ISYM_GETUID:
       gfc_conv_intrinsic_funcall (se, expr);
       break;
 

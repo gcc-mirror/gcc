@@ -1,3 +1,20 @@
+2004-08-29  Steven G. Kargl  <kargls@comcast.net>
+	Paul Brook  <paul@codesourcery.com>
+
+	* gfortran.h (enum gfc_generic_isym_id): Add GFC_ISYM_GET?ID.
+	(gfc_check_f, gfc_simplify_f): Add f0.
+	* intrinsic.c (do_check): Call f0.  Flatten.
+	(add_sym_0): Fix prototype.  Set f0.
+	(add_functions): Add getgid, getgid and getuid.
+	(resolve_intrinsic): Remove obsolete comment.
+	(do_simplify): Call f0.
+	* intrinsic.h (gfc_resolve_getgid, gfc_resolve_getpid,
+	gfc_resolve_getuid): Add prototypes.
+	* iresolve.c (gfc_resolve_getgid, gfc_resolve_getpid,
+	gfc_resolve_getuid): New functions.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Handle
+	GFC_ISYM_GET?ID.
+
 2004-08-28  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* error.c (gfc_error_init_1): Remove blank line in front of
