@@ -1,5 +1,5 @@
 // Build don't link: 
-// crash test - XFAIL *-*-*
+// crash test
 
 // these are marked as expected errors because they evidence an
 // ambiguity in the grammar between expressions and declarations.
@@ -20,4 +20,4 @@ A A::operator+(const A in)
       return A();    // this works
     else
       return (A());  // this works not // gets bogus error - XFAIL *-*-* 
-} // gets bogus error - XFAIL *-*-* 
+}

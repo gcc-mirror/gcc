@@ -8,5 +8,5 @@ class Elvis
 template<int a>
 class Elvis<0>
 { // ERROR - incorrect number of parameters
-   int geta() { return a ; }
+  int geta() { return a ; } // ERROR - not in a class
 } ;
