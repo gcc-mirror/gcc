@@ -19,11 +19,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "ch-tree.h"
 #include "lex.h"
-#include <stdio.h>
 #include "input.h"
+#include "toplev.h"
 
 /* Type node for boolean types.  */
 
@@ -49,14 +50,6 @@ char* chill_real_input_filename;
 extern FILE* finput;
 
 extern int maximum_field_alignment;
-
-extern void error             PROTO((char *, ...));
-extern void error_with_decl   PROTO((tree, char *, ...));
-extern void fatal             PROTO((char *, ...));
-extern int  floor_log2_wide   PROTO((unsigned HOST_WIDE_INT));
-extern void pedwarn_with_decl PROTO((tree, char *, ...));
-extern void sorry             PROTO((char *, ...));
-extern int  type_hash_list    PROTO((tree));
 
 /* return 1 if the expression tree given has all
    constant nodes as its leaves; return 0 otherwise. */
@@ -111,14 +104,14 @@ const_expr (exp)
 /* Used by c-lex.c, but only for objc.  */
 tree
 lookup_interface (arg)
-     tree arg;
+     tree arg ATTRIBUTE_UNUSED;
 {
   return 0;
 }
 
 int
 maybe_objc_comptypes (lhs, rhs)
-     tree lhs, rhs;
+     tree lhs ATTRIBUTE_UNUSED, rhs ATTRIBUTE_UNUSED;
 {
   return -1;
 }
@@ -144,9 +137,9 @@ lang_init_options ()
 
 void
 lang_print_xnode (file, node, indent)
-     FILE *file;
-     tree node;
-     int indent;
+     FILE *file ATTRIBUTE_UNUSED;
+     tree node ATTRIBUTE_UNUSED;
+     int indent ATTRIBUTE_UNUSED;
 {
 }
 
@@ -171,7 +164,7 @@ lang_decode_option (argc, argv)
      char **argv;
 {
   char *p = argv[0];
-  static explicit_ignore_case = 0;
+  static int explicit_ignore_case = 0;
   if (!strcmp(p, "-lang-chill"))
     ; /* do nothing */
   else if (!strcmp (p, "-fruntime-checking"))
@@ -280,8 +273,8 @@ chill_print_error_function (file)
 
 void
 incomplete_type_error (value, type)
-     tree value;
-     tree type;
+     tree value ATTRIBUTE_UNUSED;
+     tree type ATTRIBUTE_UNUSED;
 {
   error ("internal error - use of undefined type");
 }

@@ -17,19 +17,15 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include <stdio.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "flags.h"
 #include "ch-tree.h"
 #include "lex.h"
+#include "toplev.h"
 
 #define SATISFY(ARG) ((ARG) = satisfy(ARG, chain))
-
-extern void error           PROTO((char *, ...));
-extern void error_with_decl PROTO((tree, char *, ...));
-extern void expand_decl     PROTO((tree));
-extern void layout_enum     PROTO((tree));
 
 struct decl_chain
 {

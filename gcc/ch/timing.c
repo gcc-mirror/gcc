@@ -17,10 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include <stdio.h>
-#include <limits.h>
-#include <string.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "ch-tree.h"
@@ -28,6 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "input.h"
 #include "obstack.h"
 #include "lex.h"
+#include "toplev.h"
 
 #ifndef LONG_TYPE_SIZE
 #define LONG_TYPE_SIZE BITS_PER_WORD
@@ -394,7 +393,7 @@ build_after_start (duration, delay_flag)
 void
 build_after_timeout_start ()
 {
-  tree label_name, goto_where;
+  tree label_name;
   
   if (! ignoring)
     {

@@ -24,14 +24,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    but what kind of conversions it does will depend on the language.  */
 
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "ch-tree.h"
 #include "flags.h"
 #include "convert.h"
 #include "lex.h"
+#include "toplev.h"
 
-extern void error                              PROTO((char *, ...));
-extern tree initializer_constant_valid_p       PROTO((tree, tree));
 extern tree bit_one_node, bit_zero_node;
 extern tree string_one_type_node;
 extern tree bitstring_one_type_node;
@@ -932,7 +932,6 @@ convert (type, expr)
 {
   register tree e = expr;
   register enum chill_tree_code code;
-  char *errstr;
   int type_varying;
 
   if (e == NULL_TREE || TREE_CODE (e) == ERROR_MARK)

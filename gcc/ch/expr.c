@@ -20,7 +20,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -29,25 +29,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "assert.h"
 #include "lex.h"
 #include "convert.h"
-
-#ifndef NULL
-#define NULL 0
-#endif
+#include "toplev.h"
 
 extern char **boolean_code_name;
 extern int  flag_old_strings;
 extern tree long_unsigned_type_node;
 extern int  ignore_case;
 extern int  special_UC;
-
-extern void check_for_full_enumeration_handling PROTO((tree));
-extern void chill_handle_case_default           PROTO((void));
-extern void error                               PROTO((char *, ...));
-extern void error_with_decl                     PROTO((tree, char *, ...));
-extern void fatal                               PROTO((char *, ...));
-extern void sorry                               PROTO((char *, ...));
-extern tree stabilize_reference                 PROTO((tree));
-extern void warning                             PROTO((char *, ...));
 
 /* definitions for duration built-ins */
 #define MILLISECS_MULTIPLIER                                 1
@@ -557,7 +545,6 @@ chill_expand_expr (exp, target, tmode, modifier)
 
     case SET_IN_EXPR:
       {
-	extern tree lookup_name PROTO((tree));
 	tree set = TREE_OPERAND (exp, 1);
 	tree pos = convert (long_unsigned_type_node, TREE_OPERAND (exp, 0));
 	tree set_type = TREE_TYPE (set);
@@ -602,7 +589,6 @@ chill_expand_expr (exp, target, tmode, modifier)
 
     case PACKED_ARRAY_REF:
       {
-	extern tree lookup_name PROTO((tree));
 	tree array = TREE_OPERAND (exp, 0);
 	tree pos = save_expr (TREE_OPERAND (exp, 1));
 	tree array_type = TREE_TYPE (array);
@@ -679,7 +665,7 @@ check_arglist_length (args, min_length, max_length, name)
 static tree
 internal_build_compound_expr (list, first_p)
      tree list;
-     int first_p;
+     int first_p ATTRIBUTE_UNUSED;
 {
   register tree rest;
 
@@ -1564,7 +1550,7 @@ build_allocate_getstack (mode, value, chill_name, fnname, filename, linenumber)
 {
   tree type, result;
   tree expr = NULL_TREE;
-  tree args, tmpvar, fncall, ptr, init, outlist = NULL_TREE;
+  tree args, tmpvar, fncall, ptr, outlist = NULL_TREE;
 
   if (mode == NULL_TREE || TREE_CODE (mode) == ERROR_MARK)
     return error_mark_node;
@@ -2125,7 +2111,6 @@ build_chill_pred_or_succ (expr, op)
 {
   struct ch_class class;
   tree etype, cond;
-  tree limit;
 
   if (pass == 1)
     return NULL_TREE;
@@ -3241,7 +3226,7 @@ varying_to_slice (exp)
   if (!chill_varying_type_p (TREE_TYPE (exp)))
     return exp;
   else
-    { tree size, data, data_domain, doamin, min;
+    { tree size, data, data_domain, min;
       tree novelty = CH_NOVELTY (TREE_TYPE (exp));
       exp = save_if_needed (exp);
       size = build_component_ref (exp, var_length_id);
@@ -3732,8 +3717,6 @@ finish_chill_binary_op (node)
   tree op1 = check_have_mode (TREE_OPERAND (node, 1), "binary expression");
   tree type0 = TREE_TYPE (op0);
   tree type1 = TREE_TYPE (op1);
-  enum tree_code code0;
-  enum tree_code code1;
   tree folded;
 
   if (TREE_CODE (op0) == ERROR_MARK || TREE_CODE (op1) == ERROR_MARK)
@@ -3902,8 +3885,6 @@ finish_chill_binary_op (node)
       return error_mark_node;
     }
 
-
- finish:
   if (TREE_TYPE (node) == NULL_TREE)
     {
       struct ch_class class;
@@ -3922,23 +3903,26 @@ finish_chill_binary_op (node)
     TREE_CONSTANT (folded) = TREE_CONSTANT (op0) & TREE_CONSTANT (op1);
 #endif
   if (TREE_CODE (node) == TRUNC_DIV_EXPR)
-    if (TREE_CONSTANT (op1))
-      {
-	if (tree_int_cst_equal (op1, integer_zero_node))
-	  {
-	    error ("division by zero");
-	    return integer_zero_node;
-	  }
-      }
-    else if (range_checking)
-      {
+    {
+      if (TREE_CONSTANT (op1))
+	{
+	  if (tree_int_cst_equal (op1, integer_zero_node))
+	    {
+	      error ("division by zero");
+	      return integer_zero_node;
+	    }
+	}
+      else if (range_checking)
+	{
 #if 0
-	tree test = build (EQ_EXPR, boolean_type_node, op1, integer_zero_node);
-	/* Should this be overflow? */
-	folded = check_expression (folded, test,
-				   ridpointers[(int) RID_RANGEFAIL]);
+	  tree test =
+	    build (EQ_EXPR, boolean_type_node, op1, integer_zero_node);
+	  /* Should this be overflow? */
+	  folded = check_expression (folded, test,
+				     ridpointers[(int) RID_RANGEFAIL]);
 #endif
-      }
+	}
+    }
   return folded;
 }
 
@@ -4035,7 +4019,7 @@ build_chill_addr_expr (ref, errormsg)
   if (! CH_LOCATION_P (ref)
       && TREE_CODE (TREE_TYPE (ref)) != FUNCTION_TYPE)
     {
-      error ("ADDR parameter must be a LOCATION", errormsg);
+      error ("ADDR parameter must be a LOCATION");
       return error_mark_node;
     }
   ref = build_chill_arrow_expr (ref, 1);
@@ -4358,8 +4342,6 @@ build_chill_unary_op (code, op0)
      tree op0;
 {
   register tree result = NULL_TREE;
-  struct ch_class class;
-  tree type0 = TREE_TYPE (op0);
 
   if (op0 == NULL_TREE || TREE_CODE (op0) == ERROR_MARK)
     return error_mark_node;
@@ -4482,8 +4464,6 @@ tree
 powersetlen (powerset)
      tree powerset;
 {
-  tree domain, temp;
-
   if (powerset == NULL_TREE || TREE_CODE (powerset) == ERROR_MARK)
     return error_mark_node;
 

@@ -18,9 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include <stdio.h>
-#include <limits.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "expr.h"
@@ -30,6 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "actions.h"
 #include "obstack.h"
 #include "assert.h"
+#include "toplev.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -42,18 +42,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern int flag_short_enums;
 extern int current_nesting_level;
-
-extern tree build_chill_compound_expr PROTO((tree));
-extern tree build_chill_exception_decl PROTO((char *));
-extern tree convert                   PROTO((tree, tree));
-extern rtx  emit_line_note_force      PROTO((char *, int));
-extern void error                     PROTO((char *, ...));
-extern void error_with_decl           PROTO((tree, char *, ...));
-extern rtx  gen_nop                   PROTO((void));
-extern tree get_identifier            PROTO((char *));
-extern void pedwarn                   PROTO((char *, ...));
-extern void sorry                     PROTO((char *, ...));
-extern void warning                   PROTO((char *, ...));
 
 extern struct obstack *expression_obstack, permanent_obstack;
 extern struct obstack *current_obstack, *saveable_obstack;
@@ -337,6 +325,8 @@ build_cause_exception (exp_name, warn_if_unhandled)
       if (lineno == NULL_TREE)
 	lineno = error_mark_node;
       break;
+    default:
+      abort();
     }
   result =
     build_chill_function_call (function,
@@ -849,8 +839,8 @@ update_else_range_for_range (else_range, low_target, high_target)
     {
       low_range_val  = TREE_INT_CST_LOW (TREE_PURPOSE (this_range));
       high_range_val = TREE_INT_CST_LOW (TREE_VALUE (this_range));
-      if (low_target_val >= low_range_val && low_target_val <= high_range_val
-	  || high_target_val >= low_range_val && high_target_val <= high_range_val)
+      if ((low_target_val >= low_range_val && low_target_val <= high_range_val)
+	  || (high_target_val >= low_range_val && high_target_val <= high_range_val))
 	break;
       prev_range = this_range;
     }
@@ -1305,7 +1295,7 @@ static tree
 chill_handle_multi_case_label_list (selector, labels)
   tree selector, labels;
 {
-  tree one_label, selector_value, larg, rarg;
+  tree one_label, larg, rarg;
 
   one_label = TREE_VALUE (labels);
   larg = chill_handle_multi_case_label (selector, TREE_VALUE (one_label));
@@ -1352,9 +1342,6 @@ build_multi_case_selector_expression (selector_list, label_spec)
   ((ARRAY)[(unsigned)(INDEX) / HOST_BITS_PER_CHAR]\
 			  |= 1 << ((unsigned)(INDEX) % HOST_BITS_PER_CHAR))
 
-extern HOST_WIDE_INT all_cases_count PROTO((tree, int*));
-extern void mark_seen_cases PROTO((tree, unsigned char*, long, int));
-
 /* CASES_SEEN is a set (bitarray) of length COUNT.
    For each element that is zero, print an error message,
    assume the element have the given TYPE. */
@@ -1388,9 +1375,9 @@ print_missing_cases (type, cases_seen, count)
 	      break;
 	    case CHAR_TYPE:
 	      if ((x >= ' ' && x < 127) && x != '\'' && x != '^')
-		sprintf (buf, "'%c'", x);
+		sprintf (buf, "'%c'", (char)x);
 	      else
-		sprintf (buf, "'^(%d)'", x);
+		sprintf (buf, "'^(%ld)'", x);
 	      err_val_name = buf;
 	      j = i;
 	      while (j < count && !BITARRAY_TEST(cases_seen, j))
@@ -1400,9 +1387,9 @@ print_missing_cases (type, cases_seen, count)
 		  long y = x+j-i-1;
 		  err_val_name += strlen (err_val_name);
 		  if ((y >= ' ' && y < 127) && y != '\'' && y != '^')
-		    sprintf (err_val_name, "%s:'%c'", buf, y);
+		    sprintf (err_val_name, "%s:'%c'", buf, (char)y);
 		  else
-		    sprintf (err_val_name, "%s:'^(%d)'", buf, y);
+		    sprintf (err_val_name, "%s:'^(%ld)'", buf, y);
 		  i = j - 1;      
 		}
 	      break;
@@ -1417,9 +1404,9 @@ print_missing_cases (type, cases_seen, count)
 	      while (j < count && !BITARRAY_TEST(cases_seen, j))
 		j++;
 	      if (j == i + 1)
-		sprintf (buf, "%d", x);
+		sprintf (buf, "%ld", x);
 	      else
-		sprintf (buf, "%d:%d", x, x+j-i-1);
+		sprintf (buf, "%ld:%ld", x, x+j-i-1);
 	      i = j - 1;      
 	      err_val_name = buf;
 	      break;

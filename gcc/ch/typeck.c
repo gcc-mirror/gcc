@@ -28,27 +28,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    like a strange sort of assignment).  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "tree.h"
 #include "ch-tree.h"
 #include "flags.h"
 #include "rtl.h"
 #include "expr.h"
 #include "lex.h"
-
-extern tree build_chill_compound_expr PROTO((tree));
-extern tree build_component_ref       PROTO((tree, tree));
-extern void c_expand_return           PROTO((tree));
-extern int  ch_singleton_set          PROTO((tree));
-extern void error                     PROTO((char *, ...));
-extern void error_with_decl           PROTO((tree, char *, ...));
-extern int  mark_addressable          PROTO((tree));
-extern void pedwarn                   PROTO((char *, ...));
-extern void pedwarn_with_decl         PROTO((tree, char *, ...));
-extern tree require_complete_type     PROTO((tree));
-extern void sorry                     PROTO((char *, ...));
-extern void warning                   PROTO((char *, ...));
-extern int  get_type_precision        PROTO((tree, tree));
+#include "toplev.h"
 
 extern tree intQI_type_node;
 extern tree intHI_type_node;
@@ -63,9 +50,9 @@ extern tree unsigned_intDI_type_node;
 extern tree unsigned_intTI_type_node;
 
 /* forward declarations */
-tree chill_expand_tuple PROTO((tree, tree));
 static int chill_l_equivalent PROTO((tree, tree, struct mode_chain*));
-extern tree extract_constant_from_buffer();
+static tree extract_constant_from_buffer PROTO((tree, unsigned char *, int));
+static int expand_constant_to_buffer PROTO((tree, unsigned char *, int));
 
 /*
  * This function checks an array access.
@@ -249,7 +236,6 @@ build_chill_slice (array, min_value, length)
       tree element_type = TREE_TYPE (array_type);
       tree slice_type = build_simple_array_type (element_type, index_type, NULL_TREE);
       tree slice_pointer_type;
-      int is_static;
       tree max_size;
 
       if (CH_CHARS_TYPE_P (array_type))
@@ -729,7 +715,7 @@ convert_to_discrete (exp)
    Returns 1 on success, or 0 on failure. (Either the VALUE was
    not constant, or we don't know how to do the conversion.) */
 
-int
+static int
 expand_constant_to_buffer (value, buffer, buf_size)
      tree value;
      unsigned char *buffer; 
@@ -782,10 +768,12 @@ expand_constant_to_buffer (value, buffer, buf_size)
 	    {
 	      tree min_val = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
 	      if (min_val)
-		if (TREE_CODE (min_val) != INTEGER_CST)
-		  return 0;
-		else
-		  min_index = TREE_INT_CST_LOW (min_val);
+		{
+		  if (TREE_CODE (min_val) != INTEGER_CST)
+		    return 0;
+		  else
+		    min_index = TREE_INT_CST_LOW (min_val);
+		}
 	    }
 
 	  next_index = min_index;
@@ -858,7 +846,7 @@ expand_constant_to_buffer (value, buffer, buf_size)
    Returns NULL_TREE on failure. (E.g. the TYPE might be variable size,
    or perhaps we don't know how to do the conversion.) */
 
-tree
+static tree
 extract_constant_from_buffer (type, buffer, buf_size)
      tree type;
      unsigned char *buffer;
@@ -912,10 +900,12 @@ extract_constant_from_buffer (type, buffer, buf_size)
 	  return 0;
 	value = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
 	if (value)
-	  if (TREE_CODE (value) != INTEGER_CST)
-	    return 0;
-	  else
-	    min_index = TREE_INT_CST_LOW (value);
+	  {
+	    if (TREE_CODE (value) != INTEGER_CST)
+	      return 0;
+	    else
+	      min_index = TREE_INT_CST_LOW (value);
+	  }
 	value = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
 	if (value == NULL_TREE || TREE_CODE (value) != INTEGER_CST)
 	  return 0;
@@ -1845,12 +1835,14 @@ chill_compatible (expr, mode)
     mode = TREE_TYPE (mode);
 
   if (TREE_TYPE (expr) == NULL_TREE)
-    if (TREE_CODE (expr) == CONSTRUCTOR)
-      return TREE_CODE (mode) == RECORD_TYPE
-	|| ((TREE_CODE (mode) == SET_TYPE || TREE_CODE (mode) == ARRAY_TYPE)
-	    && ! TYPE_STRING_FLAG (mode));
-    else
-      return TREE_CODE (expr) == CASE_EXPR || TREE_CODE (expr) == COND_EXPR;
+    {
+      if (TREE_CODE (expr) == CONSTRUCTOR)
+	return TREE_CODE (mode) == RECORD_TYPE
+	  || ((TREE_CODE (mode) == SET_TYPE || TREE_CODE (mode) == ARRAY_TYPE)
+	      && ! TYPE_STRING_FLAG (mode));
+      else
+	return TREE_CODE (expr) == CASE_EXPR || TREE_CODE (expr) == COND_EXPR;
+    }
 
   class = chill_expr_class (expr);
   switch (class.kind)
@@ -2733,7 +2725,7 @@ apply_chill_array_layout (array_type)
      tree array_type;
 {
   tree layout, temp, what, element_type;
-  int stepsize, word, start_bit, offset, length, natural_length;
+  int stepsize, word, start_bit, length, natural_length;
   int stepsize_specified;
   int start_bit_error = 0;
   int length_error = 0;
@@ -3351,7 +3343,6 @@ smash_dummy_type (type)
   int  save_readonly = TYPE_READONLY (type);
   tree  save_novelty = CH_NOVELTY (type);
   tree save_domain = TYPE_DOMAIN (type);
-  struct lang_type *save_lang_specific = TYPE_LANG_SPECIFIC (type);
 
   if (origin == NULL_TREE)
     abort ();
@@ -3795,9 +3786,9 @@ initializer_constant_valid_p (value, endtype)
 	  return null_pointer_node;
 	return 0;
       }
+    default:
+      return 0;
     }
-
-  return 0;
 }
 
 /* Return an integer type with BITS bits of precision,

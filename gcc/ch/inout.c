@@ -17,10 +17,8 @@
    along with GNU CC; see the file COPYING.  If not, write to
    the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "ch-tree.h"
 #include "rtl.h"
@@ -28,18 +26,13 @@
 #include "flags.h"
 #include "input.h"
 #include "assert.h"
+#include "toplev.h"
 
 /* set non-zero if input text is forced to lowercase */
 extern int ignore_case;
 
 /* set non-zero if special words are to be entered in uppercase */
 extern int special_UC;
-
-extern void error   PROTO((char *, ...));
-extern void sorry   PROTO((char *, ...));
-extern void warning PROTO((char *, ...));
-
-extern tree build_chill_compound_expr PROTO((tree));
 
 static int intsize_of_charsexpr PROTO((tree));
 
@@ -1722,7 +1715,7 @@ textlocation_mode (text)
   field = TYPE_FIELDS (text);
   for ( ; field != NULL_TREE; field = TREE_CHAIN (field))
     {
-      if (TREE_CODE (field) == FIELD_DECL &
+      if (TREE_CODE (field) == FIELD_DECL &&
 	  DECL_NAME (field) == get_identifier ("tloc"))
 	return TREE_TYPE (field);
     }
@@ -4161,7 +4154,6 @@ scanformcont (fcs, len, fcsptr, lenptr, exprlist, exprptr,
 	      break;
 	    }
 	  
-	do_the_action: ;
 	  state = FormatText;
 	  break;
 	  

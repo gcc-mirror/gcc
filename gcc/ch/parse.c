@@ -40,14 +40,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. */
  * Then code is generated.
  */
 
-#include <stdio.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "ch-tree.h"
 #include "lex.h"
 #include "actions.h"
 #include "tasking.h"
 #include "parse.h"
+#include "toplev.h"
 
 /* Since parsers are distinct for each language, put the 
    language string definition here.  (fnf) */
@@ -68,26 +69,11 @@ char *language_string = "GNU CHILL";
 /* Cause the `yydebug' variable to be defined.  */
 #define YYDEBUG 1
 
-extern void assemble_external                 PROTO((tree));
-extern void chill_check_no_handlers           PROTO((void));
-extern void chill_finish_on                   PROTO((void));
-extern void chill_handle_case_default         PROTO((void));
-extern void chill_handle_on_labels            PROTO((tree));
-extern tree chill_initializer_constant_valid_p PROTO((tree, tree));
-extern void chill_start_default_handler       PROTO((void));
-extern void chill_start_on                    PROTO((void));
-extern struct rtx_def* emit_line_note         PROTO((char *, int));
 extern struct rtx_def* gen_label_rtx	      PROTO((void));
 extern void emit_jump                         PROTO((struct rtx_def *));
 extern void emit_label                        PROTO((struct rtx_def *));
-extern void error                             PROTO((char *, ...));
-extern int  expand_exit_labelled              PROTO((tree));
-extern void lookup_and_expand_goto            PROTO((tree));
-extern void lookup_and_handle_exit            PROTO((tree));
 
-extern void push_granted                      PROTO((tree, tree));
-extern void sorry                             PROTO((char *, ...));
-extern void warning                           PROTO((char *, ...));
+static int parse_action				PROTO((void));
 
 extern int  lineno;
 extern char *input_filename;
@@ -96,7 +82,9 @@ extern tree signal_code;
 extern int all_static_flag;
 extern int ignore_case;
      
+#if 0
 static int  quasi_signal = 0;  /* 1 if processing a quasi signal decl */
+#endif
 
 int parsing_newmode;                       /* 0 while parsing SYNMODE; 
 					      1 while parsing NEWMODE. */
@@ -261,7 +249,7 @@ static YYSTYPE val_buffer[MAX_LOOK_AHEAD+1];
 #ifdef __GNUC__
 __inline__
 #endif
-static int
+static enum terminal
 PEEK_TOKEN()
 {
   if (terminal_buffer[0] == TOKEN_NOT_READ)
@@ -533,8 +521,6 @@ parse_opt_end_label_semi_colon (start_label)
   parse_semi_colon ();
 }
 
-extern tree set_module_name ();
-
 static void
 parse_modulion (label)
      tree label;
@@ -633,7 +619,6 @@ void
 parse_mode_definition_statement (is_newmode)
      int is_newmode;
 {
-  tree names;
   FORWARD_TOKEN (); /* skip SYNMODE or NEWMODE */
   parse_mode_definition (is_newmode);
   while (PEEK_TOKEN () == COMMA)
@@ -1077,8 +1062,7 @@ parse_param_attr ()
 /* In pass 1, returns list of types; in pass 2: chain of PARM_DECLs. */
    
 static tree
-parse_formpar (in_spec_module)
-     int in_spec_module;
+parse_formpar ()
 {
   tree names = parse_param_name_list ();
   tree mode = parse_mode ();
@@ -1093,15 +1077,14 @@ parse_formpar (in_spec_module)
  * also need change.  Push_extern_process is affected as well.
  */
 static tree
-parse_formparlist (in_spec_module)
-     int in_spec_module;
+parse_formparlist ()
 {
   tree list = NULL_TREE;
   if (PEEK_TOKEN() == RPRN)
     return NULL_TREE;
   for (;;)
     {
-      list = chainon (list, parse_formpar (in_spec_module));
+      list = chainon (list, parse_formpar ());
       if (! check_token (COMMA))
 	break;
     }
@@ -1233,7 +1216,7 @@ parse_procedure_definition (in_spec_module)
     ignoring = pass == 2;
   require (COLON); require (PROC);
   expect (LPRN, "missing '(' after PROC");
-  params = parse_formparlist (in_spec_module);
+  params = parse_formparlist ();
   expect (RPRN, "missing ')' in PROC");
   result = parse_opt_result_spec ();
   exceptlist = parse_opt_except ();
@@ -1259,7 +1242,7 @@ parse_processpar ()
   tree names = parse_defining_occurrence_list ();
   tree mode = parse_mode ();
   tree paramattr = parse_param_attr ();
-  tree parms = NULL_TREE;
+
   if (names && TREE_CODE (names) == IDENTIFIER_NODE)
     names = build_tree_list (NULL_TREE, names);
   return tree_cons (tree_cons (paramattr, mode, NULL_TREE), names, NULL_TREE);
@@ -1395,16 +1378,18 @@ parse_definition (in_spec_module)
     {
     case NAME:
       if (PEEK_TOKEN1() == COLON)
-	if (PEEK_TOKEN2() == PROC)
-	  {
-	    parse_procedure_definition (in_spec_module);
-	    return 1;
-	  }
-	else if (PEEK_TOKEN2() == PROCESS)
-	  {
-	    parse_process_definition (in_spec_module);
-	    return 1;
-	  }
+	{
+	  if (PEEK_TOKEN2() == PROC)
+	    {
+	      parse_procedure_definition (in_spec_module);
+	      return 1;
+	    }
+	  else if (PEEK_TOKEN2() == PROCESS)
+	    {
+	      parse_process_definition (in_spec_module);
+	      return 1;
+	    }
+	}
       return 0;
     case DCL:
       parse_declaration_statement(in_spec_module);
@@ -1684,10 +1669,9 @@ static void
 parse_multi_dimension_case_action (selector)
      tree selector;
 {
-  struct rtx_def *begin_test_label, *end_case_label, *new_label;
+  struct rtx_def *begin_test_label = 0, *end_case_label, *new_label;
   tree action_labels = NULL_TREE;
   tree tests = NULL_TREE;
-  tree new_test;
   int  save_lineno = lineno;
   char *save_filename = input_filename;
 
@@ -1816,10 +1800,6 @@ parse_case_action (label)
   tree selector;
   int  multi_dimension_case = 0;
 
-/* The case label/action toggle.  It is 0 initially, and when an action
-   was last seen.  It is 1 integer_zero_node when a label was last seen. */
-  int caseaction_flag = 0;
-
   require (CASE);
   selector = parse_expr_list ();
   selector = nreverse (selector);
@@ -1897,7 +1877,7 @@ parse_asm_clobbers ()
   tree list = NULL_TREE;
   for (;;)
     {
-      tree string, expr;
+      tree string;
       if (PEEK_TOKEN () != STRING)
 	{
 	  error ("bad ASM operand");
@@ -2176,7 +2156,7 @@ static void
 parse_delay_case_action (label)
      tree label;
 {
-  tree label_cnt, set_location, priority;
+  tree label_cnt = NULL_TREE, set_location, priority;
   tree combined_event_list = NULL_TREE;
   require (DELAY);
   require (CASE);
@@ -2577,7 +2557,7 @@ parse_opt_actions ()
   while (parse_action ()) ;
 }
 
-int
+static int
 parse_action ()
 {
   tree label = NULL_TREE;
@@ -2962,7 +2942,7 @@ parse_tuple_element ()
 {
   /* The tupleelement chain is built in reverse order,
      and put in forward order when the list is used.  */
-  tree value, list, label;
+  tree value, label;
   if (PEEK_TOKEN () == DOT)
     {
       /* Parse a labelled structure tuple. */
@@ -3152,6 +3132,8 @@ parse_primval ()
 	  args = parse_primval ();
 	  val = ignoring ? val : build_generalized_call (val, args);
 	  continue;
+	default:
+	  break;
 	}
       break;
     }
@@ -3755,8 +3737,8 @@ parse_variant_field_list ()
 static tree
 parse_variant_alternative ()
 {
-  tree labels, x;
-  tree variant_fields = NULL_TREE;
+  tree labels;
+
   if (PEEK_TOKEN () == LPRN)
     labels = parse_case_label_specification (NULL_TREE);
   else

@@ -17,14 +17,11 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include <stdio.h>
-#include <errno.h>
+#include "config.h"
+#include "system.h"
 #include <setjmp.h>
-#include <ctype.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 
-#include "config.h"
 #include "tree.h"
 #include "input.h"
 
@@ -33,24 +30,24 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include "parse.h"
 #include "obstack.h"
+#include "toplev.h"
 
 #ifdef MULTIBYTE_CHARS
-#include <stdlib.h>
 #include <locale.h>
 #endif
 
 /* include the keyword recognizers */
 #include "hash.h"
 
-#undef strchr
-
 FILE* finput;
 
+#if 0
 static int	last_token = 0;
 /* Sun's C compiler warns about the safer sequence 
    do { .. } while 0 
    when there's a 'return' inside the braces, so don't use it */
 #define RETURN_TOKEN(X) { last_token = X; return (X); }
+#endif
 
 /* This is set non-zero to force incoming tokens to lowercase. */
 extern int ignore_case;
@@ -64,23 +61,6 @@ extern int special_UC;
 extern struct obstack permanent_obstack;
 extern struct obstack temporary_obstack;
 
-#ifndef errno
-extern int errno;
-#endif
-
-extern tree build_string_type        PROTO((tree, tree));
-extern void error                    PROTO((char *, ...));
-extern void error_with_file_and_line PROTO((char *, int, char *, ...));
-extern void grant_use_seizefile      PROTO((char *));
-extern void pedwarn                  PROTO((char *, ...));
-extern void pfatal_with_name         PROTO((char *));
-extern void push_obstacks PROTO((struct obstack *, struct obstack *));
-extern void set_identifier_size      PROTO((int));
-extern void sorry                    PROTO((char *, ...));
-extern int  target_isinf             PROTO((REAL_VALUE_TYPE));
-extern int  tolower                  PROTO((int));
-extern void warning                  PROTO((char *, ...));
-
 /* forward declarations */
 static void close_input_file         PROTO((char *));
 static tree convert_bitstring        PROTO((char *));
@@ -90,7 +70,6 @@ static int  maybe_number             PROTO((char *));
 static tree equal_number             PROTO((void));
 static void handle_use_seizefile_directive PROTO((int));
 static int  handle_name		     PROTO((tree));
-static void push_back                PROTO((int));
 static char *readstring              PROTO((int, int *));
 static void read_directive	     PROTO((void));
 static tree read_identifier	     PROTO((int));
@@ -508,7 +487,7 @@ yylex ()
 		break;
 	      if (ch == '_')
 		continue;
-	      if (!isxdigit (ch))           /* error on non-hex digit */
+	      if (!ISXDIGIT (ch))           /* error on non-hex digit */
 		{
 		  if (pass == 1)
 		    error ("invalid C'xx' ");
@@ -544,7 +523,7 @@ yylex ()
 	  for (;;)
 	    {
 	      ch = input ();
-	      if (isalnum (ch))
+	      if (ISALNUM (ch))
 		obstack_1grow (&temporary_obstack, ch);
 	      else if (ch != '_')
 		break;
@@ -594,7 +573,7 @@ yylex ()
     case '.':
       nextc = input ();
       unput (nextc);
-      if (isdigit (nextc)) /* || nextc == '_')  we don't start numbers with '_' */
+      if (ISDIGIT (nextc)) /* || nextc == '_')  we don't start numbers with '_' */
 	goto number;
       return DOT;
     case '0': case '1': case '2': case '3': case '4':
@@ -637,7 +616,7 @@ read_identifier (first)
       first = input ();
       if (first == EOF)
 	break;
-      if (! isalnum (first) && first != '_')
+      if (! ISALNUM (first) && first != '_')
 	{
 	  unput (first);
 	  break;
@@ -661,7 +640,7 @@ handle_name (id)
   struct resword *tp;
   tp = in_word_set (IDENTIFIER_POINTER (id), IDENTIFIER_LENGTH (id));
   if (tp != NULL
-      && special_UC == isupper (tp->name[0])
+      && special_UC == ISUPPER ((unsigned char) tp->name[0])
       && (tp->flags == RESERVED || tp->flags == PREDEF))
     {
       if (tp->rid != NORID)
@@ -686,7 +665,7 @@ read_number (ch)
       if (ch != '_')
 	obstack_1grow (&temporary_obstack, ch);
       ch = input ();
-      if (! isdigit (ch) && ch != '_')
+      if (! ISDIGIT (ch) && ch != '_')
 	break;
     }
   if (ch == '.')
@@ -696,7 +675,7 @@ read_number (ch)
 	  if (ch != '_')
 	    obstack_1grow (&temporary_obstack, ch);
 	  ch = input ();
-	} while (isdigit (ch) || ch == '_');
+	} while (ISDIGIT (ch) || ch == '_');
       is_float++;
     }
   if (ch == 'd' || ch == 'D' || ch == 'e' || ch == 'E')
@@ -709,14 +688,14 @@ read_number (ch)
 	  obstack_1grow (&temporary_obstack, ch);
 	  ch = input ();
 	}
-      if (isdigit (ch) || ch == '_')
+      if (ISDIGIT (ch) || ch == '_')
 	{
 	  do
 	    {
 	      if (ch != '_')
 		obstack_1grow (&temporary_obstack, ch);
 	      ch = input ();
-	    } while (isdigit (ch) || ch == '_');
+	    } while (ISDIGIT (ch) || ch == '_');
 	}
       else
 	{
@@ -779,7 +758,7 @@ read_directive ()
   struct resword *tp;
   tree id;
   int ch = skip_whitespace();
-  if (isalpha (ch) || ch == '_')
+  if (ISALPHA (ch) || ch == '_')
     id = read_identifier (ch);
   else if (ch == EOF)
     {
@@ -794,7 +773,7 @@ read_directive ()
       return;
     }
   tp = in_word_set (IDENTIFIER_POINTER (id), IDENTIFIER_LENGTH (id));
-  if (tp == NULL || special_UC != isupper (tp->name[0]))
+  if (tp == NULL || special_UC != ISUPPER ((unsigned char) tp->name[0]))
     {
       if (pass == 1)
 	warning ("unrecognized compiler directive `%s'",
@@ -897,7 +876,7 @@ maybe_downcase (str)
     return;
   while (*str)
     {
-      if (isupper (*str))
+      if (ISUPPER ((unsigned char) *str))
 	*str = tolower (*str);
       str++;
     }
@@ -938,7 +917,7 @@ maybe_number (s)
 	  break;
 	case 'h':
 	case 'H':
-	  if (!isxdigit (*s))
+	  if (!ISXDIGIT ((unsigned char) *s))
 	    return 0;
 	  break;
 	case 'b':
@@ -958,15 +937,6 @@ maybe_number (s)
     }
   return 1;
 }
-
-static void
-push_back (c)
-char c;
-{
-  if (c == '\n')
-    lineno--;
-  unput (c);
-}
 
 static char *
 readstring (terminator, len)
@@ -976,7 +946,7 @@ readstring (terminator, len)
   int      c;
   unsigned allocated = 1024;
   char    *tmp = xmalloc (allocated);
-  int      i = 0;
+  unsigned i = 0;
   
   for (;;)
     {
@@ -1110,14 +1080,14 @@ readstring (terminator, len)
 		    }
 		  else if (base == 10)
 		    {
-		      if (! isdigit (cc))
+		      if (! ISDIGIT (cc))
 			cc = -1;
 		      else
 			cc -= '0';
 		    }
 		  else if (base == 16)
 		    {
-		      if (!isxdigit (cc))
+		      if (!ISXDIGIT (cc))
 			cc = -1;
 		      else
 			{
@@ -1212,7 +1182,7 @@ convert_integer (intchars)
       base = 2;
       break;
     default:
-      if (!isdigit (*p))   /* this test is for equal_number () */
+      if (!ISDIGIT (*p))   /* this test is for equal_number () */
 	{
 	  obstack_free (&temporary_obstack, intchars);
 	  return 0;
@@ -1380,7 +1350,6 @@ same_file (filename1, filename2)
   struct stat s[2];
   char        *fn_input[2];
   int         i, stat_status;
-  extern char *strchr();
   
   if (grant_only_flag)
     /* do nothing in this case */
@@ -1490,7 +1459,7 @@ getlc (file)
   register int c;
 
   c = getc (file);  
-  if (isupper (c) && ignore_case)
+  if (ISUPPER (c) && ignore_case)
     c = tolower (c);
   return c;
 }
@@ -1554,7 +1523,7 @@ check_newline ()
      it and ignore it; otherwise, ignore the line, with an error
      if the word isn't `pragma', `ident', `define', or `undef'.  */
 
-  if (isupper (c) && ignore_case)
+  if (ISUPPER (c) && ignore_case)
     c = tolower (c);
 
   if (c >= 'a' && c <= 'z')
@@ -1566,14 +1535,14 @@ check_newline ()
 	      && getlc (finput) == 'g'
 	      && getlc (finput) == 'm'
 	      && getlc (finput) == 'a'
-	      && (isspace (c = getlc (finput))))
+	      && (c = getlc (finput), ISSPACE (c)))
 	    {
 #ifdef HANDLE_PRAGMA
 	      static char buffer [128];
 	      char * buff = buffer;
 
 	      /* Read the pragma name into a buffer.  */
-	      while (isspace (c = getlc (finput)))
+	      while (c = getlc (finput), ISSPACE (c))
 		continue;
 	      
 	      do
@@ -1581,7 +1550,7 @@ check_newline ()
 		  * buff ++ = c;
 		  c = getlc (finput);
 		}
-	      while (c != EOF && ! isspace (c) && c != '\n'
+	      while (c != EOF && ! ISSPACE (c) && c != '\n'
 		     && buff < buffer + 128);
 
 	      pragma_ungetc (c);
@@ -1601,7 +1570,7 @@ check_newline ()
 	      && getlc (finput) == 'i'
 	      && getlc (finput) == 'n'
 	      && getlc (finput) == 'e'
-	      && (isspace (c = getlc (finput))))
+	      && (c = getlc (finput), ISSPACE (c)))
 	    {
 #if 0 /*def DWARF_DEBUGGING_INFO*/
 	      if (c != '\n'
@@ -1618,7 +1587,7 @@ check_newline ()
 	      && getlc (finput) == 'd'
 	      && getlc (finput) == 'e'
 	      && getlc (finput) == 'f'
-	      && (isspace (c = getlc (finput))))
+	      && (c = getlc (finput), ISSPACE (c)))
 	    {
 #if 0 /*def DWARF_DEBUGGING_INFO*/
 	      if (c != '\n'
@@ -1699,7 +1668,7 @@ linenum:
 
   /* Something follows the #; read a token.  */
 
-  if (isdigit(c))
+  if (ISDIGIT(c))
     {
       int old_lineno = lineno;
       int used_up = 0;
@@ -1710,7 +1679,7 @@ linenum:
 	{
 	  l = l * 10 + (c - '0'); /* FIXME Not portable */
 	  c = getlc(finput);
-	} while (isdigit(c));
+	} while (ISDIGIT(c));
       /* subtract one, because it is the following line that
 	 gets the specified number */
 
@@ -1777,7 +1746,7 @@ linenum:
       /* `1' after file name means entering new file.
 	 `2' after file name means just left a file.  */
 
-      if (isdigit (c))
+      if (ISDIGIT (c))
 	{
 	  if (c == '1')
 	    {
@@ -1976,7 +1945,7 @@ equal_number ()
   /* collect token into tokenbuf for later analysis */
   while (TRUE)
     {
-      if (isspace (c) || c == '<')
+      if (ISSPACE (c) || c == '<')
 	break;
       obstack_1grow (&temporary_obstack, c);
       c = input ();
@@ -2017,7 +1986,7 @@ equal_number ()
     {
       cursor = tokenbuf;
       c = *cursor;
-      if (!isalpha (c) && c != '_')
+      if (!ISALPHA (c) && c != '_')
 	{
 	  if (pass == 1)
 	    error ("invalid value follows `=' in compiler directive");
@@ -2025,7 +1994,8 @@ equal_number ()
 	}
 
       for (cursor = &tokenbuf[1]; *cursor != '\0'; cursor++)
-	if (isalpha (*cursor) || *cursor == '_' || isdigit (*cursor))
+	if (ISALPHA ((unsigned char) *cursor) || *cursor == '_' ||
+	    ISDIGIT (*cursor))
 	  continue;
 	else
 	  {
@@ -2117,9 +2087,7 @@ mark_use_seizefile_written (name)
 static int
 yywrap ()
 {
-  extern char *strchr ();
   extern char *chill_real_input_filename;
-  tree node;
 
   close_input_file (input_filename);
 
