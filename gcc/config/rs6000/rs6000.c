@@ -2063,7 +2063,7 @@ expand_block_move (operands)
   rtx bytes_rtx	= operands[2];
   rtx align_rtx = operands[3];
   int constp	= (GET_CODE (bytes_rtx) == CONST_INT);
-  int align	= XINT (align_rtx, 0);
+  int align;
   int bytes;
   int offset;
   int num_reg;
@@ -2079,6 +2079,11 @@ expand_block_move (operands)
   /* If this is not a fixed size move, just call memcpy */
   if (! constp)
     return 0;
+
+  /* If this is not a fixed size alignment, abort */
+  if (GET_CODE (align_rtx) != CONST_INT)
+    abort ();
+  align = INTVAL (align_rtx);
 
   /* Anything to move? */
   bytes = INTVAL (bytes_rtx);
