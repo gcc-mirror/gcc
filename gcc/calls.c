@@ -886,10 +886,10 @@ expand_call (exp, target, ignore)
 	{
 	  /* We make a copy of the object and pass the address to the function
 	     being called.  */
-	  int size = int_size_in_bytes (type);
 	  rtx copy;
 
-	  if (size < 0)
+	  if (TYPE_SIZE (type) == 0
+	      || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	    {
 	      /* This is a variable-sized object.  Make space on the stack
 		 for it.  */
@@ -908,7 +908,10 @@ expand_call (exp, target, ignore)
 							    TYPE_ALIGN (type)));
 	    }
 	  else
-	    copy = assign_stack_temp (TYPE_MODE (type), size, 1);
+	    {
+	      int size = int_size_in_bytes (type);
+	      copy = assign_stack_temp (TYPE_MODE (type), size, 1);
+	    }
 
 	  store_expr (args[i].tree_value, copy, 0);
 
