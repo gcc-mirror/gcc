@@ -148,10 +148,25 @@ extern char *current_function_original_name;
 	fprintf (FILE, ":\n");						\
   } while (0)
 
+/* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
+ 
+   Note that we want to give these sections the SHF_WRITE attribute
+   because these sections will actually contain data (i.e. tables of
+   addresses of functions in the current root executable or shared library
+   file) and, in the case of a shared library, the relocatable addresses
+   will have to be properly resolved/relocated (and then written into) by
+   the dynamic linker when it actually attaches the given shared library
+   to the executing process.  (Note that on SVR4, you may wish to use the
+   `-z text' option to the ELF linker, when building a shared library, as
+   an additional check that you are doing everything right.  But if you do
+   use the `-z text' option when building a shared library, you will get
+   errors unless the .ctors and .dtors sections are marked as writable
+   via the SHF_WRITE attribute.)  */
+ 
 #undef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"a\",\"progbits\""
+#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"aw\""
 #undef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"a\",\"progbits\""
+#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"aw\""
 
 /* Add definitions to support the .tdesc section as specified in the svr4
    ABI for the i860.  */

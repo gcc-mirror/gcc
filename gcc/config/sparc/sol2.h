@@ -102,13 +102,13 @@ do {									\
 #define STARTFILE_SPEC "%{!shared: \
 			 %{!symbolic: \
 			  %{pg:crt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}} \
-			  %{pg:gmon.o%s} \
-			  %{pg:crti.o%s}%{!pg:crti.o%s} \
-			  %{ansi:/usr/ccs/lib/values-Xc.o%s} \
-			  %{!ansi: \
-			   %{traditional:/usr/ccs/lib/values-Xt.o%s} \
-			   %{!traditional:/usr/ccs/lib/values-Xa.o%s}}}} \
-			  crtbegin.o%s"
+			  %{pg:gmon.o%s}}} \
+			%{pg:crti.o%s}%{!pg:crti.o%s} \
+			%{ansi:/usr/ccs/lib/values-Xc.o%s} \
+			%{!ansi: \
+			 %{traditional:/usr/ccs/lib/values-Xt.o%s} \
+			 %{!traditional:/usr/ccs/lib/values-Xa.o%s}} \
+			crtbegin.o%s"
 
 /* ??? Note: in order for -compat-bsd to work fully,
    we must somehow arrange to fixincludes /usr/ucbinclude
@@ -116,10 +116,10 @@ do {									\
 
 #undef LIB_SPEC
 #define LIB_SPEC \
-  "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
-   %{!shared:%{!symbolic:-lc}} \
-   crtend.o%s \
-   %{!shared:%{!symbolic:%{pg:crtn.o%s}%{!pg:crtn.o%s}}}"
+  "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} %{!shared:%{!symbolic:-lc}}"
+
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC "crtend.o%s %{pg:crtn.o%s}%{!pg:crtn.o%s}"
 
 /* This should be the same as in svr4.h, except with -R added.  */
 #undef LINK_SPEC
@@ -127,8 +127,8 @@ do {									\
   "%{h*} %{V} %{v:%{!V:-V}} \
    %{b} %{Wl,*:%*} \
    %{static:-dn -Bstatic} \
-   %{shared:-G -dy} \
-   %{symbolic:-Bsymbolic -G -dy} \
+   %{shared:-G -dy -z text} \
+   %{symbolic:-Bsymbolic -G -dy -z text} \
    %{G:-G} \
    %{YP,*} \
    %{R*} \

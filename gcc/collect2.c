@@ -107,6 +107,7 @@ extern int sys_nerr;
    cross-versions are in the proper directories.  */
 
 #ifdef CROSS_COMPILE
+#undef SUNOS4_SHARED_LIBRARIES
 #undef OBJECT_FORMAT_COFF
 #undef OBJECT_FORMAT_ROSE
 #undef MD_EXEC_PREFIX
@@ -188,6 +189,9 @@ extern int sys_nerr;
 #define SYMBOL__MAIN __main
 #endif
 
+#if defined (LDD_SUFFIX) || defined (SUNOS4_SHARED_LIBRARIES)
+#define SCAN_LIBRARIES
+#endif
 
 /* Linked lists of constructor and destructor names. */
 
@@ -209,6 +213,7 @@ struct head
 
 enum pass {
   PASS_FIRST,				/* without constructors */
+  PASS_LIB,			        /* looking for shared libraries */
   PASS_SECOND				/* with constructors linked in */
 };
 
@@ -225,12 +230,15 @@ static int strip_flag;			/* true if -s */
 
 static int debug;			/* true if -debug */
 
+static int shared_obj;		        /* true if -shared */
+
 static int   temp_filename_length;	/* Length of temp_filename */
 static char *temp_filename;		/* Base of temp filenames */
 static char *c_file;			/* <xxx>.c for constructor/destructor list. */
 static char *o_file;			/* <xxx>.o for constructor/destructor list. */
 static char *output_file;		/* Output file for ld.  */
 static char *nm_file_name;		/* pathname of nm */
+static char *ldd_file_name;		/* pathname of ldd (or equivalent) */
 static char *strip_file_name;		/* pathname of strip */
 
 static struct head constructors;	/* list of constructors found */
@@ -272,6 +280,7 @@ static void write_list		PROTO((FILE *, char *, struct id *));
 static void write_list_with_asm PROTO((FILE *, char *, struct id *));
 static void write_c_file	PROTO((FILE *, char *));
 static void scan_prog_file	PROTO((char *, enum pass));
+static void scan_libraries	PROTO((char *));
 
 generic *xcalloc ();
 generic *xmalloc ();
@@ -467,6 +476,8 @@ is_ctor_dtor (s)
     { "GLOBAL_$I$", sizeof ("GLOBAL_$I$")-1, 1, 0 },
     { "GLOBAL_$D$", sizeof ("GLOBAL_$D$")-1, 2, 0 },
 #endif
+    { "GLOBAL__FI_", sizeof ("GLOBAL__FI_")-1, 3, 0 },
+    { "GLOBAL__FD_", sizeof ("GLOBAL__FD_")-1, 4, 0 },
 #ifdef CFRONT_LOSSAGE /* Don't collect cfront initialization functions.
 			 cfront has its own linker procedure to collect them;
 			 if collect2 gets them too, they get collected twice
@@ -792,6 +803,10 @@ main (argc, argv)
   char *full_nm_suffix	= nm_suffix;
   char *gnm_suffix	= "gnm";
   char *full_gnm_suffix	= gnm_suffix;
+#ifdef LDD_SUFFIX
+  char *ldd_suffix	= LDD_SUFFIX;
+  char *full_ldd_suffix	= ldd_suffix;
+#endif
   char *strip_suffix	= "strip";
   char *full_strip_suffix = strip_suffix;
   char *gstrip_suffix	= "gstrip";
@@ -943,6 +958,14 @@ main (argc, argv)
   strcat (full_gnm_suffix, "-");
   strcat (full_gnm_suffix, gnm_suffix);
 
+#ifdef LDD_SUFFIX
+  full_ldd_suffix
+    = xcalloc (strlen (ldd_suffix) + strlen (target_machine) + 2, 1);
+  strcpy (full_ldd_suffix, target_machine);
+  strcat (full_ldd_suffix, "-");
+  strcat (full_ldd_suffix, ldd_suffix);
+#endif
+
   full_strip_suffix
     = xcalloc (strlen (strip_suffix) + strlen (target_machine) + 2, 1);
   strcpy (full_strip_suffix, target_machine);
@@ -1010,6 +1033,12 @@ main (argc, argv)
     nm_file_name = find_a_file (&cpath, nm_suffix);
   if (nm_file_name == 0)
     nm_file_name = find_a_file (&path, full_nm_suffix);
+
+#ifdef LDD_SUFFIX
+  ldd_file_name = find_a_file (&cpath, ldd_suffix);
+  if (ldd_file_name == 0)
+    ldd_file_name = find_a_file (&path, full_ldd_suffix);
+#endif
 
 #ifdef REAL_STRIP_FILE_NAME
   strip_file_name = find_a_file (&path, REAL_STRIP_FILE_NAME);
@@ -1088,6 +1117,17 @@ main (argc, argv)
 		}
 	      break;
 
+	    case 'l':
+	      if (first_file)
+		{
+		  /* place o_file BEFORE this argument! */
+		  first_file = 0;
+		  ld2--;
+		  *ld2++ = o_file;
+		  *ld2++ = arg;
+		}
+	      break;
+
 	    case 'o':
 	      output_file = (arg[2] == '\0') ? argv[1] : &arg[2];
 	      break;
@@ -1116,10 +1156,13 @@ main (argc, argv)
 	}
       else if (first_file
 	       && (p = rindex (arg, '.')) != (char *)0
-	       && strcmp (p, ".o") == 0)
+	       && (strcmp (p, ".o") == 0 || strcmp (p, ".a") == 0))
 	{
 	  first_file = 0;
+	  /* place o_file BEFORE this argument! */
+	  ld2--;
 	  *ld2++ = o_file;
+	  *ld2++ = arg;
 	}
     }
 
@@ -1132,10 +1175,23 @@ main (argc, argv)
 	while (*q && *q != ' ') q++;
 	if (*p == '-' && (p[1] == 'm' || p[1] == 'f'))
 	  *c_ptr++ = savestring (p, q - p);
+	if (strncmp (p, "-shared", sizeof ("shared") - 1) == 0)
+	  shared_obj = 1;
 
 	if (*q) q++;
 	p = q;
       }
+
+#ifdef LD_INIT_SWITCH
+  /* Tell the linker that we have initializer and finalizer functions.  */
+  if (shared_obj)
+    {
+      *ld2++ = LD_INIT_SWITCH;
+      *ld2++ = "_GLOBAL__DI";
+      *ld2++ = LD_FINI_SWITCH;
+      *ld2++ = "_GLOBAL__DD";
+    }
+#endif
 
   *c_ptr++ = c_file;
   *c_ptr = *ld1 = *ld2 = (char *)0;
@@ -1158,6 +1214,10 @@ main (argc, argv)
 	       (c_file_name ? c_file_name : "not found"));
       fprintf (stderr, "nm_file_name        = %s\n",
 	       (nm_file_name ? nm_file_name : "not found"));
+#ifdef LDD_SUFFIX
+      fprintf (stderr, "ldd_file_name       = %s\n",
+	       (ldd_file_name ? ldd_file_name : "not found"));
+#endif
       fprintf (stderr, "strip_file_name     = %s\n",
 	       (strip_file_name ? strip_file_name : "not found"));
       fprintf (stderr, "c_file              = %s\n",
@@ -1195,11 +1255,15 @@ main (argc, argv)
 
   fork_execute ("ld", ld1_argv);
 
-  /* If -r, don't build the constructor or destructor list, just return now.  */
+  /* If -r, don't build the constructor or destructor list, just return now. */
   if (rflag)
     return 0;
 
   scan_prog_file (output_file, PASS_FIRST);
+
+#ifdef SCAN_LIBRARIES
+  scan_libraries (output_file);
+#endif
 
   if (debug)
     {
@@ -1207,7 +1271,14 @@ main (argc, argv)
       fprintf (stderr, "%d destructor(s)  found\n", destructors.number);
     }
 
-  if (constructors.number == 0 && destructors.number == 0)
+  if (constructors.number == 0 && destructors.number == 0
+#ifdef LDD_SUFFIX
+      /* If we will be running these functions ourselves, we want to emit
+	 stubs into the shared library so that we don't have to relink
+	 dependent programs when we add static objects.  */
+      && ! shared_obj
+#endif
+      )
     {
       /* Strip now if it was requested on the command line.  */
       if (strip_flag)
@@ -1429,10 +1500,107 @@ write_list_with_asm (stream, prefix, list)
     }
 }
 
+/* Write out the constructor and destructor tables statically (for a shared
+   object), along with the functions to execute them.  */
+
+static void
+write_c_file_stat (stream, name)
+     FILE *stream;
+     char *name;
+{
+  char *prefix, *p, *q;
+  char *initname, *fininame;
+
+  /* Figure out name of output_file, stripping off .so version.  */
+  p = rindex (output_file, '/');
+  if (p == 0)
+    p = (char *) output_file;
+  else
+    p++;
+  q = p;
+  while (q)
+    {
+      q = index (q,'.');
+      if (q == 0)
+	{
+	  q = p + strlen (p);
+	  break;
+	}
+      else
+	{
+	  if (strncmp (q, ".so", 3) == 0)
+	    {
+	      q += 3;
+	      break;
+	    }
+	  else
+	    q++;
+	}
+    }
+  /* q points to null at end of the string (or . of the .so version) */
+  prefix = xmalloc (q - p + 1);
+  strncpy (prefix, p, q - p);
+  prefix[q - p] = 0;
+  for (q = prefix; *q; q++)
+    if (!isalnum (*q))
+      *q = '_';
+  if (debug)
+    fprintf (stderr, "\nwrite_c_file - output name is %s, prefix is %s\n",
+	     output_file, prefix);
+
+#define INIT_NAME_FORMAT "_GLOBAL__FI_%s"
+  initname = xmalloc (strlen (prefix) + sizeof (INIT_NAME_FORMAT) - 2);
+  sprintf (initname, INIT_NAME_FORMAT, prefix);
+
+#define FINI_NAME_FORMAT "_GLOBAL__FD_%s"
+  fininame = xmalloc (strlen (prefix) + sizeof (FINI_NAME_FORMAT) - 2);
+  sprintf (fininame, FINI_NAME_FORMAT, prefix);
+
+  free (prefix);
+
+  /* Write the tables as C code  */
+
+  fprintf (stream, "static int count;\n");
+  fprintf (stream, "typedef void entry_pt();\n");
+  write_list_with_asm (stream, "extern entry_pt ", constructors.first);
+  fprintf (stream, "void %s() {\n", initname);
+  if (constructors.number > 0)
+    {
+      fprintf (stream, "\tstatic entry_pt *ctors[] = {\n");
+      write_list (stream, "\t\t", constructors.first);
+      fprintf (stream, "\t};\n");
+      fprintf (stream, "\tentry_pt **p;\n");
+      fprintf (stream, "\tif (count++ != 0) return;\n");
+      fprintf (stream, "\tp = ctors + %d;\n", constructors.number);
+      fprintf (stream, "\twhile (p > ctors) (*--p)();\n");
+    }
+  fprintf (stream, "}\n");
+  write_list_with_asm (stream, "extern entry_pt ", destructors.first);
+  fprintf (stream, "void %s() {\n", fininame);
+  if (destructors.number > 0)
+    {
+      fprintf (stream, "\tstatic entry_pt *dtors[] = {\n");
+      write_list (stream, "\t\t", destructors.first);
+      fprintf (stream, "\t};\n");
+      fprintf (stream, "\tentry_pt **p;\n");
+      fprintf (stream, "\tif (--count != 0) return;\n");
+      fprintf (stream, "\tp = dtors;\n");
+      fprintf (stream, "\twhile (p < dtors + %d) (*p++)();\n",
+	       destructors.number);
+    }
+  fprintf (stream, "}\n");
+
+  fprintf (stream, "void _GLOBAL__DI() {\n\t%s();\n}\n", initname);
+  fprintf (stream, "void _GLOBAL__DD() {\n\t%s();\n}\n", fininame);
+
+  free (initname);
+  free (fininame);
+}
+
 /* Write the constructor/destructor tables. */
 
 static void
-write_c_file (stream, name)
+write_c_file_glob (stream, name)
      FILE *stream;
      char *name;
 {
@@ -1458,6 +1626,16 @@ write_c_file (stream, name)
   fprintf (stream, "entry_pt *__main_reference = %s;\n\n", NAME__MAIN);
 }
 
+static void
+write_c_file (stream, name)
+     FILE *stream;
+     char *name;
+{
+  if (shared_obj)
+    write_c_file_stat (stream, name);
+  else
+    write_c_file_glob (stream, name);
+}
 
 #ifdef OBJECT_FORMAT_NONE
 
@@ -1484,14 +1662,14 @@ scan_prog_file (prog_name, which_pass)
   char *p, buf[1024];
   FILE *inf;
 
-  if (which_pass != PASS_FIRST)
+  if (which_pass == PASS_SECOND)
     return;
 
   /* If we don't have an `nm', complain.  */
   if (nm_file_name == 0)
     fatal ("cannot find `nm'");
 
-  nm_argv[argc++] = "nm";
+  nm_argv[argc++] = nm_file_name;
   if (NM_FLAGS[0] != '\0')
     nm_argv[argc++] = NM_FLAGS;
 
@@ -1511,8 +1689,7 @@ scan_prog_file (prog_name, which_pass)
       char **p_argv;
       char *str;
 
-      fprintf (stderr, "%s", nm_file_name);
-      for (p_argv = &nm_argv[1]; (str = *p_argv) != (char *)0; p_argv++)
+      for (p_argv = &nm_argv[0]; (str = *p_argv) != (char *)0; p_argv++)
 	fprintf (stderr, " %s", str);
 
       fprintf (stderr, "\n");
@@ -1570,9 +1747,10 @@ scan_prog_file (prog_name, which_pass)
 	 to the appropriate list. */
 
       for (p = buf; (ch = *p) != '\0' && ch != '\n' && ch != '_'; p++)
-	;
+	if (ch == ' ' && p[1] == 'U' && p[2] == ' ')
+	  break;
 
-      if (ch == '\0' || ch == '\n')
+      if (ch != '_')
 	continue;
   
       name = p;
@@ -1587,10 +1765,24 @@ scan_prog_file (prog_name, which_pass)
       switch (is_ctor_dtor (name))
 	{
 	case 1:
-	  add_to_list (&constructors, name);
+	  if (which_pass != PASS_LIB)
+	    add_to_list (&constructors, name);
 	  break;
 
 	case 2:
+	  if (which_pass != PASS_LIB)
+	    add_to_list (&destructors, name);
+	  break;
+
+	case 3:
+	  if (which_pass != PASS_LIB)
+	    fatal ("init function found in object %s", prog_name);
+	  add_to_list (&constructors, name);
+	  break;
+
+	case 4:
+	  if (which_pass != PASS_LIB)
+	    fatal ("init function found in object %s", prog_name);
 	  add_to_list (&destructors, name);
 	  break;
 
@@ -1615,6 +1807,357 @@ scan_prog_file (prog_name, which_pass)
   signal (SIGQUIT, quit_handler);
 #endif
 }
+
+#ifdef SUNOS4_SHARED_LIBRARIES
+
+/* Routines to scan the SunOS 4 _DYNAMIC structure to find shared libraries
+   that the output file depends upon and their initialization/finalization
+   routines, if any.  */
+
+#include <a.out.h>
+#include <fcntl.h>
+#include <link.h>
+#include <sys/mman.h>
+#include <sys/param.h>
+#include <sys/unistd.h>
+
+/* pointers to the object file */
+unsigned object;    	/* address of memory mapped file */
+unsigned objsize;    	/* size of memory mapped to file */
+char * code;		/* pointer to code segment */
+char * data;		/* pointer to data segment */
+struct nlist *symtab;	/* pointer to symbol table */
+struct link_dynamic *ld;
+struct link_dynamic_2 *ld_2;
+struct head libraries;
+
+/* Map the file indicated by NAME into memory and store its address.  */
+
+static void
+mapfile (name)
+     char *name;
+{
+  int fp;
+  struct stat s;
+  if ((fp = open (name, O_RDONLY)) == -1)
+    fatal ("unable to open file '%s'", name);
+  if (fstat (fp, &s) == -1)
+    fatal ("unable to stat file '%s'", name);
+
+  objsize = s.st_size;
+  object = (unsigned) mmap (0, objsize, PROT_READ|PROT_WRITE, MAP_PRIVATE,
+			    fp, 0);
+  if (object == -1)
+    fatal ("unable to mmap file '%s'", name);
+
+  close (fp);
+}
+
+/* Given the name NAME of a dynamic dependency, find its pathname and add
+   it to the list of libraries.  */
+
+static void
+locatelib (name)
+     char *name;
+{
+  static char **l;
+  static int cnt;
+  char buf[MAXPATHLEN];
+  char *p, *q;
+  char **pp;
+
+  if (l == 0)
+    {
+      char *ld_rules;
+      char *ldr = 0;
+      /* counting elements in array, need 1 extra for null */
+      cnt = 1;  
+      ld_rules = (char *) (ld_2->ld_rules + code);
+      if (ld_rules)
+	{
+	  cnt++;
+	  for (; *ld_rules != 0; ld_rules++)
+	    if (*ld_rules == ':')
+	      cnt++;
+	  ld_rules = (char *) (ld_2->ld_rules + code);
+	  ldr = (char *) malloc (strlen (ld_rules) + 1);
+	  strcpy (ldr, ld_rules);
+	}
+      p = getenv ("LD_LIBRARY_PATH");
+      q = 0;
+      if (p)
+	{
+	  cnt++;
+	  for (q = p ; *q != 0; q++)
+	    if (*q == ':')
+	      cnt++;
+	  q = (char *) malloc (strlen (p) + 1);
+	  strcpy (q, p);
+	}
+      l = (char **) malloc ((cnt + 3) * sizeof (char *));
+      pp = l;
+      if (ldr)
+	{
+	  *pp++ = ldr;
+	  for (; *ldr != 0; ldr++) 
+	    if (*ldr == ':')
+	      {
+		*ldr++ = 0;
+		*pp++ = ldr;
+	      }
+	}
+      if (q)
+	{
+	  *pp++ = q;
+	  for (; *q != 0; q++) 
+	    if (*q == ':')
+	      {
+		*q++ = 0;
+		*pp++ = p;
+	      }
+	}
+      /* built in directories are /lib, /usr/lib, and /usr/local/lib */
+      *pp++ = "/lib";
+      *pp++ = "/usr/lib";
+      *pp++ = "/usr/local/lib";
+      *pp = 0;
+    }
+  for (pp = l; *pp != 0 ; pp++)
+    {
+      sprintf (buf, "%s/%s", *pp, name);
+      if (access (buf, R_OK) == 0)
+	{
+	  add_to_list (&libraries, buf);
+	  if (debug)
+	    fprintf (stderr, "%s\n", buf);
+	  break;
+	}
+    }
+  if (*pp == 0)
+    {
+      if (debug)
+	fprintf (stderr, "not found\n");
+      else
+	fatal ("dynamic dependency %s not found", name);
+    }
+}
+
+/* Scan the _DYNAMIC structure of the output file to find shared libraries
+   that it depends upon and any constructors or destructors they contain.  */
+
+static void 
+scan_libraries (prog_name)
+     char *prog_name;
+{
+  struct exec *header;
+  char *base;
+  struct link_object *lo;
+  char buff[MAXPATHLEN];
+  struct id *list;
+
+  mapfile (prog_name);
+  header = (struct exec *)object;
+  if (N_BADMAG (*header))
+    fatal ("bad magic number in file '%s'", prog_name);
+  if (header->a_dynamic == 0)
+    return;
+
+  code = (char *) (N_TXTOFF (*header) + (long) header);
+  data = (char *) (N_DATOFF (*header) + (long) header);
+  symtab = (struct nlist *) (N_SYMOFF (*header) + (long) header);
+
+  if (header->a_magic == ZMAGIC && header->a_entry == 0x20)
+    {
+      /* shared object */
+      ld = (struct link_dynamic *) (symtab->n_value + code);
+      base = code;
+    }
+  else
+    {
+      /* executable */
+      ld = (struct link_dynamic *) data;
+      base = code-PAGSIZ;
+    }
+
+  if (debug)
+    fprintf (stderr, "dynamic dependencies.\n");
+
+  ld_2 = (struct link_dynamic_2 *) ((long) ld->ld_un.ld_2 + (long)base);
+  for (lo = (struct link_object *) ld_2->ld_need; lo;
+       lo = (struct link_object *) lo->lo_next)
+    {
+      char *name;
+      lo = (struct link_object *) ((long) lo + code);
+      name = (char *) (code + lo->lo_name);
+      if (lo->lo_library)
+	{
+	  if (debug)
+	    fprintf (stderr, "\t-l%s.%d => ", name, lo->lo_major);
+	  sprintf (buff, "lib%s.so.%d.%d", name, lo->lo_major, lo->lo_minor);
+	  locatelib (buff);
+	}
+      else
+	{
+	  if (debug)
+	    fprintf (stderr, "\t%s\n", name);
+	  add_to_list (&libraries, name);
+	}
+    }
+
+  if (debug)
+    fprintf (stderr, "\n");
+
+  /* now iterate through the library list adding their symbols to
+     the list.  */
+  for (list = libraries.first; list; list = list->next)
+    scan_prog_file (list->name, PASS_LIB);
+}
+
+#else  /* SUNOS4_SHARED_LIBRARIES */
+#ifdef LDD_SUFFIX
+
+/* Use the List Dynamic Dependencies program to find shared libraries that
+   the output file depends upon and their initialization/finalization
+   routines, if any.  */
+
+static void 
+scan_libraries (prog_name)
+     char *prog_name;
+{
+  static struct head libraries;		/* list of shared libraries found */
+  struct id *list;
+  void (*int_handler) ();
+  void (*quit_handler) ();
+  char *ldd_argv[4];
+  int pid;
+  int argc = 0;
+  int pipe_fd[2];
+  char buf[1024];
+  FILE *inf;
+
+  /* If we don't have an `ldd', complain.  */
+  if (ldd_file_name == 0)
+    {
+      error ("cannot find `ldd'");
+      return;
+    }
+
+  ldd_argv[argc++] = ldd_file_name;
+  ldd_argv[argc++] = prog_name;
+  ldd_argv[argc++] = (char *) 0;
+
+  if (pipe (pipe_fd) < 0)
+    fatal_perror ("pipe");
+
+  inf = fdopen (pipe_fd[0], "r");
+  if (inf == (FILE *) 0)
+    fatal_perror ("fdopen");
+
+  /* Trace if needed.  */
+  if (vflag)
+    {
+      char **p_argv;
+      char *str;
+
+      for (p_argv = &ldd_argv[0]; (str = *p_argv) != (char *) 0; p_argv++)
+	fprintf (stderr, " %s", str);
+
+      fprintf (stderr, "\n");
+    }
+
+  fflush (stdout);
+  fflush (stderr);
+
+  /* Spawn child ldd on pipe */
+  pid = vfork ();
+  if (pid == -1)
+    {
+#ifdef vfork
+      fatal_perror ("fork");
+#else
+      fatal_perror ("vfork");
+#endif
+    }
+
+  if (pid == 0)			/* child context */
+    {
+      /* setup stdout */
+      if (dup2 (pipe_fd[1], 1) < 0)
+	fatal_perror ("dup2 (%d, 1)", pipe_fd[1]);
+
+      if (close (pipe_fd[0]) < 0)
+	fatal_perror ("close (%d)", pipe_fd[0]);
+
+      if (close (pipe_fd[1]) < 0)
+	fatal_perror ("close (%d)", pipe_fd[1]);
+
+      execv (ldd_file_name, ldd_argv);
+      fatal_perror ("executing %s", ldd_file_name);
+    }
+
+  /* Parent context from here on.  */
+  int_handler  = (void (*) ()) signal (SIGINT,  SIG_IGN);
+#ifdef SIGQUIT
+  quit_handler = (void (*) ()) signal (SIGQUIT, SIG_IGN);
+#endif
+
+  if (close (pipe_fd[1]) < 0)
+    fatal_perror ("close (%d)", pipe_fd[1]);
+
+  if (debug)
+    fprintf (stderr, "\nldd output with constructors/destructors.\n");
+
+  /* Read each line of ldd output.  */
+  while (fgets (buf, sizeof buf, inf) != (char *) 0)
+    {
+      int ch, ch2;
+      char *name, *end, *p = buf;
+
+      /* Extract names of libraries and add to list. */
+      PARSE_LDD_OUTPUT (p);
+      if (p == 0)
+	continue;
+
+      name = p;
+      if (strncmp (name, "not found", sizeof ("not found") - 1) == 0)
+	fatal ("dynamic dependency %s not found", buf);
+
+      /* Find the end of the symbol name. */
+      for (end = p; 
+	   (ch2 = *end) != '\0' && ch2 != '\n' && !isspace (ch2) && ch2 != '|';
+	   end++)
+	continue;
+      *end = '\0';
+
+      if (access (name, R_OK) == 0)
+        add_to_list (&libraries, name);
+      else
+	fatal ("unable to open dynamic dependency '%s'", buf);
+
+      if (debug)
+	fprintf (stderr, "\t%s\n", buf);
+    }
+  if (debug)
+    fprintf (stderr, "\n");
+
+  if (fclose (inf) != 0)
+    fatal_perror ("fclose of pipe");
+
+  do_wait (ldd_file_name);
+
+  signal (SIGINT,  int_handler);
+#ifdef SIGQUIT
+  signal (SIGQUIT, quit_handler);
+#endif
+
+  /* now iterate through the library list adding their symbols to
+     the list.  */
+  for (list = libraries.first; list; list = list->next)
+    scan_prog_file (list->name, PASS_LIB);
+}
+
+#endif /* LDD_SUFFIX */
+#endif /* SUNOS4_SHARED_LIBRARIES */
 
 #endif /* OBJECT_FORMAT_NONE */
 

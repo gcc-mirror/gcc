@@ -340,6 +340,9 @@ FLOAT_H=float.h-nat
 # Extra symbols for fixproto to define when parsing headers.
 FIXPROTO_DEFINES = 
 
+# Extra flags to use when compiling crt{begin,end}.o.
+CRTSTUFF_T_CFLAGS = 
+
 # End of variables for you to override.
 
 # Definition of `all' is here so that new rules inserted by sed
@@ -943,13 +946,13 @@ sublibobjc.a: cc1obj stmp-int-hdrs libgcc2.ready
 # Compile two additional files that are linked with every program
 # linked using GCC on system V, for the sake of C++ constructors.
 crtbegin.o:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) -DCRT_BEGIN \
-	  -finhibit-size-directive -fno-inline-functions \
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
+	  -DCRT_BEGIN -finhibit-size-directive -fno-inline-functions \
 	  -g0 -c $(srcdir)/crtstuff.c -o crtbegin.o
 
 crtend.o:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) -DCRT_END \
-	  -finhibit-size-directive -fno-inline-functions \
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
+	  -DCRT_END -finhibit-size-directive -fno-inline-functions \
 	  -g0 -c $(srcdir)/crtstuff.c -o crtend.o
 
 # Compiling object files from source files.

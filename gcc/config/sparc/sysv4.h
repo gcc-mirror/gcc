@@ -37,9 +37,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    appropriate only for typical svr4 systems, but not for the specific
    case of svr4 running on a Sparc.  */
 
-#undef CTORS_SECTION_ASM_OP
-#undef DTORS_SECTION_ASM_OP
 #undef INIT_SECTION_ASM_OP
+#undef FINI_SECTION_ASM_OP
 #undef CONST_SECTION_ASM_OP
 #undef TYPE_OPERAND_FMT
 #undef PUSHSECTION_FORMAT
@@ -76,24 +75,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   else						\
     const_section ();				\
 }
-
-/* The specialized code which needs to appear in the .init section prior
-   to the prologue code for `__do_global_ctors' (see crtstuff.c).
-
-   On Sparcs running svr4, the /usr/ccs/lib/crti.o file (with gets linked
-   in prior to the crtbegin.o file) has a single `save' instruction in its
-   .init section.  That `save' instruction tries to setup a stack frame for
-   the sake of any subsequent code in the .init section.  Unfortunately,
-   the size it uses for the stack frame is only a guess, and is not really
-   adequate for our purposes.  More importantly, we independently put our
-   own standard function prologue (for __do_global_ctors) into the .init
-   section and that function prologue includes its own `save' instruction!
-   Thus, unless we do something to correct the situation, we'll get *two*
-   stack frames allocated when crt0.o calls the code in the .init section,
-   and havoc will ensue.  The following macro definition prevents such woes.
-*/
-
-#define INIT_SECTION_PREAMBLE	asm ("restore")
 
 /* This is the string used to begin an assembly language comment for the
    Sparc/svr4 assembler.  */
@@ -172,8 +153,27 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
 #define BSS_SECTION_ASM_OP	".section\t\".bss\""
 #define CONST_SECTION_ASM_OP	".section\t\".rodata\""
 #define INIT_SECTION_ASM_OP	".section\t\".init\""
-#define CTORS_SECTION_ASM_OP    ".section\t\".ctors\",#alloc,#execinstr"
-#define DTORS_SECTION_ASM_OP    ".section\t\".dtors\",#alloc,#execinstr"
+#define FINI_SECTION_ASM_OP	".section\t\".fini\""
+
+/* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
+ 
+   Note that we want to give these sections the SHF_WRITE attribute
+   because these sections will actually contain data (i.e. tables of
+   addresses of functions in the current root executable or shared library
+   file) and, in the case of a shared library, the relocatable addresses
+   will have to be properly resolved/relocated (and then written into) by
+   the dynamic linker when it actually attaches the given shared library
+   to the executing process.  (Note that on SVR4, you may wish to use the
+   `-z text' option to the ELF linker, when building a shared library, as
+   an additional check that you are doing everything right.  But if you do
+   use the `-z text' option when building a shared library, you will get
+   errors unless the .ctors and .dtors sections are marked as writable
+   via the SHF_WRITE attribute.)  */
+ 
+#undef CTORS_SECTION_ASM_OP
+#define CTORS_SECTION_ASM_OP    ".section\t\".ctors\",#alloc,#write"
+#undef DTORS_SECTION_ASM_OP
+#define DTORS_SECTION_ASM_OP    ".section\t\".dtors\",#alloc,#write"
 
 /* A C statement to output something to the assembler file to switch to section
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or

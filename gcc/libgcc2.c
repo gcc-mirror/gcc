@@ -1996,6 +1996,7 @@ __enable_execute_stack ()
 #define SYMBOL__MAIN __main
 #endif
 
+#if !defined (INIT_SECTION_ASM_OP) || !defined (OBJECT_FORMAT_ELF)
 /* Run all the global destructors on exit from the program.  */
 
 void
@@ -2009,6 +2010,7 @@ __do_global_dtors ()
     (*p++) ();
 #endif
 }
+#endif
 
 #ifndef INIT_SECTION_ASM_OP
 /* Run all the global constructors on entry to the program.  */
@@ -2111,41 +2113,6 @@ int _exit_dummy_decl = 0;	/* prevent compiler & linker warnings */
 #endif
 
 #endif /* L_exit */
-
-/* In a.out systems, we need to have these dummy constructor and destructor
-   lists in the library.
-
-   When using `collect', the first link will resolve __CTOR_LIST__
-   and __DTOR_LIST__ to these symbols.  We will then run "nm" on the
-   result, build the correct __CTOR_LIST__ and __DTOR_LIST__, and relink.
-   Since we don't do the second link if no constructors existed, these
-   dummies must be fully functional empty lists.
-
-   When using `gnu ld', these symbols will be used if there are no
-   constructors.  If there are constructors, the N_SETV symbol defined
-   by the linker from the N_SETT's in input files will define __CTOR_LIST__
-   and __DTOR_LIST__ rather than its being allocated as common storage
-   by the definitions below.
-
-   When using a linker that supports constructor and destructor segments,
-   these definitions will not be used, since crtbegin.o and crtend.o
-   (from crtstuff.c) will have already defined __CTOR_LIST__ and
-    __DTOR_LIST__.  The crt*.o files are passed directly to the linker
-   on its command line, by gcc.  */
-
-/* The list needs two elements:  one is ignored (the old count); the
-   second is the terminating zero.  Since both values are zero, this
-   declaration is not initialized, and it becomes `common'.  */
-
-#ifdef L_ctor_list
-#include "gbl-ctors.h"
-func_ptr __CTOR_LIST__[2];
-#endif
-
-#ifdef L_dtor_list
-#include "gbl-ctors.h"
-func_ptr __DTOR_LIST__[2];
-#endif
 
 #ifdef L_eh
 typedef struct {

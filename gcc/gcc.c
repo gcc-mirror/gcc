@@ -362,6 +362,7 @@ or with constant text in a single argument.
 	If multilib_dir is set, extra entries are generated with it affixed.
  %l     process LINK_SPEC as a spec.
  %L     process LIB_SPEC as a spec.
+ %G     process LIBGCC_SPEC as a spec.
  %S     process STARTFILE_SPEC as a spec.  A capital S is actually used here.
  %E     process ENDFILE_SPEC as a spec.  A capital E is actually used here.
  %c	process SIGNED_CHAR_SPEC as a spec.
@@ -458,7 +459,18 @@ proper position among the other output files.  */
 
 /* config.h can define LIB_SPEC to override the default libraries.  */
 #ifndef LIB_SPEC
-#define LIB_SPEC "%{g*:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
+#define LIB_SPEC "%{!shared:%{g*:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}"
+#endif
+
+/* config.h can define LIBGCC_SPEC to override how and when libgcc.a is
+   included.  */
+#ifndef LIBGCC_SPEC
+#if defined(LINK_LIBGCC_SPECIAL) || defined(LINK_LIBGCC_SPECIAL_1)
+/* Have gcc do the search for libgcc.a.  */
+#define LIBGCC_SPEC "%{!shared:libgcc.a%s}"
+#else
+#define LIBGCC_SPEC "%{!shared:-lgcc}"
+#endif
 #endif
 
 /* config.h can define STARTFILE_SPEC to override the default crt0 files.  */
@@ -505,6 +517,7 @@ static char *asm_spec = ASM_SPEC;
 static char *asm_final_spec = ASM_FINAL_SPEC;
 static char *link_spec = LINK_SPEC;
 static char *lib_spec = LIB_SPEC;
+static char *libgcc_spec = LIBGCC_SPEC;
 static char *endfile_spec = ENDFILE_SPEC;
 static char *startfile_spec = STARTFILE_SPEC;
 static char *switches_need_spaces = SWITCHES_NEED_SPACES;
@@ -728,32 +741,22 @@ static int n_default_compilers
 /* We want %{T*} after %{L*} and %D so that it can be used to specify linker
    scripts which exist in user specified directories, or in standard
    directories.  */
-#ifdef LINK_LIBGCC_SPECIAL_1
-/* Have gcc do the search for libgcc.a, but generate -L options as usual.  */
-static char *link_command_spec = "\
-%{!fsyntax-only: \
- %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
-			%{r} %{s} %{t} %{u*} %{x} %{z} %{Z}\
-			%{!A:%{!nostartfiles:%{!nostdlib:%S}}} %{static:}\
-			%{L*} %D %{T*} %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}}";
-#else
 #ifdef LINK_LIBGCC_SPECIAL
-/* Have gcc do the search for libgcc.a, and don't generate -L options.  */
+/* Don't generate -L options.  */
 static char *link_command_spec = "\
 %{!fsyntax-only: \
  %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{t} %{u*} %{x} %{z} %{Z}\
 			%{!A:%{!nostartfiles:%{!nostdlib:%S}}} %{static:}\
-			%{L*} %{T*} %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}}";
+			%{L*} %{T*} %o %{!nostdlib:%G %L %G %{!A:%E}}\n }}}}}}";
 #else
-/* Use -L and have the linker do the search for -lgcc.  */
+/* Use -L.  */
 static char *link_command_spec = "\
 %{!fsyntax-only: \
  %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{t} %{u*} %{x} %{z} %{Z}\
 			%{!A:%{!nostartfiles:%{!nostdlib:%S}}} %{static:}\
-			%{L*} %D %{T*} %o %{!nostdlib:-lgcc %L -lgcc %{!A:%E}}\n }}}}}}";
-#endif
+			%{L*} %D %{T*} %o %{!nostdlib:%G %L %G %{!A:%E}}\n }}}}}}";
 #endif
 
 /* A vector of options to give to the linker.
@@ -1229,6 +1232,8 @@ set_spec (name, spec)
     endfile_spec = sl->spec;
   else if (! strcmp (name, "lib"))
     lib_spec = sl->spec;
+  else if (! strcmp (name, "libgcc"))
+    libgcc_spec = sl->spec;
   else if (! strcmp (name, "link"))
     link_spec = sl->spec;
   else if (! strcmp (name, "predefines"))
@@ -2490,6 +2495,7 @@ process_command (argc, argv)
 	  printf ("*endfile:\n%s\n\n", endfile_spec);
 	  printf ("*link:\n%s\n\n", link_spec);
 	  printf ("*lib:\n%s\n\n", lib_spec);
+	  printf ("*libgcc:\n%s\n\n", libgcc_spec);
 	  printf ("*startfile:\n%s\n\n", startfile_spec);
 	  printf ("*switches_need_spaces:\n%s\n\n", switches_need_spaces);
 	  printf ("*signed_char:\n%s\n\n", signed_char_spec);
@@ -3500,6 +3506,12 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	  case 'L':
 	    value = do_spec_1 (lib_spec, 0, NULL_PTR);
+	    if (value != 0)
+	      return value;
+	    break;
+
+	  case 'G':
+	    value = do_spec_1 (libgcc_spec, 0, NULL_PTR);
 	    if (value != 0)
 	      return value;
 	    break;
@@ -4867,6 +4879,12 @@ validate_all_switches ()
       validate_switches (p + 1);
 
   p = lib_spec;
+  while (c = *p++)
+    if (c == '%' && *p == '{')
+      /* We have a switch spec.  */
+      validate_switches (p + 1);
+
+  p = libgcc_spec;
   while (c = *p++)
     if (c == '%' && *p == '{')
       /* We have a switch spec.  */

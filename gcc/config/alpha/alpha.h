@@ -2019,5 +2019,8 @@ do {							\
 
 /* The linker will stick __main into the .init section.  */
 #define HAS_INIT_SECTION
-#define INIT_NAME_FORMAT "__init_%s"
-#define FINI_NAME_FORMAT "__fini_%s"
+#define LD_INIT_SWITCH "-init"
+#define LD_FINI_SWITCH "-fini"
+
+/* We do want to link in libgcc when building shared libraries under OSF/1.  */
+#define LIBGCC_SPEC "-lgcc"

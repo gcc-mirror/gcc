@@ -54,22 +54,88 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "tm.h"
 
+/* Provide default definitions for the pseudo-ops used to switch to the
+   .ctors and .dtors sections.
+ 
+   Note that we want to give these sections the SHF_WRITE attribute
+   because these sections will actually contain data (i.e. tables of
+   addresses of functions in the current root executable or shared library
+   file) and, in the case of a shared library, the relocatable addresses
+   will have to be properly resolved/relocated (and then written into) by
+   the dynamic linker when it actually attaches the given shared library
+   to the executing process.  (Note that on SVR4, you may wish to use the
+   `-z text' option to the ELF linker, when building a shared library, as
+   an additional check that you are doing everything right.  But if you do
+   use the `-z text' option when building a shared library, you will get
+   errors unless the .ctors and .dtors sections are marked as writable
+   via the SHF_WRITE attribute.)  */
+
 #ifndef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"a\",@progbits"
+#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"aw\""
 #endif
 #ifndef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"a\",@progbits"
+#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"aw\""
 #endif
+
+#ifdef OBJECT_FORMAT_ELF
+
+/*  Declare a pointer to void function type.  */
+typedef void (*func_ptr) (void);
+#define STATIC static
+
+#else  /* OBJECT_FORMAT_ELF */
 
 #include "gbl-ctors.h"
 
 #ifndef ON_EXIT
 #define ON_EXIT(a, b)
 #endif
+#define STATIC
+
+#endif /* OBJECT_FORMAT_ELF */
 
 #ifdef CRT_BEGIN
 
 #ifdef INIT_SECTION_ASM_OP
+
+#ifdef OBJECT_FORMAT_ELF
+
+/* Run all the global destructors on exit from the program.  */
+ 
+/* Some systems place the number of pointers in the first word of the
+   table.  On SVR4 however, that word is -1.  In all cases, the table is
+   null-terminated.  On SVR4, we start from the beginning of the list and
+   invoke each per-compilation-unit destructor routine in order
+   until we find that null.
+
+   Note that this function MUST be static.  There will be one of these
+   functions in each root executable and one in each shared library, but
+   although they all have the same code, each one is unique in that it
+   refers to one particular associated `__DTOR_LIST__' which belongs to the
+   same particular root executable or shared library file.  */
+
+static func_ptr __DTOR_LIST__[];
+static void
+__do_global_dtors_aux ()
+{
+  func_ptr *p;
+  for (p = __DTOR_LIST__ + 1; *p; p++)
+    (*p) ();
+}
+
+/* Stick a call to __do_global_dtors_aux into the .fini section.  */
+static void
+fini_dummy ()
+{
+  asm (FINI_SECTION_ASM_OP);
+  __do_global_dtors_aux ();
+#ifdef FORCE_FINI_SECTION_ALIGN
+  FORCE_FINI_SECTION_ALIGN;
+#endif
+  asm (TEXT_SECTION_ASM_OP);
+}
+
+#else  /* OBJECT_FORMAT_ELF */
 
 /* The function __do_global_ctors_aux is compiled twice (once in crtbegin.o
    and once in crtend.o).  It must be declared static to avoid a link
@@ -92,16 +158,6 @@ void __do_global_ctors ()
 
 asm (INIT_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
 
-/* On some svr4 systems, the .init section preamble code provided in
-   crti.o may do some evil things which we have to undo before we reach
-   the function prologue code for __do_global_ctors (directly below).
-   For such systems, define the macro INIT_SECTION_PREAMBLE to
-   expand into the code needed to undo the actions of the crti.o file.  */
-   
-#ifdef INIT_SECTION_PREAMBLE
-  INIT_SECTION_PREAMBLE;
-#endif
-
 /* A routine to invoke all of the global constructors upon entry to the
    program.  We put this into the .init section (for systems that have
    such a thing) so that we can properly perform the construction of
@@ -118,10 +174,23 @@ __do_global_ctors_aux ()	/* prologue goes in .init section */
   ON_EXIT (__do_global_dtors, 0);
 }
 
+#endif /* OBJECT_FORMAT_ELF */
 #endif /* defined(INIT_SECTION_ASM_OP) */
 
 /* Force cc1 to switch to .data section.  */
 static func_ptr force_to_data[0] = { };
+
+/* NOTE:  In order to be able to support SVR4 shared libraries, we arrange
+   to have one set of symbols { __CTOR_LIST__, __DTOR_LIST__, __CTOR_END__,
+   __DTOR_END__ } per root executable and also one set of these symbols
+   per shared library.  So in any given whole process image, we may have
+   multiple definitions of each of these symbols.  In order to prevent
+   these definitions from conflicting with one another, and in order to
+   ensure that the proper lists are used for the initialization/finalization
+   of each individual shared library (respectively), we give these symbols
+   only internal (i.e. `static') linkage, and we also make it a point to
+   refer to only the __CTOR_END__ symbol in crtend.o and the __DTOR_LIST__
+   symbol in crtbegin.o, where they are defined.  */
 
 /* The -1 is a flag to __do_global_[cd]tors
    indicating that this table does not start with a count of elements.  */
@@ -129,14 +198,14 @@ static func_ptr force_to_data[0] = { };
 CTOR_LIST_BEGIN;
 #else
 asm (CTORS_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
-func_ptr __CTOR_LIST__[1] = { (func_ptr) (-1) };
+STATIC func_ptr __CTOR_LIST__[1] = { (func_ptr) (-1) };
 #endif
 
 #ifdef DTOR_LIST_BEGIN
 DTOR_LIST_BEGIN;
 #else
 asm (DTORS_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
-func_ptr __DTOR_LIST__[1] = { (func_ptr) (-1) };
+STATIC func_ptr __DTOR_LIST__[1] = { (func_ptr) (-1) };
 #endif
 
 #endif /* defined(CRT_BEGIN) */
@@ -145,17 +214,51 @@ func_ptr __DTOR_LIST__[1] = { (func_ptr) (-1) };
 
 #ifdef INIT_SECTION_ASM_OP
 
-/* A routine to invoke all of the global constructors upon entry to the
-   program.  We put this into the .init section (for systems that have
-   such a thing) so that we can properly perform the construction of
-   file-scope static-storage C++ objects within shared libraries.
+#ifdef OBJECT_FORMAT_ELF
 
-   This must be virtually identical to the one above so that we can
-   insure that the function prologue from the one above works correctly
-   with the epilogue from this one.  (They will both go into the .init
-   section as the first and last things (respectively) that the linker
-   will put in that section.)
-*/
+static func_ptr __CTOR_END__[];
+static void
+__do_global_ctors_aux ()
+{
+  func_ptr *p;
+  for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)
+    (*p) ();
+}
+
+/* Stick a call to __do_global_ctors_aux into the .init section.  */
+static void
+init_dummy ()
+{
+  asm (INIT_SECTION_ASM_OP);
+  __do_global_ctors_aux ();
+#ifdef FORCE_INIT_SECTION_ALIGN
+  FORCE_INIT_SECTION_ALIGN;
+#endif
+  asm (TEXT_SECTION_ASM_OP);
+}
+
+#else  /* OBJECT_FORMAT_ELF */
+
+/* Stick the real initialization code, followed by a normal sort of
+   function epilogue at the very end of the .init section for this
+   entire root executable file or for this entire shared library file.
+
+   Note that we use some tricks here to get *just* the body and just
+   a function epilogue (but no function prologue) into the .init
+   section of the crtend.o file.  Sepcifically, we switch to the .text
+   section, start to define a function, and then we switch to the .init
+   section just before the body code.
+
+   Earlier on, we put the corresponding function prologue into the .init
+   section of the crtbegin.o file (which will be linked in first).
+
+   Note that we want to invoke all constructors for C++ file-scope static-
+   storage objects AFTER any other possible initialization actions which
+   may be performed by the code in the .init section contributions made by
+   other libraries, etc.  That's because those other initializations may
+   include setup operations for very primitive things (e.g. initializing
+   the state of the floating-point coprocessor, etc.) which should be done
+   before we start to execute any of the user's code. */
 
 static void
 __do_global_ctors_aux ()	/* prologue goes in .text section */
@@ -165,23 +268,31 @@ __do_global_ctors_aux ()	/* prologue goes in .text section */
   ON_EXIT (__do_global_dtors, 0);
 }				/* epilogue and body go in .init section */
 
+#endif /* OBJECT_FORMAT_ELF */
+
 #endif /* defined(INIT_SECTION_ASM_OP) */
 
 /* Force cc1 to switch to .data section.  */
 static func_ptr force_to_data[0] = { };
 
+/* Put a word containing zero at the end of each of our two lists of function
+   addresses.  Note that the words defined here go into the .ctors and .dtors
+   sections of the crtend.o file, and since that file is always linked in
+   last, these words naturally end up at the very ends of the two lists
+   contained in these two sections.  */
+
 #ifdef CTOR_LIST_END
 CTOR_LIST_END;
 #else
 asm (CTORS_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
-func_ptr __CTOR_END__[1] = { (func_ptr) 0 };
+STATIC func_ptr __CTOR_END__[1] = { (func_ptr) 0 };
 #endif
 
 #ifdef DTOR_LIST_END
 DTOR_LIST_END;
 #else
 asm (DTORS_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
-func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
+STATIC func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
 #endif
 
 #endif /* defined(CRT_END) */
