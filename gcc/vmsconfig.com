@@ -1,5 +1,5 @@
 $ !
-$ !	Set up to compile GCC on VAX/VMS
+$ !	Set up to compile GCC on VMS.
 $ !
 $! Set the def dir to proper place for use in batch. Works for interactive too.
 $flnm = f$enviroment("PROCEDURE")     ! get current procedure name
@@ -10,9 +10,12 @@ $if f$trnlnm("IFILE$").nes."" then close/noLog ifile$
 $ !
 $ echo = "write sys$output"
 $ !
+$ arch_indx = 1 + ((f$getsyi("CPU").ge.128).and.1)	! vax==1, alpha==2
+$ arch = f$element(arch_indx,"|","|vax|alpha|")
+$ !
 $ if f$search("config.h") .nes. "" then delete config.h.*
-$ copy [.config.vax]xm-vms.h []config.h
-$ echo "Linked `config.h' to `[.config.vax]xm-vms.h'.
+$ copy [.config.'arch']xm-vms.h []config.h
+$ echo "Linked `config.h' to `[.config.''arch']xm-vms.h'."
 $ !
 $ if f$search("tconfig.h") .nes. "" then delete tconfig.h.*
 $ create []tconfig.h
@@ -31,18 +34,21 @@ $EOD
 $ echo "Created `hconfig.h'.
 $ !
 $ if f$search("tm.h") .nes. "" then delete tm.h.*
-$!! copy [.config.vax]vms.h []tm.h
+$!! copy [.config.'arch']vms.h []tm.h
 $ edit/tpu/nojournal/nosection/nodisplay/command=sys$input -
-        [.config.vax]vms.h /output=[]tm.h
+        [.config.'arch']vms.h /output=[]tm.h
 $DECK
 !
 !  Copy file, changing lines of the form
 !	#include "vax/*"
+!  or
+!	#include "alpha/*"
 !  into
 !	#include "config-*"
 !
    file := CREATE_BUFFER("file", GET_INFO(COMMAND_LINE, "file_name"));
-   targ := LINE_BEGIN & '#include' & SPAN(ASCII(32)+ASCII(9)) & '"vax/';
+   targ := LINE_BEGIN & '#include' & SPAN(ASCII(32)+ASCII(9))
+	   & '"' & ('vax' | 'alpha') & '/';
    rang := CREATE_RANGE(BEGINNING_OF(file), END_OF(file));
    LOOP
       incl := SEARCH_QUIETLY(targ, FORWARD, EXACT, rang);
@@ -55,24 +61,24 @@ $DECK
    WRITE_FILE(file, GET_INFO(COMMAND_LINE, "output_file"));
    QUIT
 $EOD
-$ echo "Generated `tm.h' from `[.config.vax]vms.h'.
+$ echo "Generated `tm.h' from `[.config.''arch']vms.h'."
 $ !
 $	!crude hack to allow compiling from [.cp] subdirectory
-$ if f$search("config-vax.h") .nes. "" then delete config-vax.h;*
-$ copy [.config.vax]vax.h []config-vax.h
-$ echo "Linked `config-vax.h' to `[.config.vax]vax.h' for `tm.h'."
+$ if f$search("config-''arch'.h") .nes. "" then delete config-'arch'.h;*
+$ copy [.config.'arch']'arch'.h []config-'arch'.h
+$ echo "Linked `config-''arch'.h' to `[.config.''arch']''arch'.h' for `tm.h'."
 $ !
 $ call make_lang_incl "options.h"
 $ !
 $ call make_lang_incl "specs.h"
 $ !
-$ if f$search("vax.md") .nes. "" then delete vax.md;*
-$ copy [.config.vax]vax.md []vax.md
-$ echo "Copied `vax.md' from `[.config.vax]vax.md'."
+$ if f$search("''arch'.md") .nes. "" then delete 'arch'.md;*
+$ copy [.config.'arch']'arch'.md []'arch'.md
+$ echo "Copied `''arch'.md' from `[.config.''arch']''arch'.md'."
 $ !
 $ if f$search("aux-output.c") .nes. "" then delete aux-output.c.*
-$ copy [.config.vax]vax.c []aux-output.c
-$ echo "Linked `aux-output.c' to `[.config.vax]vax.c'.
+$ copy [.config.'arch']'arch'.c []aux-output.c
+$ echo "Linked `aux-output.c' to `[.config.''arch']''arch'.c'.
 $ !
 $!
 $!
@@ -103,7 +109,7 @@ $elm="?.??"
 $!
 $!
 $write_ident:
-$open ifile$ version.opt/write
+$open/write ifile$ version.opt
 $write ifile$ "ident="+""""+elm+""""
 $close ifile$
 $purge version.opt
@@ -125,9 +131,11 @@ $if f$search("[.cp]Makefile.in").eqs."" .and. f$search("[.cp]$M$akefile.in").nes
 $!
 $!
 $echo "Now processing Makefile.in to generate linker option files."
-$edit/TPU/noJournal/noSection/noDisplay/Command=sys$input: Makefile.in
+$edit/TPU/noJournal/noSection/noDisplay/Command=sys$input: Makefile.in -
+	/Start_Position=('arch_indx')		! 1 for vax, 2 for alpha
 !!
 VARIABLE makefile_buf, opt_file_buf, complist_buf, extra_compilers; ! Globals.
+VARIABLE arch;		! String 'vax' or 'alpha', set in configure_makefile().
 
 !!
 PROCEDURE process_makefile( )
@@ -220,12 +228,17 @@ PROCEDURE configure_makefile( )
   ! Plug in some values normally handled by `configure'.  Rather than
   ! replacing the dummy entries, insert the real entries before them.
   !
+  IF (GET_INFO (COMMAND_LINE, 'START_RECORD') <> 2) THEN
+    arch := 'vax';
+  ELSE
+    arch := 'alpha';
+  ENDIF;
   POSITION (BEGINNING_OF (makefile_buf));
-  COPY_TEXT ("target=vax-vms");			SPLIT_LINE;
-  COPY_TEXT ("out_file=aux-output.c");		SPLIT_LINE;	! vax/vax.c
+  COPY_TEXT ("target=" + arch + "-vms");	SPLIT_LINE;
+  COPY_TEXT ("out_file=aux-output.c");		SPLIT_LINE;	! 'arch'/'arch'.c
   COPY_TEXT ("out_object_file=aux-output.o");	SPLIT_LINE;	! aux-output.obj
-  COPY_TEXT ("md_file=vax.md");			SPLIT_LINE;	! vax/vax.md
-  COPY_TEXT ("tm_file=tm.h");			SPLIT_LINE;	! vax/tm-vms.h
+  COPY_TEXT ("md_file=" + arch + ".md");	SPLIT_LINE;	! 'arch'/'arch'.md
+  COPY_TEXT ("tm_file=tm.h");			SPLIT_LINE;	! 'arch'/tm-vms.h
 ENDPROCEDURE; !configure_makefile
 !!
 
@@ -444,7 +457,9 @@ $!
 $!
 $ if f$search("config.status") .nes. "" then delete config.status.*
 $ create config.status
-Links are now set up for use with a vax running VMS.
+$ open/append ifile$ config.status
+$ write ifile$ "Links are now set up for use with a ''arch' running VMS."
+$ close ifile$
 $ type config.status
 $ echo ""
 $!
