@@ -489,7 +489,7 @@ xgcc: gcc.o version.o $(LIBDEPS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 specs: xgcc
-	./xgcc -dumpspecs > specs
+	$(GCC_FOR_TARGET) -dumpspecs > specs
 
 # We do want to create an executable named `xgcc', so we can use it to
 # compile libgcc2.a.
