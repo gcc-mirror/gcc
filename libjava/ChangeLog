@@ -3,6 +3,8 @@
 	* prims.cc (_Jv_ThisExecutable): Use _Jv_Malloc.
 	* posix-threads.cc (_Jv_ThreadInitData): Use _Jv_Malloc.
 	(_Jv_ThreadDestroyData): Use _Jv_Free.
+	* java/lang/natClassLoader.cc (_Jv_RegisterInitiatingLoader):
+	Use _Jv_Malloc.
 
 2001-04-27  Tom Tromey  <tromey@redhat.com>
 

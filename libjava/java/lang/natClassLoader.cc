@@ -403,7 +403,8 @@ _Jv_UnregisterClass (jclass the_class)
 void
 _Jv_RegisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 {
-  _Jv_LoaderInfo *info = new _Jv_LoaderInfo; // non-gc alloc!
+  // non-gc alloc!
+  _Jv_LoaderInfo *info = (_Jv_LoaderInfo *) _Jv_Malloc (sizeof(_Jv_LoaderInfo));
   jint hash = HASH_UTF(klass->name);
 
   _Jv_MonitorEnter (&ClassClass);
@@ -412,7 +413,6 @@ _Jv_RegisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
   info->next   = initiated_classes[hash];
   initiated_classes[hash] = info;
   _Jv_MonitorExit (&ClassClass);
-  
 }
 
 // This function is called many times during startup, before main() is
