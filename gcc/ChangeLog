@@ -1,3 +1,11 @@
+2000-05-27  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Makefile.in (libgcc2.ready): Rename to libgcc.ready.
+	Depend on $(LANGUAGES) as well as $(GCC_PATCHES) and fixed
+	headers.
+	(clean): No need to delete libgcc1.a, libgcc1-asm.a,
+	libgcc2.a, or libgcc1.null.
+
 2000-05-27  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (recog.o): Don't depend on resource.h.

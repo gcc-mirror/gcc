@@ -159,7 +159,7 @@ USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
 # want to set this empty.
 INSTALL_ASSERT_H = install-assert-h
 
-# The GCC to use for compiling libgcc2.a, enquire, and libgcc1-test.
+# The GCC to use for compiling libgcc.a, enquire, and libgcc1-test.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
 GCC_FOR_TARGET = ./xgcc -B$(build_tooldir)/bin/ -B./ -isystem $(build_tooldir)/include
@@ -348,9 +348,6 @@ LIBGCC1 = libgcc1.a
 # Specify the rule for making libgcc1.a for a cross-compiler.
 # The default rule assumes that libgcc1.a is supplied by the user.
 CROSS_LIBGCC1 = libgcc1.cross
-
-# Specify the rule for actually making libgcc2.a.
-LIBGCC2 = libgcc2.a
 
 # Options to use when compiling libgcc2.a.
 # -g1 causes output of debug info only for file-scope entities.
@@ -944,14 +941,14 @@ xlimits.h: glimits.h limitx.h limity.h
 #
 # Build libgcc.a.
 
-# Compiling libgcc2.a requires making sure that cc1, etc. have been compiled.
-# But recompiling cc1 should not force recompilation of libgcc2.a.
-# If you want to force recompilation, delete libgcc2.a.
-libgcc2.ready: $(GCC_PASSES) stmp-int-hdrs $(STMP_FIXPROTO)
-	-if [ -f libgcc2.ready ] ; then \
+# Compiling libgcc.a requires making sure that cc1, etc. have been compiled.
+# But recompiling cc1 should not force recompilation of libgcc.a.
+# If you want to force recompilation, delete libgcc.a.
+libgcc.ready: $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO)
+	-if [ -f libgcc.ready ] ; then \
 		true; \
 	else \
-		touch libgcc2.ready; \
+		touch libgcc.ready; \
 	fi
 
 LIB2ADD = $(LIB2ADDEH) $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
@@ -975,7 +972,7 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
 	  $(SHELL) mklibgcc > tmp-libgcc.mk
 	$(SHELL) $(srcdir)/move-if-change tmp-libgcc.mk libgcc.mk
 
-libgcc.a: libgcc2.ready libgcc.mk $(FPBIT) $(DPBIT)
+libgcc.a: libgcc.ready libgcc.mk $(FPBIT) $(DPBIT)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
@@ -1006,7 +1003,7 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	touch s-mlib
 
 # Build multiple copies of libgcc.a, one for each target switch.
-stmp-multilib: libgcc2.ready libgcc.mk $(FPBIT) $(DPBIT)
+stmp-multilib: libgcc.ready libgcc.mk $(FPBIT) $(DPBIT)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
@@ -2139,8 +2136,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 # that don't exist in the distribution.
 INTL_CLEAN = intl.clean
 clean: mostlyclean $(INTL_CLEAN) lang.clean
-	-rm -f libgcc.a libgcc1.a libgcc1-asm.a libgcc2.a libgcc2.ready
-	-rm -f libgcc1.null
+	-rm -f libgcc.a libgcc.ready
 	-rm -f *.dvi
 	-rm -f */*.dvi
 	-if [ -f md.pre-cpp ]; then \
