@@ -105,8 +105,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Generate DBX_DEBUGGING_INFO by default.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-/* Redefine this to print in hex like iC960.  */
-#define PUT_SDB_TYPE(A) fprintf (asm_out_file, "\t.type\t0x%x;", A)
+/* Redefine this to print in hex and adjust values like GNU960.  The extra
+   bit is used to handle the type long double.  Gcc does not support long
+   double in sdb output, but we do support the non-standard format.  */
+#define PUT_SDB_TYPE(A) \
+  fprintf (asm_out_file, "\t.type\t0x%x;", (A & 0xf) + 2 * (A & ~0xf))
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
