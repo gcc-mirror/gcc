@@ -12766,27 +12766,23 @@ xref_tag (code_type_node, name, globalize)
     }
   else
     {
-      ref = lookup_tag (code, name, b, 0);
-
       if (t)
 	{
 	  /* [dcl.type.elab] If the identifier resolves to a
 	     typedef-name or a template type-parameter, the
 	     elaborated-type-specifier is ill-formed.  */
-	  if ((ref != TYPE_MAIN_VARIANT (t) && t != TYPE_MAIN_VARIANT (t))
+	  if (t != TYPE_MAIN_VARIANT (t)
 	      || (CLASS_TYPE_P (t) && TYPE_WAS_ANONYMOUS (t)))
-	    {
-	      pedwarn ("using typedef-name `%D' after `%s'",
-		       TYPE_NAME (t), tag_name (tag_code));
-	      t = ref;
-	    }
+	    pedwarn ("using typedef-name `%D' after `%s'",
+			TYPE_NAME (t), tag_name (tag_code));
 	  else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
-	    {
-	      error ("using template type parameter `%T' after `%s'",
-		     t, tag_name (tag_code));
-	      t = ref;
-	    }
+	    error ("using template type parameter `%T' after `%s'",
+		      t, tag_name (tag_code));
+
+	  ref = t;
 	}
+      else
+	ref = lookup_tag (code, name, b, 0);
 
       if (! ref)
 	{
