@@ -5659,14 +5659,72 @@ fold (tree expr)
 				    same));
 	    }
 	}
+      else
+	{
+	  /* See if ARG1 is zero and X + ARG1 reduces to X.  */
+	  if (fold_real_zero_addition_p (TREE_TYPE (arg0), arg1, 0))
+	    return non_lvalue (convert (type, arg0));
 
-      /* See if ARG1 is zero and X + ARG1 reduces to X.  */
-      else if (fold_real_zero_addition_p (TREE_TYPE (arg0), arg1, 0))
-	return non_lvalue (convert (type, arg0));
+	  /* Likewise if the operands are reversed.  */
+	  if (fold_real_zero_addition_p (TREE_TYPE (arg1), arg0, 0))
+	    return non_lvalue (convert (type, arg1));
 
-      /* Likewise if the operands are reversed.  */
-      else if (fold_real_zero_addition_p (TREE_TYPE (arg1), arg0, 0))
-	return non_lvalue (convert (type, arg1));
+	  /* Convert x+x into x*2.0.  */
+	  if (operand_equal_p (arg0, arg1, 0))
+	    return fold (build (MULT_EXPR, type, arg0,
+				build_real (type, dconst2)));
+
+	  /* Convert x*c+x into x*(c+1).  */
+	  if (flag_unsafe_math_optimizations
+	      && TREE_CODE (arg0) == MULT_EXPR
+	      && TREE_CODE (TREE_OPERAND (arg0, 1)) == REAL_CST
+	      && ! TREE_CONSTANT_OVERFLOW (TREE_OPERAND (arg0, 1))
+	      && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
+	    {
+	      REAL_VALUE_TYPE c;
+
+	      c = TREE_REAL_CST (TREE_OPERAND (arg0, 1));
+	      real_arithmetic (&c, PLUS_EXPR, &c, &dconst1);
+	      return fold (build (MULT_EXPR, type, arg1,
+				  build_real (type, c)));
+	    }
+
+	  /* Convert x+x*c into x*(c+1).  */
+	  if (flag_unsafe_math_optimizations
+	      && TREE_CODE (arg1) == MULT_EXPR
+	      && TREE_CODE (TREE_OPERAND (arg1, 1)) == REAL_CST
+	      && ! TREE_CONSTANT_OVERFLOW (TREE_OPERAND (arg1, 1))
+	      && operand_equal_p (TREE_OPERAND (arg1, 0), arg0, 0))
+	    {
+	      REAL_VALUE_TYPE c;
+
+	      c = TREE_REAL_CST (TREE_OPERAND (arg1, 1));
+	      real_arithmetic (&c, PLUS_EXPR, &c, &dconst1);
+	      return fold (build (MULT_EXPR, type, arg0,
+				  build_real (type, c)));
+	    }
+
+	  /* Convert x*c1+x*c2 into x*(c1+c2).  */
+	  if (flag_unsafe_math_optimizations
+	      && TREE_CODE (arg0) == MULT_EXPR
+	      && TREE_CODE (arg1) == MULT_EXPR
+	      && TREE_CODE (TREE_OPERAND (arg0, 1)) == REAL_CST
+	      && ! TREE_CONSTANT_OVERFLOW (TREE_OPERAND (arg0, 1))
+	      && TREE_CODE (TREE_OPERAND (arg1, 1)) == REAL_CST
+	      && ! TREE_CONSTANT_OVERFLOW (TREE_OPERAND (arg1, 1))
+	      && operand_equal_p (TREE_OPERAND (arg0, 0),
+				  TREE_OPERAND (arg1, 0), 0))
+	    {
+	      REAL_VALUE_TYPE c1, c2;
+
+	      c1 = TREE_REAL_CST (TREE_OPERAND (arg0, 1));
+	      c2 = TREE_REAL_CST (TREE_OPERAND (arg1, 1));
+	      real_arithmetic (&c1, PLUS_EXPR, &c1, &c2);
+	      return fold (build (MULT_EXPR, type,
+				  TREE_OPERAND (arg0, 0),
+				  build_real (type, c1)));
+	    }
+	}
 
      bit_rotate:
       /* (A << C1) + (A >> C2) if A is unsigned and C1+C2 is the size of A
@@ -5953,15 +6011,6 @@ fold (tree expr)
 	  if (!HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
 	      && real_minus_onep (arg1))
 	    return fold (build1 (NEGATE_EXPR, type, arg0));
-
-	  /* x*2 is x+x */
-	  if (! wins && real_twop (arg1)
-	      && (*lang_hooks.decls.global_bindings_p) () == 0
-	      && ! CONTAINS_PLACEHOLDER_P (arg0))
-	    {
-	      tree arg = save_expr (arg0);
-	      return fold (build (PLUS_EXPR, type, arg, arg));
-	    }
 
 	  if (flag_unsafe_math_optimizations)
 	    {

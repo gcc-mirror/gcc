@@ -2300,7 +2300,8 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
    you should swap the two operands if OP0 would be constant.  */
 
 rtx
-expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target, int unsignedp)
+expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
+	     int unsignedp)
 {
   rtx const_op1 = op1;
 
@@ -2511,6 +2512,28 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target, int unsignedp
 	    abort ();
 
 	  return accum;
+	}
+    }
+
+  if (GET_CODE (op0) == CONST_DOUBLE)
+    {
+      rtx temp = op0;
+      op0 = op1;
+      op1 = temp;
+    }
+
+  /* Expand x*2.0 as x+x.  */
+  if (GET_CODE (op1) == CONST_DOUBLE
+      && GET_MODE_CLASS (mode) == MODE_FLOAT)
+    {
+      REAL_VALUE_TYPE d;
+      REAL_VALUE_FROM_CONST_DOUBLE (d, op1);
+
+      if (REAL_VALUES_EQUAL (d, dconst2))
+	{
+	  op0 = force_reg (GET_MODE (op0), op0);
+	  return expand_binop (mode, add_optab, op0, op0,
+			       target, unsignedp, OPTAB_LIB_WIDEN);
 	}
     }
 
