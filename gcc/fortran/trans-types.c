@@ -187,10 +187,10 @@ gfc_init_kinds (void)
 
   /* Choose the default integer kind.  We choose 4 unless the user
      directs us otherwise.  */
-  if (gfc_option.i8)
+  if (gfc_option.flag_default_integer)
     {
       if (!saw_i8)
-	fatal_error ("integer kind=8 not available for -i8 option");
+	fatal_error ("integer kind=8 not available for -fdefault-integer-8 option");
       gfc_default_integer_kind = 8;
     }
   else if (saw_i4)
@@ -199,10 +199,10 @@ gfc_init_kinds (void)
     gfc_default_integer_kind = gfc_integer_kinds[i_index - 1].kind;
 
   /* Choose the default real kind.  Again, we choose 4 when possible.  */
-  if (gfc_option.r8)
+  if (gfc_option.flag_default_real)
     {
       if (!saw_r8)
-	fatal_error ("real kind=8 not available for -r8 option");
+	fatal_error ("real kind=8 not available for -fdefault-real-8 option");
       gfc_default_real_kind = 8;
     }
   else if (saw_r4)
@@ -210,9 +210,16 @@ gfc_init_kinds (void)
   else
     gfc_default_real_kind = gfc_real_kinds[0].kind;
 
-  /* Choose the default double kind.  If -r8 is specified, we use kind=16,
-     if it's available, otherwise we do not change anything.  */
-  if (gfc_option.r8 && saw_r16)
+  /* Choose the default double kind.  If -fdefault-real and -fdefault-double 
+     are specified, we use kind=8, if it's available.  If -fdefault-real is
+     specified without -fdefault-double, we use kind=16, if it's available.
+     Otherwise we do not change anything.  */
+  if (gfc_option.flag_default_double && !gfc_option.flag_default_real)
+    fatal_error ("Use of -fdefault-double-8 requires -fdefault-real-8");
+
+  if (gfc_option.flag_default_real && gfc_option.flag_default_double && saw_r8)
+    gfc_default_double_kind = 8;
+  else if (gfc_option.flag_default_real && saw_r16)
     gfc_default_double_kind = 16;
   else if (saw_r4 && saw_r8)
     gfc_default_double_kind = 8;
