@@ -1,3 +1,8 @@
+2000-01-16  Anthony Green  <green@cygnus.com>
+
+	* parse.y (build_string_concatenation): Only use
+	StringBuffer(String) shortcut if String arg is constant.
+
 2000-01-11  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* jcf-path.c: Delete PATH_SEPARATOR and DIR_SEPARATOR macros.

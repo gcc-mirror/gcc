@@ -10218,9 +10218,9 @@ build_string_concatenation (op1, op2)
   if (!IS_CRAFTED_STRING_BUFFER_P (op1))
     {
       /* Two solutions here: 
-	 1) OP1 is a string reference, we call new StringBuffer(OP1)
-	 2) OP1 is something else, we call new StringBuffer().append(OP1). */
-      if (JSTRING_TYPE_P (TREE_TYPE (op1)))
+	 1) OP1 is a constant string reference, we call new StringBuffer(OP1)
+	 2) OP1 is something else, we call new StringBuffer().append(OP1).  */
+      if (TREE_CONSTANT (op1) && JSTRING_TYPE_P (TREE_TYPE (op1)))
 	op1 = BUILD_STRING_BUFFER (op1);
       else
 	{
