@@ -615,12 +615,15 @@ extern int arm_is_6_or_7;
   (TREE_CODE (EXP) == STRING_CST        \
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-/* Every structures size must be a multiple of 32 bits.  */
-/* This is for compatibility with ARMCC.  ARM SDT Reference Manual
-   (ARM DUI 0020D) page 2-20 says "Structures are aligned on word
-   boundaries".  */
+/* Setting this to 32 produces more efficient code, but the value set in
+   previous versions of this toolchain was 8, which produces more compact
+   structures.  The command line option -mstructure_size_boundary=<n> can
+   be used to change this value, for compatability with the ARM SDK however
+   the value should be left at 32.  ARM SDT Reference Manual (ARM DUI 0020D)
+   page 2-20 says "Structures are aligned on word boundaries".  */
 #ifndef STRUCTURE_SIZE_BOUNDARY
-#define STRUCTURE_SIZE_BOUNDARY 32
+#define STRUCTURE_SIZE_BOUNDARY arm_structure_size_boundary
+extern int arm_structure_size_boundary;
 #endif
 
 /* Used when parsing command line option -mstructure_size_boundary.  */
