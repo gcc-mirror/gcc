@@ -130,24 +130,23 @@ need_imm_uses_for (tree var)
 static void
 fix_phi_uses (tree phi, tree stmt)
 {
-  stmt_ann_t ann = stmt_ann (stmt);
-  v_may_def_optype v_may_defs;
-  unsigned int i;
-  int j;
+  use_operand_p use_p;
+  def_operand_p def_p;
+  ssa_op_iter iter;
+  int i;
 
   get_stmt_operands (stmt);
-  v_may_defs = V_MAY_DEF_OPS (ann);
 
-  /* Walk each V_MAY_DEF in STMT.  */
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
+  FOR_EACH_SSA_MAYDEF_OPERAND (def_p, use_p, stmt, iter)
     {
-      tree v_may_def = V_MAY_DEF_RESULT (v_may_defs, i);
+      tree v_may_def = DEF_FROM_PTR (def_p);
+      tree v_may_use = USE_FROM_PTR (use_p);
 
       /* Find any uses in the PHI which match V_MAY_DEF and replace
 	 them with the appropriate V_MAY_DEF_OP.  */
-      for (j = 0; j < PHI_NUM_ARGS (phi); j++)
-	if (v_may_def == PHI_ARG_DEF (phi, j))
-	  SET_PHI_ARG_DEF (phi, j, V_MAY_DEF_OP (v_may_defs, i));
+      for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+	if (v_may_def == PHI_ARG_DEF (phi, i))
+	  SET_PHI_ARG_DEF (phi, i, v_may_use);
     }
 }
 
@@ -157,36 +156,36 @@ fix_phi_uses (tree phi, tree stmt)
 static void
 fix_stmt_v_may_defs (tree stmt1, tree stmt2)
 {
-  stmt_ann_t ann1 = stmt_ann (stmt1);
-  stmt_ann_t ann2 = stmt_ann (stmt2);
-  v_may_def_optype v_may_defs1;
-  v_may_def_optype v_may_defs2;
-  unsigned int i, j;
+  bool found = false;
+  ssa_op_iter iter1;
+  ssa_op_iter iter2;
+  use_operand_p use1_p, use2_p;
+  def_operand_p def1_p, def2_p;
 
   get_stmt_operands (stmt1);
   get_stmt_operands (stmt2);
-  v_may_defs1 = V_MAY_DEF_OPS (ann1);
-  v_may_defs2 = V_MAY_DEF_OPS (ann2);
 
   /* Walk each V_MAY_DEF_OP in stmt1.  */
-  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs1); i++)
+  FOR_EACH_SSA_MAYDEF_OPERAND (def1_p, use1_p, stmt1, iter1)
     {
-      tree v_may_def1 = V_MAY_DEF_OP (v_may_defs1, i);
+      tree use = USE_FROM_PTR (use1_p);
 
       /* Find the appropriate V_MAY_DEF_RESULT in STMT2.  */
-      for (j = 0; j < NUM_V_MAY_DEFS (v_may_defs2); j++)
+      FOR_EACH_SSA_MAYDEF_OPERAND (def2_p, use2_p, stmt2, iter2)
 	{
-	  if (v_may_def1 == V_MAY_DEF_RESULT (v_may_defs2, j))
+	  tree def = DEF_FROM_PTR (def2_p);
+	  if (use == def)
 	    {
 	      /* Update.  */
-	      SET_V_MAY_DEF_OP (v_may_defs1, i, V_MAY_DEF_OP (v_may_defs2, j));
-	      break;
-	    }
+	      SET_USE (use1_p, USE_FROM_PTR (use2_p));
+	      found = true;
+              break;
+            }
 	}
 
-      /* If we did not find a corresponding V_MAY_DEF_RESULT, then something
-	 has gone terribly wrong.  */
-      gcc_assert (j != NUM_V_MAY_DEFS (v_may_defs2));
+      /* If we did not find a corresponding V_MAY_DEF_RESULT,
+	 then something has gone terribly wrong.  */
+      gcc_assert (found);
     }
 }
 
@@ -269,7 +268,6 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
       unsigned int num_uses = num_immediate_uses (df);
       tree use;
       tree skipped_phi;
-
 
       /* If there are no uses then there is nothing left to do.  */
       if (num_uses == 0)
