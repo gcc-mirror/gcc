@@ -22,6 +22,8 @@
 	in comments.
 	* doc/cfg.texi: Don't mention find_sub_basic_blocks.
 
+	* tree-ssa-operands.c (check_build_stmt): Remove.
+
 2005-03-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* config/i386/cygwin1.c(mingw_scan): Use xstrdup in calls to putenv.
