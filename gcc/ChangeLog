@@ -1,3 +1,12 @@
+2000-08-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (scan_char_table): Add 'w' to flags for all formats
+	except 'n'.
+	(check_format_info): Set 'wide' for scanf format widths.  Warn for
+	a zero scanf width.  Make the check for writing into a constant
+	object at the first level of indirection; at later levels, warn if
+	any type qualifiers are encountered.
+
 Mon Aug 21 07:41:12 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* reload.c (reload_inner_reg_of_subreg): New function broken out of
