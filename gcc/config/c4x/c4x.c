@@ -3582,6 +3582,11 @@ c4x_valid_operands (code, operands, mode, force)
 
       /* Any valid memory operand screened by src_operand is OK.  */      
     case MEM:
+#if 0
+      if (code2 != REG)
+	return 0;
+#endif
+      break;
 
       /* After CSE, any remaining (ADDRESSOF:P reg) gets converted
 	 into a stack slot memory address comprising a PLUS and a
@@ -3644,10 +3649,9 @@ legitimize_operands (code, operands, mode)
       if (! reload_in_progress
 	  && TARGET_HOIST
 	  && optimize > 0
-	  && ((GET_CODE (operands[1]) == CONST_INT 
-	       && ! c4x_J_constant (operands[1])
-	       && INTVAL (operands[1]) != 0)
-	      || GET_CODE (operands[1]) == CONST_DOUBLE))
+	  && GET_CODE (operands[1]) == CONST_INT 
+	  && preserve_subexpressions_p ()
+	  && rtx_cost (operands[1], code) > 1)
 	operands[1] = force_reg (mode, operands[1]);
       
       if (! reload_in_progress
@@ -3661,11 +3665,11 @@ legitimize_operands (code, operands, mode)
      opportunities.  */
   if (! reload_in_progress
       && ! ((code == PLUS || code == MINUS) && mode == Pmode)
-      && (TARGET_HOIST && optimize > 1
-       && ((GET_CODE (operands[2]) == CONST_INT 
-	    && ! c4x_J_constant (operands[2])
-	    && INTVAL (operands[2]) != 0)
-	   || GET_CODE (operands[2]) == CONST_DOUBLE)))
+      && TARGET_HOIST
+      && optimize > 1
+      && GET_CODE (operands[2]) == CONST_INT
+      && preserve_subexpressions_p ()
+      && rtx_cost (operands[2], code) > 1)
     operands[2] = force_reg (mode, operands[2]);
 
   /* We can get better code on a C30 if we force constant shift counts
