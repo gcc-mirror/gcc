@@ -1555,7 +1555,7 @@ cfgbuild.o : cfgbuild.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h insn-config.h \
    function.h except.h $(GGC_H)
 cfgcleanup.o : cfgcleanup.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TIMEVAR_H)\
    $(BASIC_BLOCK_H) hard-reg-set.h output.h flags.h $(RECOG_H) toplev.h \
-   $(GGC_H) insn-config.h cselib.h $(TARGET_H) $(TM_P_H)
+   $(GGC_H) insn-config.h cselib.h $(TARGET_H) $(TM_P_H) $(PARAMS_H)
 cfgloop.o : cfgloop.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h
 dominance.o : dominance.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) hard-reg-set.h \
