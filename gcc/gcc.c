@@ -5130,7 +5130,7 @@ fatal_error (signum)
   kill (getpid (), signum);
 }
 
-extern int main PARAMS ((int, const char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)
