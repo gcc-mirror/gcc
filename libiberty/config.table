@@ -66,6 +66,14 @@ fi
 echo "# Warning: this fragment is automatically generated" > temp-frag
 
 for frag in ${frags}; do
+  case ${frag} in
+    ../* )
+      if [ ${srcdir} = . ]; then
+	[ -n "${with_target_subdir}" ] && frag=../${frag}
+	[ -n "${with_multisrctop}" ] && frag=${with_multisrctop}${frag}
+      fi
+      ;;
+  esac
   frag=${srcdir}/${xsrcdir}config/$frag
   if [ -f ${frag} ]; then
     echo "Appending ${frag} to xhost-mkfrag"
