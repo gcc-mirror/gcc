@@ -1,5 +1,13 @@
 2004-04-21  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/14857
+	Backport from mainline:
+
+	* config/ia64/ia64.c (ia64_encode_section_info): Don't prod
+	global register variables.
+
+2004-04-21  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* PR target/14723
 	Backport from mainline:
 	2004-02-14  Jan Hubicka  <jh@suse.cz>
