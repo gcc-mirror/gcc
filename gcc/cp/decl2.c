@@ -1211,7 +1211,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 
   if (doing_vec)
     return build_vec_delete (t, maxindex, integer_one_node,
-			     integer_two_node, use_global_delete);
+			     integer_zero_node, use_global_delete);
   else
     {
       if (IS_AGGR_TYPE (TREE_TYPE (type))
