@@ -341,18 +341,19 @@ tmake_file=@dep_tmake_file@
 out_file=$(srcdir)/config/@out_file@
 out_object_file=@out_object_file@
 md_file=$(srcdir)/config/@md_file@
-tm_file=@tm_file@
 tm_file_list=@tm_file_list@
+tm_include_list=@tm_include_list@
 tm_defines=@tm_defines@
 tm_p_file_list=@tm_p_file_list@
-tm_p_file=@tm_p_file@
+tm_p_include_list=@tm_p_include_list@
 build_xm_file_list=@build_xm_file_list@
-build_xm_file=@build_xm_file@
+build_xm_include_list=@build_xm_include_list@
 build_xm_defines=@build_xm_defines@
 host_xm_file_list=@host_xm_file_list@
-host_xm_file=@host_xm_file@
+host_xm_include_list=@host_xm_include_list@
 host_xm_defines=@host_xm_defines@
-xm_file=@xm_file@
+xm_file_list=@xm_file_list@
+xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
 lang_opt_files=@lang_opt_files@ $(srcdir)/c.opt $(srcdir)/common.opt
 lang_specs_files=@lang_specs_files@
@@ -935,27 +936,27 @@ tm_p.h: cs-tm_p.h ; @true
 
 cs-config.h: Makefile
 	TARGET_CPU_DEFAULT="" \
-	HEADERS="$(host_xm_file)" DEFINES="$(host_xm_defines)" \
+	HEADERS="$(host_xm_include_list)" DEFINES="$(host_xm_defines)" \
 	$(SHELL) $(srcdir)/mkconfig.sh config.h
 
 cs-bconfig.h: Makefile
 	TARGET_CPU_DEFAULT="" \
-	HEADERS="$(build_xm_file)" DEFINES="$(build_xm_defines)" \
+	HEADERS="$(build_xm_include_list)" DEFINES="$(build_xm_defines)" \
 	$(SHELL) $(srcdir)/mkconfig.sh bconfig.h
 
 cs-tconfig.h: Makefile
 	TARGET_CPU_DEFAULT="" \
-	HEADERS="$(xm_file)" DEFINES="$(xm_defines)" \
+	HEADERS="$(xm_include_list)" DEFINES="$(xm_defines)" \
 	$(SHELL) $(srcdir)/mkconfig.sh tconfig.h
 
 cs-tm.h: Makefile
 	TARGET_CPU_DEFAULT="$(target_cpu_default)" \
-	HEADERS="$(tm_file)" DEFINES="$(tm_defines)" \
+	HEADERS="$(tm_include_list)" DEFINES="$(tm_defines)" \
 	$(SHELL) $(srcdir)/mkconfig.sh tm.h
 
 cs-tm_p.h: Makefile
 	TARGET_CPU_DEFAULT="" \
-	HEADERS="$(tm_p_file)" DEFINES="" \
+	HEADERS="$(tm_p_include_list)" DEFINES="" \
 	$(SHELL) $(srcdir)/mkconfig.sh tm_p.h
 
 # Don't automatically run autoconf, since configure.in might be accidentally
@@ -1739,7 +1740,7 @@ postreload.o : postreload.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H)
 caller-save.o : caller-save.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    flags.h $(REGS_H) hard-reg-set.h insn-config.h $(BASIC_BLOCK_H) function.h \
    $(RECOG_H) reload.h $(EXPR_H) toplev.h $(TM_P_H)
-bt-load.o : bt-load.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+bt-load.o : bt-load.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(BASIC_BLOCK_H) $(RTL_H) hard-reg-set.h $(REGS_H) $(OBSTACK_H) $(TM_P_H) \
    $(FIBHEAP_H) output.h $(TARGET_H) $(EXPR_H) flags.h $(INSN_ATTR_H)
 reorg.o : reorg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) conditions.h \
