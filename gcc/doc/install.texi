@@ -3397,7 +3397,7 @@ PowerPC system in big endian mode, running System V.4.
 @heading @anchor{powerpc-*-linux-gnu*}powerpc-*-linux-gnu*
 
 You will need
-@uref{ftp://ftp.kernel.org/pub/linux/devel/binutils,,binutils 2.12.90.0.7}
+@uref{ftp://ftp.kernel.org/pub/linux/devel/binutils,,binutils 2.13.90.0.10}
 or newer for a working GCC@.
 
 @html

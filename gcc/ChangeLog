@@ -1,3 +1,7 @@
+2002-11-12  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* doc/install.texi (powerpc-*-linux-gnu*): Update binutils requirement.
+
 2002-11-12  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Use GCJ instead of gcj to refer
