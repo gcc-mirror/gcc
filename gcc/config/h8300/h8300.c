@@ -521,28 +521,6 @@ asm_file_end (file)
   fprintf (file, "\t.end\n");
 }
 
-/* Return true if VALUE is a valid constant for constraint 'P'.
-   IE: VALUE is a power of two <= 2**15.  */
-
-int
-small_power_of_two (value)
-     HOST_WIDE_INT value;
-{
-  int power = exact_log2 (value);
-  return power >= 0 && power <= 15;
-}
-
-/* Return true if VALUE is a valid constant for constraint 'O', which
-   means that the constant would be ok to use as a bit for a bclr
-   instruction.  */
-
-int
-ok_for_bclr (value)
-     HOST_WIDE_INT value;
-{
-  return small_power_of_two ((~value) & 0xff);
-}
-
 /* Return true if OP is a valid source operand for an integer move
    instruction.  */
 
@@ -3245,32 +3223,30 @@ fix_bit_operand (operands, what, type)
      only 'U' memory afterwards, so if this is a MEM operand, we must force
      it to be valid for 'U' by reloading the address.  */
 
-  if (GET_CODE (operands[2]) == CONST_INT)
+  if ((what == 0 && single_zero_operand (operands[2], QImode))
+      || (what == 1 && single_one_operand (operands[2], QImode)))
     {
-      if (CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), what))
+      /* OK to have a memory dest.  */
+      if (GET_CODE (operands[0]) == MEM
+	  && !EXTRA_CONSTRAINT (operands[0], 'U'))
 	{
-	  /* Ok to have a memory dest.  */
-	  if (GET_CODE (operands[0]) == MEM
-	      && !EXTRA_CONSTRAINT (operands[0], 'U'))
-	    {
-	      rtx mem = gen_rtx_MEM (GET_MODE (operands[0]),
-				     copy_to_mode_reg (Pmode,
-						       XEXP (operands[0], 0)));
-	      MEM_COPY_ATTRIBUTES (mem, operands[0]);
-	      operands[0] = mem;
-	    }
-
-	  if (GET_CODE (operands[1]) == MEM
-	      && !EXTRA_CONSTRAINT (operands[1], 'U'))
-	    {
-	      rtx mem = gen_rtx_MEM (GET_MODE (operands[1]),
-				     copy_to_mode_reg (Pmode,
-						       XEXP (operands[1], 0)));
-	      MEM_COPY_ATTRIBUTES (mem, operands[0]);
-	      operands[1] = mem;
-	    }
-	  return 0;
+	  rtx mem = gen_rtx_MEM (GET_MODE (operands[0]),
+				 copy_to_mode_reg (Pmode,
+						   XEXP (operands[0], 0)));
+	  MEM_COPY_ATTRIBUTES (mem, operands[0]);
+	  operands[0] = mem;
 	}
+
+      if (GET_CODE (operands[1]) == MEM
+	  && !EXTRA_CONSTRAINT (operands[1], 'U'))
+	{
+	  rtx mem = gen_rtx_MEM (GET_MODE (operands[1]),
+				 copy_to_mode_reg (Pmode,
+						   XEXP (operands[1], 0)));
+	  MEM_COPY_ATTRIBUTES (mem, operands[0]);
+	  operands[1] = mem;
+	}
+      return 0;
     }
 
   /* Dest and src op must be register.  */

@@ -1,3 +1,20 @@
+2002-05-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Remove prototypes for
+	ok_for_bclr and small_power_of_two.
+	* config/h8300/h8300.c (small_power_of_two): Remove.
+	(ok_for_blcr): Likewise.
+	(fix_bit_operand): Make WHAT deal with an integer instead of a
+	constraint character.
+	* config/h8300/h8300.h (CONST_OK_FOR_O): Remove.
+	(CONST_OK_FOR_P): Likewise.
+	(CONST_OK_FOR_LETTER_P): Do not call CONST_OK_FOR_O or
+	CONST_OK_FOR_P any more.
+	* config/h8300/h8300.md (andqi3): Adjust to the new prototype
+	of fix_bit_operand.
+	(iorqi3): Likewise.
+	(xorqi3): Likewise.
+
 2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/mips/netbsd.h (TARGET_OS_CPP_BUILTINS): Define.
