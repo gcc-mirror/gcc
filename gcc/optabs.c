@@ -4754,16 +4754,17 @@ ldexp(x,n)
 /* The insn generating function can not take an rtx_code argument.
    TRAP_RTX is used as an rtx argument.  Its code is replaced with
    the code to be used in the trap insn and all other fields are
-   ignored.
-
-   ??? Will need to change to support garbage collection.  */
+   ignored.  */
 static rtx trap_rtx;
 
 static void
 init_traps ()
 {
   if (HAVE_conditional_trap)
-    trap_rtx = gen_rtx_fmt_ee (EQ, VOIDmode, NULL_RTX, NULL_RTX);
+    {
+      trap_rtx = gen_rtx_fmt_ee (EQ, VOIDmode, NULL_RTX, NULL_RTX);
+      ggc_add_tree_root (&trap_rtx, 1);
+    }
 }
 #endif
 

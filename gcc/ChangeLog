@@ -1,3 +1,7 @@
+Thu Sep 23 18:07:01 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* optabs.c (init_traps): Register trap_rtx as a GC root.
+
 Thu Sep 23 17:41:47 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/mips/mips.c (function_arg_pass_by_reference): Define
