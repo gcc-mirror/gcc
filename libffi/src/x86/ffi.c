@@ -53,7 +53,7 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
   p_argv = ecif->avalue;
 
   for (i = ecif->cif->nargs, p_arg = ecif->cif->arg_types;
-       (i != 0) && (avn != 0);
+       i != 0;
        i--, p_arg++)
     {
       size_t z;
