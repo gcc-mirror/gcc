@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "output.h"
 #include "c-pragma.h"
+#include "rtl.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -66,6 +67,7 @@ static void init_attributes		PROTO((void));
 static void record_function_format	PROTO((tree, tree, enum format_type,
 					       int, int));
 static void record_international_format	PROTO((tree, tree, int));
+static tree c_find_base_decl            PROTO((tree));
 
 /* Keep a stack of if statements.  We record the number of compound
    statements seen up to the if keyword, as well as the line number
@@ -2995,15 +2997,126 @@ get_directive_line (finput)
    down to the element type of an array.  */
 
 tree
-c_build_type_variant (type, constp, volatilep)
+c_build_qualified_type (type, type_quals)
      tree type;
-     int constp, volatilep;
+     int type_quals;
 {
+  /* A restrict-qualified pointer type must be a pointer to object or
+     incomplete type.  Note that the use of POINTER_TYPE_P also allows
+     REFERENCE_TYPEs, which is appropriate for C++.  Unfortunately,
+     the C++ front-end also use POINTER_TYPE for pointer-to-member
+     values, so even though it should be illegal to use `restrict'
+     with such an entity we don't flag that here.  Thus, special case
+     code for that case is required in the C++ front-end.  */
+  if ((type_quals & TYPE_QUAL_RESTRICT)
+      && (!POINTER_TYPE_P (type)
+	  || !C_TYPE_OBJECT_OR_INCOMPLETE_P (TREE_TYPE (type))))
+    {
+      error ("invalid use of `restrict'");
+      type_quals &= ~TYPE_QUAL_RESTRICT;
+    }
+
   if (TREE_CODE (type) == ARRAY_TYPE)
-    return build_array_type (c_build_type_variant (TREE_TYPE (type),
-						   constp, volatilep),
+    return build_array_type (c_build_qualified_type (TREE_TYPE (type),
+						     type_quals),
 			     TYPE_DOMAIN (type));
-  return build_type_variant (type, constp, volatilep);
+  return build_qualified_type (type, type_quals);
+}
+
+/* Apply the TYPE_QUALS to the new DECL.  */
+
+void
+c_apply_type_quals_to_decl (type_quals, decl)
+     int type_quals;
+     tree decl;
+{
+  if (type_quals & TYPE_QUAL_CONST)
+    TREE_READONLY (decl) = 1;
+  if (type_quals & TYPE_QUAL_VOLATILE)
+    {
+      TREE_SIDE_EFFECTS (decl) = 1;
+      TREE_THIS_VOLATILE (decl) = 1;
+    }
+  if ((type_quals & TYPE_QUAL_RESTRICT) && flag_strict_aliasing)
+    {
+      /* No two restricted pointers can point at the same thing.
+	 However, a restricted pointer can point at the same thing as
+	 an unrestricted pointer, if that unrestricted pointer is
+	 based on the restricted pointer.  So, we make the alias set
+	 for the restricted pointer a subset of the alias set for the
+	 type pointed to by the type of the decl.  */
+
+      int pointed_to_alias_set 
+	= get_alias_set (TREE_TYPE (TREE_TYPE (decl)));
+
+      if (!pointed_to_alias_set)
+	/* It's not legal to make a subset of alias set zero.  */
+	    ;
+      else
+	{
+	  DECL_POINTER_ALIAS_SET (decl) = new_alias_set ();
+	  record_alias_subset  (pointed_to_alias_set,
+				DECL_POINTER_ALIAS_SET (decl));
+	}
+    }
+}
+
+/* T is an expression with pointer type.  Find the DECL on which this
+   expression is based.  (For example, in `a[i]' this would be `a'.)
+   If there is no such DECL, or a unique decl cannot be determined,
+   NULL_TREE is retured.  */
+
+static tree
+c_find_base_decl (t)
+     tree t;
+{
+  int i;
+  tree decl;
+
+  if (t == NULL_TREE || t == error_mark_node)
+    return NULL_TREE;
+
+  if (!POINTER_TYPE_P (TREE_TYPE (t)))
+    return NULL_TREE;
+
+  decl = NULL_TREE;
+
+  if (TREE_CODE (t) == FIELD_DECL 
+      || TREE_CODE (t) == PARM_DECL
+      || TREE_CODE (t) == VAR_DECL)
+    /* Aha, we found a pointer-typed declaration.  */
+    return t;
+
+  /* It would be nice to deal with COMPONENT_REFs here.  If we could
+     tell that `a' and `b' were the same, then `a->f' and `b->f' are
+     also the same.  */
+
+  /* Handle general expressions.  */
+  switch (TREE_CODE_CLASS (TREE_CODE (t)))
+    {
+    case '1':
+    case '2':
+    case '3':
+      for (i = tree_code_length [(int) TREE_CODE (t)]; --i >= 0;)
+	{
+	  tree d = c_find_base_decl (TREE_OPERAND (t, i));
+	  if (d)
+	    {
+	      if (!decl)
+		decl = d;
+	      else if (d && d != decl)
+		/* Two different declarations.  That's confusing; let's
+		   just assume we don't know what's going on.  */
+		decl = NULL_TREE;
+	    }
+	}
+      break;
+
+    default:
+      break;
+    }
+
+  return decl;
 }
 
 /* Return the typed-based alias set for T, which may be an expression
@@ -3043,6 +3156,16 @@ c_get_alias_set (t)
        GCC extension, albeit a common and useful one; the C standard
        says that such accesses have implementation-defined behavior.  */ 
     return 0;
+
+  if (TREE_CODE (t) == INDIRECT_REF)
+    {
+      /* Check for accesses through restrict-qualified pointers.  */
+      tree decl = c_find_base_decl (TREE_OPERAND (t, 0));
+
+      if (decl && DECL_POINTER_ALIAS_SET_KNOWN_P (decl))
+	/* We use the alias set indicated in the declaration.  */
+	return DECL_POINTER_ALIAS_SET (decl);
+    }
 
   /* From here on, only the type matters.  */
 

@@ -404,6 +404,8 @@ print_node (file, prefix, node, indent)
 	fprintf (file, " built-in code %d", DECL_FUNCTION_CODE (node));
       if (TREE_CODE (node) == FIELD_DECL)
 	print_node (file, "bitpos", DECL_FIELD_BITPOS (node), indent + 4);
+      if (DECL_POINTER_ALIAS_SET_KNOWN_P (node))
+	fprintf (file, " alias set %d", DECL_POINTER_ALIAS_SET (node));
       print_node_brief (file, "context", DECL_CONTEXT (node), indent + 4);
       print_node_brief (file, "machine_attributes", DECL_MACHINE_ATTRIBUTES (node), indent + 4);
       print_node_brief (file, "abstract_origin",

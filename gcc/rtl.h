@@ -1505,5 +1505,6 @@ extern void init_alias_analysis		PROTO ((void));
 extern void end_alias_analysis		PROTO ((void));
 
 extern void record_base_value		PROTO ((int, rtx, int));
+extern void record_alias_subset         PROTO ((int, int));
 
 #endif /* _RTL_H */

@@ -264,6 +264,8 @@ int (*lang_get_alias_set) PROTO((tree));
    codes are made.  */
 #define TYPE_HASH(TYPE) ((unsigned long) (TYPE) & 0777777)
 
+static void set_type_quals PROTO((tree, int));
+
 extern char *mode_name[];
 
 void gcc_obstack_init ();
@@ -1100,6 +1102,9 @@ make_node (code)
       DECL_SOURCE_LINE (t) = lineno;
       DECL_SOURCE_FILE (t) = (input_filename) ? input_filename : "<built-in>";
       DECL_UID (t) = next_decl_uid++;
+      /* Note that we have not yet computed the alias set for this
+	 declaration.  */
+      DECL_POINTER_ALIAS_SET (t) = -1;
       break;
 
     case 't':
@@ -3294,7 +3299,7 @@ build_type_attribute_variant (ttype, attribute)
       /* Create a new main variant of TYPE.  */
       TYPE_MAIN_VARIANT (ntype) = ntype;
       TYPE_NEXT_VARIANT (ntype) = 0;
-      TYPE_READONLY (ntype) = TYPE_VOLATILE (ntype) = 0;
+      set_type_quals (ntype, TYPE_UNQUALIFIED);
 
       hashcode = TYPE_HASH (TREE_CODE (ntype))
 		 + TYPE_HASH (TREE_TYPE (ntype))
@@ -3319,8 +3324,7 @@ build_type_attribute_variant (ttype, attribute)
         }
 
       ntype = type_hash_canon (hashcode, ntype);
-      ttype = build_type_variant (ntype, TYPE_READONLY (ttype),
-				  TYPE_VOLATILE (ttype));
+      ttype = build_qualified_type (ntype, TYPE_QUALS (ttype));
     }
 
   return ttype;
@@ -3576,45 +3580,44 @@ merge_machine_decl_attributes (olddecl, newdecl)
 #endif
 }
 
-/* Return a type like TYPE except that its TYPE_READONLY is CONSTP
-   and its TYPE_VOLATILE is VOLATILEP.
+/* Set the type qualifiers for TYPE to TYPE_QUALS, which is a bitmask
+   of the various TYPE_QUAL values.  */
 
-   Such variant types already made are recorded so that duplicates
-   are not made.
+static void
+set_type_quals (type, type_quals)
+     tree type;
+     int  type_quals;
+{
+  TYPE_READONLY (type) = (type_quals & TYPE_QUAL_CONST) != 0;
+  TYPE_VOLATILE (type) = (type_quals & TYPE_QUAL_VOLATILE) != 0;
+  TYPE_RESTRICT (type) = (type_quals & TYPE_QUAL_RESTRICT) != 0;
+}
 
-   A variant types should never be used as the type of an expression.
-   Always copy the variant information into the TREE_READONLY
-   and TREE_THIS_VOLATILE of the expression, and then give the expression
-   as its type the "main variant", the variant whose TYPE_READONLY
-   and TYPE_VOLATILE are zero.  Use TYPE_MAIN_VARIANT to find the
-   main variant.  */
+/* Given a type node TYPE and a TYPE_QUALIFIER_SET, return a type for
+   the same kind of data as TYPE describes.  Variants point to the
+   "main variant" (which has no qualifiers set) via TYPE_MAIN_VARIANT,
+   and it points to a chain of other variants so that duplicate
+   variants are never made.  Only main variants should ever appear as
+   types of expressions.  */
 
 tree
-build_type_variant (type, constp, volatilep)
+build_qualified_type (type, type_quals)
      tree type;
-     int constp, volatilep;
+     int type_quals;
 {
   register tree t;
-
-  /* Treat any nonzero argument as 1.  */
-  constp = !!constp;
-  volatilep = !!volatilep;
-
+  
   /* Search the chain of variants to see if there is already one there just
      like the one we need to have.  If so, use that existing one.  We must
      preserve the TYPE_NAME, since there is code that depends on this.  */
 
   for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-    if (constp == TYPE_READONLY (t) && volatilep == TYPE_VOLATILE (t)
-	&& TYPE_NAME (t) == TYPE_NAME (type))
+    if (TYPE_QUALS (t) == type_quals && TYPE_NAME (t) == TYPE_NAME (type))
       return t;
 
   /* We need a new one.  */
-
   t = build_type_copy (type);
-  TYPE_READONLY (t) = constp;
-  TYPE_VOLATILE (t) = volatilep;
-
+  set_type_quals (t, type_quals);
   return t;
 }
 
@@ -4422,8 +4425,7 @@ build_complex_type (component_type)
   t = make_node (COMPLEX_TYPE);
 
   TREE_TYPE (t) = TYPE_MAIN_VARIANT (component_type);
-  TYPE_VOLATILE (t) = TYPE_VOLATILE (component_type);
-  TYPE_READONLY (t) = TYPE_READONLY (component_type);
+  set_type_quals (t, TYPE_QUALS (component_type));
 
   /* If we already have such a type, use the old one and free this one.  */
   hashcode = TYPE_HASH (component_type);

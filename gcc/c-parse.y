@@ -104,7 +104,7 @@ char *language_string = "GNU C";
    yylval contains an IDENTIFIER_NODE which indicates which one.  */
 %token TYPESPEC
 
-/* Reserved words that qualify type: "const" or "volatile".
+/* Reserved words that qualify type: "const", "volatile", or "restrict".
    yylval contains an IDENTIFIER_NODE which indicates which one.  */
 %token TYPE_QUAL
 

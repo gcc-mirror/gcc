@@ -28,6 +28,49 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "output.h"
 #include "toplev.h"
+#include "splay-tree.h"
+
+/* The alias sets assigned to MEMs assist the back-end in determining
+   which MEMs can alias which other MEMs.  In general, two MEMs in
+   different alias sets to not alias each other.  There is one
+   exception, however.  Consider something like:
+
+     struct S {int i; double d; };
+
+   a store to an `S' can alias something of either type `int' or type
+   `double'.  (However, a store to an `int' cannot alias a `double'
+   and vice versa.)  We indicate this via a tree structure that looks
+   like:
+           struct S
+            /   \
+	   /     \
+         |/_     _\|
+         int    double
+
+   (The arrows are directed and point downwards.)  If, when comparing
+   two alias sets, we can hold one set fixed, and trace the other set
+   downwards, and at some point find the first set, the two MEMs can
+   alias one another.  In this situation we say the alias set for
+   `struct S' is the `superset' and that those for `int' and `double'
+   are `subsets'.  
+
+   Alias set zero is implicitly a superset of all other alias sets.
+   However, this is no actual entry for alias set zero.  It is an
+   error to attempt to explicitly construct a subset of zero.  */
+
+typedef struct alias_set_entry {
+  /* The alias set number, as stored in MEM_ALIAS_SET.  */
+  int alias_set;
+
+  /* The children of the alias set.  These are not just the immediate
+     children, but, in fact, all children.  So, if we have:
+
+       struct T { struct S s; float f; } 
+
+     continuing our example above, the children here will be all of
+     `int', `double', `float', and `struct S'.  */
+  splay_tree children;
+}* alias_set_entry;
 
 static rtx canon_rtx			PROTO((rtx));
 static int rtx_equal_for_memref_p	PROTO((rtx, rtx));
@@ -39,35 +82,23 @@ static rtx find_base_term		PROTO((rtx));
 static int base_alias_check		PROTO((rtx, rtx, enum machine_mode,
 					       enum machine_mode));
 static rtx find_base_value		PROTO((rtx));
+static int mems_in_disjoint_alias_sets_p PROTO((rtx, rtx));
+static int alias_set_compare            PROTO((splay_tree_key, 
+					       splay_tree_key));
+static int insert_subset_children       PROTO((splay_tree_node,
+					       void*));
+static alias_set_entry get_alias_set_entry PROTO((int));
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
 #define SIZE_FOR_MODE(X) (GET_MODE_SIZE (GET_MODE (X)))
-
-/* Perform a basic sanity check.  Namely, that there are	
-   no alias sets if we're not doing strict aliasing.  This helps     
-   to catch bugs whereby someone uses PUT_CODE, but doesn't clear
-   MEM_ALIAS_SET, or where a MEM is allocated in some way other
-   than by the use of gen_rtx_MEM, and the MEM_ALIAS_SET is not
-   cleared.  */			
-#ifdef ENABLE_CHECKING	
-#define CHECK_ALIAS_SETS_FOR_CONSISTENCY(MEM1, MEM2)	\
-  (!flag_strict_aliasing				\
-   && (MEM_ALIAS_SET (MEM1) || MEM_ALIAS_SET (MEM2))	\
-   ? (abort (), 0) : 0)
-#else 
-#define CHECK_ALIAS_SETS_FOR_CONSISTENCY(MEM1, MEM2) ((void)0)
-#endif
 
 /* Returns nonzero if MEM1 and MEM2 do not alias because they are in
    different alias sets.  We ignore alias sets in functions making use
    of variable arguments because the va_arg macros on some systems are
    not legal ANSI C.  */
 #define DIFFERENT_ALIAS_SETS_P(MEM1, MEM2)			\
-  (CHECK_ALIAS_SETS_FOR_CONSISTENCY(MEM1, MEM2),		\
-   MEM_ALIAS_SET (MEM1) && MEM_ALIAS_SET (MEM2)			\
-   && MEM_ALIAS_SET (MEM1) != MEM_ALIAS_SET (MEM2)		\
-   && !current_function_stdarg && !current_function_varargs)
+  mems_in_disjoint_alias_sets_p (MEM1, MEM2)
 
 /* Cap the number of passes we make over the insns propagating alias
    information through set chains.
@@ -130,6 +161,167 @@ char *reg_known_equiv_p;
    NOTE_INSN_FUNCTION_BEG note.  */
 
 static int copying_arguments;
+
+/* The splay-tree used to store the various alias set entries.  */
+
+static splay_tree alias_sets;
+
+/* Returns -1, 0, 1 according to whether SET1 is less than, equal to,
+   or greater than SET2.  */
+
+static int
+alias_set_compare (set1, set2)
+     splay_tree_key set1;
+     splay_tree_key set2;
+{
+  int s1 = (int) set1;
+  int s2 = (int) set2;
+
+  if (s1 < s2)
+    return -1;
+  else if (s1 > s2)
+    return 1;
+  else 
+    return 0;
+}
+
+/* Returns a pointer to the alias set entry for ALIAS_SET, if there is
+   such an entry, or NULL otherwise.  */
+
+static alias_set_entry
+get_alias_set_entry (alias_set)
+     int alias_set;
+{
+  splay_tree_node sn =  
+    splay_tree_lookup (alias_sets, (splay_tree_key) alias_set);
+
+  return sn ? ((alias_set_entry) sn->value) : ((alias_set_entry) 0);
+}
+
+/* Returns nonzero value if the alias sets for MEM1 and MEM2 are such
+   that the two MEMs cannot alias each other.  */
+
+static int 
+mems_in_disjoint_alias_sets_p (mem1, mem2)
+     rtx mem1;
+     rtx mem2;
+{
+  alias_set_entry ase;
+
+#ifdef ENABLE_CHECKING	
+/* Perform a basic sanity check.  Namely, that there are no alias sets
+   if we're not using strict aliasing.  This helps to catch bugs
+   whereby someone uses PUT_CODE, but doesn't clear MEM_ALIAS_SET, or
+   where a MEM is allocated in some way other than by the use of
+   gen_rtx_MEM, and the MEM_ALIAS_SET is not cleared.  If we begin to
+   use alias sets to indicate that spilled registers cannot alias each
+   other, we might need to remove this check.  */
+  if (!flag_strict_aliasing && 
+      (MEM_ALIAS_SET (mem1) || MEM_ALIAS_SET (mem2)))
+    abort ();
+#endif
+
+  /* The code used in varargs macros are often not conforming ANSI C,
+     which can trick the compiler into making incorrect aliasing
+     assumptions in these functions.  So, we don't use alias sets in
+     such a function.  FIXME: This should be moved into the front-end;
+     it is a language-dependent notion, and there's no reason not to
+     still use these checks to handle globals.  */
+  if (current_function_stdarg || current_function_varargs)
+    return 0;
+
+  if (!MEM_ALIAS_SET (mem1) || !MEM_ALIAS_SET (mem2))
+    /* We have no alias set information for one of the MEMs, so we
+       have to assume it can alias anything.  */
+    return 0;
+
+  if (MEM_ALIAS_SET (mem1) == MEM_ALIAS_SET (mem2))
+    /* The two alias sets are the same, so they may alias.  */
+    return 0;
+
+  /* Iterate through each of the children of the first alias set,
+     comparing it with the second alias set.  */
+  ase = get_alias_set_entry (MEM_ALIAS_SET (mem1));
+  if (ase && splay_tree_lookup (ase->children,
+				(splay_tree_key) MEM_ALIAS_SET (mem2)))
+    return  0;
+
+  /* Now do the same, but with the alias sets reversed.  */
+  ase = get_alias_set_entry (MEM_ALIAS_SET (mem2));
+  if (ase && splay_tree_lookup (ase->children,
+				(splay_tree_key) MEM_ALIAS_SET (mem1)))
+    return  0;
+
+  /* The two MEMs are in distinct alias sets, and neither one is the
+     child of the other.  Therefore, they cannot alias.  */
+  return 1;
+}
+
+/* Insert the NODE into the splay tree given by DATA.  Used by
+   record_alias_subset via splay_tree_foreach.  */
+
+static int
+insert_subset_children (node, data)
+     splay_tree_node node;
+     void *data;
+{
+  splay_tree_insert ((splay_tree) data,
+		     node->key,
+		     node->value);
+
+  return 0;
+}
+
+/* Indicate that things in SUBSET can alias things in SUPERSET, but
+   not vice versa.  For example, in C, a store to an `int' can alias a
+   structure containing an `int', but not vice versa.  Here, the
+   structure would be the SUPERSET and `int' the SUBSET.  This
+   function should be called only once per SUPERSET/SUBSET pair.  At
+   present any given alias set may only be a subset of one superset.  
+
+   It is illegal for SUPERSET to be zero; everything is implicitly a
+   subset of alias set zero.  */
+
+void
+record_alias_subset (superset, subset)
+     int superset;
+     int subset;
+{
+  alias_set_entry superset_entry;
+  alias_set_entry subset_entry;
+
+  if (superset == 0)
+    abort ();
+
+  superset_entry = get_alias_set_entry (superset);
+  if (!superset_entry) 
+    {
+      /* Create an entry for the SUPERSET, so that we have a place to
+	 attach the SUBSET.  */
+      superset_entry = 
+	(alias_set_entry) xmalloc (sizeof (struct alias_set_entry));
+      superset_entry->alias_set = superset;
+      superset_entry->children 
+	= splay_tree_new (&alias_set_compare, 0, 0);
+      splay_tree_insert (alias_sets, 
+			 (splay_tree_key) superset,
+			 (splay_tree_value) superset_entry);
+
+    }
+
+  subset_entry = get_alias_set_entry (subset);
+  if (subset_entry) 
+    /* There is an entry for the subset.  Enter all of its children
+       (if they are not already present) as children of the SUPERSET.  */
+    splay_tree_foreach (subset_entry->children,
+			&insert_subset_children,
+			superset_entry->children);
+
+  /* Enter the SUBSET itself as a child of the SUPERSET.  */
+  splay_tree_insert (superset_entry->children, 
+		     (splay_tree_key) subset,
+		     /*value=*/0);
+}
 
 /* Inside SRC, the source of a SET, find a base address.  */
 
@@ -1063,6 +1255,8 @@ init_alias_once ()
     if (FUNCTION_ARG_REGNO_P (OUTGOING_REGNO (i))
 	&& HARD_REGNO_MODE_OK (i, Pmode))
       SET_HARD_REG_BIT (argument_registers, i);
+
+  alias_sets = splay_tree_new (&alias_set_compare, 0, 0);
 }
 
 void

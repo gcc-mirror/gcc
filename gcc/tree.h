@@ -830,6 +830,25 @@ struct tree_block
 /* Means this type is const-qualified.  */
 #define TYPE_READONLY(NODE) ((NODE)->common.readonly_flag)
 
+/* If nonzero, this type is `restrict'-qualified, in the C sense of
+   the term.  */
+#define TYPE_RESTRICT(NODE) (TYPE_CHECK (NODE)->type.restrict_flag)
+
+/* There is a TYPE_QUAL value for each type qualifier.  They can be
+   combined by bitwise-or to form the complete set of qualifiers for a
+   type.  */
+
+#define TYPE_UNQUALIFIED   0x0
+#define TYPE_QUAL_CONST    0x1
+#define TYPE_QUAL_VOLATILE 0x2
+#define TYPE_QUAL_RESTRICT 0x4
+
+/* The set of type qualifiers for this type.  */
+#define TYPE_QUALS(NODE)			\
+  ((TYPE_READONLY(NODE) * TYPE_QUAL_CONST) |	\
+   (TYPE_VOLATILE(NODE) * TYPE_QUAL_VOLATILE) |	\
+   (TYPE_RESTRICT(NODE) * TYPE_QUAL_RESTRICT))
+
 /* These flags are available for each language front end to use internally.  */
 #define TYPE_LANG_FLAG_0(NODE) (TYPE_CHECK (NODE)->type.lang_flag_0)
 #define TYPE_LANG_FLAG_1(NODE) (TYPE_CHECK (NODE)->type.lang_flag_1)
@@ -881,6 +900,8 @@ struct tree_type
   unsigned needs_constructing_flag : 1;
   unsigned transparent_union_flag : 1;
   unsigned packed_flag : 1;
+  unsigned restrict_flag : 1;
+
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
   unsigned lang_flag_2 : 1;
@@ -888,7 +909,7 @@ struct tree_type
   unsigned lang_flag_4 : 1;
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
-  /* room for 4 more bits */
+  /* room for 3 more bits */
 
   unsigned int align;
   union tree_node *pointer_to;
@@ -1244,6 +1265,16 @@ struct tree_type
    an address constant.  */
 #define DECL_NON_ADDR_CONST_P(NODE) (DECL_CHECK (NODE)->decl.non_addr_const_p)
 
+/* Used to indicate an alias set for the memory pointed to by this
+   particular FIELD_DECL, PARM_DECL, or VAR_DECL, which must have
+   pointer (or reference) type.  */
+#define DECL_POINTER_ALIAS_SET(NODE) \
+  (DECL_CHECK (NODE)->decl.pointer_alias_set)
+
+/* Nonzero if an alias set has been assigned to this declaration.  */
+#define DECL_POINTER_ALIAS_SET_KNOWN_P(NODE) \
+  (DECL_POINTER_ALIAS_SET (NODE) != - 1)
+
 struct tree_decl
 {
   char common[sizeof (struct tree_common)];
@@ -1316,6 +1347,7 @@ struct tree_decl
     HOST_WIDE_INT i;
   } saved_insns;
   union tree_node *vindex;
+  int pointer_alias_set;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_decl *lang_specific;
 };
@@ -1502,14 +1534,24 @@ extern tree lookup_attribute		PROTO((char *, tree));
 
 extern tree merge_attributes		PROTO((tree, tree));
 
-/* Given a type node TYPE, and CONSTP and VOLATILEP, return a type
-   for the same kind of data as TYPE describes.
-   Variants point to the "main variant" (which has neither CONST nor VOLATILE)
-   via TYPE_MAIN_VARIANT, and it points to a chain of other variants
-   so that duplicate variants are never made.
-   Only main variants should ever appear as types of expressions.  */
+/* Given a type node TYPE and a TYPE_QUALIFIER_SET, return a type for
+   the same kind of data as TYPE describes.  Variants point to the
+   "main variant" (which has no qualifiers set) via TYPE_MAIN_VARIANT,
+   and it points to a chain of other variants so that duplicate
+   variants are never made.  Only main variants should ever appear as
+   types of expressions.  */
 
-extern tree build_type_variant		PROTO((tree, int, int));
+extern tree build_qualified_type        PROTO((tree, int));
+
+/* Like build_qualified_type, but only deals with the `const' and
+   `volatile' qualifiers.  This interface is retained for backwards
+   compatiblity with the various front-ends; new code should use
+   build_qualified_type instead.  */
+
+#define build_type_variant(TYPE, CONST_P, VOLATILE_P)			\
+  build_qualified_type (TYPE,						\
+			((CONST_P) ? TYPE_QUAL_CONST : 0)		\
+			| ((VOLATILE_P) ? TYPE_QUAL_VOLATILE : 0))
 
 /* Make a copy of a type node.  */
 

@@ -245,6 +245,7 @@ init_lex ()
   ridpointers[(int) RID_SIGNED] = get_identifier ("signed");
   ridpointers[(int) RID_INLINE] = get_identifier ("inline");
   ridpointers[(int) RID_CONST] = get_identifier ("const");
+  ridpointers[(int) RID_RESTRICT] = get_identifier ("restrict");
   ridpointers[(int) RID_VOLATILE] = get_identifier ("volatile");
   ridpointers[(int) RID_AUTO] = get_identifier ("auto");
   ridpointers[(int) RID_STATIC] = get_identifier ("static");
@@ -274,6 +275,7 @@ init_lex ()
   if (flag_traditional)
     {
       UNSET_RESERVED_WORD ("const");
+      UNSET_RESERVED_WORD ("restrict");
       UNSET_RESERVED_WORD ("volatile");
       UNSET_RESERVED_WORD ("typeof");
       UNSET_RESERVED_WORD ("signed");
@@ -281,6 +283,9 @@ init_lex ()
       UNSET_RESERVED_WORD ("iterator");
       UNSET_RESERVED_WORD ("complex");
     }
+  else if (!flag_isoc9x)
+    UNSET_RESERVED_WORD ("restrict");
+
   if (flag_no_asm)
     {
       UNSET_RESERVED_WORD ("asm");

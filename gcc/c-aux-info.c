@@ -478,8 +478,8 @@ gen_type (ret_val, t, style)
         case INTEGER_TYPE:
           data_type = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (t)));
           /* Normally, `unsigned' is part of the deal.  Not so if it comes
-    	     with `const' or `volatile'.  */
-          if (TREE_UNSIGNED (t) && (TYPE_READONLY (t) || TYPE_VOLATILE (t)))
+    	     with a type qualifier.  */
+          if (TREE_UNSIGNED (t) && TYPE_QUALS (t))
     	    data_type = concat ("unsigned ", data_type);
 	  break;
 
@@ -503,6 +503,8 @@ gen_type (ret_val, t, style)
     ret_val = concat ("const ", ret_val);
   if (TYPE_VOLATILE (t))
     ret_val = concat ("volatile ", ret_val);
+  if (TYPE_RESTRICT (t))
+    ret_val = concat ("restrict ", ret_val);
   return ret_val;
 }
 

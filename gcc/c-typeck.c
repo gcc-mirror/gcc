@@ -163,9 +163,7 @@ static tree
 qualify_type (type, like)
      tree type, like;
 {
-  int constflag = TYPE_READONLY (type) || TYPE_READONLY (like);
-  int volflag = TYPE_VOLATILE (type) || TYPE_VOLATILE (like);
-  return c_build_type_variant (type, constflag, volflag);
+  return c_build_qualified_type (type, TYPE_QUALS (like));
 }
 
 /* Return the common type of two types.
@@ -283,14 +281,14 @@ common_type (t1, t2)
 	 But ANSI C specifies doing this with the qualifiers.
 	 So I turned it on again.  */
       {
-	tree target = common_type (TYPE_MAIN_VARIANT (TREE_TYPE (t1)),
-				   TYPE_MAIN_VARIANT (TREE_TYPE (t2)));
-	int constp
-	  = TYPE_READONLY (TREE_TYPE (t1)) || TYPE_READONLY (TREE_TYPE (t2));
-	int volatilep
-	  = TYPE_VOLATILE (TREE_TYPE (t1)) || TYPE_VOLATILE (TREE_TYPE (t2));
-	t1 = build_pointer_type (c_build_type_variant (target, constp,
-				 volatilep));
+	tree pointed_to_1 = TREE_TYPE (t1);
+	tree pointed_to_2 = TREE_TYPE (t2);
+	tree target = common_type (TYPE_MAIN_VARIANT (pointed_to_1),
+				   TYPE_MAIN_VARIANT (pointed_to_2));
+	t1 = build_pointer_type (c_build_qualified_type 
+				 (target, 
+				  TYPE_QUALS (pointed_to_1) | 
+				  TYPE_QUALS (pointed_to_2)));
 	return build_type_attribute_variant (t1, attributes);
       }
 #if 0
@@ -447,9 +445,7 @@ comptypes (type1, type2)
 
   /* Qualifiers must match.  */
 
-  if (TYPE_READONLY (t1) != TYPE_READONLY (t2))
-    return 0;
-  if (TYPE_VOLATILE (t1) != TYPE_VOLATILE (t2))
+  if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
     return 0;
 
   /* Allow for two different type nodes which have essentially the same
@@ -1084,11 +1080,12 @@ default_conversion (exp)
 	  volatilep = TREE_THIS_VOLATILE (exp);
 	}
 
-      if (TYPE_READONLY (type) || TYPE_VOLATILE (type)
-	  || constp || volatilep)
-	restype = c_build_type_variant (restype,
-					TYPE_READONLY (type) || constp,
-					TYPE_VOLATILE (type) || volatilep);
+      if (TYPE_QUALS (type) || constp || volatilep)
+	restype 
+	  = c_build_qualified_type (restype,
+				    TYPE_QUALS (type) 
+				    | (constp * TYPE_QUAL_CONST)
+				    | (volatilep * TYPE_QUAL_VOLATILE));
 
       if (TREE_CODE (exp) == INDIRECT_REF)
 	return convert (TYPE_POINTER_TO (restype),
@@ -3080,8 +3077,10 @@ build_unary_op (code, xarg, noconvert)
 
       /* Ordinary case; arg is a COMPONENT_REF or a decl.  */
       argtype = TREE_TYPE (arg);
-      /* If the lvalue is const or volatile,
-	 merge that into the type that the address will point to.  */
+      /* If the lvalue is const or volatile, merge that into the type
+         to which the address will point.  Note that you can't get a
+	 restricted pointer by taking the address of something, so we
+	 only have to deal with `const' and `volatile' here.  */
       if (TREE_CODE_CLASS (TREE_CODE (arg)) == 'd'
 	  || TREE_CODE_CLASS (TREE_CODE (arg)) == 'r')
 	{
@@ -3779,11 +3778,11 @@ build_c_cast (type, expr)
 	    in_type = TREE_TYPE (in_type);
 	  while (TREE_CODE (in_otype) == POINTER_TYPE)
 	    in_otype = TREE_TYPE (in_otype);
-	    
-	  if (TYPE_VOLATILE (in_otype) && ! TYPE_VOLATILE (in_type))
-	    pedwarn ("cast discards `volatile' from pointer target type");
-	  if (TYPE_READONLY (in_otype) && ! TYPE_READONLY (in_type))
-	    pedwarn ("cast discards `const' from pointer target type");
+	  
+	  if (TYPE_QUALS (in_otype) & ~TYPE_QUALS (in_type))
+	    /* There are qualifiers present in IN_OTYPE that are not
+	       present in IN_TYPE.  */
+	    pedwarn ("cast discards qualifiers from pointer target type");
 	}
 
       /* Warn about possible alignment problems.  */
@@ -4114,12 +4113,13 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 		  || comp_target_types (memb_type, rhstype))
 		{
 		  /* If this type won't generate any warnings, use it.  */
-		  if ((TREE_CODE (ttr) == FUNCTION_TYPE
-		       && TREE_CODE (ttl) == FUNCTION_TYPE)
-		      ? ((! TYPE_READONLY (ttl) | TYPE_READONLY (ttr))
-			 & (! TYPE_VOLATILE (ttl) | TYPE_VOLATILE (ttr)))
-		      : ((TYPE_READONLY (ttl) | ! TYPE_READONLY (ttr))
-			 & (TYPE_VOLATILE (ttl) | ! TYPE_VOLATILE (ttr))))
+		  if (TYPE_QUALS (ttl) == TYPE_QUALS (ttr)
+		      || ((TREE_CODE (ttr) == FUNCTION_TYPE
+			   && TREE_CODE (ttl) == FUNCTION_TYPE)
+			  ? ((TYPE_QUALS (ttl) | TYPE_QUALS (ttr))
+			     == TYPE_QUALS (ttr))
+			  : (TYPE_QUALS (ttl) | TYPE_QUALS (ttr)
+			     == TYPE_QUALS (ttl))))
 		    break;
 
 		  /* Keep looking for a better type, but remember this one.  */
@@ -4157,26 +4157,15 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 		     certain things, it is okay to use a const or volatile
 		     function where an ordinary one is wanted, but not
 		     vice-versa.  */
-		  if (TYPE_READONLY (ttl) && ! TYPE_READONLY (ttr))
-		    warn_for_assignment ("%s makes `const *' function pointer from non-const",
-					 get_spelling (errtype), funname,
-					 parmnum);
-		  if (TYPE_VOLATILE (ttl) && ! TYPE_VOLATILE (ttr))
-		    warn_for_assignment ("%s makes `volatile *' function pointer from non-volatile",
+		  if (TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr))
+		    warn_for_assignment ("%s makes qualified function pointer from unqualified",
 					 get_spelling (errtype), funname,
 					 parmnum);
 		}
-	      else
-		{
-		  if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
-		    warn_for_assignment ("%s discards `const' from pointer target type",
-					 get_spelling (errtype), funname,
-					 parmnum);
-		  if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
-		    warn_for_assignment ("%s discards `volatile' from pointer target type",
-					 get_spelling (errtype), funname,
-					 parmnum);
-		}
+	      else if (TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl))
+		warn_for_assignment ("%s discards qualifiers from pointer target type",
+				     get_spelling (errtype), funname,
+				     parmnum);
 	    }
 	  
 	  if (pedantic && ! DECL_IN_SYSTEM_HEADER (fundecl))
@@ -4217,11 +4206,8 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 	  else if (TREE_CODE (ttr) != FUNCTION_TYPE
 		   && TREE_CODE (ttl) != FUNCTION_TYPE)
 	    {
-	      if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
-		warn_for_assignment ("%s discards `const' from pointer target type",
-				     get_spelling (errtype), funname, parmnum);
-	      else if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
-		warn_for_assignment ("%s discards `volatile' from pointer target type",
+	      if (TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl))
+		warn_for_assignment ("%s discards qualifiers from pointer target type",
 				     get_spelling (errtype), funname, parmnum);
 	      /* If this is not a case of ignoring a mismatch in signedness,
 		 no warning.  */
@@ -4241,11 +4227,8 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 		 that say the function will not do certain things,
 		 it is okay to use a const or volatile function
 		 where an ordinary one is wanted, but not vice-versa.  */
-	      if (TYPE_READONLY (ttl) && ! TYPE_READONLY (ttr))
-		warn_for_assignment ("%s makes `const *' function pointer from non-const",
-				     get_spelling (errtype), funname, parmnum);
-	      if (TYPE_VOLATILE (ttl) && ! TYPE_VOLATILE (ttr))
-		warn_for_assignment ("%s makes `volatile *' function pointer from non-volatile",
+	      if (TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr))
+		warn_for_assignment ("%s makes qualified function pointer from unqualified",
 				     get_spelling (errtype), funname, parmnum);
 	    }
 	}
