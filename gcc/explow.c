@@ -294,6 +294,26 @@ expr_size (exp)
 
   return expand_expr (size, NULL_RTX, TYPE_MODE (sizetype), 0);
 }
+
+/* Return a wide integer for the size in bytes of the value of EXP, or -1
+   if the size can vary or is larger than an integer.  */
+
+HOST_WIDE_INT
+int_expr_size (exp)
+     tree exp;
+{
+  tree t = (*lang_hooks.expr_size) (exp);
+
+  if (t == 0
+      || TREE_CODE (t) != INTEGER_CST
+      || TREE_OVERFLOW (t)
+      || TREE_INT_CST_HIGH (t) != 0
+      /* If the result would appear negative, it's too big to represent.  */
+      || (HOST_WIDE_INT) TREE_INT_CST_LOW (t) < 0)
+    return -1;
+
+  return TREE_INT_CST_LOW (t);
+}
 
 /* Return a copy of X in which all memory references
    and all constants that involve symbol refs
