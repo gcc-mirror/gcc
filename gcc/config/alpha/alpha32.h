@@ -77,7 +77,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef INITIALIZE_TRAMPOLINE
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
-  alpha_initialize_trampoline (TRAMP, FNADDR, CXT, 16, 20, 12)
+  alpha_initialize_trampoline (TRAMP, FNADDR, CXT, 20, 16, 12)
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
