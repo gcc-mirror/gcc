@@ -8613,14 +8613,11 @@ Floating-Point Arithmetic', Computing Surveys, 23, March 1991, pp.@:
 An online version is available at
 @uref{http://docs.sun.com/}.
 
-Information related to the IEEE 754
-floating-point standard by a leading light can be found at
+Information related to the IEEE 754 floating-point standard by can be found
+at @uref{http://grouper.ieee.org/groups/754/} and
 @uref{http://http.cs.berkeley.edu/%7Ewkahan/ieee754status/};
 see also slides from the short course referenced from
 @uref{http://http.cs.berkeley.edu/%7Efateman/}.
-@uref{http://www.linuxsupportline.com/%7Ebillm/} has a brief
-guide to IEEE 754, a somewhat x86-GNU/Linux-specific FAQ,
-and library code for GNU/Linux x86 systems.
 
 The supplement to the PostScript-formatted Goldberg document,
 referenced above, is available in HTML format.

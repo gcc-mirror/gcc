@@ -1,3 +1,9 @@
+2004-05-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* g77.texi (Floating-point Errors): Avoid referencing 
+	http://www.linuxsupportline.com/~billm/ which as has been hijacked;
+	add a reference to the official IEEE 754 site.
+
 2004-04-18  Release Manager
 
 	* GCC 3.4.0 released.
