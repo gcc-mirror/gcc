@@ -1,3 +1,20 @@
+2005-01-20  Ian Lance Taylor  <ian@airs.com>
+
+	PR tree-optimization/13000
+	* tree-inline.c: Include "tree-flow.h".
+	(expand_call_inline): If warn_return_type, warn if non-void inline
+	function falls through.
+	* tree-cfg.c (execute_warn_function_return): Don't warn about
+	control reaching end if TREE_NO_WARNING is set.  Set
+	TREE_NO_WARNING.
+	* gimple-low.c (block_may_fallthru): Don't assume that SWITCH_EXPR
+	has been lowered.
+	* gimplify.c (shortcut_cond_expr): Don't emit a jump over the else
+	branch if we don't need one.
+	* c-typeck.c: Include "tree-flow.h"
+	(c_finish_bc_stmt): Don't add a goto if the current statement
+	list doesn't fall through to the current point.
+
 2005-01-21  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/576

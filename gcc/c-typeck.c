@@ -43,6 +43,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "tree-iterator.h"
 #include "tree-gimple.h"
+#include "tree-flow.h"
 
 /* Possible cases of implicit bad conversions.  Used to select
    diagnostic messages in convert_for_assignment.  */
@@ -6762,10 +6763,23 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
 tree
 c_finish_bc_stmt (tree *label_p, bool is_break)
 {
+  bool skip;
   tree label = *label_p;
 
+  /* In switch statements break is sometimes stylistically used after
+     a return statement.  This can lead to spurious warnings about
+     control reaching the end of a non-void function when it is
+     inlined.  Note that we are calling block_may_fallthru with
+     language specific tree nodes; this works because
+     block_may_fallthru returns true when given something it does not
+     understand.  */
+  skip = !block_may_fallthru (cur_stmt_list);
+
   if (!label)
-    *label_p = label = create_artificial_label ();
+    {
+      if (!skip)
+	*label_p = label = create_artificial_label ();
+    }
   else if (TREE_CODE (label) != LABEL_DECL)
     {
       if (is_break)
@@ -6774,6 +6788,9 @@ c_finish_bc_stmt (tree *label_p, bool is_break)
         error ("continue statement not within a loop");
       return NULL_TREE;
     }
+
+  if (skip)
+    return NULL_TREE;
 
   return add_stmt (build1 (GOTO_EXPR, void_type_node, label));
 }

@@ -278,10 +278,16 @@ block_may_fallthru (tree block)
     case GOTO_EXPR:
     case RETURN_EXPR:
     case RESX_EXPR:
-    case SWITCH_EXPR:
       /* Easy cases.  If the last statement of the block implies 
 	 control transfer, then we can't fall through.  */
       return false;
+
+    case SWITCH_EXPR:
+      /* If SWITCH_LABELS is set, this is lowered, and represents a
+	 branch to a selected label and hence can not fall through.
+	 Otherwise SWITCH_BODY is set, and the switch can fall
+	 through.  */
+      return SWITCH_LABELS (stmt) != NULL_TREE;
 
     case COND_EXPR:
       if (block_may_fallthru (COND_EXPR_THEN (stmt)))

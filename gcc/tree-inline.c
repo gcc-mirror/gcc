@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cgraph.h"
 #include "intl.h"
 #include "tree-mudflap.h"
+#include "tree-flow.h"
 #include "function.h"
 #include "diagnostic.h"
 #include "debug.h"
@@ -1607,9 +1608,22 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
      function itself.  */
   {
     struct cgraph_node *old_node = id->current_node;
+    tree copy;
 
     id->current_node = edge->callee;
-    append_to_statement_list (copy_body (id), &BIND_EXPR_BODY (expr));
+    copy = copy_body (id);
+
+    if (warn_return_type
+	&& !TREE_NO_WARNING (fn)
+	&& !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fn)))
+	&& block_may_fallthru (copy))
+      {
+	warning ("control may reach end of non-void function %qD being inlined",
+		 fn);
+	TREE_NO_WARNING (fn) = 1;
+      }
+
+    append_to_statement_list (copy, &BIND_EXPR_BODY (expr));
     id->current_node = old_node;
   }
   inlined_body = &BIND_EXPR_BODY (expr);
