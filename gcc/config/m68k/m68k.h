@@ -1052,11 +1052,20 @@ while(0)
     }
 #else /* !__mcf5200__ */
 #if defined(MACHINE_STATE_m68010_up)
+#ifdef __HPUX_ASM__
+/* HPUX assembler does not accept %ccr.  */
+#define MACHINE_STATE_SAVE(id)		\
+    {					\
+      asm ("move.w %cc,-(%sp)");	\
+      asm ("movm.l &0xc0c0,-(%sp)");	\
+    }
+#else /* ! __HPUX_ASM__ */
 #define MACHINE_STATE_SAVE(id)		\
     {					\
       asm ("move.w %ccr,-(%sp)");	\
       asm ("movm.l &0xc0c0,-(%sp)");	\
     }
+#endif /* __HPUX_ASM__ */
 #else /* !MACHINE_STATE_m68010_up */
 #define MACHINE_STATE_SAVE(id)		\
     {					\
@@ -1103,11 +1112,20 @@ while(0)
       asm ("add.l 20,%sp");		\
     }
 #else /* !__mcf5200__ */
+#ifdef __HPUX_ASM__
+/* HPUX assembler does not accept %ccr.  */
+#define MACHINE_STATE_RESTORE(id)	\
+    {					\
+      asm ("movm.l (%sp)+,&0x0303");	\
+      asm ("move.w (%sp)+,%cc");	\
+    }
+#else /* ! __HPUX_ASM__ */
 #define MACHINE_STATE_RESTORE(id)	\
     {					\
       asm ("movm.l (%sp)+,&0x0303");	\
       asm ("move.w (%sp)+,%ccr");	\
     }
+#endif /* __HPUX_ASM__ */
 #endif /* __mcf5200__ */
 #else /* !MOTOROLA */
 #if defined(__mcf5200__)
