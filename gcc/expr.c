@@ -6306,6 +6306,8 @@ expand_expr (exp, target, tmode, modifier)
 	  if (ignore)
 	    return op0;
 
+	  op0 = protect_from_queue (op0, 0);
+
 	  /* We would like the object in memory.  If it is a constant,
 	     we can have it be statically allocated into memory.  For
 	     a non-constant (REG, SUBREG or CONCAT), we need to allocate some
