@@ -4346,7 +4346,17 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
  	if (regno < FIRST_PSEUDO_REGISTER
  	    && TEST_HARD_REG_BIT (reg_class_contents[rld[i].class], regno)
  	    && HARD_REGNO_MODE_OK (regno, rld[i].mode))
- 	  rld[i].reg_rtx = dest;
+	  {
+	    int nr = HARD_REGNO_NREGS (regno, rld[i].mode);
+	    int ok = 1, nri;
+
+	    for (nri = 1; nri < nr; nri ++)
+	      if (! TEST_HARD_REG_BIT (reg_class_contents[rld[i].class], regno + nri))
+		ok = 0;
+
+	    if (ok)
+	      rld[i].reg_rtx = dest;
+	  }
       }
 
   return retval;
