@@ -1,3 +1,8 @@
+2005-01-11  Bastian Blank  <waldi@debian.org>
+
+	* system-linux-s390.ads: Define Preallocated_Stacks.
+	* system-linux-s390x.ads: Likewise.
+
 2005-01-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat_ugn.texi: Fix texi errors with null variables.
