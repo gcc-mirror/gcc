@@ -1,3 +1,9 @@
+2004-04-26  Matt Austern  <austern@apple.com>
+
+	* src/powerpc/darwin.S: Go through a non-lazy pointer for initial
+	FDE location.
+	* src/powerpc/darwin_closure.S: Likewise.
+	
 2004-04-24  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libffi.call/cls_multi_schar.c (main): Fix initialization

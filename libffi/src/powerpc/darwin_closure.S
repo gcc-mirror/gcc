@@ -260,7 +260,7 @@ LSFDE1:
 
 LASFDE1:
 	.long	LASFDE1-EH_frame1	; FDE CIE offset
-	.long	LFB1-.	; FDE initial location
+	.long	LLFB1$non_lazy_ptr-.	; FDE initial location
 	.set	L$set$3,LFE1-LFB1
 	.long	L$set$3	; FDE address range
 	.byte   0x0     ; uleb128 0x0; Augmentation size
@@ -298,3 +298,7 @@ LO$ffi_closure_helper_DARWIN:
 L_ffi_closure_helper_DARWIN$lazy_ptr:
 	.indirect_symbol _ffi_closure_helper_DARWIN
 	.long   dyld_stub_binding_helper
+.data
+	.align 2
+LLFB1$non_lazy_ptr:
+        .long LFB1
