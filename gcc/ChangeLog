@@ -1,5 +1,13 @@
 2004-03-12  Philip Blundell  <philb@gnu.org>
 
+	PR target/10730
+	Backport from trunk:
+	2003-05-15  Philip Blundell  <philb@gnu.org>
+	* config/arm/arm.c (adjacent_mem_locations): Reject offsets
+	involving invalid constants.
+ 
+2004-03-12  Philip Blundell  <philb@gnu.org>
+
 	PR target/14558
 	Backport from trunk:
 	2004-02-25  Richard Earnshaw  <rearnsha@arm.com>
