@@ -1,3 +1,8 @@
+2001-09-06  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.misc-tests/gcov.exp: Add support for call return percentages.
+	* gcc.misc-tests/gcov-6.c: New test.
+
 2001-09-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/3986
