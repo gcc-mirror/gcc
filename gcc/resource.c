@@ -1249,7 +1249,7 @@ mark_end_of_function_resources (trial, include_delayed_effects)
 rtx
 find_free_register (current_insn, last_insn, class_str, mode, reg_set)
      rtx current_insn, last_insn;
-     char *class_str;
+     const char *class_str;
      int mode;
      HARD_REG_SET *reg_set;
 {
