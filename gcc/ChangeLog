@@ -1,3 +1,7 @@
+2001-06-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* NEWS: Regenerate.
+
 2001-06-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gthr-posix.h (__gthread_objc_thread_detach): Simply cast
