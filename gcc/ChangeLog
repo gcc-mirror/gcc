@@ -1,3 +1,10 @@
+2001-07-07  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.c (m68hc11_initial_elimination_offset):
+	Take into account m68hc11_sp_correction for FRAME_POINTER_REGNUM
+	elimination.
+	* config/m68hc11/m68hc11.h (STARTING_FRAME_OFFSET): Use 0.
+
 2001-07-07  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/ia64/sysv4.h (ASM_OUTPUT_LABELREF): Append # to end
