@@ -1,3 +1,9 @@
+Thu Jan  4 15:54:05 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* varasm.c (output_constructor): Use HOST_WIDE_INT for sizes.
+	Only call array_size_for_constructor if last field and array type
+	with no upper bound.
+
 2001-01-04  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/arm.c (arm_gen_constant): Prefer to emit constants
