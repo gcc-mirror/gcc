@@ -49,7 +49,8 @@ enum node_type
   T_MACRO,	   /* object-like macro */
   T_FMACRO,	   /* function-like macro */
   T_IDENTITY,	   /* macro defined to itself */
-  T_EMPTY	   /* macro defined to nothing */
+  T_EMPTY,	   /* macro defined to nothing */
+  T_ASSERTION	   /* predicate for #assert */
 };
 
 typedef struct hashnode HASHNODE;
@@ -64,10 +65,17 @@ struct hashnode
     const U_CHAR *cpval;		/* some predefined macros */
     const struct object_defn *odefn;	/* #define foo bar */
     const struct funct_defn *fdefn;	/* #define foo(x) bar(x) */
-    struct hashnode *aschain;		/* #assert */
+    struct predicate *pred;		/* #assert */
   } value;
 
   const U_CHAR name[1];			/* name[length] */
+};
+
+/* Structure used for assertion predicates.  */
+struct predicate
+{
+  struct predicate *next;
+  struct cpp_toklist answer;
 };
 
 /* List of directories to look for include files in. */
@@ -250,7 +258,20 @@ extern enum cpp_ttype _cpp_get_directive_token
 					PARAMS ((cpp_reader *));
 extern enum cpp_ttype _cpp_get_define_token
 					PARAMS ((cpp_reader *));
-extern void _cpp_scan_line		PARAMS ((cpp_reader *, cpp_toklist *));
+extern enum cpp_ttype _cpp_scan_until	PARAMS ((cpp_reader *, cpp_toklist *,
+						 enum cpp_ttype));
+extern void _cpp_init_toklist		PARAMS ((cpp_toklist *));
+extern void _cpp_clear_toklist		PARAMS ((cpp_toklist *));
+extern void _cpp_free_toklist		PARAMS ((cpp_toklist *));
+extern void _cpp_slice_toklist		PARAMS ((cpp_toklist *,
+						 const cpp_token *,
+						 const cpp_token *));
+extern void _cpp_squeeze_toklist	PARAMS ((cpp_toklist *));
+extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
+						 const cpp_token *));
+extern int _cpp_equiv_toklists		PARAMS ((const cpp_toklist *,
+						 const cpp_toklist *));
+
 
 /* In cpplib.c */
 extern int _cpp_handle_directive	PARAMS ((cpp_reader *));

@@ -82,6 +82,7 @@ static struct operation parse_number PARAMS ((cpp_reader *, U_CHAR *,
 static struct operation parse_charconst PARAMS ((cpp_reader *, U_CHAR *,
 						 U_CHAR *));
 static struct operation parse_defined PARAMS ((cpp_reader *));
+static struct operation parse_assertion PARAMS ((cpp_reader *));
 static HOST_WIDEST_INT parse_escape PARAMS ((cpp_reader *, U_CHAR **,
 					     HOST_WIDEST_INT));
 static struct operation lex PARAMS ((cpp_reader *, int));
@@ -109,6 +110,15 @@ struct operation
   U_CHAR unsignedp;    /* True if value should be treated as unsigned.  */
   HOST_WIDEST_INT value; /* The value logically "right" of op.  */
 };
+
+/* With -O2, gcc appears to produce nice code, moving the error
+   message load and subsequent jump completely out of the main path.  */
+#define CPP_ICE(msgid) \
+  do { cpp_ice (pfile, msgid); goto syntax_error; } while(0)
+#define SYNTAX_ERROR(msgid) \
+  do { cpp_error (pfile, msgid); goto syntax_error; } while(0)
+#define SYNTAX_ERROR2(msgid, arg) \
+  do { cpp_error (pfile, msgid, arg); goto syntax_error; } while(0)
 
 /* Parse and convert an integer for #if.  Accepts decimal, hex, or octal
    with or without size suffixes.  */
@@ -379,6 +389,81 @@ parse_defined (pfile)
   return op;
 }
 
+static struct operation
+parse_assertion (pfile)
+     cpp_reader *pfile;
+{
+  struct operation op;
+  HASHNODE *hp;
+  struct predicate *pred;
+  cpp_toklist query;
+  enum cpp_ttype type;
+  U_CHAR *tok;
+  size_t len;
+  unsigned int old_written;
+  int specific = 0;
+
+  old_written = CPP_WRITTEN (pfile);
+  CPP_PUTC (pfile, '#');
+  pfile->no_macro_expand++;
+  type = _cpp_get_directive_token (pfile);
+  if (type == CPP_VSPACE)
+    SYNTAX_ERROR ("assertion without predicate");
+  else if (type != CPP_NAME)
+    SYNTAX_ERROR ("assertion predicate is not an identifier");
+
+  tok = pfile->token_buffer + old_written;
+  len = CPP_WRITTEN (pfile) - old_written;
+  hp = _cpp_lookup (pfile, tok, len);
+
+  /* Look ahead for an open paren.  */
+  _cpp_skip_hspace (pfile);
+  if (CPP_BUF_PEEK (CPP_BUFFER (pfile)) == '(')
+    {
+      if (_cpp_get_directive_token (pfile) != CPP_OPEN_PAREN)
+	CPP_ICE ("impossible token, expecting ( in parse_assertion");
+
+      _cpp_init_toklist (&query);
+      specific = 1;
+      if (_cpp_scan_until (pfile, &query, CPP_CLOSE_PAREN) != CPP_CLOSE_PAREN)
+	SYNTAX_ERROR ("missing close paren on assertion answer");
+
+      if (_cpp_get_directive_token (pfile) != CPP_CLOSE_PAREN)
+	CPP_ICE ("impossible token, expecting ) in parse_assertion");
+    }
+
+  /* If we get here, the syntax is valid.  */
+  op.op = INT;
+  op.value = 0;
+  /* Has this predicate been asserted at all?  */
+  if (hp->type == T_ASSERTION)
+    {
+      if (specific)
+	{
+	  for (pred = hp->value.pred; pred; pred = pred->next)
+	    if (_cpp_equiv_toklists (&query, &pred->answer))
+	      {
+		op.value = 1;
+		break;
+	      }
+	  _cpp_free_toklist (&query);
+	}
+      else
+	op.value = 1;
+    }
+
+ out:
+  pfile->no_macro_expand--;
+  CPP_SET_WRITTEN (pfile, old_written);
+  return op;
+
+ syntax_error:
+  if (specific)
+    _cpp_free_toklist (&query);
+  op.op = ERROR;
+  goto out;
+}
+
 struct token
 {
   const char *operator;
@@ -451,11 +536,8 @@ lex (pfile, skip_evaluation)
 		     (int) (tok_end - tok_start), tok_start);
       return op;
 
-    case CPP_ASSERTION:
-      op.op = INT;
-      op.unsignedp = 0;
-      op.value = cpp_defined (pfile, tok_start, tok_end - tok_start);
-      return op;
+    case CPP_HASH:
+      return parse_assertion (pfile);
 
     case CPP_OTHER:
       /* See if it is a special token of length 2.  */
@@ -734,15 +816,6 @@ be handled with operator-specific code.  */
   top->value = v1 OP v2; \
   top->unsignedp = unsigned1 | unsigned2;
 
-/* With -O2, gcc appears to produce nice code, moving the error
-   message load and subsequent jump completely out of the main path.  */
-#define CPP_ICE(msgid) \
-  do { cpp_ice (pfile, msgid); goto syntax_error; } while(0)
-#define SYNTAX_ERROR(msgid) \
-  do { cpp_error (pfile, msgid); goto syntax_error; } while(0)
-#define SYNTAX_ERROR2(msgid, arg) \
-  do { cpp_error (pfile, msgid, arg); goto syntax_error; } while(0)
-
 /* Parse and evaluate a C expression, reading from PFILE.
    Returns the truth value of the expression.  */
 
@@ -770,7 +843,6 @@ _cpp_parse_expr (pfile)
   int result;
   char buff[5];
 
-  pfile->parsing_if_directive++;
   /* We've finished when we try to reduce this.  */
   top->op = FINISHED;
   /* Nifty way to catch missing '('.  */
@@ -795,11 +867,6 @@ _cpp_parse_expr (pfile)
 	case NAME:
 	  CPP_ICE ("lex returns a NAME");
 	case ERROR:
-	  goto syntax_error;
-	case '#':
-	  /* We get '#' when get_directive_token hits a syntactically
-	     invalid assertion predicate.  _cpp_parse_assertion has
-	     already issued an error.  */
 	  goto syntax_error;
 	default:
 	  SYNTAX_ERROR ("invalid character in #if");
@@ -1094,7 +1161,6 @@ _cpp_parse_expr (pfile)
   /* Free dynamic stack if we allocated one.  */
   if (stack != init_stack)
     free (stack);
-  pfile->parsing_if_directive--;
   CPP_SET_WRITTEN (pfile, old_written);
   return result;
 }

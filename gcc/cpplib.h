@@ -124,7 +124,6 @@ typedef struct cpp_name cpp_name;
   T(CPP_VSPACE,		"\n")	/* End of line.  */		\
   N(CPP_EOF,		0)	/* End of file.  */		\
   N(CPP_HEADER_NAME,	0)	/* <stdio.h> in #include */	\
-  N(CPP_ASSERTION,	0)	/* (...) in #assert */		\
 \
   /* Obsolete - will be removed when no code uses them still.  */	\
   N(CPP_HSPACE,		0)	/* Horizontal white space.  */	\
@@ -189,6 +188,9 @@ struct cpp_token
   } val;
 };
 
+/* General flags.  */
+#define LIST_OFFSET    (1 << 0)
+
 /* Directive flags.  */
 #define SYNTAX_INCLUDE (1 << 8)
 
@@ -211,12 +213,12 @@ struct cpp_toklist
   unsigned int comments_used;	/* comment tokens used.  */
   unsigned int comments_cap;	/* comment token capacity.  */
 
-  /* Only used if tokens[0].type == CPP_DIRECTIVE.  This is the
-     handler to call after lexing the rest of this line.  The flags
-     indicate whether the rest of the line gets special treatment
-     during lexing (#include, #if, #assert, #unassert).  */
-  directive_handler dir_handler;
-  unsigned short dir_flags;
+  /* The handler to call after lexing the rest of this line.
+     -1 for none */
+  short dirno;
+
+  /* Per-list flags, see above */
+  unsigned short flags;
 };
 
 struct cpp_buffer
@@ -543,12 +545,6 @@ struct cpp_reader
 
   /* If true, characters between '<' and '>' are a single (string) token.  */
   unsigned char parsing_include_directive;
-
-  /* If true, # introduces an assertion (see do_assert) */
-  unsigned char parsing_if_directive;
-
-  /* If true, # and ## are the STRINGIZE and TOKPASTE operators */
-  unsigned char parsing_define_directive;
 
   /* True if escape sequences (as described for has_escapes in
      parse_buffer) should be emitted.  */
