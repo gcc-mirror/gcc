@@ -1457,8 +1457,7 @@ alter_access (t, binfo, fdecl, access)
 }
 
 /* Process the USING_DECL, which is a member of T.  The METHOD_VEC, if
-   non-NULL, is the methods of T.  The FIELDS are the fields of T.
-   Returns 1 if the USING_DECL was valid, 0 otherwise.  */
+   non-NULL, is the methods of T.  The FIELDS are the fields of T.  */
 
 void
 handle_using_decl (using_decl, t, method_vec, fields)
@@ -1485,8 +1484,11 @@ handle_using_decl (using_decl, t, method_vec, fields)
   
   if (name == constructor_name (ctype)
       || name == constructor_name_full (ctype))
-    cp_error_at ("using-declaration for constructor", using_decl);
-  
+    {
+      cp_error_at ("using-declaration for constructor", using_decl);
+      return;
+    }
+
   fdecl = lookup_member (binfo, name, 0, 0);
   
   if (!fdecl)
@@ -4994,7 +4996,7 @@ validate_lhs (lhstype, complain)
 
 /* This function will instantiate the type of the expression given in
    RHS to match the type of LHSTYPE.  If errors exist, then return
-   error_mark_node.  If only complain is COMPLAIN is set.  If we are
+   error_mark_node.  We only complain is COMPLAIN is set.  If we are
    not complaining, never modify rhs, as overload resolution wants to
    try many possible instantiations, in hopes that at least one will
    work.

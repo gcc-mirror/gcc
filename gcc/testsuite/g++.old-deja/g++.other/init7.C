@@ -4,8 +4,6 @@
 // The initialization of a static local variable must be retried if a
 // previous try finished by throwing an exception [stmt.dcl]/4
 
-// execution test - XFAIL *-*-*
-
 struct foo {
   foo() { throw true; }
 };
