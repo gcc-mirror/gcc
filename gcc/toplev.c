@@ -3126,7 +3126,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
       char *lim = (char *) sbrk (0);
 
       fprintf (stderr, "Data size %d.\n",
-	       (int) lim - (int) &environ);
+	       lim - (char *) &environ);
       fflush (stderr);
 
 #ifdef USG
