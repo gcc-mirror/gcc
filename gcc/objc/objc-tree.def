@@ -1,7 +1,8 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the Objective C front end (see tree.def
    for the standard codes).
-   Copyright (C) 1990, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1997, 1998, 1999, 2000, 2001 
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -25,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 DEFTREECODE (CLASS_INTERFACE_TYPE, "class_interface_type", 't', 0)
 DEFTREECODE (CLASS_IMPLEMENTATION_TYPE, "class_implementation_type", 't', 0)
 DEFTREECODE (CATEGORY_INTERFACE_TYPE, "category_interface_type", 't', 0)
-DEFTREECODE (CATEGORY_IMPLEMENTATION_TYPE,"category_implementation_type",'t',0)
+DEFTREECODE (CATEGORY_IMPLEMENTATION_TYPE,"category_implementation_type", 't', 0)
 DEFTREECODE (PROTOCOL_INTERFACE_TYPE, "protocol_interface_type", 't', 0)
 
 /* Objective-C decls.  */
