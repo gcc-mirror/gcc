@@ -11123,7 +11123,7 @@ simplify_comparison (code, pop0, pop1)
 
 /* Like jump.c' reversed_comparison_code, but use combine infrastructure for
    searching backward.  */
-enum rtx_code
+static enum rtx_code
 combine_reversed_comparison_code (exp)
      rtx exp;
 {
@@ -11135,8 +11135,8 @@ combine_reversed_comparison_code (exp)
      return code1;
    /* Otherwise try and find where the condition codes were last set and
       use that.  */
-   x = get_last_value (XEXP (x, 0));
-   if (GET_CODE (x) != COMPARE)
+   x = get_last_value (XEXP (exp, 0));
+   if (!x || GET_CODE (x) != COMPARE)
      return UNKNOWN;
    return reversed_comparison_code_parts (GET_CODE (exp),
 					  XEXP (x, 0), XEXP (x, 1), NULL);
