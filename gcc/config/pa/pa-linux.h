@@ -26,7 +26,6 @@ Boston, MA 02111-1307, USA.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
-#define DWARF2_UNWIND_INFO 1
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__ELF__ -Dunix -D__hppa__ -D__gnu_linux__ -Dlinux -Asystem=unix -Asystem=posix -Acpu=hppa -Amachine=hppa -Amachine=bigendian"
@@ -53,9 +52,9 @@ Boston, MA 02111-1307, USA.  */
       %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
       %{static:-static}}"
 
-/* Sibcalls, stubs, and elf sections don't play well.  */
+/* Sibcalls are ok.  */
 #undef FUNCTION_OK_FOR_SIBCALL
-#define FUNCTION_OK_FOR_SIBCALL(x) 0
+#define FUNCTION_OK_FOR_SIBCALL(x) 1
 
 /* glibc's profiling functions don't need gcc to allocate counters.  */
 #define NO_PROFILE_COUNTERS 1
@@ -67,12 +66,6 @@ Boston, MA 02111-1307, USA.  */
     data_section ();					\
   else							\
     readonly_data_section ();
-
-/* A C expression whose value is RTL representing the location of the
-   incoming return address at the beginning of any function, before the
-   prologue.  */
-#define INCOMING_RETURN_ADDR_RTX  (gen_rtx_REG (word_mode, 2))
-#define DWARF_FRAME_RETURN_COLUMN (DWARF_FRAME_REGNUM (2))
 
 /* Define the strings used for the special svr4 .type and .size directives.
    These strings generally do not vary from one system running svr4 to

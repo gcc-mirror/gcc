@@ -3978,7 +3978,7 @@
   emit_insn (gen_umulsidi3 (cross_product2, op2l, op1r));
 
   /* Emit a multiply for the low sub-word.  */
-  emit_insn (gen_umulsidi3 (low_product, op2r, op1r));
+  emit_insn (gen_umulsidi3 (low_product, copy_rtx (op2r), copy_rtx (op1r)));
 
   /* Sum the cross products and shift them into proper position.  */
   emit_insn (gen_adddi3 (cross_scratch, cross_product1, cross_product2));
