@@ -1,3 +1,8 @@
+2002-01-12  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* global.c (find_reg): Check for HARD_REGNO_CALL_PART_CLOBBERED
+	every where we allocate a register.
+
 2002-01-12  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* gcse.c (compute_pre_data, pre_gcse): Use sbitmap_free.

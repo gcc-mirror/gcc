@@ -1086,6 +1086,9 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (allocno[num].hard_reg_copy_preferences, i)
 	    && HARD_REGNO_MODE_OK (i, mode)
+	    && (allocno[num].calls_crossed == 0
+		|| accept_call_clobbered
+		|| ! HARD_REGNO_CALL_PART_CLOBBERED (i, mode))
 	    && (REGNO_REG_CLASS (i) == REGNO_REG_CLASS (best_reg)
 		|| reg_class_subset_p (REGNO_REG_CLASS (i),
 				       REGNO_REG_CLASS (best_reg))
@@ -1122,6 +1125,9 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (allocno[num].hard_reg_preferences, i)
 	    && HARD_REGNO_MODE_OK (i, mode)
+	    && (allocno[num].calls_crossed == 0
+		|| accept_call_clobbered
+		|| ! HARD_REGNO_CALL_PART_CLOBBERED (i, mode))
 	    && (REGNO_REG_CLASS (i) == REGNO_REG_CLASS (best_reg)
 		|| reg_class_subset_p (REGNO_REG_CLASS (i),
 				       REGNO_REG_CLASS (best_reg))
@@ -1202,6 +1208,9 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 	      /* Don't use a reg no good for this pseudo.  */
 	      && ! TEST_HARD_REG_BIT (used2, regno)
 	      && HARD_REGNO_MODE_OK (regno, mode)
+	      && (allocno[num].calls_crossed == 0
+		  || accept_call_clobbered
+		  || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode))
 #ifdef CLASS_CANNOT_CHANGE_MODE
 	      && ! (REG_CHANGES_MODE (allocno[num].reg)
 		    && (TEST_HARD_REG_BIT
