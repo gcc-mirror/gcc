@@ -3750,6 +3750,11 @@ while (0)
   {"extend_operator",           { SIGN_EXTEND, ZERO_EXTEND }},          \
   {"highpart_shift_operator",   { ASHIFTRT, LSHIFTRT, ROTATERT, ROTATE }},
 
+/* A list of predicates that do special things with modes, and so
+   should not elicit warnings for VOIDmode match_operand.  */
+
+#define SPECIAL_MODE_PREDICATES \
+  "pc_or_label_operand",
 
 
 /* If defined, a C statement to be executed just prior to the
