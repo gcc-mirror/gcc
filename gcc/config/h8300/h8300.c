@@ -315,9 +315,9 @@ h8300_init_once ()
       target_flags |= 1;
     }
 
-  /* Some of the shifts are optimized for speed by default. 
+  /* Some of the shifts are optimized for speed by default.
      See http://gcc.gnu.org/ml/gcc-patches/2002-07/msg01858.html
-     If optimizing for size, change shift_alg for those shift to 
+     If optimizing for size, change shift_alg for those shift to
      SHIFT_LOOP.  */
   if(optimize_size)
     {
@@ -484,7 +484,7 @@ pop (file, rn)
    PC
    FP			<- fp
    <locals>
-   <saved registers> 	<- sp
+   <saved registers>	<- sp
 
    This is what the stack looks like after the prolog of
    a function which doesn't have a frame:
@@ -492,7 +492,7 @@ pop (file, rn)
    <args>
    PC
    <locals>
-   <saved registers>   	<- sp
+   <saved registers>	<- sp
 */
 
 /* Output assembly language code for the function prologue.  */
@@ -700,7 +700,7 @@ asm_file_start (file)
 {
   fprintf (file, ";\tGCC For the Hitachi H8/300\n");
   fprintf (file, ";\tBy Hitachi America Ltd and Cygnus Support\n");
-  
+
   if (optimize_size)
     fprintf (file, "; -Os\n");
   else if (optimize)

@@ -392,8 +392,8 @@ enum reg_class {
 
 #define REG_CLASS_CONTENTS			\
 {      {0},		/* No regs      */	\
-   {0x6ff},		/* GENERAL_REGS */ 	\
-   {0x100},		/* MAC_REGS */ 	\
+   {0x6ff},		/* GENERAL_REGS */	\
+   {0x100},		/* MAC_REGS */	\
    {0x7ff},		/* ALL_REGS	*/	\
 }
 
@@ -686,14 +686,14 @@ struct cum_arg
 
    H8/300
 	      vvvv context
-   1 0000 7900xxxx 		mov.w	#0x1234,r3
-   2 0004 5A00xxxx 		jmp	@0x1234
+   1 0000 7900xxxx		mov.w	#0x1234,r3
+   2 0004 5A00xxxx		jmp	@0x1234
 	      ^^^^ function
 
    H8/300H
 	      vvvvvvvv context
-   2 0000 7A00xxxxxxxx 		mov.l	#0x12345678,er3
-   3 0006 5Axxxxxx 		jmp	@0x123456
+   2 0000 7A00xxxxxxxx		mov.l	#0x12345678,er3
+   3 0006 5Axxxxxx		jmp	@0x123456
 	    ^^^^^^ function
 */
 
