@@ -2940,7 +2940,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	     conversion now.  */
 	  if (target_mode != compare_mode)
 	    {
-	      convert_move (target, op0);
+	      convert_move (target, op0, 0);
 	      return target;
 	    }
 	  else
