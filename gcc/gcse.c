@@ -672,6 +672,21 @@ gcse_main (f, file)
       return 0;
     }
 
+  /* Trying to perform global optimizations on flow graphs which have
+     a high connectivity will take a long time and is unlikely to be
+     particularly useful.
+
+     In normal circumstances a cfg should have about twice has many edges
+     as blocks.  But we do not want to punish small functions which have
+     a couple switch statements.  So we require a relatively large number
+     of basic blocks and the ratio of edges to blocks to be high.  */
+  if (n_basic_blocks > 1000 && n_edges / n_basic_blocks >= 20)
+    {
+      /* Free storage allocated by find_basic_blocks.  */
+      free_basic_block_vars (0);
+      return 0;
+    }
+
   /* See what modes support reg/reg copy operations.  */
   if (! can_copy_init_p)
     {
@@ -4906,6 +4921,21 @@ delete_null_pointer_checks (f)
       /* Free storage allocated by find_basic_blocks.  */
       free_basic_block_vars (0);
       return;
+    }
+
+  /* Trying to perform global optimizations on flow graphs which have
+     a high connectivity will take a long time and is unlikely to be
+     particularly useful.
+
+     In normal circumstances a cfg should have about twice has many edges
+     as blocks.  But we do not want to punish small functions which have
+     a couple switch statements.  So we require a relatively large number
+     of basic blocks and the ratio of edges to blocks to be high.  */
+  if (n_basic_blocks > 1000 && n_edges / n_basic_blocks >= 20)
+    {
+      /* Free storage allocated by find_basic_blocks.  */
+      free_basic_block_vars (0);
+      return 0;
     }
 
   /* We need predecessor/successor lists as well as pred/succ counts for
