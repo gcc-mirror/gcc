@@ -22,7 +22,7 @@
 #error 0xabc	/* { dg-bogus "#error" "normal conversion" } */
 #endif
 
-#if 1.2 /* { dg-error "loating point numbers" "floating point in #if" } */
+#if 1.2 /* { dg-error "loating constant" "floating point in #if" } */
 #endif
 
 #if 4uu /* { dg-error "invalid suffix" "too many suffixes" } */
@@ -34,7 +34,7 @@
 #if 1234lul	/* { dg-error "invalid suffix" "u between ls" } */
 #endif
 
-#if 099 /* { dg-error "digits beyond the radix" "decimal in octal constant" } */
+#if 099 /* { dg-error "invalid digit" "decimal in octal constant" } */
 #endif
 
 #if 0xfffffffffffffffff /* { dg-error "integer constant" "range error" } */

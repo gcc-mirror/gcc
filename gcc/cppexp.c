@@ -23,22 +23,10 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 
-typedef struct cpp_num cpp_num;
-
 #define PART_PRECISION (sizeof (cpp_num_part) * CHAR_BIT)
 #define HALF_MASK (~(cpp_num_part) 0 >> (PART_PRECISION / 2))
 #define LOW_PART(num_part) (num_part & HALF_MASK)
 #define HIGH_PART(num_part) (num_part >> (PART_PRECISION / 2))
-
-/* A preprocessing number.  Code assumes that any unused high bits of
-   the double integer are set to zero.  */
-struct cpp_num
-{
-  cpp_num_part high;
-  cpp_num_part low;
-  bool unsignedp;  /* True if value should be treated as unsigned.  */
-  bool overflow;   /* True if the most recent calculation overflowed.  */
-};
 
 struct op
 {
@@ -72,15 +60,13 @@ static cpp_num num_lshift PARAMS ((cpp_num, size_t, size_t));
 static cpp_num num_rshift PARAMS ((cpp_num, size_t, size_t));
 
 static cpp_num append_digit PARAMS ((cpp_num, int, int, size_t));
-static cpp_num interpret_number PARAMS ((cpp_reader *, const cpp_token *));
 static cpp_num parse_defined PARAMS ((cpp_reader *));
 static cpp_num eval_token PARAMS ((cpp_reader *, const cpp_token *));
 static struct op *reduce PARAMS ((cpp_reader *, struct op *, enum cpp_ttype));
+static unsigned int interpret_float_suffix PARAMS ((const uchar *, size_t));
+static unsigned int interpret_int_suffix PARAMS ((const uchar *, size_t));
 
-/* Token type abuse.  There is no "error" token, but we can't get
-   comments in #if, so we can abuse that token type.  Similarly,
-   create unary plus and minus operators.  */
-#define CPP_ERROR CPP_COMMENT
+/* Token type abuse to create unary plus and minus operators.  */
 #define CPP_UPLUS (CPP_LAST_CPP_OP + 1)
 #define CPP_UMINUS (CPP_LAST_CPP_OP + 2)
 
@@ -91,28 +77,317 @@ static struct op *reduce PARAMS ((cpp_reader *, struct op *, enum cpp_ttype));
 #define SYNTAX_ERROR2(msgid, arg) \
   do { cpp_error (pfile, DL_ERROR, msgid, arg); goto syntax_error; } while(0)
 
-struct suffix
+/* Subroutine of cpp_classify_number.  S points to a float suffix of
+   length LEN, possibly zero.  Returns 0 for an invalid suffix, or a
+   flag vector describing the suffix.  */
+static unsigned int
+interpret_float_suffix (s, len)
+     const uchar *s;
+     size_t len;
 {
-  const unsigned char s[4];
-  const unsigned char u;
-  const unsigned char l;
-};
+  size_t f = 0, l = 0, i = 0;
 
-static const struct suffix vsuf_1[] = {
-  { "u", 1, 0 }, { "U", 1, 0 },
-  { "l", 0, 1 }, { "L", 0, 1 }
-};
+  while (len--)
+    switch (s[len])
+      {
+      case 'f': case 'F': f++; break;
+      case 'l': case 'L': l++; break;
+      case 'i': case 'I':
+      case 'j': case 'J': i++; break;
+      default:
+	return 0;
+      }
 
-static const struct suffix vsuf_2[] = {
-  { "ul", 1, 1 }, { "UL", 1, 1 }, { "uL", 1, 1 }, { "Ul", 1, 1 },
-  { "lu", 1, 1 }, { "LU", 1, 1 }, { "Lu", 1, 1 }, { "lU", 1, 1 },
-  { "ll", 0, 2 }, { "LL", 0, 2 }
-};
+  if (f + l > 1 || i > 1)
+    return 0;
 
-static const struct suffix vsuf_3[] = {
-  { "ull", 1, 2 }, { "ULL", 1, 2 }, { "uLL", 1, 2 }, { "Ull", 1, 2 },
-  { "llu", 1, 2 }, { "LLU", 1, 2 }, { "LLu", 1, 2 }, { "llU", 1, 2 }
-};
+  return ((i ? CPP_N_IMAGINARY : 0)
+	  | (f ? CPP_N_SMALL :
+	     l ? CPP_N_LARGE : CPP_N_MEDIUM));
+}
+
+/* Subroutine of cpp_classify_number.  S points to an integer suffix
+   of length LEN, possibly zero. Returns 0 for an invalid suffix, or a
+   flag vector describing the suffix.  */
+static unsigned int
+interpret_int_suffix (s, len)
+     const uchar *s;
+     size_t len;
+{
+  size_t u, l, i;
+
+  u = l = i = 0;
+
+  while (len--)
+    switch (s[len])
+      {
+      case 'u': case 'U':	u++; break;
+      case 'i': case 'I':
+      case 'j': case 'J':	i++; break;
+      case 'l': case 'L':	l++;
+	/* If there are two Ls, they must be adjacent and the same case.  */
+	if (l == 2 && s[len] != s[len + 1])
+	  return 0;
+	break;
+      default:
+	return 0;
+      }
+
+  if (l > 2 || u > 1 || i > 1)
+    return 0;
+
+  return ((i ? CPP_N_IMAGINARY : 0)
+	  | (u ? CPP_N_UNSIGNED : 0)
+	  | ((l == 0) ? CPP_N_SMALL
+	     : (l == 1) ? CPP_N_MEDIUM : CPP_N_LARGE));
+}
+
+/* Categorize numeric constants according to their field (integer,
+   floating point, or invalid), radix (decimal, octal, hexadecimal),
+   and type suffixes.  */
+unsigned int
+cpp_classify_number (pfile, token)
+     cpp_reader *pfile;
+     const cpp_token *token;
+{
+  const uchar *str = token->val.str.text;
+  const uchar *limit;
+  unsigned int max_digit, result, radix;
+  enum {NOT_FLOAT = 0, AFTER_POINT, AFTER_EXPON} float_flag;
+
+  /* If the lexer has done its job, length one can only be a single
+     digit.  Fast-path this very common case.  */
+  if (token->val.str.len == 1)
+    return CPP_N_INTEGER | CPP_N_SMALL | CPP_N_DECIMAL;
+
+  limit = str + token->val.str.len;
+  float_flag = NOT_FLOAT;
+  max_digit = 0;
+  radix = 10;
+
+  /* First, interpret the radix.  */
+  if (*str == '0')
+    {
+      radix = 8;
+      str++;
+
+      /* Require at least one hex digit to classify it as hex.  */
+      if ((*str == 'x' || *str == 'X') && ISXDIGIT (str[1]))
+	{
+	  radix = 16;
+	  str++;
+	}
+    }
+
+  /* Now scan for a well-formed integer or float.  */
+  for (;;)
+    {
+      unsigned int c = *str++;
+
+      if (ISDIGIT (c) || (ISXDIGIT (c) && radix == 16))
+	{
+	  c = hex_value (c);
+	  if (c > max_digit)
+	    max_digit = c;
+	}
+      else if (c == '.')
+	{
+	  if (float_flag == NOT_FLOAT)
+	    float_flag = AFTER_POINT;
+	  else
+	    SYNTAX_ERROR ("too many decimal points in number");
+	}
+      else if ((radix <= 10 && (c == 'e' || c == 'E'))
+	       || (radix == 16 && (c == 'p' || c == 'P')))
+	{
+	  float_flag = AFTER_EXPON;
+	  break;
+	}
+      else
+	{
+	  /* Start of suffix.  */
+	  str--;
+	  break;
+	}
+    }
+
+  if (float_flag != NOT_FLOAT && radix == 8)
+    radix = 10;
+
+  if (max_digit >= radix)
+    SYNTAX_ERROR2 ("invalid digit \"%c\" in octal constant", '0' + max_digit);
+
+  if (float_flag != NOT_FLOAT)
+    {
+      if (radix == 16 && CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, c99))
+	cpp_error (pfile, DL_PEDWARN,
+		   "use of C99 hexadecimal floating constant");
+
+      if (float_flag == AFTER_EXPON)
+	{
+	  if (*str == '+' || *str == '-')
+	    str++;
+
+	  /* Exponent is decimal, even if string is a hex float.  */
+	  if (!ISDIGIT (*str))
+	    SYNTAX_ERROR ("exponent has no digits");
+
+	  do
+	    str++;
+	  while (ISDIGIT (*str));
+	}
+      else if (radix == 16)
+	SYNTAX_ERROR ("hexadecimal floating constants require an exponent");
+
+      result = interpret_float_suffix (str, limit - str);
+      if (result == 0)
+	{
+	  cpp_error (pfile, DL_ERROR,
+		     "invalid suffix \"%.*s\" on floating constant",
+		     limit - str, str);
+	  return CPP_N_INVALID;
+	}
+
+      /* Traditional C didn't accept any floating suffixes.  */
+      if (limit != str
+	  && CPP_WTRADITIONAL (pfile)
+	  && ! cpp_sys_macro_p (pfile))
+	cpp_error (pfile, DL_WARNING,
+		   "traditional C rejects the \"%.*s\" suffix",
+		   limit - str, str);
+
+      result |= CPP_N_FLOATING;
+    }
+  else
+    {
+      result = interpret_int_suffix (str, limit - str);
+      if (result == 0)
+	{
+	  cpp_error (pfile, DL_ERROR,
+		     "invalid suffix \"%.*s\" on integer constant",
+		     limit - str, str);
+	  return CPP_N_INVALID;
+	}
+
+      /* Traditional C only accepted the 'L' suffix.  */
+      if (result != CPP_N_SMALL && result != CPP_N_MEDIUM
+	  && CPP_WTRADITIONAL (pfile)
+	  && ! cpp_sys_macro_p (pfile))
+	cpp_error (pfile, DL_WARNING,
+		   "traditional C rejects the \"%.*s\" suffix",
+		   limit - str, str);
+
+      if ((result & CPP_N_WIDTH) == CPP_N_LARGE
+	  && ! CPP_OPTION (pfile, c99)
+	  && CPP_OPTION (pfile, warn_long_long))
+	cpp_error (pfile, DL_PEDWARN, "use of C99 long long integer constant");
+
+      result |= CPP_N_INTEGER;
+    }
+
+  if ((result & CPP_N_IMAGINARY) && CPP_PEDANTIC (pfile))
+    cpp_error (pfile, DL_PEDWARN, "imaginary constants are a GCC extension");
+
+  if (radix == 10)
+    result |= CPP_N_DECIMAL;
+  else if (radix == 16)
+    result |= CPP_N_HEX;
+  else
+    result |= CPP_N_OCTAL;
+
+  return result;
+
+ syntax_error:
+  return CPP_N_INVALID;
+}
+
+/* cpp_interpret_integer converts an integer constant into a cpp_num,
+   of precision options->precision.
+
+   We do not provide any interface for decimal->float conversion,
+   because the preprocessor doesn't need it and the floating point
+   handling in GCC proper is too ugly to speak of.  */
+cpp_num
+cpp_interpret_integer (pfile, token, type)
+     cpp_reader *pfile;
+     const cpp_token *token;
+     unsigned int type;
+{
+  const uchar *p, *end;
+  cpp_num result;
+
+  result.low = 0;
+  result.high = 0;
+  result.unsignedp = type & CPP_N_UNSIGNED;
+  result.overflow = 0;
+
+  p = token->val.str.text;
+  end = p + token->val.str.len;
+
+  /* Common case of a single digit.  */
+  if (token->val.str.len == 1)
+    result.low = p[0] - '0';
+  else
+    {
+      cpp_num_part max;
+      size_t precision = CPP_OPTION (pfile, precision);
+      unsigned int base = 10, c = 0;
+      bool overflow = false;
+
+      if ((type & CPP_N_RADIX) == CPP_N_OCTAL)
+	{
+	  base = 8;
+	  p++;
+	}
+      else if ((type & CPP_N_RADIX) == CPP_N_HEX)
+	{
+	  base = 16;
+	  p += 2;
+	}
+
+      /* We can add a digit to numbers strictly less than this without
+	 needing the precision and slowness of double integers.  */
+      max = ~(cpp_num_part) 0;
+      if (precision < PART_PRECISION)
+	max >>= PART_PRECISION - precision;
+      max = (max - base + 1) / base + 1;
+
+      for (; p < end; p++)
+	{
+	  c = *p;
+
+	  if (ISDIGIT (c) || (base == 16 && ISXDIGIT (c)))
+	    c = hex_value (c);
+	  else
+	    break;
+
+	  /* Strict inequality for when max is set to zero.  */
+	  if (result.low < max)
+	    result.low = result.low * base + c;
+	  else
+	    {
+	      result = append_digit (result, c, base, precision);
+	      overflow |= result.overflow;
+	      max = 0;
+	    }
+	}
+
+      if (overflow)
+	cpp_error (pfile, DL_PEDWARN,
+		   "integer constant is too large for its type");
+      else if (!result.unsignedp && !num_positive (result, precision))
+	{
+	  /* If too big to be signed, consider it unsigned.  Only warn
+	     for decimal numbers.  */
+	  if (base == 10)
+	    cpp_error (pfile, DL_WARNING,
+		       "integer constant is so large that it is unsigned");
+	  result.unsignedp = 1;
+	}
+    }
+
+  return result;
+}
 
 /* Append DIGIT to NUM, a number of PRECISION bits being read in base
    BASE.  */
@@ -164,149 +439,6 @@ append_digit (num, digit, base, precision)
 
   result.unsignedp = num.unsignedp;
   result.overflow = overflow;
-  return result;
-}
-
-/* Parse and convert what is presumably an integer in TOK.  Accepts
-   decimal, hex, or octal with or without size suffixes.  Returned op
-   is CPP_ERROR on error, otherwise it is a CPP_NUMBER.  */
-static cpp_num
-interpret_number (pfile, tok)
-     cpp_reader *pfile;
-     const cpp_token *tok;
-{
-  cpp_num result;
-  cpp_num_part max;
-  const uchar *p = tok->val.str.text;
-  const uchar *end;
-  const struct suffix *sufftab;
-  size_t precision;
-  unsigned int i, nsuff, base, c;
-  bool overflow, big_digit;
-
-  result.low = 0;
-  result.high = 0;
-  result.unsignedp = 0;
-  result.overflow = 0;
-
-  /* Common case of a single digit.  */
-  end = p + tok->val.str.len;
-  if (tok->val.str.len == 1 && (unsigned int) (p[0] - '0') <= 9)
-    {
-      result.low = p[0] - '0';
-      return result;
-    }
-
-  base = 10;
-  if (p[0] == '0')
-    {
-      if (end - p >= 3 && (p[1] == 'x' || p[1] == 'X'))
-	{
-	  p += 2;
-	  base = 16;
-	}
-      else
-	{
-	  p += 1;
-	  base = 8;
-	}
-    }
-
-  c = 0;
-  overflow = big_digit = false;
-  precision = CPP_OPTION (pfile, precision);
-
-  /* We can add a digit to numbers less than this without needing
-     double integers.  9 is the maximum digit for octal and decimal;
-     for hex it is annihilated by the division anyway.  */
-  max = ~(cpp_num_part) 0;
-  if (precision < PART_PRECISION)
-    max >>= PART_PRECISION - precision;
-  max = (max - 9) / base + 1;
-
-  for(; p < end; p++)
-    {
-      c = *p;
-
-      if (ISDIGIT (c) || (base == 16 && ISXDIGIT (c)))
-	c = hex_value (c);
-      else
-	break;
-
-      if (c >= base)
-	big_digit = true;
-
-      /* Strict inequality for when max is set to zero.  */
-      if (result.low < max)
-	result.low = result.low * base + c;
-      else
-	{
-	  result = append_digit (result, c, base, precision);
-	  overflow |= result.overflow;
-	  max = 0;
-	}
-    }
-
-  if (p < end)
-    {
-      /* Check for a floating point constant.  Note that float constants
-	 with an exponent or suffix but no decimal point are technically
-	 invalid (C99 6.4.4.2) but accepted elsewhere.  */
-      if ((c == '.' || c == 'F' || c == 'f')
-	  || (base == 10 && (c == 'E' || c == 'e')
-	      && p+1 < end && (p[1] == '+' || p[1] == '-'))
-	  || (base == 16 && (c == 'P' || c == 'p')
-	      && p+1 < end && (p[1] == '+' || p[1] == '-')))
-	SYNTAX_ERROR ("floating point numbers are not valid in #if");
-
-      /* Determine the suffix. l means long, and u means unsigned.
-	 See the suffix tables, above.  */
-      switch (end - p)
-	{
-	case 1: sufftab = vsuf_1; nsuff = ARRAY_SIZE (vsuf_1); break;
-	case 2: sufftab = vsuf_2; nsuff = ARRAY_SIZE (vsuf_2); break;
-	case 3: sufftab = vsuf_3; nsuff = ARRAY_SIZE (vsuf_3); break;
-	default: goto invalid_suffix;
-	}
-
-      for (i = 0; i < nsuff; i++)
-	if (memcmp (p, sufftab[i].s, end - p) == 0)
-	  break;
-      if (i == nsuff)
-	goto invalid_suffix;
-      result.unsignedp = sufftab[i].u;
-
-      if (CPP_WTRADITIONAL (pfile)
-	  && sufftab[i].u
-	  && ! cpp_sys_macro_p (pfile))
-	cpp_error (pfile, DL_WARNING, "traditional C rejects the `U' suffix");
-      if (sufftab[i].l == 2 && CPP_OPTION (pfile, pedantic)
-	  && ! CPP_OPTION (pfile, c99))
-	cpp_error (pfile, DL_PEDWARN,
-		   "too many 'l' suffixes in integer constant");
-    }
-
-  if (big_digit)
-    cpp_error (pfile, DL_PEDWARN,
-	       "integer constant contains digits beyond the radix");
-
-  if (overflow)
-    cpp_error (pfile, DL_PEDWARN, "integer constant too large for its type");
-  /* If too big to be signed, consider it unsigned.  */
-  else if (!result.unsignedp && !num_positive (result, precision))
-    {
-      if (base == 10)
-	cpp_error (pfile, DL_WARNING,
-		   "integer constant is so large that it is unsigned");
-      result.unsignedp = 1;
-    }
-
-  return result;
-
- invalid_suffix:
-  cpp_error (pfile, DL_ERROR, "invalid suffix '%.*s' on integer constant",
-	     (int) (end - p), p);
- syntax_error:
   return result;
 }
 
@@ -379,7 +511,7 @@ parse_defined (pfile)
 
 /* Convert a token into a CPP_NUMBER (an interpreted preprocessing
    number or character constant, or the result of the "defined" or "#"
-   operators), or CPP_ERROR on error.  */
+   operators).  */
 static cpp_num
 eval_token (pfile, token)
      cpp_reader *pfile;
@@ -392,7 +524,26 @@ eval_token (pfile, token)
   switch (token->type)
     {
     case CPP_NUMBER:
-      return interpret_number (pfile, token);
+      temp = cpp_classify_number (pfile, token);
+      switch (temp & CPP_N_CATEGORY)
+	{
+	case CPP_N_FLOATING:
+	  cpp_error (pfile, DL_ERROR,
+		     "floating constant in preprocessor expression");
+	  break;
+	case CPP_N_INTEGER:
+	  if (!(temp & CPP_N_IMAGINARY))
+	    return cpp_interpret_integer (pfile, token, temp);
+	  cpp_error (pfile, DL_ERROR,
+		     "imaginary number in preprocessor expression");
+	  break;
+
+	case CPP_N_INVALID:
+	  /* Error already issued.  */
+	  break;
+	}
+      result.high = result.low = 0;
+      break;
 
     case CPP_WCHAR:
     case CPP_CHAR:
@@ -604,7 +755,7 @@ _cpp_parse_expr (pfile)
 
 	default:
 	  if ((int) op.op <= (int) CPP_EQ || (int) op.op >= (int) CPP_PLUS_EQ)
-	    SYNTAX_ERROR2 ("token \"%s\" is not valid in #if expressions",
+	    SYNTAX_ERROR2 ("token \"%s\" is not valid in preprocessor expressions",
 			   cpp_token_as_text (pfile, token));
 	  break;
 	}

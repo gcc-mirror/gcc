@@ -1,3 +1,22 @@
+2002-05-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+	    Zack Weinberg <zack@codesourcery.com>
+
+	* cppexp.c (cpp_num): Move to cpplib.h.
+	(CPP_ERROR): Remove.
+	(interpret_float_suffix, interpret_int_suffix): New.
+	(struct suffix, vsuf_1, vsuf_2, vsuf_3): Remove.
+	(cpp_classify_number, cpp_interpret_integer): New.
+	(interpret_number): Remove.
+	(eval_token): Update to use new routines.
+	* cpphash.h (cpp_num_part): Move to cpplib.h.
+	* cppinit.c (cpp_post_options): Set warn_long_long.
+	* cpplib.h (struct cpp_options): Add warn_long_long.
+	(cpp_num, cpp_num_part, CPP_N_CATEGORY, CPP_N_INVALID,
+	CPP_N_INTEGER, CPP_N_FLOATING, CPP_N_WIDTH, CPP_N_SMALL,
+	CPP_N_MEDIUM, CPP_N_LARGE, CPP_N_RADIX, CPP_N_DEC, CPP_N_HEX,
+	CPP_N_OCTAL, CPP_N_UNSIGNED, CPP_N_IMAGINARY, cpp_classify_number,
+	cpp_interpret_integer): New.
+
 2002-05-29  Joel Sherrill <joel@OARcorp.com>
 
 	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Use -m403 and -m405.

@@ -1,3 +1,9 @@
+2002-05-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/c++98-pedantic.c, gcc.dg/cpp/c89-pedantic.c, 
+	gcc.dg/cpp/c94-pedantic.c, gcc.dg/cpp/gnuc89-pedantic.c,
+	gcc.dg/cpp/if-1.c: Update for modified diagnostics.
+
 2002-05-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-torture/execute/20020529-1.c: New test.
