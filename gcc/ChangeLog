@@ -1,3 +1,7 @@
+2005-02-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* flags.h, read-rtl.c, tree-ssa-live.h: Update copyright.
+
 2005-02-13  Jason Merrill  <jason@redhat.com>
 
 	[reverted temporarily]
