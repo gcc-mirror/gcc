@@ -1566,6 +1566,7 @@ tsubst (t, args, nargs, in_decl)
       {
 	tree r = copy_node (t);
 	TREE_TYPE (r) = type;
+	DECL_CONTEXT (r) = current_class_type;
 	set_nested_typename (r, current_class_name, DECL_NAME (r), type);
 	TREE_CHAIN (r) = NULL_TREE;
 	return r;
@@ -2935,7 +2936,12 @@ instantiate_decl (d)
   if (! pattern_defined
       || (TREE_CODE (d) == FUNCTION_DECL && ! DECL_INLINE (d)
 	  && (! DECL_INTERFACE_KNOWN (d)
-	      || ! DECL_NOT_REALLY_EXTERN (d))))
+	      || ! DECL_NOT_REALLY_EXTERN (d)))
+      /* Kludge: if we compile a constructor in the middle of processing a
+         toplevel declaration, we blow away the declspecs in
+         temp_decl_obstack when we call permanent_allocation in
+         finish_function.  So don't compile it yet.  */
+      || (TREE_CODE (d) == FUNCTION_DECL && ! nested && ! at_eof))
     {
       add_pending_template (d);
       return d;

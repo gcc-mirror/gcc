@@ -8268,6 +8268,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	error ("top-level declaration of `%s' specifies `auto'", name);
     }
 
+  if (nclasses > 0 && friendp)
+    error ("storage class specifiers invalid in friend function declarations");
+
   /* Now figure out the structure of the declarator proper.
      Descend through it, creating more complex types, until we reach
      the declared identifier (or NULL_TREE, in an absolute declarator).  */
