@@ -1,3 +1,17 @@
+2000-04-28  Richard Henderson  <rth@cygnus.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (combine_pending_stack_adjustment_and_call): Return the
+	adjustment; don't do the stack adjust.
+	(expand_call): Call compute_argument_block_size right before
+	allocating the block; update comment; don't do alignment sanity
+	checking for sibling call; use args_size instead of
+	unadjusted_args_size before args_size is adjusted.  Use
+	combine_pending_stack_adjustment_and_call to compute stack adjust
+	for must_preallocate case.
+
+	* expr.c (push_block): Remove shadow `temp' in inner scope.
+
 2000-04-28  Jason Merrill  <jason@casey.cygnus.com>
 
 	* toplev.c (rest_of_compilation): Call 

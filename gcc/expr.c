@@ -2840,7 +2840,7 @@ push_block (size, extra, below)
     anti_adjust_stack (size);
   else
     {
-      rtx temp = copy_to_mode_reg (Pmode, size);
+      temp = copy_to_mode_reg (Pmode, size);
       if (extra != 0)
 	temp = expand_binop (Pmode, add_optab, temp, GEN_INT (extra),
 			     temp, 0, OPTAB_LIB_WIDEN);
@@ -2857,7 +2857,6 @@ push_block (size, extra, below)
   if (1)
 #endif
     {
-
       /* Return the lowest stack address when STACK or ARGS grow downward and
 	 we are not aaccumulating outgoing arguments (the c4x port uses such
 	 conventions).  */
