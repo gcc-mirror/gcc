@@ -632,12 +632,11 @@ two_insn_adds_subs_operand (op, mode)
 	}
       else
 	{
-	  /* A constant addition/subtraction takes 2 states in
-	     QImode. It takes 6 states in HImode, requiring the
-	     constant to be loaded to a register first, and a lot more
-	     in SImode.  Thus the only case we can win is when either
-	     HImode or SImode is used.  */
-	  if (mode != QImode
+	  /* We do not profit directly by splitting addition or
+	     subtraction of 3 and 4.  However, since these are
+	     implemented as a sequence of adds or subs, they do not
+	     clobber (cc0) unlike a sequence of add.b and add.x.  */
+	  if (mode == HImode
 	      && (value == 2 + 1
 		  || value == 2 + 2))
 	    return 1;
