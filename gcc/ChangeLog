@@ -1,3 +1,9 @@
+2000-12-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (builtin_function_2): New function.
+	(c_common_nodes_and_builtins): Use it to define each pair (foo,
+	__builtin_foo) of builtins in one place.
+
 2000-12-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gccbug.in: Add libgcj and preprocessor categories.
