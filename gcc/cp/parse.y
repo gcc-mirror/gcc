@@ -228,7 +228,7 @@ empty_parms ()
 %type <ttype> fcast_or_absdcl regcast_or_absdcl
 %type <ttype> expr_or_declarator complex_notype_declarator
 %type <ttype> notype_unqualified_id unqualified_id qualified_id
-%type <ttype> template_id object_template_id notype_template_declarator
+%type <ttype> template_id do_id object_template_id notype_template_declarator
 %type <ttype> overqualified_id notype_qualified_id any_id
 %type <ttype> complex_direct_notype_declarator functional_cast
 %type <ttype> complex_parmlist parms_comma
@@ -1293,19 +1293,18 @@ notype_unqualified_id:
 	| NSNAME  %prec EMPTY
 	;
 
+do_id:
+		{ $$ = do_identifier ($<ttype>-1, 1); }
+
 template_id:
-        PFUNCNAME '<' template_arg_list template_close_bracket 
-                { $$ = lookup_template_function
-		    (do_identifier ($1, 1), $3); }
-        | PFUNCNAME '<' template_close_bracket
-                { $$ = lookup_template_function
-		    (do_identifier ($1, 1), NULL_TREE); }
-        | operator_name '<' template_arg_list template_close_bracket
-                { $$ = lookup_template_function 
-		    (do_identifier ($1, 1), $3); }
-        | operator_name '<' template_close_bracket
-                { $$ = lookup_template_function 
-		    (do_identifier ($1, 1), NULL_TREE); }
+          PFUNCNAME '<' do_id template_arg_list template_close_bracket 
+                { $$ = lookup_template_function ($3, $4); }
+        | PFUNCNAME '<' do_id template_close_bracket
+                { $$ = lookup_template_function ($3, NULL_TREE); }
+        | operator_name '<' do_id template_arg_list template_close_bracket
+                { $$ = lookup_template_function ($3, $4); }
+        | operator_name '<' do_id template_close_bracket
+                { $$ = lookup_template_function ($3, NULL_TREE); }
 	;
 
 object_template_id:
