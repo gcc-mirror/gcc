@@ -1,3 +1,9 @@
+2003-03-23  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/10178
+	* stmt.c (expand_end_case_type): Check for overflow in range when
+	determining whether to use a bit-test implementation.
+
 2003-03-23  Richard Henderson  <rth@redhat.com>
 
 	* cfgcleanup.c (try_optimize_cfg): Allow merging of tablejumps
