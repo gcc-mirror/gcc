@@ -2722,7 +2722,7 @@ tSCC zIrix_Stdio_Va_ListList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zIrix_Stdio_Va_ListSelect0[] =
-       "(printf\\(.*), /\\* va_list \\*/ char \\*";
+       "/\\* va_list \\*/ char \\*";
 
 #define    IRIX_STDIO_VA_LIST_TEST_CT  1
 static tTestDesc aIrix_Stdio_Va_ListTests[] = {
@@ -2733,7 +2733,7 @@ static tTestDesc aIrix_Stdio_Va_ListTests[] = {
  */
 static const char* apzIrix_Stdio_Va_ListPatch[] = {
     "format",
-    "%1, __gnuc_va_list",
+    "__gnuc_va_list",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -4463,7 +4463,6 @@ static tTestDesc aStdio_Va_ListTests[] = {
 static const char* apzStdio_Va_ListPatch[] = { "sed",
     "-e", "s@ va_list @ __gnuc_va_list @\n\
 s@ va_list)@ __gnuc_va_list)@\n\
-s@va_list _ap;@__gnuc_va_list _ap;@\n\
 s@(va_list)&@(__gnuc_va_list)\\&@\n\
 s@ _VA_LIST_));@ __gnuc_va_list));@\n\
 s@ __VA_LIST__));@ __gnuc_va_list));@\n\
