@@ -1,3 +1,7 @@
+2000-01-23  Brad Lucier  <lucier@math.purdue.edu>
+
+	* class.c (dump_class_hierarchy): Print HOST_WIDE_INT properly.
+
 2000-01-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (register_dtor_fn): New function.

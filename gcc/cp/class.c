@@ -6297,10 +6297,12 @@ dump_class_hierarchy (binfo, indent)
 {
   int i;
 
-  fprintf (stderr, "%*s0x%lx (%s) %d %s\n", indent, "",
+  fprintf (stderr, "%*s0x%lx (%s) ", indent, "",
 	   (unsigned long) binfo,
-	   type_as_string (binfo, TS_PLAIN),
-	   TREE_INT_CST_LOW (BINFO_OFFSET (binfo)),
+	   type_as_string (binfo, TS_PLAIN));
+  fprintf (stderr, HOST_WIDE_INT_PRINT_DEC,
+	   TREE_INT_CST_LOW (BINFO_OFFSET (binfo)));
+  fprintf (stderr, " %s\n",
 	   BINFO_PRIMARY_MARKED_P (binfo) ? "primary" : "");
 
   for (i = 0; i < BINFO_N_BASETYPES (binfo); ++i)
