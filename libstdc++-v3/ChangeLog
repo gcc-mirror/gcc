@@ -1,3 +1,8 @@
+2000-09-09  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* bits/localefwd.h (locale::_Impl): Scope out types to public.
+	(locale): Make _Impl declaration public.
+
 2000-09-08  Felix Natter  <fnatter@gmx.net>
 
 	* docs/17_intro/porting-howto.html:  New version.
