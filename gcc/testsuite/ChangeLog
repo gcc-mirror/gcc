@@ -1,3 +1,9 @@
+Sun Aug  6 11:41:51 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* lib/objc.exp (objc_target_compile): Set the ld_library_path so
+	that running programs linked against the shared version of libobjc
+	run correctly.
+
 2000-08-06  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c99-printf-1.c: New test.
