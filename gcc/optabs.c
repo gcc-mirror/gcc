@@ -916,16 +916,21 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	  if (imag0 && imag1)
 	    {
-	      rtx temp =
-		expand_binop (submode, sub_optab,
-			      expand_binop (submode, binoptab, real0,
-					    real1, 0, unsignedp, methods),
-			      expand_binop (submode, binoptab, imag0,
-					    imag1, 0, unsignedp, methods),
-			      realr, unsignedp, methods);
+	      /* Don't fetch these from memory more than once.  */
+	      real0 = force_reg (submode, real0);
+	      real1 = force_reg (submode, real1);
+	      imag0 = force_reg (submode, imag0);
+	      imag1 = force_reg (submode, imag1);
 
-	      if (temp != realr)
-		emit_move_insn (realr, temp);
+	      res = expand_binop (submode, sub_optab,
+				  expand_binop (submode, binoptab, real0,
+						real1, 0, unsignedp, methods),
+				  expand_binop (submode, binoptab, imag0,
+						imag1, 0, unsignedp, methods),
+				  realr, unsignedp, methods);
+
+	      if (res != realr)
+		emit_move_insn (realr, res);
 
 	      res = expand_binop (submode, add_optab,
 				  expand_binop (submode, binoptab,
@@ -940,6 +945,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	    }
 	  else
 	    {
+	      /* Don't fetch these from memory more than once.  */
+	      real0 = force_reg (submode, real0);
+	      real1 = force_reg (submode, real1);
+
 	      res = expand_binop (submode, binoptab, real0, real1,
 				  realr, unsignedp, methods);
 	      if (res != realr)
@@ -961,6 +970,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  
 	  if (! imag1)
 	    {	/* (a+ib) / (c+i0) = (a/c) + i(b/c) */
+
+	      /* Don't fetch these from memory more than once.  */
+	      real1 = force_reg (submode, real1);
+
 	      /* Simply divide the real and imaginary parts by `c' */
 	      res = expand_binop (submode, binoptab, real0, real1,
 				  realr, unsignedp, methods);
@@ -980,6 +993,13 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      rtx imag_t;
 	      
 	      optab mulopt = unsignedp ? umul_widen_optab : smul_optab;
+
+	      /* Don't fetch these from memory more than once.  */
+	      real0 = force_reg (submode, real0);
+	      real1 = force_reg (submode, real1);
+	      if (imag0)
+		imag0 = force_reg (submode, imag0);
+	      imag1 = force_reg (submode, imag1);
 
 	      /* Divisor: c*c + d*d */
 	      divisor = expand_binop (submode, add_optab,
@@ -1984,9 +2004,16 @@ emit_no_conflict_block (insns, target, op0, op1, equiv)
 				    REG_NOTES (insn));
     }
 
-  last = emit_move_insn (target, target);
-  if (equiv)
-    REG_NOTES (last) = gen_rtx (EXPR_LIST, REG_EQUAL, equiv, REG_NOTES (last));
+  if (mov_optab->handlers[(int) GET_MODE (target)].insn_code
+      != CODE_FOR_nothing)
+    {
+      last = emit_move_insn (target, target);
+      if (equiv)
+	REG_NOTES (last)
+	  = gen_rtx (EXPR_LIST, REG_EQUAL, equiv, REG_NOTES (last));
+    }
+  else
+    last = get_last_insn ();
 
   if (prev == 0)
     first = get_insns ();
