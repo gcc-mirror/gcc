@@ -993,7 +993,7 @@ c_lex (value)
       if (ISGRAPH (tok.val.c))
 	error ("stray '%c' in program", tok.val.c);
       else
-	error ("stray '\\%#o' in program", tok.val.c);
+	error ("stray '\\%o' in program", tok.val.c);
       goto retry;
       
     case CPP_NAME:
