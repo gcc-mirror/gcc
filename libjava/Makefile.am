@@ -2306,6 +2306,7 @@ java/nio/Buffer.java \
 java/nio/BufferOverflowException.java \
 java/nio/BufferUnderflowException.java \
 java/nio/ByteBuffer.java \
+java/nio/ByteBufferHelper.java \
 java/nio/ByteBufferImpl.java \
 java/nio/ByteOrder.java \
 java/nio/CharBuffer.java \

@@ -2024,6 +2024,7 @@ java/nio/Buffer.java \
 java/nio/BufferOverflowException.java \
 java/nio/BufferUnderflowException.java \
 java/nio/ByteBuffer.java \
+java/nio/ByteBufferHelper.java \
 java/nio/ByteBufferImpl.java \
 java/nio/ByteOrder.java \
 java/nio/CharBuffer.java \
@@ -3545,9 +3546,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/natInetAddress.P .deps/java/net/natNetworkInterface.P \
 .deps/java/nio/Buffer.P .deps/java/nio/BufferOverflowException.P \
 .deps/java/nio/BufferUnderflowException.P .deps/java/nio/ByteBuffer.P \
-.deps/java/nio/ByteBufferImpl.P .deps/java/nio/ByteOrder.P \
-.deps/java/nio/CharBuffer.P .deps/java/nio/CharBufferImpl.P \
-.deps/java/nio/CharViewBufferImpl.P \
+.deps/java/nio/ByteBufferHelper.P .deps/java/nio/ByteBufferImpl.P \
+.deps/java/nio/ByteOrder.P .deps/java/nio/CharBuffer.P \
+.deps/java/nio/CharBufferImpl.P .deps/java/nio/CharViewBufferImpl.P \
 .deps/java/nio/DirectByteBufferImpl.P .deps/java/nio/DoubleBuffer.P \
 .deps/java/nio/DoubleBufferImpl.P .deps/java/nio/DoubleViewBufferImpl.P \
 .deps/java/nio/FloatBuffer.P .deps/java/nio/FloatBufferImpl.P \
