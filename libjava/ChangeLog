@@ -1,3 +1,25 @@
+2003-09-02  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkDialogPeer.java (create): Add width
+	and height arguments to GtkWindowPeer.create method call.
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java
+	(create(int,int,int)): New method.
+	(create(int)): Add call to new create method.
+	(create()): Add width and height arguments to create method
+	call.
+	(GtkWindowPeer): Remove call to setBounds.
+	* java/awt/Frame.java (Frame(String)): Initialize visible field
+	to false.
+	(Frame(GraphicsConfiguration)): Likewise.
+	(Frame(String,GraphicsConfiguration)): Likewise.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c (create):
+	Add width and height parameters.  Call
+	gtk_window_set_default_size.
+	(connectHooks): Remove unused name variable.
+	(static setBounds): Call gtk_window_resize not
+	gtk_widget_set_usize.
+	(setBounds): Remove unused nchildren variable.
+
 2003-08-31  Ingo Proetel  <proetel@aicas.com>
 
 	* java/util/logging/Logger.java: provide class and method information

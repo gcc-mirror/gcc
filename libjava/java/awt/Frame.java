@@ -237,12 +237,15 @@ Frame(String title)
 {
   super();
   this.title = title;
+  // Top-level frames are initially invisible.
+  visible = false;
 }
 
 public
 Frame(GraphicsConfiguration gc)
 {
   super(gc);
+  visible = false;
 }
 
 public
@@ -250,6 +253,7 @@ Frame(String title, GraphicsConfiguration gc)
 {
   super(gc);
   setTitle(title);
+  visible = false;
 }
 
 /*************************************************************************/
