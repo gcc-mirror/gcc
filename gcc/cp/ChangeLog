@@ -1,3 +1,7 @@
+Sat Apr  4 18:43:58 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (avoid_overlap): Return a value.
+
 Sat Apr  4 12:52:35 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* method.c (check_btype): Add missing argument to xrealloc.
