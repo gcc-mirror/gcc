@@ -298,7 +298,7 @@ build_scoped_method_call (exp, basetype, name, parms)
 
   if (! binfo)
     {
-      binfo = get_binfo (basetype, type, 1);
+      binfo = lookup_base (type, basetype, ba_check, NULL);
       if (binfo == error_mark_node)
 	return error_mark_node;
       if (! binfo)
@@ -308,9 +308,12 @@ build_scoped_method_call (exp, basetype, name, parms)
   if (binfo)
     {
       if (TREE_CODE (exp) == INDIRECT_REF)
-	decl = build_indirect_ref
-	  (convert_pointer_to_real
-	   (binfo, build_unary_op (ADDR_EXPR, exp, 0)), NULL);
+	{
+	  decl = build_base_path (PLUS_EXPR,
+				  build_unary_op (ADDR_EXPR, exp, 0),
+				  binfo, 1);
+	  decl = build_indirect_ref (decl, NULL);
+	}
       else
 	decl = build_scoped_ref (exp, basetype);
 
@@ -4157,7 +4160,9 @@ build_over_call (cand, args, flags)
          So we can assume that anything passed as 'this' is non-null, and
 	 optimize accordingly.  */
       my_friendly_assert (TREE_CODE (parmtype) == POINTER_TYPE, 19990811);
-      t = convert_pointer_to_real (TREE_TYPE (parmtype), TREE_VALUE (arg));
+      t = lookup_base (TREE_TYPE (TREE_TYPE (TREE_VALUE (arg))),
+		       TREE_TYPE (parmtype), ba_ignore, NULL);
+      t = build_base_path (PLUS_EXPR, TREE_VALUE (arg), t, 1);
       converted_args = tree_cons (NULL_TREE, t, converted_args);
       parm = TREE_CHAIN (parm);
       arg = TREE_CHAIN (arg);
@@ -4307,9 +4312,12 @@ build_over_call (cand, args, flags)
   if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0)
     {
       tree t, *p = &TREE_VALUE (converted_args);
-      tree binfo = get_binfo
-	(DECL_VIRTUAL_CONTEXT (fn), TREE_TYPE (TREE_TYPE (*p)), 0);
-      *p = convert_pointer_to_real (binfo, *p);
+      tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (*p)),
+				DECL_VIRTUAL_CONTEXT (fn),
+				ba_any, NULL);
+      my_friendly_assert (binfo && binfo != error_mark_node, 20010730);
+      
+      *p = build_base_path (PLUS_EXPR, *p, binfo, 1);
       if (TREE_SIDE_EFFECTS (*p))
 	*p = save_expr (*p);
       t = build_pointer_type (TREE_TYPE (fn));

@@ -997,12 +997,17 @@ build_scoped_ref (datum, basetype)
      tree basetype;
 {
   tree ref;
+  tree binfo;
 
   if (datum == error_mark_node)
     return error_mark_node;
+  binfo = lookup_base (TREE_TYPE (datum), basetype, ba_check, NULL);
 
+  if (!binfo)
+    return error_not_base_type (TREE_TYPE (datum), basetype);
+  
   ref = build_unary_op (ADDR_EXPR, datum, 0);
-  ref = convert_pointer_to (basetype, ref);
+  ref = build_base_path (PLUS_EXPR, ref, binfo, 1);
 
   return build_indirect_ref (ref, "(compiler error in build_scoped_ref)");
 }

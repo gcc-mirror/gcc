@@ -3018,6 +3018,29 @@ typedef enum instantiate_type_flags {
   itf_ptrmem_ok = 1 << 2,     /* pointers to member ok (internal use) */
 } instantiate_type_flags;
 
+/* The kind of checking we can do looking in a class heirarchy. */
+typedef enum base_access {
+  ba_any = -2,     /* Do not check access, allow an ambiguous base,
+		      prefer a non-virtual base */
+  ba_ignore = -1,  /* Do not check access */
+  ba_check = 0,    /* Check access */
+  ba_not_special   /* Do not consider special privilege
+		      current_class_type might give. */
+} base_access;
+
+/* The kind of base we can find, looking in a class heirarchy.
+   values <0 indicate we failed. */
+typedef enum base_kind {
+  bk_inaccessible = -3,   /* The base is inaccessible */
+  bk_ambig = -2,          /* The base is ambiguous */
+  bk_not_base = -1,       /* It is not a base */
+  bk_same_type = 0,       /* It is the same type */
+  bk_proper_base = 1,     /* It is a proper base */
+  bk_via_virtual = 2      /* It is a proper base, but via a virtual
+			     path. This might not be the canonical
+			     binfo. */
+} base_kind;
+
 /* Nonzero means allow Microsoft extensions without a pedwarn.  */
 extern int flag_ms_extensions;
 
@@ -3508,6 +3531,7 @@ extern tree strip_top_quals                     PARAMS ((tree));
 extern tree perform_implicit_conversion         PARAMS ((tree, tree));
 
 /* in class.c */
+extern tree build_base_path			PARAMS ((enum tree_code, tree, tree, int));
 extern tree build_vbase_path			PARAMS ((enum tree_code, tree, tree, tree, int));
 extern tree build_vtbl_ref			PARAMS ((tree, tree));
 extern tree build_vfn_ref			PARAMS ((tree, tree));
@@ -3554,8 +3578,6 @@ extern tree get_primary_binfo                   PARAMS ((tree));
 extern tree convert_to_reference		PARAMS ((tree, tree, int, int, tree));
 extern tree convert_from_reference		PARAMS ((tree));
 extern tree convert_lvalue			PARAMS ((tree, tree));
-extern tree convert_pointer_to_real		PARAMS ((tree, tree));
-extern tree convert_pointer_to			PARAMS ((tree, tree));
 extern tree ocp_convert				PARAMS ((tree, tree, int, int));
 extern tree cp_convert				PARAMS ((tree, tree));
 extern tree convert_to_void			PARAMS ((tree, const char */*implicit context*/));
@@ -3980,6 +4002,7 @@ extern int tinfo_decl_p                         PARAMS((tree, void *));
 extern int emit_tinfo_decl                      PARAMS((tree *, void *));
 
 /* in search.c */
+extern tree lookup_base PARAMS ((tree, tree, base_access, base_kind *));
 extern int types_overlap_p			PARAMS ((tree, tree));
 extern tree get_vbase				PARAMS ((tree, tree));
 extern tree get_binfo				PARAMS ((tree, tree, int));
@@ -4030,7 +4053,6 @@ extern tree dfs_marked_real_bases_queue_p       PARAMS ((tree, void *));
 extern tree dfs_skip_vbases                     PARAMS ((tree, void *));
 extern tree marked_vtable_pathp                 PARAMS ((tree, void *));
 extern tree unmarked_vtable_pathp               PARAMS ((tree, void *));
-extern tree convert_pointer_to_vbase            PARAMS ((tree, tree));
 extern tree find_vbase_instance                 PARAMS ((tree, tree));
 extern tree binfo_for_vbase                     PARAMS ((tree, tree));
 extern tree binfo_via_virtual                   PARAMS ((tree, tree));
