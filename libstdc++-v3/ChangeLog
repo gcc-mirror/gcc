@@ -1,5 +1,20 @@
 2003-05-01  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/bits/streambuf.tcc (basic_streambuf::xsgetn):
+	Const-ify some variables.
+	(basic_streambuf::xsputn): Likewise; change the type of some
+	variables to size_t.
+	(__copy_streambufs): Change some variables to size_t.
+
+2003-05-01  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_sstream.h (str()): Avoid constructing
+	a basic_string temporary not only when it would turn out
+	to be zero-sized but also when identical to the current
+	_M_string buffer.
+
+2003-05-01  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/ext/stdio_filebuf.h
 	(stdio_filebuf(int, std::ios_base::openmode, bool, size_t),
 	stdio_filebuf(std::__c_file*, std::ios_base::openmode, size_t)):

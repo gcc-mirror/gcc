@@ -140,14 +140,12 @@ namespace std
 	    // represents the size of the initial string used to
 	    // created the buffer, and may not be the correct size of
 	    // the current stringbuf internal buffer.
-	    __size_type __len = _M_string.size();
-	    __size_type __nlen = this->_M_out_lim - this->_M_out_beg;
-	    if (__nlen)
-	      {
-		__len = std::max(__nlen, __len);
-		__ret = __string_type(this->_M_out_beg, 
-				      this->_M_out_beg + __len);
-	      }
+	    const __size_type __len = _M_string.size();
+	    const __size_type __nlen = this->_M_out_lim
+	                               - this->_M_out_beg;
+	    if (__nlen > __len)
+	      __ret = __string_type(this->_M_out_beg, 
+				    this->_M_out_beg + __nlen);
 	  }
 	return __ret;
       }
