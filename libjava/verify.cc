@@ -675,14 +675,19 @@ private:
 		      oldk = oldk->getComponentType ();
 		    }
 
-		  // This loop will end when we hit Object.
-		  while (true)
+		  // Ordinarily this terminates when we hit Object...
+		  while (k != NULL)
 		    {
 		      if (is_assignable_from_slow (k, oldk))
 			break;
 		      k = k->getSuperclass ();
 		      changed = true;
 		    }
+		  // ... but K could have been an interface, in which
+		  // case we'll end up here.  We just convert this
+		  // into Object.
+		  if (k == NULL)
+		    k = &java::lang::Object::class$;
 
 		  if (changed)
 		    {

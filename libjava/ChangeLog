@@ -1,3 +1,9 @@
+2002-02-13  Todd Stock  <toddastock@yahoo.com>
+
+	Fix for PR libgcj/5671:
+	* verify.cc (state::merge): Handle case where we're merging
+	against an interface.
+
 2002-02-12  Tom Tromey  <tromey@redhat.com>
 
 	* exception.cc (std::abort): Mark as noreturn.
