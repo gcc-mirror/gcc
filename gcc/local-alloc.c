@@ -759,7 +759,8 @@ update_equiv_regs ()
 	  && REG_N_SETS (regno) == 1
 	  && reg_equiv_init_insns[regno] != 0
 	  && reg_equiv_init_insns[regno] != const0_rtx
-	  && ! find_reg_note (insn, REG_EQUIV, NULL_RTX)
+	  && ! find_reg_note (XEXP (reg_equiv_init_insns[regno], 0),
+			      REG_EQUIV, NULL_RTX)
 	  && ! contains_replace_regs (XEXP (dest, 0), reg_equiv_replace))
 	{
 	  rtx init_insn = XEXP (reg_equiv_init_insns[regno], 0);

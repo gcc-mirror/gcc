@@ -1,3 +1,8 @@
+Wed Oct 20 22:57:58 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* local-alloc.c (update_equiv_regs): Check the correct insn
+	for pre-existing REG_EQUIV notes.
+
 Tue Oct 19 02:03:00 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Revert this change.  Gavin's patch to operand_equal_p is a better fix.
