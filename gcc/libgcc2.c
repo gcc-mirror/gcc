@@ -1530,7 +1530,7 @@ __bb_exit_func (void)
 		fprintf (stderr, "arc profiling: Error closing output file %s.\n",
 			 ptr->filename);
 	    }
-	  if ((da_file = fopen (ptr->filename, "w")) < 0)
+	  if ((da_file = fopen (ptr->filename, "w")) == 0)
 	    {
 	      fprintf (stderr, "arc profiling: Can't open output file %s.\n",
 		       ptr->filename);
