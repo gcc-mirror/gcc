@@ -75,10 +75,11 @@ output_file_directive ((FILE), main_input_filename)
 #define ASM_OUTPUT_ALIGN(FILE,LOG)					\
 	fprintf (FILE, "\t.align %d\n", 1 << (LOG))
 
-/* The Encore assembler doesn't seem to accept the usual second argument.  */
+/* The Encore assembler doesn't seem to accept the usual second argument
+   and warns that .align may not work in the text section if optimization
+   is on.  */
 #undef ASM_OUTPUT_ALIGN_CODE
-#define ASM_OUTPUT_ALIGN_CODE(FILE)	\
-  fprintf (FILE, "\t.align 2\n")
+#define ASM_OUTPUT_ALIGN_CODE(FILE)
 
 /*
  *  Internal labels are prefixed with a period.
