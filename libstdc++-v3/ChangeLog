@@ -1,5 +1,11 @@
 2002-04-17  Phil Edwards  <pme@gcc.gnu.org>
 
+	* docs/doxygen/doxygroups.cc:  New group on binary searching.
+	* include/bits/stl_algo.h:  Document binary searches and merges.
+	* include/bits/stl_deque.h:  The 'map' member is not the 'map' class.
+
+2002-04-17  Phil Edwards  <pme@gcc.gnu.org>
+
 	* docs/doxygen/mainpage.html:  Doxygen logo is now a PNG file.
 	* docs/doxygen/run_doxygen:  Bump required version.
 	* docs/doxygen/user.cfg.in:  Revert accidental change.
