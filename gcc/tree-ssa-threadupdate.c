@@ -203,7 +203,7 @@ static hashval_t
 redirection_data_hash (const void *p)
 {
   edge e = ((struct redirection_data *)p)->outgoing_edge;
-  return htab_hash_pointer (e);
+  return e->dest->index;
 }
 
 static int
