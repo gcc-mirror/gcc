@@ -7,7 +7,7 @@
 
 # Comment this out to avoid including the stdio functions in libiostream.a:
 LIBIOSTREAM_OBJECTS = $(IO_OBJECTS) $(IOSTREAM_OBJECTS) $(STDIO_WRAP_OBJECTS) $(OSPRIM_OBJECTS)
-LIBIOSTREAM_DEP = $(LIBIOSTREAM_OBJECTS) stdio.list
+LIBIOSTREAM_DEP = $(LIBIOSTREAM_OBJECTS) stmp-stdio
 LIBIOSTREAM_USE = $(LIBIOSTREAM_OBJECTS) `cat stdio.list`
 
 # Comment the above and uncomment the below to use the code in the Linux libc:

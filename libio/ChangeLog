@@ -1,3 +1,7 @@
+Sun Sep  7 23:00:18 1997  Jim Wilson  (wilson@cygnus.com)
+
+	* linux.mt (LIBIOSTREAM_DEP): Change stdio.list to stmp-stdio.
+
 Fri Sep  5 09:58:43 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* Makefile.in (iostream.list): Instead of adding stdio.list, add
