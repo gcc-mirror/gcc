@@ -109,7 +109,6 @@
 	* include/bits/istream.tcc: Same.
 	* include/bits/ostream.tcc: Same.
 
->>>>>>> 1.2063
 2003-10-30  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (time_get::_M_extract_via_format):
