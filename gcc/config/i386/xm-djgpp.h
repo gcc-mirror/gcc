@@ -34,3 +34,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define LIBSTDCXX "-lstdcxx"
 
+/* System dependant initialization for collect2
+   to tell system() to act like Unix.  */
+#define COLLECT2_HOST_INITIALIZATION \
+  do { __system_flags |= (__system_allow_multiple_cmds			\
+		          | __system_emulate_chdir); } while (0)
+

@@ -5,7 +5,18 @@ Tue Mar 23 15:45:25 1999  Richard Earnshaw (rearnsha@arm.com)
 	as we know the type.  Remove now unnecessary set of orig_type for
 	conversions.
 
-Wed Mar 24 23:27:25 1999  Mark Elbrecht  <snowball3@usa.net.
+Wed Mar 24 23:27:25 1999  Mark Elbrecht  <snowball3@usa.net>
+			  Jeff Law <law@cygnus.com>
+
+	* system.h (STDIN_FILENO): Provide default definition if one is not
+	provided by the system header files.
+	(STDOUT_FILENO, STDERR_FILENO): Likewise.
+
+	* i386/xm-djgpp.h (COLLECT2_HOST_INITIALIZATION): New macro.
+	* collect2.c (main): Use it.
+	(pexecute_pid): New variable. Holds return value from call to pexecute.
+	(collect2_execute): Rework to use pexecute instead of fork.
+	(collect2_wait): Use pwait() instead of wait().
 
 	* i386/djgpp.h: Fix typo.
 

@@ -477,6 +477,17 @@ extern void abort ();
 #define O_NOCTTY 0
 #endif
 
+/* Define well known filenos if the system does not define them.  */
+#ifndef STDIN_FILENO
+# define STDIN_FILENO   0
+#endif
+#ifndef STDOUT_FILENO
+# define STDOUT_FILENO  1
+#endif
+#ifndef STDOUT_FILENO
+# define STDERR_FILENO  2
+#endif
+
 /* Get libiberty declarations. */
 #include "libiberty.h"
 
