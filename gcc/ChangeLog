@@ -1,3 +1,12 @@
+2001-01-24  Ulrich Drepper  <drepper@redhat.com>
+
+	* dwarf2out.c (prefix_of): New function.  Determine longest common
+	prefix of the two arguments.  The units are whole path components.
+	(output_file_names): When adding a new directory find the one entry
+	with the longest common prefix already in the list.  Artificially
+	generate entry if there is none for this prefix.
+	Fix test to check whether the zeroth directory entry is used.
+
 Wed Jan 24 23:51:55 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* reload1.c (reload_reg_free_for_value_p): New parameter start_regno.
@@ -46,7 +55,7 @@ Wed Jan 24 23:51:55 2001  J"orn Rennecke <amylaar@redhat.com>
 	* cpp.texi (-M, -MM): Document -M -include behaviour.
 
 2001-01-24  Roger Collins <roger@ProProject.com>
-	  
+
         * config/i386/xm-i386.h: Make __i386__ a boolean macro.
 
 2001-01-24  Will Cohen  <wcohen@redhat.com>
@@ -67,7 +76,7 @@ Wed Jan 24 23:51:55 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* bb-reorder.c (make_reorder_chain_1): Handle case where
 	jump edge goes to the same block as the fallthru edge.
- 
+
 2001-01-23  Jim Wilson  <wilson@redhat.com>
 
 	* dwarf2out.c (dwarf2out_line): Make last_file_num be unsigned.
@@ -92,7 +101,7 @@ Wed Jan 24 23:51:55 2001  J"orn Rennecke <amylaar@redhat.com>
 	(flushrs): Add explicit stop bit at end.
 	* config/ia64/lib1funcs.asm (__ia64_restore_stack_nonlocal): Change
 	trailing \ to >.
-	
+
 2001-01-23  Chris Demetriou  <cgd@broadcom.com>
 
 	* libgcc-std.ver (GCC_3.0): Add __terminate_func_set to list
@@ -172,7 +181,7 @@ Wed Jan 24 23:51:55 2001  J"orn Rennecke <amylaar@redhat.com>
 	Use the saved register pointer array as the source of the CFA.
 	(throw_helper): Rewrite.  Unwind once rather than twice and keep
 	track of saved registers as we go.
- 
+
 2001-01-23  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* c4x-protos.h (c4x_legitimize_reload_address): Remove.
@@ -236,7 +245,7 @@ Mon Jan 22 16:53:06 2001  J"orn Rennecke <amylaar@redhat.com>
 	memory.
 	(c4x_r11_set_p, c4x_check_laj_p): New functions.
 	* c4x-protos.h (c4x_check_laj_p): Add prototype.
-	* c4x.md (in_annul_slot_3): Do not allow auto-increment in last 
+	* c4x.md (in_annul_slot_3): Do not allow auto-increment in last
 	anulling slot because of silicon bug.
 	(laj, lajv): Call c4x_check_laj_p to check for silicon bug.
 
