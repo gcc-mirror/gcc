@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---              Copyright (C) 1998-2003 Free Software Fundation             --
+--              Copyright (C) 1998-2004 Free Software Fundation             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -631,7 +631,7 @@ package body System.Interrupts is
 
    task body Server_Task is
       Desc    : Handler_Desc renames Descriptors (Interrupt);
-      Self_Id : Task_ID := STPO.Self;
+      Self_Id : constant Task_ID := STPO.Self;
       Temp    : Parameterless_Handler;
 
    begin

@@ -1282,6 +1282,26 @@ package body Exp_Pakd is
       --  conversion is analyzed immediately so that subsequent processing
       --  can work with an analyzed Rhs (and e.g. look at its Etype)
 
+      --  If the right-hand side is a string literal, create a temporary for
+      --  it, constant-folding is not ready to wrap the bit representation
+      --  of a string literal.
+
+      if Nkind (Rhs) = N_String_Literal then
+         declare
+            Decl : Node_Id;
+         begin
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc,  New_Internal_Name ('T')),
+                Object_Definition => New_Occurrence_Of (Ctyp, Loc),
+                Expression => New_Copy_Tree (Rhs));
+
+            Insert_Actions (N, New_List (Decl));
+            Rhs := New_Occurrence_Of (Defining_Identifier (Decl), Loc);
+         end;
+      end if;
+
       Rhs := Convert_To (Ctyp, Rhs);
       Set_Parent (Rhs, N);
       Analyze_And_Resolve (Rhs, Ctyp);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,8 +86,9 @@ package body Switch.M is
 
          elsif Last = Switches'Last then
             declare
-               New_Switches : Argument_List_Access := new Argument_List
-                 (1 .. Switches'Length + Switches'Length);
+               New_Switches : constant Argument_List_Access :=
+                                new Argument_List
+                                      (1 .. Switches'Length + Switches'Length);
             begin
                New_Switches (1 .. Switches'Length) := Switches.all;
                Last := Switches'Length;
@@ -96,9 +97,9 @@ package body Switch.M is
          end if;
 
          --  If this is the first switch, Last designates the first component
+
          if Last = 0 then
             Last := Switches'First;
-
          else
             Last := Last + 1;
          end if;
@@ -225,8 +226,7 @@ package body Switch.M is
 
                   when 'e' =>
 
-                     --  Only -gnateD and -gnatep= need to be store in an ALI
-                     --  file.
+                     --  Only -gnateD and -gnatep= need storing in ALI file
 
                      Storing (First_Stored) := 'e';
                      Ptr := Ptr + 1;
@@ -239,9 +239,9 @@ package body Switch.M is
                         return;
                      end if;
 
-                     if Switch_Chars (Ptr) = 'D' then
-                        --  gnateD
+                     --  Processing for -gnateD
 
+                     if Switch_Chars (Ptr) = 'D' then
                         Storing (First_Stored + 1 ..
                                  First_Stored + Max - Ptr + 1) :=
                           Switch_Chars (Ptr .. Max);
@@ -249,9 +249,9 @@ package body Switch.M is
                           (Storing (Storing'First ..
                                       First_Stored + Max - Ptr + 1));
 
-                     else
-                        --  gnatep=
+                     --  Processing for -gnatep=
 
+                     else
                         Ptr := Ptr + 1;
 
                         if Ptr = Max then
@@ -269,7 +269,6 @@ package body Switch.M is
 
                         declare
                            To_Store : String (1 .. Max - Ptr + 9);
-
                         begin
                            To_Store (1 .. 8) := "-gnatep=";
                            To_Store (9 .. Max - Ptr + 9) :=

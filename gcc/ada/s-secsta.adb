@@ -423,7 +423,8 @@ package body System.Secondary_Stack is
 
       if not SS_Ratio_Dynamic then
          declare
-            Fixed_Stack : Fixed_Stack_Ptr := To_Fixed_Stack_Ptr (Stk);
+            Fixed_Stack : constant Fixed_Stack_Ptr :=
+                            To_Fixed_Stack_Ptr (Stk);
 
          begin
             Fixed_Stack.Top  := 0;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,11 +31,38 @@ with Namet;   use Namet;
 with Opt;     use Opt;
 with Output;  use Output;
 with Osint;   use Osint;
-
-with System.CRC32;
-with System.Memory;
+with Scans;   use Scans;
+with Scng;
+with Sinput.C;
+with Snames;  use Snames;
+with Styleg;
 
 package body ALI.Util is
+
+   --  Empty procedures needed to instantiate Scng. Error procedures are
+   --  empty, because we don't want to report any errors when computing
+   --  a source checksum.
+
+   procedure Post_Scan;
+
+   procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr);
+
+   procedure Error_Msg_S (Msg : String);
+
+   procedure Error_Msg_SC (Msg : String);
+
+   procedure Error_Msg_SP (Msg : String);
+
+   --  Instantiation of Styleg, needed  to instantiate Scng
+
+   package Style is new Styleg
+     (Error_Msg, Error_Msg_S, Error_Msg_SC, Error_Msg_SP);
+
+   --  A Scanner is needed to get checksum of a source (procedure
+   --  Get_File_Checksum).
+
+   package Scanner is new Scng
+     (Post_Scan, Error_Msg, Error_Msg_S, Error_Msg_SC, Error_Msg_SP, Style);
 
    type Header_Num is range 0 .. 1_000;
 
@@ -50,33 +77,6 @@ package body ALI.Util is
      Hash       => Hash,
      Equal      => "=");
 
-   -----------------------
-   -- Local Subprograms --
-   -----------------------
-
-   procedure Accumulate_Checksum (C : Character; Csum : in out Word);
-   pragma Inline (Accumulate_Checksum);
-   --  This routine accumulates the checksum given character C. During the
-   --  scanning of a source file, this routine is called with every character
-   --  in the source, excluding blanks, and all control characters (except
-   --  that ESC is included in the checksum). Upper case letters not in string
-   --  literals are folded by the caller. See Sinput spec for the documentation
-   --  of the checksum algorithm. Note: checksum values are only used if we
-   --  generate code, so it is not necessary to worry about making the right
-   --  sequence of calls in any error situation.
-
-   procedure Initialize_Checksum (Csum : out Word);
-   --  Sets initial value of Csum before any calls to Accumulate_Checksum
-
-   -------------------------
-   -- Accumulate_Checksum --
-   -------------------------
-
-   procedure Accumulate_Checksum (C : Character; Csum : in out Word) is
-   begin
-      System.CRC32.Update (System.CRC32.CRC32 (Csum), C);
-   end Accumulate_Checksum;
-
    ---------------------
    -- Checksums_Match --
    ---------------------
@@ -86,182 +86,92 @@ package body ALI.Util is
       return Checksum1 = Checksum2 and then Checksum1 /= Checksum_Error;
    end Checksums_Match;
 
+   pragma Warnings (Off);
+   --  To avoid warnings on non referenced parameters of the error procedures
+
+   ---------------
+   -- Error_Msg --
+   ---------------
+
+   procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr) is
+   begin
+      null;
+   end Error_Msg;
+
+   pragma Warnings (Off);
+   --  To avoid warnings on non referenced parameters of the error procedures
+
+   -----------------
+   -- Error_Msg_S --
+   -----------------
+
+   procedure Error_Msg_S (Msg : String) is
+   begin
+      null;
+   end Error_Msg_S;
+
+   ------------------
+   -- Error_Msg_SC --
+   ------------------
+
+   procedure Error_Msg_SC (Msg : String) is
+   begin
+      null;
+   end Error_Msg_SC;
+
+   ------------------
+   -- Error_Msg_SP --
+   ------------------
+
+   procedure Error_Msg_SP (Msg : String) is
+   begin
+      null;
+   end Error_Msg_SP;
+
+   pragma Warnings (On);
+
    -----------------------
    -- Get_File_Checksum --
    -----------------------
 
    function Get_File_Checksum (Fname : Name_Id) return Word is
-      Src  : Source_Buffer_Ptr;
-      Hi   : Source_Ptr;
-      Csum : Word;
-      Ptr  : Source_Ptr;
-
-      Bad : exception;
-      --  Raised if file not found, or file format error
-
-      use ASCII;
-      --  Make control characters visible
-
+      Full_Name    : Name_Id;
+      Source_Index : Source_File_Index;
    begin
-      Read_Source_File (Fname, 0, Hi, Src);
+      Full_Name := Find_File (Fname, Osint.Source);
 
       --  If we cannot find the file, then return an impossible checksum,
       --  impossible becaues checksums have the high order bit zero, so
       --  that checksums do not match.
 
-      if Src = null then
-         raise Bad;
+      if Full_Name = No_File then
+         return Checksum_Error;
       end if;
 
-      Initialize_Checksum (Csum);
-      Ptr := 0;
+      Source_Index := Sinput.C.Load_File (Get_Name_String (Full_Name));
+
+      if Source_Index = No_Source_File then
+         return Checksum_Error;
+      end if;
+
+      Scanner.Initialize_Scanner (Types.No_Unit, Source_Index);
+
+      --  Make sure that the project language reserved words are not
+      --  recognized as reserved words, but as identifiers. The byte info for
+      --  those names have been set if we are in gnatmake.
+
+      Set_Name_Table_Byte (Name_Project,  0);
+      Set_Name_Table_Byte (Name_Extends,  0);
+      Set_Name_Table_Byte (Name_External, 0);
+
+      --  Scan the complete file to compute its checksum
 
       loop
-         case Src (Ptr) is
-
-            --  Spaces and formatting information are ignored in checksum
-
-            when ' ' | CR | LF | VT | FF | HT =>
-               Ptr := Ptr + 1;
-
-            --  EOF is ignored unless it is the last character
-
-            when EOF =>
-               if Ptr = Hi then
-                  System.Memory.Free (Src.all'Address);
-                  return Csum;
-               else
-                  Ptr := Ptr + 1;
-               end if;
-
-            --  Non-blank characters that are included in the checksum
-
-            when '#' | '&' | '*' | ':' | '(' | ',' | '.' | '=' | '>' |
-                 '<' | ')' | '/' | ';' | '|' | '!' | '+' | '_' |
-                 '0' .. '9' | 'a' .. 'z'
-            =>
-               Accumulate_Checksum (Src (Ptr), Csum);
-               Ptr := Ptr + 1;
-
-            --  Upper case letters, fold to lower case
-
-            when 'A' .. 'Z' =>
-               Accumulate_Checksum
-                 (Character'Val (Character'Pos (Src (Ptr)) + 32), Csum);
-               Ptr := Ptr + 1;
-
-            --  Left bracket, really should do wide character thing here,
-            --  but for now, don't bother.
-
-            when '[' =>
-               raise Bad;
-
-            --  Minus, could be comment
-
-            when '-' =>
-               if Src (Ptr + 1) = '-' then
-                  Ptr := Ptr + 2;
-
-                  while Src (Ptr) >= ' ' or else Src (Ptr) = HT loop
-                     Ptr := Ptr + 1;
-                  end loop;
-
-               else
-                  Accumulate_Checksum ('-', Csum);
-                  Ptr := Ptr + 1;
-               end if;
-
-            --  String delimited by double quote
-
-            when '"' =>
-               Accumulate_Checksum ('"', Csum);
-
-               loop
-                  Ptr := Ptr + 1;
-                  exit when Src (Ptr) = '"';
-
-                  if Src (Ptr) < ' ' then
-                     raise Bad;
-                  end if;
-
-                  Accumulate_Checksum (Src (Ptr), Csum);
-               end loop;
-
-               Accumulate_Checksum ('"', Csum);
-               Ptr := Ptr + 1;
-
-            --  String delimited by percent
-
-            when '%' =>
-               Accumulate_Checksum ('%', Csum);
-
-               loop
-                  Ptr := Ptr + 1;
-                  exit when Src (Ptr) = '%';
-
-                  if Src (Ptr) < ' ' then
-                     raise Bad;
-                  end if;
-
-                  Accumulate_Checksum (Src (Ptr), Csum);
-               end loop;
-
-               Accumulate_Checksum ('%', Csum);
-               Ptr := Ptr + 1;
-
-            --  Quote, could be character constant
-
-            when ''' =>
-               Accumulate_Checksum (''', Csum);
-
-               if Src (Ptr + 2) = ''' then
-                  Accumulate_Checksum (Src (Ptr + 1), Csum);
-                  Accumulate_Checksum (''', Csum);
-                  Ptr := Ptr + 3;
-
-               --  Otherwise assume attribute char. We should deal with wide
-               --  character cases here, but that's hard, so forget it.
-
-               else
-                  Ptr := Ptr + 1;
-               end if;
-
-            --  Upper half character, more to be done here, we should worry
-            --  about folding Latin-1, folding other character sets, and
-            --  dealing with the nasty case of upper half wide encoding.
-
-            when Upper_Half_Character =>
-               Accumulate_Checksum (Src (Ptr), Csum);
-               Ptr := Ptr + 1;
-
-            --  Escape character, we should do the wide character thing here,
-            --  but for now, do not bother.
-
-            when ESC =>
-               raise Bad;
-
-            --  Invalid control characters
-
-            when NUL | SOH | STX | ETX | EOT | ENQ | ACK | BEL | BS  | SO  |
-                 SI  | DLE | DC1 | DC2 | DC3 | DC4 | NAK | SYN | ETB | CAN |
-                 EM  | FS  | GS  | RS  | US  | DEL
-            =>
-               raise Bad;
-
-            --  Invalid graphic characters
-
-            when '$' | '?' | '@' | '`' | '\' |
-                 '^' | '~' | ']' | '{' | '}'
-            =>
-               raise Bad;
-
-         end case;
+         Scanner.Scan;
+         exit when Token = Tok_EOF;
       end loop;
 
-   exception
-      when Bad =>
-         System.Memory.Free (Src.all'Address);
-         return Checksum_Error;
+      return Scans.Checksum;
    end Get_File_Checksum;
 
    ----------
@@ -293,14 +203,14 @@ package body ALI.Util is
       Interfaces.Reset;
    end Initialize_ALI_Source;
 
-   -------------------------
-   -- Initialize_Checksum --
-   -------------------------
+   ---------------
+   -- Post_Scan --
+   ---------------
 
-   procedure Initialize_Checksum (Csum : out Word) is
+   procedure Post_Scan is
    begin
-      System.CRC32.Initialize (System.CRC32.CRC32 (Csum));
-   end Initialize_Checksum;
+      null;
+   end Post_Scan;
 
    --------------
    -- Read_ALI --

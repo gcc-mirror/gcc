@@ -1233,38 +1233,6 @@ begin
    else
       Save_Opt_Config_Switches (Save_Config_Switches);
 
-      --  Special processing for language defined units. For this purpose
-      --  we do NOT consider the renamings in annex J as predefined. That
-      --  allows users to compile their own versions of these files, and
-      --  in particular, in the VMS implementation, the DEC versions can
-      --  be substituted for the standard Ada 95 versions.
-
-      if Is_Predefined_File_Name
-           (Fname => File_Name (Current_Source_File),
-            Renamings_Included => False)
-      then
-         Set_Opt_Config_Switches
-           (Is_Internal_File_Name (File_Name (Current_Source_File)));
-
-         --  If this is the main unit, disallow compilation unless the -gnatg
-         --  (GNAT mode) switch is set (from a user point of view, the rule is
-         --  that language defined units cannot be recompiled).
-
-         --  However, an exception is s-rpc, and its children. We test this
-         --  by looking at the characters after the minus. The rule is that
-         --  only s-rpc and its children have names starting s-rp.
-
-         Get_Name_String (File_Name (Current_Source_File));
-
-         if (Name_Len < 5 or else Name_Buffer (1 .. 4) /= "s-rp")
-           and then Current_Source_Unit = Main_Unit
-           and then not GNAT_Mode
-           and then Operating_Mode = Generate_Code
-         then
-            Error_Msg_SC ("language defined units may not be recompiled");
-         end if;
-      end if;
-
       --  The following loop runs more than once in syntax check mode
       --  where we allow multiple compilation units in the same file
       --  and in Multiple_Unit_Per_file mode where we skip units till
@@ -1298,10 +1266,15 @@ begin
                Save_Operating_Mode : constant Operating_Mode_Type :=
                                        Operating_Mode;
 
+               Save_Style_Check : constant Boolean := Style_Check;
+
+
             begin
                Operating_Mode := Check_Syntax;
+               Style_Check := False;
                Discard_Node (P_Compilation_Unit);
                Operating_Mode := Save_Operating_Mode;
+               Style_Check := Save_Style_Check;
 
                --  If we are at an end of file, and not yet at the right
                --  unit, then we have a fatal error. The unit is missing.
@@ -1317,7 +1290,62 @@ begin
             --  check syntax mode we are interested in all units in the file.
 
          else
-            Discard_Node (P_Compilation_Unit);
+            declare
+               Comp_Unit_Node : constant Node_Id := P_Compilation_Unit;
+
+            begin
+               --  If parsing was successful and we are not in check syntax
+               --  mode, check that language defined units are compiled in
+               --  GNAT mode. For this purpose we do NOT consider renamings
+               --  in annex J as predefined. That allows users to compile
+               --  their own versions of these files, and in particular,
+               --  in the VMS implementation, the DEC versions can be
+               --  substituted for the standard Ada 95 versions. Another
+               --  exception is System.RPC and its children. This allows
+               --  a user to supply their own communication layer.
+
+               if Comp_Unit_Node /= Error
+                 and then Operating_Mode = Generate_Code
+                 and then Current_Source_Unit = Main_Unit
+                 and then not GNAT_Mode
+               then
+                  declare
+                     Name : constant String :=
+                              Get_Name_String
+                               (Unit_Name (Current_Source_Unit));
+                  begin
+                     if (Name = "ada"                  or else
+                         Name = "calendar"             or else
+                         Name = "interfaces"           or else
+                         Name = "system"               or else
+                         Name = "machine_code"         or else
+                         Name = "unchecked_conversion" or else
+                         Name = "unchecked_deallocation"
+                           or else (Name'Length > 4
+                                     and then
+                                       Name (Name'First .. Name'First + 3) =
+                                                                 "ada.")
+                           or else (Name'Length > 11
+                                     and then
+                                       Name (Name'First .. Name'First + 10) =
+                                                                 "interfaces.")
+                           or else (Name'Length > 7
+                                     and then
+                                       Name (Name'First .. Name'First + 6) =
+                                                                 "system."))
+                       and then Name /= "system.rpc"
+                       and then
+                         (Name'Length < 11
+                            or else Name (Name'First .. Name'First + 10) /=
+                                                                 "system.rpc.")
+                     then
+                        Error_Msg
+                          ("language defined units may not be recompiled",
+                           Sloc (Unit (Comp_Unit_Node)));
+                     end if;
+                  end;
+               end if;
+            end;
 
             --  All done if at end of file
 

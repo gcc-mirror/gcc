@@ -36,6 +36,11 @@ pragma Elaborate (GNAT.OS_Lib);
 
 package Osint is
 
+   Multi_Unit_Index_Character : Character := '~';
+   --  The character before the index of the unit in a multi-unit source,
+   --  in ALI and object file names. This is not a constant, because it is
+   --  changed to '$' on VMS.
+
    Ada_Include_Path          : constant String := "ADA_INCLUDE_PATH";
    Ada_Objects_Path          : constant String := "ADA_OBJECTS_PATH";
    Project_Include_Path_File : constant String := "ADA_PRJ_INCLUDE_FILE";

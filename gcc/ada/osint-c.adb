@@ -272,7 +272,7 @@ package body Osint.C is
                Exten : constant String := Name_Buffer (Dot_Index .. Name_Len);
             begin
                Name_Len := Dot_Index - 1;
-               Add_Char_To_Name_Buffer ('~');
+               Add_Char_To_Name_Buffer (Multi_Unit_Index_Character);
                Add_Nat_To_Name_Buffer (Multiple_Unit_Index);
                Dot_Index := Name_Len + 1;
                Add_Str_To_Name_Buffer (Exten);

@@ -951,7 +951,7 @@ package body System.Interrupts is
    -----------------
 
    task body Server_Task is
-      Self_ID         : Task_ID := Self;
+      Self_ID         : constant Task_ID := Self;
       Tmp_Handler     : Parameterless_Handler;
       Tmp_ID          : Task_ID;
       Tmp_Entry_Index : Task_Entry_Index;

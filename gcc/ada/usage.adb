@@ -159,6 +159,11 @@ begin
    Write_Switch_Char ("ef");
    Write_Line ("Full source path in brief error messages");
 
+   --  Line for -gnateI switch
+
+   Write_Switch_Char ("eInnn");
+   Write_Line ("Index in multi-unit source, e.g. -gnateI2");
+
    --  Line for -gnatem switch
 
    Write_Switch_Char ("em=?");

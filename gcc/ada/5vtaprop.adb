@@ -161,7 +161,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Timer_Sleep_AST (ID : Address) is
       Result  : Interfaces.C.int;
-      Self_ID : Task_ID := To_Task_ID (ID);
+      Self_ID : constant Task_ID := To_Task_ID (ID);
    begin
       Self_ID.Common.LL.AST_Pending := False;
       Result := pthread_cond_signal_int_np (Self_ID.Common.LL.CV'Access);

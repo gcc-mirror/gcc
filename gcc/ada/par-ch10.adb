@@ -665,11 +665,19 @@ package body Ch10 is
 
             --  Skip tokens to end of file, so that the -gnatl listing
             --  will be complete in this situation, but no need to parse
-            --  the remaining units.
+            --  the remaining units; no style checking either.
 
-            while Token /= Tok_EOF loop
-               Scan;
-            end loop;
+            declare
+               Save_Style_Check : constant Boolean := Style_Check;
+            begin
+               Style_Check := False;
+
+               while Token /= Tok_EOF loop
+                  Scan;
+               end loop;
+
+               Style_Check := Save_Style_Check;
+            end;
 
             return Comp_Unit_Node;
 
