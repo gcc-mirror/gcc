@@ -19,6 +19,12 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
  
+/* As a special exception, if you link this library with files
+   compiled with GCC to produce an executable, this does not cause
+   the resulting executable to be covered by the GNU General Public License.
+   This exception does not however invalidate any other reasons why
+   the executable file might be covered by the GNU General Public License.  */
+
 #include "objc/NXConstStr.h"
 
 @implementation NXConstantString
