@@ -3391,8 +3391,8 @@ check_subobject_offset (type, offset, offsets)
 
 /* Walk through all the subobjects of TYPE (located at OFFSET).  Call
    F for every subobject, passing it the type, offset, and table of
-   OFFSETS.  If VBASES_P is nonzero, then even virtual non-primary
-   bases should be traversed; otherwise, they are ignored.  
+   OFFSETS.  If VBASES_P is one, then virtual non-primary bases should
+   be traversed.
 
    If MAX_OFFSET is non-NULL, then subobjects with an offset greater
    than MAX_OFFSET will not be walked.
@@ -3480,6 +3480,8 @@ walk_subobject_offsets (type, f, offset, offsets, max_offset, vbases_p)
 					  offsets,
 					  max_offset,
 					  /*vbases_p=*/0);
+	      if (r)
+		return r;
 	    }
 	}
 
@@ -3850,6 +3852,27 @@ build_base_field (record_layout_info rli, tree binfo,
 			    BINFO_OFFSET (binfo),
 			    offsets, 
 			    /*vbases_p=*/0);
+
+  if (abi_version_at_least (2))
+    {
+      /* If BINFO has a primary virtual base that is really going to
+	 be located at the same offset as binfo, it will have been
+	 skipped -- but we should record empty bases from there too.  */
+      while (true) 
+	{
+	  tree b;
+
+	  b = get_primary_binfo (binfo);
+	  if (!b || BINFO_PRIMARY_BASE_OF (b) != binfo)
+	    break;
+	  if (TREE_VIA_VIRTUAL (b))
+	    record_subobject_offsets (BINFO_TYPE (b),
+				      BINFO_OFFSET (b),
+				      offsets,
+				      /*vbases_p=*/0);
+	  binfo = b;
+	}
+    }
 
   return next_field;
 }
@@ -4939,6 +4962,13 @@ layout_class_type (tree t, tree *virtuals_p)
 
       layout_nonempty_base_or_field (rli, field, NULL_TREE,
 				     empty_base_offsets);
+
+      /* Remember the location of any empty classes in FIELD.  */
+      if (abi_version_at_least (2))
+	record_subobject_offsets (TREE_TYPE (field), 
+				  byte_position(field),
+				  empty_base_offsets,
+				  /*vbases_p=*/1);
 
       /* If a bit-field does not immediately follow another bit-field,
 	 and yet it starts in the middle of a byte, we have failed to

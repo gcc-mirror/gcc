@@ -1,3 +1,8 @@
+2002-11-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/g++.dg/abi/empty11.C: New test.
+	* testsuite/g++.dg/rtti/cv1.C: New test.
+
 2002-11-25  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* lib/prune.exp: Prune more -fpic/-fPIC warnings.
