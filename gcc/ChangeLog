@@ -1,3 +1,11 @@
+2002-09-09  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (index_register_operand): New.
+	* i386.h (predicate_codes): Add new predicate.
+	* i386.md (lea_general_*): Use index_regsiter_operand
+	(ashift to lea splitter): Do not produce invalid leas
+	(ashift to mov+ashift split): New.
+
 2002-09-09  Nick Clifton  <nickc@redhat.com>
 
 	* config/fr30/fr30.c (output.h): Move after inclusion of tree.h.
