@@ -2836,6 +2836,15 @@ cacheflush (char *beg, int size, int flag)
 #endif
 
 #if !defined (HAS_INIT_SECTION) || !defined (OBJECT_FORMAT_ELF)
+
+/* Some ELF crosses use crtstuff.c to provide __CTOR_LIST__, but use this
+   code to run constructors.  In that case, we need to handle EH here, too.  */
+
+#ifdef EH_FRAME_SECTION
+#include "frame.h"
+extern unsigned char __EH_FRAME_BEGIN__[];
+#endif
+
 /* Run all the global destructors on exit from the program.  */
 
 void
@@ -2850,6 +2859,9 @@ __do_global_dtors ()
       p++;
       (*(p-1)) ();
     }
+#endif
+#ifdef EH_FRAME_SECTION
+  __deregister_frame_info (__EH_FRAME_BEGIN__);
 #endif
 }
 #endif
@@ -2871,6 +2883,12 @@ int *_exit_dummy_ref = &_exit_dummy_decl;
 void
 __do_global_ctors ()
 {
+#ifdef EH_FRAME_SECTION
+  {
+    static struct object object;
+    __register_frame_info (__EH_FRAME_BEGIN__, &object);
+  }
+#endif
   DO_GLOBAL_CTORS_BODY;
   ON_EXIT (__do_global_dtors, 0);
 }

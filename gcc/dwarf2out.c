@@ -1674,24 +1674,6 @@ output_cfi (cfi, fde)
      }
 }
 
-#if !defined (EH_FRAME_SECTION)
-#if defined (EH_FRAME_SECTION_ASM_OP)
-#define EH_FRAME_SECTION() eh_frame_section();
-#else
-#if defined (ASM_OUTPUT_SECTION_NAME)
-#define EH_FRAME_SECTION()				\
-  do {							\
-      named_section (NULL_TREE, ".eh_frame", 0);	\
-  } while (0)
-#endif
-#endif
-#endif
-
-/* If we aren't using crtstuff to run ctors, don't use it for EH.  */
-#if !defined (HAS_INIT_SECTION) && !defined (INIT_SECTION_ASM_OP)
-#undef EH_FRAME_SECTION
-#endif
-
 /* Output the call frame information used to used to record information
    that relates to calculating the frame pointer, and records the
    location of saved registers.  */

@@ -1,6 +1,6 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
-   Copyright (C) 1991, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994-1999 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
@@ -107,9 +107,6 @@ extern void *__deregister_frame_info (void *)
 #endif
 #ifndef DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP	".section\t.dtors,\"aw\""
-#endif
-#if !defined (EH_FRAME_SECTION_ASM_OP) && defined (DWARF2_UNWIND_INFO) && defined(ASM_OUTPUT_SECTION_NAME)
-#define EH_FRAME_SECTION_ASM_OP	".section\t.eh_frame,\"aw\""
 #endif
 
 #ifdef OBJECT_FORMAT_ELF
