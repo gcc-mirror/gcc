@@ -1,3 +1,12 @@
+2002-10-25  Zack Weinberg  <zack@codesourcery.com>
+
+	PR middle-end/6994
+	* c-objc-common.c (inline_forbidden_p): Can not inline
+	functions containing structures or unions containing VLAs.
+	* tree-inline.c (walk_tree): For all class 't' nodes, walk
+	TYPE_SIZE and TYPE_SIZE_UNIT.
+	(copy_tree_r): Copy types if they are variably modified.
+
 2002-10-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md: Remove old-style peepholes.
