@@ -1732,15 +1732,17 @@ typedef struct ix86_args {
 
 /* If PIC, we cannot make sibling calls to global functions
    because the PLT requires %ebx live.
-   If we are returning floats on the register stack, we cannot make
-   sibling calls to functions that return floats.  (The stack adjust
-   instruction will wind up after the sibcall jump, and not be executed.) */
+   If we are returning floats on the 80387 register stack, we cannot
+   make a sibcall from a function that doesn't return a float to a
+   function that does or, conversely, from a function that does return
+   a float to a function that doesn't; the necessary stack adjustment
+   would not be executed.  */
 #define FUNCTION_OK_FOR_SIBCALL(DECL)					\
   ((DECL)								\
    && (! flag_pic || ! TREE_PUBLIC (DECL))				\
    && (! TARGET_FLOAT_RETURNS_IN_80387					\
-       || ! FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (TREE_TYPE (DECL))))	\
-       || FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (TREE_TYPE (cfun->decl))))))
+       || (FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (TREE_TYPE (DECL))))	\
+           == FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (TREE_TYPE (cfun->decl)))))))
 
 /* Perform any needed actions needed for a function that is receiving a
    variable number of arguments.
