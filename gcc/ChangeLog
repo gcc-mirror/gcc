@@ -1,3 +1,8 @@
+2004-07-03  Richard Henderson  <rth@redhat.com>
+
+	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Don't fold
+	fp plus with minus.
+
 2004-07-03  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* tree.c (type_hash_eq): Allow TYPE_MIN_VALUE which compares equal
