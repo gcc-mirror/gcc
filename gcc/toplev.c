@@ -1454,44 +1454,6 @@ fatal_io_error (name)
   exit (FATAL_EXIT_CODE);
 }
 
-/* Called to give a better error message for a bad insn rather than
-   just calling abort().  */
-
-void
-fatal_insn VPROTO((const char *msgid, rtx insn, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-  rtx insn;
-#endif
-  va_list ap;
-
-  VA_START (ap, insn);
-
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-  insn = va_arg (ap, rtx);
-#endif
-
-  verror (msgid, ap);
-  debug_rtx (insn);
-  exit (FATAL_EXIT_CODE);
-}
-
-/* Called to give a better error message when we don't have an insn to match
-   what we are looking for or if the insn's constraints aren't satisfied,
-   rather than just calling abort().  */
-
-void
-fatal_insn_not_found (insn)
-     rtx insn;
-{
-  if (INSN_CODE (insn) < 0)
-    fatal_insn ("internal error--unrecognizable insn:", insn);
-  else
-    fatal_insn ("internal error--insn does not satisfy its constraints:", insn);
-}
-
 /* This is the default decl_printable_name function.  */
 
 static char *
@@ -1953,6 +1915,33 @@ fatal VPROTO((const char *msgid, ...))
   va_end (ap);
 }
 
+void
+_fatal_insn (msgid, insn, file, line, function)
+     const char *msgid;
+     rtx insn;
+     const char *file;
+     int line;
+     const char *function;
+{
+  error (msgid);
+  debug_rtx (insn);
+  fancy_abort (file, line, function);
+}
+
+void
+_fatal_insn_not_found (insn, file, line, function)
+     rtx insn;
+     const char *file;
+     int line;
+     const char *function;
+{
+  if (INSN_CODE (insn) < 0)
+    _fatal_insn ("Unrecognizable insn:", insn, file, line, function);
+  else
+    _fatal_insn ("Insn does not satisfy its constraints:",
+		insn, file, line, function);
+}
+
 /* Report a warning at line LINE of file FILE.  */
 
 static void
@@ -2243,41 +2232,6 @@ sorry VPROTO((const char *msgid, ...))
   va_end (ap);
 }
 
-/* Given a partial pathname as input, return another pathname that shares
-   no elements with the pathname of __FILE__.  This is used by abort() to
-   print `Internal compiler error in expr.c' instead of `Internal compiler
-   error in ../../egcs/gcc/expr.c'.  */
-const char *
-trim_filename (name)
-     const char *name;
-{
-  static const char *this_file = __FILE__;
-  const char *p = name, *q = this_file;
-
-  while (*p == *q && *p != 0 && *q != 0) p++, q++;
-  while (p > name && p[-1] != DIR_SEPARATOR
-#ifdef DIR_SEPARATOR_2
-	 && p[-1] != DIR_SEPARATOR_2
-#endif
-	 )
-    p--;
-
-  return p;
-}
-
-/* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.
-
-   I don't think this is actually a good idea.
-   Other sorts of crashes will look a certain way.
-   It is a good thing if crashes from calling abort look the same way.
-     -- RMS  */
-
-void
-fancy_abort ()
-{
-  fatal ("internal gcc abort");
-}
 
 /* This calls abort and is used to avoid problems when abort if a macro.
    It is used when we need to pass the address of abort.  */

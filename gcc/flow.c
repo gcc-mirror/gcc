@@ -6171,8 +6171,9 @@ verify_flow_info ()
 	  break;
       if (!x)
 	{
-	  fatal ("verify_flow_info: Head insn %d for block %d not found in the insn stream.\n",
+	  error ("Head insn %d for block %d not found in the insn stream.",
 		 INSN_UID (bb->head), bb->index);
+	  abort ();
 	}
 
       /* Check the end pointer and make sure that it is pointing into
@@ -6181,8 +6182,9 @@ verify_flow_info ()
 	{
 	  if (bb_info[INSN_UID (x)] != NULL)
 	    {
-	      fatal ("verify_flow_info: Insn %d is in multiple basic blocks (%d and %d)",
+	      error ("Insn %d is in multiple basic blocks (%d and %d)",
 		     INSN_UID (x), bb->index, bb_info[INSN_UID (x)]->index);
+	      abort ();
 	    }
 	  bb_info[INSN_UID (x)] = bb;
 
@@ -6191,8 +6193,9 @@ verify_flow_info ()
 	}
       if (!x)
 	{
-	  fatal ("verify_flow_info: End insn %d for block %d not found in the insn stream.\n",
+	  error ("End insn %d for block %d not found in the insn stream.",
 		 INSN_UID (bb->end), bb->index);
+	  abort ();
 	}
     }
 
@@ -6224,8 +6227,8 @@ verify_flow_info ()
 		e2 = e2->pred_next;
 	      if (!e2)
 		{
-		  fatal ("verify_flow_info: Basic block %i edge lists are corrupted\n",
-			 bb->index);
+		  error ("Basic block %i edge lists are corrupted", bb->index);
+		  abort ();
 		}
 	    }
 	  e = e->succ_next;
@@ -6236,13 +6239,12 @@ verify_flow_info ()
 	{
 	  if (e->dest != bb)
 	    {
-	      fprintf (stderr, "verify_flow_info: Basic block %d pred edge is corrupted\n",
-		       bb->index);
-	      fprintf (stderr, "Predecessor: ");
+	      error ("Basic block %d pred edge is corrupted", bb->index);
+	      fputs ("Predecessor: ", stderr);
 	      dump_edge_info (stderr, e, 0);
-	      fprintf (stderr, "\nSuccessor: ");
+	      fputs ("\nSuccessor: ", stderr);
 	      dump_edge_info (stderr, e, 1);
-	      fflush (stderr);
+	      fputc ('\n', stderr);
 	      abort ();
 	    }
 	  if (e->src != ENTRY_BLOCK_PTR)
@@ -6252,8 +6254,8 @@ verify_flow_info ()
 		e2 = e2->succ_next;
 	      if (!e2)
 		{
-		  fatal ("verify_flow_info: Basic block %i edge lists are corrupted\n",
-			 bb->index);
+		  error ("Basic block %i edge lists are corrupted", bb->index);
+		  abort;
 		}
 	    }
 	  e = e->pred_next;
@@ -6267,7 +6269,9 @@ verify_flow_info ()
 	{
 	  if (bb->end == x)
 	    {
-	      fatal ("verify_flow_info: Basic block contains only CODE_LABEL and no NOTE_INSN_BASIC_BLOCK note\n");
+	      error ("NOTE_INSN_BASIC_BLOCK is missing for block %d",
+		     bb->index);
+	      abort ();
 	    }
 	  x = NEXT_INSN (x);
 	}
@@ -6275,8 +6279,9 @@ verify_flow_info ()
 	  || NOTE_LINE_NUMBER (x) != NOTE_INSN_BASIC_BLOCK
 	  || NOTE_BASIC_BLOCK (x) != bb)
 	{
-	  fatal ("verify_flow_info: NOTE_INSN_BASIC_BLOCK is missing for block %d\n",
+	  error ("NOTE_INSN_BASIC_BLOCK is missing for block %d\n",
 		 bb->index);
+	  abort ();
 	}
 
       if (bb->end == x)
@@ -6291,8 +6296,9 @@ verify_flow_info ()
 	      if (GET_CODE (x) == NOTE
 		  && NOTE_LINE_NUMBER (x) == NOTE_INSN_BASIC_BLOCK)
 		{
-		  fatal ("verify_flow_info: NOTE_INSN_BASIC_BLOCK %d in the middle of basic block %d\n",
+		  error ("NOTE_INSN_BASIC_BLOCK %d in the middle of basic block %d",
 			 INSN_UID (x), bb->index);
+		  abort ();
 		}
 
 	      if (x == bb->end)
@@ -6302,8 +6308,8 @@ verify_flow_info ()
 		  || GET_CODE (x) == CODE_LABEL
 		  || GET_CODE (x) == BARRIER)
 		{
-		  fatal_insn ("verify_flow_info: Incorrect insn in the middle of basic block %d\n",
-			      x, bb->index);
+		  error ("In basic block %d:", bb->index);
+		  fatal_insn ("Flow control insn inside a basic block", x);
 		}
 
 	      x = NEXT_INSN (x);
@@ -6336,7 +6342,7 @@ verify_flow_info ()
 	      break;
 
 	    default:
-	      fatal_insn ("verify_flow_info: Insn outside basic block\n", x);
+	      fatal_insn ("Insn outside basic block", x);
 	    }
 	}
 

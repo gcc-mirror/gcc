@@ -312,14 +312,8 @@ struct tree_common
 
 /* When checking is enabled, errors will be generated if a tree node
    is accessed incorrectly. The macros abort with a fatal error.  */
+#if defined ENABLE_CHECKING && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
 
-#ifdef ENABLE_CHECKING
-
-#if defined __GNUC__ && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
-/* This optimization can only be done in stage2/3, because it
-   uses statement expressions.  You might think that you could use
-   conditional (?:) expressions, but you would be wrong: these macros
-   need to evaluate `t' only once.  */
 #define TREE_CHECK(t, code)						\
 ({  const tree __t = t;							\
     if (TREE_CODE(__t) != (code))					\
@@ -357,25 +351,7 @@ extern void tree_class_check_failed PROTO((const tree, char,
 					   const char *, int, const char *))
     ATTRIBUTE_NORETURN;
 
-#else /* not gcc or old gcc */
-
-#define TREE_CHECK(t, code) \
-	tree_check (t, code, __FILE__, __LINE__)
-#define TREE_CLASS_CHECK(t, code) \
-	tree_class_check (t, code, __FILE__, __LINE__)
-#define CST_OR_CONSTRUCTOR_CHECK(t) \
-	cst_or_constructor_check (t, __FILE__, __LINE__)
-#define EXPR_CHECK(t) \
-	expr_check (t, __FILE__, __LINE__)
-
-extern tree tree_check PROTO((const tree, enum tree_code, const char *, int));
-extern tree tree_class_check PROTO((const tree, char, const char *, int));
-extern tree cst_or_constructor_check PROTO((const tree, const char *, int));
-extern tree expr_check PROTO((const tree, enum tree_code, const char *, int));
-
-#endif /* not gcc or old gcc */
-
-#else /* not ENABLE_CHECKING */
+#else /* not ENABLE_CHECKING, or not gcc */
 
 #define TREE_CHECK(t, code)		(t)
 #define TREE_CLASS_CHECK(t, code)	(t)
@@ -2425,3 +2401,18 @@ extern void dwarf2out_begin_prologue	PROTO((void));
    code for a function definition.  */
 
 extern void dwarf2out_end_epilogue	PROTO((void));
+
+/* Redefine abort to report an internal error w/o coredump, and
+   reporting the location of the error in the source file.  This logic
+   is duplicated in rtl.h and tree.h because every file that needs the
+   special abort includes one or both.  toplev.h gets too few files,
+   system.h gets too many.  */
+
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+extern void fancy_abort PROTO((const char *, int)) ATTRIBUTE_NORETURN;
+#define abort() fancy_abort (__FILE__, __LINE__)
+#else
+extern void fancy_abort PROTO((const char *, int, const char *))
+    ATTRIBUTE_NORETURN;
+#define abort() fancy_abort (__FILE__, __LINE__, __PRETTY_FUNCTION__)
+#endif

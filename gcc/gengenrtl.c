@@ -21,10 +21,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include "hconfig.h"
 #include "system.h"
-#undef abort
 
 #define NO_GENRTL_H
 #include "rtl.h"
+#undef abort
 
 
 struct rtx_definition 

@@ -109,7 +109,6 @@ struct obstack *rtl_obstack = &obstack;
 
 void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 static void error PVPROTO ((const char *, ...)) ATTRIBUTE_PRINTF_1;
 static int n_occurrences PROTO((int, char *));
 
@@ -951,15 +950,6 @@ fatal VPROTO ((const char *format, ...))
   va_end (ap);
   fprintf (stderr, "\n");
   exit (FATAL_EXIT_CODE);
-}
-
-/* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.  */
-
-void
-fancy_abort ()
-{
-  fatal ("Internal gcc abort.");
 }
 
 static void

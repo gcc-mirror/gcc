@@ -1692,7 +1692,10 @@ start_catch_handler (rtime)
       rtx call_rtx, rtime_address;
 
       if (catchstack.top->entry->false_label != NULL_RTX)
-        fatal ("Compiler Bug: Never issued previous false_label");
+	{
+	  error ("Never issued previous false_label");
+	  abort ();
+	}
       catchstack.top->entry->false_label = gen_exception_label ();
 
       rtime_address = expand_expr (rtime, NULL_RTX, Pmode, EXPAND_INITIALIZER);

@@ -5073,14 +5073,9 @@ get_set_constructor_bytes (init, buffer, wd_size)
   return non_const_bits;
 }
 
-#ifdef ENABLE_CHECKING
-
-#if defined __GNUC__ && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
-
+#if defined ENABLE_CHECKING && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
 /* Complain that the tree code of NODE does not match the expected CODE.
-   FILE, LINE, and FUNCTION are of the caller.
-
-   FIXME: should print the blather about reporting the bug. */
+   FILE, LINE, and FUNCTION are of the caller.  */
 void
 tree_check_failed (node, code, file, line, function)
      const tree node;
@@ -5089,10 +5084,9 @@ tree_check_failed (node, code, file, line, function)
      int line;
      const char *function;
 {
-  fatal ("Internal compiler error in `%s', at %s:%d:\n\
-\texpected %s, have %s\n",
-	 function, trim_filename (file), line,
+  error ("Tree check: expected %s, have %s",
 	 tree_code_name[code], tree_code_name[TREE_CODE (node)]);
+  fancy_abort (file, line, function);
 }
 
 /* Similar to above, except that we check for a class of tree
@@ -5105,81 +5099,12 @@ tree_class_check_failed (node, cl, file, line, function)
      int line;
      const char *function;
 {
-  fatal ("Internal compiler error in `%s', at %s:%d:\n\
-\texpected '%c', have '%c' (%s)\n",
-	 function, trim_filename (file), line, cl,
-	 TREE_CODE_CLASS (TREE_CODE (node)),
+  error ("Tree check: expected class '%c', have '%c' (%s)",
+	 cl, TREE_CODE_CLASS (TREE_CODE (node)),
 	 tree_code_name[TREE_CODE (node)]);
+  fancy_abort (file, line, function);
 }
 
-#else /* not gcc or old gcc */
-
-/* These functions are just like the above, but they have to
-   do the check as well as report the error.  */
-tree
-tree_check (node, code, file, line)
-     const tree node;
-     enum tree_code code;
-     const char *file;
-     int line;
-{	
-  if (TREE_CODE (node) == code)
-    return node;
-
-  fatal ("Internal compiler error at %s:%d:\n\texpected %s, have %s\n",
-	 file, trim_filename (file), tree_code_name[code], tree_code_name[TREE_CODE(node)]);
-}
-
-tree
-tree_class_check (node, class, file, line)
-     const tree node;
-     char class;
-     const char *file;
-     int line;
-{	
-  if (TREE_CODE_CLASS (TREE_CODE (node)) == class)
-    return node;
-
-  fatal ("Internal compiler error at %s:%d:\n\
-\texpected '%c', have '%c' (%s)\n",
-	 file, trim_filename (file), class, TREE_CODE_CLASS (TREE_CODE (node)),
-	 tree_code_name[TREE_CODE(node)]);
-}
-
-tree
-cst_or_constructor_check (node, file, line)
-     const tree node;
-     const char *file;
-     int line;
-{
-  enum tree_code code = TREE_CODE (node);
-  
-  if (code == CONSTRUCTOR || TREE_CODE_CLASS (code) == 'c')
-    return node;
-
-  fatal ("Internal compiler error at %s:%d:\n\
-\texpected constructor, have %s\n",
-	 file, line, tree_code_name[code]);
-}
-
-tree
-expr_check (node, file, line)
-     const tree node;
-     const char *file;
-     int line;
-{
-  char c = TREE_CODE_CLASS (TREE_CODE (node));
-
-  if (c == 'r' || c == 's' || c == '<'
-      || c == '1' || c == '2' || c == 'e')
-    return node;
-
-  fatal ("Internal compiler error at %s:%d:\n\
-\texpected 'e', have '%c' (%s)\n",
-	 file, trim_filename (file), c, tree_code_name[TREE_CODE (node)]);
-}
-
-#endif /* not gcc or old gcc */
 #endif /* ENABLE_CHECKING */
 
 /* Return the alias set for T, which may be either a type or an

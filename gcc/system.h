@@ -384,28 +384,9 @@ extern int setrlimit ();
 #define volatile
 #endif
 
-/* Redefine abort to report an internal error w/o coredump, and reporting the
-   location of the error in the source file.
-   Some files undefine abort again, so we must prototype the real thing
-   for their sake.  */
 #ifdef NEED_DECLARATION_ABORT
 extern void abort ();
 #endif
-extern void fatal PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
-#define abort() fatal ("Internal compiler error at %s:%d\n", \
-		       trim_filename (__FILE__), __LINE__)
-#else
-#define abort() fatal ("Internal compiler error in `%s', at %s:%d\n"	\
-  "Please submit a full bug report.\n"	\
-  "See <URL:http://www.gnu.org/software/gcc/faq.html#bugreport> for instructions.", \
-  __PRETTY_FUNCTION__, trim_filename (__FILE__), __LINE__)
-#endif /* recent gcc */
-
-/* trim_filename is in toplev.c.  Define a stub macro for files that
-   don't link toplev.c.  toplev.h will reset it to the real version.  */
-#define trim_filename(x) (x)
 
 /* Define a STRINGIFY macro that's right for ANSI or traditional C.
    HAVE_CPP_STRINGIFY only refers to the stage1 compiler.  Assume that

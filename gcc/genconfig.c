@@ -51,7 +51,6 @@ static int dup_operands_seen_this_insn;
 
 void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 
 static void walk_insn_part PROTO((rtx, int, int));
 static void gen_insn PROTO((rtx));
@@ -292,15 +291,6 @@ fatal VPROTO ((const char *format, ...))
   exit (FATAL_EXIT_CODE);
 }
 
-/* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.  */
-
-void
-fancy_abort ()
-{
-  fatal ("Internal gcc abort.");
-}
-
 int
 main (argc, argv)
      int argc;

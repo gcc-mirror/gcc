@@ -3324,7 +3324,10 @@ output_operand_lossage (msgid)
   if (this_is_asm_operands)
     error_for_asm (this_is_asm_operands, "invalid `asm': %s", _(msgid));
   else
-    fatal ("Internal compiler error, output_operand_lossage `%s'", _(msgid));
+    {
+      error ("output_operand: %s", _(msgid));
+      abort ();
+    }
 }
 
 /* Output of assembler code from a template, and its subroutines.  */

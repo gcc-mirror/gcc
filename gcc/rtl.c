@@ -29,6 +29,10 @@ Boston, MA 02111-1307, USA.  */
 #define	obstack_chunk_alloc	xmalloc
 #define	obstack_chunk_free	free
 
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '/'
+#endif
+
 /* Obstack used for allocating RTL objects.
    Between functions, this is the permanent_obstack.
    While parsing and expanding a function, this is maybepermanent_obstack
@@ -961,4 +965,54 @@ init_rtl ()
 	  min_class_size[(int) GET_MODE_CLASS (mode)] = GET_MODE_SIZE (mode);
 	}
     }
+}
+
+/* These are utility functions used by fatal-error functions all over the
+   code.  rtl.c happens to be linked by all the programs that need them,
+   so these are here.  In the future we want to break out all error handling
+   to its own module.  */
+
+/* Given a partial pathname as input, return another pathname that
+   shares no directory elements with the pathname of __FILE__.  This
+   is used by fancy_abort() to print `Internal compiler error in expr.c'
+   instead of `Internal compiler error in ../../egcs/gcc/expr.c'.  */
+static const char *
+trim_filename (name)
+     const char *name;
+{
+  static const char *this_file = __FILE__;
+  const char *p = name, *q = this_file;
+
+  while (*p == *q && *p != 0 && *q != 0) p++, q++;
+  while (p > name && p[-1] != DIR_SEPARATOR
+#ifdef DIR_SEPARATOR_2
+	 && p[-1] != DIR_SEPARATOR_2
+#endif
+	 )
+    p--;
+
+  return p;
+}
+
+/* Report an internal compiler error in a friendly manner and without
+   dumping core.  There are two versions because __FUNCTION__ isn't
+   available except in gcc 2.7 and later.  */
+
+extern void fatal PVPROTO ((const char *, ...))
+    ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+
+void
+fancy_abort (file, line, function)
+     const char *file;
+     int line;
+     const char *function;
+{
+  if (function == NULL)
+    function = "?";
+  fatal (
+"Internal compiler error in `%s', at %s:%d\n\
+Please submit a full bug report.\n\
+See <URL:http://www.gnu.org/software/gcc/faq.html#bugreport> \
+for instructions.",
+	 function, trim_filename (file), line);
 }

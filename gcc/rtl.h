@@ -1544,6 +1544,20 @@ extern int supports_one_only		PROTO ((void));
 extern void init_rtl			PROTO ((void));
 extern void rtx_free			PROTO ((rtx));
 
+/* Redefine abort to report an internal error w/o coredump, and
+   reporting the location of the error in the source file.  This logic
+   is duplicated in rtl.h and tree.h because every file that needs the
+   special abort includes one or both.  toplev.h gets too few files,
+   system.h gets too many.  */
+
+extern void fancy_abort PROTO((const char *, int, const char *))
+    ATTRIBUTE_NORETURN;
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+#define abort() fancy_abort (__FILE__, __LINE__, 0)
+#else
+#define abort() fancy_abort (__FILE__, __LINE__, __PRETTY_FUNCTION__)
+#endif
+
 /* In alias.c */
 extern int true_dependence		PROTO ((rtx, enum machine_mode, rtx,
 						int (*)(rtx)));

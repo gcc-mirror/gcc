@@ -205,6 +205,8 @@ static void pfatal_with_name	PROTO((const char *)) ATTRIBUTE_NORETURN;
 static void perror_with_name	PROTO((const char *));
 static void pfatal_pexecute	PROTO((const char *, const char *))
   ATTRIBUTE_NORETURN;
+static void fatal		PVPROTO((const char *, ...))
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 static void error		PVPROTO((const char *, ...))
   ATTRIBUTE_PRINTF_1;
 static void notice		PVPROTO((const char *, ...))

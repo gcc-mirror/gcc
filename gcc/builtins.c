@@ -1734,8 +1734,7 @@ expand_builtin_args_info (exp)
 #endif
 
   if (sizeof (CUMULATIVE_ARGS) % sizeof (int) != 0)
-    fatal ("CUMULATIVE_ARGS type defined badly; see %s, line %d",
-	   __FILE__, __LINE__);
+    abort ();
 
   if (arglist != 0)
     {
