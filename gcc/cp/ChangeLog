@@ -1,3 +1,9 @@
+1999-08-02  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (mark_overriders): Fix order of args to overrides.
+	(warn_hidden): Likewise.  Fix for having virtual and non-virtual
+	functions with the same name.
+
 1999-08-02  Richard Henderson  <rth@cygnus.com>
 
 	* cp-tree.h (TYPE_PTRMEMFUNC_P): Check TYPE_LANG_SPECIFIC non-null.
