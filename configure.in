@@ -175,7 +175,11 @@ fi
 
 case ${with_x} in
   yes | "") ;; # the default value for this tree is that X11 is available
-  no)  skipdirs="${skipdirs} tk libgui" ;;
+  no)
+    skipdirs="${skipdirs} tk tix itcl libgui"
+    # We won't be able to build gdbtk without X.
+    enable_gdbtk=no 
+    ;;
   *)  echo "*** bad value \"${with_x}\" for -with-x flag; ignored" 1>&2 ;;
 esac
 

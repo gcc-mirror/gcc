@@ -1,3 +1,7 @@
+2002-07-03  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Make --without-x work.
+
 2002-07-02  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Rearrange target Makefile fragment collection.
