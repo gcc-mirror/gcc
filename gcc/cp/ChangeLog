@@ -1,3 +1,8 @@
+1999-10-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* dump.c (dequeue_and_dump): Replace several uses of
+	queue_and_dump_index with dump_child.
+
 1999-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* expr.c: Include tm_p.h.

@@ -375,7 +375,7 @@ dequeue_and_dump (di)
 	dump_child ("name", DECL_NAME (t));
       /* And types.  */
       queue_and_dump_type (di, t);
-      queue_and_dump_index (di, "scpe", DECL_CONTEXT (t), 0);
+      dump_child ("scpe", DECL_CONTEXT (t));
       /* And a source position.  */
       if (DECL_SOURCE_FILE (t))
 	{
@@ -436,7 +436,7 @@ dequeue_and_dump (di)
       if (IDENTIFIER_OPNAME_P (t))
 	dump_string (di, "operator");
       else if (IDENTIFIER_TYPENAME_P (t))
-	queue_and_dump_index (di, "tynm", TREE_TYPE (t), 0);
+	dump_child ("tynm", TREE_TYPE (t));
       else if (t == anonymous_namespace_name)
 	dump_string (di, "unnamed");
       else
@@ -458,7 +458,7 @@ dequeue_and_dump (di)
 	{
 	  char buffer[32];
 	  sprintf (buffer, "%u", i);
-	  queue_and_dump_index (di, buffer, TREE_VEC_ELT (t, i), 1);
+	  dump_child (buffer, TREE_VEC_ELT (t, i));
 	}
       break;
 
@@ -482,10 +482,8 @@ dequeue_and_dump (di)
       if (TYPE_PTRMEM_P (t))
 	{
 	  dump_string (di, "ptrmem");
-	  queue_and_dump_index (di, "ptd", 
-				TYPE_PTRMEM_POINTED_TO_TYPE (t), 1);
-	  queue_and_dump_index (di, "cls", 
-				TYPE_PTRMEM_CLASS_TYPE (t), 1);
+	  dump_child ("ptd", TYPE_PTRMEM_POINTED_TO_TYPE (t));
+	  dump_child ("csl", TYPE_PTRMEM_CLASS_TYPE (t));
 	}
       else
 	dump_child ("ptd", TREE_TYPE (t));
@@ -514,10 +512,8 @@ dequeue_and_dump (di)
       if (TYPE_PTRMEMFUNC_P (t))
 	{
 	  dump_string (di, "ptrmem");
-	  queue_and_dump_index (di, "ptd", 
-				TYPE_PTRMEM_POINTED_TO_TYPE (t), 1);
-	  queue_and_dump_index (di, "cls", 
-				TYPE_PTRMEM_CLASS_TYPE (t), 1);
+	  dump_child ("ptd", TYPE_PTRMEM_POINTED_TO_TYPE (t));
+	  dump_child ("cls", TYPE_PTRMEM_CLASS_TYPE (t));
 	}
       else
 	{
@@ -561,7 +557,7 @@ dequeue_and_dump (di)
 
     case FUNCTION_DECL:
     case THUNK_DECL:
-      queue_and_dump_index (di, "scpe", DECL_REAL_CONTEXT (t), 0);
+      dump_child ("scpe", DECL_REAL_CONTEXT (t));
       dump_child ("mngl", DECL_ASSEMBLER_NAME (t));
       dump_child ("args", DECL_ARGUMENTS (t));
       if (DECL_EXTERNAL (t))
