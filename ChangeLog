@@ -1,3 +1,8 @@
+2002-05-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (noconfigdirs): Don't disable libgcj on
+	sparc64-*-solaris* and sparcv9-*-solaris*.
+
 2002-05-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Revert 2002-04-18's patch; fixed in libjava.
