@@ -256,7 +256,8 @@ do {									   \
 
 /* Support the ctors/dtors and other sections.  */
  
-/* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
+/* Define the names of and pseudo-ops used to switch to the .ctors and
+   .dtors sections.
  
    Note that we want to give these sections the SHF_WRITE attribute
    because these sections will actually contain data (i.e. tables of
@@ -271,7 +272,9 @@ do {									   \
    errors unless the .ctors and .dtors sections are marked as writable
    via the SHF_WRITE attribute.)  */
 
+#define CTORS_SECTION_NAME      ".ctors"
 #define CTORS_SECTION_ASM_OP    "\t.section\t.ctors,\"aw\""
+#define DTORS_SECTION_NAME      ".dtors"
 #define DTORS_SECTION_ASM_OP    "\t.section\t.dtors,\"aw\""
  
 /* There's no point providing a default definition of __CTOR_LIST__
@@ -325,21 +328,21 @@ void FN ()                                                            \
     fprintf (FILE, "\n");                                             \
   } while (0)
 
-#define CTOR_LIST_BEGIN                                 \
-asm (CTORS_SECTION_ASM_OP);                             \
-func_ptr __CTOR_LIST__ = (func_ptr) (-1)
+#define CTOR_LIST_BEGIN                                               \
+func_ptr __CTOR_LIST__ __attribute__((section(CTORS_SECTION_NAME))) = \
+  (func_ptr) (-1)
  
-#define CTOR_LIST_END                                   \
-asm (CTORS_SECTION_ASM_OP);                             \
-func_ptr __CTOR_END__ = (func_ptr) 0
+#define CTOR_LIST_END                                                 \
+func_ptr __CTOR_END__ __attribute__((section(CTORS_SECTION_NAME))) =  \
+  (func_ptr) 0
  
-#define DTOR_LIST_BEGIN                                 \
-asm (DTORS_SECTION_ASM_OP);                             \
-func_ptr __DTOR_LIST__ = (func_ptr) (-1)
+#define DTOR_LIST_BEGIN                                               \
+func_ptr __DTOR_LIST__ __attribute__((section(DTORS_SECTION_NAME))) = \
+  (func_ptr) (-1)
 
-#define DTOR_LIST_END                                   \
-asm (DTORS_SECTION_ASM_OP);                             \
-func_ptr __DTOR_END__ = (func_ptr) 0
+#define DTOR_LIST_END                                                 \
+func_ptr __DTOR_END__ __attribute__((section(DTORS_SECTION_NAME))) =  \
+  (func_ptr) 0
 
 /* Don't set the target flags, this is done by the linker script */
 #undef LIB_SPEC
