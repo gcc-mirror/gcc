@@ -1,3 +1,8 @@
+2003-10-07  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* gengtype-lex.l: Remove -Wtraditional cruft.
+	* Makefile.in (gengtype-lex.c): Likewise.
+
 2003-10-07  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfgloopmanip.c (fix_irreducible_loops): Initialize e correctly.
