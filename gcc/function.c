@@ -287,8 +287,6 @@ pop_function_context_from (tree context ATTRIBUTE_UNUSED)
   current_function_decl = p->decl;
   reg_renumber = 0;
 
-  restore_emit_status (p);
-
   lang_hooks.function.leave_nested (p);
 
   /* Reset variables that have known state during rtx generation.  */
