@@ -864,6 +864,10 @@ ftree-loop-im
 Common Report Var(flag_tree_loop_im) Init(1)
 Enable loop invariant motion on trees
 
+ftree-loop-linear
+Common Report Var(flag_tree_loop_linear)
+Enable linear loop transforms on trees
+
 ftree-loop-ivcanon
 Common Report Var(flag_tree_loop_ivcanon)
 Create canonical induction variables in loops

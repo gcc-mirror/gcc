@@ -397,6 +397,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_iv_canon);
   NEXT_PASS (pass_if_conversion);
   NEXT_PASS (pass_vectorize);
+  NEXT_PASS (pass_linear_transform);
   NEXT_PASS (pass_complete_unroll);
   NEXT_PASS (pass_iv_optimize);
   NEXT_PASS (pass_loop_done);
