@@ -398,22 +398,24 @@ public class BitSet implements Cloneable, Serializable
    * bit <code>k</code> is set in the BitSet (for non-negative values
    * of <code>k</code>) if and only if
    *
-   * <pre>
-   * ((k/64) < bits.length) && ((bits[k/64] & (1L << (bit % 64))) != 0)
-   * </pre>
+   * <code>((k/64) &lt; bits.length)
+   * && ((bits[k/64] & (1L &lt;&lt; (bit % 64))) != 0)
+   * </code>
    *
    * Then the following definition of the hashCode method
    * would be a correct implementation of the actual algorithm:
    *
-   * <pre>
-   * public int hashCode() {
-   *     long h = 1234;
-   *     for (int i = bits.length-1; i>=0; i--) {
-   *         h ^= bits[i] * (i + 1);
-   *     }
-   *     return (int)((h >> 32) ^ h);
-   * }
-   * </pre>
+   * 
+<pre>public int hashCode()
+{
+  long h = 1234;
+  for (int i = bits.length-1; i &gt;= 0; i--)
+  {
+    h ^= bits[i] * (i + 1);
+  }
+
+  return (int)((h >> 32) ^ h);
+}</pre>
    *
    * Note that the hash code values changes, if the set is changed.
    *
@@ -526,10 +528,11 @@ public class BitSet implements Cloneable, Serializable
    * Returns the index of the next true bit, from the specified bit
    * (inclusive). If there is none, -1 is returned. You can iterate over
    * all true bits with this loop:<br>
-   * <pre>
-   * for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1))
-   *   { // operate on i here }
-   * </pre>
+   * 
+<pre>for (int i = bs.nextSetBit(0); i &gt;= 0; i = bs.nextSetBit(i + 1))
+{
+  // operate on i here
+}</pre>
    *
    * @param from the start location
    * @return the first true bit, or -1

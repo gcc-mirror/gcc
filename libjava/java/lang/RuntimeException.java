@@ -1,6 +1,5 @@
-/* RuntimeException.java -- all exceptions which are subclasses of this class
-   can be thrown at any time during the execution of a Java virtual machine.
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+/* RuntimeException.java -- root of all unchecked exceptions
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -8,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,43 +38,65 @@ exception statement from your version. */
 
 package java.lang;
 
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
- */
-
 /**
- * Exceptions may be thrown by one part of a Java program and caught
- * by another in order to deal with exceptional conditions.  
  * All exceptions which are subclasses of <code>RuntimeException</code>
  * can be thrown at any time during the execution of a Java virtual machine.
  * Methods which throw these exceptions are not required to declare them
  * in their throws clause.
  *
- * @since JDK 1.0
- * 
  * @author Brian Jones
  * @author Warren Levy <warrenl@cygnus.com>
- * @date September 18, 1998.
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @status updated to 1.4
  */
 public class RuntimeException extends Exception
 {
-  static final long serialVersionUID = -7034897190745766939L;
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = -7034897190745766939L;
 
   /**
-   * Create an exception without a message.
+   * Create an exception without a message. The cause remains uninitialized.
+   *
+   * @see #initCause(Throwable)
    */
   public RuntimeException()
-    {
-      super();
-    }
+  {
+  }
 
   /**
-   * Create an exception with a message.
+   * Create an exception with a message. The cause remains uninitialized.
+   *
+   * @param s the message string
+   * @see #initCause(Throwable)
    */
   public RuntimeException(String s)
-    {
-      super(s);
-    }
+  {
+    super(s);
+  }
+
+  /**
+   * Create an exception with a message and a cause.
+   *
+   * @param s the message string
+   * @param cause the cause of this exception
+   * @since 1.4
+   */
+  public RuntimeException(String s, Throwable cause)
+  {
+    super(s, cause);
+  }
+
+  /**
+   * Create an exception with the given cause, and a message of
+   * <code>cause == null ? null : cause.toString()</code>.
+   *
+   * @param cause the cause of this exception
+   * @since 1.4
+   */
+  public RuntimeException(Throwable cause)
+  {
+    super(cause);
+  }
 }

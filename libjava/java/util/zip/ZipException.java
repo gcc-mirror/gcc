@@ -1,5 +1,5 @@
-/* ZipException.java - Exception representing a zip related error
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* ZipException.java - exception representing a zip related error
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,24 +37,34 @@ exception statement from your version. */
 
 package java.util.zip;
 
-/* Written using on-line Java Platform 1.2 API Specification.
- * Believed complete and correct.
- */
+import java.io.IOException;
 
 /**
- * Is thrown during the creation or input of a zip file.
+ * Thrown during the creation or input of a zip file.
  *
  * @author Jochen Hoenicke
  * @author Per Bothner
- * @since JDK 1.1
+ * @status updated to 1.4
  */
-public class ZipException extends java.io.IOException
+public class ZipException extends IOException
 {
-  public ZipException ()
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = 8000196834066748623L;
+
+  /**
+   * Create an exception without a message.
+   */
+  public ZipException()
   {
-    super();
   }
 
+  /**
+   * Create an exception with a message.
+   *
+   * @param msg the message
+   */
   public ZipException (String msg)
   {
     super(msg);

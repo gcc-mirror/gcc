@@ -1,3 +1,17 @@
+2002-06-16  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/RuntimeException.java: Re-merge with Classpath.
+	* java/util/ArrayList.java: Likewise.
+	* java/util/Arrays.java: Likewise.
+	* java/util/BitSet.java: Likewise.
+	* java/util/Dictionary.java: Likewise.
+	* java/util/IdentityHashMap.java: Likewise.
+	* java/util/MissingResourceException.java: Likewise.
+	* java/util/Observer.java: Likewise.
+	* java/util/TooManyListenersException.java: Likewise.
+	* java/util/zip/DataFormatException.java: Likewise.
+	* java/util/zip/ZipException.java: Likewise.
+
 2002-06-16  Nathanael Nerode  <neroden@twcny.rr.com>
 
 	* java/rmi/AccessException.java: Remerge from Classpath.
