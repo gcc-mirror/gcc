@@ -3014,6 +3014,7 @@ gfc_convert_type_warn (gfc_expr * expr, gfc_typespec * ts, int eflag,
   locus old_where;
   gfc_expr *new;
   int rank;
+  mpz_t *shape;
 
   from_ts = expr->ts;		/* expr->ts gets clobbered */
 
@@ -3050,6 +3051,8 @@ gfc_convert_type_warn (gfc_expr * expr, gfc_typespec * ts, int eflag,
   /* Insert a pre-resolved function call to the right function.  */
   old_where = expr->where;
   rank = expr->rank;
+  shape = expr->shape;
+
   new = gfc_get_expr ();
   *new = *expr;
 
@@ -3058,6 +3061,7 @@ gfc_convert_type_warn (gfc_expr * expr, gfc_typespec * ts, int eflag,
   new->value.function.isym = sym;
   new->where = old_where;
   new->rank = rank;
+  new->shape = gfc_copy_shape (shape, rank);
 
   *expr = *new;
 
