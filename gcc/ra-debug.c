@@ -495,20 +495,25 @@ ra_print_rtx (FILE *file, rtx x, int with_pn)
   switch (GET_RTX_CLASS (code))
     {
       case RTX_UNARY:
-        ra_print_rtx_1op (file, x);
+	ra_print_rtx_1op (file, x);
+	break;
       case RTX_BIN_ARITH:
       case RTX_COMM_ARITH:
       case RTX_COMPARE:
       case RTX_COMM_COMPARE:
-        ra_print_rtx_2op (file, x);
+	ra_print_rtx_2op (file, x);
+	break;
       case RTX_TERNARY:
       case RTX_BITFIELD_OPS:
-        ra_print_rtx_3op (file, x);
+	ra_print_rtx_3op (file, x);
+	break;
       case RTX_OBJ:
       case RTX_CONST_OBJ:
-        ra_print_rtx_object (file, x);
+	ra_print_rtx_object (file, x);
+	break;
       default:
-        print_inline_rtx (file, x, 0);
+	print_inline_rtx (file, x, 0);
+	break;
     }
 }
 
