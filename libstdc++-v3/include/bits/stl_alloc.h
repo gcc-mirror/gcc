@@ -927,6 +927,11 @@ struct _Alloc_traits<_Tp, __allocator<_Tp1, __debug_alloc<_Alloc> > >
   // NB: This syntax is a GNU extension.
   extern template class allocator<char>;
   extern template class allocator<wchar_t>;
+#ifdef __USE_MALLOC
+  extern template class __malloc_alloc_template<0>;
+#else
+  extern template class __default_alloc_template<true, 0>;
+#endif
 } // namespace std
 
 #endif /* __GLIBCPP_INTERNAL_ALLOC_H */
