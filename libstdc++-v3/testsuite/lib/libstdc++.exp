@@ -14,30 +14,30 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
-# Define libstdc++-v3 callbacks for dg.exp.
+# Define callbacks for dg.exp.  This file is loaded early.
 
 load_lib dg.exp
 load_lib libgloss.exp
 load_lib prune.exp
 
-# Called once, by libstdc++-v3-init below.  "Static" to this file.
-proc libstdc++-v3-copy-files {srcfiles dstdir} {
+# Called by v3-init below.  "Static" to this file.
+proc v3-copy-files {srcfiles dstdir} {
     foreach f $srcfiles {
-	if { [catch { set symlink [file readlink $f] } x] } then {
-	    file copy -force $f $dstdir
-	} else {
-	    if { [regexp "^/" "$symlink"] } then {
-		file copy -force $symlink $dstdir
-	    } else {
-		set dirname [file dirname $f]
-		file copy -force $dirname/$symlink $dstdir
-	    }
-	}
+        if { [catch { set symlink [file readlink $f] } x] } then {
+            file copy -force $f $dstdir
+        } else {
+            if { [regexp "^/" "$symlink"] } then {
+                file copy -force $symlink $dstdir
+            } else {
+                set dirname [file dirname $f]
+                file copy -force $dirname/$symlink $dstdir
+            }
+        }
     }
 }
 
-# Called once, from libstdc++-v3.dg/dg.exp.
-proc libstdc++-v3-init { args } {
+# Called once, from libstdc++/dg.exp.
+proc v3-init { args } {
     global srcdir
     global outdir
     global blddir
@@ -56,15 +56,15 @@ proc libstdc++-v3-init { args } {
     set dg-do-what-default run
 
     # Copy any required data files.
-    libstdc++-v3-copy-files [glob -nocomplain "$srcdir/data/*.tst"] $outdir
-    libstdc++-v3-copy-files [glob -nocomplain "$srcdir/data/*.txt"] $outdir
+    v3-copy-files [glob -nocomplain "$srcdir/data/*.tst"] $outdir
+    v3-copy-files [glob -nocomplain "$srcdir/data/*.txt"] $outdir
 
     # set LD_LIBRARY_PATH so that libgcc_s, libstdc++ binaries can be found.
     # locate libgcc.a so we don't need to account for different values of
     # SHLIB_EXT on different platforms
     set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
     if {$gccdir != ""} {
-	set gccdir [file dirname $gccdir]
+        set gccdir [file dirname $gccdir]
     }
 
     set ld_library_path "."
@@ -72,15 +72,15 @@ proc libstdc++-v3-init { args } {
     set compiler ${gccdir}/g++
     if { [is_remote host] == 0 && [which $compiler] != 0 } {
       foreach i "[exec $compiler --print-multi-lib]" {
-	set mldir ""
-	regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
-	set mldir [string trimright $mldir "\;@"]
-	if { "$mldir" == "." } {
-	  continue
-	}
-	if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] == 1 } {
-	  append ld_library_path ":${gccdir}/${mldir}"
-	}
+        set mldir ""
+        regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
+        set mldir [string trimright $mldir "\;@"]
+        if { "$mldir" == "." } {
+          continue
+        }
+        if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] == 1 } {
+          append ld_library_path ":${gccdir}/${mldir}"
+        }
       }
     }
     append ld_library_path ":${blddir}/src/.libs"
@@ -137,55 +137,55 @@ proc libstdc++-v3-init { args } {
 }
 
 # Callback from system dg-test.
-proc libstdc++-v3-dg-test { prog do_what extra_tool_flags } {
+proc libstdc++-dg-test { prog do_what extra_tool_flags } {
     # Set up the compiler flags, based on what we're going to do.
 
     switch $do_what {
-	"preprocess" {
-	    set compile_type "preprocess"
-	    set output_file "[file rootname [file tail $prog]].i"
-	}
-	"compile" {
-	    set compile_type "assembly"
-	    set output_file "[file rootname [file tail $prog]].s"
-	}
-	"assemble" {
-	    set compile_type "object"
-	    set output_file "[file rootname [file tail $prog]].o"
-	}
-	"link" {
-	    set compile_type "executable"
-	    set output_file "./[file rootname [file tail $prog]].exe"
-	}
-	"run" {
-	    set compile_type "executable"
-	    # FIXME: "./" is to cope with "." not being in $PATH.
-	    # Should this be handled elsewhere?
-	    # YES.
-	    set output_file "./[file rootname [file tail $prog]].exe"
-	    # This is the only place where we care if an executable was
-	    # created or not.  If it was, dg.exp will try to run it.
-	    remote_file build delete $output_file;
-	}
-	default {
-	    perror "$do_what: not a valid dg-do keyword"
-	    return ""
-	}
+        "preprocess" {
+            set compile_type "preprocess"
+            set output_file "[file rootname [file tail $prog]].i"
+        }
+        "compile" {
+            set compile_type "assembly"
+            set output_file "[file rootname [file tail $prog]].s"
+        }
+        "assemble" {
+            set compile_type "object"
+            set output_file "[file rootname [file tail $prog]].o"
+        }
+        "link" {
+            set compile_type "executable"
+            set output_file "./[file rootname [file tail $prog]].exe"
+        }
+        "run" {
+            set compile_type "executable"
+            # FIXME: "./" is to cope with "." not being in $PATH.
+            # Should this be handled elsewhere?
+            # YES.
+            set output_file "./[file rootname [file tail $prog]].exe"
+            # This is the only place where we care if an executable was
+            # created or not.  If it was, dg.exp will try to run it.
+            remote_file build delete $output_file;
+        }
+        default {
+            perror "$do_what: not a valid dg-do keyword"
+            return ""
+        }
     }
     set options ""
     if { $extra_tool_flags != "" } {
-	lappend options "additional_flags=$extra_tool_flags"
+        lappend options "additional_flags=$extra_tool_flags"
     }
 
-    set comp_output [libstdc++-v3_target_compile "$prog" "$output_file" "$compile_type" $options];
+    set comp_output [v3_target_compile "$prog" "$output_file" "$compile_type" $options];
     set comp_output [ prune_g++_output $comp_output ];
 
     return [list $comp_output $output_file]
 }
 
-# Called from libstdc++-v3-dg-test above.  Calls back into system's
+# Called from libstdc++-dg-test above.  Calls back into system's
 # target_compile to actually do the work.
-proc libstdc++-v3_target_compile { source dest type options } {
+proc v3_target_compile { source dest type options } {
     global gluefile 
     global wrap_flags
     global cxx
@@ -194,8 +194,8 @@ proc libstdc++-v3_target_compile { source dest type options } {
     global blddir
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
-	lappend options "libs=${gluefile}"
-	lappend options "ldflags=${wrap_flags}"
+        lappend options "libs=${gluefile}"
+        lappend options "ldflags=${wrap_flags}"
     }
 
     set cxx_final $cxx
@@ -215,7 +215,7 @@ proc libstdc++-v3_target_compile { source dest type options } {
 }
 
 
-# Called once, from libstdc++-v3.dg/dg.exp.
+# Called once, from libstdc++*/dg.exp.
 proc v3-list-tests { filename } {
     global srcdir
     global outdir
@@ -225,16 +225,16 @@ proc v3-list-tests { filename } {
 
     # If there is a testsuite_file, use it. 
     if { [file exists $tests_file] } {
-	set f [open $tests_file]
-	while { ! [eof $f] } {
-	    set t [gets $f]
-	    if { [string length "$t"] != 0 } {
-		lappend sfiles  ${srcdir}/${t}
-	    }
-	} 
-	close $f
+        set f [open $tests_file]
+        while { ! [eof $f] } {
+            set t [gets $f]
+            if { [string length "$t"] != 0 } {
+                lappend sfiles  ${srcdir}/${t}
+            }
+        } 
+        close $f
     } else {
-	verbose "cannot open $tests_file"
+        verbose "cannot open $tests_file"
     }
     return $sfiles
 }
