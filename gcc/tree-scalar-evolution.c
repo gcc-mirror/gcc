@@ -1955,28 +1955,40 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
 				      allow_superloop_chrecs);
       op1 = instantiate_parameters_1 (loop, CHREC_RIGHT (chrec),
 				      allow_superloop_chrecs);
-      return build_polynomial_chrec (CHREC_VARIABLE (chrec), op0, op1);
+      if (CHREC_LEFT (chrec) != op0
+	  || CHREC_RIGHT (chrec) != op1)
+	chrec = build_polynomial_chrec (CHREC_VARIABLE (chrec), op0, op1);
+      return chrec;
 
     case PLUS_EXPR:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
 				      allow_superloop_chrecs);
       op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
 				      allow_superloop_chrecs);
-      return chrec_fold_plus (TREE_TYPE (chrec), op0, op1);
+      if (TREE_OPERAND (chrec, 0) != op0
+	  || TREE_OPERAND (chrec, 1) != op1)
+      	chrec = chrec_fold_plus (TREE_TYPE (chrec), op0, op1);
+      return chrec;
 
     case MINUS_EXPR:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
 				      allow_superloop_chrecs);
       op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
 				      allow_superloop_chrecs);
-      return chrec_fold_minus (TREE_TYPE (chrec), op0, op1);
+      if (TREE_OPERAND (chrec, 0) != op0
+	  || TREE_OPERAND (chrec, 1) != op1)
+        chrec = chrec_fold_minus (TREE_TYPE (chrec), op0, op1);
+      return chrec;
 
     case MULT_EXPR:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
 				      allow_superloop_chrecs);
       op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
 				      allow_superloop_chrecs);
-      return chrec_fold_multiply (TREE_TYPE (chrec), op0, op1);
+      if (TREE_OPERAND (chrec, 0) != op0
+	  || TREE_OPERAND (chrec, 1) != op1)
+	chrec = chrec_fold_multiply (TREE_TYPE (chrec), op0, op1);
+      return chrec;
 
     case NOP_EXPR:
     case CONVERT_EXPR:
@@ -1985,6 +1997,9 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
 				      allow_superloop_chrecs);
       if (op0 == chrec_dont_know)
         return chrec_dont_know;
+
+      if (op0 == TREE_OPERAND (chrec, 0))
+	return chrec;
 
       return chrec_convert (TREE_TYPE (chrec), op0);
 
@@ -2011,6 +2026,12 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
 	  || op1 == chrec_dont_know
 	  || op2 == chrec_dont_know)
         return chrec_dont_know;
+
+      if (op0 == TREE_OPERAND (chrec, 0)
+	  && op1 == TREE_OPERAND (chrec, 1)
+	  && op2 == TREE_OPERAND (chrec, 2))
+	return chrec;
+
       return fold (build (TREE_CODE (chrec),
 			  TREE_TYPE (chrec), op0, op1, op2));
 
@@ -2022,6 +2043,10 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
       if (op0 == chrec_dont_know
 	  || op1 == chrec_dont_know)
         return chrec_dont_know;
+
+      if (op0 == TREE_OPERAND (chrec, 0)
+	  && op1 == TREE_OPERAND (chrec, 1))
+	return chrec;
       return fold (build (TREE_CODE (chrec), TREE_TYPE (chrec), op0, op1));
 	    
     case 1:
@@ -2029,6 +2054,8 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
 				      allow_superloop_chrecs);
       if (op0 == chrec_dont_know)
         return chrec_dont_know;
+      if (op0 == TREE_OPERAND (chrec, 0))
+	return chrec;
       return fold (build1 (TREE_CODE (chrec), TREE_TYPE (chrec), op0));
 
     case 0:
