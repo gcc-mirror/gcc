@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GCC.
@@ -92,7 +93,9 @@ Note:
   while (0)
 
 /* As an embedded target, we have no libc.  */
-#define inhibit_libc
+#ifndef inhibit_libc
+#  define inhibit_libc
+#endif
 
 /* Forward type declaration for prototypes definitions.
    rtx_ptr is equivalent to rtx. Can't use the same name.  */
@@ -879,7 +882,9 @@ extern enum reg_class m68hc11_tmp_regs_class;
 		 && VALUE == CONST0_RTX (GET_MODE (VALUE))) : 0) 
 
 /* 'U' represents certain kind of memory indexed operand for 68HC12.
-   and any memory operand for 68HC11.  */
+   and any memory operand for 68HC11.
+   'R' represents indexed addressing mode or access to page0 for 68HC11.
+   For 68HC12, it represents any memory operand.  */
 #define EXTRA_CONSTRAINT(OP, C)                         \
 ((C) == 'U' ? m68hc11_small_indexed_indirect_p (OP, GET_MODE (OP)) \
  : (C) == 'Q' ? m68hc11_symbolic_p (OP, GET_MODE (OP)) \
@@ -1647,6 +1652,7 @@ do {                                                                    \
 {"m68hc11_shift_operator",   {ASHIFT, ASHIFTRT, LSHIFTRT, ROTATE, ROTATERT}},\
 {"m68hc11_eq_compare_operator", {EQ, NE}},                              \
 {"non_push_operand",         {SUBREG, REG, MEM}},			\
+{"splitable_operand",        {SUBREG, REG, MEM}},			\
 {"reg_or_some_mem_operand",  {SUBREG, REG, MEM}},			\
 {"tst_operand",              {SUBREG, REG, MEM}},			\
 {"cmp_operand",              {SUBREG, REG, MEM, SYMBOL_REF, LABEL_REF,	\

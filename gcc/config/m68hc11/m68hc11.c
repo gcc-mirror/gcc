@@ -1004,6 +1004,24 @@ non_push_operand (rtx operand, enum machine_mode mode)
 }
 
 int
+splitable_operand (rtx operand, enum machine_mode mode)
+{
+  if (general_operand (operand, mode) == 0)
+    return 0;
+
+  if (push_operand (operand, mode) == 1)
+    return 0;
+
+  /* Reject a (MEM (MEM X)) because the patterns that use non_push_operand
+     need to split such addresses to access the low and high part but it
+     is not possible to express a valid address for the low part.  */
+  if (mode != QImode && GET_CODE (operand) == MEM
+      && GET_CODE (XEXP (operand, 0)) == MEM)
+    return 0;
+  return 1;
+}
+
+int
 reg_or_some_mem_operand (rtx operand, enum machine_mode mode)
 {
   if (GET_CODE (operand) == MEM)
