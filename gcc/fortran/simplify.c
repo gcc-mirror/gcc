@@ -2822,7 +2822,7 @@ inc:
   e->shape = gfc_get_shape (rank);
 
   for (i = 0; i < rank; i++)
-    mpz_init_set_ui (e->shape[i], shape[order[i]]);
+    mpz_init_set_ui (e->shape[i], shape[i]);
 
   e->ts = head->expr->ts;
   e->rank = rank;
