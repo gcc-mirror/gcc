@@ -265,6 +265,30 @@ GLIBCXX_3.4.2 {
 
 } GLIBCXX_3.4.1;
 
+GLIBCXX_3.4.3 {
+
+    # stub functions from libmath
+    acosf;
+    acosl;
+    asinf;
+    asinl;
+    atanf;
+    atanl;
+    ceilf;
+    ceill;
+    floorf;
+    floorl;
+    fmodf;
+    fmodl;
+    frexpf;
+    frexpl;
+    ldexpf;
+    ldexpl;
+    modff;
+    modfl;
+
+} GLIBCXX_3.4.2;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 

@@ -1,3 +1,10 @@
+2004-10-04  Roger Sayle  <roger@eyesopen.com>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR libstdc++/17505
+	* config/linker-map.gnu: Synchronize the current list of stub
+	functions from libmath.
+
 2004-10-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.ac (libtool_VERSION): To 6:3:0.
