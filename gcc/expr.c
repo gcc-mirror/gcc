@@ -7775,9 +7775,6 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 	    }
 	}
 
-      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
-	subtarget = 0;
-
       /* No sense saving up arithmetic to be done
 	 if it's all in the wrong mode to form part of an address.
 	 And force_operand won't know whether to sign-extend or
@@ -7884,9 +7881,6 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 			       gen_int_mode (tree_low_cst (exp1, 0),
 					     TYPE_MODE (TREE_TYPE (exp1))));
 	}
-
-      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
-	subtarget = 0;
 
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
@@ -8066,7 +8060,6 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
       target = original_target;
       if (target == 0
 	  || modifier == EXPAND_STACK_PARM
-	  || ! safe_from_p (target, TREE_OPERAND (exp, 1), 1)
 	  || (GET_CODE (target) == MEM && MEM_VOLATILE_P (target))
 	  || GET_MODE (target) != mode
 	  || (GET_CODE (target) == REG
@@ -8092,6 +8085,14 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 
       if (GET_CODE (target) == MEM)
 	target = gen_reg_rtx (mode);
+
+      /* If op1 was placed in target, swap op0 and op1.  */
+      if (target != op0 && target == op1)
+	{
+	  rtx tem = op0;
+	  op0 = op1;
+	  op1 = tem;
+	}
 
       if (target != op0)
 	emit_move_insn (target, op0);
@@ -9589,8 +9590,7 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
     }
 
   if (! get_subtarget (target)
-      || GET_MODE (subtarget) != operand_mode
-      || ! safe_from_p (subtarget, arg1, 1))
+      || GET_MODE (subtarget) != operand_mode)
     subtarget = 0;
 
   expand_operands (arg0, arg1, subtarget, &op0, &op1, 0);
