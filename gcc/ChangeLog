@@ -1,3 +1,11 @@
+Sun Jul 21 00:54:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c: Include cselib.h
+	(constptop_register): Break out from ...
+	(cprop_insn): ... here; kill basic_block argument.
+	(do_local_cprop, local_cprop_pass): New functions.
+	(one_cprop_pass): Call local_cprop_pass.
+
 2002-07-20  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_relational_operation): Optimize
