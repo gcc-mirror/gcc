@@ -1766,6 +1766,9 @@ emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method)
      can be incorrect is coming from __builtin_memcpy.  */
   if (GET_CODE (size) == CONST_INT)
     {
+      if (INTVAL (size) == 0)
+	return 0;
+
       x = shallow_copy_rtx (x);
       y = shallow_copy_rtx (y);
       set_mem_size (x, size);
@@ -2975,7 +2978,7 @@ clear_storage (rtx object, rtx size)
       object = protect_from_queue (object, 1);
       size = protect_from_queue (size, 0);
 
-      if (GET_CODE (size) == CONST_INT && INTVAL (size) == 0)
+      if (size == const0_rtx)
 	;
       else if (GET_CODE (size) == CONST_INT
 	  && CLEAR_BY_PIECES_P (INTVAL (size), align))
