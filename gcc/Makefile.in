@@ -655,7 +655,9 @@ T =
 Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
    $(xmake_file) $(tmake_file) \
    $(LANG_MAKEFILES)
-	$(SHELL) configure.frag $(srcdir) "$(SUBDIRS)"
+	srcdir="$(srcdir)" ; export srcdir ; \
+	subdirs="$(SUBDIRS)" ; export subdirs ; \
+	$(SHELL) configure.frag
 	cp config.status config.run
 	$(SHELL) config.run
 	rm -f config.run
