@@ -1,5 +1,8 @@
 2004-01-05  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/12132
+	* g++.dg/template/error11.C: New test.
+
 	PR c++/13451
 	* g++.dg/template/class2.C: New test.
 
