@@ -24,7 +24,7 @@
 #define __ll_lowpart(t) ((unsigned long int) (t) % __ll_B)
 #define __ll_highpart(t) ((unsigned long int) (t) / __ll_B)
 
-/* Define auxilliary asm macros.
+/* Define auxiliary asm macros.
 
    1) umul_ppmm(high_prod, low_prod, multipler, multiplicand)
    multiplies two unsigned long integers MULTIPLER and MULTIPLICAND,
@@ -250,6 +250,7 @@
 	     + (((signed long int) __m1 >> 31) & __m0));		\
   } while (0)
 #define UMUL_TIME 8
+#if 0 /* Overflow for nh>=FFFFFFFE, d==FFFFFFFF.  Find a good fix later.  */
 #define udiv_qrnnd(q, r, nh, nl, d) \
   do { /* Use the signed "div" insn, and adjust the result. */		\
     unsigned long int __q, __r, __nh, __nl, __d, __xh, __xl;		\
@@ -298,6 +299,7 @@
   } while (0)
 #define UDIV_TIME 40
 #define UDIV_NEEDS_NORMALIZATION 1
+#endif
 #define count_leading_zeros(count, x) \
   __asm__ ("cntlz %0,%1"						\
 	: "=r" ((unsigned long int)(count)) : "r" ((unsigned long int)(x)))
