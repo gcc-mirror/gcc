@@ -1,3 +1,12 @@
+2005-03-23  Uros Bizjak  <uros@kss-loka.si>
+
+	* optabs.h (enum optab_index): Remove OTI_llrint.
+	(llrint_optab): Remove macro.
+	* optabs.c (init_optabs): Remove llrint_optab initialization.
+	* genopinit.c (optabs): Remove llrint_optab implementation.
+	* builtins.c (expand_builtin_mathfn): Handle BUILT_IN_LLRINT{,F,L}
+	using lrint_optab.
+
 2005-03-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/20532
