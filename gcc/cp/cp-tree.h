@@ -3245,7 +3245,7 @@ extern tree build_min				PVPROTO((enum tree_code, tree, ...));
 extern tree build_min_nt			PVPROTO((enum tree_code, ...));
 extern tree min_tree_cons			PROTO((tree, tree, tree));
 extern int lvalue_p				PROTO((tree));
-extern int lvalue_or_else			PROTO((tree, char *));
+extern int lvalue_or_else			PROTO((tree, const char *));
 extern tree build_cplus_new			PROTO((tree, tree));
 extern tree get_target_expr			PROTO((tree));
 extern tree break_out_cleanups			PROTO((tree));

@@ -1,3 +1,10 @@
+Thu Feb 18 23:40:01 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-tree.h (lvalue_or_else): Qualify a char* with the `const'
+	keyword to match an analogous change at the top level.
+
+	* tree.c (lvalue_or_else): Likewise.
+
 1999-02-17  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (xref_basetypes): Comment.
