@@ -1,3 +1,8 @@
+2000-09-07  Richard Henderson  <rth@cygnus.com>
+
+	* c-lex.c (process_directive): If not HANDLE_GENERIC_PRAGMAS,
+	do not call dispatch_pragma.
+
 2000-09-07  Jim Wilson  <wilson@cygnus.com>
 
 	* reload.c (push_reload): Use CLASS_CANNOT_CHANGE_MODE_P in addition
