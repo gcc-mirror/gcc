@@ -172,7 +172,7 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control  -fcheck-new @gol
--fconserve-space  -fno-const-strings  -fdollars-in-identifiers @gol
+-fconserve-space  -fno-const-strings @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs  -fexternal-templates @gol
 -falt-external-templates @gol
@@ -1312,14 +1312,6 @@ actually modify the value of a string constant, unless you also use
 This option might be removed in a future release of G++.  For maximum
 portability, you should structure your code so that it works with
 string constants that have type @code{const char *}.
-
-@item -fdollars-in-identifiers
-@opindex fdollars-in-identifiers
-Accept @samp{$} in identifiers.  You can also explicitly prohibit use of
-@samp{$} with the option @option{-fno-dollars-in-identifiers}.  (GNU C allows
-@samp{$} by default on most target systems, but there are a few exceptions.)
-Traditional C allowed the character @samp{$} to form part of
-identifiers.  However, ISO C and C++ forbid @samp{$} in identifiers.
 
 @item -fno-elide-constructors
 @opindex fno-elide-constructors

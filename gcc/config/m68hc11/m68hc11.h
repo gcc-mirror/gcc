@@ -1706,9 +1706,6 @@ do {                                                                    \
    purposes) so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE		QImode
 
-/* Allow $ in identifiers */
-#define DOLLARS_IN_IDENTIFIERS	1
-
 extern int debug_m6811;
 extern int z_replacement_completed;
 extern int current_function_interrupt;

@@ -36,6 +36,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-incpath.h"
 #include "debug.h"		/* For debug_hooks.  */
 
+#ifndef DOLLARS_IN_IDENTIFIERS
+# define DOLLARS_IN_IDENTIFIERS true
+#endif
+
 #ifndef TARGET_SYSTEM_ROOT
 # define TARGET_SYSTEM_ROOT NULL
 #endif
@@ -590,6 +594,7 @@ c_common_init_options (lang)
   parse_in = cpp_create_reader (lang == clk_c ? CLK_GNUC89 : CLK_GNUCXX,
 				ident_hash);
   cpp_opts = cpp_get_options (parse_in);
+  cpp_opts->dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
   if (flag_objc)
     cpp_opts->objc = 1;
 
@@ -1157,7 +1162,7 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_fdollars_in_identifiers:
-      dollars_in_ident = on;
+      cpp_opts->dollars_in_ident = on;
       break;
 
     case OPT_fdump:

@@ -73,22 +73,20 @@ struct lang_flags
   char cplusplus;
   char extended_numbers;
   char std;
-  char dollars_in_ident;
   char cplusplus_comments;
   char digraphs;
 };
 
-/* ??? Enable $ in identifiers in assembly? */
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 c++ xnum std dollar c++comm digr  */
-  /* GNUC89 */  { 0,  0,  1,   0,   1,     1,      1     },
-  /* GNUC99 */  { 1,  0,  1,   0,   1,     1,      1     },
-  /* STDC89 */  { 0,  0,  0,   1,   0,     0,      0     },
-  /* STDC94 */  { 0,  0,  0,   1,   0,     0,      1     },
-  /* STDC99 */  { 1,  0,  1,   1,   0,     1,      1     },
-  /* GNUCXX */  { 0,  1,  1,   0,   1,     1,      1     },
-  /* CXX98  */  { 0,  1,  1,   1,   0,     1,      1     },
-  /* ASM    */  { 0,  0,  1,   0,   0,     1,      0     }
+{ /*              c99 c++ xnum std  //   digr  */
+  /* GNUC89 */  { 0,  0,  1,   0,   1,   1     },
+  /* GNUC99 */  { 1,  0,  1,   0,   1,   1     },
+  /* STDC89 */  { 0,  0,  0,   1,   0,   0     },
+  /* STDC94 */  { 0,  0,  0,   1,   0,   1     },
+  /* STDC99 */  { 1,  0,  1,   1,   1,   1     },
+  /* GNUCXX */  { 0,  1,  1,   0,   1,   1     },
+  /* CXX98  */  { 0,  1,  1,   1,   1,   1     },
+  /* ASM    */  { 0,  0,  1,   0,   1,   0     }
 };
 
 /* Sets internal flags correctly for a given language.  */
@@ -106,7 +104,6 @@ cpp_set_lang (pfile, lang)
   CPP_OPTION (pfile, extended_numbers)	 = l->extended_numbers;
   CPP_OPTION (pfile, std)		 = l->std;
   CPP_OPTION (pfile, trigraphs)		 = l->std;
-  CPP_OPTION (pfile, dollars_in_ident)	 = l->dollars_in_ident;
   CPP_OPTION (pfile, cplusplus_comments) = l->cplusplus_comments;
   CPP_OPTION (pfile, digraphs)		 = l->digraphs;
 }
@@ -153,6 +150,7 @@ cpp_create_reader (lang, table)
   CPP_OPTION (pfile, warn_endif_labels) = 1;
   CPP_OPTION (pfile, warn_deprecated) = 1;
   CPP_OPTION (pfile, warn_long_long) = !CPP_OPTION (pfile, c99);
+  CPP_OPTION (pfile, dollars_in_ident) = 1;
 
   /* Default CPP arithmetic to something sensible for the host for the
      benefit of dumb users like fix-header.  */
@@ -572,4 +570,11 @@ post_options (pfile)
       CPP_OPTION (pfile, trigraphs) = 0;
       CPP_OPTION (pfile, warn_trigraphs) = 0;
     }
+
+  /* C99 permits implementation-defined characters in identifiers.
+     The documented meaning of -std= is to turn off extensions that
+     conflict with the specified standard, and since a strictly
+     conforming program cannot contain a '$', we do not condition
+     their acceptance on the -std= setting.  */
+  pfile->warn_dollars = CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, c99);
 }

@@ -9064,10 +9064,10 @@ value.
 
 @findex DOLLARS_IN_IDENTIFIERS
 @item DOLLARS_IN_IDENTIFIERS
-Define this macro to control use of the character @samp{$} in identifier
-names.  0 means @samp{$} is not allowed by default; 1 means it is allowed.
-1 is the default; there is no need to define this macro in that case.
-This macro controls the compiler proper; it does not affect the preprocessor.
+Define this macro to control use of the character @samp{$} in
+identifier names for the C family of languages.  0 means @samp{$} is
+not allowed by default; 1 means it is allowed.  1 is the default;
+there is no need to define this macro in that case.
 
 @findex NO_DOLLAR_IN_LABEL
 @item NO_DOLLAR_IN_LABEL

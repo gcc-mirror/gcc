@@ -287,9 +287,6 @@ Boston, MA 02111-1307, USA.  */
    to put anything in ENDFILE_SPEC.  */
 /* #define ENDFILE_SPEC "" */
 
-#undef	DOLLARS_IN_IDENTIFIERS
-#define DOLLARS_IN_IDENTIFIERS 2
-
 /* We use Dbx symbol format.  */
 
 #define DBX_DEBUGGING_INFO 1
