@@ -1367,64 +1367,64 @@ mips*-*-openbsd*)
         esac
 	;;
 mipsisa32-*-elf* | mipsisa32el-*-elf*)
-	tm_file="${tm_file} mips/elf.h"
+	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file=mips/t-isa3264
 	tm_defines="MIPS_ISA_DEFAULT=32 MIPS_ABI_DEFAULT=ABI_EABI"
 	use_fixproto=yes
 	;;
 mipsisa32r2-*-elf* | mipsisa32r2el-*-elf*)
-	tm_file="${tm_file} mips/elf.h"
+	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file=mips/t-isa3264
 	tm_defines="MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_EABI"
 	use_fixproto=yes
 	;;
 mipsisa64-*-elf* | mipsisa64el-*-elf*)
-	tm_file="${tm_file} mips/elf.h"
+	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file=mips/t-isa3264
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
 	tm_defines="MIPS_ISA_DEFAULT=64 MIPS_ABI_DEFAULT=ABI_EABI"
 	use_fixproto=yes
 	;;
 mipsisa64sr71k-*-elf*)
-        tm_file="${tm_file} mips/elf.h"
+        tm_file="elfos.h ${tm_file} mips/elf.h"
         tmake_file=mips/t-sr71k
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
 	tm_defines="MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sr71000\\\" MIPS_ABI_DEFAULT=ABI_EABI"
 	use_fixproto=yes
         ;;
 mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)
-	tm_file="${tm_file} mips/elf.h"
+	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file=mips/t-elf
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
 	tm_defines="MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sb1\\\" MIPS_ABI_DEFAULT=ABI_O64"
 	use_fixproto=yes
 	;;
 mips-*-elf* | mipsel-*-elf*)
-	tm_file="${tm_file} mips/elf.h"
+	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file=mips/t-elf
 	use_fixproto=yes
 	;;
 mips64-*-elf* | mips64el-*-elf*)
-	tm_file="${tm_file} mips/elf64.h"
+	tm_file="elfos.h ${tm_file} mips/elf.h"
 	tmake_file=mips/t-elf
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
 	tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
 	use_fixproto=yes
 	;;
 mips64vr-*-elf* | mips64vrel-*-elf*)
-        tm_file="mips/vr.h ${tm_file} mips/elf64.h"
+        tm_file="mips/vr.h elfos.h ${tm_file} mips/elf.h"
         tmake_file=mips/t-vr
 	use_fixproto=yes
         ;;
 mips64orion-*-elf* | mips64orionel-*-elf*)
-	tm_file="${tm_file} mips/elforion.h mips/elf64.h"
+	tm_file="elfos.h ${tm_file} mips/elforion.h mips/elf.h"
 	tmake_file=mips/t-elf
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
 	tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
 	use_fixproto=yes
 	;;
 mips*-*-rtems*)
-	tm_file="${tm_file} mips/elf.h mips/rtems.h rtems.h"
+	tm_file="elfos.h ${tm_file} mips/elf.h mips/rtems.h rtems.h"
 	tmake_file="mips/t-elf t-rtems mips/t-rtems"
 	;;
 mips-wrs-vxworks)
@@ -1442,7 +1442,7 @@ mips-wrs-windiss)	# Instruction-level simulator for VxWorks.
 	thread_file=
 	;;
 mipstx39-*-elf* | mipstx39el-*-elf*)
-	tm_file="${tm_file} mips/r3900.h mips/elf.h"
+	tm_file="elfos.h ${tm_file} mips/r3900.h mips/elf.h"
 	tmake_file=mips/t-r3900
 	use_fixproto=yes
 	;;
@@ -2633,7 +2633,7 @@ fi
 				;;
 		esac
 		case $tm_file in
-			*mips/elf.h* | *mips/elf64.h*)
+			*mips/elf.h*)
 				tm_defines="OBJECT_FORMAT_ELF $tm_defines"
 				;;
 		esac

@@ -1,3 +1,15 @@
+2004-08-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config.gcc (mips*-*-elf*, mips*-*-rtems*): Add elfos.h to tm_file.
+	Replace uses of mips/elf64.h with mips/elf.h
+	* config/mips/elf.h (MAX_OFILE_ALIGNMENT, TARGET_ASM_NAMED_SECTION)
+	(TYPE_OPERAND_FMT, TYPE_ASM_OP, SIZE_ASM_OP, BSS_SECTION_ASM_OP)
+	(ASM_OUTPUT_ALIGNED_BSS, ASM_WEAKEN_LABEL, ASM_OUTPUT_WEAK_ALIAS)
+	(MAKE_DECL_ONE_ONLY, INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP)
+	(HANDLE_SYSV_PRAGMA): Delete.
+	(ASM_OUTPUT_DEF): Fix formatting.
+	* config/mips/elf64.h: Delete.
+
 2004-08-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/ia64/ia64.c (got_symbolic_operand): Do require a
