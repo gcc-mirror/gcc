@@ -58,6 +58,11 @@ do {						\
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */
 
+/* This works only for glibc-2.3 and later, because sigcontext is different
+   in glibc-2.2.4.  */
+
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)
+
 #ifdef IN_LIBGCC2
 #include <signal.h>
 #include <sys/ucontext.h>
@@ -207,3 +212,4 @@ do {						\
     }
 
 #endif /* IN_LIBGCC2 */
+#endif /* glibc-2.3 or better */
