@@ -65,7 +65,7 @@ Boston, MA 02111-1307, USA.  */
 static void finish_diagnostic PARAMS ((void));
 static void output_do_verbatim PARAMS ((output_buffer *,
                                         const char *, va_list *));
-static void output_to_stream PARAMS ((output_buffer *, FILE *));
+static void output_buffer_to_stream PARAMS ((output_buffer *));
 static void output_format PARAMS ((output_buffer *));
 static void output_indent PARAMS ((output_buffer *));
 
@@ -340,6 +340,7 @@ init_output_buffer (buffer, prefix, maximum_length)
 {
   memset (buffer, 0, sizeof (output_buffer));
   obstack_init (&buffer->obstack);
+  output_buffer_attached_stream (buffer) = stderr;
   ideal_line_wrap_cutoff (buffer) = maximum_length;
   prefixing_policy (buffer) = current_prefixing_rule;
   output_set_prefix (buffer, prefix);
@@ -393,8 +394,8 @@ output_finalize_message (buffer)
 void
 flush_diagnostic_buffer ()
 {
-  output_to_stream (diagnostic_buffer, stderr);
-  fflush (stderr);
+  output_buffer_to_stream (diagnostic_buffer);
+  fflush (output_buffer_attached_stream (diagnostic_buffer));
 }
 
 /* Return the amount of characters BUFFER can accept to
@@ -654,15 +655,15 @@ output_add_string (buffer, str)
   maybe_wrap_text (buffer, str, str + (str ? strlen (str) : 0));
 }
 
-/* Flush the content of BUFFER onto FILE and reinitialize BUFFER.  */
+/* Flush the content of BUFFER onto the attached stream,
+   and reinitialize.  */
 
 static void
-output_to_stream (buffer, file)
+output_buffer_to_stream (buffer)
      output_buffer *buffer;
-     FILE *file;
 {
   const char *text = output_finalize_message (buffer);
-  fputs (text, file);
+  fputs (text, output_buffer_attached_stream (buffer));
   output_clear_message_text (buffer);
 }
 
@@ -1294,7 +1295,7 @@ default_print_error_function (file)
       output_add_newline (diagnostic_buffer);
 
       record_last_error_function ();
-      output_to_stream (diagnostic_buffer, stderr);
+      output_buffer_to_stream (diagnostic_buffer);
       output_buffer_state (diagnostic_buffer) = os;
       free ((char*) prefix);
     }
@@ -1600,10 +1601,10 @@ warning VPARAMS ((const char *msgid, ...))
 static void
 finish_diagnostic ()
 {
-  output_to_stream (diagnostic_buffer, stderr);
+  output_buffer_to_stream (diagnostic_buffer);
   clear_diagnostic_info (diagnostic_buffer);
-  fputc ('\n', stderr);
-  fflush (stderr);
+  fputc ('\n', output_buffer_attached_stream (diagnostic_buffer));
+  fflush (output_buffer_attached_stream (diagnostic_buffer));
 }
 
 /* Helper subroutine of output_verbatim and verbatim. Do the approriate
@@ -1662,7 +1663,7 @@ verbatim VPARAMS ((const char *msg, ...))
   msg = va_arg (ap, const char *);
 #endif
   output_do_verbatim (diagnostic_buffer, msg, &ap);
-  output_to_stream (diagnostic_buffer, stderr);
+  output_buffer_to_stream (diagnostic_buffer);
   va_end (ap);
 }
 

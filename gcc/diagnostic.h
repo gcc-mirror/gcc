@@ -80,6 +80,8 @@ struct output_buffer
   /* Internal data.  These fields should not be accessed directly by
      front-ends.  */
 
+  /* Where to output formatted text.  */
+  FILE* stream;
   /* The obstack where the text is built up.  */  
   struct obstack obstack;
   /* The amount of characters output so far.  */  
@@ -88,6 +90,7 @@ struct output_buffer
   output_state state;
 };
 
+#define output_buffer_attached_stream(BUFFER) (BUFFER)->stream
 #define output_buffer_text_cursor(BUFFER) (BUFFER)->state.cursor
 #define output_buffer_format_args(BUFFER) *((BUFFER)->state.format_args)
 #define output_needs_newline(BUFFER) (BUFFER)->state.need_newline_p
