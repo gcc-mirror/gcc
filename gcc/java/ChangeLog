@@ -1,5 +1,8 @@
 2000-06-24  Tom Tromey  <tromey@cygnus.com>
 
+	* expr.c (lookup_field): Print error and return error_mark_node if
+	field reference is ambiguous.
+
 	* parse.y (check_abstract_method_definitions): Also check if
 	`other_method' is abstract.
 

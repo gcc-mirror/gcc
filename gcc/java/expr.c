@@ -1315,7 +1315,8 @@ expand_java_binop (type, op)
 
 /* Lookup the field named NAME in *TYPEP or its super classes.
    If not found, return NULL_TREE.
-   (If the *TYPEP is not found, return error_mark_node.)
+   (If the *TYPEP is not found, or if the field reference is
+   ambiguous, return error_mark_node.)
    If found, return the FIELD_DECL, and set *TYPEP to the
    class containing the field. */
 
@@ -1334,6 +1335,7 @@ lookup_field (typep, name)
   do
     {
       tree field, basetype_vec;
+      tree save_field;
       int n, i;
 
       for (field = TYPE_FIELDS (*typep); field; field = TREE_CHAIN (field))
@@ -1353,12 +1355,30 @@ lookup_field (typep, name)
       /* Process implemented interfaces. */
       basetype_vec = TYPE_BINFO_BASETYPES (*typep);
       n = TREE_VEC_LENGTH (basetype_vec);
+      save_field = NULL_TREE;
       for (i = 0; i < n; i++)
 	{
 	  tree t = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
 	  if ((field = lookup_field (&t, name)))
-	    return field;
+	    {
+	      if (save_field == NULL_TREE)
+		save_field = field;
+	      else
+		{
+		  tree i1 = DECL_CONTEXT (save_field);
+		  tree i2 = DECL_CONTEXT (field);
+		  error ("reference `%s' is ambiguous: appears in interface `%s' and interface `%s'",
+			 IDENTIFIER_POINTER (name),
+			 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (i1))),
+			 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (i2))));
+		  return error_mark_node;
+		}
+	    }
 	}
+
+      if (save_field != NULL_TREE)
+	return save_field;
+
       *typep = CLASSTYPE_SUPER (*typep);
     } while (*typep);
   return NULL_TREE;
