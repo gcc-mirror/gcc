@@ -254,12 +254,12 @@ extern char	       *mktemp ();
 #define MASK_HALF_PIC	0x00000800	/* Emit OSF-style pic refs to externs*/
 #define MASK_LONG_CALLS	0x00001000	/* Always call through a register */
 #define MASK_64BIT	0x00002000	/* Use 64 bit GP registers and insns */
-#define MASK_UNUSED1	0x00004000
-#define MASK_UNUSED2	0x00008000
-#define MASK_UNUSED3	0x00010000
-#define MASK_UNUSED4	0x00020000
-#define MASK_UNUSED5	0x00040000
-#define MASK_UNUSED6	0x00080000
+#define MASK_EMBEDDED_PIC 0x00004000	/* Generate embedded PIC code */
+#define MASK_UNUSED1	0x00008000
+#define MASK_UNUSED2	0x00010000
+#define MASK_UNUSED3	0x00020000
+#define MASK_UNUSED4	0x00040000
+#define MASK_UNUSED5	0x00080000
 
 					/* Dummy switches used only in spec's*/
 #define MASK_MIPS_TFILE	0x00000000	/* flag for mips-tfile usage */
@@ -327,6 +327,10 @@ extern char	       *mktemp ();
 					/* always call through a register */
 #define TARGET_LONG_CALLS	(target_flags & MASK_LONG_CALLS)
 
+					/* generate embedded PIC code;
+					   requires gas.  */
+#define TARGET_EMBEDDED_PIC	(target_flags & MASK_EMBEDDED_PIC)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -364,6 +368,8 @@ extern char	       *mktemp ();
   {"no-half-pic",	 -MASK_HALF_PIC},				\
   {"long-calls",	  MASK_LONG_CALLS},				\
   {"no-long-calls",	 -MASK_LONG_CALLS},				\
+  {"embedded-pic",	  MASK_EMBEDDED_PIC},				\
+  {"no-embedded-pic",	 -MASK_EMBEDDED_PIC},				\
   {"debug",		  MASK_DEBUG},					\
   {"debuga",		  MASK_DEBUG_A},				\
   {"debugb",		  MASK_DEBUG_B},				\
@@ -552,7 +558,8 @@ while (0)
 %{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
 %{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
 %{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
-%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3}"
+%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3} \
+%{membedded-pic}"
 
 #else
 /* not GAS */
@@ -568,7 +575,8 @@ while (0)
 %{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
 %{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
 %{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
-%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3}"
+%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3} \
+%{membedded-pic}"
 
 #endif
 #endif	/* ASM_SPEC */
@@ -3375,12 +3383,33 @@ do {									\
 	   VALUE)
 
 /* This is how to output an element of a case-vector that is relative.
-   This is used for pc-relative code (e.g. when TARGET_ABICALLS).  */
+   This is used for pc-relative code (e.g. when TARGET_ABICALLS or
+   TARGET_EMBEDDED_PIC).  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, VALUE, REL)			\
-  fprintf (STREAM, "\t%s\t$L%d\n",					\
-	   TARGET_LONG64 ? ".gpdword" : ".gpword",			\
-	   VALUE)
+do {									\
+  if (TARGET_EMBEDDED_PIC)						\
+    fprintf (STREAM, "\t%s\t$L%d-$LS%d\n",				\
+	     TARGET_LONG64 ? ".dword" : ".word",			\
+	     VALUE, REL);						\
+  else									\
+    fprintf (STREAM, "\t%s\t$L%d\n",					\
+	     TARGET_LONG64 ? ".gpdword" : ".gpword",			\
+	     VALUE);							\
+} while (0)
+
+/* When generating embedded PIC code we want to put the jump table in
+   the .text section.  In all other cases, we want to put the jump
+   table in the .rdata section.  Unfortunately, we can't use
+   JUMP_TABLES_IN_TEXT_SECTION, because it is not conditional.
+   Instead, we use ASM_OUTPUT_CASE_LABEL to switch back to the .text
+   section if appropriate.  */
+#define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, INSN)			\
+do {									\
+  if (TARGET_EMBEDDED_PIC)						\
+    text_section ();							\
+  ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM);			\
+} while (0)
 
 /* This is how to output an assembler line
    that says to advance the location counter

@@ -3191,6 +3191,28 @@ override_options ()
   else
     mips_abicalls = MIPS_ABICALLS_NO;
 
+  /* -membedded-pic is a form of PIC code suitable for embedded
+     systems.  All calls are made using PC relative addressing, and
+     all data is addressed using the $gp register.  This requires gas,
+     which does most of the work, and GNU ld, which automatically
+     expands PC relative calls which are out of range into a longer
+     instruction sequence.  All gcc really does differently is
+     generate a different sequence for a switch.  */
+  if (TARGET_EMBEDDED_PIC)
+    {
+      flag_pic = 1;
+      if (TARGET_ABICALLS)
+	warning ("-membedded-pic and -mabicalls are incompatible");
+      if (g_switch_set)
+	warning ("-G and -membedded-pic are incompatible");
+      /* Setting mips_section_threshold is not required, because gas
+	 will force everything to be GP addressable anyhow, but
+	 setting it will cause gcc to make better estimates of the
+	 number of instructions required to access a particular data
+	 item.  */
+      mips_section_threshold = 0x7fffffff;
+    }
+
   /* -mrnames says to use the MIPS software convention for register
      names instead of the hardware names (ie, $a0 instead of $4).
      We do this by switching the names in mips_reg_names, which the
@@ -3387,6 +3409,7 @@ mips_debugger_offset (addr, offset)
    'M'  print high-order register of double-word register operand.
    'C'  print part of opcode for a branch condition.
    'N'  print part of opcode for a branch condition, inverted.
+   'S'  X is CODE_LABEL, print with prefix of "LS" (for embedded switch).
    '('	Turn on .set noreorder
    ')'	Turn on .set reorder
    '['	Turn on .set noat
@@ -3568,6 +3591,14 @@ print_operand (file, op, letter)
       default:
 	abort_with_insn (op, "PRINT_OPERAND, illegal insn for %%N");
       }
+
+  else if (letter == 'S')
+    {
+      char buffer[100];
+
+      ASM_GENERATE_INTERNAL_LABEL (buffer, "LS", CODE_LABEL_NUMBER (op));
+      assemble_name (file, buffer);
+    }
 
   else if (code == REG)
     {
