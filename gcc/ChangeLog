@@ -1,5 +1,9 @@
 Sat Jun  2 06:53:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* print-tree.c (print_node): Don't print "regdecl" when bit doesn't
+	mean that; use proper names instead.
+	Print DECL_NO_STATIC_CHAIN.
+
 	* except.c (expand_builtin_frob_return_addr): Add missing call
 	to convert_memory_address #ifdef POINTERS_EXTEND_UNSIGNED.
 	(expand_builtin_eh_return): Likewise.
