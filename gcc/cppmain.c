@@ -263,7 +263,10 @@ maybe_print_line (line)
   if (print.no_line_dirs)
     return;
 
-  if (line >= print.lineno && line < print.lineno + 8)
+  /* print.lineno is zero if this is the first token of the file.  We
+     handle this specially, so that a first line of "# 1 "foo.c" in
+     file foo.i outputs just the foo.c line, and not a foo.i line.  */
+  if (line >= print.lineno && line < print.lineno + 8 && print.lineno)
     {
       while (line > print.lineno)
 	{
@@ -358,7 +361,6 @@ cb_change_file (pfile, fc)
   if (fc->reason == FC_ENTER && fc->from.filename)
     maybe_print_line (fc->from.lineno);
 
-  print.lineno = fc->to.lineno;
   print.last_fname = fc->to.filename;
   if (fc->externc)
     print.syshdr_flags = " 3 4";
@@ -367,14 +369,18 @@ cb_change_file (pfile, fc)
   else
     print.syshdr_flags = "";
 
-  switch (fc->reason)
+  if (print.lineno)
     {
-    case FC_ENTER : flags = fc->from.filename ? " 1": ""; break;
-    case FC_LEAVE : flags = " 2"; break;
-    case FC_RENAME: flags = ""; break;
-    }
+      print.lineno = fc->to.lineno;
+      switch (fc->reason)
+	{
+	case FC_ENTER : flags = " 1"; break;
+	case FC_LEAVE : flags = " 2"; break;
+	case FC_RENAME: flags = ""; break;
+	}
 
-  print_line (flags);
+      print_line (flags);
+    }
 }
 
 static void

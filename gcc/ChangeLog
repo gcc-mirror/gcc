@@ -1,3 +1,21 @@
+2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * c-lex.c: Move main_input_filename handling to FC_ENTER. Clean up.
+        * cpperror.c (print_containing_files): Get right line number.
+        (print_location): Output column of 1 if 0.
+        * cppfiles.c (stack_include_file): cpp_push_buffer handles
+        the callback.
+        * cpphash.h (_cpp_do_file_change): No longer external.
+        * cpplib.c (do_file_change): Now local to cpplib.c.
+        (do_line): Fake a buffer stack for preprocessed files.
+        (cpp_push_buffer): Create a file_change callback.  Handle faked
+        buffers.
+        (cpp_pop_buffer): Similarly.
+        * cpplib.h: BUF_FAKE: New buffer type.
+        * cppmain.c: Update to handle correct file renaming where a
+        #line is the first line of the main file, and produce only
+        the renamed file, not the original file, as output.
+
 2000-12-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md: Remove redundant @s from output patterns.

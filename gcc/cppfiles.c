@@ -245,15 +245,7 @@ stack_include_file (pfile, inc)
      cpp_reader *pfile;
      struct include_file *inc;
 {
-  const char *filename = 0;
-  unsigned int lineno = 0;
   cpp_buffer *fp;
-
-  if (pfile->buffer)
-    {
-      filename = pfile->buffer->nominal_fname;
-      lineno = pfile->buffer->lineno;
-    }
 
   /* Not in cache?  */
   if (! inc->buffer)
@@ -268,7 +260,6 @@ stack_include_file (pfile, inc)
     fp->rlimit += inc->st.st_size;
   fp->cur = fp->buf;
   fp->line_base = fp->buf;
-  fp->lineno = 0;		/* For _cpp_do_file_change.  */
   fp->inc->refcnt++;
   if (inc->foundhere)
     fp->sysp = inc->foundhere->sysp;
@@ -282,10 +273,6 @@ stack_include_file (pfile, inc)
   pfile->mi_state = MI_OUTSIDE;
   pfile->mi_cmacro = 0;
   pfile->include_depth++;
-
-  _cpp_do_file_change (pfile, FC_ENTER, filename, lineno);
-
-  fp->lineno = 1;
 }
 
 /* Read the file referenced by INC into the file cache.

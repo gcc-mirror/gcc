@@ -234,14 +234,10 @@ cb_change_file (pfile, fc)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
      const cpp_file_change *fc;
 {
-  if (fc->from.filename == 0)
-    main_input_filename = fc->to.filename;
-  in_system_header = fc->sysp;
-
   /* Do the actions implied by the preceding numbers.  */
   if (fc->reason == FC_ENTER)
     {
-      /* FIXME.  Don't stack the main buffer on the input stack.  */
+      /* Don't stack the main buffer on the input stack.  */
       if (fc->from.filename)
 	{
 	  lineno = lex_lineno;
@@ -258,6 +254,8 @@ cb_change_file (pfile, fc)
 	    }
 #endif
 	}
+      else
+	main_input_filename = fc->to.filename;
     }
   else if (fc->reason == FC_LEAVE)
     {
@@ -288,11 +286,9 @@ cb_change_file (pfile, fc)
       else
 	error ("leaving more files than we entered");
     }
-  else if (fc->reason == FC_RENAME)
-    input_filename = fc->to.filename;
 
   update_header_times (fc->to.filename);
-
+  in_system_header = fc->sysp;
   input_filename = fc->to.filename;
   lex_lineno = fc->to.lineno;
 
