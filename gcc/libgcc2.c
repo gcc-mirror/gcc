@@ -2952,9 +2952,6 @@ int _exit_dummy_decl = 0;	/* prevent compiler & linker warnings */
 #ifdef NEED_ATEXIT
 # include <errno.h>
 
-extern void *malloc ();
-extern void *realloc ();
-
 static func_ptr *atexit_chain = NULL;
 static long atexit_chain_length = 0;
 static volatile long last_atexit_chain_slot = -1;
