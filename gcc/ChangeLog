@@ -1,3 +1,8 @@
+Thu Mar  1 09:44:15 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (emit_move_sequence): Verify operand0 is a hard register
+	before determining its register class.
+
 2001-03-01  Bernd Schmidt  <bernds@redhat.com>
 
 	* config/ia64/ia64.c (ia64_hard_regno_rename_ok): Disallow renaming
