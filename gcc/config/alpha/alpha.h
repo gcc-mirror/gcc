@@ -171,7 +171,9 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #ifndef TARGET_AS_CAN_SUBTRACT_LABELS
 #define TARGET_AS_CAN_SUBTRACT_LABELS TARGET_GAS
 #endif
-
+#ifndef TARGET_CAN_FAULT_IN_PROLOGUE
+#define TARGET_CAN_FAULT_IN_PROLOGUE 0
+#endif
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -371,7 +373,7 @@ extern void override_options ();
 #define STACK_BOUNDARY 64
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY 64
+#define FUNCTION_BOUNDARY 256
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 64
@@ -387,20 +389,16 @@ extern void override_options ();
    ??? Kludge this and the next macro for the moment by not doing anything if
    we don't optimize and also if we are writing ECOFF symbols to work around
    a bug in DEC's assembler. */
-/* Aligning past 2**3 wastes insn cache lines, and doesn't buy much 
-   issue-wise on average anyway.  */
 
 #define LOOP_ALIGN(LABEL) \
-  (optimize > 0 && write_symbols != SDB_DEBUG ? 3 : 0)
+  (optimize > 0 && write_symbols != SDB_DEBUG ? 4 : 0)
 
-/* This is how to align an instruction for optimal branching.
-   On Alpha we'll get better performance by aligning on a quadword
+/* This is how to align an instruction for optimal branching.  On
+   Alpha we'll get better performance by aligning on an octaword
    boundary.  */
-/* Aligning past 2**3 wastes insn cache lines, and doesn't buy much 
-   issue-wise on average anyway.  */
 
 #define ALIGN_LABEL_AFTER_BARRIER(FILE)	\
-  (optimize > 0 && write_symbols != SDB_DEBUG ? 3 : 0)
+  (optimize > 0 && write_symbols != SDB_DEBUG ? 4 : 0)
 
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 64
@@ -1118,7 +1116,11 @@ extern char *alpha_function_name;
    is ever used in the function.  This macro is responsible for
    knowing which registers should not be saved even if used.  */
 
-#define FUNCTION_PROLOGUE(FILE, SIZE)  output_prolog (FILE, SIZE)
+#define FUNCTION_PROLOGUE(FILE, SIZE)  output_prologue (FILE, SIZE)
+
+/* This macro notes the end of the prologue.  */
+
+#define FUNCTION_END_PROLOGUE(FILE)  output_end_prologue (FILE)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  Under OSF/1, profiling is enabled
@@ -1179,7 +1181,7 @@ extern char *alpha_function_name;
    of alloca; we also take advantage of it to omit stack adjustments
    before returning.  */
 
-#define FUNCTION_EPILOGUE(FILE, SIZE)	output_epilog (FILE, SIZE)
+#define FUNCTION_EPILOGUE(FILE, SIZE)	output_epilogue (FILE, SIZE)
 
 
 /* Output assembler code for a block containing the constant parts
@@ -1253,7 +1255,6 @@ extern char *alpha_function_name;
 /* Attempt to turn on access permissions for the stack.  */
 
 #define TRANSFER_FROM_TRAMPOLINE					\
-									\
 void									\
 __enable_execute_stack (addr)						\
      void *addr;							\

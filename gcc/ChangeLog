@@ -1,3 +1,26 @@
+Tue Jun 16 16:49:26 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_expand_prologue, alpha_expand_epilogue): New fns.
+	(output_prologue, output_epilogue): Merge VMS and OSF versions;
+	Remove anything related to the actual code generation.
+	(output_end_prologue): New function.
+	(alpha_sa_mask, alpha_sa_size): Merge VMS and OSF versions.
+	(alpha_does_function_need_gp): Return false for VMS.
+	(alpha_function_needs_gp): Make static.
+	(add_long_const): Delete.
+	(summarize_insn): Don't assume a SUBREG is of a REG.
+	Prototype all static functions.  Rename VMS-specific global
+	variables vms_*.
+	* alpha.h (TARGET_CAN_FAULT_IN_PROLOGUE): Default to 0.
+	(FUNCTION_BOUNDARY): Align to cache line.
+	(LOOP_ALIGN, ALIGN_LABEL_AFTER_BARRIER): Align to octaword.
+	(FUNCTION_END_PROLOGUE): New macro.
+	* alpha.md (attribute length): New.  Mark all insns.
+	(return_internal, prologue_stack_probe_loop) New patterns.
+	(prologue, init_fp, epilogue): New patterns.
+	Disable peepholes.
+	* linux.h (TARGET_CAN_FAULT_IN_PROLOGUE): Define.
+
 Tue Jun 16 17:36:35 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* toplev.c (lang_options): Add -trigraphs option for cpplib.

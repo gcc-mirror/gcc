@@ -37,7 +37,7 @@
 ;;	2	builtin_setjmp_receiver
 ;;	3	builtin_longjmp
 ;;	4	trapb
-
+;;	5	prologue_stack_probe_loop
 
 ;; Processor type -- this attribute must exactly match the processor_type
 ;; enumeration in alpha.h.
@@ -54,13 +54,20 @@
   "ild,fld,ldsym,ist,fst,ibr,fbr,jsr,iadd,ilog,shift,icmov,fcmov,icmp,imul,fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof"
   (const_string "iadd"))
 
+;; Define the operand size an insn operates on.  Used primarily by mul
+;; and div operations that have size dependant timings.
+
 (define_attr "opsize" "si,di,udi" (const_string "di"))
 
 ;; The TRAP_TYPE attribute marks instructions that may generate traps
 ;; (which are imprecise and may need a trapb if software completion
 ;; is desired).
+
 (define_attr "trap" "no,yes" (const_string "no"))
 
+;; The length of an instruction sequence in bytes.
+
+(define_attr "length" "" (const_int 4))
 
 ;; On EV4 there are two classes of resources to consider: resources needed
 ;; to issue, and resources needed to execute.  IBUS[01] are in the first
@@ -385,7 +392,8 @@
    addl %1,$31,%0
    ldl %0,%1
    lds %0,%1\;cvtlq %0,%0"
-  [(set_attr "type" "iadd,ild,fld")])
+  [(set_attr "type" "iadd,ild,fld")
+   (set_attr "length" "*,*,8")])
 
 ;; Due to issues with CLASS_CANNOT_CHANGE_SIZE, we cannot use a subreg here.
 (define_split
@@ -917,6 +925,8 @@
   "!TARGET_OPEN_VMS"
   "")
 
+;; Lengths of 8 for ldq $t12,__divq($gp); jsr $t9,($t12),__divq as
+;; expanded by the assembler.
 (define_insn ""
   [(set (reg:DI 27)
 	(sign_extend:DI (match_operator:SI 1 "divmod_operator"
@@ -925,7 +935,8 @@
    (clobber (reg:DI 28))]
   "!TARGET_OPEN_VMS"
   "%E1 $24,$25,$27"
-  [(set_attr "type" "jsr")])
+  [(set_attr "type" "jsr")
+   (set_attr "length" "8")])
 
 (define_insn ""
   [(set (reg:DI 27)
@@ -935,7 +946,8 @@
    (clobber (reg:DI 28))]
   "!TARGET_OPEN_VMS"
   "%E1 $24,$25,$27"
-  [(set_attr "type" "jsr")])
+  [(set_attr "type" "jsr")
+   (set_attr "length" "8")])
 
 ;; Next are the basic logical operations.  These only exist in DImode.
 
@@ -2357,7 +2369,8 @@
    (clobber (match_scratch:DI 4 "=&r"))]
   ""
   "addq %0,%1,%4\;cmov%C2 %r3,%4,%0"
-  [(set_attr "type" "icmov")])
+  [(set_attr "type" "icmov")
+   (set_attr "length" "8")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -3679,7 +3692,8 @@
    jsr $26,($27),0\;ldgp $29,0($26)
    bsr $26,$%0..ng
    jsr $26,%0\;ldgp $29,0($26)"
-  [(set_attr "type" "jsr")])
+  [(set_attr "type" "jsr")
+   (set_attr "length" "12,*,12")])
       
 (define_insn ""
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,i"))
@@ -3690,7 +3704,8 @@
    jsr $26,(%0)
    bsr $26,%0
    jsr $26,%0"
-  [(set_attr "type" "jsr")])
+  [(set_attr "type" "jsr")
+   (set_attr "length" "*,*,12")])
       
 (define_insn ""
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,i"))
@@ -3703,7 +3718,8 @@
   "@
    bis %2,%2,$27\;jsr $26,0\;ldq $27,0($29)
    ldq $27,%2\;jsr $26,%0\;ldq $27,0($29)"
-  [(set_attr "type" "jsr")])
+  [(set_attr "type" "jsr")
+   (set_attr "length" "12,16")])
 
 (define_insn ""
   [(set (match_operand 0 "register_operand" "=rf,rf,rf")
@@ -3716,7 +3732,8 @@
    jsr $26,($27),0\;ldgp $29,0($26)
    bsr $26,$%1..ng
    jsr $26,%1\;ldgp $29,0($26)"
-  [(set_attr "type" "jsr")])
+  [(set_attr "type" "jsr")
+   (set_attr "length" "12,*,12")])
 
 (define_insn ""
   [(set (match_operand 0 "register_operand" "=rf,rf,rf")
@@ -3728,7 +3745,8 @@
    jsr $26,(%1)
    bsr $26,%1
    jsr $26,%1"
-  [(set_attr "type" "jsr")])
+  [(set_attr "type" "jsr")
+   (set_attr "length" "*,*,12")])
 
 (define_insn ""
   [(set (match_operand 0 "register_operand" "")
@@ -3742,7 +3760,8 @@
   "@
    bis %3,%3,$27\;jsr $26,0\;ldq $27,0($29)
    ldq $27,%3\;jsr $26,%1\;ldq $27,0($29)"
-  [(set_attr "type" "jsr")])
+  [(set_attr "type" "jsr")
+   (set_attr "length" "12,16")])
 
 ;; Call subroutine returning any type.
 
@@ -3779,7 +3798,8 @@
 (define_insn "blockage"
   [(unspec_volatile [(const_int 0)] 1)]
   ""
-  "")
+  ""
+  [(set_attr "length" "0")])
 
 (define_insn "jump"
   [(set (pc)
@@ -3794,6 +3814,15 @@
   "ret $31,($26),1"
   [(set_attr "type" "ibr")])
 
+;; Use a different pattern for functions which have non-trivial
+;; epilogues so as not to confuse jump and reorg.
+(define_insn "return_internal"
+  [(use (reg:DI 26))
+   (return)]
+  ""
+  "ret $31,($26),1"
+  [(set_attr "type" "ibr")])
+
 (define_insn "indirect_jump"
   [(set (pc) (match_operand:DI 0 "register_operand" "r"))]
   ""
@@ -3803,7 +3832,7 @@
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "bis $31,$31,$31"
+  "nop"
   [(set_attr "type" "ilog")])
 
 (define_expand "tablejump"
@@ -3900,7 +3929,8 @@
   else
     return \"addq %0,$29,%2\;jmp $31,(%2),0\";
 }"
-  [(set_attr "type" "ibr")])
+  [(set_attr "type" "ibr")
+   (set_attr "length" "8")])
 
 (define_insn ""
   [(set (pc)
@@ -5058,6 +5088,57 @@
     }
 }")
 
+;; This is used by alpha_expand_prolog to do the same thing as above,
+;; except we cannot at that time generate new basic blocks, so we hide
+;; the loop in this one insn.
+
+(define_insn "prologue_stack_probe_loop"
+  [(unspec_volatile [(match_operand 0 "register_operand" "r")
+		     (match_operand 1 "register_operand" "r")] 5)]
+  ""
+  "*
+{
+  static int label_no;
+  int count_regno = REGNO (operands[0]);
+  int ptr_regno = REGNO (operands[1]);
+  char label[64];
+
+  /* Ho hum, output the hard way to get the label at the beginning of
+     the line.  Wish there were a magic char you could get
+     asm_output_printf to do that.  Then we could use %= as well and
+     get rid of the label_no bits here too.  */
+
+  ASM_GENERATE_INTERNAL_LABEL (label, \"LSC\", label_no);
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"LSC\", label_no++);
+
+  fprintf (asm_out_file, \"\\tstq $31,-8192($%d)\\n\", ptr_regno);
+  fprintf (asm_out_file, \"\\tsubq $%d,1,$%d\\n\", count_regno, count_regno);
+  fprintf (asm_out_file, \"\\tlda $%d,-8192($%d)\\n\", ptr_regno, ptr_regno);
+  fprintf (asm_out_file, \"\\tbne $%d,\", count_regno);
+  assemble_name (asm_out_file, label);
+  putc ('\\n', asm_out_file);
+
+  return \"\";
+}"
+  [(set_attr "length" "16")])
+
+(define_expand "prologue"
+  [(clobber (const_int 0))]
+  ""
+  "alpha_expand_prologue (); DONE;")
+
+(define_insn "init_fp"
+  [(set (match_operand:DI 0 "register_operand" "r")
+        (match_operand:DI 1 "register_operand" "r"))
+   (clobber (mem:BLK (match_operand:DI 2 "register_operand" "r")))]
+  ""
+  "bis %1,%1,%0")
+
+(define_expand "epilogue"
+  [(clobber (const_int 0))]
+  ""
+  "alpha_expand_epilogue (); DONE;")
+
 (define_expand "builtin_longjmp"
   [(unspec_volatile [(match_operand 0 "register_operand" "r")] 3)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
@@ -5085,12 +5166,14 @@
 (define_insn "builtin_setjmp_receiver"
   [(unspec_volatile [(match_operand 0 "" "")] 2)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT && TARGET_AS_CAN_SUBTRACT_LABELS"
-  "\\n$LSJ%=:\;ldgp $29,$LSJ%=-%l0($27)")
+  "\\n$LSJ%=:\;ldgp $29,$LSJ%=-%l0($27)"
+  [(set_attr "length" "8")])
 
 (define_insn ""
   [(unspec_volatile [(match_operand 0 "" "")] 2)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
-  "br $27,$LSJ%=\\n$LSJ%=:\;ldgp $29,0($27)")
+  "br $27,$LSJ%=\\n$LSJ%=:\;ldgp $29,0($27)"
+  [(set_attr "length" "12")])
 
 (define_expand "nonlocal_goto_receiver"
   [(unspec_volatile [(const_int 0)] 1)
@@ -5121,7 +5204,8 @@
    (clobber (reg:DI 25))
    (clobber (reg:DI 0))]
   "TARGET_OPEN_VMS"
-  "lda $0,OTS$HOME_ARGS\;ldq $0,8($0)\;jsr $0,OTS$HOME_ARGS")
+  "lda $0,OTS$HOME_ARGS\;ldq $0,8($0)\;jsr $0,OTS$HOME_ARGS"
+  [(set_attr "length" "16")])
 
 ;; Close the trap shadow of preceeding instructions.  This is generated
 ;; by alpha_reorg.
@@ -5137,22 +5221,22 @@
 ;; Optimize sign-extension of SImode loads.  This shows up in the wake of
 ;; reload when converting fp->int.
 ;;
-;; ??? What to do when we are actually caring about the packing and
+;; ??? What to do now that we actually care about the packing and
 ;; alignment of instructions?  Perhaps reload can be enlightened, or
-;; the peephole pass moved up after reload but before sched2.
-
-(define_peephole
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (match_operand:SI 1 "memory_operand" "m"))
-   (set (match_operand:DI 2 "register_operand" "=r")
-        (sign_extend:DI (match_dup 0)))]
-  "dead_or_set_p (insn, operands[0])"
-  "ldl %2,%1")
-
-(define_peephole
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (match_operand:SI 1 "hard_fp_register_operand" "f"))
-   (set (match_operand:DI 2 "register_operand" "=r")
-        (sign_extend:DI (match_dup 0)))]
-  "TARGET_CIX && dead_or_set_p (insn, operands[0])"
-  "ftois %1,%2")
+;; the peephole pass moved up after reload but before sched2?
+;
+;(define_peephole
+;  [(set (match_operand:SI 0 "register_operand" "=r")
+;        (match_operand:SI 1 "memory_operand" "m"))
+;   (set (match_operand:DI 2 "register_operand" "=r")
+;        (sign_extend:DI (match_dup 0)))]
+;  "dead_or_set_p (insn, operands[0])"
+;  "ldl %2,%1")
+;
+;(define_peephole
+;  [(set (match_operand:SI 0 "register_operand" "=r")
+;        (match_operand:SI 1 "hard_fp_register_operand" "f"))
+;   (set (match_operand:DI 2 "register_operand" "=r")
+;        (sign_extend:DI (match_dup 0)))]
+;  "TARGET_CIX && dead_or_set_p (insn, operands[0])"
+;  "ftois %1,%2")
