@@ -8248,8 +8248,13 @@ expand_builtin_setjmp (buf_addr, target)
   /* We store the frame pointer and the address of lab1 in the buffer
      and use the rest of it for the stack save area, which is
      machine-dependent.  */
-  emit_move_insn (gen_rtx (MEM, Pmode, buf_addr),
-		  virtual_stack_vars_rtx);
+
+#ifndef BUILTIN_SETJMP_FRAME_VALUE
+#define BUILTIN_SETJMP_FRAME_VALUE virtual_stack_vars_rtx
+#endif
+
+  emit_move_insn (gen_rtx (MEM, Pmode, buf_addr), BUILTIN_SETJMP_FRAME_VALUE);
+
   emit_move_insn
     (validize_mem (gen_rtx (MEM, Pmode,
 			    plus_constant (buf_addr,
