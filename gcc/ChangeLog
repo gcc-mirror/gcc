@@ -1,3 +1,16 @@
+2004-09-23  Diego Novillo  <dnovillo@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-flow.h (find_new_referenced_vars): Add prototype.
+	* tree-sra.c (find_new_referenced_vars_1, find_new_referenced_vars):
+	Move to...
+	* tree-dfa.c (find_new_referenced_vars_1, find_new_referenced_vars):
+	... here.
+	(mark_new_vars_to_rename): Walk through all operands.
+	* tree-ssa-ccp.c (convert_to_gimple_builtin): New function.
+	(execute_fold_all_builtins): Use it.
+	(pass_fold_builtins): Add TODO_rename_vars to todo_flags_finish.
+
 2004-09-23  P.J. Darcy  <darcypj@us.ibm.com>
 
 	* gthr-tpf.h: New file.
