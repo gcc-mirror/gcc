@@ -2231,13 +2231,12 @@ extern struct rtx_def *fpscr_rtx;
 #define PREDICATE_CODES \
   {"arith_operand", {SUBREG, REG, CONST_INT}},				\
   {"arith_reg_operand", {SUBREG, REG}},					\
-  {"reg_no_subreg_operand", {REG}},					\
   {"arith_reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
   {"binary_float_operator", {PLUS, MULT}},				\
   {"commutative_float_operator", {PLUS, MULT}},				\
   {"fp_arith_reg_operand", {SUBREG, REG}},				\
-  {"fp_extended_operand", {SUBREG, REG, FLOAT_EXTEND}},			\
   {"fpscr_operand", {REG}},						\
+  {"fpul_operand", {REG}},						\
   {"general_movsrc_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE, MEM}}, \
   {"general_movdst_operand", {SUBREG, REG, MEM}},			\
   {"logical_operand", {SUBREG, REG, CONST_INT}},			\

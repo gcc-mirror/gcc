@@ -1,3 +1,23 @@
+Tue Oct 31 15:33:27 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* sh-protos.h (reg_no_subreg_operand, emit_fpscr_use): Don't declare.
+	(fp_extended_operand, emit_fpscr_use): Likewise.
+	* sh.c (reg_no_subreg_operand, fp_extended_operand): Delete functions.
+	(fpul_operand): New function.
+	* sh.h (PREDICATE_CODES): Remove reg_no_subreg_operand and
+	fp_extended_operand.  Add fpul_operand.
+	* sh.md (mulsf3, mulsf3_i4): Use fp_arith_reg_operand for "f" operands.
+	(mulsf3_ie, macsf3, cmpgtsf_t, cmpeqsf_t, ieee_ccmpeqsf_t): Likewise.
+	(cmpgtsf_t_i4, cmpeqsf_t_i4, ieee_ccmpeqsf_t_4, negsf2): Likewise.
+	(negsf2_i, sqrtsf2, sqrtsf2_i, abssf2, abssf2_i, adddf3): Likewise.
+	(adddf3_i, subdf3, subdf3_i, muldf3, muldf3_i, divdf3): Likewise.
+	(divdf3_i): Likewise.
+	(floatsisf2): Likewise.  Use fpul_operand for 'y' operand.
+	(floatsisf2_i4, floatsisf2_ie, fix_truncsfsi2): Likewise.
+	(fix_truncsfsi2_i4, fixsfsi, floatsidf2, floatsidf2_i): Likewise.
+	(fix_truncdfsi2, fix_truncdfsi2_i, extendsfdf2): Likewise.
+	(extendsfdf2_i4, truncdfsf2, truncdfsf2_i4): Likewise.
+
 2000-10-31  Bernd Schmidt  <bernds@redhat.co.uk>
 
         * config/i386/i386.c (ix86_init_builtins): Correct return type

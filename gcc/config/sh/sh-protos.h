@@ -81,9 +81,7 @@ extern int system_reg_operand PARAMS ((rtx, enum machine_mode));
 extern int general_movsrc_operand PARAMS ((rtx, enum machine_mode));
 extern int general_movdst_operand PARAMS ((rtx, enum machine_mode));
 extern int arith_reg_operand PARAMS ((rtx, enum machine_mode));
-extern int reg_no_subreg_operand PARAMS ((rtx, enum machine_mode));
 extern int fp_arith_reg_operand PARAMS ((rtx, enum machine_mode));
-extern int fp_extended_operand PARAMS ((rtx, enum machine_mode));
 extern int arith_operand PARAMS ((rtx, enum machine_mode));
 extern int arith_reg_or_0_operand PARAMS ((rtx, enum machine_mode));
 extern int logical_operand PARAMS ((rtx, enum machine_mode));
@@ -120,7 +118,6 @@ extern void sh_expand_epilogue PARAMS ((void));
 extern int sh_need_epilogue PARAMS ((void));
 extern void function_epilogue PARAMS ((FILE *, int));
 extern int initial_elimination_offset PARAMS ((int, int));
-extern void emit_fpscr_use PARAMS ((void));
 extern int fldi_ok PARAMS ((void));
 
 #ifdef HARD_CONST

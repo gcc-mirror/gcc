@@ -4163,9 +4163,9 @@
 ;; SH3E, we use a separate insn for SH3E mulsf3.
 
 (define_expand "mulsf3"
-  [(match_operand:SF 0 "arith_reg_operand" "")
-   (match_operand:SF 1 "arith_reg_operand" "")
-   (match_operand:SF 2 "arith_reg_operand" "")]
+  [(match_operand:SF 0 "fp_arith_reg_operand" "")
+   (match_operand:SF 1 "fp_arith_reg_operand" "")
+   (match_operand:SF 2 "fp_arith_reg_operand" "")]
   "TARGET_SH3E"
   "
 {
@@ -4177,9 +4177,9 @@
 }")
 
 (define_insn "mulsf3_i4"
-  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(mult:SF (match_operand:SF 1 "arith_reg_operand" "%0")
-		 (match_operand:SF 2 "arith_reg_operand" "f")))
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%0")
+		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "fmul	%2,%0"
@@ -4187,17 +4187,17 @@
    (set_attr "fp_mode" "single")])
 
 (define_insn "mulsf3_ie"
-  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(mult:SF (match_operand:SF 1 "arith_reg_operand" "%0")
-		 (match_operand:SF 2 "arith_reg_operand" "f")))]
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%0")
+		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))]
   "TARGET_SH3E && ! TARGET_SH4"
   "fmul	%2,%0"
   [(set_attr "type" "fp")])
 
 (define_insn "*macsf3"
-  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(plus:SF (mult:SF (match_operand:SF 1 "arith_reg_operand" "%w")
-			  (match_operand:SF 2 "arith_reg_operand" "f"))
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(plus:SF (mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%w")
+			  (match_operand:SF 2 "fp_arith_reg_operand" "f"))
 		 (match_operand:SF 3 "arith_reg_operand" "0")))
    (use (match_operand:PSI 4 "fpscr_operand" "c"))]
   "TARGET_SH3E && ! TARGET_SH4"
@@ -4223,8 +4223,8 @@
    (set_attr "fp_mode" "single")])
 
 (define_expand "floatsisf2"
-  [(set (match_operand:SF 0 "arith_reg_operand" "")
-	(float:SF (match_operand:SI 1 "reg_no_subreg_operand" "")))]
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
+	(float:SF (match_operand:SI 1 "fpul_operand" "")))]
   "TARGET_SH3E"
   "
 {
@@ -4236,8 +4236,8 @@
 }")
 
 (define_insn "floatsisf2_i4"
-  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(float:SF (match_operand:SI 1 "reg_no_subreg_operand" "y")))
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(float:SF (match_operand:SI 1 "fpul_operand" "y")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "float	%1,%0"
@@ -4245,15 +4245,15 @@
    (set_attr "fp_mode" "single")])
 
 (define_insn "*floatsisf2_ie"
-  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(float:SF (match_operand:SI 1 "reg_no_subreg_operand" "y")))]
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(float:SF (match_operand:SI 1 "fpul_operand" "y")))]
   "TARGET_SH3E && ! TARGET_SH4"
   "float	%1,%0"
   [(set_attr "type" "fp")])
 
 (define_expand "fix_truncsfsi2"
-  [(set (match_operand:SI 0 "register_operand" "=y")
-	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))]
+  [(set (match_operand:SI 0 "fpul_operand" "=y")
+	(fix:SI (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
   "TARGET_SH3E"
   "
 {
@@ -4265,8 +4265,8 @@
 }")
 
 (define_insn "fix_truncsfsi2_i4"
-  [(set (match_operand:SI 0 "register_operand" "=y")
-	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
+  [(set (match_operand:SI 0 "fpul_operand" "=y")
+	(fix:SI (match_operand:SF 1 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "ftrc	%1,%0"
@@ -4296,40 +4296,41 @@
 ;;   (set (match_dup 0) (reg:SI 22))])
 
 (define_insn "*fixsfsi"
-  [(set (match_operand:SI 0 "register_operand" "=y")
-	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))]
+  [(set (match_operand:SI 0 "fpul_operand" "=y")
+	(fix:SI (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
   "TARGET_SH3E && ! TARGET_SH4"
   "ftrc	%1,%0"
   [(set_attr "type" "fp")])
 
 (define_insn "cmpgtsf_t"
-  [(set (reg:SI 18) (gt:SI (match_operand:SF 0 "arith_reg_operand" "f")
-			   (match_operand:SF 1 "arith_reg_operand" "f")))]
+  [(set (reg:SI 18) (gt:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
+			   (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
   "TARGET_SH3E && ! TARGET_SH4"
   "fcmp/gt	%1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
 
 (define_insn "cmpeqsf_t"
-  [(set (reg:SI 18) (eq:SI (match_operand:SF 0 "arith_reg_operand" "f")
-			   (match_operand:SF 1 "arith_reg_operand" "f")))]
+  [(set (reg:SI 18) (eq:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
+			   (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
   "TARGET_SH3E && ! TARGET_SH4"
   "fcmp/eq	%1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
 
 (define_insn "ieee_ccmpeqsf_t"
-  [(set (reg:SI 18) (ior:SI (reg:SI 18)
-			    (eq:SI (match_operand:SF 0 "arith_reg_operand" "f")
-				   (match_operand:SF 1 "arith_reg_operand" "f"))))]
+  [(set (reg:SI 18)
+	(ior:SI (reg:SI 18)
+		(eq:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
+		       (match_operand:SF 1 "fp_arith_reg_operand" "f"))))]
   "TARGET_SH3E && TARGET_IEEE && ! TARGET_SH4"
   "* return output_ieee_ccmpeq (insn, operands);"
   [(set_attr "length" "4")])
 
 
 (define_insn "cmpgtsf_t_i4"
-  [(set (reg:SI 18) (gt:SI (match_operand:SF 0 "arith_reg_operand" "f")
-			   (match_operand:SF 1 "arith_reg_operand" "f")))
+  [(set (reg:SI 18) (gt:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
+			   (match_operand:SF 1 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fcmp/gt	%1,%0"
@@ -4337,8 +4338,8 @@
    (set_attr "fp_mode" "single")])
 
 (define_insn "cmpeqsf_t_i4"
-  [(set (reg:SI 18) (eq:SI (match_operand:SF 0 "arith_reg_operand" "f")
-			   (match_operand:SF 1 "arith_reg_operand" "f")))
+  [(set (reg:SI 18) (eq:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
+			   (match_operand:SF 1 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fcmp/eq	%1,%0"
@@ -4346,9 +4347,10 @@
    (set_attr "fp_mode" "single")])
 
 (define_insn "*ieee_ccmpeqsf_t_4"
-  [(set (reg:SI 18) (ior:SI (reg:SI 18)
-			    (eq:SI (match_operand:SF 0 "arith_reg_operand" "f")
-				   (match_operand:SF 1 "arith_reg_operand" "f"))))
+  [(set (reg:SI 18)
+	(ior:SI (reg:SI 18)
+		(eq:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
+		       (match_operand:SF 1 "fp_arith_reg_operand" "f"))))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_IEEE && TARGET_SH4"
   "* return output_ieee_ccmpeq (insn, operands);"
@@ -4367,14 +4369,14 @@
 }")
 
 (define_expand "negsf2"
-  [(match_operand:SF 0 "arith_reg_operand" "")
-   (match_operand:SF 1 "arith_reg_operand" "")]
+  [(match_operand:SF 0 "fp_arith_reg_operand" "")
+   (match_operand:SF 1 "fp_arith_reg_operand" "")]
   "TARGET_SH3E"
   "{ expand_sf_unop (&gen_negsf2_i, operands); DONE; }")
 
 (define_insn "negsf2_i"
-  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(neg:SF (match_operand:SF 1 "arith_reg_operand" "0")))
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(neg:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "fneg	%0"
@@ -4382,14 +4384,14 @@
    (set_attr "fp_mode" "single")])
 
 (define_expand "sqrtsf2"
-  [(match_operand:SF 0 "arith_reg_operand" "")
-   (match_operand:SF 1 "arith_reg_operand" "")]
+  [(match_operand:SF 0 "fp_arith_reg_operand" "")
+   (match_operand:SF 1 "fp_arith_reg_operand" "")]
   "TARGET_SH3E"
   "{ expand_sf_unop (&gen_sqrtsf2_i, operands); DONE; }")
 
 (define_insn "sqrtsf2_i"
-  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(sqrt:SF (match_operand:SF 1 "arith_reg_operand" "0")))
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(sqrt:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "fsqrt	%0"
@@ -4397,14 +4399,14 @@
    (set_attr "fp_mode" "single")])
 
 (define_expand "abssf2"
-  [(match_operand:SF 0 "arith_reg_operand" "")
-   (match_operand:SF 1 "arith_reg_operand" "")]
+  [(match_operand:SF 0 "fp_arith_reg_operand" "")
+   (match_operand:SF 1 "fp_arith_reg_operand" "")]
   "TARGET_SH3E"
   "{ expand_sf_unop (&gen_abssf2_i, operands); DONE; }")
 
 (define_insn "abssf2_i"
-  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(abs:SF (match_operand:SF 1 "arith_reg_operand" "0")))
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(abs:SF (match_operand:SF 1 "fp_arith_reg_operand" "0")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "fabs	%0"
@@ -4412,16 +4414,16 @@
    (set_attr "fp_mode" "single")])
 
 (define_expand "adddf3"
-  [(match_operand:DF 0 "arith_reg_operand" "")
-   (match_operand:DF 1 "arith_reg_operand" "")
-   (match_operand:DF 2 "arith_reg_operand" "")]
+  [(match_operand:DF 0 "fp_arith_reg_operand" "")
+   (match_operand:DF 1 "fp_arith_reg_operand" "")
+   (match_operand:DF 2 "fp_arith_reg_operand" "")]
   "TARGET_SH4"
   "{ expand_df_binop (&gen_adddf3_i, operands); DONE; }")
 
 (define_insn "adddf3_i"
-  [(set (match_operand:DF 0 "arith_reg_operand" "=f")
-	(plus:DF (match_operand:DF 1 "arith_reg_operand" "%0")
-		 (match_operand:DF 2 "arith_reg_operand" "f")))
+  [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
+	(plus:DF (match_operand:DF 1 "fp_arith_reg_operand" "%0")
+		 (match_operand:DF 2 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fadd	%2,%0"
@@ -4429,16 +4431,16 @@
    (set_attr "fp_mode" "double")])
 
 (define_expand "subdf3"
-  [(match_operand:DF 0 "arith_reg_operand" "")
-   (match_operand:DF 1 "arith_reg_operand" "")
-   (match_operand:DF 2 "arith_reg_operand" "")]
+  [(match_operand:DF 0 "fp_arith_reg_operand" "")
+   (match_operand:DF 1 "fp_arith_reg_operand" "")
+   (match_operand:DF 2 "fp_arith_reg_operand" "")]
   "TARGET_SH4"
   "{ expand_df_binop (&gen_subdf3_i, operands); DONE; }")
 
 (define_insn "subdf3_i"
-  [(set (match_operand:DF 0 "arith_reg_operand" "=f")
-	(minus:DF (match_operand:DF 1 "arith_reg_operand" "0")
-		  (match_operand:DF 2 "arith_reg_operand" "f")))
+  [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
+	(minus:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")
+		  (match_operand:DF 2 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fsub	%2,%0"
@@ -4446,16 +4448,16 @@
    (set_attr "fp_mode" "double")])
 
 (define_expand "muldf3"
-  [(match_operand:DF 0 "arith_reg_operand" "")
-   (match_operand:DF 1 "arith_reg_operand" "")
-   (match_operand:DF 2 "arith_reg_operand" "")]
+  [(match_operand:DF 0 "fp_arith_reg_operand" "")
+   (match_operand:DF 1 "fp_arith_reg_operand" "")
+   (match_operand:DF 2 "fp_arith_reg_operand" "")]
   "TARGET_SH4"
   "{ expand_df_binop (&gen_muldf3_i, operands); DONE; }")
 
 (define_insn "muldf3_i"
-  [(set (match_operand:DF 0 "arith_reg_operand" "=f")
-	(mult:DF (match_operand:DF 1 "arith_reg_operand" "%0")
-		 (match_operand:DF 2 "arith_reg_operand" "f")))
+  [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
+	(mult:DF (match_operand:DF 1 "fp_arith_reg_operand" "%0")
+		 (match_operand:DF 2 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fmul	%2,%0"
@@ -4463,16 +4465,16 @@
    (set_attr "fp_mode" "double")])
 
 (define_expand "divdf3"
-  [(match_operand:DF 0 "arith_reg_operand" "")
-   (match_operand:DF 1 "arith_reg_operand" "")
-   (match_operand:DF 2 "arith_reg_operand" "")]
+  [(match_operand:DF 0 "fp_arith_reg_operand" "")
+   (match_operand:DF 1 "fp_arith_reg_operand" "")
+   (match_operand:DF 2 "fp_arith_reg_operand" "")]
   "TARGET_SH4"
   "{ expand_df_binop (&gen_divdf3_i, operands); DONE; }")
 
 (define_insn "divdf3_i"
-  [(set (match_operand:DF 0 "arith_reg_operand" "=f")
-	(div:DF (match_operand:DF 1 "arith_reg_operand" "0")
-		(match_operand:DF 2 "arith_reg_operand" "f")))
+  [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
+	(div:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")
+		(match_operand:DF 2 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fdiv	%2,%0"
@@ -4480,8 +4482,8 @@
    (set_attr "fp_mode" "double")])
 
 (define_expand "floatsidf2"
-  [(match_operand:DF 0 "arith_reg_operand" "")
-   (match_operand:SI 1 "reg_no_subreg_operand" "")]
+  [(match_operand:DF 0 "fp_arith_reg_operand" "")
+   (match_operand:SI 1 "fpul_operand" "")]
   "TARGET_SH4"
   "
 {
@@ -4490,8 +4492,8 @@
 }")
 
 (define_insn "floatsidf2_i"
-  [(set (match_operand:DF 0 "arith_reg_operand" "=f")
-	(float:DF (match_operand:SI 1 "reg_no_subreg_operand" "y")))
+  [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
+	(float:DF (match_operand:SI 1 "fpul_operand" "y")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "float	%1,%0"
@@ -4499,8 +4501,8 @@
    (set_attr "fp_mode" "double")])
 
 (define_expand "fix_truncdfsi2"
-  [(match_operand:SI 0 "arith_reg_operand" "=r")
-   (match_operand:DF 1 "arith_reg_operand" "f")]
+  [(match_operand:SI 0 "fpul_operand" "")
+   (match_operand:DF 1 "fp_arith_reg_operand" "")]
   "TARGET_SH4"
   "
 {
@@ -4509,8 +4511,8 @@
 }")
 
 (define_insn "fix_truncdfsi2_i"
-  [(set (match_operand:SI 0 "register_operand" "=y")
-	(fix:SI (match_operand:DF 1 "arith_reg_operand" "f")))
+  [(set (match_operand:SI 0 "fpul_operand" "=y")
+	(fix:SI (match_operand:DF 1 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "ftrc	%1,%0"
@@ -4624,8 +4626,8 @@
    (set_attr "fp_mode" "double")])
 
 (define_expand "extendsfdf2"
-  [(match_operand:DF 0 "arith_reg_operand" "")
-   (match_operand:SF 1 "reg_no_subreg_operand" "")]
+  [(match_operand:DF 0 "fp_arith_reg_operand" "")
+   (match_operand:SF 1 "fpul_operand" "")]
   "TARGET_SH4"
   "
 {
@@ -4634,8 +4636,8 @@
 }")
 
 (define_insn "extendsfdf2_i4"
-  [(set (match_operand:DF 0 "arith_reg_operand" "=f")
-	(float_extend:DF (match_operand:SF 1 "reg_no_subreg_operand" "y")))
+  [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
+	(float_extend:DF (match_operand:SF 1 "fpul_operand" "y")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fcnvsd  %1,%0"
@@ -4643,8 +4645,8 @@
    (set_attr "fp_mode" "double")])
 
 (define_expand "truncdfsf2"
-  [(match_operand:SF 0 "arith_reg_operand" "")
-   (match_operand:DF 1 "arith_reg_operand" "")]
+  [(match_operand:SF 0 "fpul_operand" "")
+   (match_operand:DF 1 "fp_arith_reg_operand" "")]
   "TARGET_SH4"
   "
 {
@@ -4653,8 +4655,8 @@
 }")
 
 (define_insn "truncdfsf2_i4"
-  [(set (match_operand:SF 0 "register_operand" "=y")
-	(float_truncate:SF (match_operand:DF 1 "arith_reg_operand" "f")))
+  [(set (match_operand:SF 0 "fpul_operand" "=y")
+	(float_truncate:SF (match_operand:DF 1 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fcnvds  %1,%0"
