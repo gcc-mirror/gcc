@@ -1,5 +1,5 @@
 /* Permission.java -- The superclass for all permission objects
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,7 +59,7 @@ public abstract class Permission implements Guard, Serializable
   /**
    * This is the name assigned to this permission object.
    */
-  protected String name;	// Taken from the serializable form information
+  private String name;		// Taken from the serializable form information
 
   /**
    * This method initializes a new instance of <code>Permission</code> to
@@ -75,7 +75,7 @@ public abstract class Permission implements Guard, Serializable
    *
    * @return The name of this <code>Permission</code>
    */
-  public String getName()
+  public final String getName()
   {
     return (name);
   }
@@ -105,6 +105,11 @@ public abstract class Permission implements Guard, Serializable
     if (sm != null)
       sm.checkPermission(this);
   }
+
+  /**
+   * Check to see if this object equals OBJ.
+   */
+  public abstract boolean equals (Object obj);
 
   /**
    * This method tests whether this <code>Permission</code> implies that the

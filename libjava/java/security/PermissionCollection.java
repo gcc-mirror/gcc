@@ -1,5 +1,5 @@
 /* PermissionCollection.java -- A collection of permission objects
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,10 +60,11 @@ import java.util.Enumeration;
    *
    * @author Aaron M. Renn (arenn@urbanophile.com)
    */
-public abstract class PermissionCollection extends Object implements
-  Serializable
+public abstract class PermissionCollection
+  extends Object
+  implements Serializable
 {
-  public static final String linesep = null;
+  private static final String linesep = null;
 
   static
   {

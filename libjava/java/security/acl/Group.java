@@ -1,5 +1,5 @@
 /* Group.java -- Represents a group of Principals
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,7 +39,7 @@ import java.util.Enumeration;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public interface Group
+public interface Group extends Principal
 {
   /**
    * This method adds a new <code>Principal</code> to this group.
@@ -67,7 +67,7 @@ public interface Group
    *
    * @return <code>true</code> if the user is member, <code>false</code> otherwise
    */
-  public abstract boolean isMember();
+  public abstract boolean isMember(Principal member);
 
   /**
    * This method returns a list of all members of the group as an 

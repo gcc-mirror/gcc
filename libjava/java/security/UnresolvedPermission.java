@@ -1,5 +1,5 @@
 /* UnresolvedPermission.java -- Placeholder for unresolved permissions.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -27,6 +27,8 @@ executable file might be covered by the GNU General Public License. */
 package java.security;
 
 import java.io.Serializable;
+// All uses of Certificate in this file refer to this class.
+import java.security.cert.Certificate;
 
 /**
  * This class is used to hold instances of all permissions that cannot
@@ -44,7 +46,9 @@ import java.io.Serializable;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public class UnresolvedPermission extends Permission implements Serializable
+public final class UnresolvedPermission
+  extends Permission
+  implements Serializable
 {
 
   /**

@@ -1,5 +1,5 @@
 /* Permissions.java -- A collection of permission collections
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,9 @@ import java.util.NoSuchElementException;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public class Permissions extends PermissionCollection implements Serializable
+public final class Permissions
+  extends PermissionCollection
+  implements Serializable
 {
   /**
    * Holds instances of <code>AllPermission</code>.
