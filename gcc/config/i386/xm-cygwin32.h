@@ -1,6 +1,6 @@
 /* Configuration for GNU C-compiler for hosting on Windows NT.
    using a unix style C library.
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
