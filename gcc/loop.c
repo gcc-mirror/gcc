@@ -296,7 +296,7 @@ static int libcall_benefit PROTO((rtx));
 static void ignore_some_movables PROTO((struct movable *));
 static void force_movables PROTO((struct movable *));
 static void combine_movables PROTO((struct movable *, int));
-static int regs_patch_p PROTO((rtx, rtx, struct movable *));
+static int regs_match_p PROTO((rtx, rtx, struct movable *));
 static int rtx_equal_for_loop_p PROTO((rtx, rtx, struct movable *));
 static void add_label_notes PROTO((rtx, rtx));
 static void move_movables PROTO((struct movable *, int, int, rtx, rtx, int));
