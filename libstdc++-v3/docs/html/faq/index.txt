@@ -187,7 +187,7 @@
        more automated than building the GCC 2.[78] series was. If you are
        using GCC 2.95, you can still build earlier snapshots of
        libstdc++.
-     * GNU Make is the only make that supports these makefiles.
+     * GNU Make is recommended, but should not be required.
      * The GNU Autotools are needed if you are messing with the configury
        or makefiles.
 
@@ -228,11 +228,11 @@
 2.4 How do I know if it works?
 
    libstdc++-v3 comes with its own testsuite. You do not need to actually
-   install the library ("gmake install") to run the testsuite.
+   install the library ("make install") to run the testsuite.
 
-   To run the testsuite on the library after building it, use "gmake
+   To run the testsuite on the library after building it, use "make
    check" while in your build directory. To run the testsuite on the
-   library after building and installing it, use "gmake check-install"
+   library after building and installing it, use "make check-install"
    instead.
 
    If you find bugs in the testsuite programs themselves, or if you think
@@ -430,27 +430,38 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    were never guaranteed by the Standard anyway. The type-safety achieved
    by making iterators a real class rather than a typedef for T*
    outweighs nearly all opposing arguments.
+
+   Code which does assume that a vector iterator i is a pointer can often
+   be fixed by changing i in certain expressions to &*i . Future
+   revisions of the Standard are expected to bless this usage for
+   vector<> (but not for basic_string<>).
      _________________________________________________________________
 
 5.2 What's next after libstdc++-v3?
 
    Hopefully, not much. The goal of libstdc++-v3 is to produce a
    fully-compliant, fully-portable Standard Library. After that, we're
-   mostly done: there won't be any more compliance work to do.
-
-   The ISO Committee will meet periodically to review Defect Reports in
-   the C++ Standard. Undoubtedly some of these will result in changes to
-   the Standard, which will be reflected in patches to libstdc++. Some of
-   that is already happening, see 4.2. Some of those changes are being
-   predicted by the library maintainers, and we add code to the library
-   based on what the current proposed resolution specifies.
-
-   The current libstdc++ contains extensions to the Library which must be
-   explicitly requested by client code (for example, the hash tables from
-   SGI). Other extensions may be added to libstdc++-v3 if they seem to be
-   "standard" enough. (For example, the "long long" type from C99.)
-   Bugfixes and rewrites (to improve or fix thread safety, for instance)
-   will of course be a continuing task.
+   mostly done: there won't be any more compliance work to do. However:
+    1. The ISO Committee will meet periodically to review Defect Reports
+       in the C++ Standard. Undoubtedly some of these will result in
+       changes to the Standard, which will be reflected in patches to
+       libstdc++. Some of that is already happening, see 4.2. Some of
+       those changes are being predicted by the library maintainers, and
+       we add code to the library based on what the current proposed
+       resolution specifies.
+    2. Performance tuning. Lots of performance tuning. This too is
+       already underway for post-3.0 releases, starting with memory
+       expansion in container classes and buffer usage in synchronized
+       stream objects.
+    3. An ABI for libstdc++ will eventually be developed, so that
+       multiple binary-incompatible copies of the library can be replaced
+       with a single backwards-compatible library, like libgcc_s.so is.
+    4. The current libstdc++ contains extensions to the Library which
+       must be explicitly requested by client code (for example, the hash
+       tables from SGI). Other extensions may be added to libstdc++-v3 if
+       they seem to be "standard" enough. (For example, the "long long"
+       type from C99.) Bugfixes and rewrites (to improve or fix thread
+       safety, for instance) will of course be a continuing task.
 
    [69]This question about the next libstdc++ prompted some brief but
    interesting [70]speculation.
@@ -458,9 +469,10 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
 5.3 What about the STL from SGI?
 
-   The [71]STL from SGI is merged into libstdc++-v3 with changes as
-   necessary. Currently release 3.3 is being used as an initial codebase,
-   plus changes, fixes, and extensions.
+   The [71]STL from SGI, version 3.3, was the most recent merge of the
+   STL codebase. The code in libstdc++ contains many fixes and changes,
+   and it is very likely that the SGI code is no longer under active
+   development. We expect that no future merges will take place.
 
    In particular, string is not from SGI and makes no use of their "rope"
    class (which is included as an optional extension), nor is valarray
@@ -517,7 +529,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
    Comments and suggestions are welcome, and may be sent to [78]the
    mailing list.
-   $Id: index.html,v 1.8 2001/05/10 18:42:11 pme Exp $ 
+   $Id: index.html,v 1.9 2001/05/30 21:55:04 pme Exp $ 
 
 References
 
@@ -571,7 +583,7 @@ References
   48. http://www.boost.org/
   49. http://gcc.gnu.org/fom_serv/cache/33.html
   50. mailto:libstdc++@gcc.gnu.org
-  51. mailto:pme@sources.redhat.com
+  51. mailto:pme@gcc.gnu.org
   52. mailto:gdr@gcc.gnu.org
   53. ../documentation.html
   54. ../17_intro/RELEASE-NOTES

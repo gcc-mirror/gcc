@@ -9,7 +9,7 @@
   ** Locations of "the most recent snapshot is the Nth" text are 
   ** answers 1_1, 1_4, 4_1, 5_6.
 -->
-<!-- $Id: index.html,v 1.8 2001/05/10 18:42:11 pme Exp $ -->
+<!-- $Id: index.html,v 1.9 2001/05/30 21:55:04 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -241,7 +241,7 @@ which is no longer available, thanks deja...-->
       </P>
       <P>If you have a question that you think should be included here,
          or if you have a question <EM>about</EM> a question/answer here,
-         contact <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A>
+         contact <A HREF="mailto:pme@gcc.gnu.org">Phil Edwards</A>
          or <A HREF="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</A>.
       </P>
 
@@ -257,7 +257,7 @@ which is no longer available, thanks deja...-->
                  easier and more automated than building the GCC 2.[78]
                  series was.  If you are using GCC 2.95, you can still
                  build earlier snapshots of libstdc++.
-            <LI> GNU Make is the only make that supports these makefiles. 
+            <LI> GNU Make is recommended, but should not be required.
             <LI> The GNU Autotools are needed if you are messing with
                  the configury or makefiles.
          </UL>
@@ -304,13 +304,13 @@ which is no longer available, thanks deja...-->
 <HR>
    <H2><A NAME="2_4">2.4 How do I know if it works?</A></H2>
       <P>libstdc++-v3 comes with its own testsuite.  You do not need
-         to actually install the library (&quot;<TT>gmake
+         to actually install the library (&quot;<TT>make
          install</TT>&quot;) to run the testsuite.
       </P>
       <P>To run the testsuite on the library after building it, use
-         &quot;gmake check&quot; while in your build directory.  To run
+         &quot;make check&quot; while in your build directory.  To run
          the testsuite on the library after building and installing it,
-         use &quot;gmake check-install&quot; instead.
+         use &quot;make check-install&quot; instead.
       </P>
       <P>If you find bugs in the testsuite programs themselves, or if
          you think of a new test program that should be added to the
@@ -551,15 +551,22 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          than a typedef for <TT>T*</TT> outweighs nearly all opposing
          arguments.
       </P>
+      <P>Code which does assume that a vector iterator <code> i </code>
+         is a pointer can often be fixed by changing <code> i </code> in
+         certain expressions to <code> &amp;*i </code>.  Future revisions
+         of the Standard are expected to bless this usage for
+         vector&lt;&gt; (but not for basic_string&lt;&gt;).
+      </P>
 
 <HR>
    <H2><A NAME="5_2">5.2 What's next after libstdc++-v3?</A></H2>
       <P>Hopefully, not much.  The goal of libstdc++-v3 is to produce
          a fully-compliant, fully-portable Standard Library.  After that,
          we're mostly done:  there won't <EM>be</EM> any more compliance
-         work to do.
+         work to do.  However:
       </P>
-      <P>The ISO Committee will meet periodically to review Defect Reports
+      <OL>
+      <LI><P>The ISO Committee will meet periodically to review Defect Reports
          in the C++ Standard.  Undoubtedly some of these will result in
          changes to the Standard, which will be reflected in patches to
          libstdc++.  Some of that is already happening, see 4.2.  Some of
@@ -567,7 +574,16 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          we add code to the library based on what the current proposed
          resolution specifies.
       </P>
-      <P>The current libstdc++ contains extensions to the Library which
+      <LI><P>Performance tuning.  Lots of performance tuning.  This too is
+         already underway for post-3.0 releases, starting with memory
+         expansion in container classes and buffer usage in synchronized
+         stream objects.
+      </P>
+      <LI><P>An ABI for libstdc++ will eventually be developed, so that
+         multiple binary-incompatible copies of the library can be replaced
+         with a single backwards-compatible library, like libgcc_s.so is.
+      </P>
+      <LI><P>The current libstdc++ contains extensions to the Library which
          must be explicitly requested by client code (for example, the
          hash tables from SGI).  Other extensions may be added to
          libstdc++-v3 if they seem to be &quot;standard&quot; enough.
@@ -575,6 +591,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          Bugfixes and rewrites (to improve or fix thread safety, for
          instance) will of course be a continuing task.
       </P>
+      </OL>
       <P><A
 HREF="http://gcc.gnu.org/ml/libstdc++/1999/msg00080.html">This
          question</A> about the next libstdc++ prompted some brief but
@@ -584,10 +601,11 @@ HREF="http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html">speculation</A>.
 
 <HR>
    <H2><A NAME="5_3">5.3 What about the STL from SGI?</A></H2>
-      <P>The <A HREF="http://www.sgi.com/Technology/STL/">STL from SGI</A>
-         is merged into libstdc++-v3 with changes as necessary.  
-         Currently release 3.3 is being used as an initial codebase, plus
-         changes, fixes, and extensions.
+      <P>The <A HREF="http://www.sgi.com/Technology/STL/">STL from SGI</A>,
+         version 3.3, was the most recent merge of the STL codebase.  The
+         code in libstdc++ contains many fixes and changes, and it is
+         very likely that the SGI code is no longer under active
+         development.  We expect that no future merges will take place.
       </P>
       <P>In particular, <TT>string</TT> is not from SGI and makes no
          use of their &quot;rope&quot; class (which is included as an
@@ -660,7 +678,7 @@ HREF="http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html">speculation</A>.
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: index.html,v 1.8 2001/05/10 18:42:11 pme Exp $
+<BR> $Id: index.html,v 1.9 2001/05/30 21:55:04 pme Exp $
 </EM></P>
 
 
