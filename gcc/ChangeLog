@@ -1,3 +1,7 @@
+Mon Nov  1 15:41:01 1999  Mark P. Mitchell  <mark@codesourcery.com>
+
+	* combine.c (combine_instructions): Use xmalloc instead of alloca.
+
 Mon Nov  1 13:22:30 1999  Richard Henderson  <rth@cygnus.com>
 
 	* toplev.c (rest_of_compilation): Don't optimize the CFG
