@@ -702,6 +702,7 @@ c_sizeof (type)
      tree type;
 {
   enum tree_code code = TREE_CODE (type);
+  tree t;
 
   if (code == FUNCTION_TYPE)
     {
@@ -724,8 +725,10 @@ c_sizeof (type)
     }
 
   /* Convert in case a char is more than one unit.  */
-  return size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
-		     size_int (TYPE_PRECISION (char_type_node)));
+  t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
+		  size_int (TYPE_PRECISION (char_type_node)));
+  force_fit_type (t);
+  return t;
 }
 
 tree
@@ -733,6 +736,7 @@ c_sizeof_nowarn (type)
      tree type;
 {
   enum tree_code code = TREE_CODE (type);
+  tree t;
 
   if (code == FUNCTION_TYPE
       || code == VOID_TYPE
@@ -742,8 +746,10 @@ c_sizeof_nowarn (type)
     return size_int (0);
 
   /* Convert in case a char is more than one unit.  */
-  return size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
-		     size_int (TYPE_PRECISION (char_type_node)));
+  t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
+		  size_int (TYPE_PRECISION (char_type_node)));
+  force_fit_type (t);
+  return t;
 }
 
 /* Compute the size to increment a pointer by.  */
@@ -753,6 +759,7 @@ c_size_in_bytes (type)
      tree type;
 {
   enum tree_code code = TREE_CODE (type);
+  tree t;
 
   if (code == FUNCTION_TYPE)
     return size_int (1);
@@ -767,8 +774,10 @@ c_size_in_bytes (type)
     }
 
   /* Convert in case a char is more than one unit.  */
-  return size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
+  t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
 		     size_int (BITS_PER_UNIT));
+  force_fit_type (t);
+  return t;
 }
 
 /* Implement the __alignof keyword: Return the minimum required
