@@ -510,7 +510,7 @@ AC_DEFUN(GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT, [
   dnl always pass if libm is available, and fail if it isn't.  If it is
   dnl available, we assume we'll need it later, so add it to LIBS.
   AC_CHECK_LIB(m, main)
-  AC_REPLACE_MATHFUNCS(nan copysignf)
+  AC_REPLACE_MATHFUNCS(copysignf)
 
   dnl For __signbit to signbit conversions.
   AC_CHECK_FUNCS([__signbit], , [LIBMATHOBJS="$LIBMATHOBJS signbit.lo"])

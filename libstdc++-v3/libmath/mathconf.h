@@ -79,11 +79,6 @@ typedef int Int64_t __attribute ((mode (DI)));
 # include <nan.h>
 #endif
 
-#ifndef NAN
-# define NAN (nan())
-double nan (void);
-#endif
-
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>
 #endif
