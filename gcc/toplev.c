@@ -2714,13 +2714,16 @@ rest_of_compilation (decl)
 	 compile it by itself, defer decision till end of compilation.
 	 finish_compilation will call rest_of_compilation again
 	 for those functions that need to be output.  Also defer those
-	 functions that we are supposed to defer.  */
+	 functions that we are supposed to defer.  We cannot defer
+	 functions containing nested functions since the nested function
+	 data is in our non-saved obstack.  */
 
-      if (DECL_DEFER_OUTPUT (decl)
-	  || ((specd || DECL_INLINE (decl))
-	      && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
-		   && ! flag_keep_inline_functions)
-		  || DECL_EXTERNAL (decl))))
+      if (! current_function_contains_functions
+	  && (DECL_DEFER_OUTPUT (decl)
+	      || ((specd || DECL_INLINE (decl))
+		  && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
+		       && ! flag_keep_inline_functions)
+		      || DECL_EXTERNAL (decl)))))
 	{
 	  DECL_DEFER_OUTPUT (decl) = 1;
 
@@ -3667,7 +3670,16 @@ main (argc, argv, envp)
 #if !defined (BLOCK_PROFILER) || !defined (FUNCTION_BLOCK_PROFILER)
 	      warning ("`-a' option (basic block profile) not supported");
 #else
-	      profile_block_flag = 1;
+              profile_block_flag = (profile_block_flag < 2) ? 1 : 3;
+#endif
+	    }
+	  else if (!strcmp (str, "ax"))
+	    {
+#if !defined (FUNCTION_BLOCK_PROFILER_EXIT) || !defined (BLOCK_PROFILER) || !defined (FUNCTION_BLOCK_PROFILER)
+	      warning ("`-ax' option (jump profiling) not supported");
+#else
+	      profile_block_flag = (!profile_block_flag 
+	                               || profile_block_flag == 2) ? 2 : 3;
 #endif
 	    }
 	  else if (str[0] == 'g')
@@ -3860,6 +3872,12 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
   /* Some machines may reject certain combinations of options.  */
   OVERRIDE_OPTIONS;
 #endif
+
+  if (profile_block_flag == 3)
+    {
+      warning ("`-ax' and `-a' are conflicting options. `-a' ignored.");
+      profile_block_flag = 2;
+    }
 
   /* Unrolling all loops implies that standard loop unrolling must also
      be done.  */
