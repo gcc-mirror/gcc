@@ -1,3 +1,8 @@
+2003-02-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* genconfig.c (main): Generate CC0_P.
+	* rtl.h (CC0_P): Remove.
+
 2003-02-04  Richard Henderson  <rth@redhat.com>
 
 	* libgcc2.h, libgcc2.c (__ffsSI2): New.
