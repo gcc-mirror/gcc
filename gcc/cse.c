@@ -7273,7 +7273,9 @@ cse_insn (insn, in_libcall_block)
 
 	elt = insert (dest, sets[i].src_elt,
 		      sets[i].dest_hash, GET_MODE (dest));
-	elt->in_memory = GET_CODE (sets[i].inner_dest) == MEM;
+	elt->in_memory = (GET_CODE (sets[i].inner_dest) == MEM
+			  && ! RTX_UNCHANGING_P (sets[i].inner_dest));
+
 	if (elt->in_memory)
 	  {
 	    /* This implicitly assumes a whole struct
