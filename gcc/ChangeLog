@@ -1,3 +1,10 @@
+2004-07-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_output_move): When generating mips16 code,
+	force loads of negative constants to be split.
+	* config/mips/mips.md (*movhi_mips16, *movqi_mips16): Likewise.
+	Generalize SImode li/neg splitter to cope with other modes.
+
 2004-07-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	* expmed.c: Remove more references to QUEUED in the comments.

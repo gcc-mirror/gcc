@@ -2616,7 +2616,7 @@ mips_output_move (rtx dest, rtx src)
 	    return "li\t%0,%1";
 
 	  if (INTVAL (src) < 0 && INTVAL (src) >= -0xffff)
-	    return "li\t%0,%n1\n\tneg\t%0";
+	    return "#";
 	}
 
       if (src_code == HIGH)

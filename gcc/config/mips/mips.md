@@ -4289,22 +4289,6 @@ dsrl\t%3,%3,1\n\
   operands[2] = GEN_INT (val - 0xff);
 })
 
-;; On the mips16, we can split a load of a negative constant into a
-;; load and a neg.  That's what mips_output_move will generate anyhow.
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand")
-	(match_operand:SI 1 "const_int_operand"))]
-  "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
-   && GET_CODE (operands[0]) == REG
-   && M16_REG_P (REGNO (operands[0]))
-   && GET_CODE (operands[1]) == CONST_INT
-   && INTVAL (operands[1]) < 0
-   && INTVAL (operands[1]) > - 0x8000"
-  [(set (match_dup 0) (match_dup 1))
-   (set (match_dup 0) (neg:SI (match_dup 0)))]
-  { operands[1] = GEN_INT (- INTVAL (operands[1])); })
-
 ;; This insn handles moving CCmode values.  It's really just a
 ;; slightly simplified copy of movsi_internal2, with additional cases
 ;; to move a condition register to a general register and to move
@@ -4492,7 +4476,7 @@ dsrl\t%3,%3,1\n\
     move\t%0,%1
     move\t%0,%1
     li\t%0,%1
-    li\t%0,%n1\;neg\t%0
+    #
     lhu\t%0,%1
     sh\t%1,%0"
   [(set_attr "type"	"arith,arith,arith,arith,arith,load,store")
@@ -4599,7 +4583,7 @@ dsrl\t%3,%3,1\n\
     move\t%0,%1
     move\t%0,%1
     li\t%0,%1
-    li\t%0,%n1\;neg\t%0
+    #
     lbu\t%0,%1
     sb\t%1,%0"
   [(set_attr "type"	"arith,arith,arith,arith,arith,load,store")
@@ -4756,6 +4740,21 @@ dsrl\t%3,%3,1\n\
 {
   mips_split_64bit_move (operands[0], operands[1]);
   DONE;
+})
+
+;; When generating mips16 code, split moves of negative constants into
+;; a positive "li" followed by a negation.
+(define_split
+  [(set (match_operand 0 "register_operand")
+	(match_operand 1 "const_int_operand"))]
+  "TARGET_MIPS16 && reload_completed && INTVAL (operands[1]) < 0"
+  [(set (match_dup 0)
+	(match_dup 2))
+   (set (match_dup 3)
+	(neg:SI (match_dup 3)))]
+{
+  operands[2] = GEN_INT (-INTVAL (operands[1]));
+  operands[3] = gen_lowpart (SImode, operands[0]);
 })
 
 ;; The HI and LO registers are not truly independent.  If we move an mthi
