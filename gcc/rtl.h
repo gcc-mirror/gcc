@@ -1701,6 +1701,9 @@ extern void rebuild_jump_labels		PARAMS ((rtx));
 extern void thread_jumps		PARAMS ((rtx, int, int));
 extern int rtx_equal_for_thread_p	PARAMS ((rtx, rtx, rtx));
 extern int can_reverse_comparison_p	PARAMS ((rtx, rtx));
+extern enum rtx_code reversed_comparison_code PARAMS ((rtx, rtx));
+extern enum rtx_code reversed_comparison_code_parts PARAMS ((enum rtx_code,
+							     rtx, rtx, rtx));
 extern void delete_for_peephole		PARAMS ((rtx, rtx));
 extern int condjump_in_parallel_p	PARAMS ((rtx));
 extern void never_reached_warning	PARAMS ((rtx));

@@ -1,3 +1,12 @@
+Sun Jan  7 19:37:48 MET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* jump.c (reversed_comparison_code_parts, reversed_comparison_code):
+	New.
+	(can_reverse_comparison_p): Rewrite to use reversed_comparison_code.
+	(reverse_condition_maybe_unordered): Abort on unsigned comparisons.
+	* rtl.h (reversed_comparison_code_parts, reversed_comparison_code):
+	Declare.
+
 2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * fix-header.c (read_scan_file): s/pfile/scan_in/.
