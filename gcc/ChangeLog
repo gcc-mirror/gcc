@@ -1,3 +1,8 @@
+Fri Sep 10 11:58:55 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* i386.md (ashlqi3): For NON_QI_REG_P regs, use sall.  Fix some
+	operand size modifiers.
+
 Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* c-common.c (c_common_nodes_and_builtins): Don't build
