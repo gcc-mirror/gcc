@@ -1379,7 +1379,7 @@ tSCC zLimits_IfndefsName[] =
  *  File name selection pattern
  */
 tSCC zLimits_IfndefsList[] =
-  "|limits.h|";
+  "|limits.h|sys/limits.h|";
 /*
  *  Machine/OS name selection pattern
  */
