@@ -3679,12 +3679,12 @@ expand_end_case (orig_index)
 						 TREE_TYPE (index_expr),
 						 index_expr, minval)));
 	      index = expand_expr (index_expr, 0, VOIDmode, 0);
+	      index = convert_to_mode (Pmode, index, 1);
 	      emit_queue ();
 	      index = protect_from_queue (index, 0);
 	      do_pending_stack_adjust ();
 
-	      do_tablejump (index,
-			    TYPE_MODE (thiscase->data.case_stmt.nominal_type),
+	      do_tablejump (index, Pmode,
 			    gen_rtx (CONST_INT, VOIDmode,
 				     TREE_INT_CST_LOW (range)),
 			    table_label, default_label);
