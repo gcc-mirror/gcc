@@ -1,5 +1,12 @@
 2003-09-28  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_constant_info): Add reloc field.
+	(mips_classify_constant): Initialize it.  Always set SYMBOL to the
+	underlying symbol, not to an unspec.
+	(mips_delegitimize_address, print_operand): Clean up accordingly.
+
+2003-09-28  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips-protos.h (mips16_gp_pseudo_reg): Remove.
 	* config/mips/mips.h (LEGITIMATE_CONSTANT_P): Remove orphaned comment.
 	* config/mips/mips.c (mips_reloc_offset_ok_p): New function.
