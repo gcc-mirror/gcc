@@ -302,7 +302,7 @@ void
 init_loop ()
 {
   char *free_point = (char *) oballoc (1);
-  rtx reg = gen_rtx (REG, word_mode, 0);
+  rtx reg = gen_rtx (REG, word_mode, LAST_VIRTUAL_REGISTER + 1);
 
   add_cost = rtx_cost (gen_rtx (PLUS, word_mode, reg, reg), SET);
 
