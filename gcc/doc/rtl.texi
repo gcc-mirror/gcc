@@ -2317,7 +2317,7 @@ either wrap around or use saturating addition depending on the value
 of a special control register:
 
 @example
-(parallel [(set (reg:SI 2) (unspec:SI [(reg:SI 3) 
+(parallel [(set (reg:SI 2) (unspec:SI [(reg:SI 3)
                                        (reg:SI 4)] 0))
            (use (reg:SI 1))])
 @end example

@@ -130,7 +130,7 @@ representation, before converting into RTL code.
 @cindex inline on trees, automatic
 Currently, the main optimization performed here is tree-based
 inlining.
-This is implemented in @file{tree-inline.c} and used by both C and C++.  
+This is implemented in @file{tree-inline.c} and used by both C and C++.
 Note that tree based inlining turns off rtx based inlining (since it's more
 powerful, it would be a waste of time to do rtx based inlining in
 addition).

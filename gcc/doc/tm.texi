@@ -1604,10 +1604,10 @@ in which function addresses are always even, according to
 @findex TARGET_VTABLE_USES_DESCRIPTORS
 @item TARGET_VTABLE_USES_DESCRIPTORS
 Normally, the C++ compiler uses function pointers in vtables.  This
-macro allows the target to change to use ``function descriptors'' 
+macro allows the target to change to use ``function descriptors''
 instead.  Function descriptors are found on targets for whom a
 function pointer is actually a small data structure.  Normally the
-data structure consists of the actual code address plus a data 
+data structure consists of the actual code address plus a data
 pointer to which the function's data is relative.
 
 If vtables are used, the value of this macro should be the number
@@ -1729,10 +1729,10 @@ exit, if the register is used within the function.
 @cindex call-used register
 @cindex call-clobbered register
 @cindex call-saved register
-Like @code{CALL_USED_REGISTERS} except this macro doesn't require 
-that the entire set of @code{FIXED_REGISTERS} be included.  
+Like @code{CALL_USED_REGISTERS} except this macro doesn't require
+that the entire set of @code{FIXED_REGISTERS} be included.
 (@code{CALL_USED_REGISTERS} must be a superset of @code{FIXED_REGISTERS}).
-This macro is optional.  If not specified, it defaults to the value 
+This macro is optional.  If not specified, it defaults to the value
 of @code{CALL_USED_REGISTERS}.
 
 @findex HARD_REGNO_CALL_PART_CLOBBERED
@@ -2805,7 +2805,7 @@ and @file{unwind-ia64.c}.  @var{context} is an @code{_Unwind_Context};
 for the address of the code being executed and @code{context->cfa} for
 the stack pointer value.  If the frame can be decoded, the register save
 addresses should be updated in @var{fs} and the macro should branch to
-@var{success}.  If the frame cannot be decoded, the macro should do 
+@var{success}.  If the frame cannot be decoded, the macro should do
 nothing.
 @end table
 
@@ -5770,7 +5770,7 @@ Output assembly directives to switch to section @var{name}.  The section
 should have attributes as specified by @var{flags}, which is a bit mask
 of the @code{SECTION_*} flags defined in @file{output.h}.  If @var{align}
 is nonzero, it contains an alignment in bytes to be used for the section,
-otherwise some target default should be used.  Only targets that must 
+otherwise some target default should be used.  Only targets that must
 specify an alignment within the section directive need pay attention to
 @var{align} -- we will still use @code{ASM_OUTPUT_ALIGN}.
 @end deftypefn
@@ -6481,7 +6481,7 @@ Termination functions are handled similarly.
 
 This method will be chosen as the default by @file{target-def.h} if
 @code{TARGET_ASM_NAMED_SECTION} is defined.  A target that does not
-support arbitrary sections, but does support special designated 
+support arbitrary sections, but does support special designated
 constructor and destructor sections may define @code{CTORS_SECTION_ASM_OP}
 and @code{DTORS_SECTION_ASM_OP} to achieve the same effect.
 
@@ -6591,7 +6591,7 @@ the object format requires an explicit initialization function, then a
 function called @code{_GLOBAL__DI} will be generated.
 
 This function and the following one are used by collect2 when linking a
-shared library that needs constructors or destructors, or has DWARF2 
+shared library that needs constructors or destructors, or has DWARF2
 exception tables embedded in the code.
 
 @item COLLECT_SHARED_FINI_FUNC (@var{stream}, @var{func})
@@ -6872,7 +6872,7 @@ first variant.
 
 If this macro is defined, you may use constructs of the form
 @smallexample
-@samp{@{option0|option1|option2@dots{}@}} 
+@samp{@{option0|option1|option2@dots{}@}}
 @end smallexample
 @noindent
 in the output templates of patterns (@pxref{Output Template}) or in the
