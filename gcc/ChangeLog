@@ -353,6 +353,45 @@ Thu Jun 20 12:14:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (xorqi_1_slp, xorqi_2_slp): New patterns.
 
+2002-06-16  Aldy Hernandez  <aldyh@redhat.com>
+	
+	* gcc.c-torture/execute/simd-1.c: New.
+
+	* gcc.dg/simd-1.c: New.
+
+	* doc/extend.texi (Vector Extensions): Document that we can
+	specify simd types not specifically supported by the hardware.
+	Document that simd types can be used as function arguments.
+	Document that signness does make a difference in SIMD types.
+	Misc cleanups and revisions to the vector extensions section.
+
+	* simplify-rtx.c (simplify_subreg): Simplify subregs of vector
+	constants.
+
+	* expr.c (vector_mode_valid_p): New.
+
+	* expr.h: Add vector_mode_valid_p.
+
+	* defaults.h (VECTOR_MODE_SUPPORTED_P): Set default.
+
+	* c-common.c (type_for_mode): Always build vector nodes regardless
+	of VECTOR_MODE_SUPPORTED_P.
+	(handle_mode_attribute): Error if we can't emulate a nonexisting
+	vector mode.
+	(handle_vector_size_attribute): Same.
+
+	* optabs.c (expand_binop): Open-code vector operations.
+	(expand_unop): Open-code vector unops.
+	(expand_vector_binop): New.
+	(expand_vector_unop): New.
+	
+	* c-typeck.c (build_binary_op): Allow vectors in binops.
+	Allow vectors in conditional operatiors.
+	(build_unary_op): Allow vectors in unary minus.
+
+	* config/rs6000/rs6000.h (ALTIVEC_VECTOR_MODE): Conditionalize on
+	TARGET_ALTIVEC.
+
 2002-05-20  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (c_common_get_alias_set): Correctly handle characters.
