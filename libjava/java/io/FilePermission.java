@@ -144,9 +144,10 @@ public final class FilePermission extends Permission implements Serializable
     /* Compare names, taking into account if they refer to a
      * directory and one has a separator and the other does not.
      */
-    if(f1.charAt(f1.length()) == File.separatorChar) 
+    if(f1.length() > 0 && f1.charAt(f1.length() - 1) == File.separatorChar) 
       {
-        if(f2.charAt(f2.length()) == File.separatorChar) 
+        if(f2.length() > 0
+	   && f2.charAt(f2.length() - 1) == File.separatorChar) 
           {
 	    if(!f2.equals(f1))
 	      return false;
@@ -159,7 +160,8 @@ public final class FilePermission extends Permission implements Serializable
       } 
     else 
       {
-        if(f2.charAt(f2.length()) == File.separatorChar) 
+        if(f2.length() > 0
+	   && f2.charAt(f2.length() - 1) == File.separatorChar) 
           {
 	    if(!f1.equals(f2.substring(0,f2.length()-1)))
 	      return false;
