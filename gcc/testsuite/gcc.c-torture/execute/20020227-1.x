@@ -24,8 +24,8 @@ if { [istarget "sparc64-*-*"] || [istarget "sparcv9-*-*"] } {
             { "-O0" "-O1" }
         }
     }
-} elseif { [istarget "powerpc64-*-*"] } {
-    # PowerPC-64 doesn't fail at any optimization level.
+} elseif { [istarget "powerpc64-*-*"] || [istarget "x86_64-*-*"] } {
+    # PowerPC-64 and x86_64 do not fail at any optimization level.
 } elseif { [istarget "*64*-*-*"] || [istarget "alpha*-*-*"]
         || [istarget "mmix-*-*"] || [istarget "mips*-*-irix6*"] } {
     # Other 64-bit targets fail at all optimization levels.
