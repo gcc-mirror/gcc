@@ -1,3 +1,8 @@
+Mon Jul 31 12:27:55 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (addsi to lea splitter, ashlqi3_1_lea): Fix bugs
+	in my last checkin.
+
 Mon Jul 31 10:41:01 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* recog.c (extract_insn): Set operand_mode according to
