@@ -1746,6 +1746,182 @@ alpha_emit_set_long_const (target, c1, c2)
   return target;
 }
 
+/* Expand a move instruction; return true if all work is done.
+   We don't handle non-bwx subword loads here.  */
+
+bool
+alpha_expand_mov (mode, operands)
+     enum machine_mode mode;
+     rtx *operands;
+{
+  /* If the output is not a register, the input must be.  */
+  if (GET_CODE (operands[0]) == MEM
+      && ! reg_or_0_operand (operands[1], mode))
+    operands[1] = force_reg (mode, operands[1]);
+
+  /* Early out for non-constants and valid constants.  */
+  if (! CONSTANT_P (operands[1]) || input_operand (operands[1], mode))
+    return false;
+
+  /* Split large integers.  */
+  if (GET_CODE (operands[1]) == CONST_INT
+      || GET_CODE (operands[1]) == CONST_DOUBLE)
+    {
+      HOST_WIDE_INT i0, i1;
+      rtx temp;
+
+      if (GET_CODE (operands[1]) == CONST_INT)
+	{
+	  i0 = INTVAL (operands[1]);
+	  i1 = -(i0 < 0);
+	}
+      else if (HOST_BITS_PER_WIDE_INT >= 64)
+	{
+	  i0 = CONST_DOUBLE_LOW (operands[1]);
+	  i1 = -(i0 < 0);
+	}
+      else
+	{
+	  i0 = CONST_DOUBLE_LOW (operands[1]);
+	  i1 = CONST_DOUBLE_HIGH (operands[1]);
+	}
+
+      if (HOST_BITS_PER_WIDE_INT >= 64 || i1 == -(i0 < 0))
+	temp = alpha_emit_set_const (operands[0], mode, i0, 3);
+
+      if (!temp && TARGET_BUILD_CONSTANTS)
+	temp = alpha_emit_set_long_const (operands[0], i0, i1);
+
+      if (temp)
+	{
+	  if (rtx_equal_p (operands[0], temp))
+	    return true;
+	  operands[1] = temp;
+	  return false;
+	}
+    }
+
+  /* Otherwise we've nothing left but to drop the thing to memory.  */
+  operands[1] = force_const_mem (DImode, operands[1]);
+  if (reload_in_progress)
+    {
+      emit_move_insn (operands[0], XEXP (operands[1], 0));
+      operands[1] = copy_rtx (operands[1]);
+      XEXP (operands[1], 0) = operands[0];
+    }
+  else
+    operands[1] = validize_mem (operands[1]);
+  return false;
+}
+
+/* Expand a non-bwx QImode or HImode move instruction;
+   return true if all work is done.  */
+
+bool
+alpha_expand_mov_nobwx (mode, operands)
+     enum machine_mode mode;
+     rtx *operands;
+{
+  /* If the output is not a register, the input must be.  */
+  if (GET_CODE (operands[0]) == MEM)
+    operands[1] = force_reg (mode, operands[1]);
+
+  /* Handle four memory cases, unaligned and aligned for either the input
+     or the output.  The only case where we can be called during reload is
+     for aligned loads; all other cases require temporaries.  */
+
+  if (GET_CODE (operands[1]) == MEM
+      || (GET_CODE (operands[1]) == SUBREG
+	  && GET_CODE (SUBREG_REG (operands[1])) == MEM)
+      || (reload_in_progress && GET_CODE (operands[1]) == REG
+	  && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)
+      || (reload_in_progress && GET_CODE (operands[1]) == SUBREG
+	  && GET_CODE (SUBREG_REG (operands[1])) == REG
+	  && REGNO (SUBREG_REG (operands[1])) >= FIRST_PSEUDO_REGISTER))
+    {
+      if (aligned_memory_operand (operands[1], mode))
+	{
+	  if (reload_in_progress)
+	    {
+	      emit_insn ((mode == QImode
+			  ? gen_reload_inqi_help
+			  : gen_reload_inhi_help)
+		         (operands[0], operands[1],
+			  gen_rtx_REG (SImode, REGNO (operands[0]))));
+	    }
+	  else
+	    {
+	      rtx aligned_mem, bitnum;
+	      rtx scratch = gen_reg_rtx (SImode);
+
+	      get_aligned_mem (operands[1], &aligned_mem, &bitnum);
+
+	      emit_insn ((mode == QImode
+			  ? gen_aligned_loadqi
+			  : gen_aligned_loadhi)
+			 (operands[0], aligned_mem, bitnum, scratch));
+	    }
+	}
+      else
+	{
+	  /* Don't pass these as parameters since that makes the generated
+	     code depend on parameter evaluation order which will cause
+	     bootstrap failures.  */
+
+	  rtx temp1 = gen_reg_rtx (DImode);
+	  rtx temp2 = gen_reg_rtx (DImode);
+	  rtx seq = ((mode == QImode
+		      ? gen_unaligned_loadqi
+		      : gen_unaligned_loadhi)
+		     (operands[0], get_unaligned_address (operands[1], 0),
+		      temp1, temp2));
+
+	  alpha_set_memflags (seq, operands[1]);
+	  emit_insn (seq);
+	}
+      return true;
+    }
+
+  if (GET_CODE (operands[0]) == MEM
+      || (GET_CODE (operands[0]) == SUBREG
+	  && GET_CODE (SUBREG_REG (operands[0])) == MEM)
+      || (reload_in_progress && GET_CODE (operands[0]) == REG
+	  && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER)
+      || (reload_in_progress && GET_CODE (operands[0]) == SUBREG
+	  && GET_CODE (SUBREG_REG (operands[0])) == REG
+	  && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER))
+    {
+      if (aligned_memory_operand (operands[0], mode))
+	{
+	  rtx aligned_mem, bitnum;
+	  rtx temp1 = gen_reg_rtx (SImode);
+	  rtx temp2 = gen_reg_rtx (SImode);
+
+	  get_aligned_mem (operands[0], &aligned_mem, &bitnum);
+
+	  emit_insn (gen_aligned_store (aligned_mem, operands[1], bitnum,
+					temp1, temp2));
+	}
+      else
+	{
+	  rtx temp1 = gen_reg_rtx (DImode);
+	  rtx temp2 = gen_reg_rtx (DImode);
+	  rtx temp3 = gen_reg_rtx (DImode);
+	  rtx seq = ((mode == QImode
+		      ? gen_unaligned_storeqi
+		      : gen_unaligned_storehi)
+		     (get_unaligned_address (operands[0], 0),
+		      operands[1], temp1, temp2, temp3));
+
+	  alpha_set_memflags (seq, operands[0]);
+	  emit_insn (seq);
+	}
+      return true;
+    }
+
+  return false;
+}
+
 /* Generate an unsigned DImode to FP conversion.  This is the same code
    optabs would emit if we didn't have TFmode patterns.
 

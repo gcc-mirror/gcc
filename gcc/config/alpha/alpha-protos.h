@@ -87,6 +87,8 @@ extern rtx alpha_emit_set_const PARAMS ((rtx, enum machine_mode,
 					HOST_WIDE_INT, int));
 extern rtx alpha_emit_set_long_const PARAMS ((rtx, HOST_WIDE_INT,
 					     HOST_WIDE_INT));
+extern bool alpha_expand_mov PARAMS ((enum machine_mode, rtx *));
+extern bool alpha_expand_mov_nobwx PARAMS ((enum machine_mode, rtx *));
 extern void alpha_emit_floatuns PARAMS ((rtx[]));
 extern rtx alpha_emit_conditional_branch PARAMS ((enum rtx_code));
 extern rtx alpha_emit_setcc PARAMS ((enum rtx_code));
