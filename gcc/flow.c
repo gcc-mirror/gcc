@@ -2888,7 +2888,7 @@ try_simplify_condjump (src)
   redirect_edge_succ (fallthru, next_block->succ->dest);
 
   branch->flags |= EDGE_FALLTHRU;
-  fallthru->flags &= EDGE_FALLTHRU;
+  fallthru->flags &= ~EDGE_FALLTHRU;
   
   flow_delete_block (next_block);
   return true;
