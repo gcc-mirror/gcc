@@ -1446,6 +1446,10 @@ main (argc, argv)
 	  strip_argv[2] = (char *) 0;
 	  fork_execute ("strip", strip_argv);
 	}
+
+#ifdef COLLECT_EXPORT_LIST
+      maybe_unlink (export_file);
+#endif
       return 0;
     }
 
