@@ -1,3 +1,8 @@
+Tue Feb 12 10:12:56 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (find_base_value, case ZERO_EXTEND, case SIGN_EXTEND):
+	Handle #ifdef POINTERS_EXTEND_UNSIGNED.
+
 2002-02-11  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.c (mmix_assemble_integer) <case 1, 2>: Handle
