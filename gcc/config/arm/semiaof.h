@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  ARM on semi-hosted platform
    AOF Syntax assembler.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (richard.earnshaw@armltd.co.uk)
 
 This file is part of GNU CC.
