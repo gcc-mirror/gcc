@@ -1,12 +1,12 @@
 # Tests for class verifier.
 
 global gcj_verify_xfail
-set gcj_verify_xfail("gij verify of call.fail.Static") 1
-set gcj_verify_xfail("gij verify of simple.fail.dupfield") 1
-set gcj_verify_xfail("gij verify of simple.fail.dupinterface") 1
-set gcj_verify_xfail("gij verify of simple.fail.dupmethod") 1
-set gcj_verify_xfail("gij verify of subr.fail.jsr10") 1
-set gcj_verify_xfail("gij verify of subr.fail.jsr8") 1
+set {gcj_verify_xfail(gij verify of call.fail.Static)} 1
+set {gcj_verify_xfail(gij verify of simple.fail.dupfield)} 1
+set {gcj_verify_xfail(gij verify of simple.fail.dupinterface)} 1
+set {gcj_verify_xfail(gij verify of simple.fail.dupmethod)} 1
+set {gcj_verify_xfail(gij verify of subr.fail.jsr10)} 1
+set {gcj_verify_xfail(gij verify of subr.fail.jsr8)} 1
 
 
 proc gcj_verify_list_tests {srcdir} {
