@@ -1,3 +1,10 @@
+2003-07-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* configure.in (BUILD_PREFIX, BUILD_PREFIX_1): Set if enable
+	coverage is on.
+	* configure: Regenerated.
+	* Makefile.in (ALL_CFLAGS): Correct its comment.
+
 2003-07-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* fold-const.c (make_range): Do not access operand 1 for a

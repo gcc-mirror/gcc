@@ -668,9 +668,8 @@ CPPLIB_H = cpplib.h line-map.h
 # autoconf inserts -DCROSS_COMPILE if we are building a cross compiler.
 INTERNAL_CFLAGS = -DIN_GCC @CROSS@
 
-# This is the variable actually used when we compile.
-# If you change this line, you probably also need to change the definition
-# of BUILD_CFLAGS in build-make to match.
+# This is the variable actually used when we compile. If you change this,
+# you probably want to update BUILD_CFLAGS in configure.in
 ALL_CFLAGS = $(X_CFLAGS) $(T_CFLAGS) \
   $(CFLAGS) $(INTERNAL_CFLAGS) $(COVERAGE_FLAGS) $(WARN_CFLAGS) $(XCFLAGS) @DEFS@
 
