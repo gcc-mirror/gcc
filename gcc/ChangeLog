@@ -4,6 +4,9 @@ Fri Jun 19 22:55:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 Fri Jun 19 20:38:34 1998  H.J. Lu  (hjl@gnu.org)
 
+	* explow.c (emit_stack_save): Add prototype for FCN.
+	(emit_stack_restore): Likewise.
+
 	* dwarf2out.c (getpwd): Add prototype.
 
 	* dwarf2out.h (debug_dwarf, debug_dwarf_die): New declarations.
