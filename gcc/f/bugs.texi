@@ -172,26 +172,6 @@ for information on how to change the point at which
 @code{g77} decides to issue this warning.
 @end ifset
 
-@cindex debugging
-@cindex common blocks
-@cindex equivalence areas
-@cindex local equivalence areas
-@item
-Previous versions of @code{g77} didn't emit information on
-variable and array members of common blocks and equivalences
-for use with a debugger (the @samp{-g} command-line option).
-As of the version of @code{g77} shipped with version 3.0 of
-@code{GCC}, this is corrected.
-
-As of Version 0.5.19, a temporary kludge solution is provided whereby
-some rudimentary information on a member is written as a string that
-is the member's value as a character string.
-
-@ifset DOC-G77
-@xref{Code Gen Options,,Options for Code Generation Conventions},
-for information on the @samp{-fdebug-kludge} option.
-@end ifset
-
 @cindex code, displaying main source
 @cindex displaying main source code
 @cindex debugging main source code
