@@ -1,5 +1,10 @@
 2005-02-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* gcc.dg/tree-ssa/inline_asm-2.c: link_error produces
+	a V_MAY_DEF also.
+
+2005-02-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR tree-opt/20188
 	* gcc.dg/tree-ssa/inline_asm-1.c: New test.
 	* gcc.dg/tree-ssa/inline_asm-2.c: New test.
