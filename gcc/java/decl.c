@@ -589,8 +589,8 @@ init_decl_processing ()
   PUSH_FIELD (class_type_node, field, "superclass", class_ptr_type);
   PUSH_FIELD (class_type_node, field, "constants", constants_type_node);
   PUSH_FIELD (class_type_node, field, "methods", method_ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "nmethods", short_type_node);
   PUSH_FIELD (class_type_node, field, "method_count", short_type_node);
+  PUSH_FIELD (class_type_node, field, "dtable_method_count", short_type_node);
   PUSH_FIELD (class_type_node, field, "fields", field_ptr_type_node);
   PUSH_FIELD (class_type_node, field, "size_in_bytes", int_type_node);
   PUSH_FIELD (class_type_node, field, "field_count", short_type_node);

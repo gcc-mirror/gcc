@@ -1089,8 +1089,8 @@ make_class_data (type)
   PUSH_FIELD_VALUE (cons, "constants", constant_pool_constructor);
   PUSH_FIELD_VALUE (cons, "methods",
 		    build1 (ADDR_EXPR, method_ptr_type_node, methods_decl));
-  PUSH_FIELD_VALUE (cons, "nmethods",  build_int_2 (method_count, 0));
-  PUSH_FIELD_VALUE (cons, "method_count", TYPE_NVIRTUALS (type));
+  PUSH_FIELD_VALUE (cons, "method_count",  build_int_2 (method_count, 0));
+  PUSH_FIELD_VALUE (cons, "dtable_method_count", TYPE_NVIRTUALS (type));
   PUSH_FIELD_VALUE (cons, "fields",
 		    fields_decl == NULL_TREE ? null_pointer_node
 		    : build1 (ADDR_EXPR, field_ptr_type_node, fields_decl));
@@ -1105,9 +1105,7 @@ make_class_data (type)
   PUSH_FIELD_VALUE (cons, "interfaces", interfaces);
   PUSH_FIELD_VALUE (cons, "loader", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "interface_count", build_int_2 (interface_len, 0));
-  PUSH_FIELD_VALUE (cons, "state",
-		    flag_assume_compiled ? integer_four_node
-		    : integer_two_node);
+  PUSH_FIELD_VALUE (cons, "state", integer_zero_node);
 
   PUSH_FIELD_VALUE (cons, "thread", null_pointer_node);
 
