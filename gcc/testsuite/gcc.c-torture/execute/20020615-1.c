@@ -1,6 +1,6 @@
 /* PR target/7042.  When reorg.c changed branches into return insns, it
    completely forgot about any current_function_epilogue_delay_list and
-   drops those insns.  Uncovered on cris-axis-elf, where an insn in an
+   dropped those insns.  Uncovered on cris-axis-elf, where an insn in an
    epilogue delay-slot set the return-value register with the test-case
    below.  Derived from ghostscript-6.52 (GPL) by hp@axis.com.  */
 
