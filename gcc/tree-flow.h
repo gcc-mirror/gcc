@@ -395,6 +395,10 @@ extern GTY(()) tree global_var;
    REFERENCED_VARS (I) is call-clobbered.  */
 extern bitmap call_clobbered_vars;
 
+/* Addressable variables in the function.  If bit I is set, then
+   REFERENCED_VARS (I) has had its address taken.  */
+extern bitmap addressable_vars;
+
 /* 'true' after aliases have been computed (see compute_may_aliases).  */
 extern bool aliases_computed_p;
 

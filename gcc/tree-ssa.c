@@ -494,6 +494,7 @@ init_tree_ssa (void)
 {
   VARRAY_TREE_INIT (referenced_vars, 20, "referenced_vars");
   call_clobbered_vars = BITMAP_XMALLOC ();
+  addressable_vars = BITMAP_XMALLOC ();
   init_ssa_operands ();
   init_ssanames ();
   init_phinodes ();
@@ -532,6 +533,8 @@ delete_tree_ssa (void)
   BITMAP_XFREE (call_clobbered_vars);
   call_clobbered_vars = NULL;
   aliases_computed_p = false;
+  BITMAP_XFREE (addressable_vars);
+  addressable_vars = NULL;
 }
 
 

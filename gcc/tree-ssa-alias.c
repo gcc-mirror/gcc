@@ -163,6 +163,10 @@ static struct ptr_info_def *get_ptr_info (tree t);
    REFERENCED_VARS (I) is call-clobbered.  */
 bitmap call_clobbered_vars;
 
+/* Addressable variables in the function.  If bit I is set, then
+   REFERENCED_VARS (I) has had its address taken.  */
+bitmap addressable_vars;
+
 /* 'true' after aliases have been computed (see compute_may_aliases).  This
    is used by get_stmt_operands and its helpers to determine what to do
    when scanning an operand for a variable that may be aliased.  If
@@ -1195,6 +1199,14 @@ setup_pointers_and_addressables (struct alias_info *ai)
 	      /* Since VAR is now a regular GIMPLE register, we will need
 		 to rename VAR into SSA afterwards.  */
 	      bitmap_set_bit (vars_to_rename, v_ann->uid);
+	    }
+	  else
+	    {
+	      /* Add the variable to the set of addressables.  Mostly
+		 used when scanning operands for ASM_EXPRs that
+		 clobber memory.  In those cases, we need to clobber
+		 all call-clobbered variables and all addressables.  */
+	      bitmap_set_bit (addressable_vars, v_ann->uid);
 	    }
 	}
 
