@@ -4872,10 +4872,7 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
   "! TARGET_PTR64"
-  "*
-{
-  return \"call %a0,%1%#\";
-}"
+  "call %a0,%1%#"
   [(set_attr "type" "call")])
 
 (define_insn "*call_symbolic_sp32"
@@ -4884,10 +4881,7 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
   "! TARGET_PTR64"
-  "*
-{
-  return \"call %a0,%1%#\";
-}"
+  "call %a0,%1%#"
   [(set_attr "type" "call")])
 
 (define_insn "*call_address_sp64"
@@ -4896,10 +4890,7 @@
    (clobber (reg:DI 15))]
   ;;- Do not use operand 1 for most machines.
   "TARGET_PTR64"
-  "*
-{
-  return \"call %a0,%1%#\";
-}"
+  "call %a0,%1%#"
   [(set_attr "type" "call")])
 
 (define_insn "*call_symbolic_sp64"
@@ -4908,10 +4899,7 @@
    (clobber (reg:DI 15))]
   ;;- Do not use operand 1 for most machines.
   "TARGET_PTR64"
-  "*
-{
-  return \"call %a0,%1%#\";
-}"
+  "call %a0,%1%#"
   [(set_attr "type" "call")])
 
 ;; This is a call that wants a structure value.
@@ -4923,10 +4911,7 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
   "! TARGET_V9 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) > 0"
-  "*
-{
-  return \"call %a0,%1\;nop\;unimp %2\";
-}"
+  "call %a0,%1\;nop\;unimp %2"
   [(set_attr "type" "call_no_delay_slot")])
 
 ;; This is a call that wants a structure value.
@@ -4938,10 +4923,7 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
   "! TARGET_V9 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) > 0"
-  "*
-{
-  return \"call %a0,%1\;nop\;unimp %2\";
-}"
+  "call %a0,%1\;nop\;unimp %2"
   [(set_attr "type" "call_no_delay_slot")])
 
 ;; This is a call that may want a structure value.  This is used for
@@ -4953,10 +4935,7 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
   "! TARGET_V9 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0"
-  "*
-{
-  return \"call %a0,%1\;nop\;nop\";
-}"
+  "call %a0,%1\;nop\;nop"
   [(set_attr "type" "call_no_delay_slot")])
 
 ;; This is a call that wants a structure value.
@@ -4967,10 +4946,7 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
   "! TARGET_V9 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0"
-  "*
-{
-  return \"call %a0,%1\;nop\;nop\";
-}"
+  "call %a0,%1\;nop\;nop"
   [(set_attr "type" "call_no_delay_slot")])
 
 (define_expand "call_value"
@@ -5018,10 +4994,7 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 2 for most machines.
   "! TARGET_PTR64"
-  "*
-{
-  return \"call %a1,%2%#\";
-}"
+  "call %a1,%2%#"
   [(set_attr "type" "call")])
 
 (define_insn "*call_value_symbolic_sp32"
@@ -5031,10 +5004,7 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 2 for most machines.
   "! TARGET_PTR64"
-  "*
-{
-  return \"call %a1,%2%#\";
-}"
+  "call %a1,%2%#"
   [(set_attr "type" "call")])
 
 (define_insn "*call_value_address_sp64"
@@ -5044,10 +5014,7 @@
    (clobber (reg:DI 15))]
   ;;- Do not use operand 2 for most machines.
   "TARGET_PTR64"
-  "*
-{
-  return \"call %a1,%2%#\";
-}"
+  "call %a1,%2%#"
   [(set_attr "type" "call")])
 
 (define_insn "*call_value_symbolic_sp64"
@@ -5057,10 +5024,7 @@
    (clobber (reg:DI 15))]
   ;;- Do not use operand 2 for most machines.
   "TARGET_PTR64"
-  "*
-{
-  return \"call %a1,%2%#\";
-}"
+  "call %a1,%2%#"
   [(set_attr "type" "call")])
 
 (define_expand "untyped_call"
@@ -5793,10 +5757,7 @@
 	      (clobber (reg:SI 15))])
    (set (pc) (label_ref (match_operand 3 "" "")))]
   "short_branch (INSN_UID (insn), INSN_UID (operands[3]))"
-  "*
-{
-  return \"call %a1,%2\;add %%o7,(%l3-.-4),%%o7\";
-}")
+  "call %a1,%2\;add %%o7,(%l3-.-4),%%o7")
 
 (define_peephole
   [(parallel [(call (mem:SI (match_operand:SI 0 "call_operand_address" "ps"))
@@ -5816,10 +5777,7 @@
 	      (clobber (reg:DI 15))])
    (set (pc) (label_ref (match_operand 3 "" "")))]
   "TARGET_V9 && short_branch (INSN_UID (insn), INSN_UID (operands[3]))"
-  "*
-{
-  return \"call %a1,%2\;add %%o7,(%l3-.-4),%%o7\";
-}")
+  "call %a1,%2\;add %%o7,(%l3-.-4),%%o7")
 
 (define_peephole
   [(parallel [(call (mem:SI (match_operand:DI 0 "call_operand_address" "ps"))
@@ -5827,10 +5785,7 @@
 	      (clobber (reg:DI 15))])
    (set (pc) (label_ref (match_operand 2 "" "")))]
   "TARGET_V9 && short_branch (INSN_UID (insn), INSN_UID (operands[2]))"
-  "*
-{
-  return \"call %a0,%1\;add %%o7,(%l2-.-4),%%o7\";
-}")
+  "call %a0,%1\;add %%o7,(%l2-.-4),%%o7")
 
 ;; Other miscellaneous peepholes.
 
