@@ -3856,7 +3856,6 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	SUBST (XEXP (x, 0), XEXP (XEXP (x, 0), 0));
       break;
 
-    case LSHIFT:
     case ASHIFT:
     case LSHIFTRT:
     case ASHIFTRT:
@@ -5296,7 +5295,6 @@ make_compound_operation (x, in_code)
   switch (code)
     {
     case ASHIFT:
-    case LSHIFT:
       /* Convert shifts by constants into multiplications if inside
 	 an address.  */
       if (in_code == MEM && GET_CODE (XEXP (x, 1)) == CONST_INT
@@ -5338,7 +5336,7 @@ make_compound_operation (x, in_code)
 				 XEXP (SUBREG_REG (XEXP (x, 0)), 1), i, 1,
 				 0, in_code == COMPARE);
 	}
-      /* Same as previous, but for (xor/ior (lshift...) (lshift...)).  */
+      /* Same as previous, but for (xor/ior (lshiftrt...) (lshiftrt...)).  */
       else if ((GET_CODE (XEXP (x, 0)) == XOR
 		|| GET_CODE (XEXP (x, 0)) == IOR)
 	       && GET_CODE (XEXP (XEXP (x, 0), 0)) == LSHIFTRT
@@ -5811,7 +5809,6 @@ force_to_mode (x, mode, mask, reg, just_select)
       break;
 
     case ASHIFT:
-    case LSHIFT:
       /* For left shifts, do the same, but just for the first operand.
 	 However, we cannot do anything with shifts where we cannot
 	 guarantee that the counts are smaller than the size of the mode
@@ -6458,8 +6455,7 @@ apply_distributive_law (x)
       break;
 
     case ASHIFT:
-    case LSHIFT:
-      /* These are also multiplies, so they distribute over everything.  */
+      /* This is also a multiply, so it distributes over everything.  */
       break;
 
     case SUBREG:
@@ -6926,7 +6922,6 @@ nonzero_bits (x, mode)
     case ASHIFTRT:
     case LSHIFTRT:
     case ASHIFT:
-    case LSHIFT:
     case ROTATE:
       /* The nonzero bits are in two classes: any bits within MODE
 	 that aren't in GET_MODE (x) are always significant.  The rest of the
@@ -6961,7 +6956,7 @@ nonzero_bits (x, mode)
 	      if (inner & ((HOST_WIDE_INT) 1 << (width - 1 - count)))
 		inner |= (((HOST_WIDE_INT) 1 << count) - 1) << (width - count);
 	    }
-	  else if (code == LSHIFT || code == ASHIFT)
+	  else if (code == ASHIFT)
 	    inner <<= count;
 	  else
 	    inner = ((inner << (count % width)
@@ -7229,7 +7224,6 @@ num_sign_bit_copies (x, mode)
       return num0;
 
     case ASHIFT:
-    case LSHIFT:
       /* Left shifts destroy copies.  */
       if (GET_CODE (XEXP (x, 1)) != CONST_INT
 	  || INTVAL (XEXP (x, 1)) < 0
@@ -7477,10 +7471,6 @@ simplify_shift_const (x, code, result_mode, varop, count)
       if (code == ROTATERT)
 	code = ROTATE, count = GET_MODE_BITSIZE (result_mode) - count;
 
-      /* Canonicalize LSHIFT to ASHIFT.  */
-      if (code == LSHIFT)
-	code = ASHIFT;
-
       /* We need to determine what mode we will do the shift in.  If the
 	 shift is a ASHIFTRT or ROTATE, we must always do it in the mode it
 	 was originally done in.  Otherwise, we can do it in MODE, the widest
@@ -7672,7 +7662,6 @@ simplify_shift_const (x, code, result_mode, varop, count)
 
 	case LSHIFTRT:
 	case ASHIFT:
-	case LSHIFT:
 	case ROTATE:
 	  /* Here we have two nested shifts.  The result is usually the
 	     AND of a new shift with a mask.  We compute the result below.  */
@@ -7686,9 +7675,6 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	      int first_count = INTVAL (XEXP (varop, 1));
 	      unsigned HOST_WIDE_INT mask;
 	      rtx mask_rtx;
-
-	      if (first_code == LSHIFT)
-		first_code = ASHIFT;
 
 	      /* We have one common special case.  We can't do any merging if
 		 the inner code is an ASHIFTRT of a smaller mode.  However, if
@@ -7894,11 +7880,11 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	  break;
 
 	case EQ:
-	  /* convert (lshift (eq FOO 0) C) to (xor FOO 1) if STORE_FLAG_VALUE
+	  /* convert (lshiftrt (eq FOO 0) C) to (xor FOO 1) if STORE_FLAG_VALUE
 	     says that the sign bit can be tested, FOO has mode MODE, C is
-	     GET_MODE_BITSIZE (MODE) - 1, and FOO has only the low-order bit
-	     may be nonzero.  */
-	  if (code == LSHIFT
+	     GET_MODE_BITSIZE (MODE) - 1, and FOO has only its low-order bit
+	     that may be nonzero.  */
+	  if (code == LSHIFTRT
 	      && XEXP (varop, 1) == const0_rtx
 	      && GET_MODE (XEXP (varop, 0)) == result_mode
 	      && count == GET_MODE_BITSIZE (result_mode) - 1
@@ -8517,9 +8503,7 @@ simplify_comparison (code, pop0, pop1)
       if (GET_CODE (op0) == GET_CODE (op1)
 	  && GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT
 	  && ((GET_CODE (op0) == ROTATE && (code == NE || code == EQ))
-	      || ((GET_CODE (op0) == LSHIFTRT
-		   || GET_CODE (op0) == ASHIFT
-		   || GET_CODE (op0) == LSHIFT)
+	      || ((GET_CODE (op0) == LSHIFTRT || GET_CODE (op0) == ASHIFT)
 		  && (code != GT && code != LT && code != GE && code != LE))
 	      || (GET_CODE (op0) == ASHIFTRT
 		  && (code != GTU && code != LTU
@@ -8535,7 +8519,7 @@ simplify_comparison (code, pop0, pop1)
 
 	  if (GET_CODE (op0) == LSHIFTRT || GET_CODE (op0) == ASHIFTRT)
 	    mask &= (mask >> shift_count) << shift_count;
-	  else if (GET_CODE (op0) == ASHIFT || GET_CODE (op0) == LSHIFT)
+	  else if (GET_CODE (op0) == ASHIFT)
 	    mask = (mask & (mask << shift_count)) >> shift_count;
 
 	  if ((nonzero_bits (XEXP (op0, 0), mode) & ~ mask) == 0
@@ -9145,8 +9129,7 @@ simplify_comparison (code, pop0, pop1)
 	  /* Convert (and (xshift 1 X) Y) to (and (lshiftrt Y X) 1).  This
 	     will be converted to a ZERO_EXTRACT later.  */
 	  if (const_op == 0 && equality_comparison_p
-	      && (GET_CODE (XEXP (op0, 0)) == ASHIFT
-		  || GET_CODE (XEXP (op0, 0)) == LSHIFT)
+	      && GET_CODE (XEXP (op0, 0)) == ASHIFT
 	      && XEXP (XEXP (op0, 0), 0) == const1_rtx)
 	    {
 	      op0 = simplify_and_const_int
@@ -9213,8 +9196,7 @@ simplify_comparison (code, pop0, pop1)
 	  break;
 
 	case ASHIFT:
-	case LSHIFT:
-	  /* If we have (compare (xshift FOO N) (const_int C)) and
+	  /* If we have (compare (ashift FOO N) (const_int C)) and
 	     the high order N bits of FOO (N+1 if an inequality comparison)
 	     are known to be zero, we can do this by comparing FOO with C
 	     shifted right N bits so long as the low-order N bits of C are

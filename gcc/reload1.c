@@ -2928,8 +2928,8 @@ eliminate_regs (x, mem_mode, insn)
     case DIV:      case UDIV:
     case MOD:      case UMOD:
     case AND:      case IOR:      case XOR:
-    case LSHIFT:   case ASHIFT:   case ROTATE:
-    case ASHIFTRT: case LSHIFTRT: case ROTATERT:
+    case ROTATERT: case ROTATE:
+    case ASHIFTRT: case LSHIFTRT: case ASHIFT:
     case NE:       case EQ:
     case GE:       case GT:       case GEU:    case GTU:
     case LE:       case LT:       case LEU:    case LTU:

@@ -4287,7 +4287,7 @@ write_test_expr (exp, in_comparison)
 
     case PLUS:   case MINUS:  case MULT:     case DIV:      case MOD:
     case AND:    case IOR:    case XOR:
-    case LSHIFT: case ASHIFT: case LSHIFTRT: case ASHIFTRT:
+    case ASHIFT: case LSHIFTRT: case ASHIFTRT:
       write_test_expr (XEXP (exp, 0), in_comparison || comparison_operator);
       switch (code)
         {
@@ -4351,7 +4351,6 @@ write_test_expr (exp, in_comparison)
 	case XOR:
 	  printf (" ^ ");
 	  break;
-	case LSHIFT:
 	case ASHIFT:
 	  printf (" << ");
 	  break;
