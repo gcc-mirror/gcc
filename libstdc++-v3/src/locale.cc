@@ -1,4 +1,4 @@
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -356,7 +356,7 @@ namespace std
   locale::id::_M_id() const
   {
     if (!_M_index)
-      _M_index = 1 + __exchange_and_add(&_S_refcount, 1);
+      _M_index = 1 + __gnu_cxx::__exchange_and_add(&_S_refcount, 1);
     return _M_index - 1;
   }
 } // namespace std

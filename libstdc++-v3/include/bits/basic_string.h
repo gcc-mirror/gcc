@@ -212,7 +212,7 @@ namespace std
 	_M_dispose(const _Alloc& __a)
 	{
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
-	    if (__exchange_and_add(&this->_M_refcount, -1) <= 0)
+	    if (__gnu_cxx::__exchange_and_add(&this->_M_refcount, -1) <= 0)
 	      _M_destroy(__a);
 	}  // XXX MT
 
@@ -223,7 +223,7 @@ namespace std
 	_M_refcopy() throw()
 	{
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
-            __atomic_add(&this->_M_refcount, 1);
+            __gnu_cxx::__atomic_add(&this->_M_refcount, 1);
 	  return _M_refdata();
 	}  // XXX MT
 

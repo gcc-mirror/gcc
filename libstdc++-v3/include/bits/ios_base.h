@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -435,11 +435,12 @@ namespace std
       : _M_next(__cb), _M_fn(__fn), _M_index(__index), _M_refcount(0) { }
 
       void
-      _M_add_reference() { __atomic_add(&_M_refcount, 1); }
+      _M_add_reference() { __gnu_cxx::__atomic_add(&_M_refcount, 1); }
 
       // 0 => OK to delete.
       int
-      _M_remove_reference() { return __exchange_and_add(&_M_refcount, -1); }
+      _M_remove_reference() 
+      { return __gnu_cxx::__exchange_and_add(&_M_refcount, -1); }
     };
 
      _Callback_list*	_M_callbacks;

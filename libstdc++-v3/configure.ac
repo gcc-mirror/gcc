@@ -95,7 +95,7 @@ GLIBCXX_ENABLE_DEBUG([no])
 GLIBCXX_ENABLE_CXX_FLAGS
 
 # No surprises, no surprises...
-if test $atomicity_include_dir = cpu/generic ; then
+if test $atomicity_dir = cpu/generic ; then
   AC_MSG_WARN([No native atomic operations are provided for this platform.])
   if test $target_thread_file = single; then
     AC_MSG_WARN([They cannot be faked when thread support is disabled.])
@@ -268,9 +268,11 @@ GLIBCXX_CONFIGURE_TESTSUITE
 # Propagate the target-specific source directories through the build chain.
 # (Nothing currently uses cpu_include_dir directly; only atomicity_include_dir 
 # uses it, and it only gets used in this file.)
-ATOMICITY_INC_SRCDIR=config/${atomicity_include_dir}
+ATOMICITY_SRCDIR=config/${atomicity_dir}
+ATOMIC_WORD_SRCDIR=config/${atomic_word_dir}
 OS_INC_SRCDIR=config/${os_include_dir}
-AC_SUBST(ATOMICITY_INC_SRCDIR)
+AC_SUBST(ATOMICITY_SRCDIR)
+AC_SUBST(ATOMIC_WORD_SRCDIR)
 AC_SUBST(OS_INC_SRCDIR)
 
 # Determine cross-compile flags and AM_CONDITIONALs.

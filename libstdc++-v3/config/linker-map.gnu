@@ -214,10 +214,10 @@ GLIBCXX_3.4 {
     # __gnu_cxx::stdio_sync_filebuf
     _ZTVN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEE;
 
-    # Needed only when generic cpu's atomicity.h is in use.
-    _ZN9__gnu_cxx17_Atomic_add_mutexE;
-    _ZN9__gnu_cxx22_Atomic_add_mutex_onceE;
-    _ZN9__gnu_cxx31__gthread_atomic_add_mutex_onceEv;
+    # __gnu_cxx::__atomic_add
+    # __gnu_cxx::__exchange_and_add
+    _ZN9__gnu_cxx12__atomic_addEPVii;
+    _ZN9__gnu_cxx18__exchange_and_addEPVii;
 
   # DO NOT DELETE THIS LINE.  Port-specific symbols, if any, will be here.
 

@@ -30,8 +30,11 @@
 #   abi_baseline_pair      directory name for ABI compat testing,
 #                          defaults to host_cpu-host_os (as per config.guess)
 #
-#   atomicity_include_dir  location of atomicity.h,
+#   atomicity_dir          location of atomicity.h,
 #                          defaults to cpu_include_dir
+#
+#   atomic_word_dir        location of atomic_word.h
+#                          defaults to generic.
 #
 # It possibly modifies the following variables:
 #
@@ -57,6 +60,7 @@
 # systems out there.  :-)
 c_model=c_std
 c_compatibility=no
+atomic_word_dir=cpu/generic
 
 # HOST-SPECIFIC OVERRIDES
 # Set any CPU-dependent bits.
@@ -102,11 +106,22 @@ case "${host_cpu}" in
     ;;
 esac
 
+# Set specific CPU overrides for atomic_word_dir. Most can just use generic.
+# THIS TABLE IS SORTED.  KEEP IT THAT WAY.
+case "${host_cpu}" in
+  cris*)
+    atomic_word_dir=cpu/cris
+    ;;
+  sparc* | ultrasparc)
+    atomic_word_dir=cpu/sparc
+    ;;
+esac
+
 # Now look for the file(s) usually tied to a CPU model, and make
 # default choices for those if they haven't been explicitly set
 # already.  
 cpu_include_dir="cpu/${try_cpu}"
-atomicity_include_dir=$cpu_include_dir
+atomicity_dir=$cpu_include_dir
 abi_baseline_pair=${try_cpu}-${host_os}
 
 
@@ -122,16 +137,16 @@ case "${host_os}" in
     # os/aix/atomicity.h works on earlier versions of AIX 4.*, so we
     # explicitly duplicate the directory for 4.[<3].
     os_include_dir="os/aix"
-    atomicity_include_dir="os/aix"
+    atomicity_dir="os/aix"
     OPT_LDFLAGS="-Wl,-G"
     ;;
   aix4.*)
     os_include_dir="os/generic"
-    atomicity_include_dir="os/aix"
+    atomicity_dir="os/aix"
     ;;
   aix*)
     os_include_dir="os/generic"
-    atomicity_include_dir="cpu/generic"
+    atomicity_dir="cpu/generic"
     ;;
   bsd*)
     # Plain BSD attempts to share FreeBSD files.
@@ -155,11 +170,11 @@ case "${host_os}" in
   irix[1-6] | irix[1-5].* | irix6.[0-4]*)
     # This is known to work on at least IRIX 5.2 and 6.3.
     os_include_dir="os/irix/irix5.2"
-    atomicity_include_dir=$os_include_dir
+    atomicity_dir=$os_include_dir
     ;;
   irix6.5*)
     os_include_dir="os/irix/irix6.5"
-    atomicity_include_dir=$os_include_dir
+    atomicity_dir=$os_include_dir
     ;;
   mingw32*)
     os_include_dir="os/mingw32"
@@ -205,7 +220,7 @@ esac
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host}" in
   mips*-*-linux*)
-    atomicity_include_dir="cpu/mips"
+    atomicity_dir="cpu/mips"
     ;;
   x86_64-*-linux*)
     abi_baseline_pair="x86_64-linux-gnu"

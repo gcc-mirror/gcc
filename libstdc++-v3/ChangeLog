@@ -1,3 +1,54 @@
+2004-02-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/atomicity.h: New, forward declarations for __atomic_add
+	and __exchange_and_add.
+	* config/cpu/generic/atomic_word.h: New, typdef for atomic word.
+	* config/cpu/cris/atomic_word.h: Same.
+	* config/cpu/sparc/atomic_word.h: Same.
+	* include/bits/ios_base.h (_Callback_list::_M_remove_reference):
+	Qualifiy with __gnu_cxx.
+	(_Callback_list::_M_add_reference): Same.
+	* include/bits/locale_classes.h (locale::facet::_M_add_reference): Add.
+	(locale::facet::_M_remove_reference): Same.
+	(locale::_Impl::_M_add_reference): Add.
+	(locale::_Impl::_M_remove_reference): Same.
+	* include/bits/basic_string.h (basic_string::_Rep::_M_refcopy): Same.
+	(basic_string::_Rep::_M_dispose): Same.
+	* src/ios.cc (ios_base::xalloc): Same.
+	* src/ios_init.cc (ios_base::Init::Init): Same.
+	(ios_base::Init::~Init): Same.
+	* src/locale.cc (locale::id::_M_id): Same.
+	* config/cpu/i486/atomicity.h: Use __gnu_cxx namespace. Remove
+	static, and inline keyworks.
+	* config/cpu/alpha/atomicity.h: Same.
+	* config/cpu/cris/atomicity.h: Same.
+	* config/cpu/generic/atomicity.h: Same.
+	* config/cpu/hppa/atomicity.h: Same.
+	* config/cpu/i386/atomicity.h: Same.
+	* config/cpu/ia64/atomicity.h: Same.
+	* config/cpu/m68k/atomicity.h: Same.
+	* config/cpu/mips/atomicity.h: Same.
+	* config/cpu/powerpc/atomicity.h: Same.
+	* config/cpu/s390/atomicity.h: Same.
+	* config/cpu/sparc/atomicity.h: Same.
+	
+	* src/Makefile.am (host_sources): Add atomicity.cc.
+	(atomicity.cc): New rule.
+	* src/Makefile.in: Regenerate.
+	* include/Makefile.am (host_headers): Remove host atomicity.h.
+	(host_headers): Add atomic_word.h.
+	(bits_headers): Add bits atomicity.h.
+	Change ATOMICITY_INC_SRCDIR to ATOMICITY_SRCDIR.
+	* include/Makefile.in: Regenerate.
+	* configure.host (atomic_word_dir): Add.
+	* configure.ac: Substitute ATOMIC_WORD_SRCDIR. Change
+	ATOMICITY_INC_SRCDIR to ATOMICITY_SRCDIR.
+	* configure: Regenerate.
+	* config/linker-map.gnu: Export __exchange_and_add, and __atomic_add.
+
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Adjust line numbers.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Same.	
+	
 2004-02-25  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/20_util/howto.html, docs/html/20_util/allocator.html,
