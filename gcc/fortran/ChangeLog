@@ -1,3 +1,12 @@
+2004-12-08  Richard Henderson  <rth@redhat.com>
+
+	* intrinsic.c (gfc_convert_type_warn): Propagate the input shape
+	to the output expression.
+	* iresolve.c (gfc_resolve_cshift, gfc_resolve_eoshift): Suppress
+	warning conversion.
+	(gfc_resolve_reshape): Force convert SHAPE and ORDER parameters
+	to index kind.
+
 2004-12-08  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/18826

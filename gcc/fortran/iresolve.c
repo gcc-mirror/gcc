@@ -421,7 +421,7 @@ gfc_resolve_cshift (gfc_expr * f, gfc_expr * array,
       gfc_resolve_index (dim, 1);
       /* Convert dim to shift's kind, so we don't need so many variations.  */
       if (dim->ts.kind != shift->ts.kind)
-	gfc_convert_type (dim, &shift->ts, 2);
+	gfc_convert_type_warn (dim, &shift->ts, 2, 0);
     }
   f->value.function.name =
     gfc_get_string ("__cshift%d_%d", n, shift->ts.kind);
@@ -510,7 +510,7 @@ gfc_resolve_eoshift (gfc_expr * f, gfc_expr * array,
   /* Convert dim to the same type as shift, so we don't need quite so many
      variations.  */
   if (dim != NULL && dim->ts.kind != shift->ts.kind)
-    gfc_convert_type (dim, &shift->ts, 2);
+    gfc_convert_type_warn (dim, &shift->ts, 2, 0);
 
   f->value.function.name =
     gfc_get_string ("__eoshift%d_%d", n, shift->ts.kind);
@@ -1172,6 +1172,17 @@ gfc_resolve_reshape (gfc_expr * f, gfc_expr * source, gfc_expr * shape,
 	  c = c->next;
 	}
     }
+
+  /* Force-convert both SHAPE and ORDER to index_kind so that we don't need
+     so many runtime variations.  */
+  if (shape->ts.kind != gfc_index_integer_kind)
+    {
+      gfc_typespec ts = shape->ts;
+      ts.kind = gfc_index_integer_kind;
+      gfc_convert_type_warn (shape, &ts, 2, 0);
+    }
+  if (order && order->ts.kind != gfc_index_integer_kind)
+    gfc_convert_type_warn (order, &shape->ts, 2, 0);
 }
 
 
