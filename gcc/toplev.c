@@ -697,6 +697,8 @@ char *lang_options[] =
   "-Wno-template-debugging",
   "-Wctor-dtor-privacy",
   "-Wno-ctor-dtor-privacy",
+  "-Wnon-virtual-dtor",
+  "-Wno-non-virtual-dtor",
   "-Wextern-inline",
   "-Wno-extern-inline",
 
