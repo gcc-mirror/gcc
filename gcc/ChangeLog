@@ -1,3 +1,8 @@
+2002-03-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* doc/cpp.texi: Clarify documentation of relationship between
+	#line and #include.
+
 Don Feb 28 16:46:03 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (HARD_REGNO_RENAME_OK): Define.
