@@ -3422,6 +3422,11 @@ fold (expr)
       return t;
 #endif /* 0 */
 
+    case COMPONENT_REF:
+      if (TREE_CODE (arg0) == CONSTRUCTOR)
+	t = TREE_VALUE (purpose_member (arg1, CONSTRUCTOR_ELTS (arg0)));
+      return t;
+
     case RANGE_EXPR:
       TREE_CONSTANT (t) = wins;
       return t;
