@@ -1,8 +1,9 @@
-Sun Apr 12 19:04:56 1998  David Mosberger-Tang  <David.Mosberger@acm.org>
+Sun Apr 12 20:40:44 1998  Richard Henderson  <rth@dot.cygnus.com>
 
-	* alpha.c (print_operand, case '('): New case.
-	* alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Add '('.
-	* alpha.md (fix_trunc[ds]fdi2): Use %( and show trapping.
+	* alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Accept '(' for s/sv/svi.
+	* alpha.c (print_operand): Handle it.
+	* alpha.md (fix_trunc[ds]fdi2): Use it.  Add earlyclobber pattern
+	for ALPHA_TP_INSN.
 
 Sun Apr 12 13:09:46 1998  Scott Christley  <scottc@net-community.com>
 
