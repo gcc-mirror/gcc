@@ -89,9 +89,10 @@ extern int current_function_anonymous_args;
 #endif
 
 /* If the configuration file doesn't specify the cpu, the subtarget may
-   override it.  If it doesn't, then default to an ARM6. */
+   override it.  If it doesn't, then default to an ARM6.  */
 #if TARGET_CPU_DEFAULT == TARGET_CPU_generic
 #undef TARGET_CPU_DEFAULT
+
 #ifdef SUBTARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT SUBTARGET_CPU_DEFAULT
 #else
@@ -108,10 +109,10 @@ extern int current_function_anonymous_args;
 #if TARGET_CPU_DEFAULT == TARGET_CPU_arm7m
 #define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_3M__"
 #else
-#if TARGET_CPU_DEFAULT == TARGET_CPU_arm7tdmi || TARGET_CPU_DEFAULT == TARGET_CPU_arm9
+#if TARGET_CPU_DEFAULT == TARGET_CPU_arm7tdmi || TARGET_CPU_DEFAULT == TARGET_CPU_arm9 || TARGET_CPU_DEFAULT == TARGET_CPU_arm9tdmi
 #define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_4T__"
 #else
-#if TARGET_CPU_DEFAULT == TARGET_CPU_arm8 || TARGET_CPU_DEFAULT == TARGET_CPU_arm810 || TARGET_CPU_DEFAULT == TARGET_CPU_strongarm
+#if TARGET_CPU_DEFAULT == TARGET_CPU_arm8 || TARGET_CPU_DEFAULT == TARGET_CPU_arm810 || TARGET_CPU_DEFAULT == TARGET_CPU_strongarm || TARGET_CPU_DEFAULT = TARGET_CPU_strongarm110 || TARGET_CPU_DEFAULT = TARGET_CPU_strongarm1100 
 #define CPP_ARCH_DEFAULT_SPEC "-D__ARM_ARCH_4__"
 #else
 Unrecognized value in TARGET_CPU_DEFAULT.

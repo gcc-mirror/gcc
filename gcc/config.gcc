@@ -3277,8 +3277,8 @@ arm*-*-*)
 
 		# Distinguish cores, and major variants
 		# arm7m doesn't exist, but D & I don't affect code
-		xarm[23678] | xarm250 | xarm[67][01]0 \
-		| xarm7m | xarm7dm | xarm7dmi | xarm7tdmi \
+		xarm[236789] | xarm250 | xarm[67][01]0 \
+		| xarm7m | xarm7dm | xarm7dmi | xarm[79]tdmi \
 		| xarm7100 | xarm7500 | xarm7500fe | xarm810 \
 		| xstrongarm | xstrongarm110 | xstrongarm1100)
 			target_cpu_default2="TARGET_CPU_$with_cpu"
