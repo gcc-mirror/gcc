@@ -4,10 +4,28 @@
  *  Most of these declarations are defined by virtue of data 
  *  structures produced by the compiler.
  *
-  $Header$
-  $Author$
-  $Date$
-  $Log$
+ * Copyright (C) 1991 Threaded Technologies Inc.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation; either version 1, or any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ * 
+ * You should receive a copy of the GNU General Public License 
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * 
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.1 1991/10/24 00:19:24 dennisg Exp dennisg $
+  $Author: dennisg $
+  $Date: 1991/10/24 00:19:24 $
+  $Log: ObjC.h,v $
+ * Revision 0.1  1991/10/24  00:19:24  dennisg
+ * Initial check in.  Preliminary development stage.
+ *
 */
  
 
