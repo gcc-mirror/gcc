@@ -357,7 +357,7 @@ _Jv_BuildGCDescr(jclass self)
 	      // fall back to procedure marker.
 	      if (off > CHAR_BIT * sizeof (void *))
 		return (void *) (GCJ_DEFAULT_DESCR);
-	      desc |= 1 << off;
+	      desc |= 1ULL << off;
 	    }
 
 	  field = field->getNextField();
