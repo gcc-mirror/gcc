@@ -1,3 +1,7 @@
+2004-07-23  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/comp-return-1.c: New test
+
 2004-07-23  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/vmx/8-02a.c: Fix typo.
