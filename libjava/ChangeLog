@@ -1,3 +1,21 @@
+2002-10-11  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/URL.java
+	(URL): Activate SecurityManager checks.
+	(equals): Use URLStreamHandler implementation instead of doing it
+	alone. This allows special protocol stream handlers to change default
+	behaviour.
+	(hashCode): Use URLStreamHandler implementation instead of doing it
+	alone. This allows special protocol stream handlers to change default
+	behaviour.
+	* java/net/URLStreamHandler.java
+	(equals): Implemented default URL equality check.
+	(hostsEqual): Implemented default URL equality check.
+	(hashCode): Implemented default URL hashCode algorithm.
+	* java/net/natPlainDatagramSocketImpl.cc:
+	No lines longer then 80 characters.
+	
+
 2002-10-20  Adam Megacz <adam@xwt.org>
 
 	* aclocal.m4 (CHECK_FOR_BROKEN_MINGW_LD): added
