@@ -175,7 +175,8 @@ cpp_classify_number (pfile, token)
       str++;
 
       /* Require at least one hex digit to classify it as hex.  */
-      if ((*str == 'x' || *str == 'X') && ISXDIGIT (str[1]))
+      if ((*str == 'x' || *str == 'X')
+	  && (str[1] == '.' || ISXDIGIT (str[1])))
 	{
 	  radix = 16;
 	  str++;
