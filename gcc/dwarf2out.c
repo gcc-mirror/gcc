@@ -2,6 +2,7 @@
    Copyright (C) 1992, 1993, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).  Derived from the
    DWARF 1 implementation written by Ron Guilmette (rfg@monkeys.com).
+   Extensively modified by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
 
@@ -23,6 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifdef DWARF2_DEBUGGING_INFO
 #include <stdio.h>
+#include <setjmp.h>
 #include "dwarf2.h"
 #include "tree.h"
 #include "flags.h"
@@ -67,7 +69,8 @@ typedef enum
     dw_val_class_loc,
     dw_val_class_const,
     dw_val_class_unsigned_const,
-    dw_val_class_double_const,
+    dw_val_class_long_long,
+    dw_val_class_float,
     dw_val_class_flag,
     dw_val_class_die_ref,
     dw_val_class_fde_ref,
@@ -95,12 +98,20 @@ typedef struct pubname_struct *pubname_ref;
 typedef dw_die_ref *arange_ref;
 
 /* Describe a double word constant value.  */
-typedef struct dw_double_const_struct
+typedef struct dw_long_long_struct
   {
-    unsigned long dw_dbl_hi;
-    unsigned long dw_dbl_low;
+    unsigned long hi;
+    unsigned long low;
   }
-dw_dbl_const;
+dw_long_long_const;
+
+/* Describe a floating point constant value.  */
+typedef struct dw_fp_struct
+  {
+    long *array;
+    unsigned length;
+  }
+dw_float_const;
 
 /* Each entry in the line_info_table maintains the file and
    line nuber associated with the label generated for that
@@ -134,7 +145,8 @@ typedef struct dw_val_struct
 	dw_loc_descr_ref val_loc;
 	long int val_int;
 	long unsigned val_unsigned;
-	dw_dbl_const val_dbl_const;
+	dw_long_long_const val_long_long;
+	dw_float_const val_float;
 	dw_die_ref val_die_ref;
 	unsigned val_fde_index;
 	char *val_str;
@@ -301,7 +313,11 @@ extern char *language_string;
 static unsigned cie_size;
 
 /* Offsets recorded in opcodes are a multiple of this alignment factor.  */
-#define DWARF_CIE_DATA_ALIGNMENT -4
+#ifdef STACK_GROWS_DOWNWARD
+#define DWARF_CIE_DATA_ALIGNMENT (-UNITS_PER_WORD)
+#else
+#define DWARF_CIE_DATA_ALIGNMENT UNITS_PER_WORD
+#endif
 
 /* Fixed size portion of the FDE.  */
 #define DWARF_FDE_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 2 * PTR_SIZE)
@@ -830,9 +846,9 @@ char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #endif
 
 /* The mapping from gcc register number to DWARF 2 CFA column number.  By
-   default, we provide columns for all registers after the CFA column.  */
+   default, we just provide columns for all registers.  */
 #ifndef DWARF_FRAME_REGNUM
-#define DWARF_FRAME_REGNUM(REG) (DBX_REGISTER_NUMBER (REG) + 1)
+#define DWARF_FRAME_REGNUM(REG) DBX_REGISTER_NUMBER (REG)
 #endif
 
 /************************ general utility functions **************************/
@@ -1948,7 +1964,7 @@ add_AT_unsigned (die, attr_kind, unsigned_val)
 
 /* Add an unsigned double integer attribute value to a DIE.  */
 inline void
-add_AT_double (die, attr_kind, val_hi, val_low)
+add_AT_long_long (die, attr_kind, val_hi, val_low)
      register dw_die_ref die;
      register enum dwarf_attribute attr_kind;
      register unsigned long val_hi;
@@ -1959,9 +1975,29 @@ add_AT_double (die, attr_kind, val_hi, val_low)
     {
       attr->dw_attr_next = NULL;
       attr->dw_attr = attr_kind;
-      attr->dw_attr_val.val_class = dw_val_class_double_const;
-      attr->dw_attr_val.v.val_dbl_const.dw_dbl_hi = val_hi;
-      attr->dw_attr_val.v.val_dbl_const.dw_dbl_low = val_low;
+      attr->dw_attr_val.val_class = dw_val_class_long_long;
+      attr->dw_attr_val.v.val_long_long.hi = val_hi;
+      attr->dw_attr_val.v.val_long_long.low = val_low;
+      add_dwarf_attr (die, attr);
+    }
+}
+
+/* Add a floating point attribute value to a DIE and return it.  */
+inline void
+add_AT_float (die, attr_kind, length, array)
+     register dw_die_ref die;
+     register enum dwarf_attribute attr_kind;
+     register unsigned length;
+     register long *array;
+{
+  register dw_attr_ref attr = (dw_attr_ref) xmalloc (sizeof (dw_attr_node));
+  if (attr != NULL)
+    {
+      attr->dw_attr_next = NULL;
+      attr->dw_attr = attr_kind;
+      attr->dw_attr_val.val_class = dw_val_class_float;
+      attr->dw_attr_val.v.val_float.length = length;
+      attr->dw_attr_val.v.val_float.array = array;
       add_dwarf_attr (die, attr);
     }
 }
@@ -2502,10 +2538,13 @@ print_die (die, outfile)
 	case dw_val_class_unsigned_const:
 	  fprintf (outfile, "%u", a->dw_attr_val.v.val_unsigned);
 	  break;
-	case dw_val_class_double_const:
+	case dw_val_class_long_long:
 	  fprintf (outfile, "constant (%u,%u)",
-		  a->dw_attr_val.v.val_dbl_const.dw_dbl_hi,
-		  a->dw_attr_val.v.val_dbl_const.dw_dbl_low);
+		  a->dw_attr_val.v.val_long_long.hi,
+		  a->dw_attr_val.v.val_long_long.low);
+	  break;
+	case dw_val_class_float:
+	  fprintf (outfile, "floating-point constant");
 	  break;
 	case dw_val_class_flag:
 	  fprintf (outfile, "%u", a->dw_attr_val.v.val_flag);
@@ -2909,8 +2948,11 @@ size_of_die (die)
 	case dw_val_class_unsigned_const:
 	  size += constant_size (a->dw_attr_val.v.val_unsigned);
 	  break;
-	case dw_val_class_double_const:
-	  size += 8;
+	case dw_val_class_long_long:
+	  size += 1 + 8; /* block */
+	  break;
+	case dw_val_class_float:
+	  size += 1 + a->dw_attr_val.v.val_float.length * 4; /* block */
 	  break;
 	case dw_val_class_flag:
 	  size += 1;
@@ -3237,8 +3279,10 @@ value_format (v)
 	default:
 	  abort ();
 	}
-    case dw_val_class_double_const:
-      return DW_FORM_data8;
+    case dw_val_class_long_long:
+      return DW_FORM_block1;
+    case dw_val_class_float:
+      return DW_FORM_block1;
     case dw_val_class_flag:
       return DW_FORM_flag;
     case dw_val_class_die_ref:
@@ -3342,9 +3386,7 @@ output_loc_operands (loc)
       break;
     case DW_OP_const8u:
     case DW_OP_const8s:
-      ASM_OUTPUT_DWARF_DATA8 (asm_out_file,
-			      val1->v.val_dbl_const.dw_dbl_hi,
-			      val2->v.val_dbl_const.dw_dbl_low);
+      abort ();
       fputc ('\n', asm_out_file);
       break;
     case DW_OP_constu:
@@ -3459,6 +3501,8 @@ output_die (die)
   register unsigned long ref_offset;
   register unsigned long size;
   register dw_loc_descr_ref loc;
+  register int i;
+
   output_uleb128 (die->die_abbrev);
   if (flag_verbose_asm)
     fprintf (asm_out_file, " (DIE (0x%x) %s)",
@@ -3530,10 +3574,36 @@ output_die (die)
 	      abort ();
 	    }
 	  break;
-	case dw_val_class_double_const:
+	case dw_val_class_long_long:
+	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 8);
+	  if (flag_verbose_asm)
+	    fprintf (asm_out_file, "\t%s %s",
+		     ASM_COMMENT_START, dwarf_attr_name (a->dw_attr));
+	  fputc ('\n', asm_out_file);
 	  ASM_OUTPUT_DWARF_DATA8 (asm_out_file,
-				  a->dw_attr_val.v.val_dbl_const.dw_dbl_hi,
-				  a->dw_attr_val.v.val_dbl_const.dw_dbl_low);
+				  a->dw_attr_val.v.val_long_long.hi,
+				  a->dw_attr_val.v.val_long_long.low);
+	  if (flag_verbose_asm)
+	    fprintf (asm_out_file, "\t%s long long constant",
+		     ASM_COMMENT_START);
+	  fputc ('\n', asm_out_file);
+	  break;
+	case dw_val_class_float:
+	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file,
+				  a->dw_attr_val.v.val_float.length * 4);
+	  if (flag_verbose_asm)
+	    fprintf (asm_out_file, "\t%s %s",
+		     ASM_COMMENT_START, dwarf_attr_name (a->dw_attr));
+	  fputc ('\n', asm_out_file);
+	  for (i = 0; i < a->dw_attr_val.v.val_float.length; ++i)
+	    {
+	      ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
+				      a->dw_attr_val.v.val_float.array[i]);
+	      if (flag_verbose_asm)
+		fprintf (asm_out_file, "\t%s fp constant word %d",
+			 ASM_COMMENT_START, i);
+	      fputc ('\n', asm_out_file);
+	    }
 	  break;
 	case dw_val_class_flag:
 	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, a->dw_attr_val.v.val_flag);
@@ -3571,7 +3641,9 @@ output_die (die)
 	default:
 	  abort ();
 	}
-      if (a->dw_attr_val.val_class != dw_val_class_loc)
+      if (a->dw_attr_val.val_class != dw_val_class_loc
+	  && a->dw_attr_val.val_class != dw_val_class_long_long
+	  && a->dw_attr_val.val_class != dw_val_class_float)
 	{
 	  if (flag_verbose_asm)
 	    {
@@ -3631,35 +3703,23 @@ output_compilation_unit_header ()
   fputc ('\n', asm_out_file);
 }
 
-/* Extract the register and offset values from RTL.  If no register number
-   is specified, return -1 to indicate frame-relative addressing.  */
-static void
-decode_cfi_rtl (rtl, regp, offsetp)
-     register rtx rtl;
-     register unsigned long *regp;
-     register long *offsetp;
+/* Generate a new label for the CFI info to refer to.  */
+
+char *
+dwarf2out_cfi_label ()
 {
-  switch (GET_CODE (rtl))
-    {
-    case REG:
-      *regp = reg_number (rtl);
-      *offsetp = 0;
-      break;
-    case PLUS:
-      *regp = reg_number (XEXP (rtl, 0));
-      *offsetp = INTVAL (XEXP (rtl, 1));
-      break;
-    case CONST_INT:
-      *regp = (unsigned long) -1;
-      *offsetp = INTVAL (rtl);
-      break;
-    default:
-      abort ();
-    }
+  static char label[20];
+  static unsigned long label_num = 0;
+  
+  ASM_GENERATE_INTERNAL_LABEL (label, "LCFI", label_num++);
+  ASM_OUTPUT_LABEL (asm_out_file, label);
+
+  return label;
 }
 
 /* Add CFI to the current fde at the PC value indicated by LABEL if specified,
    or to the CIE if LABEL is NULL.  */
+
 static void
 add_fde_cfi (label, cfi)
      register char * label;
@@ -3668,6 +3728,8 @@ add_fde_cfi (label, cfi)
   if (label)
     {
       register dw_fde_ref fde = &fde_table[fde_table_in_use - 1];
+      if (*label == 0)
+	label = dwarf2out_cfi_label ();
       if (fde->dw_fde_current_label == NULL
 	  || strcmp (label, fde->dw_fde_current_label) != 0)
 	{
@@ -3730,20 +3792,20 @@ lookup_cfa (regp, offsetp)
 }
 
 /* Entry point to update the canonical frame address (CFA).
-   LABEL is passed to add_fde_cfi.  RTL is either:
+   LABEL is passed to add_fde_cfi.  The value of CFA is now to be
+   calculated from REG+OFFSET.  */
 
-   a REG:  The frame is at 0(REG).
-   a PLUS of a REG and a CONST_INT:  The frame is at CONST(REG).  */
 void
-dwarf2out_def_cfa (label, rtl)
+dwarf2out_def_cfa (label, reg, offset)
      register char * label;
-     register rtx rtl;
+     register unsigned reg;
+     register long offset;
 {
   register dw_cfi_ref cfi;
-  unsigned long reg, old_reg;
-  long offset, old_offset;
+  unsigned old_reg;
+  long old_offset;
 
-  decode_cfi_rtl (rtl, &reg, &offset);
+  reg = DWARF_FRAME_REGNUM (reg);
   lookup_cfa (&old_reg, &old_offset);
 
   if (reg == old_reg && offset == old_offset)
@@ -3775,29 +3837,21 @@ dwarf2out_def_cfa (label, rtl)
 
 /* Add the CFI for saving a register.  REG is the CFA column number.
    LABEL is passed to add_fde_cfi.
-   RTL is either:
+   If SREG is -1, the register is saved at OFFSET from the CFA;
+   otherwise it is saved in SREG.  */
 
-   a REG:  The register is saved in REG.
-   a CONST_INT:  The register is saved at an offset of CONST
-     from the CFA.  */
 static void
-reg_save (label, reg, rtl)
+reg_save (label, reg, sreg, offset)
      register char * label;
-     register unsigned long reg;
-     register rtx rtl;
+     register unsigned reg;
+     register unsigned sreg;
+     register long offset;
 {
-  register dw_cfi_ref cfi;
-  unsigned long sreg;
-  long offset;
-
-  cfi = new_cfi ();
+  register dw_cfi_ref cfi = new_cfi ();
 
   cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
 
-  decode_cfi_rtl (rtl, &sreg, &offset);
-  offset /= DWARF_CIE_DATA_ALIGNMENT;
-
-  if (sreg == (unsigned long) -1)
+  if (sreg == -1)
     {
       if (reg & ~0x3f)
 	/* The register number won't fit in 6 bits, so we have to use
@@ -3805,6 +3859,9 @@ reg_save (label, reg, rtl)
 	cfi->dw_cfi_opc = DW_CFA_offset_extended;
       else
 	cfi->dw_cfi_opc = DW_CFA_offset;
+
+      offset /= DWARF_CIE_DATA_ALIGNMENT;
+      assert (offset >= 0);
       cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
     }
   else
@@ -3817,24 +3874,166 @@ reg_save (label, reg, rtl)
 }
 
 /* Entry point for saving a register.  REG is the GCC register number.
-   LABEL and RTL are passed to reg_save.  */
+   LABEL and OFFSET are passed to reg_save.  */
+
 void
-dwarf2out_reg_save (label, reg, rtl)
+dwarf2out_reg_save (label, reg, offset)
      register char * label;
-     register unsigned long reg;
-     register rtx rtl;
+     register unsigned reg;
+     register long offset;
 {
-  reg_save (label, DWARF_FRAME_REGNUM (reg), rtl);
+  reg_save (label, DWARF_FRAME_REGNUM (reg), -1, offset);
 }
 
-/* Entry point for saving the return address.
-   LABEL and RTL are passed to reg_save.  */
-void
-dwarf2out_return_save (label, rtl)
-     register char * label;
+/* Record the initial position of the return address.  RTL is
+   INCOMING_RETURN_ADDR_RTX.  */
+
+static void
+initial_return_save (rtl)
      register rtx rtl;
 {
-  reg_save (label, DWARF_FRAME_RETURN_COLUMN, rtl);
+  unsigned reg = -1;
+  long offset = 0;
+
+  switch (GET_CODE (rtl))
+    {
+    case REG:
+      /* RA is in a register.  */
+      reg = reg_number (rtl);
+      break;
+    case MEM:
+      /* RA is on the stack.  */
+      rtl = XEXP (rtl, 0);
+      switch (GET_CODE (rtl))
+	{
+	case REG:
+	  assert (REGNO (rtl) == STACK_POINTER_REGNUM);
+	  offset = 0;
+	  break;
+	case PLUS:
+	  assert (REGNO (XEXP (rtl, 0)) == STACK_POINTER_REGNUM);
+	  offset = INTVAL (XEXP (rtl, 1));
+	  break;
+	case MINUS:
+	  assert (REGNO (XEXP (rtl, 0)) == STACK_POINTER_REGNUM);
+	  offset = -INTVAL (XEXP (rtl, 1));
+	  break;
+	default:
+	  abort ();
+	}
+      break;
+    default:
+      abort ();
+    }
+
+  reg_save (NULL, DWARF_FRAME_RETURN_COLUMN, reg, offset);
+}
+
+/* Record call frame debugging information for INSN, which either
+   sets SP or FP (adjusting how we calculate the frame address) or saves a
+   register to the stack.  If INSN is NULL_RTX, initialize our state.  */
+
+void
+dwarf2out_frame_debug (insn)
+     rtx insn;
+{
+  char *label;
+  rtx src, dest;
+  long offset;
+  static unsigned cfa_reg;
+  static long cfa_offset;
+  static long cfa_sp_offset;
+
+  if (insn == NULL_RTX)
+    {
+      /* Set up state for generating call frame debug info.  */
+      cfa_reg = STACK_POINTER_REGNUM;
+      cfa_offset = 0;
+      cfa_sp_offset = 0;
+      return;
+    }
+
+  label = dwarf2out_cfi_label ();
+    
+  insn = PATTERN (insn);
+  assert (GET_CODE (insn) == SET);
+
+  src = SET_SRC (insn);
+  dest = SET_DEST (insn);
+
+  switch (GET_CODE (dest))
+    {
+    case REG:
+      /* Update the CFA rule wrt SP or FP.  Make sure src is
+	 relative to the current CFA register.  */
+      assert (REGNO (dest) == STACK_POINTER_REGNUM
+	      || frame_pointer_needed && REGNO (dest) == FRAME_POINTER_REGNUM);
+      switch (GET_CODE (src))
+	{
+	  /* Setting FP from SP.  */
+	case REG:
+	  assert (cfa_reg == REGNO (src));
+	  cfa_reg = REGNO (dest);
+	  break;
+
+	  /* Adjusting SP.  */
+	case PLUS:
+	  cfa_sp_offset -= INTVAL (XEXP (src, 1));
+	  goto add;
+	case MINUS:
+	  cfa_sp_offset += INTVAL (XEXP (src, 1));
+	add:
+	  assert (REGNO (XEXP (src, 0)) == STACK_POINTER_REGNUM);
+	  if (cfa_reg == STACK_POINTER_REGNUM)
+	    cfa_offset = cfa_sp_offset;
+	  break;
+
+	default:
+	  abort ();
+	}
+      dwarf2out_def_cfa (label, cfa_reg, cfa_offset);
+      break;
+
+    case MEM:
+      /* Saving a register to the stack.  Make sure dest is relative to the
+         CFA register.  */
+      assert (GET_CODE (src) == REG);
+      switch (GET_CODE (XEXP (dest, 0)))
+	{
+	  /* With a push.  */
+	case PRE_DEC:
+	  cfa_sp_offset += GET_MODE_SIZE (GET_MODE (dest));
+	  goto pre;
+	case PRE_INC:
+	  cfa_sp_offset -= GET_MODE_SIZE (GET_MODE (dest));
+	pre:
+	  assert (REGNO (XEXP (XEXP (dest, 0), 0)) == STACK_POINTER_REGNUM);
+	  if (cfa_reg == STACK_POINTER_REGNUM)
+	    cfa_offset = cfa_sp_offset;
+	  offset = -cfa_sp_offset;
+	  break;
+
+	  /* With an offset.  */
+	case PLUS:
+	  offset = INTVAL (XEXP (XEXP (dest, 0), 1));
+	  goto off;
+	case MINUS:
+	  offset = -INTVAL (XEXP (XEXP (dest, 0), 1));
+	off:
+	  assert (cfa_reg == REGNO (XEXP (XEXP (dest, 0), 0)));
+	  offset -= cfa_offset;
+	  break;
+
+	default:
+	  abort ();
+	}
+      dwarf2out_def_cfa (label, cfa_reg, cfa_offset);
+      dwarf2out_reg_save (label, REGNO (src), offset);
+      break;
+
+    default:
+      abort ();
+    }
 }
 
 /* Return the size of a Call Frame Instruction.  */
@@ -3952,9 +4151,8 @@ output_cfi (cfi, fde)
 			      cfi->dw_cfi_opc
 			      | (cfi->dw_cfi_oprnd1.dw_cfi_offset & 0x3f));
       if (flag_verbose_asm)
-	{
-	  fprintf (asm_out_file, "\t%s DW_CFA_advance_loc", ASM_COMMENT_START);
-	}
+	fprintf (asm_out_file, "\t%s DW_CFA_advance_loc 0x%x",
+		 ASM_COMMENT_START, cfi->dw_cfi_oprnd1.dw_cfi_offset);
       fputc ('\n', asm_out_file);
     }
   else if (cfi->dw_cfi_opc == DW_CFA_offset)
@@ -3963,9 +4161,8 @@ output_cfi (cfi, fde)
 			      cfi->dw_cfi_opc
 			      | (cfi->dw_cfi_oprnd1.dw_cfi_reg_num & 0x3f));
       if (flag_verbose_asm)
-	{
-	  fprintf (asm_out_file, "\t%s DW_CFA_offset", ASM_COMMENT_START);
-	}
+	fprintf (asm_out_file, "\t%s DW_CFA_offset, column 0x%x",
+		 ASM_COMMENT_START, cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
       fputc ('\n', asm_out_file);
       output_uleb128(cfi->dw_cfi_oprnd2.dw_cfi_offset);
       fputc ('\n', asm_out_file);
@@ -3976,9 +4173,8 @@ output_cfi (cfi, fde)
 			      cfi->dw_cfi_opc
 			      | (cfi->dw_cfi_oprnd1.dw_cfi_reg_num & 0x3f));
       if (flag_verbose_asm)
-	{
-	  fprintf (asm_out_file, "\t%s DW_CFA_restore", ASM_COMMENT_START);
-	}
+	fprintf (asm_out_file, "\t%s DW_CFA_restore, column 0x%x",
+		 ASM_COMMENT_START, cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
       fputc ('\n', asm_out_file);
     }
   else
@@ -5534,12 +5730,54 @@ add_const_value_attribute (die, rtl)
       /* Note that a CONST_DOUBLE rtx could represent either an integer or a
          floating-point constant.  A CONST_DOUBLE is used whenever the
          constant requires more than one word in order to be adequately
-         represented.  In all such cases, the original mode of the constant
-         value is preserved as the mode of the CONST_DOUBLE rtx, but for
-         simplicity we always just output CONST_DOUBLEs using 8 bytes.  */
-      add_AT_double (die, DW_AT_const_value,
-		     (unsigned) CONST_DOUBLE_HIGH (rtl),
-		     (unsigned) CONST_DOUBLE_LOW (rtl));
+         represented.  We output CONST_DOUBLEs as blocks.  */
+      {
+	register enum machine_mode mode = GET_MODE (rtl);
+
+	if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+	  {
+	    union real_extract u;
+	    jmp_buf handler;
+	    register unsigned length = GET_MODE_SIZE (mode) / 4;
+	    register long *array = (long *) xmalloc (length * sizeof (long));
+	    
+	    bcopy ((char *) &CONST_DOUBLE_LOW (rtl), (char *) &u, sizeof u);
+
+	    if (setjmp (handler))
+	      {
+		error ("floating point trap outputting debug info");
+		u.d = dconst0;
+	      }
+
+	    set_float_handler (handler);
+
+	    switch (mode)
+	      {
+	      case SFmode:
+		REAL_VALUE_TO_TARGET_SINGLE (u.d, array[0]);
+		break;
+
+	      case DFmode:
+		REAL_VALUE_TO_TARGET_DOUBLE (u.d, array);
+		break;
+
+	      case XFmode:
+	      case TFmode:
+		REAL_VALUE_TO_TARGET_LONG_DOUBLE (u.d, array);
+		break;
+
+	      default:
+		abort ();
+	      }
+
+	    set_float_handler (NULL_PTR);
+
+	    add_AT_float (die, DW_AT_const_value, length, array);
+	  }
+	else
+	  add_AT_long_long (die, DW_AT_const_value,
+			    CONST_DOUBLE_HIGH (rtl), CONST_DOUBLE_LOW (rtl));
+      }
       break;
 
     case CONST_STRING:
@@ -8043,59 +8281,6 @@ dwarf2out_begin_prologue ()
   fde->dw_fde_cfi = NULL;
 }
 
-/* Output a marker (i.e. a label) for the point in the generated code where
-   the real body of the function begins (after parameters have been moved to
-   their home locations).  */
-void
-dwarf2out_begin_function ()
-{
-#ifdef MIPS_DEBUGGING_INFO
-  char label[MAX_ARTIFICIAL_LABEL_BYTES];
-  register long int offset;
-  register dw_fde_ref fde;
-  register dw_cfi_ref cfi;
-  register int regno, fp_inc;
-
-  function_section (current_function_decl);
-  ASM_GENERATE_INTERNAL_LABEL (label, BODY_BEGIN_LABEL,
-			       current_funcdef_number);
-  ASM_OUTPUT_LABEL (asm_out_file, label);
-
-  /* Define the CFA as an offset from either the frame pointer
-     or the stack pointer.  */
-  dwarf2out_def_cfa
-    (label, gen_rtx (PLUS, VOIDmode,
-		     gen_rtx (REG, VOIDmode,
-			      (frame_pointer_needed ? FRAME_POINTER_REGNUM
-			       : STACK_POINTER_REGNUM)),
-		     GEN_INT (current_frame_info.total_size)));
-
-  /* Record the locations of the return address and any callee-saved regs.  */
-  offset = current_frame_info.gp_save_offset / DWARF_CIE_DATA_ALIGNMENT;
-  for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; --regno)
-    if (current_frame_info.mask & (1<<regno))
-      {
-	assert (offset >= 0);
-
-	if (regno == 31)
-	  dwarf2out_return_save (label, GEN_INT (offset));
-	else
-	  dwarf2out_reg_save (label, regno, GEN_INT (offset));
-	offset -= UNITS_PER_WORD / DWARF_CIE_DATA_ALIGNMENT;
-      }
-
-  fp_inc = (TARGET_FLOAT64 || TARGET_SINGLE_FLOAT) ? 1 : 2;
-  offset = current_frame_info.fp_save_offset / DWARF_CIE_DATA_ALIGNMENT;
-  for (regno = FP_REG_LAST - 1; regno >= FP_REG_FIRST; regno -= fp_inc)
-    if (current_frame_info.fmask & (1 << (regno - FP_REG_FIRST)))
-      {
-	assert (offset >= 0);
-	dwarf2out_reg_save (label, regno, GEN_INT (offset));
-	offset -= (fp_inc * UNITS_PER_FPREG) / DWARF_CIE_DATA_ALIGNMENT;
-      }
-#endif
-}
-
 /* Output a marker (i.e. a label) for the absolute end of the generated code
    for a function definition.  This gets called *after* the epilogue code has
    been generated.  */
@@ -8336,12 +8521,11 @@ dwarf2out_init (asm_out_file, main_input_filename)
 
   /* Generate the CFA instructions common to all FDE's.  Do it now for the
      sake of lookup_cfa.  */
-#ifdef MIPS_DEBUGGING_INFO
-  /* On entry, the Call Frame Address is in the stack pointer register.  */
-  dwarf2out_def_cfa (NULL, gen_rtx (REG, VOIDmode, STACK_POINTER_REGNUM));
 
-  /* Set the RA on entry to be the contents of r31.  */
-  dwarf2out_return_save (NULL, gen_rtx (REG, VOIDmode, GP_REG_FIRST + 31));
+#ifdef INCOMING_RETURN_ADDR_RTX
+  /* On entry, the Canonical Frame Address is at SP+0.  */
+  dwarf2out_def_cfa (NULL, STACK_POINTER_REGNUM, 0);
+  initial_return_save (INCOMING_RETURN_ADDR_RTX);
 #endif
 }
 

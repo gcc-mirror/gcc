@@ -2331,6 +2331,13 @@ number as al, and ax.
  (n) == 7 ? 5 : \
  (n) + 4)
 
+/* Before the prologue, RA is at 0(%esp).  */
+#define INCOMING_RETURN_ADDR_RTX \
+  gen_rtx (MEM, VOIDmode, gen_rtx (REG, VOIDmode, STACK_POINTER_REGNUM))
+
+/* PC is dbx register 8; let's use that column for RA. */
+#define DWARF_FRAME_RETURN_COLUMN 	8
+
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 

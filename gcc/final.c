@@ -1208,6 +1208,10 @@ final (first, file, optimize, prescan)
   last_ignored_compare = 0;
   new_block = 1;
 
+#if defined (DWARF2_DEBUGGING_INFO) && defined (HAVE_prologue)
+  dwarf2out_frame_debug (NULL_RTX);
+#endif
+
   check_exception_handler_labels ();
 
   /* Make a map indicating which line numbers appear in this function.
@@ -1369,12 +1373,6 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	     must be after the prologue.  */
 	  if (write_symbols == DWARF_DEBUG)
 	    dwarfout_begin_function ();
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-	  /* This outputs a marker where the function body starts, so it
-	     must be after the prologue.  */
-	  if (write_symbols == DWARF2_DEBUG)
-	    dwarf2out_begin_function ();
 #endif
 	  break;
 	}
@@ -2103,6 +2101,13 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	/* Output assembler code from the template.  */
 
 	output_asm_insn (template, recog_operand);
+
+#if defined (DWARF2_DEBUGGING_INFO) && defined (HAVE_prologue)
+	/* If this insn is part of the prologue, emit DWARF v2
+	   call frame info.  */
+	if (write_symbols == DWARF2_DEBUG && RTX_FRAME_RELATED_P (insn))
+	  dwarf2out_frame_debug (insn);
+#endif
 
 #if 0
 	/* It's not at all clear why we did this and doing so interferes

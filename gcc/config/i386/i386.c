@@ -1832,6 +1832,7 @@ ix86_expand_prologue ()
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
 				  || current_function_uses_const_pool);
   long tsize = get_frame_size ();
+  rtx insn;
 
   if (!TARGET_SCHEDULE_PROLOGUE)
     return;
@@ -1841,17 +1842,23 @@ ix86_expand_prologue ()
   xops[2] = GEN_INT (tsize);
   if (frame_pointer_needed)
     {
-      emit_insn (gen_rtx (SET, 0,
-			  gen_rtx (MEM, SImode,
-				   gen_rtx (PRE_DEC, SImode, stack_pointer_rtx)),
-			  frame_pointer_rtx));
-      emit_move_insn (xops[1], xops[0]);
+      insn = emit_insn
+	(gen_rtx (SET, 0,
+		  gen_rtx (MEM, SImode,
+			   gen_rtx (PRE_DEC, SImode, stack_pointer_rtx)),
+		  frame_pointer_rtx));
+      RTX_FRAME_RELATED_P (insn) = 1;
+      insn = emit_move_insn (xops[1], xops[0]);
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   if (tsize == 0)
     ;
   else if (! TARGET_STACK_PROBE || tsize < CHECK_STACK_LIMIT)
-    emit_insn (gen_subsi3 (xops[0], xops[0], xops[2]));
+    {
+      insn = emit_insn (gen_subsi3 (xops[0], xops[0], xops[2]));
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
   else 
     {
       xops[3] = gen_rtx (REG, SImode, 0);
@@ -1877,10 +1884,13 @@ ix86_expand_prologue ()
 	|| (regno == PIC_OFFSET_TABLE_REGNUM && pic_reg_used))
       {
 	xops[0] = gen_rtx (REG, SImode, regno);
-	emit_insn (gen_rtx (SET, 0,
-			    gen_rtx (MEM, SImode,
-				     gen_rtx (PRE_DEC, SImode, stack_pointer_rtx)),
-			  xops[0]));
+	insn = emit_insn
+	  (gen_rtx (SET, 0,
+		    gen_rtx (MEM, SImode,
+			     gen_rtx (PRE_DEC, SImode, stack_pointer_rtx)),
+		    xops[0]));
+	
+	RTX_FRAME_RELATED_P (insn) = 1;
       }
 
   if (pic_reg_used && TARGET_DEEP_BRANCH_PREDICTION)
