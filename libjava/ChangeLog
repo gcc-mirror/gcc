@@ -1,3 +1,7 @@
+2005-03-14  David Daney  <ddaney@avtrex.com>
+
+	* configure.host: Don't use -mxgot for MIPS builds.
+	
 2005-03-10  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/tools/gcj_dbtool/Main.java (main): Handle '-p'.
