@@ -1,5 +1,6 @@
 /* Null garbage collection for the GNU compiler.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2003
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -29,23 +30,19 @@
 #include "ggc.h"
 
 void *
-ggc_alloc (size)
-     size_t size;
+ggc_alloc (size_t size)
 {
   return xmalloc (size);
 }
 
 void *
-ggc_alloc_cleared (size)
-     size_t size;
+ggc_alloc_cleared (size_t size)
 {
   return xcalloc (size, 1);
 }
 
 void *
-ggc_realloc (x, size)
-     void *x;
-     size_t size;
+ggc_realloc (void *x, size_t size)
 {
   return xrealloc (x, size);
 }
