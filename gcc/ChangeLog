@@ -1,5 +1,9 @@
 2001-11-26  Richard Henderson  <rth@redhat.com>
 
+	* toplev.c (rest_of_compilation): Call free_bb_for_insn before exit.
+
+2001-11-26  Richard Henderson  <rth@redhat.com>
+
 	* config/ia64/sysv4.h (DBX_DEBUGGING_INFO): Undef.
 	* config/ia64/aix.h (PREFERRED_DEBUGGING_TYPE): Remove
 	commented out override.

@@ -3516,6 +3516,7 @@ rest_of_compilation (decl)
   init_temp_slots ();
 
   free_basic_block_vars (0);
+  free_bb_for_insn ();
 
   timevar_pop (TV_FINAL);
 
