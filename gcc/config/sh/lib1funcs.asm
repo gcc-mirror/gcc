@@ -2036,7 +2036,34 @@ GLOBAL(ic_invalidate):
 
 	ENDFUNC(GLOBAL(ic_invalidate))
 	ENDFUNC(GLOBAL(init_trampoline))
+#elif defined(__SH4A__)
+	.global GLOBAL(ic_invalidate)
+	FUNC(GLOBAL(ic_invalidate))
+GLOBAL(ic_invalidate):
+	ocbwb	@r4
+	synco
+	rts
+	icbi	@r4
+	ENDFUNC(GLOBAL(ic_invalidate))
 #elif defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
+	/* This assumes a direct-mapped cache, which is the case for
+	the first SH4, but not for the second version of SH4, that
+	uses a 2-way set-associative cache, nor SH4a, that is 4-way.
+	SH4a fortunately offers an instruction to invalidate the
+	instruction cache, and we use it above, but SH4 doesn't.
+	However, since the libraries don't contain any nested
+	functions (the only case in which GCC would emit this pattern)
+	and we actually emit the ic_invalidate_line_i pattern for
+	cache invalidation on all SH4 multilibs (even 4-nofpu, that
+	isn't even corevered here), and pre-SH4 cores don't have
+	caches, it seems like this code is pointless, unless it's
+	meant for backward binary compatibility or for userland-only
+	cache invalidation for say sh4-*-linux-gnu.  Such a feature
+	should probably be moved into a system call, such that the
+	kernel could do whatever it takes to invalidate a cache line
+	on the core it's actually running on.  I.e., this hideous :-)
+	piece of code should go away at some point.  */
+
 	.global GLOBAL(ic_invalidate)
 	FUNC(GLOBAL(ic_invalidate))
 GLOBAL(ic_invalidate):

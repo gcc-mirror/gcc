@@ -621,6 +621,7 @@ See RS/6000 and PowerPC Options.
 @emph{SH Options}
 @gccoptlist{-m1  -m2  -m2e  -m3  -m3e @gol
 -m4-nofpu  -m4-single-only  -m4-single  -m4 @gol
+-m4a-nofpu -m4a-single-only -m4a-single -m4a -m4al @gol
 -m5-64media  -m5-64media-nofpu @gol
 -m5-32media  -m5-32media-nofpu @gol
 -m5-compact  -m5-compact-nofpu @gol
@@ -10517,6 +10518,31 @@ single-precision mode by default.
 @item -m4
 @opindex m4
 Generate code for the SH4.
+
+@item -m4a-nofpu
+@opindex m4a-nofpu
+Generate code for the SH4al-dsp, or for a SH4a in such a way that the
+floating-point unit is not used.
+
+@item -m4a-single-only
+@opindex m4a-single-only
+Generate code for the SH4a, in such a way that no double-precision
+floating point operations are used.
+
+@item -m4a-single
+@opindex m4a-single
+Generate code for the SH4a assuming the floating-point unit is in
+single-precision mode by default.
+
+@item -m4a
+@opindex m4a
+Generate code for the SH4a.
+
+@item -m4al
+@opindex m4al
+Same as @option{-m4a-nofpu}, except that it implicitly passes
+@option{-dsp} to the assembler.  GCC doesn't generate any DSP
+instructions at the moment.
 
 @item -mb
 @opindex mb

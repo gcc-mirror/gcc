@@ -1,3 +1,11 @@
+2004-07-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	2003-10-01  Eric Christopher  <echristo@redhat.com>
+	* config/cpu/sh/atomicity.h (__exchange_and_add): Remove 'm'
+	constraint.
+	2003-07-09  Alexandre Oliva  <aoliva@redhat.com>
+	* config/cpu/sh/atomicity.h: New.  Use movli and movco on SH4a.
+
 2004-07-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/16678

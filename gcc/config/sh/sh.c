@@ -537,6 +537,7 @@ print_operand_address (FILE *stream, rtx x)
    'T'  print the next word of a dp value - same as 'R' in big endian mode.
    'M'  print an `x' if `m' will print `base,index'.
    'N'  print 'r63' if the operand is (const_int 0).
+   'd'  print a V2SF reg as dN instead of fpN.
    'm'  print a pair `base,offset' or `base,index', for LD and ST.
    'u'  prints the lowest 16 bits of CONST_INT, as an unsigned value.
    'o'  output an operator.  */
@@ -651,6 +652,13 @@ print_operand (FILE *stream, rtx x, int code)
 	}
       break;
 
+    case 'd':
+      if (GET_CODE (x) != REG || GET_MODE (x) != V2SFmode)
+	abort ();
+
+      fprintf ((stream), "d%s", reg_names[REGNO (x)] + 1);
+      break;
+      
     case 'N':
       if (x == CONST0_RTX (GET_MODE (x)))
 	{
@@ -772,9 +780,48 @@ expand_block_move (rtx *operands)
   int constp = (GET_CODE (operands[2]) == CONST_INT);
   int bytes = (constp ? INTVAL (operands[2]) : 0);
 
+  if (! constp)
+    return 0;
+
+  /* If we could use mov.l to move words and dest is word-aligned, we
+     can use movua.l for loads and still generate a relatively short
+     and efficient sequence.  */
+  if (TARGET_SH4A_ARCH && align < 4
+      && MEM_ALIGN (operands[0]) >= 32
+      && can_move_by_pieces (bytes, 32))
+    {
+      rtx dest = copy_rtx (operands[0]);
+      rtx src = copy_rtx (operands[1]);
+      /* We could use different pseudos for each copied word, but
+	 since movua can only load into r0, it's kind of
+	 pointless.  */
+      rtx temp = gen_reg_rtx (SImode);
+      rtx src_addr = copy_addr_to_reg (XEXP (src, 0));
+      int copied = 0;
+
+      while (copied + 4 <= bytes)
+	{
+	  rtx to = adjust_address (dest, SImode, copied);
+	  rtx from = adjust_automodify_address (src, SImode, src_addr, copied);
+
+	  emit_insn (gen_movua (temp, from));
+	  emit_move_insn (src_addr, plus_constant (src_addr, 4));
+	  emit_move_insn (to, temp);
+	  copied += 4;
+	}
+
+      if (copied < bytes)
+	move_by_pieces (adjust_address (dest, BLKmode, copied),
+			adjust_automodify_address (src, BLKmode,
+						   src_addr, copied),
+			bytes - copied, align, 0);
+
+      return 1;
+    }
+
   /* If it isn't a constant number of bytes, or if it doesn't have 4 byte
      alignment, or if it isn't a multiple of 4 bytes, then fail.  */
-  if (! constp || align < 4 || (bytes % 4 != 0))
+  if (align < 4 || (bytes % 4 != 0))
     return 0;
 
   if (TARGET_HARD_SH4)
@@ -9397,6 +9444,11 @@ bool
 sh_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
 			     enum reg_class class)
 {
+  /* We want to enable the use of SUBREGs as a means to
+     VEC_SELECT a single element of a vector.  */
+  if (to == SFmode && VECTOR_MODE_P (from) && GET_MODE_INNER (from) == SFmode)
+    return (reg_classes_intersect_p (GENERAL_REGS, class));
+
   if (GET_MODE_SIZE (from) != GET_MODE_SIZE (to))
     {
       if (TARGET_LITTLE_ENDIAN)
@@ -9821,4 +9873,87 @@ check_use_sfunc_addr (rtx insn, rtx reg)
   abort ();
 }
 
+/* Returns 1 if OP is a MEM that can be source of a simple move operation.  */
+
+int
+unaligned_load_operand (rtx op, enum machine_mode mode)
+{
+  rtx inside;
+
+  if (GET_CODE (op) != MEM || GET_MODE (op) != mode)
+    return 0;
+
+  inside = XEXP (op, 0);
+
+  if (GET_CODE (inside) == POST_INC)
+    inside = XEXP (inside, 0);
+
+  if (GET_CODE (inside) == REG)
+    return 1;
+
+  return 0;
+}
+
+/* This function returns a constant rtx that represents pi / 2**15 in
+   SFmode.  it's used to scale SFmode angles, in radians, to a
+   fixed-point signed 16.16-bit fraction of a full circle, i.e., 2*pi
+   maps to 0x10000).  */
+
+static GTY(()) rtx sh_fsca_sf2int_rtx;
+
+rtx
+sh_fsca_sf2int (void)
+{
+  if (! sh_fsca_sf2int_rtx)
+    {
+      REAL_VALUE_TYPE rv;
+
+      real_from_string (&rv, "10430.378350470453");
+      sh_fsca_sf2int_rtx = const_double_from_real_value (rv, SFmode);
+    }
+
+  return sh_fsca_sf2int_rtx;
+}
+  
+/* This function returns a constant rtx that represents pi / 2**15 in
+   DFmode.  it's used to scale DFmode angles, in radians, to a
+   fixed-point signed 16.16-bit fraction of a full circle, i.e., 2*pi
+   maps to 0x10000).  */
+
+static GTY(()) rtx sh_fsca_df2int_rtx;
+
+rtx
+sh_fsca_df2int (void)
+{
+  if (! sh_fsca_df2int_rtx)
+    {
+      REAL_VALUE_TYPE rv;
+
+      real_from_string (&rv, "10430.378350470453");
+      sh_fsca_df2int_rtx = const_double_from_real_value (rv, DFmode);
+    }
+
+  return sh_fsca_df2int_rtx;
+}
+  
+/* This function returns a constant rtx that represents 2**15 / pi in
+   SFmode.  it's used to scale a fixed-point signed 16.16-bit fraction
+   of a full circle back to a SFmode value, i.e., 0x10000 maps to
+   2*pi).  */
+
+static GTY(()) rtx sh_fsca_int2sf_rtx;
+
+rtx
+sh_fsca_int2sf (void)
+{
+  if (! sh_fsca_int2sf_rtx)
+    {
+      REAL_VALUE_TYPE rv;
+
+      real_from_string (&rv, "9.587379924285257e-5");
+      sh_fsca_int2sf_rtx = const_double_from_real_value (rv, SFmode);
+    }
+
+  return sh_fsca_int2sf_rtx;
+}
 #include "gt-sh.h"

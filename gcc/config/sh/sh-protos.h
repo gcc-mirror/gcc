@@ -25,6 +25,9 @@ Boston, MA 02111-1307, USA.  */
 #define GCC_SH_PROTOS_H
 
 #ifdef RTX_CODE
+extern rtx sh_fsca_sf2int (void);
+extern rtx sh_fsca_df2int (void);
+extern rtx sh_fsca_int2sf (void);
 extern struct rtx_def *prepare_scc_operands (enum rtx_code);
 
 /* Declare functions defined in sh.c and used in templates.  */
