@@ -137,8 +137,8 @@ ___ashiftrt_r4_1:
 	shar	r4
 
 ___ashiftrt_r4_0:
-	or	r0,r0
 	rts
+	nop
 #endif
 
 #ifdef L_movstr
