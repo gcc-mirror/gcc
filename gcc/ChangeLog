@@ -1,3 +1,8 @@
+Sat May  8 01:47:20 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* invoke.texi: Remove duplicates in the description of -d
+	letters.  Fix use of @item vs. @itemx.
+
 Sat May  8 01:43:02 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* rs6000.h (RS6000_VARARGS_OFFSET): Die die die.
