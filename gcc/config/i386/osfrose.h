@@ -364,6 +364,12 @@ while (0)
   fprintf (FILE, "%s%s%d:\n", (TARGET_UNDERSCORES) ? "" : ".",		\
 	   PREFIX, NUM)
 
+/* The prefix to add to user-visible assembler symbols. */
+
+/* target_flags is not accessible by the preprocessor */
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX "_"
+
 /* This is how to output a reference to a user-level label named NAME.  */
 
 #undef	ASM_OUTPUT_LABELREF
