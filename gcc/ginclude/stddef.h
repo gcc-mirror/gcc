@@ -36,13 +36,13 @@
 #define _WCHAR_T
 #endif
 /* Undef _FOO_T_ if we are supposed to define foo_t.  */
-#if ! defined (__need_wchar_t) && ! defined (__need_size_t)
+#if defined (__need_ptrdiff_t) || defined (_STDDEF_H_)
 #undef _PTRDIFF_T_
 #endif
-#if ! defined (__need_wchar_t) && ! defined (__need_ptrdiff_t)
+#if defined (__need_size_t) || defined (_STDDEF_H_)
 #undef _SIZE_T_
 #endif
-#if ! defined (__need_size_t) && ! defined (__need_ptrdiff_t)
+#if defined (__need_wchar_t) || defined (_STDDEF_H_)
 #undef _WCHAR_T_
 #endif
 #endif /* _ANSI_H_ */
