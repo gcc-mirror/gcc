@@ -1,3 +1,14 @@
+2004-07-29  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloop.c (update_latch_info): Update dominator of the new block.
+	(canonicalize_loop_headers, flow_loops_find): Do not free dominance
+	info.
+	* dominance.c (verify_dominators): Check that the dominance tree is
+	connected.
+	(recount_dominator): Ignore unreachable blocks.
+	(iterate_fix_dominators): Cleanup old dominance information before
+	recomputing it.
+
 2004-07-29  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-operands.c (get_expr_operands): Revert changes

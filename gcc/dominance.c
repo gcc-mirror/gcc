@@ -824,6 +824,20 @@ verify_dominators (enum cdi_direction dir)
 	  err = 1;
 	}
     }
+
+  if (dir == CDI_DOMINATORS
+      && dom_computed[dir] >= DOM_NO_FAST_QUERY)
+    {
+      FOR_EACH_BB (bb)
+	{
+	  if (!dominated_by_p (dir, bb, ENTRY_BLOCK_PTR))
+	    {
+	      error ("ENTRY does not dominate bb %d", bb->index);
+	      err = 1;
+	    }
+	}
+    }
+
   if (err)
     abort ();
 }
@@ -846,6 +860,11 @@ recount_dominator (enum cdi_direction dir, basic_block bb)
     {
       for (e = bb->pred; e; e = e->pred_next)
 	{
+	  /* Ignore the predecessors that either are not reachable from
+	     the entry block, or whose dominator was not determined yet.  */
+	  if (!dominated_by_p (dir, e->src, ENTRY_BLOCK_PTR))
+	    continue;
+
 	  if (!dominated_by_p (dir, e->src, bb))
 	    dom_bb = nearest_common_dominator (dir, dom_bb, e->src);
 	}
@@ -873,6 +892,9 @@ iterate_fix_dominators (enum cdi_direction dir, basic_block *bbs, int n)
   if (!dom_computed[dir])
     abort ();
 
+  for (i = 0; i < n; i++)
+    set_immediate_dominator (dir, bbs[i], NULL);
+
   while (changed)
     {
       changed = 0;
@@ -887,6 +909,10 @@ iterate_fix_dominators (enum cdi_direction dir, basic_block *bbs, int n)
 	    }
 	}
     }
+
+  for (i = 0; i < n; i++)
+    if (!get_immediate_dominator (dir, bbs[i]))
+      abort ();
 }
 
 void
