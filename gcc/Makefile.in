@@ -1214,12 +1214,12 @@ crtbeginS.o crtendS.o: s-crtS ; @true
 s-crtS: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
   defaults.h frame.h gbl-ctors.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
-	  -DCRT_BEGIN -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/crtstuff.c 
+	  -DCRT_BEGIN -DCRTSTUFFS_O -finhibit-size-directive -fno-inline-functions \
+	  -fno-exceptions -g0 -c $(srcdir)/crtstuff.c 
 	mv crtstuff$(objext) crtbeginS$(objext)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
-	  -DCRT_END -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/crtstuff.c -o crtendS$(objext)
+	  -DCRT_END -DCRTSTUFFS_O -finhibit-size-directive -fno-inline-functions \
+	  -fno-exceptions -g0 -c $(srcdir)/crtstuff.c -o crtendS$(objext)
 	touch s-crtS
 
 # Compile the start modules crt0.o and mcrt0.o that are linked with every program
@@ -2108,8 +2108,8 @@ cpp.dvi: $(srcdir)/cpp.texi
 
 
 INSTALL: $(srcdir)/install1.texi $(srcdir)/install.texi
-	$(MAKEINFO) -D INSTALLONLY --no-header --no-split -o INSTALL \
-	$(srcdir)/install1.texi 
+	cd $(srcdir); $(MAKEINFO) -D INSTALLONLY --no-header \
+		--no-split -o INSTALL install1.texi 
 #
 # Deletion of files made during compilation.
 # There are four levels of this:
