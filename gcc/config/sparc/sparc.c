@@ -1825,20 +1825,6 @@ compute_frame_size (size, leaf_function)
   return actual_fsize;
 }
 
-/* If this were a leaf function, how far would we have to reach
-   from the stack pointer to the last arg on the stack?
-
-   If we don't know, return 4096 (i.e., "too far".)  */
-
-int
-compute_last_arg_offset ()
-{
-  if (GET_CODE (current_function_arg_offset_rtx) == CONST_INT)
-    return (compute_frame_size (get_frame_size (), 1)
-	    + INTVAL (current_function_arg_offset_rtx));
-  return 4096;
-}
-
 /* Output code for the function prologue.  */
 
 void
