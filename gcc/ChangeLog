@@ -1,5 +1,7 @@
 Thu Feb 18 13:15:56 1999  Marc Espie <espie@cvs.openbsd.org>
 
+	* alpha/openbsd.h: New file.
+	* alpha/xm-openbsd.h: New file.
 	* sparc/openbsd.h: New file.
 	* sparc/xm-openbsd.h: New file.
 	* m68k/openbsd.h: New file.
