@@ -1671,6 +1671,7 @@ s390x-ibm-tpf*)
 	tmake_file="t-slibgcc-elf-ver s390/t-crtstuff s390/t-tpf"
 	;;
 sh-*-elf* | sh[12346l]*-*-elf* | sh*-*-kaos* | \
+sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
   sh-*-linux* | sh[346lbe]*-*-linux* | \
   sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
    sh64-*-netbsd* | sh64l*-*-netbsd*)
@@ -1730,6 +1731,12 @@ sh-*-elf* | sh[12346l]*-*-elf* | sh*-*-kaos* | \
 		tm_file="${tm_file} sh/sh64.h"
 		extra_headers="shmedia.h ushmedia.h sshmedia.h"
 		;;
+	*-*-symbianelf*)
+		tmake_file="sh/t-symbian"
+		tm_file="sh/symbian-pre.h sh/little.h ${tm_file} sh/symbian-post.h"
+		extra_objs="symbian.o"
+		extra_parts="crt1.o crti.o crtn.o crtbegin.o crtend.o crtbeginS.o crtendS.o"
+		;;	
 	esac
 	# sed el/eb endian suffixes away to avoid confusion with sh[23]e
 	case `echo ${target} | sed 's/e[lb]-/-/'` in
