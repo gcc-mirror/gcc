@@ -1,3 +1,8 @@
+2002-01-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cplus-dem.c (mystrstr): Delete.  All callers changed to use
+	strstr instead.
+
 2001-12-31  Ira Ruben	<ira@apple.com>
 
 	* aclocal.m4 (libiberty_AC_FUNC_STRNCMP): Use anon mmap as 2nd try.
