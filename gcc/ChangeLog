@@ -1,3 +1,7 @@
+2004-12-22  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree-sra.c (type_can_be_decomposed_p): Reject variable sized types.
+
 2004-12-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (install-common): Remove special-case code for when
