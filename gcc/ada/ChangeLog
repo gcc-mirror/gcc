@@ -1,3 +1,7 @@
+2004-09-20  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* 5tsystem.ads: Removed, no longer used.
+
 2004-09-17  Jeffrey D. Oldham  <oldham@codesourcery.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 
