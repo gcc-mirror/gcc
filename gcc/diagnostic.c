@@ -463,6 +463,16 @@ output_add_string (buffer, str)
   maybe_wrap_text (buffer, str, str + (str ? strlen (str) : 0));
 }
 
+/* Append an identifier ID to BUFFER.  */
+void
+output_add_identifier (buffer, id)
+     output_buffer *buffer;
+     tree id;
+{
+  output_append (buffer, IDENTIFIER_POINTER (id),
+		 IDENTIFIER_POINTER (id) + IDENTIFIER_LENGTH (id));
+}
+
 /* Flush the content of BUFFER onto the attached stream,
    and reinitialize.  */
 

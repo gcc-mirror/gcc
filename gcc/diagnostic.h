@@ -316,6 +316,7 @@ extern void output_add_character	PARAMS ((output_buffer *, int));
 extern void output_decimal		PARAMS ((output_buffer *, int));
 extern void output_add_string		PARAMS ((output_buffer *,
 						 const char *));
+extern void output_add_identifier	PARAMS ((output_buffer *, tree));
 extern const char *output_finalize_message PARAMS ((output_buffer *));
 extern void output_clear_message_text	PARAMS ((output_buffer *));
 extern void output_printf		PARAMS ((output_buffer *, const char *,
