@@ -4160,22 +4160,6 @@ must not use the @var{labelno} argument to @code{FUNCTION_PROFILER}.
 @item PROFILE_BEFORE_PROLOGUE
 Define this macro if the code for function profiling should come before
 the function prologue.  Normally, the profiling code comes after.
-
-
-@findex TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER
-@item TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER
-On some targets, it is impossible to use profiling when the frame
-pointer has been omitted.  For example, on x86 GNU/Linux systems,
-the @code{mcount} routine provided by the GNU C Library finds the
-address of the routine that called the routine that called @code{mcount}
-by looking in the immediate caller's stack frame.  If the immediate
-caller has no frame pointer, this lookup will fail.
-
-By default, GCC assumes that the target does allow profiling when the
-frame pointer is omitted.  This macro should be defined to a C
-expression that evaluates to @code{false} if the target does not allow
-profiling when the frame pointer is omitted.
-
 @end table
 
 @node Tail Calls
