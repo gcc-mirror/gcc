@@ -1382,12 +1382,14 @@ while (0)
   case CONST_INT:						\
     if (INTVAL (RTX) == 0) return 0;				\
     if (INT_14_BITS (RTX)) return 1;				\
+  case HIGH:							\
+    return 2;							\
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
-    return 2;							\
+    return 4;							\
   case CONST_DOUBLE:						\
-    return 4;
+    return 8;
 
 #define ADDRESS_COST(RTX) \
   (GET_CODE (RTX) == REG ? 1 : hppa_address_cost (RTX))
