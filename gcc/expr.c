@@ -191,6 +191,7 @@ static rtx compare		PROTO((tree, enum rtx_code, enum rtx_code));
 static rtx do_store_flag	PROTO((tree, rtx, enum machine_mode, int));
 static tree defer_cleanups_to	PROTO((tree));
 extern void (*interim_eh_hook)	PROTO((tree));
+extern tree truthvalue_conversion       PROTO((tree));
 
 /* Record for each mode whether we can move a register directly to or
    from an object of that mode in memory.  If we can't, we won't try
