@@ -1,3 +1,7 @@
+2001-03-05  Brad Lucier  <lucier@math.purdue.edu>
+
+	* invoke.texi: Document __FAST_MATH__.
+
 2001-03-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* crtstuff.c: Restore include of auto-host.h.
