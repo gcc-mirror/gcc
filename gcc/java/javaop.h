@@ -26,7 +26,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #ifndef JAVAOP_H
 #define JAVAOP_H
 
-typedef	char		int8;
 typedef	unsigned char	uint8;
 #ifndef int16
 #define int16 short
@@ -48,7 +47,11 @@ typedef unsigned int32	uint32;
 #endif
 
 typedef uint16			jchar;
-typedef int8			jbyte;
+#ifdef __STDC__
+typedef	signed char		jbyte;
+#else
+typedef	char			jbyte;
+#endif
 typedef int16                   jshort;
 typedef int32                   jint;
 typedef int64                   jlong;
