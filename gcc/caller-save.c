@@ -406,6 +406,7 @@ set_reg_live (reg, setter)
      rtx reg, setter;
 {
   register int regno, endregno, i;
+  enum machine_mode mode = GET_MODE (reg);
   int word = 0;
 
   if (GET_CODE (reg) == SUBREG)
@@ -418,7 +419,7 @@ set_reg_live (reg, setter)
     return;
 
   regno = REGNO (reg) + word;
-  endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (reg));
+  endregno = regno + HARD_REGNO_NREGS (regno, mode);
 
   for (i = regno; i < endregno; i++)
     SET_HARD_REG_BIT (hard_regs_live, i);
