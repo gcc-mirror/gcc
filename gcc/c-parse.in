@@ -29,10 +29,10 @@ Boston, MA 02111-1307, USA.  */
    written by AT&T, but I have never seen it.  */
 
 ifobjc
-%expect 31
+%expect 31 /* shift/reduce conflicts, and 1 reduce/reduce conflict.  */
 end ifobjc
 ifc
-%expect 10
+%expect 10 /* shift/reduce conflicts, and no reduce/reduce conflicts.  */
 end ifc
 
 %{
@@ -295,7 +295,17 @@ int objc_receiver_context;
 int objc_public_flag;
 int objc_pq_context;
 
+/* The following flag is needed to contextualize ObjC lexical analysis.
+   In some cases (e.g., 'int NSObject;'), it is undesirable to bind 
+   an identifier to an ObjC class, even if a class with that name 
+   exists.  */
+int objc_need_raw_identifier;
+#define OBJC_NEED_RAW_IDENTIFIER(VAL)	objc_need_raw_identifier = VAL
 end ifobjc
+
+ifc
+#define OBJC_NEED_RAW_IDENTIFIER(VAL)	/* nothing */
+end ifc
 
 /* Tell yyparse how to print a token's value, if yydebug is set.  */
 
@@ -444,7 +454,7 @@ identifier:
 	| TYPENAME
 ifobjc
 	| OBJECTNAME
-        | CLASSNAME
+	| CLASSNAME
 end ifobjc
 	;
 
@@ -1384,6 +1394,7 @@ typespec_attr:
 
 typespec_reserved_nonattr:
 	  TYPESPEC
+		{ OBJC_NEED_RAW_IDENTIFIER (1);	}
 	| structsp_nonattr
 	;
 
@@ -1694,6 +1705,9 @@ parm_declarator_starttypename:
 	| parm_declarator_starttypename array_declarator  %prec '.'
 		{ $$ = set_array_declarator_type ($2, $1, 0); }
 	| TYPENAME
+ifobjc
+	| OBJECTNAME
+end ifobjc
 	;
 
 parm_declarator_nostarttypename:
@@ -2836,6 +2850,13 @@ protocoldef:
 		  finish_protocol(objc_interface_context);
 		  objc_interface_context = NULL_TREE;
 		}
+	/* The @protocol forward-declaration production introduces a
+	   reduce/reduce conflict on ';', which should be resolved in
+	   favor of the production 'identifier_list -> identifier'.  */
+	| PROTOCOL identifier_list ';'
+		{
+		  objc_declare_protocols ($2);
+		}
 	;
 
 protocolrefs:
@@ -3119,8 +3140,9 @@ keywordselector:
 
 selector:
 	  IDENTIFIER
-        | TYPENAME
-  	| OBJECTNAME
+	| TYPENAME
+	| CLASSNAME
+	| OBJECTNAME
 	| reservedwords
 	;
 
@@ -3615,12 +3637,26 @@ static int
 yylexname ()
 {
   tree decl;
-
+  
+ifobjc
+  int objc_force_identifier = objc_need_raw_identifier;
+  OBJC_NEED_RAW_IDENTIFIER (0);
+end ifobjc
+  
   if (C_IS_RESERVED_WORD (yylval.ttype))
     {
       enum rid rid_code = C_RID_CODE (yylval.ttype);
 
 ifobjc
+      /* Turn non-typedefed refs to "id" into plain identifiers; this
+	 allows constructs like "void foo(id id);" to work.  */
+      if (rid_code == RID_ID)
+      {
+	decl = lookup_name (yylval.ttype);
+	if (decl == NULL_TREE || TREE_CODE (decl) != TYPE_DECL)
+	  return IDENTIFIER;
+      }
+
       if (!OBJC_IS_AT_KEYWORD (rid_code)
 	  && (!OBJC_IS_PQ_KEYWORD (rid_code) || objc_pq_context))
 end ifobjc
@@ -3653,8 +3689,11 @@ ifobjc
   else
     {
       tree objc_interface_decl = is_class_name (yylval.ttype);
-
-      if (objc_interface_decl)
+      /* ObjC class names are in the same namespace as variables and
+	 typedefs, and hence are shadowed by local declarations.  */
+      if (objc_interface_decl 
+	  && (global_bindings_p () 
+	      || (!objc_force_identifier && !decl)))
 	{
 	  yylval.ttype = objc_interface_decl;
 	  return CLASSNAME;
@@ -3692,10 +3731,7 @@ _yylex ()
     case CPP_AND_AND:					return ANDAND;
     case CPP_OR_OR:					return OROR;
     case CPP_QUERY:					return '?';
-    case CPP_COLON:					return ':';
-    case CPP_COMMA:					return ',';
     case CPP_OPEN_PAREN:				return '(';
-    case CPP_CLOSE_PAREN:				return ')';
     case CPP_EQ_EQ:	yylval.code = EQ_EXPR;		return EQCOMPARE;
     case CPP_NOT_EQ:	yylval.code = NE_EXPR;		return EQCOMPARE;
     case CPP_GREATER_EQ:yylval.code = GE_EXPR;		return ARITHCOMPARE;
@@ -3716,13 +3752,19 @@ _yylex ()
     case CPP_CLOSE_SQUARE:				return ']';
     case CPP_OPEN_BRACE:				return '{';
     case CPP_CLOSE_BRACE:				return '}';
-    case CPP_SEMICOLON:					return ';';
     case CPP_ELLIPSIS:					return ELLIPSIS;
 
     case CPP_PLUS_PLUS:					return PLUSPLUS;
     case CPP_MINUS_MINUS:				return MINUSMINUS;
     case CPP_DEREF:					return POINTSAT;
     case CPP_DOT:					return '.';
+
+      /* The following tokens may affect the interpretation of any
+	 identifiers following, if doing Objective-C.  */
+    case CPP_COLON:		OBJC_NEED_RAW_IDENTIFIER (0);	return ':';
+    case CPP_COMMA:		OBJC_NEED_RAW_IDENTIFIER (0);	return ',';
+    case CPP_CLOSE_PAREN:	OBJC_NEED_RAW_IDENTIFIER (0);	return ')';
+    case CPP_SEMICOLON:		OBJC_NEED_RAW_IDENTIFIER (0);	return ';';
 
     case CPP_EOF:
       if (cpp_pop_buffer (parse_in) == 0)
@@ -3741,8 +3783,8 @@ _yylex ()
     case CPP_WSTRING:
       return STRING;
       
-      /* This token is Objective-C specific.  It gives the next
-	 token special significance.  */
+      /* This token is Objective-C specific.  It gives the next token
+	 special significance.  */
     case CPP_ATSIGN:
 ifobjc
       {
