@@ -1,3 +1,8 @@
+2004-01-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* combine.c (simplify_shift_const, case XOR): Be careful when
+	commuting XOR with ASHIFTRT.
+
 2004-01-30  Kazu Hirata  <kazu@cs.umass.edu>
             Eric Botcazou  <ebotcazou@libertysurf.fr>
 
