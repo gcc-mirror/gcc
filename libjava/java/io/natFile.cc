@@ -37,7 +37,7 @@ details.  */
 #include <java/lang/System.h>
 
 jboolean
-java::io::File::access (jint query)
+java::io::File::_access (jint query)
 {
   char buf[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
@@ -59,7 +59,7 @@ java::io::File::access (jint query)
 }
 
 jboolean
-java::io::File::stat (jint query)
+java::io::File::_stat (jint query)
 {
   char buf[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);

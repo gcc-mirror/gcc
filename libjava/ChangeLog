@@ -1,3 +1,12 @@
+2001-07-18  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/natFileWin32.cc (_access): Renamed.
+	(_stat): Likewise.
+	* java/io/natFile.cc (_access): Renamed.
+	(_stat): Likewise.
+	* java/io/File.java (access, stat): Add leading `_' to name.
+	Updated all callers.
+
 2001-07-18  Martin Kahlert  <martin.kahlert@infineon.com>
 
 	* java/lang/natClass.cc: Move calls of _Jv_InitClass from
