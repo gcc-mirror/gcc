@@ -1,3 +1,9 @@
+Sat Apr  4 17:45:01 1998  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (ffecom_expr_): Revert Oct 22 change.  Instead take a WIDENP
+	argument so that we can respect the signedness of the original type.
+	(ffecom_init_0): Do sizetype initialization first.
+
 1998-03-28  Dave Love  <d.love@dl.ac.uk>
 
 	* Make-lang.in (f771$(exeext)): Fix typpo.
