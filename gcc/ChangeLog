@@ -12,6 +12,8 @@
 	(m32r_return_addr): Added for __builtin_return_address(0).
 	(m32r_reload_lr): Ditto.
 
+	* longlong.h: Fix macros for m32r add_ssaaaa and sub_ddmmss. 
+	
 2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* doc/install.texi (Prerequisites): Update libbanshee,
