@@ -1110,12 +1110,12 @@ extern int fixuplabelno;
 
 #ifdef HAVE_LD_PIE
 #define	STARTFILE_LINUX_SPEC "\
-%{!shared: %{pg|p:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} \
+%{!shared: %{pg|p|profile:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} \
 %{mnewlib:ecrti.o%s;:crti.o%s} \
 %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #else
 #define	STARTFILE_LINUX_SPEC "\
-%{!shared: %{pg|p:gcrt1.o%s;:crt1.o%s}} \
+%{!shared: %{pg|p|profile:gcrt1.o%s;:crt1.o%s}} \
 %{mnewlib:ecrti.o%s;:crti.o%s} \
 %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #endif
