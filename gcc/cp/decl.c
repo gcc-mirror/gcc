@@ -329,6 +329,9 @@ struct cp_binding_level GTY(())
     /* A chain of NAMESPACE_DECL nodes.  */
     tree namespaces;
 
+    /* An array of static functions and variables (for namespaces only) */
+    varray_type static_decls;
+
     /* A chain of VTABLE_DECL nodes.  */
     tree vtables; 
 
@@ -1039,6 +1042,13 @@ add_decl_to_level (decl, b)
       TREE_CHAIN (decl) = b->names;
       b->names = decl;
       b->names_size++;
+
+      /* If appropriate, add decl to separate list of statics */
+      if (b->namespace_p)
+	if ((TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
+	    || (TREE_CODE (decl) == FUNCTION_DECL
+		&& (!TREE_PUBLIC (decl) || DECL_DECLARED_INLINE_P (decl))))
+	  VARRAY_PUSH_TREE (b->static_decls, decl);
     }
 }
 
@@ -1919,18 +1929,11 @@ wrapup_globals_for_namespace (namespace, data)
      tree namespace;
      void *data;
 {
-  tree globals = cp_namespace_decls (namespace);
-  int len = NAMESPACE_LEVEL (namespace)->names_size;
-  tree *vec = (tree *) alloca (sizeof (tree) * len);
-  int i;
-  int result;
-  tree decl;
+  struct cp_binding_level *level = NAMESPACE_LEVEL (namespace);
+  varray_type statics = level->static_decls;
+  tree *vec = &VARRAY_TREE (statics, 0);
+  int len = VARRAY_ACTIVE_SIZE (statics);
   int last_time = (data != 0);
-
-  /* Process the decls in reverse order--earliest first.
-     Put them into VEC from back to front, then take out from front.  */       
-  for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
-    vec[len - i - 1] = decl;
 
   if (last_time)
     {
@@ -1939,9 +1942,7 @@ wrapup_globals_for_namespace (namespace, data)
     }
 
   /* Write out any globals that need to be output.  */
-  result = wrapup_global_declarations (vec, len);
-
-  return result;
+  return wrapup_global_declarations (vec, len);
 }
 
 
@@ -2278,6 +2279,9 @@ push_namespace (name)
 	  pushlevel (0);
 	  declare_namespace_level ();
 	  NAMESPACE_LEVEL (d) = current_binding_level;
+	  VARRAY_TREE_INIT (current_binding_level->static_decls,
+			    name != std_identifier ? 10 : 200,
+			    "Static declarations");
 	}
     }
   else
@@ -6656,6 +6660,10 @@ cxx_init_decl_processing ()
   /* The global level is the namespace level of ::.  */
   NAMESPACE_LEVEL (global_namespace) = global_binding_level;
   declare_namespace_level ();
+
+  VARRAY_TREE_INIT (global_binding_level->static_decls,
+		    200,
+		    "Static declarations");
 
   /* Create the `std' namespace.  */
   push_namespace (std_identifier);
