@@ -1,3 +1,8 @@
+Thu Jan 14 22:38:41 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* stmt.c (expand_end_case): Use emit_cmp_and_jump_insns to avoid
+	generating non-canonical rtl.
+
 1999-01-14  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
 	* config/i960/i960.c (i960_output_move_double_zero,
