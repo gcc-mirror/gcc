@@ -4133,8 +4133,6 @@ mips_va_arg (tree valist, tree type)
 	  rsize = UNITS_PER_WORD;
 	}
 
-      addr_rtx = gen_reg_rtx (Pmode);
-
       if (!EABI_FLOAT_VARARGS_P)
 	{
 	  /* Case of all args in a merged stack.  No need to check bounds,
@@ -4157,12 +4155,12 @@ mips_va_arg (tree valist, tree type)
 
 	  /* Emit code to set addr_rtx to the valist, and postincrement
 	     the valist by the size of the argument, rounded up to the
-	     next word.	 */
+	     next word.	 Account for padding on big-endian targets.  */
 	  t = build (POSTINCREMENT_EXPR, TREE_TYPE (gpr), gpr,
 		     size_int (rsize));
-	  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-	  if (r != addr_rtx)
-	    emit_move_insn (addr_rtx, r);
+	  addr_rtx = expand_expr (t, 0, Pmode, EXPAND_NORMAL);
+	  if (BYTES_BIG_ENDIAN)
+	    addr_rtx = plus_constant (addr_rtx, rsize - size);
 
 	  /* Flush the POSTINCREMENT.  */
 	  emit_queue();
@@ -4175,6 +4173,8 @@ mips_va_arg (tree valist, tree type)
 	  tree ovfl, top, off;
 	  rtx lab_over = NULL_RTX, lab_false;
 	  HOST_WIDE_INT osize;
+
+	  addr_rtx = gen_reg_rtx (Pmode);
 
 	  f_ovfl = TYPE_FIELDS (va_list_type_node);
 	  f_gtop = TREE_CHAIN (f_ovfl);
@@ -4226,6 +4226,25 @@ mips_va_arg (tree valist, tree type)
 		 each one will take up UNITS_PER_HWFPVALUE bytes, regardless
 		 of the float's precision.  */
 	      rsize = UNITS_PER_HWFPVALUE;
+
+	      /* Overflow arguments are padded to UNITS_PER_WORD bytes
+		 (= PARM_BOUNDARY bits).  This can be different from RSIZE
+		 in two cases:
+
+		     (1) On 32-bit targets when TYPE is a structure such as:
+
+			     struct s { float f; };
+
+			 Such structures are passed in paired FPRs, so RSIZE
+			 will be 8 bytes.  However, the structure only takes
+			 up 4 bytes of memory, so OSIZE will only be 4.
+
+		     (2) In combinations such as -mgp64 -msingle-float
+			 -fshort-double.  Doubles passed in registers
+			 will then take up 4 (UNITS_PER_HWFPVALUE) bytes,
+			 but those passed on the stack take up
+			 UNITS_PER_WORD bytes.  */
+	      osize = MAX (GET_MODE_SIZE (TYPE_MODE (type)), UNITS_PER_WORD);
 	    }
 	  else
 	    {
@@ -4239,14 +4258,8 @@ mips_va_arg (tree valist, tree type)
 		  t = build (MODIFY_EXPR, TREE_TYPE (off), off, t);
 		  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 		}
+	      osize = rsize;
 	    }
-	  /* Every overflow argument must take up at least UNITS_PER_WORD
-	     bytes (= PARM_BOUNDARY bits).  RSIZE can sometimes be smaller
-	     than that, such as in the combination -mgp64 -msingle-float
-	     -fshort-double.  Doubles passed in registers will then take
-	     up UNITS_PER_HWFPVALUE bytes, but those passed on the stack
-	     take up UNITS_PER_WORD bytes.  */
-	  osize = MAX (rsize, UNITS_PER_WORD);
 
 	  /* [2] Emit code to branch if off == 0.  */
 	  r = expand_expr (off, NULL_RTX, TYPE_MODE (TREE_TYPE (off)),
@@ -4254,8 +4267,12 @@ mips_va_arg (tree valist, tree type)
 	  emit_cmp_and_jump_insns (r, const0_rtx, EQ, const1_rtx, GET_MODE (r),
 				   1, lab_false);
 
-	  /* [4] Emit code for: addr_rtx = top - off.  */
+	  /* [4] Emit code for: addr_rtx = top - off.  On big endian machines,
+	     the argument has RSIZE - SIZE bytes of leading padding.  */
 	  t = build (MINUS_EXPR, TREE_TYPE (top), top, off);
+	  if (BYTES_BIG_ENDIAN && rsize > size)
+	    t = build (PLUS_EXPR, TREE_TYPE (t), t,
+		       build_int_2 (rsize - size, 0));
 	  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
 	  if (r != addr_rtx)
 	    emit_move_insn (addr_rtx, r);
@@ -4285,12 +4302,12 @@ mips_va_arg (tree valist, tree type)
 
 	  /* [10, 11].	Emit code to store ovfl in addr_rtx, then
 	     post-increment ovfl by osize.  On big-endian machines,
-	     the argument has OSIZE - RSIZE bytes of leading padding.  */
+	     the argument has OSIZE - SIZE bytes of leading padding.  */
 	  t = build (POSTINCREMENT_EXPR, TREE_TYPE (ovfl), ovfl,
 		     size_int (osize));
-	  if (BYTES_BIG_ENDIAN && osize > rsize)
+	  if (BYTES_BIG_ENDIAN && osize > size)
 	    t = build (PLUS_EXPR, TREE_TYPE (t), t,
-		       build_int_2 (osize - rsize, 0));
+		       build_int_2 (osize - size, 0));
 	  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
 	  if (r != addr_rtx)
 	    emit_move_insn (addr_rtx, r);
@@ -4298,8 +4315,6 @@ mips_va_arg (tree valist, tree type)
 	  emit_queue();
 	  emit_label (lab_over);
 	}
-      if (BYTES_BIG_ENDIAN && rsize != size)
-	addr_rtx = plus_constant (addr_rtx, rsize - size);
       if (indirect)
 	{
 	  addr_rtx = force_reg (Pmode, addr_rtx);
