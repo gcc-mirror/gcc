@@ -11835,7 +11835,7 @@ floating-point standard by a leading light can be found at
 @uref{http://http.cs.berkeley.edu/%7Ewkahan/ieee754status};
 see also slides from the short course referenced from
 @uref{http://http.cs.berkeley.edu/%7Efateman/}.
-@uref{http://www.suburbia.net/%7Ebillm/floating-point/} has a brief
+@uref{http://www.linuxsupportline.com/%7Ebillm/} has a brief
 guide to IEEE 754, a somewhat x86-GNU/Linux-specific FAQ,
 and library code for GNU/Linux x86 systems.
 
