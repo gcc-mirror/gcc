@@ -1,3 +1,8 @@
+Thu Apr  2 18:29:26 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* info/termdep.h: If POSIX, #undef TIOCGETC for benefit of systems
+	that provide TIOCETC but not struct tchars.
+
 Thu Mar 26 11:31:33 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* acinclude.m4: Bring back changes lost during merge.
