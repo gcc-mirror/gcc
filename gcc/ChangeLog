@@ -1,3 +1,11 @@
+2000-09-05  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64.h (INIT_TARGET_OPTABS): Remove.
+	* config/ia64/lib1funcs.asm (__divdi3): Update from Intel IA-64
+	Optimization Guide, minimum latency alternative.
+	(__moddi3, __udivdi3, __umoddi3): Likewise.
+	(__divsi3, __modsi3, __udivsi3, __umodsi3): Likewise.
+
 2000-09-05  Bruce Korb  <bkorb@gnu.org>
 
         * gcc/fixinc/fixincl.c(load_file): always read header files
