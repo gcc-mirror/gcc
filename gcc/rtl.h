@@ -856,7 +856,6 @@ extern rtx single_set			PROTO((rtx));
 extern rtx find_last_value		PROTO((rtx, rtx *, rtx));
 extern int refers_to_regno_p		PROTO((int, int, rtx, rtx *));
 extern int reg_overlap_mentioned_p	PROTO((rtx, rtx));
-extern void note_stores			PROTO((rtx, void (*)()));
 extern rtx reg_set_last			PROTO((rtx, rtx));
 extern int rtx_equal_p			PROTO((rtx, rtx));
 extern int dead_or_set_p		PROTO((rtx, rtx));
@@ -951,7 +950,9 @@ extern rtx static_chain_incoming_rtx;
 extern rtx gen_rtx_CONST_INT PROTO((enum machine_mode, HOST_WIDE_INT));
 extern rtx gen_rtx_REG PROTO((enum machine_mode, int));
 
-#define GEN_INT(N)  gen_rtx_CONST_INT (VOIDmode, (N))
+/* We need the cast here to ensure that we get the same result both with
+   and without prototypes.  */
+#define GEN_INT(N)  gen_rtx_CONST_INT (VOIDmode, (HOST_WIDE_INT) (N))
 
 
 /* If HARD_FRAME_POINTER_REGNUM is defined, then a special dummy reg

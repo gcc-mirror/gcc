@@ -1,5 +1,23 @@
 Wed Apr  1 22:26:22 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* c-lex.c (yylex): Initialize traditional_type, ansi_type and type.
+
+	* caller-save.c (insert_save_restore): Initialize pat, code and
+	numregs.
+
+	* emit-rtl.c (push_to_sequence): Initialize top.
+	(push_topmost_sequence): Likewise.
+
+	* genattrtab.c (simplify_by_exploding): Initialize defval.
+
+	* profile.c (branch_prob): Initialize dest.
+
+	* rtl.h (note_stores): Remove duplicate prototype.
+	(GEN_INT): Re-instate cast of second arg to HOST_WIDE_INT.
+
+	* cplus-dem.c (gnu_special): Don't get confused by .<digits>
+	strings that are not actually lengths.
+
 	* genattrtab.c: Make generated file use system.h, instead of
 	including stdio.h, etc directly.
 	* genextract.c, genopinit.c, genoutput.c: Likewise.

@@ -3112,7 +3112,7 @@ push_to_sequence (first)
 void
 push_topmost_sequence ()
 {
-  struct sequence_stack *stack, *top;
+  struct sequence_stack *stack, *top = NULL;
 
   start_sequence ();
 
@@ -3130,7 +3130,7 @@ push_topmost_sequence ()
 void
 pop_topmost_sequence ()
 {
-  struct sequence_stack *stack, *top;
+  struct sequence_stack *stack, *top = NULL;
 
   for (stack = sequence_stack; stack; stack = stack->next)
     top = stack;
