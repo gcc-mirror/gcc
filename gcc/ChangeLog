@@ -1,3 +1,8 @@
+2004-08-24  Geoffrey Keating  <geoffk@apple.com>
+
+	* gimplify.c (lookup_tmp_var): Separate temporaries when not
+	optimizing.
+
 2004-08-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR libstdc++/17005 (fix for HP-UX 11.11)

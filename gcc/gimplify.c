@@ -117,8 +117,11 @@ push_gimplify_context (void)
     abort ();
   gimplify_ctxp
     = (struct gimplify_ctx *) xcalloc (1, sizeof (struct gimplify_ctx));
-  gimplify_ctxp->temp_htab
-    = htab_create (1000, gimple_tree_hash, gimple_tree_eq, free);
+  if (optimize)
+    gimplify_ctxp->temp_htab
+      = htab_create (1000, gimple_tree_hash, gimple_tree_eq, free);
+  else
+    gimplify_ctxp->temp_htab = NULL;
 }
 
 /* Tear down a context for the gimplifier.  If BODY is non-null, then
@@ -142,12 +145,13 @@ pop_gimplify_context (tree body)
     record_vars (gimplify_ctxp->temps);
 
 #if 0
-  if (!quiet_flag)
+  if (!quiet_flag && optimize)
     fprintf (stderr, " collisions: %f ",
 	     htab_collisions (gimplify_ctxp->temp_htab));
 #endif
 
-  htab_delete (gimplify_ctxp->temp_htab);
+  if (optimize)
+    htab_delete (gimplify_ctxp->temp_htab);
   free (gimplify_ctxp);
   gimplify_ctxp = NULL;
 }
@@ -409,7 +413,12 @@ lookup_tmp_var (tree val, bool is_formal)
 {
   tree ret;
 
-  if (!is_formal || TREE_SIDE_EFFECTS (val))
+  /* If not optimizing, never really reuse a temporary.  local-alloc
+     won't allocate any variable that is used in more than one basic
+     block, which means it will go into memory, causing much extra
+     work in reload and final and poorer code generation, outweighing
+     the extra memory allocation here.  */
+  if (!optimize || !is_formal || TREE_SIDE_EFFECTS (val))
     ret = create_tmp_from_val (val);
   else
     {
