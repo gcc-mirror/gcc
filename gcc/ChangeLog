@@ -1,5 +1,10 @@
 2002-03-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* regrename.c (build_def_use): Move recog_memoized
+	before extract_insn.
+
+2002-03-25  Jakub Jelinek  <jakub@redhat.com>
+
 	PR target/6043
 	* expr.c (emit_group_store): Handle storing into CONCAT.
 

@@ -784,9 +784,9 @@ build_def_use (bb)
 	     (6) For any write we find in an operand, make a new chain.
 	     (7) For any REG_UNUSED, close any chains we just opened.  */
 
+	  icode = recog_memoized (insn);
 	  extract_insn (insn);
 	  constrain_operands (1);
-	  icode = recog_memoized (insn);
 	  preprocess_constraints ();
 	  alt = which_alternative;
 	  n_ops = recog_data.n_operands;
