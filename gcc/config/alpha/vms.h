@@ -240,7 +240,7 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
     }							\
 }
 
-/* ABI has stack checking, but its broken */
+/* ABI has stack checking, but it's broken.  */
 #undef STACK_CHECK_BUILTIN
 #define STACK_CHECK_BUILTIN 0
 
