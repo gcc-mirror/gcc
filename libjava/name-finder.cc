@@ -112,7 +112,8 @@ _Jv_name_finder::_Jv_name_finder (char *executable)
 void
 _Jv_name_finder::toHex (void *p)
 {
-  unsigned long long n = (unsigned long long)p;
+  typedef unsigned word_t __attribute ((mode (word)));
+  word_t n = (word_t) p;
   int digits = sizeof (void *) * 2;
 
   strcpy (hex, "0x");

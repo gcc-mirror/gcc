@@ -1,3 +1,9 @@
+2002-02-18  Jason Merrill  <jason@redhat.com>
+
+	* name-finder.cc (toHex): Use word mode, not long long.
+
+	* gnu/gcj/convert/natIconv.cc (write): Avoid sign-compare warning.
+
 2002-02-15  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/5695:

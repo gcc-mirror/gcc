@@ -213,7 +213,7 @@ gnu::gcj::convert::Output_iconv::write (jcharArray inbuffer,
       size_t r = iconv_adapter (iconv, (iconv_t) handle,
 				&inbuf, &inavail,
 				&outbuf, &outavail);
-      if (r == -1 && inavail == loop_old_in)
+      if (r == (size_t) -1 && inavail == loop_old_in)
 	{
 	  inavail -= 2;
 	  if (inavail == 0)
