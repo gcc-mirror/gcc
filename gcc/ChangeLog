@@ -1,3 +1,8 @@
+2004-10-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-cfg.c (group_case_labels): Look at the second to last
+	case statement for combing with the default case.
+
 2004-10-19  Richard Hendeson  <rth@redhat.com>
 
 	PR 17962
