@@ -1,3 +1,10 @@
+Tue Oct 12 09:45:19 1999  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+        * config/rs6000/eabi-ctors.c (__do_global_ctors): Run through
+        __CTOR_LIST__ in opposite order, which is the correct order for sorted
+        constructors.
+        (__do_global_dtors): similarly for __DTOR_LIST__.
+
 Fri Oct  8 19:46:03 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 				Diego Novillo <dnovillo@cygnus.com>
 

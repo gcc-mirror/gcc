@@ -58,14 +58,14 @@ void (*__atexit)(func_ptr);
 void
 __do_global_ctors (void)
 {
-  func_ptr *ptr = &__CTOR_LIST__[0];
-  func_ptr *end = &__CTOR_END__[0];
+  func_ptr *ptr   = &__CTOR_END__[0] - 1;
+  func_ptr *start = &__CTOR_LIST__[0];
 
   if (__atexit)
     __atexit (__do_global_dtors);
 
   /* Call the constructors collected in the .ctors section.  */
-  for ( ; ptr != end; ptr++)
+  for ( ; ptr >= start; ptr--)
     if (*ptr)
       (*ptr)();
 
@@ -77,15 +77,15 @@ __do_global_ctors (void)
 void
 __do_global_dtors (void)
 {
-  func_ptr *ptr   = &__DTOR_END__[0] - 1;
-  func_ptr *start = &__DTOR_LIST__[0];
+  func_ptr *ptr   = &__DTOR_LIST__[0];
+  func_ptr *end   = &__DTOR_END__[0];
 
   /* Call the termination function in the .fini section.  */
   (*fini_ptr) ();
 
   /* Call the  destructors collected in the .dtors section.  Run
      the destructors in reverse order.  */
-  for ( ; ptr >= start; ptr--)
+  for ( ; ptr < end; ptr++)
     if (*ptr)
       (*ptr)();
 }
