@@ -20,7 +20,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This file defines the grammar of C and that of Objective C.
    ifobjc ... end ifobjc  conditionals contain code for Objective C only.
    ifc ... end ifc  conditionals contain code for C only.
-   The awk script cond.awk is used to convert this file into
+   Sed commands in Makefile.in are used to convert this file into
    c-parse.y and into objc-parse.y.  */
 
 /* To whomever it may concern: I have heard that such a thing was once
