@@ -203,7 +203,6 @@ static rtx initial_reg_note_copy PARAMS ((rtx, struct inline_remap *));
 static void final_reg_note_copy PARAMS ((rtx, struct inline_remap *));
 static void copy_loop_body PARAMS ((rtx, rtx, struct inline_remap *, rtx, int,
 				  enum unroll_types, rtx, rtx, rtx, rtx));
-static void iteration_info PARAMS ((const struct loop *, rtx, rtx *, rtx *));
 static int find_splittable_regs PARAMS ((const struct loop *,
 					 enum unroll_types, rtx, int));
 static int find_splittable_givs PARAMS ((const struct loop *, 
@@ -1477,7 +1476,7 @@ precondition_loop_p (loop, initial_value, final_value, increment, mode)
       return 0;
     }
 
-  /* Note that iteration_info biases the initial value for GIV iterators
+  /* Note that loop_iterations biases the initial value for GIV iterators
      such as "while (i-- > 0)" so that we can calculate the number of
      iterations just like for BIV iterators.
 
@@ -2425,125 +2424,6 @@ biv_total_increment (bl)
     }
 
   return result;
-}
-
-/* Determine the initial value of the iteration variable, and the amount
-   that it is incremented each loop.  Use the tables constructed by
-   the strength reduction pass to calculate these values.
-
-   Initial_value and/or increment are set to zero if their values could not
-   be calculated.  */
-
-static void
-iteration_info (loop, iteration_var, initial_value, increment)
-     const struct loop *loop ATTRIBUTE_UNUSED;
-     rtx iteration_var, *initial_value, *increment;
-{
-  struct iv_class *bl;
-
-  /* Clear the result values, in case no answer can be found.  */
-  *initial_value = 0;
-  *increment = 0;
-
-  /* The iteration variable can be either a giv or a biv.  Check to see
-     which it is, and compute the variable's initial value, and increment
-     value if possible.  */
-
-  /* If this is a new register, can't handle it since we don't have any
-     reg_iv_type entry for it.  */
-  if ((unsigned) REGNO (iteration_var) >= reg_iv_type->num_elements)
-    {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop unrolling: No reg_iv_type entry for iteration var.\n");
-      return;
-    }
-
-  /* Reject iteration variables larger than the host wide int size, since they
-     could result in a number of iterations greater than the range of our
-     `unsigned HOST_WIDE_INT' variable loop_info->n_iterations.  */
-  else if ((GET_MODE_BITSIZE (GET_MODE (iteration_var))
-	    > HOST_BITS_PER_WIDE_INT))
-    {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop unrolling: Iteration var rejected because mode too large.\n");
-      return;
-    }
-  else if (GET_MODE_CLASS (GET_MODE (iteration_var)) != MODE_INT)
-    {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop unrolling: Iteration var not an integer.\n");
-      return;
-    }
-  else if (REG_IV_TYPE (REGNO (iteration_var)) == BASIC_INDUCT)
-    {
-      /* When reg_iv_type / reg_iv_info is resized for biv increments
-	 that are turned into givs, reg_biv_class is not resized.
-	 So check here that we don't make an out-of-bounds access.  */
-      if (REGNO (iteration_var) >= max_reg_before_loop)
-	abort ();
-
-      /* Grab initial value, only useful if it is a constant.  */
-      bl = reg_biv_class[REGNO (iteration_var)];
-      *initial_value = bl->initial_value;
-
-      *increment = biv_total_increment (bl);
-    }
-  else if (REG_IV_TYPE (REGNO (iteration_var)) == GENERAL_INDUCT)
-    {
-      HOST_WIDE_INT offset = 0;
-      struct induction *v = REG_IV_INFO (REGNO (iteration_var));
-      rtx biv_initial_value;
-
-      if (REGNO (v->src_reg) >= max_reg_before_loop)
-	abort ();
-
-      bl = reg_biv_class[REGNO (v->src_reg)];
-
-      /* Increment value is mult_val times the increment value of the biv.  */
-
-      *increment = biv_total_increment (bl);
-      if (*increment)
-	{
-	  struct induction *biv_inc;
-
-	  *increment
-	    = fold_rtx_mult_add (v->mult_val, *increment, const0_rtx, v->mode);
-	  /* The caller assumes that one full increment has occured at the
-	     first loop test.  But that's not true when the biv is incremented
-	     after the giv is set (which is the usual case), e.g.:
-	     i = 6; do {;} while (i++ < 9) .
-	     Therefore, we bias the initial value by subtracting the amount of
-	     the increment that occurs between the giv set and the giv test.  */
-	  for (biv_inc = bl->biv; biv_inc; biv_inc = biv_inc->next_iv)
-	    {
-	      if (loop_insn_first_p (v->insn, biv_inc->insn))
-		offset -= INTVAL (biv_inc->add_val);
-	    }
-	  offset *= INTVAL (v->mult_val);
-	}
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop unrolling: Giv iterator, initial value bias %ld.\n",
-		 (long) offset);
-
-      /* Initial value is mult_val times the biv's initial value plus
-	 add_val.  Only useful if it is a constant.  */
-      biv_initial_value = extend_value_for_giv (v, bl->initial_value);
-      *initial_value
-	= fold_rtx_mult_add (v->mult_val,
-			     plus_constant (biv_initial_value, offset),
-			     v->add_val, v->mode);
-    }
-  else
-    {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop unrolling: Not basic or general induction var.\n");
-      return;
-    }
 }
 
 
@@ -3631,8 +3511,10 @@ find_common_reg_term (op0, op1)
   return NULL_RTX;
 }
 
-/* Calculate the number of loop iterations.  Returns the exact number of loop
-   iterations if it can be calculated, otherwise returns zero.  */
+
+/* Determine the loop iterator and calculate the number of loop
+   iterations.  Returns the exact number of loop iterations if it can
+   be calculated, otherwise returns zero.  */
 
 unsigned HOST_WIDE_INT
 loop_iterations (loop)
@@ -3649,6 +3531,7 @@ loop_iterations (loop)
   rtx last_loop_insn;
   rtx reg_term;
   struct loop_info *loop_info = LOOP_INFO (loop);
+  struct iv_class *bl;
 
   loop_info->n_iterations = 0;
   loop_info->initial_value = 0;
@@ -3659,6 +3542,7 @@ loop_iterations (loop)
   loop_info->increment = 0;
   loop_info->iteration_var = 0;
   loop_info->unroll_number = 1;
+  loop_info->iv = 0;
 
   /* We used to use prev_nonnote_insn here, but that fails because it might
      accidentally get the branch for a contained loop if the branch for this
@@ -3725,10 +3609,115 @@ loop_iterations (loop)
       && ! REG_USERVAR_P (iteration_var))
     abort ();
 
-  iteration_info (loop, iteration_var, &initial_value, &increment);
+  /* Determine the initial value of the iteration variable, and the amount
+     that it is incremented each loop.  Use the tables constructed by
+     the strength reduction pass to calculate these values.  */
+
+  /* Clear the result values, in case no answer can be found.  */
+  initial_value = 0;
+  increment = 0;
+
+  /* The iteration variable can be either a giv or a biv.  Check to see
+     which it is, and compute the variable's initial value, and increment
+     value if possible.  */
+
+  /* If this is a new register, can't handle it since we don't have any
+     reg_iv_type entry for it.  */
+  if ((unsigned) REGNO (iteration_var) >= reg_iv_type->num_elements)
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Loop iterations: No reg_iv_type entry for iteration var.\n");
+      return 0;
+    }
+
+  /* Reject iteration variables larger than the host wide int size, since they
+     could result in a number of iterations greater than the range of our
+     `unsigned HOST_WIDE_INT' variable loop_info->n_iterations.  */
+  else if ((GET_MODE_BITSIZE (GET_MODE (iteration_var))
+	    > HOST_BITS_PER_WIDE_INT))
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Loop iterations: Iteration var rejected because mode too large.\n");
+      return 0;
+    }
+  else if (GET_MODE_CLASS (GET_MODE (iteration_var)) != MODE_INT)
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Loop iterations: Iteration var not an integer.\n");
+      return 0;
+    }
+  else if (REG_IV_TYPE (REGNO (iteration_var)) == BASIC_INDUCT)
+    {
+      /* When reg_iv_type / reg_iv_info is resized for biv increments
+	 that are turned into givs, reg_biv_class is not resized.
+	 So check here that we don't make an out-of-bounds access.  */
+      if (REGNO (iteration_var) >= max_reg_before_loop)
+	abort ();
+
+      /* Grab initial value, only useful if it is a constant.  */
+      bl = reg_biv_class[REGNO (iteration_var)];
+      initial_value = bl->initial_value;
+
+      increment = biv_total_increment (bl);
+    }
+  else if (REG_IV_TYPE (REGNO (iteration_var)) == GENERAL_INDUCT)
+    {
+      HOST_WIDE_INT offset = 0;
+      struct induction *v = REG_IV_INFO (REGNO (iteration_var));
+      rtx biv_initial_value;
+
+      if (REGNO (v->src_reg) >= max_reg_before_loop)
+	abort ();
+
+      bl = reg_biv_class[REGNO (v->src_reg)];
+
+      /* Increment value is mult_val times the increment value of the biv.  */
+
+      increment = biv_total_increment (bl);
+      if (increment)
+	{
+	  struct induction *biv_inc;
+
+	  increment
+	    = fold_rtx_mult_add (v->mult_val, increment, const0_rtx, v->mode);
+	  /* The caller assumes that one full increment has occured at the
+	     first loop test.  But that's not true when the biv is incremented
+	     after the giv is set (which is the usual case), e.g.:
+	     i = 6; do {;} while (i++ < 9) .
+	     Therefore, we bias the initial value by subtracting the amount of
+	     the increment that occurs between the giv set and the giv test.  */
+	  for (biv_inc = bl->biv; biv_inc; biv_inc = biv_inc->next_iv)
+	    {
+	      if (loop_insn_first_p (v->insn, biv_inc->insn))
+		offset -= INTVAL (biv_inc->add_val);
+	    }
+	  offset *= INTVAL (v->mult_val);
+	}
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Loop iterations: Giv iterator, initial value bias %ld.\n",
+		 (long) offset);
+
+      /* Initial value is mult_val times the biv's initial value plus
+	 add_val.  Only useful if it is a constant.  */
+      biv_initial_value = extend_value_for_giv (v, bl->initial_value);
+      initial_value
+	= fold_rtx_mult_add (v->mult_val,
+			     plus_constant (biv_initial_value, offset),
+			     v->add_val, v->mode);
+    }
+  else
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Loop iterations: Not basic or general induction var.\n");
+      return 0;
+    }
 
   if (initial_value == 0)
-    /* iteration_info already printed a message.  */
     return 0;
 
   unsigned_p = 0;
@@ -3809,6 +3798,7 @@ loop_iterations (loop)
   loop_info->increment = increment;
   loop_info->iteration_var = iteration_var;
   loop_info->comparison_code = comparison_code;
+  loop_info->iv = bl;
 
   /* Try to determine the iteration count for loops such
      as (for i = init; i < init + const; i++).  When running the

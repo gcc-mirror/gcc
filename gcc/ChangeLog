@@ -1,5 +1,10 @@
 2000-09-12  Michael Hayes  <mhayes@cygnus.com>
 
+	* unroll.c (iteration_info): Subsume into loop_iterations.
+	* loop.h (loop_info): New field iv.
+
+2000-09-12  Michael Hayes  <mhayes@cygnus.com>
+
 	* basic-block.h (LOOP_TREE, LOOP_PRE_HEADER, LOOP_EDGES): New.
 	(LOOP_EXITS_DOMS, LOOP_ALL): Likewise.
 	(flow_loops_update): New prototype.
