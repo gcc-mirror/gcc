@@ -1,3 +1,11 @@
+2004-01-16  Jan Hubicka  <jh@suse.cz>
+
+        PR opt/11350
+        * cfgcleanup.c (try_optimize_cfg): Suppress tablejump removal
+	after reload.
+        * cfgrtl.c (rtl_can_merge_blocks, cfglayout_can_merge_blocks,
+        rtl_try_redirect_by_replacing_branch): Likewise.
+
 2004-01-15  Geoffrey Keating  <geoffk@apple.com>
 
 	PR pch/13689

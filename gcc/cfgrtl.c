@@ -661,7 +661,7 @@ rtl_can_merge_blocks (basic_block a,basic_block b)
 	  /* If the jump insn has side effects,
 	     we can't kill the edge.  */
 	  && (GET_CODE (BB_END (a)) != JUMP_INSN
-	      || (flow2_completed
+	      || (reload_completed
 		  ? simplejump_p (BB_END (a)) : onlyjump_p (BB_END (a)))));
 }
 
@@ -703,7 +703,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 
   if (tmp || !onlyjump_p (insn))
     return false;
-  if ((!optimize || flow2_completed) && tablejump_p (insn, NULL, NULL))
+  if ((!optimize || reload_completed) && tablejump_p (insn, NULL, NULL))
     return false;
 
   /* Avoid removing branch with side effects.  */
@@ -2607,7 +2607,7 @@ cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
 	  /* If the jump insn has side effects,
 	     we can't kill the edge.  */
 	  && (GET_CODE (BB_END (a)) != JUMP_INSN
-	      || (flow2_completed
+	      || (reload_completed
 		  ? simplejump_p (BB_END (a)) : onlyjump_p (BB_END (a)))));
 }
 
