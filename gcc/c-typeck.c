@@ -6753,7 +6753,10 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
   /* Record the contents of OUTPUTS before it is modified.  */
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
-    o[i] = TREE_VALUE (tail);
+    {
+      o[i] = TREE_VALUE (tail);
+      lvalue_or_else (o[i], "asm statement");
+    }
 
   /* Perform default conversions on array and function inputs.  */
   /* Don't do this for other types--
