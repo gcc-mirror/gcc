@@ -1,3 +1,17 @@
+2005-01-29  Richard Guenther <richard.guenther@uni-tuebingen.de>
+
+	PR tree-optimization/15791
+	* gcc.dg/tree-ssa/pr15791-1.c: New testcase.
+	* gcc.dg/tree-ssa/pr15791-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr15791-3.c: Likewise.
+	* gcc.dg/tree-ssa/pr15791-4.c: Likewise.
+	* gcc.dg/tree-ssa/pr15791-5.c: Likewise.
+	* g++.dg/tree-ssa/pr15791-1.C: Likewise.
+	* g++.dg/tree-ssa/pr15791-2.C: Likewise.
+	* g++.dg/tree-ssa/pr15791-3.C: Likewise.
+	* g++.dg/tree-ssa/pr15791-4.C: Likewise.
+	* g++.dg/tree-ssa/pr15791-5.C: Likewise.
+
 2005-01-29  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/18565
