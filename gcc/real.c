@@ -2367,8 +2367,10 @@ emdnorm (s, lost, subflg, exp, rcntrl)
     }
 
   /* Shift down 1 temporarily if the data structure has an implied
-     most significant bit and the number is denormal.  */
-  if ((exp <= 0) && (rndprc != 64) && (rndprc != NBITS))
+     most significant bit and the number is denormal.
+     Intel long double denormals also lose one bit of precision.  */
+  if ((exp <= 0) && (rndprc != NBITS)
+      && ((rndprc != 64) || ((rndprc == 64) && ! REAL_WORDS_BIG_ENDIAN)))
     {
       lost |= s[NI - 1] & 1;
       eshdn1 (s);
@@ -2406,7 +2408,9 @@ emdnorm (s, lost, subflg, exp, rcntrl)
       eaddm (rbit, s);
     }
  mddone:
-  if ((exp <= 0) && (rndprc != 64) && (rndprc != NBITS))
+/* Undo the temporary shift for denormal values. */
+  if ((exp <= 0) && (rndprc != NBITS)
+      && ((rndprc != 64) || ((rndprc == 64) && ! REAL_WORDS_BIG_ENDIAN)))
     {
       eshup1 (s);
     }
@@ -2948,6 +2952,19 @@ e64toe (pe, y)
     {
       for (i = 0; i < 5; i++)
 	*p++ = *e++;
+
+      /* For denormal long double Intel format, shift significand up one
+	 -- but only if the top significand bit is zero.  A top bit of 1
+	 is "pseudodenormal" when the exponent is zero.  */
+      if((yy[NE-1] & 0x7fff) == 0 && (yy[NE-2] & 0x8000) == 0)
+	{
+	  unsigned EMUSHORT temp[NI];
+
+	  emovi(yy, temp);
+	  eshup1(temp);
+	  emovo(temp,y);
+	  return;
+	}
     }
   else
     {
@@ -3323,6 +3340,9 @@ toe64 (a, b)
       return;
     }
 #endif
+  /* Shift denormal long double Intel format significand down one bit.  */
+  if ((a[E] == 0) && ! REAL_WORDS_BIG_ENDIAN)
+    eshdn1 (a);
   p = a;
 #ifdef IBM
   q = b;
