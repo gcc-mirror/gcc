@@ -1,3 +1,8 @@
+2003-10-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/12598
+	* gcc.dg/torture/cris-volatile-1.c: New test.
+
 2003-10-14  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/9325
