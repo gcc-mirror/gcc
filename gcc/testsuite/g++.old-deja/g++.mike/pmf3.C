@@ -5,9 +5,9 @@ struct Fooey {
   void h(double dx);
 };
 
-void Fooey::f(char*) { }
-void Fooey::f(int) { }
-void Fooey::f(float) { }
+void Fooey::f(char*) { }	// ERROR - candidate
+void Fooey::f(int) { }		// ERROR - candidate
+void Fooey::f(float) { }	// ERROR - candidate
 void Fooey::h(double zahl) { }
 
 int main() {

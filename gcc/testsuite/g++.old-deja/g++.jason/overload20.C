@@ -3,8 +3,8 @@
 void f (char *);
 void f (int);
 struct A {
-  void f ();
-  void f (int);
+  void f ();			// ERROR - candidate
+  void f (int);			// ERROR - candidate
   void g () {
     void (*p)(char *) = f;	// ERROR - no matching function in scope
   }
