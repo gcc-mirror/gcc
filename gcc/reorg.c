@@ -1663,7 +1663,7 @@ try_merge_delay_insns (insn, thread)
   int i;
   int flags;
 
-  flags = get_jump_flags (insn, JUMP_LABEL (insn));
+  flags = get_jump_flags (delay_insn, JUMP_LABEL (delay_insn));
 
   CLEAR_RESOURCE (&needed);
   CLEAR_RESOURCE (&set);
@@ -2654,7 +2654,10 @@ fill_simple_delay_slots (first, non_jumps_p)
 	  || (GET_CODE (insn) != JUMP_INSN && ! non_jumps_p))
 	continue;
      
-      flags = get_jump_flags (insn, JUMP_LABEL (insn));
+      if (GET_CODE (insn) == JUMP_INSN)
+	flags = get_jump_flags (insn, JUMP_LABEL (insn));
+      else
+	flags = get_jump_flags (insn, NULL_RTX);
       slots_to_fill = num_delay_slots (insn);
       if (slots_to_fill == 0)
 	abort ();
