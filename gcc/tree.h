@@ -1174,11 +1174,42 @@ struct tree_exp GTY(())
 #define SSA_NAME_OCCURS_IN_ABNORMAL_PHI(NODE) \
     SSA_NAME_CHECK (NODE)->common.asm_written_flag
 
-/* Nonzero if this SSA_NAME expression is currently on the freelist of
+/* Nonzero if this SSA_NAME expression is currently on the free list of
    SSA_NAMES.  Using NOTHROW_FLAG seems reasonably safe since throwing
    has no meaning for an SSA_NAME.  */
 #define SSA_NAME_IN_FREE_LIST(NODE) \
     SSA_NAME_CHECK (NODE)->common.nothrow_flag
+
+/* Attributes for SSA_NAMEs for pointer-type variables.  */
+#define SSA_NAME_PTR_INFO(N) \
+    SSA_NAME_CHECK (N)->ssa_name.ptr_info
+
+#ifndef GCC_BITMAP_H
+struct bitmap_head_def;
+#endif
+
+/* Aliasing information for SSA_NAMEs representing pointer variables.  */
+struct ptr_info_def GTY(())
+{
+  /* Nonzero if points-to analysis couldn't determine where this pointer
+     is pointing to.  */
+  unsigned int pt_anything : 1;
+
+  /* Nonzero if this pointer is the result of a call to malloc.  */
+  unsigned int pt_malloc : 1;
+
+  /* Nonzero if the value of this pointer escapes the current function.  */
+  unsigned int value_escapes_p : 1;
+
+  /* Set of variables that this pointer may point to.  */
+  struct bitmap_head_def *pt_vars;
+
+  /* If this pointer has been dereferenced, and points-to information is
+     more precise than type-based aliasing, indirect references to this
+     pointer will be represented by this memory tag, instead of the type
+     tag computed by TBAA.  */
+  tree name_mem_tag;
+};
 
 struct tree_ssa_name GTY(())
 {
@@ -1189,6 +1220,9 @@ struct tree_ssa_name GTY(())
 
   /* SSA version number.  */
   unsigned int version;
+
+  /* Pointer attributes used for alias analysis.  */
+  struct ptr_info_def *ptr_info;
 };
 
 /* In a PHI_NODE node.  */
