@@ -195,25 +195,37 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	  line!=0?64:0,line)
 
 #define DBX_OUTPUT_CATCH(file,decl,name)		\
-	fprintf (file, ".stab \"%s:C1\",", IDENTIFIER_POINTER (DECL_NAME (decl)));	\
-	assemble_name (file, name);			\
-	fprintf (file, ",0x%x,0,0\n", N_CATCH)
+  fprintf (file, ".stab \"%s:C1\",",			\
+	   IDENTIFIER_POINTER (DECL_NAME (decl)));	\
+  assemble_name (file, name);				\
+  fprintf (file, ",0x%x,0,0\n", N_CATCH)
 
 #define DBX_OUTPUT_LBRAC(file,name)	\
-	if (depth > 1) {		\
-	fprintf (file, ".stab \"\",");	\
-	assemble_name (file, name);	\
-	fprintf (file, ",0x%x,0,%d\n", N_LBRAC, depth); }
+  if (depth > 1) {			\
+    fprintf (file, ".stab \"\",");	\
+    assemble_name (file, name);		\
+    fprintf (file, ",0x%x,0,%d\n", N_LBRAC, depth); }
 
 #define DBX_OUTPUT_RBRAC(file,name)	\
-	if (depth > 1) {		\
-	fprintf (file, ".stab \"\",");	\
-	assemble_name (file, name);	\
-	fprintf (file, ",0x%x,0,%d\n", N_RBRAC, depth); }
+  if (depth > 1) {			\
+    fprintf (file, ".stab \"\",");	\
+    assemble_name (file, name);		\
+    fprintf (file, ",0x%x,0,%d\n", N_RBRAC, depth); }
 
-#define DBX_OUTPUT_ENUM(file)	\
-	fprintf (file, "e3");	\
-	CHARS(2)
+#define DBX_OUTPUT_ENUM(file)					\
+  fprintf (file, "e3");						\
+  CHARS(2)							\
+  for (tem = TYPE_VALUES (type); tem; tem = TREE_CHAIN (tem))	\
+    {								\
+      fprintf (asmfile, "%s:%d,",				\
+	       IDENTIFIER_POINTER (TREE_PURPOSE (tem)),		\
+	       TREE_INT_CST_LOW (TREE_VALUE (tem)));		\
+      CHARS (11 + IDENTIFIER_LENGTH (TREE_PURPOSE (tem)));	\
+      if (TREE_CHAIN (tem) != 0)				\
+	CONTIN;							\
+    }								\
+  putc (';', asmfile);						\
+  CHARS (1);
 
 /* Undefine some things defined in i860.h because the native C compiler
    on the FX/2800 emits code to do these operations inline.  For GCC,
