@@ -42,6 +42,7 @@ fr30 port		Nick Clifton		niclc@cygnus.com
 fortran			Craig Burley		craig@jcb-sc.com
 fortran			Richard Henderson	rth@cygnus.com	
 c++			Jason Merrill		jason@cygnus.com
+c++                     Mark Mitchell		mark@codesourcery.com
 chill			Dave Brolley		brolley@cygnus.com
 chill			Per Bothner		bothner@cygnus.com
 java			Per Bothner		bothner@cygnus.com
