@@ -797,7 +797,7 @@ namespace std
 	   ios_base::openmode __mode = ios_base::in | ios_base::out)
       {
 	if (!_M_filebuf.open(__s, __mode))
-	  setstate(ios_base::failbit);
+	  this->setstate(ios_base::failbit);
       }
 
       /**
@@ -810,7 +810,7 @@ namespace std
       close()
       {
 	if (!_M_filebuf.close())
-	  setstate(ios_base::failbit);
+	  this->setstate(ios_base::failbit);
       }
     };
 } // namespace std

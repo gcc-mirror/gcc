@@ -95,7 +95,7 @@ namespace std
 	__ret = 0;
       }
     return __ret;
-  };
+  }
   
   wchar_t
   ctype<wchar_t>::do_toupper(wchar_t __c) const

@@ -1,6 +1,6 @@
 // Methods for Exception Support for -*- C++ -*-
 
-// Copyright (C) 1997, 1999, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1999, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,7 @@ namespace std
   logic_error::logic_error(const string& __arg) 
   : exception(), _M_msg(__arg) { }
 
-  logic_error::~logic_error() throw() { };
+  logic_error::~logic_error() throw() { }
 
   const char*
   logic_error::what() const throw()
@@ -60,7 +60,7 @@ namespace std
   runtime_error::runtime_error(const string& __arg) 
   : exception(), _M_msg(__arg) { }
 
-  runtime_error::~runtime_error() throw() { };
+  runtime_error::~runtime_error() throw() { }
 
   const char*
   runtime_error::what() const throw()

@@ -1,3 +1,27 @@
+2002-12-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/locale/gnu/ctype_members.cc
+	(ctype<wchar_t>::_M_convert_to_wmask): Remove stray semicolon.
+	* config/locale/gnu/monetary_members.cc
+	(moneypunct<wchar_t, true>::_M_initialize_moneypunct): Avoid
+	defining classes in static_cast.
+	(moneypunct<wchar_t, false>::_M_initialize_moneypunct): Likewise.
+	* config/locale/gnu/numeric_members.cc
+	(numpunct<wchar_t, false>::_M_initialize_numpunct): Likewise.
+	* include/bits/stl_deque.h (operator-): Insert typename where
+	required.
+	* include/bits/stl_multiset.h (multiset): Remove stray semicolon.
+	* include/bits/stl_set.h (set): Likewise.
+	* include/bits/valarray_meta.h (bits/slice_array.h): Include it.
+	* include/std/std_fstream.h (basic_fstream::open): Use this-> to
+	avoid Koenig lookup.
+	(basic_fstream::close): Likewise.
+	* libsupc++/new (operator delete): Remove stray semicolon.
+	* libsupc++/new (operator delete[]): Likewise.
+	* libsupc++/tinfo.cc: Likewise.
+	* src/stdexcept.c (logic_error::~logic_error): Likewise.
+	(runtime_error::~runtime_error): Likewise.
+	
 2002-12-26  Phil Edwards  <pme@gcc.gnu.org>
 
 	* libsupc++/exception:  Add comment (mistakenly skipped).

@@ -86,8 +86,12 @@ namespace std
       else
 	{
 	  // Named locale.
-	  _M_decimal_point = static_cast<wchar_t>(((union { const char *__s; unsigned int __w; }){ __s: __nl_langinfo_l(_NL_NUMERIC_DECIMAL_POINT_WC, __cloc)}).__w);
-	  _M_thousands_sep = static_cast<wchar_t>(((union { const char *__s; unsigned int __w; }){ __s: __nl_langinfo_l(_NL_NUMERIC_THOUSANDS_SEP_WC, __cloc)}).__w);
+	  union __s_and_w { const char *__s; unsigned int __w; } __u;
+	  __u.__s = __nl_langinfo_l(_NL_NUMERIC_DECIMAL_POINT_WC, __cloc);
+	  _M_decimal_point = static_cast<wchar_t>(__u.__w);
+
+	  __u.__s = __nl_langinfo_l(_NL_NUMERIC_THOUSANDS_SEP_WC, __cloc);
+	  _M_thousands_sep = static_cast<wchar_t>(__u.__w);
 	  if (_M_thousands_sep == L'\0')
 	    _M_grouping = "";
 	  else
