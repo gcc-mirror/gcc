@@ -1,3 +1,11 @@
+2003-10-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/12538
+	* config/sparc/sparc.c (MUST_SAVE_REGISTER): Delete.
+	(sparc_flat_must_save_register_p): New function to decide whether
+	a register must be saved/restored in the function prologue/epilogue.
+	(sparc_flat_compute_frame_size): Use it instead of MUST_SAVE_REGISTER.
+
 2003-10-12  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/avr/avr.c, config/avr/avr-protos.h: Convert to
