@@ -2894,13 +2894,13 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	      temp = get_push_address (INTVAL(size) - used);
 	      if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
 		emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
-				   temp, ptr_mode,
-				   XEXP (xinner, 0), ptr_mode,
+				   temp, Pmode,
+				   XEXP (xinner, 0), Pmode,
 				   GEN_INT (INTVAL(size) - used),
 				   TYPE_MODE (sizetype));
 	      else
 		emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-				   temp, ptr_mode,
+				   temp, Pmode,
 			 	   GEN_INT (INTVAL(size) - used),
 				   TYPE_MODE (sizetype),
 				   GEN_INT (MEMORY_USE_RW),
@@ -2951,12 +2951,12 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	      target = copy_to_reg (temp);
 	      if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
 		emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
-				   target, ptr_mode,
-				   XEXP (xinner, 0), ptr_mode,
+				   target, Pmode,
+				   XEXP (xinner, 0), Pmode,
 				   size, TYPE_MODE (sizetype));
 	      else
 	        emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-				   target, ptr_mode,
+				   target, Pmode,
 			 	   size, TYPE_MODE (sizetype),
 				   GEN_INT (MEMORY_USE_RW),
 				   TYPE_MODE (integer_type_node));
@@ -3150,13 +3150,13 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 
 	  if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
 	    emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
-			       target, ptr_mode,
-			       XEXP (x, 0), ptr_mode,
+			       target, Pmode,
+			       XEXP (x, 0), Pmode,
 			       GEN_INT (GET_MODE_SIZE (mode)),
 			       TYPE_MODE (sizetype));
 	  else
 	    emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-			       target, ptr_mode,
+			       target, Pmode,
 			       GEN_INT (GET_MODE_SIZE (mode)),
 			       TYPE_MODE (sizetype),
 			       GEN_INT (MEMORY_USE_RW),
@@ -3334,7 +3334,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  /* Check the access right of the pointer.  */
 	  if (size)
 	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-			       to_addr, ptr_mode,
+			       to_addr, Pmode,
 			       GEN_INT (size), TYPE_MODE (sizetype),
 			       GEN_INT (MEMORY_USE_WO),
 			       TYPE_MODE (integer_type_node));
@@ -3448,8 +3448,8 @@ expand_assignment (to, from, want_value, suggest_reg)
       /* Copy the rights of the bitmap.  */
       if (current_function_check_memory_usage)
 	emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
-			   XEXP (to_rtx, 0), ptr_mode,
-			   XEXP (from_rtx, 0), ptr_mode,
+			   XEXP (to_rtx, 0), Pmode,
+			   XEXP (from_rtx, 0), Pmode,
 			   convert_to_mode (TYPE_MODE (sizetype),
 					    size, TREE_UNSIGNED (sizetype)),
 			   TYPE_MODE (sizetype));
@@ -3674,12 +3674,12 @@ store_expr (exp, target, want_value)
     {
       if (GET_CODE (temp) == MEM)
         emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
-			   XEXP (target, 0), ptr_mode,
-			   XEXP (temp, 0), ptr_mode,
+			   XEXP (target, 0), Pmode,
+			   XEXP (temp, 0), Pmode,
 			   expr_size (exp), TYPE_MODE (sizetype));
       else
         emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-			   XEXP (target, 0), ptr_mode, 
+			   XEXP (target, 0), Pmode, 
 			   expr_size (exp), TYPE_MODE (sizetype),
 			   GEN_INT (MEMORY_USE_WO), 
 			   TYPE_MODE (integer_type_node));
@@ -3784,7 +3784,7 @@ store_expr (exp, target, want_value)
 		  /* Be sure we can write on ADDR.  */
 		  if (current_function_check_memory_usage)
 		    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-				       addr, ptr_mode,
+				       addr, Pmode,
 				       size, TYPE_MODE (sizetype),
  				       GEN_INT (MEMORY_USE_WO), 
 				       TYPE_MODE (integer_type_node));
@@ -5665,7 +5665,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	  if (memory_usage != MEMORY_USE_DONT)
 	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-			       XEXP (DECL_RTL (exp), 0), ptr_mode,
+			       XEXP (DECL_RTL (exp), 0), Pmode,
 			       GEN_INT (int_size_in_bytes (type)),
 			       TYPE_MODE (sizetype),
 			       GEN_INT (memory_usage),
@@ -6182,7 +6182,7 @@ expand_expr (exp, target, tmode, modifier)
 	      {
 		in_check_memory_usage = 1;
 		emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-				   op0, ptr_mode,
+				   op0, Pmode,
 				   GEN_INT (int_size_in_bytes (type)),
 				   TYPE_MODE (sizetype),
 				   GEN_INT (memory_usage),
@@ -6477,7 +6477,7 @@ expand_expr (exp, target, tmode, modifier)
         	/* Check the access right of the pointer.  */
 		if (size > BITS_PER_UNIT)
 		  emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-				     to, ptr_mode,
+				     to, Pmode,
 				     GEN_INT (size / BITS_PER_UNIT),
 				     TYPE_MODE (sizetype),
 				     GEN_INT (memory_usage), 
@@ -9253,7 +9253,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  /* Check the string is readable and has an end.  */
 	  if (current_function_check_memory_usage)
 	    emit_library_call (chkr_check_str_libfunc, 1, VOIDmode, 2,
-			       src_rtx, ptr_mode,
+			       src_rtx, Pmode,
 			       GEN_INT (MEMORY_USE_RO),
 			       TYPE_MODE (integer_type_node));
 
@@ -9346,8 +9346,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  /* Just copy the rights of SRC to the rights of DEST.  */
 	  if (current_function_check_memory_usage)
 	    emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
-			       XEXP (dest_mem, 0), ptr_mode,
-			       XEXP (src_mem, 0), ptr_mode,
+			       XEXP (dest_mem, 0), Pmode,
+			       XEXP (src_mem, 0), Pmode,
 			       len_rtx, TYPE_MODE (sizetype));
 
 	  /* Copy word part most expediently.  */
@@ -9417,7 +9417,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  /* Just check DST is writable and mark it as readable.  */
 	  if (current_function_check_memory_usage)
 	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-			       XEXP (dest_mem, 0), ptr_mode,
+			       XEXP (dest_mem, 0), Pmode,
 			       len_rtx, TYPE_MODE (sizetype),
 			       GEN_INT (MEMORY_USE_WO),
 			       TYPE_MODE (integer_type_node));

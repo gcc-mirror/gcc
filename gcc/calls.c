@@ -1415,7 +1415,7 @@ rtx_for_function_call (fndecl, exp)
       if (current_function_check_memory_usage)
 	emit_library_call (chkr_check_exec_libfunc, 1,
 			   VOIDmode, 1,
-			   funexp, ptr_mode);
+			   funexp, Pmode);
       emit_queue ();
     }
   return funexp;
@@ -2256,7 +2256,7 @@ expand_call (exp, target, ignore)
       if (current_function_check_memory_usage)
 	emit_library_call (chkr_set_right_libfunc, 1,
 			   VOIDmode, 3,
-			   structure_value_addr, ptr_mode, 
+			   structure_value_addr, Pmode, 
 			   GEN_INT (struct_value_size), TYPE_MODE (sizetype),
 			   GEN_INT (MEMORY_USE_WO),
 			   TYPE_MODE (integer_type_node));
@@ -3826,7 +3826,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
       if (current_function_check_memory_usage && GET_CODE (arg->stack) == MEM)
 	{
 	  emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-			     XEXP (arg->stack, 0), ptr_mode, 
+			     XEXP (arg->stack, 0), Pmode, 
 			     ARGS_SIZE_RTX (arg->size),
 			     TYPE_MODE (sizetype),
 			     GEN_INT (MEMORY_USE_RW),

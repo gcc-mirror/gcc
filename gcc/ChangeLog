@@ -1,6 +1,29 @@
 Mon Apr 26 23:28:54 1999  Mumit Khan  <khan@xraylith.wisc.edu>
                           Donn Terry  <donn@interix.com>
 
+	* function.c (put_var_into_stack): Change ptr_mode to Pmode
+	in setup for chkr_set_right_libfunc calls.
+	(assign_params): Likewise.
+	* expr.c (emit_push_insn): Change ptr_mode to Pmode in
+	setup for chkr_copy_bitmap_libfunc and chkr_set_right_libfunc calls.
+	(expand_assignment): Change ptr_mode to Pmode in
+	setup for chkr_add_libfunc and chkr_copy_bitmap_libfunc.
+	(store_expr): Change ptr_mode to Pmode in
+	setup for chkr_add_libfunc and chkr_copy_bitmap_libfunc.
+	(expand_expr): Change ptr_mode to Pmode in
+	setup for chkr_check_addr_libfunc.
+	(expand_builtin): Change ptr_mode to Pmode in
+	setup for chkr_check_str_libfunc, chkr_copy_bitmap_libfunc and
+	chkr_check_addr_libfunc.
+	* calls.c (rtx_for_function_call): Change ptr_mode to Pmode in
+	setup for chkr_check_exec_libfunc.
+	(expand_call): Change ptr_mode to Pmode in
+	setup for chkr_set_right_libfunc.
+	(expand_call): Change ptr_mode to Pmode in
+	setup for chkr_set_right_libfunc.
+	(store_one_arg): Change ptr_mode to Pmode in
+	setup for chkr_set_right_libfunc.
+
         * c-parse.in (absdcl1): Allow attributes in explicit typespecs.
         (%expect): Update.
         * c-parse.y: Regenerate.
