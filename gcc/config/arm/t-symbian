@@ -2,6 +2,6 @@
 # multilib for those without -- using the soft-float ABI in both
 # cases.  Symbian OS object should be compiled with interworking
 # enabled, so there are no separate thumb-mode libraries.
-MULTILIB_OPTIONS     = mfloat-abi=hard
-MULTILIB_DIRNAMES    = hard
+MULTILIB_OPTIONS     = mfloat-abi=softfp
+MULTILIB_DIRNAMES    = softfp
 
