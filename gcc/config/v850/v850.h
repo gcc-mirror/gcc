@@ -21,28 +21,36 @@ Boston, MA 02111-1307, USA.  */
 
 #include "svr4.h"	/* Automatically does #undef CPP_PREDEFINES */
 
-#undef ASM_SPEC
-#define ASM_SPEC "%{mv*:-mv%*}"
-
-#ifndef CPP_SPEC
-#define CPP_SPEC "-D__v850__"
-#endif
-
+/* These are defiend in svr4.h but we want to override them.  */
 #undef ASM_FINAL_SPEC
 #undef LIB_SPEC
 #undef ENDFILE_SPEC
 #undef LINK_SPEC
 #undef STARTFILE_SPEC
+#undef ASM_SPEC
+
+
+#define TARGET_CPU_generic 	1
+
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT	TARGET_CPU_generic
+#endif
+
+#define MASK_DEFAULT            MASK_V850
+#define SUBTARGET_ASM_SPEC 	"%{!mv*:-mv850}"
+#define SUBTARGET_CPP_SPEC 	"%{!mv*:-D__v850__}"
+#define TARGET_VERSION 		fprintf (stderr, " (NEC V850)");
+
+
+#define ASM_SPEC "%{mv*:-mv%*}"
+#define CPP_SPEC		"%{mv850ea:-D__v850ea__} %{mv850e:-D__v850e__} %{mv850:-D__v850__} %(subtarget_cpp_spec)"
+
+#define EXTRA_SPECS \
+ { "subtarget_asm_spec", SUBTARGET_ASM_SPEC }, \
+ { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC } 
 
 /* Names to predefine in the preprocessor for this target machine.  */
 #define CPP_PREDEFINES "-D__v851__ -D__v850"
-
-/* Print subsidiary information on the compiler version in use.  */
-
-#ifndef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (NEC V850)");
-#endif
-
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -59,13 +67,6 @@ extern int target_flags;
 #define MASK_V850               0x00000010
 
 #define MASK_BIG_SWITCH		0x00000100
-
-#ifndef MASK_DEFAULT
-#define MASK_DEFAULT            MASK_V850
-#endif
-
-#define TARGET_V850    		((target_flags & MASK_CPU) == MASK_V850)
-
 
 /* Macros used in the machine description to test the flags.  */
 
@@ -99,6 +100,8 @@ extern int target_flags;
 /* Whether to call out-of-line functions to save registers or not.  */
 #define TARGET_PROLOG_FUNCTION (target_flags & MASK_PROLOG_FUNCTION)
 
+#define TARGET_V850    		((target_flags & MASK_CPU) == MASK_V850)
+
 /* Whether to emit 2 byte per entry or 4 byte per entry switch tables.  */
 #define TARGET_BIG_SWITCH (target_flags & MASK_BIG_SWITCH)
 
@@ -131,16 +134,7 @@ extern int target_flags;
    { "v850",		 	 -(MASK_V850 ^ MASK_CPU), "" },		\
    { "big-switch",		 MASK_BIG_SWITCH, 			\
        				"Use 4 byte entries in switch tables" },\
-   EXTRA_SWITCHES							\
-   { "",			 TARGET_DEFAULT, ""}}
-
-#ifndef EXTRA_SWITCHES
-#define EXTRA_SWITCHES
-#endif
-
-#ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 		MASK_DEFAULT
-#endif
+   { "",			 MASK_DEFAULT, ""}}
 
 /* Information about the various small memory areas.  */
 struct small_memory_info {
@@ -301,8 +295,8 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
 /* Define this if move instructions will actually fail to work
    when given unaligned data.  */
-#ifndef STRICT_ALIGNMENT 1
-#define STRICT_ALIGNMENT 1
+#ifndef STRICT_ALIGNMENT 
+#define STRICT_ALIGNMENT TARGET_V850
 #endif
 
 /* Define this as 1 if `char' should by default be signed; else as 0.
@@ -919,7 +913,8 @@ extern int current_function_anonymous_args;
 do {									\
   if (RTX_OK_FOR_BASE_P (X)) goto ADDR;					\
   if (CONSTANT_ADDRESS_P (X)						\
-      && (MODE == QImode || INTVAL (X) % 2 == 0))			\
+      && (MODE == QImode || INTVAL (X) % 2 == 0)			\
+      && (GET_MODE_SIZE (MODE) <= 4 || INTVAL (X) % 4 == 0))		\
     goto ADDR;								\
   if (GET_CODE (X) == LO_SUM						\
       && GET_CODE (XEXP (X, 0)) == REG					\
@@ -1342,7 +1337,7 @@ do { char dstr[30];					\
 #undef ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE, NAME)	          \
   do {                                            \
-  const char* real_name;                          \
+  const char * real_name;                         \
   STRIP_NAME_ENCODING (real_name, (NAME));        \
   fprintf (FILE, "_%s", real_name);               \
   } while (0)           

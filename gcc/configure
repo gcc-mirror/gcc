@@ -5668,6 +5668,7 @@ for machine in $build $host $target; do
 #		use_collect2=yes
 #		;;
 	v850-*-*)
+		target_cpu_default="TARGET_CPU_generic"
 		cpu_type=v850
 		tm_file="v850/v850.h"
 		xm_file="v850/xm-v850.h"
