@@ -48,6 +48,8 @@ static int ia32_use_dfa_pipeline_interface PARAMS ((void));
 
 #undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE 
 #define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE ia32_use_dfa_pipeline_interface
+#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
+#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD ia32_multipass_dfa_lookahead
 
 static int
 ia32_use_dfa_pipeline_interface ()
@@ -55,6 +57,19 @@ ia32_use_dfa_pipeline_interface ()
   if (ix86_cpu == PROCESSOR_PENTIUM)
     return 1;
   return 0;
+}
+
+/* How many alternative schedules to try.  This should be as wide as the
+   scheduling freedom in the DFA, but no wider.  Making this value too
+   large results extra work for the scheduler.  */
+
+static int
+ia32_multipass_dfa_lookahead ()
+{
+  if (ix86_cpu == PROCESSOR_PENTIUM)
+    return 2;
+  else
+   return 0;
 }
 
 #ifndef CHECK_STACK_LIMIT
