@@ -70,6 +70,7 @@ declare_function_name ()
   DECL_SOURCE_LINE (decl) = 0;
   DECL_IN_SYSTEM_HEADER (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
+  DECL_EXTERNAL (decl) = 1;
   init = build_string (len, name);
   TREE_TYPE (init) = type;
   DECL_INITIAL (decl) = init;
@@ -89,6 +90,7 @@ declare_function_name ()
   DECL_SOURCE_LINE (decl) = 0;
   DECL_IN_SYSTEM_HEADER (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
+  DECL_EXTERNAL (decl) = 1;
   init = build_string (len, printable_name);
   TREE_TYPE (init) = type;
   DECL_INITIAL (decl) = init;
