@@ -643,10 +643,12 @@ check_java_method (tree method)
 
 /* Sanity check: report error if this function FUNCTION is not
    really a member of the class (CTYPE) it is supposed to belong to.
-   CNAME is the same here as it is for grokclassfn above.  */
+   CNAME is the same here as it is for grokclassfn above.
+   TEMPLATE_HEADER_P is true when this declaration comes with a
+   template header.  */
 
 tree
-check_classfn (tree ctype, tree function)
+check_classfn (tree ctype, tree function, bool template_header_p)
 {
   int ix;
   int is_template;
@@ -669,7 +671,7 @@ check_classfn (tree ctype, tree function)
 
   /* OK, is this a definition of a member template?  */
   is_template = (TREE_CODE (function) == TEMPLATE_DECL
-		 || (processing_template_decl - template_class_depth (ctype)));
+		 || template_header_p);
 
   ix = lookup_fnfields_1 (complete_type (ctype),
 			  DECL_CONSTRUCTOR_P (function) ? ctor_identifier :
