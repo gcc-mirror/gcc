@@ -1,3 +1,7 @@
+Sun Nov  8 17:46:14 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (INCLUDES): Add -I$(srcdir)/$(MULTISRCTOP)../include.
+
 Thu Oct 22 14:34:06 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Use AC_CONFIG_AUX_DIR($topsrcdir).
