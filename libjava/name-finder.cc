@@ -149,7 +149,7 @@ _Jv_name_finder::lookup (void *p)
 	strncpy (method_name, dl_info.dli_sname, sizeof method_name);
        
        /* Don't trust dladdr() if the address is from the main program. */
-       if (strcmp (file_name, _Jv_argv[0]) != 0)
+       if (_Jv_argv == NULL || strcmp (file_name, _Jv_argv[0]) != 0)
          return true;
       }
   }
