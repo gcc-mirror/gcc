@@ -3456,7 +3456,7 @@ purge_single_hard_subreg_set (pattern)
     }
 
 		  
-  if (REGNO (reg) < FIRST_PSEUDO_REGISTER)
+  if (GET_CODE (reg) == REG && REGNO (reg) < FIRST_PSEUDO_REGISTER)
     {
       reg = gen_rtx_REG (mode, REGNO (reg) + offset);
       SET_DEST (pattern) = reg;
