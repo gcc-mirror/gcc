@@ -356,6 +356,8 @@ struct temp_slot
   tree rtl_expr;
   /* Non-zero if this temporary is currently in use.  */
   char in_use;
+  /* Non-zero if this temporary has its address taken.  */
+  char addr_taken;
   /* Nesting level at which this slot is being used.  */
   int level;
   /* Non-zero if this should survive a call to free_temp_slots.  */
@@ -827,7 +829,7 @@ assign_stack_temp (mode, size, keep)
 	  if (best_p->size - rounded_size >= alignment)
 	    {
 	      p = (struct temp_slot *) oballoc (sizeof (struct temp_slot));
-	      p->in_use = 0;
+	      p->in_use = p->addr_taken = 0;
 	      p->size = best_p->size - rounded_size;
 	      p->slot = gen_rtx (MEM, BLKmode,
 				 plus_constant (XEXP (best_p->slot, 0),
@@ -860,7 +862,9 @@ assign_stack_temp (mode, size, keep)
     }
 
   p->in_use = 1;
+  p->addr_taken = 0;
   p->rtl_expr = sequence_rtl_expr;
+
   if (keep == 2)
     {
       p->level = target_temp_slot_level;
@@ -984,6 +988,28 @@ update_temp_slot_address (old, new)
     }
 }
 
+/* If X could be a reference to a temporary slot, mark the fact that its
+   adddress was taken.  */
+
+void
+mark_temp_addr_taken (x)
+     rtx x;
+{
+  struct temp_slot *p;
+
+  if (x == 0)
+    return;
+
+  /* If X is not in memory or is at a constant address, it cannot be in
+     a temporary slot.  */
+  if (GET_CODE (x) != MEM || CONSTANT_P (XEXP (x, 0)))
+    return;
+
+  p = find_temp_slot_from_address (XEXP (x, 0));
+  if (p != 0)
+    p->addr_taken = 1;
+}
+
 /* If X could be a reference to a temporary slot, mark that slot as belonging
    to the to one level higher.  If X matched one of our slots, just mark that
    one.  Otherwise, we can't easily predict which it is, so upgrade all of
@@ -996,7 +1022,7 @@ void
 preserve_temp_slots (x)
      rtx x;
 {
-  struct temp_slot *p;
+  struct temp_slot *p = 0;
 
   if (x == 0)
     return;
@@ -1005,22 +1031,28 @@ preserve_temp_slots (x)
      a temporary slot we know it points to.  To be consistent with
      the code below, we really should preserve all non-kept slots
      if we can't find a match, but that seems to be much too costly.  */
-  if (GET_CODE (x) == REG && REGNO_POINTER_FLAG (REGNO (x))
-      && (p = find_temp_slot_from_address (x)) != 0)
-    {
-      p->level--;
-      return;
-    }
-    
+  if (GET_CODE (x) == REG && REGNO_POINTER_FLAG (REGNO (x)))
+    p = find_temp_slot_from_address (x);
+
   /* If X is not in memory or is at a constant address, it cannot be in
      a temporary slot.  */
-  if (GET_CODE (x) != MEM || CONSTANT_P (XEXP (x, 0)))
+  if (p == 0 && (GET_CODE (x) != MEM || CONSTANT_P (XEXP (x, 0))))
     return;
 
   /* First see if we can find a match.  */
-  p = find_temp_slot_from_address (XEXP (x, 0));
+  if (p== 0)
+    p = find_temp_slot_from_address (XEXP (x, 0));
+
   if (p != 0)
     {
+      /* Move everything at our level whose address was taken to our new
+	 level in case we used its address.  */
+      struct temp_slot *q;
+
+      for (q = temp_slots; q; q = q->next)
+	if (q != p && q->addr_taken && q->level == p->level)
+	  q->level--;
+
       p->level--;
       return;
     }
