@@ -1,3 +1,8 @@
+2003-07-10  Dara Hazeghi  <dhazeghi@yahoo.com>
+
+	PR bootstrap/10758
+	* doc/install.texi: Document requirements for ia64-*-hpux* target.
+
 2003-07-10  Roger Sayle  <roger@eyesopen.com>
 
 	* config/ia64/hpux.h (TARGET_C99_FUNCTIONS): Define.
