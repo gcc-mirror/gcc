@@ -97,8 +97,8 @@ flow_loops_cfg_dump (const struct loops *loops, FILE *file)
 bool
 flow_loop_nested_p (const struct loop *outer, const struct loop *loop)
 {
-  return loop->depth > outer->depth
-	 && loop->pred[outer->depth] == outer;
+  return (loop->depth > outer->depth
+	 && loop->pred[outer->depth] == outer);
 }
 
 /* Returns the loop such that LOOP is nested DEPTH (indexed from zero)
