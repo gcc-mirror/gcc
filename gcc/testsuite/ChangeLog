@@ -1,3 +1,8 @@
+2003-10-02  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/parse/parameter-declaration-1.C: Fix line number of
+	expected error message.
+
 2003-10-02  Josef Zlomek  <zlomekj@suse.cz>
 
 	* gcc.c-torture/compile/20031002-1.c: New test.
