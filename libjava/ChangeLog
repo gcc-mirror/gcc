@@ -1,3 +1,7 @@
+2002-07-31  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/awt/Frame.java (Frame): Remove println calls.
+
 2002-07-30  Jeff Sturm  <jsturm@one-point.com>
 
 	* configure.in (LIBFFIINCS): Don't prepend MULTIBUILDTOP.
