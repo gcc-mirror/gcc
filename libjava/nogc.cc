@@ -76,6 +76,16 @@ _Jv_GCFreeMemory (void)
 }
 
 void
+_Jv_GCSetInitialHeapSize (size_t size)
+{
+}
+
+void
+_Jv_GCSetMaximumHeapSize (size_t size)
+{
+}
+
+void
 _Jv_InitGC (void)
 {
 }

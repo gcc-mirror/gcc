@@ -203,6 +203,11 @@ nat_headers = $(ordinary_java_source_files:.java=.h) \
 
 $(nat_headers): libgcj.zip
 
+java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.zip
+	$(GCJH) -classpath $(top_builddir) \
+		-friend 'jclass _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
+		$(basename $<)
+
 ## Our internal main program needs to be able to create a FirstThread.
 java/lang/FirstThread.h: java/lang/FirstThread.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \

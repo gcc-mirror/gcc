@@ -393,6 +393,20 @@ _Jv_GCFreeMemory (void)
 }
 
 void
+_Jv_GCSetInitialHeapSize (size_t size)
+{
+  size_t current = GC_get_heap_size ();
+  if (size > current)
+    GC_expand_hp (current - size);
+}
+
+void
+_Jv_GCSetMaximumHeapSize (size_t size)
+{
+  GC_set_max_heap_size ((GC_word) size);
+}
+
+void
 _Jv_InitGC (void)
 {
   int proc;

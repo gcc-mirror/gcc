@@ -8,27 +8,120 @@ details.  */
 
 /* Author: Kresten Krab Thorup <krab@gnu.org>  */
 
+#include <config.h>
+
 #include <jvm.h>
 #include <gcj/cni.h>
+#include <java-props.h>
+
 #include <stdio.h>
+#include <string.h>
 
 #include <java/lang/System.h>
 #include <java/util/Properties.h>
 
-// This is used to initialize the compiled-in system properties.
-const char *_Jv_Compiler_Properties[] =
+static void
+help ()
 {
-  NULL
-};
+  printf ("Usage: gij [OPTION] ... CLASS [ARGS] ...\n\n");
+  printf ("Interpret Java bytecodes\n\n");
+  printf ("  -DVAR=VAL         define property VAR with value VAL\n");
+  printf ("  --help            print this help, then exit\n");
+  printf ("  --ms=NUMBER       set initial heap size\n");
+  printf ("  --mx=NUMBER       set maximum heap size\n");
+  printf ("  --version         print version number, then exit\n");
+  printf ("\nSee http://sourceware.cygnus.com/java/ for information on reporting bugs\n");
+  exit (0);
+}
+
+static void
+version ()
+{
+  printf ("gij (GNU libgcj) version %s\n\n", VERSION);
+  printf ("Copyright (C) 1999 Cygnus Solutions.\n");
+  printf ("This is free software; see the source for copying conditions.  There is NO\n");
+  printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
+  exit (0);
+}
 
 int
 main (int argc, const char **argv)
 {
-  if (argc < 2)
+  /* We rearrange ARGV so that all the -D options appear near the
+     beginning.  */
+  int last_D_option = 0;
+
+  int i;
+  for (i = 1; i < argc; ++i)
     {
-      printf ("usage: %s CLASS [ARGS]...\n", argv[0]);
+      const char *arg = argv[i];
+
+      /* A non-option stops processing.  */
+      if (arg[0] != '-')
+	break;
+      /* A "--" stops processing.  */
+      if (! strcmp (arg, "--"))
+	{
+	  ++i;
+	  break;
+	}
+
+      if (! strncmp (arg, "-D", 2))
+	{
+	  argv[last_D_option++] = arg + 2;
+	  continue;
+	}
+
+      /* Allow both single or double hyphen for all remaining
+	 options.  */
+      if (arg[1] == '-')
+	++arg;
+
+      if (! strcmp (arg, "-help"))
+	help ();
+      else if (! strcmp (arg, "-version"))
+	version ();
+      /* FIXME: use getopt and avoid the ugliness here.
+	 We at least need to handle the argument in a better way.  */
+      else if (! strncmp (arg, "-ms=", 4))
+	_Jv_SetInitialHeapSize (arg + 4);
+      else if (! strcmp (arg, "-ms"))
+	{
+	  if (i >= argc - 1)
+	    {
+	    no_argument:
+	      fprintf (stderr, "gij: option requires an argument -- `%s'\n",
+		       argv[i]);
+	      fprintf (stderr, "Try `gij --help' for more information.\n");
+	      exit (1);
+	    }
+	  _Jv_SetInitialHeapSize (argv[++i]);
+	}
+      else if (! strncmp (arg, "-mx=", 4))
+	_Jv_SetMaximumHeapSize (arg + 4);
+      else if (! strcmp (arg, "-mx"))
+	{
+	  if (i >= argc - 1)
+	    goto no_argument;
+	  _Jv_SetMaximumHeapSize (argv[++i]);
+	}
+      else
+	{
+	  fprintf (stderr, "gij: unrecognized option -- `%s'\n", argv[i]);
+	  fprintf (stderr, "Try `gij --help' for more information.\n");
+	  exit (1);
+	}
+    }
+
+  argv[last_D_option] = NULL;
+  _Jv_Compiler_Properties = argv;
+
+  if (argc - i < 1)
+    {
+      fprintf (stderr, "Usage: gij [OPTION] ... CLASS [ARGS] ...\n");
+      fprintf (stderr, "Try `gij --help' for more information.\n");
       exit (1);
     }
 
-  _Jv_RunMain (argv[1], argc - 1, argv + 1);
+  _Jv_RunMain (argv[i], argc - i, argv + i);
 }

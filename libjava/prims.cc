@@ -63,6 +63,9 @@ static java::lang::OutOfMemoryError *no_memory;
 // Largest representable size_t.
 #define SIZE_T_MAX ((size_t) (~ (size_t) 0))
 
+// Properties set at compile time.
+const char **_Jv_Compiler_Properties;
+
 #ifndef DISABLE_GETENV_PROPERTIES
 // Property key/value pairs.
 property_pair *_Jv_Environment_Properties;
@@ -811,6 +814,38 @@ _Jv_RunMain (const char *class_name, int argc, const char **argv)
   java::lang::Runtime::getRuntime ()->exit (0);
 }
 
+
+
+// Parse a string and return a heap size.
+static size_t
+parse_heap_size (const char *spec)
+{
+  char *end;
+  unsigned long val = strtoul (spec, &end, 10);
+  if (*spec == 'k' || *spec == 'K')
+    val *= 1000;
+  else if (*spec == 'm' || *spec == 'M')
+    val *= 1000000;
+  return (size_t) val;
+}
+
+// Set the initial heap size.  This might be ignored by the GC layer.
+// This must be called before _Jv_RunMain.
+void
+_Jv_SetInitialHeapSize (const char *arg)
+{
+  size_t size = parse_heap_size (arg);
+  _Jv_GCSetInitialHeapSize (size);
+}
+
+// Set the maximum heap size.  This might be ignored by the GC layer.
+// This must be called before _Jv_RunMain.
+void
+_Jv_SetMaximumHeapSize (const char *arg)
+{
+  size_t size = parse_heap_size (arg);
+  _Jv_GCSetMaximumHeapSize (size);
+}
 
 
 
@@ -885,10 +920,3 @@ _Jv_remJ (jlong dividend, jlong divisor)
 
   return dividend % divisor;
 }
-
-
-
-
-
-
-

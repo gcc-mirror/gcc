@@ -83,8 +83,29 @@ long _Jv_GCTotalMemory (void);
 /* Return approximation of total free memory.  */
 long _Jv_GCFreeMemory (void);
 
+/* Set initial heap size.  If SIZE==0, ignore.  Should be run before
+   _Jv_InitGC.  Not required to have any actual effect.  */
+void _Jv_GCSetInitialHeapSize (size_t size);
+
+/* Set maximum heap size.  If SIZE==0, unbounded.  Should be run
+   before _Jv_InitGC.  Not required to have any actual effect.  */
+void _Jv_GCSetMaximumHeapSize (size_t size);
+
+/* External interface to setting the heap size.  Parses ARG (a number
+   which can optionally have "k" or "m" appended and calls
+   _Jv_GCSetInitialHeapSize.  */
+void _Jv_SetInitialHeapSize (const char *arg);
+
+/* External interface to setting the maximum heap size.  Parses ARG (a
+   number which can optionally have "k" or "m" appended and calls
+   _Jv_GCSetMaximumHeapSize.  */
+void _Jv_SetMaximumHeapSize (const char *arg);
+
 /* Allocate some unscanned bytes.  Throw exception if out of memory.  */
 void *_Jv_AllocBytesChecked (jsize size);
+
+extern "C" void JvRunMain (jclass klass, int argc, const char **argv);
+void _Jv_RunMain (const char* name, int argc, const char **argv);
 
 // This function is used to determine the hash code of an object.
 inline jint
