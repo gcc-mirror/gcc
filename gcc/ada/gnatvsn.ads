@@ -32,20 +32,16 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package spec holds version information for GNAT, GNATBIND and
---  GNATMAKE. It is updated whenever the release number is changed.
+--  This package spec exports version information for GNAT, GNATBIND and
+--  GNATMAKE.
 
 package Gnatvsn is
 
-   Gnat_Version_String : constant String := "3.3 20020923 (experimental)";
+   function Gnat_Version_String
+     return String;
    --  Version output when GNAT (compiler), or its related tools, including
    --  GNATBIND, GNATCHOP, GNATFIND, GNATLINK, GNATMAKE, GNATXREF, are run
    --  (with appropriate verbose option switch set).
-   --
-   --  WARNING: some scripts rely on the format of this string. Any change
-   --  must be coordinated with a script maintainer. Furthermore, no
-   --  other variable in this package may have a name starting with
-   --  Gnat_Version_String.
 
    Gnat_Version_Type : constant String := "FSF    ";
    --  This string is set to one of three values:

@@ -45,23 +45,29 @@ for BRANCH in $BRANCHES; do
 
   for file in $textstring_FILES; do
     if test -f $file; then 
-      OLD_VERSION=`/bin/cat $file`
-      /bin/sed -e "s/\(.*\"[^ ]*\) [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/\1 ${CURR_DATE}/" >${file} <<HERE
-$OLD_VERSION
-HERE
+      /bin/sed  <$file >$file.new -e \
+  "s/\(.*\"[^ ]*\) [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/\1 ${CURR_DATE}/" 
 
-      COMMIT_FILES="$COMMIT_FILES $file"
+      if /usr/bin/cmp -s $file $file.new; then
+	rm -f $file.new
+      else
+	mv -f $file.new $file
+        COMMIT_FILES="$COMMIT_FILES $file"
+      fi
     fi
   done
 
   for file in $cppdefine_FILES; do
-    if test -f $file; then 
-      OLD_VERSION=`/bin/cat $file`
-      /bin/sed -e "s/\(#.*\) [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/\1 ${CURR_DATE}/" >${file} <<HERE
-$OLD_VERSION
-HERE
+    if test -f $file; then
+      /bin/sed <$file >$file.new -e \
+  "s/\(#.*\) [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/\1 ${CURR_DATE}/"
 
-      COMMIT_FILES="$COMMIT_FILES $file"
+      if /usr/bin/cmp -s $file $file.new; then
+	rm -f $file.new
+      else
+	mv -f $file.new $file
+        COMMIT_FILES="$COMMIT_FILES $file"
+      fi
     fi
   done
 

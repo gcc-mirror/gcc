@@ -47,7 +47,6 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "gcc.h"
-#include <f/version.h>
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "-lm"
@@ -374,7 +373,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
 	case OPTION_version:
 	  printf ("\
-GNU Fortran (GCC %s) %s\n\
+GNU Fortran (GCC) %s\n\
 Copyright (C) 2002 Free Software Foundation, Inc.\n\
 \n\
 GNU Fortran comes with NO WARRANTY, to the extent permitted by law.\n\
@@ -382,7 +381,7 @@ You may redistribute copies of GNU Fortran\n\
 under the terms of the GNU General Public License.\n\
 For more information about these matters, see the file named COPYING\n\
 or type the command `info -f g77 Copying'.\n\
-", version_string, ffe_version_string);
+", version_string);
 	  exit (0);
 	  break;
 

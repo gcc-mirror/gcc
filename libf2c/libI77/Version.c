@@ -1,9 +1,4 @@
-static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 20001205\n";
-
-/*
-*/
-
-char __G77_LIBI77_VERSION__[] = "3.3 20020923 (experimental)";
+const char __LIBI77_VERSION__[] = "@(#) LIBI77 VERSION pjw,dmg-mods 20001205\n";
 
 /*
 2.01	$ format added
@@ -324,17 +319,6 @@ wrtfmt.c:
 /*		treat Tstuff= and Fstuff= as new assignments rather than as */
 /*		logical constants. */
 
-
-
 /* Changes for GNU Fortran (g77) version of libf2c:  */
 
 /* 17 June 1997: detect recursive I/O and call f__fatal explaining it. */
-
-#include <stdio.h>
-
-void
-g77__ivers__ ()
-{
-  fprintf (stderr, "__G77_LIBI77_VERSION__: %s", __G77_LIBI77_VERSION__);
-  fputs (junk, stderr);
-}

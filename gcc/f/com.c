@@ -11124,7 +11124,7 @@ ffecom_init_0 ()
 
       name = bsearch ("foo", &names[0], ARRAY_SIZE (names), sizeof (names[0]),
 		      (int (*)(const void *, const void *)) strcmp);
-      if (name != &names[0][2])
+      if (name != &names[2][0])
 	{
 	  assert ("bsearch doesn't work, #define FFEPROJ_BSEARCH 0 in proj.h"
 		  == NULL);

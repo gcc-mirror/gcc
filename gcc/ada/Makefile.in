@@ -248,8 +248,8 @@ LIBIBERTY = ../../libiberty/libiberty.a
 # and the system's installed libraries.
 LIBS = $(INTLLIBS) $(LIBIBERTY) $(SYSLIBS)
 LIBDEPS = $(INTLDEPS) $(LIBIBERTY)
-TOOLS_LIBS = ../../prefix.o $(LIBGNAT) ../../../libiberty/libiberty.a \
-	$(SYSLIBS)
+TOOLS_LIBS = ../../prefix.o ../../version.o $(LIBGNAT) \
+	../../../libiberty/libiberty.a $(SYSLIBS)
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,

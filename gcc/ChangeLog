@@ -1,3 +1,8 @@
+2002-09-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* version.c (version_string): Now const char[].
+	* version.h: Update to match.
+
 2002-09-23  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.h (MASK_ACCUMULATE_OUTGOING_ARGS_SET, MASK_MMX_SET,
@@ -55,7 +60,7 @@
 	(c_common_decode_option): Process -fabi-version.
 	* doc/invoke.texi (-fabi-version): Document it.
 	(-Wabi): Add information about bit-fields in unions.
-	
+
 2002-09-22  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/mips/netbsd.h (SUBTARGET_ASM_SPEC): Always pass -KPIC
@@ -214,7 +219,7 @@ Tue Aug 27 20:07:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(real_to_target_fmt, real_from_target_fmt): New.
 	(ieee_single_format, ieee_double_format, ieee_extended_motorola_format,
 	ieee_extended_intel_96_format, ieee_extended_intel_128_format,
-	ieee_quad_format, i370_single_format, i370_double_format, 
+	ieee_quad_format, i370_single_format, i370_double_format,
 	c4x_single_format, c4x_extended_format): Rename from s/_format//.
 	(ieee_quad_format): Fix emin.
 	(format_for_size, init_real_once): Remove.
@@ -256,7 +261,7 @@ Tue Aug 27 20:07:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	for Intel 80-bit extended, if enabled.
 
 	* config/m68k/m68k.c (override_options): Set real_format_for_mode
-        for Motorola 96-bit extended.
+	for Motorola 96-bit extended.
 
 	* config/vax/vax.h (OVERRIDE_OPTIONS): New.
 	* config/vax/vax.c (override_options): New.
@@ -451,30 +456,30 @@ Tue Aug 27 20:07:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-09-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390.c (addr_generation_dependency_p): Handle SUBREG 
+	* config/s390/s390.c (addr_generation_dependency_p): Handle SUBREG
 	and STRICT_LOW_PART within SET_DEST.
 	* config/s390/s390.md ("*extractqi", "*extracthi"): New insns with
 	splitters, replacing pre-reload splitters.
-	("*zero_extendhisi2_31", "*zero_extendqisi2_31", 
+	("*zero_extendhisi2_31", "*zero_extendqisi2_31",
 	"*zero_extendqihi2_31"): New insns.
 	("*zero_extendqihi2_64"): Do not clobber CC.
 
 2002-09-18  Devang Patel  <dpatel@apple.com>
 
-	* cp/cp-tree.h: New prototype for walk_vtabls().        
-	* cp/decl.c (walk_vtables_r): New function.        
-	(struct cp_binding_level): Add new members, namespaces,        
-	names_size and vtables.        
-	(add_decl_to_level): Add decl in namespaces or vtables        
-	chain, if conditions match.        
-	(walk_vtables): New function.        
-	(walk_namespaces_r): Travers separate namespace chain        
-	for namespace decls.        
-	(wrapup_globals_for_namespace): Use names_size instead        
-	of list_length().        
-	* cp/decl2.c (finish_file): Use walk_vtables() instead of        
-	walk_globals() to walk vtable decls.        
-		
+	* cp/cp-tree.h: New prototype for walk_vtabls().
+	* cp/decl.c (walk_vtables_r): New function.
+	(struct cp_binding_level): Add new members, namespaces,
+	names_size and vtables.
+	(add_decl_to_level): Add decl in namespaces or vtables
+	chain, if conditions match.
+	(walk_vtables): New function.
+	(walk_namespaces_r): Travers separate namespace chain
+	for namespace decls.
+	(wrapup_globals_for_namespace): Use names_size instead
+	of list_length().
+	* cp/decl2.c (finish_file): Use walk_vtables() instead of
+	walk_globals() to walk vtable decls.
+
 2002-09-19  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/hpux.h (CTORS_SECTION_ASM_OP): New.
@@ -518,7 +523,7 @@ Tue Aug 27 20:07:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 2002-09-18  Richard Henderson  <rth@redhat.com>
 
 	* ifcvt.c (noce_process_if_block): Correctly detect X modified
-	with INSN_B before COND_EARLIEST.  Don't check A and B for 
+	with INSN_B before COND_EARLIEST.  Don't check A and B for
 	modification in condition range.  Reorder INSN_B for A==B properly.
 	(if_convert): Iterate until no matches for a block.
 
@@ -550,7 +555,7 @@ Tue Aug 27 20:07:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-09-18  Richard Henderson  <rth@redhat.com>
 
-	* real.c (sticky_rshift_significand): Collect sticky as 
+	* real.c (sticky_rshift_significand): Collect sticky as
 	unsigned long, not bool.
 
 2002-09-18  Ulrich Weigand  <uweigand@de.ibm.com>
@@ -650,7 +655,7 @@ Tue Aug 27 20:07:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-09-17  Steve Ellcey  <sje@cup.hp.com>
 
-        * config/ia64/elf.h: Remove CPP_PREDEFINES.
+	* config/ia64/elf.h: Remove CPP_PREDEFINES.
 
 Tue Sep 17 13:58:04 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
@@ -678,7 +683,7 @@ Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* doc/objc.texi (Constant string objects): Extended documentation
 	to make clear that the constant string class ivar layout is
 	completely fixed.
-	
+
 2002-09-17  Roger Sayle  <roger@eyesopen.com>
 
 	* cfgrtl.c (flow_delete_block_noexpunge): Delete orphaned
@@ -692,7 +697,7 @@ Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 2002-09-16  Richard Henderson  <rth@redhat.com>
 
 	PR fortran/3924
-        * sdbout.c (sdbout_symbol): Don't handle offsets from a symbol.
+	* sdbout.c (sdbout_symbol): Don't handle offsets from a symbol.
 
 2002-09-16  Richard Henderson  <rth@redhat.com>
 
@@ -701,10 +706,10 @@ Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2002-09-16  Jeff Garzik  <jgarzik@mandrakesoft.com>
 
-        * config.gcc: Treat winchip_c6-*|winchip2-*|c3-* as pentium-mmx.
-        * config/i386/i386.c (processor_alias_table): Add winchip-c6,
+	* config.gcc: Treat winchip_c6-*|winchip2-*|c3-* as pentium-mmx.
+	* config/i386/i386.c (processor_alias_table): Add winchip-c6,
 	winchip2 and c3.
-        * doc/invoke.texi: Mention new aliases.
+	* doc/invoke.texi: Mention new aliases.
 
 2002-09-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
@@ -931,7 +936,7 @@ Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* config/s390/s390.c: Include "optabs.h".
 	(s390_expand_movstr, s390_expand_clrstr, s390_expand_cmpstr): New.
-	config/s390/s390-protos.h (s390_expand_movstr, s390_expand_clrstr, 
+	config/s390/s390-protos.h (s390_expand_movstr, s390_expand_clrstr,
 	s390_expand_cmpstr): Add prototypes.
 	config/s390/s390.md ("movstrdi", "movstrsi"): Call s390_expand_movstr.
 	("movstrdi_short"): Rename to "movstr_short_64".  Change predicates
@@ -1234,7 +1239,7 @@ Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	We need a temporary when passing, e.g. (long) x by const ref.
 	* testsuite/g++.dg/other/constref[12].C: New, regression tests for
 	passing a cast expression to a function by const reference.
-	
+
 2002-09-13  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (attr type): Add callpal.

@@ -130,7 +130,8 @@ begin
          end if;
 
          Write_Str (Gnat_Version_String);
-         Write_Str (" Copyright 1992-2002 Free Software Foundation, Inc.");
+         Write_Eol;
+         Write_Str ("Copyright 1992-2002 Free Software Foundation, Inc.");
          Write_Eol;
       end if;
 

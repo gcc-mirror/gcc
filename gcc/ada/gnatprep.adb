@@ -36,7 +36,6 @@ with GNAT.Command_Line;
 with Gnatvsn;
 
 procedure GNATprep is
-   pragma Ident (Gnatvsn.Gnat_Version_String);
 
    type Strptr is access String;
 

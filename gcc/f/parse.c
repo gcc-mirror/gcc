@@ -35,7 +35,7 @@ ffe_parse_file (set_yydebug)
   ffewhereFile wf;
 
   if (ffe_is_version ())
-    fprintf (stderr, "GNU Fortran Front End version %s\n", ffe_version_string);
+    fprintf (stderr, "GNU Fortran Front End version %s\n", version_string);
 
   if (!ffe_is_pedantic ())
     ffe_set_is_pedantic (pedantic);

@@ -65,21 +65,17 @@ F77 f77: f771$(exeext)
   f77.extraclean f77.maintainer-clean f77.rebuilt \
   f77.stage1 f77.stage2 f77.stage3 f77.stage4
 
-g77spec.o: $(srcdir)/f/g77spec.c $(srcdir)/f/version.h $(SYSTEM_H) $(GCC_H) \
+g77spec.o: $(srcdir)/f/g77spec.c $(SYSTEM_H) $(GCC_H) \
 	$(CONFIG_H)
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/f/g77spec.c)
 
-g77version.o: $(srcdir)/f/version.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -o g77version.o \
-	    $(srcdir)/f/version.c
-
 # Create the compiler driver for g77.
-g77$(exeext): gcc.o g77spec.o g77version.o version.o prefix.o intl.o \
+g77$(exeext): gcc.o g77spec.o version.o prefix.o intl.o \
   $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o g77spec.o g77version.o \
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o g77spec.o \
 	   version.o prefix.o intl.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Create a version of the g77 driver which calls the cross-compiler.
@@ -93,7 +89,7 @@ F77_OBJS = f/bad.o f/bit.o f/bld.o f/com.o f/data.o f/equiv.o f/expr.o \
  f/global.o f/implic.o f/info.o f/intrin.o f/lab.o f/lex.o f/malloc.o \
  f/name.o f/parse.o f/src.o f/st.o f/sta.o f/stb.o f/stc.o \
  f/std.o f/ste.o f/storag.o f/stp.o f/str.o f/sts.o f/stt.o f/stu.o \
- f/stv.o f/stw.o f/symbol.o f/target.o f/top.o f/type.o f/version.o f/where.o
+ f/stv.o f/stw.o f/symbol.o f/target.o f/top.o f/type.o f/where.o
 
 # Use loose warnings for this front end.
 f-warn =
@@ -321,7 +317,7 @@ f77.mostlyclean:
 	-rm -f g77.aux g77.cps g77.ky g77.toc g77.vr g77.fn g77.kys \
 	       g77.pg g77.tp g77.vrs g77.cp g77.fns g77.log g77.pgs g77.tps 
 f77.clean:
-	-rm -f g77spec.o g77version.o
+	-rm -f g77spec.o
 f77.distclean:
 	-rm -f f/Makefile
 f77.extraclean:
@@ -332,7 +328,7 @@ f77.maintainer-clean:
 # The main makefile has already created stage?/f.
 
 G77STAGESTUFF = f/*$(objext) f/fini$(build_exeext) f/stamp-str \
-  f/str-*.h f/str-*.j g77spec.o g77version.o
+  f/str-*.h f/str-*.j g77spec.o
 
 f77.stage1: stage1-start
 	-mv -f $(G77STAGESTUFF) stage1/f
@@ -425,7 +421,7 @@ f/parse.o: f/parse.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/top.h f/malloc.h \
  f/where.h glimits.h f/com.h f/com-rt.def $(TREE_H) f/bld.h f/bld-op.def \
  f/bit.h f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h \
  f/bad.def f/lex.h f/type.h f/intrin.h f/intrin.def f/lab.h f/symbol.h \
- f/symbol.def f/equiv.h f/storag.h f/global.h f/name.h f/version.h flags.h
+ f/symbol.def f/equiv.h f/storag.h f/global.h f/name.h version.h flags.h
 f/src.o: f/src.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/src.h f/bad.h f/bad.def \
  f/where.h glimits.h f/top.h f/malloc.h
 f/st.o: f/st.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/st.h f/bad.h f/bad.def \
@@ -527,6 +523,5 @@ f/top.o: f/top.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/top.h f/malloc.h f/where.h \
  f/intrin.def f/data.h f/expr.h f/implic.h f/src.h f/st.h flags.h \
  toplev.h
 f/type.o: f/type.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/type.h f/malloc.h
-f/version.o: f/version.c f/version.h
 f/where.o: f/where.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/where.h glimits.h f/top.h \
  f/malloc.h f/lex.h $(GGC_H) gt-f-where.h
