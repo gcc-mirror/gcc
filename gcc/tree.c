@@ -2572,7 +2572,7 @@ build1 (code, type, node)
    or even garbage if their values do not matter.  */
 
 tree
-build_nt VPROTO((register enum tree_code code, ...))
+build_nt VPROTO((enum tree_code code, ...))
 {
 #ifndef __STDC__
   enum tree_code code;
@@ -2602,7 +2602,7 @@ build_nt VPROTO((register enum tree_code code, ...))
    on the temp_decl_obstack, regardless.  */
 
 tree
-build_parse_node VPROTO((register enum tree_code code, ...))
+build_parse_node VPROTO((enum tree_code code, ...))
 {
 #ifndef __STDC__
   enum tree_code code;
