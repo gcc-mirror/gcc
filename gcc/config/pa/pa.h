@@ -404,7 +404,7 @@ extern int target_flags;
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) == 0 ? (MODE) == CCmode || (MODE) == CCFPmode		\
    : (REGNO) < 32 ? ((GET_MODE_SIZE (MODE) <= 4) ? 1 : ((REGNO) & 1) == 0)\
-   : (REGNO) < 44 ? (GET_MODE_SIZE (MODE) == 4				\
+   : (REGNO) < 44 ? (GET_MODE_SIZE (MODE) <= 4				\
 		     || (GET_MODE_SIZE (MODE) > 4			\
 			 && GET_MODE_CLASS (MODE) == MODE_FLOAT)) 	\
    : (GET_MODE_SIZE (MODE) > 4 ? ((REGNO) & 1) == 0			\
