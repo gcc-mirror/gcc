@@ -1,3 +1,18 @@
+2003-04-26  Zack Weinberg  <zack@codesourcery.com>
+
+	* varasm.c (output_constant_def): Split out two new static
+	functions, build_constant_desc and maybe_output_constant_def_contents.
+	Restructure for comprehensibility.  Don't call
+	output_addressed_constants.  Treat defstr being non-NULL for
+	STRING_POOL_ADDRESS_P constants as an invariant.
+	(struct deferred_string): Remove labelno field.
+	(output_constant_def_contents): Kill labelno argument. Call
+	output_addressed_constants here.  Use ASM_OUTPUT_LABEL,	not
+	asm_out.internal_label.
+	(mark_constant): Update call to	output_constant_def_contents.
+	Treat defstr being non-NULL for STRING_POOL_ADDRESS_P
+	constants as an invariant.
+
 2003-04-26  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (output_pic_addr_const): Use SYMBOL_REF_LOCAL_P.
@@ -88,9 +103,9 @@
 
 2003-04-25  Richard Henderson  <rth@redhat.com>
 
-        PR opt/10315 
-        * config/rs6000/rs6000.c (rs6000_emit_move): Only elide proper
-        checks during reload; use validize_mem instead of adjust_address.
+	PR opt/10315
+	* config/rs6000/rs6000.c (rs6000_emit_move): Only elide proper
+	checks during reload; use validize_mem instead of adjust_address.
 
 2003-04-26  Ben Elliston  <bje@wasabisystems.com>
 
@@ -115,14 +130,14 @@
 2003-04-24  Alexander Kabaev <kan@FreeBSD.ORG>
 
 	* config/sparc/sparc.md (umulsidi3, mulsidi3): Avoid using
-	const_umulsidi3_sp32 and const_mulsidi3_sp32 on 64bit targets 
+	const_umulsidi3_sp32 and const_mulsidi3_sp32 on 64bit targets
 	where they might be not present. Use their _sp64 equivalent
 	instead.
 
 Thu Apr 24 20:42:12 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (cvtsi2sdq): Fix typo in previous patch.
-	
+
 2003-04-24  Krister Walfridsson  <cato@df.lth.se>
 
 	* configure.in: Check whether mbstowcs works.
@@ -156,7 +171,7 @@ Thu Apr 24 16:55:26 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	PR c/10308
 	* reload.c (find_reloads_address_1): Reload plus at the place of
 	index register.
-	
+
 2003-04-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	New GCOV_TAG_FUNCTION layout
@@ -334,14 +349,14 @@ Thu Apr 24 16:55:26 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-22  Richard Henderson  <rth@redhat.com>
 
-        PR 8866
-        * rtl.h (MEM_NOTRAP_P): New.
-        (MEM_COPY_ATTRIBUTES): Copy it.
-        * rtlanal.c (may_trap_p): Check it.
-        * expr.c (do_tablejump): Set it.
+	PR 8866
+	* rtl.h (MEM_NOTRAP_P): New.
+	(MEM_COPY_ATTRIBUTES): Copy it.
+	* rtlanal.c (may_trap_p): Check it.
+	* expr.c (do_tablejump): Set it.
 	* doc/rtl.texi (Flags): Document it.
 
-        * cfgrtl.c (try_redirect_by_replacing_jump): Revert last three changes.
+	* cfgrtl.c (try_redirect_by_replacing_jump): Revert last three changes.
 
 2003-04-22  Olivier Hainque  <hainque@act-europe.fr>
 
@@ -350,12 +365,12 @@ Thu Apr 24 16:55:26 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-22  Vincent Celier <celier@gnat.com>
 
-        * gthr-gnat.h, gthr-gnat.c: new sources for implementation of
-        --enable-threads=gnat.
-        * Makefile.in: Add gthr-gnat.c to LIB2ADDEH.
-        * configure.in: Add gnat to the list of thread packages
-        * configure: Rebuild.
-        * config/t-linux: Add gthr-gnat.c to LIB2ADDEH and LIB2ADDEHDEP
+	* gthr-gnat.h, gthr-gnat.c: new sources for implementation of
+	--enable-threads=gnat.
+	* Makefile.in: Add gthr-gnat.c to LIB2ADDEH.
+	* configure.in: Add gnat to the list of thread packages
+	* configure: Rebuild.
+	* config/t-linux: Add gthr-gnat.c to LIB2ADDEH and LIB2ADDEHDEP
 
 2003-04-22  Neil Booth  <neil@daikokuya.co.uk>
 
@@ -366,7 +381,7 @@ Thu Apr 24 16:55:26 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* cpptrad.c (_cpp_replacement_text_len): Add check for macro
 	parameter count.
 	(_cpp_copy_replacement_text): Same.
-	
+
 2003-04-22  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-lex.c (c_lex): Handle CPP_OTHER differently.
@@ -397,9 +412,9 @@ Thu Apr 24 16:55:26 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-22  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/t-spe: Merge in t-fprules into file.
+	* config/rs6000/t-spe: Merge in t-fprules into file.
 
-        * config.gcc: Add t-spe to powerpc-eabispe.
+	* config.gcc: Add t-spe to powerpc-eabispe.
 
 2003-04-22  Kean Johnston  <jkj@sco.com>
 
@@ -433,8 +448,8 @@ Thu Apr 24 16:55:26 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-21  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_override_options): No SPE means
-        64-bit long doubles.
+	* config/rs6000/rs6000.c (rs6000_override_options): No SPE means
+	64-bit long doubles.
 
 2003-04-21  Olivier Hainque  <hainque@act-europe.fr>
 
@@ -446,7 +461,7 @@ Thu Apr 24 16:55:26 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	nested subprograms.
 
 	* expmed.c (extract_bit_field): Reverse operands of && condition to
-        prevent a potential division by zero in the previously first branch.
+	prevent a potential division by zero in the previously first branch.
 	* config/pa/pa.md (extv, extzv): FAIL if the bitfield length is zero.
 
 2003-04-21  Joel Brobecker  <brobecker@gnat.com>
@@ -458,34 +473,34 @@ Thu Apr 24 16:55:26 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
-        Break out coverage routines to new file.
-        * Makefile.in (COVERAGE_H): New variable
-        (C_OBJS): Add coverage.o
-        (coverage.o): New target.
-        (profile.o, loop-init.o, sched-ebb.o, predict.o, tracer.o): Adjust
-        dependencies.
-        (GTFILES): Adjust.
-        (gt-coverage.h): New target.
-        (gt-profile.h): Remove.
-        * profile.h: Remove. Move to ...
-        * coverage.h: ... here. New. #include gcov-io.h.
-        * gcov-io.h: Move function definitions to ...
-        * gcov-io.c: ... here. New.
-        * profile.c: Move coverage routines to coverage.c.
-        (instrument_edges, get_exec_counts, branch_prob, init_branch_prob,
-        end_branch_prob): Adjust.
-        * coverage.c: New. Coverage routines from profile.c
-        (coverage_counter_ref, coverage_init, coverage_finish,
-        coverage_end_function, coverage_begin_output,
-        coverage_counter_ref, get_coverage_counts): Define.
-        * gcov-dump.c, gcov.c: #include gcov-io.c.
-        * libgcov.c: Likewise. Adjust.
-        * loop-init.c: Don't #include profile.h
-        * tracer.c, predict.c, sched-ebb.c: Adjust #includes.
-        * rtl.h: Add coverage prototypes.
-        * toplev.c (compile_file): Init coverage, not branch_prob.
-        Always call coverage_finish.
-        (rest_of_compilation): Call coverage_end_function.
+	Break out coverage routines to new file.
+	* Makefile.in (COVERAGE_H): New variable
+	(C_OBJS): Add coverage.o
+	(coverage.o): New target.
+	(profile.o, loop-init.o, sched-ebb.o, predict.o, tracer.o): Adjust
+	dependencies.
+	(GTFILES): Adjust.
+	(gt-coverage.h): New target.
+	(gt-profile.h): Remove.
+	* profile.h: Remove. Move to ...
+	* coverage.h: ... here. New. #include gcov-io.h.
+	* gcov-io.h: Move function definitions to ...
+	* gcov-io.c: ... here. New.
+	* profile.c: Move coverage routines to coverage.c.
+	(instrument_edges, get_exec_counts, branch_prob, init_branch_prob,
+	end_branch_prob): Adjust.
+	* coverage.c: New. Coverage routines from profile.c
+	(coverage_counter_ref, coverage_init, coverage_finish,
+	coverage_end_function, coverage_begin_output,
+	coverage_counter_ref, get_coverage_counts): Define.
+	* gcov-dump.c, gcov.c: #include gcov-io.c.
+	* libgcov.c: Likewise. Adjust.
+	* loop-init.c: Don't #include profile.h
+	* tracer.c, predict.c, sched-ebb.c: Adjust #includes.
+	* rtl.h: Add coverage prototypes.
+	* toplev.c (compile_file): Init coverage, not branch_prob.
+	Always call coverage_finish.
+	(rest_of_compilation): Call coverage_end_function.
 
 2003-04-21  Matt Kraai  <kraai@alumni.cmu.edu>
 
@@ -506,10 +521,10 @@ Thu Apr 24 16:55:26 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* cpplib.h (struct cpp_callbacks): Change prototype of include.
 
 2003-04-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
-	
+
 	* doc/rtl.texi (RTX_UNCHANGING_P): Point to true_dependence for
 	details of conflict handling.
-	
+
 	* fold-const.c (extract_muldiv, case CONVERT_EXPR): Detect case
 	when conversion overflows.
 
@@ -525,7 +540,7 @@ Thu Apr 24 16:55:26 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-21  Andreas Jaeger  <aj@suse.de>
 
-        * cppcharset.c (_cpp_valid_ucn): Cast field precision to int.
+	* cppcharset.c (_cpp_valid_ucn): Cast field precision to int.
 
 2003-04-20  Chris Lattner  <sabre@nondot.org>
 	    Zack Weinberg  <zack@codesourcery.com>
@@ -921,7 +936,7 @@ Fri Apr 18 01:28:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (subreg_hard_regno):  Check that register is
 	representable.
-	
+
 	* reload.c (reload_inner_reg_of_subreg):  When register is not
 	representable, reload the whole thing.
 	(find_reloads): Likewsie.
