@@ -8522,7 +8522,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
 	emit_queue ();
 
-	emit_note (NULL_PTR, NOTE_INSN_SETJMP);
+	CONST_CALL_P (emit_note (NULL_PTR, NOTE_INSN_SETJMP)) = 1;
 	current_function_calls_setjmp = 1;
 
 	/* We store the frame pointer and the address of lab1 in the buffer
@@ -8553,15 +8553,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	emit_label (lab1);
 
 	/* Note that setjmp clobbers FP when we get here, so we have to
-	   make sure it's marked as used by this function.  Also,
-	   some inner function might use a call-saved register, so we
-	   have to set up to save all of them here.  */
+	   make sure it's marked as used by this function.   */
 	emit_insn (gen_rtx (USE, VOIDmode, hard_frame_pointer_rtx));
-
-	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	  if (! call_used_regs[i])
-	    emit_insn (gen_rtx (USE, VOIDmode,
-				gen_rtx (REG, reg_raw_mode[i], i)));
 
 	/* Now put in the code to restore the frame pointer, and argument
 	   pointer, if needed.  The code below is from expand_end_bindings
