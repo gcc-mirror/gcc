@@ -3144,6 +3144,50 @@ eliminate_regs_in_insn (insn, replace)
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
 	if (ep->from_rtx == SET_DEST (old_set) && ep->can_eliminate)
 	  {
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+	    /* If this is setting the frame pointer register to the
+	       hardware frame pointer register and this is an elimination
+	       that will be done (tested above), this insn is really
+	       adjusting the frame pointer downward to compensate for
+	       the adjustment done before a nonlocal goto.  */
+	    if (ep->from == FRAME_POINTER_REGNUM
+		&& ep->to == HARD_FRAME_POINTER_REGNUM)
+	      {
+		rtx src = SET_SRC (old_set);
+		int offset, ok = 0;
+
+		if (src == ep->to_rtx)
+		  offset = 0, ok = 1;
+		else if (GET_CODE (src) == PLUS
+			 && GET_CODE (XEXP (src, 0)) == CONST_INT)
+		  offset = INTVAL (XEXP (src, 0)), ok = 1;
+
+		if (ok)
+		  {
+		    if (replace)
+		      {
+			rtx src
+			  = plus_constant (ep->to_rtx, offset - ep->offset);
+
+			/* First see if this insn remains valid when we
+			   make the change.  If not, keep the INSN_CODE
+			   the same and let reload fit it up.  */
+			validate_change (insn, &SET_SRC (old_set), src, 1);
+			validate_change (insn, &SET_DEST (old_set),
+					 ep->to_rtx, 1);
+			if (! apply_change_group ())
+			  {
+			    SET_SRC (old_set) = src;
+			    SET_DEST (old_set) = ep->to_rtx;
+			  }
+		      }
+
+		    val = 1;
+		    goto done;
+		  }
+	      }
+#endif
+
 	    /* In this case this insn isn't serving a useful purpose.  We
 	       will delete it in reload_as_needed once we know that this
 	       elimination is, in fact, being done.
