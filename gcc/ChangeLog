@@ -1,3 +1,6 @@
+2003-05-18  Neil Booth  <neil@daikokuya.co.uk>
+
+	* config/sparc/sparc.h: Define sparc for now.
 2003-05-18  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Clear xm_file, md_file at the beginning of each pass.
