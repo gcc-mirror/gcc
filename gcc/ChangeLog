@@ -1,3 +1,8 @@
+Mon Jun 21 04:44:31 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* sparc.h (LEGITIMIZE_RELOAD_ADDRESS): Fix paren error introduced
+	in last change.
+
 Sun Jun 20 17:27:20 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (sched_analyze_1): Use free_list instead of 
