@@ -982,6 +982,12 @@ expand_call (exp, target, ignore)
       if (type == error_mark_node || TYPE_SIZE (type) == 0)
 	args[i].tree_value = integer_zero_node, type = integer_type_node;
 
+      /* If TYPE is a transparent union, pass things the way we would
+	 pass the first field of the union.  We have already verified that
+	 the modes are the same.  */
+      if (TYPE_TRANSPARENT_UNION (type))
+	type = TREE_TYPE (TYPE_FIELDS (type));
+
       /* Decide where to pass this arg.
 
 	 args[i].reg is nonzero if all or part is passed in registers.
