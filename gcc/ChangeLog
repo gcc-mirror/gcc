@@ -1,3 +1,13 @@
+2003-03-02  Neil Booth  <neil@daikokuya.co.uk>
+
+	* toplev.c (aux_base_name): Moved from toplev.h.
+	(filename): Constify.
+	(lang_dependent_init): Don't duplicate name.
+	(process_options): Set aux_base_name here, not...
+	(do_compile): ...here.  Change protoype.
+	(toplev_main): Move some code from do_compile.
+	* toplev.h: Remove aux_base_name.
+
 2003-03-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Add a prototype for

@@ -103,7 +103,7 @@ extern void reg_alloc PARAMS ((void));
 
 static void general_init PARAMS ((char *));
 static void parse_options_and_default_flags PARAMS ((int, char **));
-static void do_compile PARAMS ((void));
+static void do_compile PARAMS ((int));
 static void process_options PARAMS ((void));
 static void backend_init PARAMS ((void));
 static int lang_dependent_init PARAMS ((const char *));
@@ -176,7 +176,7 @@ const char *dump_base_name;
 
 /* Name to use as a base for auxiliary output files.  */
 
-const char *aux_base_name;
+static const char *aux_base_name;
 
 /* Format to use to print dumpfile index value */
 #ifndef DUMPFILE_FORMAT
@@ -321,7 +321,7 @@ static void close_dump_file PARAMS ((enum dump_file_index,
 int rtl_dump_and_exit;
 int flag_print_asm_name;
 static int version_flag;
-static char *filename;
+static const char *filename;
 enum graph_dump_types graph_dump_format;
 
 /* Name for output file of assembly code, specified with -o.  */
@@ -5144,6 +5144,19 @@ process_options ()
   OVERRIDE_OPTIONS;
 #endif
 
+  /* Set aux_base_name if not already set.  */
+  if (aux_base_name)
+    ;
+  else if (filename)
+    {
+      char *name = xstrdup (lbasename (filename));
+      
+      strip_off_ending (name, strlen (name));
+      aux_base_name = name;
+    }
+  else
+    aux_base_name = "gccaux";
+
   /* Set up the align_*_log variables, defaulting them to 1 if they
      were still unset.  */
   if (align_loops <= 0) align_loops = 1;
@@ -5376,8 +5389,6 @@ lang_dependent_init (name)
   if (name == NULL)
     return 0;
 
-  /* Is this duplication necessary?  */
-  name = ggc_strdup (name);
   main_input_filename = input_filename = name;
   init_asm_output (name);
 
@@ -5472,31 +5483,9 @@ finalize ()
 
 /* Initialize the compiler, and compile the input file.  */
 static void
-do_compile ()
+do_compile (no_backend)
+     int no_backend;
 {
-  /* All command line options have been parsed; allow the front end to
-     perform consistency checks, etc.  */
-  bool no_backend = (*lang_hooks.post_options) ();
-
-  /* The bulk of command line switch processing.  */
-  process_options ();
-
-  /* If an error has already occurred, give up.  */
-  if (errorcount)
-    return;
-
-  if (aux_base_name)
-    /*NOP*/;
-  else if (filename)
-    {
-      char *name = xstrdup (lbasename (filename));
-
-      aux_base_name = name;
-      strip_off_ending (name, strlen (name));
-    }
-  else
-    aux_base_name = "gccaux";
-
   /* We cannot start timing until after options are processed since that
      says if we run timers or not.  */
   init_timevar ();
@@ -5538,7 +5527,18 @@ toplev_main (argc, argv)
 
   /* Exit early if we can (e.g. -help).  */
   if (!exit_after_options)
-    do_compile ();
+    {
+      /* All command line options have been parsed; allow the front
+	 end to perform consistency checks, etc.  */
+      bool no_backend = (*lang_hooks.post_options) ();
+
+      /* The bulk of command line switch processing.  */
+      process_options ();
+
+      /* Don't do any more if an error has already occurred.  */
+      if (!errorcount)
+	do_compile (no_backend);
+    }
 
   if (errorcount || sorrycount)
     return (FATAL_EXIT_CODE);

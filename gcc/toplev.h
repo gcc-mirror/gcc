@@ -108,7 +108,6 @@ extern void check_global_declarations   PARAMS ((union tree_node **, int));
 
 extern const char *progname;
 extern const char *dump_base_name;
-extern const char *aux_base_name;
 
 extern int target_flags_explicit;
 
