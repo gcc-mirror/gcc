@@ -1,5 +1,5 @@
 /* Procedure integration for GNU CC.
-   Copyright (C) 1988, 91, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 91, 93-97, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -77,6 +77,25 @@ static void set_block_abstract_flags PROTO((tree, int));
 
 void set_decl_abstract_flags	PROTO((tree, int));
 
+/* Returns the Ith entry in the label_map contained in MAP.  If the
+   Ith entry has not yet been set, it is assumed to be a fresh label.
+   Essentially, we use this function to perform a lazy initialization
+   of label_map, thereby avoiding huge memory explosions when the
+   label_map gets very large.  */
+rtx
+get_label_from_map (map, i)
+     struct inline_remap* map;
+     int i;
+{
+  rtx x = map->label_map[i];
+
+  if (x == NULL_RTX)
+    x = map->label_map[i] = gen_label_rtx();
+
+  return x;
+}
+
+
 /* Zero if the current function (whose FUNCTION_DECL is FNDECL)
    is safe and reasonable to integrate into other functions.
    Nonzero means value is a warning message with a single %s
@@ -1756,7 +1775,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
   /* Make new label equivalences for the labels in the called function.  */
   for (i = min_labelno; i < max_labelno; i++)
-    map->label_map[i] = gen_label_rtx ();
+    map->label_map[i] = NULL_RTX;
 
   /* Perform postincrements before actually calling the function.  */
   emit_queue ();
@@ -1949,7 +1968,9 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  break;
 
 	case CODE_LABEL:
-	  copy = emit_label (map->label_map[CODE_LABEL_NUMBER (insn)]);
+	  copy = 
+	    emit_label (get_label_from_map(map,
+					   CODE_LABEL_NUMBER (insn)));
 	  LABEL_NAME (copy) = LABEL_NAME (insn);
 	  map->const_age++;
 	  break;
@@ -1972,7 +1993,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	      if (copy && (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG
 			   || NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_END))
 		{
-		  rtx label = map->label_map[NOTE_BLOCK_NUMBER (copy)];
+		  rtx label =
+		    get_label_from_map (map, NOTE_BLOCK_NUMBER (copy));
 
 		  /* We have to forward these both to match the new exception
 		     region.  */
@@ -2387,14 +2409,15 @@ copy_rtx_and_substitute (orig, map)
       return gen_rtx (code, VOIDmode, copy);
 
     case CODE_LABEL:
-      LABEL_PRESERVE_P (map->label_map[CODE_LABEL_NUMBER (orig)])
+      LABEL_PRESERVE_P (get_label_from_map (map, CODE_LABEL_NUMBER (orig)))
 	= LABEL_PRESERVE_P (orig);
-      return map->label_map[CODE_LABEL_NUMBER (orig)];
+      return get_label_from_map (map, CODE_LABEL_NUMBER (orig));
 
     case LABEL_REF:
       copy = gen_rtx (LABEL_REF, mode,
 		      LABEL_REF_NONLOCAL_P (orig) ? XEXP (orig, 0)
-		      : map->label_map[CODE_LABEL_NUMBER (XEXP (orig, 0))]);
+		      : get_label_from_map (map, 
+					    CODE_LABEL_NUMBER (XEXP (orig, 0))));
       LABEL_OUTSIDE_LOOP_P (copy) = LABEL_OUTSIDE_LOOP_P (orig);
 
       /* The fact that this label was previously nonlocal does not mean
