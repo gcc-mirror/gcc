@@ -870,6 +870,13 @@ convert_move (to, from, unsignedp)
   if (GET_MODE_BITSIZE (from_mode) > BITS_PER_WORD
       && GET_MODE_BITSIZE (to_mode) <= BITS_PER_WORD)
     {
+      if (!((GET_CODE (from) == MEM
+	     && ! MEM_VOLATILE_P (from)
+	     && direct_load[(int) to_mode]
+	     && ! mode_dependent_address_p (XEXP (from, 0)))
+	    || GET_CODE (from) == REG
+	    || GET_CODE (from) == SUBREG))
+	from = force_reg (from_mode, from);
       convert_move (to, gen_lowpart (word_mode, from), 0);
       return;
     }
