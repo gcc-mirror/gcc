@@ -1751,12 +1751,12 @@ alpha_expand_block_move (operands)
 	  emit_move_insn (data_regs[nregs+i],
 			  change_address(orig_src, DImode,
 					 plus_constant (XEXP (orig_src, 0),
-							i*8)));
+							ofs + i*8)));
 	}
 
       nregs += words;
       bytes -= words * 8;
-      ofs = words * 8;
+      ofs += words * 8;
     }
   if (src_align >= 4 && bytes >= 4)
     {
@@ -1770,12 +1770,12 @@ alpha_expand_block_move (operands)
 	  emit_move_insn (data_regs[nregs+i],
 			  change_address(orig_src, SImode,
 					 plus_constant (XEXP (orig_src, 0),
-							i*4)));
+							ofs + i*4)));
 	}
 
       nregs += words;
       bytes -= words * 4;
-      ofs = words * 4;
+      ofs += words * 4;
     }
   if (bytes >= 16)
     {
@@ -1788,7 +1788,7 @@ alpha_expand_block_move (operands)
 
       nregs += words;
       bytes -= words * 8;
-      ofs = words * 8;
+      ofs += words * 8;
     }
   if (!TARGET_BWX && bytes >= 8)
     {
@@ -2025,14 +2025,14 @@ alpha_expand_block_clear (operands)
 	{
 	  emit_move_insn (change_address(orig_dst, DImode,
 					 plus_constant (XEXP (orig_dst, 0),
-							i*8)),
+							ofs + i*8)),
 			  const0_rtx);
 	}
 
       bytes -= words * 8;
-      ofs = words * 8;
+      ofs += words * 8;
     }
-  else if (align >= 4 && bytes >= 4)
+  if (align >= 4 && bytes >= 4)
     {
       words = bytes / 4;
 
@@ -2040,21 +2040,21 @@ alpha_expand_block_clear (operands)
 	{
 	  emit_move_insn (change_address(orig_dst, SImode,
 					 plus_constant (XEXP (orig_dst, 0),
-							i*4)),
+							ofs + i*4)),
 			  const0_rtx);
 	}
 
       bytes -= words * 4;
-      ofs = words * 4;
+      ofs += words * 4;
     }
-  else if (bytes >= 16)
+  if (bytes >= 16)
     {
       words = bytes / 8;
 
-      alpha_expand_unaligned_store_words (NULL, orig_dst, words, 0);
+      alpha_expand_unaligned_store_words (NULL, orig_dst, words, ofs);
 
       bytes -= words * 8;
-      ofs = words * 8;
+      ofs += words * 8;
     }
 
   /* Next clean up any trailing pieces.  We know from the contiguous

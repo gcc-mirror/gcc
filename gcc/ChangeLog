@@ -1,3 +1,8 @@
+Tue Apr  7 02:01:47 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_expand_block_move): Correctly collect block offsets.
+	(alpha_expand_block_clear): Likewise.
+
 Mon Apr  6 23:36:01 1998  Richard Henderson  <rth@cygnus.com>
 
 	* tree.h (sizetype_tab): Fix previous change for K&R.
