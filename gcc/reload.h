@@ -182,6 +182,12 @@ extern int reload_n_operands;
    Used in find_equiv_reg.  */
 extern int reload_first_uid;
 
+/* Nonzero if indirect addressing is supported when the innermost MEM is
+   of the form (MEM (SYMBOL_REF sym)).  It is assumed that the level to
+   which these are valid is the same as spill_indirect_levels, above.  */
+
+extern char indirect_symref_ok;
+
 /* Nonzero if an address (plus (reg frame_pointer) (reg ...)) is valid.  */
 extern char double_reg_address_ok;
 

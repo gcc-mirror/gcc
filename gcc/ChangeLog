@@ -4,6 +4,9 @@
 	static.
 	* reload.h: Remove the prototype for indirect_symref_ok.
 
+	* reload1.c (indirect_symref_ok): Make it global.
+	* reload.h: Add a prototype for indirect_symref_ok.
+
 2005-03-22  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (ashlhi3): Rename to *ashlhi3_n and add a new
