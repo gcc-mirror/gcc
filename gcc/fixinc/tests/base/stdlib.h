@@ -16,6 +16,12 @@
 #endif  /* ARM_WCHAR_CHECK */
 
 
+#if defined( HPUX_LONG_DOUBLE_CHECK )
+extern long double strtold(const char *, char **);
+
+#endif  /* HPUX_LONG_DOUBLE_CHECK */
+
+
 #if defined( INT_ABORT_FREE_AND_EXIT_CHECK )
 extern void	abort(int);
 extern void	free(void*);
