@@ -162,7 +162,7 @@
 ;; align them when relaxing.
 
 ;; Loads have a latency of two.
-;; However, call insn can have ;; a delay slot, so that we want one more
+;; However, call insns can have a delay slot, so that we want one more
 ;; insn to be scheduled between the load of the function address and the call.
 ;; This is equivalent to a latency of three.
 ;; We cannot use a conflict list for this, because we need to distinguish
@@ -1884,6 +1884,18 @@
 	sts	%1,%0
 	lds	%1,%0"
  [(set_attr "type" "move,load,store,move,move,move")])
+
+;; For Big-endian, reload now sometimes generates something like
+;; (insn 2107 2104 2099 (set (reg:QI 3 r3)
+;;         (subreg:QI (mem:SI (reg:SI 0 r0)) 0)) -1 (nil)
+;;     (nil))
+;; To avoid clutter in the movqi pattern, we express this as a peephole.
+
+(define_peephole
+  [(set (match_operand:QI 0 "arith_reg_operand" "r")
+	(subreg:QI (match_operand:SI 1 "memory_operand"  "m") 0))]
+  ""
+  "mov.l	%1,%0")
 
 (define_expand "movqi"
   [(set (match_operand:QI 0 "general_operand" "")
