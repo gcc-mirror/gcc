@@ -1,3 +1,8 @@
+2003-11-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/lib1funcs.asm (___udivsi3): Peel off the first
+	iteration.
+
 2003-11-14  Fariborz Jahanian <fjahanian@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_move_block_from_reg):
