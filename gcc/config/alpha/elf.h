@@ -215,7 +215,7 @@ extern void sdata_section (void);
 
 #undef  SECTION_FUNCTION_TEMPLATE
 #define SECTION_FUNCTION_TEMPLATE(FN, ENUM, OP)	\
-void FN ()					\
+void FN (void)					\
 {						\
   if (in_section != ENUM)			\
     {						\

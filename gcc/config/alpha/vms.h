@@ -218,7 +218,7 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS					\
 void								\
-link_section ()							\
+link_section (void)						\
 {								\
   if (in_section != in_link)					\
     {								\
@@ -227,7 +227,7 @@ link_section ()							\
     }								\
 }                                                               \
 void								\
-literals_section ()						\
+literals_section (void)						\
 {								\
   if (in_section != in_literals)				\
     {								\
