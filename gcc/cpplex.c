@@ -24,22 +24,17 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 Cleanups to do:-
 
-o Fix ISTABLE to flag the parts we want for IS_HSPACE and IS_NEWLINE.
 o Get use of digraphs in sync with the standard reqd on the command line.
 o -dM and with _cpp_dump_list: too many \n output.
 o Put a printer object in cpp_reader?
 o Check line numbers assigned to all errors.
 o Replace strncmp with memcmp almost everywhere.
 o lex_line's use of cur_token, flags and list->token_used is a bit opaque.
-o Get rid of cpp_get_directive_token.
 o Convert do_ functions to return void.  Kaveh thinks its OK; and said he'll
   give it a run when we've got some code.
-o _cpp_parse_expr updated to new lexer.
 o Distinguish integers, floats, and 'other' pp-numbers.
 o Store ints and char constants as binary values.
 o New command-line assertion syntax.
-o Merge hash table text pointer and token list text pointer for identifiers.
-o Have _cpp_parse_expr use all the information the new lexer provides.
 o Work towards functions in cpperror.c taking a message level parameter.
   If we do this, merge the common code of do_warning and do_error.
 o Comment all functions, and describe macro expansion algorithm.
@@ -121,10 +116,6 @@ static void process_directive PARAMS ((cpp_reader *, const cpp_token *));
   (((c) == '+' || (c) == '-') && \
    ((prevc) == 'e' || (prevc) == 'E' \
     || (((prevc) == 'p' || (prevc) == 'P') && !CPP_OPTION (pfile, c89))))
-
-/* Maybe put these in the ISTABLE eventually.  */
-#define IS_HSPACE(c) ((c) == ' ' || (c) == '\t')
-#define IS_NEWLINE(c) ((c) == '\n' || (c) == '\r')
 
 /* Handle LF, CR, CR-LF and LF-CR style newlines.  Assumes next
    character, if any, is in buffer.  */
@@ -863,7 +854,7 @@ skip_block_comment (pfile)
 	      cpp_warning (pfile, "'/*' within comment");
 	    }
 	}
-      else if (IS_NEWLINE(c))
+      else if (is_vspace (c))
 	{
 	  const unsigned char* bslash = backslash_start (pfile, cur - 2);
 
@@ -897,7 +888,7 @@ skip_line_comment (pfile)
     {
       unsigned char c = *cur++;
 
-      if (IS_NEWLINE (c))
+      if (is_vspace (c))
 	{
 	  /* Check for a (trigaph?) backslash escaping the newline.  */
 	  if (!backslash_start (pfile, cur - 2))
@@ -922,37 +913,38 @@ skip_whitespace (pfile, in_directive)
      int in_directive;
 {
   cpp_buffer *buffer = pfile->buffer;
-  register const unsigned char *cur = buffer->cur;
-  unsigned short null_count = 0;
+  unsigned short warned = 0;
 
-  for (; cur < buffer->rlimit; )
+  /* We only want non-vertical space, i.e. ' ' \t \f \v \0. */
+  while (buffer->cur < buffer->rlimit)
     {
-      unsigned char c = *cur++;
+      unsigned char c = *buffer->cur;
 
-      if (c == '\t')
-	{
-	  unsigned int col = CPP_BUF_COLUMN (buffer, cur - 1);
-	  pfile->col_adjust += (CPP_OPTION (pfile, tabstop) - 1
-				- col % CPP_OPTION(pfile, tabstop));
-	}
-      if (IS_HSPACE(c))		/* FIXME: Fix ISTABLE.  */
+      if (!is_nvspace (c))
+	break;
+
+      buffer->cur++;
+      /* Horizontal space always OK.  */
+      if (c == ' ')
 	continue;
-      if (!is_space(c) || IS_NEWLINE (c)) /* Main loop handles newlines.  */
-	goto out;
-      if (c == '\0')
-	null_count++;
-      /* Mut be '\f' or '\v' */
+      else if (c == '\t')
+	pfile->col_adjust += CPP_OPTION (pfile, tabstop) - 1
+	  - (CPP_BUF_COL (buffer) - 1) % CPP_OPTION(pfile, tabstop);
+      /* Must be \f \v or \0.  */
+      else if (c == '\0')
+	{
+	  if (!warned)
+	    cpp_warning_with_line (pfile, CPP_BUF_LINE (buffer),
+				   CPP_BUF_COL (buffer),
+				   "embedded null character ignored");
+	  warned = 1;
+	}
       else if (in_directive && CPP_PEDANTIC (pfile))
-	cpp_pedwarn (pfile, "%s in preprocessing directive",
-		     c == '\f' ? "formfeed" : "vertical tab");
+	cpp_pedwarn_with_line (pfile, CPP_BUF_LINE (buffer),
+			       CPP_BUF_COL (buffer),
+			       "%s in preprocessing directive",
+			       c == '\f' ? "form feed" : "vertical tab");
     }
-  cur++;
-
- out:
-  buffer->cur = cur - 1;
-  if (null_count)
-    cpp_warning (pfile, null_count > 1 ? "embedded null characters ignored"
-		 : "embedded null character ignored");
 }
 
 /* Parse (append) an identifier.  */
@@ -1073,7 +1065,7 @@ parse_string (pfile, list, token, terminator)
 
       if (c == '\0')
 	null_count++;
-      else if (c == terminator || IS_NEWLINE (c))
+      else if (c == terminator || is_vspace (c))
 	{
 	  /* Needed for trigraph_replace and multiline string warning.  */
 	  buffer->cur = cur;
@@ -1090,7 +1082,7 @@ parse_string (pfile, list, token, terminator)
 	    }
 
 	  namebuf--;     /* Drop the newline / terminator from the name.  */
-	  if (IS_NEWLINE (c))
+	  if (is_vspace (c))
 	    {
 	      /* Drop a backslash newline, and continue. */
 	      if (namebuf[-1] == '\\')
@@ -1159,7 +1151,7 @@ parse_string (pfile, list, token, terminator)
   /* We may not have trigraph-replaced the input for this code path,
      but as the input is in error by being unterminated we don't
      bother.  Prevent warnings about no newlines at EOF.  */
-  if (IS_NEWLINE(cur[-1]))
+  if (is_vspace (cur[-1]))
     cur--;
 
  unterminated:
@@ -1240,7 +1232,7 @@ save_comment (list, token, from, len, type)
  *  even when enabled.
  */
 
-#define IS_DIRECTIVE() (list->directive != 0)
+#define KNOWN_DIRECTIVE() (list->directive != 0)
 #define MIGHT_BE_DIRECTIVE() \
 (cur_token == &list->tokens[first_token + 1] && cur_token[-1].type == CPP_HASH)
 
@@ -1273,21 +1265,22 @@ lex_line (pfile, list)
     {
       unsigned char c;
 
-      /* Optimize whitespace skipping, as most tokens are probably
-	 separated by whitespace. (' ' '\t' '\v' '\f' '\0').  */
-      c = *cur++;
-      if (is_hspace (c))
+      /* Optimize non-vertical whitespace skipping; most tokens are
+	 probably separated by whitespace. (' ' '\t' '\v' '\f' '\0').  */
+      c = *cur;
+      if (is_nvspace (c))
 	{
-	  /* Step back to get the null warning and tab correction.  */
-	  buffer->cur = cur - 1;
-	  skip_whitespace (pfile, IS_DIRECTIVE ());
+	  buffer->cur = cur;
+	  skip_whitespace (pfile, (list->tokens[first_token].type == CPP_HASH
+				   && cur_token > &list->tokens[first_token]));
 	  cur = buffer->cur;
 
 	  flags = PREV_WHITE;
 	  if (cur == buffer->rlimit)
 	    break;
-	  c = *cur++;
+	  c = *cur;
 	}
+      cur++;
 
       /* Initialize current token.  CPP_EOF will not be fixed up by
 	 expand_name_space.  */
@@ -1428,7 +1421,7 @@ lex_line (pfile, list)
 		      /* Back-up to first '-' or '/'.  */
 		      cur_token--;
 		      if (!CPP_OPTION (pfile, discard_comments)
-			  && (!IS_DIRECTIVE()
+			  && (!KNOWN_DIRECTIVE()
 			      || (list->directive->flags & COMMENTS)))
 			save_comment (list, cur_token++, cur,
 				      buffer->cur - cur, c);
@@ -1466,7 +1459,7 @@ lex_line (pfile, list)
 		  /* Back up to opening '/'.  */
 		  cur_token--;
 		  if (!CPP_OPTION (pfile, discard_comments)
-		      && (!IS_DIRECTIVE()
+		      && (!KNOWN_DIRECTIVE()
 			  || (list->directive->flags & COMMENTS)))
 		    save_comment (list, cur_token++, cur,
 				  buffer->cur - cur, c);
@@ -1647,7 +1640,7 @@ lex_line (pfile, list)
 	      break;
 	    }
 	  /* Is this the beginning of a header name?  */
-	  if (IS_DIRECTIVE () && (list->directive->flags & INCL))
+	  if (KNOWN_DIRECTIVE () && (list->directive->flags & INCL))
 	    {
 	      c = '>';	/* Terminator.  */
 	      cur_token->type = CPP_HEADER_NAME;
@@ -1755,7 +1748,7 @@ lex_line (pfile, list)
   cur_token->flags = flags;
   if (cur_token == &list->tokens[first_token] && pfile->done_initializing)
     {
-      if (cur > buffer->buf && !IS_NEWLINE (cur[-1]))
+      if (cur > buffer->buf && !is_vspace (cur[-1]))
 	cpp_pedwarn_with_line (pfile, CPP_BUF_LINE (buffer),
 			       CPP_BUF_COLUMN (buffer, cur),
 			       "no newline at end of file");
@@ -1780,16 +1773,16 @@ lex_line (pfile, list)
 	cpp_error (pfile, "invalid preprocessing directive");
     }
 
-  /* Put EOF at end of directives.  This covers "directives do not
-     extend beyond the end of the line (description 6.10 part 2)".  */
-  if (IS_DIRECTIVE () || !pfile->done_initializing)
+  /* Put EOF at end of known directives.  This covers "directives do
+     not extend beyond the end of the line (description 6.10 part 2)".  */
+  if (KNOWN_DIRECTIVE () || !pfile->done_initializing)
     {
       pfile->first_directive_token = first;
       cur_token++->type = CPP_EOF;
     }
 
-  if (first_token == 0 || IS_DIRECTIVE ())
-    /* Set beginning of line flag.  */
+  /* Directives, known or not, always start a new line.  */
+  if (first_token == 0 || list->tokens[first_token].type == CPP_HASH)
     first->flags |= BOL;
   else
     /* 6.10.3.10: Within the sequence of preprocessing tokens making
@@ -2968,6 +2961,16 @@ lex_next (pfile, clear)
   const cpp_token *old_list = list->tokens;
   unsigned int old_used = list->tokens_used;
 
+  /* If we are currently processing a directive, do not advance.  6.10
+     paragraph 2: A new-line character ends the directive even if it
+     occurs within what would otherwise be an invocation of a
+     function-like macro.
+
+     It is possible that clear == 1 too; e.g. "#if funlike_macro ("
+     since parse_args swallowed the directive's EOF.  */
+  if (list->directive)
+    return 1;
+
   if (clear)
     {
       /* Release all temporary tokens.  */
@@ -2975,15 +2978,6 @@ lex_next (pfile, clear)
       pfile->contexts[0].posn = 0;
       if (pfile->temp_used)
 	release_temp_tokens (pfile);
-    }
-  else
-    {
-      /* If we are currently processing a directive, do not advance.
-	 (6.10 paragraph 2: A new-line character ends the directive
-	 even if it occurs within what would otherwise be an
-	 invocation of a function-like macro.)  */
-      if (list->directive)
-	return 1;
     }
      
   lex_line (pfile, list);
@@ -3021,11 +3015,7 @@ lex_next (pfile, clear)
 			       list->tokens[old_used].col,
 			       "#%s may not be used inside a macro argument",
 			       list->directive->name);
-	  /* Don't treat as a directive: clear list->directive,
-	     prune the final EOF from the list.  */
-	  list->directive = 0;
-	  list->tokens_used--;
-	  pfile->contexts[0].count--;
+	  return 1;
 	}
     }
 

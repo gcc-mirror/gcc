@@ -138,6 +138,7 @@ enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
 #define A(x) s(x, ISidnum|ISidstart)
 #define N(x) s(x, ISidnum|ISnumstart)
 #define H(x) s(x, IShspace|ISspace)
+#define V(x) s(x, ISvspace|ISspace)
 #define S(x) s(x, ISspace)
 
 ISTABLE
@@ -153,14 +154,17 @@ ISTABLE
 
   N('1') N('2') N('3') N('4') N('5') N('6') N('7') N('8') N('9') N('0')
 
-  H('\0') H(' ') H('\t') H('\v') H('\f')
+  H(' ') H('\t')
 
-  S('\n')
+  V('\n') V('\r')
+
+  S('\0') S('\v') S('\f')
 END
 
 #undef A
 #undef N
 #undef H
+#undef V
 #undef S
 #undef s
 #undef ISTABLE

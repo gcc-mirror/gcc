@@ -141,12 +141,17 @@ struct spec_nodes
 
 /* Character classes.
    If the definition of `numchar' looks odd to you, please look up the
-   definition of a pp-number in the C standard [section 6.4.8 of C99] */
+   definition of a pp-number in the C standard [section 6.4.8 of C99].
+
+   In the unlikely event that characters other than \r and \n enter
+   the set is_vspace, the macro handle_newline() in cpplex.c must be
+   updated.  */
 #define ISidnum		0x01	/* a-zA-Z0-9_ */
 #define ISidstart	0x02	/* _a-zA-Z */
 #define ISnumstart	0x04	/* 0-9 */
-#define IShspace	0x08	/* ' ' \t \f \v */
-#define ISspace		0x10	/* ' ' \t \f \v \n */
+#define IShspace	0x08	/* ' ' \t */
+#define ISvspace	0x10	/* \r \n */
+#define ISspace		0x20	/* ' ' \t \r \n \f \v \0 */
 
 #define _dollar_ok(x)	((x) == '$' && CPP_OPTION (pfile, dollars_in_ident))
 
@@ -155,6 +160,8 @@ struct spec_nodes
 #define is_numchar(x)	(_cpp_IStable[x] & ISidnum)
 #define is_numstart(x)	(_cpp_IStable[x] & ISnumstart)
 #define is_hspace(x)	(_cpp_IStable[x] & IShspace)
+#define is_vspace(x)	(_cpp_IStable[x] & ISvspace)
+#define is_nvspace(x)	((_cpp_IStable[x] & (ISspace | ISvspace)) == ISspace)
 #define is_space(x)	(_cpp_IStable[x] & ISspace)
 
 /* This table is constant if it can be initialized at compile time,

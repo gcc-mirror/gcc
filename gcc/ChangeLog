@@ -1,3 +1,22 @@
+2000-07-09  Neil Booth  <NeilB@earthling.net>
+
+	* cpphash.h: ISvspace, is_vspace, is_nvspace: New.
+	IShspace, ISspace: Update.
+
+	* cppinit.c: ISTABLE: Update.
+	V: New.
+
+	* cpplex.c (IS_HSPACE, S_NEWLINE): Remove.
+	(IS_DIRECTIVE): Rename KNOWN_DIRECTIVE.
+	(skip_block_comment, skip_line_comment,	parse_string,
+	lex_line): Use is_vspace rather than IS_NEWLINE.
+	(skip_whitespace, lex_line): Clean up to use is_nvspace.
+	(lex_line): Use KNOWN_DIRECTIVE.  Any kind of directive
+	gets a BOL flag.
+	(lex_next): Unconditionally stop if within a directive.
+	Treat directives within macro invocations as directives
+	(after parse_args emits error), not as the argument.
+
 2000-07-09  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.c (diagnostic_args): New macro.
