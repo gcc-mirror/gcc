@@ -1,3 +1,16 @@
+Mon Dec 19 22:40:53 1994  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (check_classfn): Don't use decls_match yet, as it modifies
+	static functions to early.
+
+Thu Dec 19 22:37:48 1994  Mike Stump  <mrs@cygnus.com>
+
+	* method.c (make_thunk): Handle encoding of positive thunk offsets.
+
+Sat Dec 17 13:29:50 1994  Doug Evans  <dje@canuck.cygnus.com>
+
+	* Make-lang.in (.PHONY): Tell GNU make C++ and c++ are phony targets.
+
 Thu Dec 15 16:32:12 1994  Mike Stump  <mrs@cygnus.com>
 
 	* decl2.c (check_classfn): Use decls_match to check if this has

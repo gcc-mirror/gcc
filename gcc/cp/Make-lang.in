@@ -56,6 +56,9 @@ GXX_CROSS_NAME = `t='$(program_transform_cross_name)'; echo g++ | sed $$t`
 # to do the right thing within all.cross.
 C++ c++: cc1plus
 
+# Tell GNU make to ignore these if they exist.
+.PHONY: C++ c++
+
 # Create the compiler driver for g++.
 g++: $(srcdir)/cp/g++.c $(CONFIG_H) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o g++ $(srcdir)/cp/g++.c $(LIBS)

@@ -1147,10 +1147,22 @@ check_classfn (ctype, cname, function)
 		{
 		  if (DECL_ASSEMBLER_NAME (function) == DECL_ASSEMBLER_NAME (fndecl))
 		    return;
+#if 0
+		  /* This should work, but causes libg++ to fail
+		     make check-tFix. */
 		  /* We have to do more extensive argument checking here, as
 		     the name may have been changed by asm("new_name"). */
 		  if (decls_match (function, fndecl))
 		    return;
+#else
+		  if (DECL_NAME (function) == DECL_NAME (fndecl)
+		      && comptypes (TREE_TYPE (TREE_TYPE (function)),
+				    TREE_TYPE (TREE_TYPE (fndecl)), 1)
+		      && compparms (TYPE_ARG_TYPES (TREE_TYPE (function)),
+				    TYPE_ARG_TYPES (TREE_TYPE (fndecl)),
+				    3))
+		    return;
+#endif
 		  fndecl = DECL_CHAIN (fndecl);
 		}
 	      break;		/* loser */
