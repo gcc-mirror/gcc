@@ -1,3 +1,19 @@
+2003-05-03  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* gnu/awt/gtk/GtkButtonPeer.java: Fix misspelling of
+	"version".
+	* gnu/awt/gtk/GtkComponentPeer.java: Likewise.
+	* gnu/awt/gtk/GtkContainerPeer.java: Likewise.
+	* gnu/awt/gtk/GtkFramePeer.java: Likewise.
+	* gnu/awt/gtk/GtkLabelPeer.java: Likewise.
+	* gnu/awt/gtk/GtkMainThread.java: Likewise.
+	* gnu/awt/gtk/GtkToolkit.java: Likewise.
+	* gnu/awt/gtk/GtkWindowPeer.java: Likewise.
+	* java/security/Key.java: Likewise.
+	* java/security/PrivateKey.java: Likewise.
+	* java/security/Provider.java: Likewise.
+	* java/security/PublicKey.java: Likewise.
+
 2003-05-02  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URI.java
