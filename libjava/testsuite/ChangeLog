@@ -1,3 +1,17 @@
+1999-07-06  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.lang/Final.xfail: New file.
+	* libjava.compile/Case.xfail: New file.
+	* libjava.compile/Where.xfail: New file.
+	* libjava.compile/test.exp: Look for `.xfail' files.
+	* libjava.lang/test.exp: Don't look for `.arg' files.
+	Do look for `.xfail' files.
+	* lib/libjava.exp (test_libjava_from_source): Changed meaning of
+	`exec_args' argument.  Handle `xfail-*' arguments.
+	(test_libjava_from_javac): Likewise.
+	(test_libjava): Likewise.
+	(libjava_read_xfail): New proc.
+
 1999-07-05  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* libjava.lang/Final.java: Added.
