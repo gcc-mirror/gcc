@@ -1,5 +1,10 @@
 1999-09-08  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (saved_scope): Remove old_binding_level and 
+	function_decl.  Tidy up.
+	* decl.c (mark_saved_scope): Don't set them.
+	(maybe_push_to_top_level): Clear memory.
+
 	* decl.c (layout_var_decl): Change prototype.  Don't complete
 	types for external objects.
 	(check_initializer): Likewise.  Tidy.
