@@ -1,3 +1,9 @@
+2005-01-28  Stephane Carrez  <stcarrez@nerim.fr>
+
+	PR target/15384
+	* config/m68hc11/t-m68hc11-gas (dp-bit.c): Fix typo causing a
+	configuration part of dp-bit.c to be lost.
+
 2005-01-27  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/17771
