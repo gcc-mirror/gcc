@@ -277,8 +277,9 @@
 #   define MACOS
 #   define mach_type_known
 # endif
-# if defined(macosx) || \
-     defined(__APPLE__) && defined(__MACH__) && defined(__ppc__)
+# if defined(macosx) \
+     || defined(__APPLE__) && defined(__MACH__) && defined(__ppc__) \
+     || defined(__APPLE__) && defined(__MACH__) && defined(__ppc64__)
 #    define DARWIN
 #    define POWERPC
 #    define mach_type_known
@@ -756,7 +757,12 @@
 #     define DATAEND (_end)
 #   endif
 #   ifdef DARWIN
-#     define ALIGNMENT 4
+#     if (defined (__ppc64__))
+#       define ALIGNMENT 8
+#       define CPP_WORDSZ 64
+#     else
+#       define ALIGNMENT 4
+#     endif
 #     define OS_TYPE "DARWIN"
 #     define DYNAMIC_LOADING
       /* XXX: see get_end(3), get_etext() and get_end() should not be used.
