@@ -2773,7 +2773,6 @@ mark_target_live_regs (target, res)
 					  j++)
 				       SET_HARD_REG_BIT (current_live_regs, j);
 				 });
-	}
 
       /* Get starting and ending insn, handling the case where each might
 	 be a SEQUENCE.  */
