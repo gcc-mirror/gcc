@@ -282,6 +282,13 @@ process_assignment (tree ass, tree stmt, block_stmt_iterator call, tree *m,
   if (TREE_CODE_CLASS (code) != '2')
     return false;
 
+  /* Accumulator optimizations will reverse the order of operations.
+     We can only do that for floating-point types if we're assuming
+     that addition and multiplication are associative.  */
+  if (!flag_unsafe_math_optimizations)
+    if (FLOAT_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
+      return false;
+
   /* We only handle the code like
 
      x = call ();
