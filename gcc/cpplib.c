@@ -6079,7 +6079,7 @@ cpp_start_read (pfile, fname)
 	{
 	  char *p, *q, *r;
 	  int len, x;
-	  char *known_suffixes[] = { ".c", ".C", ".s", ".S", ".m",
+	  static char *known_suffixes[] = { ".c", ".C", ".s", ".S", ".m",
 				     ".cc", ".cxx", ".cpp", ".cp",
 				     ".c++", 0
 				   };
