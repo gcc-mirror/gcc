@@ -103,34 +103,32 @@ estimate_probability (loops_info)
     {
       rtx last_insn = BLOCK_END (i);
       rtx cond, earliest;
-      int prob = 0;
+      int prob;
       edge e;
 
       if (GET_CODE (last_insn) != JUMP_INSN
 	  || ! condjump_p (last_insn) || simplejump_p (last_insn))
 	continue;
+
       if (find_reg_note (last_insn, REG_BR_PROB, 0))
 	continue;
+
       cond = get_condition (last_insn, &earliest);
       if (! cond)
 	continue;
 
-      /* If the jump branches around a block with no successors,
-	 predict it to be taken.  */
-      prob = 0;
+      /* If one of the successor blocks has no successors, predict
+	 that side not taken.  */
+      /* ??? Ought to do the same for any subgraph with no exit.  */
       for (e = BASIC_BLOCK (i)->succ; e; e = e->succ_next)
-	if ((e->flags & EDGE_FALLTHRU) && e->dest->succ == NULL)
+	if (e->dest->succ == NULL)
 	  {
-	    prob = REG_BR_PROB_BASE;
-	    break;
+	    if (e->flags & EDGE_FALLTHRU)
+	      prob = REG_BR_PROB_BASE;
+	    else
+	      prob = 0;
+	    goto emitnote;
 	  }
-      if (prob)
-	{
-	  REG_NOTES (last_insn)
-	    = gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
-				 REG_NOTES (last_insn));
-	  continue;
-	}
 
       /* Try "pointer heuristic."
 	 A comparison ptr == 0 is predicted as false.
@@ -143,7 +141,10 @@ estimate_probability (loops_info)
 	      && (XEXP (cond, 1) == const0_rtx
 		  || (GET_CODE (XEXP (cond, 1)) == REG
 		      && REGNO_POINTER_FLAG (REGNO (XEXP (cond, 1))))))
-	    prob = REG_BR_PROB_BASE / 10;
+	    {
+	      prob = REG_BR_PROB_BASE / 10;
+	      goto emitnote;
+	    }
 	  break;
 	case NE:
 	  if (GET_CODE (XEXP (cond, 0)) == REG
@@ -151,17 +152,14 @@ estimate_probability (loops_info)
 	      && (XEXP (cond, 1) == const0_rtx
 		  || (GET_CODE (XEXP (cond, 1)) == REG
 		      && REGNO_POINTER_FLAG (REGNO (XEXP (cond, 1))))))
-	    prob = REG_BR_PROB_BASE / 2;
+	    {
+	      prob = REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 10);
+	      goto emitnote;
+	    }
 	  break;
+
 	default:
-	  prob = 0;
-	}
-      if (prob)
-	{
-	  REG_NOTES (last_insn)
-	    = gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
-				 REG_NOTES (last_insn));
-	  continue;
+	  break;
 	}
 
       /* Try "opcode heuristic."
@@ -172,30 +170,42 @@ estimate_probability (loops_info)
 	{
 	case CONST_INT:
 	  /* Unconditional branch.  */
-	  prob = REG_BR_PROB_BASE / 2;
-	  break;
+	  prob = (cond == const0_rtx ? 0 : REG_BR_PROB_BASE);
+	  goto emitnote;
+
 	case EQ:
 	  prob = REG_BR_PROB_BASE / 10;
-	  break;
+	  goto emitnote;
 	case NE:
-	  prob = REG_BR_PROB_BASE / 2;
-	  break;
+	  prob = REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 10);
+	  goto emitnote;
 	case LE:
 	case LT:
 	  if (XEXP (cond, 1) == const0_rtx)
-	    prob = REG_BR_PROB_BASE / 10;
+	    {
+	      prob = REG_BR_PROB_BASE / 10;
+	      goto emitnote;
+	    }
 	  break;
 	case GE:
 	case GT:
 	  if (XEXP (cond, 1) == const0_rtx
 	      || (GET_CODE (XEXP (cond, 1)) == CONST_INT
 		  && INTVAL (XEXP (cond, 1)) == -1))
-	    prob = REG_BR_PROB_BASE / 2;
+	    {
+	      prob = REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 10);
+	      goto emitnote;
+	    }
 	  break;
 
 	default:
-	  prob = 0;
+	  break;
 	}
+
+      /* If we havn't chosen something by now, predict 50-50.  */
+      prob = REG_BR_PROB_BASE / 2;
+
+    emitnote:
       REG_NOTES (last_insn)
 	= gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
 			     REG_NOTES (last_insn));
