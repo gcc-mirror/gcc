@@ -4119,7 +4119,7 @@ expand_decl_cleanup (decl, cleanup)
 
 	  /* Conditionalize the cleanup.  */
 	  cleanup = build (COND_EXPR, void_type_node,
-			   truthvalue_conversion (cond),
+			   (*lang_hooks.truthvalue_conversion) (cond),
 			   cleanup, integer_zero_node);
 	  cleanup = fold (cleanup);
 

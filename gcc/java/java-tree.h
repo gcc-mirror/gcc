@@ -1045,6 +1045,7 @@ extern tree java_type_for_size PARAMS ((unsigned int, int));
 extern tree java_unsigned_type PARAMS ((tree));
 extern tree java_signed_type PARAMS ((tree));
 extern tree java_signed_or_unsigned_type PARAMS ((int, tree));
+extern tree java_truthvalue_conversion PARAMS ((tree));
 extern void add_assume_compiled PARAMS ((const char *, int));
 extern tree lookup_class PARAMS ((tree));
 extern tree lookup_java_constructor PARAMS ((tree, tree));

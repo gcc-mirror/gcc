@@ -1,3 +1,11 @@
+2002-04-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_TRUTHVALUE_CONVERSION): Redefine.
+	* cvt.c: Update comment.
+	* init.c (expand_cleanup_for_base): Update.
+	* semantics.c (finish_parenthesized_expr): Update.
+	* typeck.c (cp_truthvalue_conversion): Update.
+
 2002-04-04  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (finish_eh_cleanup): New fn.

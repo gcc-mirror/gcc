@@ -1907,7 +1907,7 @@ tree_transform (gnat_node)
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 	gnu_result = build_cond_expr (gnu_result_type,
-				      truthvalue_conversion (gnu_cond),
+				      gnat_truthvalue_conversion (gnu_cond),
 				      gnu_true, gnu_false);
       }
       break;
@@ -2411,9 +2411,8 @@ tree_transform (gnat_node)
 	      TREE_LOOP_ID (get_gnu_tree (Entity (Name (gnat_node))));
 
 	if (Present (Condition (gnat_node)))
-	  gnu_cond
-	    = invert_truthvalue
-	      (truthvalue_conversion (gnat_to_gnu (Condition (gnat_node))));
+	  gnu_cond = invert_truthvalue (gnat_truthvalue_conversion
+					(gnat_to_gnu (Condition (gnat_node))));
 
 	set_lineno (gnat_node, 1);
 	expand_exit_loop_if_false (loop_id, gnu_cond);

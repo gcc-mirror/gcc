@@ -152,7 +152,7 @@ init_expr_processing()
 }
 
 tree
-truthvalue_conversion (expr)
+java_truthvalue_conversion (expr)
      tree expr;
 {
   /* It is simpler and generates better code to have only TRUTH_*_EXPR
@@ -183,19 +183,19 @@ truthvalue_conversion (expr)
     case FLOAT_EXPR:
     case FFS_EXPR:
       /* These don't change whether an object is non-zero or zero.  */
-      return truthvalue_conversion (TREE_OPERAND (expr, 0));
+      return java_truthvalue_conversion (TREE_OPERAND (expr, 0));
 
     case COND_EXPR:
       /* Distribute the conversion into the arms of a COND_EXPR.  */
       return fold (build (COND_EXPR, boolean_type_node, TREE_OPERAND (expr, 0),
-                          truthvalue_conversion (TREE_OPERAND (expr, 1)),
-                          truthvalue_conversion (TREE_OPERAND (expr, 2))));
+                          java_truthvalue_conversion (TREE_OPERAND (expr, 1)),
+                          java_truthvalue_conversion (TREE_OPERAND (expr, 2))));
 
     case NOP_EXPR:
       /* If this is widening the argument, we can ignore it.  */
       if (TYPE_PRECISION (TREE_TYPE (expr))
           >= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (expr, 0))))
-        return truthvalue_conversion (TREE_OPERAND (expr, 0));
+        return java_truthvalue_conversion (TREE_OPERAND (expr, 0));
       /* fall through to default */
 
     default:
@@ -1656,7 +1656,7 @@ expand_compare (condition, value1, value2, target_pc)
 {
   tree target = lookup_label (target_pc);
   tree cond = fold (build (condition, boolean_type_node, value1, value2));
-  expand_start_cond (truthvalue_conversion (cond), 0);
+  expand_start_cond (java_truthvalue_conversion (cond), 0);
   expand_goto (target);
   expand_end_cond ();
 }

@@ -841,7 +841,7 @@ expand_cleanup_for_base (binfo, flag)
 	  (current_class_ref, binfo, base_dtor_identifier, NULL_TREE));
   if (flag)
     expr = fold (build (COND_EXPR, void_type_node,
-			truthvalue_conversion (flag),
+			c_common_truthvalue_conversion (flag),
 			expr, integer_zero_node));
 
   finish_eh_cleanup (expr);

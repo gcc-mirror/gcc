@@ -267,6 +267,7 @@ static tree ffe_unsigned_type PARAMS ((tree));
 static tree ffe_signed_type PARAMS ((tree));
 static tree ffe_signed_or_unsigned_type PARAMS ((int, tree));
 static bool ffe_mark_addressable PARAMS ((tree));
+static tree ffe_truthvalue_conversion PARAMS ((tree));
 static void ffecom_init_decl_processing PARAMS ((void));
 static tree ffecom_arglist_expr_ (const char *argstring, ffebld args);
 static tree ffecom_widest_expr_type_ (ffebld list);
@@ -13012,7 +13013,7 @@ ffecom_temp_label ()
 tree
 ffecom_truth_value (tree expr)
 {
-  return truthvalue_conversion (expr);
+  return ffe_truthvalue_conversion (expr);
 }
 
 /* Return the inversion of a truth value (the inversion of what
@@ -14236,6 +14237,8 @@ static void ffe_mark_tree (tree);
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	ffe_printable_name
 #undef  LANG_HOOKS_PRINT_ERROR_FUNCTION
 #define LANG_HOOKS_PRINT_ERROR_FUNCTION ffe_print_error_function
+#undef  LANG_HOOKS_TRUTHVALUE_CONVERSION
+#define LANG_HOOKS_TRUTHVALUE_CONVERSION ffe_truthvalue_conversion
 
 #undef  LANG_HOOKS_TYPE_FOR_MODE
 #define LANG_HOOKS_TYPE_FOR_MODE	ffe_type_for_mode
@@ -14841,8 +14844,8 @@ ffe_signed_type (type)
 
    The resulting type should always be `integer_type_node'.  */
 
-tree
-truthvalue_conversion (expr)
+static tree
+ffe_truthvalue_conversion (expr)
      tree expr;
 {
   if (TREE_CODE (expr) == ERROR_MARK)
@@ -14919,15 +14922,15 @@ truthvalue_conversion (expr)
       return ffecom_2 ((TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1))
 			? TRUTH_OR_EXPR : TRUTH_ORIF_EXPR),
 		       integer_type_node,
-		       truthvalue_conversion (TREE_OPERAND (expr, 0)),
-		       truthvalue_conversion (TREE_OPERAND (expr, 1)));
+		       ffe_truthvalue_conversion (TREE_OPERAND (expr, 0)),
+		       ffe_truthvalue_conversion (TREE_OPERAND (expr, 1)));
 
     case NEGATE_EXPR:
     case ABS_EXPR:
     case FLOAT_EXPR:
     case FFS_EXPR:
       /* These don't change whether an object is non-zero or zero.  */
-      return truthvalue_conversion (TREE_OPERAND (expr, 0));
+      return ffe_truthvalue_conversion (TREE_OPERAND (expr, 0));
 
     case LROTATE_EXPR:
     case RROTATE_EXPR:
@@ -14935,15 +14938,15 @@ truthvalue_conversion (expr)
 	 we can't ignore them if their second arg has side-effects.  */
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1)))
 	return build (COMPOUND_EXPR, integer_type_node, TREE_OPERAND (expr, 1),
-		      truthvalue_conversion (TREE_OPERAND (expr, 0)));
+		      ffe_truthvalue_conversion (TREE_OPERAND (expr, 0)));
       else
-	return truthvalue_conversion (TREE_OPERAND (expr, 0));
+	return ffe_truthvalue_conversion (TREE_OPERAND (expr, 0));
 
     case COND_EXPR:
       /* Distribute the conversion into the arms of a COND_EXPR.  */
       return fold (build (COND_EXPR, integer_type_node, TREE_OPERAND (expr, 0),
-			  truthvalue_conversion (TREE_OPERAND (expr, 1)),
-			  truthvalue_conversion (TREE_OPERAND (expr, 2))));
+			  ffe_truthvalue_conversion (TREE_OPERAND (expr, 1)),
+			  ffe_truthvalue_conversion (TREE_OPERAND (expr, 2))));
 
     case CONVERT_EXPR:
       /* Don't cancel the effect of a CONVERT_EXPR from a REFERENCE_TYPE,
@@ -14956,7 +14959,7 @@ truthvalue_conversion (expr)
       /* If this is widening the argument, we can ignore it.  */
       if (TYPE_PRECISION (TREE_TYPE (expr))
 	  >= TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (expr, 0))))
-	return truthvalue_conversion (TREE_OPERAND (expr, 0));
+	return ffe_truthvalue_conversion (TREE_OPERAND (expr, 0));
       break;
 
     case MINUS_EXPR:
@@ -15001,12 +15004,12 @@ truthvalue_conversion (expr)
 	    ((TREE_SIDE_EFFECTS (expr)
 	      ? TRUTH_OR_EXPR : TRUTH_ORIF_EXPR),
 	     integer_type_node,
-	     truthvalue_conversion (ffecom_1 (REALPART_EXPR,
-					      TREE_TYPE (TREE_TYPE (expr)),
-					      expr)),
-	     truthvalue_conversion (ffecom_1 (IMAGPART_EXPR,
-					      TREE_TYPE (TREE_TYPE (expr)),
-					      expr))));
+	     ffe_truthvalue_conversion (ffecom_1 (REALPART_EXPR,
+						  TREE_TYPE (TREE_TYPE (expr)),
+						  expr)),
+	     ffe_truthvalue_conversion (ffecom_1 (IMAGPART_EXPR,
+						  TREE_TYPE (TREE_TYPE (expr)),
+						  expr))));
 
   return ffecom_2 (NE_EXPR, integer_type_node,
 		   expr,
