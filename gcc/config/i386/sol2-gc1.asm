@@ -128,6 +128,12 @@ _start:
 ! is the argument vector pointer, which is at a fixed address off
 ! the initial frame pointer.
 
+!
+! Make sure the stack is properly aligned.
+!
+	andl $0xfffffff0,%esp
+	subl $4,%esp
+
 	pushl	%edx
 	leal	12(%ebp),%edx
 	pushl	%edx

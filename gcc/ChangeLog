@@ -1,3 +1,8 @@
+Fri Jul 30 16:33:42 1999  Mathias Froehlich  <frohlich@na.uni-tuebingen.de>
+
+	* config/i386/sol2-c1.asm: Align the stack.
+	* config/i386/sol2-gc1.asm: Likewise.
+
 1999-07-30  Vladimir Makarov  <vmakarov@loony.cygnus.com>
 
 	* config/sparc/sparc.h (ASM_CPU32_DEFAULT_SPEC): Change -Av8 onto
