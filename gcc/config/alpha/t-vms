@@ -20,3 +20,7 @@ vcrt0.o: $(CRT0_S) $(GCC_PASSES)
 pcrt0.o: $(CRT0_S) $(GCC_PASSES)
 	decc -c /names=as_is $(srcdir)/config/alpha/vms-psxcrt0.c -o pcrt0.o
 
+MULTILIB_OPTIONS = mcpu=ev6
+MULTILIB_DIRNAMES = ev6
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib

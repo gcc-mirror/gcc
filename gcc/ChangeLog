@@ -1,3 +1,9 @@
+2002-02-13  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/t-vms (MULTILIB_OPTIONS): Define.
+	(MULTILIB_DIRNAME, LIBGCC, INSTALL_LIBGCC): Likewise.
+	* config/alpha/vms.h (ASM_FILE_START): Write .arch directive.
+
 Wed Feb 13 09:45:08 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (find_base_term, case ZERO_EXTEND, case SIGN_EXTEND):
