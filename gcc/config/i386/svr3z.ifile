@@ -28,7 +28,10 @@ SECTIONS
 		vfork = fork; /* I got tired of editing peoples sloppy code */
 		*(.fini)
 	}
-	GROUP BIND( NEXT(0x400000) + (ADDR(.text) + (SIZEOF(.text)) % 0x1000)):
+	.stab BIND(ADDR(.text) + SIZEOF(.text)): { }
+	.stabstr BIND(ADDR(.stab) + SIZEOF(.stab)): { }
+	GROUP BIND( NEXT(0x400000) +
+		(ADDR(.stabstr) + (SIZEOF(.stabstr)) % 0x1000)):
 	{
 			.data : {
 				__CTOR_LIST__ = . ; 
