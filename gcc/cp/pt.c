@@ -118,7 +118,7 @@ process_template_parm (list, next)
       my_friendly_assert (TREE_CODE (TREE_PURPOSE (parm)) == TREE_LIST, 260);
       /* is a const-param */
       parm = grokdeclarator (TREE_VALUE (parm), TREE_PURPOSE (parm),
-			     PARM, 0, NULL_TREE, NULL_TREE);
+			     PARM, 0, NULL_TREE);
       /* A template parameter is not modifiable.  */
       TREE_READONLY (parm) = 1;
       if (IS_AGGR_TYPE (TREE_TYPE (parm))
@@ -1761,7 +1761,8 @@ tsubst (t, args, nargs, in_decl)
       {
 	tree values = TYPE_ARG_TYPES (t);
 	tree context = TYPE_CONTEXT (t);
-	tree new_value;
+	tree raises = TYPE_RAISES_EXCEPTIONS (t);
+	tree fntype;
 
 	/* Don't bother recursing if we know it won't change anything.	*/
 	if (values != void_list_node)
@@ -1777,7 +1778,7 @@ tsubst (t, args, nargs, in_decl)
 		tree value
 		  = tsubst (TREE_VALUE (values), args, nargs, in_decl);
 		tree purpose = tsubst_expr (TREE_PURPOSE (values),
-				       args, nargs, in_decl);
+					    args, nargs, in_decl);
 		tree x = build_tree_list (purpose, value);
 
 		if (first)
@@ -1807,34 +1808,39 @@ tsubst (t, args, nargs, in_decl)
 	if (TREE_CODE (t) == FUNCTION_TYPE
 	    && context == NULL_TREE)
 	  {
-	    new_value = build_function_type (type, values);
+	    fntype = build_function_type (type, values);
 	  }
 	else if (context == NULL_TREE)
 	  {
 	    tree base = tsubst (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t))),
 				args, nargs, in_decl);
-	    new_value = build_cplus_method_type (base, type,
-						 TREE_CHAIN (values));
+	    fntype = build_cplus_method_type (base, type,
+					      TREE_CHAIN (values));
 	  }
 	else
 	  {
-	    new_value = make_node (TREE_CODE (t));
-	    TREE_TYPE (new_value) = type;
-	    TYPE_CONTEXT (new_value) = context;
-	    TYPE_VALUES (new_value) = values;
-	    TYPE_SIZE (new_value) = TYPE_SIZE (t);
-	    TYPE_ALIGN (new_value) = TYPE_ALIGN (t);
-	    TYPE_MODE (new_value) = TYPE_MODE (t);
+	    fntype = make_node (TREE_CODE (t));
+	    TREE_TYPE (fntype) = type;
+	    TYPE_CONTEXT (fntype) = context;
+	    TYPE_VALUES (fntype) = values;
+	    TYPE_SIZE (fntype) = TYPE_SIZE (t);
+	    TYPE_ALIGN (fntype) = TYPE_ALIGN (t);
+	    TYPE_MODE (fntype) = TYPE_MODE (t);
 	    if (TYPE_METHOD_BASETYPE (t))
-	      TYPE_METHOD_BASETYPE (new_value) = tsubst (TYPE_METHOD_BASETYPE (t),
-							 args, nargs, in_decl);
+	      TYPE_METHOD_BASETYPE (fntype) = tsubst (TYPE_METHOD_BASETYPE (t),
+						      args, nargs, in_decl);
 	    /* Need to generate hash value.  */
 	    my_friendly_abort (84);
 	  }
-	new_value = build_type_variant (new_value,
-					TYPE_READONLY (t),
-					TYPE_VOLATILE (t));
-	return new_value;
+	fntype = build_type_variant (fntype,
+				     TYPE_READONLY (t),
+				     TYPE_VOLATILE (t));
+	if (raises)
+	  {
+	    raises = tsubst (raises, args, nargs, in_decl);
+	    fntype = build_exception_variant (fntype, raises);
+	  }
+	return fntype;
       }
     case ARRAY_TYPE:
       {
@@ -1880,9 +1886,11 @@ tsubst (t, args, nargs, in_decl)
 	 tsubst_expr (TREE_OPERAND (t, 1), args, nargs, in_decl));
 
     case CALL_EXPR:
-      return build_parse_node
-	(CALL_EXPR, tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	 tsubst (TREE_OPERAND (t, 1), args, nargs, in_decl), NULL_TREE);
+      return make_call_declarator
+	(tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl),
+	 tsubst (TREE_OPERAND (t, 1), args, nargs, in_decl),
+	 TREE_OPERAND (t, 2),
+	 tsubst (TREE_TYPE (t), args, nargs, in_decl));
 
     case SCOPE_REF:
       return build_parse_node
@@ -2182,9 +2190,8 @@ tsubst_expr (t, args, nargs, in_decl)
 	dcl = start_decl
 	  (tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl),
 	   tsubst (TREE_OPERAND (t, 1), args, nargs, in_decl),
-	   TREE_OPERAND (t, 3) != 0,
-	   tsubst (TREE_OPERAND (t, 2), args, nargs, in_decl));
-	init = tsubst_expr (TREE_OPERAND (t, 3), args, nargs, in_decl);
+	   TREE_OPERAND (t, 2) != 0);
+	init = tsubst_expr (TREE_OPERAND (t, 2), args, nargs, in_decl);
 	cp_finish_decl
 	  (dcl, init, NULL_TREE, 1, /*init ? LOOKUP_ONLYCONVERTING :*/ 0);
 	resume_momentary (i);
@@ -3057,8 +3064,7 @@ void
 do_function_instantiation (declspecs, declarator, storage)
      tree declspecs, declarator, storage;
 {
-  tree decl = grokdeclarator (declarator, declspecs, NORMAL, 0,
-			      NULL_TREE, NULL_TREE);
+  tree decl = grokdeclarator (declarator, declspecs, NORMAL, 0, NULL_TREE);
   tree name;
   tree fn;
   tree result = NULL_TREE;
@@ -3354,7 +3360,7 @@ instantiate_decl (d)
       lineno = DECL_SOURCE_LINE (d);
       input_filename = DECL_SOURCE_FILE (d);
 
-      start_function (NULL_TREE, d, NULL_TREE, NULL_TREE, 1);
+      start_function (NULL_TREE, d, NULL_TREE, 1);
       store_parm_decls ();
 
       if (t && TREE_CODE (t) == RETURN_INIT)

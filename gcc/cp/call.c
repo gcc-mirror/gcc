@@ -668,24 +668,6 @@ user_harshness (type, parmtype)
   return -1;
 }
 
-int
-can_convert (to, from)
-     tree to, from;
-{
-  struct harshness_code h;
-  h = convert_harshness (to, from, NULL_TREE);
-  return (h.code < USER_CODE) && (h.distance >= 0);
-}
-
-int
-can_convert_arg (to, from, arg)
-     tree to, from, arg;
-{
-  struct harshness_code h;
-  h = convert_harshness (to, from, arg);
-  return (h.code < USER_CODE) && (h.distance >= 0);
-}
-
 #ifdef DEBUG_MATCHING
 static char *
 print_harshness (h)
@@ -1865,8 +1847,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  && TYPE_IDENTIFIER (basetype) != name)
 	{
 	  basetype = SIGNATURE_TYPE (basetype);
-	  instance_ptr = build_optr_ref (instance);
-	  instance_ptr = convert (build_pointer_type (basetype), instance_ptr);
+	  instance_ptr = instance;
 	  basetype_path = TYPE_BINFO (basetype);
 	}
       else
@@ -2462,7 +2443,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		    basetype, save_name);
 	  return error_mark_node;
 	}
-      return build_signature_method_call (basetype, instance, function, parms);
+      return build_signature_method_call (function, parms);
     }
 
   function = DECL_MAIN_VARIANT (function);
@@ -3461,27 +3442,6 @@ add_conv_candidate (candidates, fn, obj, arglist)
   return cand;
 }
 
-int
-ptr_complete_ob (t)
-     tree t;
-{
-  return (TREE_CODE (t) == POINTER_TYPE
-	  && TREE_CODE (TREE_TYPE (t)) != OFFSET_TYPE
-	  && TREE_CODE (TREE_TYPE (t)) != FUNCTION_TYPE
-	  && TREE_CODE (TREE_TYPE (t)) != VOID_TYPE
-	  && TYPE_SIZE (complete_type (TREE_TYPE (t))) != NULL_TREE);
-}
-
-#define TYPE_PTRMEM_P(NODE)					\
-  (TREE_CODE (NODE) == POINTER_TYPE				\
-   && TREE_CODE (TREE_TYPE (NODE)) == OFFSET_TYPE)
-#define TYPE_PTR_P(NODE)				\
-  (TREE_CODE (NODE) == POINTER_TYPE			\
-   && TREE_CODE (TREE_TYPE (NODE)) != OFFSET_TYPE)
-#define TYPE_PTROB_P(NODE)						\
-  (TYPE_PTR_P (NODE) && TREE_CODE (TREE_TYPE (NODE)) != FUNCTION_TYPE	\
-   && TREE_CODE (TREE_TYPE (NODE)) != VOID_TYPE)
-
 static struct z_candidate *
 build_builtin_candidate (candidates, fnname, type1, type2,
 			 args, argtypes, flags)
@@ -3598,7 +3558,7 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
     case POSTINCREMENT_EXPR:
     case PREINCREMENT_EXPR:
       if ((ARITHMETIC_TYPE_P (type1) && TREE_CODE (type1) != ENUMERAL_TYPE)
-	  || ptr_complete_ob (type1))
+	  || TYPE_PTROB_P (type1))
 	{
 	  type1 = build_reference_type (type1);
 	  break;
@@ -3616,7 +3576,7 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
 
     case INDIRECT_REF:
       if (TREE_CODE (type1) == POINTER_TYPE
-	  && (ptr_complete_ob (type1)
+	  && (TYPE_PTROB_P (type1)
 	      || TREE_CODE (TREE_TYPE (type1)) == FUNCTION_TYPE))
 	break;
       return candidates;
@@ -3713,9 +3673,9 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
 	     bool    operator!=(T, T);  */
 
     case MINUS_EXPR:
-      if (ptr_complete_ob (type1) && ptr_complete_ob (type2))
+      if (TYPE_PTROB_P (type1) && TYPE_PTROB_P (type2))
 	break;
-      if (ptr_complete_ob (type1) && INTEGRAL_TYPE_P (type2))
+      if (TYPE_PTROB_P (type1) && INTEGRAL_TYPE_P (type2))
 	{
 	  type2 = ptrdiff_type_node;
 	  break;
@@ -3768,12 +3728,12 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
       if (ARITHMETIC_TYPE_P (type1) && ARITHMETIC_TYPE_P (type2))
 	break;
     case ARRAY_REF:
-      if (INTEGRAL_TYPE_P (type1) && ptr_complete_ob (type2))
+      if (INTEGRAL_TYPE_P (type1) && TYPE_PTROB_P (type2))
 	{
 	  type1 = ptrdiff_type_node;
 	  break;
 	}
-      if (ptr_complete_ob (type1) && INTEGRAL_TYPE_P (type2))
+      if (TYPE_PTROB_P (type1) && INTEGRAL_TYPE_P (type2))
 	{
 	  type2 = ptrdiff_type_node;
 	  break;
@@ -3842,7 +3802,7 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
 	{
 	case PLUS_EXPR:
 	case MINUS_EXPR:
-	  if (ptr_complete_ob (type1) && INTEGRAL_TYPE_P (type2))
+	  if (TYPE_PTROB_P (type1) && INTEGRAL_TYPE_P (type2))
 	    {
 	      type2 = ptrdiff_type_node;
 	      break;
@@ -4164,7 +4124,11 @@ build_this (obj)
      tree obj;
 {
   /* Fix this to work on non-lvalues.  */
-  return build_unary_op (ADDR_EXPR, obj, 0);
+  if (IS_SIGNATURE_POINTER (TREE_TYPE (obj))
+      || IS_SIGNATURE_REFERENCE (TREE_TYPE (obj)))
+    return obj;
+  else
+    return build_unary_op (ADDR_EXPR, obj, 0);
 }
 
 static void
@@ -5096,6 +5060,67 @@ build_over_call (fn, convs, args, flags)
 
   converted_args = nreverse (converted_args);
 
+  /* Avoid actually calling copy constructors and copy assignment operators,
+     if possible.  */
+  if (DECL_CONSTRUCTOR_P (fn)
+      && TREE_VEC_LENGTH (convs) == 1
+      && copy_args_p (fn))
+    {
+      tree targ = NULL_TREE;
+      arg = TREE_VALUE (TREE_CHAIN (converted_args));
+
+      /* Pull out the real argument, disregarding const-correctness.  */
+      if (TREE_CODE (arg) == ADDR_EXPR)
+	{
+	  targ = TREE_OPERAND (arg, 0);
+	  if (! comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (arg))),
+			   TYPE_MAIN_VARIANT (TREE_TYPE (targ)), 1))
+	    targ = NULL_TREE;
+	}
+
+      if (targ)
+	arg = targ;
+      else
+	arg = build_indirect_ref (arg, 0);
+
+      /* If we're creating a temp and we already have one, don't create a
+         new one.  If we're not creating a temp but we get one, use
+         INIT_EXPR to collapse the temp into our target.  Otherwise, if the
+         ctor is trivial, do a bitwise copy with a simple TARGET_EXPR for a
+         temp or an INIT_EXPR otherwise.  */
+      if (integer_zerop (TREE_VALUE (args)))
+	{
+	  if (! real_lvalue_p (arg))
+	    return arg;
+	  else if (TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
+	    {
+	      val = build (VAR_DECL, DECL_CONTEXT (fn));
+	      layout_decl (val, 0);
+	      return build (TARGET_EXPR, DECL_CONTEXT (fn), val, arg, 0, 0);
+	    }
+	}
+      else if (! real_lvalue_p (arg)
+	       || TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
+	{
+	  tree to = stabilize_reference
+	    (build_indirect_ref (TREE_VALUE (args), 0));
+	  val = build (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
+	  TREE_SIDE_EFFECTS (val) = 1;
+	  return build_unary_op (ADDR_EXPR, val, 0);
+	}
+    }
+  else if (DECL_NAME (fn) == ansi_opname[MODIFY_EXPR]
+	   && copy_args_p (fn)
+	   && TYPE_HAS_TRIVIAL_ASSIGN_REF (DECL_CONTEXT (fn)))
+    {
+      tree to = stabilize_reference
+	(build_indirect_ref (TREE_VALUE (converted_args), 0));
+      arg = build_indirect_ref (TREE_VALUE (TREE_CHAIN (converted_args)), 0);
+      val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);
+      TREE_SIDE_EFFECTS (val) = 1;
+      return val;
+    }
+
   mark_used (fn);
 
   if (pedantic && DECL_THIS_INLINE (fn) && ! DECL_ARTIFICIAL (fn)
@@ -5104,7 +5129,9 @@ build_over_call (fn, convs, args, flags)
 	    && TREE_LANG_FLAG_0 (DECL_TEMPLATE_INFO (fn))))
     cp_warning ("inline function `%#D' called before definition", fn);
 
-  if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0)
+  if (DECL_CONTEXT (fn) && IS_SIGNATURE (DECL_CONTEXT (fn)))
+    return build_signature_method_call (fn, converted_args);
+  else if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0)
     {
       tree t, *p = &TREE_VALUE (converted_args);
       tree binfo = get_binfo
@@ -5153,7 +5180,10 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       basetype = TREE_TYPE (instance);
 
       /* XXX this should be handled before we get here.  */
-      if (! IS_AGGR_TYPE (basetype))
+      if (! IS_AGGR_TYPE (basetype)
+	  && ! (TYPE_LANG_SPECIFIC (basetype)
+		&& (IS_SIGNATURE_POINTER (basetype)
+		    || IS_SIGNATURE_REFERENCE (basetype))))
 	{
 	  if ((flags & LOOKUP_COMPLAIN) && basetype != error_mark_node)
 	    cp_error ("request for member `%D' in `%E', which is of non-aggregate type `%T'",
@@ -5161,6 +5191,14 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 
 	  return error_mark_node;
 	}
+
+      /* If `instance' is a signature pointer/reference and `name' is
+	 not a constructor, we are calling a signature member function.
+	 In that case set the `basetype' to the signature type.  */
+      if ((IS_SIGNATURE_POINTER (basetype)
+	   || IS_SIGNATURE_REFERENCE (basetype))
+	  && TYPE_IDENTIFIER (basetype) != name)
+	basetype = SIGNATURE_TYPE (basetype);
     }
 
   if (basetype_path == NULL_TREE)
@@ -5587,7 +5625,10 @@ joust (cand1, cand2)
       if (comp != 0)
 	{
 	  if (winner && comp != winner)
-	    return 0;
+	    {
+	      winner = 0;
+	      goto tweak;
+	    }
 	  winner = comp;
 	}
     }
@@ -5621,7 +5662,7 @@ joust (cand1, cand2)
   if (! winner && cand1->fn == cand2->fn
       && TREE_CODE (cand1->fn) == IDENTIFIER_NODE)
     {
-      for (i = 0; i < TREE_VEC_LENGTH (cand1->convs); ++i)
+      for (i = 0; i < len; ++i)
 	if (! comptypes (TREE_TYPE (TREE_VEC_ELT (cand1->convs, i)),
 			 TREE_TYPE (TREE_VEC_ELT (cand2->convs, i)), 1))
 	  break;
@@ -5644,6 +5685,28 @@ joust (cand1, cand2)
 		return -1;
 	    }
 	}
+    }
+
+tweak:
+
+  /* Extension: If the worst conversion for one candidate is worse than the
+     worst conversion for the other, take the first.  */
+  if (! winner && ! pedantic)
+    {
+      int rank1 = IDENTITY_RANK, rank2 = IDENTITY_RANK;
+
+      for (i = 0; i < len; ++i)
+	{
+	  if (ICS_RANK (TREE_VEC_ELT (cand1->convs, i+off1)) > rank1)
+	    rank1 = ICS_RANK (TREE_VEC_ELT (cand1->convs, i+off1));
+	  if (ICS_RANK (TREE_VEC_ELT (cand2->convs, i+off2)) > rank2)
+	    rank2 = ICS_RANK (TREE_VEC_ELT (cand2->convs, i+off2));
+	}
+
+      if (rank1 < rank2)
+	return 1;
+      if (rank1 > rank2)
+	return -1;
     }
 
   return winner;
@@ -5697,4 +5760,38 @@ tourney (candidates)
     }
 
   return champ;
+}
+
+int
+can_convert (to, from)
+     tree to, from;
+{
+  if (flag_ansi_overloading)
+    {
+      tree t = implicit_conversion (to, from, NULL_TREE, LOOKUP_NORMAL);
+      return (t && ! ICS_BAD_FLAG (t));
+    }
+  else
+    {
+      struct harshness_code h;
+      h = convert_harshness (to, from, NULL_TREE);
+      return (h.code < USER_CODE) && (h.distance >= 0);
+    }
+}
+
+int
+can_convert_arg (to, from, arg)
+     tree to, from, arg;
+{
+  if (flag_ansi_overloading)
+    {
+      tree t = implicit_conversion (to, from, arg, LOOKUP_NORMAL);
+      return (t && ! ICS_BAD_FLAG (t));
+    }
+  else
+    {
+      struct harshness_code h;
+      h = convert_harshness (to, from, arg);
+      return (h.code < USER_CODE) && (h.distance >= 0);
+    }
 }

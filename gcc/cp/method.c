@@ -39,10 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "flags.h"
 
-#ifndef SUPPORTS_ONE_ONLY
-#define SUPPORTS_ONE_ONLY 0
-#endif
-
 /* TREE_LIST of the current inline functions that need to be
    processed.  */
 struct pending_inline *pending_inlines;
@@ -2179,7 +2175,7 @@ synthesize_method (fndecl)
     push_cp_function_context (context);
 
   interface_unknown = 1;
-  start_function (NULL_TREE, fndecl, NULL_TREE, NULL_TREE, 1);
+  start_function (NULL_TREE, fndecl, NULL_TREE, 1);
   store_parm_decls ();
 
   if (DECL_NAME (fndecl) == ansi_opname[MODIFY_EXPR])

@@ -1265,6 +1265,21 @@ extern int flag_new_for_scope;
 #define TYPE_HAS_TRIVIAL_ASSIGN_REF(NODE) \
   (TYPE_HAS_ASSIGN_REF (NODE) && ! TYPE_HAS_COMPLEX_ASSIGN_REF (NODE))
 
+#define TYPE_PTRMEM_P(NODE)					\
+  (TREE_CODE (NODE) == POINTER_TYPE				\
+   && TREE_CODE (TREE_TYPE (NODE)) == OFFSET_TYPE)
+#define TYPE_PTR_P(NODE)				\
+  (TREE_CODE (NODE) == POINTER_TYPE			\
+   && TREE_CODE (TREE_TYPE (NODE)) != OFFSET_TYPE)
+#define TYPE_PTROB_P(NODE)						\
+  (TYPE_PTR_P (NODE) && TREE_CODE (TREE_TYPE (NODE)) != FUNCTION_TYPE	\
+   && TREE_CODE (TREE_TYPE (NODE)) != VOID_TYPE)
+#define TYPE_PTROBV_P(NODE)						\
+  (TYPE_PTR_P (NODE) && TREE_CODE (TREE_TYPE (NODE)) != FUNCTION_TYPE)
+#define TYPE_PTRFN_P(NODE)				\
+  (TREE_CODE (NODE) == POINTER_TYPE			\
+   && TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE)
+
 /* Nonzero for _TYPE node means that this type is a pointer to member
    function type.  */
 #define TYPE_PTRMEMFUNC_P(NODE) (TREE_CODE(NODE) == RECORD_TYPE && TYPE_LANG_SPECIFIC(NODE)->type_flags.ptrmemfunc_flag)
@@ -2047,7 +2062,7 @@ extern int init_type_desc			PROTO((void));
 extern void shadow_tag				PROTO((tree));
 extern int grok_ctor_properties			PROTO((tree, tree));
 extern tree groktypename			PROTO((tree));
-extern tree start_decl				PROTO((tree, tree, int, tree));
+extern tree start_decl				PROTO((tree, tree, int));
 extern void cp_finish_decl			PROTO((tree, tree, tree, int, int));
 extern void expand_static_init			PROTO((tree, tree));
 extern int complete_array_type			PROTO((tree, tree, int));
@@ -2061,13 +2076,13 @@ extern tree start_enum				PROTO((tree));
 extern tree finish_enum				PROTO((tree, tree));
 extern tree build_enumerator			PROTO((tree, tree));
 extern tree grok_enum_decls			PROTO((tree, tree));
-extern int start_function			PROTO((tree, tree, tree, tree, int));
+extern int start_function			PROTO((tree, tree, tree, int));
 extern void store_parm_decls			PROTO((void));
 extern void expand_start_early_try_stmts	PROTO((void));
 extern void store_in_parms			PROTO((struct rtx_def *));
 extern void store_return_init			PROTO((tree, tree));
 extern void finish_function			PROTO((int, int, int));
-extern tree start_method			PROTO((tree, tree, tree));
+extern tree start_method			PROTO((tree, tree));
 extern tree finish_method			PROTO((tree));
 extern void hack_incomplete_structures		PROTO((tree));
 extern tree maybe_build_cleanup			PROTO((tree));
@@ -2092,7 +2107,7 @@ extern tree grok_alignof			PROTO((tree));
 extern tree grok_array_decl			PROTO((tree, tree));
 extern tree delete_sanity			PROTO((tree, tree, int, int));
 extern tree check_classfn			PROTO((tree, tree));
-extern tree grokfield				PROTO((tree, tree, tree, tree, tree, tree));
+extern tree grokfield				PROTO((tree, tree, tree, tree, tree));
 extern tree grokbitfield			PROTO((tree, tree, tree));
 extern tree groktypefield			PROTO((tree, tree));
 extern tree grokoptypename			PROTO((tree, tree));
@@ -2192,6 +2207,8 @@ extern tree build_vec_delete			PROTO((tree, tree, tree, tree, int));
 /* in lex.c */
 extern tree make_pointer_declarator		PROTO((tree, tree));
 extern tree make_reference_declarator		PROTO((tree, tree));
+extern tree make_call_declarator		PROTO((tree, tree, tree, tree));
+extern void set_quals_and_spec			PROTO((tree, tree, tree));
 extern char *operator_name_string		PROTO((tree));
 extern void lang_init				PROTO((void));
 extern void lang_finish				PROTO((void));
@@ -2345,7 +2362,7 @@ extern tree get_template_base			PROTO((tree, tree));
 extern tree build_signature_pointer_type	PROTO((tree, int, int));
 extern tree build_signature_reference_type	PROTO((tree, int, int));
 extern tree build_signature_pointer_constructor	PROTO((tree, tree));
-extern tree build_signature_method_call		PROTO((tree, tree, tree, tree));
+extern tree build_signature_method_call		PROTO((tree, tree));
 extern tree build_optr_ref			PROTO((tree));
 extern tree build_sptr_ref			PROTO((tree));
 extern void append_signature_fields		PROTO((tree));

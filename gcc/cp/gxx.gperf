@@ -9,8 +9,8 @@ __asm, GCC_ASM_KEYWORD, NORID
 __asm__, GCC_ASM_KEYWORD, NORID
 __attribute, ATTRIBUTE, NORID
 __attribute__, ATTRIBUTE, NORID
-__const, TYPE_QUAL, RID_CONST
-__const__, TYPE_QUAL, RID_CONST
+__const, CV_QUALIFIER, RID_CONST
+__const__, CV_QUALIFIER, RID_CONST
 __extension__, EXTENSION, NORID
 __inline, SCSPEC, RID_INLINE
 __inline__, SCSPEC, RID_INLINE
@@ -22,8 +22,8 @@ __signed__, TYPESPEC, RID_SIGNED
 __sigof__, SIGOF, NORID		/* Extension */,
 __typeof, TYPEOF, NORID
 __typeof__, TYPEOF, NORID
-__volatile, TYPE_QUAL, RID_VOLATILE
-__volatile__, TYPE_QUAL, RID_VOLATILE
+__volatile, CV_QUALIFIER, RID_VOLATILE
+__volatile__, CV_QUALIFIER, RID_VOLATILE
 __wchar_t, TYPESPEC, RID_WCHAR  /* Unique to ANSI C++ */,
 asm, ASM_KEYWORD, NORID,
 and, ANDAND, NORID,
@@ -38,7 +38,7 @@ catch, CATCH, NORID,
 char, TYPESPEC, RID_CHAR,
 class, AGGR, RID_CLASS,
 compl, '~', NORID,
-const, TYPE_QUAL, RID_CONST,
+const, CV_QUALIFIER, RID_CONST,
 const_cast, CONST_CAST, NORID,
 continue, CONTINUE, NORID,
 default, DEFAULT, NORID,
@@ -97,7 +97,7 @@ unsigned, TYPESPEC, RID_UNSIGNED,
 using, USING, NORID,
 virtual, SCSPEC, RID_VIRTUAL,
 void, TYPESPEC, RID_VOID,
-volatile, TYPE_QUAL, RID_VOLATILE,
+volatile, CV_QUALIFIER, RID_VOLATILE,
 while, WHILE, NORID,
 xor, '^', NORID,
 xor_eq, ASSIGN, NORID,

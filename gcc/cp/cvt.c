@@ -594,6 +594,11 @@ build_up_reference (type, arg, flags, checkconst)
       TREE_REFERENCE_EXPR (rval) = 1;
       return rval;
 
+    case TARGET_EXPR:
+      TREE_ADDRESSABLE (targ) = 1;
+      put_var_into_stack (TREE_OPERAND (targ, 0));
+      break;
+
     default:
       break;
     }
@@ -742,15 +747,14 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	    ttr = cp_build_type_variant (TREE_TYPE (expr), r, v);
 	  }
 
-	  if (! real_lvalue_p (expr) &&
-	      (decl == NULL_TREE || ! TYPE_READONLY (ttl)))
+	  if (! real_lvalue_p (expr) && ! TYPE_READONLY (ttl))
 	    {
 	      if (decl)
 		/* Ensure semantics of [dcl.init.ref] */
-		cp_pedwarn ("initialization of non-const `%T' from rvalue `%T'",
+		cp_pedwarn ("initialization of non-const reference `%#T' from rvalue `%T'",
 			    reftype, intype);
 	      else
-		cp_pedwarn ("conversion to `%T' from rvalue `%T'",
+		cp_pedwarn ("conversion to non-const `%T' from rvalue `%T'",
 			    reftype, intype);
 	    }
 	  else if (! (convtype & CONV_CONST))

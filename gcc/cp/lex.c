@@ -131,35 +131,35 @@ extern int *token_count;
 
 /* Return something to represent absolute declarators containing a *.
    TARGET is the absolute declarator that the * contains.
-   TYPE_QUALS is a list of modifiers such as const or volatile
+   CV_QUALIFIERS is a list of modifiers such as const or volatile
    to apply to the pointer type, represented as identifiers.
 
    We return an INDIRECT_REF whose "contents" are TARGET
    and whose type is the modifier list.  */
 
 tree
-make_pointer_declarator (type_quals, target)
-     tree type_quals, target;
+make_pointer_declarator (cv_qualifiers, target)
+     tree cv_qualifiers, target;
 {
   if (target && TREE_CODE (target) == IDENTIFIER_NODE
       && ANON_AGGRNAME_P (target))
     error ("type name expected before `*'");
   target = build_parse_node (INDIRECT_REF, target);
-  TREE_TYPE (target) = type_quals;
+  TREE_TYPE (target) = cv_qualifiers;
   return target;
 }
 
 /* Return something to represent absolute declarators containing a &.
    TARGET is the absolute declarator that the & contains.
-   TYPE_QUALS is a list of modifiers such as const or volatile
+   CV_QUALIFIERS is a list of modifiers such as const or volatile
    to apply to the reference type, represented as identifiers.
 
    We return an ADDR_EXPR whose "contents" are TARGET
    and whose type is the modifier list.  */
    
 tree
-make_reference_declarator (type_quals, target)
-     tree type_quals, target;
+make_reference_declarator (cv_qualifiers, target)
+     tree cv_qualifiers, target;
 {
   if (target)
     {
@@ -177,8 +177,25 @@ make_reference_declarator (type_quals, target)
 	  error ("type name expected before `&'");
     }
   target = build_parse_node (ADDR_EXPR, target);
-  TREE_TYPE (target) = type_quals;
+  TREE_TYPE (target) = cv_qualifiers;
   return target;
+}
+
+tree
+make_call_declarator (target, parms, cv_qualifiers, exception_specification)
+     tree target, parms, cv_qualifiers, exception_specification;
+{
+  target = build_parse_node (CALL_EXPR, target, parms, cv_qualifiers);
+  TREE_TYPE (target) = exception_specification;
+  return target;
+}
+
+void
+set_quals_and_spec (call_declarator, cv_qualifiers, exception_specification)
+     tree call_declarator, cv_qualifiers, exception_specification;
+{
+  TREE_OPERAND (call_declarator, 2) = cv_qualifiers;
+  TREE_TYPE (call_declarator) = exception_specification;
 }
 
 /* Build names and nodes for overloaded operators.  */
@@ -1681,12 +1698,11 @@ cons_up_default_function (type, full_name, kind)
   TREE_PARMLIST (args) = 1;
 
   {
-    tree declarator = build_parse_node (CALL_EXPR, name, args, NULL_TREE);
+    tree declarator = make_call_declarator (name, args, NULL_TREE, NULL_TREE);
     if (retref)
       declarator = build_parse_node (ADDR_EXPR, declarator);
     
-    fn = grokfield (declarator, declspecs, NULL_TREE, NULL_TREE,
-		    NULL_TREE, NULL_TREE);
+    fn = grokfield (declarator, declspecs, NULL_TREE, NULL_TREE, NULL_TREE);
   }
   
   if (fn == void_type_node)
@@ -2443,20 +2459,6 @@ readescape (ignore_ptr)
    a typename (when it may be a local variable or a class variable).
    Value is 0 if we treat this name in a default fashion.  */
 int looking_for_typename = 0;
-
-#if 0
-/* NO LONGER USED: Value is -1 if we must not see a type name.  */
-void
-dont_see_typename ()
-{
-  looking_for_typename = -1;
-  if (yychar == TYPENAME || yychar == PTYPENAME)
-    {
-      yychar = IDENTIFIER;
-      lastiddecl = 0;
-    }
-}
-#endif
 
 #ifdef __GNUC__
 extern __inline int identifier_type ();
@@ -4363,11 +4365,6 @@ handle_cp_pragma (pname)
 	  main_filename = TREE_STRING_POINTER (yylval.ttype);
 	}
 
-#ifdef SUPPORTS_ONE_ONLY
-      if (SUPPORTS_ONE_ONLY > 1)
-	return 1;
-#endif
-      
       while (token != END_OF_LINE)
 	{
 	  if (!warned_already && extra_warnings)
@@ -4378,6 +4375,7 @@ handle_cp_pragma (pname)
 	  token = real_yylex ();
 	}
 
+#ifndef NO_LINKAGE_HEURISTICS
       write_virtuals = 3;
 
       if (impl_file_chain == 0)
@@ -4404,6 +4402,7 @@ handle_cp_pragma (pname)
       interface_unknown = 0;
       TREE_INT_CST_LOW (fileinfo) = interface_only;
       TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
+#endif /* NO_LINKAGE_HEURISTICS */
 
       return 1;
     }
@@ -4436,11 +4435,7 @@ handle_cp_pragma (pname)
 	  token = real_yylex ();
 	}
 
-#ifdef SUPPORTS_ONE_ONLY
-      if (SUPPORTS_ONE_ONLY > 1)
-	return 1;
-#endif
-
+#ifndef NO_LINKAGE_HEURISTICS
       if (write_virtuals == 3)
 	{
 	  struct impl_files *ifiles = impl_file_chain;
@@ -4485,6 +4480,8 @@ handle_cp_pragma (pname)
 #endif
       TREE_INT_CST_LOW (fileinfo) = interface_only;
       TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
+#endif /* NO_LINKAGE_HEURISTICS */
+
       return 1;
     }
 

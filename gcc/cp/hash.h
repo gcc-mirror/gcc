@@ -1,5 +1,5 @@
 /* C code produced by gperf version 2.5 (GNU C++ version) */
-/* Command-line: gperf -p -j1 -g -o -t -N is_reserved_word -k1,4,7,$ /yorick/splunge/jason/g++/small/devo/gcc/cp/gxx.gperf  */
+/* Command-line: gperf -p -j1 -g -o -t -N is_reserved_word -k1,4,7,$ ../../../devo/gcc/cp/gxx.gperf  */
 /* Command-line: gperf -p -j1 -g -o -t -N is_reserved_word -k1,4,$,7 gplus.gperf  */
 struct resword { char *name; short token; enum rid rid;};
 
@@ -123,7 +123,7 @@ is_reserved_word (str, len)
       {"mutable",  SCSPEC, RID_MUTABLE,},
       {"short",  TYPESPEC, RID_SHORT,},
       {"signature",  AGGR, RID_SIGNATURE	/* Extension */,},
-      {"const",  TYPE_QUAL, RID_CONST,},
+      {"const",  CV_QUALIFIER, RID_CONST,},
       {"static",  SCSPEC, RID_STATIC,},
       {"",}, {"",}, 
       {"for",  FOR, NORID,},
@@ -149,11 +149,11 @@ is_reserved_word (str, len)
       {"",}, {"",}, {"",}, 
       {"signed",  TYPESPEC, RID_SIGNED,},
       {"this",  THIS, NORID,},
-      {"__const",  TYPE_QUAL, RID_CONST},
-      {"__const__",  TYPE_QUAL, RID_CONST},
-      {"__volatile",  TYPE_QUAL, RID_VOLATILE},
+      {"__const",  CV_QUALIFIER, RID_CONST},
+      {"__const__",  CV_QUALIFIER, RID_CONST},
+      {"__volatile",  CV_QUALIFIER, RID_VOLATILE},
       {"__null",  CONSTANT, RID_NULL},
-      {"__volatile__",  TYPE_QUAL, RID_VOLATILE},
+      {"__volatile__",  CV_QUALIFIER, RID_VOLATILE},
       {"__typeof__",  TYPEOF, NORID},
       {"or_eq",  ASSIGN, NORID,},
       {"",}, 
@@ -178,7 +178,7 @@ is_reserved_word (str, len)
       {"bitor",  '|', NORID,},
       {"",}, 
       {"do",  DO, NORID,},
-      {"volatile",  TYPE_QUAL, RID_VOLATILE,},
+      {"volatile",  CV_QUALIFIER, RID_VOLATILE,},
       {"",}, {"",}, {"",}, {"",}, 
       {"if",  IF, NORID,},
       {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, 

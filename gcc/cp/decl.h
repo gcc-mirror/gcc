@@ -31,7 +31,7 @@ enum decl_context
 };
 
 /* We need this in here to get the decl_context definition.  */
-extern tree grokdeclarator			PROTO((tree, tree, enum decl_context, int, tree, tree));
+extern tree grokdeclarator			PROTO((tree, tree, enum decl_context, int, tree));
 
 /* C++: Keep these around to reduce calls to `get_identifier'.
    Identifiers for `this' in member functions and the auto-delete
