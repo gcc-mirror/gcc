@@ -1213,6 +1213,16 @@ assemble_real (d, mode)
 
   switch (mode)
     {
+#ifdef ASM_OUTPUT_BYTE_FLOAT
+    case QFmode:
+      ASM_OUTPUT_BYTE_FLOAT (asm_out_file, d);
+      break;
+#endif
+#ifdef ASM_OUTPUT_SHORT_FLOAT
+    case HFmode:
+      ASM_OUTPUT_SHORT_FLOAT (asm_out_file, d);
+      break;
+#endif
 #ifdef ASM_OUTPUT_FLOAT
     case SFmode:
       ASM_OUTPUT_FLOAT (asm_out_file, d);
