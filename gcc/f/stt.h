@@ -164,9 +164,6 @@ struct _ffest_format_list_
 void ffestt_caselist_append (ffesttCaseList list, bool range, ffebld case1,
 			     ffebld case2, ffelexToken t);
 ffesttCaseList ffestt_caselist_create (void);
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-void ffestt_caselist_dump (ffesttCaseList list);
-#endif
 void ffestt_caselist_kill (ffesttCaseList list);
 void ffestt_dimlist_append (ffesttDimList list, ffebld lower, ffebld upper,
 			    ffelexToken t);
@@ -174,39 +171,24 @@ ffebld ffestt_dimlist_as_expr (ffesttDimList list, ffeinfoRank *rank,
 			       ffebld *array_size, ffebld *extents,
 			       bool is_ugly_assumed);
 ffesttDimList ffestt_dimlist_create (void);
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-void ffestt_dimlist_dump (ffesttDimList list);
-#endif
 void ffestt_dimlist_kill (ffesttDimList list);
 ffestpDimtype ffestt_dimlist_type (ffesttDimList dims, bool is_ugly_assumed);
 void ffestt_exprlist_append (ffesttExprList list, ffebld expr, ffelexToken t);
 ffesttExprList ffestt_exprlist_create (void);
 void ffestt_exprlist_drive (ffesttExprList list, void (*fn) (ffebld, ffelexToken));
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-void ffestt_exprlist_dump (ffesttExprList list);
-#endif
 void ffestt_exprlist_kill (ffesttExprList list);
 ffesttFormatList ffestt_formatlist_append (ffesttFormatList list);
 ffesttFormatList ffestt_formatlist_create (ffesttFormatList parent,
 					   ffelexToken t);
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-void ffestt_formatlist_dump (ffesttFormatList list);
-#endif
 void ffestt_formatlist_kill (ffesttFormatList list);
 void ffestt_implist_append (ffesttImpList list, ffelexToken first,
 			    ffelexToken last);
 ffesttImpList ffestt_implist_create (void);
 void ffestt_implist_drive (ffesttImpList list, void (*fn) (ffelexToken, ffelexToken));
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-void ffestt_implist_dump (ffesttImpList list);
-#endif
 void ffestt_implist_kill (ffesttImpList list);
 void ffestt_tokenlist_append (ffesttTokenList list, ffelexToken t);
 ffesttTokenList ffestt_tokenlist_create (void);
 void ffestt_tokenlist_drive (ffesttTokenList list, void (*fn) (ffelexToken));
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-void ffestt_tokenlist_dump (ffesttTokenList list);
-#endif
 ffelexHandler ffestt_tokenlist_handle (ffesttTokenList list,
 				       ffelexHandler handler);
 void ffestt_tokenlist_kill (ffesttTokenList list);

@@ -1452,9 +1452,6 @@ ffesta_eof ()
   if (ffe_is_ffedebug ())
     {
       ffestorag_report ();
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-      ffesymbol_report_all ();
-#endif
     }
 }
 
@@ -1990,9 +1987,6 @@ ffesta_zero (ffelexToken t)
   if (ffe_is_ffedebug ())
     {
       ffestorag_report ();
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-      ffesymbol_report_all ();
-#endif
     }
 
   ffelex_set_names (TRUE);

@@ -31,13 +31,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Include files. */
 
 #include "proj.h"
-
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 #include "rtl.h"
 #include "toplev.h"
 #include "ggc.h"
-#endif
-
 #include "ste.h"
 #include "bld.h"
 #include "com.h"
@@ -79,7 +75,6 @@ typedef enum
 /* Static objects accessed by functions in this module. */
 
 static ffesteStatelet_ ffeste_statelet_ = FFESTE_stateletSIMPLE_;
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static ffelab ffeste_label_formatdef_ = NULL;
 static tree (*ffeste_io_driver_) (ffebld expr);	/* do?io. */
 static ffecomGfrt ffeste_io_endgfrt_;	/* end function to call. */
@@ -89,11 +84,9 @@ static tree ffeste_io_end_;	/* END= label or NULL_TREE. */
 static tree ffeste_io_err_;	/* ERR= label or NULL_TREE. */
 static tree ffeste_io_iostat_;	/* IOSTAT= var or NULL_TREE. */
 static bool ffeste_io_iostat_is_temp_;	/* IOSTAT= var is a temp. */
-#endif
 
 /* Static functions (internal). */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void ffeste_begin_iterdo_ (ffestw block, tree *tvar, tree *tincr,
 				  tree *xitersvar, ffebld var,
 				  ffebld start, ffelexToken start_token,
@@ -144,18 +137,11 @@ static tree ffeste_io_olist_ (bool have_err, ffebld unit_expr,
 			      ffestpFile *recl_spec,
 			      ffestpFile *blank_spec);
 static void ffeste_subr_beru_ (ffestpBeruStmt *info, ffecomGfrt rt);
-#elif FFECOM_targetCURRENT == FFECOM_targetFFE
-static void ffeste_subr_file_ (const char *kw, ffestpFile *spec);
-#else
-#error
-#endif
 
 /* Internal macros. */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 #define ffeste_emit_line_note_() \
   emit_line_note (input_filename, lineno)
-#endif
 #define ffeste_check_simple_() \
   assert(ffeste_statelet_ == FFESTE_stateletSIMPLE_)
 #define ffeste_check_start_() \
@@ -499,7 +485,6 @@ ffeste_end_stmt_(void)
 /* Begin an iterative DO loop.  Pass the block to start if
    applicable.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
 ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
 		      tree *xitersvar, ffebld var,
@@ -738,12 +723,9 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
     }
 }
 
-#endif
-
 /* End an iterative DO loop.  Pass the same iteration variable and increment
    value trees that were generated in the paired _begin_ call.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
 ffeste_end_iterdo_ (ffestw block, tree tvar, tree tincr, tree itersvar)
 {
@@ -789,11 +771,9 @@ ffeste_end_iterdo_ (ffestw block, tree tvar, tree tincr, tree itersvar)
   else
     ffeste_end_stmt_ ();
 }
-#endif
 
 /* Generate call to run-time I/O routine.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
 ffeste_io_call_ (tree call, bool do_check)
 {
@@ -816,7 +796,6 @@ ffeste_io_call_ (tree call, bool do_check)
   expand_goto (ffeste_io_abort_);
   expand_end_cond ();
 }
-#endif
 
 /* Handle implied-DO in I/O list.
 
@@ -824,7 +803,6 @@ ffeste_io_call_ (tree call, bool do_check)
    DO loop, handles appropriately (possibly including recursively calling
    itself).  Then expands code to end the DO loop.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
 ffeste_io_impdo_ (ffebld impdo, ffelexToken impdo_token)
 {
@@ -903,7 +881,6 @@ ffeste_io_impdo_ (ffebld impdo, ffelexToken impdo_token)
 
   ffeste_end_iterdo_ (NULL, tvar, tincr, titervar);
 }
-#endif
 
 /* I/O driver for formatted I/O item (do_fio)
 
@@ -914,7 +891,6 @@ ffeste_io_impdo_ (ffebld impdo, ffelexToken impdo_token)
    of the result to an IOSTAT= variable, and emit any checking of the
    result for errors.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
 ffeste_io_dofio_ (ffebld expr)
 {
@@ -993,7 +969,6 @@ ffeste_io_dofio_ (ffebld expr)
   return ffecom_call_gfrt (FFECOM_gfrtDOFIO, arglist, NULL_TREE);
 }
 
-#endif
 /* I/O driver for list-directed I/O item (do_lio)
 
    Returns a tree for a CALL_EXPR to the do_lio function, which handles
@@ -1003,7 +978,6 @@ ffeste_io_dofio_ (ffebld expr)
    of the result to an IOSTAT= variable, and emit any checking of the
    result for errors.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
 ffeste_io_dolio_ (ffebld expr)
 {
@@ -1086,7 +1060,6 @@ ffeste_io_dolio_ (ffebld expr)
   return ffecom_call_gfrt (FFECOM_gfrtDOLIO, arglist, NULL_TREE);
 }
 
-#endif
 /* I/O driver for unformatted I/O item (do_uio)
 
    Returns a tree for a CALL_EXPR to the do_uio function, which handles
@@ -1096,7 +1069,6 @@ ffeste_io_dolio_ (ffebld expr)
    of the result to an IOSTAT= variable, and emit any checking of the
    result for errors.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
 ffeste_io_douio_ (ffebld expr)
 {
@@ -1175,7 +1147,6 @@ ffeste_io_douio_ (ffebld expr)
   return ffecom_call_gfrt (FFECOM_gfrtDOUIO, arglist, NULL_TREE);
 }
 
-#endif
 /* Make arglist with ptr to BACKSPACE/ENDFILE/REWIND control list.
 
    Returns a tree suitable as an argument list containing a pointer to
@@ -1191,7 +1162,6 @@ ffeste_io_douio_ (ffebld expr)
    declaration of variables (temporaries) to the expanding of expressions,
    statements, etc.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
 ffeste_io_ialist_ (bool have_err,
 		   ffestvUnit unit,
@@ -1298,7 +1268,6 @@ ffeste_io_ialist_ (bool have_err,
   return t;
 }
 
-#endif
 /* Make arglist with ptr to external-I/O control list.
 
    Returns a tree suitable as an argument list containing a pointer to
@@ -1314,7 +1283,6 @@ ffeste_io_ialist_ (bool have_err,
    declaration of variables (temporaries) to the expanding of expressions,
    statements, etc.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
 ffeste_io_cilist_ (bool have_err,
 		   ffestvUnit unit,
@@ -1525,7 +1493,6 @@ ffeste_io_cilist_ (bool have_err,
   return t;
 }
 
-#endif
 /* Make arglist with ptr to CLOSE control list.
 
    Returns a tree suitable as an argument list containing a pointer to
@@ -1541,7 +1508,6 @@ ffeste_io_cilist_ (bool have_err,
    declaration of variables (temporaries) to the expanding of expressions,
    statements, etc.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
 ffeste_io_cllist_ (bool have_err,
 		   ffebld unit_expr,
@@ -1641,7 +1607,6 @@ ffeste_io_cllist_ (bool have_err,
   return t;
 }
 
-#endif
 /* Make arglist with ptr to internal-I/O control list.
 
    Returns a tree suitable as an argument list containing a pointer to
@@ -1657,7 +1622,6 @@ ffeste_io_cllist_ (bool have_err,
    declaration of variables (temporaries) to the expanding of expressions,
    statements, etc.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
 ffeste_io_icilist_ (bool have_err,
 		    ffebld unit_expr,
@@ -1837,7 +1801,7 @@ ffeste_io_icilist_ (bool have_err,
     {
       int need_unitexp = (! unitexp);
       int need_unitlenexp = (! unitlenexp);
- 
+
       unitexp = ffecom_arg_ptr_to_expr (unit_expr, &unitlenexp);
       if (need_unitexp)
 	ffeste_f2c_compile_ (unitfield, unitexp);
@@ -1871,7 +1835,6 @@ ffeste_io_icilist_ (bool have_err,
 
   return t;
 }
-#endif
 
 /* Make arglist with ptr to INQUIRE control list
 
@@ -1888,7 +1851,6 @@ ffeste_io_icilist_ (bool have_err,
    declaration of variables (temporaries) to the expanding of expressions,
    statements, etc.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
 ffeste_io_inlist_ (bool have_err,
 		   ffestpFile *unit_spec,
@@ -2132,7 +2094,6 @@ ffeste_io_inlist_ (bool have_err,
   return t;
 }
 
-#endif
 /* Make arglist with ptr to OPEN control list
 
    Returns a tree suitable as an argument list containing a pointer to
@@ -2148,7 +2109,6 @@ ffeste_io_inlist_ (bool have_err,
    declaration of variables (temporaries) to the expanding of expressions,
    statements, etc.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
 ffeste_io_olist_ (bool have_err,
 		  ffebld unit_expr,
@@ -2291,35 +2251,8 @@ ffeste_io_olist_ (bool have_err,
   return t;
 }
 
-#endif
-/* Display file-statement specifier.  */
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-static void
-ffeste_subr_file_ (const char *kw, ffestpFile *spec)
-{
-  if (!spec->kw_or_val_present)
-    return;
-  fputs (kw, dmpout);
-  if (spec->value_present)
-    {
-      fputc ('=', dmpout);
-      if (spec->value_is_label)
-	{
-	  assert (spec->value_is_label == 2);	/* Temporary checking only. */
-	  fprintf (dmpout, "%" ffelabValue_f "u",
-		   ffelab_value (spec->u.label));
-	}
-      else
-	ffebld_dump (spec->u.expr);
-    }
-  fputc (',', dmpout);
-}
-#endif
-
 /* Generate code for BACKSPACE/ENDFILE/REWIND.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
 ffeste_subr_beru_ (ffestpBeruStmt *info, ffecomGfrt rt)
 {
@@ -2419,7 +2352,6 @@ ffeste_subr_beru_ (ffestpBeruStmt *info, ffecomGfrt rt)
 
   ffeste_end_stmt_ ();
 }
-#endif
 
 /* END DO statement
 
@@ -2431,9 +2363,6 @@ ffeste_subr_beru_ (ffestpBeruStmt *info, ffecomGfrt rt)
 void
 ffeste_do (ffestw block)
 {
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ END_DO\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
 
   if (ffestw_do_tvar (block) == 0)
@@ -2447,9 +2376,6 @@ ffeste_do (ffestw block)
 			ffestw_do_tvar (block),
 			ffestw_do_incr_saved (block),
 			ffestw_do_count_var (block));
-#else
-#error
-#endif
 }
 
 /* End of statement following logical IF.
@@ -2459,17 +2385,11 @@ ffeste_do (ffestw block)
 void
 ffeste_end_R807 ()
 {
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ END_IF\n", dmpout);	/* Also see ffeste_R806. */
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
 
   expand_end_cond ();
 
   ffeste_end_block_ (NULL);
-#else
-#error
-#endif
 }
 
 /* Generate "code" for branch label definition.  */
@@ -2477,30 +2397,22 @@ ffeste_end_R807 ()
 void
 ffeste_labeldef_branch (ffelab label)
 {
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fprintf (dmpout, "+ label %lu\n", ffelab_value (label));
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree glabel;
+  tree glabel;
 
-    glabel = ffecom_lookup_label (label);
-    assert (glabel != NULL_TREE);
-    if (TREE_CODE (glabel) == ERROR_MARK)
-      return;
+  glabel = ffecom_lookup_label (label);
+  assert (glabel != NULL_TREE);
+  if (TREE_CODE (glabel) == ERROR_MARK)
+    return;
 
-    assert (DECL_INITIAL (glabel) == NULL_TREE);
+  assert (DECL_INITIAL (glabel) == NULL_TREE);
 
-    DECL_INITIAL (glabel) = error_mark_node;
-    DECL_SOURCE_FILE (glabel) = ffelab_definition_filename (label);
-    DECL_SOURCE_LINE (glabel) = ffelab_definition_filelinenum (label);
+  DECL_INITIAL (glabel) = error_mark_node;
+  DECL_SOURCE_FILE (glabel) = ffelab_definition_filename (label);
+  DECL_SOURCE_LINE (glabel) = ffelab_definition_filelinenum (label);
 
-    emit_nop ();
+  emit_nop ();
 
-    expand_label (glabel);
-  }
-#else
-#error
-#endif
+  expand_label (glabel);
 }
 
 /* Generate "code" for FORMAT label definition.  */
@@ -2508,13 +2420,7 @@ ffeste_labeldef_branch (ffelab label)
 void
 ffeste_labeldef_format (ffelab label)
 {
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fprintf (dmpout, "$ label %lu\n", ffelab_value (label));
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_label_formatdef_ = label;
-#else
-#error
-#endif
 }
 
 /* Assignment statement (outside of WHERE).  */
@@ -2524,13 +2430,6 @@ ffeste_R737A (ffebld dest, ffebld source)
 {
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ let ", dmpout);
-  ffebld_dump (dest);
-  fputs ("=", dmpout);
-  ffebld_dump (source);
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
 
   ffeste_start_stmt_ ();
@@ -2538,9 +2437,6 @@ ffeste_R737A (ffebld dest, ffebld source)
   ffecom_expand_let_stmt (dest, source);
 
   ffeste_end_stmt_ ();
-#else
-#error
-#endif
 }
 
 /* Block IF (IF-THEN) statement.  */
@@ -2548,54 +2444,44 @@ ffeste_R737A (ffebld dest, ffebld source)
 void
 ffeste_R803 (ffestw block, ffebld expr)
 {
+  tree temp;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ IF_block (", dmpout);
-  ffebld_dump (expr);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree temp;
+  ffeste_emit_line_note_ ();
 
-    ffeste_emit_line_note_ ();
+  ffeste_start_block_ (block);
 
-    ffeste_start_block_ (block);
+  temp = ffecom_make_tempvar ("ifthen", integer_type_node,
+			      FFETARGET_charactersizeNONE, -1);
 
-    temp = ffecom_make_tempvar ("ifthen", integer_type_node,
-				FFETARGET_charactersizeNONE, -1);
+  ffeste_start_stmt_ ();
 
-    ffeste_start_stmt_ ();
+  ffecom_prepare_expr (expr);
 
-    ffecom_prepare_expr (expr);
+  if (ffecom_prepare_end ())
+    {
+      tree result;
 
-    if (ffecom_prepare_end ())
-      {
-	tree result;
+      result = ffecom_modify (void_type_node,
+			      temp,
+			      ffecom_truth_value (ffecom_expr (expr)));
 
-	result = ffecom_modify (void_type_node,
-				temp,
-				ffecom_truth_value (ffecom_expr (expr)));
+      expand_expr_stmt (result);
 
-	expand_expr_stmt (result);
+      ffeste_end_stmt_ ();
+    }
+  else
+    {
+      ffeste_end_stmt_ ();
 
-	ffeste_end_stmt_ ();
-      }
-    else
-      {
-	ffeste_end_stmt_ ();
+      temp = ffecom_truth_value (ffecom_expr (expr));
+    }
 
-	temp = ffecom_truth_value (ffecom_expr (expr));
-      }
+  expand_start_cond (temp, 0);
 
-    expand_start_cond (temp, 0);
-
-    /* No fake `else' constructs introduced (yet).  */
-    ffestw_set_ifthen_fake_else (block, 0);
-  }
-#else
-#error
-#endif
+  /* No fake `else' constructs introduced (yet).  */
+  ffestw_set_ifthen_fake_else (block, 0);
 }
 
 /* ELSE IF statement.  */
@@ -2603,66 +2489,56 @@ ffeste_R803 (ffestw block, ffebld expr)
 void
 ffeste_R804 (ffestw block, ffebld expr)
 {
+  tree temp;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ ELSE_IF (", dmpout);
-  ffebld_dump (expr);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree temp;
+  ffeste_emit_line_note_ ();
 
-    ffeste_emit_line_note_ ();
+  /* Since ELSEIF(expr) might require preparations for expr,
+     implement as ELSE; prepare-expr; IF (expr) THEN ...; ENDIF.  */
 
-    /* Since ELSEIF(expr) might require preparations for expr,
-       implement as ELSE; prepare-expr; IF (expr) THEN ...; ENDIF.  */
+  expand_start_else ();
 
-    expand_start_else ();
+  ffeste_start_block_ (block);
 
-    ffeste_start_block_ (block);
+  temp = ffecom_make_tempvar ("elseif", integer_type_node,
+			      FFETARGET_charactersizeNONE, -1);
 
-    temp = ffecom_make_tempvar ("elseif", integer_type_node,
-				FFETARGET_charactersizeNONE, -1);
+  ffeste_start_stmt_ ();
 
-    ffeste_start_stmt_ ();
+  ffecom_prepare_expr (expr);
 
-    ffecom_prepare_expr (expr);
+  if (ffecom_prepare_end ())
+    {
+      tree result;
 
-    if (ffecom_prepare_end ())
-      {
-	tree result;
+      result = ffecom_modify (void_type_node,
+			      temp,
+			      ffecom_truth_value (ffecom_expr (expr)));
 
-	result = ffecom_modify (void_type_node,
-				temp,
-				ffecom_truth_value (ffecom_expr (expr)));
+      expand_expr_stmt (result);
 
-	expand_expr_stmt (result);
+      ffeste_end_stmt_ ();
+    }
+  else
+    {
+      /* In this case, we could probably have used expand_start_elseif
+	 instead, saving the need for a fake `else' construct.  But,
+	 until it's clear that'd improve performance, it's easier this
+	 way, since we have to expand_start_else before we get to this
+	 test, given the current design.  */
 
-	ffeste_end_stmt_ ();
-      }
-    else
-      {
-	/* In this case, we could probably have used expand_start_elseif
-	   instead, saving the need for a fake `else' construct.  But,
-	   until it's clear that'd improve performance, it's easier this
-	   way, since we have to expand_start_else before we get to this
-	   test, given the current design.  */
+      ffeste_end_stmt_ ();
 
-	ffeste_end_stmt_ ();
+      temp = ffecom_truth_value (ffecom_expr (expr));
+    }
 
-	temp = ffecom_truth_value (ffecom_expr (expr));
-      }
+  expand_start_cond (temp, 0);
 
-    expand_start_cond (temp, 0);
-
-    /* Increment number of fake `else' constructs introduced.  */
-    ffestw_set_ifthen_fake_else (block,
-				 ffestw_ifthen_fake_else (block) + 1);
-  }
-#else
-#error
-#endif
+  /* Increment number of fake `else' constructs introduced.  */
+  ffestw_set_ifthen_fake_else (block,
+			       ffestw_ifthen_fake_else (block) + 1);
 }
 
 /* ELSE statement.  */
@@ -2672,15 +2548,9 @@ ffeste_R805 (ffestw block UNUSED)
 {
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ ELSE\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
 
   expand_start_else ();
-#else
-#error
-#endif
 }
 
 /* END IF statement.  */
@@ -2688,24 +2558,16 @@ ffeste_R805 (ffestw block UNUSED)
 void
 ffeste_R806 (ffestw block)
 {
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ END_IF_then\n", dmpout);	/* Also see ffeste_shriek_if_. */
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    int i = ffestw_ifthen_fake_else (block) + 1;
+  int i = ffestw_ifthen_fake_else (block) + 1;
 
-    ffeste_emit_line_note_ ();
+  ffeste_emit_line_note_ ();
 
-    for (; i; --i)
-      {
-	expand_end_cond ();
+  for (; i; --i)
+    {
+      expand_end_cond ();
 
-	ffeste_end_block_ (block);
-      }
-  }
-#else
-#error
-#endif
+      ffeste_end_block_ (block);
+    }
 }
 
 /* Logical IF statement.  */
@@ -2713,51 +2575,41 @@ ffeste_R806 (ffestw block)
 void
 ffeste_R807 (ffebld expr)
 {
+  tree temp;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ IF_logical (", dmpout);
-  ffebld_dump (expr);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree temp;
+  ffeste_emit_line_note_ ();
 
-    ffeste_emit_line_note_ ();
+  ffeste_start_block_ (NULL);
 
-    ffeste_start_block_ (NULL);
+  temp = ffecom_make_tempvar ("if", integer_type_node,
+			      FFETARGET_charactersizeNONE, -1);
 
-    temp = ffecom_make_tempvar ("if", integer_type_node,
-				FFETARGET_charactersizeNONE, -1);
+  ffeste_start_stmt_ ();
 
-    ffeste_start_stmt_ ();
+  ffecom_prepare_expr (expr);
 
-    ffecom_prepare_expr (expr);
+  if (ffecom_prepare_end ())
+    {
+      tree result;
 
-    if (ffecom_prepare_end ())
-      {
-	tree result;
+      result = ffecom_modify (void_type_node,
+			      temp,
+			      ffecom_truth_value (ffecom_expr (expr)));
 
-	result = ffecom_modify (void_type_node,
-				temp,
-				ffecom_truth_value (ffecom_expr (expr)));
+      expand_expr_stmt (result);
 
-	expand_expr_stmt (result);
+      ffeste_end_stmt_ ();
+    }
+  else
+    {
+      ffeste_end_stmt_ ();
 
-	ffeste_end_stmt_ ();
-      }
-    else
-      {
-	ffeste_end_stmt_ ();
+      temp = ffecom_truth_value (ffecom_expr (expr));
+    }
 
-	temp = ffecom_truth_value (ffecom_expr (expr));
-      }
-
-    expand_start_cond (temp, 0);
-  }
-#else
-#error
-#endif
+  expand_start_cond (temp, 0);
 }
 
 /* SELECT CASE statement.  */
@@ -2767,11 +2619,6 @@ ffeste_R809 (ffestw block, ffebld expr)
 {
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ SELECT_CASE (", dmpout);
-  ffebld_dump (expr);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
 
   ffeste_start_block_ (block);
@@ -2823,9 +2670,6 @@ ffeste_R809 (ffestw block, ffebld expr)
       ffestw_set_select_texpr (block, texpr);
       ffestw_set_select_break (block, FALSE);
     }
-#else
-#error
-#endif
 }
 
 /* CASE statement.
@@ -2839,6 +2683,11 @@ ffeste_R810 (ffestw block, unsigned long casenum)
 {
   ffestwSelect s = ffestw_select (block);
   ffestwCase c;
+  tree texprlow;
+  tree texprhigh;
+  tree tlabel;
+  int pushok;
+  tree duplicate;
 
   ffeste_check_simple_ ();
 
@@ -2847,98 +2696,53 @@ ffeste_R810 (ffestw block, unsigned long casenum)
   else
     c = s->first_stmt;
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
+  ffeste_emit_line_note_ ();
+
+  if (ffestw_select_texpr (block) == error_mark_node)
+    return;
+
+  /* ~~~Someday handle CHARACTER*1, CHARACTER*N */
+
+  tlabel = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+
+  if (ffestw_select_break (block))
+    expand_exit_something ();
+  else
+    ffestw_set_select_break (block, TRUE);
+
   if ((c == NULL) || (casenum != c->casenum))
     {
-      if (casenum == 0)		/* Intentional CASE DEFAULT. */
-	fputs ("+ CASE_DEFAULT", dmpout);
+      if (casenum == 0)	/* Intentional CASE DEFAULT. */
+	{
+	  pushok = pushcase (NULL_TREE, 0, tlabel, &duplicate);
+	  assert (pushok == 0);
+	}
     }
   else
-    {
-      bool comma = FALSE;
-
-      fputs ("+ CASE (", dmpout);
-      do
-	{
-	  if (comma)
-	    fputc (',', dmpout);
-	  else
-	    comma = TRUE;
-	  if (c->low != NULL)
-	    ffebld_constant_dump (c->low);
-	  if (c->low != c->high)
-	    {
-	      fputc (':', dmpout);
-	      if (c->high != NULL)
-		ffebld_constant_dump (c->high);
-	    }
-	  c = c->next_stmt;
-	  /* Unlink prev.  */
-	  c->previous_stmt->previous_stmt->next_stmt = c;
-	  c->previous_stmt = c->previous_stmt->previous_stmt;
-	}
-      while ((c != (ffestwCase) &s->first_rel) && (casenum == c->casenum));
-      fputc (')', dmpout);
-    }
-
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree texprlow;
-    tree texprhigh;
-    tree tlabel;
-    int pushok;
-    tree duplicate;
-
-    ffeste_emit_line_note_ ();
-
-    if (ffestw_select_texpr (block) == error_mark_node)
-      return;
-
-    /* ~~~Someday handle CHARACTER*1, CHARACTER*N */
-
-    tlabel = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-
-    if (ffestw_select_break (block))
-      expand_exit_something ();
-    else
-      ffestw_set_select_break (block, TRUE);
-
-    if ((c == NULL) || (casenum != c->casenum))
+    do
       {
-	if (casenum == 0)	/* Intentional CASE DEFAULT. */
+	texprlow = (c->low == NULL) ? NULL_TREE
+	  : ffecom_constantunion (&ffebld_constant_union (c->low), s->type,
+				  s->kindtype,
+				  ffecom_tree_type[s->type][s->kindtype]);
+	if (c->low != c->high)
 	  {
-	    pushok = pushcase (NULL_TREE, 0, tlabel, &duplicate);
-	    assert (pushok == 0);
+	    texprhigh = (c->high == NULL) ? NULL_TREE
+	      : ffecom_constantunion (&ffebld_constant_union (c->high),
+				      s->type, s->kindtype,
+				      ffecom_tree_type[s->type][s->kindtype]);
+	    pushok = pushcase_range (texprlow, texprhigh, convert,
+				     tlabel, &duplicate);
 	  }
+	else
+	  pushok = pushcase (texprlow, convert, tlabel, &duplicate);
+	assert (pushok == 0);
+	c = c->next_stmt;
+	/* Unlink prev.  */
+	c->previous_stmt->previous_stmt->next_stmt = c;
+	c->previous_stmt = c->previous_stmt->previous_stmt;
       }
-    else
-      do
-	{
-	  texprlow = (c->low == NULL) ? NULL_TREE
-	    : ffecom_constantunion (&ffebld_constant_union (c->low), s->type,
-		       s->kindtype, ffecom_tree_type[s->type][s->kindtype]);
-	  if (c->low != c->high)
-	    {
-	      texprhigh = (c->high == NULL) ? NULL_TREE
-		: ffecom_constantunion (&ffebld_constant_union (c->high),
-	      s->type, s->kindtype, ffecom_tree_type[s->type][s->kindtype]);
-	      pushok = pushcase_range (texprlow, texprhigh, convert,
-				       tlabel, &duplicate);
-	    }
-	  else
-	    pushok = pushcase (texprlow, convert, tlabel, &duplicate);
-	  assert (pushok == 0);
-	  c = c->next_stmt;
-	  /* Unlink prev.  */
-	  c->previous_stmt->previous_stmt->next_stmt = c;
-	  c->previous_stmt = c->previous_stmt->previous_stmt;
-	}
-      while ((c != (ffestwCase) &s->first_rel) && (casenum == c->casenum));
-  }
-#else
-#error
-#endif
+    while ((c != (ffestwCase) &s->first_rel) && (casenum == c->casenum));
 }
 
 /* END SELECT statement.  */
@@ -2946,9 +2750,6 @@ ffeste_R810 (ffestw block, unsigned long casenum)
 void
 ffeste_R811 (ffestw block)
 {
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ END_SELECT\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
 
   /* ~~~Someday handle CHARACTER*1, CHARACTER*N */
@@ -2957,9 +2758,6 @@ ffeste_R811 (ffestw block)
     expand_end_case (ffestw_select_texpr (block));
 
   ffeste_end_block_ (block);
-#else
-#error
-#endif
 }
 
 /* Iterative DO statement.  */
@@ -2972,44 +2770,14 @@ ffeste_R819A (ffestw block, ffelab label UNUSED, ffebld var,
 {
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  if ((ffebld_op (incr) == FFEBLD_opCONTER)
-      && (ffebld_constant_is_zero (ffebld_conter (incr))))
-    {
-      ffebad_start (FFEBAD_DO_STEP_ZERO);
-      ffebad_here (0, ffelex_token_where_line (incr_token),
-		   ffelex_token_where_column (incr_token));
-      ffebad_string ("Iterative DO loop");
-      ffebad_finish ();
-      /* Don't bother replacing it with 1 yet.  */
-    }
+  ffeste_emit_line_note_ ();
 
-  if (label == NULL)
-    fputs ("+ DO_iterative_nonlabeled (", dmpout);
-  else
-    fprintf (dmpout, "+ DO_iterative_labeled %lu (", ffelab_value (label));
-  ffebld_dump (var);
-  fputc ('=', dmpout);
-  ffebld_dump (start);
-  fputc (',', dmpout);
-  ffebld_dump (end);
-  fputc (',', dmpout);
-  ffebld_dump (incr);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    ffeste_emit_line_note_ ();
-
-    ffeste_begin_iterdo_ (block, NULL, NULL, NULL,
-			  var,
-			  start, start_token,
-			  end, end_token,
-			  incr, incr_token,
-			  "Iterative DO loop");
-  }
-#else
-#error
-#endif
+  ffeste_begin_iterdo_ (block, NULL, NULL, NULL,
+			var,
+			start, start_token,
+			end, end_token,
+			incr, incr_token,
+			"Iterative DO loop");
 }
 
 /* DO WHILE statement.  */
@@ -3017,56 +2785,43 @@ ffeste_R819A (ffestw block, ffelab label UNUSED, ffebld var,
 void
 ffeste_R819B (ffestw block, ffelab label UNUSED, ffebld expr)
 {
+  tree result;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  if (label == NULL)
-    fputs ("+ DO_WHILE_nonlabeled (", dmpout);
+  ffeste_emit_line_note_ ();
+
+  ffeste_start_block_ (block);
+
+  if (expr)
+    {
+      struct nesting *loop;
+      tree mod;
+
+      result = ffecom_make_tempvar ("dowhile", integer_type_node,
+				    FFETARGET_charactersizeNONE, -1);
+      loop = expand_start_loop (1);
+
+      ffeste_start_stmt_ ();
+
+      ffecom_prepare_expr (expr);
+
+      ffecom_prepare_end ();
+
+      mod = ffecom_modify (void_type_node,
+			   result,
+			   ffecom_truth_value (ffecom_expr (expr)));
+      expand_expr_stmt (mod);
+
+      ffeste_end_stmt_ ();
+
+      ffestw_set_do_hook (block, loop);
+      expand_exit_loop_if_false (0, result);
+    }
   else
-    fprintf (dmpout, "+ DO_WHILE_labeled %lu (", ffelab_value (label));
-  ffebld_dump (expr);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree result;
+    ffestw_set_do_hook (block, expand_start_loop (1));
 
-    ffeste_emit_line_note_ ();
-
-    ffeste_start_block_ (block);
-
-    if (expr)
-      {
-	struct nesting *loop;
-	tree mod;
-
-	result = ffecom_make_tempvar ("dowhile", integer_type_node,
-				      FFETARGET_charactersizeNONE, -1);
-	loop = expand_start_loop (1);
-
-	ffeste_start_stmt_ ();
-
-	ffecom_prepare_expr (expr);
-
-	ffecom_prepare_end ();
-
-	mod = ffecom_modify (void_type_node,
-			     result,
-			     ffecom_truth_value (ffecom_expr (expr)));
-	expand_expr_stmt (mod);
-
-	ffeste_end_stmt_ ();
-
-	ffestw_set_do_hook (block, loop);
-	expand_exit_loop_if_false (0, result);
-      }
-    else
-      ffestw_set_do_hook (block, expand_start_loop (1));
-
-    ffestw_set_do_tvar (block, NULL_TREE);
-  }
-#else
-#error
-#endif
+  ffestw_set_do_tvar (block, NULL_TREE);
 }
 
 /* END DO statement.
@@ -3082,15 +2837,9 @@ ffeste_R825 ()
 {
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ END_DO_sugar\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
 
   emit_nop ();
-#else
-#error
-#endif
 }
 
 /* CYCLE statement.  */
@@ -3100,15 +2849,9 @@ ffeste_R834 (ffestw block)
 {
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fprintf (dmpout, "+ CYCLE block #%lu\n", ffestw_blocknum (block));
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
 
   expand_continue_loop (ffestw_do_hook (block));
-#else
-#error
-#endif
 }
 
 /* EXIT statement.  */
@@ -3118,15 +2861,9 @@ ffeste_R835 (ffestw block)
 {
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fprintf (dmpout, "+ EXIT block #%lu\n", ffestw_blocknum (block));
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
 
   expand_exit_loop (ffestw_do_hook (block));
-#else
-#error
-#endif
 }
 
 /* GOTO statement.  */
@@ -3134,27 +2871,19 @@ ffeste_R835 (ffestw block)
 void
 ffeste_R836 (ffelab label)
 {
+  tree glabel;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fprintf (dmpout, "+ GOTO %lu\n", ffelab_value (label));
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree glabel;
+  ffeste_emit_line_note_ ();
 
-    ffeste_emit_line_note_ ();
-
-    glabel = ffecom_lookup_label (label);
-    if ((glabel != NULL_TREE)
-	&& (TREE_CODE (glabel) != ERROR_MARK))
-      {
-	expand_goto (glabel);
-	TREE_USED (glabel) = 1;
-      }
-  }
-#else
-#error
-#endif
+  glabel = ffecom_lookup_label (label);
+  if ((glabel != NULL_TREE)
+      && (TREE_CODE (glabel) != ERROR_MARK))
+    {
+      expand_goto (glabel);
+      TREE_USED (glabel) = 1;
+    }
 }
 
 /* Computed GOTO statement.  */
@@ -3163,63 +2892,45 @@ void
 ffeste_R837 (ffelab *labels, int count, ffebld expr)
 {
   int i;
+  tree texpr;
+  tree value;
+  tree tlabel;
+  int pushok;
+  tree duplicate;
 
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ CGOTO (", dmpout);
+  ffeste_emit_line_note_ ();
+
+  ffeste_start_stmt_ ();
+
+  ffecom_prepare_expr (expr);
+
+  ffecom_prepare_end ();
+
+  texpr = ffecom_expr (expr);
+
+  expand_start_case (0, texpr, TREE_TYPE (texpr), "computed GOTO statement");
+
   for (i = 0; i < count; ++i)
     {
-      if (i != 0)
-	fputc (',', dmpout);
-      fprintf (dmpout, "%" ffelabValue_f "u", ffelab_value (labels[i]));
+      value = build_int_2 (i + 1, 0);
+      tlabel = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+
+      pushok = pushcase (value, convert, tlabel, &duplicate);
+      assert (pushok == 0);
+
+      tlabel = ffecom_lookup_label (labels[i]);
+      if ((tlabel == NULL_TREE)
+	  || (TREE_CODE (tlabel) == ERROR_MARK))
+	continue;
+
+      expand_goto (tlabel);
+      TREE_USED (tlabel) = 1;
     }
-  fputs ("),", dmpout);
-  ffebld_dump (expr);
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree texpr;
-    tree value;
-    tree tlabel;
-    int pushok;
-    tree duplicate;
+  expand_end_case (texpr);
 
-    ffeste_emit_line_note_ ();
-
-    ffeste_start_stmt_ ();
-
-    ffecom_prepare_expr (expr);
-
-    ffecom_prepare_end ();
-
-    texpr = ffecom_expr (expr);
-
-    expand_start_case (0, texpr, TREE_TYPE (texpr), "computed GOTO statement");
-
-    for (i = 0; i < count; ++i)
-      {
-	value = build_int_2 (i + 1, 0);
-	tlabel = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-
-	pushok = pushcase (value, convert, tlabel, &duplicate);
-	assert (pushok == 0);
-
-	tlabel = ffecom_lookup_label (labels[i]);
-	if ((tlabel == NULL_TREE)
-	    || (TREE_CODE (tlabel) == ERROR_MARK))
-	  continue;
-
-	expand_goto (tlabel);
-	TREE_USED (tlabel) = 1;
-      }
-    expand_end_case (texpr);
-
-    ffeste_end_stmt_ ();
-  }
-#else
-#error
-#endif
+  ffeste_end_stmt_ ();
 }
 
 /* ASSIGN statement.  */
@@ -3227,48 +2938,38 @@ ffeste_R837 (ffelab *labels, int count, ffebld expr)
 void
 ffeste_R838 (ffelab label, ffebld target)
 {
+  tree expr_tree;
+  tree label_tree;
+  tree target_tree;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fprintf (dmpout, "+ ASSIGN %lu TO ", ffelab_value (label));
-  ffebld_dump (target);
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree expr_tree;
-    tree label_tree;
-    tree target_tree;
-
-    ffeste_emit_line_note_ ();
+  ffeste_emit_line_note_ ();
 
     /* No need to call ffeste_start_stmt_(), as the sorts of expressions
        seen here should never require use of temporaries.  */
 
-    label_tree = ffecom_lookup_label (label);
-    if ((label_tree != NULL_TREE)
-	&& (TREE_CODE (label_tree) != ERROR_MARK))
-      {
-	label_tree = ffecom_1 (ADDR_EXPR,
-			       build_pointer_type (void_type_node),
-			       label_tree);
-	TREE_CONSTANT (label_tree) = 1;
+  label_tree = ffecom_lookup_label (label);
+  if ((label_tree != NULL_TREE)
+      && (TREE_CODE (label_tree) != ERROR_MARK))
+    {
+      label_tree = ffecom_1 (ADDR_EXPR,
+			     build_pointer_type (void_type_node),
+			     label_tree);
+      TREE_CONSTANT (label_tree) = 1;
 
-	target_tree = ffecom_expr_assign_w (target);
-	if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (target_tree)))
-	    < GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (label_tree))))
-	  error ("ASSIGN to variable that is too small");
+      target_tree = ffecom_expr_assign_w (target);
+      if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (target_tree)))
+	  < GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (label_tree))))
+	error ("ASSIGN to variable that is too small");
 
-	label_tree = convert (TREE_TYPE (target_tree), label_tree);
+      label_tree = convert (TREE_TYPE (target_tree), label_tree);
 
-	expr_tree = ffecom_modify (void_type_node,
-				   target_tree,
-				   label_tree);
-	expand_expr_stmt (expr_tree);
-      }
-  }
-#else
-#error
-#endif
+      expr_tree = ffecom_modify (void_type_node,
+				 target_tree,
+				 label_tree);
+      expand_expr_stmt (expr_tree);
+    }
 }
 
 /* Assigned GOTO statement.  */
@@ -3276,31 +2977,21 @@ ffeste_R838 (ffelab label, ffebld target)
 void
 ffeste_R839 (ffebld target)
 {
+  tree t;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ AGOTO ", dmpout);
-  ffebld_dump (target);
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree t;
+  ffeste_emit_line_note_ ();
 
-    ffeste_emit_line_note_ ();
+  /* No need to call ffeste_start_stmt_(), as the sorts of expressions
+     seen here should never require use of temporaries.  */
 
-    /* No need to call ffeste_start_stmt_(), as the sorts of expressions
-       seen here should never require use of temporaries.  */
+  t = ffecom_expr_assign (target);
+  if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (t)))
+      < GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (null_pointer_node))))
+    error ("ASSIGNed GOTO target variable is too small");
 
-    t = ffecom_expr_assign (target);
-    if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (t)))
-	< GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (null_pointer_node))))
-      error ("ASSIGNed GOTO target variable is too small");
-
-    expand_computed_goto (convert (TREE_TYPE (null_pointer_node), t));
-  }
-#else
-#error
-#endif
+  expand_computed_goto (convert (TREE_TYPE (null_pointer_node), t));
 }
 
 /* Arithmetic IF statement.  */
@@ -3308,112 +2999,101 @@ ffeste_R839 (ffebld target)
 void
 ffeste_R840 (ffebld expr, ffelab neg, ffelab zero, ffelab pos)
 {
+  tree gneg = ffecom_lookup_label (neg);
+  tree gzero = ffecom_lookup_label (zero);
+  tree gpos = ffecom_lookup_label (pos);
+  tree texpr;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ IF_arithmetic (", dmpout);
-  ffebld_dump (expr);
-  fprintf (dmpout, ") %" ffelabValue_f "u,%" ffelabValue_f "u,%" ffelabValue_f "u\n",
-	   ffelab_value (neg), ffelab_value (zero), ffelab_value (pos));
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree gneg = ffecom_lookup_label (neg);
-    tree gzero = ffecom_lookup_label (zero);
-    tree gpos = ffecom_lookup_label (pos);
-    tree texpr;
+  ffeste_emit_line_note_ ();
 
-    ffeste_emit_line_note_ ();
+  if ((gneg == NULL_TREE) || (gzero == NULL_TREE) || (gpos == NULL_TREE))
+    return;
+  if ((TREE_CODE (gneg) == ERROR_MARK)
+      || (TREE_CODE (gzero) == ERROR_MARK)
+      || (TREE_CODE (gpos) == ERROR_MARK))
+    return;
 
-    if ((gneg == NULL_TREE) || (gzero == NULL_TREE) || (gpos == NULL_TREE))
-      return;
-    if ((TREE_CODE (gneg) == ERROR_MARK)
-	|| (TREE_CODE (gzero) == ERROR_MARK)
-	|| (TREE_CODE (gpos) == ERROR_MARK))
-      return;
+  ffeste_start_stmt_ ();
 
-    ffeste_start_stmt_ ();
+  ffecom_prepare_expr (expr);
 
-    ffecom_prepare_expr (expr);
+  ffecom_prepare_end ();
 
-    ffecom_prepare_end ();
-
-    if (neg == zero)
-      {
-	if (neg == pos)
+  if (neg == zero)
+    {
+      if (neg == pos)
+	expand_goto (gzero);
+      else
+	{
+	  /* IF (expr.LE.0) THEN GOTO neg/zero ELSE GOTO pos.  */
+	  texpr = ffecom_expr (expr);
+	  texpr = ffecom_2 (LE_EXPR, integer_type_node,
+			    texpr,
+			    convert (TREE_TYPE (texpr),
+				     integer_zero_node));
+	  expand_start_cond (ffecom_truth_value (texpr), 0);
 	  expand_goto (gzero);
-	else
-	  {
-	    /* IF (expr.LE.0) THEN GOTO neg/zero ELSE GOTO pos.  */
-	    texpr = ffecom_expr (expr);
-	    texpr = ffecom_2 (LE_EXPR, integer_type_node,
-			      texpr,
-			      convert (TREE_TYPE (texpr),
-				       integer_zero_node));
-	    expand_start_cond (ffecom_truth_value (texpr), 0);
-	    expand_goto (gzero);
-	    expand_start_else ();
-	    expand_goto (gpos);
-	    expand_end_cond ();
-	  }
-      }
-    else if (neg == pos)
-      {
-	/* IF (expr.NE.0) THEN GOTO neg/pos ELSE GOTO zero.  */
-	texpr = ffecom_expr (expr);
-	texpr = ffecom_2 (NE_EXPR, integer_type_node,
-			  texpr,
-			  convert (TREE_TYPE (texpr),
-				   integer_zero_node));
-	expand_start_cond (ffecom_truth_value (texpr), 0);
-	expand_goto (gneg);
-	expand_start_else ();
-	expand_goto (gzero);
-	expand_end_cond ();
-      }
-    else if (zero == pos)
-      {
-	/* IF (expr.GE.0) THEN GOTO zero/pos ELSE GOTO neg.  */
-	texpr = ffecom_expr (expr);
-	texpr = ffecom_2 (GE_EXPR, integer_type_node,
-			  texpr,
-			  convert (TREE_TYPE (texpr),
-				   integer_zero_node));
-	expand_start_cond (ffecom_truth_value (texpr), 0);
-	expand_goto (gzero);
-	expand_start_else ();
-	expand_goto (gneg);
-	expand_end_cond ();
-      }
-    else
-      {
-	/* Use a SAVE_EXPR in combo with:
-	   IF (expr.LT.0) THEN GOTO neg
-	   ELSEIF (expr.GT.0) THEN GOTO pos
-	   ELSE GOTO zero.  */
-	tree expr_saved = ffecom_save_tree (ffecom_expr (expr));
+	  expand_start_else ();
+	  expand_goto (gpos);
+	  expand_end_cond ();
+	}
+    }
+  else if (neg == pos)
+    {
+      /* IF (expr.NE.0) THEN GOTO neg/pos ELSE GOTO zero.  */
+      texpr = ffecom_expr (expr);
+      texpr = ffecom_2 (NE_EXPR, integer_type_node,
+			texpr,
+			convert (TREE_TYPE (texpr),
+				 integer_zero_node));
+      expand_start_cond (ffecom_truth_value (texpr), 0);
+      expand_goto (gneg);
+      expand_start_else ();
+      expand_goto (gzero);
+      expand_end_cond ();
+    }
+  else if (zero == pos)
+    {
+      /* IF (expr.GE.0) THEN GOTO zero/pos ELSE GOTO neg.  */
+      texpr = ffecom_expr (expr);
+      texpr = ffecom_2 (GE_EXPR, integer_type_node,
+			texpr,
+			convert (TREE_TYPE (texpr),
+				 integer_zero_node));
+      expand_start_cond (ffecom_truth_value (texpr), 0);
+      expand_goto (gzero);
+      expand_start_else ();
+      expand_goto (gneg);
+      expand_end_cond ();
+    }
+  else
+    {
+      /* Use a SAVE_EXPR in combo with:
+	 IF (expr.LT.0) THEN GOTO neg
+	 ELSEIF (expr.GT.0) THEN GOTO pos
+	 ELSE GOTO zero.  */
+      tree expr_saved = ffecom_save_tree (ffecom_expr (expr));
 
-	texpr = ffecom_2 (LT_EXPR, integer_type_node,
-			  expr_saved,
-			  convert (TREE_TYPE (expr_saved),
-				   integer_zero_node));
-	expand_start_cond (ffecom_truth_value (texpr), 0);
-	expand_goto (gneg);
-	texpr = ffecom_2 (GT_EXPR, integer_type_node,
-			  expr_saved,
-			  convert (TREE_TYPE (expr_saved),
-				   integer_zero_node));
-	expand_start_elseif (ffecom_truth_value (texpr));
-	expand_goto (gpos);
-	expand_start_else ();
-	expand_goto (gzero);
-	expand_end_cond ();
-      }
+      texpr = ffecom_2 (LT_EXPR, integer_type_node,
+			expr_saved,
+			convert (TREE_TYPE (expr_saved),
+				 integer_zero_node));
+      expand_start_cond (ffecom_truth_value (texpr), 0);
+      expand_goto (gneg);
+      texpr = ffecom_2 (GT_EXPR, integer_type_node,
+			expr_saved,
+			convert (TREE_TYPE (expr_saved),
+				 integer_zero_node));
+      expand_start_elseif (ffecom_truth_value (texpr));
+      expand_goto (gpos);
+      expand_start_else ();
+      expand_goto (gzero);
+      expand_end_cond ();
+    }
 
-    ffeste_end_stmt_ ();
-  }
-#else
-#error
-#endif
+  ffeste_end_stmt_ ();
 }
 
 /* CONTINUE statement.  */
@@ -3423,15 +3103,9 @@ ffeste_R841 ()
 {
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ CONTINUE\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
 
   emit_nop ();
-#else
-#error
-#endif
 }
 
 /* STOP statement.  */
@@ -3439,82 +3113,66 @@ ffeste_R841 ()
 void
 ffeste_R842 (ffebld expr)
 {
+  tree callit;
+  ffelexToken msg;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  if (expr == NULL)
+  ffeste_emit_line_note_ ();
+
+  if ((expr == NULL)
+      || (ffeinfo_basictype (ffebld_info (expr))
+	  == FFEINFO_basictypeANY))
     {
-      fputs ("+ STOP\n", dmpout);
+      msg = ffelex_token_new_character ("",
+					ffelex_token_where_line (ffesta_tokens[0]),
+					ffelex_token_where_column (ffesta_tokens[0]));
+      expr = ffebld_new_conter (ffebld_constant_new_characterdefault
+				(msg));
+      ffelex_token_kill (msg);
+      ffebld_set_info (expr, ffeinfo_new (FFEINFO_basictypeCHARACTER,
+					  FFEINFO_kindtypeCHARACTERDEFAULT,
+					  0, FFEINFO_kindENTITY,
+					  FFEINFO_whereCONSTANT, 0));
+    }
+  else if (ffeinfo_basictype (ffebld_info (expr))
+	   == FFEINFO_basictypeINTEGER)
+    {
+      char num[50];
+
+      assert (ffebld_op (expr) == FFEBLD_opCONTER);
+      assert (ffeinfo_kindtype (ffebld_info (expr))
+	      == FFEINFO_kindtypeINTEGERDEFAULT);
+      sprintf (num, "%" ffetargetIntegerDefault_f "d",
+	       ffebld_constant_integer1 (ffebld_conter (expr)));
+      msg = ffelex_token_new_character (num,
+					ffelex_token_where_line (ffesta_tokens[0]),
+					ffelex_token_where_column (ffesta_tokens[0]));
+      expr = ffebld_new_conter (ffebld_constant_new_characterdefault (msg));
+      ffelex_token_kill (msg);
+      ffebld_set_info (expr, ffeinfo_new (FFEINFO_basictypeCHARACTER,
+					  FFEINFO_kindtypeCHARACTERDEFAULT,
+					  0, FFEINFO_kindENTITY,
+					  FFEINFO_whereCONSTANT, 0));
     }
   else
     {
-      fputs ("+ STOP_coded ", dmpout);
-      ffebld_dump (expr);
-      fputc ('\n', dmpout);
+      assert (ffeinfo_basictype (ffebld_info (expr))
+	      == FFEINFO_basictypeCHARACTER);
+      assert (ffebld_op (expr) == FFEBLD_opCONTER);
+      assert (ffeinfo_kindtype (ffebld_info (expr))
+	      == FFEINFO_kindtypeCHARACTERDEFAULT);
     }
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree callit;
-    ffelexToken msg;
 
-    ffeste_emit_line_note_ ();
+  /* No need to call ffeste_start_stmt_(), as the sorts of expressions
+     seen here should never require use of temporaries.  */
 
-    if ((expr == NULL)
-	|| (ffeinfo_basictype (ffebld_info (expr))
-	    == FFEINFO_basictypeANY))
-      {
-	msg = ffelex_token_new_character ("", ffelex_token_where_line
-			       (ffesta_tokens[0]), ffelex_token_where_column
-					  (ffesta_tokens[0]));
-	expr = ffebld_new_conter (ffebld_constant_new_characterdefault
-				  (msg));
-	ffelex_token_kill (msg);
-	ffebld_set_info (expr, ffeinfo_new (FFEINFO_basictypeCHARACTER,
-		    FFEINFO_kindtypeCHARACTERDEFAULT, 0, FFEINFO_kindENTITY,
-					    FFEINFO_whereCONSTANT, 0));
-      }
-    else if (ffeinfo_basictype (ffebld_info (expr))
-	     == FFEINFO_basictypeINTEGER)
-      {
-	char num[50];
+  callit = ffecom_call_gfrt (FFECOM_gfrtSTOP,
+			     ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)),
+			     NULL_TREE);
+  TREE_SIDE_EFFECTS (callit) = 1;
 
-	assert (ffebld_op (expr) == FFEBLD_opCONTER);
-	assert (ffeinfo_kindtype (ffebld_info (expr))
-		== FFEINFO_kindtypeINTEGERDEFAULT);
-	sprintf (num, "%" ffetargetIntegerDefault_f "d",
-		 ffebld_constant_integer1 (ffebld_conter (expr)));
-	msg = ffelex_token_new_character (num, ffelex_token_where_line
-			       (ffesta_tokens[0]), ffelex_token_where_column
-					  (ffesta_tokens[0]));
-	expr = ffebld_new_conter (ffebld_constant_new_characterdefault
-				  (msg));
-	ffelex_token_kill (msg);
-	ffebld_set_info (expr, ffeinfo_new (FFEINFO_basictypeCHARACTER,
-		    FFEINFO_kindtypeCHARACTERDEFAULT, 0, FFEINFO_kindENTITY,
-					    FFEINFO_whereCONSTANT, 0));
-      }
-    else
-      {
-	assert (ffeinfo_basictype (ffebld_info (expr))
-		== FFEINFO_basictypeCHARACTER);
-	assert (ffebld_op (expr) == FFEBLD_opCONTER);
-	assert (ffeinfo_kindtype (ffebld_info (expr))
-		== FFEINFO_kindtypeCHARACTERDEFAULT);
-      }
-
-    /* No need to call ffeste_start_stmt_(), as the sorts of expressions
-       seen here should never require use of temporaries.  */
-
-    callit = ffecom_call_gfrt (FFECOM_gfrtSTOP,
-		    ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)),
-			       NULL_TREE);
-    TREE_SIDE_EFFECTS (callit) = 1;
-
-    expand_expr_stmt (callit);
-  }
-#else
-#error
-#endif
+  expand_expr_stmt (callit);
 }
 
 /* PAUSE statement.  */
@@ -3522,108 +3180,63 @@ ffeste_R842 (ffebld expr)
 void
 ffeste_R843 (ffebld expr)
 {
+  tree callit;
+  ffelexToken msg;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  if (expr == NULL)
+  ffeste_emit_line_note_ ();
+
+  if ((expr == NULL)
+      || (ffeinfo_basictype (ffebld_info (expr))
+	  == FFEINFO_basictypeANY))
     {
-      fputs ("+ PAUSE\n", dmpout);
+      msg = ffelex_token_new_character ("",
+					ffelex_token_where_line (ffesta_tokens[0]),
+					ffelex_token_where_column (ffesta_tokens[0]));
+      expr = ffebld_new_conter (ffebld_constant_new_characterdefault (msg));
+      ffelex_token_kill (msg);
+      ffebld_set_info (expr, ffeinfo_new (FFEINFO_basictypeCHARACTER,
+					  FFEINFO_kindtypeCHARACTERDEFAULT,
+					  0, FFEINFO_kindENTITY,
+					  FFEINFO_whereCONSTANT, 0));
+    }
+  else if (ffeinfo_basictype (ffebld_info (expr)) == FFEINFO_basictypeINTEGER)
+    {
+      char num[50];
+
+      assert (ffebld_op (expr) == FFEBLD_opCONTER);
+      assert (ffeinfo_kindtype (ffebld_info (expr))
+	      == FFEINFO_kindtypeINTEGERDEFAULT);
+      sprintf (num, "%" ffetargetIntegerDefault_f "d",
+	       ffebld_constant_integer1 (ffebld_conter (expr)));
+      msg = ffelex_token_new_character (num, ffelex_token_where_line (ffesta_tokens[0]),
+					ffelex_token_where_column (ffesta_tokens[0]));
+      expr = ffebld_new_conter (ffebld_constant_new_characterdefault (msg));
+      ffelex_token_kill (msg);
+      ffebld_set_info (expr, ffeinfo_new (FFEINFO_basictypeCHARACTER,
+					  FFEINFO_kindtypeCHARACTERDEFAULT,
+					  0, FFEINFO_kindENTITY,
+					  FFEINFO_whereCONSTANT, 0));
     }
   else
     {
-      fputs ("+ PAUSE_coded ", dmpout);
-      ffebld_dump (expr);
-      fputc ('\n', dmpout);
+      assert (ffeinfo_basictype (ffebld_info (expr))
+	      == FFEINFO_basictypeCHARACTER);
+      assert (ffebld_op (expr) == FFEBLD_opCONTER);
+      assert (ffeinfo_kindtype (ffebld_info (expr))
+	      == FFEINFO_kindtypeCHARACTERDEFAULT);
     }
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree callit;
-    ffelexToken msg;
 
-    ffeste_emit_line_note_ ();
+  /* No need to call ffeste_start_stmt_(), as the sorts of expressions
+     seen here should never require use of temporaries.  */
 
-    if ((expr == NULL)
-	|| (ffeinfo_basictype (ffebld_info (expr))
-	    == FFEINFO_basictypeANY))
-      {
-	msg = ffelex_token_new_character ("", ffelex_token_where_line
-			       (ffesta_tokens[0]), ffelex_token_where_column
-					  (ffesta_tokens[0]));
-	expr = ffebld_new_conter (ffebld_constant_new_characterdefault
-				  (msg));
-	ffelex_token_kill (msg);
-	ffebld_set_info (expr, ffeinfo_new (FFEINFO_basictypeCHARACTER,
-		    FFEINFO_kindtypeCHARACTERDEFAULT, 0, FFEINFO_kindENTITY,
-					    FFEINFO_whereCONSTANT, 0));
-      }
-    else if (ffeinfo_basictype (ffebld_info (expr))
-	     == FFEINFO_basictypeINTEGER)
-      {
-	char num[50];
+  callit = ffecom_call_gfrt (FFECOM_gfrtPAUSE,
+			     ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)),
+			     NULL_TREE);
+  TREE_SIDE_EFFECTS (callit) = 1;
 
-	assert (ffebld_op (expr) == FFEBLD_opCONTER);
-	assert (ffeinfo_kindtype (ffebld_info (expr))
-		== FFEINFO_kindtypeINTEGERDEFAULT);
-	sprintf (num, "%" ffetargetIntegerDefault_f "d",
-		 ffebld_constant_integer1 (ffebld_conter (expr)));
-	msg = ffelex_token_new_character (num, ffelex_token_where_line
-			       (ffesta_tokens[0]), ffelex_token_where_column
-					  (ffesta_tokens[0]));
-	expr = ffebld_new_conter (ffebld_constant_new_characterdefault
-				  (msg));
-	ffelex_token_kill (msg);
-	ffebld_set_info (expr, ffeinfo_new (FFEINFO_basictypeCHARACTER,
-		    FFEINFO_kindtypeCHARACTERDEFAULT, 0, FFEINFO_kindENTITY,
-					    FFEINFO_whereCONSTANT, 0));
-      }
-    else
-      {
-	assert (ffeinfo_basictype (ffebld_info (expr))
-		== FFEINFO_basictypeCHARACTER);
-	assert (ffebld_op (expr) == FFEBLD_opCONTER);
-	assert (ffeinfo_kindtype (ffebld_info (expr))
-		== FFEINFO_kindtypeCHARACTERDEFAULT);
-      }
-
-    /* No need to call ffeste_start_stmt_(), as the sorts of expressions
-       seen here should never require use of temporaries.  */
-
-    callit = ffecom_call_gfrt (FFECOM_gfrtPAUSE,
-		    ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)),
-			       NULL_TREE);
-    TREE_SIDE_EFFECTS (callit) = 1;
-
-    expand_expr_stmt (callit);
-  }
-#if 0				/* Old approach for phantom g77 run-time
-				   library. */
-  {
-    tree callit;
-
-    ffeste_emit_line_note_ ();
-
-    if (expr == NULL)
-      callit = ffecom_call_gfrt (FFECOM_gfrtPAUSENIL, NULL_TREE, NULL_TREE);
-    else if (ffeinfo_basictype (ffebld_info (expr))
-	     == FFEINFO_basictypeINTEGER)
-      callit = ffecom_call_gfrt (FFECOM_gfrtPAUSEINT,
-		      ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)),
-				 NULL_TREE);
-    else if (ffeinfo_basictype (ffebld_info (expr))
-	     == FFEINFO_basictypeCHARACTER)
-      callit = ffecom_call_gfrt (FFECOM_gfrtPAUSECHAR,
-		      ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)),
-				 NULL_TREE);
-    else
-      abort ();
-    TREE_SIDE_EFFECTS (callit) = 1;
-
-    expand_expr_stmt (callit);
-  }
-#endif
-#else
-#error
-#endif
+  expand_expr_stmt (callit);
 }
 
 /* OPEN statement.  */
@@ -3631,133 +3244,95 @@ ffeste_R843 (ffebld expr)
 void
 ffeste_R904 (ffestpOpenStmt *info)
 {
+  tree args;
+  bool iostat;
+  bool errl;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ OPEN (", dmpout);
-  ffeste_subr_file_ ("UNIT", &info->open_spec[FFESTP_openixUNIT]);
-  ffeste_subr_file_ ("ACCESS", &info->open_spec[FFESTP_openixACCESS]);
-  ffeste_subr_file_ ("ACTION", &info->open_spec[FFESTP_openixACTION]);
-  ffeste_subr_file_ ("ASSOCIATEVARIABLE", &info->open_spec[FFESTP_openixASSOCIATEVARIABLE]);
-  ffeste_subr_file_ ("BLANK", &info->open_spec[FFESTP_openixBLANK]);
-  ffeste_subr_file_ ("BLOCKSIZE", &info->open_spec[FFESTP_openixBLOCKSIZE]);
-  ffeste_subr_file_ ("BUFFERCOUNT", &info->open_spec[FFESTP_openixBUFFERCOUNT]);
-  ffeste_subr_file_ ("CARRIAGECONTROL", &info->open_spec[FFESTP_openixCARRIAGECONTROL]);
-  ffeste_subr_file_ ("DEFAULTFILE", &info->open_spec[FFESTP_openixDEFAULTFILE]);
-  ffeste_subr_file_ ("DELIM", &info->open_spec[FFESTP_openixDELIM]);
-  ffeste_subr_file_ ("DISPOSE", &info->open_spec[FFESTP_openixDISPOSE]);
-  ffeste_subr_file_ ("ERR", &info->open_spec[FFESTP_openixERR]);
-  ffeste_subr_file_ ("EXTENDSIZE", &info->open_spec[FFESTP_openixEXTENDSIZE]);
-  ffeste_subr_file_ ("FILE", &info->open_spec[FFESTP_openixFILE]);
-  ffeste_subr_file_ ("FORM", &info->open_spec[FFESTP_openixFORM]);
-  ffeste_subr_file_ ("INITIALSIZE", &info->open_spec[FFESTP_openixINITIALSIZE]);
-  ffeste_subr_file_ ("IOSTAT", &info->open_spec[FFESTP_openixIOSTAT]);
-  ffeste_subr_file_ ("KEY", &info->open_spec[FFESTP_openixKEY]);
-  ffeste_subr_file_ ("MAXREC", &info->open_spec[FFESTP_openixMAXREC]);
-  ffeste_subr_file_ ("NOSPANBLOCKS", &info->open_spec[FFESTP_openixNOSPANBLOCKS]);
-  ffeste_subr_file_ ("ORGANIZATION", &info->open_spec[FFESTP_openixORGANIZATION]);
-  ffeste_subr_file_ ("PAD", &info->open_spec[FFESTP_openixPAD]);
-  ffeste_subr_file_ ("POSITION", &info->open_spec[FFESTP_openixPOSITION]);
-  ffeste_subr_file_ ("READONLY", &info->open_spec[FFESTP_openixREADONLY]);
-  ffeste_subr_file_ ("RECL", &info->open_spec[FFESTP_openixRECL]);
-  ffeste_subr_file_ ("RECORDTYPE", &info->open_spec[FFESTP_openixRECORDTYPE]);
-  ffeste_subr_file_ ("SHARED", &info->open_spec[FFESTP_openixSHARED]);
-  ffeste_subr_file_ ("STATUS", &info->open_spec[FFESTP_openixSTATUS]);
-  ffeste_subr_file_ ("USEROPEN", &info->open_spec[FFESTP_openixUSEROPEN]);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree args;
-    bool iostat;
-    bool errl;
-
-    ffeste_emit_line_note_ ();
+  ffeste_emit_line_note_ ();
 
 #define specified(something) (info->open_spec[something].kw_or_val_present)
 
-    iostat = specified (FFESTP_openixIOSTAT);
-    errl = specified (FFESTP_openixERR);
+  iostat = specified (FFESTP_openixIOSTAT);
+  errl = specified (FFESTP_openixERR);
 
 #undef specified
 
-    ffeste_start_stmt_ ();
+  ffeste_start_stmt_ ();
 
-    if (errl)
-      {
-	ffeste_io_err_
-	  = ffeste_io_abort_
-	  = ffecom_lookup_label
-	  (info->open_spec[FFESTP_openixERR].u.label);
-	ffeste_io_abort_is_temp_ = FALSE;
-      }
-    else
-      {
-	ffeste_io_err_ = NULL_TREE;
+  if (errl)
+    {
+      ffeste_io_err_
+	= ffeste_io_abort_
+	= ffecom_lookup_label
+	(info->open_spec[FFESTP_openixERR].u.label);
+      ffeste_io_abort_is_temp_ = FALSE;
+    }
+  else
+    {
+      ffeste_io_err_ = NULL_TREE;
 
-	if ((ffeste_io_abort_is_temp_ = iostat))
-	  ffeste_io_abort_ = ffecom_temp_label ();
-	else
-	  ffeste_io_abort_ = NULL_TREE;
-      }
+      if ((ffeste_io_abort_is_temp_ = iostat))
+	ffeste_io_abort_ = ffecom_temp_label ();
+      else
+	ffeste_io_abort_ = NULL_TREE;
+    }
 
-    if (iostat)
-      {
-	/* Have IOSTAT= specification.  */
+  if (iostat)
+    {
+      /* Have IOSTAT= specification.  */
 
-	ffeste_io_iostat_is_temp_ = FALSE;
-	ffeste_io_iostat_ = ffecom_expr
-	  (info->open_spec[FFESTP_openixIOSTAT].u.expr);
-      }
-    else if (ffeste_io_abort_ != NULL_TREE)
-      {
-	/* Have no IOSTAT= but have ERR=.  */
+      ffeste_io_iostat_is_temp_ = FALSE;
+      ffeste_io_iostat_ = ffecom_expr
+	(info->open_spec[FFESTP_openixIOSTAT].u.expr);
+    }
+  else if (ffeste_io_abort_ != NULL_TREE)
+    {
+      /* Have no IOSTAT= but have ERR=.  */
 
-	ffeste_io_iostat_is_temp_ = TRUE;
-	ffeste_io_iostat_
-	  = ffecom_make_tempvar ("open", ffecom_integer_type_node,
-				 FFETARGET_charactersizeNONE, -1);
-      }
-    else
-      {
-	/* No IOSTAT= or ERR= specification.  */
+      ffeste_io_iostat_is_temp_ = TRUE;
+      ffeste_io_iostat_
+	= ffecom_make_tempvar ("open", ffecom_integer_type_node,
+			       FFETARGET_charactersizeNONE, -1);
+    }
+  else
+    {
+      /* No IOSTAT= or ERR= specification.  */
 
-	ffeste_io_iostat_is_temp_ = FALSE;
-	ffeste_io_iostat_ = NULL_TREE;
-      }
+      ffeste_io_iostat_is_temp_ = FALSE;
+      ffeste_io_iostat_ = NULL_TREE;
+    }
 
-    /* Now prescan, then convert, all the arguments.  */
+  /* Now prescan, then convert, all the arguments.  */
 
-    args = ffeste_io_olist_ (errl || iostat,
-			     info->open_spec[FFESTP_openixUNIT].u.expr,
-			     &info->open_spec[FFESTP_openixFILE],
-			     &info->open_spec[FFESTP_openixSTATUS],
-			     &info->open_spec[FFESTP_openixACCESS],
-			     &info->open_spec[FFESTP_openixFORM],
-			     &info->open_spec[FFESTP_openixRECL],
-			     &info->open_spec[FFESTP_openixBLANK]);
+  args = ffeste_io_olist_ (errl || iostat,
+			   info->open_spec[FFESTP_openixUNIT].u.expr,
+			   &info->open_spec[FFESTP_openixFILE],
+			   &info->open_spec[FFESTP_openixSTATUS],
+			   &info->open_spec[FFESTP_openixACCESS],
+			   &info->open_spec[FFESTP_openixFORM],
+			   &info->open_spec[FFESTP_openixRECL],
+			   &info->open_spec[FFESTP_openixBLANK]);
 
-    /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
+  /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
        label, since we're gonna fall through to there anyway. */
 
-    ffeste_io_call_ (ffecom_call_gfrt (FFECOM_gfrtFOPEN, args, NULL_TREE),
-		     ! ffeste_io_abort_is_temp_);
+  ffeste_io_call_ (ffecom_call_gfrt (FFECOM_gfrtFOPEN, args, NULL_TREE),
+		   ! ffeste_io_abort_is_temp_);
 
-    /* If we've got a temp label, generate its code here.  */
+  /* If we've got a temp label, generate its code here.  */
 
-    if (ffeste_io_abort_is_temp_)
-      {
-	DECL_INITIAL (ffeste_io_abort_) = error_mark_node;
-	emit_nop ();
-	expand_label (ffeste_io_abort_);
+  if (ffeste_io_abort_is_temp_)
+    {
+      DECL_INITIAL (ffeste_io_abort_) = error_mark_node;
+      emit_nop ();
+      expand_label (ffeste_io_abort_);
 
-	assert (ffeste_io_err_ == NULL_TREE);
-      }
+      assert (ffeste_io_err_ == NULL_TREE);
+    }
 
-    ffeste_end_stmt_ ();
-  }
-#else
-#error
-#endif
+  ffeste_end_stmt_ ();
 }
 
 /* CLOSE statement.  */
@@ -3765,103 +3340,90 @@ ffeste_R904 (ffestpOpenStmt *info)
 void
 ffeste_R907 (ffestpCloseStmt *info)
 {
+  tree args;
+  bool iostat;
+  bool errl;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ CLOSE (", dmpout);
-  ffeste_subr_file_ ("UNIT", &info->close_spec[FFESTP_closeixUNIT]);
-  ffeste_subr_file_ ("ERR", &info->close_spec[FFESTP_closeixERR]);
-  ffeste_subr_file_ ("IOSTAT", &info->close_spec[FFESTP_closeixIOSTAT]);
-  ffeste_subr_file_ ("STATUS", &info->close_spec[FFESTP_closeixSTATUS]);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree args;
-    bool iostat;
-    bool errl;
-
-    ffeste_emit_line_note_ ();
+  ffeste_emit_line_note_ ();
 
 #define specified(something) (info->close_spec[something].kw_or_val_present)
 
-    iostat = specified (FFESTP_closeixIOSTAT);
-    errl = specified (FFESTP_closeixERR);
+  iostat = specified (FFESTP_closeixIOSTAT);
+  errl = specified (FFESTP_closeixERR);
 
 #undef specified
 
-    ffeste_start_stmt_ ();
+  ffeste_start_stmt_ ();
 
-    if (errl)
-      {
-	ffeste_io_err_
-	  = ffeste_io_abort_
-	  = ffecom_lookup_label
-	  (info->close_spec[FFESTP_closeixERR].u.label);
-	ffeste_io_abort_is_temp_ = FALSE;
-      }
-    else
-      {
-	ffeste_io_err_ = NULL_TREE;
+  if (errl)
+    {
+      ffeste_io_err_
+	= ffeste_io_abort_
+	= ffecom_lookup_label
+	(info->close_spec[FFESTP_closeixERR].u.label);
+      ffeste_io_abort_is_temp_ = FALSE;
+    }
+  else
+    {
+      ffeste_io_err_ = NULL_TREE;
 
-	if ((ffeste_io_abort_is_temp_ = iostat))
-	  ffeste_io_abort_ = ffecom_temp_label ();
-	else
-	  ffeste_io_abort_ = NULL_TREE;
-      }
+      if ((ffeste_io_abort_is_temp_ = iostat))
+	ffeste_io_abort_ = ffecom_temp_label ();
+      else
+	ffeste_io_abort_ = NULL_TREE;
+    }
 
-    if (iostat)
-      {
-	/* Have IOSTAT= specification.  */
+  if (iostat)
+    {
+      /* Have IOSTAT= specification.  */
 
-	ffeste_io_iostat_is_temp_ = FALSE;
-	ffeste_io_iostat_ = ffecom_expr
-	  (info->close_spec[FFESTP_closeixIOSTAT].u.expr);
-      }
-    else if (ffeste_io_abort_ != NULL_TREE)
-      {
-	/* Have no IOSTAT= but have ERR=.  */
+      ffeste_io_iostat_is_temp_ = FALSE;
+      ffeste_io_iostat_ = ffecom_expr
+	(info->close_spec[FFESTP_closeixIOSTAT].u.expr);
+    }
+  else if (ffeste_io_abort_ != NULL_TREE)
+    {
+      /* Have no IOSTAT= but have ERR=.  */
 
-	ffeste_io_iostat_is_temp_ = TRUE;
-	ffeste_io_iostat_
-	  = ffecom_make_tempvar ("close", ffecom_integer_type_node,
-				 FFETARGET_charactersizeNONE, -1);
-      }
-    else
-      {
-	/* No IOSTAT= or ERR= specification.  */
+      ffeste_io_iostat_is_temp_ = TRUE;
+      ffeste_io_iostat_
+	= ffecom_make_tempvar ("close", ffecom_integer_type_node,
+			       FFETARGET_charactersizeNONE, -1);
+    }
+  else
+    {
+      /* No IOSTAT= or ERR= specification.  */
 
-	ffeste_io_iostat_is_temp_ = FALSE;
-	ffeste_io_iostat_ = NULL_TREE;
-      }
+      ffeste_io_iostat_is_temp_ = FALSE;
+      ffeste_io_iostat_ = NULL_TREE;
+    }
 
-    /* Now prescan, then convert, all the arguments.  */
+  /* Now prescan, then convert, all the arguments.  */
 
-    args = ffeste_io_cllist_ (errl || iostat,
-			      info->close_spec[FFESTP_closeixUNIT].u.expr,
-			      &info->close_spec[FFESTP_closeixSTATUS]);
+  args = ffeste_io_cllist_ (errl || iostat,
+			    info->close_spec[FFESTP_closeixUNIT].u.expr,
+			    &info->close_spec[FFESTP_closeixSTATUS]);
 
-    /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
+  /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
        label, since we're gonna fall through to there anyway. */
 
-    ffeste_io_call_ (ffecom_call_gfrt (FFECOM_gfrtFCLOS, args, NULL_TREE),
-		     ! ffeste_io_abort_is_temp_);
+  ffeste_io_call_ (ffecom_call_gfrt (FFECOM_gfrtFCLOS, args, NULL_TREE),
+		   ! ffeste_io_abort_is_temp_);
 
-    /* If we've got a temp label, generate its code here. */
+  /* If we've got a temp label, generate its code here. */
 
-    if (ffeste_io_abort_is_temp_)
-      {
-	DECL_INITIAL (ffeste_io_abort_) = error_mark_node;
-	emit_nop ();
-	expand_label (ffeste_io_abort_);
+  if (ffeste_io_abort_is_temp_)
+    {
+      DECL_INITIAL (ffeste_io_abort_) = error_mark_node;
+      emit_nop ();
+      expand_label (ffeste_io_abort_);
 
-	assert (ffeste_io_err_ == NULL_TREE);
-      }
+      assert (ffeste_io_err_ == NULL_TREE);
+    }
 
-    ffeste_end_stmt_ ();
-  }
-#else
-#error
-#endif
+  ffeste_end_stmt_ ();
 }
 
 /* READ(...) statement -- start.  */
@@ -3871,254 +3433,174 @@ ffeste_R909_start (ffestpReadStmt *info, bool only_format UNUSED,
 		   ffestvUnit unit, ffestvFormat format, bool rec,
 		   bool key UNUSED)
 {
+  ffecomGfrt start;
+  ffecomGfrt end;
+  tree cilist;
+  bool iostat;
+  bool errl;
+  bool endl;
+
   ffeste_check_start_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  switch (format)
-    {
-    case FFESTV_formatNONE:
-      if (rec)
-	fputs ("+ READ_ufdac", dmpout);
-      else if (key)
-	fputs ("+ READ_ufidx", dmpout);
-      else
-	fputs ("+ READ_ufseq", dmpout);
-      break;
-
-    case FFESTV_formatLABEL:
-    case FFESTV_formatCHAREXPR:
-    case FFESTV_formatINTEXPR:
-      if (rec)
-	fputs ("+ READ_fmdac", dmpout);
-      else if (key)
-	fputs ("+ READ_fmidx", dmpout);
-      else if (unit == FFESTV_unitCHAREXPR)
-	fputs ("+ READ_fmint", dmpout);
-      else
-	fputs ("+ READ_fmseq", dmpout);
-      break;
-
-    case FFESTV_formatASTERISK:
-      if (unit == FFESTV_unitCHAREXPR)
-	fputs ("+ READ_lsint", dmpout);
-      else
-	fputs ("+ READ_lsseq", dmpout);
-      break;
-
-    case FFESTV_formatNAMELIST:
-      fputs ("+ READ_nlseq", dmpout);
-      break;
-
-    default:
-      assert ("Unexpected kind of format item in R909 READ" == NULL);
-    }
-
-  if (only_format)
-    {
-      fputc (' ', dmpout);
-      ffeste_subr_file_ ("FORMAT", &info->read_spec[FFESTP_readixFORMAT]);
-      fputc (' ', dmpout);
-
-      return;
-    }
-
-  fputs (" (", dmpout);
-  ffeste_subr_file_ ("UNIT", &info->read_spec[FFESTP_readixUNIT]);
-  ffeste_subr_file_ ("FORMAT", &info->read_spec[FFESTP_readixFORMAT]);
-  ffeste_subr_file_ ("ADVANCE", &info->read_spec[FFESTP_readixADVANCE]);
-  ffeste_subr_file_ ("EOR", &info->read_spec[FFESTP_readixEOR]);
-  ffeste_subr_file_ ("ERR", &info->read_spec[FFESTP_readixERR]);
-  ffeste_subr_file_ ("END", &info->read_spec[FFESTP_readixEND]);
-  ffeste_subr_file_ ("IOSTAT", &info->read_spec[FFESTP_readixIOSTAT]);
-  ffeste_subr_file_ ("KEYEQ", &info->read_spec[FFESTP_readixKEYEQ]);
-  ffeste_subr_file_ ("KEYGE", &info->read_spec[FFESTP_readixKEYGE]);
-  ffeste_subr_file_ ("KEYGT", &info->read_spec[FFESTP_readixKEYGT]);
-  ffeste_subr_file_ ("KEYID", &info->read_spec[FFESTP_readixKEYID]);
-  ffeste_subr_file_ ("NULLS", &info->read_spec[FFESTP_readixNULLS]);
-  ffeste_subr_file_ ("REC", &info->read_spec[FFESTP_readixREC]);
-  ffeste_subr_file_ ("SIZE", &info->read_spec[FFESTP_readixSIZE]);
-  fputs (") ", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
 
   ffeste_emit_line_note_ ();
 
-  {
-    ffecomGfrt start;
-    ffecomGfrt end;
-    tree cilist;
-    bool iostat;
-    bool errl;
-    bool endl;
+  /* First determine the start, per-item, and end run-time functions to
+     call.  The per-item function is picked by choosing an ffeste function
+     to call to handle a given item; it knows how to generate a call to the
+     appropriate run-time function, and is called an "I/O driver".  */
 
-    /* First determine the start, per-item, and end run-time functions to
-       call.  The per-item function is picked by choosing an ffeste function
-       to call to handle a given item; it knows how to generate a call to the
-       appropriate run-time function, and is called an "I/O driver".  */
+  switch (format)
+    {
+    case FFESTV_formatNONE:	/* no FMT= */
+      ffeste_io_driver_ = ffeste_io_douio_;
+      if (rec)
+	start = FFECOM_gfrtSRDUE, end = FFECOM_gfrtERDUE;
+      else
+	start = FFECOM_gfrtSRSUE, end = FFECOM_gfrtERSUE;
+      break;
 
-    switch (format)
-      {
-      case FFESTV_formatNONE:	/* no FMT= */
-	ffeste_io_driver_ = ffeste_io_douio_;
-	if (rec)
-	  start = FFECOM_gfrtSRDUE, end = FFECOM_gfrtERDUE;
-#if 0
-	else if (key)
-	  start = FFECOM_gfrtSRIUE, end = FFECOM_gfrtERIUE;
-#endif
-	else
-	  start = FFECOM_gfrtSRSUE, end = FFECOM_gfrtERSUE;
-	break;
+    case FFESTV_formatLABEL:	/* FMT=10 */
+    case FFESTV_formatCHAREXPR:	/* FMT='(I10)' */
+    case FFESTV_formatINTEXPR:	/* FMT=I [after ASSIGN 10 TO I] */
+      ffeste_io_driver_ = ffeste_io_dofio_;
+      if (rec)
+	start = FFECOM_gfrtSRDFE, end = FFECOM_gfrtERDFE;
+      else if (unit == FFESTV_unitCHAREXPR)
+	start = FFECOM_gfrtSRSFI, end = FFECOM_gfrtERSFI;
+      else
+	start = FFECOM_gfrtSRSFE, end = FFECOM_gfrtERSFE;
+      break;
 
-      case FFESTV_formatLABEL:	/* FMT=10 */
-      case FFESTV_formatCHAREXPR:	/* FMT='(I10)' */
-      case FFESTV_formatINTEXPR:	/* FMT=I [after ASSIGN 10 TO I] */
-	ffeste_io_driver_ = ffeste_io_dofio_;
-	if (rec)
-	  start = FFECOM_gfrtSRDFE, end = FFECOM_gfrtERDFE;
-#if 0
-	else if (key)
-	  start = FFECOM_gfrtSRIFE, end = FFECOM_gfrtERIFE;
-#endif
-	else if (unit == FFESTV_unitCHAREXPR)
-	  start = FFECOM_gfrtSRSFI, end = FFECOM_gfrtERSFI;
-	else
-	  start = FFECOM_gfrtSRSFE, end = FFECOM_gfrtERSFE;
-	break;
+    case FFESTV_formatASTERISK:	/* FMT=* */
+      ffeste_io_driver_ = ffeste_io_dolio_;
+      if (unit == FFESTV_unitCHAREXPR)
+	start = FFECOM_gfrtSRSLI, end = FFECOM_gfrtERSLI;
+      else
+	start = FFECOM_gfrtSRSLE, end = FFECOM_gfrtERSLE;
+      break;
 
-      case FFESTV_formatASTERISK:	/* FMT=* */
-	ffeste_io_driver_ = ffeste_io_dolio_;
-	if (unit == FFESTV_unitCHAREXPR)
-	  start = FFECOM_gfrtSRSLI, end = FFECOM_gfrtERSLI;
-	else
-	  start = FFECOM_gfrtSRSLE, end = FFECOM_gfrtERSLE;
-	break;
+    case FFESTV_formatNAMELIST:	/* FMT=FOO or NML=FOO [NAMELIST
+				   /FOO/] */
+      ffeste_io_driver_ = NULL;	/* No start or driver function. */
+      start = FFECOM_gfrtSRSNE, end = FFECOM_gfrt;
+      break;
 
-      case FFESTV_formatNAMELIST:	/* FMT=FOO or NML=FOO [NAMELIST
-					   /FOO/] */
-	ffeste_io_driver_ = NULL;	/* No start or driver function. */
-	start = FFECOM_gfrtSRSNE, end = FFECOM_gfrt;
-	break;
-
-      default:
-	assert ("Weird stuff" == NULL);
-	start = FFECOM_gfrt, end = FFECOM_gfrt;
-	break;
-      }
-    ffeste_io_endgfrt_ = end;
+    default:
+      assert ("Weird stuff" == NULL);
+      start = FFECOM_gfrt, end = FFECOM_gfrt;
+      break;
+    }
+  ffeste_io_endgfrt_ = end;
 
 #define specified(something) (info->read_spec[something].kw_or_val_present)
 
-    iostat = specified (FFESTP_readixIOSTAT);
-    errl = specified (FFESTP_readixERR);
-    endl = specified (FFESTP_readixEND);
+  iostat = specified (FFESTP_readixIOSTAT);
+  errl = specified (FFESTP_readixERR);
+  endl = specified (FFESTP_readixEND);
 
 #undef specified
 
-    ffeste_start_stmt_ ();
+  ffeste_start_stmt_ ();
 
-    if (errl)
-      {
-	/* Have ERR= specification.   */
+  if (errl)
+    {
+      /* Have ERR= specification.   */
 
-	ffeste_io_err_
-	  = ffecom_lookup_label (info->read_spec[FFESTP_readixERR].u.label);
+      ffeste_io_err_
+	= ffecom_lookup_label (info->read_spec[FFESTP_readixERR].u.label);
 
-	if (endl)
-	  {
-	    /* Have both ERR= and END=.  Need a temp label to handle both.  */
-	    ffeste_io_end_
-	      = ffecom_lookup_label (info->read_spec[FFESTP_readixEND].u.label);
-	    ffeste_io_abort_is_temp_ = TRUE;
+      if (endl)
+	{
+	  /* Have both ERR= and END=.  Need a temp label to handle both.  */
+	  ffeste_io_end_
+	    = ffecom_lookup_label (info->read_spec[FFESTP_readixEND].u.label);
+	  ffeste_io_abort_is_temp_ = TRUE;
+	  ffeste_io_abort_ = ffecom_temp_label ();
+	}
+      else
+	{
+	  /* Have ERR= but no END=.  */
+	  ffeste_io_end_ = NULL_TREE;
+	  if ((ffeste_io_abort_is_temp_ = iostat))
 	    ffeste_io_abort_ = ffecom_temp_label ();
-	  }
-	else
-	  {
-	    /* Have ERR= but no END=.  */
-	    ffeste_io_end_ = NULL_TREE;
-	    if ((ffeste_io_abort_is_temp_ = iostat))
-	      ffeste_io_abort_ = ffecom_temp_label ();
-	    else
-	      ffeste_io_abort_ = ffeste_io_err_;
-	  }
-      }
-    else
-      {
-	/* No ERR= specification.  */
+	  else
+	    ffeste_io_abort_ = ffeste_io_err_;
+	}
+    }
+  else
+    {
+      /* No ERR= specification.  */
 
-	ffeste_io_err_ = NULL_TREE;
-	if (endl)
-	  {
-	    /* Have END= but no ERR=.  */
-	    ffeste_io_end_
-	      = ffecom_lookup_label (info->read_spec[FFESTP_readixEND].u.label);
-	    if ((ffeste_io_abort_is_temp_ = iostat))
-	      ffeste_io_abort_ = ffecom_temp_label ();
-	    else
-	      ffeste_io_abort_ = ffeste_io_end_;
-	  }
-	else
-	  {
-	    /* Have no ERR= or END=.  */
+      ffeste_io_err_ = NULL_TREE;
+      if (endl)
+	{
+	  /* Have END= but no ERR=.  */
+	  ffeste_io_end_
+	    = ffecom_lookup_label (info->read_spec[FFESTP_readixEND].u.label);
+	  if ((ffeste_io_abort_is_temp_ = iostat))
+	    ffeste_io_abort_ = ffecom_temp_label ();
+	  else
+	    ffeste_io_abort_ = ffeste_io_end_;
+	}
+      else
+	{
+	  /* Have no ERR= or END=.  */
 
-	    ffeste_io_end_ = NULL_TREE;
-	    if ((ffeste_io_abort_is_temp_ = iostat))
-	      ffeste_io_abort_ = ffecom_temp_label ();
-	    else
-	      ffeste_io_abort_ = NULL_TREE;
-	  }
-      }
+	  ffeste_io_end_ = NULL_TREE;
+	  if ((ffeste_io_abort_is_temp_ = iostat))
+	    ffeste_io_abort_ = ffecom_temp_label ();
+	  else
+	    ffeste_io_abort_ = NULL_TREE;
+	}
+    }
 
-    if (iostat)
-      {
-	/* Have IOSTAT= specification.  */
+  if (iostat)
+    {
+      /* Have IOSTAT= specification.  */
 
-	ffeste_io_iostat_is_temp_ = FALSE;
-	ffeste_io_iostat_
-	  = ffecom_expr (info->read_spec[FFESTP_readixIOSTAT].u.expr);
-      }
-    else if (ffeste_io_abort_ != NULL_TREE)
-      {
-	/* Have no IOSTAT= but have ERR= and/or END=.  */
+      ffeste_io_iostat_is_temp_ = FALSE;
+      ffeste_io_iostat_
+	= ffecom_expr (info->read_spec[FFESTP_readixIOSTAT].u.expr);
+    }
+  else if (ffeste_io_abort_ != NULL_TREE)
+    {
+      /* Have no IOSTAT= but have ERR= and/or END=.  */
 
-	ffeste_io_iostat_is_temp_ = TRUE;
-	ffeste_io_iostat_
-	  = ffecom_make_tempvar ("read", ffecom_integer_type_node,
-				 FFETARGET_charactersizeNONE, -1);
-      }
-    else
-      {
-	/* No IOSTAT=, ERR=, or END= specification.  */
+      ffeste_io_iostat_is_temp_ = TRUE;
+      ffeste_io_iostat_
+	= ffecom_make_tempvar ("read", ffecom_integer_type_node,
+			       FFETARGET_charactersizeNONE, -1);
+    }
+  else
+    {
+      /* No IOSTAT=, ERR=, or END= specification.  */
 
-	ffeste_io_iostat_is_temp_ = FALSE;
-	ffeste_io_iostat_ = NULL_TREE;
-      }
+      ffeste_io_iostat_is_temp_ = FALSE;
+      ffeste_io_iostat_ = NULL_TREE;
+    }
 
-    /* Now prescan, then convert, all the arguments.  */
+  /* Now prescan, then convert, all the arguments.  */
 
-    if (unit == FFESTV_unitCHAREXPR)
-      cilist = ffeste_io_icilist_ (errl || iostat,
-				   info->read_spec[FFESTP_readixUNIT].u.expr,
-				   endl || iostat, format,
-				   &info->read_spec[FFESTP_readixFORMAT]);
-    else
-      cilist = ffeste_io_cilist_ (errl || iostat, unit,
-				  info->read_spec[FFESTP_readixUNIT].u.expr,
-				  5, endl || iostat, format,
-				  &info->read_spec[FFESTP_readixFORMAT],
-				  rec,
-				  info->read_spec[FFESTP_readixREC].u.expr);
+  if (unit == FFESTV_unitCHAREXPR)
+    cilist = ffeste_io_icilist_ (errl || iostat,
+				 info->read_spec[FFESTP_readixUNIT].u.expr,
+				 endl || iostat, format,
+				 &info->read_spec[FFESTP_readixFORMAT]);
+  else
+    cilist = ffeste_io_cilist_ (errl || iostat, unit,
+				info->read_spec[FFESTP_readixUNIT].u.expr,
+				5, endl || iostat, format,
+				&info->read_spec[FFESTP_readixFORMAT],
+				rec,
+				info->read_spec[FFESTP_readixREC].u.expr);
 
-    /* If there is no end function, then there are no item functions (i.e.
-       it's a NAMELIST), and vice versa by the way.  In this situation, don't
-       generate the "if (iostat != 0) goto label;" if the label is temp abort
-       label, since we're gonna fall through to there anyway.  */
+  /* If there is no end function, then there are no item functions (i.e.
+     it's a NAMELIST), and vice versa by the way.  In this situation, don't
+     generate the "if (iostat != 0) goto label;" if the label is temp abort
+     label, since we're gonna fall through to there anyway.  */
 
-    ffeste_io_call_ (ffecom_call_gfrt (start, cilist, NULL_TREE),
-		     (! ffeste_io_abort_is_temp_) || (end != FFECOM_gfrt));
-  }
-#else
-#error
-#endif
+  ffeste_io_call_ (ffecom_call_gfrt (start, cilist, NULL_TREE),
+		   (! ffeste_io_abort_is_temp_) || (end != FFECOM_gfrt));
 }
 
 /* READ statement -- I/O item.  */
@@ -4128,10 +3610,6 @@ ffeste_R909_item (ffebld expr, ffelexToken expr_token)
 {
   ffeste_check_item_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  ffebld_dump (expr);
-  fputc (',', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   if (expr == NULL)
     return;
 
@@ -4157,9 +3635,6 @@ ffeste_R909_item (ffebld expr, ffelexToken expr_token)
 
       ffeste_end_stmt_ ();
     }
-#else
-#error
-#endif
 }
 
 /* READ statement -- end.  */
@@ -4168,10 +3643,6 @@ void
 ffeste_R909_finish ()
 {
   ffeste_check_finish_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
 
   /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
      label, since we're gonna fall through to there anyway. */
@@ -4220,9 +3691,6 @@ ffeste_R909_finish ()
     }
 
   ffeste_end_stmt_ ();
-#else
-#error
-#endif
 }
 
 /* WRITE statement -- start.  */
@@ -4231,195 +3699,144 @@ void
 ffeste_R910_start (ffestpWriteStmt *info, ffestvUnit unit,
 		   ffestvFormat format, bool rec)
 {
+  ffecomGfrt start;
+  ffecomGfrt end;
+  tree cilist;
+  bool iostat;
+  bool errl;
+
   ffeste_check_start_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  switch (format)
-    {
-    case FFESTV_formatNONE:
-      if (rec)
-	fputs ("+ WRITE_ufdac (", dmpout);
-      else
-	fputs ("+ WRITE_ufseq_or_idx (", dmpout);
-      break;
-
-    case FFESTV_formatLABEL:
-    case FFESTV_formatCHAREXPR:
-    case FFESTV_formatINTEXPR:
-      if (rec)
-	fputs ("+ WRITE_fmdac (", dmpout);
-      else if (unit == FFESTV_unitCHAREXPR)
-	fputs ("+ WRITE_fmint (", dmpout);
-      else
-	fputs ("+ WRITE_fmseq_or_idx (", dmpout);
-      break;
-
-    case FFESTV_formatASTERISK:
-      if (unit == FFESTV_unitCHAREXPR)
-	fputs ("+ WRITE_lsint (", dmpout);
-      else
-	fputs ("+ WRITE_lsseq (", dmpout);
-      break;
-
-    case FFESTV_formatNAMELIST:
-      fputs ("+ WRITE_nlseq (", dmpout);
-      break;
-
-    default:
-      assert ("Unexpected kind of format item in R910 WRITE" == NULL);
-    }
-
-  ffeste_subr_file_ ("UNIT", &info->write_spec[FFESTP_writeixUNIT]);
-  ffeste_subr_file_ ("FORMAT", &info->write_spec[FFESTP_writeixFORMAT]);
-  ffeste_subr_file_ ("ADVANCE", &info->write_spec[FFESTP_writeixADVANCE]);
-  ffeste_subr_file_ ("EOR", &info->write_spec[FFESTP_writeixEOR]);
-  ffeste_subr_file_ ("ERR", &info->write_spec[FFESTP_writeixERR]);
-  ffeste_subr_file_ ("IOSTAT", &info->write_spec[FFESTP_writeixIOSTAT]);
-  ffeste_subr_file_ ("REC", &info->write_spec[FFESTP_writeixREC]);
-  fputs (") ", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
 
   ffeste_emit_line_note_ ();
 
-  {
-    ffecomGfrt start;
-    ffecomGfrt end;
-    tree cilist;
-    bool iostat;
-    bool errl;
+  /* First determine the start, per-item, and end run-time functions to
+     call.  The per-item function is picked by choosing an ffeste function
+     to call to handle a given item; it knows how to generate a call to the
+     appropriate run-time function, and is called an "I/O driver".  */
 
-    /* First determine the start, per-item, and end run-time functions to
-       call.  The per-item function is picked by choosing an ffeste function
-       to call to handle a given item; it knows how to generate a call to the
-       appropriate run-time function, and is called an "I/O driver".  */
+  switch (format)
+    {
+    case FFESTV_formatNONE:	/* no FMT= */
+      ffeste_io_driver_ = ffeste_io_douio_;
+      if (rec)
+	start = FFECOM_gfrtSWDUE, end = FFECOM_gfrtEWDUE;
+      else
+	start = FFECOM_gfrtSWSUE, end = FFECOM_gfrtEWSUE;
+      break;
 
-    switch (format)
-      {
-      case FFESTV_formatNONE:	/* no FMT= */
-	ffeste_io_driver_ = ffeste_io_douio_;
-	if (rec)
-	  start = FFECOM_gfrtSWDUE, end = FFECOM_gfrtEWDUE;
-	else
-	  start = FFECOM_gfrtSWSUE, end = FFECOM_gfrtEWSUE;
-	break;
+    case FFESTV_formatLABEL:	/* FMT=10 */
+    case FFESTV_formatCHAREXPR:	/* FMT='(I10)' */
+    case FFESTV_formatINTEXPR:	/* FMT=I [after ASSIGN 10 TO I] */
+      ffeste_io_driver_ = ffeste_io_dofio_;
+      if (rec)
+	start = FFECOM_gfrtSWDFE, end = FFECOM_gfrtEWDFE;
+      else if (unit == FFESTV_unitCHAREXPR)
+	start = FFECOM_gfrtSWSFI, end = FFECOM_gfrtEWSFI;
+      else
+	start = FFECOM_gfrtSWSFE, end = FFECOM_gfrtEWSFE;
+      break;
 
-      case FFESTV_formatLABEL:	/* FMT=10 */
-      case FFESTV_formatCHAREXPR:	/* FMT='(I10)' */
-      case FFESTV_formatINTEXPR:	/* FMT=I [after ASSIGN 10 TO I] */
-	ffeste_io_driver_ = ffeste_io_dofio_;
-	if (rec)
-	  start = FFECOM_gfrtSWDFE, end = FFECOM_gfrtEWDFE;
-	else if (unit == FFESTV_unitCHAREXPR)
-	  start = FFECOM_gfrtSWSFI, end = FFECOM_gfrtEWSFI;
-	else
-	  start = FFECOM_gfrtSWSFE, end = FFECOM_gfrtEWSFE;
-	break;
+    case FFESTV_formatASTERISK:	/* FMT=* */
+      ffeste_io_driver_ = ffeste_io_dolio_;
+      if (unit == FFESTV_unitCHAREXPR)
+	start = FFECOM_gfrtSWSLI, end = FFECOM_gfrtEWSLI;
+      else
+	start = FFECOM_gfrtSWSLE, end = FFECOM_gfrtEWSLE;
+      break;
 
-      case FFESTV_formatASTERISK:	/* FMT=* */
-	ffeste_io_driver_ = ffeste_io_dolio_;
-	if (unit == FFESTV_unitCHAREXPR)
-	  start = FFECOM_gfrtSWSLI, end = FFECOM_gfrtEWSLI;
-	else
-	  start = FFECOM_gfrtSWSLE, end = FFECOM_gfrtEWSLE;
-	break;
+    case FFESTV_formatNAMELIST:	/* FMT=FOO or NML=FOO [NAMELIST
+				   /FOO/] */
+      ffeste_io_driver_ = NULL;	/* No start or driver function. */
+      start = FFECOM_gfrtSWSNE, end = FFECOM_gfrt;
+      break;
 
-      case FFESTV_formatNAMELIST:	/* FMT=FOO or NML=FOO [NAMELIST
-					   /FOO/] */
-	ffeste_io_driver_ = NULL;	/* No start or driver function. */
-	start = FFECOM_gfrtSWSNE, end = FFECOM_gfrt;
-	break;
-
-      default:
-	assert ("Weird stuff" == NULL);
-	start = FFECOM_gfrt, end = FFECOM_gfrt;
-	break;
-      }
-    ffeste_io_endgfrt_ = end;
+    default:
+      assert ("Weird stuff" == NULL);
+      start = FFECOM_gfrt, end = FFECOM_gfrt;
+      break;
+    }
+  ffeste_io_endgfrt_ = end;
 
 #define specified(something) (info->write_spec[something].kw_or_val_present)
 
-    iostat = specified (FFESTP_writeixIOSTAT);
-    errl = specified (FFESTP_writeixERR);
+  iostat = specified (FFESTP_writeixIOSTAT);
+  errl = specified (FFESTP_writeixERR);
 
 #undef specified
 
-    ffeste_start_stmt_ ();
+  ffeste_start_stmt_ ();
 
-    ffeste_io_end_ = NULL_TREE;
+  ffeste_io_end_ = NULL_TREE;
 
-    if (errl)
-      {
-	/* Have ERR= specification.   */
+  if (errl)
+    {
+      /* Have ERR= specification.   */
 
-	ffeste_io_err_
-	  = ffeste_io_abort_
-	  = ffecom_lookup_label
-	  (info->write_spec[FFESTP_writeixERR].u.label);
-	ffeste_io_abort_is_temp_ = FALSE;
-      }
-    else
-      {
-	/* No ERR= specification.  */
+      ffeste_io_err_
+	= ffeste_io_abort_
+	= ffecom_lookup_label
+	(info->write_spec[FFESTP_writeixERR].u.label);
+      ffeste_io_abort_is_temp_ = FALSE;
+    }
+  else
+    {
+      /* No ERR= specification.  */
 
-	ffeste_io_err_ = NULL_TREE;
+      ffeste_io_err_ = NULL_TREE;
 
-	if ((ffeste_io_abort_is_temp_ = iostat))
-	  ffeste_io_abort_ = ffecom_temp_label ();
-	else
-	  ffeste_io_abort_ = NULL_TREE;
-      }
+      if ((ffeste_io_abort_is_temp_ = iostat))
+	ffeste_io_abort_ = ffecom_temp_label ();
+      else
+	ffeste_io_abort_ = NULL_TREE;
+    }
 
-    if (iostat)
-      {
-	/* Have IOSTAT= specification.  */
+  if (iostat)
+    {
+      /* Have IOSTAT= specification.  */
 
-	ffeste_io_iostat_is_temp_ = FALSE;
-	ffeste_io_iostat_ = ffecom_expr
-	  (info->write_spec[FFESTP_writeixIOSTAT].u.expr);
-      }
-    else if (ffeste_io_abort_ != NULL_TREE)
-      {
-	/* Have no IOSTAT= but have ERR=.  */
+      ffeste_io_iostat_is_temp_ = FALSE;
+      ffeste_io_iostat_ = ffecom_expr
+	(info->write_spec[FFESTP_writeixIOSTAT].u.expr);
+    }
+  else if (ffeste_io_abort_ != NULL_TREE)
+    {
+      /* Have no IOSTAT= but have ERR=.  */
 
-	ffeste_io_iostat_is_temp_ = TRUE;
-	ffeste_io_iostat_
-	  = ffecom_make_tempvar ("write", ffecom_integer_type_node,
-				 FFETARGET_charactersizeNONE, -1);
-      }
-    else
-      {
-	/* No IOSTAT= or ERR= specification.  */
+      ffeste_io_iostat_is_temp_ = TRUE;
+      ffeste_io_iostat_
+	= ffecom_make_tempvar ("write", ffecom_integer_type_node,
+			       FFETARGET_charactersizeNONE, -1);
+    }
+  else
+    {
+      /* No IOSTAT= or ERR= specification.  */
 
-	ffeste_io_iostat_is_temp_ = FALSE;
-	ffeste_io_iostat_ = NULL_TREE;
-      }
+      ffeste_io_iostat_is_temp_ = FALSE;
+      ffeste_io_iostat_ = NULL_TREE;
+    }
 
-    /* Now prescan, then convert, all the arguments.  */
+  /* Now prescan, then convert, all the arguments.  */
 
-    if (unit == FFESTV_unitCHAREXPR)
-      cilist = ffeste_io_icilist_ (errl || iostat,
-				   info->write_spec[FFESTP_writeixUNIT].u.expr,
-				   FALSE, format,
-				   &info->write_spec[FFESTP_writeixFORMAT]);
-    else
-      cilist = ffeste_io_cilist_ (errl || iostat, unit,
-				  info->write_spec[FFESTP_writeixUNIT].u.expr,
-				  6, FALSE, format,
-				  &info->write_spec[FFESTP_writeixFORMAT],
-				  rec,
-				  info->write_spec[FFESTP_writeixREC].u.expr);
+  if (unit == FFESTV_unitCHAREXPR)
+    cilist = ffeste_io_icilist_ (errl || iostat,
+				 info->write_spec[FFESTP_writeixUNIT].u.expr,
+				 FALSE, format,
+				 &info->write_spec[FFESTP_writeixFORMAT]);
+  else
+    cilist = ffeste_io_cilist_ (errl || iostat, unit,
+				info->write_spec[FFESTP_writeixUNIT].u.expr,
+				6, FALSE, format,
+				&info->write_spec[FFESTP_writeixFORMAT],
+				rec,
+				info->write_spec[FFESTP_writeixREC].u.expr);
 
-    /* If there is no end function, then there are no item functions (i.e.
-       it's a NAMELIST), and vice versa by the way.  In this situation, don't
-       generate the "if (iostat != 0) goto label;" if the label is temp abort
-       label, since we're gonna fall through to there anyway.  */
+  /* If there is no end function, then there are no item functions (i.e.
+     it's a NAMELIST), and vice versa by the way.  In this situation, don't
+     generate the "if (iostat != 0) goto label;" if the label is temp abort
+     label, since we're gonna fall through to there anyway.  */
 
-    ffeste_io_call_ (ffecom_call_gfrt (start, cilist, NULL_TREE),
-		     (! ffeste_io_abort_is_temp_) || (end != FFECOM_gfrt));
-  }
-#else
-#error
-#endif
+  ffeste_io_call_ (ffecom_call_gfrt (start, cilist, NULL_TREE),
+		   (! ffeste_io_abort_is_temp_) || (end != FFECOM_gfrt));
 }
 
 /* WRITE statement -- I/O item.  */
@@ -4429,10 +3846,6 @@ ffeste_R910_item (ffebld expr, ffelexToken expr_token)
 {
   ffeste_check_item_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  ffebld_dump (expr);
-  fputc (',', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   if (expr == NULL)
     return;
 
@@ -4453,9 +3866,6 @@ ffeste_R910_item (ffebld expr, ffelexToken expr_token)
 
       ffeste_end_stmt_ ();
     }
-#else
-#error
-#endif
 }
 
 /* WRITE statement -- end.  */
@@ -4464,10 +3874,6 @@ void
 ffeste_R910_finish ()
 {
   ffeste_check_finish_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
 
   /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
      label, since we're gonna fall through to there anyway. */
@@ -4489,9 +3895,6 @@ ffeste_R910_finish ()
     }
 
   ffeste_end_stmt_ ();
-#else
-#error
-#endif
 }
 
 /* PRINT statement -- start.  */
@@ -4499,96 +3902,68 @@ ffeste_R910_finish ()
 void
 ffeste_R911_start (ffestpPrintStmt *info, ffestvFormat format)
 {
+  ffecomGfrt start;
+  ffecomGfrt end;
+  tree cilist;
+
   ffeste_check_start_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  switch (format)
-    {
-    case FFESTV_formatLABEL:
-    case FFESTV_formatCHAREXPR:
-    case FFESTV_formatINTEXPR:
-      fputs ("+ PRINT_fm ", dmpout);
-      break;
-
-    case FFESTV_formatASTERISK:
-      fputs ("+ PRINT_ls ", dmpout);
-      break;
-
-    case FFESTV_formatNAMELIST:
-      fputs ("+ PRINT_nl ", dmpout);
-      break;
-
-    default:
-      assert ("Unexpected kind of format item in R911 PRINT" == NULL);
-    }
-  ffeste_subr_file_ ("FORMAT", &info->print_spec[FFESTP_printixFORMAT]);
-  fputc (' ', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
 
   ffeste_emit_line_note_ ();
 
-  {
-    ffecomGfrt start;
-    ffecomGfrt end;
-    tree cilist;
+  /* First determine the start, per-item, and end run-time functions to
+     call.  The per-item function is picked by choosing an ffeste function
+     to call to handle a given item; it knows how to generate a call to the
+     appropriate run-time function, and is called an "I/O driver".  */
 
-    /* First determine the start, per-item, and end run-time functions to
-       call.  The per-item function is picked by choosing an ffeste function
-       to call to handle a given item; it knows how to generate a call to the
-       appropriate run-time function, and is called an "I/O driver".  */
+  switch (format)
+    {
+    case FFESTV_formatLABEL:	/* FMT=10 */
+    case FFESTV_formatCHAREXPR:	/* FMT='(I10)' */
+    case FFESTV_formatINTEXPR:	/* FMT=I [after ASSIGN 10 TO I] */
+      ffeste_io_driver_ = ffeste_io_dofio_;
+      start = FFECOM_gfrtSWSFE, end = FFECOM_gfrtEWSFE;
+      break;
 
-    switch (format)
-      {
-      case FFESTV_formatLABEL:	/* FMT=10 */
-      case FFESTV_formatCHAREXPR:	/* FMT='(I10)' */
-      case FFESTV_formatINTEXPR:	/* FMT=I [after ASSIGN 10 TO I] */
-	ffeste_io_driver_ = ffeste_io_dofio_;
-	start = FFECOM_gfrtSWSFE, end = FFECOM_gfrtEWSFE;
-	break;
+    case FFESTV_formatASTERISK:	/* FMT=* */
+      ffeste_io_driver_ = ffeste_io_dolio_;
+      start = FFECOM_gfrtSWSLE, end = FFECOM_gfrtEWSLE;
+      break;
 
-      case FFESTV_formatASTERISK:	/* FMT=* */
-	ffeste_io_driver_ = ffeste_io_dolio_;
-	start = FFECOM_gfrtSWSLE, end = FFECOM_gfrtEWSLE;
-	break;
+    case FFESTV_formatNAMELIST:	/* FMT=FOO or NML=FOO [NAMELIST
+				   /FOO/] */
+      ffeste_io_driver_ = NULL;	/* No start or driver function. */
+      start = FFECOM_gfrtSWSNE, end = FFECOM_gfrt;
+      break;
 
-      case FFESTV_formatNAMELIST:	/* FMT=FOO or NML=FOO [NAMELIST
-					   /FOO/] */
-	ffeste_io_driver_ = NULL;	/* No start or driver function. */
-	start = FFECOM_gfrtSWSNE, end = FFECOM_gfrt;
-	break;
+    default:
+      assert ("Weird stuff" == NULL);
+      start = FFECOM_gfrt, end = FFECOM_gfrt;
+      break;
+    }
+  ffeste_io_endgfrt_ = end;
 
-      default:
-	assert ("Weird stuff" == NULL);
-	start = FFECOM_gfrt, end = FFECOM_gfrt;
-	break;
-      }
-    ffeste_io_endgfrt_ = end;
+  ffeste_start_stmt_ ();
 
-    ffeste_start_stmt_ ();
+  ffeste_io_end_ = NULL_TREE;
+  ffeste_io_err_ = NULL_TREE;
+  ffeste_io_abort_ = NULL_TREE;
+  ffeste_io_abort_is_temp_ = FALSE;
+  ffeste_io_iostat_is_temp_ = FALSE;
+  ffeste_io_iostat_ = NULL_TREE;
 
-    ffeste_io_end_ = NULL_TREE;
-    ffeste_io_err_ = NULL_TREE;
-    ffeste_io_abort_ = NULL_TREE;
-    ffeste_io_abort_is_temp_ = FALSE;
-    ffeste_io_iostat_is_temp_ = FALSE;
-    ffeste_io_iostat_ = NULL_TREE;
+  /* Now prescan, then convert, all the arguments.  */
 
-    /* Now prescan, then convert, all the arguments.  */
+  cilist = ffeste_io_cilist_ (FALSE, FFESTV_unitNONE, NULL, 6, FALSE, format,
+			      &info->print_spec[FFESTP_printixFORMAT],
+			      FALSE, NULL);
 
-    cilist = ffeste_io_cilist_ (FALSE, FFESTV_unitNONE, NULL, 6, FALSE, format,
-		      &info->print_spec[FFESTP_printixFORMAT], FALSE, NULL);
+  /* If there is no end function, then there are no item functions (i.e.
+     it's a NAMELIST), and vice versa by the way.  In this situation, don't
+     generate the "if (iostat != 0) goto label;" if the label is temp abort
+     label, since we're gonna fall through to there anyway.  */
 
-    /* If there is no end function, then there are no item functions (i.e.
-       it's a NAMELIST), and vice versa by the way.  In this situation, don't
-       generate the "if (iostat != 0) goto label;" if the label is temp abort
-       label, since we're gonna fall through to there anyway.  */
-
-    ffeste_io_call_ (ffecom_call_gfrt (start, cilist, NULL_TREE),
-		     (! ffeste_io_abort_is_temp_) || (end != FFECOM_gfrt));
-  }
-#else
-#error
-#endif
+  ffeste_io_call_ (ffecom_call_gfrt (start, cilist, NULL_TREE),
+		   (! ffeste_io_abort_is_temp_) || (end != FFECOM_gfrt));
 }
 
 /* PRINT statement -- I/O item.  */
@@ -4598,10 +3973,6 @@ ffeste_R911_item (ffebld expr, ffelexToken expr_token)
 {
   ffeste_check_item_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  ffebld_dump (expr);
-  fputc (',', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   if (expr == NULL)
     return;
 
@@ -4622,9 +3993,6 @@ ffeste_R911_item (ffebld expr, ffelexToken expr_token)
 
       ffeste_end_stmt_ ();
     }
-#else
-#error
-#endif
 }
 
 /* PRINT statement -- end.  */
@@ -4634,19 +4002,12 @@ ffeste_R911_finish ()
 {
   ffeste_check_finish_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-
   if (ffeste_io_endgfrt_ != FFECOM_gfrt)
     ffeste_io_call_ (ffecom_call_gfrt (ffeste_io_endgfrt_, NULL_TREE,
 				       NULL_TREE),
 		     FALSE);
 
   ffeste_end_stmt_ ();
-#else
-#error
-#endif
 }
 
 /* BACKSPACE statement.  */
@@ -4656,17 +4017,7 @@ ffeste_R919 (ffestpBeruStmt *info)
 {
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ BACKSPACE (", dmpout);
-  ffeste_subr_file_ ("UNIT", &info->beru_spec[FFESTP_beruixUNIT]);
-  ffeste_subr_file_ ("ERR", &info->beru_spec[FFESTP_beruixERR]);
-  ffeste_subr_file_ ("IOSTAT", &info->beru_spec[FFESTP_beruixIOSTAT]);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_subr_beru_ (info, FFECOM_gfrtFBACK);
-#else
-#error
-#endif
 }
 
 /* ENDFILE statement.  */
@@ -4676,17 +4027,7 @@ ffeste_R920 (ffestpBeruStmt *info)
 {
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ ENDFILE (", dmpout);
-  ffeste_subr_file_ ("UNIT", &info->beru_spec[FFESTP_beruixUNIT]);
-  ffeste_subr_file_ ("ERR", &info->beru_spec[FFESTP_beruixERR]);
-  ffeste_subr_file_ ("IOSTAT", &info->beru_spec[FFESTP_beruixIOSTAT]);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_subr_beru_ (info, FFECOM_gfrtFEND);
-#else
-#error
-#endif
 }
 
 /* REWIND statement.  */
@@ -4696,17 +4037,7 @@ ffeste_R921 (ffestpBeruStmt *info)
 {
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ REWIND (", dmpout);
-  ffeste_subr_file_ ("UNIT", &info->beru_spec[FFESTP_beruixUNIT]);
-  ffeste_subr_file_ ("ERR", &info->beru_spec[FFESTP_beruixERR]);
-  ffeste_subr_file_ ("IOSTAT", &info->beru_spec[FFESTP_beruixIOSTAT]);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_subr_beru_ (info, FFECOM_gfrtFREW);
-#else
-#error
-#endif
 }
 
 /* INQUIRE statement (non-IOLENGTH version).  */
@@ -4714,151 +4045,105 @@ ffeste_R921 (ffestpBeruStmt *info)
 void
 ffeste_R923A (ffestpInquireStmt *info, bool by_file UNUSED)
 {
+  tree args;
+  bool iostat;
+  bool errl;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  if (by_file)
-    {
-      fputs ("+ INQUIRE_file (", dmpout);
-      ffeste_subr_file_ ("FILE", &info->inquire_spec[FFESTP_inquireixFILE]);
-    }
-  else
-    {
-      fputs ("+ INQUIRE_unit (", dmpout);
-      ffeste_subr_file_ ("UNIT", &info->inquire_spec[FFESTP_inquireixUNIT]);
-    }
-  ffeste_subr_file_ ("ACCESS", &info->inquire_spec[FFESTP_inquireixACCESS]);
-  ffeste_subr_file_ ("ACTION", &info->inquire_spec[FFESTP_inquireixACTION]);
-  ffeste_subr_file_ ("BLANK", &info->inquire_spec[FFESTP_inquireixBLANK]);
-  ffeste_subr_file_ ("CARRIAGECONTROL", &info->inquire_spec[FFESTP_inquireixCARRIAGECONTROL]);
-  ffeste_subr_file_ ("DEFAULTFILE", &info->inquire_spec[FFESTP_inquireixDEFAULTFILE]);
-  ffeste_subr_file_ ("DELIM", &info->inquire_spec[FFESTP_inquireixDELIM]);
-  ffeste_subr_file_ ("DIRECT", &info->inquire_spec[FFESTP_inquireixDIRECT]);
-  ffeste_subr_file_ ("ERR", &info->inquire_spec[FFESTP_inquireixERR]);
-  ffeste_subr_file_ ("EXIST", &info->inquire_spec[FFESTP_inquireixEXIST]);
-  ffeste_subr_file_ ("FORM", &info->inquire_spec[FFESTP_inquireixFORM]);
-  ffeste_subr_file_ ("FORMATTED", &info->inquire_spec[FFESTP_inquireixFORMATTED]);
-  ffeste_subr_file_ ("IOSTAT", &info->inquire_spec[FFESTP_inquireixIOSTAT]);
-  ffeste_subr_file_ ("KEYED", &info->inquire_spec[FFESTP_inquireixKEYED]);
-  ffeste_subr_file_ ("NAME", &info->inquire_spec[FFESTP_inquireixNAME]);
-  ffeste_subr_file_ ("NAMED", &info->inquire_spec[FFESTP_inquireixNAMED]);
-  ffeste_subr_file_ ("NEXTREC", &info->inquire_spec[FFESTP_inquireixNEXTREC]);
-  ffeste_subr_file_ ("NUMBER", &info->inquire_spec[FFESTP_inquireixNUMBER]);
-  ffeste_subr_file_ ("OPENED", &info->inquire_spec[FFESTP_inquireixOPENED]);
-  ffeste_subr_file_ ("ORGANIZATION", &info->inquire_spec[FFESTP_inquireixORGANIZATION]);
-  ffeste_subr_file_ ("PAD", &info->inquire_spec[FFESTP_inquireixPAD]);
-  ffeste_subr_file_ ("POSITION", &info->inquire_spec[FFESTP_inquireixPOSITION]);
-  ffeste_subr_file_ ("READ", &info->inquire_spec[FFESTP_inquireixREAD]);
-  ffeste_subr_file_ ("READWRITE", &info->inquire_spec[FFESTP_inquireixREADWRITE]);
-  ffeste_subr_file_ ("RECL", &info->inquire_spec[FFESTP_inquireixRECL]);
-  ffeste_subr_file_ ("RECORDTYPE", &info->inquire_spec[FFESTP_inquireixRECORDTYPE]);
-  ffeste_subr_file_ ("SEQUENTIAL", &info->inquire_spec[FFESTP_inquireixSEQUENTIAL]);
-  ffeste_subr_file_ ("UNFORMATTED", &info->inquire_spec[FFESTP_inquireixUNFORMATTED]);
-  ffeste_subr_file_ ("WRITE", &info->inquire_spec[FFESTP_inquireixWRITE]);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree args;
-    bool iostat;
-    bool errl;
-
-    ffeste_emit_line_note_ ();
+  ffeste_emit_line_note_ ();
 
 #define specified(something) (info->inquire_spec[something].kw_or_val_present)
 
-    iostat = specified (FFESTP_inquireixIOSTAT);
-    errl = specified (FFESTP_inquireixERR);
+  iostat = specified (FFESTP_inquireixIOSTAT);
+  errl = specified (FFESTP_inquireixERR);
 
 #undef specified
 
-    ffeste_start_stmt_ ();
+  ffeste_start_stmt_ ();
 
-    if (errl)
-      {
-	ffeste_io_err_
-	  = ffeste_io_abort_
-	  = ffecom_lookup_label
-	  (info->inquire_spec[FFESTP_inquireixERR].u.label);
-	ffeste_io_abort_is_temp_ = FALSE;
-      }
-    else
-      {
-	ffeste_io_err_ = NULL_TREE;
+  if (errl)
+    {
+      ffeste_io_err_
+	= ffeste_io_abort_
+	= ffecom_lookup_label
+	(info->inquire_spec[FFESTP_inquireixERR].u.label);
+      ffeste_io_abort_is_temp_ = FALSE;
+    }
+  else
+    {
+      ffeste_io_err_ = NULL_TREE;
 
-	if ((ffeste_io_abort_is_temp_ = iostat))
-	  ffeste_io_abort_ = ffecom_temp_label ();
-	else
-	  ffeste_io_abort_ = NULL_TREE;
-      }
+      if ((ffeste_io_abort_is_temp_ = iostat))
+	ffeste_io_abort_ = ffecom_temp_label ();
+      else
+	ffeste_io_abort_ = NULL_TREE;
+    }
 
-    if (iostat)
-      {
-	/* Have IOSTAT= specification.  */
+  if (iostat)
+    {
+      /* Have IOSTAT= specification.  */
 
-	ffeste_io_iostat_is_temp_ = FALSE;
-	ffeste_io_iostat_ = ffecom_expr
-	  (info->inquire_spec[FFESTP_inquireixIOSTAT].u.expr);
-      }
-    else if (ffeste_io_abort_ != NULL_TREE)
-      {
-	/* Have no IOSTAT= but have ERR=.  */
+      ffeste_io_iostat_is_temp_ = FALSE;
+      ffeste_io_iostat_ = ffecom_expr
+	(info->inquire_spec[FFESTP_inquireixIOSTAT].u.expr);
+    }
+  else if (ffeste_io_abort_ != NULL_TREE)
+    {
+      /* Have no IOSTAT= but have ERR=.  */
 
-	ffeste_io_iostat_is_temp_ = TRUE;
-	ffeste_io_iostat_
-	  = ffecom_make_tempvar ("inquire", ffecom_integer_type_node,
-				 FFETARGET_charactersizeNONE, -1);
-      }
-    else
-      {
-	/* No IOSTAT= or ERR= specification.  */
+      ffeste_io_iostat_is_temp_ = TRUE;
+      ffeste_io_iostat_
+	= ffecom_make_tempvar ("inquire", ffecom_integer_type_node,
+			       FFETARGET_charactersizeNONE, -1);
+    }
+  else
+    {
+      /* No IOSTAT= or ERR= specification.  */
 
-	ffeste_io_iostat_is_temp_ = FALSE;
-	ffeste_io_iostat_ = NULL_TREE;
-      }
+      ffeste_io_iostat_is_temp_ = FALSE;
+      ffeste_io_iostat_ = NULL_TREE;
+    }
 
-    /* Now prescan, then convert, all the arguments.  */
+  /* Now prescan, then convert, all the arguments.  */
 
-    args
-      = ffeste_io_inlist_ (errl || iostat,
-			   &info->inquire_spec[FFESTP_inquireixUNIT],
-			   &info->inquire_spec[FFESTP_inquireixFILE],
-			   &info->inquire_spec[FFESTP_inquireixEXIST],
-			   &info->inquire_spec[FFESTP_inquireixOPENED],
-			   &info->inquire_spec[FFESTP_inquireixNUMBER],
-			   &info->inquire_spec[FFESTP_inquireixNAMED],
-			   &info->inquire_spec[FFESTP_inquireixNAME],
-			   &info->inquire_spec[FFESTP_inquireixACCESS],
-			   &info->inquire_spec[FFESTP_inquireixSEQUENTIAL],
-			   &info->inquire_spec[FFESTP_inquireixDIRECT],
-			   &info->inquire_spec[FFESTP_inquireixFORM],
-			   &info->inquire_spec[FFESTP_inquireixFORMATTED],
-			   &info->inquire_spec[FFESTP_inquireixUNFORMATTED],
-			   &info->inquire_spec[FFESTP_inquireixRECL],
-			   &info->inquire_spec[FFESTP_inquireixNEXTREC],
-			   &info->inquire_spec[FFESTP_inquireixBLANK]);
+  args
+    = ffeste_io_inlist_ (errl || iostat,
+			 &info->inquire_spec[FFESTP_inquireixUNIT],
+			 &info->inquire_spec[FFESTP_inquireixFILE],
+			 &info->inquire_spec[FFESTP_inquireixEXIST],
+			 &info->inquire_spec[FFESTP_inquireixOPENED],
+			 &info->inquire_spec[FFESTP_inquireixNUMBER],
+			 &info->inquire_spec[FFESTP_inquireixNAMED],
+			 &info->inquire_spec[FFESTP_inquireixNAME],
+			 &info->inquire_spec[FFESTP_inquireixACCESS],
+			 &info->inquire_spec[FFESTP_inquireixSEQUENTIAL],
+			 &info->inquire_spec[FFESTP_inquireixDIRECT],
+			 &info->inquire_spec[FFESTP_inquireixFORM],
+			 &info->inquire_spec[FFESTP_inquireixFORMATTED],
+			 &info->inquire_spec[FFESTP_inquireixUNFORMATTED],
+			 &info->inquire_spec[FFESTP_inquireixRECL],
+			 &info->inquire_spec[FFESTP_inquireixNEXTREC],
+			 &info->inquire_spec[FFESTP_inquireixBLANK]);
 
-    /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
-       label, since we're gonna fall through to there anyway. */
+  /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
+     label, since we're gonna fall through to there anyway. */
 
-    ffeste_io_call_ (ffecom_call_gfrt (FFECOM_gfrtFINQU, args, NULL_TREE),
-		     ! ffeste_io_abort_is_temp_);
+  ffeste_io_call_ (ffecom_call_gfrt (FFECOM_gfrtFINQU, args, NULL_TREE),
+		   ! ffeste_io_abort_is_temp_);
 
-    /* If we've got a temp label, generate its code here.  */
+  /* If we've got a temp label, generate its code here.  */
 
-    if (ffeste_io_abort_is_temp_)
-      {
-	DECL_INITIAL (ffeste_io_abort_) = error_mark_node;
-	emit_nop ();
-	expand_label (ffeste_io_abort_);
+  if (ffeste_io_abort_is_temp_)
+    {
+      DECL_INITIAL (ffeste_io_abort_) = error_mark_node;
+      emit_nop ();
+      expand_label (ffeste_io_abort_);
 
-	assert (ffeste_io_err_ == NULL_TREE);
-      }
+      assert (ffeste_io_err_ == NULL_TREE);
+    }
 
-    ffeste_end_stmt_ ();
-  }
-#else
-#error
-#endif
+  ffeste_end_stmt_ ();
 }
 
 /* INQUIRE(IOLENGTH=expr) statement -- start.  */
@@ -4868,17 +4153,9 @@ ffeste_R923B_start (ffestpInquireStmt *info UNUSED)
 {
   ffeste_check_start_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ INQUIRE (", dmpout);
-  ffeste_subr_file_ ("IOLENGTH", &info->inquire_spec[FFESTP_inquireixIOLENGTH]);
-  fputs (") ", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
   assert ("INQUIRE(IOLENGTH=<var>) not implemented yet! ~~~" == NULL);
 
   ffeste_emit_line_note_ ();
-#else
-#error
-#endif
 }
 
 /* INQUIRE(IOLENGTH=expr) statement -- I/O item.  */
@@ -4887,14 +4164,6 @@ void
 ffeste_R923B_item (ffebld expr UNUSED)
 {
   ffeste_check_item_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  ffebld_dump (expr);
-  fputc (',', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* INQUIRE(IOLENGTH=expr) statement -- end.  */
@@ -4903,13 +4172,6 @@ void
 ffeste_R923B_finish ()
 {
   ffeste_check_finish_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* ffeste_R1001 -- FORMAT statement
@@ -4919,57 +4181,49 @@ ffeste_R923B_finish ()
 void
 ffeste_R1001 (ffests s)
 {
+  tree t;
+  tree ttype;
+  tree maxindex;
+  tree var;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fprintf (dmpout, "$ FORMAT %.*s\n", (int) ffests_length (s), ffests_text (s));
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree t;
-    tree ttype;
-    tree maxindex;
-    tree var;
+  assert (ffeste_label_formatdef_ != NULL);
 
-    assert (ffeste_label_formatdef_ != NULL);
+  ffeste_emit_line_note_ ();
 
-    ffeste_emit_line_note_ ();
+  t = build_string (ffests_length (s), ffests_text (s));
 
-    t = build_string (ffests_length (s), ffests_text (s));
-
-    TREE_TYPE (t)
-      = build_type_variant (build_array_type
-			    (char_type_node,
-			     build_range_type (integer_type_node,
-					       integer_one_node,
+  TREE_TYPE (t)
+    = build_type_variant (build_array_type
+			  (char_type_node,
+			   build_range_type (integer_type_node,
+					     integer_one_node,
 					     build_int_2 (ffests_length (s),
 							  0))),
-			    1, 0);
-    TREE_CONSTANT (t) = 1;
-    TREE_STATIC (t) = 1;
+			  1, 0);
+  TREE_CONSTANT (t) = 1;
+  TREE_STATIC (t) = 1;
 
-    var = ffecom_lookup_label (ffeste_label_formatdef_);
-    if ((var != NULL_TREE)
-	&& (TREE_CODE (var) == VAR_DECL))
-      {
-	DECL_INITIAL (var) = t;
-	maxindex = build_int_2 (ffests_length (s) - 1, 0);
-	ttype = TREE_TYPE (var);
-	TYPE_DOMAIN (ttype) = build_range_type (integer_type_node,
-						integer_zero_node,
-						maxindex);
-	if (!TREE_TYPE (maxindex))
-	  TREE_TYPE (maxindex) = TYPE_DOMAIN (ttype);
-	layout_type (ttype);
-	rest_of_decl_compilation (var, NULL, 1, 0);
-	expand_decl (var);
-	expand_decl_init (var);
-      }
+  var = ffecom_lookup_label (ffeste_label_formatdef_);
+  if ((var != NULL_TREE)
+      && (TREE_CODE (var) == VAR_DECL))
+    {
+      DECL_INITIAL (var) = t;
+      maxindex = build_int_2 (ffests_length (s) - 1, 0);
+      ttype = TREE_TYPE (var);
+      TYPE_DOMAIN (ttype) = build_range_type (integer_type_node,
+					      integer_zero_node,
+					      maxindex);
+      if (!TREE_TYPE (maxindex))
+	TREE_TYPE (maxindex) = TYPE_DOMAIN (ttype);
+      layout_type (ttype);
+      rest_of_decl_compilation (var, NULL, 1, 0);
+      expand_decl (var);
+      expand_decl_init (var);
+    }
 
-    ffeste_label_formatdef_ = NULL;
-  }
-#else
-#error
-#endif
+  ffeste_label_formatdef_ = NULL;
 }
 
 /* END PROGRAM.  */
@@ -4977,12 +4231,6 @@ ffeste_R1001 (ffests s)
 void
 ffeste_R1103 ()
 {
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ END_PROGRAM\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* END BLOCK DATA.  */
@@ -4990,12 +4238,6 @@ ffeste_R1103 ()
 void
 ffeste_R1112 ()
 {
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("* END_BLOCK_DATA\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* CALL statement.  */
@@ -5003,129 +4245,121 @@ ffeste_R1112 ()
 void
 ffeste_R1212 (ffebld expr)
 {
+  ffebld args;
+  ffebld arg;
+  ffebld labels = NULL;	/* First in list of LABTERs. */
+  ffebld prevlabels = NULL;
+  ffebld prevargs = NULL;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ CALL ", dmpout);
-  ffebld_dump (expr);
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    ffebld args = ffebld_right (expr);
-    ffebld arg;
-    ffebld labels = NULL;	/* First in list of LABTERs. */
-    ffebld prevlabels = NULL;
-    ffebld prevargs = NULL;
+  args = ffebld_right (expr);
 
-    ffeste_emit_line_note_ ();
+  ffeste_emit_line_note_ ();
 
-    /* Here we split the list at ffebld_right(expr) into two lists: one at
-       ffebld_right(expr) consisting of all items that are not LABTERs, the
-       other at labels consisting of all items that are LABTERs.  Then, if
-       the latter list is NULL, we have an ordinary call, else we have a call
-       with alternate returns. */
+  /* Here we split the list at ffebld_right(expr) into two lists: one at
+     ffebld_right(expr) consisting of all items that are not LABTERs, the
+     other at labels consisting of all items that are LABTERs.  Then, if
+     the latter list is NULL, we have an ordinary call, else we have a call
+     with alternate returns. */
 
-    for (args = ffebld_right (expr); args != NULL; args = ffebld_trail (args))
-      {
-	if (((arg = ffebld_head (args)) == NULL)
-	    || (ffebld_op (arg) != FFEBLD_opLABTER))
-	  {
-	    if (prevargs == NULL)
-	      {
-		prevargs = args;
-		ffebld_set_right (expr, args);
-	      }
-	    else
-	      {
-		ffebld_set_trail (prevargs, args);
-		prevargs = args;
-	      }
-	  }
-	else
-	  {
-	    if (prevlabels == NULL)
-	      {
-		prevlabels = labels = args;
-	      }
-	    else
-	      {
-		ffebld_set_trail (prevlabels, args);
-		prevlabels = args;
-	      }
-	  }
-      }
-    if (prevlabels == NULL)
-      labels = NULL;
-    else
-      ffebld_set_trail (prevlabels, NULL);
-    if (prevargs == NULL)
-      ffebld_set_right (expr, NULL);
-    else
-      ffebld_set_trail (prevargs, NULL);
+  for (args = ffebld_right (expr); args != NULL; args = ffebld_trail (args))
+    {
+      if (((arg = ffebld_head (args)) == NULL)
+	  || (ffebld_op (arg) != FFEBLD_opLABTER))
+	{
+	  if (prevargs == NULL)
+	    {
+	      prevargs = args;
+	      ffebld_set_right (expr, args);
+	    }
+	  else
+	    {
+	      ffebld_set_trail (prevargs, args);
+	      prevargs = args;
+	    }
+	}
+      else
+	{
+	  if (prevlabels == NULL)
+	    {
+	      prevlabels = labels = args;
+	    }
+	  else
+	    {
+	      ffebld_set_trail (prevlabels, args);
+	      prevlabels = args;
+	    }
+	}
+    }
+  if (prevlabels == NULL)
+    labels = NULL;
+  else
+    ffebld_set_trail (prevlabels, NULL);
+  if (prevargs == NULL)
+    ffebld_set_right (expr, NULL);
+  else
+    ffebld_set_trail (prevargs, NULL);
 
-    ffeste_start_stmt_ ();
+  ffeste_start_stmt_ ();
 
-    /* No temporaries are actually needed at this level, but we go
-       through the motions anyway, just to be sure in case they do
-       get made.  Temporaries needed for arguments should be in the
-       scopes of inner blocks, and if clean-up actions are supported,
-       such as CALL-ing an intrinsic that writes to an argument of one
-       type when a variable of a different type is provided (requiring
-       assignment to the variable from a temporary after the library
-       routine returns), the clean-up must be done by the expression
-       evaluator, generally, to handle alternate returns (which we hope
-       won't ever be supported by intrinsics, but might be a similar
-       issue, such as CALL-ing an F90-style subroutine with an INTERFACE
-       block).  That implies the expression evaluator will have to
-       recognize the need for its own temporary anyway, meaning it'll
-       construct a block within the one constructed here.  */
+  /* No temporaries are actually needed at this level, but we go
+     through the motions anyway, just to be sure in case they do
+     get made.  Temporaries needed for arguments should be in the
+     scopes of inner blocks, and if clean-up actions are supported,
+     such as CALL-ing an intrinsic that writes to an argument of one
+     type when a variable of a different type is provided (requiring
+     assignment to the variable from a temporary after the library
+     routine returns), the clean-up must be done by the expression
+     evaluator, generally, to handle alternate returns (which we hope
+     won't ever be supported by intrinsics, but might be a similar
+     issue, such as CALL-ing an F90-style subroutine with an INTERFACE
+     block).  That implies the expression evaluator will have to
+     recognize the need for its own temporary anyway, meaning it'll
+     construct a block within the one constructed here.  */
 
-    ffecom_prepare_expr (expr);
+  ffecom_prepare_expr (expr);
 
-    ffecom_prepare_end ();
+  ffecom_prepare_end ();
 
-    if (labels == NULL)
-      expand_expr_stmt (ffecom_expr (expr));
-    else
-      {
-	tree texpr;
-	tree value;
-	tree tlabel;
-	int caseno;
-	int pushok;
-	tree duplicate;
-	ffebld label;
+  if (labels == NULL)
+    expand_expr_stmt (ffecom_expr (expr));
+  else
+    {
+      tree texpr;
+      tree value;
+      tree tlabel;
+      int caseno;
+      int pushok;
+      tree duplicate;
+      ffebld label;
 
-	texpr = ffecom_expr (expr);
-	expand_start_case (0, texpr, TREE_TYPE (texpr), "CALL statement");
+      texpr = ffecom_expr (expr);
+      expand_start_case (0, texpr, TREE_TYPE (texpr), "CALL statement");
 
-	for (caseno = 1, label = labels;
-	     label != NULL;
-	     ++caseno, label = ffebld_trail (label))
-	  {
-	    value = build_int_2 (caseno, 0);
-	    tlabel = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+      for (caseno = 1, label = labels;
+	   label != NULL;
+	   ++caseno, label = ffebld_trail (label))
+	{
+	  value = build_int_2 (caseno, 0);
+	  tlabel = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
-	    pushok = pushcase (value, convert, tlabel, &duplicate);
-	    assert (pushok == 0);
+	  pushok = pushcase (value, convert, tlabel, &duplicate);
+	  assert (pushok == 0);
 
-	    tlabel
-	      = ffecom_lookup_label (ffebld_labter (ffebld_head (label)));
-	    if ((tlabel == NULL_TREE)
-		|| (TREE_CODE (tlabel) == ERROR_MARK))
-	      continue;
-	    TREE_USED (tlabel) = 1;
-	    expand_goto (tlabel);
-	  }
+	  tlabel
+	    = ffecom_lookup_label (ffebld_labter (ffebld_head (label)));
+	  if ((tlabel == NULL_TREE)
+	      || (TREE_CODE (tlabel) == ERROR_MARK))
+	    continue;
+	  TREE_USED (tlabel) = 1;
+	  expand_goto (tlabel);
+	}
 
-	expand_end_case (texpr);
-      }
+      expand_end_case (texpr);
+    }
 
-    ffeste_end_stmt_ ();
-  }
-#else
-#error
-#endif
+  ffeste_end_stmt_ ();
 }
 
 /* END FUNCTION.  */
@@ -5133,12 +4367,6 @@ ffeste_R1212 (ffebld expr)
 void
 ffeste_R1221 ()
 {
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ END_FUNCTION\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* END SUBROUTINE.  */
@@ -5146,12 +4374,6 @@ ffeste_R1221 ()
 void
 ffeste_R1225 ()
 {
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fprintf (dmpout, "+ END_SUBROUTINE\n");
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* ENTRY statement.  */
@@ -5159,59 +4381,20 @@ ffeste_R1225 ()
 void
 ffeste_R1226 (ffesymbol entry)
 {
+  tree label;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fprintf (dmpout, "+ ENTRY %s", ffesymbol_text (entry));
-  if (ffesymbol_dummyargs (entry) != NULL)
-    {
-      ffebld argh;
+  label = ffesymbol_hook (entry).length_tree;
 
-      fputc ('(', dmpout);
-      for (argh = ffesymbol_dummyargs (entry);
-	   argh != NULL;
-	   argh = ffebld_trail (argh))
-	{
-	  assert (ffebld_head (argh) != NULL);
-	  switch (ffebld_op (ffebld_head (argh)))
-	    {
-	    case FFEBLD_opSYMTER:
-	      fputs (ffesymbol_text (ffebld_symter (ffebld_head (argh))),
-		     dmpout);
-	      break;
+  ffeste_emit_line_note_ ();
 
-	    case FFEBLD_opSTAR:
-	      fputc ('*', dmpout);
-	      break;
+  if (label == error_mark_node)
+    return;
 
-	    default:
-	      fputc ('?', dmpout);
-	      ffebld_dump (ffebld_head (argh));
-	      fputc ('?', dmpout);
-	      break;
-	    }
-	  if (ffebld_trail (argh) != NULL)
-	    fputc (',', dmpout);
-	}
-      fputc (')', dmpout);
-    }
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree label = ffesymbol_hook (entry).length_tree;
-
-    ffeste_emit_line_note_ ();
-
-    if (label == error_mark_node)
-      return;
-
-    DECL_INITIAL (label) = error_mark_node;
-    emit_nop ();
-    expand_label (label);
-  }
-#else
-#error
-#endif
+  DECL_INITIAL (label) = error_mark_node;
+  emit_nop ();
+  expand_label (label);
 }
 
 /* RETURN statement.  */
@@ -5219,55 +4402,38 @@ ffeste_R1226 (ffesymbol entry)
 void
 ffeste_R1227 (ffestw block UNUSED, ffebld expr)
 {
+  tree rtn;
+
   ffeste_check_simple_ ();
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  if (expr == NULL)
-    {
-      fputs ("+ RETURN\n", dmpout);
-    }
+  ffeste_emit_line_note_ ();
+
+  ffeste_start_stmt_ ();
+
+  ffecom_prepare_return_expr (expr);
+
+  ffecom_prepare_end ();
+
+  rtn = ffecom_return_expr (expr);
+
+  if ((rtn == NULL_TREE)
+      || (rtn == error_mark_node))
+    expand_null_return ();
   else
     {
-      fputs ("+ RETURN_alternate ", dmpout);
-      ffebld_dump (expr);
-      fputc ('\n', dmpout);
+      tree result = DECL_RESULT (current_function_decl);
+
+      if ((result != error_mark_node)
+	  && (TREE_TYPE (result) != error_mark_node))
+	expand_return (ffecom_modify (NULL_TREE,
+				      result,
+				      convert (TREE_TYPE (result),
+					       rtn)));
+      else
+	expand_null_return ();
     }
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    tree rtn;
 
-    ffeste_emit_line_note_ ();
-
-    ffeste_start_stmt_ ();
-
-    ffecom_prepare_return_expr (expr);
-
-    ffecom_prepare_end ();
-
-    rtn = ffecom_return_expr (expr);
-
-    if ((rtn == NULL_TREE)
-	|| (rtn == error_mark_node))
-      expand_null_return ();
-    else
-      {
-	tree result = DECL_RESULT (current_function_decl);
-
-	if ((result != error_mark_node)
-	    && (TREE_TYPE (result) != error_mark_node))
-	  expand_return (ffecom_modify (NULL_TREE,
-					result,
-					convert (TREE_TYPE (result),
-						 rtn)));
-	else
-	  expand_null_return ();
-      }
-
-    ffeste_end_stmt_ ();
-  }
-#else
-#error
-#endif
+  ffeste_end_stmt_ ();
 }
 
 /* REWRITE statement -- start.  */
@@ -5277,32 +4443,6 @@ void
 ffeste_V018_start (ffestpRewriteStmt *info, ffestvFormat format)
 {
   ffeste_check_start_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  switch (format)
-    {
-    case FFESTV_formatNONE:
-      fputs ("+ REWRITE_uf (", dmpout);
-      break;
-
-    case FFESTV_formatLABEL:
-    case FFESTV_formatCHAREXPR:
-    case FFESTV_formatINTEXPR:
-      fputs ("+ REWRITE_fm (", dmpout);
-      break;
-
-    default:
-      assert ("Unexpected kind of format item in V018 REWRITE" == NULL);
-    }
-  ffeste_subr_file_ ("UNIT", &info->rewrite_spec[FFESTP_rewriteixUNIT]);
-  ffeste_subr_file_ ("FMT", &info->rewrite_spec[FFESTP_rewriteixFMT]);
-  ffeste_subr_file_ ("ERR", &info->rewrite_spec[FFESTP_rewriteixERR]);
-  ffeste_subr_file_ ("IOSTAT", &info->rewrite_spec[FFESTP_rewriteixIOSTAT]);
-  fputs (") ", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* REWRITE statement -- I/O item.  */
@@ -5311,14 +4451,6 @@ void
 ffeste_V018_item (ffebld expr)
 {
   ffeste_check_item_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  ffebld_dump (expr);
-  fputc (',', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* REWRITE statement -- end.  */
@@ -5327,13 +4459,6 @@ void
 ffeste_V018_finish ()
 {
   ffeste_check_finish_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* ACCEPT statement -- start.  */
@@ -5342,33 +4467,6 @@ void
 ffeste_V019_start (ffestpAcceptStmt *info, ffestvFormat format)
 {
   ffeste_check_start_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  switch (format)
-    {
-    case FFESTV_formatLABEL:
-    case FFESTV_formatCHAREXPR:
-    case FFESTV_formatINTEXPR:
-      fputs ("+ ACCEPT_fm ", dmpout);
-      break;
-
-    case FFESTV_formatASTERISK:
-      fputs ("+ ACCEPT_ls ", dmpout);
-      break;
-
-    case FFESTV_formatNAMELIST:
-      fputs ("+ ACCEPT_nl ", dmpout);
-      break;
-
-    default:
-      assert ("Unexpected kind of format item in V019 ACCEPT" == NULL);
-    }
-  ffeste_subr_file_ ("FORMAT", &info->accept_spec[FFESTP_acceptixFORMAT]);
-  fputc (' ', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* ACCEPT statement -- I/O item.  */
@@ -5377,14 +4475,6 @@ void
 ffeste_V019_item (ffebld expr)
 {
   ffeste_check_item_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  ffebld_dump (expr);
-  fputc (',', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* ACCEPT statement -- end.  */
@@ -5393,13 +4483,6 @@ void
 ffeste_V019_finish ()
 {
   ffeste_check_finish_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 #endif
@@ -5410,33 +4493,6 @@ ffeste_V020_start (ffestpTypeStmt *info UNUSED,
 		   ffestvFormat format UNUSED)
 {
   ffeste_check_start_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  switch (format)
-    {
-    case FFESTV_formatLABEL:
-    case FFESTV_formatCHAREXPR:
-    case FFESTV_formatINTEXPR:
-      fputs ("+ TYPE_fm ", dmpout);
-      break;
-
-    case FFESTV_formatASTERISK:
-      fputs ("+ TYPE_ls ", dmpout);
-      break;
-
-    case FFESTV_formatNAMELIST:
-      fputs ("* TYPE_nl ", dmpout);
-      break;
-
-    default:
-      assert ("Unexpected kind of format item in V020 TYPE" == NULL);
-    }
-  ffeste_subr_file_ ("FORMAT", &info->type_spec[FFESTP_typeixFORMAT]);
-  fputc (' ', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* TYPE statement -- I/O item.  */
@@ -5445,14 +4501,6 @@ void
 ffeste_V020_item (ffebld expr UNUSED)
 {
   ffeste_check_item_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  ffebld_dump (expr);
-  fputc (',', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* TYPE statement -- end.  */
@@ -5461,13 +4509,6 @@ void
 ffeste_V020_finish ()
 {
   ffeste_check_finish_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* DELETE statement.  */
@@ -5477,18 +4518,6 @@ void
 ffeste_V021 (ffestpDeleteStmt *info)
 {
   ffeste_check_simple_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ DELETE (", dmpout);
-  ffeste_subr_file_ ("UNIT", &info->delete_spec[FFESTP_deleteixUNIT]);
-  ffeste_subr_file_ ("REC", &info->delete_spec[FFESTP_deleteixREC]);
-  ffeste_subr_file_ ("ERR", &info->delete_spec[FFESTP_deleteixERR]);
-  ffeste_subr_file_ ("IOSTAT", &info->delete_spec[FFESTP_deleteixIOSTAT]);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* UNLOCK statement.  */
@@ -5497,17 +4526,6 @@ void
 ffeste_V022 (ffestpBeruStmt *info)
 {
   ffeste_check_simple_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ UNLOCK (", dmpout);
-  ffeste_subr_file_ ("UNIT", &info->beru_spec[FFESTP_beruixUNIT]);
-  ffeste_subr_file_ ("ERR", &info->beru_spec[FFESTP_beruixERR]);
-  ffeste_subr_file_ ("IOSTAT", &info->beru_spec[FFESTP_beruixIOSTAT]);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* ENCODE statement -- start.  */
@@ -5516,19 +4534,6 @@ void
 ffeste_V023_start (ffestpVxtcodeStmt *info)
 {
   ffeste_check_start_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ ENCODE (", dmpout);
-  ffeste_subr_file_ ("C", &info->vxtcode_spec[FFESTP_vxtcodeixC]);
-  ffeste_subr_file_ ("F", &info->vxtcode_spec[FFESTP_vxtcodeixF]);
-  ffeste_subr_file_ ("B", &info->vxtcode_spec[FFESTP_vxtcodeixB]);
-  ffeste_subr_file_ ("ERR", &info->vxtcode_spec[FFESTP_vxtcodeixERR]);
-  ffeste_subr_file_ ("IOSTAT", &info->vxtcode_spec[FFESTP_vxtcodeixIOSTAT]);
-  fputs (") ", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* ENCODE statement -- I/O item.  */
@@ -5537,14 +4542,6 @@ void
 ffeste_V023_item (ffebld expr)
 {
   ffeste_check_item_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  ffebld_dump (expr);
-  fputc (',', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* ENCODE statement -- end.  */
@@ -5553,13 +4550,6 @@ void
 ffeste_V023_finish ()
 {
   ffeste_check_finish_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* DECODE statement -- start.  */
@@ -5568,19 +4558,6 @@ void
 ffeste_V024_start (ffestpVxtcodeStmt *info)
 {
   ffeste_check_start_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ DECODE (", dmpout);
-  ffeste_subr_file_ ("C", &info->vxtcode_spec[FFESTP_vxtcodeixC]);
-  ffeste_subr_file_ ("F", &info->vxtcode_spec[FFESTP_vxtcodeixF]);
-  ffeste_subr_file_ ("B", &info->vxtcode_spec[FFESTP_vxtcodeixB]);
-  ffeste_subr_file_ ("ERR", &info->vxtcode_spec[FFESTP_vxtcodeixERR]);
-  ffeste_subr_file_ ("IOSTAT", &info->vxtcode_spec[FFESTP_vxtcodeixIOSTAT]);
-  fputs (") ", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* DECODE statement -- I/O item.  */
@@ -5589,14 +4566,6 @@ void
 ffeste_V024_item (ffebld expr)
 {
   ffeste_check_item_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  ffebld_dump (expr);
-  fputc (',', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* DECODE statement -- end.  */
@@ -5605,13 +4574,6 @@ void
 ffeste_V024_finish ()
 {
   ffeste_check_finish_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* DEFINEFILE statement -- start.  */
@@ -5620,13 +4582,6 @@ void
 ffeste_V025_start ()
 {
   ffeste_check_start_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ DEFINE_FILE ", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* DEFINE FILE statement -- item.  */
@@ -5635,20 +4590,6 @@ void
 ffeste_V025_item (ffebld u, ffebld m, ffebld n, ffebld asv)
 {
   ffeste_check_item_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  ffebld_dump (u);
-  fputc ('(', dmpout);
-  ffebld_dump (m);
-  fputc (',', dmpout);
-  ffebld_dump (n);
-  fputs (",U,", dmpout);
-  ffebld_dump (asv);
-  fputs ("),", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* DEFINE FILE statement -- end.  */
@@ -5657,13 +4598,6 @@ void
 ffeste_V025_finish ()
 {
   ffeste_check_finish_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputc ('\n', dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 /* FIND statement.  */
@@ -5672,18 +4606,6 @@ void
 ffeste_V026 (ffestpFindStmt *info)
 {
   ffeste_check_simple_ ();
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-  fputs ("+ FIND (", dmpout);
-  ffeste_subr_file_ ("UNIT", &info->find_spec[FFESTP_findixUNIT]);
-  ffeste_subr_file_ ("REC", &info->find_spec[FFESTP_findixREC]);
-  ffeste_subr_file_ ("ERR", &info->find_spec[FFESTP_findixERR]);
-  ffeste_subr_file_ ("IOSTAT", &info->find_spec[FFESTP_findixIOSTAT]);
-  fputs (")\n", dmpout);
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
-#else
-#error
-#endif
 }
 
 #endif

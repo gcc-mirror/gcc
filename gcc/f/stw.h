@@ -73,7 +73,6 @@ struct _ffestw_
     int uses_;			/* # uses (new+use-kill calls). */
     ffestvState state_;
     int substate_;		/* Used on a per-block-state basis. */
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
     struct nesting *do_hook_;	/* backend id for given loop (EXIT/CYCLE). */
     tree do_tvar_;		/* tree form of do_iter_var. */
     tree do_incr_saved_;	/* tree SAVED_EXPR of incr expr. */
@@ -82,7 +81,6 @@ struct _ffestw_
     bool select_break_;		/* TRUE when CASE should start with gen
 				   "break;". */
     int ifthen_fake_else_;	/* Number of fake `else' introductions.  */
-#endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC*/
   };
 
 struct _ffestw_case_
