@@ -6054,8 +6054,8 @@ move\\t%0,%z4\\n\\
    (set_attr "length"	"4,8,16,8,16,16,8,8,8,8,16,8,16")])
 
 (define_insn "movdf_internal1a"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,R,R,To,To,f,*d,*d,*d,*To,*R,*d")
- 	(match_operand:DF 1 "general_operand"      " f,To,f,G,f,G,F,*F,*To,*R,*d,*d,*d"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,R,R,To,To,*d,*d,*d,*To,*R,*d")
+ 	(match_operand:DF 1 "general_operand"      " f,To,f,G,f,G,*F,*To,*R,*d,*d,*d"))]
   "TARGET_HARD_FLOAT && (TARGET_FLOAT64 && !TARGET_64BIT)
    && TARGET_DOUBLE_FLOAT
    && (register_operand (operands[0], DFmode)
@@ -6065,9 +6065,9 @@ move\\t%0,%z4\\n\\
 		&& INTVAL (operands[1]) == 0)
 	       || operands[1] == CONST0_RTX (DFmode))))"
   "* return mips_move_2words (operands, insn); "
-  [(set_attr "type"	"move,load,store,store,store,store,load,load,load,load,store,store,move")
+  [(set_attr "type"	"move,load,store,store,store,store,load,load,load,store,store,move")
    (set_attr "mode"	"DF")
-   (set_attr "length"	"4,8,4,4,8,8,8,8,8,4,8,4,4")])
+   (set_attr "length"	"4,8,4,4,8,8,8,8,4,8,4,4")])
 
 (define_insn "movdf_internal2"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=d,d,d,R,To")
