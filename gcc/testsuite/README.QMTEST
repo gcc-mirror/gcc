@@ -67,7 +67,7 @@ You must download and install the following software:
 
   To do that, follow the instructions at:
 
-    http://www.codesourcery.com/qm/qmtest_development
+    http://www.codesourcery.com/qmtest
 
   Installation instructions are available in the file called README
   after you check out QMTest.
