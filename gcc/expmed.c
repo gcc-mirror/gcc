@@ -1503,9 +1503,9 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
 	part = expand_shift (LSHIFT_EXPR, word_mode, part,
 			     build_int_2 (bitsize - bitsdone, 0), 0, 1);
 #else
-      if (bitsdone != 0)
+      if (bitsdone != thissize)
 	part = expand_shift (LSHIFT_EXPR, word_mode, part,
-			     build_int_2 (bitsdone, 0), 0, 1);
+			     build_int_2 (bitsdone - thissize, 0), 0, 1);
 #endif
 
       if (first)
