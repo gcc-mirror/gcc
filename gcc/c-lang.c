@@ -143,7 +143,7 @@ finish_file ()
       start_function (void_list_node,
 		      build_parse_node (CALL_EXPR, fnname, void_list_node,
 					NULL_TREE),
-		      NULL_TREE, 0);
+		      NULL_TREE, NULL_TREE, 0);
       fnname = DECL_ASSEMBLER_NAME (current_function_decl);
       store_parm_decls ();
 
