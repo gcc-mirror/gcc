@@ -5115,6 +5115,11 @@ if [ -f ../gas/Makefile ]; then
 	rm -f as; $symbolic_link ../gas/as-new$host_exeext as$host_exeext 2>/dev/null
 fi
 
+# If we have nm in the build tree, make a link to it.
+if [ -f ../binutils/Makefile ]; then
+	rm -f nm; $symbolic_link ../binutils/nm-new$host_exeext nm$host_exeext 2>/dev/null
+fi
+
 # If we have ld in the build tree, make a link to it.
 if [ -f ../ld/Makefile ]; then
 #	if [[ x$use_collect2 = x ]]; then
@@ -5126,7 +5131,7 @@ fi
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:5130: checking assembler alignment features" >&5
+echo "configure:5135: checking assembler alignment features" >&5
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 if [ -x as$host_exeext ]; then
