@@ -7109,7 +7109,7 @@ void analyze_loop_iterations (loop_start, loop_end)
 
   /* make sure that the last loop insn is a conditional jump */
   last_loop_insn = PREV_INSN (loop_end);
-  if (GET_CODE (last_loop_insn != JUMP_INSN) || !condjump_p (last_loop_insn))
+  if (GET_CODE (last_loop_insn) != JUMP_INSN || !condjump_p (last_loop_insn)) {
     if (loop_dump_stream)
       fprintf (loop_dump_stream,
               "analyze_loop_iterations %d: BCT instrumentation failed: invalid jump at loop end\n",
@@ -7300,7 +7300,7 @@ insert_bct (loop_start, loop_end)
      This check is repeated from analyze_loop_iterations (),
      because unrolling might have changed that.  */
   if (GET_CODE (PREV_INSN (loop_end)) != JUMP_INSN
-      || !is_condjump_p (PREV_INSN (loop_end)))
+      || !is_condjump_p (PREV_INSN (loop_end))) {
     if (loop_dump_stream)
       fprintf (loop_dump_stream,
 	      "insert_bct: not instrumenting BCT because of invalid branch\n");
