@@ -1,3 +1,10 @@
+Wed Sep 16 12:43:19 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gen-protos.c (parse_fn_proto): Cast argument of ISALNUM to
+	`unsigned char'.
+	(main): Mark parameter `argc' with ATTRIBUTE_UNUSED.
+	When generating output, initialize missing struct member to zero.
+
 Wed Sep 16 14:47:43 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* regmove.c (copy_src_to_dest): Don't copy if that requires

@@ -110,7 +110,7 @@ parse_fn_proto (start, end, fn)
   ptr--;
   while (*ptr == ' ' || *ptr == '\t') ptr--;
 
-  if (!ISALNUM (*ptr))
+  if (!ISALNUM ((unsigned char)*ptr))
     {
       if (verbose)
 	fprintf (stderr, "%s: Can't handle this complex prototype: %s\n",
@@ -119,7 +119,7 @@ parse_fn_proto (start, end, fn)
     }
   name_end = ptr+1;
 
-  while (ISALNUM (*ptr) || *ptr == '_') --ptr;
+  while (ISALNUM ((unsigned char)*ptr) || *ptr == '_') --ptr;
   name_start = ptr+1;
   while (*ptr == ' ' || *ptr == '\t') ptr--;
   ptr[1] = 0;
@@ -140,7 +140,7 @@ parse_fn_proto (start, end, fn)
 
 int
 main (argc, argv)
-     int argc;
+     int argc ATTRIBUTE_UNUSED;
      char **argv;
 {
   FILE *inf = stdin;
@@ -158,7 +158,7 @@ main (argc, argv)
   fprintf (outf, "struct fn_decl std_protos[] = {\n");
 
   /* A hash table entry of 0 means "unused" so reserve it.  */
-  fprintf (outf, "  {\"\", \"\", \"\"},\n");
+  fprintf (outf, "  {\"\", \"\", \"\", 0},\n");
   next_index = 1;
   
   for (;;)
@@ -180,13 +180,13 @@ main (argc, argv)
 
       add_hash (fn_decl.fname);
 
-      fprintf (outf, "  {\"%s\", \"%s\", \"%s\"},\n",
+      fprintf (outf, "  {\"%s\", \"%s\", \"%s\", 0},\n",
 	       fn_decl.fname, fn_decl.rtype, fn_decl.params);
 
       if (c == EOF)
 	break;
     }
-  fprintf (outf, "  {0, 0, 0}\n};\n");
+  fprintf (outf, "  {0, 0, 0, 0}\n};\n");
 
 
   fprintf (outf, "#define HASH_SIZE %d\n", HASH_SIZE);
