@@ -1,3 +1,20 @@
+2003-06-13  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/27_io/basic_filebuf/seekoff/char/1.cc: Split and
+	fix for missing seeks between gets and puts into...
+	* testsuite/27_io/basic_filebuf/seekoff/char/3-io.cc: New.
+	* testsuite/27_io/basic_filebuf/seekoff/char/4-io.cc: New.
+	* testsuite/27_io/basic_filebuf/seekpos/char/1.cc: Same, into...
+	* testsuite/27_io/basic_filebuf/seekpos/char/3-io.cc: New.
+	* testsuite/27_io/basic_filebuf/seekpos/char/4-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1-io.cc: Fix
+	for missing seeks between gets and puts.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/2-io.cc: Ditto.
+	* testsuite/data/seekoff-1.tst: New.
+	* testsuite/data/seekoff-2.tst: New.
+	* testsuite/data/seekpos-1.tst: New.
+	* testsuite/data/seekpos-2.tst: New.
+
 2003-06-13  Nathan C. Myers <ncm-nospam@cantrip.org>
 
 	Avoid multi-processor bus contention on increment/decrement-and-

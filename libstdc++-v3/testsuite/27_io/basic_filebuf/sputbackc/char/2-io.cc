@@ -54,6 +54,7 @@ void test01()
     VERIFY( fb_01.unbuffered() );
     strmsz_1 = fb_01.sputn("racadabras", 10);//"abracadabras or what?"
     strmsz_2 = fb_01.sputn(", i wanna reach out and", 10);
+    fb_01.pubseekoff(0, std::ios_base::cur);
     c1 = fb_01.sgetc(); // -1
     c2 = fb_01.sputbackc('z');
     strmsz_2 = fb_01.in_avail();
@@ -63,9 +64,9 @@ void test01()
     VERIFY( 1 == strmsz_2 );
     //test for _in_cur == _in_beg
     // fb_01._M_out_beg = "bd23456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZracada" etc
-    fb_01.pubseekoff(10, std::ios_base::beg, 
-		   std::ios_base::in | std::ios_base::out);
+    fb_01.pubseekoff(10, std::ios_base::beg);
     fb_01.sputc('m');
+    fb_01.pubseekoff(0, std::ios_base::cur);
     strmsz_1 = fb_01.in_avail(); 
     c1 = fb_01.sgetc(); 
     fb_01.snextc();
@@ -78,15 +79,17 @@ void test01()
     VERIFY( c2 == 'z' );
     // test for replacing char with identical one
     fb_01.snextc();
+    fb_01.pubseekoff(0, std::ios_base::cur);
     fb_01.sputc('u');
     fb_01.sputc('v');
     fb_01.sputc('a');
+    fb_01.pubseekoff(0, std::ios_base::end);
     strmsz_1 = fb_01.in_avail();
     c2 = fb_01.sputbackc('a');
     strmsz_2 = fb_01.in_avail();
     c3 = fb_01.sgetc();
     VERIFY( c3 == c2 );
-    VERIFY( strmsz_1 == strmsz_2 );
+    VERIFY( strmsz_1 + 1 == strmsz_2 );
     VERIFY( fb_01.unbuffered() );
   }
 }
