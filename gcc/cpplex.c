@@ -657,7 +657,7 @@ parse_string (pfile, token, terminator)
   cpp_pool *pool = &pfile->ident_pool;
   unsigned char *dest, *limit;
   cppchar_t c;
-  unsigned int nulls = 0;
+  bool warned_nulls = false, warned_multi = false;
 
   dest = POOL_FRONT (pool);
   limit = POOL_LIMIT (pool);
@@ -707,7 +707,12 @@ parse_string (pfile, token, terminator)
 	      break;
 	    }
 
-	  cpp_pedwarn (pfile, "multi-line string literals are deprecated");
+	  if (!warned_multi)
+	    {
+	      warned_multi = true;
+	      cpp_pedwarn (pfile, "multi-line string literals are deprecated");
+	    }
+
 	  if (pfile->mlstring_pos.line == 0)
 	    pfile->mlstring_pos = pfile->lexer_pos;
 	      
@@ -715,10 +720,10 @@ parse_string (pfile, token, terminator)
 	  *dest++ = '\n';
 	  goto have_char;
 	}
-      else if (c == '\0')
+      else if (c == '\0' && !warned_nulls)
 	{
-	  if (nulls++ == 0)
-	    cpp_warning (pfile, "null character(s) preserved in literal");
+	  warned_nulls = true;
+	  cpp_warning (pfile, "null character(s) preserved in literal");
 	}
 
       *dest++ = c;
@@ -914,8 +919,8 @@ _cpp_lex_token (pfile, result)
 	  bol = 1;
 	  pfile->lexer_pos.output_line = buffer->lineno;
 	  /* This is a new line, so clear any white space flag.
-	     Newlines in arguments are white space (6.10.3.10);
-	     parse_arg takes care of that.  */
+	          Newlines in arguments are white space (6.10.3.10);
+		  parse_arg takes care of that.  */
 	  result->flags &= ~(PREV_WHITE | AVOID_LPASTE);
 	  goto next_char;
 	}

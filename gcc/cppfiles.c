@@ -338,7 +338,7 @@ stack_include_file (pfile, inc)
 
   /* Generate the call back.  */
   fp->lineno = 0;
-  _cpp_do_file_change (pfile, FC_ENTER, 0, 0);
+  _cpp_do_file_change (pfile, LC_ENTER);
   fp->lineno = 1;
 }
 
@@ -579,8 +579,7 @@ cpp_make_system_header (pfile, syshdr, externc)
   if (syshdr)
     flags = 1 + (externc != 0);
   pfile->buffer->sysp = flags;
-  _cpp_do_file_change (pfile, FC_RENAME, pfile->buffer->nominal_fname,
-		       pfile->buffer->lineno);
+  _cpp_do_file_change (pfile, LC_RENAME);
 }
 
 /* Report on all files that might benefit from a multiple include guard.
@@ -681,6 +680,7 @@ _cpp_execute_include (pfile, header, type)
 	pfile->system_include_depth++;
 
       stack_include_file (pfile, inc);
+      pfile->line++;		/* Fake the '\n' at the end of #include.  */
 
       if (type == IT_IMPORT)
 	_cpp_never_reread (inc);

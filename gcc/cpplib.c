@@ -379,7 +379,8 @@ _cpp_handle_directive (pfile, indented)
 		   cpp_token_as_text (pfile, &dname));
     }
 
-  end_directive (pfile, skip);
+  if (pfile->state.in_directive)
+    end_directive (pfile, skip);
   return skip;
 }
 
@@ -623,7 +624,7 @@ do_include_common (pfile, type)
 	{
 	  check_eol (pfile);
 	  /* Get out of macro context, if we are.  */
-	  skip_rest_of_line (pfile);
+	  end_directive (pfile, 1);
 	  if (pfile->cb.include)
 	    (*pfile->cb.include) (pfile, pfile->directive->name, &header);
 
@@ -713,9 +714,7 @@ do_line (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *buffer = pfile->buffer;
-  const char *filename = buffer->nominal_fname;
-  unsigned int lineno = buffer->lineno;
-  enum cpp_fc_reason reason = FC_RENAME;
+  enum lc_reason reason = LC_RENAME;
   unsigned long new_lineno;
   unsigned int cap;
   cpp_token token;
@@ -733,7 +732,8 @@ do_line (pfile)
       return;
     }      
 
-  if (CPP_PEDANTIC (pfile) && (new_lineno == 0 || new_lineno > cap))
+  if (CPP_PEDANTIC (pfile) && ! pfile->state.line_extension
+      && (new_lineno == 0 || new_lineno > cap))
     cpp_pedwarn (pfile, "line number out of range");
 
   cpp_get_token (pfile, &token);
@@ -751,12 +751,12 @@ do_line (pfile)
 	  flag = read_flag (pfile, flag);
 	  if (flag == 1)
 	    {
-	      reason = FC_ENTER;
+	      reason = LC_ENTER;
 	      flag = read_flag (pfile, flag);
 	    }
 	  else if (flag == 2)
 	    {
-	      reason = FC_LEAVE;
+	      reason = LC_LEAVE;
 	      flag = read_flag (pfile, flag);
 	    }
 	  if (flag == 3)
@@ -767,7 +767,7 @@ do_line (pfile)
 		sysp = 2, read_flag (pfile, flag);
 	    }
 
-	  if (reason == FC_ENTER)
+	  if (reason == LC_ENTER)
 	    {
 	      /* Fake a buffer stack for diagnostics.  */
 	      cpp_push_buffer (pfile, 0, 0, BUF_FAKE, fname);
@@ -775,7 +775,7 @@ do_line (pfile)
 	      _cpp_fake_include (pfile, fname);
 	      buffer = pfile->buffer;
 	    }
-	  else if (reason == FC_LEAVE)
+	  else if (reason == LC_LEAVE)
 	    {
 	      if (buffer->type != BUF_FAKE)
 		cpp_warning (pfile, "file \"%s\" left but not entered",
@@ -808,49 +808,36 @@ do_line (pfile)
       return;
     }
 
-  /* Our line number is incremented after the directive is processed.  */
+  end_directive (pfile, 1);
   buffer->lineno = new_lineno - 1;
-  _cpp_do_file_change (pfile, reason, filename, lineno);
+  _cpp_do_file_change (pfile, reason);
 }
 
-/* Arrange the file_change callback.  */
+/* Arrange the file_change callback.  It is assumed that the next line
+   is given by incrementing buffer->lineno and pfile->line.  */
 void
-_cpp_do_file_change (pfile, reason, from_file, from_lineno)
+_cpp_do_file_change (pfile, reason)
      cpp_reader *pfile;
-     enum cpp_fc_reason reason;
-     const char *from_file;
-     unsigned int from_lineno;
+     enum lc_reason reason;
 {
+  cpp_buffer *buffer;
+  struct line_map *map;
+
+  buffer = pfile->buffer;
+  map = add_line_map (&pfile->line_maps, reason,
+		      pfile->line + 1, buffer->nominal_fname, buffer->lineno + 1);
+
   if (pfile->cb.file_change)
     {
       cpp_file_change fc;
-      cpp_buffer *buffer = pfile->buffer;
-
+      
+      fc.map = map;
+      fc.line = pfile->line + 1;
       fc.reason = reason;
-      fc.to.filename = buffer->nominal_fname;
-      fc.to.lineno = buffer->lineno + 1;
       fc.sysp = buffer->sysp;
       fc.externc = CPP_OPTION (pfile, cplusplus) && buffer->sysp == 2;
 
-      /* Caller doesn't need to handle FC_ENTER.  */
-      if (reason == FC_ENTER)
-	{
-	  if (buffer->prev)
-	    {
-	      from_file = buffer->prev->nominal_fname;
-	      from_lineno = buffer->prev->lineno;
-	    }
-	  else
-	    from_file = 0;
-	}
-      /* Special case for file "foo.i" with "# 1 foo.c" on first line.  */
-      else if (reason == FC_RENAME && ! buffer->prev
-	       && pfile->directive_pos.line == 1)
-	from_file = 0;
-
-      fc.from.filename = from_file;
-      fc.from.lineno = from_lineno;
-      pfile->cb.file_change (pfile, &fc);
+      (*pfile->cb.file_change) (pfile, &fc);
     }
 }
 
@@ -915,6 +902,7 @@ do_ident (pfile)
 
 /* Sub-handlers for the pragmas needing treatment here.
    They return 1 if the token buffer is to be popped, 0 if not.  */
+typedef void (*pragma_cb) PARAMS ((cpp_reader *));
 struct pragma_entry
 {
   struct pragma_entry *next;
@@ -922,7 +910,7 @@ struct pragma_entry
   size_t len;
   int isnspace;
   union {
-    void (*handler) PARAMS ((cpp_reader *));
+    pragma_cb handler;
     struct pragma_entry *space;
   } u;
 };
@@ -932,7 +920,7 @@ cpp_register_pragma (pfile, space, name, handler)
      cpp_reader *pfile;
      const char *space;
      const char *name;
-     void (*handler) PARAMS ((cpp_reader *));
+     pragma_cb handler;
 {
   struct pragma_entry **x, *new;
   size_t len;
@@ -1014,9 +1002,9 @@ static void
 do_pragma (pfile)
      cpp_reader *pfile;
 {
+  pragma_cb handler = NULL;
   const struct pragma_entry *p;
   cpp_token tok;
-  int drop = 0;
 
   p = pfile->pragmas;
   pfile->state.prevent_expansion++;
@@ -1041,8 +1029,7 @@ do_pragma (pfile)
 		}
 	      else
 		{
-		  (*p->u.handler) (pfile);
-		  drop = 1;
+		  handler = p->u.handler;
 		  break;
 		}
 	    }
@@ -1050,10 +1037,12 @@ do_pragma (pfile)
 	}
     }
 
-  cpp_stop_lookahead (pfile, drop);
+  cpp_stop_lookahead (pfile, handler != NULL);
   pfile->state.prevent_expansion--;
 
-  if (!drop && pfile->cb.def_pragma)
+  if (handler)
+    (*handler) (pfile);
+  else if (pfile->cb.def_pragma)
     (*pfile->cb.def_pragma) (pfile);
 }
 
@@ -1119,9 +1108,11 @@ do_pragma_system_header (pfile)
   if (buffer->prev == 0)
     cpp_warning (pfile, "#pragma system_header ignored outside include file");
   else
-    cpp_make_system_header (pfile, 1, 0);
-
-  check_eol (pfile);
+    {
+      check_eol (pfile);
+      end_directive (pfile, 1);
+      cpp_make_system_header (pfile, 1, 0);
+    }
 }
 
 /* Check the modified date of the current include file against a specified
@@ -1763,6 +1754,14 @@ cpp_get_callbacks (pfile)
   return &pfile->cb;
 }
 
+/* The line map set.  */
+struct line_maps *
+cpp_get_line_maps (pfile)
+     cpp_reader *pfile;
+{
+  return &pfile->line_maps;
+}
+
 /* Copy the given callbacks structure to our own.  */
 void
 cpp_set_callbacks (pfile, cb)
@@ -1875,8 +1874,8 @@ cpp_pop_buffer (pfile)
       if (pfile->directive == &dtable[T_LINE])
 	break;
 
-      _cpp_do_file_change (pfile, FC_LEAVE, buffer->nominal_fname,
-			   buffer->lineno);
+      pfile->line--;		/* We have a '\n' at the end of #include.  */
+      _cpp_do_file_change (pfile, LC_LEAVE);
       if (pfile->buffer->type == BUF_FILE)
 	break;
 

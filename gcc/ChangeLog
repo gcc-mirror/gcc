@@ -1,3 +1,43 @@
+2001-08-03  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* line-map.c: New.
+	* line-map.h: New.
+	* Makefile.in (line-map.o): New.
+	(LIBCPP_OBJS, LIBCPP_DEPS): Update.
+	* c-lex.c (cb_file_change): Update for new cpp_file_change structure.
+	* cpperror.c (print_containing_files): Similarly.
+	(print_location): Update.  Don't output a space before _Pragma.
+	* cppfiles.c (stack_include_file): Set to line 1 immediately.
+	(stack_include_filee, cpp_make_system_header): Update.
+	(_cpp_execute_include): Get logical line number right for calling
+	as-yet-unterminated #include.
+	* cpphash.h (struct cpp_reader): Add line_maps.
+	(_cpp_do_file_change): Update.
+	* cppinit.c (cpp_create_reader): Initialize line maps.
+	(cpp_destroy): Destroy line maps.
+	(cpp_start_read): Get logical line number right.
+	* cpplex.c (parse_string): Only warn once for multi-line strings.
+	Use boolean variable for null warning.
+	* cpplib.c (_cpp_handle_directive): End the directive if it isn't
+	already.
+	(do_include_common): End the directive early.
+	(do_line): Don't warn about out-of-range lines in preprocessed
+	source.  Update.  Remove unused variables.
+	(_cpp_do_file_change): Update for new line mapping.
+	(pragma_cb): New typedef.
+	(cpp_register_pragma): Stop looking ahead before calling the
+	handler.  Clean up.
+	(do_pragma_system_header): End directive early.
+	(cpp_get_line_maps): New.
+	(cpp_pop_buffer): Fudge logical line.  Update.
+	* cpplib.h: Include line-map.h
+	(enum cpp_fc_reason): Remove.
+	(struct cpp_file_change): Update.
+	(cpp_get_line_maps): New.
+	* cppmain.c (struct_printer): New member map.
+	(cb_file_change): Update for new mappings.
+	* fix-header.c (cb_file_change): Similarly.
+
 2001-08-02  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* Makefile.in (libgcc.mk): Define mkinstalldirs.

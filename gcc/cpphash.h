@@ -249,6 +249,7 @@ struct cpp_reader
   /* Source line tracking.  Subtract pseudo_newlines from the actual
      line number to get the line number of preprocessed output.  Used
      for escaped newlines and macro args that cross multiple lines.  */
+  struct line_maps line_maps;
   unsigned int line;
   unsigned int pseudo_newlines;
 
@@ -439,8 +440,7 @@ extern void _cpp_define_builtin	PARAMS ((cpp_reader *, const char *));
 extern void _cpp_do__Pragma	PARAMS ((cpp_reader *));
 extern void _cpp_init_directives PARAMS ((cpp_reader *));
 extern void _cpp_init_internal_pragmas PARAMS ((cpp_reader *));
-extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum cpp_fc_reason,
-					 const char *, unsigned int));
+extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum lc_reason));
 
 /* Utility routines and macros.  */
 #define DSC(str) (const U_CHAR *)str, sizeof str - 1

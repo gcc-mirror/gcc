@@ -1324,6 +1324,8 @@ stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(OBSTACK_H) \
 
 hashtable.o: hashtable.c hashtable.h $(CONFIG_H) $(SYSTEM_H) $(OBSTACK_H)
 
+line-map.o: line-map.c line-map.h $(CONFIG_H) $(SYSTEM_H)
+
 ggc-none.o: ggc-none.c $(GCONFIG_H) $(SYSTEM_H) $(GGC_H)
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
@@ -1933,9 +1935,10 @@ PREPROCESSOR_DEFINES = \
 
 LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o \
 		cpphash.o cpperror.o cppinit.o cppdefault.o \
-		hashtable.o mkdeps.o prefix.o version.o mbchar.o
+		hashtable.o line-map.o mkdeps.o prefix.o version.o mbchar.o
 
-LIBCPP_DEPS =	cpplib.h cpphash.h hashtable.h intl.h $(OBSTACK_H) $(SYSTEM_H)
+LIBCPP_DEPS =	cpplib.h cpphash.h line-map.h hashtable.h intl.h \
+		$(OBSTACK_H) $(SYSTEM_H)
 
 # Most of the other archives built/used by this makefile are for
 # targets.  This one is strictly for the host.

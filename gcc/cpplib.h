@@ -25,6 +25,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include <sys/types.h>
 #include "hashtable.h"
+#include "line-map.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -386,21 +387,12 @@ struct cpp_options
   unsigned char help_only;
 };
 
-/* This structure is passed to the call back when changing file.  */
-enum cpp_fc_reason {FC_ENTER = 0, FC_LEAVE, FC_RENAME};
-
-struct cpp_file_loc
-{
-  const char *filename;
-  unsigned int lineno;
-};
-
 typedef struct cpp_file_change cpp_file_change;
 struct cpp_file_change
 {
-  struct cpp_file_loc from;	/* Line of #include or #line.  */
-  struct cpp_file_loc to;	/* Line after #include or #line, or start.  */
-  enum cpp_fc_reason reason;	/* Reason for change.  */
+  struct line_map *map;		/* Line map to use until next callback.  */
+  unsigned int line;		/* Logical line number of next line.  */
+  enum lc_reason reason;	/* Reason for change.  */
   unsigned char sysp;		/* Nonzero if system header.  */
   unsigned char externc;	/* Nonzero if wrapper needed.  */
 };
@@ -510,6 +502,7 @@ extern int cpp_destroy PARAMS ((cpp_reader *));
    through the pointer returned from cpp_get_callbacks, or set them
    with cpp_set_callbacks.  */
 extern cpp_options *cpp_get_options PARAMS ((cpp_reader *));
+extern struct line_maps *cpp_get_line_maps PARAMS ((cpp_reader *));
 extern cpp_callbacks *cpp_get_callbacks PARAMS ((cpp_reader *));
 extern void cpp_set_callbacks PARAMS ((cpp_reader *, cpp_callbacks *));
 

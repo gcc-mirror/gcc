@@ -35,6 +35,7 @@ struct printer
   const char *syshdr_flags;	/* system header flags, if any.  */
   unsigned int lineno;		/* line currently being written.  */
   unsigned char printed;	/* nonzero if something output at lineno.  */
+  struct line_map *map;		/* logical to physical line mappings.  */
 };
 
 int main		PARAMS ((int, char **));
@@ -402,10 +403,11 @@ cb_file_change (pfile, fc)
      const cpp_file_change *fc;
 {
   /* Bring current file to correct line (except first file).  */
-  if (fc->reason == FC_ENTER && fc->from.filename)
-    maybe_print_line (fc->from.lineno);
+  if (fc->reason == LC_ENTER && !MAIN_FILE_P (fc->map))
+    maybe_print_line (SOURCE_LINE (fc->map - 1, fc->line - 1));
 
-  print.last_fname = fc->to.filename;
+  print.map = fc->map;
+  print.last_fname = fc->map->to_file;
   if (fc->externc)
     print.syshdr_flags = " 3 4";
   else if (fc->sysp)
@@ -417,10 +419,10 @@ cb_file_change (pfile, fc)
     {
       const char *flags = "";
 
-      print.lineno = fc->to.lineno;
-      if (fc->reason == FC_ENTER)
+      print.lineno = SOURCE_LINE (fc->map, fc->line);
+      if (fc->reason == LC_ENTER)
 	flags = " 1";
-      else if (fc->reason == FC_LEAVE)
+      else if (fc->reason == LC_LEAVE)
 	flags = " 2";
 
       if (! options->no_line_commands)
@@ -428,6 +430,8 @@ cb_file_change (pfile, fc)
     }
 }
 
+/* Copy a #pragma directive to the preprocessed output.  LINE is the
+   line of the current source file, not the logical line.  */
 static void
 cb_def_pragma (pfile)
      cpp_reader *pfile;
