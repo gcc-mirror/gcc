@@ -391,7 +391,7 @@ macro is defined when we leave the header file for the first time.  If
 the host supports it, we try to map suitably large files into memory,
 rather than reading them in directly.
 
-The include paths are intenally stored on a null-terminated
+The include paths are internally stored on a null-terminated
 singly-linked list, starting with the @code{"header.h"} directory search
 chain, which then links into the @code{<header.h>} directory chain.
 

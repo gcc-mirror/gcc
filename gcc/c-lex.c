@@ -86,7 +86,7 @@ static const char *read_ucs 	PARAMS ((const char *, const char *,
 static void parse_float		PARAMS ((PTR));
 static tree lex_number		PARAMS ((const char *, unsigned int));
 static tree lex_string		PARAMS ((const char *, unsigned int, int));
-static tree lex_charconst	PARAMS ((const char *, unsigned int, int));
+static tree lex_charconst	PARAMS ((const cpp_token *));
 static void update_header_times	PARAMS ((const char *));
 static int dump_one_header	PARAMS ((splay_tree_node, void *));
 static void cb_ident		PARAMS ((cpp_reader *, const cpp_string *));
@@ -1008,8 +1008,7 @@ c_lex (value)
 
     case CPP_CHAR:
     case CPP_WCHAR:
-      *value = lex_charconst ((const char *)tok.val.str.text,
-			      tok.val.str.len, tok.type == CPP_WCHAR);
+      *value = lex_charconst (&tok);
       break;
 
     case CPP_STRING:
@@ -1607,113 +1606,36 @@ lex_string (str, len, wide)
   return value;
 }
 
+/* Converts a (possibly wide) character constant token into a tree.  */
 static tree
-lex_charconst (str, len, wide)
-     const char *str;
-     unsigned int len;
-     int wide;
+lex_charconst (token)
+     const cpp_token *token;
 {
-  const char *limit = str + len;
-  int result = 0;
-  int num_chars = 0;
-  int chars_seen = 0;
-  unsigned width = TYPE_PRECISION (char_type_node);
-  int max_chars;
-  unsigned int c;
+  HOST_WIDE_INT result;
   tree value;
-
-#ifdef MULTIBYTE_CHARS
-  int longest_char = local_mb_cur_max ();
-  (void) local_mbtowc (NULL, NULL, 0);
-#endif
-
-  max_chars = TYPE_PRECISION (integer_type_node) / width;
-  if (wide)
-    width = WCHAR_TYPE_SIZE;
-
-  while (str < limit)
-    {
-#ifdef MULTIBYTE_CHARS
-      wchar_t wc;
-      int char_len;
-
-      char_len = local_mbtowc (&wc, str, limit - str);
-      if (char_len == -1)
-	{
-	  warning ("Ignoring invalid multibyte character");
-	  char_len = 1;
-	  c = *str++;
-	}
-      else
-	{
-	  str += char_len;
-	  c = wc;
-	}
-#else
-      c = *str++;
-#endif
-
-      ++chars_seen;
-      if (c == '\\')
-	{
-	  str = readescape (str, limit, &c);
-	  if (width < HOST_BITS_PER_INT
-	      && (unsigned) c >= ((unsigned)1 << width))
-	    pedwarn ("escape sequence out of range for character");
-	}
-#ifdef MAP_CHARACTER
-      if (ISPRINT (c))
-	c = MAP_CHARACTER (c);
-#endif
-      
-      /* Merge character into result; ignore excess chars.  */
-      num_chars += (width / TYPE_PRECISION (char_type_node));
-      if (num_chars < max_chars + 1)
-	{
-	  if (width < HOST_BITS_PER_INT)
-	    result = (result << width) | (c & ((1 << width) - 1));
-	  else
-	    result = c;
-	}
-    }
-
-  if (chars_seen == 0)
-    error ("empty character constant");
-  else if (num_chars > max_chars)
-    {
-      num_chars = max_chars;
-      error ("character constant too long");
-    }
-  else if (chars_seen != 1 && ! flag_traditional && warn_multichar)
-    warning ("multi-character character constant");
-
-  /* If char type is signed, sign-extend the constant.  */
-  if (! wide)
-    {
-      int num_bits = num_chars * width;
-      if (num_bits == 0)
-	/* We already got an error; avoid invalid shift.  */
-	value = build_int_2 (0, 0);
-      else if (TREE_UNSIGNED (char_type_node)
-	       || ((result >> (num_bits - 1)) & 1) == 0)
-	value = build_int_2 (result & (~(unsigned HOST_WIDE_INT) 0
-				       >> (HOST_BITS_PER_WIDE_INT - num_bits)),
-			     0);
-      else
-	value = build_int_2 (result | ~(~(unsigned HOST_WIDE_INT) 0
-					>> (HOST_BITS_PER_WIDE_INT - num_bits)),
-			     -1);
-      /* In C, a character constant has type 'int'; in C++, 'char'.  */
-      if (chars_seen <= 1 && c_language == clk_cplusplus)
-	TREE_TYPE (value) = char_type_node;
-      else
-	TREE_TYPE (value) = integer_type_node;
-    }
-  else
+  unsigned int chars_seen;
+ 
+  result = cpp_interpret_charconst (parse_in, token, warn_multichar,
+ 				    flag_traditional, &chars_seen);
+  if (token->type == CPP_WCHAR)
     {
       value = build_int_2 (result, 0);
       TREE_TYPE (value) = wchar_type_node;
     }
-
+  else
+    {
+      if (result < 0)
+ 	value = build_int_2 (result, -1);
+      else
+ 	value = build_int_2 (result, 0);
+ 
+      /* In C, a character constant has type 'int'.
+ 	 In C++ 'char', but multi-char charconsts have type 'int'.  */
+      if (c_language == clk_cplusplus && chars_seen <= 1)
+ 	TREE_TYPE (value) = char_type_node;
+      else
+ 	TREE_TYPE (value) = integer_type_node;
+    }
+ 
   return value;
 }

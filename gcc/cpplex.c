@@ -39,6 +39,18 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 
+/* MULTIBYTE_CHARS support only works for native compilers.
+   ??? Ideally what we want is to model widechar support after
+   the current floating point support.  */
+#ifdef CROSS_COMPILE
+#undef MULTIBYTE_CHARS
+#endif
+
+#ifdef MULTIBYTE_CHARS
+#include "mbchar.h"
+#include <locale.h>
+#endif
+
 /* Tokens with SPELL_STRING store their spelling in the token list,
    and it's length in the token->val.name.len.  */
 enum spell_type
@@ -86,9 +98,15 @@ static void save_comment PARAMS ((cpp_reader *, cpp_token *, const U_CHAR *));
 static void lex_percent PARAMS ((cpp_buffer *, cpp_token *));
 static void lex_dot PARAMS ((cpp_reader *, cpp_token *));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
+static unsigned int parse_escape PARAMS ((cpp_reader *, const unsigned char **,
+					  const unsigned char *, HOST_WIDE_INT,
+					  int));
+static unsigned int read_ucs PARAMS ((cpp_reader *, const unsigned char **,
+				      const unsigned char *, unsigned int));
 
 static cpp_chunk *new_chunk PARAMS ((unsigned int));
 static int chunk_suitable PARAMS ((cpp_pool *, cpp_chunk *, unsigned int));
+static unsigned int hex_digit_value PARAMS ((unsigned int));
 
 /* Utility routine:
 
@@ -1638,6 +1656,337 @@ cpp_output_line (pfile, fp)
     }
 
   putc ('\n', fp);
+}
+
+/* Returns the value of a hexadecimal digit.  */
+static unsigned int
+hex_digit_value (c)
+     unsigned int c;
+{
+  if (c >= 'a' && c <= 'f')
+    return c - 'a' + 10;
+  if (c >= 'A' && c <= 'F')
+    return c - 'A' + 10;
+  if (c >= '0' && c <= '9')
+    return c - '0';
+  abort ();
+}
+
+/* Parse a '\uNNNN' or '\UNNNNNNNN' sequence (C++ and C99).
+
+   [lex.charset]: The character designated by the universal character
+   name \UNNNNNNNN is that character whose character short name in
+   ISO/IEC 10646 is NNNNNNNN; the character designated by the
+   universal character name \uNNNN is that character whose character
+   short name in ISO/IEC 10646 is 0000NNNN.  If the hexadecimal value
+   for a universal character name is less than 0x20 or in the range
+   0x7F-0x9F (inclusive), or if the universal character name
+   designates a character in the basic source character set, then the
+   program is ill-formed.
+
+   We assume that wchar_t is Unicode, so we don't need to do any
+   mapping.  Is this ever wrong?  */
+
+static unsigned int
+read_ucs (pfile, pstr, limit, length)
+     cpp_reader *pfile;
+     const unsigned char **pstr;
+     const unsigned char *limit;
+     unsigned int length;
+{
+  const unsigned char *p = *pstr;
+  unsigned int c, code = 0;
+
+  for (; length; --length)
+    {
+      if (p >= limit)
+	{
+	  cpp_error (pfile, "incomplete universal-character-name");
+	  break;
+	}
+
+      c = *p;
+      if (ISXDIGIT (c))
+	{
+	  code = (code << 4) + hex_digit_value (c);
+	  p++;
+	}
+      else
+	{
+	  cpp_error (pfile,
+		     "non-hex digit '%c' in universal-character-name", c);
+	  break;
+	}
+
+    }
+
+#ifdef TARGET_EBCDIC
+  cpp_error (pfile, "universal-character-name on EBCDIC target");
+  code = 0x3f;  /* EBCDIC invalid character */
+#else
+  if (code > 0x9f && !(code & 0x80000000))
+    ; /* True extended character, OK.  */
+  else if (code >= 0x20 && code < 0x7f)
+    {
+      /* ASCII printable character.  The C character set consists of all of
+	 these except $, @ and `.  We use hex escapes so that this also
+	 works with EBCDIC hosts.  */
+      if (code != 0x24 && code != 0x40 && code != 0x60)
+	cpp_error (pfile, "universal-character-name used for '%c'", code);
+    }
+  else
+    cpp_error (pfile, "invalid universal-character-name");
+#endif
+
+  *pstr = p;
+  return code;
+}
+
+/* Interpret an escape sequence, and return its value.  PSTR points to
+   the input pointer, which is just after the backslash.  LIMIT is how
+   much text we have.  MASK is the precision for the target type (char
+   or wchar_t).  TRADITIONAL, if true, does not interpret escapes that
+   did not exist in traditional C.  */
+
+static unsigned int
+parse_escape (pfile, pstr, limit, mask, traditional)
+     cpp_reader *pfile;
+     const unsigned char **pstr;
+     const unsigned char *limit;
+     HOST_WIDE_INT mask;
+     int traditional;
+{
+  int unknown = 0;
+  const unsigned char *str = *pstr;
+  unsigned int c = *str++;
+
+  switch (c)
+    {
+    case '\\': case '\'': case '"': case '?': break;
+    case 'b': c = TARGET_BS;	  break;
+    case 'f': c = TARGET_FF;	  break;
+    case 'n': c = TARGET_NEWLINE; break;
+    case 'r': c = TARGET_CR;	  break;
+    case 't': c = TARGET_TAB;	  break;
+    case 'v': c = TARGET_VT;	  break;
+
+    case '(': case '{': case '[': case '%':
+      /* '\(', etc, are used at beginning of line to avoid confusing Emacs.
+	 '\%' is used to prevent SCCS from getting confused.  */
+      unknown = CPP_PEDANTIC (pfile);
+      break;
+
+    case 'a':
+      if (CPP_WTRADITIONAL (pfile))
+	cpp_warning (pfile, "the meaning of '\\a' varies with -traditional");
+      if (!traditional)
+	c = TARGET_BELL;
+      break;
+
+    case 'e': case 'E':
+      if (CPP_PEDANTIC (pfile))
+	cpp_pedwarn (pfile, "non-ISO-standard escape sequence, '\\%c'", c);
+      c = TARGET_ESC;
+      break;
+      
+      /* Warnings and support checks handled by read_ucs().  */
+    case 'u': case 'U':
+      if (CPP_OPTION (pfile, cplusplus) || CPP_OPTION (pfile, c99))
+	{
+	  if (CPP_WTRADITIONAL (pfile))
+	    cpp_warning (pfile,
+			 "the meaning of '\\%c' varies with -traditional", c);
+	  c = read_ucs (pfile, &str, limit, c == 'u' ? 4 : 8);
+	}
+      else
+	unknown = 1;
+      break;
+
+    case 'x':
+      if (CPP_WTRADITIONAL (pfile))
+	cpp_warning (pfile, "the meaning of '\\x' varies with -traditional");
+
+      if (!traditional)
+	{
+	  unsigned int i = 0, overflow = 0;
+	  int digits_found = 0;
+
+	  while (str < limit)
+	    {
+	      c = *str;
+	      if (! ISXDIGIT (c))
+		break;
+	      str++;
+	      overflow |= i ^ (i << 4 >> 4);
+	      i = (i << 4) + hex_digit_value (c);
+	      digits_found = 1;
+	    }
+
+	  if (!digits_found)
+	    cpp_error (pfile, "\\x used with no following hex digits");
+
+	  if (overflow | (i != (i & mask)))
+	    {
+	      cpp_pedwarn (pfile, "hex escape sequence out of range");
+	      i &= mask;
+	    }
+	  c = i;
+	}
+      break;
+
+    case '0':  case '1':  case '2':  case '3':
+    case '4':  case '5':  case '6':  case '7':
+      {
+	unsigned int i = c - '0';
+	int count = 0;
+
+	while (str < limit && ++count < 3)
+	  {
+	    c = *str;
+	    if (c < '0' || c > '7')
+	      break;
+	    str++;
+	    i = (i << 3) + c - '0';
+	  }
+
+	if (i != (i & mask))
+	  {
+	    cpp_pedwarn (pfile, "octal escape sequence out of range");
+	    i &= mask;
+	  }
+	c = i;
+      }
+      break;
+
+    default:
+      unknown = 1;
+      break;
+    }
+
+  if (unknown)
+    {
+      if (ISGRAPH (c))
+	cpp_pedwarn (pfile, "unknown escape sequence '\\%c'", c);
+      else
+	cpp_pedwarn (pfile, "unknown escape sequence: '\\%03o'", c);
+    }
+
+  *pstr = str;
+  return c;
+}
+
+#ifndef MAX_CHAR_TYPE_SIZE
+#define MAX_CHAR_TYPE_SIZE CHAR_TYPE_SIZE
+#endif
+
+#ifndef MAX_WCHAR_TYPE_SIZE
+#define MAX_WCHAR_TYPE_SIZE WCHAR_TYPE_SIZE
+#endif
+
+/* Interpret a (possibly wide) character constant in TOKEN.
+   WARN_MULTI warns about multi-character charconsts, if not
+   TRADITIONAL.  TRADITIONAL also indicates not to interpret escapes
+   that did not exist in traditional C.  PCHARS_SEEN points to a
+   variable that is filled in with the number of characters seen.  */
+HOST_WIDE_INT
+cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
+     cpp_reader *pfile;
+     const cpp_token *token;
+     int warn_multi;
+     int traditional;
+     unsigned int *pchars_seen;
+{
+  const unsigned char *str = token->val.str.text;
+  const unsigned char *limit = str + token->val.str.len;
+  unsigned int chars_seen = 0;
+  unsigned int width, max_chars, c;
+  HOST_WIDE_INT result = 0, mask;
+
+#ifdef MULTIBYTE_CHARS
+  (void) local_mbtowc (NULL, NULL, 0);
+#endif
+
+  /* Width in bits.  */
+  if (token->type == CPP_CHAR)
+    width = MAX_CHAR_TYPE_SIZE;
+  else
+    width = MAX_WCHAR_TYPE_SIZE;
+
+  if (width < HOST_BITS_PER_WIDE_INT)
+    mask = ((unsigned HOST_WIDE_INT) 1 << width) - 1;
+  else
+    mask = ~0;
+  max_chars = HOST_BITS_PER_WIDE_INT / width;
+
+  while (str < limit)
+    {
+#ifdef MULTIBYTE_CHARS
+      wchar_t wc;
+      int char_len;
+
+      char_len = local_mbtowc (&wc, str, limit - str);
+      if (char_len == -1)
+	{
+	  cpp_warning (pfile, "ignoring invalid multibyte character");
+	  c = *str++;
+	}
+      else
+	{
+	  str += char_len;
+	  c = wc;
+	}
+#else
+      c = *str++;
+#endif
+
+      if (c == '\\')
+	{
+	  c = parse_escape (pfile, &str, limit, mask, traditional);
+	  if (width < HOST_BITS_PER_WIDE_INT && c > mask)
+	    cpp_pedwarn (pfile, "escape sequence out of range for character");
+	}
+
+#ifdef MAP_CHARACTER
+      if (ISPRINT (c))
+	c = MAP_CHARACTER (c);
+#endif
+      
+      /* Merge character into result; ignore excess chars.  */
+      if (++chars_seen <= max_chars)
+	{
+	  if (width < HOST_BITS_PER_WIDE_INT)
+	    result = (result << width) | (c & mask);
+	  else
+	    result = c;
+	}
+    }
+
+  if (chars_seen == 0)
+    cpp_error (pfile, "empty character constant");
+  else if (chars_seen > max_chars)
+    {
+      chars_seen = max_chars;
+      cpp_error (pfile, "character constant too long");
+    }
+  else if (chars_seen > 1 && !traditional && warn_multi)
+    cpp_warning (pfile, "multi-character character constant");
+
+  /* If char type is signed, sign-extend the constant.  The
+     __CHAR_UNSIGNED__ macro is set by the driver if appropriate.  */
+  if (token->type == CPP_CHAR && chars_seen)
+    {
+      unsigned int nbits = chars_seen * width;
+      unsigned int mask = (unsigned int) ~0 >> (HOST_BITS_PER_INT - nbits);
+
+      if (pfile->spec_nodes.n__CHAR_UNSIGNED__->type == NT_MACRO
+	  || ((result >> (nbits - 1)) & 1) == 0)
+	result &= mask;
+      else
+	result |= ~mask;
+    }
+
+  *pchars_seen = chars_seen;
+  return result;
 }
 
 /* Memory pools.  */
