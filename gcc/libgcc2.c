@@ -1792,8 +1792,11 @@ TRANSFER_FROM_TRAMPOLINE
 
 /* Make stack executable so we can call trampolines on stack.
    This is called from INITIALIZE_TRAMPOLINE in next.h.  */
-
-#include <mach/mach.h>
+#ifdef NeXTStep21
+ #include <mach.h>
+#else
+ #include <mach/mach.h>
+#endif
 
 void
 __enable_execute_stack (addr)
