@@ -1,3 +1,9 @@
+2002-03-01  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (HANDLE_PRAGMA_PACK): Delete.
+	* config/rs6000/darwin.h (HANDLE_SYSV_PRAGMA): Define.
+	* config/rs6000/xcoff.h (COLLET_EXPORT_LIST): Delete.
+
 2002-03-01  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300-protos.h: Fix formatting.

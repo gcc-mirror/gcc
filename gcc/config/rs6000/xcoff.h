@@ -22,10 +22,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_OBJECT_FORMAT OBJECT_XCOFF
 
-/* The AIX linker will discard static constructors in object files before
-   collect has a chance to see them, so scan the object files directly.  */
-#define COLLECT_EXPORT_LIST
-
 /* The RS/6000 uses the XCOFF format.  */
 #define XCOFF_DEBUGGING_INFO
 
