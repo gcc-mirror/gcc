@@ -1397,7 +1397,7 @@ main (argc, argv)
     }
 
   if (constructors.number == 0 && destructors.number == 0
-#ifdef LDD_SUFFIX
+#ifdef SCAN_LIBRARIES
       /* If we will be running these functions ourselves, we want to emit
 	 stubs into the shared library so that we don't have to relink
 	 dependent programs when we add static objects.  */
