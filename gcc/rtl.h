@@ -1037,6 +1037,7 @@ extern int computed_jump_p		PROTO((rtx));
 typedef int (*rtx_function)             PROTO((rtx *, void *));
 extern int for_each_rtx                 PROTO((rtx *, rtx_function, void *));
 extern int insn_first_p			PROTO((rtx, rtx));
+extern rtx regno_use_in			PROTO((int, rtx));
 
 /* flow.c */
 
@@ -1063,6 +1064,9 @@ extern enum reg_class reg_preferred_class PROTO((int));
 extern enum reg_class reg_alternate_class PROTO((int));
 
 extern rtx get_first_nonparm_insn	PROTO((void));
+
+extern void split_block_insns		PROTO((int, int));
+extern void update_flow_info		PROTO((rtx, rtx, rtx, rtx));
 
 /* Standard pieces of rtx, to be substituted directly into things.  */
 #define pc_rtx		(&global_rtl.pc_val)

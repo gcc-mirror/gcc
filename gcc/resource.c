@@ -1,3 +1,23 @@
+/* Definitions for computing resource usage of specific insns.
+   Copyright (C) 1999 Free Software Foundation, Inc.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.  */
+
 #include "config.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
@@ -49,7 +69,14 @@ static HARD_REG_SET current_live_regs;
    Also only used by the next two functions.  */
 
 static HARD_REG_SET pending_dead_regs;
-
+
+static void update_live_status		PROTO ((rtx, rtx));
+static int find_basic_block		PROTO ((rtx));
+static rtx next_insn_no_annul		PROTO ((rtx));
+static rtx find_dead_or_set_registers	PROTO ((rtx, struct resources*,
+						rtx*, int, struct resources,
+						struct resources));
+
 /* Utility function called from mark_target_live_regs via note_stores.
    It deadens any CLOBBERed registers and livens any SET registers.  */
 
