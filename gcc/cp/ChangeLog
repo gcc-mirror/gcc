@@ -1,3 +1,8 @@
+2002-07-20  Roger Sayle  <roger@eyesopen.com>
+
+	* decl2.c (cxx_decode_option): Simplify -fhandle-exceptions
+	test by using positive_option.  Make whitespace consistent.
+
 2002-07-20  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* spew.c (struct uinparsed_test): Replace 'filename' and 'lineno'
