@@ -549,7 +549,7 @@ namespace std
       __string_type __str;
       __size_type __len = __rhs.size();
       __str.reserve(__len + 1);
-      __str.append(__string_type::size_type(1), __lhs);
+      __str.append(__size_type(1), __lhs);
       __str.append(__rhs);
       return __str;
     }
