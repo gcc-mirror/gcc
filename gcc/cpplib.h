@@ -308,6 +308,9 @@ struct cpp_options
      traditional C.  */
   unsigned char warn_traditional;
 
+  /* Nonzero means warn about text after an #endif (or #else).  */
+  unsigned char warn_endif_labels;
+
   /* Nonzero means turn warnings into errors.  */
   unsigned char warnings_are_errors;
 

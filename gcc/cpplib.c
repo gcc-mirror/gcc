@@ -1375,7 +1375,7 @@ do_else (pfile)
       ifs->mi_cmacro = 0;
 
       /* Only check EOL if was not originally skipping.  */
-      if (!ifs->was_skipping)
+      if (!ifs->was_skipping && CPP_OPTION (pfile, warn_endif_labels))
 	check_eol (pfile);
     }
 }
@@ -1430,7 +1430,7 @@ do_endif (pfile)
   else
     {
       /* Only check EOL if was not originally skipping.  */
-      if (!ifs->was_skipping)
+      if (!ifs->was_skipping && CPP_OPTION (pfile, warn_endif_labels))
 	check_eol (pfile);
 
       /* If potential control macro, we go back outside again.  */
