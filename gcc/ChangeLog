@@ -73,6 +73,15 @@ Fri Mar  8 06:48:45 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/mips/mips.h (SUBTARGET_CPP_SIZE_SPEC): Simplify.
 
+2002-03-07  Matt Hiller  <hiller@redhat.com>
+
+	* gensupport.c (first_dir_md_include): Renamed from include;
+	change all references.
+	(last_dir_md_include): Renamed from last_include; change all
+	references.
+	(init_md_reader): Unconditionally initialize base_dir whether or
+	not filename is a relative path.
+
 2002-03-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/fp-bit.c (_unord_f2): Compile it in even if
