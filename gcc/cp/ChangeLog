@@ -1,3 +1,9 @@
+2004-10-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c++/18047
+	* parser.c (enum cp_parser_prec): Give relational expressions
+	a higher precedence than equality expressions.
+
 2004-10-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (UNIQUELY_DERIVED_FROM_P): Adjust lookup_base call.
