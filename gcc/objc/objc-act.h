@@ -57,7 +57,7 @@ void objc_clear_super_receiver (void);
 tree get_class_ivars_from_name (tree);
 tree get_class_reference (tree);
 tree get_static_reference (tree, tree);
-tree get_object_reference (tree);
+tree get_protocol_reference (tree);
 tree build_message_expr (tree);
 tree finish_message_expr (tree, tree, tree);
 tree build_selector_expr (tree);
@@ -308,17 +308,17 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define objc_get_meta_class_decl			\
 				objc_global_trees[OCTI_GET_MCLASS_DECL]
 
-#define super_type		objc_global_trees[OCTI_SUPER_TYPE]
-#define selector_type		objc_global_trees[OCTI_SEL_TYPE]
-#define id_type			objc_global_trees[OCTI_ID_TYPE]
+#define objc_super_type		objc_global_trees[OCTI_SUPER_TYPE]
+#define objc_selector_type	objc_global_trees[OCTI_SEL_TYPE]
+#define objc_id_type		objc_global_trees[OCTI_ID_TYPE]
 #define objc_class_type		objc_global_trees[OCTI_CLS_TYPE]
-#define instance_type		objc_global_trees[OCTI_NST_TYPE]
-#define protocol_type		objc_global_trees[OCTI_PROTO_TYPE]
+#define objc_instance_type	objc_global_trees[OCTI_NST_TYPE]
+#define objc_protocol_type	objc_global_trees[OCTI_PROTO_TYPE]
 
 /* Type checking macros.  */
 
 #define IS_ID(TYPE) \
-  (TYPE_MAIN_VARIANT (TYPE) == TYPE_MAIN_VARIANT (id_type))
+  (TYPE_MAIN_VARIANT (TYPE) == TYPE_MAIN_VARIANT (objc_id_type))
 #define IS_PROTOCOL_QUALIFIED_ID(TYPE) \
   (IS_ID (TYPE) && TYPE_PROTOCOL_LIST (TYPE))
 #define IS_SUPER(TYPE) \
