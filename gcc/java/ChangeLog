@@ -1,3 +1,13 @@
+2001-01-30  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-parse.c (init_jcf_parse): Added cast to ggc_add_root's last
+	argument.
+	* parse.y (finish_method_declaration): Code accounting for WFLed
+	method DECL_NAMEs deleted.
+	(check_abstract_method_definitions): Likewise.
+	(resolve_type_during_patch): Layout resolved type.
+	* typeck.c (lookup_do): Removed unused local.
+
 2000-01-30  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java-tree.h: Remove JTI_INTEGER_NEGATIVE_ONE_NODE.
