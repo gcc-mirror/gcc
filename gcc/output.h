@@ -437,6 +437,10 @@ extern rtx this_is_asm_operands;
 extern bool decl_readonly_section (tree, int);
 extern bool decl_readonly_section_1 (tree, int, int);
 
+/* This can be used to compute RELOC for the function above, when
+   given a constant expression.  */
+extern int compute_reloc_for_constant (tree);
+
 /* User label prefix in effect for this compilation.  */
 extern const char *user_label_prefix;
 
