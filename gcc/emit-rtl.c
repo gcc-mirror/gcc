@@ -1689,16 +1689,6 @@ copy_rtx_if_shared (orig)
       if (CONSTANT_ADDRESS_P (XEXP (x, 0)))
 	return x;
 
-      if (GET_CODE (XEXP (x, 0)) == PLUS
-	  && CONSTANT_ADDRESS_P (XEXP (XEXP (x, 0), 1)))
-	{
-	  /* This MEM can appear in more than one place,
-	     but its address better not be shared with anything else.  */
-	  if (! x->used)
-	    XEXP (x, 0) = copy_rtx_if_shared (XEXP (x, 0));
-	  x->used = 1;
-	  return x;
-	}
       break;
 
     default:
