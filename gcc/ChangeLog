@@ -1,3 +1,8 @@
+Tue Jun  9 22:05:34 1998  Richard Henderson  <rth@cygnus.com>
+
+	* fold-const.c (fold): Even with otherwise constant trees, look for
+	opportunities to combine integer constants.
+
 Wed Jun  3 23:41:24 EDT 1998  John Wehle  (john@feith.com)
 
 	* i386.md (movsfcc, movdfcc, movxfcc): The floating point
