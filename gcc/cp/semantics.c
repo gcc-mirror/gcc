@@ -730,19 +730,29 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
   else
     {
       emit_line_note (input_filename, lineno);
-
-      if (cv_qualifier != NULL_TREE
-	  && cv_qualifier != ridpointers[(int) RID_VOLATILE])
-	cp_warning ("%s qualifier ignored on asm",
-		    IDENTIFIER_POINTER (cv_qualifier));
+      if (output_operands != NULL_TREE || input_operands != NULL_TREE
+	    || clobbers != NULL_TREE)
+	{
+	  if (cv_qualifier != NULL_TREE
+	      && cv_qualifier != ridpointers[(int) RID_VOLATILE])
+	    cp_warning ("%s qualifier ignored on asm",
+			IDENTIFIER_POINTER (cv_qualifier));
+	  
+	  c_expand_asm_operands (string, output_operands,
+				 input_operands, 
+				 clobbers,
+				 cv_qualifier 
+				 == ridpointers[(int) RID_VOLATILE],
+				 input_filename, lineno);
+	}
+      else
+	{
+	  if (cv_qualifier != NULL_TREE)
+	    cp_warning ("%s qualifier ignored on asm",
+			IDENTIFIER_POINTER (cv_qualifier));
+	  expand_asm (string);
+	}
       
-      c_expand_asm_operands (string, output_operands,
-			     input_operands, 
-			     clobbers,
-			     cv_qualifier 
-			     == ridpointers[(int) RID_VOLATILE],
-			     input_filename, lineno);
-
       finish_stmt ();
     }
 }
