@@ -16,3 +16,6 @@
 
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
+
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "#"

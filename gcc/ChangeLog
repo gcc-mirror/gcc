@@ -1,3 +1,7 @@
+Sun Oct 19 18:44:06 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* i386/bsd386.h (ASM_COMMENT_START): Define.
+
 Sat Oct 18 13:47:15 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (restore_tree_status): Also free up temporary storage
