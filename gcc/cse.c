@@ -5215,7 +5215,8 @@ fold_rtx (x, insn)
 	    {
 	      rtx y = lookup_as_function (XEXP (x, 0), PLUS);
 	      if (y && GET_CODE (XEXP (y, 1)) == CONST_INT)
-		return fold_rtx (plus_constant (y, -INTVAL (const_arg1)),
+		return fold_rtx (plus_constant (copy_rtx (y),
+						-INTVAL (const_arg1)),
 				 NULL_RTX);
 	    }
 
