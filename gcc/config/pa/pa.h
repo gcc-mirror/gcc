@@ -500,7 +500,7 @@ extern int target_flags;
 #define PIC_OFFSET_TABLE_REGNUM (TARGET_64BIT ? 27 : 19)
 #define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED 1
 
-/* Register into which we save the PIC_OFFEST_TABLE_REGNUM so that it
+/* Register into which we save the PIC_OFFSET_TABLE_REGNUM so that it
    can be restored across function calls.  */
 #define PIC_OFFSET_TABLE_SAVE_RTX (cfun->machine->pic_offset_table_save_rtx)
 
