@@ -1,3 +1,10 @@
+2004-06-01  Paul Eggert  <eggert@cs.ucla.edu>
+
+	PR target/15626
+	* doc/install.texi (sparc-sun-solaris2*): Document messages issued
+	by the Sun linker in conjunction with the Sun assembler.
+	(sparc-sun-solaris2.7): Update revision info for Sun patch 106950.
+
 2004-05-19  Jeff Law <law@redhat.com>
 
         * stmt.c (expand_decl): Be more selective about calling
