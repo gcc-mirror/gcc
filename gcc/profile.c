@@ -818,7 +818,13 @@ branch_prob (f, dump_file)
 	if (code != NOTE)
 	  prev_code = code;
 	else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
-	  prev_code = CALL_INSN;
+	  {
+	    /* Make a fake insn to tag our notes on.  */
+	    bb_graph[i].first_insn = insn
+	      = emit_insn_after (gen_rtx (USE, VOIDmode, stack_pointer_rtx),
+				 insn);
+	    prev_code = CALL_INSN;
+	  }
       }
 
     /* If the code at the end of the function would give a new block, then
