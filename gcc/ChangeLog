@@ -1,3 +1,9 @@
+2003-03-12  Andrew Lewycky  <andrew@mxc.ca>
+
+	PR c++/7050
+	* expr.c (store_expr): Don't attempt to store void-typed trees,
+	just evaluate them for side effects.
+
 2003-03-12  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppfiles.c (cpp_rename_file, cpp_push_include): New.
@@ -9,10 +15,10 @@
 
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
-        * aclocal.m4: Introduce gcc_GAS_VERSION_GTE_IFELSE,
-        _gcc_COMPUTE_GAS_VERSION.
-        * configure.in: Use them.
-        * configure: Regenerate.
+	* aclocal.m4: Introduce gcc_GAS_VERSION_GTE_IFELSE,
+	_gcc_COMPUTE_GAS_VERSION.
+	* configure.in: Use them.
+	* configure: Regenerate.
 
 2003-03-12  Bob Wilson  <bob.wilson@acm.org>
 
