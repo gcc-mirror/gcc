@@ -1,3 +1,8 @@
+2003-12-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12397
+	* g++.dg/template/lookup3.C: New test.
+
 2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* g++.dg/template/recurse1.C: New test
