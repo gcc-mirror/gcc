@@ -650,10 +650,20 @@ cp_build_qualified_type_real (type, type_quals, complain)
       if (element_type == error_mark_node)
 	return error_mark_node;
 
-      /* Make a new array type, just like the old one, but with the
-	 appropriately qualified element type.  */
-      t = build_type_copy (type);
-      TREE_TYPE (t) = element_type;
+      /* See if we already have an identically qualified type.  */
+      for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+	if (cp_type_quals (t) == type_quals 
+	    && TYPE_NAME (t) == TYPE_NAME (type)
+	    && TYPE_CONTEXT (t) == TYPE_CONTEXT (type))
+	  break;
+	  
+      if (!t)
+	{
+	  /* Make a new array type, just like the old one, but with the
+	     appropriately qualified element type.  */
+	  t = build_type_copy (type);
+	  TREE_TYPE (t) = element_type;
+	}
 
       /* Even if we already had this variant, we update
 	 TYPE_NEEDS_CONSTRUCTING and TYPE_HAS_NONTRIVIAL_DESTRUCTOR in case
