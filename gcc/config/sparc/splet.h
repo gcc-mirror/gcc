@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARClet.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
 
 This file is part of GNU CC.
@@ -35,12 +35,6 @@ Boston, MA 02111-1307, USA.  */
 {"no-live-g0", -MASK_LIVE_G0},			\
 {"broken-saverestore", MASK_BROKEN_SAVERESTORE},	\
 {"no-broken-saverestore", -MASK_BROKEN_SAVERESTORE},
-
-#undef CPP_SPEC
-#define CPP_SPEC "\
-%(cpp_cpu) \
-%{mlittle-endian:-D__LITTLE_ENDIAN__} \
-"
 
 #undef ASM_SPEC
 #define ASM_SPEC "%{mlittle-endian:-EL} %(asm_cpu)"
