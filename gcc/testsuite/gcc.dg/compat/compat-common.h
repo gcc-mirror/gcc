@@ -28,8 +28,14 @@
 #define CINT(x, y) (x + __extension__ y##i)
 #define CDBL(x, y) (x + __extension__ y##i)
 #else
+#ifdef __SUNPRO_C
+/* ??? Complex support without <complex.h>.  */
+#else
 #include <complex.h>
+#endif
+#ifndef SKIP_COMPLEX_INT
 #define CINT(x, y) ((_Complex int) (x + y * _Complex_I))
+#endif
 #define CDBL(x, y) (x + y * _Complex_I)
 #endif
 
