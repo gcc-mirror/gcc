@@ -103,6 +103,13 @@ extern char regs_ever_live[FIRST_PSEUDO_REGISTER];
 
 extern char *reg_names[FIRST_PSEUDO_REGISTER];
 
+/* For each hard register, the widest mode object that it can contain.
+   This will be a MODE_INT mode if the register can hold integers.  Otherwise
+   it will be a MODE_FLOAT or a MODE_CC mode, whichever is valid for the
+   register.  */
+
+extern enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
+
 /* Vector indexed by regno; gives uid of first insn using that reg.
    This is computed by reg_scan for use by cse and loop.
    It is sometimes adjusted for subsequent changes during loop,
