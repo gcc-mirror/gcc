@@ -1,0 +1,5 @@
+# Custom multilibs for RTEMS
+
+MULTILIB_OPTIONS = mips1/mips3 msoft-float/msingle-float EL/EB
+MULTILIB_DIRNAMES = mips1 mips3 soft-float single el eb
+MULTILIB_MATCHES = msingle-float=m4650
