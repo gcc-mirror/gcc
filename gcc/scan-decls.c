@@ -1,5 +1,5 @@
 /* scan-decls.c - Extracts declarations from cpp output.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -53,8 +53,26 @@ skip_to_closing_brace (pfile)
 }
 
 /* This function scans a C source file (actually, the output of cpp),
-   reading from FP.  It looks for function declarations, and certain
-   other interesting sequences (external variables and macros).  */
+   reading from FP.  It looks for function declarations, and
+   external variable declarations.  
+
+   The following grammar (as well as some extra stuff) is recognized:
+
+   declaration:
+     (decl-specifier)* declarator ("," declarator)* ";"
+   decl-specifier:
+     identifier
+     keyword
+     extern "C"
+   declarator:
+     (ptr-operator)* dname [ "(" argument-declaration-list ")" ]
+   ptr-operator:
+     ("*" | "&") ("const" | "volatile")*
+   dname:
+     identifier
+
+Here dname is the actual name being declared.
+*/
 
 int
 scan_decls (pfile, argc, argv)
@@ -64,9 +82,12 @@ scan_decls (pfile, argc, argv)
 {
   int saw_extern, saw_inline;
   int old_written;
+  /* If declarator_start is non-zero, it marks the start of the current
+     declarator.  If it is zero, we are either still parsing the
+     decl-specs, or prev_id_start marks the start of the declarator. */
+  int declarator_start;
   int prev_id_start, prev_id_end;
   enum cpp_token token;
-
 
  new_statement:
   CPP_SET_WRITTEN (pfile, 0);
@@ -96,40 +117,18 @@ scan_decls (pfile, argc, argv)
     goto new_statement;
   if (token != CPP_NAME)
     goto new_statement;
-  if (strcmp (pfile->token_buffer, "inline") == 0)
-     {
-      saw_inline = 1;
-      CPP_SET_WRITTEN (pfile, 0);
-      token = cpp_get_non_space_token (pfile);
-    }
-  if (strcmp (pfile->token_buffer, "extern") == 0)
-    {
-      saw_extern = 1;
-      CPP_SET_WRITTEN (pfile, 0);
-      token = cpp_get_non_space_token (pfile);
-      if (token == CPP_STRING
-	  && strcmp (pfile->token_buffer, "\"C\"") == 0)
-	{
-	  CPP_SET_WRITTEN (pfile, 0);
-	  current_extern_C = 1;
-	  token = cpp_get_non_space_token (pfile);
-	  if (token == CPP_LPAREN)
-	    {
-	      brace_nesting++;
-	      extern_C_braces[extern_C_braces_length++] = brace_nesting;
-	      goto new_statement;
-	    }
-	  token = cpp_get_non_space_token (pfile);
-	}
-    }
-  prev_id_start = NULL;
+
+  prev_id_start = 0;
+  declarator_start = 0;
   for (;;)
     {
       int start_written = CPP_WRITTEN (pfile);
       token = cpp_get_token (pfile);
+    handle_token:
       switch (token)
 	{
 	case CPP_LPAREN:
+	  /* Looks like this is the start of a formal parameter list. */
 	  if (prev_id_start)
 	    {
 	      int nesting = 1;
@@ -168,9 +167,18 @@ scan_decls (pfile, argc, argv)
 		  skip_to_closing_brace (pfile);
 		  goto new_statement;
 		}
-	      goto handle_statement;
+	      goto maybe_handle_comma;
 	    }
 	  break;
+	case CPP_OTHER:
+	  if (CPP_WRITTEN (pfile) == start_written + 1
+	      && (CPP_PWRITTEN (pfile)[-1] == '*'
+		  || CPP_PWRITTEN (pfile)[-1] == '&'))
+	    declarator_start = start_written;
+	  else
+	    goto handle_statement;
+	  break;
+	case CPP_COMMA:
 	case CPP_SEMICOLON:
 	  if (prev_id_start && saw_extern)
 	    {
@@ -179,8 +187,48 @@ scan_decls (pfile, argc, argv)
 				 pfile->token_buffer,
 				 prev_id_start);
 	    }
-	  goto new_statement;
+	  /* ... fall through ... */
+	maybe_handle_comma:
+	  if (token != CPP_COMMA)
+	    goto new_statement;
+	handle_comma:
+	  /* Handle multiple declarators in a single declaration,
+	     as in:  extern char *strcpy (), *strcat (), ... ; */
+	  if (declarator_start == 0)
+	    declarator_start = prev_id_start;
+	  CPP_SET_WRITTEN (pfile, declarator_start);
+	  break;
 	case CPP_NAME:
+	  /* "inline" and "extern" are recognized but skipped */
+	  if (strcmp (pfile->token_buffer, "inline") == 0)
+	    {
+	      saw_inline = 1;
+	      CPP_SET_WRITTEN (pfile, start_written);
+	    }
+	  if (strcmp (pfile->token_buffer, "extern") == 0)
+	    {
+	      saw_extern = 1;
+	      CPP_SET_WRITTEN (pfile, start_written);
+	      token = cpp_get_non_space_token (pfile);
+	      if (token == CPP_STRING
+		  && strcmp (pfile->token_buffer, "\"C\"") == 0)
+		{
+		  CPP_SET_WRITTEN (pfile, start_written);
+		  current_extern_C = 1;
+		  token = cpp_get_non_space_token (pfile);
+		  if (token == CPP_LBRACE)
+		    {
+		      brace_nesting++;
+		      extern_C_braces[extern_C_braces_length++]
+			= brace_nesting;
+		      goto new_statement;
+		    }
+		}
+	      else
+		goto handle_token;
+	      break;
+	    }
+	  /* This may be the name of a variable or function. */
 	  prev_id_start = start_written;
 	  prev_id_end = CPP_WRITTEN (pfile);
 	  break;
@@ -192,6 +240,9 @@ scan_decls (pfile, argc, argv)
 	  goto new_statement;  /* handle_statement? */
 	  
 	case CPP_HSPACE:  case CPP_VSPACE:  case CPP_COMMENT:  case CPP_POP:
+	  /* Skip initial white space. */
+	  if (start_written == 0)
+	    CPP_SET_WRITTEN (pfile, 0);
 	  break;
 
 	 default:
