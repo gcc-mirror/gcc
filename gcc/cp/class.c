@@ -3338,7 +3338,8 @@ check_field_decls (t, access_decls, empty_p,
 	  *cant_have_default_ctor_p = 1;
 	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
 
-	  if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
+	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t)
+	      && extra_warnings)
             cp_warning_at ("non-static reference `%#D' in class without a constructor", x);
 	}
 
@@ -3372,7 +3373,8 @@ check_field_decls (t, access_decls, empty_p,
 	  *cant_have_default_ctor_p = 1;
 	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
 
-	  if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
+	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t)
+	      && extra_warnings)
             cp_warning_at ("non-static const member `%#D' in class without a constructor", x);
 	}
       /* A field that is pseudo-const makes the structure likewise.  */
