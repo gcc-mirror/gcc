@@ -1,3 +1,11 @@
+Fri Jan 29 00:14:55 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (strength_reduce): Grow set_in_loop / n_times_set /
+	may_not_optimize to proper size when converting biv increments
+	into givs.
+	If necessary, reallocate reg_iv_type / reg_iv_info before calling
+	recombine_givs.
+
 Thu Jan 28 23:24:08 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (recombine_givs): New parameter unroll_p.  If set, don't
