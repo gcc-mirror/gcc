@@ -160,6 +160,8 @@ struct function
 
   /* For md files.  */
   int uses_pic_offset_table;
+  /* tm.h can use this to store whatever it likes.  */
+  struct machine_function *machine;
 
   /* For reorg.  */
   rtx epilogue_delay_list;
@@ -193,7 +195,13 @@ extern struct function *outer_function_chain;
 /* Put all this function's BLOCK nodes into a vector and return it.
    Also store in each NOTE for the beginning or end of a block
    the index of that block in the vector.  */
-tree *identify_blocks PROTO((tree, rtx));
+extern tree *identify_blocks PROTO((tree, rtx));
+
+/* These variables hold pointers to functions to
+   save and restore machine-specific data,
+   in push_function_context and pop_function_context.  */
+extern void (*save_machine_status) ();
+extern void (*restore_machine_status) ();
 
 #ifdef rtx
 #undef rtx
