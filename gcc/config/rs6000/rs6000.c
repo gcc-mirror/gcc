@@ -138,6 +138,10 @@ static char alt_reg_names[][8] =
 };
 #endif
 
+#ifndef MASK_STRICT_ALIGN
+#define MASK_STRICT_ALIGN 0
+#endif
+
 /* Override command line options.  Mostly we process the processor
    type and sometimes adjust other TARGET_ options.  */
 
@@ -190,7 +194,7 @@ rs6000_override_options (default_cpu)
 	    MASK_POWER | MASK_MULTIPLE | MASK_STRING | MASK_POWER2,
 	    POWERPC_MASKS | MASK_NEW_MNEMONICS},
 	 {"403", PROCESSOR_PPC403,
-	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
+	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS | MASK_STRICT_ALIGN,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"505", PROCESSOR_MPCCORE,
 	    MASK_POWERPC | MASK_NEW_MNEMONICS,
