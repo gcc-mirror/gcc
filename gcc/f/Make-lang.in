@@ -249,12 +249,12 @@ f77.dvi: f/g77.dvi
 f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	    $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
 	    $(srcdir)/f/intdoc.texi
-	$(MAKEINFO) -I$(srcdir)/f $(srcdir)/f/g77.texi -o f/g77.info
+	$(MAKEINFO) -I$(srcdir)/f -o f/g77.info $(srcdir)/f/g77.texi
 
 f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		     $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
 		     $(srcdir)/f/intdoc.texi
-	$(TEXI2DVI) -I$(srcdir)/f $(srcdir)/f/g77.texi -o f/g77.dvi
+	$(TEXI2DVI) -I$(srcdir)/f -o f/g77.dvi $(srcdir)/f/g77.texi
 
 # This dance is all about producing accurate documentation for g77's
 # intrinsics with minimum fuss.  f/ansify appends "\n\" to C strings
@@ -286,15 +286,15 @@ $(srcdir)/f/intdoc.texi: f/intdoc.c f/intdoc.in f/ansify.c f/intrin.def f/intrin
 
 $(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D BUGSONLY --no-header --no-split \
-	  --no-validate bugs0.texi -o BUGS
+	  --no-validate -o BUGS bugs0.texi
 
 $(srcdir)/f/INSTALL: f/install0.texi f/g77install.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D INSTALLONLY --no-header --no-split \
-	  --no-validate install0.texi -o INSTALL
+	  --no-validate -o INSTALL install0.texi
 
 $(srcdir)/f/NEWS: f/news0.texi f/news.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D NEWSONLY --no-header --no-split \
-	  --no-validate news0.texi -o NEWS
+	  --no-validate -o NEWS news0.texi
 
 f77.rebuilt: $(srcdir)/f/g77.info $(srcdir)/f/BUGS $(srcdir)/f/INSTALL \
   $(srcdir)/f/NEWS 

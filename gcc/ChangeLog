@@ -1,3 +1,7 @@
+Thu Apr 30 18:59:03 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (cpp.info, gcc.info): Put -o option before input file.
+
 Thu Apr 30 16:57:34 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* haifa-sched.c (print_{exp,value}): Various changes to make the

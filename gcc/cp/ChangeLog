@@ -1,3 +1,7 @@
+Thu Apr 30 18:59:23 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (g++FAQ.info): Put -o option before input file.
+
 Thu Apr 30 13:05:33 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* gxxint.texi: Add info for squangling codes K and B.

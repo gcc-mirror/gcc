@@ -291,7 +291,7 @@ TAGS: force
 force:
 
 g++FAQ.info:	$(srcdir)/g++FAQ.texi
-	$(MAKEINFO) --no-split $(srcdir)/g++FAQ.texi -o ./g++FAQ.info
+	$(MAKEINFO) --no-split -o ./g++FAQ.info $(srcdir)/g++FAQ.texi
 
 # Preprocess the texi file so that the final document will have
 # hyperlinks.
