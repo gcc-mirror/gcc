@@ -1,3 +1,9 @@
+2003-01-30  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_compute_initial_elimination_offset): If optimizing for
+	size, the link register is always saved if any other register is
+	saved.
+
 2003-01-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Update the prototype for
