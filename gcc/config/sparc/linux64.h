@@ -112,7 +112,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef LIB_SPEC
 #define LIB_SPEC \
-  "%{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
+  "%{shared: -lc} \
+   %{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
      %{profile:-lc_p} %{!profile: -lc}}"
 
 /* Provide a LINK_SPEC appropriate for GNU/Linux.  Here we provide support

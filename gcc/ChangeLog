@@ -1,3 +1,14 @@
+Fri Feb 13 01:34:14 1998  H.J. Lu  (hjl@gnu.org)
+
+	* config/linux.h (LIB_SPEC): Add -lc for -shared if
+	USE_GNULIBC_1 is not defined.
+	* config/sparc/linux.h; Ditto.
+
+	* config/sparc/linux64.h (LIB_SPEC): Add -lc for -shared.
+
+	* config/alpha/linux-elf.h (LIB_SPEC): New. Defined if
+	USE_GNULIBC_1 is not defined.
+
 Fri Feb 13 01:29:29 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
 
 	* rs6000/sysv4.h (ENDFILE_SPEC): add missing %(endfile_linux)
