@@ -1,3 +1,11 @@
+1999-08-02  Jakub Jelinek  <jj@ultra.linux.cz>
+
+	* java/decl.c (start_java_method): Change all uses of
+	PROMOTE_PROTOTYPES, so that it tests it as a C expression.
+	Ensure expr.h is included.
+	* java/expr.c (pop_arguments): Ditto.
+	* java/parse.y (expand_start_java_method): Ditto.
+
 1999-08-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (ALL_CFLAGS): Add '-W -Wall'.

@@ -1448,11 +1448,10 @@ pop_arguments (arg_types)
       tree tail = pop_arguments (TREE_CHAIN (arg_types));
       tree type = TREE_VALUE (arg_types);
       tree arg = pop_value (type);
-#ifdef PROMOTE_PROTOTYPES
-      if (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
+      if (PROMOTE_PROTOTYPES
+	  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
 	  && INTEGRAL_TYPE_P (type))
 	arg = convert (integer_type_node, arg);
-#endif
       return tree_cons (NULL_TREE, arg, tail);
     }
   abort ();
