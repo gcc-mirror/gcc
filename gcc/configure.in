@@ -944,6 +944,7 @@ for machine in $build $host $target; do
  		fi
 		;;
 	i[[34567]]86-*-gnu*)
+		float_format=i386
 		;;
 	i[[34567]]86-go32-msdos | i[[34567]]86-*-go32*)
 		xm_file=i386/xm-go32.h
