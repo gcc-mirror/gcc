@@ -2214,6 +2214,7 @@ substitute_in_expr (exp, f, r)
      tree r;
 {
   enum tree_code code = TREE_CODE (exp);
+  tree op0, op1, op2;
   tree new = 0;
   tree inner;
 
@@ -2235,9 +2236,11 @@ substitute_in_expr (exp, f, r)
       switch (tree_code_length[(int) code])
 	{
 	case 1:
-	  new = fold (build1 (code, TREE_TYPE (exp),
-			      substitute_in_expr (TREE_OPERAND (exp, 0),
-						  f, r)));
+	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
+	  if (op0 == TREE_OPERAND (exp, 0))
+	    return exp;
+	  
+	  new = fold (build1 (code, TREE_TYPE (exp), op0));
 	  break;
 
 	case 2:
@@ -2248,10 +2251,12 @@ substitute_in_expr (exp, f, r)
 	  else if (code == CONSTRUCTOR)
 	    abort ();
 
-	  new = fold (build (code, TREE_TYPE (exp),
-			     substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
-			     substitute_in_expr (TREE_OPERAND (exp, 1),
-						 f, r)));
+	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
+	  op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
+	  if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
+	    return exp;
+
+	  new = fold (build (code, TREE_TYPE (exp), op0, op1));
 	  break;
 
 	case 3:
@@ -2263,11 +2268,14 @@ substitute_in_expr (exp, f, r)
 	  if (code != COND_EXPR)
 	    abort ();
 
-	  new = fold (build (code, TREE_TYPE (exp),
-			     substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
-			     substitute_in_expr (TREE_OPERAND (exp, 1), f, r),
-			     substitute_in_expr (TREE_OPERAND (exp, 2),
-						 f, r)));
+	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
+	  op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
+	  op2 = substitute_in_expr (TREE_OPERAND (exp, 2), f, r);
+	  if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1)
+	      && op2 == TREE_OPERAND (exp, 2))
+	    return exp;
+
+	  new = fold (build (code, TREE_TYPE (exp), op0, op1, op2));
 	}
 
       break;
@@ -2292,29 +2300,41 @@ substitute_in_expr (exp, f, r)
 	      && TREE_TYPE (inner) == 0)
 	    return exp;
 
-	  new = fold (build (code, TREE_TYPE (exp),
-			     substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
+	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
+	  if (op0 == TREE_OPERAND (exp, 0))
+	    return exp;
+
+	  new = fold (build (code, TREE_TYPE (exp), op0,
 			     TREE_OPERAND (exp, 1)));
 	  break;
 
 	case BIT_FIELD_REF:
-	  new = fold (build (code, TREE_TYPE (exp),
-			     substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
-			     substitute_in_expr (TREE_OPERAND (exp, 1), f, r),
-			     substitute_in_expr (TREE_OPERAND (exp, 2), f, r)));
+	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
+	  op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
+	  op2 = substitute_in_expr (TREE_OPERAND (exp, 2), f, r);
+	  if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1)
+	      && op2 == TREE_OPERAND (exp, 2))
+	    return exp;
+
+	  new = fold (build (code, TREE_TYPE (exp), op0, op1, op2));
 	  break;
 
 	case INDIRECT_REF:
 	case BUFFER_REF:
-	  new = fold (build1 (code, TREE_TYPE (exp),
-			      substitute_in_expr (TREE_OPERAND (exp, 0),
-						  f, r)));
+	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
+	  if (op0 == TREE_OPERAND (exp, 0))
+	    return exp;
+
+	  new = fold (build1 (code, TREE_TYPE (exp), op0));
 	  break;
 
 	case OFFSET_REF:
-	  new = fold (build (code, TREE_TYPE (exp),
-			     substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
-			     substitute_in_expr (TREE_OPERAND (exp, 1), f, r)));
+	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
+	  op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
+	  if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
+	    return exp;
+
+	  new = fold (build (code, TREE_TYPE (exp), op0, op1));
 	  break;
 	}
     }
@@ -2325,146 +2345,6 @@ substitute_in_expr (exp, f, r)
 
   TREE_READONLY (new) = TREE_READONLY (exp);
   return new;
-}
-
-/* Given a type T, a FIELD_DECL F, and a replacement value R,
-   return a new type with all size expressions that contain F
-   updated by replacing F with R.  */
-
-tree
-substitute_in_type (t, f, r)
-     tree t, f, r;
-{
-  switch (TREE_CODE (t))
-    {
-    case POINTER_TYPE:
-    case VOID_TYPE:
-      return t;
-    case INTEGER_TYPE:
-    case ENUMERAL_TYPE:
-    case BOOLEAN_TYPE:
-    case CHAR_TYPE:
-      if ((TREE_CODE (TYPE_MIN_VALUE (t)) != INTEGER_CST
-	   && contains_placeholder_p (TYPE_MIN_VALUE (t)))
-	  || (TREE_CODE (TYPE_MAX_VALUE (t)) != INTEGER_CST
-	      && contains_placeholder_p (TYPE_MAX_VALUE (t))))
-	return build_range_type (t,
-				 substitute_in_expr (TYPE_MIN_VALUE (t), f, r),
-				 substitute_in_expr (TYPE_MAX_VALUE (t), f, r));
-      return t;
-
-    case REAL_TYPE:
-      if ((TYPE_MIN_VALUE (t) != 0
-	   && TREE_CODE (TYPE_MIN_VALUE (t)) != REAL_CST
-	   && contains_placeholder_p (TYPE_MIN_VALUE (t)))
-	  || (TYPE_MAX_VALUE (t) != 0
-	      && TREE_CODE (TYPE_MAX_VALUE (t)) != REAL_CST
-	      && contains_placeholder_p (TYPE_MAX_VALUE (t))))
-	{
-	  t = build_type_copy (t);
-
-	  if (TYPE_MIN_VALUE (t))
-	    TYPE_MIN_VALUE (t) = substitute_in_expr (TYPE_MIN_VALUE (t), f, r);
-	  if (TYPE_MAX_VALUE (t))
-	    TYPE_MAX_VALUE (t) = substitute_in_expr (TYPE_MAX_VALUE (t), f, r);
-	}
-      return t;
-
-    case COMPLEX_TYPE:
-      return build_complex_type (substitute_in_type (TREE_TYPE (t), f, r));
-
-    case OFFSET_TYPE:
-    case METHOD_TYPE:
-    case REFERENCE_TYPE:
-    case FILE_TYPE:
-    case SET_TYPE:
-    case FUNCTION_TYPE:
-    case LANG_TYPE:
-      /* Don't know how to do these yet.  */
-      abort ();
-
-    case ARRAY_TYPE:
-      t = build_array_type (substitute_in_type (TREE_TYPE (t), f, r),
-			    substitute_in_type (TYPE_DOMAIN (t), f, r));
-      TYPE_SIZE (t) = 0;
-      layout_type (t);
-      return t;
-
-    case RECORD_TYPE:
-    case UNION_TYPE:
-    case QUAL_UNION_TYPE:
-      {
-	tree new = copy_node (t);
-	tree field;
-	tree last_field = 0;
-
-	/* Start out with no fields, make new fields, and chain them
-	   in.  */
-
-	TYPE_FIELDS (new) = 0;
-	TYPE_SIZE (new) = 0;
-
-	for (field = TYPE_FIELDS (t); field;
-	     field = TREE_CHAIN (field))
-	  {
-	    tree new_field = copy_node (field);
-
-	    TREE_TYPE (new_field)
-	      = substitute_in_type (TREE_TYPE (new_field), f, r);
-
-	    /* If this is an anonymous field and the type of this field is
-	       a UNION_TYPE or RECORD_TYPE with no elements, ignore it.  If
-	       the type just has one element, treat that as the field. 
-	       But don't do this if we are processing a QUAL_UNION_TYPE.  */
-	    if (TREE_CODE (t) != QUAL_UNION_TYPE && DECL_NAME (new_field) == 0
-		&& (TREE_CODE (TREE_TYPE (new_field)) == UNION_TYPE
-		    || TREE_CODE (TREE_TYPE (new_field)) == RECORD_TYPE))
-	      {
-		if (TYPE_FIELDS (TREE_TYPE (new_field)) == 0)
-		  continue;
-
-		if (TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (new_field))) == 0)
-		  new_field = TYPE_FIELDS (TREE_TYPE (new_field));
-	      }
-
-	    DECL_CONTEXT (new_field) = new;
-	    DECL_SIZE (new_field) = 0;
-
-	    if (TREE_CODE (t) == QUAL_UNION_TYPE)
-	      {
-		/* Do the substitution inside the qualifier and if we find
-		   that this field will not be present, omit it.  */
-		DECL_QUALIFIER (new_field)
-		  = substitute_in_expr (DECL_QUALIFIER (field), f, r);
-		if (integer_zerop (DECL_QUALIFIER (new_field)))
-		  continue;
-	      }
-
-	    if (last_field == 0)
-	      TYPE_FIELDS (new) = new_field;
-	    else
-	      TREE_CHAIN (last_field) = new_field;
-
-	    last_field = new_field;
-
-	    /* If this is a qualified type and this field will always be
-	       present, we are done.  */
-	    if (TREE_CODE (t) == QUAL_UNION_TYPE
-		&& integer_onep (DECL_QUALIFIER (new_field)))
-	      break;
-	  }
-
-	/* If this used to be a qualified union type, but we now know what
-	   field will be present, make this a normal union.  */
-	if (TREE_CODE (new) == QUAL_UNION_TYPE
-	    && (TYPE_FIELDS (new) == 0
-		|| integer_onep (DECL_QUALIFIER (TYPE_FIELDS (new)))))
-	  TREE_SET_CODE (new, UNION_TYPE);
-
-	layout_type (new);
-	return new;
-      }
-    }
 }
 
 /* Stabilize a reference so that we can use it any number of times
