@@ -1,3 +1,12 @@
+2002-12-31  Tom Tromey  <tromey@redhat.com>
+	Ranjit Mathew  <rmathew@hotmail.com>
+
+	Fix for PR libgcj/8997:
+	* java/lang/natObject.cc (spin): Use _Jv_platform_usleep.
+	Include platform.h.
+	* include/posix.h (_Jv_platform_usleep): New function.
+	* include/win32.h (_Jv_platform_usleep): New function.
+
 2002-12-30  Tom Tromey  <tromey@redhat.com>
 
 	* gcj/javaprims.h: Updated class list.
