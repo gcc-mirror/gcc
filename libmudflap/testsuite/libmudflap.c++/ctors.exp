@@ -8,7 +8,7 @@ global srcdir subdir
 foreach flags [list {} {-static} {-O2} {-O3}] {
     set l1 [libmudflap_target_compile "$srcdir/$subdir/ctors-1.cxx" "ctors-1.o" object {additional_flags=-fmudflap}]
     set test "ctors-1 compilation ${flags}"
-    if [string match "*mudflap cannot track lifetime of*k*" $l1] { pass $test } { fail $test }
+    if [string match "*mudflap cannot track unknown size extern *k*" $l1] { pass $test } { fail $test }
 
     set l2 [libmudflap_target_compile "$srcdir/$subdir/ctors-2.cxx" "ctors-2.o" object {additional_flags=-fmudflap}]
     set test "ctors-2 compilation ${flags}"

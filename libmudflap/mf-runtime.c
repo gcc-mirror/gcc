@@ -160,7 +160,7 @@ static void mfsplay_tree_rebalance (mfsplay_tree sp);
 /* Required globals.  */
 
 #define LOOKUP_CACHE_MASK_DFL 1023
-#define LOOKUP_CACHE_SIZE_MAX 4096 /* Allows max CACHE_MASK 0x0FFF */
+#define LOOKUP_CACHE_SIZE_MAX 65536 /* Allows max CACHE_MASK 0xFFFF */
 #define LOOKUP_CACHE_SHIFT_DFL 2
 
 struct __mf_cache __mf_lookup_cache [LOOKUP_CACHE_SIZE_MAX];
@@ -917,7 +917,7 @@ void __mfu_check (void *ptr, size_t sz, int type, const char *location)
                   judgement = -1;
               }
 
-            /* We now know that the access spans one or more valid objects.  */
+            /* We now know that the access spans one or more only valid objects.  */
             if (LIKELY (judgement >= 0))
               for (i = 0; i < obj_count; i++)
                 {
@@ -931,11 +931,57 @@ void __mfu_check (void *ptr, size_t sz, int type, const char *location)
                       entry->high = obj->high;
                       judgement = 1;
                     }
-
-                  /* XXX: Access runs off left or right side of this
-                          object.  That could be okay, if there are
-                          other objects that fill in all the holes. */
                 }
+
+            /* This access runs off the end of one valid object.  That
+                could be okay, if other valid objects fill in all the
+                holes.  We allow this only for HEAP and GUESS type
+                objects.  Accesses to STATIC and STACK variables
+                should not be allowed to span.  */
+            if (UNLIKELY ((judgement == 0) && (obj_count > 1)))
+              {
+                unsigned uncovered = 0;
+                for (i = 0; i < obj_count; i++)
+                  {
+                    __mf_object_t *obj = all_ovr_obj[i];
+                    int j, uncovered_low_p, uncovered_high_p;
+                    uintptr_t ptr_lower, ptr_higher;
+
+                    uncovered_low_p = ptr_low < obj->low;
+                    ptr_lower = CLAMPSUB (obj->low, 1);
+                    uncovered_high_p = ptr_high > obj->high;
+                    ptr_higher = CLAMPADD (obj->high, 1);
+
+                    for (j = 0; j < obj_count; j++)
+                      {
+                        __mf_object_t *obj2 = all_ovr_obj[j];
+
+                        if (i == j) continue;
+
+                        /* Filter out objects that cannot be spanned across.  */
+                        if (obj2->type == __MF_TYPE_STACK 
+                            || obj2->type == __MF_TYPE_STATIC)
+                          continue;
+
+                          /* Consider a side "covered" if obj2 includes
+                             the next byte on that side.  */
+                          if (uncovered_low_p
+                              && (ptr_lower >= obj2->low && ptr_lower <= obj2->high))
+                            uncovered_low_p = 0;
+                          if (uncovered_high_p
+                              && (ptr_high >= obj2->low && ptr_higher <= obj2->high))
+                            uncovered_high_p = 0;
+                      }
+                    
+                    if (uncovered_low_p || uncovered_high_p)
+                      uncovered ++;
+                  }
+
+                /* Success if no overlapping objects are uncovered.  */
+                if (uncovered == 0)
+                  judgement = 1;
+                }
+
 
             if (dealloc_me != NULL)
               CALL_REAL (free, dealloc_me);
@@ -1413,7 +1459,7 @@ __mf_adapt_cache ()
       cache_utilization += 1.0;
   cache_utilization /= (1 + __mf_lc_mask);
 
-  new_mask |= 0x3ff; /* XXX: force a large cache.  */
+  new_mask |= 0xffff; /* XXX: force a large cache.  */
   new_mask &= (LOOKUP_CACHE_SIZE_MAX - 1);
 
   VERBOSE_TRACE ("adapt cache obj=%u/%u sizes=%lu/%.0f/%.0f => "

@@ -108,6 +108,8 @@ extern int __mf_set_options (const char *opts);
 #pragma redefine_extname time __mfwrap_time
 #pragma redefine_extname strerror __mfwrap_strerror
 #pragma redefine_extname fopen __mfwrap_fopen
+#pragma redefine_extname fdopen __mfwrap_fdopen
+#pragma redefine_extname freopen __mfwrap_freopen
 #pragma redefine_extname fclose __mfwrap_fclose
 #pragma redefine_extname fread __mfwrap_fread
 #pragma redefine_extname fwrite __mfwrap_fwrite
@@ -146,6 +148,8 @@ extern int __mf_set_options (const char *opts);
 #pragma redefine_extname mkfifo __mfwrap_mkfifo
 #pragma redefine_extname setvbuf __mfwrap_setvbuf
 #pragma redefine_extname setbuf __mfwrap_setbuf
+#pragma redefine_extname setbuffer __mfwrap_setbuffer
+#pragma redefine_extname setlinebuf __mfwrap_setlinebuf
 #pragma redefine_extname opendir __mfwrap_opendir
 #pragma redefine_extname closedir __mfwrap_closedir
 #pragma redefine_extname readdir __mfwrap_readdir
@@ -176,6 +180,7 @@ extern int __mf_set_options (const char *opts);
 #pragma redefine_extname dlsym __mfwrap_dlsym
 #pragma redefine_extname dlclose __mfwrap_dlclose
 #pragma redefine_extname fopen64 __mfwrap_fopen64
+#pragma redefine_extname freopen64 __mfwrap_freopen64
 #pragma redefine_extname stat64 __mfwrap_stat64
 #pragma redefine_extname fseeko64 __mfwrap_fseeko64
 #pragma redefine_extname ftello64 __mfwrap_ftello64

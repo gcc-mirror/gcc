@@ -584,6 +584,66 @@ WRAPPER2(char *, strerror, int errnum)
 }
 
 
+
+/* An auxiliary data structure for tracking the hand-made stdio
+   buffers we generate during the fopen/fopen64 hooks.  In a civilized
+   language, this would be a simple dynamically sized FILE*->char*
+   lookup table, but this is C and we get to do it by hand.  */
+struct mf_filebuffer
+{
+  FILE *file;
+  char *buffer;
+  struct mf_filebuffer *next;
+};
+static struct mf_filebuffer *mf_filebuffers = NULL;
+
+static void
+mkbuffer (FILE *f)
+{
+  /* Reset any buffer automatically provided by libc, since this may
+     have been done via mechanisms that libmudflap couldn't
+     intercept.  */
+  int rc;
+  size_t bufsize = BUFSIZ;
+  int bufmode;
+  char *buffer = malloc (bufsize);
+  struct mf_filebuffer *b = malloc (sizeof (struct mf_filebuffer));
+  assert ((buffer != NULL) && (b != NULL));
+
+  /* Link it into list.  */
+  b->file = f;
+  b->buffer = buffer;
+  b->next = mf_filebuffers;
+  mf_filebuffers = b;
+
+  /* Determine how the file is supposed to be buffered at the moment.  */
+  bufmode = fileno (f) == 2 ? _IONBF : (isatty (fileno (f)) ? _IOLBF : _IOFBF);
+
+  rc = setvbuf (f, buffer, bufmode, bufsize);
+  assert (rc == 0);
+}
+
+static void
+unmkbuffer (FILE *f)
+{
+  struct mf_filebuffer *b = mf_filebuffers;
+  struct mf_filebuffer **pb = & mf_filebuffers;
+  while (b != NULL)
+    {
+      if (b->file == f)
+        {
+          *pb = b->next;
+          free (b->buffer);
+          free (b);
+          return;
+        }
+      pb = & b->next;
+      b = b->next;
+    }
+}
+
+
+
 WRAPPER2(FILE *, fopen, const char *path, const char *mode)
 {
   size_t n;
@@ -602,6 +662,106 @@ WRAPPER2(FILE *, fopen, const char *path, const char *mode)
     __mf_register (p, sizeof (*p), MF_REGISTER_fopen, "fopen result");
 #endif
     MF_VALIDATE_EXTENT (p, sizeof (*p), __MF_CHECK_WRITE, "fopen result");
+
+    mkbuffer (p);
+  }
+
+  return p;
+}
+
+
+WRAPPER2(int, setvbuf, FILE *stream, char *buf, int mode, size_t size)
+{
+  int rc = 0;
+  TRACE ("%s\n", __PRETTY_FUNCTION__);
+
+  MF_VALIDATE_EXTENT (stream, sizeof (*stream), __MF_CHECK_WRITE, "setvbuf stream");
+
+  unmkbuffer (stream);
+
+  if (buf != NULL)
+    MF_VALIDATE_EXTENT (buf, size, __MF_CHECK_WRITE, "setvbuf buffer");
+
+  /* Override the user only if it's an auto-allocated buffer request.  Otherwise
+     assume that the supplied buffer is already known to libmudflap.  */
+  if ((buf == NULL) && ((mode == _IOFBF) || (mode == _IOLBF)))
+    mkbuffer (stream);
+  else
+    rc = setvbuf (stream, buf, mode, size);
+
+  return rc;
+}
+
+
+#ifdef HAVE_SETBUF
+WRAPPER2(int, setbuf, FILE* stream, char *buf)
+{
+  return __mfwrap_setvbuf (stream, buf, buf ? _IOFBF : _IONBF, BUFSIZ);
+}
+#endif
+
+#ifdef HAVE_SETBUFFER
+WRAPPER2(int, setbuffer, FILE* stream, char *buf, size_t sz)
+{
+  return __mfwrap_setvbuf (stream, buf, buf ? _IOFBF : _IONBF, sz);
+}
+#endif
+
+#ifdef HAVE_SETLINEBUF
+WRAPPER2(int, setlinebuf, FILE* stream)
+{
+  return __mfwrap_setvbuf(stream, NULL, _IOLBF, 0);
+}
+#endif
+
+
+
+WRAPPER2(FILE *, fdopen, int fd, const char *mode)
+{
+  size_t n;
+  FILE *p;
+  TRACE ("%s\n", __PRETTY_FUNCTION__);
+
+  n = strlen (mode);
+  MF_VALIDATE_EXTENT (mode, CLAMPADD(n, 1), __MF_CHECK_READ, "fdopen mode");
+
+  p = fdopen (fd, mode);
+  if (NULL != p) {
+#ifdef MF_REGISTER_fopen
+    __mf_register (p, sizeof (*p), MF_REGISTER_fopen, "fdopen result");
+#endif
+    MF_VALIDATE_EXTENT (p, sizeof (*p), __MF_CHECK_WRITE, "fdopen result");
+
+    mkbuffer (p);
+  }
+
+  return p;
+}
+
+
+WRAPPER2(FILE *, freopen, const char *path, const char *mode, FILE *s)
+{
+  size_t n;
+  FILE *p;
+  TRACE ("%s\n", __PRETTY_FUNCTION__);
+
+  n = strlen (path);
+  MF_VALIDATE_EXTENT (path, CLAMPADD(n, 1), __MF_CHECK_READ, "freopen path");
+
+  MF_VALIDATE_EXTENT (s, (sizeof (*s)), __MF_CHECK_WRITE, "freopen stream");
+  unmkbuffer (s);
+
+  n = strlen (mode);
+  MF_VALIDATE_EXTENT (mode, CLAMPADD(n, 1), __MF_CHECK_READ, "freopen mode");
+
+  p = freopen (path, mode, s);
+  if (NULL != p) {
+#ifdef MF_REGISTER_fopen
+    __mf_register (p, sizeof (*p), MF_REGISTER_fopen, "freopen result");
+#endif
+    MF_VALIDATE_EXTENT (p, sizeof (*p), __MF_CHECK_WRITE, "freopen result");
+
+    mkbuffer (p);
   }
 
   return p;
@@ -627,6 +787,39 @@ WRAPPER2(FILE *, fopen64, const char *path, const char *mode)
     __mf_register (p, sizeof (*p), MF_REGISTER_fopen, "fopen64 result");
 #endif
     MF_VALIDATE_EXTENT (p, sizeof (*p), __MF_CHECK_WRITE, "fopen64 result");
+
+    mkbuffer (p);
+  }
+
+  return p;
+}
+#endif
+
+
+#ifdef HAVE_FREOPEN64
+WRAPPER2(FILE *, freopen64, const char *path, const char *mode, FILE *s)
+{
+  size_t n;
+  FILE *p;
+  TRACE ("%s\n", __PRETTY_FUNCTION__);
+
+  n = strlen (path);
+  MF_VALIDATE_EXTENT (path, CLAMPADD(n, 1), __MF_CHECK_READ, "freopen64 path");
+
+  MF_VALIDATE_EXTENT (s, (sizeof (*s)), __MF_CHECK_WRITE, "freopen64 stream");
+  unmkbuffer (s);
+
+  n = strlen (mode);
+  MF_VALIDATE_EXTENT (mode, CLAMPADD(n, 1), __MF_CHECK_READ, "freopen64 mode");
+
+  p = freopen (path, mode, s);
+  if (NULL != p) {
+#ifdef MF_REGISTER_fopen
+    __mf_register (p, sizeof (*p), MF_REGISTER_fopen, "freopen64 result");
+#endif
+    MF_VALIDATE_EXTENT (p, sizeof (*p), __MF_CHECK_WRITE, "freopen64 result");
+
+    mkbuffer (p);
   }
 
   return p;
@@ -644,6 +837,7 @@ WRAPPER2(int, fclose, FILE *stream)
 #ifdef MF_REGISTER_fopen
   __mf_unregister (stream, sizeof (*stream), MF_REGISTER_fopen);
 #endif
+  unmkbuffer (stream);
 
   return resp;
 }
@@ -943,8 +1137,9 @@ WRAPPER2(int , remove, const char *path)
 WRAPPER2(int, fflush, FILE *stream)
 {
   TRACE ("%s\n", __PRETTY_FUNCTION__);
-  MF_VALIDATE_EXTENT (stream, sizeof (*stream), __MF_CHECK_WRITE,
-    "fflush stream");
+  if (stream != NULL)
+    MF_VALIDATE_EXTENT (stream, sizeof (*stream), __MF_CHECK_WRITE,
+                        "fflush stream");
   return fflush (stream);
 }
 
@@ -1068,28 +1263,6 @@ WRAPPER2(int , mkfifo, const char *path, mode_t mode)
   n = strlen (path);
   MF_VALIDATE_EXTENT (path, CLAMPADD(n, 1), __MF_CHECK_READ, "mkfifo path");
   return mkfifo (path, mode);
-}
-
-
-WRAPPER2(int, setvbuf, FILE *stream, char *buf, int mode , size_t size)
-{
-  TRACE ("%s\n", __PRETTY_FUNCTION__);
-  MF_VALIDATE_EXTENT (stream, sizeof (*stream), __MF_CHECK_WRITE,
-    "setvbuf stream");
-  if (NULL != buf)
-    MF_VALIDATE_EXTENT (buf, size, __MF_CHECK_READ, "setvbuf buf");
-  return setvbuf (stream, buf, mode, size);
-}
-
-
-WRAPPER2(void, setbuf, FILE *stream, char *buf)
-{
-  TRACE ("%s\n", __PRETTY_FUNCTION__);
-  MF_VALIDATE_EXTENT (stream, sizeof (*stream), __MF_CHECK_WRITE,
-    "setbuf stream");
-  if (NULL != buf)
-    MF_VALIDATE_EXTENT (buf, BUFSIZ, __MF_CHECK_READ, "setbuf buf");
-  setbuf (stream, buf);
 }
 
 

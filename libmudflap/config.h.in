@@ -33,6 +33,9 @@
 /* Define to 1 if you have the `fopen64' function. */
 #undef HAVE_FOPEN64
 
+/* Define to 1 if you have the `freopen64' function. */
+#undef HAVE_FREOPEN64
+
 /* Define to 1 if you have the `fseeko64' function. */
 #undef HAVE_FSEEKO64
 
@@ -126,8 +129,14 @@
 /* Define to 1 if you have the `memrchr' function. */
 #undef HAVE_MEMRCHR
 
+/* Define to 1 if you have the `mmap' function. */
+#undef HAVE_MMAP
+
 /* Define to 1 if you have the <mntent.h> header file. */
 #undef HAVE_MNTENT_H
+
+/* Define to 1 if you have the `munmap' function. */
+#undef HAVE_MUNMAP
 
 /* Define to 1 if you have the <netdb.h> header file. */
 #undef HAVE_NETDB_H
@@ -141,11 +150,23 @@
 /* Define to 1 if you have the <pwd.h> header file. */
 #undef HAVE_PWD_H
 
+/* Define to 1 if you have the `setbuf' function. */
+#undef HAVE_SETBUF
+
+/* Define to 1 if you have the `setbuffer' function. */
+#undef HAVE_SETBUFFER
+
 /* Define to 1 if you have the `sethostname' function. */
 #undef HAVE_SETHOSTNAME
 
+/* Define to 1 if you have the `setlinebuf' function. */
+#undef HAVE_SETLINEBUF
+
 /* Define to 1 if you have the `setmntent' function. */
 #undef HAVE_SETMNTENT
+
+/* Define to 1 if you have the `setvbuf' function. */
+#undef HAVE_SETVBUF
 
 /* Define to 1 if you have the `signal' function. */
 #undef HAVE_SIGNAL
@@ -179,6 +200,9 @@
 
 /* Define to 1 if you have the <sys/ipc.h> header file. */
 #undef HAVE_SYS_IPC_H
+
+/* Define to 1 if you have the <sys/mman.h> header file. */
+#undef HAVE_SYS_MMAN_H
 
 /* Define to 1 if you have the <sys/sem.h> header file. */
 #undef HAVE_SYS_SEM_H
