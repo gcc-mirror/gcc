@@ -278,19 +278,6 @@ fixup_result_decl (decl, result)
     }
 }
 
-/* Return nonzero iff DECL is memory-based.  The DECL_RTL of
-   certain const variables might be a CONST_INT, or a REG
-   in some cases.  We cannot use `memory_operand' as a test
-   here because on most RISC machines, a variable's address
-   is not, by itself, a legitimate address.  */
-
-int
-decl_in_memory_p (decl)
-     tree decl;
-{
-  return DECL_RTL (decl) != 0 && GET_CODE (DECL_RTL (decl)) == MEM;
-}
-
 /* Expand this initialization inline and see if it's simple enough that
    it can be done at compile-time.  */
 

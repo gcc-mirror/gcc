@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 extern tree get_file_function_name ();
 extern tree cleanups_this_call;
 static void grok_function_init ();
+extern int current_class_depth;
 
 /* A list of virtual function tables we must make sure to write out.  */
 tree pending_vtables;
@@ -1328,11 +1329,20 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree, attrlist)
       flags = 0;
     }
 
+  if (declspecs == NULL_TREE
+      && TREE_CODE (declarator) == SCOPE_REF)
+    {
+      /* Access declaration */
+      if (TREE_COMPLEXITY (declarator) == current_class_depth)
+	pop_nested_class (1);
+      return do_class_using_decl (declarator);
+    }
+
   if (init
       && TREE_CODE (init) == TREE_LIST
       && TREE_VALUE (init) == error_mark_node
       && TREE_CHAIN (init) == NULL_TREE)
-	init = NULL_TREE;
+    init = NULL_TREE;
 
   value = grokdeclarator (declarator, declspecs, FIELD, init != 0,
 			  raises, NULL_TREE);
@@ -1867,8 +1877,11 @@ grok_function_init (decl, init)
 
   if (TREE_CODE (type) == FUNCTION_TYPE)
     cp_error ("initializer specified for non-member function `%D'", decl);
+#if 0
+  /* We'll check for this in finish_struct_1.  */
   else if (DECL_VINDEX (decl) == NULL_TREE)
     cp_error ("initializer specified for non-virtual method `%D'", decl);
+#endif
   else if (integer_zerop (init))
     {
 #if 0
@@ -3404,10 +3417,23 @@ tree
 do_class_using_decl (decl)
      tree decl;
 {
-  tree type;
+  tree name, value;
 
-  /* Ignore for now, unimplemented. */
-  return NULL_TREE;
+  if (TREE_CODE (decl) != SCOPE_REF)
+    {
+      cp_error ("using-declaration for non-member at class scope");
+      return NULL_TREE;
+    }
+  name = TREE_OPERAND (decl, 1);
+  if (TREE_CODE (name) == BIT_NOT_EXPR)
+    {
+      cp_error ("using-declaration for destructor");
+      return NULL_TREE;
+    }
+
+  value = build_lang_field_decl (USING_DECL, name, unknown_type_node);
+  DECL_INITIAL (value) = TREE_OPERAND (decl, 0);
+  return value;
 }
 
 void

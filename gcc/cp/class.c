@@ -2758,7 +2758,7 @@ mark_overriders (fndecl, base_fndecls)
    mark this field as being virtual as well.  */
 
 void
-fixup_virtual (decl, ctype)
+check_for_override (decl, ctype)
      tree decl, ctype;
 {
   tree binfos = BINFO_BASETYPES (TYPE_BINFO (ctype));
@@ -3177,7 +3177,9 @@ finish_struct_1 (t, attributes, warn_anon)
       DECL_SAVED_INSNS (x) = NULL_RTX;
       DECL_FIELD_SIZE (x) = 0;
 
-      fixup_virtual (x, t);
+      check_for_override (x, t);
+      if (DECL_ABSTRACT_VIRTUAL_P (x) && ! DECL_VINDEX (x))
+	cp_error_at ("initializer specified for non-virtual method `%D'", x);
 
       /* The name of the field is the original field name
 	 Save this in auxiliary field for later overloading.  */
@@ -3198,19 +3200,36 @@ finish_struct_1 (t, attributes, warn_anon)
       GNU_xref_member (current_class_name, x);
 
       /* Handle access declarations.  */
-      if (DECL_NAME (x) && TREE_CODE (DECL_NAME (x)) == SCOPE_REF)
+      if (TREE_CODE (x) == USING_DECL)
 	{
-	  tree fdecl = TREE_OPERAND (DECL_NAME (x), 1);
+	  tree ctype = DECL_INITIAL (x);
+	  tree sname = DECL_NAME (x);
 	  tree access
 	    = TREE_PRIVATE (x) ? access_private_node :
 	      TREE_PROTECTED (x) ? access_protected_node : access_public_node;
+	  tree fdecl, binfo;
 
 	  if (last_x)
 	    TREE_CHAIN (last_x) = TREE_CHAIN (x);
 	  else
 	    fields = TREE_CHAIN (x);
 
-	  access_decls = tree_cons (access, fdecl, access_decls);
+	  binfo = binfo_or_else (ctype, t);
+	  if (! binfo)
+	    continue;
+
+	  if (sname == constructor_name (ctype)
+	      || sname == constructor_name_full (ctype))
+	    cp_error_at ("using-declaration for constructor", x);
+
+	  fdecl = lookup_field (binfo, sname, 0, 0);
+	  if (! fdecl)
+	    fdecl = lookup_fnfields (binfo, sname, 0);
+
+	  if (fdecl)
+	    access_decls = tree_cons (access, fdecl, access_decls);
+	  else
+	    cp_error_at ("no members matching `%D' in `%#T'", x, ctype);
 	  continue;
 	}
 
@@ -3529,6 +3548,7 @@ finish_struct_1 (t, attributes, warn_anon)
     {
       /* Here we must cons up a destructor on the fly.  */
       tree dtor = cons_up_default_function (t, name, needs_virtual_dtor != 0);
+      check_for_override (dtor, t);
 
       /* If we couldn't make it work, then pretend we didn't need it.  */
       if (dtor == void_type_node)
@@ -4125,9 +4145,6 @@ finish_struct_1 (t, attributes, warn_anon)
   else if (TYPE_NEEDS_CONSTRUCTING (t))
     build_class_init_list (t);
 
-  if (! IS_SIGNATURE (t))
-    embrace_waiting_friends (t);
-
   /* Write out inline function definitions.  */
   do_inline_function_hair (t, CLASSTYPE_INLINE_FRIENDS (t));
   CLASSTYPE_INLINE_FRIENDS (t) = 0;
@@ -4289,7 +4306,7 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 
 	  /* Check for inconsistent use of this name in the class body.
              Enums, types and static vars have already been checked.  */
-	  if (TREE_CODE (x) != TYPE_DECL
+	  if (TREE_CODE (x) != TYPE_DECL && TREE_CODE (x) != USING_DECL
 	      && TREE_CODE (x) != CONST_DECL && TREE_CODE (x) != VAR_DECL)
 	    {
 	      tree name = DECL_NAME (x);

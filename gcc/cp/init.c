@@ -2332,23 +2332,6 @@ add_friends (type, name, friend_type)
     }
 }
 
-/* Set up a cross reference so that type TYPE will make member function
-   CTYPE::DECL a friend when CTYPE is finally defined.  For more than
-   one, set up a cross reference so that functions with the name DECL
-   and type CTYPE know that they are friends of TYPE.  */
-static void
-xref_friend (type, decl, ctype)
-     tree type, decl, ctype;
-{
-  tree friend_decl = TYPE_NAME (ctype);
-  tree t = 0;
-
-  SET_DECL_WAITING_FRIENDS (friend_decl,
-			    tree_cons (type, t,
-				       DECL_WAITING_FRIENDS (friend_decl)));
-  TREE_TYPE (DECL_WAITING_FRIENDS (friend_decl)) = decl;
-}
-
 /* Make FRIEND_TYPE a friend class to TYPE.  If FRIEND_TYPE has already
    been defined, we make all of its member functions friends of
    TYPE.  If not, we make it a pending friend, which can later be added
@@ -2469,24 +2452,14 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals)
 
 	  /* Get the class they belong to.  */
 	  tree ctype = IDENTIFIER_TYPE_VALUE (cname);
+	  tree fields = lookup_fnfields (TYPE_BINFO (ctype), declarator, 0);
 
-	  /* This class is defined, use its methods now.  */
-	  if (TYPE_SIZE (ctype))
-	    {
-	      tree fields = lookup_fnfields (TYPE_BINFO (ctype), declarator, 0);
-	      if (fields)
-		add_friends (current_class_type, declarator, ctype);
-	      else
-		error ("method `%s' is not a member of class `%s'",
-		       IDENTIFIER_POINTER (declarator),
-		       IDENTIFIER_POINTER (cname));
-	    }
+	  if (fields)
+	    add_friends (current_class_type, declarator, ctype);
 	  else
-	    /* Note: DECLARATOR actually has more than one; in this
-	       case, we're making sure that fns with the name DECLARATOR
-	       and type CTYPE know they are friends of the current
-	       class type.  */
-	    xref_friend (current_class_type, declarator, ctype);
+	    error ("method `%s' is not a member of class `%s'",
+		   IDENTIFIER_POINTER (declarator),
+		   IDENTIFIER_POINTER (cname));
 	  decl = void_type_node;
 	}
     }
@@ -2560,49 +2533,6 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals)
       decl = void_type_node;
     }
   return decl;
-}
-
-/* TYPE has now been defined.  It may, however, have a number of things
-   waiting make make it their friend.  We resolve these references
-   here.  */
-void
-embrace_waiting_friends (type)
-     tree type;
-{
-  tree decl = TYPE_NAME (type);
-  tree waiters;
-
-  if (TREE_CODE (decl) != TYPE_DECL)
-    return;
-
-  for (waiters = DECL_WAITING_FRIENDS (decl); waiters;
-       waiters = TREE_CHAIN (waiters))
-    {
-      tree waiter = TREE_PURPOSE (waiters);
-      tree decl = TREE_TYPE (waiters);
-      tree name = decl ? (TREE_CODE (decl) == IDENTIFIER_NODE
-			  ? decl : DECL_NAME (decl)) : NULL_TREE;
-      if (name)
-	{
-	  /* @@ There may be work to be done since we have not verified
-	     @@ consistency between original and friend declarations
-	     @@ of the functions waiting to become friends.  */
-	  tree field = lookup_fnfields (TYPE_BINFO (type), name, 0);
-	  if (field)
-	    if (decl == name)
-	      add_friends (waiter, name, type);
-	    else
-	      add_friend (waiter, decl);
-	  else
-	    error_with_file_and_line (DECL_SOURCE_FILE (TYPE_NAME (waiter)),
-				      DECL_SOURCE_LINE (TYPE_NAME (waiter)),
-				      "no method `%s' defined in class `%s' to be friend",
-				      IDENTIFIER_POINTER (DECL_NAME (TREE_TYPE (waiters))),
-				      TYPE_NAME_STRING (type));
-	}
-      else
-	make_friend_class (type, waiter);
-    }
 }
 
 /* Common subroutines of build_new and build_vec_delete.  */

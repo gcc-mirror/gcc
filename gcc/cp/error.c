@@ -740,6 +740,13 @@ dump_decl (t, v)
 	dump_expr (DECL_INITIAL (t), 0);
       break;
 
+    case USING_DECL:
+      OB_PUTS ("using ");
+      dump_type (DECL_INITIAL (t), 0);
+      OB_PUTS ("::");
+      OB_PUTID (DECL_NAME (t));
+      break;
+
     default:
       sorry ("`%s' not supported by dump_decl",
 	     tree_code_name[(int) TREE_CODE (t)]);

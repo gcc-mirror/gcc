@@ -1,8 +1,107 @@
+Thu Feb 15 18:44:42 1996  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (cp_finish_decl): Delay emitting the debug information for
+	a typedef that has been installed as the canonical typedef, if the
+	type has not yet been defined.
+
+Thu Feb 15 09:39:08 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (grokfield): Still call pop_nested_class for access decls.
+
+Wed Feb 14 17:30:04 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl.c (lookup_label): Call label_rtx.
+
+	* decl.c (make_binding_level): New function.
+	(pushlevel, pushlevel_class): Call it instead of explicit
+	duplicate calls to xmalloc.
+
+	* decl.c (init_decl_processing): Delete useless build_pointer_type
+	call.
+
+	* decl.c (float_ftype_float, ldouble_ftype_ldouble): Add definitions.
+	(sizet_ftype_string): Delete variable.
+	(init_decl_processing): Add built-in functions fabsf, fabsl,
+	sqrtf, sqrtl, sinf, sin, sinl, cosf, cos, cosl.  New local
+	variable strlen_ftype, used for strlen.
+
+Wed Feb 14 16:21:25 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (push_to_top_level): Start from current_binding_level
+ 	again for now; the stl hacks depend on g++ being broken in this
+ 	way, and it'll be fixed in the template rewrite.
+
+	* tree.def: Add USING_DECL.
+	* decl2.c (do_class_using_decl): Implement.
+	(grokfield): Pass access decls off to do_class_using_decl instead of
+	grokdeclarator.
+	* error.c (dump_decl): Handle USING_DECLs.
+	* decl.c (grokdeclarator): Remove code for handling access decls.
+	* class.c (finish_struct_1): Adjust accordingly, treat using-decls
+ 	as access decls for now.
+	(finish_struct): Don't check USING_DECLs for other uses of the name.
+
+	* search.c (get_matching_virtual): Use cp_error_at.
+
+Wed Feb 14 10:36:58 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* typeck.c (comptypes): Default COMP_TYPE_ATTRIBUTES to 1, to
+	match c-typeck.c.
+	(self_promoting_args_p): Move the check that TYPE is non-nil
+	before trying to look at its main variant.
+	(unsigned_type, signed_type): Add checking of DI/SI/HI/QI nodes.
+
+	* cp-tree.h (DECL_WAITING_FRIENDS, SET_DECL_WAITING_FRIENDS):
+	Delete macros.
+	* init.c (xref_friend, embrace_waiting_friends): Delete functions.
+	(do_friend): Delete call to xref_friend.
+	* class.c (finish_struct_1): Delete call to embrace_waiting_friends.
+
+	* typeck.c (convert_sequence): #if 0 unused function.
+
+	* cp-tree.h (DECL_IN_MEMORY_P): New macro w/ the check that used to
+	be in decl_in_memory_p.
+	(decl_in_memory_p): Delete decl.
+	* expr.c (decl_in_memory_p): Delete fn.
+	* typeck.c (mark_addressable): Use DECL_IN_MEMORY_P.
+
+	* decl.c (cp_finish_decl): Use DECL_IN_MEMORY_P.
+
+Tue Feb 13 12:51:21 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (finish_struct_1): Check for a pure-specifier on a
+ 	non-virtual function here.
+
+	* decl2.c (grok_function_init): Don't check whether the function
+ 	is virtual here.
+	(grokfield): Don't call check_for_override here.
+
+	* decl.c (push_to_top_level): Start from inner_binding_level,
+ 	check class_shadowed in class levels.
+
+Mon Feb 12 17:46:59 1996  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (resume_level): Ignore things that don't have names, instead
+	of core dumping.
+
+Mon Feb 12 15:47:44 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl2.c (grokfield): Set DECL_VINDEX properly for FUNCTION_DECLs.
+
+Sat Feb 10 17:59:45 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (finish_struct_1): Set DECL_VINDEX properly on a
+ 	synthesized dtor.
+
+	* parse.y (complete_type_name): Bind global_scope earlier.
+	(complex_type_name): Ditto.
+	(qualified_type_name): Remove.
+
 Thu Feb  8 15:15:14 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokfndecl): Move code that looks for virtuals in base
  	classes...
-	* class.c (fixup_virtual): ... to a new function.
+	* class.c (check_for_override): ... to a new function.
 	(finish_struct_1): Call it.
 
 	* cp-tree.h: Declare warn_sign_compare.

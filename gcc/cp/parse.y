@@ -254,7 +254,7 @@ empty_parms ()
 /* %type <itype> try_for_typename */
 %type <ttype> condition xcond paren_cond_or_null
 %type <ttype> type_name nested_name_specifier nested_type ptr_to_mem
-%type <ttype> qualified_type_name complete_type_name notype_identifier
+%type <ttype> complete_type_name notype_identifier
 %type <ttype> complex_type_name nested_name_specifier_1
 %type <itype> nomods_initdecls nomods_initdcl0
 %type <ttype> new_initializer new_placement specialization type_specifier_seq
@@ -2854,23 +2854,48 @@ after_type_declarator:
 	| direct_after_type_declarator
 	;
 
-qualified_type_name:
+complete_type_name:
 	  type_name %prec EMPTY
 		{
-		  $$ = identifier_typedecl_value ($1);
-		  /* Remember that this name has been used in the class
-		     definition, as per [class.scope0] */
-		  if (current_class_type
-		      && TYPE_BEING_DEFINED (current_class_type)
-		      && ! IDENTIFIER_TEMPLATE ($1)
-		      && ! IDENTIFIER_CLASS_VALUE ($1))
+		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
 		    {
-		      /* Be sure to get an inherited typedef.  */
-		      $$ = lookup_name ($1, 1);
-		      pushdecl_class_level ($$);
+		      if (current_class_type
+			  && TYPE_BEING_DEFINED (current_class_type)
+			  && ! TREE_MANGLED ($1)
+			  && ! IDENTIFIER_CLASS_VALUE ($1))
+			{
+			  /* Be sure to get an inherited typedef.  */
+			  $$ = lookup_name ($1, 1);
+			  /* Remember that this name has been used in the class
+			     definition, as per [class.scope0] */
+			  pushdecl_class_level ($$);
+			}
+		      else
+			$$ = identifier_typedecl_value ($1);
 		    }
+		  else
+		    $$ = $1;
+		}
+	| global_scope type_name
+		{
+		  if (TREE_CODE ($2) == IDENTIFIER_NODE)
+		    {
+		      if (current_class_type
+			  && TYPE_BEING_DEFINED (current_class_type)
+			  && ! TREE_MANGLED ($2)
+			  && ! IDENTIFIER_CLASS_VALUE ($2))
+			/* Be sure to get an inherited typedef.  */
+			$$ = lookup_name ($2, 1);
+		      else
+		        $$ = identifier_typedecl_value ($2);
+		    }
+		  else
+		    $$ = $2;
+		  got_scope = NULL_TREE;
 		}
 	| nested_type
+	| global_scope nested_type
+		{ $$ = $2; }
 	;
 
 nested_type:
@@ -3016,15 +3041,26 @@ nested_name_specifier_1:
 		{ goto failed_scope; } */
 	;
 
-complete_type_name:
-	  qualified_type_name
-	| global_scope qualified_type_name
-		{ $$ = $2; }
-	;
-
 complex_type_name:
-	  nested_type
-	| global_scope qualified_type_name
+	  global_scope type_name
+		{
+		  if (TREE_CODE ($2) == IDENTIFIER_NODE)
+		    {
+		      if (current_class_type
+			  && TYPE_BEING_DEFINED (current_class_type)
+			  && ! TREE_MANGLED ($2)
+			  && ! IDENTIFIER_CLASS_VALUE ($2))
+			/* Be sure to get an inherited typedef.  */
+			$$ = lookup_name ($2, 1);
+		      else
+		        $$ = identifier_typedecl_value ($2);
+		    }
+		  else
+		    $$ = $2;
+		  got_scope = NULL_TREE;
+		}
+	| nested_type
+	| global_scope nested_type
 		{ $$ = $2; }
 	;
 
