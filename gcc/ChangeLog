@@ -1,12 +1,9 @@
+Mon Jun  8 10:43:15 1998  Richard Henderson  <rth@cygnus.com>
+
+	* expr.c (force_operand): Detect PIC address loads before 
+	splitting arithmetic.
+
 Mon Jun 8 09:22:38 PDT 1998 Jeff Law  (law@cygnus.com)
-
-	* version.c: Bump for snapshot.
-
-Mon Jun 8 09:17:09 PDT 1998 Jeff Law  (law@cygnus.com)
-
-	* version.c: Bump for snapshot.
-
-Mon Jun 8 02:09:47 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
