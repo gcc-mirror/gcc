@@ -2944,7 +2944,7 @@ build_unary_op (code, xarg, noconvert)
 
 	if (typecode == POINTER_TYPE)
 	  {
-	    if (pedantic
+	    if ((pedantic || warn_pointer_arith)
 		&& (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE
 		    || TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE))
 	      pedwarn ("wrong type argument to %s",
