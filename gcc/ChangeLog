@@ -1,3 +1,8 @@
+2000-05-04  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Add floating-point
+	comparison codes to branch_comparison_operator.
+
 2000-05-04  Richard Henderson  <rth@cygnus.com>
 
 	* ifcvt.c (noce_process_if_block): Always reset X in the A == B case.
