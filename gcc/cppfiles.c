@@ -272,6 +272,7 @@ read_include_file (pfile, inc)
 	}
       size = inc->st.st_size;
 
+      inc->mapped = 0;
 #if MMAP_THRESHOLD
       if (pagesize == -1)
 	pagesize = getpagesize ();
@@ -300,7 +301,6 @@ read_include_file (pfile, inc)
 		}
 	      offset += count;
 	    }
-	  inc->mapped = 0;
 	}
     }
   else if (S_ISBLK (inc->st.st_mode))
@@ -363,9 +363,11 @@ purge_cache (inc)
 {
   if (inc->buffer)
     {
+#if MMAP_THRESHOLD
       if (inc->mapped)
 	munmap ((PTR) inc->buffer, inc->st.st_size);
       else
+#endif
 	free ((PTR) inc->buffer);
       inc->buffer = NULL;
     }
