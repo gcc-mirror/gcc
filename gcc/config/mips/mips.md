@@ -96,6 +96,10 @@
 (define_asm_attributes
   [(set_attr "type" "multi")])
 
+;; whether or not generating calls to position independent functions
+(define_attr "abicalls" "no,yes"
+  (const (symbol_ref "mips_abicalls")))
+
 
 
 ;; .........................
@@ -109,7 +113,12 @@
    (nil)
    (and (eq_attr "branch_likely" "yes") (and (eq_attr "dslot" "no") (eq_attr "length" "1")))])
 
-(define_delay (eq_attr "type" "call,jump")
+(define_delay (eq_attr "type" "jump")
+  [(and (eq_attr "dslot" "no") (eq_attr "length" "1"))
+   (nil)
+   (nil)])
+
+(define_delay (and (eq_attr "type" "call") (eq_attr "abicalls" "no"))
   [(and (eq_attr "dslot" "no") (eq_attr "length" "1"))
    (nil)
    (nil)])
@@ -4089,7 +4098,7 @@ move\\t%0,%z4\\n\\
   [(call (match_operand 0 "call_insn_operand" "m")
 	 (match_operand 1 "" "i"))
    (clobber (match_operand:SI 2 "register_operand" "=d"))]
-  "!TARGET_LONG_CALLS"
+  "!TARGET_ABICALLS && !TARGET_LONG_CALLS"
   "*
 {
   register rtx target = XEXP (operands[0], 0);
@@ -4114,14 +4123,61 @@ move\\t%0,%z4\\n\\
    (set_attr "length"	"1")])
 
 (define_insn "call_internal2"
+  [(call (match_operand 0 "call_insn_operand" "m")
+	 (match_operand 1 "" "i"))
+   (clobber (match_operand:SI 2 "register_operand" "=d"))]
+  "TARGET_ABICALLS && !TARGET_LONG_CALLS"
+  "*
+{
+  register rtx target = XEXP (operands[0], 0);
+
+  if (GET_CODE (target) == SYMBOL_REF)
+    return \"jal\\t%0\";
+
+  else if (GET_CODE (target) == CONST_INT)
+    {
+      operands[0] = target;
+      return \"li\\t%^,%0\\n\\tjal\\t%2,%^\";
+    }
+
+  else
+    {
+      operands[0] = target;
+      if (REGNO (target) != PIC_FUNCTION_ADDR_REGNUM)
+	return \"move\\t%^,%0\\n\\tjal\\t%2,%^\";
+      else
+	return \"jal\\t%2,%0\";
+    }
+}"
+  [(set_attr "type"	"call")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"2")])
+
+(define_insn "call_internal3"
   [(call (mem:SI (match_operand:SI 0 "register_operand" "r"))
 	 (match_operand 1 "" "i"))
    (clobber (match_operand:SI 2 "register_operand" "=d"))]
-  "TARGET_LONG_CALLS"
+  "!TARGET_ABICALLS && TARGET_LONG_CALLS"
   "%*jal\\t%2,%0"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
    (set_attr "length"	"1")])
+
+(define_insn "call_internal4"
+  [(call (mem:SI (match_operand:SI 0 "register_operand" "r"))
+	 (match_operand 1 "" "i"))
+   (clobber (match_operand:SI 2 "register_operand" "=d"))]
+  "TARGET_ABICALLS && TARGET_LONG_CALLS"
+  "*
+{
+  if (REGNO (operands[0]) != PIC_FUNCTION_ADDR_REGNUM)
+    return \"move\\t%^,%0\\n\\tjal\\t%2,%^\";
+  else
+    return \"jal\\t%2,%0\";
+}"
+  [(set_attr "type"	"call")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"2")])
 
 
 ;; calls.c now passes a fourth argument, make saber happy
@@ -4174,7 +4230,7 @@ move\\t%0,%z4\\n\\
         (call (match_operand 1 "call_insn_operand" "m")
               (match_operand 2 "" "i")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
-  "!TARGET_LONG_CALLS"
+  "!TARGET_ABICALLS && !TARGET_LONG_CALLS"
   "*
 {
   register rtx target = XEXP (operands[1], 0);
@@ -4200,14 +4256,63 @@ move\\t%0,%z4\\n\\
 
 (define_insn "call_value_internal2"
   [(set (match_operand 0 "register_operand" "=df")
+        (call (match_operand 1 "call_insn_operand" "m")
+              (match_operand 2 "" "i")))
+   (clobber (match_operand:SI 3 "register_operand" "=d"))]
+  "TARGET_ABICALLS && !TARGET_LONG_CALLS"
+  "*
+{
+  register rtx target = XEXP (operands[1], 0);
+
+  if (GET_CODE (target) == SYMBOL_REF)
+    return \"jal\\t%1\";
+
+  else if (GET_CODE (target) == CONST_INT)
+    {
+      operands[1] = target;
+      return \"li\\t%^,%1\\n\\tjal\\t%3,%^\";
+    }
+
+  else
+    {
+      operands[1] = target;
+      if (REGNO (target) != PIC_FUNCTION_ADDR_REGNUM)
+	return \"move\\t%^,%1\\n\\tjal\\t%3,%^\";
+      else
+	return \"jal\\t%3,%1\";
+    }
+}"
+  [(set_attr "type"	"call")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"2")])
+
+(define_insn "call_value_internal3"
+  [(set (match_operand 0 "register_operand" "=df")
         (call (mem:SI (match_operand:SI 1 "register_operand" "r"))
 	      (match_operand 2 "" "i")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
-  "TARGET_LONG_CALLS"
+  "!TARGET_ABICALLS && TARGET_LONG_CALLS"
   "%*jal\\t%3,%1"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
    (set_attr "length"	"1")])
+
+(define_insn "call_value_internal4"
+  [(set (match_operand 0 "register_operand" "=df")
+        (call (mem:SI (match_operand:SI 1 "register_operand" "r"))
+	      (match_operand 2 "" "i")))
+   (clobber (match_operand:SI 3 "register_operand" "=d"))]
+  "TARGET_ABICALLS && TARGET_LONG_CALLS"
+  "*
+{
+  if (REGNO (operands[1]) != PIC_FUNCTION_ADDR_REGNUM)
+    return \"move\\t%^,%1\\n\\tjal\\t%3,%^\";
+  else
+    return \"jal\\t%3,%1\";
+}"
+  [(set_attr "type"	"call")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"2")])
 
 ;; Call subroutine returning any type.
 
