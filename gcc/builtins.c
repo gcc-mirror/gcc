@@ -1506,7 +1506,7 @@ expand_builtin_mathfn (exp, target, subtarget)
     case BUILT_IN_COSF:
     case BUILT_IN_COSL:
       builtin_optab = cos_optab; break;
-    case BUILT_IN_FSQRT:
+    case BUILT_IN_SQRT:
     case BUILT_IN_SQRTF:
     case BUILT_IN_SQRTL:
       builtin_optab = sqrt_optab; break;
@@ -3550,7 +3550,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       {
       case BUILT_IN_SIN:
       case BUILT_IN_COS:
-      case BUILT_IN_FSQRT:
+      case BUILT_IN_SQRT:
       case BUILT_IN_SQRTF:
       case BUILT_IN_SQRTL:
       case BUILT_IN_MEMSET:
@@ -3621,7 +3621,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	 because of possible accuracy problems.  */
       if (! flag_unsafe_math_optimizations)
 	break;
-    case BUILT_IN_FSQRT:
+    case BUILT_IN_SQRT:
     case BUILT_IN_SQRTF:
     case BUILT_IN_SQRTL:
       target = expand_builtin_mathfn (exp, target, subtarget);
