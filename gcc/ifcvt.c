@@ -86,6 +86,7 @@ static bool life_data_ok;
 
 /* Forward references.  */
 static int count_bb_insns (basic_block);
+static int total_bb_rtx_cost (basic_block);
 static rtx first_active_insn (basic_block);
 static rtx last_active_insn (basic_block, int);
 static basic_block block_fallthru (basic_block);
@@ -151,6 +152,27 @@ count_bb_insns (basic_block bb)
     {
       if (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == INSN)
 	count++;
+
+      if (insn == BB_END (bb))
+	break;
+      insn = NEXT_INSN (insn);
+    }
+
+  return count;
+}
+
+/* Count the total rtx_cost of non-jump active insns in BB.  */
+
+static int
+total_bb_rtx_cost (basic_block bb)
+{
+  int count = 0;
+  rtx insn = BB_HEAD (bb);
+
+  while (1)
+    {
+      if (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == INSN)
+	count += rtx_cost (PATTERN (insn), 0);
 
       if (insn == BB_END (bb))
 	break;
@@ -2883,7 +2905,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 	     test_bb->index, then_bb->index);
 
   /* THEN is small.  */
-  if (count_bb_insns (then_bb) > BRANCH_COST)
+  if (total_bb_rtx_cost (then_bb) >= COSTS_N_INSNS (BRANCH_COST))
     return FALSE;
 
   /* Registers set are dead, or are predicable.  */
@@ -2974,7 +2996,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
 	     test_bb->index, else_bb->index);
 
   /* ELSE is small.  */
-  if (count_bb_insns (else_bb) > BRANCH_COST)
+  if (total_bb_rtx_cost (else_bb) >= COSTS_N_INSNS (BRANCH_COST))
     return FALSE;
 
   /* Registers set are dead, or are predicable.  */
