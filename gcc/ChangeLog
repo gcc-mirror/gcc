@@ -1,5 +1,8 @@
 2004-07-08  Alexandre Oliva  <aoliva@redhat.com>
 
+	* builtins.c (expand_builtin_stpcpy): Un-simplify decay of stpcpy
+	to strcpy.
+
 	* expr.h (FUNCTION_ARG_PARTIAL_NREGS): Default to 0.
 	(FUNCTION_ARG_PASS_BY_REFERENCE): Likewise.
 	(FUNCTION_ARG_CALLEE_COPIES): Likewise.
