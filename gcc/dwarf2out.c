@@ -6349,7 +6349,10 @@ size_of_die (die)
 	  size += 1;
 	  break;
 	case dw_val_class_die_ref:
-	  size += DWARF_OFFSET_SIZE;
+	  if (AT_ref_external (a))
+	    size += DWARF2_ADDR_SIZE;
+	  else
+	    size += DWARF_OFFSET_SIZE;
 	  break;
 	case dw_val_class_fde_ref:
 	  size += DWARF_OFFSET_SIZE;
