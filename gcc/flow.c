@@ -1457,8 +1457,7 @@ life_analysis_1 (f, nregs)
 		 basic_block_live_at_end[i], 0, j,
 		 {
 		   consider = 1;
-		   if (!reload_completed
-		       && REGNO_REG_SET_P (basic_block_significant[i], j))
+		   if (REGNO_REG_SET_P (basic_block_significant[i], j))
 		     {
 		       must_rescan = 1;
 		       goto done;
@@ -1797,7 +1796,7 @@ propagate_block (old, first, last, final, significant, bnum)
 	     "delete" it by turning it into a NOTE of type NOTE_INSN_DELETED.
 	     We could really delete it with delete_insn, but that
 	     can cause trouble for first or last insn in a basic block.  */
-	  if (!reload_completed && final && insn_is_dead)
+	  if (final && insn_is_dead)
 	    {
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;

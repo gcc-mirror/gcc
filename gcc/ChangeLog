@@ -26,6 +26,9 @@ Fri Oct 23 15:34:14 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 Fri Oct 23 13:12:35 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* flow.c (life_analysis_1): Enable "rescan" code after reload.
+	(propagate_block): Delete dead code after reload.
+
 	* sched.c (update_flow_info): Revert Oct 19, 1998 change.  Brings
 	back Oct 15, 1998 change.  
 	* haifa-sched.c (update_flow_info): Likewise.
