@@ -1,3 +1,12 @@
+2002-11-22  Geoffrey Keating  <geoffk@apple.com>
+
+	* aclocal.m4 (ac_cv_func_mmap_dev_zero): Darwin does not
+	allow mmap from /dev/zero.  Don't make decisions for the host
+	based on presence or absence of /dev/zero on the build machine.
+	(ac_cv_func_mmap_anon): Darwin does have working MMAP_ANON.
+	(AC_FUNC_MMAP_FILE): Darwin does have mmap of a file.
+	* configure: Regenerate.
+
 2002-11-22  Daniel Jacobowitz  <drow@mvista.com>
 
 	* gcc.c (make_relative_prefix, split_directories)

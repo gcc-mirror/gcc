@@ -660,14 +660,13 @@ AC_CACHE_CHECK(for working mmap from /dev/zero,
  then ac_cv_func_mmap_dev_zero=no
  else ac_cv_func_mmap_dev_zero=buggy
  fi],
- # If this is not cygwin, and /dev/zero is a character device, it's probably
- # safe to assume it works.
+ # When cross-building, assume that this works, unless we know it
+ # doesn't.  Of course, we have no way of knowing if there even is a /dev/zero
+ # on the host, let alone whether mmap will work on it.
  [case "$host_os" in
    cygwin* | win32 | pe | mingw* ) ac_cv_func_mmap_dev_zero=buggy ;;
-   * ) if test -c /dev/zero
-       then ac_cv_func_mmap_dev_zero=yes
-       else ac_cv_func_mmap_dev_zero=no
-       fi ;;
+   darwin* ) ac_cv_func_mmap_dev_zero=no ;;
+   * ) ac_cv_func_mmap_dev_zero=yes ;;
   esac])
 ])
 if test $ac_cv_func_mmap_dev_zero = yes; then
@@ -687,7 +686,10 @@ AC_CACHE_CHECK([for working mmap with MAP_ANON(YMOUS)],
  fi],
  # Unlike /dev/zero, it is not safe to assume MAP_ANON(YMOUS) works
  # just because it's there. Some SCO Un*xen define it but don't implement it.
- ac_cv_func_mmap_anon=no)
+ [case "$host_os" in
+   darwin* ) ac_cv_func_mmap_anon=yes ;;
+   * ) ac_cv_func_mmap_anon=no ;;
+  esac])
 ])
 if test $ac_cv_func_mmap_anon = yes; then
   AC_DEFINE(HAVE_MMAP_ANON, 1,
@@ -740,7 +742,10 @@ int main()
 
   exit(0);
 }], ac_cv_func_mmap_file=yes, ac_cv_func_mmap_file=no,
-ac_cv_func_mmap_file=no)])
+ [case "$host_os" in
+   darwin* ) ac_cv_func_mmap_file=yes ;;
+   * ) ac_cv_func_mmap_file=no ;;
+  esac])])
 if test $ac_cv_func_mmap_file = yes; then
   AC_DEFINE(HAVE_MMAP_FILE, 1,
 	    [Define if read-only mmap of a plain file works.])
