@@ -15938,10 +15938,22 @@ ix86_emit_fp_unordered_jump (rtx label)
   rtx temp;
 
   emit_insn (gen_x86_fnstsw_1 (reg));
-  emit_insn (gen_x86_sahf_1 (reg));
+
+  if (TARGET_USE_SAHF)
+    {
+      emit_insn (gen_x86_sahf_1 (reg));
+
+      temp = gen_rtx_REG (CCmode, FLAGS_REG); 
+      temp = gen_rtx_UNORDERED (VOIDmode, temp, const0_rtx);
+    }
+  else
+    {
+      emit_insn (gen_testqi_ext_ccno_0 (reg, GEN_INT (0x04)));
+
+      temp = gen_rtx_REG (CCNOmode, FLAGS_REG); 
+      temp = gen_rtx_NE (VOIDmode, temp, const0_rtx);
+    }
   
-  temp = gen_rtx_REG (CCmode, FLAGS_REG); 
-  temp = gen_rtx_UNORDERED (VOIDmode, temp, const0_rtx);
   temp = gen_rtx_IF_THEN_ELSE (VOIDmode, temp,
 			      gen_rtx_LABEL_REF (VOIDmode, label),
 			      pc_rtx);
