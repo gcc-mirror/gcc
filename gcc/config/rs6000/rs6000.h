@@ -631,6 +631,10 @@ extern int rs6000_default_long_calls;
 /* A bitfield declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
+/* Most ABIs word-align FP doubles but doubleword-align 64-bit ints.  */
+#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
+  rs6000_field_alignment ((FIELD), (COMPUTED))
+
 /* Make strings word-aligned so strcpy from constants will be faster.
    Make vector constants quadword aligned.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)                           \

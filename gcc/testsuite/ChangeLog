@@ -1,3 +1,9 @@
+2002-08-07  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/i386-bitfield1.c: New test.
+	* g++.dg/abi/bitfield3.C: Update.
+
 2002-08-07  Neil Booth  <neil@daikokuya.co.uk>
 
 	* objc.dg/const-str-2.m: Update.

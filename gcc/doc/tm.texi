@@ -1068,9 +1068,11 @@ by the @code{__attribute__ ((aligned (@var{n})))} construct.
 @findex ADJUST_FIELD_ALIGN
 @item ADJUST_FIELD_ALIGN (@var{field}, @var{computed})
 An expression for the alignment of a structure field @var{field} if the
-alignment computed in the usual way is @var{computed}.  GCC uses
-this value instead of the value in @code{BIGGEST_ALIGNMENT} or
-@code{BIGGEST_FIELD_ALIGNMENT}, if defined.
+alignment computed in the usual way (including applying of
+@code{BIGGEST_ALIGNMENT} and @code{BIGGEST_FIELD_ALIGNMENT} to the
+alignment) is @var{computed}.  It overrides alignment only if the
+field alignment has not been set by the
+@code{__attribute__ ((aligned (@var{n})))} construct.
 
 @findex MAX_OFILE_ALIGNMENT
 @item MAX_OFILE_ALIGNMENT
