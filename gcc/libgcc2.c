@@ -3126,7 +3126,7 @@ __unwind_function(void *ptr)
   asm("movl %ecx,0(%esp)");
   asm("ret");
 }
-#elif #machine(rs6000)
+#elif #machine(rs6000) && !defined _ARCH_PPC
 __unwind_function(void *ptr)
 {
   asm("mr 31,1");
@@ -3142,7 +3142,7 @@ __unwind_function(void *ptr)
   asm("# br");
   asm("mtctr 3;bctr # b 3");
 }
-#elif #machine(powerpc)
+#elif (#machine(rs6000) || #machine(powerpc)) && defined _ARCH_PPC
 __unwind_function(void *ptr)
 {
   asm("mr 31,1");
