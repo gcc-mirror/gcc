@@ -209,8 +209,8 @@ common_type (t1, t2)
   if (t2 == error_mark_node)
     return t1;
 
-  /* Merge the attributes */
-  attributes = merge_attributes (TYPE_ATTRIBUTES (t1), TYPE_ATTRIBUTES (t2));
+  /* Merge the attributes.  */
+  attributes = merge_machine_type_attributes (t1, t2);
 
   /* Treat an enum type as the unsigned integer type of the same width.  */
 

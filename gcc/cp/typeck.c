@@ -320,7 +320,8 @@ common_type (t1, t2)
   if (t2 == error_mark_node)
     return t1;
 
-  /* Merge the attributes */
+  /* Merge the attributes.  */
+  attributes = merge_machine_type_attributes (t1, t2);
 
   { register tree a1, a2;
     a1 = TYPE_ATTRIBUTES (t1);

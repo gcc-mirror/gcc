@@ -7150,6 +7150,22 @@ generated).
 If defined, a C statement that assigns default attributes to
 newly defined @var{type}.
 
+@findex MERGE_MACHINE_TYPE_ATTRIBUTES
+@item MERGE_MACHINE_TYPE_ATTRIBUTES (@var{type1}, @var{type2})
+Define this macro if the merging of type attributes needs special handling.
+If defined, the result is a list of the combined TYPE_ATTRIBUTES of
+@var{type1} and @var{type2}.  It is assumed that comptypes has already been
+called and returned 1.
+
+@findex MERGE_MACHINE_DECL_ATTRIBUTES
+@item MERGE_MACHINE_DECL_ATTRIBUTES (@var{olddecl}, @var{newdecl})
+Define this macro if the merging of decl attributes needs special handling.
+If defined, the result is a list of the combined DECL_MACHINE_ATTRIBUTES of
+@var{olddecl} and @var{newdecl}.  @var{newdecl} is a duplicate declaration
+of @var{olddecl}.  Examples of when this is needed are when one attribute
+overrides another, or when an attribute is nullified by a subsequent
+definition.
+
 @findex DOLLARS_IN_IDENTIFIERS
 @item DOLLARS_IN_IDENTIFIERS
 Define this macro to control use of the character @samp{$} in identifier

@@ -1,3 +1,19 @@
+1998-02-18  Doug Evans  <devans@cygnus.com>
+
+	* tree.h (merge_machine_{type,decl}_attributes): Declare.
+	(split_specs_attrs, strip_attrs): Add prototypes.
+	* tree.c (merge_machine_{type,decl}_attributes): New functions.
+	* c-decl.c (duplicate_decls): Call merge_machine_decl_attributes.
+	Update olddecl's attributes too.
+	* c-common.c (strip_attrs): New function.
+	* c-typeck.c (common_type): Call merge_machine_type_attributes.
+	* varasm.c (make_function_rtl): New target macro REDO_SECTION_INFO_P.
+	(make_decl_rtl): Likewise.
+
+1998-02-18  Jim Wilson  <wilson@cygnus.com>
+
+	* c-decl.c (shadow_tag_warned): Call split_specs_attrs.
+
 Wed Feb 18 09:09:50 1998  Jeffrey A Law  (law@cygnus.com)
 
 	Remove this change until we can fix it correctly.

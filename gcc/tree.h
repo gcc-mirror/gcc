@@ -1335,6 +1335,17 @@ extern tree make_tree			PROTO((tree, struct rtx_def *));
 extern tree build_type_attribute_variant PROTO((tree, tree));
 extern tree build_decl_attribute_variant PROTO((tree, tree));
 
+extern tree merge_machine_decl_attributes PROTO((tree, tree));
+extern tree merge_machine_type_attributes PROTO((tree, tree));
+
+/* Split a list of declspecs and attributes into two.  */
+
+extern void split_specs_attrs		PROTO((tree, tree *, tree *));
+
+/* Strip attributes from a list of combined specs and attrs.  */
+
+extern tree strip_attrs			PROTO((tree));
+
 /* Return 1 if an attribute and its arguments are valid for a decl or type.  */
 
 extern int valid_machine_attribute	PROTO((tree, tree, tree, tree));

@@ -523,6 +523,20 @@ make_function_rtl (decl)
       ENCODE_SECTION_INFO (decl);
 #endif
     }
+  else
+    {
+      /* ??? Another way to do this would be to do what halfpic.c does
+	 and maintain a hashed table of such critters.  */
+      /* ??? Another way to do this would be to pass a flag bit to
+	 ENCODE_SECTION_INFO saying whether this is a new decl or not.  */
+      /* Let the target reassign the RTL if it wants.
+	 This is necessary, for example, when one machine specific
+	 decl attribute overrides another.  */
+#ifdef REDO_SECTION_INFO_P
+      if (REDO_SECTION_INFO_P (decl))
+	ENCODE_SECTION_INFO (decl);
+#endif
+    }
 
   /* Record at least one function has been defined.  */
   function_defined = 1;
@@ -768,11 +782,26 @@ make_decl_rtl (decl, asmspec, top_level)
 #endif
 	}
     }
-  /* If the old RTL had the wrong mode, fix the mode.  */
-  else if (GET_MODE (DECL_RTL (decl)) != DECL_MODE (decl))
+  else
     {
-      rtx rtl = DECL_RTL (decl);
-      PUT_MODE (rtl, DECL_MODE (decl));
+      /* If the old RTL had the wrong mode, fix the mode.  */
+      if (GET_MODE (DECL_RTL (decl)) != DECL_MODE (decl))
+	{
+	  rtx rtl = DECL_RTL (decl);
+	  PUT_MODE (rtl, DECL_MODE (decl));
+	}
+
+      /* ??? Another way to do this would be to do what halfpic.c does
+	 and maintain a hashed table of such critters.  */
+      /* ??? Another way to do this would be to pass a flag bit to
+	 ENCODE_SECTION_INFO saying whether this is a new decl or not.  */
+      /* Let the target reassign the RTL if it wants.
+	 This is necessary, for example, when one machine specific
+	 decl attribute overrides another.  */
+#ifdef REDO_SECTION_INFO_P
+      if (REDO_SECTION_INFO_P (decl))
+	ENCODE_SECTION_INFO (decl);
+#endif
     }
 }
 

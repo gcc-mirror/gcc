@@ -3501,6 +3501,36 @@ merge_attributes (a1, a2)
       }
   return attributes;
 }
+
+/* Given types T1 and T2, merge their attributes and return
+   the result.  */
+
+tree
+merge_machine_type_attributes (t1, t2)
+     tree t1, t2;
+{
+#ifdef MERGE_MACHINE_TYPE_ATTRIBUTES
+  return MERGE_MACHINE_TYPE_ATTRIBUTES (t1, t2);
+#else
+  return merge_attributes (TYPE_ATTRIBUTES (t1),
+			   TYPE_ATTRIBUTES (t2));
+#endif
+}
+
+/* Given decls OLDDECL and NEWDECL, merge their attributes and return
+   the result.  */
+
+tree
+merge_machine_decl_attributes (olddecl, newdecl)
+     tree olddecl, newdecl;
+{
+#ifdef MERGE_MACHINE_DECL_ATTRIBUTES
+  return MERGE_MACHINE_DECL_ATTRIBUTES (olddecl, newdecl);
+#else
+  return merge_attributes (DECL_MACHINE_ATTRIBUTES (olddecl),
+			   DECL_MACHINE_ATTRIBUTES (newdecl));
+#endif
+}
 
 /* Return a type like TYPE except that its TYPE_READONLY is CONSTP
    and its TYPE_VOLATILE is VOLATILEP.

@@ -928,6 +928,30 @@ split_specs_attrs (specs_attrs, declspecs, prefix_attributes)
   *declspecs = specs;
   *prefix_attributes = attrs;
 }
+
+/* Strip attributes from SPECS_ATTRS, a list of declspecs and attributes.
+   This function is used by the parser when a rule will accept attributes
+   in a particular position, but we don't want to support that just yet.
+
+   A warning is issued for every ignored attribute.  */
+
+tree
+strip_attrs (specs_attrs)
+     tree specs_attrs;
+{
+  tree specs, attrs;
+
+  split_specs_attrs (specs_attrs, &specs, &attrs);
+
+  while (attrs)
+    {
+      warning ("`%s' attribute ignored",
+	       IDENTIFIER_POINTER (TREE_PURPOSE (attrs)));
+      attrs = TREE_CHAIN (attrs);
+    }
+
+  return specs;
+}
 
 /* Check a printf/fprintf/sprintf/scanf/fscanf/sscanf format against
    a parameter list.  */
