@@ -1,3 +1,10 @@
+2001-02-13  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/1351:
+	* posix.cc (_Jv_select): Throw InterruptedIOException if thread is
+	interrupted.
+	Include Thread.h and InterruptedIOException.h.
+
 2001-02-13  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/io/BlockDataException.java: Removed.
