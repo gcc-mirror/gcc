@@ -95,10 +95,6 @@ Boston, MA 02111-1307, USA.  */
       %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
       %{static:-static}}"
 
-/* Sibcalls, stubs, and elf sections don't play well.  */
-#undef FUNCTION_OK_FOR_SIBCALL
-#define FUNCTION_OK_FOR_SIBCALL(x) 0
-
 /* glibc's profiling functions don't need gcc to allocate counters.  */
 #define NO_PROFILE_COUNTERS 1
 
