@@ -1568,16 +1568,45 @@ pushdecl (x)
 	  return t;
 	}
 
-      /* If declaring a type as a typedef, and the type has no known
-	 typedef name, install this TYPE_DECL as its typedef name.  If
-         generating prototypes, *don't* assign the current name to the
-         existing type node, but rather give the name its own associated
-         type node.  This new type node is created as a type variant of
-         the existing type node, but it is essentially identical to the
-         existing one.  Obviously, we don't generate these type variants
-         if the node that we are working on is a standard type and it has
-         not yet been assigned a name.  In that case we must allow the
-         standard type to given its standard name (by the compiler).
+      /* If we are processing a typedef statement, generate a whole new
+	 ..._TYPE node (which will be just an variant of the existing
+	 ..._TYPE node with identical properties) and then install the
+	 TYPE_DECL node generated to represent the typedef name as the
+	 TYPE_NAME of this brand new (duplicate) ..._TYPE node.
+
+	 The whole point here is to end up with a situation where each
+	 and every ..._TYPE node the compiler creates will be uniquely
+	 associated with AT MOST one node representing a typedef name.
+	 This way, even though the compiler substitutes corresponding
+	 ..._TYPE nodes for TYPE_DECL (i.e. "typedef name") nodes very
+	 early on, later parts of the compiler can always do the reverse
+	 translation and get back the corresponding typedef name.  For
+	 example, given:
+
+		typedef struct S MY_TYPE;
+		MY_TYPE object;
+
+	 Later parts of the compiler might only know that `object' was of
+	 type `struct S' if if were not for code just below.  With this
+	 code however, later parts of the compiler see something like:
+
+		struct S' == struct S
+		typedef struct S' MY_TYPE;
+		struct S' object;
+
+	 And they can then deduce (from the node for type struct S') that
+	 the original object declaration was:
+
+		MY_TYPE object;
+
+	 Being able to do this is important for proper support of protoize,
+	 and also for generating precise symbolic debugging information
+	 which takes full account of the programmer's (typedef) vocabulary.
+
+         Obviously, we don't want to generate a duplicate ..._TYPE node if
+	 the TYPE_DECL node that we are now processing really represents a
+	 standard built-in type.
+
          Since all standard types are effectively declared at line zero
          in the source file, we can easily check to see if we are working
          on a standard type by checking the current value of lineno.  */
@@ -1593,8 +1622,7 @@ pushdecl (x)
             {
               tree tt = TREE_TYPE (x);
 
-              tt = c_build_type_variant (tt,
-					 TYPE_READONLY (tt), TYPE_VOLATILE (tt));
+              tt = build_type_copy (tt);
               TYPE_NAME (tt) = x;
               TREE_TYPE (x) = tt;
             }
