@@ -2211,9 +2211,9 @@ merge_blocks_nomove (a, b)
     {
       rtx prev;
 
-      prev = prev_nonnote_insn (a_end);
-      if (!prev) 
-	prev = a->head;
+      for (prev = PREV_INSN (a_end); ; prev = PREV_INSN (prev))
+	if (GET_CODE (prev) != NOTE || prev == a->head)
+	  break;
 
       del_first = a_end;
 

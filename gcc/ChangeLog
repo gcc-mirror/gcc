@@ -1,5 +1,8 @@
 2000-08-11  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (merge_blocks_nomove): Be more careful about
+	locating the beginning of block A.
+
 	* combine.c (simplify_shift_const): Obey SHIFT_COUNT_TRUNCATED.
 
 Thu Aug 10 22:47:09 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
