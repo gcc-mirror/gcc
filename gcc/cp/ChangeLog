@@ -1,4 +1,7 @@
-Mon Feb 23 03:04:14 1998  Jason Merrill  <jason@yorick.cygnus.com>
+Mon Feb 23 05:08:55 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c, call.c, decl.c, method.c, cp-tree.h: Remove unused NARGS
+	argument to tsubst and friends.
 
 	* pt.c (tsubst, FUNCTION_DECL): Tidy.
 

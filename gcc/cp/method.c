@@ -899,8 +899,7 @@ build_template_parm_names (parmlist, arglist)
 	}
       else
 	{
-	  parm = tsubst (parm, arglist,
-			 TREE_VEC_LENGTH (arglist), NULL_TREE);
+	  parm = tsubst (parm, arglist, NULL_TREE);
 	  /* It's a PARM_DECL.  */
 	  build_mangled_name (TREE_TYPE (parm), 0, 0);
 	  build_overload_value (parm, arg, uses_template_parms (arglist));

@@ -5523,8 +5523,7 @@ build_over_call (fn, convs, args, flags)
       if (DECL_TEMPLATE_INFO (fn))
 	/* This came from a template.  Instantiate the default arg here,
 	   not in tsubst.  */
-	arg = tsubst_expr (arg, DECL_TI_ARGS (fn),
-			   TREE_VEC_LENGTH (DECL_TI_ARGS (fn)), NULL_TREE);
+	arg = tsubst_expr (arg, DECL_TI_ARGS (fn), NULL_TREE);
       converted_args = expr_tree_cons
 	(NULL_TREE, convert_default_arg (TREE_VALUE (parm), arg),
 	 converted_args);
