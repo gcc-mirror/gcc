@@ -1,3 +1,10 @@
+2004-02-26  Richard Earnshaw  <rearnsha@arm.com>
+	Daniel Jacobowitz  <drow@mvista.com>
+
+	PR target/14302
+	* arm.h (ARM_GO_IF_LEGITIMATE_ADDRESS): Don't check the mode
+	size for minipool references.
+
 2004-02-25  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/14166

@@ -2029,7 +2029,7 @@ typedef struct
 	   && GET_CODE (XEXP (X, 0)) == REG				\
 	   && ARM_REG_OK_FOR_BASE_P (XEXP (X, 0)))			\
     goto LABEL;								\
-  else if (GET_MODE_SIZE (MODE) >= 4 && reload_completed		\
+  else if (reload_completed						\
 	   && (GET_CODE (X) == LABEL_REF				\
 	       || (GET_CODE (X) == CONST				\
 		   && GET_CODE (XEXP ((X), 0)) == PLUS			\
