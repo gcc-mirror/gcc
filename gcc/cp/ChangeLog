@@ -1,5 +1,8 @@
 2002-03-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/5995
+	* call.c (build_over_call): Fix empty class logic.
+
 	PR c++/3870
 	* cp-tree.h (struct saved_scope): Add last_parms field.
 	* decl.c (maybe_push_to_top_level): Save last_function_parms.
