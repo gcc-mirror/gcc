@@ -7804,7 +7804,14 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
 
   /* Set the DECL_ASSEMBLER_NAME for the variable.  */
   if (asmspec)
-    SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
+    {
+      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
+      /* The `register' keyword, when used together with an
+	 asm-specification, indicates that the variable should be
+	 placed in a particular register.  */
+      if (DECL_REGISTER (decl))
+	DECL_C_HARD_REGISTER (decl) = 1;
+    }
 
   /* We don't create any RTL for local variables.  */
   if (DECL_FUNCTION_SCOPE_P (decl) && !TREE_STATIC (decl))
