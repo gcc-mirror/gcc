@@ -1,3 +1,7 @@
+2004-11-18  Andreas Schwab  <schwab@suse.de>
+
+	* config/i386/i386.md (define_peephole2): Revert last change.
+
 2004-11-18  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.comn>
 
 	* config/m32r/linux.h (TARGET_ASM_FILE_END): Set
