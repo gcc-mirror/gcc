@@ -1,3 +1,7 @@
+2003-03-17  Andreas Jaeger  <aj@suse.de>
+
+	* Make-lang.in (treelang.tags): Remove duplicate entry.
+
 2003-03-15  Andreas Jaeger  <aj@suse.de>
 
 	* treetree.c (cpp_handle_option): Remove.
