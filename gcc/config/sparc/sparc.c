@@ -3031,7 +3031,7 @@ sparc_type_code (type)
     }
 }
 
-#ifdef HANDLE_PRAGMA
+#if defined(HANDLE_PRAGMA) && !defined(HANDLE_SYSV_PRAGMA)
 
 /* Handle a pragma directive.  HANDLE_PRAGMA conspires to parse the
    input following #pragma into tokens based on yylex.  TOKEN is the
@@ -3138,7 +3138,7 @@ handle_pragma_token (string, token)
       abort ();
     }
 }
-#endif /* HANDLE_PRAGMA */
+#endif /* HANDLE_PRAGMA && not HANDLE_SYSV_PRAGMA */
 
 /* Subroutines to support a flat (single) register window calling
    convention.  */
