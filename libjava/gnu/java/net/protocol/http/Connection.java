@@ -8,19 +8,23 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-package gnu.gcj.protocol.http;
+package gnu.java.net.protocol.http;
 
-import java.net.*;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.ProtocolException;
+import java.net.Socket;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Map;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
-
-/**
- * @author Warren Levy <warrenl@cygnus.com>
- * @date March 29, 1999.
- */
 
 /**
  * Written using on-line Java Platform 1.2 API Specification, as well
@@ -32,6 +36,10 @@ import java.util.Enumeration;
  * doOutput.
  */
 
+/**
+ * @author Warren Levy <warrenl@cygnus.com>
+ * @date March 29, 1999.
+ */
 class Connection extends HttpURLConnection
 {
   protected Socket sock = null;
@@ -233,7 +241,7 @@ class Connection extends HttpURLConnection
 	}
 
     if (n < hdrVec.size())
-      return getField((String) hdrVec.elementAt(n));
+      return getField ((String) hdrVec.elementAt(n));
     return null;
   }
 
@@ -251,7 +259,7 @@ class Connection extends HttpURLConnection
 	}
 
     if (n < hdrVec.size())
-      return getKey((String) hdrVec.elementAt(n));
+      return getKey ((String) hdrVec.elementAt(n));
     return null;
   }
 
