@@ -1227,6 +1227,23 @@ duplicate_decls (newdecl, olddecl)
 	  TREE_THIS_VOLATILE (newdecl) |= TREE_THIS_VOLATILE (olddecl);
 	}
     }
+  /* Permit char *foo () to match void *foo (...) if not pedantic.  */
+  else if (!types_match
+	   && TREE_CODE (olddecl) == FUNCTION_DECL
+	   && TREE_CODE (newdecl) == FUNCTION_DECL
+	   && TREE_CODE (TREE_TYPE (olddecl)) == POINTER_TYPE
+	   && TREE_CODE (TREE_TYPE (newdecl)) == POINTER_TYPE
+	   && ((TREE_TYPE (TREE_TYPE (newdecl)) == void_type_node
+		&& TYPE_ARG_TYPES (TREE_TYPE (olddecl)) == 0
+		&& TREE_TYPE (TREE_TYPE (olddecl)) == char_type_node)
+	       ||
+	       (TREE_TYPE (TREE_TYPE (newdecl)) == char_type_node
+		&& TYPE_ARG_TYPES (TREE_TYPE (newdecl)) == 0
+		&& TREE_TYPE (TREE_TYPE (olddecl)) == void_type_node)))
+    {
+      if (pedantic)
+	pedwarn_with_decl (newdecl, "conflicting types for `%s'");
+    }
   else if (!types_match
 	   /* Permit char *foo (int, ...); followed by char *foo ();
 	      if not pedantic.  */
