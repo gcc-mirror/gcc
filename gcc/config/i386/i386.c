@@ -1973,7 +1973,7 @@ ix86_expand_prologue ()
     ;
   else if (! TARGET_STACK_PROBE || tsize < CHECK_STACK_LIMIT)
     {
-      insn = emit_insn (gen_subsi3 (xops[0], xops[0], xops[2]));
+      insn = emit_insn (gen_prologue_set_stack_ptr (xops[2]));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else 
@@ -2837,20 +2837,20 @@ output_pic_addr_const (file, x, code)
       break;
 
     case PLUS:
-      /* Some assemblers need integer constants to appear last (eg masm).  */
+      /* Some assemblers need integer constants to appear first.  */
       if (GET_CODE (XEXP (x, 0)) == CONST_INT)
-	{
-	  output_pic_addr_const (file, XEXP (x, 1), code);
-	  if (INTVAL (XEXP (x, 0)) >= 0)
-	    fprintf (file, "+");
-	  output_pic_addr_const (file, XEXP (x, 0), code);
-	}
-      else
 	{
 	  output_pic_addr_const (file, XEXP (x, 0), code);
 	  if (INTVAL (XEXP (x, 1)) >= 0)
 	    fprintf (file, "+");
 	  output_pic_addr_const (file, XEXP (x, 1), code);
+	}
+      else
+	{
+	  output_pic_addr_const (file, XEXP (x, 1), code);
+	  if (INTVAL (XEXP (x, 0)) >= 0)
+	    fprintf (file, "+");
+	  output_pic_addr_const (file, XEXP (x, 0), code);
 	}
       break;
 
