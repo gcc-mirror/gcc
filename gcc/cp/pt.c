@@ -7584,10 +7584,6 @@ tsubst_expr (t, args, complain, in_decl)
       tsubst (TREE_TYPE (t), args, complain, NULL_TREE);
       break;
 
-    case CTOR_STMT:
-      add_stmt (copy_node (t));
-      break;
-
     default:
       abort ();
     }

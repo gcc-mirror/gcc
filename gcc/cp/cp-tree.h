@@ -47,7 +47,6 @@ struct diagnostic_context;
       ICS_USER_FLAG (in _CONV)
       CLEANUP_P (in TRY_BLOCK)
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
-      CTOR_BEGIN_P (in CTOR_STMT)
       BV_USE_VCALL_INDEX_P (in the BINFO_VIRTUALS TREE_LIST)
       PTRMEM_OK_P (in ADDR_EXPR, OFFSET_REF)
       PARMLIST_ELLIPSIS_P (in PARMLIST)
@@ -2969,15 +2968,6 @@ enum ptrmemfunc_vbit_where_t
 #define HANDLER_PARMS(NODE)     TREE_OPERAND (HANDLER_CHECK (NODE), 0)
 #define HANDLER_BODY(NODE)      TREE_OPERAND (HANDLER_CHECK (NODE), 1)
 #define HANDLER_TYPE(NODE)	TREE_TYPE (HANDLER_CHECK (NODE))
-#define SUBOBJECT_CLEANUP(NODE) TREE_OPERAND (SUBOBJECT_CHECK (NODE), 0)
-
-/* Nonzero if this CTOR_STMT is for the beginning of a constructor.  */
-#define CTOR_BEGIN_P(NODE) \
-  (TREE_LANG_FLAG_0 (CTOR_STMT_CHECK (NODE)))
-
-/* Nonzero if this CTOR_STMT is for the end of a constructor.  */
-#define CTOR_END_P(NODE) \
-  (!CTOR_BEGIN_P (NODE))
 
 /* The parameters for a call-declarator.  */
 #define CALL_DECLARATOR_PARMS(NODE) \
@@ -4217,6 +4207,7 @@ extern tree finish_typeof			PARAMS ((tree));
 extern tree finish_sizeof			PARAMS ((tree));
 extern tree finish_alignof			PARAMS ((tree));
 extern void finish_decl_cleanup                 PARAMS ((tree, tree));
+extern void finish_eh_cleanup                   PARAMS ((tree));
 extern void finish_named_return_value           PARAMS ((tree, tree));
 extern void expand_body                         PARAMS ((tree));
 extern tree nullify_returns_r		      PARAMS ((tree *, int *, void *));

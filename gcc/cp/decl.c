@@ -13948,9 +13948,6 @@ save_function_data (decl)
 static void
 begin_constructor_body ()
 {
-  tree ctor_stmt = build_stmt (CTOR_STMT);
-  CTOR_BEGIN_P (ctor_stmt) = 1;
-  add_stmt (ctor_stmt);
 }
 
 /* Add a note to mark the end of the main body of the constructor.  This is
@@ -13960,12 +13957,6 @@ begin_constructor_body ()
 static void
 finish_constructor_body ()
 {
-  /* Mark the end of the cleanups for a partially constructed object.
-
-     ??? These should really be handled automatically by closing the block,
-     as with the destructor cleanups; the only difference is that these are
-     only run if an exception is thrown.  */
-  add_stmt (build_stmt (CTOR_STMT));
 }
 
 /* Do all the processing for the beginning of a destructor; set up the

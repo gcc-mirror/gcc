@@ -177,6 +177,9 @@ struct tree_common
            INTEGER_CST, REAL_CST, COMPLEX_CST, VECTOR_CST
        TREE_SYMBOL_REFERENCED in
            IDENTIFIER_NODE
+       CLEANUP_EH_ONLY in
+           TARGET_EXPR, WITH_CLEANUP_EXPR, CLEANUP_STMT,
+	   TREE_LIST elements of a block's cleanup list.
 
    public_flag:
 
@@ -194,7 +197,7 @@ struct tree_common
        TREE_VIA_PRIVATE in
            TREE_LIST or TREE_VEC
        TREE_PRIVATE in
-           ??? unspecified nodes
+           ..._DECL
 
    protected_flag:
 
@@ -203,7 +206,7 @@ struct tree_common
 	   TREE_VEC
        TREE_PROTECTED in
            BLOCK
-	   ??? unspecified nodes
+	   ..._DECL
 
    side_effects_flag:
 
@@ -502,6 +505,11 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
    In a FUNCTION_DECL, nonzero if function has been defined.
    In a CONSTRUCTOR, nonzero means allocate static storage.  */
 #define TREE_STATIC(NODE) ((NODE)->common.static_flag)
+
+/* In a TARGET_EXPR, WITH_CLEANUP_EXPR, CLEANUP_STMT, or element of a
+   block's cleanup list, means that the pertinent cleanup should only be
+   executed if an exception is thrown, not on normal exit of its scope.  */
+#define CLEANUP_EH_ONLY(NODE) ((NODE)->common.static_flag)
 
 /* In a CONVERT_EXPR, NOP_EXPR or COMPOUND_EXPR, this means the node was
    made implicitly and should not lead to an "unused value" warning.  */
@@ -2985,6 +2993,7 @@ extern void expand_elseif		PARAMS ((tree));
 extern void save_stack_pointer		PARAMS ((void));
 extern void expand_decl			PARAMS ((tree));
 extern int expand_decl_cleanup		PARAMS ((tree, tree));
+extern int expand_decl_cleanup_eh	PARAMS ((tree, tree, int));
 extern void expand_anon_union_decl	PARAMS ((tree, tree, tree));
 extern void move_cleanups_up		PARAMS ((void));
 extern void expand_start_case_dummy	PARAMS ((void));

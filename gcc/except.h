@@ -83,20 +83,6 @@ extern void expand_eh_region_end_throw		PARAMS ((tree));
    destroying an object twice.  */
 extern void expand_eh_region_end_fixup		PARAMS ((tree));
 
-/* Begin a region that will contain entries created with
-   add_partial_entry.  */
-extern void begin_protect_partials              PARAMS ((void));
-
-/* Create a new exception region and add the handler for the region
-   onto a list. These regions will be ended (and their handlers emitted)
-   when end_protect_partials is invoked.  */
-extern void add_partial_entry			PARAMS ((tree));
-
-/* End all of the pending exception regions that have handlers added with
-   add_partial_entry.  */
-extern void end_protect_partials		PARAMS ((void));
-
-
 /* A list of labels used for exception handlers.  */
 extern rtx exception_handler_labels;
 
