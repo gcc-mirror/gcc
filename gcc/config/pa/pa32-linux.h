@@ -21,6 +21,3 @@ Boston, MA 02111-1307, USA.  */
 /* Turn off various SOM crap we don't want.  */
 #undef TARGET_ELF32
 #define TARGET_ELF32 1
-
-#undef CPP_SPEC
-#define CPP_SPEC "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{mhppa:-D__hppa__} %{posix:-D_POSIX_SOURCE} -D_PA_RISC1_1"

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for HP PA-RISC 1.1
-   Copyright (C) 1991, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995, 1996, 2002 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@defmacro.cs.utah.edu)
 
 This file is part of GNU CC.
@@ -19,12 +19,34 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#undef CPP_PREDEFINES
-#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_PA_11)
-#define CPP_PREDEFINES "-Dhppa -Dunix -Dhp9000 -Dspectrum -DREVARGV -Dhp700 -DHP700 -Dparisc -D__pa_risc -DPARISC -DBYTE_MSF -DBIT_MSF -Asystem=unix -Asystem=mach -Acpu=hppa -Amachine=hppa"
-#else
-#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -Dhp9000 -Dhp800 -Dspectrum -DREVARGV -Dparisc -D__pa_risc -DPARISC -DBYTE_MSF -DBIT_MSF -Asystem=unix -Asystem=mach -Acpu=hppa -Amachine=hppa"
-#endif
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	if (TARGET_PA_11)			\
+	  {					\
+	    builtin_define_std ("hp700");	\
+	    builtin_define_std ("HP700");	\
+	  }					\
+	else					\
+	  {					\
+	    builtin_define_std ("hp800");	\
+	    builtin_define_std ("hp9k8");	\
+	    builtin_define_std ("hp9000s800");	\
+	  }					\
+	builtin_define_std ("BIT_MSF");		\
+	builtin_define_std ("BYTE_MSF");	\
+	builtin_define_std ("PARISC");		\
+	builtin_define_std ("REVARGV");		\
+	builtin_define_std ("hp9000");		\
+	builtin_define ("__pa_risc");		\
+	builtin_define_std ("parisc");		\
+	builtin_define_std ("spectrum");	\
+	builtin_define_std ("unix");		\
+	builtin_assert ("system=mach");		\
+	builtin_assert ("system=unix");		\
+    }						\
+  while (0)
 
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */

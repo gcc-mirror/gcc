@@ -5007,6 +5007,7 @@ cb_register_builtins (pfile)
   /* A straightforward target hook doesn't work, because of problems
      linking that hook's body when part of non-C front ends.  */
 # define preprocessing_asm_p() (cpp_get_options (pfile)->lang == CLK_ASM)
+# define preprocessing_trad_p() (cpp_get_options (pfile)->traditional)
 # define builtin_define(TXT) cpp_define (pfile, TXT)
 # define builtin_assert(TXT) cpp_assert (pfile, TXT)
   TARGET_CPU_CPP_BUILTINS ();

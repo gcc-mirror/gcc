@@ -1,5 +1,6 @@
-/* Definitions of target machine for GNU compiler, for HP PA-RISC 1.1
-   Copyright (C) 1995, 1996, 1997, 2000, 2001 Free Software Foundation, Inc.
+/* Definitions of target machine for GNU compiler, for HP PA-RISC
+   Copyright (C) 1995, 1996, 1997, 2000, 2001, 2002
+   Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@defmacro.cs.utah.edu)
 
 This file is part of GNU CC.
@@ -18,6 +19,52 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
+
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()				\
+  do								\
+    {								\
+	builtin_assert ("system=hpux");				\
+	builtin_assert ("system=unix");				\
+	builtin_define ("__hp9000s800");			\
+	builtin_define ("__hp9000s800__");			\
+	builtin_define ("__hpux");				\
+	builtin_define ("__hpux__");				\
+	builtin_define ("__unix");				\
+	builtin_define ("__unix__");				\
+	if (c_language == clk_cplusplus)			\
+	  {							\
+	    builtin_define ("_HPUX_SOURCE");			\
+	    builtin_define ("_INCLUDE_LONGLONG");		\
+	  }							\
+	else if (!flag_iso)					\
+	  {							\
+	    builtin_define ("_HPUX_SOURCE");			\
+	    if (preprocessing_trad_p ())			\
+	      {							\
+		builtin_define ("hp9000s800");			\
+		builtin_define ("hppa");			\
+		builtin_define ("hpux");			\
+		builtin_define ("unix");			\
+		builtin_define ("__CLASSIC_C__");		\
+		builtin_define ("_PWB");			\
+		builtin_define ("PWB");				\
+	      }							\
+	    else						\
+	      builtin_define ("__STDC_EXT__");			\
+	  }							\
+	if (TARGET_SIO)						\
+	  builtin_define ("_SIO");				\
+	else							\
+	  {							\
+	    builtin_define ("__hp9000s700");			\
+	    builtin_define ("__hp9000s700__");			\
+	    builtin_define ("_WSIO");				\
+	  }							\
+    }								\
+  while (0)
+
+#define CPP_SPEC "%{threads: -D_REENTRANT -D_DCE_THREADS}"
 
 /* We can debug dynamically linked executables on hpux9; we also want
    dereferencing of a NULL pointer to cause a SEGV.  */

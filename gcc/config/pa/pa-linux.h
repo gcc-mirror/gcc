@@ -56,8 +56,22 @@ Boston, MA 02111-1307, USA.  */
       }									\
     } while (0)
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -D__hppa__ -D__gnu_linux__ -Dlinux -Asystem=unix -Asystem=posix -Acpu=hppa -Amachine=hppa -Amachine=bigendian"
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define ("__ELF__");		\
+	builtin_define ("__gnu_linux__");	\
+	builtin_define_std ("linux");		\
+	builtin_define_std ("unix");		\
+	builtin_assert ("machine=bigendian");	\
+	builtin_assert ("system=posix");	\
+	builtin_assert ("system=unix");		\
+    }						\
+  while (0)
+
+#undef CPP_SPEC
+#define CPP_SPEC "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"
 
 #undef	LIB_SPEC
 #define LIB_SPEC \

@@ -508,7 +508,7 @@ in the following sections.
 -mno-portable-runtime  -mno-soft-float @gol
 -mno-space-regs  -msoft-float  -mpa-risc-1-0 @gol
 -mpa-risc-1-1  -mpa-risc-2-0  -mportable-runtime @gol
--mschedule=@var{cpu-type}  -mspace-regs}
+-mschedule=@var{cpu-type}  -mspace-regs -msio -mwsio}
 
 @emph{Intel 960 Options}
 @gccoptlist{
@@ -7901,9 +7901,9 @@ proper scheduling option for your machine.  The default scheduling is
 
 @item -mlinker-opt
 @opindex mlinker-opt
-Enable the optimization pass in the HPUX linker.  Note this makes symbolic
-debugging impossible.  It also triggers a bug in the HPUX 8 and HPUX 9 linkers
-in which they give bogus error messages when linking some programs.
+Enable the optimization pass in the HP-UX linker.  Note this makes symbolic
+debugging impossible.  It also triggers a bug in the HP-UX 8 and HP-UX 9
+linkers in which they give bogus error messages when linking some programs.
 
 @item -msoft-float
 @opindex msoft-float
@@ -7920,6 +7920,13 @@ therefore, it is only useful if you compile @emph{all} of a program with
 this option.  In particular, you need to compile @file{libgcc.a}, the
 library that comes with GCC, with @option{-msoft-float} in order for
 this to work.
+
+@item -msio
+@opindex msio
+Generate the predefine, @code{_SIO}, for server IO.  The default is
+@option{-mwsio}.  This generates the predefines, @code{__hp9000s700},
+@code{__hp9000s700__} and @code{_WSIO}, for workstation IO.  These
+options are available under HP-UX and HI-UX.
 @end table
 
 @node Intel 960 Options
@@ -9125,7 +9132,7 @@ These are the @samp{-m} options defined for the Intel IA-64 architecture.
 @table @gcctabopt
 @item -mbig-endian
 @opindex mbig-endian
-Generate code for a big endian target.  This is the default for HPUX@.
+Generate code for a big endian target.  This is the default for HP-UX@.
 
 @item -mlittle-endian
 @opindex mlittle-endian
