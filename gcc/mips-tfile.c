@@ -670,17 +670,9 @@ main ()
 #include "mips/a.out.h"
 #endif /* CROSS_COMPILE */
 
-#if defined (USG) || !defined (HAVE_STAB_H)
-#include "gstab.h"  /* If doing DBX on sysV, use our own stab.h.  */
-#else
-#include <stab.h>  /* On BSD, use the system's stab.h.  */
-#endif /* not USG */
+#include "gstab.h"
 
-#ifdef __GNU_STAB__
 #define STAB_CODE_TYPE enum __stab_debug_code
-#else
-#define STAB_CODE_TYPE int
-#endif
 
 #ifndef MALLOC_CHECK
 #ifdef	__SABER__

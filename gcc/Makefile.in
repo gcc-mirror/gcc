@@ -1550,7 +1550,7 @@ sched-vis.o : sched-vis.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) sched-int.h \
    hard-reg-set.h $(BASIC_BLOCK_H) $(INSN_ATTR_H) $(REGS_H) $(TM_P_H)
 final.o : final.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h intl.h \
    $(REGS_H) $(RECOG_H) conditions.h insn-config.h $(INSN_ATTR_H) function.h \
-   real.h output.h hard-reg-set.h gstab.h except.h \
+   real.h output.h hard-reg-set.h except.h \
    xcoffout.h toplev.h reload.h dwarfout.h dwarf2out.h sdbout.h \
    dbxout.h $(BASIC_BLOCK_H) $(TM_P_H)
 recog.o : recog.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) function.h $(BASIC_BLOCK_H) \

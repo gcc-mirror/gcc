@@ -66,15 +66,8 @@ Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "basic-block.h"
 
-/* Get N_SLINE and N_SOL from stab.h if we can expect the file to exist.  */
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
-#if defined (USG) || !defined (HAVE_STAB_H)
-#include "gstab.h"  /* If doing DBX on sysV, use our own stab.h.  */
-#else
-#include <stab.h>
-#endif
-
 #endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
 
 #ifdef XCOFF_DEBUGGING_INFO
@@ -91,16 +84,6 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef SDB_DEBUGGING_INFO
 #include "sdbout.h"
-#endif
-
-/* .stabd code for line number.  */
-#ifndef N_SLINE
-#define	N_SLINE	0x44
-#endif
-
-/* .stabs code for included file name.  */
-#ifndef N_SOL
-#define	N_SOL 0x84
 #endif
 
 /* If we aren't using cc0, CC_STATUS_INIT shouldn't exist.  So define a

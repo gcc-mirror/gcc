@@ -145,9 +145,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
-/* Typical USG systems don't have stab.h, and they also have
-   no use for DBX-format debugging info.  */
-
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
 
 static int flag_minimal_debug = MINIMAL_DEBUG;
@@ -170,31 +167,9 @@ static int source_label_number = 1;
 #define FORCE_TEXT
 #endif
 
-/* If there is a system stab.h, use it.  Otherwise, use our own.  */
-/* ??? This is supposed to describe the target's stab format, so using
-   the host HAVE_STAB_H appears to be wrong.  For now, we use our own file
-   when cross compiling.  */
-#if defined (USG) || !defined (HAVE_STAB_H) || defined (CROSS_COMPILE)
-#include "gstab.h" /* If doing DBX on sysV, use our own stab.h.  */
-#else
-#include <stab.h>
+#include "gstab.h"
 
-/* This is a GNU extension we need to reference in this file.  */
-#ifndef N_CATCH
-#define N_CATCH 0x54
-#endif
-
-/* This is a Solaris extension we need to reference in this file. */
-#ifndef N_OPT
-#define N_OPT 0x3c
-#endif
-#endif
-
-#ifdef __GNU_STAB__
 #define STAB_CODE_TYPE enum __stab_debug_code
-#else
-#define STAB_CODE_TYPE int
-#endif
 
 /* 1 if PARM is passed to this function in memory.  */
 
