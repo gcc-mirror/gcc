@@ -294,13 +294,6 @@ extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
     N_("Use push instructions to save outgoing arguments") },		      \
   { "no-accumulate-outgoing-args",-MASK_ACCUMULATE_OUTGOING_ARGS,	      \
     N_("Do not use push instructions to save outgoing arguments") },	      \
-  { "mmx",			 MASK_MMX, N_("Support MMX builtins") },      \
-  { "no-mmx",			-MASK_MMX,				      \
-    N_("Do not support MMX builtins") },				      \
-  { "sse",			 MASK_SSE,				      \
-    N_("Support MMX and SSE builtins") },				      \
-  { "no-sse",			-MASK_SSE,				      \
-    N_("Do not support MMX and SSE builtins") },			      \
   { "128bit-long-double",	 MASK_128BIT_LONG_DOUBLE,		      \
     N_("sizeof(long double) is 16.") },					      \
   { "96bit-long-double",	-MASK_128BIT_LONG_DOUBLE,		      \
