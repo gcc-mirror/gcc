@@ -1,3 +1,8 @@
+2003-06-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/11384
+	* g++.dg/init/init-ref4.C: New test.
+
 2003-07-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11547
