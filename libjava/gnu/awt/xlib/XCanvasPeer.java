@@ -424,7 +424,8 @@ public class XCanvasPeer implements CanvasPeer
       }
     else
       {
-	throw new UnsupportedOperationException("unmap not implemented");
+	window.unmap();
+	ensureFlush();	    
       }
   }
 	
