@@ -1,5 +1,11 @@
 2000-08-30  Greg McGary  <greg@mcgary.org>
 
+	* Makefile.in (fixinc.sh): Pass CC, CFLAGS and LDFLAGS to mkfixinc.sh
+	* fixinc/Makefile.in (fixincl): Pass $(LDFLAGS) to $(CC).
+	* fixinc/mkfixinc.sh: Pass $CC, $CFLAGS and $LDFLAGS to $MAKE.
+
+2000-08-30  Greg McGary  <greg@mcgary.org>
+
 	* tree.h (struct tree_int_cst): Wrap low and high in a sub-struct.
 	(TREE_INT_CST_LOW, TREE_INT_CST_HIGH): Access through sub-struct.
 	(TREE_INT_CST): New macro.

@@ -111,9 +111,8 @@ then
 fi
 
 #  OK.  We gotta make the thing.
-#
-echo $MAKE SHELL=\"$SHELL\" install-bin
-
 #  make and install either the binary or the default script
-#
-$MAKE SHELL="$SHELL" install-bin
+
+cmd="$MAKE SHELL=\"$SHELL\" CC=\"$CC\" CFLAGS=\"$CFLAGS\" LDFLAGS=\"$LDFLAGS\" install-bin"
+echo $cmd
+eval $cmd

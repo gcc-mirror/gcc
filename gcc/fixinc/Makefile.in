@@ -73,7 +73,7 @@ all : $(TARGETS)
 gen : fixincl.x
 
 fixincl: $(OBJ) $(LIBERTY)
-	$(CC) $(FIXINC_DEFS) -o $@ $(OBJ) $(LIBERTY)
+	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $@ $(OBJ) $(LIBERTY)
 
 $(OBJ)      : $(HDR)
 fixincl.o   : fixincl.x fixincl.c
