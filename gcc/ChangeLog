@@ -1,3 +1,7 @@
+2004-09-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* config.in: Regenerate after removal of libbanshee.
+
 2004-09-13  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/17400
@@ -10,7 +14,7 @@
 	name to _new_size.
 
 2004-09-13  Richard Henderson  <rth@redhat.com>
- 
+
 	PR inline-asm/6806
 	* cselib.c (cselib_invalidate_rtx): Export.  Remove unused args.
 	(cselib_invalidate_rtx_note_stores): New.
