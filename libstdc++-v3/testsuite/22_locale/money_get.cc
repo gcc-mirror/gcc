@@ -20,6 +20,8 @@
 
 // 22.2.6.1  Template class money_get
 
+// { dg-do compile }
+
 #include <locale>
 
 void test01()

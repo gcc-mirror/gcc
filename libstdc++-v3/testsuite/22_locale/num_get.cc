@@ -20,6 +20,8 @@
 
 // 22.2.2.1  Template class num_get
 
+// { dg-do compile }
+
 #include <locale>
 
 void test01()

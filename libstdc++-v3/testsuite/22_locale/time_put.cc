@@ -20,6 +20,8 @@
 
 // 22.2.5.3  Template class time_put
 
+// { dg-do compile }
+
 #include <locale>
 
 void test01()

@@ -18,7 +18,9 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 22.2.1 the ctype category
+// 22.2.1 The ctype category
+
+// { dg-do compile }
 
 // 1: Test that the locale headers are picking up the correct declaration
 // of the internal type `ctype_base::mask'.

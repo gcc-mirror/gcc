@@ -20,6 +20,8 @@
 
 // 22.2.2.2  Template class num_put
 
+// { dg-do compile }
+
 #include <locale>
 
 void test01()

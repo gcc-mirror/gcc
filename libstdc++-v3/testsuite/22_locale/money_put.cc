@@ -20,6 +20,8 @@
 
 // 22.2.6.2  Template class money_put
 
+// { dg-do compile }
+
 #include <locale>
 
 void test01()

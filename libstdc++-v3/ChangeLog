@@ -1,5 +1,18 @@
 2001-12-03  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/22_locale/collate.cc: Compile-only.
+	* testsuite/22_locale/time_get.cc: Same.
+	* testsuite/22_locale/time_put.cc: Same.
+	* testsuite/22_locale/numpunct.cc: Same.
+	* testsuite/22_locale/num_put.cc: Same.
+	* testsuite/22_locale/num_get.cc: Same.
+	* testsuite/22_locale/moneypunct.cc: Same.
+	* testsuite/22_locale/money_get.cc: Same.
+	* testsuite/22_locale/messages.cc: Same.
+	* testsuite/22_locale/ctype.cc: Same.
+
+2001-12-03  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* src/string-inst.cc (string::_Rep::_S_terminal): Add static data
 	member instantiations.
 
