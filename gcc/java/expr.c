@@ -2838,8 +2838,9 @@ expand_byte_code (JCF *jcf, tree method)
 	  if (dead_code_index != -1)
 	    {
               /* We've just reached the end of a region of dead code.  */
-              warning ("unreachable bytecode from %d to before %d",
-                       dead_code_index, PC);
+	      if (extra_warnings)
+		warning ("unreachable bytecode from %d to before %d",
+			 dead_code_index, PC);
               dead_code_index = -1;
             }
 	}
@@ -2875,8 +2876,9 @@ expand_byte_code (JCF *jcf, tree method)
   if (dead_code_index != -1)
     {
       /* We've just reached the end of a region of dead code.  */
-      warning ("unreachable bytecode from %d to the end of the method", 
-              dead_code_index);
+      if (extra_warnings)
+	warning ("unreachable bytecode from %d to the end of the method", 
+		 dead_code_index);
     }
 }
 

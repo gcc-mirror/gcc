@@ -1,3 +1,8 @@
+2003-10-22  Tom Tromey  <tromey@redhat.com>
+
+	* expr.c (expand_byte_code): Only warn about dead bytecode when
+	extra_warnings is set.
+
 2003-10-22  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	Fix for	PR java/12586.
