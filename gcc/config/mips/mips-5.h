@@ -29,4 +29,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt1.o%s crtn.o%s}}"
 
+/* Some RISCOS assemblers misassemble \n in a .ascii,
+   so we use \X0A instead.  */
+#define ASM_OUTPUT_NEWLINE(STREAM) \
+  fputs ("\\X0A", (STREAM));
+
 #include "mips/mips.h"
