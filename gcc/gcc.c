@@ -236,7 +236,6 @@ static void add_prefix		PARAMS ((struct path_prefix *, const char *,
 					 const char *, int, int, int *));
 static void translate_options	PARAMS ((int *, const char *const **));
 static char *skip_whitespace	PARAMS ((char *));
-static void record_temp_file	PARAMS ((const char *, int, int));
 static void delete_if_ordinary	PARAMS ((const char *));
 static void delete_temp_files	PARAMS ((void));
 static void delete_failure_queue PARAMS ((void));
@@ -254,12 +253,9 @@ static int used_arg		PARAMS ((const char *, int));
 static int default_arg		PARAMS ((const char *, int));
 static void set_multilib_dir	PARAMS ((void));
 static void print_multilib_info	PARAMS ((void));
-static void pfatal_with_name	PARAMS ((const char *)) ATTRIBUTE_NORETURN;
 static void perror_with_name	PARAMS ((const char *));
 static void pfatal_pexecute	PARAMS ((const char *, const char *))
   ATTRIBUTE_NORETURN;
-static void error		PARAMS ((const char *, ...))
-  ATTRIBUTE_PRINTF_1;
 static void notice		PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1;
 static void display_help 	PARAMS ((void));
@@ -1879,7 +1875,7 @@ static struct temp_file *failure_delete_queue;
    FAIL_DELETE nonzero means delete it if a compilation step fails;
    otherwise delete it in any case.  */
 
-static void
+void
 record_temp_file (filename, always_delete, fail_delete)
      const char *filename;
      int always_delete;
@@ -6030,7 +6026,7 @@ save_string (s, len)
   return result;
 }
 
-static void
+void
 pfatal_with_name (name)
      const char *name;
 {
@@ -6098,7 +6094,7 @@ fatal VPARAMS ((const char *msgid, ...))
   exit (1);
 }
 
-static void
+void
 error VPARAMS ((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES

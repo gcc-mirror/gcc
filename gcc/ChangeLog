@@ -789,6 +789,12 @@ Sat Feb 24 06:45:21 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rtl.c (rtl_check_failed_code2): Fix typo in last change.
 
+2001-02-23  Per Bothner  <per@bothner.com>
+
+	* gcc.c (record_temp_file, pfatal_with_name, error):  Make non-static,
+	so they can be called from java/jvspec.c.
+	* gcc.h (record_temp_file, pfatal_with_name, error):  Declare.
+
 Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* diagnostic.c (trim_filename): No longer static.
