@@ -1,3 +1,8 @@
+2004-01-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* defaults.h (ASM_OUTPUT_ADDR_VEC_ELT): Fix the computation of
+	the size of a pointer in bytes.
+
 2004-01-18  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin_expect_jump): Fix thinko of reusing
