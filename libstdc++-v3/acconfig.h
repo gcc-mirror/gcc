@@ -4,11 +4,6 @@
 #undef PACKAGE
 #undef VERSION
 
-// Needed for gettext.
-#undef ENABLE_NLS
-#undef HAVE_CATGETS
-#undef HAVE_GETTEXT
-#undef HAVE_STPCPY
 
 // Define if code specialized for long long should be used.
 #undef _GLIBCXX_USE_LONG_LONG
