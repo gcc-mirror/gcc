@@ -1,3 +1,12 @@
+2003-09-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR debug/12066
+	* cp-lang.c (LANG_HOOKS_BUILTIN_TYPE_DECLS): Define.
+	* cp-tree.h (cxx_builtin_type_decls): Declare.
+	* decl.c (builtin_type_decls): New variables.
+	(cxx_builtin_type_decls): New function.
+	(record_builtin_type): Add to builtin_type_decls.
+
 2003-09-17  Richard Henderson  <rth@redhat.com>
 
         * semantics.c (expand_or_defer_fn): Inc/dec function_depth.

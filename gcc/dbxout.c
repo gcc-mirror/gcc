@@ -535,9 +535,10 @@ dbxout_init (const char *input_file_name)
   DBX_OUTPUT_STANDARD_TYPES (syms);
 #endif
 
-  /* Get all permanent types that have typedef names,
-     and output them all, except for those already output.  */
-
+  /* Get all permanent types that have typedef names, and output them
+     all, except for those already output.  Some language front ends
+     put these declarations in the top-level scope; some do not.  */
+  dbxout_typedefs ((*lang_hooks.decls.builtin_type_decls) ());
   dbxout_typedefs (syms);
 }
 
