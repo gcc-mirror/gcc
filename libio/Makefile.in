@@ -66,6 +66,8 @@ USER_INCLUDES = *.h
 #### package, host, target, and site dependent Makefile fragments come in here.
 ##
 
+$(LIBIO_OBJECTS): $(_G_CONFIG_H)
+
 libio.a: $(_G_CONFIG_H) $(LIBIO_OBJECTS)
 	-rm -rf libio.a
 	$(AR) $(AR_FLAGS) libio.a $(LIBIO_OBJECTS)
