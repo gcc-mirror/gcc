@@ -3633,7 +3633,7 @@ simple_cst_equal (t1, t2)
 int
 compare_tree_int (t, u)
      tree t;
-     unsigned int u;
+     unsigned HOST_WIDE_INT u;
 {
   if (tree_int_cst_sgn (t) < 0)
     return -1;

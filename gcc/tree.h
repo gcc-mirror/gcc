@@ -2888,7 +2888,8 @@ extern void preserve_data		PARAMS ((void));
 extern int object_permanent_p		PARAMS ((tree));
 extern int type_precision		PARAMS ((tree));
 extern int simple_cst_equal		PARAMS ((tree, tree));
-extern int compare_tree_int		PARAMS ((tree, unsigned int));
+extern int compare_tree_int		PARAMS ((tree,
+						 unsigned HOST_WIDE_INT));
 extern int type_list_equal		PARAMS ((tree, tree));
 extern int chain_member			PARAMS ((tree, tree));
 extern int chain_member_purpose		PARAMS ((tree, tree));

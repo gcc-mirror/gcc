@@ -2062,7 +2062,7 @@ expand_builtin_strncpy (arglist, target, mode)
 	return 0;
 
       /* If the len parameter is zero, return the dst parameter.  */
-      if (compare_tree_int (len, 0) == 0)
+      if (integer_zerop (len))
         {
 	/* Evaluate and ignore the src argument in case it has
            side-effects.  */
@@ -2279,10 +2279,11 @@ expand_builtin_memcmp (exp, arglist, target, mode)
   /* If all arguments are constant, and the value of len is not greater
      than the lengths of arg1 and arg2, evaluate at compile-time.  */
   if (host_integerp (len, 1) && p1 && p2
-      && compare_tree_int (len, strlen (p1)+1) <= 0
-      && compare_tree_int (len, strlen (p2)+1) <= 0)
+      && compare_tree_int (len, strlen (p1) + 1) <= 0
+      && compare_tree_int (len, strlen (p2) + 1) <= 0)
     {
       const int r = memcmp (p1, p2, tree_low_cst (len, 1));
+
       return (r < 0 ? constm1_rtx : (r > 0 ? const1_rtx : const0_rtx));
     }
 
@@ -2607,7 +2608,7 @@ expand_builtin_strncat (arglist, target, mode)
 
       /* If the requested length is zero, or the src parameter string
           length is zero, return the dst parameter.  */
-      if ((TREE_CODE (len) == INTEGER_CST && compare_tree_int (len, 0) == 0)
+      if ((TREE_CODE (len) == INTEGER_CST && integer_zerop (len))
 	  || (p && *p == '\0'))
         {
 	  /* Evaluate and ignore the src and len parameters in case
@@ -2622,9 +2623,9 @@ expand_builtin_strncat (arglist, target, mode)
       if (TREE_CODE (len) == INTEGER_CST && p
 	  && compare_tree_int (len, strlen (p)) >= 0)
         {
-	  tree newarglist =
-	    tree_cons (NULL_TREE, dst, build_tree_list (NULL_TREE, src)),
-	    fn = built_in_decls[BUILT_IN_STRCAT];
+	  tree newarglist
+	    = tree_cons (NULL_TREE, dst, build_tree_list (NULL_TREE, src));
+	  tree fn = built_in_decls[BUILT_IN_STRCAT];
 
 	  /* If the replacement _DECL isn't initialized, don't do the
 	     transformation.  */

@@ -5693,11 +5693,10 @@ finish_struct (t, fieldlist, attributes)
 	 field widths.  */
       if (DECL_INITIAL (x))
 	{
-	  int max_width;
-	  if (TYPE_MAIN_VARIANT (TREE_TYPE (x)) == c_bool_type_node)
-	    max_width = CHAR_TYPE_SIZE;
-	  else
-	    max_width = TYPE_PRECISION (TREE_TYPE (x));
+	  int max_width
+	    = (TYPE_MAIN_VARIANT (TREE_TYPE (x)) == c_bool_type_node
+	       ? CHAR_TYPE_SIZE : TYPE_PRECISION (TREE_TYPE (x)));
+
 	  if (tree_int_cst_sgn (DECL_INITIAL (x)) < 0)
 	    error_with_decl (x, "negative width in bit-field `%s'");
 	  else if (0 < compare_tree_int (DECL_INITIAL (x), max_width))
@@ -5708,7 +5707,7 @@ finish_struct (t, fieldlist, attributes)
 	    {
 	      /* The test above has assured us that TREE_INT_CST_HIGH is 0.  */
 	      unsigned HOST_WIDE_INT width
-		= TREE_INT_CST_LOW (DECL_INITIAL (x));
+		= tree_low_cst (DECL_INITIAL (x), 1);
 
 	      if (TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
 		  && (width < min_precision (TYPE_MIN_VALUE (TREE_TYPE (x)),
