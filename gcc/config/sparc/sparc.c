@@ -490,6 +490,11 @@ symbolic_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
+  enum machine_mode omode = GET_MODE (op);
+
+  if (omode != mode && omode != VOIDmode && mode != VOIDmode)
+    return 0;
+
   switch (GET_CODE (op))
     {
     case SYMBOL_REF:
@@ -501,10 +506,6 @@ symbolic_operand (op, mode)
       return ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
 	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
 	      && GET_CODE (XEXP (op, 1)) == CONST_INT);
-
-      /* ??? This clause seems to be irrelevant.  */
-    case CONST_DOUBLE:
-      return GET_MODE (op) == mode;
 
     default:
       return 0;
