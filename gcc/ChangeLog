@@ -1,3 +1,15 @@
+Fri Jul  2 13:23:39 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* c-decl.c (widest_integer_literal_type_node,
+	widest_unsigned_literal_type) : New.
+	(init_decl_processing): Handle/use the two new types.
+	* c-common.c (type_for_size,type_for_mode) : Same.
+	* c-lex.c (yylex) : Same.
+	* c-typeck.c (unsigned_type,signed_type,signed_or_unsigned_type) :
+	Same.
+	* c-tree.h (widest_integer_literal_type_node,
+	widest_unsigned_literal_type) : New.
+
 Fri Jul  2 03:05:44 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* dwarfout.c (field_byte_offset): Correctly compute the object's
