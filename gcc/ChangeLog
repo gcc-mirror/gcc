@@ -1,3 +1,8 @@
+2004-04-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload1.c (emit_reload_insns): Set reg_has_output_reload to one
+	after setting reg_last_reload_reg for optional output reloads.
+
 2004-04-12  Fariborz Jahanian <fjahanian@apple.com>
 
 	* config/rs6000/altivec.h (vec_mergeh, vec_mergel):
