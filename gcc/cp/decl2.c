@@ -1884,7 +1884,7 @@ cplus_decl_attributes (decl, attributes, prefix_attributes)
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     decl = DECL_TEMPLATE_RESULT (decl);
 
-  decl_attributes (decl, attributes, prefix_attributes);
+  decl_attributes (decl, chainon (attributes, prefix_attributes));
 
   if (TREE_CODE (decl) == TYPE_DECL)
     SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (decl), TREE_TYPE (decl));

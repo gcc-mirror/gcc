@@ -378,7 +378,7 @@ datadef:
 fndef:
 	  declspecs_ts setspecs declarator
 		{ if (! start_function (current_declspecs, $3,
-					prefix_attributes, NULL_TREE))
+					prefix_attributes))
 		    YYERROR1;
 		}
 	  old_style_parm_decls
@@ -396,7 +396,7 @@ fndef:
 		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| declspecs_nots setspecs notype_declarator
 		{ if (! start_function (current_declspecs, $3,
-					prefix_attributes, NULL_TREE))
+					prefix_attributes))
 		    YYERROR1;
 		}
 	  old_style_parm_decls
@@ -414,7 +414,7 @@ fndef:
 		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| setspecs notype_declarator
 		{ if (! start_function (NULL_TREE, $2,
-					prefix_attributes, NULL_TREE))
+					prefix_attributes))
 		    YYERROR1;
 		}
 	  old_style_parm_decls
@@ -1436,7 +1436,7 @@ maybeasm:
 initdcl:
 	  declarator maybeasm maybe_attribute '='
 		{ $<ttype>$ = start_decl ($1, current_declspecs, 1,
-					  $3, prefix_attributes);
+					  chainon ($3, prefix_attributes));
 		  start_init ($<ttype>$, $2, global_bindings_p ()); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
@@ -1444,7 +1444,7 @@ initdcl:
 		  finish_decl ($<ttype>5, $6, $2); }
 	| declarator maybeasm maybe_attribute
 		{ tree d = start_decl ($1, current_declspecs, 0,
-				       $3, prefix_attributes);
+				       chainon ($3, prefix_attributes));
 		  finish_decl (d, NULL_TREE, $2); 
                 }
 	;
@@ -1452,7 +1452,7 @@ initdcl:
 notype_initdcl:
 	  notype_declarator maybeasm maybe_attribute '='
 		{ $<ttype>$ = start_decl ($1, current_declspecs, 1,
-					  $3, prefix_attributes);
+					  chainon ($3, prefix_attributes));
 		  start_init ($<ttype>$, $2, global_bindings_p ()); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
@@ -1460,7 +1460,7 @@ notype_initdcl:
 		  finish_decl ($<ttype>5, $6, $2); }
 	| notype_declarator maybeasm maybe_attribute
 		{ tree d = start_decl ($1, current_declspecs, 0,
-				       $3, prefix_attributes);
+				       chainon ($3, prefix_attributes));
 		  finish_decl (d, NULL_TREE, $2); }
 	;
 /* the * rules are dummies to accept the Apollo extended syntax
@@ -1594,7 +1594,7 @@ nested_function:
 
 		  push_function_context ();
 		  if (! start_function (current_declspecs, $1,
-					prefix_attributes, NULL_TREE))
+					prefix_attributes))
 		    {
 		      pop_function_context ();
 		      YYERROR1;
@@ -1624,7 +1624,7 @@ notype_nested_function:
 
 		  push_function_context ();
 		  if (! start_function (current_declspecs, $1,
-					prefix_attributes, NULL_TREE))
+					prefix_attributes))
 		    {
 		      pop_function_context ();
 		      YYERROR1;
@@ -1896,27 +1896,27 @@ components_notype:
 component_declarator:
 	  save_filename save_lineno declarator maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, NULL_TREE);
-		  decl_attributes ($$, $4, prefix_attributes); }
+		  decl_attributes ($$, chainon ($4, prefix_attributes)); }
 	| save_filename save_lineno
 	  declarator ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, $5);
-		  decl_attributes ($$, $6, prefix_attributes); }
+		  decl_attributes ($$, chainon ($6, prefix_attributes)); }
 	| save_filename save_lineno ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, NULL_TREE, current_declspecs, $4);
-		  decl_attributes ($$, $5, prefix_attributes); }
+		  decl_attributes ($$, chainon ($5, prefix_attributes)); }
 	;
 
 component_notype_declarator:
 	  save_filename save_lineno notype_declarator maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, NULL_TREE);
-		  decl_attributes ($$, $4, prefix_attributes); }
+		  decl_attributes ($$, chainon ($4, prefix_attributes)); }
 	| save_filename save_lineno
 	  notype_declarator ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, $3, current_declspecs, $5);
-		  decl_attributes ($$, $6, prefix_attributes); }
+		  decl_attributes ($$, chainon ($6, prefix_attributes)); }
 	| save_filename save_lineno ':' expr_no_commas maybe_attribute
 		{ $$ = grokfield ($1, $2, NULL_TREE, current_declspecs, $4);
-		  decl_attributes ($$, $5, prefix_attributes); }
+		  decl_attributes ($$, chainon ($5, prefix_attributes)); }
 	;
 
 /* We chain the enumerators in reverse order.
@@ -1966,18 +1966,15 @@ absdcl_maybe_attribute:   /* absdcl maybe_attribute, but not just attributes */
 	/* empty */
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 NULL_TREE),
-					build_tree_list (prefix_attributes,
-							 NULL_TREE)); }
+					prefix_attributes); }
 	| absdcl1
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $1),
-					build_tree_list (prefix_attributes,
-							 NULL_TREE)); }
+					prefix_attributes); }
 	| absdcl1_noea attributes
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $1),
-					build_tree_list (prefix_attributes,
-							 $2)); }
+					chainon ($2, prefix_attributes)); }
 	;
 
 absdcl1:  /* a nonempty absolute declarator */
@@ -2450,7 +2447,7 @@ label:	  CASE expr_no_commas ':'
 		  stmt_count++;
 		  if (label)
 		    {
-		      decl_attributes (label, $5, NULL_TREE);
+		      decl_attributes (label, $5);
 		      $$ = add_stmt (build_stmt (LABEL_STMT, label));
 		    }
 		  else
@@ -2567,16 +2564,14 @@ parm:
 	  declspecs_ts setspecs parm_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					build_tree_list (prefix_attributes,
-							 $4));
+					chainon ($4, prefix_attributes));
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| declspecs_ts setspecs notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					build_tree_list (prefix_attributes,
-							 $4)); 
+					chainon ($4, prefix_attributes)); 
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack); }
@@ -2588,8 +2583,7 @@ parm:
 	| declspecs_nots setspecs notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					build_tree_list (prefix_attributes,
-							 $4));
+					chainon ($4, prefix_attributes));
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack); }
@@ -2607,16 +2601,14 @@ firstparm:
 	  declspecs_ts_nosa setspecs_fp parm_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					build_tree_list (prefix_attributes,
-							 $4));
+					chainon ($4, prefix_attributes));
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| declspecs_ts_nosa setspecs_fp notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					build_tree_list (prefix_attributes,
-							 $4)); 
+					chainon ($4, prefix_attributes)); 
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack); }
@@ -2628,8 +2620,7 @@ firstparm:
 	| declspecs_nots_nosa setspecs_fp notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $3),
-					build_tree_list (prefix_attributes,
-							 $4));
+					chainon ($4, prefix_attributes));
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack); }
@@ -3113,13 +3104,11 @@ myparm:
 	  parm_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $1),
-					build_tree_list (prefix_attributes,
-							 $2)); }
+					chainon ($2, prefix_attributes)); }
 	| notype_declarator maybe_attribute
 		{ $$ = build_tree_list (build_tree_list (current_declspecs,
 							 $1),
-					build_tree_list (prefix_attributes,
-							 $2)); }
+					chainon ($2, prefix_attributes)); }
 	| absdcl_maybe_attribute
 		{ $$ = $1; }
 	;

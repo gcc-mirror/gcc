@@ -8415,15 +8415,17 @@ in @file{i386/cygwin.h} and @file{i386/i386.c}, for example.
 
 @table @code
 @findex INSERT_ATTRIBUTES
-@item INSERT_ATTRIBUTES (@var{node}, @var{attr_ptr}, @var{prefix_ptr})
+@item INSERT_ATTRIBUTES (@var{node}, @var{attr_ptr})
 Define this macro if you want to be able to add attributes to a decl
 when it is being created.  This is normally useful for back ends which
 wish to implement a pragma by using the attributes which correspond to
 the pragma's effect.  The @var{node} argument is the decl which is being
 created.  The @var{attr_ptr} argument is a pointer to the attribute list
-for this decl.  The @var{prefix_ptr} is a pointer to the list of
-attributes that have appeared after the specifiers and modifiers of the
-declaration, but before the declaration proper.
+for this decl.  The list itself should not be modified, since it may be
+shared with other decls, but attributes may be chained on the head of
+the list and @code{*@var{attr_ptr}} modified to point to the new
+attributes, or a copy of the list may be made if further changes are
+needed.
 
 @findex SET_DEFAULT_DECL_ATTRIBUTES
 @item SET_DEFAULT_DECL_ATTRIBUTES (@var{decl}, @var{attributes})

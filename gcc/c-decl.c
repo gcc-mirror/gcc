@@ -3336,10 +3336,10 @@ groktypename_in_parm_context (typename)
    grokfield and not through here.  */
 
 tree
-start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
+start_decl (declarator, declspecs, initialized, attributes)
      tree declarator, declspecs;
      int initialized;
-     tree attributes, prefix_attributes;
+     tree attributes;
 {
   register tree decl = grokdeclarator (declarator, declspecs,
 				       NORMAL, initialized);
@@ -3452,7 +3452,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 #endif
 
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
-  decl_attributes (decl, attributes, prefix_attributes);
+  decl_attributes (decl, attributes);
 
   /* Add this decl to the current binding level.
      TEM may equal DECL or it may be a previous decl of the same name.  */
@@ -3716,8 +3716,7 @@ push_parm_decl (parm)
 
   decl = grokdeclarator (TREE_VALUE (TREE_PURPOSE (parm)),
 			 TREE_PURPOSE (TREE_PURPOSE (parm)), PARM, 0);
-  decl_attributes (decl, TREE_VALUE (TREE_VALUE (parm)),
-		   TREE_PURPOSE (TREE_VALUE (parm)));
+  decl_attributes (decl, TREE_VALUE (parm));
 
 #if 0
   if (DECL_NAME (decl))
@@ -5345,7 +5344,7 @@ finish_struct (t, fieldlist, attributes)
 
   TYPE_SIZE (t) = 0;
 
-  decl_attributes (t, attributes, NULL_TREE);
+  decl_attributes (t, attributes);
 
   /* Nameless union parm types are useful as GCC extension.  */
   if (! (TREE_CODE (t) == UNION_TYPE && TYPE_NAME (t) == 0) && !pedantic)
@@ -5709,7 +5708,7 @@ finish_enum (enumtype, values, attributes)
   if (in_parm_level_p ())
     warning ("enum defined inside parms");
 
-  decl_attributes (enumtype, attributes, NULL_TREE);
+  decl_attributes (enumtype, attributes);
 
   /* Calculate the maximum value of any enumerator in this type.  */
 
@@ -5893,7 +5892,7 @@ build_enumerator (name, value)
 
 
 /* Create the FUNCTION_DECL for a function definition.
-   DECLSPECS, DECLARATOR, PREFIX_ATTRIBUTES and ATTRIBUTES are the parts of
+   DECLSPECS, DECLARATOR and ATTRIBUTES are the parts of
    the declaration; they describe the function's name and the type it returns,
    but twisted together in a fashion that parallels the syntax of C.
 
@@ -5905,8 +5904,8 @@ build_enumerator (name, value)
    yyparse to report a parse error.  */
 
 int
-start_function (declspecs, declarator, prefix_attributes, attributes)
-     tree declarator, declspecs, prefix_attributes, attributes;
+start_function (declspecs, declarator, attributes)
+     tree declarator, declspecs, attributes;
 {
   tree decl1, old_decl;
   tree restype;
@@ -5933,7 +5932,7 @@ start_function (declspecs, declarator, prefix_attributes, attributes)
       return 0;
     }
 
-  decl_attributes (decl1, prefix_attributes, attributes);
+  decl_attributes (decl1, attributes);
 
   announce_function (decl1);
 
