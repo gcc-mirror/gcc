@@ -1,3 +1,12 @@
+2000-10-13  Richard Earnshaw <rearnsha@arm.com>
+
+	* arm.c: Include obstack.h
+	(minipool_obstack, minipool_startobj): Define.
+	(arm_add_gc_roots): Initialize them.
+	(create_fix_barrier): Use our new obstack.
+	(push_minipool_barrier, push_minipool_fix): Likewise.
+	(arm_reorg): Release obstack memory.
+
 2000-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.md (nonlocal_goto_receiver): Remove.

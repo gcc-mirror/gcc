@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 #include "tree.h"
+#include "obstack.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "real.h"
@@ -98,6 +99,13 @@ static int       current_file_function_operand	PARAMS ((rtx));
 #undef Hint
 #undef Mmode
 #undef Ulong
+
+/* Obstack for minipool constant handling.  */
+static struct obstack minipool_obstack;
+static char *minipool_startobj;
+
+#define obstack_chunk_alloc xmalloc
+#define obstack_chunk_free free
 
 /* The maximum number of insns skipped which will be conditionalised if
    possible.  */
@@ -662,7 +670,9 @@ arm_add_gc_roots ()
   ggc_add_rtx_root (&arm_compare_op0, 1);
   ggc_add_rtx_root (&arm_compare_op1, 1);
   ggc_add_rtx_root (&arm_target_insn, 1); /* Not sure this is really a root */
-  /* XXX: What about the minipool tables?  */
+
+  gcc_obstack_init(&minipool_obstack);
+  minipool_startobj = (char *) obstack_alloc (&minipool_obstack, 0);
 }
 
 /* Return 1 if it is possible to return using a single instruction.  */
@@ -5375,7 +5385,7 @@ create_fix_barrier (fix, max_address)
   emit_label_after (label, barrier);
 
   /* Create a minipool barrier entry for the new barrier.  */
-  new_fix = (Mfix *) oballoc (sizeof (* new_fix));
+  new_fix = (Mfix *) obstack_alloc (&minipool_obstack, sizeof (* new_fix));
   new_fix->insn = barrier;
   new_fix->address = selected_address;
   new_fix->next = fix->next;
@@ -5391,7 +5401,7 @@ push_minipool_barrier (insn, address)
      rtx insn;
      HOST_WIDE_INT address;
 {
-  Mfix * fix = (Mfix *) oballoc (sizeof (* fix));
+  Mfix * fix = (Mfix *) obstack_alloc (&minipool_obstack, sizeof (* fix));
 
   fix->insn = insn;
   fix->address = address;
@@ -5418,7 +5428,7 @@ push_minipool_fix (insn, address, loc, mode, value)
      enum machine_mode mode;
      rtx value;
 {
-  Mfix * fix = (Mfix *) oballoc (sizeof (* fix));
+  Mfix * fix = (Mfix *) obstack_alloc (&minipool_obstack, sizeof (* fix));
 
 #ifdef AOF_ASSEMBLER
   /* PIC symbol refereneces need to be converted into offsets into the
@@ -5671,6 +5681,9 @@ arm_reorg (first)
      directly.  This can happen if the RTL gets split during final
      instruction generation.  */
   after_arm_reorg = 1;
+
+  /* Free the minipool memory.  */
+  obstack_free (&minipool_obstack, minipool_startobj);
 }
 
 /* Routines to output assembly language.  */
