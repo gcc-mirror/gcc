@@ -1,3 +1,10 @@
+Sat Jan  9 11:44:55 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gansidecl.h: Allow attribute unused on labels only when we are
+ 	version 2.93 or higher.  Not all versions of 2.92 have this feature.
+
+	* version.c: Bump minor number to 93.
+
 Fri Jan  8 10:51:13 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* config/m68k/m68k.h: Declare output_function_epilogue.
