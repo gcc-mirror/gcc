@@ -228,13 +228,9 @@ static void
 scan_translation_unit_trad (pfile)
      cpp_reader *pfile;
 {
-  for (;;)
+  while (_cpp_read_logical_line_trad (pfile))
     {
-      size_t len;
-
-      if (!_cpp_read_logical_line_trad (pfile))
-	break;
-      len = pfile->out.cur - pfile->out.base;
+      size_t len = pfile->out.cur - pfile->out.base;
       maybe_print_line (print.map, pfile->out.first_line);
       fwrite (pfile->out.base, 1, len, print.outf);
       print.printed = 1;

@@ -1,3 +1,9 @@
+2002-06-29  Neil Booth  <neil@daikokuya.co.uk>
+
+	PR preprocessor/7150
+	* cppmain.c (scan_translation_unit_trad): Simplify.
+	* cpplib.c (cpp_scan_nooutput): Handle traditional case.
+
 2002-06-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* config/i386/crtdll.h: Define EXTRA_OS_CPP_BUILTINS.
