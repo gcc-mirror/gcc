@@ -540,8 +540,14 @@ extern void do_compare_rtx_and_jump PARAMS ((rtx, rtx, enum rtx_code, int,
 					     enum machine_mode, rtx,
 					     unsigned int, rtx, rtx));
 
-/* Generate a tablejump instruction (used for switch statements).  */
-extern void do_tablejump PARAMS ((rtx, enum machine_mode, rtx, rtx, rtx));
+/* Two different ways of generating switch statements.  */
+extern int try_casesi    PARAMS ((tree, tree, tree, tree, rtx, rtx));
+extern int try_tablejump PARAMS ((tree, tree, tree, tree, rtx, rtx));
+
+/* Smallest number of adjacent cases before we use a jump table.
+   XXX Should be a target hook.  */
+extern unsigned int case_values_threshold PARAMS ((void));
+
 
 #ifdef TREE_CODE
 /* rtl.h and tree.h were included.  */

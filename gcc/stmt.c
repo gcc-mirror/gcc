@@ -43,7 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 #include "insn-config.h"
-#include "insn-codes.h"
 #include "expr.h"
 #include "libfuncs.h"
 #include "hard-reg-set.h"
@@ -5021,10 +5020,6 @@ check_for_full_enumeration_handling (type)
 {
   register struct case_node *n;
   register tree chain;
-#if 0  /* variable used by 'if 0'ed  code below.  */
-  register struct case_node **l;
-  int all_values = 1;
-#endif
 
   /* True iff the selector type is a numbered set mode.  */
   int sparseness = 0;
@@ -5122,28 +5117,6 @@ check_for_full_enumeration_handling (type)
 	      }
 	  }
       }
-
-#if 0
-  /* ??? This optimization is disabled because it causes valid programs to
-     fail.  ANSI C does not guarantee that an expression with enum type
-     will have a value that is the same as one of the enumeration literals.  */
-
-  /* If all values were found as case labels, make one of them the default
-     label.  Thus, this switch will never fall through.  We arbitrarily pick
-     the last one to make the default since this is likely the most
-     efficient choice.  */
-
-  if (all_values)
-    {
-      for (l = &case_stack->data.case_stmt.case_list;
-	   (*l)->right != 0;
-	   l = &(*l)->right)
-	;
-
-      case_stack->data.case_stmt.default_label = (*l)->code_label;
-      *l = 0;
-    }
-#endif /* 0 */
 }
 
 /* Free CN, and its children.  */
@@ -5161,6 +5134,7 @@ free_case_nodes (cn)
 }
 
 
+
 /* Terminate a case (Pascal) or switch (C) statement
    in which ORIG_INDEX is the expression to be tested.
    Generate the code to test it and jump to the right place.  */
@@ -5289,18 +5263,7 @@ expand_end_case (orig_index)
 	 If the switch-index is a constant, do it this way
 	 because we can optimize it.  */
 
-#ifndef CASE_VALUES_THRESHOLD
-#ifdef HAVE_casesi
-#define CASE_VALUES_THRESHOLD (HAVE_casesi ? 4 : 5)
-#else
-      /* If machine does not have a case insn that compares the
-	 bounds, this means extra overhead for dispatch tables
-	 which raises the threshold for using them.  */
-#define CASE_VALUES_THRESHOLD 5
-#endif /* HAVE_casesi */
-#endif /* CASE_VALUES_THRESHOLD */
-
-      else if (count < CASE_VALUES_THRESHOLD
+      else if (count < case_values_threshold ()
 	       || compare_tree_int (range, 10 * count) > 0
 	       /* RANGE may be signed, and really large ranges will show up
 		  as negative numbers.  */
@@ -5309,12 +5272,6 @@ expand_end_case (orig_index)
 	       || flag_pic
 #endif
 	       || TREE_CODE (index_expr) == INTEGER_CST
-	       /* These will reduce to a constant.  */
-	       || (TREE_CODE (index_expr) == CALL_EXPR
-		   && TREE_CODE (TREE_OPERAND (index_expr, 0)) == ADDR_EXPR
-		   && TREE_CODE (TREE_OPERAND (TREE_OPERAND (index_expr, 0), 0)) == FUNCTION_DECL
-		   && DECL_BUILT_IN_CLASS (TREE_OPERAND (TREE_OPERAND (index_expr, 0), 0)) == BUILT_IN_NORMAL
-		   && DECL_FUNCTION_CODE (TREE_OPERAND (TREE_OPERAND (index_expr, 0), 0)) == BUILT_IN_CLASSIFY_TYPE)
 	       || (TREE_CODE (index_expr) == COMPOUND_EXPR
 		   && TREE_CODE (TREE_OPERAND (index_expr, 1)) == INTEGER_CST))
 	{
@@ -5399,100 +5356,15 @@ expand_end_case (orig_index)
 	}
       else
 	{
-	  int win = 0;
-#ifdef HAVE_casesi
-	  if (HAVE_casesi)
-	    {
-	      enum machine_mode index_mode = SImode;
-	      int index_bits = GET_MODE_BITSIZE (index_mode);
-	      rtx op1, op2;
-	      enum machine_mode op_mode;
-
-	      /* Convert the index to SImode.  */
-	      if (GET_MODE_BITSIZE (TYPE_MODE (index_type))
-		  > GET_MODE_BITSIZE (index_mode))
-		{
-		  enum machine_mode omode = TYPE_MODE (index_type);
-		  rtx rangertx = expand_expr (range, NULL_RTX, VOIDmode, 0);
-
-		  /* We must handle the endpoints in the original mode.  */
-		  index_expr = build (MINUS_EXPR, index_type,
-				      index_expr, minval);
-		  minval = integer_zero_node;
-		  index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
-		  emit_cmp_and_jump_insns (rangertx, index, LTU, NULL_RTX,
-					   omode, 1, 0, default_label);
-		  /* Now we can safely truncate.  */
-		  index = convert_to_mode (index_mode, index, 0);
-		}
-	      else
-		{
-		  if (TYPE_MODE (index_type) != index_mode)
-		    {
-		      index_expr = convert (type_for_size (index_bits, 0),
-					    index_expr);
-		      index_type = TREE_TYPE (index_expr);
-		    }
-
-		  index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
-		}
-	      emit_queue ();
-	      index = protect_from_queue (index, 0);
-	      do_pending_stack_adjust ();
-
-	      op_mode = insn_data[(int) CODE_FOR_casesi].operand[0].mode;
-	      if (! (*insn_data[(int) CODE_FOR_casesi].operand[0].predicate)
-		  (index, op_mode))
-		index = copy_to_mode_reg (op_mode, index);
-
-	      op1 = expand_expr (minval, NULL_RTX, VOIDmode, 0);
-
-	      op_mode = insn_data[(int) CODE_FOR_casesi].operand[1].mode;
-	      op1 = convert_modes (op_mode, TYPE_MODE (TREE_TYPE (minval)),
-				   op1, TREE_UNSIGNED (TREE_TYPE (minval)));
-	      if (! (*insn_data[(int) CODE_FOR_casesi].operand[1].predicate)
-		  (op1, op_mode))
-		op1 = copy_to_mode_reg (op_mode, op1);
-
-	      op2 = expand_expr (range, NULL_RTX, VOIDmode, 0);
-
-	      op_mode = insn_data[(int) CODE_FOR_casesi].operand[2].mode;
-	      op2 = convert_modes (op_mode, TYPE_MODE (TREE_TYPE (range)),
-				   op2, TREE_UNSIGNED (TREE_TYPE (range)));
-	      if (! (*insn_data[(int) CODE_FOR_casesi].operand[2].predicate)
-		  (op2, op_mode))
-		op2 = copy_to_mode_reg (op_mode, op2);
-
-	      emit_jump_insn (gen_casesi (index, op1, op2,
-					  table_label, default_label));
-	      win = 1;
-	    }
-#endif
-#ifdef HAVE_tablejump
-	  if (! win && HAVE_tablejump)
+	  if (! try_casesi (index_type, index_expr, minval, range,
+			    table_label, default_label))
 	    {
 	      index_type = thiscase->data.case_stmt.nominal_type;
-	      index_expr = fold (build (MINUS_EXPR, index_type,
-					convert (index_type, index_expr),
-					convert (index_type, minval)));
-	      index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
-	      emit_queue ();
-	      index = protect_from_queue (index, 0);
-	      do_pending_stack_adjust ();
-
-	      do_tablejump (index, TYPE_MODE (index_type),
-			    convert_modes (TYPE_MODE (index_type),
-					   TYPE_MODE (TREE_TYPE (range)),
-					   expand_expr (range, NULL_RTX,
-							VOIDmode, 0),
-					   TREE_UNSIGNED (TREE_TYPE (range))),
-			    table_label, default_label);
-	      win = 1;
+	      if (! try_tablejump (index_type, index_expr, minval, range,
+				   table_label, default_label))
+		abort ();
 	    }
-#endif
-	  if (! win)
-	    abort ();
-
+	  
 	  /* Get table of labels to jump to, in order of case index.  */
 
 	  ncases = TREE_INT_CST_LOW (range) + 1;
@@ -6133,20 +6005,6 @@ emit_case_nodes (index, node, default_label, index_type)
       else if (node->right == 0 && node->left != 0)
 	{
 	  /* Just one subtree, on the left.  */
-
-#if 0 /* The following code and comment were formerly part
-	 of the condition here, but they didn't work
-	 and I don't understand what the idea was.  -- rms.  */
-	  /* If our "most probable entry" is less probable
-	     than the default label, emit a jump to
-	     the default label using condition codes
-	     already lying around.  With no right branch,
-	     a branch-greater-than will get us to the default
-	     label correctly.  */
-	  if (use_cost_table
-	      && COST_TABLE (TREE_INT_CST_LOW (node->high)) < 12)
-	    ;
-#endif /* 0 */
 	  if (node->left->left || node->left->right
 	      || !tree_int_cst_equal (node->left->low, node->left->high))
 	    {

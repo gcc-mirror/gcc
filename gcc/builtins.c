@@ -91,6 +91,7 @@ static rtx expand_builtin_apply_args	PARAMS ((void));
 static rtx expand_builtin_apply_args_1	PARAMS ((void));
 static rtx expand_builtin_apply		PARAMS ((rtx, rtx, rtx));
 static void expand_builtin_return	PARAMS ((rtx));
+static int type_to_class		PARAMS ((tree));
 static rtx expand_builtin_classify_type	PARAMS ((tree));
 static rtx expand_builtin_mathfn	PARAMS ((tree, rtx, rtx));
 static rtx expand_builtin_constant_p	PARAMS ((tree));
@@ -142,6 +143,7 @@ static rtx expand_builtin_fputs		PARAMS ((tree, int));
 static tree stabilize_va_list		PARAMS ((tree, int));
 static rtx expand_builtin_expect	PARAMS ((tree, rtx));
 static tree fold_builtin_constant_p	PARAMS ((tree));
+static tree fold_builtin_classify_type	PARAMS ((tree));
 static tree build_function_call_expr	PARAMS ((tree, tree));
 static int validate_arglist		PARAMS ((tree, ...));
 
@@ -1267,6 +1269,37 @@ expand_builtin_return (result)
   expand_null_return ();
 }
 
+/* Used by expand_builtin_classify_type and fold_builtin_classify_type.  */
+static enum type_class
+type_to_class (type)
+     tree type;
+{
+  switch (TREE_CODE (type))
+    {
+    case VOID_TYPE:	   return void_type_class;
+    case INTEGER_TYPE:	   return integer_type_class;
+    case CHAR_TYPE:	   return char_type_class;
+    case ENUMERAL_TYPE:	   return enumeral_type_class;
+    case BOOLEAN_TYPE:	   return boolean_type_class;
+    case POINTER_TYPE:	   return pointer_type_class;
+    case REFERENCE_TYPE:   return reference_type_class;
+    case OFFSET_TYPE:	   return offset_type_class;
+    case REAL_TYPE:	   return real_type_class;
+    case COMPLEX_TYPE:	   return complex_type_class;
+    case FUNCTION_TYPE:	   return function_type_class;
+    case METHOD_TYPE:	   return method_type_class;
+    case RECORD_TYPE:	   return record_type_class;
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:  return union_type_class;
+    case ARRAY_TYPE:	   return (TYPE_STRING_FLAG (type)
+				   ? string_type_class : array_type_class);
+    case SET_TYPE:	   return set_type_class;
+    case FILE_TYPE:	   return file_type_class;
+    case LANG_TYPE:	   return lang_type_class;
+    default:		   return no_type_class;
+    }
+}
+  
 /* Expand a call to __builtin_classify_type with arguments found in
    ARGLIST.  */
 static rtx
@@ -1274,51 +1307,7 @@ expand_builtin_classify_type (arglist)
      tree arglist;
 {
   if (arglist != 0)
-    {
-      tree type = TREE_TYPE (TREE_VALUE (arglist));
-      enum tree_code code = TREE_CODE (type);
-      if (code == VOID_TYPE)
-	return GEN_INT (void_type_class);
-      if (code == INTEGER_TYPE)
-	return GEN_INT (integer_type_class);
-      if (code == CHAR_TYPE)
-	return GEN_INT (char_type_class);
-      if (code == ENUMERAL_TYPE)
-	return GEN_INT (enumeral_type_class);
-      if (code == BOOLEAN_TYPE)
-	return GEN_INT (boolean_type_class);
-      if (code == POINTER_TYPE)
-	return GEN_INT (pointer_type_class);
-      if (code == REFERENCE_TYPE)
-	return GEN_INT (reference_type_class);
-      if (code == OFFSET_TYPE)
-	return GEN_INT (offset_type_class);
-      if (code == REAL_TYPE)
-	return GEN_INT (real_type_class);
-      if (code == COMPLEX_TYPE)
-	return GEN_INT (complex_type_class);
-      if (code == FUNCTION_TYPE)
-	return GEN_INT (function_type_class);
-      if (code == METHOD_TYPE)
-	return GEN_INT (method_type_class);
-      if (code == RECORD_TYPE)
-	return GEN_INT (record_type_class);
-      if (code == UNION_TYPE || code == QUAL_UNION_TYPE)
-	return GEN_INT (union_type_class);
-      if (code == ARRAY_TYPE)
-	{
-	  if (TYPE_STRING_FLAG (type))
-	    return GEN_INT (string_type_class);
-	  else
-	    return GEN_INT (array_type_class);
-	}
-      if (code == SET_TYPE)
-	return GEN_INT (set_type_class);
-      if (code == FILE_TYPE)
-	return GEN_INT (file_type_class);
-      if (code == LANG_TYPE)
-	return GEN_INT (lang_type_class);
-    }
+    return GEN_INT (type_to_class (TREE_TYPE (TREE_VALUE (arglist))));
   return GEN_INT (no_type_class);
 }
 
@@ -3806,6 +3795,17 @@ fold_builtin_constant_p (arglist)
   return 0;
 }
 
+/* Fold a call to __builtin_classify_type.  */
+static tree
+fold_builtin_classify_type (arglist)
+     tree arglist;
+{
+  if (arglist == 0)
+    return build_int_2 (no_type_class, 0);
+
+  return build_int_2 (type_to_class (TREE_TYPE (TREE_VALUE (arglist))), 0);
+}
+
 /* Used by constant folding to eliminate some builtin calls early.  EXP is
    the CALL_EXPR of a call to a builtin function.  */
 
@@ -3824,6 +3824,9 @@ fold_builtin (exp)
     {
     case BUILT_IN_CONSTANT_P:
       return fold_builtin_constant_p (arglist);
+
+    case BUILT_IN_CLASSIFY_TYPE:
+      return fold_builtin_classify_type (arglist);
 
     case BUILT_IN_STRLEN:
       if (validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
