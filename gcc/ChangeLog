@@ -1,5 +1,12 @@
 2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.md ("negsi2"): Optimize inline case.
+	("neghi2"): Tighten constraints.
+	("one_cmplsi2"): Optimize and simplify split.
+	* config/m68hc11/larith.asm (__negsi2): Likewise for library.
+
+2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.md ("logicalsi3_zexthi"): Fix constraints
 	and split of AND operation to clear the upper bits.
 	("*logicalsi3_zextqi"): Likewise.
