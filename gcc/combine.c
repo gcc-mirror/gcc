@@ -1535,7 +1535,15 @@ try_combine (i3, i2, i1)
 	 convert I2DEST to the mode of the source of NEWPAT if we can.  */
 
       m_split = split_insns (newpat, i3);
-      if (m_split == 0)
+
+      /* We can only use I2DEST as a scratch reg if it doesn't overlap any
+	 inputs of NEWPAT.  */
+
+      /* ??? If I2DEST is not safe, and I1DEST exists, then it would be
+	 possible to try that as a scratch reg.  This would require adding
+	 more code to make it work though.  */
+
+      if (m_split == 0 && ! reg_overlap_mentioned_p (ni2dest, newpat))
 	{
 	  /* If I2DEST is a hard register or the only use of a pseudo,
 	     we can change its mode.  */
