@@ -1,3 +1,20 @@
+*** Changes in GCC 3.0:
+
+* Certain invalid conversions that were previously accepted will now
+  be rejected.  For example, assigning function pointers of one type
+  to function pointers of another type now requires a cast, whereas
+  previously g++ would sometimes accept the code even without the
+  cast.
+
+* G++ previously allowed `sizeof (X::Y)' where Y was a non-static
+  member of X, even if the `sizeof' expression occurred outside
+  of a non-static member function of X (or one of its derived classes, 
+  or a member-initializer for X or one of its derived classes.)   This
+  extension has been removed.
+
+* G++ no longer allows you to overload the conditional operator (i.e., 
+  the `?:' operator.)
+
 *** Changes in GCC 2.95:
 
 * Messages about non-conformant code that we can still handle ("pedwarns")
