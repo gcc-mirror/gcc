@@ -106,6 +106,7 @@ extern char * output_move_double		PARAMS ((rtx *));
 extern char * output_return_instruction		PARAMS ((rtx, int, int));
 extern int    store_multiple_sequence		PARAMS ((rtx *, int, int *, int *, HOST_WIDE_INT *));
 extern int    symbol_mentioned_p		PARAMS ((rtx));
+extern int    arm_is_longcall_p			PARAMS ((rtx, int, int));
 #if defined AOF_ASSEMBLER 
 extern rtx    aof_pic_entry			PARAMS ((rtx));
 #endif /* AOF_ASSEMBLER */
@@ -145,6 +146,7 @@ extern int    shift_operator			PARAMS ((rtx, Mmode));
 extern int    shiftable_operator		PARAMS ((rtx, Mmode));
 extern int    soft_df_operand			PARAMS ((rtx, Mmode));
 extern int    store_multiple_operation		PARAMS ((rtx, Mmode));
+
 #if defined TREE_CODE
 extern rtx    arm_function_arg			PARAMS ((CUMULATIVE_ARGS *, Mmode, tree, int));
 extern void   arm_init_cumulative_args		PARAMS ((CUMULATIVE_ARGS *, tree, rtx, int));

@@ -1,5 +1,5 @@
 /* Routines for GCC for ARM/pe.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000 Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
 
 This file is part of GNU CC.
@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "expr.h"
 #include "toplev.h"
+#include "arm-protos.h"
 
 extern int current_function_anonymous_args;
 

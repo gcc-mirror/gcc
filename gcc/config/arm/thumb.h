@@ -1296,37 +1296,5 @@ extern int making_const_table;
 /* Options specific to Thumb */
 
 /* True if a return instruction can be used in this function. */
-int thumb_trivial_epilogue ();
 #define USE_RETURN (reload_completed && thumb_trivial_epilogue ())
-
-extern char * thumb_unexpanded_epilogue ();
-extern char * output_move_mem_multiple ();
-extern char * thumb_load_double_from_address ();
-extern char * output_return ();
-extern int    far_jump_used_p();
-extern int    is_called_in_ARM_mode ();
-extern void   thumb_finalize_pic ();
-extern void   thumb_reorg ();
-extern void   thumb_override_options ();
-extern int    is_pic ();
-extern int    thumb_symbol_mentioned_p ();
-extern void   thumb_function_prologue ();
-extern void   thumb_function_epilogue ();
-extern void   thumb_print_operand ();
-extern void   thumb_final_prescan_insn ();
-extern int    thumb_cmp_operand ();
-extern void   thumb_expand_movstrqi ();
-extern void   thumb_expand_prologue ();
-extern void   thumb_expand_epilogue ();
-extern int    arm_valid_machine_decl_attribute ();
-extern void   thumb_init_expanders ();
-
-#ifndef RTX_CODE
-struct rtx_def;
-#define Rtx struct rtx_def *
-#else
-#define Rtx rtx
-#endif
-
-extern Rtx    thumb_return_addr ();
 

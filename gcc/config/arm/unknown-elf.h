@@ -107,6 +107,9 @@ func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
    dwarf2.out. */ 
 #define UNALIGNED_WORD_ASM_OP ".4byte"
 
+#define ASM_OUTPUT_DWARF2_ADDR_CONST(FILE,ADDR)                  \
+     fprintf ((FILE), "\t%s\t%s", UNALIGNED_WORD_ASM_OP, ADDR)
+
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,RTX)                   \
 do {								\
   fprintf ((FILE), "\t%s\t", UNALIGNED_WORD_ASM_OP);		\

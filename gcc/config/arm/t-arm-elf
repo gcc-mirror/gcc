@@ -1,6 +1,6 @@
 CROSS_LIBGCC1 = libgcc1-asm.a
-LIB1ASMSRC = arm/lib1funcs.asm
-LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls
+LIB1ASMSRC    = arm/lib1funcs.asm
+LIB1ASMFUNCS  = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _call_via_rX
 
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.
@@ -21,13 +21,51 @@ dp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#endif' >> dp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
 
-# MULTILIB_OPTIONS  = mlittle-endian/mbig-endian mhard-float/msoft-float mapcs-32/mapcs-26 fno-leading-underscore/fleading-underscore
-# MULTILIB_DIRNAMES = le be fpu soft 32bit 26bit elf under
-# MULTILIB_EXCEPTIONS = 
-# MULTILIB_MATCHES  = 
+# MULTILIB_OPTIONS     = mlittle-endian/mbig-endian
+# MULTILIB_DIRNAMES    = le be
+# MULTILIB_EXCEPTIONS  = 
+# MULTILIB_MATCHES     = mbig-endian=mbe mlittle-endian=mle
+# 
+# MULTILIB_OPTIONS    += mhard-float/msoft-float
+# MULTILIB_DIRNAMES   += fpu soft
+# 
+# MULTILIB_OPTIONS    += mapcs-32/mapcs-26
+# MULTILIB_DIRNAMES   += 32bit 26bit
+# 
+# MULTILIB_OPTIONS    += mno-thumb-interwork/mthumb-interwork
+# MULTILIB_DIRNAMES   += normal interwork
+# MULTILIB_EXCEPTIONS += *mapcs-26/*mthumb-interwork*
+# 
+# MULTILIB_OPTIONS    += fno-leading-underscore/fleading-underscore
+# MULTILIB_DIRNAMES   += elf under
+# 
+# MULTILIB_OPTIONS    += mcpu=arm7
+# MULTILIB_DIRNAMES   += nofmult
+# MULTILIB_EXCEPTIONS += *mthumb-interwork*/*mcpu=arm7*
+# # We have to match all the arm cpu variants which do not have the
+# # multiply instruction and treat them as if the user had specified
+# # -mcpu=arm7.  Note that in the following the ? is interpreted as
+# # an = for the purposes of matching command line options.
+# # FIXME: There ought to be a better way to do this.
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm7d
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm7di
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm70
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm700
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm700i
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm710
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm710c
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm7100
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm7500
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm7500fe
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm6
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm60
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm600
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm610
+# MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm620
+#  
 # EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
-# LIBGCC = stmp-multilib
-# INSTALL_LIBGCC = install-multilib
+# LIBGCC               = stmp-multilib
+# INSTALL_LIBGCC       = install-multilib
 
 # If EXTRA_MULTILIB_PARTS is not defined above then define EXTRA_PARTS here
 EXTRA_PARTS = crtbegin.o crtend.o
