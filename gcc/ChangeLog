@@ -1,3 +1,8 @@
+2004-03-11  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure: Regenerate, since I forgot to while committing Paolo's
+	changes.
+
 2004-03-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR ada/14131
