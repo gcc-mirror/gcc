@@ -1,3 +1,7 @@
+2004-09-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/darwin-longlong.c: XFAIL on AIX and SPE.
+
 2004-09-17  Diego Novillo  <dnovillo@redhat.com>
 
 	* gcc.c-torture/execute/pr17252.c: Use post-increment to
