@@ -1,5 +1,10 @@
 2004-10-27  Zack Weinberg  <zack@codesourcery.com>
 
+	* dbxout.c (dbxout_finish_complex_stabs): Mark 'line' variable
+	ATTRIBUTE_UNUSED.
+
+2004-10-27  Zack Weinberg  <zack@codesourcery.com>
+
 	* c-lex.c (cb_def_pragma): Clean up code for making location
 	palatable to diagnostic.c.
 
@@ -173,7 +178,7 @@
 
 2004-10-26  Fariborz Jahanian <fjahanian@apple.com>
 
-	* config/rs6000/rs6000.md (andsi3_internal8): Set CR when splitting 
+	* config/rs6000/rs6000.md (andsi3_internal8): Set CR when splitting
 	into rotlsi3.
 
 2004-10-26  Kazu Hirata  <kazu@cs.umass.edu>
