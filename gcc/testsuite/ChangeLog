@@ -4,7 +4,6 @@
 	* lib/g++.exp (g++_version): Tweak regexp for version 
 	* lib/g77.exp (g77_version): Likewise 
 	* lib/objc.exp (objc_version): Likewise 
-	* lib/treelang.exp (treelang_version): Likewise 
 
 2005-01-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
