@@ -1,3 +1,8 @@
+1998-09-15  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* search.c (expand_indirect_vtbls_init): Mark temporary stack slots
+	as used to prevent conflicts with virtual function tables.
+
 1998-09-14  Mark Mitchell  <mark@markmitchell.com>
 
 	* pt.c (check_specialization_scope): Fix spelling error.

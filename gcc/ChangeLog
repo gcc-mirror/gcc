@@ -1,3 +1,7 @@
+Tue Sep 15 13:53:59 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* config/i960/i960.h (SLOW_BYTE_ACCESS): Change definition to 1.
+
 Tue Sep 15 09:59:01 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* integrate.c (copy_decl_list): Fix typo.

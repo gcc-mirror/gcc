@@ -2657,6 +2657,17 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
 {
   tree type = BINFO_TYPE (binfo);
 
+  /* This function executes during the finish_function() segment,
+     AFTER the auto variables and temporary stack space has been marked
+     unused...If space is needed for the virtual function tables,
+     some of them might fit within what the compiler now thinks
+     are available stack slots... These values are actually initialized at
+     the beginnning of the function, so when the automatics use their space,
+     they will overwrite the values that are placed here. Marking all
+     temporary space as unavailable prevents this from happening. */
+
+  mark_all_temps_used();
+
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
       rtx fixup_insns = NULL_RTX;
