@@ -77,12 +77,14 @@ public class Socket
   /**
    * The implementation object to which calls are redirected
    */
-  private SocketImpl impl;
+  // package-private because ServerSocket.implAccept() needs to access it.
+  SocketImpl impl;
 
   /**
    * True if socket implementation was created by calling their create() method.
    */
-  private boolean implCreated;
+  // package-private because ServerSocket.implAccept() needs to access it.
+  boolean implCreated;
 
   /**
    * True if the socket is bound.

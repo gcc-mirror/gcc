@@ -354,7 +354,8 @@ public class ServerSocket
         && !((PlainSocketImpl) getImpl()).isInChannelOperation())
       throw new IllegalBlockingModeException ();
 	    
-    impl.accept(socket.getImpl());
+    impl.accept(socket.impl);
+    socket.implCreated = true;
   }
 
   /**

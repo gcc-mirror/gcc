@@ -1,3 +1,11 @@
+2004-07-11  Michael Koch  <konqueror@gmx.de>
+
+	PR libgcj/16473
+	* java/net/ServerSocket.java (accept): Don't create two client 
+	sockets when accepting connections.
+	* java/net/Socket.java (impl): Made package-private.
+	(implCreated): Likewise.
+
 2004-07-01  Release Manager
 
 	* GCC 3.4.1 released.
