@@ -1,3 +1,11 @@
+Mon Dec 17 17:02:12 2001  Nicola Pero  <nicola@brainstorm.co.uk>
+
+	* init.c (__objc_exec_class): Fixed bug in the loop on unclaimed
+	categories - when an unclaimed category was found, the loop was
+	doing two steps forward instead of one, so that in certain cases
+	it was failing to properly load all the categories.  (Reported
+	with fix by Alexander Malmberg <alexander@malmberg.org>).
+
 2001-11-14  Aldy Hernandez  <aldyh@redhat.com>
 
         * encoding.c: Add target_flags.
