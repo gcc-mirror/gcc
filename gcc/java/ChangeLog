@@ -1,3 +1,14 @@
+2000-03-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (resolve_package): Set `next' once a type name has been
+	progressively discovered.
+	(resolve_qualified_expression_name): Propagate resolution only if
+	there are remaining qualifiers. Take into account `q' might have
+	been cleared after re-qualification.
+	* parse.y (patch_method_invocation): New local `resolved'.
+  	Section dealing with qualified expression rewritten to use
+ 	resolve_field_access.
+
 Mon Mar 13 12:21:13 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.h (PUSH_CPC): Fixed indentation.

@@ -9261,6 +9261,7 @@ resolve_package (pkg, next)
 	if ((type_name = resolve_no_layout (acc, NULL_TREE)))
 	  {
 	    type_name = acc;
+	    *next = TREE_CHAIN (current);
 	    break;
 	  }
       }
@@ -11364,15 +11365,17 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	      *type_found = type = TREE_TYPE (decl);
 	      layout_class (type);
 	      from_type = 1;
-	      /* Should be a list, really. FIXME */
-	      /* Fix them all the way down */
 
-	      list = TREE_CHAIN (q);
-	      while (list)
+	      /* Fix them all the way down, if any are left. */
+	      if (q)
 		{
-		  RESOLVE_EXPRESSION_NAME_P (QUAL_WFL (list)) = 1;
-		  RESOLVE_PACKAGE_NAME_P (QUAL_WFL (list)) = 0;
-		  list = TREE_CHAIN (list);
+		  list = TREE_CHAIN (q);
+		  while (list)
+		    {
+		      RESOLVE_EXPRESSION_NAME_P (QUAL_WFL (list)) = 1;
+		      RESOLVE_PACKAGE_NAME_P (QUAL_WFL (list)) = 0;
+		      list = TREE_CHAIN (list);
+		    }
 		}
 	    }
 	  else
@@ -11585,6 +11588,10 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	      return 1;
 	    }
 	}
+      /* `q' might have changed due to a after package resolution
+         re-qualification */
+      if (!q)
+	break;
     }
   *found_decl = decl;
   return 0;
@@ -11762,7 +11769,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
   /* Resolution of qualified name, excluding constructors */
   if (QUALIFIED_P (name) && !CALL_CONSTRUCTOR_P (patch))
     {
-      tree class_decl, identifier, identifier_wfl;
+      tree identifier, identifier_wfl, type, resolved;
       /* Extract the last IDENTIFIER of the qualified
 	 expression. This is a wfl and we will use it's location
 	 data during error report. */
@@ -11772,45 +11779,20 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
       /* Given the context, IDENTIFIER is syntactically qualified
 	 as a MethodName. We need to qualify what's before */
       qualify_ambiguous_name (wfl);
+      resolved = resolve_field_access (wfl, NULL, NULL);
 
-      /* Package resolution */
-      if (RESOLVE_PACKAGE_NAME_P (wfl))
-	{
-	  tree next, decl, name = resolve_package (wfl, &next);
-	  
-	  if (!name)
-	    {
-	      tree remainder;
-	      breakdown_qualified (&remainder, NULL, EXPR_WFL_NODE (wfl));
-	      parse_error_context
-		(wfl, "Can't search method `%s' in package `%s'",
-		 IDENTIFIER_POINTER (identifier),
-		 IDENTIFIER_POINTER (remainder));
-	      PATCH_METHOD_RETURN_ERROR ();
-	    }
-	  RESOLVE_PACKAGE_NAME_P (wfl) = 0;
-	  if ((decl = resolve_no_layout (name, QUAL_WFL (next))))
-	    {
-	      QUAL_RESOLUTION (EXPR_WFL_QUALIFICATION (wfl)) = decl;
-	      RESOLVE_EXPRESSION_NAME_P (wfl) = 0;
-	      RESOLVE_TYPE_NAME_P (wfl) = 1;
-	    }
-	  else
-	    {
-	      RESOLVE_EXPRESSION_NAME_P (wfl) = 1;
-	      RESOLVE_TYPE_NAME_P (wfl) = 0;
-	    }
-	}
+      if (resolved == error_mark_node)
+	PATCH_METHOD_RETURN_ERROR ();
+
+      type = GET_SKIP_TYPE (resolved);
+      resolve_and_layout (type, NULL_TREE);
+      list = lookup_method_invoke (0, identifier_wfl, type, identifier, args);
+      args = nreverse (args);
 
       /* We're resolving a call from a type */
-      if (RESOLVE_TYPE_NAME_P (wfl))
+      if (TREE_CODE (resolved) == TYPE_DECL)
 	{
-	  tree decl = QUAL_RESOLUTION (EXPR_WFL_QUALIFICATION (wfl));
-	  tree name = DECL_NAME (decl);
-	  tree type;
-
-	  class_decl = resolve_and_layout (name, wfl);
-	  if (CLASS_INTERFACE (decl))
+	  if (CLASS_INTERFACE (resolved))
 	    {
 	      parse_error_context
 		(identifier_wfl,
@@ -11819,10 +11801,6 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 		 IDENTIFIER_POINTER (name));
 	      PATCH_METHOD_RETURN_ERROR ();
 	    }
-	  /* Look the method up in the type selector. The method ought
-             to be static. */
-	  type = TREE_TYPE (class_decl);
-	  list = lookup_method_invoke (0, wfl, type, identifier, args);
 	  if (list && !METHOD_STATIC (list))
 	    {
 	      char *fct_name = xstrdup (lang_printable_name (list, 0));
@@ -11834,38 +11812,10 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 	      free (fct_name);
 	      PATCH_METHOD_RETURN_ERROR ();
 	    }
-	  args = nreverse (args);
 	}
-      /* We're resolving an expression name */
       else
-	{
-	  tree field, type;
-	  
-	  /* 1- Find the field to which the call applies */
-	  field = resolve_field_access (wfl, NULL, &type);
-	  if (field == error_mark_node)
-	    PATCH_METHOD_RETURN_ERROR ();
-	  /* field is used in lieu of a primary. It alows us not to
-	   report errors on erroneous use of `this' in
-	   constructors. */
-	  primary = field;	
-	  
-	  /* 2- Do the layout of the class where the last field
-	     was found, so we can search it. */
-	  class_decl = resolve_and_layout (type, NULL_TREE);
-	  if (class_decl != NULL_TREE)
-	  type = TREE_TYPE (class_decl);
-
-	  /* 3- Retrieve a filtered list of method matches, Refine
-	     if necessary. In any cases, point out errors.  */
-	  list = lookup_method_invoke (0, identifier_wfl, type, 
-				       identifier, args);
-
-	  /* 4- Add the field as an argument */
-	  args = nreverse (args);
-	  this_arg = field;
-	}
-
+	this_arg = primary = resolved;
+      
       /* IDENTIFIER_WFL will be used to report any problem further */
       wfl = identifier_wfl;
     }
@@ -12385,7 +12335,7 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
     }
 
   /* Search interfaces */
-  if (CLASS_INTERFACE (TYPE_NAME (class)) 
+  if (CLASS_INTERFACE (TYPE_NAME (class))
       || CLASS_ABSTRACT (TYPE_NAME (class)))
     {
       static tree searched_interfaces = NULL_TREE;
