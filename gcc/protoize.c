@@ -1,5 +1,5 @@
 /* Protoize program - Original version by Ron Guilmette (rfg@segfault.us.com).
-   Copyright (C) 1989, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -74,6 +74,8 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include <setjmp.h>
 
+#include "gansidecl.h"
+
 /* Include getopt.h for the sake of getopt_long.
    We don't need the declaration of getopt, and it could conflict
    with something from a system header file, so effectively nullify that.  */
@@ -107,13 +109,22 @@ extern char *version_string;
 
 #define my_access(file,flag)	access((char *)file, flag)
 #define my_stat(file,pkt)	stat((char *)file, pkt)
-#define my_execvp(prog,argv)	execvp((char *)prog, (char **)argv)
 #define my_link(file1, file2)	link((char *)file1, (char *)file2)
 #define my_unlink(file)		unlink((char *)file)
 #define my_open(file, mode, flag)	open((char *)file, mode, flag)
 #define my_chmod(file, mode)	chmod((char *)file, mode)
 
 extern char *getpwd ();
+
+extern char *choose_temp_base PROTO ((void));
+
+extern int pexecute PROTO ((const char *, char * const *, const char *,
+			    const char *, char **, char **, int));
+extern int pwait PROTO ((int, int *, int));
+/* Flag arguments to pexecute.  */
+#define PEXECUTE_FIRST  1
+#define PEXECUTE_LAST   2
+#define PEXECUTE_SEARCH 4
 
 /* Aliases for pointers to void.
    These were made to facilitate compilation with old brain-dead DEC C
@@ -192,7 +203,6 @@ extern int fputc ();
 extern int link ();
 extern int unlink ();
 extern int access ();
-extern int execvp ();
 
 #if 0 /* size_t from sys/types.h may fail to match GCC.
 	 If so, we would get a warning from this.  */
@@ -867,7 +877,7 @@ usage ()
   fprintf (stderr, "%s: usage '%s [ -VqfnkN ] [ -i <istring> ] [ filename ... ]'\n",
 	   pname, pname);
 #else /* !defined (UNPROTOIZE) */
-  fprintf (stderr, "%s: usage '%s [ -VqfnkNlgC ] [ -B <diname> ] [ filename ... ]'\n",
+  fprintf (stderr, "%s: usage '%s [ -VqfnkNlgC ] [ -B <dirname> ] [ filename ... ]'\n",
 	   pname, pname);
 #endif /* !defined (UNPROTOIZE) */
   exit (1);
@@ -2085,14 +2095,14 @@ munge_compile_params (params_list)
 }
 
 /* Do a recompilation for the express purpose of generating a new aux_info
-   file to go with a specific base source file.  */
+   file to go with a specific base source file.
+
+   The result is a boolean indicating success.  */
 
 static int
 gen_aux_info_file (base_filename)
      const char *base_filename;
 {
-  int child_pid;
-
   if (!input_file_name_index)
     munge_compile_params ("");
 
@@ -2109,79 +2119,48 @@ gen_aux_info_file (base_filename)
     fprintf (stderr, "%s: compiling `%s'\n",
 	     pname, compile_params[input_file_name_index]);
 
-  if (child_pid = fork ())
-    {
-      if (child_pid == -1)
-        {
-          fprintf (stderr, "%s: could not fork process: %s\n",
-		   pname, my_strerror(errno));
-          return 0;
-        }
+  {
+    char *errmsg_fmt, *errmsg_arg;
+    int wait_status, pid;
+    char *temp_base = choose_temp_base ();
 
-#if 0
-      /* Print out the command line that the other process is now executing.  */
+    pid = pexecute (compile_params[0], (char * const *) compile_params,
+		    pname, temp_base, &errmsg_fmt, &errmsg_arg,
+		    PEXECUTE_FIRST | PEXECUTE_LAST | PEXECUTE_SEARCH);
 
-      if (!quiet_flag)
-        {
-          const char **arg;
-  
-          fputs ("\t", stderr);
-          for (arg = compile_params; *arg; arg++)
-            {
-              fputs (*arg, stderr);
-              fputc (' ', stderr);
-            }
-          fputc ('\n', stderr);
-          fflush (stderr);
-        }
-#endif /* 0 */
-
+    if (pid == -1)
       {
-        int wait_status;
+	int errno_val = errno;
+	fprintf (stderr, "%s: ", pname);
+	fprintf (stderr, errmsg_fmt, errmsg_arg);
+	fprintf (stderr, ": %s\n", my_strerror (errno_val));
+	return 0;
+      }
 
-        if (wait (&wait_status) == -1)
-          {
-            fprintf (stderr, "%s: wait failed: %s\n",
-		     pname, my_strerror(errno));
-            return 0;
-          }
-	if (WIFSIGNALED (wait_status))
-	  {
-	    fprintf (stderr, "%s: subprocess got fatal signal %d",
-		     pname, WTERMSIG (wait_status));
-	    return 0;
-	  }
-	if (WIFEXITED (wait_status) && WEXITSTATUS (wait_status) != 0)
+    pid = pwait (pid, &wait_status, 0);
+    if (pid == -1)
+      {
+	fprintf (stderr, "%s: wait: %s\n", pname, my_strerror (errno));
+	return 0;
+      }
+    if (WIFSIGNALED (wait_status))
+      {
+	fprintf (stderr, "%s: subprocess got fatal signal %d\n",
+		 pname, WTERMSIG (wait_status));
+	return 0;
+      }
+    if (WIFEXITED (wait_status))
+      {
+	if (WEXITSTATUS (wait_status) != 0)
 	  {
 	    fprintf (stderr, "%s: %s exited with status %d\n",
-		     pname, base_filename, WEXITSTATUS (wait_status));
+		     pname, compile_params[0], WEXITSTATUS (wait_status));
 	    return 0;
 	  }
 	return 1;
       }
-    }
-  else
-    {
-      if (my_execvp (compile_params[0], (char *const *) compile_params))
-        {
-	  int e = errno, f = fileno (stderr);
-	  write (f, pname, strlen (pname));
-	  write (f, ": ", 2);
-	  write (f, compile_params[0], strlen (compile_params[0]));
-	  write (f, ": ", 2);
-#ifdef HAVE_STRERROR
-	  {
-	    char *p = strerror(e);
-	    write (f, p, strlen (p));
-	  }
-#else
-	  write (f, sys_errlist[e], strlen (sys_errlist[e]));
-#endif
-	  write (f, "\n", 1);
-          _exit (1);
-        }
-      return 1;		/* Never executed.  */
-    }
+    abort ();
+  }
 }
 
 /* Read in all of the information contained in a single aux_info file.
