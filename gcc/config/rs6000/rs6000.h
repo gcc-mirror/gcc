@@ -1789,26 +1789,28 @@ typedef struct rs6000_args
    After reload, it makes no difference, since pseudo regs have
    been eliminated by then.  */
 
-#ifndef REG_OK_STRICT
+#ifdef REG_OK_STRICT
+# define REG_OK_STRICT_FLAG 1
+#else
+# define REG_OK_STRICT_FLAG 0
+#endif
 
 /* Nonzero if X is a hard reg that can be used as an index
-   or if it is a pseudo reg.  */
-#define REG_OK_FOR_INDEX_P(X)			\
-  (REGNO (X) <= 31 || REGNO (X) == 67 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+   or if it is a pseudo reg in the non-strict case.  */
+#define INT_REG_OK_FOR_INDEX_P(X, STRICT)			\
+  ((! (STRICT)							\
+    && (REGNO (X) <= 31						\
+	|| REGNO (X) == ARG_POINTER_REGNUM			\
+	|| REGNO (X) >= FIRST_PSEUDO_REGISTER))			\
+   || ((STRICT) && REGNO_OK_FOR_INDEX_P (REGNO (X))))
 
 /* Nonzero if X is a hard reg that can be used as a base reg
-   or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P(X)					 \
-  (REGNO (X) > 0 && REG_OK_FOR_INDEX_P (X))
+   or if it is a pseudo reg in the non-strict case.  */
+#define INT_REG_OK_FOR_BASE_P(X, STRICT)			\
+  (REGNO (X) > 0 && INT_REG_OK_FOR_INDEX_P (X, (STRICT)))
 
-#else
-
-/* Nonzero if X is a hard reg that can be used as an index.  */
-#define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
-/* Nonzero if X is a hard reg that can be used as a base reg.  */
-#define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-
-#endif
+#define REG_OK_FOR_INDEX_P(X) INT_REG_OK_FOR_INDEX_P (X, REG_OK_STRICT_FLAG)
+#define REG_OK_FOR_BASE_P(X)  INT_REG_OK_FOR_BASE_P (X, REG_OK_STRICT_FLAG)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
    that is a valid memory address for an instruction.
@@ -1845,68 +1847,51 @@ typedef struct rs6000_args
    && (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST)		\
    && small_data_operand (X, MODE))
 
-#define LEGITIMATE_ADDRESS_INTEGER_P(X,OFFSET)				\
+#define LEGITIMATE_ADDRESS_INTEGER_P(X, OFFSET)				\
  (GET_CODE (X) == CONST_INT						\
   && (unsigned HOST_WIDE_INT) (INTVAL (X) + (OFFSET) + 0x8000) < 0x10000)
 
-#define LEGITIMATE_OFFSET_ADDRESS_P(MODE,X)		\
- (GET_CODE (X) == PLUS					\
-  && GET_CODE (XEXP (X, 0)) == REG			\
-  && REG_OK_FOR_BASE_P (XEXP (X, 0))			\
-  && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 0)	\
-  && (((MODE) != DFmode && (MODE) != DImode)		\
-      || (TARGET_32BIT					\
-	  ? LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 4) \
-	  : ! (INTVAL (XEXP (X, 1)) & 3)))		\
-  && ((MODE) != TImode					\
-      || (TARGET_32BIT					\
-	  ? LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 12) \
-	  : (LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 8) \
+#define LEGITIMATE_OFFSET_ADDRESS_P(MODE, X, STRICT)		\
+ (GET_CODE (X) == PLUS						\
+  && GET_CODE (XEXP (X, 0)) == REG				\
+  && INT_REG_OK_FOR_BASE_P (XEXP (X, 0), (STRICT))		\
+  && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 0)		\
+  && (((MODE) != DFmode && (MODE) != DImode)			\
+      || (TARGET_32BIT						\
+	  ? LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 4) 	\
+	  : ! (INTVAL (XEXP (X, 1)) & 3)))			\
+  && ((MODE) != TImode						\
+      || (TARGET_32BIT						\
+	  ? LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 12) 	\
+	  : (LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 8) 	\
 	     && ! (INTVAL (XEXP (X, 1)) & 3)))))
 
-#define LEGITIMATE_INDEXED_ADDRESS_P(X)		\
- (GET_CODE (X) == PLUS				\
-  && GET_CODE (XEXP (X, 0)) == REG		\
-  && GET_CODE (XEXP (X, 1)) == REG		\
-  && ((REG_OK_FOR_BASE_P (XEXP (X, 0))		\
-       && REG_OK_FOR_INDEX_P (XEXP (X, 1)))	\
-      || (REG_OK_FOR_BASE_P (XEXP (X, 1))	\
-	  && REG_OK_FOR_INDEX_P (XEXP (X, 0)))))
+#define LEGITIMATE_INDEXED_ADDRESS_P(X, STRICT)			\
+ (GET_CODE (X) == PLUS						\
+  && GET_CODE (XEXP (X, 0)) == REG				\
+  && GET_CODE (XEXP (X, 1)) == REG				\
+  && ((INT_REG_OK_FOR_BASE_P (XEXP (X, 0), (STRICT))		\
+       && INT_REG_OK_FOR_INDEX_P (XEXP (X, 1), (STRICT)))	\
+      || (INT_REG_OK_FOR_BASE_P (XEXP (X, 1), (STRICT))		\
+	  && INT_REG_OK_FOR_INDEX_P (XEXP (X, 0), (STRICT)))))
 
-#define LEGITIMATE_INDIRECT_ADDRESS_P(X)	\
-  (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))
+#define LEGITIMATE_INDIRECT_ADDRESS_P(X, STRICT)		\
+  (GET_CODE (X) == REG && INT_REG_OK_FOR_BASE_P (X, (STRICT)))
 
-#define LEGITIMATE_LO_SUM_ADDRESS_P(MODE, X)		\
-  (TARGET_ELF						\
-   && ! flag_pic && ! TARGET_TOC			\
-   && (MODE) != DImode					\
-   && (MODE) != TImode					\
-   && (TARGET_HARD_FLOAT || (MODE) != DFmode)		\
-   && GET_CODE (X) == LO_SUM				\
-   && GET_CODE (XEXP (X, 0)) == REG			\
-   && REG_OK_FOR_BASE_P (XEXP (X, 0))			\
+#define LEGITIMATE_LO_SUM_ADDRESS_P(MODE, X, STRICT)		\
+  (TARGET_ELF							\
+   && ! flag_pic && ! TARGET_TOC				\
+   && (MODE) != DImode						\
+   && (MODE) != TImode						\
+   && (TARGET_HARD_FLOAT || (MODE) != DFmode)			\
+   && GET_CODE (X) == LO_SUM					\
+   && GET_CODE (XEXP (X, 0)) == REG				\
+   && INT_REG_OK_FOR_BASE_P (XEXP (X, 0), (STRICT))		\
    && CONSTANT_P (XEXP (X, 1)))
 
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)		\
-{ if (LEGITIMATE_INDIRECT_ADDRESS_P (X))		\
-    goto ADDR;						\
-  if ((GET_CODE (X) == PRE_INC || GET_CODE (X) == PRE_DEC) \
-      && TARGET_UPDATE					\
-      && LEGITIMATE_INDIRECT_ADDRESS_P (XEXP (X, 0)))	\
-    goto ADDR;						\
-  if (LEGITIMATE_SMALL_DATA_P (MODE, X))		\
-    goto ADDR;						\
-  if (LEGITIMATE_CONSTANT_POOL_ADDRESS_P (X))		\
-    goto ADDR;						\
-  if (LEGITIMATE_OFFSET_ADDRESS_P (MODE, X))		\
-    goto ADDR;						\
-  if ((MODE) != TImode					\
-      && (TARGET_HARD_FLOAT || TARGET_POWERPC64 || (MODE) != DFmode) \
-      && (TARGET_POWERPC64 || (MODE) != DImode)		\
-      && LEGITIMATE_INDEXED_ADDRESS_P (X))		\
-    goto ADDR;						\
-  if (LEGITIMATE_LO_SUM_ADDRESS_P (MODE, X))		\
-    goto ADDR;						\
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)			\
+{ if (rs6000_legitimate_address (MODE, X, REG_OK_STRICT_FLAG))	\
+    goto ADDR;							\
 }
 
 /* Try machine-dependent ways of modifying an illegitimate address

@@ -1550,6 +1550,58 @@ rs6000_legitimize_address (x, oldx, mode)
   else
     return NULL_RTX;
 }
+
+/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
+   that is a valid memory address for an instruction.
+   The MODE argument is the machine mode for the MEM expression
+   that wants to use this address.
+
+   On the RS/6000, there are four valid address: a SYMBOL_REF that
+   refers to a constant pool entry of an address (or the sum of it
+   plus a constant), a short (16-bit signed) constant plus a register,
+   the sum of two registers, or a register indirect, possibly with an
+   auto-increment.  For DFmode and DImode with an constant plus register,
+   we must ensure that both words are addressable or PowerPC64 with offset
+   word aligned.
+
+   For modes spanning multiple registers (DFmode in 32-bit GPRs,
+   32-bit DImode, TImode), indexed addressing cannot be used because
+   adjacent memory cells are accessed by adding word-sized offsets
+   during assembly output.  */
+int
+rs6000_legitimate_address (mode, x, reg_ok_strict)
+    enum machine_mode mode;
+    rtx x;
+    int reg_ok_strict;
+{
+  if (LEGITIMATE_INDIRECT_ADDRESS_P (x, reg_ok_strict))
+    return 1;
+  if ((GET_CODE (x) == PRE_INC || GET_CODE (x) == PRE_DEC)
+      && TARGET_UPDATE
+      && LEGITIMATE_INDIRECT_ADDRESS_P (XEXP (x, 0), reg_ok_strict))
+    return 1;
+  if (LEGITIMATE_SMALL_DATA_P (mode, x))
+    return 1;
+  if (LEGITIMATE_CONSTANT_POOL_ADDRESS_P (x))
+    return 1;
+  /* If not REG_OK_STRICT (before reload) let pass any stack offset.  */
+  if (! reg_ok_strict
+      && GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == REG
+      && XEXP (x, 0) == virtual_stack_vars_rtx
+      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+    return 1;
+  if (LEGITIMATE_OFFSET_ADDRESS_P (mode, x, reg_ok_strict))
+    return 1;
+  if (mode != TImode
+      && (TARGET_HARD_FLOAT || TARGET_POWERPC64 || mode != DFmode)
+      && (TARGET_POWERPC64 || mode != DImode)
+      && LEGITIMATE_INDEXED_ADDRESS_P (x, reg_ok_strict))
+    return 1;
+  if (LEGITIMATE_LO_SUM_ADDRESS_P (mode, x, reg_ok_strict))
+    return 1;
+  return 0;
+}
 
 /* Emit a move from SOURCE to DEST in mode MODE.  */
 void
@@ -3098,14 +3150,14 @@ lmw_operation (op, mode)
       || count != 32 - (int) dest_regno)
     return 0;
 
-  if (LEGITIMATE_INDIRECT_ADDRESS_P (src_addr))
+  if (LEGITIMATE_INDIRECT_ADDRESS_P (src_addr, 0))
     {
       offset = 0;
       base_regno = REGNO (src_addr);
       if (base_regno == 0)
 	return 0;
     }
-  else if (LEGITIMATE_OFFSET_ADDRESS_P (SImode, src_addr))
+  else if (LEGITIMATE_OFFSET_ADDRESS_P (SImode, src_addr, 0))
     {
       offset = INTVAL (XEXP (src_addr, 1));
       base_regno = REGNO (XEXP (src_addr, 0));
@@ -3128,12 +3180,12 @@ lmw_operation (op, mode)
 	  || GET_MODE (SET_SRC (elt)) != SImode)
 	return 0;
       newaddr = XEXP (SET_SRC (elt), 0);
-      if (LEGITIMATE_INDIRECT_ADDRESS_P (newaddr))
+      if (LEGITIMATE_INDIRECT_ADDRESS_P (newaddr, 0))
 	{
 	  newoffset = 0;
 	  addr_reg = newaddr;
 	}
-      else if (LEGITIMATE_OFFSET_ADDRESS_P (SImode, newaddr))
+      else if (LEGITIMATE_OFFSET_ADDRESS_P (SImode, newaddr, 0))
 	{
 	  addr_reg = XEXP (newaddr, 0);
 	  newoffset = INTVAL (XEXP (newaddr, 1));
@@ -3176,14 +3228,14 @@ stmw_operation (op, mode)
       || count != 32 - (int) src_regno)
     return 0;
 
-  if (LEGITIMATE_INDIRECT_ADDRESS_P (dest_addr))
+  if (LEGITIMATE_INDIRECT_ADDRESS_P (dest_addr, 0))
     {
       offset = 0;
       base_regno = REGNO (dest_addr);
       if (base_regno == 0)
 	return 0;
     }
-  else if (LEGITIMATE_OFFSET_ADDRESS_P (SImode, dest_addr))
+  else if (LEGITIMATE_OFFSET_ADDRESS_P (SImode, dest_addr, 0))
     {
       offset = INTVAL (XEXP (dest_addr, 1));
       base_regno = REGNO (XEXP (dest_addr, 0));
@@ -3206,12 +3258,12 @@ stmw_operation (op, mode)
 	  || GET_MODE (SET_DEST (elt)) != SImode)
 	return 0;
       newaddr = XEXP (SET_DEST (elt), 0);
-      if (LEGITIMATE_INDIRECT_ADDRESS_P (newaddr))
+      if (LEGITIMATE_INDIRECT_ADDRESS_P (newaddr, 0))
 	{
 	  newoffset = 0;
 	  addr_reg = newaddr;
 	}
-      else if (LEGITIMATE_OFFSET_ADDRESS_P (SImode, newaddr))
+      else if (LEGITIMATE_OFFSET_ADDRESS_P (SImode, newaddr, 0))
 	{
 	  addr_reg = XEXP (newaddr, 0);
 	  newoffset = INTVAL (XEXP (newaddr, 1));
@@ -4270,7 +4322,7 @@ print_operand (file, x, code)
 
     case 'X':
       if (GET_CODE (x) == MEM
-	  && LEGITIMATE_INDEXED_ADDRESS_P (XEXP (x, 0)))
+	  && LEGITIMATE_INDEXED_ADDRESS_P (XEXP (x, 0), 0))
 	putc ('x', file);
       return;
 
