@@ -337,6 +337,7 @@ tree_code_create_function_prototype (unsigned char* chars,
   /* Last parm if void indicates fixed length list (as opposed to
      printf style va_* list).  */
   type_list = tree_cons (NULL_TREE, void_type_node, type_list);
+
   /* The back end needs them in reverse order.  */
   type_list = nreverse (type_list);
 
@@ -493,7 +494,6 @@ tree_code_create_function_wrapup (location_t loc)
   allocate_struct_function (fn_decl);
   cfun->function_end_locus = loc;
 
-
   /* Dump the original tree to a file.  */
   dump_function (TDI_original, fn_decl);
 
@@ -510,14 +510,12 @@ tree_code_create_function_wrapup (location_t loc)
   cgraph_finalize_function (fn_decl, false);
 }
 
-/*
-   Create a variable.
+/* Create a variable.
 
    The storage class is STORAGE_CLASS (eg LOCAL).
    The name is CHARS/LENGTH.
    The type is EXPRESSION_TYPE (eg UNSIGNED_TYPE).
-   The init tree is INIT.
-*/
+   The init tree is INIT.  */
 
 tree
 tree_code_create_variable (unsigned int storage_class,

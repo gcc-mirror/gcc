@@ -146,7 +146,7 @@ the GCC compiler.  */
 %% 
 
 file:
-/* Nil.   */ {
+/* Nil.  */ {
   /* Nothing to do.  */
 }
 |declarations {
@@ -369,7 +369,7 @@ variable_defs_opt statements_opt RIGHT_BRACE {
 ;
 
 variable_defs_opt:
-/* Nil.   */ {
+/* Nil.  */ {
   $$ = 0;
 }
 |variable_defs {
@@ -378,7 +378,7 @@ variable_defs_opt:
 ;
 
 statements_opt:
-/* Nil.   */ {
+/* Nil.  */ {
   $$ = 0;
 }
 |statements {
@@ -550,7 +550,7 @@ tl_RETURN expression_opt {
 ;
 
 expression_opt:
-/* Nil.   */ {
+/* Nil.  */ {
   $$ = 0;
 }
 |expression {
@@ -727,11 +727,12 @@ NAME {
 ;
 
 init_opt:
-/* Nil.   */ {
+/* Nil.  */ {
   $$ = 0;
 }
 |init {
-  /* Nothing to do.  */
+  /* Pass the initialization value up.  */
+  $$ = $1;
 };
 
 init:
