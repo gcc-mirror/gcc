@@ -1,3 +1,14 @@
+2003-09-26  Sascha Brawer  <brawer@dandelis.ch>
+
+	* java/awt/image/SinglePixelPackedSampleModel.java (createDataBuffer): 
+	Save space for some pixels at the buffer end.  Added Javadoc.
+
+2003-09-26  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/ObjectOutputStream.java (writeFields): Fixed
+	indentation.
+	(putFields): Likewise.
+
 2003-09-26  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/ByteBufferHelper.java:

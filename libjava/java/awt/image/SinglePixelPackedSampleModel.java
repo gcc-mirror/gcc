@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* Copyright (C) 2000, 2002, 2003  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -88,12 +88,24 @@ public class SinglePixelPackedSampleModel extends SampleModel
     return new SinglePixelPackedSampleModel(dataType, w, h, bitMasks);
   }
 
+
+  /**
+   * Creates a DataBuffer for holding pixel data in the format and
+   * layout described by this SampleModel. The returned buffer will
+   * consist of one single bank.
+   */
   public DataBuffer createDataBuffer()
   {
-    // Important: use scanlineStride here, not width!
-    int size = scanlineStride*height;
+    int size;
+
+    // We can save (scanlineStride - width) pixels at the very end of
+    // the buffer. The Sun reference implementation (J2SE 1.3.1 and
+    // 1.4.1_01) seems to do this; tested with Mauve test code.
+    size = scanlineStride * (height - 1) + width;
+
     return Buffers.createBuffer(getDataType(), size);
   }
+
 
   public int[] getSampleSize()
   {
