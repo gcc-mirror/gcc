@@ -93,11 +93,6 @@ enum rid
   /* casts */
   RID_CONSTCAST, RID_DYNCAST, RID_REINTCAST, RID_STATCAST,
 
-  /* alternate spellings */
-  RID_AND, RID_AND_EQ, RID_NOT, RID_NOT_EQ,
-  RID_OR,  RID_OR_EQ,  RID_XOR, RID_XOR_EQ,
-  RID_BITAND, RID_BITOR, RID_COMPL,
-
   /* Objective C */
   RID_ID,          RID_AT_ENCODE,    RID_AT_END,
   RID_AT_CLASS,    RID_AT_ALIAS,     RID_AT_DEFS,

@@ -1,3 +1,10 @@
+2002-07-26  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-common.h (RID_AND, RID_AND_EQ, RID_NOT, RID_NOT_EQ,
+	RID_OR, RID_OR_EQ, RID_XOR, RID_XOR_EQ, RID_BITAND, RID_BITOR,
+	RID_COMPL): Remove.
+	* c-parse.in (rid_to_yy): Similarly.
+
 2002-07-26  Jason Merrill  <jason@redhat.com>
 
 	* c-dump.c: Resurrect.

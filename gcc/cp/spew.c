@@ -207,23 +207,8 @@ read_process_identifier (pyylval)
 
   if (C_IS_RESERVED_WORD (id))
     {
-      /* Possibly replace the IDENTIFIER_NODE with a magic cookie.
-	 Can't put yylval.code numbers in ridpointers[].  Bleah.  */
-
-      switch (C_RID_CODE (id))
-	{
-	case RID_BITAND: pyylval->code = BIT_AND_EXPR;	return '&';
-	case RID_AND_EQ: pyylval->code = BIT_AND_EXPR;	return ASSIGN;
-	case RID_BITOR:	 pyylval->code = BIT_IOR_EXPR;	return '|';
-	case RID_OR_EQ:	 pyylval->code = BIT_IOR_EXPR;	return ASSIGN;
-	case RID_XOR:	 pyylval->code = BIT_XOR_EXPR;	return '^';
-	case RID_XOR_EQ: pyylval->code = BIT_XOR_EXPR;	return ASSIGN;
-	case RID_NOT_EQ: pyylval->code = NE_EXPR;	return EQCOMPARE;
-
-	default:
-	  pyylval->ttype = ridpointers[C_RID_CODE (id)];
-	  return C_RID_YYCODE (id);
-	}
+      pyylval->ttype = ridpointers[C_RID_CODE (id)];
+      return C_RID_YYCODE (id);
     }
 
   /* Make sure that user does not collide with our internal naming

@@ -331,10 +331,6 @@ int flag_conserve_space;
 
 int flag_access_control = 1;
 
-/* Nonzero if we want to understand the operator names, i.e. 'bitand'.  */
-
-int flag_operator_names = 1;
-
 /* Nonzero if we want to check the return value of new and avoid calling
    constructors if it is a null pointer.  */
 
@@ -420,7 +416,6 @@ lang_f_options[] =
   {"implicit-templates", &flag_implicit_templates, 1},
   {"ms-extensions", &flag_ms_extensions, 1},
   {"nonansi-builtins", &flag_no_nonansi_builtin, 0},
-  {"operator-names", &flag_operator_names, 1},
   {"optional-diags", &flag_optional_diags, 1},
   {"permissive", &flag_permissive, 1},
   {"repo", &flag_use_repository, 1},

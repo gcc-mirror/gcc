@@ -1,3 +1,15 @@
+2002-07-26  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cp-tree.h (flag_operator_names): Remove.
+	* decl2.c (flag_operator_names): Remove.
+	(lang_f_options): Remove operator-names.
+	* lex.c (D_OPNAME): Remove.
+	(reswords): Remove operator names.
+	(rid_to_yy): Remove operator names.
+	(init_reswords): No need to handle D_OPNAME.
+	* spew.c (read_process_identifier): There are no operator
+	names.
+
 2002-07-26  Jason Merrill  <jason@redhat.com>
 
 	* dump.c (cp_dump_tree): Call c_dump_tree.

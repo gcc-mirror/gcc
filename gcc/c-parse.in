@@ -3522,19 +3522,6 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_REINTCAST */	0,
   /* RID_STATCAST */	0,
 
-  /* alternate spellings */
-  /* RID_AND */		0,
-  /* RID_AND_EQ */	0,
-  /* RID_NOT */		0,
-  /* RID_NOT_EQ */	0,
-  /* RID_OR */		0,
-  /* RID_OR_EQ */	0,
-  /* RID_XOR */		0,
-  /* RID_XOR_EQ */	0,
-  /* RID_BITAND */	0,
-  /* RID_BITOR */	0,
-  /* RID_COMPL */	0,
-
   /* Objective C */
   /* RID_ID */			OBJECTNAME,
   /* RID_AT_ENCODE */		ENCODE,
