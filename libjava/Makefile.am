@@ -14,15 +14,6 @@ endif
 ## What gets installed, and where.
 ##
 
-## Install a library built with a cross compiler in tooldir, not
-## libdir.
-if USE_LIBDIR
-toolexeclibdir = $(libdir)$(MULTISUBDIR)
-else
-toolexecdir = $(exec_prefix)/$(target_alias)
-toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
-endif
-
 if XLIB_AWT
 cond_x_ltlibrary = libgcjx.la
 ## We require libstdc++-v3 to be in the same build tree.
@@ -33,7 +24,7 @@ xlib_includes =
 endif
 
 toolexeclib_LTLIBRARIES = libgcj.la lib-org-xml-sax.la lib-org-w3c-dom.la $(cond_x_ltlibrary)
-toolexeclib_DATA = libgcj.spec
+toolexecmainlib_DATA = libgcj.spec
 
 jardir = $(datadir)/java
 jar_DATA = libgcj-@gcc_version@.jar
