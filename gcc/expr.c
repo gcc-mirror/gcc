@@ -4079,7 +4079,7 @@ store_constructor_field (target, bitsize, bitpos,
   else
     store_field (target, bitsize, bitpos, mode, exp, VOIDmode, 0, 
 		 (align + BITS_PER_UNIT - 1) / BITS_PER_UNIT,
-		 int_size_in_bytes (type), cleared);
+		 int_size_in_bytes (type), 0);
 }
 
 /* Store the value of constructor EXP into the rtx TARGET.
