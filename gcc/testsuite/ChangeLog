@@ -1,4 +1,10 @@
-2005-01-16  Ian Lance Taylor  <ian@c2micro.com>
+2005-01-17  Ian Lance Taylor  <ian@airs.com>
+
+	PR c/5675
+	* gcc.dg/c90-const-expr-3.c: Remove xfails on tests which now
+	pass--those that refer just to the variable, possibly with a
+	cast.
+	* gcc.dg/c99-const-expr-3.c: Likewise.
 
 	PR middle-end/13127
 	* gcc.dg/20040206-1.c: Remove xfail on bogus warning which is no
