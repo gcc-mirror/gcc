@@ -58,7 +58,8 @@ CXX_EXTRA_HEADERS = $(srcdir)/cp/inc/typeinfo $(srcdir)/cp/inc/exception \
 	$(srcdir)/cp/inc/new $(srcdir)/cp/inc/new.h
 
 # Extra code to include in libgcc2.
-CXX_LIB2FUNCS = tinfo.o tinfo2.o new.o new1.o new2.o exception.o
+CXX_LIB2FUNCS = tinfo.o tinfo2.o new.o opnew.o opnewnt.o opvnew.o opvnewnt.o \
+	opdel.o opdelnt.o opvdel.o opvdelnt.o exception.o
 CXX_LIB2SRCS = $(srcdir)/cp/new.cc $(srcdir)/cp/new1.cc $(srcdir)/cp/new2.cc \
 	$(srcdir)/cp/exception.cc $(srcdir)/cp/tinfo.cc \
 	$(srcdir)/cp/tinfo2.cc $(srcdir)/cp/tinfo.h
@@ -147,12 +148,30 @@ exception.o: cc1plus $(srcdir)/cp/exception.cc
 new.o: cc1plus $(srcdir)/cp/new.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new.cc
-new1.o: cc1plus $(srcdir)/cp/new1.cc
+opnew.o: cc1plus $(srcdir)/cp/new1.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
-	  -c $(srcdir)/cp/new1.cc
-new2.o: cc1plus $(srcdir)/cp/new2.cc
+	  -c $(srcdir)/cp/new1.cc -DL_op_new -o opnew.o
+opnewnt.o: cc1plus $(srcdir)/cp/new1.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
-	  -c $(srcdir)/cp/new2.cc
+	  -c $(srcdir)/cp/new1.cc -DL_op_newnt -o opnewnt.o
+opvnew.o: cc1plus $(srcdir)/cp/new2.cc
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
+	  -c $(srcdir)/cp/new2.cc -DL_op_vnew -o opvnew.o
+opvnewnt.o: cc1plus $(srcdir)/cp/new2.cc
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
+	  -c $(srcdir)/cp/new2.cc -DL_op_vnewnt -o opvnewnt.o
+opdel.o: cc1plus $(srcdir)/cp/new2.cc
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
+	  -c $(srcdir)/cp/new2.cc -DL_op_delete -o opdel.o
+opdelnt.o: cc1plus $(srcdir)/cp/new2.cc
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
+	  -c $(srcdir)/cp/new2.cc -DL_op_delnt -o opdelnt.o
+opvdel.o: cc1plus $(srcdir)/cp/new2.cc
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
+	  -c $(srcdir)/cp/new2.cc -DL_op_vdel -o opvdel.o
+opvdelnt.o: cc1plus $(srcdir)/cp/new2.cc
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
+	  -c $(srcdir)/cp/new2.cc -DL_op_vdelnt -o opvdelnt.o
 
 # We want to update cplib2.txt if any of the source files change...
 cplib2.txt: $(CXX_LIB2SRCS) $(CXX_EXTRA_HEADERS) cplib2.ready

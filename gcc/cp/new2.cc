@@ -1,4 +1,4 @@
-// Support routine for the -*- C++ -*- dynamic memory management.
+// Boilerplate support routines for -*- C++ -*- dynamic memory management.
 // Copyright (C) 1997 Free Software Foundation
 
 // This file is part of GNU CC.
@@ -27,7 +27,54 @@
 
 #include "new"
 
-void *operator new[] (size_t sz, const nothrow_t& nothrow) throw()
+extern "C" void free (void *);
+
+#define WEAK(x) \
+  x __attribute__ ((weak)); \
+  x
+
+#ifdef L_op_vnew
+WEAK(void * operator new[] (size_t sz) throw (std::bad_alloc))
+{
+  return ::operator new(sz);
+}
+#endif
+
+#ifdef L_op_vnewnt
+WEAK(void *operator new[] (size_t sz, const nothrow_t& nothrow) throw())
 {
   return ::operator new(sz, nothrow);
 }
+#endif
+
+#ifdef L_op_delete
+WEAK (void operator delete (void *ptr) throw ())
+{
+  if (ptr)
+    free (ptr);
+}
+#endif
+
+#ifdef L_op_vdel
+WEAK (void operator delete[] (void *ptr) throw ())
+{
+  if (ptr)
+    free (ptr);
+}
+#endif
+
+#ifdef L_op_delnt
+WEAK (void operator delete (void *ptr, const std::nothrow_t&) throw ())
+{
+  if (ptr)
+    free (ptr);
+}
+#endif
+
+#ifdef L_op_vdelnt
+WEAK (void operator delete[] (void *ptr, const std::nothrow_t&) throw ())
+{
+  if (ptr)
+    free (ptr);
+}
+#endif

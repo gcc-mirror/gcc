@@ -22,23 +22,21 @@ namespace std {
   struct nothrow_t {};
   extern const nothrow_t nothrow;
   typedef void (*new_handler)();
-  extern "C" new_handler set_new_handler (new_handler);
+  new_handler set_new_handler (new_handler);
 
 #if 0
 } // namespace std
 #endif
 
-// G++ implementation internals
-extern new_handler __new_handler;
-extern "C" void __default_new_handler (void);
-
 // replaceable signatures
-void *operator new (size_t);
-void *operator new (size_t, const nothrow_t&) throw();
-void *operator new[] (size_t);
-void *operator new[] (size_t, const nothrow_t&) throw();
+void *operator new (size_t) throw (std::bad_alloc);
+void *operator new[] (size_t) throw (std::bad_alloc);
 void operator delete (void *) throw();
 void operator delete[] (void *) throw();
+void *operator new (size_t, const nothrow_t&) throw();
+void *operator new[] (size_t, const nothrow_t&) throw();
+void operator delete (void *, const nothrow_t&) throw();
+void operator delete[] (void *, const nothrow_t&) throw();
 
 // default placement versions of operator new
 inline void *operator new(size_t, void *place) throw() { return place; }
