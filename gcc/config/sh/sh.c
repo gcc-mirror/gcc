@@ -51,6 +51,8 @@ Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "sched-int.h"
 #include "ggc.h"
+#include "tree-gimple.h"
+
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
@@ -279,6 +281,7 @@ static void sh_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode, tre
 static bool sh_strict_argument_naming (CUMULATIVE_ARGS *);
 static bool sh_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
 static tree sh_build_builtin_va_list (void);
+static tree sh_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 
 /* Initialize the GCC target structure.  */
@@ -436,6 +439,8 @@ static tree sh_build_builtin_va_list (void);
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST sh_build_builtin_va_list
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR sh_gimplify_va_arg_expr
 
 #undef TARGET_PCH_VALID_P
 #define TARGET_PCH_VALID_P sh_pch_valid_p
@@ -6287,22 +6292,21 @@ sh_va_start (tree valist, rtx nextarg)
 
 /* Implement `va_arg'.  */
 
-rtx
-sh_va_arg (tree valist, tree type)
+static tree
+sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
+			 tree *post_p ATTRIBUTE_UNUSED)
 {
   HOST_WIDE_INT size, rsize;
   tree tmp, pptr_type_node;
-  rtx addr_rtx, r;
-  rtx result_ptr, result = NULL_RTX;
+  tree addr, lab_over, result = NULL;
   int pass_by_ref = MUST_PASS_IN_STACK (TYPE_MODE (type), type);
-  rtx lab_over = NULL_RTX;
+
+  if (pass_by_ref)
+    type = build_pointer_type (type);
 
   size = int_size_in_bytes (type);
   rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
   pptr_type_node = build_pointer_type (ptr_type_node);
-
-  if (pass_by_ref)
-    type = build_pointer_type (type);
 
   if (! TARGET_SH5 && (TARGET_SH2E || TARGET_SH4)
       && ! (TARGET_HITACHI || sh_cfun_attr_renesas_p ()))
@@ -6310,7 +6314,7 @@ sh_va_arg (tree valist, tree type)
       tree f_next_o, f_next_o_limit, f_next_fp, f_next_fp_limit, f_next_stack;
       tree next_o, next_o_limit, next_fp, next_fp_limit, next_stack;
       int pass_as_float;
-      rtx lab_false;
+      tree lab_false;
 
       f_next_o = TYPE_FIELDS (va_list_type_node);
       f_next_o_limit = TREE_CHAIN (f_next_o);
@@ -6339,6 +6343,7 @@ sh_va_arg (tree valist, tree type)
 	      || TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == COMPLEX_TYPE)
           && TREE_CHAIN (TYPE_FIELDS (type)) == NULL_TREE)
 	type = TREE_TYPE (TYPE_FIELDS (type));
+
       if (TARGET_SH4)
 	{
 	  pass_as_float = ((TREE_CODE (type) == REAL_TYPE && size <= 8)
@@ -6351,12 +6356,11 @@ sh_va_arg (tree valist, tree type)
 	  pass_as_float = (TREE_CODE (type) == REAL_TYPE && size == 4);
 	}
 
-      addr_rtx = gen_reg_rtx (Pmode);
-      lab_false = gen_label_rtx ();
-      lab_over = gen_label_rtx ();
+      addr = create_tmp_var (pptr_type_node, NULL);
+      lab_false = create_artificial_label ();
+      lab_over = create_artificial_label ();
 
-      tmp = make_tree (pptr_type_node, addr_rtx);
-      valist = build1 (INDIRECT_REF, ptr_type_node, tmp);
+      valist = build1 (INDIRECT_REF, ptr_type_node, addr);
 
       if (pass_as_float)
 	{
@@ -6364,129 +6368,110 @@ sh_va_arg (tree valist, tree type)
 	    = current_function_args_info.arg_count[(int) SH_ARG_FLOAT];
 	  int n_floatregs = MAX (0, NPARM_REGS (SFmode) - first_floatreg);
 
-	  emit_cmp_and_jump_insns (expand_expr (next_fp, NULL_RTX, Pmode,
-						EXPAND_NORMAL),
-				   expand_expr (next_fp_limit, NULL_RTX,
-						Pmode, EXPAND_NORMAL),
-				   GE, const1_rtx, Pmode, 1, lab_false);
+	  tmp = build (GE_EXPR, boolean_type_node, next_fp, next_fp_limit);
+	  tmp = build (COND_EXPR, void_type_node, tmp,
+		       build (GOTO_EXPR, void_type_node, lab_false),
+		       NULL);
+	  gimplify_and_add (tmp, pre_p);
 
 	  if (TYPE_ALIGN (type) > BITS_PER_WORD
 	      || (((TREE_CODE (type) == REAL_TYPE && size == 8) || size == 16)
 		  && (n_floatregs & 1)))
 	    {
-	      tmp = build (BIT_AND_EXPR, ptr_type_node, next_fp,
-			   build_int_2 (UNITS_PER_WORD, 0));
+	      tmp = fold_convert (ptr_type_node, size_int (UNITS_PER_WORD));
+	      tmp = build (BIT_AND_EXPR, ptr_type_node, next_fp, tmp);
 	      tmp = build (PLUS_EXPR, ptr_type_node, next_fp, tmp);
 	      tmp = build (MODIFY_EXPR, ptr_type_node, next_fp, tmp);
-	      TREE_SIDE_EFFECTS (tmp) = 1;
-	      expand_expr (tmp, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	      gimplify_and_add (tmp, pre_p);
 	    }
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_fp);
-	  r = expand_expr (tmp, addr_rtx, Pmode, EXPAND_NORMAL);
-	  if (r != addr_rtx)
-	    emit_move_insn (addr_rtx, r);
+	  tmp = build (MODIFY_EXPR, void_type_node, addr, tmp);
+	  gimplify_and_add (tmp, pre_p);
 
 #ifdef FUNCTION_ARG_SCmode_WART
 	  if (TYPE_MODE (type) == SCmode && TARGET_SH4 && TARGET_LITTLE_ENDIAN)
 	    {
-	      rtx addr, real, imag, result_value, slot;
 	      tree subtype = TREE_TYPE (type);
+	      tree real, imag;
 
-	      addr = std_expand_builtin_va_arg (valist, subtype);
-#ifdef POINTERS_EXTEND_UNSIGNED
-	      if (GET_MODE (addr) != Pmode)
-		addr = convert_memory_address (Pmode, addr);
-#endif
-	      imag = gen_rtx_MEM (TYPE_MODE (type), addr);
-	      set_mem_alias_set (imag, get_varargs_alias_set ());
+	      imag = std_gimplify_va_arg_expr (valist, subtype, pre_p, NULL);
+	      imag = get_initialized_tmp_var (imag, pre_p, NULL);
 
-	      addr = std_expand_builtin_va_arg (valist, subtype);
-#ifdef POINTERS_EXTEND_UNSIGNED
-	      if (GET_MODE (addr) != Pmode)
-		addr = convert_memory_address (Pmode, addr);
-#endif
-	      real = gen_rtx_MEM (TYPE_MODE (type), addr);
-	      set_mem_alias_set (real, get_varargs_alias_set ());
+	      real = std_gimplify_va_arg_expr (valist, subtype, pre_p, NULL);
+	      real = get_initialized_tmp_var (real, pre_p, NULL);
 
-	      result_value = gen_rtx_CONCAT (SCmode, real, imag);
-	      /* ??? this interface is stupid - why require a pointer?  */
-	      result = gen_reg_rtx (Pmode);
-	      slot = assign_stack_temp (SCmode, 8, 0);
-	      emit_move_insn (slot, result_value);
-	      emit_move_insn (result, XEXP (slot, 0));
+	      result = build (COMPLEX_EXPR, type, real, imag);
+	      result = get_initialized_tmp_var (result, pre_p, NULL);
 	    }
 #endif /* FUNCTION_ARG_SCmode_WART */
 
-	  emit_jump_insn (gen_jump (lab_over));
-	  emit_barrier ();
-	  emit_label (lab_false);
+	  tmp = build (GOTO_EXPR, void_type_node, lab_over);
+	  gimplify_and_add (tmp, pre_p);
+
+	  tmp = build (LABEL_EXPR, void_type_node, lab_false);
+	  gimplify_and_add (tmp, pre_p);
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_stack);
-	  r = expand_expr (tmp, addr_rtx, Pmode, EXPAND_NORMAL);
-	  if (r != addr_rtx)
-	    emit_move_insn (addr_rtx, r);
+	  tmp = build (MODIFY_EXPR, void_type_node, addr, tmp);
+	  gimplify_and_add (tmp, pre_p);
 	}
       else
 	{
-	  tmp = build (PLUS_EXPR, ptr_type_node, next_o,
-		       build_int_2 (rsize, 0));
-	  
-	  emit_cmp_and_jump_insns (expand_expr (tmp, NULL_RTX, Pmode,
-						EXPAND_NORMAL),
-				   expand_expr (next_o_limit, NULL_RTX,
-						Pmode, EXPAND_NORMAL),
-				   GT, const1_rtx, Pmode, 1, lab_false);
+	  tmp = fold_convert (ptr_type_node, size_int (rsize));
+	  tmp = build (PLUS_EXPR, ptr_type_node, next_o, tmp);
+	  tmp = build (GT_EXPR, boolean_type_node, tmp, next_o_limit);
+	  tmp = build (COND_EXPR, void_type_node, tmp,
+		       build (GOTO_EXPR, void_type_node, lab_false),
+		       NULL);
+	  gimplify_and_add (tmp, pre_p);
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_o);
-	  r = expand_expr (tmp, addr_rtx, Pmode, EXPAND_NORMAL);
-	  if (r != addr_rtx)
-	    emit_move_insn (addr_rtx, r);
+	  tmp = build (MODIFY_EXPR, void_type_node, addr, tmp);
+	  gimplify_and_add (tmp, pre_p);
 
-	  emit_jump_insn (gen_jump (lab_over));
-	  emit_barrier ();
-	  emit_label (lab_false);
+	  tmp = build (GOTO_EXPR, void_type_node, lab_over);
+	  gimplify_and_add (tmp, pre_p);
+
+	  tmp = build (LABEL_EXPR, void_type_node, lab_false);
+	  gimplify_and_add (tmp, pre_p);
 
 	  if (size > 4 && ! TARGET_SH4)
 	    {
 	      tmp = build (MODIFY_EXPR, ptr_type_node, next_o, next_o_limit);
-	      TREE_SIDE_EFFECTS (tmp) = 1;
-	      expand_expr (tmp, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	      gimplify_and_add (tmp, pre_p);
 	    }
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_stack);
-	  r = expand_expr (tmp, addr_rtx, Pmode, EXPAND_NORMAL);
-	  if (r != addr_rtx)
-	    emit_move_insn (addr_rtx, r);
+	  tmp = build (MODIFY_EXPR, void_type_node, addr, tmp);
+	  gimplify_and_add (tmp, pre_p);
 	}
 
-      if (! result)
-        emit_label (lab_over);
+      if (!result)
+	{
+	  tmp = build (LABEL_EXPR, void_type_node, lab_over);
+	  gimplify_and_add (tmp, pre_p);
+	}
     }
 
   /* ??? In va-sh.h, there had been code to make values larger than
      size 8 indirect.  This does not match the FUNCTION_ARG macros.  */
 
-  result_ptr = std_expand_builtin_va_arg (valist, type);
+  tmp = std_gimplify_va_arg_expr (valist, type, pre_p, NULL);
   if (result)
     {
-      emit_move_insn (result, result_ptr);
-      emit_label (lab_over);
+      tmp = build (MODIFY_EXPR, void_type_node, result, tmp);
+      gimplify_and_add (tmp, pre_p);
+
+      tmp = build (LABEL_EXPR, void_type_node, lab_over);
+      gimplify_and_add (tmp, pre_p);
     }
   else
-    result = result_ptr;
+    result = tmp;
 
   if (pass_by_ref)
-    {
-#ifdef POINTERS_EXTEND_UNSIGNED
-      if (GET_MODE (addr) != Pmode)
-	addr = convert_memory_address (Pmode, result);
-#endif
-      result = gen_rtx_MEM (ptr_mode, force_reg (Pmode, result));
-      set_mem_alias_set (result, get_varargs_alias_set ());
-    }
-  /* ??? expand_builtin_va_arg will also set the alias set of the dereferenced
-     argument to the varargs alias set.  */
+    result = build_fold_indirect_ref (result);
+
   return result;
 }
 

@@ -1,5 +1,10 @@
 2004-07-09  Richard Henderson  <rth@redhat.com>
 
+	* config/sh/sh-protos.h (sh_va_arg): Remove.
+	* config/sh/sh.c (TARGET_GIMPLIFY_VA_ARG_EXPR): New.
+	(sh_gimplify_va_arg_expr): Rewrite from sh_va_arg.
+	* config/sh/sh.h (EXPAND_BUILTIN_VA_ARG): Remove.
+
 	* config/pa/pa-protos.h (hppa_va_arg): Remove.
 	* config/pa/pa.c (TARGET_GIMPLIFY_VA_ARG_EXPR): New.
 	(hppa_gimplify_va_arg_expr): Rewrite from hppa_va_arg.
