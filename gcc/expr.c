@@ -4088,8 +4088,9 @@ store_constructor (exp, target, align, cleared)
       register tree elt;
 
       /* Inform later passes that the whole union value is dead.  */
-      if (TREE_CODE (type) == UNION_TYPE
-	  || TREE_CODE (type) == QUAL_UNION_TYPE)
+      if ((TREE_CODE (type) == UNION_TYPE
+	   || TREE_CODE (type) == QUAL_UNION_TYPE)
+	  && ! cleared)
 	{
 	  emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
 
@@ -4125,7 +4126,7 @@ store_constructor (exp, target, align, cleared)
 
 	  cleared = 1;
 	}
-      else
+      else if (! cleared)
 	/* Inform later passes that the old value is dead.  */
 	emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
 
