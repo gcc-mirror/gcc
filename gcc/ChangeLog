@@ -1,5 +1,10 @@
 2005-02-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/19019
+	* mklibgcc.in: Pass -DSHARED when compiling all *_s${objext} objects.
+	* config/rs6000/darwin-ldouble.c: Only use the .symver directives
+	if SHARED is defined.
+
 	PR target/20196
 	* config/rs6000/rs6000.md (LTU, GTU sCC splitters): Add earlyclobber,
 	allow splitting only if operands 0 and 3 don't overlap.
