@@ -199,7 +199,7 @@ _FOR fix ",\n" =]
        _ELIF  c_fix    _exist =] | FD_SUBROUTINE[=
        _ELIF  replace  _exist =] | FD_REPLACEMENT[=
        _ENDIF =],
-     a[=hackname _cap=]Tests,   apz[=hackname _cap=]Patch }[=
+     a[=hackname _cap=]Tests,   apz[=hackname _cap=]Patch, 0 }[=
 
 /fix=]
 };

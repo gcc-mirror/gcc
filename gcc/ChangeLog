@@ -1,3 +1,8 @@
+2000-12-11  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fixincl.tpl: initialize all fields for warnings
+	* fixinc/fixincl.x: regenerate
+
 2000-12-11  Neil Booth  <neilb@earthling.net>
 
 	* tradcpp.h: For tradcpp, NUL is not whitespace.
