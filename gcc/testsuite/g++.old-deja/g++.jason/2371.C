@@ -1,3 +1,4 @@
+# 1 "SetLS.cc"
 // GROUPS passed templates nested-classes
 // Special g++ Options: 
 //
@@ -12,6 +13,7 @@
 
 #include <stdlib.h>
 #include <iostream.h>
+
 # 1 "../../templates/SetLS.h" 1
 // -*- C++ -*-
 
@@ -75,7 +77,7 @@
 
 
 
-# 26 "../../templates/ListS.h" 2
+# 23 "../../templates/ListS.h" 2
 
 # 37 "../../templates/ListS.h"
 
@@ -318,7 +320,7 @@ ListS<T>::remove_head_filling(T* fill)
 }
 
 
-# 39 "../../templates/SetLS.h" 2
+# 40 "../../templates/SetLS.h" 2
 
 
 # 62 "../../templates/SetLS.h"
@@ -420,31 +422,8 @@ SetLS<T>::contains(const T& item) const
 }
 
 
-# 14 "SetLS.cc" 2
+# 17 "SetLS.cc" 2
 
-
-
-# 1 "/projects/gnu-cygnus/gnu-cygnus-14/mips/lib/gcc-lib/decstation/cygnus-reno-1/g++-include/iostream.h" 1 3
-//    This is part of the iostream library, providing -*- C++ -*- input/output.
-//    Copyright (C) 1991 Per Bothner.
-//
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Library General Public
-//    License as published by the Free Software Foundation; either
-//    version 2 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Library General Public License for more details.
-//
-//    You should have received a copy of the GNU Library General Public
-//    License along with this library; if not, write to the Free
-//    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-# 211 "/projects/gnu-cygnus/gnu-cygnus-14/mips/lib/gcc-lib/decstation/cygnus-reno-1/g++-include/iostream.h" 3
-
-# 21 "SetLS.cc" 2
 
 
 // In (most versions of) g++ 2.X, this use of typedefs has the effect
