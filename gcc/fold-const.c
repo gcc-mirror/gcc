@@ -1837,6 +1837,8 @@ truth_value_p (enum tree_code code)
 int
 operand_equal_p (tree arg0, tree arg1, int only_const)
 {
+  tree fndecl;
+
   /* If both types don't have the same signedness, then we can't consider
      them equal.  We must check this before the STRIP_NOPS calls
      because they may change the signedness of the arguments.  */
@@ -2007,13 +2009,9 @@ operand_equal_p (tree arg0, tree arg1, int only_const)
 	    return 0;
 
 	  /* Only consider const functions equivalent.  */
-	  if (TREE_CODE (TREE_OPERAND (arg0, 0)) == ADDR_EXPR)
-	    {
-	      tree fndecl = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
-	      if (! (flags_from_decl_or_type (fndecl) & ECF_CONST))
-		return 0;
-	    }
-	  else
+	  fndecl = get_callee_fndecl (arg0);
+	  if (fndecl == NULL_TREE
+	      || ! (flags_from_decl_or_type (fndecl) & ECF_CONST))
 	    return 0;
 
 	  /* Now see if all the arguments are the same.  operand_equal_p
@@ -5481,7 +5479,7 @@ fold (tree expr)
 	    {
 	      tree fndecl, arg, arglist;
 
-	      fndecl = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+	      fndecl = get_callee_fndecl (arg0);
 	      arg = TREE_VALUE (TREE_OPERAND (arg0, 1));
 	      arg = fold (build1 (NEGATE_EXPR, type, arg));
 	      arglist = build_tree_list (NULL_TREE, arg);
@@ -7622,13 +7620,12 @@ fold (tree expr)
 	 due to the return value of strlen being unsigned.  */
       if ((code == EQ_EXPR || code == NE_EXPR)
 	  && integer_zerop (arg1)
-	  && TREE_CODE (arg0) == CALL_EXPR
-	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == ADDR_EXPR)
+	  && TREE_CODE (arg0) == CALL_EXPR)
 	{
-	  tree fndecl = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+	  tree fndecl = get_callee_fndecl (arg0);
 	  tree arglist;
 
-	  if (TREE_CODE (fndecl) == FUNCTION_DECL
+	  if (fndecl
 	      && DECL_BUILT_IN (fndecl)
 	      && DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_MD
 	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STRLEN
@@ -8637,58 +8634,57 @@ tree_expr_nonnegative_p (tree t)
       return rtl_expr_nonnegative_p (RTL_EXPR_RTL (t));
 
     case CALL_EXPR:
-      if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
-	{
-	  tree fndecl = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
-	  tree arglist = TREE_OPERAND (t, 1);
-	  if (TREE_CODE (fndecl) == FUNCTION_DECL
-	      && DECL_BUILT_IN (fndecl)
-	      && DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_MD)
-	    switch (DECL_FUNCTION_CODE (fndecl))
-	      {
-	      case BUILT_IN_CABS:
-	      case BUILT_IN_CABSL:
-	      case BUILT_IN_CABSF:
-	      case BUILT_IN_EXP:
-	      case BUILT_IN_EXPF:
-	      case BUILT_IN_EXPL:
-	      case BUILT_IN_FABS:
-	      case BUILT_IN_FABSF:
-	      case BUILT_IN_FABSL:
-	      case BUILT_IN_SQRT:
-	      case BUILT_IN_SQRTF:
-	      case BUILT_IN_SQRTL:
-		return 1;
+      {
+	tree fndecl = get_callee_fndecl (t);
+	tree arglist = TREE_OPERAND (t, 1);
+	if (fndecl
+	    && DECL_BUILT_IN (fndecl)
+	    && DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_MD)
+	  switch (DECL_FUNCTION_CODE (fndecl))
+	    {
+	    case BUILT_IN_CABS:
+	    case BUILT_IN_CABSL:
+	    case BUILT_IN_CABSF:
+	    case BUILT_IN_EXP:
+	    case BUILT_IN_EXPF:
+	    case BUILT_IN_EXPL:
+	    case BUILT_IN_FABS:
+	    case BUILT_IN_FABSF:
+	    case BUILT_IN_FABSL:
+	    case BUILT_IN_SQRT:
+	    case BUILT_IN_SQRTF:
+	    case BUILT_IN_SQRTL:
+	      return 1;
 
-	      case BUILT_IN_ATAN:
-	      case BUILT_IN_ATANF:
-	      case BUILT_IN_ATANL:
-	      case BUILT_IN_CEIL:
-	      case BUILT_IN_CEILF:
-	      case BUILT_IN_CEILL:
-	      case BUILT_IN_FLOOR:
-	      case BUILT_IN_FLOORF:
-	      case BUILT_IN_FLOORL:
-	      case BUILT_IN_NEARBYINT:
-	      case BUILT_IN_NEARBYINTF:
-	      case BUILT_IN_NEARBYINTL:
-	      case BUILT_IN_ROUND:
-	      case BUILT_IN_ROUNDF:
-	      case BUILT_IN_ROUNDL:
-	      case BUILT_IN_TRUNC:
-	      case BUILT_IN_TRUNCF:
-	      case BUILT_IN_TRUNCL:
-		return tree_expr_nonnegative_p (TREE_VALUE (arglist));
+	    case BUILT_IN_ATAN:
+	    case BUILT_IN_ATANF:
+	    case BUILT_IN_ATANL:
+	    case BUILT_IN_CEIL:
+	    case BUILT_IN_CEILF:
+	    case BUILT_IN_CEILL:
+	    case BUILT_IN_FLOOR:
+	    case BUILT_IN_FLOORF:
+	    case BUILT_IN_FLOORL:
+	    case BUILT_IN_NEARBYINT:
+	    case BUILT_IN_NEARBYINTF:
+	    case BUILT_IN_NEARBYINTL:
+	    case BUILT_IN_ROUND:
+	    case BUILT_IN_ROUNDF:
+	    case BUILT_IN_ROUNDL:
+	    case BUILT_IN_TRUNC:
+	    case BUILT_IN_TRUNCF:
+	    case BUILT_IN_TRUNCL:
+	      return tree_expr_nonnegative_p (TREE_VALUE (arglist));
 
-	      case BUILT_IN_POW:
-	      case BUILT_IN_POWF:
-	      case BUILT_IN_POWL:
-		return tree_expr_nonnegative_p (TREE_VALUE (arglist));
+	    case BUILT_IN_POW:
+	    case BUILT_IN_POWF:
+	    case BUILT_IN_POWL:
+	      return tree_expr_nonnegative_p (TREE_VALUE (arglist));
 
-	      default:
-		break;
-	      }
-	}
+	    default:
+	      break;
+	    }
+      }
 
       /* ... fall through ...  */
 
