@@ -1,3 +1,9 @@
+2003-03-12  Bob Wilson  <bob.wilson@acm.org>
+
+        * config/xtensa/xtensa.md (adddi3): Don't clobber source operand used
+	to detect carry.
+        (subdi3): Reorder emitted instructions.
+
 2003-03-12  Andreas Jaeger  <aj@suse.de>
 
 	* config/i386/netbsd64.h (TARGET_OS_CPP_BUILTINS): Remove call to
