@@ -1950,7 +1950,7 @@ output_move_double (operands)
 		 save a register file writeback)  */
 	      if (GET_CODE (addr) == POST_INC)
 		return "{ldws|ldw},ma 8(%1),%0\n\tldw -4(%1),%R0";
-	      return "{ldws|ldw},ma -8(%1),%0\n\tldw 12(%1),%R0}";
+	      return "{ldws|ldw},ma -8(%1),%0\n\tldw 12(%1),%R0";
 	    }
 	  else
 	    {
