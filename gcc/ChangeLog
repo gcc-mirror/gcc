@@ -1,3 +1,13 @@
+2002-06-20  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppexp.c (cpp_interpret_integer): Don't force traditional
+	numbers to be unsigned.
+	* cpplib.c (prepare_directive_trad): Set line number for
+	diagnostics.
+	* cpptrad.c (scan_out_logical_line): Continue scanning out
+	at start of buffer.
+	* gcc.c (trad_capable_cpp): Use cc1 always.
+
 2002-06-20  Jeffrey Law  <law@redhat.com>
 
 	* i386.h (TARGET_DEFAULT): Do not turn on frame pointer
