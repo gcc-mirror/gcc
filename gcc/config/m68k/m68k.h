@@ -121,6 +121,12 @@ extern int target_flags;
     { "68030", -01400},				\
     { "68030", 5},				\
     { "68040", 01007},				\
+    { "68851", 0},	/* Affects *_SPEC and/or GAS.  */	\
+    { "no-68851", 0},	/* Affects *_SPEC and/or GAS.  */	\
+    { "68302", 0},	/* Affects *_SPEC and/or GAS.  */	\
+    { "no-68302", 0},	/* Affects *_SPEC and/or GAS.  */	\
+    { "68332", 0},	/* Affects *_SPEC and/or GAS.  */	\
+    { "no-68332", 0},	/* Affects *_SPEC and/or GAS.  */	\
     SUBTARGET_SWITCHES				\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
