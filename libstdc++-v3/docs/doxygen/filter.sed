@@ -1,5 +1,5 @@
 # Input filter for doxygen.
-# Copyright (C) 2003 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 # Phil Edwards <pme@gcc.gnu.org>
 
 # single+capital is easy
@@ -23,4 +23,4 @@ s/__s/s/g
 s/__value/value/g
 s/__x/x/g
 s/__y/y/g
-
+s/GLIBCXXSTD/std/g
