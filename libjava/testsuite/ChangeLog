@@ -1,3 +1,8 @@
+1999-08-25  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.lang/G19990310_01.out: New file.
+	* libjava.lang/G19990310_01.java: New file.
+
 1999-08-17  Tom Tromey  <tromey@cygnus.com>
 
 	From Bryce McKinlay:
