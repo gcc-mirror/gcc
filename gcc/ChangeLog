@@ -1,3 +1,22 @@
+2004-05-06  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm-protots.h (vfp_mem_operand): Rename ...
+	(arm_coproc_mem_operand): ... To this.
+	* config/arm/arm.c (arm_legitimate_address_p): Allow ldrd modes.
+	(arm_legitimate_index_p): Ditto.
+	(vfp_mem_operand): Rename ...
+	(arm_coproc_mem_operand): ... To this.  Handle writeback modes.
+	(vfp_secondary_reload_class): Use it.
+	(output_move_double): Use doubleword load/store instructions.
+	(arm_hard_regno_mode_ok): Only allow even reg pairs for ldrd.
+	* config/arm/arm.h (TARGET_LDRD): Define.
+	(EXTRA_CONSTRAINT_STR_ARM): Add 'Uy'.
+	* config/gcc/arm/arm.md (arm_movdi): Allow all valid memory operands.
+	New splitter for invalid doubleword loads.
+	* config/arm/iwmmxt.md (iwmmxt_arm_movdi): Use Uy constraint.
+	* config/arm/vfp.md (arm_movdi_vfp): Allow all valid memory operands.
+	* doc/md.texi: Document Uy constraint.
+
 2004-05-05  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/14980

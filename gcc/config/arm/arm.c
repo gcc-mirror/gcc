@@ -2983,25 +2983,44 @@ int
 arm_legitimate_address_p (enum machine_mode mode, rtx x, RTX_CODE outer,
 			  int strict_p)
 {
+  bool use_ldrd;
+  enum rtx_code code = GET_CODE (x);
+  
   if (arm_address_register_rtx_p (x, strict_p))
     return 1;
 
-  else if (GET_CODE (x) == POST_INC || GET_CODE (x) == PRE_DEC)
+  use_ldrd = (TARGET_LDRD
+	      && (mode == DImode
+		  || (mode == DFmode && (TARGET_SOFT_FLOAT || TARGET_VFP))));
+
+  if (code == POST_INC || code == PRE_DEC
+      || ((code == PRE_INC || code == POST_DEC)
+	  && (use_ldrd || GET_MODE_SIZE (mode) <= 4)))
     return arm_address_register_rtx_p (XEXP (x, 0), strict_p);
 
-  else if ((GET_CODE (x) == POST_MODIFY || GET_CODE (x) == PRE_MODIFY)
-	   && GET_MODE_SIZE (mode) <= 4
+  else if ((code == POST_MODIFY || code == PRE_MODIFY)
 	   && arm_address_register_rtx_p (XEXP (x, 0), strict_p)
 	   && GET_CODE (XEXP (x, 1)) == PLUS
 	   && rtx_equal_p (XEXP (XEXP (x, 1), 0), XEXP (x, 0)))
-    return arm_legitimate_index_p (mode, XEXP (XEXP (x, 1), 1), outer,
-				   strict_p);
+    {
+      rtx addend = XEXP (XEXP (x, 1), 1);
+
+      /* Don't allow ldrd post increment by register becuase it's hard
+	 to fixup invalid register choices.  */
+      if (use_ldrd
+	  && GET_CODE (x) == POST_MODIFY
+	  && GET_CODE (addend) == REG)
+	return 0;
+
+      return ((use_ldrd || GET_MODE_SIZE (mode) <= 4)
+	      && arm_legitimate_index_p (mode, addend, outer, strict_p));
+    }
 
   /* After reload constants split into minipools will have addresses
      from a LABEL_REF.  */
   else if (reload_completed
-	   && (GET_CODE (x) == LABEL_REF
-	       || (GET_CODE (x) == CONST
+	   && (code == LABEL_REF
+	       || (code == CONST
 		   && GET_CODE (XEXP (x, 0)) == PLUS
 		   && GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF
 		   && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)))
@@ -3010,38 +3029,7 @@ arm_legitimate_address_p (enum machine_mode mode, rtx x, RTX_CODE outer,
   else if (mode == TImode)
     return 0;
 
-  else if (mode == DImode || (TARGET_SOFT_FLOAT && mode == DFmode))
-    {
-      if (GET_CODE (x) == PLUS
-	  && arm_address_register_rtx_p (XEXP (x, 0), strict_p)
-	  && GET_CODE (XEXP (x, 1)) == CONST_INT)
-	{
-	  HOST_WIDE_INT val = INTVAL (XEXP (x, 1));
-
-          if (val == 4 || val == -4 || val == -8)
-	    return 1;
-	}
-    }
-
-  else if (TARGET_HARD_FLOAT && TARGET_VFP && mode == DFmode)
-    {
-      if (GET_CODE (x) == PLUS
-	  && arm_address_register_rtx_p (XEXP (x, 0), strict_p)
-	  && GET_CODE (XEXP (x, 1)) == CONST_INT)
-	{
-	  HOST_WIDE_INT val = INTVAL (XEXP (x, 1));
-
-	  /* ??? valid arm offsets are a subset of VFP offsets.
-	     For now only allow this subset.  Proper fix is to add an
-	     additional memory constraint for arm address modes.
-	     Alternatively allow full vfp addressing and let
-	     output_move_double fix it up with a sub-optimal sequence.  */
-          if (val == 4 || val == -4 || val == -8)
-	    return 1;
-	}
-    }
-
-  else if (GET_CODE (x) == PLUS)
+  else if (code == PLUS)
     {
       rtx xop0 = XEXP (x, 0);
       rtx xop1 = XEXP (x, 1);
@@ -3065,15 +3053,10 @@ arm_legitimate_address_p (enum machine_mode mode, rtx x, RTX_CODE outer,
 #endif
 
   else if (GET_MODE_CLASS (mode) != MODE_FLOAT
-	   && GET_CODE (x) == SYMBOL_REF
+	   && code == SYMBOL_REF
 	   && CONSTANT_POOL_ADDRESS_P (x)
 	   && ! (flag_pic
 		 && symbol_mentioned_p (get_pool_constant (x))))
-    return 1;
-
-  else if ((GET_CODE (x) == PRE_INC || GET_CODE (x) == POST_DEC)
-	   && (GET_MODE_SIZE (mode) <= 4)
-	   && arm_address_register_rtx_p (XEXP (x, 0), strict_p))
     return 1;
 
   return 0;
@@ -3097,15 +3080,30 @@ arm_legitimate_index_p (enum machine_mode mode, rtx index, RTX_CODE outer,
 	    && INTVAL (index) > -1024
 	    && (INTVAL (index) & 3) == 0);
 
-  if (arm_address_register_rtx_p (index, strict_p)
-      && GET_MODE_SIZE (mode) <= 4)
-    return 1;
-
   if (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (mode))
     return (code == CONST_INT
 	    && INTVAL (index) < 1024
 	    && INTVAL (index) > -1024
 	    && (INTVAL (index) & 3) == 0);
+
+  if (arm_address_register_rtx_p (index, strict_p)
+      && (GET_MODE_SIZE (mode) <= 4))
+    return 1;
+
+  if (mode == DImode || mode == DFmode)
+    {
+      if (code == CONST_INT)
+	{
+	  HOST_WIDE_INT val = INTVAL (index);
+
+	  if (TARGET_LDRD)
+	    return val > -256 && val < 256;
+	  else
+	    return val == 4 || val == -4 || val == -8;
+	}
+
+      return TARGET_LDRD && arm_address_register_rtx_p (index, strict_p);
+    }
 
   if (GET_MODE_SIZE (mode) <= 4
       && ! (arm_arch4
@@ -4614,14 +4612,15 @@ cirrus_shift_const (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 }
 
 
-/* Return TRUE if OP is a valid VFP memory address pattern.  */
-/* Copied from cirrus_memory_offset but with restricted offset range.  */
+/* Return TRUE if OP is a valid VFP memory address pattern.
+   WB if true if writeback address modes are allowed.  */
 
 int
-vfp_mem_operand (rtx op)
+arm_coproc_mem_operand (rtx op, bool wb)
 {
-  /* Reject eliminable registers.  */
+  rtx ind;
 
+  /* Reject eliminable registers.  */
   if (! (reload_in_progress || reload_completed)
       && (   reg_mentioned_p (frame_pointer_rtx, op)
 	  || reg_mentioned_p (arg_pointer_rtx, op)
@@ -4632,35 +4631,49 @@ vfp_mem_operand (rtx op)
     return FALSE;
 
   /* Constants are converted into offsets from labels.  */
-  if (GET_CODE (op) == MEM)
-    {
-      rtx ind;
+  if (GET_CODE (op) != MEM)
+    return FALSE;
 
-      ind = XEXP (op, 0);
+  ind = XEXP (op, 0);
 
-      if (reload_completed
-	  && (GET_CODE (ind) == LABEL_REF
-	      || (GET_CODE (ind) == CONST
-		  && GET_CODE (XEXP (ind, 0)) == PLUS
-		  && GET_CODE (XEXP (XEXP (ind, 0), 0)) == LABEL_REF
-		  && GET_CODE (XEXP (XEXP (ind, 0), 1)) == CONST_INT)))
-	return TRUE;
+  if (reload_completed
+      && (GET_CODE (ind) == LABEL_REF
+	  || (GET_CODE (ind) == CONST
+	      && GET_CODE (XEXP (ind, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (ind, 0), 0)) == LABEL_REF
+	      && GET_CODE (XEXP (XEXP (ind, 0), 1)) == CONST_INT)))
+    return TRUE;
 
-      /* Match: (mem (reg)).  */
-      if (GET_CODE (ind) == REG)
-	return arm_address_register_rtx_p (ind, 0);
+  /* Match: (mem (reg)).  */
+  if (GET_CODE (ind) == REG)
+    return arm_address_register_rtx_p (ind, 0);
 
-      /* Match:
-	 (mem (plus (reg)
-	            (const))).  */
-      if (GET_CODE (ind) == PLUS
-	  && GET_CODE (XEXP (ind, 0)) == REG
-	  && REG_MODE_OK_FOR_BASE_P (XEXP (ind, 0), VOIDmode)
-	  && GET_CODE (XEXP (ind, 1)) == CONST_INT
-	  && INTVAL (XEXP (ind, 1)) > -1024
-	  && INTVAL (XEXP (ind, 1)) <  1024)
-	return TRUE;
-    }
+  /* Autoincremment addressing modes.  */
+  if (wb
+      && (GET_CODE (ind) == PRE_INC
+	  || GET_CODE (ind) == POST_INC
+	  || GET_CODE (ind) == PRE_DEC
+	  || GET_CODE (ind) == POST_DEC))
+    return arm_address_register_rtx_p (XEXP (ind, 0), 0);
+
+  if (wb
+      && (GET_CODE (ind) == POST_MODIFY || GET_CODE (ind) == PRE_MODIFY)
+      && arm_address_register_rtx_p (XEXP (ind, 0), 0)
+      && GET_CODE (XEXP (ind, 1)) == PLUS
+      && rtx_equal_p (XEXP (XEXP (ind, 1), 0), XEXP (ind, 0)))
+    ind = XEXP (ind, 1);
+
+  /* Match:
+     (plus (reg)
+	   (const)).  */
+  if (GET_CODE (ind) == PLUS
+      && GET_CODE (XEXP (ind, 0)) == REG
+      && REG_MODE_OK_FOR_BASE_P (XEXP (ind, 0), VOIDmode)
+      && GET_CODE (XEXP (ind, 1)) == CONST_INT
+      && INTVAL (XEXP (ind, 1)) > -1024
+      && INTVAL (XEXP (ind, 1)) <  1024
+      && (INTVAL (XEXP (ind, 1)) & 3) == 0)
+    return TRUE;
 
   return FALSE;
 }
@@ -4684,7 +4697,7 @@ vfp_compare_operand (rtx op, enum machine_mode mode)
 enum reg_class
 vfp_secondary_reload_class (enum machine_mode mode, rtx x)
 {
-  if (vfp_mem_operand (x) || s_register_operand (x, mode))
+  if (arm_coproc_mem_operand (x, FALSE) || s_register_operand (x, mode))
     return NO_REGS;
 
   return GENERAL_REGS;
@@ -8384,7 +8397,9 @@ output_move_double (rtx *operands)
 	      break;
 
   	    case PRE_INC:
-	      abort (); /* Should never happen now.  */
+	      if (!TARGET_LDRD)
+		abort (); /* Should never happen now.  */
+	      output_asm_insn ("ldr%?d\t%0, [%m1, #8]!", operands);
 	      break;
 
 	    case PRE_DEC:
@@ -8396,7 +8411,33 @@ output_move_double (rtx *operands)
 	      break;
 
 	    case POST_DEC:
-	      abort (); /* Should never happen now.  */
+	      if (!TARGET_LDRD)
+		abort (); /* Should never happen now.  */
+	      output_asm_insn ("ldr%?d\t%0, [%m1], #-8", operands);
+	      break;
+
+	    case PRE_MODIFY:
+	    case POST_MODIFY:
+	      otherops[0] = operands[0];
+	      otherops[1] = XEXP (XEXP (XEXP (operands[1], 0), 1), 0);
+	      otherops[2] = XEXP (XEXP (XEXP (operands[1], 0), 1), 1);
+
+	      if (GET_CODE (XEXP (operands[1], 0)) == PRE_MODIFY)
+		{
+		  if (reg_overlap_mentioned_p (otherops[0], otherops[2]))
+		    {
+		      /* Registers overlap so split out the increment.  */
+		      output_asm_insn ("add%?\t%1, %1, %2", otherops);
+		      output_asm_insn ("ldr%?d\t%0, [%1] @split", otherops);
+		    }
+		  else
+		    output_asm_insn ("ldr%?d\t%0, [%1, %2]!", otherops);
+		}
+	      else
+		{
+		  /* We only allow constant increments, so this is safe.  */
+		  output_asm_insn ("ldr%?d\t%0, [%1], %2", otherops);
+		}
 	      break;
 
 	    case LABEL_REF:
@@ -8429,7 +8470,41 @@ output_move_double (rtx *operands)
 			      output_asm_insn ("ldm%?ib\t%1, %M0", otherops);
 			      return "";
 			    }
-
+			}
+		      if (TARGET_LDRD
+			  && (GET_CODE (otherops[2]) == REG
+			      || (GET_CODE (otherops[2]) == CONST_INT
+				  && INTVAL (otherops[2]) > -256
+				  && INTVAL (otherops[2]) < 256)))
+			{
+			  if (reg_overlap_mentioned_p (otherops[0],
+						       otherops[2]))
+			    {
+			      /* Swap base and index registers over to
+				 avoid a conflict.  */
+			      otherops[1] = XEXP (XEXP (operands[1], 0), 1);
+			      otherops[2] = XEXP (XEXP (operands[1], 0), 0);
+			      
+			    }
+			  /* If both registers conflict, it will usually
+			     have been fixed by a splitter.  */
+			  if (reg_overlap_mentioned_p (otherops[0],
+							otherops[2]))
+			    {
+			      output_asm_insn ("add%?\t%1, %1, %2", otherops);
+			      output_asm_insn ("ldr%?d\t%0, [%1]",
+					       otherops);
+			      return "";
+			    }
+			  else
+			    {
+			      output_asm_insn ("ldr%?d\t%0, [%1, %2]",
+					       otherops);
+			      return "";
+			    }
+			}
+		      if (GET_CODE (otherops[2]) == CONST_INT)
+			{
 			  if (!(const_ok_for_arm (INTVAL (otherops[2]))))
 			    output_asm_insn ("sub%?\t%0, %1, #%n2", otherops);
 			  else
@@ -8475,7 +8550,9 @@ output_move_double (rtx *operands)
 	  break;
 
         case PRE_INC:
-	  abort (); /* Should never happen now.  */
+	  if (!TARGET_LDRD)
+	    abort (); /* Should never happen now.  */
+	  output_asm_insn ("str%?d\t%1, [%m0, #8]!", operands);
 	  break;
 
         case PRE_DEC:
@@ -8487,11 +8564,26 @@ output_move_double (rtx *operands)
 	  break;
 
         case POST_DEC:
-	  abort (); /* Should never happen now.  */
+	  if (!TARGET_LDRD)
+	    abort (); /* Should never happen now.  */
+	  output_asm_insn ("str%?d\t%1, [%m0], #-8", operands);
+	  break;
+
+	case PRE_MODIFY:
+	case POST_MODIFY:
+	  otherops[0] = operands[1];
+	  otherops[1] = XEXP (XEXP (XEXP (operands[0], 0), 1), 0);
+	  otherops[2] = XEXP (XEXP (XEXP (operands[0], 0), 1), 1);
+
+	  if (GET_CODE (XEXP (operands[0], 0)) == PRE_MODIFY)
+	    output_asm_insn ("str%?d\t%0, [%1, %2]!", otherops);
+	  else
+	    output_asm_insn ("str%?d\t%0, [%1], %2", otherops);
 	  break;
 
 	case PLUS:
-	  if (GET_CODE (XEXP (XEXP (operands[0], 0), 1)) == CONST_INT)
+	  otherops[2] = XEXP (XEXP (operands[0], 0), 1);
+	  if (GET_CODE (otherops[2]) == CONST_INT)
 	    {
 	      switch ((int) INTVAL (XEXP (XEXP (operands[0], 0), 1)))
 		{
@@ -8507,6 +8599,17 @@ output_move_double (rtx *operands)
 		  output_asm_insn ("stm%?ib\t%m0, %M1", operands);
 		  return "";
 		}
+	    }
+	  if (TARGET_LDRD
+	      && (GET_CODE (otherops[2]) == REG
+		  || (GET_CODE (otherops[2]) == CONST_INT
+		      && INTVAL (otherops[2]) > -256
+		      && INTVAL (otherops[2]) < 256)))
+	    {
+	      otherops[0] = operands[1];
+	      otherops[1] = XEXP (XEXP (operands[0], 0), 0);
+	      output_asm_insn ("str%?d\t%0, [%1, %2]", otherops);
+	      return "";
 	    }
 	  /* Fall through */
 
@@ -11393,9 +11496,11 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
   if (IS_IWMMXT_REGNUM (regno))
     return VALID_IWMMXT_REG_MODE (mode);
 
+  /* We allow any value to be stored in the general registers.
+     Restrict doubleword quantities to even register pairs so that we can
+     use ldrd.  */
   if (regno <= LAST_ARM_REGNUM)
-    /* We allow any value to be stored in the general registers.  */
-    return 1;
+    return !(TARGET_LDRD && GET_MODE_SIZE (mode) > 4 && (regno & 1) != 0);
 
   if (   regno == FRAME_POINTER_REGNUM
       || regno == ARG_POINTER_REGNUM)

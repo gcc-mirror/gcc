@@ -100,7 +100,7 @@ extern int cirrus_general_operand (rtx, enum machine_mode);
 extern int cirrus_register_operand (rtx, enum machine_mode);
 extern int cirrus_shift_const (rtx, enum machine_mode);
 extern int cirrus_memory_offset (rtx);
-extern int vfp_mem_operand (rtx);
+extern int arm_coproc_mem_operand (rtx, bool);
 extern int vfp_compare_operand (rtx, enum machine_mode);
 extern int arm_float_compare_operand (rtx, enum machine_mode);
 extern int arm_no_early_store_addr_dep (rtx, rtx);

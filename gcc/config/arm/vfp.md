@@ -136,8 +136,8 @@
 ;; DImode moves
 
 (define_insn "*arm_movdi_vfp"
-  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r,o<>,w,r,w,w  ,Uv")
-	(match_operand:DI 1 "di_operand"              "rIK,mi,r ,r,w,w,Uvi,w"))]
+  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r,m,w,r,w,w, Uv")
+	(match_operand:DI 1 "di_operand"              "rIK,mi,r,r,w,w,Uvi,w"))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
   "*
   switch (which_alternative)
