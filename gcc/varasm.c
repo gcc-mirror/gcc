@@ -1062,6 +1062,10 @@ void
 assemble_zeros (size)
      int size;
 {
+  /* Do no output if -fsyntax-only.  */
+  if (flag_syntax_only)
+    return;
+
 #ifdef ASM_NO_SKIP_IN_TEXT
   /* The `space' pseudo in the text section outputs nop insns rather than 0s,
      so we must output 0s explicitly in the text section.  */
@@ -1168,6 +1172,10 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	return;
       TREE_ASM_WRITTEN (decl) = 1;
 
+      /* Do no output if -fsyntax-only.  */
+      if (flag_syntax_only)
+	return;
+
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
       /* File-scope global variables are output here.  */
       if ((write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
@@ -1234,6 +1242,10 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     return;
 
   TREE_ASM_WRITTEN (decl) = 1;
+
+  /* Do no output if -fsyntax-only.  */
+  if (flag_syntax_only)
+    return;
 
   app_disable ();
 
@@ -3017,7 +3029,12 @@ output_constant_def (exp)
 	    }
 	}
       else
-	output_constant_def_contents (exp, reloc, const_labelno++);
+	{
+	  /* Do no output if -fsyntax-only.  */
+	  if (! flag_syntax_only)
+	    output_constant_def_contents (exp, reloc, const_labelno);
+	  ++const_labelno;
+	}
     }
 
   return TREE_CST_RTL (exp);
