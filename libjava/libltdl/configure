@@ -11255,7 +11255,7 @@ echo $ECHO_N "checking for $compiler option to produce PIC... $ECHO_C" >&6
       mvs*)
 	case $cc_basename in
 	  cxx)
-	    lt_prog_compiler_pic_CXX='-W c,exportall'
+	    lt_prog_compiler_pic_CXX='-Wextra c,exportall'
 	    ;;
 	  *)
 	    ;;
