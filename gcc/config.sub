@@ -202,10 +202,6 @@ case $basic_machine in
 		basic_machine=m68k-apple
 		os=-aux
 		;;
-	aux)
-		basic_machine=m68k-apple
-		os=-aux
-		;;
 	balance)
 		basic_machine=ns32k-sequent
 		os=-dynix
