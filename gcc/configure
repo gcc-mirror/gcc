@@ -42,7 +42,7 @@ ac_help="$ac_help
   --disable-haifa         don't use the experimental scheduler for the
                           targets which normally enable it."
 ac_help="$ac_help
-  --with-fast-fixincludes    use a faster fixinclude program (experimental)"
+  --with-fast-fixincludes use a faster fixinclude program (experimental)"
 ac_help="$ac_help
   --enable-init-priority  use attributes to assign initialization order
 			  for static objects.
