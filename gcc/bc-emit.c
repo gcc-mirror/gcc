@@ -826,13 +826,39 @@ bc_write_file (file)
   BC_WRITE_FILE (file);
 }
 
+
+/* Allocate a new bytecode rtx.
+   If you supply a null BC_LABEL, we generate one.  */
+
+rtx
+bc_gen_rtx (label, offset, bc_label)
+     char *label;
+     int offset;
+     struct bc_label *bc_label;
+{
+  rtx r;
+
+  if (bc_label == 0)
+    bc_label = (struct bc_label *) xmalloc (sizeof (struct bc_label));
+
+  r = gen_rtx (CODE_LABEL, VOIDmode, label, bc_label);
+  bc_label->offset = offset;
+
+  return r;
+}
+
+
 /* Print bytecode rtx */
 void
 bc_print_rtl (fp, r)
      FILE *fp;
      rtx r;
 {
+#if 0 /* This needs to get fixed to really work again.  */
+  /* BC_WRITE_RTL has a definition
+     that doesn't even make sense for this use.  */
   BC_WRITE_RTL (r, fp);
+#endif
 }
 
 
