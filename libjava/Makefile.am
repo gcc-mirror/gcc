@@ -1959,6 +1959,8 @@ java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
 java/nio/Buffer.java \
+java/nio/BufferOverflowException.java \
+java/nio/BufferUnderflowException.java \
 java/nio/ByteBuffer.java \
 java/nio/ByteOrder.java \
 java/nio/MappedByteBuffer.java \

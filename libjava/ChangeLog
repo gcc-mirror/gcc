@@ -1,3 +1,11 @@
+2002-11-11  Michael Koch <konqueror@gmx.de>
+
+	* java/nio/BufferOverflowException.java,
+	java/nio/BufferUnderflowException.java: New file.
+	* Makefile.am (ordinary_java_source_files):
+	Added new files.
+	* Makefile.in: Regenerated.
+	
 2002-11-10  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/Container.java (validate): Use tree lock.
