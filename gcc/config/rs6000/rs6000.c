@@ -16265,7 +16265,7 @@ rs6000_handle_altivec_attribute (tree *node, tree name, tree args,
 	    /* If the user says 'vector int bool', we may be handed the 'bool'
 	       attribute _before_ the 'vector' attribute, and so select the proper
 	       type in the 'b' case below.  */
-	  case V4SImode: case V8HImode: case V16QImode: result = type;
+	  case V4SImode: case V8HImode: case V16QImode: case V4SFmode: result = type;
 	  default: break;
 	}
       break;

@@ -7441,6 +7441,7 @@ cp_parser_conversion_type_id (cp_parser* parser)
   tree attributes;
   cp_decl_specifier_seq type_specifiers;
   cp_declarator *declarator;
+  tree type_specified;
 
   /* Parse the attributes.  */
   attributes = cp_parser_attributes_opt (parser);
@@ -7452,8 +7453,11 @@ cp_parser_conversion_type_id (cp_parser* parser)
   /* Parse the conversion-declarator.  */
   declarator = cp_parser_conversion_declarator_opt (parser);
 
-  return grokdeclarator (declarator, &type_specifiers, TYPENAME,
-			 /*initialized=*/0, &attributes);
+  type_specified =  grokdeclarator (declarator, &type_specifiers, TYPENAME,
+			            /*initialized=*/0, &attributes);
+  if (attributes)
+    cplus_decl_attributes (&type_specified, attributes, /*flags=*/0);
+  return type_specified;
 }
 
 /* Parse an (optional) conversion-declarator.

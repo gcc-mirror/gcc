@@ -1,3 +1,18 @@
+2004-09-21 Fariborz Jahanian <fjahanian@apple.com>
+	PR c++/13989
+	PR c++/9844
+
+	* cp/decl.c (grokfndecl): Add new argument "attrlist", use it 
+  	to call cplus_decl_attributes.
+	(start_function): Remove call to cplus_decl_attributes.
+	* tree.c (reconstruct_complex_type): Remove extra "this".
+	* cp/cvt.c (ocp_convert): Add support to use type conversion
+	function to vector type.
+	* cp/parser.c (cp_parser_conversion_type_id): Add attributes, if any,
+	 to the parsed type. 
+	* config/rs6000/rs6000.c (rs6000_handle_altivec_attribute): 
+	Add V4SFmode to case statement.
+
 2004-09-23  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/16833

@@ -5642,10 +5642,15 @@ reconstruct_complex_type (tree type, tree bottom)
     }
   else if (TREE_CODE (type) == METHOD_TYPE)
     {
+      tree argtypes;
       inner = reconstruct_complex_type (TREE_TYPE (type), bottom);
+      /* The build_method_type_directly() routine prepends 'this' to argument list,
+         so we must compensate by getting rid of it.  */
+      argtypes = TYPE_ARG_TYPES (type);
       outer = build_method_type_directly (TYPE_METHOD_BASETYPE (type),
 					  inner,
 					  TYPE_ARG_TYPES (type));
+      TYPE_ARG_TYPES (outer) = argtypes;
     }
   else
     return bottom;
