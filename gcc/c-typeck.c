@@ -3752,15 +3752,20 @@ build_c_cast (type, expr)
 
       if (TREE_CODE (type) == INTEGER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE
-	  && TYPE_PRECISION (type) != TYPE_PRECISION (otype))
+	  && TYPE_PRECISION (type) != TYPE_PRECISION (otype)
+	  && !TREE_CONSTANT (value))
 	warning ("cast from pointer to integer of different size");
 
       if (TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == INTEGER_TYPE
 	  && TYPE_PRECISION (type) != TYPE_PRECISION (otype)
+#if 0
 	  /* Don't warn about converting 0 to pointer,
 	     provided the 0 was explicit--not cast or made by folding.  */
-	  && !(TREE_CODE (value) == INTEGER_CST && integer_zerop (value)))
+	  && !(TREE_CODE (value) == INTEGER_CST && integer_zerop (value))
+#endif
+	  /* Don't warn about converting any constant.  */
+	  && !TREE_CONSTANT (value))
 	warning ("cast to pointer from integer of different size");
 
       value = convert (type, value);
