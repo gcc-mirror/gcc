@@ -41,6 +41,16 @@
 #pragma GCC system_header
 #include_next <stdio.h>
 
+// Get rid of those macros defined in <stdio.h> in lieu of real functions.
+#undef clearerr
+#undef feof
+#undef ferror
+#undef fileno
+#undef getc
+#undef getchar
+#undef putc
+#undef putchar
+
 namespace std 
 {
   using ::FILE;

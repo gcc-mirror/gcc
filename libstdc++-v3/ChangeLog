@@ -1,3 +1,9 @@
+Thu Nov  2 23:19:20 2000  Mark P Mitchell  <mark@codesourcery.com>
+
+	* include/c/bits/std_cctype.h: Undefine macros that conflict
+	with function names defined in this file.
+	* include/c/bits/std_cstdio.h: Likewise.
+
 2000-11-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_CTYPE_SUPPORT): Fix typo.

@@ -41,6 +41,22 @@
 #pragma GCC system_header
 #include_next <ctype.h>
 
+// Get rid of those macros defined in <ctype.h> in lieu of real functions.
+#undef isalnum
+#undef isalpha
+#undef isblank
+#undef iscntrl
+#undef isdigit
+#undef isgraph
+#undef islower
+#undef isprint
+#undef ispunct
+#undef isspace
+#undef isupper
+#undef isxdigit
+#undef tolower
+#undef toupper
+
 namespace std
 {
   extern "C" int isalnum(int __c);
