@@ -1,3 +1,7 @@
+2001-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20010119-1.c: New test.
+
 2001-01-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/vbase5.C: New test.
