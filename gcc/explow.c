@@ -732,7 +732,7 @@ emit_stack_save (save_level, psave, after)
       if (HAVE_save_stack_nonlocal)
 	{
 	  fcn = gen_save_stack_nonlocal;
-	  mode = insn_operand_mode[CODE_FOR_save_stack_nonlocal][0];
+	  mode = insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0];
 	}
       break;
 #endif
