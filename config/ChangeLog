@@ -1,3 +1,16 @@
+2002-04-29  Nathanael Nerode  <neroden@twcny.rr.com>
+
+	* config/mt-armpic: Delete.
+	* config/mt-elfalphapic: Delete.
+	* config/mt-i370pic: Delete.
+	* config/mt-ia64pic: Delete.
+	* config/mt-m68kpic: Delete.
+	* config/mt-papic: Delete.
+	* config/mt-ppcpic: Delete.
+	* config/mt-s390pic: Delete.
+	* config/mt-sparcpic: Delete.
+	* config/mt-x86pic: Delete.
+
 2002-04-19  Nathanael Nerode  <neroden@twcny.rr.com>
 
 	* mh-a68bsd: clean out dead code
