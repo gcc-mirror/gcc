@@ -145,38 +145,7 @@ hack_identifier (value, name)
   tree type;
 
   if (value == error_mark_node)
-    {
-      if (current_class_name)
-	{
-	  tree fields = lookup_fnfields (TYPE_BINFO (current_class_type),
-					 name, 1);
-	  if (fields == error_mark_node)
-	    return error_mark_node;
-	  if (fields)
-	    {
-	      tree fndecl;
-
-	      fndecl = TREE_VALUE (fields);
-	      my_friendly_assert (TREE_CODE (fndecl) == FUNCTION_DECL, 251);
-	      /* I could not trigger this code. MvL */
-	      abort ();
-#ifdef DEAD
-	      if (DECL_CHAIN (fndecl) == NULL_TREE)
-		{
-		  warning ("methods cannot be converted to function pointers");
-		  return fndecl;
-		}
-	      else
-		{
-		  error ("ambiguous request for method pointer `%s'",
-			 IDENTIFIER_POINTER (name));
-		  return error_mark_node;
-		}
-#endif
-	    }
-	}
-      return error_mark_node;
-    }
+    return error_mark_node;
 
   type = TREE_TYPE (value);
   if (TREE_CODE (value) == FIELD_DECL)

@@ -1650,7 +1650,7 @@ primary:
 	| TYPEID '(' type_id ')'
 		{ tree type = groktypename ($3.t);
 		  check_for_new_type ("typeid", $3);
-		  $$ = get_typeid (TYPE_MAIN_VARIANT (type)); }
+		  $$ = get_typeid (type); }
 	| global_scope IDENTIFIER
 		{ $$ = do_scoped_id ($2, 1); }
 	| global_scope template_id
@@ -3505,6 +3505,15 @@ try_block:
 handler_seq:
 	  handler
 	| handler_seq handler
+	| /* empty */
+		{ /* Generate a fake handler block to avoid later aborts. */
+		  tree fake_handler = begin_handler ();
+		  finish_handler_parms (NULL_TREE, fake_handler);
+		  finish_handler (fake_handler);
+		  $<ttype>$ = fake_handler;
+
+		  error ("must have at least one catch per try block");
+		}
 	;
 
 handler:
@@ -3809,6 +3818,8 @@ ansi_raise_identifier:
 		  check_for_new_type ("exception specifier", $1);
 		  $$ = groktypename ($1.t);
 		}
+	  | error
+		{ $$ = error_mark_node; }
 	;
 
 ansi_raise_identifiers:

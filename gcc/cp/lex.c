@@ -1026,7 +1026,7 @@ note_list_got_semicolon (declspecs)
   for (link = declspecs; link; link = TREE_CHAIN (link))
     {
       tree type = TREE_VALUE (link);
-      if (TYPE_P (type))
+      if (type && TYPE_P (type))
 	note_got_semicolon (type);
     }
   clear_anon_tags ();

@@ -120,7 +120,7 @@ $(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf
 
 $(srcdir)/cp/parse.h: $(srcdir)/cp/parse.c
 $(srcdir)/cp/parse.c: $(srcdir)/cp/parse.y
-	@echo "Expect 34 shift/reduce conflicts and 58 reduce/reduce conflicts."
+	@echo "Expect 36 shift/reduce conflicts and 58 reduce/reduce conflicts."
 	cd $(srcdir)/cp; $(BISON) $(BISONFLAGS) -d -o p$$$$.c parse.y ; \
 	grep '^#define[ 	]*YYEMPTY' p$$$$.c >> p$$$$.h ; \
 	mv -f p$$$$.c parse.c ; mv -f p$$$$.h parse.h
@@ -249,7 +249,7 @@ cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) toplev.h langhooks.h langhooks-def.h \
   c-common.h
 cp/decl.o: cp/decl.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h stack.h \
   output.h $(EXPR_H) except.h toplev.h hash.h $(GGC_H) $(RTL_H) \
-  cp/operators.def $(TM_P_H) tree-inline.h
+  cp/operators.def $(TM_P_H) tree-inline.h diagnostic.h
 cp/decl2.o: cp/decl2.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h $(EXPR_H) \
   output.h except.h toplev.h $(GGC_H) $(RTL_H)
 cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) flags.h toplev.h output.h $(TM_P_H) \
