@@ -699,7 +699,7 @@ See S/390 and zSeries Options.
 -fpcc-struct-return  -fpic  -fPIC -fpie -fPIE @gol
 -freg-struct-return  -fshared-data  -fshort-enums @gol
 -fshort-double  -fshort-wchar @gol
--fverbose-asm  -fpack-struct  -fstack-check @gol
+-fverbose-asm  -fpack-struct[=@var{n}]  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
 -fargument-alias  -fargument-noalias @gol
 -fargument-noalias-global  -fleading-underscore @gol
@@ -11789,9 +11789,13 @@ a register in which function values may be returned.
 This flag does not have a negative form, because it specifies a
 three-way choice.
 
-@item -fpack-struct
+@item -fpack-struct[=@var{n}]
 @opindex fpack-struct
-Pack all structure members together without holes.
+Without a value specified, pack all structure members together without
+holes. When a value is specified (which must be a small power of two), pack
+structure members according to this value, representing the maximum
+alignment (that is, objects with default alignment requirements larger than
+this will be output potentially unaligned at the next fitting location.
 
 @strong{Warning:} the @option{-fpack-struct} switch causes GCC to generate
 code that is not binary compatible with code generated without that switch.

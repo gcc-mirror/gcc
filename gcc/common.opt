@@ -575,6 +575,10 @@ fpack-struct
 Common Report Var(flag_pack_struct)
 Pack structure members together without holes
 
+fpack-struct=
+Common RejectNegative Joined UInteger
+-fpack-struct=<number>	Set initial maximum structure member alignment
+
 fpcc-struct-return
 Common Report Var(flag_pcc_struct_return,1) VarExists
 Return small aggregates in memory, not registers

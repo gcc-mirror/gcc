@@ -1,3 +1,24 @@
+2004-09-03  Jan Beulich  <jbeulich@novell.com>
+
+	PR c/7054
+	* defaults.h (TARGET_DEFAULT_PACK_STRUCT): Provide default.
+	* tree.h (initial_max_fld_align): Declare
+	* stor-layout.c (initial_max_fld_align): Define and initialize.
+	(maximum_field_alignment): Initialize to the same value.
+	* common.opt: Add -fpack-struct= variant of switch.
+	* opts.c: Handle -fpack-struct= variant of switch.
+	* c-pragma.c: Change #pragma pack() handling so that it becomes
+	compatible to other compilers: accept individual 'push' argument,
+	make final pop restore (command line) default, correct interaction
+	of push/pop and sole specification of a new alignment (so that the
+	sequence #pragma pack(push) - #pragma pack(<n>) becomes identical
+	to #pragma pack(push, <n>).
+	* doc/extend.texi: New node "Structure-Packing Pragmas" under
+	"Pragmas", describing #pragma pack.
+	* doc/invoke.texi: Document -fpack-struct=<n> variant of switch.
+	* doc/tm.texi: Adjust description for HANDLE_PRAGMA_PACK_PUSH_POP.
+	Document new TARGET_DEFAULT_PACK_STRUCT.
+
 2004-09-03  Devang Patel  <dpatel@apple.com>
 
 	* dwarf2out.c (gen_field_die). Equate decl number to die.

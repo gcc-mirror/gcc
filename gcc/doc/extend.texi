@@ -7672,6 +7672,7 @@ for further explanation.
 * Darwin Pragmas::
 * Solaris Pragmas::
 * Symbol-Renaming Pragmas::
+* Structure-Packing Pragmas::
 @end menu
 
 @node ARM Pragmas
@@ -7846,6 +7847,30 @@ warning issues if they contradict each other.  (We would like to have
 @code{#pragma redefine_extname} always win, for consistency with asm
 labels, but if @code{#pragma extern_prefix} triggers first we have no
 way of knowing that that happened.)
+@end enumerate
+
+@node Structure-Packing Pragmas
+@subsection Structure-Packing Pragmas
+
+For compatibility with Win32, GCC supports as set of @code{#pragma}
+directives which change the maximum alignment of members of structures,
+unions, and classes subsequently defined.  The @var{n} value below always
+is required to be a small power of two and specifies the new alignment
+in bytes.
+
+@enumerate
+@item @code{#pragma pack(@var{n})} simply sets the new alignment.
+@item @code{#pragma pack()} sets the alignment to the one that was in
+effect when compilation started (see also command line option
+@option{-fpack-struct[=<n>]} @pxref{Code Gen Options}).
+@item @code{#pragma pack(push[,@var{n}])} pushes the current alignment
+setting on an internal stack and then optionally sets the new alignment.
+@item @code{#pragma pack(pop)} restores the alignment setting to the one
+saved at the top of the internal stack (and removes that stack entry).
+Note that @code{#pragma pack([@var{n}])} does not influence this internal
+stack; thus it is possible to have @code{#pragma pack(push)} followed by
+multiple @code{#pragma pack(@var{n})} instances and finalized by a single
+@code{#pragma pack(pop)}.
 @end enumerate
 
 @node Unnamed Fields

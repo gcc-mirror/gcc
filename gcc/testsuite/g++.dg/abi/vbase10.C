@@ -1,5 +1,7 @@
 // { dg-do compile }
-// { dg-options "-Wabi -fabi-version=1" }
+// -fpack-struct is necessary because the code below assumes the initial
+// packing is larger than 1, which cannot ge guaranteed for all targets.
+// { dg-options "-Wabi -fabi-version=1 -fpack-struct=8" }
 // On ARM processors, the alignment of B will be 4 even though it
 // contains only a single "char".  That would avoids the situation
 // that the warning below is designed to catch.  We therefore

@@ -9017,14 +9017,21 @@ of specifically named weak labels, optionally with a value.
 @findex pragma
 @defmac HANDLE_PRAGMA_PACK_PUSH_POP
 Define this macro (to a value of 1) if you want to support the Win32
-style pragmas @samp{#pragma pack(push,@var{n})} and @samp{#pragma
-pack(pop)}.  The @samp{pack(push,@var{n})} pragma specifies the maximum alignment
-(in bytes) of fields within a structure, in much the same way as the
-@samp{__aligned__} and @samp{__packed__} @code{__attribute__}s do.  A
+style pragmas @samp{#pragma pack(push[,@var{n}])} and @samp{#pragma
+pack(pop)}.  The @samp{pack(push,[@var{n}])} pragma specifies the maximum
+alignment (in bytes) of fields within a structure, in much the same way as
+the @samp{__aligned__} and @samp{__packed__} @code{__attribute__}s do.  A
 pack value of zero resets the behavior to the default.  Successive
 invocations of this pragma cause the previous values to be stacked, so
 that invocations of @samp{#pragma pack(pop)} will return to the previous
 value.
+@end defmac
+
+@defmac TARGET_DEFAULT_PACK_STRUCT
+If your target requires a structure packing default other than 0 (meaning
+the machine default), define this macro the the necessary value (in bytes).
+This must be a value that would also valid to be used with
+@samp{#pragma pack()} (that is, a small power of two).
 @end defmac
 
 @defmac DOLLARS_IN_IDENTIFIERS

@@ -42,7 +42,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 typedef struct align_stack GTY(())
 {
   int                  alignment;
-  unsigned int         num_pushes;
   tree                 id;
   struct align_stack * prev;
 } align_stack;
@@ -59,8 +58,9 @@ static void handle_pragma_pack (cpp_reader *);
    happens, we restore the value to this, not to a value of 0 for
    maximum_field_alignment.  Value is in bits.  */
 static int default_alignment;
-#define SET_GLOBAL_ALIGNMENT(ALIGN) \
-  (default_alignment = maximum_field_alignment = (ALIGN))
+#define SET_GLOBAL_ALIGNMENT(ALIGN) (maximum_field_alignment = *(alignment_stack == NULL \
+	? &default_alignment \
+	: &alignment_stack->alignment) = (ALIGN))
 
 static void push_alignment (int, tree);
 static void pop_alignment (tree);
@@ -69,31 +69,23 @@ static void pop_alignment (tree);
 static void
 push_alignment (int alignment, tree id)
 {
-  if (alignment_stack == NULL
-      || alignment_stack->alignment != alignment
-      || id != NULL_TREE)
-    {
-      align_stack * entry;
+  align_stack * entry;
 
-      entry = ggc_alloc (sizeof (* entry));
+  entry = ggc_alloc (sizeof (* entry));
 
-      entry->alignment  = alignment;
-      entry->num_pushes = 1;
-      entry->id         = id;
-      entry->prev       = alignment_stack;
-      
-      /* The current value of maximum_field_alignment is not necessarily 
-	 0 since there may be a #pragma pack(<n>) in effect; remember it 
-	 so that we can restore it after the final #pragma pop().  */
-      if (alignment_stack == NULL)
-	default_alignment = maximum_field_alignment;
-      
-      alignment_stack = entry;
+  entry->alignment  = alignment;
+  entry->id         = id;
+  entry->prev       = alignment_stack;
+       
+  /* The current value of maximum_field_alignment is not necessarily 
+     0 since there may be a #pragma pack(<n>) in effect; remember it 
+     so that we can restore it after the final #pragma pop().  */
+  if (alignment_stack == NULL)
+    default_alignment = maximum_field_alignment;
+ 
+  alignment_stack = entry;
 
-      maximum_field_alignment = alignment;
-    }
-  else
-    alignment_stack->num_pushes ++;
+  maximum_field_alignment = alignment;
 }
 
 /* Undo a push of an alignment onto the stack.  */
@@ -103,12 +95,7 @@ pop_alignment (tree id)
   align_stack * entry;
       
   if (alignment_stack == NULL)
-    {
-      warning ("\
-#pragma pack (pop) encountered without matching #pragma pack (push, <n>)"
-	       );
-      return;
-    }
+    GCC_BAD("#pragma pack (pop) encountered without matching #pragma pack (push)");
 
   /* If we got an identifier, strip away everything above the target
      entry so that the next step will restore the state just below it.  */
@@ -117,27 +104,20 @@ pop_alignment (tree id)
       for (entry = alignment_stack; entry; entry = entry->prev)
 	if (entry->id == id)
 	  {
-	    entry->num_pushes = 1;
 	    alignment_stack = entry;
 	    break;
 	  }
       if (entry == NULL)
 	warning ("\
-#pragma pack(pop, %s) encountered without matching #pragma pack(push, %s, <n>)"
+#pragma pack(pop, %s) encountered without matching #pragma pack(push, %s)"
 		 , IDENTIFIER_POINTER (id), IDENTIFIER_POINTER (id));
     }
 
-  if (-- alignment_stack->num_pushes == 0)
-    {
-      entry = alignment_stack->prev;
+  entry = alignment_stack->prev;
 
-      if (entry == NULL)
-	maximum_field_alignment = default_alignment;
-      else
-	maximum_field_alignment = entry->alignment;
+  maximum_field_alignment = entry ? entry->alignment : default_alignment;
 
-      alignment_stack = entry;
-    }
+  alignment_stack = entry;
 }
 #else  /* not HANDLE_PRAGMA_PACK_PUSH_POP */
 #define SET_GLOBAL_ALIGNMENT(ALIGN) (maximum_field_alignment = (ALIGN))
@@ -150,7 +130,9 @@ pop_alignment (tree id)
 /* #pragma pack ()
    #pragma pack (N)
    
+   #pragma pack (push)
    #pragma pack (push, N)
+   #pragma pack (push, ID)
    #pragma pack (push, ID, N)
    #pragma pack (pop)
    #pragma pack (pop, ID) */
@@ -169,7 +151,7 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
   if (token == CPP_CLOSE_PAREN)
     {
       action = set;
-      align = 0;
+      align = initial_max_fld_align;
     }
   else if (token == CPP_NUMBER)
     {
@@ -180,8 +162,8 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
     }
   else if (token == CPP_NAME)
     {
-#define GCC_BAD_ACTION do { if (action == push) \
-	  GCC_BAD ("malformed '#pragma pack(push[, id], <n>)' - ignored"); \
+#define GCC_BAD_ACTION do { if (action != pop) \
+	  GCC_BAD ("malformed '#pragma pack(push[, id][, <n>])' - ignored"); \
 	else \
 	  GCC_BAD ("malformed '#pragma pack(pop[, id])' - ignored"); \
 	} while (0)
@@ -194,31 +176,21 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
       else
 	GCC_BAD2 ("unknown action '%s' for '#pragma pack' - ignored", op);
 
-      token = c_lex (&x);
-      if (token != CPP_COMMA && action == push)
-	GCC_BAD_ACTION;
-
-      if (token == CPP_COMMA)
+      while ((token = c_lex (&x)) == CPP_COMMA)
 	{
 	  token = c_lex (&x);
-	  if (token == CPP_NAME)
+	  if (token == CPP_NAME && id == 0)
 	    {
 	      id = x;
-	      if (action == push && c_lex (&x) != CPP_COMMA)
-		GCC_BAD_ACTION;
-	      token = c_lex (&x);
 	    }
-
-	  if (action == push)
+	  else if (token == CPP_NUMBER && action == push && align == -1)
 	    {
-	      if (token == CPP_NUMBER)
-		{
-		  align = TREE_INT_CST_LOW (x);
-		  token = c_lex (&x);
-		}
-	      else
-		GCC_BAD_ACTION;
+	      align = TREE_INT_CST_LOW (x);
+	      if (align == -1)
+		action = set;
 	    }
+	  else
+	    GCC_BAD_ACTION;
 	}
 
       if (token != CPP_CLOSE_PAREN)
@@ -231,6 +203,9 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
   if (c_lex (&x) != CPP_EOF)
     warning ("junk at end of '#pragma pack'");
 
+  if (flag_pack_struct)
+    GCC_BAD ("#pragma pack has no effect with -fpack-struct - ignored");
+
   if (action != pop)
     switch (align)
       {
@@ -242,6 +217,12 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
       case 16:
 	align *= BITS_PER_UNIT;
 	break;
+      case -1:
+	if (action == push)
+	  {
+	    align = maximum_field_alignment;
+	    break;
+	  }
       default:
 	GCC_BAD2 ("alignment must be a small power of two, not %d", align);
       }

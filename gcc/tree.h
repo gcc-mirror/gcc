@@ -3102,8 +3102,10 @@ extern void put_pending_sizes (tree);
    + (BITS_PER_UNIT > 8) + (BITS_PER_UNIT > 16) + (BITS_PER_UNIT > 32) \
    + (BITS_PER_UNIT > 64) + (BITS_PER_UNIT > 128) + (BITS_PER_UNIT > 256))
 
-/* If nonzero, an upper limit on alignment of structure fields, in bits.  */
+/* If nonzero, an upper limit on alignment of structure fields, in bits,  */
 extern unsigned int maximum_field_alignment;
+/* and its original value in bytes, specified via -fpack-struct=<value>. */
+extern unsigned int initial_max_fld_align;
 
 /* If nonzero, the alignment of a bitstring or (power-)set value, in bits.  */
 extern unsigned int set_alignment;
