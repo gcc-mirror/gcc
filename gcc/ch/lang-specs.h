@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
   {".ch",  "@chill"},
   {".chi", "@chill"},
   {"@chill",
-     "tradcpp -lang-chill %{!no-gcc:-D__GNUCHILL__=%v1} %(cpp_options)\
+     "tradcpp0 -lang-chill %{!no-gcc:-D__GNUCHILL__=%v1} %(cpp_options)\
 	      %{!M:%{!MM:%{!E:%{!pipe:%g.i} |\n\
       cc1chill %{!pipe:%g.i} %(cc1_options) %{!S:-o %{|!pipe:%g.s} |\n\
       as %(asm_options) %{!pipe:%g.s} %A }}}}\n"},

@@ -448,7 +448,7 @@ COMPILERS = cc1$(exeext) @all_compilers@
 
 # List of things which should already be built whenever we try to use xgcc
 # to compile anything (without linking).
-GCC_PASSES=xgcc$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES)
+GCC_PASSES=xgcc$(exeext) cc1$(exeext) cpp0$(exeext) $(EXTRA_PASSES)
 
 # List of things which should already be built whenever we try to use xgcc
 # to link anything.
@@ -716,10 +716,10 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  genconfig$(build_exeext) genpeep$(build_exeext) genattrtab$(build_exeext) \
  genattr$(build_exeext) genopinit$(build_exeext) gengenrtl$(build_exeext) \
  gencheck$(build_exeext) genrtl.c genrtl.h \
- xgcc$(exeext) xcpp$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES) \
+ xgcc$(exeext) cpp$(exeext) cc1$(exeext) cpp0$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) cc1obj$(exeext) \
  enquire$(exeext) protoize$(exeext) unprotoize$(exeext) \
- specs collect2$(exeext) $(USE_COLLECT2) underscore.c tradcpp$(exeext) \
+ specs collect2$(exeext) $(USE_COLLECT2) underscore.c tradcpp0$(exeext) \
  gcov$(exeext) *.[0-9][0-9].* *.[si] libcpp.a libgcc libgcc.mk \
  $(LANG_STAGESTUFF)
 
@@ -858,22 +858,22 @@ all.internal: start.encap rest.encap doc
 # This is what to compile if making a cross-compiler.
 # Note that we can compile enquire using the cross-compiler just built,
 # although we can't run it on this machine.
-all.cross: native gcc-cross xcpp$(exeext) specs \
+all.cross: native gcc-cross cpp$(exeext) specs \
 	$(LIBGCC) $(LIBGCC1_TEST) $(EXTRA_PARTS) lang.all.cross doc
 # This is what to compile if making gcc with a cross-compiler.
-all.build: native xgcc$(exeext) xcpp$(exeext) $(EXTRA_PARTS) lang.all.build
+all.build: native xgcc$(exeext) cpp$(exeext) $(EXTRA_PARTS) lang.all.build
 # This is what must be made before installing GCC and converting libraries.
-start.encap: native xgcc$(exeext) xcpp$(exeext) specs \
+start.encap: native xgcc$(exeext) cpp$(exeext) specs \
 	xlimits.h lang.start.encap
 # These can't be made until after GCC can run.
 rest.encap: $(STMP_FIXPROTO) $(LIBGCC) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
-native: config.status auto-host.h cpp$(exeext) intl.all $(LANGUAGES) \
+native: config.status auto-host.h intl.all $(LANGUAGES) \
 	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
-C c: cc1$(exeext) tradcpp$(exeext)
+C c: cc1$(exeext) tradcpp0$(exeext)
 PROTO: proto
 
 # Tell GNU make these are phony targets.
@@ -909,12 +909,10 @@ xgcc$(exeext): gcc.o gccspec.o version.o intl.o prefix.o \
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o gccspec.o intl.o \
 	  prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
-# We call this executable `xcpp' rather than `cpp'
-# since the real preprocessor is named `cpp'.  It too is renamed
-# when it is installed.
+# cpp is to cpp0 as gcc is to cc1.
 # The only difference from xgcc is that it's linked with cppspec.o
 # instead of gccspec.o.
-xcpp$(exeext): gcc.o cppspec.o version.o intl.o prefix.o \
+cpp$(exeext): gcc.o cppspec.o version.o intl.o prefix.o \
    version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o cppspec.o intl.o \
 	  prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
@@ -1801,8 +1799,8 @@ libcpp.a: $(LIBCPP_OBJS)
 	$(AR) $(AR_FLAGS) libcpp.a $(LIBCPP_OBJS)
 	if $(RANLIB_TEST) ; then $(RANLIB) libcpp.a ; else true ; fi
 
-cpp$(exeext): cppmain.o intl.o libcpp.a $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cpp$(exeext) cppmain.o \
+cpp0$(exeext): cppmain.o intl.o libcpp.a $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cpp0$(exeext) cppmain.o \
 	intl.o libcpp.a $(LIBS)
 
 cppmain.o:  cppmain.c  $(CONFIG_H) cpplib.h intl.h system.h
@@ -1827,8 +1825,8 @@ mkdeps.o: mkdeps.c $(CONFIG_H) system.h mkdeps.h
 
 # The traditional mode preprocessor, a separate program for ease of
 # maintenance.  Some code is shared with the ISO-C cpp.
-tradcpp$(exeext): tradcpp.o tradcif.o cppdefault.o version.o intl.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o tradcpp$(exeext) \
+tradcpp0$(exeext): tradcpp.o tradcif.o cppdefault.o version.o intl.o $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o tradcpp0$(exeext) \
 	tradcpp.o tradcif.o cppdefault.o version.o intl.o $(LIBS)
 
 tradcpp.o: tradcpp.c $(CONFIG_H) system.h version.h cppdefault.h
@@ -2256,20 +2254,20 @@ install-build: force
 install-cross-rest: install-float-h-cross
 
 # Handle cpp installation.
-install-cpp: xcpp$(exeext)
+install-cpp: cpp$(exeext)
 	-if [ -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(bindir)/$(CPP_CROSS_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) -m 755 xcpp$(exeext) $(bindir)/$(CPP_CROSS_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(bindir)/$(CPP_CROSS_NAME)$(exeext); \
 	  if [ x$(cpp_install_dir) != x ]; then \
 	    rm -f $(prefix)/$(cpp_install_dir)/$(CPP_CROSS_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) -m 755 xcpp$(exeext) $(prefix)/$(cpp_install_dir)/$(CPP_CROSS_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(prefix)/$(cpp_install_dir)/$(CPP_CROSS_NAME)$(exeext); \
 	  else true; fi; \
 	else \
 	  rm -f $(bindir)/$(CPP_INSTALL_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) -m 755 xcpp$(exeext) $(bindir)/$(CPP_INSTALL_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(bindir)/$(CPP_INSTALL_NAME)$(exeext); \
 	  if [ x$(cpp_install_dir) != x ]; then \
 	    rm -f $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) -m 755 xcpp$(exeext) $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
 	  else true; fi; \
 	fi
 
@@ -2363,10 +2361,10 @@ install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 	    $(INSTALL_DATA) SYSCALLS.c.X $(libsubdir)/SYSCALLS.c.X; \
 	    chmod a-x $(libsubdir)/SYSCALLS.c.X; \
 	fi
-	-rm -f $(libsubdir)/cpp$(exeext)
-	$(INSTALL_PROGRAM) cpp$(exeext) $(libsubdir)/cpp$(exeext)
-	-rm -f $(libsubdir)/tradcpp$(exeext)
-	$(INSTALL_PROGRAM) tradcpp$(exeext) $(libsubdir)/tradcpp$(exeext)
+	-rm -f $(libsubdir)/cpp0$(exeext)
+	$(INSTALL_PROGRAM) cpp0$(exeext) $(libsubdir)/cpp0$(exeext)
+	-rm -f $(libsubdir)/tradcpp0$(exeext)
+	$(INSTALL_PROGRAM) tradcpp0$(exeext) $(libsubdir)/tradcpp0$(exeext)
 # Install gcov if it was compiled.
 	-if [ -f gcov$(exeext) ]; \
 	then \

@@ -548,7 +548,7 @@ static const char *link_libgcc_spec = LINK_LIBGCC_SPEC;
    appropriate -B options.  */
 
 static const char *trad_capable_cpp =
-"%{traditional|ftraditional|traditional-cpp:trad}cpp";
+"%{traditional|ftraditional|traditional-cpp:trad}cpp0";
 
 static const char *cpp_options =
 "%{C:%{!E:%eGNU C does not support -C without using -E}}\
@@ -688,7 +688,7 @@ static struct compiler default_compilers[] =
   {".c", "@c"},
   {"@c",
 #if USE_CPPLIB
-     "%{E|M|MM:cpp -lang-c %{ansi:-std=c89} %(cpp_options)}\
+     "%{E|M|MM:cpp0 -lang-c %{ansi:-std=c89} %(cpp_options)}\
       %{!E:%{!M:%{!MM:cc1 -lang-c %{ansi:-std=c89} %(cpp_options)\
 			  %(cc1_options) %{!S:-o %{|!pipe:%g.s} |\n\
       as %(asm_options) %{!pipe:%g.s} %A }}}}"
@@ -709,7 +709,7 @@ static struct compiler default_compilers[] =
   {".i", "@cpp-output"},
   {"@cpp-output",
    "%{!M:%{!MM:%{!E:\
-    cc1 %i %(cc1_options) %{!S:|\n\
+    cc1 %i %(cc1_options) %{!S:-o %{|!pipe:%g.s} |\n\
     as %(asm_options) %{!pipe:%g.s} %A }}}}"},
   {".s", "@assembler"},
   {"@assembler",

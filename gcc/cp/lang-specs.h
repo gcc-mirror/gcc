@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
   {".C",   "@c++"},
   {"@c++",
 #if USE_CPPLIB
-    "%{E|M|MM:cpp -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
+    "%{E|M|MM:cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-trigraphs -$ -D__STRICT_ANSI__} %(cpp_options)}\
      %{!E:%{!M:%{!MM:cc1plus -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
        %{!S:-o %{|!pipe:%g.s} |\n\
      as %(asm_options) %{!pipe:%g.s} %A }}}}"
 #else /* ! USE_CPPLIB */
-    "cpp -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
+    "cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-trigraphs -$ -D__STRICT_ANSI__} %(cpp_options)\
        %{!M:%{!MM:%{!E:%{!pipe:%g.ii} |\n\

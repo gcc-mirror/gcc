@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
   {".m", "@objective-c"},
   {"@objective-c",
 #if USE_CPPLIB
-     "%{E|M|MM:cpp -lang-objc %{ansi:-std=c89} %(cpp_options)}\
+     "%{E|M|MM:cpp0 -lang-objc %{ansi:-std=c89} %(cpp_options)}\
       %{!E:%{!M:%{!MM:cc1obj -lang-objc %(cpp_options) %(cc1_options)\
 			     %{gen-decls} %{!S:-o %{|!pipe:%g.s} |\n\
       as %(asm_options) %{!pipe:%g.s} %A }}}}"
