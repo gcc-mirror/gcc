@@ -1,5 +1,5 @@
 /* Pragma related interfaces.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
+
+#ifdef HANDLE_SYSV_PRAGMA
 
 /* Support #pragma weak iff ASM_WEAKEN_LABEL and ASM_OUTPUT_DEF are
    defined.  */
@@ -43,4 +45,6 @@ enum pragma_state
 extern void handle_pragma_weak PROTO((enum pragma_state, char *, char *));
 
 /* Handle a C style pragma */
-extern void handle_pragma_token PROTO((char *, tree));
+extern int handle_pragma_token PROTO((char *, tree));
+
+#endif /* HANDLE_SYSV_PRAGMA */

@@ -7315,17 +7315,31 @@ C++, which is to pretend that the file's contents are enclosed in
 @findex HANDLE_PRAGMA
 @findex #pragma
 @findex pragma
-@item HANDLE_PRAGMA (@var{stream}, @var{node})
+@item HANDLE_PRAGMA (@var{getc}, @var{ungetc}, @var{node})
 Define this macro if you want to implement any pragmas.  If defined, it
-is a C expression whose value is 1 if the pragma was handled by the function.
-The argument @var{stream} is the stdio input stream from which the source text
-can be read.  @var{node} is the tree node for the identifier after the
-@code{#pragma}.
+is a C expression whose value is 1 if the pragma was handled by the
+function, zero otherwise.  The argument @var{getc} is a function of type
+@samp{int (*)(void)} which will return the next character in the input
+stream, or EOF if no characters are left.  The argument @var{ungetc} is
+a function of type @samp{void (*)(int)} which will push a character back
+into the input stream.  The argument @var{name} is the word following
+#pragma in the input stream.  The input stream pointer will be pointing
+just beyond the end of this word.  The input stream should be left
+undistrubed if the expression returns zero, otherwise it should be
+pointing at the last character after the end of the pragma (newline or
+end-of-file). 
 
 It is generally a bad idea to implement new uses of @code{#pragma}.  The
 only reason to define this macro is for compatibility with other
 compilers that do support @code{#pragma} for the sake of any user
 programs which already use it.
+
+If the pragma can be implemented by atttributes then the macro
+@samp{INSERT_ATTRIBUTES} might be a useful one to define as well.
+
+Note: older versions of this macro only had two arguments: @var{stream}
+and @var{token}.  The macro was changed in order to allow it to work
+when gcc is built both with and without a cpp library.
 
 @findex VALID_MACHINE_DECL_ATTRIBUTE
 @item VALID_MACHINE_DECL_ATTRIBUTE (@var{decl}, @var{attributes}, @var{identifier}, @var{args})
@@ -7367,10 +7381,26 @@ of @var{olddecl}.  Examples of when this is needed are when one attribute
 overrides another, or when an attribute is nullified by a subsequent
 definition.
 
+@findex INSERT_ATTRIBUTES
+@item INSERT_ATTRIBUTES (@var{node}, @var{attr_ptr}, @var{prefix_ptr})
+Define this macro if you want to be able to add attributes to a decl
+when it is being created.  This is normally useful for backends which
+wish to implement a pragma by using the attributes which correspond to
+the pragma's effect.  The @var{node} argument is the decl which is being
+created.  The @var{attr_ptr} argument is a pointer to the attribute list
+for this decl.  The @var{prefix_ptr} is a pointer to the list of
+attributes that have appeared after the specifiers and modifiers of the
+declaration, but before the declaration proper.
+
 @findex SET_DEFAULT_DECL_ATTRIBUTES
 @item SET_DEFAULT_DECL_ATTRIBUTES (@var{decl}, @var{attributes})
 If defined, a C statement that assigns default attributes to
 newly defined @var{decl}.
+
+@findex SET_DEFAULT_SECTION_NAME
+@item SET_DEFAULT_SECTION_NAME (@var{decl})
+If defined, a C statement that assigns a section name to the newly
+created @var{decl}.
 
 @findex DOLLARS_IN_IDENTIFIERS
 @item DOLLARS_IN_IDENTIFIERS
