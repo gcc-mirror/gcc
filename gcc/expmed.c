@@ -740,19 +740,12 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 			 >> (bitsize - bitsdone - thissize))
 			& (((HOST_WIDE_INT) 1 << thissize) - 1));
       else
-	{
-	  /* The args are chosen so that the last part
-	     includes the lsb.  */
-	  int bit_offset = 0;
-	  /* If the value isn't in memory, then it must be right aligned
-	     if a register, so skip past the padding on the left.  If it
-	     is in memory, then there is no padding on the left.  */
-	  if (GET_CODE (value) != MEM)
-	    bit_offset = BITS_PER_WORD - bitsize;
-	  part = extract_fixed_bit_field (word_mode, value, 0, thissize,
-					  bit_offset + bitsdone,
-					  NULL_RTX, 1, align);
-	}
+	/* The args are chosen so that the last part includes the lsb.
+	   Give extract_bit_field the value it needs (with endianness
+	   compensation) to fetch the piece we want.  */
+	part = extract_fixed_bit_field (word_mode, value, 0, thissize,
+					BITS_PER_WORD - bitsize + bitsdone,
+					NULL_RTX, 1, align);
 #else
       /* Fetch successively more significant portions.  */
       if (GET_CODE (value) == CONST_INT)
