@@ -1040,7 +1040,9 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
 	      && ! ((temp6 = prev_nonnote_insn (insn)) != 0
 		    && GET_CODE (temp6) == INSN
-		    && sets_cc0_p (PATTERN (temp6)) == -1)
+		    && (sets_cc0_p (PATTERN (temp6)) == -1
+			|| (sets_cc0_p (PATTERN (temp6)) == 1
+			    && FIND_REG_INC_NOTE (temp6, NULL_RTX))))
 #endif
 	      )
 	    {
@@ -1088,6 +1090,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 					normalizep);
 	      if (target)
 		{
+		  rtx before = insn;
 		  rtx seq;
 
 		  /* Put the store-flag insns in front of the first insn
@@ -1143,7 +1146,15 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		  seq = get_insns ();
 		  end_sequence ();
 
-		  emit_insns_before (seq, insn);
+#ifdef HAVE_cc0
+		  /* If INSN uses CC0, we must not separate it from the
+		     insn that sets cc0.  */
+
+		  if (reg_mentioned_p (cc0_rtx, PATTERN (before)))
+		    before = prev_nonnote_insn (before);
+#endif
+
+		  emit_insns_before (seq, before);
 
 		  delete_insn (temp);
 		  next = NEXT_INSN (insn);
