@@ -1,3 +1,10 @@
+2004-10-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* dbxout.c (dbxout_function_decl): Don't use
+	DBX_OUTPUT_FUNCTION_END.
+	* system.h: Poison DBX_OUTPUT_FUNCTION_END.
+	* doc/tm.texi (DBX_OUTPUT_FUNCTION_END): Remove.
+
 2004-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/17967

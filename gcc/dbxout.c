@@ -851,9 +851,6 @@ dbxout_function_decl (tree decl)
   dbxout_begin_function (decl);
 #endif
   dbxout_block (DECL_INITIAL (decl), 0, DECL_ARGUMENTS (decl));
-#ifdef DBX_OUTPUT_FUNCTION_END
-  DBX_OUTPUT_FUNCTION_END (asm_out_file, decl);
-#endif
   dbxout_function_end ();
 }
 
