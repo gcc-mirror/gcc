@@ -72,7 +72,7 @@ munge (filename)
     }
 
   /* Now we know how big to make the buffer.  */
-  buffer = malloc (len + 1);
+  buffer = xmalloc (len + 1);
 
   for (p = filename, dst = buffer; *p; p++, dst++)
     {

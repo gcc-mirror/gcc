@@ -46,10 +46,7 @@ load_file_data (fp)
       if (space_left < 1024)
         {
           space_left += 4096;
-         if (pz_data)
-            pz_data = realloc ((void*)pz_data, space_left + space_used + 1 );
-         else
-            pz_data = malloc (space_left + space_used + 1 );
+	  pz_data = xrealloc ((void*)pz_data, space_left + space_used + 1 );
         }
       size_read = fread (pz_data + space_used, 1, space_left, fp);
 
@@ -74,7 +71,7 @@ load_file_data (fp)
       space_used += size_read;
     } while (! feof (fp));
 
-  pz_data = realloc ((void*)pz_data, space_used+1 );
+  pz_data = xrealloc ((void*)pz_data, space_used+1 );
   pz_data[ space_used ] = NUL;
   fclose (fp);
 

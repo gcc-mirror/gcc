@@ -2324,7 +2324,7 @@ mcore_expand_prolog ()
 	free (mcore_current_function_name);
       
       len = strlen (XSTR (x, 0)) + 1;
-      mcore_current_function_name = (char *) malloc (len);
+      mcore_current_function_name = (char *) xmalloc (len);
       
       memcpy (mcore_current_function_name, XSTR (x, 0), len);
       

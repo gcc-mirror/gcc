@@ -474,14 +474,7 @@ run_compiles ()
 {
   tFixDesc *p_fixd = fixDescList;
   int fix_ct = FIX_COUNT;
-  regex_t *p_re = (regex_t *) malloc (REGEX_COUNT * sizeof (regex_t));
-
-  if (p_re == (regex_t *) NULL)
-    {
-      fprintf (stderr, "fixincl ERROR:  cannot allocate %d bytes for regex\n",
-               REGEX_COUNT * sizeof (regex_t));
-      exit (EXIT_FAILURE);
-    }
+  regex_t *p_re = (regex_t *) xmalloc (REGEX_COUNT * sizeof (regex_t));
 
   /*  Make sure compile_re does not stumble across invalid data */
 
@@ -1036,14 +1029,9 @@ start_fixer (read_fd, p_fixd, pz_fix_file)
   else
     {
       tSCC z_cmd_fmt[] = "file='%s'\n%s";
-      pz_cmd = (char*)malloc (strlen (p_fixd->patch_args[2])
-                               + sizeof( z_cmd_fmt )
-                               + strlen( pz_fix_file ));
-      if (pz_cmd == (char*)NULL)
-        {
-          fputs ("allocation failure\n", stderr);
-          exit (EXIT_FAILURE);
-        }
+      pz_cmd = (char*) xmalloc (strlen (p_fixd->patch_args[2])
+				+ sizeof( z_cmd_fmt )
+				+ strlen( pz_fix_file ));
       sprintf (pz_cmd, z_cmd_fmt, pz_fix_file, p_fixd->patch_args[2]);
       pz_cmd_save = p_fixd->patch_args[2];
       p_fixd->patch_args[2] = pz_cmd;
