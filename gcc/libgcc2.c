@@ -1598,6 +1598,9 @@ void
 __clear_cache (beg, end)
      char *beg, *end;
 {
+#ifdef CLEAR_INSN_CACHE 
+  CLEAR_INSN_CACHE (beg, end);
+#else
 #ifdef INSN_CACHE_SIZE
   static char array[INSN_CACHE_SIZE + INSN_CACHE_PLANE_SIZE + INSN_CACHE_LINE_WIDTH];
   static int initialized = 0;
@@ -1696,6 +1699,7 @@ __clear_cache (beg, end)
 #endif /* just one plane */
 #endif /* Cache is large */
 #endif /* Cache exists */
+#endif /* CLEAR_INSN_CACHE */
 }
 
 #endif /* L_clear_cache */
