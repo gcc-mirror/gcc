@@ -84,7 +84,7 @@ from the machine description file `md'.  */\n\n");
 	gen_insn (desc);
     }
 
-  printf ("  CODE_FOR_nothing };\n");
+  printf ("  CODE_FOR_nothing = %d };\n", insn_code_number + 1);
 
   printf ("\n#define MAX_INSN_CODE ((int) CODE_FOR_nothing)\n");
 

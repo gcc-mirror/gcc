@@ -1,3 +1,8 @@
+2000-08-04 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* gencodes.c (main): Define CODE_FOR_nothing as the last possible
+	insn_code_number + 1.
+
 2000-08-04  Kazu Hirata  <kazu@hxi.com>
 
 	* cse.c: Fix a comment typo. Fix formatting.
