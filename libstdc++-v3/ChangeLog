@@ -1,3 +1,54 @@
+2004-07-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/concurrence.h: Tweak comments.
+
+2004-07-12  Benjamin Kosnik  <bkoz@redhat.com>
+            Per Bothner  <per@bothner.com>
+	    Mohan Embar  <gnustuff@thisiscool.com>
+
+	PR libstdc++/16248
+	* include/bits/concurrence.h (__glibcxx_mutex_type): New.
+	(__glibcxx_mutex): Encapsulate mutex init function into type for
+	threaded configurations without __GTHREAD_MUTEX_INIT.
+	(lock::lock): Make device member a reference.
+	(lock::~lock): Same.
+	* include/ext/pool_allocator.h (__pool_base::_M_get_mutex): Change
+	to mutex_type.
+	* src/allocator.cc: Same.
+
+2004-07-12  Brad Spencer  <spencer@infointeractive.com>
+
+	* include/ext/mt_allocator.h: Handle allocations at static
+	initialization that happen before _S_options is (automatically)
+	constructed; set _S_init even if _M_force_new is true.
+
+2004-07-12  Paul Brook  <paul@codesourcery.com>
+
+	* include/bits/concurrence.h: Still create mutex object when
+	single-threaded.
+
+2004-07-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/concurrence.h (__gnu_cxx::lock): New.
+	* include/ext/pool_allocator.h (__pool_base::_Lock::_S_lock): Remove.
+	(__pool_base::_M_get_mutex): New.
+	* include/bits/allocator.h: Tweak.
+	* src/allocator.cc (__pool_base::_M_get_free_list): Correct offset.
+
+	* src/allocator.cc: Move all instantiations...
+	* src/allocator-inst.cc: ...here.
+
+2004-07-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pool_allocator.h: Qualify __throw_bad_alloc.
+	(__pool_base): Remove unused template parameter.  Add
+	protected. Move lock data into __pool_base::_Lock. Remove static
+	on member functions.
+	(__pool_base::_M_get_free_list): New.
+	(__pool_alloc): Move _S_force new here.
+	* src/allocator.cc: Move out of line __pool_base definitions here.
+	* config/linker-map.gnu: Export bits from __pool_base.
+
 2004-07-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.ac (libtool_VERSION): To 6:2:0.

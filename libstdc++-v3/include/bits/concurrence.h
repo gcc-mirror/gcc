@@ -37,18 +37,22 @@
 #if __GTHREADS
 
 # ifdef __GTHREAD_MUTEX_INIT
+#  define __glibcxx_mutex_type __gthread_mutex_t
 #  define __glibcxx_mutex_define_initialized(NAME) \
 __gthread_mutex_t NAME = __GTHREAD_MUTEX_INIT
 #  define __glibcxx_mutex_lock(NAME) \
 __gthread_mutex_lock(&NAME)
 # else
 // Implies __GTHREAD_MUTEX_INIT_FUNCTION
+struct __glibcxx_mutex : public __gthread_mutex_t
+{
+   __glibcxx_mutex() { __GTHREAD_MUTEX_INIT_FUNCTION(this); }
+};
+
+#  define __glibcxx_mutex_type __glibcxx_mutex
 #  define __glibcxx_mutex_define_initialized(NAME) \
-__gthread_mutex_t NAME; \
-__gthread_once_t NAME ## _once = __GTHREAD_ONCE_INIT; \
-void NAME ## _init() { __GTHREAD_MUTEX_INIT_FUNCTION(&NAME); }
+__glibcxx_mutex NAME
 # define __glibcxx_mutex_lock(NAME) \
-__gthread_once(&NAME ## _once, NAME ## _init); \
 __gthread_mutex_lock(&NAME)
 # endif
 
@@ -56,10 +60,36 @@ __gthread_mutex_lock(&NAME)
 
 #else
 
-# define __glibcxx_mutex_define_initialized(NAME)
+# define __glibcxx_mutex_type __gthread_mutex_t
+# define __glibcxx_mutex_define_initialized(NAME) __gthread_mutex_t NAME
 # define __glibcxx_mutex_lock(NAME)
 # define __glibcxx_mutex_unlock(NAME)
 
 #endif
+
+namespace __gnu_cxx
+{
+  typedef __glibcxx_mutex_type mutex_type;
+  
+  // Scoped lock idiom.
+  // Acquire the mutex here with a constructor call, then release with
+  // the destructor call in accordance with RAII style.
+   class lock
+  {
+    // Externally defined and initialized.
+    mutex_type& device;
+
+  public:
+    explicit lock(mutex_type& name) : device(name)
+    { __glibcxx_mutex_lock(device); }
+
+    ~lock() throw()
+    { __glibcxx_mutex_unlock(device); }
+
+  private:
+    lock(const lock&);
+    lock& operator=(const lock&);
+  };
+}
 
 #endif
