@@ -99,6 +99,7 @@ static void mmix_output_octa PARAMS ((FILE *, HOST_WIDEST_INT, int));
 static bool mmix_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void mmix_init_machine_status PARAMS ((struct function *));
 static void mmix_encode_section_info PARAMS ((tree, int));
+static const char *mmix_strip_name_encoding PARAMS ((const char *));
 
 extern void mmix_target_asm_function_prologue
   PARAMS ((FILE *, HOST_WIDE_INT));
@@ -130,6 +131,8 @@ extern void mmix_target_asm_function_epilogue
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO  mmix_encode_section_info
+#undef TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING  mmix_strip_name_encoding
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1768,9 +1771,7 @@ mmix_encode_section_info (decl, first)
     }
 }
 
-/* STRIP_NAME_ENCODING.  */
-
-const char *
+static const char *
 mmix_strip_name_encoding (name)
      const char *name;
 {

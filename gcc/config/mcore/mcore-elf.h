@@ -67,7 +67,7 @@ exports_section ()						\
     {							\
       exports_section ();				\
       fprintf (STREAM, "\t.ascii \" -export:%s\"\n",	\
-	       MCORE_STRIP_NAME_ENCODING (NAME));	\
+	       (* targetm.strip_name_encoding) (NAME));	\
     }							\
   while (0);
 

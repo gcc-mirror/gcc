@@ -907,9 +907,6 @@ typedef struct { int regs; int lib; int now_varargs; } CUMULATIVE_ARGS;
 
 #define READONLY_DATA_SECTION_ASM_OP	"\t.section\t.rodata"
 
-#define STRIP_NAME_ENCODING(VAR, SYM_NAME) \
- (VAR) = mmix_strip_name_encoding (SYM_NAME)
-
 /* Node: PIC */
 /* (empty) */
 

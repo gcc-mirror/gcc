@@ -596,7 +596,7 @@ typedef char _Bool;
 	MD_INIT_BUILTINS MD_EXPAND_BUILTIN ASM_OUTPUT_CONSTRUCTOR	\
 	ASM_OUTPUT_DESTRUCTOR SIGNED_CHAR_SPEC MAX_CHAR_TYPE_SIZE	\
 	WCHAR_UNSIGNED UNIQUE_SECTION SELECT_SECTION SELECT_RTX_SECTION	\
-	ENCODE_SECTION_INFO
+	ENCODE_SECTION_INFO STRIP_NAME_ENCODING
 
 /* And other obsolete target macros, or macros that used to be in target
    headers and were not used, and may be obsolete or may never have

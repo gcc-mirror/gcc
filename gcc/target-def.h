@@ -205,6 +205,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_SECTION_TYPE_FLAGS default_section_type_flags
 #endif
 
+#ifndef TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING default_strip_name_encoding
+#endif
+
 /* In hook.c.  */
 #define TARGET_CANNOT_MODIFY_JUMPS_P hook_void_bool_false
 #define TARGET_IN_SMALL_DATA_P hook_tree_bool_false
@@ -233,7 +237,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_HAVE_CTORS_DTORS,			\
   TARGET_CANNOT_MODIFY_JUMPS_P,			\
   TARGET_IN_SMALL_DATA_P,			\
-  TARGET_ENCODE_SECTION_INFO			\
+  TARGET_ENCODE_SECTION_INFO,			\
+  TARGET_STRIP_NAME_ENCODING			\
 }
 
 #include "hooks.h"

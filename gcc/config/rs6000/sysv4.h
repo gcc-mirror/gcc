@@ -625,7 +625,7 @@ extern int rs6000_pic_labelno;
       {									\
 	const char *desc_name, *orig_name;				\
 									\
-        STRIP_NAME_ENCODING (orig_name, NAME);				\
+        orig_name = (*targetm.strip_name_encoding) (NAME);		\
         desc_name = orig_name;						\
 	while (*desc_name == '.')					\
 	  desc_name++;							\
@@ -776,24 +776,13 @@ extern int fixuplabelno;
 /* Historically we have also supported stabs debugging.  */
 #define	DBX_DEBUGGING_INFO
 
-#undef	TARGET_ENCODE_SECTION_INFO
 #define	TARGET_ENCODE_SECTION_INFO  rs6000_elf_encode_section_info
+#define	TARGET_STRIP_NAME_ENCODING  rs6000_elf_strip_name_encoding
 
 /* The ELF version doesn't encode [DS] or whatever at the end of symbols.  */
 
 #define	RS6000_OUTPUT_BASENAME(FILE, NAME)	\
     assemble_name (FILE, NAME)
-
-/* This macro gets just the user-specified name
-   out of the string in a SYMBOL_REF.  Discard
-   a leading * or @.  */
-#define	STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)				\
-do {									\
-  const char *_name = SYMBOL_NAME;					\
-  while (*_name == '*' || *_name == '@')				\
-    _name++;								\
-  (VAR) = _name;							\
-} while (0)
 
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */

@@ -1724,15 +1724,6 @@ do {									     \
 
 #define DATA_SECTION_ASM_OP "\t.data"
 
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)	\
-do {						\
-  (VAR) = (SYMBOL_NAME);			\
-  if ((VAR)[0] == '@')				\
-    (VAR) += 2;					\
-  if ((VAR)[0] == '*')				\
-    (VAR)++;					\
-} while (0)
-
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 

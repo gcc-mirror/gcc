@@ -180,6 +180,9 @@ static void	 arm_encode_section_info	PARAMS ((tree, int));
 #define TARGET_ENCODE_SECTION_INFO  arm_encode_section_info
 #endif
 
+#undef TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING arm_strip_name_encoding
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Obstack for minipool constant handling.  */

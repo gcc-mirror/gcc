@@ -163,6 +163,7 @@ toc_section ()						\
 
 #define TARGET_ASM_SELECT_RTX_SECTION  rs6000_xcoff_select_rtx_section
 #define TARGET_ENCODE_SECTION_INFO rs6000_xcoff_encode_section_info
+#define TARGET_STRIP_NAME_ENCODING rs6000_xcoff_strip_name_encoding
 
 /* FP save and restore routines.  */
 #define	SAVE_FP_PREFIX "._savef"
@@ -183,13 +184,8 @@ toc_section ()						\
 
 /* This outputs NAME to FILE up to the first null or '['.  */
 
-#define RS6000_OUTPUT_BASENAME(FILE, NAME)	\
-  {						\
-    const char *_p;				\
-						\
-    STRIP_NAME_ENCODING (_p, (NAME));		\
-    assemble_name ((FILE), _p);			\
-  }
+#define RS6000_OUTPUT_BASENAME(FILE, NAME) \
+  assemble_name ((FILE), (*targetm.strip_name_encoding) (NAME))
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
@@ -203,28 +199,6 @@ toc_section ()						\
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
   do { fputs ("\t.globl ", FILE);	\
        RS6000_OUTPUT_BASENAME (FILE, NAME); putc ('\n', FILE);} while (0)
-
-/* Remove any trailing [DS] or the like from the symbol name.  */
-
-#define STRIP_NAME_ENCODING(VAR,NAME)			\
-  do							\
-    {							\
-      const char *_name = (NAME);			\
-      size_t _len;					\
-      if (*_name == '*')				\
-        _name++;					\
-      _len = strlen (_name);				\
-      if (_name[_len - 1] != ']')			\
-	(VAR) = _name;					\
-      else						\
-	{						\
-	  char *_new_name = (char *) alloca (_len + 1);	\
-	  strcpy (_new_name, _name);			\
-	  _new_name[_len - 4] = '\0';			\
-	  (VAR) = _new_name;				\
-	}						\
-    }							\
-  while (0)
 
 /* Output at beginning of assembler file.
 

@@ -247,6 +247,9 @@ struct gcc_target
   /* Do something target-specific to record properties of the DECL into
      the associated SYMBOL_REF.  */
   void (* encode_section_info) PARAMS ((tree, int));
+
+  /* Undo the effects of encode_section_info on the symbol string.  */
+  const char * (* strip_name_encoding) PARAMS ((const char *));
 };
 
 extern struct gcc_target targetm;

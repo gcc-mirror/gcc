@@ -199,3 +199,8 @@ extern unsigned int i386_pe_section_type_flags PARAMS ((tree, const char *,
 extern void i386_pe_asm_named_section PARAMS ((const char *, unsigned int));
 extern void x86_output_mi_thunk PARAMS ((FILE *, int, tree));
 #endif
+
+/* In winnt.c  */
+extern void i386_pe_encode_section_info PARAMS ((tree, int));
+extern const char *i386_pe_strip_name_encoding PARAMS ((const char *));
+extern const char *i386_pe_strip_name_encoding_full PARAMS ((const char *));

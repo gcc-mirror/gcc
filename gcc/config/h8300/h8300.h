@@ -1096,13 +1096,6 @@ struct cum_arg
 
 #define TINY_DATA_NAME_P(NAME) (*(NAME) == '&')
 
-/* Store the user-specified part of SYMBOL_NAME in VAR.
-   This is sort of inverse to targetm.encode_section_info.  */
-#define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME)		\
-  (VAR) = (SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'	\
-			   || (SYMBOL_NAME)[0] == '@'	\
-			   || (SYMBOL_NAME)[0] == '&');
-
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 

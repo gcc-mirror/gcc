@@ -139,6 +139,7 @@ static void	  mcore_asm_named_section      PARAMS ((const char *,
 #endif
 static void       mcore_unique_section	       PARAMS ((tree, int));
 static void mcore_encode_section_info		PARAMS ((tree, int));
+static const char *mcore_strip_name_encoding	PARAMS ((const char *));
 
 /* Initialize the GCC target structure.  */
 #ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
@@ -159,6 +160,8 @@ static void mcore_encode_section_info		PARAMS ((tree, int));
 #define TARGET_ASM_UNIQUE_SECTION mcore_unique_section
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO mcore_encode_section_info
+#undef TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING mcore_strip_name_encoding
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3467,6 +3470,15 @@ mcore_encode_section_info (decl, first)
     }
 }
 
+/* Undo the effects of the above.  */
+
+static const char *
+mcore_strip_name_encoding (str)
+     const char *str;
+{
+  return str + (str[0] == '@' ? 3 : 0);
+}
+
 /* MCore specific attribute support.
    dllexport - for exporting a function/variable that will live in a dll
    dllimport - for importing a function/variable from a dll
@@ -3535,7 +3547,7 @@ mcore_unique_section (decl, reloc)
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   
   /* Strip off any encoding in name.  */
-  STRIP_NAME_ENCODING (name, name);
+  name = (* targetm.strip_name_encoding) (name);
 
   /* The object is put in, for example, section .text$foo.
      The linker will then ultimately place them in .text

@@ -117,6 +117,7 @@ static int pa_issue_rate PARAMS ((void));
 static void pa_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT))
      ATTRIBUTE_UNUSED;
 static void pa_encode_section_info PARAMS ((tree, int));
+static const char *pa_strip_name_encoding PARAMS ((const char *));
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -188,6 +189,8 @@ int n_deferred_plabels = 0;
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO pa_encode_section_info
+#undef TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING pa_strip_name_encoding
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6285,7 +6288,7 @@ output_call (insn, call_dest, sibcall)
 
 	      /* Gross.  We have just implicitly taken the address of this
 		 function, mark it as such.  */
-	      STRIP_NAME_ENCODING (real_name, name);
+	      real_name = (*targetm.strip_name_encoding) (name);
 	      TREE_SYMBOL_REFERENCED (get_identifier (real_name)) = 1;
 	    }
 
@@ -6458,6 +6461,15 @@ pa_encode_section_info (decl, first)
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	hppa_encode_label (XEXP (DECL_RTL (decl), 0));
     }
+}
+
+/* This is sort of inverse to pa_encode_section_info.  */
+
+static const char *
+pa_strip_name_encoding (str)
+     const char *str;
+{
+  return str + (*str == '*' || *str == '@');
 }
 
 int

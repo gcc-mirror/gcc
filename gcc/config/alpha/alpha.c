@@ -119,6 +119,8 @@ static bool alpha_in_small_data_p
   PARAMS ((tree));
 static void alpha_encode_section_info
   PARAMS ((tree, int));
+static const char *alpha_strip_name_encoding
+  PARAMS ((const char *));
 static int some_small_symbolic_operand_1
   PARAMS ((rtx *, void *));
 static int split_small_symbolic_operand_1
@@ -212,6 +214,8 @@ static void vms_asm_out_destructor PARAMS ((rtx, int));
 #define TARGET_IN_SMALL_DATA_P alpha_in_small_data_p
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO alpha_encode_section_info
+#undef TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING alpha_strip_name_encoding
 
 #if TARGET_ABI_UNICOSMK
 static void unicosmk_asm_named_section PARAMS ((const char *, unsigned int));
@@ -1706,6 +1710,19 @@ alpha_encode_section_info (decl, first)
 	 attribute after rtl generation.  They should have gotten
 	 a warning about unspecified behaviour from varasm.c.  */
     }
+}
+
+/* Undo the effects of the above.  */
+
+static const char *
+alpha_strip_name_encoding (str)
+     const char *str;
+{
+  if (str[0] == '@')
+    str += 2;
+  if (str[0] == '*')
+    str++;
+  return str;
 }
 
 /* legitimate_address_p recognizes an RTL expression that is a valid
@@ -8599,7 +8616,7 @@ unicosmk_unique_section (decl, reloc)
     abort ();
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  STRIP_NAME_ENCODING (name, name);
+  name = alpha_strip_name_encoding (name);
   len = strlen (name);
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
@@ -8830,8 +8847,7 @@ unicosmk_ssib_name ()
   x = XEXP (x, 0);
   if (GET_CODE (x) != SYMBOL_REF)
     abort ();
-  fnname = XSTR (x, 0);
-  STRIP_NAME_ENCODING (fnname, fnname);
+  fnname = alpha_strip_name_encoding (XSTR (x, 0));
 
   len = strlen (fnname);
   if (len + SSIB_PREFIX_LEN > 255)
@@ -9006,7 +9022,7 @@ unicosmk_output_externs (file)
       /* We have to strip the encoding and possibly remove user_label_prefix 
 	 from the identifier in order to handle -fleading-underscore and
 	 explicit asm names correctly (cf. gcc.dg/asm-names-1.c).  */
-      STRIP_NAME_ENCODING (real_name, p->name);
+      real_name = alpha_strip_name_encoding (p->name);
       if (len && p->name[0] == '*'
 	  && !memcmp (real_name, user_label_prefix, len))
 	real_name += len;

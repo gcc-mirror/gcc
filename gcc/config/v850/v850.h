@@ -1194,13 +1194,8 @@ zbss_section ()								\
    `assemble_name' uses this.  */
 
 #undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE, NAME)           \
-  do {                                            \
-  const char* real_name;                          \
-  STRIP_NAME_ENCODING (real_name, (NAME));        \
-  asm_fprintf (FILE, "%U%s", real_name);          \
-  } while (0)
-
+#define ASM_OUTPUT_LABELREF(FILE, NAME) \
+  asm_fprintf (FILE, "%U%s", (*targetm.strip_name_encoding) (NAME))
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
@@ -1426,9 +1421,6 @@ extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_K
   (   ZDA_NAME_P (SYMBOL_NAME)         \
    || TDA_NAME_P (SYMBOL_NAME)         \
    || SDA_NAME_P (SYMBOL_NAME))
-
-#define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME) \
-     (VAR) = (SYMBOL_NAME) + (ENCODED_NAME_P (SYMBOL_NAME) || *(SYMBOL_NAME) == '*')
 
 /* Define this if you have defined special-purpose predicates in the
    file `MACHINE.c'.  This macro is called within an initializer of an

@@ -102,8 +102,7 @@ i386_pe_unique_section (decl, reloc)
   char *string,*prefix;
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  /* Strip off any encoding in fnname.  */
-  STRIP_NAME_ENCODING (name, name);
+  name = (* targetm.strip_name_encoding) (name);
 
   /* The object is put in, for example, section .text$foo.
      The linker will then ultimately place them in .text

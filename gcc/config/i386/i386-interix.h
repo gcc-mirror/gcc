@@ -299,40 +299,13 @@ while (0)
 
 /* Define this macro if references to a symbol must be treated
    differently depending on something about the variable or
-   function named by the symbol (such as what section it is in).
-
-   Apply stddef, handle (as yet unimplemented) pic.
-
-   stddef renaming does NOT apply to Alpha.  */
-
-const char *gen_stdcall_suffix PARAMS ((tree));
-void i386_interix_encode_section_info PARAMS ((tree, int));
+   function named by the symbol (such as what section it is in).  */
 
 #undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO i386_interix_encode_section_info
+#define TARGET_ENCODE_SECTION_INFO i386_pe_encode_section_info
+#undef  TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING  i386_pe_strip_name_encoding_full
 
-/* This macro gets just the user-specified name
-   out of the string in a SYMBOL_REF.  Discard
-   trailing @[NUM] encoded by targetm.encode_section_info.  */
-#undef  STRIP_NAME_ENCODING
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)				\
-do {									\
-  const char *_p;							\
-  const char *_name = SYMBOL_NAME;					\
-  for (_p = _name; *_p && *_p != '@'; ++_p)				\
-    ;									\
-  if (*_p == '@')							\
-    {									\
-      int _len = _p - _name;						\
-      char *_new_name = (char *) alloca (_len + 1);			\
-      strncpy (_new_name, _name, _len);					\
-      _new_name[_len] = '\0';						\
-      (VAR) = _new_name;						\
-    }									\
-  else									\
-    (VAR) = _name;							\
-} while (0)
-      
 #if 0	
 /* Turn this back on when the linker is updated to handle grouped
    .data$ sections correctly. See corresponding note in i386/interix.c. 

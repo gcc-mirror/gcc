@@ -76,7 +76,7 @@ static int    m32r_issue_rate	   PARAMS ((void));
 
 static void m32r_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
 static void m32r_encode_section_info PARAMS ((tree, int));
-
+static const char *m32r_strip_name_encoding PARAMS ((const char *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -107,6 +107,8 @@ static void m32r_encode_section_info PARAMS ((tree, int));
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO m32r_encode_section_info
+#undef TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING m32r_strip_name_encoding
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -484,6 +486,17 @@ m32r_encode_section_info (decl, first)
 
       XSTR (XEXP (rtl, 0), 0) = newstr;
     }
+}
+
+/* Undo the effects of the above.  */
+
+static const char *
+m32r_strip_name_encoding (str)
+     const char *str;
+{
+  str += ENCODED_NAME_P (str);
+  str += *str == '*';
+  return str;
 }
 
 /* Do anything needed before RTL is emitted for each function.  */

@@ -482,14 +482,6 @@ extern rtx this_is_asm_operands;
 /* User label prefix in effect for this compilation.  */
 extern const char *user_label_prefix;
 
-/* This macro gets just the user-specified name
-   out of the string in a SYMBOL_REF.  On most machines,
-   we discard the * if any and that's all.  */
-#ifndef STRIP_NAME_ENCODING
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
-  (VAR) = ((SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'))
-#endif
-
 /* Default target function prologue and epilogue assembler output.  */
 extern void default_function_pro_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
@@ -552,6 +544,8 @@ extern void default_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						unsigned HOST_WIDE_INT));
 extern void default_elf_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						    unsigned HOST_WIDE_INT));
+extern const char *default_strip_name_encoding PARAMS ((const char *));
+
 /* Emit data for vtable gc for GNU binutils.  */
 extern void assemble_vtable_entry PARAMS ((struct rtx_def *, HOST_WIDE_INT));
 extern void assemble_vtable_inherit PARAMS ((struct rtx_def *,
