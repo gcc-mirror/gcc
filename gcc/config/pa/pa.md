@@ -2587,30 +2587,14 @@
   ""
   "
 {
-  operands[3] = gen_reg_rtx(SImode);
-  if (!(GET_CODE (operands[2]) == CONST_INT && emit_hpdiv_const(operands, 0)))
-    {
-      emit_move_insn (gen_rtx (REG, SImode, 26), operands[1]);
-      emit_move_insn (gen_rtx (REG, SImode, 25), operands[2]);
-      emit
-	(gen_rtx
-	 (PARALLEL, VOIDmode,
-	  gen_rtvec (5, gen_rtx (SET, VOIDmode, gen_rtx (REG, SImode, 29),
-				 gen_rtx (DIV, SImode,
-					  gen_rtx (REG, SImode, 26),
-					  gen_rtx (REG, SImode, 25))),
-		     gen_rtx (CLOBBER, VOIDmode, operands[3]),
-		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 26)),
-		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 25)),
-		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 31)))));
-      emit_move_insn (operands[0], gen_rtx (REG, SImode, 29));
-    }
-  DONE;
+  operands[3] = gen_reg_rtx (SImode);
+  if (GET_CODE (operands[2]) == CONST_INT && emit_hpdiv_const (operands, 0))
+    DONE;
 }")
 
 (define_insn ""
   [(set (reg:SI 29)
-    (div:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
+	(div:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
    (clobber (match_operand:SI 1 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
@@ -2639,30 +2623,14 @@
   ""
   "
 {
-  operands[3] = gen_reg_rtx(SImode);
-  if (!(GET_CODE (operands[2]) == CONST_INT && emit_hpdiv_const(operands, 1)))
-    {
-      emit_move_insn (gen_rtx (REG, SImode, 26), operands[1]);
-      emit_move_insn (gen_rtx (REG, SImode, 25), operands[2]);
-      emit
-	(gen_rtx
-	 (PARALLEL, VOIDmode,
-	  gen_rtvec (5, gen_rtx (SET, VOIDmode, gen_rtx (REG, SImode, 29),
-				 gen_rtx (UDIV, SImode,
-					  gen_rtx (REG, SImode, 26),
-					  gen_rtx (REG, SImode, 25))),
-		     gen_rtx (CLOBBER, VOIDmode, operands[3]),
-		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 26)),
-		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 25)),
-		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 31)))));
-      emit_move_insn (operands[0], gen_rtx (REG, SImode, 29));
-    }
-  DONE;
+  operands[3] = gen_reg_rtx (SImode);
+  if (GET_CODE (operands[2]) == CONST_INT && emit_hpdiv_const (operands, 1))
+    DONE;
 }")
 
 (define_insn ""
   [(set (reg:SI 29)
-    (udiv:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
+	(udiv:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
    (clobber (match_operand:SI 1 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
@@ -2691,22 +2659,7 @@
   ""
   "
 {
-  operands[3] = gen_reg_rtx(SImode);
-  emit_move_insn (gen_rtx (REG, SImode, 26), operands[1]);
-  emit_move_insn (gen_rtx (REG, SImode, 25), operands[2]);
-  emit
-    (gen_rtx
-     (PARALLEL, VOIDmode,
-      gen_rtvec (5, gen_rtx (SET, VOIDmode, gen_rtx (REG, SImode, 29),
-			     gen_rtx (MOD, SImode,
-				      gen_rtx (REG, SImode, 26),
-				      gen_rtx (REG, SImode, 25))),
-		 gen_rtx (CLOBBER, VOIDmode, operands[3]),
-		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 26)),
-		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 25)),
-		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 31)))));
-  emit_move_insn (operands[0], gen_rtx (REG, SImode, 29));
-  DONE;
+  operands[3] = gen_reg_rtx (SImode);
 }")
 
 (define_insn ""
@@ -2739,22 +2692,7 @@
   ""
   "
 {
-  operands[3] = gen_reg_rtx(SImode);
-  emit_move_insn (gen_rtx (REG, SImode, 26), operands[1]);
-  emit_move_insn (gen_rtx (REG, SImode, 25), operands[2]);
-  emit
-    (gen_rtx
-     (PARALLEL, VOIDmode,
-      gen_rtvec (5, gen_rtx (SET, VOIDmode, gen_rtx (REG, SImode, 29),
-			     gen_rtx (UMOD, SImode,
-				      gen_rtx (REG, SImode, 26),
-				      gen_rtx (REG, SImode, 25))),
-		 gen_rtx (CLOBBER, VOIDmode, operands[3]),
-		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 26)),
-		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 25)),
-		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 31)))));
-  emit_move_insn (operands[0], gen_rtx (REG, SImode, 29));
-  DONE;
+  operands[3] = gen_reg_rtx (SImode);
 }")
 
 (define_insn ""
@@ -3142,14 +3080,14 @@
     {
       rtx temp = gen_reg_rtx (SImode);
       emit_insn (gen_subsi3 (temp, GEN_INT (31), operands[2]));
-	if (GET_CODE (operands[1]) == CONST_INT)
-	  emit_insn (gen_zvdep_imm (operands[0], operands[1], temp));
-	else
-	  emit_insn (gen_zvdep32 (operands[0], operands[1], temp));
+      if (GET_CODE (operands[1]) == CONST_INT)
+	emit_insn (gen_zvdep_imm (operands[0], operands[1], temp));
+      else
+	emit_insn (gen_zvdep32 (operands[0], operands[1], temp));
       DONE;
     }
   /* Make sure both inputs are not constants,
-     the recognizer can't handle that.  */
+     there are no patterns for that.  */
   operands[1] = force_reg (SImode, operands[1]);
 }")
 
