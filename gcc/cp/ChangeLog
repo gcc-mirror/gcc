@@ -1,5 +1,8 @@
 1999-04-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl2.c (finish_file): Tweak handling of extern inlines so that
+	they are not unnecessarily put out.
+
 	* search.c (is_subobject_of_p): Handle TEMPLATE_TYPE_PARMs and
 	such as base classes.
 
