@@ -272,7 +272,7 @@ dump_type (tree t, int flags)
       pp_cxx_tree_identifier (cxx_pp, t);
       break;
 
-    case TREE_VEC:
+    case TREE_BINFO:
       dump_type (BINFO_TYPE (t), flags);
       break;
 

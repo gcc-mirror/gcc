@@ -1,5 +1,8 @@
 2004-09-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/17681
+	* error.c (dump_type): Change TREE_VEC case into TREE_BINFO.
+
 	* class.c (struct count_depth_data): Remove.
 	(dfs_depth_post, dfs_depth_q): Remove.
 	(find_final_overrider): Use number of vbase classes as depth
