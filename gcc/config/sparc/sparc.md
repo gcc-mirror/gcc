@@ -245,6 +245,23 @@
   (and (eq_attr "type" "fpsqrt")   (eq_attr "cpu" "supersparc")) 36 30)
 (define_function_unit "fp_mds" 1 0
   (and (eq_attr "type" "imul")     (eq_attr "cpu" "supersparc")) 12 12)
+
+;; ----- sparclet 90c701 scheduling
+;; The 90c701 issues 1 insn per cycle.
+;; Results may be written back out of order.
+
+;; Loads take 2 extra cycles to complete and 4 can be buffered at a time.
+(define_function_unit "s90c701_load" 4 1
+  (and (eq_attr "type" "load")          (eq_attr "cpu" "90c701")) 3 1)
+;; Stores take 2(?) extra cycles to complete.
+;; It is desirable to not have any memory operation in the following 2 cycles.
+;; (??? or 2 memory ops in the case of std).
+(define_function_unit "s90c701_store" 1 0
+  (and (eq_attr "type" "store")		(eq_attr "cpu" "90c701")) 3 3
+  [(eq_attr "type" "load,store")])
+;; The multiply unit has a latency of 5.
+(define_function_unit "s90c701_mul" 1 0
+  (and (eq_attr "type" "imul")		(eq_attr "cpu" "90c701")) 5 5)
 
 ;; Compare instructions.
 ;; This controls RTL generation and register allocation.
@@ -324,6 +341,120 @@
   DONE;
 }")
 
+;; Now the compare DEFINE_INSNs.
+
+(define_insn "*cmpsi_insn"
+  [(set (reg:CC 0)
+	(compare:CC (match_operand:SI 0 "register_operand" "r")
+		    (match_operand:SI 1 "arith_operand" "rI")))]
+  ""
+  "cmp %r0,%1"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmpsf_fpe_sp32"
+  [(set (reg:CCFPE 0)
+	(compare:CCFPE (match_operand:SF 0 "register_operand" "f")
+		       (match_operand:SF 1 "register_operand" "f")))]
+  "! TARGET_V9 && TARGET_FPU"
+  "fcmpes %0,%1"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn "*cmpdf_fpe_sp32"
+  [(set (reg:CCFPE 0)
+	(compare:CCFPE (match_operand:DF 0 "register_operand" "e")
+		       (match_operand:DF 1 "register_operand" "e")))]
+  "! TARGET_V9 && TARGET_FPU"
+  "fcmped %0,%1"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn "*cmptf_fpe_sp32"
+  [(set (reg:CCFPE 0)
+	(compare:CCFPE (match_operand:TF 0 "register_operand" "e")
+		       (match_operand:TF 1 "register_operand" "e")))]
+  "! TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
+  "fcmpeq %0,%1"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn "*cmpsf_fp_sp32"
+  [(set (reg:CCFP 0)
+	(compare:CCFP (match_operand:SF 0 "register_operand" "f")
+		      (match_operand:SF 1 "register_operand" "f")))]
+  "! TARGET_V9 && TARGET_FPU"
+  "fcmps %0,%1"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn "*cmpdf_fp_sp32"
+  [(set (reg:CCFP 0)
+	(compare:CCFP (match_operand:DF 0 "register_operand" "e")
+		      (match_operand:DF 1 "register_operand" "e")))]
+  "! TARGET_V9 && TARGET_FPU"
+  "fcmpd %0,%1"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn "*cmptf_fp_sp32"
+  [(set (reg:CCFP 0)
+	(compare:CCFP (match_operand:TF 0 "register_operand" "e")
+		      (match_operand:TF 1 "register_operand" "e")))]
+  "! TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
+  "fcmpq %0,%1"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn "*cmpdi_sp64"
+  [(set (reg:CCX 0)
+	(compare:CCX (match_operand:DI 0 "register_operand" "r")
+		     (match_operand:DI 1 "arith_double_operand" "rHI")))]
+  "TARGET_ARCH64"
+  "cmp %r0,%1"
+  [(set_attr "type" "compare")])
+
+(define_insn "*cmpsf_fpe_sp64"
+  [(set (match_operand:CCFPE 0 "ccfp_reg_operand" "=c")
+	(compare:CCFPE (match_operand:SF 1 "register_operand" "f")
+		       (match_operand:SF 2 "register_operand" "f")))]
+  "TARGET_V9 && TARGET_FPU"
+  "fcmpes %0,%1,%2"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn "*cmpdf_fpe_sp64"
+  [(set (match_operand:CCFPE 0 "ccfp_reg_operand" "=c")
+	(compare:CCFPE (match_operand:DF 1 "register_operand" "e")
+		       (match_operand:DF 2 "register_operand" "e")))]
+  "TARGET_V9 && TARGET_FPU"
+  "fcmped %0,%1,%2"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn "*cmptf_fpe_sp64"
+  [(set (match_operand:CCFPE 0 "ccfp_reg_operand" "=c")
+	(compare:CCFPE (match_operand:TF 1 "register_operand" "e")
+		       (match_operand:TF 2 "register_operand" "e")))]
+  "TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
+  "fcmpeq %0,%1,%2"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn "*cmpsf_fp_sp64"
+  [(set (match_operand:CCFP 0 "ccfp_reg_operand" "=c")
+	(compare:CCFP (match_operand:SF 1 "register_operand" "f")
+		      (match_operand:SF 2 "register_operand" "f")))]
+  "TARGET_V9 && TARGET_FPU"
+  "fcmps %0,%1,%2"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn "*cmpdf_fp_sp64"
+  [(set (match_operand:CCFP 0 "ccfp_reg_operand" "=c")
+	(compare:CCFP (match_operand:DF 1 "register_operand" "e")
+		      (match_operand:DF 2 "register_operand" "e")))]
+  "TARGET_V9 && TARGET_FPU"
+  "fcmpd %0,%1,%2"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn "*cmptf_fp_sp64"
+  [(set (match_operand:CCFP 0 "ccfp_reg_operand" "=c")
+	(compare:CCFP (match_operand:TF 1 "register_operand" "e")
+		      (match_operand:TF 2 "register_operand" "e")))]
+  "TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
+  "fcmpq %0,%1,%2"
+  [(set_attr "type" "fpcmp")])
+
 ;; Next come the scc insns.  For seq, sne, sgeu, and sltu, we can do this
 ;; without jumps using the addx/subx instructions.  For seq/sne on v9 we use
 ;; the same code as v8 (the addx/subx method has more applications).  The
@@ -696,119 +827,7 @@
   operands[1] = gen_compare_reg (LEU, sparc_compare_op0, sparc_compare_op1);
 }")
 
-;; Now the DEFINE_INSNs for the compare and scc cases.  First the compares.
-
-(define_insn "*cmpsi_insn"
-  [(set (reg:CC 0)
-	(compare:CC (match_operand:SI 0 "register_operand" "r")
-		    (match_operand:SI 1 "arith_operand" "rI")))]
-  ""
-  "cmp %r0,%1"
-  [(set_attr "type" "compare")])
-
-(define_insn "*cmpsf_fpe_sp32"
-  [(set (reg:CCFPE 0)
-	(compare:CCFPE (match_operand:SF 0 "register_operand" "f")
-		       (match_operand:SF 1 "register_operand" "f")))]
-  "! TARGET_V9 && TARGET_FPU"
-  "fcmpes %0,%1"
-  [(set_attr "type" "fpcmp")])
-
-(define_insn "*cmpdf_fpe_sp32"
-  [(set (reg:CCFPE 0)
-	(compare:CCFPE (match_operand:DF 0 "register_operand" "e")
-		       (match_operand:DF 1 "register_operand" "e")))]
-  "! TARGET_V9 && TARGET_FPU"
-  "fcmped %0,%1"
-  [(set_attr "type" "fpcmp")])
-
-(define_insn "*cmptf_fpe_sp32"
-  [(set (reg:CCFPE 0)
-	(compare:CCFPE (match_operand:TF 0 "register_operand" "e")
-		       (match_operand:TF 1 "register_operand" "e")))]
-  "! TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
-  "fcmpeq %0,%1"
-  [(set_attr "type" "fpcmp")])
-
-(define_insn "*cmpsf_fp_sp32"
-  [(set (reg:CCFP 0)
-	(compare:CCFP (match_operand:SF 0 "register_operand" "f")
-		      (match_operand:SF 1 "register_operand" "f")))]
-  "! TARGET_V9 && TARGET_FPU"
-  "fcmps %0,%1"
-  [(set_attr "type" "fpcmp")])
-
-(define_insn "*cmpdf_fp_sp32"
-  [(set (reg:CCFP 0)
-	(compare:CCFP (match_operand:DF 0 "register_operand" "e")
-		      (match_operand:DF 1 "register_operand" "e")))]
-  "! TARGET_V9 && TARGET_FPU"
-  "fcmpd %0,%1"
-  [(set_attr "type" "fpcmp")])
-
-(define_insn "*cmptf_fp_sp32"
-  [(set (reg:CCFP 0)
-	(compare:CCFP (match_operand:TF 0 "register_operand" "e")
-		      (match_operand:TF 1 "register_operand" "e")))]
-  "! TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
-  "fcmpq %0,%1"
-  [(set_attr "type" "fpcmp")])
-
-(define_insn "*cmpdi_sp64"
-  [(set (reg:CCX 0)
-	(compare:CCX (match_operand:DI 0 "register_operand" "r")
-		     (match_operand:DI 1 "arith_double_operand" "rHI")))]
-  "TARGET_ARCH64"
-  "cmp %r0,%1"
-  [(set_attr "type" "compare")])
-
-(define_insn "*cmpsf_fpe_sp64"
-  [(set (match_operand:CCFPE 0 "ccfp_reg_operand" "=c")
-	(compare:CCFPE (match_operand:SF 1 "register_operand" "f")
-		       (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_V9 && TARGET_FPU"
-  "fcmpes %0,%1,%2"
-  [(set_attr "type" "fpcmp")])
-
-(define_insn "*cmpdf_fpe_sp64"
-  [(set (match_operand:CCFPE 0 "ccfp_reg_operand" "=c")
-	(compare:CCFPE (match_operand:DF 1 "register_operand" "e")
-		       (match_operand:DF 2 "register_operand" "e")))]
-  "TARGET_V9 && TARGET_FPU"
-  "fcmped %0,%1,%2"
-  [(set_attr "type" "fpcmp")])
-
-(define_insn "*cmptf_fpe_sp64"
-  [(set (match_operand:CCFPE 0 "ccfp_reg_operand" "=c")
-	(compare:CCFPE (match_operand:TF 1 "register_operand" "e")
-		       (match_operand:TF 2 "register_operand" "e")))]
-  "TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
-  "fcmpeq %0,%1,%2"
-  [(set_attr "type" "fpcmp")])
-
-(define_insn "*cmpsf_fp_sp64"
-  [(set (match_operand:CCFP 0 "ccfp_reg_operand" "=c")
-	(compare:CCFP (match_operand:SF 1 "register_operand" "f")
-		      (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_V9 && TARGET_FPU"
-  "fcmps %0,%1,%2"
-  [(set_attr "type" "fpcmp")])
-
-(define_insn "*cmpdf_fp_sp64"
-  [(set (match_operand:CCFP 0 "ccfp_reg_operand" "=c")
-	(compare:CCFP (match_operand:DF 1 "register_operand" "e")
-		      (match_operand:DF 2 "register_operand" "e")))]
-  "TARGET_V9 && TARGET_FPU"
-  "fcmpd %0,%1,%2"
-  [(set_attr "type" "fpcmp")])
-
-(define_insn "*cmptf_fp_sp64"
-  [(set (match_operand:CCFP 0 "ccfp_reg_operand" "=c")
-	(compare:CCFP (match_operand:TF 1 "register_operand" "e")
-		      (match_operand:TF 2 "register_operand" "e")))]
-  "TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
-  "fcmpq %0,%1,%2"
-  [(set_attr "type" "fpcmp")])
+;; Now the DEFINE_INSNs for the scc cases.
 
 ;; The SEQ and SNE patterns are special because they can be done
 ;; without any branching and do not involve a COMPARE.
@@ -3651,7 +3670,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(mult:SI (match_operand:SI 1 "arith_operand" "%r")
 		 (match_operand:SI 2 "arith_operand" "rI")))]
-  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "smul %1,%2,%0"
   [(set_attr "type" "imul")])
 
@@ -3679,7 +3698,7 @@
   [(set (match_operand:DI 0 "register_operand" "")
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" ""))
 		 (sign_extend:DI (match_operand:SI 2 "arith_operand" ""))))]
-  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "
 {
   if (CONSTANT_P (operands[2]))
@@ -3693,7 +3712,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (sign_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
-  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "smul %1,%2,%R0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3703,7 +3722,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (match_operand:SI 2 "small_int" "I")))]
-  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "smul %1,%2,%R0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3713,7 +3732,7 @@
 	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" ""))
 			       (sign_extend:DI (match_operand:SI 2 "arith_operand" "")))
 		      (const_int 32))))]
-  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "
 {
   if (CONSTANT_P (operands[2]))
@@ -3729,7 +3748,7 @@
 	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 			       (sign_extend:DI (match_operand:SI 2 "register_operand" "r")))
 		      (const_int 32))))]
-  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "smul %1,%2,%%g0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3739,7 +3758,7 @@
 	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 			       (match_operand:SI 2 "register_operand" "r"))
 		      (const_int 32))))]
-  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "smul %1,%2,%%g0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3747,7 +3766,7 @@
   [(set (match_operand:DI 0 "register_operand" "")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
 		 (zero_extend:DI (match_operand:SI 2 "uns_arith_operand" ""))))]
-  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "
 {
   if (CONSTANT_P (operands[2]))
@@ -3761,7 +3780,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (zero_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
-  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "umul %1,%2,%R0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3771,7 +3790,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (match_operand:SI 2 "uns_small_int" "")))]
-  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "umul %1,%2,%R0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3781,7 +3800,7 @@
 	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
 			       (zero_extend:DI (match_operand:SI 2 "uns_arith_operand" "")))
 		      (const_int 32))))]
-  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "
 {
   if (CONSTANT_P (operands[2]))
@@ -3797,7 +3816,7 @@
 	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 			       (zero_extend:DI (match_operand:SI 2 "register_operand" "r")))
 		      (const_int 32))))]
-  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "umul %1,%2,%%g0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3807,7 +3826,7 @@
 	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 			       (match_operand:SI 2 "uns_small_int" ""))
 		      (const_int 32))))]
-  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS"
   "umul %1,%2,%%g0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3903,10 +3922,43 @@
   [(set (attr "length")
 	(if_then_else (eq_attr "isa" "v9")
 		      (const_int 2) (const_int 5)))])
+
+; sparclet multiply/accumulate insns
+
+(define_insn "*smacsi"
+  [(set (match_operand:SI 0 "register_operand" "+r")
+	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "%r")
+			  (match_operand:SI 2 "arith_operand" "rI"))
+		 (match_dup 0)))]
+  "TARGET_SPARCLET"
+  "smac %1,%2,%0"
+  [(set_attr "type" "imul")])
+
+(define_insn "*smacdi"
+  [(set (match_operand:DI 0 "register_operand" "+r")
+	(plus:DI (mult:DI (sign_extend:DI
+			   (match_operand:SI 1 "register_operand" "%r"))
+			  (sign_extend:DI
+			   (match_operand:SI 2 "register_operand" "r")))
+		 (match_dup 0)))]
+  "TARGET_SPARCLET"
+  "smacd %1,%2,%R0"
+  [(set_attr "type" "imul")])
+
+(define_insn "*umacdi"
+  [(set (match_operand:DI 0 "register_operand" "+r")
+	(plus:DI (mult:DI (zero_extend:DI
+			   (match_operand:SI 1 "register_operand" "%r"))
+			  (zero_extend:DI
+			   (match_operand:SI 2 "register_operand" "r")))
+		 (match_dup 0)))]
+  "TARGET_SPARCLET"
+  "umacd %1,%2,%R0"
+  [(set_attr "type" "imul")])
 
 ;;- Boolean instructions
-;; We define DImode `and` so with DImode `not` we can get
-;; DImode `andn`.  Other combinations are possible.
+;; We define DImode `and' so with DImode `not' we can get
+;; DImode `andn'.  Other combinations are possible.
 
 (define_expand "anddi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -5324,7 +5376,7 @@
   [(set (match_operand:SI 0 "register_operand" "=&r")
 	(ffs:SI (match_operand:SI 1 "register_operand" "r")))
    (clobber (match_scratch:SI 2 "=&r"))]
-  "TARGET_SPARCLITE"
+  "TARGET_SPARCLITE || TARGET_SPARCLET"
   "sub %%g0,%1,%0\;and %0,%1,%0\;scan %0,0,%0\;mov 32,%2\;sub %2,%0,%0\;sra %0,31,%2\;and %2,31,%2\;add %2,%0,%0"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
@@ -5425,7 +5477,7 @@
 	(lo_sum:SI (match_dup 0) (match_dup 1)))]
   "")
 
-;; LABEL_REFs are not modified by `legitimize_pic_address`
+;; LABEL_REFs are not modified by `legitimize_pic_address'
 ;; so do not recurse infinitely in the PIC case.
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
