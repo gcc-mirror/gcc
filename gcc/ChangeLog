@@ -1,6 +1,7 @@
 2003-10-17  Segher Boessenkool  <boessen@de.ibm.com>
 	    Hartmut Penner  <hpenner@de.ibm.com>
 
+	PR 10404, partial 11591, partial 11601
 	* config/rs6000/altivec.md ("altivec_dst", "altivec_dstt",
 	"altivec_dstst", "altivec_dststt", "altivec_lvsl", "altivec_lvsr",
 	"altivec_lvebx", "altivec_lvehx", "altivec_lvewx", "altivec_lvxl",
