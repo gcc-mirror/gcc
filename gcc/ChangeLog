@@ -1,5 +1,12 @@
 2000-08-28  Richard Henderson  <rth@cygnus.com>
 
+	* reload.c (push_secondary_reload): Revert 2000-08-16 change.
+	(find_reloads): Likewise.
+	* config/alpha/alpha.md (reload_inqi): Revert 2000-08-11 change.
+	(reload_inhi): Likewise.
+
+2000-08-28  Richard Henderson  <rth@cygnus.com>
+
 	* config/i386/i386.c: Don't error on EXTRA_CONSTRAINT defined.
 	(call_insn_operand): Don't expect a surrounding mem.
 	(constant_call_address_operand): Likewise.
