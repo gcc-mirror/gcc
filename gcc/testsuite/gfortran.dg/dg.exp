@@ -29,23 +29,12 @@ if ![info exists DEFAULT_FFLAGS] then {
 dg-init
 
 # Main loop.
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.f ] ]\
-	$DEFAULT_FFLAGS
+gfortran-dg-runtest [lsort \
+       [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95} ] ] $DEFAULT_FFLAGS
 
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.F ] ]\
-	$DEFAULT_FFLAGS
+gfortran-dg-runtest [lsort \
+       [glob -nocomplain $srcdir/$subdir/g77/*.\[fF\] ] ] $DEFAULT_FFLAGS
 
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.f90 ] ]\
-	$DEFAULT_FFLAGS
-
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.F90 ] ]\
-	$DEFAULT_FFLAGS
-
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/g77/*.f ] ] \
-	$DEFAULT_FFLAGS
-
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/g77/*.F ] ] \
-	$DEFAULT_FFLAGS
 
 # All done.
 dg-finish
