@@ -162,4 +162,6 @@ END {
 echo "running xgettext..." >&2
 $xgettext --default-domain=$package --directory=$srcdir \
 	  --add-comments `cat $kopt` --files-from=$posr \
+	  --copyright-holder="Free Software Foundation, Inc." \
+	  --msgid-bugs-address="http://gcc.gnu.org/bugs.html" \
 	  --language=c -o po/$package.pot
