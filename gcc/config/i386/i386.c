@@ -14810,7 +14810,7 @@ x86_output_mi_thunk (file, thunk, delta, vcall_offset, function)
       if (!flag_pic || (*targetm.binds_local_p) (function))
 	output_asm_insn ("jmp\t%P0", xops);
       else
-#if defined TARGET_MACHO
+#if TARGET_MACHO
 	if (TARGET_MACHO)
 	  {
 	    char *ip = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (function));
