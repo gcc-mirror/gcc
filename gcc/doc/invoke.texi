@@ -280,7 +280,7 @@ in the following sections.
 -freduce-all-givs -fregmove  -frename-registers @gol
 -freorder-blocks -freorder-functions @gol
 -frerun-cse-after-loop  -frerun-loop-opt @gol
--fschedule-insns  -fschedule-insns2 @gol
+-fschedule-insns  -fschedule-insns2 -fsignaling-nans @gol
 -fsingle-precision-constant  -fssa -fssa-ccp -fssa-dce @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer -fthread-jumps  -ftrapv @gol
 -funroll-all-loops  -funroll-loops  @gol
@@ -3407,8 +3407,8 @@ performed when this option is not used.
 
 @item -ffast-math
 @opindex ffast-math
-Sets @option{-fno-math-errno}, @option{-funsafe-math-optimizations}, and @*
-@option{-fno-trapping-math}.
+Sets @option{-fno-math-errno}, @option{-funsafe-math-optimizations}, @*
+@option{-fno-trapping-math} and @option{-fno-signaling-nans}.
 
 This option causes the preprocessor macro @code{__FAST_MATH__} to be defined.
 
@@ -3449,8 +3449,10 @@ The default is @option{-fno-unsafe-math-optimizations}.
 @item -fno-trapping-math
 @opindex fno-trapping-math
 Compile code assuming that floating-point operations cannot generate
-user-visible traps.  Setting this option may allow faster code
-if one relies on ``non-stop'' IEEE arithmetic, for example.
+user-visible traps.  These traps include division by zero, overflow,
+underflow, inexact result and invalid operation.  This option implies
+@option{-fno-signaling-nans}.  Setting this option may allow faster
+code if one relies on ``non-stop'' IEEE arithmetic, for example.
 
 This option should never be turned on by any @option{-O} option since
 it can result in incorrect output for programs which depend on
@@ -3458,6 +3460,21 @@ an exact implementation of IEEE or ISO rules/specifications for
 math functions.
 
 The default is @option{-ftrapping-math}.
+
+@item -fsignaling-nans
+@opindex fsignaling-nans
+Compile code assuming that IEEE signaling NaNs may generate user-visible
+traps during floating-point operations.  Setting this option disables
+optimizations that may change the number of exceptions visible with
+signaling NaNs.  This option implies @option{-ftrapping-math}.
+
+This option causes the preprocessor macro @code{__SUPPORT_SNAN__} to
+be defined.
+
+The default is @option{-fno-signaling-nans}.
+
+This option is experimental and does not currently guarantee to
+disable all GCC optimizations that affect signaling NaN behavior.
 
 @item -fno-zero-initialized-in-bss
 @opindex fno-zero-initialized-in-bss

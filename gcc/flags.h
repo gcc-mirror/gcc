@@ -663,6 +663,9 @@ extern int flag_non_call_exceptions;
 /* Nonzero means put zero initialized data in the bss section.  */
 extern int flag_zero_initialized_in_bss;
 
+/* Nonzero means disable transformations observable by signaling NaNs.  */
+extern int flag_signaling_nans;
+
 /* True if the given mode has a NaN representation and the treatment of
    NaN operands is important.  Certain optimizations, such as folding
    x * 0 into x, are not correct for NaN operands, and are normally
@@ -670,6 +673,9 @@ extern int flag_zero_initialized_in_bss;
    done anyway using the -funsafe-math-optimizations switch.  */
 #define HONOR_NANS(MODE) \
   (MODE_HAS_NANS (MODE) && !flag_unsafe_math_optimizations)
+
+/* Like HONOR_NANs, but true if we honor signaling NaNs (or sNaNs).  */
+#define HONOR_SNANS(MODE) (flag_signaling_nans && HONOR_NANS (MODE))
 
 /* As for HONOR_NANS, but true if the mode can represent infinity and
    the treatment of infinite values is important.  */

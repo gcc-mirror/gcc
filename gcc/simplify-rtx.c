@@ -2063,7 +2063,7 @@ simplify_relational_operation (code, mode, op0, op1)
 
 	case LT:
 	  /* Optimize abs(x) < 0.0.  */
-	  if (trueop1 == CONST0_RTX (mode))
+	  if (trueop1 == CONST0_RTX (mode) && !HONOR_SNANS (mode))
 	    {
 	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
 						       : trueop0;
