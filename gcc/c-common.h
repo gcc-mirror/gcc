@@ -40,6 +40,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    2: STMT_LINENO_FOR_FN_P (in _STMT)
    3: SCOPE_NO_CLEANUPS_P (in SCOPE_STMT)
       COMPOUND_STMT_BODY_BLOCK (in COMPOUND_STMT)
+      STMT_EXPR_WARN_UNUSED_RESULT (in STMT_EXPR)
    4: SCOPE_PARTIAL_P (in SCOPE_STMT)
 */
 
@@ -1053,6 +1054,11 @@ extern void finish_file	(void);
 /* Nonzero if this statement-expression does not have an associated scope.  */
 #define STMT_EXPR_NO_SCOPE(NODE) \
    TREE_LANG_FLAG_0 (STMT_EXPR_CHECK (NODE))
+
+/* Nonzero if this statement-expression should cause warning if its result
+   is not used.  */
+#define STMT_EXPR_WARN_UNUSED_RESULT(NODE) \
+   TREE_LANG_FLAG_3 (STMT_EXPR_CHECK (NODE))
 
 /* LABEL_STMT accessor. This gives access to the label associated with
    the given label statement.  */

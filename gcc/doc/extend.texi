@@ -1980,9 +1980,9 @@ attributes are currently defined for functions on all targets:
 @code{format}, @code{format_arg}, @code{no_instrument_function},
 @code{section}, @code{constructor}, @code{destructor}, @code{used},
 @code{unused}, @code{deprecated}, @code{weak}, @code{malloc},
-@code{alias}, and @code{nonnull}.  Several other attributes are defined
-for functions on particular target systems.  Other attributes, including
-@code{section} are supported for variables declarations
+@code{alias}, @code{warn_unused_result} and @code{nonnull}.  Several other
+attributes are defined for functions on particular target systems.  Other
+attributes, including @code{section} are supported for variables declarations
 (@pxref{Variable Attributes}) and for types (@pxref{Type Attributes}).
 
 You may also specify attributes with @samp{__} preceding and following
@@ -2311,6 +2311,26 @@ results in a warning on line 3 but not line 2.
 
 The @code{deprecated} attribute can also be used for variables and
 types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
+
+@item warn_unused_result
+@cindex @code{warn_unused_result} attribute
+The @code{warn_unused_result} attribute causes a warning to be emitted
+if a caller of the function with this attribute does not use its
+return value.  This is useful for functions where not checking
+the result is either a security problem or always a bug, such as
+@code{realloc}.
+
+@smallexample
+int fn () __attribute__ ((warn_unused_result));
+int foo ()
+@{
+  if (fn () < 0) return -1;
+  fn ();
+  return 0;
+@}
+@end smallexample
+
+results in warning on line 5.
 
 @item weak
 @cindex @code{weak} attribute
