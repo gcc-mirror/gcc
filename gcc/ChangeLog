@@ -1,5 +1,7 @@
 2002-03-23  Alan Modra  <amodra@bigpond.net.au>
 
+	* real.h (N): Special case 128 bit doubles.
+
 	* combine.c (simplify_comparison): When widening modes, ignore
 	sign extension on CONST_INTs.
 
