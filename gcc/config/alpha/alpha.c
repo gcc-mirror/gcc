@@ -2812,21 +2812,29 @@ alpha_emit_conditional_branch (code)
 	    1  true
 	 Convert the compare against the raw return value.  */
 
-      if (code == UNORDERED || code == ORDERED)
-	cmp_code = EQ;
-      else
-	cmp_code = code;
+      switch (code)
+	{
+	case UNORDERED:
+	  cmp_code = EQ;
+	  code = LT;
+	  break;
+	case ORDERED:
+	  cmp_code = EQ;
+	  code = GE;
+	  break;
+	case NE:
+	  cmp_code = NE;
+	  code = NE;
+	  break;
+	default:
+	  cmp_code = code;
+  code = GT;
+	  break;
+	}
 
       op0 = alpha_emit_xfloating_compare (cmp_code, op0, op1);
       op1 = const0_rtx;
       alpha_compare.fp_p = 0;
-
-      if (code == UNORDERED)
-	code = LT;
-      else if (code == ORDERED)
-	code = GE;
-      else
-        code = GT;
     }
 
   /* The general case: fold the comparison code to the types of compares
