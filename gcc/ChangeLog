@@ -1,3 +1,8 @@
+Tue Dec 18 07:09:06 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* config/alpha/xm-vms.h (INCLUDE_DEFAULTS): Add /gnu/include.
+	* config/alpha/vms.h (STACK_CHECK_BUILTIN): #define 0 for VMS.
+
 2001-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/linux.h (PREFERRED_DEBUGGING_TYPE): Remove.

@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 {					\
   { "/gnu_gxx_include", 0, 1, 1 },	\
   { "/gnu_cc_include", 0, 0, 0 },	\
+  { "/gnu/include", 0, 0, 0 },	        \
   { 0, 0, 0, 0 }			\
 }
 
