@@ -313,8 +313,11 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
     loop_n_iterations = 0;
 
   if (loop_dump_stream && loop_n_iterations > 0)
-    fprintf (loop_dump_stream,
-	     "Loop unrolling: %d iterations.\n", loop_n_iterations);
+    {
+      fputs ("Loop unrolling: ", loop_dump_stream);
+      fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, loop_n_iterations);
+      fputs (" iterations.\n", loop_dump_stream);
+    }
 
   /* Find and save a pointer to the last nonnote insn in the loop.  */
 
@@ -1312,9 +1315,13 @@ precondition_loop_p (initial_value, final_value, increment, loop_start,
       *final_value = GEN_INT (loop_n_iterations);
 
       if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Preconditioning: Success, number of iterations known, %d.\n",
-		 loop_n_iterations);
+	{
+	  fputs ("Preconditioning: Success, number of iterations known, ",
+		 loop_dump_stream);
+	  fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC,
+		   loop_n_iterations);
+	  fputs (".\n", loop_dump_stream);
+	}
       return 1;
     }
 

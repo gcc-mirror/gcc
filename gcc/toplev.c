@@ -4410,8 +4410,7 @@ main (argc, argv, envp)
     {
       char *lim = (char *) sbrk (0);
 
-      fprintf (stderr, "Data size %d.\n",
-	       lim - (char *) &environ);
+      fprintf (stderr, "Data size %ld.\n", (long)(lim - (char *) &environ));
       fflush (stderr);
 
 #ifndef __MSDOS__

@@ -21,6 +21,30 @@ Mon Jun 22 08:18:46 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	and use %ld specifier.
 	(adorn_decl): Likewise, twice.
 
+	* reload1.c (reload_cse_regs): Cast first arg of `bzero' to char *.
+
+	* sdbout.c: Include output.h and toplev.h.
+	(PUT_SDB_INT_VAL): Use HOST_WIDE_INT_PRINT_DEV to print argument
+	`a'.  Cast `a' to HOST_WIDE_INT to force it to always be so.
+	(PUT_SDB_SIZE): Likewise.
+
+	* sdbout.h (sdbout_mark_begin_function): Add prototype.
+
+	* stmt.c (check_for_full_enumeration_handling): Cast argument of
+	`warning' to long and use %ld specifier.
+
+	* toplev.c (main): Likewise for `fprintf'.
+
+	* toplev.h (output_file_directive): Add prototype.
+
+	* unroll.c (unroll_loop): Use HOST_WIDE_INT_PRINT_DEC specifier in
+	call to `fprintf'.
+	(precondition_loop_p): Likewise.
+
+	* varasm.c Include sdbout.h.
+	(assemble_static_space): Move sometimes-unused variable `rounded'
+	into the scope in which it is used. 
+
 Sun Jun 21 17:05:34 1998  Dave Love  <d.love@dl.ac.uk>
 
 	* Makefile.in (install-info): Use install-info program if
