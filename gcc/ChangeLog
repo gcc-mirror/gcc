@@ -1,3 +1,9 @@
+2000-12-23  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr.c (out_movqi_r_mr, out_movhi_r_mr, out_movsi_r_mr,
+	out_movsi_mr_r, out_movqi_mr_r, out_movhi_mr_r): Use %o instead of
+	%4 in output templates, do not modify operands passed by the caller.
+
 2000-12-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* builtins.def (BUILT_IN_LABS, BUILT_IN_LLABS, BUILT_IN_IMAXABS):
