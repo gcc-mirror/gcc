@@ -1,3 +1,24 @@
+Fri Oct 22 23:46:50 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* genoutput.c (struct operand_data): New elt eliminable.
+	(output_operand_data): Write it.
+	(scan_operands): Set it for MATCH_OPERAND, clear for other matchers.
+	(compare_operands): Take it into account.
+	* recog.h (struct insn_operand_data): New elt eliminable.
+	* reload1.c (check_eliminable_occurrences, elimination_effects): New
+	functions.
+	(old_asm_operands_vec, new_asm_operands_vec): Delete.
+	(eliminate_regs): Move code that detects changes to elimination
+	target regs into new function elimination_effects.
+	Delete one #if 0 block.
+	Abort for USE, CLOBBER, ASM_OPERANDS and SET. 
+	(eliminate_regs_in_insn): Return immediately for USEs, CLOBBERs,
+	ADDR_VECs, ADDR_DIFF_VECs and ASM_INPUTs.
+	Only call eliminate_regs for real operands of the insn, not for parts
+	of its structure or parts matched by things like match_operator.
+	Use elimination_effects and check_eliminable_occurrences.  Use
+	copy_insn to duplicate the pattern when not in the final pass.
+
 Fri Oct 22 09:03:44 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* i386.md: Add missing `y' modifiers to uses of fst, fstp, fld,

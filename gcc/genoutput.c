@@ -65,6 +65,10 @@ Boston, MA 02111-1307, USA.  */
 
      e. `strict_low', is nonzero for operands contained in a STRICT_LOW_PART.
 
+     f. `eliminable', is nonzero for operands that are matched normally by
+     MATCH_OPERAND; it is zero for operands that should not be changed during
+     register elimination such as MATCH_OPERATORs.
+
   The code number of an insn is simply its position in the machine
   description; code numbers are assigned sequentially to entries in
   the description, starting with code number 0.
@@ -128,6 +132,7 @@ struct operand_data
   unsigned char n_alternatives;
   char address_p;
   char strict_low;
+  char eliminable;
   char seen;
 };
 
@@ -287,7 +292,9 @@ output_operand_data ()
 
       printf ("    %smode,\n", GET_MODE_NAME (d->mode));
 
-      printf ("    %d\n", d->strict_low);
+      printf ("    %d,\n", d->strict_low);
+
+      printf ("    %d\n", d->eliminable);
 
       printf("  },\n");
     }
@@ -436,6 +443,7 @@ scan_operands (d, part, this_address_p, this_strict_low)
 	d->operand[opno].n_alternatives
 	  = n_occurrences (',', XSTR (part, 2)) + 1;
       d->operand[opno].address_p = this_address_p;
+      d->operand[opno].eliminable = 1;
       return;
 
     case MATCH_SCRATCH:
@@ -460,6 +468,7 @@ scan_operands (d, part, this_address_p, this_strict_low)
 	d->operand[opno].n_alternatives
 	  = n_occurrences (',', XSTR (part, 1)) + 1;
       d->operand[opno].address_p = 0;
+      d->operand[opno].eliminable = 0;
       return;
 
     case MATCH_OPERATOR:
@@ -482,6 +491,7 @@ scan_operands (d, part, this_address_p, this_strict_low)
       d->operand[opno].predicate = XSTR (part, 1);
       d->operand[opno].constraint = 0;
       d->operand[opno].address_p = 0;
+      d->operand[opno].eliminable = 0;
       for (i = 0; i < XVECLEN (part, 2); i++)
 	scan_operands (d, XVECEXP (part, 2, i), 0, 0);
       return;
@@ -551,6 +561,9 @@ compare_operands (d0, d1)
     return 0;
 
   if (d0->strict_low != d1->strict_low)
+    return 0;
+
+  if (d0->eliminable != d1->eliminable)
     return 0;
 
   return 1;
