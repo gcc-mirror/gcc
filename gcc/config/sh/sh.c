@@ -3959,6 +3959,8 @@ calc_live_regs (count_ptr, live_regs_mask2)
   int live_regs_mask = 0;
   int count;
   int interrupt_handler;
+  rtx pr_initial;
+  int pr_live;
 
   if ((lookup_attribute
        ("interrupt_handler",
@@ -3979,14 +3981,20 @@ calc_live_regs (count_ptr, live_regs_mask2)
 	  target_flags &= ~FPU_SINGLE_BIT;
 	  break;
 	}
+  pr_initial = has_hard_reg_initial_val (Pmode, PR_REG);
+  pr_live = (pr_initial
+	     ? REGNO (pr_initial) != PR_REG
+	     : regs_ever_live[PR_REG]);
   for (count = 0, reg = FIRST_PSEUDO_REGISTER - 1; reg >= 0; reg--)
     {
-      if ((interrupt_handler && ! pragma_trapa)
+      if (reg == PR_REG
+	  ? pr_live
+	  : (interrupt_handler && ! pragma_trapa)
 	  ? (/* Need to save all the regs ever live.  */
 	     (regs_ever_live[reg]
 	      || (call_used_regs[reg]
 		  && (! fixed_regs[reg] || reg == MACH_REG || reg == MACL_REG)
-		  && regs_ever_live[PR_REG]))
+		  && pr_live))
 	     && reg != STACK_POINTER_REGNUM && reg != ARG_POINTER_REGNUM
 	     && reg != RETURN_ADDRESS_POINTER_REGNUM
 	     && reg != T_REG && reg != GBR_REG && reg != FPSCR_REG)
@@ -4598,7 +4606,7 @@ initial_elimination_offset (from, to)
 
   if (from == RETURN_ADDRESS_POINTER_REGNUM
       && (to == FRAME_POINTER_REGNUM || to == STACK_POINTER_REGNUM))
-    return UNITS_PER_WORD + total_auto_space;
+    return total_auto_space;
 
   abort ();
 }
@@ -5637,4 +5645,14 @@ sh_adjust_cost (insn, link, dep_insn, cost)
     cost = 20;
 
   return cost;
+}
+
+/* For use by ALLOCATE_INITIAL_VALUE.  Note that sh.md contains some
+   'special function' patterns (type sfunc) that clobber pr, but that
+   do not look like function calls to leaf_function_p.  Hence we must
+   do this extra check.  */
+int
+sh_pr_n_sets ()
+{
+  return REG_N_SETS (PR_REG);
 }

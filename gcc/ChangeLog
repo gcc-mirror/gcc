@@ -1,3 +1,15 @@
+Fri Sep 21 01:49:41 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* sh-protos.h (sh_pr_n_sets): Declare.
+	* sh.c (calc_live_regs): If the initial value for PR has been copied,
+	look at the copy to determine if PR needs to be saved.
+	sh_pr_n_sets: New function.
+	* sh.h (RETURN_ADDR_RTX): Use get_hard_reg_initial_val.
+	(ALLOCATE_INITIAL_VALUE): Define.
+
+	* sh.c (initial_elimination_offset):
+	Fix RETURN_ADDRESS_POINTER_REGNUM case.
+
 Fri Sep 21 01:13:56 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* integrate.c (allocate_initial_values): New function.
