@@ -1,3 +1,7 @@
+2005-02-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/include/gcc-common.texi (version-GCC): Update to 4.1.
+
 2005-02-25  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/19930
