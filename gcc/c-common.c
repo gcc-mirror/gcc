@@ -211,15 +211,7 @@ decl_attributes (decl, attributes, prefix_attributes)
   tree a, name, args, type;
 
   type = TREE_TYPE (decl);
-
-  for (a = prefix_attributes; a; a = TREE_CHAIN (a))
-    if (!(name = TREE_VALUE (a)))
-      continue;
-    else if (valid_machine_attribute (name, decl, type))
-      ;
-    else
-      warning ("`%s' attribute directive ignored",
-	       IDENTIFIER_POINTER (name));
+  attributes = chainon (prefix_attributes, attributes);
 
   for (a = attributes; a; a = TREE_CHAIN (a))
     if (!(name = TREE_VALUE (a)))
