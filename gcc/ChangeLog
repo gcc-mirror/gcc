@@ -1,3 +1,14 @@
+2001-10-10  Hartmut Schirmer <SchirmerH@Innovative-Systems.de>
+
+	* config/float-i128.h: Make sure __STDC__VERSION__ is defined
+	before using it.
+	* config/float/i32.h: Likewise.
+	* config/float-i386.h: Likewise.
+	* config/float-i64.h: Likewise.
+	* config/float-m68k.h: Likewise.
+	* config/float-sh.h: Likewise.
+	* config/float-sparc.h: Likewise.
+
 2001-10-11  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/contrib.texi: Add note about CRIS port to my entry.

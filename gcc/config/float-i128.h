@@ -93,7 +93,7 @@
 #undef LDBL_MAX_10_EXP
 #define LDBL_MAX_10_EXP 4932
 
-#if __STDC_VERSION__ >= 199901L
+#if  defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
    /* The floating-point expression evaluation method.
         -1  indeterminate
          0  evaluate all operations and constants just to the range and
