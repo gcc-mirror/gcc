@@ -1065,6 +1065,10 @@ struct tree_vec GTY(())
 #define TARGET_EXPR_INITIAL(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 1)
 #define TARGET_EXPR_CLEANUP(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 2)
 
+/* DECL_EXPR accessor. This gives access to the DECL associated with
+   the given declaration statement.  */
+#define DECL_EXPR_DECL(NODE)    TREE_OPERAND (DECL_EXPR_CHECK (NODE), 0)
+
 #define EXIT_EXPR_COND(NODE)	     TREE_OPERAND (EXIT_EXPR_CHECK (NODE), 0)
 
 /* SWITCH_EXPR accessors. These give access to the condition, body and

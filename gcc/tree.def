@@ -805,6 +805,9 @@ DEFTREECODE (TRY_FINALLY_EXPR, "try_finally", 's', 2)
 /* These types of expressions have no useful value,
    and always have side effects.  */
 
+/* Used to represent a local declaration. The operand is DECL_EXPR_DECL.  */
+DEFTREECODE (DECL_EXPR, "decl_expr", 's', 1)
+
 /* A label definition, encapsulated as a statement.
    Operand 0 is the LABEL_DECL node for the label that appears here.
    The type should be void and the value should be ignored.  */

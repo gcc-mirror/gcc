@@ -1446,7 +1446,7 @@ pp_cxx_template_argument_list (cxx_pretty_printer *pp, tree t)
 static void
 pp_cxx_exception_declaration (cxx_pretty_printer *pp, tree t)
 {
-  t = DECL_STMT_DECL (t);
+  t = DECL_EXPR_DECL (t);
   pp_cxx_type_specifier_seq (pp, t);
   if (TYPE_P (t))
     pp_cxx_abstract_declarator (pp, t);

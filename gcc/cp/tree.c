@@ -1962,14 +1962,11 @@ cp_build_type_attribute_variant (tree type, tree attributes)
 }
 
 /* Apply FUNC to all language-specific sub-trees of TP in a pre-order
-   traversal.  Called from walk_tree().  */
+   traversal.  Called from walk_tree.  */
 
 tree 
-cp_walk_subtrees (tree* tp, 
-                  int* walk_subtrees_p, 
-                  walk_tree_fn func, 
-                  void* data, 
-                  void* htab)
+cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
+		  void *data, void *htab)
 {
   enum tree_code code = TREE_CODE (*tp);
   location_t save_locus;
@@ -2030,7 +2027,7 @@ cp_walk_subtrees (tree* tp,
 
     default:
       input_location = save_locus;
-      return c_walk_subtrees (tp, walk_subtrees_p, func, data, htab);
+      return NULL_TREE;
     }
 
   /* We didn't find what we were looking for.  */
@@ -2201,7 +2198,7 @@ init_tree (void)
   list_hash_table = htab_create_ggc (31, list_hash, list_hash_eq, NULL);
 }
 
-/* Called via walk_tree.  If *TP points to a DECL_STMT for a local
+/* Called via walk_tree.  If *TP points to a DECL_EXPR for a local
    declaration, copies the declaration and enters it in the splay_tree
    pointed to by DATA (which is really a `splay_tree *').  */
 
@@ -2215,9 +2212,9 @@ mark_local_for_remap_r (tree* tp,
   tree decl;
 
   
-  if (TREE_CODE (t) == DECL_STMT
-      && nonstatic_local_decl_p (DECL_STMT_DECL (t)))
-    decl = DECL_STMT_DECL (t);
+  if (TREE_CODE (t) == DECL_EXPR
+      && nonstatic_local_decl_p (DECL_EXPR_DECL (t)))
+    decl = DECL_EXPR_DECL (t);
   else if (TREE_CODE (t) == LABEL_EXPR)
     decl = LABEL_EXPR_LABEL (t);
   else if (TREE_CODE (t) == TARGET_EXPR

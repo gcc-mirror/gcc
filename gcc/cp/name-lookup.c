@@ -2269,7 +2269,7 @@ do_local_using_decl (tree decl, tree scope, tree name)
 
   if (building_stmt_tree ()
       && at_function_scope_p ())
-    add_decl_stmt (decl);
+    add_decl_expr (decl);
 
   oldval = lookup_name_current_level (name);
   oldtype = lookup_type_current_level (name);

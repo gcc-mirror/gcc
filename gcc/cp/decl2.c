@@ -1227,7 +1227,7 @@ finish_anon_union (tree anon_union_decl)
   pushdecl (anon_union_decl);
   if (building_stmt_tree ()
       && at_function_scope_p ())
-    add_decl_stmt (anon_union_decl);
+    add_decl_expr (anon_union_decl);
   else if (!processing_template_decl)
     rest_of_decl_compilation (anon_union_decl, NULL,
 			      toplevel_bindings_p (), at_eof);

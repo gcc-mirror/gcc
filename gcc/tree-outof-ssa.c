@@ -1763,7 +1763,7 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
 
   if (TYPE_P (t) || DECL_P (t))
     *walk_subtrees = 0;
-  if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
+  else if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
     {
       while (((TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	      && is_gimple_min_invariant (TREE_OPERAND (t, 1))

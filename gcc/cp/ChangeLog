@@ -1,3 +1,11 @@
+2004-06-26  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* call.c, cp-tree.h, cxx-pretty-print.c, decl.c, decl2.c:
+	Rename DECL_STMT to DECL_EXPR.
+	* init.c, name-lookup.c, parser.c, pt.c, semantics.c: Likewise.
+	* cp-lang.c (LANG_HOOKS_SAFE_FROM_P): Deleted.
+	* tree.c (cp_walk_subtrees): Don't call c_walk_subtrees.
+
 2004-06-26  Jan Hubicka  <jh@suse.cz>
 
 	PR C++/14865

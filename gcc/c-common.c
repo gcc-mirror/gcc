@@ -3718,28 +3718,6 @@ c_expand_expr (tree exp, rtx target, enum machine_mode tmode,
     }
 }
 
-/* Hook used by safe_from_p to handle language-specific tree codes.  */
-
-int
-c_safe_from_p (rtx target, tree exp)
-{
-  /* We can see statements here when processing the body of a
-     statement-expression.  For a declaration statement declaring a
-     variable, look at the variable's initializer.  */
-  if (TREE_CODE (exp) == DECL_STMT)
-    {
-      tree decl = DECL_STMT_DECL (exp);
-
-      if (TREE_CODE (decl) == VAR_DECL
-	  && DECL_INITIAL (decl)
-	  && !safe_from_p (target, DECL_INITIAL (decl), /*top_p=*/0))
-	return 0;
-    }
-
-  /* Assume everything else is safe.  */
-  return 1;
-}
-
 /* Hook used by unsafe_for_reeval to handle language-specific tree codes.  */
 
 int
@@ -5123,53 +5101,6 @@ check_function_arguments_recurse (void (*callback)
     }
 
   (*callback) (ctx, param, param_num);
-}
-
-/* C implementation of lang_hooks.tree_inlining.walk_subtrees.  Tracks the
-   locus from EXPR_LOCUS and handles DECL_STMT specially.  */
-
-tree 
-c_walk_subtrees (tree *tp, int *walk_subtrees_p ATTRIBUTE_UNUSED,
-		 walk_tree_fn func, void *data, void *htab)
-{
-  enum tree_code code = TREE_CODE (*tp);
-  location_t save_locus;
-  tree result;
-
-#define WALK_SUBTREE(NODE)				\
-  do							\
-    {							\
-      result = walk_tree (&(NODE), func, data, htab);	\
-      if (result) goto out;				\
-    }							\
-  while (0)
-
-  if (code != DECL_STMT)
-    return NULL_TREE;
-
-  /* Set input_location here so we get the right instantiation context
-     if we call instantiate_decl from inlinable_function_p.  */
-  save_locus = input_location;
-  if (EXPR_LOCUS (*tp))
-    input_location = *EXPR_LOCUS (*tp);
-
-  /* Walk the DECL_INITIAL and DECL_SIZE.  We don't want to walk
-     into declarations that are just mentioned, rather than
-     declared; they don't really belong to this part of the tree.
-     And, we can see cycles: the initializer for a declaration can
-     refer to the declaration itself.  */
-  WALK_SUBTREE (DECL_INITIAL (DECL_STMT_DECL (*tp)));
-  WALK_SUBTREE (DECL_SIZE (DECL_STMT_DECL (*tp)));
-  WALK_SUBTREE (DECL_SIZE_UNIT (DECL_STMT_DECL (*tp)));
-  WALK_SUBTREE (TREE_CHAIN (*tp));
-  *walk_subtrees_p = 0;
-
-  /* We didn't find what we were looking for.  */
- out:
-  input_location = save_locus;
-  return result;
-
-#undef WALK_SUBTREE
 }
 
 /* Function to help qsort sort FIELD_DECLs by name order.  */

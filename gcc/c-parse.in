@@ -1537,7 +1537,7 @@ nested_function:
 		  add_stmt ($6);
 		  finish_function ();
 		  pop_function_context ();
-		  add_stmt (build_stmt (DECL_STMT, decl)); }
+		  add_stmt (build_stmt (DECL_EXPR, decl)); }
 	;
 
 notype_nested_function:
@@ -1567,7 +1567,7 @@ notype_nested_function:
 		  add_stmt ($6);
 		  finish_function ();
 		  pop_function_context ();
-		  add_stmt (build_stmt (DECL_STMT, decl)); }
+		  add_stmt (build_stmt (DECL_EXPR, decl)); }
 	;
 
 /* Any kind of declarator (thus, all declarators allowed
@@ -2016,7 +2016,7 @@ label_decl:
 		    {
 		      tree label = declare_label (TREE_VALUE (link));
 		      C_DECLARED_LABEL_FLAG (label) = 1;
-		      add_stmt (build_stmt (DECL_STMT, label));
+		      add_stmt (build_stmt (DECL_EXPR, label));
 		    }
 		}
 	;

@@ -6468,7 +6468,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	  init = build (INIT_EXPR, type, var, expr);
 	  if (at_function_scope_p ())
 	    {
-	      add_decl_stmt (var);
+	      add_decl_expr (var);
 	      *cleanup = cxx_maybe_build_cleanup (var);
 
 	      /* We must be careful to destroy the temporary only
