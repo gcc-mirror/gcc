@@ -6230,7 +6230,7 @@ check_return_expr (tree retval)
     /* Remember that this function did return a value.  */
     current_function_returns_value = 1;
 
-  /* Check for errnoneous operands -- but after giving ourselves a
+  /* Check for erroneous operands -- but after giving ourselves a
      chance to provide an error about returning a value from a void
      function.  */
   if (error_operand_p (retval))

@@ -1,3 +1,7 @@
+2004-11-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* typeck.c: Fix a comment typo.
+
 2004-11-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18445
