@@ -1,5 +1,13 @@
 2004-04-04  Richard Sandiford  <rsandifo@redhat.com>
 
+	* Makefile.in (tree-ssa-loop-ivopts.o): Depend on langhooks.h.
+	* tree-ssa-loop-ivopts.c: Include langhooks.h.
+	(add_standard_iv_candidates_for_size): New function, extracting code
+	from add_standard_iv_candidates and parameterizing it by type size.
+	(add_standard_iv_candidates): Use add_standard_iv_candidates_for_size.
+
+2004-04-04  Richard Sandiford  <rsandifo@redhat.com>
+
 	* system.h (GCOV_SIZE_TYPE): Unposion.
 	* gcov-io.h (GCOV_TYPE_NODE): Delete, replacing with...
 	(GCOV_TYPE_SIZE): ...this new macro.
