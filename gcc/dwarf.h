@@ -1,7 +1,7 @@
 /* Declarations and definitions of codes relating to the DWARF symbolic
    debugging information format.
 
-   Written by Ron Guilmette (rfg@ncd.com)
+   Written by Ron Guilmette (rfg@netcom.com)
 
 Copyright (C) 1992 Free Software Foundation, Inc.
 
