@@ -69,10 +69,6 @@ definitions and other extensions.  */
 #include "debug.h"
 #include "tree-inline.h"
 
-#ifndef DIR_SEPARATOR
-#define DIR_SEPARATOR '/'
-#endif
-
 /* Local function prototypes */
 static char *java_accstring_lookup PARAMS ((int));
 static void  classitf_redefinition_error PARAMS ((const char *,tree, tree, tree));
@@ -3449,12 +3445,11 @@ check_class_interface_creation (is_interface, flags, raw_name, qualified_name, d
     {
       const char *f;
 
-      /* Contains OS dependent assumption on path separator. FIXME */
       for (f = &input_filename [strlen (input_filename)];
-	   f != input_filename && f[0] != '/' && f[0] != DIR_SEPARATOR;
+	   f != input_filename && ! IS_DIR_SEPARATOR (f[0]);
 	   f--)
 	;
-      if (f[0] == '/' || f[0] == DIR_SEPARATOR)
+      if (IS_DIR_SEPARATOR (f[0]))
 	f++;
       if (strncmp (IDENTIFIER_POINTER (raw_name),
 		   f , IDENTIFIER_LENGTH (raw_name)) ||
@@ -12916,7 +12911,7 @@ try_builtin_assignconv (wfl_op1, lhs_type, rhs)
 
   /* Try a narrowing primitive conversion (5.1.3):
        - expression is a constant expression of type byte, short, char,
-         or int, AND
+         or int, AND
        - variable is byte, short or char AND
        - The value of the expression is representable in the type of the
          variable */
