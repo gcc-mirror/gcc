@@ -736,8 +736,7 @@ lang_init ()
 
   objc_ellipsis_node = make_node (ERROR_MARK);
 
-  if (doing_objc_thang)
-    init_objc ();
+  init_objc ();
 
   if (print_struct_values)
     generate_struct_by_value_array ();
@@ -755,8 +754,7 @@ objc_fatal ()
 void
 finish_file ()
 {
-  if (doing_objc_thang)
-    finish_objc ();		/* Objective-C finalization */
+  finish_objc ();		/* Objective-C finalization */
 
   if (gen_declaration_file)
     fclose (gen_declaration_file);
@@ -851,9 +849,7 @@ maybe_objc_comptypes (lhs, rhs, reflexive)
      tree lhs, rhs;
      int reflexive;
 {
-  if (doing_objc_thang)
-    return objc_comptypes (lhs, rhs, reflexive);
-  return -1;
+  return objc_comptypes (lhs, rhs, reflexive);
 }
 
 static tree
@@ -1095,8 +1091,7 @@ void
 maybe_objc_check_decl (decl)
      tree decl;
 {
-  if (doing_objc_thang)
-    objc_check_decl (decl);
+  objc_check_decl (decl);
 }
 
 /* Implement static typing.  At this point, we know we have an interface.  */
@@ -1414,9 +1409,6 @@ build_objc_string_object (strings)
 {
   tree string, initlist, constructor;
   int length;
-
-  if (!doing_objc_thang)
-    objc_fatal ();
 
   if (lookup_interface (constant_string_id) == NULL_TREE)
     {
@@ -2452,9 +2444,6 @@ objc_declare_alias (alias_ident, class_ident)
      tree alias_ident;
      tree class_ident;
 {
-  if (!doing_objc_thang)
-    objc_fatal ();
-
   if (is_class_name (class_ident) != class_ident)
     warning ("Cannot find class `%s'", IDENTIFIER_POINTER (class_ident));
   else if (is_class_name (alias_ident))
@@ -2468,9 +2457,6 @@ objc_declare_class (ident_list)
      tree ident_list;
 {
   tree list;
-
-  if (!doing_objc_thang)
-    objc_fatal ();
 
   for (list = ident_list; list; list = TREE_CHAIN (list))
     {
@@ -4942,9 +4928,6 @@ build_message_expr (mess)
   /* 1 if this is sending to the superclass.  */
   int super;
 
-  if (!doing_objc_thang)
-    objc_fatal ();
-
   if (TREE_CODE (receiver) == ERROR_MARK)
     return error_mark_node;
 
@@ -5355,12 +5338,7 @@ build_protocol_expr (protoname)
      tree protoname;
 {
   tree expr;
-  tree p;
-
-  if (!doing_objc_thang)
-    objc_fatal ();
-
-  p = lookup_protocol (protoname);
+  tree p = lookup_protocol (protoname);
 
   if (!p)
     {
@@ -5385,9 +5363,6 @@ build_selector_expr (selnamelist)
 {
   tree selname;
 
-  if (!doing_objc_thang)
-    objc_fatal ();
-
   /* Obtain the full selector name.  */
   if (TREE_CODE (selnamelist) == IDENTIFIER_NODE)
     /* A unary selector.  */
@@ -5409,9 +5384,6 @@ build_encode_expr (type)
 {
   tree result;
   const char *string;
-
-  if (!doing_objc_thang)
-    objc_fatal ();
 
   encode_type (type, obstack_object_size (&util_obstack),
 	       OBJC_ENCODE_INLINE_DEFS);
@@ -5935,9 +5907,6 @@ tree
 get_class_ivars (interface)
      tree interface;
 {
-  if (!doing_objc_thang)
-    objc_fatal ();
-
   return build_ivar_chain (interface, 1);
 }
 
@@ -6137,9 +6106,6 @@ start_class (code, class_name, super_name, protocol_list)
      tree protocol_list;
 {
   tree class, decl;
-
-  if (!doing_objc_thang)
-    objc_fatal ();
 
   class = make_node (code);
   TYPE_BINFO (class) = make_tree_vec (5);
@@ -6449,9 +6415,6 @@ start_protocol (code, name, list)
      tree list;
 {
   tree protocol;
-
-  if (!doing_objc_thang)
-    objc_fatal ();
 
   /* This is as good a place as any.  Need to invoke push_tag_toplevel.  */
   if (!objc_protocol_template)

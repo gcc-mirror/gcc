@@ -1,3 +1,12 @@
+2000-11-30  Neil Booth  <neilb@earthling.net>
+
+        * objc/objc-act.c (lang_init, finish_file, maybe_objc_comptypes,
+        maybe_objc_check_decl, build_objc_string_object,
+        objc_declare_alias, objc_declare_class, build_message_expr,
+        build_protocol_expr, build_selector_expr, build_encode_expr,
+        get_class_ivars, start_class, start_protocol): Remove
+        redundant code, assuming doing_objc_thang is true.
+
 2000-11-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (restore_unscaled_index_insn_codes): Delete procedure.
