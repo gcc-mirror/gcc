@@ -1679,7 +1679,7 @@ int *regno_last_note_uid;
 static int highest_regno_in_uid_map;
 
 /* Maximum number of parallel sets and clobbers in any insn in this fn.
-   Always at least 3, since the combiner could put that many togetherm
+   Always at least 3, since the combiner could put that many together
    and we want this to remain correct for all the remaining passes.  */
 
 int max_parallel;
