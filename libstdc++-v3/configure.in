@@ -38,7 +38,6 @@ GLIBCPP_ENABLE_LONG_LONG(yes)
 GLIBCPP_ENABLE_SHADOW(no)
 GLIBCPP_ENABLE_THREADS
 GLIBCPP_ENABLE_ATOMICITY
-#GLIBCPP_ENABLE_RELIBGCC([../..])
 GLIBCPP_ENABLE_CXX_FLAGS([none])
 
 
@@ -245,16 +244,10 @@ if test ! -f stamp-limits; then
   touch stamp-limits
 fi
 
+
 # Sanity checking & User-visible messages.
 # Checks down here, otherwise they get scrolled off before
 # the user will notice.
-if test "$enable_libgcc_rebuild" = "no"; then
-  AC_MSG_WARN([libgcc.a will not match mangled symbols unless it is rebuilt])
-else
-  # Other things besides namespaces can make this true as well, but none
-  # of them are done automatically... yet
-  AC_MSG_WARN([no point in rebuilding libgcc.a if namespaces aren't used])
-fi
 
 # Trying to get more people to read documentation.  Possibly remove
 # check and warn all the time. There is no "informational" AC_MSG_

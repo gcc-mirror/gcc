@@ -1,3 +1,19 @@
+2000-10-17  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	via Alexandre Oliva  <aoliva@redhat.com>
+	* libsupc++/Makefile.am: Add --tag CXX, --tag CC, comments.
+	* libsupc++/Makefile.in: Regenerate.
+	* src/Makefile.am: Duplicate code.
+	* src/Makefile.in: Regenerate.
+	
+	* acinclude.m4 (GLIBCPP_ENABLE_RELIBGCC): Take this out.
+	* aclocal.m4: Regenerate.
+	* configure.in: And here.
+	* configure: Regenerate.
+
+	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES): Disable
+	test for SECTION_LDFLAGS.
+
 2000-10-16  Benjamin Kosnik  <bkoz@gnu.org>
 
 	Shadow headers would work if libsupc++ was strict about namespaces.
