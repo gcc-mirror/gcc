@@ -1,3 +1,38 @@
+2003-02-18  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/channels/FileChannel.java
+	(toString): New implementation, added documentation.
+	(map): Added exception documentation.
+	(size): Added exception documentation.
+	(write): New methods, documentation work.
+	(read): New methods, documentation work.
+	(implCloseChannel): Rewrote exception documentation.
+	(force): Throws IOException, added documentation.
+	(lock): New methods.
+	(tryLock): New methods.
+	(position): New methods.
+	(transferTo): New method.
+	(transferFrom): New method.
+	(truncate): New method.
+	* java/nio/channels/spi/SelectorProvider.java
+	(provider): Implemented.
+	* Makefile.am
+	(ordinary_java_source_files): Added the following files:
+	gnu/java/nio/DatagramChannelImpl.java
+	gnu/java/nio/FileChannelImpl.java
+	gnu/java/nio/PipeImpl.java
+	gnu/java/nio/SelectionKeyImpl.java
+	gnu/java/nio/SelectorImpl.java
+	gnu/java/nio/SelectorProviderImpl.java
+	gnu/java/nio/ServerSocketChannelImpl.java
+	gnu/java/nio/SocketChannelImpl.java
+	java/nio/channels/FileLock.java
+	(nat_java_source_files): Added the following files:
+	gnu/java/nio/natFileChannelImpl.cc
+	gnu/java/nio/natSelectorImpl.cc
+	gnu/java/nio/natSocketChannelImpl.cc
+	* Makefile.in: Regenerated.
+
 2003-02-17  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/image/ColorModel.java: Re-merged with Classpath.

@@ -65,9 +65,17 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
       m = a;
     }
 
+    /**
+     * Returns a string representation of the <code>MapMode</code> object.
+     */
     public String toString() 
     {
-      return "" + m;
+      if (this == READ_ONLY)
+        return "READ_ONLY";
+      else if (this == READ_WRITE)
+        return "READ_WRITE";
+
+      return "PRIVATE";
     }
   }
 
@@ -81,20 +89,28 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
   /**
    * Maps the file into the memory.
    *
-   * @exception IOException If an error occurs.
+   * @exception IllegalArgumentException If the preconditions on the parameters
+   * do not hold.
+   * @exception IOException If an I/O error occurs.
+   * @exception NonReadableChannelException If mode is READ_ONLY but this channel was
+   * not opened for reading.
+   * @exception NonWritableChannelException If mode is READ_WRITE or PRIVATE but this
+   * channel was not opened for writing.
    */
   public abstract MappedByteBuffer map(MapMode mode, long position, long size)
     throws IOException;
 
   /**
    * Return the size of the file thus far
+   * 
+   * @exception ClosedChannelException If this channel is closed.
    */
   public abstract long size() throws IOException;
   
   /**
    * Writes data to the channel.
    *
-   * @exception IOException If an error occurs.
+   * @exception IOException If an I/O error occurs.
    */
   public long write (ByteBuffer[] srcs) throws IOException
   {
@@ -110,26 +126,243 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
   
   /**
    * Writes data to the channel.
+   *
+   * @exception IOException If an I/O error occurs.
+   */
+  public abstract int write (ByteBuffer src) throws IOException;
+
+  /**
+   * Writes data to the channel.
+   *
+   * @exception AsynchronousCloseException If another thread closes this channel
+   * while the transfer is in progress.
+   * @exception ClosedByInterruptException If another thread interrupts the
+   * current thread while the transfer is in progress, thereby closing both
+   * channels and setting the current thread's interrupt status.
+   * @exception ClosedChannelException If this channel is closed.
+   * @exception IllegalArgumentException If position is negative.
+   * @exception IOException If an I/O error occurs.
+   * @exception NonWritableChannelException If this channel was not opened for
+   * writing.
+   */
+  public abstract int write (ByteBuffer srcs, long position) throws IOException;
+
+  /**
+   * Writes data to the channel.
+   *
+   * @exception IOException If an I/O error occurs.
    */
   public abstract long write(ByteBuffer[] srcs, int offset, int length)
     throws IOException;
   
   /**
    * Reads data from the channel.
+   *
+   * @exception IOException If an I/O error occurs.
+   */
+  public abstract long read (ByteBuffer[] dsts, int offset, int length)
+    throws IOException;
+
+  /**
+   * Reads data from the channel.
+   *
+   * @exception IOException If an I/O error occurs.
+   */
+  public final long read (ByteBuffer[] dsts) throws IOException
+  {
+    long result = 0;
+    
+    for (int i = 0; i < dsts.length; i++)
+      {
+        read (dsts [i]);
+      }
+
+    return result;
+  }
+
+  /**
+   * Reads data from the channel.
+   *
+   * @exception IOException If an I/O error occurs.
    */
   public abstract int read(ByteBuffer dst) throws IOException;
+  
+  /**
+   * Reads data from the channel.
+   *
+   * @exception AsynchronousCloseException If another thread closes this channel
+   * while the transfer is in progress.
+   * @exception ClosedByInterruptException If another thread interrupts the
+   * current thread while the transfer is in progress, thereby closing both
+   * channels and setting the current thread's interrupt status.
+   * @exception ClosedChannelException If this channel is closed.
+   * @exception IllegalArgumentException If position is negative.
+   * @exception IOException If an I/O error occurs.
+   * @exception NonReadableChannelException If this channel was not opened for
+   * reading.
+   */
+  public abstract int read(ByteBuffer dst, long position) throws IOException;
   
   /**
    * Closes the channel.
    *
    * This is called from @see close.
    *
-   * @exception IOException If an error occurs.
+   * @exception IOException If an I/O error occurs.
    */
   protected abstract void implCloseChannel() throws IOException;
 
   /**
    * msync with the disk
+   *
+   * @exception ClosedChannelException If this channel is closed.
+   * @exception IOException If an I/O error occurs.
    */
-  public abstract void force(boolean metaData);    
+  public abstract void force(boolean metaData) throws IOException;
+
+  /**
+   * Creates a file lock for the whole assoziated file.
+   *
+   * @exception AsynchronousCloseException If another thread closes this channel
+   * while the transfer is in progress.
+   * @exception ClosedChannelException If this channel is closed.
+   * @exception FileLockInterruptionException If the invoking thread is
+   * interrupted while blocked in this method.
+   * @exception IOException If an I/O error occurs.
+   * @exception NonReadableChannelException If shared is true and this channel
+   * was not opened for reading.
+   * @exception NonWritableChannelException If shared is false and this channel
+   * was not opened for writing.
+   * @exception OverlappingFileLockException If a lock that overlaps the
+   * requested region is already held by this Java virtual machine, or if
+   * another thread is already blocked in this method and is attempting to lock
+   * an overlapping region.
+   */
+  public final FileLock lock () throws IOException
+  {
+    return lock (0, Long.MAX_VALUE, false);
+  }
+
+  /**
+   * Creates a file lock for a region of the assoziated file.
+   *
+   * @exception AsynchronousCloseException If another thread closes this channel
+   * while the transfer is in progress.
+   * @exception ClosedChannelException If this channel is closed.
+   * @exception FileLockInterruptionException If the invoking thread is
+   * interrupted while blocked in this method.
+   * @exception IllegalArgumentException If the preconditions on the parameters
+   * do not hold.
+   * @exception IOException If an I/O error occurs.
+   * @exception OverlappingFileLockException If a lock that overlaps the
+   * requested region is already held by this Java virtual machine, or if
+   * another thread is already blocked in this method and is attempting to lock
+   * an overlapping region.
+   * @exception NonReadableChannelException If shared is true and this channel
+   * was not opened for reading.
+   * @exception NonWritableChannelException If shared is false and this channel
+   * was not opened for writing.
+   */
+  public abstract FileLock lock (long position, long size, boolean shared)
+    throws IOException;
+
+  /**
+   * Tries to aqquire alock on the whole assoziated file.
+   *
+   * @exception ClosedChannelException If this channel is closed.
+   * @exception IOException If an I/O error occurs.
+   * @exception OverlappingFileLockException If a lock that overlaps the
+   * requested region is already held by this Java virtual machine, or if
+   * another thread is already blocked in this method and is attempting to lock
+   * an overlapping region.
+   */
+  public final FileLock tryLock () throws IOException
+  {
+    return tryLock (0, Long.MAX_VALUE, false);
+  }
+
+  /**
+   * Tries to aqquire a lock on a region of the assoziated file.
+   *
+   * @exception ClosedChannelException If this channel is closed.
+   * @exception IllegalArgumentException If the preconditions on the parameters
+   * do not hold.
+   * @exception IOException If an I/O error occurs.
+   * @exception OverlappingFileLockException If a lock that overlaps the
+   * requested region is already held by this Java virtual machine, or if
+   * another thread is already blocked in this method and is attempting to lock
+   * an overlapping region.
+   */
+  public abstract FileLock tryLock (long position, long size, boolean shared)
+    throws IOException;
+
+  /**
+   * Returns the current position on the file.
+   *
+   * @exception ClosedChannelException If this channel is closed.
+   * @exception IOException If an I/O error occurs.
+   */
+  public abstract long position () throws IOException;
+
+  /**
+   * Sets the position of the channel on the assoziated file.
+   *
+   * @exception ClosedChannelException If this channel is closed.
+   * @exception IllegalArgumentException If newPosition is negative.
+   * @exception IOException If an I/O error occurs.
+   */
+  public abstract FileChannel position (long newPosition) throws IOException;
+
+  /**
+   * Transfers bytes from this channel's file to the given writable byte
+   * channel.
+   *
+   * @exception AsynchronousCloseException If another thread closes this channel
+   * while the transfer is in progress.
+   * @exception ClosedByInterruptException If another thread interrupts the
+   * current thread while the transfer is in progress, thereby closing both
+   * channels and setting the current thread's interrupt status.
+   * @exception ClosedChannelException If this channel is closed.
+   * @exception IllegalArgumentException If the preconditions on the parameters
+   * do not hold.
+   * @exception IOException If an I/O error occurs.
+   * @exception NonReadableChannelException If this channel was not opened for
+   * reading.
+   * @exception NonWritableChannelException If the target channel was not
+   * opened for writing.
+   */
+  public abstract long transferTo (long position, long count,
+                                   WritableByteChannel target)
+    throws IOException;
+
+  /**
+   * Transfers bytes from the given readable channel into this channel.
+   *
+   * @exception AsynchronousCloseException If another thread closes this channel
+   * while the transfer is in progress.
+   * @exception ClosedByInterruptException If another thread interrupts the
+   * current thread while the transfer is in progress, thereby closing both
+   * channels and setting the current thread's interrupt status.
+   * @exception ClosedChannelException If this channel is closed.
+   * @exception IllegalArgumentException If the preconditions on the parameters
+   * do not hold.
+   * @exception IOException If an I/O error occurs.
+   * @exception NonReadableChannelException If the source channel was not
+   * opened for reading.
+   * @exception NonWritableChannelException If this channel was not opened for
+   * writing.
+   */
+  public abstract long transferFrom (ReadableByteChannel src, long position,
+                                     long count) throws IOException;
+
+  /**
+   * Truncates the channel's file at <code>size</code>.
+   *
+   * @exception ClosedChannelException If this channel is closed.
+   * @exception IllegalArgumentException If size is negative.
+   * @exception IOException If an I/O error occurs.
+   * @exception NonWritableChannelException If this channel was not opened for
+   * writing.
+   */
+  public abstract FileChannel truncate (long size) throws IOException;
 }
