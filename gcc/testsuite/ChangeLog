@@ -1,3 +1,7 @@
+2003-08-26  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* gcc.dg/noncompile/20030818-1.c: Expect second line of error.
+
 2003-08-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11871
