@@ -105,7 +105,7 @@ static GTY((deletable (""))) varray_type reg_values_old;
 #define REG_VALUES(I) VARRAY_ELT_LIST (reg_values, (I))
 
 /* The largest number of hard regs used by any entry added to the
-   REG_VALUES table.  Cleared on each clear_table() invocation.   */
+   REG_VALUES table.  Cleared on each clear_table() invocation.  */
 static unsigned int max_value_regs;
 
 /* Here the set of indices I with REG_VALUES(I) != 0 is saved.  This is used
