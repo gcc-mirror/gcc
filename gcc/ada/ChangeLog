@@ -1,3 +1,42 @@
+2004-07-13  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c: (gnat_to_gnu_entity, object case): Convert initializer to
+	object type.
+	(gnat_to_gnu_entity, case E_Record_Subtype): Properly set
+	TYPE_STUB_DECL.
+
+	* misc.c (gnat_types_compatible_p): New function.
+	(LANG_HOOKS_TYPES_COMPATIBLE_P): New hook, to use it.
+	(LANG_HOOKS_TYPE_MAX_SIZE, gnat_type_max_size): New.
+
+	* trans.c (gigi): Move processing of main N_Compilation_Unit here.
+	(gnat_to_gnu, case N_Compilation_Unit): Just handle nested case here.
+	(add_stmt): Force walking of sizes and DECL_INITIAL for DECL_EXPR.
+	(mark_visited): Don't mark dummy type.
+	(tree_transform <N_Procedure_Call_Statement>): Unless this is an In	
+	parameter, we must remove any LJM building from GNU_NAME.
+	(gnat_to_gnu, case N_String_Literal): Fill in indices in CONSTRUCTOR.
+	(pos_to_constructor): Use int_const_binop.
+	(gnat_to_gnu, case N_Identifier): Don't reference DECL_INITIAL of
+	PARM_DECL.
+
+	* utils.c (gnat_init_decl_processing): Don't make two "void" decls.
+	(gnat_pushlevel): Set TREE_USE on BLOCK node.
+	(gnat_install_builtins): Add __builtin_memset.
+
+2004-07-13  Olivier Hainque  <hainque@act-europe.fr>
+
+	* decl.c (gnat_to_gnu_entity <E_Variable>): If we are making a pointer
+	for a renaming, stabilize the initialization expression if we are at a
+	local level.  At the local level, uses of the renaming may be performed
+	by a direct dereference of the initializing expression, and we don't
+	want possible variables there to be evaluated for every use.
+
+	* trans.c (gnat_stabilize_reference, gnat_stabilize_reference_1):
+	Propagate TREE_SIDE_EFFECTS and TREE_THIS_VOLATILE to avoid loosing
+	them on the way.  Account for the fact that we may introduce side
+	effects in the process.
+
 2004-07-13  Richard Henderson  <rth@redhat.com>
 
 	* misc.c (default_pass_by_ref): Use pass_by_reference.

@@ -94,6 +94,7 @@ static bool gnat_post_options		(const char **);
 static HOST_WIDE_INT gnat_get_alias_set	(tree);
 static void gnat_print_decl		(FILE *, tree, int);
 static void gnat_print_type		(FILE *, tree, int);
+static int gnat_types_compatible_p	(tree, tree);
 static const char *gnat_printable_name	(tree, int);
 static tree gnat_eh_runtime_type	(tree);
 static int gnat_eh_type_covers		(tree, tree);
@@ -102,6 +103,7 @@ static rtx gnat_expand_expr		(tree, rtx, enum machine_mode, int,
 					 rtx *);
 static void internal_error_function	(const char *, va_list *);
 static void gnat_adjust_rli		(record_layout_info);
+static tree gnat_type_max_size		(tree);
 
 /* Definitions for our language-specific hooks.  */
 
@@ -141,6 +143,10 @@ static void gnat_adjust_rli		(record_layout_info);
 #define LANG_HOOKS_PRINT_DECL		gnat_print_decl
 #undef LANG_HOOKS_PRINT_TYPE
 #define LANG_HOOKS_PRINT_TYPE		gnat_print_type
+#undef LANG_HOOKS_TYPES_COMPATIBLE_P
+#define LANG_HOOKS_TYPES_COMPATIBLE_P	gnat_types_compatible_p
+#undef LANG_HOOKS_TYPE_MAX_SIZE
+#define LANG_HOOKS_TYPE_MAX_SIZE	gnat_type_max_size
 #undef LANG_HOOKS_DECL_PRINTABLE_NAME
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	gnat_printable_name
 #undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
@@ -555,6 +561,27 @@ gnat_print_type (FILE *file, tree node, int indent)
     }
 }
 
+/* We consider two types compatible if they have the same main variant,
+   but we also consider two array types compatible if they have the same
+   component type and bounds.
+
+   ??? We may also want to generalize to considering lots of integer types
+   compatible, but we need to understand the effects of alias sets first.  */
+
+static int
+gnat_types_compatible_p (tree x, tree y)
+{
+  if (TREE_CODE (x) == ARRAY_TYPE && TREE_CODE (y) == ARRAY_TYPE
+      && gnat_types_compatible_p (TREE_TYPE (x), TREE_TYPE (y))
+      && operand_equal_p (TYPE_MIN_VALUE (TYPE_DOMAIN (x)),
+			  TYPE_MIN_VALUE (TYPE_DOMAIN (y)), 0)
+      && operand_equal_p (TYPE_MAX_VALUE (TYPE_DOMAIN (x)),
+			  TYPE_MAX_VALUE (TYPE_DOMAIN (y)), 0))
+    return 1;
+  else
+    return TYPE_MAIN_VARIANT (x) == TYPE_MAIN_VARIANT (y);
+}
+
 static const char *
 gnat_printable_name (tree decl, int verbosity)
 {
@@ -691,6 +718,15 @@ gnat_get_alias_set (tree type)
   return -1;
 }
 
+/* GNU_TYPE is a type.  Return its maxium size in bytes, if known.  */
+
+static tree
+gnat_type_max_size (gnu_type)
+     tree gnu_type;
+{
+  return max_size (TYPE_SIZE_UNIT (gnu_type), 1);
+}
+
 /* GNU_TYPE is a type. Determine if it should be passed by reference by
    default.  */
 
@@ -709,7 +745,7 @@ default_pass_by_ref (tree gnu_type)
 
   if (targetm.calls.return_in_memory (gnu_type, NULL_TREE))
     return true;
-  
+
   if (AGGREGATE_TYPE_P (gnu_type)
       && (! host_integerp (TYPE_SIZE (gnu_type), 1)
 	  || 0 < compare_tree_int (TYPE_SIZE (gnu_type),
