@@ -1,3 +1,17 @@
+Sat Feb 27 22:48:38 1999  H.J. Lu  (hjl@gnu.org)
+			  Jeffrey A Law  (law@cygnus.com)
+
+	* frame.h: Update some comments.
+	* crtstuff.c (TARGET_ATTRIBUTE_WEAK): Define.
+	(__register_frame_info, __deregister_frame_info): Declare using
+	TARGET_WEAK_ATTRIBUTE.
+	(__do_global_dtors_aux): Check if __deregister_frame_info is
+	zero before calling it.
+	(__do_global_dtors): Likewise.
+	(frame_dummy): Check if __register_frame_info is zero before
+	calling it.
+	(__frame_dummy): Likewise.
+	
 Sat Feb 27 19:47:39 1999  Marc Espie <espie@openbsd.org>
 
 	* config/t-openbsd (T_CFLAGS): Add -Dmkstemps=my_mkstemps.

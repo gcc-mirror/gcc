@@ -56,6 +56,45 @@ Boston, MA 02111-1307, USA.  */
 #include <stddef.h>
 #include "frame.h"
 
+/* This really belongs in gansidecl.h, but for the egcs-1.1.x branch, the
+   only code which uses weak attributes is in this file and this file does
+   not include gansidecl.h.  */
+#ifndef TARGET_ATTRIBUTE_WEAK
+# if SUPPORTS_WEAK
+#  define TARGET_ATTRIBUTE_WEAK       __attribute__ ((weak))
+# else
+#  define TARGET_ATTRIBUTE_WEAK
+# endif
+#endif
+
+/* We do not want to add the weak attribute to the declarations of these
+   routines in frame.h because that will cause the definition of these
+   symbols to be weak as well.
+
+   This exposes a core issue, how to handle creating weak references vs
+   how to create weak definitions.  Either we have to have the definition
+   of TARGET_WEAK_ATTRIBUTE be conditional in the shared header files or
+   have a second declaration if we want a function's references to be weak,
+   but not its definition.
+
+   Making TARGET_WEAK_ATTRIBUTE conditional seems like a good solution until
+   one thinks about scaling to larger problems -- ie, the condition under
+   which TARGET_WEAK_ATTRIBUTE is active will eventually get far too
+   complicated.
+
+   So, we take an approach similar to #pragma weak -- we have a second
+   declaration for functions that we want to have weak references.
+
+   Neither way is particularly good.  */
+   
+/* References to __register_frame_info and __deregister_frame_info should
+   be weak in this file if at all possible.  */
+extern void __register_frame_info (void *, struct object *)
+				  TARGET_ATTRIBUTE_WEAK;
+
+extern void *__deregister_frame_info (void *)
+				     TARGET_ATTRIBUTE_WEAK;
+
 /* Provide default definitions for the pseudo-ops used to switch to the
    .ctors and .dtors sections.
  
@@ -142,7 +181,8 @@ __do_global_dtors_aux ()
     }
 
 #ifdef EH_FRAME_SECTION_ASM_OP
-  __deregister_frame_info (__EH_FRAME_BEGIN__);
+  if (__deregister_frame_info)
+    __deregister_frame_info (__EH_FRAME_BEGIN__);
 #endif
   completed = 1;
 }
@@ -170,7 +210,8 @@ static void
 frame_dummy ()
 {
   static struct object object;
-  __register_frame_info (__EH_FRAME_BEGIN__, &object);
+  if (__register_frame_info)
+    __register_frame_info (__EH_FRAME_BEGIN__, &object);
 }
 
 static void __attribute__ ((__unused__))
@@ -254,7 +295,8 @@ __do_global_dtors ()
     (*p) ();
 
 #ifdef EH_FRAME_SECTION_ASM_OP
-  __deregister_frame_info (__EH_FRAME_BEGIN__);
+  if (__deregister_frame_info)
+    __deregister_frame_info (__EH_FRAME_BEGIN__);
 #endif
 }
 
@@ -266,7 +308,8 @@ void
 __frame_dummy ()
 {
   static struct object object;
-  __register_frame_info (__EH_FRAME_BEGIN__, &object);
+  if (__register_frame_info)
+    __register_frame_info (__EH_FRAME_BEGIN__, &object);
 }
 #endif
 #endif

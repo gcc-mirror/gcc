@@ -34,6 +34,11 @@ struct object {
   struct object *next;
 };
 
+/* Note the following routines are exported interfaces from libgcc; do not
+   change these interfaces.  Instead create new interfaces.  Also note
+   references to these functions may be made weak in files where they
+   are referenced.  */
+
 extern void __register_frame (void * );
 extern void __register_frame_table (void *);
 extern void __deregister_frame (void *);
