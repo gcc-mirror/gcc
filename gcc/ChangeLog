@@ -1,3 +1,12 @@
+2003-08-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (LOAD_EXTEND_OP): Remove.
+	* config/s390/s390.md ("movhi"): New expander; old insn renamed to ...
+	("*movhi"): ... this.
+	("movqi", "*movqi"): Likewise.
+	("movqi_64"): Remove.
+	("*zero_extendhisi2_31"): Change predicate to s_operand.
+
 2003-08-23  Dale Johannesen  <dalej@apple.com>
 	* calls.c (emit_library_call_value_1): Fix obvious errors in
 	arguments to emit_group_store.

@@ -1090,14 +1090,6 @@ extern int s390_nr_constants;
    tablejump instruction.  */
 #define CASE_VECTOR_MODE (TARGET_64BIT ? DImode : SImode)
 
-/* Load from integral MODE < SI from memory into register makes sign_extend
-   or zero_extend
-   In our case sign_extension happens for Halfwords, other no extension.  */
-#define LOAD_EXTEND_OP(MODE) 					\
-(TARGET_64BIT ? ((MODE) == QImode ? ZERO_EXTEND :               \
-                 (MODE) == HImode ? SIGN_EXTEND : NIL)          \
-              : ((MODE) == HImode ? SIGN_EXTEND : NIL))
-
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)  1
