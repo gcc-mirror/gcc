@@ -1298,7 +1298,13 @@ esac
 if test "x${CHILL_FOR_TARGET+set}" = xset; then
   :
 elif test -d ${topsrcdir}/gcc &&
-   echo ",${enable_languages-`echo ${LANGUAGES-CHILL} | tr ' ' ','`}," |
+   # This used to be
+   # echo ",${enable_languages-`echo ${LANGUAGES-CHILL} | tr ' ' ','`},"
+   # but that didn't work on the AIX 4.3.3 /bin/sh.
+   # echo ",${enable_languages-`echo ${LANGUAGES-CHILL} | tr " " ","`},"
+   # doesn't work on the Solaris 5.6 /bin/sh.
+   # This works on both:
+   echo ",${enable_languages-`echo ${LANGUAGES-CHILL} | tr \  ,`}," |
    grep ',CHILL,' > /dev/null ; then
   CHILL_FOR_TARGET='$$r/gcc/xgcc -L$$r/gcc/ch/runtime/'
 elif test "$host" = "$target"; then
@@ -1314,7 +1320,13 @@ esac
 if test "x${CXX_FOR_TARGET+set}" = xset; then
   :
 elif test -d ${topsrcdir}/gcc &&
-   echo ",${enable_languages-`echo ${LANGUAGES-c++} | tr ' ' ','`}," |
+   # This used to be
+   # echo ",${enable_languages-`echo ${LANGUAGES-c++} | tr ' ' ','`},"
+   # but that didn't work on the AIX 4.3.3 /bin/sh.
+   # echo ",${enable_languages-`echo ${LANGUAGES-c++} | tr " " ","`},"
+   # doesn't work on the Solaris 5.6 /bin/sh.
+   # This works on both:
+   echo ",${enable_languages-`echo ${LANGUAGES-c++} | tr \  ,`}," |
    grep ',c[+][+],' > /dev/null ; then
   CXX_FOR_TARGET='$$r/gcc/g++ -nostdinc++ '$libstdcxx_flags
 elif test "$host" = "$target"; then
