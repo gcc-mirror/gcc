@@ -191,19 +191,6 @@ do {								\
   putc ('\n', (FILE));						\
 } while (0)
 
-/* SVR4 m68k assembler is bitching on the syntax `2.b'.
-   So use the "LLDnnn-LLnnn" format.  Define LLDnnn after the table.  */
-
-#undef ASM_OUTPUT_CASE_END
-#define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)				\
-do {									\
-  if (switch_table_difference_label_flag)				\
-    asm_fprintf ((FILE), "%s%LLD%d,%LL%d\n", SET_ASM_OP, (NUM), (NUM));	\
-  switch_table_difference_label_flag = 0;				\
-} while (0)
-
-extern int switch_table_difference_label_flag;
-
 #undef ASM_OUTPUT_COMMON
 #undef ASM_OUTPUT_LOCAL
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \

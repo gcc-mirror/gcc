@@ -91,10 +91,6 @@ struct m68k_frame
 /* Current frame information calculated by m68k_compute_frame_layout().  */
 static struct m68k_frame current_frame;
 
-/* This flag is used to communicate between movhi and ASM_OUTPUT_CASE_END,
-   if SGS_SWITCH_TABLE.  */
-int switch_table_difference_label_flag;
-
 static rtx find_addr_reg (rtx);
 static const char *singlemove_string (rtx *);
 static void m68k_output_function_prologue (FILE *, HOST_WIDE_INT);
@@ -1127,8 +1123,8 @@ output_dbcc_and_branch (rtx *operands)
     {
       case SImode:
         output_asm_insn (MOTOROLA ?
-			   "clr%.w %0\n\tsubq%.l %#1,%0\n\tjbpl %l1" :
-			   "clr%.w %0\n\tsubq%.l %#1,%0\n\tjpl %l1",
+			   "clr%.w %0\n\tsubq%.l #1,%0\n\tjbpl %l1" :
+			   "clr%.w %0\n\tsubq%.l #1,%0\n\tjpl %l1",
 			 operands);
         break;
 
@@ -1176,18 +1172,10 @@ output_scc_di(rtx op, rtx operand1, rtx operand2, rtx dest)
   loperands[4] = gen_label_rtx();
   if (operand2 != const0_rtx)
     {
-      if (MOTOROLA)
-#ifdef SGS_CMP_ORDER
-        output_asm_insn ("cmp%.l %0,%2\n\tjbne %l4\n\tcmp%.l %1,%3", loperands);
-#else
-        output_asm_insn ("cmp%.l %2,%0\n\tjbne %l4\n\tcmp%.l %3,%1", loperands);
-#endif
-      else
-#ifdef SGS_CMP_ORDER
-        output_asm_insn ("cmp%.l %0,%2\n\tjne %l4\n\tcmp%.l %1,%3", loperands);
-#else
-        output_asm_insn ("cmp%.l %2,%0\n\tjne %l4\n\tcmp%.l %3,%1", loperands);
-#endif
+      output_asm_insn (MOTOROLA ?
+	  "cmp%.l %2,%0\n\tjbne %l4\n\tcmp%.l %3,%1" :
+          "cmp%.l %2,%0\n\tjne %l4\n\tcmp%.l %3,%1",
+	loperands);
     }
   else
     {
@@ -1195,11 +1183,7 @@ output_scc_di(rtx op, rtx operand1, rtx operand2, rtx dest)
 	output_asm_insn ("tst%.l %0", loperands);
       else
 	{
-#ifdef SGS_CMP_ORDER
-	  output_asm_insn ("cmp%.w %0,%#0", loperands);
-#else
-	  output_asm_insn ("cmp%.w %#0,%0", loperands);
-#endif
+	  output_asm_insn ("cmp%.w #0,%0", loperands);
 	}
 
       output_asm_insn (MOTOROLA ? "jbne %l4" : "jne %l4", loperands);
@@ -1207,17 +1191,11 @@ output_scc_di(rtx op, rtx operand1, rtx operand2, rtx dest)
       if (TARGET_68020 || TARGET_COLDFIRE || ! ADDRESS_REG_P (loperands[1]))
 	output_asm_insn ("tst%.l %1", loperands);
       else
-	{
-#ifdef SGS_CMP_ORDER
-	  output_asm_insn ("cmp%.w %1,%#0", loperands);
-#else
-	  output_asm_insn ("cmp%.w %#0,%1", loperands);
-#endif
-	}
+	output_asm_insn ("cmp%.w #0,%1", loperands);
     }
 
   loperands[5] = dest;
-  
+
   switch (op_code)
     {
       case EQ:
@@ -1693,7 +1671,7 @@ output_move_const_into_data_reg (rtx *operands)
       return "moveq %1,%0\n\tnot%.w %0";
     case NEGW :
       CC_STATUS_INIT;
-      return "moveq %#-128,%0\n\tneg%.w %0";
+      return "moveq #-128,%0\n\tneg%.w %0";
     case SWAP :
       {
 	unsigned u = i;
@@ -1795,23 +1773,12 @@ output_move_himode (rtx *operands)
       && GET_CODE (XEXP (XEXP (operands[1], 0), 0)) != PLUS)
     {
       rtx labelref = XEXP (XEXP (operands[1], 0), 1);
-#if MOTOROLA && !defined (SGS_SWITCH_TABLES)
-#ifdef SGS
-      asm_fprintf (asm_out_file, "\tset %LLI%d,.+2\n",
-		   CODE_LABEL_NUMBER (XEXP (labelref, 0)));
-#else /* not SGS */
-      asm_fprintf (asm_out_file, "\t.set %LLI%d,.+2\n",
-		   CODE_LABEL_NUMBER (XEXP (labelref, 0)));
-#endif /* not SGS */
-#else /* SGS_SWITCH_TABLES or not MOTOROLA */
-      (*targetm.asm_out.internal_label) (asm_out_file, "LI",
-				 CODE_LABEL_NUMBER (XEXP (labelref, 0)));
-#ifdef SGS_SWITCH_TABLES
-      /* Set flag saying we need to define the symbol
-	 LD%n (with value L%n-LI%n) at the end of the switch table.  */
-      switch_table_difference_label_flag = 1;
-#endif /* SGS_SWITCH_TABLES */
-#endif /* SGS_SWITCH_TABLES or not MOTOROLA */
+      if (MOTOROLA)
+	asm_fprintf (asm_out_file, "\t.set %LLI%d,.+2\n",
+		     CODE_LABEL_NUMBER (XEXP (labelref, 0)));
+      else
+	(*targetm.asm_out.internal_label) (asm_out_file, "LI",
+		     CODE_LABEL_NUMBER (XEXP (labelref, 0)));
     }
   return "move%.w %1,%0";
 }
@@ -1840,7 +1807,7 @@ output_move_qimode (rtx *operands)
       if (!reg_mentioned_p (stack_pointer_rtx, operands[1]))
 	{
 	  xoperands[3] = stack_pointer_rtx;
-	  output_asm_insn ("subq%.l %#2,%3\n\tmove%.b %1,%2", xoperands);
+	  output_asm_insn ("subq%.l #2,%3\n\tmove%.b %1,%2", xoperands);
 	}
       else
 	output_asm_insn ("move%.b %1,%-\n\tmove%.b %@,%2", xoperands);
@@ -1982,9 +1949,9 @@ output_move_double (rtx *operands)
     {
       operands[0] = XEXP (XEXP (operands[0], 0), 0);
       if (size == 12)
-        output_asm_insn ("sub%.l %#12,%0", operands);
+        output_asm_insn ("sub%.l #12,%0", operands);
       else
-        output_asm_insn ("subq%.l %#8,%0", operands);
+        output_asm_insn ("subq%.l #8,%0", operands);
       if (GET_MODE (operands[1]) == XFmode)
 	operands[0] = gen_rtx_MEM (XFmode, operands[0]);
       else if (GET_MODE (operands[0]) == DFmode)
@@ -1997,9 +1964,9 @@ output_move_double (rtx *operands)
     {
       operands[1] = XEXP (XEXP (operands[1], 0), 0);
       if (size == 12)
-        output_asm_insn ("sub%.l %#12,%1", operands);
+        output_asm_insn ("sub%.l #12,%1", operands);
       else
-        output_asm_insn ("subq%.l %#8,%1", operands);
+        output_asm_insn ("subq%.l #8,%1", operands);
       if (GET_MODE (operands[1]) == XFmode)
 	operands[1] = gen_rtx_MEM (XFmode, operands[1]);
       else if (GET_MODE (operands[1]) == DFmode)
@@ -2193,16 +2160,16 @@ compadr:
       if (addreg0)
 	{
 	  if (size == 12)
-	    output_asm_insn ("addq%.l %#8,%0", &addreg0);
+	    output_asm_insn ("addq%.l #8,%0", &addreg0);
 	  else
-	    output_asm_insn ("addq%.l %#4,%0", &addreg0);
+	    output_asm_insn ("addq%.l #4,%0", &addreg0);
 	}
       if (addreg1)
 	{
 	  if (size == 12)
-	    output_asm_insn ("addq%.l %#8,%0", &addreg1);
+	    output_asm_insn ("addq%.l #8,%0", &addreg1);
 	  else
-	    output_asm_insn ("addq%.l %#4,%0", &addreg1);
+	    output_asm_insn ("addq%.l #4,%0", &addreg1);
 	}
 
       /* Do that word.  */
@@ -2210,17 +2177,17 @@ compadr:
 
       /* Undo the adds we just did.  */
       if (addreg0)
-	output_asm_insn ("subq%.l %#4,%0", &addreg0);
+	output_asm_insn ("subq%.l #4,%0", &addreg0);
       if (addreg1)
-	output_asm_insn ("subq%.l %#4,%0", &addreg1);
+	output_asm_insn ("subq%.l #4,%0", &addreg1);
 
       if (size == 12)
 	{
 	  output_asm_insn (singlemove_string (middlehalf), middlehalf);
 	  if (addreg0)
-	    output_asm_insn ("subq%.l %#4,%0", &addreg0);
+	    output_asm_insn ("subq%.l #4,%0", &addreg0);
 	  if (addreg1)
-	    output_asm_insn ("subq%.l %#4,%0", &addreg1);
+	    output_asm_insn ("subq%.l #4,%0", &addreg1);
 	}
 
       /* Do low-numbered word.  */
@@ -2235,18 +2202,18 @@ compadr:
   if (size == 12)
     {
       if (addreg0)
-	output_asm_insn ("addq%.l %#4,%0", &addreg0);
+	output_asm_insn ("addq%.l #4,%0", &addreg0);
       if (addreg1)
-	output_asm_insn ("addq%.l %#4,%0", &addreg1);
+	output_asm_insn ("addq%.l #4,%0", &addreg1);
 
       output_asm_insn (singlemove_string (middlehalf), middlehalf);
     }
 
   /* Make any unoffsettable addresses point at high-numbered word.  */
   if (addreg0)
-    output_asm_insn ("addq%.l %#4,%0", &addreg0);
+    output_asm_insn ("addq%.l #4,%0", &addreg0);
   if (addreg1)
-    output_asm_insn ("addq%.l %#4,%0", &addreg1);
+    output_asm_insn ("addq%.l #4,%0", &addreg1);
 
   /* Do that word.  */
   output_asm_insn (singlemove_string (latehalf), latehalf);
@@ -2255,16 +2222,16 @@ compadr:
   if (addreg0)
     {
       if (size == 12)
-        output_asm_insn ("subq%.l %#8,%0", &addreg0);
+        output_asm_insn ("subq%.l #8,%0", &addreg0);
       else
-        output_asm_insn ("subq%.l %#4,%0", &addreg0);
+        output_asm_insn ("subq%.l #4,%0", &addreg0);
     }
   if (addreg1)
     {
       if (size == 12)
-        output_asm_insn ("subq%.l %#8,%0", &addreg1);
+        output_asm_insn ("subq%.l #8,%0", &addreg1);
       else
-        output_asm_insn ("subq%.l %#4,%0", &addreg1);
+        output_asm_insn ("subq%.l #4,%0", &addreg1);
     }
 
   return "";
@@ -2314,27 +2281,9 @@ output_addsi3 (rtx *operands)
       if (GET_CODE (operands[2]) == CONST_INT
 	  && (INTVAL (operands[2]) < -32768 || INTVAL (operands[2]) > 32767))
         return "move%.l %2,%0\n\tadd%.l %1,%0";
-#ifdef SGS
       if (GET_CODE (operands[2]) == REG)
-	return "lea 0(%1,%2.l),%0";
-      else
-	return "lea %c2(%1),%0";
-#else /* !SGS */
-      if (MOTOROLA)
-	{
-	  if (GET_CODE (operands[2]) == REG)
-	   return "lea (%1,%2.l),%0";
-	  else
-	   return "lea (%c2,%1),%0";
-	}
-      else /* !MOTOROLA (MIT syntax) */
-	{
-	  if (GET_CODE (operands[2]) == REG)
-	    return "lea %1@(0,%2:l),%0";
-	  else
-	    return "lea %1@(%c2),%0";
-	}
-#endif /* !SGS */
+	return MOTOROLA ? "lea (%1,%2.l),%0" : "lea %1@(0,%2:l),%0";
+      return MOTOROLA ? "lea (%c2,%1),%0" : "lea %1@(%c2),%0";
     }
   if (GET_CODE (operands[2]) == CONST_INT)
     {
@@ -2356,13 +2305,13 @@ output_addsi3 (rtx *operands)
 	      && INTVAL (operands[2]) <= 16)
 	    {
 	      operands[2] = GEN_INT (INTVAL (operands[2]) - 8);
-	      return "addq%.l %#8,%0\n\taddq%.l %2,%0";
+	      return "addq%.l #8,%0\n\taddq%.l %2,%0";
 	    }
 	  if (INTVAL (operands[2]) < -8
 	      && INTVAL (operands[2]) >= -16)
 	    {
 	      operands[2] = GEN_INT (- INTVAL (operands[2]) - 8);
-	      return "subq%.l %#8,%0\n\tsubq%.l %2,%0";
+	      return "subq%.l #8,%0\n\tsubq%.l %2,%0";
 	    }
 	}
       if (ADDRESS_REG_P (operands[0])
@@ -2496,7 +2445,7 @@ output_move_const_double (rtx *operands)
     {
       static char buf[40];
 
-      sprintf (buf, "fmovecr %%#0x%x,%%0", code & 0xff);
+      sprintf (buf, "fmovecr #0x%x,%%0", code & 0xff);
       return buf;
     }
   return "fmove%.d %1,%0";
@@ -2511,7 +2460,7 @@ output_move_const_single (rtx *operands)
     {
       static char buf[40];
 
-      sprintf (buf, "fmovecr %%#0x%x,%%0", code & 0xff);
+      sprintf (buf, "fmovecr #0x%x,%%0", code & 0xff);
       return buf;
     }
   return "fmove%.s %f1,%0";
@@ -2791,20 +2740,13 @@ print_operand (FILE *file, rtx op, int letter)
    offset is output in word mode (eg movel a5@(_foo:w), a0).  When generating
    -fPIC code the offset is output in long mode (eg movel a5@(_foo:l), a0) */
 
-#ifndef ASM_OUTPUT_CASE_FETCH
-# if MOTOROLA
-#  ifdef SGS
-#   define ASM_OUTPUT_CASE_FETCH(file, labelno, regname)\
-	asm_fprintf (file, "%LLD%d(%Rpc,%s.", labelno, regname)
-#  else /* !SGS */
-#   define ASM_OUTPUT_CASE_FETCH(file, labelno, regname)\
-	asm_fprintf (file, "%LL%d-%LLI%d.b(%Rpc,%s.", labelno, labelno, regname)
-#  endif /* !SGS */
-# else /* !MOTOROLA */
+#if MOTOROLA
 #  define ASM_OUTPUT_CASE_FETCH(file, labelno, regname)\
+	asm_fprintf (file, "%LL%d-%LLI%d.b(%Rpc,%s.", labelno, labelno, regname)
+#else /* !MOTOROLA */
+# define ASM_OUTPUT_CASE_FETCH(file, labelno, regname)\
 	asm_fprintf (file, "%Rpc@(%LL%d-%LLI%d-2:b,%s:", labelno, labelno, regname)
-# endif /* !MOTOROLA */
-#endif /* ASM_OUTPUT_CASE_FETCH */
+#endif /* !MOTOROLA */
 
 void
 print_operand_address (FILE *file, rtx addr)
@@ -3034,15 +2976,7 @@ print_operand_address (FILE *file, rtx addr)
 	    && INTVAL (addr) < 0x8000
 	    && INTVAL (addr) >= -0x8000)
 	  {
-	    if (MOTOROLA)
-#ifdef SGS
-	      /* Many SGS assemblers croak on size specifiers for constants.  */
-	      fprintf (file, "%d", (int) INTVAL (addr));
-#else
-	      fprintf (file, "%d.w", (int) INTVAL (addr));
-#endif
-	    else /* !MOTOROLA */
-	      fprintf (file, "%d:w", (int) INTVAL (addr));
+	    fprintf (file, MOTOROLA ? "%d.w" : "%d:w", (int) INTVAL (addr));
 	  }
 	else if (GET_CODE (addr) == CONST_INT)
 	  {

@@ -1,3 +1,16 @@
+2004-02-08  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k.c, config/m68k/m68k.md (SGS, SGS_CMP_ORDER): Remove
+	code to support SGS assembler.  Reformat adjacent code where possible.
+	* config/m68k/m68k.c (switch_table_difference_label_flag): Remove definition.
+	* config/m68k/m68k.h (PRINT_OPERAND_PUNCT_VALID_P): Remove support for '%#'.
+	* config/m68k/linux.h, config/m68k/m68k.c,
+	* config/m68k/math-68881.h: Replace `%#' with `#' in inline asm macros and
+	asm_printf() format strings.
+	* config/m68k/m68kelf.h (ASM_OUTPUT_CASE_END): Remove macro definition.
+	* config/m68k/linux.h: Update copyright.
+	* config/m68k/linux.h, config/m68k/m68k.c: Remove traling whitespace.
+
 2004-02-08  Andreas Schwab  <schwab@suse.de>
             Bernardo Innocenti  <bernie@develer.com>
 
