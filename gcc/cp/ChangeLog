@@ -1,5 +1,13 @@
 1999-12-09  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (init_decl_processing): Reenable inlining on trees.
+	(finish_function): Likewise.
+	* expr.c (cplus_expand_expr): Don't handle AGGR_INIT_EXPR here.
+	* semantics.c (simplify_aggr_init_exprs): New function.
+	(expand_body): Use it.
+	* tree.c (walk_tree): Special-case TARGET_EXPRs since they
+	sometimes present the same sub-tree twice.
+	
 	* dump.c (dequeue_and_dump): Abbreviate `class' as `cls', not
 	`csl'.
 

@@ -1626,8 +1626,18 @@ walk_tree (tp, func, data)
       int i;
 
       /* Walk over all the sub-trees of this operand.  */
-      for (i = first_rtl_op (code) - 1; i >= 0; --i)
-	WALK_SUBTREE (TREE_OPERAND (*tp, i));
+      i = first_rtl_op (code) - 1;
+      /* TARGET_EXPRs are peculiar: operands 1 and 3 can be the same.
+	 But, we only want to walk once.  */
+      if (code == TARGET_EXPR
+	  && TREE_OPERAND (*tp, 3) == TREE_OPERAND (*tp, 1))
+	--i;
+      /* Go through the subtrees.  */
+      while (i >= 0)
+	{
+	  WALK_SUBTREE (TREE_OPERAND (*tp, i));
+	  --i;
+	}
 
       /* For statements, we also walk the chain so that we cover the
 	 entire statement tree.  */
