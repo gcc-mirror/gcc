@@ -1,5 +1,5 @@
 /* ImageConsumer.java -- Java interface for image consumption
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -160,17 +160,45 @@ public interface ImageConsumer
     void setHints(int flags);
 
     /**
-     * This function delivers a rectangle of pixels where any
-     * pixel(m,n) is stored in the array as a <code>byte</code> at
-     * index (n * scansize + m + offset).  
+     * Deliver a subset of an ImageProducer's pixels to this ImageConsumer.
+     *
+     * Each element of the pixels array represents one pixel.  The
+     * pixel data is formatted according to the color model model.
+     * The x and y parameters are the coordinates of the block of
+     * pixels being delivered to this ImageConsumer.  They are
+     * specified relative to the top left corner of the image being
+     * produced.  Likewise, w and h are the pixel block's dimensions.
+     *
+     * @param x x coordinate of pixel block
+     * @param y y coordinate of pixel block
+     * @param w width of pixel block
+     * @param h height of pixel block
+     * @param model color model used to interpret pixel data
+     * @param pixels pixel block data
+     * @param offset offset into pixels array
+     * @param scansize width of one row in the pixel block
      */
     void setPixels(int x, int y, int w, int h, 
 	   ColorModel model, byte[] pixels, int offset, int scansize);
 
     /**
-     * This function delivers a rectangle of pixels where any
-     * pixel(m,n) is stored in the array as an <code>int</code> at
-     * index (n * scansize + m + offset).  
+     * Deliver a subset of an ImageProducer's pixels to this ImageConsumer.
+     *
+     * Each element of the pixels array represents one pixel.  The
+     * pixel data is formatted according to the color model model.
+     * The x and y parameters are the coordinates of the rectangular
+     * region of pixels being delivered to this ImageConsumer,
+     * specified relative to the top left corner of the image being
+     * produced.  Likewise, w and h are the pixel region's dimensions.
+     *
+     * @param x x coordinate of pixel block
+     * @param y y coordinate of pixel block
+     * @param w width of pixel block
+     * @param h height of pixel block
+     * @param model color model used to interpret pixel data
+     * @param pixels pixel block data
+     * @param offset offset into pixels array
+     * @param scansize width of one row in the pixel block
      */
     void setPixels(int x, int y, int w, int h, 
            ColorModel model, int[] pixels, int offset, int scansize);
@@ -180,7 +208,9 @@ public interface ImageConsumer
      * single frame or the entire image is complete.  The method is
      * also used to indicate an error in loading or producing the
      * image.  
+     *
+     * @param status the status of image production, represented by a
+     * bitwise OR of ImageConsumer flags
      */
     void imageComplete(int status);
 }
-
