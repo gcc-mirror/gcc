@@ -11,14 +11,14 @@
       INTEGER   KL, KU, LDAB, M
       REAL      AB( LDAB, * )
 
-      INTEGER   J, JB, JJ, JP, KV, KM
+      INTEGER   J, JB, JJ, JP, KV, KM, F
       REAL      WORK13(65,64), WORK31(65,64)
       KV = KU + KL
       DO J = 1, M
          JB = MIN( 1, M-J+1 )
          DO JJ = J, J + JB - 1
             KM = MIN( KL, M-JJ )
-            JP = MAX( KM+1, AB( KV+1, JJ ) )
+            JP = F( KM+1, AB( KV+1, JJ ) )
             CALL SSWAP( JB, AB( KV+1+JJ-J, J ), LDAB-1,
      $           AB( KV+JP+JJ-J, J ), LDAB-1 )
          END DO
