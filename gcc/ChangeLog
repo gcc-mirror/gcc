@@ -1,3 +1,48 @@
+2005-03-22  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/frv/frv-protos.h (frv_branch_cost_string, frv_branch_cost_int)
+	(frv_cpu_string, frv_condexec_insns_str, frv_condexec_insns)
+	(frv_condexec_temps_str, frv_condexec_temps, frv_sched_lookahead_str)
+	(frv_sched_lookahead): Delete.
+	* config/frv/frv.h (MASK_DEFAULT_ALLOC_CC): Move to frv.c.
+	(target_flags, MASK_GPR_32, MASK_FPR_32, MASK_SOFT_FLOAT)
+	(MASK_ALLOC_CC, MASK_DWORD, MASK_DOUBLE, MASK_MEDIA, MASK_MULADD)
+	(MASK_LIBPIC, MASK_ACC_4,  MASK_PACK, MASK_LONG_CALLS)
+	(MASK_ALIGN_LABELS, MASK_LINKED_FP, MASK_BIG_TLS, MASK_DEBUG_ARG)
+	(MASK_DEBUG_ADDR, MASK_DEBUG_STACK, MASK_DEBUG, MASK_DEBUG_LOC)
+	(MASK_DEBUG_COND_EXEC, MASK_NO_COND_MOVE, MASK_NO_SCC)
+	(MASK_NO_COND_EXEC, MASK_NO_VLIW_BRANCH, MASK_NO_MULTI_CE)
+	(MASK_FDPIC, MASK_INLINE_PLT, MASK_GPREL_RO, MASK_DEFAULT)
+	(TARGET_GPR_32, TARGET_FPR_32, TARGET_SOFT_FLOAT, TARGET_ALLOC_CC)
+	(TARGET_DWORD, TARGET_DOUBLE, TARGET_MEDIA, TARGET_MULADD)
+	(TARGET_LIBPIC, TARGET_ACC_4, TARGET_DEBUG_ARG, TARGET_DEBUG_ADDR)
+	(TARGET_DEBUG_STACK, TARGET_DEBUG, TARGET_DEBUG_LOC)
+	(TARGET_DEBUG_COND_EXEC, TARGET_NO_COND_MOVE, TARGET_NO_SCC)
+	(TARGET_NO_COND_EXEC, TARGET_NO_VLIW_BRANCH, TARGET_NO_MULTI_CE)
+	(TARGET_NO_NESTED_CE, TARGET_FDPIC, TARGET_INLINE_PLT, TARGET_BIG_TLS)
+	(TARGET_GPREL_RO, TARGET_PACK, TARGET_LONG_CALLS, TARGET_ALIGN_LABELS)
+	(TARGET_LINKED_FP, TARGET_GPR_64, TARGET_FPR_64, TARGET_HARD_FLOAT)
+	(TARGET_FIXED_CC, TARGET_COND_MOVE, TARGET_SCC, TARGET_COND_EXEC)
+	(TARGET_VLIW_BRANCH, TARGET_MULTI_CE, TARGET_NESTED_CE, TARGET_ACC_8)
+	(TARGET_SWITCHES, TARGET_OPTIONS, DEFAULT_CONDEXEC_TEMPS)
+	(DEFAULT_BRANCH_COST, DEFAULT_CONDEXEC_INSNS): Delete.
+	* config/frv/frv.c (frv_branch_cost_string, frv_branch_cost_int)
+	(frv_cpu_string, frv_condexec_insns_str, frv_condexec_insns)
+	(frv_condexec_temps_str, frv_condexec_temps, frv_sched_lookahead_str)
+	(frv_sched_lookahead): Delete.
+	(MASK_DEFAULT_ALLOC_CC): Moved from frv.h.
+	(TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION): Override defaults.
+	(frv_handle_option): New function.  Move -mcpu= handling from...
+	(frv_override_options): ...here.  Remove handling of other
+	TARGET_OPTIONS.
+	(frv_ifcvt_modify_tests): Check !TARGET_COND_EXEC instead of
+	TARGET_NO_COND_EXEC and !TARGET_NESTED_CE to TARGET_NO_NESTED_CE.
+	(frv_ifcvt_modify_multiple_tests): Likewise !TARGET_MULTI_CE
+	and TARGET_NO_MULTI_CE.
+	(frv_for_each_packet): Likewise TARGET_NO_VLIW_BRANCH and
+	!TARGET_VLIW_BRANCH.
+	* config/frv/frv.opt: New file.
+
 2005-03-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c (fold_ternary): Take decomposed arguments of
