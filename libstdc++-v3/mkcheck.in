@@ -261,9 +261,9 @@ test_for_output()
     # this is the name of the resulting diff file, if any
     DIFF_FILE="`echo $TEST_NAME | sed 's/cc$/diff/'`"
     # construct wildcard names, ie for $NAME=filebuf.cc, makes "filebuf*.tst"
-    DATA_FILES="`echo $NAME | sed 's/\.cc/\*\.tst/g'`"
+    DATA_FILES="`echo $TEST_NAME | sed 's/\.cc/\*\.tst/g'`"
     # make sure there is at least one, then go
-    ST_E="`echo $NAME | sed 's/\.cc/\-1\.tst/g'`"
+    ST_E="`echo $TEST_NAME | sed 's/\.cc/\-1\.tst/g'`"
     if [ -f $ST_E ]; then
         # list of actual files that match the wildcard above, ie
         # "filebuf-1.tst"
@@ -275,7 +275,6 @@ test_for_output()
             diff $ST_OUT_FILE $i > $DIFF_FILE
             if [ -s $DIFF_FILE ]; then
                 RESULT="-r"
-                echo "$ST_OUT_FILE has some problems, dude"
             else
                 RESULT="+"
             fi

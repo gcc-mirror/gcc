@@ -2,11 +2,21 @@
 
 	* testsuite/libstdc++.tests, testsuite/lib: New directories.
 
+2001-01-17  Loren J. Rittle  <ljrittle@acm.org>
+
+        * mkcheck.in: Construct file names that match $objdir structure.
+        * testsuite/27_io/filebuf_members-1.txt: New file.
+        * testsuite/27_io/ifstream_members-1.txt: New file.
+        * testsuite/27_io/ostream_inserter_char-1.txt: New file.
+
+	* testsuite/27_io/ios_base_members_static.cc (test02): Add test.
+	* testsuite/27_io/ios_base_members_static-1.tst: Add expected output.
+
 2001-01-17  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
 	* testsuite/27_io/istream_sentry.cc (test02): Fix.
 
-2001-01-16  Benjamin Kosnik  <bkoz@redhat.com>
+2001-01-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/1605
 	* include/bits/ios_base.h (ios_base::failure): Tighten up throw specs.
