@@ -606,6 +606,16 @@ int flag_pack_struct = 0;
    to be allocated dynamically.  */
 int flag_stack_check;
 
+/* -fcheck-memory-usage causes extra code to be generated in order to check
+   memory accesses.  This is used by a detector of bad memory accesses such
+   as Checker.  */
+int flag_check_memory_usage = 0;
+
+/* -fprefix-function-name causes function name to be prefixed.  This
+   can be used with -fcheck-memory-usage to isolate code compiled with
+   -fcheck-memory-usage.  */
+int flag_prefix_function_name = 0;
+
 /* Table of language-independent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -661,7 +671,9 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"gnu-linker", &flag_gnu_linker, 1},
   {"pack-struct", &flag_pack_struct, 1},
   {"stack-check", &flag_stack_check, 1},
-  {"bytecode", &output_bytecode, 1}
+  {"bytecode", &output_bytecode, 1},
+  {"check-memory-usage", &flag_check_memory_usage, 1},
+  {"prefix-function-name", &flag_prefix_function_name, 1}
 };
 
 /* Table of language-specific options.  */
@@ -4110,6 +4122,10 @@ main (argc, argv, envp)
       else
 	filename = argv[i];
     }
+
+  /* Checker uses the frame pointer.  */
+  if (flag_check_memory_usage)
+    flag_omit_frame_pointer = 0;
 
   /* Initialize for bytecode output.  A good idea to do this as soon as
      possible after the "-f" options have been parsed.  */
