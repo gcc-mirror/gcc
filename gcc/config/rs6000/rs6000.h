@@ -76,6 +76,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=604e: -D_ARCH_PPC} \
 %{mcpu=620: -D_ARCH_PPC} \
 %{mcpu=740: -D_ARCH_PPC} \
+%{mcpu=7400: -D_ARCH_PPC} \
 %{mcpu=7450: -D_ARCH_PPC} \
 %{mcpu=750: -D_ARCH_PPC} \
 %{mcpu=801: -D_ARCH_PPC} \
@@ -114,6 +115,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=604e: -mppc} \
 %{mcpu=620: -mppc} \
 %{mcpu=740: -mppc} \
+%{mcpu=7400: -mppc} \
 %{mcpu=7450: -mppc} \
 %{mcpu=750: -mppc} \
 %{mcpu=801: -mppc} \
@@ -2073,7 +2075,7 @@ do {									     \
       push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,		     \
                    BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	     \
                    OPNUM, TYPE);					     \
-      goto WIN;								     \
+      goto WIN; 							     \
     }									     \
   if (GET_CODE (X) == PLUS						     \
       && GET_CODE (XEXP (X, 0)) == REG					     \
@@ -2326,12 +2328,15 @@ do {									     \
         return COSTS_N_INSNS (5);					\
       case PROCESSOR_PPC603:						\
       case PROCESSOR_PPC7400:						\
-      case PROCESSOR_PPC7450:						\
       case PROCESSOR_PPC750:						\
         return (GET_CODE (XEXP (X, 1)) != CONST_INT			\
 		? COSTS_N_INSNS (5)					\
 		: INTVAL (XEXP (X, 1)) >= -256 && INTVAL (XEXP (X, 1)) <= 255 \
 		? COSTS_N_INSNS (2) : COSTS_N_INSNS (3));		\
+      case PROCESSOR_PPC7450:						\
+        return (GET_CODE (XEXP (X, 1)) != CONST_INT			\
+		? COSTS_N_INSNS (4)					\
+		: COSTS_N_INSNS (3));			    		\
       case PROCESSOR_PPC403:						\
       case PROCESSOR_PPC604:						\
         return COSTS_N_INSNS (4);					\
