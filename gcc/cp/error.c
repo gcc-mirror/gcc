@@ -2651,43 +2651,50 @@ cp_tree_printer (buffer)
       ++output_buffer_text_cursor (buffer);
     }
 
-  if (*output_buffer_text_cursor (buffer) == 'P')
-      print_function_parameter
-        (buffer, va_arg (output_buffer_format_args (buffer), int));
-  else
+  switch (*output_buffer_text_cursor (buffer))
     {
+    case 'A':
       tree_being_formatted (&tfi) =
         va_arg (output_buffer_format_args (buffer), tree);
-
-      switch (*output_buffer_text_cursor (buffer))
-        {
-        case 'A':
-          print_function_argument_list (buffer, &tfi);
-          break;
-
-        case 'D':
-          print_declaration (buffer, &tfi);
-          break;
-
-        case 'E':
-          print_expression (buffer, &tfi);
-          break;
-          
-        case 'F':
-          print_function_declaration (buffer, &tfi);
-          break;
-
-        case 'T':
-          print_type (buffer, &tfi);
-          break;
-          
-        case 'V':
-          print_cv_qualifier (buffer, &tfi);
-          break;
-          
-        default:
-          return 0;
-        }
+      print_function_argument_list (buffer, &tfi);
+      break;
+      
+    case 'D':
+      tree_being_formatted (&tfi) =
+        va_arg (output_buffer_format_args (buffer), tree);
+      print_declaration (buffer, &tfi);
+      break;
+      
+    case 'E':
+      tree_being_formatted (&tfi) =
+        va_arg (output_buffer_format_args (buffer), tree);
+      print_expression (buffer, &tfi);
+      break;
+      
+    case 'F':
+      tree_being_formatted (&tfi) =
+        va_arg (output_buffer_format_args (buffer), tree);
+      print_function_declaration (buffer, &tfi);
+      break;
+      
+    case 'P':
+      print_function_parameter
+        (buffer, va_arg (output_buffer_format_args (buffer), int));
+      
+    case 'T':
+      tree_being_formatted (&tfi) =
+        va_arg (output_buffer_format_args (buffer), tree);
+      print_type (buffer, &tfi);
+      break;
+      
+    case 'V':
+      tree_being_formatted (&tfi) =
+        va_arg (output_buffer_format_args (buffer), tree);
+      print_cv_qualifier (buffer, &tfi);
+      break;
+      
+    default:
+      return 0;
     }
   
   return 1;
