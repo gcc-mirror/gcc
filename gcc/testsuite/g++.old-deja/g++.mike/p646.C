@@ -1,6 +1,5 @@
 // { dg-do assemble  }
 // { dg-options "-Wno-deprecated -Wreturn-type" }
-//
 // GROUPS passed i960
 /*
   Bug Id: bnr
@@ -102,7 +101,7 @@ warn_return_1 ()
 {
   foo f;
   printf ("returning 1\n");
-}                              // { dg-warning "" "" { xfail *-*-* } } control reaches end
+}                              // { dg-warning "" } control reaches end
 
 int
 warn_return_arg (int arg)
@@ -110,7 +109,7 @@ warn_return_arg (int arg)
   foo f;
   printf ("returning %d\n", arg);
   arg;
-}                              // { dg-warning "" "" { xfail *-*-* } } control reaches end
+}                              // { dg-warning "" } control reaches end
 
 int
 warn_return_sum (int x, int y)
@@ -118,20 +117,20 @@ warn_return_sum (int x, int y)
   foo f;
   printf ("returning %d+%d\n", x, y);
   x + y;
-}                              // { dg-warning "" "" { xfail *-*-* } } control reaches end
+}                              // { dg-warning "" } control reaches end
 
 foo
 warn_return_foo ()
 {
   foo f;
   printf ("returning foo\n");
-}                              // { dg-warning "" "" { xfail *-*-* } } control reaches end
+}                              // { dg-warning "" } control reaches end
 
 foo
 warn_foo_parm_returns_foo (foo f)
 {
   f;
-}                              // { dg-warning "" "" { xfail *-*-* } } control reaches end
+}                              // { dg-warning "" } control reaches end
 
 main ()
 {				// { dg-warning "" } no type
