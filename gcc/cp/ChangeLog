@@ -1,3 +1,14 @@
+2004-09-21  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/7503
+	* tree.c (lvalue_p_1):  Disallow MIN_EXPR and MAX_EXPR as lvalues
+	if either operand has side-effects.
+	* typeck.c (rationalize_conditional_expr): Assert that neither
+	operand of MIN_EXPR or MAX_EXPR has side-effects.
+	(build_modify_expr):  Add support for MIN_EXPR and MAX_EXPR.
+	Check that the "lhs" is a valid lvalue, i.e. that neither operand
+	of a MIN_EXPR or MAX_EXPR has a side-effect.
+
 2004-09-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (struct lang_type_header): Remove

@@ -1,3 +1,12 @@
+2004-09-21  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/7503
+	* g++.dg/opt/pr7503-1.C: New testcase for COND_EXPR lvalues.
+	* g++.dg/opt/pr7503-2.C: New testcase for <? and >? lvalues.
+	* g++.dg/opt/pr7503-3.C: New testcase for invalid <? lvalue errors.
+	* g++.dg/opt/pr7503-4.C: New testcase for <?= and >?= assignments.
+	* g++.dg/opt/pr7503-5.C: New testcase for side-effects with <?=.
+
 2004-09-21  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/17286
