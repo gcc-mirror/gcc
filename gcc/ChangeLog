@@ -1,4 +1,15 @@
+Thu Aug 13 16:09:53 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* expr.c (safe_from_p): Change code to ERROR_MARK only when not
+	accessing nodes.
+
 Thu Aug 13 15:24:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* toplev.c (display_help): Add braces to shut up warnings.
+
+	* fold-const.c (non_lvalue): Don't deal with null pointer 
+	constants here.
+	(fold, case COMPOUND_EXPR): Wrap a constant 0 in a NOP_EXPR.
 
 	* c-typeck.c (initializer_constant_valid_p): Allow conversion of 0
 	of any size to a pointer.

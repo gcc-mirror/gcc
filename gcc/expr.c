@@ -4983,13 +4983,19 @@ safe_from_p (x, exp, top_p)
 	  if (save_expr_count >= save_expr_size)
 	    return 0;
 	  save_expr_rewritten[save_expr_count++] = exp;
-	  TREE_SET_CODE (exp, ERROR_MARK);
 
 	  nops = tree_code_length[(int) SAVE_EXPR];
 	  for (i = 0; i < nops; i++)
-	    if (TREE_OPERAND (exp, i) != 0
-		&& ! safe_from_p (x, TREE_OPERAND (exp, i), 0))
-	      return 0;
+	    {
+	      tree operand = TREE_OPERAND (exp, i);
+	      if (operand == NULL_TREE)
+		continue;
+	      TREE_SET_CODE (exp, ERROR_MARK);
+	      if (!safe_from_p (x, operand, 0))
+		return 0;
+	      TREE_SET_CODE (exp, SAVE_EXPR);
+	    }
+	  TREE_SET_CODE (exp, ERROR_MARK);
 	  return 1;
 
 	case BIND_EXPR:
