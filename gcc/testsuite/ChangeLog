@@ -1,6 +1,11 @@
+2004-10-06  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/17368
+	* g++.dg/ext/asm6.C: New test.
+
 2004-10-06  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-	gcc.dg/20011119-1.c : Added memory attribute to asm sequence.
+	* gcc.dg/20011119-1.c : Added memory attribute to asm sequence.
 
 2004-10-06  Paul Brook  <paul@codesourcery.com>
 

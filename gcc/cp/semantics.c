@@ -1178,6 +1178,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		  output_operands, input_operands,
 		  clobbers);
   ASM_VOLATILE_P (r) = volatile_p;
+  r = maybe_cleanup_point_expr (r);
   return add_stmt (r);
 }
 
