@@ -49,8 +49,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef DBX_OUTPUT_MAIN_SOURCE_FILE_END
 #define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
-  fprintf (FILE,							\
-	   "\t.text\n\t.stabs \"\",%d,0,0,Letext\nLetext:\n", N_SO)
+  asm_fprintf (FILE,							\
+	       "\t.text\n\t.stabs \"\",%d,0,0,%LLetext\n%LLetext:\n", N_SO)
 
 /* Like block addresses, stabs line numbers are relative to the
    current function.  */
