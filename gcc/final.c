@@ -980,7 +980,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	}
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
 	  && (debug_info_level == DINFO_LEVEL_NORMAL
-	      || debug_info_level == DINFO_LEVEL_VERBOSE))
+	      || debug_info_level == DINFO_LEVEL_VERBOSE
+#ifdef DWARF_DEBUGGING_INFO
+	      || write_symbols == DWARF_DEBUG
+#endif
+	     )
+	 )
 	{
 	  /* Beginning of a symbol-block.  Assign it a sequence number
 	     and push the number onto the stack PENDING_BLOCKS.  */
@@ -1018,7 +1023,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	}
       else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END
 	       && (debug_info_level == DINFO_LEVEL_NORMAL
-		   || debug_info_level == DINFO_LEVEL_VERBOSE))
+		   || debug_info_level == DINFO_LEVEL_VERBOSE
+#ifdef DWARF_DEBUGGING_INFO
+	           || write_symbols == DWARF_DEBUG
+#endif
+	          )
+	      )
 	{
 	  /* End of a symbol-block.  Pop its sequence number off
 	     PENDING_BLOCKS and output debugging info based on that.  */
