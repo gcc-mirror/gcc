@@ -5,11 +5,26 @@
 # success.
 proc gcj_jni_compile_c_to_so {file {options {}}} {
   global srcdir
+  global host_triplet
+  verbose "options: $options"
+  set options_cxx $options
+  set options ""
 
+# apple uses a different extension for shared/dynamic libraries
+# so we check against powerpc-apple-darwin and set them to 
+# dylib, else we assume it's .so
+
+  if { [ regexp {powerpc-apple-darwin} $host_triplet] } {
+      set so_extension "dylib"
+      set so_flag "-dynamiclib"
+  } else {
+      set so_extension "so"
+      set so_flag "-shared"
+  }
   set name [file rootname [file tail $file]]
-  set soname lib${name}.so
+  set soname lib${name}.${so_extension}
 
-  lappend options "additional_flags=-shared -fPIC"
+  lappend options "additional_flags=${so_flag} -fPIC"
   # Find the generated header.
   lappend options "additional_flags=-I. -I.."
   # Find jni.h.
@@ -46,6 +61,17 @@ proc gcj_jni_build_header {file} {
 # Do all the work for a single JNI test.  Return 0 on failure.
 proc gcj_jni_test_one {file} {
   global runtests
+  global host_triplet
+
+# apple uses a different extension for shared/dynamic libraries
+# so we check against powerpc-apple-darwin and set them to 
+# dylib, else we assume it's .so
+
+  if { [ regexp {powerpc-apple-darwin} $host_triplet] } {
+      set so_extension "dylib"
+  } else {
+      set so_extension "so"
+  }
 
   # The base name.  We use it for several purposes.
   set main [file rootname [file tail $file]]
@@ -112,7 +138,7 @@ proc gcj_jni_test_one {file} {
   }
 
   # When we succeed we remove all our clutter.
-  eval gcj_cleanup [glob -nocomplain -- ${main}.*] [list $main lib${main}.so]
+  eval gcj_cleanup [glob -nocomplain -- ${main}.*] [list $main lib${main}.${so_extension}]
 
   return 1
 }
