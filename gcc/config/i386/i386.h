@@ -328,7 +328,7 @@ extern int ix86_arch;
 
 #ifndef CPP_CPU_SPEC
 #define CPP_CPU_SPEC "\
--Asystem(unix) -Acpu(i386) -Amachine(i386) \
+-Acpu(i386) -Amachine(i386) \
 %{!ansi:-Di386} -D__i386 -D__i386__ \
 %{mcpu=i486:%(cpp_486)} %{m486:%(cpp_486)} \
 %{mpentium:%(cpp_586)} %{mcpu=pentium:%(cpp_586)} \
