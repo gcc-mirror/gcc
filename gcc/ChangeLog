@@ -1,3 +1,8 @@
+2002-01-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload1.c (eliminate_regs_in_insn): Recognize frame pointer
+	adjustments even if they are implemented by more than two insns.
+
 Fri Jan 25 20:43:56 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* df.c (df_ref_create, df_ref_record_1, df_ref_record): Kill BB argument.
