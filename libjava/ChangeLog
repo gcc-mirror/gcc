@@ -1,3 +1,7 @@
+2002-07-27  Alan Modra  <amodra@bigpond.net.au>
+
+	* configure.host: Add powerpc64*-* entry.
+
 2002-07-26  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/natFileDescriptorPosix.cc: Don't include sys/socket.h or

@@ -101,6 +101,16 @@ case "${host}" in
 	libgcj_interpreter=yes
 	enable_hash_synchronization_default=yes
 	;;
+  powerpc64*-*)
+	# libffi not ported.
+	with_libffi_default=no
+	libgcj_interpreter=no
+	libgcj_flags="${libgcj_flags} -mminimal-toc"
+	# this may not be correct
+	sysdeps_dir=powerpc
+	enable_hash_synchronization_default=yes
+	slow_pthread_self=yes
+	;;
   powerpc*-*)
 	sysdeps_dir=powerpc
 	libgcj_interpreter=yes
