@@ -1,3 +1,12 @@
+Tue Mar 24 10:13:07 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* std/bastring.cc (basic_string::copy): Mark const here, too.
+
+1998-03-23 15:59  Ulrich Drepper  <drepper@cygnus.com>
+
+	* std/bastring.h (basic_string::copy): Mark copy function as const.
+	Reported by Scott Schurr <scotts@ims.com>.
+
 Thu Mar  5 09:23:28 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in: Make locating frag files failsafe even for the

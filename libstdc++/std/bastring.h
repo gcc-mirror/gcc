@@ -296,7 +296,7 @@ public:
     { resize (n, eos ()); }
   void reserve (size_type) { }
 
-  size_type copy (charT* s, size_type n, size_type pos = 0);
+  size_type copy (charT* s, size_type n, size_type pos = 0) const;
 
   size_type find (const basic_string& str, size_type pos = 0) const
     { return find (str.data(), pos, str.length()); }
