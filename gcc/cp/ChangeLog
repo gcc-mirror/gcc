@@ -1,3 +1,9 @@
+2003-07-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6949
+	* decl2.c (grokfield): Create TEMPLATE_DECLs for methods in local
+	classes.
+
 2003-07-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* error.c (locate_error): %P takes an `int', not a `tree'.
