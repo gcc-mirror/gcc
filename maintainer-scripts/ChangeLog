@@ -1,3 +1,9 @@
+2002-07-28  Andreas Jaeger  <aj@suse.de>
+
+	* gcc_release: Update comment.
+
+	* snapshot-README: Snapshots are taken from GCC 3.2 branch.
+
 2002-07-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_release: Use the 3.2 branch for snapshots.
@@ -171,7 +177,7 @@
 
 2001-06-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
-	* update_web_docs: Only update the install documentation for the 
+	* update_web_docs: Only update the install documentation for the
 	CVS HEAD.
 
 2001-06-07  Joseph S. Myers  <jsm28@cam.ac.uk>
