@@ -2584,7 +2584,7 @@ to such programs, to wrap around
 (change from a larger value to a smaller one)
 as of the Year 10000.
 
-@xref{Fdate Intrinsic (subroutine)} for an equivalent routine.
+@xref{FDate Intrinsic (subroutine)} for an equivalent routine.
 ")
 
 DEFDOC (IBCLR, "Clear a bit.", "\
