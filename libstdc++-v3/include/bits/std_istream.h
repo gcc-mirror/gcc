@@ -240,12 +240,12 @@ namespace std {
   template<class _Traits>
     basic_istream<char, _Traits>&
     operator>>(basic_istream<char, _Traits>& __in, unsigned char& __c)
-    { return (__in >> static_cast<char>(__c)); }
+    { return (__in >> reinterpret_cast<char&>(__c)); }
 
   template<class _Traits>
     basic_istream<char, _Traits>&
     operator>>(basic_istream<char, _Traits>& __in, signed char& __c)
-    { return (__in >> static_cast<char>(__c)); }
+    { return (__in >> reinterpret_cast<char&>(__c)); }
 
   template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>&
