@@ -8506,6 +8506,8 @@ expand_static_init (decl, init)
 	{
 	  tree cleanup, fcall;
 	  static tree Atexit = 0;
+	  int saved_flag_access_control;
+
 	  if (Atexit == 0)
 	    {
 	      tree atexit_fndecl, PFV, pfvlist;
@@ -8532,13 +8534,31 @@ expand_static_init (decl, init)
 	     so that any access checks will be done relative to the
 	     current scope, rather than the scope of the anonymous
 	     function.  */
-	  fcall = build_cleanup (decl);
+	  build_cleanup (decl);
+
+	  /* Now start the function.  */
 	  cleanup = start_anon_func ();
+
+	  /* Now, recompute the cleanup.  It may contain SAVE_EXPRs
+	     that refer to the original function, rather than the
+	     anonymous one.  That will make the back-end think that
+	     nested functions are in use, which causes confusion.  */
+	  saved_flag_access_control = flag_access_control;
+	  flag_access_control = 0;
+	  fcall = build_cleanup (decl);
+	  flag_access_control = saved_flag_access_control;
+
+	  /* Finish off the function.  */
 	  expand_expr_stmt (fcall);
 	  end_anon_func ();
+
+	  /* Call atexit with the cleanup function.  */
 	  mark_addressable (cleanup);
 	  cleanup = build_unary_op (ADDR_EXPR, cleanup, 0);
-	  fcall = build_function_call (Atexit, expr_tree_cons (NULL_TREE, cleanup, NULL_TREE));
+	  fcall = build_function_call (Atexit, 
+				       expr_tree_cons (NULL_TREE, 
+						       cleanup, 
+						       NULL_TREE));
 	  expand_expr_stmt (fcall);
 	}
 
