@@ -1,3 +1,8 @@
+2003-06-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (build_op_delete_call): Use strip_array_call. Correct
+	error message to say 'delete' or 'delete[]'.
+
 2003-06-26  Giovanni Bajo  <giovannibajo@libero.it>
 
         PR c++/8266
