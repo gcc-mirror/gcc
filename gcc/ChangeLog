@@ -1,3 +1,13 @@
+2000-11-07  Richard Henderson  <rth@redhat.com>
+
+	* c-lang.c (start_cdtor, finish_cdtor): New functions.
+	(finish_file): Use them in building constructor/destructor functions.
+
+	* config/alpha/alpha.h (HAS_INIT_SECTION, LD_INIT_SWITCH, 
+	LD_FINI_SWITCH): Move ...
+	* config/alpha/osf.h: ... here.
+	* config/alpha/alpha-interix.h: Don't undef them.
+
 2000-11-07  Jeffrey Oldham  <oldham@oz.codesourcery.com>
 
 	* config/mips/t-iris6 (FPBIT): New.  Added so that __unorddf2 is

@@ -183,63 +183,86 @@ lookup_objc_ivar (id)
   return 0;
 }
 
+#if !defined(ASM_OUTPUT_CONSTRUCTOR) || !defined(ASM_OUTPUT_DESTRUCTOR)
+extern tree static_ctors;
+extern tree static_dtors;
+
+static tree start_cdtor		PARAMS ((int));
+static void finish_cdtor	PARAMS ((tree));
+
+static tree
+start_cdtor (method_type)
+     int method_type;
+{
+  tree fnname = get_file_function_name (method_type);
+  tree void_list_node_1 = build_tree_list (NULL_TREE, void_type_node);
+  tree body;
+
+  start_function (void_list_node_1,
+		  build_parse_node (CALL_EXPR, fnname, 
+				    tree_cons (NULL_TREE, NULL_TREE, 
+					       void_list_node_1),
+				    NULL_TREE),
+		  NULL_TREE, NULL_TREE);
+  store_parm_decls ();
+
+  current_function_cannot_inline
+    = "static constructors and destructors cannot be inlined";
+
+  body = c_begin_compound_stmt ();
+
+  pushlevel (0);
+  clear_last_expr ();
+  add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
+
+  return body;
+}
+
+static void
+finish_cdtor (body)
+     tree body;
+{
+  tree scope;
+  tree block;
+
+  scope = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
+  block = poplevel (0, 0, 0); 
+  SCOPE_STMT_BLOCK (TREE_PURPOSE (scope)) = block;
+  SCOPE_STMT_BLOCK (TREE_VALUE (scope)) = block;
+
+  RECHAIN_STMTS (body, COMPOUND_BODY (body)); 
+
+  finish_function (0);
+}
+#endif
+
 /* Called at end of parsing, but before end-of-file processing.  */
 
 void
 finish_file ()
 {
 #ifndef ASM_OUTPUT_CONSTRUCTOR
-  extern tree static_ctors;
-#endif
-#ifndef ASM_OUTPUT_DESTRUCTOR
-  extern tree static_dtors;
-#endif
-  extern tree build_function_call                 PARAMS ((tree, tree));
-#if !defined(ASM_OUTPUT_CONSTRUCTOR) || !defined(ASM_OUTPUT_DESTRUCTOR)
-  tree void_list_node_1 = build_tree_list (NULL_TREE, void_type_node);
-#endif
-#ifndef ASM_OUTPUT_CONSTRUCTOR
   if (static_ctors)
     {
-      tree fnname = get_file_function_name ('I');
-      start_function (void_list_node_1,
-		      build_parse_node (CALL_EXPR, fnname, 
-					tree_cons (NULL_TREE, NULL_TREE, 
-						   void_list_node_1),
-					NULL_TREE),
-		      NULL_TREE, NULL_TREE);
-      fnname = DECL_ASSEMBLER_NAME (current_function_decl);
-      store_parm_decls ();
+      tree body = start_cdtor ('I');
 
       for (; static_ctors; static_ctors = TREE_CHAIN (static_ctors))
-	expand_expr_stmt (build_function_call (TREE_VALUE (static_ctors),
-					       NULL_TREE));
+	c_expand_expr_stmt (build_function_call (TREE_VALUE (static_ctors),
+						 NULL_TREE));
 
-      finish_function (0);
-
-      assemble_constructor (IDENTIFIER_POINTER (fnname));
+      finish_cdtor (body);
     }
 #endif
 #ifndef ASM_OUTPUT_DESTRUCTOR
   if (static_dtors)
     {
-      tree fnname = get_file_function_name ('D');
-      start_function (void_list_node_1,
-		      build_parse_node (CALL_EXPR, fnname, 
-					tree_cons (NULL_TREE, NULL_TREE,
-						   void_list_node_1),
-					NULL_TREE),
-		      NULL_TREE, NULL_TREE);
-      fnname = DECL_ASSEMBLER_NAME (current_function_decl);
-      store_parm_decls ();
+      tree body = start_cdtor ('D');
 
       for (; static_dtors; static_dtors = TREE_CHAIN (static_dtors))
-	expand_expr_stmt (build_function_call (TREE_VALUE (static_dtors),
-					       NULL_TREE));
+	c_expand_expr_stmt (build_function_call (TREE_VALUE (static_dtors),
+						 NULL_TREE));
 
-      finish_function (0);
-
-      assemble_destructor (IDENTIFIER_POINTER (fnname));
+      finish_cdtor (body);
     }
 #endif
   
