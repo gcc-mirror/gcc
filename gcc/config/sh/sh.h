@@ -1,4 +1,5 @@
-/* Definitions of target machine for GNU compiler, for Hitachi Super-H.
+/* Definitions of target machine for GNU compiler, 
+   for Hitachi Super-H.
    Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
    Contributed by Steve Chamberlain (sac@cygnus.com)
@@ -83,6 +84,7 @@ extern int target_flags;
 #define CONSTLEN_0_BIT  (1<<25)
 #define BSR_BIT   	(1<<26)
 #define SHORTADDR_BIT   (1<<27)
+#define PACKSTRUCT_BIT  (1<<28)
 
 /* Nonzero if we should generate code using type 0 insns */
 #define TARGET_SH0 (target_flags & SH0_BIT)
@@ -141,11 +143,14 @@ extern int target_flags;
 
 /* Nonzero if using Hitachi's calling convention */
 #define TARGET_HITACHI 		(target_flags & HITACHI_BIT)
+
 #define TARGET_PARANOID 	(target_flags & PARANOID_BIT)
 #define TARGET_RETR2 		(target_flags & RETR2_BIT)
 #define TARGET_SHORTADDR	(target_flags & SHORTADDR_BIT)
 #define TARGET_BSR		(target_flags & BSR_BIT)
 
+/* Nonzero if packing structures as small as they'll go (incompatible with Hitachi's compiler) */
+#define TARGET_PACKSTRUCT       (target_flags & PACKSTRUCT_BIT)
 
 #define TARGET_SWITCHES  		\
 { {"isize", 	( ISIZE_BIT) },		\
@@ -170,10 +175,11 @@ extern int target_flags;
   {"r2",	( RETR2_BIT) },		\
   {"shortaddr", ( SHORTADDR_BIT) },     \
   {"bsr",       ( BSR_BIT) },    	\
+  {"packstruct",( PACKSTRUCT_BIT) },    \
   {"",   	TARGET_DEFAULT} 	\
 }
 
-#define TARGET_DEFAULT  (FAST_BIT)
+#define TARGET_DEFAULT  (FAST_BIT | BIGTABLE_BIT)
 
 /* Macro to define table for command options with values.  */
 #define TARGET_OPTIONS \
@@ -206,7 +212,7 @@ do {								\
   if (max_hi)							\
     max_count_hi = atoi (max_hi);				\
   else      							\
-    max_count_hi = 505;				                \
+    max_count_hi = 500;				                \
   if (TARGET_BSR)                                               \
      flag_no_function_cse = 1;                                  \
 } while (0)
@@ -264,9 +270,6 @@ do {								\
 /* The best alignment to use in cases where we have a choice.  */
 #define FASTEST_ALIGNMENT 32
 
-/* Every structures size must be a multiple of 32 bits.  */
-#define STRUCTURE_SIZE_BOUNDARY 32
-
 /* Make strings word-aligned so strcpy from constants will be faster.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
   ((TREE_CODE (EXP) == STRING_CST	\
@@ -278,6 +281,11 @@ do {								\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < FASTEST_ALIGNMENT ? FASTEST_ALIGNMENT : (ALIGN))
+
+/* Number of bits which any structure or union's size must be a
+   multiple of.  Each structure or union's size is rounded up to a
+   multiple of this. */
+#define STRUCTURE_SIZE_BOUNDARY (TARGET_PACKSTRUCT ? 8 : 32)
 
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
@@ -305,9 +313,7 @@ do {								\
    The hardware registers are assigned numbers for the compiler
    from 0 to just below FIRST_PSEUDO_REGISTER.
    All registers that the compiler knows about must be given numbers,
-   even those that are not normally considered general registers.
-
-*/
+   even those that are not normally considered general registers. */
 
 #define AP_REG   16  
 #define PR_REG   17
@@ -867,7 +873,7 @@ extern int current_function_anonymous_args;
 /* Nonzero if the constant value X is a legitimate general operand. */
 
 #define LEGITIMATE_CONSTANT_P(X) \
-  (GET_CODE(X) != CONST_DOUBLE && GET_CODE(X) != LABEL_REF)
+  (GET_CODE(X) != CONST_DOUBLE /*&& GET_CODE(X) != LABEL_REF*/)
 
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
@@ -877,9 +883,9 @@ extern int current_function_anonymous_args;
    them unless they have been allocated suitable hard regs.
    The symbol REG_OK_STRICT causes the latter definition to be used.  */
 
-#define MODE_DISP_OK_4(X,MODE) ((GET_MODE_SIZE(MODE)==4) && ((unsigned)INTVAL(X)<64))
-#define MODE_DISP_OK_8(X,MODE) ((GET_MODE_SIZE(MODE)==8) && ((unsigned)INTVAL(X)<60))
-#define MODE_DISP_OK_2(X,MODE) ((GET_MODE_SIZE(MODE)==2) && ((unsigned)INTVAL(X)<32) && TARGET_TRYR0)
+#define MODE_DISP_OK_4(X,MODE) ((GET_MODE_SIZE(MODE)==4) && ((unsigned)INTVAL(X)<64) && (!(INTVAL(X) &3)))
+#define MODE_DISP_OK_8(X,MODE) ((GET_MODE_SIZE(MODE)==8) && ((unsigned)INTVAL(X)<60) && (!(INTVAL(X) &3)))
+#define MODE_DISP_OK_2(X,MODE) ((GET_MODE_SIZE(MODE)==2) && ((unsigned)INTVAL(X)<32) && TARGET_TRYR0 && (!INTVAL(X) &1))
 #define MODE_DISP_OK_1(X,MODE) ((GET_MODE_SIZE(MODE)==1) && ((unsigned)INTVAL(X)<16) && TARGET_TRYR0)
 
 #ifndef REG_OK_STRICT
@@ -896,7 +902,7 @@ extern int current_function_anonymous_args;
   (REGNO (X) == 0 || REGNO(X) >= FIRST_PSEUDO_REGISTER)
 
 #define REG_OK_FOR_PRE_POST_P(X) \
-  	(REG_OK_FOR_INDEX_P (X))
+  	(REG_OK_FOR_BASE_P (X))
 
 #else
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
@@ -908,7 +914,7 @@ extern int current_function_anonymous_args;
   	REGNO_OK_FOR_INDEX_P (REGNO (X))
 
 #define REG_OK_FOR_PRE_POST_P(X)  \
-	(REGNO_OK_FOR_INDEX_P (REGNO (X)))
+	(REGNO_OK_FOR_BASE_P (REGNO (X)))
 #endif
 
 /* The Q is a pc relative load operand */
@@ -1039,7 +1045,7 @@ extern int current_function_anonymous_args;
 /* Define this if the tablejump instruction expects the table
    to contain offsets from the address of the table.
    Do not define this if the table should contain absolute addresses.  */
-#define CASE_VECTOR_PC_RELATIVE 
+/*#define CASE_VECTOR_PC_RELATIVE */
 
 /* Specify the tree operation to be used to convert reals to integers.  */
 #define IMPLICIT_FIX_EXPR  FIX_ROUND_EXPR
@@ -1052,6 +1058,9 @@ extern int current_function_anonymous_args;
 
 /* The type of size_t unsigned int.  */
 #define SIZE_TYPE "unsigned int"
+
+#define WCHAR_TYPE "short unsigned int"
+#define WCHAR_TYPE_SIZE 16
 
 /* Don't cse the address of the function being compiled.  */
 /*#define NO_RECURSIVE_FUNCTION_CSE 1*/
@@ -1195,13 +1204,14 @@ extern int current_function_anonymous_args;
 
 /* How to change between sections. */
 
-#define TEXT_SECTION_ASM_OP  	"\t.text"
-#define DATA_SECTION_ASM_OP  	"\t.data"
-#define CTORS_SECTION_ASM_OP 	"\t.section\t.ctors\n"
-#define DTORS_SECTION_ASM_OP 	"\t.section\t.dtors\n"
-#define INIT_SECTION_ASM_OP  	"\t.section\t.init\n"
-#define EXTRA_SECTIONS 		in_ctors, in_dtors
-
+#define TEXT_SECTION_ASM_OP  		"\t.text"
+#define DATA_SECTION_ASM_OP  		"\t.data"
+#define READONLY_DATA_SECTION_ASM_OP 	"\t.section\t.rdata\n"
+#define CTORS_SECTION_ASM_OP 		"\t.section\t.ctors\n"
+#define DTORS_SECTION_ASM_OP 		"\t.section\t.dtors\n"
+#define INIT_SECTION_ASM_OP  		"\t.section\t.init\n"
+#define EXTRA_SECTIONS 			in_ctors, in_dtors, in_rdata
+#define READONLY_DATA_SECTION   	rdata_section
 #define EXTRA_SECTION_FUNCTIONS                              \
 void							     \
 ctors_section() 					     \
@@ -1219,6 +1229,15 @@ dtors_section() 					     \
     {							     \
       fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);  \
       in_section = in_dtors;				     \
+    }							     \
+}                                                            \
+void							     \
+rdata_section() 					     \
+{							     \
+  if (in_section != in_rdata)				     \
+    {							     \
+      fprintf (asm_out_file, "%s\n", READONLY_DATA_SECTION_ASM_OP);  \
+      in_section = in_rdata;				     \
     }							     \
 }							      
 
@@ -1462,7 +1481,7 @@ extern char *output_far_jump();
 
 #define TARGET_MEM_FUNCTIONS
 
-#define HANDLE_PRAGMA(finput) handle_pragma (finput)
+#define HANDLE_PRAGMA(finput) return handle_pragma (finput)
 
 /* Set when processing a function with pragma interrupt turned on. */
 
