@@ -479,7 +479,7 @@ tree_ssa_dominator_optimize (void)
 	    SSA_NAME_VALUE (name) = NULL;
 	}
     }
-  while (cfg_altered);
+  while (optimize > 1 && cfg_altered);
 
   /* Debugging dumps.  */
   if (dump_file && (dump_flags & TDF_STATS))

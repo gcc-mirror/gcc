@@ -481,7 +481,6 @@ decode_options (unsigned int argc, const char **argv)
   if (optimize >= 1)
     {
       flag_defer_pop = 1;
-      flag_thread_jumps = 1;
 #ifdef DELAY_SLOTS
       flag_delayed_branch = 1;
 #endif
@@ -510,14 +509,12 @@ decode_options (unsigned int argc, const char **argv)
 	     the condition is satisfied in the first iteration and therefore
 	     to eliminate it.  Jump threading handles these cases now.  */
 	  flag_tree_ch = 1;
- 
-          /* PRE tends to generate bigger code.  */
-          flag_tree_pre = 1;
 	}
     }
 
   if (optimize >= 2)
     {
+      flag_thread_jumps = 1;
       flag_crossjumping = 1;
       flag_optimize_sibling_calls = 1;
       flag_cse_follow_jumps = 1;
@@ -540,6 +537,12 @@ decode_options (unsigned int argc, const char **argv)
       flag_reorder_blocks = 1;
       flag_reorder_functions = 1;
       flag_unit_at_a_time = 1;
+
+      if (!optimize_size)
+	{
+          /* PRE tends to generate bigger code.  */
+          flag_tree_pre = 1;
+	}
     }
 
   if (optimize >= 3)

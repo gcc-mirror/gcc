@@ -1,3 +1,11 @@
+2005-01-27  Steven Bosscher  <stevenb@suse.de>
+
+	PR middle-end/17278
+	* opts.c (decode_options): Move flag_thread_jumps from -O1 and
+	higher to -O2 and higher.  Likewise for tree PRE.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Only iterate at -O2
+	and better.
+
 2005-01-27  Ian Lance Taylor  <ian@c2micro.com>
 
 	PR middle-end/19583
