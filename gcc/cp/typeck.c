@@ -3620,13 +3620,15 @@ build_x_unary_op (enum tree_code code, tree xarg)
 	{
 	  if (TREE_CODE (xarg) != OFFSET_REF)
 	    {
-	      error ("invalid use of '%E' to form a pointer-to-member-function.  Use a qualified-id.",
+	      error ("invalid use of %qE to form a pointer-to-member-function."
+                     "  Use a qualified-id.",
 		     xarg);
 	      return error_mark_node;
 	    }
 	  else
 	    {
-	      error ("parenthesis around '%E' cannot be used to form a pointer-to-member-function",
+	      error ("parenthesis around %qE cannot be used to form a"
+                     " pointer-to-member-function",
 		     xarg);
 	      PTRMEM_OK_P (xarg) = 1;
 	    }
@@ -4802,7 +4804,7 @@ convert_member_func_to_ptr (tree type, tree expr)
 	      || TREE_CODE (intype) == METHOD_TYPE);
 
   if (pedantic || warn_pmf2ptr)
-    pedwarn ("converting from `%T' to `%T'", intype, type);
+    pedwarn ("converting from %qT to %qT", intype, type);
     
   if (TREE_CODE (intype) == METHOD_TYPE)
     expr = build_addr_func (expr);
@@ -5595,7 +5597,7 @@ get_delta_difference (tree from, tree to,
 	      virt_binfo = binfo_from_vbase (binfo);
 	      if (virt_binfo)
 		/* This is a reinterpret cast, we choose to do nothing.  */
-		warning ("pointer to member cast via virtual base `%T'",
+		warning ("pointer to member cast via virtual base %qT",
 			 BINFO_TYPE (virt_binfo));
 	      else
 		result = size_diffop (size_zero_node, BINFO_OFFSET (binfo));

@@ -2152,7 +2152,7 @@ cp_print_error_function (diagnostic_context *context,
       if (current_function_decl == NULL)
         pp_base_string (context->printer, "At global scope:");
       else
-        pp_printf (context->printer, "In %s `%s':",
+        pp_printf (context->printer, "In %s %qs:",
                    function_category (current_function_decl),
                    cxx_printable_name (current_function_decl, 2));
       pp_base_newline (context->printer);
@@ -2206,7 +2206,7 @@ print_instantiation_full_context (diagnostic_context *context)
 	    /* Avoid redundancy with the the "In function" line.  */;
 	  else
 	    pp_verbatim (context->printer,
-                         "%s: In instantiation of `%s':\n",
+                         "%s: In instantiation of %qs:\n",
 			 LOCATION_FILE (location),
                          decl_as_string (TINST_DECL (p),
                                          TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
