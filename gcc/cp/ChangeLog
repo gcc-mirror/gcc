@@ -1,3 +1,9 @@
+Wed Apr  1 18:22:25 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* class.c, Make sure system.h is included just after config.h.
+	Delete lingering stdio and errno references too.
+	* decl.c, errfn.c, parse.y, ptree.c search.c, xrefc.: Likewwise.
+	
 Wed Apr  1 15:38:36 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* friend.c (is_friend): Fix access control for local classes.
