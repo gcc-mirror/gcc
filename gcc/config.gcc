@@ -1819,11 +1819,6 @@ mips-sgi-*)	# would otherwise be caught by mips-*-elf*
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	tm_file="elfos.h mips/netbsd.h"
-	case $machine in
-	mips*el-*)
-		tm_file="mips/little.h $tm_file" 
-		;;
-	esac
 	tmake_file="${tmake_file} mips/t-netbsd"
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
@@ -1834,11 +1829,6 @@ mips*-*-linux*)				# Linux MIPS, either endian.
                 target_cpu_default="MASK_SOFT_FLOAT"
                 ;;
         esac
-        case $machine in
-        mips*el-*)
-                tm_file="mips/little.h $tm_file"
-                ;;
-	esac
 	tmake_file="t-slibgcc-elf-ver t-linux mips/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	gnu_ld=yes
@@ -1854,46 +1844,27 @@ mips*-*-openbsd*)		# mips big endian
 	target_cpu_default="MASK_GAS|MASK_ABICALLS"
 	tm_file="mips/openbsd-be.h ${tm_file}"
 	;;
-mipsel-*-ecoff*)
-	tm_file=mips/ecoffl.h
-	if test x$stabs = xyes; then
-		tm_file="${tm_file} dbx.h"
-	fi
-	tmake_file=mips/t-ecoff
-	;;
-mips-*-ecoff*)
+mips-*-ecoff* | mipsel-*-ecoff*)
 	tm_file="gofast.h mips/ecoff.h"
 	if test x$stabs = xyes; then
 		tm_file="${tm_file} dbx.h"
 	fi
 	tmake_file=mips/t-ecoff
 	;;
-mipsisa32-*-elf*)
+mipsisa32-*-elf* | mipsisa32el-*-elf*)
 	tm_file="mips/isa3264.h mips/abi64.h"
 	tmake_file=mips/t-isa3264
 	target_cpu_default="MASK_SOFT_FLOAT"
 	;;
-mipsel-*-elf*)
-	tm_file="mips/elfl.h"
-	tmake_file=mips/t-elf
-	;;
-mips-*-elf*)
+mips-*-elf* | mipsel-*-elf*)
 	tm_file="mips/elf.h"
 	tmake_file=mips/t-elf
 	;;
-mips64el-*-elf*)
-	tm_file="mips/elfl64.h"
-	tmake_file=mips/t-elf
-	;;
-mips64orionel-*-elf*)
-	tm_file="mips/elforion.h mips/elfl64.h"
-	tmake_file=mips/t-elf
-	;;
-mips64-*-elf*)
+mips64-*-elf* | mips64el-*-elf*)
 	tm_file="mips/elf64.h"
 	tmake_file=mips/t-elf
 	;;
-mips64orion-*-elf*)
+mips64orion-*-elf* | mips64orionel-*-elf*)
 	tm_file="mips/elforion.h mips/elf64.h"
 	tmake_file=mips/t-elf
 	;;
@@ -1913,12 +1884,7 @@ mips*-*-rtems*)
 	  thread_file='rtems'
 	fi
 	;;
-mipstx39el-*-elf*)
-	tm_file="mips/r3900.h mips/elfl.h mips/abi64.h"
-	tmake_file=mips/t-r3900
-	target_cpu_default="MASK_SOFT_FLOAT"
-	;;
-mipstx39-*-elf*)
+mipstx39-*-elf* | mipstx39el-*-elf*)
 	tm_file="mips/r3900.h mips/elf.h mips/abi64.h"
 	tmake_file=mips/t-r3900
 	;;
@@ -2856,23 +2822,31 @@ hppa*-*-* | parisc*-*-*)
 			;;
 	esac
 	;;
-
-mips*-*-ecoff* | mips*-*-elf*)
-	if test x$gas = xyes
-	then
-		if test x$gnu_ld = xyes
+mips*-*-*)
+	case $machine in
+	mips*-*-ecoff* | mips*-*-elf*)
+		if test x$gas = xyes
 		then
-			target_cpu_default2="MASK_GAS|MASK_SPLIT_ADDR"
-		else
+			if test x$gnu_ld = xyes
+			then
+				target_cpu_default2="MASK_GAS|MASK_SPLIT_ADDR"
+			else
+				target_cpu_default2="MASK_GAS"
+			fi
+		fi
+		;;
+	mips*-*-*)
+		if test x$gas = xyes
+		then
 			target_cpu_default2="MASK_GAS"
 		fi
-	fi
-	;;
-mips*-*-*)
-	if test x$gas = xyes
-	then
-		target_cpu_default2="MASK_GAS"
-	fi
+		;;
+	esac
+	case $machine in
+		mips*el-*-*)
+			tm_file="mips/little.h ${tm_file}"
+			;;
+	esac
 	;;
 powerpc*-*-* | rs6000-*-*)
         if test x$enable_altivec = xyes
