@@ -735,7 +735,7 @@ struct cum_arg
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE ((TARGET_H8300 || TARGET_NORMAL_MODE) ? 8 : 12)
+#define TRAMPOLINE_SIZE ((Pmode == HImode) ? 8 : 12)
 
 /* Emit RTL insns to build a trampoline.
    FNADDR is an RTX for the address of the function's pure code.

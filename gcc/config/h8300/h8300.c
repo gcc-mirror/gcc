@@ -435,7 +435,7 @@ push (int rn)
   if (TARGET_H8300)
     x = gen_push_h8300 (reg);
   else if (!TARGET_NORMAL_MODE)
-    x = gen_push_h8300hs (reg);
+    x = gen_push_h8300hs_advanced (reg);
   else
     x = gen_push_h8300hs_normal (reg);
   x = emit_insn (x);
@@ -453,7 +453,7 @@ pop (int rn)
   if (TARGET_H8300)
     x = gen_pop_h8300 (reg);
   else if (!TARGET_NORMAL_MODE)
-    x = gen_pop_h8300hs (reg);
+    x = gen_pop_h8300hs_advanced (reg);
   else
     x = gen_pop_h8300hs_normal (reg);
   x = emit_insn (x);
