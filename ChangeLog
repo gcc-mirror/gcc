@@ -1,5 +1,9 @@
 2004-11-15  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* install-sh, compile: Import from automake.
+
+2004-11-15  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* config.guess, config.sub:  Import from savannnah.
 
 2004-11-12  Scott Robert Ladd  <scott.ladd@coyotegulch.com>
