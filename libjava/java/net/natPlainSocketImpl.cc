@@ -18,6 +18,11 @@ details.  */
 #include <stdio.h>
 #include <string.h>
 
+#if HAVE_BSTRING_H
+// Needed for bzero, implicitly used by FD_ZERO on IRIX 5.2 
+#include <bstring.h>
+#endif
+
 #include <cni.h>
 #include <javaprims.h>
 #include <java/io/IOException.h>

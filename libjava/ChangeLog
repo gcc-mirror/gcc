@@ -1,3 +1,10 @@
+1999-08-01  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* configure.in: Check for bstring.h.
+	* configure, include/config.h.in: Rebuilt.
+	* java/net/natPlainDatagramSocketImpl.cc: #include bstring.h.
+	* java/net/natPlainSocketImpl.cc: Likewise.
+
 1999-07-31  Tom Tromey  <tromey@cygnus.com>
 
 	* NEWS: Likewise.
