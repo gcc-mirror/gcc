@@ -1,3 +1,7 @@
+2002-05-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (two anonymous patterns): New.
+
 2002-05-28  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.md (cpu): Tidy.
