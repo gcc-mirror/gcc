@@ -7375,7 +7375,7 @@ gen_enumeration_type_die (type, context_die)
 
       TREE_ASM_WRITTEN (type) = 1;
       add_byte_size_attribute (type_die, type);
-      if (type_tag (type))
+      if (TYPE_STUB_DECL (type) != NULL_TREE)
 	add_src_coords_attributes (type_die, TYPE_STUB_DECL (type));
 
       /* If the first reference to this type was as the return type of an
@@ -8235,7 +8235,7 @@ gen_struct_or_union_type_die (type, context_die)
          this type is expressed in terms of this type itself.  */
       TREE_ASM_WRITTEN (type) = 1;
       add_byte_size_attribute (type_die, type);
-      if (type_tag (type))
+      if (TYPE_STUB_DECL (type) != NULL_TREE)
 	add_src_coords_attributes (type_die, TYPE_STUB_DECL (type));
 
       /* If the first reference to this type was as the return type of an
