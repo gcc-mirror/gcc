@@ -1,0 +1,483 @@
+@\input texinfo @c -*-texinfo-*-
+@setfilename gcj.info
+@settitle Guide to GNU gcj
+
+@c Note: When reading this manual you'll find lots of strange
+@c circumlocutions like ``compiler for the Java language''.
+@c This is necessary due to Sun's restrictions on the use of
+@c the word ``Java'.
+
+
+@ifinfo
+@format
+@dircategory Programming
+@direntry
+* Gcj: (gcj).               Ahead-of-time compiler for the Java language
+@end direntry
+
+@dircategory Individual utilities
+@direntry
+* gcjh: (gcj)Invoking gcjh.
+                            Generate header files from Java class files
+* jv-scan: (gcj)Invoking jv-scan.
+                            Print information about Java source files
+* jcf-dump: (gcj)Invoking jcf-dump.
+                            Print information about Java class files
+* gij: (gcj)Invoking gij.   GNU interpreter for Java bytecode
+@end direntry
+@end format
+@end ifinfo
+
+@titlepage
+@title GNU gcj
+@author Tom Tromey
+@end titlepage
+
+@node Top
+@top Introduction
+
+This manual describes how to use @code{gcj}, the GNU compiler for the
+Java programming language.  @code{gcj} can generate both @file{.class}
+files and object files, and it can read both Java source code and
+@file{.class} files.
+
+@menu
+* Invoking gcj::	Compiler options supported by @code{gcj}
+* Compatibility::	Compatibility between gcj and other tools for Java
+* Invoking gcjh::       Generate header files from class files
+* Invoking jv-scan::    Print information about source files
+* Invoking jcf-dump::   Print information about class files
+* Invoking gij::	Interpreting Java bytecodes
+* Resources::		Where to look for more information
+@end menu
+
+
+@node Invoking gcj
+@chapter Invoking gcj
+
+As @code{gcj} is just another front end to @code{gcc}, it supports many
+of the same options as gcc.  @xref{Option Summary, , Option Summary,
+gcc, Using the GNU Compiler Collection}.  This manual only documents the
+options specific to @code{gcj}.
+
+@menu
+* Input Options::		How to find input files
+* Encodings::                   Options controlling source file encoding
+* Warnings::			Options controlling warnings specific to gcj
+* Code Generation::		Options controlling the output of gcj
+* Configure-time Options::	Options you won't use
+@end menu
+
+
+@node Input Options
+@section Input Options
+
+@cindex class path
+
+@code{gcj} has options to control where it looks to find input files.
+Like other compilers for the Java language, @code{gcj} has a notion of a
+@dfn{class path}.  There are several options and environment variables
+which can be used to manipulate the class path.  When @code{gcj} looks
+for a given class, it searches the class path looking for the
+corresponding @file{.class} file.  @code{gcj} comes with a built-in
+class path which points at the installed @file{libgcj.jar}, a file which
+contains all the standard classes.
+
+In the below, a directory or path component can refer either to an
+actual directory on the filesystem, or to a @file{.zip} or @file{.jar}
+file, which @code{gcj} will search as if it is a directory.
+
+@table @code
+@item -I@var{dir}
+All directories specified by @code{-I} are kept in order and prepended
+to the class path constructed from all the other options.  Unless
+compatibility with tools like @code{javac} is imported, we recommend
+always using @code{-I} instead of the other options for manipulating the
+class path.
+
+@item --classpath=@var{path}
+This sets the class path to @var{path}, a colon-separated list of paths
+(on Windows-based systems, a semicolon-separate list of paths).
+
+@item --CLASSPATH=@var{path}
+This sets the class path to @var{path}, a colon-separated list of paths
+(on Windows-based systems, a semicolon-separate list of paths).  This
+differs from the @code{--classpath} option in that it also suppresses
+the built-in system path.
+
+@item CLASSPATH
+This is an environment variable which holds a list of paths.
+@end table
+
+The final class path is constructed like so:
+
+@itemize @bullet
+@item
+First come all directories specified via @code{-I}.
+
+@item
+If @code{--classpath} is specified, its value is appended and processing
+stops.  That is, @code{--classpath} suppresses all the options mentioned
+later in this list.
+
+@item
+If @code{--CLASSPATH} is specified, its value is appended and the
+@code{CLASSPATH} environment variable is suppressed.
+
+@item
+If the @code{CLASSPATH} environment variable is specified (and was not
+suppressed by @code{--CLASSPATH}), then its value is appended.
+
+@item
+Finally, the built-in system directory, @file{libgcj.jar}, is appended.
+@end itemize
+
+
+@node Encodings
+@section Encodings
+
+The Java programming language uses Unicode throughout.  In an effort to
+integrate well with other locales, @code{gcj} allows @file{.java} files
+to be written using almost any encoding.  @code{gcj} knows how to
+convert these encodings into its internal encoding at compile time.
+
+You can use the @code{--encoding=@var{NAME}} option to specify an
+encoding (of a particular character set) to use for source files.  If
+this is not specified, the default encoding comes from your current
+locale.  If your host system has insufficient locale support, then
+@code{gcj} assumes the default encoding to be the @samp{UTF-8} encoding
+of Unicode.
+
+To implement @code{--encoding}, @code{gcj} simply uses the host
+platform's @code{iconv} conversion routine.  This means that in practice
+@code{gcj} is limited by the capabilities of the host platform.
+
+The names allowed for the argument @code{--encoding} vary from platform
+to platform (since they are not standardized anywhere).  However,
+@code{gcj} implements the encoding named @samp{UTF-8} internally, so if
+you choose to use this for your source files you can be assured that it
+will work on every host.
+
+
+@node Warnings
+@section Warnings
+
+@code{gcj} implements several warnings.  As with other generic
+@code{gcc} warnings, if an option of the form @code{-Wfoo} enables a
+warning, then @code{-Wno-foo} will disable it.  Here we've chosen to
+document the form of the warning which will have an effect -- the
+default being the opposite of what is listed.
+
+@table @code
+@item -Wunsupported-jdk11
+This will cause @code{gcj} to warn that @code{final} local variables are
+being treated as non-final.
+@c FIXME: why do we want this?  Is it just not implemented yet?
+
+@item -Wredundant-modifiers
+With this flag, @code{gcj} will warn about redundant modifiers.  For
+instance, it will warn if an interface method is declared @code{public}.
+
+@item -Wextraneous-semicolon
+This causes @code{gcj} to warn about empty statements.  Empty statements
+have been deprecated.
+
+@item -Wno-out-of-date
+This option will cause @code{gcj} not to warn when a source file is
+newer than its matching class file.  By default @code{gcj} will warn
+about this.
+
+@item -Wunused
+This is the same as @code{gcc}'s @code{-Wunused}.
+
+@item -Wall
+This is the same as @code{-Wredundant-modifiers -Wextraneous-semicolon
+-Wunused}.
+@end table
+
+
+@node Code Generation
+@section Code Generation
+
+In addition to the many @code{gcc} options controlling code generation,
+@code{gcj} has several options specific to itself.
+
+@table @code
+@item --main=@var{CLASSNAME}
+This option is used when linking.  Since the linker expects to find a
+method simply named @code{main}, and since Java programs won't have such
+a method (due to name mangling), at link time @code{gcj} will generate a
+stub @code{main} function which will initialize the runtime and then
+invoke the @code{main} method of the appropriate class.  This option is
+used to specify the name of the class whose @code{main} method should be
+invoked when the resulting executable is run.
+
+@item -D@var{name}[=@var{value}]
+This option can only be used with @code{--main}.  It defines a system
+property named @var{name} with value @var{value}.  If @var{value} is not
+specified then it defaults to the empty string.  These system properties
+are initialized at the program's startup and can be retrieved at runtime
+using the @code{java.lang.System.getProperty} method.
+
+@item -C
+This option is used to tell @code{gcj} to generate bytecode
+(@file{.class} files) rather than object code.
+
+@item -d @var{directory}
+When used with @code{-C}, this causes all generated @file{.class} files
+to be put in the appropriate subdirectory of @var{directory}.  By
+default they will be put in subdirectories of the current working
+directory.
+
+@c @item -fassume-compiled
+@c Nobody is sure what this does and anyway it doesn't work.
+
+@item -fno-bounds-check
+By default, @code{gcj} generates code which checks the bounds of all
+array indexing operations.  With this option, these checks are omitted.
+Note that this can result in unpredictable behavior if the code in
+question actually does violate array bounds constraints.
+
+@item -fjni
+With @code{gcj} there are two options for writing native methods: CNI
+and JNI.  By default @code{gcj} assumes you are using CNI.  If you are
+compiling a class with native methods, and these methods are implemented
+using JNI, then you must use @code{-fjni}.  This option causes
+@code{gcj} to generate stubs which will invoke the underlying JNI
+methods.
+@end table
+
+
+@node Configure-time Options
+@section Configure-time Options
+
+Some @code{gcj} code generations options affect the resulting ABI, and
+so can only be meaningfully given when @code{libgcj}, the runtime
+package, is configured.  @code{libgcj} puts the appropriate options from
+this group into a @samp{spec} file which is read by @code{gcj}.  These
+options are listed here for completeness; if you are using @code{libgcj}
+then you won't want to touch these options.
+
+@table @code
+@item -fuse-boehm-gc
+This enables the use of the Boehm GC bitmap marking code.  In particular
+this causes @code{gcj} to put an object marking descriptor into each
+vtable.
+
+@item -fhash-synchronization
+By default, synchronization data (the data used for @code{synchronize},
+@code{wait}, and @code{notify}) is pointed to by a word in each object.
+With this option @code{gcj} assumes that this information is stored in a
+hash table and not in the object itself.
+
+@item -fuse-divide-subroutine
+On some systems, a library routine is called to perform integer
+division.  This is required to get exception handling correct when
+dividing by zero.
+@end table
+
+
+@node Compatibility
+@chapter Compatibility
+
+As we believe it is important that the Java platform not be fragmented,
+@code{gcj} and @code{libgcj} try to conform to the relevant Java
+specifications.  However, limited manpower and incomplete and unclear
+documentation work against us.  So, there are caveats to using
+@code{gcj}.
+
+This list of compatibility issues is by no means complete.
+
+@itemize @bullet
+@item
+@code{gcj} implements the JDK 1.1 language.  It supports inner classes,
+though these are known to still be buggy.  It does not yet support the
+Java 2 @code{strictfp} keyword (it recognizes the keyword but ignores
+it).
+
+@item
+@code{libgcj} is missing many packages, most notably @code{java.awt}.
+
+@item
+Sometimes the @code{libgcj} implementation of a method or class differs
+from the JDK implementation.  This is not always a bug.  Still, if it
+affects you, it probably makes sense to report it so that we can discuss
+the appropriate response.
+@end itemize
+
+
+@node Invoking gcjh
+@chapter Invoking gcjh
+
+The @code{gcjh} program is used to generate header files from class
+files.  It can generate both CNI and JNI header files, as well as stub
+implementation files which can be used as a basis for implementing the
+required native methods.
+
+@table @code
+@item -stubs
+This causes @code{gcjh} to generate stub files instead of header files.
+By default the stub file will be named after the class, with a suffix of
+@samp{.cc}.  In JNI mode, the default output file will have the suffix
+@samp{.c}.
+
+@item -jni
+This tells @code{gcjh} to generate a JNI header or stub.  By default,
+CNI headers are generated.
+
+@item -add @var{text}
+Inserts @var{text} into the class body.  This is ignored in JNI mode.
+
+@item -append @var{text}
+Inserts @var{text} into the header file after the class declaration.
+This is ignored in JNI mode.
+
+@item -friend @var{text}
+Inserts @var{text} into the class as a @code{friend} declaration.
+This is ignored in JNI mode.
+
+@item -prepend @var{text}
+Inserts @var{text} into the header file before the class declaration.
+This is ignored in JNI mode.
+
+@item --classpath=@var{path}
+@itemx --CLASSPATH=@var{path}
+@itemx -I@var{directory}
+@itemx -d @var{directory}
+@itemx -o @var{file}
+These options are all identical to the corresponding @code{gcj} options.
+
+@item -o @var{file}
+Sets the output file name.  This cannot be used if there is more than
+one class on the command line.
+
+@item -td @var{directory}
+Sets the name of the directory to use for temporary files.
+
+@item --help
+Print help about @code{gcjh} and exit.  No further processing is done.
+
+@item --version
+Print version information for @code{gcjh} and exit.  No further
+processing is done.
+@end table
+
+All remaining options are considered to be names of classes.
+
+
+@node Invoking jv-scan
+@chapter Invoking jv-scan
+
+The @code{jv-scan} program can be used to print information about a Java
+source file (@file{.java} file).
+
+@table @code
+@item --complexity
+This prints a complexity measure, related to cyclomatic complexity, for
+each input file.
+
+@item --encoding=@var{name}
+This works like the corresponding @code{gcj} option.
+
+@item --print-main
+This prints the name of the class in this file containing a @code{main}
+method.
+
+@item --list-class
+This lists the names of all classes defined in the input files.
+
+@item --list-filename
+If @code{--list-class} is given, this option causes @code{jv-scan} to
+also print the name of the file in which each class was found.
+
+@item -o @var{file}
+Print output to the named file.
+@end table
+
+
+@node Invoking jcf-dump
+@chapter Invoking jcf-dump
+
+This is a class file examiner, similar to @code{javap}.  It will print
+information about a number of classes, which are specifed by class name
+or file name.
+
+@table @code
+@item -c
+Disassemble method bodies.  By default method bodies are not printed.
+
+@item --javap
+Generate output in @code{javap} format.
+
+@item --classpath=@var{path}
+@itemx --CLASSPATH=@var{path}
+@itemx -I@var{directory}
+@itemx -o @var{file}
+These options as the same as the corresponding @code{gcj} options.
+@end table
+
+
+@node Invoking gij
+@chapter Invoking gij
+
+@code{gij} is a Java bytecode interpreter included with @code{libgcj}.
+@code{gij} is not available on every platform; porting it requires a
+small amount of assembly programming which has not been done for all the
+targets supported by @code{gcj}.
+
+The primary argument to @code{gij} is the name of a class or, with
+@code{-jar}, a jar file.  Options before this argument are interpreted
+by @code{gij}; remaining options are passed to the interpreted program.
+
+If a class name is specified and this class does not have a @code{main}
+method with the appropriate signature (a @code{static void} method with
+a @code{String[]} as its sole argument), then @code{gij} will print an
+error and exit.
+
+If a jar file is specified then @code{gij} will use information in it to
+determine which class' @code{main} method will be invoked.
+
+@code{gij} will invoke the @code{main} method with all the remaining
+command-line options.
+
+Note that @code{gij} is not limited to interpreting code.  Because
+@code{libgcj} includes a class loader which can dynamically load shared
+objects, it is possible to give @code{gij} the name of a class which has
+been compiled and put into a shared library on the class path.
+
+@table @code
+@item -D@var{name}[=@var{value}]
+This defines a system property named @var{name} with value @var{value}.
+If @var{value} is not specified then it defaults to the empty string.
+These system properties are initialized at the program's startup and can
+be retrieved at runtime using the @code{java.lang.System.getProperty}
+method.
+
+@item -ms=@var{number}
+This sets the initial heap size 
+
+@item -mx=@var{number}
+This sets the maximum heap size.
+
+@item -jar
+This indicates that the name passed to @code{gij} should be interpreted
+as the name of a jar file, not a class.
+@end table
+
+
+@node Resources
+@chapter Resources
+
+The current @code{gcj} home page is
+@uref{http://sources.redhat.com/java/}.  This is likely to change in the
+near future.
+
+For more information on gcc, see @uref{http://gcc.gnu.org/}.
+
+Some @code{libgcj} testing is done using the Mauve test suite.  This is
+a free software Java class library test suite which is being written
+because the JCK is not free.  See
+@uref{http://sources.redhat.com/mauve/} for more information.
+
+@contents
+@bye
