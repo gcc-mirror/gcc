@@ -8894,6 +8894,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  }
 #endif
 
+#ifdef HAVE_nonlocal_goto_receiver
+	if (HAVE_nonlocal_goto_receiver)
+	  emit_insn (gen_nonlocal_goto_receiver ());
+#endif
 	/* The static chain pointer contains the address of dummy function.
 	   We need to call it here to handle some PIC cases of restoring
 	   a global pointer.  Then return 1.  */
