@@ -67,7 +67,7 @@ g77.c: $(srcdir)/gcc.c
 	if [ -f lang-f77 ]; then \
 	  rm -f g77.c; \
 	  $(LN_S) $(srcdir)/gcc.c g77.c; \
-	fi
+	else true; fi
 
 g77spec.o: $(srcdir)/f/g77spec.c $(srcdir)/f/version.h
 	case "$(LANGUAGES)" in \
@@ -76,7 +76,7 @@ g77spec.o: $(srcdir)/f/g77spec.c $(srcdir)/f/version.h
 	esac
 	if [ -f lang-f77 ]; then \
 	  $(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/f/g77spec.c; \
-	fi
+	else true; fi
 
 g77version.o: $(srcdir)/f/version.c
 	case "$(LANGUAGES)" in \
@@ -86,7 +86,7 @@ g77version.o: $(srcdir)/f/version.c
 	if [ -f lang-f77 ]; then \
 	  $(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -o g77version.o \
 	    $(srcdir)/f/version.c; \
-	fi
+	else true; fi
 
 # N.B.: This is a copy of the gcc.o rule, with -DLANG_SPECIFIC_DRIVER added.
 # It'd be nice if we could find an easier way to do this---rather than have
@@ -100,7 +100,7 @@ g77.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g77.c
 	if [ -f lang-f77 ]; then \
 	  $(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(DRIVER_DEFINES) \
 	   -DLANG_SPECIFIC_DRIVER -c g77.c; \
-	fi
+	else true; fi
 
 # Create the compiler driver for g77.
 g77$(exeext): g77.o g77spec.o g77version.o version.o choose-temp.o pexecute.o prefix.o mkstemp.o \
@@ -108,14 +108,14 @@ g77$(exeext): g77.o g77spec.o g77version.o version.o choose-temp.o pexecute.o pr
 	if [ -f lang-f77 ]; then \
 	  $(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ g77.o g77spec.o g77version.o \
 	   version.o choose-temp.o pexecute.o prefix.o mkstemp.o $(EXTRA_GCC_OBJS) $(LIBS); \
-	fi
+	else true; fi
 
 # Create a version of the g77 driver which calls the cross-compiler.
 g77-cross$(exeext): g77$(exeext)
 	if [ -f lang-f77 ]; then \
 	  rm -f g77-cross$(exeext); \
 	  cp g77$(exeext) g77-cross$(exeext); \
-	fi
+	else true; fi
 
 F77_SRCS = \
  $(srcdir)/f/assert.j \
@@ -252,7 +252,7 @@ f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	if [ -f lang-f77 ]; then \
 	  rm -f $(srcdir)/f/g77.info-*; \
 	  $(MAKEINFO) -I$(srcdir)/f -o f/g77.info $(srcdir)/f/g77.texi; \
-	fi
+	else true; fi
 
 f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	    $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
@@ -270,7 +270,7 @@ f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	  texindex g77.??; \
 	  TEXINPUTS=$(srcdir)/f:$$TEXINPUTS tex $(srcdir)/f/g77.texi; \
 	  mv g77.dvi f; \
-	fi
+	else true; fi
 
 # This dance is all about producing accurate documentation for g77's
 # intrinsics with minimum fuss.  f/ansify appends "\n\" to C strings
@@ -304,7 +304,7 @@ $(srcdir)/f/intdoc.texi: f/intdoc.c f/intdoc.in f/ansify.c f/intrin.def f/intrin
 	   `echo $(srcdir)/f/intdoc.c | sed 's,^\./,,'` -o f/intdoc; \
 	  f/intdoc > $(srcdir)/f/intdoc.texi; \
 	  rm f/intdoc f/ansify f/intdoc.h0; \
-	fi
+	else true; fi
 
 $(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D BUGSONLY --no-header --no-split \

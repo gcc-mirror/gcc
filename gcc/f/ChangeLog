@@ -1,3 +1,10 @@
+1999-02-26  Craig Burley  <craig@jcb-sc.com>
+
+	Fix what evidently remains of these, for 4.4bsd:
+	Tue Aug 18 21:41:31 1998  Jeffrey A Law  (law@cygnus.com)
+	* Make-lang.in: Add several "else true" clauses to deal with lame
+	systems.
+
 1999-02-14  Craig Burley  <craig@jcb-sc.com>
 
 	* version.c: Bump for 1998-10-02 change (forgot to do this
