@@ -1,3 +1,10 @@
+2002-06-13  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.c (output_format): Recognize "%H" as a format
+	specifier for a location_t.
+	(text_specifies_location): New function.
+	(diagnostic_set_info): Use it.
+
 2002-06-13  Jeffrey Law  <law@redhat.com>
 
 	* i386.md (extenddfxf2, extenddftf2): Fix typo/thinko.
