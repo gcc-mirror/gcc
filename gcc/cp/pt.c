@@ -3547,7 +3547,9 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       push_obstacks (&permanent_obstack, &permanent_obstack);
       
       /* This type is a "partial instantiation" if any of the template
-	 arguments still inolve template parameters.  */
+	 arguments still inolve template parameters.  Note that we set
+	 IS_PARTIAL_INSTANTIATION for partial specializations as
+	 well.  */
       is_partial_instantiation = uses_template_parms (arglist);
 
       /* Create the type.  */
@@ -4519,6 +4521,17 @@ instantiate_class_template (type)
       newtag = tsubst (tag, args, NULL_TREE);
       if (TREE_CODE (newtag) != ENUMERAL_TYPE)
 	{
+	  if (TYPE_LANG_SPECIFIC (tag) && CLASSTYPE_IS_TEMPLATE (tag))
+	    /* Unfortunately, lookup_template_class sets
+	       CLASSTYPE_IMPLICIT_INSTANTIATION for a partial
+	       instantiation (i.e., for the type of a member template
+	       class nested within a template class.)  This behavior is
+	       required for maybe_process_partial_specialization to work
+	       correctly, but is not accurate in this case; the TAG is not
+	       an instantiation of anything.  (The corresponding
+	       TEMPLATE_DECL is an instantiation, but the TYPE is not.) */
+	    CLASSTYPE_USE_TEMPLATE (newtag) = 0;
+
 	  /* Now, we call pushtag to put this NEWTAG into the scope of
 	     TYPE.  We first set up the IDENTIFIER_TYPE_VALUE to avoid
 	     pushtag calling push_template_decl.  We don't have to do
