@@ -1,3 +1,9 @@
+2002-05-01  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR bootstrap/6514
+	* varasm.c (globalize_decl): Compare DECL_ASSEMBLER_NAME to check
+	for duplicates. Always loop over whole list.
+
 Wed May  1 10:32:37 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload.c (find_reloads, case 'p'): Set BADOP to 0.
