@@ -1,6 +1,6 @@
 // 2001-01-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,13 +31,6 @@ void test01()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_us = __gnu_test::try_named_locale("en_US");
-  locale loc_fr = __gnu_test::try_named_locale("fr_FR");
-  locale loc_de = __gnu_test::try_named_locale("de_DE");
-  VERIFY( loc_c != loc_de );
-  VERIFY( loc_us != loc_fr );
-  VERIFY( loc_us != loc_de );
-  VERIFY( loc_de != loc_fr );
 
   // cache the numpunct facets
   const numpunct<char>& nump_c = use_facet<numpunct<char> >(loc_c); 

@@ -1,3 +1,23 @@
+2004-04-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/22_locale/messages/members/char/1.cc: Remove junk.
+	* testsuite/22_locale/messages/members/char/2.cc: Ditto.
+	* testsuite/22_locale/messages/members/char/3.cc: Ditto.
+	* testsuite/22_locale/num_get/get/char/1.cc: Ditto.
+	* testsuite/22_locale/num_get/get/char/2.cc: Ditto.
+	* testsuite/22_locale/num_get/get/char/3.cc: Ditto.
+	* testsuite/22_locale/num_get/get/wchar_t/1.cc: Ditto.
+	* testsuite/22_locale/num_get/get/wchar_t/2.cc: Ditto.
+	* testsuite/22_locale/num_get/get/wchar_t/3.cc: Ditto.
+	* testsuite/22_locale/num_put/put/char/1.cc: Ditto.
+	* testsuite/22_locale/num_put/put/char/2.cc: Ditto.
+	* testsuite/22_locale/num_put/put/char/3.cc: Ditto.
+	* testsuite/22_locale/num_put/put/wchar_t/1.cc: Ditto.
+	* testsuite/22_locale/num_put/put/wchar_t/2.cc: Ditto.
+	* testsuite/22_locale/num_put/put/wchar_t/3.cc: Ditto.
+	* testsuite/22_locale/numpunct/members/char/1.cc: Ditto.
+	* testsuite/22_locale/numpunct/members/wchar_t/1.cc: Ditto.
+
 2004-04-07  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/generic/time_members.cc
