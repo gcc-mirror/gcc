@@ -428,13 +428,14 @@ static jint
 }
 
 static jclass
-(JNICALL _Jv_JNI_DefineClass) (JNIEnv *env, jobject loader,
+(JNICALL _Jv_JNI_DefineClass) (JNIEnv *env, const char *name, jobject loader,
 		               const jbyte *buf, jsize bufLen)
 {
   try
     {
       loader = unwrap (loader);
 
+      jstring sname = JvNewStringUTF (name);
       jbyteArray bytes = JvNewByteArray (bufLen);
 
       jbyte *elts = elements (bytes);
@@ -443,7 +444,7 @@ static jclass
       java::lang::ClassLoader *l
 	= reinterpret_cast<java::lang::ClassLoader *> (loader);
 
-      jclass result = l->defineClass (bytes, 0, bufLen);
+      jclass result = l->defineClass (sname, bytes, 0, bufLen);
       return (jclass) wrap_value (env, result);
     }
   catch (jthrowable t)
