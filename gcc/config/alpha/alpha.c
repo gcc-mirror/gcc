@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the DEC Alpha.
-   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -2134,7 +2134,7 @@ output_prolog (file, size)
     }
   else
     {
-      /* Here we generate code to set R4 to SP + 4096 and set R23 to the
+      /* Here we generate code to set R22 to SP + 4096 and set R23 to the
 	 number of 8192 byte blocks to probe.  We then probe each block
 	 in the loop and then set SP to the proper location.  If the
 	 amount remaining is > 4096, we have to do one more probe if we
@@ -2333,9 +2333,9 @@ output_epilog (file, size)
 		  high++;
 		  low = -32768 + (low & 0x7fff);
 		}
-	      fprintf (file, "\tldah $2,%ld($31)\n", high);
-	      fprintf (file, "\tlda $2,%ld($2)\n", low);
-	      fprintf (file, "\taddq $30,$2,$30\n");
+	      fprintf (file, "\tldah $22,%ld($31)\n", high);
+	      fprintf (file, "\tlda $22,%ld($22)\n", low);
+	      fprintf (file, "\taddq $30,$22,$30\n");
 	    }
 	}
 
