@@ -615,9 +615,14 @@ emit_base_init (t, immediately)
       if (TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (base_binfo)))
 	{
 	  start_protect ();
+
+	  /* All cleanups must be on the function_obstack.  */
+	  push_obstacks_nochange ();
+	  resume_temporary_allocation ();
 	  protect_list = tree_cons (NULL_TREE,
 				    build_partial_cleanup_for (base_binfo),
 				    protect_list);
+	  pop_obstacks ();
 	}
 
       rbase_init_list = TREE_CHAIN (rbase_init_list);

@@ -3,6 +3,131 @@ Sat May 11 04:33:50 1996  Doug Evans  <dje@canuck.cygnus.com>
 	* decl2.c (finish_vtable_vardecl): Surround DECL_ONE_ONLY with ifdef.
 	(finish_file): Likewise.
 
+Wed May 29 17:04:33 1996  Mike Stump  <mrs@cygnus.com>
+
+	* cvt.c (build_up_reference): Redo how and when temporaries are
+	created.
+	* decl.c (grok_reference_init): Don't try and be smart about
+	running cleanups.
+
+Wed May 29 16:02:08 1996  Mike Stump  <mrs@cygnus.com>
+
+	* cvt.c (build_up_reference): Add NULL_TREE to all calls to build
+	(TARGET_EXPR...), now that it has 4 arguments.
+	* tree.c (build_cplus_new): Ditto.
+
+Thu May 23 16:40:30 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* error.c (dump_expr, case CAST_EXPR): Handle T() properly.
+
+	* pt.c (instantiate_decl): Don't call push/pop_cp_function_context.
+	* decl.c (struct saved_scope): Remove named_labels,
+	{base,member}_init_list.
+	(maybe_push_to_top_level): Don't set them.  Call
+	push_cp_function_context if appropriate.
+	(pop_from_top_level): Likewise.
+
+	* method.c (do_build_assign_ref): Remove obsolete check of
+	TYPE_HAS_ASSIGN_REF (basetype).
+
+	* decl.c (grokfndecl): Diagnose user definition of
+ 	implicitly-declared methods.
+
+Thu May 23 12:13:08 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* method.c (do_build_copy_constructor): Add code to give
+ 	meaningful error messages instead of crashing.
+  	(do_build_assign_ref): Don't synthesize assignment operators for
+ 	classes containing reference or const members.
+
+	* class.c (struct base_info): Remove cant_synth_copy_ctor
+	and cant_synth_asn_ref.
+	(finish_base_struct): Remove the code that tries to conditionalize
+ 	synthesis of copy constructors & assignment operators based on
+ 	access permissions. Instead, let it fail when it tries to
+ 	synthesize the copy constructor. This will give meaningful error
+ 	messages instead of silently generating code to perform a bitcopy.
+
+Wed May 22 11:45:19 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* lex.c (real_yylex): Remove old-n-crufty #if 0 code for
+ 	determining types for constant values.
+
+	* decl.c (struct named_label_list): Use instead of stuffing
+	random items into a TREE_LIST node.
+	(named_label_uses): Use the new struct.
+	(poplevel): Ditto.
+	(lookup_label): Ditto.
+	(define_label): Add an error message to tell the user the line
+ 	where the goto is located in addition to the destination of the
+ 	goto.
+	(init_decl_processing): Use NULL instead of NULL_TREE to initialize
+	named_label_uses.
+	(finish_function): Ditto.
+	
+	(start_decl): Complain about defining a static data member
+	in a different type from which it was declared.
+
+Wed May 22 09:33:23 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (build_expr_type_conversion): Adjust.
+
+Tue May 21 11:21:56 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_method_call): Always convert 'this' to the
+ 	appropriate type.
+
+	* search.c (add_conversions): Put the conversion function in
+ 	TREE_VALUE, the type in TREE_PURPOSE.
+	* cvt.c (build_type_conversion): Adjust.
+	* call.c (user_harshness): Adjust.
+
+	* method.c (emit_thunk): Call temporary_allocation and
+ 	permanent_allocation around the ASM_OUTPUT_MI_THUNK case, too.
+
+	* tree.c (build_cplus_array_type): Handle tweaking of
+ 	TYPE_MAIN_VARIANT here.
+	* typeck.c (common_type): Not here.
+
+	* typeck.c (complete_type): Only try to complete an array type if
+ 	it has a domain.
+
+Mon May 20 14:55:59 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokvardecl): Call complete_type.
+	(grokdeclarator): Call complete_type for PARM_DECLs.
+
+Fri May 17 16:41:17 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_class_template): Re-set
+ 	CLASSTYPE_GOT_SEMICOLON after calling finish_struct_1.
+
+Fri May 17 14:56:55 1996  Mike Stump  <mrs@cygnus.com>
+
+	* cp-tree.h (cp_expand_decl_cleanup): Remove, the backend is now
+	smart enough to do it right.
+	* tree.c (cp_expand_decl_cleanup): Ditto.
+	* decl.c (cp_finish_decl): Use expand_decl_cleanup instead of
+	cp_expand_decl_cleanup.
+	(store_parm_decls): Ditto.
+	(hack_incomplete_structures): Ditto.
+	* except.c (push_eh_cleanup): Ditto.
+
+Fri May 17 13:13:51 1996  Mike Stump  <mrs@cygnus.com>
+
+	* expr.c (expand_expr, cond UNSAVE_EXPR): Move from the C++
+	frontend to the backend where it belongs.
+	* tree.c (unsave_expr): Ditto.
+	(unsave_expr_now): Ditto.
+	* tree.def (UNSAVE_EXPR): Ditto.
+	* cp-tree.h (unsave_expr): Ditto.
+	(unsave_expr_now): Ditto.
+
+Fri May 17 11:02:41 1996  Mike Stump  <mrs@cygnus.com>
+
+	* init.c (emit_base_init): Make sure the partial EH cleanups live
+	on the function_obstack.
+
 Thu May 16 15:29:33 1996  Bob Manson  <manson@charmed.cygnus.com>
 
 	* expr.c (do_case): Don't try to dereference null TREE_TYPEs
@@ -2369,7 +2494,7 @@ Mon Nov 13 15:45:34 1995  Mike Stump  <mrs@cygnus.com>
 	indirect binding.
 	* decl.c (cp_finish_decl): Ensure that we reuse stack slots as fast
 	as they are unused.
-	(expand_static_init): Diotto.
+	(expand_static_init): Ditto.
 	(cplus_expand_expr_stmt): Ditto.
 	* decl2.c (finish_file): Ditto.
 	* init.c (perform_member_init): Ditto.

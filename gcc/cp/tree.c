@@ -220,7 +220,7 @@ build_cplus_new (type, init)
 		TREE_OPERAND (init, 0), TREE_OPERAND (init, 1), slot);
   TREE_SIDE_EFFECTS (rval) = 1;
   TREE_ADDRESSABLE (rval) = 1;
-  rval = build (TARGET_EXPR, type, slot, rval, NULL_TREE);
+  rval = build (TARGET_EXPR, type, slot, rval, NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (rval) = 1;
   TREE_ADDRESSABLE (rval) = 1;
 
@@ -399,7 +399,7 @@ build_cplus_method_type (basetype, rettype, argtypes)
 }
 
 tree
-build_cplus_array_type (elt_type, index_type)
+build_cplus_array_type_1 (elt_type, index_type)
      tree elt_type;
      tree index_type;
 {
@@ -433,6 +433,24 @@ build_cplus_array_type (elt_type, index_type)
   saveable_obstack = ambient_saveable_obstack;
   return t;
 }
+
+tree
+build_cplus_array_type (elt_type, index_type)
+     tree elt_type;
+     tree index_type;
+{
+  tree t;
+  int constp = TYPE_READONLY (elt_type);
+  int volatilep = TYPE_VOLATILE (elt_type);
+  elt_type = TYPE_MAIN_VARIANT (elt_type);
+
+  t = build_cplus_array_type_1 (elt_type, index_type);
+
+  if (constp || volatilep)
+    t = cp_build_type_variant (t, constp, volatilep);
+
+  return t;
+}
 
 /* Make a variant type in the proper way for C/C++, propagating qualifiers
    down to the element type of an array.  */
@@ -451,9 +469,9 @@ cp_build_type_variant (type, constp, volatilep)
 
       push_obstacks (TYPE_OBSTACK (real_main_variant),
 		     TYPE_OBSTACK (real_main_variant));
-      type = build_cplus_array_type (cp_build_type_variant (TREE_TYPE (type),
-							    constp, volatilep),
-				     TYPE_DOMAIN (type));
+      type = build_cplus_array_type_1 (cp_build_type_variant
+				       (TREE_TYPE (type), constp, volatilep),
+				       TYPE_DOMAIN (type));
 
       /* TYPE must be on same obstack as REAL_MAIN_VARIANT.  If not,
 	 make a copy.  (TYPE might have come from the hash table and
@@ -467,6 +485,7 @@ cp_build_type_variant (type, constp, volatilep)
 
       TYPE_MAIN_VARIANT (type) = real_main_variant;
       pop_obstacks ();
+      return type;
     }
   return build_type_variant (type, constp, volatilep);
 }
@@ -1751,16 +1770,6 @@ break_out_target_exprs (t)
      tree t;
 {
   return mapcar (t, bot_manip);
-}
-
-/* Since cleanup may have SAVE_EXPRs in it, we protect it with an
-   UNSAVE_EXPR as the backend cannot yet handle SAVE_EXPRs in cleanups
-   by itself.  */
-int
-cp_expand_decl_cleanup (decl, cleanup)
-     tree decl, cleanup;
-{
-  return expand_decl_cleanup (decl, unsave_expr (cleanup));
 }
 
 /* Obstack used for allocating nodes in template function and variable

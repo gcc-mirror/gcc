@@ -596,13 +596,24 @@ build_up_reference (type, arg, flags, checkconst)
 
   if (TREE_ADDRESSABLE (targ) == 0)
     {
-      tree temp;
+      if (! (flags&INDIRECT_BIND)
+	  && toplevel_bindings_p ())
+	{
+	  tree temp = get_temp_name (argtype, 0);
+	  /* Give this new temp some rtl and initialize it.  */
+	  DECL_INITIAL (temp) = targ;
+	  TREE_STATIC (temp) = 1;
+	  cp_finish_decl (temp, targ, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+	  /* Do this after declaring it static.  */
+	  rval = build_unary_op (ADDR_EXPR, temp, 0);
+	  TREE_TYPE (rval) = type;
+	  literal_flag = TREE_CONSTANT (rval);
+	  goto done;
+	}
 
       if (TREE_CODE (targ) == CALL_EXPR && IS_AGGR_TYPE (argtype))
 	{
-	  temp = build_cplus_new (argtype, targ);
-	  rval = build1 (ADDR_EXPR, type, temp);
-	  goto done;
+	  arg = build_cplus_new (argtype, targ);
 	}
       else if (flags&INDIRECT_BIND)
 	{
@@ -611,41 +622,41 @@ build_up_reference (type, arg, flags, checkconst)
              use INDIRECT_BIND.  */
 	  tree slot = build (VAR_DECL, argtype);
 	  layout_decl (slot, 0);
-	  rval = build (TARGET_EXPR, argtype, slot, arg, NULL_TREE);
-	  rval = build1 (ADDR_EXPR, type, rval);
-	  goto done;
+	  arg = build (TARGET_EXPR, argtype, slot, arg, NULL_TREE, NULL_TREE);
 	}
       else
 	{
-	  temp = get_temp_name (argtype, 0);
-	  if (toplevel_bindings_p ())
-	    {
-	      /* Give this new temp some rtl and initialize it.  */
-	      DECL_INITIAL (temp) = targ;
-	      TREE_STATIC (temp) = 1;
-	      cp_finish_decl (temp, targ, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
-	      /* Do this after declaring it static.  */
-	      rval = build_unary_op (ADDR_EXPR, temp, 0);
-	      TREE_TYPE (rval) = type;
-	      literal_flag = TREE_CONSTANT (rval);
-	      goto done;
-	    }
+	  tree temp = get_temp_name (argtype, 0);
+	  rval = build_unary_op (ADDR_EXPR, temp, 0);
+	  if (binfo && !BINFO_OFFSET_ZEROP (binfo))
+	    rval = convert_pointer_to (target_type, rval);
 	  else
-	    {
-	      rval = build_unary_op (ADDR_EXPR, temp, 0);
-	      if (binfo && !BINFO_OFFSET_ZEROP (binfo))
-		rval = convert_pointer_to (target_type, rval);
-	      else
-		TREE_TYPE (rval) = type;
+	    TREE_TYPE (rval) = type;
 
-	      temp = build (MODIFY_EXPR, argtype, temp, arg);
-	      TREE_SIDE_EFFECTS (temp) = 1;
-	      return build (COMPOUND_EXPR, type, temp, rval);
+	  temp = build (MODIFY_EXPR, argtype, temp, arg);
+	  TREE_SIDE_EFFECTS (temp) = 1;
+	  return build (COMPOUND_EXPR, type, temp, rval);
+	}
+    }
+
+  if (! (flags&INDIRECT_BIND))
+    {
+      if (TREE_CODE (arg) == TARGET_EXPR)
+	{
+	  tree decl = TREE_OPERAND (arg, 0);
+	  tree cleanup;
+
+	  if (! toplevel_bindings_p ())
+	    {
+	      expand_decl (decl);
+	      cleanup = maybe_build_cleanup (decl);
+	      if (cleanup)
+		expand_decl_cleanup (decl, cleanup);
 	    }
 	}
     }
-  else
-    rval = build1 (ADDR_EXPR, type, arg);
+
+  rval = build1 (ADDR_EXPR, type, arg);
 
  done:
   if (TYPE_USES_COMPLEX_INHERITANCE (argtype)
@@ -1498,10 +1509,10 @@ build_type_conversion (code, xtype, expr, for_sure)
   /* Nope; try looking for others.  */
   for (conv = lookup_conversions (basetype); conv; conv = TREE_CHAIN (conv))
     {
-      if (winner && TREE_PURPOSE (winner) == TREE_PURPOSE (conv))
+      if (winner && TREE_VALUE (winner) == TREE_VALUE (conv))
 	continue;
 
-      if (can_convert (xtype, TREE_VALUE (conv)))
+      if (can_convert (xtype, TREE_PURPOSE (conv)))
 	{
 	  if (winner)
 	    {
@@ -1510,7 +1521,7 @@ build_type_conversion (code, xtype, expr, for_sure)
 		  cp_error ("ambiguous conversion from `%T' to `%T'", basetype,
 			    xtype);
 		  cp_error ("  candidate conversions include `%T' and `%T'",
-			    TREE_VALUE (winner), TREE_VALUE (conv));
+			    TREE_PURPOSE (winner), TREE_PURPOSE (conv));
 		}
 	      return NULL_TREE;
 	    }
@@ -1521,7 +1532,7 @@ build_type_conversion (code, xtype, expr, for_sure)
 
   if (winner)
     return build_type_conversion_1 (xtype, basetype, expr,
-				    TREE_PURPOSE (winner), for_sure);
+				    DECL_NAME (TREE_VALUE (winner)), for_sure);
 
   return NULL_TREE;
 }
@@ -1580,10 +1591,10 @@ build_expr_type_conversion (desires, expr, complain)
       int win = 0;
       tree candidate;
 
-      if (winner && TREE_PURPOSE (winner) == TREE_PURPOSE (conv))
+      if (winner && TREE_VALUE (winner) == TREE_VALUE (conv))
 	continue;
 
-      candidate = TREE_VALUE (conv);
+      candidate = TREE_PURPOSE (conv);
       if (TREE_CODE (candidate) == REFERENCE_TYPE)
 	candidate = TREE_TYPE (candidate);
 
@@ -1609,7 +1620,7 @@ build_expr_type_conversion (desires, expr, complain)
 		  cp_error ("ambiguous default type conversion from `%T'",
 			    basetype);
 		  cp_error ("  candidate conversions include `%T' and `%T'",
-			    TREE_VALUE (winner), TREE_VALUE (conv));
+			    TREE_PURPOSE (winner), TREE_PURPOSE (conv));
 		}
 	      return error_mark_node;
 	    }
@@ -1620,11 +1631,11 @@ build_expr_type_conversion (desires, expr, complain)
 
   if (winner)
     {
-      tree type = TREE_VALUE (winner);
+      tree type = TREE_PURPOSE (winner);
       if (TREE_CODE (type) == REFERENCE_TYPE)
 	type = TREE_TYPE (type);
       return build_type_conversion_1 (type, basetype, expr,
-				      TREE_PURPOSE (winner), 1);
+				      DECL_NAME (TREE_VALUE (winner)), 1);
     }
 
   return NULL_TREE;
@@ -1820,6 +1831,41 @@ null_ptr_cst (t)
 }
 
 tree
+build_conv (code, type, from)
+     enum tree_code code;
+     tree type, from;
+{
+  tree t = build1 (code, type, from);
+  int rank = ICS_STD_RANK (from);
+  switch (code)
+    {
+    case PROMO_CONV:
+      if (rank < PROMO_RANK)
+	rank = PROMO_RANK;
+      break;
+      
+    case PTR_CONV:
+    case PMEM_CONV:
+    case BASE_CONV:
+    case STD_CONV:
+      if (rank < STD_RANK)
+	rank = STD_RANK;
+      break;
+
+    case PBOOL_CONV:
+      if (rank < PBOOL_RANK)
+	rank = PBOOL_RANK;
+      break;
+
+    default:
+      break;
+    }
+  ICS_STD_RANK (t) = rank;
+  ICS_USER_FLAG (t) = ICS_USER_FLAG (from);
+  return t;
+}
+
+tree
 standard_conversion (to, from, expr)
      tree to, from, expr;
 {
@@ -1830,25 +1876,27 @@ standard_conversion (to, from, expr)
   if (from == to)
     return from;
 
-  conv = from;
+  conv = build1 (EXACT_CONV, from, expr);
+  if (TREE_CODE (expr) == USER_CONV)
+    ICS_USER_FLAG (conv) = 1;
 
   if (fcode == FUNCTION_TYPE)
     {
       from = build_pointer_type (from);
       fcode = TREE_CODE (from);
-      conv = build1 (LVALUE_CONV, from, conv);
+      conv = build_conv (LVALUE_CONV, from, conv);
     }
   else if (fcode == ARRAY_TYPE)
     {
       from = build_pointer_type (TREE_TYPE (from));
       fcode = TREE_CODE (from);
-      conv = build1 (LVALUE_CONV, from, conv);
+      conv = build_conv (LVALUE_CONV, from, conv);
     }
 
   if ((tcode == POINTER_TYPE || TYPE_PTRMEMFUNC_P (to))
       && expr && null_ptr_cst (expr))
     {
-      conv = build1 (CONV_CONV, to, conv);
+      conv = build_conv (STD_CONV, to, conv);
     }
   else if (tcode == POINTER_TYPE && fcode == POINTER_TYPE)
     {
@@ -1864,7 +1912,7 @@ standard_conversion (to, from, expr)
 	  from = cp_build_type_variant (void_type_node,
 					TYPE_READONLY (TREE_TYPE (from)),
 					TYPE_VOLATILE (TREE_TYPE (from)));
-	  conv = build1 (CONV_CONV, from, conv);
+	  conv = build_conv (PTR_CONV, from, conv);
 	}
       else if (ufcode == OFFSET_TYPE && utcode == OFFSET_TYPE)
 	{
@@ -1877,7 +1925,7 @@ standard_conversion (to, from, expr)
 			     1)))
 	    {
 	      from = build_offset_type (tbase, TREE_TYPE (TREE_TYPE (from)));
-	      conv = build1 (CONV_CONV, from, conv);
+	      conv = build_conv (PMEM_CONV, from, conv);
 	    }
 	  else
 	    return 0;
@@ -1890,7 +1938,7 @@ standard_conversion (to, from, expr)
 	      from = cp_build_type_variant (TREE_TYPE (to),
 					    TYPE_READONLY (TREE_TYPE (from)),
 					    TYPE_VOLATILE (TREE_TYPE (from)));
-	      conv = build1 (CONV_CONV, from, conv);
+	      conv = build_conv (PTR_CONV, from, conv);
 	    }
 	  else
 	    return 0;
@@ -1901,7 +1949,7 @@ standard_conversion (to, from, expr)
       if (! comptypes (from, to, 1) && comp_ptr_ttypes (to, from))
 	{
 	  from = to;
-	  conv = build1 (QUAL_CONV, from, conv);
+	  conv = build_conv (QUAL_CONV, from, conv);
 	}
     }
   else if (TYPE_PTRMEMFUNC_P (to) && TYPE_PTRMEMFUNC_P (from))
@@ -1923,29 +1971,32 @@ standard_conversion (to, from, expr)
 				    TYPE_VOLATILE (fbase));
       from = build_cplus_method_type (from, TREE_TYPE (fromfn),
 				      TREE_CHAIN (TYPE_ARG_TYPES (fromfn)));
-      conv = build1 (CONV_CONV, from, conv);
+      conv = build_conv (PMEM_CONV, from, conv);
     }
   else if (tcode == BOOLEAN_TYPE)
     {
-      if (INTEGRAL_CODE_P (fcode) || fcode == REAL_TYPE
-	  || fcode == POINTER_TYPE)
-	return build1 (CONV_CONV, to, conv);
-      else
+      if (! (INTEGRAL_CODE_P (fcode) || fcode == REAL_TYPE
+	     || fcode == POINTER_TYPE || TYPE_PTRMEMFUNC_P (from)))
 	return 0;
+
+      if (fcode == POINTER_TYPE || TYPE_PTRMEMFUNC_P (from))
+	conv = build_conv (PBOOL_CONV, to, conv);
+      else
+	conv = build_conv (STD_CONV, to, conv);
     }
   else if (INTEGRAL_CODE_P (tcode) || tcode == REAL_TYPE)
     {
       if (! (INTEGRAL_CODE_P (fcode) || fcode == REAL_TYPE))
 	return 0;
       else if (to == type_promotes_to (from))
-	conv = build1 (PROMO_CONV, to, conv);
+	conv = build_conv (PROMO_CONV, to, conv);
       else 
-	conv = build1 (CONV_CONV, to, conv);
+	conv = build_conv (STD_CONV, to, conv);
     }
   else if (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
 	   && DERIVED_FROM_P (to, from))
     {
-      conv = build1 (CONV_CONV, to, conv);
+      conv = build_conv (BASE_CONV, to, conv);
     }
   else
     return 0;
@@ -1958,16 +2009,366 @@ implicit_conversion (to, from, expr, flags)
      tree to, from, expr;
      int flags;
 {
-  tree conv = standard_conversion (to, from, expr);
+  tree t, conv = standard_conversion (to, from, expr);
+  struct z_candidate *cand;
 
   if (conv || (flags & LOOKUP_NO_CONVERSION))
     return conv;
 
   flags |= LOOKUP_NO_CONVERSION;
 
-    /* try constructors */;
-    /* try conversion ops */;
+  cand = build_user_type_conversion_1 (to, expr, flags);
+  if (! cand)
+    return NULL_TREE;
+
+  conv = cand->second_conv;
+
+  for (t = conv; TREE_CODE (TREE_OPERAND (t, 0)) != EXACT_MATCH; )
+    t = TREE_OPERAND (t, 0));
+
+  TREE_OPERAND (t, 0) = build (USER_CONV
 
   return conv;
+}
+
+struct z_candidate *
+add_method_candidate (candidates, method, instance, parms, flags)
+     struct z_candidate *candidates;
+     tree method, instance, parms;
+     int flags;
+{
+  
+}
+
+struct z_candidate *
+build_user_type_conversion_1 (totype, expr, flags)
+     tree totype, expr;
+     int flags;
+{
+  struct z_candidate *candidates, *cand;
+  tree fromtype = TREE_TYPE (expr);
+  tree ctors = NULL_TREE, convs = NULL_TREE, t;
+
+  if (IS_AGGR_TYPE (totype))
+    ctors = lookup_fnfields (TYPE_BINFO (totype), ctor_identifier, 0);
+  if (IS_AGGR_TYPE (fromtype))
+    convs = lookup_conversions (fromtype);
+
+  if (ctors)
+    ctors = TREE_VALUE (ctors);
+  for (; ctors; ctors = DECL_CHAIN (ctors))
+    {
+      candidates = add_ctor_candidate (candidates, ctors, expr, flags);
+    }
+
+  for (; convs; convs = TREE_CHAIN (convs))
+    {
+      tree fn = TREE_VALUE (convs);
+      tree ics = standard_conversion (totype, TREE_TYPE (TREE_TYPE (fn)), 0);
+      if (ics)
+	{
+	  candidates = add_method_candidate
+	    (candidates, fn, expr, NULL_TREE, flags);
+	  candidates->second_ics = ics;
+	}
+    }
+
+  if (! any_viable (candidates))
+    {
+      if (flags & LOOKUP_COMPLAIN)
+	cp_error ("no viable candidates");
+      return 0;
+    }
+
+  candidates = splice_viable (candidates);
+  cand = tourney (candidates, totype);
+
+  if (cand == 0)
+    {
+      if (flags & LOOKUP_COMPLAIN)
+	cp_error ("ambiguous user-defined type conversion");
+    }
+
+  return cand;
+}
+
+/* Compare two implicit conversion sequences according to the rules set out in
+   [over.ics.rank].  Return values:
+
+      1: ics1 is better than ics2
+     -1: ics2 is better than ics1
+      0: ics1 and ics2 are indistinguishable */
+
+int
+compare_ics (ics1, ics2)
+     tree ics1, ics2;
+{
+  tree main1, main2;
+
+  if (ICS_RANK (ics1) > ICS_RANK (ics2))
+    return 1;
+  else if (ICS_RANK (ics1) < ICS_RANK (ics2))
+    return -1;
+
+  /* User-defined  conversion sequence U1 is a better conversion sequence
+     than another user-defined conversion sequence U2 if they contain the
+     same user-defined conversion operator or constructor and if the sec-
+     ond standard conversion sequence of U1 is  better  than  the  second
+     standard conversion sequence of U2. */
+
+  if (ICS_RANK (ics1) == USER_RANK)
+    {
+      tree t1, t2;
+
+      for (t1 = ics1; TREE_CODE (t1) != USER_CONV; t1 = TREE_OPERAND (t1, 0))
+	;
+      for (t2 = ics2; TREE_CODE (t2) != USER_CONV; t2 = TREE_OPERAND (t2, 0))
+	;
+
+      if (USER_CONV_FN (t1) != USER_CONV_FN (t2))
+	return 0;
+      else if (ICS_STD_RANK (ics1) > ICS_STD_RANK (ics2))
+	return 1;
+      else if (ICS_STD_RANK (ics1) < ICS_STD_RANK (ics2))
+	return -1;
+
+      /* else fall through */
+    }
+
+#if 0 /* Handled by ranking */
+  /* A conversion that is not a conversion of a pointer,  or  pointer  to
+     member,  to  bool  is  better than another conversion that is such a
+     conversion.  */
+  {
+    int bool1 = TREE_CODE (ics1) == BOOL_CONV;
+    int bool2 = TREE_CODE (ics2) == BOOL_CONV;
+
+    if (bool1)
+      {
+	tree it = TREE_TYPE (TREE_OPERAND (ics1, 0));
+	if (TREE_CODE (it) != POINTER_TYPE
+	    && ! TYPE_PTRMEMFUNC_TYPE (it))
+	  bool1 = 0;
+      }
+    if (bool2)
+      {
+	tree it = TREE_TYPE (TREE_OPERAND (ics2, 0));
+	if (TREE_CODE (it) != POINTER_TYPE
+	    && ! TYPE_PTRMEMFUNC_TYPE (it))
+	  bool2 = 0;
+      }
+    if (bool1 && ! bool2)
+      return 1;
+    if (bool2 && ! bool1)
+      return -1;
+  }
+#endif
+
+  if (TREE_CODE (ics1) == QUAL_CONV)
+    main1 = TREE_OPERAND (ics1, 0);
+  else
+    main1 = ics1;
+
+  if (TREE_CODE (ics2) == QUAL_CONV)
+    main2 = TREE_OPERAND (ics2, 0);
+  else
+    main2 = ics2;
+
+  if (TREE_CODE (main1) != TREE_CODE (main2))
+    return 0;
+
+  if (TREE_CODE (main1) == PTR_CONV || TREE_CODE (main1) == PMEM_CONV
+      || TREE_CODE (main1) == REF_BIND)
+    {
+      tree to1 = TREE_TYPE (main1);
+      tree from1 = TREE_TYPE (TREE_OPERAND (main1, 0));
+      tree to2 = TREE_TYPE (main2);
+      tree from2 = TREE_TYPE (TREE_OPERAND (main2, 0));
+      int distf, distt;
+
+      /* Standard conversion sequence S1 is a better conversion sequence than
+	 standard conversion sequence S2 if...
+
+	 S1 and S2 differ only in their qualification conversion  and  they
+	 yield types identical except for cv-qualifiers and S2 adds all the
+	 qualifiers that S1 adds (and in the same places) and S2  adds  yet
+	 more  cv-qualifiers  than  S1,  or the similar case with reference
+	 binding15). */
+      if (from1 == from2 && to1 == to2)
+	{
+	  to1 = TREE_TYPE (TREE_TYPE (ics1));
+	  to2 = TREE_TYPE (TREE_TYPE (ics2));
+	  if (TYPE_READONLY (to1) >= TYPE_READONLY (to2)
+	      && TYPE_VOLATILE (to1) > TYPE_VOLATILE (to2))
+	    return 1;
+	  else if (TYPE_READONLY (to1) > TYPE_READONLY (to2)
+		   && TYPE_VOLATILE (to1) == TYPE_VOLATILE (to2))
+	    return 1;
+	  else if (TYPE_READONLY (to1) <= TYPE_READONLY (to2)
+		   && TYPE_VOLATILE (to1) < TYPE_VOLATILE (to2))
+	    return -1;
+	  else if (TYPE_READONLY (to1) < TYPE_READONLY (to2)
+		   && TYPE_VOLATILE (to1) == TYPE_VOLATILE (to2))
+	    return -1;
+	  return 0;
+	}
+	
+      if (TYPE_PTRMEMFUNC_P (to1))
+	{
+	  to1 = TYPE_METHOD_BASETYPE (TYPE_PTRMEMFUNC_FN_TYPE (to1));
+	  from1 = TYPE_METHOD_BASETYPE (TYPE_PTRMEMFUNC_FN_TYPE (from1));
+	}
+      else
+	{
+	  to1 = TREE_TYPE (to1);
+	  from1 = TREE_TYPE (from1);
+
+	  if (TREE_CODE (to1) == OFFSET_TYPE)
+	    {
+	      to1 = TYPE_OFFSET_BASETYPE (to1);
+	      from1 = TYPE_OFFSET_BASETYPE (from1);
+	    }
+	}
+
+      if (TYPE_PTRMEMFUNC_P (to2))
+	{
+	  to2 = TYPE_METHOD_BASETYPE (TYPE_PTRMEMFUNC_FN_TYPE (to2));
+	  from2 = TYPE_METHOD_BASETYPE (TYPE_PTRMEMFUNC_FN_TYPE (from2));
+	}
+      else
+	{
+	  to2 = TREE_TYPE (to2);
+	  from2 = TREE_TYPE (from2);
+
+	  if (TREE_CODE (to2) == OFFSET_TYPE)
+	    {
+	      to2 = TYPE_OFFSET_BASETYPE (to2);
+	      from2 = TYPE_OFFSET_BASETYPE (from2);
+	    }
+	}
+
+      if (! (IS_AGGR_TYPE (from1) && IS_AGGR_TYPE (from2)))
+	return 0;
+
+      distf = get_base_distance (from1, from2, 0, 0);
+      if (distf == -1)
+	distf = -get_base_distance (from2, from1, 0, 0);
+      if (distf == -1)
+	return 0;
+
+      /* If class B is derived directly or indirectly from class  A,  conver-
+	 sion  of  B*  to  A*  is  better than conversion of B* to void*, and
+	 conversion of A* to void* is better than conversion of B* to void*. */
+
+      if (TREE_CODE (to1) == VOID_TYPE && TREE_CODE (to2) == VOID_TYPE)
+	{
+	  if (distf > 0)
+	    return 1;
+	  else if (distf < 0)
+	    return -1;
+	}
+      else if (TREE_CODE (to2) == VOID_TYPE && IS_AGGR_TYPE (to1)
+	       && get_base_distance (to1, from1, 0, 0) != -1)
+	return 1;
+      else if (TREE_CODE (to1) == VOID_TYPE && IS_AGGR_TYPE (to2)
+	       && get_base_distance (to2, from2, 0, 0) != -1)
+	return -1;
+
+      if (! (IS_AGGR_TYPE (to1) && IS_AGGR_TYPE (to2)))
+	return 0;
+
+      /* If  class B is derived directly or indirectly from class A and class
+	 C is derived directly or indirectly from B */
+
+      distt = get_base_distance (to1, to2, 0, 0);
+      if (distt == -1)
+	distt = -get_base_distance (to2, to1, 0, 0);
+      if (distt == -1)
+	return 0;
+
+      /* --conversion of C* to B* is better than conversion of C* to A*, */
+      if (distf == 0)
+	{
+	  if (distt > 0)
+	    return -1;
+	  else if (distt < 0)
+	    return 1;
+	}
+      /* --conversion of B* to A* is better than conversion of C* to A*, */
+      else if (distt == 0)
+	{
+	  if (distf > 0)
+	    return 1;
+	  else if (distf < 0)
+	    return -1;
+	}
+    }
+  return 0;
+}
+
+int joust (cand1, cand2)
+     struct z_candidate *cand1, *cand2;
+{
+  int winner = 0;
+  int i;
+
+  for (i = 0; i < TREE_VEC_LENGTH (cand1->convs); ++i)
+    {
+      int comp = compare_ics (TREE_VEC_ELT (cand1->convs, i),
+			      TREE_VEC_ELT (cand2->convs, i));
+
+      if (comp != 0)
+	{
+	  if (winner && comp != winner)
+	    return 0;
+	  winner = comp;
+	}
+    }
+
+  if (winner == 0 && cand1->second_ics)
+    winner = compare_ics (cand1->second_ics, cand2->second_ics);
+
+  return winner;
+}
+
+struct z_candidate *
+tourney (candidates)
+     struct z_candidate *candidates;
+{
+  struct z_candidate *champ = candidates, *challenger;
+  int fate;
+
+  /* This algorithm has a worst case of O(2n) (winner is last) , and a best
+     case of O(n/2) (no winner); much better than a sorting algorithm.  */
+
+  for (challenger = champ->next; challenger; )
+    {
+      fate = joust (champ, challenger);
+      if (fate == 1)
+	challenger = challenger->next;
+      else
+	{
+	  if (fate == 0)
+	    {
+	      champ = challenger->next;
+	      if (champ == 0)
+		return 0;
+	    }
+	  else
+	    champ = challenger;
+
+	  challenger = champ->next;
+	}
+    }
+
+  for (challenger = candidates; challenger != champ;
+       challenger = challenger->next)
+    {
+      fate = joust (champ, challenger);
+      if (fate != 1)
+	return 0;
+    }
+
+  return champ;
 }
 #endif

@@ -1285,7 +1285,8 @@ dump_expr (t, nop)
       break;
 
     case CAST_EXPR:
-      if (TREE_CHAIN (TREE_OPERAND (t, 0)))
+      if (TREE_OPERAND (t, 0) == NULL_TREE
+	  || TREE_CHAIN (TREE_OPERAND (t, 0)))
 	{
 	  dump_type (TREE_TYPE (t), 0);
 	  OB_PUTC ('(');

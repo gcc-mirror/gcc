@@ -129,7 +129,7 @@ complete_type (type)
 {
   if (TYPE_SIZE (type) != NULL_TREE)
     ;
-  else if (TREE_CODE (type) == ARRAY_TYPE)
+  else if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
     {
       tree t = complete_type (TREE_TYPE (type));
       if (TYPE_SIZE (t) != NULL_TREE)
@@ -437,10 +437,6 @@ common_type (t1, t2)
 
     case ARRAY_TYPE:
       {
-	int constp 
-	  = TYPE_READONLY (t1) || TYPE_READONLY (t2);
-	int volatilep
-	  = TYPE_VOLATILE (t1) || TYPE_VOLATILE (t2);
 	tree elt = common_type (TREE_TYPE (t1), TREE_TYPE (t2));
 	/* Save space: see if the result is identical to one of the args.  */
 	if (elt == TREE_TYPE (t1) && TYPE_DOMAIN (t1))
@@ -448,9 +444,8 @@ common_type (t1, t2)
 	if (elt == TREE_TYPE (t2) && TYPE_DOMAIN (t2))
 	  return build_type_attribute_variant (t2, attributes);
 	/* Merge the element types, and have a size if either arg has one.  */
-	t1 = build_cplus_array_type (TYPE_MAIN_VARIANT (elt), TYPE_DOMAIN (TYPE_DOMAIN (t1) ? t1 : t2));
-	if (constp || volatilep)
-	  t1 = cp_build_type_variant (t1, constp, volatilep);
+	t1 = build_cplus_array_type
+	  (elt, TYPE_DOMAIN (TYPE_DOMAIN (t1) ? t1 : t2));
 	return build_type_attribute_variant (t1, attributes);
       }
 

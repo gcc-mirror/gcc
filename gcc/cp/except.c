@@ -962,7 +962,7 @@ push_eh_cleanup ()
   cleanup = build (COMPOUND_EXPR, void_type_node, cleanup,
 		   build_modify_expr (saved_in_catch, NOP_EXPR,
 				      build_modify_expr (saved_throw_type, NOP_EXPR, integer_zero_node)));
-  cp_expand_decl_cleanup (NULL_TREE, cleanup);
+  expand_decl_cleanup (NULL_TREE, cleanup);
 
   resume_momentary (yes);
 }

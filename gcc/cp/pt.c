@@ -1187,6 +1187,7 @@ instantiate_class_template (type)
 
       /* XXX handle attributes */
       type = finish_struct_1 (type, NULL_TREE, 0);
+      CLASSTYPE_GOT_SEMICOLON (type) = 1;
     }
   else
     {
@@ -2968,8 +2969,6 @@ instantiate_decl (d)
   if (! push_tinst_level (d))
     return d;
 
-  if (TREE_CODE (d) == FUNCTION_DECL && nested)
-    push_cp_function_context (NULL_TREE);
   push_to_top_level ();
 
   /* Trick tsubst into giving us a new decl in case the template changed.  */
@@ -3044,8 +3043,6 @@ instantiate_decl (d)
     }
 
   pop_from_top_level ();
-  if (TREE_CODE (d) == FUNCTION_DECL && nested)
-    pop_cp_function_context (NULL_TREE);
   pop_tinst_level ();
 
   return d;
