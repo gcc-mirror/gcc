@@ -1,5 +1,5 @@
 CLIB = -lPW
 # One person said it needs -DPOSIX_JC, but daa@CERF.NET says no.
-X_CFLAGS = -D_SYSV3
+X_CFLAGS = -D_SYSV3 -Xp
 ENQUIRE_LDFLAGS = $(LDFLAGS)
 INSTALL_HEADERS_DIR = install-headers-cpio
