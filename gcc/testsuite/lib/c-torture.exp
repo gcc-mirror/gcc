@@ -189,8 +189,22 @@ proc c-torture-execute { src args } {
             set ignore_me [eval $torture_eval_before_execute]
 	}
 	
+
+	# Sometimes we end up creating identical executables for two
+	# consecutive sets of different of compiler options.
+	#
+	# In such cases we know the result of this test will be identical
+	# to the result of the last test.
+	#
+	# So in cases where the time to load and run/simulate the test
+	# is relatively high, compare the two binaries and avoid rerunning
+	# tests if the executables are identical.
+	#
+	# Do not do this for native testing since the cost to load/execute
+	# the test is fairly small and the comparison step actually slows
+	# the entire process down because it usually does not "hit".
 	set skip 0;
-	if [info exists oldexec] {
+	if { ![isnative] && [info exists oldexec] } {
 	    if { [remote_file build cmp $oldexec $execname] == 0 } {
 		set skip 1;
 	    }
