@@ -566,12 +566,12 @@ global_alloc (file)
 	       for this pseudo-reg.  If that fails, try any reg.  */
 	    if (N_REG_CLASSES > 1)
 	      {
-		find_reg (allocno_order[i], HARD_CONST (0), 0, 0, 0);
+		find_reg (allocno_order[i], 0, 0, 0, 0);
 		if (reg_renumber[allocno_reg[allocno_order[i]]] >= 0)
 		  continue;
 	      }
 	    if (reg_alternate_class (allocno_reg[allocno_order[i]]) != NO_REGS)
-	      find_reg (allocno_order[i], HARD_CONST (0), 1, 0, 0);
+	      find_reg (allocno_order[i], 0, 1, 0, 0);
 	  }
     }
 

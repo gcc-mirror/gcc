@@ -1,5 +1,8 @@
 Fri Apr 17 22:38:17 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* global.c (global_alloc): Don't pass HARD_CONST (0) to find_reg,
+	just pass zero.  That will work regardless of the size of HARD_REG_SET.
+
 	* libgcc2.c (__floatdisf): Fix a couple typos.
 
 Fri Apr 17 17:28:26 1998  Jim Wilson  <wilson@cygnus.com>
