@@ -28,7 +28,6 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h> /* this defines alloca */
 #define USG
 #define ONLY_INT_FIELDS
-#define HAVE_PUTENV
 #define USE_PROTOTYPES 1
 #define bcmp(a,b,c) memcmp (a,b,c)
 #define bcopy(a,b,c) memcpy (b,a,c)

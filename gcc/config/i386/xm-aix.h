@@ -33,5 +33,3 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __GNUC__
 #define USE_C_ALLOCA
 #endif
-
-#define HAVE_PUTENV
