@@ -149,32 +149,32 @@ namespace std
 
   // 27.4.2.5  iword/pword storage
   ios_base::_Words&
-  ios_base::_M_grow_words(int ix, bool iword)
+  ios_base::_M_grow_words(int __ix, bool __iword)
   {
-    // Precondition: _M_word_size <= ix
-    int newsize = _S_local_word_size;
-    _Words* words = _M_local_word;
-    if (ix > _S_local_word_size - 1)
+    // Precondition: _M_word_size <= __ix
+    int __newsize = _S_local_word_size;
+    _Words* __words = _M_local_word;
+    if (__ix > _S_local_word_size - 1)
       {
-	if (ix < numeric_limits<int>::max())
+	if (__ix < numeric_limits<int>::max())
 	  {
-	    newsize = ix + 1;
+	    __newsize = __ix + 1;
 	    try
-	      { words = new _Words[newsize]; }
+	      { __words = new _Words[__newsize]; }
 	    catch (...)
 	      {
 		_M_streambuf_state |= badbit;
 		if (_M_streambuf_state & _M_exception)
 		  __throw_ios_failure(__N("ios_base::_M_grow_words "
 				      "allocation failed"));
-		if (iword)
+		if (__iword)
 		  _M_word_zero._M_iword = 0;
 		else
 		  _M_word_zero._M_pword = 0;
 		return _M_word_zero;
 	      }
-	    for (int i = 0; i < _M_word_size; i++) 
-	      words[i] = _M_word[i];
+	    for (int __i = 0; __i < _M_word_size; __i++) 
+	      __words[__i] = _M_word[__i];
 	    if (_M_word && _M_word != _M_local_word) 
 	      {
 		delete [] _M_word;
@@ -186,16 +186,16 @@ namespace std
 	    _M_streambuf_state |= badbit;
 	    if (_M_streambuf_state & _M_exception)
 	      __throw_ios_failure(__N("ios_base::_M_grow_words is not valid"));
-	    if (iword)
+	    if (__iword)
 	      _M_word_zero._M_iword = 0;
 	    else
 	      _M_word_zero._M_pword = 0;
 	    return _M_word_zero;
 	  }
       }
-    _M_word = words;
-    _M_word_size = newsize;
-    return _M_word[ix];
+    _M_word = __words;
+    _M_word_size = __newsize;
+    return _M_word[__ix];
   }
 
   void 

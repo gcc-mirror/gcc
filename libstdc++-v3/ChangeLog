@@ -1,3 +1,11 @@
+2004-08-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_bvector.h: Trivial formatting fixes.
+
+2004-08-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* src/ios.cc (ios_base::_M_grow_words): Uglify the names.
+
 2004-08-07  Jonathan Wakely  <redi@gcc.gnu.org>
 	    Paolo Carlini  <pcarlini@suse.de>
 	
