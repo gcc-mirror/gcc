@@ -89,7 +89,8 @@ public final class Class implements Serializable
   public native Class[] getInterfaces ();
 
   private final native void getSignature (StringBuffer buffer);
-  private static final native String getSignature (Class[] parameterTypes);
+  private static final native String getSignature (Class[] parameterTypes,
+						   boolean is_construtor);
 
   public native Method getMethod (String methodName, Class[] parameterTypes)
     throws NoSuchMethodException, SecurityException;

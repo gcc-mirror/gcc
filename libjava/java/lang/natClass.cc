@@ -101,7 +101,7 @@ java::lang::Class::forName (jstring className)
 java::lang::reflect::Constructor *
 java::lang::Class::getConstructor (JArray<jclass> *param_types)
 {
-  jstring partial_sig = getSignature (param_types);
+  jstring partial_sig = getSignature (param_types, true);
   jint hash = partial_sig->hashCode ();
 
   int i = isPrimitive () ? 0 : method_count;
@@ -114,7 +114,7 @@ java::lang::Class::getConstructor (JArray<jclass> *param_types)
 	  // Found it.  For getConstructor, the constructor must be
 	  // public.
 	  using namespace java::lang::reflect;
-	  if (Modifier::isPublic(methods[i].accflags))
+	  if (! Modifier::isPublic(methods[i].accflags))
 	    break;
 	  Constructor *cons = new Constructor ();
 	  cons->offset = (char *) (&methods[i]) - (char *) methods;
@@ -139,7 +139,7 @@ java::lang::Class::_getConstructors (jboolean declared)
       if (method->name == NULL
 	  && ! _Jv_equalUtf8Consts (method->name, init_name))
 	continue;
-      if (declared
+      if (! declared
 	  && ! java::lang::reflect::Modifier::isPublic(method->accflags))
 	continue;
       numConstructors++;
@@ -154,7 +154,7 @@ java::lang::Class::_getConstructors (jboolean declared)
       if (method->name == NULL
 	  && ! _Jv_equalUtf8Consts (method->name, init_name))
 	continue;
-      if (declared
+      if (! declared
 	  && ! java::lang::reflect::Modifier::isPublic(method->accflags))
 	continue;
       java::lang::reflect::Constructor *cons
@@ -169,7 +169,7 @@ java::lang::Class::_getConstructors (jboolean declared)
 java::lang::reflect::Constructor *
 java::lang::Class::getDeclaredConstructor (JArray<jclass> *param_types)
 {
-  jstring partial_sig = getSignature (param_types);
+  jstring partial_sig = getSignature (param_types, true);
   jint hash = partial_sig->hashCode ();
 
   int i = isPrimitive () ? 0 : method_count;
@@ -277,7 +277,8 @@ java::lang::Class::getSignature (java::lang::StringBuffer *buffer)
 // This doesn't have to be native.  It is an implementation detail
 // only called from the C++ code, though, so maybe this is clearer.
 jstring
-java::lang::Class::getSignature (JArray<jclass> *param_types)
+java::lang::Class::getSignature (JArray<jclass> *param_types,
+				 jboolean is_constructor)
 {
   java::lang::StringBuffer *buf = new java::lang::StringBuffer ();
   buf->append((jchar) '(');
@@ -285,6 +286,8 @@ java::lang::Class::getSignature (JArray<jclass> *param_types)
   for (int i = 0; i < param_types->length; ++i)
     v[i]->getSignature(buf);
   buf->append((jchar) ')');
+  if (is_constructor)
+    buf->append((jchar) 'V');
   return buf->toString();
 }
 
@@ -292,7 +295,7 @@ java::lang::reflect::Method *
 java::lang::Class::getDeclaredMethod (jstring name,
 				      JArray<jclass> *param_types)
 {
-  jstring partial_sig = getSignature (param_types);
+  jstring partial_sig = getSignature (param_types, false);
   jint p_len = partial_sig->length();
   _Jv_Utf8Const *utf_name = _Jv_makeUtf8Const (name);
   int i = isPrimitive () ? 0 : method_count;
@@ -446,7 +449,7 @@ java::lang::Class::getInterfaces (void)
 java::lang::reflect::Method *
 java::lang::Class::getMethod (jstring name, JArray<jclass> *param_types)
 {
-  jstring partial_sig = getSignature (param_types);
+  jstring partial_sig = getSignature (param_types, false);
   jint p_len = partial_sig->length();
   _Jv_Utf8Const *utf_name = _Jv_makeUtf8Const (name);
   for (Class *klass = this; klass; klass = klass->getSuperclass())
