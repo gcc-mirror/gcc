@@ -2076,7 +2076,9 @@ init_label_info (f)
   return largest_uid;
 }
 
-/* Delete insns following barriers, up to next label.  */
+/* Delete insns following barriers, up to next label. 
+
+   Also delete no-op jumps created by gcse.  */
 static void
 delete_barrier_successors (f)
      rtx f;
@@ -2098,6 +2100,14 @@ delete_barrier_successors (f)
 	    }
 	  /* INSN is now the code_label.  */
 	}
+      /* Also remove (set (pc) (pc)) insns which can be created by
+	 gcse.  We eliminate such insns now to avoid having them
+	 cause problems later.  */
+      else if (GET_CODE (insn) == JUMP_INSN
+	       && SET_SRC (PATTERN (insn)) == pc_rtx
+	       && SET_DEST (PATTERN (insn)) == pc_rtx)
+	insn = delete_insn (insn);
+
       else
 	insn = NEXT_INSN (insn);
     }
