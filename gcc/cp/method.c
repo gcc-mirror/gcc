@@ -636,7 +636,7 @@ do_build_assign_ref (fndecl)
 	  tree expr = build_method_call (dst,
 					 ansi_assopname (NOP_EXPR),
 					 build_tree_list (NULL_TREE, src),
-					 NULL,
+					 binfo,
 					 LOOKUP_NORMAL | LOOKUP_NONVIRTUAL);
 	  finish_expr_stmt (expr);
 	}
