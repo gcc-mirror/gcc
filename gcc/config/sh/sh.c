@@ -193,9 +193,6 @@ static tree sh_handle_sp_switch_attribute PARAMS ((tree *, tree, tree, int, bool
 static tree sh_handle_trap_exit_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static void sh_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void sh_insert_attributes PARAMS ((tree, tree *));
-#ifndef OBJECT_FORMAT_ELF
-static void sh_asm_named_section PARAMS ((const char *, unsigned int));
-#endif
 static int sh_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int sh_use_dfa_interface PARAMS ((void));
 static int sh_issue_rate PARAMS ((void));
@@ -6677,17 +6674,6 @@ sh_can_redirect_branch (branch1, branch2)
     }
   return 0;
 }
-
-#ifndef OBJECT_FORMAT_ELF
-static void
-sh_asm_named_section (name, flags)
-     const char *name;
-     unsigned int flags ATTRIBUTE_UNUSED;
-{
-  /* ??? Perhaps we should be using default_coff_asm_named_section.  */
-  fprintf (asm_out_file, "\t.section %s\n", name);
-}
-#endif /* ! OBJECT_FORMAT_ELF */
 
 /* A C statement (sans semicolon) to update the integer variable COST
    based on the relationship between INSN that is dependent on

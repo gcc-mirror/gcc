@@ -2207,12 +2207,12 @@ s390x-*-linux*)
 	;;
 sh-*-elf*)
 	tmake_file="sh/t-sh sh/t-elf"
-	tm_file="${tm_file} sh/embed-elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/embed-elf.h"
 	float_format=sh
 	;;
 sh64-*-elf*)
 	tmake_file="sh/t-sh sh/t-elf sh/t-sh64"
-	tm_file="${tm_file} sh/sh.h sh/embed-elf.h sh/sh64.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/embed-elf.h sh/sh64.h"
 	float_format=sh
 	extra_headers="shmedia.h ushmedia.h sshmedia.h"
 	# Not strictly necessary to check this, but a good idea anyway.
@@ -2223,7 +2223,7 @@ sh64-*-elf*)
 sh-*-rtemself*)
 	xm_defines=POSIX
 	tmake_file="sh/t-sh sh/t-elf t-rtems"
-	tm_file="${tm_file} sh/embed-elf.h sh/rtemself.h rtems.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/embed-elf.h sh/rtemself.h rtems.h"
 	float_format=sh
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
@@ -2232,15 +2232,15 @@ sh-*-rtemself*)
 sh-*-rtems*)
 	xm_defines=POSIX
 	tmake_file="sh/t-sh t-rtems"
-	tm_file="${tm_file} sh/rtems.h rtems.h"
+	tm_file="${tm_file} sh/coff.h sh/rtems.h rtems.h"
 	float_format=sh
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
 	;;
 sh-*-linux*)
-	tm_file="${tm_file} sh/elf.h sh/linux.h"
-	tmake_file="sh/t-sh sh/t-elf sh/t-linux"
+	tm_file="sh/little.h ${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/linux.h"
+	tmake_file="sh/t-sh sh/t-elf sh/t-le sh/t-linux"
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -2248,6 +2248,7 @@ sh-*-linux*)
 	float_format=sh
 	;;
 sh-*-*)
+	tm_file="${tm_file} sh/coff.h"
 	float_format=sh
 	;;
 sparc-tti-*)

@@ -25,39 +25,27 @@ Boston, MA 02111-1307, USA.  */
 
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "\
-   %{fPIC:-D__PIC__ -D__pic__} \
-   %{fpic:-D__PIC__ -D__pic__} \
    %{posix:-D_POSIX_SOURCE} \
    %{pthread:-D_REENTRANT -D_PTHREADS} \
 "
 
-#undef SUBTARGET_CPP_ENDIAN_SPEC
-#define SUBTARGET_CPP_ENDIAN_SPEC \
-  "%{mb:-D__BIG_ENDIAN__} \
-   %{!mb:-D__LITTLE_ENDIAN__}"
+#define TARGET_OS_CPP_BUILTINS() \
+do { \
+  builtin_define_std ("unix"); \
+  builtin_define ("__gnu_linux__"); \
+  builtin_define_std ("linux"); \
+  builtin_assert ("system=posix"); \
+} while (0)
 
-#undef CPP_DEFAULT_CPU_SPEC
-#define CPP_DEFAULT_CPU_SPEC "-D__SH3__ -D__sh3__"
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT \
+  (SH3_BIT|SH2_BIT|SH1_BIT | USERMODE_BIT | TARGET_ENDIAN_DEFAULT)
 
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -D__sh__ -D__gnu_linux__ -Dlinux -Asystem=posix"
-
-#undef SUBTARGET_ASM_ENDIAN_SPEC
-#define SUBTARGET_ASM_ENDIAN_SPEC "%{!mb:-little}"
-
-#undef CC1_SPEC
-#define CC1_SPEC \
-  "-musermode %{!mb:-ml} %{!m3e:%{!m4*:%{!m5*:-m3}}}"
-
-#undef CC1PLUS_SPEC
-#define CC1PLUS_SPEC \
-  "-musermode %{!mb:-ml} %{!m3e:%{!m4:-m3}}"
-
-#undef LINK_SPEC
-#define LINK_SPEC \
-  "%{!mb:-m shlelf_linux} %{mrelax:-relax} \
-   %{shared:-shared} \
+#undef SUBTARGET_LINK_EMUL_SUFFIX
+#define SUBTARGET_LINK_EMUL_SUFFIX "_linux"
+#undef SUBTARGET_LINK_SPEC
+#define SUBTARGET_LINK_SPEC \
+  "%{shared:-shared} \
    %{!static: \
      %{rdynamic:-export-dynamic} \
      %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2} \

@@ -19,26 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Undefine some macros defined in both sh.h and svr4.h.  */
-#undef IDENT_ASM_OP
-#undef ASM_FILE_END
-#undef ASM_OUTPUT_SOURCE_LINE
-#undef DBX_OUTPUT_MAIN_SOURCE_FILE_END
-#undef TARGET_ASM_NAMED_SECTION
-#undef ASM_DECLARE_FUNCTION_NAME
-#undef MAX_OFILE_ALIGNMENT
-#undef SIZE_TYPE
-#undef PTRDIFF_TYPE
-
-/* Be ELF-like.  */
-/* TODO: convert includes to ${tm_file} list in config.gcc.  */
-#include "dbxelf.h"
-#include "elfos.h"
-#include "svr4.h"
-
-/* No SDB debugging info.  */
-#undef SDB_DEBUGGING_INFO
-
 /* Generate DWARF2 debugging information and make it the default */
 #undef DWARF2_DEBUGGING_INFO
 #define DWARF2_DEBUGGING_INFO 1
@@ -82,7 +62,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* Let code know that this is ELF.  */
-#define CPP_PREDEFINES "-D__sh__ -D__ELF__ -Acpu=sh -Amachine=sh"
+#define TARGET_OBJFMT_CPP_BUILTINS() builtin_define ("__ELF__")
 
 #undef SIZE_TYPE
 #define SIZE_TYPE (TARGET_SH5 ? "long unsigned int" : "unsigned int")
@@ -97,15 +77,13 @@ Boston, MA 02111-1307, USA.  */
 %{m5-64media:--isa=SHmedia --abi=64} %{m5-64media-nofpu:--isa=SHmedia --abi=64}"
 
 #undef LINK_SPEC
-#define LINK_SPEC " \
-%{m5-compact:%{!ml:-m shelf32} %{ml:-m shlelf32}} \
-%{m5-compact-nofpu:%{!ml:-m shelf32} %{ml:-m shlelf32}} \
-%{m5-32media:%{!ml:-m shelf32} %{ml:-m shlelf32}} \
-%{m5-32media-nofpu:%{!ml:-m shelf32} %{ml:-m shlelf32}} \
-%{m5-64media:%{!ml:-m shelf64} %{ml:-m shlelf64}} \
-%{m5-64media-nofpu:%{!ml:-m shelf64} %{ml:-m shlelf64}} \
-%{!m5-64media:%{!m5-64media-nofpu:%{!m5-32media:%{!m5-32media-nofpu:%{!m5-compact:%{!m5-compact-nofpu:%{ml:-m shlelf}}}}}}} \
-%{mrelax:-relax}"
+#define LINK_SPEC SH_LINK_SPEC
+#undef LINK_EMUL_PREFIX
+#if TARGET_ENDIAN_DEFAULT == LITTLE_ENDIAN_BIT
+#define LINK_EMUL_PREFIX "sh%{!mb:l}elf"
+#else
+#define LINK_EMUL_PREFIX "sh%{ml:l}elf"
+#endif
 
 /* svr4.h undefined DBX_REGISTER_NUMBER, so we need to define it
    again.  */

@@ -1,3 +1,76 @@
+Tue May 28 21:16:18 2002  J"orn Rennecke <joern.rennecke@superh.com>
+                          Jason R. Thorpe <thorpej@wasabisystems.com>
+
+	config/sh reorganization to factor out endianness and coff:
+
+	* config/sh/little.h: New file.
+        * config/sh/sh.h (TARGET_ENDIAN_DEFAULT): If not already
+        defined, define to 0 to select big-endian.
+	(SUBTARGET_ASM_ENDIAN_SPEC): Define according to TARGET_ENDIAN_DEFAULT.
+        (TARGET_DEFAULT): Include TARGET_ENDIAN_DEFAULT.
+        * config/sh/sh64.h (TARGET_DEFAULT): Include TARGET_ENDIAN_DEFAULT.
+        * config/sh/t-be: New file.
+        * config/sh/t-le: New file.
+
+	* sh.h (SDB_DEBUGGING_INFO, #include "dbxcoff.h"): Moved to sh/coff.h.
+	(SDB_DELIM, MAX_OFILE_ALIGNMENT, IDENT_ASM_OP): Likewise.
+	(TARGET_ASM_NAMED_SECTION, ASM_OUTPUT_SKIP): Likewise.
+	(USER_LABEL_PREFIX, LOCAL_LABEL_PREFIX): Likewise.
+	(ASM_GENERATE_INTERNAL_LABEL, ASM_OUTPUT_INTERNAL_LABEL): Likewise.
+	(ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL): Likewise.
+	(ASM_FILE_END, ASM_DECLARE_FUNCTION_NAME): Deleted.
+	(CPP_SPEC, SUBTARGET_CPP_ENDIAN_SPEC): Likewise.
+	(SUBTARGET_CPP_SPEC, CPP_DEFAULT_CPU_SPEC, CPP_PREDEFINES): Likewise.
+	(EXTRA_SPECS): Remove SUBTARGET_CPP_ENDIAN_SPEC and
+	CPP_DEFAULT_CPU_SPEC.  Add LINK_EMUL_PREFIX, LINK_DEFAULT_CPU_EMUL,
+	SUBTARGET_LINK_EMUL_SUFFIX and SUBTARGET_LINK_SPEC.
+	(LINK_SPEC): Define to SH_LINK_SPEC.
+	(TARGET_CPU_CPP_BUILTINS, SH_LINK_SPEC): Define.
+	(LINK_EMUL_PREFIX, LINK_DEFAULT_CPU_EMUL): Likewise.
+	(SUBTARGET_LINK_EMUL_SUFFIX, SUBTARGET_LINK_SPEC): Likewise.
+	(CPP_SPEC): Reduce to %(subtarget_cpp_spec).
+	(TARGET_ENDIAN_DEFAULT): Define if not already defined.
+	* config/sh/coff.h: New file.
+	(TARGET_ASM_NAMED_SECTION): Now default_coff_asm_named_section
+	(TARGET_OBJFMT_CPP_BUILTINS): Define.
+	* config/sh/elf.h (IDENT_ASM_OP): No need to #undef at the start.
+	(ASM_FILE_END, ASM_OUTPUT_SOURCE_LINE): Likewise.
+	(DBX_OUTPUT_MAIN_SOURCE_FILE_END, TARGET_ASM_NAMED_SECTION): Likewise.
+	(ASM_DECLARE_FUNCTION_NAME, MAX_OFILE_ALIGNMENT, SIZE_TYPE): Likewise.
+	(PTRDIFF_TYPE): Likewise.
+	("dbxelf.h", "elfos.h", "svr4.h"): Don't #include.
+	(CPP_PREDEFINES): Don't define.
+	(TARGET_OBJFMT_CPP_BUILTINS): Define.
+	(LINK_SPEC): Define to SH_LINK_SPEC.
+	(LINK_EMUL_PREFIX): Redefine.
+	* config/sh/linux.h: (SUBTARGET_CPP_SPEC): Remove -fpic / -fPIC cases.
+	(SUBTARGET_CPP_ENDIAN_SPEC, CPP_DEFAULT_CPU_SPEC): Remove redefinition.
+	(CPP_PREDEFINES, SUBTARGET_ASM_ENDIAN_SPEC): Likewise.
+	(CC1_SPEC, CC1PLUS_SPEC, LINK_SPEC): Likewise.
+	(TARGET_OS_CPP_BUILTINS): Define.
+	(TARGET_DEFAULT): Redefine.
+	(SUBTARGET_LINK_EMUL_SUFFIX, SUBTARGET_LINK_SPEC): Likewise.
+	* config/sh/sh64.h (CPP_DEFAULT_CPU_SPEC): Remove.
+	(LINK_SPEC): Don't redefine.
+	(LINK_DEFAULT_CPU_EMUL): Redefine.
+	(TARGET_DEFAULT): Include TARGET_ENDIAN_DEFAULT.
+	* sh.c (sh_asm_named_section): Don't declare / define.
+	* t-linux (MULTILIB_OPTIONS): Rely on pre-set endianness option.
+	* config.gcc (sh-*-elf* tm_file): Add dbxelf.h elfos.h svr4.h.
+	(sh64-*-elf* tm_file): Likewise.
+	(sh-*-rtemself* tm_file): Likewise.
+	(sh-*-linux* tm_file): Likewise.  Add sh/little.h.
+	(sh-*-linux* tmake_file): Add sh/t-le.
+	(sh-*-rtems* tm_file): Add sh/coff.h
+	(sh-*-* tm_file): Likewise.
+
+Tue May 28 21:16:18 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (LEGITIMATE_PIC_OPERAND_P): Check for SYMBOL_REF before using
+	CONSTANT_POOL_ADDRESS_P.
+
+	* coff.h (HAS_INIT_SECTION, INVOKE__MAIN): Define.
+
 2002-05-22  David Edelsohn  <edelsohn@gnu.org>
 	    Jeff Law <law@redhat.com>
 
