@@ -22,6 +22,52 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+/* Store in OUTPUT a string (made with alloca) containing
+   an assembler-name for a local static variable or function named NAME.
+   LABELNO is an integer which is different for each call.  */
+
+#ifndef ASM_FORMAT_PRIVATE_NAME
+#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)			\
+  do {									\
+    int len = strlen (NAME);						\
+    char *temp = (char *) alloca (len + 3);				\
+    temp[0] = 'L';							\
+    strcpy (&temp[1], (NAME));						\
+    temp[len + 1] = '.';						\
+    temp[len + 2] = 0;							\
+    (OUTPUT) = (char *) alloca (strlen (NAME) + 11);			\
+    ASM_GENERATE_INTERNAL_LABEL (OUTPUT, temp, LABELNO);		\
+  } while (0)
+#endif
+
+#ifndef ASM_STABD_OP
+#define ASM_STABD_OP ".stabd"
+#endif
+
+/* This is how to output an element of a case-vector that is absolute.
+   Some targets don't use this, but we have to define it anyway.  */
+
+#ifndef ASM_OUTPUT_ADDR_VEC_ELT
+#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
+do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
+     ASM_OUTPUT_INTERNAL_LABEL (FILE, "L", (VALUE));			\
+     fputc ('\n', FILE);						\
+   } while (0)
+#endif
+
+/* This is how to output an element of a case-vector that is relative.
+   Some targets don't use this, but we have to define it anyway.  */
+
+#ifndef ASM_OUTPUT_ADDR_DIFF_ELT
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
+do { fprintf (FILE, "\t%s\t", ASM_SHORT);				\
+     ASM_GENERATE_INTERNAL_LABEL (FILE, "L", (VALUE));			\
+     fputc ('-', FILE);							\
+     ASM_GENERATE_INTERNAL_LABEL (FILE, "L", (REL));			\
+     fputc ('\n', FILE);						\
+   } while (0)
+#endif
+
 /* choose a reasonable default for ASM_OUTPUT_ASCII.  */
 
 #ifndef ASM_OUTPUT_ASCII
