@@ -1,4 +1,4 @@
-2001-06-13  Andrew Cagney  <ac131313@redhat.com>
+2001-08-10  Andrew Cagney  <ac131313@redhat.com>
 
 	* lbasename.c (lbasename): Change function definition to return a
 	const char pointer.
