@@ -1,5 +1,9 @@
 2001-06-15  Tom Tromey  <tromey@redhat.com>
 
+	* jni.cc (_Jv_JNI_NewLocalRef): Search other frames.
+
+2001-06-15  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/natRuntime.cc (_Jv_FindSymbolInExecutable): Return
 	NULL if no library on the list has the symbol.
 	(init): Call add_library on the program itself.
