@@ -27,6 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "cp-tree.h"
 #include "flags.h"
 #include "rtl.h"
+#include "output.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc xmalloc
@@ -1412,8 +1413,7 @@ finish_base_struct (t, b, t_binfo)
       TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (basetype);
       TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_NEEDS_DESTRUCTOR (basetype);
       TYPE_HAS_COMPLEX_ASSIGN_REF (t) |= TYPE_HAS_COMPLEX_ASSIGN_REF (basetype);
-      TYPE_HAS_COMPLEX_INIT_REF (t) |= (TYPE_HAS_COMPLEX_INIT_REF (basetype)
-					|| TYPE_NEEDS_CONSTRUCTING (basetype));
+      TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_HAS_COMPLEX_INIT_REF (basetype);
 
       TYPE_OVERLOADS_CALL_EXPR (t) |= TYPE_OVERLOADS_CALL_EXPR (basetype);
       TYPE_OVERLOADS_ARRAY_REF (t) |= TYPE_OVERLOADS_ARRAY_REF (basetype);
@@ -1688,19 +1688,19 @@ finish_struct_bits (t, max_has_virtual)
 	}
     }
 
-  /* If this type has constructors, force its mode to be BLKmode,
-     and force its TREE_ADDRESSABLE bit to be nonzero.  */
-  if (TYPE_NEEDS_CONSTRUCTING (t) || TYPE_NEEDS_DESTRUCTOR (t))
+  /* If this type has a copy constructor, force its mode to be BLKmode, and
+     force its TREE_ADDRESSABLE bit to be nonzero.  This will cause it to
+     be passed by invisible reference and prevent it from being returned in
+     a register.  */
+  if (! TYPE_HAS_TRIVIAL_INIT_REF (t))
     {
-      tree variants = t;
-
+      tree variants;
       if (TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
 	DECL_MODE (TYPE_NAME (t)) = BLKmode;
-      while (variants)
+      for (variants = t; variants; variants = TYPE_NEXT_VARIANT (variants))
 	{
 	  TYPE_MODE (variants) = BLKmode;
 	  TREE_ADDRESSABLE (variants) = 1;
-	  variants = TYPE_NEXT_VARIANT (variants);
 	}
     }
 }
@@ -3085,7 +3085,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 		 members.  */
 	      cant_synth_asn_ref = 1;
 	      cant_have_default_ctor = 1;
-	      TYPE_HAS_COMPLEX_INIT_REF (t) = 1;
 
 	      if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
 		{
@@ -3109,7 +3108,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 		 members.  */
 	      cant_synth_asn_ref = 1;
 	      cant_have_default_ctor = 1;
-	      TYPE_HAS_COMPLEX_INIT_REF (t) = 1;
 
 	      if (! TYPE_HAS_CONSTRUCTOR (t) && !IS_SIGNATURE (t)
 		  && extra_warnings)
@@ -3266,9 +3264,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 		      TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (type);
 		      TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_NEEDS_DESTRUCTOR (type);
 		      TYPE_HAS_COMPLEX_ASSIGN_REF (t) |= TYPE_HAS_COMPLEX_ASSIGN_REF (type);
-		      TYPE_HAS_COMPLEX_INIT_REF (t)
-			|= (TYPE_HAS_COMPLEX_INIT_REF (type)
-			    || TYPE_NEEDS_CONSTRUCTING (type));
+		      TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_HAS_COMPLEX_INIT_REF (type);
 		    }
 
 		  if (! TYPE_HAS_INIT_REF (type)
@@ -3374,7 +3370,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 
   TYPE_HAS_COMPLEX_INIT_REF (t)
     |= (TYPE_HAS_INIT_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
-	|| has_virtual || any_default_members || first_vfn_base_index >= 0);
+	|| any_default_members);
   TYPE_NEEDS_CONSTRUCTING (t)
     |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
 	|| has_virtual || any_default_members || first_vfn_base_index >= 0);
@@ -3406,8 +3402,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   TYPE_HAS_REAL_ASSIGNMENT (t) |= TYPE_HAS_ASSIGNMENT (t);
   TYPE_HAS_REAL_ASSIGN_REF (t) |= TYPE_HAS_ASSIGN_REF (t);
   TYPE_HAS_COMPLEX_ASSIGN_REF (t)
-    |= (TYPE_HAS_ASSIGN_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
-	|| has_virtual || first_vfn_base_index >= 0);
+    |= TYPE_HAS_ASSIGN_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t);
 
   if (! TYPE_HAS_ASSIGN_REF (t) && ! cant_synth_asn_ref
       && ! IS_SIGNATURE (t))

@@ -153,7 +153,7 @@ lvalue_p (ref)
       return 1;
 
     case CALL_EXPR:
-      if (TREE_ADDRESSABLE (TREE_TYPE (ref)))
+      if (IS_AGGR_TYPE (TREE_TYPE (ref)))
 	return 1;
       break;
 
@@ -217,9 +217,13 @@ build_cplus_new (type, init, with_cleanup_p)
      tree init;
      int with_cleanup_p;
 {
-  tree slot = build (VAR_DECL, type);
-  tree rval = build (NEW_EXPR, type,
-		     TREE_OPERAND (init, 0), TREE_OPERAND (init, 1), slot);
+  tree slot;
+  tree rval;
+
+  slot = build (VAR_DECL, type);
+  layout_decl (slot, 0);
+  rval = build (NEW_EXPR, type,
+		TREE_OPERAND (init, 0), TREE_OPERAND (init, 1), slot);
   TREE_SIDE_EFFECTS (rval) = 1;
   TREE_ADDRESSABLE (rval) = 1;
   rval = build (TARGET_EXPR, type, slot, rval, 0);

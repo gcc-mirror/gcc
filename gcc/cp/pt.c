@@ -38,6 +38,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "decl.h"
 #include "parse.h"
 #include "lex.h"
+#include "output.h"
 
 extern struct obstack permanent_obstack;
 extern tree grokdeclarator ();
@@ -2510,11 +2511,17 @@ do_function_instantiation (declspecs, declarator, storage)
      tree declspecs, declarator, storage;
 {
   tree decl = grokdeclarator (declarator, declspecs, NORMAL, 0, 0);
-  tree name = DECL_NAME (decl);
-  tree fn = IDENTIFIER_GLOBAL_VALUE (name);
+  tree name;
+  tree fn;
   tree result = NULL_TREE;
   int extern_p = 0;
-  if (fn)
+
+  /* If we've already seen this template instance, use it.  */
+  if (name = DECL_ASSEMBLER_NAME (decl),
+      fn = IDENTIFIER_GLOBAL_VALUE (name),
+      fn && DECL_TEMPLATE_INSTANTIATION (fn))
+    result = fn;
+  else if (name = DECL_NAME (decl), fn = IDENTIFIER_GLOBAL_VALUE (name), fn)
     {
       for (fn = get_first_fn (fn); fn; fn = DECL_CHAIN (fn))
 	if (decls_match (fn, decl)
@@ -2578,12 +2585,14 @@ mark_class_instantiated (t, extern_p)
       rest_of_type_compilation (t, 1);
     }
 }     
+
 void
 do_type_instantiation (name, storage)
      tree name, storage;
 {
   tree t = TREE_TYPE (name);
-  int extern_p;
+  int extern_p = 0;
+  int nomem_p = 0;
 
   /* With -fexternal-templates, explicit instantiations are treated the same
      as implicit ones.  */
@@ -2598,7 +2607,9 @@ do_type_instantiation (name, storage)
     }
 
   if (storage == NULL_TREE)
-    extern_p = 0;
+    /* OK */;
+  else if (storage == ridpointers[(int) RID_INLINE])
+    nomem_p = 1;
   else if (storage == ridpointers[(int) RID_EXTERN])
     extern_p = 1;
   else
@@ -2618,7 +2629,10 @@ do_type_instantiation (name, storage)
       mark_class_instantiated (t, extern_p);
       repo_template_instantiated (t, extern_p);
     }
-  
+
+  if (nomem_p)
+    return;
+
   {
     tree tmp;
     /* Classes nested in template classes currently don't have an

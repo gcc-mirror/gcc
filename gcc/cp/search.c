@@ -28,12 +28,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "obstack.h"
 #include "flags.h"
 #include "rtl.h"
+#include "output.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
 void init_search ();
 extern struct obstack *current_obstack;
+extern tree abort_fndecl;
 
 #include "stack.h"
 
@@ -2626,6 +2628,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, t, vbase_offsets)
       current_fndecl = FNADDR_FROM_VTABLE_ENTRY (current_fndecl);
       current_fndecl = TREE_OPERAND (current_fndecl, 0);
       if (current_fndecl
+	  && current_fndecl != abort_fndecl
 	  && (vc=virtual_context (current_fndecl, t, vbase)) != vbase)
 	{
 	  /* This may in fact need a runtime fixup. */

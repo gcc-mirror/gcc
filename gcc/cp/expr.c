@@ -142,7 +142,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	preserve_temp_slots (DECL_RTL (slot));
 	call_exp = build (CALL_EXPR, type, func, args, 0);
 	TREE_SIDE_EFFECTS (call_exp) = 1;
-	return_target = expand_expr (call_exp, call_target, mode, 0);
+	return_target = expand_call (call_exp, call_target, ignore);
 	free_temp_slots ();
 	if (call_target == 0)
 	  {
@@ -174,7 +174,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 
 	if (call_target != return_target)
 	  {
-	    my_friendly_assert (! TYPE_NEEDS_CONSTRUCTING (type), 317);
+	    my_friendly_assert (TYPE_HAS_TRIVIAL_INIT_REF (type), 317);
 	    if (GET_MODE (return_target) == BLKmode)
 	      emit_block_move (call_target, return_target, expr_size (exp),
 			       TYPE_ALIGN (type) / BITS_PER_UNIT);

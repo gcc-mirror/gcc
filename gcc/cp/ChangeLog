@@ -1,3 +1,98 @@
+Sun Apr 23 12:32:38 1995  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (finish_file): Fix broken linked list handling.
+
+Fri Apr 21 18:08:43 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* class.c (finish_base_struct): Don't set TYPE_HAS_COMPLEX_*_REF
+	as often.
+	(finish_struct): Ditto.
+
+	* various: Use TYPE_HAS_TRIVIAL_* instead of TYPE_HAS_COMPLEX_*.
+
+	* cp-tree.h (TYPE_HAS_TRIVIAL_INIT_REF): New macro.
+	(TYPE_HAS_TRIVIAL_ASSIGN_REF): New macro.
+
+Fri Apr 21 15:52:22 1995  Jason Merrill  <jason@python.cygnus.com>
+
+	* typeck.c (c_expand_return): Only expand a returned TARGET_EXPR if
+	it is of the same type as the return value.
+
+Fri Apr 21 03:01:46 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl2.c (finish_file): Reconsider if synthesizing a method wrote
+	out its assembly.
+
+	* typeck.c (convert_for_initialization): Don't call a trivial copy
+	constructor.
+
+	* typeck2.c (store_init_value): Only abort if the type has a
+	non-trivial copy constructor.
+
+	* typeck.c (c_expand_return): If we're returning in a register and
+	the return value is a TARGET_EXPR, expand it.  Only do
+	expand_aggr_init if we're returning in memory.
+	(expand_target_expr): Function to expand a TARGET_EXPR.
+	(build_modify_expr): Use it.
+
+	* tree.c (build_cplus_new): Layout the slot.
+
+	* expr.c (cplus_expand_expr): Use expand_call to expand the call
+	under a NEW_EXPR, so the target is not discarded.
+
+Thu Apr 20 14:59:31 1995  Mike Stump  <mrs@cygnus.com>
+
+	* gc.c (build_dynamic_cast): Tighten error checking.
+
+Thu Apr 20 11:23:54 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* expr.c (cplus_expand_expr): Only abort if the returned target is
+	different from what we expected if the type has a non-trivial copy
+	constructor.
+
+	* decl2.c (cplus_decl_attributes): Attributes applied to a template
+	really apply to the template's result.
+
+	* tree.c (lvalue_p): Check IS_AGGR_TYPE instead of TREE_ADDRESSABLE
+	to decide whether to consider a CALL_EXPR an lvalue.
+
+	* class.c (finish_struct_bits): Only set TREE_ADDRESSABLE if the
+	type has a non-trivial copy constructor.
+
+	* decl.c (start_function): If interface_known, unset
+	DECL_NOT_REALLY_EXTERN on the function.
+
+Wed Apr 19 16:53:13 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* pt.c (do_function_instantiation): Handle explicit instantiation of
+	member functions.
+	(do_type_instantiation): Handle 'inline template class foo<int>',
+	meaning just spit out the vtable.
+
+	* lex.c (cons_up_default_function): Set DECL_NOT_REALLY_EXTERN on
+	the consed functions.
+
+	* decl2.c (import_export_inline): Set DECL_INTERFACE_KNOWN.
+
+Wed Apr 19 16:28:17 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* call.c, class.c, decl2.c, gc.c, init.c, parse.y, pt.c, search.c,
+	typeck.c: Include output.h.
+
+Wed Apr 19 14:57:21 1995  Gerald Baumgartner  (gb@alexander.cs.purdue.edu)
+
+	* call.c (build_method_call): Allow a signature member functions to
+	be called from a default implementation.
+
+Wed Apr 19 10:21:17 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* repo.c (finish_repo): Remember what directory we are in.
+
+	* search.c (expand_upcast_fixups): Don't mess with abort_fndecl.
+
+	* repo.c: Use obstacks instead of fixed-size buffers.  Don't spit
+	out the second copy of the symbol name.  Don't remember COLLECT_GCC.
+
 Wed Apr 19 02:32:40 1995  Mike Stump  <mrs@cygnus.com>
 
 	* search.c (virtual_context): New function to get the virtual

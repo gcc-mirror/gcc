@@ -34,6 +34,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "cp-tree.h"
 #include "decl.h"
 #include "lex.h"
+#include "output.h"
 
 extern tree grokdeclarator ();
 extern tree get_file_function_name ();
@@ -1948,8 +1949,13 @@ void
 cplus_decl_attributes (decl, attributes, prefix_attributes)
      tree decl, attributes, prefix_attributes;
 {
-  if (decl && decl != void_type_node)
-    decl_attributes (decl, attributes, prefix_attributes);
+  if (decl == NULL_TREE || decl == void_type_node)
+    return;
+
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    decl = DECL_TEMPLATE_RESULT (decl);
+
+  decl_attributes (decl, attributes, prefix_attributes);
 }
 
 /* CONSTRUCTOR_NAME:
@@ -2775,6 +2781,8 @@ import_export_inline (decl)
     }
   else
     TREE_PUBLIC (decl) = 0;
+
+  DECL_INTERFACE_KNOWN (decl) = 1;
 }
 
 extern int parse_time, varconst_time;
@@ -3086,11 +3094,12 @@ finish_file ()
      inline'.  */
   {
     int reconsider = 1;		/* More may be referenced; check again */
-    saved_inlines = tree_cons (NULL_TREE, NULL_TREE, saved_inlines);
 
     while (reconsider)
       {
-	tree last = saved_inlines;
+	tree last = saved_inlines = tree_cons (NULL_TREE, NULL_TREE,
+					       saved_inlines);
+	tree last_head = last;
 	tree place = TREE_CHAIN (saved_inlines);
 	reconsider = 0;
 
@@ -3100,11 +3109,23 @@ finish_file ()
 	  {
 	    tree decl = TREE_VALUE (place);
 
+	    /* Slice out the empty elements put in just above in the
+	       previous reconsidering.  */
+	    if (decl == NULL_TREE)
+	      {
+		TREE_CHAIN (last) = TREE_CHAIN (place);
+		continue;
+	      }
+
 	    if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl))
 	      {
 		if (TREE_USED (decl)
 		    || (TREE_PUBLIC (decl) && DECL_NOT_REALLY_EXTERN (decl)))
-		  synthesize_method (decl);
+		  {
+		    synthesize_method (decl);
+		    if (TREE_ASM_WRITTEN (decl))
+		      reconsider = 1;
+		  }
 		else
 		  {
 		    last = place;

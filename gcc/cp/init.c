@@ -26,6 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "rtl.h"
 #include "cp-tree.h"
 #include "flags.h"
+#include "output.h"
 
 #undef NULL
 #define NULL 0
@@ -1202,8 +1203,7 @@ expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags)
     }
 
   if (init && TREE_CHAIN (parms) == NULL_TREE
-      && TYPE_HAS_CONSTRUCTOR (type)
-      && ! TYPE_NEEDS_CONSTRUCTING (type)
+      && TYPE_HAS_TRIVIAL_INIT_REF (type)
       && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (init)))
     {
       rval = build (INIT_EXPR, type, exp, init);
