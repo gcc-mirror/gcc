@@ -5128,8 +5128,8 @@ init_intraclass_conv_libfuncs (convert_optab tab, const char *opname,
 	*p++ = '2';
 	*p = '\0';
 
-	tab->handlers[widening ? nmode : wmode]
-	             [widening ? wmode : nmode].libfunc
+	tab->handlers[widening ? wmode : nmode]
+	             [widening ? nmode : wmode].libfunc
 	  = init_one_libfunc (ggc_alloc_string (libfunc_name,
 						p - libfunc_name));
       }
