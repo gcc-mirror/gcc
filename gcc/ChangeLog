@@ -1,3 +1,8 @@
+2000-07-31 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* calls.c (combine_pending_stack_adjustment_and_call): Only use
+	preferred_unit_stack_boundary when it is > 1.
+
 2000-07-31  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (init_function_format_info): Add C99 format functions
