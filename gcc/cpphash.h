@@ -517,6 +517,7 @@ extern cpp_token *_cpp_lex_direct	PARAMS ((cpp_reader *));
 extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
 						 const cpp_token *));
 extern void _cpp_init_tokenrun		PARAMS ((tokenrun *, unsigned int));
+extern void _cpp_init_mbchar		PARAMS ((void));
 
 /* In cppinit.c.  */
 extern void _cpp_maybe_push_include_file PARAMS ((cpp_reader *));

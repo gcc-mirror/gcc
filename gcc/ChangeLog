@@ -1,3 +1,21 @@
+2003-03-06  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in (c-ppoutput.o): Update.
+	* c-common.h (init_pp_output): New.
+	(preprocess_file): Update.
+	* c-lex.c (init_c_lex): Move mbchar initialization to cpplib.
+	Register builtins.
+	* c-opts.c (c_common_init): Call init_pp_output if preprocessing.
+	Make call to cpp_read_main_file common to whether preprocessing
+	or not.  Don't register builtins.
+	* c-ppoutput.c: Include c-pragma.h.
+	(setup_callbacks): Rename init_pp_output.
+	(preprocess_file): No longer setup callbacks or call
+	cpp_read_main_file.
+	* cpphash.h (_cpp_init_mbchar): New.
+	* cppinit.c (init_library): Call _cpp_init_mbchar.
+	* cpplex.c (_cpp_init_mbchar): New.
+
 2003-03-06  Roger Sayle  <roger@eyesopen.com>
 
 	* emit-rtl.c (gen_lowpart): When requesting the low-part of a

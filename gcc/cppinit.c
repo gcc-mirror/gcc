@@ -191,6 +191,8 @@ init_library ()
 	 we were compiled with a compiler that supports C99 designated
 	 initializers.  */
       init_trigraph_map ();
+
+      _cpp_init_mbchar ();
     }
 }
 

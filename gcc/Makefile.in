@@ -1236,7 +1236,7 @@ c-lex.o : c-lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     c-pragma.h input.h intl.h flags.h toplev.h output.h \
     mbchar.h $(CPPLIB_H) $(EXPR_H) $(TM_P_H)
 c-ppoutput.o : c-ppoutput.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-    c-common.h $(TREE_H) $(CPPLIB_H) cpphash.h $(TM_P_H)
+    c-common.h $(TREE_H) $(CPPLIB_H) cpphash.h $(TM_P_H) c-pragma.h
 c-objc-common.o : c-objc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(C_TREE_H) $(RTL_H) insn-config.h integrate.h $(EXPR_H) $(C_TREE_H) \
     flags.h toplev.h tree-inline.h diagnostic.h integrate.h $(VARRAY_H) \

@@ -1292,8 +1292,9 @@ extern void c_common_read_pch			PARAMS ((cpp_reader *pfile,
 							 int fd,
 							 const char *orig));
 extern void c_common_write_pch			PARAMS ((void));
-extern void preprocess_file			PARAMS ((cpp_reader *,
-							 const char *,
-							 FILE *));
+
+/* In c-ppoutput.c  */
+extern void init_pp_output			PARAMS ((FILE *));
+extern void preprocess_file			PARAMS ((cpp_reader *));
 
 #endif /* ! GCC_C_COMMON_H */

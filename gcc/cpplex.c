@@ -89,6 +89,16 @@ static tokenrun *next_tokenrun PARAMS ((tokenrun *));
 static unsigned int hex_digit_value PARAMS ((unsigned int));
 static _cpp_buff *new_buff PARAMS ((size_t));
 
+/* Change to the native locale for multibyte conversions.  */
+void
+_cpp_init_mbchar ()
+{
+#ifdef MULTIBYTE_CHARS
+  setlocale (LC_CTYPE, "");
+  GET_ENVIRONMENT (literal_codeset, "LANG");
+#endif
+}
+
 /* Utility routine:
 
    Compares, the token TOKEN to the NUL-terminated string STRING.
