@@ -1279,17 +1279,9 @@ finalize_record_size (rli)
       = size_binop (PLUS_EXPR, unpadded_size_unit, size_one_node);
 
   /* Round the size up to be a multiple of the required alignment */
-#ifdef ROUND_TYPE_SIZE
-  TYPE_SIZE (rli->t) = ROUND_TYPE_SIZE (rli->t, unpadded_size,
-					TYPE_ALIGN (rli->t));
-  TYPE_SIZE_UNIT (rli->t)
-    = ROUND_TYPE_SIZE_UNIT (rli->t, unpadded_size_unit,
-			    TYPE_ALIGN (rli->t) / BITS_PER_UNIT);
-#else
   TYPE_SIZE (rli->t) = round_up (unpadded_size, TYPE_ALIGN (rli->t));
   TYPE_SIZE_UNIT (rli->t) = round_up (unpadded_size_unit,
 				      TYPE_ALIGN (rli->t) / BITS_PER_UNIT);
-#endif
 
   if (warn_padded && TREE_CONSTANT (unpadded_size)
       && simple_cst_equal (unpadded_size, TYPE_SIZE (rli->t)) == 0)
@@ -1308,13 +1300,7 @@ finalize_record_size (rli)
       rli->unpacked_align = MAX (TYPE_ALIGN (rli->t), rli->unpacked_align);
 #endif
 
-#ifdef ROUND_TYPE_SIZE
-      unpacked_size = ROUND_TYPE_SIZE (rli->t, TYPE_SIZE (rli->t),
-				       rli->unpacked_align);
-#else
       unpacked_size = round_up (TYPE_SIZE (rli->t), rli->unpacked_align);
-#endif
-
       if (simple_cst_equal (unpacked_size, TYPE_SIZE (rli->t)))
 	{
 	  TYPE_PACKED (rli->t) = 0;
@@ -1470,17 +1456,9 @@ finalize_type_size (type)
 
   if (TYPE_SIZE (type) != 0)
     {
-#ifdef ROUND_TYPE_SIZE
-      TYPE_SIZE (type)
-	= ROUND_TYPE_SIZE (type, TYPE_SIZE (type), TYPE_ALIGN (type));
-      TYPE_SIZE_UNIT (type)
-	= ROUND_TYPE_SIZE_UNIT (type, TYPE_SIZE_UNIT (type),
-				TYPE_ALIGN (type) / BITS_PER_UNIT);
-#else
       TYPE_SIZE (type) = round_up (TYPE_SIZE (type), TYPE_ALIGN (type));
       TYPE_SIZE_UNIT (type)
 	= round_up (TYPE_SIZE_UNIT (type), TYPE_ALIGN (type) / BITS_PER_UNIT);
-#endif
     }
 
   /* Evaluate nonconstant sizes only once, either now or as soon as safe.  */
@@ -1779,22 +1757,6 @@ layout_type (type)
 	TYPE_ALIGN (type) = MAX (TYPE_ALIGN (element), BITS_PER_UNIT);
 #endif
 	TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (element);
-
-#ifdef ROUND_TYPE_SIZE
-	if (TYPE_SIZE (type) != 0)
-	  {
-	    tree tmp
-	      = ROUND_TYPE_SIZE (type, TYPE_SIZE (type), TYPE_ALIGN (type));
-
-	    /* If the rounding changed the size of the type, remove any
-	       pre-calculated TYPE_SIZE_UNIT.  */
-	    if (simple_cst_equal (TYPE_SIZE (type), tmp) != 1)
-	      TYPE_SIZE_UNIT (type) = NULL;
-
-	    TYPE_SIZE (type) = tmp;
-	  }
-#endif
-
 	TYPE_MODE (type) = BLKmode;
 	if (TYPE_SIZE (type) != 0
 #ifdef MEMBER_TYPE_FORCES_BLK

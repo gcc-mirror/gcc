@@ -1,3 +1,8 @@
+2003-06-01  Andreas Jaeger  <aj@suse.de>
+
+	* utils.c (finish_record_type): Remove usages of ROUND_TYPE_SIZE
+	and ROUND_TYPE_SIZE_UNIT.
+
 2003-05-22   Geert Bosch <bosch@gnat.com>
 
 	* gnat_rm.texi : Remove reference to Ada Core Technologies.
@@ -19,10 +24,10 @@
 
 2003-05-01  Laurent Guerby <guerby@acm.org>
 
-        PR ada/10546 
+        PR ada/10546
         * 5iosinte.ads: Increase pthread_cond_t size to match recent
         LinuxThread and NPTL version, merge from ACT.
-	
+
 2003-04-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* utils.c (convert): No need to clear TREE_CST_RTL.
