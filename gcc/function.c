@@ -5842,8 +5842,7 @@ trampoline_address (function)
       && fn_context != inline_function_decl)
     fp = find_function_data (fn_context);
 
-  /* Allocate run-time space for this trampoline
-     (usually in the defining function's stack frame).  */
+  /* Allocate run-time space for this trampoline.  */
   /* If rounding needed, allocate extra space
      to ensure we have TRAMPOLINE_SIZE bytes left after rounding up.  */
 #define TRAMPOLINE_REAL_SIZE \
