@@ -1845,9 +1845,14 @@ expand_call (exp, target, ignore)
 	     not specified.  This calling sequence is only used on
 	     a few machines and TARGET is usually nonzero.  */
 	  if (TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
-	    target = assign_stack_temp (BLKmode,
-					int_size_in_bytes (TREE_TYPE (exp)),
-					1);
+	    {
+	      target = assign_stack_temp (BLKmode,
+					  int_size_in_bytes (TREE_TYPE (exp)),
+					  0);
+
+	      /* Save this temp slot around the pop below.  */
+	      preserve_temp_slots (target);
+	    }
 	  else
 	    target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
 	}
