@@ -1,3 +1,10 @@
+2004-02-08  Richard Henderson  <rth@redhat.com>
+
+	PR libstdc++/14026
+	* libsupc++/eh_catch.cc (__cxa_begin_catch): Don't adjust 
+	uncaughtExceptions during nested catch rethrow.
+	* testsuite/18_support/14026.cc: New.
+
 2004-02-08  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.tcc (assign(const _CharT*, size_type)):
