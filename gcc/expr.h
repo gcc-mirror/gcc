@@ -330,6 +330,9 @@ extern enum insn_code fixtab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
 extern enum insn_code fixtrunctab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
 extern enum insn_code floattab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
 
+/* Contains the optab used for each rtx code.  */
+extern optab code_to_optab[NUM_RTX_CODE + 1];
+
 /* Passed to expand_binop and expand_unop to say which options to try to use
    if the requested operation can't be open-coded on the requisite mode.
    Either OPTAB_LIB or OPTAB_LIB_WIDEN says try using a library call.
