@@ -29,30 +29,39 @@ typedef struct pretty_print_info pretty_print_info;
 /* The type of pretty-printer flags passed to clients.  */
 typedef unsigned int pp_flags;
 
-/* The type of pretty-print styles.  */
-enum pp_style
+enum pp_padding
 {
-  pp_standard_c,
-  pp_gnu_c,
-  pp_standard_cxx,
-  pp_gnu_cxx
+  pp_none, pp_before, pp_after
 };
 
 struct pretty_print_info
 {
+  /* The entity to pretty-print.  */
   tree entity;
-  tree scope;
-  enum pp_style style;
   pp_flags flags;
+  /* Where to put whitespace around the entity being formatted.  */
+  enum pp_padding padding;
   /* Where we print external representation of ENTITY.  */
   output_buffer *buffer;
-  /* Client extenion hook.  */
-  void *x_data;
-
-  void (*print_declaration) (pretty_print_info *);
-  void (*print_statement) (pretty_print_info *);
-  void (*print_expression) (pretty_print_info *);
 };
+
+
+#define pp_sorry_for_unsupported_tree(PPI, T) \
+  output_verbatim ((PPI)->buffer, "\nsorry: `%s' not supported by %s\n",\
+                   tree_code_name[(int) TREE_CODE (T)], __FUNCTION__)
+
+#define pp_left_paren(PPI)    output_add_character ((PPI)->buffer, '(')
+#define pp_right_paren(PPI)   output_add_character ((PPI)->buffer, ')')
+#define pp_left_bracket(PPI)  output_add_character ((PPI)->buffer, '[')
+#define pp_right_bracket(PPI) output_add_character ((PPI)->buffer, '[')
+#define pp_semi_colon(PPI)    output_add_character ((PPI)->buffer, ';')
+#define pp_comma(PPI)         output_add_string ((PPI)->buffer, ", ")
+#define pp_dot(PPI)           output_add_character ((PPI)->buffer, '.')
+#define pp_colon(PPI)         output_add_character ((PPI)->buffer, ':')
+#define pp_colon_colon(PPI)   output_add_string ((PPI)->buffer, "::")
+#define pp_quote(PPI)         output_add_character ((PPI)->buffer, '\'')
+#define pp_backquote(PPI)     output_add_character ((PPI)->buffer, '`')
+#define pp_doublequote(PPI)   output_add_character ((PPI)->buffer, '"')
 
 
 #endif /* GCC_PRETTY_PRINT_H */
