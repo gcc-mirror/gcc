@@ -1,5 +1,8 @@
 Tue Jan  4 00:18:46 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* regclass.c (regclass): Properly compute loop_cost.  Adjust
+	comments.
+
 	* regclass.c: Fix minor whitespace problems.
 
 2000-01-03  Anthony Green  <green@cygnus.com>
