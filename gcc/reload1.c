@@ -9748,7 +9748,7 @@ reload_combine_note_store (dst, set)
       || GET_CODE (SET_DEST (set)) == SIGN_EXTRACT
       || GET_CODE (SET_DEST (set)) == STRICT_LOW_PART)
     {
-      for (i = size / UNITS_PER_WORD - 1 + regno; i >= regno; i--)
+      for (i = (size - 1) / UNITS_PER_WORD + regno; i >= regno; i--)
 	{
 	  reg_state[i].use_index = -1;
 	  reg_state[i].store_ruid = reload_combine_ruid;
@@ -9756,7 +9756,7 @@ reload_combine_note_store (dst, set)
     }
   else
     {
-      for (i = size / UNITS_PER_WORD - 1 + regno; i >= regno; i--)
+      for (i = (size - 1) / UNITS_PER_WORD + regno; i >= regno; i--)
 	{
 	  reg_state[i].store_ruid = reload_combine_ruid;
 	  reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
