@@ -1716,10 +1716,9 @@ EOF
 	if test x$gcc_cv_as != x -a x$gcc_cv_ld != x; then
 	    gcc_cv_as_sparc_ua_pcrel=no
 	    echo ".text; foo: nop; .data; .align 4; .byte 0; .uaword %r_disp32(foo)" > conftest.s
-	    if $gcc_cv_as -K PIC -o conftest.o conftest.s > /dev/null 2>&1; then
-		if $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
-		    gcc_cv_as_sparc_ua_pcrel=yes
-		fi
+	    if $gcc_cv_as -K PIC -o conftest.o conftest.s > /dev/null 2>&1 \
+	       && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
+		gcc_cv_as_sparc_ua_pcrel=yes
 	    fi
 	    rm -f conftest.s conftest.o conftest
 	fi
@@ -1727,6 +1726,37 @@ EOF
     if test "x$gcc_cv_as_sparc_ua_pcrel" = xyes; then
 	AC_DEFINE(HAVE_AS_SPARC_UA_PCREL, 1,
 		[Define if your assembler and linker support unaligned PC relative relocs.])
+    fi
+
+    AC_CACHE_CHECK([assembler and linker support unaligned pc related relocs against hidden symbols],
+	gcc_cv_as_sparc_ua_pcrel_hidden, [
+	if test "x$gcc_cv_as_sparc_ua_pcrel" = xyes; then
+	    gcc_cv_as_sparc_ua_pcrel_hidden=unknown
+	    if test x$gcc_cv_objdump != x; then
+	        gcc_cv_as_sparc_ua_pcrel_hidden=no
+		echo ".data; .align 4; .byte 0x31; .uaword %r_disp32(foo)" > conftest.s
+		echo ".byte 0x32, 0x33, 0x34; .global foo; .hidden foo" >> conftest.s
+		echo "foo: .skip 4" >> conftest.s
+		if $gcc_cv_as -K PIC -o conftest.o conftest.s > /dev/null 2>&1 \
+		   && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1 \
+		   && $gcc_cv_objdump -s -j .data conftest 2> /dev/null \
+		      | grep ' 31000000 07323334' > /dev/null 2>&1; then
+		    if $gcc_cv_objdump -R conftest 2> /dev/null \
+		       | grep 'DISP32' > /dev/null 2>&1; then
+			:
+		    else
+			gcc_cv_as_sparc_ua_pcrel_hidden=yes
+		    fi
+		fi
+	    fi
+	    rm -f conftest.s conftest.o conftest
+	else
+	    gcc_cv_as_sparc_ua_pcrel_hidden="$gcc_cv_as_sparc_ua_pcrel"
+	fi
+    ])
+    if test "x$gcc_cv_as_sparc_ua_pcrel_hidden" = xyes; then
+	AC_DEFINE(HAVE_AS_SPARC_UA_PCREL_HIDDEN, 1,
+		[Define if your assembler and linker support unaligned PC relative relocs against hidden symbols.])
     fi
 
     case "$tm_file" in
