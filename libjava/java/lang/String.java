@@ -419,7 +419,7 @@ public final class String implements Serializable, Comparable, CharSequence
   {
     // No need to synchronize or mark the buffer, since we know it is
     // only used once.
-    init (buffer.value, 0, buffer.count, true);
+    init (buffer);
   }
 
   /**
@@ -1253,5 +1253,6 @@ public final class String implements Serializable, Comparable, CharSequence
   private native void init(byte[] chars, int hibyte, int offset, int count);
   private native void init(byte[] chars, int offset, int count, String enc)
     throws UnsupportedEncodingException;
+  private native void init(gnu.gcj.runtime.StringBuffer buffer);
   private static native void rehash();
 }
