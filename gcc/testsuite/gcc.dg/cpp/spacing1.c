@@ -66,9 +66,9 @@ f (g) str
    { dg-final { if \{ [grep spacing1.i "B Q B Q A Q A:"] != "" \}     \{  } }
    { dg-final { if \{ [grep spacing1.i "f.*bar"] == "" \} \{              } }
    { dg-final { if \{ [grep spacing1.i "^bar"] != "" \}   \{              } }
-   { dg-final { if \{ [grep spacing1.i "g] != "" \} \{   } }
-   { dg-final { if \{ [grep spacing1.i " \"1 2\""] != "" \} \{   } }
-   { dg-final { if \{ [grep spacing1.i " bam baz"] != "" \} \{   } }
-   { dg-final { return \} \} \} \} \}                                     } }
+   { dg-final { if \{ [grep spacing1.i "g"] != "" \} \{                   } }
+   { dg-final { if \{ [grep spacing1.i " \"1 2\""] != "" \} \{            } }
+   { dg-final { if \{ [grep spacing1.i " bam baz"] != "" \} \{            } }
+   { dg-final { return \} \} \} \} \} \} \}                               } }
    { dg-final { fail "spacing1.c: spacing and new-line preservation"      } }
 */
