@@ -1,5 +1,10 @@
 2004-10-06  Daniel Berlin  <dberlin@dberlin.org>
 
+	* tree-pretty-print.c (dump_generic_node): Fix printing of BINFO
+	and TREE_VEC nodes. 
+
+2004-10-06  Daniel Berlin  <dberlin@dberlin.org>
+
 	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Convert
 	to use FOR_EACH_SSA_USE_OPERAND iterator, and propagate_value.
 	
