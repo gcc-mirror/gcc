@@ -1,3 +1,8 @@
+1998-10-14  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* compile/981001-4.c: Remove use of GCC extension that triggers a
+	compiler bug.
+
 1998-10-13  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* lib/old-dejagnu.exp (old-dejagnu): support `Additional sources:'
