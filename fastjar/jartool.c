@@ -1938,24 +1938,34 @@ expand_options (int *argcp, char ***argvp)
   int argc = *argcp;
   char **argv = *argvp;
 
-  if (argc > 1 && argv[1][0] != '-')
+  /* Accept arguments with a leading "-" (eg "-cvf"), but don't do expansion 
+     if a long argument (like "--help") is detected. */
+  if (argc > 1 && argv[1][1] != '-')
     {
       char buf[3];
       char **new_argv;
       int new_argc;
+      int args_to_expand;
       char *p;
       char **in, **out;
 
       buf[0] = '-';
       buf[2] = '\0';
 
-      new_argc = argc - 1 + strlen (argv[1]);
+      args_to_expand = strlen (argv[1]);
+      if (argv[1][0] == '-')
+        --args_to_expand;
+        
+      new_argc = argc - 1 + args_to_expand;
       new_argv = (char **) malloc (new_argc * sizeof (char *));
       in = argv;
       out = new_argv;
 
       *out++ = *in++;
-      for (p = *in++; *p; ++p)
+      p = *in++;
+      if (*p == '-')
+        p++;
+      while (*p != '\0')
 	{
 	  char *opt;
 	  buf[1] = *p;
@@ -1974,6 +1984,7 @@ expand_options (int *argcp, char ***argvp)
 		  usage(argv[0]);
 		}
 	    }
+	  ++p;
 	}
 
       /* Copy remaining options.  */
