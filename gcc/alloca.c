@@ -60,6 +60,17 @@ typedef char *pointer;
 
 #define	NULL	0
 
+/* Different portions of Emacs need to call different versions of
+   malloc.  The Emacs executable needs alloca to call xmalloc, because
+   ordinary malloc isn't protected from input signals.  On the other
+   hand, the utilities in lib-src need alloca to call malloc; some of
+   them are very simple, and don't have an xmalloc routine.
+
+   Everybody else should just call malloc.  */
+#ifndef emacs
+extern pointer malloc ();
+#endif
+
 /* Define STACK_DIRECTION if you know the direction of stack
    growth for your system; otherwise it will be automatically
    deduced at run-time.
