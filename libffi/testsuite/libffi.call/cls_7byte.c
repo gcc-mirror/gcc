@@ -5,7 +5,7 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20030828	 */
 
-/* { dg-do run } */
+/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 typedef struct cls_struct_7byte {
@@ -26,16 +26,16 @@ cls_struct_7byte cls_struct_7byte_fn(struct cls_struct_7byte a1,
   result.d = a1.d + a2.d;
 
   printf("%d %d %d %d %d %d %d %d: %d %d %d %d\n", a1.a, a1.b, a1.c, a1.d,
-	 a2.a, a2.b, a2.c, a2.d, 
+	 a2.a, a2.b, a2.c, a2.d,
 	 result.a, result.b, result.c, result.d);
 
   return  result;
 }
 
-static void 
+static void
 cls_struct_7byte_gn(ffi_cif* cif, void* resp, void** args, void* userdata)
-{   
-  
+{
+
   struct cls_struct_7byte a1, a2;
 
   a1 = *(struct cls_struct_7byte*)(args[0]);
@@ -62,24 +62,24 @@ int main (void)
   struct cls_struct_7byte g_dbl = { 127, 120, 1, 254 };
   struct cls_struct_7byte f_dbl = { 12, 128, 9, 255 };
   struct cls_struct_7byte res_dbl;
-  
+
   cls_struct_fields[0] = &ffi_type_ushort;
   cls_struct_fields[1] = &ffi_type_ushort;
   cls_struct_fields[2] = &ffi_type_uchar;
   cls_struct_fields[3] = &ffi_type_ushort;
   cls_struct_fields[4] = NULL;
-  
+
   dbl_arg_types[0] = &cls_struct_type;
   dbl_arg_types[1] = &cls_struct_type;
   dbl_arg_types[2] = NULL;
-  
-  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 2, &cls_struct_type, 
+
+  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 2, &cls_struct_type,
 		     dbl_arg_types) == FFI_OK);
 
   args_dbl[0] = &g_dbl;
   args_dbl[1] = &f_dbl;
   args_dbl[2] = NULL;
-  
+
   ffi_call(&cif, FFI_FN(cls_struct_7byte_fn), &res_dbl, args_dbl);
   /* { dg-output "127 120 1 254 12 128 9 255: 139 248 10 509" } */
   CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
@@ -88,7 +88,7 @@ int main (void)
   CHECK( res_dbl.d == (g_dbl.d + f_dbl.d));
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_7byte_gn, NULL) == FFI_OK);
-  
+
   res_dbl = ((cls_struct_7byte(*)(cls_struct_7byte, cls_struct_7byte))(pcl))(g_dbl, f_dbl);
   /* { dg-output "\n127 120 1 254 12 128 9 255: 139 248 10 509" } */
   CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));

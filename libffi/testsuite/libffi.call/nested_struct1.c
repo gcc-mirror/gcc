@@ -5,7 +5,7 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20030828	 */
 
-/* { dg-do run } */
+/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 typedef struct cls_struct_16byte1 {
@@ -39,7 +39,7 @@ cls_struct_combined cls_struct_combined_fn(struct cls_struct_16byte1 b0,
   result.e.dd = b0.a + b1.dd + b2.e.dd;
   result.e.ff = b0.b + b1.ff + b2.e.ff;
 
-  printf("%g %g %d %d %g %g %g %g %d %d %g %g %g %g %d: %g %g %d %d %g %g\n", 
+  printf("%g %g %d %d %g %g %g %g %d %d %g %g %g %g %d: %g %g %d %d %g %g\n",
 	 b0.a, b0.b, b0.c,
 	 b1.ii, b1.dd, b1.ff,
 	 b2.d.a, b2.d.b, b2.d.c,
@@ -51,20 +51,20 @@ cls_struct_combined cls_struct_combined_fn(struct cls_struct_16byte1 b0,
   return result;
 }
 
-static void 
+static void
 cls_struct_combined_gn(ffi_cif* cif, void* resp, void** args, void* userdata)
-{   
+{
   struct cls_struct_16byte1 b0;
   struct cls_struct_16byte2 b1;
   struct cls_struct_combined b2;
   struct cls_struct_16byte1 b3;
-  
+
   b0 = *(struct cls_struct_16byte1*)(args[0]);
   b1 = *(struct cls_struct_16byte2*)(args[1]);
   b2 = *(struct cls_struct_combined*)(args[2]);
   b3 = *(struct cls_struct_16byte1*)(args[3]);
 
-  
+
   *(cls_struct_combined*)resp = cls_struct_combined_fn(b0, b1, b2, b3);
 }
 
@@ -79,7 +79,7 @@ int main (void)
   ffi_type* cls_struct_fields2[5];
   ffi_type cls_struct_type, cls_struct_type1, cls_struct_type2;
   ffi_type* dbl_arg_types[5];
-  
+
   cls_struct_type.size = 0;
   cls_struct_type.alignment = 0;
   cls_struct_type.type = FFI_TYPE_STRUCT;
@@ -89,19 +89,19 @@ int main (void)
   cls_struct_type1.alignment = 0;
   cls_struct_type1.type = FFI_TYPE_STRUCT;
   cls_struct_type1.elements = cls_struct_fields1;
-  
+
   cls_struct_type2.size = 0;
   cls_struct_type2.alignment = 0;
   cls_struct_type2.type = FFI_TYPE_STRUCT;
   cls_struct_type2.elements = cls_struct_fields2;
-  
+
   struct cls_struct_16byte1 e_dbl = { 9.0, 2.0, 6};
   struct cls_struct_16byte2 f_dbl = { 1, 2.0, 3.0};
-  struct cls_struct_combined g_dbl = {{4.0, 5.0, 6}, 
+  struct cls_struct_combined g_dbl = {{4.0, 5.0, 6},
 				      {3, 1.0, 8.0}};
   struct cls_struct_16byte1 h_dbl = { 3.0, 2.0, 4};
   struct cls_struct_combined res_dbl;
-    
+
   cls_struct_fields[0] = &ffi_type_double;
   cls_struct_fields[1] = &ffi_type_float;
   cls_struct_fields[2] = &ffi_type_uint32;
@@ -115,15 +115,15 @@ int main (void)
   cls_struct_fields2[0] = &cls_struct_type;
   cls_struct_fields2[1] = &cls_struct_type1;
   cls_struct_fields2[2] = NULL;
-  
-  
+
+
   dbl_arg_types[0] = &cls_struct_type;
   dbl_arg_types[1] = &cls_struct_type1;
   dbl_arg_types[2] = &cls_struct_type2;
   dbl_arg_types[3] = &cls_struct_type;
   dbl_arg_types[4] = NULL;
-  
-  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 4, &cls_struct_type2, 
+
+  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 4, &cls_struct_type2,
 		     dbl_arg_types) == FFI_OK);
 
   args_dbl[0] = &e_dbl;
@@ -142,8 +142,8 @@ int main (void)
   CHECK( res_dbl.e.ff == (e_dbl.b + f_dbl.ff + g_dbl.e.ff));
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_combined_gn, NULL) == FFI_OK);
-  
-  res_dbl = ((cls_struct_combined(*)(cls_struct_16byte1, 
+
+  res_dbl = ((cls_struct_combined(*)(cls_struct_16byte1,
 				     cls_struct_16byte2,
 				     cls_struct_combined,
 				     cls_struct_16byte1))
@@ -157,4 +157,4 @@ int main (void)
   CHECK( res_dbl.e.ff == (e_dbl.b + f_dbl.ff + g_dbl.e.ff));
   //  CHECK( 1 == 0);
   exit(0);
-}   
+}

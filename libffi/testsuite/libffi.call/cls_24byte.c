@@ -5,7 +5,7 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20030828	 */
 
-/* { dg-do run } */
+/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 typedef struct cls_struct_24byte {
@@ -27,7 +27,7 @@ cls_struct_24byte cls_struct_24byte_fn(struct cls_struct_24byte b0,
   result.c = b0.c + b1.c + b2.c + b3.c;
   result.d = b0.d + b1.d + b2.d + b3.d;
 
-  printf("%g %g %d %g %g %g %d %g %g %g %d %g %g %g %d %g: %g %g %d %g\n", 
+  printf("%g %g %d %g %g %g %d %g %g %g %d %g %g %g %d %g: %g %g %d %g\n",
 	 b0.a, b0.b, b0.c, b0.d,
 	 b1.a, b1.b, b1.c, b1.d,
 	 b2.a, b2.b, b2.c, b2.d,
@@ -37,16 +37,16 @@ cls_struct_24byte cls_struct_24byte_fn(struct cls_struct_24byte b0,
   return result;
 }
 
-static void 
+static void
 cls_struct_24byte_gn(ffi_cif* cif, void* resp, void** args, void* userdata)
-{   
+{
   struct cls_struct_24byte b0, b1, b2, b3;
-  
+
   b0 = *(struct cls_struct_24byte*)(args[0]);
   b1 = *(struct cls_struct_24byte*)(args[1]);
   b2 = *(struct cls_struct_24byte*)(args[2]);
   b3 = *(struct cls_struct_24byte*)(args[3]);
-  
+
   *(cls_struct_24byte*)resp = cls_struct_24byte_fn(b0, b1, b2, b3);
 }
 
@@ -59,31 +59,31 @@ int main (void)
   ffi_type* cls_struct_fields[5];
   ffi_type cls_struct_type;
   ffi_type* dbl_arg_types[5];
-  
+
   cls_struct_type.size = 0;
   cls_struct_type.alignment = 0;
   cls_struct_type.type = FFI_TYPE_STRUCT;
   cls_struct_type.elements = cls_struct_fields;
-  
+
   struct cls_struct_24byte e_dbl = { 9.0, 2.0, 6, 5.0 };
   struct cls_struct_24byte f_dbl = { 1.0, 2.0, 3, 7.0 };
   struct cls_struct_24byte g_dbl = { 4.0, 5.0, 7, 9.0 };
   struct cls_struct_24byte h_dbl = { 8.0, 6.0, 1, 4.0 };
   struct cls_struct_24byte res_dbl;
-  
+
   cls_struct_fields[0] = &ffi_type_double;
   cls_struct_fields[1] = &ffi_type_double;
   cls_struct_fields[2] = &ffi_type_uint32;
   cls_struct_fields[3] = &ffi_type_float;
   cls_struct_fields[4] = NULL;
-  
+
   dbl_arg_types[0] = &cls_struct_type;
   dbl_arg_types[1] = &cls_struct_type;
   dbl_arg_types[2] = &cls_struct_type;
   dbl_arg_types[3] = &cls_struct_type;
   dbl_arg_types[4] = NULL;
-  
-  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 4, &cls_struct_type, 
+
+  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 4, &cls_struct_type,
 		     dbl_arg_types) == FFI_OK);
 
   args_dbl[0] = &e_dbl;
@@ -100,10 +100,10 @@ int main (void)
   CHECK( res_dbl.d == (e_dbl.d + f_dbl.d + g_dbl.d + h_dbl.d));
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_24byte_gn, NULL) == FFI_OK);
-  
-  res_dbl = ((cls_struct_24byte(*)(cls_struct_24byte, 
+
+  res_dbl = ((cls_struct_24byte(*)(cls_struct_24byte,
 				     cls_struct_24byte,
-				     cls_struct_24byte, 
+				     cls_struct_24byte,
 				     cls_struct_24byte))
 	     (pcl))(e_dbl, f_dbl, g_dbl, h_dbl);
   /* { dg-output "\n9 2 6 5 1 2 3 7 4 5 7 9 8 6 1 9: 22 15 17 25" } */
@@ -112,4 +112,4 @@ int main (void)
   CHECK( res_dbl.c == (e_dbl.c + f_dbl.c + g_dbl.c + h_dbl.c));
   CHECK( res_dbl.d == (e_dbl.d + f_dbl.d + g_dbl.d + h_dbl.d));
   exit(0);
-}   
+}

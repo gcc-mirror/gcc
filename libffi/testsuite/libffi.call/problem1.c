@@ -4,7 +4,7 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20030828	 */
 
-/* { dg-do run } */
+/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 typedef struct my_ffi_struct {
@@ -19,19 +19,19 @@ my_ffi_struct callee(struct my_ffi_struct a1, struct my_ffi_struct a2)
   result.a = a1.a + a2.a;
   result.b = a1.b + a2.b;
   result.c = a1.c + a2.c;
-  
 
-  printf("%g %g %g %g %g %g: %g %g %g\n", a1.a, a1.b, a1.c, 
+
+  printf("%g %g %g %g %g %g: %g %g %g\n", a1.a, a1.b, a1.c,
 	 a2.a, a2.b, a2.c, result.a, result.b, result.c);
-  
+
   return result;
 }
 
 void stub(ffi_cif* cif, void* resp, void** args, void* userdata)
-{   
+{
     struct my_ffi_struct a1;
     struct my_ffi_struct a2;
-    
+
     a1 = *(struct my_ffi_struct*)(args[0]);
     a2 = *(struct my_ffi_struct*)(args[1]);
 
@@ -48,7 +48,7 @@ int main(void)
     ffi_closure *pcl = &cl;
     void* args[4];
     ffi_type* arg_types[3];
-    
+
     struct my_ffi_struct g = { 1.0, 2.0, 3.0 };
     struct my_ffi_struct f = { 1.0, 2.0, 3.0 };
     struct my_ffi_struct res;
@@ -67,7 +67,7 @@ int main(void)
     arg_types[1] = &my_ffi_struct_type;
     arg_types[2] = NULL;
 
-    CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 2, &my_ffi_struct_type, 
+    CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 2, &my_ffi_struct_type,
 		       arg_types) == FFI_OK);
 
     args[0] = &g;
@@ -79,15 +79,15 @@ int main(void)
     CHECK(res.a == 2.0);
     CHECK(res.b == 4.0);
     CHECK(res.c == 6.0);
-    
+
     CHECK(ffi_prep_closure(pcl, &cif, stub, NULL) == FFI_OK);
- 
+
     res = ((my_ffi_struct(*)(struct my_ffi_struct, struct my_ffi_struct))(pcl))(g, f);
     /* { dg-output "\n1 2 3 1 2 3: 2 4 6" } */
-    
+
     CHECK(res.a == 2.0);
     CHECK(res.b == 4.0);
     CHECK(res.c == 6.0);
 
     exit(0);;
-} 
+}

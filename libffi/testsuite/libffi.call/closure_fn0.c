@@ -1,12 +1,12 @@
 /* Area:	closure_call
    Purpose:	Check multiple values passing from different type.
-		Also, exceed the limit of gpr and fpr registers on PowerPC 
+		Also, exceed the limit of gpr and fpr registers on PowerPC
 		Darwin.
    Limitations:	none.
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20030828	 */
-	
-/* { dg-do run } */
+
+/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 static void
@@ -24,31 +24,31 @@ closure_test_fn0(ffi_cif* cif,void* resp,void** args, void* userdata)
     (int)(*(int *)args[14]) +  *(int *)args[15] + (int)(long)userdata;
 
   printf("%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d: %d\n",
-	 (int)*(unsigned long long *)args[0], (int)(*(int *)args[1]), 
+	 (int)*(unsigned long long *)args[0], (int)(*(int *)args[1]),
 	 (int)(*(unsigned long long *)args[2]),
-	 (int)*(int *)args[3], (int)(*(signed short *)args[4]), 
+	 (int)*(int *)args[3], (int)(*(signed short *)args[4]),
 	 (int)(*(unsigned long long *)args[5]),
-	 (int)*(int *)args[6], (int)(*(int *)args[7]), 
+	 (int)*(int *)args[6], (int)(*(int *)args[7]),
 	 (int)(*(double *)args[8]), (int)*(int *)args[9],
 	 (int)(*(int *)args[10]), (int)(*(float *)args[11]),
-	 (int)*(int *)args[12], (int)(*(int *)args[13]), 
+	 (int)*(int *)args[12], (int)(*(int *)args[13]),
 	 (int)(*(int *)args[14]),*(int *)args[15],
 	 (int)(long)userdata, (int)*(ffi_arg *)resp);
-  
+
 }
 
-typedef int (*closure_test_type0)(unsigned long long, int, unsigned long long, 
-				  int, signed short, unsigned long long, int, 
-				  int, double, int, int, float, int, int, 
+typedef int (*closure_test_type0)(unsigned long long, int, unsigned long long,
+				  int, signed short, unsigned long long, int,
+				  int, double, int, int, float, int, int,
 				  int, int);
 
 int main (void)
-{ 
+{
   ffi_cif cif;
   static ffi_closure cl;
   ffi_closure *pcl = &cl;
   ffi_type * cl_arg_types[17];
-  
+
   cl_arg_types[0] = &ffi_type_uint64;
   cl_arg_types[1] = &ffi_type_uint;
   cl_arg_types[2] = &ffi_type_uint64;
@@ -65,17 +65,17 @@ int main (void)
   cl_arg_types[13] = &ffi_type_uint;
   cl_arg_types[14] = &ffi_type_uint;
   cl_arg_types[15] = &ffi_type_uint;
-  cl_arg_types[16] = NULL;   
-  
+  cl_arg_types[16] = NULL;
+
   /* Initialize the cif */
   CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 16,
 		     &ffi_type_sint, cl_arg_types) == FFI_OK);
-  
+
   CHECK(ffi_prep_closure(pcl, &cif, closure_test_fn0,
 			 (void *) 3 /* userdata */) == FFI_OK);
-     
+
   (*((closure_test_type0)pcl))
-	(1LL, 2, 3LL, 4, 127, 429LL, 7, 8, 9.5, 10, 11, 12, 13, 
+	(1LL, 2, 3LL, 4, 127, 429LL, 7, 8, 9.5, 10, 11, 12, 13,
 	 19, 21, 1);
   /* { dg-output "1 2 3 4 127 429 7 8 9 10 11 12 13 19 21 1 3: 680" } */
      exit(0);

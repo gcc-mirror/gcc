@@ -6,7 +6,7 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20030902	 */
 
-/* { dg-do run } */
+/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 typedef struct cls_struct_4_1byte {
@@ -33,10 +33,10 @@ cls_struct_4_1byte cls_struct_4_1byte_fn(struct cls_struct_4_1byte a1,
   return  result;
 }
 
-static void 
+static void
 cls_struct_4_1byte_gn(ffi_cif* cif, void* resp, void** args, void* userdata)
-{   
-  
+{
+
   struct cls_struct_4_1byte a1, a2;
 
   a1 = *(struct cls_struct_4_1byte*)(args[0]);
@@ -63,18 +63,18 @@ int main (void)
   struct cls_struct_4_1byte g_dbl = { 12, 13, 14, 15 };
   struct cls_struct_4_1byte f_dbl = { 178, 179, 180, 181 };
   struct cls_struct_4_1byte res_dbl;
-  
+
   cls_struct_fields[0] = &ffi_type_uchar;
   cls_struct_fields[1] = &ffi_type_uchar;
   cls_struct_fields[2] = &ffi_type_uchar;
   cls_struct_fields[3] = &ffi_type_uchar;
   cls_struct_fields[4] = NULL;
-  
+
   dbl_arg_types[0] = &cls_struct_type;
   dbl_arg_types[1] = &cls_struct_type;
   dbl_arg_types[2] = NULL;
-  
-  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 2, &cls_struct_type, 
+
+  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 2, &cls_struct_type,
 		     dbl_arg_types) == FFI_OK);
 
   args_dbl[0] = &g_dbl;
@@ -89,7 +89,7 @@ int main (void)
   CHECK( res_dbl.d == (g_dbl.d + f_dbl.d));
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_4_1byte_gn, NULL) == FFI_OK);
-  
+
   res_dbl = ((cls_struct_4_1byte(*)(cls_struct_4_1byte, cls_struct_4_1byte))(pcl))(g_dbl, f_dbl);
   /* { dg-output "\n12 13 14 15 178 179 180 181: 190 192 194 196" } */
   CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
