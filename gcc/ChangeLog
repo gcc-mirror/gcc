@@ -1,3 +1,20 @@
+Sun Aug 23 18:39:11 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (sparc_emit_set_const32): If outputting a
+	CONST_INT, not a symbolic reference, don't use a HIGH/LO_SUM
+	sequence, use SET/IOR instead so CSE can see it.
+	* config/sparc/sparc.md (movhi_const64_special,
+	movsi_const64_special): New patterns necessitated by that change.
+	(movhi_high): Remove.
+	(movhi_lo_sum): Change to match an IOR.
+	(movdf_insn_sp32): Test TARGET_V9 not TARGET_ARCH64.
+	(movdf_insn_v9only): New pattern for when V9 but not ARCH64.
+	(movdf_insn_sp64): Test both TARGET_V9 and TARGET_ARCH64.
+	(movdf splits): Allow when not V9 or when not ARCH64 and integer
+	registers are involved.
+	(snesi_zero_extend split): Remove reload_completed test.
+	(unnamed plus and minus zero_extend sidi splits): Add it.
+
 Sun Aug 23 11:56:08 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* extend.texi: Remove description of extension to explicit

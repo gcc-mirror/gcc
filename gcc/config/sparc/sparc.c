@@ -1111,15 +1111,46 @@ sparc_emit_set_const32 (op0, op1)
   else
     temp = gen_reg_rtx (mode);
 
-  emit_insn (gen_rtx_SET (VOIDmode,
-			  temp,
-			  gen_rtx_HIGH (mode,
-					op1)));
-  emit_insn (gen_rtx_SET (VOIDmode,
-			  op0,
-			  gen_rtx_LO_SUM (mode,
-					  temp,
-					  op1)));
+  if (GET_CODE (op1) == CONST_INT)
+    {
+      /* Emit them as real moves instead of a HIGH/LO_SUM,
+	 this way CSE can see everything and reuse intermediate
+	 values if it wants.  */
+      if (TARGET_ARCH64
+	  && HOST_BITS_PER_WIDE_INT != 64
+	  && (INTVAL (op1) & 0x80000000) != 0)
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  temp,
+				  gen_rtx_CONST_DOUBLE (VOIDmode, const0_rtx,
+							INTVAL (op1) & 0xfffffc00, 0)));
+	}
+      else
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  temp,
+				  GEN_INT (INTVAL (op1) & 0xfffffc00)));
+	}
+      emit_insn (gen_rtx_SET (VOIDmode,
+			      op0,
+			      gen_rtx_IOR (mode,
+					   temp,
+					   GEN_INT (INTVAL (op1) & 0x3ff))));
+    }
+  else
+    {
+      /* A symbol, emit in the traditional way.  */
+      emit_insn (gen_rtx_SET (VOIDmode,
+			      temp,
+			      gen_rtx_HIGH (mode,
+					    op1)));
+      emit_insn (gen_rtx_SET (VOIDmode,
+			      op0,
+			      gen_rtx_LO_SUM (mode,
+					      temp,
+					      op1)));
+
+    }
 }
 
 
