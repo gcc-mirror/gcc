@@ -1,5 +1,11 @@
 2004-06-05  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/SwingConstants.java
+	(NEXT): New constant.
+	(PREVIOUS): Likewise.
+
+2004-06-05  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/UIManager.java
 	(LookAndFeel): Made public.
 	(LookAndFeel.getName): Likewise.
