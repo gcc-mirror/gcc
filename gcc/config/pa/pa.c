@@ -852,8 +852,7 @@ emit_move_sequence (operands, mode, scratch_reg)
   /* Simplify the source if we need to.  */
   if (GET_CODE (operand1) != HIGH && immediate_operand (operand1, mode)
       || (GET_CODE (operand1) == HIGH
-	  && symbolic_operand (XEXP (operand1, 0), mode)
-	  && TARGET_KERNEL))
+	  && symbolic_operand (XEXP (operand1, 0), mode)))
     {
       int ishighonly = 0;
 
@@ -3241,7 +3240,7 @@ secondary_reload_class (class, mode, in)
   if (GET_CODE (in) == HIGH)
     in = XEXP (in, 0);
 
-  if (TARGET_KERNEL && class != R1_REGS && symbolic_operand (in, VOIDmode))
+  if (class != R1_REGS && symbolic_operand (in, VOIDmode))
     return R1_REGS;
 
   return NO_REGS;
