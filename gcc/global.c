@@ -302,10 +302,14 @@ global_alloc (file)
       SET_HARD_REG_BIT (eliminable_regset, eliminables[i].from);
 
       if (! CAN_ELIMINATE (eliminables[i].from, eliminables[i].to)
-	  || (eliminables[i].from == FRAME_POINTER_REGNUM
+	  || (eliminables[i].from == HARD_FRAME_POINTER_REGNUM
 	      && (! flag_omit_frame_pointer || FRAME_POINTER_REQUIRED)))
 	SET_HARD_REG_BIT (no_global_alloc_regs, eliminables[i].from);
     }
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+  if (!flag_omit_frame_pointer || FRAME_POINTER_REQUIRED)
+    SET_HARD_REG_BIT (no_global_alloc_regs, HARD_FRAME_POINTER_REGNUM);
+#endif
 #else
   SET_HARD_REG_BIT (eliminable_regset, FRAME_POINTER_REGNUM);
 
