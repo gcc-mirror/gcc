@@ -1,6 +1,6 @@
 // natFileDescriptor.cc - Native part of FileDescriptor class.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -81,7 +81,7 @@ java::io::FileDescriptor::open (jstring path, jint jflags)
   JvAssert ((jflags & READ) || (jflags & WRITE));
   int mode = 0666;
   if ((jflags & READ) && (jflags & WRITE))
-    flags |= O_RDWR;
+    flags |= O_RDWR | O_CREAT;
   else if ((jflags & READ))
     flags |= O_RDONLY;
   else
