@@ -1,3 +1,8 @@
+2003-11-14  Giovanni Bajo  <giovannibajo@libero.it>
+
+        PR c++/2094
+        * g++.dg/template/ptrmem7.C: New test.
+
 2003-11-13  Andrew Pinski <apinski@apple.com>
 
 	* gcc.c-torture/compile/20031113-1.c: New test.
