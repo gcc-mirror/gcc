@@ -2886,7 +2886,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 	   the original assignment true.
 	   So the following insn will actually be
 	   decrementing fp by STARTING_FRAME_OFFSET.  */
-	emit_move_insn (virtual_stack_vars_rtx, frame_pointer_rtx);
+	emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
 
 #if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
       if (fixed_regs[ARG_POINTER_REGNUM])
