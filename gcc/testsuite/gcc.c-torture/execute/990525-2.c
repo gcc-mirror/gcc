@@ -11,11 +11,11 @@ int func1()
 
     if (test.v[0] != 10)
       abort ();
-    if (test.v[0] != 20)
+    if (test.v[1] != 20)
       abort ();
-    if (test.v[0] != 30)
+    if (test.v[2] != 30)
       abort ();
-    if (test.v[0] != 40)
+    if (test.v[3] != 40)
       abort ();
 }
 
