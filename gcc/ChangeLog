@@ -1,3 +1,7 @@
+Mon Jul 13 23:06:55 1998  Henning.Petersen@t-online.de (Henning Petersen)
+
+	* gcse.c (hash_scan_insn): Add missing argument declaration.
+
 Mon Jul 13 18:59:13 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* configure.in (mips-sgi-irix5cross64, mips-sgi-irix5*): Remove
