@@ -3830,30 +3830,41 @@
       else
 	operands[1] = tem;
     }
-  else if (TARGET_BUILD_CONSTANTS
-	   && GET_CODE (operands[1]) == CONST_INT)
-    {
-#if HOST_BITS_PER_WIDE_INT == 64
-      tem = alpha_emit_set_long_const (operands[0], INTVAL (operands[1]));
-      if (rtx_equal_p (tem, operands[0]))
-	DONE;
-      else
-	operands[1] = tem;
-#else
-      abort();
-#endif
-    }
   else if (CONSTANT_P (operands[1]))
     {
-      operands[1] = force_const_mem (DImode, operands[1]);
-      if (reload_in_progress)
+      if (TARGET_BUILD_CONSTANTS)
 	{
-	  emit_move_insn (operands[0], XEXP (operands[1], 0));
-	  operands[1] = copy_rtx (operands[1]);
-	  XEXP (operands[1], 0) = operands[0];
+#if HOST_BITS_PER_WIDE_INT == 64
+	  HOST_WIDE_INT i;
+
+	  if (GET_CODE (operands[1]) == CONST_INT)
+	    i = INTVAL (operands[1]);
+	  else if (GET_CODE (operands[1]) == CONST_DOUBLE)
+	    i = CONST_DOUBLE_LOW (operands[1]);
+	  else
+	    abort();
+	  
+          tem = alpha_emit_set_long_const (operands[0], i);
+          if (rtx_equal_p (tem, operands[0]))
+	    DONE;
+          else
+	    operands[1] = tem;
+#else
+          abort();
+#endif
 	}
       else
-	operands[1] = validize_mem (operands[1]);
+	{
+	  operands[1] = force_const_mem (DImode, operands[1]);
+	  if (reload_in_progress)
+	    {
+	      emit_move_insn (operands[0], XEXP (operands[1], 0));
+	      operands[1] = copy_rtx (operands[1]);
+	      XEXP (operands[1], 0) = operands[0];
+	    }
+	  else
+	    operands[1] = validize_mem (operands[1]);
+	}
     }
   else
     abort ();
