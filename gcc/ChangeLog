@@ -1,3 +1,10 @@
+2001-06-15  Zack Weinberg  <zackw@stanford.edu>
+
+	* doc/cpp.texi: Formatting corrections.
+	Correct buggy example of use of __GNUC__ etc.
+	Clarify $ in identifiers.
+	* doc/cpp.1: Regenerate.
+
 Fri Jun 15 19:35:38 CEST 2001 Jan Hubicka  <jh@suse.cz>
 
 	* optabs.c (expand_twoval_binop): Avoid undefined behaviour.
