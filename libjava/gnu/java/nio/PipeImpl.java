@@ -1,5 +1,5 @@
 /* PipeImpl.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import java.nio.channels.spi.SelectorProvider;
 
 class PipeImpl extends Pipe
 {
-  public final class SourceChannelImpl extends Pipe.SourceChannel
+  public static final class SourceChannelImpl extends Pipe.SourceChannel
   {
     private int native_fd;
     
@@ -79,10 +79,22 @@ class PipeImpl extends Pipe
       return read (srcs, 0, srcs.length);
     }
 
-    public final long read (ByteBuffer[] srcs, int offset, int len)
+    public synchronized final long read (ByteBuffer[] srcs, int offset, int len)
       throws IOException
     {
-      throw new Error ("Not implemented");
+      if (offset < 0
+	  || offset > srcs.length
+	  || len < 0
+	  || len > srcs.length - offset)
+	throw new IndexOutOfBoundsException();
+
+      long bytesRead = 0;
+      
+      for (int index = 0; index < len; index++)
+	bytesRead += read (srcs [offset + index]);
+
+      return bytesRead;
+
     }
 
     public final int getNativeFD()
@@ -91,7 +103,7 @@ class PipeImpl extends Pipe
     }
   }
 
-  public final class SinkChannelImpl extends Pipe.SinkChannel
+  public static final class SinkChannelImpl extends Pipe.SinkChannel
   {
     private int native_fd;
     
@@ -120,16 +132,27 @@ class PipeImpl extends Pipe
       throw new Error ("Not implemented");
     }
 
-    public final long write (ByteBuffer[] dsts)
+    public final long write (ByteBuffer[] srcs)
       throws IOException
     {
-      return write (dsts, 0, dsts.length);
+      return write (srcs, 0, srcs.length);
     }
 
-    public final long write (ByteBuffer[] dsts, int offset, int len)
+    public synchronized final long write (ByteBuffer[] srcs, int offset, int len)
       throws IOException
     {
-      throw new Error ("Not implemented");
+      if (offset < 0
+	  || offset > srcs.length
+	  || len < 0
+	  || len > srcs.length - offset)
+	throw new IndexOutOfBoundsException();
+
+      long bytesWritten = 0;
+      
+      for (int index = 0; index < len; index++)
+	bytesWritten += write (srcs [offset + index]);
+
+      return bytesWritten;
     }
 
     public final int getNativeFD()
