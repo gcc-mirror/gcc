@@ -1757,6 +1757,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 				  op);
 	  else if (GET_CODE (op) == REG
 		   || GET_CODE (op) == SUBREG
+		   || GET_CODE (op) == ADDRESSOF
 		   || GET_CODE (op) == CONCAT)
 	    {
 	      tree type = TREE_TYPE (TREE_VALUE (tail));

@@ -1,3 +1,8 @@
+Wed May 16 19:53:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* stmt.c (expand_asm_operands): Be able to offload addressof
+	expression to memory. (PR optimization/185)
+
 Wed May 16 18:53:23 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (combine_simplify_rtx): Set op0_mode to VOIDmode after
