@@ -102,15 +102,15 @@ oneprocess : full-stamp
 twoprocess : test-stamp $(AF)
 
 full-stamp : $(ALLOBJ) $(LIBIBERTY)
-	$(CC) $(LDFLAGS) -o $(FI) $(ALLOBJ) $(LIBIBERTY)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(FI) $(ALLOBJ) $(LIBIBERTY)
 	$(STAMP) $@
 
 test-stamp : $(TESTOBJ) $(LIBIBERTY)
-	$(CC) $(LDFLAGS) -o $(FI) $(TESTOBJ) $(LIBIBERTY)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(FI) $(TESTOBJ) $(LIBIBERTY)
 	$(STAMP) $@
 
 $(AF): $(FIXOBJ) $(LIBIBERTY)
-	$(CC) $(LDFLAGS) -o $@ $(FIXOBJ) $(LIBIBERTY)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(FIXOBJ) $(LIBIBERTY)
 
 $(ALLOBJ)   : $(HDR)
 fixincl.o   : fixincl.c  $(srcdir)/fixincl.x
