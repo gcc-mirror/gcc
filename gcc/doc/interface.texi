@@ -69,17 +69,3 @@ values after a @code{longjmp}.  And this is all GCC promises to do,
 because it is very difficult to restore register variables correctly, and
 one of GCC's features is that it can put variables in registers without
 your asking it to.
-
-If you want a variable to be unaltered by @code{longjmp}, and you don't
-want to write @code{volatile} because old C compilers don't accept it,
-just take the address of the variable.  If a variable's address is ever
-taken, even if just to compute it and ignore it, then the variable cannot
-go in a register:
-
-@smallexample
-@{
-  int careful;
-  &careful;
-  @dots{}
-@}
-@end smallexample
