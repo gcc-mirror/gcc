@@ -21,11 +21,19 @@ else
   if_topsrcdir=${top_srcdir}
 fi
 
+if [ -f ${if_topsrcdir}/libstdc++/Makefile.in ]; then
 # We check libstdc++ for libstdcxx_interface.
 libstdcxx_interface=`grep "^INTERFACE" ${if_topsrcdir}/libstdc++/Makefile.in | sed 's/INTERFACE[ 	]*=[ 	]*\(.*\)/\1/'`
+else
+libstdcxx_interface=
+fi
 
+if [ -f ${if_topsrcdir}/gcc/cp/Makefile.in ]; then
 # We check gcc/cp for cxx_interface.
 cxx_interface=`grep "^INTERFACE" ${if_topsrcdir}/gcc/cp/Makefile.in | sed 's/INTERFACE[ 	]*=[ 	]*\(.*\)/\1/'`
+else
+cxx_interface=
+fi
 
 # The trickiest part is libc_interface.
 if [ -z "${libc_interface}" ]
