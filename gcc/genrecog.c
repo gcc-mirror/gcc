@@ -1979,9 +1979,12 @@ from the machine description file `md'.  */\n\n");
   break_out_subroutines (split_tree, SPLIT, 1);
   write_subroutine (split_tree.first, SPLIT);
 
-  next_subroutine_number = 0;
-  break_out_subroutines (peephole2_tree, PEEPHOLE2, 1);
-  write_subroutine (peephole2_tree.first, PEEPHOLE2);
+  if (peephole2_tree.first)
+    {
+      next_subroutine_number = 0;
+      break_out_subroutines (peephole2_tree, PEEPHOLE2, 1);
+      write_subroutine (peephole2_tree.first, PEEPHOLE2);
+    }
 
   fflush (stdout);
   exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);

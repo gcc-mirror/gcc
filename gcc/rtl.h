@@ -476,7 +476,7 @@ extern const char * const reg_note_name[];
 #define NOTE_EH_HANDLER(INSN)	X0INT(INSN, 3)
 #define NOTE_RANGE_INFO(INSN)  	X0EXP(INSN, 3)
 #define NOTE_LIVE_INFO(INSN)   	X0EXP(INSN, 3)
-#define NOTE_BASIC_BLOCK(INSN)	X0EXP(INSN, 3)
+#define NOTE_BASIC_BLOCK(INSN)	X0BBDEF(INSN, 3)
 
 /* If the NOTE_BLOCK_NUMBER field gets a -1, it means create a new
    block node for a live range block.  */

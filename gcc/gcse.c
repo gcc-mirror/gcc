@@ -577,7 +577,9 @@ static void find_used_regs	    PROTO ((rtx));
 static int try_replace_reg	    PROTO ((rtx, rtx, rtx));
 static struct expr *find_avail_set    PROTO ((int, rtx));
 static int cprop_jump			PROTO((rtx, rtx, struct reg_use *, rtx));
+#ifdef HAVE_cc0
 static int cprop_cc0_jump		PROTO((rtx, struct reg_use *, rtx));
+#endif
 static int cprop_insn		 PROTO ((rtx, int));
 static int cprop		      PROTO ((int));
 static int one_cprop_pass	     PROTO ((int, int));

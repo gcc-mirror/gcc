@@ -9012,7 +9012,6 @@ do_jump_by_parts_greater_rtx (mode, unsignedp, op0, op1, if_false_label, if_true
   /* Compare a word at a time, high order first.  */
   for (i = 0; i < nwords; i++)
     {
-      rtx comp;
       rtx op0_word, op1_word;
 
       if (WORDS_BIG_ENDIAN)

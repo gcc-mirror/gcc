@@ -6080,9 +6080,8 @@ replace_insns (first, last, first_new, notes)
      rtx first, last, first_new, notes;
 {
   rtx stop = NEXT_INSN (last);
-  rtx last_new;
-  rtx curr, next;
   rtx prev = PREV_INSN (first);
+  rtx last_new, curr;
   int i;
 
   if (notes == NULL_RTX)
@@ -6356,8 +6355,7 @@ create_edge_list ()
   struct edge_list *elist;
   edge e;
   int num_edges;
-  int x,y;
-  int_list_ptr ptr;
+  int x;
   int block_count;
 
   block_count = n_basic_blocks + 2;   /* Include the entry and exit blocks.  */
@@ -6451,8 +6449,6 @@ verify_edge_list (f, elist)
      struct edge_list *elist;
 {
   int x, pred, succ, index;
-  int_list_ptr ptr;
-  int flawed = 0;
   edge e;
 
   for (x = 0; x < n_basic_blocks; x++)

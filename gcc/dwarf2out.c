@@ -9885,7 +9885,7 @@ dwarf2out_line (filename, line)
 
       if (DWARF2_ASM_LINE_DEBUG_INFO)
 	{
-	  static char *lastfile;
+	  static const char *lastfile;
 
 	  /* Emit the .file and .loc directives understood by GNU as.  */
 	  if (lastfile == 0 || strcmp (filename, lastfile))
