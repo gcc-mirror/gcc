@@ -1,3 +1,7 @@
+2002-11-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* src/s390/sysv.S (.eh_frame section): Adapt to pcrel FDE encoding.
+
 2002-11-11  DJ Delorie  <dj@redhat.com>
 
 	* configure.in: Look for common files in the right place.

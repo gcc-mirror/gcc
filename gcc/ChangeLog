@@ -1,3 +1,7 @@
+2002-11-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.
+
 Fri Nov 15 14:54:19 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386-protos.h (x86_function_profiler): New function
