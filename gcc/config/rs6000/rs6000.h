@@ -131,7 +131,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=860: -mppc}"
 
 #ifndef ASM_DEFAULT_SPEC
-#define ASM_DEFAULT_SPEC "-mpwr"
+#define ASM_DEFAULT_SPEC ""
 #endif
 
 /* This macro defines names of additional specifications to put in the specs

@@ -28,26 +28,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC "%{fpic:-K PIC} %{fPIC:-K PIC} -le -s"
 
-/* This should be the same as in svr4.h, except with -R added.  */
-#undef LINK_SPEC
-#define LINK_SPEC \
-  "%{h*} %{v:-V} %{G*} \
-   %{b} %{Wl,*:%*} \
-   %{static:-dn -Bstatic} \
-   %{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
-   %{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
-   %{G:-G} \
-   %{YP,*} \
-   %{R*} %{!static:%{!R*:%{L*:-R %*}}} \
-   %{compat-bsd: \
-     %{!YP,*:%{p:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-       %{!p:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}} \
-     -R /usr/ucblib} \
-   %{!compat-bsd: \
-     %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-       %{!p:-Y P,/usr/ccs/lib:/usr/lib}}} \
-   %{Qy:} %{!Qn:-Qy}"
-
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_POWERPC | \
 			MASK_NEW_MNEMONICS | \
@@ -68,6 +48,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef	CPP_OS_DEFAULT_SPEC
 #define	CPP_OS_DEFAULT_SPEC "%(cpp_os_solaris)"
+
+#undef	LINK_OS_DEFAULT_SPEC
+#define	LINK_OS_DEFAULT_SPEC "%(link_os_solaris)"
 
 /* Don't turn -B into -L if the argument specifies a relative file name.  */
 #undef	RELATIVE_PREFIX_NOT_LINKDIR
