@@ -1,4 +1,5 @@
-// { dg-do run }
+// HP-UX libunwind.so doesn't provide _Unwind_ForcedUnwind.
+// { dg-do run { xfail "ia64-hp-hpux11.*" } }
 
 // Test that forced unwinding runs all cleanups.  Also tests that
 // rethrowing doesn't call the exception object destructor.
