@@ -7865,11 +7865,12 @@ loop_iv_add_mult_emit_before (loop, b, m, a, reg, before_bb, before_insn)
   update_reg_last_use (b, before_insn);
   update_reg_last_use (m, before_insn);
 
-  loop_insn_emit_before (loop, before_bb, before_insn, seq);
-
   /* It is possible that the expansion created lots of new registers.
-     Iterate over the sequence we just created and record them all.  */
+     Iterate over the sequence we just created and record them all.  We
+     must do this before inserting the sequence.  */
   loop_regs_update (loop, seq);
+
+  loop_insn_emit_before (loop, before_bb, before_insn, seq);
 }
 
 
@@ -7894,11 +7895,12 @@ loop_iv_add_mult_sink (loop, b, m, a, reg)
   update_reg_last_use (b, loop->sink);
   update_reg_last_use (m, loop->sink);
 
-  loop_insn_sink (loop, seq);
-
   /* It is possible that the expansion created lots of new registers.
-     Iterate over the sequence we just created and record them all.  */
+     Iterate over the sequence we just created and record them all.  We
+     must do this before inserting the sequence.  */
   loop_regs_update (loop, seq);
+
+  loop_insn_sink (loop, seq);
 }
 
 
@@ -7917,11 +7919,12 @@ loop_iv_add_mult_hoist (loop, b, m, a, reg)
   /* Use copy_rtx to prevent unexpected sharing of these rtx.  */
   seq = gen_add_mult (copy_rtx (b), copy_rtx (m), copy_rtx (a), reg);
 
-  loop_insn_hoist (loop, seq);
-
   /* It is possible that the expansion created lots of new registers.
-     Iterate over the sequence we just created and record them all.  */
+     Iterate over the sequence we just created and record them all.  We
+     must do this before inserting the sequence.  */
   loop_regs_update (loop, seq);
+
+  loop_insn_hoist (loop, seq);
 }
 
 
