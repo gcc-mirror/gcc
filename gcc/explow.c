@@ -732,6 +732,7 @@ promote_mode (type, mode, punsignedp, for_call)
 #endif
 
 #ifdef POINTERS_EXTEND_UNSIGNED
+    case REFERENCE_TYPE:
     case POINTER_TYPE:
       mode = Pmode;
       unsignedp = POINTERS_EXTEND_UNSIGNED;
