@@ -31,17 +31,14 @@ cabs`'q (complex_type z)
   return hypot`'q (REALPART (z), IMAGPART (z));
 }
 
-/* Complex argument.  The angle made with the +ve real axis.  Range 0-2pi.  */
+/* Complex argument.  The angle made with the +ve real axis.
+   Range -pi-pi.  */
 real_type
 carg`'q (complex_type z)
 {
   real_type arg;
 
-  arg = atan2`'q (IMAGPART (z), REALPART (z));
-  if (arg < 0)
-    return arg + 2 * M_PI;
-  else
-    return arg;
+  return atan2`'q (IMAGPART (z), REALPART (z));
 }
 
 /* exp(z) = exp(a)*(cos(b) + isin(b))  */

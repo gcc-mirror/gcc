@@ -30,17 +30,14 @@ cabsf (GFC_COMPLEX_4 z)
   return hypotf (REALPART (z), IMAGPART (z));
 }
 
-/* Complex argument.  The angle made with the +ve real axis.  Range 0-2pi.  */
+/* Complex argument.  The angle made with the +ve real axis.
+   Range -pi-pi.  */
 GFC_REAL_4
 cargf (GFC_COMPLEX_4 z)
 {
   GFC_REAL_4 arg;
 
-  arg = atan2f (IMAGPART (z), REALPART (z));
-  if (arg < 0)
-    return arg + 2 * M_PI;
-  else
-    return arg;
+  return atan2f (IMAGPART (z), REALPART (z));
 }
 
 /* exp(z) = exp(a)*(cos(b) + isin(b))  */
