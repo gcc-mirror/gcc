@@ -17,6 +17,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdio.h>
 #include <ctype.h>
+#include "hconfig.h"
 #include "scan.h"
 
 #define HASH_SIZE 2503 /* a prime */
