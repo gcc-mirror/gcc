@@ -125,24 +125,18 @@ tSCC z[=hackname _cap=]FTst[=_eval _index=][] = "[=c_test=]";[=
 #define    [=hackname _up =]_TEST_CT  [=
     _IF exesel _exist =][=
        _eval exesel       _count
-      	     bypass       _count +
-      	     test         _count + 
-      	     c_test       _count + =][=
+             bypass       _count +
+             test         _count + 
+             c_test       _count +
+        "ct=%d ; re_ct=`expr $ct + $re_ct` ; echo $ct"
+        _printf _shell =][=
     _ELSE =][=
        _eval select       _count
-      	     bypass       _count +
-      	     test         _count + 
-      	     c_test       _count + =][=
-    _ENDIF =]
-#define    [=hackname _up =]_RE_CT    [=
-    _IF exesel _exist =][=
-       _eval exesel _count bypass _count
-             "#2$ct=`expr %d + %d` ; re_ct=`expr $ct + $re_ct` ; echo $ct"
-             _printf _shell =][=
-    _ELSE =][=
-       _eval select _count bypass _count
-             "#2$ct=`expr %d + %d` ; re_ct=`expr $ct + $re_ct` ; echo $ct"
-             _printf _shell =][=
+             bypass       _count +
+             test         _count + 
+             c_test       _count +
+        "ct=%d ; re_ct=`expr $ct + $re_ct` ; echo $ct"
+        _printf _shell =][=
     _ENDIF =]
 tTestDesc a[=hackname _cap=]Tests[] = {[=
 
@@ -173,7 +167,6 @@ tTestDesc a[=hackname _cap=]Tests[] = {[=
     _ENDIF =] };[=
   _ELSE =]
 #define [=hackname _up=]_TEST_CT  0
-#define [=hackname _up=]_RE_CT    0
 #define a[=hackname _cap=]Tests   (tTestDesc*)NULL[=
   _ENDIF =]
 

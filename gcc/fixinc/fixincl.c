@@ -433,16 +433,17 @@ wait_for_pid(child)
       {
         if (! WIFEXITED( status ))
           {
-            if (NOT_SILENT)
-              fprintf (stderr, "child process %d is hung on signal %d\n",
-                       child, WSTOPSIG( status ));
+            if (WSTOPSIG( status ) == 0)
+              break;
+
+            fprintf (stderr, "child process %d is hung on signal %d\n",
+                     child, WSTOPSIG( status ));
             exit (EXIT_FAILURE);
           }
         if (WEXITSTATUS( status ) != 0)
           {
-            if (NOT_SILENT)
-              fprintf (stderr, "child process %d exited with status %d\n",
-                       child, WEXITSTATUS( status ));
+            fprintf (stderr, "child process %d exited with status %d\n",
+                     child, WEXITSTATUS( status ));
             exit (EXIT_FAILURE);
           }
         break; /* normal child completion */

@@ -48,16 +48,11 @@ Boston, MA 02111-1307, USA.  */
 
 #include "fixlib.h"
 
-typedef int apply_fix_p_t;  /* Apply Fix Predicate Type */
-
-#define APPLY_FIX 0
-#define SKIP_FIX  1
-
 #define SHOULD_APPLY(afp) ((afp) == APPLY_FIX)
 apply_fix_p_t run_test();
 
 typedef struct {
-    const char*  test_name;
+    tCC*  test_name;
     apply_fix_p_t (*test_proc)();
 } test_entry_t;
 
@@ -68,8 +63,8 @@ typedef struct {
 
 #define TEST_FOR_FIX_PROC_HEAD( test ) \
 static apply_fix_p_t test ( fname, text ) \
-    const char* fname; \
-    const char* text;
+    tCC* fname; \
+    tCC* text;
 
 /*
  *  Skip over a quoted string.  Single quote strings may
@@ -77,7 +72,7 @@ static apply_fix_p_t test ( fname, text ) \
  *  a backslash.  Especially a backslash followed by octal digits.
  *  We are not doing a correctness syntax check here.
  */
-static const char*
+tSCC*
 skip_quote( q, text )
   char  q;
   char* text;
@@ -106,29 +101,10 @@ skip_quote( q, text )
   return text;
 }
 
-static apply_fix_p_t
-is_cxx_header (fname, text)
-     const char *fname;
-     const char *text;
-{
-  /*  First, check to see if the file is in a C++ directory */
-  if (strstr( fname, "CC/" ) != NULL)
-    return SKIP_FIX;
-  if (strstr( fname, "xx/" ) != NULL)
-    return SKIP_FIX;
-  if (strstr( fname, "++" ) != NULL)
-    return SKIP_FIX;
-  /* Or it might contain the phrase 'extern "C++"' */
-  if (strstr( text, "extern \"C++\"" ) != NULL)
-    return SKIP_FIX;
-
-  return APPLY_FIX;
-}
-
 
 TEST_FOR_FIX_PROC_HEAD( double_slash_test )
 {
-  if (is_cxx_header (fname, text) == SKIP_FIX)
+  if (is_cxx_header (fname, text))
     return SKIP_FIX;
 
   /*  Now look for the comment markers in the text */
@@ -173,13 +149,13 @@ TEST_FOR_FIX_PROC_HEAD( double_slash_test )
 TEST_FOR_FIX_PROC_HEAD( else_endif_label_test )
 {
   static int compiled = 0;
-  static const char label_pat[] = "^[ \t]*#[ \t]*(else|endif)";
+  tSCC label_pat[] = "^[ \t]*#[ \t]*(else|endif)";
   static regex_t label_re;
 
   char ch;
-  const char* pz_next = (char*)NULL;
+  tCC* pz_next = (char*)NULL;
   regmatch_t match[2];
-  const char *all_text = text;
+  t_bool file_is_cxx = is_cxx_header( fname, text );
 
   /*
      This routine may be run many times within a single execution.
@@ -271,25 +247,33 @@ TEST_FOR_FIX_PROC_HEAD( else_endif_label_test )
             case '/':
               /*
                 Skip comments.  Otherwise, we have a bogon */
-              if (*pz_next == '*')
+              switch (*pz_next)
                 {
+                case '/':
+                  /* IF we found a "//" in a C header, THEN fix it. */
+                  if (! file_is_cxx)
+                    return APPLY_FIX;
+
+                  /* C++ header.  Skip to newline and continue. */
+                  pz_next = strchr( pz_next+1, '\n' );
+                  if (pz_next == (char*)NULL)
+                    return SKIP_FIX;
+                  pz_next++;
+                  break;
+
+                case '*':
+                  /* A comment for either C++ or C.  Skip over it. */
                   pz_next = strstr( pz_next+1, "*/" );
                   if (pz_next == (char*)NULL)
                     return SKIP_FIX;
                   pz_next += 2;
                   break;
-                }
-	      else if (*pz_next == '/'
-		       && is_cxx_header( fname, all_text ) == SKIP_FIX)
-		{
-		  pz_next = strchr( pz_next+1, '\n' );
-		  if (pz_next == (char*)NULL)
-		    return SKIP_FIX;
-		  pz_next++;
-		  break;
-		}
 
-              /* FALLTHROUGH */
+                default:
+                  /* a '/' followed by other junk. */
+                  return APPLY_FIX;
+                }
+              break; /* a C or C++ comment */
 
             default:
               /*
@@ -311,9 +295,9 @@ TEST_FOR_FIX_PROC_HEAD( else_endif_label_test )
 */
 apply_fix_p_t
 run_test( tname, fname, text )
-  const char* tname;
-  const char* fname;
-  const char* text;
+  tCC* tname;
+  tCC* fname;
+  tCC* text;
 {
 #define _FT_(n,p) { n, p },
   static test_entry_t test_table[] = { FIX_TEST_TABLE { NULL, NULL }};
@@ -353,7 +337,6 @@ main( argc, argv )
   char* fname = *++argv;
   char* tname = *++argv;
   char* buf;
-  size_t buf_size = 0;
 
   if (argc != 3)
     return run_test( "No test name provided", NULL, NULL, 0 );

@@ -8,12 +8,17 @@ autogen definitions inclhack;
 Define all the fixes we know about for repairing damaged headers.
 Please see the README before adding or changing entries in this file.
 
-Now, first:  DO NOT DO BROKEN FIXES (empty replacement fixes) */
+Set up a debug test so we can make the templates emit special
+code while debugging these fixes:  */
 
+#ifdef DEBUG
+FIXINC_DEBUG = yes;
+#endif
 
+/* DO NOT DO BROKEN FIXES (empty replacement fixes) */
 
 /*
- *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ *  Purge some HP-UX 11 files that are only broken after they are "fixed".
  */
 fix = {
     hackname = AAA_ki_iface;
@@ -24,7 +29,7 @@ fix = {
 
 
 /*
- *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ *  Purge some HP-UX 11 files that are only broken after they are "fixed".
  */
 fix = {
     hackname = AAA_ki;
@@ -35,7 +40,7 @@ fix = {
 
 
 /*
- *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ *  Purge some HP-UX 11 files that are only broken after they are "fixed".
  */
 fix = {
     hackname = AAA_ki_calls;
@@ -46,7 +51,7 @@ fix = {
 
 
 /*
- *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ *  Purge some HP-UX 11 files that are only broken after they are "fixed".
  */
 fix = {
     hackname = AAA_ki_defs;
@@ -71,7 +76,7 @@ fix = {
 
 
 /*
- *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ *  Purge some HP-UX 11 files that are only broken after they are "fixed".
  */
 fix = {
     hackname = AAA_time;
