@@ -10,6 +10,10 @@
 
 2003-04-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stor-layout.c (mode_for_size_tree): Use tree_low_cst.
+	(layout_decl, place_field): Likewise.
+	Also make minor type and whitespace changes.
+
 	* tree.c (save_expr): Don't fold a COMPONENT_REF.
 
 2003-04-29  Olivier Hainque <hainque@act-europe.fr>
