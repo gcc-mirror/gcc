@@ -1,3 +1,21 @@
+2001-03-14  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppfiles.c (stack_include_file): Only increase the include
+	count if we actually process the file properly, as opposed
+	to treating it as length zero.  Only call read_include_file
+	if not DO_NOT_REREAD.  Handle the -H include file output
+	here.
+	(read_include_file): Remove now redundant DO_NOT_REREAD check.
+	(cpp_included, find_include_file): Simplify pathnames after
+	remapping them.  If remapping, don't use the remapped file
+	name's buffer as our scratch buffer.
+	(cpp_pop_file_buffer): Replace the multiple include macro
+	only if it isn't yet set.
+	(read_name_map): Simplify remapped names when reading in.
+	(remap_filename): Move code to code path that uses it.
+	(_cpp_simplify_pathname): Return the input pointer.
+	* cpphash.h (_cpp_simplify_pathname): Update prototype.
+
 2001-03-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.c (expand_expr): Revove bogus conditional.

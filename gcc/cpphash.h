@@ -409,7 +409,7 @@ extern cpp_hashnode *_cpp_lookup_with_hash PARAMS ((cpp_reader*, size_t,
 /* In cppfiles.c */
 extern void _cpp_fake_include		PARAMS ((cpp_reader *, const char *));
 extern void _cpp_never_reread		PARAMS ((struct include_file *));
-extern void _cpp_simplify_pathname	PARAMS ((char *));
+extern char *_cpp_simplify_pathname	PARAMS ((char *));
 extern int _cpp_read_file		PARAMS ((cpp_reader *, const char *));
 extern void _cpp_execute_include	PARAMS ((cpp_reader *,
 						 const cpp_token *, int, int));
