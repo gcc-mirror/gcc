@@ -1,3 +1,9 @@
+2004-03-30  Hartmut Penner  <hpenner@de.ibm.com>
+
+	PR 11591	
+	* config/rs6000/rs6000.c (rs6000_legitimate_address): 
+	Allow any offset to argument pointer in no-strict case.
+
 2004-03-30  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (backend_init): Add missing call to inint_optimization_passes.
