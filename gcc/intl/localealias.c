@@ -57,6 +57,10 @@ char *alloca ();
 # endif
 #endif
 
+#ifdef STRING_WITH_STRINGS
+#include <strings.h>
+#endif
+
 #include "gettextP.h"
 
 /* @@ end of prolog @@ */
