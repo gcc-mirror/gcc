@@ -192,7 +192,7 @@ AM_MAKEFLAGS = \
 	"DESTDIR=$(DESTDIR)"
 
 
-CONFIG_STATUS_DEPENDENCIES = $(boehm_gc_basedir)/configure.host
+CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
 MAKEOVERRIDES = 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
