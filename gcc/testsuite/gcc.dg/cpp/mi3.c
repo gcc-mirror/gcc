@@ -10,8 +10,11 @@
 #include "mi3.def"
 #undef X
 
+#include "mi3.h"
+#include "mi3.h"  /* The second include declares variable c.  */
+
 int
 main(void)
 {
-  return a + b;
+  return a + b + c;
 }

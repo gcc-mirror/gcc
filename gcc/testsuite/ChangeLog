@@ -1,5 +1,13 @@
 2000-10-29  Neil Booth  <neilb@earthling.net>
 
+	* gcc.dg/cpp/defined.c, include1.c, paste11.c, skipping.c:
+	New tests.
+	* gcc.dg/cpp/macsyntx.c: Move test to defined.c.
+	* gcc.dg/cpp/mi3.c, mi3.h: New test for over-enthusiastic
+	optimisation.
+
+2000-10-29  Neil Booth  <neilb@earthling.net>
+
         * gcc.dg/cpp/macro4.c, macro5.c: New tests.
 	* mi1.c, mi1c.h: Add null directives to multiple-include test.
 	* mi5.c: Test multiple includes work with -C.
