@@ -3029,7 +3029,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      case 'p':
 		/* All necessary reloads for an address_operand
 		   were handled in find_reloads_address.  */
-		this_alternative[i] = (int) BASE_REG_CLASS;
+		this_alternative[i] = (int) MODE_BASE_REG_CLASS (VOIDmode);
 		win = 1;
 		break;
 
@@ -3686,7 +3686,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    operand_reloadnum[i]
 	      = push_reload (XEXP (recog_data.operand[i], 0), NULL_RTX,
 			     &XEXP (recog_data.operand[i], 0), (rtx*)0,
-			     BASE_REG_CLASS,
+			     MODE_BASE_REG_CLASS (VOIDmode),
 			     GET_MODE (XEXP (recog_data.operand[i], 0)),
 			     VOIDmode, 0, 0, i, RELOAD_FOR_INPUT);
 	    rld[operand_reloadnum[i]].inc
@@ -4617,7 +4617,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	return 0;
 
       /* If we do not have one of the cases above, we must do the reload.  */
-      push_reload (ad, NULL_RTX, loc, (rtx*)0, BASE_REG_CLASS,
+      push_reload (ad, NULL_RTX, loc, (rtx*)0, MODE_BASE_REG_CLASS (mode),
 		   GET_MODE (ad), VOIDmode, 0, 0, opnum, type);
       return 1;
     }
@@ -4718,7 +4718,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	  /* Must use TEM here, not AD, since it is the one that will
 	     have any subexpressions reloaded, if needed.  */
 	  push_reload (tem, NULL_RTX, loc, (rtx*)0,
-		       BASE_REG_CLASS, GET_MODE (tem),
+		       MODE_BASE_REG_CLASS (mode), GET_MODE (tem),
 		       VOIDmode, 0,
 		       0, opnum, type);
 	  return ! removed_and;
@@ -4764,7 +4764,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	  /* If the sum of two regs is not necessarily valid,
 	     reload the sum into a base reg.
 	     That will at least work.  */
-	  find_reloads_address_part (ad, loc, BASE_REG_CLASS,
+	  find_reloads_address_part (ad, loc, MODE_BASE_REG_CLASS (mode),
 				     Pmode, opnum, type, ind_levels);
 	}
       return ! removed_and;
@@ -4807,7 +4807,8 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 				plus_constant (XEXP (XEXP (ad, 0), 0),
 					       INTVAL (XEXP (ad, 1))),
 				XEXP (XEXP (ad, 0), 1));
-      find_reloads_address_part (XEXP (ad, 0), &XEXP (ad, 0), BASE_REG_CLASS,
+      find_reloads_address_part (XEXP (ad, 0), &XEXP (ad, 0),
+				 MODE_BASE_REG_CLASS (mode),
 				 GET_MODE (ad), opnum, type, ind_levels);
       find_reloads_address_1 (mode, XEXP (ad, 1), 1, &XEXP (ad, 1), opnum,
 			      type, 0, insn);
@@ -4831,7 +4832,8 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 				XEXP (XEXP (ad, 0), 0),
 				plus_constant (XEXP (XEXP (ad, 0), 1),
 					       INTVAL (XEXP (ad, 1))));
-      find_reloads_address_part (XEXP (ad, 1), &XEXP (ad, 1), BASE_REG_CLASS,
+      find_reloads_address_part (XEXP (ad, 1), &XEXP (ad, 1),
+				 MODE_BASE_REG_CLASS (mode),
 				 GET_MODE (ad), opnum, type, ind_levels);
       find_reloads_address_1 (mode, XEXP (ad, 0), 1, &XEXP (ad, 0), opnum,
 			      type, 0, insn);
@@ -4877,8 +4879,8 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	    loc = &XEXP (*loc, 0);
 	}
 
-      find_reloads_address_part (ad, loc, BASE_REG_CLASS, Pmode, opnum, type,
-				 ind_levels);
+      find_reloads_address_part (ad, loc, MODE_BASE_REG_CLASS (mode),
+				 Pmode, opnum, type, ind_levels);
       return ! removed_and;
     }
 
@@ -5303,7 +5305,8 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 		    /* Then reload the memory location into a base
 		       register.  */
 		    reloadnum = push_reload (tem, tem, &XEXP (x, 0),
-					     &XEXP (op1, 0), BASE_REG_CLASS,
+					     &XEXP (op1, 0),
+					     MODE_BASE_REG_CLASS (mode),
 					     GET_MODE (x), GET_MODE (x), 0,
 					     0, opnum, RELOAD_OTHER);
 
@@ -5320,7 +5323,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	      {
 		reloadnum = push_reload (XEXP (op1, 0), XEXP (x, 0),
 					 &XEXP (op1, 0), &XEXP (x, 0),
-					 BASE_REG_CLASS,
+					 MODE_BASE_REG_CLASS (mode),
 					 GET_MODE (x), GET_MODE (x), 0, 0,
 					 opnum, RELOAD_OTHER);
 
@@ -5421,7 +5424,8 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 		  x = XEXP (x, 0);
 		  reloadnum
 		    = push_reload (x, x, loc, loc,
-				   (context ? INDEX_REG_CLASS : BASE_REG_CLASS),
+				   (context ? INDEX_REG_CLASS :
+				    MODE_BASE_REG_CLASS (mode)),
 				   GET_MODE (x), GET_MODE (x), 0, 0,
 				   opnum, RELOAD_OTHER);
 		}
@@ -5429,7 +5433,8 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 		{
 		  reloadnum
 		    = push_reload (x, NULL_RTX, loc, (rtx*)0,
-				   (context ? INDEX_REG_CLASS : BASE_REG_CLASS),
+				   (context ? INDEX_REG_CLASS :
+				    MODE_BASE_REG_CLASS (mode)),
 				   GET_MODE (x), GET_MODE (x), 0, 0,
 				   opnum, type);
 		  rld[reloadnum].inc
@@ -5469,7 +5474,8 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 				opnum, type, ind_levels, insn);
 
 	  reloadnum = push_reload (x, NULL_RTX, loc, (rtx*)0,
-				   (context ? INDEX_REG_CLASS : BASE_REG_CLASS),
+				   (context ? INDEX_REG_CLASS :
+				    MODE_BASE_REG_CLASS (mode)),
 				   GET_MODE (x), VOIDmode, 0, 0, opnum, type);
 	  rld[reloadnum].inc
 	    = find_inc_amount (PATTERN (this_insn), XEXP (x, 0));
@@ -5498,7 +5504,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
       find_reloads_address (GET_MODE (x), loc, XEXP (x, 0), &XEXP (x, 0),
 			    opnum, ADDR_TYPE (type), ind_levels, insn);
       push_reload (*loc, NULL_RTX, loc, (rtx*)0,
-		   (context ? INDEX_REG_CLASS : BASE_REG_CLASS),
+		   (context ? INDEX_REG_CLASS : MODE_BASE_REG_CLASS (mode)),
 		   GET_MODE (x), VOIDmode, 0, 0, opnum, type);
       return 1;
 
@@ -5509,7 +5515,8 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	if (reg_equiv_constant[regno] != 0)
 	  {
 	    find_reloads_address_part (reg_equiv_constant[regno], loc,
-				       (context ? INDEX_REG_CLASS : BASE_REG_CLASS),
+				       (context ? INDEX_REG_CLASS :
+					MODE_BASE_REG_CLASS (mode)),
 				       GET_MODE (x), opnum, type, ind_levels);
 	    return 1;
 	  }
@@ -5519,7 +5526,8 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	if (reg_equiv_mem[regno] != 0)
 	  {
 	    push_reload (reg_equiv_mem[regno], NULL_RTX, loc, (rtx*)0,
-			 (context ? INDEX_REG_CLASS : BASE_REG_CLASS),
+			 (context ? INDEX_REG_CLASS :
+			  MODE_BASE_REG_CLASS (mode)),
 			 GET_MODE (x), VOIDmode, 0, 0, opnum, type);
 	    return 1;
 	  }
@@ -5547,7 +5555,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 		  : REGNO_MODE_OK_FOR_BASE_P (regno, mode))))
 	  {
 	    push_reload (x, NULL_RTX, loc, (rtx*)0,
-			 (context ? INDEX_REG_CLASS : BASE_REG_CLASS),
+			 (context ? INDEX_REG_CLASS : MODE_BASE_REG_CLASS (mode)),
 			 GET_MODE (x), VOIDmode, 0, 0, opnum, type);
 	    return 1;
 	  }
@@ -5559,7 +5567,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	if (regno_clobbered_p (regno, this_insn, GET_MODE (x), 0))
 	  {
 	    push_reload (x, NULL_RTX, loc, (rtx*)0,
-			 (context ? INDEX_REG_CLASS : BASE_REG_CLASS),
+			 (context ? INDEX_REG_CLASS : MODE_BASE_REG_CLASS (mode)),
 			 GET_MODE (x), VOIDmode, 0, 0, opnum, type);
 	    return 1;
 	  }
@@ -5580,7 +5588,8 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 		     : REGNO_MODE_OK_FOR_BASE_P (regno, mode)))
 		{
 		  push_reload (x, NULL_RTX, loc, (rtx*)0,
-			       (context ? INDEX_REG_CLASS : BASE_REG_CLASS),
+			       (context ? INDEX_REG_CLASS :
+				MODE_BASE_REG_CLASS (mode)),
 			       GET_MODE (x), VOIDmode, 0, 0, opnum, type);
 		  return 1;
 		}
@@ -5590,7 +5599,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	  else
 	    {
 	      enum reg_class class = (context ? INDEX_REG_CLASS
-				      : BASE_REG_CLASS);
+				      : MODE_BASE_REG_CLASS (mode));
 	      if (CLASS_MAX_NREGS (class, GET_MODE (SUBREG_REG (x)))
 		  > reg_class_size[class])
 		{

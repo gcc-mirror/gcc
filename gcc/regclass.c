@@ -1005,10 +1005,10 @@ record_operand_costs (insn, op_costs, reg_pref)
 
       if (GET_CODE (recog_data.operand[i]) == MEM)
 	record_address_regs (XEXP (recog_data.operand[i], 0),
-			     BASE_REG_CLASS, frequency * 2);
+			     MODE_BASE_REG_CLASS (modes[i]), frequency * 2);
       else if (constraints[i][0] == 'p')
 	record_address_regs (recog_data.operand[i],
-			     BASE_REG_CLASS, frequency * 2);
+			     MODE_BASE_REG_CLASS (modes[i]), frequency * 2);
     }
 
   /* Check for commutative in a separate loop so everything will
@@ -1086,7 +1086,7 @@ scan_one_insn (insn, pass)
 			      GENERAL_REGS, 1)
 	    * frequency);
       record_address_regs (XEXP (SET_SRC (set), 0),
-			   BASE_REG_CLASS, frequency * 2);
+			   MODE_BASE_REG_CLASS (VOIDmode), frequency * 2);
       return insn;
     }
 
@@ -1228,15 +1228,15 @@ regclass (f, nregs, dump)
 
 		  if ((0
 #ifdef SECONDARY_RELOAD_CLASS
-		       || (SECONDARY_RELOAD_CLASS (BASE_REG_CLASS, m, r)
+		       || (SECONDARY_RELOAD_CLASS (MODE_BASE_REG_CLASS (VOIDmode), m, r)
 			   != NO_REGS)
 #else
 #ifdef SECONDARY_INPUT_RELOAD_CLASS
-		       || (SECONDARY_INPUT_RELOAD_CLASS (BASE_REG_CLASS, m, r)
+		       || (SECONDARY_INPUT_RELOAD_CLASS (MODE_BASE_REG_CLASS (VOIDmode), m, r)
 			   != NO_REGS)
 #endif
 #ifdef SECONDARY_OUTPUT_RELOAD_CLASS
-		       || (SECONDARY_OUTPUT_RELOAD_CLASS (BASE_REG_CLASS, m, r)
+		       || (SECONDARY_OUTPUT_RELOAD_CLASS (MODE_BASE_REG_CLASS (VOIDmode), m, r)
 			   != NO_REGS)
 #endif
 #endif
@@ -1609,7 +1609,7 @@ record_reg_classes (n_alts, n_ops, ops, modes,
 		   address, ie BASE_REG_CLASS.  */
 		classes[i]
 		  = reg_class_subunion[(int) classes[i]]
-		    [(int) BASE_REG_CLASS];
+		    [(int) MODE_BASE_REG_CLASS (VOIDmode)];
 		break;
 
 	      case 'm':  case 'o':  case 'V':
@@ -2016,7 +2016,7 @@ record_address_regs (x, class, scale)
 	   as well as in the tests below, that all addresses are in 
 	   canonical form.  */
 
-	else if (INDEX_REG_CLASS == BASE_REG_CLASS)
+	else if (INDEX_REG_CLASS == MODE_BASE_REG_CLASS (VOIDmode))
 	  {
 	    record_address_regs (arg0, class, scale);
 	    if (! CONSTANT_P (arg1))
@@ -2045,14 +2045,14 @@ record_address_regs (x, class, scale)
 		 && (REG_OK_FOR_BASE_P (arg0) || REG_OK_FOR_INDEX_P (arg0)))
 	  record_address_regs (arg1,
 			       REG_OK_FOR_BASE_P (arg0)
-			       ? INDEX_REG_CLASS : BASE_REG_CLASS,
+			       ? INDEX_REG_CLASS : MODE_BASE_REG_CLASS (VOIDmode),
 			       scale);
 	else if (code0 == REG && code1 == REG
 		 && REGNO (arg1) < FIRST_PSEUDO_REGISTER
 		 && (REG_OK_FOR_BASE_P (arg1) || REG_OK_FOR_INDEX_P (arg1)))
 	  record_address_regs (arg0,
 			       REG_OK_FOR_BASE_P (arg1)
-			       ? INDEX_REG_CLASS : BASE_REG_CLASS,
+			       ? INDEX_REG_CLASS : MODE_BASE_REG_CLASS (VOIDmode),
 			       scale);
 #endif
 
@@ -2063,14 +2063,14 @@ record_address_regs (x, class, scale)
 	else if ((code0 == REG && REG_POINTER (arg0))
 		 || code1 == MULT)
 	  {
-	    record_address_regs (arg0, BASE_REG_CLASS, scale);
+	    record_address_regs (arg0, MODE_BASE_REG_CLASS (VOIDmode), scale);
 	    record_address_regs (arg1, INDEX_REG_CLASS, scale);
 	  }
 	else if ((code1 == REG && REG_POINTER (arg1))
 		 || code0 == MULT)
 	  {
 	    record_address_regs (arg0, INDEX_REG_CLASS, scale);
-	    record_address_regs (arg1, BASE_REG_CLASS, scale);
+	    record_address_regs (arg1, MODE_BASE_REG_CLASS (VOIDmode), scale);
 	  }
 
 	/* Otherwise, count equal chances that each might be a base
@@ -2078,9 +2078,11 @@ record_address_regs (x, class, scale)
 
 	else
 	  {
-	    record_address_regs (arg0, BASE_REG_CLASS, scale / 2);
+	    record_address_regs (arg0, MODE_BASE_REG_CLASS (VOIDmode),
+				 scale / 2);
 	    record_address_regs (arg0, INDEX_REG_CLASS, scale / 2);
-	    record_address_regs (arg1, BASE_REG_CLASS, scale / 2);
+	    record_address_regs (arg1, MODE_BASE_REG_CLASS (VOIDmode),
+				 scale / 2);
 	    record_address_regs (arg1, INDEX_REG_CLASS, scale / 2);
 	  }
       }
@@ -2091,7 +2093,8 @@ record_address_regs (x, class, scale)
 	 if it ends up in the wrong place.  */
     case POST_MODIFY:
     case PRE_MODIFY:
-      record_address_regs (XEXP (x, 0), BASE_REG_CLASS, 2 * scale);
+      record_address_regs (XEXP (x, 0), MODE_BASE_REG_CLASS (VOIDmode),
+			   2 * scale);
       if (REG_P (XEXP (XEXP (x, 1), 1)))
 	record_address_regs (XEXP (XEXP (x, 1), 1),
 			     INDEX_REG_CLASS, 2 * scale);

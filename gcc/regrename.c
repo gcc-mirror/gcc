@@ -611,7 +611,7 @@ scan_rtx_address (insn, loc, class, action, mode)
 	if (locI)
 	  scan_rtx_address (insn, locI, INDEX_REG_CLASS, action, mode);
 	if (locB)
-	  scan_rtx_address (insn, locB, BASE_REG_CLASS, action, mode);
+	  scan_rtx_address (insn, locB, MODE_BASE_REG_CLASS (mode), action, mode);
 	return;
       }
 
@@ -629,7 +629,8 @@ scan_rtx_address (insn, loc, class, action, mode)
       break;
 
     case MEM:
-      scan_rtx_address (insn, &XEXP (x, 0), BASE_REG_CLASS, action,
+      scan_rtx_address (insn, &XEXP (x, 0),
+			MODE_BASE_REG_CLASS (GET_MODE (x)), action,
 			GET_MODE (x));
       return;
 
@@ -683,7 +684,8 @@ scan_rtx (insn, loc, class, action, type, earlyclobber)
       return;
 
     case MEM:
-      scan_rtx_address (insn, &XEXP (x, 0), BASE_REG_CLASS, action,
+      scan_rtx_address (insn, &XEXP (x, 0),
+			MODE_BASE_REG_CLASS (GET_MODE (x)), action,
 			GET_MODE (x));
       return;
 
@@ -1376,8 +1378,9 @@ replace_oldest_value_addr (loc, class, mode, insn, vd)
 	  changed |= replace_oldest_value_addr (locI, INDEX_REG_CLASS, mode,
 					        insn, vd);
 	if (locB)
-	  changed |= replace_oldest_value_addr (locB, BASE_REG_CLASS, mode,
-					        insn, vd);
+	  changed |= replace_oldest_value_addr (locB,
+						MODE_BASE_REG_CLASS (mode),
+						mode, insn, vd);
 	return changed;
       }
 
@@ -1422,7 +1425,8 @@ replace_oldest_value_mem (x, insn, vd)
      rtx insn;
      struct value_data *vd;
 {
-  return replace_oldest_value_addr (&XEXP (x, 0), BASE_REG_CLASS,
+  return replace_oldest_value_addr (&XEXP (x, 0),
+				    MODE_BASE_REG_CLASS (GET_MODE (x)),
 				    GET_MODE (x), insn, vd);
 }
 

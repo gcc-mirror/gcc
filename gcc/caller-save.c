@@ -151,7 +151,9 @@ init_caller_save ()
      that register in every mode we will use to save registers.  */
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (TEST_HARD_REG_BIT (reg_class_contents[(int) BASE_REG_CLASS], i))
+    if (TEST_HARD_REG_BIT
+	(reg_class_contents
+	 [(int) MODE_BASE_REG_CLASS (regno_save_mode [i][1])], i))
       break;
 
   if (i == FIRST_PSEUDO_REGISTER)
