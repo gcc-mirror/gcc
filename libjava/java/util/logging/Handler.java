@@ -378,7 +378,7 @@ h.setFormatter(h.getFormatter());</pre>
    */
   public boolean isLoggable(LogRecord record)
   {
-    if (record.getLevel().intValue() <= level.intValue())
+    if (record.getLevel().intValue() < level.intValue())
       return false;
     
     if (filter != null)
