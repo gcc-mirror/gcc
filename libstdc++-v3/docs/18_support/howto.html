@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 HOWTO:  Chapter 18</TITLE>
 <LINK REL="home" HREF="http://sources.redhat.com/libstdc++/docs/18_support/">
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.2 2000/07/07 21:13:28 pme Exp $ -->
+<!-- $Id: howto.html,v 1.3 2000/07/11 21:45:07 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -88,6 +88,18 @@
       you actually use NULL in function calls, though; if you make a call of
       <TT>foo(0);</TT> instead of <TT>foo(NULL);</TT>, then you're back
       where you started.
+   </P>
+   <P><B>Added Note:</B>  When we contacted Dr. Meyers to ask permission to
+      print this stuff, it prompted him to run this code through current
+      compilers to see what the state of the art is with respect to member
+      template functions.  He posted
+      <A HREF="http://www.deja.com/threadmsg_md.xp?AN=644660779.1&CONTEXT=964036823.871301239">an
+      article to Usenet</A> after discovering that the code above is not
+      valid!  Even though it has no data members, it still needs a
+      user-defined constructor (which means that the class needs a type name
+      after all).  The ctor can have an empty body; it just needs to be
+      there.  (Stupid requirement?  We think so too, and this will probably
+      be changed in the language itself.)
    </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
@@ -250,7 +262,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.2 2000/07/07 21:13:28 pme Exp $
+<BR> $Id: howto.html,v 1.3 2000/07/11 21:45:07 pme Exp $
 </EM></P>
 
 
