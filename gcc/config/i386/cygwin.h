@@ -84,7 +84,7 @@ Boston, MA 02111-1307, USA. */
                                  %{mno-cygwin:crt1%O%s} %{pg:gcrt0%O%s}}"
 
 #undef CPP_SPEC
-#define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
+#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
   %{!ansi:-D_stdcall=__attribute__((__stdcall__)) \
