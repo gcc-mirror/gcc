@@ -1,3 +1,8 @@
+2003-01-28  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/9258
+	* g77.dg/pr9258.f: New test.
+
 2003-01-27  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	PR c++/47
