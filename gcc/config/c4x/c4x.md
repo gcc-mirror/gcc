@@ -3965,11 +3965,11 @@
 (define_insn "*subqf3_set"
   [(set (reg:CC_NOOV 21)
         (compare:CC_NOOV (minus:QF (match_operand:QF 1 "src_operand" "0,fHm,fR,fS<>")
-                                   (match_operand:QF 2 "src_operand" "0,fHm,R,fS<>"))
+                                   (match_operand:QF 2 "src_operand" "fHm,0,R,fS<>"))
                          (match_operand:QF 3 "fp_zero_operand" "G,G,G,G")))
    (set (match_operand:QF 0 "reg_operand" "=f,f,f,?f")
         (minus:QF (match_dup 1)
-                 (match_dup 2)))]
+                  (match_dup 2)))]
   "valid_operands (MINUS, operands, QFmode)"
   "@
    subf\\t%2,%0
