@@ -29,6 +29,9 @@
 
 	* tree-ssa-pre.c (has_abnormal_preds): Make it static.
 
+	* tree-ssa-dce.c (control_dependence_map,
+	visited_control_parents): Make them static.
+
 2005-03-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* config/i386/cygwin1.c(mingw_scan): Use xstrdup in calls to putenv.
