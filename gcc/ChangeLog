@@ -1,3 +1,7 @@
+2001-07-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi: Remove CVS Id.
+
 2001-07-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.c (expand_expr, case ARRAY_REF): Correct check for
