@@ -1,6 +1,6 @@
 // FirstThread.java - Implementation of very first thread.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -57,22 +57,21 @@ final class FirstThread extends Thread
   private String getMain (String name)
   {
     String mainName = null;
-    try {
-
-      JarFile j = new JarFile (name);
-
-      Attributes a = j.getManifest().getMainAttributes();
-
-      mainName = a.getValue(Attributes.Name.MAIN_CLASS);
-
-    } catch (Exception e) {
-      // empty
-    }
+    try
+      {
+	JarFile j = new JarFile(name);
+	Attributes a = j.getManifest().getMainAttributes();
+	mainName = a.getValue(Attributes.Name.MAIN_CLASS);
+      }
+    catch (Exception e)
+      {
+	// Ignore.
+      }
 
     if (mainName == null)
       {
-	System.err.println ("Failed to load Main-Class manifest attribute from\n"
-			    + name);
+	System.err.println("Failed to load Main-Class manifest attribute from "
+			   + name);
 	System.exit(1);
       }
     return mainName;
