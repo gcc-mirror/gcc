@@ -39,14 +39,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CC1_SPEC "\
 %{!melf: %{!mrose: %{!mno-elf: -melf }}} \
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{pic-none:   -mno-half-pic} \
-%{fpic:	      -mno-half-pic} \
-%{fPIC:	      -mno-half-pic} \
-%{pic-lib:    -mhalf-pic} \
-%{pic-extern: -mhalf-pic} \
-%{pic-calls:  -mhalf-pic} \
-%{pic-names*: -mhalf-pic} \
-%{!pic-*: %{!fpic: %{!fPIC: -mhalf-pic}}}"
+%{pic-none: -mno-half-pic} \
+%{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
+%{!pic-none: \
+	%{!mno-elf: %{!mrose: -mno-half-pic}} \
+	%{fpic: -mno-half-pic} \
+	%{fPIC: -mno-half-pic} \
+	%{!fpic: %{!fPIC: %{mrose: -mhalf-pic} %{mno-elf: -mhalf-pic}}}}"
 
 #undef	ASM_SPEC
 #define ASM_SPEC       "%{v*: -v}"
