@@ -114,7 +114,57 @@ _cpp_clean_line (cpp_reader *pfile)
 
   if (!buffer->from_stage3)
     {
-      d = (uchar *) s;
+      /* Short circuit for the common case of an un-escaped line with
+	 no trigraphs.  The primary win here is by not writing any
+	 data back to memory until we have to.  */
+      for (;;)
+	{
+	  c = *++s;
+	  if (c == '\n' || c == '\r')
+	    {
+	      d = (uchar *) s;
+
+	      if (s == buffer->rlimit)
+		goto done;
+
+	      /* DOS line ending? */
+	      if (c == '\r' && s[1] == '\n')
+		s++;
+
+	      if (s == buffer->rlimit)
+		goto done;
+
+	      /* check for escaped newline */
+	      p = d;
+	      while (p != buffer->next_line && is_nvspace (p[-1]))
+		p--;
+	      if (p == buffer->next_line || p[-1] != '\\')
+		goto done;
+
+	      /* Have an escaped newline; process it and proceed to
+		 the slow path.  */
+	      add_line_note (buffer, p - 1, p != d ? ' ' : '\\');
+	      d = p - 2;
+	      buffer->next_line = p - 1;
+	      break;
+	    }
+	  if (c == '?' && s[1] == '?' && _cpp_trigraph_map[s[2]])
+	    {
+	      /* Have a trigraph.  We may or may not have to convert
+		 it.  Add a line note regardless, for -Wtrigraphs.  */
+	      add_line_note (buffer, s, s[2]);
+	      if (CPP_OPTION (pfile, trigraphs))
+		{
+		  /* We do, and that means we have to switch to the
+		     slow path.  */
+		  d = (uchar *) s;
+		  *d = _cpp_trigraph_map[s[2]];
+		  s += 2;
+		  break;
+		}
+	    }
+	}
+
 
       for (;;)
 	{
@@ -164,6 +214,7 @@ _cpp_clean_line (cpp_reader *pfile)
 	s++;
     }
 
+ done:
   *d = '\n';
   /* A sentinel note that should never be processed.  */
   add_line_note (buffer, d + 1, '\n');
@@ -266,43 +317,49 @@ bool
 _cpp_skip_block_comment (cpp_reader *pfile)
 {
   cpp_buffer *buffer = pfile->buffer;
-  cppchar_t c;
+  const uchar *cur = buffer->cur;
+  uchar c;
 
-  buffer->cur++;
-  if (*buffer->cur == '/')
-    buffer->cur++;
+  cur++;
+  if (*cur == '/')
+    cur++;
 
   for (;;)
     {
-      c = *buffer->cur++;
-
       /* People like decorating comments with '*', so check for '/'
 	 instead for efficiency.  */
+      c = *cur++;
+
       if (c == '/')
 	{
-	  if (buffer->cur[-2] == '*')
+	  if (cur[-2] == '*')
 	    break;
 
 	  /* Warn about potential nested comments, but not if the '/'
 	     comes immediately before the true comment delimiter.
 	     Don't bother to get it right across escaped newlines.  */
 	  if (CPP_OPTION (pfile, warn_comments)
-	      && buffer->cur[0] == '*' && buffer->cur[1] != '/')
-	    cpp_error_with_line (pfile, DL_WARNING,
-				 pfile->line, CPP_BUF_COL (buffer),
-				 "\"/*\" within comment");
+	      && cur[0] == '*' && cur[1] != '/')
+	    {
+	      buffer->cur = cur;
+	      cpp_error_with_line (pfile, DL_WARNING,
+				   pfile->line, CPP_BUF_COL (buffer),
+				   "\"/*\" within comment");
+	    }
 	}
       else if (c == '\n')
 	{
-	  buffer->cur--;
+	  buffer->cur = cur - 1;
 	  _cpp_process_line_notes (pfile, true);
 	  if (buffer->next_line >= buffer->rlimit)
 	    return true;
 	  _cpp_clean_line (pfile);
 	  pfile->line++;
+	  cur = buffer->cur;
 	}
     }
 
+  buffer->cur = cur;
   _cpp_process_line_notes (pfile, true);
   return false;
 }

@@ -1,3 +1,11 @@
+2003-10-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* cpplex.c (_cpp_clean_line): In the common case of a line
+	with no trigraphs and no \-newline, avoid writing to memory.
+	(_cpp_skip_block_comment): Use a local 'cur' pointer instead
+	of the buffer member.  Make c an uchar to avoid unnecessary
+	sign extensions.
+
 2003-10-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Remove unnecessary test.
@@ -9,13 +17,13 @@
 
 2003-10-13  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* config/s390/s390.md ("*fmadddf4", "*fmsubdf4", "*fmaddsf4", 
+	* config/s390/s390.md ("*fmadddf4", "*fmsubdf4", "*fmaddsf4",
 	"*fmsubsf4"): Insns are now dependent on TARGET_FUSED_MADD instead
 	of flag_unsafe_math_optimizations.
 	* config/s390/s390.h ("MASK_NO_FUSED_MADD", "TARGET_NO_FUSED_MADD",
 	"TARGET_FUSED_MADD", "TARGET_SWITCHES"): Introduced new target flags
 	fused-madd and no-fused-madd.
-	* doc/invoke.texi: Documented the new options fused-madd and 
+	* doc/invoke.texi: Documented the new options fused-madd and
 	no-fused-madd for S/390.
 
 2003-10-14  Alan Modra  <amodra@bigpond.net.au>
@@ -123,7 +131,7 @@
 	and the signed type would overflow.  Always negate real constants
 	unless we honor -ftrapping-math.  Only convert -(A-B) into B-A
 	if allowed by reorder_operands_p.  Add support for COMPLEX_CST.
-	Optimize negation through floating point extensions and 
+	Optimize negation through floating point extensions and
 	sign-preserving built-in functions (as defined by negate_mathfn_p).
 	(fold): Adjust calls to tree_swap_operands_p.
 	(fold <NEGATE_EXPR>): Move the remaining negation optimizations
@@ -226,7 +234,7 @@ Sat Oct 11 12:24:23 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	point optimizations with -funsafe-math-optimizations.
 
 2003-10-11  Andrew Pinski <pinskia@physics.uc.edu>
-	
+
 	* genmodes.c (emit_mode_mask) Change MASK to MODE_MASK.
 
 2003-10-11  Kazu Hirata  <kazu@cs.umass.edu>
@@ -298,7 +306,7 @@ Sat Oct 11 12:24:23 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	    Paul Dale  <pauli@snapgear.com>
 
 	* config/m68k/lb1sf68.asm: Add __PIC__ and __ID_SHARED_LIBRARY__
-	support. 
+	support.
 	* config/m68k/m68k-none.h (ASM_SPEC): Pass --pcrel to assembler on
 	-fpic, -fPIC, -msep-data and -mid-shared-library.
 	* config/m68k/m68k.c (m68k_library_id_string): New global variable.
