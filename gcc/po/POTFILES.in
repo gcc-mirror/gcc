@@ -746,7 +746,6 @@ mkdeps.h
 #mips-tfile.c is not yet internationalized
 objc/objc-act.c
 objc/objc-act.h
-objc/objc-parse.c
 optabs.c
 output.h
 ../libiberty/pexecute.c

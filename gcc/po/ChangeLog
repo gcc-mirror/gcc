@@ -1,3 +1,7 @@
+2000-09-13  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* POTFILES.in: Remove objc/objc-parse.c.
+
 2000-09-12  Philipp Thomas  <pthomas@suse.de>
 
 	* POTFILES.in: Remove yet more files caught by the new
