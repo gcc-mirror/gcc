@@ -1,3 +1,7 @@
+2002-06-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.c-torture/execute/20020615-1.c: New test.
+
 2002-06-15  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-tortuture/execute/compare-1.c: New test case.
