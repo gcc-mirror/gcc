@@ -2,8 +2,8 @@
 
 	* prims.cc (_Jv_Abort): Always print error message using fprintf,
 	don't try to allocate.
-	(_Jv_CreateJavaVM): Set gcj::runTimeInitialized.
-	* include/jvm.h (gcj::runTimeInitialized): New variable declaration.
+	(_Jv_CreateJavaVM): Set gcj::runtimeInitialized.
+	* include/jvm.h (gcj::runtimeInitialized): New variable declaration.
 	* java/lang/natClassLoader.cc (_Jv_RegisterClassHookDefault): Handle
 	duplicate class registration with JvFail if the runtime hasn't been
 	initialized yet.
