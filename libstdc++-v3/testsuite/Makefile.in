@@ -128,14 +128,10 @@ AUTOMAKE_OPTIONS = foreign dejagnu
 
 DEJATOOL = libstdc++-v3
 
-EXPECT = `if [ -f @glibcpp_builddir@/../../expect/expect ] ; then \
-            echo @glibcpp_builddir@/../../expect/expect ; \
-          else echo expect ; fi`
+EXPECT = `if [ -f @glibcpp_builddir@/../../expect/expect ] ; then             echo @glibcpp_builddir@/../../expect/expect ;           else echo expect ; fi`
 
 
-RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then \
-	       echo @glibcpp_srcdir@/../dejagnu/runtest ; \
-	    else echo runtest; fi`
+RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then 	       echo @glibcpp_srcdir@/../dejagnu/runtest ; 	    else echo runtest; fi`
 
 
 RUNTESTFLAGS = 
@@ -170,7 +166,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+	    cp -pr $$/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

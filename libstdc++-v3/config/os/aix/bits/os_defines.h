@@ -55,5 +55,15 @@
 #undef _G_USING_THUNKS
 #define _G_USING_THUNKS 0
 
+#define __glibcpp_long_double_bits 64
+
+#if !defined(_AIX51) || !defined(__64BIT__)
+#define __glibcpp_wchar_t_bits 16
+#endif
+
+#ifdef __64BIT__
+#define __glibcpp_long_bits 64
+#endif
+
 #endif
 

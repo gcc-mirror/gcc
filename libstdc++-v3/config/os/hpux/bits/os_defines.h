@@ -39,6 +39,8 @@
 #define __off64_t off64_t
 #define __ssize_t ssize_t
 
+#ifdef __LP64__
+#define __glibcpp_long_bits 64
 #endif
 
-
+#endif

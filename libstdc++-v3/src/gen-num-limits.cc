@@ -584,7 +584,7 @@ template<typename T>
 void digits10()
 {
   printf("%s%s = %d;\n", tab2, "static const int digits10",
-	 int(log10_of_two * value<T>::digits));
+	 int(log10_of_two * value<T>::digits) + 1);
 }
 
 template<typename T>

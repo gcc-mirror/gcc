@@ -34,4 +34,8 @@
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
 
+#ifdef __alpha__
+#define __glibcpp_long_bits 64
+#endif
+
 #endif
