@@ -1481,26 +1481,6 @@ fix = {
 
 
 /*
- *  HPUX 10.x sys/param.h defines MAXINT which clashes with values.h
- */
-fix = {
-    hackname  = hpux_maxint;
-    files     = sys/param.h;
-    files     = values.h;
-    select    = "^#[ \t]*define[ \t]+MAXINT[ \t]";
-    bypass    = "^#[ \t]*ifndef[ \t]+MAXINT";
-    test =
-    "-n \"`egrep '#[ \t]*define[ \t]+MAXINT[ \t]' sys/param.h`\"";
-
-    c_fix     = format;
-    c_fix_arg = "#ifndef MAXINT\n%0\n#endif";
-    c_fix_arg = "^#[ \t]*define[ \t]+MAXINT[ \t].*";
-
-    test_text = '#define MAXINT 0x7FFFFFFF';
-};
-
-
-/*
  *  Fix hpux10.20 <sys/time.h> to avoid invalid forward decl
  */
 fix = {
@@ -1863,34 +1843,6 @@ fix = {
 };
 
 
-/*
- *  In limits.h, put #ifndefs around things that are supposed to be defined
- *  in float.h to avoid redefinition errors if float.h is included first.
- *  On HP/UX this patch does not work, because on HP/UX limits.h uses
- *  multi line comments and the inserted #endif winds up inside the
- *  comment.  Fortunately, HP/UX already uses #ifndefs in limits.h; if
- *  we find a #ifndef FLT_MIN we assume that all the required #ifndefs
- *  are there, and we do not add them ourselves.
- *
- *  QNX Software Systems also guards the defines, but doesn't define
- *  FLT_MIN.  Therefore, bypass the fix for *either* guarded FLT_MIN
- *  or guarded FLT_MAX.
- */
-fix = {
-    hackname = limits_ifndefs;
-    files  = "sys/limits.h";
-    files  = "limits.h";
-    select = "^[ \t]*#[ \t]*define[ \t]+"
-             "((FLT|DBL)_(MIN|MAX|DIG))[ \t].*";
-    bypass = "ifndef[ \t]+FLT_(MIN|MAX)";
-
-    c_fix     = format;
-    c_fix_arg = "#ifndef %1\n%0\n#endif";
-    /* Second arg is select expression */
-    test_text = " #\tdefine\tDBL_DIG \t 0  /* somthin' */";
-};
-
-
 /* The /usr/include/sys/ucontext.h on ia64-*linux-gnu systems defines
  * an _SC_GR0_OFFSET macro using an idiom that isn't a compile time
  * constant on recent versions of g++.
@@ -2056,23 +2008,6 @@ fix = {
     test_text =
     "`echo '#define DBL_MAX\t3.1415e+9 /* really big */' >> float.h`\n"
     "#define HUGE_VAL DBL_MAX";
-};
-
-
-/*
- * In any case, put #ifndef .. #endif around #define HUGE_VAL in math.h.
- */
-fix = {
-    hackname = math_huge_val_ifndef;
-    files    = math.h;
-    files    = math/math.h;
-    select   = "define[ \t]+HUGE_VAL";
-
-    c_fix     = format;
-    c_fix_arg = "#ifndef HUGE_VAL\n%0\n#endif";
-    c_fix_arg = "^[ \t]*#[ \t]*define[ \t]+HUGE_VAL[ \t].*";
-
-    test_text = "# define\tHUGE_VAL 3.4e+40";
 };
 
 
@@ -3037,23 +2972,6 @@ fix = {
 
 
 /*
- *  Solaris math.h and floatingpoint.h define __P without protection,
- *  which conflicts with the fixproto definition.  The fixproto
- *  definition and the Solaris definition are used the same way.
- */
-fix = {
-    hackname = svr4__p;
-    files    = math.h;
-    files    = floatingpoint.h;
-    select   = "^#define[ \t]+__P.*";
-    c_fix     = format;
-    c_fix_arg = "#ifndef __P\n%0\n#endif";
-
-    test_text = "#define __P(a) a";
-};
-
-
-/*
  *  Disable apparent native compiler optimization cruft in SVR4.2 <string.h>
  *  that is visible to any ANSI compiler using this include.  Simply
  *  delete the lines that #define some string functions to internal forms.
@@ -3906,25 +3824,6 @@ fix = {
     "\tfork(),\n";
 };
 
-
-/*
- *  Fix multiple defines for NULL.  Sometimes, we stumble into \r\n
- *  terminated lines, so accommodate these.  Test both ways.
- *  Don't bother to reproduce the \r\n termination, as GCC has to
- *  recognize \n termination anyway.
- */
-fix = {
-    hackname  = undefine_null;
-    select    = "^#[ \t]*define[ \t]+NULL[ \t]";
-    bypass    = "#[ \t]*(ifn|un)def[ \t]+NULL($|[ \t\r])";
-
-    c_fix     = format;
-    c_fix_arg = "#ifndef NULL\n#define NULL%1\n#endif\n";
-    c_fix_arg = "^#[ \t]*define[ \t]+NULL([^\r\n]+)[\r]*\n";
-
-    test_text = "#define NULL 0UL\r\n"
-                "#define NULL\t((void*)0)\n";
-};
 
 /*
  * On Cray Unicos/Mk some standard headers use the C99 keyword "restrict"
