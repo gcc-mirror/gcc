@@ -1,3 +1,12 @@
+2001-11-04  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.md (load_toc_aix_{si,di}): Mark r2 as used.
+
+2001-11-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_emit_move): Handle 64-bit
+	mode as well.  Do not explicitly create intermediate regs.
+
 2001-11-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* arm/aof.h (aof_text_section, aof_data_section): Don't declare.
