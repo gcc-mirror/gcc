@@ -1,3 +1,9 @@
+2002-01-12  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.h (ARM_LEGITIMIZE_RELOAD_ADDRESS): Use
+	MODE_BASE_REG_CLASS.
+	(THUMB_LEGITIMIZE_RELOAD_ADDRESS): Use MODE_BASE_REG_CLASS.
+
 2002-01-12  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (override_options): If SSE, enable sse prefetch.

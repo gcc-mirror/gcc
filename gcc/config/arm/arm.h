@@ -1287,8 +1287,8 @@ enum reg_class
 					  GEN_INT (high)),		   \
 			    GEN_INT (low));				   \
 	  push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,	   \
-		       BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	   \
-		       OPNUM, TYPE);					   \
+		       MODE_BASE_REG_CLASS (MODE), GET_MODE (X), 	   \
+		       VOIDmode, 0, 0, OPNUM, TYPE);			   \
 	  goto WIN;							   \
 	}								   \
     }									   \
@@ -1314,7 +1314,7 @@ enum reg_class
       rtx orig_X = X;							\
       X = copy_rtx (X);							\
       push_reload (orig_X, NULL_RTX, &X, NULL,				\
-		   BASE_REG_CLASS,					\
+		   MODE_BASE_REG_CLASS (MODE),				\
 		   Pmode, VOIDmode, 0, 0, OPNUM, TYPE);			\
       goto WIN;								\
     }									\
