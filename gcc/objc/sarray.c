@@ -60,11 +60,16 @@ sarray_at_put(struct sarray* array, sidx index, void* element)
 #endif
   boffset = xx.off.boffset;
   eoffset = xx.off.eoffset;
-#else
+#else /* not PRECOMPUTE_SELECTORS */
+#ifdef OBJC_SPARSE3
   ioffset = index/INDEX_CAPACITY;
   boffset = (index/BUCKET_SIZE)%INDEX_SIZE;
   eoffset = index%BUCKET_SIZE;
+#else
+  boffset = index/BUCKET_SIZE;
+  eoffset = index%BUCKET_SIZE;
 #endif
+#endif /* not PRECOMPUTE_SELECTORS */
 
   assert(soffset_decode(index) < array->capacity); /* Range check */
 
