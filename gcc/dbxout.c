@@ -687,13 +687,13 @@ dbxout_type_method_1 (decl, debug_name)
      tree decl;
      char *debug_name;
 {
-  tree firstarg = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl)));
   char c1 = 'A', c2;
 
   if (TREE_CODE (TREE_TYPE (decl)) == FUNCTION_TYPE)
     c2 = '?';
   else /* it's a METHOD_TYPE.  */
     {
+      tree firstarg = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl)));
       /* A for normal functions.
 	 B for `const' member functions.
 	 C for `volatile' member functions.
