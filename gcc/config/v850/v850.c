@@ -1047,7 +1047,7 @@ not_power_of_two_operand (op, mode)
   else if (mode == HImode)
     mask = 0xffff;
   else if (mode == SImode)
-    mask = 0xffffffffU;
+    mask = 0xffffffff;
   else
     return 0;
 

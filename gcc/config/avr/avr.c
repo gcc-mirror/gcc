@@ -1358,7 +1358,7 @@ avr_simplify_comparision_p (mode, operator, x)
 {
   unsigned int max = (mode == QImode ? 0xff :
                       mode == HImode ? 0xffff :
-                      mode == SImode ? 0xffffffffU : 0);
+                      mode == SImode ? 0xffffffff : 0);
   if (max && operator && GET_CODE (x) == CONST_INT)
     {
       if (unsigned_condition (operator) != operator)
@@ -4242,8 +4242,8 @@ adjust_insn_length (insn, len)
 	      if (GET_MODE (op[1]) == SImode)
 		len = (((mask & 0xff) != 0xff)
 		       + ((mask & 0xff00) != 0xff00)
-		       + ((mask & 0xff0000UL) != 0xff0000UL)
-		       + ((mask & 0xff000000UL) != 0xff000000UL));
+		       + ((mask & 0xff0000L) != 0xff0000L)
+		       + ((mask & 0xff000000L) != 0xff000000L));
 	      else if (GET_MODE (op[1]) == HImode)
 		len = (((mask & 0xff) != 0xff)
 		       + ((mask & 0xff00) != 0xff00));
@@ -4257,8 +4257,8 @@ adjust_insn_length (insn, len)
 	      if (GET_MODE (op[1]) == SImode)
 		len = (((mask & 0xff) != 0)
 		       + ((mask & 0xff00) != 0)
-		       + ((mask & 0xff0000UL) != 0)
-		       + ((mask & 0xff000000UL) != 0));
+		       + ((mask & 0xff0000L) != 0)
+		       + ((mask & 0xff000000L) != 0));
 	      else if (GET_MODE (op[1]) == HImode)
 		len = (((mask & 0xff) != 0)
 		       + ((mask & 0xff00) != 0));
@@ -5162,9 +5162,9 @@ mask_one_bit_p (mask)
   unsigned HOST_WIDE_INT n=mask;
   for (i = 0; i < 32; ++i)
     {
-      if (n & 0x80000000UL)
+      if (n & 0x80000000L)
 	{
-	  if (n & 0x7fffffffUL)
+	  if (n & 0x7fffffffL)
 	    return 0;
 	  else
 	    return 32-i;
@@ -5347,7 +5347,7 @@ output_reload_insisf (insn, operands, len)
 	*len = 4 + ((INTVAL (src) & 0xff) != 0)
 		+ ((INTVAL (src) & 0xff00) != 0)
 		+ ((INTVAL (src) & 0xff0000) != 0)
-		+ ((INTVAL (src) & 0xff000000U) != 0);
+		+ ((INTVAL (src) & 0xff000000) != 0);
       else
 	*len = 8;
 
@@ -5375,7 +5375,7 @@ output_reload_insisf (insn, operands, len)
       output_asm_insn (AS2 (ldi, %2, hlo8(%1)), operands);
       output_asm_insn (AS2 (mov, %C0, %2), operands);
     }
-  if (cnst && ((INTVAL (src) & 0xff000000U) == 0))
+  if (cnst && ((INTVAL (src) & 0xff000000) == 0))
     output_asm_insn (AS2 (mov, %D0, __zero_reg__), operands);
   else
     {

@@ -1716,7 +1716,7 @@ shl_sext_kind (left_rtx, size_rtx, costp)
 	  cost = ext_shift_insns[ext - insize] + 1 + shift_insns[size - ext];
 	  if (cost < best_cost)
 	    {
-	      kind = ext / 8U;
+	      kind = ext / (unsigned) 8;
 	      best_cost = cost;
 	    }
 	}
@@ -1733,7 +1733,7 @@ shl_sext_kind (left_rtx, size_rtx, costp)
 	continue;
       if (cost < best_cost)
 	{
-	  kind = ext / 8U + 2;
+	  kind = ext / (unsigned) 8 + 2;
 	  best_cost = cost;
 	}
     }
@@ -2688,7 +2688,8 @@ gen_block_redirect (jump, addr, need_block)
   dest = XEXP (SET_SRC (PATTERN (jump)), 0);
   /* If the branch is out of range, try to find a scratch register for it.  */
   if (optimize
-      && (INSN_ADDRESSES (INSN_UID (dest)) - addr + 4092U > 4092 + 4098))
+      && (INSN_ADDRESSES (INSN_UID (dest)) - addr + (unsigned) 4092
+	  > 4092 + 4098))
     {
       rtx scan;
       /* Don't look for the stack pointer as a scratch register,
@@ -2764,7 +2765,7 @@ gen_block_redirect (jump, addr, need_block)
 	{
 	  dest = JUMP_LABEL (next);
 	  if (dest
-	      && (INSN_ADDRESSES (INSN_UID (dest)) - addr + 4092U
+	      && (INSN_ADDRESSES (INSN_UID (dest)) - addr + (unsigned) 4092
 		  > 4092 + 4098))
 	    gen_block_redirect (next, INSN_ADDRESSES (INSN_UID (next)), -1);
 	}
@@ -3630,7 +3631,7 @@ split_branches (first)
 		    && recog_memoized (beyond) == CODE_FOR_jump
 		    && ((INSN_ADDRESSES
 			 (INSN_UID (XEXP (SET_SRC (PATTERN (beyond)), 0)))
-			 - INSN_ADDRESSES (INSN_UID (insn)) + 252U)
+			 - INSN_ADDRESSES (INSN_UID (insn)) + (unsigned) 252)
 			> 252 + 258 + 2))
 		  gen_block_redirect (beyond,
 				      INSN_ADDRESSES (INSN_UID (beyond)), 1);
@@ -3644,7 +3645,7 @@ split_branches (first)
 		&& recog_memoized (next) == CODE_FOR_jump
 		&& ((INSN_ADDRESSES
 		     (INSN_UID (XEXP (SET_SRC (PATTERN (next)), 0)))
-		     - INSN_ADDRESSES (INSN_UID (insn)) + 252U)
+		     - INSN_ADDRESSES (INSN_UID (insn)) + (unsigned) 252)
 		    > 252 + 258 + 2))
 	      gen_block_redirect (next, INSN_ADDRESSES (INSN_UID (next)), 1);
 	  }

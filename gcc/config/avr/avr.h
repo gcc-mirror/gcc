@@ -613,8 +613,8 @@ enum reg_class {
   {(3 << REG_X)|(3 << REG_Y)|(3 << REG_Z)|(3 << REG_W)|(0xff << 16),	\
      0x00000000},	/* LD_REGS, r16 - r31 */			\
   {0x0000ffff,0x00000000}, 	/* NO_LD_REGS  r0 - r15 */              \
-  {0xffffffffu,0x00000000},	/* GENERAL_REGS, r0 - r31 */		\
-  {0xffffffffu,0x00000003}	/* ALL_REGS */				\
+  {0xffffffff,0x00000000},	/* GENERAL_REGS, r0 - r31 */		\
+  {0xffffffff,0x00000003}	/* ALL_REGS */				\
 }
 /* An initializer containing the contents of the register classes, as
    integers which are bit masks.  The Nth integer specifies the
