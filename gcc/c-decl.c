@@ -100,8 +100,7 @@ static tree current_function_parm_tags;
 
 /* Similar, for the file and line that the prototype came from if this is
    an old-style definition.  */
-static const char *current_function_prototype_file;
-static int current_function_prototype_line;
+static location_t current_function_prototype_locus;
 
 /* The current statement tree.  */
 
@@ -2070,12 +2069,12 @@ shadow_label (name)
    Otherwise return 0.  */
 
 tree
-define_label (filename, line, name)
-     const char *filename;
-     int line;
-     tree name;
+define_label (const char* filename, int line, tree name)
 {
+  location_t locus;
   tree decl = lookup_label (name);
+  locus.file = filename;
+  locus.line = line;
 
   /* If label with this name is known from an outer context, shadow it.  */
   if (decl != 0 && DECL_CONTEXT (decl) != current_function_decl)
@@ -2086,14 +2085,12 @@ define_label (filename, line, name)
     }
 
   if (warn_traditional && !in_system_header && lookup_name (name))
-    warning_with_file_and_line (filename, line,
-				"traditional C lacks a separate namespace for labels, identifier `%s' conflicts",
-				IDENTIFIER_POINTER (name));
+    warning ("%Htraditional C lacks a separate namespace for labels, "
+             "identifier `%s' conflicts", &locus, IDENTIFIER_POINTER (name));
 
   if (DECL_INITIAL (decl) != 0)
     {
-      error_with_file_and_line (filename, line, "duplicate label `%s'",
-				IDENTIFIER_POINTER (name));
+      error ("%Hduplicate label `%s'", &locus, IDENTIFIER_POINTER (name));
       return 0;
     }
   else
@@ -2101,8 +2098,7 @@ define_label (filename, line, name)
       /* Mark label as having been defined.  */
       DECL_INITIAL (decl) = error_mark_node;
       /* Say where in the source.  */
-      DECL_SOURCE_FILE (decl) = filename;
-      DECL_SOURCE_LINE (decl) = line;
+      DECL_SOURCE_LOCATION (decl) = locus;
       return decl;
     }
 }
@@ -2202,10 +2198,9 @@ void
 pending_xref_error ()
 {
   if (pending_invalid_xref != 0)
-    error_with_file_and_line (pending_invalid_xref_location.file,
-			      pending_invalid_xref_location.line,
-			      "`%s' defined as wrong kind of tag",
-			      IDENTIFIER_POINTER (pending_invalid_xref));
+    error ("%H`%s' defined as wrong kind of tag",
+           &pending_invalid_xref_location,
+           IDENTIFIER_POINTER (pending_invalid_xref));
   pending_invalid_xref = 0;
 }
 
@@ -5536,8 +5531,7 @@ start_function (declspecs, declarator, attributes)
       && TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0)
     {
       TREE_TYPE (decl1) = TREE_TYPE (old_decl);
-      current_function_prototype_file = DECL_SOURCE_FILE (old_decl);
-      current_function_prototype_line = DECL_SOURCE_LINE (old_decl);
+      current_function_prototype_locus = DECL_SOURCE_LOCATION (old_decl);
     }
 
   /* Optionally warn of old-fashioned def with no previous prototype.  */
@@ -5966,9 +5960,8 @@ store_parm_decls ()
 		  || TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
 		{
 		  error ("number of arguments doesn't match prototype");
-		  error_with_file_and_line (current_function_prototype_file,
-					    current_function_prototype_line,
-					    "prototype declaration");
+		  error ("%Hprototype declaration",
+                         &current_function_prototype_locus);
 		  break;
 		}
 	      /* Type for passing arg must be consistent with that
@@ -5997,19 +5990,16 @@ store_parm_decls ()
 			{
 			  pedwarn ("promoted argument `%s' doesn't match prototype",
 				   IDENTIFIER_POINTER (DECL_NAME (parm)));
-			  warning_with_file_and_line
-			    (current_function_prototype_file,
-			     current_function_prototype_line,
-			     "prototype declaration");
+			  warning ("%Hprototype declaration",
+                                   &current_function_prototype_locus);
 			}
 		    }
 		  else
 		    {
 		      error ("argument `%s' doesn't match prototype",
 			     IDENTIFIER_POINTER (DECL_NAME (parm)));
-		      error_with_file_and_line (current_function_prototype_file,
-						current_function_prototype_line,
-						"prototype declaration");
+		      error ("%Hprototype declaration",
+                             &current_function_prototype_locus);
 		    }
 		}
 	    }
