@@ -809,7 +809,7 @@
 (define_expand "addsf3"
   [(set (match_operand:SF          0 "s_register_operand" "")
 	(plus:SF (match_operand:SF 1 "s_register_operand" "")
-		 (match_operand:SF 2 "fpu_add_operand" "")))]
+		 (match_operand:SF 2 "fpa_add_operand" "")))]
   "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
   "
   if (TARGET_CIRRUS
@@ -820,7 +820,7 @@
 (define_insn "*arm_addsf3"
   [(set (match_operand:SF          0 "s_register_operand" "=f,f")
 	(plus:SF (match_operand:SF 1 "s_register_operand" "%f,f")
-		 (match_operand:SF 2 "fpu_add_operand"    "fG,H")))]
+		 (match_operand:SF 2 "fpa_add_operand"    "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    adf%?s\\t%0, %1, %2
@@ -832,7 +832,7 @@
 (define_expand "adddf3"
   [(set (match_operand:DF          0 "s_register_operand" "")
 	(plus:DF (match_operand:DF 1 "s_register_operand" "")
-		 (match_operand:DF 2 "fpu_add_operand" "")))]
+		 (match_operand:DF 2 "fpa_add_operand" "")))]
   "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
   "
   if (TARGET_CIRRUS
@@ -843,7 +843,7 @@
 (define_insn "*arm_adddf3"
   [(set (match_operand:DF          0 "s_register_operand" "=f,f")
 	(plus:DF (match_operand:DF 1 "s_register_operand" "%f,f")
-		 (match_operand:DF 2 "fpu_add_operand"    "fG,H")))]
+		 (match_operand:DF 2 "fpa_add_operand"    "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    adf%?d\\t%0, %1, %2
@@ -856,7 +856,7 @@
   [(set (match_operand:DF           0 "s_register_operand" "=f,f")
 	(plus:DF (float_extend:DF
 		  (match_operand:SF 1 "s_register_operand"  "f,f"))
-		 (match_operand:DF  2 "fpu_add_operand"    "fG,H")))]
+		 (match_operand:DF  2 "fpa_add_operand"    "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    adf%?d\\t%0, %1, %2
@@ -1092,8 +1092,8 @@
 
 (define_expand "subsf3"
   [(set (match_operand:SF           0 "s_register_operand" "")
-	(minus:SF (match_operand:SF 1 "fpu_rhs_operand" "")
-		  (match_operand:SF 2 "fpu_rhs_operand" "")))]
+	(minus:SF (match_operand:SF 1 "fpa_rhs_operand" "")
+		  (match_operand:SF 2 "fpa_rhs_operand" "")))]
   "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
   "
   if (TARGET_CIRRUS)
@@ -1107,8 +1107,8 @@
 
 (define_insn "*arm_subsf3"
   [(set (match_operand:SF 0 "s_register_operand" "=f,f")
-	(minus:SF (match_operand:SF 1 "fpu_rhs_operand" "f,G")
-		  (match_operand:SF 2 "fpu_rhs_operand" "fG,f")))]
+	(minus:SF (match_operand:SF 1 "fpa_rhs_operand" "f,G")
+		  (match_operand:SF 2 "fpa_rhs_operand" "fG,f")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    suf%?s\\t%0, %1, %2
@@ -1118,8 +1118,8 @@
 
 (define_expand "subdf3"
   [(set (match_operand:DF           0 "s_register_operand" "")
-	(minus:DF (match_operand:DF 1 "fpu_rhs_operand"     "")
-		  (match_operand:DF 2 "fpu_rhs_operand"    "")))]
+	(minus:DF (match_operand:DF 1 "fpa_rhs_operand"     "")
+		  (match_operand:DF 2 "fpa_rhs_operand"    "")))]
   "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
   "
   if (TARGET_CIRRUS)
@@ -1133,8 +1133,8 @@
 
 (define_insn "*arm_subdf3"
   [(set (match_operand:DF           0 "s_register_operand" "=f,f")
-	(minus:DF (match_operand:DF 1 "fpu_rhs_operand"     "f,G")
-		  (match_operand:DF 2 "fpu_rhs_operand"    "fG,f")))]
+	(minus:DF (match_operand:DF 1 "fpa_rhs_operand"     "f,G")
+		  (match_operand:DF 2 "fpa_rhs_operand"    "fG,f")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    suf%?d\\t%0, %1, %2
@@ -1147,7 +1147,7 @@
   [(set (match_operand:DF            0 "s_register_operand" "=f")
 	(minus:DF (float_extend:DF
 		   (match_operand:SF 1 "s_register_operand"  "f"))
-		  (match_operand:DF  2 "fpu_rhs_operand"    "fG")))]
+		  (match_operand:DF  2 "fpa_rhs_operand"    "fG")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "suf%?d\\t%0, %1, %2"
   [(set_attr "type" "farith")
@@ -1156,7 +1156,7 @@
 
 (define_insn "*subdf_df_esfdf"
   [(set (match_operand:DF 0 "s_register_operand" "=f,f")
-	(minus:DF (match_operand:DF 1 "fpu_rhs_operand" "f,G")
+	(minus:DF (match_operand:DF 1 "fpa_rhs_operand" "f,G")
 		  (float_extend:DF
 		   (match_operand:SF 2 "s_register_operand" "f,f"))))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
@@ -1456,7 +1456,7 @@
 (define_expand "mulsf3"
   [(set (match_operand:SF          0 "s_register_operand" "")
 	(mult:SF (match_operand:SF 1 "s_register_operand" "")
-		 (match_operand:SF 2 "fpu_rhs_operand" "")))]
+		 (match_operand:SF 2 "fpa_rhs_operand" "")))]
   "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
   "
   if (TARGET_CIRRUS
@@ -1467,7 +1467,7 @@
 (define_insn "*arm_mulsf3"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "s_register_operand" "f")
-		 (match_operand:SF 2 "fpu_rhs_operand" "fG")))]
+		 (match_operand:SF 2 "fpa_rhs_operand" "fG")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "fml%?s\\t%0, %1, %2"
   [(set_attr "type" "ffmul")
@@ -1477,7 +1477,7 @@
 (define_expand "muldf3"
   [(set (match_operand:DF          0 "s_register_operand" "")
 	(mult:DF (match_operand:DF 1 "s_register_operand" "")
-		 (match_operand:DF 2 "fpu_rhs_operand" "")))]
+		 (match_operand:DF 2 "fpa_rhs_operand" "")))]
   "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
   "
   if (TARGET_CIRRUS
@@ -1488,7 +1488,7 @@
 (define_insn "*arm_muldf3"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "s_register_operand" "f")
-		 (match_operand:DF 2 "fpu_rhs_operand" "fG")))]
+		 (match_operand:DF 2 "fpa_rhs_operand" "fG")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "muf%?d\\t%0, %1, %2"
   [(set_attr "type" "fmul")
@@ -1499,7 +1499,7 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(mult:DF (float_extend:DF
 		  (match_operand:SF 1 "s_register_operand" "f"))
-		 (match_operand:DF 2 "fpu_rhs_operand" "fG")))]
+		 (match_operand:DF 2 "fpa_rhs_operand" "fG")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "muf%?d\\t%0, %1, %2"
   [(set_attr "type" "fmul")
@@ -1532,8 +1532,8 @@
 
 (define_insn "divsf3"
   [(set (match_operand:SF 0 "s_register_operand" "=f,f")
-	(div:SF (match_operand:SF 1 "fpu_rhs_operand" "f,G")
-		(match_operand:SF 2 "fpu_rhs_operand" "fG,f")))]
+	(div:SF (match_operand:SF 1 "fpa_rhs_operand" "f,G")
+		(match_operand:SF 2 "fpa_rhs_operand" "fG,f")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    fdv%?s\\t%0, %1, %2
@@ -1544,8 +1544,8 @@
 
 (define_insn "divdf3"
   [(set (match_operand:DF 0 "s_register_operand" "=f,f")
-	(div:DF (match_operand:DF 1 "fpu_rhs_operand" "f,G")
-		(match_operand:DF 2 "fpu_rhs_operand" "fG,f")))]
+	(div:DF (match_operand:DF 1 "fpa_rhs_operand" "f,G")
+		(match_operand:DF 2 "fpa_rhs_operand" "fG,f")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    dvf%?d\\t%0, %1, %2
@@ -1558,7 +1558,7 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(div:DF (float_extend:DF
 		 (match_operand:SF 1 "s_register_operand" "f"))
-		(match_operand:DF 2 "fpu_rhs_operand" "fG")))]
+		(match_operand:DF 2 "fpa_rhs_operand" "fG")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "dvf%?d\\t%0, %1, %2"
   [(set_attr "type" "fdivd")
@@ -1567,7 +1567,7 @@
 
 (define_insn "*divdf_df_esfdf"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
-	(div:DF (match_operand:DF 1 "fpu_rhs_operand" "fG")
+	(div:DF (match_operand:DF 1 "fpa_rhs_operand" "fG")
 		(float_extend:DF
 		 (match_operand:SF 2 "s_register_operand" "f"))))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
@@ -1593,7 +1593,7 @@
 (define_insn "modsf3"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(mod:SF (match_operand:SF 1 "s_register_operand" "f")
-		(match_operand:SF 2 "fpu_rhs_operand" "fG")))]
+		(match_operand:SF 2 "fpa_rhs_operand" "fG")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "rmf%?s\\t%0, %1, %2"
   [(set_attr "type" "fdivs")
@@ -1603,7 +1603,7 @@
 (define_insn "moddf3"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(mod:DF (match_operand:DF 1 "s_register_operand" "f")
-		(match_operand:DF 2 "fpu_rhs_operand" "fG")))]
+		(match_operand:DF 2 "fpa_rhs_operand" "fG")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "rmf%?d\\t%0, %1, %2"
   [(set_attr "type" "fdivd")
@@ -1614,7 +1614,7 @@
   [(set (match_operand:DF 0 "s_register_operand" "=f")
 	(mod:DF (float_extend:DF
 		 (match_operand:SF 1 "s_register_operand" "f"))
-		(match_operand:DF 2 "fpu_rhs_operand" "fG")))]
+		(match_operand:DF 2 "fpa_rhs_operand" "fG")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "rmf%?d\\t%0, %1, %2"
   [(set_attr "type" "fdivd")
@@ -5148,8 +5148,8 @@
     case 6: return \"mnf%?d\\t%0, #%N1\";
     case 7: return \"ldf%?d\\t%0, %1\";
     case 8: return \"stf%?d\\t%1, %0\";
-    case 9: return output_mov_double_fpu_from_arm (operands);
-    case 10: return output_mov_double_arm_from_fpu (operands);
+    case 9: return output_mov_double_fpa_from_arm (operands);
+    case 10: return output_mov_double_arm_from_fpa (operands);
     }
   }
   "
@@ -5236,8 +5236,8 @@
     case 1: return \"mnf%?e\\t%0, #%N1\";
     case 2: return \"ldf%?e\\t%0, %1\";
     case 3: return \"stf%?e\\t%1, %0\";
-    case 4: return output_mov_long_double_fpu_from_arm (operands);
-    case 5: return output_mov_long_double_arm_from_fpu (operands);
+    case 4: return output_mov_long_double_fpa_from_arm (operands);
+    case 5: return output_mov_long_double_arm_from_fpa (operands);
     case 6: return output_mov_long_double_arm_from_arm (operands);
     }
   "
@@ -5674,7 +5674,7 @@
 
 (define_expand "cmpsf"
   [(match_operand:SF 0 "s_register_operand" "")
-   (match_operand:SF 1 "fpu_rhs_operand" "")]
+   (match_operand:SF 1 "fpa_rhs_operand" "")]
   "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
   "
   if (TARGET_CIRRUS && !cirrus_fp_register (operands[1], SFmode))
@@ -5688,7 +5688,7 @@
 
 (define_expand "cmpdf"
   [(match_operand:DF 0 "s_register_operand" "")
-   (match_operand:DF 1 "fpu_rhs_operand" "")]
+   (match_operand:DF 1 "fpa_rhs_operand" "")]
   "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
   "
   if (TARGET_CIRRUS && !cirrus_fp_register (operands[1], DFmode))
@@ -5753,7 +5753,7 @@
 (define_insn "*cmpsf_insn"
   [(set (reg:CCFP CC_REGNUM)
 	(compare:CCFP (match_operand:SF 0 "s_register_operand" "f,f")
-		      (match_operand:SF 1 "fpu_add_operand" "fG,H")))]
+		      (match_operand:SF 1 "fpa_add_operand" "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    cmf%?\\t%0, %1
@@ -5765,7 +5765,7 @@
 (define_insn "*cmpdf_insn"
   [(set (reg:CCFP CC_REGNUM)
 	(compare:CCFP (match_operand:DF 0 "s_register_operand" "f,f")
-		      (match_operand:DF 1 "fpu_add_operand" "fG,H")))]
+		      (match_operand:DF 1 "fpa_add_operand" "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    cmf%?\\t%0, %1
@@ -5778,7 +5778,7 @@
   [(set (reg:CCFP CC_REGNUM)
 	(compare:CCFP (float_extend:DF
 		       (match_operand:SF 0 "s_register_operand" "f,f"))
-		      (match_operand:DF 1 "fpu_add_operand" "fG,H")))]
+		      (match_operand:DF 1 "fpa_add_operand" "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    cmf%?\\t%0, %1
@@ -5844,7 +5844,7 @@
 (define_insn "*cmpsf_trap"
   [(set (reg:CCFPE CC_REGNUM)
 	(compare:CCFPE (match_operand:SF 0 "s_register_operand" "f,f")
-		       (match_operand:SF 1 "fpu_add_operand" "fG,H")))]
+		       (match_operand:SF 1 "fpa_add_operand" "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    cmf%?e\\t%0, %1
@@ -5856,7 +5856,7 @@
 (define_insn "*cmpdf_trap"
   [(set (reg:CCFPE CC_REGNUM)
 	(compare:CCFPE (match_operand:DF 0 "s_register_operand" "f,f")
-		       (match_operand:DF 1 "fpu_add_operand" "fG,H")))]
+		       (match_operand:DF 1 "fpa_add_operand" "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    cmf%?e\\t%0, %1
@@ -5869,7 +5869,7 @@
   [(set (reg:CCFPE CC_REGNUM)
 	(compare:CCFPE (float_extend:DF
 			(match_operand:SF 0 "s_register_operand" "f,f"))
-		       (match_operand:DF 1 "fpu_add_operand" "fG,H")))]
+		       (match_operand:DF 1 "fpa_add_operand" "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    cmf%?e\\t%0, %1
@@ -6388,7 +6388,7 @@
     /* When compiling for SOFT_FLOAT, ensure both arms are in registers. 
        Otherwise, ensure it is a valid FP add operand */
     if ((!TARGET_HARD_FLOAT)
-        || (!fpu_add_operand (operands[3], SFmode)))
+        || (!fpa_add_operand (operands[3], SFmode)))
       operands[3] = force_reg (SFmode, operands[3]);
 
     ccreg = arm_gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
@@ -6400,7 +6400,7 @@
   [(set (match_operand:DF 0 "s_register_operand" "")
 	(if_then_else:DF (match_operand 1 "arm_comparison_operator" "")
 			 (match_operand:DF 2 "s_register_operand" "")
-			 (match_operand:DF 3 "fpu_add_operand" "")))]
+			 (match_operand:DF 3 "fpa_add_operand" "")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "
   {
@@ -6441,8 +6441,8 @@
 	(if_then_else:SF
 	 (match_operator 3 "arm_comparison_operator" 
 	  [(match_operand 4 "cc_register" "") (const_int 0)])
-	 (match_operand:SF 1 "fpu_add_operand" "0,0,fG,H,fG,fG,H,H")
-	 (match_operand:SF 2 "fpu_add_operand" "fG,H,0,0,fG,H,fG,H")))]
+	 (match_operand:SF 1 "fpa_add_operand" "0,0,fG,H,fG,fG,H,H")
+	 (match_operand:SF 2 "fpa_add_operand" "fG,H,0,0,fG,H,fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    mvf%D3s\\t%0, %2
@@ -6476,8 +6476,8 @@
 	(if_then_else:DF
 	 (match_operator 3 "arm_comparison_operator"
 	  [(match_operand 4 "cc_register" "") (const_int 0)])
-	 (match_operand:DF 1 "fpu_add_operand" "0,0,fG,H,fG,fG,H,H")
-	 (match_operand:DF 2 "fpu_add_operand" "fG,H,0,0,fG,H,fG,H")))]
+	 (match_operand:DF 1 "fpa_add_operand" "0,0,fG,H,fG,fG,H,H")
+	 (match_operand:DF 2 "fpa_add_operand" "fG,H,0,0,fG,H,fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
    mvf%D3d\\t%0, %2
