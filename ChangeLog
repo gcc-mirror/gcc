@@ -1,3 +1,11 @@
+Fri Jun 19 02:36:59 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
+
+	* Makefile.in (local-clean): remove *.log
+	(warning.log): built with warn_summary from build.log
+	(mail-report.log): run test_summary
+	(mail-report-with-warnings.log): run test_summary including
+	warning.log in the report
+
 Thu Jun 18 11:26:03 1998  Robert Lipe  <robertl@dgii.com>
 
 	* config.guess: Detection of Pentium II for *-sco-3.2v5*.
