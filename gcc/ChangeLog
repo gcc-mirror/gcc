@@ -1,5 +1,16 @@
 2003-08-30  Zack Weinberg  <zack@codesourcery.com>
 
+	* c-tree.h: Delete COMPARE_DIFFERENT_TU from enumeration.
+	* c-typeck.c (same_translation_unit_p): New function.
+	(comptypes): Use it instead of flags parameter to identify
+	structure types from different translation units.
+	* c-decl.c (duplicate_decls): Always call comptypes with
+	COMPTYPE_STRICT flags argument.
+	(c_reset_state): Set BLOCK_SUPERCONTEXT of the block formed
+	to file_scope_decl.
+
+2003-08-30  Zack Weinberg  <zack@codesourcery.com>
+
 	* c-tree.h (C_TYPE_INCOMPLETE_VARS): New macro.
 	* c-decl.c (struct c_scope): Remove "incomplete" field.
 	(pushdecl): Attach variables with incomplete types to

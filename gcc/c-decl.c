@@ -775,10 +775,8 @@ static int
 duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 		 int different_tu)
 {
-  int comptype_flags = (different_tu ? COMPARE_DIFFERENT_TU
-			: COMPARE_STRICT);
   int types_match = comptypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl),
-			       comptype_flags);
+			       COMPARE_STRICT);
   int new_is_definition = (TREE_CODE (newdecl) == FUNCTION_DECL
 			   && DECL_INITIAL (newdecl) != 0);
   tree oldtype = TREE_TYPE (olddecl);
@@ -897,7 +895,7 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 
 	  if (trytype)
 	    {
-	      types_match = comptypes (newtype, trytype, comptype_flags);
+	      types_match = comptypes (newtype, trytype, COMPARE_STRICT);
 	      if (types_match)
 		oldtype = trytype;
 	      if (! different_binding_level)
@@ -983,7 +981,7 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 		 && ! pedantic
 		 /* Return types must still match.  */
 		 && comptypes (TREE_TYPE (oldtype),
-			       TREE_TYPE (newtype), comptype_flags)
+			       TREE_TYPE (newtype), COMPARE_STRICT)
 		 && TYPE_ARG_TYPES (newtype) == 0))
     {
       error ("%Hconflicting types for '%D'",
@@ -992,7 +990,7 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	 involving an empty arglist vs a nonempty one.  */
       if (TREE_CODE (olddecl) == FUNCTION_DECL
 	  && comptypes (TREE_TYPE (oldtype),
-			TREE_TYPE (newtype), comptype_flags)
+			TREE_TYPE (newtype), COMPARE_STRICT)
 	  && ((TYPE_ARG_TYPES (oldtype) == 0
 	       && DECL_INITIAL (olddecl) == 0)
 	      ||
@@ -1135,7 +1133,7 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	      /* Type for passing arg must be consistent
 		 with that declared for the arg.  */
 	      if (! comptypes (TREE_VALUE (parm), TREE_VALUE (type),
-			       comptype_flags))
+			       COMPARE_STRICT))
 		{
                   const location_t *locus = &DECL_SOURCE_LOCATION (newdecl);
 		  error ("%Hprototype for '%D' follows and argument %d "
@@ -6701,6 +6699,7 @@ c_reset_state (void)
       current_scope = global_scope;
   file_scope_decl = current_file_decl;
   DECL_INITIAL (file_scope_decl) = poplevel (1, 0, 0);
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (file_scope_decl)) = file_scope_decl;
   truly_local_externals = NULL_TREE;
 
   /* Start a new global binding level.  */

@@ -50,6 +50,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static int missing_braces_mentioned;
 
 static tree qualify_type (tree, tree);
+static int same_translation_unit_p (tree, tree);
 static int tagged_types_tu_compatible_p (tree, tree, int);
 static int comp_target_types (tree, tree, int);
 static int function_types_compatible_p (tree, tree, int);
@@ -564,7 +565,7 @@ comptypes (tree type1, tree type2, int flags)
 
     case ENUMERAL_TYPE:
     case UNION_TYPE:
-      if (val != 1 && (flags & COMPARE_DIFFERENT_TU))
+      if (val != 1 && !same_translation_unit_p (t1, t2))
 	val = tagged_types_tu_compatible_p (t1, t2, flags);
       break;
 
@@ -605,6 +606,34 @@ comp_target_types (tree ttl, tree ttr, int reflexive)
 }
 
 /* Subroutines of `comptypes'.  */
+
+/* Determine whether two types derive from the same translation unit.
+   If the CONTEXT chain ends in a null, that type's context is still
+   being parsed, so if two types have context chains ending in null,
+   they're in the same translation unit.  */
+static int
+same_translation_unit_p (tree t1, tree t2)
+{
+  while (t1 && TREE_CODE (t1) != TRANSLATION_UNIT_DECL)
+    switch (TREE_CODE_CLASS (TREE_CODE (t1)))
+      {
+      case 'd': t1 = DECL_CONTEXT (t1); break;
+      case 't': t1 = TYPE_CONTEXT (t1); break;
+      case 'b': t1 = BLOCK_SUPERCONTEXT (t1); break;
+      default: abort ();
+      }
+
+  while (t2 && TREE_CODE (t2) != TRANSLATION_UNIT_DECL)
+    switch (TREE_CODE_CLASS (TREE_CODE (t2)))
+      {
+      case 'd': t2 = DECL_CONTEXT (t1); break;
+      case 't': t2 = TYPE_CONTEXT (t2); break;
+      case 'b': t2 = BLOCK_SUPERCONTEXT (t2); break;
+      default: abort ();
+      }
+
+  return t1 == t2;
+}
 
 /* The C standard says that two structures in different translation
    units are compatible with each other only if the types of their
