@@ -1936,12 +1936,15 @@ alpha_emit_xfloating_arith (code, operands)
 {
   const char *func;
   int mode;
+  rtx out_operands[3];
 
   func = alpha_lookup_xfloating_lib_func (code);
   mode = alpha_compute_xfloating_mode_arg (code, alpha_fprm);
 
-  operands[3] = GEN_INT (mode);
-  alpha_emit_xfloating_libcall (func, operands[0], operands+1, 3,  
+  out_operands[0] = operands[1];
+  out_operands[1] = operands[2];
+  out_operands[2] = GEN_INT (mode);
+  alpha_emit_xfloating_libcall (func, operands[0], out_operands, 3,  
 				gen_rtx_fmt_ee (code, TFmode, operands[1],
 						operands[2]));
 }
@@ -1978,27 +1981,30 @@ alpha_emit_xfloating_cvt (code, operands)
      rtx operands[];
 {
   int noperands = 1, mode;
+  rtx out_operands[2];
   const char *func;
 
   func = alpha_lookup_xfloating_lib_func (code);
+
+  out_operands[0] = operands[1];
 
   switch (code)
     {
     case FIX:
       mode = alpha_compute_xfloating_mode_arg (code, ALPHA_FPRM_CHOP);
-      operands[2] = GEN_INT (mode);
+      out_operands[1] = GEN_INT (mode);
       noperands = 2;
       break;
     case FLOAT_TRUNCATE:
       mode = alpha_compute_xfloating_mode_arg (code, alpha_fprm);
-      operands[2] = GEN_INT (mode);
+      out_operands[1] = GEN_INT (mode);
       noperands = 2;
       break;
     default:
       break;
     }
 
-  alpha_emit_xfloating_libcall (func, operands[0], operands+1, noperands,
+  alpha_emit_xfloating_libcall (func, operands[0], out_operands, noperands,
 				gen_rtx_fmt_e (code, GET_MODE (operands[0]),
 					       operands[1]));
 }
