@@ -1,5 +1,8 @@
 2003-06-27  Zack Weinberg  <zack@codesourcery.com>
 
+	* dbxout.c (flag_debug_only_used_symbols): Delete redundant
+	declaration.
+
 	* c-format.c (check_format_string, get_constant)
 	* cfgrtl.c (rtl_split_edge):
 	Mark the definition static, matching the forward declaration.

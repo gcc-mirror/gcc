@@ -55,7 +55,7 @@ location_t input_location;
 struct obstack temporary_obstack;
 
 /* The current parser context.  */
-static struct parser_ctxt *ctxp;
+struct parser_ctxt *ctxp;
 
 /* Error and warning counts, because they're used elsewhere  */
 int java_error_count;

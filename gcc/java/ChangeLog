@@ -1,5 +1,8 @@
 2003-06-27  Zack Weinberg  <zack@codesourcery.com>
 
+	* gjavah.c (flag_jni): Make non-static.
+	* parse-scan.y (ctxp): Make non-static.
+
 	* class.c (build_method_symbols_entry)
 	* expr.c (get_offset_table_index)
 	* jcf-parse.c (jcf_parse):

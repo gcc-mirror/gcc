@@ -93,8 +93,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "xcoffout.h"
 #endif
 
-extern int flag_debug_only_used_symbols;
-
 #undef DBXOUT_DECR_NESTING
 #define DBXOUT_DECR_NESTING \
   if (--debug_nesting == 0 && symbol_queue_index > 0) \
