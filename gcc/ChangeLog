@@ -1,3 +1,8 @@
+2004-03-16  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR bootstrap/12974
+	* Makefile.in: Pass $(INCLUDES) down to libgcc.mk explicitly.
+
 2004-03-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c-common.c (c_common_type_for_mode): Build vector types on
