@@ -1,5 +1,5 @@
 /* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -558,6 +558,7 @@ struct tree_block
 #define TYPE_BINFO(NODE) ((NODE)->type.binfo)
 #define TYPE_NONCOPIED_PARTS(NODE) ((NODE)->type.noncopied_parts)
 #define TYPE_CONTEXT(NODE) ((NODE)->type.context)
+#define TYPE_OBSTACK(NODE) ((NODE)->type.obstack)
 #define TYPE_LANG_SPECIFIC(NODE) ((NODE)->type.lang_specific)
 
 /* The alignment necessary for objects of this type.
@@ -622,6 +623,7 @@ struct tree_type
   union tree_node *binfo;
   union tree_node *noncopied_parts;
   union tree_node *context;
+  struct obstack *obstack;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_type *lang_specific;
 };
