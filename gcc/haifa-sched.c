@@ -6201,7 +6201,7 @@ init_rgn_data_dependences (n_bbs)
   bzero ((char *) bb_pending_read_mems, n_bbs * sizeof (rtx));
   bzero ((char *) bb_pending_write_insns, n_bbs * sizeof (rtx));
   bzero ((char *) bb_pending_write_mems, n_bbs * sizeof (rtx));
-  bzero ((char *) bb_pending_lists_length, n_bbs * sizeof (rtx));
+  bzero ((char *) bb_pending_lists_length, n_bbs * sizeof (int));
   bzero ((char *) bb_last_pending_memory_flush, n_bbs * sizeof (rtx));
   bzero ((char *) bb_last_function_call, n_bbs * sizeof (rtx));
   bzero ((char *) bb_sched_before_next_call, n_bbs * sizeof (rtx));
