@@ -1,3 +1,9 @@
+2001-02-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* Makefile.in (-DGPLUSPLUS_TOOL_INCLUDE_DIR): Change to target
+	subdir of gcc_gxx_include_dir.
+	(gcc_gxx_target_include_dir): Remove.
+
 2001-02-05  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* dwarf2out.c: Revise DWARF2 Abbreviation Glossary comments.
