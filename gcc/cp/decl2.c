@@ -4045,8 +4045,8 @@ do_local_using_decl (tree decl)
 tree
 do_class_using_decl (tree decl)
 {
-  tree name, value;
-
+  tree name, value, scope, type;
+  
   if (TREE_CODE (decl) != SCOPE_REF
       || !TREE_OPERAND (decl, 0)
       || !TYPE_P (TREE_OPERAND (decl, 0)))
@@ -4054,50 +4054,44 @@ do_class_using_decl (tree decl)
       error ("using-declaration for non-member at class scope");
       return NULL_TREE;
     }
+  scope = TREE_OPERAND (decl, 0);
   name = TREE_OPERAND (decl, 1);
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
-      error ("using-declaration for destructor");
+      error ("using-declaration cannot name destructor");
       return NULL_TREE;
     }
   else if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
     {
-      name = TREE_OPERAND (name, 0);
-      error ("a using-declaration cannot specify a template-id.  Try  `using %T::%D'", TREE_OPERAND (decl, 0), name);
+    template_id_error:;
+      
+      error ("a using-declaration cannot specify a template-id");
       return NULL_TREE;
     }
   if (TREE_CODE (name) == TYPE_DECL)
     {
-      tree type = TREE_TYPE (name);
       if (CLASSTYPE_USE_TEMPLATE (TREE_TYPE (name)))
-	{
-	  name = DECL_NAME (CLASSTYPE_TI_TEMPLATE (type));
-	  error ("a using-declaration cannot specify a template-id.");
-	  return NULL_TREE;
-	}
+	goto template_id_error;
       name = DECL_NAME (name);
     }
   else if (TREE_CODE (name) == TEMPLATE_DECL)
      name = DECL_NAME (name);
   else if (BASELINK_P (name))
     {
-      tree fns;
-
-      fns = BASELINK_FUNCTIONS (name);
+      tree fns = BASELINK_FUNCTIONS (name);
+      
       if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
-	{
-	  fns = TREE_OPERAND (fns, 0);
-	  error ("a using-declaration cannot specify a template-id.  Try  `using %T::%D'", 
-		 BASELINK_ACCESS_BINFO (name),
-		 DECL_NAME (get_first_fn (fns)));
-	}
+	goto template_id_error;
       name = DECL_NAME (get_first_fn (fns));
     }
 
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 980716);
 
-  value = build_lang_decl (USING_DECL, name, NULL_TREE);
-  DECL_INITIAL (value) = TREE_OPERAND (decl, 0);
+  /* Dependent using decls have a NULL type, non-dependent ones have a
+     void type.  */
+  type = dependent_type_p (scope) ? NULL_TREE : void_type_node;
+  value = build_lang_decl (USING_DECL, name, type);
+  DECL_INITIAL (value) = scope;
   return value;
 }
 
