@@ -389,7 +389,7 @@
 ;; from an scc insn (negscc and incscc).  
 (define_insn "negscc"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(neg (match_operator:SI 3 "comparison_operator"
+	(neg:SI (match_operator:SI 3 "comparison_operator"
 	       [(match_operand:SI 1 "register_operand" "r")
 		(match_operand:SI 2  "arith11_operand" "rI")])))]
   ""
