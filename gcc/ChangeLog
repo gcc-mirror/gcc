@@ -1,3 +1,7 @@
+2002-12-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/md.texi (pushm): Fix a typo.
+
 2002-12-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.c (mips_output_conditional_branch): Support
