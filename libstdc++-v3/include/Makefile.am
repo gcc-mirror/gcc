@@ -21,8 +21,6 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.10 2001/09/10 18:13:16 bkoz Exp $
-
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
 

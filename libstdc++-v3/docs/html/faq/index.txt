@@ -546,7 +546,6 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
    Comments  and  suggestions  are  welcome,  and  may be sent to [80]the
    mailing list.
-   $Id: index.html,v 1.11 2001/09/17 23:24:40 pme Exp $ 
 
 References
 

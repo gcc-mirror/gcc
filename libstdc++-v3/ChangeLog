@@ -1,3 +1,28 @@
+2001-09-26  Stan Shebs  <shebs@apple.com>
+
+	* include/Makefile.am: Remove RCS Id strings.
+	* src/Makefile.am: Ditto.
+	* docs/doxygen/run_doxygen: Ditto.
+	* docs/html/configopts.html: Ditto.
+	* docs/html/documentation.html: Ditto.
+	* docs/html/explanations.html: Ditto.
+	* docs/html/install.html: Ditto.
+	* docs/html/17_intro/howto.html: Ditto.
+	* docs/html/18_support/howto.html: Ditto.
+	* docs/html/19_diagnostics/howto.html: Ditto.
+	* docs/html/20_util/howto.html: Ditto.
+	* docs/html/21_strings/howto.html: Ditto.
+	* docs/html/22_locale/howto.html: Ditto.
+	* docs/html/23_containers/howto.html: Ditto.
+	* docs/html/24_iterators/howto.html: Ditto.
+	* docs/html/25_algorithms/howto.html: Ditto.
+	* docs/html/26_numerics/howto.html: Ditto.
+	* docs/html/27_io/howto.html: Ditto.
+	* docs/html/ext/howto.html: Ditto.
+	* docs/html/ext/sgiexts.html: Ditto.
+	* docs/html/faq/index.html: Ditto.
+	* docs/html/faq/index.txt: Ditto.
+	
 2001-09-25  Phil Edwards  <pme@gcc.gnu.org>
 
 	* testsuite/21_strings/c_strings.cc (test01, test02):  Increase
