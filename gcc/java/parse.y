@@ -11719,9 +11719,13 @@ java_complete_lhs (tree node)
     case TRY_FINALLY_EXPR:
       COMPLETE_CHECK_OP_0 (node);
       COMPLETE_CHECK_OP_1 (node);
-      if (TREE_OPERAND (node, 0) == empty_stmt_node)
+      /* Reduce try/finally nodes with an empty try block.  */
+      if (TREE_OPERAND (node, 0) == empty_stmt_node
+	  || BLOCK_EMPTY_P (TREE_OPERAND (node, 0)))
 	return TREE_OPERAND (node, 1);
-      if (TREE_OPERAND (node, 1) == empty_stmt_node)
+      /* Likewise for an empty finally block.  */
+      if (TREE_OPERAND (node, 1) == empty_stmt_node
+	  || BLOCK_EMPTY_P (TREE_OPERAND (node, 1)))
 	return TREE_OPERAND (node, 0);
       CAN_COMPLETE_NORMALLY (node)
 	= (CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0))

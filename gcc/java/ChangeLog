@@ -1,4 +1,11 @@
-2003-09-12  Andrew Haley  <aph@redhat.com>
+2003-11-17  Jeff Sturm  <jsturm@one-point.com>
+
+	Fix PR java/12739.
+	* java-tree.h (BLOCK_EMPTY_P): Define.
+	* parse.y (java_complete_lhs): Check for empty blocks
+	in TRY_FINALLY_EXPR case.
+
+2003-11-17  Andrew Haley  <aph@redhat.com>
 
 	* java-tree.h (LOCAL_VAR_OUT_OF_SCOPE_P): New.
 	(struct lang_decl_var:freed): New variable. 
