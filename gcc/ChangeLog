@@ -1,3 +1,9 @@
+2005-01-17  Ian Lance Taylor  <ian@airs.com>
+
+	PR c/5675
+	* c-typeck.c (build_c_cast): Revert patch of 2003-02-16: don't
+	fold constant variables into initial values.
+
 2005-01-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (tree_can_merge_blocks_p): Reorder two checks.
