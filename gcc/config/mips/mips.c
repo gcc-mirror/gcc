@@ -4719,7 +4719,7 @@ function_prologue (file, size)
 
   ASM_OUTPUT_SOURCE_FILENAME (file, DECL_SOURCE_FILE (current_function_decl));
 
-  if (debug_info_level != DINFO_LEVEL_TERSE)
+  if (debug_info_level != DINFO_LEVEL_TERSE && write_symbols == SDB_DEBUG)
     ASM_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl));
 
   inside_function = 1;
