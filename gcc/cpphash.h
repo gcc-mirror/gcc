@@ -45,35 +45,28 @@ enum node_type
   T_CONST,	   /* Constant string, used by `__SIZE_TYPE__' etc */
   T_XCONST,	   /* Ditto, but the string is malloced memory */
   T_POISON,	   /* poisoned identifier */
-  T_MCONST,	   /* object-like macro defined to a single identifier */
-  T_MACRO,	   /* general object-like macro */
-  T_FMACRO,	   /* general function-like macro */
+  T_MACRO,	   /* object-like macro */
+  T_FMACRO,	   /* function-like macro */
   T_IDENTITY,	   /* macro defined to itself */
   T_EMPTY	   /* macro defined to nothing */
-};
-
-/* different kinds of things that can appear in the value field
-   of a hash node. */
-union hashval
-{
-  const char *cpval;		/* some predefined macros */
-  struct definition *defn;	/* #define */
-  struct hashnode *aschain;	/* #assert */
 };
 
 typedef struct hashnode HASHNODE;
 struct hashnode
 {
-  const U_CHAR *name;		/* the actual name */
-  size_t length;		/* length of token, for quick comparison */
-  unsigned long hash;		/* cached hash value */
-  union hashval value;		/* pointer to expansion, or whatever */
-  enum node_type type;		/* type of special token */
-  int disabled;			/* macro turned off for rescan?  */
+  unsigned int hash;			/* cached hash value */
+  unsigned short length;		/* length of name */
+  ENUM_BITFIELD(node_type) type : 8;	/* node type */
+  char disabled;			/* macro turned off for rescan? */
 
-  const char *file;		/* File, line, column of definition; */
-  int line;
-  int col;
+  union {
+    const char *cpval;			/* some predefined macros */
+    const struct object_defn *odefn;	/* #define foo bar */
+    const struct funct_defn *fdefn;	/* #define foo(x) bar(x) */
+    struct hashnode *aschain;		/* #assert */
+  } value;
+
+  const U_CHAR *name;
 };
 
 /* List of directories to look for include files in. */

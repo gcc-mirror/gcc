@@ -33,11 +33,14 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 /* Structure allocated for every #define.  For a simple replacement
    such as
-   	#define foo bar ,
-   nargs = -1, the `pattern' list is null, and the expansion is just
-   the replacement text.  Nargs = 0 means a functionlike macro with no args,
-   e.g.,
-       #define getchar() getc (stdin) .
+   	#define foo bar
+
+   we allocate an object_defn structure; the expansion field points
+   to the replacement text.  For a function-like macro we allocate a
+   funct_defn structure; nargs is the number of arguments - it can be zero,
+   e.g.
+       #define getchar() getc (stdin)
+
    When there are args, the expansion is the replacement text with the
    args squashed out, and the reflist is a list describing how to
    build the output from the input: e.g., "3 chars, then the 1st arg,
@@ -50,11 +53,25 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    #define f(x) x+x+x+x+x+x+x would have replacement text "++++++" and
    pattern list
      { (0, 1), (1, 1), (1, 1), ..., (1, 1), NULL }
-   where (x, y) means (nchars, argno). */
+   where (x, y) means (nchars, argno).
+
+   Note that EMPTY and IDENTITY macros have object_defn structures too,
+   but they're just used to hold the file, line, and column.  The
+   expansion field will be NULL.  */
+
+struct object_defn
+{
+  const U_CHAR *expansion;
+  unsigned int length;
+
+  const char *file;		/* File, line, column of definition */
+  int line;
+  int col;
+};  
 
 struct reflist
 {
-  struct reflist *next;
+  const struct reflist *next;
   char stringify;		/* nonzero if this arg was preceded by a
 				   # operator. */
   char raw_before;		/* Nonzero if a ## operator before arg. */
@@ -65,25 +82,29 @@ struct reflist
   int argno;			/* Number of arg to substitute (origin-0) */
 };
 
-typedef struct definition DEFINITION;
-struct definition
+struct funct_defn
 {
   int nargs;
   int length;			/* length of expansion string */
-  U_CHAR *expansion;
+  const U_CHAR *expansion;
   char rest_args;		/* Nonzero if last arg. absorbs the rest */
-  struct reflist *pattern;
+  const struct reflist *pattern;
 
   /* Names of macro args, concatenated in order with \0 between
      them.  The only use of this is that we warn on redefinition if
      this differs between the old and new definitions.  */
   U_CHAR *argnames;
+
+  const char *file;		/* File, line, column of definition */
+  int line;
+  int col;
 };
 
 static unsigned int hash_HASHNODE PARAMS ((const void *));
 static int eq_HASHNODE		  PARAMS ((const void *, const void *));
 static void del_HASHNODE	  PARAMS ((void *));
-static void dump_DEFINITION	  PARAMS ((cpp_reader *, DEFINITION *));
+static void dump_funlike_macro	  PARAMS ((cpp_reader *,
+					   const struct funct_defn *));
 static int dump_hash_helper	  PARAMS ((void **, void *));
 
 static void push_macro_expansion PARAMS ((cpp_reader *, const U_CHAR *,
@@ -92,22 +113,23 @@ static int unsafe_chars		 PARAMS ((cpp_reader *, int, int));
 static int macro_cleanup	 PARAMS ((cpp_buffer *, cpp_reader *));
 static enum cpp_ttype macarg	 PARAMS ((cpp_reader *, int));
 static void special_symbol	 PARAMS ((cpp_reader *, HASHNODE *));
-static int compare_defs		 PARAMS ((cpp_reader *, DEFINITION *,
-					  DEFINITION *));
+static int compare_defs		 PARAMS ((cpp_reader *,
+					  const struct funct_defn *,
+					  const struct funct_defn *));
 
 /* Initial hash table size.  (It can grow if necessary - see hashtab.c.)  */
 #define HASHSIZE 500
 
-/* The arglist structure is built by create_definition to tell
-   collect_expansion where the argument names begin.  That
-   is, for a define like "#define f(x,y,z) foo+x-bar*y", the arglist
-   would contain pointers to the strings x, y, and z.
-   collect_expansion would then build a DEFINITION node,
-   with reflist nodes pointing to the places x, y, and z had
-   appeared.  So the arglist is just convenience data passed
-   between these two routines.  It is not kept around after
-   the current #define has been processed and entered into the
-   hash table.  */
+/* The arglist structure is built by collect_params to tell
+   collect_funlike_expansion where the argument names begin.  That is,
+   for a define like "#define f(x,y,z) foo+x-bar*y", the arglist would
+   contain pointers to the strings x, y, and z.
+   collect_funlike_expansion would then build a funct_defn node, with
+   reflist nodes pointing to the places x, y, and z had appeared.
+
+   The arglist is just convenience data passed between these two
+   routines.  It is not kept around after the current #define has been
+   processed and entered into the hash table.  */
 
 struct arg
 {
@@ -124,9 +146,9 @@ struct arglist
 };
 
 
-static DEFINITION *
+static struct object_defn *
 collect_objlike_expansion PARAMS ((cpp_reader *, cpp_toklist *));
-static DEFINITION *
+static struct funct_defn *
 collect_funlike_expansion PARAMS ((cpp_reader *, cpp_toklist *,
 				   struct arglist *, unsigned int));
 static unsigned int collect_params PARAMS ((cpp_reader *, cpp_toklist *,
@@ -160,8 +182,9 @@ struct argdata
   int stringified_length;
 };
 
-static void scan_arguments	PARAMS ((cpp_reader *, DEFINITION *,
-					  struct argdata *, const U_CHAR *));
+static void scan_arguments	PARAMS ((cpp_reader *,
+					 const struct funct_defn *,
+					 struct argdata *, const U_CHAR *));
 static void stringify		PARAMS ((cpp_reader *, struct argdata *));
 static void funlike_macroexpand	PARAMS ((cpp_reader *, HASHNODE *,
 					 struct argdata *));
@@ -318,22 +341,29 @@ void
 _cpp_free_definition (h)
      HASHNODE *h;
 {
-  if (h->type == T_MCONST || h->type == T_XCONST)
-    free ((void *) h->value.cpval);
-  else if (h->type == T_MACRO || h->type == T_FMACRO)
+  if (h->type == T_XCONST)
+    free ((PTR) h->value.cpval);
+  else if (h->type == T_MACRO)
     {
-      DEFINITION *d = h->value.defn;
-      struct reflist *ap, *nextap;
+      if (h->value.odefn->expansion)
+	free ((PTR) h->value.odefn->expansion);
+      free ((PTR) h->value.odefn);
+    }
+  else if (h->type == T_FMACRO)
+    {
+      const struct funct_defn *d = h->value.fdefn;
+      const struct reflist *ap, *nextap;
     
       for (ap = d->pattern; ap != NULL; ap = nextap)
 	{
 	  nextap = ap->next;
-	  free (ap);
+	  free ((PTR) ap);
 	}
       if (d->argnames)
-	free (d->argnames);
-      free (d);
+	free ((PTR) d->argnames);
+      free ((PTR) d);
     }
+  h->value.cpval = NULL;
 }
 
 static int
@@ -344,10 +374,10 @@ macro_cleanup (pbuf, pfile)
   HASHNODE *m = pbuf->macro;
   
   m->disabled = 0;
-  if (m->type == T_FMACRO && pbuf->buf != m->value.defn->expansion)
-    free ((PTR) pbuf->buf);
-  else if (m->type != T_MACRO && m->type != T_FMACRO && m->type != T_CONST
-	   && m->type != T_MCONST && m->type != T_XCONST)
+  if ((m->type == T_FMACRO && pbuf->buf != m->value.fdefn->expansion)
+      || m->type == T_SPECLINE || m->type == T_FILE
+      || m->type == T_BASE_FILE || m->type == T_INCLUDE_LEVEL
+      || m->type == T_STDC)
     free ((PTR) pbuf->buf);
   return 0;
 }
@@ -466,14 +496,14 @@ trad_stringify (pfile, base, len, argc, argv, pat, endpat, last)
 }
 
 /* Read a replacement list for an object-like macro, and build the
-   DEFINITION structure.  LIST contains the replacement list,
+   object_defn structure.  LIST contains the replacement list,
    beginning at 1.  */
-static DEFINITION *
+static struct object_defn *
 collect_objlike_expansion (pfile, list)
      cpp_reader *pfile;
      cpp_toklist *list;
 {
-  DEFINITION *defn;
+  struct object_defn *defn;
   unsigned int i;
   unsigned int start;
   int last_was_paste = 0;
@@ -535,30 +565,26 @@ collect_objlike_expansion (pfile, list)
   memcpy (exp, pfile->token_buffer + start, len);
   exp[len] = '\0';
 
-  defn = (DEFINITION *) xmalloc (sizeof (DEFINITION));
+  defn = (struct object_defn *) xmalloc (sizeof (struct object_defn));
   defn->length = len;
   defn->expansion = exp;
-  defn->pattern = 0;
-  defn->rest_args = 0;
-  defn->argnames = 0;
-  defn->nargs = -1;
 
   return defn;
 }
 
 /* Read a replacement list for a function-like macro, and build the
-   DEFINITION structure.  LIST contains the replacement list,
+   funct_defn structure.  LIST contains the replacement list,
    beginning at REPLACEMENT.  ARGLIST specifies the formal parameters
    to look for in the text of the definition.  */
 
-static DEFINITION *
+static struct funct_defn *
 collect_funlike_expansion (pfile, list, arglist, replacement)
      cpp_reader *pfile;
      cpp_toklist *list;
      struct arglist *arglist;
      unsigned int replacement;
 {
-  DEFINITION *defn;
+  struct funct_defn *defn;
   struct reflist *pat = 0, *endpat = 0;
   enum cpp_ttype token;
   unsigned int start, last;
@@ -694,7 +720,7 @@ collect_funlike_expansion (pfile, list, arglist, replacement)
   memcpy (exp, pfile->token_buffer + start, len);
   exp[len] = '\0';
 
-  defn = (DEFINITION *) xmalloc (sizeof (DEFINITION));
+  defn = (struct funct_defn *) xmalloc (sizeof (struct funct_defn));
   defn->length = len;
   defn->expansion = exp;
   defn->pattern = pat;
@@ -868,9 +894,9 @@ collect_params (pfile, list, arglist)
   return i + 1;
 }
 
-/* Create a DEFINITION node for a macro.  The replacement text
-   (including formal parameters if present) is in LIST.  If FUNLIKE is
-   true, this is a function-like macro.  */
+/* Create a definition for a macro.  The replacement text (including
+   formal parameters if present) is in LIST.  If FUNLIKE is true, this
+   is a function-like macro.  */
 
 int
 _cpp_create_definition (pfile, list, hp)
@@ -878,41 +904,29 @@ _cpp_create_definition (pfile, list, hp)
      cpp_toklist *list;
      HASHNODE *hp;
 {
-  DEFINITION *defn = 0;
-  U_CHAR *cpval = 0;
+  struct funct_defn *fdefn = 0;
+  struct object_defn *odefn = 0;
   enum node_type ntype;
   int ok;
 
   /* Special-case a few simple and common idioms:
      #define TOKEN   // nothing
      #define TOKEN TOKEN
-     #define TOKEN OTHERTOKEN
 
      Might also be good to special-case these:
 
      #define FUNC()  // nothing
      #define FUNC(a, b, ...) // nothing
-     #define FUNC(a, b, c) FUNC(a, b, c)
-     #define FUNC(a, b, c) foobar(a, b, c)  */
+     #define FUNC(a, b, c) FUNC(a, b, c)  */
 
   if (list->tokens_used == 2)
     ntype = T_EMPTY;    /* Empty definition of object-like macro.  */
-  else if (list->tokens_used == 3 && list->tokens[1].type == CPP_NAME)
-    {
-      if (list->tokens[0].val.name.len == list->tokens[1].val.name.len
-	  && !strncmp (list->tokens[0].val.name.offset + list->namebuf,
-		       list->tokens[1].val.name.offset + list->namebuf,
-		       list->tokens[0].val.name.len))
-	ntype = T_IDENTITY;
-      else
-	{
-	  ntype = T_MCONST;
-	  cpval = xmalloc (list->tokens[1].val.name.len + 1);
-	  memcpy (cpval, list->tokens[1].val.name.offset + list->namebuf,
-		  list->tokens[1].val.name.len);
-	  cpval[list->tokens[1].val.name.len] = '\0';
-	}
-    }
+  else if (list->tokens_used == 3 && list->tokens[1].type == CPP_NAME
+	   && list->tokens[0].val.name.len == list->tokens[1].val.name.len
+	   && !strncmp (list->tokens[0].val.name.offset + list->namebuf,
+			list->tokens[1].val.name.offset + list->namebuf,
+			list->tokens[0].val.name.len))
+    ntype = T_IDENTITY;  /* Object like macro defined to itself.  */
 
   /* The macro is function-like only if the next character,
      with no intervening whitespace, is '('.  */
@@ -925,8 +939,8 @@ _cpp_create_definition (pfile, list, hp)
       replacement = collect_params (pfile, list, &args);
       if (replacement == 0)
 	return 0;
-      defn = collect_funlike_expansion (pfile, list, &args, replacement);
-      if (defn == 0)
+      fdefn = collect_funlike_expansion (pfile, list, &args, replacement);
+      if (fdefn == 0)
 	return 0;
 
       ntype = T_FMACRO;
@@ -941,11 +955,18 @@ _cpp_create_definition (pfile, list, hp)
 		     "The C standard requires whitespace after #define %s",
 		     hp->name);
 
-      defn = collect_objlike_expansion (pfile, list);
-      if (defn == 0)
+      odefn = collect_objlike_expansion (pfile, list);
+      if (odefn == 0)
 	return 0;
 
       ntype = T_MACRO;
+    }
+
+  if (ntype == T_EMPTY || ntype == T_IDENTITY)
+    {
+      odefn = xmalloc (sizeof (struct object_defn));
+      odefn->length = 0;
+      odefn->expansion = 0;
     }
 
   /* Check for a redefinition, and its legality.  Redefining a macro
@@ -958,15 +979,19 @@ _cpp_create_definition (pfile, list, hp)
     case T_VOID:  ok = 1; break;
     default:	  ok = 0; break;
 
-    case T_MACRO: case T_FMACRO:
-      ok = (ntype == hp->type && !compare_defs (pfile, defn, hp->value.defn));
+    case T_MACRO:
+      ok = (ntype == hp->type
+	    && odefn->length == hp->value.odefn->length
+	    && !strncmp (odefn->expansion, hp->value.odefn->expansion,
+			 odefn->length));
+      break;
+    case T_FMACRO:
+      ok = (ntype == hp->type
+	    && !compare_defs (pfile, fdefn, hp->value.fdefn));
       break;
     case T_IDENTITY:
     case T_EMPTY:
       ok = (ntype == hp->type);
-      break;
-    case T_MCONST:
-      ok = (ntype == hp->type && !strcmp (cpval, hp->value.cpval));
       break;
     case T_CONST:
     case T_XCONST:
@@ -979,23 +1004,45 @@ _cpp_create_definition (pfile, list, hp)
     {
       cpp_pedwarn (pfile, "\"%s\" redefined", hp->name);
       if (pfile->done_initializing)
-	cpp_pedwarn_with_file_and_line (pfile, hp->file, hp->line, hp->col,
+	{
+	  const char *file;
+	  unsigned int line, col;
+	  if (hp->type == T_FMACRO)
+	    {
+	      file = hp->value.fdefn->file;
+	      line = hp->value.fdefn->line;
+	      col  = hp->value.fdefn->col;
+	    }
+	  else
+	    {
+	      file = hp->value.odefn->file;
+	      line = hp->value.odefn->line;
+	      col  = hp->value.odefn->col;
+	    }
+	cpp_pedwarn_with_file_and_line (pfile, file, line, col,
 			"this is the location of the previous definition");
+	}
     }
 
   /* And replace the old definition (if any).  */
 
   _cpp_free_definition (hp);
 
-  if (ntype == T_MACRO || ntype == T_FMACRO)
-    hp->value.defn = defn;
-  else
-    hp->value.cpval = cpval;
-
   hp->type = ntype;
-  hp->file = CPP_BUFFER (pfile)->nominal_fname;
-  hp->line = list->line;
-  hp->col  = list->tokens[0].col;
+  if (ntype == T_FMACRO)
+    {
+      fdefn->file = CPP_BUFFER (pfile)->nominal_fname;
+      fdefn->line = list->line;
+      fdefn->col  = list->tokens[0].col;
+      hp->value.fdefn = fdefn;
+    }
+  else
+    {
+      odefn->file = CPP_BUFFER (pfile)->nominal_fname;
+      odefn->line = list->line;
+      odefn->col  = list->tokens[0].col;
+      hp->value.odefn = odefn;
+    }
   return 1;
 }
 
@@ -1227,7 +1274,7 @@ _cpp_macroexpand (pfile, hp)
      cpp_reader *pfile;
      HASHNODE *hp;
 {
-  DEFINITION *defn;
+  const struct funct_defn *defn;
   struct argdata *args;
   unsigned int old_written;
   int i;
@@ -1235,13 +1282,13 @@ _cpp_macroexpand (pfile, hp)
   /* Object like macro - most common case.  */
   if (hp->type == T_MACRO)
     {
-      push_macro_expansion (pfile, hp->value.defn->expansion,
-			    hp->value.defn->length, hp);
+      push_macro_expansion (pfile, hp->value.odefn->expansion,
+			    hp->value.odefn->length, hp);
       return;
     }
 
   /* Or might it be a constant string?  */
-  if (hp->type == T_MCONST || hp->type == T_CONST || hp->type == T_XCONST)
+  if (hp->type == T_CONST || hp->type == T_XCONST)
     {
       const U_CHAR *cpval = hp->value.cpval;
       if (cpval && *cpval != '\0')
@@ -1253,8 +1300,9 @@ _cpp_macroexpand (pfile, hp)
   if (hp->type != T_FMACRO)
     {
       U_CHAR *xbuf;
-      unsigned int len, old_written = CPP_WRITTEN (pfile);
-      
+      unsigned int len;
+
+      old_written = CPP_WRITTEN (pfile);
       special_symbol (pfile, hp);
       len = CPP_WRITTEN (pfile) - old_written;
       CPP_SET_WRITTEN (pfile, old_written);
@@ -1270,7 +1318,7 @@ _cpp_macroexpand (pfile, hp)
 
   /* Okay, it's a full-on function-like macro...  */
   old_written = CPP_WRITTEN (pfile);
-  defn = hp->value.defn;
+  defn = hp->value.fdefn;
 
   args = alloca (MAX (defn->nargs, 1) * sizeof (struct argdata));
   for (i = 0; i < MAX (defn->nargs, 1); i++)
@@ -1301,7 +1349,7 @@ _cpp_macroexpand (pfile, hp)
 static void
 scan_arguments (pfile, defn, args, name)
      cpp_reader *pfile;
-     DEFINITION *defn;
+     const struct funct_defn *defn;
      struct argdata *args;
      const U_CHAR *name;
 {
@@ -1479,13 +1527,13 @@ funlike_macroexpand (pfile, hp, args)
      HASHNODE *hp;
      struct argdata *args;
 {
-  DEFINITION *defn = hp->value.defn;
+  const struct funct_defn *defn = hp->value.fdefn;
   register U_CHAR *xbuf;
   int xbuf_len;
-  U_CHAR *exp = defn->expansion;
+  const U_CHAR *exp = defn->expansion;
   int offset;	/* offset in expansion, copied a piece at a time */
   int totlen;	/* total amount of exp buffer filled so far */
-  struct reflist *ap, *last_ap;
+  const struct reflist *ap, *last_ap;
   int i;
 
   /* Compute length in characters of the macro's expansion.
@@ -1776,20 +1824,20 @@ push_macro_expansion (pfile, xbuf, len, hp)
      foo(foo(baz(0, 0)) in K+R.  This looks pathological to me.
      If someone has a real-world example I would love to see it.  */
   if (hp->type != T_FMACRO
-      || hp->value.defn->nargs == 0
-      || hp->value.defn->pattern == 0
+      || hp->value.fdefn->nargs == 0
+      || hp->value.fdefn->pattern == 0
       || !CPP_TRADITIONAL (pfile))
     hp->disabled = 1;
 }
 
-/* Return zero if two DEFINITIONs are isomorphic.  */
+/* Return zero if two funct_defns are isomorphic.  */
 
 static int
 compare_defs (pfile, d1, d2)
      cpp_reader *pfile;
-     DEFINITION *d1, *d2;
+     const struct funct_defn *d1, *d2;
 {
-  struct reflist *a1, *a2;
+  const struct reflist *a1, *a2;
 
   if (d1->nargs != d2->nargs)
     return 1;
@@ -1842,23 +1890,21 @@ _cpp_dump_definition (pfile, hp)
   if (hp->type == T_EMPTY)
     /* do nothing */;
   else if (hp->type == T_FMACRO)
-    dump_DEFINITION (pfile, hp->value.defn);
+    dump_funlike_macro (pfile, hp->value.fdefn);
   else
     {
       CPP_PUTC_Q (pfile, ' ');
 
       if (hp->type == T_IDENTITY)
 	CPP_PUTS (pfile, hp->name, hp->length);
-      else if (hp->type == T_MCONST)
-	CPP_PUTS (pfile, hp->value.cpval, strlen (hp->value.cpval));
       else if (hp->type == T_MACRO)
 	{
 	  /* The first and last two characters of a macro expansion are
 	     always "\r "; this needs to be trimmed out.
 	     So we need length-4 chars of space, plus one for the NUL.  */
-	  CPP_RESERVE (pfile, hp->value.defn->length - 4 + 1);
-	  CPP_PUTS_Q (pfile, hp->value.defn->expansion + 2,
-		      hp->value.defn->length - 4);
+	  CPP_RESERVE (pfile, hp->value.odefn->length - 4 + 1);
+	  CPP_PUTS_Q (pfile, hp->value.odefn->expansion + 2,
+		      hp->value.odefn->length - 4);
 	}
       else
 	cpp_ice (pfile, "invalid hash type %d in dump_definition", hp->type);
@@ -1868,15 +1914,15 @@ _cpp_dump_definition (pfile, hp)
 }
 
 static void
-dump_DEFINITION (pfile, defn)
+dump_funlike_macro (pfile, defn)
      cpp_reader *pfile;
-     DEFINITION *defn;
+     const struct funct_defn *defn;
 {
-  struct reflist *r;
-  unsigned char **argv = (unsigned char **) alloca (defn->nargs *
-						    sizeof(char *));
+  const struct reflist *r;
+  const U_CHAR **argv = (const U_CHAR **) alloca (defn->nargs *
+						  sizeof(const U_CHAR *));
   int *argl = (int *) alloca (defn->nargs * sizeof(int));
-  unsigned char *x;
+  const U_CHAR *x;
   int i;
 
   /* First extract the argument list. */
