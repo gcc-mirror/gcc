@@ -1,3 +1,10 @@
+1999-05-11  Andrew Haley  <aph@cygnus.com>
+
+        * parse.y (source_end_java_method): If the current method contains
+        any exception handlers, force asynchronous_exceptions: this is
+        necessary because signal handlers in libjava may throw exceptions.
+        * decl.c (end_java_method): Ditto.
+
 1999-05-11  Tom Tromey  <tromey@cygnus.com>
 
 	* Make-lang.in (jvspec.o): Don't define WITH_THREAD_x or WITH_GC_x
