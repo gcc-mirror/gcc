@@ -1293,6 +1293,11 @@ namespace std
 		  __testvalid = false;
 		break;
 	      case money_base::space:
+		// At least one space is required.
+		if (__beg != __end && __ctype.is(ctype_base::space, *__beg))
+		  ++__beg;
+		else
+		  __testvalid = false;
 	      case money_base::none:
 		// Only if not at the end of the pattern.
 		if (__i != 3)
@@ -1372,10 +1377,7 @@ namespace std
 	__beg = _M_extract<true>(__beg, __end, __io, __err, __str);
       else
 	__beg = _M_extract<false>(__beg, __end, __io, __err, __str);
-
-      if (__str.size())
-	std::__convert_to_v(__str.c_str(), __units, __err, _S_get_c_locale());
-
+      std::__convert_to_v(__str.c_str(), __units, __err, _S_get_c_locale());
       return __beg;
     }
 
