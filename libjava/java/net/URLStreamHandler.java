@@ -184,6 +184,29 @@ public abstract class URLStreamHandler
   }
 
   /**
+   * Sets the fields of the URL argument to the indicated values
+   *
+   * @param u The URL to modify
+   * @param protocol The protocol to set
+   * @param host The host name to set
+   * @param port The port number to set
+   * @param authority The authority to set
+   * @param userInfo The user information to set
+   * @param path The path/filename to set
+   * @param query The query part to set
+   * @param ref The reference
+   *
+   * @exception SecurityException If the protocol handler of the URL is
+   * different from this one
+   */
+  protected void setURL(URL u, String protocol, String host, int port,
+			String authority, String userInfo, String path,
+			String query, String ref)
+  {
+    u.set(protocol, host, port, authority, userInfo, path, query, ref);
+  }
+
+  /**
    * Converts an URL of a specific protocol to a string
    *
    * @param u The URL to convert

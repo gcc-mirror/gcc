@@ -89,14 +89,14 @@ java::net::PlainDatagramSocketImpl::bind (jint, java::net::InetAddress *)
 void
 java::net::PlainDatagramSocketImpl::connect (java::net::InetAddress *, jint)
 {
-  throw new java::io::SocketException (
+  throw new SocketException (
     JvNewStringLatin1 ("DatagramSocketImpl.connect: unimplemented"));
 }
 
 void
 java::net::PlainDatagramSocketImpl::disconnect ()
 {
-  throw new java::io::SocketException (
+  throw new SocketException (
     JvNewStringLatin1 ("DatagramSocketImpl.disconnect: unimplemented"));
 }
 
