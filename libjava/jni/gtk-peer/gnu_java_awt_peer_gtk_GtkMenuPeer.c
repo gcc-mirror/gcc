@@ -1,5 +1,5 @@
 /* gtkmenupeer.c -- Native implementation of GtkMenuPeer
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -108,7 +108,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_create
 
   gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_title), menu);
 
-  // Allow this menu to grab the pointer.
+  /* Allow this menu to grab the pointer. */
   GtkWidget *toplevel = gtk_widget_get_toplevel (menu);
   if (GTK_IS_WINDOW (toplevel))
     {

@@ -136,7 +136,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_requestFocus
   ptr = NSA_GET_PTR (env, obj);
   
   gdk_threads_enter ();
-  // gtk_widget_grab_focus (GTK_WIDGET (ptr));
+  /* XXX gtk_widget_grab_focus (GTK_WIDGET (ptr)); */
   gdk_threads_leave ();
 }
 
