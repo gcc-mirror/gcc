@@ -562,10 +562,11 @@ const int x86_decompose_lea = m_PENT4 | m_NOCONA;
 const int x86_shift1 = ~m_486;
 const int x86_arch_always_fancy_math_387 = m_PENT | m_PPRO | m_ATHLON_K8 | m_PENT4 | m_NOCONA;
 const int x86_sse_partial_reg_dependency = m_PENT4 | m_NOCONA | m_PPRO;
-/* Set for machines where the type and dependencies are resolved on SSE register
-   parts instead of whole registers, so we may maintain just lower part of
-   scalar values in proper format leaving the upper part undefined.  */
-const int x86_sse_partial_regs = m_ATHLON_K8;
+/* Set for machines where the type and dependencies are resolved on SSE
+   register parts instead of whole registers, so we may maintain just
+   lower part of scalar values in proper format leaving the upper part
+   undefined.  */
+const int x86_sse_split_regs = m_ATHLON_K8;
 const int x86_sse_typeless_stores = m_ATHLON_K8;
 const int x86_sse_load0_by_pxor = m_PPRO | m_PENT4 | m_NOCONA;
 const int x86_use_ffreep = m_ATHLON_K8;

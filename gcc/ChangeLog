@@ -1,5 +1,14 @@
 2004-12-21  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (x86_sse_split_regs): Rename from
+	x86_sse_partial_regs.
+	* config/i386/i386.h (x86_sse_split_regs): Likewise.
+	(TARGET_SSE_SPLIT_REGS): Rename from TARGET_SSE_PARTIAL_REGS.
+	* config/i386/i386.md (*): Update to match.  Remove two
+	floatsisf splitters that use it.
+
+	* config/i386/i386.h (x86_sse_partial_regs_for_cvtsd2ss): Remove.
+
 	* config/i386/i386.c (x86_sse_partial_regs_for_cvtsd2ss): Remove.
 	* config/i386/i386.h (TARGET_SSE_PARTIAL_REGS_FOR_CVTSD2SS): Remove.
 	* config/i386/i386.md (truncdfsf2_1_sse): Don't test it.
