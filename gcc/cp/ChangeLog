@@ -1,3 +1,55 @@
+2000-09-04  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* cp-tree.def (BOUND_TEMPLATE_TEMPLATE_PARM): New tree code.
+	(TEMPLATE_TEMPLATE_PARM): Adjust comment.
+	* cp-tree.h (TYPE_BINFO): Adjust comment.
+	(TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO): Likewise.
+	(TEMPLATE_TYPE_PARM_INDEX): Likewise.
+	(IS_AGGR_TYPE): Use BOUND_TEMPLATE_TEMPLATE_PARM instead.
+	(TYPE_TEMPLATE_INFO): Likewise.
+	(TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL): Likewise.
+	* class.c (push_nested_class): Likewise.
+	* decl.c (lookup_name_real): Likewise.
+	(grokdeclarator): Likewise.
+	(grok_op_properties): Likewise.
+	(xref_tag): Likewise.
+	(xref_basetypes): Likewise.
+	* decl2.c (constructor_name_full): Likewise.
+	(arg_assoc_template_arg): Add TEMPLATE_TEMPLATE_PARM case.
+	(arg_assoc_type): Use BOUND_TEMPLATE_TEMPLATE_PARM instead.
+	* error.c (dump_type): Split TEMPLATE_TEMPLATE_PARM case.
+	(dump_type_prefix): Add BOUND_TEMPLATE_TEMPLATE_PARM.
+	(dump_type_suffix): Likewise.
+	* init.c (is_aggr_type): Use BOUND_TEMPLATE_TEMPLATE_PARM
+	instead.
+	(get_aggr_from_typedef): Likewise.
+	* mangle.c (write_type): Split TEMPLATE_TEMPLATE_PARM case.
+	(write_expression): Add BOUND_TEMPLATE_TEMPLATE_PARM.
+	(write_template_parm): Likewise.
+	(write_template_template_parm): Check tree code instead of
+	using TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
+	* method.c (build_overload_nested_name): Add 
+	BOUND_TEMPLATE_TEMPLATE_PARM.
+	(process_overload_item): Split TEMPLATE_TEMPLATE_PARM case.
+	* parse.y (bad_parm): Add BOUND_TEMPLATE_TEMPLATE_PARM.
+	* pt.c (convert_template_argument): Check tree code instead of
+	using TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
+	(for_each_template_parm_r): Split TEMPLATE_TEMPLATE_PARM case.
+	(for_each_template_parm): Adjust comment.
+	(tsubst): Add BOUND_TEMPLATE_TEMPLATE_PARM.  Reorganize.
+	(tsubst_copy): Add BOUND_TEMPLATE_TEMPLATE_PARM.
+	(unify): Add BOUND_TEMPLATE_TEMPLATE_PARM.  Reorganize.  Use
+	template_args_equal to compare template template parameter cases.
+	* ptree.c (print_lang_type): Add BOUND_TEMPLATE_TEMPLATE_PARM.
+	* search.c (lookup_field_1): Use BOUND_TEMPLATE_TEMPLATE_PARM
+	instead.
+	* tree.c (copy_template_template_parm): Decide whether to create
+	a TEMPLATE_TEMPLATE_PARM or BOUND_TEMPLATE_TEMPLATE_PARM node.
+	(walk_tree): Add BOUND_TEMPLATE_TEMPLATE_PARM.
+	(copy_tree_r): Likewise.
+	* typeck.c (comptypes): Likewise.  Check tree code instead of
+	using TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
+
 2000-09-04  Mark Elbrecht  <snowball3@bigfoot.com>
 
 	* decl.c (finish_function): Move the code for handling functions

@@ -462,22 +462,21 @@ dump_type (t, flags)
       break;
 
     case TEMPLATE_TEMPLATE_PARM:
-      if (!TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t))
-	{
-	  /* For parameters inside template signature. */
-	  if (TYPE_IDENTIFIER (t))
-	    OB_PUTID (TYPE_IDENTIFIER (t));
-	  else
-	    OB_PUTS ("{anonymous template template parameter}");
-	}
+      /* For parameters inside template signature. */
+      if (TYPE_IDENTIFIER (t))
+	OB_PUTID (TYPE_IDENTIFIER (t));
       else
-	{
-	  tree args = TYPE_TI_ARGS (t);
-	  OB_PUTID (TYPE_IDENTIFIER (t));
-	  OB_PUTC ('<');
-          dump_template_argument_list (args, flags);
-	  OB_END_TEMPLATE_ID ();
-	}
+	OB_PUTS ("{anonymous template template parameter}");
+      break;
+
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
+      {
+	tree args = TYPE_TI_ARGS (t);
+	OB_PUTID (TYPE_IDENTIFIER (t));
+	OB_PUTC ('<');
+        dump_template_argument_list (args, flags);
+	OB_END_TEMPLATE_ID ();
+      }
       break;
 
     case TEMPLATE_TYPE_PARM:
@@ -704,6 +703,7 @@ dump_type_prefix (t, flags)
     case RECORD_TYPE:
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_TEMPLATE_PARM:
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
     case TREE_LIST:
     case TYPE_DECL:
     case TREE_VEC:

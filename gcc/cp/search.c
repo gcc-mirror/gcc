@@ -587,7 +587,7 @@ lookup_field_1 (type, name)
   register tree field;
 
   if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
-      || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
+      || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
     /* The TYPE_FIELDS of a TEMPLATE_TYPE_PARM are not fields at all;
        instead TYPE_FIELDS is the TEMPLATE_PARM_INDEX.  (Miraculously,
        the code often worked even when we treated the index as a list

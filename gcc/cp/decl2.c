@@ -2043,7 +2043,7 @@ constructor_name_full (thing)
      tree thing;
 {
   if (TREE_CODE (thing) == TEMPLATE_TYPE_PARM
-      || TREE_CODE (thing) == TEMPLATE_TEMPLATE_PARM
+      || TREE_CODE (thing) == BOUND_TEMPLATE_TEMPLATE_PARM
       || TREE_CODE (thing) == TYPENAME_TYPE)
     thing = TYPE_NAME (thing);
   else if (IS_AGGR_TYPE_CODE (TREE_CODE (thing)))
@@ -4860,7 +4860,9 @@ arg_assoc_template_arg (k, arg)
      contribute to the set of associated namespaces.  ]  */
 
   /* Consider first template template arguments.  */
-  if (TREE_CODE (arg) == TEMPLATE_DECL)
+  if (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
+    return 0;
+  else if (TREE_CODE (arg) == TEMPLATE_DECL)
     {
       tree ctx = CP_DECL_CONTEXT (arg);
 
@@ -4976,7 +4978,7 @@ arg_assoc_type (k, type)
       /* Associate the return type. */
       return arg_assoc_type (k, TREE_TYPE (type));
     case TEMPLATE_TYPE_PARM:
-    case TEMPLATE_TEMPLATE_PARM:
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
       return 0;
     case TYPENAME_TYPE:
       return 0;

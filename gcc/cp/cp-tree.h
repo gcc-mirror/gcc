@@ -112,8 +112,8 @@ Boston, MA 02111-1307, USA.  */
    TYPE_BINFO
      For an ENUMERAL_TYPE, this is ENUM_TEMPLATE_INFO.
      For a TYPENAME_TYPE, this is TYPENAME_TYPE_FULLNAME.
-     For a TEMPLATE_TEMPLATE_PARM, this is
-     TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
+     For a TEMPLATE_TEMPLATE_PARM or BOUND_TEMPLATE_TEMPLATE_PARM, 
+     this is TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
 
   BINFO_VIRTUALS
      For a binfo, this is a TREE_LIST.  The BV_DELTA of each node
@@ -1241,8 +1241,7 @@ enum languages { lang_c, lang_cplusplus, lang_java };
   (TREE_CODE (t) == TEMPLATE_TYPE_PARM		\
    || TREE_CODE (t) == TYPENAME_TYPE		\
    || TREE_CODE (t) == TYPEOF_TYPE		\
-   || (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM	\
-       && TYPE_TEMPLATE_INFO (t))		\
+   || TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM	\
    || TYPE_LANG_FLAG_5 (t))
 
 /* Set IS_AGGR_TYPE for T to VAL.  T must be a class, struct, or 
@@ -2298,14 +2297,14 @@ struct lang_decl
    non-type template parameters.  */
 #define ENUM_TEMPLATE_INFO(NODE) (TYPE_BINFO (ENUMERAL_TYPE_CHECK (NODE)))
 
-/* Template information for a template template parameter.  */
+/* Template information for a bound template template parameter.  */
 #define TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO(NODE) (TYPE_BINFO (NODE))
 
 /* Template information for an ENUMERAL_, RECORD_, or UNION_TYPE.  */
 #define TYPE_TEMPLATE_INFO(NODE)			\
   (TREE_CODE (NODE) == ENUMERAL_TYPE			\
    ? ENUM_TEMPLATE_INFO (NODE) :			\
-   (TREE_CODE (NODE) == TEMPLATE_TEMPLATE_PARM		\
+   (TREE_CODE (NODE) == BOUND_TEMPLATE_TEMPLATE_PARM	\
     ? TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (NODE) :	\
     (TYPE_LANG_SPECIFIC (NODE)				\
      ? CLASSTYPE_TEMPLATE_INFO (NODE)			\
@@ -3716,8 +3715,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define TEMPLATE_PARM_ORIG_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->orig_level)
 #define TEMPLATE_PARM_DECL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->decl)
 
-/* These macros are for accessing the fields of TEMPLATE_TYPE_PARM 
-   and TEMPLATE_TEMPLATE_PARM nodes.  */
+/* These macros are for accessing the fields of TEMPLATE_TYPE_PARM, 
+   TEMPLATE_TEMPLATE_PARM and BOUND_TEMPLATE_TEMPLATE_PARM nodes.  */
 #define TEMPLATE_TYPE_PARM_INDEX(NODE) (TYPE_FIELDS (NODE))
 #define TEMPLATE_TYPE_IDX(NODE) \
   (TEMPLATE_PARM_IDX (TEMPLATE_TYPE_PARM_INDEX (NODE)))
@@ -3755,7 +3754,7 @@ enum tree_string_flags
 /* Returns the TEMPLATE_DECL associated to a TEMPLATE_TEMPLATE_PARM
    node.  */
 #define TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL(NODE) 	\
-  (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (NODE) 		\
+  ((TREE_CODE (NODE) == BOUND_TEMPLATE_TEMPLATE_PARM)	\
    ? TYPE_TI_TEMPLATE (NODE) 				\
    : TYPE_NAME (NODE))
 

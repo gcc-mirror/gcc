@@ -446,7 +446,8 @@ build_overload_nested_name (decl)
     /* For a template type parameter, we want to output an 'Xn'
        rather than 'T' or some such. */
     if (TREE_CODE (context) == TEMPLATE_TYPE_PARM
-        || TREE_CODE (context) == TEMPLATE_TEMPLATE_PARM)
+        || TREE_CODE (context) == TEMPLATE_TEMPLATE_PARM
+        || TREE_CODE (context) == BOUND_TEMPLATE_TEMPLATE_PARM)
       build_mangled_name_for_type (context);
     else
     {
@@ -1512,26 +1513,23 @@ process_overload_item (parmtype, extra_Gcode)
       OB_PUTC ('?');
       break;
 
-    case TEMPLATE_TEMPLATE_PARM:
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
       /* Find and output the original template parameter 
          declaration. */
-      if (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (parmtype))
-        {
-	  build_mangled_template_parm_index ("tzX",
-					     TEMPLATE_TYPE_PARM_INDEX 
-					     (parmtype));
-          build_template_parm_names
-            (DECL_INNERMOST_TEMPLATE_PARMS (TYPE_TI_TEMPLATE (parmtype)),
-	     TYPE_TI_ARGS (parmtype));
-        }
-      else
-        {
-	  build_mangled_template_parm_index ("ZzX",
-					     TEMPLATE_TYPE_PARM_INDEX 
-					     (parmtype));
-          build_template_template_parm_names
-            (DECL_INNERMOST_TEMPLATE_PARMS (TYPE_STUB_DECL (parmtype)));
-        }
+      build_mangled_template_parm_index ("tzX",
+					 TEMPLATE_TYPE_PARM_INDEX 
+					 (parmtype));
+      build_template_parm_names
+	(DECL_INNERMOST_TEMPLATE_PARMS (TYPE_TI_TEMPLATE (parmtype)),
+	 TYPE_TI_ARGS (parmtype));
+      break;
+
+    case TEMPLATE_TEMPLATE_PARM:
+      build_mangled_template_parm_index ("ZzX",
+					 TEMPLATE_TYPE_PARM_INDEX 
+					 (parmtype));
+      build_template_template_parm_names
+	(DECL_INNERMOST_TEMPLATE_PARMS (TYPE_STUB_DECL (parmtype)));
       break;
 
     case TEMPLATE_TYPE_PARM:

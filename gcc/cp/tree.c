@@ -1176,7 +1176,8 @@ build_exception_variant (type, raises)
   return v;
 }
 
-/* Given a TEMPLATE_TEMPLATE_PARM node T, create a new one together with its 
+/* Given a TEMPLATE_TEMPLATE_PARM or BOUND_TEMPLATE_TEMPLATE_PARM
+   node T, create a new one together with its 
    lang_specific field and its corresponding *_DECL node.
    If NEWARGS is not NULL_TREE, this parameter is bound with new set of
    arguments.  */
@@ -1189,9 +1190,9 @@ copy_template_template_parm (t, newargs)
   tree decl = TYPE_NAME (t);
   tree t2;
 
-  t2 = make_aggr_type (TEMPLATE_TEMPLATE_PARM);
   if (newargs == NULL_TREE)
     {
+      t2 = make_aggr_type (TREE_CODE (t));
       decl = copy_decl (decl);
 
       /* No need to copy these.  */
@@ -1201,6 +1202,7 @@ copy_template_template_parm (t, newargs)
     }
   else
     {
+      t2 = make_aggr_type (BOUND_TEMPLATE_TEMPLATE_PARM);
       decl = build_decl (TYPE_DECL, DECL_NAME (decl), NULL_TREE);
 
       /* These nodes have to be created to reflect new TYPE_DECL and template
@@ -1329,6 +1331,7 @@ walk_tree (tp, func, data)
     case STRING_CST:
     case DEFAULT_ARG:
     case TEMPLATE_TEMPLATE_PARM:
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
     case TEMPLATE_PARM_INDEX:
     case TEMPLATE_TYPE_PARM:
     case REAL_TYPE:
@@ -1581,7 +1584,8 @@ copy_tree_r (tp, walk_subtrees, data)
       if (TREE_CODE (*tp) == SCOPE_STMT)
 	SCOPE_STMT_BLOCK (*tp) = NULL_TREE;
     }
-  else if (code == TEMPLATE_TEMPLATE_PARM)
+  else if (code == TEMPLATE_TEMPLATE_PARM
+	   || code == BOUND_TEMPLATE_TEMPLATE_PARM)
     /* These must be copied specially.  */
     *tp = copy_template_template_parm (*tp, NULL_TREE);
   else if (TREE_CODE_CLASS (code) == 't')
