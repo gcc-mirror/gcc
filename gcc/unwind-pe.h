@@ -108,6 +108,57 @@ base_of_encoded_value (unsigned char encoding, struct _Unwind_Context *context)
 
 #endif
 
+/* Read an unsigned leb128 value from P, store the value in VAL, return
+   P incremented past the value.  We assume that a word is large enough to
+   hold any value so encoded; if it is smaller than a pointer on some target,
+   pointers should not be leb128 encoded on that target.  */
+
+static const unsigned char *
+read_uleb128 (const unsigned char *p, _Unwind_Word *val)
+{
+  unsigned int shift = 0;
+  unsigned char byte;
+  _Unwind_Word result;
+
+  result = 0;
+  do
+    {
+      byte = *p++;
+      result |= (byte & 0x7f) << shift;
+      shift += 7;
+    }
+  while (byte & 0x80);
+
+  *val = result;
+  return p;
+}
+
+/* Similar, but read a signed leb128 value.  */
+
+static const unsigned char *
+read_sleb128 (const unsigned char *p, _Unwind_Sword *val)
+{
+  unsigned int shift = 0;
+  unsigned char byte;
+  _Unwind_Word result;
+
+  result = 0;
+  do
+    {
+      byte = *p++;
+      result |= (byte & 0x7f) << shift;
+      shift += 7;
+    }
+  while (byte & 0x80);
+
+  /* Sign-extend a negative value.  */
+  if (shift < 8 * sizeof(result) && (byte & 0x40) != 0)
+    result |= -(1L << shift);
+
+  *val = (_Unwind_Sword) result;
+  return p;
+}
+
 /* Load an encoded value from memory at P.  The value is returned in VAL;
    The function returns P incremented past the value.  BASE is as given
    by base_of_encoded_value for this encoding in the appropriate context.  */
@@ -148,36 +199,17 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
 
 	case DW_EH_PE_uleb128:
 	  {
-	    unsigned int shift = 0;
-	    unsigned char byte;
-
-	    result = 0;
-	    do
-	      {
-		byte = *p++;
-		result |= (_Unwind_Ptr)(byte & 0x7f) << shift;
-		shift += 7;
-	      }
-	    while (byte & 0x80);
+	    _Unwind_Word tmp;
+	    p = read_uleb128 (p, &tmp);
+	    result = (_Unwind_Ptr)tmp;
 	  }
 	  break;
 
 	case DW_EH_PE_sleb128:
 	  {
-	    unsigned int shift = 0;
-	    unsigned char byte;
-
-	    result = 0;
-	    do
-	      {
-		byte = *p++;
-		result |= (_Unwind_Ptr)(byte & 0x7f) << shift;
-		shift += 7;
-	      }
-	    while (byte & 0x80);
-
-	    if (shift < 8 * sizeof(result) && (byte & 0x40) != 0)
-	      result |= -(1L << shift);
+	    _Unwind_Sword tmp;
+	    p = read_sleb128 (p, &tmp);
+	    result = (_Unwind_Ptr)tmp;
 	  }
 	  break;
 
@@ -239,20 +271,3 @@ read_encoded_value (struct _Unwind_Context *context, unsigned char encoding,
 }
 
 #endif
-
-/* Read an unsigned leb128 value from P, store the value in VAL, return
-   P incremented past the value.  */
-
-static inline const unsigned char *
-read_uleb128 (const unsigned char *p, _Unwind_Ptr *val)
-{
-  return read_encoded_value_with_base (DW_EH_PE_uleb128, 0, p, val);
-}
-
-/* Similar, but read a signed leb128 value.  */
-
-static inline const unsigned char *
-read_sleb128 (const unsigned char *p, _Unwind_Ptr *val)
-{
-  return read_encoded_value_with_base (DW_EH_PE_sleb128, 0, p, val);
-}

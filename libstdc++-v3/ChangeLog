@@ -1,3 +1,8 @@
+2001-08-31  Jason Merrill  <jason_merrill@redhat.com>
+
+	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Simplify
+	leb128 handling.
+
 2001-08-28  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/Makefile.am: Use toplevel_srcdir to refer to src files
