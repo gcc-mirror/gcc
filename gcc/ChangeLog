@@ -1,3 +1,15 @@
+Sun Jul 25 23:44:13 1999  Richard Henderson  <rth@cygnus.com>
+
+	* clipper.h (EXPAND_BUILTIN_SAVEREGS): Remove argument.
+	(BUILD_VA_LIST_TYPE): New.
+	(EXPAND_BUILTIN_VA_START): New.
+	(EXPAND_BUILTIN_VA_ARG): New.
+	* clipper.c (clipper_builtin_saveregs): Only dump registers.
+	Return the address of the save area.
+	(clipper_build_va_list): New.
+	(clipper_va_start): New.
+	(clipper_va_arg): New.
+
 Sun Jul 25 22:56:47 1999  Richard Henderson  <rth@cygnus.com>
 
 	* arc.h (EXPAND_BUILTIN_VA_START): New.

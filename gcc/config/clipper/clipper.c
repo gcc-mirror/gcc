@@ -365,93 +365,56 @@ rev_cond_name (op)
 }
 
 
-/* Do what is necessary for `va_start'.  The argument is ignored;
-   We fill in an initial va_list.  A pointer to this constructor
-   is returned. */
-
+/* Dump the argument register to the stack; return the location
+   of the block.  */
 
 struct rtx_def *
-clipper_builtin_saveregs (arglist)
-     tree arglist;
+clipper_builtin_saveregs ()
 {
-  extern int current_function_varargs;
-  rtx block, addr, argsize, scratch, r0_addr,r1_addr,f0_addr,f1_addr;
+  rtx block, addr, r0_addr, r1_addr, f0_addr, f1_addr, mem;
+  int set = get_varargs_alias_set ();
 
-  /* Allocate the va_list constructor + save area for r0,r1,f0,f1 */
+  /* Allocate the save area for r0,r1,f0,f1 */
 
-  block = assign_stack_local (BLKmode,
-			      (6 + 6) * UNITS_PER_WORD, 2 * BITS_PER_WORD);
+  block = assign_stack_local (BLKmode, 6 * UNITS_PER_WORD, 2 * BITS_PER_WORD);
 
   RTX_UNCHANGING_P (block) = 1;
   RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
 
-  addr = copy_to_reg (XEXP (block, 0));
+  addr = XEXP (block, 0);
 
-  f0_addr =  gen_rtx (PLUS, Pmode, addr, GEN_INT (24));
-  f1_addr =  gen_rtx (PLUS, Pmode, addr, GEN_INT (32));
-  r0_addr =  gen_rtx (PLUS, Pmode, addr, GEN_INT (40));
-  r1_addr =  gen_rtx (PLUS, Pmode, addr, GEN_INT (44));
-
-
-  /* Store float regs  */
-
-  emit_move_insn (gen_rtx (MEM, DFmode, f0_addr), gen_rtx (REG, DFmode, 16));
-  emit_move_insn (gen_rtx (MEM, DFmode, f1_addr), gen_rtx (REG, DFmode, 17));
+  r0_addr = addr;
+  r1_addr = plus_constant (addr, 4);
+  f0_addr = plus_constant (addr, 8);
+  f1_addr = plus_constant (addr, 16);
 
   /* Store int regs  */
 
-  emit_move_insn (gen_rtx (MEM, SImode, r0_addr), gen_rtx (REG, SImode, 0));
-  emit_move_insn (gen_rtx (MEM, SImode, r1_addr), gen_rtx (REG, SImode, 1));
+  mem = gen_rtx_MEM (SImode, r0_addr);
+  MEM_ALIAS_SET (mem) = set;
+  emit_move_insn (mem, gen_rtx_REG (SImode, 0));
 
-  /* Store the arg pointer in the __va_stk member.  */
+  mem = gen_rtx_MEM (SImode, r1_addr);
+  MEM_ALIAS_SET (mem) = set;
+  emit_move_insn (mem, gen_rtx_REG (SImode, 1));
 
-  emit_move_insn (gen_rtx (MEM, SImode, addr),
-		  copy_to_reg (virtual_incoming_args_rtx));
-		  
+  /* Store float regs  */
 
-  /* now move addresses of the saved regs into the pointer array */
+  mem = gen_rtx_MEM (DFmode, f0_addr);
+  MEM_ALIAS_SET (mem) = set;
+  emit_move_insn (mem, gen_rtx_REG (DFmode, 16));
 
-  scratch = gen_reg_rtx (Pmode);
-
-  emit_move_insn (scratch, r0_addr);
-  emit_move_insn (gen_rtx (MEM, SImode,
-			   gen_rtx (PLUS, Pmode, addr,
-				    GEN_INT (4))),
-		  scratch);
-		  
-  emit_move_insn (scratch, f0_addr);
-  emit_move_insn (gen_rtx (MEM, SImode,
-			   gen_rtx (PLUS, Pmode, addr,
-				    GEN_INT (8))),
-		  scratch);
-		  
-  emit_move_insn (scratch, r1_addr);
-  emit_move_insn (gen_rtx (MEM, SImode,
-			   gen_rtx (PLUS, Pmode, addr,
-				    GEN_INT (12))),
-		  scratch);
-		  
-  emit_move_insn (scratch, f1_addr);
-  emit_move_insn (gen_rtx (MEM, SImode,
-			   gen_rtx (PLUS, Pmode, addr,
-				    GEN_INT (16))),
-		  scratch);
-
+  mem = gen_rtx_MEM (DFmode, f1_addr);
+  MEM_ALIAS_SET (mem) = set;
+  emit_move_insn (mem, gen_rtx_REG (DFmode, 17));
 
   if (current_function_check_memory_usage)
     {
       emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-			 addr, ptr_mode,
-			 GEN_INT (5 * GET_MODE_SIZE (SImode)),
-			 TYPE_MODE (sizetype),
-			 GEN_INT (MEMORY_USE_RW),
-			 TYPE_MODE (integer_type_node));
-
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 			 f0_addr, ptr_mode,
 			 GEN_INT (GET_MODE_SIZE (DFmode)),
 			 TYPE_MODE (sizetype),
-			 GEN_INT (MEMORY_USE_RW), 
+			 GEN_INT (MEMORY_USE_RW),
 			 TYPE_MODE (integer_type_node));
       emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 			 f1_addr, ptr_mode,
@@ -473,12 +436,222 @@ clipper_builtin_saveregs (arglist)
 			 TYPE_MODE (integer_type_node));
     }
 
-  /* Return the address of the va_list constructor, but don't put it in a
-     register.  This fails when not optimizing and produces worse code when
-     optimizing.  */
-  return XEXP (block, 0);
+  return addr;
 }
 
+tree
+clipper_build_va_list ()
+{
+  tree record, ap, reg, num;
+
+  /*
+    struct
+    {
+      int __va_ap;		// pointer to stack args
+      void *__va_reg[4];	// pointer to r0,f0,r1,f1
+      int __va_num;		// number of args processed
+    };
+  */
+
+  record = make_node (RECORD_TYPE);
+
+  num = build_decl (FIELD_DECL, get_identifier ("__va_num"),
+		    integer_type_node);
+  DECL_FIELD_CONTEXT (num) = record;
+
+  reg = build_decl (FIELD_DECL, get_identifier ("__va_reg"),
+		    build_array_type (ptr_type_node,
+				      build_index_type (build_int_2 (3, 0))));
+  DECL_FIELD_CONTEXT (reg) = record;
+  TREE_CHAIN (reg) = num;
+
+  ap = build_decl (FIELD_DECL, get_identifier ("__va_ap"),
+		   integer_type_node);
+  DECL_FIELD_CONTEXT (ap) = record;
+  TREE_CHAIN (ap) = reg;
+
+  TYPE_FIELDS (record) = ap;
+  layout_type (record);
+
+  return record;
+}
+
+void
+clipper_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg ATTRIBUTE_UNUSED;
+{
+  tree ap_field, reg_field, num_field;
+  tree t, u, save_area;
+
+  ap_field = TYPE_FIELDS (TREE_TYPE (valist));
+  reg_field = TREE_CHAIN (ap_field);
+  num_field = TREE_CHAIN (reg_field);
+
+  ap_field = build (COMPONENT_REF, TREE_TYPE (ap_field), valist, ap_field);
+  reg_field = build (COMPONENT_REF, TREE_TYPE (reg_field), valist, reg_field);
+  num_field = build (COMPONENT_REF, TREE_TYPE (num_field), valist, num_field);
+
+  /* Call __builtin_saveregs to save r0, r1, f0, and f1 in a block.  */
+
+  save_area = make_tree (integer_type_node, expand_builtin_saveregs ());
+
+  /* Set __va_ap.  */
+
+  t = make_tree (ptr_type_node, virtual_incoming_args_rtx);
+  if (stdarg_p && current_function_args_info.size != 0)
+    t = build (PLUS_EXPR, ptr_type_node, t,
+	       build_int_2 (current_function_args_info.size, 0));
+  t = build (MODIFY_EXPR, TREE_TYPE (ap_field), ap_field, t);
+  TREE_SIZE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* Set the four entries of __va_reg.  */
+
+  t = build1 (NOP_EXPR, ptr_type_node, save_area);
+  u = build (ARRAY_REF, ptr_type_node, reg_field, build_int (0, 0));
+  t = build (MODIFY_EXPR, ptr_type_node, u, t);
+  TREE_SIZE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  t = fold (build (PLUS_EXPR, integer_type_node, save_area,
+		   build_int_2 (8, 0)));
+  t = build1 (NOP_EXPR, ptr_type_node, save_area);
+  u = build (ARRAY_REF, ptr_type_node, reg_field, build_int (1, 0));
+  t = build (MODIFY_EXPR, ptr_type_node, u, t);
+  TREE_SIZE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  t = fold (build (PLUS_EXPR, integer_type_node, save_area,
+		   build_int_2 (4, 0)));
+  t = build1 (NOP_EXPR, ptr_type_node, save_area);
+  u = build (ARRAY_REF, ptr_type_node, reg_field, build_int (2, 0));
+  t = build (MODIFY_EXPR, ptr_type_node, u, t);
+  TREE_SIZE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  t = fold (build (PLUS_EXPR, integer_type_node, save_area,
+		   build_int_2 (16, 0)));
+  t = build1 (NOP_EXPR, ptr_type_node, save_area);
+  u = build (ARRAY_REF, ptr_type_node, reg_field, build_int (3, 0));
+  t = build (MODIFY_EXPR, ptr_type_node, u, t);
+  TREE_SIZE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* Set __va_num.  */
+
+  t = build_int_2 (current_function_args_info.num, 0);
+  t = build (MODIFY_EXPR, TREE_TYPE (num_field), num_field, t);
+  TREE_SIZE_EFFECTS (t) = 1;
+}
+
+rtx
+clipper_va_arg (valist, type)
+     tree valist, type;
+{
+  tree ap_field, reg_field, num_field;
+  tree addr, t;
+  HOST_WIDE_INT align;
+  rtx addr_rtx, over_label = NULL_RTX, tr;
+
+  /*
+    Integers:
+
+    if (VA.__va_num < 2)
+      addr = VA.__va_reg[2 * VA.__va_num];
+    else
+      addr = round(VA.__va_ap), VA.__va_ap = round(VA.__va_ap) + sizeof(TYPE);
+    VA.__va_num++;
+
+    Floats:
+
+    if (VA.__va_num < 2)
+      addr = VA.__va_reg[2 * VA.__va_num + 1];
+    else
+      addr = round(VA.__va_ap), VA.__va_ap = round(VA.__va_ap) + sizeof(TYPE);
+    VA.__va_num++;
+
+    Aggregates:
+
+    addr = round(VA.__va_ap), VA.__va_ap = round(VA.__va_ap) + sizeof(TYPE);
+    VA.__va_num++;
+  */
+
+  ap_field = TYPE_FIELDS (TREE_TYPE (valist));
+  reg_field = TREE_CHAIN (ap_field);
+  num_field = TREE_CHAIN (reg_field);
+
+  ap_field = build (COMPONENT_REF, TREE_TYPE (ap_field), valist, ap_field);
+  reg_field = build (COMPONENT_REF, TREE_TYPE (reg_field), valist, reg_field);
+  num_field = build (COMPONENT_REF, TREE_TYPE (num_field), valist, num_field);
+
+  addr_rtx = gen_reg_rtx (Pmode);
+
+  if (! AGGREGATE_TYPE_P (type))
+    {
+      tree inreg;
+      rtx false_label;
+
+      over_label = gen_label_rtx ();
+      false_label = gen_label_rtx ();
+
+      emit_cmp_and_jump_insns (expand_expr (num_field, NULL_RTX, 0,
+					    OPTAB_LIB_WIDEN),
+			       GEN_INT (2), GE, const0_rtx,
+			       TYPE_MODE (TREE_TYPE (num_field)),
+			       TREE_UNSIGNED (num_field), 0, false_label);
+
+      inreg = fold (build (MULT_EXPR, integer_type_node, num_field,
+			   build_int_2 (2, 0)));
+      if (FLOAT_TYPE_P (type))
+	inreg = fold (build (PLUS_EXPR, integer_type_node, inreg,
+			     build_int_2 (1, 0)));
+      inreg = fold (build (ARRAY_REF, ptr_type_node, reg_field, inreg));
+
+      tr = expand_expr (inreg, addr_rtx, VOIDmode, EXPAND_NORMAL);
+      if (tr != addr_rtx)
+	emit_move_insn (addr_rtx, tr);
+
+      emit_jump_insn (gen_jump (over_label));
+      emit_barrier ();
+      emit_label (false_label);
+    }
+
+  /* Round to alignment of `type', or at least integer alignment.  */
+
+  align = TYPE_ALIGN (type);
+  if (align < TYPE_ALIGN (integer_type_node))
+    align = TYPE_ALIGN (integer_type_node);
+  align /= BITS_PER_UNIT;
+
+  addr = fold (build (PLUS_EXPR, ptr_type_node, ap_field,
+		      build_int_2 (align-1, 0)));
+  addr = fold (build (BIT_AND_EXPR, ptr_type_node, addr,
+		      build_int_2 (-align, -1)));
+  addr = save_expr (addr);
+
+  tr = expand_expr (addr, addr_rtx, Pmode, EXPAND_NORMAL);
+  if (tr != addr_rtx)
+    emit_move_insn (addr_rtx, tr);
+  
+  t = build (MODIFY_EXPR, TREE_TYPE (ap_field), ap_field,
+	     build (PLUS_EXPR, TREE_TYPE (ap_field), 
+		    addr, build_int_2 (int_size_in_bytes (type), 0)));
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  if (over_label)
+    emit_label (over_label);
+
+  t = build (MODIFY_EXPR, TREE_TYPE (num_field), num_field,
+	     build (PLUS_EXPR, TREE_TYPE (num_field), 
+		    num_field, build_int_2 (1, 0)));
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  return addr_rtx;
+}
 
 /* Return truth value of whether OP can be used as an word register
    operand. Reject (SUBREG:SI (REG:SF )) */

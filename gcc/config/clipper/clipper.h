@@ -549,7 +549,7 @@ do									      \
 /* Generate necessary RTL for __builtin_saveregs().
    ARGLIST is the argument list; see expr.c.  */
 
-#define EXPAND_BUILTIN_SAVEREGS(ARGLIST) clipper_builtin_saveregs (ARGLIST)
+#define EXPAND_BUILTIN_SAVEREGS() clipper_builtin_saveregs ()
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
@@ -1123,3 +1123,15 @@ Clipper operand formatting codes:
 #define PREDICATE_CODES \
   {"int_reg_operand", {SUBREG, REG}},	\
   {"fp_reg_operand", {SUBREG, REG}},
+
+/* Define the `__builtin_va_list' type for the ABI.  */
+#define BUILD_VA_LIST_TYPE(VALIST) \
+  (VALIST) = clipper_build_va_list ()
+
+/* Implement `va_start' for varargs and stdarg.  */
+#define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
+  clipper_va_start (stdarg, valist, nextarg)
+
+/* Implement `va_arg'.  */
+#define EXPAND_BUILTIN_VA_ARG(valist, type) \
+  clipper_va_arg (valist, type)
