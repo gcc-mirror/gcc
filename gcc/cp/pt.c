@@ -79,7 +79,7 @@ static int comp_template_args PROTO((tree, tree));
 static int list_eq PROTO((tree, tree));
 static tree get_class_bindings PROTO((tree, tree, tree));
 static tree coerce_template_parms PROTO((tree, tree, tree, int, int, int));
-static tree tsubst_enum	PROTO((tree, tree, int, tree *));
+static tree tsubst_enum	PROTO((tree, tree, tree *));
 static tree add_to_template_args PROTO((tree, tree));
 static int  type_unification_real PROTO((tree, tree *, tree, tree, int*,
 					 int, int, int));
@@ -1901,9 +1901,9 @@ coerce_template_parms (parms, arglist, in_decl,
 	      break;
 	    }
 	  else if (TREE_CODE (TREE_VALUE (parm)) == TYPE_DECL)
-	    arg = tsubst (TREE_PURPOSE (parm), vec, i, in_decl);
+	    arg = tsubst (TREE_PURPOSE (parm), vec, in_decl);
 	  else
-	    arg = tsubst_expr (TREE_PURPOSE (parm), vec, i, in_decl);
+	    arg = tsubst_expr (TREE_PURPOSE (parm), vec, in_decl);
 
 	  TREE_VEC_ELT (vec, i) = arg;
 	}
@@ -2077,8 +2077,7 @@ coerce_template_parms (parms, arglist, in_decl,
 	}
       else
 	{
-	  tree t = tsubst (TREE_TYPE (parm), vec,
-			   TREE_VEC_LENGTH (vec), in_decl);
+	  tree t = tsubst (TREE_TYPE (parm), vec, in_decl);
 
 	  if (processing_template_decl)
 	    arg = maybe_fold_nontype_arg (arg);
@@ -2482,10 +2481,7 @@ lookup_template_class (d1, arglist, in_decl, context)
   else
     {
       tree type_ctx = TYPE_CONTEXT (TREE_TYPE (template));
-      tree args = tsubst (CLASSTYPE_TI_ARGS (type_ctx),
-			  arglist,
-			  TREE_VEC_LENGTH (arglist),
-			  in_decl);
+      tree args = tsubst (CLASSTYPE_TI_ARGS (type_ctx), arglist, in_decl);
       tree ctx = lookup_template_class (type_ctx, args,
 					in_decl, NULL_TREE);
       id = d1;
@@ -2849,19 +2845,15 @@ tsubst_friend_function (decl, args)
 
       template_id
 	= lookup_template_function (tsubst_expr (DECL_TI_TEMPLATE (decl),
-						 args, 
-						 TREE_VEC_LENGTH (args),
-						 NULL_TREE),
+						 args, NULL_TREE),
 				    tsubst (DECL_TI_ARGS (decl),
-					    args,
-					    TREE_VEC_LENGTH (decl),
-					    NULL_TREE));
+					    args, NULL_TREE));
       
       /* Temporarily remove the DECL_TEMPLATE_INFO so as not to
 	 confuse tsubst.  */
       tinfo = DECL_TEMPLATE_INFO (decl);
       DECL_TEMPLATE_INFO (decl) = NULL_TREE;
-      new_friend = tsubst (decl, args, TREE_VEC_LENGTH (args), NULL_TREE);
+      new_friend = tsubst (decl, args, NULL_TREE);
       DECL_TEMPLATE_INFO (decl) = tinfo;
 
       tmpl = determine_specialization (template_id,
@@ -2871,7 +2863,7 @@ tsubst_friend_function (decl, args)
       return instantiate_template (tmpl, new_args);
     }
     else
-      new_friend = tsubst (decl, args, TREE_VEC_LENGTH (args), NULL_TREE);
+      new_friend = tsubst (decl, args, NULL_TREE);
 	
   /* The new_friend will look like an instantiation, to the
      compiler, but is not an instantiation from the point of view of
@@ -3034,8 +3026,7 @@ instantiate_class_template (type)
 	    tree elt;
 
 	    TREE_VEC_ELT (bases, i) = elt
-	      = tsubst (TREE_VEC_ELT (pbases, i), args,
-			TREE_VEC_LENGTH (args), NULL_TREE);
+	      = tsubst (TREE_VEC_ELT (pbases, i), args, NULL_TREE);
 	    BINFO_INHERITANCE_CHAIN (elt) = binfo;
 
 	    if (! IS_AGGR_TYPE (TREE_TYPE (elt)))
@@ -3065,8 +3056,7 @@ instantiate_class_template (type)
       /* These will add themselves to CLASSTYPE_TAGS for the new type.  */
       if (TREE_CODE (tag) == ENUMERAL_TYPE)
 	{
-	  tree newtag =
-	    tsubst_enum (tag, args, TREE_VEC_LENGTH (args), field_chain);
+	  tree newtag = tsubst_enum (tag, args, field_chain);
 
 	  while (*field_chain)
 	    {
@@ -3075,16 +3065,14 @@ instantiate_class_template (type)
 	    }
 	}
       else
-	tsubst (tag, args,
-		TREE_VEC_LENGTH (args), NULL_TREE);
+	tsubst (tag, args, NULL_TREE);
     }
 
   /* Don't replace enum constants here.  */
   for (t = TYPE_FIELDS (pattern); t; t = TREE_CHAIN (t))
     if (TREE_CODE (t) != CONST_DECL)
       {
-	tree r = tsubst (t, args,
-			 TREE_VEC_LENGTH (args), NULL_TREE);
+	tree r = tsubst (t, args, NULL_TREE);
 	if (TREE_CODE (r) == VAR_DECL)
 	  {
 	    if (! uses_template_parms (r))
@@ -3136,9 +3124,7 @@ instantiate_class_template (type)
 	  else
 	    {
 	      TREE_VALUE (DECL_FRIENDLIST (typedecl))
-		= tree_cons (tsubst (TREE_PURPOSE (friends),
-				     args, TREE_VEC_LENGTH (args),
-				     NULL_TREE),
+		= tree_cons (tsubst (TREE_PURPOSE (friends), args, NULL_TREE),
 			     NULL_TREE,
 			     TREE_VALUE (DECL_FRIENDLIST (typedecl)));
 
@@ -3148,8 +3134,7 @@ instantiate_class_template (type)
 
   {
     tree d = CLASSTYPE_FRIEND_CLASSES (type)
-      = tsubst (CLASSTYPE_FRIEND_CLASSES (pattern), args,
-		TREE_VEC_LENGTH (args), NULL_TREE);
+      = tsubst (CLASSTYPE_FRIEND_CLASSES (pattern), args, NULL_TREE);
 
     /* This does injection for friend classes.  */
     for (; d; d = TREE_CHAIN (d))
@@ -3158,8 +3143,7 @@ instantiate_class_template (type)
     /* This does injection for friend functions. */
     if (!processing_template_decl)
       {
-	d = tsubst (DECL_TEMPLATE_INJECT (template), args,
-		TREE_VEC_LENGTH (args), NULL_TREE);
+	d = tsubst (DECL_TEMPLATE_INJECT (template), args, NULL_TREE);
 
 	for (; d; d = TREE_CHAIN (d))
 	  {
@@ -3284,16 +3268,15 @@ innermost_args (args, is_spec)
 }
 
 /* Take the tree structure T and replace template parameters used therein
-   with the argument vector ARGS.  NARGS is the number of args; should
-   be removed.  IN_DECL is an associated decl for diagnostics.
+   with the argument vector ARGS.  IN_DECL is an associated decl for
+   diagnostics.
 
    tsubst is used for dealing with types, decls and the like; for
    expressions, use tsubst_expr or tsubst_copy.  */
 
 tree
-tsubst (t, args, nargs, in_decl)
+tsubst (t, args, in_decl)
      tree t, args;
-     int nargs;
      tree in_decl;
 {
   tree type;
@@ -3310,7 +3293,7 @@ tsubst (t, args, nargs, in_decl)
   if (type && TREE_CODE (t) != FUNCTION_DECL
       && TREE_CODE (t) != TYPENAME_TYPE
       && TREE_CODE (t) != TEMPLATE_DECL)
-    type = tsubst (type, args, nargs, in_decl);
+    type = tsubst (type, args, in_decl);
 
   switch (TREE_CODE (t))
     {
@@ -3318,7 +3301,7 @@ tsubst (t, args, nargs, in_decl)
       if (TYPE_PTRMEMFUNC_P (t))
 	{
 	  tree r = build_ptrmemfunc_type
-	    (tsubst (TYPE_PTRMEMFUNC_FN_TYPE (t), args, nargs, in_decl));
+	    (tsubst (TYPE_PTRMEMFUNC_FN_TYPE (t), args, in_decl));
 	  return cp_build_type_variant (r, TYPE_READONLY (t),
 					TYPE_VOLATILE (t));
 	}
@@ -3327,13 +3310,13 @@ tsubst (t, args, nargs, in_decl)
     case UNION_TYPE:
       if (uses_template_parms (t))
 	{
-	  tree argvec = tsubst (CLASSTYPE_TI_ARGS (t), args, nargs, in_decl);
+	  tree argvec = tsubst (CLASSTYPE_TI_ARGS (t), args, in_decl);
 	  tree context;
 	  tree r;
 
 	  context = 
 	    TYPE_CONTEXT (t) 
-	    ? tsubst (TYPE_CONTEXT (t), args, nargs, in_decl) : NULL_TREE;
+	    ? tsubst (TYPE_CONTEXT (t), args, in_decl) : NULL_TREE;
 
 	  r = lookup_template_class (t, argvec, in_decl, context);
 
@@ -3356,7 +3339,7 @@ tsubst (t, args, nargs, in_decl)
 
     case ENUMERAL_TYPE:
       {
-	tree ctx = tsubst (TYPE_CONTEXT (t), args, nargs, in_decl);
+	tree ctx = tsubst (TYPE_CONTEXT (t), args, in_decl);
 	if (ctx == NULL_TREE)
 	  return t;
 	else if (ctx == current_function_decl)
@@ -3375,7 +3358,7 @@ tsubst (t, args, nargs, in_decl)
 
       {
 	tree max = TREE_OPERAND (TYPE_MAX_VALUE (t), 0);
-	max = tsubst_expr (max, args, nargs, in_decl);
+	max = tsubst_expr (max, args, in_decl);
 	if (processing_template_decl)
 	  {
 	    tree itype = make_node (INTEGER_TYPE);
@@ -3435,7 +3418,7 @@ tsubst (t, args, nargs, in_decl)
 			/* We are processing a type constructed from
 			   a template template parameter */
 			tree argvec = tsubst (CLASSTYPE_TI_ARGS (t),
-					      args, nargs, in_decl);
+					      args, in_decl);
 			tree r;
 
 			/* We can get a TEMPLATE_TEMPLATE_PARM here when 
@@ -3531,11 +3514,11 @@ tsubst (t, args, nargs, in_decl)
 	DECL_CHAIN (tmpl) = NULL_TREE;
 	TREE_CHAIN (tmpl) = NULL_TREE;
 	DECL_CONTEXT (tmpl) = tsubst (DECL_CONTEXT (t),
-				      args, nargs, in_decl);
+				      args, in_decl);
 	DECL_CLASS_CONTEXT (tmpl) = tsubst (DECL_CLASS_CONTEXT (t),
-					    args, nargs, in_decl);
+					    args, in_decl);
 	DECL_TEMPLATE_INFO (tmpl) = build_tree_list (t, args);
-	new_decl = tsubst (decl, args, nargs, in_decl);
+	new_decl = tsubst (decl, args, in_decl);
 	DECL_RESULT (tmpl) = new_decl;
 	DECL_TI_TEMPLATE (new_decl) = tmpl;
 	TREE_TYPE (tmpl) = TREE_TYPE (new_decl);
@@ -3563,10 +3546,8 @@ tsubst (t, args, nargs, in_decl)
 		  TREE_VALUE (TREE_VEC_ELT (TREE_VALUE (parms), i));
 		  
 		TREE_VEC_ELT (new_vec, i)
-		  = build_tree_list (tsubst (default_value, args,
-					     nargs, in_decl),
-				     tsubst (parm_decl, args, nargs,
-					     in_decl));
+		  = build_tree_list (tsubst (default_value, args, in_decl),
+				     tsubst (parm_decl, args, in_decl));
 		  
 	      }
 
@@ -3624,9 +3605,9 @@ tsubst (t, args, nargs, in_decl)
 		 no concern to us.  */
 	      continue;
 
-	    spec_args = tsubst (DECL_TI_ARGS (fn), args, nargs,
+	    spec_args = tsubst (DECL_TI_ARGS (fn), args,
 				in_decl); 
-	    new_fn = tsubst (DECL_RESULT (fn), args, nargs,
+	    new_fn = tsubst (DECL_RESULT (fn), args,
 			     in_decl); 
 	    DECL_TEMPLATE_SPECIALIZATIONS (tmpl) = 
 	      perm_tree_cons (spec_args, new_fn, 
@@ -3654,14 +3635,14 @@ tsubst (t, args, nargs, in_decl)
 	      member = 2;
 	    else
 	      member = 1;
-	    ctx = tsubst (DECL_CLASS_CONTEXT (t), args, nargs, t);
-	    type = tsubst (type, args, nargs, in_decl);
+	    ctx = tsubst (DECL_CLASS_CONTEXT (t), args, t);
+	    type = tsubst (type, args, in_decl);
 	  }
 	else
 	  {
 	    member = 0;
 	    ctx = NULL_TREE;
-	    type = tsubst (type, args, nargs, in_decl);
+	    type = tsubst (type, args, in_decl);
 	  }
 
 	/* If we are instantiating a specialization, get the other args.  */
@@ -3672,7 +3653,7 @@ tsubst (t, args, nargs, in_decl)
 	    tmpl = DECL_TI_TEMPLATE (t);
 
 	    /* Start by getting the innermost args.  */
-	    argvec = tsubst (DECL_TI_ARGS (t), args, nargs, in_decl);
+	    argvec = tsubst (DECL_TI_ARGS (t), args, in_decl);
 
 	    /* If tmpl is an instantiation of a member template, tack on
 	       the args for the enclosing class.  NOTE: this will change
@@ -3707,7 +3688,7 @@ tsubst (t, args, nargs, in_decl)
 	TREE_TYPE (r) = type;
 
 	DECL_CONTEXT (r)
-	  = tsubst (DECL_CONTEXT (t), args, nargs, t);
+	  = tsubst (DECL_CONTEXT (t), args, t);
 	DECL_CLASS_CONTEXT (r) = ctx;
 
 	if (member && !strncmp (OPERATOR_TYPENAME_FORMAT,
@@ -3822,7 +3803,7 @@ tsubst (t, args, nargs, in_decl)
 	DECL_RTL (r) = 0;
 	make_decl_rtl (r, NULL_PTR, 1);
 
-	DECL_ARGUMENTS (r) = tsubst (DECL_ARGUMENTS (t), args, nargs, t);
+	DECL_ARGUMENTS (r) = tsubst (DECL_ARGUMENTS (t), args, t);
 	DECL_MAIN_VARIANT (r) = r;
 	DECL_RESULT (r) = NULL_TREE;
 	DECL_INITIAL (r) = NULL_TREE;
@@ -3910,7 +3891,7 @@ tsubst (t, args, nargs, in_decl)
 	  DECL_ARG_TYPE (r) = integer_type_node;
 #endif
 	if (TREE_CHAIN (t))
-	  TREE_CHAIN (r) = tsubst (TREE_CHAIN (t), args, nargs, TREE_CHAIN (t));
+	  TREE_CHAIN (r) = tsubst (TREE_CHAIN (t), args, TREE_CHAIN (t));
 	return r;
       }
 
@@ -3920,9 +3901,9 @@ tsubst (t, args, nargs, in_decl)
 	TREE_TYPE (r) = type;
 	copy_lang_decl (r);
 #if 0
-	DECL_FIELD_CONTEXT (r) = tsubst (DECL_FIELD_CONTEXT (t), args, nargs, in_decl);
+	DECL_FIELD_CONTEXT (r) = tsubst (DECL_FIELD_CONTEXT (t), args, in_decl);
 #endif
-	DECL_INITIAL (r) = tsubst_expr (DECL_INITIAL (t), args, nargs, in_decl);
+	DECL_INITIAL (r) = tsubst_expr (DECL_INITIAL (t), args, in_decl);
 	TREE_CHAIN (r) = NULL_TREE;
 	return r;
       }
@@ -3931,7 +3912,7 @@ tsubst (t, args, nargs, in_decl)
       {
 	tree r = copy_node (t);
 	DECL_INITIAL (r)
-	  = tsubst_copy (DECL_INITIAL (t), args, nargs, in_decl);
+	  = tsubst_copy (DECL_INITIAL (t), args, in_decl);
 	TREE_CHAIN (r) = NULL_TREE;
 	return r;
       }
@@ -3939,7 +3920,7 @@ tsubst (t, args, nargs, in_decl)
     case VAR_DECL:
       {
 	tree r;
-	tree ctx = tsubst_copy (DECL_CONTEXT (t), args, nargs, in_decl);
+	tree ctx = tsubst_copy (DECL_CONTEXT (t), args, in_decl);
 
 	/* Do we already have this instantiation?  */
 	if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t))
@@ -3976,7 +3957,7 @@ tsubst (t, args, nargs, in_decl)
 	  {
 	    tree tmpl = DECL_TI_TEMPLATE (t);
 	    tree *declsp = &DECL_TEMPLATE_INSTANTIATIONS (tmpl);
-	    tree argvec = tsubst (DECL_TI_ARGS (t), args, nargs, in_decl);
+	    tree argvec = tsubst (DECL_TI_ARGS (t), args, in_decl);
 
 	    DECL_TEMPLATE_INFO (r) = perm_tree_cons (tmpl, argvec, NULL_TREE);
 	    *declsp = perm_tree_cons (argvec, r, *declsp);
@@ -4012,13 +3993,13 @@ tsubst (t, args, nargs, in_decl)
 
 	purpose = TREE_PURPOSE (t);
 	if (purpose)
-	  purpose = tsubst (purpose, args, nargs, in_decl);
+	  purpose = tsubst (purpose, args, in_decl);
 	value = TREE_VALUE (t);
 	if (value)
-	  value = tsubst (value, args, nargs, in_decl);
+	  value = tsubst (value, args, in_decl);
 	chain = TREE_CHAIN (t);
 	if (chain && chain != void_type_node)
-	  chain = tsubst (chain, args, nargs, in_decl);
+	  chain = tsubst (chain, args, in_decl);
 	if (purpose == TREE_PURPOSE (t)
 	    && value == TREE_VALUE (t)
 	    && chain == TREE_CHAIN (t))
@@ -4059,7 +4040,7 @@ tsubst (t, args, nargs, in_decl)
 	for (i = 0; i < len; i++)
 	  {
 	    elts[i] = maybe_fold_nontype_arg
-	      (tsubst_expr (TREE_VEC_ELT (t, i), args, nargs, in_decl));
+	      (tsubst_expr (TREE_VEC_ELT (t, i), args, in_decl));
 
 	    if (elts[i] != TREE_VEC_ELT (t, i))
 	      need_new = 1;
@@ -4122,7 +4103,7 @@ tsubst (t, args, nargs, in_decl)
       }
     case OFFSET_TYPE:
       return build_offset_type
-	(tsubst (TYPE_OFFSET_BASETYPE (t), args, nargs, in_decl), type);
+	(tsubst (TYPE_OFFSET_BASETYPE (t), args, in_decl), type);
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       {
@@ -4143,7 +4124,7 @@ tsubst (t, args, nargs, in_decl)
 		 values = TREE_CHAIN (values))
 	      {
 		tree value = TYPE_MAIN_VARIANT (type_decays_to
-		  (tsubst (TREE_VALUE (values), args, nargs, in_decl)));
+		  (tsubst (TREE_VALUE (values), args, in_decl)));
 		/* Don't instantiate default args unless they are used.
 		   Handle it in build_over_call instead.  */
 		tree purpose = TREE_PURPOSE (values);
@@ -4162,7 +4143,7 @@ tsubst (t, args, nargs, in_decl)
 	    values = first;
 	  }
 	if (context)
-	  context = tsubst (context, args, nargs, in_decl);
+	  context = tsubst (context, args, in_decl);
 	/* Could also optimize cases where return value and
 	   values have common elements (e.g., T min(const &T, const T&).  */
 
@@ -4181,7 +4162,7 @@ tsubst (t, args, nargs, in_decl)
 	else if (context == NULL_TREE)
 	  {
 	    tree base = tsubst (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t))),
-				args, nargs, in_decl);
+				args, in_decl);
 	    fntype = build_cplus_method_type (base, type,
 					      TREE_CHAIN (values));
 	  }
@@ -4196,7 +4177,7 @@ tsubst (t, args, nargs, in_decl)
 	    TYPE_MODE (fntype) = TYPE_MODE (t);
 	    if (TYPE_METHOD_BASETYPE (t))
 	      TYPE_METHOD_BASETYPE (fntype) = tsubst (TYPE_METHOD_BASETYPE (t),
-						      args, nargs, in_decl);
+						      args, in_decl);
 	    /* Need to generate hash value.  */
 	    my_friendly_abort (84);
 	  }
@@ -4205,14 +4186,14 @@ tsubst (t, args, nargs, in_decl)
 				     TYPE_VOLATILE (t));
 	if (raises)
 	  {
-	    raises = tsubst (raises, args, nargs, in_decl);
+	    raises = tsubst (raises, args, in_decl);
 	    fntype = build_exception_variant (fntype, raises);
 	  }
 	return fntype;
       }
     case ARRAY_TYPE:
       {
-	tree domain = tsubst (TYPE_DOMAIN (t), args, nargs, in_decl);
+	tree domain = tsubst (TYPE_DOMAIN (t), args, in_decl);
 	tree r;
 	if (type == TREE_TYPE (t) && domain == TYPE_DOMAIN (t))
 	  return t;
@@ -4223,17 +4204,17 @@ tsubst (t, args, nargs, in_decl)
     case PLUS_EXPR:
     case MINUS_EXPR:
       return fold (build (TREE_CODE (t), TREE_TYPE (t),
-			  tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl),
-			  tsubst (TREE_OPERAND (t, 1), args, nargs, in_decl)));
+			  tsubst (TREE_OPERAND (t, 0), args, in_decl),
+			  tsubst (TREE_OPERAND (t, 1), args, in_decl)));
 
     case NEGATE_EXPR:
     case NOP_EXPR:
       return fold (build1 (TREE_CODE (t), TREE_TYPE (t),
-			   tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl)));
+			   tsubst (TREE_OPERAND (t, 0), args, in_decl)));
 
     case TYPENAME_TYPE:
       {
-	tree ctx = tsubst (TYPE_CONTEXT (t), args, nargs, in_decl);
+	tree ctx = tsubst (TYPE_CONTEXT (t), args, in_decl);
 	tree f = make_typename_type (ctx, TYPE_IDENTIFIER (t));
 	return cp_build_type_variant
 	  (f, TYPE_READONLY (f) || TYPE_READONLY (t),
@@ -4242,28 +4223,28 @@ tsubst (t, args, nargs, in_decl)
 
     case INDIRECT_REF:
       return make_pointer_declarator
-	(type, tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl));
+	(type, tsubst (TREE_OPERAND (t, 0), args, in_decl));
       
     case ADDR_EXPR:
       return make_reference_declarator
-	(type, tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl));
+	(type, tsubst (TREE_OPERAND (t, 0), args, in_decl));
 
     case ARRAY_REF:
       return build_parse_node
-	(ARRAY_REF, tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	 tsubst_expr (TREE_OPERAND (t, 1), args, nargs, in_decl));
+	(ARRAY_REF, tsubst (TREE_OPERAND (t, 0), args, in_decl),
+	 tsubst_expr (TREE_OPERAND (t, 1), args, in_decl));
 
     case CALL_EXPR:
       return make_call_declarator
-	(tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	 tsubst (TREE_OPERAND (t, 1), args, nargs, in_decl),
+	(tsubst (TREE_OPERAND (t, 0), args, in_decl),
+	 tsubst (TREE_OPERAND (t, 1), args, in_decl),
 	 TREE_OPERAND (t, 2),
-	 tsubst (TREE_TYPE (t), args, nargs, in_decl));
+	 tsubst (TREE_TYPE (t), args, in_decl));
 
     case SCOPE_REF:
       return build_parse_node
-	(TREE_CODE (t), tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	 tsubst (TREE_OPERAND (t, 1), args, nargs, in_decl));
+	(TREE_CODE (t), tsubst (TREE_OPERAND (t, 0), args, in_decl),
+	 tsubst (TREE_OPERAND (t, 1), args, in_decl));
 
     default:
       sorry ("use of `%s' in template",
@@ -4306,9 +4287,8 @@ do_poplevel ()
    tsubst_expr.  */
 
 tree
-tsubst_copy (t, args, nargs, in_decl)
+tsubst_copy (t, args, in_decl)
      tree t, args;
-     int nargs;
      tree in_decl;
 {
   enum tree_code code;
@@ -4327,7 +4307,7 @@ tsubst_copy (t, args, nargs, in_decl)
     case FIELD_DECL:
       if (DECL_CONTEXT (t))
 	{
-	  tree ctx = tsubst (DECL_CONTEXT (t), args, nargs, in_decl);
+	  tree ctx = tsubst (DECL_CONTEXT (t), args, in_decl);
 	  if (ctx == current_function_decl)
 	    return lookup_name (DECL_NAME (t), 0);
 	  else if (ctx != DECL_CONTEXT (t))
@@ -4338,13 +4318,13 @@ tsubst_copy (t, args, nargs, in_decl)
     case VAR_DECL:
     case FUNCTION_DECL:
       if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t))
-	t = tsubst (t, args, nargs, in_decl);
+	t = tsubst (t, args, in_decl);
       mark_used (t);
       return t;
 
     case TEMPLATE_DECL:
       if (is_member_template (t))
-	return tsubst (t, args, nargs, in_decl);
+	return tsubst (t, args, in_decl);
       else
 	return t;
 
@@ -4359,8 +4339,8 @@ tsubst_copy (t, args, nargs, in_decl)
     case STATIC_CAST_EXPR:
     case DYNAMIC_CAST_EXPR:
       return build1
-	(code, tsubst (TREE_TYPE (t), args, nargs, in_decl),
-	 tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl));
+	(code, tsubst (TREE_TYPE (t), args, in_decl),
+	 tsubst_copy (TREE_OPERAND (t, 0), args, in_decl));
 
     case INDIRECT_REF:
     case PREDECREMENT_EXPR:
@@ -4379,7 +4359,7 @@ tsubst_copy (t, args, nargs, in_decl)
     case TYPEID_EXPR:
       return build1
 	(code, NULL_TREE,
-	 tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl));
+	 tsubst_copy (TREE_OPERAND (t, 0), args, in_decl));
 
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -4418,19 +4398,19 @@ tsubst_copy (t, args, nargs, in_decl)
     case DOTSTAR_EXPR:
     case MEMBER_REF:
       return build_nt
-	(code, tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	 tsubst_copy (TREE_OPERAND (t, 1), args, nargs, in_decl));
+	(code, tsubst_copy (TREE_OPERAND (t, 0), args, in_decl),
+	 tsubst_copy (TREE_OPERAND (t, 1), args, in_decl));
 
     case CALL_EXPR:
       {
 	tree fn = TREE_OPERAND (t, 0);
 	if (is_overloaded_fn (fn))
-	  fn = tsubst_copy (get_first_fn (fn), args, nargs, in_decl);
+	  fn = tsubst_copy (get_first_fn (fn), args, in_decl);
 	else
 	  /* Sometimes FN is a LOOKUP_EXPR.  */
-	  fn = tsubst_copy (fn, args, nargs, in_decl);
+	  fn = tsubst_copy (fn, args, in_decl);
 	return build_nt
-	  (code, fn, tsubst_copy (TREE_OPERAND (t, 1), args, nargs, in_decl),
+	  (code, fn, tsubst_copy (TREE_OPERAND (t, 1), args, in_decl),
 	   NULL_TREE);
       }
 
@@ -4439,23 +4419,23 @@ tsubst_copy (t, args, nargs, in_decl)
 	tree name = TREE_OPERAND (t, 0);
 	if (TREE_CODE (name) == BIT_NOT_EXPR)
 	  {
-	    name = tsubst_copy (TREE_OPERAND (name, 0), args, nargs, in_decl);
+	    name = tsubst_copy (TREE_OPERAND (name, 0), args, in_decl);
 	    name = build1 (BIT_NOT_EXPR, NULL_TREE, TYPE_MAIN_VARIANT (name));
 	  }
 	else if (TREE_CODE (name) == SCOPE_REF
 		 && TREE_CODE (TREE_OPERAND (name, 1)) == BIT_NOT_EXPR)
 	  {
-	    tree base = tsubst_copy (TREE_OPERAND (name, 0), args, nargs, in_decl);
+	    tree base = tsubst_copy (TREE_OPERAND (name, 0), args, in_decl);
 	    name = TREE_OPERAND (name, 1);
-	    name = tsubst_copy (TREE_OPERAND (name, 0), args, nargs, in_decl);
+	    name = tsubst_copy (TREE_OPERAND (name, 0), args, in_decl);
 	    name = build1 (BIT_NOT_EXPR, NULL_TREE, TYPE_MAIN_VARIANT (name));
 	    name = build_nt (SCOPE_REF, base, name);
 	  }
 	else
-	  name = tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl);
+	  name = tsubst_copy (TREE_OPERAND (t, 0), args, in_decl);
 	return build_nt
-	  (code, name, tsubst_copy (TREE_OPERAND (t, 1), args, nargs, in_decl),
-	   tsubst_copy (TREE_OPERAND (t, 2), args, nargs, in_decl),
+	  (code, name, tsubst_copy (TREE_OPERAND (t, 1), args, in_decl),
+	   tsubst_copy (TREE_OPERAND (t, 2), args, in_decl),
 	   NULL_TREE);
       }
 
@@ -4464,9 +4444,9 @@ tsubst_copy (t, args, nargs, in_decl)
     case MODOP_EXPR:
       {
 	tree r = build_nt
-	  (code, tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	   tsubst_copy (TREE_OPERAND (t, 1), args, nargs, in_decl),
-	   tsubst_copy (TREE_OPERAND (t, 2), args, nargs, in_decl));
+	  (code, tsubst_copy (TREE_OPERAND (t, 0), args, in_decl),
+	   tsubst_copy (TREE_OPERAND (t, 1), args, in_decl),
+	   tsubst_copy (TREE_OPERAND (t, 2), args, in_decl));
 
 	if (code == BIND_EXPR && !processing_template_decl)
 	  {
@@ -4477,7 +4457,7 @@ tsubst_copy (t, args, nargs, in_decl)
 	       build_expr_from_tree.  So, we need to expand the
 	       BIND_EXPR here.  */ 
 	    tree rtl_exp = expand_start_stmt_expr();
-	    tsubst_expr (TREE_OPERAND (r, 1), args, nargs, in_decl);
+	    tsubst_expr (TREE_OPERAND (r, 1), args, in_decl);
 	    rtl_exp = expand_end_stmt_expr (rtl_exp);
 	    TREE_SIDE_EFFECTS (rtl_exp) = 1;
 	    return build (BIND_EXPR, TREE_TYPE (rtl_exp), 
@@ -4490,9 +4470,9 @@ tsubst_copy (t, args, nargs, in_decl)
     case NEW_EXPR:
       {
 	tree r = build_nt
-	(code, tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	 tsubst_copy (TREE_OPERAND (t, 1), args, nargs, in_decl),
-	 tsubst_copy (TREE_OPERAND (t, 2), args, nargs, in_decl));
+	(code, tsubst_copy (TREE_OPERAND (t, 0), args, in_decl),
+	 tsubst_copy (TREE_OPERAND (t, 1), args, in_decl),
+	 tsubst_copy (TREE_OPERAND (t, 2), args, in_decl));
 	NEW_EXPR_USE_GLOBAL (r) = NEW_EXPR_USE_GLOBAL (t);
 	return r;
       }
@@ -4500,8 +4480,8 @@ tsubst_copy (t, args, nargs, in_decl)
     case DELETE_EXPR:
       {
 	tree r = build_nt
-	(code, tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	 tsubst_copy (TREE_OPERAND (t, 1), args, nargs, in_decl));
+	(code, tsubst_copy (TREE_OPERAND (t, 0), args, in_decl),
+	 tsubst_copy (TREE_OPERAND (t, 1), args, in_decl));
 	DELETE_EXPR_USE_GLOBAL (r) = DELETE_EXPR_USE_GLOBAL (t);
 	DELETE_EXPR_USE_VEC (r) = DELETE_EXPR_USE_VEC (t);
 	return r;
@@ -4510,13 +4490,13 @@ tsubst_copy (t, args, nargs, in_decl)
     case TEMPLATE_ID_EXPR:
       {
         /* Substituted template arguments */
-	tree targs = tsubst_copy (TREE_OPERAND (t, 1), args, nargs, in_decl);
+	tree targs = tsubst_copy (TREE_OPERAND (t, 1), args, in_decl);
 	tree chain;
 	for (chain = targs; chain; chain = TREE_CHAIN (chain))
 	  TREE_VALUE (chain) = maybe_fold_nontype_arg (TREE_VALUE (chain));
 
 	return lookup_template_function
-	  (tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl), targs);
+	  (tsubst_copy (TREE_OPERAND (t, 0), args, in_decl), targs);
       }
 
     case TREE_LIST:
@@ -4528,13 +4508,13 @@ tsubst_copy (t, args, nargs, in_decl)
 
 	purpose = TREE_PURPOSE (t);
 	if (purpose)
-	  purpose = tsubst_copy (purpose, args, nargs, in_decl);
+	  purpose = tsubst_copy (purpose, args, in_decl);
 	value = TREE_VALUE (t);
 	if (value)
-	  value = tsubst_copy (value, args, nargs, in_decl);
+	  value = tsubst_copy (value, args, in_decl);
 	chain = TREE_CHAIN (t);
 	if (chain && chain != void_type_node)
-	  chain = tsubst_copy (chain, args, nargs, in_decl);
+	  chain = tsubst_copy (chain, args, in_decl);
 	if (purpose == TREE_PURPOSE (t)
 	    && value == TREE_VALUE (t)
 	    && chain == TREE_CHAIN (t))
@@ -4557,19 +4537,19 @@ tsubst_copy (t, args, nargs, in_decl)
     case ARRAY_TYPE:
     case TYPENAME_TYPE:
     case TYPE_DECL:
-      return tsubst (t, args, nargs, in_decl);
+      return tsubst (t, args, in_decl);
 
     case IDENTIFIER_NODE:
       if (IDENTIFIER_TYPENAME_P (t))
 	return build_typename_overload
-	  (tsubst (TREE_TYPE (t), args, nargs, in_decl));
+	  (tsubst (TREE_TYPE (t), args, in_decl));
       else
 	return t;
 
     case CONSTRUCTOR:
       return build
-	(CONSTRUCTOR, tsubst (TREE_TYPE (t), args, nargs, in_decl), NULL_TREE,
-	 tsubst_copy (CONSTRUCTOR_ELTS (t), args, nargs, in_decl));
+	(CONSTRUCTOR, tsubst (TREE_TYPE (t), args, in_decl), NULL_TREE,
+	 tsubst_copy (CONSTRUCTOR_ELTS (t), args, in_decl));
 
     default:
       return t;
@@ -4579,16 +4559,15 @@ tsubst_copy (t, args, nargs, in_decl)
 /* Like tsubst_copy, but also does semantic processing and RTL expansion.  */
 
 tree
-tsubst_expr (t, args, nargs, in_decl)
+tsubst_expr (t, args, in_decl)
      tree t, args;
-     int nargs;
      tree in_decl;
 {
   if (t == NULL_TREE || t == error_mark_node)
     return t;
 
   if (processing_template_decl)
-    return tsubst_copy (t, args, nargs, in_decl);
+    return tsubst_copy (t, args, in_decl);
 
   switch (TREE_CODE (t))
     {
@@ -4596,14 +4575,14 @@ tsubst_expr (t, args, nargs, in_decl)
       lineno = TREE_COMPLEXITY (t);
       emit_line_note (input_filename, lineno);
       c_expand_return
-	(tsubst_expr (TREE_OPERAND (t, 0), args, nargs, in_decl));
+	(tsubst_expr (TREE_OPERAND (t, 0), args, in_decl));
       finish_stmt ();
       break;
 
     case EXPR_STMT:
       lineno = TREE_COMPLEXITY (t);
       emit_line_note (input_filename, lineno);
-      t = tsubst_expr (TREE_OPERAND (t, 0), args, nargs, in_decl);
+      t = tsubst_expr (TREE_OPERAND (t, 0), args, in_decl);
       /* Do default conversion if safe and possibly important,
 	 in case within ({...}).  */
       if ((TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE && lvalue_p (t))
@@ -4622,10 +4601,10 @@ tsubst_expr (t, args, nargs, in_decl)
 	lineno = TREE_COMPLEXITY (t);
 	emit_line_note (input_filename, lineno);
 	dcl = start_decl
-	  (tsubst (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	   tsubst (TREE_OPERAND (t, 1), args, nargs, in_decl),
+	  (tsubst (TREE_OPERAND (t, 0), args, in_decl),
+	   tsubst (TREE_OPERAND (t, 1), args, in_decl),
 	   TREE_OPERAND (t, 2) != 0);
-	init = tsubst_expr (TREE_OPERAND (t, 2), args, nargs, in_decl);
+	init = tsubst_expr (TREE_OPERAND (t, 2), args, in_decl);
 	cp_finish_decl
 	  (dcl, init, NULL_TREE, 1, /*init ? LOOKUP_ONLYCONVERTING :*/ 0);
 	resume_momentary (i);
@@ -4645,26 +4624,26 @@ tsubst_expr (t, args, nargs, in_decl)
 	if (init_scope)
 	  do_pushlevel ();
 	for (tmp = TREE_OPERAND (t, 0); tmp; tmp = TREE_CHAIN (tmp))
-	  tsubst_expr (tmp, args, nargs, in_decl);
+	  tsubst_expr (tmp, args, in_decl);
 	emit_nop ();
 	emit_line_note (input_filename, lineno);
 	expand_start_loop_continue_elsewhere (1); 
 
 	if (cond_scope)
 	  do_pushlevel ();
-	tmp = tsubst_expr (TREE_OPERAND (t, 1), args, nargs, in_decl);
+	tmp = tsubst_expr (TREE_OPERAND (t, 1), args, in_decl);
 	emit_line_note (input_filename, lineno);
 	if (tmp)
 	  expand_exit_loop_if_false (0, condition_conversion (tmp));
 
 	if (! cond_scope)
 	  do_pushlevel ();
-	tsubst_expr (TREE_OPERAND (t, 3), args, nargs, in_decl);
+	tsubst_expr (TREE_OPERAND (t, 3), args, in_decl);
 	do_poplevel ();
 
 	emit_line_note (input_filename, lineno);
 	expand_loop_continue_here ();
-	tmp = tsubst_expr (TREE_OPERAND (t, 2), args, nargs, in_decl);
+	tmp = tsubst_expr (TREE_OPERAND (t, 2), args, in_decl);
 	if (tmp)
 	  cplus_expand_expr_stmt (tmp);
 
@@ -4687,13 +4666,13 @@ tsubst_expr (t, args, nargs, in_decl)
 	cond = TREE_OPERAND (t, 0);
 	if (TREE_CODE (cond) == DECL_STMT)
 	  do_pushlevel ();
-	cond = tsubst_expr (cond, args, nargs, in_decl);
+	cond = tsubst_expr (cond, args, in_decl);
 	emit_line_note (input_filename, lineno);
 	expand_exit_loop_if_false (0, condition_conversion (cond));
 
 	if (TREE_CODE (TREE_OPERAND (t, 0)) != DECL_STMT)
 	  do_pushlevel ();
-	tsubst_expr (TREE_OPERAND (t, 1), args, nargs, in_decl);
+	tsubst_expr (TREE_OPERAND (t, 1), args, in_decl);
 	do_poplevel ();
 
 	expand_end_loop ();
@@ -4710,10 +4689,10 @@ tsubst_expr (t, args, nargs, in_decl)
 	emit_line_note (input_filename, lineno);
 	expand_start_loop_continue_elsewhere (1); 
 
-	tsubst_expr (TREE_OPERAND (t, 0), args, nargs, in_decl);
+	tsubst_expr (TREE_OPERAND (t, 0), args, in_decl);
 	expand_loop_continue_here ();
 
-	cond = tsubst_expr (TREE_OPERAND (t, 1), args, nargs, in_decl);
+	cond = tsubst_expr (TREE_OPERAND (t, 1), args, in_decl);
 	emit_line_note (input_filename, lineno);
 	expand_exit_loop_if_false (0, condition_conversion (cond));
 	expand_end_loop ();
@@ -4731,17 +4710,17 @@ tsubst_expr (t, args, nargs, in_decl)
 	lineno = TREE_COMPLEXITY (t);
 	if (cond_scope)
 	  do_pushlevel ();
-	tmp = tsubst_expr (TREE_OPERAND (t, 0), args, nargs, in_decl);
+	tmp = tsubst_expr (TREE_OPERAND (t, 0), args, in_decl);
 	emit_line_note (input_filename, lineno);
 	expand_start_cond (condition_conversion (tmp), 0);
 	
 	if (tmp = TREE_OPERAND (t, 1), tmp)
-	  tsubst_expr (tmp, args, nargs, in_decl);
+	  tsubst_expr (tmp, args, in_decl);
 
 	if (tmp = TREE_OPERAND (t, 2), tmp)
 	  {
 	    expand_start_else ();
-	    tsubst_expr (tmp, args, nargs, in_decl);
+	    tsubst_expr (tmp, args, in_decl);
 	  }
 
 	expand_end_cond ();
@@ -4763,7 +4742,7 @@ tsubst_expr (t, args, nargs, in_decl)
 	  do_pushlevel ();
 
 	for (; substmt; substmt = TREE_CHAIN (substmt))
-	  tsubst_expr (substmt, args, nargs, in_decl);
+	  tsubst_expr (substmt, args, in_decl);
 
 	if (COMPOUND_STMT_NO_SCOPE (t) == 0)
 	  do_poplevel ();
@@ -4792,13 +4771,13 @@ tsubst_expr (t, args, nargs, in_decl)
 	lineno = TREE_COMPLEXITY (t);
 	if (cond_scope)
 	  do_pushlevel ();
-	val = tsubst_expr (TREE_OPERAND (t, 0), args, nargs, in_decl);
+	val = tsubst_expr (TREE_OPERAND (t, 0), args, in_decl);
 	emit_line_note (input_filename, lineno);
 	c_expand_start_case (val);
 	push_switch ();
 	
 	if (tmp = TREE_OPERAND (t, 1), tmp)
-	  tsubst_expr (tmp, args, nargs, in_decl);
+	  tsubst_expr (tmp, args, in_decl);
 
 	expand_end_case (val);
 	pop_switch ();
@@ -4811,8 +4790,8 @@ tsubst_expr (t, args, nargs, in_decl)
       break;
 
     case CASE_LABEL:
-      do_case (tsubst_expr (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	       tsubst_expr (TREE_OPERAND (t, 1), args, nargs, in_decl));
+      do_case (tsubst_expr (TREE_OPERAND (t, 0), args, in_decl),
+	       tsubst_expr (TREE_OPERAND (t, 1), args, in_decl));
       break;
 
     case LABEL_DECL:
@@ -4833,19 +4812,19 @@ tsubst_expr (t, args, nargs, in_decl)
 	}
       else
 	expand_computed_goto
-	  (tsubst_expr (TREE_OPERAND (t, 0), args, nargs, in_decl));
+	  (tsubst_expr (TREE_OPERAND (t, 0), args, in_decl));
       break;
 
     case TRY_BLOCK:
       lineno = TREE_COMPLEXITY (t);
       emit_line_note (input_filename, lineno);
       expand_start_try_stmts ();
-      tsubst_expr (TREE_OPERAND (t, 0), args, nargs, in_decl);
+      tsubst_expr (TREE_OPERAND (t, 0), args, in_decl);
       expand_start_all_catch ();
       {
 	tree handler = TREE_OPERAND (t, 1);
 	for (; handler; handler = TREE_CHAIN (handler))
-	  tsubst_expr (handler, args, nargs, in_decl);
+	  tsubst_expr (handler, args, in_decl);
       }
       expand_end_all_catch ();
       break;
@@ -4857,12 +4836,12 @@ tsubst_expr (t, args, nargs, in_decl)
 	{
 	  tree d = TREE_OPERAND (t, 0);
 	  expand_start_catch_block
-	    (tsubst (TREE_OPERAND (d, 1), args, nargs, in_decl),
-	     tsubst (TREE_OPERAND (d, 0), args, nargs, in_decl));
+	    (tsubst (TREE_OPERAND (d, 1), args, in_decl),
+	     tsubst (TREE_OPERAND (d, 0), args, in_decl));
 	}
       else
 	expand_start_catch_block (NULL_TREE, NULL_TREE);
-      tsubst_expr (TREE_OPERAND (t, 1), args, nargs, in_decl);
+      tsubst_expr (TREE_OPERAND (t, 1), args, in_decl);
       expand_end_catch_block ();
       do_poplevel ();
       break;
@@ -4871,11 +4850,11 @@ tsubst_expr (t, args, nargs, in_decl)
       lineno = TREE_COMPLEXITY (t);
       t = TREE_TYPE (t);
       if (TREE_CODE (t) == ENUMERAL_TYPE)
-	tsubst_enum (t, args, nargs, NULL);
+	tsubst_enum (t, args, NULL);
       break;
 
     default:
-      return build_expr_from_tree (tsubst_copy (t, args, nargs, in_decl));
+      return build_expr_from_tree (tsubst_copy (t, args, in_decl));
     }
   return NULL_TREE;
 }
@@ -4928,7 +4907,7 @@ instantiate_template (tmpl, targ_ptr)
   targ_ptr = copy_to_permanent (targ_ptr);
 
   /* substitute template parameters */
-  fndecl = tsubst (DECL_RESULT (tmpl), targ_ptr, len, tmpl);
+  fndecl = tsubst (DECL_RESULT (tmpl), targ_ptr, tmpl);
 
   if (flag_external_templates)
     add_pending_template (fndecl);
@@ -5665,10 +5644,7 @@ get_bindings (fn, decl, explicit_args)
   if (i == 0)
     {
       /* Check to see that the resulting return type is also OK.  */
-      tree t = tsubst (TREE_TYPE (TREE_TYPE (fn)),
-		       targs,
-		       DECL_NTPARMS (fn),
-		       NULL_TREE);
+      tree t = tsubst (TREE_TYPE (TREE_TYPE (fn)), targs, NULL_TREE);
 
       if (!comptypes (t, TREE_TYPE (TREE_TYPE (decl)), 1))
 	return NULL_TREE;
@@ -6055,7 +6031,7 @@ instantiate_decl (d)
     {
       pushclass (DECL_CONTEXT (d), 2);
       DECL_INITIAL (d) = tsubst_expr (DECL_INITIAL (code_pattern), args,
-				      TREE_VEC_LENGTH (args), tmpl);
+				      tmpl);
       cp_finish_decl (d, DECL_INITIAL (d), NULL_TREE, 0, LOOKUP_NORMAL);
     }
 
@@ -6105,7 +6081,7 @@ instantiate_decl (d)
   save_ti = DECL_TEMPLATE_INFO (decl_pattern);
   DECL_TEMPLATE_INFO (decl_pattern) = NULL_TREE;
   temp = innermost_args (args, DECL_TEMPLATE_SPECIALIZATION (decl_pattern));
-  td = tsubst (decl_pattern, temp, 0, tmpl);
+  td = tsubst (decl_pattern, temp, tmpl);
   SET_DECL_IMPLICIT_INSTANTIATION (td);
   DECL_TEMPLATE_INFO (decl_pattern) = save_ti;
 
@@ -6114,7 +6090,7 @@ instantiate_decl (d)
     {
       pushclass (DECL_CONTEXT (d), 2);
       DECL_INITIAL (td) = tsubst_expr (DECL_INITIAL (code_pattern), args,
-				       TREE_VEC_LENGTH (args), tmpl);
+				       tmpl);
       popclass (1);
     }
 
@@ -6155,8 +6131,7 @@ instantiate_decl (d)
 	{
 	  store_return_init
 	    (TREE_OPERAND (t, 0),
-	     tsubst_expr (TREE_OPERAND (t, 1), args,
-			  TREE_VEC_LENGTH (args), tmpl));
+	     tsubst_expr (TREE_OPERAND (t, 1), args, tmpl));
 	  t = TREE_CHAIN (t);
 	}
 
@@ -6176,7 +6151,7 @@ instantiate_decl (d)
       keep_next_level ();
 
       my_friendly_assert (TREE_CODE (t) == COMPOUND_STMT, 42);
-      tsubst_expr (t, args, TREE_VEC_LENGTH (args), tmpl);
+      tsubst_expr (t, args, tmpl);
 
       finish_function (lineno, 0, nested);
     }
@@ -6197,13 +6172,12 @@ tsubst_chain (t, argvec)
 {
   if (t)
     {
-      tree first = tsubst (t, argvec,
-			   TREE_VEC_LENGTH (argvec), NULL_TREE);
+      tree first = tsubst (t, argvec, NULL_TREE);
       tree last = first;
 
       for (t = TREE_CHAIN (t); t; t = TREE_CHAIN (t))
 	{
-	  tree x = tsubst (t, argvec, TREE_VEC_LENGTH (argvec), NULL_TREE);
+	  tree x = tsubst (t, argvec, NULL_TREE);
 	  TREE_CHAIN (last) = x;
 	  last = x;
 	}
@@ -6222,10 +6196,8 @@ tsubst_expr_values (t, argvec)
 
   for (; t; t = TREE_CHAIN (t))
     {
-      tree pur = tsubst_copy (TREE_PURPOSE (t), argvec,
-			      TREE_VEC_LENGTH (argvec), NULL_TREE);
-      tree val = tsubst_expr (TREE_VALUE (t), argvec,
-			      TREE_VEC_LENGTH (argvec), NULL_TREE);
+      tree pur = tsubst_copy (TREE_PURPOSE (t), argvec, NULL_TREE);
+      tree val = tsubst_expr (TREE_VALUE (t), argvec, NULL_TREE);
       *p = build_tree_list (pur, val);
       p = &TREE_CHAIN (*p);
     }
@@ -6291,9 +6263,8 @@ add_maybe_template (d, fns)
    tsubst_expr.  */
 
 static tree
-tsubst_enum (tag, args, nargs, field_chain)
+tsubst_enum (tag, args, field_chain)
      tree tag, args;
-     int nargs;
      tree * field_chain;
 {
   extern tree current_local_enum;
@@ -6306,7 +6277,7 @@ tsubst_enum (tag, args, nargs, field_chain)
     {
       tree elt = build_enumerator (TREE_PURPOSE (e),
 				   tsubst_expr (TREE_VALUE (e), args,
-						nargs, NULL_TREE));
+						NULL_TREE));
       TREE_CHAIN (elt) = values;
       values = elt;
     }

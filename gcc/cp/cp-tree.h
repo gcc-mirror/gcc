@@ -2375,9 +2375,9 @@ extern void synthesize_method			PROTO((tree));
 extern tree get_id_2				PROTO((char *, tree));
 
 /* in pt.c */
-extern tree tsubst				PROTO ((tree, tree, int, tree));
-extern tree tsubst_expr				PROTO ((tree, tree, int, tree));
-extern tree tsubst_copy				PROTO ((tree, tree, int, tree));
+extern tree tsubst				PROTO ((tree, tree, tree));
+extern tree tsubst_expr				PROTO ((tree, tree, tree));
+extern tree tsubst_copy				PROTO ((tree, tree, tree));
 extern tree tsubst_chain			PROTO((tree, tree));
 extern void maybe_begin_member_template_processing PROTO((tree));
 extern void maybe_end_member_template_processing PROTO((tree));
