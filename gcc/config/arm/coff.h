@@ -21,8 +21,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "semi.h"
-#include "aout.h"
 
 /* Note - it is important that this definition matches the one in tcoff.h */
 #undef  USER_LABEL_PREFIX

@@ -29,7 +29,5 @@ Boston, MA 02111-1307, USA.  */
 #define MULTILIB_DEFAULTS \
   { "mlittle-endian", "mno-thumb-interwork", "marm" }
 
-#include "coff.h"
-
 #undef  TARGET_VERSION
 #define TARGET_VERSION	fputs (" (XScale/COFF)", stderr);
