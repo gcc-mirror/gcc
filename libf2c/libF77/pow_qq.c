@@ -1,10 +1,6 @@
 #include "f2c.h"
 
-#ifdef KR_headers
-longint pow_qq(ap, bp) longint *ap, *bp;
-#else
 longint pow_qq(longint *ap, longint *bp)
-#endif
 {
 	longint pow, x, n;
 	unsigned long long u;	/* system-dependent */

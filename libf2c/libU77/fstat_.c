@@ -26,17 +26,9 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef KR_headers
-extern integer G77_fnum_0 ();
-
-integer G77_fstat_0 (lunit, statb)
-     integer *lunit;
-     integer statb[13];
-#else
 extern integer G77_fnum_0 (const integer *);
 
 integer G77_fstat_0 (const integer *lunit, integer statb[13])
-#endif
 {
   int err;
   struct stat buf;

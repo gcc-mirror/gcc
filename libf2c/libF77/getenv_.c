@@ -1,12 +1,8 @@
 #include "f2c.h"
 #undef abs
-#ifdef KR_headers
-extern char *F77_aloc(), *getenv();
-#else
 #include <stdlib.h>
 #include <string.h>
 extern char *F77_aloc(ftnlen, char*);
-#endif
 
 /*
  * getenv - f77 subroutine to return environment variables
@@ -20,13 +16,8 @@ extern char *F77_aloc(ftnlen, char*);
  *		if ENV_NAME is not defined
  */
 
-#ifdef KR_headers
- VOID
-G77_getenv_0 (fname, value, flen, vlen) char *value, *fname; ftnlen vlen, flen;
-#else
  void
 G77_getenv_0 (char *fname, char *value, ftnlen flen, ftnlen vlen)
-#endif
 {
 	char buf[256], *ep, *fp;
 	integer i;

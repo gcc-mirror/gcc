@@ -9,11 +9,7 @@
 #endif
 
  integer
-#ifdef KR_headers
-qbit_bits(a, b, len) longint a; integer b, len;
-#else
 qbit_bits(longint a, integer b, integer len)
-#endif
 {
 	/* Assume 2's complement arithmetic */
 
@@ -27,11 +23,7 @@ qbit_bits(longint a, integer b, integer len)
 	}
 
  longint
-#ifdef KR_headers
-qbit_cshift(a, b, len) longint a; integer b, len;
-#else
 qbit_cshift(longint a, integer b, integer len)
-#endif
 {
 	ulongint x, y, z;
 

@@ -6,13 +6,6 @@
 
 static integer memfailure = 3;
 
-#ifdef KR_headers
-extern char *malloc();
-extern void G77_exit_0 ();
-
- char *
-F77_aloc(Len, whence) integer Len; char *whence;
-#else
 #include <stdlib.h>
 #ifdef __cplusplus
 extern "C" {
@@ -24,7 +17,6 @@ extern void G77_exit_0 (integer*);
 
  char *
 F77_aloc(integer Len, char *whence)
-#endif
 {
 	char *rv;
 	unsigned int uLen = (unsigned int) Len;	/* for K&R C */

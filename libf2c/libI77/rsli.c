@@ -24,11 +24,7 @@ static int i_getc(Void)
 	}
 
  static
-#ifdef KR_headers
-int i_ungetc(ch, f) int ch; FILE *f;
-#else
 int i_ungetc(int ch, FILE *f)
-#endif
 {
 	if (--f__recpos == f__svic->icirlen)
 		return '\n';
@@ -39,11 +35,7 @@ int i_ungetc(int ch, FILE *f)
 	}
 
  static void
-#ifdef KR_headers
-c_lir(a) icilist *a;
-#else
 c_lir(icilist *a)
-#endif
 {
 	extern int l_eof;
 	if(f__init != 1) f_init();
@@ -67,11 +59,7 @@ c_lir(icilist *a)
 	}
 
 
-#ifdef KR_headers
-integer s_rsli(a) icilist *a;
-#else
 integer s_rsli(icilist *a)
-#endif
 {
 	f__lioproc = l_read;
 	f__lquit = 0;
@@ -84,13 +72,9 @@ integer s_rsli(icilist *a)
 integer e_rsli(Void)
 { f__init = 1; return 0; }
 
-#ifdef KR_headers
-integer s_rsni(a) icilist *a;
-#else
 extern int x_rsne(cilist*);
 
 integer s_rsni(icilist *a)
-#endif
 {
 	extern int nml_read;
 	integer rv;

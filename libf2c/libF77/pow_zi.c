@@ -1,12 +1,7 @@
 #include "f2c.h"
 
-#ifdef KR_headers
-VOID pow_zi(p, a, b) 	/* p = a**b  */
- doublecomplex *p, *a; integer *b;
-#else
 extern void z_div(doublecomplex*, doublecomplex*, doublecomplex*);
 void pow_zi(doublecomplex *p, doublecomplex *a, integer *b) 	/* p = a**b  */
-#endif
 {
 	integer n;
 	unsigned long u;

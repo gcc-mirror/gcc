@@ -2,11 +2,7 @@
 
 /* compare two strings */
 
-#ifdef KR_headers
-integer s_cmp(a0, b0, la, lb) char *a0, *b0; ftnlen la, lb;
-#else
 integer s_cmp(char *a0, char *b0, ftnlen la, ftnlen lb)
-#endif
 {
 register unsigned char *a, *aend, *b, *bend;
 a = (unsigned char *)a0;

@@ -13,14 +13,10 @@ nl_donewrec(Void)
 	PUT(' ');
 	}
 
-#ifdef KR_headers
-x_wsne(a) cilist *a;
-#else
 #include <string.h>
 
  VOID
 x_wsne(cilist *a)
-#endif
 {
 	Namelist *nl;
 	char *s;

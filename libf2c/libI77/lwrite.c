@@ -14,11 +14,7 @@ donewrec(Void)
 	}
 
  static VOID
-#ifdef KR_headers
-lwrt_I(n) longint n;
-#else
 lwrt_I(longint n)
-#endif
 {
 	char *p;
 	int ndigit, sign;
@@ -33,22 +29,14 @@ lwrt_I(longint n)
 		PUT(*p++);
 }
  static VOID
-#ifdef KR_headers
-lwrt_L(n, len) ftnint n; ftnlen len;
-#else
 lwrt_L(ftnint n, ftnlen len)
-#endif
 {
 	if(f__recpos+LLOGW>=L_len)
 		donewrec();
 	wrt_L((Uint *)&n,LLOGW, len);
 }
  static VOID
-#ifdef KR_headers
-lwrt_A(p,len) char *p; ftnlen len;
-#else
 lwrt_A(char *p, ftnlen len)
-#endif
 {
 	int a;
 	char *p1, *pe;
@@ -89,11 +77,7 @@ lwrt_A(char *p, ftnlen len)
 }
 
  static int
-#ifdef KR_headers
-l_g(buf, n) char *buf; double n;
-#else
 l_g(char *buf, double n)
-#endif
 {
 #ifdef Old_list_output
 	doublereal absn;
@@ -167,17 +151,9 @@ l_g(char *buf, double n)
 	}
 
  static VOID
-#ifdef KR_headers
-l_put(s) register char *s;
-#else
 l_put(register char *s)
-#endif
 {
-#ifdef KR_headers
-	register void (*pn)() = f__putn;
-#else
 	register void (*pn)(int) = f__putn;
-#endif
 	register int c;
 
 	while(c = *s++)
@@ -185,11 +161,7 @@ l_put(register char *s)
 	}
 
  static VOID
-#ifdef KR_headers
-lwrt_F(n) double n;
-#else
 lwrt_F(double n)
-#endif
 {
 	char buf[LEFBL];
 
@@ -198,11 +170,7 @@ lwrt_F(double n)
 	l_put(buf);
 }
  static VOID
-#ifdef KR_headers
-lwrt_C(a,b) double a,b;
-#else
 lwrt_C(double a, double b)
-#endif
 {
 	char *ba, *bb, bufa[LEFBL], bufb[LEFBL];
 	int al, bl;
@@ -231,11 +199,7 @@ lwrt_C(double a, double b)
 	l_put(bb);
 	PUT(')');
 }
-#ifdef KR_headers
-l_write(number,ptr,len,type) ftnint *number,type; char *ptr; ftnlen len;
-#else
 l_write(ftnint *number, char *ptr, ftnlen len, ftnint type)
-#endif
 {
 #define Ptr ((flex *)ptr)
 	int i;

@@ -3,11 +3,7 @@
 #include "lio.h"
 
  integer
-#ifdef KR_headers
-s_wsne(a) cilist *a;
-#else
 s_wsne(cilist *a)
-#endif
 {
 	int n;
 

@@ -6,14 +6,10 @@
 #include <sys/stat.h>
 #endif
 #include "f2c.h"
-#ifdef KR_headers
-extern char *malloc();
-#else
 #undef abs
 #undef min
 #undef max
 #include <stdlib.h>
-#endif
 #include "fio.h"
 #include "fmt.h"	/* for struct syl */
 
@@ -29,17 +25,10 @@ flag f__cplus,f__cblank;
 char *f__fmtbuf;
 int f__fmtlen;
 flag f__external;	/*1 if external io, 0 if internal */
-#ifdef KR_headers
-int (*f__doed)(),(*f__doned)();
-int (*f__doend)(),(*f__donewrec)(),(*f__dorevert)();
-int (*f__getn)();	/* for formatted input */
-void (*f__putn)();	/* for formatted output */
-#else
 int (*f__getn)(void);	/* for formatted input */
 void (*f__putn)(int);	/* for formatted output */
 int (*f__doed)(struct syl*, char*, ftnlen),(*f__doned)(struct syl*);
 int (*f__dorevert)(void),(*f__donewrec)(void),(*f__doend)(void);
-#endif
 flag f__sequential;	/*1 if sequential io, 0 if direct*/
 flag f__formatted;	/*1 if formatted io, 0 if unformatted*/
 FILE *f__cf;	/*current file*/
@@ -87,11 +76,7 @@ char *F_err[] =
 };
 #define MAXERR (sizeof(F_err)/sizeof(char *)+100)
 
-#ifdef KR_headers
-f__canseek(f) FILE *f; /*SYSDEP*/
-#else
 f__canseek(FILE *f) /*SYSDEP*/
-#endif
 {
 #ifdef NON_UNIX_STDIO
 	return !isatty(fileno(f));
@@ -142,11 +127,7 @@ f__canseek(FILE *f) /*SYSDEP*/
 }
 
  void
-#ifdef KR_headers
-f__fatal(n,s) char *s;
-#else
 f__fatal(int n, char *s)
-#endif
 {
 	static int dead = 0;
 
@@ -204,11 +185,7 @@ f_init(Void)
 	p->ufmt=1;
 	p->uwrt=1;
 }
-#ifdef KR_headers
-f__nowreading(x) unit *x;
-#else
 f__nowreading(unit *x)
-#endif
 {
 	off_t loc;
 	int ufmt, urw;
@@ -235,11 +212,7 @@ f__nowreading(unit *x)
 	x->uwrt = 0;
 	return 0;
 }
-#ifdef KR_headers
-f__nowwriting(x) unit *x;
-#else
 f__nowwriting(unit *x)
-#endif
 {
 	off_t loc;
 	int ufmt;
@@ -275,11 +248,7 @@ f__nowwriting(unit *x)
 }
 
  int
-#ifdef KR_headers
-err__fl(f, m, s) int f, m; char *s;
-#else
 err__fl(int f, int m, char *s)
-#endif
 {
 	if (!f)
 		f__fatal(m, s);

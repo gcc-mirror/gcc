@@ -27,18 +27,9 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/stat.h>
 #include "f2c.h"
 
-#ifdef KR_headers
-void g_char ();
-
-integer G77_stat_0 (name, statb, Lname)
-     char *name;
-     integer statb[13];
-     ftnlen Lname;
-#else
 void g_char(const char *a, ftnlen alen, char *b);
 
 integer G77_stat_0 (const char *name, integer statb[13], const ftnlen Lname)
-#endif
 {
   char *buff;
   char *bp, *blast;

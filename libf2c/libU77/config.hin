@@ -33,6 +33,12 @@
 /* Define as the path of the `chmod' program. */
 #undef CHMOD_PATH
 
+/* Define if your gettimeofday takes only one argument. */
+#undef GETTIMEOFDAY_ONE_ARGUMENT
+
+/* Define if your gettimeofday takes a time zome argument. */
+#undef HAVE_TIMEZONE
+
 /* Define if you have the alarm function.  */
 #undef HAVE_ALARM
 
@@ -53,6 +59,9 @@
 
 /* Define if you have the getrusage function.  */
 #undef HAVE_GETRUSAGE
+
+/* Define if you have the gettimeofday function.  */
+#undef HAVE_GETTIMEOFDAY
 
 /* Define if you have the getuid function.  */
 #undef HAVE_GETUID

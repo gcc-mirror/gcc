@@ -40,11 +40,7 @@ xw_rev(Void)
 	return n;
 }
 
-#ifdef KR_headers
-integer s_wsfe(a) cilist *a;	/*start*/
-#else
 integer s_wsfe(cilist *a)	/*start*/
-#endif
 {	int n;
 	if(f__init != 1) f_init();
 	f__init = 3;

@@ -2,12 +2,6 @@
 
 #include "f2c.h"
 
-#ifdef KR_headers
-extern char *F77_aloc();
-
- integer
-G77_system_0 (s, n) register char *s; ftnlen n;
-#else
 #undef abs
 #undef min
 #undef max
@@ -16,7 +10,6 @@ extern char *F77_aloc(ftnlen, char*);
 
  integer
 G77_system_0 (register char *s, ftnlen n)
-#endif
 {
 	char buff0[256], *buff;
 	register char *bp, *blast;

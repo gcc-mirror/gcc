@@ -2,9 +2,6 @@
 #include "f2c.h"
 #include "fio.h"
 #include <string.h>
-#ifdef KR_headers
-integer f_inqu(a) inlist *a;
-#else
 #if defined (MSDOS) && !defined (GO32)
 #undef abs
 #undef min
@@ -12,7 +9,6 @@ integer f_inqu(a) inlist *a;
 #include "io.h"
 #endif
 integer f_inqu(inlist *a)
-#endif
 {	flag byfile;
 	int i, n;
 	unit *p;

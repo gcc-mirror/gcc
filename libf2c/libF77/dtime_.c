@@ -24,11 +24,7 @@
 #endif
 
  double
-#ifdef KR_headers
-dtime_(tarray) float *tarray;
-#else
 dtime_(float *tarray)
-#endif
 {
 #ifdef USE_CLOCK
 #ifndef CLOCKS_PER_SECOND

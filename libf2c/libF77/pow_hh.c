@@ -1,10 +1,6 @@
 #include "f2c.h"
 
-#ifdef KR_headers
-shortint pow_hh(ap, bp) shortint *ap, *bp;
-#else
 shortint pow_hh(shortint *ap, shortint *bp)
-#endif
 {
 	shortint pow, x, n;
 	unsigned u;

@@ -33,12 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include "f2c.h"
 
-#ifdef KR_headers
-/* Subroutine */ int G77_gmtime_0 (xstime, tarray)
-     integer *xstime, tarray[9];
-#else
 /* Subroutine */ int G77_gmtime_0 (const integer * xstime, integer tarray[9])
-#endif
 {
   struct tm *lt;
   time_t stime = *xstime;

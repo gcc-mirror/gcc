@@ -41,14 +41,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* SGI also has character*(*) function getlog() */
 
-#ifdef KR_headers
-extern VOID s_copy ();
-/* Subroutine */ int G77_getlog_0 (str, Lstr)
-     char *str; ftnlen Lstr;
-#else
 extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
 /* Subroutine */ int G77_getlog_0 (char *str, const ftnlen Lstr)
-#endif
 {
   size_t i;
   char *p;

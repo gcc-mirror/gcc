@@ -26,12 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* fixme: bsd, svr1-3 use int, not pid_t */
 
-#ifdef KR_headers
-integer G77_kill_0 (pid, signum)
-     integer *pid, *signum;
-#else
 integer G77_kill_0 (const integer *pid, const integer *signum)
-#endif
 {
 #if defined (HAVE_KILL)
   return kill ((pid_t) *pid, *signum) ? errno : 0;

@@ -3,11 +3,7 @@
 #include <sys/types.h>
 uiolen f__reclen;
 
-#ifdef KR_headers
-do_us(number,ptr,len) ftnint *number; char *ptr; ftnlen len;
-#else
 do_us(ftnint *number, char *ptr, ftnlen len)
-#endif
 {
 	if(f__reading)
 	{
@@ -25,11 +21,7 @@ do_us(ftnint *number, char *ptr, ftnlen len)
 		return(0);
 	}
 }
-#ifdef KR_headers
-integer do_ud(number,ptr,len) ftnint *number; char *ptr; ftnlen len;
-#else
 integer do_ud(ftnint *number, char *ptr, ftnlen len)
-#endif
 {
 	f__recpos += (int)(*number * len);
 	if(f__recpos > f__curunit->url && f__curunit->url!=1)
@@ -37,11 +29,7 @@ integer do_ud(ftnint *number, char *ptr, ftnlen len)
 	if(f__reading)
 	{
 #ifdef Pad_UDread
-#ifdef KR_headers
-	int i;
-#else
 	size_t i;
-#endif
 		if (!(i = fread(ptr,(size_t)len,(size_t)(*number),f__cf))
 		 && !(f__recpos - *number*len))
 			err(f__elist->cierr,EOF,"do_ud");
@@ -57,11 +45,7 @@ integer do_ud(ftnint *number, char *ptr, ftnlen len)
 	(void) fwrite(ptr,(size_t)len,(size_t)(*number),f__cf);
 	return(0);
 }
-#ifdef KR_headers
-integer do_uio(number,ptr,len) ftnint *number; char *ptr; ftnlen len;
-#else
 integer do_uio(ftnint *number, char *ptr, ftnlen len)
-#endif
 {
 	if(f__sequential)
 		return(do_us(number,ptr,len));

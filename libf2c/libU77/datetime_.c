@@ -33,11 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include "f2c.h"
 
-#ifdef KR_headers
-VOID s_copy ();
-#else
 void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
-#endif
 
 int G77_date_and_time_0 (char *date, char *fftime, char *zone,
 			 integer *values, ftnlen date_len,

@@ -37,12 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* libU77 one: */
 
-#ifdef KR_headers
-/* Subroutine */ int G77_idate_0 (iarray)
-     int iarray[3];
-#else
 /* Subroutine */ int G77_idate_0 (int iarray[3])
-#endif
 {
   struct tm *lt;
   time_t tim;

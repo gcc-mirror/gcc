@@ -1,10 +1,6 @@
 #include <stdio.h>
 #include "f2c.h"
 
-#ifdef KR_headers
-extern void f_exit();
-VOID s_stop(s, n) char *s; ftnlen n;
-#else
 #undef abs
 #undef min
 #undef max
@@ -15,7 +11,6 @@ extern "C" {
 void f_exit(void);
 
 int s_stop(char *s, ftnlen n)
-#endif
 {
 int i;
 

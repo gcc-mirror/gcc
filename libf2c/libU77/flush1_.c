@@ -25,16 +25,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* This flushes a single unit, c.f. libI77 version. */
 
-#ifdef KR_headers
-extern integer G77_fnum_0 ();
-
-/* Subroutine */ int G77_flush1_0 (lunit)
-     integer *lunit;
-#else
 extern integer G77_fnum_0 (integer *);
 
 /* Subroutine */ int G77_flush1_0 (const integer *lunit)
-#endif
 {
   if (*lunit>=MXUNIT || *lunit<0)
     err(1,101,"flush");

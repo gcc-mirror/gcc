@@ -5,11 +5,7 @@
 #endif
 
  integer
-#ifdef KR_headers
-lbit_bits(a, b, len) integer a, b, len;
-#else
 lbit_bits(integer a, integer b, integer len)
-#endif
 {
 	/* Assume 2's complement arithmetic */
 
@@ -23,11 +19,7 @@ lbit_bits(integer a, integer b, integer len)
 	}
 
  integer
-#ifdef KR_headers
-lbit_cshift(a, b, len) integer a, b, len;
-#else
 lbit_cshift(integer a, integer b, integer len)
-#endif
 {
 	unsigned long x, y, z;
 

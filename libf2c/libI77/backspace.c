@@ -2,11 +2,7 @@
 #include <sys/types.h>
 #include "f2c.h"
 #include "fio.h"
-#ifdef KR_headers
-integer f_back(a) alist *a;
-#else
 integer f_back(alist *a)
-#endif
 {	unit *b;
 	off_t v, w, x, y, z;
 	uiolen n;

@@ -35,16 +35,9 @@ Boston, MA 02111-1307, USA.  */
 #include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
-#ifdef KR_headers
-extern void s_copy ();
-extern integer G77_fnum_0 ();
-/* Character */ void G77_ttynam_0 (ret_val, ret_val_len, lunit)
-     char *ret_val; ftnlen ret_val_len; integer *lunit
-#else
 extern integer G77_fnum_0 (integer *lunit);
 extern void s_copy(register char *a, register char *b, ftnlen la, ftnlen lb);
 /* Character */ void G77_ttynam_0 (char *ret_val, ftnlen ret_val_len, integer *lunit)
-#endif
 {
 #if defined (HAVE_TTYNAME)
   size_t i;

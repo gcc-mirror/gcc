@@ -43,9 +43,7 @@
 
 typedef union
 {
-#ifndef KR_headers
 	signed
-#endif
 		char	flchar;
 	short	flshort;
 	ftnint	flint;
@@ -56,10 +54,6 @@ typedef union
 	doublereal	fldouble;
 } flex;
 extern int f__scale;
-#ifdef KR_headers
-extern int (*f__lioproc)(), (*l_getc)(), (*l_ungetc)();
-extern int l_read(), l_write();
-#else
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -72,6 +66,5 @@ extern integer e_rsle(void), e_wsle(void), s_wsne(cilist*);
 extern int z_rnew(void);
 #ifdef __cplusplus
 	}
-#endif
 #endif
 extern ftnint L_len;

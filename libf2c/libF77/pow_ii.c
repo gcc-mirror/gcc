@@ -1,10 +1,6 @@
 #include "f2c.h"
 
-#ifdef KR_headers
-integer pow_ii(ap, bp) integer *ap, *bp;
-#else
 integer pow_ii(integer *ap, integer *bp)
-#endif
 {
 	integer pow, x, n;
 	unsigned long u;

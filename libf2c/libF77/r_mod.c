@@ -1,13 +1,5 @@
 #include "f2c.h"
 
-#ifdef KR_headers
-#ifdef IEEE_drem
-double drem();
-#else
-double floor();
-#endif
-double r_mod(x,y) real *x, *y;
-#else
 #ifdef IEEE_drem
 double drem(double, double);
 #else
@@ -15,7 +7,6 @@ double drem(double, double);
 #include <math.h>
 #endif
 double r_mod(real *x, real *y)
-#endif
 {
 #ifdef IEEE_drem
 	double xa, ya, z;

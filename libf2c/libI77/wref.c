@@ -4,22 +4,16 @@
 #include <ctype.h>
 #endif
 
-#ifndef KR_headers
 #undef abs
 #undef min
 #undef max
 #include <stdlib.h>
 #include <string.h>
-#endif
 
 #include "fmt.h"
 #include "fp.h"
 
-#ifdef KR_headers
-wrt_E(p,w,d,e,len) ufloat *p; ftnlen len;
-#else
 wrt_E(ufloat *p, int w, int d, int e, ftnlen len)
-#endif
 {
 	char buf[FMAX+EXPMAXDIGS+4], *s, *se;
 	int d1, delta, e1, i, sign, signspace;
@@ -191,11 +185,7 @@ nogood:
 	return 0;
 	}
 
-#ifdef KR_headers
-wrt_F(p,w,d,len) ufloat *p; ftnlen len;
-#else
 wrt_F(ufloat *p, int w, int d, ftnlen len)
-#endif
 {
 	int d1, sign, n;
 	double x;

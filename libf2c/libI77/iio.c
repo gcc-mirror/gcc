@@ -16,11 +16,7 @@ z_getc(Void)
 }
 
  void
-#ifdef KR_headers
-z_putc(c)
-#else
 z_putc(int c)
-#endif
 {
 	if (f__icptr < f__icend && f__recpos++ < f__svic->icirlen)
 		*f__icptr++ = c;
@@ -41,11 +37,7 @@ z_endp(Void)
 	return 0;
 	}
 
-#ifdef KR_headers
-c_si(a) icilist *a;
-#else
 c_si(icilist *a)
-#endif
 {
 	if (f__init & 2)
 		f__fatal (131, "I/O recursion");
@@ -78,11 +70,7 @@ iw_rev(Void)
 	return(f__workdone=0);
 	}
 
-#ifdef KR_headers
-integer s_rsfi(a) icilist *a;
-#else
 integer s_rsfi(icilist *a)
-#endif
 {	int n;
 	if(n=c_si(a)) return(n);
 	f__reading=1;
@@ -109,11 +97,7 @@ z_wnew(Void)
 	f__icnum++;
 	return 1;
 }
-#ifdef KR_headers
-integer s_wsfi(a) icilist *a;
-#else
 integer s_wsfi(icilist *a)
-#endif
 {	int n;
 	if(n=c_si(a)) return(n);
 	f__reading=0;

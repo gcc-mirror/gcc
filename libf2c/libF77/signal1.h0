@@ -11,11 +11,7 @@
 #define Sigret_t void
 #endif
 #ifndef Sigarg_t
-#ifdef KR_headers
-#define Sigarg_t
-#else
 #define Sigarg_t int
-#endif
 #endif /*Sigarg_t*/
 
 #ifdef USE_SIG_PF	/* compile with -DUSE_SIG_PF under IRIX */

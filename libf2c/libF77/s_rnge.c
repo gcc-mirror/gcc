@@ -3,13 +3,8 @@
 
 /* called when a subscript is out of range */
 
-#ifdef KR_headers
-extern VOID sig_die();
-integer s_rnge(varn, offset, procn, line) char *varn, *procn; ftnint offset, line;
-#else
 extern VOID sig_die(char*,int);
 integer s_rnge(char *varn, ftnint offset, char *procn, ftnint line)
-#endif
 {
 register int i;
 

@@ -4,11 +4,7 @@
 extern uiolen f__reclen;
 off_t f__recloc;
 
-#ifdef KR_headers
-c_sue(a) cilist *a;
-#else
 c_sue(cilist *a)
-#endif
 {
 	f__external=f__sequential=1;
 	f__formatted=0;
@@ -23,11 +19,7 @@ c_sue(cilist *a)
 	if(!f__curunit->useek) err(a->cierr,103,"sue");
 	return(0);
 }
-#ifdef KR_headers
-integer s_rsue(a) cilist *a;
-#else
 integer s_rsue(cilist *a)
-#endif
 {
 	int n;
 	if(f__init != 1) f_init();
@@ -48,11 +40,7 @@ integer s_rsue(cilist *a)
 	}
 	return(0);
 }
-#ifdef KR_headers
-integer s_wsue(a) cilist *a;
-#else
 integer s_wsue(cilist *a)
-#endif
 {
 	int n;
 	if(f__init != 1) f_init();

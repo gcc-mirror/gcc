@@ -1,11 +1,7 @@
 #include "config.h"
 #include "f2c.h"
 #include "fio.h"
-#ifdef KR_headers
-integer f_rew(a) alist *a;
-#else
 integer f_rew(alist *a)
-#endif
 {
 	unit *b;
 	if (f__init & 2)
