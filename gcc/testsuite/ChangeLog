@@ -1,3 +1,7 @@
+2003-07-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/i386-call-1.c: New test.
+
 2003-07-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9162
