@@ -1,3 +1,8 @@
+2005-04-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcj.texi: Fix a typo.
+	* lang.c: Fix a comment typo.
+
 2005-04-01  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gcj.texi (Invoking gij): Add descriptions of new -X options.

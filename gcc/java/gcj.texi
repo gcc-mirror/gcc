@@ -1653,7 +1653,7 @@ java::util::Hashtable *ht = new java::util::Hashtable(120);
 @node Memory allocation
 @section Memory allocation
 
-When allocting memory in @acronym{CNI} methods it is best to handle
+When allocating memory in @acronym{CNI} methods it is best to handle
 out-of-memory conditions by throwing a Java exception.  These
 functions are provided for that purpose:
 
