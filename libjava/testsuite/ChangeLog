@@ -1,3 +1,7 @@
+2002-04-12  Anthony Green  <green@redhat.com>
+
+	* lib/libjava.exp: Use libgcj-VERSION.jar, not libgcj-3.1.jar.
+
 2002-05-14  Release Manager
 
 	* GCC 3.1 Released.
