@@ -15,6 +15,9 @@
 	* tree.h (PHI_ARG_EDGE): Redefine in terms of EDGE_PRED.
 	(phi_arg_d): Remove e.
 
+	* tree-cfg.c (tree_try_redirect_by_replacing_jump): Speed up
+	by restricting to the case with two outgoing edges.
+
 2004-11-23  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_backchain_string): Removed.
