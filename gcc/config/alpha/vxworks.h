@@ -26,10 +26,14 @@ Boston, MA 02111-1307, USA.  */
 %{!mvxsim: %{!mcpu*|mcpu=21064:-DCPU=21064} %{mcpu=21164:-DCPU=21164}} \
 %{posix: -D_POSIX_SOURCE}"
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "\
--D__vxworks -D__alpha_vxworks -Asystem=vxworks \
--Asystem=embedded -D_LONGLONG"
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define ("__vxworks");		\
+	builtin_define ("__alpha_vxworks");	\
+	builtin_define ("_LONGLONG");		\
+	builtin_assert ("system=vxworks");	\
+	builtin_assert ("system=embedded");	\
+    } while (0)
 
 /* VxWorks does all the library stuff itself.  */
 

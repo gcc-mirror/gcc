@@ -1,3 +1,28 @@
+2002-05-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (c-common.o, cppinit.o): Update.
+	* c-common.c: Include except.h.
+	(cb_register_builtins): Handle __USING_SJLJ_EXCEPTIONS__.
+	Call TARGET_CPU_CPP_BUILTINS and TARGET_OS_CPP_BUILTINS.
+	* cppinit.c (__USING_SJLJ_EXCEPTIONS): Not here.
+	* defaults.h (TARGET_OS_CPP_BUILTINS, TARGET_CPU_CPP_BUILTINS,
+	CPP_PREDEFINES): Handle here.
+config:
+	* alpha/alpha-interix.h, alpha/gnu.h, alpha/linux.h,
+	alpha/netbsd.h, alpha/openbsd.h, alpha/osf.h, alpha/unicosmk.h,
+	alpha/vms.h, alpha/vxworks.h: Remove CPP_PREDEFINES, define
+	TARGET_OS_CPP_BUILTINS.
+	* alpha/alpha.h (TARGET_CPU_CPP_BUILTINS): Define.
+	(CPP_SPEC, EXTRA_SPECS): Update.
+	(CPP_AM_BWX_SPEC, CPP_AM_MAX_SPEC, CPP_AM_FIX_SPEC,
+	CPP_AM_CIX_SPEC, CPP_IM_EV4_SPEC, CPP_IM_EV5_SPEC,
+	CPP_IM_EV6_SPEC, CPP_CPU_EV4_SPEC, CPP_CPU_EV5_SPEC,
+	CPP_CPU_EV56_SPEC, CPP_CPU_PCA56_SPEC, CPP_CPU_EV6_SPEC,
+	CPP_CPU_EV67_SPEC, CPP_CPU_DEFAULT_SPEC, CPP_CPU_SPEC): Remove.
+doc:
+	* tm.texi (TARGET_REGISTER_CPP_BUILTINS): Remove.
+	(TARGET_OS_CPP_BUILTINS, TARGET_CPU_CPP_BUILTINS): Define.
+
 2002-05-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* emit-rtl.c (global_rtl): Update comment.

@@ -35,6 +35,18 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #  define TARGET_ESC 033
 #endif
 
+/* When removal of CPP_PREDEFINES is complete, TARGET_CPU_CPP_BULITINS
+   can also be removed from here.  */
+#ifndef TARGET_OS_CPP_BUILTINS
+# define TARGET_OS_CPP_BUILTINS()
+#endif
+#ifndef TARGET_CPU_CPP_BUILTINS
+# define TARGET_CPU_CPP_BUILTINS()
+#endif
+#ifndef CPP_PREDEFINES
+# define CPP_PREDEFINES ""
+#endif
+
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable or function named NAME.
    LABELNO is an integer which is different for each call.  */

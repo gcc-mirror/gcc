@@ -32,9 +32,16 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "\
--Dunix -D__osf__ -D_LONGLONG -DSYSTYPE_BSD \
--D_SYSTYPE_BSD -Asystem=unix -Asystem=xpg4"
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define_std ("unix");		\
+	builtin_define_std ("SYSTYPE_BSD");	\
+	builtin_define ("_SYSTYPE_BSD");	\
+	builtin_define ("__osf__");		\
+	builtin_define ("_LONGLONG");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=xpg4");		\
+    } while (0)
 
 /* Tru64 UNIX V5 requires additional definitions for 16 byte long double
    support.  Empty by default.  */

@@ -20,6 +20,50 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* Target CPU builtins.  */
+#define TARGET_CPU_CPP_BUILTINS()			\
+  do							\
+    {							\
+	builtin_define ("__alpha");			\
+	builtin_define ("__alpha__");			\
+	builtin_assert ("cpu=alpha");			\
+	builtin_assert ("machine=alpha");		\
+	if (TARGET_CIX)					\
+	  {						\
+	    builtin_define ("__alpha_cix__");		\
+	    builtin_assert ("cpu=cix");			\
+	  }						\
+	if (TARGET_FIX)					\
+	  {						\
+	    builtin_define ("__alpha_fix__");		\
+	    builtin_assert ("cpu=fix");			\
+	  }						\
+	if (TARGET_BWX)					\
+	  {						\
+	    builtin_define ("__alpha_bwx__");		\
+	    builtin_assert ("cpu=bwx");			\
+	  }						\
+	if (TARGET_MAX)					\
+	  {						\
+	    builtin_define ("__alpha_max__");		\
+	    builtin_assert ("cpu=max");			\
+	  }						\
+	if (TARGET_CPU_EV6)				\
+	  {						\
+	    builtin_define ("__alpha_ev6__");		\
+	    builtin_assert ("cpu=ev6");			\
+	  }						\
+	else if (TARGET_CPU_EV5)			\
+	  {						\
+	    builtin_define ("__alpha_ev5__");		\
+	    builtin_assert ("cpu=ev5");			\
+	  }						\
+	else	/* Presumably ev4.  */			\
+	  {						\
+	    builtin_define ("__alpha_ev4__");		\
+	    builtin_assert ("cpu=ev4");			\
+	  }						\
+    } while (0)
 
 /* For C++ we need to ensure that __LANGUAGE_C_PLUS_PLUS is defined independent
    of the source file extension.  */
@@ -37,7 +81,7 @@ Boston, MA 02111-1307, USA.  */
 %{!.S:%{!.cc:%{!.cxx:%{!.cpp:%{!.cp:%{!.c++:%{!.C:%{!.m:-D__LANGUAGE_C__ -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C }}}}}}}}}\
 %{mieee:-D_IEEE_FP }\
 %{mieee-with-inexact:-D_IEEE_FP -D_IEEE_FP_INEXACT }}\
-%(cpp_cpu) %(cpp_subtarget)"
+%(cpp_subtarget)"
 
 #ifndef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC ""
@@ -285,65 +329,6 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
    N_("Tune expected memory latency")},			\
 }
 
-/* Attempt to describe CPU characteristics to the preprocessor.  */
-
-/* Corresponding to amask...  */
-#define CPP_AM_BWX_SPEC	"-D__alpha_bwx__ -Acpu=bwx"
-#define CPP_AM_MAX_SPEC	"-D__alpha_max__ -Acpu=max"
-#define CPP_AM_FIX_SPEC	"-D__alpha_fix__ -Acpu=fix"
-#define CPP_AM_CIX_SPEC	"-D__alpha_cix__ -Acpu=cix"
-
-/* Corresponding to implver...  */
-#define CPP_IM_EV4_SPEC	"-D__alpha_ev4__ -Acpu=ev4"
-#define CPP_IM_EV5_SPEC	"-D__alpha_ev5__ -Acpu=ev5"
-#define CPP_IM_EV6_SPEC	"-D__alpha_ev6__ -Acpu=ev6"
-
-/* Common combinations.  */
-#define CPP_CPU_EV4_SPEC	"%(cpp_im_ev4)"
-#define CPP_CPU_EV5_SPEC	"%(cpp_im_ev5)"
-#define CPP_CPU_EV56_SPEC	"%(cpp_im_ev5) %(cpp_am_bwx)"
-#define CPP_CPU_PCA56_SPEC	"%(cpp_im_ev5) %(cpp_am_bwx) %(cpp_am_max)"
-#define CPP_CPU_EV6_SPEC \
-  "%(cpp_im_ev6) %(cpp_am_bwx) %(cpp_am_max) %(cpp_am_fix)"
-#define CPP_CPU_EV67_SPEC \
-  "%(cpp_im_ev6) %(cpp_am_bwx) %(cpp_am_max) %(cpp_am_fix) %(cpp_am_cix)"
-
-#ifndef CPP_CPU_DEFAULT_SPEC
-# if TARGET_CPU_DEFAULT & MASK_CPU_EV6
-#  if TARGET_CPU_DEFAULT & MASK_CIX
-#    define CPP_CPU_DEFAULT_SPEC	CPP_CPU_EV67_SPEC
-#  else
-#    define CPP_CPU_DEFAULT_SPEC	CPP_CPU_EV6_SPEC
-#  endif
-# else
-#  if TARGET_CPU_DEFAULT & MASK_CPU_EV5
-#   if TARGET_CPU_DEFAULT & MASK_MAX
-#    define CPP_CPU_DEFAULT_SPEC	CPP_CPU_PCA56_SPEC
-#   else
-#    if TARGET_CPU_DEFAULT & MASK_BWX
-#     define CPP_CPU_DEFAULT_SPEC	CPP_CPU_EV56_SPEC
-#    else
-#     define CPP_CPU_DEFAULT_SPEC	CPP_CPU_EV5_SPEC
-#    endif
-#   endif
-#  else
-#   define CPP_CPU_DEFAULT_SPEC		CPP_CPU_EV4_SPEC
-#  endif
-# endif
-#endif /* CPP_CPU_DEFAULT_SPEC */
-
-#ifndef CPP_CPU_SPEC
-#define CPP_CPU_SPEC "\
-%{!undef:-Acpu=alpha -Amachine=alpha -D__alpha -D__alpha__ \
-%{mcpu=ev4|mcpu=21064:%(cpp_cpu_ev4) }\
-%{mcpu=ev5|mcpu=21164:%(cpp_cpu_ev5) }\
-%{mcpu=ev56|mcpu=21164a:%(cpp_cpu_ev56) }\
-%{mcpu=pca56|mcpu=21164pc|mcpu=21164PC:%(cpp_cpu_pca56) }\
-%{mcpu=ev6|mcpu=21264:%(cpp_cpu_ev6) }\
-%{mcpu=ev67|mcpu=21264a:%(cpp_cpu_ev67) }\
-%{!mcpu*:%(cpp_cpu_default) }}"
-#endif
-
 /* This macro defines names of additional specifications to put in the
    specs that can be used in various specifications like CC1_SPEC.  Its
    definition is an initializer with a subgrouping for each command option.
@@ -359,21 +344,6 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 #endif
 
 #define EXTRA_SPECS				\
-  { "cpp_am_bwx", CPP_AM_BWX_SPEC },		\
-  { "cpp_am_max", CPP_AM_MAX_SPEC },		\
-  { "cpp_am_fix", CPP_AM_FIX_SPEC },		\
-  { "cpp_am_cix", CPP_AM_CIX_SPEC },		\
-  { "cpp_im_ev4", CPP_IM_EV4_SPEC },		\
-  { "cpp_im_ev5", CPP_IM_EV5_SPEC },		\
-  { "cpp_im_ev6", CPP_IM_EV6_SPEC },		\
-  { "cpp_cpu_ev4", CPP_CPU_EV4_SPEC },		\
-  { "cpp_cpu_ev5", CPP_CPU_EV5_SPEC },		\
-  { "cpp_cpu_ev56", CPP_CPU_EV56_SPEC },	\
-  { "cpp_cpu_pca56", CPP_CPU_PCA56_SPEC },	\
-  { "cpp_cpu_ev6", CPP_CPU_EV6_SPEC },		\
-  { "cpp_cpu_ev67", CPP_CPU_EV67_SPEC },	\
-  { "cpp_cpu_default", CPP_CPU_DEFAULT_SPEC },	\
-  { "cpp_cpu", CPP_CPU_SPEC },			\
   { "cpp_subtarget", CPP_SUBTARGET_SPEC },	\
   SUBTARGET_EXTRA_SPECS
 

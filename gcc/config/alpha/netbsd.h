@@ -22,10 +22,13 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_FP | MASK_FPREGS | MASK_GAS)
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES							\
-  "-D__NetBSD__ -D_LP64 -Asystem=unix -Asystem=NetBSD"
-
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define ("__NetBSD__");		\
+	builtin_define ("_LP64");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=NetBSD");	\
+    } while (0)
 
 /* Show that we need a GP when profiling.  */
 #undef TARGET_PROFILING_NEEDS_GP
