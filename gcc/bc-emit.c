@@ -210,7 +210,7 @@ seg_data (seg, data, size)
       seg->data = xrealloc (seg->data, seg->alloc);
     }
 
-  memcpy (seg->data + seg->size, data, size);
+  bcopy (data, seg->data + seg->size, size);
   seg->size += size;
 }
 
@@ -604,8 +604,7 @@ bc_end_function ()
     if (ref->label->defined)
       {
 	addr = ref->label->offset;
-	memcpy (bytecode->data + ref->offset, /* incest */
-		(char *) &addr, sizeof addr);
+	bcopy (&addr, bytecode->data + ref->offset, sizeof addr);
       }
 
   /* Free the chains of labelrefs and labeldefs. */
