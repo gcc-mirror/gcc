@@ -1531,10 +1531,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       int ok = 0;
 
       /* Find the correct mode for the real and imaginary parts */
-      enum machine_mode submode
-	= mode_for_size (GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT,
-			 class == MODE_COMPLEX_INT ? MODE_INT : MODE_FLOAT,
-			 0);
+      enum machine_mode submode = GET_MODE_INNER(mode);
 
       if (submode == BLKmode)
 	abort ();
@@ -2484,10 +2481,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       rtx seq;
 
       /* Find the correct mode for the real and imaginary parts */
-      enum machine_mode submode
-	= mode_for_size (GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT,
-			 class == MODE_COMPLEX_INT ? MODE_INT : MODE_FLOAT,
-			 0);
+      enum machine_mode submode = GET_MODE_INNER (mode);
 
       if (submode == BLKmode)
 	abort ();
@@ -2731,10 +2725,7 @@ expand_complex_abs (mode, op0, target, unsignedp)
   optab this_abs_optab;
 
   /* Find the correct mode for the real and imaginary parts.  */
-  enum machine_mode submode
-    = mode_for_size (GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT,
-		     class == MODE_COMPLEX_INT ? MODE_INT : MODE_FLOAT,
-		     0);
+  enum machine_mode submode = GET_MODE_INNER (mode);
 
   if (submode == BLKmode)
     abort ();
