@@ -2760,7 +2760,8 @@ generate_classfile (clas, state)
       i = find_utf8_constant (&state->cpool, name);  PUT2 (i);
       i = find_utf8_constant (&state->cpool, build_java_signature (type));
       PUT2 (i);
-      PUT2 (body != NULL_TREE ? 1 : 0);   /* attributes_count */
+      i = (body != NULL_TREE) + (DECL_FUNCTION_THROWS (part) != NULL_TREE);
+      PUT2 (i);   /* attributes_count */
       if (body != NULL_TREE)
 	{
 	  int code_attributes_count = 0;
@@ -2874,6 +2875,24 @@ generate_classfile (clas, state)
 		  i = find_utf8_constant (&state->cpool, sig);  PUT2 (i);
 		  i = DECL_LOCAL_INDEX (lvar->decl);  PUT2 (i);
 		}
+	    }
+	}
+      if (DECL_FUNCTION_THROWS (part) != NULL_TREE)
+	{
+	  tree t = DECL_FUNCTION_THROWS (part);
+	  int throws_count = list_length (t);
+	  static tree Exceptions_node = NULL_TREE;
+	  if (Exceptions_node == NULL_TREE)
+	    Exceptions_node = get_identifier ("Exceptions");
+	  ptr = append_chunk (NULL, 8 + 2 * throws_count, state);
+	  i = find_utf8_constant (&state->cpool, Exceptions_node);
+	  PUT2 (i);  /* attribute_name_index */ 
+	  i = 2 + 2 * throws_count;  PUT4(i); /* attribute_length */ 
+	  i = throws_count;  PUT2 (i); 
+	  for (;  t != NULL_TREE;  t = TREE_CHAIN (t))
+	    {
+	      i = find_class_constant (&state->cpool, TREE_VALUE (t));
+	      PUT2 (i);
 	    }
 	}
       methods_count++;
