@@ -721,7 +721,7 @@ ffelex_cfelex_ (ffelexToken *xtoken, FILE *finput, int c)
 	{
 	  bool done = FALSE;
 	  int use_d = 0;
-	  int d;
+	  int d = 0;
 
 	  switch (c)
 	    {

@@ -1,3 +1,7 @@
+2003-10-21  Jan Hubicka  <jh@suse.cz>
+
+	* haifa-sched.c (choose_ready): Initialize index.
+
 2003-10-21  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (build1): Fix off-by-one error.
