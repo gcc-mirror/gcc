@@ -47,3 +47,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* hpux8 and later have C++ compatable include files, so do not
    pretend they are `extern "C"'.  */
 #define NO_IMPLICIT_EXTERN_C
+
+/* The HPUX linker duplicates all text symbols when given -E; this confuses
+   collect2.  */
+#define COLLECT_SUPPRESS_OPTIONS "E"
