@@ -1,5 +1,12 @@
 2001-04-30  Benjamin Kosnik  <bkoz@redhat.com>
 
+	libstdc++/2627 
+	* testsuite/24_iterators/ostreambuf_iterator.cc: New file.
+	* include/bits/sbuf_iter.h (ostreambuf_iterator): Remove bogus
+	specializations.
+
+2001-04-30  Benjamin Kosnik  <bkoz@redhat.com>
+
 	libstdc++/2964
 	* include/bits/stl_iterator_base_funcs.h (__advance): Fix.
 

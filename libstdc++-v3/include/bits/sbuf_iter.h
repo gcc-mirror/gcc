@@ -36,29 +36,23 @@
 
 namespace std
 {
-
   template<typename _CharT, typename _Traits>
     class ostreambuf_iterator
-#if 1      // XXX this is standard:
     : public iterator<output_iterator_tag, _CharT, void, void, void>
-#else
-    : public output_iterator
-#endif
     {
     public:
-
       // Types:
-      typedef _CharT                       	 char_type;
+      typedef _CharT                           char_type;
       typedef _Traits                          traits_type;
       typedef basic_streambuf<_CharT, _Traits> streambuf_type;
       typedef basic_ostream<_CharT, _Traits>   ostream_type;
       
       inline 
       ostreambuf_iterator(ostream_type& __s) throw ()
-      : _M_sbuf(__s.rdbuf()), _M_failed(false) { }
+      : _M_sbuf(__s.rdbuf()), _M_failed(!_M_sbuf) { }
       
       ostreambuf_iterator(streambuf_type* __s) throw ()
-      : _M_sbuf(__s), _M_failed(false) { }
+      : _M_sbuf(__s), _M_failed(!_M_sbuf) { }
 
       ostreambuf_iterator& 
       operator=(_CharT __c);
@@ -82,56 +76,18 @@ namespace std
     private:
       streambuf_type* 	_M_sbuf;
       bool 		_M_failed;
-
-#if 0
-      template<>
-        friend char const*
-        copy(char const* __first, char const* __last,
-             ostreambuf_iterator<char,char_traits<char> > __to);
-      template<>
-        friend wchar_t const*
-        copy(wchar_t const* __first, wchar_t const* __last,
-             ostreambuf_iterator<wchar_t,char_traits<wchar_t> > __to);
-#endif
     };
 
   template<typename _CharT, typename _Traits>
     inline ostreambuf_iterator<_CharT, _Traits>&
     ostreambuf_iterator<_CharT, _Traits>::operator=(_CharT __c)
     {
-      if (!_M_failed &&
+      if (!_M_failed && 
           _Traits::eq_int_type(_M_sbuf->sputc(__c),_Traits::eof()))
       _M_failed = true;
       return *this;
     }
 
-
-#if 0
-  // Optimized specializations of standard algorithms
-  // These are specialized only for standard types
-  // (with no unbound arguments) to avoid creating
-  // overload problems with user specializations.
-
-  template<>
-    char const*
-    copy(char const* __first, char const* __last,
-	 ostreambuf_iterator<char,char_traits<char> > __to)
-    {
-      if (!__to._M_failed)
-	__to._M_sbuf->sputn(__first, __last-__first);
-      return __last;
-    }
-
-  template<>
-    wchar_t const*
-    copy(wchar_t const* __first, wchar_t const* __last,
-	 ostreambuf_iterator<whar_t,char_traits<wchar_t> > __to)
-    {
-      if (!__to._M_failed)
-	__to._M_sbuf->sputn(__first, __last-__first);
-      return __last;
-    }
-#endif
 
   // 24.5.3 Template class istreambuf_iterator
   template<class _CharT, class _Traits>
@@ -151,13 +107,13 @@ namespace std
       typedef istreambuf_iterator<_CharT, _Traits>	__istreambufiter_type;
 
       istreambuf_iterator() throw() 
-      : _M_istreambuf(NULL), _M_c(-2) { }
+      : _M_sbuf(NULL), _M_c(-2) { }
       
       istreambuf_iterator(istream_type& __s) throw()
-      : _M_istreambuf(__s.rdbuf()), _M_c(-2) { }
+      : _M_sbuf(__s.rdbuf()), _M_c(-2) { }
 
       istreambuf_iterator(streambuf_type* __s) throw()
-      : _M_istreambuf(__s), _M_c(-2) { }
+      : _M_sbuf(__s), _M_c(-2) { }
        
       // NB: This should really have an int_type return
       // value, so "end of stream" postion can be checked without
@@ -167,10 +123,10 @@ namespace std
       { 
 	// The result of operator*() on an end of stream is undefined.
 	char_type __ret;
-	if (_M_istreambuf && _M_c != static_cast<int_type>(-2))
+	if (_M_sbuf && _M_c != static_cast<int_type>(-2))
 	  __ret = _M_c;
-	else if (_M_istreambuf)
-	  __ret = traits_type::to_char_type(_M_istreambuf->sgetc()); 
+	else if (_M_sbuf)
+	  __ret = traits_type::to_char_type(_M_sbuf->sgetc()); 
 	else
 	  __ret = static_cast<char_type>(traits_type::eof());
 	return __ret;
@@ -179,8 +135,8 @@ namespace std
       __istreambufiter_type& 
       operator++()
       { 
-	if (_M_istreambuf)
-	  _M_istreambuf->sbumpc();
+	if (_M_sbuf)
+	  _M_sbuf->sbumpc();
 	_M_c = -2;
 	return *this; 
       }
@@ -192,8 +148,8 @@ namespace std
       const __istreambufiter_type
       operator++(int)
       {
-	if (_M_istreambuf)
-	  _M_c = _M_istreambuf->sbumpc();
+	if (_M_sbuf)
+	  _M_c = _M_sbuf->sbumpc();
 	return *this; 
       }
 #endif
@@ -202,9 +158,9 @@ namespace std
       equal(const __istreambufiter_type& __b)
       { 
 	int_type __eof = traits_type::eof();
-	bool __thiseof = !_M_istreambuf || _M_istreambuf->sgetc() == __eof;
-	bool __beof = !__b._M_istreambuf 
-	  	      || __b._M_istreambuf->sgetc() == __eof;
+	bool __thiseof = !_M_sbuf || _M_sbuf->sgetc() == __eof;
+	bool __beof = !__b._M_sbuf 
+	  	      || __b._M_sbuf->sgetc() == __eof;
 	return (__thiseof && __beof || (!__thiseof && !__beof));
       }
 
@@ -215,9 +171,9 @@ namespace std
       equal(const __istreambufiter_type& __b) const
       {
 	int_type __eof = traits_type::eof();
-	bool __thiseof = !_M_istreambuf || _M_istreambuf->sgetc() == __eof;
-	bool __beof = !__b._M_istreambuf 
-	  	      || __b._M_istreambuf->sgetc() == __eof;
+	bool __thiseof = !_M_sbuf || _M_sbuf->sgetc() == __eof;
+	bool __beof = !__b._M_sbuf 
+	  	      || __b._M_sbuf->sgetc() == __eof;
 	return (__thiseof && __beof || (!__thiseof && !__beof));
       }
 #endif
@@ -230,7 +186,7 @@ namespace std
       // the "end of stream" iterator value.
       // NB: This implementation assumes the "end of stream" value
       // is EOF, or -1.
-      streambuf_type* 		_M_istreambuf;  
+      streambuf_type* 		_M_sbuf;  
       int_type 			_M_c;
     };
 
@@ -246,7 +202,6 @@ namespace std
 	       const istreambuf_iterator<_CharT, _Traits>& __b)
     { return !__a.equal(__b); }
 
-} // std::
+} // namespace std
 
-#endif /* _CPP_BITS_SBUF_ITER_H */
-
+#endif
