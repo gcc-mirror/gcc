@@ -291,6 +291,8 @@ static int reg_in_basic_block_p PROTO((rtx, rtx));
 static int consec_sets_invariant_p PROTO((rtx, int, rtx));
 static rtx libcall_other_reg PROTO((rtx, rtx));
 static int labels_in_range_p PROTO((rtx, int));
+static void count_one_set PROTO((rtx, rtx, varray_type, rtx *));
+
 static void count_loop_regs_set PROTO((rtx, rtx, varray_type, varray_type,
 				       int *, int)); 
 static void note_addr_stored PROTO((rtx, rtx));
