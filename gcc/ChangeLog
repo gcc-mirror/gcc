@@ -1,3 +1,11 @@
+2002-01-17  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config.gcc (cpu_type): Include altivec.h in powerpc
+        extra_headers.
+        Same for darwin.
+
+        * config/rs6000/altivec.h: New.
+
 2002-01-17  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi (*-ibm-aix*): Update assembler and exception
