@@ -88,7 +88,11 @@ extern int target_flags;
    Like -dalign in Sun cc.  */
 #define TARGET_HOPE_ALIGN (target_flags & 16)
 
-/* Nonzero means that make sure all doubles are on 8-byte boundaries.  */
+/* Nonzero means make sure all doubles are on 8-byte boundaries.
+   This option results in a calling convention that is incompatible with
+   every other sparc compiler in the world, and thus should only ever be
+   used for experimenting.  Also, varargs won't work with it, but it doesn't
+   seem worth trying to fix.  */
 #define TARGET_FORCE_ALIGN (target_flags & 32)
 
 /* Macro to define tables used to set the flags.
@@ -559,14 +563,11 @@ extern char leaf_reg_backmap[];
 
 /* Offset of first parameter from the argument pointer register value.
    This is 64 for the ins and locals, plus 4 for the struct-return reg
-   even if this function isn't going to use it.  */
-#define FIRST_PARM_OFFSET(FNDECL) (STRUCT_VALUE_OFFSET + UNITS_PER_WORD)
-
-/* Offset from top-of-stack address to location to store the
-   function parameter if it can't go in a register.
-   Addresses for following parameters are computed relative to this one.  */
-#define FIRST_PARM_CALLER_OFFSET(FNDECL)	\
-  (STRUCT_VALUE_OFFSET + UNITS_PER_WORD - STACK_POINTER_OFFSET)
+   even if this function isn't going to use it.
+   If TARGET_FORCE_ALIGN, we must reserve 4 more bytes to ensure that the
+   stack remains aligned.  */
+#define FIRST_PARM_OFFSET(FNDECL) \
+  (STRUCT_VALUE_OFFSET + UNITS_PER_WORD + (TARGET_FORCE_ALIGN ? 4 : 0))
 
 /* When a parameter is passed in a register, stack space is still
    allocated for it.  */
