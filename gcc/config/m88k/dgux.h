@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.22 $"
+#define VERSION_INFO2   "$Revision: 1.23 $"
 #endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
@@ -83,8 +83,7 @@ Boston, MA 02111-1307, USA.  */
    -traditional, or restricting include files to one specific source
    target, specify full DG/UX features.  */
 #undef	CPP_SPEC
-#define	CPP_SPEC "%(cpp_cpu) 
-		  %{msvr3:-D_M88KBCS_TARGET} %{!msvr3:-D_DGUX_TARGET}"
+#define	CPP_SPEC "%(cpp_cpu) %{msvr3:-D_M88KBCS_TARGET} %{!msvr3:-D_DGUX_TARGET}"
 
 /* Assembler support (-V, silicon filter, legends for mxdb).  */
 #undef	ASM_SPEC
