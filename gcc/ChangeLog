@@ -1,5 +1,12 @@
 2002-04-11  Hans-Peter Nilsson  <hp@axis.com>
 
+	* config/cris/cris.c (cris_override_options): Tweak error message
+	for PIC not implemented.
+
+	* config/cris/cris.h: Tweak comments related to parameter-passing.
+
+	* config/cris/t-cris (TARGET_LIBGCC2_CFLAGS): Don't -Dinhibit_libc here.
+
 	* config/cris/cris.c (cris_target_asm_function_prologue): Cast
 	uses of PIC_OFFSET_TABLE_REGNUM to int to silence warnings.
 	(cris_target_asm_function_epilogue): Ditto.

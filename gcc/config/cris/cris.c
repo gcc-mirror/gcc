@@ -2541,7 +2541,7 @@ cris_override_options ()
 	 further errors.  */
       if (! TARGET_LINUX)
 	{
-	  error ("-fPIC not supported in this configuration");
+	  error ("-fPIC and -fpic are not supported in this configuration");
 	  flag_pic = 0;
 	}
 
