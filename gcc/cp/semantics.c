@@ -1382,7 +1382,7 @@ finish_object_call_expr (fn, object, args)
 	}
     }
   
-  if (name_p (fn))
+  if (processing_template_decl || name_p (fn))
     return build_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);
   else
     return build_new_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);

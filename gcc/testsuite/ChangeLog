@@ -1,3 +1,8 @@
+2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/10199
+	* g++.dg/lookup/template1.C: New test.
+
 2003-03-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/ultrasp5.c: New test.

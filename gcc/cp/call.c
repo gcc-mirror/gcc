@@ -551,6 +551,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
     }
   if (TREE_CODE (name) == OVERLOAD)
     name = DECL_NAME (get_first_fn (name));
+  else if (TREE_CODE (name) == LOOKUP_EXPR)
+    name = TREE_OPERAND (name, 0);
   else if (DECL_P (name))
     name = DECL_NAME (name);
   if (has_template_args)

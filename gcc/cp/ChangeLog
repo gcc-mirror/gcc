@@ -1,3 +1,10 @@
+2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/10199
+	* call.c (build_method_call): Deal with LOOKUP_EXPR.
+	* semantics.c (finish_object_call_expr): Use build_method_call
+	when in a template decl.
+
 2003-03-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7086
