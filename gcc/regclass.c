@@ -2011,25 +2011,27 @@ record_address_regs (rtx x, enum reg_class class, int scale)
 	  record_address_regs (arg0, INDEX_REG_CLASS, scale);
 
 	/* If both operands are registers but one is already a hard register
-	   of index or base class, give the other the class that the hard
-	   register is not.  */
+	   of index or reg-base class, give the other the class that the
+	   hard register is not.  */
 
-#ifdef REG_OK_FOR_BASE_P
 	else if (code0 == REG && code1 == REG
 		 && REGNO (arg0) < FIRST_PSEUDO_REGISTER
-		 && (REG_OK_FOR_BASE_P (arg0) || REG_OK_FOR_INDEX_P (arg0)))
+		 && (REG_MODE_OK_FOR_REG_BASE_P (arg0, VOIDmode)
+		     || REG_OK_FOR_INDEX_P (arg0)))
 	  record_address_regs (arg1,
-			       REG_OK_FOR_BASE_P (arg0)
-			       ? INDEX_REG_CLASS : MODE_BASE_REG_CLASS (VOIDmode),
+			       REG_MODE_OK_FOR_REG_BASE_P (arg0, VOIDmode)
+			       ? INDEX_REG_CLASS
+			       : MODE_BASE_REG_REG_CLASS (VOIDmode),
 			       scale);
 	else if (code0 == REG && code1 == REG
 		 && REGNO (arg1) < FIRST_PSEUDO_REGISTER
-		 && (REG_OK_FOR_BASE_P (arg1) || REG_OK_FOR_INDEX_P (arg1)))
+		 && (REG_MODE_OK_FOR_REG_BASE_P (arg1, VOIDmode)
+		     || REG_OK_FOR_INDEX_P (arg1)))
 	  record_address_regs (arg0,
-			       REG_OK_FOR_BASE_P (arg1)
-			       ? INDEX_REG_CLASS : MODE_BASE_REG_CLASS (VOIDmode),
+			       REG_MODE_OK_FOR_REG_BASE_P (arg1, VOIDmode)
+			       ? INDEX_REG_CLASS
+			       : MODE_BASE_REG_REG_CLASS (VOIDmode),
 			       scale);
-#endif
 
 	/* If one operand is known to be a pointer, it must be the base
 	   with the other operand the index.  Likewise if the other operand
@@ -2038,14 +2040,16 @@ record_address_regs (rtx x, enum reg_class class, int scale)
 	else if ((code0 == REG && REG_POINTER (arg0))
 		 || code1 == MULT)
 	  {
-	    record_address_regs (arg0, MODE_BASE_REG_CLASS (VOIDmode), scale);
+	    record_address_regs (arg0, MODE_BASE_REG_REG_CLASS (VOIDmode),
+				 scale);
 	    record_address_regs (arg1, INDEX_REG_CLASS, scale);
 	  }
 	else if ((code1 == REG && REG_POINTER (arg1))
 		 || code0 == MULT)
 	  {
 	    record_address_regs (arg0, INDEX_REG_CLASS, scale);
-	    record_address_regs (arg1, MODE_BASE_REG_CLASS (VOIDmode), scale);
+	    record_address_regs (arg1, MODE_BASE_REG_REG_CLASS (VOIDmode),
+				 scale);
 	  }
 
 	/* Otherwise, count equal chances that each might be a base
@@ -2053,10 +2057,10 @@ record_address_regs (rtx x, enum reg_class class, int scale)
 
 	else
 	  {
-	    record_address_regs (arg0, MODE_BASE_REG_CLASS (VOIDmode),
+	    record_address_regs (arg0, MODE_BASE_REG_REG_CLASS (VOIDmode),
 				 scale / 2);
 	    record_address_regs (arg0, INDEX_REG_CLASS, scale / 2);
-	    record_address_regs (arg1, MODE_BASE_REG_CLASS (VOIDmode),
+	    record_address_regs (arg1, MODE_BASE_REG_REG_CLASS (VOIDmode),
 				 scale / 2);
 	    record_address_regs (arg1, INDEX_REG_CLASS, scale / 2);
 	  }

@@ -1218,12 +1218,14 @@ enum reg_class
 
 /* For the Thumb the high registers cannot be used as base registers
    when addressing quantities in QI or HI mode; if we don't know the
-   mode, then we must be conservative.  After reload we must also be
-   conservative, since we can't support SP+reg addressing, and we
-   can't fix up any bad substitutions.  */
+   mode, then we must be conservative.  */
 #define MODE_BASE_REG_CLASS(MODE)					\
     (TARGET_ARM ? GENERAL_REGS :					\
-     (((MODE) == SImode && !reload_completed) ? BASE_REGS : LO_REGS))
+     (((MODE) == SImode) ? BASE_REGS : LO_REGS))
+
+/* For Thumb we can not support SP+reg addressing, so we return LO_REGS
+   instead of BASE_REGS.  */
+#define MODE_BASE_REG_REG_CLASS(MODE) BASE_REG_CLASS
 
 /* When SMALL_REGISTER_CLASSES is nonzero, the compiler allows
    registers explicitly used in the rtl to be used as spill registers
@@ -1980,6 +1982,11 @@ typedef struct
    ? THUMB_REGNO_MODE_OK_FOR_BASE_P (REGNO, MODE)	\
    : ARM_REGNO_OK_FOR_BASE_P (REGNO))
 
+/* Nonzero if X can be the base register in a reg+reg addressing mode.
+   For Thumb, we can not use SP + reg, so reject SP.  */
+#define REGNO_MODE_OK_FOR_REG_BASE_P(X, MODE)	\
+  REGNO_OK_FOR_INDEX_P (X)
+
 /* For ARM code, we don't care about the mode, but for Thumb, the index
    must be suitable for use in a QImode load.  */
 #define REGNO_OK_FOR_INDEX_P(REGNO)	\
@@ -2123,6 +2130,10 @@ typedef struct
    ? THUMB_REG_OK_FOR_INDEX_P (X)		\
    : ARM_REG_OK_FOR_INDEX_P (X))
 
+/* Nonzero if X can be the base register in a reg+reg addressing mode.
+   For Thumb, we can not use SP + reg, so reject SP.  */
+#define REG_MODE_OK_FOR_REG_BASE_P(X, MODE)	\
+  REG_OK_FOR_INDEX_P (X)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
    that is a valid memory address for an instruction.
