@@ -1,88 +1,233 @@
-/* Copyright (C) 2000, 2001  Free Software Foundation
+/* Label.java -- Java label widget
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
-   This file is part of libjava.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libjava License.  Please consult the file "LIBJAVA_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
 
 package java.awt;
-import java.awt.peer.ComponentPeer;
+
 import java.awt.peer.LabelPeer;
+import java.awt.peer.ComponentPeer;
 
 /**
- * @author Tom Tromey <tromey@cygnus.com>
- * @date April 12, 2000
+  * This component is used for displaying simple text strings that cannot
+  * be edited.
+  *
+  * @author Aaron M. Renn (arenn@urbanophile.com)
+  * @author Tom Tromey <tromey@cygnus.com>
+  */
+public class Label extends Component implements java.io.Serializable
+{
+
+/*
+ * Static Variables
  */
 
-public class Label extends Component
+/**
+  * Alignment constant aligning the text to the left of its window.
+  */
+public static final int LEFT = 0;
+
+/**
+  * Alignment constant aligning the text in the center of its window.
+  */
+public static final int CENTER = 1;
+
+/**
+  * Alignment constant aligning the text to the right of its window.
+  */
+public static final int RIGHT = 2;
+
+// Serialization version constant:
+private static final long serialVersionUID = 3094126758329070636L;
+
+/*************************************************************************/
+
+/*
+ * Instance Variables
+ */
+
+/**
+  * @serial Indicates the alignment of the text within this label's window.
+  * This is one of the constants in this class.  The default value is 
+  * <code>LEFT</code>.
+  */
+private int alignment;
+
+/**
+  * @serial The text displayed in the label
+  */
+private String text;
+
+/*************************************************************************/
+
+/*
+ * Constructors
+ */
+
+/**
+  * Initializes a new instance of <code>Label</code> with no text.
+  */
+public
+Label()
 {
-  public static final int CENTER = 1;
-  public static final int LEFT = 0;
-  public static final int RIGHT = 2;
-
-  public Label ()
-  {
-    this ("", LEFT);
-  }
-
-  public Label (String text)
-  {
-    this (text, LEFT);
-  }
-
-  public Label (String text, int alignment)
-  {
-    if (alignment != CENTER && alignment != LEFT && alignment != RIGHT)
-      throw new IllegalArgumentException ();
-    this.text = text;
-    this.alignment = alignment;
-  }
-
-  public void addNotify ()
-  {
-    if (peer == null)
-      peer = getToolkit ().createLabel (this);
-    super.addNotify ();
-  }
-
-  public int getAlignment ()
-  {
-    return alignment;
-  }
-
-  public String getText ()
-  {
-    return text;
-  }
-
-  protected String paramString ()
-  {
-    return "Label[" + alignment + "," + text + "]";
-  }
-
-  public void setAlignment (int alignment)
-  {
-    if (alignment != CENTER && alignment != LEFT && alignment != RIGHT)
-      throw new IllegalArgumentException ();
-    this.alignment = alignment;
-    if (peer != null)
-      {
-	LabelPeer lp = (LabelPeer) peer;
-	lp.setAlignment (alignment);
-      }
-  }
-
-  public void setText (String text)
-  {
-    this.text = text;
-    if (peer != null)
-      {
-	LabelPeer lp = (LabelPeer) peer;
-	lp.setText (text);
-      }
-  }
-
-  private String text;
-  private int alignment;
+  this("", LEFT);
 }
+
+/*************************************************************************/
+
+/**
+  * Initializes a new instance of <code>Label</code> with the specified
+  * text that is aligned to the left.
+  *
+  * @param text The text of the label.
+  */
+public
+Label(String text)
+{
+  this(text, LEFT);
+}
+
+/*************************************************************************/
+
+/**
+  * Initializes a new instance of <code>Label</code> with the specified
+  * text and alignment.
+  *
+  * @param text The text of the label.
+  * @param alignment The desired alignment for the text in this label,
+  * which must be one of <code>LEFT</code>, <code>CENTER</code>, or
+  * <code>RIGHT</code>.
+  */
+public
+Label(String text, int alignment)
+{
+  setAlignment (alignment);
+  setText (text);
+}
+
+/*************************************************************************/
+
+/*
+ * Instance Variables
+ */
+
+/**
+  * Returns the constant indicating the alignment of the text in this
+  * label.  The value returned will be one of the alignment constants
+  * from this class.
+  *
+  * @return The alignment of the text in the label.
+  */
+public int
+getAlignment()
+{
+  return(alignment);
+}
+
+/*************************************************************************/
+
+/**
+  * Sets the text alignment of this label to the specified value.
+  *
+  * @param alignment The desired alignment for the text in this label,
+  * which must be one of <code>LEFT</code>, <code>CENTER</code>, or
+  * <code>RIGHT</code>.
+  */
+public synchronized void
+setAlignment(int alignment)
+{
+  if (alignment != CENTER && alignment != LEFT && alignment != RIGHT)
+    throw new IllegalArgumentException ("invalid alignment: " + alignment);
+  this.alignment = alignment;
+  if (peer != null)
+    {
+      LabelPeer lp = (LabelPeer) peer;
+      lp.setAlignment (alignment);
+    }
+}
+
+/*************************************************************************/
+
+/**
+  * Returns the text displayed in this label.
+  *
+  * @return The text for this label.
+  */
+public String
+getText()
+{
+  return(text);
+}
+
+/*************************************************************************/
+
+/**
+  * Sets the text in this label to the specified value.
+  *
+  * @param text The new text for this label.
+  */
+public synchronized void
+setText(String text)
+{
+  this.text = text;
+
+  if (peer != null)
+    {
+      LabelPeer lp = (LabelPeer) peer;
+      lp.setText (text);
+    }
+}
+
+/*************************************************************************/
+
+/**
+  * Notifies this lable that it has been added to a container, causing
+  * the peer to be created.  This method is called internally by the AWT
+  * system.
+  */
+public void
+addNotify()
+{
+  if (peer == null)
+    peer = getToolkit ().createLabel (this);
+  super.addNotify ();
+}
+
+/*************************************************************************/
+
+/**
+  * Returns a parameter string useful for debugging.
+  *
+  * @param A debugging string.
+  */
+protected String
+paramString()
+{
+  return(getClass().getName() + "(text=" + getText() + ",alignment=" +
+         getAlignment() + ")");
+}
+
+} // class Label
+

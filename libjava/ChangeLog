@@ -1,3 +1,7 @@
+2002-01-16  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/Label.java: Merged with Classpath.
+
 2002-01-15  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/AWTPermission.java: Updated copyright.
