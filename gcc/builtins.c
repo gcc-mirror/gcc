@@ -1388,7 +1388,8 @@ expand_builtin_strlen (exp, target, mode)
 
       /* Now that we are assured of success, expand the source.  */
       start_sequence ();
-      pat = expand_expr (src, src_reg, ptr_mode, EXPAND_SUM);
+      pat = memory_address (BLKmode, 
+		expand_expr (src, src_reg, ptr_mode, EXPAND_SUM));
       if (pat != src_reg)
 	emit_move_insn (src_reg, pat);
       pat = gen_sequence ();

@@ -1,3 +1,8 @@
+2000-04-04  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* builtins.c (expand_builtin_strlen): Force the source to
+	be a memory address.
+
 2000-04-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cpplib.c (D): Adjust to call CONCAT2 macro without whitespace.
