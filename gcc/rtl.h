@@ -1144,9 +1144,6 @@ extern int ceil_log2			PARAMS ((unsigned HOST_WIDE_INT));
 
 #define plus_constant(X,C) plus_constant_wide (X, (HOST_WIDE_INT) (C))
 
-#define plus_constant_for_output(X,C)  \
-  plus_constant_for_output_wide (X, (HOST_WIDE_INT) (C))
-
 /* In builtins.c */
 extern rtx expand_builtin_expect_jump	PARAMS ((union tree_node *, rtx, rtx));
 

@@ -2958,8 +2958,7 @@
   "
 {
   rtx word0 = adjust_address (operands[1], SImode, 0);
-  rtx word1 = change_address (operands[1], SImode,
-			      plus_constant_for_output (XEXP (word0, 0), 4));
+  rtx word1 = adjust_address (operands[1], SImode, 4);
   rtx high_part = gen_highpart (SImode, operands[0]);
   rtx low_part = gen_lowpart (SImode, operands[0]);
 
@@ -2985,14 +2984,10 @@
   [(clobber (const_int 0))]
   "
 {
-  rtx word0 = adjust_address (operands[0], SImode, 0);
-  rtx word1 = change_address (operands[0], SImode,
-			      plus_constant_for_output (XEXP (word0, 0), 4));
-  rtx high_part = gen_highpart (SImode, operands[1]);
-  rtx low_part = gen_lowpart (SImode, operands[1]);
-
-  emit_insn (gen_movsi (word0, high_part));
-  emit_insn (gen_movsi (word1, low_part));
+  emit_insn (gen_movsi (adjust_address (operands[0], SImode, 0),
+			gen_highpart (SImode, operands[1])));
+  emit_insn (gen_movsi (adjust_address (operands[0], SImode, 4),
+			gen_lowpart (SImode, operands[1])));
   DONE;
 }")
 
@@ -3595,8 +3590,7 @@
   "
 {
   rtx word0 = adjust_address (operands[1], SFmode, 0);
-  rtx word1 = change_address (operands[1], SFmode,
-			      plus_constant_for_output (XEXP (word0, 0), 4));
+  rtx word1 = adjust_address (operands[1], SFmode, 4);
 
   if (GET_CODE (operands[0]) == SUBREG)
     operands[0] = alter_subreg (operands[0]);
@@ -3630,8 +3624,7 @@
   "
 {
   rtx word0 = adjust_address (operands[0], SFmode, 0);
-  rtx word1 = change_address (operands[0], SFmode,
-			      plus_constant_for_output (XEXP (word0, 0), 4));
+  rtx word1 = adjust_address (operands[0], SFmode, 4);
 
   if (GET_CODE (operands[1]) == SUBREG)
     operands[1] = alter_subreg (operands[1]);
@@ -3656,8 +3649,8 @@
   rtx dest1, dest2;
 
   dest1 = adjust_address (operands[0], SFmode, 0);
-  dest2 = change_address (operands[0], SFmode,
-			  plus_constant_for_output (XEXP (dest1, 0), 4));
+  dest2 = adjust_address (operands[0], SFmode, 4);
+
   emit_insn (gen_movsf (dest1, CONST0_RTX (SFmode)));
   emit_insn (gen_movsf (dest2, CONST0_RTX (SFmode)));
   DONE;
@@ -3930,8 +3923,7 @@
       break;
     case MEM:
       dest1 = adjust_address (set_dest, DFmode, 0);
-      dest2 = change_address (set_dest, DFmode,
-			      plus_constant_for_output (XEXP (dest1, 0), 8));
+      dest2 = adjust_address (set_dest, DFmode, 8);
       break;
     default:
       abort ();      
@@ -3951,8 +3943,7 @@
   "
 {
   rtx word0 = adjust_address (operands[1], DFmode, 0);
-  rtx word1 = change_address (operands[1], DFmode,
-			      plus_constant_for_output (XEXP (word0, 0), 8));
+  rtx word1 = adjust_address (operands[1], DFmode, 8);
   rtx set_dest, dest1, dest2;
 
   set_dest = operands[0];
@@ -3986,17 +3977,14 @@
   [(clobber (const_int 0))]
   "
 {
-  rtx word1 = adjust_address (operands[0], DFmode, 0);
-  rtx word2 = change_address (operands[0], DFmode,
-			      plus_constant_for_output (XEXP (word1, 0), 8));
-  rtx set_src;
-
-  set_src = operands[1];
+  rtx set_src = operands[1];
   if (GET_CODE (set_src) == SUBREG)
     set_src = alter_subreg (set_src);
 
-  emit_insn (gen_movdf (word1, gen_df_reg (set_src, 0)));
-  emit_insn (gen_movdf (word2, gen_df_reg (set_src, 1)));
+  emit_insn (gen_movdf (adjust_address (operands[0], DFmode, 0),
+			gen_df_reg (set_src, 0)));
+  emit_insn (gen_movdf (adjust_address (operands[0], DFmode, 8),
+			gen_df_reg (set_src, 1)));
   DONE;
 }")
 

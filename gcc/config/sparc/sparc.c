@@ -2813,7 +2813,7 @@ legitimize_pic_address (orig, mode, reg)
       if (GET_CODE (offset) == CONST_INT)
 	{
 	  if (SMALL_INT (offset))
-	    return plus_constant_for_output (base, INTVAL (offset));
+	    return plus_constant (base, INTVAL (offset));
 	  else if (! reload_in_progress && ! reload_completed)
 	    offset = force_reg (Pmode, offset);
 	  else

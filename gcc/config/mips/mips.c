@@ -930,9 +930,8 @@ double_memory_operand (op, mode)
     return 1;
 
   return memory_address_p ((GET_MODE_CLASS (mode) == MODE_INT
-			    ? SImode
-			    : SFmode),
-			   plus_constant_for_output (addr, 4));
+			    ? SImode : SFmode),
+			   plus_constant (addr, 4));
 }
 
 /* Return nonzero if the code of this rtx pattern is EQ or NE.  */

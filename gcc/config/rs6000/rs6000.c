@@ -3992,11 +3992,11 @@ print_operand (file, x, code)
 	     we have already done it, we can just use an offset of word.  */
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant_for_output (XEXP (XEXP (x, 0), 0),
-						      UNITS_PER_WORD));
+	    output_address (plus_constant (XEXP (XEXP (x, 0), 0),
+					   UNITS_PER_WORD));
 	  else
-	    output_address (plus_constant_for_output (XEXP (x, 0),
-						      UNITS_PER_WORD));
+	    output_address (plus_constant (XEXP (x, 0), UNITS_PER_WORD));
+
 	  if (small_data_operand (x, GET_MODE (x)))
 	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC,
 		     reg_names[SMALL_DATA_REG]);
@@ -8444,7 +8444,7 @@ rs6000_machopic_legitimize_pic_address (orig, mode, reg)
       if (GET_CODE (offset) == CONST_INT)
 	{
 	  if (SMALL_INT (offset))
-	    return plus_constant_for_output (base, INTVAL (offset));
+	    return plus_constant (base, INTVAL (offset));
 	  else if (! reload_in_progress && ! reload_completed)
 	    offset = force_reg (Pmode, offset);
 	  else

@@ -959,12 +959,10 @@ canon_rtx (x)
 
       if (x0 != XEXP (x, 0) || x1 != XEXP (x, 1))
 	{
-	  /* We can tolerate LO_SUMs being offset here; these
-	     rtl are used for nothing other than comparisons.  */
 	  if (GET_CODE (x0) == CONST_INT)
-	    return plus_constant_for_output (x1, INTVAL (x0));
+	    return plus_constant (x1, INTVAL (x0));
 	  else if (GET_CODE (x1) == CONST_INT)
-	    return plus_constant_for_output (x0, INTVAL (x1));
+	    return plus_constant (x0, INTVAL (x1));
 	  return gen_rtx_PLUS (GET_MODE (x), x0, x1);
 	}
     }
@@ -2349,8 +2347,7 @@ init_alias_analysis ()
 		      rtx op0 = XEXP (src, 0);
 		      op0 = reg_known_value[REGNO (op0)];
 		      reg_known_value[regno]
-			= plus_constant_for_output (op0,
-						    INTVAL (XEXP (src, 1)));
+			= plus_constant (op0, INTVAL (XEXP (src, 1)));
 		      reg_known_equiv_p[regno] = 0;
 		    }
 		  else if (REG_N_SETS (regno) == 1
