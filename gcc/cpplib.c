@@ -5286,10 +5286,10 @@ print_help ()
   printf ("  -Wcomment{s}              Warn if one comment starts inside another\n");
   printf ("  -Wno-comment{s}           Do not warn about comments\n");
   printf ("  -Wtraditional             Warn if a macro argument is/would be turned into\n");
-  printf ("                             a string if -tradtional is specified\n");
+  printf ("                             a string if -traditional is specified\n");
   printf ("  -Wno-traditional          Do not warn about stringification\n");
   printf ("  -Wundef                   Warn if an undefined macro is used by #if\n");
-  printf ("  -Wno-undef                Do not warn about testing udefined macros\n");
+  printf ("  -Wno-undef                Do not warn about testing undefined macros\n");
   printf ("  -Wimport                  Warn about the use of the #import directive\n");
   printf ("  -Wno-import               Do not warn about the use of #import\n");
   printf ("  -Werror                   Treat all warnings as errors\n");
