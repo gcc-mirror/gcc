@@ -43,11 +43,9 @@ fi
 
 echo 'Making directories:'
 cd ${INPUT}
-if $LINKS; then
-  files=`ls -LR | sed -n s/:$//p`
-else
-  files=`find . -type d -print | sed '/^.$/d'`
-fi
+# Find all directories and all symlinks that point to directories.
+files=`	find . -type d -print | sed '/^.$/d'
+	$LINKS && find . -type l -exec test -d '{}' \; -print`
 for file in $files; do
   rm -rf $LIB/$file
   if [ ! -d $LIB/$file ]
@@ -110,10 +108,12 @@ while [ $# != 0 ]; do
   for file in $files; do
 # This call to egrep is essential, since checking a file with egrep
 # is much faster than actually trying to fix it.
+# It is also essential that most files *not* match!
+# Thus, matching every #endif is unacceptable.
 # But the argument to egrep must be kept small, or many versions of egrep
 # won't be able to handle it.
 # rms: I removed `|#[el].*if.*[^/ 	]' because it made egrep fail.
-    if egrep '[ 	_]_IO|CTRL|#define.NULL|#[el]*if.*([0-9]|#e[nl]|sparc|vax|sun|pyr)' $file > /dev/null; then
+    if egrep '[ 	_]_IO|CTRL|#define.NULL|#[el]*if.*([0-9]|sparc|vax|sun|pyr)' $file > /dev/null; then
       echo Fixing $file
       if [ -r $file ]; then
 	cp $file $2/$file >/dev/null 2>&1	\
@@ -194,8 +194,8 @@ if [ -r ${LIB}/$file ]; then
   ex ${LIB}/$file <<EOF
   /size_t.*;/
   i
-#ifndef _SIZE_T
-#define _SIZE_T
+#ifndef _GCC_SIZE_T
+#define _GCC_SIZE_T
 .
   /size_t/+1
   i
@@ -203,8 +203,8 @@ if [ -r ${LIB}/$file ]; then
 .
   /ptrdiff_t.*;/
   i
-#ifndef _PTRDIFF_T
-#define _PTRDIFF_T
+#ifndef _GCC_PTRDIFF_T
+#define _GCC_PTRDIFF_T
 .
   /ptrdiff_t/+1
   i
@@ -212,8 +212,8 @@ if [ -r ${LIB}/$file ]; then
 .
   /wchar_t.*;/
   i
-#ifndef _WCHAR_T
-#define _WCHAR_T
+#ifndef _GCC_WCHAR_T
+#define _GCC_WCHAR_T
 .
   /wchar_t/+1
   i
@@ -239,8 +239,8 @@ if [ -r ${LIB}/$file ]; then
   ex ${LIB}/$file <<EOF
   /size_t.*;/
   i
-#ifndef _SIZE_T
-#define _SIZE_T
+#ifndef _GCC_SIZE_T
+#define _GCC_SIZE_T
 .
   /size_t/+1
   i
