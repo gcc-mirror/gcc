@@ -918,7 +918,7 @@ cleanup_tree_cfg (void)
 
   /* Merging the blocks creates no new opportunities for the other
      optimizations, so do it here.  */
-  merge_seq_blocks ();
+  retval |= merge_seq_blocks ();
 
   compact_blocks ();
 
