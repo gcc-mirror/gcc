@@ -1,5 +1,10 @@
 2004-08-03  Zack Weinberg  <zack@codesourcery.com>
 
+	* dbxout.c (dbxout_function_decl): Always call dbxout_function_end.
+	(dbxout_function_end): Return after emitting the "Lscope" symbol
+	under the same conditions that this function formerly wasn't called.
+	Add explanatory comments.
+
 	PR 14680
 	* c-decl.c (record_builtin_type): Call debug_hooks->type_decl
 	on the new decl.
