@@ -1,3 +1,7 @@
+2003-08-12  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+        * cp-demangle.c: Clarify what package(s) this is part of.
+
 2003-07-05  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* pex-win32.c (pexecute): Mark parameters this_pname and
