@@ -1,3 +1,8 @@
+2004-10-14  Devang Patel  <dpatel@apple.com>
+
+	PR 17635
+	* gcc.dg/pr17635.c : New test.
+	
 2004-10-14  Olga GOlovanevsky  <olga@il.ibm.com>
 
 	* testsuite/gcc.dg/vect/vect-28.c : Remove xfail.
