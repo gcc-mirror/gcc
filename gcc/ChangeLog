@@ -1,3 +1,8 @@
+2000-05-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h: Add accessor macros for token lists.
+	* cpplib.c, cpphash.c, cpplex.c: Use them.
+
 Wed May  3 09:29:17 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr, case COMPONENT_REF): Don't check for checking

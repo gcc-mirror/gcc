@@ -349,21 +349,21 @@ do_define (pfile)
 
   /* First token on the line must be a NAME.  There must be at least
      one token (the VSPACE at the end).  */
-  if (list->tokens[0].type != CPP_NAME)
+  if (TOK_TYPE (list, 0) != CPP_NAME)
     {
-      cpp_error_with_line (pfile, list->line, list->tokens[0].col,
+      cpp_error_with_line (pfile, list->line, TOK_COL (list, 0),
 			   "#define must be followed by an identifier");
       goto out;
     }
 
-  sym = list->namebuf + list->tokens[0].val.name.offset;
-  len = list->tokens[0].val.name.len;
+  sym = TOK_NAME (list, 0);
+  len = TOK_LEN (list, 0);
 
   /* That NAME is not allowed to be "defined".  (Not clear if the
      standard requires this.)  */
   if (len == 7 && !strncmp (sym, "defined", 7))
     {
-      cpp_error_with_line (pfile, list->line, list->tokens[0].col,
+      cpp_error_with_line (pfile, list->line, TOK_COL (list, 0),
 			   "\"defined\" is not a legal macro name");
       goto out;
     }
