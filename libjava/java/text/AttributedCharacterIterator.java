@@ -59,11 +59,6 @@ import java.util.Map;
   */
 public interface AttributedCharacterIterator extends CharacterIterator
 {
-
-/*
- * Inner Classes
- */
-
 /**
   * This class defines attribute keys that are used as text attributes.
   */
@@ -218,19 +213,12 @@ hashCode()
   *
   * @return A <code>String</code> representation of this object.
   */
-public String
-toString()
+public String toString()
 {
   return(getClass().getName() + "(" + getName() + ")");
 }
 
 } // Inner class Attribute
-
-/*************************************************************************/
-
-/*
- * Instance Methods
- */
 
 /**
   * This method returns a list of all keys that are defined for the 
@@ -238,10 +226,7 @@ toString()
   *
   * @return A list of keys 
   */
-public abstract Set
-getAllAttributeKeys();
-
-/*************************************************************************/
+Set getAllAttributeKeys();
 
 /**
   * This method returns a <code>Map</code> of the attributed defined for
@@ -249,10 +234,7 @@ getAllAttributeKeys();
   *
   * @return A <code>Map</code> of the attributes for the current character.
   */
-public abstract Map
-getAttributes();
-
-/*************************************************************************/
+Map getAttributes();
 
 /**
   * This method returns the value of the specified attribute for the
@@ -263,10 +245,7 @@ getAttributes();
   *
   * @return The value of the specified attribute
   */
-public abstract Object
-getAttribute(AttributedCharacterIterator.Attribute attrib);
-
-/*************************************************************************/
+Object getAttribute (AttributedCharacterIterator.Attribute attrib);
 
 /**
   * This method returns the index of the first character in the run that
@@ -274,10 +253,7 @@ getAttribute(AttributedCharacterIterator.Attribute attrib);
   *
   * @return The start index of the run
   */
-public abstract int
-getRunStart();
-
-/*************************************************************************/
+int getRunStart();
 
 /**
   * This method returns the index of the first character in the run that
@@ -288,10 +264,7 @@ getRunStart();
   *
   * @return The start index of the run.
   */
-public abstract int
-getRunStart(Set attribs);
-
-/*************************************************************************/
+int getRunStart (Set attribs);
 
 /**
   * This method returns the index of the first character in the run that
@@ -301,10 +274,7 @@ getRunStart(Set attribs);
   *
   * @return The start index of the run.
   */
-public abstract int
-getRunStart(AttributedCharacterIterator.Attribute attrib);
-
-/*************************************************************************/
+int getRunStart (AttributedCharacterIterator.Attribute attrib);
 
 /**
   * This method returns the index of the character after the end of the run
@@ -312,10 +282,7 @@ getRunStart(AttributedCharacterIterator.Attribute attrib);
   *
   * @return The end index of the run.
   */
-public abstract int
-getRunLimit();
-
-/*************************************************************************/
+int getRunLimit();
 
 /**
   * This method returns the index of the character after the end of the run
@@ -326,10 +293,7 @@ getRunLimit();
   *
   * @return The end index of the run.
   */
-public abstract int
-getRunLimit(Set attribs);
-
-/*************************************************************************/
+int getRunLimit (Set attribs);
 
 /**
   * This methods returns the index of the character after the end of the run
@@ -339,8 +303,7 @@ getRunLimit(Set attribs);
   * 
   * @return The end index of the run.
   */
-public abstract int
-getRunLimit(AttributedCharacterIterator.Attribute attrib);
+int getRunLimit (AttributedCharacterIterator.Attribute attrib);
 
 } // interface AttributedCharacterIterator
 

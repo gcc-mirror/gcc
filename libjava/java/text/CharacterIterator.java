@@ -45,61 +45,42 @@ package java.text;
   * by the methods in this interface.  Additionally, various methods allow
   * the index to be set. 
   *
-  * @version 0.0
-  *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
 public interface CharacterIterator extends Cloneable
 {
-
-  /*************************************************************************/
-
-  /*
-   * Static Variables
-   */
-
   /**
    * This is a special constant value that is returned when the beginning or
    * end of the character range has been reached.
    */
-  public static final char DONE = '\uFFFF';
-
-  /*************************************************************************/
-
-  /*
-   * Instance Methods
-   */
+  char DONE = '\uFFFF';
 
   /**
    * This method returns the character at the current index position
    *
    * @return The character at the current index position.
    */
-  public abstract char current ();
-
-  /*************************************************************************/
+  char current();
 
   /**
    * This method increments the current index and then returns the character
    * at the new index value.  If the index is already at <code>getEndIndex() - 1</code>,
    * it will not be incremented.
    *
-   * @return The character at the position of the incremented index value, or <code>DONE</code> if the index has reached getEndIndex() - 1
+   * @return The character at the position of the incremented index value,
+   * or <code>DONE</code> if the index has reached getEndIndex() - 1
    */
-  public abstract char next ();
-
-  /*************************************************************************/
+  char next();
 
   /**
    * This method decrements the current index and then returns the character
    * at the new index value.  If the index value is already at the beginning
    * index, it will not be decremented.
    *
-   * @return The character at the position of the decremented index value, or <code>DONE</code> if index was already equal to the beginning index value.
+   * @return The character at the position of the decremented index value,
+   * or <code>DONE</code> if index was already equal to the beginning index value.
    */
-  public abstract char previous ();
-
-  /*************************************************************************/
+  char previous();
 
   /**
    * This method sets the index value to the beginning of the range and returns
@@ -107,9 +88,7 @@ public interface CharacterIterator extends Cloneable
    *
    * @return The character at the beginning of the range, or <code>DONE</code> if the range is empty.
    */
-  public abstract char first ();
-
-  /*************************************************************************/
+  char first();
 
   /**
    * This method sets the index value to <code>getEndIndex() - 1</code> and
@@ -118,18 +97,14 @@ public interface CharacterIterator extends Cloneable
    *
    * @return The character at the end of the range, or <code>DONE</code> if the range is empty.
    */
-  public abstract char last ();  
-
-  /*************************************************************************/
+  char last();  
 
   /**
    * This method returns the current value of the index.
    *
    * @return The current index value
    */
-  public abstract int getIndex ();
-
-  /*************************************************************************/
+  int getIndex();
 
   /**
    * This method sets the value of the index to the specified value, then
@@ -139,9 +114,7 @@ public interface CharacterIterator extends Cloneable
    *
    * @return The character at the new index value or <code>DONE</code> if the index value is equal to <code>getEndIndex</code>.
    */
-  public abstract char setIndex (int index) throws IllegalArgumentException;
-
-  /*************************************************************************/
+  char setIndex (int index) throws IllegalArgumentException;
 
   /**
    * This method returns the character position of the first character in the
@@ -149,9 +122,7 @@ public interface CharacterIterator extends Cloneable
    *
    * @return The index of the first character in the range.
    */
-  public abstract int getBeginIndex ();
-
-  /*************************************************************************/
+  int getBeginIndex();
 
   /**
    * This method returns the character position of the end of the text range.
@@ -161,14 +132,12 @@ public interface CharacterIterator extends Cloneable
    *
    * @return The index of the end of the range.
    */
-  public abstract int getEndIndex ();
-
-  /*************************************************************************/
+  int getEndIndex();
 
   /**
    * This method creates a copy of this <code>CharacterIterator</code>.
    *
    * @return A copy of this <code>CharacterIterator</code>.
    */
-  public abstract Object clone ();
+  Object clone();
 }
