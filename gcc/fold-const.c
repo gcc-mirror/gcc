@@ -3040,8 +3040,17 @@ fold (expr)
 	  if (op == 0)
 	    continue;		/* Valid for CALL_EXPR, at least.  */
 
-	  /* Strip any conversions that don't change the mode.  */
-	  STRIP_NOPS (op);
+	  if (kind == '<' || code == RSHIFT_EXPR)
+	    {
+	      /* Signedness matters here.  Perhaps we can refine this
+		 later.  */
+	      STRIP_TYPE_NOPS (op);
+	    }
+	  else
+	    {
+	      /* Strip any conversions that don't change the mode.  */
+	      STRIP_NOPS (op);
+	    }
 	  
 	  if (TREE_CODE (op) == COMPLEX_CST)
 	    subop = TREE_REALPART (op);
