@@ -1,3 +1,8 @@
+2003-07-03  David Edelsohn  <edelsohn@gnu.org>
+
+	* testsuite/22_locale/num_put/put/char/7.cc: Guard with
+	_GLIBCPP_USE_WCHAR_T.
+
 2003-07-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/basic_string.tcc (_M_replace_aux): Constify
