@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARC64, ELF.
-   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Doug Evans, dje@cygnus.com.
 
 This file is part of GNU CC.
@@ -19,7 +19,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This is a v9 only compiler.  -mv8 is not expected to work.  If you want
+/* This is a v9 only compiler.  -mcpu=v8 is not expected to work.  If you want
    a v8/v9 compiler, this isn't the place to do it.  */
 
 #define SPARC_V9 1	/* See sparc.h.  */
@@ -35,13 +35,15 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc64-elf)")
 
-/* A v9 compiler with stack-bias, 32 bit integers and 64 bit pointers,
-   in a Medium/Anywhere code model environment.  */
+/* A v9 compiler without stack-bias, lp64 sizes,
+   in a Medium/Anywhere code model environment.
+   There is no stack bias as this configuration is intended for
+   embedded systems.  */
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
-  (MASK_V9 + MASK_ARCH64 + MASK_PTR64 + MASK_HARD_QUAD \
-   + MASK_STACK_BIAS + MASK_MEDANY + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
+  (MASK_V9 + MASK_ARCH64 + MASK_PTR64 + MASK_LONG64 + MASK_HARD_QUAD \
+   MASK_MEDANY + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
 
 /* __svr4__ is used by the C library */
 /* ??? __arch64__ is subject to change.  */
@@ -120,6 +122,7 @@ crtbegin.o%s \
 /* The medium/anywhere code model practically requires us to put jump tables
    in the text section as gcc is unable to distinguish LABEL_REF's of jump
    tables from other label refs (when we need to).  */
+/* ??? Revisit this.  */
 #undef JUMP_TABLES_IN_TEXT_SECTION
 #define JUMP_TABLES_IN_TEXT_SECTION
 
