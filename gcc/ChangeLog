@@ -1,3 +1,7 @@
+2001-05-25  Stacey Sheldon  <ssheldon@Catena.com>
+
+	* config/arc/initfini.c (.init): Fix typo.
+
 2001-05-25  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/rs6000/rs6000.md (fseldfsf4): Correct mode of operand 4.

@@ -141,7 +141,7 @@ __do_global_ctors ()
 
 asm ("\n\
 	.section .init\n\
-	bl.nd __do_global_ctors\
+	bl.nd __do_global_ctors\n\
 	ld blink,[fp,4]\n\
 	j.d blink\n\
 	ld.a fp,[sp,16]\n\
