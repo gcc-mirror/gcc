@@ -169,6 +169,7 @@ machopic_data_defined_p (rtx sym_ref)
   switch (machopic_classify_symbol (sym_ref))
     {
     case MACHOPIC_DEFINED_DATA:
+    case MACHOPIC_DEFINED_FUNCTION:
       return 1;
     default:
       return 0;

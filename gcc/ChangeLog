@@ -1,3 +1,8 @@
+2004-11-18  Fariborz Jahanian <fjahanian@apple.com>
+
+	* config/darwin.c (machopic_data_defined_p): return 1 for
+	MACHOPIC_DEFINED_FUNCTION.
+
 2004-11-19  Jeff Law  <law@redhat.com>
 
 	* tree-ssa.c (verify_ssa): Remove redundant checking of PHI
