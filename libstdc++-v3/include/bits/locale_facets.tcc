@@ -622,9 +622,14 @@ namespace std
       _M_convert_float(_OutIter __s, ios_base& __io, _CharT __fill, char __mod,
 		       _ValueT __v) const
       {
-	// Note: digits10 is rounded down.  We need to add 1 to ensure
+	// Note: digits10 is rounded down: we need to add 1 to ensure
 	// we get the full available precision.
-	const int __max_digits = numeric_limits<_ValueT>::digits10 + 1;
+	// Then, in general, one more 1 needs to be added since, when the
+	// %{g,G} conversion specifiers are chosen inside _S_format_float, the
+	// precision field is "the maximum number of significant digits", *not*
+	// the "number of digits to appear after the decimal point", as happens
+	// for %{e,E,f,F} (C99, 7.19.6.1,4).
+	const int __max_digits = numeric_limits<_ValueT>::digits10 + 2;
 	streamsize __prec = __io.precision();
 
 	if (__prec > static_cast<streamsize>(__max_digits))
@@ -1628,7 +1633,7 @@ namespace std
 	  // Find smallest matching string.
 	  size_t __minlen = 10;
 	  for (size_t __i2 = 0; __i2 < __nmatches; ++__i2)
-	    __minlen = min(__minlen, 
+	    __minlen = min(__minlen,
 			   __traits_type::length(__names[__matches[__i2]]));
 	  
 	  if (__pos < __minlen && __beg != __end)
