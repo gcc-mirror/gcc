@@ -179,37 +179,6 @@ typedef struct case_node *case_node_ptr;
 /* This must be a signed type, and non-ANSI compilers lack signed char.  */
 static short *cost_table;
 static int use_cost_table;
-
-static int estimate_case_costs ();
-static void balance_case_nodes ();
-static void emit_case_nodes ();
-static void group_case_nodes ();
-static void emit_jump_if_reachable ();
-
-static int warn_if_unused_value ();
-static void expand_goto_internal ();
-static void bc_expand_goto_internal ();
-static int expand_fixup ();
-static void bc_expand_fixup ();
-void fixup_gotos ();
-static void bc_fixup_gotos ();
-void free_temp_slots ();
-static void expand_cleanups ();
-static void expand_null_return_1 ();
-static int tail_recursion_args ();
-static void do_jump_if_equal ();
-int bc_expand_exit_loop_if_false ();
-void bc_expand_start_cond ();
-void bc_expand_end_cond ();
-void bc_expand_start_else ();
-void bc_expand_end_bindings ();
-void bc_expand_start_case ();
-void bc_check_for_full_enumeration_handling ();
-void bc_expand_end_case ();
-void bc_expand_decl ();
-
-extern rtx bc_allocate_local ();
-extern rtx bc_allocate_variable_array ();
 
 /* Stack of control and binding constructs we are currently inside.
 
@@ -482,6 +451,56 @@ struct label_chain
   struct label_chain *next;
   tree label;
 };
+static void expand_goto_internal	PROTO((tree, rtx, rtx));
+static void bc_expand_goto_internal	PROTO((enum bytecode_opcode,
+					       struct bc_label *, tree));
+static int expand_fixup			PROTO((tree, rtx, rtx));
+static void bc_expand_fixup		PROTO((enum bytecode_opcode,
+					       struct bc_label *, int));
+static void fixup_gotos			PROTO((struct nesting *, rtx, tree,
+					       rtx, int));
+static void bc_fixup_gotos		PROTO((struct nesting *, int, tree,
+					       rtx, int));
+static int warn_if_unused_value		PROTO((tree));
+static void bc_expand_start_cond	PROTO((tree, int));
+static void bc_expand_end_cond		PROTO((void));
+static void bc_expand_start_else	PROTO((void));
+static void bc_expand_end_loop		PROTO((void));
+static void bc_expand_end_bindings	PROTO((tree, int, int));
+static void bc_expand_decl		PROTO((tree, tree));
+static void bc_expand_variable_local_init PROTO((tree));
+static void bc_expand_decl_init		PROTO((tree));
+static void expand_null_return_1	PROTO((rtx, int));
+static int tail_recursion_args		PROTO((tree, tree));
+static void expand_cleanups		PROTO((tree, tree));
+static void bc_expand_start_case	PROTO((struct nesting *, tree,
+					       tree, char *));
+static int bc_pushcase			PROTO((tree, tree));
+static void bc_check_for_full_enumeration_handling PROTO((tree));
+static void bc_expand_end_case		PROTO((tree));
+static void do_jump_if_equal		PROTO((rtx, rtx, rtx, int));
+static int estimate_case_costs		PROTO((case_node_ptr));
+static void group_case_nodes		PROTO((case_node_ptr));
+static void balance_case_nodes		PROTO((case_node_ptr *,
+					       case_node_ptr));
+static int node_has_low_bound		PROTO((case_node_ptr, tree));
+static int node_has_high_bound		PROTO((case_node_ptr, tree));
+static int node_is_bounded		PROTO((case_node_ptr, tree));
+static void emit_jump_if_reachable	PROTO((rtx));
+static void emit_case_nodes		PROTO((rtx, case_node_ptr, rtx, tree));
+
+int bc_expand_exit_loop_if_false ();
+void bc_expand_start_cond ();
+void bc_expand_end_cond ();
+void bc_expand_start_else ();
+void bc_expand_end_bindings ();
+void bc_expand_start_case ();
+void bc_check_for_full_enumeration_handling ();
+void bc_expand_end_case ();
+void bc_expand_decl ();
+
+extern rtx bc_allocate_local ();
+extern rtx bc_allocate_variable_array ();
 
 void
 init_stmt ()
@@ -841,6 +860,7 @@ expand_goto_internal (body, label, last_insn)
 
 /* Generate a jump with OPCODE to the given bytecode LABEL which is
    found within BODY. */
+
 static void
 bc_expand_goto_internal (opcode, label, body)
      enum bytecode_opcode opcode;
@@ -1070,7 +1090,16 @@ bc_expand_fixup (opcode, label, stack_level)
   fputc ('\n', stderr);
 #endif
 }
+
+/* Expand any needed fixups in the outputmost binding level of the
+   function.  FIRST_INSN is the first insn in the function.  */
 
+void
+expand_fixups (first_insn)
+     rtx first_insn;
+{
+  fixup_gotos (NULL_PTR, NULL_RTX, NULL_TREE, first_insn, 0);
+}
 
 /* When exiting a binding contour, process all pending gotos requiring fixups.
    THISBLOCK is the structure that describes the block being exited.
