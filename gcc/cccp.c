@@ -8314,6 +8314,8 @@ macarg1 (start, limit, depthptr, newlines, comments, rest_args)
 	  if (*bp == '\n') ++*newlines;
 	  bp++;
 	}
+	/* Now count the newline that we are about to skip.  */
+	++*newlines;
 	break;
       }
       if (bp[1] != '*' || bp + 1 >= limit)
