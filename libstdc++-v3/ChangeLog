@@ -1,3 +1,22 @@
+2004-03-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float):
+	Also when parsing exponent sign, first look for thousands_sep
+	and decimal_point; tweak a bit.
+	* testsuite/22_locale/num_get/get/char/15.cc: New.
+	* testsuite/22_locale/num_get/get/wchar_t/15.cc: New.
+	
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float,
+	num_get<>::_M_extract_int): Reorder some conditionals.
+
+2004-03-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (money_get<>::_M_extract):
+	Consistently with numpunct, enforce the requirements in
+	22.2.6.3, p3 for the thousands separators; tweak a bit.
+	* testsuite/22_locale/money_get/get/char/15.cc: New.
+	* testsuite/22_locale/money_get/get/wchar_t/15.cc: New.
+	
 2004-03-01  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* testsuite/lib/libstdc++.exp (v3-list-tests): Use 
