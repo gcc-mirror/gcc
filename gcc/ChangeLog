@@ -1,3 +1,7 @@
+2004-07-17  Graham Stott  <graham.stott@btinternet.com>
+
+	* emit-rtl.c (reorder_insns): Don't set BB for a BARRIER insn.
+
 2004-07-17  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* doc/sourcebuild.texi: Remove libf2c entry.
