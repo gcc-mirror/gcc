@@ -1245,13 +1245,35 @@
    operands[5] = c4x_operand_subword (operands[1], 1, 1, HImode);
 }")
 
+
+; We need to clobber the DP reg to be safe in case we
+; need to load this address from memory
+(define_insn "load_immed_address"
+  [(set (match_operand:QI 0 "reg_operand" "=a?x?c*r")
+        (match_operand:QI 1 "symbolic_address_operand" ""))
+   (clobber (reg:QI 16))]
+  "TARGET_LOAD_ADDRESS"
+  "#"
+  [(set_attr "type" "multi")])
+
+
+(define_split
+  [(set (match_operand:QI 0 "std_reg_operand" "")
+        (match_operand:QI 1 "symbolic_address_operand" ""))
+   (clobber (reg:QI 16))]
+  "! TARGET_C3X && ! TARGET_TI"
+  [(set (match_dup 0) (high:QI (match_dup 1)))
+   (set (match_dup 0) (lo_sum:QI (match_dup 0) (match_dup 1)))]
+  "")
+
 ; CC has been selected to load a symbolic address.  We force the address
 ; into memory and then generate LDP and LDIU insns.
 ; This is also required for the C30 if we pretend that we can 
 ; easily load symbolic addresses into a register.
 (define_split
   [(set (match_operand:QI 0 "reg_operand" "")
-        (match_operand:QI 1 "symbolic_address_operand" ""))]
+        (match_operand:QI 1 "symbolic_address_operand" ""))
+   (clobber (reg:QI 16))]
   "! TARGET_SMALL 
    && (TARGET_C3X || TARGET_TI
        || (reload_completed
@@ -1274,7 +1296,8 @@
 ; for the small memory model.
 (define_split
   [(set (match_operand:QI 0 "reg_operand" "")
-        (match_operand:QI 1 "symbolic_address_operand" ""))]
+        (match_operand:QI 1 "symbolic_address_operand" ""))
+   (clobber (reg:QI 16))]
   "TARGET_SMALL
    && (TARGET_C3X || TARGET_TI
        || (reload_completed
@@ -1289,13 +1312,6 @@
 			         gen_rtx_LO_SUM (Pmode, dp_reg,
                                                  XEXP (operands[2], 0)));
 }")
-
-(define_insn "load_immed_address"
-  [(set (match_operand:QI 0 "reg_operand" "=a?x?c*r")
-        (match_operand:QI 1 "symbolic_address_operand" ""))]
-  "TARGET_LOAD_ADDRESS"
-  "#"
-  [(set_attr "type" "multi")])
 
 (define_insn "loadhi_big_constant"
   [(set (match_operand:HI 0 "reg_operand" "=c*d")

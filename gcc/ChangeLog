@@ -1,3 +1,7 @@
+2000-03-24  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (load_immed_address):  Add DP reg clobber.
+
 Thu Mar 23 17:10:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* calls.c (expand_call): If TARGET is passed by reference and
