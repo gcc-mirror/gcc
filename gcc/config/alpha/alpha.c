@@ -3794,7 +3794,7 @@ print_operand (file, x, code)
         if (GET_RTX_CLASS (c) != '<')
 	  output_operand_lossage ("invalid %%C value");
 
-	if (code == 'D')
+	else if (code == 'D')
 	  c = reverse_condition (c);
 	else if (code == 'c')
 	  c = swap_condition (c);
@@ -5220,7 +5220,7 @@ summarize_insn (x, sum, set)
     case REG:
       {
 	int regno = REGNO (x);
-	unsigned long mask = 1UL << (regno % 32);
+	unsigned long mask = ((unsigned long) 1) << (regno % 32);
 
 	if (regno == 31 || regno == 63)
 	  break;
