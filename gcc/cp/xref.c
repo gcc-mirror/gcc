@@ -1,6 +1,6 @@
 /* Code for handling XREF output from GNU C++.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   2000 Free Software Foundation, Inc.
+   2000, 2002 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Nonzero if NAME as a file name is absolute.  */
 #ifndef FILE_NAME_ABSOLUTE_P
-#define FILE_NAME_ABSOLUTE_P(NAME) (NAME[0] == '/')
+#define FILE_NAME_ABSOLUTE_P(NAME) ((NAME)[0] == '/')
 #endif
 
 /* For cross referencing.  */
@@ -57,19 +57,19 @@ int flag_gnu_xref;
 #define FALSE 0
 #endif
 
-#define PALLOC(typ) ((typ *) xcalloc(1,sizeof(typ)))
+#define PALLOC(TYP) ((TYP *) xcalloc (1, sizeof (TYP)))
 
 
 /* Return a malloc'd copy of STR.  */
-#define SALLOC(str) ((char *) ((str) == NULL ? NULL : xstrdup (str)))
-#define SFREE(str) (str != NULL && (free(str),0))
+#define SALLOC(STR) ((char *) ((STR) == NULL ? NULL : xstrdup (STR)))
+#define SFREE(STR) ((STR) != NULL && (free (STR), 0))
 
-#define STREQL(s1,s2) (strcmp((s1),(s2)) == 0)
-#define STRNEQ(s1,s2) (strcmp((s1),(s2)) != 0)
-#define STRLSS(s1,s2) (strcmp((s1),(s2)) < 0)
-#define STRLEQ(s1,s2) (strcmp((s1),(s2)) <= 0)
-#define STRGTR(s1,s2) (strcmp((s1),(s2)) > 0)
-#define STRGEQ(s1,s2) (strcmp((s1),(s2)) >= 0)
+#define STREQL(S1,S2) (strcmp ((S1), (S2)) == 0)
+#define STRNEQ(S1,S2) (strcmp ((S1), (S2)) != 0)
+#define STRLSS(S1,S2) (strcmp ((S1), (S2)) < 0)
+#define STRLEQ(S1,S2) (strcmp ((S1), (S2)) <= 0)
+#define STRGTR(S1,S2) (strcmp ((S1), (S2)) > 0)
+#define STRGEQ(S1,S2) (strcmp ((S1), (S2)) >= 0)
 
 /************************************************************************/
 /*									*/
