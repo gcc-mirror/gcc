@@ -6560,7 +6560,7 @@ regno_clobbered_p (regno, insn, mode)
     {
       int test = REGNO (XEXP (PATTERN (insn), 0));
 
-      return regno >= test && test < endregno;
+      return test >= regno && test < endregno;
     }
 
   if (GET_CODE (PATTERN (insn)) == PARALLEL)
@@ -6574,7 +6574,7 @@ regno_clobbered_p (regno, insn, mode)
 	    {
 	      int test = REGNO (XEXP (elt, 0));
 	      
-	      if (regno >= test && test < endregno)
+	      if (test >= regno && test < endregno)
 		return 1;
 	    }
 	}
