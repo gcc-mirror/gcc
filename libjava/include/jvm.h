@@ -11,9 +11,6 @@ details.  */
 #ifndef __JAVA_JVM_H__
 #define __JAVA_JVM_H__
 
-// Force C++ compiler to use Java-style exceptions.
-#pragma GCC java_exceptions
-
 #include <gcj/javaprims.h>
 
 #include <java-assert.h>
