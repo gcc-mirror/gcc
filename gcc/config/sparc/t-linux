@@ -1,0 +1,6 @@
+LIBGCC1 =
+CROSS_LIBGCC1 =
+
+# We don't want to build .umul, etc., because Linux provides them,
+# which means that libgcc1-test will fail for cross-compiler.
+LIBGCC1_TEST =

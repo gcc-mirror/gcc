@@ -1,0 +1,5 @@
+# Do not build libgcc1. Let gcc generate those functions. The Linux
+# C library can handle them.
+LIBGCC1 = 
+CROSS_LIBGCC1 =
+LIBGCC1_TEST =
