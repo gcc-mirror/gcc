@@ -1,3 +1,8 @@
+2004-07-05  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.am: Silence two automake warnings.
+	* Makefile.in: Regenerate.
+
 2004-06-25  Kelley Cook  <kcook@gcc.gnu.org>
 
 	PR other/15194

@@ -129,6 +129,7 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 GENINSRC_FALSE = @GENINSRC_FALSE@
 GENINSRC_TRUE = @GENINSRC_TRUE@
+GREP = @GREP@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -226,7 +227,7 @@ AM_MAKEFLAGS = \
 	"RANLIB=$(RANLIB)" \
 	"DESTDIR=$(DESTDIR)"
 
-INCLUDES = -I. -I$(top_srcdir) $(ZINCS) -I$(top_srcdir)/../include
+AM_CPPFLAGS = -I. -I$(top_srcdir) $(ZINCS) -I$(top_srcdir)/../include
 LIBIBERTY = ../libiberty/libiberty.a
 jar_SOURCES = jartool.c dostime.c compress.c pushback.c jartool.h \
 zipfile.h dostime.h compress.h pushback.h
@@ -266,7 +267,7 @@ all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .dvi .html .info .o .obj .pdf .ps .texi
+.SUFFIXES: .1 .c .dvi .html .info .o .obj .pdf .pod .ps .texi
 am--refresh:
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -817,7 +818,7 @@ uninstall-man: uninstall-man1
 	uninstall-man1
 
 
-%.1: %.pod
+.pod.1:
 	-($(POD2MAN) --section=1 $< > $(@).T$$$$ && \
 		mv -f $(@).T$$$$ $@) || \
 		(rm -f $(@).T$$$$ && exit 1)
