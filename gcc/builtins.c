@@ -4969,7 +4969,7 @@ expand_builtin_signbit (tree exp, rtx target)
 
   /* For floating point formats without a sign bit, implement signbit
      as "ARG < 0.0".  */
-  bitpos = fmt->signbit;
+  bitpos = fmt->signbit_ro;
   if (bitpos < 0)
   {
     /* But we can't do this if the format supports signed zero.  */

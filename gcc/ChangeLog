@@ -1,3 +1,20 @@
+2005-03-14  Roger Sayle  <roger@eyesopen.com>
+
+	* real.h (struct real_format): Split the signbit field into two
+	two fields, signbit_ro and signbit_rw.
+	* real.c (ieee_single_format, mips_single_format, ieee_double_format,
+	mips_double_format, ieee_extended_motorola_format,
+	ieee_extended_intel_96_format, ieee_extended_intel_96_round_53_format,
+	ieee_extended_intel_128_format, ibm_extended_format,
+	mips_extended_format, ieee_quad_format, mips_quad_format,
+	vax_f_format, vax_d_format, vax_g_format, i370_single_format,
+	i370_double_format, c4x_single_format, c4x_extended_format,
+	real_internal_format): Update initializers for new field.
+	* builtins.c (expand_builtin_signbit): Use signbit_ro field of the
+	real_format structure.
+	* optabs.c (expand_absneg_bit, expand_copysign): Use signbit_rw
+	field of the real_format structure.
+
 2005-03-14  Daniel Berlin <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/20458
