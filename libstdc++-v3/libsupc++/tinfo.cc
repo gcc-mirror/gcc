@@ -41,6 +41,17 @@ std::type_info::
 ~type_info ()
 { }
 
+#if !__GXX_MERGED_TYPEINFO_NAMES
+
+// We can't rely on common symbols being shared between shared objects.
+bool std::type_info::
+operator== (const std::type_info& arg) const
+{
+  return (&arg == this) || (__builtin_strcmp (name (), arg.name ()) == 0);
+}
+
+#endif
+
 #if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
 // original (old) abi
 
@@ -62,13 +73,6 @@ convert_to_base (void *addr, bool is_virtual, myint32 offset)
   return *((void **) ((char *) addr + offset));
 }
 
-}
-
-// We can't rely on common symbols being shared between shared objects.
-bool std::type_info::
-operator== (const std::type_info& arg) const
-{
-  return (&arg == this) || (__builtin_strcmp (name (), arg.name ()) == 0);
 }
 
 extern "C" void

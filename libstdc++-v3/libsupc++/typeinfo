@@ -48,6 +48,19 @@ namespace __cxxabiv1
 } // namespace __cxxabiv1
 #endif
 
+
+#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
+  // In the old ABI, typeinfo name strings were not merged.
+  #define __GXX_MERGED_TYPEINFO_NAMES 0
+#elif !__GXX_WEAK__
+  // If weak symbols are not supported, they are still not merged.
+  #define __GXX_MERGED_TYPEINFO_NAMES 0
+#else
+  // In the new ABI, on platforms that support weak symbols, they are
+  // merged.
+  #define __GXX_MERGED_TYPEINFO_NAMES 1
+#endif
+
 namespace std 
 {
   class type_info 
@@ -73,28 +86,29 @@ namespace std
   public:
     // the public interface
 #if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
-    // In old abi, there can be multiple instances of a type_info
-    // object for one type. Uniqueness must use the _name value, not
-    // object address.
-    bool before(const type_info& arg) const;
     const char* name() const
     { return __name; }
-    bool operator==(const type_info& __arg) const;
-    bool operator!=(const type_info& __arg) const
-    { return !operator==(__arg); }
+#else
+    const char* name() const
+    { return __name; }
+#endif
 
+#if !__GXX_MERGED_TYPEINFO_NAMES
+    bool before(const type_info& arg) const;
+    // In old abi, or when weak symbols are not supported, there can
+    // be multiple instances of a type_info object for one
+    // type. Uniqueness must use the _name value, not object address.
+    bool operator==(const type_info& __arg) const;
 #else
     // In new abi we can rely on type_info's NTBS being unique,
     // and therefore address comparisons are sufficient.
     bool before(const type_info& __arg) const
     { return __name < __arg.__name; }
-    const char* name() const
-    { return __name; }
     bool operator==(const type_info& __arg) const
     { return __name == __arg.__name; }
+#endif
     bool operator!=(const type_info& __arg) const
     { return !operator==(__arg); }
-#endif
     
     // the internal interface
 #if defined(__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
