@@ -1,3 +1,8 @@
+2000-12-03  Bruce Korb  <bkorb@gcc.org>
+
+	* fixinc/mkfixinc.sh(build machine): Sometimes, there is no canonical
+	build machine name.  Default to the target.
+
 2000-12-03  Laurynas Biveinis  <lauras@softhome.net>
 
 	* Makefile.in: use $(build_canonical), not $(canonical_build).

@@ -5,14 +5,16 @@ machine=$2
 
 if [ -z "$build" ]
 then
-       echo No build system name given
-       exit 1
+	echo No target system name given
+	exit 1
 fi
 
+#  If we don't get two arguments, then assume both arguments
+#  are the same
+#
 if [ -z "$machine" ]
 then
-	echo No machine name given
-	exit 1
+	machine="$build"
 fi
 
 target=../fixinc.sh
