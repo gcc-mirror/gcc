@@ -194,7 +194,7 @@ const int x86_use_q_reg = m_PENT | m_PPRO | m_K6;
 const int x86_use_any_reg = m_486;
 const int x86_cmove = m_PPRO | m_ATHLON;
 const int x86_deep_branch = m_PPRO | m_K6 | m_ATHLON;
-const int x86_use_sahf = m_PPRO | m_K6 | m_ATHLON;
+const int x86_use_sahf = m_PPRO | m_K6;
 const int x86_partial_reg_stall = m_PPRO;
 const int x86_use_loop = m_K6;
 const int x86_use_fiop = ~(m_PPRO | m_ATHLON | m_PENT);
@@ -434,6 +434,11 @@ static rtx ix86_expand_unop_builtin PARAMS ((enum insn_code, tree, rtx, int));
 static rtx ix86_expand_binop_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx ix86_expand_store_builtin PARAMS ((enum insn_code, tree, int));
 static rtx safe_vector_operand PARAMS ((rtx, enum machine_mode));
+static enum rtx_code ix86_fp_compare_code_to_integer PARAMS ((enum rtx_code));
+static void ix86_fp_comparison_codes PARAMS ((enum rtx_code code,
+					      enum rtx_code *,
+					      enum rtx_code *,
+					      enum rtx_code *));
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
@@ -4814,6 +4819,107 @@ ix86_prepare_fp_compare_args (code, pop0, pop1)
   return code;
 }
 
+/* Convert comparison codes we use to represent FP comparison to integer
+   code that will result in proper branch.  Return UNKNOWN if no such code
+   is available.  */
+static enum rtx_code
+ix86_fp_compare_code_to_integer (code)
+     enum rtx_code code;
+{
+  switch (code)
+    {
+    case GT:
+      return GTU;
+    case GE:
+      return GEU;
+    case ORDERED:
+    case UNORDERED:
+      return code;
+      break;
+    case UNEQ:
+      return EQ;
+      break;
+    case UNLT:
+      return LTU;
+      break;
+    case UNLE:
+      return LEU;
+      break;
+    case LTGT:
+      return NE;
+      break;
+    default:
+      return UNKNOWN;
+    }
+}
+
+/* Split comparison code CODE into comparisons we can do using branch
+   instructions.  BYPASS_CODE is comparison code for branch that will
+   branch around FIRST_CODE and SECOND_CODE.  If some of branches
+   is not required, set value to NIL.
+   We never require more than two branches.  */
+static void
+ix86_fp_comparison_codes (code, bypass_code, first_code, second_code)
+     enum rtx_code code, *bypass_code, *first_code, *second_code;
+{
+  *first_code = code;
+  *bypass_code = NIL;
+  *second_code = NIL;
+
+  /* The fcomi comparison sets flags as follows:
+
+     cmp    ZF PF CF
+     >      0  0  0
+     <      0  0  1
+     =      1  0  0
+     un     1  1  1 */
+
+  switch (code)
+    {
+    case GT:			/* GTU - CF=0 & ZF=0 */
+    case GE:			/* GEU - CF=0 */
+    case ORDERED:		/* PF=0 */
+    case UNORDERED:		/* PF=1 */
+    case UNEQ:			/* EQ - ZF=1 */
+    case UNLT:			/* LTU - CF=1 */
+    case UNLE:			/* LEU - CF=1 | ZF=1 */
+    case LTGT:			/* EQ - ZF=0 */
+      break;
+    case LT:			/* LTU - CF=1 - fails on unordered */
+      *first_code = UNLT;
+      *bypass_code = UNORDERED;
+      break;
+    case LE:			/* LEU - CF=1 | ZF=1 - fails on unordered */
+      *first_code = UNLE;
+      *bypass_code = UNORDERED;
+      break;
+    case EQ:			/* EQ - ZF=1 - fails on unordered */
+      *first_code = UNEQ;
+      *bypass_code = UNORDERED;
+      break;
+    case NE:			/* NE - ZF=0 - fails on unordered */
+      *first_code = LTGT;
+      *second_code = UNORDERED;
+      break;
+    case UNGE:			/* GEU - CF=0 - fails on unordered */
+      *first_code = GE;
+      *second_code = UNORDERED;
+      break;
+    case UNGT:			/* GTU - CF=0 & ZF=0 - fails on unordered */
+      *first_code = GT;
+      *second_code = UNORDERED;
+      break;
+    default:
+      abort ();
+    }
+  if (!TARGET_IEEE_FP)
+    {
+      *second_code = NIL;
+      *bypass_code = NIL;
+    }
+}
+
+
 /* Generate insn patterns to do a floating point compare of OPERANDS.  */
 
 rtx
@@ -4822,28 +4928,42 @@ ix86_expand_fp_compare (code, op0, op1, scratch)
      rtx op0, op1, scratch;
 {
   enum machine_mode fpcmp_mode, intcmp_mode;
-  rtx tmp;
+  rtx tmp, tmp2;
+  enum rtx_code bypass_code, first_code, second_code;
 
   fpcmp_mode = ix86_fp_compare_mode (code);
   code = ix86_prepare_fp_compare_args (code, &op0, &op1);
 
+  ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
+
   /* %%% fcomi is probably always faster, even when dealing with memory,
      since compare-and-branch would be three insns instead of four.  */
-  if (ix86_use_fcomi_compare (code))
+  if (bypass_code == NIL && second_code == NIL 
+      && (TARGET_CMOVE || TARGET_USE_SAHF || optimize_size))
     {
-      tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
-      tmp = gen_rtx_SET (VOIDmode, gen_rtx_REG (fpcmp_mode, FLAGS_REG), tmp);
-      emit_insn (tmp);
+      do_sahf:
+      if (TARGET_CMOVE)
+	{
+	  tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
+	  tmp = gen_rtx_SET (VOIDmode, gen_rtx_REG (fpcmp_mode, FLAGS_REG),
+			     tmp);
+	  emit_insn (tmp);
+	}
+      else
+	{
+	  tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
+	  tmp2 = gen_rtx_UNSPEC (HImode, gen_rtvec (1, tmp), 9);
+	  emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp2));
+	  emit_insn (gen_x86_sahf_1 (scratch));
+	}
 
       /* The FP codes work out to act like unsigned.  */
-      code = unsigned_comparison (code);
+      code = ix86_fp_compare_code_to_integer (first_code);
       intcmp_mode = CCmode;
     }
   else
     {
       /* Sadness wrt reg-stack pops killing fpsr -- gotta get fnstsw first.  */
-
-      rtx tmp2;
       tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
       tmp2 = gen_rtx_UNSPEC (HImode, gen_rtvec (1, tmp), 9);
       emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp2));
@@ -4857,72 +4977,60 @@ ix86_expand_fp_compare (code, op0, op1, scratch)
 	     smaller.  On Pentium, sahf is non-pairable while test is UV
 	     pairable.  */
 
-	  if (TARGET_USE_SAHF || optimize_size)
+	  /*
+	   * The numbers below correspond to the bits of the FPSW in AH.
+	   * C3, C2, and C0 are in bits 0x40, 0x4, and 0x01 respectively.
+	   *
+	   *    cmp    C3 C2 C0
+	   *    >      0  0  0
+	   *    <      0  0  1
+	   *    =      1  0  0
+	   *    un     1  1  1
+	   */
+
+	  int mask;
+
+	  switch (code)
 	    {
-	    do_sahf:
-	      emit_insn (gen_x86_sahf_1 (scratch));
+	    case GT:
+	      mask = 0x41;
+	      code = EQ;
+	      break;
+	    case LT:
+	      mask = 0x01;
+	      code = NE;
+	      break;
+	    case GE:
+	      /* We'd have to use `xorb 1,ah; andb 0x41,ah', so it's
+		 faster in all cases to just fall back on sahf.  */
+	      goto do_sahf;
+	    case LE:
+	      mask = 0x41;
+	      code = NE;
+	      break;
+	    case EQ:
+	      mask = 0x40;
+	      code = NE;
+	      break;
+	    case NE:
+	      mask = 0x40;
+	      code = EQ;
+	      break;
+	    case UNORDERED:
+	      mask = 0x04;
+	      code = NE;
+	      break;
+	    case ORDERED:
+	      mask = 0x04;
+	      code = EQ;
+	      break;
 
-	      /* The FP codes work out to act like unsigned.  */
-	      code = unsigned_comparison (code);
-	      intcmp_mode = CCmode;
+	    default:
+	      abort ();
 	    }
-	  else
-	    {
-	      /*
-	       * The numbers below correspond to the bits of the FPSW in AH.
-	       * C3, C2, and C0 are in bits 0x40, 0x4, and 0x01 respectively.
-	       *
-	       *    cmp    C3 C2 C0
-	       *    >      0  0  0
-	       *    <      0  0  1
-	       *    =      1  0  0
-	       *    un     1  1  1
-	       */
 
-	      int mask;
-
-	      switch (code)
-		{
-		case GT:
-		  mask = 0x41;
-		  code = EQ;
-		  break;
-		case LT:
-		  mask = 0x01;
-		  code = NE;
-		  break;
-		case GE:
-		  /* We'd have to use `xorb 1,ah; andb 0x41,ah', so it's
-		     faster in all cases to just fall back on sahf.  */
-		  goto do_sahf;
-		case LE:
-		  mask = 0x41;
-		  code = NE;
-		  break;
-		case EQ:
-		  mask = 0x40;
-		  code = NE;
-		  break;
-		case NE:
-		  mask = 0x40;
-		  code = EQ;
-		  break;
-		case UNORDERED:
-		  mask = 0x04;
-		  code = NE;
-		  break;
-		case ORDERED:
-		  mask = 0x04;
-		  code = EQ;
-		  break;
-
-		default:
-		  abort ();
-		}
-
-	      emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (mask)));
-	      intcmp_mode = CCNOmode;
-	    }
+	  emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (mask)));
+	  intcmp_mode = CCNOmode;
 	}
       else
 	{
