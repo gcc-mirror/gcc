@@ -1,3 +1,8 @@
+2001-06-25  Jim Wilson  <wilson@redhat.com>
+
+	* config/i960/t-960bare (i960-c.o): Add missing header dependencies.
+	* config/i960/t-vxworks960: Likewise.
+
 2001-06-25   Dale Johannesen    <dalej@apple.com>
 
 	* bitmap.c (bitmap_last_bit_set): Fix a non-c89 usage (null actual
