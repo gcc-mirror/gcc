@@ -1,5 +1,22 @@
 2004-11-13  James A. Morrison  <phython@gcc.gnu.org>
 
+	PR target/18230
+	* gcc.dg/vect/tree-vect.h (check_vect): Add SPARC-specific test.
+	* gcc.dg/vect/vect-2.c, gcc.dg/vect/vect-7.c, gcc.dg/vect/vect-9.c,
+	gcc.dg/vect/vect-10.c, gcc.dg/vect/vect-12.c, gcc.dg/vect/vect-14.c,
+	gcc.dg/vect/vect-15.c, gcc.dg/vect/vect-17.c, gcc.dg/vect/vect-18.c,
+	gcc.dg/vect/vect-19.c, gcc.dg/vect/vect-20.c, gcc.dg/vect/vect-21.c,
+	gcc.dg/vect/vect-22.c, gcc.dg/vect/vect-23.c, gcc.dg/vect/vect-24.c,
+	gcc.dg/vect/vect-25.c, gcc.dg/vect/vect-26.c, gcc.dg/vect/vect-32.c,
+	gcc.dg/vect/vect-33.c, gcc.dg/vect/vect-34.c, gcc.dg/vect/vect-35.c,
+	gcc.dg/vect/vect-36.c, gcc.dg/vect/vect-37.c, gcc.dg/vect/vect-62.c,
+	gcc.dg/vect/vect-63.c, gcc.dg/vect/vect-64.c, gcc.dg/vect/vect-65.c,
+	gcc.dg/vect/vect-66.c, gcc.dg/vect/vect-67.c, gcc.dg/vect/vect-68.c,
+	gcc.dg/vect/vect-69.c, gcc.dg/vect/vect-73.c, gcc.dg/vect/vect-75.c,
+	gcc.dg/vect/vect-76.c, gcc.dg/vect/vect-78.c: Enable for SPARC.
+
+2004-11-13  James A. Morrison  <phython@gcc.gnu.org>
+
 	* gcc.target/sparc/fand.c, gcc.target/sparc/fands,
 	gcc.target/sparc/fnand.c, gcc.target/sparc/fnands.c,
 	gcc.target/sparc/fxor.c, gcc.target/sparc/fxors.c,
