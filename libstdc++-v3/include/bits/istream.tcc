@@ -32,6 +32,8 @@
 // ISO C++ 14882: 27.6.2  Output streams
 //
 
+#pragma GCC system_header
+
 #include <locale>
 #include <ostream> // For flush()
 

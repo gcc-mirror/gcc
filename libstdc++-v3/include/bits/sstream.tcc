@@ -35,6 +35,8 @@
 #ifndef _CPP_BITS_SSTREAM_TCC
 #define _CPP_BITS_SSTREAM_TCC	1
 
+#pragma GCC system_header
+
 #include <sstream>
 
 namespace std
