@@ -1,3 +1,8 @@
+Wed Nov 25 19:02:55 1998  (Stephen L Moshier) <moshier@world.std.com>
+
+	* emit-rtl.c (gen_lowpart_common): Remove earlier change.
+	* real.c (make_nan): Make SIGN arg actually specify the sign bit.
+
 Thu Nov 26 14:12:05 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (addqi3): Emit addqi3_noclobber pattern
