@@ -1292,6 +1292,7 @@ fix = {
     select	= "^extern const ";
     c_fix	= format;
     c_fix_arg	= "extern __const ";
+    test_text   = "extern const char limit; /* test\n\tlimits */";
 };
 
 

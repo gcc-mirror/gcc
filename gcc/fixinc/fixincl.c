@@ -364,14 +364,13 @@ load_file ( fname )
     res = (char*)mmap ((void*)NULL, data_map_size, PROT_READ,
                        MAP_PRIVATE, data_map_fd, 0);
   if (res == (char*)BAD_ADDR)
-    {
-      curr_data_mapped = BOOL_FALSE;
-      res = load_file_data ( fdopen (data_map_fd, "r"));
-    }
-#else
-  curr_data_mapped = BOOL_FALSE;
-  res = load_file_data ( fdopen (data_map_fd, "r"));
 #endif
+    {
+      FILE* fp = fdopen (data_map_fd, "r");
+      curr_data_mapped = BOOL_FALSE;
+      res = load_file_data (fp);
+      fclose (fp);
+    }
 
   return res;
 }
@@ -1431,8 +1430,9 @@ process ()
   read_fd = open (pz_temp_file, O_RDONLY);
   if (read_fd < 0)
     {
-      fprintf (stderr, "error %d (%s) opening output (%s) for read\n",
-               errno, xstrerror (errno), pz_temp_file);
+      if (errno != ENOENT)
+        fprintf (stderr, "error %d (%s) opening output (%s) for read\n",
+                 errno, xstrerror (errno), pz_temp_file);
     }
   else
     {
