@@ -1,3 +1,8 @@
+2001-07-26  Andreas Jaeger  <aj@suse.de>, 
+	    Hans-Peter Nilsson <hp@bitrange.com>
+
+	* analyze_brprob: Fix documentation.
+
 Mon Jul 23 15:47:19 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* analyze_brprob: Fix awk compatibility problems; update comment.
@@ -40,7 +45,7 @@ Tue Jun 12 12:21:40 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-06-11  Mark Mitchell  <mark@codesourcery.com>
 
-	* gcc_build: Output information about the commands used to 
+	* gcc_build: Output information about the commands used to
 	configure the compiler.
 
 2001-06-07  Joseph S. Myers  <jsm28@cam.ac.uk>
