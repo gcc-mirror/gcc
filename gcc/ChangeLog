@@ -1,3 +1,11 @@
+2004-03-11  Josef Zlomek  <zlomekj@suse.cz>
+
+	* var-tracking.c (vars_copy_1): Cleanup and speedup chain operations.
+	(vars_copy): Likewise.
+	(variable_union): Likewise.
+	(set_variable_part): Likewise.
+	(delete_variable_part): Likewise.
+
 2004-03-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-typeck.c, combine.c, cse.c, dominance.c, et-forest.h,
