@@ -1577,7 +1577,7 @@ rest_of_clean_state (void)
    We run a series of low-level passes here on the function's RTL
    representation.  Each pass is called via a rest_of_* function.  */
 
-void
+static void
 rest_of_compilation (void)
 {
   /* Convert from NOTE_INSN_EH_REGION style notes, and do other

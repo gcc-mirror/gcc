@@ -1,5 +1,10 @@
 2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* passes.c (rest_of_compilation): Make it static.
+	* toplev.h: Remove the prototype for rest_of_compilation.
+
+2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* jump.c (cleanup_barriers): Use delete_insn instead of
 	delete_barrier.
 	(delete_barrier): Remove.
