@@ -2993,31 +2993,47 @@ set_type_quals (type, type_quals)
   TYPE_RESTRICT (type) = (type_quals & TYPE_QUAL_RESTRICT) != 0;
 }
 
-/* Given a type node TYPE and a TYPE_QUALIFIER_SET, return a type for
-   the same kind of data as TYPE describes.  Variants point to the
-   "main variant" (which has no qualifiers set) via TYPE_MAIN_VARIANT,
-   and it points to a chain of other variants so that duplicate
-   variants are never made.  Only main variants should ever appear as
-   types of expressions.  */
+/* Return a version of the TYPE, qualified as indicated by the
+   TYPE_QUALS, if one exists.  If no qualified version exists yet,
+   return NULL_TREE.  */
+
+tree
+get_qualified_type (type, type_quals)
+     tree type;
+     int type_quals;
+{
+  tree t;
+
+  /* Search the chain of variants to see if there is already one there just
+     like the one we need to have.  If so, use that existing one.  We must
+     preserve the TYPE_NAME, since there is code that depends on this.  */
+  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+    if (TYPE_QUALS (t) == type_quals && TYPE_NAME (t) == TYPE_NAME (type))
+      return t;
+
+  return NULL_TREE;
+}
+
+/* Like get_qualified_type, but creates the type if it does not
+   exist.  This function never returns NULL_TREE.  */
 
 tree
 build_qualified_type (type, type_quals)
      tree type;
      int type_quals;
 {
-  register tree t;
+  tree t;
 
-  /* Search the chain of variants to see if there is already one there just
-     like the one we need to have.  If so, use that existing one.  We must
-     preserve the TYPE_NAME, since there is code that depends on this.  */
+  /* See if we already have the appropriate qualified variant.  */
+  t = get_qualified_type (type, type_quals);
 
-  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-    if (TYPE_QUALS (t) == type_quals && TYPE_NAME (t) == TYPE_NAME (type))
-      return t;
+  /* If not, build it.  */
+  if (!t)
+    {
+      t = build_type_copy (type);
+      set_type_quals (t, type_quals);
+    }
 
-  /* We need a new one.  */
-  t = build_type_copy (type);
-  set_type_quals (t, type_quals);
   return t;
 }
 

@@ -1,3 +1,11 @@
+2001-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* dwarf2out.c (modified_type_die): Don't create new types here.
+	* tree.h (get_qualified_type): New function.
+	(build_qualified_type): Adjust comment.
+	* tree.c (get_qualified_type): New function.
+	(build_qualified_type): Use it.
+
 2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cpp.texi (-Wtraditional): Update description.

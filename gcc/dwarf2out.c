@@ -6812,22 +6812,35 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 
   if (code != ERROR_MARK)
     {
-      type = build_type_variant (type, is_const_type, is_volatile_type);
+      tree qualified_type;
 
-      mod_type_die = lookup_type_die (type);
-      if (mod_type_die)
-	return mod_type_die;
+      /* See if we already have the appropriately qualified variant of
+	 this type.  */
+      qualified_type 
+	= get_qualified_type (type,
+			      ((is_const_type ? TYPE_QUAL_CONST : 0)
+			       | (is_volatile_type 
+				  ? TYPE_QUAL_VOLATILE : 0)));
+      /* If we do, then we can just use its DIE, if it exists.  */
+      if (qualified_type)
+	{
+	  mod_type_die = lookup_type_die (qualified_type);
+	  if (mod_type_die)
+	    return mod_type_die;
+	}
 
       /* Handle C typedef types.  */
-      if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	  && DECL_ORIGINAL_TYPE (TYPE_NAME (type)))
+      if (qualified_type && TYPE_NAME (qualified_type) 
+	  && TREE_CODE (TYPE_NAME (qualified_type)) == TYPE_DECL
+	  && DECL_ORIGINAL_TYPE (TYPE_NAME (qualified_type)))
 	{
-	  tree dtype = TREE_TYPE (TYPE_NAME (type));
-	  if (type == dtype)
+	  tree type_name = TYPE_NAME (qualified_type);
+	  tree dtype = TREE_TYPE (type_name);
+	  if (qualified_type == dtype)
 	    {
 	      /* For a named type, use the typedef.  */
-	      gen_type_die (type, context_die);
-	      mod_type_die = lookup_type_die (type);
+	      gen_type_die (qualified_type, context_die);
+	      mod_type_die = lookup_type_die (qualified_type);
 	    }
 
 	  else if (is_const_type < TYPE_READONLY (dtype)
@@ -6835,7 +6848,7 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 	    /* cv-unqualified version of named type.  Just use the unnamed
 	       type to which it refers.  */
 	    mod_type_die
-	      = modified_type_die (DECL_ORIGINAL_TYPE (TYPE_NAME (type)),
+	      = modified_type_die (DECL_ORIGINAL_TYPE (type_name),
 				   is_const_type, is_volatile_type,
 				   context_die);
 	  /* Else cv-qualified version of named type; fall through.  */
