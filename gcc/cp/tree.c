@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "obstack.h"
 #include "tree.h"
 #include "cp-tree.h"
@@ -30,14 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #include <stdarg.h>
 #else
 #include <varargs.h>
-#endif
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef NEED_DECLARATION_FREE
-extern void free	PROTO((void *));
 #endif
 
 extern void compiler_error ();

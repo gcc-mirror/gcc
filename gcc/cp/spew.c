@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
    when compiling parse.c and spew.c.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "input.h"
 #include "tree.h"
 #include "lex.h"

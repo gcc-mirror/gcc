@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
    line numbers.  For example, the CONST_DECLs for enum values.  */
 
 #include "config.h"
+#include "system.h"
 #include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
@@ -35,20 +36,11 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "decl.h"
 #include "lex.h"
-#include <sys/types.h>
 #include <signal.h>
 #include "obstack.h"
 #include "defaults.h"
 #include "output.h"
 #include "except.h"
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef NEED_DECLARATION_FREE
-extern void free	PROTO((void *));
-#endif
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free

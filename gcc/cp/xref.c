@@ -22,29 +22,11 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "tree.h"
-#include <stdio.h>
+#include "system.h"
 #include "cp-tree.h"
 #include "input.h"
 
-#include <ctype.h>
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
 extern char *getpwd PROTO((void));
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#endif
-
-#ifdef NEED_DECLARATION_RINDEX
-extern char *rindex ();
-#endif
 
 /* The character(s) used to join a directory specification (obtained with
    getwd or equivalent) with a non-absolute file name.  */

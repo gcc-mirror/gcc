@@ -86,7 +86,8 @@ g++spec.o: $(srcdir)/cp/g++spec.c
 # It'd be nice if we could find an easier way to do this---rather than have
 # to track changes to the toplevel gcc Makefile as well.
 # We depend on g++.c last, to make it obvious where it came from.
-g++.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g++.c
+g++.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g++.c \
+       system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(DRIVER_DEFINES) \
 	-DLANG_SPECIFIC_DRIVER \

@@ -1,3 +1,15 @@
+Tue Mar 31 13:43:57 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* call.c: Include system.h.  Remove includes, declarations and
+	defines provided by system.h.
+	* class.c, cvt.c, decl.c, decl2.c, errfn.c error.c: Likewise.
+	* except.c, expr.c friend.c, g++spec.c, init.c, input.c: Likewise.
+	* lex.c, parse.y, pt.c, ptree.c repo.c rtti.c, search.c: Likewise.
+	* semantics.c, sig.c, spew.c, tree.c, typeck.c: Likewise.
+	* typeck2.c, xref.c: Likewise.
+	* Makefile.in: Dependencies updated as appropriate.
+	* Make-lang.in: Likewise.
+
 Mon Mar 30 12:15:00 1998  Mark Mitchell  <mmitchell@usa.net>
 
  	* pt.c (fn_type_unification): Allow incomplete unification without 

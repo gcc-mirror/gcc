@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
    like a strange sort of assignment).  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "flags.h"

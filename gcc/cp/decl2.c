@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
    line numbers.  For example, the CONST_DECLs for enum values.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "flags.h"
@@ -39,14 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "expr.h"
 #include "defaults.h"
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#endif
 
 static tree get_sentry PROTO((tree));
 static void mark_vtable_entries PROTO((tree));
