@@ -1212,6 +1212,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(parallel [(set (match_dup 0)
 		   (sign_extend:DI (match_dup 3)))
 	      (use (match_dup 0))
+	      (use (match_dup 4))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])]
 {
@@ -1233,7 +1234,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
     default:
       abort ();
     }
-  emit_move_insn (operands[0], gen_rtx_SYMBOL_REF (DImode, str));
+  operands[4] = GEN_INT (alpha_next_sequence_number++);
+  emit_insn (gen_movdi_er_high_g (operands[0], pic_offset_table_rtx,
+				  gen_rtx_SYMBOL_REF (DImode, str),
+				  operands[4]));
 }
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
@@ -1244,10 +1248,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
                         [(match_operand:DI 1 "register_operand" "a")
                          (match_operand:DI 2 "register_operand" "b")])))
    (use (match_operand:DI 4 "register_operand" "c"))
+   (use (match_operand 5 "const_int_operand" ""))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
-  "jsr $23,($27),__%E3"
+  "jsr $23,($27),__%E3%J5"
   [(set_attr "type" "jsr")
    (set_attr "length" "4")])
 
@@ -1275,6 +1280,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 3))
 	      (use (match_dup 0))
+	      (use (match_dup 4))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])]
 {
@@ -1296,7 +1302,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
     default:
       abort ();
     }
-  emit_move_insn (operands[0], gen_rtx_SYMBOL_REF (DImode, str));
+  operands[4] = GEN_INT (alpha_next_sequence_number++);
+  emit_insn (gen_movdi_er_high_g (operands[0], pic_offset_table_rtx,
+				  gen_rtx_SYMBOL_REF (DImode, str),
+				  operands[4]));
 }
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
@@ -1307,10 +1316,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
                         [(match_operand:DI 1 "register_operand" "a")
                          (match_operand:DI 2 "register_operand" "b")]))
    (use (match_operand:DI 4 "register_operand" "c"))
+   (use (match_operand 5 "const_int_operand" ""))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
-  "jsr $23,($27),__%E3"
+  "jsr $23,($27),__%E3%J5"
   [(set_attr "type" "jsr")
    (set_attr "length" "4")])
 
