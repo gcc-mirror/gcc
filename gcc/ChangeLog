@@ -1,3 +1,7 @@
+2001-04-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-tree.texi: Document representation of wide strings.
+
 2001-04-01  Richard Henderson  <rth@redhat.com>
 
 	* except.h (expand_builtin_dwarf_fp_regnum): Declare.
