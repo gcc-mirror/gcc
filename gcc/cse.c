@@ -1371,20 +1371,22 @@ insert (x, classp, hash, mode)
      update `qty_const_insn' to show that `this_insn' is the latest
      insn making that quantity equivalent to the constant.  */
 
-  if (elt->is_const && classp && GET_CODE (classp->exp) == REG)
+  if (elt->is_const && classp && GET_CODE (classp->exp) == REG
+      && GET_CODE (x) != REG)
     {
       qty_const[reg_qty[REGNO (classp->exp)]]
 	= gen_lowpart_if_possible (qty_mode[reg_qty[REGNO (classp->exp)]], x);
       qty_const_insn[reg_qty[REGNO (classp->exp)]] = this_insn;
     }
 
-  else if (GET_CODE (x) == REG && classp && ! qty_const[reg_qty[REGNO (x)]])
+  else if (GET_CODE (x) == REG && classp && ! qty_const[reg_qty[REGNO (x)]]
+	   && ! elt->is_const)
     {
       register struct table_elt *p;
 
       for (p = classp; p != 0; p = p->next_same_value)
 	{
-	  if (p->is_const)
+	  if (p->is_const && GET_CODE (p->exp) != REG)
 	    {
 	      qty_const[reg_qty[REGNO (x)]]
 		= gen_lowpart_if_possible (GET_MODE (x), p->exp);
