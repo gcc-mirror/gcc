@@ -1,3 +1,13 @@
+2000-03-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* alias.c (canon_rtx): Make it global.
+	(rtx_equal_for_memref_p): CONST_INT equality is now pointer
+	equality.
+	* cse.c (struct table_elt): Add canon_exp.
+	(insert): Clear it.
+	(invalidate): Canonicalize expressions only once.
+	* rtl.h (canon_rtx): Declare.
+
 2000-03-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (emit-rtl.o): Depend on HASHTAB_H.

@@ -408,6 +408,9 @@ static int hash_arg_in_memory;
    each recording one expression's information.
    That expression is in the `exp' field.
 
+   The canon_exp field contains a canonical (from the point of view of
+   alias analysis) version of the `exp' field.
+
    Those elements with the same hash code are chained in both directions
    through the `next_same_hash' and `prev_same_hash' fields.
 
@@ -447,6 +450,7 @@ static int hash_arg_in_memory;
 struct table_elt
 {
   rtx exp;
+  rtx canon_exp;
   struct table_elt *next_same_hash;
   struct table_elt *prev_same_hash;
   struct table_elt *next_same_value;
@@ -1498,6 +1502,7 @@ insert (x, classp, hash, mode)
     }
 
   elt->exp = x;
+  elt->canon_exp = NULL_RTX;
   elt->cost = COST (x);
   elt->next_same_value = 0;
   elt->prev_same_value = 0;
@@ -1823,6 +1828,10 @@ invalidate (x, full_mode)
       return;
 
     case MEM:
+      /* Calculate the canonical version of X here so that
+	 true_dependence doesn't generate new RTL for X on each call.  */
+      x = canon_rtx (x);
+
       /* Remove all hash table elements that refer to overlapping pieces of
 	 memory.  */
       if (full_mode == VOIDmode)
@@ -1835,11 +1844,23 @@ invalidate (x, full_mode)
 	  for (p = table[i]; p; p = next)
 	    {
 	      next = p->next_same_hash;
-	      if (p->in_memory
-		  && (GET_CODE (p->exp) != MEM
-		      || true_dependence (x, full_mode, p->exp,
-					  cse_rtx_varies_p)))
-		remove_from_table (p, i);
+	      if (p->in_memory)
+		{
+		  if (GET_CODE (p->exp) != MEM)
+		    remove_from_table (p, i);
+		  else 
+		    {
+		      /* Just canonicalize the expression once;
+			 otherwise each time we call invalidate
+			 true_dependence will canonicalize the
+			 expression again.  */
+		      if (!p->canon_exp)
+			p->canon_exp = canon_rtx (p->exp);
+		      if (true_dependence (x, full_mode, p->canon_exp,
+					   cse_rtx_varies_p))
+			remove_from_table (p, i);
+		    }
+		}
 	    }
 	}
       return;

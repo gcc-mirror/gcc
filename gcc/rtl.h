@@ -1761,6 +1761,7 @@ extern void fancy_abort PARAMS ((const char *, int, const char *))
 #endif
 
 /* In alias.c */
+extern rtx canon_rtx                    PARAMS ((rtx));
 extern int true_dependence		PARAMS ((rtx, enum machine_mode, rtx,
 						int (*)(rtx)));
 extern int read_dependence		PARAMS ((rtx, rtx));
