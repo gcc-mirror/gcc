@@ -272,6 +272,10 @@ void (*incomplete_decl_finalize_hook) () = 0;
 
 void (*interim_eh_hook)	PROTO((tree));
 
+/* Highest label number used at the end of reload.  */
+
+int max_label_num_after_reload;
+
 /* Nonzero if generating code to do profiling.  */
 
 int profile_flag = 0;
@@ -3111,6 +3115,10 @@ rest_of_compilation (decl)
     TIMEVAR (dump_time,
 	     fprintf (global_reg_dump_file, "\n;; Function %s\n\n",
 		      IDENTIFIER_POINTER (DECL_NAME (decl))));
+
+  /* Save the last label number used so far, so reorg can tell
+     when it's safe to kill spill regs.  */
+  max_label_num_after_reload = max_label_num ();
 
   /* Unless we did stupid register allocation,
      allocate remaining pseudo-regs, then do the reload pass
