@@ -2467,6 +2467,7 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
 {
   char function_key;
   tree arguments;
+  tree fndecl;
   tree body;
   size_t i;
 
@@ -2475,25 +2476,31 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
   
   /* We use `I' to indicate initialization and `D' to indicate
      destruction.  */
-  if (constructor_p)
-    function_key = 'I';
-  else
-    function_key = 'D';
+  function_key = constructor_p ? 'I' : 'D';
 
-  /* Begin the function.  */
-  body = start_objects (function_key, priority);
+  /* We emit the function lazily, to avoid generating empty
+     global constructors and destructors.  */
+  body = NULL_TREE;
 
   /* Call the static storage duration function with appropriate
      arguments.  */
   if (ssdf_decls)
     for (i = 0; i < ssdf_decls->elements_used; ++i) 
       {
-	arguments = tree_cons (NULL_TREE, build_int_2 (priority, 0), 
-			       NULL_TREE);
-	arguments = tree_cons (NULL_TREE, build_int_2 (constructor_p, 0),
-			       arguments);
-	finish_expr_stmt (build_function_call (VARRAY_TREE (ssdf_decls, i),
-					       arguments));
+	fndecl = VARRAY_TREE (ssdf_decls, i);
+
+	/* Calls to pure or const functions will expand to nothing.  */
+	if (! (flags_from_decl_or_type (fndecl) & (ECF_CONST | ECF_PURE)))
+	  {
+	    if (! body)
+	      body = start_objects (function_key, priority);
+
+	    arguments = tree_cons (NULL_TREE, build_int_2 (priority, 0), 
+				   NULL_TREE);
+	    arguments = tree_cons (NULL_TREE, build_int_2 (constructor_p, 0),
+				   arguments);
+	    finish_expr_stmt (build_function_call (fndecl, arguments));
+	  }
       }
 
   /* If we're generating code for the DEFAULT_INIT_PRIORITY, throw in
@@ -2506,11 +2513,22 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
       for (fns = constructor_p ? static_ctors : static_dtors; 
 	   fns;
 	   fns = TREE_CHAIN (fns))
-	finish_expr_stmt (build_function_call (TREE_VALUE (fns), NULL_TREE));
+	{
+	  fndecl = TREE_VALUE (fns);
+
+	  /* Calls to pure/const functions will expand to nothing.  */
+	  if (! (flags_from_decl_or_type (fndecl) & (ECF_CONST | ECF_PURE)))
+	    {
+	      if (! body)
+		body = start_objects (function_key, priority);
+	      finish_expr_stmt (build_function_call (fndecl, NULL_TREE));
+	    }
+	}
     }
 
   /* Close out the function.  */
-  finish_objects (function_key, priority, body);
+  if (body)
+    finish_objects (function_key, priority, body);
 }
 
 /* Generate constructor and destructor functions for the priority

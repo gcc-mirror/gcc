@@ -1,3 +1,10 @@
+2003-06-11  Roger Sayle  <roger@eyesopen.com>
+
+	* decl2.c (generate_ctor_or_dtor_function): Avoid expanding a 
+	global static constructor/destructor if it will be empty, i.e.
+	either doesn't call any ctors/dtors or only calls pure or const
+	ctors/dtors.
+
 2003-06-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* mangle.c (tm_p.h): Include it.
