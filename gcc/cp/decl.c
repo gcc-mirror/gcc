@@ -442,6 +442,9 @@ struct binding_level
        If 0, the BLOCK is allocated (if needed) when the level is popped.  */
     tree this_block;
 
+    /* The _TYPE node for this level, if parm_flag == 2.  */
+    tree this_class;
+
     /* The binding level which this one is contained in (inherits from).  */
     struct binding_level *level_chain;
 
@@ -1524,6 +1527,7 @@ pushlevel_class ()
 
   class_binding_level = current_binding_level;
   class_binding_level->parm_flag = 2;
+  class_binding_level->this_class = current_class_type;
 }
 
 /* ...and a poplevel for class declarations.  */
@@ -1837,6 +1841,7 @@ mark_binding_level (arg)
       ggc_mark_tree (lvl->shadowed_labels);
       ggc_mark_tree (lvl->blocks);
       ggc_mark_tree (lvl->this_block);
+      ggc_mark_tree (lvl->this_class);
       ggc_mark_tree (lvl->incomplete);
       ggc_mark_tree (lvl->dead_vars_from_for);
 
@@ -2278,6 +2283,8 @@ mark_saved_scope (arg)
       ggc_mark_tree (t->x_previous_class_type);
       ggc_mark_tree (t->x_previous_class_values);
       ggc_mark_tree (t->x_saved_tree);
+      ggc_mark_tree (t->incomplete);
+      ggc_mark_tree (t->lookups);
 
       mark_stmt_tree (&t->x_stmt_tree);
       mark_binding_level (&t->bindings);
@@ -4033,8 +4040,14 @@ pushdecl (x)
 	      /* RTTI TD entries are created while defining the type_info.  */
 	      || (TYPE_LANG_SPECIFIC (TREE_TYPE (x))
 		  && TYPE_BEING_DEFINED (TREE_TYPE (x)))))
-	current_binding_level->incomplete
-	  = tree_cons (NULL_TREE, x, current_binding_level->incomplete);
+	{
+	  if (namespace_bindings_p ())
+	    namespace_scope_incomplete
+	      = tree_cons (NULL_TREE, x, namespace_scope_incomplete);
+	  else
+	    current_binding_level->incomplete
+	      = tree_cons (NULL_TREE, x, current_binding_level->incomplete);
+	}
     }
 
   if (need_new_binding)
@@ -5602,7 +5615,10 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	  else if (type == current_class_type)
 	    val = IDENTIFIER_CLASS_VALUE (name);
 	  else
-	    val = lookup_member (type, name, 0, prefer_type);
+	    {
+	      val = lookup_member (type, name, 0, prefer_type);
+	      type_access_control (type, val);
+	    }
 	}
       else
 	val = NULL_TREE;
@@ -5640,6 +5656,11 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	binding = BINDING_TYPE (t);
       else
 	binding = NULL_TREE;
+
+      /* Handle access control on types from enclosing or base classes.  */
+      if (binding && ! yylex
+	  && BINDING_LEVEL (t) && BINDING_LEVEL (t)->parm_flag == 2)
+	type_access_control (BINDING_LEVEL (t)->this_class, binding);
 
       if (binding
 	  && (!val || !IMPLICIT_TYPENAME_TYPE_DECL_P (binding)))
@@ -9118,7 +9139,7 @@ create_array_type_for_decl (name, type, size)
    ATTRLIST is a TREE_LIST node with prefix attributes in TREE_VALUE and
    normal attributes in TREE_PURPOSE, or NULL_TREE.
 
-   In the TYPENAME case, DECLARATOR is really an absolute declarator.
+   In the TYPENAME case, DECLARATOR is really an abstract declarator.
    It may also be so in the PARM case, for a prototype where the
    argument type is specified but not the name.
 
@@ -14222,41 +14243,63 @@ hack_incomplete_structures (type)
      tree type;
 {
   tree *list;
-
-  if (current_binding_level->incomplete == NULL_TREE)
-    return;
+  struct binding_level *level;
 
   if (!type) /* Don't do this for class templates.  */
     return;
 
-  for (list = &current_binding_level->incomplete; *list; )
+  if (namespace_bindings_p ())
     {
-      tree decl = TREE_VALUE (*list);
-      if ((decl && TREE_TYPE (decl) == type)
-	  || (TREE_TYPE (decl)
-	      && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-	      && TREE_TYPE (TREE_TYPE (decl)) == type))
+      level = 0;
+      list = &namespace_scope_incomplete;
+    }
+  else
+    {
+      level = innermost_nonclass_level ();
+      list = &level->incomplete;
+    }
+
+  while (1)
+    {
+      while (*list)
 	{
-	  int toplevel = toplevel_bindings_p ();
-	  if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-	      && TREE_TYPE (TREE_TYPE (decl)) == type)
-	    layout_type (TREE_TYPE (decl));
-	  layout_decl (decl, 0);
-	  rest_of_decl_compilation (decl, NULL_PTR, toplevel, 0);
-	  if (! toplevel)
+	  tree decl = TREE_VALUE (*list);
+	  if ((decl && TREE_TYPE (decl) == type)
+	      || (TREE_TYPE (decl)
+		  && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
+		  && TREE_TYPE (TREE_TYPE (decl)) == type))
 	    {
-	      tree cleanup;
-	      expand_decl (decl);
-	      cleanup = maybe_build_cleanup (decl);
-	      expand_decl_init (decl);
-	      if (! expand_decl_cleanup (decl, cleanup))
-		cp_error ("parser lost in parsing declaration of `%D'",
-			  decl);
+	      int toplevel = toplevel_bindings_p ();
+	      if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
+		  && TREE_TYPE (TREE_TYPE (decl)) == type)
+		layout_type (TREE_TYPE (decl));
+	      layout_decl (decl, 0);
+	      rest_of_decl_compilation (decl, NULL_PTR, toplevel, 0);
+	      if (! toplevel)
+		{
+		  tree cleanup;
+		  expand_decl (decl);
+		  cleanup = maybe_build_cleanup (decl);
+		  expand_decl_init (decl);
+		  if (! expand_decl_cleanup (decl, cleanup))
+		    cp_error ("parser lost in parsing declaration of `%D'",
+			      decl);
+		}
+	      *list = TREE_CHAIN (*list);
 	    }
-	  *list = TREE_CHAIN (*list);
+	  else
+	    list = &TREE_CHAIN (*list);
+	}
+
+      /* Keep looking through artificial binding levels generated
+	 for local variables.  */
+      if (level && level->keep == 2)
+	{
+	  level = level->level_chain;
+	  list = &level->incomplete;
 	}
       else
-	list = &TREE_CHAIN (*list);
+	break;
     }
 }
 

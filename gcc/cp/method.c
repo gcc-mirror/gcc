@@ -1978,7 +1978,7 @@ hack_identifier (value, name)
 
   if (TREE_CODE_CLASS (TREE_CODE (value)) == 'd' && DECL_NONLOCAL (value))
     {
-      if (DECL_LANG_SPECIFIC (value)
+      if (DECL_CLASS_SCOPE_P (value)
 	  && DECL_CLASS_CONTEXT (value) != current_class_type)
 	{
 	  tree path;
@@ -1987,9 +1987,8 @@ hack_identifier (value, name)
 	      ? DECL_CLASS_CONTEXT (value)
 	      : DECL_CONTEXT (value);
 
-	  get_base_distance (context, current_class_type, 0, &path);
-	  if (path && !enforce_access (current_class_type, value))
-	    return error_mark_node;
+	  path = currently_open_derived_class (context);
+	  enforce_access (path, value);
 	}
     }
   else if (TREE_CODE (value) == TREE_LIST 

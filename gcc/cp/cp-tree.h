@@ -276,6 +276,7 @@ typedef struct
 {
   tree t;
   int new_type_flag;
+  tree lookups;
 } flagged_type_tree;
 
 typedef struct 
@@ -714,6 +715,8 @@ struct saved_scope {
   tree x_previous_class_type;
   tree x_previous_class_values;
   tree x_saved_tree;
+  tree incomplete;
+  tree lookups;
 
   HOST_WIDE_INT x_processing_template_decl;
   int x_processing_specialization;
@@ -773,6 +776,14 @@ struct saved_scope {
    cache miss).  */
 
 #define previous_class_values scope_chain->x_previous_class_values
+
+/* A list of the declarations with incomplete type at namespace scope.  */
+
+#define namespace_scope_incomplete scope_chain->incomplete
+
+/* A list of private types mentioned, for deferred access checking.  */
+
+#define type_lookups scope_chain->lookups
 
 extern struct saved_scope *scope_chain;
 
@@ -3550,6 +3561,7 @@ extern tree build_vfn_ref			PARAMS ((tree *, tree, tree));
 extern tree get_vtable_decl                     PARAMS ((tree, int));
 extern void add_method				PARAMS ((tree, tree *, tree));
 extern int currently_open_class			PARAMS ((tree));
+extern tree currently_open_derived_class	PARAMS ((tree));
 extern tree get_vfield_offset			PARAMS ((tree));
 extern void duplicate_tag_error			PARAMS ((tree));
 extern tree finish_struct			PARAMS ((tree, tree));
@@ -4043,6 +4055,7 @@ extern tree get_vbase				PARAMS ((tree, tree));
 extern tree get_binfo				PARAMS ((tree, tree, int));
 extern int get_base_distance			PARAMS ((tree, tree, int, tree *));
 extern tree get_dynamic_cast_base_type          PARAMS ((tree, tree));
+extern void type_access_control			PARAMS ((tree, tree));
 extern int accessible_p                         PARAMS ((tree, tree));
 extern tree lookup_field			PARAMS ((tree, tree, int, int));
 extern int lookup_fnfields_1                    PARAMS ((tree, tree));
@@ -4153,7 +4166,9 @@ extern tree finish_qualified_call_expr          PARAMS ((tree, tree));
 extern tree finish_label_address_expr           PARAMS ((tree));
 extern tree finish_unary_op_expr                PARAMS ((enum tree_code, tree));
 extern tree finish_id_expr                      PARAMS ((tree));
-extern int begin_function_definition            PARAMS ((tree, tree));
+extern void deferred_type_access_control	PARAMS ((void));
+extern void initial_deferred_type_access_control PARAMS ((tree));
+extern int begin_function_definition            PARAMS ((tree, tree, tree));
 extern tree begin_constructor_declarator        PARAMS ((tree, tree));
 extern tree finish_declarator                   PARAMS ((tree, tree, tree, tree, int));
 extern void finish_translation_unit             PARAMS ((void));
