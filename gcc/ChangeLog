@@ -1,5 +1,10 @@
 2004-10-22  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-gimple.c (is_gimple_constructor_elt): Remove.
+	* tree-gimple.h: Remove the corresponding prototype.
+
+2004-10-22  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* varasm.c (get_pool_mode_for_function, get_pool_offset):
 	Remove.
 	* rtl.h: Remove the corresponding prototypes.

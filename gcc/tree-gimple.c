@@ -132,16 +132,6 @@ rhs_predicate_for (tree lhs)
     return is_gimple_mem_rhs;
 }
 
-/* Returns true if T is a valid CONSTRUCTOR component in GIMPLE, either
-   a val or another CONSTRUCTOR.  */
-
-bool
-is_gimple_constructor_elt (tree t)
-{
-  return (is_gimple_val (t)
-	  || TREE_CODE (t) == CONSTRUCTOR);
-}
-
 /*  Return true if T is a valid LHS for a GIMPLE assignment expression.  */
 
 bool
