@@ -4674,7 +4674,10 @@ really_start_incremental_init (tree type)
 		       TYPE_MIN_VALUE (TYPE_DOMAIN (constructor_type)));
 	}
       else
-	constructor_index = bitsize_zero_node;
+	{
+	  constructor_index = bitsize_zero_node;
+	  constructor_max_index = NULL_TREE;
+	}
 
       constructor_unfilled_index = constructor_index;
     }

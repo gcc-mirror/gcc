@@ -1,3 +1,8 @@
+2005-02-02  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/19435
+	* gcc.dg/c99-init-4.c: New test.
+
 2005-02-01  Janis Johnson  <janis187@us.ibm.com>
 
 	* g++.old-deja/g++.other/init5.C: Remove xfail for powerpc-linux.
