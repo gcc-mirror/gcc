@@ -1,3 +1,7 @@
+2004-08-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	* class.c (instantiate_type) <ENTRY_VALUE_EXPR>: Do not handle.
+
 2004-08-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (start_preparsed_function): Move determine_visibility

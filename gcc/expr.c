@@ -8424,9 +8424,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
       return op0;
 
-    case ENTRY_VALUE_EXPR:
-      abort ();
-
     /* COMPLEX type for Extended Pascal & Fortran  */
     case COMPLEX_EXPR:
       {
