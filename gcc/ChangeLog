@@ -1,3 +1,10 @@
+2005-03-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* fold-const.c (fold_unary, fold_binary, fold_ternary): Return
+	NULL_TREE when a given tree is not simplified.
+	(fold): Return the original tree when any of the functions
+	mentioned above NULL_TREE.
+
 2005-03-09  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (fold_builtin_unordered_cmp): Change prototype to take
