@@ -19,13 +19,13 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #ifdef RTX_CODE
-/* Prototype function used in MACHINE_DEPENDENT_REORG macro. */
+/* Prototype function used in MACHINE_DEPENDENT_REORG macro.  */
 extern void pa_reorg PARAMS ((rtx));
 
-/* Prototype function used in various macros. */
+/* Prototype function used in various macros.  */
 extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
 
-/* Used in insn-*.c. */
+/* Used in insn-*.c.  */
 extern int following_call PARAMS ((rtx));
 extern int function_label_operand PARAMS ((rtx, enum machine_mode));
 extern int lhs_lshift_cint_operand PARAMS ((rtx, enum machine_mode));
@@ -126,7 +126,7 @@ extern int insn_refs_are_delayed PARAMS ((rtx));
 /* Prototype function used in macro ASM_OUTPUT_MI_THUNK.  */
 extern void pa_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 
-/* Prototype function used in macro CONST_OK_FOR_LETTER_P. */
+/* Prototype function used in macro CONST_OK_FOR_LETTER_P.  */
 extern int zdepi_cint_p PARAMS ((unsigned HOST_WIDE_INT));
 
 extern struct rtx_def *hppa_builtin_saveregs PARAMS ((void));

@@ -105,7 +105,7 @@ Boston, MA 02111-1307, USA.  */
     }								\
   while (0)
 
-/* Nonzero if we do not know how to pass TYPE solely in registers. */
+/* Nonzero if we do not know how to pass TYPE solely in registers.  */
 #define MUST_PASS_IN_STACK(MODE,TYPE) \
   ((TYPE) != 0							\
    && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST		\

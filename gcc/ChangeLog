@@ -1,3 +1,17 @@
+2001-11-11  Kazu Hirata  <kazu@hxi.com>
+
+	* config/pa/milli64.S: Fix comment formatting.
+	* config/pa/pa-64.h: Likewise.
+	* config/pa/pa-linux.h: Likewise.
+	* config/pa/pa-protos.h: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/pa/pa.h: Likewise.
+	* config/pa/pa32-linux.h: Likewise.
+	* config/pa/pa32-regs.h: Likewise.
+	* config/pa/pa64-hpux.h: Likewise.
+	* config/pa/pa64-regs.h: Likewise.
+	* config/pa/som.h: Likewise.
+
 2001-11-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi: Move several chapters out to ...

@@ -107,7 +107,7 @@ do {  \
    The definitions say how to change sections to the .init and .fini
    sections.  This is the same for all known svr4 assemblers.  */
 
-/* ??? For the time being, we aren't using init sections. */
+/* ??? For the time being, we aren't using init sections.  */
 #if 0
 #define INIT_SECTION_ASM_OP	"\t.section\t.init"
 #define FINI_SECTION_ASM_OP	"\t.section\t.fini"

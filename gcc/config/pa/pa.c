@@ -245,7 +245,7 @@ symbolic_expression_p (x)
      register rtx x;
 {
 
-  /* Strip off any HIGH. */
+  /* Strip off any HIGH.  */
   if (GET_CODE (x) == HIGH)
     x = XEXP (x, 0);
 
@@ -807,7 +807,7 @@ hppa_legitimize_address (x, oldx, mode)
   if (flag_pic)
     return legitimize_pic_address (x, mode, gen_reg_rtx (Pmode));
 
-  /* Strip off CONST. */
+  /* Strip off CONST.  */
   if (GET_CODE (x) == CONST)
     x = XEXP (x, 0);
 
@@ -3245,7 +3245,7 @@ load_reg (reg, disp, base)
    The function epilogue should not depend on the current stack
    pointer!  It should use the frame pointer only.  This is mandatory
    because of alloca; we also take advantage of it to omit stack
-   adjustments before returning. */
+   adjustments before returning.  */
 
 static void
 pa_output_function_epilogue (file, size)
@@ -3292,7 +3292,7 @@ hppa_expand_epilogue ()
 
   /* Try to restore RP early to avoid load/use interlocks when
      RP gets used in the return (bv) instruction.  This appears to still
-     be necessary even when we schedule the prologue and epilogue. */
+     be necessary even when we schedule the prologue and epilogue.  */
   if (regs_ever_live [2])
     {
       ret_off = TARGET_64BIT ? -16 : -20;
@@ -3992,7 +3992,7 @@ pa_adjust_insn_length (insn, length)
 	return 4;
       /* Adjust dbra insn with short backwards conditional branch with
 	 unfilled delay slot -- only for case where counter is in a
-	 general register register. */
+	 general register register.  */
       else if (GET_CODE (pat) == PARALLEL
 	       && GET_CODE (XVECEXP (pat, 0, 1)) == SET
 	       && GET_CODE (XEXP (XVECEXP (pat, 0, 1), 0)) == REG
@@ -4037,7 +4037,7 @@ print_operand (file, x, code)
       fputs (reg_names[REGNO (x) + 1], file);
       return;
     case 'r':
-      /* A register or zero. */
+      /* A register or zero.  */
       if (x == const0_rtx
 	  || (x == CONST0_RTX (DFmode))
 	  || (x == CONST0_RTX (SFmode)))
@@ -4048,7 +4048,7 @@ print_operand (file, x, code)
       else
 	break;
     case 'f':
-      /* A register or zero (floating point). */
+      /* A register or zero (floating point).  */
       if (x == const0_rtx
 	  || (x == CONST0_RTX (DFmode))
 	  || (x == CONST0_RTX (SFmode)))
@@ -4376,7 +4376,7 @@ print_operand (file, x, code)
     output_addr_const (file, x);
 }
 
-/* output a SYMBOL_REF or a CONST expression involving a SYMBOL_REF. */
+/* output a SYMBOL_REF or a CONST expression involving a SYMBOL_REF.  */
 
 void
 output_global_address (file, x, round_constant)
@@ -4505,7 +4505,7 @@ import_milli (code)
 }
 
 /* The register constraints have put the operands and return value in
-   the proper registers. */
+   the proper registers.  */
 
 const char *
 output_mul_insn (unsignedp, insn)
@@ -4516,7 +4516,7 @@ output_mul_insn (unsignedp, insn)
   return output_millicode_call (insn, gen_rtx_SYMBOL_REF (Pmode, "$$mulI"));
 }
 
-/* Emit the rtl for doing a division by a constant. */
+/* Emit the rtl for doing a division by a constant.  */
 
 /* Do magic division millicodes exist for this value? */
 static const int magic_milli[]= {0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0,
@@ -4524,7 +4524,7 @@ static const int magic_milli[]= {0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0,
 
 /* We'll use an array to keep track of the magic millicodes and
    whether or not we've used them already. [n][0] is signed, [n][1] is
-   unsigned. */
+   unsigned.  */
 
 static int div_milli[16][2];
 
@@ -4608,7 +4608,7 @@ output_div_insn (operands, unsignedp, insn)
 					gen_rtx_SYMBOL_REF (SImode, buf));
 	}
     }
-  /* Divisor isn't a special constant. */
+  /* Divisor isn't a special constant.  */
   else
     {
       if (unsignedp)
@@ -4626,7 +4626,7 @@ output_div_insn (operands, unsignedp, insn)
     }
 }
 
-/* Output a $$rem millicode to do mod. */
+/* Output a $$rem millicode to do mod.  */
 
 const char *
 output_mod_insn (unsignedp, insn)
@@ -4836,7 +4836,7 @@ function_arg_padding (mode, type)
 	size = int_size_in_bytes (type) * BITS_PER_UNIT;
       else
 	return upward;		/* Don't know if this is right, but */
-				/* same as old definition. */
+				/* same as old definition.  */
     }
   else
     size = GET_MODE_BITSIZE (mode);
@@ -4898,7 +4898,7 @@ hppa_builtin_saveregs ()
 					offset, 0, 0, OPTAB_LIB_WIDEN));
     }
 
-  /* Store general registers on the stack. */
+  /* Store general registers on the stack.  */
   dest = gen_rtx_MEM (BLKmode,
 		      plus_constant (current_function_internal_arg_pointer,
 				     -16));
@@ -4949,7 +4949,7 @@ hppa_va_arg (valist, type)
   if (TARGET_64BIT)
     {
       /* Every argument in PA64 is passed by value (including large structs).
-         Arguments with size greater than 8 must be aligned 0 MOD 16. */
+         Arguments with size greater than 8 must be aligned 0 MOD 16.  */
 
       size = int_size_in_bytes (type);
       if (size > UNITS_PER_WORD)
@@ -5814,7 +5814,7 @@ output_millicode_call (insn, call_dest)
       else if (TARGET_PORTABLE_RUNTIME)
 	{
 	  xoperands[0] = call_dest;
-	  /* Get the address of our target into %r29. */
+	  /* Get the address of our target into %r29.  */
 	  output_asm_insn ("ldil L%%%0,%%r29", xoperands);
 	  output_asm_insn ("ldo R%%%0(%%r29),%%r29", xoperands);
 
@@ -6384,7 +6384,7 @@ non_hard_reg_operand (op, mode)
 }
 
 /* Return 1 if INSN branches forward.  Should be using insn_addresses
-   to avoid walking through all the insns... */
+   to avoid walking through all the insns...  */
 static int
 forward_branch_p (insn)
      rtx insn;
@@ -7236,7 +7236,7 @@ function_arg (cum, mode, type, named, incoming)
 
 /* If this arg would be passed totally in registers or totally on the stack,
    then this routine should return zero. It is currently called only for
-   the 64-bit target. */
+   the 64-bit target.  */
 int
 function_arg_partial_nregs (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;
@@ -7251,13 +7251,13 @@ function_arg_partial_nregs (cum, mode, type, named)
     offset = 1;
 
   if (cum->words + offset + FUNCTION_ARG_SIZE (mode, type) <= max_arg_words)
-    /* Arg fits fully into registers. */
+    /* Arg fits fully into registers.  */
     return 0;
   else if (cum->words + offset >= max_arg_words)
-    /* Arg fully on the stack. */
+    /* Arg fully on the stack.  */
     return 0;
   else
-    /* Arg is split. */
+    /* Arg is split.  */
     return max_arg_words - cum->words - offset;
 }
 
