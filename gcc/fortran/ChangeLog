@@ -1,3 +1,9 @@
+2004-05-13  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gfortran.texi: Use @table @emph instead of @itemize @emph.
+	Remove "set DEVELOPMENT".
+	(Compiling GFORTRAN): Remove.
+
 2004-05-09  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* array.c (match_subscript, match_array_ref): Add comments
