@@ -377,7 +377,7 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
 
   // Check for overflow.
   if (__builtin_expect ((size_t) count > 
-			(SIZE_T_MAX - size) / sizeof (jobject), 0));
+			(SIZE_T_MAX - size) / sizeof (jobject), 0))
     JvThrow (no_memory);
 
   size += count * sizeof (jobject);

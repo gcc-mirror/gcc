@@ -1,3 +1,7 @@
+2000-04-27  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* prims.cc (_Jv_NewObjectArray): Fix typo.
+
 2000-04-26  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
