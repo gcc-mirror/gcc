@@ -1984,6 +1984,7 @@ extern void finish_builtin_type			PROTO((tree, char *, tree *, int, tree));
 extern tree coerce_new_type			PROTO((tree));
 extern tree coerce_delete_type			PROTO((tree));
 extern void walk_vtables			PROTO((void (*)(), void (*)()));
+extern void walk_sigtables			PROTO((void (*)(), void (*)()));
 extern void finish_file				PROTO((void));
 extern void warn_if_unknown_interface		PROTO((void));
 extern tree grok_x_components			PROTO((tree, tree));

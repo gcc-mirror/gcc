@@ -591,6 +591,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	      offset = integer_zero_node;
 	      pfn = build_unary_op (ADDR_EXPR, rhs_method, 0);
 	      TREE_TYPE (pfn) = ptr_type_node;
+	      TREE_ADDRESSABLE (rhs_method) = 1;
 	    }
 
 	  tbl_entry = tree_cons (NULL_TREE, code,
