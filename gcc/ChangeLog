@@ -1,3 +1,7 @@
+Mon Jun 11 15:47:45 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* jump.c (duplicate_loop_exit_test): Fix loop header heuristics.
+
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-decl.c (store_parm_decls): When comparing types in an

@@ -1257,10 +1257,11 @@ duplicate_loop_exit_test (loop_start)
 	      rtx label = JUMP_LABEL (copy);
 	      if (label)
 		{
-		  if (PREV_INSN (label)
-		      && GET_CODE (PREV_INSN (label)) == NOTE
-		      && (NOTE_LINE_NUMBER (PREV_INSN (label))
-			  == NOTE_INSN_LOOP_CONT))
+		  /* The jump_insn after loop_start should be followed
+		     by barrier and loopback label.  */
+		  if (prev_nonnote_insn (label)
+		      && (PREV_INSN (prev_nonnote_insn (label))
+			  == NEXT_INSN (loop_start)))
 		    predict_insn_def (copy, PRED_LOOP_HEADER, TAKEN);
 		  else
 		    predict_insn_def (copy, PRED_LOOP_HEADER, NOT_TAKEN);
