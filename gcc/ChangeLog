@@ -1,3 +1,11 @@
+2002-11-25  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (powerpc-*-netbsd*): Replace "svr4.h" with
+	"netbsd.h netbsd-elf.h" in tm_file.  Set tmake_file to
+	"${tmake_file} rs6000/t-netbsd".
+	* config/rs6000/netbsd.h: Rewrite.
+	* config/rs6000/t-netbsd: New file.
+
 2002-11-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (an anonymous pattern): Relax the
