@@ -3472,7 +3472,7 @@ build_c_cast (type, expr)
 	    }
 	  else
 	    name = "";
-	  return digest_init (type, build (CONSTRUCTOR, type,
+	  return digest_init (type, build (CONSTRUCTOR, type, NULL_TREE,
 					   build_tree_list (field, value)),
 			      0, 0);
 	}
