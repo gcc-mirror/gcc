@@ -878,7 +878,16 @@ grokfield (const cp_declarator *declarator,
 	value = push_template_decl (value);
 
       if (attrlist)
-	cplus_decl_attributes (&value, attrlist, 0);
+	{
+	  /* Avoid storing attributes in template parameters:
+	     tsubst is not ready to handle them.  */
+	  tree type = TREE_TYPE (value);
+	  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
+	      || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
+	    sorry ("applying attributes to template parameters is not implemented");
+	  else
+	    cplus_decl_attributes (&value, attrlist, 0);
+	}
 
       return value;
     }

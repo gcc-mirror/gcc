@@ -1,3 +1,8 @@
+2005-01-20  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+        PR c++/19508
+        * g++.dg/ext/attrib20.C: New test.
+
 2004-02-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/20030
