@@ -82,6 +82,9 @@ static void sched_analyze_1 PARAMS ((struct deps *, rtx, rtx));
 static void sched_analyze_2 PARAMS ((struct deps *, rtx, rtx));
 static void sched_analyze_insn PARAMS ((struct deps *, rtx, rtx, rtx));
 static rtx group_leader PARAMS ((rtx));
+
+static rtx get_condition PARAMS ((rtx));
+static int conditions_mutex_p PARAMS ((rtx, rtx));
 
 /* Return the INSN_LIST containing INSN in LIST, or NULL
    if LIST does not contain INSN.  */
@@ -119,6 +122,53 @@ find_insn_mem_list (insn, x, list, list1)
   return 0;
 }
 
+/* Find the condition under which INSN is executed.  */
+
+static rtx
+get_condition (insn)
+     rtx insn;
+{
+  rtx pat = PATTERN (insn);
+  rtx cond;
+
+  if (pat == 0)
+    return 0;
+  if (GET_CODE (pat) == COND_EXEC)
+    return COND_EXEC_TEST (pat);
+  if (GET_CODE (insn) != JUMP_INSN)
+    return 0;
+  if (GET_CODE (pat) != SET || SET_SRC (pat) != pc_rtx)
+    return 0;
+  if (GET_CODE (SET_DEST (pat)) != IF_THEN_ELSE)
+    return 0;
+  pat = SET_DEST (pat);
+  cond = XEXP (pat, 0);
+  if (GET_CODE (XEXP (cond, 1)) == LABEL_REF
+      && XEXP (cond, 2) == pc_rtx)
+    return cond;
+  else if (GET_CODE (XEXP (cond, 2)) == LABEL_REF
+	   && XEXP (cond, 1) == pc_rtx)
+    return gen_rtx_fmt_ee (reverse_condition (GET_CODE (cond)), GET_MODE (cond),
+			   XEXP (cond, 0), XEXP (cond, 1));
+  else
+    return 0;
+}
+
+/* Return nonzero if conditions COND1 and COND2 can never be both true.  */
+
+static int
+conditions_mutex_p (cond1, cond2)
+     rtx cond1, cond2;
+{
+  if (GET_RTX_CLASS (GET_CODE (cond1)) == '<'
+      && GET_RTX_CLASS (GET_CODE (cond2)) == '<'
+      && GET_CODE (cond1) == reverse_condition (GET_CODE (cond2))
+      && XEXP (cond1, 0) == XEXP (cond2, 0)
+      && XEXP (cond1, 1) == XEXP (cond2, 1))
+    return 1;
+  return 0;
+}
+
 /* Add ELEM wrapped in an INSN_LIST with reg note kind DEP_TYPE to the
    LOG_LINKS of INSN, if not already there.  DEP_TYPE indicates the type
    of dependence that this link represents.  */
@@ -132,6 +182,7 @@ add_dependence (insn, elem, dep_type)
   rtx link, next;
   int present_p;
   enum reg_note present_dep_type;
+  rtx cond1, cond2;
 
   /* Don't depend an insn on itself.  */
   if (insn == elem)
@@ -142,6 +193,16 @@ add_dependence (insn, elem, dep_type)
      such dependency is useless and can be ignored.  */
   if (GET_CODE (elem) == NOTE)
     return;
+
+  /* flow.c doesn't handle conditional lifetimes entirely correctly;
+     calls mess up the conditional lifetimes.  */
+  if (GET_CODE (insn) != CALL_INSN && GET_CODE (elem) != CALL_INSN)
+    {
+      cond1 = get_condition (insn);
+      cond2 = get_condition (elem);
+      if (cond1 && cond2 && conditions_mutex_p (cond1, cond2))
+	return;
+    }
 
   /* If elem is part of a sequence that must be scheduled together, then
      make the dependence point to the last insn of the sequence.
@@ -524,7 +585,8 @@ sched_analyze_1 (deps, x, insn)
 		 pending clobber.  */
 	      if (code == SET)
 		{
-		  free_INSN_LIST_list (&deps->reg_last_uses[r]);
+		  if (GET_CODE (PATTERN (insn)) != COND_EXEC)
+		    free_INSN_LIST_list (&deps->reg_last_uses[r]);
 		  for (u = deps->reg_last_clobbers[r]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 		  SET_REGNO_REG_SET (reg_pending_sets, r);
@@ -550,7 +612,8 @@ sched_analyze_1 (deps, x, insn)
 
 	  if (code == SET)
 	    {
-	      free_INSN_LIST_list (&deps->reg_last_uses[regno]);
+	      if (GET_CODE (PATTERN (insn)) != COND_EXEC)
+		free_INSN_LIST_list (&deps->reg_last_uses[regno]);
 	      for (u = deps->reg_last_clobbers[regno]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 	      SET_REGNO_REG_SET (reg_pending_sets, regno);
@@ -791,7 +854,8 @@ sched_analyze_2 (deps, x, insn)
 	      {
 		for (u = deps->reg_last_uses[i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-		free_INSN_LIST_list (&deps->reg_last_uses[i]);
+		if (GET_CODE (PATTERN (insn)) != COND_EXEC)
+		  free_INSN_LIST_list (&deps->reg_last_uses[i]);
 
 		for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
@@ -997,7 +1061,8 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 	      rtx u;
 	      for (u = deps->reg_last_uses[i]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-	      free_INSN_LIST_list (&deps->reg_last_uses[i]);
+	      if (GET_CODE (PATTERN (insn)) != COND_EXEC)
+		free_INSN_LIST_list (&deps->reg_last_uses[i]);
 
 	      for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), 0);
@@ -1017,17 +1082,22 @@ sched_analyze_insn (deps, x, insn, loop_notes)
      subsequent sets will be output dependent on it.  */
   EXECUTE_IF_SET_IN_REG_SET
     (reg_pending_sets, 0, i,
-     {
-       free_INSN_LIST_list (&deps->reg_last_sets[i]);
-       free_INSN_LIST_list (&deps->reg_last_clobbers[i]);
-       deps->reg_last_sets[i] = alloc_INSN_LIST (insn, NULL_RTX);
-     });
+    {
+      if (GET_CODE (PATTERN (insn)) != COND_EXEC)
+	{
+	  free_INSN_LIST_list (&deps->reg_last_sets[i]);
+	  free_INSN_LIST_list (&deps->reg_last_clobbers[i]);
+	  deps->reg_last_sets[i] = 0;
+	}
+      deps->reg_last_sets[i]
+	= alloc_INSN_LIST (insn, deps->reg_last_sets[i]);
+    });
   EXECUTE_IF_SET_IN_REG_SET
     (reg_pending_clobbers, 0, i,
-     {
-       deps->reg_last_clobbers[i]
-	 = alloc_INSN_LIST (insn, deps->reg_last_clobbers[i]);
-     });
+    {
+      deps->reg_last_clobbers[i]
+	= alloc_INSN_LIST (insn, deps->reg_last_clobbers[i]);
+    });
   CLEAR_REG_SET (reg_pending_sets);
   CLEAR_REG_SET (reg_pending_clobbers);
 
@@ -1035,9 +1105,14 @@ sched_analyze_insn (deps, x, insn, loop_notes)
     {
       for (i = 0; i < maxreg; i++)
 	{
-	  free_INSN_LIST_list (&deps->reg_last_sets[i]);
-	  free_INSN_LIST_list (&deps->reg_last_clobbers[i]);
-	  deps->reg_last_sets[i] = alloc_INSN_LIST (insn, NULL_RTX);
+	  if (GET_CODE (PATTERN (insn)) != COND_EXEC)
+	    {
+	      free_INSN_LIST_list (&deps->reg_last_sets[i]);
+	      free_INSN_LIST_list (&deps->reg_last_clobbers[i]);
+	      deps->reg_last_sets[i] = 0;
+	    }
+	  deps->reg_last_sets[i]
+	    = alloc_INSN_LIST (insn, deps->reg_last_sets[i]);
 	}
 
       reg_pending_sets_all = 0;
