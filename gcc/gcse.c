@@ -656,7 +656,7 @@ static int handle_avail_expr	PARAMS ((rtx, struct expr *));
 static int classic_gcse		PARAMS ((void));
 static int one_classic_gcse_pass PARAMS ((int));
 static void invalidate_nonnull_info PARAMS ((rtx, rtx, void *));
-static void delete_null_pointer_checks_1 PARAMS ((varray_type *, unsigned int *,
+static void delete_null_pointer_checks_1 PARAMS ((unsigned int *,
 						  sbitmap *, sbitmap *,
 						  struct null_pointer_info *));
 static rtx process_insert_insn	PARAMS ((struct expr *));
@@ -5194,9 +5194,8 @@ invalidate_nonnull_info (x, setter, data)
    they are not our responsibility to free.  */
 
 static void
-delete_null_pointer_checks_1 (delete_list, block_reg, nonnull_avin,
+delete_null_pointer_checks_1 (block_reg, nonnull_avin,
 			      nonnull_avout, npi)
-     varray_type *delete_list;
      unsigned int *block_reg;
      sbitmap *nonnull_avin;
      sbitmap *nonnull_avout;
@@ -5326,12 +5325,11 @@ delete_null_pointer_checks_1 (delete_list, block_reg, nonnull_avin,
 	  LABEL_NUSES (JUMP_LABEL (new_jump))++;
 	  emit_barrier_after (new_jump);
 	}
-      if (!*delete_list)
-	VARRAY_RTX_INIT (*delete_list, 10, "delete_list");
 
-      VARRAY_PUSH_RTX (*delete_list, last_insn);
+      delete_insn (last_insn);
       if (compare_and_branch == 2)
-	VARRAY_PUSH_RTX (*delete_list, earliest);
+        delete_insn (earliest);
+      purge_dead_edges (BASIC_BLOCK (bb));
 
       /* Don't check this block again.  (Note that BLOCK_END is
 	 invalid here; we deleted the last instruction in the 
@@ -5370,12 +5368,10 @@ delete_null_pointer_checks (f)
 {
   sbitmap *nonnull_avin, *nonnull_avout;
   unsigned int *block_reg;
-  varray_type delete_list = NULL;
   int bb;
   int reg;
   int regs_per_pass;
   int max_reg;
-  unsigned int i;
   struct null_pointer_info npi;
 
   /* If we have only a single block, then there's nothing to do.  */
@@ -5444,16 +5440,8 @@ delete_null_pointer_checks (f)
     {
       npi.min_reg = reg;
       npi.max_reg = MIN (reg + regs_per_pass, max_reg);
-      delete_null_pointer_checks_1 (&delete_list, block_reg, nonnull_avin,
+      delete_null_pointer_checks_1 (block_reg, nonnull_avin,
 				    nonnull_avout, &npi);
-    }
-
-  /* Now delete the instructions all at once.  This breaks the CFG.  */
-  if (delete_list)
-    {
-      for (i = 0; i < VARRAY_ACTIVE_SIZE (delete_list); i++)
-	delete_related_insns (VARRAY_RTX (delete_list, i));
-      VARRAY_FREE (delete_list);
     }
 
   /* Free the table of registers compared at the end of every block.  */

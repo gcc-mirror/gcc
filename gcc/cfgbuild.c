@@ -57,6 +57,90 @@ static void make_label_edge		PARAMS ((sbitmap *, basic_block,
 static void make_eh_edge		PARAMS ((sbitmap *, basic_block, rtx));
 static void find_bb_boundaries		PARAMS ((basic_block));
 static void compute_outgoing_frequencies PARAMS ((basic_block));
+static bool inside_basic_block_p	PARAMS ((rtx));
+static bool control_flow_insn_p		PARAMS ((rtx));
+
+/* Return true if insn is something that should be contained inside basic
+   block.  */
+
+static bool
+inside_basic_block_p (insn)
+     rtx insn;
+{
+  switch (GET_CODE (insn))
+    {
+    case CODE_LABEL:
+      /* Avoid creating of basic block for jumptables.  */
+      if (NEXT_INSN (insn)
+	  && GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
+	  && (GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_VEC
+	      || GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_DIFF_VEC))
+	return false;
+      return true;
+
+    case JUMP_INSN:
+      if (GET_CODE (PATTERN (insn)) == ADDR_VEC
+	  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
+	return false;
+      return true;
+
+    case CALL_INSN:
+    case INSN:
+      return true;
+
+    case BARRIER:
+    case NOTE:
+      return false;
+
+    default:
+      abort ();
+    }
+}
+
+/* Return true if INSN may cause control flow transfer, so 
+   it should be last in the basic block.  */
+
+static bool
+control_flow_insn_p (insn)
+     rtx insn;
+{
+  rtx note;
+  switch (GET_CODE (insn))
+    {
+      case NOTE:
+      case CODE_LABEL:
+	return false;
+
+      case JUMP_INSN:
+	/* Jump insn always causes control transfer except for tablejumps.  */
+	if (GET_CODE (PATTERN (insn)) == ADDR_VEC
+	    || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
+	  return false;
+	return true;
+
+      case CALL_INSN:
+	/* Call insn may return to the nonlocal goto handler.  */
+	if (nonlocal_goto_handler_labels
+	    && ((note = find_reg_note (insn, REG_EH_REGION, NULL_RTX)) == 0
+		|| INTVAL (XEXP (note, 0)) >= 0))
+	  return true;
+	/* Or may trap.  */
+	return can_throw_internal (insn);
+
+      case INSN:
+	return (flag_non_call_exceptions
+		&& can_throw_internal (insn));
+
+      case BARRIER:
+	/* It is nonsence to reach barrier when looking for the
+	   end of basic block, but before dead code is elliminated
+	   this may happen.  */
+	return false;
+
+      default:
+	abort ();
+    }
+}
 
 /* Count the basic blocks of the function.  */
 
@@ -64,49 +148,29 @@ static int
 count_basic_blocks (f)
      rtx f;
 {
-  rtx insn;
-  RTX_CODE prev_code;
   int count = 0;
-  int saw_abnormal_edge = 0;
+  bool saw_insn = false;
+  rtx insn;
 
-  prev_code = JUMP_INSN;
   for (insn = f; insn; insn = NEXT_INSN (insn))
     {
-      enum rtx_code code = GET_CODE (insn);
+      /* Code labels and barriers causes curent basic block to be
+         terminated at previous real insn.  */
 
-      if (code == CODE_LABEL
-	  || (GET_RTX_CLASS (code) == 'i'
-	      && (prev_code == JUMP_INSN
-		  || prev_code == BARRIER
-		  || saw_abnormal_edge)))
-	{
-	  saw_abnormal_edge = 0;
-	  count++;
-	}
+      if ((GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == BARRIER)
+	  && saw_insn)
+	count++, saw_insn = false;
 
-      /* Record whether this insn created an edge.  */
-      if (code == CALL_INSN)
-	{
-	  rtx note;
+      /* Start basic block if needed.  */
+      if (!saw_insn && inside_basic_block_p (insn))
+	saw_insn = true;
 
-	  /* If there is a nonlocal goto label and the specified
-	     region number isn't -1, we have an edge.  */
-	  if (nonlocal_goto_handler_labels
-	      && ((note = find_reg_note (insn, REG_EH_REGION, NULL_RTX)) == 0
-		  || INTVAL (XEXP (note, 0)) >= 0))
-	    saw_abnormal_edge = 1;
-
-	  else if (can_throw_internal (insn))
-	    saw_abnormal_edge = 1;
-	}
-      else if (flag_non_call_exceptions
-	       && code == INSN
-	       && can_throw_internal (insn))
-	saw_abnormal_edge = 1;
-
-      if (code != NOTE)
-	prev_code = code;
+      /* Control flow insn causes current basic block to be terminated.  */
+      if (saw_insn && control_flow_insn_p (insn))
+	count++, saw_insn = false;
     }
+  if (saw_insn)
+    count++;
 
   /* The rest of the compiler works a bit smoother when we don't have to
      check for the edge case of do-nothing functions with no basic blocks.  */
@@ -430,6 +494,26 @@ find_basic_blocks_1 (f)
 
       next = NEXT_INSN (insn);
 
+      if ((GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == BARRIER)
+	  && head)
+	{
+	  create_basic_block_structure (i++, head, end, bb_note);
+	  head = end = NULL_RTX;
+	  bb_note = NULL_RTX;
+	}
+      if (inside_basic_block_p (insn))
+	{
+	  if (head == NULL_RTX)
+	    head = insn;
+	  end = insn;
+	}
+      if (head && control_flow_insn_p (insn))
+	{
+	  create_basic_block_structure (i++, head, end, bb_note);
+	  head = end = NULL_RTX;
+	  bb_note = NULL_RTX;
+	}
+
       switch (code)
 	{
 	case NOTE:
@@ -451,97 +535,22 @@ find_basic_blocks_1 (f)
 	  }
 
 	case CODE_LABEL:
-	  /* A basic block starts at a label.  If we've closed one off due
-	     to a barrier or some such, no need to do it again.  */
-	  if (head != NULL_RTX)
-	    {
-	      create_basic_block_structure (i++, head, end, bb_note);
-	      bb_note = NULL_RTX;
-	    }
-
-	  head = end = insn;
+	case JUMP_INSN:
+	case INSN:
+	case BARRIER:
 	  break;
 
-	case JUMP_INSN:
-	  /* A basic block ends at a jump.  */
-	  if (head == NULL_RTX)
-	    head = insn;
-	  else
-	    {
-	      /* ??? Make a special check for table jumps.  The way this
-		 happens is truly and amazingly gross.  We are about to
-		 create a basic block that contains just a code label and
-		 an addr*vec jump insn.  Worse, an addr_diff_vec creates
-		 its own natural loop.
-
-		 Prevent this bit of brain damage, pasting things together
-		 correctly in make_edges.
-
-		 The correct solution involves emitting the table directly
-		 on the tablejump instruction as a note, or JUMP_LABEL.  */
-
-	      if (GET_CODE (PATTERN (insn)) == ADDR_VEC
-		  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
-		{
-		  head = end = NULL;
-		  n_basic_blocks--;
-		  break;
-		}
-	    }
-	  end = insn;
-	  goto new_bb_inclusive;
-
-	case BARRIER:
-	  /* A basic block ends at a barrier.  It may be that an unconditional
-	     jump already closed the basic block -- no need to do it again.  */
-	  if (head == NULL_RTX)
-	    break;
-	  goto new_bb_exclusive;
-
 	case CALL_INSN:
-	  {
-	    /* Record whether this call created an edge.  */
-	    rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-	    int region = (note ? INTVAL (XEXP (note, 0)) : 0);
-
-	    if (GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
-	      {
-		/* Scan each of the alternatives for label refs.  */
-		lvl = find_label_refs (XEXP (PATTERN (insn), 0), lvl);
-		lvl = find_label_refs (XEXP (PATTERN (insn), 1), lvl);
-		lvl = find_label_refs (XEXP (PATTERN (insn), 2), lvl);
-		/* Record its tail recursion label, if any.  */
-		if (XEXP (PATTERN (insn), 3) != NULL_RTX)
-		  trll = alloc_EXPR_LIST (0, XEXP (PATTERN (insn), 3), trll);
-	      }
-
-	    /* A basic block ends at a call that can either throw or
-	       do a non-local goto.  */
-	    if ((nonlocal_goto_handler_labels && region >= 0)
-		|| can_throw_internal (insn))
-	      {
-	      new_bb_inclusive:
-		if (head == NULL_RTX)
-		  head = insn;
-		end = insn;
-
-	      new_bb_exclusive:
-		create_basic_block_structure (i++, head, end, bb_note);
-		head = end = NULL_RTX;
-		bb_note = NULL_RTX;
-		break;
-	      }
-	  }
-	  /* Fall through.  */
-
-	case INSN:
-	  /* Non-call exceptions generate new blocks just like calls.  */
-	  if (flag_non_call_exceptions && can_throw_internal (insn))
-	    goto new_bb_inclusive;
-
-	  if (head == NULL_RTX)
-	    head = insn;
-	  end = insn;
+	  if (GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
+	    {
+	      /* Scan each of the alternatives for label refs.  */
+	      lvl = find_label_refs (XEXP (PATTERN (insn), 0), lvl);
+	      lvl = find_label_refs (XEXP (PATTERN (insn), 1), lvl);
+	      lvl = find_label_refs (XEXP (PATTERN (insn), 2), lvl);
+	      /* Record its tail recursion label, if any.  */
+	      if (XEXP (PATTERN (insn), 3) != NULL_RTX)
+		trll = alloc_EXPR_LIST (0, XEXP (PATTERN (insn), 3), trll);
+	    }
 	  break;
 
 	default:
@@ -699,15 +708,9 @@ find_bb_boundaries (bb)
     {
       enum rtx_code code = GET_CODE (insn);
 
-      switch (code)
+      /* On code label, split current basic block.  */
+      if (code == CODE_LABEL)
 	{
-	case BARRIER:
-	  if (!flow_transfer_insn)
-	    abort ();
-	  break;
-
-	  /* On code label, split current basic block.  */
-	case CODE_LABEL:
 	  fallthru = split_block (bb, PREV_INSN (insn));
 	  if (flow_transfer_insn)
 	    bb->end = flow_transfer_insn;
@@ -716,51 +719,19 @@ find_bb_boundaries (bb)
 	  flow_transfer_insn = NULL_RTX;
 	  if (LABEL_ALTERNATE_NAME (insn))
 	    make_edge (ENTRY_BLOCK_PTR, bb, 0);
-	  break;
-
-	case INSN:
-	case JUMP_INSN:
-	case CALL_INSN:
-	  /* In case we've previously split an insn that effects a control
-	     flow transfer, move the block header to proper place.  */
-	  if (flow_transfer_insn)
-	    {
-	      fallthru = split_block (bb, PREV_INSN (insn));
-	      bb->end = flow_transfer_insn;
-	      bb = fallthru->dest;
-	      remove_edge (fallthru);
-	      flow_transfer_insn = NULL_RTX;
-	    }
-
-	  /* We need some special care for those expressions.  */
-	  if (code == JUMP_INSN)
-	    {
-	      if (GET_CODE (PATTERN (insn)) == ADDR_VEC
-		  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
-		abort ();
-	      flow_transfer_insn = insn;
-	    }
-	  else if (code == CALL_INSN)
-	    {
-	      rtx note;
-	      if (nonlocal_goto_handler_labels
-		  && (!(note = find_reg_note (insn, REG_EH_REGION, NULL_RTX))
-		      || INTVAL (XEXP (note, 0)) >= 0))
-		flow_transfer_insn = insn;
-	      else if (can_throw_internal (insn))
-		flow_transfer_insn = insn;
-	      else if (SIBLING_CALL_P (insn))
-		flow_transfer_insn = insn;
-	      else if (find_reg_note (insn, REG_NORETURN, 0))
-		flow_transfer_insn = insn;
-	    }
-	  else if (flag_non_call_exceptions && can_throw_internal (insn))
-	    flow_transfer_insn = insn;
-	  break;
-
-	default:
-	  break;
 	}
+      /* In case we've previously seen an insn that effects a control
+	 flow transfer, split the block.  */
+      if (flow_transfer_insn && inside_basic_block_p (insn))
+	{
+	  fallthru = split_block (bb, PREV_INSN (insn));
+	  bb->end = flow_transfer_insn;
+	  bb = fallthru->dest;
+	  remove_edge (fallthru);
+	  flow_transfer_insn = NULL_RTX;
+	}
+      if (control_flow_insn_p (insn))
+	flow_transfer_insn = insn;
       if (insn == end)
 	break;
       insn = NEXT_INSN (insn);
