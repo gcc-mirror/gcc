@@ -3026,7 +3026,24 @@ while (0)
     else if (mips_cpu == PROCESSOR_R5000)				\
       return COSTS_N_INSNS (36);					\
     else								\
-      return COSTS_N_INSNS (69);
+      return COSTS_N_INSNS (69);					\
+									\
+  case SIGN_EXTEND:							\
+    /* A sign extend from SImode to DImode in 64 bit mode is often	\
+       zero instructions, because the result can often be used		\
+       directly by another instruction; we'll call it one.  */		\
+    if (TARGET_64BIT && GET_MODE (X) == DImode				\
+	&& GET_MODE (XEXP (X, 0)) == SImode)				\
+      return COSTS_N_INSNS (1);						\
+    else								\
+      return COSTS_N_INSNS (2);						\
+									\
+  case ZERO_EXTEND:							\
+    if (TARGET_64BIT && GET_MODE (X) == DImode				\
+	&& GET_MODE (XEXP (X, 0)) == SImode)				\
+      return COSTS_N_INSNS (2);						\
+    else								\
+      return COSTS_N_INSNS (1);
 
 /* An expression giving the cost of an addressing mode that
    contains ADDRESS.  If not defined, the cost is computed from the
