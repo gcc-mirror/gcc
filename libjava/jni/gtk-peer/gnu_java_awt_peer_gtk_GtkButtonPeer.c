@@ -42,11 +42,11 @@ exception statement from your version. */
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkButtonPeer_create
   (JNIEnv *env, jobject obj)
 {
-  GtkButton *button;
+  GtkWidget *button;
 
   gdk_threads_enter ();
   button = gtk_button_new();
-  gtk_widget_show (GTK_WIDGET(button));
+  gtk_widget_show (button);
   gdk_threads_leave ();
   NSA_SET_PTR (env, obj, button);
 }
@@ -74,8 +74,10 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkSetFont
   gdk_threads_enter();
 
   font_desc = pango_font_description_from_string (font_name);
-  pango_font_description_set_size (font_desc, size);
+  pango_font_description_set_size (font_desc, size * PANGO_SCALE);
+
   gtk_widget_modify_font (GTK_WIDGET(label), font_desc);
+
   pango_font_description_free (font_desc);
 
   gdk_threads_leave();
