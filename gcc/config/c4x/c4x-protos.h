@@ -75,6 +75,9 @@ extern struct rtx_def *c4x_va_arg PARAMS ((tree, tree));
 
 extern rtx c4x_expand_builtin PARAMS((tree, rtx, rtx,
 				      enum machine_mode, int));
+
+extern void c4x_init_builtins PARAMS((tree));
+
 #endif /* TREE_CODE and RTX_CODE*/
 
 
@@ -274,8 +277,6 @@ extern int valid_parallel_operands_4 PARAMS ((rtx *, enum machine_mode));
 extern int valid_parallel_operands_5 PARAMS ((rtx *, enum machine_mode));
 
 extern int valid_parallel_operands_6 PARAMS ((rtx *, enum machine_mode));
-
-extern void c4x_init_builtins PARAMS((void));
 
 extern rtx smulhi3_libfunc;
 extern rtx umulhi3_libfunc;

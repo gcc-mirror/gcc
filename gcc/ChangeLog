@@ -1,6 +1,17 @@
 2000-12-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
             Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
+	* config/c4x/c4x.h (MD_INIT_BUILTINS): Add void_list_node argument
+	  to c4x_init_builtins.
+
+	* config/c4x/c4x-protos.h (c4x_init_builtins): Add tree argument.
+
+	* config/c4x/c4x.c (c4x_init_builtins): Add tree argument.	
+	(c4x_output_ascii):  Fix.
+	
+2000-12-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+            Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
 	* config/c4x/c4x.h (MD_INIT_BUILTINS, MD_EXPAND_BUILTIN): Define.
 
 	* config/c4x/c4x-protos.h (c4x_init_builtins): New prototype.

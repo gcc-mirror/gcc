@@ -313,14 +313,10 @@ c4x_output_ascii (stream, ptr, len)
      int len;
 {
   char sbuf[C4X_ASCII_LIMIT + 1];
-  int s, l, special, first, onlys;
+  int s, l, special, first = 1, onlys;
 
-  first = 0;
   if (len)
-    {
       fprintf (stream, "\t.byte\t");
-      first = 1;
-    }
 
   for (s = l = 0; len > 0; --len, ++ptr)
     {
@@ -4858,9 +4854,9 @@ c4x_adjust_cost (insn, link, dep_insn, cost)
 }
 
 void
-c4x_init_builtins ()
+c4x_init_builtins (endlink)
+     tree endlink;
 {
-  tree endlink = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
 
   builtin_function ("abs",
 		    build_function_type

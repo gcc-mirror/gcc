@@ -2714,7 +2714,7 @@ enum c4x_builtins
 };
 
 #define MD_INIT_BUILTINS do { \
-    c4x_init_builtins (); \
+    c4x_init_builtins (void_list_node); \
   } while (0)
 
 #define MD_EXPAND_BUILTIN(EXP, TARGET, SUBTARGET, MODE, IGNORE) \
