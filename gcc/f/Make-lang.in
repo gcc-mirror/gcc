@@ -159,11 +159,11 @@ f77.all.cross: g77-cross$(exeext)
 f77.start.encap: g77$(exeext)
 f77.rest.encap:
 
-f77.info: f/g77.info
+f77.info: $(srcdir)/f/g77.info
 f77.dvi: f/g77.dvi
 
 # g77 documentation.
-f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
+$(srcdir)/f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	    $(srcdir)/f/ffe.texi \
 	    $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
 	    $(srcdir)/f/intdoc.texi $(srcdir)/f/root.texi
@@ -171,9 +171,9 @@ f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	  *[fF]77*) touch lang-f77;; \
 	  *) rm -f lang-f77;; \
 	esac
-	if [ -f lang-f77 ]; then \
+	if [ -f lang-f77 ] && [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(srcdir)/f/g77.info-*; \
-	  $(MAKEINFO) -I$(srcdir)/f -o f/g77.info $(srcdir)/f/g77.texi; \
+	  cd $(srcdir)/f && $(MAKEINFO) -o g77.info g77.texi; \
 	else true; fi
 
 f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
@@ -298,9 +298,9 @@ f77.install-info: f77.info installdirs
 	  *[fF]77*) touch $(libsubdir)/lang-f77.info;; \
 	  *) rm -f $(libsubdir)/lang-f77.info;; \
 	esac
-	if [ -f $(libsubdir)/lang-f77.info -a -f f/g77.info ] ; then \
+	if [ -f $(libsubdir)/lang-f77.info -a -f $(srcdir)/f/g77.info ] ; then \
 	  rm -f $(infodir)/g77.info*; \
-	  for f in f/g77.info*; do \
+	  for f in $(srcdir)/f/g77.info*; do \
 	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	      $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
 	  done; \

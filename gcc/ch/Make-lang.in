@@ -108,10 +108,10 @@ CHILL.start.encap: chill
 CHILL.rest.encap:
 CHILL.dvi: chill.dvi
 
-CHILL.info: ch/chill.info
+CHILL.info: $(srcdir)/ch/chill.info
 
-ch/chill.info: $(srcdir)/ch/chill.texi
-	$(MAKEINFO) -I$(srcdir)/ch -o ch/chill.info $(srcdir)/ch/chill.texi
+$(srcdir)/ch/chill.info: $(srcdir)/ch/chill.texi
+	cd $(srcdir)/ch && $(MAKEINFO) -o chill.info chill.texi
 
 chill.dvi: $(srcdir)/ch/chill.texi $(srcdir)/extend.texi $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/rtl.texi $(srcdir)/tm.texi
 	cd ch ; \
@@ -145,7 +145,7 @@ CHILL.install-common:
 # Don't delete $(infodir)/ch.info* unless there's actually new
 # docs to install (in case LANGUAGES didn't contain chill earlier).
 CHILL.install-info:
-	-for i in ch/chill.info*; do \
+	-cd $(srcdir)/ch; for i in chill.info*; do \
 	  rm -f $(infodir)/chill.info*; \
 	  realfile=`echo $$i | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	  $(INSTALL_DATA) $$i $(infodir)/$$realfile; \
@@ -169,7 +169,7 @@ CHILL.distclean:
 CHILL.extraclean:
 CHILL.maintainer-clean:
 	-rm -f ch/TAGS
-	-rm -f ch/chill.info* ch/chill.dvi ch/chill.??s ch/chill.*aux
+	-rm -f $(srcdir)/ch/chill.info* ch/chill.dvi ch/chill.??s ch/chill.*aux
 # Delete locally created file.
 	-rm -f ch/hash.h
 #

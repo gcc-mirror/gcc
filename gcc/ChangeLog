@@ -1,3 +1,18 @@
+2000-12-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* configure.in: Don't define INSTALL_INFO.
+	* configure: Regenerate.
+	* Makefile.in (INSTALL_INFO): Remove.
+	(info): Depend on info files in source directory.
+	(cpp.info, gcc.info, c-tree.info): Build info files in source
+	directory.
+	(distclean): Don't remove info files.
+	(maintainer-clean): Remove info files from source directory.
+	(install-normal): Depend on install-info.
+	(install-info): Install info files from source directory, if they
+	exist.
+	* texinfo.tex: Update to version 2000-11-09.08 from ftp.gnu.org.
+
 2000-12-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* lcm.c (optimize_mode_switching): Check whether an insn is a NOTE

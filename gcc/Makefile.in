@@ -466,7 +466,6 @@ INSTALL_HEADERS=install-headers
 
 # Control whether Info documentation is built and installed.
 BUILD_INFO = @BUILD_INFO@
-INSTALL_INFO = @INSTALL_INFO@
 
 # Additional directories of header files to run fixincludes on.
 # These should be directories searched automatically by default
@@ -2161,19 +2160,19 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 # Remake the info files.
 
 doc: $(BUILD_INFO) gccbug
-info: cpp.info gcc.info lang.info c-tree.info
+info: $(srcdir)/cpp.info $(srcdir)/gcc.info lang.info $(srcdir)/c-tree.info
 
-cpp.info: $(srcdir)/cpp.texi
-	$(MAKEINFO) $(MAKEINFOFLAGS) -I$(srcdir) -o cpp.info $(srcdir)/cpp.texi
+$(srcdir)/cpp.info: $(srcdir)/cpp.texi
+	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -o cpp.info cpp.texi
 
-gcc.info: $(srcdir)/gcc.texi $(srcdir)/extend.texi $(srcdir)/install.texi \
+$(srcdir)/gcc.info: $(srcdir)/gcc.texi $(srcdir)/extend.texi $(srcdir)/install.texi \
 	  $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/rtl.texi \
 	  $(srcdir)/tm.texi $(srcdir)/gcov.texi
-	$(MAKEINFO) $(MAKEINFOFLAGS) -I$(srcdir) -o gcc.info $(srcdir)/gcc.texi
+	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -o gcc.info gcc.texi
 
-c-tree.info: $(srcdir)/c-tree.texi
-	$(MAKEINFO) $(MAKEINFOFLAGS) -I$(srcdir) -o c-tree.info \
-		$(srcdir)/c-tree.texi
+$(srcdir)/c-tree.info: $(srcdir)/c-tree.texi
+	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -o c-tree.info \
+		c-tree.texi
 
 dvi: gcc.dvi cpp.dvi lang.dvi
 
@@ -2287,7 +2286,6 @@ distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f intl/libintl.h libintl.h
 	-rm -f cxxmain.c splay-tree.c obstack.c alloca.c hashtab.c
 	-rm -f mklibgcc libgcc.map gccbug .gdbinit configargs.h
-	-rm -f c-tree.info c-tree.info-1 c-tree.info-2 c-tree.info-3
 	-rm -f gcov.pod
 	-rm -f fixinc/Makefile
 	-rmdir cp f java objc fixinc intl po 2>/dev/null
@@ -2321,8 +2319,9 @@ maintainer-clean:
 	$(MAKE) INTL_DISTCLEAN= INTL_CLEAN= INTL_MOSTLYCLEAN= \
 		intl.maintainer-clean lang.maintainer-clean distclean
 	-rm -f c-parse.y c-parse.c c-parse.output TAGS
-	-rm -f cpp.info* cpp.??s cpp.*aux
-	-rm -f gcc.info* gcc.??s gcc.*aux
+	-rm -f cpp.??s cpp.*aux
+	-rm -f gcc.??s gcc.*aux
+	-rm -f $(srcdir)/cpp.info* $(srcdir)/gcc.info* $(srcdir)/c-tree.info*
 	-rm -f $(srcdir)/gcov.1
 #
 # Entry points `install' and `uninstall'.
@@ -2337,7 +2336,7 @@ install: $(INSTALL_TARGET) ; @true
 # Install the driver last so that the window when things are
 # broken is small.
 install-normal: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
-    $(INSTALL_CPP) install-man $(INSTALL_INFO) intl.install \
+    $(INSTALL_CPP) install-man install-info intl.install \
     lang.install-normal install-driver
 
 # Do nothing while making gcc with a cross-compiler. The person who
@@ -2494,13 +2493,18 @@ install-driver: xgcc$(exeext)
 # to do the install.
 install-info: doc installdirs lang.install-info
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
-	for f in cpp.info* gcc.info*; do \
-	    $(INSTALL_DATA) $$f $(infodir)/$$f; \
-	done
+	if [ -f $(srcdir)/gcc.info ]; then \
+	  for f in $(srcdir)/cpp.info* $(srcdir)/gcc.info*; do \
+	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	    $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
+	  done; \
+	else true; fi
 	-if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
 	  if [ -f $(infodir)/dir ] ; then \
 	    for f in cpp.info gcc.info; do \
-		install-info --dir-file=$(infodir)/dir $(infodir)/$$f; \
+		if [ -f $(infodir)/$$f ]; then \
+		  install-info --dir-file=$(infodir)/dir $(infodir)/$$f; \
+		else true; fi \
 	    done; \
 	  else true; fi; \
 	else true; fi;
