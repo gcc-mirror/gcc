@@ -1,3 +1,8 @@
+2003-12-01  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* MAINTAINERS: Move myself from 'Bug database only accounts' to
+	'Write After Approval' section. Update email.
+
 2003-12-01  James Lemke <jim@wasabisystems.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
