@@ -4220,6 +4220,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  register tree size = TREE_OPERAND (declarator, 1);
 	  /* An uninitialized decl with `extern' is a reference.  */
 	  int extern_ref = !initialized && (specbits & (1 << (int) RID_EXTERN));
+	  /* The index is a signed object `sizetype' bits wide.  */
+	  tree index_type = signed_type (sizetype);
 
 	  declarator = TREE_OPERAND (declarator, 0);
 
@@ -4292,10 +4294,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		    }
 		}
 
-	      /* Convert size to sizetype, so that if it is a variable
+	      /* Convert size to index_type, so that if it is a variable
 		 the computations will be done in the proper mode.  */
-	      itype = fold (build (MINUS_EXPR, sizetype,
-				   convert (sizetype, size), size_one_node));
+	      itype = fold (build (MINUS_EXPR, index_type,
+				   convert (index_type, size),
+				   convert (index_type, size_one_node)));
 
 	      if (size_varies)
 		itype = variable_size (itype);
