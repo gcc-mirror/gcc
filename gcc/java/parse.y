@@ -4547,7 +4547,7 @@ java_get_real_method_name (method_decl)
 
 /* Track method being redefined inside the same class. As a side
    effect, set DECL_NAME to an IDENTIFIER (prior entering this
-   function it's a FWL, so we can track errors more accurately */
+   function it's a FWL, so we can track errors more accurately.)  */
 
 static int
 check_method_redefinition (class, method)
@@ -4583,9 +4583,126 @@ check_method_redefinition (class, method)
   return 0;
 }
 
-/* Check all the methods of CLASS. Methods are first completed then
-   checked according to regular method existance rules.
-   If no constructor were encountered, then build its declaration. */
+static void
+check_abstract_method_definitions (do_interface, class_decl, type)
+     int do_interface;
+     tree class_decl, type;
+{
+  tree class = TREE_TYPE (class_decl);
+  tree method, end_type;
+
+  end_type = (do_interface ? object_type_node : type);
+  for (method = TYPE_METHODS (type); method; method = TREE_CHAIN (method))
+    {
+      tree other_super, other_method, method_sig, method_name;
+      int found = 0;
+      
+      if (!METHOD_ABSTRACT (method) || METHOD_FINAL (method))
+	continue;
+      
+      /* Now verify that somewhere in between TYPE and CLASS,
+	 abstract method METHOD gets a non abstract definition
+	 that is inherited by CLASS.  */
+      
+      method_sig = build_java_signature (TREE_TYPE (method));
+      method_name = DECL_NAME (method);
+      if (TREE_CODE (method_name) == EXPR_WITH_FILE_LOCATION)
+	method_name = EXPR_WFL_NODE (method_name);
+
+      for (other_super = class; other_super != end_type; 
+	   other_super = CLASSTYPE_SUPER (other_super))
+	{
+	  for (other_method = TYPE_METHODS (other_super); other_method;
+	       other_method = TREE_CHAIN (other_method))
+	    {
+	      tree s = build_java_signature (TREE_TYPE (other_method));
+	      tree other_name = DECL_NAME (other_method);
+
+	      if (TREE_CODE (other_name) == EXPR_WITH_FILE_LOCATION)
+		other_name = EXPR_WFL_NODE (other_name);
+	      if (!IS_CLINIT (other_method)
+		  && !DECL_CONSTRUCTOR_P (other_method)
+		  && method_name == other_name && method_sig == s)
+		{
+		  found = 1;
+		  break;
+		}
+	    }
+	}
+      
+      /* Report that abstract METHOD didn't find an implementation
+	 that CLASS can use. */
+      if (!found)
+	{
+	  char *t = strdup (lang_printable_name 
+			    (TREE_TYPE (TREE_TYPE (method)), 0));
+	  tree ccn = DECL_NAME (TYPE_NAME (DECL_CONTEXT (method)));
+	  tree saved_wfl = NULL_TREE;
+	  
+	  if (TREE_CODE (DECL_NAME (method)) == EXPR_WITH_FILE_LOCATION)
+	    {
+	      saved_wfl = DECL_NAME (method);
+	      DECL_NAME (method) = EXPR_WFL_NODE (DECL_NAME (method));
+	    }
+	  
+	  parse_error_context 
+	    (lookup_cl (class_decl),
+	     "Class `%s' doesn't define the abstract method `%s %s' from "
+	     "%s `%s'. This method must be defined or %s `%s' must be "
+	     "declared abstract",
+	     IDENTIFIER_POINTER (DECL_NAME (class_decl)),
+	     t, lang_printable_name (method, 0), 
+	     (CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (method))) ? 
+	      "interface" : "class"),
+	     IDENTIFIER_POINTER (ccn),
+	     (CLASS_INTERFACE (class_decl) ? "interface" : "class"),
+	     IDENTIFIER_POINTER (DECL_NAME (class_decl)));
+	  
+	  free (t);
+	  
+	  if (saved_wfl)
+	    DECL_NAME (method) = saved_wfl;
+	}
+    }
+}
+
+/* Check that CLASS_DECL somehoow implements all inherited abstract
+   methods.  */
+
+static void
+java_check_abstract_method_definitions (class_decl)
+     tree class_decl;
+{
+  tree class = TREE_TYPE (class_decl);
+  tree super, vector;
+  int i;
+
+  if (CLASS_ABSTRACT (class_decl))
+    return;
+
+  /* Check for inherited types */
+  for (super = CLASSTYPE_SUPER (class); super != object_type_node; 
+       super = CLASSTYPE_SUPER (super))
+    {
+      if (!CLASS_ABSTRACT (TYPE_NAME (super)))
+	continue;
+
+      check_abstract_method_definitions (0, class_decl, super);
+    }
+
+  /* Check for implemented interfaces. */
+  vector = TYPE_BINFO_BASETYPES (class);
+  for (i = 1; i < TREE_VEC_LENGTH (vector); i++)
+    {
+      super = BINFO_TYPE (TREE_VEC_ELT (vector, i));
+      check_abstract_method_definitions (1, class_decl, super);
+    }
+}
+
+/* Check all the methods of CLASS_DECL. Methods are first completed
+   then checked according to regular method existance rules.  If no
+   constructor for CLASS_DECL were encountered, then build its
+   declaration.  */
 
 static void
 java_check_regular_methods (class_decl)
@@ -4761,13 +4878,17 @@ java_check_regular_methods (class_decl)
   
   /* Don't forget eventual pending found and saved_found_wfl. Take
      into account that we might have exited because we saw an
-     aritifical method as the last entry. */
+     artificial method as the last entry. */
 
   if (found && !DECL_ARTIFICIAL (found) && saved_found_wfl)
     DECL_NAME (found) = saved_found_wfl;
 
   if (!TYPE_NVIRTUALS (class))
     TYPE_METHODS (class) = nreverse (TYPE_METHODS (class));
+
+  /* Search for inherited abstract method not yet implemented in this
+     class.  */
+  java_check_abstract_method_definitions (class_decl);
 
   if (!saw_constructor)
     {
@@ -6105,7 +6226,8 @@ verify_constructor_super ()
       for (mdecl = TYPE_METHODS (class); mdecl; mdecl = TREE_CHAIN (mdecl))
 	{
 	  if (DECL_CONSTRUCTOR_P (mdecl)
-	      && TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (mdecl))) == end_params_node)
+	      && TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (mdecl))) 
+	         == end_params_node)
 	    return 0;
 	}
     }
@@ -7440,7 +7562,7 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
   parse_error_context (cl, "Can't find %s `%s(%s)' in class `%s'%s",
 		       (lc ? "constructor" : "method"),
 		       (lc ? 
-			IDENTIFIER_POINTER(DECL_NAME (TYPE_NAME (class))) :
+			IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (class))) :
 			IDENTIFIER_POINTER (name)),
 		       IDENTIFIER_POINTER (signature),
 		       IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (class))),
