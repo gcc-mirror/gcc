@@ -1,3 +1,7 @@
+2002-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20020201-2.c: New test.
+
 2002-02-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/bitfld-1.c: Update.
