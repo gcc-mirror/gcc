@@ -47,10 +47,8 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../config.guess \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/gcc-version.m4 \
-	$(top_srcdir)/../config/no-executables.m4 \
-	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -128,13 +126,15 @@ am__objects_32 = backspace.lo close.lo endfile.lo format.lo inquire.lo \
 	list_read.lo lock.lo open.lo read.lo rewind.lo transfer.lo \
 	unit.lo unix.lo write.lo
 am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
-	c99_functions.lo cpu_time.lo cshift0.lo date_and_time.lo \
-	env.lo erf.lo eoshift0.lo eoshift2.lo etime.lo exit.lo \
-	flush.lo fnum.lo getcwd.lo getXid.lo ishftc.lo mvbits.lo \
-	pack_generic.lo size.lo spread_generic.lo string_intrinsics.lo \
-	system.lo rand.lo random.lo reshape_generic.lo \
-	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
-	stat.lo system_clock.lo transpose_generic.lo umask.lo \
+	c99_functions.lo chdir.lo cpu_time.lo cshift0.lo \
+	date_and_time.lo env.lo erf.lo eoshift0.lo eoshift2.lo \
+	etime.lo exit.lo flush.lo fnum.lo gerror.lo getcwd.lo \
+	getlog.lo getXid.lo hostnm.lo kill.lo ierrno.lo ishftc.lo \
+	link.lo mvbits.lo pack_generic.lo perror.lo size.lo sleep.lo \
+	spread_generic.lo string_intrinsics.lo system.lo rand.lo \
+	random.lo rename.lo reshape_generic.lo reshape_packed.lo \
+	selected_int_kind.lo selected_real_kind.lo stat.lo symlnk.lo \
+	system_clock.lo time.lo transpose_generic.lo umask.lo \
 	unlink.lo unpack_generic.lo in_pack_generic.lo \
 	in_unpack_generic.lo normalize.lo
 am__objects_34 =
@@ -266,9 +266,6 @@ datadir = @datadir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
-gcc_version = @gcc_version@
-gcc_version_full = @gcc_version_full@
-gcc_version_trigger = @gcc_version_trigger@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -329,6 +326,7 @@ intrinsics/abort.c \
 intrinsics/args.c \
 intrinsics/bessel.c \
 intrinsics/c99_functions.c \
+intrinsics/chdir.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
 intrinsics/date_and_time.c \
@@ -340,23 +338,34 @@ intrinsics/etime.c \
 intrinsics/exit.c \
 intrinsics/flush.c \
 intrinsics/fnum.c \
+intrinsics/gerror.c \
 intrinsics/getcwd.c \
+intrinsics/getlog.c \
 intrinsics/getXid.c \
+intrinsics/hostnm.c \
+intrinsics/kill.c \
+intrinsics/ierrno.c \
 intrinsics/ishftc.c \
+intrinsics/link.c \
 intrinsics/mvbits.c \
 intrinsics/pack_generic.c \
+intrinsics/perror.c \
 intrinsics/size.c \
+intrinsics/sleep.c \
 intrinsics/spread_generic.c \
 intrinsics/string_intrinsics.c \
 intrinsics/system.c \
 intrinsics/rand.c \
 intrinsics/random.c \
+intrinsics/rename.c \
 intrinsics/reshape_generic.c \
 intrinsics/reshape_packed.c \
 intrinsics/selected_int_kind.f90 \
 intrinsics/selected_real_kind.f90 \
 intrinsics/stat.c \
+intrinsics/symlnk.c \
 intrinsics/system_clock.c \
+intrinsics/time.c \
 intrinsics/transpose_generic.c \
 intrinsics/umask.c \
 intrinsics/unlink.c \
@@ -1213,6 +1222,9 @@ bessel.lo: intrinsics/bessel.c
 c99_functions.lo: intrinsics/c99_functions.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o c99_functions.lo `test -f 'intrinsics/c99_functions.c' || echo '$(srcdir)/'`intrinsics/c99_functions.c
 
+chdir.lo: intrinsics/chdir.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o chdir.lo `test -f 'intrinsics/chdir.c' || echo '$(srcdir)/'`intrinsics/chdir.c
+
 cpu_time.lo: intrinsics/cpu_time.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cpu_time.lo `test -f 'intrinsics/cpu_time.c' || echo '$(srcdir)/'`intrinsics/cpu_time.c
 
@@ -1246,14 +1258,32 @@ flush.lo: intrinsics/flush.c
 fnum.lo: intrinsics/fnum.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fnum.lo `test -f 'intrinsics/fnum.c' || echo '$(srcdir)/'`intrinsics/fnum.c
 
+gerror.lo: intrinsics/gerror.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gerror.lo `test -f 'intrinsics/gerror.c' || echo '$(srcdir)/'`intrinsics/gerror.c
+
 getcwd.lo: intrinsics/getcwd.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o getcwd.lo `test -f 'intrinsics/getcwd.c' || echo '$(srcdir)/'`intrinsics/getcwd.c
+
+getlog.lo: intrinsics/getlog.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o getlog.lo `test -f 'intrinsics/getlog.c' || echo '$(srcdir)/'`intrinsics/getlog.c
 
 getXid.lo: intrinsics/getXid.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o getXid.lo `test -f 'intrinsics/getXid.c' || echo '$(srcdir)/'`intrinsics/getXid.c
 
+hostnm.lo: intrinsics/hostnm.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hostnm.lo `test -f 'intrinsics/hostnm.c' || echo '$(srcdir)/'`intrinsics/hostnm.c
+
+kill.lo: intrinsics/kill.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o kill.lo `test -f 'intrinsics/kill.c' || echo '$(srcdir)/'`intrinsics/kill.c
+
+ierrno.lo: intrinsics/ierrno.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ierrno.lo `test -f 'intrinsics/ierrno.c' || echo '$(srcdir)/'`intrinsics/ierrno.c
+
 ishftc.lo: intrinsics/ishftc.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ishftc.lo `test -f 'intrinsics/ishftc.c' || echo '$(srcdir)/'`intrinsics/ishftc.c
+
+link.lo: intrinsics/link.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o link.lo `test -f 'intrinsics/link.c' || echo '$(srcdir)/'`intrinsics/link.c
 
 mvbits.lo: intrinsics/mvbits.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mvbits.lo `test -f 'intrinsics/mvbits.c' || echo '$(srcdir)/'`intrinsics/mvbits.c
@@ -1261,8 +1291,14 @@ mvbits.lo: intrinsics/mvbits.c
 pack_generic.lo: intrinsics/pack_generic.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pack_generic.lo `test -f 'intrinsics/pack_generic.c' || echo '$(srcdir)/'`intrinsics/pack_generic.c
 
+perror.lo: intrinsics/perror.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o perror.lo `test -f 'intrinsics/perror.c' || echo '$(srcdir)/'`intrinsics/perror.c
+
 size.lo: intrinsics/size.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o size.lo `test -f 'intrinsics/size.c' || echo '$(srcdir)/'`intrinsics/size.c
+
+sleep.lo: intrinsics/sleep.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sleep.lo `test -f 'intrinsics/sleep.c' || echo '$(srcdir)/'`intrinsics/sleep.c
 
 spread_generic.lo: intrinsics/spread_generic.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o spread_generic.lo `test -f 'intrinsics/spread_generic.c' || echo '$(srcdir)/'`intrinsics/spread_generic.c
@@ -1279,6 +1315,9 @@ rand.lo: intrinsics/rand.c
 random.lo: intrinsics/random.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o random.lo `test -f 'intrinsics/random.c' || echo '$(srcdir)/'`intrinsics/random.c
 
+rename.lo: intrinsics/rename.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rename.lo `test -f 'intrinsics/rename.c' || echo '$(srcdir)/'`intrinsics/rename.c
+
 reshape_generic.lo: intrinsics/reshape_generic.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_generic.lo `test -f 'intrinsics/reshape_generic.c' || echo '$(srcdir)/'`intrinsics/reshape_generic.c
 
@@ -1288,8 +1327,14 @@ reshape_packed.lo: intrinsics/reshape_packed.c
 stat.lo: intrinsics/stat.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stat.lo `test -f 'intrinsics/stat.c' || echo '$(srcdir)/'`intrinsics/stat.c
 
+symlnk.lo: intrinsics/symlnk.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o symlnk.lo `test -f 'intrinsics/symlnk.c' || echo '$(srcdir)/'`intrinsics/symlnk.c
+
 system_clock.lo: intrinsics/system_clock.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o system_clock.lo `test -f 'intrinsics/system_clock.c' || echo '$(srcdir)/'`intrinsics/system_clock.c
+
+time.lo: intrinsics/time.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o time.lo `test -f 'intrinsics/time.c' || echo '$(srcdir)/'`intrinsics/time.c
 
 transpose_generic.lo: intrinsics/transpose_generic.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_generic.lo `test -f 'intrinsics/transpose_generic.c' || echo '$(srcdir)/'`intrinsics/transpose_generic.c
@@ -1612,7 +1657,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/.. $(distdir)/../config $(distdir)/m4
+	$(mkdir_p) $(distdir)/.. $(distdir)/m4
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

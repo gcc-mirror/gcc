@@ -1,3 +1,6 @@
+2005-02-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+	* Makefile.in, config.h.in: Regenerate.
+
 2005-02-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/18025
