@@ -1,3 +1,11 @@
+1998-11-09  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* dbxout.c: Check HAVE_STAB_H instead of HAVE_STABS_H.
+
+Mon Nov  9 20:15:19 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* regmove.c (regmove_optimize): Fix error in last change.
+
 Mon Nov  9 16:37:52 1998  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* mips.c (function_prologue): When TARGET_MIPS16, adjust the register
