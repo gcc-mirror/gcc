@@ -68,6 +68,11 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEEP_BRANCH_PREDICTION
 #define TARGET_DEEP_BRANCH_PREDICTION   0
 
+/* For now, disable dynamic-no-pic.  We'll need to go through i386.c
+   with a fine-tooth comb looking for refs to flag_pic!  */
+#define MASK_MACHO_DYNAMIC_NO_PIC 0
+#define TARGET_DYNAMIC_NO_PIC	  (target_flags & MASK_MACHO_DYNAMIC_NO_PIC)
+
 /* Define the syntax of pseudo-ops, labels and comments.  */
 
 #define LPREFIX "L"

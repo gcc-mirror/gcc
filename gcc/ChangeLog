@@ -1,3 +1,52 @@
+2003-03-10  Andrew Pinski  <apinski@apple.com>
+
+	* config/darwin.c (machopic_function_base_name): If dynamic-no-pic
+	is on should not get here.
+	(machopic_indirect_data_reference): If dynamic-no-pic is on just
+	generate high/low parts of the address.
+	(machopic_legitimize_pic_address): Change MACHOPIC_PURE to
+	MACHOPIC_INDIRECT. Dynamic-no-pic uses 0 as the pic base. Generate
+	symbol and labels with a new reg.  Dynamic-no-pic does not have a
+	pic_offset_table_rtx.
+	(machopic_select_section): Change references of flag_pic to
+	MACHOPIC_INDIRECT. 
+	(machopic_asm_out_destructor): Likewise.
+	* config/darwin.h (ASM_DECLARE_UNRESOLVED_REFERENCE): Change
+	reference of flag_pic to MACHOPIC_INDIRECT.
+	(MACHO_DYNAMIC_NO_PIC_P): Define as TARGET_DYNAMIC_NO_PIC.
+	(MACHOPIC_INDIRECT): Is also true when dynamic-no-pic is on.
+	(MACHOPIC_JUST_INDIRECT): Is also true when dynamic-no-pic is on.
+	(MACHOPIC_PURE): Is not pure when dynamic-no-pic is on.
+	* config/i386/darwin.h (MASK_MACHO_DYNAMIC_NO_PIC): Define as
+	0 for right now as dynamic-no-pic is not implemented on Darwin/ia32.
+	* config/rs6000/darwin.h (MASK_MACHO_DYNAMIC_NO_PIC): Define.
+	(TARGET_DYNAMIC_NO_PIC): Define.
+	(SUBTARGET_SWITCHES): Define, have sub-target switches for
+	dynamic-no-pic. 
+	(SUBTARGET_OVERRIDE_OPTIONS): Move check for -fpic from
+	rs6000_override_options to here. Dynamic-no-pic overrides
+	pic.
+	(CC1_SPEC): Change from not static then pic to not static and not
+	dynamic-no-pic then pic.
+	* config/rs6000/rs6000.c (rs6000_override_options): Move the
+	check for -fpic and DARWIN_ABI to config/rs6000/darwin.h
+	(rs6000_legitimize_reload_address): Add case for loading floating in
+	dynamic-no-pic.
+	(rs6000_emit_move): Add case for dynamic-no-pic.  Change reference
+	of flag_pic to MACHOPIC_INDIRECT.
+	(secondary_reload_class): Conditional change the reference of
+	flag_pic to MACHOPIC_INDIRECT.
+	(rs6000_output_mi_thunk): Change reference of flag_pic to
+	MACHOPIC_INDIRECT.
+	(output_profile_hook): Likewise.
+	(machopic_output_stub):	Non-pure (dynamic-no-pic) is now supported.
+	* config/rs6000/rs6000.md (movdf_low): Add the case for
+	MACHO_DYNAMIC_NO_PIC_P.
+	(call): Change references for flag_pic in TARGET_MACHO to
+	MACHOPIC_INDIRECT.
+	(SUBTARGET_OVERRIDE_OPTIONS): Add case where -fpic is on and
+	-mdynamic-no-pic is on.	 Also move case for -fpic from rs6000.c.
+	* doc/invoke.texi (-mdynamic-no-pic): Document.
 
 2003-03-10  Devang Patel  <dpatel@apple.com>
 	
@@ -15,7 +64,6 @@
 	* toplev.c (rest_of_compilation):  Move
 	check_function_return_warnings up to just after
 	delete_unreachable_blocks.
-
 
 2003-03-10  Stephane Carrez  <stcarrez@nerim.fr>
 

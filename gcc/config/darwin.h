@@ -676,7 +676,7 @@ objc_section_init ()				\
 #define ASM_DECLARE_UNRESOLVED_REFERENCE(FILE,NAME)			\
     do { 								\
 	 if (FILE) {							\
-	   if (flag_pic)						\
+	   if (MACHOPIC_INDIRECT)					\
 	     fprintf (FILE, "\t.lazy_reference ");			\
 	   else								\
 	     fprintf (FILE, "\t.reference ");				\
@@ -722,9 +722,10 @@ enum machopic_addr_class {
 
 /* Macros defining the various PIC cases.  */
 
-#define MACHOPIC_INDIRECT      (flag_pic)
-#define MACHOPIC_JUST_INDIRECT (flag_pic == 1)
-#define MACHOPIC_PURE          (flag_pic == 2)
+#define MACHO_DYNAMIC_NO_PIC_P	(TARGET_DYNAMIC_NO_PIC)
+#define MACHOPIC_INDIRECT	(flag_pic || MACHO_DYNAMIC_NO_PIC_P)
+#define MACHOPIC_JUST_INDIRECT	(flag_pic == 1 || MACHO_DYNAMIC_NO_PIC_P)
+#define MACHOPIC_PURE		(flag_pic == 2 && ! MACHO_DYNAMIC_NO_PIC_P)
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO  darwin_encode_section_info

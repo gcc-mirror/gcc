@@ -231,6 +231,9 @@ machopic_function_base_name ()
   static const char *name = NULL;
   static const char *current_name;
 
+  /* if dynamic-no-pic is on, we should not get here */
+  if (MACHO_DYNAMIC_NO_PIC_P)
+    abort ();
   current_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
 
   if (name != current_name)
@@ -426,7 +429,20 @@ machopic_indirect_data_reference (orig, reg)
     {
       const char *name = XSTR (orig, 0);
 
-      if (machopic_data_defined_p (name))
+      int defined = machopic_data_defined_p (name);
+
+      if (defined && MACHO_DYNAMIC_NO_PIC_P)
+	{
+#if defined (TARGET_TOC)
+           emit_insn (gen_macho_high (reg, orig));  
+           emit_insn (gen_macho_low (reg, reg, orig));
+#else
+	   /* some other cpu -- writeme!  */
+	   abort ();
+#endif
+	   return reg;
+	}
+      else if (defined)
 	{
 #if defined (TARGET_TOC) || defined (HAVE_lo_sum)
 	  rtx pic_base = gen_rtx (SYMBOL_REF, Pmode, 
@@ -569,7 +585,7 @@ machopic_legitimize_pic_address (orig, mode, reg)
 {
   rtx pic_ref = orig;
 
-  if (! MACHOPIC_PURE)
+  if (! MACHOPIC_INDIRECT)
     return orig;
 
   /* First handle a simple SYMBOL_REF or LABEL_REF */
@@ -592,6 +608,10 @@ machopic_legitimize_pic_address (orig, mode, reg)
 	  return reg;
 	}  
 
+      /* if dynamic-no-pic then use 0 as the pic base  */
+      if (MACHO_DYNAMIC_NO_PIC_P)
+	pic_base = CONST0_RTX (Pmode);
+      else
       pic_base = gen_rtx (SYMBOL_REF, Pmode, machopic_function_base_name ());
 
       if (GET_CODE (orig) == MEM)
@@ -605,6 +625,27 @@ machopic_legitimize_pic_address (orig, mode, reg)
 	    }
 	
 #ifdef HAVE_lo_sum
+	  if (MACHO_DYNAMIC_NO_PIC_P
+	      && (GET_CODE (XEXP (orig, 0)) == SYMBOL_REF
+		  || GET_CODE (XEXP (orig, 0)) == LABEL_REF))
+	    {
+#if defined (TARGET_TOC)	/* ppc  */
+	      rtx temp_reg = (no_new_pseudos) ? reg : gen_reg_rtx (Pmode);
+	      rtx asym = XEXP (orig, 0);
+	      rtx mem;
+
+	      emit_insn (gen_macho_high (temp_reg, asym));
+	      mem = gen_rtx_MEM (GET_MODE (orig),
+				 gen_rtx (LO_SUM, Pmode, temp_reg, asym));
+	      RTX_UNCHANGING_P (mem) = 1;
+	      emit_insn (gen_rtx (SET, VOIDmode, reg, mem));
+#else
+	      /* Some other CPU -- WriteMe! but right now there are no other platform that can use dynamic-no-pic  */
+	      abort ();
+#endif
+	      pic_ref = reg;
+	    }
+	  else
 	  if (GET_CODE (XEXP (orig, 0)) == SYMBOL_REF 
 	      || GET_CODE (XEXP (orig, 0)) == LABEL_REF)
 	    {
@@ -692,7 +733,9 @@ machopic_legitimize_pic_address (orig, mode, reg)
 	      hi_sum_reg = reg;
 
 	      emit_insn (gen_rtx (SET, Pmode, hi_sum_reg,
-				  gen_rtx (PLUS, Pmode,
+			   (MACHO_DYNAMIC_NO_PIC_P)
+				? gen_rtx (HIGH, Pmode, offset)
+				: gen_rtx (PLUS, Pmode,
 					   pic_offset_table_rtx,
 					   gen_rtx (HIGH, Pmode, offset))));
 	      emit_insn (gen_rtx (SET, VOIDmode, reg,
@@ -1137,7 +1180,8 @@ machopic_select_section (exp, reloc, align)
 	objc_string_object_section ();
       else if (TREE_READONLY (exp) || TREE_CONSTANT (exp))
 	{
-	  if (TREE_SIDE_EFFECTS (exp) || (flag_pic && reloc))
+	  
+	  if (TREE_SIDE_EFFECTS (exp) || (MACHOPIC_INDIRECT && reloc))
 	    const_data_section ();
 	  else
 	    readonly_data_section ();
@@ -1200,7 +1244,8 @@ machopic_select_section (exp, reloc, align)
       else if ((TREE_READONLY (exp) || TREE_CONSTANT (exp))
 	       && !TREE_SIDE_EFFECTS (exp))
 	{
-	  if (flag_pic && reloc)
+	  
+	  if (MACHOPIC_INDIRECT && reloc)
 	    const_data_section ();
 	  else
 	    readonly_data_section ();
@@ -1210,7 +1255,8 @@ machopic_select_section (exp, reloc, align)
     }
   else if (TREE_READONLY (exp) || TREE_CONSTANT (exp))
     {
-      if (TREE_SIDE_EFFECTS (exp) || (flag_pic && reloc))
+     
+      if (TREE_SIDE_EFFECTS (exp) || (MACHOPIC_INDIRECT && reloc))
 	const_data_section ();
       else
 	readonly_data_section ();
@@ -1243,14 +1289,16 @@ machopic_asm_out_constructor (symbol, priority)
      rtx symbol;
      int priority ATTRIBUTE_UNUSED;
 {
-  if (flag_pic)
+  
+  if (MACHOPIC_INDIRECT)
     mod_init_section ();
   else
     constructor_section ();
   assemble_align (POINTER_SIZE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 
-  if (!flag_pic)
+ 
+  if (! MACHOPIC_INDIRECT)
     fprintf (asm_out_file, ".reference .constructors_used\n");
 }
 
@@ -1259,14 +1307,15 @@ machopic_asm_out_destructor (symbol, priority)
      rtx symbol;
      int priority ATTRIBUTE_UNUSED;
 {
-  if (flag_pic)
+  
+  if (MACHOPIC_INDIRECT)
     mod_term_section ();
   else
     destructor_section ();
   assemble_align (POINTER_SIZE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 
-  if (!flag_pic)
+  if (! MACHOPIC_INDIRECT)
     fprintf (asm_out_file, ".reference .destructors_used\n");
 }
 

@@ -643,10 +643,6 @@ rs6000_override_options (default_cpu)
       flag_pic = 0;
     }
 
-  /* For Darwin, always silently make -fpic and -fPIC identical.  */
-  if (flag_pic == 1 && DEFAULT_ABI == ABI_DARWIN)
-    flag_pic = 2;
-
   /* Set debug flags */
   if (rs6000_debug_name)
     {
@@ -2228,6 +2224,9 @@ rs6000_legitimize_address (x, oldx, mode)
     }
   else if (TARGET_MACHO && TARGET_32BIT && TARGET_NO_TOC
 	   && ! flag_pic
+#if TARGET_MACHO
+	   && ! MACHO_DYNAMIC_NO_PIC_P
+#endif
 	   && GET_CODE (x) != CONST_INT
 	   && GET_CODE (x) != CONST_DOUBLE 
 	   && CONSTANT_P (x)
@@ -2367,6 +2366,20 @@ rs6000_legitimize_reload_address (x, mode, opnum, type, ind_levels, win)
       *win = 1;
       return x;
     }
+   if (GET_CODE (x) == SYMBOL_REF
+       && DEFAULT_ABI == ABI_DARWIN
+       && !ALTIVEC_VECTOR_MODE (mode)
+       && MACHO_DYNAMIC_NO_PIC_P)
+     {
+       /* Darwin load of floating point constant.  */
+       x = gen_rtx (LO_SUM, GET_MODE (x),
+               gen_rtx (HIGH, Pmode, x), x);
+       push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
+               BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
+               opnum, (enum reload_type)type);
+       *win = 1;
+       return x;
+     }
 #endif
   if (TARGET_TOC
       && CONSTANT_POOL_EXPR_P (x)
@@ -2780,6 +2793,18 @@ rs6000_emit_move (dest, source, mode)
 
 	  if (DEFAULT_ABI == ABI_DARWIN)
 	    {
+#if TARGET_MACHO
+	      if (MACHO_DYNAMIC_NO_PIC_P)
+		{
+		  /* Take care of any required data indirection.  */
+		  operands[1] = rs6000_machopic_legitimize_pic_address (
+				  operands[1], mode, operands[0]);
+		  if (operands[0] != operands[1])
+		    emit_insn (gen_rtx_SET (VOIDmode,
+				            operands[0], operands[1]));
+		  return;
+		}
+#endif
 	      emit_insn (gen_macho_high (target, operands[1]));
 	      emit_insn (gen_macho_low (operands[0], target, operands[1]));
 	      return;
@@ -2824,7 +2849,7 @@ rs6000_emit_move (dest, source, mode)
 
 #if TARGET_MACHO
 	  /* Darwin uses a special PIC legitimizer.  */
-	  if (DEFAULT_ABI == ABI_DARWIN && flag_pic)
+	  if (DEFAULT_ABI == ABI_DARWIN && MACHOPIC_INDIRECT)
 	    {
 	      operands[1] =
 		rs6000_machopic_legitimize_pic_address (operands[1], mode,
@@ -7213,7 +7238,11 @@ secondary_reload_class (class, mode, in)
 {
   int regno;
 
-  if (TARGET_ELF || (DEFAULT_ABI == ABI_DARWIN && flag_pic))
+  if (TARGET_ELF || (DEFAULT_ABI == ABI_DARWIN
+#if TARGET_MACHO
+                    && MACHOPIC_INDIRECT
+#endif
+                    ))
     {
       /* We cannot copy a symbolic operand directly into anything
          other than BASE_REGS for TARGET_ELF.  So indicate that a
@@ -11567,7 +11596,7 @@ rs6000_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
 
 #if TARGET_MACHO
-  if (flag_pic)
+  if (MACHOPIC_INDIRECT)
     funexp = machopic_indirect_call_target (funexp);
 #endif
 
@@ -12218,7 +12247,7 @@ output_profile_hook (labelno)
 #if TARGET_MACHO
       /* For PIC code, set up a stub and collect the caller's address
 	 from r0, which is where the prologue puts it.  */
-      if (flag_pic)
+      if (MACHOPIC_INDIRECT)
 	{
 	  mcount_name = machopic_stub_name (mcount_name);
 	  if (current_function_uses_pic_offset_table)
@@ -13106,7 +13135,12 @@ machopic_output_stub (file, symb, stub)
       fprintf (file, "\tbctr\n");
     }
   else
-    fprintf (file, "non-pure not supported\n");
+   {
+     fprintf (file, "\tlis r11,ha16(%s)\n", lazy_ptr_name);
+     fprintf (file, "\tlwzu r12,lo16(%s)(r11)\n", lazy_ptr_name);
+     fprintf (file, "\tmtctr r12\n");
+     fprintf (file, "\tbctr\n");
+   }
   
   machopic_lazy_symbol_ptr_section ();
   fprintf (file, "%s:\n", lazy_ptr_name);
