@@ -186,6 +186,14 @@ threads implementation available, in which case threads can be enabled
 with this option by supplying a suitable @var{type}, probably
 @samp{posix}.  The possibilities for @var{type} are @samp{single},
 @samp{posix}, @samp{win32}, @samp{solaris}, @samp{irix} and @samp{mach}.
+
+@cindex Internal Compiler Checking
+@item --enable-checking
+When you specify this option, the compiler is built to perform checking
+of tree node types when referencing fields of that node.  This does not
+change the generated code, but adds error checking within the compiler.
+This will slow down the compiler and may only work properly if you
+are building the compiler with GNU C.
 @end table
 
 The @file{configure} script searches subdirectories of the source
