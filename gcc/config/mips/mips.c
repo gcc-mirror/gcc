@@ -54,6 +54,10 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 
+#ifdef HALF_PIC_DEBUG
+#include "halfpic.h"
+#endif
+
 #ifdef __GNU_STAB__
 #define STAB_CODE_TYPE enum __stab_debug_code
 #else

@@ -1,5 +1,11 @@
 2001-12-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* m68k.c (init_FPA_table): Provide static prototype.
+	* mips/abi64.h (mips_function_value): Move prototype to ...
+	* mips-protos.h (mips_function_value): ... here.
+	* mips.c: Include halfpic.h.
+	* output.h (rdata_section): Prototype.
+
 	* h8300.c (h8300_asm_named_section): Wrap with !OBJECT_FORMAT_ELF.
 	* m88k.c (m88k_svr3_asm_out_constructor,
 	m88k_svr3_asm_out_destructor): Wrap with CTOR_LIST_BEGIN &&
