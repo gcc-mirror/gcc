@@ -6665,7 +6665,7 @@ emit_output_reload_insns (chain, rl, j)
 
 		  /* Copy primary reload reg to secondary reload reg.
 		     (Note that these have been swapped above, then
-		     secondary reload reg to OLD using our insn.  */
+		     secondary reload reg to OLD using our insn.)  */
 
 		  /* If REAL_OLD is a paradoxical SUBREG, remove it
 		     and try to put the opposite SUBREG on
@@ -8172,6 +8172,9 @@ reload_cse_simplify_set (set, insn)
   int old_cost;
   cselib_val *val;
   struct elt_loc_list *l;
+#ifdef LOAD_EXTEND_OP
+  enum rtx_code extend_op = NIL;
+#endif
 
   dreg = true_regnum (SET_DEST (set));
   if (dreg < 0)
@@ -8182,6 +8185,18 @@ reload_cse_simplify_set (set, insn)
     return 0;
 
   dclass = REGNO_REG_CLASS (dreg);
+
+#ifdef LOAD_EXTEND_OP
+  /* When replacing a memory with a register, we need to honor assumptions
+     that combine made wrt the contents of sign bits.  We'll do this by
+     generating an extend instruction instead of a reg->reg copy.  Thus 
+     the destination must be a register that we can widen.  */
+  if (GET_CODE (src) == MEM
+      && GET_MODE_BITSIZE (GET_MODE (src)) < BITS_PER_WORD
+      && (extend_op = LOAD_EXTEND_OP (GET_MODE (src))) != NIL
+      && GET_CODE (SET_DEST (set)) != REG)
+    return 0;
+#endif
 
   /* If memory loads are cheaper than register copies, don't change them.  */
   if (GET_CODE (src) == MEM)
@@ -8200,23 +8215,72 @@ reload_cse_simplify_set (set, insn)
     return 0;
   for (l = val->locs; l; l = l->next)
     {
+      rtx this_rtx = l->loc;
       int this_cost;
-      if (CONSTANT_P (l->loc) && ! references_value_p (l->loc, 0))
-	this_cost = rtx_cost (l->loc, SET);
-      else if (GET_CODE (l->loc) == REG)
-	this_cost = REGISTER_MOVE_COST (GET_MODE (l->loc),
-					REGNO_REG_CLASS (REGNO (l->loc)),
-					dclass);
+
+      if (CONSTANT_P (this_rtx) && ! references_value_p (this_rtx, 0))
+	{
+#ifdef LOAD_EXTEND_OP
+	  if (extend_op != NIL)
+	    {
+	      HOST_WIDE_INT this_val;
+
+	      /* ??? I'm lazy and don't wish to handle CONST_DOUBLE.  Other
+		 constants, such as SYMBOL_REF, cannot be extended.  */
+	      if (GET_CODE (this_rtx) != CONST_INT)
+		continue;
+
+	      this_val = INTVAL (this_rtx);
+	      switch (extend_op)
+		{
+		case ZERO_EXTEND:
+		  this_val &= GET_MODE_MASK (GET_MODE (src));
+		  break;
+		case SIGN_EXTEND:
+		  /* ??? In theory we're already extended.  */
+		  if (this_val == trunc_int_for_mode (this_val, GET_MODE (src)))
+		    break;
+		default:
+		  abort ();
+		}
+	      this_val = GEN_INT (this_val);
+	    }
+#endif
+	  this_cost = rtx_cost (this_rtx, SET);
+	}
+      else if (GET_CODE (this_rtx) == REG)
+	{
+#ifdef LOAD_EXTEND_OP
+	  if (extend_op != NIL)
+	    {
+	      this_rtx = gen_rtx_fmt_e (extend_op, word_mode, this_rtx);
+	      this_cost = rtx_cost (this_rtx, SET);
+	    }
+	  else
+#endif
+	    this_cost = REGISTER_MOVE_COST (GET_MODE (this_rtx),
+					    REGNO_REG_CLASS (REGNO (this_rtx)),
+					    dclass);
+	}
       else
 	continue;
-      /* If equal costs, prefer registers over anything else.  That tends to
-	 lead to smaller instructions on some machines.  */
-      if ((this_cost < old_cost
-	   || (this_cost == old_cost
-	       && GET_CODE (l->loc) == REG
-	       && GET_CODE (SET_SRC (set)) != REG))
-	  && validate_change (insn, &SET_SRC (set), copy_rtx (l->loc), 1))
-	old_cost = this_cost, did_change = 1;
+
+      /* If equal costs, prefer registers over anything else.  That
+	 tends to lead to smaller instructions on some machines.  */
+      if (this_cost < old_cost
+	  || (this_cost == old_cost
+	      && GET_CODE (this_rtx) == REG
+	      && GET_CODE (SET_SRC (set)) != REG))
+	{
+#ifdef LOAD_EXTEND_OP
+	  rtx wide_dest = gen_rtx_REG (word_mode, REGNO (SET_DEST (set)));
+	  ORIGINAL_REGNO (wide_dest) = ORIGINAL_REGNO (SET_DEST (set));
+	  validate_change (insn, &SET_DEST (set), wide_dest, 1);
+#endif
+
+	  validate_change (insn, &SET_SRC (set), copy_rtx (this_rtx), 1);
+	  old_cost = this_cost, did_change = 1;
+	}
     }
 
   return did_change;
