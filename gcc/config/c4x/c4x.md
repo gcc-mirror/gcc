@@ -1466,6 +1466,23 @@
   [(set_attr "type" "unarycc,unary")
    (set_attr "data" "int16,int16")])
 
+(define_insn "*absqi2_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c")
+        (abs:QI (match_operand:QI 1 "src_operand" "rIm")))]
+  ""
+  "absi\\t%1,%0"
+  [(set_attr "type" "unary")
+   (set_attr "data" "int16")])
+
+(define_split
+  [(set (match_operand:QI 0 "std_reg_operand" "")
+        (abs:QI (match_operand:QI 1 "src_operand" "")))
+   (clobber (reg:CC_NOOV 21))]
+  "reload_completed"
+  [(set (match_dup 0)
+        (abs:QI (match_dup 1)))]
+  "")
+
 (define_insn "*absqi2_test"
   [(set (reg:CC_NOOV 21)
         (compare:CC_NOOV (abs:QI (match_operand:QI 1 "src_operand" "rIm"))
@@ -1505,6 +1522,23 @@
   "negi\\t%1,%0"
   [(set_attr "type" "unarycc,unary")
    (set_attr "data" "int16,int16")])
+
+(define_insn "*negqi2_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c")
+        (neg:QI (match_operand:QI 1 "src_operand" "rIm")))]
+  ""
+  "negi\\t%1,%0"
+  [(set_attr "type" "unary")
+   (set_attr "data" "int16")])
+
+(define_split
+  [(set (match_operand:QI 0 "std_reg_operand" "")
+        (neg:QI (match_operand:QI 1 "src_operand" "")))
+   (clobber (reg:CC_NOOV 21))]
+  "reload_completed"
+  [(set (match_dup 0)
+        (neg:QI (match_dup 1)))]
+  "")
 
 (define_insn "*negqi2_test"
   [(set (reg:CC_NOOV 21)
@@ -1555,6 +1589,23 @@
   "not\\t%1,%0"
   [(set_attr "type" "unarycc,unary")
    (set_attr "data" "uint16,uint16")])
+
+(define_insn "*one_cmplqi2_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c")
+        (not:QI (match_operand:QI 1 "lsrc_operand" "rLm")))]
+  ""
+  "not\\t%1,%0"
+  [(set_attr "type" "unary")
+   (set_attr "data" "uint16")])
+
+(define_split
+  [(set (match_operand:QI 0 "std_reg_operand" "")
+        (not:QI (match_operand:QI 1 "lsrc_operand" "")))
+   (clobber (reg:CC 21))]
+  "reload_completed"
+  [(set (match_dup 0)
+        (not:QI (match_dup 1)))]
+  "")
 
 (define_insn "*one_cmplqi2_test"
   [(set (reg:CC 21)
@@ -1734,6 +1785,17 @@
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")])
 ; Default to int16 data attr.
 
+(define_split
+  [(set (match_operand:QI 0 "std_reg_operand" "")
+        (plus:QI (match_operand:QI 1 "src_operand" "")
+                 (match_operand:QI 2 "src_operand" "")))
+   (clobber (reg:CC_NOOV 21))]
+  "reload_completed"
+  [(set (match_dup 0)
+        (plus:QI (match_dup 1)
+                 (match_dup 2)))]
+  "")
+
 (define_insn "*addqi3_test"
   [(set (reg:CC_NOOV 21)
         (compare:CC_NOOV (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
@@ -1882,6 +1944,17 @@
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc,binary,binary,binary,binary")])
 ; Default to int16 data attr.
 
+(define_split
+  [(set (match_operand:QI 0 "std_reg_operand" "")
+        (minus:QI (match_operand:QI 1 "src_operand" "")
+                  (match_operand:QI 2 "src_operand" "")))
+   (clobber (reg:CC_NOOV 21))]
+  "reload_completed"
+  [(set (match_dup 0)
+        (minus:QI (match_dup 1)
+                 (match_dup 2)))]
+  "")
+
 (define_insn "*subqi3_test"
   [(set (reg:CC_NOOV 21)
         (compare:CC_NOOV (minus:QI (match_operand:QI 1 "src_operand" "0,rIm,rR,rS<>")
@@ -1927,6 +2000,19 @@
    subi3\\t%2,%1,%0
    subi3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc")])
+; Default to int16 data attr.
+
+(define_insn "*subqi3_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,c,c,?c")
+        (minus:QI (match_operand:QI 1 "src_operand" "0,rIm,rR,rS<>")
+                  (match_operand:QI 2 "src_operand" "rIm,0,JR,rS<>")))]
+  "valid_operands (MINUS, operands, QImode)"
+  "@
+   subi\\t%2,%0
+   subri\\t%1,%0
+   subi3\\t%2,%1,%0
+   subi3\\t%2,%1,%0"
+  [(set_attr "type" "binary,binary,binary,binary")])
 ; Default to int16 data attr.
 
 (define_insn "*subqi3_carry_clobber"
@@ -2295,7 +2381,15 @@
    (clobber (reg:CC 21))]
  "! TARGET_C3X"
  "lbu0\\t%1,%0"
-  [(set_attr "type" "unarycc")])
+  [(set_attr "type" "unarycc,unary")])
+
+(define_insn "*andqi3_255_noclobber"
+  [(set (match_operand:QI 0 "reg_operand" "=c")
+        (and:QI (match_operand:QI 1 "src_operand" "mr")
+                (const_int 255)))]
+ "! TARGET_C3X"
+ "lbu0\\t%1,%0"
+  [(set_attr "type" "unary")])
 
 
 (define_insn "*andqi3_65535_clobber"
@@ -2305,8 +2399,15 @@
    (clobber (reg:CC 21))]
  "! TARGET_C3X"
  "lhu0\\t%1,%0"
-  [(set_attr "type" "unarycc")])
+  [(set_attr "type" "unarycc,unary")])
 
+(define_insn "*andqi3_65535_noclobber"
+  [(set (match_operand:QI 0 "reg_operand" "=c")
+        (and:QI (match_operand:QI 1 "src_operand" "mr")
+                (const_int 65535)))]
+ "! TARGET_C3X"
+ "lhu0\\t%1,%0"
+  [(set_attr "type" "unary")])
 
 (define_insn "*andqi3_clobber"
   [(set (match_operand:QI 0 "reg_operand" "=d,d,d,?d,c,c,c,?c")
@@ -2325,6 +2426,30 @@
    and3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binarycc,binary,binary,binary,binary")
    (set_attr "data" "not_uint16,uint16,int16,uint16,not_uint16,uint16,int16,uint16")])
+
+(define_insn "*andqi3_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,c,c,?c")
+        (and:QI (match_operand:QI 1 "src_operand" "%0,0,rR,rS<>")
+                (match_operand:QI 2 "tsrc_operand" "N,rLm,JR,rS<>")))]
+  "valid_operands (AND, operands, QImode)"
+  "@
+   andn\\t%N2,%0
+   and\\t%2,%0
+   and3\\t%2,%1,%0
+   and3\\t%2,%1,%0"
+  [(set_attr "type" "binary,binary,binary,binary")
+   (set_attr "data" "not_uint16,uint16,int16,uint16")])
+
+(define_split
+  [(set (match_operand:QI 0 "std_reg_operand" "")
+        (and:QI (match_operand:QI 1 "src_operand" "")
+                (match_operand:QI 2 "tsrc_operand" "")))
+   (clobber (reg:CC 21))]
+  "reload_completed"
+  [(set (match_dup 0)
+        (and:QI (match_dup 1)
+                (match_dup 2)))]
+  "")
 
 (define_insn "*andqi3_test"
   [(set (reg:CC 21)
@@ -2396,6 +2521,29 @@
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")
    (set_attr "data" "uint16,int16,uint16,uint16,int16,uint16")])
 
+(define_insn "*andnqi3_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,c,?c")
+        (and:QI (not:QI (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>"))
+                (match_operand:QI 1 "src_operand" "0,rR,rS<>")))]
+  "valid_operands (AND, operands, QImode)"
+  "@
+   andn\\t%2,%0
+   andn3\\t%2,%1,%0
+   andn3\\t%2,%1,%0"
+  [(set_attr "type" "binary,binary,binary")
+   (set_attr "data" "uint16,int16,uint16")])
+
+(define_split
+  [(set (match_operand:QI 0 "std_reg_operand" "")
+        (and:QI (not:QI (match_operand:QI 2 "lsrc_operand" ""))
+                (match_operand:QI 1 "src_operand" "")))
+   (clobber (reg:CC 21))]
+  "reload_completed"
+  [(set (match_dup 0)
+        (and:QI (not:QI (match_dup 2))
+                (match_dup 1)))]
+  "")
+
 (define_insn "*andnqi3_test"
   [(set (reg:CC 21)
         (compare:CC (and:QI (not:QI (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>"))
@@ -2452,6 +2600,17 @@
    or3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")
    (set_attr "data" "uint16,int16,uint16,uint16,int16,uint16")])
+
+(define_split
+  [(set (match_operand:QI 0 "std_reg_operand" "")
+        (ior:QI (match_operand:QI 1 "src_operand" "")
+                (match_operand:QI 2 "lsrc_operand" "")))
+   (clobber (reg:CC 21))]
+  "reload_completed"
+  [(set (match_dup 0)
+        (ior:QI (match_dup 1)
+                (match_dup 2)))]
+  "")
 
 (define_insn "*iorqi3_test"
   [(set (reg:CC 21)
@@ -2537,6 +2696,29 @@
    xor3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc,binary,binary,binary")
    (set_attr "data" "uint16,int16,uint16,uint16,int16,uint16")])
+
+(define_insn "*xorqi3_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,c,?c")
+        (xor:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>")))]
+  "valid_operands (XOR, operands, QImode)"
+  "@
+   xor\\t%2,%0
+   xor3\\t%2,%1,%0
+   xor3\\t%2,%1,%0"
+  [(set_attr "type" "binary,binary,binary")
+   (set_attr "data" "uint16,int16,uint16")])
+
+(define_split
+  [(set (match_operand:QI 0 "std_reg_operand" "")
+        (xor:QI (match_operand:QI 1 "src_operand" "")
+                (match_operand:QI 2 "lsrc_operand" "")))
+   (clobber (reg:CC 21))]
+  "reload_completed"
+  [(set (match_dup 0)
+        (xor:QI (match_dup 1)
+                (match_dup 2)))]
+  "")
 
 (define_insn "*xorqi3_test"
   [(set (reg:CC 21)
@@ -2633,6 +2815,16 @@
   [(set_attr "type" "binary,binary,binary")])
 ; Default to int16 data attr.
 
+(define_split
+  [(set (match_operand:QI 0 "std_reg_operand" "")
+        (ashift:QI (match_operand:QI 1 "src_operand" "")
+                   (match_operand:QI 2 "src_operand" "")))
+   (clobber (reg:CC 21))]
+  "reload_completed"
+  [(set (match_dup 0)
+        (ashift:QI (match_dup 1)
+                   (match_dup 2)))]
+  "")
 
 ; This is only used by lshrhi3_reg where we need a LSH insn that will
 ; shift both ways.
@@ -3221,7 +3413,6 @@
  ""
  "#"
   [(set_attr "type" "multi")])
-
 
 ; This can generate invalid stack slot displacements
 (define_split
@@ -3886,6 +4077,10 @@
 ;
 ; CONDITIONAL MOVES
 ;
+
+; ???  We should make these pattern fail if the src operand combination
+; is not valid.  Although reload will fix things up, it will introduce
+; extra load instructions that won't be hoisted out of a loop.
 
 (define_insn "*ldi_conditional"
   [(set (match_operand:QI 0 "reg_operand" "=r,r")
