@@ -270,16 +270,13 @@ static edgeset *ancestor_edges;
 
 static void compute_dom_prob_ps PARAMS ((int));
 
-#define ABS_VALUE(x) (((x)<0)?(-(x)):(x))
 #define INSN_PROBABILITY(INSN) (SRC_PROB (BLOCK_TO_BB (BLOCK_NUM (INSN))))
 #define IS_SPECULATIVE_INSN(INSN) (IS_SPECULATIVE (BLOCK_TO_BB (BLOCK_NUM (INSN))))
 #define INSN_BB(INSN) (BLOCK_TO_BB (BLOCK_NUM (INSN)))
 
 /* Parameters affecting the decision of rank_for_schedule().
    ??? Nope.  But MIN_PROBABILITY is used in copmute_trg_info.  */
-#define MIN_DIFF_PRIORITY 2
 #define MIN_PROBABILITY 40
-#define MIN_PROB_DIFF 10
 
 /* Speculative scheduling functions.  */
 static int check_live_1 PARAMS ((int, rtx));

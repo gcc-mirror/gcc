@@ -43,26 +43,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    virtual regs here because the simplify_*_operation routines are called
    by integrate.c, which is called before virtual register instantiation.
 
-   ?!? FIXED_BASE_PLUS_P and NONZERO_BASE_PLUS_P need to move into
+   ?!? NONZERO_BASE_PLUS_P needs to move into
    a header file so that their definitions can be shared with the
    simplification routines in simplify-rtx.c.  Until then, do not
-   change these macros without also changing the copy in simplify-rtx.c.  */
+   change this macro without also changing the copy in simplify-rtx.c.  */
 
-#define FIXED_BASE_PLUS_P(X)					\
-  ((X) == frame_pointer_rtx || (X) == hard_frame_pointer_rtx	\
-   || ((X) == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM])\
-   || (X) == virtual_stack_vars_rtx				\
-   || (X) == virtual_incoming_args_rtx				\
-   || (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == CONST_INT \
-       && (XEXP (X, 0) == frame_pointer_rtx			\
-	   || XEXP (X, 0) == hard_frame_pointer_rtx		\
-	   || ((X) == arg_pointer_rtx				\
-	       && fixed_regs[ARG_POINTER_REGNUM])		\
-	   || XEXP (X, 0) == virtual_stack_vars_rtx		\
-	   || XEXP (X, 0) == virtual_incoming_args_rtx))	\
-   || GET_CODE (X) == ADDRESSOF)
-
-/* Similar, but also allows reference to the stack pointer.
+/* Allows reference to the stack pointer.
 
    This used to include FIXED_BASE_PLUS_P, however, we can't assume that
    arg_pointer_rtx by itself is nonzero, because on at least one machine,

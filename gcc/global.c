@@ -171,10 +171,6 @@ static int allocno_row_words;
  (conflicts[(I) * allocno_row_words + (unsigned) (J) / INT_BITS]	\
   & ((INT_TYPE) 1 << ((unsigned) (J) % INT_BITS)))
 
-#define SET_CONFLICT(I, J) \
- (conflicts[(I) * allocno_row_words + (unsigned) (J) / INT_BITS]	\
-  |= ((INT_TYPE) 1 << ((unsigned) (J) % INT_BITS)))
-
 /* For any allocno set in ALLOCNO_SET, set ALLOCNO to that allocno,
    and execute CODE.  */
 #define EXECUTE_IF_SET_IN_ALLOCNO_SET(ALLOCNO_SET, ALLOCNO, CODE)	\
@@ -231,12 +227,8 @@ static int local_reg_freq[FIRST_PSEUDO_REGISTER];
 
 static int local_reg_live_length[FIRST_PSEUDO_REGISTER];
 
-/* Test a bit in TABLE, a vector of HARD_REG_SETs,
-   for vector element I, and hard register number J.  */
-
-#define REGBITP(TABLE, I, J)     TEST_HARD_REG_BIT (allocno[I].TABLE, J)
-
-/* Set to 1 a bit in a vector of HARD_REG_SETs.  Works like REGBITP.  */
+/* Set to 1 a bit in a vector TABLE of HARD_REG_SETs, for vector
+   element I, and hard register number J.  */
 
 #define SET_REGBIT(TABLE, I, J)  SET_HARD_REG_BIT (allocno[I].TABLE, J)
 
@@ -246,10 +238,6 @@ static INT_TYPE *allocnos_live;
 
 /* Test, set or clear bit number I in allocnos_live,
    a bit vector indexed by allocno.  */
-
-#define ALLOCNO_LIVE_P(I)				\
-  (allocnos_live[(unsigned) (I) / INT_BITS]		\
-   & ((INT_TYPE) 1 << ((unsigned) (I) % INT_BITS)))
 
 #define SET_ALLOCNO_LIVE(I)				\
   (allocnos_live[(unsigned) (I) / INT_BITS]		\
