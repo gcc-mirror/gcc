@@ -157,6 +157,7 @@ extern void output_ascii PARAMS ((FILE *, const char *, int));
 extern void rs6000_gen_section_name PARAMS ((char **, const char *,
 					     const char *));
 extern void output_function_profiler PARAMS ((FILE *, int));
+extern void output_profile_hook  PARAMS ((int));
 extern int rs6000_trampoline_size PARAMS ((void));
 extern void toc_section PARAMS ((void));
 extern void sdata_section PARAMS ((void));

@@ -457,3 +457,6 @@ extern const char *user_label_prefix;
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
   (VAR) = ((SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'))
 #endif
+/* Assign unique numbers to labels generated for profiling.  */
+
+int profile_label_no;

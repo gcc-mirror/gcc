@@ -7080,6 +7080,32 @@ rs6000_gen_section_name (buf, filename, section_desc)
     *p = '\0';
 }
 
+
+/* Emit profile function. */
+void
+output_profile_hook (labelno)
+     int labelno;
+{
+
+   if (profile_flag && DEFAULT_ABI == ABI_AIX)
+     {
+       char *buf;
+       int length = 0;
+       rtx fun;
+
+       labelno += 1;
+       buf = permalloc (labelno+6);
+
+       ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
+
+       fun = gen_rtx_SYMBOL_REF (Pmode, buf+1);
+
+       emit_library_call (init_one_libfunc (RS6000_MCOUNT), 0, VOIDmode, 1,
+                          fun, Pmode, Pmode);
+
+      }
+}
+
 /* Write function profiler code. */
 
 void
@@ -7148,60 +7174,9 @@ output_function_profiler (file, labelno)
       break;
 
     case ABI_AIX:
-      /* Set up a TOC entry for the profiler label.  */
-      toc_section ();
-      ASM_OUTPUT_INTERNAL_LABEL (file, "LPC", labelno);
-      if (TARGET_MINIMAL_TOC)
-	{
-	  fputs (TARGET_32BIT ? "\t.long " : "\t.llong ", file);
-	  assemble_name (file, buf);
-	  putc ('\n', file);
-	}
-      else
-	{
-	  fputs ("\t.tc\t", file);
-	  assemble_name (file, buf);
-	  fputs ("[TC],", file);
-	  assemble_name (file, buf);
-	  putc ('\n', file);
-	}
-      text_section ();
-
-  /* Figure out last used parameter register.  The proper thing to do is
-     to walk incoming args of the function.  A function might have live
-     parameter registers even if it has no incoming args.  */
-
-      for (last_parm_reg = 10;
-	   last_parm_reg > 2 && ! regs_ever_live [last_parm_reg];
-	   last_parm_reg--)
-	;
-
-  /* Save parameter registers in regs 23-30 and static chain in r22.
-     Don't overwrite reg 31, since it might be set up as the frame pointer.  */
-
-      for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
-	asm_fprintf (file, "\tmr %d,%d\n", j, i);
-      if (current_function_needs_context)
-	asm_fprintf (file, "\tmr %d,%d\n", j, STATIC_CHAIN_REGNUM);
-
-  /* Load location address into r3, and call mcount.  */
-
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LPC", labelno);
-      asm_fprintf (file, TARGET_32BIT ? "\t{l|lwz} %s," : "\tld %s,",
-		   reg_names[3]);
-      assemble_name (file, buf);
-      asm_fprintf (file, "(%s)\n\tbl %s\n\t", reg_names[2], RS6000_MCOUNT);
-      asm_fprintf (file, RS6000_CALL_GLUE);
-      putc('\n', file);
-
-  /* Restore parameter registers and static chain.  */
-
-      for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
-	asm_fprintf (file, "\tmr %d,%d\n", i, j);
-      if (current_function_needs_context)
-	asm_fprintf (file, "\tmr %d,%d\n", STATIC_CHAIN_REGNUM, j);
-
+      /* Don't do anything, done in output_profile_hook (). */
       break;
+
     }
 }
 

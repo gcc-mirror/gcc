@@ -635,3 +635,4 @@ toc_section ()						\
    So we have to squirrel it away with this.  */
 #define SETUP_FRAME_ADDRESSES() rs6000_aix_emit_builtin_unwind_init ()
 
+#define PROFILE_HOOK(LABEL)   output_profile_hook (LABEL)
