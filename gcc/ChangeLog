@@ -1,5 +1,32 @@
 2003-04-17  Richard Henderson  <rth@redhat.com>
 
+	* rtl.h (SYMBOL_FLAG_MACH_DEP_SHIFT): New.
+
+	* config/m32r/m32r.c (SYMBOL_FLAG_MODEL_SHIFT): New.
+	(SYMBOL_REF_MODEL): New.
+	(LIT_NAME_P): Move from m32r.h.
+	(m32r_select_section): Remove.
+	(m32r_encode_section_info): Use SYMBOL_REF_FLAGS.
+	(m32r_strip_name_encoding): Remove.
+	(m32r_in_small_data_p): New.
+	(small_data_operand): Use SYMBOL_REF_SMALL_P.
+	(addr24_operand): Use SYMBOL_REF_MODEL.
+	(call26_operand): Likewise.
+	(addr32_operand): Tidy.
+	(m32r_print_operand): Use HOST_WIDE_INT_PRINT_HEX.
+	* config/m32r/m32r.h (RODATA_SECTION_ASM_OP): Remove.
+	(SDATA_SECTION_ASM_OP, SBSS_SECTION_ASM_OP): Remove.
+	(READONLY_DATA_SECTION_ASM_OP): Remove.
+	(EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Remove.
+	(SDATA_SECTION_FUNCTION, SBSS_SECTION_FUNCTION): Remove.
+	(TARGET_ASM_SELECT_SECTION): Remove.
+	(SDATA_FLAG_CHAR, MEDIUM_FLAG_CHAR, LARGE_FLAG_CHAR): Remove.
+	(SDATA_NAME_P, SMALL_NAME_P, MEDIUM_NAME_P): Remove.
+	(LARGE_NAME_P, ENCODED_NAME_P): Remove.
+	(ASM_OUTPUT_LABELREF): Remove.
+
+2003-04-17  Richard Henderson  <rth@redhat.com>
+
 	* config/ip2k/ip2k.c (is_regfile_address): Use SYMBOL_REF_FUNCTION_P.
 	(encode_section_info): Remove.
 	* config/ip2k/ip2k-protos.h: Update.
