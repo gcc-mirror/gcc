@@ -1,3 +1,13 @@
+2003-06-30  Bruno Haible  <bruno@clisp.org>
+
+	PR middle-end/6578
+	* libgcc2.c (__subvsi3): Remove simplification that would not work
+	when subtracting -0x80000000.
+	(__subvdi3): Remove simplification that would return a wrong result.
+	(__mulvsi3): Fix overflow check.
+	(__absvdi2): Fix simplification that would return a wrong result.
+	(__mulvdi3): Fix overflow check.
+
 2003-06-30  Jeff Law  <law@redhat.com>
 
 	* stmt.c (any_pending_cleanups): Lose argument THIS_CONTOUR, it
