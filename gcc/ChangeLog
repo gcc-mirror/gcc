@@ -1,4 +1,11 @@
-2002-04-19	Joel Sherrill <joel@OARcorp.com>
+2002-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/6358
+	* function.c: Reapply patch for c/6358.
+	(expand_function_end): Copy decl_rtl's mode, not
+	current_function_return_rtx mode.
+
+2002-04-19  Joel Sherrill  <joel@OARcorp.com>
 
 	* config/rtems.h (STARTFILE_SPEC, ENDFILE_SPEC): Fix for non-ELF
 	targets.
