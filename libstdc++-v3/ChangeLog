@@ -1,4 +1,16 @@
+2000-11-21  Branko Cibej  <brankoe@xbc.nu>
+
+        * config/os/solaris/solaris2.6/bits/os_defines.h: Define
+        _XOPEN_SOURCE, _LARGEFILE64_SOURCE, __EXTENSIONS__, __off_t,
+        __off64_t and __ssize_t.
+	* config/os/solaris/solaris2.5/bits/os_defines.h: For now, use the
+	same configuration as above.
+	
 2000-11-21  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* libsupc++/new.h: Add using declarations for bad_alloc,
+	nothrow_t, and nothrow.
+	* include/backward/new.h: Remove duplicate file, as libsupc++ has it.
 
 	* acinclude.m4 (AC_LC_MESSAGES): Check for locale.h.
 	* aclocal.m4: Regenerate.
