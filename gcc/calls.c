@@ -631,11 +631,7 @@ expand_call (exp, target, ignore)
 
   /* Warn if this value is an aggregate type,
      regardless of which calling convention we are using for it.  */
-  if (warn_aggregate_return
-      && (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE))
+  if (warn_aggregate_return && AGGREGATE_TYPE_P (TREE_TYPE (exp)))
     warning ("function call has aggregate value");
 
   /* Set up a place to return a structure.  */
@@ -1039,11 +1035,7 @@ expand_call (exp, target, ignore)
 		  copy = assign_stack_temp (TYPE_MODE (type), size, 1);
 		}
 
-	      MEM_IN_STRUCT_P (copy)
-		= (TREE_CODE (type) == RECORD_TYPE
-		   || TREE_CODE (type) == UNION_TYPE
-		   || TREE_CODE (type) == QUAL_UNION_TYPE
-		   || TREE_CODE (type) == ARRAY_TYPE);
+	      MEM_IN_STRUCT_P (copy) = AGGREGATE_TYPE_P (type);
 
 	      store_expr (args[i].tree_value, copy, 0);
 
@@ -1498,10 +1490,7 @@ expand_call (exp, target, ignore)
 	  addr = plus_constant (addr, arg_offset);
 	  args[i].stack = gen_rtx (MEM, args[i].mode, addr);
 	  MEM_IN_STRUCT_P (args[i].stack)
-	    = (TREE_CODE (TREE_TYPE (args[i].tree_value)) == RECORD_TYPE
-	       || TREE_CODE (TREE_TYPE (args[i].tree_value)) == UNION_TYPE
-	       || TREE_CODE (TREE_TYPE (args[i].tree_value)) == QUAL_UNION_TYPE
-	       || TREE_CODE (TREE_TYPE (args[i].tree_value)) == ARRAY_TYPE);
+	    = AGGREGATE_TYPE_P (TREE_TYPE (args[i].tree_value));
 
 	  if (GET_CODE (slot_offset) == CONST_INT)
 	    addr = plus_constant (arg_reg, INTVAL (slot_offset));
@@ -1941,11 +1930,7 @@ expand_call (exp, target, ignore)
 	  target = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)),
 			    memory_address (TYPE_MODE (TREE_TYPE (exp)),
 					    structure_value_addr));
-	  MEM_IN_STRUCT_P (target)
-	    = (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
-	       || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-	       || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
-	       || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE);
+	  MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (TREE_TYPE (exp));
 	}
     }
   else if (pcc_struct_value)
@@ -1964,11 +1949,7 @@ expand_call (exp, target, ignore)
 					  int_size_in_bytes (TREE_TYPE (exp)),
 					  0);
 
-	      MEM_IN_STRUCT_P (target)
-		= (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
-		   || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-		   || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
-		   || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE);
+	      MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (TREE_TYPE (exp));
 
 	      /* Save this temp slot around the pop below.  */
 	      preserve_temp_slots (target);

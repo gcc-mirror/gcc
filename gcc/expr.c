@@ -3915,11 +3915,7 @@ expand_expr (exp, target, tmode, modifier)
 	    {
 	      temp
 		= assign_stack_temp (mode, int_size_in_bytes (type), 0);
-	      MEM_IN_STRUCT_P (temp)
-		= (TREE_CODE (type) == RECORD_TYPE
-		   || TREE_CODE (type) == UNION_TYPE
-		   || TREE_CODE (type) == QUAL_UNION_TYPE
-		   || TREE_CODE (type) == ARRAY_TYPE);
+	      MEM_IN_STRUCT_P (temp) = AGGREGATE_TYPE_P (type);
 	    }
 	  else
 	    temp = gen_reg_rtx (promote_mode (type, mode, &unsignedp, 0));
@@ -4106,11 +4102,9 @@ expand_expr (exp, target, tmode, modifier)
 		target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
 	      else
 		{
-		  enum tree_code c = TREE_CODE (type);
 		  target
 		    = assign_stack_temp (mode, int_size_in_bytes (type), 0);
-		  if (c == RECORD_TYPE || c == UNION_TYPE
-		      || c == QUAL_UNION_TYPE || c == ARRAY_TYPE)
+		  if (AGGREGATE_TYPE_P (type))
 		    MEM_IN_STRUCT_P (target) = 1;
 		}
 	    }
@@ -4153,16 +4147,10 @@ expand_expr (exp, target, tmode, modifier)
 	if (TREE_CODE (TREE_OPERAND (exp, 0)) == PLUS_EXPR
 	    || (TREE_CODE (TREE_OPERAND (exp, 0)) == SAVE_EXPR
 		&& TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)) == PLUS_EXPR)
-	    || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
-	    || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-	    || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
-	    || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE
+	    || AGGREGATE_TYPE_P (TREE_TYPE (exp))
 	    || (TREE_CODE (exp1) == ADDR_EXPR
 		&& (exp2 = TREE_OPERAND (exp1, 0))
-		&& (TREE_CODE (TREE_TYPE (exp2)) == ARRAY_TYPE
-		    || TREE_CODE (TREE_TYPE (exp2)) == RECORD_TYPE
-		    || TREE_CODE (TREE_TYPE (exp2)) == UNION_TYPE
-		    || TREE_CODE (TREE_TYPE (exp2)) == QUAL_UNION_TYPE)))
+		&& AGGREGATE_TYPE_P (TREE_TYPE (exp2))))
 	  MEM_IN_STRUCT_P (temp) = 1;
 	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp) | flag_volatile;
 #if 0 /* It is incorrect to set RTX_UNCHANGING_P here, because the fact that
@@ -5341,11 +5329,7 @@ expand_expr (exp, target, tmode, modifier)
 				      (TREE_INT_CST_LOW (TYPE_SIZE (type))
 				       + BITS_PER_UNIT - 1)
 				      / BITS_PER_UNIT, 0);
-	    MEM_IN_STRUCT_P (temp)
-	      = (TREE_CODE (type) == RECORD_TYPE
-		 || TREE_CODE (type) == UNION_TYPE
-		 || TREE_CODE (type) == QUAL_UNION_TYPE
-		 || TREE_CODE (type) == ARRAY_TYPE);
+	    MEM_IN_STRUCT_P (temp) = AGGREGATE_TYPE_P (type);
 	  }
 	else
 	  temp = gen_reg_rtx (mode);

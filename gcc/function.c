@@ -1218,11 +1218,7 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode)
 
   /* If this is a memory ref that contains aggregate components,
      mark it as such for cse and loop optimize.  */
-  MEM_IN_STRUCT_P (reg)
-    = (TREE_CODE (type) == ARRAY_TYPE
-       || TREE_CODE (type) == RECORD_TYPE
-       || TREE_CODE (type) == UNION_TYPE
-       || TREE_CODE (type) == QUAL_UNION_TYPE);
+  MEM_IN_STRUCT_P (reg) = AGGREGATE_TYPE_P (type);
 
   /* Now make sure that all refs to the variable, previously made
      when it was a register, are fixed up to be valid again.  */
@@ -2996,11 +2992,7 @@ aggregate_value_p (exp)
 
   if (RETURN_IN_MEMORY (type))
     return 1;
-  if (flag_pcc_struct_return
-      && (TREE_CODE (type) == RECORD_TYPE
-	  || TREE_CODE (type) == UNION_TYPE
-	  || TREE_CODE (type) == QUAL_UNION_TYPE
-	  || TREE_CODE (type) == ARRAY_TYPE))
+  if (flag_pcc_struct_return && AGGREGATE_TYPE_P (type))
     return 1;
   /* Make sure we have suitable call-clobbered regs to return
      the value in; if not, we must return it in memory.  */
@@ -3119,11 +3111,7 @@ assign_parms (fndecl, second_time)
 
   for (parm = fnargs; parm; parm = TREE_CHAIN (parm))
     {
-      int aggregate
-	= (TREE_CODE (TREE_TYPE (parm)) == ARRAY_TYPE
-	   || TREE_CODE (TREE_TYPE (parm)) == RECORD_TYPE
-	   || TREE_CODE (TREE_TYPE (parm)) == UNION_TYPE
-	   || TREE_CODE (TREE_TYPE (parm)) == QUAL_UNION_TYPE);
+      int aggregate = AGGREGATE_TYPE_P (TREE_TYPE (parm));
       struct args_size stack_offset;
       struct args_size arg_size;
       int passed_pointer = 0;
@@ -3704,11 +3692,7 @@ assign_parms (fndecl, second_time)
 	  DECL_RTL (result)
 	    = gen_rtx (MEM, DECL_MODE (result), DECL_RTL (parm));
 
-	  MEM_IN_STRUCT_P (DECL_RTL (result))
-	    = (TREE_CODE (restype) == RECORD_TYPE
-	       || TREE_CODE (restype) == UNION_TYPE
-	       || TREE_CODE (restype) == QUAL_UNION_TYPE
-	       || TREE_CODE (restype) == ARRAY_TYPE);
+	  MEM_IN_STRUCT_P (DECL_RTL (result)) = AGGREGATE_TYPE_P (restype);
 	}
 
       if (TREE_THIS_VOLATILE (parm))
@@ -4031,10 +4015,7 @@ uninitialized_vars_warning (block)
 	     because assigning the fields one by one can fail to convince
 	     flow.c that the entire aggregate was initialized.
 	     Unions are troublesome because members may be shorter.  */
-	  && TREE_CODE (TREE_TYPE (decl)) != RECORD_TYPE
-	  && TREE_CODE (TREE_TYPE (decl)) != UNION_TYPE
-	  && TREE_CODE (TREE_TYPE (decl)) != QUAL_UNION_TYPE
-	  && TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE
+	  && ! AGGREGATE_TYPE_P (TREE_TYPE (decl))
 	  && DECL_RTL (decl) != 0
 	  && GET_CODE (DECL_RTL (decl)) == REG
 	  && regno_uninitialized (REGNO (DECL_RTL (decl))))
@@ -4662,10 +4643,7 @@ init_function_start (subr, filename, line)
   /* Warn if this value is an aggregate type,
      regardless of which calling convention we are using for it.  */
   if (warn_aggregate_return
-      && (TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == RECORD_TYPE
-	  || TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == UNION_TYPE
-	  || TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == QUAL_UNION_TYPE
-	  || TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == ARRAY_TYPE))
+      && AGGREGATE_TYPE_P (TREE_TYPE (DECL_RESULT (subr))))
     warning ("function returns an aggregate");
 
   current_function_returns_pointer
@@ -4886,10 +4864,7 @@ expand_function_start (subr, parms_have_cleanups)
 	  DECL_RTL (DECL_RESULT (subr))
 	    = gen_rtx (MEM, DECL_MODE (DECL_RESULT (subr)), value_address);
 	  MEM_IN_STRUCT_P (DECL_RTL (DECL_RESULT (subr)))
-	    = (TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == RECORD_TYPE
-	       || TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == UNION_TYPE
-	       || TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == QUAL_UNION_TYPE
-	       || TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == ARRAY_TYPE);
+	    = AGGREGATE_TYPE_P (TREE_TYPE (DECL_RESULT (subr)));
 	}
     }
   else if (DECL_MODE (DECL_RESULT (subr)) == VOIDmode)
