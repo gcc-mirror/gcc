@@ -1760,7 +1760,14 @@ AC_SUBST_FILE(serialization_dependencies)
 
 # Base args.  Strip norecursion, cache-file, srcdir, host, build,
 # target and nonopt.  These are the ones we might not want to pass
-# down to subconfigures.  These will be expanded by make, so quote '$'.
+# down to subconfigures.  Also strip program-prefix, program-suffix,
+# and program-transform-name, so that we can pass down a consistent
+# program-transform-name.  If autoconf has put single quotes around
+# any of these arguments (because they contain shell metacharacters)
+# then this will fail; in practice this only happens for
+# --program-transform-name, so be sure to override --program-transform-name
+# at the end of the argument list.
+# These will be expanded by make, so quote '$'.
 cat <<\EOF_SED > conftestsed
 s/ --no[[^ ]]* / /
 s/ --c[[a-z-]]*[[= ]][[^ ]]* / /
@@ -1768,11 +1775,15 @@ s/ --sr[[a-z-]]*[[= ]][[^ ]]* / /
 s/ --ho[[a-z-]]*[[= ]][[^ ]]* / /
 s/ --bu[[a-z-]]*[[= ]][[^ ]]* / /
 s/ --t[[a-z-]]*[[= ]][[^ ]]* / /
+s/ --program-[[pst]][[a-z-]]*[[= ]][[^ ]]* / /
 s/ -cache-file[[= ]][[^ ]]* / /
 s/ -srcdir[[= ]][[^ ]]* / /
 s/ -host[[= ]][[^ ]]* / /
 s/ -build[[= ]][[^ ]]* / /
 s/ -target[[= ]][[^ ]]* / /
+s/ -program-prefix[[= ]][[^ ]]* / /
+s/ -program-suffix[[= ]][[^ ]]* / /
+s/ -program-transform-name[[= ]][[^ ]]* / /
 s/ [[^' -][^ ]*] / /
 s/^ *//;s/ *$//
 s,\$,$$,g
@@ -1782,6 +1793,20 @@ sed -f conftestsed <<EOF_SED > conftestsed.out
 EOF_SED
 baseargs=`cat conftestsed.out`
 rm -f conftestsed conftestsed.out
+
+# Add in --program-transform-name, after --program-prefix and
+# --program-suffix have been applied to it.  Autoconf has already
+# doubled dollar signs and backslashes in program_transform_name; we want
+# the backslashes un-doubled, and then the entire thing wrapped in single
+# quotes, because this will be expanded first by make and then by the shell. 
+# Also, because we want to override the logic in subdir configure scripts to
+# choose program_transform_name, replace any s,x,x, with s,y,y,.
+sed -e "s,\\\\\\\\,\\\\,g; s,','\\\\'',g; s/s,x,x,/s,y,y,/" <<EOF_SED > conftestsed.out
+${program_transform_name}
+EOF_SED
+gcc_transform_name=`cat conftestsed.out`
+rm -f conftestsed.out
+baseargs="$baseargs --program-transform-name='${gcc_transform_name}'"
 
 # For the build-side libraries, we just need to pretend we're native,
 # and not use the same cache file.  Multilibs are neither needed nor
