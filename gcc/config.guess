@@ -51,9 +51,10 @@ trap 'rm -f dummy.c dummy.o dummy; exit 1' 1 2 15
 # Note: order is significant - the case branches are not exclusive.
 
 case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
-    alpha:OSF1:V*:*)
+    alpha:OSF1:[VX]*:*)
 	# After 1.2, OSF1 uses "V1.3" for uname -r.
-	echo alpha-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^V//'`
+	# After 4.x, OSF1 uses "X4.x" for uname -r.
+	echo alpha-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^[VX]//'`
 	exit 0 ;;
     alpha:OSF1:*:*)
 	# 1.2 uses "1.2" for uname -r.
@@ -322,6 +323,12 @@ EOF
 	exit 0 ;;
     *:NetBSD:*:*)
 	echo ${UNAME_MACHINE}-unknown-netbsd`echo ${UNAME_RELEASE}|sed -e 's/[-_].*/\./'`
+	exit 0 ;;
+    i*:CYGWIN*:*)
+	echo i386-unknown-cygwin32
+	exit 0 ;;
+    p*:CYGWIN*:*)
+	echo powerpcle-unknown-cygwin32
 	exit 0 ;;
     *:GNU:*:*)
 	echo `echo ${UNAME_MACHINE}|sed -e 's,/.*$,,'`-unknown-gnu`echo ${UNAME_RELEASE}|sed -e 's,/.*$,,'`
