@@ -1731,7 +1731,8 @@ bitmap.o : bitmap.c $(CONFIG_H) $(SYSTEM_H)  coretypes.h $(GTM_H) $(RTL_H) flags
 global.o : global.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h \
    reload.h function.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h insn-config.h output.h \
    toplev.h $(TM_P_H)
-varray.o : varray.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) varray.h $(GGC_H) errors.h
+varray.o : varray.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) varray.h $(GGC_H) errors.h \
+   $(HASHTAB_H)
 ra.o : ra.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TM_P_H) insn-config.h \
    $(RECOG_H) $(INTEGRATE_H) function.h $(REGS_H) $(OBSTACK_H) hard-reg-set.h \
    $(BASIC_BLOCK_H) df.h $(EXPR_H) output.h toplev.h flags.h reload.h ra.h

@@ -223,6 +223,8 @@ extern varray_type varray_grow (varray_type, size_t);
 
 extern void varray_clear (varray_type);
 
+extern void dump_varray_statistics (void);
+
 /* Check for VARRAY_xxx macros being in bound.  */
 #if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
 extern void varray_check_failed (varray_type, size_t, const char *, int,
