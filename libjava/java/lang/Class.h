@@ -143,6 +143,13 @@ struct _Jv_CatchClass
 
 #define JV_CLASS(Obj) ((jclass) (*(_Jv_VTable **) Obj)->clas)
 
+// Forward declarations for friends of java::lang::Class
+class _Jv_ClassReader;	
+class _Jv_InterpClass;
+class _Jv_InterpMethod;
+class _Jv_BytecodeVerifier;
+class _Jv_StackTrace;
+
 class java::lang::Class : public java::lang::Object
 {
 public:
@@ -379,17 +386,17 @@ private:
 
   friend void _Jv_Defer_Resolution (void *cl, _Jv_Method *meth, void **);
   
-  friend class _Jv_ClassReader;	
-  friend class _Jv_InterpClass;
-  friend class _Jv_InterpMethod;
+  friend class ::_Jv_ClassReader;	
+  friend class ::_Jv_InterpClass;
+  friend class ::_Jv_InterpMethod;
 #endif
 
 #ifdef JV_MARKOBJ_DECL
   friend JV_MARKOBJ_DECL;
 #endif
 
-  friend class _Jv_BytecodeVerifier;
-  friend class _Jv_StackTrace;
+  friend class ::_Jv_BytecodeVerifier;
+  friend class ::_Jv_StackTrace;
   friend class gnu::gcj::runtime::StackTrace;
   friend class java::io::VMObjectStreamClass;
 
