@@ -1,5 +1,8 @@
 2001-03-27  Richard Henderson  <rth@redhat.com>
 
+	* rtlanal.c (rtx_addr_can_trap_p): Virtual registers cannot trap.
+	Auto-inc addresses trap only if their base register does.
+
 	* except.c (can_throw_internal): Rename from can_throw.
 	* except.h, resource.c: Update references.
 
