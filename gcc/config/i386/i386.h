@@ -606,10 +606,10 @@ extern int ix86_arch;
 %{march=athlon-tbird|march=athlon-xp|march=athlon-mp|march=pentium3|march=pentium4:\
 -D__SSE__ }\
 %{march=pentium-mmx|march=k6|march=k6-2|march=k6-3\
-march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
+|march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
 |march=athlon-mp|march=pentium2|march=pentium3|march=pentium4: -D__MMX__ }\
 %{march=k6-2|march=k6-3\
-march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
+|march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
 |march=athlon-mp: -D__3dNOW__ }\
 %{march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
 |march=athlon-mp: -D__3dNOW_A__ }\

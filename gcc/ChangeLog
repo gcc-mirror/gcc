@@ -1,5 +1,9 @@
 2002-02-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.h (CPP_CPUCOMMON_SPEC): Add missing | separators.
+
+2002-02-02  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c/5304:
 	* expmed.c (expand_mult_highpart): Use immed_double_const for wide_op1
 	unconditionally.
