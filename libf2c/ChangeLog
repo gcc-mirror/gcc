@@ -1,3 +1,8 @@
+2000-06-11  Herman A.J. ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
+
+	* rdfmt.c (rd_L): Use if-then-else instead of case statement to
+	solve problems when sizeof(char) == sizeof(short).
+
 2000-05-18  Chris Demetriou  <cgd@sibyte.com>
 
 	* configure.in: Test for __g77_integer, __g77_uinteger,

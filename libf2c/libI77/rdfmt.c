@@ -208,11 +208,15 @@ rd_L(ftnint *n, int w, ftnlen len)
 	  case '\n':
 		return errno = 116;
 		}
-	switch(len) {
-		case sizeof(char):	*(char *)n = (char)lv;	 break;
-		case sizeof(short):	*(short *)n = (short)lv; break;
-		default:		*n = lv;
-		}
+	/* The switch statement that was here
+	   didn't cut it:  It broke down for targets
+	   where sizeof(char) == sizeof(short). */
+	if (len == sizeof(char))
+		*(char *)n = (char)lv;
+	else if (len == sizeof(short))
+		*(short *)n = (short)lv;
+	else
+		*n = lv;
 	while(w-- > 0) {
 		GET(ch);
 		if (ch == ',' || ch == '\n')
