@@ -2137,7 +2137,7 @@
 (define_split
   [(set (match_operand:SF 0 "register_operand" "ry")
 	(match_operand:SF 1 "register_operand" "ry"))
-   (match_scratch:SI 2 "X")]
+   (clobber (match_scratch:SI 2 "X"))]
   "reload_completed
    && true_regnum (operands[0]) < FIRST_FP_REG
    && true_regnum (operands[1]) < FIRST_FP_REG"
