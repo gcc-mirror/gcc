@@ -1,3 +1,7 @@
+2004-03-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/m32r/m32r.md: Remove all define_peephole's.
+
 2004-03-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.md: Remove trailing whitespace.
