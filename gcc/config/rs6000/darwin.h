@@ -43,10 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #define FIXED_R2 0
 #define FIXED_R13 0
 
-#undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_POWERPC | MASK_MULTIPLE | MASK_NEW_MNEMONICS \
-  | MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC)
-
 /* Base register for access to local variables of the function.  */
 
 #undef  FRAME_POINTER_REGNUM
@@ -145,6 +141,19 @@ Boston, MA 02111-1307, USA.  */
 /* Function name to call to do profiling.  */
 
 #define RS6000_MCOUNT "*mcount"
+
+/* Default processor: a G4.  */
+
+#undef PROCESSOR_DEFAULT
+#define PROCESSOR_DEFAULT  PROCESSOR_PPC7400
+
+/* Default target flag settings.  Despite the fact that STMW/LMW
+   serializes, it's still a big codesize win to use them.  Use FSEL by
+   default as well.  */
+
+#undef  TARGET_DEFAULT
+#define TARGET_DEFAULT (MASK_POWERPC | MASK_MULTIPLE | MASK_NEW_MNEMONICS \
+                      | MASK_PPC_GFXOPT)
 
 /* Since Darwin doesn't do TOCs, stub this out.  */
 

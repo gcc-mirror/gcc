@@ -6587,9 +6587,9 @@ instruction scheduling parameters for machine type @var{cpu_type}.
 Supported values for @var{cpu_type} are @samp{rios}, @samp{rios1},
 @samp{rsc}, @samp{rios2}, @samp{rs64a}, @samp{601}, @samp{602},
 @samp{603}, @samp{603e}, @samp{604}, @samp{604e}, @samp{620},
-@samp{630}, @samp{740}, @samp{750}, @samp{power}, @samp{power2},
-@samp{powerpc}, @samp{403}, @samp{505}, @samp{801}, @samp{821},
-@samp{823}, and @samp{860} and @samp{common}.
+@samp{630}, @samp{740}, @samp{7400}, @samp{7450}, @samp{750},
+@samp{power}, @samp{power2}, @samp{powerpc}, @samp{403}, @samp{505},
+@samp{801}, @samp{821}, @samp{823}, and @samp{860} and @samp{common}.
 
 @option{-mcpu=common} selects a completely generic processor.  Code
 generated under this option will run on any POWER or PowerPC processor.
@@ -6630,6 +6630,8 @@ The @option{-mcpu} options automatically enable or disable other
 @itemx 620
 @itemx 630
 @itemx 740
+@itemx 7400
+@itemx 7450
 @itemx 750
 @itemx 505
 @option{-mno-power}, @option{-mpowerpc}, @option{-mnew-mnemonics}
