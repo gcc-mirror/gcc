@@ -1,7 +1,8 @@
 // -*- c++ -*-
 // win32-threads.h - Defines for using Win32 threads.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software
+   Foundation
 
    This file is part of libgcj.
 
@@ -18,13 +19,32 @@ details.  */
 // Typedefs.
 //
 
-typedef struct _Jv_ConditionVariable_t {
+typedef struct
+{
+  // ev[0] (signal) is a Win32 auto-reset event for _Jv_CondNotify
+  // ev[1] (broadcast) is a Win32 manual-reset event for _Jv_CondNotifyAll
   HANDLE ev[2];
-  CRITICAL_SECTION count_mutex;
-  int blocked_count;
-};
 
-typedef CRITICAL_SECTION _Jv_Mutex_t;
+  // Number of threads waiting on this condition variable
+  int blocked_count;
+
+  // Protects access to the blocked_count variable
+  CRITICAL_SECTION count_mutex;
+
+} _Jv_ConditionVariable_t;
+
+typedef struct
+{
+  // The thread-id of the owner thread if any, 0 otherwise
+  DWORD owner;
+
+  // Track nested mutex acquisitions by the same thread
+  int refcount;
+
+  // The actual Windows construct used to implement this mutex
+  CRITICAL_SECTION cs;
+
+} _Jv_Mutex_t;
 
 typedef struct
 {
@@ -60,25 +80,39 @@ int _Jv_CondNotifyAll (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *);
 
 inline void _Jv_MutexInit (_Jv_Mutex_t *mu)
 {
-  InitializeCriticalSection(mu);
+  mu->owner = 0UL;
+  mu->refcount = 0;
+  InitializeCriticalSection (&(mu->cs));
 }
 
 #define _Jv_HaveMutexDestroy
 inline void _Jv_MutexDestroy (_Jv_Mutex_t *mu)
 {
-  DeleteCriticalSection(mu);
+  mu->owner = 0UL;
+  mu->refcount = 0;
+  DeleteCriticalSection (&(mu->cs));
   mu = NULL;
 }
 
 inline int _Jv_MutexUnlock (_Jv_Mutex_t *mu)
 {
-  LeaveCriticalSection(mu);
-  return 0;
+  if (mu->owner == GetCurrentThreadId ( ))
+    {
+      mu->refcount--;
+      if (mu->refcount == 0)
+        mu->owner = 0UL;
+      LeaveCriticalSection (&(mu->cs));
+      return 0;
+    }
+  else
+    return 1;
 }
 
 inline int _Jv_MutexLock (_Jv_Mutex_t *mu)
 {
-  EnterCriticalSection(mu);
+  EnterCriticalSection (&(mu->cs));
+  mu->owner = GetCurrentThreadId ( );
+  mu->refcount++;
   return 0;
 }
 
@@ -104,9 +138,7 @@ inline _Jv_Thread_t *_Jv_ThreadCurrentData(void)
 
 inline void _Jv_ThreadYield (void)
 {
-  // FIXME: win98 freezes hard (OS hang) when we use this --
-  //        for now, we simply don't yield
-  // Sleep (0);
+  Sleep (0);
 }
 
 void _Jv_ThreadRegister (_Jv_Thread_t *data);
