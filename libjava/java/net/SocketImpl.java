@@ -277,38 +277,6 @@ public abstract class SocketImpl implements SocketOptions
   }
 
   /**
-   * Sets the specified option on a socket to the passed in object.  For
-   * options that take an integer argument, the passed in object is an
-   * <code>Integer</code>.  For options that are set to on or off, the
-   * value passed will be a <code>Boolean</code>.   The <code>option_id</code> 
-   * parameter is one of the defined constants in the superinterface.
-   *
-   * @param option_id The identifier of the option
-   * @param val The value to set the option to
-   *
-   * @exception SocketException If an error occurs
-   * @XXX This redeclaration from SocketOptions is a workaround to a gcj bug.
-   */
-  public abstract void setOption(int option_id, Object val)
-    throws SocketException;
-
-  /**
-   * Returns the current setting of the specified option.  The 
-   * <code>Object</code> returned will be an <code>Integer</code> for options 
-   * that have integer values.  For options that are set to on or off, a 
-   * <code>Boolean</code> will be returned.   The <code>option_id</code>
-   * is one of the defined constants in the superinterface.
-   *
-   * @param option_id The option identifier
-   *
-   * @return The current value of the option
-   *
-   * @exception SocketException If an error occurs
-   * @XXX This redeclaration from SocketOptions is a workaround to a gcj bug.
-   */
-  public abstract Object getOption(int option_id) throws SocketException;
-
-  /**
    * Shut down the input side of this socket.  Subsequent reads will
    * return end-of-file.
    *
