@@ -28,10 +28,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	  "march=" DEFAULT_VR_ARCH }
 
 #define DRIVER_SELF_SPECS \
-	/* Make -mfix-vr4122-bugs imply -march=vr4120.  This cuts down	\
+	/* Make -mfix-vr4120 imply -march=vr4120.  This cuts down	\
 	   on command-line tautology and makes it easier for t-vr to	\
-	   provide a -mfix-vr4122-bugs multilib.  */			\
-	"%{mfix-vr4122-bugs:%{!march=*:-march=vr4120}}",		\
+	   provide a -mfix-vr4120 multilib.  */				\
+	"%{mfix-vr4120:%{!march=*:-march=vr4120}}",			\
 									\
 	/* Make -mabi=eabi -mlong32 the default.  */			\
 	"%{!mabi=*:-mabi=eabi %{!mlong*:-mlong32}}",			\
