@@ -5484,13 +5484,15 @@ expand_expr (exp, target, tmode, modifier)
  	tree string = string_constant (exp1, &index);
  	int i;
  
+	/* Try to optimize reads from const strings.  */
  	if (string
  	    && TREE_CODE (string) == STRING_CST
  	    && TREE_CODE (index) == INTEGER_CST
  	    && !TREE_INT_CST_HIGH (index)
  	    && (i = TREE_INT_CST_LOW (index)) < TREE_STRING_LENGTH (string)
  	    && GET_MODE_CLASS (mode) == MODE_INT
- 	    && GET_MODE_SIZE (mode) == 1)
+ 	    && GET_MODE_SIZE (mode) == 1
+	    && modifier != EXPAND_MEMORY_USE_WO)
  	  return GEN_INT (TREE_STRING_POINTER (string)[i]);
 
 	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
