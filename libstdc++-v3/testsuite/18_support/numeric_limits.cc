@@ -1,3 +1,5 @@
+// { dg-options "-mieee" { target alpha*-*-* } }
+
 // 1999-08-23 bkoz
 
 // Copyright (C) 1999, 2001, 2002 Free Software Foundation
