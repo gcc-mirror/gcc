@@ -1,3 +1,10 @@
+Wed Nov 25 08:02:23 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	* Makefile.in (version.c): Truncate tmp-version.c when writing to
+	it, instead of appending.  Use timestamp file s-ver to prevent
+	repeated rebuilding of file with unchanged contents.
+	(STAGESTUFF): Add s-ver.
+
 Wed Nov 25 07:53:24 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (make_extraction): Make extraction even if may
