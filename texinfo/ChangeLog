@@ -1,3 +1,8 @@
+Fri Oct 31 09:39:31 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (install targets): Add a dummy target for sunos make.
+	(SUBDIR): Remove 'info'.  It's unneeded.
+
 Wed Oct 29 22:56:46 1997 Robert Lipe  (robertl@dgii.com)
 
 	* info/termdep.h: If POSIX, #undef TIOCGETC for benefit of systems

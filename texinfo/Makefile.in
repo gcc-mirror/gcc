@@ -1,5 +1,5 @@
 # Makefile for Texinfo distribution.
-# $Id: Makefile.in,v 1.2 1997/09/03 04:25:21 law Exp $
+# $Id: Makefile.in,v 1.5 1998/03/17 01:38:14 manfred Exp $
 # 
 # Copyright (C) 1993, 96 Free Software Foundation, Inc.
 
@@ -67,7 +67,7 @@ VERSION = 3.9
 DISTNAME = texinfo-$(VERSION)
 
 # Subdirectories that have makefiles
-SUBDIRS =  libtxi makeinfo info util emacs
+SUBDIRS =  libtxi makeinfo util emacs
 
 # All subdirectories that go into a distribution
 ALL_SUBDIRS = $(SUBDIRS) makeinfo/macros
@@ -88,6 +88,8 @@ dvi: texinfo.dvi license.dvi lgpl.dvi
 	@for dir in $(SUBDIRS); do cd $$dir; $(MAKE) $(FLAGS_TO_PASS) $@; cd ..; done
 
 .PHONY: install installdirs installcheck install-info uninstall
+
+install installdirs installcheck install-info uninstall:
 
 Makefile: Makefile.in config.status
 	$(SHELL) ./config.status
