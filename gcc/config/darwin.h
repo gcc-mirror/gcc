@@ -35,14 +35,11 @@ Boston, MA 02111-1307, USA.  */
    leave it undefined and expect system builders to set configure args
    correctly.  */
 
-/* Name of the command that invokes the compiler - used in g++.c.  */
+/* Suppress g++ attempt to link in the math library automatically.
+   (Some Darwin versions have a libm, but they seem to cause problems
+   for C++ executables.)  */
 
-#undef  GCC_NAME
-#define GCC_NAME "cc"
-
-/* Never try linking with -lm - used in g++.c.  */
-
-#define NO_MATH_LIBRARY
+#define MATH_LIBRARY ""
 
 /* We have atexit.  */
 
@@ -125,6 +122,12 @@ Boston, MA 02111-1307, USA.  */
 /* We use Dbx symbol format.  */
 
 #define DBX_DEBUGGING_INFO
+
+/* Also enable Dwarf 2 as an option.  */
+
+#define DWARF2_DEBUGGING_INFO
+
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 /* When generating stabs debugging, use N_BINCL entries.  */
 
@@ -349,6 +352,7 @@ do { if (!strcmp (alias_name, name))					\
   in_machopic_lazy_symbol_ptr,				\
   in_machopic_symbol_stub,				\
   in_machopic_picsymbol_stub,				\
+  in_darwin_exception, \
   num_sections
 
 #undef	EXTRA_SECTION_FUNCTIONS
@@ -453,6 +457,9 @@ SECTION_FUNCTION (machopic_symbol_stub_section,		\
 SECTION_FUNCTION (machopic_picsymbol_stub_section,	\
 		in_machopic_picsymbol_stub,		\
 		".picsymbol_stub", 0)      		\
+SECTION_FUNCTION (darwin_exception_section,		\
+		in_darwin_exception,			\
+		".section __TEXT,__gcc_except_tab", 0)	\
 							\
 void						\
 objc_section_init ()				\
@@ -773,6 +780,11 @@ enum machopic_addr_class {
 	strcpy (buffer_ + (SYMBOL_LENGTH) + 1, "$lazy_ptr");	\
       }								\
   } while (0)
+
+#define EXCEPTION_SECTION() darwin_exception_section ()
+
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)  \
+  (((CODE) == 1 || (GLOBAL) == 0) ? DW_EH_PE_pcrel : DW_EH_PE_absptr)
 
 #define REGISTER_TARGET_PRAGMAS(PFILE)                          \
   do {                                                          \

@@ -1014,7 +1014,8 @@ darwin_encode_section_info (decl)
       && !DECL_EXTERNAL (decl)
       && ((TREE_STATIC (decl)
 	   && (!DECL_COMMON (decl) || !TREE_PUBLIC (decl)))
-	  || DECL_INITIAL (decl)))
+	  || (DECL_INITIAL (decl)
+	      && DECL_INITIAL (decl) != error_mark_node)))
     defined = 1;
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
