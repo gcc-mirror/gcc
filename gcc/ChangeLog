@@ -1,3 +1,7 @@
+Wed Apr 19 12:14:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stor-layout.c (place_field): Set rli->offset_align properly.
+
 2000-04-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips.h (BITS_PER_WORD, UNITS_PER_WORD, UNITS_PER_FPREG,
