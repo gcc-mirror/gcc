@@ -47,13 +47,9 @@ public abstract class URLConnection
   private static ContentHandlerFactory factory;
   private static ContentHandler contentHandler;
   private static Hashtable handlers = new Hashtable();
-  private static Locale locale = new Locale("En", "Us", "Unix");
-  private static SimpleDateFormat dateFormat1 =
-	  new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'", locale);
-  private static SimpleDateFormat dateFormat2 =
-	  new SimpleDateFormat("EEEE, dd-MMM-yy hh:mm:ss 'GMT'", locale);
-  private static SimpleDateFormat dateFormat3 =
-	  new SimpleDateFormat("EEE MMM d hh:mm:ss yyyy", locale);
+  private static Locale locale; 
+  private static SimpleDateFormat dateFormat1, dateFormat2, dateFormat3;
+  private static boolean dateformats_initialized = false;
 
   protected URLConnection(URL url)
   {
@@ -128,6 +124,8 @@ public abstract class URLConnection
 
   public long getHeaderFieldDate(String name, long val)
   {
+    if (! dateformats_initialized)
+      initializeDateFormats();
     String str = getHeaderField(name);
     if (str != null)
       {
@@ -436,5 +434,21 @@ public abstract class URLConnection
     // table for content types that don't have a non-default ContentHandler.
     handlers.put(contentType, contentType);
     return null;
+  }
+  
+  // We don't put these in a static initializer, because it creates problems
+  // with initializer co-dependency: SimpleDateFormat's constructors eventually 
+  // depend on URLConnection (via the java.text.*Symbols classes).
+  private synchronized void initializeDateFormats()
+  {
+    if (dateformats_initialized)
+      return;
+    locale = new Locale("En", "Us", "Unix");
+    dateFormat1 = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'", 
+                                       locale);
+    dateFormat2 = new SimpleDateFormat("EEEE, dd-MMM-yy hh:mm:ss 'GMT'", 
+                                       locale);
+    dateFormat3 = new SimpleDateFormat("EEE MMM d hh:mm:ss yyyy", locale);
+    dateformats_initialized = true;
   }
 }
