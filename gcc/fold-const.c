@@ -5609,14 +5609,6 @@ fold (tree expr)
 
   switch (code)
     {
-    case INTEGER_CST:
-    case REAL_CST:
-    case VECTOR_CST:
-    case STRING_CST:
-    case COMPLEX_CST:
-    case CONSTRUCTOR:
-      return t;
-
     case CONST_DECL:
       return fold (DECL_INITIAL (t));
 
