@@ -18,7 +18,11 @@ extern int errno;
 #include <sys/param.h>
 extern char *getwd ();
 #define getcwd(buf,len) getwd(buf)
+#ifdef MAXPATHLEN
 #define GUESSPATHLEN (MAXPATHLEN + 1)
+#else
+#define GUESSPATHLEN 100
+#endif
 #else /* (defined (USG) || defined (VMS)) */
 extern char *getcwd ();
 /* We actually use this as a starting point, not a limit.  */
