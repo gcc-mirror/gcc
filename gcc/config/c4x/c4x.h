@@ -449,17 +449,23 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 
 /* Extended precision registers (low set).  */
 
-#define IS_R0R1_REGNO(r)           ((((r) >= R0_REGNO) && ((r) <= R1_REGNO)))
-#define IS_R2R3_REGNO(r)           ((((r) >= R2_REGNO) && ((r) <= R3_REGNO)))
-#define IS_EXT_LOW_REGNO(r)        ((((r) >= R0_REGNO) && ((r) <= R7_REGNO)))
+#define IS_R0R1_REGNO(r) \
+     ((unsigned int)((r) - R0_REGNO) <= (R1_REGNO - R0_REGNO))
+#define IS_R2R3_REGNO(r) \
+     ((unsigned int)((r) - R2_REGNO) <= (R3_REGNO - R2_REGNO))   
+#define IS_EXT_LOW_REGNO(r) \
+     ((unsigned int)((r) - R0_REGNO) <= (R7_REGNO - R0_REGNO))   
 
 /* Extended precision registers (high set).  */
 
-#define IS_EXT_HIGH_REGNO(r)       (! TARGET_C3X \
-			            && ((r) >= R8_REGNO) && ((r) <= R11_REGNO))
+#define IS_EXT_HIGH_REGNO(r) \
+(! TARGET_C3X \
+ && ((unsigned int) ((r) - R8_REGNO) <= (R11_REGNO - R8_REGNO)))
+
 /* Address registers.  */
 
-#define IS_AUX_REGNO(r)    (((r) >= AR0_REGNO) && ((r) <= AR7_REGNO))
+#define IS_AUX_REGNO(r) \
+    ((unsigned int)((r) - AR0_REGNO) <= (AR7_REGNO - AR0_REGNO))   
 #define IS_ADDR_REGNO(r)   IS_AUX_REGNO(r)
 #define IS_DP_REGNO(r)     ((r) == DP_REGNO)
 #define IS_INDEX_REGNO(r)  (((r) == IR0_REGNO) || ((r) == IR1_REGNO))
