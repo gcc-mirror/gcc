@@ -1123,7 +1123,7 @@ namespace std
       static signed char min() throw()
       { return __glibcpp_signed_char_min; }
       static signed char max() throw()
-      { return __glibcpp_signed_char_min; }
+      { return __glibcpp_signed_char_max; }
 
       static const int digits = __glibcpp_signed_char_digits;
       static const int digits10 = __glibcpp_signed_char_digits10;
