@@ -232,7 +232,8 @@ int warn_ctor_dtor_privacy = 1;
 #endif
 int flag_vtable_thunks = DEFAULT_VTABLE_THUNKS;
 
-/* True if we want to deal with repository information.  */
+/* Nonzero means generate separate instantiation control files and juggle
+   them at link time.  */
 
 int flag_use_repository;
 
@@ -2722,7 +2723,9 @@ import_export_decl (decl)
       tree ctype = DECL_CLASS_CONTEXT (decl);
       import_export_class (ctype);
       if (CLASSTYPE_INTERFACE_KNOWN (ctype)
-	  && (! DECL_ARTIFICIAL (decl) || DECL_VINDEX (decl)))
+	  && (flag_new_abi
+	      ? (! DECL_THIS_INLINE (decl))
+	      : (! DECL_ARTIFICIAL (decl) || DECL_VINDEX (decl))))
 	{
 	  DECL_NOT_REALLY_EXTERN (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
