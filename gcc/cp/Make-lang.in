@@ -294,7 +294,7 @@ cp/error.o: cp/error.c $(CXX_TREE_H) toplev.h diagnostic.h
 cp/errfn.o: cp/errfn.c $(CXX_TREE_H) toplev.h
 cp/repo.o: cp/repo.c $(CXX_TREE_H) toplev.h $(GGC_H)
 cp/semantics.o: cp/semantics.c $(CXX_TREE_H) cp/lex.h except.h toplev.h \
-  flags.h $(GGC_H) output.h $(RTL_H) $(TIMEVAR_H)
+  flags.h $(GGC_H) output.h $(RTL_H) $(TIMEVAR_H) $(EXPR_H)
 cp/dump.o: cp/dump.c $(CXX_TREE_H) c-dump.h
 cp/optimize.o: cp/optimize.c $(CXX_TREE_H) rtl.h integrate.h insn-config.h \
   input.h params.h

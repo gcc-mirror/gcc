@@ -1907,17 +1907,6 @@ extern tree integer_types[itk_none];
 
 #define NULL_TREE (tree) NULL
 
-/* The following functions accept a wide integer argument.  Rather than
-   having to cast on every function call, we use a macro instead, that is
-   defined here and in rtl.h.  */
-
-#ifndef exact_log2
-#define exact_log2(N) exact_log2_wide ((unsigned HOST_WIDE_INT) (N))
-#define floor_log2(N) floor_log2_wide ((unsigned HOST_WIDE_INT) (N))
-#endif
-extern int exact_log2_wide             PARAMS ((unsigned HOST_WIDE_INT));
-extern int floor_log2_wide             PARAMS ((unsigned HOST_WIDE_INT));
-
 /* Approximate positive square root of a host double.  This is for
    statistical reports, not code generation.  */
 extern double approx_sqrt		PARAMS ((double));
@@ -2554,7 +2543,6 @@ extern int expand_exit_loop_if_false		PARAMS ((struct nesting *,
 						       tree));
 extern int expand_exit_something		PARAMS ((void));
 
-extern void expand_null_return			PARAMS ((void));
 extern void expand_return			PARAMS ((tree));
 extern int optimize_tail_recursion		PARAMS ((tree, struct rtx_def *));
 extern void expand_start_bindings_and_block     PARAMS ((int, tree));
@@ -2679,9 +2667,6 @@ extern tree gettags				PARAMS ((void));
 
 extern tree build_range_type PARAMS ((tree, tree, tree));
 
-/* Called after finishing a record, union or enumeral type.  */
-extern void rest_of_type_compilation PARAMS ((tree, int));
-
 /* In alias.c */
 extern void record_component_aliases		PARAMS ((tree));
 extern HOST_WIDE_INT get_alias_set		PARAMS ((tree));
@@ -2789,24 +2774,14 @@ extern void indent_to			PARAMS ((FILE *, int));
 #endif
 
 /* In expr.c */
-extern void emit_queue				PARAMS ((void));
 extern int apply_args_register_offset		PARAMS ((int));
 extern struct rtx_def *expand_builtin_return_addr
 	PARAMS ((enum built_in_function, int, struct rtx_def *));
-extern void do_pending_stack_adjust		PARAMS ((void));
-extern struct rtx_def *expand_assignment	PARAMS ((tree, tree, int,
-							 int));
-extern struct rtx_def *store_expr		PARAMS ((tree,
-							 struct rtx_def *,
-							int));
 extern void check_max_integer_computation_mode	PARAMS ((tree));
 
 /* In emit-rtl.c */
 extern void start_sequence_for_rtl_expr		PARAMS ((tree));
-extern struct rtx_def *emit_line_note_after	PARAMS ((const char *, int,
-							 struct rtx_def *));
 extern struct rtx_def *emit_line_note		PARAMS ((const char *, int));
-extern struct rtx_def *emit_line_note_force	PARAMS ((const char *, int));
 
 /* In calls.c */
 
@@ -2818,7 +2793,6 @@ extern int mark_addressable		PARAMS ((tree));
 extern void incomplete_type_error	PARAMS ((tree, tree));
 extern void print_lang_statistics	PARAMS ((void));
 extern tree truthvalue_conversion	PARAMS ((tree));
-extern void split_specs_attrs		PARAMS ((tree, tree *, tree *));
 #ifdef BUFSIZ
 extern void print_lang_decl		PARAMS ((FILE *, tree, int));
 extern void print_lang_type		PARAMS ((FILE *, tree, int));
@@ -2860,7 +2834,6 @@ extern int div_and_round_double		PARAMS ((enum tree_code, int,
 /* In stmt.c */
 extern void emit_nop			PARAMS ((void));
 extern void expand_computed_goto	PARAMS ((tree));
-extern struct rtx_def *label_rtx	PARAMS ((tree));
 extern void expand_asm_operands		PARAMS ((tree, tree, tree, tree, int,
 						 const char *, int));
 extern int any_pending_cleanups		PARAMS ((int));

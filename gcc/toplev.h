@@ -170,4 +170,14 @@ extern struct lang_hooks lang_hooks;
 extern void set_fast_math_flags         PARAMS ((void));
 extern void set_no_fast_math_flags      PARAMS ((void));
 
+/* The following functions accept a wide integer argument.  Rather
+   than having to cast on every function call, we use a macro instead.  */
+
+#ifndef exact_log2
+#define exact_log2(N) exact_log2_wide ((unsigned HOST_WIDE_INT) (N))
+#define floor_log2(N) floor_log2_wide ((unsigned HOST_WIDE_INT) (N))
+#endif
+extern int exact_log2_wide             PARAMS ((unsigned HOST_WIDE_INT));
+extern int floor_log2_wide             PARAMS ((unsigned HOST_WIDE_INT));
+
 #endif /* __GCC_TOPLEV_H */

@@ -1132,17 +1132,6 @@ extern int generating_concat_p;
 
 /* Generally useful functions.  */
 
-/* The following functions accept a wide integer argument.  Rather than
-   having to cast on every function call, we use a macro instead, that is
-   defined here and in tree.h.  */
-
-#ifndef exact_log2
-#define exact_log2(N) exact_log2_wide ((unsigned HOST_WIDE_INT) (N))
-#define floor_log2(N) floor_log2_wide ((unsigned HOST_WIDE_INT) (N))
-#endif
-extern int exact_log2_wide		PARAMS ((unsigned HOST_WIDE_INT));
-extern int floor_log2_wide		PARAMS ((unsigned HOST_WIDE_INT));
-
 /* In expmed.c */
 extern int ceil_log2			PARAMS ((unsigned HOST_WIDE_INT));
 
@@ -1165,7 +1154,6 @@ extern rtx gen_rtx			PARAMS ((enum rtx_code,
 extern rtvec gen_rtvec			PARAMS ((int, ...));
 
 /* In other files */
-extern char *permalloc			PARAMS ((int));
 extern rtx rtx_alloc			PARAMS ((RTX_CODE));
 extern rtvec rtvec_alloc		PARAMS ((int));
 extern rtx copy_insn_1			PARAMS ((rtx));
@@ -1243,7 +1231,6 @@ extern rtx assign_stack_temp		PARAMS ((enum machine_mode,
 extern rtx assign_temp			PARAMS ((union tree_node *,
 					       int, int, int));
 /* In expr.c  */
-extern rtx protect_from_queue		PARAMS ((rtx, int));
 extern void emit_queue			PARAMS ((void));
 extern rtx emit_move_insn		PARAMS ((rtx, rtx));
 
@@ -1349,20 +1336,8 @@ extern rtx simplify_rtx			PARAMS ((rtx));
 /* In optabs.c  */
 extern rtx gen_move_insn		PARAMS ((rtx, rtx));
 
-extern rtx gen_jump			PARAMS ((rtx));
-extern rtx gen_beq			PARAMS ((rtx));
-extern rtx gen_bge			PARAMS ((rtx));
-extern rtx gen_ble			PARAMS ((rtx));
-
 /* In function.c  */
 extern rtx gen_mem_addressof		PARAMS ((rtx, union tree_node *));
-
-/* In explow.c  */
-extern rtx eliminate_constant_term	PARAMS ((rtx, rtx *));
-
-/* In optabs.c */
-extern rtx expand_complex_abs		PARAMS ((enum machine_mode, rtx, rtx,
-						 int));
 
 /* In regclass.c  */
 extern enum machine_mode choose_hard_reg_mode PARAMS ((unsigned int,
@@ -1645,11 +1620,9 @@ extern rtx gen_lowpart_SUBREG PARAMS ((enum machine_mode, rtx));
 #define INVALID_REGNUM			(~(unsigned int)0)
 
 extern rtx find_next_ref		PARAMS ((rtx, rtx));
-extern rtx *find_single_use		PARAMS ((rtx, rtx, rtx *));
 
 extern rtx output_constant_def		PARAMS ((union tree_node *, int));
 extern rtx immed_real_const		PARAMS ((union tree_node *));
-extern union tree_node *make_tree	PARAMS ((union tree_node *, rtx));
 
 /* Define a default value for STORE_FLAG_VALUE.  */
 
@@ -1853,7 +1826,6 @@ extern void emit_jump			PARAMS ((rtx));
 extern int preserve_subexpressions_p	PARAMS ((void));
 
 /* In expr.c */
-extern void init_expr_once		PARAMS ((void));
 extern void move_by_pieces		PARAMS ((rtx, rtx,
 						 unsigned HOST_WIDE_INT,
 						 unsigned int));
@@ -1914,9 +1886,6 @@ extern void combine_stack_adjustments	PARAMS ((void));
 #ifdef BUFSIZ
 extern void dbr_schedule		PARAMS ((rtx, FILE *));
 #endif
-
-/* In optabs.c */
-extern void init_optabs			PARAMS ((void));
 
 /* In local-alloc.c */
 #ifdef BUFSIZ
@@ -2000,7 +1969,6 @@ extern int set_dominates_use		PARAMS ((int, int, int, rtx, rtx));
 /* In varasm.c */
 extern void bss_section			PARAMS ((void));
 extern int in_data_section		PARAMS ((void));
-extern int supports_one_only		PARAMS ((void));
 extern void init_varasm_once		PARAMS ((void));
 
 /* In rtl.c */

@@ -30,6 +30,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree.h"
 #include "java-tree.h"
 #include "parse.h"
+#include "toplev.h"
 
 static void mark_reference_fields PARAMS ((tree,
 					   unsigned HOST_WIDE_INT *,

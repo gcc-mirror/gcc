@@ -32,6 +32,7 @@
 #include "expr.h"
 #include "real.h"
 #include "output.h"
+#include "toplev.h"
 #include "tm_p.h"
 
 

@@ -34,6 +34,7 @@
 #include "flags.h"
 #include "ggc.h"
 #include "rtl.h"
+#include "expr.h"
 #include "output.h"
 #include "timevar.h"
 
