@@ -70,7 +70,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    this strategy, but it helps (by keeping more options open).
    `fill_eager_delay_slots' tries to guess the direction the branch
    will go; if it guesses right 100% of the time, it can reduce the
-   branch penalty as much as `fill_eager_delay_slots' does.  If it
+   branch penalty as much as `fill_simple_delay_slots' does.  If it
    guesses wrong 100% of the time, it might as well schedule nops (or
    on the m88k, unexpose the branch slot).  When
    `fill_eager_delay_slots' takes insns from the fall-through path of
