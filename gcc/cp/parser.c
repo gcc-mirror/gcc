@@ -12443,6 +12443,8 @@ cp_parser_class_specifier (cp_parser* parser)
    *NESTED_NAME_SPECIFIER_P to TRUE iff one of the productions
    involving a nested-name-specifier was used, and FALSE otherwise.
 
+   Returns error_mark_node if this is not a class-head.
+   
    Returns NULL_TREE if the class-head is syntactically valid, but
    semantically invalid in a way that means we should skip the entire
    body of the class.  */
@@ -12714,7 +12716,15 @@ cp_parser_class_head (cp_parser* parser,
       type = TYPE_MAIN_DECL (TREE_TYPE (type));
       if (PROCESSING_REAL_TEMPLATE_DECL_P ()
 	  && !CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (type)))
-	type = push_template_decl (type);
+	{
+	  type = push_template_decl (type);
+	  if (type == error_mark_node)
+	    {
+	      type = NULL_TREE;
+	      goto done;
+	    }
+	}
+      
       type = TREE_TYPE (type);
       if (nested_name_specifier)
 	{

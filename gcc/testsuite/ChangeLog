@@ -1,3 +1,8 @@
+2004-12-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR 18758
+	* g++.dg/parse/crash21.C: New.
+
 2004-12-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/15664, c++/18276
