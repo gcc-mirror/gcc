@@ -79,6 +79,12 @@ if [[ x$gxx_include_dir = x ]]; then
 	gxx_include_dir='${prefix}/include/g++'
 fi
 
+# Enable expensive internal checks
+AC_ARG_ENABLE(checking,
+[  --enable-checking       enable expensive run-time checks.],
+AC_DEFINE(ENABLE_CHECKING)
+)
+
 # Enable use of cpplib for C.
 AC_ARG_ENABLE(c-cpplib,
 [  --enable-c-cpplib       Use cpplib for C.],
