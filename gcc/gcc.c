@@ -5419,12 +5419,7 @@ find_file (name)
   /* Try multilib_dir if it is defined.  */
   if (multilib_dir != NULL)
     {
-      char *try;
-
-      try = (char *) alloca (strlen (multilib_dir) + strlen (name) + 2);
-      strcpy (try, multilib_dir);
-      strcat (try, dir_separator_str);
-      strcat (try, name);
+      const char *const try = ACONCAT ((multilib_dir, dir_separator_str, name, NULL));
 
       newname = find_a_file (&startfile_prefixes, try, R_OK);
 

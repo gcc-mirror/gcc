@@ -74,38 +74,98 @@ NOTES
 #  endif
 # endif
 
-char *
-concat VPARAMS ((const char *first, ...))
+static inline unsigned long vconcat_length PARAMS ((const char *, va_list));
+static inline unsigned long
+vconcat_length (first, args)
+     const char *first;
+     va_list args;
 {
-  register size_t length;
-  register char *newstr;
-  register char *end;
-  register const char *arg;
+  unsigned long length = 0;
+  const char *arg;
 
-  /* First compute the size of the result and get sufficient memory.  */
-  VA_OPEN (args, first);
-  VA_FIXEDARG (args, const char *, first);
-  
-  length = 0;
   for (arg = first; arg ; arg = va_arg (args, const char *))
     length += strlen (arg);
 
-  VA_CLOSE (args);
+  return length;
+}
 
-  newstr = (char *) xmalloc (length + 1);
+static inline char *vconcat_copy PARAMS ((char *, const char *, va_list));
+static inline char *
+vconcat_copy (dst, first, args)
+     char *dst;
+     const char *first;
+     va_list args;
+{
+  char *end = dst;
+  const char *arg;
 
-  /* Now copy the individual pieces to the result string. */
-  VA_OPEN (args, first);
-  VA_FIXEDARG (args, const char *, first);
-
-  end = newstr;
   for (arg = first; arg ; arg = va_arg (args, const char *))
     {
-      length = strlen (arg);
+      unsigned long length = strlen (arg);
       memcpy (end, arg, length);
       end += length;
     }
   *end = '\000';
+
+  return dst;
+}
+
+unsigned long
+concat_length VPARAMS ((const char *first, ...))
+{
+  unsigned long length;
+
+  VA_OPEN (args, first);
+  VA_FIXEDARG (args, const char *, first);
+  length = vconcat_length (first, args);
+  VA_CLOSE (args);
+
+  return length;
+}
+
+char *
+concat_copy VPARAMS ((char *dst, const char *first, ...))
+{
+  char *save_dst;
+
+  VA_OPEN (args, first);
+  VA_FIXEDARG (args, char *, dst);
+  VA_FIXEDARG (args, const char *, first);
+  vconcat_copy (dst, first, args);
+  save_dst = dst; /* With K&R C, dst goes out of scope here.  */
+  VA_CLOSE (args);
+
+  return save_dst;
+}
+
+char *libiberty_concat_ptr;
+
+char *
+concat_copy2 VPARAMS ((const char *first, ...))
+{
+  VA_OPEN (args, first);
+  VA_FIXEDARG (args, const char *, first);
+  vconcat_copy (libiberty_concat_ptr, first, args);
+  VA_CLOSE (args);
+
+  return libiberty_concat_ptr;
+}
+
+char *
+concat VPARAMS ((const char *first, ...))
+{
+  char *newstr;
+
+  /* First compute the size of the result and get sufficient memory.  */
+  VA_OPEN (args, first);
+  VA_FIXEDARG (args, const char *, first);
+  newstr = (char *) xmalloc (vconcat_length (first, args) + 1);
+  VA_CLOSE (args);
+
+  /* Now copy the individual pieces to the result string. */
+  VA_OPEN (args, first);
+  VA_FIXEDARG (args, const char *, first);
+  vconcat_copy (newstr, first, args);
   VA_CLOSE (args);
 
   return newstr;

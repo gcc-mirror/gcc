@@ -1,5 +1,8 @@
 2001-09-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* libiberty.h (concat_length, concat_copy, concat_copy2,
+	libiberty_concat_ptr, ACONCAT): New.
+
 	* libiberty.h (ASTRDUP): New macro.
 	libiberty_optr, libiberty_nptr, libiberty_len): Declare.
 
