@@ -689,18 +689,6 @@ struct stack_local_entry GTY(())
   struct stack_local_entry *next;
 };
 
-
-struct machine_function GTY(())
-{
-  struct stack_local_entry *stack_locals;
-  const char *some_ld_name;
-  int save_varrargs_registers;
-  int accesses_prev_frame;
-};
-
-#define ix86_stack_locals (cfun->machine->stack_locals)
-#define ix86_save_varrargs_registers (cfun->machine->save_varrargs_registers)
-
 /* Structure describing stack frame layout.
    Stack grows downward:
 

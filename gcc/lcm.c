@@ -63,6 +63,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "basic-block.h"
 #include "output.h"
 #include "tm_p.h"
+#include "function.h"
 
 /* We want target macros for the mode switching code to be able to refer
    to instruction attribute values.  */
