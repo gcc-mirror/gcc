@@ -5,7 +5,6 @@
 --                  S Y S T E M . S C A L A R _ V A L U E S                 --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.2 $
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --

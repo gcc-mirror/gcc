@@ -7,7 +7,6 @@
 --                                 S p e c                                  --
 --                       (C Library Version, VxWorks)                       --
 --                                                                          --
---                            $Revision: 1.1 $                             --
 --                                                                          --
 --          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
 --                                                                          --

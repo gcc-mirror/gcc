@@ -7,7 +7,6 @@
 --                                  S p e c                                 --
 --                           (No Tasking Version)                           --
 --                                                                          --
---                             $Revision: 1.2 $                             --
 --                                                                          --
 --    Copyright (C) 1991,92,93,94,95,1996 Free Software Foundation, Inc.    --
 --                                                                          --

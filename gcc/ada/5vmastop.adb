@@ -7,7 +7,6 @@
 --                                 B o d y                                  --
 --                         (Version for Alpha/VMS)                          --
 --                                                                          --
---                            $Revision$
 --                                                                          --
 --          Copyright (C) 2001-2002 Ada Core Technologies, Inc.             --
 --                                                                          --

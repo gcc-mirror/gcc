@@ -7,7 +7,6 @@
 --                                 S p e c                                  --
 --                           (SGI Irix, n32 ABI)                            --
 --                                                                          --
---                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --

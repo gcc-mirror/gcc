@@ -9,7 +9,6 @@
 @c                                                                            o
 @c                              G N A T _ RM                                  o
 @c                                                                            o
-@c                            $Revision$
 @c                                                                            o
 @c          Copyright (C) 1992-2001 Ada Core Technologies, Inc.               o
 @c                                                                            o
@@ -39,8 +38,7 @@
 @title GNAT Reference Manual
 @subtitle GNAT, The GNU Ada 95 Compiler
 @subtitle Version 3.15w
-@subtitle Document revision level $Revision$
-@subtitle Date: $Date$
+@subtitle Date: $Date: 2001/12/18 00:03:37 $
 @author Ada Core Technologies, Inc.
 
 @page
@@ -84,7 +82,7 @@ GNAT, The GNU Ada 95 Compiler
 
 Version 3.14a
 
-Date: $Date$
+Date: $Date: 2001/12/18 00:03:37 $
 
 Ada Core Technologies, Inc.
 

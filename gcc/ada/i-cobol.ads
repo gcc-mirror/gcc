@@ -7,7 +7,6 @@
 --                                 S p e c                                  --
 --                             (ASCII Version)                              --
 --                                                                          --
---                            $Revision: 1.10 $
 --                                                                          --
 --          Copyright (C) 1993-2000 Free Software Foundation, Inc.          --
 --                                                                          --

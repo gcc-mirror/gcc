@@ -6,7 +6,6 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -51,22 +50,13 @@ procedure XSnames is
    Line    : VString := Nul;
    Name    : VString := Nul;
    Name1   : VString := Nul;
-   Oldrev  : VString := Nul;
    Oname   : VString := Nul;
    Oval    : VString := Nul;
    Restl   : VString := Nul;
-   Specrev : VString := Nul;
 
    Tdigs : Pattern := Any (Decimal_Digit_Set) &
                       Any (Decimal_Digit_Set) &
                       Any (Decimal_Digit_Set);
-
-   Get_Srev : Pattern := BreakX ('$') & "$Rev" & "ision: "
-                           & Break (' ') * Specrev;
-
-   Get_Orev : Pattern := (BreakX ('$') & "$Rev" &  "ision: "
-                           & Break ('.') & '.') * A
-                           & Break (' ') * Oldrev & ' ';
 
    Name_Ref : Pattern := Span (' ') * A & Break (' ') * Name
                            & Span (' ') * B
@@ -95,18 +85,6 @@ begin
    Anchored_Mode := True;
    Oname := Nul;
    Val := 0;
-
-   loop
-      Line := Get_Line (InS);
-      Put_Line (OutS, Line);
-      exit when not Match (Line, Get_Srev);
-   end loop;
-
-   loop
-      Line := Get_Line (InB);
-      exit when Match (Line, Get_Orev);
-      Put_Line (OutB, Line);
-   end loop;
 
    Line := A & (Natural'Value (S (Oldrev)) + 1) & " $";
    Line := Rpad (Line, 76) & "--";

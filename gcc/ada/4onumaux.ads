@@ -7,7 +7,6 @@
 --                                 S p e c                                  --
 --                       (C Library Version for x86)                        --
 --                                                                          --
---                            $Revision: 1.11 $                             --
 --                                                                          --
 --          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
 --                                                                          --

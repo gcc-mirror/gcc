@@ -6,7 +6,6 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision$
  *                                                                          *
  *           Copyright (C) 2000-2001 Ada Core Technologies, Inc.            *
  *                                                                          *

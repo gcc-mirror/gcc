@@ -7,7 +7,6 @@
 --                                 S p e c                                  --
 --                        (Machine Version for x86)                         --
 --                                                                          --
---                            $Revision: 1.4 $                              --
 --                                                                          --
 --          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
 --                                                                          --
