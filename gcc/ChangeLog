@@ -1,3 +1,7 @@
+2004-04-20  Anil Paranjpe   <anilp1@kpitcummins.com>
+
+	* toplev.c (compile_file): Move targetm.asm_out.file_end call to end.
+
 2004-04-20  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_legitimize_move): Generate special patterns

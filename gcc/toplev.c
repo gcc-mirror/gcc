@@ -1633,8 +1633,6 @@ compile_file (void)
 
   dw2_output_indirect_constants ();
 
-  targetm.asm_out.file_end ();
-
   /* Attach a special .ident directive to the end of the file to identify
      the version of GCC which compiled this code.  The format of the .ident
      string is patterned after the ones produced by native SVR4 compilers.  */
@@ -1643,6 +1641,11 @@ compile_file (void)
     fprintf (asm_out_file, "%s\"GCC: (GNU) %s\"\n",
 	     IDENT_ASM_OP, version_string);
 #endif
+
+  /* This must be at the end.  Some target ports emit end of file directives
+     into the assembly file here, and hence we can not output anything to the
+     assembly file after this point.  */
+  targetm.asm_out.file_end ();
 }
 
 /* Display help for target options.  */
