@@ -257,8 +257,7 @@ package Exp_Util is
 
    function Duplicate_Subexpr
      (Exp      : Node_Id;
-      Name_Req : Boolean := False)
-      return     Node_Id;
+      Name_Req : Boolean := False) return Node_Id;
    --  Given the node for a subexpression, this function makes a logical
    --  copy of the subexpression, and returns it. This is intended for use
    --  when the expansion of an expression needs to repeat part of it. For
@@ -280,8 +279,7 @@ package Exp_Util is
 
    function Duplicate_Subexpr_No_Checks
      (Exp      : Node_Id;
-      Name_Req : Boolean := False)
-      return     Node_Id;
+      Name_Req : Boolean := False) return Node_Id;
    --  Identical in effect to Duplicate_Subexpr, except that Remove_Checks
    --  is called on the result, so that the duplicated expression does not
    --  include checks. This is appropriate for use when Exp, the original
@@ -290,8 +288,7 @@ package Exp_Util is
 
    function Duplicate_Subexpr_Move_Checks
      (Exp      : Node_Id;
-      Name_Req : Boolean := False)
-      return     Node_Id;
+      Name_Req : Boolean := False) return Node_Id;
    --  Identical in effect to Duplicate_Subexpr, except that Remove_Checks
    --  is called on Exp after the duplication is complete, so that the
    --  original expression does not include checks. In this case the result
@@ -482,8 +479,7 @@ package Exp_Util is
 
    function Make_Subtype_From_Expr
      (E       : Node_Id;
-      Unc_Typ : Entity_Id)
-      return    Node_Id;
+      Unc_Typ : Entity_Id) return Node_Id;
    --  Returns a subtype indication corresponding to the actual type of an
    --  expression E. Unc_Typ is an unconstrained array or record, or
    --  a classwide type.
@@ -536,8 +532,7 @@ package Exp_Util is
    function Target_Has_Fixed_Ops
      (Left_Typ   : Entity_Id;
       Right_Typ  : Entity_Id;
-      Result_Typ : Entity_Id)
-      return       Boolean;
+      Result_Typ : Entity_Id) return Boolean;
    --  Returns True if and only if the target machine has direct support
    --  for fixed-by-fixed multiplications and divisions for the given
    --  operand and result types. This is called in package Exp_Fixd to

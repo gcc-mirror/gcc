@@ -33,6 +33,16 @@
 
 --  Definitions for interfacing to C++ classes
 
+--  This package corresponds to Ada.Tags but applied to tagged types which are
+--  are imported from C++ and correspond exactly to a C++ Class. The code that
+--  the GNAT front end generates does not know about the structure of the C++
+--  dispatch table (Vtable) but always accesses it through the procedural
+--  interface defined in this package, thus the implementation of this package
+--  (the body) can be customized to another C++ compiler without any change in
+--  the compiler code itself as long as this procedural interface is respected.
+--  Note that Ada.Tags defines a very similar procedural interface to the
+--  regular Ada Dispatch Table.
+
 with System;
 with System.Storage_Elements;
 
@@ -41,23 +51,15 @@ package Interfaces.CPP is
    package S   renames System;
    package SSE renames System.Storage_Elements;
 
-   --  This package corresponds to Ada.Tags but applied to tagged
-   --  types which are 'imported' from C++ and correspond exactly to a
-   --  C++ Class. GNAT doesn't know about the structure of the C++
-   --  dispatch table (Vtable) but always accesses it through the
-   --  procedural interface defined below, thus the implementation of
-   --  this package (the body) can be customized to another C++
-   --  compiler without any change in the compiler code itself as long
-   --  as this procedural interface is respected. Note that Ada.Tags
-   --  defines a very similar procedural interface to the regular Ada
-   --  Dispatch Table.
-
    type Vtable_Ptr is private;
 
    function Expanded_Name (T : Vtable_Ptr) return String;
    function External_Tag  (T : Vtable_Ptr) return String;
 
 private
+   --  These subprograms are in the private part. They are never accessed
+   --  directly except from compiler generated code, which has access to
+   --  private components of packages via the Rtsfind interface.
 
    procedure CPP_Set_Prim_Op_Address
      (T        : Vtable_Ptr;
