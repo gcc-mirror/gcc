@@ -200,7 +200,7 @@ namespace __gnu_cxx
               ((_Obj*)(void*)_S_start_free)->_M_free_list_link = *__free_list;
               *__free_list = (_Obj*)(void*)_S_start_free;
             }
-          _S_start_free = new char[__bytes_to_get];
+          _S_start_free = static_cast<char*>(::operator new(__bytes_to_get));
           if (_S_start_free == 0)
             {
               size_t __i;
@@ -225,7 +225,7 @@ namespace __gnu_cxx
                     }
                 }
               _S_end_free = 0;        // In case of exception.
-              _S_start_free = new char[__bytes_to_get];
+              _S_start_free = static_cast<char*>(::operator new(__bytes_to_get));
               // This should either throw an exception or remedy the situation.
               // Thus we assume it succeeded.
             }
@@ -290,7 +290,7 @@ namespace __gnu_cxx
 	}
 
       if ((__n > (size_t) _S_max_bytes) || (_S_force_new > 0))
-	__ret = new char[__n];
+	__ret = ::operator new(__n);
       else
 	{
 	  _Obj* volatile* __free_list = _S_free_list + _S_freelist_index(__n);
@@ -317,7 +317,7 @@ namespace __gnu_cxx
     __pool_alloc<__threads, __inst>::deallocate(void* __p, size_t __n)
     {
       if ((__n > (size_t) _S_max_bytes) || (_S_force_new > 0))
-	delete [] __p;
+	::operator delete(__p);
       else
 	{
 	  _Obj* volatile* __free_list = _S_free_list + _S_freelist_index(__n);
