@@ -1,3 +1,8 @@
+2001-11-02  Hans Boehm <Hans_Boehm@hp.com>
+
+	* java/util/natResourceBundle.cc:getClassContext: return
+	array of Class instead of array of ClassLoader.
+
 2001-10-31  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* HACKING, gnu/gcj/xlib/Pixmap.java, gnu/gcj/xlib/XException.java,

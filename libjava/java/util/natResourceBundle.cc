@@ -24,7 +24,7 @@ java::util::ResourceBundle::getClassContext ()
   // only have the system class loader.
   jobjectArray a = JvNewObjectArray (2, &java::lang::Class::class$, NULL);
   jobject *elts = elements (a);
-  elts[0] = java::lang::ClassLoader::getSystemClassLoader ();
+  elts[0] = &class$;
   elts[1] = elts[0];
 
   return reinterpret_cast< JArray<jclass> *> (a);
