@@ -1,3 +1,8 @@
+2004-12-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* expr.c (emit_group_load_1): Return the source if the move
+	is a regular move between complex values.
+
 2004-12-20  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/18683

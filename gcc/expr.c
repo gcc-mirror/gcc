@@ -1650,6 +1650,11 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
 	  tmps[i] = gen_reg_rtx (mode);
 	  emit_move_insn (tmps[i], adjust_address (src, mode, bytepos));
 	}
+      else if (COMPLEX_MODE_P (mode)
+	       && GET_MODE (src) == mode
+	       && bytelen == GET_MODE_SIZE (mode))
+	/* Let emit_move_complex do the bulk of the work.  */
+	tmps[i] = src;
       else if (GET_CODE (src) == CONCAT)
 	{
 	  unsigned int slen = GET_MODE_SIZE (GET_MODE (src));
