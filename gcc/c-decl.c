@@ -1572,7 +1572,9 @@ warn_if_shadowing (tree x, tree old)
 	 It would be nice to avoid warning in any function
 	 declarator in a declaration, as opposed to a definition,
 	 but there is no way to tell it's not a definition.  */
-      || (TREE_CODE (x) == PARM_DECL && current_scope->outer->parm_flag))
+      || (TREE_CODE (x) == PARM_DECL && current_scope->outer->parm_flag)
+      /* Shadow warnings only apply to local variables and parameters.  */
+      || (TREE_CODE (x) != PARM_DECL && DECL_FILE_SCOPE_P (x)))
     return;
 
   if (TREE_CODE (old) == PARM_DECL)

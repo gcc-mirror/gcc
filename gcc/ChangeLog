@@ -1,3 +1,9 @@
+2004-03-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c/13129
+	* c-decl.c (warn_if_shadowing): Don't warn about a new declaration
+	of a file-scope entity.
+
 2004-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/14069
