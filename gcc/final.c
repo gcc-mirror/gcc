@@ -2608,7 +2608,24 @@ alter_subreg (rtx *xp)
   /* simplify_subreg does not remove subreg from volatile references.
      We are required to.  */
   if (MEM_P (y))
-    *xp = adjust_address (y, GET_MODE (x), SUBREG_BYTE (x));
+    {
+      int offset = SUBREG_BYTE (x);
+
+      /* For paradoxical subregs on big-endian machines, SUBREG_BYTE
+	 contains 0 instead of the proper offset.  See simplify_subreg.  */
+      if (offset == 0
+	  && GET_MODE_SIZE (GET_MODE (y)) < GET_MODE_SIZE (GET_MODE (x)))
+        {
+          int difference = GET_MODE_SIZE (GET_MODE (y))
+			   - GET_MODE_SIZE (GET_MODE (x));
+          if (WORDS_BIG_ENDIAN)
+            offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
+          if (BYTES_BIG_ENDIAN)
+            offset += difference % UNITS_PER_WORD;
+        }
+
+      *xp = adjust_address (y, GET_MODE (x), offset);
+    }
   else
     {
       rtx new = simplify_subreg (GET_MODE (x), y, GET_MODE (y),

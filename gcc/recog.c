@@ -936,8 +936,10 @@ general_operand (rtx op, enum machine_mode mode)
 
 #ifdef INSN_SCHEDULING
       /* On machines that have insn scheduling, we want all memory
-	 reference to be explicit, so outlaw paradoxical SUBREGs.  */
-      if (MEM_P (sub)
+	 reference to be explicit, so outlaw paradoxical SUBREGs.
+	 However, we must allow them after reload so that they can
+	 get cleaned up by cleanup_subreg_operands.  */
+      if (!reload_completed && MEM_P (sub)
 	  && GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (sub)))
 	return 0;
 #endif
