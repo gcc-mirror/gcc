@@ -1,3 +1,9 @@
+2003-06-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/dg-pch.exp: New file.
+	* g++.dg/pch/pch.exp: Use dg-pch.exp.
+	* gcc.dg/pch/pch.exp: Likewise.
+
 2003-06-04  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-2.c: Add tests for tan(atan(x)).

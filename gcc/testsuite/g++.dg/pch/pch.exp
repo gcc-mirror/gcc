@@ -19,6 +19,7 @@
 
 # Load support procs.
 load_lib "g++-dg.exp"
+load_lib dg-pch.exp
 
 # Initialize `dg'.
 dg-init
@@ -27,63 +28,9 @@ set old_dg_do_what_default "${dg-do-what-default}"
 
 # Main loop.
 foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.C]] {
-    global runtests dg-do-what-default
-
-    # If we're only testing specific files and this isn't one of them, skip it.
-    if ![runtest_file_p $runtests $test] {
-	continue
-    }
-    set nshort "$subdir/[file tail $test]"
-    set bname "[file rootname [file tail $test]]"
-
-    catch { file delete "$bname.H.gch" }
-    catch { file delete "$bname.s" }
-    catch { file delete "$bname.s-gch" }
-
     # We don't try to use the loop-optimizing options, since they are highly
     # unlikely to make any difference to PCH.
-    foreach flags { "-g" "-O2 -g" "-O2" } {
-	verbose "Testing $nshort, $flags" 1
-
-	# For the header files, the default is to precompile.
-	set dg-do-what-default precompile
-	catch { file delete "$bname.H" }
-	file copy "[file rootname $test].Hs" "$bname.H"
-	dg-test -keep-output "$bname.H" $flags ""
-
-	# For the rest, the default is to compile to .s.
-	set dg-do-what-default compile
-
-	if { [ file exists "$bname.H.gch" ] } {
-	    # Ensure that the PCH file is used, not the original header.
-	    file delete "$bname.H"
-
-	    dg-test -keep-output $test $flags "-I."
-	    file delete "$bname.H.gch"
-	    if { [ file exists "$bname.s" ] } {
-		file rename "$bname.s" "$bname.s-gch"
-		file copy "[file rootname $test].Hs" "$bname.H"
-		dg-test -keep-output $test $flags "-I."
-		set tmp [ diff "$bname.s" "$bname.s-gch" ]
-		if { $tmp == 0 } {
-		    untested "$nshort $flags assembly comparison"
-		} elseif { $tmp == 1 } {
-		    pass "$nshort $flags assembly comparison"
-		} else {
-		    fail "$nshort $flags assembly comparison"
-		}
-		file delete "$bname.H"
-		file delete "$bname.s"
-		file delete "$bname.s-gch"
-	    } else {
-		untested "$nshort $flags assembly comparison"
-	    }
-
-	} else {
-	    untested "$nshort $flags"
-	    untested "$nshort $flags assembly comparison"
-	}
-    }
+    dg-pch $subdir $test [list "-g" "-O2 -g" "-O2"] ".H"
 }
 
 set dg-do-what-default "$old_dg_do_what_default"
