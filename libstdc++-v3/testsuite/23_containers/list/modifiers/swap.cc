@@ -54,6 +54,10 @@ void test02()
   VERIFY(1 == swap_calls);
 }
 
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+template class __gnu_cxx::__mt_alloc<std::_List_node<T> >;
+#endif
+
 // See c++/13658 for background info.
 int main()
 {
