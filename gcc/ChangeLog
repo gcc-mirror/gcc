@@ -1,3 +1,9 @@
+Tue Mar  4 11:30:04 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* doc/invoke.texi:  Document that unit-at-a-time is enabled for -O3
+	* toplev.c (parse_options_and_default_flags): Enable flag_unit_at_a_time
+	for -O3.
+
 2003-03-04  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Delete three unused variables.  Move a variable
