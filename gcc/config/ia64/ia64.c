@@ -116,6 +116,7 @@ static void ia64_add_gc_roots PARAMS ((void));
 static void ia64_init_machine_status PARAMS ((struct function *));
 static void ia64_mark_machine_status PARAMS ((struct function *));
 static void emit_insn_group_barriers PARAMS ((FILE *, rtx));
+static void emit_all_insn_group_barriers PARAMS ((FILE *, rtx));
 static void emit_predicate_relation_info PARAMS ((void));
 static int process_set PARAMS ((FILE *, rtx));
 
@@ -4450,7 +4451,11 @@ safe_group_barrier_needed_p (insn)
 }
 
 /* INSNS is an chain of instructions.  Scan the chain, and insert stop bits
-   as necessary to eliminate dependendencies.  */
+   as necessary to eliminate dependendencies.  This function assumes that
+   a final instruction scheduling pass has been run which has already
+   inserted most of the necessary stop bits.  This function only inserts
+   new ones at basic block boundaries, since these are invisible to the
+   scheduler.  */
 
 static void
 emit_insn_group_barriers (dump, insns)
@@ -4501,6 +4506,36 @@ emit_insn_group_barriers (dump, insns)
 		}
 	      init_insn_group_barriers ();
 	      last_label = 0;
+	    }
+	}
+    }
+}
+
+/* Like emit_insn_group_barriers, but run if no final scheduling pass was run.
+   This function has to emit all necessary group barriers.  */
+
+static void
+emit_all_insn_group_barriers (dump, insns)
+     FILE *dump;
+     rtx insns;
+{
+  rtx insn;
+
+  init_insn_group_barriers ();
+
+  for (insn = insns; insn; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) == INSN
+	       && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+	       && XINT (PATTERN (insn), 1) == 2)
+	init_insn_group_barriers ();
+      else if (INSN_P (insn))
+	{
+	  if (group_barrier_needed_p (insn))
+	    {
+	      emit_insn_before (gen_insn_group_barrier (GEN_INT (3)), insn);
+	      init_insn_group_barriers ();
+	      group_barrier_needed_p (insn);
 	    }
 	}
     }
@@ -4567,7 +4602,7 @@ errata_emit_nops (insn)
       || GET_CODE (real_pat) == ASM_INPUT
       || GET_CODE (real_pat) == ADDR_VEC
       || GET_CODE (real_pat) == ADDR_DIFF_VEC
-      || asm_noperands (insn) >= 0)
+      || asm_noperands (PATTERN (insn)) >= 0)
     return;
 
   /* single_set doesn't work for COND_EXEC insns, so we have to duplicate
@@ -5612,6 +5647,12 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, reorder_type)
 		schedule_stop (sched_verbose ? dump : NULL);
 		sched_data.last_was_stop = 1;
 	      }
+	    else if (GET_CODE (PATTERN (insn)) == ASM_INPUT
+		     || asm_noperands (PATTERN (insn)) >= 0)
+	      {
+		/* It must be an asm of some kind.  */
+		cycle_end_fill_slots (sched_verbose ? dump : NULL);
+	      }
 	    return 1;
 	  }
       }
@@ -5811,6 +5852,12 @@ ia64_variable_issue (dump, sched_verbose, insn, can_issue_more)
     {
       if (sched_verbose)
 	fprintf (dump, "// Ignoring type %s\n", type_names[t]);
+      if (GET_CODE (PATTERN (insn)) == ASM_INPUT
+	  || asm_noperands (PATTERN (insn)) >= 0)
+	{
+	  /* This must be some kind of asm.  Clear the scheduling state.  */
+	  rotate_two_bundles (sched_verbose ? dump : NULL);
+	}
       return 1;
     }
 
@@ -5931,13 +5978,18 @@ ia64_reorg (insns)
   find_basic_blocks (insns, max_reg_num (), NULL);
   life_analysis (insns, NULL, PROP_DEATH_NOTES);
 
-  ia64_final_schedule = 1;
-  schedule_ebbs (rtl_dump_file);
-  ia64_final_schedule = 0;
+  if (optimize)
+    {
+      ia64_final_schedule = 1;
+      schedule_ebbs (rtl_dump_file);
+      ia64_final_schedule = 0;
 
-  /* This relies on the NOTE_INSN_BASIC_BLOCK notes to be in the same
-     place as they were during scheduling.  */
-  emit_insn_group_barriers (rtl_dump_file, insns);
+      /* This relies on the NOTE_INSN_BASIC_BLOCK notes to be in the same
+	 place as they were during scheduling.  */
+      emit_insn_group_barriers (rtl_dump_file, insns);
+    }
+  else
+    emit_all_insn_group_barriers (rtl_dump_file, insns);
 
   fixup_errata ();
   emit_predicate_relation_info ();

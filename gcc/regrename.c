@@ -248,7 +248,13 @@ regrename_optimize ()
 	    }
 #endif
 
-	  if (fixed_regs[reg] || global_regs[reg])
+	  if (fixed_regs[reg] || global_regs[reg]
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+	      || (frame_pointer_needed && reg == HARD_FRAME_POINTER_REGNUM)
+#else
+	      || (frame_pointer_needed && reg == FRAME_POINTER_REGNUM)
+#endif
+	      )
 	    continue;
 
 	  COPY_HARD_REG_SET (this_unavailable, unavailable);
@@ -351,7 +357,8 @@ do_replace (chain, reg)
     {
       unsigned int regno = ORIGINAL_REGNO (*chain->loc);
       *chain->loc = gen_raw_REG (GET_MODE (*chain->loc), reg);
-      ORIGINAL_REGNO (*chain->loc) = regno;
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	ORIGINAL_REGNO (*chain->loc) = regno;
       chain = chain->next_use;
     }
 }

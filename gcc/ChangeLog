@@ -1,3 +1,14 @@
+2001-01-04  Bernd Schmidt  <bernds@redhat.com>
+
+	* regrename.c (regrename_optimize): Don't rename from frame pointer
+	if frame_pointer_needed.
+	(do_replace): Don't set ORIGINAL_REGNO to a hard register number.
+	* config/ia64/ia64.c (emit_all_group_insn_barriers): New function.
+	(ia64_reorg): Use it instead of scheduling if ! optimize.
+	(errata_emit_nops): Properly call asm_noperands.
+	(ia64_sched_reorder): Finish cycle if we see an asm.
+	(ia64_variable_issue): Clear scheduling state after asms.
+
 2001-01-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cpp.texi: Update for -MT.
