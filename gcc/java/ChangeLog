@@ -1,3 +1,11 @@
+2005-02-02  Ranjit Mathew  <rmathew@hotmail.com>
+
+	PR java/15543
+	* parse-scan.y (formal_parameter): Use $2 (type) instead of $$
+	(modifiers) when square brackets are present in a declaration for
+	a final paramter.
+	* jv-scan.c (main): Set input_filename and input_line.
+
 2005-02-01  Tom Tromey  <tromey@redhat.com>
 
 	PR java/19742:
@@ -8,7 +16,7 @@
 	* jcf-write.c (generate_bytecode_insns): Implement RSHIFT_EXPR
 	of unsigned types using iushr and lushr JVM bytecodes.
 
-2005-02-02  Ranjit Mathew  <rmathew@hotmail.com>
+2005-02-01  Ranjit Mathew  <rmathew@hotmail.com>
 
 	PR java/19738
 	* gjavah.c (jni_print_float): Do not emit floating-point

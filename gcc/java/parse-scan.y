@@ -515,10 +515,10 @@ formal_parameter:
 		  if (bracket_count)
 		    {
 		      int i;
-		      char *n = xmalloc (bracket_count + 1 + strlen ($$));
+		      char *n = xmalloc (bracket_count + 1 + strlen ($2));
 		      for (i = 0; i < bracket_count; ++i)
 			n[i] = '[';
-		      strcpy (n + bracket_count, $$);
+		      strcpy (n + bracket_count, $2);
 		      $$ = n;
 		    }
 		  else
