@@ -21,5 +21,9 @@ public class pr109
 	      break;
 	    System.out.print (i);
 	  }
+
+      // We print a newline here because otherwise the DejaGNU log
+      // file is screwed up.
+      System.out.println ();
     }
 }
