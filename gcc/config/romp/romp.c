@@ -1076,7 +1076,6 @@ output_prolog (file, size)
 {
   int first_reg;
   int reg_save_offset;
-  rtx insn;
   int fp_save = size + current_function_outgoing_args_size;
 
   init_fpops ();
@@ -1123,7 +1122,61 @@ output_prolog (file, size)
   output_loadsave_fpregs (file, USE,
 			  plus_constant (stack_pointer_rtx, fp_save));
 }
+
+/* Output the offset information used by debuggers.
+   This is the exactly the total_size value of output_epilog
+   which is added to the frame pointer. However the value in the debug
+   table is encoded in a space-saving way as follows:
 
+   The first byte contains two fields: a 2-bit size field and the first
+   6 bits of an offset value. The 2-bit size field is in the high-order
+   position and specifies how many subsequent bytes follow after
+   this one. An offset value is at most 4-bytes long.
+
+   The last 6 bits of the first byte initialize the offset value. In many
+   cases where procedures have small local storage, this is enough and, in
+   this case, the high-order size field is zero so the byte can (almost) be
+   used as is (see below). Thus, the byte value of 0x0d is encodes a offset
+   size of 13 words, or 52 bytes.
+
+   For procedures with a local space larger than 60 bytes, the 6 bits
+   are the high-order 6 bits.  The remaining bytes follow as necessary,
+   in Big Endian order.  Thus, the short value of 16907 (= 16384+523)
+   encodes an offset of 2092 bytes (523 words).
+
+   The total offset value is in words (not bytes), so the final value has to
+   be multiplied by 4 before it can be used in address computations by a
+   debugger.   */
+
+void
+output_encoded_offset (file, reg_offset)
+     FILE *file;
+     unsigned reg_offset;
+{
+  /* Convert the offset value to 4-byte words rather than bytes. */
+  reg_offset = (reg_offset + 3) / 4;
+
+  /* Now output 1-4 bytes in encoded form. */
+  if (reg_offset < (1 << 6))
+    /* Fits into one byte */
+    fprintf (file, "\t.byte %d\n", reg_offset);
+  else if (reg_offset < (1 << (6 + 8)))
+    /* Fits into two bytes */
+    fprintf (file, "\t.short %d\n", (1 << (6 + 8)) + reg_offset);
+  else if (reg_offset < (1 << (6 + 8 + 8)))
+    {
+      /* Fits in three bytes */
+      fprintf (file, "\t.byte %d\n", (2 << 6) + (reg_offset >> ( 6+ 8)));
+      fprintf (file, "\t.short %d\n", reg_offset % (1 << (6 + 8)));
+    }
+  else
+    {
+      /* Use 4 bytes.  */
+      fprintf (file, "\t.short %d", (3 << (6 + 8)) + (reg_offset >> (6 + 8)));
+      fprintf (file, "\t.short %d\n", reg_offset % (1 << (6 + 8)));
+    }
+}
+
 /* Write function epilogue.  */
 
 void
@@ -1195,18 +1248,51 @@ output_epilog (file, size)
 	  else
 	    fprintf (file, "\tbrx r15\n\tcal r1,%d(r1)\n", total_size);
 	}
+
+      /* Table header (0xdf), usual-type stack frame (0x07),
+	 table header (0xdf), and first register saved.
+
+	 The final 0x08 means that there is a byte following this one
+	 describing the number of parameter words and the register used as
+	 stack pointer.
+
+	 If GCC passed floating-point parameters in floating-point registers,
+	 it would be necessary to change the final byte from 0x08 to 0x0c.
+	 Also an additional entry byte would be need to be emitted to specify
+	 the first floating-point register.
+
+	 (See also Section 11 (Trace Tables) in ``IBM/4.3 Linkage Convention,''
+	 pages IBM/4.3-PSD:5-7 of Volume III of the IBM Academic Operating
+	 System Manual dated July 1987.)  */
+
       fprintf (file, "\t.long 0x%x\n", 0xdf07df08 + first_reg * 0x10);
 
       if (nargs > 15) nargs = 15;
-      if (frame_pointer_needed)
-	fprintf (file, "\t.byte 0x%xd, 53\n", nargs);
-      else
-	fprintf (file, "\t.short 0x%x100\n", nargs);
+
+      /* The number of parameter words and the register used as the stack
+	 pointer (encoded here as r1).
+
+	 Note: The MetWare Hich C Compiler R2.1y actually gets this wrong;
+	 it erroneously lists r13 but uses r1 as the stack too. But a bug in
+	 dbx 1.5 nullifies this mistake---most of the time.
+         (Dbx retrieves the value of r13 saved on the stack which is often
+	 the value of r1 before the call.)  */
+
+      fprintf (file, "\t.byte 0x%x1\n", nargs);
+      output_encoded_offset (file, total_size);
     }
   else
     {
       if (write_code)
 	fprintf (file, "\tbr r15\n");
+
+      /* Table header (0xdf), no stack frame (0x02),
+	 table header (0xdf) and no parameters saved (0x00).
+
+	 If GCC passed floating-point parameters in floating-point registers,
+	 it might be necessary to change the final byte from 0x00 to 0x04.
+	 Also a byte would be needed to specify the first floating-point
+	 register.  */
       fprintf (file, "\t.long 0xdf02df00\n");
     }
 
@@ -1904,4 +1990,47 @@ init_fpops()
   first_fpop = last_fpop_in_mem = 0;
   for (i = 0; i < FP_HASH_SIZE; i++)
     fp_hash_table[i] = 0;
+}
+
+/* Return the offset value of an automatic variable (N_LSYM) having
+   the given offset. Basically, we correct by going from a frame pointer to
+   stack pointer value.
+*/
+
+int
+romp_debugger_auto_correction(offset)
+     int offset;
+{
+  int fp_to_sp;
+
+  /* We really want to go from STACK_POINTER_REGNUM to
+     FRAME_POINTER_REGNUM, but this isn't defined. So go the other
+     direction and negate. */
+  INITIAL_ELIMINATION_OFFSET (FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM,
+			      fp_to_sp);
+
+  /* The offset value points somewhere between the frame pointer and
+     the stack pointer. What is up from the frame pointer is down from the
+     stack pointer. Therefore the negation in the offset value too. */
+
+  return -(offset+fp_to_sp+4);
+}
+
+/* Return the offset value of an argument having
+   the given offset. Basically, we correct by going from a arg pointer to
+   stack pointer value. */
+
+int
+romp_debugger_arg_correction (offset)
+     int offset;
+{
+  int fp_to_argp;
+
+  INITIAL_ELIMINATION_OFFSET (ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM,
+			      fp_to_argp);
+
+  /* Actually, something different happens if offset is from a floating-point
+     register argument, but we don't handle it here.  */
+
+  return (offset - fp_to_argp);
 }
