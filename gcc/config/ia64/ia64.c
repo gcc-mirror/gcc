@@ -2436,6 +2436,10 @@ ia64_hard_regno_rename_ok (from, to)
   if (PR_REGNO_P (from) && PR_REGNO_P (to))
     return (from & 1) == (to & 1);
 
+  /* Reg 4 contains the saved gp; we can't reliably rename this.  */
+  if (from == GR_REG (4) && current_function_calls_setjmp)
+    return 0;
+
   return 1;
 }
 

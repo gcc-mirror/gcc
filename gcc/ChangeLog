@@ -1,5 +1,8 @@
 2001-03-01  Bernd Schmidt  <bernds@redhat.com>
 
+	* config/ia64/ia64.c (ia64_hard_regno_rename_ok): Disallow renaming
+	from reg 4 if current_function_calls_setjmp.
+
 	* reload1.c (eliminate_regs_in_insn): Restrict the special case
 	code not to try to optimize adds with anything but a REG destination.
 
