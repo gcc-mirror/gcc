@@ -1,3 +1,22 @@
+2004-09-12  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_split_ashldi): Special case op1 as one
+	or minus one.
+	(ix86_split_ashrdi, ix86_split_lshrdi): Clean up conditions for
+	post-reload, and scratch NULL.
+	* config/i386/i386.md (testqi_1): Use FLAGS_REG name.
+	(x86_shift_adj_2): Use ix86_expand_clear.
+	(ashldi3): Remove CMOVE expansion difference.
+	(ashldi3_1): Remove.
+	(*ashldi3_1): Rename from *ashldi3_2.  Use reg_or_pm1_operand and
+	add constraints for immediates.  New peephole for split-with-temp.
+	Run splitter after peep2 pass.
+	(ashrdi3, ashrdi3_1, ashrdi3_2): Similarly.
+	(lshrdi3, lshrdi3_1, lshrdi3_2): Similarly.
+	(setcc_2): Rename with *.
+	* config/i386/predicates.md (reg_or_pm1_operand): New.
+	(ashldi_input_operand): New.
+
 2004-09-12  Richard Henderson  <rth@redhat.com
 
 	* print-rtl.c (print_decl_name): New.
