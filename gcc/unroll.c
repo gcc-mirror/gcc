@@ -1,5 +1,5 @@
 /* Try to unroll loops, and split induction variables.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
    Contributed by James E. Wilson, Cygnus Support/UC Berkeley.
 
 This file is part of GNU CC.
@@ -1318,7 +1318,10 @@ calculate_giv_inc (pattern, src_insn, regno)
      int regno;
 {
   rtx increment;
+  rtx increment_total = 0;
+  int tries = 0;
 
+ retry:
   /* Verify that we have an increment insn here.  First check for a plus
      as the set source.  */
   if (GET_CODE (SET_SRC (pattern)) != PLUS)
@@ -1341,7 +1344,8 @@ calculate_giv_inc (pattern, src_insn, regno)
     {
       /* SR sometimes puts the constant in a register, especially if it is
 	 too big to be an add immed operand.  */
-      increment = SET_SRC (PATTERN (PREV_INSN (src_insn)));
+      src_insn = PREV_INSN (src_insn);
+      increment = SET_SRC (PATTERN (src_insn));
 
       /* SR may have used LO_SUM to compute the constant if it is too large
 	 for a load immed operand.  In this case, the constant is in operand
@@ -1357,12 +1361,36 @@ calculate_giv_inc (pattern, src_insn, regno)
       delete_insn (get_last_insn ());
     }
 
-  /* Check that the source register is the same as the dest register.  */
+  if (increment_total)
+    increment_total = GEN_INT (INTVAL (increment_total) + INTVAL (increment));
+  else
+    increment_total = increment;
+
+  /* Check that the source register is the same as the register we expected
+     to see as the source.  If not, something is seriously wrong.  */
   if (GET_CODE (XEXP (SET_SRC (pattern), 0)) != REG
       || REGNO (XEXP (SET_SRC (pattern), 0)) != regno)
-    abort ();
+    {
+      /* Some machines (e.g. the romp), may emit two add instructions for
+	 certain constants, so lets try looking for another add immediately
+	 before this one if we have only seen one add insn so far.  */
 
-  return increment;
+      if (tries == 0)
+	{
+	  tries++;
+
+	  src_insn = PREV_INSN (src_insn);
+	  pattern = PATTERN (src_insn);
+
+	  delete_insn (get_last_insn ());
+
+	  goto retry;
+	}
+
+      abort ();
+    }
+
+  return increment_total;
 }
 
 /* Copy REG_NOTES, except for insn references, because not all insn_map
