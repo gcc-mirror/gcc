@@ -180,7 +180,7 @@ and again mark them read/write.
 #include "recog.h"
 #include "function.h"
 #include "regs.h"
-#include "obstack.h"
+#include "alloc-pool.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "sbitmap.h"
@@ -197,7 +197,8 @@ and again mark them read/write.
     }							\
   while (0)
 
-static struct obstack df_ref_obstack;
+static alloc_pool df_ref_pool;
+static alloc_pool df_link_pool;
 static struct df *ddf;
 
 static void df_reg_table_realloc PARAMS((struct df *, int));
@@ -502,7 +503,9 @@ df_alloc (df, n_regs)
   int n_insns;
   basic_block bb;
 
-  gcc_obstack_init (&df_ref_obstack);
+  df_link_pool = create_alloc_pool ("df_link pool", sizeof (struct df_link),
+				    100);
+  df_ref_pool  = create_alloc_pool ("df_ref pool", sizeof (struct ref), 100);
 
   /* Perhaps we should use LUIDs to save memory for the insn_refs
      table.  This is only a small saving; a few pointers.  */
@@ -587,7 +590,9 @@ df_free (df)
   BITMAP_XFREE (df->all_blocks);
   df->all_blocks = 0;
 
-  obstack_free (&df_ref_obstack, NULL);
+  free_alloc_pool (df_ref_pool);
+  free_alloc_pool (df_link_pool);
+
 }
 
 /* Local miscellaneous routines.  */
@@ -629,8 +634,7 @@ df_link_create (ref, next)
 {
   struct df_link *link;
 
-  link = (struct df_link *) obstack_alloc (&df_ref_obstack,
-					   sizeof (*link));
+  link = pool_alloc (df_link_pool);
   link->next = next;
   link->ref = ref;
   return link;
@@ -768,8 +772,7 @@ df_ref_create (df, reg, loc, insn, ref_type, ref_flags)
 {
   struct ref *this_ref;
 
-  this_ref = (struct ref *) obstack_alloc (&df_ref_obstack,
-					   sizeof (*this_ref));
+  this_ref = pool_alloc (df_ref_pool);
   DF_REF_REG (this_ref) = reg;
   DF_REF_LOC (this_ref) = loc;
   DF_REF_INSN (this_ref) = insn;
