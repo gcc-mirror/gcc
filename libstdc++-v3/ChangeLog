@@ -1,3 +1,8 @@
+2000-12-05  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* src/Makefile.am (libstdc++.INC): Revert for libjava builds.
+	* src/Makefile.in: Regenerate.
+	
 2000-12-05  Benjamin Kosnik  <bkoz@haight.redhat.com>
 
 	* acinclude.m4 (EXTRA_CXX_FLAGS): And here.
