@@ -449,7 +449,7 @@ static void bc_expand_variable_local_init PROTO((tree));
 static void bc_expand_decl_init		PROTO((tree));
 static void expand_null_return_1	PROTO((rtx, int));
 static int tail_recursion_args		PROTO((tree, tree));
-static void expand_cleanups		PROTO((tree, tree, int));
+static void expand_cleanups		PROTO((tree, tree, int, int));
 static void bc_expand_start_case	PROTO((struct nesting *, tree,
 					       tree, char *));
 static int bc_pushcase			PROTO((tree, tree));
@@ -804,7 +804,7 @@ expand_goto_internal (body, label, last_insn)
 	  /* Execute the cleanups for blocks we are exiting.  */
 	  if (block->data.block.cleanups != 0)
 	    {
-	      expand_cleanups (block->data.block.cleanups, NULL_TREE, 1);
+	      expand_cleanups (block->data.block.cleanups, NULL_TREE, 1, 1);
 	      do_pending_stack_adjust ();
 	    }
 	}
@@ -868,7 +868,7 @@ bc_expand_goto_internal (opcode, label, body)
 	  /* Execute the cleanups for blocks we are exiting.  */
 	  if (block->data.block.cleanups != 0)
 	    {
-	      expand_cleanups (block->data.block.cleanups, NULL_TREE, 1);
+	      expand_cleanups (block->data.block.cleanups, NULL_TREE, 1, 1);
 	      do_pending_stack_adjust ();
 	    }
 	}
@@ -1181,7 +1181,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 		if (TREE_ADDRESSABLE (lists)
 		    && TREE_VALUE (lists) != 0)
 		  {
-		    expand_cleanups (TREE_VALUE (lists), NULL_TREE, 1);
+		    expand_cleanups (TREE_VALUE (lists), NULL_TREE, 1, 1);
 		    /* Pop any pushes done in the cleanups,
 		       in case function is about to return.  */
 		    do_pending_stack_adjust ();
@@ -3093,32 +3093,32 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
       || thisblock->data.block.cleanups != 0)
     {
       /* Only clean up here if this point can actually be reached.  */
-      if (GET_CODE (get_last_insn ()) != BARRIER)
+      int reachable = GET_CODE (get_last_insn ()) != BARRIER;
+
+      /* Don't let cleanups affect ({...}) constructs.  */
+      int old_expr_stmts_for_value = expr_stmts_for_value;
+      rtx old_last_expr_value = last_expr_value;
+      tree old_last_expr_type = last_expr_type;
+      expr_stmts_for_value = 0;
+
+      /* Do the cleanups.  */
+      expand_cleanups (thisblock->data.block.cleanups, NULL_TREE, 0, reachable);
+      if (reachable)
+	do_pending_stack_adjust ();
+
+      expr_stmts_for_value = old_expr_stmts_for_value;
+      last_expr_value = old_last_expr_value;
+      last_expr_type = old_last_expr_type;
+
+      /* Restore the stack level.  */
+
+      if (reachable && thisblock->data.block.stack_level != 0)
 	{
-	  /* Don't let cleanups affect ({...}) constructs.  */
-	  int old_expr_stmts_for_value = expr_stmts_for_value;
-	  rtx old_last_expr_value = last_expr_value;
-	  tree old_last_expr_type = last_expr_type;
-	  expr_stmts_for_value = 0;
-
-	  /* Do the cleanups.  */
-	  expand_cleanups (thisblock->data.block.cleanups, NULL_TREE, 0);
-	  do_pending_stack_adjust ();
-
-	  expr_stmts_for_value = old_expr_stmts_for_value;
-	  last_expr_value = old_last_expr_value;
-	  last_expr_type = old_last_expr_type;
-
-	  /* Restore the stack level.  */
-
-	  if (thisblock->data.block.stack_level != 0)
-	    {
-	      emit_stack_restore (thisblock->next ? SAVE_BLOCK : SAVE_FUNCTION,
-				  thisblock->data.block.stack_level, NULL_RTX);
-	      if (nonlocal_goto_handler_slot != 0)
-		emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level,
-				 NULL_RTX);
-	    }
+	  emit_stack_restore (thisblock->next ? SAVE_BLOCK : SAVE_FUNCTION,
+			      thisblock->data.block.stack_level, NULL_RTX);
+	  if (nonlocal_goto_handler_slot != 0)
+	    emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level,
+			     NULL_RTX);
 	}
 
       /* Any gotos out of this block must also do these things.
@@ -3684,35 +3684,42 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
    a value that is being returned out of the scope.
 
    If IN_FIXUP is non-zero, we are generating this cleanup for a fixup
-   goto and handle protection regions specially in that case.  */
+   goto and handle protection regions specially in that case.
+
+   If REACHABLE, we emit code, otherwise just inform the exception handling
+   code about this finalization.  */
 
 static void
-expand_cleanups (list, dont_do, in_fixup)
+expand_cleanups (list, dont_do, in_fixup, reachable)
      tree list;
      tree dont_do;
      int in_fixup;
+     int reachable;
 {
   tree tail;
   for (tail = list; tail; tail = TREE_CHAIN (tail))
     if (dont_do == 0 || TREE_PURPOSE (tail) != dont_do)
       {
 	if (TREE_CODE (TREE_VALUE (tail)) == TREE_LIST)
-	  expand_cleanups (TREE_VALUE (tail), dont_do, in_fixup);
+	  expand_cleanups (TREE_VALUE (tail), dont_do, in_fixup, reachable);
 	else
 	  {
 	    if (! in_fixup)
 	      (*interim_eh_hook) (TREE_VALUE (tail));
 
-	    /* Cleanups may be run multiple times.  For example,
-	       when exiting a binding contour, we expand the
-	       cleanups associated with that contour.  When a goto
-	       within that binding contour has a target outside that
-	       contour, it will expand all cleanups from its scope to
-	       the target.  Though the cleanups are expanded multiple
-	       times, the control paths are non-overlapping so the
-	       cleanups will not be executed twice.  */
-	    expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
-	    free_temp_slots ();
+	    if (reachable)
+	      {
+		/* Cleanups may be run multiple times.  For example,
+		   when exiting a binding contour, we expand the
+		   cleanups associated with that contour.  When a goto
+		   within that binding contour has a target outside that
+		   contour, it will expand all cleanups from its scope to
+		   the target.  Though the cleanups are expanded multiple
+		   times, the control paths are non-overlapping so the
+		   cleanups will not be executed twice.  */
+		expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
+		free_temp_slots ();
+	      }
 	  }
       }
 }
