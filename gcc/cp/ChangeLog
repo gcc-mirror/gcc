@@ -1,5 +1,18 @@
 2004-10-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	Convert diagnostics to use quoting flag q 2/n
+	* class.c (build_base_path, add_method, alter_access,
+	handle_using_decl, check_bases,
+	maybe_warn_about_overly_private_class, find_final_overrider,
+	warn_hidden, finish_struct_anon, add_implicitly_declared_members,
+	check_bitfield_decl, check_field_decls, layout_empty_base,
+	build_base_field, check_methods, layout_virtual_bases,
+	warn_about_ambiguous_bases, layout_class_type, finish_struct_1,
+	resolve_address_of_overloaded_function, instantiate_type,
+	note_name_declared_in_class): Use format flag "q" for quoting.
+
+2004-10-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	Convert diagnostics to use quoting flag q 1/n
 	* error.c (locate_error): Ignore quoting flag q.
 	* call.c (build_user_type_conversion_1, build_operator_new_call,
