@@ -227,6 +227,8 @@ struct tree_common
            VAR_DECL or FUNCTION_DECL
        TREE_VIA_PUBLIC in
            TREE_LIST or TREE_VEC
+       EXPR_WFL_EMIT_LINE_NOTE in
+           EXPR_WITH_FILE_LOCATION
 
    private_flag:
 
@@ -686,7 +688,7 @@ struct tree_vec
 #define TREE_OPERAND(NODE, I) (EXPR_CHECK (NODE)->exp.operands[I])
 #define TREE_COMPLEXITY(NODE) (EXPR_CHECK (NODE)->exp.complexity)
 
-/* In expression with file location information.  */
+/* In a EXPR_WITH_FILE_LOCATION node.  */
 #define EXPR_WFL_NODE(NODE) TREE_OPERAND((NODE), 0)
 #define EXPR_WFL_FILENAME(NODE) (IDENTIFIER_POINTER ((NODE)->common.chain))
 #define EXPR_WFL_FILENAME_NODE(NODE) ((NODE)->common.chain)
@@ -695,7 +697,7 @@ struct tree_vec
 #define EXPR_WFL_LINECOL(NODE) (EXPR_CHECK (NODE)->exp.complexity)
 #define EXPR_WFL_SET_LINECOL(NODE, LINE, COL) \
   (EXPR_WFL_LINECOL(NODE) = ((LINE) << 12) | ((COL) & 0xfff))
-#define EXPR_WFL_EMIT_LINE_NOTE(NODE) ((NODE)->common.lang_flag_0)
+#define EXPR_WFL_EMIT_LINE_NOTE(NODE) ((NODE)->common.public_flag)
 
 struct tree_exp
 {
