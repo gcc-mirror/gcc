@@ -140,7 +140,6 @@ echo 'CFLAGS = -g'
 echo 'CXXFLAGS = -g -O'
 echo 'LIBCFLAGS = $(CFLAGS)'
 echo 'LIBCXXFLAGS = $(CXXFLAGS) -fno-implicit-templates'
-echo 'PICFLAG ='
 if [ "${LIBDIR}" = "yes" ]; then
   echo 'PICDIR = stamp-picdir'
 else
@@ -395,7 +394,7 @@ echo '# clean rules'
 
 MOSTLYCLEAN="${MOSTLYCLEAN-*.o pic stamp-picdir core ${EXTRA_MOSTLYCLEAN}} `if test -n "${TOUCH_ON_COMPILE}"; then echo stamp; else true; fi`"
 CLEAN="${CLEAN-${TARGETPROG} ${TARGETLIB}}"
-DISTCLEAN="${DISTCLEAN-config.status Makefile *~ Make.pack multilib.out ${EXTRA_DISTCLEAN-}}"
+DISTCLEAN="${DISTCLEAN-config.status Makefile *~ Make.pack target-mkfrag multilib.out ${EXTRA_DISTCLEAN-}}"
 REALCLEAN="${REALCLEAN-depend *.info*}"
 
 

@@ -32,6 +32,8 @@ IO_OBJECTS = filedoalloc.o floatconv.o genops.o fileops.o \
   outfloat.o strops.o iofclose.o iopopen.o ioungetc.o peekc.o iogetc.o \
   ioputc.o iofeof.o ioferror.o
 
+STDIO_OBJECTS = stdfiles.o
+
 # These emulate stdio functionality, but with a different name (_IO_ungetc
 # instead of ungetc), and using _IO_FILE instead of FILE.
 # They are not needed for C++ iostream, nor stdio, though some stdio
@@ -56,12 +58,15 @@ IOSTREAM_OBJECTS = builtinbuf.o filebuf.o fstream.o \
 OSPRIM_OBJECTS = ioprims.o iostrerror.o cleanup.o
 
 LIBIOSTREAM_OBJECTS = $(IO_OBJECTS) $(IOSTREAM_OBJECTS) $(OSPRIM_OBJECTS)
-LIBIO_OBJECTS = $(IO_OBJECTS) $(STDIO_WRAP_OBJECTS) $(OSPRIM_OBJECTS) stdfiles.o
+LIBIO_OBJECTS = $(IO_OBJECTS) $(STDIO_WRAP_OBJECTS) $(OSPRIM_OBJECTS) \
+		$(STDIO_OBJECTS)
 
 LIBIOSTREAM_DEP = $(LIBIOSTREAM_OBJECTS)
 LIBIOSTREAM_USE = $(LIBIOSTREAM_OBJECTS)
 
 USER_INCLUDES = *.h
+
+PICFLAG =
 
 #### package, host, target, and site dependent Makefile fragments come in here.
 ##

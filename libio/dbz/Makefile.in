@@ -37,7 +37,8 @@ install:
 install-info:
 info:
 
-check: r rclean
+check: r
+	$(MAKE) rclean
 
 bininstall:	dbz
 	cp dbz $(NEWSBIN)
