@@ -3646,6 +3646,7 @@ assign_parms (fndecl, second_time)
 	      else
 		copy = assign_stack_temp (TYPE_MODE (type),
 					  int_size_in_bytes (type), 1);
+	      MEM_IN_STRUCT_P (copy) = AGGREGATE_TYPE_P (type);
 
 	      store_expr (parm, copy, 0);
 	      emit_move_insn (parmreg, XEXP (copy, 0));

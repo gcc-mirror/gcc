@@ -684,6 +684,8 @@ expand_call (exp, target, ignore)
 
 	    structure_value_addr
 	      = XEXP (assign_stack_temp (BLKmode, struct_value_size, 1), 0);
+	    MEM_IN_STRUCT_P (structure_value_addr)
+	      = AGGREGATE_TYPE_P (TREE_TYPE (exp));
 	    target = 0;
 	  }
       }
@@ -1682,6 +1684,7 @@ expand_call (exp, target, ignore)
       if (save_mode == BLKmode)
 	{
 	  save_area = assign_stack_temp (BLKmode, num_to_save, 1);
+	  MEM_IN_STRUCT_P (save_area) = 0;
 	  emit_block_move (validize_mem (save_area), stack_area,
 			   GEN_INT (num_to_save),
 			   PARM_BOUNDARY / BITS_PER_UNIT);
@@ -2949,6 +2952,8 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 	    {
 	      arg->save_area = assign_stack_temp (BLKmode,
 						  arg->size.constant, 1);
+	      MEM_IN_STRUCT_P (arg->save_area)
+		= AGGREGATE_TYPE_P (TREE_TYPE (arg->tree_value));
 	      preserve_temp_slots (arg->save_area);
 	      emit_block_move (validize_mem (arg->save_area), stack_area,
 			       GEN_INT (arg->size.constant),
