@@ -1,5 +1,8 @@
 2001-12-06  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (_Jv_BytecodeVerifier::FLAG_JSR_TARGET): Removed.
+	(_Jv_BytecodeVerifier::note_branch_target): Likewise.
+
 	* verify.cc (_Jv_BytecodeVerifier::type_val): Added
 	unused_by_subroutine_type.
 	(_Jv_BytecodeVerifier::type::merge): Handle

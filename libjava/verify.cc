@@ -64,7 +64,6 @@ private:
 
   static const int FLAG_INSN_START = 1;
   static const int FLAG_BRANCH_TARGET = 2;
-  static const int FLAG_JSR_TARGET = 4;
 
   struct state;
   struct type;
@@ -1265,7 +1264,6 @@ private:
 	info->pc = PC;
 	info->next = jsr_ptrs[pc];
 	jsr_ptrs[pc] = info;
-	flags[pc] |= FLAG_JSR_TARGET;
       }
   }
 
