@@ -1,5 +1,16 @@
 1998-11-24  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* except.c (expand_throw): Use cp_finish_decl for the throw temp.
+	* cvt.c (build_up_reference): Pass DIRECT_BIND down into
+	cp_finish_decl.
+	* init.c (expand_default_init): Check for DIRECT_BIND instead of
+	DECL_ARTIFICIAL.
+
+	* call.c (build_over_call): Use build_decl.
+
+	* except.c (expand_throw): Just use convert, not
+	build_reinterpret_cast.
+
 	* lex.c (handle_generic_pragma): Use token_buffer.
 
 	* decl.c (check_tag_decl): Don't complain about null friend decl.
