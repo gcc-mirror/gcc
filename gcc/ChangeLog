@@ -1,3 +1,9 @@
+2005-03-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/20263
+	* varasm.c (make_decl_rtl) [ASM_DECLARE_REGISTER_GLOBAL]: Use
+	the DECL_NAME, not the DECL_ASSEMBLER_NAME.
+
 2005-03-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* c.opt (fvisibility-inlines-hidden): Allow for ObjC++.
