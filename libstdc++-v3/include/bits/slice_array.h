@@ -101,7 +101,7 @@ namespace std
       void operator|=(const valarray<_Tp>&) const;
       void operator<<=(const valarray<_Tp>&) const;
       void operator>>=(const valarray<_Tp>&) const;
-      void operator=(const _Tp &);
+      void operator=(const _Tp &) const;
       //        ~slice_array ();
 
       template<class _Dom>
@@ -163,7 +163,7 @@ namespace std
 
   template<typename _Tp>
     inline void
-    slice_array<_Tp>::operator=(const _Tp& __t) 
+    slice_array<_Tp>::operator=(const _Tp& __t) const
     { __valarray_fill(_M_array, _M_sz, _M_stride, __t); }
     
   template<typename _Tp>
