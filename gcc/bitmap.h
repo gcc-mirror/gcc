@@ -156,7 +156,7 @@ extern void bitmap_malloc_free (bitmap);
 extern unsigned bitmap_first_set_bit (bitmap);
 
 /* Allocate a bitmap from a bit obstack.  */
-#define BITMAP_OBSTACK_ALLOC(OBSTACK) bitmap_obstack_alloc (OBSTACK)
+#define BITMAP_ALLOC(OBSTACK) bitmap_obstack_alloc (OBSTACK)
 
 /* Allocate a gc'd bitmap.  */
 #define BITMAP_GGC_ALLOC() bitmap_gc_alloc ()
@@ -165,14 +165,8 @@ extern unsigned bitmap_first_set_bit (bitmap);
 #define BITMAP_XMALLOC() bitmap_malloc_alloc ()
 
 /* Do any cleanup needed on a bitmap when it is no longer used.  */
-#define BITMAP_OBSTACK_FREE(BITMAP)			\
-do {						\
-  if (BITMAP)					\
-    {						\
-      bitmap_obstack_free (BITMAP);		\
-      (BITMAP) = 0;				\
-    }						\
-} while (0)
+#define BITMAP_FREE(BITMAP)			\
+      	((void)(bitmap_obstack_free (BITMAP), (BITMAP) = NULL))
 
 /* Do any cleanup needed on an xmalloced bitmap when it is no longer used.  */
 #define BITMAP_XFREE(BITMAP)			\

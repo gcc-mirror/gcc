@@ -241,9 +241,12 @@ bitmap_malloc_alloc (void)
 void
 bitmap_obstack_free (bitmap map)
 {
-  bitmap_clear (map);
-  map->first = (void *)map->obstack->heads;
-  map->obstack->heads = map;
+  if (map)
+    {
+      bitmap_clear (map);
+      map->first = (void *)map->obstack->heads;
+      map->obstack->heads = map;
+    }
 }
 
 /* Release a malloc allocated bitmap.  */
