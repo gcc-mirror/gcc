@@ -75,91 +75,12 @@ extern int fputs_unlocked PARAMS ((const char *, FILE *));
 # endif
 #endif
 
-#include <ctype.h>
+/* There are an extraordinary number of issues with <ctype.h>.
+   The last straw is that it varies with the locale.  Use libiberty's
+   replacement instead.  */
+#include <safe-ctype.h>
 
-/* Jim Meyering writes:
-
-   "... Some ctype macros are valid only for character codes that
-   isascii says are ASCII (SGI's IRIX-4.0.5 is one such system --when
-   using /bin/cc or gcc but without giving an ansi option).  So, all
-   ctype uses should be through macros like ISPRINT...  If
-   STDC_HEADERS is defined, then autoconf has verified that the ctype
-   macros don't need to be guarded with references to isascii. ...
-   Defining isascii to 1 should let any compiler worth its salt
-   eliminate the && through constant folding."
-
-   Bruno Haible adds:
-
-   "... Furthermore, isupper(c) etc. have an undefined result if c is
-   outside the range -1 <= c <= 255. One is tempted to write isupper(c)
-   with c being of type `char', but this is wrong if c is an 8-bit
-   character >= 128 which gets sign-extended to a negative value.
-   The macro ISUPPER protects against this as well."  */
-
-#if defined (STDC_HEADERS) || (!defined (isascii) && !defined (HAVE_ISASCII)) || defined(HOST_EBCDIC)
-# define IN_CTYPE_DOMAIN(c) 1
-#else
-# define IN_CTYPE_DOMAIN(c) isascii(c)
-#endif
-
-/* The ctype functions are often implemented as macros which do
-   lookups in arrays using the parameter as the offset.  If the ctype
-   function parameter is a char, then gcc will (appropriately) warn
-   that a "subscript has type char".  Using a (signed) char as a subscript
-   is bad because you may get negative offsets and thus it is not 8-bit
-   safe.  The CTYPE_CONV macro ensures that the parameter is cast to an
-   unsigned char when a char is passed in.  When an int is passed in, the
-   parameter is left alone so we don't lose EOF.
-*/
-
-#define CTYPE_CONV(CH) \
-  (sizeof(CH) == sizeof(unsigned char) ? (int)(unsigned char)(CH) : (int)(CH))
-
-
-/* WARNING!  The argument to the ctype replacement macros below is
-   evaluated more than once so it must not have side effects!  */
-
-#ifdef isblank
-# define ISBLANK(c) (IN_CTYPE_DOMAIN (c) && isblank (CTYPE_CONV(c)))
-#else
-# define ISBLANK(c) ((c) == ' ' || (c) == '\t')
-#endif
-#ifdef isgraph
-# define ISGRAPH(c) (IN_CTYPE_DOMAIN (c) && isgraph (CTYPE_CONV(c)))
-#else
-# define ISGRAPH(c) (IN_CTYPE_DOMAIN (c) && isprint (CTYPE_CONV(c)) && !isspace (CTYPE_CONV(c)))
-#endif
-
-#define ISPRINT(c) (IN_CTYPE_DOMAIN (c) && isprint (CTYPE_CONV(c)))
-#define ISALNUM(c) (IN_CTYPE_DOMAIN (c) && isalnum (CTYPE_CONV(c)))
-#define ISALPHA(c) (IN_CTYPE_DOMAIN (c) && isalpha (CTYPE_CONV(c)))
-#define ISCNTRL(c) (IN_CTYPE_DOMAIN (c) && iscntrl (CTYPE_CONV(c)))
-#define ISLOWER(c) (IN_CTYPE_DOMAIN (c) && islower (CTYPE_CONV(c)))
-#define ISPUNCT(c) (IN_CTYPE_DOMAIN (c) && ispunct (CTYPE_CONV(c)))
-#define ISSPACE(c) (IN_CTYPE_DOMAIN (c) && isspace (CTYPE_CONV(c)))
-#define ISUPPER(c) (IN_CTYPE_DOMAIN (c) && isupper (CTYPE_CONV(c)))
-#define ISXDIGIT(c) (IN_CTYPE_DOMAIN (c) && isxdigit (CTYPE_CONV(c)))
-#define ISDIGIT_LOCALE(c) (IN_CTYPE_DOMAIN (c) && isdigit (CTYPE_CONV(c)))
-
-#if STDC_HEADERS
-# define TOLOWER(c) (tolower (CTYPE_CONV(c)))
-# define TOUPPER(c) (toupper (CTYPE_CONV(c)))
-#else
-# define TOLOWER(c) (ISUPPER (c) ? tolower (CTYPE_CONV(c)) : (c))
-# define TOUPPER(c) (ISLOWER (c) ? toupper (CTYPE_CONV(c)) : (c))
-#endif
-
-/* ISDIGIT differs from ISDIGIT_LOCALE, as follows:
-   - Its arg may be any int or unsigned int; it need not be an unsigned char.
-   - It's guaranteed to evaluate its argument exactly once.
-   - It's typically faster.
-   Posix 1003.2-1992 section 2.5.2.1 page 50 lines 1556-1558 says that
-   only '0' through '9' are digits.  Prefer ISDIGIT to ISDIGIT_LOCALE unless
-   it's important to use the locale's definition of `digit' even when the
-   host does not conform to Posix.  */
-#define ISDIGIT(c) ((unsigned) (c) - '0' <= 9)
-
-/* Define a default escape character; its different for EBCDIC.  */
+/* Define a default escape character; it's different for EBCDIC.  */
 #ifndef TARGET_ESC
 #define TARGET_ESC 033
 #endif

@@ -1,3 +1,15 @@
+2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* safe-ctype.c: New file.
+	* Makefile.in (CFILES): Add safe-ctype.c.
+	(REQUIRED_OFILES): Add safe-ctype.o.
+
+	* argv.c: Define ISBLANK and use it, not isspace.
+	* basename.c, cplus-dem.c, fnmatch.c, pexecute.c, strtod.c,
+	strtol.c, strtoul.c: Include safe-ctype.h, not ctype.h.  Use
+	uppercase ctype macros.  Don't test ISUPPER(c)/ISLOWER(c)
+	before calling TOLOWER(c)/TOUPPER(c).
+
 2000-12-07  Mike Stump  <mrs@wrs.com>
 
 	* Makefile.in (distclean): When cleaning, remove testsuite.
@@ -13,7 +25,7 @@
 	* cplus-dem.c: Likewise.
 	(current_demangling_style): Now auto_demangling.
 	(cplus_demangle): Try v3 demangling if AUTO_DEMANGLING.
-	(main): Use standard symbol chars for auto_demangling.	
+	(main): Use standard symbol chars for auto_demangling.
 
 2000-11-26  Mark Mitchell  <mark@codesourcery.com>
 

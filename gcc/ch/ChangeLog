@@ -1,3 +1,9 @@
+2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* lex.c: Don't bother checking whether ISUPPER(c) before
+	calling TOLOWER(c).  Don't bother checking whether isascii(c)
+	before testing ISSPACE(c); ISSPACE(c) includes '\n'.
+
 2000-12-06  Rodney Brown  <RodneyBrown@mynd.com>
 
 	* actions.h: Standarize copyright statement.
@@ -217,7 +223,7 @@ Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Sat Feb 19 18:43:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	* decl.c (layout_enum): Set DECL_SIZE_UNIT.	
+	* decl.c (layout_enum): Set DECL_SIZE_UNIT.
 	* satisfy.c (safe_satisfy_decl): Likewise.
 
 2000-02-15  Jonathan Larmour  <jlarmour@redhat.co.uk>
@@ -284,9 +290,9 @@ Sat Feb 19 18:43:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (build_chill_function_call): Don't call a variadic
 	function with a non-literal format string.
-	
+
 	* grant.c (write_spec_module): Likewise.
-	
+
 	* parse.c (require, expect): Likewise.
 
 	* tasking.c (get_struct_type_name, get_struct_debug_type_name,
@@ -567,10 +573,10 @@ Tue Sep  7 15:59:56 1999  Dave Brolley  <brolley@cygnus.com>
 
 1999-08-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-        * actions.c (lang_identify): Constify a char*.
+	* actions.c (lang_identify): Constify a char*.
 
-        * lang.c (chill_print_error_function): Likewise.
-        (lang_init): Remove redundant prototype for `print_error_function'.
+	* lang.c (chill_print_error_function): Likewise.
+	(lang_init): Remove redundant prototype for `print_error_function'.
 
 1999-07-25  Richard Henderson  <rth@cygnus.com>
 
@@ -609,14 +615,14 @@ Wed Apr 14 21:07:30 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 Fri Apr  2 15:49:44 1999  Jeffrey A Law  (law@cygnus.com)
 
-        * Make-lang.in (CHILL_FLAGS_TO_PASS): Do not pass $(CC).
+	* Make-lang.in (CHILL_FLAGS_TO_PASS): Do not pass $(CC).
 
 Wed Mar 31 10:44:47 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-        * Makefile.in (hash.h): Generate using gperf language 'C', not
-        'KR-C', so gperf uses the `const' keyword on strings.
-	 
-        * gperf (resword): Const-ify a char*.
+	* Makefile.in (hash.h): Generate using gperf language 'C', not
+	'KR-C', so gperf uses the `const' keyword on strings.
+
+	* gperf (resword): Const-ify a char*.
 
 Sun Mar 28 00:30:36 1999  Jeffrey A Law  (law@cygnus.com)
 
@@ -655,7 +661,7 @@ Tue Jan 19 23:24:36 1999  Jeffrey A Law  (law@cygnus.com)
 	(parse_multi_dimension_case_action): Initialize "end_case_label".
 	* tasking.c (build_start_process): Initialize "struct_type_node".
 	* typeck.c (apply_chill_field_layout): Initialize "word".
-	(type_for_mode); Unconditionally cast RHS & LHS to ints to shut up	
+	(type_for_mode); Unconditionally cast RHS & LHS to ints to shut up
 	signed/unsigned comparison warning.
 
 Mon Jan 18 11:55:06 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -672,7 +678,7 @@ Wed Jan  6 02:53:38 1999  Jeffrey A Law  (law@cygnus.com)
 	* Makefile.in: Add some missing $(exeext).  Remove some obsolete
 	runtime stuff.
 	* Make-lang.in: Similarly.
-	
+
 Tue Nov 24 09:57:34 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (lex.c): Do not depend on hash.h.
@@ -694,7 +700,7 @@ Thu Oct 15 09:25:21 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* parse.c (parse_spec_module): Remove unused variable
 	`module_name', but preserve function call from initialization.
 	(parse_operand6): Mark variable `location' with ATTRIBUTE_UNUSED.
-	
+
 	* inout.c (init_text_location): Remove unused variable `textlength'.
 
 Wed Oct 14 22:19:48 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -742,7 +748,7 @@ Thu Oct  1 10:43:45 1998  Nick Clifton  <nickc@cygnus.com>
 	* lex.c: Replace occurances of HANDLE_SYSV_PRAGMA with
 	HANDLE_GENERIC_PRAGMAS.
 	(handle_generic_pragma): New function: Parse generic pragmas.
-	
+
 Wed Sep 30 20:22:34 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* parse.c (emit_label): Fix return-type of prototype.
@@ -750,7 +756,7 @@ Wed Sep 30 20:22:34 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 Wed Sep 30 19:41:36 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* actions.c (chill_handle_multi_case_label): Always return a value
-	in function returning non-void. 
+	in function returning non-void.
 
 	* except.c: Include OS headers before any local ones.
 
@@ -966,7 +972,7 @@ Sun Sep 20 09:25:13 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
  	explicit braces to avoid ambiguous `else'.
 	(expand_constant_to_buffer): Likewise.
 	(build_chill_slice): remove unused variable `is_static'.
-	(chill_compatible): Add explicit braces to avoid ambiguous `else'. 
+	(chill_compatible): Add explicit braces to avoid ambiguous `else'.
 	(apply_chill_array_layout): Remove unused variable `offset'.
 	(smash_dummy_type): Remove unused variable `save_lang_specific'.
 	(initializer_constant_valid_p): Add default case in switch.
@@ -1130,7 +1136,7 @@ Thu Apr  9 12:46:55 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* lang.c (finput): Declare.
 	* ch-tree.h (init_lex): Remove.
-	
+
 
 Wed Apr  8 14:47:33 1998  Dave Brolley  <brolley@cygnus.com>
 
@@ -1271,14 +1277,14 @@ Thu Feb 19 17:33:06 1998  Dave Brolley  <brolley@cygnus.com>
 
 Wed Feb 18 23:48:57 1998  Richard Henderson  <rth@cygnus.com>
 
-	* Make-lang.in (cc1chill): Kill lingering bc-opcode.h dependancy. 
+	* Make-lang.in (cc1chill): Kill lingering bc-opcode.h dependancy.
 
 Wed Feb 18 17:35:05 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* parse.c (parse_field): Get rid of warning for multiple case selectors.
 
 	* decl.c (layout_chill_variants): Fix loop indexing error.
-	
+
 Mon Feb 16 15:54:47 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* parse.c (parse_case_expression): Remove code which checked for
@@ -1349,11 +1355,11 @@ Thu Jan 29 15:34:18 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* decl.c (init_decl_processing): Don't allocate chill_tree_code_...
 	(init_decl_processing): Change last argument to 'sizeof(char)'.
-	
+
 
 Tue Nov 25 10:44:19 1997  Nick Clifton  <nickc@cygnus.com>
 
-	* Make-lang.in (mostlyclean): Use && to separate commands, so that 
+	* Make-lang.in (mostlyclean): Use && to separate commands, so that
 	if the directory change fails, the rule will not loop.
 
 Mon Mar  3 12:08:19 1997  Fred Fish  <fnf@cygnus.com>
@@ -1364,38 +1370,38 @@ Mon Mar  3 12:08:19 1997  Fred Fish  <fnf@cygnus.com>
 
 Tue Nov 26 05:12:40 1996  Wilfried Moser  <moser@rtl.cygnus.com>
 
-        * tasking.c (build_receive_buffer_case_label): Rework in a manner,
-        that the buffer location gets evaluated only once, in
-        build_receive_buffer_case_end. 
+	* tasking.c (build_receive_buffer_case_label): Rework in a manner,
+	that the buffer location gets evaluated only once, in
+	build_receive_buffer_case_end.
 
-        * typeck.c (build_chill_bin_type): Rework.
-        (layout_chill_range_type): Process BIN mode.
-        (build_chill_array_type): Remove checking of layout. This is done
-        at the parse.
+	* typeck.c (build_chill_bin_type): Rework.
+	(layout_chill_range_type): Process BIN mode.
+	(build_chill_array_type): Remove checking of layout. This is done
+	at the parse.
 
-        * parse.c (parse_on_exception_list): Don't allow ON name:.
-        (parse_opt_layout): Parse POS and STEP and return a tree instead
-        of int.
+	* parse.c (parse_on_exception_list): Don't allow ON name:.
+	(parse_opt_layout): Parse POS and STEP and return a tree instead
+	of int.
 
-        * lex.c (init_lex), lex.h: Define and initialise RID_BIN.
+	* lex.c (init_lex), lex.h: Define and initialise RID_BIN.
 
-        * grant.c (print_integer_type): Take care of BIN.
+	* grant.c (print_integer_type): Take care of BIN.
 
-        * expr.c (build_chill_descr): Make descr static if requested
-        location is static.
-        (build_chill_length): Process text mode name and text location as
-        described in Z.200/1992.
-        (build_compare_expr): Don't allow < <= > >= for composite modes.
+	* expr.c (build_chill_descr): Make descr static if requested
+	location is static.
+	(build_chill_length): Process text mode name and text location as
+	described in Z.200/1992.
+	(build_compare_expr): Don't allow < <= > >= for composite modes.
 
-        * decl.c (grok_chill_fixedfields): Remove checking of
-        layout. This is done at the parser.
+	* decl.c (grok_chill_fixedfields): Remove checking of
+	layout. This is done at the parser.
 
-        * convert.c (digest_structure_tuple): Take care of wrong (probably
-        array) tuple. Printing error may cause sigsegv.
+	* convert.c (digest_structure_tuple): Take care of wrong (probably
+	array) tuple. Printing error may cause sigsegv.
 
-        * ch-tree.h: Change prototypes of grok_chill_fixedfields and
-        build_chill_array_type (layout is passed now as a tree instead of
-        int).
+	* ch-tree.h: Change prototypes of grok_chill_fixedfields and
+	build_chill_array_type (layout is passed now as a tree instead of
+	int).
 
 Fri Nov 15 15:17:44 1996  Per Bothner  <bothner@deneb.cygnus.com>
 
@@ -1405,22 +1411,22 @@ Fri Nov 15 15:17:44 1996  Per Bothner  <bothner@deneb.cygnus.com>
 
 Mon Oct 28 12:48:06 1996  Jeffrey A Law  (law@cygnus.com)
 
-        * typeck.c (signed_or_unsigned_type): If the given type already
-        as the correct signedness, then just return it.
+	* typeck.c (signed_or_unsigned_type): If the given type already
+	as the correct signedness, then just return it.
 
-        * typeck.c ({un,}signed_type): If can't do anything, call
-        signed_or_unsigned_type.
+	* typeck.c ({un,}signed_type): If can't do anything, call
+	signed_or_unsigned_type.
 
 Fri Sep  6 02:50:08 1996  Wilfried Moser  <moser@rtl.cygnus.com>
 
-	* typeck.c (build_chill_cast): In case of rangecheck, take care of 
+	* typeck.c (build_chill_cast): In case of rangecheck, take care of
 	constant expression (when defining a SYN).
 
 Thu Sep  5 04:30:32 1996  Wilfried Moser  <moser@rtl.cygnus.com>
 
 	* parse.c (define__PROCNAME__): New function to define a SYNONYM
 	__PROCNAME__ (__procname__) which is a character string containing
-	the name of the current procedure. This is quit the same as 
+	the name of the current procedure. This is quit the same as
 	__FUNCTION__ in C.
 	(parse_proc_body): Add call to define__PROCNAME__.
 
@@ -1569,7 +1575,7 @@ Thu Feb 29 23:39:54 1996  Per Bothner  <bothner@kalessin.cygnus.com>
 	(build_chill_function_call):  Error if OUT/INOUT arg is TREE_READONLY.
 	* actions.c (chill_expand_assignment):  Also error if TREE_READONLY.
 	Use convert_from_reference.
-	
+
 Thu Feb 29 11:14:09 1996  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* parse.c (parse_do_action):  DO WITH expressions are evaluated in
@@ -1678,7 +1684,7 @@ Wed Jan 24 05:10:08 1996  Wilfried Moser  <moser@rtl.cygnus.com>
 	* Make-lang.in: Change GNUCHILL_VERSION to 1.5.2.
 
 	* decl.c (layout_enum): Add check for negative values if
-	enum is numbered and duplicate values in an enum. 
+	enum is numbered and duplicate values in an enum.
 
 Mon Jan 15 06:21:52 1996  Wilfried Moser  <moser@rtl.cygnus.com>
 
@@ -1836,7 +1842,7 @@ Mon Nov  6 04:12:06 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 	given. This is also not allowed.
 	Add initialisation of variables of the above modes during
 	runtime. This influence the mechanism for detecting to
-	build a constructor. 
+	build a constructor.
 	(push_modedef): NEW- or SYNMODES of ASSOCIATION, ACCESS, TEXT,
 	BUFFER, and EVENT mode must not be READonly.
 	(start_chill_function): Arguments of modes ASSOCIATION, ACCESS,
@@ -1864,7 +1870,7 @@ Mon Nov  6 04:12:06 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 
 	* inout.c: Completely rewritten for implementing Chapter 7 of
 	Z.200 (input and output).
-	
+
 	* lex.c (yylex): An '_' after a '.' doesn't mean, that we are
 	parsing numbers.
 
@@ -1883,7 +1889,7 @@ Mon Nov  6 04:12:06 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 	ACCESS, TEXT, BUFFER, or EVENT and print an error in this case.
 	(satisfy (case RECORD_TYPE)): If exp is TEXT mode, check the text length.
 
-	* typeck.c (extract_constant_from_buffer): Fix thinko in case 
+	* typeck.c (extract_constant_from_buffer): Fix thinko in case
 	of ! BYTES_BIG_ENDIAN.
 	(build_chill_cast): Implement representation conversion between
 	INT's and REAL's.
@@ -1900,11 +1906,11 @@ Mon Nov  6 04:12:06 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 	CH_IS_USAGE_MODE, CH_IS_WHERE_MODE, and CH_IS_TEXT_MODE.
 	Add some prototypes.
 	(enum chill_built_in_function): Add BUILT_IN_ARCCOS, BUILT_IN_ARCSIN,
-	BUILT_IN_CH_DELETE, BUILT_IN_LOG, BUILT_IN_SQRT. 
+	BUILT_IN_CH_DELETE, BUILT_IN_LOG, BUILT_IN_SQRT.
 	Remove BUILT_IN_READLEN, BUILT_IN_ROUND, BUILT_IN_SKIPRECORD.
 
 	* gperf, hash.h: Remove definition of WHERE.
-	
+
 Thu Oct  5 06:22:19 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 
 	* grant.c (decode_constant_selective): Add some newlines
@@ -1982,7 +1988,7 @@ Wed Sep 13 14:24:12 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 	CH_IS_INSTANCE_MODE, not CH_COMPATIBLE.
 	* actions.c, convert.c (instance_type_node):  Remove redundant
 	extern declaration.
-	
+
 Wed Sep 13 14:19:37 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* regression.awk2:  Use \ line-continuation-markers
@@ -2100,7 +2106,7 @@ Thu Jul 27 23:08:51 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 	set proper value of CH_DECL_FLAG on both the decl and its value.
 
 	* convert.c (digest_array_tuple); Slightly better errors.
-	
+
 Wed Jul 26 22:13:39 1995  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (expand_packed_set):  Also allocate the CONSTRUCTOR itself.
@@ -2134,9 +2140,9 @@ Tue Jun 27 05:00:04 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 	code for reraising the exceptions (call chill_reraise_exceptions).
 
 	* except.c (chill_reraise_exceptions): New function to generate
-	code for reraising exceptions are specified at the function 
+	code for reraising exceptions are specified at the function
 	definition.
-	
+
 	* ch-tree.h: Add prototype for chill_reraise_exceptions.
 
 	* decl.c (build_chill_function_type): When the function (type)
@@ -2198,16 +2204,16 @@ Mon Jun 19 06:01:42 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 	New marco CH_ALREADY_GRANTED. Used in grant.c to determine if an
 	identifier already has been written to grant file.
 
-        * grant.c (write_spec_module): If not GRANT ALL specified,
-        write only this identifiers to grant file which are
-        neccessary to form a prober grant file. This will shorten
-        grant files and speed up compilation.
-        (decode_constant_selective, decode_mode_selective,
-        get_type_selective, decode_decl_selective,
-        grant_array_type_selective, get_tag_value_selective,
-        print_enumeral_selective, print_integer_selective, 
-        print_struct_selective, print_proc_tail_selective,
-        grant_one_decl_selective): New functions.
+	* grant.c (write_spec_module): If not GRANT ALL specified,
+	write only this identifiers to grant file which are
+	neccessary to form a prober grant file. This will shorten
+	grant files and speed up compilation.
+	(decode_constant_selective, decode_mode_selective,
+	get_type_selective, decode_decl_selective,
+	grant_array_type_selective, get_tag_value_selective,
+	print_enumeral_selective, print_integer_selective,
+	print_struct_selective, print_proc_tail_selective,
+	grant_one_decl_selective): New functions.
 
 	* lex.c (yywrap): Remove writing of not yet written USE_SEIZE_FILE
 	directives to grant file.
@@ -2506,7 +2512,7 @@ Thu Mar 30 02:51:59 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 	EMPTY_ON and EMPTY_OFF.
 
 	* lex.c: New variables empty_checking and runtime_checking_flag.
-	(ch_lex_init): Initialize empty_checking and range_checking 
+	(ch_lex_init): Initialize empty_checking and range_checking
 	when switching from pass 1 to 2.
 	(read_directive): Add processing of EMPTY_OFF/ON.
 
@@ -2524,7 +2530,7 @@ Thu Mar 30 02:51:59 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 	* ch-tree.h: Change prototype of build_chill_indirect_ref.
 	Add declaration of runtime_checking_flag and empty_checking.
 
-	* actions.c (check_non_null): Do null pointer checking only 
+	* actions.c (check_non_null): Do null pointer checking only
 	when enabled (empty_checking != 0).
 
 Wed Mar 29 15:18:23 1995  Per Bothner  <bothner@kalessin.cygnus.com>
@@ -2739,7 +2745,7 @@ Tue Feb 28 16:00:03 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 Tue Feb 28 00:29:51 1995  Per Bothner  <bothner@cygnus.com>
 
 	* configure:  Merge in code for calculating host, build, and
-	target and canon_{host,build,target} from ../configure.  
+	target and canon_{host,build,target} from ../configure.
 	Fix calculation of mainsrcdir.  Host canon_* variables
 	to merge in build-make (as in ../configure).
 
@@ -2753,7 +2759,7 @@ Tue Feb 21 01:41:56 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 	* inout.c (build_chill_writetext): Add processing of
 	conditional expressions in argument list.
 
-	* parse.c (parse_opt_name_string): Print error message only 
+	* parse.c (parse_opt_name_string): Print error message only
 	in pass 1.
 
 	* chill.texi: Add chapter about compiler directives.
@@ -2768,7 +2774,7 @@ Tue Feb 14 16:45:19 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 Fri Feb  3 04:30:28 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 
 	* grant.c (really_grant_this, search_in_list): New static
-	functions to determine if a decl should be written to 
+	functions to determine if a decl should be written to
 	grant file.
 	(write_spec_module): Add call to really_grant_this.
 
@@ -2840,7 +2846,7 @@ Fri Jan 13 13:04:41 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 Wed Jan 11 14:03:47 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* parse.c (parse_modulion):  Undo yesterday's change (to allow
-	an ON-handler to follow) until we re-implement module.	
+	an ON-handler to follow) until we re-implement module.
 
 Tue Jan 10 17:23:55 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 
@@ -2870,7 +2876,7 @@ Tue Jan 10 04:46:42 1995  Wilfried Moser  <moser@rtl.cygnus.com>
 	* expr.c (chill_expand_expr): When calling __psslice take care
 	of a newmoded min_value.
 
-	* parse.c (parse_name_string): Print error message only in 
+	* parse.c (parse_name_string): Print error message only in
 	pass 1.
 
 Tue Jan  3 19:56:36 1995  Per Bothner  <bothner@kalessin.cygnus.com>
@@ -3130,7 +3136,7 @@ Fri Nov 11 13:06:29 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 
 	* inout.c (build_chill_writetext, build_chill_readtext): Use stack
 	temporary variables for the iolist so that they can get reused in
-	subsequent calls. Emit code immediately instead of building a 
+	subsequent calls. Emit code immediately instead of building a
 	compound expr.
 
 Fri Nov  4 12:00:54 1994  Per Bothner  <bothner@kalessin.cygnus.com>
@@ -3167,7 +3173,7 @@ Wed Nov  2 05:33:03 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 
 	* ch-tree.h: Add new prototypes.
 
-	* decl.c (init_decl_processing): Remove timing related 
+	* decl.c (init_decl_processing): Remove timing related
 	initialisations. Add call to timing_init.
 
 	* parse.c (parse_action): Process AFTER action.
@@ -3187,7 +3193,7 @@ Wed Nov  2 05:33:03 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 	(build_timeout_preface, build_timesupervised_call): New functions
 	to handle timesupervision in case of blocking system calls (i.e.
 	SEND buffer action, RECEIVE CASE action etc.).
-	
+
 Thu Oct 27 12:50:24 1994  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* expr.c (build_chill_repetition_op):  Fix repeating all-zero
@@ -3225,7 +3231,7 @@ Thu Oct 20 05:37:17 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 
 Mon Oct 17 02:30:38 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 
-	* decl.c (init_decl_processing): Set CH_DERIVED_FLAG for 
+	* decl.c (init_decl_processing): Set CH_DERIVED_FLAG for
 	boolean_true_node and boolean_false_node. TRUE and FALSE have
 	the BOOL derived class.
 
@@ -3400,7 +3406,7 @@ Tue Sep 13 06:19:42 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 
 	* expr.c (compare_records): In case of -fpack do always
 	a memcmp instead of comparing each field of the
-	structure. If the structure is a variant structure, 
+	structure. If the structure is a variant structure,
 	issue a warning.
 
 Mon Sep 12 13:15:09 1994  Per Bothner  (bothner@cygnus.com)
@@ -3418,7 +3424,7 @@ Fri Sep  9 01:53:30 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 	like arguments of a function. There will be a wrapper
 	which is the real entry point for a PROCESS. This wrapper
 	is automatically build after a PROCESS definition and gets
-	as argument a pointer to a structure looking like the 
+	as argument a pointer to a structure looking like the
 	arguments of the PROCESS. This wrapper will call the
 	PROCESS (see build_process_wrapper).
 	(build_process_wrapper): New function (see above).
@@ -3445,12 +3451,12 @@ Fri Sep  9 01:53:30 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 	* grant.c (write_spec_module): Write GNUCHILL and gcc
 	version into grant file.
 
-	* Make-lang.in (CHILL_FLAGS_TO_PASS): Add passing of CC and 
+	* Make-lang.in (CHILL_FLAGS_TO_PASS): Add passing of CC and
 	GNUCHILL_VERSION to ch/Makefile.
 	* Make-lang.in (CHILL.mostlyclean): Add ch/ch-version.c.
 
 	* Makefile.in (CHILL_OBJS): Add ch-version.o. ch-version.c
-	will get generated every time a new Makefile will get 
+	will get generated every time a new Makefile will get
 	generated.
 	* Makefile.in (GNUCHILL_VERSION): Remove it, its defined in
 	Make-lang.in.
@@ -3572,8 +3578,8 @@ Fri Aug 19 07:10:43 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 
 	* inout.c (build_chill_io_list_type, build_enum_tables),
 	tasking.c (build_tasking_struct): Temporarily reset
-        maximum_field_alignment to 0, so that the compiler-built
-        data structures needed by the RTS can be independent of -fpack.
+	maximum_field_alignment to 0, so that the compiler-built
+	data structures needed by the RTS can be independent of -fpack.
 
 Thu Aug 18 13:39:51 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
@@ -3589,7 +3595,7 @@ Wed Aug 17 23:48:33 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 Wed Aug 17 13:47:50 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
 	* decl.c (switch_to_pass_2):  Revert June 13 change,
-        (Don't exit after pass 1 if an error was found.)
+	(Don't exit after pass 1 if an error was found.)
 
 	* ch-tree.def (SLICE_EXPR):  New tree-code.
 	* typeck.c (build_chill_slice):  For building a slice of a
@@ -3681,7 +3687,7 @@ Thu Aug  4 17:40:38 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
 Thu Jul 28 04:00:11 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 
-	* expr.c (build_allocate_global_memory_call, build_allocate_memory_call): 
+	* expr.c (build_allocate_global_memory_call, build_allocate_memory_call):
 	Add new checks.
 
 Tue Jul 26 22:48:15 1994  Michael Tiemann  (tiemann@blues.cygnus.com)
@@ -3745,7 +3751,7 @@ Wed Jul  6 20:12:13 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 	* expr.c, ch-tree.h (finish_chill_unary_op):  New function,
 	based on code ripped out of build_chill_unary_op.
 	(build_chill_unary_op):  Call finish_chill_unary_op unless pass==1.
-	* satisfy.c (satisfy):   Call finish_chill_unary_op when needed. 
+	* satisfy.c (satisfy):   Call finish_chill_unary_op when needed.
 
 Mon Jun 27 11:29:18 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
@@ -3799,7 +3805,7 @@ Tue Jun 14 16:44:14 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 	Therefore we must check for ignoring here.
 	* parse.c (parse_loc_declaration):  Set ignoring in pass 2
 	when parsing the mode.
-	
+
 	* tasking.c (generate_tasking_code_variable):  Do arithmetic
 	on signal_code etc using unsigned rather than signed shorts.
 
@@ -3913,7 +3919,7 @@ Tue May 31 18:12:00 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
 Tue May 31 04:33:28 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 
-	* inout.c (build_chill_writetext): Add correct processing 
+	* inout.c (build_chill_writetext): Add correct processing
 	of POWERSET RANGE (setmode).
 
 	* lex.l (same_file): Add searching for file(s) in
@@ -4012,7 +4018,7 @@ Tue May 24 22:36:51 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 	* grant.c (chill_grant):  Set it here instead.
 
 	* expr.c (fold_set_expr):  Use int_size_in_bytes instead of
-	TYPE_PRECISION (which is not defined for a SET_TYPE).	
+	TYPE_PRECISION (which is not defined for a SET_TYPE).
 
 Fri May 20 15:21:26 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
@@ -4085,7 +4091,7 @@ Thu May  5 18:58:22 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 Mon May  2 14:33:44 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
 	* parse.y (sendaction):   Fix thinko (in sense of condition).
-	* tasking.c (build_receive_case_label):  Another thinko.	
+	* tasking.c (build_receive_case_label):  Another thinko.
 
 	* parse.y (optsigdest):  Force ignore_exprs to 0 while parsing
 	the (signal-)name.
@@ -4095,7 +4101,7 @@ Mon May  2 14:33:44 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 	properly satisfied).
 	* satisfy.c (satisfy):  Layout FUNCTION_TYPEs.
 	* parse.y (procmode):  Call build_chill_pointer_type, rather
-	than build_pointer_type (which incorrectly sets TYPE_SIZE). 
+	than build_pointer_type (which incorrectly sets TYPE_SIZE).
 
 	* parse.y (get_type_of):  Handle TYPE_DECL (again).
 	* parse.y (optresultspec):  Call build_chill_reference_type, rather
@@ -4197,7 +4203,7 @@ Thu Apr 28 15:21:56 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 	* parse.y (sendaction): Add code for SEND buffer.
 	* parse.y (rccase_label): Change error processing.
 	* tasking.c (build_gen_inst): More checks.
-	* tasking.c (build_gen_code): Add checking for argument is a 
+	* tasking.c (build_gen_code): Add checking for argument is a
 	  PROCESS or a SIGNAL.
 	* tasking.c (struct rc_state_type): Add new fields for easier
 	  error processing.
@@ -4337,7 +4343,7 @@ Thu Apr 14 13:30:19 1994  Wilfried Moser  (moser@phishhead.cygnus.com)
 	* expr.c (build_chill_inttime_type): New function to built type
 	for the INTTIME builtin.
 	* expr.c (build_chill_inttime): New function to process builtin
-	INTTIME. 
+	INTTIME.
 	* expr.c (build_chill_duration): New function to process builtin's
 	MILLISECS, SECS, MINUTES, HOURS and DAYS.
 
@@ -4389,7 +4395,7 @@ Mon Apr  4 22:06:31 1994  Per Bothner  (bothner@cygnus.com)
 	* actions.c (chill_expand_result):  Save result in saved_result_rtx
 	or assign to DECL_RESULT as appropriate.
 	* decl.c, ch-tree.h (current_function_returns_value,
-        current_function_returns_null, current_extern_inline):
+	current_function_returns_null, current_extern_inline):
 	Don't use.  Only define first two to allow linking with ch-typeck.c.
 
 	* typeck.c (chill_l_equivalent):  Add forward declaration.
@@ -4431,7 +4437,7 @@ Tue Mar 29 13:24:27 1994  Wilfried Moser  (fs_moser at rcsw1h)
 
 	* Makefile.in: Change version string to 1.2.1
 	* ch-tree.h (enum chill_built_in_function): Delete no longer valid
-	  entries. 
+	  entries.
 	* ch-tree.h: Change prototype for build_chill_readtext.
 	* decl.c (init_decl_processing): Add builtin_function _readstring,
 	  _readunixstd and READTEXT.
@@ -4440,7 +4446,7 @@ Tue Mar 29 13:24:27 1994  Wilfried Moser  (fs_moser at rcsw1h)
 	* gperf: Remove keyword READTEXT.
 	* parse.y: Remove token READTEXT.
 	* inout.c (build_chill_io_list_type): Add building type for
-	  READTEXT. 
+	  READTEXT.
 	* inout.c (build_chill_readtext): Implement the function
 	  (partial).
 	* inout.c (build_chill_writetext): Do some cleanups.
@@ -4464,7 +4470,7 @@ Tue Mar 29 12:30:59 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 	* ch-tree.h, decl.c (shadow_record_fields), decl.c
 	(shadow_record_fields), expr.c (chill_expand_case_expr,
 	build_chill_function_call), grant.c (chill_finish_compile),
-	typeck.c (build_empty_string, build_init_struct):  Rename magic	
+	typeck.c (build_empty_string, build_init_struct):  Rename magic
 	identifiers of the form "<...>" to "__..." for better portability.
 
 	* actions.c (adjust_parm_or_field):  Remove extraneous
@@ -4564,7 +4570,7 @@ Tue Mar 22 10:17:58 1994  Bill Cox  (bill@rtl.cygnus.com)
 	  string assignment case.
 	* expr.c (chill_expand_expr): Now that we're using build_chill_function_call,
 	  the actual parameters need to be converted to the unsigned long
-	  type explicitly.  Do that.	
+	  type explicitly.  Do that.
 	* satisfy.c (safe_satisfy_decl): Correct range-checking code.
 
 Mon Mar 21 16:25:07 1994  Bill Cox  (bill@rtl.cygnus.com)
@@ -4585,7 +4591,7 @@ Mon Mar 21 13:29:23 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 	* expr.c (chill_expand_expr):  Code to expand SET_IN_EXPR,
 	moved from expand_expr in ../expr.c.  Also add some extra
 	conversions (because we're now using build_chill_function-call).
-	* actions.c, decl.c, expr.c, grant.c, parse.y, typeck.c: 
+	* actions.c, decl.c, expr.c, grant.c, parse.y, typeck.c:
 	Use SET_IN_EXPR in place of IN_EXPR.
 
 	* expr.c (build_compare_discrete_expr), ch-tree.h:  New function,
@@ -4643,14 +4649,14 @@ Sun Mar 20 11:48:10 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
 Sun Mar 20 08:54:27 1994  Bill Cox  (bill@rtl.cygnus.com)
 
-	* actions.c (expand_assignment_to_varying_array): 
+	* actions.c (expand_assignment_to_varying_array):
 	  Call build_chill_array_ref to get index checking.
-          (chill_convert_for_assignment): Delete unused errstr
-          variable.
+	  (chill_convert_for_assignment): Delete unused errstr
+	  variable.
 	  (chill_expand_assignment): Call build_chill_array_ref
 	  to get runtime index checking.
 	  (expand_varying_length_assignment): Use new interface
-          to varying_array_index_p.
+	  to varying_array_index_p.
 	* ch-tree.h (varying_array_index_p): New proto.
 	* convert.c (convert): Call build_chill_array_ref
 	  to get runtime index checking.
@@ -4694,7 +4700,7 @@ Fri Mar 18 00:12:48 1994  Per Bothner  (bothner@deneb.cygnus.com)
 Thu Mar 17 17:29:43 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 	* expr.c (build_chill_function_call): Give function call the correct
-          type tree.
+	  type tree.
 	* typeck.c (build_chill_slice_with_length): Restore dynamic range
 	  checking, so it doesn't obscure the CONSTANTness of the length.
 
@@ -4710,7 +4716,7 @@ Wed Mar 16 17:23:31 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 	* typeck.c (valid_array_index_p):  Check compatibility using
 	correct types.
 	* typeck.c (build_chill_slice_with_length);  For now revert
-	calling valid_array_index_p on length.  (It makes it harder 
+	calling valid_array_index_p on length.  (It makes it harder
 	to realize when the slice is constant length.)
 	* expr.c (build_chill_indirect_expr):  Minor tweak.  (This
 	seems to work around a weird C compiler bug. ??)
@@ -4750,11 +4756,11 @@ Tue Mar 15 08:42:12 1994  Bill Cox  (bill@rtl.cygnus.com)
 	* actions.c: Fix comment.
 	  (build_rts_call): Ifdef it out - never used.
 	  (expand_varying_length_assignment): call valid_array_index_p.
-          rather than validate_varying_array_ref.
+	  rather than validate_varying_array_ref.
 	* ch-tree.h: Fix prototype for valid_array_index_p.
 	* expr.c (chill_expand_expr): Call build_chill_array_ref to get
 	  index validation.
-          (build_hill_lower, build_chill_upper): Return value now inherits
+	  (build_hill_lower, build_chill_upper): Return value now inherits
 	  the novelty of the input parameter.
 	  (varying_to_slice): Use CH_NOVELTY macro rather than calling
 	  chill_novelty directly.
@@ -4771,7 +4777,7 @@ Tue Mar 15 08:42:12 1994  Bill Cox  (bill@rtl.cygnus.com)
 	  build_loop_iterator parameter, etc.
 	* tasking.c (build_receive_case_end): Chack cond_stack before popping.
 	* typeck.c (validate_varying_array_ref, chill_max_vary_array_index,
-          valid_array_index): Delete them.  They're now unused.
+	  valid_array_index): Delete them.  They're now unused.
 	  (valid_array_index_p): Add function, call it everywhere that an
 	  array index is checked.
 	  (build_chill_slice): Restore old functionality where varying_to_slice
@@ -4802,10 +4808,10 @@ Thu Mar 10 09:41:37 1994  Bill Cox  (bill@rtl.cygnus.com)
 	  derived files.  This allows the gcc/configure list of CHILL
 	  files machinery to work.
 	* ch-tree.h (permanent_allocation): Add a parameter flag.
-	* decl.c (finish_chill_function, finish_decl): Provide the 
+	* decl.c (finish_chill_function, finish_decl): Provide the
 	  new permanent_allocation flag.
 	  (poplevel): Return early, avoid a seg fault.
-	* lex.l (NORMAL): Replace this whole state with the predefined 
+	* lex.l (NORMAL): Replace this whole state with the predefined
 	  INITIAL state.  Force compilation state to global level after
 	  compiler directive error - prevents endless loop on error.
 	  (handle_use_seizefile_directive): Rewrite for readability.
@@ -4842,12 +4848,12 @@ Tue Mar  8 11:51:10 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 Mon Mar  7 19:14:05 1994  Bill Cox  (bill@rtl.cygnus.com)
 
-	* Makefile.in: Use the 'all' target to build the runtime 
+	* Makefile.in: Use the 'all' target to build the runtime
 	  library and chillrt0.o.
 	* README: Explain rules for files in this directory.
-	* addtest, addtest.man, build-release, 
+	* addtest, addtest.man, build-release,
 	  chill.regress.cron: Move to utils subdirectory.
-        * expr.c (build_chill_function_call): Mark the INOUT
+	* expr.c (build_chill_function_call): Mark the INOUT
 	  temporary so it doesn't get optimized into a
 	  register.  Fixes the execute/inout.ch bug.
 	* typeck.c (layout_chill_range_type): Restrict it
@@ -4912,7 +4918,7 @@ Wed Mar  2 16:49:05 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 	* actions.c (adjust_return_value): Simplify.
 	  Delete references to CH_RETURNS_LOC, extra parameters to
-          push_extern_function and start_chill_functions.
+	  push_extern_function and start_chill_functions.
 	  (convert_for_assignment): Check whether to generate runtime
 	  range-checking code.  Handle reference_type in convert call.
 	  (chill_expand_assignment): Produce an INDIRECT_REF for a
@@ -4924,7 +4930,7 @@ Wed Mar  2 16:49:05 1994  Bill Cox  (bill@rtl.cygnus.com)
 	  extra parameters, references to CH_RETURNS_LOC.
 	* grant.c (chill_finish_compile): Delete extra parameter.
 	* parse.y: Delete references to CH_RETURNS_LOC, extra parameters to
-          push_extern_function and start_chill_functions.
+	  push_extern_function and start_chill_functions.
 	* regression.sh (checkprms): Skip PRMS discrepancies if we
 	  can't access PRMS for some reason.
 	* satisfy.c: Correct indentation.
@@ -4945,24 +4951,24 @@ Tue Mar  1 16:24:20 1994  Wilfried Moser  (fs_moser at rcsw1h)
 
 Tue Mar  1 07:34:56 1994  Bill Cox  (bill@rtl.cygnus.com)
 
-        RETURN of LOC value is only half-baked.  Stay tuned...
+	RETURN of LOC value is only half-baked.  Stay tuned...
 	* actions.c (adjust_parm_or_field): Add to comment.
-          (adjust_return_value): New function for issuing errors about
+	  (adjust_return_value): New function for issuing errors about
 	  RETURN and RESULT expressions.  Also converts them.
 	  (chill_expand_result, chill_expand_return): Call new
 	  adjust_return_value function.
 	* ch-tree.h (CH_RETURNS_LOC): Add new flag for function types.
-          New parameter for push_extern_function and start_chill_function.
+	  New parameter for push_extern_function and start_chill_function.
 	* decl.c (push_extern_function, start_chill_function): New parameter
 	  to say whether return value is a LOC.
 	* expr.c (build_chill_indirect_ref): Further qualify the issuing
 	  of the error message.
-	* grant.c (raw_decode_mode): Move test for instance mode under 
+	* grant.c (raw_decode_mode): Move test for instance mode under
 	  STRUCT handling.
 	  (start_chill_module_code, chill_finish_compile): Add new
 	  parameter to start_chill_function calls.
 	* parse.y (get_type_of): Do lookup_name more often.
-	  (quasi_pdef, procedure, procmode, optresultspec): Set 
+	  (quasi_pdef, procedure, procmode, optresultspec): Set
 	  CH_RETURNS_LOC flag.
 	  (optresultattr): Code keywords as a bitmask.
 	* tasking.c (build_process_header): Add new parameter to
@@ -4972,8 +4978,8 @@ Sat Feb 26 12:49:05 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 	* Makefile.in: Replace undefined $(RM) with rm -f.
 	* configure: Make sure scripts are executable.
-	* regression.sh: Make variables to invoke make 
-	  and awk.  Don't process a directory if it 
+	* regression.sh: Make variables to invoke make
+	  and awk.  Don't process a directory if it
 	  doesn't exist.
 
 Fri Feb 25 14:48:48 1994  Bill Cox  (bill@rtl.cygnus.com)
@@ -5062,12 +5068,12 @@ Mon Feb 21 13:24:02 1994  Bill Cox  (bill@rtl.cygnus.com)
 	* grant.c (chill_finish_compile): Bypass handling
 	  module-level code if an earlier error has made
 	  is useless.
-	* tasking.c (build_start_process): Generate error, 
+	* tasking.c (build_start_process): Generate error,
 	  return if process name unknown.
 
 Mon Feb 21 14:29:41 1994  Wilfried Moser  (fs_moser at rcsw47)
 
-	* expr.c (build_generalized_call): Use 
+	* expr.c (build_generalized_call): Use
 	  build_arrow_expr semantics for ADDR () builtin.
 
 Mon Feb 21 12:49:14 1994  Bill Cox  (bill@rtl.cygnus.com)
@@ -5083,9 +5089,9 @@ Sun Feb 20 19:58:14 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 	* regression.sh: Fix cvs update-related commands.
 	  Have cron job always perform the update, so it's
-	  always reporting on the current state of the 
+	  always reporting on the current state of the
 	  sources.
-	* typeck.c (string_assignment_condition): Allow a 
+	* typeck.c (string_assignment_condition): Allow a
 	  mis-match if the LHS is varying.
 
 Fri Feb 18 18:10:04 1994  Bill Cox  (bill@rtl.cygnus.com)
@@ -5187,9 +5193,9 @@ Sat Feb 12 16:24:22 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 	* actions.c, convert.c, decl.c, expr.c, lex.l,
 	  tasking.c, typeck.c: gcc -Wall cleanups.
-        * ch-tree.h: Change loop-related prototypes.
+	* ch-tree.h: Change loop-related prototypes.
 	* loop.c, parse.y: Rewrite to set up correct loop scope.
-          Fix error path where loop variable not declared.
+	  Fix error path where loop variable not declared.
 
 Fri Feb 11 11:12:29 1994  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -5265,7 +5271,7 @@ Wed Feb  2 11:24:57 1994  Wilfried Moser  (fs_moser at rcsw47)
 
 Wed Feb  2 09:31:37 1994  Bill Cox  (bill@rtl.cygnus.com)
 
-        * configure: Add ${srcdir} to Makefile.in's path.
+	* configure: Add ${srcdir} to Makefile.in's path.
 	* loop.c: Delete unused whitespace.
 
 Tue Feb  1 17:09:41 1994  Bill Cox  (bill@rtl.cygnus.com)
@@ -5329,7 +5335,7 @@ Sun Jan 30 12:01:07 1994  Bill Cox  (bill@rtl.cygnus.com)
 	  (expand_varying_length_assignment): Clean up bitrot.
 	* convert.c (convert): Revert most recent change.
 	* loop.c (maybe_skip_loop): New function, split out of
-	  begin_chill_loop.  Add conditional to skip processing an empty 
+	  begin_chill_loop.  Add conditional to skip processing an empty
 	  VARYING array.
 	* parse.y (assignaction): Delete code to recognize LENGTH
 	  on left-hand-side.
@@ -5382,7 +5388,7 @@ Thu Jan 27 14:12:07 1994  Mike Stump  (mrs@cygnus.com)
 Thu Jan 27 10:37:33 1994  Bill Cox  (bill@rtl.cygnus.com)
 
 	* decl.c (bind_sub_modules): Need a parameter on the recursive call.
-	  Thanks, Zoo!	
+	  Thanks, Zoo!
 
 Thu Jan 27 10:37:33 1994  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -5417,7 +5423,7 @@ Tue Jan 25 14:00:02 1994  Wilfried Moser  (fs_moser at rcsw1j)
 	  build the type the DESCR builtin returns.
 	  Add function build_chill_descr, which process the DESCR builtin.
 	* ch-expr.c (build_chill_length): Add code to enable
-	  LENGTH (bitstring). 
+	  LENGTH (bitstring).
 	* ch-expr.ch (build_generalized_call): Add processing of DESCR
 	  builtin.
 	* ch-grant.c: Add code to avoid producing of unnecessary grant
@@ -5493,7 +5499,7 @@ Sat Jan 15 09:15:22 1994  Bill Cox  (bill@rtl.cygnus.com)
  << This set of CHILL frontend sources is now the
     maintainable and master set. Accept no substitutes! >>
 	* Makefile.in, configure: Completely rewritten
-	  to be invoked by gcc/Makefile.in and 
+	  to be invoked by gcc/Makefile.in and
 	  gcc/configure.
 	* addtest (update_ChangeLog): Fix insertion
 	  of the '*'.
@@ -5502,10 +5508,10 @@ Sat Jan 15 09:15:22 1994  Bill Cox  (bill@rtl.cygnus.com)
 	* cpy.sh: Add necessary edits to files as they
 	  are copied down.
 	* actions.c, ch-tree.def, ch-tree.h, convert.c,
-          decl.c, except.c, expr.c, grant.c, inout.c,
+	  decl.c, except.c, expr.c, grant.c, inout.c,
 	  lang.c, lex.h, lex.l, loop.c, parse.y,
 	  satisfy.c, tasking.c, typeck.c: Latest
-	  versions from the repository. 
+	  versions from the repository.
 
 Fri Jan 14 12:28:39 1994  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -5555,7 +5561,7 @@ Wed Dec  8 09:35:54 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 Sun Nov 21 08:34:33 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-        * Makefile.in: Adjust gperf rule for names in this directory.
+	* Makefile.in: Adjust gperf rule for names in this directory.
 	* ch_decomment.l: New file.  Ignores CHILL comments.
 	  Executable is used bu ch_makedepend.
 	* ch_makedepend: New script.  Makes CHILL dependencies for
@@ -5570,7 +5576,7 @@ Sun Nov 21 08:34:33 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 Sat Oct 30 15:02:24 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
-	* chill.texi:  Add new node about conversions. 
+	* chill.texi:  Add new node about conversions.
 
 Fri Oct 29 14:17:31 1993  Bill Cox  (bill@cygnus.com)
 
@@ -5665,7 +5671,7 @@ Fri Jan 14 21:09:44 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
 Wed Jan 12 10:19:35 1994  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-lex.l (WS): Add BS, VT and CR to definition of 
+	* ch-lex.l (WS): Add BS, VT and CR to definition of
 	  whitespace.
 	  (convert_number): Allow for uppercase hex digits.
 
@@ -5694,7 +5700,7 @@ Mon Jan 10 18:29:36 1994  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-actions.c (chill_convert_for_assignment): Avoid seg fault.
 	* ch-expr.c (expand_packed_set): Add new parameter to pass
 	  set's minimum ordinal value.  Fix loop invariant problem.
-	  (fold_set_expr): Change to add new parameter to 
+	  (fold_set_expr): Change to add new parameter to
 	  expand_packed_set call.
 	* ch-grant.c: Move extern declaration to ch-tree.h.
 	* ch-lex.l (convert_bitstring): Also output the bitstring
@@ -5865,7 +5871,7 @@ Tue Jan  4 00:24:14 1994  Bill Cox  (bill@cygnus.com)
 
 	* ch-actions.c: Fix comments.
 	* ch-parse.y: Define caseaction_flag.
-	  (caseaction): Create new caseaction_flag node at the start, 
+	  (caseaction): Create new caseaction_flag node at the start,
 	  then free it at the end.  Check it before the ELSE code.
 	  (expanded_case_label): Check the flag here.  If set in either
 	  place, generate a jump to the end of the case.
@@ -5897,9 +5903,9 @@ Mon Jan  3 21:49:04 1994  Michael Tiemann  (tiemann@blues.cygnus.com)
 Mon Jan  3 21:24:44 1994  Bill Cox  (bill@cygnus.com)
 
 	* c-typeck.c: Fix comment.
-	* ch-actions.c (chill_expand_assignment): Error assigning to 
-	  READONLY location.  (PR_3903)  Pass filename, linenumber 
-	  to setbitpowerset runtime routine.	
+	* ch-actions.c (chill_expand_assignment): Error assigning to
+	  READONLY location.  (PR_3903)  Pass filename, linenumber
+	  to setbitpowerset runtime routine.
 	* ch-decl.c (init_decl_processing): Add filename, linenumber
 	  parameters to setbitpowerset prototype.
 	* ch-expr.c (build_chill_function_call): Error when passing a
@@ -5919,7 +5925,7 @@ Mon Jan  3 19:03:55 1994  Michael Tiemann  (tiemann@blues.cygnus.com)
 	* ch-typeck.c (validate_varying_array_ref): Simplify interface
 	since INDEX parameter can never meaningfully be an INDEXLIST.
 	* ch-actions.c (expand_varying_length_assignment): Caller changed.
-	
+
 Mon Jan  3 07:29:45 1994  Michael Tiemann  (tiemann@blues.cygnus.com)
 
 	* ch-typeck.c (build_chill_cast): Set TREE_CONSTANT on NOP_EXPRs.
@@ -5993,7 +5999,7 @@ Sat Jan  1 10:29:19 1994  Michael Tiemann  (tiemann@blues.cygnus.com)
 	TREE_CONSTANT not being set by calling `build1' when `build_unary_op'
 	should have been called.
 
-	* ch-convert.c (digest_struct_tuple): Restore code which tracks 
+	* ch-convert.c (digest_struct_tuple): Restore code which tracks
 	field initializations so that the compiler can deduce what variant
 	initializations to assume.
 
@@ -6053,9 +6059,9 @@ Fri Dec 31 11:31:01 1993  Michael Tiemann  (tiemann@blues.cygnus.com)
 
 Fri Dec 31 15:32:56 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-lex.l (convert_number): Output the converted number if 
+	* ch-lex.l (convert_number): Output the converted number if
 	  yydebug is enabled.
-	* ch-parse.y (signaldef): Set ignore_exprs correctly for a 
+	* ch-parse.y (signaldef): Set ignore_exprs correctly for a
 	  SIGNAL declaration.
 
 Fri Dec 31 13:17:48 1993  Bill Cox  (bill@cygnus.com)
@@ -6085,10 +6091,10 @@ Thu Dec 30 14:28:25 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  (build_receive_case_label): Move between start and end functions.
 	  (build_delay_case_start): Pass SET name and priority also.
 	  Generally update to correct functioning.
-          (build_delay_case_label): Move between start and end fucntions, 
+	  (build_delay_case_label): Move between start and end fucntions,
 	  correct its functioning.
 	  (build_delay_case_end): Correct the code.
-          (tasking_init): Lots of tasking-related code moved here from
+	  (tasking_init): Lots of tasking-related code moved here from
 	  init_decl_processing.
 	* ch-tree.h: Update, add prototypes.
 
@@ -6130,7 +6136,7 @@ Tue Dec 28 18:20:14 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  (build_receive_case_start, build_receive_case_label): Defer
 	  calling runtime routine until we know whether we have a signal
 	  or a buffer to wait for.
-	  (build_delay_case_start, build_delay_case_end, 
+	  (build_delay_case_start, build_delay_case_end,
 	   build_delay_case_label, build_delay_action,
 	   process_event_decls): Added functions.
 	* ch-typeck.c (chill_similar): Allow all integers of differing
@@ -6239,7 +6245,7 @@ Tue Dec 14 15:41:32 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
 Mon Dec 13 16:44:43 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
-	* ch-expr.c (build_chill_addr_expr, build_chill_addr_expr):  Don't re-write 
+	* ch-expr.c (build_chill_addr_expr, build_chill_addr_expr):  Don't re-write
 
 	* ch-tree.h (chill_root_resulting_mode):  Fix typo (missing '_').
 
@@ -6271,7 +6277,7 @@ Mon Dec 13 14:57:55 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  variable.
 	* ch-tasking.c: Use expand_expr_stmt to avoid C-specific
 	  conversions.
-          (build_buffer_decl): Save the tasking_code_variable's decl
+	  (build_buffer_decl): Save the tasking_code_variable's decl
 	  in the buffer decl tree.
 	  (build_buffer_descriptor): Real, working version.
 
@@ -6284,7 +6290,7 @@ Mon Dec 13 03:13:36 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  (locdec): Enable building of a buffer decl.
 	  (optresultspec, optresultattr): Add optional
 	  result attributes such as LOC.  Semantics
-          not enabled yet.
+	  not enabled yet.
 	* ch-tasking.c (expand_send_buffer): Renamed.
 	* ch-tree.h (build_send_buffer): Renamed.
 	* ch-typeck.c (chill_expr_class): Do more complete,
@@ -6312,7 +6318,7 @@ Fri Dec 10 10:00:42 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-grant.c (decode_decl): Restore code mistakenly deleted.
 	  Move instance-handling code to raw_decode_mode.
 	* ch-parse.y (formpar): Allow READ modifier in SPEC MODULE.
-          Add rough draft of DELAY statement handling.
+	  Add rough draft of DELAY statement handling.
 	* ch-tasking.c (build_event_type): New function.
 	* ch-tree.h (build_event_type): Add prototype.
 	* ch-typeck.c (smash_dummy_type): Add buffer & event handling.
@@ -6380,14 +6386,14 @@ Mon Dec  6 14:35:31 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
 Sat Dec  4 22:16:19 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-actions.c (cond_range_exception, 
+	* ch-actions.c (cond_range_exception,
 	  cond_type_range_exception): Check command-line flag before
 	  generating code.  Fix comments.
 	* ch-expr.c (build_chill_num): Add generation of OVERFLOW
 	  code, commented out.
 	* ch-loop.c (build_chill_iterator): Comment out
 	  exception code generation.
-	* ch-parse.y: Delete quasi_signal flag, use 
+	* ch-parse.y: Delete quasi_signal flag, use
 	  current_module->is_spec_module instead.
 	* ch-tasking.c (build_buffer_decl, build_buffer_descriptor):
 	  Delete quasi_decl flag.  Look at current_module
@@ -6473,7 +6479,7 @@ Tue Nov 30 14:05:23 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-decl.c (init_decl_processing): Add filename, line number
 	  parameters to tasking-related runtime routines.
 	* ch-grant.c (decode_decl): Check for BUFFER mode differently.
-	* ch-parse.y (BUFFER_CODE, EVENT_CODE): Move token to 
+	* ch-parse.y (BUFFER_CODE, EVENT_CODE): Move token to
 	  lex-only list.
 	  (quasi_locdec): Set/reset quasi_decl flag.
 	* ch-tasking.c (build_start_process, expand_send_signal,
@@ -6564,7 +6570,7 @@ Sat Nov 20 20:17:15 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-decl.c (init_decl_processing): Add filename
 	  and linenumber to allocate, free memory calls.
 	* ch-expr.c (build_allocate_memory_call,
-	  (build_allocate_global_memory_call): Add 
+	  (build_allocate_global_memory_call): Add
 	  filename, linenumber to call.
 	* ch-loop.c: Complete rewrite for maintainability.
 
@@ -6606,7 +6612,7 @@ Wed Nov 17 16:40:05 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  of powerset runtime routines.
 	* ch-expr.c (chill_expand_expr): Change parameters to powerset
 	  runtimes so bitlengths are long unsigned ints.
-	* ch-inout.c (build_chill_writetext): Add filename and linenumber	
+	* ch-inout.c (build_chill_writetext): Add filename and linenumber
 	  as runtime parameters, for better error messages.
 	* ch-loop.c: general pre-rewrite cleanup.
 	* expr.c (store_constructor): Rewrite set interface to
@@ -6691,7 +6697,7 @@ Fri Nov 12 13:27:12 1993  Per Bothner  (bothner@rtl.cygnus.com)
 
 	* ch-expr.c (chill_expand_expr, build_concat_expr): Simplify
 	string concatenation by treating varying strings as slices.
-        (varying_to_slice): New function.
+	(varying_to_slice): New function.
 	* ch-typeck.c (build_chill_slice): Changed to support the above.
 
 Fri Nov 12 12:07:28 1993  Bill Cox  (bill@rtl.cygnus.com)
@@ -6715,7 +6721,7 @@ Thu Nov 11 07:49:53 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  word.  It's only predefined.
 	* ch-inout.c: Add special_UC to conditionals
 	  to determine case of reserved words.
-	  (build_chill_writetext): Change for call from 
+	  (build_chill_writetext): Change for call from
 	  build_generalized_call.  Add code to format
 	  integers.
 	* ch-lang.c (lang_decode_option): Add special_UC and
@@ -6755,8 +6761,8 @@ Wed Nov 10 02:29:53 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  token before checking for reserved words.
 	* ch-parse.y: Delete ADDR as a reserved word.
 	  (mode2, optlayout): Allow PACK/UNPACK specifier.
-	  (call): Use build_generalized_call for 
-	          primval LPRN modename RPRN.
+	  (call): Use build_generalized_call for
+		  primval LPRN modename RPRN.
 	  (primval): Delete ADDR reference.  It's now only
 	  predefined, not reserved.
 	* ch-tree.h: Add BUILT_IN_ADDR as a predefined.
@@ -6773,8 +6779,8 @@ Tue Nov  9 15:07:02 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  (init_decl_processing): Add builtin_function calls for lots of
 	  predefined functions.
 	* ch-expr.c: Change builtin function handlers back to accepting
-	  args, not a treelist.  
-          (route_to_predefined_function): Delete it and its call.
+	  args, not a treelist.
+	  (route_to_predefined_function): Delete it and its call.
 	  (build_generalized_call): Add lots of builtin functions.
 	* ch-gperf (backwards, duration, inttime, null): Delete them.
 	* ch-hash.h: New version.
@@ -6786,7 +6792,7 @@ Tue Nov  9 15:07:02 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-parse.y: Delete lots of stuff which should only be predefined.
 	* ch-tasking.c: Change special_UC to ignore_case everywhere.
 	  Change builtin function handlers back to accepting args,
-          not a treelist.  
+	  not a treelist.
 	* ch-tree.h: Add lots of builtin functions to the enumerator.
 
 Mon Nov  8 18:08:27 1993  Bill Cox  (bill@rtl.cygnus.com)
@@ -6802,7 +6808,7 @@ Mon Nov  8 17:30:22 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  function.
 	  (lookup_name): Check for a CONST_DECL, don't ask about DECL_NESTING
 	  stuff for builtin constant like TRUE.
-	* ch-expr.c (route_to_predefined_function): Add a bunch of 
+	* ch-expr.c (route_to_predefined_function): Add a bunch of
 	  predefined functions to the list.
 	* ch-gperf: Define the list of reserved words, minus the predefined
 	  words, using the special_UC flag.  Remove NULL, TRUE, FALSE -
@@ -6814,10 +6820,10 @@ Mon Nov  8 17:30:22 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-lex.h: Add enumerators for TRUE, FALSE, NULL.
 	* ch-lex.l: Total rewrite of reserved-word recognition, using
 	  the ch-hash.h lookup routines.
-	* ch-parse.y: Delete a bunch of unused rules for predefined 
+	* ch-parse.y: Delete a bunch of unused rules for predefined
 	  procedures and their parameters.
 	* ch-tasking.c (tasking_init): Build predefined functions
-          for COPY_NUMBER, GEN_CODE, GEN_INST, and GEN_PTYPE.  Not
+	  for COPY_NUMBER, GEN_CODE, GEN_INST, and GEN_PTYPE.  Not
 	  complete yet.  Change interface to builtin handlers to accept
 	  just an expression list.
 
@@ -6840,7 +6846,7 @@ Wed Nov  3 18:07:08 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-lex.l (init_lex): Initialize ridpointers to uppercase
 	  if special_UC flag is set.
 	  (downcase, getlc, check_newline): Don't do this if ignore_case
-          flag is set.
+	  flag is set.
 	* ch-parse.y (variantdef, case_expr): Report 'sorry' for use of
 	  multiple selector expressions.
 
@@ -6910,7 +6916,7 @@ Thu Oct 28 16:43:36 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  Check for invalid parameters, issue errors.
 	* expr.c (store_constructor): Calculate bitlength, startrtx
 	  and endrtx of powerset correctly.  Define targetx, use it
-          and XEXP correctly.
+	  and XEXP correctly.
 
 Wed Oct 27 08:25:56 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -6977,7 +6983,7 @@ Wed Oct 20 09:52:44 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  (decl_tasking_code_var): Delete it.  Its calls are replaced woth
 	  generate_tasking_code_variable calls, plus a little glue.
 	  (push_extern_process): generate tasking_code_variable as local
-	  static variable, point the process' function_decl at it for later 
+	  static variable, point the process' function_decl at it for later
 	  reference by build_start_process.
 	  (print_mode): Use CHILL upper-case convention to print modes.
 	* ch-lex.l: Must initialize tasking-related trees to NULL at start
@@ -6985,7 +6991,7 @@ Wed Oct 20 09:52:44 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  specify a value for each of them.
 	* ch-parse.y (check_end_label, action, exceptlist): Only output
 	  error message in pass 1.
-          (sendaction): Add comments.
+	  (sendaction): Add comments.
 	  (sigdef): Comment out special handling for external signals.
 	  Chain tasking_variable_decl onto signal structure decl, for
 	  easier non-symbol-table access later.
@@ -7000,7 +7006,7 @@ Wed Oct 20 09:52:44 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  function decl.
 	  (build_signal_struct_type): Return the type decl, to be accessed by ...
 	  (build_signal_descriptor): .. this function.
-	  (build_receive_case_label): Get data buffer pointer not from hash 
+	  (build_receive_case_label): Get data buffer pointer not from hash
 	  table, but from Tiemann's current rc_state structure instead.
 	* ch-tree.h: Change prototype, fix comment, add DECL_TASKING_CODE_DECL
 	  macro for tasking_code_variable storage.
@@ -7057,7 +7063,7 @@ Sun Oct 17 23:15:00 1993  Bill Cox  (bill@cygnus.com)
 	* ch-decl.c (do_decl): Revert bogus initializer type change.
 	* ch-grant.c (chill_finish_module_code): Put module's decl onto
 	  the module_init_list, for chill_finish_compile's possible use.
-	  (chill_finish_compile): Rename variables for clarity, add 
+	  (chill_finish_compile): Rename variables for clarity, add
 	  commented-out code as example for assignment of module address to its
 	  init_list entry.
 
@@ -7094,7 +7100,7 @@ Fri Oct 15 21:44:11 1993  david d `zoo' zuhn  (zoo@rtl.cygnus.com)
 
 Fri Oct 15 10:30:09 1993  Bill Cox  (bill@cygnus.com)
 
-	* ch-expr.c (finish_chill_binary_op): Activate some 
+	* ch-expr.c (finish_chill_binary_op): Activate some
 	  type-setup code.
 	* expr.c (store_constructor): Subtract arrays minimum element.
 	  Makes orientexpress work.
@@ -7106,7 +7112,7 @@ Fri Oct 15 09:26:24 1993  Bill Cox  (bill@cygnus.com)
 
 Thu Oct 14 13:20:02 1993  Bill Cox  (bill@cygnus.com)
 
-	* ch-actions.c (build_chill_cause_exception): Pass the 
+	* ch-actions.c (build_chill_cause_exception): Pass the
 	  *address* of the filename string to the runtime routine,
 	  rather than passing the string by value.
 
@@ -7160,7 +7166,7 @@ Mon Oct 11 17:23:02 1993  Bill Cox  (bill@cygnus.com)
 	* ch-decl.c (init_decl_processing): Define __whoami and
 	  __wait_buffer functions.
 	* ch-lex.l (ch_lex_init): Reset tasking numbers to zero.
-	* ch-parse.y (sigdef): Add new add_taskstuff_to_list 
+	* ch-parse.y (sigdef): Add new add_taskstuff_to_list
 	  parameter.
 	* ch-tasking.c (get_tasking_code): Search tasking_list for
 	  tasking code name match.  Can't use lookup_name.
@@ -7173,7 +7179,7 @@ Mon Oct 11 17:23:02 1993  Bill Cox  (bill@cygnus.com)
 	  list entries no built by ..
 	  (add_taskstuff_to_list): Accept new parameter,
 	  add it to the list.
-	* ch-tree.h (add_taskstuff_to_list): Add new 
+	* ch-tree.h (add_taskstuff_to_list): Add new
 	  parameter.
 
 Mon Oct 11 14:54:50 1993  Per Bothner  (bothner@kalessin.cygnus.com)
@@ -7193,7 +7199,7 @@ Sun Oct 10 09:11:52 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 Fri Oct  8 16:00:04 1993  Bill Cox  (bill@cygnus.com)
 
-	* ch-actions.c (adjust_parm_or_field): Add parameter to 
+	* ch-actions.c (adjust_parm_or_field): Add parameter to
 	  decl_temp1 call.
 	*ch-decl.c (decl_tasking_code_var): Replace do_decl call with
 	  decl_temp1 call.
@@ -7201,14 +7207,14 @@ Fri Oct  8 16:00:04 1993  Bill Cox  (bill@cygnus.com)
 	  (shadow_record_fields): Add parameter to decl_temp1 call.
 	* ch-expr.c (chill_expand_case_expr): Add parameter
 	  to decl_temp1 call.
-	* ch-grant.c (chill_finish_compile): Add code to spoof 
+	* ch-grant.c (chill_finish_compile): Add code to spoof
 	  get_file_function_name,  so we don't get __tmp_s1_code,
 	  for example, as the module-level code's name.
 	* ch-loop.c (build_temporary_variable, begin_for_range,
-          init_loop_counter): Add parameter to decl_temp1 call.
+	  init_loop_counter): Add parameter to decl_temp1 call.
 	* ch-parse.y (quasi_signaldef): Clear quasi_signal flag here,
 	  for easier maintenance.
-          (sendaction): Rewrite to receive SIGNALNAME token correctly
+	  (sendaction): Rewrite to receive SIGNALNAME token correctly
 	  from ch-lex.l (name_type_signal).
 	  (signaldef): Don't clear quasi_signal here.
 	* ch-tasking.c (generate_tasking_code_variable): Tell decl_temp1
@@ -7216,7 +7222,7 @@ Fri Oct  8 16:00:04 1993  Bill Cox  (bill@cygnus.com)
 	  (build_start_process): Add parameter to decl_temp1 call.
 	  (tasking_setup): Comment out band-aid hack which calls
 	  generate_tasking_code_variable.  Shouldn't be necessary.
-	  Use null_pointer_node rather than integer_zero_node in 
+	  Use null_pointer_node rather than integer_zero_node in
 	  entry_point.  More rewrites.
 	  (build_signal_descriptor): Name the non-signal in the error msg.
 	  Rewrite the building of the signal envelope - avoid seg fault.
@@ -7232,7 +7238,7 @@ Tue Oct  5 13:51:27 1993  Bill Cox  (bill@cygnus.com)
 	* ch-grant.c: Standardize indentation.
 	* ch-parse.y (end_function): Unconditionally poplevel for processes.
 	* ch-tasking.c (build_process_header): Unconditionally pushlevel.
-          (generate_tasking_code_variable): Stop using pass number to
+	  (generate_tasking_code_variable): Stop using pass number to
 	  force a one-time action.
 	* ch-tree.h (build_chill_slice): Delete proto since function went static.
 
@@ -7250,7 +7256,7 @@ Mon Oct  4 13:52:36 1993  Bill Cox  (bill@cygnus.com)
 	  (generate_tasking_code_variable): Return the var's decl.
 	  (build_signal_struct_type): Move generate_tasking_code_variable
 	  and add_taskstuff_to_list calls to ..
-        * ch-parse.y (sigdef): .. here.  And make indentation changes.
+	* ch-parse.y (sigdef): .. here.  And make indentation changes.
 	* ch-tree.h: Rename functions, add return values.
 
 Mon Oct  4 15:43:56 1993  Per Bothner  (bothner@kalessin.cygnus.com)
@@ -7336,7 +7342,7 @@ Wed Sep 29 13:36:23 1993 1993  Bill Cox  (bill@cygnus.com)
 	  fault.
 	  (procedure, process): Change calls to end_function, remove
 	  code saving value from build_process_header.  Delete redundant chill_
-	  phrases from some function calls.  
+	  phrases from some function calls.
 	* ch-tasking.c: Remove some redundant _chill phrases from function
 	  names.
 	* ch-tree.h: Remove some redundant _chill phrases from function
@@ -7498,7 +7504,7 @@ Fri Sep 24 15:27:13 1993  Bill Cox  (bill@cygnus.com)
 	  due to the language's 2-pass nature.
 	* ch-parse.y (arrayindex): Rewrite for correctness, and to avoid
 	  a seg fault.
-	* ch-tree.h (lookup_remembered_name): Comment out the prototype. 
+	* ch-tree.h (lookup_remembered_name): Comment out the prototype.
 
 Fri Sep 24 11:01:31 1993  Michael Tiemann  (tiemann@blues.cygnus.com)
 
@@ -7522,9 +7528,9 @@ Fri Sep 24 11:01:31 1993  Michael Tiemann  (tiemann@blues.cygnus.com)
 	  (build_tasking_message_type): Layout the type.
 	  (rc_state_type): New structure to keep nested receive-case
 	  info in.
-          (build_chill_receive_case_start, build_chill_receive_case_end):
+	  (build_chill_receive_case_start, build_chill_receive_case_end):
 	  Use the new struct.
-	  
+
 
 Fri Sep 24 04:19:15 1993  Michael Tiemann  (tiemann@blues.cygnus.com)
 
@@ -7600,10 +7606,10 @@ Thu Sep 23 09:18:35 1993  Bill Cox  (bill@cygnus.com)
 
 	* ch-decl.c (print_lang_decl): Make weak name output more standard.
 	  (print_lang_identifier): Make signal-data flag output more standard.
-          (push_chill_extern_process): Pass correct arg tree to
+	  (push_chill_extern_process): Pass correct arg tree to
 	  push_chill_extern_function.
-	  (push_syn_decls, fixup_unknown_type, chill_modes_equiv): 
-	  Standardize function header layouts (Makes the tcov script 
+	  (push_syn_decls, fixup_unknown_type, chill_modes_equiv):
+	  Standardize function header layouts (Makes the tcov script
 	  work better).
 	* ch-except.c (chill_finish_on): Standardize function header.
 	* ch-expr.c (fold_set_or): Standardize function header.
@@ -7643,7 +7649,7 @@ Wed Sep 22 10:42:31 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 	(CH_CLASS_IS_XXX, TYPE_NEWMODE, CH_CLASS_MODE):  Removed.
 	* ch-typeck.c (classify_chill_expr renamed to chill_expr_class):
 	Take extra output parameter (for M, as in M-value class).
-	* ch-typeck.c (chill_novelty):  New function.  (Also de-references.) 
+	* ch-typeck.c (chill_novelty):  New function.  (Also de-references.)
 
 	* ch-expr.c (resolve_component_ref, build_chill_component_ref):
 	New functions.  Handle 2-pass and variant records.
@@ -7692,20 +7698,20 @@ Tue Sep 21 14:19:11 1993  Bill Cox  (bill@cygnus.com)
 	* ch-grant.c (decode_decl): Write proper header for a process.
 	* ch-parse.y (quasi_pdef): process now uses processparlist,
 	  which doesn't change with the passes.
-          (quasi_locdec): Call build_chill_reference_type to defer
+	  (quasi_locdec): Call build_chill_reference_type to defer
 	  doing the type's layout.
 	  (processpar): Use paramnamelist, but reformat it into a
 	  list of identifiers in pass 2, so a processpar is the same
 	  structure in both passes.
-          (locdec): Call build_chill_reference_type to defer doing the
-          type's layout.
+	  (locdec): Call build_chill_reference_type to defer doing the
+	  type's layout.
 	* ch-tasking.c (generate_tasking_code_variable): Call do_decl to
 	  build the decl.  Only update the variable's tree in pass 2.
-          (make_process_struct): Call build_chill_reference_type to defer
+	  (make_process_struct): Call build_chill_reference_type to defer
 	  doing the type's layout.
-          (build_process_header): New code to call make_process_struct.
+	  (build_process_header): New code to call make_process_struct.
 	  New pass-2 code to make a PARM_DECL for start_chill_function.
-          Pass a void_type_node, not a NULL_TREE for an empty list.
+	  Pass a void_type_node, not a NULL_TREE for an empty list.
 	  Get input for shadow_record_fields from current_function_decl.
 	  (build_buffer_decl): Call do_decl not decl_temp1.
 	* ch-typeck.c: Reindent to standards.
@@ -7836,8 +7842,8 @@ Sun Sep 12 21:10:10 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
 	* ch-parse.y (labellist):  Don't do anything if ignore_exprs.
 
-        * c-typeck.c (output_pending_init_elements): Handle
-        !constructor_incremental case of filling in empty positions.
+	* c-typeck.c (output_pending_init_elements): Handle
+	!constructor_incremental case of filling in empty positions.
 	(Patch by Jim Wilson.  CYGNUS LOCAL until we have approval.)
 	* ch-decl.c (pop_module):  Don't grant a seized name.
 	* ch-grant.c (decode_constant):  Support CALL_EXPR.
@@ -7873,7 +7879,7 @@ Sun Sep 12 18:06:23 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  (quasi_formparlist): Write more clearly.
 	  (rcaltlist, optelsercvcase, optstartset): Add ignore_actions
 	  guards.
-	  (rccase_label, sendaction): Use NAME, not SIGNALNAME 
+	  (rccase_label, sendaction): Use NAME, not SIGNALNAME
 	  or BUFFERNAME.
 	  (process): Handle like procedure.
 	  (mode): Add SIGNAL as a generic signal parameter.  This
@@ -7886,7 +7892,7 @@ Sun Sep 12 15:03:21 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
 	* c-typeck.c (digest_init):  Compare types using comptypes
 	instead of comparing pointers.  (Helps Chill front end.)
-	* ch-expr.c (finish_chill_binary_op): 
+	* ch-expr.c (finish_chill_binary_op):
 	* ch-typeck.c (build_chill_array_ref, build_chill_bitref),
 	ch-expr.c (finish_chill_binary_op):  For now, prefer IN_EXPR
 	over BIT_FIELD_REF because of various problems with BIT_FIELD_REF
@@ -7941,7 +7947,7 @@ Fri Sep 10 15:47:52 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 Thu Sep  9 18:21:46 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-typeck.c (my_build_array_ref): Delete pedantic
-          C-specific error message.
+	  C-specific error message.
 
 Thu Sep  9 17:44:20 1993  Jeffrey Wheat  (cassidy@eclipse.cygnus.com)
 
@@ -7954,7 +7960,7 @@ Thu Sep  9 12:22:22 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
 Wed Sep  8 13:03:49 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
-	* ch-except.c (finish_handler_array), ch-decl.c (finish_decl): 
+	* ch-except.c (finish_handler_array), ch-decl.c (finish_decl):
 	Don't use store_init_value, since it calls digest_init instead
 	of chill_digest_init.
 	* ch-except.c (finish_handler_array):  Use build1 (ADDR_EXPR, ...)
@@ -8013,7 +8019,7 @@ Tue Sep  7 11:16:10 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-decl.c (chill_digest_init): New function.  Calls were
 	  changed, since it has fewer parameters than old digest_init.
 	* ch-parse.y (untyped_expr, primval, tupleelement): Calls to
-          new init stuff.
+	  new init stuff.
 	  (elementlist): Delete unused code.
 	* ch-satisfy.c (safe_satisfy_decl): Just return if decl == NULL.
 	* ch-tasking.c (build_tasking_enum): Attempt to adapt to 2-pass.
@@ -8023,7 +8029,7 @@ Tue Sep  7 11:16:10 1993  Bill Cox  (bill@rtl.cygnus.com)
 Tue Sep  7 12:06:28 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-decl.c, ch-parse.y, ch-tree.h, ch-typeck.c: Revert
-          files to their pre-init-change state.
+	  files to their pre-init-change state.
 
 Mon Sep  6 15:28:27 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -8052,16 +8058,16 @@ Wed Sep  1 13:21:53 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 Tue Aug 31 14:57:35 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-decl.c (print_lang_decl): Print weak-name status.
-          (print_lang_identifier): Print signal_data as T or F.
+	  (print_lang_identifier): Print signal_data as T or F.
 	* ch-lex.l (convert_bitstring, convert_charliteral,
-          convert_float, convert_number): Pass string directly to convert
+	  convert_float, convert_number): Pass string directly to convert
 	  as a parameter.  Return token code consistently, return 0
 	  for error.
-          (equal_number): Parse differently, allowing hex, binary
+	  (equal_number): Parse differently, allowing hex, binary
 	  and octal constants.
 	* ch-parse.y (dowithaction, structured_variable): Only
-          push/pop scopes once per DO WITH.
-          (structured_variable_list): Check ignore_actions flag here.
+	  push/pop scopes once per DO WITH.
+	  (structured_variable_list): Check ignore_actions flag here.
 	* gcc.c: Delete 'traditional' from string, add 'itu'
 	  as the standard flag's name.
 
@@ -8092,7 +8098,7 @@ Wed Aug 25 16:58:13 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* .cvsignore: Add g++.sum
 	* ch-actions.c (chill_expand_result): Stop building a temp.
 	  Assign the expression directly into function's DECL_RESULT.
-	* ch-decl.c: Add formfeeds.  
+	* ch-decl.c: Add formfeeds.
 	  (start_chill_function): Don't need to zero DECL_RESULT's pointer any more.
 	  (push_chill_function_context): Delete C pedwarn message.
 	* ch-expr.c: Move builtin functions together.
@@ -8114,7 +8120,7 @@ Wed Aug 25 13:24:06 1993  Bill Cox  (bill@rtl.cygnus.com)
 Wed Aug 25 08:34:36 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-lex.l, ch-parse.y: Delete CONTINUE_EVENT token.
-          It wasn't used anyway.
+	  It wasn't used anyway.
 
 Tue Aug 24 17:51:18 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -8128,7 +8134,7 @@ Tue Aug 24 16:38:24 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 	* ch-tree.c (build_bitstring_type):  Remove all layout-like
 	stuff, and defer that to layout_powerset_type.
 	* ch-expr.c (chill_expand_expr):  For various SET_xxx_EXPRs,
-	allocate stack temp for target using correct mode. 
+	allocate stack temp for target using correct mode.
 
 Tue Aug 24 10:27:19 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -8152,7 +8158,7 @@ Mon Aug 23 12:15:11 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* Makefile.in: Add dependency lines for ch-except.o and
 	  ch-satisfy.o.  Correct dependency lines for ch-convert.o,
 	  ch-expr.o, ch-inout.o, and ch-loop.o.
-          (chill, install-common): Add clean-up commands.
+	  (chill, install-common): Add clean-up commands.
 
 Sat Aug 21 17:11:26 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -8163,7 +8169,7 @@ Sat Aug 21 17:11:26 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 Sat Aug 21 13:59:40 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-decl.c (init_decl_processing): Define setbitpowerset	
+	* ch-decl.c (init_decl_processing): Define setbitpowerset
 	  runtime function.
 	* ch-expr.c (chill_expand_assignment): Call setbitpowerset
 	  to set a bit.
@@ -8177,7 +8183,7 @@ Fri Aug 20 17:29:56 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-typeck.c: Indent to standard.
 	* stor-layout.c: Fix comment.
 	* toplev.c: Change -L option ti -I.
-	* varasm.c (emit_set_data): Align set constant to word 
+	* varasm.c (emit_set_data): Align set constant to word
 	  boundary.
 
 Fri Aug 20 08:20:07 1993  Bill Cox  (bill@rtl.cygnus.com)
@@ -8202,7 +8208,7 @@ Wed Aug 18 17:36:53 1993  Bill Cox  (bill@cygnus.com)
 	* ch-parse.y (dowithaction): Always compute & save # of
 	  'with' variables seen (both passes), and always pop that
 	  number of levels.
-          (structured_variable_list): Always chain variables into a list.
+	  (structured_variable_list): Always chain variables into a list.
   	  (structured_variable): Put pushlevel here (from shadow_record_fields).
 	* ch-tasking.c: Indentation fixes.
 	* ch-tree.h: Change proto.
@@ -8274,11 +8280,11 @@ Mon Aug 16 14:41:29 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
 Mon Aug 16 11:13:07 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-actions.c (chill_comptypes): Correct handling reference        
+	* ch-actions.c (chill_comptypes): Correct handling reference
  	  of type 1.
-          (build_chill_length, build_chill_num,
+	  (build_chill_length, build_chill_num,
 	   build_chill_sizeof): Convert result to CHILL integer.
-          (build_chill_function_call): Clean up INOUT and OUT
+	  (build_chill_function_call): Clean up INOUT and OUT
 	  parameter handling.
 	* ch-decl.c (build_chill_function_type): Handle INOUT and
 	  OUT parameters.
@@ -8302,7 +8308,7 @@ Sun Aug 15 15:06:01 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-parse.y (doaction): Unconditionally make a scope
 	  for a loop, pop it later.
 	  (controlpart, iteration): Save return from
-          build_chill_iterator.
+	  build_chill_iterator.
 	* expr.c: Readability changes.
 
 Sat Aug 14 19:42:32 1993  Bill Cox  (bill@rtl.cygnus.com)
@@ -8383,37 +8389,37 @@ Fri Aug 13 13:39:59 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-decl.c (decl_temp): Break the chain of decls.  This
 	  prevents an infinite loop.
 	* ch-lang.c (make_chill_pointer_type): Fix compiler warning.
-	* ch-lex.l (equal_number): Check passes in looking up a 
+	* ch-lex.l (equal_number): Check passes in looking up a
 	  symbolic value.
 	* ch-parse.y: Fix comments.
 	* ch-tasking.c (tasking_setup): Only act in pass 2.
-          (make_signal_struct, build_signal_decl,
+	  (make_signal_struct, build_signal_decl,
 	   build_chill_receive_case_label): Don't go indirect
 	   thru NULL decl pointer.
 
 Thu Aug 12 11:02:34 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (route_to_predefined_function): New function called
-          from build_chill_function_call, to call the proper predefined routine.
-          (build_chill_card, build_chill_length, build_chill_lower,
-          build_chill_max, build_chill_min, build_chill_num, 
-          build_chill_pred, build_chill_sizeof, build_chill_succ,
-          build_chill_upper): Rewritten to run only in pass 2.
+	  from build_chill_function_call, to call the proper predefined routine.
+	  (build_chill_card, build_chill_length, build_chill_lower,
+	  build_chill_max, build_chill_min, build_chill_num,
+	  build_chill_pred, build_chill_sizeof, build_chill_succ,
+	  build_chill_upper): Rewritten to run only in pass 2.
 	* ch-decl.c (init_decl_processing): Build predefined functions for card,
-          length, lower, max, min, num, pred, sizeof, succ and upper.  Delete
-          unused builtin_function calls.
+	  length, lower, max, min, num, pred, sizeof, succ and upper.  Delete
+	  unused builtin_function calls.
 	* ch-grant.c (chill_finish_module_code): Save current_function_decl
 	  before calling finish_chill_function, and use that to build the
-          initializer structure.
+	  initializer structure.
 	* ch-lex.l: Remove following tokens, since they're now just predefined,
-          not reserved: card, length, lower, max, min, num, pred, sizeof, succ
-          and upper.
+	  not reserved: card, length, lower, max, min, num, pred, sizeof, succ
+	  and upper.
 	* ch-loop.c: Readability, indentation changes.
 	* ch-parse.y: Delete tokens for card, length, lower, max, min, num, pred,
-          sizeof, succ and upper.  Delete special rules for calls to these.
-          Delete mode_location and upper_lower_arg non-terminals.
+	  sizeof, succ and upper.  Delete special rules for calls to these.
+	  Delete mode_location and upper_lower_arg non-terminals.
 	  (pmodearg): Eliminate convolutions.
-          (call): Add rule for typename parameter.
+	  (call): Add rule for typename parameter.
 	* ch-tasking.c: Readability changes.
 	* ch-tree.h: Add prototypes.
 
@@ -8495,7 +8501,7 @@ Tue Aug 10 21:33:10 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 	* ch-parse.y (modename):  Changed to yield identifier, not type.
 	This allows following changes, which work better for 2-pass:
 	(location):  primval ARROW optmodename -> primval ARROW optname.
-	(primval):  Tuple can now be prefixed by unsatisfied name.	
+	(primval):  Tuple can now be prefixed by unsatisfied name.
 
 	* ch-actions.c (chill_grant_only):  Renamed to grant_only_flag.
 	* ch-lex.l (yywrap):  Don't read seizefiles if grant_only_flag.
@@ -8592,7 +8598,7 @@ Mon Aug  9 15:44:01 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  structure's decl.
 	  (chill_finish_compile): Clear module_init_list to NULL.
 	* ch-parse.y (quasi_formparlist): Rewrite to avoid seg fault.
-	  Rename reverse_scopes to switch_to_pass_2, delete setting 
+	  Rename reverse_scopes to switch_to_pass_2, delete setting
 	  of pass = 2.
 	* ch-tree.h: Rename reverse_scopes proto.
 
@@ -8632,13 +8638,13 @@ Mon Aug  9 01:00:33 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 Sun Aug  8 16:26:40 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
 	* ch-lex.h:  Add some missing RID_'s.
-	* ch-decl.c (init_decl_processing): 
+	* ch-decl.c (init_decl_processing):
 
 Sun Aug  8 15:32:54 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-grant.c (module_has_actions): Delete this and all
 	  references.  It was a botch.
-          (chill_finish_module_code): Move finish_chill_function_call inside
+	  (chill_finish_module_code): Move finish_chill_function_call inside
 	  the test whether actions were found at module level.
 	  Use current_function_name in the initializer build,
 	  and init_entry_id in the module_list setup.
@@ -8660,7 +8666,7 @@ Sun Aug  8 13:13:29 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
 Sun Aug  8 10:31:04 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	Generally, replace 'function' with 'procedure' 
+	Generally, replace 'function' with 'procedure'
 	and 'type' with 'mode' in error/warning messages.
 	* ch-actions.c: See Generally. Fix up 'too many' and 'too few' error msgs.
 	* ch-decl.c: See Generally.
@@ -8685,11 +8691,11 @@ Sun Aug  8 08:59:23 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  (init_decl_processing): Build __tmp_initializer_type.
 	  Code moved from chill_finish_module_code.
 	* ch-grant.c: New flag module_has_actions.  Set TRUE by push_actions,
-	  used, reset by chill_finish_module_code.    Replaces test of 
-          module_function_name.  Shuffled finish-up code to end of module.
-          (chill_finish_module_code): Use global_bindings_p to determine
+	  used, reset by chill_finish_module_code.    Replaces test of
+	  module_function_name.  Shuffled finish-up code to end of module.
+	  (chill_finish_module_code): Use global_bindings_p to determine
 	  'nested' parameter for finish_chill_function.  Use new
-          module_has_actions flag to trigger generation of module_init list
+	  module_has_actions flag to trigger generation of module_init list
 	  entry.  We now can handle not only multiple modules per file,
 	  but modules nested inside functions (I think).
 	* ch-lang.c (build_chill_pointer_type): Restore missing assignment.
@@ -8697,7 +8703,7 @@ Sun Aug  8 08:59:23 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  (modulion, spec_module): Save possibly-generated module name
 	  returned by push_module.
 	* ch-satisfy.c (satisfy): Put switch cases into alpha order, add
-          case for POINTER_TYPE.
+	  case for POINTER_TYPE.
 	* ch-tasking.c: Replace build_pointer_type calls with
 	  build_chill_pointer_type calls.
 	* ch-tree.h: Fix, add prototypes.
@@ -8746,7 +8752,7 @@ Sat Aug  7 09:28:17 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  (decl_temp, decl_temp1): Delete unused code.
 	  (init_decl_processing): Call build_instance_type and
 	  build_tasking_type in both passes.
-	  Generally change current_scope comparisons against 
+	  Generally change current_scope comparisons against
 	  global_scope to global_biidings_p calls.
 	* ch-except.c (push_handler): Add space before parameter paren.
 	* ch-grant.c (chill_start_module, chill_finish_module,
@@ -9003,11 +9009,11 @@ Thu Jul 22 18:56:16 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* c-decl.c (pushdecllist): Standardize loop for readability.
 	* ch-decl.c (decl_temp): Call pushdecllist to store decl
-          into hash table, move after current_scope declaration.
+	  into hash table, move after current_scope declaration.
 	  (decl_temp1): Move also.
 	* ch-lex.l (getlc): New function.  Force char to lower case.
 	  (check_newline): Call it, so comparisons work on uppercase
-          keywords.
+	  keywords.
 
 Wed Jul 21 22:17:22 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -9018,7 +9024,7 @@ Wed Jul 21 22:17:22 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-loop.c (build_temporary_variable, begin_for_range):
 	  Replace start_decl, finish_decl pairs with decl_temp1 calls.
 	* ch-parse.y (parnamelist): Eliminate warning by eliminating
-          the %type for now.
+	  the %type for now.
 	* ch-actions.c, ch-tasking.c: Replace do_decls calls with
 	  decl_temp1 calls.
 	* ch-tree.h: New prototypes.
@@ -9032,7 +9038,7 @@ Wed Jul 21 21:06:18 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-lex.l (RETURN_TOKEN): Don't use the 'do { .. return } while 0'
 	  in the macro - Sun's compiler throws warnings.  Thanks, Brendan.
 	* ch-satisfy.c (satisfy): Add forward declaration.
-          (SATISFY): Add outer parens for greater safety.
+	  (SATISFY): Add outer parens for greater safety.
 
 Wed Jul 21 12:59:20 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
@@ -9083,10 +9089,10 @@ Wed Jul 21 14:23:25 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (lang_decode_option): Add option -Lpath
 	  to specify seize file path.
-          (ch_singleton_set): Readability formatting.
+	  (ch_singleton_set): Readability formatting.
 	  Add comment, move functions to easier found places.
 	* ch-lex.l (setup_seizefile_read): Check for *no* slashes.
-          (register_seize_path): Use memcpy so pathlen has an effect.
+	  (register_seize_path): Use memcpy so pathlen has an effect.
 	* gcc.c (default_compilers): Add -L option to chill
 	  compiler SPECs.
 
@@ -9103,13 +9109,13 @@ Wed Jul 21 12:16:51 1993  Bill Cox  (bill@rtl.cygnus.com)
 Wed Jul 21 09:29:24 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-grant.c: #undef strchr and strrchr names in extern
-          declarations, to prevent RS6000 compiler from reporting
-          their misuse as macros.
+	  declarations, to prevent RS6000 compiler from reporting
+	  their misuse as macros.
 	* ch-lex.l (setup_seizefile_read): Refer to list of  paths
 	  for seizefiles specified by -L options on command line.
-          (register_seize_path): Add a new path to the seize file list.
+	  (register_seize_path): Add a new path to the seize file list.
 	* toplev.c (strip_off_ending): Recognize chill suffix.
-          (main): Recognize -L option, specifying a seize file path.
+	  (main): Recognize -L option, specifying a seize file path.
 
 Tue Jul 20 12:41:52 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -9126,14 +9132,14 @@ Tue Jul 20 11:01:30 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-lex.l (convert_float): Give variable `d' correct
 	  type so build_real call is correct.  Should remove
 	  vxworks portability problem.
-          (convert_float): Re-indent to standards.
+	  (convert_float): Re-indent to standards.
 
 Mon Jul 19 17:32:10 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (build_char_array_expr): Add field decls to
 	  constructor.  Now, it generates the library call.
 	* ch-expr.c (chill_expand_array_assignment): Make sure that all
-          error messages say 'mode' not 'type'.
+	  error messages say 'mode' not 'type'.
 
 Mon Jul 19 14:44:46 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -9173,11 +9179,11 @@ Thu Jul 15 13:25:33 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  varying array to be assigned to a smaller, with a runtime
 	  test (to be provided).
 	* ch-parse.y (locdec): Comment out bogus error msg.
-          (elementlist): Replace several lines with chainon call.
+	  (elementlist): Replace several lines with chainon call.
 	* ch-tree.h (SCALAR_P): New macro.  New prototype for
 	  build_array_type_for_scalar.
 	* ch-typeck.c (build_chill_cast): Re-indent.
-          (chill_expand_tuple): Comment out strange addition of 
+	  (chill_expand_tuple): Comment out strange addition of
 	  varying string's length to front of constructor list.
 
 Thu Jul 15 05:58:46 1993  Bill Cox  (bill@rtl.cygnus.com)
@@ -9193,12 +9199,12 @@ Mon Jul 12 16:07:53 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* c-typeck.c (build_function_call): Bypass default
 	  parameter promotions, format param syntax check for
 	  CHILL; they've already been converted in
-          build_chill_function_call.
+	  build_chill_function_call.
 	* ch-actions.c (chill_expand-return): Correct tests
 	  for function which returns no value.
 	* ch-convert.c (base_type_size_in_bytes): Check for
 	  NULL type parameter, just return.
-          (convert): Allow conversion of CHAR to varying array
+	  (convert): Allow conversion of CHAR to varying array
 	  of CHAR.
 	  Change error msg to "conversion" from "assignment".
 	  Remove default from case, which short-circuited before
@@ -9212,12 +9218,12 @@ Sun Jul 11 11:27:08 1993  Bill Cox  (bill@cygnus.com)
 
 	* ch-actions.c (chill_expand_result, chill_expand_return):
 	  Move here from ch-typeck.c.  Add a temporary to remember the
-	  result value in.  Change return handler to fetch that 
+	  result value in.  Change return handler to fetch that
 	  temporary value, if there is one.
 	* ch-parse.y (pdef): Call chill_expand_return to fetch
 	  the temp's value.
 	* ch-tree.h, ch-typeck.c: Move return, result functions to
-          ch-actions.c.  And their prototypes.
+	  ch-actions.c.  And their prototypes.
 
 Fri Jul  9 15:47:51 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -9229,10 +9235,10 @@ Fri Jul  9 15:47:51 1993  Bill Cox  (bill@rtl.cygnus.com)
 Fri Jul  9 09:41:05 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-grant.c (decode_decl): Grant BUFFER, INSTANCE variables.
-          (print_integer): Delete old non-working INSTANCE code.
+	  (print_integer): Delete old non-working INSTANCE code.
 	* ch-lex.l (name_type_signal): Recognize BUFFER name, too.
 	* ch-parse.y (rccase_label): Move all actions inside if.
-          Use BUFFERNAME to recognize receice case buffer clause,
+	  Use BUFFERNAME to recognize receice case buffer clause,
 	  eliminate one shift-reduce conflict.
 	* ch-tasking.c (build_buffer_descriptor): Check for
 	  CH_DECL_BUFFER flag, remove unused code.
@@ -9246,14 +9252,14 @@ Thu Jul  8 11:17:32 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  isn't hidden.
 	* ch-lex.l: Clean up prototypes for readability.
 	* ch-parse.y (sendaction): Add send buffer action.
-          (locdec): Add rule for buffer declaration.
+	  (locdec): Add rule for buffer declaration.
 	* ch-tasking.c (generate_tasking_code): standardize indentation.
-          (make_signal_struct): Readability changes.
-          (build_chill_send_buffer, build_buffer_decl, 
-           build_buffer_descriptor): New functions.
+	  (make_signal_struct): Readability changes.
+	  (build_chill_send_buffer, build_buffer_decl,
+	   build_buffer_descriptor): New functions.
 	* ch-tree.h (IDENTIFIER_BUFFER_SIZE): Add place to save
 	  buffer's maximum queue length in buffer decl.
-          (CH_DECL_BUFFER): Add flag in decl.  Clean up for
+	  (CH_DECL_BUFFER): Add flag in decl.  Clean up for
 	  readability.  Add prototypes.
 	* ch-typeck.c (build_chill_cast): Call convert rather
 	  than storing directly into TREE_TYPE field.
@@ -9270,7 +9276,7 @@ Mon Jul  5 10:02:27 1993  Wilfried Moser  (fs_moser at rcsw1j)
 
 	* ch-lex.l: Add compiler directive SUPPORT_CAUSING_ADDRESS.
 	* ch-except.c (initialize_exceptions): Change the layout of the
-	  structure __ch_handler. The entry __jbuf is moved to the end 
+	  structure __ch_handler. The entry __jbuf is moved to the end
 	  of the structure and its size was changed to _JBLEN+10.
 	* ch-decl.c (push_chill_extern_process): Add processing of
 	  processes with no arguments.
@@ -9279,12 +9285,12 @@ Mon Jul  5 10:02:27 1993  Wilfried Moser  (fs_moser at rcsw1j)
 	* ch-tasking.c (build_process_header, build_chill_start_process):
 	  Add processing of processes with no arguments.
 	  (make_process_struct): Add processing of IN attribute for
-          process arguments.
+	  process arguments.
 	  (tasking_setup): Add NUL-character to name of a tasking
-          element. The name must be NUL terminated.
+	  element. The name must be NUL terminated.
 	  (build_chill_send_signal): Default SEND_SIGNAL_PRIORITY
-          to 0 with a warning if -Wall specified on command-line.
-	
+	  to 0 with a warning if -Wall specified on command-line.
+
 Fri Jul  2 16:01:57 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-parse.y: Change 'empty' comments to new non-terminal
@@ -9293,15 +9299,15 @@ Fri Jul  2 16:01:57 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 Fri Jul  2 12:43:25 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-parse.y (action): Catch and report actions which 
-          shouldn't have exception clauses, but do.  Unfortunately,
-	  catching more than one of these per compilation will 
-          have to await the general addition of syntax error
-          recovery to the parser.
+	* ch-parse.y (action): Catch and report actions which
+	  shouldn't have exception clauses, but do.  Unfortunately,
+	  catching more than one of these per compilation will
+	  have to await the general addition of syntax error
+	  recovery to the parser.
 
 Fri Jul  2 10:45:35 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-parse.y (locdec): Issue error for initialization 
+	* ch-parse.y (locdec): Issue error for initialization
 	  of bitstring with tuple, not for powerset init with
 	  tuple.
 
@@ -9328,10 +9334,10 @@ Wed Jun 30 14:02:23 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-grant.c (print_an_int): New function to print a
 	  decimal integer string or the CONST_DECL (SYN) which
 	  best matches it.
-          (print_integer): Call the above function.  Replace
+	  (print_integer): Call the above function.  Replace
 	  calls to SAME_TYPE macro with TYPE_MAIN_VARIANT
 	  comparisons, as suggested by Jim Wilson.
-          (decode_decl): Set current_grant_modename sooner,
+	  (decode_decl): Set current_grant_modename sooner,
 	  be sure to clear it when done.
 
 Wed Jun 30 10:10:57 1993  Bill Cox  (bill@rtl.cygnus.com)
@@ -9339,7 +9345,7 @@ Wed Jun 30 10:10:57 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-actions.c (build_max_min): Change interface to accept
 	  just a max/min flag.  Get min/max values from an
 	  enumeral constructor.
-          (build_chill_max, build_chill_min): Change calls to
+	  (build_chill_max, build_chill_min): Change calls to
 	  build_max_min.
 	* ch-lang.c (deep_const_expr): Check for NULL_TREE
 	  arguments, don't seg fault.
@@ -9361,34 +9367,34 @@ Tue Jun 29 13:13:46 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  optional ELSE clause, error for multiple case-selector
 	  expressions, error for missing ELSE clause.
 	* ch-expr.c (chill_expand_assignment): Error if multiple
-	  location assignment and locations not novelty 
+	  location assignment and locations not novelty
 	  equivalent.
 	* ch-parse.y (caseaction): Add range_list_clause non-
-          terminal, sorry message for it.
-          (assignaction): error if operator used on multiple
+	  terminal, sorry message for it.
+	  (assignaction): error if operator used on multiple
 	  assignment.
-	  (case_expr): Pass optional ELSE tree to 
+	  (case_expr): Pass optional ELSE tree to
 	  build_chill_case_expr for checking.
 	* ch-tree.h (build_chill_case_expr): Change proto.
 
 Fri Jun 25 17:22:41 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (chill_comptypes, build_chill_binary_op):
-          Allow PROC mode variables.
+	  Allow PROC mode variables.
 	* ch-convert.c (convert): Turn a NULL literal into a zero
 	  valued pointer-to-function, given such a type.  Also
 	  build the ADDR_EXPR of a function variable.
 	* ch-grant.c: Pervasive -Wall -pedantic cleanup.
-          (print_enumeral, print_integer, print_struct) Moved these
+	  (print_enumeral, print_integer, print_struct) Moved these
 	  large functions out of the switch in raw_decode_mode for
 	  readability, and to encourage future code-sharing.
-          (print_proc_tail, print_proc_exceptions): Moved these out
+	  (print_proc_tail, print_proc_exceptions): Moved these out
 	  of decode_decl, to share them.  They're used also to
 	  output PROC modes.
 	* ch-parse.y (mode2): Enable PROC modes.
 	  (procmode): Represent PROC mode as a ptr-to-function type.
-          (call): Recognize ptr-to-function as indirect call.
-          Cleanup 'primval LPRN untyped_exprlist RPRN' action code.
+	  (call): Recognize ptr-to-function as indirect call.
+	  Cleanup 'primval LPRN untyped_exprlist RPRN' action code.
 
 Thu Jun 24 15:59:20 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -9401,11 +9407,11 @@ Thu Jun 24 13:52:10 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  Explicitly convert a varying array's length field to an
 	  integer_type_node, now that it's only a chill_integer_
 	  type_node.
-	* ch-expr.c (chill_expand_expr, 
-                     expand_assignment_to_varying_array, 
-                     chill_expand_array_assignment,
-                     expand_varying_length_assignment): Explicitly 
-          convert a varying array's length field to an integer_type_node,
+	* ch-expr.c (chill_expand_expr,
+		     expand_assignment_to_varying_array,
+		     chill_expand_array_assignment,
+		     expand_varying_length_assignment): Explicitly
+	  convert a varying array's length field to an integer_type_node,
 	  now that it's only a chill_integer_type_node.
 	* ch-loop.c (init_loop_counter, top_of_loop_test): Change
 	  to handle varying array location iterations.
@@ -9413,16 +9419,16 @@ Thu Jun 24 13:52:10 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  as opposed to '*' members.  Issue error if there were none.
 	  (setelement): Count named set members.  Generate a unique
 	  identifier for the '*' element.
-	* ch-typeck.c (validate_varying_array_ref):  Explicitly 
-          convert a varying array's length field to an integer_type_node,
+	* ch-typeck.c (validate_varying_array_ref):  Explicitly
+	  convert a varying array's length field to an integer_type_node,
 	  now that it's only a chill_integer_type_node.
 
 Wed Jun 23 19:18:28 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-lang.c (finish_chill_enum): Change test for too-
-          large enumerations.
+	  large enumerations.
 	* ch-parse.y (setelement, optsetvalue): Allow numbered,
-          unnamed set elements.
+	  unnamed set elements.
 
 Wed Jun 23 16:25:06 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -9431,7 +9437,7 @@ Wed Jun 23 16:25:06 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  array is VARYING, as signaled by C_TYPE_VARIABLE_SIZE.
 	* ch-actions.c (lang_init): Set flag_short_enums, so that CHILL
 	  enumerations *can* be only a byte in size.
-          (adjust_parm_or_field): Convert untyped parameter before
+	  (adjust_parm_or_field): Convert untyped parameter before
 	  looking at its type to process it.
 	* ch-convert.c (convert): Generate [ -1, -1 ] value for
 	  an INSTANCE type.
@@ -9443,24 +9449,24 @@ Wed Jun 23 16:25:06 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  enumeration values exceeds 256.
 	* ch-parse.y (check_end_label): Error, not warning if start
 	  and end labels don't match.
-          (assignaction): Convert RHS.  Allows untyped tuples to be
+	  (assignaction): Convert RHS.  Allows untyped tuples to be
 	  passed to stabilize_reference.
-          (exceptlist, onexceptprefix): Error if non-unique exception
+	  (exceptlist, onexceptprefix): Error if non-unique exception
 	  name is coded.
 	* ch-tree.c: Added form feeds, comment reformatted.
 	* ch-typeck.c (chill_expand_tuple): Compare tree value to
 	  NULL_TREE, not zero.  Add a constructor element for a
 	  VARYING array's length to the constructor list.
-          (build_varying_struct): Mark the type as VARYING for
+	  (build_varying_struct): Mark the type as VARYING for
 	  process_init_constructor.
 	* toplev.c (lang_options): Add '-lang-chill' and
-          '-fchill-grant-only' options to table.
+	  '-fchill-grant-only' options to table.
 
 Tue Jun 22 13:13:41 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (build_chill_function_call): Add check
 	  to prevent calling a PROCESS like a PROCEDURE.
-	* ch-parse.y (rcalternative): Add check for an 
+	* ch-parse.y (rcalternative): Add check for an
 	  receive case alternative after a RECEIVE CASE
 	  statement.
 	* ch-tree.h: Fix macro ENCAPSULATED_ARRAY_P.
@@ -9473,24 +9479,24 @@ Mon Jun 21 17:56:48 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-actions.c (lang_init): Add else_clause flag to
 	  __wait_signal parameter list.
 	* ch-lex.l: Add SIGNALNAME token, return when appropriate.
-	* ch-parse.y (SIGNALNAME): New token.  Delete 
-	  empty_untyped_exprlist token, no longer used.  Add 
+	* ch-parse.y (SIGNALNAME): New token.  Delete
+	  empty_untyped_exprlist token, no longer used.  Add
 	  name_or_signal non-terminal.  Standardize a few NULL
 	  tests.  Add real RECEIVE CASE semantics.  Add checks that
 	  SIGNALS, BUFFERs are only declared at global scope.
 	  (call): Add signal declarations with/without data fields.
 	* ch-tasking.c (get_tasking_code_name, get_tasking_code,
-          build_chill_receive_case_start, build_chill_receive_case_end,
-          build_chill_receive_case_label): New functions.
-	  Replace build (CONSTRUCTOR, ... calls with build_nt 
-          (CONSTRUCTOR, calls.
+	  build_chill_receive_case_start, build_chill_receive_case_end,
+	  build_chill_receive_case_label): New functions.
+	  Replace build (CONSTRUCTOR, ... calls with build_nt
+	  (CONSTRUCTOR, calls.
 	* ch-tree.h: New prototypes.
 
 Thu Jun 17 18:36:38 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	SIGNAL declaration compilation, seizing & granting,
-          SENDing also.
-	* ch-actions.c (lang_init): Move instance_type_node 
+	  SENDing also.
+	* ch-actions.c (lang_init): Move instance_type_node
 	  build to ch-tasking.c.  Call build_tasking_message_type.
 	  Build a type for send_signal.  Put builtin_function
 	  calls into alpha order.
@@ -9505,18 +9511,18 @@ Thu Jun 17 18:36:38 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-loop.c (get_unique_identifier): Standardize loop
 	  temporary's name to assure that it's not granted.
 	* ch-parse.y (SIG_NAME): Delete unused token.
-          (spec_declist): Delete silly printf.
+	  (spec_declist): Delete silly printf.
 	  (quasi_signaldef): Add non-terminal.
 	  (sendaction, optsendwith, optsendto, optpriority):
-          Implement actual working semantics.
-          (call, empty_untyped_exprlist): Allow empty signal 
-          fields between parens.
+	  Implement actual working semantics.
+	  (call, empty_untyped_exprlist): Allow empty signal
+	  fields between parens.
 	* ch-tasking.c: Rename adjust_proc_param calls, add
 	  is_signal flag to calls.  Make instance_type_node a
-          type, not a TYPE_DECL, change references.  Fix all
+	  type, not a TYPE_DECL, change references.  Fix all
 	  CONSTRUCTOR builds.  Add make_signal_struct function.
-          Move build_instance_type here from lang_init.
-          (build_tasking_message-type, build_signal_descriptor,
+	  Move build_instance_type here from lang_init.
+	  (build_tasking_message-type, build_signal_descriptor,
 	  build_chill_send_signal): New functions.
 	* ch-tree.h: Add, update protos.
 	* ch-typeck.c (build_chill_cast): Check for NULL expression
@@ -9532,7 +9538,7 @@ Wed Jun 16 07:12:53 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  to ch-tasking.c.
 	* ch-decl.c (push_chill_extern_function): Drop is_process
 	  parameter, and marking process decl trees.
-          (push_chill_extern_process): New function for
+	  (push_chill_extern_process): New function for
 	  SEIZEd processes.  Lotsa form feeds added for print
 	  readability.
 	* ch-grant.c (decode_decl): Handle GRANTing of SIGNAls.
@@ -9562,25 +9568,25 @@ Mon Jun 14 18:17:13 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-lex.l (equal_number): Also accept synonym
 	  name for numeric value.
 	* ch-parse.y (primval): Add process-related
-	  function calls.  
-          (signaldef, etc.): Rough draft of SIGNAL definition
-          processing. 
-          (stopaction): Call runtime function.
-          (pdef): Pop symbol level if ending a process
-          and there were parameters.
-          (primval): Call `whoami' runtime function for THIS.
+	  function calls.
+	  (signaldef, etc.): Rough draft of SIGNAL definition
+	  processing.
+	  (stopaction): Call runtime function.
+	  (pdef): Pop symbol level if ending a process
+	  and there were parameters.
+	  (primval): Call `whoami' runtime function for THIS.
 	* ch-tasking.c (build_process_header): Be sure
-          to define the tasking enum, if it hasn't already
+	  to define the tasking enum, if it hasn't already
 	  been done.  Only call shadow_record_fields if there
-	  are parameters.  
-          (build_tasking_enum): Only call start_enum *after*
-          checking the already_built flag.
-          (build_copy_number, get_tasking_code,
+	  are parameters.
+	  (build_tasking_enum): Only call start_enum *after*
+	  checking the already_built flag.
+	  (build_copy_number, get_tasking_code,
 	  build_gen_code, build_gen_inst, build_get_ptype,
 	  build_proc_type): New functions for process-related
 	  builtins.
-          (build_signal_decl): New function for SIGNAL
-          declaration - rough draft.
+	  (build_signal_decl): New function for SIGNAL
+	  declaration - rough draft.
 	* ch-tree.def (INSTANCE_TYPE): new tree code.
 	* ch-tree.h: New prototypes.  Defines for instance
 	  type field access.
@@ -9591,53 +9597,53 @@ Sat Jun 12 21:15:02 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-actions.c (adjust_proc_param): new function,
 	  extracted from build_chill_function_call and called
 	  from there.
-	* ch-tree.h, ch-grant.c (do_seize): Add process_type 
+	* ch-tree.h, ch-grant.c (do_seize): Add process_type
 	  parameter to add_taskstuff_to_list call, prototype.
 	* ch-parse.y (start_parlist): New non-terminal for
 	  START action.
-          (startaction): Reference start_parlist, check for
+	  (startaction): Reference start_parlist, check for
 	  integer-valued process copy-number.
-          (optstartset): Check instance parameter - must be
+	  (optstartset): Check instance parameter - must be
 	  an INSTANCE_TYPE location.
 	* ch-tasking.c (generate_tasking_code_variable): New
-	  function, extracted from tasking_setup and called 
-          from there.  Also called from build_process_header.
+	  function, extracted from tasking_setup and called
+	  from there.  Also called from build_process_header.
 	  (build_process_header): Add process_type parameter
 	  to add_taskstuff_to_list call.  Remove incrementing
 	  of process_type (moved into generate_tasking_code
 	  _variable).
-          (build_chill_start_process): Complete rewrite.
+	  (build_chill_start_process): Complete rewrite.
 	  (add_tasking_stuff_to_list): Add stuffnumber parameter
-	  putit on the list.          
+	  putit on the list.
 
 Sat Jun 12 06:08:09 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	Getting processes compiled, initialized and granted:
 	* .cvsignore: Add chill file.
 	* c-decl.c (shadow_record_fields): Allow PARM_DECL
-          as well as VAR_DECL.
+	  as well as VAR_DECL.
 	* ch-actions.c (lang_init): Move build of
 	  initializer_type into ch-tasking.c.  Change
 	  definition of THIS to function call.
 	* ch-decl.c (massage_param_node): Add comments.
 	  (start_chill_function): Set nested flag in
-          start_function call based upon current_function_decl,
+	  start_function call based upon current_function_decl,
 	  not as constant zero.
 	* ch-grant.c (decode_decl): lotsa code by Wilfried to
-	  GRANT process decls.  
-          (finish_chill_module): Completely rewrote interface
-          to runtime.
+	  GRANT process decls.
+	  (finish_chill_module): Completely rewrote interface
+	  to runtime.
 	* ch-lex.l (THIS): Just return the token code.
 	* ch-parse: Add THIS token.
 	  (processpar, processparlist): New rules, to collect
-          process parameters. 
-          (pdef): Add code to pop the process' WITH scope.
-          (procedure): Set process WITH scope flag to zero.
-          (process): Move most code into build_process_header.
-          (primval): Output function call for THIS.
+	  process parameters.
+	  (pdef): Add code to pop the process' WITH scope.
+	  (procedure): Set process WITH scope flag to zero.
+	  (process): Move most code into build_process_header.
+	  (primval): Output function call for THIS.
 	* ch-tasking.c (add_taskstuff_to_list, build_tasking_enum,
-          make_process_struct, build_process_header): New code 
-          to handle process translation and interface to runtime.
+	  make_process_struct, build_process_header): New code
+	  to handle process translation and interface to runtime.
 	* ch-tree.h: New prototypes.
 
 Thu Jun 10 13:32:51 1993  Bill Cox  (bill@rtl.cygnus.com)
@@ -9683,7 +9689,7 @@ Wed Jun  9 09:03:55 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-grant.c (chill_start_module_code): Rename actual
 	  module-level code to just the modulename, which is
 	  *not* public.
-          (chill_finish_module_code): Allocate space for initializer
+	  (chill_finish_module_code): Allocate space for initializer
 	  list entry, build real initializer function, which puts
 	  the list entry on the runtime list.  Name the init function
 	  as the module's constructor function.
@@ -9696,10 +9702,10 @@ Thu Jun  3 17:04:01 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* c-decl.c: Fix comment.
 	* ch-actions.c, ch-grant.c: Standardize front end:
-          #define first, etc.  Add comments.
+	  #define first, etc.  Add comments.
 	  (lang_init): Delete unused flag, code for inapplicable
-          gen-decls option.  (lang_decode_option): Delete
-          gen-decls option, add grant-only option, flag.
+	  gen-decls option.  (lang_decode_option): Delete
+	  gen-decls option, add grant-only option, flag.
 	* ch-convert.c, ch-decl.c, ch-except.c, ch-tree.c,
 	  ch-typeck.c: Add form feed after front end.
 	* ch-expr.c: Standardize testing for error_mark node.
@@ -9735,11 +9741,11 @@ Wed May 19 16:45:54 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  better name to unsigned flag.
 	* ch-expr.c (chill_expand_assignment): Correct calling
 	  sequence for setpowersetbits runtime routine.
-	* ch-grant.c (raw_decode_mode): Give better name to 
-          unsigned flag.  (decode_constant): Check for null
-          'val' ptr, avoid seg fault.
-	* ch-lex.l (convert_number):  Give better name to 
-          unsigned flag. (convert_bitstring): Move increment
+	* ch-grant.c (raw_decode_mode): Give better name to
+	  unsigned flag.  (decode_constant): Check for null
+	  'val' ptr, avoid seg fault.
+	* ch-lex.l (convert_number):  Give better name to
+	  unsigned flag. (convert_bitstring): Move increment
 	  of bl counter to emphasize that it increments once
 	  per loop.
 	* ch-tree.h: (NO_SOURCE_UNARY_MINUS): Define new flag.
@@ -9753,8 +9759,8 @@ Thu May 13 17:03:04 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  TREE_UNSIGNED flag FALSE for raw_decode_mode.
 	* ch-grant.c (grant_array_type): Correct the May 12
 	  check for circularity.
-          (raw_decode_mode): Use TREE_UNSIGNED flag to
-          control range's printing.
+	  (raw_decode_mode): Use TREE_UNSIGNED flag to
+	  control range's printing.
 	  (chill_grant): Remove useless, bogus code.
 	* ch-lex.l (convert_number): Set the TREE_UNSIGNED
 	  flag TRUE for raw_decode_mode.
@@ -9764,7 +9770,7 @@ Wed May 12 18:04:01 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-decl.c (push_syndecls, push_modedef): Comment
 	  reminders to check for circular definitions.  Later!
 	* ch-grant.c (grant_array_type, decode_decl): Prevent
-	  circular definitions in the use of the array's 
+	  circular definitions in the use of the array's
 	  type name.
 
 Wed May 12 16:06:13 1993  Bill Cox  (bill@rtl.cygnus.com)
@@ -9777,11 +9783,11 @@ Wed May 12 16:06:13 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 Wed May 12 07:49:00 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-actions.c (fold_set_*): Correct tests for 
+	* ch-actions.c (fold_set_*): Correct tests for
 	  range set-constructor list entries.
 	  (lang_init): Define setpowersetbits function.
 	* expr.c (store_constructor): Handle non-constant
-          set constructors.
+	  set constructors.
 
 Tue May 11 18:25:40 1993  Per Bothner  (bothner@cygnus.com)
 
@@ -9803,12 +9809,12 @@ Tue May 11 15:24:31 1993  Bill Cox  (bill@rtl.cygnus.com)
 Mon May 10 18:45:18 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (invalid{left right}_operand): Add
-          handlers for REPLICATE_EXPR.
+	  handlers for REPLICATE_EXPR.
 	  (build_chill_repetition_op): Build constructor list
 	  for repetition of bitstring.
 	* ch-parse.y (call): Recognize more trees as arrays,
 	  to avoid error msg.
-          (operand5): Add count, string temporaries, use them.
+	  (operand5): Add count, string temporaries, use them.
 
 Mon May 10 16:49:08 1993  Per Bothner  (bothner@cygnus.com)
 
@@ -9822,10 +9828,10 @@ Mon May 10 10:54:57 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-grant.c (do_seize, seize_implied_types): Move
 	  result and parameter processing to proper place.
-          (chill_seize): Mark unseized identifier with
-          error_mark_node, to avoid excessive errors.
-	* ch-parse.y (call): Check for ERROR_MARK before 
-          reporting an error.
+	  (chill_seize): Mark unseized identifier with
+	  error_mark_node, to avoid excessive errors.
+	* ch-parse.y (call): Check for ERROR_MARK before
+	  reporting an error.
 
 Sun May  9 17:21:24 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -9851,20 +9857,20 @@ Sun May  9 17:11:33 1993  Per Bothner  (bothner@cygnus.com)
 Fri May  7 10:30:34 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (lang_init): Add definition of psslice
-          runtime routine. (build_chill_binary_op_1,
-          build_chill_binary_op): Have result type of
-          TRUTH_ANDIF_EXPR be boolean, not integer.  Some
+	  runtime routine. (build_chill_binary_op_1,
+	  build_chill_binary_op): Have result type of
+	  TRUTH_ANDIF_EXPR be boolean, not integer.  Some
 	  reindenting.
 	* ch-convert.c (convert): Use consistent notation
 	  for expression.
 	* ch-parse.y: Add front-end pass count. (locdec):
-          Add syntax for other BASED declaration.
+	  Add syntax for other BASED declaration.
 	* ch-tree.c: Fix comment.
 	* ch-typeck.c (build_chill_slice): Implement a runtime
 	  call for bitstring slices. (build_chill_cast):
-          Add code for BITS_BIG_ENDIAN bit loop.
+	  Add code for BITS_BIG_ENDIAN bit loop.
 	  (chill_expand_tuple): Don't pass ref type to
-          digest_init, only underlying type.
+	  digest_init, only underlying type.
 
 Thu May  6 12:52:14 1993  Per Bothner  (bothner@cygnus.com)
 
@@ -9874,16 +9880,16 @@ Thu May  6 12:52:14 1993  Per Bothner  (bothner@cygnus.com)
 Wed May  5 19:02:55 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c: Break out separate routines for set
-          folding, handle ranges in set_fold_eq and set_fold_ne.
-          Fix folding as req'd by TTC test.
+	  folding, handle ranges in set_fold_eq and set_fold_ne.
+	  Fix folding as req'd by TTC test.
 	* ch-grant.c (raw_decode_more): Check for content match
 	  to decide output mode, not pointer identity.
 	* ch-typeck.c: Add cross-reference comment.
 	* varasm.c (emit_set_data): Clarify parameter name.
 	  Handle INTEGER_CST as set constructor.
-          (output_constant): Handle CONSTRUCTOR node for sets.
+	  (output_constant): Handle CONSTRUCTOR node for sets.
 	  Apparently forgot to actually 'checkin' this one last
-          time.
+	  time.
 
 Wed May  5 12:23:58 1993  Jim Wilson  (wilson@sphagnum.cygnus.com)
 
@@ -9892,26 +9898,26 @@ Wed May  5 12:23:58 1993  Jim Wilson  (wilson@sphagnum.cygnus.com)
 Tue May  4 15:47:44 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (fold_set_expr): new function to fold
-          set expressions.  Calls inserted into 
+	  set expressions.  Calls inserted into
 	  build_chill_binary_op and build_chill_unary_op.
-          (build_chill_repetition_op): New function, called
+	  (build_chill_repetition_op): New function, called
 	  from build_chill_function_call.
-	* ch-expr.c (chill_expand_assignment): Call 
+	* ch-expr.c (chill_expand_assignment): Call
 	  build_chill_repetition_op.
 	* ch-grant.c (decode_constant): Comment out deep_fold
 	  call.  The earlier fold_set_expr calls should make
 	  this one unnecessary.  Prevent seg fault when name
 	  of structure field is NULL.  Standardize for loop.
 	* ch-parse.y: Fix comments.
-          (operand5): build a REPLICATE_EXPR.  Don't call
+	  (operand5): build a REPLICATE_EXPR.  Don't call
 	  build_repetition_op until we have a type.
 	* ch-tree.def (REPLICATE_EXPR): Define tree-code.
 	* ch-tree.h (build_chill_repetiton_op): Fix proto.
-	* ch-typeck.c (chill_expand_result): Call 
+	* ch-typeck.c (chill_expand_result): Call
 	  build_chill_repetition_op if needed.
 	* varasm.c (emit_set_data): Clarify parameter name.
 	  Handle INTEGER_CST as set constructor.
-          (output_constant): Handle CONSTRUCTOR node for sets.
+	  (output_constant): Handle CONSTRUCTOR node for sets.
 
 Mon May  3 13:06:47 1993  Per Bothner  (bothner@cygnus.com)
 
@@ -9924,7 +9930,7 @@ Mon May  3 13:06:47 1993  Per Bothner  (bothner@cygnus.com)
 Mon May  3 08:22:45 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-grant.c (decode_constant): Revert interpretation
-          of SET_TYPE as integer.
+	  of SET_TYPE as integer.
 
 Mon May  3 07:55:46 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -9941,28 +9947,28 @@ Sat May  1 14:55:58 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  Redefine __inpowerset to take a 'minval' parameter
 	  that matches the new runtime.  Added comments.
 	* ch-expr.c (chill_handle_case_label): Handle
-          NULL or ERROR trees.
+	  NULL or ERROR trees.
 	* ch-grant.c (get_type): Survive bogus type params,
 	  return empty string.
 	* ch-tree.c (build_powerset_type): Diagnose powerset
-          of non-discrete type.
+	  of non-discrete type.
 	* ch-typeck.c (discrete_type_p): Reindent.
 
 Fri Apr 30 16:08:54 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-grant.c (decode_constant): Interpret SET_TYPE
-          with integer value, so we output the same stuff as
-          the user gave us.
+	  with integer value, so we output the same stuff as
+	  the user gave us.
 	* ch-parse.y: Fix indentation.
 
 Fri Apr 30 09:34:03 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (chill_comptypes): Simplify, correct
-          integer subrange analysis.
+	  integer subrange analysis.
 	* ch-grant.c (seize_implied_names): Add handling for
 	  PROCESS_DECL, PROCESS_TYPE.
-          (do_seize): Call seize_implied_names for process,
-          procedure parameters and return value.
+	  (do_seize): Call seize_implied_names for process,
+	  procedure parameters and return value.
 	* ch-lang.c (finish_chill_enum): Canonicalize enum
 	  types.
 	* ch-tree.def (PROCESS_TYPE): Add.
@@ -9973,11 +9979,11 @@ Fri Apr 30 09:34:03 1993  Bill Cox  (bill@rtl.cygnus.com)
 Thu Apr 29 13:07:55 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (build_chill_lower, build_chill_upper):
-          Handle enumeration types.
+	  Handle enumeration types.
 	  (build_chill_binary_op): Call chill_comptypes
 	  to error check IN arguments.  Change error
-          messages to say 'mode' rather than 'type'.  Cast
-          tree codes when build is called.
+	  messages to say 'mode' rather than 'type'.  Cast
+	  tree codes when build is called.
 	* ch-expr.c (chill_expand_array_assignment): Call
 	  chill_comptypes to validate assignment args.
 	* ch-lex.l: Add newline for readability.
@@ -9987,18 +9993,18 @@ Wed Apr 28 15:22:18 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* Makefile.in (ch-hash.h): Add rule to build this
 	  from chill.gperf.  Not yet used.
 	* ch-actions.c (build_chill_binary_op): Allow enum
-          subranges on RHS of IN operator.
-	* ch-grant.c (decode_constant): Recognize 
+	  subranges on RHS of IN operator.
+	* ch-grant.c (decode_constant): Recognize
 	  error_mark_node as empty powerset initializer,
 	  re-indent a bit.
 	* ch-lang.c (deep_fold): Return error_mark_node for
-          NULL input pointer or incoming error_mark_node.
+	  NULL input pointer or incoming error_mark_node.
 	* ch-lex.l: Ignore PACK and UNPACK keywords. Return
 	  POS, ROW, and STEP as user-defined names.
-          (name_or_type): New function for above.
+	  (name_or_type): New function for above.
 	* ch-parse.y: Move token defs for following, comment
 	  them separately: NOPACK, PACK, POS, ROW, STEP
-	* varasm.c (output_constant): Check for VAR_DECLs in 
+	* varasm.c (output_constant): Check for VAR_DECLs in
 	  records & unions, like arrays.  Don't abort.
 
 Tue Apr 27 17:42:29 1993  Bill Cox  (bill@rtl.cygnus.com)
@@ -10011,25 +10017,25 @@ Tue Apr 27 17:42:29 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  IDENTIFIER_GLOBAL_VALUE, for full generality.
 	* ch-expr.c (chill_expand_assignment): Need to
 	  handle non-NOP modify codes here, since C code
-	  in build_modify_expr won't understand powersets, 
+	  in build_modify_expr won't understand powersets,
 	  etc.
 
 Tue Apr 27 09:05:31 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (build_max_min): Assign the set's
 	  base type to the function's return type.
-          (build_chill_function_call): Before complaining
-          about parameter mismatches, convert certain actual
-          parameters.
-	* ch-expr.c (chill_expand_assignment): Before 
-          complaining about LHS/RHS mismatches, convert
-          certain RHS expressions.
-	* ch-grant.c (decode_constant): Deep-fold incoming 
+	  (build_chill_function_call): Before complaining
+	  about parameter mismatches, convert certain actual
+	  parameters.
+	* ch-expr.c (chill_expand_assignment): Before
+	  complaining about LHS/RHS mismatches, convert
+	  certain RHS expressions.
+	* ch-grant.c (decode_constant): Deep-fold incoming
 	  expression, so we can output it.
 	* ch-lang.c (deep_const_expr): New function, called
-	  from const_expr, actually traverses the tree 
+	  from const_expr, actually traverses the tree
 	  looking at its leaves for 'const'ness.
-	  (deep_fold): New function to fold already-built 
+	  (deep_fold): New function to fold already-built
 	  trees.
 	* ch-parse.y (case_expr): Add whitespace.
 	* ch-tree.h: Add prototype for deep_fold.
@@ -10037,22 +10043,22 @@ Tue Apr 27 09:05:31 1993  Bill Cox  (bill@rtl.cygnus.com)
 Tue Apr 27 07:21:43 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (chill_comptypes): Allow enumeration
-          subranges as compatible with the parent enum.
-          (build_chill_function_call): Before checking type
-          compatibility, use convert on typeless expressions,
-          like constructors.
-	* ch-expr.c (chill_expand_assignment): Before 
-	  checking type compatibility, use convert on 
-          typeless expressions, like constructors.
+	  subranges as compatible with the parent enum.
+	  (build_chill_function_call): Before checking type
+	  compatibility, use convert on typeless expressions,
+	  like constructors.
+	* ch-expr.c (chill_expand_assignment): Before
+	  checking type compatibility, use convert on
+	  typeless expressions, like constructors.
 	* ch-lex.l: Add comment.
 
 Thu Apr 22 17:23:25 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* .cvsignore: Add genopinit, insn-opinit.c
 	* c-common.c (binary_op_error): Prevent seg fault on
-          unknown node code.
+	  unknown node code.
 	* ch-typeck.c (build_chill_array_ref): Remove old
-          lower-bound-of-array-index-nonzero code.
+	  lower-bound-of-array-index-nonzero code.
 	* expr.c (expand-expr, get_inner_reference): Remove
 	  old lower-bound-of-array-index-nonzero code.
 
@@ -10061,14 +10067,14 @@ Thu Apr 22 16:01:09 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* c-decl.c (shadow_record_fields): Add pushlevel for
 	  each PROCESS parameter, too.
 	* ch-process.c (make_process_struct): First working
-          version.
+	  version.
 	* ch-tree.def: Add PROCESS_DECL definition.
 	* ch-tree.h: Add CH_IS_EVENT_MODE macro, change proto
-          for make_process_struct.
-	* expr.c (expand_expr): Add references to 
-          PROCESS_DECL.  Add #include of ch-tree.h.
+	  for make_process_struct.
+	* expr.c (expand_expr): Add references to
+	  PROCESS_DECL.  Add #include of ch-tree.h.
 	* tree.c (decl_function_context): Add check for a
-          PROCESS_DECL, and #include for ch-tree.h.
+	  PROCESS_DECL, and #include for ch-tree.h.
 
 Thu Apr 22 09:25:08 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -10084,67 +10090,67 @@ Wed Apr 21 16:17:07 1993  Bill Cox  (bill@rtl.cygnus.com)
 Thu Apr 22 09:25:08 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-expr.c (chill_expand_expr): Add missing
-          parameters to expand_expr calls.  Some trivial
+	  parameters to expand_expr calls.  Some trivial
 	  reformatting for readability.
 
 Wed Apr 21 16:17:07 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-lex.l: Make send_*_prio externally visible,
-          default them to zero, eliminate the init flags.
-          Same for process_type.
+	  default them to zero, eliminate the init flags.
+	  Same for process_type.
 
 Sat Apr 17 10:59:50 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (build_chill_binary_op): Build a
-          BIT_FIELD_REF tree for IN_EXPR operations.
+	  BIT_FIELD_REF tree for IN_EXPR operations.
 	* ch-typeck.c (build_chill_array_ref): Build a
-          BIT_FIELD_REF tree for access to packed array of
+	  BIT_FIELD_REF tree for access to packed array of
 	  bits.
 
 Fri Apr 16 12:33:34 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-parse.y (EXIT action): Improve error checking,
-          messages.
+	  messages.
 	* ch-typeck.c (chill_expand_tuple): Remove code to
 	  pack sets (moved to varasm.c long ago).
 	* varasm.c (unpack_set_constructor): Rename size to
-          bit_size, since 'size' always means bytes.
-          (pack_set_constructor): Rename size to wd_size,
-          since 'size' always means bytes.
+	  bit_size, since 'size' always means bytes.
+	  (pack_set_constructor): Rename size to wd_size,
+	  since 'size' always means bytes.
 	  (output_constant): Set size to zero, so that extra
-          bytes of padding aren't output after set constants.
+	  bytes of padding aren't output after set constants.
 
 Fri Apr 16 11:57:50 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* .cvsignore: Add .gdbinit.
 	* ch-decl.c (start_chill_bindings): Add function name
-          to binding contour's exit_label for EXIT stmt.
+	  to binding contour's exit_label for EXIT stmt.
 	* ch-parse.y (EXIT action): Call lookup_name to avoid
-          inserting label for function name.  Also check
-          IDENTIFIER_LABEL_VALUE for label's decl.
-          (caseaction, beginendblock, ifaction): Call
-          stamp_nesting_label to put action's label into
-          contour for EXIT to find.
+	  inserting label for function name.  Also check
+	  IDENTIFIER_LABEL_VALUE for label's decl.
+	  (caseaction, beginendblock, ifaction): Call
+	  stamp_nesting_label to put action's label into
+	  contour for EXIT to find.
 
 Thu Apr 15 17:17:05 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* expr.c (expand_expr): Unify, clean up handling of
-          IN_EXPR, and handling of bit-string element ref.
+	  IN_EXPR, and handling of bit-string element ref.
 	  Now, all goes through IN_EXPR handler.
 	* stmt.c (stamp_nesting_label, expand_exit_labelled):
-          New functions, which allow either label or 
-          function decls.
+	  New functions, which allow either label or
+	  function decls.
 
 Thu Apr 15 17:17:05 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c ch-actions.h ch-convert.c ch-decl.c ch-except.c
-          ch-expr.c ch-grant.c ch-inout.c ch-lang.c ch-lex.h ch-lex.l
+	  ch-expr.c ch-grant.c ch-inout.c ch-lang.c ch-lex.h ch-lex.l
 	  ch-loop.c ch-parse.y ch-process.c ch-tree.c ch-tree.def
 	  ch-tree.h ch-typeck.c: Add 1993 copyright, fix titles.
 	* ch-actions.c (build_chill_binary_op): Move runtime function call
 	  to expr.c.  Just build a tree here.  Clean up error checking.
 	* ch-convert.c (convert): Simply store a type into an expression if
-          TREE_TYPE (expr) == NULL.  Prevent error if an enum is to be
+	  TREE_TYPE (expr) == NULL.  Prevent error if an enum is to be
 	  converted to a set of such enums.
 	* ch-loop.c (init_loop_counter): Restore error msg for undeclared
 	  variable if no local scope is to be created for the loop.
@@ -10157,7 +10163,7 @@ Wed Apr 14 07:54:00 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-convert.c (convert): Check pointers better - avoid NULL reference.
 	  Remove redundant check for ERROR_MARK - already checked earlier.
 	* ch-parse.y (get_type_of): Add parameter checks for NULL ptrs and
-          error_mark_node.
+	  error_mark_node.
 
 Tue Apr 13 16:00:37 1993  Per Bothner  (bothner@cygnus.com)
 
@@ -10183,32 +10189,32 @@ Tue Apr 13 16:00:37 1993  Per Bothner  (bothner@cygnus.com)
 Tue Apr 13 15:48:25 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-loop.c (begin_chill_loop): Also stamp the user's loop name into
-          current contour for DO FOR EVER loops.
+	  current contour for DO FOR EVER loops.
 
 Tue Apr 13 14:37:39 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-parse.y (actionstatement): Add error rule.  Delete 
-          POP_UNUSED_ON_CONTEXT.  Add comments about label name usage.
+	* ch-parse.y (actionstatement): Add error rule.  Delete
+	  POP_UNUSED_ON_CONTEXT.  Add comments about label name usage.
 	  (nohandleraction): Better error check in EXIT processing.
-          (optexprlist): Comment out make_function_rtl call.
-          (seizestatement): Change error to warning.
+	  (optexprlist): Comment out make_function_rtl call.
+	  (seizestatement): Change error to warning.
 
 Tue Apr 13 08:29:31 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-grant.c (raw_decode_mode): Supply missing parameter in get_type
-          call.
+	  call.
 	* ch-loop.c (begin_chill_loop): Take loop label as parameter.  Stamp
-          its name into the current contour's exit_label, for EXIT to use.
+	  its name into the current contour's exit_label, for EXIT to use.
 	* ch-parse.y: (actionlabel): Save label tree in global variable.
-          (actionstatement): Clear label to NULL when action is finished.
-	  (handlerstatement, nohandlerstatement): Split actions into 
-          categories which do/don't permit exception handlers.
-          (exitaction): Move code into nohandleraction, make it work.
-          (doaction): Pass (possibly NULL) label tree to begin_chill_loop.
+	  (actionstatement): Clear label to NULL when action is finished.
+	  (handlerstatement, nohandlerstatement): Split actions into
+	  categories which do/don't permit exception handlers.
+	  (exitaction): Move code into nohandleraction, make it work.
+	  (doaction): Pass (possibly NULL) label tree to begin_chill_loop.
 	* ch-tree.h: Add parameter  to begin_chill_tree prototype.
 	* stmt.c (stamp_nesting_label, expand_exit_labelled): Add functions.
-          Note: This implementation of EXIT only exits from loops, not yet 
-                from other bracketted statements.
+	  Note: This implementation of EXIT only exits from loops, not yet
+		from other bracketted statements.
 
 Mon Apr 12 13:41:55 1993  Per Bothner  (bothner@rtl.cygnus.com)
 
@@ -10226,45 +10232,45 @@ Mon Apr 12 08:10:34 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-loop.c: Diffuse cleanup after big functional changes.
 	* ch-parse.y: Eliminate temporary variables, now unnecessary.  Use
-          parse-time stack instead.
+	  parse-time stack instead.
 	* ch-tree.h: Change build_chill_iterator prototype.
 
 Sun Apr 11 15:50:33 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-convert.c (convert): Replace an ERROR_MARK type - from a 
+	* ch-convert.c (convert): Replace an ERROR_MARK type - from a
 	  untyped_expr with the given type.  Move chill_expand_case_expr
 	  call inside chill_expand_expr.
-	* ch-expr.c, ch-tree.h, ch-typeck.c (chill_handle_case_default, 
-          chill_handle_case_label, chill_expand_case_expr):  Move to ch-expr.c
-          from ch-typeck.c.
+	* ch-expr.c, ch-tree.h, ch-typeck.c (chill_handle_case_default,
+	  chill_handle_case_label, chill_expand_case_expr):  Move to ch-expr.c
+	  from ch-typeck.c.
 	* ch-loop.c: Major reorganization to support multiple iterators in
-          DO FOR loop, very little new code, just a re-org.
+	  DO FOR loop, very little new code, just a re-org.
 	* ch-parse.y (iterationlist): Add handling for multiple loop iterators.
 
 Sat Apr 10 14:40:12 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (build_chill_lower, build_chill_upper): Clean up.
 	* ch-grant.c (chill_grant): Avoid making strange SYNMODE for enum
-          member.
+	  member.
 	* ch-lex.l (equal_number): Add function to look in the input for '='
-          followed by a decimal literal.  Call it from directive scanning.
-          (start state 'ccitt'): Deleted, unused.  Moved unused, but reserved,
-          tokens to NORMAL state.
-          (compiler_directive): Replaced by equal_number.  Now the only
-          recursive call to yylex happens in check_newline at the beginning
-          of a compilation.
+	  followed by a decimal literal.  Call it from directive scanning.
+	  (start state 'ccitt'): Deleted, unused.  Moved unused, but reserved,
+	  tokens to NORMAL state.
+	  (compiler_directive): Replaced by equal_number.  Now the only
+	  recursive call to yylex happens in check_newline at the beginning
+	  of a compilation.
 
 Sat Apr 10 09:55:50 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (build_chill_case_expr): Added from ch-parse.y.
 	* ch-lex.l (ENTRY, PERVASIVE, ROW, STEP): Add token recognition to
-          'reserve' them.
+	  'reserve' them.
 	* ch-parse.y (case_expr): Move code into ch-actions.c.  There will
-          need to be much more written.
+	  need to be much more written.
 	* ch-tree.def (VARY_ARRAY_REF): Add comment.
 	* ch-tree.h (build_chill_case_expr): Add prototype.
 	* ch-typeck.c (build_chill_cast): Allow untyped_expr - just assign the
-          type to the expr.  Check for CASE_EXPR, call expand_case_expr.
+	  type to the expr.  Check for CASE_EXPR, call expand_case_expr.
 
 Sat Apr 10 01:10:51 1993  Per Bothner  (bothner@rtl.cygnus.com)
 
@@ -10298,9 +10304,9 @@ Sat Apr 10 01:10:51 1993  Per Bothner  (bothner@rtl.cygnus.com)
 Fri Apr  9 09:37:38 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-expr.c (chill_expand_array_assignment): Remove false error	about
-	  arrays that are too small.    
+	  arrays that are too small.
 	* ch-parse.y (callaction): Don't pass an error_mark_node to
-          c_expand_expr_stmt.
+	  c_expand_expr_stmt.
 
 Fri Apr  9 00:26:54 1993  Per Bothner  (bothner@rtl.cygnus.com)
 
@@ -10328,12 +10334,12 @@ Fri Apr  9 00:26:54 1993  Per Bothner  (bothner@rtl.cygnus.com)
 Thu Apr  8 16:56:52 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (build_char_array_expr): Add handling of varying
-          arrays in relational expressions.
+	  arrays in relational expressions.
 	* ch-decl.c: Add prototype for lookup_name_current_level.
-	* ch-expr.c (chill_expand_expr): Make concat_expr's temp a BLKmode, 
-          so its length is used as the temp's size.
+	* ch-expr.c (chill_expand_expr): Make concat_expr's temp a BLKmode,
+	  so its length is used as the temp's size.
 	  (chill_expand_array_assignment): Correct for varying := varying
-          assignment, clean up.
+	  assignment, clean up.
 	* ch-typeck.c: Add prototype for require_complete_type.
 
 Wed Apr  7 16:41:29 1993  Bill Cox  (bill@rtl.cygnus.com)
@@ -10368,24 +10374,24 @@ Tue Apr  6 18:05:40 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-actions.c: Move build_varying_struct to ch-typeck.c.
 	* ch-parse.y (formpar): Turn ARRAY_TYPE parms into structure.
 	* ch-parse.y (location): Do build_component_ref for an array wrapped
-          in a structure.
+	  in a structure.
 	* ch-tree.h: Add prototype, #define for build_chill_array_parm_type.
 	* ch-typeck.c (build_chill_array_parm_type): Add function, move
 	  build_varying_struct here from ch-actions.c.
 
 Mon Apr  5 19:56:56 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-actions.c, ch-decl.c: Use tree_int_cst_equal and integer_zerop 
+	* ch-actions.c, ch-decl.c: Use tree_int_cst_equal and integer_zerop
 	  rather than in-line code - tests LOW and HIGH values.
 	* ch-lang.c: Use tree_int_cst_lt rather than inline code.
 	* ch-typeck.c (my_build_array_ref): Handle case where array low bound
-          isn't zero.
+	  isn't zero.
 
 Mon Apr  5 15:45:10 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-typeck.c (my_build_array_ref): Add some more code from 
-          build_array_ref.  Change checks, error messages to mention 
-          'discrete types'.  I.E. types which don't kiss and tell..
+	* ch-typeck.c (my_build_array_ref): Add some more code from
+	  build_array_ref.  Change checks, error messages to mention
+	  'discrete types'.  I.E. types which don't kiss and tell..
 
 Sat Apr  3 09:27:03 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -10393,7 +10399,7 @@ Sat Apr  3 09:27:03 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-grant.c (chill_grant): Remove orphan #else.
 	* ch-tree.h: Add prototype for build_chill_bin_type.
 	* ch-typeck.c: Turn externs into prototypes, delete code which
-          was commented out in chill_expand_return; it will never be used.
+	  was commented out in chill_expand_return; it will never be used.
 
 Fri Apr  2 21:55:14 1993  Per Bothner  (bothner@rtl.cygnus.com)
 
@@ -10516,7 +10522,7 @@ Sun Mar 28 10:12:45 1993  Ken Raeburn  (raeburn@kr-pc.cygnus.com)
 Fri Mar 26 18:32:15 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-parse.y: Put %type directives back into alpha order.
-          (variant_alternative): Simplify error_mark test.
+	  (variant_alternative): Simplify error_mark test.
 	  (variantfields, varianthack): Add error_mark checks.
 
 Fri Mar 26 13:36:23 1993  Bill Cox  (bill@rtl.cygnus.com)
@@ -10524,21 +10530,21 @@ Fri Mar 26 13:36:23 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-lex.l (convert_charliteral): Rewrite to avoid bogus error msg.
 	* ch-parse.y (get_type_of): Add function to deal with possible fwd
 	  declared type name.  Call it from lotsa places.  Add lotsa checks
-          for error_mark_node.  Standardize indentations.
+	  for error_mark_node.  Standardize indentations.
 
 Thu Mar 25 15:00:11 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-expr.c (chill_expand_assignment): Avoid seg fault while checking
-          for array assignments.
+	  for array assignments.
 	* ch-parse.y (action): Add recognition for allocate_memory and
-          allocate_global_memory system calls.
-          (mode2): Remove ill-conceived error check that broke REFs to
-          as-yet-undeclared types.  Check for IDENTIFIER_NODE, lookup its
-          DECL if there, pass TREE_TYPE of decl to build_pointer_type.
-          (variantfields, varianthack): Clean up.
-          (variantfield): Check for IDENTIFIER_NODE, lookup its DECL if
-          there, pass TREE_TYPE of decl to grok_fixedfields.
-          (labellist): Explicitly assign error_mark_node to signal error.
+	  allocate_global_memory system calls.
+	  (mode2): Remove ill-conceived error check that broke REFs to
+	  as-yet-undeclared types.  Check for IDENTIFIER_NODE, lookup its
+	  DECL if there, pass TREE_TYPE of decl to build_pointer_type.
+	  (variantfields, varianthack): Clean up.
+	  (variantfield): Check for IDENTIFIER_NODE, lookup its DECL if
+	  there, pass TREE_TYPE of decl to grok_fixedfields.
+	  (labellist): Explicitly assign error_mark_node to signal error.
 	* ch-typeck.c (chill_compatible): Report FALSE for bad parameters,
 	  rather than seg faulting.
 
@@ -10546,7 +10552,7 @@ Thu Mar 25 10:35:58 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (lang_init): build_function_type for allocate_memory
 	  and allocate_global_memory runtime routines.  Move discrete_type_p
-          into ch-typeck.c.
+	  into ch-typeck.c.
 	* ch-typeck.c (discrete_type_p): Move here, where it belongs, call it
 	  in build_chill_cast.
 
@@ -10558,14 +10564,14 @@ Tue Mar 23 15:25:39 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* Makefile.in (ch-actions.o): Add dependencies (expr.h insn-codes.h)
 	* dwarfout.c (fundamental_type_code): Add handling of BOOLEAN_TYPEs,
-          avoid abort.
+	  avoid abort.
 
 Tue Mar 23 09:03:35 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (build_char_array_expr): Just build a type for the
-          result of a CONCAT_EXPR, and pass the tree back.  
-          chill_expand_array_assignment can do a better job of 
-          code-generation.
+	  result of a CONCAT_EXPR, and pass the tree back.
+	  chill_expand_array_assignment can do a better job of
+	  code-generation.
 	* ch-expr.c (chill_expand_array_assignment): Generate the CONCAT_EXPR
 	  code.
 
@@ -10592,14 +10598,14 @@ Mon Mar 22 12:42:58 1993  Per Bothner  (bothner@rtl.cygnus.com)
 Fri Mar 19 11:55:35 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c: Add prototypes, remove unused variables.  Attempt to
-	  continue generating grant file in presence of error (Wilfried's 
-          patch to lang_finish).
+	  continue generating grant file in presence of error (Wilfried's
+	  patch to lang_finish).
 	* ch-expr.c: Change assign_stack_temp calls so temps get recovered
-          after each statement.  Move convert call into
-          chill_expand_assignment from ch-parse.y.
+	  after each statement.  Move convert call into
+	  chill_expand_assignment from ch-parse.y.
 	* ch-grant.c: Generally re-order, clean up.  Include Per's decode_mode
-          simplification.  Include commented-out hack in decode_mode to return
-          type's name if type SEIZEd or already GRANTed in this file.
+	  simplification.  Include commented-out hack in decode_mode to return
+	  type's name if type SEIZEd or already GRANTed in this file.
 	* ch-lex.l: Add prototypes.
 	* ch-parse.y (assignaction): Move convert call into
 	  chill_expand_assignment.
@@ -10608,7 +10614,7 @@ Thu Mar 18 16:04:45 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-convert.c (convert): Remove unused variable, fix int_size_in_bytes
 	  comparison.
-        * ch-decl.c: Add prototypes, correct error message spelling, remove
+	* ch-decl.c: Add prototypes, correct error message spelling, remove
 	  unused variables.
 	* ch-lang.c (build_chill_range_type): Add error message.  Add prototypes.
 	  Correct comment spelling.
@@ -10621,7 +10627,7 @@ Thu Mar 18 16:04:45 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-parse.y (label_spec): Correct assignment within IF expression which
 	  was intended to be equality test.  Remove unused variables.
 	* ch-tree.h: Add prototype.  Remove unused EXCP_CODE enumeration, and
-          prototyping editorial comments.
+	  prototyping editorial comments.
 	* ch-typeck.c: Disable generation of code to validate array index for
 	  now.  Should be done as a call-back from more generic array_ref code.
 	  Clean up parameter checking.  Remove unused variables.
@@ -10648,14 +10654,14 @@ Thu Mar 11 21:06:55 1993  Bill Cox  (bill@rtl.cygnus.com)
 Thu Mar 11 19:20:37 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (build_set_expr, build_chill_binary_op): Calculate
-          *BIT* length of powersets and arrays of BOOLs.
+	  *BIT* length of powersets and arrays of BOOLs.
 	  (invalid_left_operand, invalid_right_operand): Disallow relationals
 	  with arrays of BOOL as operands.
-        * ch-convert.c (convert): Test TREE_CODE for ERROR_MARK rather than
+	* ch-convert.c (convert): Test TREE_CODE for ERROR_MARK rather than
 	  comparing pointers.
 	* ch-decl.c (push_newmode): Re-indent.
 	* ch-expr.c (chill_expand_expr): Calculate *BIT* length of powersets
-          and arrays of BOOLs.
+	  and arrays of BOOLs.
 	* ch-lang.c (build_chill_array_type): Add parameter error checking.
 
 Mon Mar  8 17:13:00 1993  Bill Cox  (bill@rtl.cygnus.com)
@@ -10673,7 +10679,7 @@ Mon Mar  8 17:13:00 1993  Bill Cox  (bill@rtl.cygnus.com)
 Mon Mar  8 13:16:05 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* fold-const.c (fold_convert): Allow CHAR_TYPE CONVERT_EXPR to
-          be folded.
+	  be folded.
 
 Mon Mar  8 10:13:57 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -10695,9 +10701,9 @@ Thu Mar  4 18:05:43 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-loop.c (end_chill_loop): Output end-of-loop marker.
 	* ch-parse.y (label_spec): redefine variant structure label_spec
 	  to agree with the Z.200 spec.
-	             (locdec): Error if set/bitstring initialized with a tuple.
-                     (case_label, arrayindex): Use new discrete_type_p 
-                     function. 
+		     (locdec): Error if set/bitstring initialized with a tuple.
+		     (case_label, arrayindex): Use new discrete_type_p
+		     function.
 	* ch-process.c: Fix typo.
 
 Wed Mar  3 14:30:53 1993  Per Bothner  (bothner@rtl.cygnus.com)
@@ -10731,7 +10737,7 @@ Thu Feb 25 17:35:46 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 Fri Feb 26 07:14:34 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* c-decl.c (finsh_decl): Don't output non-constant storage size 
+	* c-decl.c (finsh_decl): Don't output non-constant storage size
 	  error for CHILL
 	* ch-actions.c: Call build_temporary_variable, fix build_tree_list
 	  call in build_chill_cause_exception.
@@ -10751,7 +10757,7 @@ Thu Feb 25 12:09:01 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* stor-layout.c (variable_size): Disable complaint about variable-
 	  size type or decl at file scope.  Perhaps later this s.b. a warning.
 	* varasm.c (emit_set_data): Add function.
-	  (output_constant): Call new emit_set_data function for VAR_DECLs, 
+	  (output_constant): Call new emit_set_data function for VAR_DECLs,
 	  in addition to CONSTRUCTORs.
 
 Thu Feb 25 11:34:36 1993  Bill Cox  (bill@rtl.cygnus.com)
@@ -10761,7 +10767,7 @@ Thu Feb 25 11:34:36 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  to references to the TREE_CODE == BOOLEAN_TYPE, to follow the
 	  convention.
 	  build_set_expr: Remove length parameter, call powersetlen() instead.
-	    remove handling of CHAR arrays - they're handled in build_char_array_expr.  
+	    remove handling of CHAR arrays - they're handled in build_char_array_expr.
 	    Call __eqpowerset to test for equality - we can't use a byte-length -
 	    need bitcount instead.
 	  build_chill_compound_expr, internal_build_compound_expr: Copy from C
@@ -10872,7 +10878,7 @@ Thu Feb 18 12:40:56 1993  Michael Tiemann  (fs_tie@rcvie.co.at)
 Thu Feb 18 09:30:11 1993  Michael Tiemann  (fs_tie@rcvie.co.at)
 
 	* ch-actions.c (chill_comptypes): Figure out which newmode or
-          synmode decls look most canonical.
+	  synmode decls look most canonical.
 	* ch-convert.c (convert): handle location conversions of records,
 	  unions and arrays.
 	* ch-decl.c (fixup_unknown_type): changes for variant records
@@ -10995,7 +11001,7 @@ Fri Feb 12 10:32:37 1993  Bill Cox  (bill@rtl.cygnus.com)
 	  assignments to handle INOUT and OUT parameters.
 	* ch-decl.c (build_chill_function_type): better parameter name.
 	* ch-parse.y (action): keep rules in alpha order.
-          (pmodearg): turn INOUT, OUT parameter types into reference types.
+	  (pmodearg): turn INOUT, OUT parameter types into reference types.
 	* ch-typeck.c (build_tree_slice): indentation change.
 
 Thu Feb 11 23:16:34 1993  Per Bothner  (bothner@rtl.cygnus.com)
@@ -11083,7 +11089,7 @@ Tue Feb  9 08:27:18 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 Sun Feb  7 18:20:49 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-tree.def: add a new tree type - just for varying array 
+	* ch-tree.def: add a new tree type - just for varying array
 	  references.  We were using ARRAY_REF, but the underlying C
 	  code also generates that one.
 	* ch-convert.c, ch-expr.c, ch-typeck.c: use the new tree type.
@@ -11141,20 +11147,20 @@ Thu Jan 28 17:41:58 1993  Per Bothner  (bothner@rtl.cygnus.com)
 
 Thu Jan 28 16:16:00 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-        * ch-convert.c (convert): correct fixed->varying conversion.
-        * ch-parse.y (mode2): delete unesthetic newline.
+	* ch-convert.c (convert): correct fixed->varying conversion.
+	* ch-parse.y (mode2): delete unesthetic newline.
 
 Thu Jan 28 10:32:55 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c: delete maybe_array_ref()
-        * ch-expr.c (chill_expand_assignment): handle RHS array_ref, delay
-          calling convert().
-        * ch-lex.l, ch-parse.y, chill.gperf: add keywords, syntax for time
+	* ch-expr.c (chill_expand_assignment): handle RHS array_ref, delay
+	  calling convert().
+	* ch-lex.l, ch-parse.y, chill.gperf: add keywords, syntax for time
 	  supervision actions & builtins
-        * ch-parse.y (call): eliminate optlocarrayidx, call build_chill_slice,
-          smaller actions directly (maybe_array_ref() used to call them).
-        * ch-tree.h: add build_chill_function_call, build_chill_slice
-        * ch-typeck.c: add build_chill_slice()
+	* ch-parse.y (call): eliminate optlocarrayidx, call build_chill_slice,
+	  smaller actions directly (maybe_array_ref() used to call them).
+	* ch-tree.h: add build_chill_function_call, build_chill_slice
+	* ch-typeck.c: add build_chill_slice()
 
 Thu Jan 28 08:44:28 1993  Bill Cox  (bill@rtl.cygnus.com)
 
@@ -11184,7 +11190,7 @@ Wed Jan 27 22:28:36 1993  Per Bothner  (bothner@rtl.cygnus.com)
 Wed Jan 27 15:45:20 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c: delete convert_chill_parameter, replace call with
-          call to convert().	
+	  call to convert().
 	* ch-convert.c (convert): combine chill_give_type_to_expr in here.
 	* ch-decl.c: call convert rather than chill_give_type_to_expr.
 	* ch-expr.c: delete chill_expand_array_assignment, move code to convert.
@@ -11212,7 +11218,7 @@ Wed Jan 27 15:45:20 1993  Bill Cox  (bill@rtl.cygnus.com)
 Wed Jan 27 15:32:21 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (build_chill_length, build_chill_lower,
-                        build_chill_upper): accept parameters, too.
+			build_chill_upper): accept parameters, too.
 	* ch-expr.c (chill_expand_assignment):  decipher ARRAY_REF on RHS.
 	* ch-typeck.c (chill_give_type_to_expr, build_chill_array_ref):
 	  assign proper type to ARRAY_REF expression.
@@ -11252,7 +11258,7 @@ Mon Jan 25 17:26:47 1993  Bill Cox  (bill@rtl.cygnus.com)
 Mon Jan 25 14:57:24 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-parse.y (mode2): eliminate old method to mark varying arrays.
-	* ch-expr.c (expand_varying_length_assignment): repair scaling of 
+	* ch-expr.c (expand_varying_length_assignment): repair scaling of
 	  RHS expression.
 
 Mon Jan 25 11:44:21 1993  Per Bothner  (bothner@cygnus.com)
@@ -11293,9 +11299,9 @@ Wed Jan 20 17:11:05 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 Wed Jan 20 16:48:13 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-tree.h, ch-process.c, ch-inout.c, Makefile.in: 
+	* ch-tree.h, ch-process.c, ch-inout.c, Makefile.in:
 	  create new modules for I/O and process-related stuff.
-	* ch-actions.c: move routines to new modules.  
+	* ch-actions.c: move routines to new modules.
 	  call xmalloc, not malloc.
 	* ch-lang.c (build_chill_struct_type): add parameter checking.
 	* ch-lex.l (init_lex): remove redundant cast.
@@ -11304,7 +11310,7 @@ Tue Jan 19 16:33:56 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-parse.y (operand5): delete unnecessary argument to
 	  build_chill_unary_op.  Add rule for string repetition.
-        * ch-parse.y (primval): delete string repetition attempt.
+	* ch-parse.y (primval): delete string repetition attempt.
 	* ch-parse.y (start_process): rough draft of action.
 	* ch-actions.c (build_repetition_op): add it
 	* ch-actions.c (build_chill_binary_op): handle constant arguments
@@ -11316,7 +11322,7 @@ Tue Jan 19 16:33:56 1993  Bill Cox  (bill@rtl.cygnus.com)
 Tue Jan 19 15:03:29 1993  Fred Fish  (fnf@cygnus.com)
 
 	* dwarfout.c (output_type):  Add hack that matches the one in the
-	chill front end to distinquish between true string types and 
+	chill front end to distinquish between true string types and
 	arrays of char, since it uses ARRAY_TYPE for both, rather than
 	trying to use the existing support for STRING_TYPE.
 
@@ -11324,8 +11330,8 @@ Tue Jan 19 13:54:27 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-tree.h: added prototypes for all non-static CHILL functions.
 	* ch-actions.c (lang_init): declare builtin type for start_process
-        * ch-actions.c (build_chill_binary_op): combine	string literals when
-	  concatenated.  
+	* ch-actions.c (build_chill_binary_op): combine	string literals when
+	  concatenated.
 	* ch-actions.c (formpars2struct): added for later start_process
 	  implementation.
 	* ch-actions.h: remove un-needed function declarations.
@@ -11350,11 +11356,11 @@ Mon Jan 18 08:24:21 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 Mon Jan 18 08:00:11 1993  Bill Cox  (bill@rtl.cygnus.com)
 
-	* ch-lex.l, ch-parse.y: make BOOLS synonymous with BIT and 
+	* ch-lex.l, ch-parse.y: make BOOLS synonymous with BIT and
 	CHARS synonymous with CHAR, in the lexer.  Delete unnecessary
 	'bools' non-terminal.
 	* ch-parse.y (assignaction): add lhs version of length() function
-	* ch-actions.c: add builtin_concat function, lots of support for 
+	* ch-actions.c: add builtin_concat function, lots of support for
 	CONCAT_EXPR.
 	* ch-actions.c, ch-tree.h: make a function out of former
 	macro CH_VARYING_TYPE_P
@@ -11462,10 +11468,10 @@ Wed Jan  6 09:48:35 1993  Bill Cox  (bill@cygnus.com)
 	New function build_varying_struct, to do just that.  Use the macros
 	for the special varying field names.
 	* ch-tree.h: define macros for varying field names.
-	* ch-expr.c: use macros for varying struct names.  Simplify 
+	* ch-expr.c: use macros for varying struct names.  Simplify
 	chill_expand_array_assignment.
 	* ch-parse.y: assure that build_varying_struct is called everywhere
-	that it applies.  Add a line-number note before the body of a DO 
+	that it applies.  Add a line-number note before the body of a DO
 	loop.
 	* ch-loop.c: #ifdef out creation of new scope for DO loop body.
 
@@ -11622,20 +11628,20 @@ Wed Dec 30 16:06:55 1992  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-parse.y, ch-expr.c: add support for declaring & assigning
 	VARYING arrays.
-        * ch-typeck.c: allow VARYING structures in assign_type_to_expr.
+	* ch-typeck.c: allow VARYING structures in assign_type_to_expr.
 
 Tue Dec 29 15:28:48 1992  Bill Cox  (bill@cygnus.com)
 
 	* ch-actions.c: implement expressions of arrays of char,
-        ( concatenation, relationals ), correct type of code parameters
-        * ch-expr.c: correct type of code parameters
+	( concatenation, relationals ), correct type of code parameters
+	* ch-expr.c: correct type of code parameters
 
 Tue Dec 29 11:16:19 1992  Bill Cox  (bill@cygnus.com)
 
 	* ch-decl.c: cleanup.
-        * ch-parse.y: put emit_line_note() calls in lotsa places,
-        per Fred's request; be sure that statements get counted also.
-        * ch-lex.l: standardize function headers.
+	* ch-parse.y: put emit_line_note() calls in lotsa places,
+	per Fred's request; be sure that statements get counted also.
+	* ch-lex.l: standardize function headers.
 
 Tue Dec 29 10:41:56 1992  Fred Fish  (fnf@cygnus.com)
 
@@ -11840,7 +11846,7 @@ Mon Dec 14 00:22:49 1992  Fred Fish  (fnf@cygnus.com)
 	* Makefile.in (CHILL, chill, cc1chill, chill-runtime, libchill.a,
 	sublibchill.a, ch-parse.o, ch-parse.c ch-*.o, install-libchill,
 	install-librmt):  New targets.
-	* Makefile.in (install-native):  Add install-libchill, 
+	* Makefile.in (install-native):  Add install-libchill,
 	install-librmt.
 
 Sun Dec 13 15:21:06 1992  Bill Cox  (bill@cygnus.com)
@@ -11911,7 +11917,7 @@ Mon Dec  7 14:57:46 1992  Bill Cox  (bill@cygnus.com)
 Mon Dec  7 10:42:35 1992  Bill Cox  (bill@cygnus.com)
 
 	* ch-actions.c: implement relational, logic operations
-        on arrays of BOOLs.
+	on arrays of BOOLs.
 
 Mon Dec  7 08:55:20 1992  Michael Tiemann  (tiemann@rtl.cygnus.com)
 
@@ -11935,7 +11941,7 @@ Sun Dec  6 13:12:32 1992  Bill Cox  (bill@cygnus.com)
 Sun Dec  6 11:15:59 1992  Bill Cox  (bill@cygnus.com)
 
 	* ch-parse.y, ch-actions.c, ch-expr.c: Implement set-oriented
-        relational expressions, including (<, <=, =, /=, >, >=, IN).
+	relational expressions, including (<, <=, =, /=, >, >=, IN).
 
 Fri Dec  4 13:54:58 1992  Brendan Kehoe  (brendan@lisa.cygnus.com)
 
@@ -12000,7 +12006,7 @@ Wed Dec  2 09:52:06 1992  Michael Tiemann  (tiemann@rtl.cygnus.com)
 Tue Dec  2 09:44:05 1992  Bill Cox  (bill@cygnus.com)
 
 	* ch-typeck.c: clean up a gcc warning with a forward
-        declaration of build_string_type.
+	declaration of build_string_type.
 
 Tue Dec  1 16:51:05 1992  Bill Cox  (bill@cygnus.com)
 
@@ -12028,8 +12034,8 @@ Tue Dec  1 12:35:56 1992  Bill Cox  (bill@cygnus.com)
 
 Tue Dec  1 11:10:56 1992  Bill Cox  (bill@cygnus.com)
 
-	* ch-parse.y, ch-actions: added parsing and processing 
-        for upper, lower, and length built-ins.
+	* ch-parse.y, ch-actions: added parsing and processing
+	for upper, lower, and length built-ins.
 
 Tue Dec  1 09:40:49 1992  Fred Fish  (fnf@cygnus.com)
 

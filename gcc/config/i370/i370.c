@@ -906,11 +906,11 @@ mvs_need_alias (realname)
      return 1;
    if (strchr (realname, '_') != 0)
      return 1;
-   if (isupper (realname[0]))
+   if (ISUPPER (realname[0]))
      {
        for (i = 1; i < j; i++)
 	 {
-	   if (islower (realname[i]))
+	   if (ISLOWER (realname[i]))
 	     return 1;
 	 }
      }
@@ -918,7 +918,7 @@ mvs_need_alias (realname)
      {
        for (i = 1; i < j; i++)
          {
-	   if (isupper (realname[i]))
+	   if (ISUPPER (realname[i]))
 	     return 1;
 	 }
      }
@@ -951,9 +951,9 @@ mvs_get_alias (realname, aliasname)
 
       c1 = realname[0];
       c2 = realname[1];
-      if (islower (c1)) c1 = toupper (c1);
+      if (ISLOWER (c1)) c1 = TOUPPER (c1);
       else if (c1 == '_') c1 = 'A';
-      if (islower (c2)) c2 = toupper (c2);
+      if (ISLOWER (c2)) c2 = TOUPPER (c2);
       else if (c2 == '_' || c2 == '\0') c2 = '#';
 
       sprintf (aliasname, "%c%c%06d", c1, c2, mvs_hash_alias (realname));
@@ -998,9 +998,9 @@ mvs_check_alias (realname, aliasname)
 
       c1 = realname[0];
       c2 = realname[1];
-      if (islower (c1)) c1 = toupper (c1);
+      if (ISLOWER (c1)) c1 = TOUPPER (c1);
       else if (c1 == '_') c1 = 'A';
-      if (islower (c2)) c2 = toupper (c2);
+      if (ISLOWER (c2)) c2 = TOUPPER (c2);
       else if (c2 == '_' || c2 == '\0') c2 = '#';
 
       sprintf (aliasname, "%c%c%06d", c1, c2, mvs_hash_alias (realname));

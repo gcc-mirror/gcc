@@ -627,7 +627,7 @@ HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
 	    $(USE_HOST_VFPRINTF) $(USE_HOST_DOPRINT) $(HOST_CLIB)
 
 HOST_RTL = $(HOST_PREFIX)rtl.o $(HOST_PREFIX)bitmap.o \
-		$(HOST_PREFIX)ggc-none.o gensupport.o hashtab.o
+		$(HOST_PREFIX)ggc-none.o gensupport.o hashtab.o safe-ctype.o
 
 HOST_PRINT = $(HOST_PREFIX)print-rtl.o
 HOST_ERRORS = $(HOST_PREFIX)errors.o
@@ -1671,6 +1671,11 @@ hashtab.o: $(srcdir)/../libiberty/hashtab.c $(GCONFIG_H)
 	rm -f hashtab.c
 	$(LN_S) $(srcdir)/../libiberty/hashtab.c hashtab.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) hashtab.c
+
+safe-ctype.o: $(srcdir)/../libiberty/safe-ctype.c $(GCONFIG_H)
+	rm -f safe-ctype.c
+	$(LN_S) $(srcdir)/../libiberty/safe-ctype.c safe-ctype.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) safe-ctype.c
 
 genconfig : genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \

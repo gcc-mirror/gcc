@@ -33,8 +33,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "bad.h"
 #include "top.h"
 
-extern char ffesrc_toupper_[256];
-extern char ffesrc_tolower_[256];
 extern char ffesrc_char_match_init_[256];
 extern char ffesrc_char_match_noninit_[256];
 extern char ffesrc_char_source_[256];
@@ -136,8 +134,6 @@ int ffesrc_strncmp_2c (ffeCase mcase, const char *var, const char *str_uc,
 #define ffesrc_terminate_2()
 #define ffesrc_terminate_3()
 #define ffesrc_terminate_4()
-#define ffesrc_toupper(c) (ffesrc_toupper_[(unsigned int) (c)])
-#define ffesrc_tolower(c) (ffesrc_tolower_[(unsigned int) (c)])
 
 /* End of #include file. */
 

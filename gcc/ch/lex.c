@@ -889,8 +889,7 @@ maybe_downcase (str)
     return;
   while (*str)
     {
-      if (ISUPPER ((unsigned char) *str))
-	*str = TOLOWER (*str);
+      *str = TOLOWER (*str);
       str++;
     }
 }
@@ -1526,9 +1525,9 @@ handle_generic_pragma (buffer)
 	  * buff ++ = c;
 	  c = getc (finput);
 	}
-      while (c != EOF && isascii (c) && ! ISSPACE (c) && c != '\n'
-	     && buff < buffer + 128); /* XXX shared knowledge about size of buffer.  */
-      
+      while (c != EOF && ! ISSPACE (c) && buff < buffer + 128);
+        /* XXX shared knowledge about size of buffer.  */
+
       ungetc (c, finput);
       
       * -- buff = 0;

@@ -36,7 +36,9 @@ extern struct hashnode *lookup PARAMS ((const unsigned char *, int, int));
 extern int parse_c_expression PARAMS ((const char *));  /* in tradcif.y */
 extern int test_assertion PARAMS ((unsigned char **));
 
-/* some external tables of character types */
-extern unsigned char is_idstart[], is_idchar[];
+#define is_idchar(x)	ISIDNUM(x)
+#define is_idstart(x)	ISIDST(x)
+#define is_space(x)	ISSPACE(x)
+#define is_nvspace(x)	IS_NVSPACE(x)
 
 #endif /* ! _TRADCPP_H_ */

@@ -457,7 +457,7 @@ ffebad_finish ()
   if (ffebad_places_ == 0)
     {
       /* Didn't output "warning:" string, capitalize it for message.  */
-      if ((s[0] != '\0') && ISALPHA (s[0]) && ISLOWER (s[0]))
+      if (s[0] != '\0')
 	{
 	  char c;
 

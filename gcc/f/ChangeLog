@@ -1,3 +1,16 @@
+2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* Make-lang.in: Link f/fini with safe-ctype.o.
+	* bad.c: Don't test ISUPPER(c) || ISLOWER(c) before calling TOUPPER(c).
+	* com.c: Use TOUPPER, not ffesrc_toupper.
+	* fini.c: Don't test ISALPHA(c) before calling TOUPPER(c)/TOLOWER(c).
+	* intrin.c: Don't test IN_CTYPE_DOMAIN(c).
+	* src.c: Delete ffesrc_toupper_ and ffesrc_tolower_ and their
+	initializing code; use TOUPPER and TOLOWER instead of
+	ffesrc_toupper and ffesrc_tolower.
+	* src.h: Don't declare ffesrc_toupper_ or ffesrc_tolower_.
+	Don't define ffesrc_toupper or ffesrc_tolower.
+
 2000-11-28  Richard Henderson  <rth@redhat.com>
 
 	* com.c (ffecom_member_phase2_): Set TREE_USED on the debugging decl.
@@ -35,11 +48,11 @@ Thu Nov 23 02:18:57 2000  J"orn Rennecke <amylaar@redhat.com>
 
 Sun Nov 19 17:29:22 2000  Matthias Klose  <doko@marvin.itso-berlin.de>
 
-        * g77.texi (Floating-point precision): Adjust example
-        to work with glibc (>= 2.1).
+	* g77.texi (Floating-point precision): Adjust example
+	to work with glibc (>= 2.1).
 
-Sat Nov 18 13:54:49 2000  Matthias Klose  <doko@cs.tu-berlin.de> 
- 
+Sat Nov 18 13:54:49 2000  Matthias Klose  <doko@cs.tu-berlin.de>
+
 	* g77.texi (Floating-point Exception Handling): Adjust
 	example to work with glibc (>= 2.1).
 
@@ -149,7 +162,7 @@ Thu Oct 12 22:28:51 2000  Mark Mitchell  <mark@codesourcery.com>
 	(ffeste_R842): Likewise.
 	(ffeste_R843): Likewise.
 	(ffeste_R1001): Likewise.
-	
+
 2000-10-05  Richard Henderson  <rth@cygnus.com>
 
 	* com.c (finish_function): Don't init can_reach_end.
@@ -188,9 +201,9 @@ Sun Oct  1 11:43:44 2000  Mark Mitchell  <mark@codesourcery.com>
 	* intrin.def: Adjust DEFIMP definition of LOG10, (float) MOD.
 
 2000-08-21  Nix  <nix@esperi.demon.co.uk>
-        
-        * lang-specs.h: Do not process -o or run the assembler if
-        -fsyntax-only.  Use %j instead of /dev/null.
+
+	* lang-specs.h: Do not process -o or run the assembler if
+	-fsyntax-only.  Use %j instead of /dev/null.
 
 2000-08-21  Jakub Jelinek  <jakub@redhat.com>
 
@@ -210,7 +223,7 @@ Sun Oct  1 11:43:44 2000  Mark Mitchell  <mark@codesourcery.com>
 	* news.texi: Ditto.
 
 2000-08-11  G. Helffrich  <george@gly.bris.ac.uk>
-            Toon Moene  <toon@moene.indiv.nluug.nl>
+	    Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* com.c (ffecom_transform_equiv_): Make EQUIVALENCEs addressable
 	so that debug info can be attached to their storage.

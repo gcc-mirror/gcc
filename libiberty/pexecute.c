@@ -41,12 +41,12 @@ extern int errno;
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
-#define ISSPACE (x) isspace(x)
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
 
 #include "libiberty.h"
+#include "safe-ctype.h"
 
 /* stdin file number.  */
 #define STDIN_FILE_NO 0

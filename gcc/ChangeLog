@@ -1,3 +1,32 @@
+2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* Makefile.in (HOST_RTL): Add safe-ctype.o.
+	(safe-ctype.o): New rule.
+	* system.h: Include safe-ctype.h, not ctype.h.  No need to
+	wrap ctype macros.
+
+	* cpphash.h: Zap IStable and related macros.  Define is_* in
+	terms of safe-ctype.h macros.
+	* cppinit.c: Delete the IStable and all related code.
+
+	* tradcpp.c: Delete is_idchar, is_idstart, is_hor_space, and
+	is_space arrays.  Delete initialize_char_syntax.  Change all
+	references to the above arrays to use macros instead.
+	* tradcpp.h: Define is_idchar, is_idstart, is_space, and
+	is_nvspace in terms of safe_ctype.h's macros.
+	* tradcif.y: is_idchar, is_idstart are macros not arrays.
+
+	* config/i370/i370.c, config/winnt/dirent.c,
+	config/winnt/fixinc-nt.c, config/winnt/ld.c:
+	Use uppercase ctype macros.  If we included ctype.h,
+	include safe-ctype.h instead.
+
+	* fixinc/fixfixes.c: Use uppercase ctype macros.  Don't test
+	ISLOWER(c) before calling TOUPPER(c).
+	* fixinc/fixincl.c (extract_quoted_files): Simplify out some gunk.
+	* fixinc/gnu-regex.c: Include safe-ctype.h, not ctype.h.  No need to
+	wrap ctype macros.  Don't test ISUPPER(x) before calling TOLOWER(x).
+
 2000-12-07  DJ Delorie  <dj@redhat.com>
 
 	* c-decl.c (grokdeclarator): preserve previous alignments when
@@ -5,27 +34,27 @@
 
 2000-12-07  Neil Booth  <neilb@earthling.net>
 
-        * cppfiles.c (struct include_file): Move from cpphash.h.
-        (_cpp_never_reread): New function.
-        (open_file, read_include_file): Use it.
-        (stack_include_file): Set the buffer's sysp according to the
-        path in which the file was found.
-        (find_include_file): Don't set sysp.
-        (cpp_make_system_header, actual_directory): Update.
-        (_cpp_execute_include): Do #include_next lookup handling here,
-        not in cpplib.c.  Use _cpp_never_reread.
-        * cpphash.h (struct_include_file): Remove.
-        (struct cpp_buffer): New member sysp.
-        (CPP_IN_SYSTEM_HEADER, _cpp_execute_include): Update.
-        (_cpp_never_reread): New.
-        * cpplib.c (read_line_number): Rename read_flag.  Rework slightly.
-        (end_directive): Clear line_extension flag.
-        (_cpp_handle_directive): Set line_extension flag for #number.
-        (do_include_next): Handle path lookup in _cpp_execute_include.
-        (do_line): Cleanup to use read_flag.  Don't allow flags in #line.
-        (_cpp_do_file_change): Update.
-        (do_pragma_once): Use cpp_never_reread.  Clean up.
-        * cpplib.h (struct lexer_state): New member line_extension.
+	* cppfiles.c (struct include_file): Move from cpphash.h.
+	(_cpp_never_reread): New function.
+	(open_file, read_include_file): Use it.
+	(stack_include_file): Set the buffer's sysp according to the
+	path in which the file was found.
+	(find_include_file): Don't set sysp.
+	(cpp_make_system_header, actual_directory): Update.
+	(_cpp_execute_include): Do #include_next lookup handling here,
+	not in cpplib.c.  Use _cpp_never_reread.
+	* cpphash.h (struct_include_file): Remove.
+	(struct cpp_buffer): New member sysp.
+	(CPP_IN_SYSTEM_HEADER, _cpp_execute_include): Update.
+	(_cpp_never_reread): New.
+	* cpplib.c (read_line_number): Rename read_flag.  Rework slightly.
+	(end_directive): Clear line_extension flag.
+	(_cpp_handle_directive): Set line_extension flag for #number.
+	(do_include_next): Handle path lookup in _cpp_execute_include.
+	(do_line): Cleanup to use read_flag.  Don't allow flags in #line.
+	(_cpp_do_file_change): Update.
+	(do_pragma_once): Use cpp_never_reread.  Clean up.
+	* cpplib.h (struct lexer_state): New member line_extension.
 
 2000-12-07  Richard Henderson  <rth@redhat.com>
 
@@ -39,14 +68,14 @@
 
 2000-12-07  Neil Booth  <neilb@earthling.net>
 
-        * c-common.c (parse_in): Make a cpp_reader *.
-        * cppfiles.c (_cpp_fake_include): Remove.
-        * cpphash.h: Similarly.
-        * cpplib.c (do_line): Don't call _cpp_fake_include.  A valid
-        #line always creates a callback; FC_RENAME if there are no
-        #line flags.
-        * fix-header.c (read_scan_file): cpp_push_buffer cannot fail.
-        The first EOF must be our get_char buffer.
+	* c-common.c (parse_in): Make a cpp_reader *.
+	* cppfiles.c (_cpp_fake_include): Remove.
+	* cpphash.h: Similarly.
+	* cpplib.c (do_line): Don't call _cpp_fake_include.  A valid
+	#line always creates a callback; FC_RENAME if there are no
+	#line flags.
+	* fix-header.c (read_scan_file): cpp_push_buffer cannot fail.
+	The first EOF must be our get_char buffer.
 
 2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -91,17 +120,17 @@
 
 2000-12-06      Joel Sherrill <joel@OARcorp.com>
 
-        * config.gcc (a29k*-*-rtems*, arm*-*-rtems*, c4x-*-rtems*, 
-        h8300-*-rtems*, hppa1.1-*-rtems, *mips*-*-rtems*): New targets.
-        * config.gcc (*-rtems*): Add support for gthr-rtems.h.
-        * gthr-rtems.h, config/a29k/rtems.h, config/arm/rtems-elf.h,
-        config/h8300/rtems.h, config/mips/rtems.h: New files.
+	* config.gcc (a29k*-*-rtems*, arm*-*-rtems*, c4x-*-rtems*,
+	h8300-*-rtems*, hppa1.1-*-rtems, *mips*-*-rtems*): New targets.
+	* config.gcc (*-rtems*): Add support for gthr-rtems.h.
+	* gthr-rtems.h, config/a29k/rtems.h, config/arm/rtems-elf.h,
+	config/h8300/rtems.h, config/mips/rtems.h: New files.
 
 2000-12-06  Mark Kettenis  <kettenis@gnu.org>
 
 	* config.gcc: Reorganize handling of *-*-gnu*, to share target
 	specific make details with Linux.  Update comments to clarify
-        the distinction between GNU/Linux and GNU/Hurd.
+	the distinction between GNU/Linux and GNU/Hurd.
 
 Wed Dec  6 19:22:02 2000  Jeffrey A Law  (law@cygnus.com)
 
@@ -163,9 +192,9 @@ Wed Dec  6 21:03:41 2000  J"orn Rennecke <amylaar@redhat.com>
 	* final.c (final_addr_vec_align): Fix clipping to BIGGEST_ALIGNMENT.
 
 2000-12-06  Sylvain Pion  <Sylvain.Pion@sophia.inria.fr>
-	  
-        * cpplex.c (skip_escaped_newlines): Don't warn for spaces between
-        backslash and newline, when inside a comment.
+
+	* cpplex.c (skip_escaped_newlines): Don't warn for spaces between
+	backslash and newline, when inside a comment.
 
 2000-12-06  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -200,16 +229,16 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-12-05  Neil Booth  <neilb@earthling.net>
 
-        * cppfiles.c (stack_include_file): Push zero-length buffers
-        in case of failure.  Return void, as we don't fail any more.
-        (read_include_file): Check for files we shouldn't re-read.
-        Don't return an error code; errors are implied by marking the
-        file NEVER_REREAD.
-        (_cpp_execute_include): Move the recursion and in-macro checks
-        here.  Update for stack_include_file not failing.
-        * cpplib.c (cpp_push_buffer): Always succeed, since
-        _cpp_execute_include performs the recursion check.  Tidy up.
-        * cpplib.h (cpp_push_buffer): Update prototype.
+	* cppfiles.c (stack_include_file): Push zero-length buffers
+	in case of failure.  Return void, as we don't fail any more.
+	(read_include_file): Check for files we shouldn't re-read.
+	Don't return an error code; errors are implied by marking the
+	file NEVER_REREAD.
+	(_cpp_execute_include): Move the recursion and in-macro checks
+	here.  Update for stack_include_file not failing.
+	* cpplib.c (cpp_push_buffer): Always succeed, since
+	_cpp_execute_include performs the recursion check.  Tidy up.
+	* cpplib.h (cpp_push_buffer): Update prototype.
 
 2000-12-05  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -276,7 +305,7 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* config/arm/arm.c (arm_override_options): Test 'insn_flags' not
 	'tune_flags' for XScale nature.
-	Remove spurious test of HARD_FLOAT and XScale flags. 
+	Remove spurious test of HARD_FLOAT and XScale flags.
 
 	* config/arm/arm.md (umulsidi3adddi): Restore "=&r" register
 	contraint, accidentally changed during XScale contribution.
@@ -294,13 +323,13 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-12-04  Neil Booth  <neilb@earthling.net>
 
-        * tradcif.y: Move lexptr to top of file.  Add rule to handle
-        assertions in conditional expressions.
-        * tradcpp.c (parse_answer): Assertions do not need to go to
-        end of line in conditional directives.
-        (parse_assertion): Get first character of identifiers correct.
-        (test_assertion): New function.
-        * tradcpp.h (test_assertion): New prototype.
+	* tradcif.y: Move lexptr to top of file.  Add rule to handle
+	assertions in conditional expressions.
+	* tradcpp.c (parse_answer): Assertions do not need to go to
+	end of line in conditional directives.
+	(parse_assertion): Get first character of identifiers correct.
+	(test_assertion): New function.
+	* tradcpp.h (test_assertion): New prototype.
 
 2000-12-01  Rodney Brown  <RodneyBrown@mynd.com>
 
@@ -339,19 +368,19 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-12-04  Neil Booth  <neilb@earthling.net>
 
-        * cppinternals.texi: New file.
+	* cppinternals.texi: New file.
 
 2000-12-04  Neil Booth  <neilb@earthling.net>
 
-        * cppfiles.c (cpp_make_system_header): Take 2 booleans,
-        and operate on current buffer.
-        (cpp_read_file): Rename _cpp_read_file.  
-        * cpplib.c (do_line, do_pragma_system_header): Update calls to
-        cpp_make_system_header.
-        * fix-header.c: Similarly.
-        * cpphash.h (_cpp_read_file): Move from... 
-        * cpplib.h: ... here.
-        * cppinit.c (do_includes, cpp_start_read): Update appropriately.
+	* cppfiles.c (cpp_make_system_header): Take 2 booleans,
+	and operate on current buffer.
+	(cpp_read_file): Rename _cpp_read_file.
+	* cpplib.c (do_line, do_pragma_system_header): Update calls to
+	cpp_make_system_header.
+	* fix-header.c: Similarly.
+	* cpphash.h (_cpp_read_file): Move from...
+	* cpplib.h: ... here.
+	* cppinit.c (do_includes, cpp_start_read): Update appropriately.
 
 2000-12-03  Kaveh R. Ghazi  <ghazi@teal.rutgers.edu>
 
@@ -466,9 +495,9 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 2000-12-03  Laurynas Biveinis  <lauras@softhome.net>
 	    Bruce Korb  <bkorb@gnu.org>
 
-        * Makefile.in: pass $(build_canonical) to mkfixinc.sh.
-        * fixinc/mkfixinc.sh: accept build system name as an argument.
-        Use it for choosing the fix build method.  Use the target for
+	* Makefile.in: pass $(build_canonical) to mkfixinc.sh.
+	* fixinc/mkfixinc.sh: accept build system name as an argument.
+	Use it for choosing the fix build method.  Use the target for
 	selecting special fix rules.
 
 2000-12-03  Bernd Schmidt  <bernds@redhat.co.uk>
@@ -553,11 +582,11 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-12-03  Neil Booth  <neilb@earthling.net>
 
-        * cppmacro.c (funlike_invocation_p): Re-disable macros enabled
-        by contexts drops AFTER argument pre-expansion, so that they
-        remain enabled during argument pre-expansion.
-        (_cpp_pop_context): Unconditionally re-enable a macro when
-        dropping a context level.
+	* cppmacro.c (funlike_invocation_p): Re-disable macros enabled
+	by contexts drops AFTER argument pre-expansion, so that they
+	remain enabled during argument pre-expansion.
+	(_cpp_pop_context): Unconditionally re-enable a macro when
+	dropping a context level.
 
 2000-12-03  Manfred Hollstein  <manfredh@redhat.com>
 
@@ -579,7 +608,7 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* c-common.c (c_common_nodes_and_builtins): Declare builtin
 	strcat, strncat, strspn and strcspn.
-	(string_ftype_string_cstring): Renamed from `string_ftype_ptr_ptr'. 
+	(string_ftype_string_cstring): Renamed from `string_ftype_ptr_ptr'.
 
 	* extend.texi (strcat, strcspn, strncat, strspn): Document new
 	builtins.
@@ -608,16 +637,16 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 	(do_ifndef): Likewise.
 
 2000-12-02  Daniel Berlin  <dberlin@redhat.com>
-            Bruce Korb  <bkorb@gnu.org>
+	    Bruce Korb  <bkorb@gnu.org>
 
-        * fixinc/*: global substitute /__MSDOS__/SEPARATE_FIX_PROC/
-        * fixinc/mkfixinc.sh: prepare to use Makefile.BEOS for *-*-beos*
-        * fixinc/Makefile.DOS: define SEPARATE_FIX_PROC for build
-        * fixinc/fixfix.c(wrap_fix): avoid wrapping files that
-        use the "__need_" hackery.  It breaks them.
-        * fixinc/fixincl.c(process - SEPARATE_FIX_PROC):
-        Sometimes on DOS and BeOS the temp output file cannot be opened.
-        Skip the file noisily.  Ought to be fixed instead.
+	* fixinc/*: global substitute /__MSDOS__/SEPARATE_FIX_PROC/
+	* fixinc/mkfixinc.sh: prepare to use Makefile.BEOS for *-*-beos*
+	* fixinc/Makefile.DOS: define SEPARATE_FIX_PROC for build
+	* fixinc/fixfix.c(wrap_fix): avoid wrapping files that
+	use the "__need_" hackery.  It breaks them.
+	* fixinc/fixincl.c(process - SEPARATE_FIX_PROC):
+	Sometimes on DOS and BeOS the temp output file cannot be opened.
+	Skip the file noisily.  Ought to be fixed instead.
 
 2000-12-02  Bruce Korb  <bkorb@gnu.org>
 
@@ -673,10 +702,10 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-12-02  Neil Booth  <neilb@earthling.net>
 
-        * tradcpp.c (struct answer, parse_assertion, parse_answer,
-        canonicalize_text, find_answer): New.
-        (do_assert, do_unassert): Provide appropriate function bodies.
-        (union hashval): New member answers.
+	* tradcpp.c (struct answer, parse_assertion, parse_answer,
+	canonicalize_text, find_answer): New.
+	(do_assert, do_unassert): Provide appropriate function bodies.
+	(union hashval): New member answers.
 
 2000-11-23  Marek Michalkiewicz  <marekm@linux.org.pl>
 
@@ -703,7 +732,7 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-12-02  Neil Booth  <neilb@earthling.net>
 
-        * cppexp.c (parse_number): Update diagnostic test.
+	* cppexp.c (parse_number): Update diagnostic test.
 
 2000-12-02  Bernd Schmidt  <bernds@redhat.co.uk>
 
@@ -720,7 +749,7 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* install.texi (Installation): Remove obsolete description for
 	libstdc++ which is now an integral part of GCC.
-	
+
 2000-12-01  Jim Blandy  <jimb@redhat.com>
 
 	* dbxout.c (dbxout_parms): Correctly describe parameters passed by
@@ -794,19 +823,19 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-12-01  Neil Booth  <neilb@earthling.net>
 
-        * cppinit.c (initialize): Forgotten prototype.
-        * cpplex.c (_cpp_lex_token): Loop until not skipping.
-        Always clear PREV_WHITE upon meeting a new line.
-        * cpplib.c (end_directive): Set pfile->skipping after
-        skip_rest_of_line.
-        * cpplib.h (cpp_reader): Remove macro_pos.
-        * cppmacro.c (cpp_get_line): Don't do anything special inside
-        macros.  
-        (parse_arg): Add PREV_WHITE if a token appears after new lines.
-        (funlike_invocation_p): Save and restore the output position
-        over a successful check for a '('.
-        (enter_macro_context): Delete uses of macro_pos.
-        (cpp_get_token): Don't use pfile->skipping.
+	* cppinit.c (initialize): Forgotten prototype.
+	* cpplex.c (_cpp_lex_token): Loop until not skipping.
+	Always clear PREV_WHITE upon meeting a new line.
+	* cpplib.c (end_directive): Set pfile->skipping after
+	skip_rest_of_line.
+	* cpplib.h (cpp_reader): Remove macro_pos.
+	* cppmacro.c (cpp_get_line): Don't do anything special inside
+	macros.
+	(parse_arg): Add PREV_WHITE if a token appears after new lines.
+	(funlike_invocation_p): Save and restore the output position
+	over a successful check for a '('.
+	(enter_macro_context): Delete uses of macro_pos.
+	(cpp_get_token): Don't use pfile->skipping.
 
 2000-12-01  Phil Edwards  <pme@sources.redhat.com>
 
@@ -912,15 +941,15 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 	the tail recursion sequence.
 
 2000-11-30  J. David Anglin  <dave.anglin@nrc.ca>
-            Bruce Korb  <bkorb@gnu.org>
+	    Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/inclhack.def(): prevent dual double definition protection
 	* fixinc/fixincl.x: regenerate
 
 2000-11-29  Loren J. Rittle  <ljrittle@acm.org>
 
-        * fixinc/Makefile.in (fixincl.x): Explicitly state the
-        location of the generated file.
+	* fixinc/Makefile.in (fixincl.x): Explicitly state the
+	location of the generated file.
 
 2000-11-30  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
@@ -949,12 +978,12 @@ Thu Nov 30 01:12:52 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-11-30  Neil Booth  <neilb@earthling.net>
 
-        * objc/objc-act.c (lang_init, finish_file, maybe_objc_comptypes,
-        maybe_objc_check_decl, build_objc_string_object,
-        objc_declare_alias, objc_declare_class, build_message_expr,
-        build_protocol_expr, build_selector_expr, build_encode_expr,
-        get_class_ivars, start_class, start_protocol): Remove
-        redundant code, assuming doing_objc_thang is true.
+	* objc/objc-act.c (lang_init, finish_file, maybe_objc_comptypes,
+	maybe_objc_check_decl, build_objc_string_object,
+	objc_declare_alias, objc_declare_class, build_message_expr,
+	build_protocol_expr, build_selector_expr, build_encode_expr,
+	get_class_ivars, start_class, start_protocol): Remove
+	redundant code, assuming doing_objc_thang is true.
 
 2000-11-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
@@ -1048,10 +1077,10 @@ Thu Nov 30 01:12:52 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-11-29  Neil Booth  <neilb@earthling.net>
 
-        * c-decl.c (c_decode_option): Don't handle -lang-objc.
-        * objc/lang-options.h: Remove -lang-objc.
-        * objc/lang-specs.h: Don't pass -lang-objc to cc1obj.
-        * objc/objc-act.c (lang_init_options): Set c_language.
+	* c-decl.c (c_decode_option): Don't handle -lang-objc.
+	* objc/lang-options.h: Remove -lang-objc.
+	* objc/lang-specs.h: Don't pass -lang-objc to cc1obj.
+	* objc/objc-act.c (lang_init_options): Set c_language.
 
 2000-11-29  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1060,7 +1089,7 @@ Thu Nov 30 01:12:52 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-11-29  Neil Booth  <neilb@earthling.net>
 
-        * c-pragma.c (init_pragma): Update for parse_in type change.
+	* c-pragma.c (init_pragma): Update for parse_in type change.
 
 2000-11-29  Laurynas Biveinis  <lauras@softhome.net>
 
@@ -1129,8 +1158,8 @@ Wed Nov 29 00:08:23 2000  J"orn Rennecke <amylaar@redhat.com>
 2000-11-28  Neil Booth  <neilb@earthling.net>
 
 	* c-common.h: Remove flag_digraphs.
-	* c-decl.c: Remove flag_digraphs.  
-	(c_decode_option): Don't set it. 
+	* c-decl.c: Remove flag_digraphs.
+	(c_decode_option): Don't set it.
 	* c-lex.c (init_c_lex): Don't do anything for digraphs.
 
 2000-11-28  Richard Henderson  <rth@redhat.com>
@@ -1246,7 +1275,7 @@ Tue Nov 28 09:53:50 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-11-27  Neil Booth  <neilb@earthling.net>
 
-	* cppinit.c (cpp_reader_init): Remove handling of warn_paste   
+	* cppinit.c (cpp_reader_init): Remove handling of warn_paste
 	command line options.
 	(cpp_handle_option): Similarly.
 	* cpplib.h (struct cpp_options): Remove warn_paste.
@@ -1300,7 +1329,7 @@ Mon Nov 27 17:22:56 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* arm.md (arm_adddi3, adddi_sesidi_di, adddi_zesidi_di, arm_addsi3,
 	arm_subsi3_insn, anddi_zesidi_di, arm_andsi3_insn, anddi_notdi_di,
-	anddi_notzesidi_di, anddi_notsesidi_di, arm_iorsi3, 
+	anddi_notzesidi_di, anddi_notsesidi_di, arm_iorsi3,
 	one_cmpldi2): Merge with splitters to create define_insn_and_split
  	patterns.  Remove redundant splits.
 	(peephole2 for add:SI of invalid immediate): New.
@@ -1427,7 +1456,7 @@ Mon Nov 27 17:22:56 MET 2000  Jan Hubicka  <jh@suse.cz>
 	* cpplib.h (struct cpp_reader): Remove lang_asm.
 	(struct cpp_options): Remove c89. New members lang,
 	extended_numbers.
-	* cppexp.c (parse_number): Use them. 
+	* cppexp.c (parse_number): Use them.
 	* cpphash.h (VALID_SIGN): Use them.
 	* cppinit.c (set_lang, cpp_start_read): Update.
 	* cpplex.c (parse_string, _cpp_lex_token): Update.
@@ -1600,7 +1629,7 @@ Sun Nov 26 10:02:37 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2000-11-24  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (v850-*-*): Define c_target_objs and
-        cxx_target_objs.
+	cxx_target_objs.
 
 	* config/v850/t-v850: Define how to build v850-c.o
 
@@ -1632,7 +1661,7 @@ Sun Nov 26 10:02:37 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config.gcc (extra_objs): Remove duplicate description.
 	(c_target_objs): New variable.  Contains target specific
 	object files for the gcc C compiler only.
-	(cxx_target_objs): New variable.  Contains target specific 
+	(cxx_target_objs): New variable.  Contains target specific
 	object files for the gxx C++ compiler only.
 
 	* configure.in (c_target_objs): Substitute in the makefile.
@@ -1681,7 +1710,7 @@ Fri Nov 24 22:37:41 2000  Denis Chertykov  <denisc@overta.ru>
 	* config/avr/avr.c (out_tsthi,out_tstsi): Test simplification bug
 	fixed.
 	(machine_dependent_reorg): Wrong optimization based on
-	NOTICE_UPDATE_CC removed. 
+	NOTICE_UPDATE_CC removed.
 
 Fri Nov 24 19:48:09 2000  J"orn Rennecke <amylaar@redhat.com>
 
@@ -1824,7 +1853,7 @@ Thu Nov 23 01:01:32 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* cpplex.c (trigraph_ok): Ensure we don't warn twice.
 	* cpplib.h (struct cpp_buffer): New member last_Wtrigraphs.
-	
+
 2000-11-22  Richard Henderson  <rth@redhat.com>
 
 	* haifa-sched.c (sched_analyze_1): Don't special-case calls
@@ -1832,11 +1861,11 @@ Thu Nov 23 01:01:32 2000  J"orn Rennecke <amylaar@redhat.com>
 	(sched_analyze_2): Likewise.
 	(sched_analyze): Zap reg_last_uses and reg_last_sets after calls.
 
-2000-11-22  Chris Demetriou  <cgd@sibyte.com>  
+2000-11-22  Chris Demetriou  <cgd@sibyte.com>
 	    Neil Booth  <neilb@earthling.net>
 
 	* gcc.c (validate_switches): Validate multiple switches named
-	in '|' (or) expressions in specs.  
+	in '|' (or) expressions in specs.
 	(handle_braces): If more than 1 alternative in a '|' spec
 	matches, call do_spec1 just once.
 
@@ -1846,7 +1875,7 @@ Thu Nov 23 01:01:32 2000  J"orn Rennecke <amylaar@redhat.com>
 	(TARGET_OPTIONS): Ditto.
 	(OPTIMIZATION_OPTIONS): Temporarily turn off -frename-registers if
 	-O3.
-	
+
 Wed Nov 22 06:40:56 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (hppa_encode_label): Account for addition of encoding
@@ -1924,7 +1953,7 @@ Wed Nov 22 00:52:55 2000  J"orn Rennecke <amylaar@redhat.com>
 	TARGET_CPU_strongarm110 and TARGET_SPU_strongarm1100.
 
 	* config.gcc: Accept --with-cpu=arm9 and --with-cpu=arm9tdmi.
-	
+
 2000-11-21  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (c_unsafe_for_reeval): New function.
@@ -1955,7 +1984,7 @@ Wed Nov 22 00:52:55 2000  J"orn Rennecke <amylaar@redhat.com>
 	(all insn patterns): Use itanium_class, not type attributes.
 	Occasionally split alternatives as necessary.
 	(attr type): Compute from new attr itanium_class.
-	
+
 2000-11-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tradcpp.c (output_line_command): Mark system headers as such in
@@ -2102,7 +2131,7 @@ Wed Nov 22 00:52:55 2000  J"orn Rennecke <amylaar@redhat.com>
 	* ssa.c (ssa_rename_from_hash_function): Avoid needlessly casting
 	away const-ness.
 	* tradcpp.c (rescan, do_line, macroexpand, macarg): Use
-	ISALNUM/ISDIGIT/ISPRINT, not isalnum/isdigit/isprint. 
+	ISALNUM/ISDIGIT/ISPRINT, not isalnum/isdigit/isprint.
 	* varasm.c (const_str_htab_hash, const_str_htab_eq,
 	compare_constant_1, record_constant_1): Constify.
 
@@ -2180,7 +2209,7 @@ Wed Nov 22 00:52:55 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-17  Jim Wilson  <wilson@redhat.com>
 
-	* config/ia64/ia64.c (emit_insn_group_barriers, case CALL_INSN): 
+	* config/ia64/ia64.c (emit_insn_group_barriers, case CALL_INSN):
 	Don't clear need_barrier is next_insn is a CALL_INSN, or has
 	instruction type B or UNKNOWN.
 

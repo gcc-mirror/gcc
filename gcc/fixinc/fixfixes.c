@@ -156,7 +156,7 @@ emit_gnu_type ( text, rm )
     char* pD = z_TYPE;
 
     while (ps < pe)
-      *(pD++) = toupper( *(pd++) = *(ps++) );
+      *(pD++) = TOUPPER( *(pd++) = *(ps++) );
 
     *pD = *pd = NUL;
   }
@@ -612,20 +612,16 @@ FIX_PROC_HEAD( wrap_fix )
                 "wrap-fix" );
 
   for (;;) {
-    char ch = *(pz_src++);
+    char ch = *pz_src++;
 
-    if (ISLOWER (ch))
-      *(pz_dst++) = TOUPPER ( ch );
-
-    else if (ISALNUM ( ch ))
-      *(pz_dst++) = ch;
-
-    else if (ch == NUL) {
-      *(pz_dst++) = ch;
+    if (ch == NUL) {
+      *pz_dst++ = ch;
       break;
+    } else if (! ISALNUM (ch)) {
+      *pz_dst++ = '_';
+    } else {
+      *pz_dst++ = TOUPPER (ch);
     }
-    else
-      *(pz_dst++) = '_';
 
     if (++len >= sizeof( z_fixname )) {
       void* p = xmalloc( len + strlen( pz_src ) + 1 );

@@ -125,9 +125,6 @@ enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
    runtime.  */
 #if HAVE_DESIGNATED_INITIALIZERS
 
-#define init_IStable()  /* Nothing.  */
-#define ISTABLE __extension__ const U_CHAR _cpp_IStable[UCHAR_MAX + 1] = {
-
 #define init_trigraph_map()  /* Nothing.  */
 #define TRIGRAPH_MAP \
 __extension__ const U_CHAR _cpp_trigraph_map[UCHAR_MAX + 1] = {
@@ -136,10 +133,6 @@ __extension__ const U_CHAR _cpp_trigraph_map[UCHAR_MAX + 1] = {
 #define s(p, v) [p] = v,
 
 #else
-
-#define ISTABLE unsigned char _cpp_IStable[UCHAR_MAX + 1] = { 0 }; \
- static void init_IStable PARAMS ((void)) { \
- unsigned char *x = _cpp_IStable;
 
 #define TRIGRAPH_MAP U_CHAR _cpp_trigraph_map[UCHAR_MAX + 1] = { 0 }; \
  static void init_trigraph_map PARAMS ((void)) { \
@@ -150,45 +143,13 @@ __extension__ const U_CHAR _cpp_trigraph_map[UCHAR_MAX + 1] = {
 
 #endif
 
-#define A(x) s(x, ISidnum|ISidstart)
-#define N(x) s(x, ISidnum|ISnumstart)
-#define H(x) s(x, IShspace|ISspace)
-#define V(x) s(x, ISvspace|ISspace)
-#define S(x) s(x, ISspace)
-
-ISTABLE
-  A('_')
-
-  A('a') A('b') A('c') A('d') A('e') A('f') A('g') A('h') A('i')
-  A('j') A('k') A('l') A('m') A('n') A('o') A('p') A('q') A('r')
-  A('s') A('t') A('u') A('v') A('w') A('x') A('y') A('z')
-
-  A('A') A('B') A('C') A('D') A('E') A('F') A('G') A('H') A('I')
-  A('J') A('K') A('L') A('M') A('N') A('O') A('P') A('Q') A('R')
-  A('S') A('T') A('U') A('V') A('W') A('X') A('Y') A('Z')
-
-  N('1') N('2') N('3') N('4') N('5') N('6') N('7') N('8') N('9') N('0')
-
-  H(' ') H('\t')
-
-  V('\n') V('\r')
-
-  S('\0') S('\v') S('\f')
-END
-
 TRIGRAPH_MAP
   s('=', '#')	s(')', ']')	s('!', '|')
   s('(', '[')	s('\'', '^')	s('>', '}')
   s('/', '\\')	s('<', '{')	s('-', '~')
 END
 
-#undef A
-#undef N
-#undef H
-#undef V
-#undef S
 #undef s
-#undef ISTABLE
 #undef END
 #undef TRIGRAPH_MAP
 
@@ -507,11 +468,9 @@ initialize ()
   qsort (cl_options, N_OPTS, sizeof (struct cl_option), opt_comp);
 #endif
 
-  /* Set up the trigraph map and the IStable.  These don't need to do
-     anything if we were compiled with a compiler that supports C99
-     designated initializers.  */
+  /* Set up the trigraph map.  This doesn't need to do anything if we were
+     compiled with a compiler that supports C99 designated initializers.  */
   init_trigraph_map ();
-  init_IStable ();
 
   initialized = 1;
 }

@@ -135,39 +135,30 @@ struct cpp_buffer
   unsigned char sysp;
 };
 
-/* Character classes.
+/* Character classes.  Based on the more primitive macros in safe-ctype.h.
    If the definition of `numchar' looks odd to you, please look up the
    definition of a pp-number in the C standard [section 6.4.8 of C99].
 
    In the unlikely event that characters other than \r and \n enter
    the set is_vspace, the macro handle_newline() in cpplex.c must be
    updated.  */
-#define ISidnum		0x01	/* a-zA-Z0-9_ */
-#define ISidstart	0x02	/* _a-zA-Z */
-#define ISnumstart	0x04	/* 0-9 */
-#define IShspace	0x08	/* ' ' \t */
-#define ISvspace	0x10	/* \r \n */
-#define ISspace		0x20	/* ' ' \t \r \n \f \v \0 */
-
 #define _dollar_ok(x)	((x) == '$' && CPP_OPTION (pfile, dollars_in_ident))
 
-#define is_idchar(x)	((_cpp_IStable[x] & ISidnum) || _dollar_ok(x))
-#define is_idstart(x)	((_cpp_IStable[x] & ISidstart) || _dollar_ok(x))
-#define is_numchar(x)	(_cpp_IStable[x] & ISidnum)
-#define is_numstart(x)	(_cpp_IStable[x] & ISnumstart)
-#define is_hspace(x)	(_cpp_IStable[x] & IShspace)
-#define is_vspace(x)	(_cpp_IStable[x] & ISvspace)
-#define is_nvspace(x)	((_cpp_IStable[x] & (ISspace | ISvspace)) == ISspace)
-#define is_space(x)	(_cpp_IStable[x] & ISspace)
+#define is_idchar(x)	(ISIDNUM(x) || _dollar_ok(x))
+#define is_numchar(x)	ISIDNUM(x)
+#define is_idstart(x)	(ISIDST(x) || _dollar_ok(x))
+#define is_numstart(x)	ISDIGIT(x)
+#define is_hspace(x)	ISBLANK(x)
+#define is_vspace(x)	IS_VSPACE(x)
+#define is_nvspace(x)	IS_NVSPACE(x)
+#define is_space(x)	IS_SPACE_OR_NUL(x)
 
-/* These tables are constant if they can be initialized at compile time,
+/* This table is constant if it can be initialized at compile time,
    which is the case if cpp was compiled with GCC >=2.7, or another
    compiler that supports C99.  */
 #if HAVE_DESIGNATED_INITIALIZERS
-extern const unsigned char _cpp_IStable[UCHAR_MAX + 1];
 extern const unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #else
-extern unsigned char _cpp_IStable[UCHAR_MAX + 1];
 extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #endif
 

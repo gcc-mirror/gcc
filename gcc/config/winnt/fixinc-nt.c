@@ -64,7 +64,7 @@ newname (olddirname)
   char *newname = strdup (olddirname);
 
   if ((strlen (newname) >= 2)
-      && (isalpha (newname[0]) && newname[1] == ':'))
+      && (ISALPHA (newname[0]) && newname[1] == ':'))
     newname [1] = '-';
   else if ((strlen (newname) >= 1) 
            && (newname [0] == '/' || newname [0] == '\\'))

@@ -771,14 +771,8 @@ extract_quoted_files (pz_data, pz_fixed_file, p_re_match)
       pz_incl_quot += p_re_match->rm_so;
 
       /*  Skip forward to the included file name */
-      while (ISSPACE (*pz_incl_quot))
+      while (*pz_incl_quot != '"')
         pz_incl_quot++;
-      /* ISSPACE() may evaluate its argument more than once!  */
-      while (++pz_incl_quot, ISSPACE (*pz_incl_quot))
-        ;
-      pz_incl_quot += sizeof ("include") - 1;
-      while (*pz_incl_quot++ != '"')
-        ;
 
       if (quoted_file_exists (pz_src_dir, pz_fixed_file, pz_incl_quot))
         {

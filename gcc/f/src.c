@@ -32,16 +32,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "src.h"
 #include "top.h"
 
-/* This array does a toupper (), but any valid char type is valid as an
-   index and returns identity if not a lower-case character.  */
-
-char ffesrc_toupper_[256];
-
-/* This array does a tolower (), but any valid char type is valid as an
-   index and returns identity if not an upper-case character.  */
-
-char ffesrc_tolower_[256];
-
 /* This array is set up so that, given a source-mapped character, the result
    of indexing into this array will match an upper-cased character depending
    on the source-mapped character's case and the established ffe_case_match()
@@ -113,17 +103,9 @@ ffesrc_init_1 ()
       ffesrc_char_match_noninit_[i] = i;
       ffesrc_char_source_[i] = i;
       ffesrc_char_internal_init_[i] = i;
-      ffesrc_toupper_[i] = i;
-      ffesrc_tolower_[i] = i;
       ffesrc_bad_symbol_init_[i] = FFEBAD;
       ffesrc_bad_symbol_noninit_[i] = FFEBAD;
     }
-
-  for (i = 'A'; i <= 'Z'; ++i)
-    ffesrc_tolower_[i] = TOLOWER (i);
-
-  for (i = 'a'; i <= 'z'; ++i)
-    ffesrc_toupper_[i] = TOUPPER (i);
 
   ffesrc_check_symbol_ = (ffe_case_symbol () != FFE_caseNONE);
 
@@ -230,8 +212,8 @@ ffesrc_strcmp_1ns2i (ffeCase mcase, const char *var, int len,
       for (; len > 0; --len, ++var, ++str_ic)
 	{
 	  c = ffesrc_char_source (*var);	/* Transform source. */
-	  c = ffesrc_toupper (c);	/* Upcase source. */
-	  d = ffesrc_toupper (*str_ic);	/* Upcase InitialCaps char. */
+	  c = TOUPPER (c);			/* Upcase source. */
+	  d = TOUPPER (*str_ic);		/* Upcase InitialCaps char. */
 	  if (c != d)
 	    {
 	      if ((d != '\0') && (c < d))
@@ -246,7 +228,7 @@ ffesrc_strcmp_1ns2i (ffeCase mcase, const char *var, int len,
       for (; len > 0; --len, ++var, ++str_ic)
 	{
 	  c = ffesrc_char_source (*var);	/* Transform source. */
-	  d = ffesrc_toupper (*str_ic);	/* Transform InitialCaps char. */
+	  d = TOUPPER (*str_ic);	/* Transform InitialCaps char. */
 	  if (c != d)
 	    {
 	      if ((d != '\0') && (c < d))
@@ -261,7 +243,7 @@ ffesrc_strcmp_1ns2i (ffeCase mcase, const char *var, int len,
       for (; len > 0; --len, ++var, ++str_ic)
 	{
 	  c = ffesrc_char_source (*var);	/* Transform source. */
-	  d = ffesrc_tolower (*str_ic);	/* Transform InitialCaps char. */
+	  d = TOLOWER (*str_ic);	/* Transform InitialCaps char. */
 	  if (c != d)
 	    {
 	      if ((d != '\0') && (c < d))
@@ -279,14 +261,14 @@ ffesrc_strcmp_1ns2i (ffeCase mcase, const char *var, int len,
 	  d = *str_ic;		/* No transform of InitialCaps char. */
 	  if (c != d)
 	    {
-	      c = ffesrc_toupper (c);
-	      d = ffesrc_toupper (d);
+	      c = TOUPPER (c);
+	      d = TOUPPER (d);
 	      while ((len > 0) && (c == d))
 		{		/* Skip past equivalent (case-ins) chars. */
 		  --len, ++var, ++str_ic;
 		  if (len > 0)
-		    c = ffesrc_toupper (*var);
-		  d = ffesrc_toupper (*str_ic);
+		    c = TOUPPER (*var);
+		  d = TOUPPER (*str_ic);
 		}
 	      if ((d != '\0') && (c < d))
 		return -1;
@@ -323,7 +305,7 @@ ffesrc_strcmp_2c (ffeCase mcase, const char *var, const char *str_uc,
     case FFE_caseNONE:
       for (; *var != '\0'; ++var, ++str_uc)
 	{
-	  c = ffesrc_toupper (*var);	/* Upcase source. */
+	  c = TOUPPER (*var);	/* Upcase source. */
 	  if (c != *str_uc)
 	    {
 	      if ((*str_uc != '\0') && (c < *str_uc))
@@ -349,11 +331,11 @@ ffesrc_strcmp_2c (ffeCase mcase, const char *var, const char *str_uc,
 	{
 	  if (*var != *str_ic)
 	    {
-	      c = ffesrc_toupper (*var);
+	      c = TOUPPER (*var);
 	      while ((c != '\0') && (c == *str_uc))
 		{		/* Skip past equivalent (case-ins) chars. */
 		  ++var, ++str_uc;
-		  c = ffesrc_toupper (*var);
+		  c = TOUPPER (*var);
 		}
 	      if ((*str_uc != '\0') && (c < *str_uc))
 		return -1;
@@ -393,7 +375,7 @@ ffesrc_strncmp_2c (ffeCase mcase, const char *var, const char *str_uc,
     case FFE_caseNONE:
       for (; len > 0; ++var, ++str_uc, --len)
 	{
-	  c = ffesrc_toupper (*var);	/* Upcase source. */
+	  c = TOUPPER (*var);	/* Upcase source. */
 	  if (c != *str_uc)
 	    {
 	      if (c < *str_uc)
@@ -417,12 +399,12 @@ ffesrc_strncmp_2c (ffeCase mcase, const char *var, const char *str_uc,
 	{
 	  if (*var != *str_ic)
 	    {
-	      c = ffesrc_toupper (*var);
+	      c = TOUPPER (*var);
 	      while ((len > 0) && (c == *str_uc))
 		{		/* Skip past equivalent (case-ins) chars. */
 		  --len, ++var, ++str_uc;
 		  if (len > 0)
-		    c = ffesrc_toupper (*var);
+		    c = TOUPPER (*var);
 		}
 	      if ((len > 0) && (c < *str_uc))
 		return -1;
