@@ -1,3 +1,8 @@
+2000-11-21  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcse.c (hoist_expr_reaches_here_p): Do not mark expr_bb as
+	visited before visiting it.
+
 2000-11-21  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.h: Accept TARGET_CPU_arm9tdmi,
