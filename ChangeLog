@@ -1,3 +1,8 @@
+2002-09-27  Geoffrey Keating  <geoffk@apple.com>
+
+	* configure.in (powerpc-*-darwin*): Don't configure BFD, TK, or the
+	things that depend on them.
+
 2002-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Make subsituted variables more autoconfy.
