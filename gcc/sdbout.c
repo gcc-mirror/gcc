@@ -801,7 +801,7 @@ sdbout_symbol (decl, local)
       else if (GET_CODE (value) == MEM
 	       && (GET_CODE (XEXP (value, 0)) == MEM
 		   || (GET_CODE (XEXP (value, 0)) == REG
-		       && REGNO (XEXP (value, 0)) != FRAME_POINTER_REGNUM
+		       && REGNO (XEXP (value, 0)) != HARD_FRAME_POINTER_REGNUM
 		       && REGNO (XEXP (value, 0)) != STACK_POINTER_REGNUM)))
 	/* If the value is indirect by memory or by a register
 	   that isn't the frame pointer
