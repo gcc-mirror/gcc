@@ -401,9 +401,9 @@ error (const char * msgid, ...)
    provide a default entry.  */
 
 void
-fancy_abort (void)
+fancy_abort (const char *file, int line, const char *func)
 {
-  fatal ("internal error");
+  fatal ("internal gcc abort in %s, at %s:%d", func, file, line);
 }
 
 static void

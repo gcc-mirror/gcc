@@ -771,7 +771,7 @@ BUILD_SUPPORT = gensupport.o insn-conditions.o
 BUILD_EARLY_SUPPORT = gensupport.o dummy-conditions.o
 
 BUILD_PRINT = build-print-rtl.o
-BUILD_ERRORS = errors.o
+BUILD_ERRORS = build-errors.o
 BUILD_VARRAY = build-varray.o
 
 # Specify the directories to be searched for header files.
@@ -2137,6 +2137,7 @@ lambda-mat.o : lambda-mat.c lambda.h $(GGC_H) $(SYSTEM_H) $(CONFIG_H) $(TM_H)
 params.o : params.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(PARAMS_H) toplev.h
 hooks.o: hooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(HOOKS_H)
 pretty-print.o: $(CONFIG_H) $(SYSTEM_H) pretty-print.c $(PRETTY_PRINT_H)
+errors.o : errors.c $(CONFIG_H) $(SYSTEM_H) errors.h
 
 $(out_object_file): $(out_file) $(CONFIG_H) coretypes.h $(TM_H) $(TREE_H) $(GGC_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h real.h insn-config.h conditions.h \
@@ -2464,8 +2465,9 @@ genprogs=$(genprognames:%=%$(build_exeext))
 genobjs=$(genprognames:%=%.o) read-rtl.o gensupport.o genattrtab.o \
         genautomata.o gengenrtl.o genmodes.o genpreds.o gengtype.o \
 	genconstants.o gen-protos.o scan.o fix-header.o scan-decls.o \
-	gencheck.o dummy-conditions.o genconditions.o errors.o ggc-none.o \
-	min-insn-modes.o build-rtl.o build-print-rtl.o build-varray.o
+	gencheck.o dummy-conditions.o genconditions.o build-errors.o \
+	ggc-none.o min-insn-modes.o build-rtl.o build-print-rtl.o \
+	build-varray.o
 
 $(genprogs): %$(build_exeext): %.o  $(BUILD_RTL) $(BUILD_SUPPORT) \
 			       $(BUILD_PRINT) $(BUILD_ERRORS) \
@@ -2537,9 +2539,9 @@ genautomata.o : genautomata.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H) \
 genoutput.o : genoutput.c $(RTL_BASE_H) $(BCONFIG_H) \
   $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
 
-gengenrtl$(build_exeext) : gengenrtl.o $(BUILD_LIBDEPS)
+gengenrtl$(build_exeext) : gengenrtl.o $(BUILD_ERRORS) $(BUILD_LIBDEPS)
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	 gengenrtl.o $(BUILD_LIBS)
+	 gengenrtl.o $(BUILD_ERRORS) $(BUILD_LIBS)
 
 gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
 
@@ -2592,7 +2594,7 @@ genconditions$(build_exeext) : genconditions.o $(BUILD_EARLY_SUPPORT) \
 genconditions.o : genconditions.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H) \
 	coretypes.h $(GTM_H) errors.h
 
-errors.o : errors.c $(BCONFIG_H) $(SYSTEM_H) errors.h
+build-errors.o : errors.c $(BCONFIG_H) $(SYSTEM_H) errors.h
 ggc-none.o : ggc-none.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H)
 min-insn-modes.o : min-insn-modes.c $(BCONFIG_H) system.h $(MACHMODE_H)
 build-rtl.o: rtl.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) $(RTL_H) \
@@ -2711,12 +2713,10 @@ s-iov: gcov-iov$(build_exeext)
 gcov.o: gcov.c gcov-io.h gcov-io.c gcov-iov.h intl.h $(SYSTEM_H) coretypes.h $(TM_H) $(CONFIG_H)
 gcov-dump.o: gcov-dump.c gcov-io.h gcov-io.c gcov-iov.h $(SYSTEM_H) coretypes.h $(TM_H) $(CONFIG_H)
 
-# Only one of 'gcov' or 'gcov.exe' is actually built, depending
-# upon whether $(exeext) is empty or not.
-GCOV_OBJS = gcov.o intl.o version.o
+GCOV_OBJS = gcov.o intl.o version.o errors.o
 gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(GCOV_OBJS) $(LIBS) -o $@
-GCOV_DUMP_OBJS = gcov-dump.o version.o
+GCOV_DUMP_OBJS = gcov-dump.o version.o errors.o
 gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) $(LIBS) -o $@
 #
@@ -2841,11 +2841,12 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos$(build_
 # This is nominally a 'build' program, but it's run only when host==build,
 # so we can (indeed, must) use $(LIBDEPS) and $(LIBS).
 fix-header$(build_exeext): fix-header.o scan-decls.o scan.o xsys-protos.h \
-           c-incpath.o cppdefault.o prefix.o $(LIBDEPS)
+           c-incpath.o cppdefault.o prefix.o $(BUILD_ERRORS) $(LIBDEPS)
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ fix-header.o \
-	c-incpath.o cppdefault.o scan-decls.o prefix.o scan.o $(LIBS)
+	  c-incpath.o cppdefault.o scan-decls.o prefix.o scan.o \
+	  $(BUILD_ERRORS) $(LIBS)
 
-fix-header.o: fix-header.c $(OBSTACK_H) scan.h \
+fix-header.o: fix-header.c $(OBSTACK_H) scan.h errors.h \
 	xsys-protos.h $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) $(CPPLIB_H)
 
 scan-decls.o: scan-decls.c scan.h $(CPPLIB_H) $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H)

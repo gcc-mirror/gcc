@@ -79,10 +79,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "scan.h"
 #include "cpplib.h"
 #include "c-incpath.h"
-
-static void v_fatal (const char *, va_list)
-     ATTRIBUTE_PRINTF (1,0) ATTRIBUTE_NORETURN;
-static void fatal (const char *, ...) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+#include "errors.h"
 
 #ifdef TARGET_EXTRA_INCLUDES
 static void hook_void_int(int u ATTRIBUTE_UNUSED) { }
@@ -407,7 +404,6 @@ lookup_std_proto (const char *name, int name_length)
 
 char *inc_filename;
 int inc_filename_length;
-const char *progname = "fix-header";
 FILE *outf;
 sstring line;
 
@@ -1076,6 +1072,7 @@ main (int argc, char **argv)
   long int inf_size;
   struct symbol_list *cur_symbols;
 
+  progname = "fix-header";
   if (argv[0] && argv[0][0])
     {
       char *p;
@@ -1300,25 +1297,4 @@ main (int argc, char **argv)
   fclose (outf);
 
   return 0;
-}
-
-
-static void
-v_fatal (const char *str, va_list ap)
-{
-  fprintf (stderr, "%s: %s: ", progname, inc_filename);
-  vfprintf (stderr, str, ap);
-  fprintf (stderr, "\n");
-
-  exit (FATAL_EXIT_CODE);
-}
-
-static void
-fatal (const char *str, ...)
-{
-  va_list ap;
-
-  va_start (ap, str);
-  v_fatal (str, ap);
-  va_end (ap);
 }

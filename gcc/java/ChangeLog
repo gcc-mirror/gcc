@@ -1,3 +1,7 @@
+2004-08-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* jv-scan.c (fancy_abort): Add.
+
 2004-08-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* expr.c (build_java_arrayaccess): Use convert to change
@@ -8592,7 +8596,7 @@
 	properly initialize `finished_label'. Don't emit gotos for empty
 	try statements.
 
-2000-03-19  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-03-19  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* except.c (emit_handlers): Clear catch_clauses_last.
 
