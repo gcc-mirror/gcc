@@ -454,7 +454,7 @@ extern int pex_get_times (struct pex_obj *, int count,
 
 /* Clean up a pex_obj.  */
 
-  extern void pex_free (struct pex_obj *);
+extern void pex_free (struct pex_obj *);
 
 /* Just execute one program.  Return value is as for pex_run.
    FLAGS	Combination of PEX_SEARCH and PEX_STDERR_TO_STDOUT.
