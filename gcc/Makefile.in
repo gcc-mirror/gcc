@@ -2365,6 +2365,9 @@ install-info: doc installdirs lang.install-info
 	for f in cpp.info* gcc.info*; do \
 	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	    $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
+	    if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
+	       install-info --dir-file=$(infodir)/dir $(infodir)/$$realfile; \
+	    else true; fi
 	done
 	-chmod a-x $(infodir)/cpp.info* $(infodir)/gcc.info*
 
