@@ -27,6 +27,8 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_ASM_NAMED_SECTION
 #undef ASM_DECLARE_FUNCTION_NAME
 #undef MAX_OFILE_ALIGNMENT
+#undef SIZE_TYPE
+#undef PTRDIFF_TYPE
 
 /* Be ELF-like.  */
 /* TODO: convert includes to ${tm_file} list in config.gcc.  */
@@ -47,6 +49,11 @@ Boston, MA 02111-1307, USA.  */
 /* use a more compact format for line information */
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
 
+/* WCHAR_TYPE_SIZE is defined to BITS_PER_WORD in svr4.h, but
+   BITS_PER_WORD isn't constant any more.  Fortunately, on no SH
+   platform is it wider than 32-bits.  */
+#define MAX_WCHAR_TYPE_SIZE 32
+
 /* The prefix to add to user-visible assembler symbols.
    Note that svr4.h redefined it from the original value (that we want)
    in sh.h */
@@ -60,6 +67,14 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) do {				\
   output_file_directive ((FILE), main_input_filename);		\
+/* We also need to show the text section with the proper	\
+   attributes as in TEXT_SECTION_ASM_OP, before dwarf2out	\
+   emits it without attributes in TEXT_SECTION, else GAS	\
+   will complain.  We can teach GAS specifically about the	\
+   default attributes for our choice of text section, but	\
+   then we would have to change GAS again if/when we change	\
+   the text section name.  */					\
+   fprintf ((FILE), "%s\n", TEXT_SECTION_ASM_OP);		\
   if (TARGET_LITTLE_ENDIAN)					\
     fprintf ((FILE), "\t.little\n");				\
 } while (0)
@@ -69,17 +84,54 @@ Boston, MA 02111-1307, USA.  */
 /* Let code know that this is ELF.  */
 #define CPP_PREDEFINES "-D__sh__ -D__ELF__ -Acpu=sh -Amachine=sh"
 
+#undef SIZE_TYPE
+#define SIZE_TYPE (TARGET_SH5 ? "long unsigned int" : "unsigned int")
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE (TARGET_SH5 ? "long int" : "int")
 /* Pass -ml and -mrelax to the assembler and linker.  */
 #undef ASM_SPEC
-#define ASM_SPEC  "%{ml:-little} %{mrelax:-relax}"
+#define ASM_SPEC  "%{ml:-little} %{mrelax:-relax} \
+%{m5-compact:--isa=SHcompact} %{m5-compact-nofpu:--isa=SHcompact} \
+%{m5-32media:--isa=SHmedia --abi=32} %{m5-32media-nofpu:--isa=SHmedia --abi=32} \
+%{m5-64media:--isa=SHmedia --abi=64} %{m5-64media-nofpu:--isa=SHmedia --abi=64}"
 
 #undef LINK_SPEC
-#define LINK_SPEC "%{ml:-m shlelf} %{mrelax:-relax}"
+#define LINK_SPEC " \
+%{m5-compact:%{!ml:-m shelf32} %{ml:-m shlelf32}} \
+%{m5-compact-nofpu:%{!ml:-m shelf32} %{ml:-m shlelf32}} \
+%{m5-32media:%{!ml:-m shelf32} %{ml:-m shlelf32}} \
+%{m5-32media-nofpu:%{!ml:-m shelf32} %{ml:-m shlelf32}} \
+%{m5-64media:%{!ml:-m shelf64} %{ml:-m shlelf64}} \
+%{m5-64media-nofpu:%{!ml:-m shelf64} %{ml:-m shlelf64}} \
+%{!m5-64media:%{!m5-64media-nofpu:%{!m5-32media:%{!m5-32media-nofpu:%{!m5-compact:%{!m5-compact-nofpu:%{ml:-m shlelf}}}}}}} \
+%{mrelax:-relax}"
 
 /* svr4.h undefined DBX_REGISTER_NUMBER, so we need to define it
    again.  */
-#define DBX_REGISTER_NUMBER(REGNO)	\
-  (((REGNO) >= 22 && (REGNO) <= 39) ? ((REGNO) + 1) : (REGNO))
+#define DBX_REGISTER_NUMBER(REGNO)					\
+  (GENERAL_REGISTER_P (REGNO)						\
+   ? ((REGNO) - FIRST_GENERAL_REG)					\
+   : FP_REGISTER_P (REGNO)						\
+   ? ((REGNO) - FIRST_FP_REG + (TARGET_SH5 ? (TARGET_SHCOMPACT ? 245	\
+					      : 77) : 25))		\
+   : XD_REGISTER_P (REGNO)						\
+   ? ((REGNO) - FIRST_XD_REG + (TARGET_SH5 ? 289 : 87))			\
+   : TARGET_REGISTER_P (REGNO)						\
+   ? ((REGNO) - FIRST_TARGET_REG + 68)					\
+   : (REGNO) == PR_REG							\
+   ? (TARGET_SH5 ? 241 : 17)						\
+   : (REGNO) == T_REG							\
+   ? (TARGET_SH5 ? 242 : 18)						\
+   : (REGNO) == GBR_REG							\
+   ? (TARGET_SH5 ? 238 : 19)						\
+   : (REGNO) == MACH_REG						\
+   ? (TARGET_SH5 ? 239 : 20)						\
+   : (REGNO) == MACL_REG						\
+   ? (TARGET_SH5 ? 240 : 21)						\
+   : (REGNO) == FPUL_REG						\
+   ? (TARGET_SH5 ? 244 : 23)						\
+   : (abort(), -1))
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM) \

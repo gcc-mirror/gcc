@@ -1002,6 +1002,21 @@ UDItype __umulsidi3 (USItype, USItype);
 #define UMUL_TIME 5
 #endif
 
+#if defined (__SH5__) && __SHMEDIA__ && W_TYPE_SIZE == 32
+#define __umulsidi3(u,v) ((UDItype)(USItype)u*(USItype)v)
+#define count_leading_zeros(count, x) \
+  do									\
+    {									\
+      UDItype x_ = (USItype)(x);					\
+      SItype c_;							\
+									\
+      __asm__ ("nsb %1, %0" : "=r" (c_) : "r" (x_));			\
+      (count) = c_ - 31;						\
+    }									\
+  while (0)
+#define COUNT_LEADING_ZEROS_0 32
+#endif
+
 #if defined (__sparc__) && !defined (__arch64__) && !defined (__sparcv9) \
     && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \

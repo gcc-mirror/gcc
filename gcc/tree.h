@@ -1910,6 +1910,7 @@ enum tree_index
   TI_UV16QI_TYPE,
 
   TI_V4SF_TYPE,
+  TI_V16SF_TYPE,
   TI_V4SI_TYPE,
   TI_V8HI_TYPE,
   TI_V8QI_TYPE,
@@ -1992,6 +1993,7 @@ extern tree global_trees[TI_MAX];
 #define V4HI_type_node			global_trees[TI_V4HI_TYPE]
 #define V2SI_type_node			global_trees[TI_V2SI_TYPE]
 #define V2SF_type_node			global_trees[TI_V2SF_TYPE]
+#define V16SF_type_node			global_trees[TI_V16SF_TYPE]
 
 /* An enumeration of the standard C integer types.  These must be
    ordered so that shorter types appear before longer ones.  */
