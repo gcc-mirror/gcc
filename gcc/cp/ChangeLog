@@ -5,6 +5,12 @@
 
 2003-12-03  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9127
+	* cp-tree.h (at_namespace_scope_p): New function.
+	* parser.c (cp_parser_class_head): Handle invalid explicit
+	specializations.
+	* search.c (at_namespace_scope_p): New function.
+
 	PR c++/13179
 	* semantics.c (finish_handler_parms): Do not call eh_type_info for
 	types used in templates.

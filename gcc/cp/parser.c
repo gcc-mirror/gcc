@@ -11584,6 +11584,7 @@ cp_parser_class_head (cp_parser* parser,
   bool template_id_p = false;
   bool qualified_p = false;
   bool invalid_nested_name_p = false;
+  bool invalid_explicit_specialization_p = false;
   unsigned num_templates;
 
   /* Assume no nested-name-specifier will be present.  */
@@ -11732,12 +11733,31 @@ cp_parser_class_head (cp_parser* parser,
   else if (invalid_nested_name_p)
     cp_parser_error (parser,
 		     "qualified name does not name a class");
+  /* An explicit-specialization must be preceded by "template <>".  If
+     it is not, try to recover gracefully.  */
+  if (at_namespace_scope_p () 
+      && parser->num_template_parameter_lists == 0
+      && num_templates == 1)
+    {
+      error ("an explicit specialization must be preceded by 'template <>'");
+      invalid_explicit_specialization_p = true;
+      /* Take the same action that would have been taken by
+	 cp_parser_explicit_specialization.  */
+      ++parser->num_template_parameter_lists;
+      begin_specialization ();
+    }
+  /* There must be no "return" statements between this point and the
+     end of this function; set "type "to the correct return value and
+     use "goto done;" to return.  */
   /* Make sure that the right number of template parameters were
      present.  */
   if (!cp_parser_check_template_parameters (parser, num_templates))
-    /* If something went wrong, there is no point in even trying to
-       process the class-definition.  */
-    return NULL_TREE;
+    {
+      /* If something went wrong, there is no point in even trying to
+	 process the class-definition.  */
+      type = NULL_TREE;
+      goto done;
+    }
 
   /* Look up the type.  */
   if (template_id_p)
@@ -11789,7 +11809,8 @@ cp_parser_class_head (cp_parser* parser,
 	{
 	  error ("declaration of `%D' in `%D' which does not "
 		 "enclose `%D'", type, scope, nested_name_specifier);
-	  return NULL_TREE;
+	  type = NULL_TREE;
+	  goto done;
 	}
       /* [dcl.meaning]
 
@@ -11848,6 +11869,12 @@ cp_parser_class_head (cp_parser* parser,
   if (nested_name_specifier)
     pop_scope (nested_name_specifier);
 
+ done:
+  if (invalid_explicit_specialization_p)
+    {
+      end_specialization ();
+      --parser->num_template_parameter_lists;
+    }
   return type;
 }
 
