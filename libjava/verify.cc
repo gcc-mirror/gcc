@@ -28,7 +28,6 @@ details.  */
 
 // TO DO
 // * read more about when classes must be loaded
-// * there are bugs with boolean arrays?
 // * class loader madness
 // * Lots and lots of debugging and testing
 // * type representation is still ugly.  look for the big switches
@@ -951,7 +950,18 @@ private:
 
     type t = array.element_type ();
     if (! element.compatible (t))
-      verify_fail ("incompatible array element type");
+      {
+	// Special case for byte arrays, which must also be boolean
+	// arrays.
+	bool ok = true;
+	if (element.key == byte_type)
+	  {
+	    type e2 (boolean_type);
+	    ok = e2.compatible (t);
+	  }
+	if (! ok)
+	  verify_fail ("incompatible array element type");
+      }
 
     // Return T and not ELEMENT, because T might be specialized.
     return t;
@@ -992,7 +1002,7 @@ private:
   {
     int npc = start_PC + offset;
     if (npc < 0 || npc >= current_method->code_length)
-      verify_fail ("branch out of range");
+      verify_fail ("branch out of range", start_PC);
     return npc;
   }
 
