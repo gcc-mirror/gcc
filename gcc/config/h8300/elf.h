@@ -24,6 +24,17 @@
 
 #include "elfos.h"
 
+
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC "crtend.o%s %{pg:gcrtn.o%s}%{!pg:crtn.o%s}"
+
+#undef	STARTFILE_SPEC
+#define STARTFILE_SPEC "%{!shared: \
+			 %{!symbolic: \
+			  %{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}\
+			%{pg:gcrti.o%s}%{!pg:crti.o%s} \
+			crtbegin.o%s"
+
 /* Output at beginning/end of assembler file.  */
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)                            \
