@@ -102,7 +102,16 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public ByteBuffer compact ()
   {
-    throw new Error ("Not implemented");
+    int copied = 0;
+    
+    while (remaining () > 0)
+      {
+	put (copied, get ());
+	copied++;
+      }
+
+    position (copied);
+    return this;
   }
 
   public boolean isDirect ()
@@ -157,7 +166,9 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public char getChar ()
   {
-    throw new Error ("Not implemented");
+    char value = getChar (position());
+    position (position() + 2);
+    return value;
   }
 
   public char getChar (int index)
@@ -167,7 +178,9 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public ByteBuffer putChar (char value)
   {
-    throw new Error ("Not implemented");
+    putChar (position(), value);
+    position (position() + 2);
+    return this;
   }
 
   public ByteBuffer putChar (int index, char value)
@@ -177,7 +190,9 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public double getDouble ()
   {
-    throw new Error ("Not implemented");
+    double value = getDouble (position());
+    position (position() + 8);
+    return value;
   }
 
   public double getDouble (int index)
@@ -187,7 +202,9 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public ByteBuffer putDouble (double value)
   {
-    throw new Error ("Not implemented");
+    putDouble (position(), value);
+    position (position() + 8);
+    return this;
   }
 
   public ByteBuffer putDouble (int index, double value)
@@ -197,7 +214,9 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public float getFloat ()
   {
-    throw new Error ("Not implemented");
+    float value = getFloat (position ());
+    position (position() + 4);
+    return value;
   }
 
   public float getFloat (int index)
@@ -207,7 +226,9 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public ByteBuffer putFloat (float value)
   {
-    throw new Error ("Not implemented");
+    putFloat (position(), value);
+    position (position() + 4);
+    return this;
   }
 
   public ByteBuffer putFloat (int index, float value)
@@ -217,7 +238,9 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public int getInt ()
   {
-    throw new Error ("Not implemented");
+    int value = getInt (position());
+    position (position() + 8);
+    return value;
   }
 
   public int getInt (int index)
@@ -227,7 +250,9 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public ByteBuffer putInt (int value)
   {
-    throw new Error ("Not implemented");
+    putInt (position(), value);
+    position (position() + 4);
+    return this;
   }
 
   public ByteBuffer putInt (int index, int value)
@@ -237,7 +262,9 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public long getLong ()
   {
-    throw new Error ("Not implemented");
+    long value = getLong (position());
+    position (position() + 8);
+    return value;
   }
 
   public long getLong (int index)
@@ -247,7 +274,9 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public ByteBuffer putLong (long value)
   {
-    throw new Error ("Not implemented");
+    putLong (position(), value);
+    position (position() + 8);
+    return this;
   }
 
   public ByteBuffer putLong (int index, long value)
@@ -257,7 +286,9 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public short getShort ()
   {
-    throw new Error ("Not implemented");
+    short value = getShort (position());
+    position (position() + 2);
+    return value;
   }
 
   public short getShort (int index)
@@ -267,7 +298,9 @@ public class MappedByteBufferImpl extends MappedByteBuffer
 
   public ByteBuffer putShort (short value)
   {
-    throw new Error ("Not implemented");
+    putShort (position(), value);
+    position (position() + 2);
+    return this;
   }
 
   public ByteBuffer putShort (int index, short value)
