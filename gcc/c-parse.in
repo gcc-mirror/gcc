@@ -1,5 +1,5 @@
 /* YACC parser for C syntax and for Objective C.  -*-c-*-
-   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -577,27 +577,24 @@ expr_no_commas:
 		{ $$ = parser_build_binary_op ($2, $1, $3); }
 	| expr_no_commas ANDAND
 		{ $1 = truthvalue_conversion (default_conversion ($1));
-		  $<itype>2 = $1 == boolean_false_node;
-		  skip_evaluation += $<itype>2; }
+		  skip_evaluation += $1 == boolean_false_node; }
 	  expr_no_commas
-		{ skip_evaluation -= $<itype>2;
+		{ skip_evaluation -= $1 == boolean_false_node;
 		  $$ = parser_build_binary_op (TRUTH_ANDIF_EXPR, $1, $4); }
 	| expr_no_commas OROR
 		{ $1 = truthvalue_conversion (default_conversion ($1));
-		  $<itype>3 = $1 == boolean_true_node;
-		  skip_evaluation += $<itype>3; }
+		  skip_evaluation += $1 == boolean_true_node; }
 	  expr_no_commas
-		{ skip_evaluation -= $<itype>3;
+		{ skip_evaluation -= $1 == boolean_true_node;
 		  $$ = parser_build_binary_op (TRUTH_ORIF_EXPR, $1, $4); }
 	| expr_no_commas '?'
 		{ $1 = truthvalue_conversion (default_conversion ($1));
-		  $<itype>3 = $1 == boolean_true_node;
-		  $<itype>2 = $1 == boolean_false_node;
-		  skip_evaluation += $<itype>2; }
+		  skip_evaluation += $1 == boolean_false_node; }
           expr ':'
-		{ skip_evaluation += $<itype>3 - $<itype>2; }
+		{ skip_evaluation += (($1 == boolean_true_node)
+				      - ($1 == boolean_false_node)); }
 	  expr_no_commas
-		{ skip_evaluation -= $<itype>3;
+		{ skip_evaluation -= $1 == boolean_true_node;
 		  $$ = build_conditional_expr ($1, $4, $7); }
 	| expr_no_commas '?'
 		{ if (pedantic)
@@ -605,10 +602,9 @@ expr_no_commas:
 		  /* Make sure first operand is calculated only once.  */
 		  $<ttype>2 = save_expr ($1);
 		  $1 = truthvalue_conversion (default_conversion ($<ttype>2));
-		  $<itype>3 = $1 == boolean_true_node;
-		  skip_evaluation += $<itype>3; }
+		  skip_evaluation += $1 == boolean_true_node; }
 	  ':' expr_no_commas
-		{ skip_evaluation -= $<itype>3;
+		{ skip_evaluation -= $1 == boolean_true_node;
 		  $$ = build_conditional_expr ($1, $<ttype>2, $5); }
 	| expr_no_commas '=' expr_no_commas
 		{ $$ = build_modify_expr ($1, NOP_EXPR, $3);
