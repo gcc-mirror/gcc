@@ -1,4 +1,4 @@
-2004-11-28  Steven Bosscher
+2004-11-28  Steven Bosscher  <stevenb@suse.de>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/vax/vax.h (CASE_DROPS_THROUGH): Don't define.
