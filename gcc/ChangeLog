@@ -1,3 +1,9 @@
+2001-09-21  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* s390.md: Changed attributes for scheduling.
+	* s390.c: (s390_adjust_cost, s390_adjust_priority)
+	Changed scheduling
+
 2001-09-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	Table-driven attributes.
