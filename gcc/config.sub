@@ -518,7 +518,7 @@ case $os in
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aos* \
 	      | -nindy* | -vxworks* | -ebmon* | -hms* | -mvs* | -clix* \
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* \
-	      | -386bsd* | -netbsd* | -lynxos*)
+	      | -386bsd* | -netbsd* | -riscix* | -lynxos*)
 		;;
 	-sunos5*)
 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
@@ -587,6 +587,9 @@ else
 # system, and we'll never get to this point.
 
 case $basic_machine in
+	*-acorn)
+		os=-riscix1.2
+		;;
 	*-dec | vax-*)
 		os=-ultrix4.2
 		;;
@@ -671,6 +674,9 @@ vendor=unknown
 case $basic_machine in
 	*-unknown)
 		case $os in
+			-riscix*)
+				vendor=acorn
+				;;
 			-sunos*)
 				vendor=sun
 				;;
