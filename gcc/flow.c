@@ -1739,8 +1739,9 @@ propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
 					      current_function_return_rtx,
 					      (rtx *) 0)))
 	      {
+		enum rtx_code code = global_regs[i] ? SET : CLOBBER;
 		/* We do not want REG_UNUSED notes for these registers.  */
-		mark_set_1 (pbi, CLOBBER, regno_reg_rtx[i], cond, insn,
+		mark_set_1 (pbi, code, regno_reg_rtx[i], cond, insn,
 			    pbi->flags & ~(PROP_DEATH_NOTES | PROP_REG_INFO));
 	      }
 	}
@@ -2756,10 +2757,18 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 		     in ASM_OPERANDs.  If these registers get replaced,
 		     we might wind up changing the semantics of the insn,
 		     even if reload can make what appear to be valid
-		     assignments later.  */
+		     assignments later.
+
+		     We don't build a LOG_LINK for global registers to
+		     or from a function call.  We don't want to let
+		     combine think that it knows what is going on with
+		     global registers.  */
 		  if (y && (BLOCK_NUM (y) == blocknum)
 		      && (regno_first >= FIRST_PSEUDO_REGISTER
-			  || asm_noperands (PATTERN (y)) < 0))
+			  || (asm_noperands (PATTERN (y)) < 0
+			      && ! ((GET_CODE (insn) == CALL_INSN
+				     || GET_CODE (y) == CALL_INSN)
+				    && global_regs[regno_first]))))
 		    LOG_LINKS (y) = alloc_INSN_LIST (insn, LOG_LINKS (y));
 		}
 	    }
