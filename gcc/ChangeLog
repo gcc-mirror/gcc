@@ -1,3 +1,12 @@
+2003-04-24  H.J. Lu <hjl@gnu.org>
+
+	* config/ia64/ia64.c (ia64_init_builtins): Add si_ftype_pdi_di_di
+	for __sync_bool_compare_and_swap_di for int return type.
+
+	* config/ia64/ia64intrin.h (__sync_bool_compare_and_swap_di):
+	Change return type to int.
+	(__sync_bool_compare_and_swap): Likewise.
+
 Thu Apr 24 16:55:26 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cfgbuild.c (make_edges):  Do not use next_nonnote_insn when

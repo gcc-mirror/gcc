@@ -19,13 +19,11 @@ extern long __sync_val_compare_and_swap_di (long *, long, long);
     __sync_val_compare_and_swap_di((long *)(PTR),(long)(OLD),(long)(NEW)))
 
 extern int __sync_bool_compare_and_swap_si (int *, int, int);
-extern long __sync_bool_compare_and_swap_di (long *, long, long);
+extern int __sync_bool_compare_and_swap_di (long *, long, long);
 #define __sync_bool_compare_and_swap(PTR, OLD, NEW)			\
  ((sizeof (*(PTR)) == sizeof(int))					\
-  ? (__typeof__(*(PTR)))						\
-    __sync_bool_compare_and_swap_si((int *)(PTR),(int)(OLD),(int)(NEW))	\
-  : (__typeof__(*(PTR)))						\
-    __sync_bool_compare_and_swap_di((long *)(PTR),(long)(OLD),(long)(NEW)))
+  ? __sync_bool_compare_and_swap_si((int *)(PTR),(int)(OLD),(int)(NEW))	\
+  : __sync_bool_compare_and_swap_di((long *)(PTR),(long)(OLD),(long)(NEW)))
 
 extern void __sync_lock_release_si (int *);
 extern void __sync_lock_release_di (long *);

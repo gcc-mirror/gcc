@@ -7730,9 +7730,14 @@ ia64_init_builtins ()
 				psi_type_node, integer_type_node,
 				integer_type_node, NULL_TREE);
 
-  /* __sync_val_compare_and_swap_di, __sync_bool_compare_and_swap_di */
+  /* __sync_val_compare_and_swap_di */
   tree di_ftype_pdi_di_di
     = build_function_type_list (long_integer_type_node,
+				pdi_type_node, long_integer_type_node,
+				long_integer_type_node, NULL_TREE);
+  /* __sync_bool_compare_and_swap_di */
+  tree si_ftype_pdi_di_di
+    = build_function_type_list (integer_type_node,
 				pdi_type_node, long_integer_type_node,
 				long_integer_type_node, NULL_TREE);
   /* __sync_synchronize */
@@ -7767,7 +7772,7 @@ ia64_init_builtins ()
 	       IA64_BUILTIN_VAL_COMPARE_AND_SWAP_DI);
   def_builtin ("__sync_bool_compare_and_swap_si", si_ftype_psi_si_si,
 	       IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_SI);
-  def_builtin ("__sync_bool_compare_and_swap_di", di_ftype_pdi_di_di,
+  def_builtin ("__sync_bool_compare_and_swap_di", si_ftype_pdi_di_di,
 	       IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_DI);
 
   def_builtin ("__sync_synchronize", void_ftype_void,
