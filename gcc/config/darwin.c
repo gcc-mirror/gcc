@@ -914,6 +914,14 @@ darwin_make_decl_one_only (tree decl)
 }
 
 void
+darwin_mark_decl_preserved (const char *name)
+{
+  fprintf (asm_out_file, ".no_dead_strip ");
+  assemble_name (asm_out_file, name);
+  fputc ('\n', asm_out_file);
+}
+
+void
 machopic_select_section (tree exp, int reloc,
 			 unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {

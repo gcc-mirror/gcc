@@ -353,6 +353,9 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       if (DECL_DEFER_OUTPUT (node))
 	fputs (" defer-output", file);
 
+      if (DECL_PRESERVE_P (node))
+	fputs (" preserve", file);
+
       if (DECL_LANG_FLAG_0 (node))
 	fputs (" decl_0", file);
       if (DECL_LANG_FLAG_1 (node))

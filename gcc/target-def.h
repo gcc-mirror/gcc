@@ -183,6 +183,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_ASM_EXTERNAL_LIBCALL default_external_libcall
 #endif
 
+#ifndef TARGET_ASM_MARK_DECL_PRESERVED
+#define TARGET_ASM_MARK_DECL_PRESERVED hook_void_constcharptr
+#endif
+
 #define TARGET_ASM_ALIGNED_INT_OP				\
 		       {TARGET_ASM_ALIGNED_HI_OP,		\
 			TARGET_ASM_ALIGNED_SI_OP,		\
@@ -223,7 +227,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
                         TARGET_ASM_CAN_OUTPUT_MI_THUNK,         \
                         TARGET_ASM_FILE_START,                  \
                         TARGET_ASM_FILE_END,			\
-			TARGET_ASM_EXTERNAL_LIBCALL}
+			TARGET_ASM_EXTERNAL_LIBCALL,            \
+                        TARGET_ASM_MARK_DECL_PRESERVED}
 
 /* Scheduler hooks.  All of these default to null pointers, which
    haifa-sched.c looks for and handles.  */

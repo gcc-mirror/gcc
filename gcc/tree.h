@@ -2165,6 +2165,11 @@ struct tree_binfo GTY (())
 #define DECL_POSSIBLY_INLINED(DECL) \
   FUNCTION_DECL_CHECK (DECL)->decl.possibly_inlined
 
+/* Nonzero for a decl that is decorated using attribute used.
+   This indicates compiler tools that this decl needs to be preserved.  */
+#define DECL_PRESERVE_P(DECL) \
+  DECL_CHECK (DECL)->decl.preserve_flag
+
 /* Enumerate visibility settings.  */
 #ifndef SYMBOL_VISIBILITY_DEFINED
 #define SYMBOL_VISIBILITY_DEFINED
@@ -2232,7 +2237,8 @@ struct tree_decl GTY(())
   unsigned lang_flag_7 : 1;
 
   unsigned possibly_inlined : 1;
-  /* 15 unused bits.  */
+  unsigned preserve_flag: 1;
+  /* 13 unused bits.  */
 
   union tree_decl_u1 {
     /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is

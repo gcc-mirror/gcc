@@ -799,6 +799,9 @@ objc_section_init (void)			\
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM))
 
+#undef TARGET_ASM_MARK_DECL_PRESERVED
+#define TARGET_ASM_MARK_DECL_PRESERVED darwin_mark_decl_preserved
+
 /* Since we have a separate readonly data section, define this so that
    jump tables end up in text rather than data.  */
 

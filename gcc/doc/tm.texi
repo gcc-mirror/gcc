@@ -6804,6 +6804,12 @@ pseudo-op to declare a library function name external.  The name of the
 library function is given by @var{symref}, which is a @code{symbol_ref}.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_ASM_MARK_DECL_PRESERVED (tree @var{decl})
+This target hook is a function to output to @var{asm_out_file} an assembler
+directive to annotate used symbol.  Darwin target use .no_dead_code_strip
+directive.
+@end deftypefn
+
 @defmac ASM_OUTPUT_LABELREF (@var{stream}, @var{name})
 A C statement (sans semicolon) to output to the stdio stream
 @var{stream} a reference in assembler syntax to a label named
