@@ -1,5 +1,13 @@
 2004-05-20  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/15301
+	* gcc.dg/compat/union-m128-1.h: New file.
+	* gcc.dg/compat/union-m128-1_main.c: Likewise.
+	* gcc.dg/compat/union-m128-1_x.c: Likewise.
+	* gcc.dg/compat/union-m128-1_y.c: Likewise.
+
+2004-05-20  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/15302
 	* gcc.dg/compat/struct-complex-1.h: New file.
 	* gcc.dg/compat/struct-complex-1_main.c: Likewise.
