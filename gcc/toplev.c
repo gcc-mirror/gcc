@@ -251,6 +251,7 @@ struct dump_file_info
 enum dump_file_index
 {
   DFI_rtl,
+  DFI_sibling,
   DFI_jump,
   DFI_cse,
   DFI_addressof,
@@ -284,6 +285,7 @@ enum dump_file_index
 struct dump_file_info dump_file[DFI_MAX] = 
 {
   { "rtl",	'r', 0, 0, 0 },
+  { "sibling",  'i', 0, 0, 0 },
   { "jump",	'j', 0, 0, 0 },
   { "cse",	's', 0, 0, 0 },
   { "addressof", 'F', 0, 0, 0 },
@@ -2897,8 +2899,13 @@ rest_of_compilation (decl)
 
   /* We may have potential sibling or tail recursion sites.  Select one
      (of possibly multiple) methods of performing the call.  */
-  if (flag_optimize_sibling_calls)
-    optimize_sibling_and_tail_recursive_calls ();
+  open_dump_file (DFI_sibling, decl);
+  TIMEVAR (jump_time,
+	   {
+	     if (flag_optimize_sibling_calls)
+	       optimize_sibling_and_tail_recursive_calls ();
+	   });
+  close_dump_file (DFI_sibling, print_rtl, get_insns ());
   
   if (ggc_p)
     ggc_collect ();
