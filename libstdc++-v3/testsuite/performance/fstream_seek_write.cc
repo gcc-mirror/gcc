@@ -53,5 +53,6 @@ int main()
       report_performance(__FILE__, "", time, resource);
     }
 
+  unlink("tmp_perf_seek");
   return 0;
 }

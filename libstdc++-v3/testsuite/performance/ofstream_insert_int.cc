@@ -45,5 +45,6 @@ int main()
   stop_counters(time, resource);
   report_performance(__FILE__, "", time, resource);
 
+  unlink("tmp_perf_int.txt");
   return 0;
 };
