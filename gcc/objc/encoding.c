@@ -1,5 +1,5 @@
 /* Encoding of types for Objective C.
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -342,6 +342,7 @@ objc_skip_typespec (const char* type)
   case _C_FLT:
   case _C_DBL:
   case _C_VOID:
+  case _C_UNDEF:
     return ++type;
     break;
 
