@@ -1,3 +1,12 @@
+2004-05-17  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/bits/boost_concept_check.h: Fix old attribute syntax.
+	* testsuite/23_containers/map/modifiers/swap.cc: Define operator<
+	to pass concept-checks.
+	* testsuite/23_containers/multimap/modifiers/swap.cc: Same.
+	* testsuite/23_containers/set/modifiers/swap.cc: Same.
+	* testsuite/23_containers/multiset/modifiers/swap.cc: Same.
+
 2004-05-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/std_bitset.h: Minor formatting fixes.

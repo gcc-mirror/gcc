@@ -194,7 +194,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __const_constraints(__a);
     }
     void __const_constraints(const _Tp& __a) {
-      _Tp __c(__a) _IsUnused;           // require const copy constructor
+      _Tp __c _IsUnused(__a);           // require const copy constructor
       const _Tp* __ptr _IsUnused = &__a; // require const address of operator
     }
     _Tp __b;
@@ -205,12 +205,12 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
   struct _SGIAssignableConcept
   {
     void __constraints() {
-      _Tp __b(__a) _IsUnused;
+      _Tp __b _IsUnused(__a);
       __a = __a;                        // require assignment operator
       __const_constraints(__a);
     }
     void __const_constraints(const _Tp& __b) {
-      _Tp __c(__b) _IsUnused;
+      _Tp __c _IsUnused(__b);
       __a = __b;              // const required for argument to assignment
     }
     _Tp __a;
@@ -726,9 +726,9 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __function_requires< _DefaultConstructibleConcept<_Sequence> >();
 
       _Sequence
-        __c(__n) _IsUnused,
-        __c2(__n, __t) _IsUnused,
-        __c3(__first, __last) _IsUnused;
+        __c _IsUnused(__n),
+        __c2 _IsUnused(__n, __t),
+        __c3 _IsUnused(__first, __last);
 
       __c.insert(__p, __t);
       __c.insert(__p, __n, __t);
@@ -845,7 +845,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __c.insert(__first, __last);
 
     }
-    typename _MultipleAssociativeContainer::iterator __pos _IsUnused;
+    typename _MultipleAssociativeContainer::iterator __pos;
     typename _MultipleAssociativeContainer::value_type __t;
     typename _MultipleAssociativeContainer::value_type *__first, *__last;
   };
@@ -888,9 +888,9 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
         _ReversibleContainerConcept<_SortedAssociativeContainer> >();
 
       _SortedAssociativeContainer
-        __c(__kc) _IsUnused,
-        __c2(__first, __last) _IsUnused,
-        __c3(__first, __last, __kc) _IsUnused;
+        __c _IsUnused(__kc),
+        __c2 _IsUnused(__first, __last),
+        __c3 _IsUnused(__first, __last, __kc);
 
       __p = __c.upper_bound(__k);
       __p = __c.lower_bound(__k);
